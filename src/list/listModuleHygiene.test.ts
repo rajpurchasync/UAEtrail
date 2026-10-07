@@ -50,12 +50,13 @@ describe('list module hygiene', () => {
     expect(categoryFeed).toMatch(/ListFeedVenuePosterCard/);
   });
 
-  it('keeps venue category posters without host header chrome', () => {
+  it('keeps venue category posters with catalog entity header (not activity host avatar)', () => {
     const venuePoster = readFileSync(
       join(process.cwd(), 'src/list/ui/feed/ListFeedVenuePosterCard.tsx'),
       'utf8'
     );
     expect(venuePoster).toMatch(/resolveListVenuePosterCopy/);
+    expect(venuePoster).toMatch(/ListFeedCatalogEntityHeader/);
     expect(venuePoster).not.toMatch(/ListFeedPosterOptionsMenu/);
     expect(venuePoster).not.toMatch(/SecureAvatar/);
   });

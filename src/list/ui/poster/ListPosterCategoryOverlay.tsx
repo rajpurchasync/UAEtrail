@@ -1,9 +1,7 @@
-import type { ExploreCardModel } from '../../../explore/exploreCardModel';
 import type { BrowsePosterScheduleGrid } from '../../listPosterPresentation';
 import type { formatListFeedPosterTitleLines } from '../../listPosterPresentation';
 import { LIST_FEED } from '../../listFeedTheme';
 import { LIST_FEED_CAPTION_BOTTOM_SCRIM_CLASS, type ListFeedCaptionScrim } from '../../listFeedCaptionContrast';
-import { ListPosterCatalogHeroHeader } from './ListPosterCatalogHeroHeader';
 
 type TitleLines = ReturnType<typeof formatListFeedPosterTitleLines>;
 
@@ -16,15 +14,12 @@ export const ListPosterCategoryOverlay = ({
   schedule,
   requirementLabels = [],
   captionScrim,
-  catalogHero,
 }: {
   placeLine: string | null;
   titleLines: TitleLines;
   schedule: BrowsePosterScheduleGrid;
   requirementLabels?: string[];
   captionScrim: ListFeedCaptionScrim;
-  /** Venue / shop name + rating on top of image. */
-  catalogHero?: { name: string; card: ExploreCardModel } | null;
 }) => {
   const shadow = LIST_FEED.overlayTextShadow;
   const hasSchedule =
@@ -44,7 +39,6 @@ export const ListPosterCategoryOverlay = ({
 
   return (
     <div className={rootClass}>
-      {catalogHero ? <ListPosterCatalogHeroHeader name={catalogHero.name} card={catalogHero.card} /> : null}
       {showCenterTitle || placeLine ? (
         <div className={LIST_FEED.overlayHeroCenter}>
           <div className={LIST_FEED.overlayHeroCopy}>

@@ -10,8 +10,8 @@ import {
   ListPosterDiscoverScheduleBody,
   resolveListPosterCopy,
 } from './poster/ListPosterHeroChrome';
-import { ListPosterCatalogHeroHeader } from './poster/ListPosterCatalogHeroHeader';
 import { resolveListVenuePosterCopy } from '../listVenuePosterPresentation';
+import { ListFeedCatalogEntityHeader } from './feed/ListFeedCatalogEntityHeader';
 
 interface ListDiscoverRailPreviewCardProps {
   card: ExploreCardModel;
@@ -31,8 +31,13 @@ export const ListDiscoverRailPreviewCard = ({ card }: ListDiscoverRailPreviewCar
       <Link
         to={card.path}
         className={`${LIST_DISCOVER_HOME.frame} touch-manipulation active:opacity-95`}
-        aria-label={`View ${copy.heroTitle}`}
+        aria-label={`View ${catalogCopy?.heroTitle ?? copy.heroTitle}`}
       >
+        {catalogCopy ? (
+          <div className="mb-2 px-0.5">
+            <ListFeedCatalogEntityHeader card={card} name={catalogCopy.heroTitle} />
+          </div>
+        ) : null}
         <div className={LIST_DISCOVER_HOME.mediaHalf}>
           {showPhoto ? (
             <EnvironmentImage
@@ -52,9 +57,7 @@ export const ListDiscoverRailPreviewCard = ({ card }: ListDiscoverRailPreviewCar
             </div>
           )}
 
-          {catalogCopy ? (
-            <ListPosterCatalogHeroHeader name={catalogCopy.heroTitle} card={card} />
-          ) : (
+          {catalogCopy ? null : (
             <ListPosterDiscoverHeroEyebrow
               activityTypeLabel={copy.activityTypeLabel}
               placeLine={copy.placeLine}

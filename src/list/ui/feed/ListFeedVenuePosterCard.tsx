@@ -14,6 +14,7 @@ import { resolveListVenuePosterCopy } from '../../listVenuePosterPresentation';
 import { useListFeedActions } from '../ListFeedActionsProvider';
 import { ListFeedPosterImageCta } from '../ListFeedPosterImageCta';
 import { ListPosterCategoryOverlay } from '../poster/ListPosterCategoryOverlay';
+import { ListFeedCatalogEntityHeader } from './ListFeedCatalogEntityHeader';
 import { ListFeedPosterEngagementBar } from './ListFeedPosterEngagementBar';
 
 interface ListFeedVenuePosterCardProps {
@@ -21,7 +22,7 @@ interface ListFeedVenuePosterCardProps {
   edgeToEdge?: boolean;
 }
 
-/** Places category — venue / shop catalog poster (name + rating on image, Like · Share · Follow). */
+/** Places category — catalog header above image; venue / shop Like · Share · Follow. */
 export const ListFeedVenuePosterCard = ({ card, edgeToEdge = false }: ListFeedVenuePosterCardProps) => {
   const { footerModel } = useListFeedActions();
   const showImageCta = shouldShowListFeedImageCta(footerModel(card));
@@ -69,7 +70,6 @@ export const ListFeedVenuePosterCard = ({ card, edgeToEdge = false }: ListFeedVe
         schedule={copy.schedule}
         requirementLabels={copy.requirementLabels}
         captionScrim={scrim}
-        catalogHero={{ name: copy.heroTitle, card }}
       />
     </div>
   );
@@ -83,6 +83,7 @@ export const ListFeedVenuePosterCard = ({ card, edgeToEdge = false }: ListFeedVe
 
   const frameClass = edgeToEdge ? LIST_FEED.feedCardFrameEdge : LIST_FEED.feedCardFrame;
   const articleClass = edgeToEdge ? LIST_FEED.articleEdge : LIST_FEED.article;
+  const headerClass = edgeToEdge ? LIST_FEED.headerEdge : LIST_FEED.header;
 
   return (
     <article className={`relative ${articleClass}`}>
@@ -91,6 +92,12 @@ export const ListFeedVenuePosterCard = ({ card, edgeToEdge = false }: ListFeedVe
         className="absolute inset-0 z-[1] touch-manipulation"
         aria-label={`View ${copy.heroTitle}`}
       />
+
+      <header className={`relative z-[2] ${headerClass}`}>
+        <div className={`${LIST_FEED.publisherStatic} w-full`}>
+          <ListFeedCatalogEntityHeader card={card} name={copy.heroTitle} />
+        </div>
+      </header>
 
       <div className={`relative z-[2] ${frameClass}`}>
         {mediaBlock}

@@ -1,4 +1,5 @@
 import type { ExploreCardModel } from '../explore/exploreCardModel';
+import { ACTIVITY_TYPE_LABELS, type ActivityType } from '../config/activityTypes';
 import type { BrowsePosterScheduleGrid, ListFeedPosterTitleLines } from './listPosterPresentation';
 
 const capitalize = (value: string): string =>
@@ -13,6 +14,17 @@ const emptySchedule: BrowsePosterScheduleGrid = {
 
 const normalize = (value: string | null | undefined): string =>
   value?.trim().toLowerCase().replace(/\s+/g, ' ') ?? '';
+
+/** Venue kind line under location name (catalog poster header). */
+export const resolveCatalogVenueKindLabel = (card: ExploreCardModel): string | null => {
+  if (card.source === 'shop') return 'Outdoor shop';
+  if (card.kind === 'hiking' || card.kind === 'camping' || card.kind === 'event') {
+    return ACTIVITY_TYPE_LABELS[card.kind as ActivityType];
+  }
+  if (card.kind === 'shop') return 'Outdoor shop';
+  if (card.source === 'venue') return 'Outdoor place';
+  return null;
+};
 
 export const resolveCatalogEntityName = (card: ExploreCardModel): string => {
   const listTitle = card.listTitle?.trim();
@@ -133,3 +145,4 @@ export const resolveListVenuePosterCopy = (card: ExploreCardModel): ListVenuePos
     requirementLabels: resolveListVenuePosterFactLabels(card),
   };
 };
+
