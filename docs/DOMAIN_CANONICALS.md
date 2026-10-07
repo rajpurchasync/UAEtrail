@@ -176,8 +176,28 @@ Built only via **`routingCatalog`** or `@uaetrail/shared-types` `entity-path` he
 | FAB deep link (wire) | `compose=organize:*` \| `find:*` \| `add:*` — param name **legacy**; product = **Organize · Find · Add** | User-facing “Compose”; `/host/activities/new` for consumers |
 | Panel/filter query | `explorePath({ panel, filter, … })` | Raw `` `/explore?${...}` `` outside `explore/routing.ts` |
 | Demand pin | `exploreDemandMapItemPath` (shared-types) | `/demand/:id` |
+| Full-screen list browse | `LIST_DISCOVERY_PATH` (`/list`) + `listDiscoveryPath()` | `/list/hiking`, `/shops` as category site roots |
+| List ↔ map handoff | `exploreMapPathFromListSearch()`, `listDiscoveryPathFromExploreSearch()` | Second filter vocabulary on `/list` |
 
-Explore URL builders live in `src/explore/routing.ts` (re-exported from `config/routingCatalog`); the old `utils/exploreRouting` shim is **removed** (`exploreModuleBoundary.test.ts`).
+Explore URL builders live in `src/explore/routing.ts` (re-exported from `config/routingCatalog`); list helpers in `src/list/routing.ts`. The old `utils/exploreRouting` shim is **removed** (`exploreModuleBoundary.test.ts`).
+
+### 4.1 Browse vs entity paths (mental model)
+
+**North star:** members **discover people and plans** on one browse surface; they **open one record** when they care about join, follow, or share.
+
+| Layer | URL pattern | Job | Cache / load |
+|-------|-------------|-----|----------------|
+| **Browse (feed)** | `/explore?…` and optionally `/list?…` | Map-first discovery; topic + pin-kind filters (Trips, Looking for, Spots, Shops) live in **query**, not path segments | One read model: `GET /explore/map` (filters on query). Client cache keys = **canonical serialized browse state** (`explorePath`, list URL state). Embedded list on explore uses `list=1` — same state, different chrome. |
+| **Entity (document)** | `/activity/:id`, `/trail/:id`, `/venue/:id`, `/shop/:id`, `/guide/:slug`, … | Share link, notification target, SEO snippet, per-record auth (`viewerAccess`) | Per-entity fetch + cache (`activity`, place, shop, tenant). **Not** used as “browse all hikes” hubs. |
+| **Personal (not public browse)** | `/trips`, `/trips/map`, `/profile` | Your upcoming outings, journey map, settings | `/me/*` APIs; separate from explore map payload. |
+
+**Do not add** parallel browse roots such as `/map`, `/activities` (catalog), `/places`, `/shops` as top-level **category pages** — that duplicates filters already expressed on `/explore` and `/list`, splits analytics, and invites divergent APIs. Legacy `/map` and `/activities` → redirect only ([`NAVIGATION.md`](./NAVIGATION.md)).
+
+**When a new path is justified:** marketing/SEO landings that **deep-link into** `explorePath({ … })` with the same filter params; partner embeds; or a **new bounded context** with its own read API (document in Tier-1 before shipping).
+
+**Three maps (do not conflate):** (1) **Explore** — public discovery; (2) **Journey map** — `/trips/map`, personal pins; (3) **Host console** — tenant tools under `/host/*`. See [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §3.1 and §4.1.
+
+IA detail (pills, topics): [`experiment/explore-browse-ia.md`](./experiment/explore-browse-ia.md).
 
 ---
 

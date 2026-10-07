@@ -40,6 +40,12 @@ const ACTIVITIES_PATH_ALLOWLIST = new Set([
   'src/config/routingHygiene.test.ts',
 ]);
 
+const LEGACY_MAP_BROWSE_ALLOWLIST = new Set([
+  'src/App.tsx',
+  'src/config/platform.ts',
+  'src/config/routingHygiene.test.ts',
+]);
+
 const collectSourceFiles = (dir: string): string[] => {
   const entries = readdirSync(dir);
   const files: string[] = [];
@@ -132,6 +138,37 @@ describe('routingHygiene', () => {
     }
 
     expect(violations).toEqual([]);
+  });
+
+  it('app code does not link to /map as browse home (use EXPLORE_MAP_PATH / explorePath)', () => {
+    const files = collectSourceFiles(SCAN_ROOT);
+    const violations: string[] = [];
+    const linkPattern =
+      /(?:to|href)=["']\/map(?:[?'"])|navigate\(\s*["']\/map|path:\s*["']\/map["']/;
+
+    for (const file of files) {
+      if (LEGACY_MAP_BROWSE_ALLOWLIST.has(file)) continue;
+      if (file.includes('/api/')) continue;
+      const content = readFileSync(join(process.cwd(), file), 'utf8');
+      if (linkPattern.test(content)) {
+        violations.push(`${file}: use EXPLORE_MAP_PATH or explorePath() — /map is redirect-only`);
+      }
+    }
+
+    expect(violations).toEqual([]);
+  });
+
+  it('App does not register category browse path segments (/browse, catalog /places)', () => {
+    const app = readFileSync(join(process.cwd(), 'src/App.tsx'), 'utf8');
+    const banned = [
+      /path="\/browse\//,
+      /path="\/places"/,
+      /path="\/places\//,
+      /path="\/shops"/,
+      /path="\/shops\//,
+    ];
+    const hits = banned.filter((pattern) => pattern.test(app));
+    expect(hits, 'use /explore or /list with query filters per DOMAIN_CANONICALS §4.1').toHaveLength(0);
   });
 
   it('app code does not introduce /demand/ detail routes', () => {
