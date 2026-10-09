@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { History, Map, type LucideIcon } from 'lucide-react';
-import { MY_TRIPS_MAIN_TABS, type TripsMainView } from '../../trips/tripsRouting';
+import { PROFILE_HISTORY_MAIN_TABS, type TripsMainView } from '../../trips/tripsRouting';
 
 const tabIcons: Partial<Record<TripsMainView, LucideIcon>> = {
   completed: History,
@@ -11,14 +11,14 @@ type TripsMainTabsProps = {
   active: TripsMainView;
 };
 
-/** My Trips — History · Map (profile inventory). */
+/** Profile history — History · My Map. */
 export const TripsMainTabs = ({ active }: TripsMainTabsProps) => (
   <div
     className="grid grid-cols-2 divide-x divide-neutral-200/90 rounded-xl border border-neutral-200/90 bg-white/80"
     role="tablist"
-    aria-label="My trips sections"
+    aria-label="Outing history sections"
   >
-    {MY_TRIPS_MAIN_TABS.map((tab) => {
+    {PROFILE_HISTORY_MAIN_TABS.map((tab) => {
       const isActive = tab.id === active;
       const Icon = tabIcons[tab.id] ?? History;
       const className = [

@@ -154,7 +154,7 @@ export const ExploreBrowsePanel = ({
   const posterCardsToRender =
     posterFeedCards.length > 0 ? posterFeedCards : posterFeedBuiltCards;
   const heading = myTripsMode
-    ? `My trips (${listItems.length})`
+    ? `Your plan (${listItems.length})`
     : listHeading(isDesktop, desktopBrowseTab, sidebarPanel, listItems.length, mapFilter);
   const filterEmojiContext = placesMode ? 'venue' : 'activity';
   const queryInputRef = useRef<HTMLInputElement>(null);

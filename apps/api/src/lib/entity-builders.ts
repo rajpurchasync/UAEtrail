@@ -99,6 +99,8 @@ export type ActivityCreateInput = {
   publishedAt?: Date | null;
   outingCategory?: string | null;
   outingTopic?: string | null;
+  activityMode?: 'hosted' | 'seeking' | null;
+  participantIntentId?: string | null;
 };
 
 export type ActivityUpdateInput = {
@@ -143,6 +145,8 @@ export type ActivityUpdateInput = {
   location?: RelationConnect;
   outingCategory?: string | null;
   outingTopic?: string | null;
+  activityMode?: 'hosted' | 'seeking' | null;
+  participantIntentId?: string | null;
 };
 
 const extractConnectedId = (relation?: RelationConnect): string | null => {
@@ -248,6 +252,8 @@ export type MongoActivityDoc = {
   outingCategory?: string | null;
   outingTopic?: string | null;
   areaId?: string | null;
+  activityMode?: 'hosted' | 'seeking' | null;
+  participantIntentId?: string | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -300,6 +306,9 @@ export const buildActivityFromCreateInput = (data: ActivityCreateInput, id: stri
     publishedAt: data.publishedAt ?? null,
     outingCategory: data.outingCategory ?? null,
     outingTopic: data.outingTopic ?? null,
+    areaId: null,
+    activityMode: data.activityMode ?? 'hosted',
+    participantIntentId: data.participantIntentId ?? null,
     createdAt: now,
     updatedAt: now
   };

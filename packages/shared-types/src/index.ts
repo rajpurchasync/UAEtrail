@@ -640,6 +640,8 @@ export interface ParticipantIntentDTO {
   comment: string;
   status: 'active' | 'fulfilled' | 'cancelled';
   convertedActivityId?: string | null;
+  /** M1 dual-write — published seeking activity mirror (`activityMode: seeking`). */
+  seekingActivityId?: string | null;
   createdAt: string;
   requesterName?: string | null;
   requesterAvatar?: string | null;

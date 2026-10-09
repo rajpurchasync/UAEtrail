@@ -66,6 +66,12 @@ export {
   LEGACY_MY_REWARDS_PATH,
   LEGACY_REWARDS_PATH,
   isLegacyRewardsWalletPath,
+  PROFILE_HISTORY_PATH,
+  JOURNEY_MAP_PATH,
+  MY_TRIPS_PATH,
+  MY_TRIPS_MAP_PATH,
+  isProfileHistoryListPath,
+  isJourneyMapPath,
 } from './surfacePaths';
 
 export {
@@ -90,7 +96,6 @@ export {
 
 export {
   PLAN_PATH,
-  MY_TRIPS_PATH,
   TRIPS_PATH,
   ACTIVITIES_PATH,
   HOST_CONSOLE_LINKS,

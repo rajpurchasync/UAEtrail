@@ -54,7 +54,8 @@ Storage: `activity_requests` vs `participant_intent_requests`.
 | Method | Path | Who |
 |--------|------|-----|
 | GET | `/me/participant-intents` | List my intents |
-| POST | `/me/participant-intents` | Create (Find flow) |
+| POST | `/me/participant-intents` | Create (Find flow); **M1** also writes `activities` row (`activityMode: seeking`, `participantIntentId`). Response includes `seekingActivityId`. |
+| — | `npm run backfill-seeking-activities` | One-off **M1** backfill for active intents missing `seekingActivityId` (`--dry-run`, `--limit=N`) |
 | PATCH | `/me/participant-intents/:intentId` | Update own active intent |
 | POST | `/me/participant-intents/:intentId/cancel` | Remove from map |
 | POST | `/me/participant-intents/:intentId/link-activity` | **Poster** links published activity (`convertedActivityId`) |

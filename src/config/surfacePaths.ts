@@ -11,14 +11,32 @@ export const PROFILE_PATH = '/profile' as const;
 /** Active member tab — goals, upcoming, plan attention (`docs/NAVIGATION.md`). */
 export const PLAN_PATH = '/plan' as const;
 
-/** Profile inventory — hosted / joined / gone, wishlist, journey map list + map. */
+/** Profile outing history (joined / hosted / self past) — canonical URL. */
+export const PROFILE_HISTORY_PATH = '/profile/history' as const;
+/** Member journey map (pins + wishlist visited). */
+export const JOURNEY_MAP_PATH = '/profile/history/map' as const;
+
+/** @deprecated Bookmark — `App.tsx` redirects to {@link PROFILE_HISTORY_PATH}. */
 export const MY_TRIPS_PATH = '/profile/my-trips' as const;
+/** @deprecated Bookmark — `App.tsx` redirects to {@link JOURNEY_MAP_PATH}. */
 export const MY_TRIPS_MAP_PATH = '/profile/my-trips/map' as const;
+
+export const isProfileHistoryListPath = (pathname: string): boolean =>
+  pathname === PROFILE_HISTORY_PATH ||
+  pathname === MY_TRIPS_PATH ||
+  pathname.endsWith('/profile/history') ||
+  pathname.endsWith('/my-trips');
+
+export const isJourneyMapPath = (pathname: string): boolean =>
+  pathname === JOURNEY_MAP_PATH ||
+  pathname === MY_TRIPS_MAP_PATH ||
+  pathname.endsWith('/profile/history/map') ||
+  pathname.endsWith('/my-trips/map');
 
 /** Legacy personal hub bookmark (`/activities`). */
 export const ACTIVITIES_LEGACY_PATH = '/activities' as const;
 
-/** @deprecated Legacy URL — `App.tsx` redirects to {@link PLAN_PATH} or {@link MY_TRIPS_PATH}. */
+/** @deprecated Legacy URL — `App.tsx` redirects to {@link PLAN_PATH} or {@link PROFILE_HISTORY_PATH}. */
 export const TRIPS_PATH = '/trips' as const;
 
 /** Admin / host place registry consoles */

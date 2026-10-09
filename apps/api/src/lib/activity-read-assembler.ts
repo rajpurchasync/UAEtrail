@@ -111,6 +111,8 @@ const mongoEventToEvent = (doc: MongoActivityDoc): Activity => {
   outingCategory: (doc.outingCategory as OutingCategory | null | undefined) ?? null,
   outingTopic: (doc.outingTopic as OutingTopic | null | undefined) ?? null,
   areaId: doc.areaId ?? null,
+  activityMode: doc.activityMode ?? null,
+  participantIntentId: doc.participantIntentId ?? null,
   createdAt: doc.createdAt,
   updatedAt: doc.updatedAt,
   };

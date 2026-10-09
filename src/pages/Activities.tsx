@@ -26,8 +26,9 @@ import { PlanLensTabs } from '../components/plan/PlanLensTabs';
 import { PlanSavedSection } from '../components/plan/PlanSavedSection';
 import { PlanAvailabilitySection } from '../components/plan/PlanAvailabilitySection';
 import { PlanNeedsYouStrip } from '../components/plan/PlanNeedsYouStrip';
+import { PlanSuggestedRail } from '../components/plan/PlanSuggestedRail';
 import { PlanCalendarSection } from '../components/plan/PlanCalendarSection';
-import { MY_TRIPS_PATH } from '../config/surfacePaths';
+import { PROFILE_HISTORY_PATH } from '../config/surfacePaths';
 import { parsePlanLens, type PlanLens } from '../plan/planLens';
 import {
   normalizeTripsSearchParams,
@@ -60,7 +61,10 @@ export const Activities = () => {
     const view = searchParams.get('view');
     if (view && view !== 'plans') {
       const qs = searchParams.toString();
-      navigate(qs ? `${MY_TRIPS_PATH}?${qs}` : `${MY_TRIPS_PATH}?view=completed`, { replace: true });
+      navigate(
+        qs ? `${PROFILE_HISTORY_PATH}?${qs}` : `${PROFILE_HISTORY_PATH}?view=completed`,
+        { replace: true }
+      );
       return;
     }
     if (!user) return;
@@ -242,6 +246,7 @@ export const Activities = () => {
                 {planLens === 'schedule' ? (
                   <>
                     <PlanNeedsYouStrip refreshKey={refreshKey} canHost={canHost} />
+                    <PlanSuggestedRail refreshKey={refreshKey} />
                     <TripsPlansUpcomingHeader
                       activeRole={plansRole}
                       onRoleChange={setPlansRole}

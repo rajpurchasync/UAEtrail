@@ -11,7 +11,7 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 | **Marketing** | `/` | First impression — story, trust, sign up (not live catalog) |
 | **Browse** | `/explore` | Map-first discovery — activities, places, shops |
 | **List discovery** | `/list` | Full-screen poster/list browse (same filters as explore; `listDiscoveryPath()` ↔ map via `exploreMapPathFromListSearch()`) |
-| **Personal hub** | `/profile`, `/profile/settings`, `/profile/edit`, `/profile/my-trips` | Account hub, settings stack, trip **history** + journey map |
+| **Personal hub** | `/profile`, `/profile/settings`, `/profile/edit`, `/profile/history` | Account hub, settings stack, outing **history** + journey map |
 | **Plan tab** | `/plan` | Active layer — goals, upcoming outings (bottom nav middle tab; UI label **Plan**) |
 | **Mobile tabs (signed-in)** | `/explore`, `/plan`, `/chat` | **Three tabs only** — **Explore** · **Plan** · **Chat** (`md:hidden`). **No List tab.** Map-aligned list from the **List** pill (`list=1`); discover browse from hamburger **Browse** (`browse=1`) or optional full-screen `/list` (`listDiscoveryPathFromExploreSearch()`), not bottom nav. **Facebook / Instagram / WhatsApp** icon row above tabs (`src/config/socialLinks.ts`); same bar on **`/profile`**, settings stack, **Friends**, **Contributions**, and related profile stack routes |
 | **Entity detail** | `/trail`, `/camp`, `/venue`, `/activity`, `/shop`, `/guide`, `/agency`, `/partner`, `/area/:slug` | Place, scheduled outing, shop, brand profile, or curated **area** hub |
@@ -22,7 +22,7 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 - **Edit profile:** `/profile/edit` — name, gender, bio, speaks, location (no DOB edit on this screen).
 - **Pull-to-refresh** reloads hub data at scroll top.
 - **Sign out:** Profile hub (bottom) and Settings → Account.
-- **My trips (history + map):** `/profile/my-trips` — joined / hosted / self **past** outings; **History · My Map** tabs. Legacy `/trips`, `/trips/map`, `/activities` redirect here or to `/plan` via `resolveLegacyTripsHubRedirect`.
+- **Outing history + map:** `/profile/history` — joined / hosted / self **past** outings; **History · My Map** tabs (`PROFILE_HISTORY_MAIN_TABS`). Journey map at `/profile/history/map`. Legacy `/profile/my-trips` redirects; `/trips`, `/trips/map`, `/activities` → `/plan` or history via `resolveLegacyTripsHubRedirect`.
 - **Saved (wishlist):** `/plan?view=plans&lens=saved` (`planSavedPath()`). Legacy `/profile/wishlist` and `segment=wishlist` URLs normalize to the same lens. Profile shows a teaser only — not a second full list ([`experiment/member-surfaces-implementation-plan.md`](./experiment/member-surfaces-implementation-plan.md) D13).
 - **Settings stack:** `/profile/settings` index → Account, Privacy, Notifications sub-routes; **iPhone & iPad** (`#ios-install`, Safari steps) and **Android** (`#android-install`, Samsung Internet / Chrome manual steps — no in-app install prompt).
 - **Hamburger (header):** next to the notifications bell on tab chrome and desktop `Header` — Explore, My Trips, Messages, Profile/Signup, Download → Android / iOS (deep-link to the matching settings hash). Notifications are the bell only, not in the drawer.
@@ -39,12 +39,12 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 - **Bottom nav middle tab** — forward commitments, not past history (history → **My trips**).
 - **Lenses** (`?view=plans&lens=` — `src/plan/planLens.ts`): **Schedule** (default) · **Calendar** (placeholder; day markers in `planCalendarMarkers.ts`) · **Available** (edit `GET/PUT /me/availability`) · **Saved** · **Goals**. Schedule shows **Upcoming** role chips (All · Hosted · Joined · Seeking).
 - **Query helpers:** `tripsPlansPath()`, `planSavedPath()`, `planLensPath()`. Legacy `segment` / `tab` / `segment=wishlist` normalize on load.
-- **`/trips`**, **`/activities`** redirect to `/plan` or `/profile/my-trips` preserving query (`legacyTripsRedirect.ts`).
+- **`/trips`**, **`/activities`** redirect to `/plan` or `/profile/history` preserving query (`legacyTripsRedirect.ts`).
 
-### My trips (`/profile/my-trips`)
+### Outing history (`/profile/history`)
 
-- **Profile inventory** — past joined / hosted / self outings (`?view=completed&role=`); journey map at `/profile/my-trips/map`. `?view=plans` redirects to `/plan`.
-- **Main tabs (list surface):** History · My Map (`MY_TRIPS_MAIN_TABS`).
+- **Profile inventory** — past joined / hosted / self outings (`?view=completed&role=`); journey map at `/profile/history/map`. `?view=plans` redirects to `/plan`.
+- **Main tabs (list surface):** History · My Map (`PROFILE_HISTORY_MAIN_TABS`).
 - **Manage & crew chat:** Hosted/joined **Manage outing** sheets and explore map peek **`open_crew_chat`** → **`/chat?group=<id>`**. See [`experiment/member-surfaces-implementation-plan.md`](./experiment/member-surfaces-implementation-plan.md) and [`COMMUNICATION.md`](./COMMUNICATION.md).
 
 ### Host console (`/host/*`)

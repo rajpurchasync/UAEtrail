@@ -149,6 +149,8 @@ export interface Activity {
   outingTopic?: OutingTopic | null;
   /** Curated area slug target — set on publish from place or point-in-polygon. */
   areaId?: string | null;
+  activityMode?: 'hosted' | 'seeking' | null;
+  participantIntentId?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }

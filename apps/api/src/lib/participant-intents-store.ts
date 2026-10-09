@@ -41,6 +41,7 @@ type MongoParticipantIntent = {
   comment: string;
   status: 'active' | 'fulfilled' | 'cancelled';
   convertedActivityId?: string | null;
+  seekingActivityId?: string | null;
   areaId?: string | null;
   createdAt: Date;
   updatedAt: Date;
@@ -100,6 +101,7 @@ const mapDto = (
   comment: doc.comment,
   status: doc.status,
   convertedActivityId: doc.convertedActivityId ?? null,
+  seekingActivityId: doc.seekingActivityId ?? null,
   createdAt: doc.createdAt.toISOString(),
   requesterName: user?.profile?.displayName ?? null,
   requesterAvatar: user?.profile?.avatarUrl ?? null,
@@ -153,6 +155,19 @@ export const createParticipantIntent = async (
   };
 
   await collection().insertOne(doc);
+
+  const { createSeekingActivityForIntent } = await import(
+    '../services/participant-intent-seeking-activity.js'
+  );
+  try {
+    const seekingActivityId = await createSeekingActivityForIntent(userId, doc._id, input, areaId);
+    await collection().updateOne({ _id: doc._id }, { $set: { seekingActivityId, updatedAt: new Date() } });
+    doc.seekingActivityId = seekingActivityId;
+  } catch (error) {
+    await collection().deleteOne({ _id: doc._id });
+    throw error;
+  }
+
   await invalidateExploreMapCache();
   const { notifyMemberPublishSubscribers } = await import('../services/member-publish-notifications.js');
   void notifyMemberPublishSubscribers(userId, {
@@ -164,7 +179,9 @@ export const createParticipantIntent = async (
   return mapDto(doc, user);
 };
 
-const mongoDocToCreateInput = (doc: MongoParticipantIntent): CreateParticipantIntentInput => ({
+export const participantIntentDocToCreateInput = (
+  doc: MongoParticipantIntent
+): CreateParticipantIntentInput => ({
   kind: doc.kind,
   title: doc.title?.trim() || resolveStoredDemandTitle(doc),
   date: doc.date,
@@ -198,9 +215,9 @@ export const updateParticipantIntent = async (
   if (!existing) return null;
 
   const merged = parseMergedParticipantIntent({
-    ...mongoDocToCreateInput(existing),
+    ...participantIntentDocToCreateInput(existing),
     ...patch,
-    title: patch.title?.trim() ?? mongoDocToCreateInput(existing).title,
+    title: patch.title?.trim() ?? participantIntentDocToCreateInput(existing).title,
   });
 
   const now = new Date();
@@ -235,6 +252,26 @@ export const updateParticipantIntent = async (
 
   if (!updated) return null;
 
+  if (updated.seekingActivityId) {
+    const { patchActivityInMongo } = await import('./entity-sync.js');
+    const { parseLocalDateTime } = await import('./datetime.js');
+    const startAt =
+      merged.date != null
+        ? parseLocalDateTime(merged.date, merged.time?.trim() || '09:00', 'AE')
+        : undefined;
+    await patchActivityInMongo(updated.seekingActivityId, {
+      title: merged.title.trim(),
+      description: merged.comment.trim(),
+      capacity: merged.partySize,
+      ...(startAt ? { startAt } : {}),
+      meetingLat: merged.latitude ?? null,
+      meetingLng: merged.longitude ?? null,
+      startLat: merged.toLatitude ?? null,
+      startLng: merged.toLongitude ?? null,
+      areaId: update.areaId ?? null,
+    });
+  }
+
   await invalidateExploreMapCache();
   const user = await findAuthUserById(userId);
   return mapDto(updated, user);
@@ -256,6 +293,11 @@ export const cancelParticipantIntent = async (
   );
 
   if (!updated) return null;
+
+  const { cancelSeekingActivityForIntent } = await import(
+    '../services/participant-intent-seeking-activity.js'
+  );
+  await cancelSeekingActivityForIntent(updated.seekingActivityId);
 
   await invalidateExploreMapCache();
   const user = await findAuthUserById(updated.userId);
@@ -322,6 +364,11 @@ export const fulfillParticipantIntent = async (
 
   if (!updated) return null;
 
+  const { cancelSeekingActivityForIntent } = await import(
+    '../services/participant-intent-seeking-activity.js'
+  );
+  await cancelSeekingActivityForIntent(updated.seekingActivityId);
+
   const { carryApprovedDemandJoinersToActivity } = await import(
     '../services/participant-intent-carryover.js'
   );
@@ -377,6 +424,7 @@ export const listActiveParticipantIntentsForMap = async (limit = 200): Promise<E
   );
 
   return docs
+    .filter((doc) => !doc.seekingActivityId)
     .filter((doc) => doc.latitude != null && doc.longitude != null)
     .filter((doc) => !hideFromMapByUserId.get(doc.userId))
     .map((doc) => {
@@ -426,3 +474,63 @@ export const listActiveParticipantIntentsForMap = async (limit = 200): Promise<E
 /** Non-cancelled demand posts — counts toward community Host label. */
 export const countParticipantIntentsByUser = async (userId: string): Promise<number> =>
   collection().countDocuments({ userId, status: { $ne: 'cancelled' } });
+
+/** M1 backfill — active intents without `seekingActivityId` (pre-dual-write rows). */
+export const backfillSeekingActivitiesForActiveIntents = async (options?: {
+  dryRun?: boolean;
+  limit?: number;
+}): Promise<{ scanned: number; created: number; skipped: number; errors: string[] }> => {
+  const limit = options?.limit ?? 500;
+  const docs = await collection()
+    .find({
+      status: 'active',
+      $or: [{ seekingActivityId: { $exists: false } }, { seekingActivityId: null }],
+    })
+    .sort({ createdAt: 1 })
+    .limit(limit)
+    .toArray();
+
+  const { createSeekingActivityForIntent } = await import(
+    '../services/participant-intent-seeking-activity.js'
+  );
+
+  let created = 0;
+  let skipped = 0;
+  const errors: string[] = [];
+
+  for (const doc of docs) {
+    if (doc.latitude == null || doc.longitude == null) {
+      skipped += 1;
+      continue;
+    }
+
+    if (options?.dryRun) {
+      created += 1;
+      continue;
+    }
+
+    const input = participantIntentDocToCreateInput(doc);
+    try {
+      const seekingActivityId = await createSeekingActivityForIntent(
+        doc.userId,
+        doc._id,
+        input,
+        doc.areaId ?? null,
+        { deferCacheInvalidate: true }
+      );
+      await collection().updateOne(
+        { _id: doc._id },
+        { $set: { seekingActivityId, updatedAt: new Date() } }
+      );
+      created += 1;
+    } catch (error) {
+      errors.push(`${doc._id}: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  if (!options?.dryRun && created > 0) {
+    await invalidateExploreMapCache();
+  }
+
+  return { scanned: docs.length, created, skipped, errors };
+};

@@ -1,8 +1,8 @@
 import {
   ACTIVITIES_LEGACY_PATH,
-  MY_TRIPS_MAP_PATH,
-  MY_TRIPS_PATH,
+  JOURNEY_MAP_PATH,
   PLAN_PATH,
+  PROFILE_HISTORY_PATH,
   TRIPS_PATH,
 } from '../config/surfacePaths';
 import { planSavedPath } from '../plan/planLens';
@@ -11,7 +11,7 @@ import { normalizeTripsSearchParams } from './tripsRouting';
 const LEGACY_HUB_PATHS = new Set<string>([TRIPS_PATH, ACTIVITIES_LEGACY_PATH]);
 
 /**
- * Map legacy `/trips`, `/activities`, and `/trips/map` to {@link PLAN_PATH} or {@link MY_TRIPS_PATH}.
+ * Map legacy `/trips`, `/activities`, and `/trips/map` to {@link PLAN_PATH} or {@link PROFILE_HISTORY_PATH}.
  */
 export const resolveLegacyTripsHubRedirect = (
   pathname: string,
@@ -20,7 +20,7 @@ export const resolveLegacyTripsHubRedirect = (
 ): string | null => {
   if (pathname === '/trips/map' || pathname.endsWith('/trips/map')) {
     const qs = search.replace(/^\?/, '');
-    return qs ? `${MY_TRIPS_MAP_PATH}?${qs}` : MY_TRIPS_MAP_PATH;
+    return qs ? `${JOURNEY_MAP_PATH}?${qs}` : JOURNEY_MAP_PATH;
   }
 
   if (!LEGACY_HUB_PATHS.has(pathname)) return null;
@@ -33,7 +33,7 @@ export const resolveLegacyTripsHubRedirect = (
 
   if (view === 'map') {
     const qs = params.toString();
-    return qs ? `${MY_TRIPS_MAP_PATH}?${qs}` : MY_TRIPS_MAP_PATH;
+    return qs ? `${JOURNEY_MAP_PATH}?${qs}` : JOURNEY_MAP_PATH;
   }
 
   const wantsHistory =
@@ -51,7 +51,7 @@ export const resolveLegacyTripsHubRedirect = (
     }
     next.set('view', 'completed');
     const qs = next.toString();
-    return qs ? `${MY_TRIPS_PATH}?${qs}` : `${MY_TRIPS_PATH}?view=completed`;
+    return qs ? `${PROFILE_HISTORY_PATH}?${qs}` : `${PROFILE_HISTORY_PATH}?view=completed`;
   }
 
   if (segment === 'wishlist' || params.get('saved')) {

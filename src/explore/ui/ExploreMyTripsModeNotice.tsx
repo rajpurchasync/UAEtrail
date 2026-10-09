@@ -5,7 +5,7 @@ import { explorePath } from '../routing';
 /** Shown when explore is filtered to the signed-in member's trips + wishlist pins. */
 export const ExploreMyTripsModeNotice = () => (
   <div className="mb-2 shrink-0 rounded-xl border border-emerald-200/80 bg-emerald-50/90 px-3 py-2.5 text-xs text-emerald-950">
-    <p className="font-semibold">My trips on the map</p>
+    <p className="font-semibold">Your plan on the map</p>
     <p className="mt-0.5 leading-snug text-emerald-900/85">
       Saved places and outings you&apos;re in or waiting to join.
     </p>

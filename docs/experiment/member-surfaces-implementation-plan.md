@@ -22,14 +22,14 @@
 | D4 | **Catalog projections:** `/activity`, places, `/shop`, `/guide`, `/agency` — same detail pattern; not a separate host app. |
 | D5 | **Geography:** Region (emirate) → **Area** (curated, e.g. Hatta) → Place → Activity. |
 | D6 | **Time-bound on map:** everything that is not a Place is an **Activity** with `activityMode`: **`hosted`** \| **`seeking`** (no separate map species “demand”). |
-| D7 | **Availability** is **person + calendar slots** — separate from Activity; discoverable via **People** (+ optional map layer); edited on Plan. |
+| D7 | **Availability** is **person + calendar slots** — separate from Activity; discoverable on Explore via map **People pill** → **Available** tab (and list Buddies); edited on Plan. **No extra map cluster overlay** — pill + panel is the map entry. |
 | D8 | **Browse axis:** shared **topic** (hiking, camping, rideshare, …) across activities (both modes), places, and available people. |
 | D9 | **Find FAB** creates Activity **`seeking`** (not a parallel entity in UX). |
 | D10 | **Plan** owns: commitments (join/organize/seek), goals, saved (wishlist), availability editor — full create/edit, not read-only. |
 | D11 | **No fifth tab** — Friends at `/buddies` (Profile/hamburger); **People** on Explore = discovery + availability, not chat. |
 | D12 | **Business workspace** stays under **shop/agency/guide manage URLs** + Profile membership — not consumer `/host` branding. |
 | D13 | **Wishlist / saved** — one API; **write UI primary on Plan `saved` lens**; Explore heart writes same store; Profile **teaser only** (no second list). |
-| D14 | **Seeking ≠ availability** — seeking = Activity `activityMode: seeking` (map pin); availability = person slots (People layer / clusters). Never one entity. |
+| D14 | **Seeking ≠ availability** — seeking = Activity `activityMode: seeking` (map pin); availability = person slots in **People** browse (`peopleTab=available`), not activity pins. Never one entity. |
 
 ---
 
@@ -145,8 +145,8 @@ Notifications (deep link to **activity**, **Plan row context**, **chat thread**,
 ### 3.2 Map pins
 
 - [ ] Activity pins: badge **Seeking** vs **Hosted** (iconography)
-- [ ] People **Available** layer: **area clusters** v1 (“12 available · hiking · this week”) — not per-user pin spam
-- [ ] Optional v2: opt-in fuzzy pin per user per area
+- [x] Map **People pill** → **Available** tab (`ExploreMapPeopleBrowseButton`, `PeopleBrowsePanel`) — **shipped**; supersedes area-cluster overlay idea
+- [x] ~~Separate **area cluster** pins on map canvas~~ — **not needed** (2026-10-10); pill + panel already covers discovery
 
 ### 3.3 Search
 
@@ -196,7 +196,7 @@ Notifications (deep link to **activity**, **Plan row context**, **chat thread**,
 ### 5.3 View surfaces
 
 - [ ] Explore **People** list: filters topic, date range, area, buddies-only
-- [ ] Explore map **Available** layer (clusters) — §3.2
+- [x] Explore map entry: **People pill** + `peopleTab=available` (not cluster overlay); list **Buddies** + `/area/:slug` sections
 - [ ] `/area/:slug` — available people section
 - [ ] `/member/:id` — public slice per visibility
 - [ ] Optional v2: activity detail “N members available near this date”
@@ -223,7 +223,7 @@ Notifications (deep link to **activity**, **Plan row context**, **chat thread**,
 - [x] `availability` — **dedicated lens** (`?lens=availability`, `PlanAvailabilitySection`) — **OD-3 locked** (see §19)
 - [x] `calendar` — month grid + day sheet (`PlanCalendarSection`, `planCalendarMarkers.ts`)
 - [x] **Needs-you** strip (host join queue + joiner requests awaiting host) atop `schedule` — `PlanNeedsYouStrip` (§19 #1; activity invites v2)
-- [ ] **Suggested** rail (wishlist match / buddies — links to Explore, not second map) — after needs-you (§19 #3)
+- [x] **Suggested** rail (wishlist ↔ explore map match; links out, no embedded map) — `PlanSuggestedRail` + `planWishlistExploreMatches` (§19 #3)
 
 ### 6.2 Manage outing (no /host)
 
@@ -232,7 +232,7 @@ Notifications (deep link to **activity**, **Plan row context**, **chat thread**,
 
 ### 6.3 Profile memory (not Plan)
 
-- [ ] Rename routes: `PROFILE_HISTORY_PATH`, `JOURNEY_MAP_PATH` (redirect from `my-trips`)
+- [x] Rename routes: `PROFILE_HISTORY_PATH`, `JOURNEY_MAP_PATH` (redirect from `my-trips`)
 - [ ] Past activities, reviews, badges on Profile only
 
 ### 6.4 Code moves
@@ -279,8 +279,8 @@ Notifications (deep link to **activity**, **Plan row context**, **chat thread**,
 
 ### Phase M1 — Dual write
 
-- [ ] New Find publishes to `activities` with `seeking` + read intents for legacy
-- [ ] Backfill script intents → activities
+- [x] New Find publishes to `activities` with `seeking` + read intents for legacy (`participant-intent-seeking-activity.ts`)
+- [x] Backfill script intents → activities (`npm --workspace @uaetrail/api run backfill-seeking-activities`)
 
 ### Phase M2 — Single write
 
@@ -308,9 +308,9 @@ Use one PR per subsection where possible; check boxes when merged.
 
 ### Phase 1 — Terminology & routes (partially done)
 
-- [x] 1.1 `PLAN_PATH`, history/journey path aliases + redirects (rename `MY_TRIPS_*` → `PROFILE_HISTORY_*` still open)
+- [x] 1.1 `PLAN_PATH`, `PROFILE_HISTORY_PATH` / `JOURNEY_MAP_PATH` + legacy redirects
 - [x] 1.2 Plan lenses shell (`?lens=schedule|calendar|availability|saved|goals`)
-- [ ] 1.3 Remove trips hub UI; grep guard for new “trips” strings in consumer UI
+- [x] 1.3 Profile history paths (`PROFILE_HISTORY_PATH`, `JOURNEY_MAP_PATH`); `tripsConsumerNamingGuard`; consumer copy → Plan / History
 - [ ] 1.4 Mobile tab label Plan/Home — product choice documented
 
 ### Phase 2 — OutingTopic + explore layers
@@ -341,14 +341,14 @@ Use one PR per subsection where possible; check boxes when merged.
 - [x] 5.2 Plan availability editor (Available lens + day calendar multi-select)
 - [x] 5.2b Plan **Calendar** lens month view (markers from `planCalendarMarkers` + map outing density)
 - [x] 5.3 Explore People filters (wire roster UI to `/explore/people/availability`)
-- [x] 5.4 Map Available clusters (API `clusters[]` on explore people availability)
-- [ ] 5.4b Map **layer chrome** — toggle Available clusters on map (not only People list) — §19 #4
+- [x] 5.4 Explore people availability API (`GET /explore/people/availability`; `clusters[]` unused on client)
+- [x] ~~5.4b Map cluster overlay~~ — **skipped**; **5.3 map chrome** = People pill → Available tab (already live — `NAVIGATION.md` § Browse people)
 - [x] 5.5 Area page + member profile public slice
 - [x] 5.6 MEMBER_MODEL visibility rules
 
 ### Phase 6 — Activity storage merge (M1–M2)
 
-- [ ] 6.1 Create seeking via activities API
+- [x] 6.1 Create seeking via activities API (M1 dual-write on `POST /me/participant-intents`)
 - [ ] 6.2 Join request unification plan + migration
 - [ ] 6.3 Remove demand from explore source enum (client + API)
 
@@ -394,7 +394,7 @@ Use one PR per subsection where possible; check boxes when merged.
 | G-seek | Find FAB creates seeking activity; appears as activity pin (not demand source) |
 | G-area | Publish activity in Hatta bounds sets `areaId`; `/area/hatta` lists it |
 | G-avail | Multi-day availability on Plan visible in People search for matching dates (visibility respected) |
-| G-avail-map | Available layer shows area cluster, not N duplicate pins per user per day |
+| G-avail-map | From map: **People pill** opens **Available** roster (`peopleTab=available`); **no** per-user availability pins or area-cluster overlay on the canvas |
 | G-plan | Goals + saved + schedule + availability editable on Plan without Profile duplicate lists |
 | G-manage | Host approve join from Plan/detail without `/host` |
 
@@ -408,6 +408,7 @@ Use one PR per subsection where possible; check boxes when merged.
   - Merging availability into Activity entity
   - OSM-auto areas v1
   - SEO city landings at scale before curated areas work
+  - **Map availability cluster overlay** — area chips on the map canvas (redundant with **People pill → Available**)
 
 ---
 
@@ -440,14 +441,14 @@ Use one PR per subsection where possible; check boxes when merged.
 |---|-----------|-----------|---------------------|
 | 1 | ~~**Plan needs-you strip**~~ **done** | §6.1 | `PlanNeedsYouStrip.tsx` |
 | 2 | ~~**Plan Calendar lens UI**~~ **done** | 5.2b | `PlanCalendarSection.tsx`, `usePlanCalendarData` |
-| 3 | **Suggested rail** on Plan schedule (wishlist ↔ upcoming match; links to Explore, no embedded map) | §6.1, Phase 5+ | `PlanSuggestedSection.tsx`, wishlist match helpers |
-| 4 | **Explore map Available layer chrome** — surface `clusters[]` from `useExplorePeopleAvailability` on map (area chips / toggle) | §3.2, 5.4b | `ExploreExperience.tsx`, map stage overlay |
-| 5 | **Phase 1.3** — consumer “trips” string grep + guard; `MY_TRIPS_*` → `PROFILE_HISTORY_*` rename | Phase 1, §6.3–6.4 | `tripsRouting.ts`, `surfacePaths.ts`, `verify` guards |
-| 6 | **Phase 6** — seeking activity dual-write (M1), then deprecate `demand` source | §8, Phase 6 | `participant-intents-store`, compose/find flows |
+| 3 | ~~**Suggested rail**~~ **done** | §6.1, Phase 5+ | `PlanSuggestedRail.tsx`, `planWishlistExploreMatches.ts` |
+| 4 | ~~**Map cluster overlay**~~ **skipped** — availability already on map via **People pill → Available** | 5.4b, §12 | `ExploreMapPeopleBrowseButton`, `peopleTab=available` |
+| 5 | ~~**Phase 1.3** trips naming~~ **done** | Phase 1, §6.3 | `PROFILE_HISTORY_PATH`, `tripsConsumerNamingGuard.test.ts` |
+| 6 | ~~**Phase 6.1** M1 dual-write~~ **done** — backfill + deprecate `demand` source still open | §8, Phase 6 | `participant-intent-seeking-activity.ts` |
 | 7 | **Phase 7** — consumer `/host` link audit + redirects; notification meta URLs | §7 | `notificationRouting.ts`, `App.tsx` |
 | 8 | **Phase 8** — §11 acceptance + full `verify:system` | Phase 8 | CI / manual QA checklist |
 
-**Paused / explicit non-goals for now:** attention strip variants beyond needs-you (#1), goals projection polish, upcoming carousel (`plan-tab-ux-backlog.md`).
+**Paused / explicit non-goals for now:** attention strip variants beyond needs-you (#1), goals projection polish, upcoming carousel (`plan-tab-ux-backlog.md`), **map cluster overlay** (#4 — pill path is enough).
 
 ---
 
@@ -461,7 +462,12 @@ Use one PR per subsection where possible; check boxes when merged.
 | 2026-10-10 | hygiene | PeopleBrowseTab canonical naming; ExploreBrowsePanel prop trim; Tier-1 NAVIGATION quota/tab copy |
 | 2026-10-10 | 6.1 | Plan needs-you strip (`PlanNeedsYouStrip`) — §19 #1 |
 | 2026-10-10 | 5.2b / §19 #2 | Plan Calendar lens UI |
-| | | **Next:** §19 #3 suggested rail, then Phase 6.1 |
+| 2026-10-10 | §19 #3 | Plan suggested rail (`PlanSuggestedRail`, `planWishlistExploreMatches`) |
+| 2026-10-10 | §19 #4 | **Skipped** cluster overlay — map **People pill → Available** already ships |
+| 2026-10-10 | §19 #5 | Profile history routes + consumer trips naming guard |
+| 2026-10-10 | Phase 6.1 / §19 #6 | M1 dual-write — Find → `activities` (`activityMode: seeking`) |
+| 2026-10-10 | M1 backfill | `backfill-seeking-activities` script + `seekingActivityId` on intent DTO |
+| | | **Next:** Phase 6.2 join unification, then 6.3 drop legacy `demand:` map pins |
 
 ---
 
@@ -482,7 +488,7 @@ Use this table to confirm nothing was lost. **Status:** C = captured in checklis
 | 9 | areaId from pin on publish + admin areas | §4, Phase 4 | C |
 | 10 | Activity kind + Place kind + **OutingTopic** for “hiking” unified filter | §2.5, Phase 2, G-topic | C |
 | 11 | **Seeking merged into Activity** (no demand map species) | D6, D9, §8 M0–M2, Phase 3 | C |
-| 12 | **Availability** separate; multi-day calendar; People + map clusters | D7, D14, §5, Phase 5 | C |
+| 12 | **Availability** separate; multi-day calendar; map People pill + Available tab (no cluster overlay) | D7, D14, §5, Phase 5 | C |
 | 13 | Find FAB → seeking **activity** (not parallel “demand” UX) | D9, §3.4 | C |
 | 14 | Chat coordination-first; not chat-app discovery | §7.1, §12 non-goals | C |
 | 15 | Notifications → entity/thread not hub URLs | §1.3, Phase 7.3 | C |

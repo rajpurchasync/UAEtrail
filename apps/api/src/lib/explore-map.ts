@@ -198,6 +198,7 @@ const buildExploreMapPayloadUncached = async (): Promise<{ items: ExploreMapItem
   for (let index = 0; index < activityDtos.length; index += 1) {
     const activity = activityDtos[index];
     const event = activityEvents[index];
+    const activityMode = event.activityMode === 'seeking' ? 'seeking' : 'hosted';
     if (resolveJoinMode(event.joinMode, event.requirements) === 'private') continue;
     const rideshare = isRideshareActivity(activity);
     const hikingDual =
@@ -222,7 +223,7 @@ const buildExploreMapPayloadUncached = async (): Promise<{ items: ExploreMapItem
       id: `activity:${activity.id}`,
       kind: rideshare ? 'rideshare' : activity.activityType,
       source: 'activity',
-      activityMode: 'hosted',
+      activityMode,
       title: activity.title,
       subtitle: rideshare
         ? [display.fromLabel, display.toLabel].filter(Boolean).join(' → ') || activity.locationName
@@ -236,8 +237,14 @@ const buildExploreMapPayloadUncached = async (): Promise<{ items: ExploreMapItem
         userId: resolveActivityHostUserId(activity),
         displayName: resolveActivityHostDisplayName(activity),
         avatarUrl: resolveActivityHostAvatar(activity),
-        role: 'host',
+        role: activityMode === 'seeking' ? 'requester' : 'host',
       }),
+      ...(activityMode === 'seeking' && event.participantIntentId
+        ? {
+            participantIntentId: event.participantIntentId,
+            requesterUserId: resolveActivityHostUserId(activity),
+          }
+        : {}),
       hostName: activity.hostName ?? null,
       hostAvatar: resolveActivityHostAvatar(activity),
       date: activity.date,

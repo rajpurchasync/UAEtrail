@@ -5,7 +5,7 @@ import {
   explorePeopleBrowsePath,
   HOST_OVERVIEW_PATH,
   MESSAGES_PATH,
-  MY_TRIPS_PATH,
+  PROFILE_HISTORY_PATH,
   PROFILE_BADGES_PATH,
   PROFILE_SETTINGS_PATH,
 } from '../../config/routingCatalog';
@@ -97,9 +97,9 @@ export const buildProfileQuickLauncherItems = (input: {
       badge: input.badgesEarnedCount > 0 ? input.badgesEarnedCount : undefined,
     },
     {
-      key: 'my-trips',
-      label: 'My trips',
-      to: MY_TRIPS_PATH,
+      key: 'history',
+      label: 'History',
+      to: PROFILE_HISTORY_PATH,
       icon: Backpack,
       iconWrapClassName: 'bg-sky-50 text-sky-800',
     },

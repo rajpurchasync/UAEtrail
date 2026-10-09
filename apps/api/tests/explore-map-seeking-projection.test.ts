@@ -35,6 +35,7 @@ describe('GET /api/v1/explore/map seeking projection (M0)', () => {
       title: `Crew for Hatta ${suffix}`,
       date: '2026-12-20',
       time: '07:00',
+      preferredArea: 'Hatta',
       partySize: 4,
       comment: 'Looking for company',
       latitude: 25.12,
@@ -55,11 +56,11 @@ describe('GET /api/v1/explore/map seeking projection (M0)', () => {
       composeIntent?: string | null;
     }>;
 
-    const row = items.find((item) => item.id === `demand:${intent.id}`);
+    const row = items.find((item) => item.participantIntentId === intent.id);
     expect(row).toBeDefined();
+    expect(row?.id.startsWith('activity:')).toBe(true);
     expect(row?.source).toBe('activity');
     expect(row?.activityMode).toBe('seeking');
-    expect(row?.participantIntentId).toBe(intent.id);
-    expect(row?.composeIntent).toBe('demand');
+    expect(items.some((item) => item.id === `demand:${intent.id}`)).toBe(false);
   });
 });

@@ -4,7 +4,12 @@ import { useAuth } from '../context/AuthContext';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { PullToRefresh } from '../components/mobile/PullToRefresh';
 import { PageMeta } from '../components/seo/PageMeta';
-import { MY_TRIPS_MAP_PATH, MY_TRIPS_PATH, PLAN_PATH } from '../config/surfacePaths';
+import {
+  JOURNEY_MAP_PATH,
+  PLAN_PATH,
+  PROFILE_HISTORY_PATH,
+  isProfileHistoryListPath,
+} from '../config/surfacePaths';
 import { useHostStatus } from '../hooks/useHostStatus';
 import { memberCanManageHostedActivities } from '../utils/hostedActivitiesGate';
 import { JoinedSection } from './activities/JoinedSection';
@@ -43,14 +48,14 @@ export const MyTrips = () => {
     }
     if (view === 'map') {
       const qs = searchParams.toString();
-      navigate(qs ? `${MY_TRIPS_MAP_PATH}?${qs}` : MY_TRIPS_MAP_PATH, { replace: true });
+      navigate(qs ? `${JOURNEY_MAP_PATH}?${qs}` : JOURNEY_MAP_PATH, { replace: true });
       return;
     }
     if (!user) return;
     const next = new URLSearchParams(searchParams);
     const { changed } = normalizeTripsSearchParams(next, canHost);
     let shouldReplace = changed;
-    if (!next.get('view') && location.pathname === MY_TRIPS_PATH) {
+    if (!next.get('view') && isProfileHistoryListPath(location.pathname)) {
       next.set('view', 'completed');
       shouldReplace = true;
     }
@@ -94,7 +99,7 @@ export const MyTrips = () => {
       mainView={mainView === 'map' ? 'completed' : mainView}
       searchQuery={activitySearchQuery}
       onSearchChange={setActivitySearchQuery}
-      searchPlaceholder="Search completed trips"
+      searchPlaceholder="Search past outings"
       filtersActive={false}
       onOpenFilters={() => setFiltersOpen(true)}
       historyRole={historyRole}
@@ -160,14 +165,14 @@ export const MyTrips = () => {
   return (
     <>
       <PageMeta
-        title="My trips — your history on UAE Trail"
+        title="Outing history — UAE Trail"
         description="Outings you joined, hosted, or logged — plus your journey map."
-        path={MY_TRIPS_PATH}
+        path={PROFILE_HISTORY_PATH}
       />
 
       <ConsumerShell
         layout="tab"
-        title="My trips"
+        title="History"
         suppressMobileHeader
         suppressMobileToolbarBorder
         maxWidth="4xl"

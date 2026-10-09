@@ -29,7 +29,7 @@ export const MOBILE_NAV_ICON_MAP: Record<
   | 'Explore Map'
   | 'My Profile'
   | 'My activities'
-  | 'My trips'
+  | 'History'
   | 'Notifications'
   | 'Join'
   | 'Join free'
@@ -51,7 +51,7 @@ export const MOBILE_NAV_ICON_MAP: Record<
   Notifications: Bell,
   'Trail catalog': Map,
   'My activities': NAV_ICONS.activities,
-  'My trips': NAV_ICONS.activities,
+  History: NAV_ICONS.activities,
   'Upcoming Activities': NAV_ICONS.activities,
   'Gears Shop': NAV_ICONS.shop,
 };

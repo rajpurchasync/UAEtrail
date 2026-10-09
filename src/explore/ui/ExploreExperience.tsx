@@ -660,7 +660,7 @@ export const ExploreExperience = () => {
       <PageMeta
         title={
           myTripsMode
-            ? 'My trips on the map'
+            ? 'Your plan on the map'
             : 'Explore hiking, camping, events & shops'
         }
         description={

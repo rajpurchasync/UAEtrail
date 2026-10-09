@@ -9,9 +9,10 @@ import {
   ACTIVITIES_PATH,
   EXPLORE_MAP_PATH,
   MESSAGES_PATH,
-  MY_TRIPS_PATH,
   PLAN_PATH,
   TRIPS_PATH,
+  isJourneyMapPath,
+  isProfileHistoryListPath,
 } from '../../config/routingCatalog';
 import { joinedSubViewTitle } from '../../pages/activities/shared';
 import { useHostStatus } from '../../hooks/useHostStatus';
@@ -32,8 +33,8 @@ const resolveCenter = (
     if (subTitle) return { kind: 'title', text: subTitle };
     return { kind: 'title', text: 'Plan' };
   }
-  if (pathname === MY_TRIPS_PATH || pathname.startsWith(`${MY_TRIPS_PATH}/`)) {
-    return { kind: 'title', text: 'My trips' };
+  if (isProfileHistoryListPath(pathname) || isJourneyMapPath(pathname)) {
+    return { kind: 'title', text: isJourneyMapPath(pathname) ? 'My Map' : 'History' };
   }
   if (pathname === MESSAGES_PATH) return { kind: 'title', text: 'Chat' };
   if (!isMobileTabHeaderRoute(pathname)) return null;
@@ -58,7 +59,8 @@ export const MobileTabHeader = () => {
     pathname === ACTIVITIES_PATH ||
     pathname === PLAN_PATH ||
     pathname === TRIPS_PATH ||
-    pathname === MY_TRIPS_PATH ||
+    isProfileHistoryListPath(pathname) ||
+    isJourneyMapPath(pathname) ||
     pathname === MESSAGES_PATH;
 
   const trailing = showHeaderActions ? <ConsumerHeaderActions /> : null;

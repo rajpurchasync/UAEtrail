@@ -24,7 +24,7 @@ import { BrowseListPage } from './list/BrowseListPage';
 import { discoveryToExploreSearch, explorePath, legacyCreateParamToOrganizePath, parseActivityListFilter, LIST_DISCOVERY_PATH } from './config/routingCatalog';
 import { organisationManagePath, SIGNIN_PATH, SIGNUP_PATH } from './config/routingCatalog';
 import { GuestTabPlaceholder } from './components/auth/GuestTabPlaceholder';
-import { PLAN_PATH } from './config/surfacePaths';
+import { JOURNEY_MAP_PATH, PLAN_PATH, PROFILE_HISTORY_PATH } from './config/surfacePaths';
 import { resolveLegacyTripsHubRedirect } from './trips/legacyTripsRedirect';
 import { useHostStatus } from './hooks/useHostStatus';
 import { memberCanManageHostedActivities } from './utils/hostedActivitiesGate';
@@ -343,7 +343,7 @@ function App() {
           <Route path="/trips/map" element={<LegacyTripsHubRedirect />} />
           <Route path="/activities" element={<LegacyTripsHubRedirect />} />
           <Route
-            path="/profile/my-trips"
+            path="/profile/history"
             element={
               <ProtectedRoute>
                 <Suspense fallback={<PageLoader />}>
@@ -353,7 +353,7 @@ function App() {
             }
           />
           <Route
-            path="/profile/my-trips/map"
+            path="/profile/history/map"
             element={
               <ProtectedRoute>
                 <Suspense fallback={<PageLoader />}>
@@ -362,6 +362,8 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route path="/profile/my-trips" element={<AuthAliasRedirect to={PROFILE_HISTORY_PATH} />} />
+          <Route path="/profile/my-trips/map" element={<AuthAliasRedirect to={JOURNEY_MAP_PATH} />} />
           <Route
             path="/profile/reviews"
             element={

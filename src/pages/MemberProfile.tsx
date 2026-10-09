@@ -192,7 +192,7 @@ export const MemberProfile = () => {
       showJourney={false}
       back={{
         fallbackTo: profileReturn?.from ?? myActivitiesPath(),
-        label: profileReturn?.backLabel ?? 'My trips',
+        label: profileReturn?.backLabel ?? 'History',
       }}
     >
       <PageMeta title={pageTitle} noIndex />

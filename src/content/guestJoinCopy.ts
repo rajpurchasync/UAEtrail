@@ -31,7 +31,7 @@ export const guestJoinSheetBody = (input: GuestJoinCopyInput): string => {
   const title = input.activityTitle?.trim();
   if (mode === 'rsvp') {
     return title
-      ? `Join the community today to say you’re going on “${title}” and keep it in My trips.`
+      ? `Join the community today to say you’re going on “${title}” and keep it on your Plan.`
       : 'Join the community today to say you’re going, meet the group, and keep your plans in one place.';
   }
   return title
