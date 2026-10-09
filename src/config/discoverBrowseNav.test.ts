@@ -10,8 +10,13 @@ import {
 
 describe('discover browse navigation contract', () => {
   it('hamburger and desktop nav open discover browse (not bare map)', () => {
-    const hamburgerLink = CONSUMER_HAMBURGER_MENU.find((item) => item.kind === 'link' && item.label === 'Browse');
-    expect(hamburgerLink?.to).toBe(EXPLORE_DISCOVER_BROWSE_PATH);
+    const hamburgerLink = CONSUMER_HAMBURGER_MENU.find(
+      (item) => item.kind === 'link' && item.label === 'Browse'
+    );
+    expect(hamburgerLink?.kind).toBe('link');
+    if (hamburgerLink?.kind === 'link') {
+      expect(hamburgerLink.to).toBe(EXPLORE_DISCOVER_BROWSE_PATH);
+    }
     expect(DESKTOP_NAV_LINKS.some((link) => link.to === EXPLORE_DISCOVER_BROWSE_PATH)).toBe(true);
   });
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
-import { hostedExploreMapItem, seekingExploreMapItem, venueExploreMapItem } from '../exploreMapItemFixtures';
+import { seekingExploreMapItem, venueExploreMapItem } from '../exploreMapItemFixtures';
 import { matchesActivityDateFilter } from '../exploreActivityDateFilter';
 import { expandMapPins, isShopListItem, layoutColocatedMapPins, matchesMapFilter, matchesPlacesMapFilter, matchesBuddyMapFilter, isPlacesMapItem, isBuddyMapItem } from './exploreMapPinModel';
 

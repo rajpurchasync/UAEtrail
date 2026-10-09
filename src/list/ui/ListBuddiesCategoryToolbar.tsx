@@ -6,8 +6,7 @@ import { ListCategoryTopicCircleFilter } from './ListCategoryTopicCircleFilter';
 const BUDDIES_SEGMENT_EMOJI: Record<BuddiesDiscoverySegment, string> = {
   available: '📅',
   going: '🧑‍🤝‍🧑',
-  friends: '👋',
-  all: '🌐',
+  connect: '🌐',
 };
 
 type ListBuddiesCategoryToolbarProps = {

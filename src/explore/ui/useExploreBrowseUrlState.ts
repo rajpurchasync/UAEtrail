@@ -259,7 +259,6 @@ export const useExploreBrowseUrlState = ({
       else params.delete('topics');
 
       const peopleBrowseTabValue = next.peopleBrowseTab ?? peopleBrowseTab;
-      const buddiesSegmentValue = next.buddiesDiscoverSegment ?? buddiesDiscoverSegment;
       if (listModeValue === 'people') {
         params.set('view', 'people');
         params.delete('goingTab');
@@ -278,7 +277,6 @@ export const useExploreBrowseUrlState = ({
         params.delete('followedKind');
       }
 
-      const followedSegmentValue = next.followedSegment ?? followedSegment;
       params.delete('followedKind');
 
       const serializedSearchScope = serializeExploreSearchScope(searchScopeValue);

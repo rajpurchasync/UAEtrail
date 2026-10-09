@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom';
-import { History, Map } from 'lucide-react';
+import { History, Map, type LucideIcon } from 'lucide-react';
 import { MY_TRIPS_MAIN_TABS, type TripsMainView } from '../../trips/tripsRouting';
 
-const tabIcons: Partial<Record<TripsMainView, typeof CalendarCheck>> = {
+const tabIcons: Partial<Record<TripsMainView, LucideIcon>> = {
   completed: History,
   map: Map,
 };

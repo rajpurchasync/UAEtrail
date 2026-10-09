@@ -1,9 +1,4 @@
-import {
-  MY_TRIPS_MAP_PATH,
-  MY_TRIPS_PATH,
-  PLAN_PATH,
-  TRIPS_PATH,
-} from '../config/surfacePaths';
+import { MY_TRIPS_MAP_PATH, MY_TRIPS_PATH, PLAN_PATH } from '../config/surfacePaths';
 import { planSavedPath } from '../plan/planLens';
 
 /**

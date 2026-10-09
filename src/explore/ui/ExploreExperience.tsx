@@ -593,44 +593,7 @@ export const ExploreExperience = () => {
     searchScopeCounts,
     onSearchScopePick: handleExploreSearchCommit,
     searchFocusNonce,
-    peopleBrowseTab: browse.peopleBrowseTab,
-    onPeopleBrowseTabChange: browse.applyPeopleBrowseTab,
-    activityDatePreset: browse.activityDatePreset,
-    onActivityDatePresetChange: browse.applyActivityDatePreset,
-    buddiesDiscoverSegment: browse.buddiesDiscoverSegment,
-    onBuddiesDiscoverSegmentChange: browse.applyBuddiesDiscoverSegment,
-    memberPeopleAllCount: memberPeoplePreview.preview?.allCount,
-    memberPeopleFriendsCount: memberPeoplePreview.preview?.friendCount,
-    memberPeopleFollowedCount: memberPeoplePreview.preview?.followedCount,
-    memberPeopleNetwork: [],
-    memberPeopleLoading: false,
-    memberPeopleError: null,
-    onRefreshMemberPeople: () => {},
-    onOpenMemberPersonActivity: openExploreActivityFromRef,
-    discoveryFriendsGoing: memberDiscovery.friendsGoing,
-    discoveryHostsGoing: memberDiscovery.hostsGoing,
-    discoveryLookingFor: memberDiscovery.lookingFor,
-    discoveryFollowed: memberDiscovery.followed,
-    discoveryDirectory: memberDiscovery.directory,
-    discoveryQuota: memberDiscovery.quota,
-    discoveryLoading: memberDiscovery.loading,
-    discoveryError: memberDiscovery.error,
-    onOpenDiscoveryActivity: openDiscoveryActivityOnMap,
-    onRefreshMemberDiscovery: () => void memberDiscovery.refresh(),
-    availabilityPeople: peopleAvailability.people,
-    availabilityLoading: peopleAvailability.loading,
-    availabilityError: peopleAvailability.error,
-    availabilityRange: peopleAvailability.range,
-    onRefreshAvailability: () => void peopleAvailability.refresh(),
-    followedSegment: browse.followedSegment,
-    onFollowedSegmentChange: browse.applyFollowedSegment,
-    entityFollows: entityFollows.follows,
-    entityFollowsLoading: entityFollows.loading,
-    entityFollowsError: entityFollows.error,
-    isSignedIn: Boolean(user),
-    userRole: user?.role,
     buddyUserIds: user ? new Set(memberPeoplePreview.preview?.friendUserIds ?? []) : undefined,
-    canBrowseAllMembers,
   };
 
   const desktopMapListPanel = (
@@ -639,7 +602,6 @@ export const ExploreExperience = () => {
       listItems={listItems}
       onClose={browse.closeListPanel}
       closePanelAriaLabel="Close map list"
-      listMode="default"
     />
   );
 
@@ -679,7 +641,6 @@ export const ExploreExperience = () => {
       onClose={browse.closeListPanel}
       closePanelAriaLabel="Close list"
       closeButtonVariant="dismiss"
-      listMode="default"
       mobileSheetChrome
     />
   );

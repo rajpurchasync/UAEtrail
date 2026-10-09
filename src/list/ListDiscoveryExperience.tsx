@@ -91,7 +91,6 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
   const search = searchParams.toString() ? `?${searchParams.toString()}` : '';
 
   const {
-    status: hostStatus,
     canPublish,
     signupProfileComplete,
     isCommunityHost,

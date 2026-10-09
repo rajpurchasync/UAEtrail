@@ -37,7 +37,7 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 ### Plan (`/plan`)
 
 - **Bottom nav middle tab** — forward commitments, not past history (history → **My trips**).
-- **Lenses** (`?view=plans&lens=` — `src/plan/planLens.ts`): **Schedule** (default) · **Saved** · **Goals**. Schedule shows **Upcoming** role chips (All · Hosted · Joined). Availability editor placement is TBD (same doc §6.1).
+- **Lenses** (`?view=plans&lens=` — `src/plan/planLens.ts`): **Schedule** (default) · **Calendar** (placeholder; day markers in `planCalendarMarkers.ts`) · **Available** (edit `GET/PUT /me/availability`) · **Saved** · **Goals**. Schedule shows **Upcoming** role chips (All · Hosted · Joined · Seeking).
 - **Query helpers:** `tripsPlansPath()`, `planSavedPath()`, `planLensPath()`. Legacy `segment` / `tab` / `segment=wishlist` normalize on load.
 - **`/trips`**, **`/activities`** redirect to `/plan` or `/profile/my-trips` preserving query (`legacyTripsRedirect.ts`).
 
@@ -165,14 +165,13 @@ Legacy browse URLs (`/map`, `/discovery`, `/calendar`, bare `/activities` as bro
 
 **Job:** who can I go with, who’s going, who’s looking — **not** chat. Chat is [`/messages`](#chat-messages) ([`COMMUNICATION.md`](./COMMUNICATION.md)).
 
-Map pill label **Social** (`EXPLORE_PEOPLE_BROWSE_MAP_BUTTON_LABEL`); opens browse `listMode=people` (URL `view=people`; legacy `view=social` and `view=going` still parse). Query `peopleTab=all|friends|followed|discover` (legacy `socialTab` still parses). Panel title **People** (`explorePeopleBrowseCopy.ts`) — same family as list **Buddies** (`listCat=people`). Guests → sign-in (`guestBrowseGateCopy` intent `explore-people-browse`).
+Map pill label **Find your crew** (see `explorePeopleBrowseCopy.ts`); opens `view=people` (`listMode=people`; legacy `view=social` / `view=going` still parse). Query `peopleTab=available|going|connect` (legacy `socialTab`, `all`→`connect`, `friends`→`going`, `discover`→`available`). Panel title **People** — same rows as list **Buddies** (`listCat=people`, URL `buddies=` mirrors `peopleTab`). Guests → sign-in (`explore-people-browse`).
 
-| Segment (`peopleTab`; legacy `socialTab`) | Label | Data / actions |
+| Segment (`peopleTab`) | Label | Data / actions |
 |-----------------------|-------|----------------|
-| `all` | All | `GET /social/people?segment=all` — friends + followed (network roster + outing hints) |
-| `friends` | Friends | Same API · **Message** (→ `/messages`) · **Plan a trip** |
-| `followed` | Followed | Same API · profile · **Add friend** when allowed |
-| `discover` | Discover | `GET /me/member-discovery/roster` — who’s going / looking / followed hosts + public directory; profile opens use discover quota (5 / 30d free, Pro unlimited). Discover sub-segments share list **Buddies** query `buddies=going|looking|followed` (default going). List **Buddies** (`listCat=people`) → map handoff sets `view=people`, `peopleTab=discover`, and `buddies`. |
+| `available` | Available | `GET /explore/people/availability` — members who marked days + kinds; edit yours on Plan → **Available** (`planLensPath('availability')`). |
+| `going` | Friends going | `GET /me/member-discovery/roster` + social trip hints — buddies with upcoming outings. |
+| `connect` | Everyone | Directory from `GET /users/browse` / roster; **3** directory rows preview free, then Pro lock; profile opens count toward **3 unique profiles / 30d** (`MEMBER_DISCOVERY_QUOTA_LIMIT`). |
 
 Cards show city, outings attended, and a subtle upcoming trip hint (link opens activity on map). **Friends → Plan a trip** opens compose (`explorePlanWithBuddyPath`). Profile quick launcher: **People** (this panel), **Friends** (`/buddies`), **Messages** (chat). **Join me** on activity detail (`ActivityInviteSharePanel`). APIs: [`API_ROUTING.md`](./API_ROUTING.md) § Member people reads (browse).
 

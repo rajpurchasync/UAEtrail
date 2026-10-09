@@ -30,15 +30,6 @@ import {
   type ExploreSearchScopeKey,
 } from '../exploreBrowseTaxonomy';
 import { ExploreSearchScopeHints } from './ExploreSearchScopeHints';
-import type { ExploreBrowseListMode } from './useExploreBrowseUrlState';
-import { ExploreFollowedEntityList } from './ExploreFollowedEntityList';
-import type { BuddiesDiscoverySegment } from '../../list/buddiesDiscoverySegment';
-import type {
-  MemberBrowseCardDTO,
-  MemberDiscoveryQuotaDTO,
-  SocialPersonRowDTO,
-} from '@uaetrail/shared-types';
-import type { UserRole } from '@uaetrail/shared-types';
 import type { ExploreBuddySubtypeKey } from '../exploreBuddySubtype';
 import type { ExploreOutingTopicKey } from '../exploreOutingTopic';
 import { ExploreMyTripsModeNotice } from './ExploreMyTripsModeNotice';
@@ -82,42 +73,7 @@ export interface ExploreBrowsePanelProps {
   searchScopeCounts: ExploreSearchScopeCounts;
   onSearchScopePick: (scope?: ExploreSearchScopeKey | null) => void;
   searchFocusNonce?: number;
-  listMode?: ExploreBrowseListMode;
-  peopleBrowseTab?: ExplorePeopleBrowseTab;
-  onPeopleBrowseTabChange?: (tab: ExplorePeopleBrowseTab) => void;
-  buddiesDiscoverSegment?: BuddiesDiscoverySegment;
-  onBuddiesDiscoverSegmentChange?: (segment: BuddiesDiscoverySegment) => void;
-  memberPeopleAllCount?: number;
-  memberPeopleFriendsCount?: number;
-  memberPeopleFollowedCount?: number;
-  memberPeopleNetwork?: SocialPersonRowDTO[];
-  memberPeopleLoading?: boolean;
-  memberPeopleError?: string | null;
-  onRefreshMemberPeople?: () => void;
-  onOpenMemberPersonActivity?: (trip: { exploreItemId: string }) => void;
-  discoveryFriendsGoing?: import('@uaetrail/shared-types').SocialPersonRowDTO[];
-  discoveryHostsGoing?: import('@uaetrail/shared-types').SocialPersonRowDTO[];
-  discoveryLookingFor?: import('@uaetrail/shared-types').MemberDiscoveryLookingRowDTO[];
-  discoveryFollowed?: MemberBrowseCardDTO[];
-  discoveryDirectory?: MemberBrowseCardDTO[];
-  discoveryQuota?: MemberDiscoveryQuotaDTO | null;
-  discoveryLoading?: boolean;
-  discoveryError?: string | null;
-  onOpenDiscoveryActivity?: (activityId: string) => void;
-  onRefreshMemberDiscovery?: () => void;
-  availabilityPeople?: import('@uaetrail/shared-types').ExploreAvailablePersonDTO[];
-  availabilityLoading?: boolean;
-  availabilityError?: string | null;
-  availabilityRange?: { from: string; to: string };
-  onRefreshAvailability?: () => void;
-  followedSegment?: import('./useExploreBrowseUrlState').ExploreFollowedSegment;
-  onFollowedSegmentChange?: (segment: import('./useExploreBrowseUrlState').ExploreFollowedSegment) => void;
-  entityFollows?: import('@uaetrail/shared-types').EntityFollowDTO[];
-  entityFollowsLoading?: boolean;
-  entityFollowsError?: string | null;
-  isSignedIn?: boolean;
-  userRole?: UserRole;
-  canBrowseAllMembers?: boolean;
+  /** Highlight buddy-hosted outings in map-aligned list rows. */
   buddyUserIds?: Set<string>;
   /** Filtered explore: only member trips + wishlist pins (`myTrips=1`). */
   myTripsMode?: boolean;
@@ -182,42 +138,6 @@ export const ExploreBrowsePanel = ({
   searchScopeCounts,
   onSearchScopePick,
   searchFocusNonce = 0,
-  listMode = 'default',
-  peopleBrowseTab = 'available',
-  onPeopleBrowseTabChange,
-  buddiesDiscoverSegment = 'going',
-  onBuddiesDiscoverSegmentChange,
-  memberPeopleAllCount,
-  memberPeopleFriendsCount,
-  memberPeopleFollowedCount,
-  memberPeopleNetwork = [],
-  memberPeopleLoading = false,
-  memberPeopleError = null,
-  onRefreshMemberPeople,
-  onOpenMemberPersonActivity,
-  discoveryFriendsGoing = [],
-  discoveryHostsGoing = [],
-  discoveryLookingFor = [],
-  discoveryFollowed = [],
-  discoveryDirectory = [],
-  discoveryQuota = null,
-  discoveryLoading = false,
-  discoveryError = null,
-  onOpenDiscoveryActivity,
-  onRefreshMemberDiscovery,
-  availabilityPeople = [],
-  availabilityLoading = false,
-  availabilityError = null,
-  availabilityRange = { from: '', to: '' },
-  onRefreshAvailability,
-  followedSegment = 'people',
-  onFollowedSegmentChange,
-  entityFollows = [],
-  entityFollowsLoading = false,
-  entityFollowsError = null,
-  isSignedIn = false,
-  userRole,
-  canBrowseAllMembers = false,
   buddyUserIds,
   myTripsMode = false,
   usePosterFeed = false,
