@@ -18,3 +18,17 @@ export const parsePeopleBrowseTab = (raw: string | null): PeopleBrowseTab => {
 /** URL `peopleTab` — omit default Available. */
 export const serializePeopleBrowseTab = (tab: PeopleBrowseTab): string | null =>
   tab === 'available' ? null : tab;
+
+/**
+ * Explore map/list URL: `peopleTab` / `socialTab` plus legacy `goingTab` when `view=going`.
+ */
+export const parsePeopleBrowseTabFromUrl = (
+  peopleTab: string | null,
+  legacyGoingTab: string | null
+): PeopleBrowseTab => {
+  if (peopleTab) return parsePeopleBrowseTab(peopleTab);
+  if (legacyGoingTab === 'people') return 'going';
+  if (legacyGoingTab === 'discover') return 'available';
+  if (legacyGoingTab === 'trips') return 'connect';
+  return 'available';
+};

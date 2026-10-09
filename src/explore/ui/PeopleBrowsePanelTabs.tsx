@@ -1,10 +1,9 @@
 import { LIST_CHIP_SCROLL, listCategoryPillClass } from '../../list/listChromeTheme';
 import { PEOPLE_BROWSE_TAB_LABELS, type PeopleBrowseTab } from '../peopleBrowseTab';
-import type { ExplorePeopleBrowseTab } from './useExploreBrowseUrlState';
 
 type PeopleBrowsePanelTabsProps = {
-  tab: ExplorePeopleBrowseTab;
-  onTabChange: (tab: ExplorePeopleBrowseTab) => void;
+  tab: PeopleBrowseTab;
+  onTabChange: (tab: PeopleBrowseTab) => void;
 };
 
 export const PeopleBrowsePanelTabs = ({ tab, onTabChange }: PeopleBrowsePanelTabsProps) => {

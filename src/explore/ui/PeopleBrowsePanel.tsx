@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 import { EXPLORE_SHEET, EXPLORE_TYPE } from '../../config/exploreTheme';
-import type { ExplorePeopleBrowseTab } from './useExploreBrowseUrlState';
+import type { PeopleBrowseTab } from '../peopleBrowseTab';
 import { PeopleBrowsePanelTabs } from './PeopleBrowsePanelTabs';
 import type { ExploreActivityDatePreset } from '../exploreActivityDateFilter';
 import type { ExploreAvailablePersonDTO } from '@uaetrail/shared-types';
@@ -27,8 +27,8 @@ export interface PeopleBrowsePanelProps {
   closePanelAriaLabel?: string;
   closeButtonVariant?: 'collapse' | 'dismiss';
   searchFocusNonce?: number;
-  peopleBrowseTab: ExplorePeopleBrowseTab;
-  onPeopleBrowseTabChange: (tab: ExplorePeopleBrowseTab) => void;
+  peopleBrowseTab: PeopleBrowseTab;
+  onPeopleBrowseTabChange: (tab: PeopleBrowseTab) => void;
   activityDatePreset: ExploreActivityDatePreset;
   onActivityDatePresetChange: (preset: ExploreActivityDatePreset) => void;
   buddiesDiscoverSegment: BuddiesDiscoverySegment;

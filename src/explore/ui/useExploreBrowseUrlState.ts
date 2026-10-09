@@ -63,13 +63,14 @@ import {
   serializeExplorePinKindFilter,
   type ExplorePinKindFilter,
 } from '../explorePinKindFilter';
-import { parsePeopleBrowseTab, serializePeopleBrowseTab } from '../peopleBrowseTab.js';
+import {
+  parsePeopleBrowseTabFromUrl,
+  serializePeopleBrowseTab,
+  type PeopleBrowseTab,
+} from '../peopleBrowseTab.js';
 
 /** Browse list presentation — `people` maps to URL `view=people` (member people panel on map). */
 export type ExploreBrowseListMode = 'default' | 'people';
-
-/** People browse panel segment (`peopleTab` query; legacy `socialTab`). */
-export type ExplorePeopleBrowseTab = import('../peopleBrowseTab.js').PeopleBrowseTab;
 
 /** Sub-segment on People → Followed (people vs entity-follow places vs hosts/shops). */
 export type ExploreFollowedSegment = 'people' | 'places' | 'events';
@@ -81,17 +82,6 @@ export const parseExploreFollowedSegment = (raw: string | null): ExploreFollowed
 
 const readPeopleBrowseTabParam = (params: URLSearchParams): string | null =>
   params.get('peopleTab') ?? params.get('socialTab');
-
-export const parseExplorePeopleBrowseTab = (
-  peopleTab: string | null,
-  legacyGoingTab: string | null
-): ExplorePeopleBrowseTab => {
-  if (peopleTab) return parsePeopleBrowseTab(peopleTab);
-  if (legacyGoingTab === 'people') return 'going';
-  if (legacyGoingTab === 'discover') return 'available';
-  if (legacyGoingTab === 'trips') return 'connect';
-  return 'available';
-};
 
 const isPeopleBrowseListView = (view: string | null): boolean =>
   view === 'people' || view === 'social' || view === 'going';
@@ -114,7 +104,7 @@ type SyncPatch = {
   topicPills?: ExploreMapFilterPillKey[];
   listMode?: ExploreBrowseListMode;
   searchScope?: ExploreSearchScopeKey | null;
-  peopleBrowseTab?: ExplorePeopleBrowseTab;
+  peopleBrowseTab?: PeopleBrowseTab;
   buddiesDiscoverSegment?: BuddiesDiscoverySegment;
   followedSegment?: ExploreFollowedSegment;
   /** Clear list category page when opening browse home from the map List pill. */
@@ -183,8 +173,8 @@ export const useExploreBrowseUrlState = ({
   const [searchScope, setSearchScope] = useState<ExploreSearchScopeKey | null>(() =>
     parseExploreSearchScope(searchParams.get('searchScope') ?? searchParams.get('searchFocus'))
   );
-  const [peopleBrowseTab, setPeopleBrowseTab] = useState<ExplorePeopleBrowseTab>(() =>
-    parseExplorePeopleBrowseTab(readPeopleBrowseTabParam(searchParams), searchParams.get('goingTab'))
+  const [peopleBrowseTab, setPeopleBrowseTab] = useState<PeopleBrowseTab>(() =>
+    parsePeopleBrowseTabFromUrl(readPeopleBrowseTabParam(searchParams), searchParams.get('goingTab'))
   );
   const [followedSegment, setFollowedSegment] = useState<ExploreFollowedSegment>(() =>
     parseExploreFollowedSegment(searchParams.get('followedKind'))
@@ -371,7 +361,7 @@ export const useExploreBrowseUrlState = ({
       parseExploreSearchScope(searchParams.get('searchScope') ?? searchParams.get('searchFocus'))
     );
     setPeopleBrowseTab(
-      parseExplorePeopleBrowseTab(readPeopleBrowseTabParam(searchParams), searchParams.get('goingTab'))
+      parsePeopleBrowseTabFromUrl(readPeopleBrowseTabParam(searchParams), searchParams.get('goingTab'))
     );
     setFollowedSegment(parseExploreFollowedSegment(searchParams.get('followedKind')));
     setBuddiesDiscoverSegment(parseBuddiesDiscoverySegment(searchParams.get(BUDDIES_SEGMENT_URL_PARAM)));
@@ -441,7 +431,7 @@ export const useExploreBrowseUrlState = ({
     syncExploreUrl({ topicPills: [], list: listOpen });
   };
 
-  const openPeopleBrowsePanel = (initialTab: ExplorePeopleBrowseTab = 'available') => {
+  const openPeopleBrowsePanel = (initialTab: PeopleBrowseTab = 'available') => {
     clearSelection();
     setListMode('people');
     setPeopleBrowseTab(initialTab);
@@ -466,7 +456,7 @@ export const useExploreBrowseUrlState = ({
     syncExploreUrl({ listMode: 'default' });
   };
 
-  const applyPeopleBrowseTab = (tab: ExplorePeopleBrowseTab) => {
+  const applyPeopleBrowseTab = (tab: PeopleBrowseTab) => {
     setPeopleBrowseTab(tab);
     setBuddiesDiscoverSegment(tab);
     setFollowedSegment('people');
