@@ -398,6 +398,10 @@ export const listParticipantIntentsForUser = async (
   return docs.map((doc) => mapDto(doc, user));
 };
 
+/**
+ * @deprecated M0 map projection — explore map reads seeking pins from `activities` only (M1).
+ * Kept for unit tests and emergency tooling; run `backfill-seeking-activities` in each env.
+ */
 export const listActiveParticipantIntentsForMap = async (limit = 200): Promise<ExploreMapItemDTO[]> => {
   const docs = await collection()
     .find({ status: 'active' })

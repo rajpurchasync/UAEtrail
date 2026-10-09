@@ -25,7 +25,6 @@ import {
   loadMerchantOwnerDisplaysByAdminIds,
 } from './shop-store.js';
 import { listPublicShopTenantsForExplore } from './tenant-store.js';
-import { listActiveParticipantIntentsForMap } from './participant-intents-store.js';
 import { getReviewStatsByTargets } from './social-data.js';
 import { ReviewTargetType } from '../domain/enums.js';
 import { getRedisClient } from './redis.js';
@@ -181,11 +180,10 @@ const attachExploreItemArea = (
 };
 
 const buildExploreMapPayloadUncached = async (): Promise<{ items: ExploreMapItemDTO[] }> => {
-  const [activityEvents, locationsResult, shopTenants, demandItems, publishedAreas] = await Promise.all([
+  const [activityEvents, locationsResult, shopTenants, publishedAreas] = await Promise.all([
     listPublishedActivitiesForExploreMap(250),
     listActiveLocations({ page: 1, pageSize: 1200 }),
     listPublicShopTenantsForExplore(250),
-    listActiveParticipantIntentsForMap(200),
     listPublishedAreas(),
   ]);
 
@@ -406,20 +404,18 @@ const buildExploreMapPayloadUncached = async (): Promise<{ items: ExploreMapItem
     });
   }
 
-  items.push(
-    ...demandItems.map((item) => attachExploreItemArea(item, item.areaId, areaSlugById))
-  );
-
   attachLinkedRideshareMetadata(items);
 
   for (const item of items) {
     if (item.source === 'activity' && item.activity) {
+      const activityMode = item.activityMode ?? 'hosted';
+      const mapKind = exploreMapKindToPlanMapKind(item.kind);
       Object.assign(
         item,
-        { activityMode: item.activityMode ?? 'hosted' },
+        { activityMode },
         buildExploreMapPlanProjection({
-          source: 'activity',
-          mapKind: exploreMapKindToPlanMapKind(item.kind),
+          source: activityMode === 'seeking' ? 'demand' : 'activity',
+          mapKind,
           participationMode: resolveParticipationMode(
             item.activity.participationMode,
             item.activity.requirements
@@ -429,6 +425,18 @@ const buildExploreMapPayloadUncached = async (): Promise<{ items: ExploreMapItem
             item.activity.outingTopic,
             item.activity.requirements
           ),
+          ...(activityMode === 'seeking'
+            ? {
+                demandIntentKind:
+                  item.activity.activityType === 'camping'
+                    ? 'camping'
+                    : item.activity.activityType === 'rideshare'
+                      ? 'rideshare'
+                      : item.activity.activityType === 'event'
+                        ? 'event'
+                        : 'hiking',
+              }
+            : {}),
         })
       );
       continue;

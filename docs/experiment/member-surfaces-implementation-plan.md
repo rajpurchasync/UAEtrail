@@ -350,7 +350,7 @@ Use one PR per subsection where possible; check boxes when merged.
 
 - [x] 6.1 Create seeking via activities API (M1 dual-write on `POST /me/participant-intents`)
 - [ ] 6.2 Join request unification plan + migration
-- [ ] 6.3 Remove demand from explore source enum (client + API)
+- [x] 6.3 Explore map stops merging legacy `demand:` pins (seeking via `activities` only; run backfill for old intents)
 
 ### Phase 7 — Host retirement & business paths
 
@@ -467,7 +467,8 @@ Use one PR per subsection where possible; check boxes when merged.
 | 2026-10-10 | §19 #5 | Profile history routes + consumer trips naming guard |
 | 2026-10-10 | Phase 6.1 / §19 #6 | M1 dual-write — Find → `activities` (`activityMode: seeking`) |
 | 2026-10-10 | M1 backfill | `backfill-seeking-activities` script + `seekingActivityId` on intent DTO |
-| | | **Next:** Phase 6.2 join unification, then 6.3 drop legacy `demand:` map pins |
+| 2026-10-10 | Phase 6.3 | Explore map: no legacy `demand:` merge; seeking `composeIntent` on activity rows |
+| | | **Next:** Phase 6.2 join unification · Phase 7 host audit |
 
 ---
 

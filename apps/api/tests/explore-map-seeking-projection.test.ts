@@ -61,6 +61,7 @@ describe('GET /api/v1/explore/map seeking projection (M0)', () => {
     expect(row?.id.startsWith('activity:')).toBe(true);
     expect(row?.source).toBe('activity');
     expect(row?.activityMode).toBe('seeking');
+    expect(row?.composeIntent).toBe('demand');
     expect(items.some((item) => item.id === `demand:${intent.id}`)).toBe(false);
   });
 });
