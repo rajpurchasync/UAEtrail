@@ -15,6 +15,7 @@ type MongoParticipantIntentJoinRequest = {
   userId: string;
   status: 'pending' | 'approved' | 'rejected' | 'withdrawn';
   note: string | null;
+  activityRequestId?: string | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -23,6 +24,7 @@ type MongoParticipantIntent = {
   _id: string;
   userId: string;
   status: 'active' | 'fulfilled' | 'cancelled';
+  seekingActivityId?: string | null;
 };
 
 const requestsCollection = () =>
@@ -87,6 +89,26 @@ export const createParticipantIntentJoinRequest = async (input: {
   };
 
   await requestsCollection().insertOne(doc);
+
+  const seekingActivityId = intent.seekingActivityId;
+  if (seekingActivityId) {
+    const { mirrorIntentJoinRequestToActivity } = await import(
+      '../services/participant-intent-join-activity-sync.js'
+    );
+    const activityRequestId = await mirrorIntentJoinRequestToActivity({
+      seekingActivityId,
+      userId: input.userId,
+      note: input.note,
+    });
+    if (activityRequestId) {
+      await requestsCollection().updateOne(
+        { _id: doc._id },
+        { $set: { activityRequestId, updatedAt: new Date() } }
+      );
+      doc.activityRequestId = activityRequestId;
+    }
+  }
+
   return mapDto(doc);
 };
 
@@ -164,7 +186,7 @@ export const approveParticipantIntentJoinRequest = async (
   requestId: string,
   ownerUserId: string
 ): Promise<ParticipantIntentJoinRequestDTO> => {
-  const { request } = await resolveJoinRequestForIntent(intentId, requestId, ownerUserId);
+  const { intent, request } = await resolveJoinRequestForIntent(intentId, requestId, ownerUserId);
   const now = new Date();
   const updated = await requestsCollection().findOneAndUpdate(
     { _id: request._id, status: 'pending' },
@@ -176,6 +198,20 @@ export const approveParticipantIntentJoinRequest = async (
     throw new ApiError(400, 'request_not_pending', 'This request was already handled.');
   }
 
+  const seekingActivityId = intent.seekingActivityId;
+  if (seekingActivityId && updated.activityRequestId) {
+    const { mirrorIntentJoinDecisionToActivity } = await import(
+      '../services/participant-intent-join-activity-sync.js'
+    );
+    await mirrorIntentJoinDecisionToActivity({
+      activityRequestId: updated.activityRequestId,
+      seekingActivityId,
+      joinerUserId: updated.userId,
+      ownerUserId: ownerUserId,
+      approved: true,
+    });
+  }
+
   return mapDto(updated);
 };
 
@@ -184,7 +220,7 @@ export const rejectParticipantIntentJoinRequest = async (
   requestId: string,
   ownerUserId: string
 ): Promise<ParticipantIntentJoinRequestDTO> => {
-  const { request } = await resolveJoinRequestForIntent(intentId, requestId, ownerUserId);
+  const { intent, request } = await resolveJoinRequestForIntent(intentId, requestId, ownerUserId);
   const now = new Date();
   const updated = await requestsCollection().findOneAndUpdate(
     { _id: request._id, status: 'pending' },
@@ -194,6 +230,20 @@ export const rejectParticipantIntentJoinRequest = async (
 
   if (!updated) {
     throw new ApiError(400, 'request_not_pending', 'This request was already handled.');
+  }
+
+  const seekingActivityId = intent.seekingActivityId;
+  if (seekingActivityId && updated.activityRequestId) {
+    const { mirrorIntentJoinDecisionToActivity } = await import(
+      '../services/participant-intent-join-activity-sync.js'
+    );
+    await mirrorIntentJoinDecisionToActivity({
+      activityRequestId: updated.activityRequestId,
+      seekingActivityId,
+      joinerUserId: updated.userId,
+      ownerUserId,
+      approved: false,
+    });
   }
 
   return mapDto(updated);

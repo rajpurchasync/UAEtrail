@@ -349,7 +349,7 @@ Use one PR per subsection where possible; check boxes when merged.
 ### Phase 6 — Activity storage merge (M1–M2)
 
 - [x] 6.1 Create seeking via activities API (M1 dual-write on `POST /me/participant-intents`)
-- [ ] 6.2 Join request unification plan + migration
+- [x] 6.2 Join request unification plan + **M2a** dual-write (`participant-intent-join-activity-sync.ts`)
 - [x] 6.3 Explore map stops merging legacy `demand:` pins (seeking via `activities` only; run backfill for old intents)
 
 ### Phase 7 — Host retirement & business paths

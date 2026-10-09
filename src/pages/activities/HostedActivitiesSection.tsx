@@ -13,7 +13,6 @@ import { ActivityManageSheet } from '../../components/host/ActivityManageSheet';
 import { HostedActivityListRow } from '../../components/host/HostedActivityListRow';
 import {
   exploreOrganizePath,
-  HOST_REQUESTS_PATH,
   tripsPlansPath,
 } from '../../config/routingCatalog';
 import { matchesActivitySearch } from '../../utils/activitySearch';
@@ -178,7 +177,7 @@ export const HostedActivitiesSection = ({
             <h3 className="text-sm font-bold text-neutral-800">
               Incoming requests ({host.pendingRequests.length})
             </h3>
-            <Link to={HOST_REQUESTS_PATH} className="text-xs font-semibold text-emerald-600">
+            <Link to={tripsPlansPath('hosted')} className="text-xs font-semibold text-emerald-600">
               View all
             </Link>
           </div>

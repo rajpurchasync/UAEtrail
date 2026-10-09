@@ -47,6 +47,17 @@ Deprecated alias (do not use in new clients): `…/join-requests` mirrors `…/r
 
 Storage: `activity_requests` vs `participant_intent_requests`.
 
+### M2 join unification (in progress)
+
+| Step | Status | Behavior |
+|------|--------|----------|
+| **M1** | Shipped | Find post → `activities` row (`activityMode: seeking`, `participantIntentId`). |
+| **M2a** | Shipped | `POST …/participant-intents/:id/requests` **dual-writes** `activity_requests` when `seekingActivityId` is set; approve/reject mirrors via `participant-intent-join-activity-sync.ts`. |
+| **M2b** | Planned | `POST /activities/:id/requests` becomes canonical for seeking pins; intent routes alias read path. |
+| **M2c** | Planned | Single store read (`activity_requests`); deprecate `participant_intent_requests` writes. |
+
+Clients may keep intent URLs until M2b; host queue for buddy seeking rows uses the mirrored `activity_requests` row.
+
 ---
 
 ## Participant intents (`/me/participant-intents`)
