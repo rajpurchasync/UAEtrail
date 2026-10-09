@@ -2,6 +2,7 @@ import { EXPLORE_MAP_PATH } from '../../config/routingCatalog';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../api/index';
+import { exploreMapItemIsSeeking } from '@uaetrail/shared-types';
 import {
   ConsumerErrorCard,
   ConsumerInlineEmpty,
@@ -66,7 +67,7 @@ export const ActivitiesHubView = ({
     const today = new Date(new Date().toDateString());
     return mapItems
       .filter((item) => {
-        if (item.source === 'demand') {
+        if (exploreMapItemIsSeeking(item)) {
           return !item.convertedActivityId;
         }
         const activity = item.activity;

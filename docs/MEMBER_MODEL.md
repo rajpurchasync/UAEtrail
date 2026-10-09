@@ -229,6 +229,19 @@ Product-facing **who is viewing** for **capabilities** (Organize, console, futur
 
 ---
 
+## Member availability (calendar — not seeking)
+
+| Concern | Rule |
+|---------|------|
+| **Storage** | `member_availability` — one row per user with `slots[]`, `kinds[]`, optional `areaId` / `region` |
+| **Edit** | Plan → **Available** lens (`lens=availability`) |
+| **Discover** | `GET /explore/people/availability` · Explore People filters (date range, area, kind) |
+| **Visibility** | `public` · `buddies` · `hidden` — enforced on index and public profile `availability` slice |
+| **vs seeking** | Seeking = time-bound **Activity** on the map (`activityMode: seeking`). Availability = person slots only. |
+| **Guide kind** | Casual “can guide” on availability; paid/commercial guiding = **hosted** activity or agency profile |
+
+---
+
 ## Naming vocabulary
 
 Host/member/join terms (do not duplicate in other docs — **update this section** when semantics change).

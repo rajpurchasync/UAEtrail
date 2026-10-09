@@ -24,6 +24,10 @@ import { BrowseListPage } from './list/BrowseListPage';
 import { discoveryToExploreSearch, explorePath, legacyCreateParamToOrganizePath, parseActivityListFilter, LIST_DISCOVERY_PATH } from './config/routingCatalog';
 import { organisationManagePath, SIGNIN_PATH, SIGNUP_PATH } from './config/routingCatalog';
 import { GuestTabPlaceholder } from './components/auth/GuestTabPlaceholder';
+import { PLAN_PATH } from './config/surfacePaths';
+import { resolveLegacyTripsHubRedirect } from './trips/legacyTripsRedirect';
+import { useHostStatus } from './hooks/useHostStatus';
+import { memberCanManageHostedActivities } from './utils/hostedActivitiesGate';
 
 const LegacyHostPathRedirect = () => {
   const { pathname, search, hash } = useLocation();
@@ -57,17 +61,16 @@ const DiscoveryRedirect = () => {
   return <Navigate to={`${explorePath()}?${discoveryToExploreSearch(search)}`} replace />;
 };
 
-const ActivitiesLegacyRedirect = () => {
-  const { search } = useLocation();
-  const params = new URLSearchParams(search);
-  if (!params.get('segment')) {
-    params.set('segment', 'upcoming');
-  }
-  const qs = params.toString();
-  return <Navigate to={`/trips${qs ? `?${qs}` : ''}`} replace />;
+const LegacyTripsHubRedirect = () => {
+  const { pathname, search } = useLocation();
+  const { user } = useAuth();
+  const gate = useHostStatus({ enabled: Boolean(user) });
+  const canHost = memberCanManageHostedActivities(user, gate.canAccessHostConsole);
+  const target = resolveLegacyTripsHubRedirect(pathname, search, { canHost });
+  return <Navigate to={target ?? PLAN_PATH} replace />;
 };
 
-const ActivitiesBrowseRoute = () => {
+const PlanBrowseRoute = () => {
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
   const tab = searchParams.get('tab');
@@ -85,8 +88,8 @@ const ActivitiesBrowseRoute = () => {
   if (tab === 'joined' || tab === 'hosted' || searchParams.get('checkin') || !tab) {
     return (
       <GuestTabPlaceholder
-        title="My trips"
-        description="Sign in to see what you're joining, hosting, and check-in."
+        title="Plan"
+        description="Sign in to see what is next on your calendar and track outdoor goals."
         intent="explore-browse"
       />
     );
@@ -136,6 +139,8 @@ const WelcomeSignup = lazy(() => import('./pages/WelcomeSignup').then((m) => ({ 
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword').then((m) => ({ default: m.ForgotPassword })));
 const AdminOverview = lazy(() => import('./pages/AdminOverview').then((m) => ({ default: m.AdminOverview })));
 const AdminPlaces = lazy(() => import('./pages/AdminPlaces').then((m) => ({ default: m.AdminPlaces })));
+const AdminAreas = lazy(() => import('./pages/AdminAreas').then((m) => ({ default: m.AdminAreas })));
+const AreaDetailPage = lazy(() => import('./pages/AreaDetailPage').then((m) => ({ default: m.AreaDetailPage })));
 const AdminOrganisations = lazy(() =>
   import('./pages/AdminOrganisations').then((m) => ({ default: m.AdminOrganisations }))
 );
@@ -172,6 +177,7 @@ const HostManage = lazy(() => import('./pages/host/Manage').then((m) => ({ defau
 const ShopManage = lazy(() => import('./pages/ShopManage').then((m) => ({ default: m.ShopManage })));
 const AgencyManage = lazy(() => import('./pages/AgencyManage').then((m) => ({ default: m.AgencyManage })));
 const Activities = lazy(() => import('./pages/Activities').then((m) => ({ default: m.Activities })));
+const MyTrips = lazy(() => import('./pages/MyTrips').then((m) => ({ default: m.MyTrips })));
 const TripsMap = lazy(() => import('./pages/TripsMap').then((m) => ({ default: m.TripsMap })));
 const Profile = lazy(() => import('./pages/Profile').then((m) => ({ default: m.Profile })));
 const ProfileSettings = lazy(() => import('./pages/ProfileSettings').then((m) => ({ default: m.ProfileSettings })));
@@ -324,21 +330,36 @@ function App() {
           <Route path="/event-spot/:id" element={<EventSpotRedirect />} />
           <Route path="/community-activity/:id" element={<CommunityActivityRedirect />} />
           <Route path="/calendar" element={<Navigate to={explorePath({ panel: 'activities' })} replace />} />
-          <Route path="/trips" element={<ActivitiesBrowseRoute />} />
           <Route
-            path="/trips/map"
+            path="/area/:slug"
+            element={
+              <Suspense fallback={<PageLoader />}>
+                <AreaDetailPage />
+              </Suspense>
+            }
+          />
+          <Route path="/plan" element={<PlanBrowseRoute />} />
+          <Route path="/trips" element={<LegacyTripsHubRedirect />} />
+          <Route path="/trips/map" element={<LegacyTripsHubRedirect />} />
+          <Route path="/activities" element={<LegacyTripsHubRedirect />} />
+          <Route
+            path="/profile/my-trips"
+            element={
+              <ProtectedRoute>
+                <Suspense fallback={<PageLoader />}>
+                  <MyTrips />
+                </Suspense>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile/my-trips/map"
             element={
               <ProtectedRoute>
                 <Suspense fallback={<PageLoader />}>
                   <TripsMap />
                 </Suspense>
               </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/activities"
-            element={
-              <ActivitiesLegacyRedirect />
             }
           />
           <Route
@@ -589,6 +610,16 @@ function App() {
             }
           />
           <Route path="/admin/locations" element={<Navigate to="/admin/places" replace />} />
+          <Route
+            path="/admin/areas"
+            element={
+              <ProtectedRoute roles={['platform_admin']}>
+                <Suspense fallback={<PageLoader />}>
+                  <AdminAreas />
+                </Suspense>
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/admin/organizers"
             element={<Navigate to="/admin/hosts" replace />}

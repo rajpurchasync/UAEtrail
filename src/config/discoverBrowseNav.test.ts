@@ -1,0 +1,38 @@
+import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import {
+  CONSUMER_HAMBURGER_MENU,
+  DESKTOP_NAV_LINKS,
+  EXPLORE_DISCOVER_BROWSE_PATH,
+  MOBILE_LANDING_USER_MENU,
+} from './platform';
+
+describe('discover browse navigation contract', () => {
+  it('hamburger and desktop nav open discover browse (not bare map)', () => {
+    const hamburgerLink = CONSUMER_HAMBURGER_MENU.find((item) => item.kind === 'link' && item.label === 'Browse');
+    expect(hamburgerLink?.to).toBe(EXPLORE_DISCOVER_BROWSE_PATH);
+    expect(DESKTOP_NAV_LINKS.some((link) => link.to === EXPLORE_DISCOVER_BROWSE_PATH)).toBe(true);
+  });
+
+  it('guest landing drawer exposes map and discover browse separately', () => {
+    const explore = MOBILE_LANDING_USER_MENU.find((item) => item.label === 'Explore');
+    const browse = MOBILE_LANDING_USER_MENU.find((item) => item.label === 'Browse');
+    expect(explore?.to).toBe('/explore');
+    expect(browse?.to).toBe(EXPLORE_DISCOVER_BROWSE_PATH);
+  });
+
+  it('ExploreExperience wires map list and discover browse separately', () => {
+    const experience = readFileSync(join(process.cwd(), 'src/explore/ui/ExploreExperience.tsx'), 'utf8');
+    expect(experience).toMatch(/ExploreBrowsePanel/);
+    expect(experience).toMatch(/openMapListPanel/);
+    expect(experience).toMatch(/closeDiscoverBrowse/);
+    expect(experience).toMatch(/browse\.browseOpen/);
+  });
+
+  it('consumer hamburger stays on map for host roles (organise drawer only on /host)', () => {
+    const menu = readFileSync(join(process.cwd(), 'src/components/layout/MobileMenu.tsx'), 'utf8');
+    expect(menu).toMatch(/isHostConsoleRole && onHostConsole/);
+    expect(menu).toMatch(/CONSUMER_HAMBURGER_MENU/);
+  });
+});

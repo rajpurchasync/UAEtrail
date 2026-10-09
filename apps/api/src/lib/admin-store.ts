@@ -172,6 +172,7 @@ const mapMongoActivity = (doc: MongoActivityDoc) : Activity => ({
   status: doc.status,
   featured: doc.featured,
   publishedAt: doc.publishedAt,
+  areaId: doc.areaId ?? null,
   createdAt: doc.createdAt,
   updatedAt: doc.updatedAt
 });

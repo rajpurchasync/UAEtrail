@@ -11,6 +11,8 @@ import {
   resolveParticipationMode,
   type ParticipationMode,
 } from './activity-participation-mode.js';
+import { exploreMapItemIsSeeking } from './explore-activity-mode.js';
+import type { ExploreActivityMode } from './explore-activity-mode.js';
 
 export type ExploreCardSource = 'activity' | 'venue' | 'shop' | 'agency' | 'demand';
 export type ExploreCardKind = 'hiking' | 'camping' | 'event' | 'rideshare' | 'shop' | 'agency';
@@ -19,6 +21,8 @@ export type ExplorePresentationBuildInput = {
   id: string;
   kind: ExploreCardKind | 'hiking' | 'camping' | 'event' | 'shop' | 'agency' | 'rideshare';
   source: ExploreCardSource;
+  activityMode?: ExploreActivityMode | null;
+  participantIntentId?: string | null;
   title: string;
   subtitle?: string | null;
   featuredPerson?: ExploreMapPersonDTO | null;
@@ -123,9 +127,10 @@ export const MAP_LAYER_FILTER_EMOJI = {
 
 /** Resolve map item source; falls back to id prefix when source is missing from cache/API. */
 export const resolveExploreItemSource = (
-  item: Pick<ExplorePresentationBuildInput, 'id' | 'source'>
+  item: Pick<ExplorePresentationBuildInput, 'id' | 'source' | 'activityMode' | 'participantIntentId'>
 ): ExploreCardSource => {
   const { id, source } = item;
+  if (exploreMapItemIsSeeking(item)) return 'demand';
   if (
     source === 'activity' ||
     source === 'venue' ||

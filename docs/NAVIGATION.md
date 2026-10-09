@@ -11,9 +11,10 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 | **Marketing** | `/` | First impression — story, trust, sign up (not live catalog) |
 | **Browse** | `/explore` | Map-first discovery — activities, places, shops |
 | **List discovery** | `/list` | Full-screen poster/list browse (same filters as explore; `listDiscoveryPath()` ↔ map via `exploreMapPathFromListSearch()`) |
-| **Personal hub** | `/profile`, `/profile/settings`, `/profile/edit`, `/trips` | Account hub, settings stack, trips (upcoming / past / wishlist) |
-| **Mobile tabs (signed-in)** | `/explore`, `/trips`, `/messages` | **Three tabs only** — Map · My trips · **Chat** (`md:hidden`; route `/chat`). **No List tab.** Browse list on mobile opens from the **List** pill on the explore map (`list=1` / overlay), not bottom nav. Optional full-screen `/list` only via handoff (`listDiscoveryPathFromExploreSearch()`), not a tab target. **Facebook / Instagram / WhatsApp** icon row above tabs (`src/config/socialLinks.ts`); same bar on **`/profile`**, settings stack, **Friends**, **Contributions**, and related profile stack routes |
-| **Entity detail** | `/trail`, `/camp`, `/venue`, `/activity`, `/shop`, `/guide`, `/agency`, `/partner` | Place, scheduled outing, shop, or brand profile |
+| **Personal hub** | `/profile`, `/profile/settings`, `/profile/edit`, `/profile/my-trips` | Account hub, settings stack, trip **history** + journey map |
+| **Plan tab** | `/plan` | Active layer — goals, upcoming outings (bottom nav middle tab; UI label **Plan**) |
+| **Mobile tabs (signed-in)** | `/explore`, `/plan`, `/chat` | **Three tabs only** — **Explore** · **Plan** · **Chat** (`md:hidden`). **No List tab.** Map-aligned list from the **List** pill (`list=1`); discover browse from hamburger **Browse** (`browse=1`) or optional full-screen `/list` (`listDiscoveryPathFromExploreSearch()`), not bottom nav. **Facebook / Instagram / WhatsApp** icon row above tabs (`src/config/socialLinks.ts`); same bar on **`/profile`**, settings stack, **Friends**, **Contributions**, and related profile stack routes |
+| **Entity detail** | `/trail`, `/camp`, `/venue`, `/activity`, `/shop`, `/guide`, `/agency`, `/partner`, `/area/:slug` | Place, scheduled outing, shop, brand profile, or curated **area** hub |
 
 ### Profile hub (`/profile`)
 
@@ -21,7 +22,8 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 - **Edit profile:** `/profile/edit` — name, gender, bio, speaks, location (no DOB edit on this screen).
 - **Pull-to-refresh** reloads hub data at scroll top.
 - **Sign out:** Profile hub (bottom) and Settings → Account.
-- **Wishlist:** `/trips?segment=wishlist` (legacy `/profile/wishlist` redirects). Settings → **Saved map & alerts** links to the same segment.
+- **My trips (history + map):** `/profile/my-trips` — joined / hosted / self **past** outings; **History · My Map** tabs. Legacy `/trips`, `/trips/map`, `/activities` redirect here or to `/plan` via `resolveLegacyTripsHubRedirect`.
+- **Saved (wishlist):** `/plan?view=plans&lens=saved` (`planSavedPath()`). Legacy `/profile/wishlist` and `segment=wishlist` URLs normalize to the same lens. Profile shows a teaser only — not a second full list ([`experiment/member-surfaces-implementation-plan.md`](./experiment/member-surfaces-implementation-plan.md) D13).
 - **Settings stack:** `/profile/settings` index → Account, Privacy, Notifications sub-routes; **iPhone & iPad** (`#ios-install`, Safari steps) and **Android** (`#android-install`, Samsung Internet / Chrome manual steps — no in-app install prompt).
 - **Hamburger (header):** next to the notifications bell on tab chrome and desktop `Header` — Explore, My Trips, Messages, Profile/Signup, Download → Android / iOS (deep-link to the matching settings hash). Notifications are the bell only, not in the drawer.
 - **View public card (eye):** opens `/member/:userId` — preview should match what **other signed-in members** see (`public` visibility), not the owner’s full hub (API P3).
@@ -32,14 +34,18 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 - **Person** surface (member card or trusted view) — not the business **storefront** (`/guide/:slug`, `/agency/:slug`, `/shop/:id`). Link from Who’s going, buddies, activity rosters.
 - **Guests:** sign-in prompt; no public member card (policy P3). **Signed-in** viewers follow `profileVisibility` ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md) § Profile visibility).
 
-### Trips (`/trips`)
+### Plan (`/plan`)
 
-- **Main tabs:** Plans · Completed · Map (`?view=plans|completed`; map at `/trips/map`). Legacy `segment` / `tab` query params normalize on load.
-- **Plans:** goal card → **Upcoming** heading with All · Hosted · Joined · Wishlist pills (default `?role=all`; wishlist uses `segment=wishlist`). Hosted/Joined lists are **future** outings only.
-- **Completed:** Joined · Hosted · Self (**My plans** / demand intents) — **past** outings (`?view=completed&role=`).
-- **My trips map:** `/trips/map` (also the Map main tab).
-- **`/activities`** redirects to `/trips` for bookmarks and old links.
-- **Manage & crew chat:** Hosted/joined **Manage outing** sheets and explore map peek **`open_crew_chat`** → **`/messages?group=<id>`** (not chat on `/trips`). Deep links: [`TRIPS_HOST_MANAGE.md`](./TRIPS_HOST_MANAGE.md). Full messaging contract: [`COMMUNICATION.md`](./COMMUNICATION.md).
+- **Bottom nav middle tab** — forward commitments, not past history (history → **My trips**).
+- **Lenses** (`?view=plans&lens=` — `src/plan/planLens.ts`): **Schedule** (default) · **Saved** · **Goals**. Schedule shows **Upcoming** role chips (All · Hosted · Joined). Availability editor placement is TBD (same doc §6.1).
+- **Query helpers:** `tripsPlansPath()`, `planSavedPath()`, `planLensPath()`. Legacy `segment` / `tab` / `segment=wishlist` normalize on load.
+- **`/trips`**, **`/activities`** redirect to `/plan` or `/profile/my-trips` preserving query (`legacyTripsRedirect.ts`).
+
+### My trips (`/profile/my-trips`)
+
+- **Profile inventory** — past joined / hosted / self outings (`?view=completed&role=`); journey map at `/profile/my-trips/map`. `?view=plans` redirects to `/plan`.
+- **Main tabs (list surface):** History · My Map (`MY_TRIPS_MAIN_TABS`).
+- **Manage & crew chat:** Hosted/joined **Manage outing** sheets and explore map peek **`open_crew_chat`** → **`/chat?group=<id>`**. See [`experiment/member-surfaces-implementation-plan.md`](./experiment/member-surfaces-implementation-plan.md) and [`COMMUNICATION.md`](./COMMUNICATION.md).
 
 ### Host console (`/host/*`)
 
@@ -128,7 +134,8 @@ Legacy browse URLs (`/map`, `/discovery`, `/calendar`, bare `/activities` as bro
 | Back from detail | `detailBackPath(kind)` | `src/explore/routing.ts` |
 | My activities hub | `myActivitiesPath('joined' \| 'hosted')` | `src/explore/routing.ts` |
 | Fulfill participant intent (return from auth) | `explorePath({ fulfillIntent })`, `exploreFulfillIntentReturnPath()` | `src/explore/routing.ts` |
-| Platform nav constants | `EXPLORE_MAP_PATH`, `joinAuthPath()` | `src/config/platform.ts` |
+| Platform nav constants | `EXPLORE_MAP_PATH`, `EXPLORE_DISCOVER_BROWSE_PATH`, `joinAuthPath()` | `src/config/platform.ts` |
+| Discover browse on explore | `exploreDiscoverBrowsePath()` | `src/explore/routing.ts` |
 | Sign-in with return | `buildSignInRedirect(location)`, `signInPathForReturn(path)` | `src/utils/authReturnContext.ts` |
 | Post-auth fallback | `resolveAuthExitFallback()` → explore | `src/utils/authRedirect.ts` |
 | Trips hub URLs | `tripsPlansPath()`, `parseTripsSegment`, … | `src/trips/tripsRouting.ts` |
@@ -141,11 +148,11 @@ Legacy browse URLs (`/map`, `/discovery`, `/calendar`, bare `/activities` as bro
 
 **Routing model:** One discovery feed (`/explore` + query; optional full-screen `/list`) over `GET /explore/map`. Category pills (Trips, Spots, Shops, topics) are **filters in the URL**, not `/hiking` or `/shops` path segments. Shareable records use **entity** routes (`/activity/:id`, `/trail/:id`, …). Detail: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §4.1 · [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §4.1.
 
-- **Desktop (`lg+`):** browse **list panel open** by default (`list=1` synced to URL). Mobile: map-first (`list=0` unless opened).
+- **Desktop (`lg+`):** **map-aligned list** panel open by default (`list=1`). Mobile: map-first (`list=0` unless List pill).
 - **Map framing:** upper-UAE overview (zoom ~8); optional GPS / **Locate** recenters at the same regional zoom (not street-level).
-- Landing on `/explore` without `list` → desktop opens list; mobile stays map-only.
-- **Mobile list entry:** **List** floating pill on the map (`ExploreMapStage` → `onOpenBrowse`) — not a fourth bottom-nav item. Do not add `/list` to `MOBILE_BOTTOM_NAV_TAB_PATHS`.
-- **Embedded list → full screen:** explore sidebar / map overlay expose **Full screen browse** → `/list` with the same query (`listDiscoveryPathFromExploreSearch()`).
+- Landing on `/explore` without `list` → desktop opens map list; mobile stays map-only.
+- **Mobile map list:** **List** pill (`list=1`, `ExploreBrowsePanel`) — Activities/Places tabs, search, calendar/filter, topic pills, compact rows.
+- **Discover browse:** hamburger / desktop header **Browse** → `/explore?browse=1` (`EXPLORE_DISCOVER_BROWSE_PATH`) or `/list` full screen — `ListDiscoveryExperience`. **Desktop:** opens in the **right** aside (like **People** / Social); **map list** stays on the **left** (`list=1` can coexist with `browse=1`). Mobile: full-screen sheet over the map (mutually exclusive with list). Embedded discover exposes **Full screen browse** → `listDiscoveryPathFromExploreSearch()`. Do not add `/list` to `MOBILE_BOTTOM_NAV_TAB_PATHS`.
 - **Mobile map filters:** horizontal scroll — All · Hiking · Camping · Rideshare · Activities · Shops (no “More” sheet).
 - **Guest join:** tapping Join on an activity opens a signup sheet (returns to map after auth).
 - First map visit shows a 3-step coach (localStorage `uaetrail:explore-coach-seen`); guest join banner appears after coach is dismissed.
@@ -158,7 +165,7 @@ Legacy browse URLs (`/map`, `/discovery`, `/calendar`, bare `/activities` as bro
 
 **Job:** who can I go with, who’s going, who’s looking — **not** chat. Chat is [`/messages`](#chat-messages) ([`COMMUNICATION.md`](./COMMUNICATION.md)).
 
-Map control opens browse `listMode=people` (URL `view=people`; legacy `view=social` and `view=going` still parse). Query `peopleTab=all|friends|followed|discover` (legacy `socialTab` still parses). Panel title **People** (`explorePeopleBrowseCopy.ts`) — same family as list **Buddies** (`listCat=people`). Guests → sign-in (`guestBrowseGateCopy` intent `explore-people-browse`).
+Map pill label **Social** (`EXPLORE_PEOPLE_BROWSE_MAP_BUTTON_LABEL`); opens browse `listMode=people` (URL `view=people`; legacy `view=social` and `view=going` still parse). Query `peopleTab=all|friends|followed|discover` (legacy `socialTab` still parses). Panel title **People** (`explorePeopleBrowseCopy.ts`) — same family as list **Buddies** (`listCat=people`). Guests → sign-in (`guestBrowseGateCopy` intent `explore-people-browse`).
 
 | Segment (`peopleTab`; legacy `socialTab`) | Label | Data / actions |
 |-----------------------|-------|----------------|
@@ -256,7 +263,7 @@ Personal hub canonical route: **`/trips`** (`TRIPS_PATH`). Legacy `/activities` 
 
 ## Copy
 
-User-facing label for map browse: **Explore** (nav, drawer, CTAs). Internal URL panel name `venues` stays in query strings only.
+User-facing labels: **Explore** = map-first tab and map chrome; **Browse** = visual discover (categories, posters) via `browse=1` or `/list`. Guest landing drawer includes both **Explore** (map) and **Browse** (discover). Internal URL panel name `venues` stays in query strings only.
 
 ## Connections QA (local / staging seed)
 

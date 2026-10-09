@@ -71,14 +71,29 @@ There is **no** `Trip` table, `TripDTO`, or trips API. Everything on the map tha
 
 **Organize menu labels** (Hiking, Camping, Event, Activity, Rideshare) are **kinds of activity** (`activityType` / compose intent), not separate products. **“Organized activities”** in conversation means activities created via **Organize** — still one `Activity` row.
 
-**Trips tab** (`/trips`) groups **your** relationships to activities and saved places:
+### Activity modes (map + Plan — phased)
+
+Time-bound map pins are **Activities** with `activityMode` (target wire name; migration M0–M2 in [`experiment/member-surfaces-implementation-plan.md`](./experiment/member-surfaces-implementation-plan.md)):
+
+| Mode | Meaning | Today (wire) | UX |
+|------|---------|--------------|-----|
+| **`hosted`** | Host-published outing | `activities` + organize compose | Join / RSVP / request on detail |
+| **`seeking`** | Member “looking for company” | `participant_intents` until merged | Find FAB; map wire: `source: activity`, `activityMode: seeking` (M0) |
+
+**Not an activity mode:** **Availability** — person + calendar slots (`member_availability` planned). Discover on Explore **People**; edit on Plan. Seeking ≠ availability.
+
+### Geography (Area — planned)
+
+**Region** (emirate) → **Area** (curated slug, e.g. Hatta) → **Place** → **Activity**. Public **`/area/:slug`** aggregates places and outings; `areaId` on publish from map pin (Phase 4).
+
+**Plan tab** (`/plan`) groups **your** forward layer — schedule, saved, goals — plus relationships to activities:
 
 | Trips UI | Domain data |
 |----------|-------------|
 | Upcoming rail / Joined list | `GET /me/activities`, `GET /me/requests` |
 | Hosted list + manage sheet | Host user: `listHostActivities`, `getHostActivityJoinRequests` |
-| Wishlist (Trips) | Private venue + activity saves (`/me/wishlist`) — not demand, not Follow |
-| `/trips/map` (outdoor map) | `memberJourneyMapApi` → `/me/trips/map` (legacy path name on server) |
+| Saved lens (`?lens=saved`) | Private venue + activity saves (`/me/wishlist`) — not demand, not Follow |
+| Journey map (`/profile/my-trips/map`) | `memberJourneyMapApi` → `/me/trips/map` (legacy path name on server) |
 
 Do **not** add `trips*` API clients or `Trip*` domain types for hosted/joined lists — reuse **activity** and **member engagement** APIs.
 

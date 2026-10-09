@@ -17,6 +17,7 @@ export const COLLECTIONS = {
   // Places & premium unlocks
   LOCATIONS: 'locations',
   LOCATION_UNLOCKS: 'location_unlocks',
+  AREAS: 'areas',
 
   // Activities & engagement
   ACTIVITIES: 'activities',
@@ -55,6 +56,7 @@ export const COLLECTIONS = {
   REWARD_LEDGERS: 'reward_ledgers',
   USER_BADGES: 'user_badges',
   USER_GOALS: 'user_goals',
+  MEMBER_AVAILABILITY: 'member_availability',
   MEMBER_MAP_PINS: 'member_map_pins',
   MEMBER_PROFILE_VIEWS: 'member_profile_views',
   ACTIVITY_INVITES: 'activity_invites',

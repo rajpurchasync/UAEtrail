@@ -9,6 +9,8 @@ import {
   ACTIVITIES_PATH,
   EXPLORE_MAP_PATH,
   MESSAGES_PATH,
+  MY_TRIPS_PATH,
+  PLAN_PATH,
   TRIPS_PATH,
 } from '../../config/routingCatalog';
 import { joinedSubViewTitle } from '../../pages/activities/shared';
@@ -24,11 +26,14 @@ const resolveCenter = (
 ): MobileTabHeaderCenter | null => {
   if (pathname === EXPLORE_MAP_PATH) return { kind: 'brand' };
   if (pathname === '/profile') return { kind: 'title', text: 'Profile' };
-  if (pathname === TRIPS_PATH || pathname === ACTIVITIES_PATH) {
+  if (pathname === PLAN_PATH || pathname === TRIPS_PATH || pathname === ACTIVITIES_PATH) {
     const params = new URLSearchParams(search);
     const subTitle = joinedSubViewTitle(params.get('sub'));
     if (subTitle) return { kind: 'title', text: subTitle };
-    return { kind: 'title', text: 'Trips' };
+    return { kind: 'title', text: 'Plan' };
+  }
+  if (pathname === MY_TRIPS_PATH || pathname.startsWith(`${MY_TRIPS_PATH}/`)) {
+    return { kind: 'title', text: 'My trips' };
   }
   if (pathname === MESSAGES_PATH) return { kind: 'title', text: 'Chat' };
   if (!isMobileTabHeaderRoute(pathname)) return null;
@@ -51,7 +56,9 @@ export const MobileTabHeader = () => {
     pathname === EXPLORE_MAP_PATH ||
     pathname === '/profile' ||
     pathname === ACTIVITIES_PATH ||
+    pathname === PLAN_PATH ||
     pathname === TRIPS_PATH ||
+    pathname === MY_TRIPS_PATH ||
     pathname === MESSAGES_PATH;
 
   const trailing = showHeaderActions ? <ConsumerHeaderActions /> : null;

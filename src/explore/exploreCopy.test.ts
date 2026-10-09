@@ -17,6 +17,7 @@ import {
 import { resolveExplorePrice } from './explorePriceLabel';
 import { extractExploreRequirementBadges } from './exploreRequirementBadges';
 import { resolveExploreHostLabel, resolveExploreHostPersonName } from '../utils/userDisplay';
+import { seekingExploreMapItem } from './exploreMapItemFixtures';
 
 describe('resolveMapPinEmoji', () => {
   it('uses activity emojis', () => {
@@ -480,10 +481,10 @@ describe('buildExploreCardModel', () => {
   });
 
   it('builds one-line demand card', () => {
-    const demand: ExploreMapItemDTO = {
+    const demand: ExploreMapItemDTO = seekingExploreMapItem({
       id: 'demand:1',
+      intentId: '1',
       kind: 'rideshare',
-      source: 'demand',
       title: 'Rideshare request',
       subtitle: 'Dubai to Fujairah',
       latitude: 25.3,
@@ -499,7 +500,7 @@ describe('buildExploreCardModel', () => {
       fromLabel: 'Dubai',
       toLabel: 'Fujairah',
       requesterUserId: 'user-1',
-    };
+    });
     const card = buildExploreCardModel(demand);
     expect(card.featuredPerson?.role).toBe('requester');
     expect(card.listTitle).toBe('Rideshare · Alex');

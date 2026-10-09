@@ -9,7 +9,11 @@ import type {
   OutingCategory,
   ParticipantPreviewDTO,
 } from '@uaetrail/shared-types';
-import { buildExploreCardPresentation, resolveExploreFeaturedPerson } from '@uaetrail/shared-types';
+import {
+  buildExploreCardPresentation,
+  exploreMapItemIsSeeking,
+  resolveExploreFeaturedPerson,
+} from '@uaetrail/shared-types';
 import {
   buildExploreRouteLabel,
   buildExploreWhenSegment,
@@ -212,17 +216,20 @@ export const buildExploreCardModel = (item: ExploreMapItemDTO): ExploreCardModel
         (item.locationCard?.parkingLat != null && item.locationCard?.parkingLng != null)
     ),
     venueDistanceKm: item.locationCard?.distance ?? null,
-    requirementBadges: enrichExploreActivityRequirementBadges(activity?.requirements, {
-      kind,
-      rideshareEnabled: Boolean(
-        source === 'activity' &&
-          kind !== 'rideshare' &&
-          (item.rideshareEnabled ??
-            activity?.rideshareEnabled ??
-            (item.linkedRideshareActivities?.length ?? 0) > 0)
-      ),
-      venueDifficulty: item.locationCard?.difficulty ?? null,
-    }),
+    requirementBadges: [
+      ...(exploreMapItemIsSeeking(item) ? ['Seeking'] : []),
+      ...enrichExploreActivityRequirementBadges(activity?.requirements, {
+        kind,
+        rideshareEnabled: Boolean(
+          source === 'activity' &&
+            kind !== 'rideshare' &&
+            (item.rideshareEnabled ??
+              activity?.rideshareEnabled ??
+              (item.linkedRideshareActivities?.length ?? 0) > 0)
+        ),
+        venueDifficulty: item.locationCard?.difficulty ?? null,
+      }),
+    ],
     mapLatitude: item.latitude ?? null,
     mapLongitude: item.longitude ?? null,
     linkedRideshares:

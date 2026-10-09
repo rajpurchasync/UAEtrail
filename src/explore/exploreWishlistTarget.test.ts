@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildExploreCardModel, resolveExploreWishlistTarget } from './exploreCardModel';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
+import { seekingExploreMapItem } from './exploreMapItemFixtures';
 
 const baseItem = (overrides: Partial<ExploreMapItemDTO>): ExploreMapItemDTO =>
   ({
@@ -32,14 +33,11 @@ describe('resolveExploreWishlistTarget', () => {
 
   it('does not wishlist-save demand pins (participation is on Explore)', () => {
     const card = buildExploreCardModel(
-      baseItem({
-        id: 'demand:int-1',
+      seekingExploreMapItem({
         kind: 'event',
-        source: 'demand',
-        composeIntent: 'demand',
         outingCategory: 'hiking',
         activity: undefined,
-        participantIntentId: 'int-1',
+        intentId: 'int-1',
       })
     );
     expect(resolveExploreWishlistTarget(card)).toBeNull();

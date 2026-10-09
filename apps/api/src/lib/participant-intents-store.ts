@@ -41,6 +41,7 @@ type MongoParticipantIntent = {
   comment: string;
   status: 'active' | 'fulfilled' | 'cancelled';
   convertedActivityId?: string | null;
+  areaId?: string | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -124,6 +125,11 @@ export const createParticipantIntent = async (
   input: CreateParticipantIntentInput
 ): Promise<ParticipantIntentDTO> => {
   const now = new Date();
+  let areaId: string | null = null;
+  if (input.latitude != null && input.longitude != null) {
+    const { resolveAreaIdForCoordinates } = await import('./area-resolution.js');
+    areaId = await resolveAreaIdForCoordinates(input.latitude, input.longitude, null);
+  }
   const doc: MongoParticipantIntent = {
     _id: randomUUID(),
     userId,
@@ -141,6 +147,7 @@ export const createParticipantIntent = async (
     partySize: input.partySize,
     comment: input.comment.trim(),
     status: 'active',
+    areaId,
     createdAt: now,
     updatedAt: now,
   };
@@ -213,6 +220,12 @@ export const updateParticipantIntent = async (
     comment: merged.comment.trim(),
     updatedAt: now,
   };
+  if (update.latitude != null && update.longitude != null) {
+    const { resolveAreaIdForCoordinates } = await import('./area-resolution.js');
+    update.areaId = await resolveAreaIdForCoordinates(update.latitude, update.longitude, null);
+  } else {
+    update.areaId = null;
+  }
 
   const updated = await collection().findOneAndUpdate(
     { _id: existing._id, userId, status: 'active' } as Filter<MongoParticipantIntent>,
@@ -374,7 +387,8 @@ export const listActiveParticipantIntentsForMap = async (limit = 200): Promise<E
       return {
         id: `demand:${doc._id}`,
         kind: mapKind,
-        source: 'demand' as const,
+        source: 'activity' as const,
+        activityMode: 'seeking' as const,
         ...buildExploreMapPlanProjection({
           source: 'demand',
           mapKind: exploreMapKindToPlanMapKind(mapKind),
@@ -404,6 +418,7 @@ export const listActiveParticipantIntentsForMap = async (limit = 200): Promise<E
         date: doc.date,
         time: doc.time,
         slotsTotal: doc.partySize,
+        areaId: doc.areaId ?? null,
       };
     });
 };

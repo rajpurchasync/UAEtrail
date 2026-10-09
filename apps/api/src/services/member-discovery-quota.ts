@@ -25,7 +25,7 @@ export const resolveMemberDiscoveryQuota = async (
 };
 
 /**
- * Gate + record a Discover-surface profile open (5 unique profiles / 30d for free members).
+ * Gate + record a Discover-surface profile open (3 unique profiles / 30d for free members).
  */
 export const assertAndRecordMemberDiscoveryProfileOpen = async (input: {
   viewerUserId: string;

@@ -1,4 +1,3 @@
-import { Link, useNavigate } from 'react-router-dom';
 import type {
   MemberBrowseCardDTO,
   MemberDiscoveryLookingRowDTO,
@@ -6,35 +5,9 @@ import type {
   SocialPersonRowDTO,
 } from '@uaetrail/shared-types';
 import type { UserRole } from '@uaetrail/shared-types';
-import { proMembershipPath } from '../../config/routingCatalog';
 import type { BuddiesDiscoverySegment } from '../../list/buddiesDiscoverySegment';
-import { LIST_SECTION_TITLE } from '../../list/listChromeTheme';
-import { memberPersonRowFromBrowseCard } from '../memberPeopleBrowseRows';
-import { memberDiscoverProfilePath } from '../memberDiscoveryExplore';
-import { exploreMapItemSharePath } from '../routing';
-import { ExploreGuestSignInCard } from './ExploreGuestSignInCard';
-import { ListFeedPersonCard } from '../../list/ui/feed/ListFeedPersonCard';
-import { LIST_FEED } from '../../list/listFeedTheme';
-import { ExploreMemberPersonCard } from './ExploreMemberPersonCard';
-import {
-  BUDDIES_DISCOVERY_INTRO,
-  EXPLORE_PEOPLE_BROWSE_DISCOVER_DIRECTORY_TITLE,
-  EXPLORE_PEOPLE_BROWSE_DISCOVER_FRIENDS_GOING_TITLE,
-  EXPLORE_PEOPLE_BROWSE_DISCOVER_HOSTS_GOING_TITLE,
-  EXPLORE_PEOPLE_BROWSE_DISCOVER_LOOKING_TITLE,
-  EXPLORE_PEOPLE_BROWSE_EMPTY_DISCOVER,
-  EXPLORE_PEOPLE_BROWSE_EMPTY_DISCOVER_FOLLOWED,
-  EXPLORE_PEOPLE_BROWSE_EMPTY_DISCOVER_LOOKING,
-  EXPLORE_PEOPLE_BROWSE_FOLLOWED_SEGMENT_PEOPLE,
-  EXPLORE_PEOPLE_BROWSE_LOADING,
-  explorePeopleBrowseDiscoverQuotaLine,
-} from '../../content/explorePeopleBrowseCopy';
-import {
-  MEMBER_DISCOVERY_QUOTA_GATE_BODY,
-  MEMBER_DISCOVERY_QUOTA_GATE_CTA,
-  MEMBER_DISCOVERY_QUOTA_GATE_TITLE,
-} from '../../content/exploreGoingPanelCopy';
-import { useMemberPersonBuddyRequest } from '../useMemberPersonBuddyRequest';
+import { PeopleBrowseTabContent } from './peopleBrowse';
+import type { PeopleBrowseTabKey } from './peopleBrowse';
 
 type ExploreMemberDiscoveryListProps = {
   variant?: 'panel' | 'list';
@@ -53,298 +26,31 @@ type ExploreMemberDiscoveryListProps = {
   onRefresh?: () => void;
 };
 
+const segmentToTab = (segment: BuddiesDiscoverySegment): PeopleBrowseTabKey =>
+  segment === 'going' ? 'going' : 'connect';
+
+/** @deprecated Use `PeopleBrowseTabContent` — kept for list hygiene imports. */
 export const ExploreMemberDiscoveryList = ({
-  variant = 'panel',
-  segment = 'going',
+  segment = 'connect',
   friendsGoing,
   hostsGoing,
-  lookingFor,
-  followed,
   directory,
   quota,
   loading,
   error,
   isSignedIn,
-  userRole,
-  onOpenActivity,
-  onRefresh,
-}: ExploreMemberDiscoveryListProps) => {
-  const navigate = useNavigate();
-  const listLayout = variant === 'list';
-  const sectionTitleClass = `mb-2 ${LIST_SECTION_TITLE}`;
-  const { busyUserId, notice, actionError, sendBuddyRequest } = useMemberPersonBuddyRequest({
-    onSuccess: onRefresh,
-  });
-
-  if (!isSignedIn) {
-    return <ExploreGuestSignInCard intent="explore-people-browse" compact />;
-  }
-
-  if (loading) {
-    return (
-      <div className={listLayout ? 'py-5' : 'space-y-3 py-4'} aria-busy>
-        {[0, 1].map((key) => (
-          <div
-            key={key}
-            className={`animate-pulse bg-neutral-200 ${listLayout ? 'aspect-[4/5] w-full rounded-none md:rounded-[22px]' : 'h-28 rounded-2xl'}`}
-          />
-        ))}
-        <p className={`text-center text-sm text-gray-500 ${listLayout ? 'mt-4' : ''}`}>
-          {EXPLORE_PEOPLE_BROWSE_LOADING}
-        </p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return <p className="py-8 text-center text-sm text-red-600">{error}</p>;
-  }
-
-  const quotaExhausted =
-    quota != null && quota.limit != null && quota.remaining != null && quota.remaining <= 0;
-
-  const showGoing = segment === 'going';
-  const showLooking = segment === 'looking';
-  const showFollowed = segment === 'followed';
-  const showDirectory = variant === 'panel' && !listLayout;
-
-  const directoryOnly = directory.filter(
-    (row) =>
-      !friendsGoing.some((p) => p.userId === row.id) &&
-      !hostsGoing.some((p) => p.userId === row.id)
-  );
-
-  const hasRows =
-    (showGoing && (friendsGoing.length > 0 || hostsGoing.length > 0)) ||
-    (showLooking && lookingFor.length > 0) ||
-    (showFollowed && followed.length > 0) ||
-    (showDirectory && directoryOnly.length > 0);
-
-  const emptyCopy =
-    segment === 'looking'
-      ? EXPLORE_PEOPLE_BROWSE_EMPTY_DISCOVER_LOOKING
-      : segment === 'followed'
-        ? EXPLORE_PEOPLE_BROWSE_EMPTY_DISCOVER_FOLLOWED
-        : EXPLORE_PEOPLE_BROWSE_EMPTY_DISCOVER;
-
-  const showQuota = segment !== 'followed';
-
-  const openActivityFromTrip = (trip: { exploreItemId: string }) => {
-    const activityId = trip.exploreItemId.replace(/^activity:/, '');
-    onOpenActivity(activityId);
-  };
-
-  const profilePathFor = (userId: string) => memberDiscoverProfilePath(userId);
-
-  const renderPerson = (person: SocialPersonRowDTO) =>
-    listLayout ? (
-      <ListFeedPersonCard
-        person={person}
-        userRole={userRole}
-        profileTo={profilePathFor(person.userId)}
-        profileDisabled={quotaExhausted && person.relationship !== 'friend'}
-        onOpenActivity={openActivityFromTrip}
-        busy={busyUserId === person.userId}
-        onSendBuddyRequest={(userId) => void sendBuddyRequest(userId)}
-      />
-    ) : (
-      <ExploreMemberPersonCard
-        person={person}
-        userRole={userRole}
-        profileTo={profilePathFor(person.userId)}
-        profileDisabled={quotaExhausted && person.relationship !== 'friend'}
-        showPlanTrip={false}
-        onOpenActivity={openActivityFromTrip}
-        busy={busyUserId === person.userId}
-        onSendBuddyRequest={(userId) => void sendBuddyRequest(userId)}
-      />
-    );
-
-  const listFeedClass = listLayout ? LIST_FEED.categoryList : '';
-
-  return (
-    <div className={`flex flex-col ${listLayout ? '' : 'gap-4'}`}>
-      {!listLayout ? (
-        <p className="text-sm leading-relaxed text-neutral-600">{BUDDIES_DISCOVERY_INTRO}</p>
-      ) : null}
-
-      {notice ? (
-        <p className={`text-xs font-medium text-emerald-700 ${listLayout ? 'px-4' : ''}`}>{notice}</p>
-      ) : null}
-      {actionError ? (
-        <p className={`text-xs font-medium text-red-600 ${listLayout ? 'px-4' : ''}`}>{actionError}</p>
-      ) : null}
-
-      {quota && showQuota && !listLayout ? (
-        <p className="text-xs font-medium tabular-nums text-neutral-500">
-          {explorePeopleBrowseDiscoverQuotaLine(quota)}
-        </p>
-      ) : null}
-
-      {quotaExhausted && showQuota ? (
-        <div
-          className={`rounded-2xl border border-amber-200/90 bg-amber-50/80 px-4 py-3 ${listLayout ? 'mx-4' : ''}`}
-        >
-          <p className="text-sm font-bold text-amber-950">{MEMBER_DISCOVERY_QUOTA_GATE_TITLE}</p>
-          <p className="mt-1 text-xs leading-relaxed text-amber-900/90">{MEMBER_DISCOVERY_QUOTA_GATE_BODY}</p>
-          <Link
-            to={proMembershipPath({ intent: 'discover-members' })}
-            className="mt-2 inline-block text-sm font-semibold text-emerald-700 hover:underline"
-          >
-            {MEMBER_DISCOVERY_QUOTA_GATE_CTA}
-          </Link>
-        </div>
-      ) : null}
-
-      {!hasRows ? (
-        <div
-          className={`rounded-2xl border border-dashed border-emerald-200/80 bg-emerald-50/30 px-4 py-8 text-center ${listLayout ? 'mx-4' : ''}`}
-        >
-          <p className="text-sm text-neutral-600">{emptyCopy}</p>
-        </div>
-      ) : null}
-
-      {showGoing && (friendsGoing.length > 0 || hostsGoing.length > 0) ? (
-        <section>
-          {!listLayout && friendsGoing.length > 0 ? (
-            <>
-              <h3 className={sectionTitleClass}>{EXPLORE_PEOPLE_BROWSE_DISCOVER_FRIENDS_GOING_TITLE}</h3>
-              <ul className="flex flex-col gap-2">
-                {friendsGoing.map((person) => (
-                  <li key={person.userId}>{renderPerson(person)}</li>
-                ))}
-              </ul>
-            </>
-          ) : null}
-          {!listLayout && hostsGoing.length > 0 ? (
-            <>
-              <h3 className={sectionTitleClass}>{EXPLORE_PEOPLE_BROWSE_DISCOVER_HOSTS_GOING_TITLE}</h3>
-              <ul className="flex flex-col gap-2">
-                {hostsGoing.map((person) => (
-                  <li key={person.userId}>{renderPerson(person)}</li>
-                ))}
-              </ul>
-            </>
-          ) : null}
-          {listLayout ? (
-            <ul className={listFeedClass}>
-              {friendsGoing.map((person) => (
-                <li key={person.userId}>{renderPerson(person)}</li>
-              ))}
-              {hostsGoing.map((person) => (
-                <li key={person.userId}>{renderPerson(person)}</li>
-              ))}
-            </ul>
-          ) : null}
-        </section>
-      ) : null}
-
-      {showLooking && lookingFor.length > 0 ? (
-        <section>
-          {!listLayout ? <h3 className={sectionTitleClass}>{EXPLORE_PEOPLE_BROWSE_DISCOVER_LOOKING_TITLE}</h3> : null}
-          <ul className={listLayout ? listFeedClass : 'flex flex-col gap-2'}>
-            {lookingFor.map((row) => {
-              const enrich = directory.find((card) => card.id === row.userId);
-              const person = enrich
-                ? memberPersonRowFromBrowseCard(enrich)
-                : memberPersonRowFromBrowseCard({
-                    id: row.userId,
-                    displayName: row.displayName,
-                    avatarUrl: row.avatarUrl,
-                    city: null,
-                  });
-              const outingHint = {
-                line: `Looking for: ${row.demandTitle}`,
-                onClick: () => navigate(exploreMapItemSharePath(row.exploreItemId)),
-              };
-              return (
-                <li key={`${row.userId}-${row.participantIntentId}`}>
-                  {listLayout ? (
-                    <ListFeedPersonCard
-                      person={person}
-                      userRole={userRole}
-                      profileTo={profilePathFor(row.userId)}
-                      profileDisabled={quotaExhausted}
-                      onOpenActivity={openActivityFromTrip}
-                      outingHint={outingHint}
-                      busy={busyUserId === row.userId}
-                      onSendBuddyRequest={(userId) => void sendBuddyRequest(userId)}
-                    />
-                  ) : (
-                    <ExploreMemberPersonCard
-                      person={person}
-                      userRole={userRole}
-                      profileTo={profilePathFor(row.userId)}
-                      profileDisabled={quotaExhausted}
-                      showPlanTrip={false}
-                      onOpenActivity={openActivityFromTrip}
-                      outingHint={outingHint}
-                      busy={busyUserId === row.userId}
-                      onSendBuddyRequest={(userId) => void sendBuddyRequest(userId)}
-                    />
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-        </section>
-      ) : null}
-
-      {showFollowed && followed.length > 0 ? (
-        <section>
-          {!listLayout ? <h3 className={sectionTitleClass}>{EXPLORE_PEOPLE_BROWSE_FOLLOWED_SEGMENT_PEOPLE}</h3> : null}
-          <ul className={listLayout ? listFeedClass : 'flex flex-col gap-2'}>
-            {followed.map((card) => (
-              <li key={card.id}>
-                {listLayout ? (
-                  <ListFeedPersonCard
-                    person={memberPersonRowFromBrowseCard(card)}
-                    userRole={userRole}
-                    profileTo={profilePathFor(card.id)}
-                    profileDisabled={false}
-                    onOpenActivity={openActivityFromTrip}
-                    busy={busyUserId === card.id}
-                    onSendBuddyRequest={(userId) => void sendBuddyRequest(userId)}
-                  />
-                ) : (
-                  <ExploreMemberPersonCard
-                    person={memberPersonRowFromBrowseCard(card)}
-                    userRole={userRole}
-                    profileTo={profilePathFor(card.id)}
-                    profileDisabled={false}
-                    showPlanTrip={false}
-                    onOpenActivity={openActivityFromTrip}
-                    busy={busyUserId === card.id}
-                    onSendBuddyRequest={(userId) => void sendBuddyRequest(userId)}
-                  />
-                )}
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
-
-      {showDirectory && directoryOnly.length > 0 ? (
-        <section>
-          <h3 className={sectionTitleClass}>{EXPLORE_PEOPLE_BROWSE_DISCOVER_DIRECTORY_TITLE}</h3>
-          <ul className="flex flex-col gap-2">
-            {directoryOnly.map((card) => (
-              <li key={card.id}>
-                <ExploreMemberPersonCard
-                  person={memberPersonRowFromBrowseCard(card)}
-                  userRole={userRole}
-                  profileTo={profilePathFor(card.id)}
-                  profileDisabled={quotaExhausted}
-                  showPlanTrip={false}
-                  onOpenActivity={openActivityFromTrip}
-                  busy={busyUserId === card.id}
-                  onSendBuddyRequest={(userId) => void sendBuddyRequest(userId)}
-                />
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
-    </div>
-  );
-};
+}: ExploreMemberDiscoveryListProps) => (
+  <PeopleBrowseTabContent
+    tab={segmentToTab(segment)}
+    isSignedIn={isSignedIn}
+    availabilityPeople={[]}
+    availabilityLoading={false}
+    availabilityError={null}
+    friendsGoing={friendsGoing}
+    hostsGoing={hostsGoing}
+    directory={directory}
+    discoveryQuota={quota}
+    discoveryLoading={loading}
+    discoveryError={error}
+  />
+);

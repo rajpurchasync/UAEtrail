@@ -19,6 +19,8 @@ import {
   HOST_PROFILE_PATH,
   HOST_REQUESTS_PATH,
   HOST_TEAM_PATH,
+  MY_TRIPS_PATH,
+  PLAN_PATH,
   TRIPS_PATH,
 } from '../config/surfacePaths';
 
@@ -28,10 +30,10 @@ export const DIFFICULTY_COLORS = {
   hard: 'bg-red-100 text-red-800'
 };
 
-/** Public activities browse + dashboard tab. */
-export { TRIPS_PATH };
-/** @deprecated Use {@link TRIPS_PATH} */
-export const ACTIVITIES_PATH = TRIPS_PATH;
+/** Active Plan tab + legacy trip hub aliases. */
+export { PLAN_PATH, MY_TRIPS_PATH, TRIPS_PATH };
+/** @deprecated Personal hub bookmark — redirects to {@link PLAN_PATH} or {@link MY_TRIPS_PATH}. */
+export const ACTIVITIES_PATH = '/activities' as const;
 
 /** Host publishing console nav — tools live under /host routes. */
 export const HOST_CONSOLE_LINKS = [

@@ -13,14 +13,12 @@ import {
 import { listCategoryResultsLabel } from './listCategoryCopy';
 import { resolveListFeedFooterModel } from './listFeedFooterActions';
 import type { ExploreCardModel } from '../explore/exploreCardModel';
+import { seekingExploreMapItem } from '../explore/exploreMapItemFixtures';
 
 describe('list poster presentation', () => {
   it('joins demand highlight and date with a space', () => {
     const card = buildExploreCardModel({
-      id: 'demand:d1',
-      kind: 'hiking',
-      source: 'demand',
-      title: 'Looking',
+      ...seekingExploreMapItem({ id: 'demand:d1', intentId: 'd1', kind: 'hiking', title: 'Looking' }),
       latitude: 25,
       longitude: 56,
       path: '/demand/d1',

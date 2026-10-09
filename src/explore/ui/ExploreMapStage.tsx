@@ -43,7 +43,6 @@ export type ExploreMapStageProps = {
   onVenueRegionsChange: (regions: string[]) => void;
   onOpenPeopleBrowsePanel: () => void;
   peopleBrowsePanelAvatars?: Array<{ id: string; name: string; avatar?: string | null }>;
-  peopleBrowsePanelExtraCount?: number;
   peopleBrowsePanelFriendCount?: number;
   exploreMapStyle: ExploreMapStyle;
   exploreMapTiles: ExploreMapTiles;
@@ -107,7 +106,6 @@ export const ExploreMapStage = ({
   onVenueRegionsChange,
   onOpenPeopleBrowsePanel,
   peopleBrowsePanelAvatars,
-  peopleBrowsePanelExtraCount,
   peopleBrowsePanelFriendCount,
   exploreMapStyle,
   exploreMapTiles,
@@ -194,7 +192,6 @@ export const ExploreMapStage = ({
         onVenueRegionsChange={onVenueRegionsChange}
         onOpenPeopleBrowsePanel={onOpenPeopleBrowsePanel}
         peopleBrowsePanelAvatars={peopleBrowsePanelAvatars}
-        peopleBrowsePanelExtraCount={peopleBrowsePanelExtraCount}
         peopleBrowsePanelFriendCount={peopleBrowsePanelFriendCount}
         searchQuery={searchQuery}
         onSearchQueryChange={onSearchQueryChange}

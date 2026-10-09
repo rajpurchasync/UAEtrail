@@ -7,6 +7,7 @@ import {
   type ActivityViewerAccessDTO,
   type ActivityViewerAccessLevel,
   type ExploreMapItemDTO,
+  exploreMapItemIsSeeking,
 } from '@uaetrail/shared-types';
 import { MembershipRole, RequestStatus, UserRole } from '../domain/enums.js';
 import { resolveJoinMode } from '../domain/activity-join-mode.js';
@@ -145,7 +146,7 @@ export const buildExploreMapViewerAccessContext = async (input: {
     .map((item) => item.activity!.id);
 
   const intentIds = input.items
-    .filter((item) => item.source === 'demand' && item.participantIntentId)
+    .filter((item) => exploreMapItemIsSeeking(item) && item.participantIntentId)
     .map((item) => item.participantIntentId as string);
 
   const [engagement, memberships, demandJoinStatusByIntentId] = await Promise.all([
@@ -184,7 +185,7 @@ export const attachExploreMapViewerAccess = (
   ctx: ExploreMapViewerAccessContext
 ): ExploreMapItemDTO[] =>
   items.map((item) => {
-    if (item.source === 'activity' && item.activity) {
+    if (item.source === 'activity' && item.activity && !exploreMapItemIsSeeking(item)) {
       const joinMode = resolveJoinMode(item.activity.joinMode, item.activity.requirements);
       const level = resolveActivityMapViewerLevel({
         viewerUserId: ctx.viewerUserId,
@@ -227,7 +228,7 @@ export const attachExploreMapViewerAccess = (
       };
     }
 
-    if (item.source === 'demand') {
+    if (exploreMapItemIsSeeking(item)) {
       const intentId = item.participantIntentId ?? item.id.replace(/^demand:/, '');
       const requesterUserId =
         item.featuredPerson?.userId ?? item.requesterUserId ?? null;

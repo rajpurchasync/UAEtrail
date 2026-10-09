@@ -1,21 +1,27 @@
-export type BuddiesDiscoverySegment = 'going' | 'looking' | 'followed';
+import {
+  PEOPLE_BROWSE_TAB_LABELS,
+  type PeopleBrowseTab,
+  parsePeopleBrowseTab,
+  serializePeopleBrowseTab,
+} from '../explore/peopleBrowseTab';
+
+/** @deprecated Name kept for list URL `buddies=` — same values as explore `peopleTab`. */
+export type BuddiesDiscoverySegment = PeopleBrowseTab;
 
 export const BUDDIES_DISCOVERY_SEGMENTS: ReadonlyArray<{
   key: BuddiesDiscoverySegment;
   label: string;
 }> = [
-  { key: 'going', label: "Who's going" },
-  { key: 'looking', label: 'Looking for' },
-  { key: 'followed', label: 'Followed' },
+  { key: 'available', label: 'Available' },
+  { key: 'going', label: 'Friends going' },
+  { key: 'connect', label: PEOPLE_BROWSE_TAB_LABELS.connect },
 ];
 
 export const BUDDIES_SEGMENT_URL_PARAM = 'buddies';
 
-export const parseBuddiesDiscoverySegment = (raw: string | null): BuddiesDiscoverySegment => {
-  if (raw === 'looking' || raw === 'followed') return raw;
-  return 'going';
-};
+export const parseBuddiesDiscoverySegment = (raw: string | null): BuddiesDiscoverySegment =>
+  parsePeopleBrowseTab(raw);
 
 export const serializeBuddiesDiscoverySegment = (
   segment: BuddiesDiscoverySegment
-): string | null => (segment === 'going' ? null : segment);
+): string | null => serializePeopleBrowseTab(segment);

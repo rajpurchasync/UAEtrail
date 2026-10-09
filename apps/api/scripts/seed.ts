@@ -47,6 +47,7 @@ import {
 } from '../src/lib/tenant-store.js';
 import { DEMO_ACCOUNTS } from '../src/lib/demo-accounts.js';
 import { logOmarHostQaPlaybook } from './logOmarHostQaPlaybook.js';
+import { seedCuratedAreas } from '../src/lib/seed-areas.js';
 import {
   createGroupWallMessage,
   createSocialGroup,
@@ -968,6 +969,8 @@ async function main() {
     }
     return;
   }
+
+  await seedCuratedAreas();
 
   const admin = await upsertDemoUser('admin@uaetrails.app');
   await updateAuthUserProfile(admin._id, { platformMasterAdmin: true });

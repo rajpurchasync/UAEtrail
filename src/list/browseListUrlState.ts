@@ -26,6 +26,11 @@ const WHEN_PARAM = 'when';
 /** List-only: dedicated category page (decoupled from map `topics` pills). */
 export const LIST_CAT_PARAM = 'listCat';
 
+/** Visual discover browse on `/explore` (poster feed) — not map-aligned `list=1`. */
+export const BROWSE_DISCOVER_PARAM = 'browse';
+
+export const parseBrowseDiscoverOpen = (value: string | null): boolean => value === '1';
+
 export const parseListCatParam = (value: string | null): BrowseMainCategoryKey | null => {
   if (value === 'shops') return 'venues';
   if (

@@ -1,4 +1,5 @@
-import { EXPLORE_MAP_PATH } from '../../config/routingCatalog';
+import { EXPLORE_DISCOVER_BROWSE_PATH, EXPLORE_MAP_PATH } from '../../config/routingCatalog';
+import { isDiscoverBrowseRoute } from '../../explore/exploreDiscoverBrowse';
 import { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -228,7 +229,7 @@ export const MobileUserMenuButton = ({
   showOnDesktop = false,
 }: MobileMenuButtonProps) => {
   const [open, setOpen] = useState(false);
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
   const toneClass =
@@ -238,7 +239,7 @@ export const MobileUserMenuButton = ({
 
   useEffect(() => {
     setOpen(false);
-  }, [pathname]);
+  }, [pathname, search]);
 
   useEffect(() => {
     if (!open) return;
@@ -297,7 +298,15 @@ export const MobileUserMenuButton = ({
           </Link>
         ) : null}
         {MOBILE_LANDING_USER_MENU.map((item) => {
-          const active = 'match' in item ? isActive(item.match) : false;
+          const active =
+            'match' in item && item.label === 'Browse'
+              ? isDiscoverBrowseRoute(pathname, search)
+              : 'match' in item && item.label === 'Explore'
+                ? (pathname === EXPLORE_MAP_PATH || pathname === '/discovery') &&
+                  !isDiscoverBrowseRoute(pathname, search)
+                : 'match' in item
+                  ? isActive(item.match)
+                  : false;
           const Icon = MOBILE_NAV_ICON_MAP[item.label] ?? User;
           const content = (
             <>
@@ -373,9 +382,11 @@ const MobileMenuPanel = () => {
     user?.role === 'tenant_owner' || user?.role === 'tenant_admin' || user?.role === 'tenant_guide';
   const isAdminRole = user?.role === 'platform_admin';
   const isPrivilegedRole = isHostConsoleRole || isAdminRole;
+  const onAdminConsole = pathname.startsWith('/admin');
+  const onHostConsole = pathname.startsWith('/host') || pathname.startsWith('/organizer');
   const canSwitchBack = user?.role === 'participant' && Boolean(user?.switchedFromRole);
 
-  // only hide for admin/organizer shells — they use their own burger
+  // Console shells use dashboard drawers; consumer map/browse always use CONSUMER_HAMBURGER_MENU.
   if (isConsumerChromeHidden(pathname) && !isPrivilegedRole) return null;
 
   const profileDestination = user ? accountRouteByRole(user.role) : signInHref;
@@ -401,7 +412,7 @@ const MobileMenuPanel = () => {
     } catch { /* noop */ }
   };
 
-  if (isAdminRole) {
+  if (isAdminRole && onAdminConsole) {
     return (
       <MobileDrawer
         open={open}
@@ -445,7 +456,7 @@ const MobileMenuPanel = () => {
     );
   }
 
-  if (isHostConsoleRole) {
+  if (isHostConsoleRole && onHostConsole) {
     return (
       <MobileDrawer
         open={open}
@@ -512,12 +523,13 @@ const MobileMenuPanel = () => {
               );
             }
 
-            const active = isActive(item.match);
+            const active =
+              item.to === EXPLORE_DISCOVER_BROWSE_PATH
+                ? isDiscoverBrowseRoute(pathname, search)
+                : isActive(item.match);
             const label = user || !item.labelGuest ? item.label : item.labelGuest;
             const emoji = user || !item.emojiGuest ? item.emoji : item.emojiGuest;
             const destination = item.profileLink ? (user ? profileDestination : signInHref) : item.to;
-            const showAvatar = item.profileLink && user;
-
             return (
               <Link
                 key={item.label}
@@ -526,22 +538,14 @@ const MobileMenuPanel = () => {
                 className={navItemClass(active)}
                 aria-current={active ? 'page' : undefined}
               >
-                {showAvatar ? (
-                  <SecureAvatar
-                    src={user.avatarUrl}
-                    name={user.displayName || user.email || 'Account'}
-                    className="w-9 h-9 text-sm"
-                  />
-                ) : (
-                  <span
-                    className={`flex h-9 w-9 items-center justify-center rounded-xl text-lg ${
-                      active ? 'bg-emerald-600/12' : 'bg-gray-100'
-                    }`}
-                    aria-hidden
-                  >
-                    {emoji}
-                  </span>
-                )}
+                <span
+                  className={`flex h-9 w-9 items-center justify-center rounded-xl text-lg ${
+                    active ? 'bg-emerald-600/12' : 'bg-gray-100'
+                  }`}
+                  aria-hidden
+                >
+                  {emoji}
+                </span>
                 <span className="font-semibold">{label}</span>
               </Link>
             );

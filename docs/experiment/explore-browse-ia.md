@@ -8,8 +8,8 @@
 
 | Map pills | Search scope rows |
 |-----------|-------------------|
-| **Trips** — all hosted `activity` pins | **Trips** |
-| **Looking for** — `demand` | *(map only in v1)* |
+| **Trips** (label **Activities** on second row) — all hosted `activity` pins | **Trips** |
+| *(merged)* — seeking pins use **Activities** pill (`activityMode: seeking`) | — |
 | **Spots** — `venue` catalog | **Spots** |
 | **Shops** — `shop` pins | **Shops** |
 | — | **Facilities** *(later)* |
@@ -60,7 +60,7 @@ Sub-pills refine **Plans vs Places** (and organize vs demand) without merging li
 | Sub-pill (UX) | Shows pin kind | Architecture |
 |---------------|----------------|--------------|
 | **Trips** | Hosted / organized plans | `source: activity` (Organize) |
-| **Looking for** | Seeking crew / ride / group | `source: demand` (Demand) |
+| *(removed)* | Seeking crew — same **Activities** pill | `activityMode: seeking` on `source: activity` |
 | **Places** | Fixed catalog locations | `source: venue` (and similar catalog) |
 | **Shops** | Shop pins | `source: shop` |
 
@@ -91,6 +91,9 @@ Intent order: **topic (top) → pin kind (sub) → when / where**.
 | Pills only outing-type (Hiking, Camping…) with no Places path | Top = topic; sub = Trips / Looking for / Places / Shops |
 | **Events** meaning three different things | UX **Plans** = time-bound layer; **events** category = marathon-style outing only in copy when needed |
 | List sheet different chrome than map | **Same** top + sub on map and list |
+| One `list=1` panel for everything | **Map list** (`list=1`, filter-synced rows) vs **discover browse** (`browse=1` / `/list`, posters) |
+
+**Shipped (Oct 2026):** Map **List** pill → `ExploreBrowsePanel` (filter-synced rows); hamburger **Browse** → `browse=1` / `ListDiscoveryExperience`; bottom tab **Explore** stays map-first.
 
 Backend **unchanged:** separate collections, endpoints, wizards (`composeFlowCatalog.ts`, `CREATE_FLOW.md`).
 
@@ -100,7 +103,7 @@ Backend **unchanged:** separate collections, endpoints, wizards (`composeFlowCat
 
 No new entity — **Layer A discovery** only (browse filters; see `exploreBrowseTaxonomy.ts`).
 
-**Map (shipped):** `matchesUnifiedExploreMapItem` in `exploreMapPinModel.ts` — URL `filter` + `pinKind` + `date` + `regions`.
+**Map (shipped):** `matchesUnifiedExploreMapItem` in `exploreMapPinModel.ts` — URL `filter` + `pinKind` (`activities` | `looking` | `places` | `shops`; legacy `pinKind=trips` → `activities`) + `date` + `regions`.
 
 ```text
 visiblePins = all ExploreMapItemDTO in bbox

@@ -3,13 +3,13 @@ import { buildMemberDiscoveryQuota, memberHasUnlimitedDiscovery } from '@uaetrai
 
 describe('member discovery quota', () => {
   it('builds free tier quota', () => {
-    expect(buildMemberDiscoveryQuota(3, false)).toEqual({
+    expect(buildMemberDiscoveryQuota(2, false)).toEqual({
       windowDays: 30,
-      limit: 5,
-      used: 3,
-      remaining: 2,
+      limit: 3,
+      used: 2,
+      remaining: 1,
     });
-    expect(buildMemberDiscoveryQuota(5, false).remaining).toBe(0);
+    expect(buildMemberDiscoveryQuota(3, false).remaining).toBe(0);
   });
 
   it('unlimited for pro host tiers', () => {

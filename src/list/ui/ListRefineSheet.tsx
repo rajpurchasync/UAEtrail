@@ -81,7 +81,7 @@ export const ListRefineSheet = ({ open, onClose, applied, regions, onApply }: Li
       price: 'all',
       when: 'any',
       activityDatePreset: 'anyday',
-      buddiesSegment: 'going',
+      buddiesSegment: 'available',
     });
     setDraftRegions([]);
   };

@@ -2,20 +2,16 @@ import { describe, expect, it } from 'vitest';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { canOfferRideshareForDemandItem } from './linkActivityRideshareOffer';
 import { buildRideshareDraftFromDemandMapItem } from './linkRidesharePrefill';
+import { seekingExploreMapItem } from './exploreMapItemFixtures';
 
 const demandItem = (overrides: Partial<ExploreMapItemDTO> = {}): ExploreMapItemDTO =>
-  ({
-    id: 'demand:int-1',
-    source: 'demand',
+  seekingExploreMapItem({
+    intentId: 'int-1',
     kind: 'hiking',
     title: 'Jebel hike crew',
-    path: '/explore',
-    latitude: 25.1,
-    longitude: 55.2,
     slotsTotal: 3,
-    participantIntentId: 'int-1',
     ...overrides,
-  }) as ExploreMapItemDTO;
+  });
 
 describe('demand carpool offer', () => {
   it('allows carpool offer for hiking demand', () => {

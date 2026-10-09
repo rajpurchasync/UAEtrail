@@ -26,7 +26,7 @@ There are **five public entity kinds** on the wire (`EntityKind` / `EntityRef`):
 
 **Demand (Find)** is not a sixth entity kind on URLs — it is a **`participant_intent`** row surfaced on the map; deep links use explore pin/query (`exploreDemandMapItemPath`), not `/demand/:id`.
 
-**Trips** is a **UI hub** (`/trips`) for relationships to activities and saves — not a domain type.
+**Plan** (`/plan`) is the active member tab (schedule, saved, goals lenses). **My trips** (`/profile/my-trips`) is profile inventory (history, journey map). Saved/wishlist primary UI: Plan `?lens=saved`. Legacy `/trips` redirects — not a domain type.
 
 **Campaigns** (future) are not a seventh entity kind — they are **surfaces** that promote Activities and/or link to host storefronts (agencies, partners, shops) in “What’s happening” feeds. See §1.2.
 
@@ -118,7 +118,7 @@ One **person** account; zero or more **storefronts** (tenant-backed public brand
 | **Wishlist** | Private “save for later” | `user_favorites` · `/me/wishlist` | **Venues** (`locationId`) and **activities** (`activityId`) only — not demand, not people |
 | **Goal** | Time-bounded target count | `user_goals` · `/me/goals` | Progress from joined/hosted outings + visited map pins — not wishlist saves |
 
-**Journey map** (`/trips/map`, `POST /me/map-pins`): personal **visited** vs **want to go** pins — complements wishlist; goal progress uses **visited** + attendance, not wishlist rows.
+**Journey map** (`/profile/my-trips/map`, `POST /me/map-pins`): personal **visited** vs **want to go** pins — complements wishlist; goal progress uses **visited** + attendance, not wishlist rows.
 
 **Retired product term:** “Favorites” — do not use in UI or new API paths.
 
@@ -154,7 +154,9 @@ Built only via **`routingCatalog`** or `@uaetrail/shared-types` `entity-path` he
 | Person (community host) | `/member/:userId` | `memberProfilePath(userId)` |
 | Shop | `/shop/:id` | `shopPublicPath({ id })` |
 | Browse | `/explore` (+ query) | `explorePath()` in `src/explore/routing.ts` |
-| Personal hub | `/trips`, `/profile` | `TRIPS_PATH`, `PROFILE_PATH` |
+| Plan tab | `/plan` | `PLAN_PATH` |
+| My trips (profile) | `/profile/my-trips` | `MY_TRIPS_PATH` |
+| Personal hub | `/profile` | `PROFILE_PATH` |
 | Member badges | `/profile/badges` | `PROFILE_BADGES_PATH` — achievements only (no Trail Points) |
 | Legacy rewards wallet | `/trail-points`, `/my-rewards`, `/rewards` | Redirect to `PROFILE_BADGES_PATH` |
 | Legacy community feed | `/community` | `COMMUNITY_PATH` → `/explore` redirect only (feed removed) |
@@ -187,11 +189,11 @@ Explore URL builders live in `src/explore/routing.ts` (re-exported from `config/
 
 | Layer | URL pattern | Job | Cache / load |
 |-------|-------------|-----|----------------|
-| **Browse (feed)** | `/explore?…` and optionally `/list?…` | Map-first discovery; topic + pin-kind filters (Trips, Looking for, Spots, Shops) live in **query**, not path segments | One read model: `GET /explore/map` (filters on query). Client cache keys = **canonical serialized browse state** (`explorePath`, list URL state). Embedded list on explore uses `list=1` — same state, different chrome. **Explore map list** = `ListDiscoveryExperience` only; **People** side panel = `ExplorePeopleBrowsePanel` (legacy `ExploreBrowsePanel` map-row list removed). **List posters (Activities):** `buildListFeedCards` → `listFeedPosterStandard.ts` + `listPosterPresentation.ts` (title/place/schedule from `ActivityDTO`; requirement pills from stored `requirements[]`). **List posters (Places category, `listCat=venues`):** location-bounded **venues + gear shops** (no separate list category for shops; legacy `listCat=shops` → Places + `filter=shop`). Same 4:5 feed chrome as activities; **catalog header above image** (place name + area/location left, star rating right — mirrors activity host row); **on-image** region eyebrow + large place name + fact pills (unchanged from earlier Places posters); primary CTA **Get directions**. Engagement: **Like** (wishlist) + **Share** + **Follow** for trails/camps; **shops** omit Like (Follow + Share per § Wishlist). Topic pills: **Trails · Spots · Shops** only (no more-filters icon on Places category; `listVenuePlaceTopics.ts`). **Agencies** stay a separate list category (brand/operators, not map pins). **Places poster data** persists on `locations`: `areaLabel` (+ synced `area:` tag), `childFriendly`, `accessibility`, `parkingLat`/`parkingLng` — set via member/host `POST …/locations` (`locationSubmitBodySchema`), admin place CRUD, and explore contribute publish. **Buddies** list/search bucket (`listCat=people`, `searchScope=people`, UI label Buddies) uses **member_discovery** roster (`ExploreMemberDiscoveryList`) — not demand/`GET /explore/map`; **Looking for** stays Trips sub-filter + map pill only. List home chrome stays “discover” / “What are you looking for?” — Buddies is one category circle, not a second discover surface. |
+| **Browse (feed)** | `/explore?…` and optionally `/list?…` | Map-first discovery; topic + pin-kind filters (Trips, Looking for, Spots, Shops) live in **query**, not path segments | One read model: `GET /explore/map` (filters on query). Client cache keys = **canonical serialized browse state** (`explorePath`, list URL state). **Map-aligned list** on explore uses `list=1` (`ExploreBrowsePanel` + `useExploreBrowseList` rows). **Visual discover browse** uses `browse=1` or `/list` (`ListDiscoveryExperience`). **People** side panel = `PeopleBrowsePanel` — not the map row list or poster feed. **List posters (Activities):** `buildListFeedCards` → `listFeedPosterStandard.ts` + `listPosterPresentation.ts` (title/place/schedule from `ActivityDTO`; requirement pills from stored `requirements[]`). **List posters (Places category, `listCat=venues`):** location-bounded **venues + gear shops** (no separate list category for shops; legacy `listCat=shops` → Places + `filter=shop`). Same 4:5 feed chrome as activities; **catalog header above image** (place name + area/location left, star rating right — mirrors activity host row); **on-image** region eyebrow + large place name + fact pills (unchanged from earlier Places posters); primary CTA **Get directions**. Engagement: **Like** (wishlist) + **Share** + **Follow** for trails/camps; **shops** omit Like (Follow + Share per § Wishlist). Topic pills: **Trails · Spots · Shops** only (no more-filters icon on Places category; `listVenuePlaceTopics.ts`). **Agencies** stay a separate list category (brand/operators, not map pins). **Places poster data** persists on `locations`: `areaLabel` (+ synced `area:` tag), `childFriendly`, `accessibility`, `parkingLat`/`parkingLng` — set via member/host `POST …/locations` (`locationSubmitBodySchema`), admin place CRUD, and explore contribute publish. **Buddies** list/search bucket (`listCat=people`, `searchScope=people`, UI label Buddies) uses **member_discovery** roster (`ExploreMemberDiscoveryList`) — not demand/`GET /explore/map`; **Looking for** stays Trips sub-filter + map pill only. List home chrome stays “discover” / “What are you looking for?” — Buddies is one category circle, not a second discover surface. |
 | **Entity (document)** | `/activity/:id`, `/trail/:id`, `/venue/:id`, `/shop/:id`, `/guide/:slug`, … | Share link, notification target, SEO snippet, per-record auth (`viewerAccess`) | Per-entity fetch + cache (`activity`, place, shop, tenant). **Not** used as “browse all hikes” hubs. |
-| **Personal (not public browse)** | `/trips`, `/trips/map`, `/profile` | Your upcoming outings, journey map, settings | `/me/*` APIs; separate from explore map payload. |
+| **Personal (not public browse)** | `/plan`, `/profile/my-trips`, `/profile` | Upcoming + goals; history + journey map; settings | `/me/*` APIs; separate from explore map payload. |
 
-**Do not add** parallel browse roots such as `/map`, `/activities` (catalog), `/places`, `/shops` as top-level **category pages** — that duplicates filters already expressed on `/explore` and `/list`, splits analytics, and invites divergent APIs. Legacy `/map` and `/activities` → redirect only ([`NAVIGATION.md`](./NAVIGATION.md)). **Do not add a List item to mobile bottom nav** — mobile browse list opens from the **List** pill on the explore map (`list=1`); `/list` is optional full-screen handoff only.
+**Do not add** parallel browse roots such as `/map`, `/activities` (catalog), `/places`, `/shops` as top-level **category pages** — that duplicates filters already expressed on `/explore` and `/list`, splits analytics, and invites divergent APIs. Legacy `/map` and `/activities` → redirect only ([`NAVIGATION.md`](./NAVIGATION.md)). **Do not add a List item to mobile bottom nav** — map-aligned list opens from the **List** pill (`list=1`); hamburger **Browse** opens discover (`browse=1`); `/list` is optional full-screen discover.
 
 **When a new path is justified:** marketing/SEO landings that **deep-link into** `explorePath({ … })` with the same filter params; partner embeds; or a **new bounded context** with its own read API (document in Tier-1 before shipping).
 
@@ -241,7 +243,7 @@ IA detail (pills, topics): [`experiment/explore-browse-ia.md`](./experiment/expl
 ## 7. Routing hygiene rules (enforced in CI)
 
 1. **No consumer links** to `/become-host` — use `PRO_MEMBERSHIP_PATH` (`hostMemberGuard.test.ts`).
-2. **No new links** to `/activities` for the trips hub — use `TRIPS_PATH` (`/trips`) (`routingHygiene.test.ts`).
+2. **No new links** to `/activities` or bare `/trips` — use `PLAN_PATH` or `MY_TRIPS_PATH` (`routingHygiene.test.ts`).
 3. **No raw `/explore?…`** outside explore routing module + small allowlist (`routingHygiene.test.ts`).
 4. **No `isHostRole(`** for product gates — `canPublish` / `canAccessHostConsole` (`hostMemberGuard.test.ts`).
 5. **No banned `api.*` legacy** calls in app code (`apiLegacyGuard.test.ts`).
@@ -315,8 +317,8 @@ Use this when naming files, hooks, and utils — **one product word per concept*
 
 | Product (UI copy) | API / wire | Preferred FE symbol / folder | Do not use for new code |
 |-------------------|------------|------------------------------|-------------------------|
-| **Find** (FAB) | `participant_intents` | `participantIntent*`, `demandFlow.ts`, explore `source: 'demand'` | “wishlist”, “lookingFor” in filenames |
-| **Demand pin** (public map) | same | `ExploreCardSource` `'demand'`, `participantIntentId` on DTOs | Mixing with personal save |
+| **Find** (FAB) | `participant_intents` | `participantIntent*`, `demandFlow.ts` | “wishlist”, “lookingFor” in filenames |
+| **Seeking pin** (public map) | same | Map DTO: `source: 'activity'`, `activityMode: 'seeking'`, id `demand:{intentId}`; helpers `exploreMapItemIsSeeking`, `resolveExploreMapActivityMode` (`@uaetrail/shared-types`). Card/presentation: `ExploreCardSource` `'demand'` via `resolveExploreItemSource` | `item.source === 'demand'` in map/list code; mixing with personal save |
 | **Follow** (venue / host brand / shop alerts) | `entity_follows` | `EntityFollowDTO`, `GET/POST /me/entity-follows` | Wishlist UI, “favorites”, `user_favorites` |
 | **Follow** (people) | `user_follows` | `MemberFollowControls`, `/me/following/:userId` | Buddies are **friends**; accepting a buddy **auto-follows** both ways |
 | **Wishlist** (private saves) | `user_favorites` (wire) | `WishlistItemDTO`, `GET/POST /me/wishlist` | “Favorite”, demand bookmarks, saving people/shops to wishlist |
@@ -325,6 +327,7 @@ Use this when naming files, hooks, and utils — **one product word per concept*
 | **Trips** (tab) | joined/hosted/self plans | `src/trips/tripsRouting.ts`, `components/trips/*` | `/activities` hub naming, wishlist segment |
 | **My trips map** (`/trips/map`) | `GET /me/trips/map`, `JourneyMapEntryDTO` (`OutdoorMapEntryDTO` deprecated alias) | `journeyMap*` (`src/trips/journeyMap*`, `JourneyMap*` components) | `outdoorMap*` (removed from FE) |
 | **Explore map** | `GET /explore/map` | `src/explore/*`, `exploreMapPinModel` | `journeyMap*` (wrong surface) |
+| **Area** (curated zone) | `GET /areas`, `GET /areas/:slug` | `areas-store`, `area-resolution`, `/area/:slug`, explore `?area=` | `areaLabel` string as third concept |
 | **Place / venue** | `locations` | `place*`, `venue` panel, `Place` in UI | `location` in new routes/components |
 | **Friends** | buddies API | `BUDDIES_PATH`, `buddy*` stores only on API | `buddyUserId`, “buddy entity” |
 | **Host console** | `/host/*`, tenant | `src/pages/host/*`, `src/console/*`, `useHostStatus`, `useConsoleHubData`, `listHostActivities` | `tenant` in consumer UI strings (wire: `x-organisation-id`) |

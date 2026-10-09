@@ -5,6 +5,7 @@ import { TripsFilterTrigger } from './TripsFiltersSheet';
 import { tripsHistoryRoleChips, type TripsMainView, type TripsRole } from '../../trips/tripsRouting';
 
 type TripsPageToolbarProps = {
+  surface: 'plan' | 'my-trips';
   mainView: TripsMainView;
   searchQuery: string;
   onSearchChange: (value: string) => void;
@@ -17,6 +18,7 @@ type TripsPageToolbarProps = {
 };
 
 export const TripsPageToolbar = ({
+  surface,
   mainView,
   searchQuery,
   onSearchChange,
@@ -28,7 +30,7 @@ export const TripsPageToolbar = ({
   canHost,
 }: TripsPageToolbarProps) => (
   <div className="flex flex-col gap-3">
-    <TripsMainTabs active={mainView} />
+    {surface === 'my-trips' ? <TripsMainTabs active={mainView} /> : null}
 
     {mainView === 'completed' ? (
       <TabPageSearchRow

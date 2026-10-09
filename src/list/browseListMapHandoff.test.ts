@@ -15,7 +15,7 @@ const baseState: BrowseListFilterState = {
   price: 'all',
   when: 'any',
   activityDatePreset: 'anyday',
-  buddiesSegment: 'going',
+  buddiesSegment: 'available',
 };
 
 describe('browseListMapHandoff', () => {
@@ -26,7 +26,8 @@ describe('browseListMapHandoff', () => {
       { listCat: 'venues' }
     );
     expect(params.get('pinKind')).toBe('places');
-    expect(params.get('listCat')).toBeNull();
+    expect(params.get('listCat')).toBe('venues');
+    expect(params.get('browse')).toBe('1');
     expect(params.get('filter')).toBe('hiking');
     expect(params.get('topics')).toBe('spots,shops');
   });
@@ -43,7 +44,7 @@ describe('browseListMapHandoff', () => {
   });
 
   it('resolves trips pinKind for activities category', () => {
-    expect(resolveListBrowseExplorePinKind({ ...baseState, categories: ['trips'] }, 'trips')).toBe('trips');
+    expect(resolveListBrowseExplorePinKind({ ...baseState, categories: ['trips'] }, 'trips')).toBe('activities');
     expect(
       resolveListBrowseExplorePinKind({ ...baseState, categories: ['trips'], tripLookingOnly: true }, 'trips')
     ).toBe('looking');
@@ -57,18 +58,20 @@ describe('browseListMapHandoff', () => {
       { listCat: 'people' }
     );
     expect(params.get('pinKind')).toBeNull();
-    expect(params.get('view')).toBe('people');
-    expect(params.get('peopleTab')).toBe('discover');
+    expect(params.get('listCat')).toBe('people');
+    expect(params.get('browse')).toBe('1');
+    expect(params.get('view')).toBeNull();
+    expect(params.get('peopleTab')).toBeNull();
     expect(params.get('buddies')).toBeNull();
   });
 
   it('hands off Buddies segment and clears date on map', () => {
     const params = serializeBrowseListToExploreSearchParams(
-      { ...baseState, categories: ['people'], buddiesSegment: 'looking', activityDatePreset: 'today' },
+      { ...baseState, categories: ['people'], buddiesSegment: 'going', activityDatePreset: 'today' },
       [],
       { listCat: 'people' }
     );
-    expect(params.get('buddies')).toBe('looking');
+    expect(params.get('buddies')).toBe('going');
     expect(params.get('date')).toBeNull();
   });
 

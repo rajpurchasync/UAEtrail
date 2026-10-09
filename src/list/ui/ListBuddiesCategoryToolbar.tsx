@@ -1,13 +1,13 @@
-import { DEMAND_EMOJI } from '../../explore/exploreCopy';
 import type { BuddiesDiscoverySegment } from '../buddiesDiscoverySegment';
 import { BUDDIES_DISCOVERY_SEGMENTS } from '../buddiesDiscoverySegment';
 import type { ListCategoryPill } from '../listCategoryFilterPills';
 import { ListCategoryTopicCircleFilter } from './ListCategoryTopicCircleFilter';
 
 const BUDDIES_SEGMENT_EMOJI: Record<BuddiesDiscoverySegment, string> = {
+  available: '📅',
   going: '🧑‍🤝‍🧑',
-  looking: DEMAND_EMOJI,
-  followed: '⭐',
+  friends: '👋',
+  all: '🌐',
 };
 
 type ListBuddiesCategoryToolbarProps = {

@@ -29,13 +29,21 @@ describe('exploreOutingTopic', () => {
     expect(parseExploreOutingTopic('workshop', 'others', 'events')).toBe('all');
   });
 
-  it('matchesOutingTopicFilter requires activities category', () => {
+  it('matchesOutingTopicFilter on activities and tagged places', () => {
     const climb = item({ outingCategory: 'activities', outingTopic: 'climbing' });
     const event = item({ outingCategory: 'events', outingTopic: 'climbing' });
+    const venue = item({
+      source: 'venue',
+      kind: 'hiking',
+      outingTopic: 'climbing',
+      outingCategory: 'hiking',
+    });
     expect(matchesOutingTopicFilter(climb, 'climbing')).toBe(true);
     expect(matchesOutingTopicFilter(climb, 'all')).toBe(true);
     expect(matchesOutingTopicFilter(climb, 'workshop')).toBe(false);
     expect(matchesOutingTopicFilter(event, 'climbing')).toBe(false);
+    expect(matchesOutingTopicFilter(venue, 'climbing')).toBe(true);
+    expect(matchesOutingTopicFilter(venue, 'trail_run')).toBe(false);
   });
 
   it('matchesBuddyMapFilter applies topic within others activities', () => {

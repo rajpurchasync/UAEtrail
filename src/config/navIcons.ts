@@ -19,6 +19,7 @@ export const NAV_ICONS = {
 
 export const MOBILE_NAV_ICON_MAP: Record<
   | 'Explore'
+  | 'Browse'
   | 'Activities'
   | 'Shop'
   | 'Profile'
@@ -38,6 +39,7 @@ export const MOBILE_NAV_ICON_MAP: Record<
 > = {
   'Explore Map': NAV_ICONS.explore,
   Explore: NAV_ICONS.explore,
+  Browse: NAV_ICONS.activities,
   Join: NAV_ICONS.activities,
   'Join free': NAV_ICONS.activities,
   'Log in': LogIn,

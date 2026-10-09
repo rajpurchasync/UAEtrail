@@ -260,7 +260,17 @@ export const duplicateTenantActivity = async (
 
 export const publishActivityById = async (activityId: string) => {
   const publishedAt = new Date();
-  await patchActivityInMongo(activityId, { status: ActivityStatus.PUBLISHED, publishedAt });
+  const draftDoc = await findActivityDocInMongo(activityId);
+  const publishLocation =
+    draftDoc?.locationId ? await findLocationInMongo(draftDoc.locationId) : null;
+  const { resolveAreaIdForActivityPublish } = await import('./area-resolution.js');
+  const areaId =
+    draftDoc && (await resolveAreaIdForActivityPublish(draftDoc, publishLocation));
+  await patchActivityInMongo(activityId, {
+    status: ActivityStatus.PUBLISHED,
+    publishedAt,
+    ...(areaId ? { areaId } : {}),
+  });
   const mongoDoc = await findActivityDocInMongo(activityId);
   if (!mongoDoc) {
     throw new Error('Failed to publish event.');

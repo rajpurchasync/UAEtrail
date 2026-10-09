@@ -17,7 +17,7 @@ import { MobileBackButton } from '../components/mobile/MobileBackButton';
 import { FloatingActionButton } from '../components/mobile/FloatingActionButton';
 import { shareJourneyMapSummary } from '../components/trips/journeyMapShare';
 import { memberJourneyMapApi } from '../api/domains/memberJourneyMap';
-import { tripsPlansPath } from '../trips/tripsRouting';
+import { tripsCompletedPath } from '../trips/tripsRouting';
 import { TripsMainTabs } from '../components/trips/TripsMainTabs';
 import {
   filterJourneyMapEntries,
@@ -225,7 +225,7 @@ export const TripsMap = () => {
 
       <header className="z-[100] glass-header flex shrink-0 flex-col gap-2 px-4 pb-2 pt-safe-plus-2">
         <div className="flex items-center gap-2">
-          <MobileBackButton fallbackTo={tripsPlansPath()} label="Trips" className="shrink-0" />
+          <MobileBackButton fallbackTo={tripsCompletedPath()} label="My trips" className="shrink-0" />
           <h1 className="min-w-0 flex-1 truncate text-center text-[17px] font-semibold text-neutral-900">
             My Map
           </h1>

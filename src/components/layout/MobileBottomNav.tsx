@@ -3,6 +3,7 @@ import {
   CHAT_PATH,
   EXPLORE_MAP_PATH,
   LIST_DISCOVERY_PATH,
+  PLAN_PATH,
   TRIPS_PATH,
 } from '../../config/routingCatalog';
 import { useEffect } from 'react';
@@ -29,11 +30,12 @@ const TabIcon = ({ icon: Icon, active }: { icon: LucideIcon; active: boolean }) 
   />
 );
 
-/** Mobile tab bar — Explore · Trips · Chat. */
+/** Mobile tab bar — Explore · Plan · Chat (`/trips`). */
 export const MobileBottomNav = () => {
   const visible = useMobileBottomNav();
   const { pathname } = useLocation();
-  const tripsActive = pathname === TRIPS_PATH || pathname === ACTIVITIES_PATH;
+  const tripsActive =
+    pathname === PLAN_PATH || pathname === TRIPS_PATH || pathname === ACTIVITIES_PATH;
   const exploreActive = pathname === EXPLORE_MAP_PATH || pathname === LIST_DISCOVERY_PATH;
   const unreadMessages = useInboxUnreadCount();
 
@@ -69,13 +71,13 @@ export const MobileBottomNav = () => {
         </NavLink>
 
         <Link
-          to={TRIPS_PATH}
+          to={PLAN_PATH}
           className={tabShellClass(tripsActive)}
           aria-current={tripsActive ? 'page' : undefined}
-          aria-label="Trips"
+          aria-label="Plan"
         >
           <TabIcon icon={ClipboardList} active={tripsActive} />
-          <span className={tabLabelClass(tripsActive)}>Trips</span>
+          <span className={tabLabelClass(tripsActive)}>Plan</span>
         </Link>
 
         <NavLink to={CHAT_PATH} end className={({ isActive }) => tabShellClass(isActive)} aria-label="Chat">

@@ -1,4 +1,4 @@
-import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
+import { exploreMapItemIsSeeking, isTimeBoundExploreMapItem, type ExploreMapItemDTO } from '@uaetrail/shared-types';
 import type { ExploreCardModel } from '../explore/exploreCardModel';
 import {
   matchesActivityDateFilter,
@@ -87,7 +87,7 @@ export const filterExploreMapItemsForList = (
     state.categories.length === 0 || state.categories.includes('venues');
 
   if (tripsCategoryInScope && state.tripLookingOnly) {
-    pool = pool.filter((item) => item.source === 'demand');
+    pool = pool.filter((item) => exploreMapItemIsSeeking(item));
   } else if (tripsCategoryInScope && state.tripTopics.length > 0) {
     pool = pool.filter((item) =>
       state.tripTopics.some((topic) => matchesUnifiedTopicFilter(item, topic, 'all', 'all'))
@@ -121,7 +121,7 @@ export const filterExploreMapItemsForList = (
     });
   }
 
-  const plans = pool.filter((item) => item.source === 'activity' || item.source === 'demand');
+  const plans = pool.filter((item) => isTimeBoundExploreMapItem(item));
   const places = pool.filter(
     (item) => item.source === 'venue' || item.source === 'shop' || item.source === 'agency'
   );

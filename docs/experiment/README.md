@@ -4,9 +4,10 @@ Shipped on **`main`**. **Product truth:** [`../DOCS_INDEX.md`](../DOCS_INDEX.md)
 
 | Doc | Purpose |
 |-----|---------|
+| [**member-surfaces-implementation-plan.md**](./member-surfaces-implementation-plan.md) | **Master checklist** — 4 tabs, Activity (hosted/seeking), Area, Availability, retire trips/host |
 | [explore-ux-spec.md](./explore-ux-spec.md) | Map card copy, emojis, CTAs |
 | [explore-browse-ia.md](./explore-browse-ia.md) · [explore-browse-taxonomy.md](./explore-browse-taxonomy.md) | Browse pills, search scopes, pin kinds (`src/explore/exploreBrowseTaxonomy.ts`) |
-| [consumer-mobile-ia.md](./consumer-mobile-ia.md) | Profile / Trips / Messages tabs |
+| [consumer-mobile-ia.md](./consumer-mobile-ia.md) | Profile / Plan / Messages tabs (**superseded in part by member-surfaces-implementation-plan**) |
 | [WHOS_GOING_UX.md](./WHOS_GOING_UX.md) | **Plan:** Who's going = friends + discover + Join me (5 free / Pro) |
 
 **Code catalog:** `src/explore/composeFlowCatalog.ts` mirrors FAB Organize · Find · Add paths documented in `CREATE_FLOW.md`.

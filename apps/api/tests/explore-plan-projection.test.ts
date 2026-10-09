@@ -3,6 +3,8 @@ import {
   activityTypeToOutingCategory,
   buildExploreMapPlanProjection,
   deriveOutingTopicFromRequirements,
+  mapItemMatchesOutingTopic,
+  parseOutingTopic,
   exploreDemandMapItemPath,
   participantIntentKindToOutingCategory,
   resolveActivityOutingTopic,
@@ -83,6 +85,23 @@ describe('explore plan projection mappers', () => {
       demandIntentKind: 'event',
     });
     expect(projection.outingCategory).toBe('activities');
+  });
+
+  it('parseOutingTopic and mapItemMatchesOutingTopic', () => {
+    expect(parseOutingTopic('climbing')).toBe('climbing');
+    expect(parseOutingTopic('invalid')).toBeNull();
+    expect(
+      mapItemMatchesOutingTopic(
+        { outingCategory: 'activities', outingTopic: 'trail_run', source: 'activity' },
+        'trail_run'
+      )
+    ).toBe(true);
+    expect(
+      mapItemMatchesOutingTopic({ source: 'venue', outingTopic: 'workshop' }, 'workshop')
+    ).toBe(true);
+    expect(
+      mapItemMatchesOutingTopic({ outingCategory: 'events', outingTopic: 'workshop' }, 'workshop')
+    ).toBe(false);
   });
 
   it('derives outing topic from activity type requirement line', () => {

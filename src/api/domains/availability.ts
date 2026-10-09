@@ -1,0 +1,38 @@
+import type {
+  ExploreAvailabilityClusterDTO,
+  ExploreAvailablePersonDTO,
+  MemberAvailabilityDTO,
+  UpsertMemberAvailabilityInput,
+} from '@uaetrail/shared-types';
+import { apiRequest } from '../client';
+
+export type ExploreAvailabilityIndex = {
+  people: ExploreAvailablePersonDTO[];
+  clusters: ExploreAvailabilityClusterDTO[];
+};
+
+export const availabilityApi = {
+  getMyAvailability: () =>
+    apiRequest<{ data: MemberAvailabilityDTO }>('/me/availability', { auth: true }),
+  putMyAvailability: (body: UpsertMemberAvailabilityInput) =>
+    apiRequest<{ data: MemberAvailabilityDTO }>('/me/availability', {
+      method: 'PUT',
+      body: JSON.stringify(body),
+      auth: true,
+    }),
+  explorePeopleAvailability: (params: {
+    from: string;
+    to: string;
+    kind?: string;
+    area?: string;
+    buddiesOnly?: boolean;
+  }) => {
+    const search = new URLSearchParams({ from: params.from, to: params.to });
+    if (params.kind) search.set('kind', params.kind);
+    if (params.area) search.set('area', params.area);
+    if (params.buddiesOnly) search.set('buddiesOnly', '1');
+    return apiRequest<{ data: ExploreAvailabilityIndex }>(
+      `/explore/people/availability?${search.toString()}`
+    );
+  },
+} as const;

@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import {
   addDaysIso,
+  exploreActivityDatePresetToInclusiveRange,
   matchesActivityDateFilter,
   parseExploreActivityDatePreset,
 } from './exploreActivityDateFilter';
@@ -46,5 +47,20 @@ describe('exploreActivityDateFilter', () => {
     expect(matchesActivityDateFilter(activityOn('2026-09-13'), 'week')).toBe(true);
     expect(matchesActivityDateFilter(activityOn('2026-09-20'), 'week')).toBe(false);
     expect(matchesActivityDateFilter(activityOn('2026-09-25'), 'month')).toBe(true);
+  });
+
+  it('exploreActivityDatePresetToInclusiveRange maps presets to ISO bounds', () => {
+    expect(exploreActivityDatePresetToInclusiveRange('today')).toEqual({
+      from: '2026-09-12',
+      to: '2026-09-12',
+    });
+    expect(exploreActivityDatePresetToInclusiveRange('tomorrow')).toEqual({
+      from: '2026-09-13',
+      to: '2026-09-13',
+    });
+    expect(exploreActivityDatePresetToInclusiveRange('week')).toEqual({
+      from: '2026-09-08',
+      to: '2026-09-14',
+    });
   });
 });

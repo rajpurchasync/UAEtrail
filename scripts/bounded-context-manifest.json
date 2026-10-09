@@ -178,8 +178,34 @@
       "feRoots": [
         "src/pages/ProfileBadges.tsx",
         "src/hooks/useEntityFollows.ts",
-        "src/wishlist"
+        "src/wishlist",
+        "src/plan"
       ]
+    },
+    {
+      "id": "areas",
+      "label": "Geographic areas",
+      "apiFiles": [
+        "apps/api/src/lib/areas-store.ts",
+        "apps/api/src/lib/area-resolution.ts"
+      ],
+      "routeRegistrars": [
+        "apps/api/src/routes/user/registerPublicAreaRoutes.ts",
+        "apps/api/src/routes/admin/registerAdminAreaRoutes.ts"
+      ],
+      "feDomains": ["src/api/domains/areas.ts"],
+      "feRoots": ["src/pages/AreaDetailPage.tsx", "src/explore/exploreAreaFilter.ts"]
+    },
+    {
+      "id": "availability",
+      "label": "Member availability",
+      "apiFiles": ["apps/api/src/lib/member-availability-store.ts"],
+      "routeRegistrars": [
+        "apps/api/src/routes/user/registerMeAvailabilityRoutes.ts",
+        "apps/api/src/routes/user/registerExploreAvailabilityRoutes.ts"
+      ],
+      "feDomains": ["src/api/domains/availability.ts"],
+      "feRoots": ["src/plan", "src/components/plan/PlanAvailabilitySection.tsx"]
     },
     {
       "id": "platform_ops",

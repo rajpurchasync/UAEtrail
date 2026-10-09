@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
+import { isTimeBoundExploreMapItem, type ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { sortExploreActivities, sortExploreVenues } from '../exploreListSort';
 import { venueItemMatchesRegions } from '../../utils/venueRegionFilter';
 import type { ExploreActivityDatePreset, ExplorePanel, MapFilterKey } from '../routing';
@@ -56,7 +56,7 @@ const dedupeExploreListById = (list: ExploreMapItemDTO[]): ExploreMapItemDTO[] =
 
 const listFromPool = (pool: ExploreMapItemDTO[], matchesQuery: (item: ExploreMapItemDTO) => boolean) => {
   const matching = dedupeExploreListById(pool.filter(matchesQuery));
-  const plans = matching.filter((item) => item.source === 'activity' || item.source === 'demand');
+  const plans = matching.filter((item) => isTimeBoundExploreMapItem(item));
   const spots = matching.filter((item) => mapItemMatchesSearchScope(item, 'places'));
   const shops = matching.filter((item) => mapItemMatchesSearchScope(item, 'shops'));
   return dedupeExploreListById([

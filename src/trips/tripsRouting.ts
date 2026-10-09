@@ -1,4 +1,10 @@
-import { TRIPS_PATH } from '../constants';
+import {
+  MY_TRIPS_MAP_PATH,
+  MY_TRIPS_PATH,
+  PLAN_PATH,
+  TRIPS_PATH,
+} from '../config/surfacePaths';
+import { planSavedPath } from '../plan/planLens';
 
 /**
  * **Trips tab UI only** — `/trips` query params, labels, and path helpers.
@@ -54,6 +60,14 @@ export const tripsPlansRoleChips = (canHost: boolean): { id: TripsPlansRole; lab
 
 export const parseTripsMainView = (pathname: string, rawView: string | null): TripsMainView => {
   if (pathname === '/trips/map' || pathname.endsWith('/trips/map')) return 'map';
+  if (pathname === MY_TRIPS_MAP_PATH || pathname.endsWith('/my-trips/map')) return 'map';
+  if (pathname === MY_TRIPS_PATH || pathname.endsWith('/my-trips')) {
+    if (rawView === 'map') return 'map';
+    if (rawView === 'plans') return 'plans';
+    if (rawView === 'completed' || rawView === 'history') return 'completed';
+    return 'completed';
+  }
+  if (pathname === PLAN_PATH) return 'plans';
   if (rawView === 'completed' || rawView === 'history') return 'completed';
   if (rawView === 'map') return 'map';
   return 'plans';
@@ -68,7 +82,7 @@ export const tripsPlansPath = (
   const params = new URLSearchParams();
   params.set('view', 'plans');
   if (role === 'wishlist') {
-    params.set('segment', 'wishlist');
+    return planSavedPath();
   } else if (role === 'upcoming') {
     params.set('role', 'all');
   } else if (role !== 'all') {
@@ -76,14 +90,14 @@ export const tripsPlansPath = (
   } else {
     params.set('role', 'all');
   }
-  return `${TRIPS_PATH}?${params.toString()}`;
+  return `${PLAN_PATH}?${params.toString()}`;
 };
 
 export const tripsCompletedPath = (role?: TripsRole): string => {
   const params = new URLSearchParams();
   params.set('view', 'completed');
   if (role && role !== 'joined') params.set('role', role);
-  return `${TRIPS_PATH}?${params.toString()}`;
+  return `${MY_TRIPS_PATH}?${params.toString()}`;
 };
 
 export type TripsRole = 'joined' | 'hosted' | 'self';
@@ -150,7 +164,8 @@ export const normalizeTripsSearchParams = (
     } else if (seg === 'saved' || seg === 'wishlist') {
       params.delete('segment');
       params.set('view', 'plans');
-      params.set('role', 'all');
+      params.set('lens', 'saved');
+      params.delete('role');
       params.delete('saved');
       changed = true;
     }
@@ -222,7 +237,7 @@ export const tripsSelfDemandPath = (intentId: string): string => {
   params.set('view', 'plans');
   params.set('role', 'joined');
   params.set('peek', intentId);
-  return `${TRIPS_PATH}?${params.toString()}`;
+  return `${PLAN_PATH}?${params.toString()}`;
 };
 
 export const tripsHostedActivityPath = (
@@ -237,7 +252,7 @@ export const tripsHostedActivityPath = (
   } else {
     params.set('peek', activityId);
   }
-  return `${TRIPS_PATH}?${params.toString()}`;
+  return `${PLAN_PATH}?${params.toString()}`;
 };
 
 export const tripsPath = (input?: {
@@ -262,33 +277,31 @@ export const tripsPath = (input?: {
     params.set('view', 'plans');
     params.set('segment', 'wishlist');
     params.set('saved', input.layer);
-    return `${TRIPS_PATH}?${params.toString()}`;
+    return `${MY_TRIPS_PATH}?${params.toString()}`;
   }
   return tripsPlansPath('all');
 };
 
-export const tripsMapPath = () => '/trips/map';
+export const tripsMapPath = () => MY_TRIPS_MAP_PATH;
+
+export const myTripsWishlistPath = (): string => planSavedPath();
 
 /** Legacy `segment` + `tab` query — normalized on load by `normalizeTripsSearchParams`. */
-export const tripsLegacyJoinedTabPath = (): string => {
-  const params = new URLSearchParams({ segment: 'upcoming', tab: 'joined' });
-  return `${TRIPS_PATH}?${params.toString()}`;
-};
+export const tripsLegacyJoinedTabPath = (): string => tripsPlansPath('joined');
 
-export const tripsLegacyUpcomingSegmentPath = (): string => {
-  const params = new URLSearchParams({ segment: 'upcoming' });
-  return `${TRIPS_PATH}?${params.toString()}`;
-};
+export const tripsLegacyUpcomingSegmentPath = (): string => tripsPlansPath('all');
 
-export const TRIPS_MAIN_TABS: {
+export const MY_TRIPS_MAIN_TABS: {
   id: TripsMainView;
   label: string;
   href: string;
 }[] = [
-  { id: 'plans', label: 'Plans', href: tripsPlansPath('all') },
-  { id: 'completed', label: 'Completed', href: tripsCompletedPath() },
+  { id: 'completed', label: 'History', href: tripsCompletedPath() },
   { id: 'map', label: 'My Map', href: tripsMapPath() },
 ];
+
+/** @deprecated Use {@link MY_TRIPS_MAIN_TABS} on profile inventory; Plan tab has no top-level section switcher. */
+export const TRIPS_MAIN_TABS = MY_TRIPS_MAIN_TABS;
 
 export const TRIPS_UNDERLINE_TABS: { id: 'upcoming' | 'completed'; label: string }[] = [
   { id: 'upcoming', label: 'Upcoming' },

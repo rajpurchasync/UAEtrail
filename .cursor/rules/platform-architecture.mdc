@@ -14,7 +14,8 @@ Canonical detail: **`docs/DOCS_INDEX.md`** · **`docs/SYSTEM_COHERENCE.md`** · 
 | Surface | Route | Who | Purpose |
 |---------|-------|-----|---------|
 | **Marketing** | `/` | **Guests only** | Emotional promise + trust + proof → Explore / Join free |
-| **Browse (product home)** | `/explore` | Everyone | Find people and outdoor plans — map-first discovery |
+| **Explore (product home)** | `/explore` | Everyone | Map-first discovery; **List** pill = filter-synced rows (`list=1`) |
+| **Discover browse** | `/explore?browse=1`, `/list` | Everyone | Visual categories/rails/posters — not the map list panel |
 | **Personal hub** | `/profile`, `/profile/settings` | Signed in | Your crew, up next, settings |
 | **Entity detail** | `/activity`, `/trail`, `/camp`, `/shop`, `/operator`, … | Public / signed in | Understand the plan → connect → join |
 | **Host console** | `/host/*` | Approved hosts | Enable others to go together (secondary audience) |

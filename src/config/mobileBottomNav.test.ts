@@ -24,6 +24,7 @@ describe('shouldShowMobileBottomNav', () => {
   it('shows on signed-in root tabs', () => {
     expect(shouldShowMobileBottomNav('/explore', '', true)).toBe(true);
     expect(shouldShowMobileBottomNav('/activities', '?tab=joined', true)).toBe(true);
+    expect(shouldShowMobileBottomNav('/plan', '?view=plans&role=joined', true)).toBe(true);
     expect(shouldShowMobileBottomNav('/trips', '?segment=upcoming&tab=joined', true)).toBe(true);
     expect(shouldShowMobileBottomNav('/chat', '', true)).toBe(true);
   });

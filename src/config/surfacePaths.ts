@@ -8,7 +8,17 @@
 /** Personal hub */
 export const PROFILE_PATH = '/profile' as const;
 
-/** Trips hub — upcoming, past, wishlist (`docs/NAVIGATION.md`) */
+/** Active member tab — goals, upcoming, plan attention (`docs/NAVIGATION.md`). */
+export const PLAN_PATH = '/plan' as const;
+
+/** Profile inventory — hosted / joined / gone, wishlist, journey map list + map. */
+export const MY_TRIPS_PATH = '/profile/my-trips' as const;
+export const MY_TRIPS_MAP_PATH = '/profile/my-trips/map' as const;
+
+/** Legacy personal hub bookmark (`/activities`). */
+export const ACTIVITIES_LEGACY_PATH = '/activities' as const;
+
+/** @deprecated Legacy URL — `App.tsx` redirects to {@link PLAN_PATH} or {@link MY_TRIPS_PATH}. */
 export const TRIPS_PATH = '/trips' as const;
 
 /** Admin / host place registry consoles */

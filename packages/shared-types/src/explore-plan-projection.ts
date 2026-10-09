@@ -16,6 +16,38 @@ export type OutingTopic =
   | 'workshop'
   | 'community';
 
+export const OUTING_TOPICS: readonly OutingTopic[] = [
+  'climbing',
+  'trail_run',
+  'road_run',
+  'swim',
+  'workshop',
+  'community',
+];
+
+const OUTING_TOPIC_SET = new Set<string>(OUTING_TOPICS);
+
+export const parseOutingTopic = (raw: string | null | undefined): OutingTopic | null => {
+  const key = raw?.trim();
+  if (!key || !OUTING_TOPIC_SET.has(key)) return null;
+  return key as OutingTopic;
+};
+
+/** Topic drill-down on map/list — activities (`outingCategory: activities`) and tagged places. */
+export const mapItemMatchesOutingTopic = (
+  item: {
+    outingCategory?: OutingCategory | null;
+    outingTopic?: OutingTopic | null;
+    source?: string;
+  },
+  topic: OutingTopic
+): boolean => {
+  if (!item.outingTopic || item.outingTopic !== topic) return false;
+  if (item.outingCategory === 'activities') return true;
+  if (item.source === 'venue') return true;
+  return false;
+};
+
 export type ExploreMapPlanActivityKind = 'hiking' | 'camping' | 'event' | 'rideshare' | 'shop';
 
 export type ExploreMapKindForPlan =

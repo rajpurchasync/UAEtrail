@@ -1,7 +1,7 @@
-import { exploreDemandMapItemPath } from '@uaetrail/shared-types';
+import { exploreAreaQueryParam, exploreDemandMapItemPath } from '@uaetrail/shared-types';
 import type { OrganizeComposeKind } from './compose';
 import { EXPLORE_MAP_PATH } from '../config/platform';
-import { TRIPS_PATH } from '../constants';
+import { PLAN_PATH } from '../constants';
 import { tripsPlansPath } from '../trips/tripsRouting';
 import type { ContributeVenueKind } from './contributeTypes';
 import { formatComposeQuery, type ExploreCompose } from './compose';
@@ -230,6 +230,8 @@ export const explorePath = (options?: {
   activity?: ActivityListFilterKey;
   panel?: ExplorePanel;
   list?: boolean;
+  /** Open visual discover browse (`browse=1`) — poster feed, not map-aligned list. */
+  browse?: boolean;
   /** @deprecated Prefer `regions` for multi-select venue filters. */
   region?: string;
   /** Selected venue states/emirates (multi-select). */
@@ -269,6 +271,8 @@ export const explorePath = (options?: {
   planWith?: string;
   /** Activity join-invite deep link — use with `pin=activity:{id}`. */
   joinInvite?: boolean;
+  /** Curated area slug — constrains map/list rows (`exploreAreaQueryParam`). */
+  area?: string;
 }): string => {
   const params = new URLSearchParams();
   if (options?.filter && options.filter !== 'all') {
@@ -280,7 +284,9 @@ export const explorePath = (options?: {
   if (options?.panel && options.panel !== 'activities') {
     params.set('panel', options.panel);
   }
-  if (options?.list) {
+  if (options?.browse) {
+    params.set('browse', '1');
+  } else if (options?.list) {
     params.set('list', '1');
   }
   if (options?.regions && options.regions.length > 0) {
@@ -347,6 +353,9 @@ export const explorePath = (options?: {
   if (options?.joinInvite) {
     params.set(EXPLORE_JOIN_INVITE_QUERY_KEY, '1');
   }
+  if (options?.area?.trim()) {
+    params.set(exploreAreaQueryParam, options.area.trim().toLowerCase());
+  }
   const qs = params.toString();
   return qs ? `${EXPLORE_MAP_PATH}?${qs}` : EXPLORE_MAP_PATH;
 };
@@ -354,6 +363,10 @@ export const explorePath = (options?: {
 /** Explore map with member people browse panel open. */
 export const explorePeopleBrowsePath = (options?: { list?: boolean }): string =>
   explorePath({ peopleBrowse: true, list: options?.list ?? true });
+
+/** Explore with visual discover browse open (`browse=1` — categories, rails, posters). */
+export const exploreDiscoverBrowsePath = (): string =>
+  explorePath({ browse: true });
 
 /** Start create flow with optional buddy to plan with. */
 export const explorePlanWithBuddyPath = (
@@ -505,7 +518,7 @@ export const detailBackPath = (kind: DetailBackKind): string => {
 
 /** Personal activities hub — joined/hosted tabs only (not public browse). */
 export const myActivitiesPath = (tab: 'joined' | 'hosted' = 'joined'): string =>
-  tab === 'hosted' ? tripsPlansPath('hosted') : TRIPS_PATH;
+  tab === 'hosted' ? tripsPlansPath('hosted') : PLAN_PATH;
 
 /** Consumer create flow — explore compose organize menu or a specific kind. */
 export const exploreOrganizePath = (kind?: OrganizeComposeKind): string =>

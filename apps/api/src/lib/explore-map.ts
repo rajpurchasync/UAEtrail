@@ -38,6 +38,7 @@ import {
 } from './explore-map-cache.js';
 import { resolveVenueExploreLabels } from './venue-display-names.js';
 import { isWithinUaeFocusArea } from './uae-bbox.js';
+import { listPublishedAreas } from './areas-store.js';
 
 export { invalidateExploreMapCache };
 
@@ -170,14 +171,25 @@ export const buildExploreMapPayload = async (): Promise<{ items: ExploreMapItemD
   return payload;
 };
 
+const attachExploreItemArea = (
+  item: ExploreMapItemDTO,
+  areaId: string | null | undefined,
+  areaSlugById: Map<string, string>
+): ExploreMapItemDTO => {
+  if (!areaId) return item;
+  return { ...item, areaId, areaSlug: areaSlugById.get(areaId) ?? null };
+};
+
 const buildExploreMapPayloadUncached = async (): Promise<{ items: ExploreMapItemDTO[] }> => {
-  const [activityEvents, locationsResult, shopTenants, demandItems] = await Promise.all([
+  const [activityEvents, locationsResult, shopTenants, demandItems, publishedAreas] = await Promise.all([
     listPublishedActivitiesForExploreMap(250),
     listActiveLocations({ page: 1, pageSize: 1200 }),
     listPublicShopTenantsForExplore(250),
-    listActiveParticipantIntentsForMap(200)
+    listActiveParticipantIntentsForMap(200),
+    listPublishedAreas(),
   ]);
 
+  const areaSlugById = new Map(publishedAreas.map((area) => [area.id, area.slug]));
   const merchantByTenantId = await findMerchantProfilesByTenantIds(shopTenants.map((shop) => shop.id));
 
   const activityDtos = activityEvents.map((event) => buildActivityDto(event));
@@ -204,10 +216,13 @@ const buildExploreMapPayloadUncached = async (): Promise<{ items: ExploreMapItem
         ? { latitude: activity.meetingLat as number, longitude: activity.meetingLng as number }
         : null;
     const display = buildExploreActivityDisplay(activity);
-    items.push({
+    items.push(
+      attachExploreItemArea(
+        {
       id: `activity:${activity.id}`,
       kind: rideshare ? 'rideshare' : activity.activityType,
       source: 'activity',
+      activityMode: 'hosted',
       title: activity.title,
       subtitle: rideshare
         ? [display.fromLabel, display.toLabel].filter(Boolean).join(' → ') || activity.locationName
@@ -237,7 +252,11 @@ const buildExploreMapPayloadUncached = async (): Promise<{ items: ExploreMapItem
       fromLabel: display.fromLabel,
       toLabel: display.toLabel,
       activity
-    });
+    },
+        activity.areaId,
+        areaSlugById
+      )
+    );
   }
 
   for (const location of locationsResult.items) {
@@ -255,18 +274,24 @@ const buildExploreMapPayloadUncached = async (): Promise<{ items: ExploreMapItem
         continue;
       }
 
-      items.push({
-        id: `venue:${dto.id}`,
-        kind: 'shop',
-        source: 'venue',
-        title: dto.name,
-        subtitle: dto.region ?? null,
-        latitude,
-        longitude,
-        path: placeDetailPath(dto.activityType, dto.id),
-        image: dto.images?.[0] ?? null,
-        about: dto.description,
-      });
+      items.push(
+        attachExploreItemArea(
+          {
+            id: `venue:${dto.id}`,
+            kind: 'shop',
+            source: 'venue',
+            title: dto.name,
+            subtitle: dto.region ?? null,
+            latitude,
+            longitude,
+            path: placeDetailPath(dto.activityType, dto.id),
+            image: dto.images?.[0] ?? null,
+            about: dto.description,
+          },
+          dto.areaId,
+          areaSlugById
+        )
+      );
       continue;
     }
 
@@ -290,7 +315,9 @@ const buildExploreMapPayloadUncached = async (): Promise<{ items: ExploreMapItem
       location.areaLabel ?? dto.areaLabel ?? null
     );
 
-    items.push({
+    items.push(
+      attachExploreItemArea(
+        {
       id: `venue:${dto.id}`,
       kind,
       source: 'venue',
@@ -322,7 +349,11 @@ const buildExploreMapPayloadUncached = async (): Promise<{ items: ExploreMapItem
         parkingLng: dto.parkingLng ?? null,
         parkingPoint: location.parkingLink ?? null,
       },
-    });
+    },
+        dto.areaId,
+        areaSlugById
+      )
+    );
   }
 
   const ownerDisplays = await loadMerchantOwnerDisplaysByAdminIds(
@@ -368,7 +399,9 @@ const buildExploreMapPayloadUncached = async (): Promise<{ items: ExploreMapItem
     });
   }
 
-  items.push(...demandItems);
+  items.push(
+    ...demandItems.map((item) => attachExploreItemArea(item, item.areaId, areaSlugById))
+  );
 
   attachLinkedRideshareMetadata(items);
 
@@ -376,6 +409,7 @@ const buildExploreMapPayloadUncached = async (): Promise<{ items: ExploreMapItem
     if (item.source === 'activity' && item.activity) {
       Object.assign(
         item,
+        { activityMode: item.activityMode ?? 'hosted' },
         buildExploreMapPlanProjection({
           source: 'activity',
           mapKind: exploreMapKindToPlanMapKind(item.kind),

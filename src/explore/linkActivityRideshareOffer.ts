@@ -1,4 +1,9 @@
-import type { ActivityDTO, ExploreMapItemDTO, ParticipantIntentDTO } from '@uaetrail/shared-types';
+import {
+  exploreMapItemIsSeeking,
+  type ActivityDTO,
+  type ExploreMapItemDTO,
+  type ParticipantIntentDTO,
+} from '@uaetrail/shared-types';
 import { api } from '../api/index';
 
 /** Parse `/activity/:id` or a bare UUID from user paste. */
@@ -69,7 +74,7 @@ export const canLinkRideshareToActivity = (activity: ActivityDTO | null | undefi
 
 /** Own-demand peek — offer a rideshare alongside a looking-for pin (not rideshare demands). */
 export const canOfferRideshareForDemandItem = (item: ExploreMapItemDTO | null | undefined): boolean => {
-  if (!item || item.source !== 'demand') return false;
+  if (!item || !exploreMapItemIsSeeking(item)) return false;
   if (item.convertedActivityId) return false;
   if (item.kind === 'rideshare') return false;
   return item.kind === 'hiking' || item.kind === 'camping' || item.kind === 'event';

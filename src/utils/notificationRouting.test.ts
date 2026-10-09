@@ -18,16 +18,16 @@ describe('inferNotificationPath', () => {
       inferNotificationPath(notif({ kind: 'join_request_pending', requestId: 'r1' }))
     ).toBe('/my-requests/r1');
     expect(inferNotificationPath(notif({ kind: 'join_request_waitlisted' }))).toBe(
-      '/trips?segment=upcoming&tab=joined'
+      '/plan?view=plans&role=joined'
     );
     expect(inferNotificationPath(notif({ kind: 'join_request_rejected' }))).toBe(
-      '/trips?segment=upcoming&tab=joined'
+      '/plan?view=plans&role=joined'
     );
   });
 
   it('routes approved join without group chat to My trips', () => {
     expect(inferNotificationPath(notif({ kind: 'join_request_approved' }))).toBe(
-      '/trips?segment=upcoming&tab=joined'
+      '/plan?view=plans&role=joined'
     );
     expect(
       inferNotificationPath(
@@ -37,10 +37,10 @@ describe('inferNotificationPath', () => {
   });
 
   it('routes member goal milestones to profile or trips', () => {
-    expect(inferNotificationPath(notif({ kind: 'goal_halfway' }))).toBe('/trips?segment=upcoming');
-    expect(inferNotificationPath(notif({ kind: 'goal_complete' }))).toBe('/trips?segment=upcoming');
+    expect(inferNotificationPath(notif({ kind: 'goal_halfway' }))).toBe('/plan?view=plans&role=all');
+    expect(inferNotificationPath(notif({ kind: 'goal_complete' }))).toBe('/plan?view=plans&role=all');
     expect(inferNotificationPath(notif({ kind: 'goal_behind_pace' }))).toBe(
-      '/trips?segment=upcoming&tab=joined'
+      '/plan?view=plans&role=joined'
     );
   });
 

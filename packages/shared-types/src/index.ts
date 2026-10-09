@@ -59,6 +59,8 @@ export interface LocationDTO {
   region: string;
   /** Trailhead, wadi, or beach zone — list poster location chip (emirate stays in `region`). */
   areaLabel?: string | null;
+  /** Curated geographic area (`GET /areas/:slug`). */
+  areaId?: string | null;
   /** @deprecated Prefer {@link PlaceKind} in new code — persisted as `activityType` on Mongo today. */
   activityType: PlaceActivityType;
   description: string;
@@ -153,6 +155,7 @@ export interface ActivityDTO {
   locationId: string;
   locationName: string;
   region?: string;
+  areaId?: string | null;
   activityType: ScheduledActivityType;
   title: string;
   description: string;
@@ -609,6 +612,14 @@ export type ShopPublicDTO = MerchantPublicDTO;
 export type ExploreMapKind = ActivityType | 'shop' | 'agency';
 export type ExploreMapSource = 'activity' | 'venue' | 'shop' | 'agency' | 'demand';
 
+export type { ExploreActivityMode } from './explore-activity-mode.js';
+export {
+  exploreMapItemIsHostedActivity,
+  exploreMapItemIsSeeking,
+  isTimeBoundExploreMapItem,
+  resolveExploreMapActivityMode,
+} from './explore-activity-mode.js';
+
 export type ParticipantIntentKind = 'hiking' | 'camping' | 'event' | 'guide' | 'rideshare' | 'other';
 
 /** Find / demand pin — public map only; join via intent requests (approve/reject), not RSVP. */
@@ -728,6 +739,14 @@ export interface ExploreMapItemDTO {
   requesterUserId?: string | null;
   /** Demand request id (without demand: prefix). */
   participantIntentId?: string | null;
+  /**
+   * Time-bound map mode — `hosted` for published outings; `seeking` for Find / participant intents (M0).
+   * Legacy payloads may omit this and use `source: demand` instead.
+   */
+  activityMode?: 'hosted' | 'seeking' | null;
+  /** Curated area membership for explore `?area=` filters. */
+  areaId?: string | null;
+  areaSlug?: string | null;
   /** Set when a host converts this request into a published activity. */
   convertedActivityId?: string | null;
   /** Shop/agency about one-liner for map cards. */
@@ -1126,6 +1145,9 @@ export {
   participantIntentKindToOutingCategory,
   resolveActivityOutingTopic,
   resolveOrganizeCreateKindFromDemandMapItem,
+  OUTING_TOPICS,
+  mapItemMatchesOutingTopic,
+  parseOutingTopic,
   type ExploreMapKindForPlan,
   type ExploreMapPlanActivityKind,
   type ExploreMapPlanProjection,
@@ -1245,6 +1267,31 @@ export type {
   MemberGoalPublicDTO,
   UpsertMemberGoalInput,
 } from './member-goals.js';
+
+export {
+  AVAILABILITY_KINDS,
+  areMemberAvailabilityDaysContiguous,
+  availabilitySlotOverlapsRange,
+  expandMemberAvailabilitySlotDays,
+  groupConsecutiveMemberAvailabilityDays,
+  isValidAvailabilitySlot,
+  memberAvailabilityCalendarDays,
+  memberAvailabilitySlotsAsDayPicks,
+  normalizeMemberAvailabilitySlotsForStorage,
+  prunePastAvailabilitySlots,
+} from './member-availability.js';
+export type { MemberAvailabilityDayBlock } from './member-availability.js';
+export type {
+  AvailabilityKind,
+  AvailabilityTimeBand,
+  AvailabilityVisibility,
+  ExploreAvailabilityClusterDTO,
+  ExploreAvailablePersonDTO,
+  MemberAvailabilityDTO,
+  MemberAvailabilityPublicDTO,
+  MemberAvailabilitySlotDTO,
+  UpsertMemberAvailabilityInput,
+} from './member-availability.js';
 
 export {
   MEMBER_MAP_PIN_ACTIVITY_TYPES,
@@ -1374,6 +1421,20 @@ export type {
 } from './group-wall.js';
 
 export { groupWallBodySnippet } from './group-wall.js';
+
+export type {
+  AreaBoundsRing,
+  AreaCenter,
+  AreaDTO,
+  AreaPublicDTO,
+  AreaStatus,
+} from './area.js';
+export {
+  approximateAreaBoundsKm2,
+  areaDetailPath,
+  exploreAreaQueryParam,
+  pointInAreaBounds,
+} from './area.js';
 
 export type { MemberInboxGroupDTO, MemberInboxGroupType } from './member-inbox.js';
 

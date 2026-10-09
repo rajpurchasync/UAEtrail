@@ -1,20 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { createDraftFromDemand } from './organizeFlow';
+import { seekingExploreMapItem } from '../exploreMapItemFixtures';
 
 const demandItem = (overrides: Partial<ExploreMapItemDTO> = {}): ExploreMapItemDTO =>
-  ({
-    id: 'demand:intent-1',
+  seekingExploreMapItem({
+    intentId: 'intent-1',
     kind: 'event',
-    source: 'demand',
     title: 'Sunday run crew',
-    latitude: 25.1,
-    longitude: 55.2,
-    path: '/explore?pin=demand%3Aintent-1',
-    participantIntentId: 'intent-1',
     outingCategory: 'activities',
     ...overrides,
-  }) as ExploreMapItemDTO;
+  });
 
 describe('createDraftFromDemand', () => {
   it('routes find.event (activities) demand to organize activity wizard', () => {

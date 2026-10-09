@@ -47,9 +47,14 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
       { key: { tenantId: 1, userId: 1 }, unique: true },
       { key: { userId: 1 } }
     ]),
+    db.collection(COLLECTIONS.AREAS).createIndexes([
+      { key: { slug: 1 }, unique: true },
+      { key: { status: 1, priority: 1 } },
+    ]),
     db.collection(COLLECTIONS.LOCATIONS).createIndexes([
       { key: { status: 1, featured: -1, createdAt: -1 } },
       { key: { submittedById: 1, createdAt: -1 } },
+      { key: { areaId: 1, status: 1 }, sparse: true },
       { key: { geo: '2dsphere' } },
       {
         key: { externalSource: 1, externalId: 1 },
@@ -104,6 +109,10 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
     ]),
     db.collection(COLLECTIONS.REWARD_LEDGERS).createIndexes([{ key: { userId: 1, action: 1 } }]),
     db.collection(COLLECTIONS.USER_BADGES).createIndexes([{ key: { userId: 1 } }]),
+    db.collection(COLLECTIONS.MEMBER_AVAILABILITY).createIndexes([
+      { key: { visibility: 1, areaId: 1 } },
+      { key: { kinds: 1, visibility: 1 } },
+    ]),
     db.collection(COLLECTIONS.USER_GOALS).createIndexes([{ key: { userId: 1, updatedAt: -1 } }]),
     db.collection(COLLECTIONS.MEMBER_MAP_PINS).createIndexes([
       { key: { userId: 1, placeDate: -1 } },
@@ -118,7 +127,8 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
       { key: { tenantId: 1, startAt: 1 } },
       { key: { status: 1, startAt: 1 } },
       { key: { locationId: 1 } },
-      { key: { featured: 1, status: 1, startAt: 1 } }
+      { key: { featured: 1, status: 1, startAt: 1 } },
+      { key: { areaId: 1, status: 1 }, sparse: true },
     ]),
     db.collection(COLLECTIONS.PUSH_SUBSCRIPTIONS).createIndexes([{ key: { userId: 1 } }]),
     db.collection(COLLECTIONS.TENANTS).createIndexes([
@@ -133,7 +143,8 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
     ]),
     db.collection(COLLECTIONS.PARTICIPANT_INTENTS).createIndexes([
       { key: { userId: 1, createdAt: -1 } },
-      { key: { status: 1, createdAt: -1 } }
+      { key: { status: 1, createdAt: -1 } },
+      { key: { areaId: 1, status: 1 }, sparse: true },
     ]),
     db.collection(COLLECTIONS.ACTIVITY_REQUESTS).createIndexes([
       { key: { activityId: 1, userId: 1 }, unique: true },

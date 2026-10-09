@@ -1,4 +1,8 @@
-import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
+import {
+  exploreMapItemIsSeeking,
+  isTimeBoundExploreMapItem,
+  type ExploreMapItemDTO,
+} from '@uaetrail/shared-types';
 import type { MapPinKind } from '../../components/ui/mapPinTypes';
 import type { ColocatedMapPinEntry, PlaceMapPin } from '../../components/ui/PlacesMap';
 import { resolveMapPinItemSource, resolveMapPinEmoji, type ExploreCardKind } from '../exploreCopy';
@@ -32,8 +36,7 @@ export const isPlacesMapItem = (item: ExploreMapItemDTO): boolean => {
 };
 
 /** Time-bound social layer: hosted outings and looking-for posts. */
-export const isBuddyMapItem = (item: ExploreMapItemDTO): boolean =>
-  item.source === 'activity' || item.source === 'demand';
+export const isBuddyMapItem = (item: ExploreMapItemDTO): boolean => isTimeBoundExploreMapItem(item);
 
 export const isPhysicalShopItem = (item: ExploreMapItemDTO): boolean =>
   isShopListItem(item) && item.shopPresence !== 'online' && item.latitude != null && item.longitude != null;
@@ -86,8 +89,8 @@ export const matchesBuddyMapFilter = (
 
 export const matchesExplorePinKindFilter = (item: ExploreMapItemDTO, pinKind: ExplorePinKindFilter): boolean => {
   if (pinKind === 'all') return true;
-  if (pinKind === 'trips') return item.source === 'activity';
-  if (pinKind === 'looking') return item.source === 'demand';
+  if (pinKind === 'activities') return isTimeBoundExploreMapItem(item);
+  if (pinKind === 'looking') return exploreMapItemIsSeeking(item);
   if (pinKind === 'places') return isPlacesMapItem(item) && !isShopListItem(item);
   if (pinKind === 'shops') return isShopListItem(item);
   return true;
@@ -154,23 +157,23 @@ export const matchesMapFilter = (item: ExploreMapItemDTO, mapFilter: MapFilterKe
   const kind = item.kind;
 
   if (mapFilter === 'hiking') {
-    return kind === 'hiking' && (item.source === 'activity' || item.source === 'demand' || item.source === 'venue');
+    return kind === 'hiking' && (isTimeBoundExploreMapItem(item) || item.source === 'venue');
   }
   if (mapFilter === 'camping') {
-    return kind === 'camping' && (item.source === 'activity' || item.source === 'demand' || item.source === 'venue');
+    return kind === 'camping' && (isTimeBoundExploreMapItem(item) || item.source === 'venue');
   }
   if (mapFilter === 'rideshare') {
-    return kind === 'rideshare' && (item.source === 'activity' || item.source === 'demand');
+    return kind === 'rideshare' && isTimeBoundExploreMapItem(item);
   }
   if (mapFilter === 'others') {
-    return kind === 'event' && (item.source === 'activity' || item.source === 'demand' || item.source === 'venue');
+    return kind === 'event' && (isTimeBoundExploreMapItem(item) || item.source === 'venue');
   }
 
   return false;
 };
 
 export const matchesActivityFilter = (item: ExploreMapItemDTO, activityFilter: ActivityListFilterKey): boolean => {
-  if (item.source !== 'activity' && item.source !== 'demand') return false;
+  if (!isTimeBoundExploreMapItem(item)) return false;
   if (activityFilter === 'all') return true;
   if (activityFilter === 'rideshare') return item.kind === 'rideshare';
   if (item.kind === 'rideshare') return false;
@@ -222,7 +225,7 @@ export const resolveExploreItemScheduleDate = (item: ExploreMapItemDTO): string 
 };
 
 const mapPinKind = (item: ExploreMapItemDTO): MapPinKind => {
-  if (item.source === 'demand') return item.kind === 'rideshare' ? 'rideshare' : (item.kind as MapPinKind);
+  if (exploreMapItemIsSeeking(item)) return item.kind === 'rideshare' ? 'rideshare' : (item.kind as MapPinKind);
   if (item.kind === 'shop') return 'shop';
   if (item.kind === 'rideshare') return 'rideshare';
   return item.kind as MapPinKind;

@@ -1,9 +1,8 @@
 import { Link } from 'react-router-dom';
-import { CalendarCheck, History, Map } from 'lucide-react';
-import { TRIPS_MAIN_TABS, type TripsMainView } from '../../trips/tripsRouting';
+import { History, Map } from 'lucide-react';
+import { MY_TRIPS_MAIN_TABS, type TripsMainView } from '../../trips/tripsRouting';
 
-const tabIcons: Record<TripsMainView, typeof CalendarCheck> = {
-  plans: CalendarCheck,
+const tabIcons: Partial<Record<TripsMainView, typeof CalendarCheck>> = {
   completed: History,
   map: Map,
 };
@@ -12,16 +11,16 @@ type TripsMainTabsProps = {
   active: TripsMainView;
 };
 
-/** Plans · Completed · Map — equal-width row with icons and dividers. */
+/** My Trips — History · Map (profile inventory). */
 export const TripsMainTabs = ({ active }: TripsMainTabsProps) => (
   <div
-    className="grid grid-cols-3 divide-x divide-neutral-200/90 rounded-xl border border-neutral-200/90 bg-white/80"
+    className="grid grid-cols-2 divide-x divide-neutral-200/90 rounded-xl border border-neutral-200/90 bg-white/80"
     role="tablist"
-    aria-label="Trips sections"
+    aria-label="My trips sections"
   >
-    {TRIPS_MAIN_TABS.map((tab) => {
+    {MY_TRIPS_MAIN_TABS.map((tab) => {
       const isActive = tab.id === active;
-      const Icon = tabIcons[tab.id];
+      const Icon = tabIcons[tab.id] ?? History;
       const className = [
         'flex flex-col items-center justify-center gap-1 py-2.5 px-2 text-center transition [-webkit-tap-highlight-color:transparent]',
         isActive ? 'bg-emerald-50/90 text-emerald-800' : 'text-neutral-500 active:bg-neutral-50',

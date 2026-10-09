@@ -1,4 +1,4 @@
-import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
+import { isTimeBoundExploreMapItem, type ExploreMapItemDTO } from '@uaetrail/shared-types';
 import type { ExploreMapFilterPillKey } from '../explore/exploreBrowseTaxonomy';
 import {
   parseExploreMapFilterPillsParam,
@@ -27,7 +27,7 @@ const isAgencyBrandItem = (item: ExploreMapItemDTO): boolean =>
 
 /** Plans layer — activity + demand (not a separate list bucket). */
 export const mapItemMatchesBrowseTripsCategory = (item: ExploreMapItemDTO): boolean =>
-  item.source === 'activity' || item.source === 'demand';
+  isTimeBoundExploreMapItem(item);
 
 export const mapItemMatchesBrowseMainCategory = (
   item: ExploreMapItemDTO,

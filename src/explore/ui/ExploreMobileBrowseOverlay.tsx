@@ -48,13 +48,7 @@ export const ExploreMobileBrowseOverlay = ({
           {contentSized ? 'People' : 'Discover plans and places'}
         </h2>
         <div className={`mb-0.5 mt-1 shrink-0 ${EXPLORE_SHAPE.sheetHandle}`} aria-hidden />
-        <div
-          className={
-            contentSized
-              ? 'flex min-h-0 flex-col overflow-hidden'
-              : 'flex min-h-0 flex-1 flex-col overflow-hidden'
-          }
-        >
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
           {children}
         </div>
       </div>

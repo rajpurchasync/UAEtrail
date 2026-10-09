@@ -183,6 +183,8 @@ The member who posts a **demand** pin is the **host** for that plan (they are lo
 
 Demand is **not** a lightweight RSVP activity. Do not add **I'm going**, private pins, or `participationMode` to `participant_intents`.
 
+**Explore map wire (M0):** seeking pins on `GET /explore/map` use `source: 'activity'`, `activityMode: 'seeking'`, and id `demand:{intentId}` (`exploreMapItemIsSeeking` in `@uaetrail/shared-types`). Card/peek copy still resolves to presentation `source: 'demand'` for join CTAs.
+
 | Who | Peek actions |
 |-----|----------------|
 | **Poster** | Manage plan · remove from map · optional linked rideshare offer (approved publish gate) |

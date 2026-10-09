@@ -1,92 +1,13 @@
-# Trips — managing what you publish
+# Trips / host manage (superseded)
 
-**Audience:** Anyone who **organizes** on the map (host-approved publish) or posts **looking for** demand.  
-**Canonical entity:** Activity (organize) · Participant intent (find). See [`DOMAIN.md`](./DOMAIN.md).
+**This doc is retired.** Consumer **Plan** + per-activity manage replaced the old “Trips hub + `/host` shell” story.
 
-## Implementation status (`main`)
+| Topic | Canonical source |
+|--------|------------------|
+| Tabs, Plan vs history, lenses | [`NAVIGATION.md`](./NAVIGATION.md) § Plan |
+| Activity, seeking, availability | [`DOMAIN.md`](./DOMAIN.md) · [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) |
+| Implementation phases | [`experiment/member-surfaces-implementation-plan.md`](./experiment/member-surfaces-implementation-plan.md) |
+| Host console (approved publishers) | [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) · `/host/*` routes (no new consumer links) |
+| Chat, invites, crew | [`COMMUNICATION.md`](./COMMUNICATION.md) (if present) or `docs/NAVIGATION.md` § Chat |
 
-| Item | Status |
-|------|--------|
-| Hosted manage sheet (`HostActivityManageSheet`) | Done — Trips Hosted, `/host/activities` |
-| Shared host activity actions (`useHostActivityManageActions`) | Done |
-| Join decline reason + note (host → guest) | Done |
-| Explore host peek → Trips manage / view participants | Done |
-| My plans list + `ParticipantIntentManageSheet` | Done — `GET /me/participant-intents` |
-| Invite crew (`ActivityInviteSharePanel` / sheet) | Done — detail, manage sheet, explore peek, Trips joined/hosted, org table |
-| Edit demand intent (PATCH) | Done — `PATCH /me/participant-intents/:id` + **Edit plan** in manage sheet |
-| `GET /host/requests?activityId=` filter | Done — manage sheet loads per-activity requests |
-| Invite / share published activities | Done — plain `/activity/:id` link; private plans need sign-in to view |
-| Edit demand map pins (My plans) | Done — **Edit plan** → `ParticipantIntentLocationEditor` |
-
-## Surfaces
-
-| Surface | Use |
-|--------|-----|
-| **`/trips` → Hosted** | Mobile-first manage sheet per outing |
-| **`/host/activities`** | Full console (same actions + table) |
-| **`/explore`** | Publish / edit via compose wizard |
-
-## Organized activities (hike, camp, event, rideshare, generic activity)
-
-**Entry:** Trips → Hosted → tap row → **Manage outing** sheet.
-
-| Capability | Hike / camp / event | Rideshare | Draft |
-|------------|---------------------|-----------|--------|
-| Edit / publish | ✓ | ✓ | ✓ |
-| Duplicate / reorganize | ✓ | ✓ | duplicate only |
-| Join requests (approval mode) | ✓ | if approval | — |
-| Group chat | ✓ (approved crew + host) | ✓ | host only |
-| View participants roster (attendance, chat, revoke, rate) | ✓ | — | — |
-| Link / create rideshare on parent | ✓ | — | — |
-| Cancel / delete | ✓ | ✓ | delete draft |
-
-Code: `ActivityManageSheet`, `ActivityParticipantsPanel`, `useHostActivityManageActions`, `HostActivityManageCancelDialogs`, `hostActivityManageCapabilities`.
-
-## Looking for (demand / Find)
-
-Not hosted under org tenant — **member intents** (`POST /me/participant-intents`).  
-**Trips → My plans / Self:** `GET /me/participant-intents` → list → **Manage plan** sheet (`ParticipantIntentManageSheet` in `src/components/participant-intent/`).  
-**Explore map** owner peek remains available (delete, offer rideshare if host).
-
-| Capability | Demand owner |
-|------------|----------------|
-| Edit / cancel intent | Trips manage sheet + API (`PATCH` / cancel) |
-| Offer / link rideshare | Host gate + organize rideshare |
-| Join requests | N/A (not an activity) |
-| Group chat | N/A until converted to organize |
-
-## Inviting people
-
-| Channel | Who | Behavior |
-|--------|-----|----------|
-| **Share link** | Host, participants, anyone on `/activity/:id` | WhatsApp, copy link, email, native share — guests can **view**; **Join free** to participate |
-| **Connections** | Signed-in host / participant | DM with activity link (`ActivityInviteSharePanel`) |
-| **Family / friends groups** | Signed-in | Post link on group wall |
-| **Trips / host console** | Host (community or tenant) | Share icon on hosted rows + full panel in manage sheet |
-| **Explore map** | Host + confirmed joiners | **Invite your crew** on peek → same panel |
-| **Activity group chat** | Host + approved crew | In-app thread after join (not a public invite URL) |
-
-## Messaging
-
-Full contract (API, inbox, Trips entry points): **[`COMMUNICATION.md`](./COMMUNICATION.md)**.
-
-| Channel | Who | Route / API |
-|---------|-----|-------------|
-| **Outing crew chat** | Host + **approved** participants | `/messages?group=<groupId>` · `social_groups.type === 'activity'` wall |
-| **Open from Trips** | Host / joiner in manage sheet | `openActivityGroupChat()` · optional `messagesReturnTo` back to `/trips?...` |
-| **Direct message** | Buddies or activity-linked context | `/messages?to=<userId>` · `POST /chat/messages` |
-| **Invite (not chat)** | Share `/activity/:id`, DM link, or family group wall post | `ActivityInviteSharePanel` |
-
-- **Roster sync:** `activity-group-chat` service adds host + confirmed joiners to the activity group.
-- **Pending requesters:** Join request **note** only — no crew chat until host approves.
-- **Chat closed:** Wall posts blocked **7 days after** activity start (server).
-- **Demand / My plans:** No crew chat until intent becomes an organized activity.
-
-Future: optional `groupChatPolicy` on activity (host-only vs crew); SSE for group walls.
-
-## Deep links
-
-- `/trips?role=hosted&peek=<activityId>` — open manage sheet  
-- `/trips?role=hosted&checkin=<activityId>` — manage sheet → **View participants** roster (legacy param name; same as `roster=<activityId>`)  
-- `/trips?role=self&peek=<intentId>` — My plans manage sheet  
-- Explore `pin=demand:<intentId>` + `compose=organize:rideshare` — offer carpool (hosts)  
+Historical status tables from this file were removed to avoid contradicting Tier-1 docs.

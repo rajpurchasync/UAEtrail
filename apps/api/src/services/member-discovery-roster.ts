@@ -1,3 +1,4 @@
+import { exploreMapItemIsSeeking } from '@uaetrail/shared-types';
 import type {
   ExploreMapItemDTO,
   MemberBrowseCardDTO,
@@ -48,7 +49,7 @@ export const buildMemberDiscoveryLookingRowsFromMapItems = (
   const rows: MemberDiscoveryLookingRowDTO[] = [];
 
   for (const item of items) {
-    if (item.source !== 'demand') continue;
+    if (!exploreMapItemIsSeeking(item)) continue;
     if (!matchesExploreActivityDateFilter(item, input.datePreset)) continue;
     if (item.viewerAccess?.exposure === 'none') continue;
 

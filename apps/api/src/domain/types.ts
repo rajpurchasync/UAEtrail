@@ -53,6 +53,8 @@ export interface Location {
   region: string;
   /** Trailhead / wadi / beach zone for explore list subtitle and poster location chip. */
   areaLabel: string | null;
+  /** Curated geographic area (`areas` collection). */
+  areaId?: string | null;
   activityType: ActivityType;
   description: string;
   difficulty: Difficulty | null;
@@ -145,6 +147,8 @@ export interface Activity {
   publishedAt: Date | null;
   outingCategory?: OutingCategory | null;
   outingTopic?: OutingTopic | null;
+  /** Curated area slug target — set on publish from place or point-in-polygon. */
+  areaId?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }

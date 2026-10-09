@@ -4,6 +4,7 @@ export * from './ExploreMapStyleToggle';
 export * from './ExploreCardPresentation';
 export * from './ExploreResponsiveSheet';
 export * from './ExploreListRow';
+export * from './ExploreBrowsePanel';
 export * from './ExploreCardTypeIcon';
 export * from './ExploreFilterIcon';
 export * from './ExploreItemSheet';

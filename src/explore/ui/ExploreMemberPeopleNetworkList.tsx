@@ -6,7 +6,6 @@ import { ExploreGuestSignInCard } from './ExploreGuestSignInCard';
 import type { UserRole } from '@uaetrail/shared-types';
 import {
   EXPLORE_PEOPLE_BROWSE_EMPTY_ALL,
-  EXPLORE_PEOPLE_BROWSE_EMPTY_FOLLOWED,
   EXPLORE_PEOPLE_BROWSE_EMPTY_FRIENDS,
   EXPLORE_PEOPLE_BROWSE_LOADING,
 } from '../../content/explorePeopleBrowseCopy';
@@ -55,11 +54,7 @@ export const ExploreMemberPeopleNetworkList = ({
 
   if (people.length === 0) {
     const emptyCopy =
-      tab === 'friends'
-        ? EXPLORE_PEOPLE_BROWSE_EMPTY_FRIENDS
-        : tab === 'followed'
-          ? EXPLORE_PEOPLE_BROWSE_EMPTY_FOLLOWED
-          : EXPLORE_PEOPLE_BROWSE_EMPTY_ALL;
+      tab === 'friends' ? EXPLORE_PEOPLE_BROWSE_EMPTY_FRIENDS : EXPLORE_PEOPLE_BROWSE_EMPTY_ALL;
     return (
       <div className="rounded-2xl border border-dashed border-emerald-200/80 bg-emerald-50/30 px-4 py-8 text-center">
         <p className="text-sm text-neutral-600">{emptyCopy}</p>

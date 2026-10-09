@@ -3,7 +3,11 @@ import type { ExplorePinKindFilter } from '../explore/explorePinKindFilter';
 import type { BrowseListFilterState } from './browseListFilters';
 import type { BrowseMainCategoryKey } from './browseListTaxonomy';
 import { BUDDIES_SEGMENT_URL_PARAM, serializeBuddiesDiscoverySegment } from './buddiesDiscoverySegment';
-import { LIST_CAT_PARAM, serializeBrowseListSearchParams } from './browseListUrlState';
+import {
+  BROWSE_DISCOVER_PARAM,
+  LIST_CAT_PARAM,
+  serializeBrowseListSearchParams,
+} from './browseListUrlState';
 
 /** Explore `pinKind` when opening the map from list browse state. */
 export const resolveListBrowseExplorePinKind = (
@@ -15,7 +19,7 @@ export const resolveListBrowseExplorePinKind = (
     if (state.placeTopics.length === 1 && state.placeTopics[0] === 'shop') return 'shops';
     return 'places';
   }
-  if (listCat === 'trips') return state.tripLookingOnly ? 'looking' : 'trips';
+  if (listCat === 'trips') return state.tripLookingOnly ? 'looking' : 'activities';
 
   if (state.tripLookingOnly) return 'looking';
 
@@ -27,7 +31,7 @@ export const resolveListBrowseExplorePinKind = (
     if (state.placeTopics.length === 1 && state.placeTopics[0] === 'shop') return 'shops';
     return 'places';
   }
-  if (hasTrips && !hasVenues) return 'trips';
+  if (hasTrips && !hasVenues) return 'activities';
 
   return null;
 };
@@ -44,7 +48,7 @@ export const inferListCatFromExploreHandoff = (
   const pinKind = parseExplorePinKindFilter(searchParams.get('pinKind'));
   if (pinKind === 'places') return 'venues';
   if (pinKind === 'shops') return 'venues';
-  if (pinKind === 'trips' || pinKind === 'looking') return 'trips';
+  if (pinKind === 'activities' || pinKind === 'looking') return 'trips';
 
   const cats = state.categories;
   if (cats.length === 1) return cats[0];
@@ -73,14 +77,29 @@ export const serializeBrowseListToExploreSearchParams = (
   else params.delete('pinKind');
 
   if (listCat === 'people') {
-    params.set('view', 'people');
-    params.set('peopleTab', 'discover');
-    params.set('list', '1');
+    params.set(LIST_CAT_PARAM, 'people');
+    params.set(BROWSE_DISCOVER_PARAM, '1');
+    params.set('list', '0');
     const serializedBuddies = serializeBuddiesDiscoverySegment(state.buddiesSegment);
     if (serializedBuddies) params.set(BUDDIES_SEGMENT_URL_PARAM, serializedBuddies);
     else params.delete(BUDDIES_SEGMENT_URL_PARAM);
+    params.delete('view');
+    params.delete('peopleTab');
     params.delete('date');
     params.delete('when');
+  } else if (listCat) {
+    params.set(LIST_CAT_PARAM, listCat);
+    params.set(BROWSE_DISCOVER_PARAM, '1');
+    params.set('list', '0');
+  } else if (
+    state.query.trim() ||
+    state.categories.length > 0 ||
+    state.tripTopics.length > 0 ||
+    state.placeTopics.length > 0 ||
+    state.tripLookingOnly
+  ) {
+    params.set(BROWSE_DISCOVER_PARAM, '1');
+    params.set('list', '0');
   }
 
   return params;

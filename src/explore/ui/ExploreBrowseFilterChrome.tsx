@@ -98,7 +98,7 @@ export const ExploreBrowseFilterChrome = ({
   const showOutingTopic =
     showBuddySubtype && buddySubtype === 'activities' && onOutingTopicChange != null;
   const showPinKindRow = unifiedMap && onPinKindChange != null;
-  const mapShowsPlans = pinKind === 'all' || pinKind === 'trips' || pinKind === 'looking';
+  const mapShowsPlans = pinKind === 'all' || pinKind === 'activities' || pinKind === 'looking';
   const mapShowsPlaces = pinKind === 'all' || pinKind === 'places';
   const effectiveShowDate =
     unifiedMap ? mapShowsPlans && showDateFilter : showDateFilter;

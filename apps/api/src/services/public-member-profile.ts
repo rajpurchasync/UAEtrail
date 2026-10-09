@@ -30,8 +30,9 @@ import {
   resolveProfileViewerAccess,
 } from './profile-viewer-access.js';
 import { getMemberGoalPublicSnapshot } from '../lib/member-goals-store.js';
+import { getMemberAvailabilityPublicSnapshot } from '../lib/member-availability-store.js';
 import { countParticipantIntentsByUser } from '../lib/participant-intents-store.js';
-import type { MemberGoalPublicDTO } from '@uaetrail/shared-types';
+import type { MemberAvailabilityPublicDTO, MemberGoalPublicDTO } from '@uaetrail/shared-types';
 import { listPublicMemberBadges } from './member-badges.js';
 
 const computeAgeFromDateOfBirth = (dateOfBirth: string): number | null => {
@@ -138,6 +139,7 @@ export type PublicMemberProfileData =
         activitiesHosted: number;
       };
       yearGoal: MemberGoalPublicDTO | null;
+      availability: MemberAvailabilityPublicDTO | null;
     };
 
 export type PublicMemberProfileBuildInput = {
@@ -199,16 +201,25 @@ export async function buildPublicMemberProfile(
     };
   }
 
-  const [activitiesAttended, activitiesHosted, demandPosts, ownedTenants, hostApplication, yearGoal, badges] =
-    await Promise.all([
-      countUserCheckedInParticipations(userId),
-      countPublishedActivitiesHostedByUser(userId),
-      countParticipantIntentsByUser(userId),
-      listTenantsByOwnerId(userId),
-      findLatestHostApplicationByApplicant(userId),
-      getMemberGoalPublicSnapshot(userId),
-      listPublicMemberBadges(userId),
-    ]);
+  const [
+    activitiesAttended,
+    activitiesHosted,
+    demandPosts,
+    ownedTenants,
+    hostApplication,
+    yearGoal,
+    badges,
+    availability,
+  ] = await Promise.all([
+    countUserCheckedInParticipations(userId),
+    countPublishedActivitiesHostedByUser(userId),
+    countParticipantIntentsByUser(userId),
+    listTenantsByOwnerId(userId),
+    findLatestHostApplicationByApplicant(userId),
+    getMemberGoalPublicSnapshot(userId),
+    listPublicMemberBadges(userId),
+    getMemberAvailabilityPublicSnapshot(userId, viewerUserId ?? null),
+  ]);
 
   const primaryTenant = ownedTenants[0] ?? null;
   const hostProfileKind = resolveHostProfileKind(primaryTenant);
@@ -257,6 +268,7 @@ export async function buildPublicMemberProfile(
       activitiesHosted,
     },
     yearGoal: showTrustedFields ? yearGoal : null,
+    availability,
   };
 
   return { data, viewerAccess };

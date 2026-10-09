@@ -23,3 +23,13 @@ export const memberPeopleNetworkQueryKey = (segment: string) =>
 
 export const memberPeopleNetworkPreviewQueryKey = () =>
   ['member-people', 'network-preview'] as const;
+
+export type ExplorePeopleAvailabilityQueryParams = {
+  from: string;
+  to: string;
+  area?: string | null;
+  kind?: string | null;
+};
+
+export const explorePeopleAvailabilityQueryKey = (params: ExplorePeopleAvailabilityQueryParams) =>
+  ['explore-people', 'availability', params] as const;

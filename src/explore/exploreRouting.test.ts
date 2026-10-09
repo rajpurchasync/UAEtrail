@@ -11,6 +11,7 @@ import {
   myActivitiesPath,
   parseFulfillIntentMapItemId,
   exploreSavedPinPath,
+  exploreDiscoverBrowsePath,
   parseExplorePinMapItemId,
 } from './routing';
 import { EXPLORE_MAP_PATH } from '../config/platform';
@@ -31,6 +32,8 @@ describe('exploreRouting navigation contract', () => {
     expect(explorePlacesPath()).toBe('/explore?panel=venues');
     expect(exploreShopsPath()).toBe('/explore?filter=shops&panel=shops');
     expect(exploreActivitiesPath({ list: true })).toBe('/explore?list=1');
+    expect(exploreDiscoverBrowsePath()).toBe('/explore?browse=1');
+    expect(explorePath({ browse: true, list: true })).toBe('/explore?browse=1');
   });
 
   it('encodes outingTopic with others activities drill-down', () => {
@@ -57,8 +60,8 @@ describe('exploreRouting navigation contract', () => {
   });
 
   it('myActivitiesPath targets trips hub tabs', () => {
-    expect(myActivitiesPath()).toBe('/trips');
-    expect(myActivitiesPath('hosted')).toBe('/trips?view=plans&role=hosted');
+    expect(myActivitiesPath()).toBe('/plan');
+    expect(myActivitiesPath('hosted')).toBe('/plan?view=plans&role=hosted');
   });
 
   it('explorePath supports join-invite deep link on activity pin', () => {

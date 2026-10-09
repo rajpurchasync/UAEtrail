@@ -6,6 +6,7 @@
  */
 export {
   EXPLORE_MAP_PATH,
+  EXPLORE_DISCOVER_BROWSE_PATH,
   LIST_DISCOVERY_PATH,
   PARTICIPANT_JOIN_REDIRECT,
   joinAuthPath,
@@ -77,6 +78,7 @@ export {
   ADMIN_NOTIFICATIONS_PATH,
   ADMIN_AUDIT_LOG_PATH,
   ADMIN_SETTINGS_PATH,
+  ADMIN_AREAS_PATH,
 } from './adminSurfacePaths';
 
 export {
@@ -86,7 +88,14 @@ export {
   type OrganisationKind,
 } from '../member/organisationPaths';
 
-export { TRIPS_PATH, ACTIVITIES_PATH, HOST_CONSOLE_LINKS, ADMIN_LINKS } from '../constants';
+export {
+  PLAN_PATH,
+  MY_TRIPS_PATH,
+  TRIPS_PATH,
+  ACTIVITIES_PATH,
+  HOST_CONSOLE_LINKS,
+  ADMIN_LINKS,
+} from '../constants';
 
 export {
   placeDetailPath,
@@ -120,6 +129,7 @@ export {
   exploreActivitiesPath,
   exploreOrganizePath,
   explorePeopleBrowsePath,
+  exploreDiscoverBrowsePath,
   explorePlanWithBuddyPath,
   detailBackPath,
   myActivitiesPath,
@@ -144,6 +154,7 @@ export {
   tripsPlansPath,
   tripsCompletedPath,
   tripsMapPath,
+  myTripsWishlistPath,
   tripsLegacyJoinedTabPath,
   tripsLegacyUpcomingSegmentPath,
 } from '../trips/tripsRouting';

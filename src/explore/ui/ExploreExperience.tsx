@@ -19,14 +19,15 @@ import { ExploreGuestSignInCard } from './ExploreGuestSignInCard';
 import { ExploreBrowseSearchModal } from './ExploreBrowseSearchModal';
 import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
 import { EXPLORE_Z } from '../../config/exploreTheme';
-import { ExplorePeopleBrowsePanel } from './ExplorePeopleBrowsePanel';
+import { PeopleBrowsePanel } from './PeopleBrowsePanel';
+import { ExploreBrowsePanel } from './ExploreBrowsePanel';
 import { ExploreMapStage } from './ExploreMapStage';
 import { ExploreMobileBrowseOverlay } from './ExploreMobileBrowseOverlay';
 import { useExploreBrowseList } from './useExploreBrowseList';
 import { useEntityFollows } from '../../hooks/useEntityFollows';
-import { useMemberPeople } from '../useMemberPeople';
 import { useMemberPeopleNetworkPreview } from '../useMemberPeopleNetworkPreview';
 import { useMemberDiscoveryRoster } from '../useMemberDiscoveryRoster';
+import { useExplorePeopleAvailability } from '../useExplorePeopleAvailability';
 import { buildExploreMemberPeopleMapChip } from '../exploreMemberPeopleMapChip';
 import { useExploreBrowseUrlState } from './useExploreBrowseUrlState';
 import { useExploreComposeRoute } from './useExploreComposeRoute';
@@ -38,7 +39,12 @@ import {
   organizePublishGateInputFromHostGate,
 } from '../../utils/organizePublishGate';
 import { buildRideshareDraftFromDemandMapItem, buildRideshareDraftFromParentActivity } from '../linkRidesharePrefill';
-import type { ActivityDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
+import {
+  exploreMapItemIsSeeking,
+  memberHasUnlimitedDiscovery,
+  type ActivityDTO,
+  type ExploreMapItemDTO,
+} from '@uaetrail/shared-types';
 import { HostActivityCancelDialog } from '../../components/activity/HostActivityCancelDialog';
 import { hostActivityCancelParticipantNotice } from '../../host/hostActivityCancelParticipantNotice';
 import { hostActivityCtaHandlers as buildHostActivityCtaHandlers } from '../../host/hostActivityCtaHandlers';
@@ -59,10 +65,15 @@ import type { ExploreSearchScopeKey } from '../exploreBrowseTaxonomy';
 import { Dialog } from '../../components/ui/Dialog';
 import { AppButton } from '../../components/mobile/AppButton';
 import { useActivityInviteShareSheet } from '../../hooks/useActivityInviteShareSheet';
+import {
+  filterExploreMapItemsByAreaSlug,
+  parseExploreAreaSlug,
+} from '../exploreAreaFilter';
 
 export const ExploreExperience = () => {
   const { user } = useAuth();
   const {
+    status: hostStatus,
     canPublish,
     signupProfileComplete,
     isCommunityHost,
@@ -73,6 +84,7 @@ export const ExploreExperience = () => {
   } = useHostStatus({
     enabled: Boolean(user),
   });
+  const canBrowseAllMembers = memberHasUnlimitedDiscovery(hostStatus);
   const navigate = useNavigate();
   const navigateOrganizePublishGate = useCallback(
     (returnPath: string) =>
@@ -99,11 +111,13 @@ export const ExploreExperience = () => {
   const { ids: myTripsPinIds, loading: myTripsPinsLoading } = useMemberJourneyMapPinIds(
     myTripsMode ? user?.id : undefined
   );
+  const areaSlug = parseExploreAreaSlug(searchParams);
   const mapItems = useMemo(() => {
-    if (!myTripsMode) return items;
+    const areaScoped = filterExploreMapItemsByAreaSlug(items, areaSlug);
+    if (!myTripsMode) return areaScoped;
     if (!myTripsPinIds) return [];
-    return items.filter((item) => myTripsPinIds.has(item.id));
-  }, [items, myTripsMode, myTripsPinIds]);
+    return areaScoped.filter((item) => myTripsPinIds.has(item.id));
+  }, [items, myTripsMode, myTripsPinIds, areaSlug]);
   const mapLoading = loading || (myTripsMode && myTripsPinsLoading);
   const loadError = mapError ? describeExploreMapLoadError(mapError) : null;
 
@@ -186,7 +200,7 @@ export const ExploreExperience = () => {
   );
 
   const handleOfferRideshareForDemand = useCallback(() => {
-    if (!selected || selected.source !== 'demand') return;
+    if (!selected || !exploreMapItemIsSeeking(selected)) return;
 
     const returnPath = `${pathname}${search}`;
 
@@ -313,7 +327,7 @@ export const ExploreExperience = () => {
     if (!deepLinkPinId?.startsWith('demand:') || rideshareLinkDemand || loading) return;
     if (compose.organizeRoute?.kind !== 'rideshare') return;
     const item = selectionItems.find((entry) => entry.id === deepLinkPinId);
-    if (item?.source === 'demand') {
+    if (item && exploreMapItemIsSeeking(item)) {
       setRideshareLinkDemand(item);
     }
   }, [
@@ -387,30 +401,28 @@ export const ExploreExperience = () => {
   }, []);
 
   const memberPeoplePreview = useMemberPeopleNetworkPreview(Boolean(user));
-  const peopleBrowsePanelOpen = Boolean(user) && browse.listMode === 'people';
-  const entityFollowsEnabled =
-    peopleBrowsePanelOpen && browse.peopleBrowseTab === 'followed' && browse.followedSegment !== 'people';
-  const entityFollows = useEntityFollows(entityFollowsEnabled);
-  const memberPeopleNetworkEnabled =
+  const peopleBrowsePanelOpen = browse.listMode === 'people';
+  const entityFollows = useEntityFollows(false);
+  const memberAvailabilityEnabled = peopleBrowsePanelOpen && browse.peopleBrowseTab === 'available';
+  const memberDiscoveryEnabled =
     peopleBrowsePanelOpen &&
-    browse.peopleBrowseTab !== 'discover' &&
-    !(browse.peopleBrowseTab === 'followed' && browse.followedSegment !== 'people');
-  const memberDiscoveryEnabled = peopleBrowsePanelOpen && browse.peopleBrowseTab === 'discover';
-  const memberPeople = useMemberPeople({
-    enabled: memberPeopleNetworkEnabled,
-    segment:
-      browse.peopleBrowseTab === 'friends' || browse.peopleBrowseTab === 'followed'
-        ? browse.peopleBrowseTab
-        : 'all',
-  });
+    Boolean(user) &&
+    (browse.peopleBrowseTab === 'going' || browse.peopleBrowseTab === 'connect');
   const memberDiscovery = useMemberDiscoveryRoster({
     enabled: memberDiscoveryEnabled,
     search: browse.query,
-    activityDatePreset: 'anyday',
+    activityDatePreset: browse.activityDatePreset,
+  });
+  const peopleAvailability = useExplorePeopleAvailability({
+    enabled: memberAvailabilityEnabled,
+    search: browse.query,
+    activityDatePreset: browse.activityDatePreset,
+    areaSlug,
+    mapFilter: browse.mapFilter,
   });
 
   const openPeopleBrowsePanel = useCallback(() => {
-    browse.openPeopleBrowsePanel('all');
+    browse.openPeopleBrowsePanel('available');
   }, [browse]);
 
   const openExploreActivityFromRef = useCallback(
@@ -430,7 +442,7 @@ export const ExploreExperience = () => {
     [mapItems, selection]
   );
 
-  const { mapPins, searchScopeCounts } =
+  const { mapPins, listItems, shopListSections, searchScopeCounts } =
     useExploreBrowseList({
       items: mapItems,
       ephemeralMapItems: linkOnlyPeekItems,
@@ -511,15 +523,17 @@ export const ExploreExperience = () => {
     searchFocusNonce,
     peopleBrowseTab: browse.peopleBrowseTab,
     onPeopleBrowseTabChange: browse.applyPeopleBrowseTab,
+    activityDatePreset: browse.activityDatePreset,
+    onActivityDatePresetChange: browse.applyActivityDatePreset,
     buddiesDiscoverSegment: browse.buddiesDiscoverSegment,
     onBuddiesDiscoverSegmentChange: browse.applyBuddiesDiscoverSegment,
     memberPeopleAllCount: memberPeoplePreview.preview?.allCount,
     memberPeopleFriendsCount: memberPeoplePreview.preview?.friendCount,
     memberPeopleFollowedCount: memberPeoplePreview.preview?.followedCount,
-    memberPeopleNetwork: memberPeople.people,
-    memberPeopleLoading: memberPeople.loading,
-    memberPeopleError: memberPeople.error,
-    onRefreshMemberPeople: memberPeople.refresh,
+    memberPeopleNetwork: [],
+    memberPeopleLoading: false,
+    memberPeopleError: null,
+    onRefreshMemberPeople: () => {},
     onOpenMemberPersonActivity: openExploreActivityFromRef,
     discoveryFriendsGoing: memberDiscovery.friendsGoing,
     discoveryHostsGoing: memberDiscovery.hostsGoing,
@@ -531,6 +545,11 @@ export const ExploreExperience = () => {
     discoveryError: memberDiscovery.error,
     onOpenDiscoveryActivity: openDiscoveryActivityOnMap,
     onRefreshMemberDiscovery: () => void memberDiscovery.refresh(),
+    availabilityPeople: peopleAvailability.people,
+    availabilityLoading: peopleAvailability.loading,
+    availabilityError: peopleAvailability.error,
+    availabilityRange: peopleAvailability.range,
+    onRefreshAvailability: () => void peopleAvailability.refresh(),
     followedSegment: browse.followedSegment,
     onFollowedSegmentChange: browse.applyFollowedSegment,
     entityFollows: entityFollows.follows,
@@ -538,14 +557,101 @@ export const ExploreExperience = () => {
     entityFollowsError: entityFollows.error,
     isSignedIn: Boolean(user),
     userRole: user?.role,
+    canBrowseAllMembers,
   };
 
-  const desktopBrowsePanel = (
-    <ListDiscoveryExperience surface="exploreSidebar" onCloseMapOverlay={browse.closeListPanel} />
+  const browsePanelShared = {
+    isDesktop,
+    loading: mapLoading,
+    myTripsMode,
+    shopListSections,
+    desktopBrowseTab: browse.desktopBrowseTab,
+    mapFilter: browse.mapFilter,
+    browseFilterKeys: browse.browseFilterKeys,
+    placesMode: browse.placesMode,
+    onMapFilterChange: browse.applyMapFilter,
+    activityDatePreset: browse.activityDatePreset,
+    onActivityDatePresetChange: browse.applyActivityDatePreset,
+    venueRegions: browse.venueRegions,
+    onVenueRegionsChange: browse.applyVenueRegions,
+    onDesktopBrowseTabChange: browse.applyDesktopBrowseTab,
+    panel: browse.panel,
+    sidebarPanel: browse.sidebarPanel,
+    onPanelChange: browse.applyPanel,
+    buddySubtype: browse.buddySubtype,
+    onBuddySubtypeChange: browse.applyBuddySubtype,
+    outingTopic: browse.outingTopic,
+    onOutingTopicChange: browse.applyOutingTopic,
+    query: browse.query,
+    onQueryChange: browse.setQuery,
+    onQuerySync: () => browse.syncExploreUrl({ q: browse.query }),
+    onClearQuery: () => {
+      browse.setQuery('');
+      browse.syncExploreUrl({ q: '' });
+    },
+    onOpenItem: selection.openItem,
+    searchScopeCounts,
+    onSearchScopePick: handleExploreSearchCommit,
+    searchFocusNonce,
+    peopleBrowseTab: browse.peopleBrowseTab,
+    onPeopleBrowseTabChange: browse.applyPeopleBrowseTab,
+    activityDatePreset: browse.activityDatePreset,
+    onActivityDatePresetChange: browse.applyActivityDatePreset,
+    buddiesDiscoverSegment: browse.buddiesDiscoverSegment,
+    onBuddiesDiscoverSegmentChange: browse.applyBuddiesDiscoverSegment,
+    memberPeopleAllCount: memberPeoplePreview.preview?.allCount,
+    memberPeopleFriendsCount: memberPeoplePreview.preview?.friendCount,
+    memberPeopleFollowedCount: memberPeoplePreview.preview?.followedCount,
+    memberPeopleNetwork: [],
+    memberPeopleLoading: false,
+    memberPeopleError: null,
+    onRefreshMemberPeople: () => {},
+    onOpenMemberPersonActivity: openExploreActivityFromRef,
+    discoveryFriendsGoing: memberDiscovery.friendsGoing,
+    discoveryHostsGoing: memberDiscovery.hostsGoing,
+    discoveryLookingFor: memberDiscovery.lookingFor,
+    discoveryFollowed: memberDiscovery.followed,
+    discoveryDirectory: memberDiscovery.directory,
+    discoveryQuota: memberDiscovery.quota,
+    discoveryLoading: memberDiscovery.loading,
+    discoveryError: memberDiscovery.error,
+    onOpenDiscoveryActivity: openDiscoveryActivityOnMap,
+    onRefreshMemberDiscovery: () => void memberDiscovery.refresh(),
+    availabilityPeople: peopleAvailability.people,
+    availabilityLoading: peopleAvailability.loading,
+    availabilityError: peopleAvailability.error,
+    availabilityRange: peopleAvailability.range,
+    onRefreshAvailability: () => void peopleAvailability.refresh(),
+    followedSegment: browse.followedSegment,
+    onFollowedSegmentChange: browse.applyFollowedSegment,
+    entityFollows: entityFollows.follows,
+    entityFollowsLoading: entityFollows.loading,
+    entityFollowsError: entityFollows.error,
+    isSignedIn: Boolean(user),
+    userRole: user?.role,
+    buddyUserIds: user ? new Set(memberPeoplePreview.preview?.friendUserIds ?? []) : undefined,
+    canBrowseAllMembers,
+  };
+
+  const desktopMapListPanel = (
+    <ExploreBrowsePanel
+      {...browsePanelShared}
+      listItems={listItems}
+      onClose={browse.closeListPanel}
+      closePanelAriaLabel="Close map list"
+      listMode="default"
+    />
+  );
+
+  const desktopDiscoverBrowsePanel = (
+    <ListDiscoveryExperience
+      surface="mapOverlay"
+      onCloseMapOverlay={browse.closeDiscoverBrowse}
+    />
   );
 
   const desktopPeopleBrowsePanel = (
-    <ExplorePeopleBrowsePanel
+    <PeopleBrowsePanel
       {...peopleBrowsePanelProps}
       onClose={browse.closePeopleBrowsePanel}
       closePanelAriaLabel="Close People panel"
@@ -555,7 +661,7 @@ export const ExploreExperience = () => {
 
   const mobileListPeopleBrowsePanel = (
     <ListFeedActionsProvider key="explore-list-people-browse">
-      <ExplorePeopleBrowsePanel
+      <PeopleBrowsePanel
         {...peopleBrowsePanelProps}
         onClose={browse.closeListPanel}
         closePanelAriaLabel="Close People"
@@ -565,11 +671,24 @@ export const ExploreExperience = () => {
     </ListFeedActionsProvider>
   );
 
-  const mobileListDiscoverPanel = (
+  const mobileMapListPanel = (
+    <ExploreBrowsePanel
+      key="explore-map-list"
+      {...browsePanelShared}
+      listItems={listItems}
+      onClose={browse.closeListPanel}
+      closePanelAriaLabel="Close list"
+      closeButtonVariant="dismiss"
+      listMode="default"
+      mobileSheetChrome
+    />
+  );
+
+  const mobileDiscoverBrowsePanel = (
     <ListDiscoveryExperience
-      key="explore-list-discover"
+      key="explore-discover-browse"
       surface="mapOverlay"
-      onCloseMapOverlay={browse.closeListPanel}
+      onCloseMapOverlay={browse.closeDiscoverBrowse}
     />
   );
 
@@ -594,7 +713,7 @@ export const ExploreExperience = () => {
       <div className="relative flex min-h-0 flex-1 lg:flex-row">
         {browse.showListPanel && isDesktop && browse.listMode !== 'people' ? (
           <aside className="hidden lg:flex lg:min-h-0 lg:w-[min(400px,32vw)] lg:shrink-0 lg:flex-col lg:overflow-hidden lg:border-r lg:border-neutral-200 lg:bg-neutral-50 lg:px-4 lg:py-4 lg:transition-[width] lg:duration-300">
-            {desktopBrowsePanel}
+            {desktopMapListPanel}
           </aside>
         ) : null}
 
@@ -611,7 +730,6 @@ export const ExploreExperience = () => {
           onVenueRegionsChange={browse.applyVenueRegions}
           onOpenPeopleBrowsePanel={openPeopleBrowsePanel}
           peopleBrowsePanelAvatars={peopleBrowseMapChip.avatars}
-          peopleBrowsePanelExtraCount={peopleBrowseMapChip.extraCount}
           peopleBrowsePanelFriendCount={peopleBrowseMapChip.friendCount}
           searchQuery={browse.query}
           onSearchQueryChange={browse.setQuery}
@@ -638,7 +756,7 @@ export const ExploreExperience = () => {
           locatingDevice={viewport.locatingDevice}
           onAllowMapLocation={viewport.handleAllowMapLocation}
           onDismissLocationPrompt={viewport.dismissLocationPromptUi}
-          onOpenBrowse={browse.openBrowse}
+          onOpenBrowse={browse.openMapListPanel}
           onPrimaryFab={compose.handleCreateTap}
           primaryFabLabel={primaryFabLabel}
           selected={selection.selected}
@@ -670,17 +788,31 @@ export const ExploreExperience = () => {
           onGuestGatedAction={selection.handleGuestGatedAction}
         />
 
-        {browse.showListPanel && !isDesktop ? (
+        {browse.browseOpen && !isDesktop ? (
+          <ExploreMobileBrowseOverlay open onClose={browse.closeDiscoverBrowse} sheetSize="full">
+            {mobileDiscoverBrowsePanel}
+          </ExploreMobileBrowseOverlay>
+        ) : null}
+
+        {browse.showListPanel && !isDesktop && !browse.browseOpen ? (
           <ExploreMobileBrowseOverlay
             open
             onClose={browse.closeListPanel}
-            sheetSize={browse.listMode === 'people' ? 'content' : 'full'}
+            sheetSize="full"
           >
-            {browse.listMode === 'people' ? mobileListPeopleBrowsePanel : mobileListDiscoverPanel}
+            {browse.listMode === 'people' ? mobileListPeopleBrowsePanel : mobileMapListPanel}
           </ExploreMobileBrowseOverlay>
         ) : null}
 
         {inviteShare.sheet}
+
+        {isDesktop && browse.browseOpen ? (
+          <aside
+            className="hidden lg:flex lg:min-h-0 lg:w-[min(400px,32vw)] lg:shrink-0 lg:flex-col lg:overflow-hidden lg:border-l lg:border-neutral-200 lg:bg-white lg:px-5 lg:py-4 lg:transition-[width] lg:duration-300"
+          >
+            {desktopDiscoverBrowsePanel}
+          </aside>
+        ) : null}
 
         {isDesktop && browse.listMode === 'people' ? (
           <aside

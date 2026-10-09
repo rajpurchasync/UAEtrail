@@ -149,7 +149,7 @@ export const SelfPlansSection = ({
                     intentStatusClass[intent.status]
                   }`}
                 >
-                  {intent.status === 'active' ? 'Live' : intent.status}
+                  {intent.status === 'active' ? 'Seeking' : intent.status}
                 </span>
               }
               onClick={() => openManage(intent)}

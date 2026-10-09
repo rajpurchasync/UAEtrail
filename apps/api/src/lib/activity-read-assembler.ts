@@ -110,6 +110,7 @@ const mongoEventToEvent = (doc: MongoActivityDoc): Activity => {
   publishedAt: doc.publishedAt,
   outingCategory: (doc.outingCategory as OutingCategory | null | undefined) ?? null,
   outingTopic: (doc.outingTopic as OutingTopic | null | undefined) ?? null,
+  areaId: doc.areaId ?? null,
   createdAt: doc.createdAt,
   updatedAt: doc.updatedAt,
   };

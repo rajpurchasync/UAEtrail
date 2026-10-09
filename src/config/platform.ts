@@ -12,6 +12,8 @@ import {
   MY_REQUESTS_PATH,
   NOTIFICATIONS_PATH,
   PROFILE_PATH,
+  MY_TRIPS_PATH,
+  PLAN_PATH,
   TRIPS_PATH,
   ADMIN_PLACES_PATH,
   HOST_PLACES_PATH,
@@ -27,6 +29,9 @@ export { ADMIN_PLACES_PATH, HOST_PLACES_PATH };
 
 /** Full-screen explore map (mobile-first). */
 export const EXPLORE_MAP_PATH = '/explore' as const;
+
+/** Visual discover browse embedded on explore (`browse=1` — categories, rails, posters). */
+export const EXPLORE_DISCOVER_BROWSE_PATH = `${EXPLORE_MAP_PATH}?browse=1` as const;
 
 /** Scroll-first discovery feed (mobile-first layout; desktop centered column). */
 export const LIST_DISCOVERY_PATH = '/list' as const;
@@ -99,6 +104,7 @@ export const OPERATOR_PUBLIC_PATH_PREFIX = LEGACY_OPERATOR_PUBLIC_PATH_PREFIX;
 export const DESKTOP_NAV_LINKS = [
   { to: '/', label: 'Home' },
   { to: EXPLORE_MAP_PATH, label: 'Explore' },
+  { to: EXPLORE_DISCOVER_BROWSE_PATH, label: 'Browse' },
   { to: '/faq', label: 'Help' },
 ] as const;
 
@@ -109,6 +115,11 @@ export const joinAuthPath = (redirect: string = PARTICIPANT_JOIN_REDIRECT): stri
 /** Right-side user menu on landing (mobile/PWA) — Explore, Join free, Contact (+ Log in in drawer). */
 export const MOBILE_LANDING_USER_MENU = [
   { label: 'Explore', to: EXPLORE_MAP_PATH, match: [EXPLORE_MAP_PATH] as const },
+  {
+    label: 'Browse',
+    to: EXPLORE_DISCOVER_BROWSE_PATH,
+    match: [EXPLORE_DISCOVER_BROWSE_PATH, LIST_DISCOVERY_PATH, '/discovery'] as const,
+  },
   { label: 'Join free', to: joinAuthPath(), match: ['/signin', '/signup'] as const },
   { label: 'Contact', href: 'mailto:support@uaetrail.com' },
 ] as const;
@@ -138,17 +149,17 @@ export type ConsumerHamburgerMenuItem =
 export const CONSUMER_HAMBURGER_MENU: readonly ConsumerHamburgerMenuItem[] = [
   {
     kind: 'link',
-    label: 'Explore',
-    emoji: '🗺️',
-    to: EXPLORE_MAP_PATH,
-    match: [EXPLORE_MAP_PATH, '/discovery'],
+    label: 'Browse',
+    emoji: '🧭',
+    to: EXPLORE_DISCOVER_BROWSE_PATH,
+    match: [EXPLORE_DISCOVER_BROWSE_PATH, LIST_DISCOVERY_PATH, '/discovery'],
   },
   {
     kind: 'link',
-    label: 'My Trips',
+    label: 'My trips',
     emoji: '🧳',
-    to: TRIPS_PATH,
-    match: ['/trips', '/activities', '/activity'],
+    to: MY_TRIPS_PATH,
+    match: [MY_TRIPS_PATH, '/trips', '/activities', '/activity'],
   },
   {
     kind: 'link',
@@ -331,9 +342,11 @@ export const CONSUMER_SELF_HEADER_EXACT = [
   '/',
   '/explore',
   LIST_DISCOVERY_PATH,
+  PLAN_PATH,
   '/trips',
   '/trips/map',
   '/activities',
+  MY_TRIPS_PATH,
   '/shop',
   PROFILE_PATH,
   GROUPS_PATH,
@@ -371,14 +384,15 @@ export const hasConsumerSelfHeader = (pathname: string): boolean =>
   CONSUMER_SELF_HEADER_PREFIXES.some((prefix) => pathname.startsWith(prefix)) ||
   isMobileDetailRoute(pathname);
 
-/** Signed-in mobile tab shell — Explore · Trips · Chat (`MESSAGES_PATH`). */
-export const MOBILE_BOTTOM_NAV_TAB_PATHS = [EXPLORE_MAP_PATH, '/trips', MESSAGES_PATH] as const;
+/** Signed-in mobile tab shell — Explore · Plan · Chat (middle tab route {@link PLAN_PATH}). */
+export const MOBILE_BOTTOM_NAV_TAB_PATHS = [EXPLORE_MAP_PATH, PLAN_PATH, MESSAGES_PATH] as const;
 
 export type MobileBottomNavTabPath = (typeof MOBILE_BOTTOM_NAV_TAB_PATHS)[number];
 
 export const isMobileBottomNavTabPath = (pathname: string): pathname is MobileBottomNavTabPath =>
   (MOBILE_BOTTOM_NAV_TAB_PATHS as readonly string[]).includes(pathname) ||
   pathname === '/activities' ||
+  pathname === TRIPS_PATH ||
   pathname === LIST_DISCOVERY_PATH;
 
 /** Personal hub routes that keep the mobile tab bar visible (profile is not a tab). */

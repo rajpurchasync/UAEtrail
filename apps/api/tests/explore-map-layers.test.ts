@@ -69,6 +69,7 @@ describe('GET /api/v1/explore/map layer separation', () => {
     const venueItem = items.find((item) => item.id === `venue:${venue.id}`);
 
     expect(activity?.source).toBe('activity');
+    expect(activity?.activityMode).toBe('hosted');
     expect(activity?.kind).toBe('hiking');
     expect(activity?.composeIntent).toBe('organize');
     expect(activity?.outingCategory).toBe('hiking');

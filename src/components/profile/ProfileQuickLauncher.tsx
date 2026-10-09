@@ -5,11 +5,12 @@ import {
   explorePeopleBrowsePath,
   HOST_OVERVIEW_PATH,
   MESSAGES_PATH,
+  MY_TRIPS_PATH,
   PROFILE_BADGES_PATH,
   PROFILE_SETTINGS_PATH,
 } from '../../config/routingCatalog';
 import type { LucideIcon } from 'lucide-react';
-import { Award, MapPin, MessageCircle, Mountain, Settings, UserRound, Users } from 'lucide-react';
+import { Award, MapPin, MessageCircle, Mountain, Settings, UserRound, Users, Backpack } from 'lucide-react';
 
 export type ProfileQuickLauncherItem = {
   key: string;
@@ -94,6 +95,13 @@ export const buildProfileQuickLauncherItems = (input: {
       icon: Award,
       iconWrapClassName: 'bg-amber-50 text-amber-800',
       badge: input.badgesEarnedCount > 0 ? input.badgesEarnedCount : undefined,
+    },
+    {
+      key: 'my-trips',
+      label: 'My trips',
+      to: MY_TRIPS_PATH,
+      icon: Backpack,
+      iconWrapClassName: 'bg-sky-50 text-sky-800',
     },
     {
       key: 'contributions',

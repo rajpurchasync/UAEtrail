@@ -1,7 +1,13 @@
 import { useCallback, useMemo, useState, type Dispatch, type SetStateAction } from 'react';
 import type { QueryClient } from '@tanstack/react-query';
 import type { NavigateFunction } from 'react-router-dom';
-import type { ActivityDTO, ActivityMapPeekActionId, ExploreMapItemDTO, UserRole } from '@uaetrail/shared-types';
+import {
+  exploreMapItemIsSeeking,
+  type ActivityDTO,
+  type ActivityMapPeekActionId,
+  type ExploreMapItemDTO,
+  type UserRole,
+} from '@uaetrail/shared-types';
 import { resolveActivityDisplayCoordinates, resolveActivityHostUserId } from '@uaetrail/shared-types';
 import { hostPublishedActivityPeekAccess } from '../../access/resolvePeekDetailAccess';
 import { buildExploreMapItemFromActivity, parseActivityMapItemId } from '../privateActivityExploreItem';
@@ -91,7 +97,7 @@ export const useExploreSelectionActions = ({
     const activityHostPeek = isOwnActivity;
     const isOwnDemand = Boolean(
       user &&
-        selected.source === 'demand' &&
+        exploreMapItemIsSeeking(selected) &&
         selected.requesterUserId === user.id &&
         selected.participantIntentId &&
         !selected.convertedActivityId
@@ -130,7 +136,7 @@ export const useExploreSelectionActions = ({
   });
 
   const demandJoinContextEnabled = Boolean(
-    selected?.source === 'demand' &&
+    selected && exploreMapItemIsSeeking(selected) &&
       selected.participantIntentId &&
       !selectedCard?.showDemandOwnerActions &&
       user
@@ -155,13 +161,13 @@ export const useExploreSelectionActions = ({
   );
 
   const peekJoinUiState =
-    selected?.source === 'demand' && !selectedCard?.showDemandOwnerActions
+    selected && exploreMapItemIsSeeking(selected) && !selectedCard?.showDemandOwnerActions
       ? demandJoinUiState
       : activityPeekSkipsJoinContext
         ? undefined
         : joinUiState;
   const peekJoinStateLoading =
-    selected?.source === 'demand' && !selectedCard?.showDemandOwnerActions
+    selected && exploreMapItemIsSeeking(selected) && !selectedCard?.showDemandOwnerActions
       ? demandJoinStateLoading
       : joinStateLoading;
 
@@ -208,7 +214,7 @@ export const useExploreSelectionActions = ({
   }, [user, selected?.source, joinActions]);
 
   const handleJoin = useCallback(() => {
-    if (selected?.source === 'demand') {
+    if (selected && exploreMapItemIsSeeking(selected)) {
       const intentId = selected.participantIntentId;
       if (!intentId) return;
       if (!user) {

@@ -1,0 +1,533 @@
+# Member surfaces — implementation plan (master checklist)
+
+**Status:** Approved direction · **not** fully implemented  
+**Last updated:** 2026-10-09 (coverage audit §15–§17)  
+**Audience:** Eng + product — use this so context is not lost across PRs.
+
+**Tier 1 defers to:** [`NAVIGATION.md`](../NAVIGATION.md), [`DOMAIN.md`](../DOMAIN.md), [`DOMAIN_CANONICALS.md`](../DOMAIN_CANONICALS.md), [`SYSTEM_COHERENCE.md`](../SYSTEM_COHERENCE.md), [`CREATE_FLOW.md`](../CREATE_FLOW.md), [`MEMBER_MODEL.md`](../MEMBER_MODEL.md) — **update those as each phase ships** (see §10).
+
+**Related experiment notes:** [`explore-browse-ia.md`](./explore-browse-ia.md) (topic + pin layers — **will change** when demand merges into Activity).
+
+---
+
+## 0. Decision record (locked)
+
+- [ ] Team sign-off recorded in PR or issue linking this doc
+
+| # | Decision |
+|---|----------|
+| D1 | **Four consumer tabs:** Explore · Plan · Chat · Profile (no Social tab, no Host tab). |
+| D2 | **No consumer `/host` shell** — host = capability; per-activity manage on Plan + activity detail; business manage via Profile → shop/agency/guide URLs. |
+| D3 | **Retire “trips”** as product + architecture term; **Activity** + **commitments** on Plan; redirects for legacy URLs. |
+| D4 | **Catalog projections:** `/activity`, places, `/shop`, `/guide`, `/agency` — same detail pattern; not a separate host app. |
+| D5 | **Geography:** Region (emirate) → **Area** (curated, e.g. Hatta) → Place → Activity. |
+| D6 | **Time-bound on map:** everything that is not a Place is an **Activity** with `activityMode`: **`hosted`** \| **`seeking`** (no separate map species “demand”). |
+| D7 | **Availability** is **person + calendar slots** — separate from Activity; discoverable via **People** (+ optional map layer); edited on Plan. |
+| D8 | **Browse axis:** shared **topic** (hiking, camping, rideshare, …) across activities (both modes), places, and available people. |
+| D9 | **Find FAB** creates Activity **`seeking`** (not a parallel entity in UX). |
+| D10 | **Plan** owns: commitments (join/organize/seek), goals, saved (wishlist), availability editor — full create/edit, not read-only. |
+| D11 | **No fifth tab** — Friends at `/buddies` (Profile/hamburger); **People** on Explore = discovery + availability, not chat. |
+| D12 | **Business workspace** stays under **shop/agency/guide manage URLs** + Profile membership — not consumer `/host` branding. |
+| D13 | **Wishlist / saved** — one API; **write UI primary on Plan `saved` lens**; Explore heart writes same store; Profile **teaser only** (no second list). |
+| D14 | **Seeking ≠ availability** — seeking = Activity `activityMode: seeking` (map pin); availability = person slots (People layer / clusters). Never one entity. |
+
+---
+
+## 1. Target architecture (reference)
+
+### 1.1 Main screens
+
+| Screen | Route | Owns |
+|--------|--------|------|
+| Explore | `/explore` | Discover + Publish (FAB); map/list/browse/people |
+| Plan | `/plan` | Commitments, goals, saved, availability, manage outing |
+| Chat | `/chat` | Messages, compose DM/group; crew deep links |
+| Profile | `/profile` + stack | Identity, visibility, history, journey map, badges, contributions, memberships → business manage |
+
+### 1.2 Entity projections
+
+| Entity | Route(s) | Plane |
+|--------|----------|--------|
+| Activity | `/activity/:id` | activities |
+| Place | `/trail`, `/camp`, `/venue`, … | places |
+| Area | `/area/:slug` | areas + discovery aggregate |
+| Shop / guide / agency | `/shop/:id`, `/guide/:slug`, `/agency/:slug` | catalog (tenant public) |
+| Member | `/member/:userId` | account (+ public availability slice) |
+
+### 1.3 Cross-cutting
+
+Notifications (deep link to **activity**, **Plan row context**, **chat thread**, **buddies requests** — not generic `/plan?segment=…` when entity exists), Share, Follow, Report, Auth — not tabs.
+
+### 1.5 Explore discovery trilogy (product questions)
+
+| Question | Answer on Explore |
+|----------|-------------------|
+| **What’s happening?** | Activities (`hosted` + `seeking`) + topic/when/area filters |
+| **Who’s available?** | **People** layer + availability index (not a separate “Social” tab) |
+| **Where can I go?** | Places + **Area** pages + shops/operators on area |
+
+**When / where / how:** time on activity & availability slots; place/area on map; join/request/RSVP on activity detail; crew via Chat deep link.
+
+### 1.4 Legacy redirects (maintain until analytics quiet)
+
+| Legacy | Target |
+|--------|--------|
+| `/trips`, `/activities` | `/plan` or Profile history per query (`legacyTripsRedirect.ts`) |
+| `/profile/my-trips` | Profile **history** + **journey map** (rename paths when ready) |
+| `/host/*` (consumer) | Plan, activity manage, or business manage — **no new links** |
+| `/profile/wishlist` | Plan `?lens=saved` or equivalent |
+| `ExploreMapSource: demand` (wire) | Project as `activity` + `activityMode: seeking` until M2; then remove enum value |
+
+### 1.6 Already on branch (do not redo)
+
+- [x] `PLAN_PATH` `/plan`, legacy `/trips` → Plan or Profile history (`legacyTripsRedirect.ts`)
+- [x] `MY_TRIPS_PATH` history/map split from Plan (rename to `PROFILE_HISTORY_*` still open)
+- [x] Explore pin label **Activities** (wire key `trips` rename still open — Phase 2.3)
+- [x] Bottom nav **Plan** label; middle tab routes to `/plan`
+- [x] Plan **lenses** shell — Schedule · Saved · Goals (`src/plan/planLens.ts`, `Activities.tsx`)
+
+---
+
+## 2. Domain model checklist
+
+### 2.1 Activity (unified time-bound)
+
+- [ ] Add `activityMode: 'hosted' | 'seeking'` to domain schema (Zod + Mongo + `ActivityDTO`)
+- [ ] Document in `DOMAIN.md` — seeking = former participant intent / “looking for”
+- [ ] Map **all** time-bound pins to `ExploreMapSource: 'activity'` (remove public `demand` source)
+- [ ] Detail page `/activity/:id` renders variants for `hosted` vs `seeking` (CTA copy, join path)
+- [ ] Join requests: unify or alias `participant_intent_requests` → activity-scoped requests (phased)
+
+**Kinds (unchanged wire, aligned names):**
+
+- [ ] `activityType`: hiking, camping, event, rideshare (+ generic “activity” organize)
+- [ ] Align `src/config/activityTypes.ts` with rideshare on wire
+- [ ] `ParticipantIntentKind` values map into `activityType` + `seeking` mode (incl. guide → policy in MEMBER_MODEL)
+
+### 2.2 Place
+
+- [ ] Keep **one** entity `locations` / Place; kinds in `PlaceKind` (`place-kind.ts`)
+- [ ] Add `areaId?: ObjectId` on place rows
+- [ ] Facilities (toilet, parking, …) = PlaceKind — surfaced on **Area** page, not mixed into topic=hiking unless grouped
+
+### 2.3 Area (new)
+
+- [ ] Collection `areas` (or documented equivalent) with slug, name, region, bounds, center, status
+- [ ] Admin CRUD + seed (Hatta, Jais, …)
+- [ ] `GET /areas/:slug` public card
+- [ ] `place.areaId` + `activity.areaId` (new field)
+- [ ] Point-in-polygon (+ place.areaId precedence) on publish — §4
+
+### 2.4 Availability (new)
+
+- [ ] Collection `member_availability` (or `availability_slots`) — see §5
+- [ ] **Not** an Activity; **not** merged with seeking posts
+- [ ] Visibility: public | buddies | hidden (MEMBER_MODEL)
+
+### 2.5 OutingTopic (browse projection)
+
+- [ ] Add `OutingTopic` + helpers: `topicFromActivity`, `topicFromPlaceKind`, `topicFromAvailabilityKind`
+- [ ] Single matcher used by explore map/list (`explore-map.ts`, `exploreMapPinModel.ts`)
+- [ ] Retire separate “Looking for” pill — use Activities layer + optional chip Hosted | Seeking | All
+
+---
+
+## 3. Explore — implementation checklist
+
+### 3.1 Layers (URL + chrome)
+
+- [ ] **Topic** row: hiking, camping, rideshare, events, shops, … (`explore-browse-ia.md` updated)
+- [ ] **Layer** row: Activities (hosted+seeking) | Places | Shops | **People** (availability)
+- [ ] Remove `pinKind=looking` / **Looking for** pill (`explorePinKindFilter.ts` — rename wire `trips` → `activities` when safe)
+- [ ] `?area=:slug` constrains bbox + membership
+- [ ] When / date presets apply to activities; availability uses date range on People
+
+### 3.2 Map pins
+
+- [ ] Activity pins: badge **Seeking** vs **Hosted** (iconography)
+- [ ] People **Available** layer: **area clusters** v1 (“12 available · hiking · this week”) — not per-user pin spam
+- [ ] Optional v2: opt-in fuzzy pin per user per area
+
+### 3.3 Search
+
+- [ ] Query “Hatta” → **Area** card first → `/area/:slug`
+- [ ] Topic + area + when returns activities (both modes), places, people index
+
+### 3.4 FAB
+
+- [ ] Organize → Activity `hosted`
+- [ ] Find → Activity `seeking` (same wizard UX; new write path when storage merged)
+- [ ] Add → Place contribute (unchanged)
+
+### 3.5 Area detail page
+
+- [ ] Route `/area/:slug`
+- [ ] Sections: map strip, **activities** (hosted+seeking), places by kind, shops/operators, **available people** (week filter)
+- [ ] CTAs: FAB with `areaId` prefill
+
+---
+
+## 4. Area resolution on create (checklist)
+
+- [ ] On activity publish (`hosted` and `seeking`): compute `areaId` from (1) `registryPlaceId` → place.areaId, (2) else point-in-polygon on anchor lat/lng
+- [ ] Tie-break: smallest area by area km² or admin `priority`
+- [ ] Review step shows “Area: {name}” with override picker (published areas list)
+- [ ] Persist `activity.areaId`; keep `region` emirate
+- [ ] Demand migration: same for legacy intents → activities
+- [ ] Availability: user selects `areaId` (+ region fallback); no required GPS home pin
+
+---
+
+## 5. Availability — implementation checklist
+
+### 5.1 Data model
+
+- [ ] `MemberAvailability`: userId, kinds[], visibility, region?, areaId?, note?
+- [ ] `slots[]`: `{ startDate, endDate, timeBand? }` (inclusive dates; multi-day ranges)
+- [ ] Index for overlap queries: kind + area/region + slot range + visibility
+- [ ] Auto-expire past slots in read model
+
+### 5.2 Set & publish (Plan)
+
+- [ ] Plan UI: calendar multi-select / range picker + kinds + area + visibility default from Profile
+- [ ] Save = publish to index (when visibility ≠ hidden and ≥1 future slot)
+- [ ] Distinct entry from FAB Find (seeking **activity** vs **availability**)
+
+### 5.3 View surfaces
+
+- [ ] Explore **People** list: filters topic, date range, area, buddies-only
+- [ ] Explore map **Available** layer (clusters) — §3.2
+- [ ] `/area/:slug` — available people section
+- [ ] `/member/:id` — public slice per visibility
+- [ ] Optional v2: activity detail “N members available near this date”
+
+### 5.4 Guide kind
+
+- [ ] Policy in MEMBER_MODEL: commercial guide = hosted Activity / agency profile; casual “can guide” = availability kind `guide` with clear copy
+
+### 5.5 API
+
+- [ ] `GET /me/availability` · `PUT /me/availability`
+- [ ] `GET /explore/people?...` or extended `GET /explore/map` people facet
+- [ ] Tests: overlap, visibility, buddies-only
+
+---
+
+## 6. Plan — implementation checklist
+
+### 6.1 Lenses (URL `?lens=`)
+
+- [ ] `schedule` — joining, organizing, **seeking** (open asks), **needs-you** (approvals, invites)
+- [x] `saved` — wishlist list shell (`PlanSavedSection`); heart on Explore → same API
+- [x] `goals` — full CRUD on Goals lens (moved off schedule default)
+- [ ] `availability` — **pick one layout before build:** dedicated lens **or** fixed block atop `schedule` (not both full editors)
+- [ ] **Needs-you** strip (host approvals, invites) atop `schedule` — collapses when empty ([`plan-tab-ux-backlog.md`](./plan-tab-ux-backlog.md))
+- [ ] **Suggested** rail (wishlist match / buddies — links to Explore, not second map) — post-availability Phase 5+
+
+### 6.2 Manage outing (no /host)
+
+- [ ] Row tap → activity detail or manage sheet (roster, approve, check-in, invite, crew chat → `/chat?group=`)
+- [ ] “See all requests” for power hosts → business manage or filtered Plan list — not `/host` for buddies
+
+### 6.3 Profile memory (not Plan)
+
+- [ ] Rename routes: `PROFILE_HISTORY_PATH`, `JOURNEY_MAP_PATH` (redirect from `my-trips`)
+- [ ] Past activities, reviews, badges on Profile only
+
+### 6.4 Code moves
+
+- [ ] Rename `src/trips` → `src/member-plan` (or `commitments`) + re-export deprecated aliases one release
+- [ ] Remove `TripsMainTabs` from Plan; no “trips” UI strings (`verify` + grep)
+
+---
+
+## 7. Chat · Profile · Host retirement
+
+### 7.1 Chat
+
+- [ ] Context-first deep links from activity, notifications
+- [ ] Tab = inbox; de-emphasize empty-state DM discovery
+- [ ] **`/groups`** — list/manage only; thread always `/chat?group=` (no duplicate group chat UI)
+
+### 7.2 Profile
+
+- [ ] Identity, settings, **visibility** (who sees profile + availability)
+- [ ] Badges, contributions (**reviews** + **place suggestions** via Add/contribute)
+- [ ] Memberships → **Pro / business / shop** → `/profile/pro-membership`, `/shop/manage`, etc. — **not** `/host/overview` for consumers
+- [ ] Friends (`/buddies`) launcher — not a fifth tab
+- [ ] **History** + **journey map** only here (not on Plan)
+- [ ] Teaser links to Plan lenses (counts OK; **no** duplicate goals/saved/upcoming lists)
+- [ ] Guest **bottom nav**: prefer Explore + sign-in **or** dead tabs with single promise — document in NAVIGATION (Phase 0)
+
+### 7.3 Retire consumer `/host`
+
+- [ ] Inventory all `/host` links in `src/` (consumer)
+- [ ] Replace with Plan + activity manage + Profile business entry
+- [ ] `App.tsx` redirects for bookmarks
+- [ ] Keep host routes for **business workspace** only if renamed (`/studio` optional — document in API_ROUTING)
+
+---
+
+## 8. API & storage migration phases
+
+### Phase M0 — Projection only (low risk)
+
+- [x] Explore map emits seeking items as `source: activity`, `activityMode: seeking`
+- [x] UI removes Looking for pill; filters use mode
+- [x] Still read `participant_intents` collection
+
+### Phase M1 — Dual write
+
+- [ ] New Find publishes to `activities` with `seeking` + read intents for legacy
+- [ ] Backfill script intents → activities
+
+### Phase M2 — Single write
+
+- [ ] Stop writing intents; migrate join requests to activity id
+- [ ] Deprecate `participant_intents` in API docs
+
+### Phase M3 — Areas + availability
+
+- [ ] `areas` + `areaId` on activities/places
+- [ ] `member_availability` + explore people index
+
+---
+
+## 9. Implementation phases (execution order)
+
+Use one PR per subsection where possible; check boxes when merged.
+
+### Phase 0 — Docs charter (parallel)
+
+- [x] 0.1 Update Tier-1 tables per §10 (minimal pass: NAVIGATION, DOMAIN, DOMAIN_CANONICALS)
+- [x] 0.2 Stub `TRIPS_HOST_MANAGE.md` → superseded by NAVIGATION + COMMUNICATION
+- [x] 0.3 This doc linked from `experiment/README.md`
+- [x] 0.4 `scripts/bounded-context-manifest.json` — add `areas`, `availability`; remove trips hub wording
+- [x] 0.5 `npm run verify:system` green after doc-only changes
+
+### Phase 1 — Terminology & routes (partially done)
+
+- [x] 1.1 `PLAN_PATH`, history/journey path aliases + redirects (rename `MY_TRIPS_*` → `PROFILE_HISTORY_*` still open)
+- [x] 1.2 Plan lenses shell (`?lens=schedule|saved|goals`)
+- [ ] 1.3 Remove trips hub UI; grep guard for new “trips” strings in consumer UI
+- [ ] 1.4 Mobile tab label Plan/Home — product choice documented
+
+### Phase 2 — OutingTopic + explore layers
+
+- [x] 2.1 `OutingTopic` helpers in `shared-types` (`OUTING_TOPICS`, `parseOutingTopic`, `mapItemMatchesOutingTopic`)
+- [x] 2.2 Unified topic filter on activities + places (`exploreOutingTopic` + shared matcher)
+- [x] 2.3 Rename pin kind wire `trips` → `activities` (with backward compat parse)
+- [x] 2.4 Update `explore-browse-ia.md` + taxonomy tests (`explorePinKindFilter.test.ts`)
+
+### Phase 3 — Activity seeking projection (= **§8 M0**; do not duplicate M0 elsewhere)
+
+- [x] 3.1 DTO: `activityMode` on map items
+- [x] 3.2 Seeking badge on cards/peek
+- [x] 3.3 Plan schedule shows seeking rows
+- [x] 3.4 Remove Looking for pill
+
+### Phase 4 — Areas
+
+- [x] 4.1 Admin areas CRUD + seed
+- [x] 4.2 `place.areaId` + admin link UI (API + `areaId` on admin place create/patch; visual picker TBD)
+- [x] 4.3 `activity.areaId` + point-in-polygon on publish (seeking intents on create/update; organize review picker TBD)
+- [x] 4.4 `/area/:slug` page + `?area=` explore filter
+- [x] 4.5 Search boosts area entity (`areaSlug` in explore haystack; dedicated area search card TBD)
+
+### Phase 5 — Availability (M3)
+
+- [x] 5.1 API + shared-types
+- [x] 5.2 Plan calendar editor (Available lens + date ranges)
+- [x] 5.3 Explore People filters (wire roster UI to `/explore/people/availability`)
+- [x] 5.4 Map Available clusters (API `clusters[]`; map chrome TBD)
+- [x] 5.5 Area page + member profile public slice
+- [x] 5.6 MEMBER_MODEL visibility rules
+
+### Phase 6 — Activity storage merge (M1–M2)
+
+- [ ] 6.1 Create seeking via activities API
+- [ ] 6.2 Join request unification plan + migration
+- [ ] 6.3 Remove demand from explore source enum (client + API)
+
+### Phase 7 — Host retirement & business paths
+
+- [ ] 7.1 Consumer `/host` redirect map
+- [ ] 7.2 Profile business entry audit
+- [ ] 7.3 Notification meta URLs canonical (`/plan`, `/activity/:id`, `/chat?…`)
+
+### Phase 8 — QA gates
+
+- [ ] 8.1 Run §11 acceptance tests
+- [ ] 8.2 `npm run verify:system` full
+- [ ] 8.3 Explore alignment tests updated
+- [ ] 8.4 PRE_DEPLOY_CHECKLIST items for map/seed if areas ship
+
+---
+
+## 10. Tier-1 doc update checklist (per phase)
+
+| File | When | What to add |
+|------|------|-------------|
+| `NAVIGATION.md` | Phase 0–1 | 4 tabs; Plan lenses; no trips; no consumer host; area route |
+| `DOMAIN.md` | Phase 2–4 | Region→Area→Place→Activity; activityMode; availability; OutingTopic |
+| `DOMAIN_CANONICALS.md` | Phase 1–5 | Paths, `areaId`, `activityMode`, notification meta |
+| `CREATE_FLOW.md` | Phase 3–4 | Find → seeking activity; area on publish |
+| `MEMBER_MODEL.md` | Phase 5 | Availability visibility; guide policy; host = capability |
+| `SYSTEM_COHERENCE.md` | Phase 4–5 | contexts: areas, availability; remove trips hub |
+| `API_ROUTING.md` | Phase 4–6 | `/areas`, `/me/availability`, deprecations |
+| `COMMUNICATION.md` | Phase 7 | Crew entry from Plan/activity only |
+| `ARCHITECTURE.md` | Phase 1 | 4-tab IA |
+| `explore-browse-ia.md` | Phase 2–3 | No looking pill; People layer; activities unified |
+
+---
+
+## 11. Acceptance criteria (release gates)
+
+| ID | Criterion |
+|----|-----------|
+| G-arch | No new consumer links to `/host` or bare `/trips`; `verify:system` passes |
+| G-lang | No user-facing “Trips” tab/hub; activities terminology on Explore |
+| G-topic | Topic=hiking returns hosted + seeking activities + hiking places in one filter API |
+| G-seek | Find FAB creates seeking activity; appears as activity pin (not demand source) |
+| G-area | Publish activity in Hatta bounds sets `areaId`; `/area/hatta` lists it |
+| G-avail | Multi-day availability on Plan visible in People search for matching dates (visibility respected) |
+| G-avail-map | Available layer shows area cluster, not N duplicate pins per user per day |
+| G-plan | Goals + saved + schedule + availability editable on Plan without Profile duplicate lists |
+| G-manage | Host approve join from Plan/detail without `/host` |
+
+---
+
+## 12. Non-goals (this program)
+
+- [ ] Documented agreement not to pursue in this program:
+  - Fifth bottom tab (Social)
+  - Generic friend DM as primary discovery
+  - Merging availability into Activity entity
+  - OSM-auto areas v1
+  - SEO city landings at scale before curated areas work
+
+---
+
+## 13. Context recovery (for agents / new threads)
+
+**Read order:** this doc → `NAVIGATION.md` → `DOMAIN.md` § Activity/Area/Availability → `explore-browse-ia.md`.
+
+**Code hotspots:**
+
+| Area | Paths |
+|------|--------|
+| Plan page | `src/pages/Activities.tsx`, `src/member-plan` or `src/trips/*` |
+| Explore map | `apps/api/src/lib/explore-map.ts`, `src/explore/ui/exploreMapPinModel.ts` |
+| Pin pills | `src/explore/explorePinKindFilter.ts`, `exploreBrowseTaxonomy.ts` |
+| Find/demand | `src/explore/ui/demandFlow.ts`, `apps/api/src/lib/participant-intents-store.ts` |
+| Compose | `src/explore/compose.ts` |
+| Places/kinds | `packages/shared-types/src/place-kind.ts` |
+| Legacy redirects | `src/trips/legacyTripsRedirect.ts`, `src/App.tsx` |
+| Areas (new) | TBD `apps/api/src/routes/areas`, `src/pages/AreaDetail.tsx` |
+
+**Handoff phrase:** “Continue **member-surfaces-implementation-plan** from Phase _N_.”
+
+---
+
+## 14. Progress log (fill in as you ship)
+
+| Date | Phase | PR / notes |
+|------|-------|------------|
+| 2026-10-09 | — | Plan doc created; partial Phase 1 routes (`/plan`, my-trips split) on branch |
+| 2026-10-09 | audit | §15–§17 coverage + anti-duplication pass |
+| | | |
+
+---
+
+## 15. Coverage audit — progressive agreements (last ~15 turns)
+
+Use this table to confirm nothing was lost. **Status:** C = captured in checklist · P = partial · G = gap closed in this audit.
+
+| # | Agreement | Where in doc | Status |
+|---|-----------|--------------|--------|
+| 1 | Plan vs Profile vs history — Plan forward; past on Profile | §1.1, §6.3, D3 | C |
+| 2 | Plan = manage + create goals/wishlist (not read-only Profile) | D10, §6 | C |
+| 3 | Plan lenses Schedule / Saved / Goals (+ availability placement TBD) | §6.1 | C |
+| 4 | No Social tab; availability + People on Explore | D1, D7, D11, §3.1 | C |
+| 5 | No `/host` consumer shell; host = capability | D2, D12, §7.3 | C |
+| 6 | shop/guide/agency = catalog projections | D4, §1.2 | C |
+| 7 | Retire **trips** naming (arch + UI) | D3, §6.4, Phase 1 | C |
+| 8 | Region → Area → Place → Activity | D5, §2.3, §4, Phase 4 | C |
+| 9 | areaId from pin on publish + admin areas | §4, Phase 4 | C |
+| 10 | Activity kind + Place kind + **OutingTopic** for “hiking” unified filter | §2.5, Phase 2, G-topic | C |
+| 11 | **Seeking merged into Activity** (no demand map species) | D6, D9, §8 M0–M2, Phase 3 | C |
+| 12 | **Availability** separate; multi-day calendar; People + map clusters | D7, D14, §5, Phase 5 | C |
+| 13 | Find FAB → seeking **activity** (not parallel “demand” UX) | D9, §3.4 | C |
+| 14 | Chat coordination-first; not chat-app discovery | §7.1, §12 non-goals | C |
+| 15 | Notifications → entity/thread not hub URLs | §1.3, Phase 7.3 | C |
+| 16 | Member **13 questions** mapped to surfaces | §16 table below | G |
+| 17 | Needs-you / suggested Plan UX (later) | §6.1 bullets | G |
+| 18 | Guest bottom nav policy | §7.2 | G |
+| 19 | Explore **one mode indicator** (map/list/browse/people) — reduce chrome clutter | §17 OD-1 | G |
+| 20 | Desktop browse right panel / earlier explore IA | **Out of scope** — see §17 | G |
+| 21 | `rideshare` / `ACTIVITY_TYPES` alignment | §2.1 | C |
+| 22 | Facilities on Area page (toilet, shop near Hatta) | §2.2, §3.5 | C |
+| 23 | Buddy **Join me** / discovery quota (`WHOS_GOING_UX`) — **not** same as availability | §16 anti-dup #5 | G |
+| 24 | Implementation master checklist doc | this file, experiment README | C |
+
+---
+
+## 16. User questions → single owner (no duplicate surfaces)
+
+| User question | Primary owner | Do **not** duplicate on |
+|---------------|---------------|-------------------------|
+| Hosted activities this week | Explore (topic + when) + Area | Plan (except *my* rows on schedule) |
+| Post what I want (seeking) | Explore FAB Find → Activity `seeking` | Separate “looking for” pill or demand source |
+| Venues + self-plan + invite | Explore Places + Organize + activity invite | — |
+| Connections’ outings | Explore People/filters + buddies graph | Social tab |
+| Profile visibility | Profile settings + public `/member/:id` | Plan |
+| Host manage participants | Plan schedule (organizing) + `/activity/:id` | `/host` for buddies |
+| Signed up / arranged / goals / saved | Plan lenses | Profile full lists |
+| Communicate | Chat | Plan, Explore |
+| Roster + check-in | Activity detail + manage sheet | Host console (buddy) |
+| Rate experiences | Profile contributions/reviews | Plan |
+| Badges / share | Profile badges | Plan |
+| Contribute places/shops | Explore FAB Add + Profile contributions | — |
+| Account / memberships | Profile settings + pro + **shop/manage** | `/host` |
+
+---
+
+## 17. Anti-duplication & conflict rules (read before every PR)
+
+| # | Rule | Violation to avoid |
+|---|------|-------------------|
+| 1 | **One time-bound map entity:** Activity (`hosted` \| `seeking`). | Keeping `pinKind=looking` or `source: demand` in UI after Phase 3. |
+| 2 | **One availability model:** `member_availability` slots only. | “Available” boolean on profile without slots; duplicating as Activity. |
+| 3 | **One wishlist store:** engagement API; Plan `saved` lens = primary editor. | Full wishlist UI on Profile **and** Plan. |
+| 4 | **One join path per seeking post:** migrate intent requests → activity-scoped requests (Phase 6). | Permanent parallel `participant_intent_requests` + `activity_requests` for same UX. |
+| 5 | **Join me / map buddy discovery** ([`WHOS_GOING_UX.md`](./WHOS_GOING_UX.md)) = roster/quota **on activity** & explore people browse. | Re-implementing as availability slots. |
+| 6 | **Area** = curated `areas` + `areaId`; `areaLabel` string is display fallback only. | Third “area” concept in filters. |
+| 7 | **Topic filter** = one `OutingTopic` matcher for activities, places, people query. | Separate hiking filters per layer that drift. |
+| 8 | **Business ops** = shop/agency/guide **manage** URLs. | New consumer `/host` links; renaming `/host` to `/organize` as a **shell**. |
+| 9 | **Phase 3 = §8 M0** only once. | Second “projection” project. |
+| 10 | **M1 dual-write** before removing intent collection reads. | Big-bang cutover without backfill. |
+
+### Open decisions (document when chosen; not blocking Phase 0–2)
+
+| ID | Decision | Options |
+|----|----------|---------|
+| OD-1 | Explore chrome: single visible **mode** (map / list / browse / people) | One title vs pills (experiment UX) |
+| OD-2 | Plan tab label | **Plan** vs **Home** / **This week** |
+| OD-3 | Availability UI | Dedicated `?lens=availability` vs block on `schedule` |
+| OD-4 | Business workspace route branding | Keep `/host/*` server routes with redirects vs rename to `/studio` |
+| OD-5 | `src/trips` rename | `member-plan` vs `commitments` |
+
+### Explicitly out of scope (this program)
+
+- Replacing prior **desktop browse right-panel** / `list=1` vs `browse=1` work — already shipped; only align **topic/layer** vocabulary (Phase 2).
+- **Marketing `/`** guest funnel — [`LANDING.md`](../LANDING.md) unchanged except cross-links.
+
+---
+
+## 18. Review checklist (run before marking program “aligned”)
+
+- [ ] Every row in §15 marked C (or consciously deferred in §17 OD-*)
+- [ ] No checklist item contradicts §17 anti-duplication table
+- [ ] Tier-1 docs updated per §10 for last completed phase
+- [ ] `npm run verify:system` + explore alignment tests green
+- [ ] Grep: no new consumer `trips` hub strings; no new `/host` links in `src/` (consumer)
