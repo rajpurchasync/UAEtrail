@@ -6,6 +6,7 @@ import { areasApi } from '../api/domains/areas';
 import { api } from '../api/index';
 import { explorePath } from '../explore/routing';
 import { EXPLORE_MAP_PATH } from '../config/routingCatalog';
+import { PRODUCT_EXPLORE_CTA } from '../content/productNorthStar';
 
 /** Curated area hub — links into explore with `?area=` filter (Phase 4). */
 export const AreaDetailPage = () => {
@@ -63,7 +64,7 @@ export const AreaDetailPage = () => {
       <main className="mx-auto max-w-lg px-4 py-10">
         <p className="text-slate-600">We could not find this area.</p>
         <Link to={EXPLORE_MAP_PATH} className="mt-4 inline-block font-semibold text-emerald-800">
-          Explore the map
+          {PRODUCT_EXPLORE_CTA}
         </Link>
       </main>
     );

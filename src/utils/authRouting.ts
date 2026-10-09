@@ -17,8 +17,12 @@ import {
   MESSAGES_PATH,
   HOST_MESSAGES_PATH,
   MY_REQUESTS_PATH,
+  PLAN_PATH,
   PROFILE_PATH,
+  PRO_MEMBERSHIP_PATH,
+  exploreOrganizePath,
   messagesToUserPath,
+  tripsPlansPath,
 } from '../config/routingCatalog';
 import { UserRole } from '@uaetrail/shared-types';
 
@@ -38,6 +42,28 @@ export const defaultRouteByRole = (role: UserRole): string => {
 export const accountRouteByRole = (role: UserRole): string => {
   if (isPlatformAdmin(role)) return ADMIN_OVERVIEW_PATH;
   return PROFILE_PATH;
+};
+
+/**
+ * Legacy `/host/*` bookmarks for members without tenant console roles (D2 — no consumer host shell).
+ * Tenant guides still use real `/host/*` routes via {@link ProtectedRoute} role allowlist.
+ */
+export const participantHostBookmarkRedirect = (pathname: string): string => {
+  if (pathname.startsWith('/host/messages')) return MESSAGES_PATH;
+  if (pathname.startsWith('/host/requests')) return MY_REQUESTS_PATH;
+  if (pathname.startsWith('/host/activities')) return tripsPlansPath('hosted');
+  if (pathname.startsWith('/host/places') || pathname.startsWith('/host/locations')) {
+    return organisationManagePath();
+  }
+  if (pathname.startsWith('/host/team') || pathname.startsWith('/host/profile')) {
+    return PRO_MEMBERSHIP_PATH;
+  }
+  if (pathname === '/host/overview' || pathname.startsWith('/host/overview')) {
+    return exploreOrganizePath();
+  }
+  if (pathname.startsWith('/host/history')) return PLAN_PATH;
+  if (pathname.startsWith('/host/security-privacy')) return PROFILE_PATH;
+  return PLAN_PATH;
 };
 
 export const participantDashboardRedirect = (subpath: string): string => {

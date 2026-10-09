@@ -3,6 +3,7 @@ import {
   activityDetailPath,
   ADMIN_HOSTS_PATH,
   ADMIN_PLACES_PATH,
+  ACTIVITIES_LEGACY_PATH,
   EXPLORE_MAP_PATH,
   explorePath,
   isLegacyRewardsWalletPath,
@@ -10,11 +11,11 @@ import {
   BUDDIES_PATH,
   GROUPS_PATH,
   groupsPath,
-  HOST_OVERVIEW_PATH,
   HOST_REQUESTS_PATH,
   PROFILE_BADGES_PATH,
   PROFILE_PATH,
   PRO_MEMBERSHIP_PATH,
+  TRIPS_PATH,
   messagesGroupPath,
   messagesToUserPath,
   myRequestDetailPath,
@@ -22,12 +23,60 @@ import {
   tripsLegacyUpcomingSegmentPath,
 } from '../config/routingCatalog';
 import { NotificationDTO, placeDetailPath } from '@uaetrail/shared-types';
+import { resolveLegacyTripsHubRedirect } from '../trips/legacyTripsRedirect';
 
 const toMetaObject = (meta: NotificationDTO['meta']): Record<string, unknown> | null =>
   meta && typeof meta === 'object' ? (meta as Record<string, unknown>) : null;
 
 const toStringValue = (value: unknown): string | null =>
   typeof value === 'string' && value.trim().length > 0 ? value : null;
+
+const normalizeDirectNotificationPath = (
+  path: string,
+  meta: Record<string, unknown> | null
+): string => {
+  if (path === '/host/overview' || path.startsWith('/host/overview?')) {
+    return PRO_MEMBERSHIP_PATH;
+  }
+
+  try {
+    const legacyUrl = new URL(path, 'http://local');
+    const legacyPathname = legacyUrl.pathname;
+    if (
+      (legacyPathname === TRIPS_PATH || legacyPathname === ACTIVITIES_LEGACY_PATH) &&
+      legacyUrl.searchParams.get('tab') === 'joined' &&
+      legacyUrl.searchParams.get('segment') === 'upcoming'
+    ) {
+      return tripsLegacyJoinedTabPath();
+    }
+  } catch {
+    // ignore malformed paths
+  }
+
+  const queryIndex = path.indexOf('?');
+  const pathname = queryIndex === -1 ? path : path.slice(0, queryIndex);
+  const search = queryIndex === -1 ? '' : path.slice(queryIndex);
+
+  if (
+    pathname === TRIPS_PATH ||
+    pathname === ACTIVITIES_LEGACY_PATH ||
+    pathname === '/trips/map'
+  ) {
+    const resolved = resolveLegacyTripsHubRedirect(pathname, search);
+    if (resolved) return resolved;
+  }
+
+  const seekingActivityId = toStringValue(meta?.seekingActivityId);
+  if (seekingActivityId && path.includes('pin=demand:')) {
+    return explorePath({
+      list: true,
+      panel: 'activities',
+      pin: `activity:${seekingActivityId}`,
+    });
+  }
+
+  return path;
+};
 
 export const inferNotificationPath = (
   notif: NotificationDTO,
@@ -54,7 +103,7 @@ export const inferNotificationPath = (
     ) {
       return activityDetailInvitePath(activityIdFromMeta);
     }
-    return directPath;
+    return normalizeDirectNotificationPath(directPath, meta);
   }
 
   const reviewPath = toStringValue(meta?.reviewPath);
@@ -145,6 +194,14 @@ export const inferNotificationPath = (
     if (activityId) return activityDetailPath(activityId);
     const intentId = toStringValue(meta?.intentId);
     if (intentId) {
+      const seekingActivityId = toStringValue(meta?.seekingActivityId);
+      if (seekingActivityId) {
+        return explorePath({
+          list: true,
+          panel: 'activities',
+          pin: `activity:${seekingActivityId}`,
+        });
+      }
       return `${explorePath({ list: true, panel: 'activities' })}&pin=demand:${encodeURIComponent(intentId)}`;
     }
     const actorUserId = toStringValue(meta?.actorUserId) ?? toStringValue(meta?.hostUserId);
@@ -172,13 +229,13 @@ export const inferNotificationPath = (
   if (kind === 'host_application_approved' || kind === 'organizer_application_approved') {
     const shopPath = toStringValue(meta?.path);
     if (shopPath && shopPath.startsWith('/shop/')) return shopPath;
-    return HOST_OVERVIEW_PATH;
+    return PRO_MEMBERSHIP_PATH;
   }
   if (kind === 'host_application_rejected' || kind === 'organizer_application_rejected') {
     return PRO_MEMBERSHIP_PATH;
   }
   if (kind === 'host_suspended' || kind === 'host_reopened') {
-    return kind === 'host_suspended' ? PRO_MEMBERSHIP_PATH : HOST_OVERVIEW_PATH;
+    return PRO_MEMBERSHIP_PATH;
   }
   if (kind === 'user_suspended' || kind === 'user_reactivated') {
     return PROFILE_PATH;

@@ -4,7 +4,8 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { api } from '../../api/index';
 import { useAuth } from '../../context/AuthContext';
 import { isSignupProfileComplete } from '../../constants/userProfileOptions';
-import { accountRouteByRole } from '../../utils/authRouting';
+import { accountRouteByRole, participantHostBookmarkRedirect } from '../../utils/authRouting';
+import { isPlatformAdmin } from '../../utils/roles';
 import { WELCOME_PATH } from '../../config/routingCatalog';
 import { buildSignInRedirect } from '../../utils/authReturnContext';
 import {
@@ -57,6 +58,9 @@ export const ProtectedRoute = ({ roles, children }: ProtectedRouteProps) => {
   }
 
   if (roles && !roles.includes(user.role)) {
+    if (!isPlatformAdmin(user.role) && location.pathname.startsWith('/host')) {
+      return <Navigate to={participantHostBookmarkRedirect(location.pathname)} replace />;
+    }
     return <Navigate to={accountRouteByRole(user.role)} replace />;
   }
 

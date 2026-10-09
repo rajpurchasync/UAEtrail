@@ -7,6 +7,7 @@ import {
   hostDashboardRedirect,
   merchantDashboardRedirect,
   participantDashboardRedirect,
+  participantHostBookmarkRedirect,
 } from './authRouting';
 
 describe('auth routing by role', () => {
@@ -75,5 +76,14 @@ describe('auth routing by role', () => {
   it('maps merchant dashboard aliases to shop management', () => {
     expect(merchantDashboardRedirect('overview')).toBe('/organisation/manage?kind=shop');
     expect(merchantDashboardRedirect('unknown')).toBe('/organisation/manage?kind=shop');
+  });
+
+  it('maps legacy /host bookmarks to Plan, explore organize, or pro membership (not host console)', () => {
+    expect(participantHostBookmarkRedirect('/host/overview')).toBe('/explore?compose=organize');
+    expect(participantHostBookmarkRedirect('/host/activities')).toBe('/plan?view=plans&role=hosted');
+    expect(participantHostBookmarkRedirect('/host/requests')).toBe('/my-requests');
+    expect(participantHostBookmarkRedirect('/host/messages')).toBe('/chat');
+    expect(participantHostBookmarkRedirect('/host/team')).toBe('/profile/pro-membership');
+    expect(participantHostBookmarkRedirect('/host/places')).toBe('/organisation/manage');
   });
 });

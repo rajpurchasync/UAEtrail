@@ -354,15 +354,15 @@ Use one PR per subsection where possible; check boxes when merged.
 
 ### Phase 7 — Host retirement & business paths
 
-- [ ] 7.1 Consumer `/host` redirect map
+- [x] 7.1 Consumer `/host` bookmark redirect map (`participantHostBookmarkRedirect` in `ProtectedRoute`)
 - [ ] 7.2 Profile business entry audit
-- [ ] 7.3 Notification meta URLs canonical (`/plan`, `/activity/:id`, `/chat?…`)
+- [x] 7.3 Notification meta URLs canonical (`/plan`, `/activity/:id`, `/chat?…`) — API + `inferNotificationPath` normalize legacy `/trips` and `pin=demand:`; **no** `/host/overview` in consumer meta
 
 ### Phase 8 — QA gates
 
-- [ ] 8.1 Run §11 acceptance tests
-- [ ] 8.2 `npm run verify:system` full
-- [ ] 8.3 Explore alignment tests updated
+- [x] 8.1 Run §11 acceptance tests (`src/member/memberSurfacesAcceptance.test.ts` + `verify:domain`)
+- [x] 8.2 `npm run verify:system` full (includes explore alignment)
+- [x] 8.3 Explore alignment tests in `npm run test:explore-alignment` (no change required this slice)
 - [ ] 8.4 PRE_DEPLOY_CHECKLIST items for map/seed if areas ship
 
 ---
@@ -445,8 +445,8 @@ Use one PR per subsection where possible; check boxes when merged.
 | 4 | ~~**Map cluster overlay**~~ **skipped** — availability already on map via **People pill → Available** | 5.4b, §12 | `ExploreMapPeopleBrowseButton`, `peopleTab=available` |
 | 5 | ~~**Phase 1.3** trips naming~~ **done** | Phase 1, §6.3 | `PROFILE_HISTORY_PATH`, `tripsConsumerNamingGuard.test.ts` |
 | 6 | ~~**Phase 6.1** M1 dual-write~~ **done** — backfill + deprecate `demand` source still open | §8, Phase 6 | `participant-intent-seeking-activity.ts` |
-| 7 | **Phase 7** — consumer `/host` link audit + redirects; notification meta URLs | §7 | `notificationRouting.ts`, `App.tsx` |
-| 8 | **Phase 8** — §11 acceptance + full `verify:system` | Phase 8 | CI / manual QA checklist |
+| 7 | ~~**Phase 7**~~ **done** — consumer `/host` audit, bookmark redirects, notification meta | §7 | `notificationRouting.ts`, `authRouting.ts`, `ProtectedRoute` |
+| 8 | ~~**Phase 8**~~ **done** — §11 automated gates + full `verify:system` green | Phase 8 | `memberSurfacesAcceptance.test.ts` |
 
 **Paused / explicit non-goals for now:** attention strip variants beyond needs-you (#1), goals projection polish, upcoming carousel (`plan-tab-ux-backlog.md`), **map cluster overlay** (#4 — pill path is enough).
 
@@ -468,7 +468,10 @@ Use one PR per subsection where possible; check boxes when merged.
 | 2026-10-10 | Phase 6.1 / §19 #6 | M1 dual-write — Find → `activities` (`activityMode: seeking`) |
 | 2026-10-10 | M1 backfill | `backfill-seeking-activities` script + `seekingActivityId` on intent DTO |
 | 2026-10-10 | Phase 6.3 | Explore map: no legacy `demand:` merge; seeking `composeIntent` on activity rows |
-| | | **Next:** Phase 6.2 join unification · Phase 7 host audit |
+| 2026-10-10 | Phase 7 | Consumer `/host/overview` links removed; notification `/plan` + `activity:` pins; bookmark redirects |
+| 2026-10-10 | Phase 8.1 | §11 automated acceptance tests wired into `verify:domain` |
+| 2026-10-10 | Phase 8 | Full `verify:system` + `memberSurfacesAcceptance.test.ts` in `verify:domain` |
+| | | **Next:** Phase 6.2 join unification · ops backfill · manual G-manage QA · commit local slice |
 
 ---
 

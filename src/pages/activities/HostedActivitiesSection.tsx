@@ -13,8 +13,8 @@ import { ActivityManageSheet } from '../../components/host/ActivityManageSheet';
 import { HostedActivityListRow } from '../../components/host/HostedActivityListRow';
 import {
   exploreOrganizePath,
-  HOST_OVERVIEW_PATH,
   HOST_REQUESTS_PATH,
+  tripsPlansPath,
 } from '../../config/routingCatalog';
 import { matchesActivitySearch } from '../../utils/activitySearch';
 import { resolveJoinRequestActivity } from '../../utils/joinRequestActivity';
@@ -159,9 +159,9 @@ export const HostedActivitiesSection = ({
     if (peekBridgeOnly) return null;
     return (
       <ConsumerInlineEmpty
-        message="Host profile is still loading — try again in a moment, or open the host console."
-        actionLabel="Host console"
-        actionTo={HOST_OVERVIEW_PATH}
+        message="Host profile is still loading — try again in a moment, or open your hosted plans."
+        actionLabel="Hosted on Plan"
+        actionTo={tripsPlansPath('hosted')}
       />
     );
   }

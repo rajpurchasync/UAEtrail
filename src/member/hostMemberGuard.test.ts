@@ -4,6 +4,24 @@ import { join, relative } from 'node:path';
 
 const SCAN_ROOT = join(process.cwd(), 'src');
 
+const ALLOW_HOST_OVERVIEW_PATH = new Set([
+  'src/App.tsx',
+  'src/config/surfacePaths.ts',
+  'src/config/routingCatalog.ts',
+  'src/constants/index.ts',
+  'src/console/ConsoleHubSections.tsx',
+  'src/pages/SecurityPrivacy.tsx',
+  'src/pages/Messages.tsx',
+  'src/utils/authRouting.ts',
+  'src/utils/authRouting.test.ts',
+  'src/utils/authRedirect.test.ts',
+  'src/config/systemCoherenceGuard.test.ts',
+  'src/config/discoverBrowseNav.test.ts',
+  'src/utils/notificationRouting.ts',
+  'src/utils/notificationRouting.test.ts',
+  'src/member/memberSurfacesAcceptance.test.ts',
+]);
+
 const ALLOW_BECOME_HOST_PATH = new Set([
   'src/config/memberRoutes.ts',
   'src/config/platform.ts',
@@ -46,6 +64,30 @@ describe('hostMemberGuard', () => {
       const content = readFileSync(join(process.cwd(), file), 'utf8');
       if (/to=["']\/become-host|navigate\(\s*['"]\/become-host|href=["']\/become-host/.test(content)) {
         violations.push(`${file}: use PRO_MEMBERSHIP_PATH or proMembershipPath()`);
+      }
+    }
+
+    expect(violations).toEqual([]);
+  });
+
+  it('consumer UI does not deep-link to /host/overview (use Plan, explore organize, or pro membership)', () => {
+    const files = collectSourceFiles(SCAN_ROOT).filter(
+      (file) =>
+        !SKIP_PREFIXES.some((prefix) => file.startsWith(prefix)) &&
+        !file.startsWith('src/pages/host/') &&
+        !file.startsWith('src/components/host/') &&
+        !ALLOW_HOST_OVERVIEW_PATH.has(file)
+    );
+    const violations: string[] = [];
+
+    for (const file of files) {
+      const content = readFileSync(join(process.cwd(), file), 'utf8');
+      if (
+        /['"]\/host\/overview['"]/.test(content) ||
+        /to=\{HOST_OVERVIEW_PATH\}/.test(content) ||
+        /to:\s*HOST_OVERVIEW_PATH/.test(content)
+      ) {
+        violations.push(`${file}: use exploreOrganizePath(), tripsPlansPath('hosted'), or PRO_MEMBERSHIP_PATH`);
       }
     }
 

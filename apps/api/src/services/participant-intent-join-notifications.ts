@@ -1,4 +1,8 @@
 import { NotificationType } from '../domain/enums.js';
+import {
+  exploreSeekingPinPath,
+  planSelfDemandPeekPath,
+} from '../lib/member-routes.js';
 import { dispatchNotification } from './notifications.js';
 
 export const notifyDemandJoinRequestSubmitted = async (input: {
@@ -7,6 +11,7 @@ export const notifyDemandJoinRequestSubmitted = async (input: {
   intentId: string;
   intentTitle: string;
   requestId: string;
+  seekingActivityId?: string | null;
 }): Promise<void> => {
   await dispatchNotification({
     userId: input.hostUserId,
@@ -18,7 +23,7 @@ export const notifyDemandJoinRequestSubmitted = async (input: {
       intentId: input.intentId,
       requestId: input.requestId,
       actorUserId: input.requesterUserId,
-      path: `/trips?view=plans&role=joined&peek=${input.intentId}`,
+      path: planSelfDemandPeekPath(input.intentId),
     },
   }).catch(() => undefined);
 
@@ -31,7 +36,10 @@ export const notifyDemandJoinRequestSubmitted = async (input: {
       kind: 'demand_join_request_pending',
       intentId: input.intentId,
       requestId: input.requestId,
-      path: '/explore',
+      path: exploreSeekingPinPath({
+        intentId: input.intentId,
+        seekingActivityId: input.seekingActivityId,
+      }),
     },
   }).catch(() => undefined);
 };
@@ -42,6 +50,7 @@ export const notifyDemandJoinRequestDecided = async (input: {
   intentId: string;
   requestId: string;
   approved: boolean;
+  seekingActivityId?: string | null;
 }): Promise<void> => {
   await dispatchNotification({
     userId: input.requesterUserId,
@@ -54,7 +63,10 @@ export const notifyDemandJoinRequestDecided = async (input: {
       kind: input.approved ? 'demand_join_request_approved' : 'demand_join_request_rejected',
       intentId: input.intentId,
       requestId: input.requestId,
-      path: '/explore',
+      path: exploreSeekingPinPath({
+        intentId: input.intentId,
+        seekingActivityId: input.seekingActivityId,
+      }),
     },
   }).catch(() => undefined);
 };

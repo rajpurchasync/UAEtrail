@@ -115,7 +115,7 @@ describe('inferNotificationPath', () => {
     ).toBe('/explore?pin=demand:int-1');
   });
 
-  it('prefers explicit meta.path when present', () => {
+  it('rewrites legacy trips hub paths in meta.path to Plan', () => {
     expect(
       inferNotificationPath(
         notif({
@@ -123,6 +123,34 @@ describe('inferNotificationPath', () => {
           path: '/trips?segment=upcoming&tab=joined',
         })
       )
-    ).toBe('/trips?segment=upcoming&tab=joined');
+    ).toBe('/plan?view=plans&role=joined');
+    expect(
+      inferNotificationPath(
+        notif({
+          kind: 'goal_behind_pace',
+          path: '/trips?segment=upcoming&tab=joined',
+        })
+      )
+    ).toBe('/plan?view=plans&role=joined');
+  });
+
+  it('rewrites demand explore pins when seekingActivityId is on meta', () => {
+    expect(
+      inferNotificationPath(
+        notif({
+          kind: 'wishlist_match',
+          path: '/explore?pin=demand:int-1&list=1',
+          seekingActivityId: 'act-seek-1',
+        })
+      )
+    ).toBe('/explore?list=1&pin=activity%3Aact-seek-1');
+  });
+
+  it('rewrites stale host overview notification paths to pro membership', () => {
+    expect(
+      inferNotificationPath(
+        notif({ kind: 'host_application_approved', path: '/host/overview' })
+      )
+    ).toBe('/profile/pro-membership');
   });
 });

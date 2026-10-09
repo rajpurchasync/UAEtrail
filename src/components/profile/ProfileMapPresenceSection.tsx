@@ -2,7 +2,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { GlassCard } from '../mobile/GlassCard';
 import type { HostFlowIntent } from '../organisation-console/hostWizardFlow';
 import { useHostStatus } from '../../hooks/useHostStatus';
-import { HOST_OVERVIEW_PATH } from '../../config/routingCatalog';
+import { PRO_MEMBERSHIP_PATH } from '../../config/routingCatalog';
 import { organisationManagePath } from '../../config/routingCatalog';
 
 const HOST_PROFILE_CHIPS = [
@@ -60,7 +60,7 @@ export const ProfileMapPresenceSection = () => {
                     ? organisationManagePath('shop')
                     : chip.key === 'agency'
                       ? organisationManagePath('agency')
-                      : HOST_OVERVIEW_PATH;
+                      : PRO_MEMBERSHIP_PATH;
                 const className = `inline-flex items-center gap-1.5 rounded-full border px-3 py-2 text-xs font-semibold ${
                   chip.key === 'guide'
                     ? 'border-emerald-200 bg-emerald-50 text-emerald-800'

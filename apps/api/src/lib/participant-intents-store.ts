@@ -174,6 +174,7 @@ export const createParticipantIntent = async (
     publishType: 'demand',
     intentId: doc._id,
     title: input.title.trim(),
+    seekingActivityId: doc.seekingActivityId,
   });
   const user = await findAuthUserById(userId);
   return mapDto(doc, user);
