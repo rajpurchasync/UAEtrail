@@ -146,8 +146,8 @@
       "feDomains": ["src/api/domains/account.ts", "src/api/domains/social.ts"],
       "feRoots": [
         "src/pages/MemberProfile.tsx",
-        "src/explore/ui/ExploreMemberDiscoveryList.tsx",
-        "src/explore/ui/ExploreMemberPeopleNetworkList.tsx",
+        "src/explore/ui/PeopleBrowsePanel.tsx",
+        "src/explore/ui/peopleBrowse/PeopleBrowseTabContent.tsx",
         "src/list/ui/ListDiscoverPeopleView.tsx"
       ]
     },
