@@ -84,7 +84,7 @@ Notifications (deep link to **activity**, **Plan row context**, **chat thread**,
 - [x] `MY_TRIPS_PATH` history/map split from Plan (rename to `PROFILE_HISTORY_*` still open)
 - [x] Explore pin label **Activities** (wire key `trips` rename still open — Phase 2.3)
 - [x] Bottom nav **Plan** label; middle tab routes to `/plan`
-- [x] Plan **lenses** shell — Schedule · Saved · Goals (`src/plan/planLens.ts`, `Activities.tsx`)
+- [x] Plan **lenses** shell — Schedule · Calendar (placeholder) · Available · Saved · Goals (`src/plan/planLens.ts`, `Activities.tsx`)
 
 ---
 
@@ -220,9 +220,10 @@ Notifications (deep link to **activity**, **Plan row context**, **chat thread**,
 - [ ] `schedule` — joining, organizing, **seeking** (open asks), **needs-you** (approvals, invites)
 - [x] `saved` — wishlist list shell (`PlanSavedSection`); heart on Explore → same API
 - [x] `goals` — full CRUD on Goals lens (moved off schedule default)
-- [ ] `availability` — **pick one layout before build:** dedicated lens **or** fixed block atop `schedule` (not both full editors)
-- [ ] **Needs-you** strip (host approvals, invites) atop `schedule` — collapses when empty ([`plan-tab-ux-backlog.md`](./plan-tab-ux-backlog.md))
-- [ ] **Suggested** rail (wishlist match / buddies — links to Explore, not second map) — post-availability Phase 5+
+- [x] `availability` — **dedicated lens** (`?lens=availability`, `PlanAvailabilitySection`) — **OD-3 locked** (see §19)
+- [x] `calendar` — month grid + day sheet (`PlanCalendarSection`, `planCalendarMarkers.ts`)
+- [x] **Needs-you** strip (host join queue + joiner requests awaiting host) atop `schedule` — `PlanNeedsYouStrip` (§19 #1; activity invites v2)
+- [ ] **Suggested** rail (wishlist match / buddies — links to Explore, not second map) — after needs-you (§19 #3)
 
 ### 6.2 Manage outing (no /host)
 
@@ -308,7 +309,7 @@ Use one PR per subsection where possible; check boxes when merged.
 ### Phase 1 — Terminology & routes (partially done)
 
 - [x] 1.1 `PLAN_PATH`, history/journey path aliases + redirects (rename `MY_TRIPS_*` → `PROFILE_HISTORY_*` still open)
-- [x] 1.2 Plan lenses shell (`?lens=schedule|saved|goals`)
+- [x] 1.2 Plan lenses shell (`?lens=schedule|calendar|availability|saved|goals`)
 - [ ] 1.3 Remove trips hub UI; grep guard for new “trips” strings in consumer UI
 - [ ] 1.4 Mobile tab label Plan/Home — product choice documented
 
@@ -337,9 +338,11 @@ Use one PR per subsection where possible; check boxes when merged.
 ### Phase 5 — Availability (M3)
 
 - [x] 5.1 API + shared-types
-- [x] 5.2 Plan calendar editor (Available lens + date ranges)
+- [x] 5.2 Plan availability editor (Available lens + day calendar multi-select)
+- [x] 5.2b Plan **Calendar** lens month view (markers from `planCalendarMarkers` + map outing density)
 - [x] 5.3 Explore People filters (wire roster UI to `/explore/people/availability`)
-- [x] 5.4 Map Available clusters (API `clusters[]`; map chrome TBD)
+- [x] 5.4 Map Available clusters (API `clusters[]` on explore people availability)
+- [ ] 5.4b Map **layer chrome** — toggle Available clusters on map (not only People list) — §19 #4
 - [x] 5.5 Area page + member profile public slice
 - [x] 5.6 MEMBER_MODEL visibility rules
 
@@ -425,7 +428,26 @@ Use one PR per subsection where possible; check boxes when merged.
 | Legacy redirects | `src/trips/legacyTripsRedirect.ts`, `src/App.tsx` |
 | Areas (new) | TBD `apps/api/src/routes/areas`, `src/pages/AreaDetail.tsx` |
 
-**Handoff phrase:** “Continue **member-surfaces-implementation-plan** from Phase _N_.”
+**Handoff phrase:** “Continue **member-surfaces-implementation-plan** from §19 resume queue.”
+
+---
+
+## 19. Resume queue (execution order — use this after hygiene PRs)
+
+**Do not** reopen Phase 5 API/editor unless a gate fails (`G-avail`). **Do not** build full Calendar UI until #2. Hygiene/refactors (naming, doc drift) are parallel-only — they do not replace items below.
+
+| # | Work item | Plan refs | Primary files / notes |
+|---|-----------|-----------|---------------------|
+| 1 | ~~**Plan needs-you strip**~~ **done** | §6.1 | `PlanNeedsYouStrip.tsx` |
+| 2 | ~~**Plan Calendar lens UI**~~ **done** | 5.2b | `PlanCalendarSection.tsx`, `usePlanCalendarData` |
+| 3 | **Suggested rail** on Plan schedule (wishlist ↔ upcoming match; links to Explore, no embedded map) | §6.1, Phase 5+ | `PlanSuggestedSection.tsx`, wishlist match helpers |
+| 4 | **Explore map Available layer chrome** — surface `clusters[]` from `useExplorePeopleAvailability` on map (area chips / toggle) | §3.2, 5.4b | `ExploreExperience.tsx`, map stage overlay |
+| 5 | **Phase 1.3** — consumer “trips” string grep + guard; `MY_TRIPS_*` → `PROFILE_HISTORY_*` rename | Phase 1, §6.3–6.4 | `tripsRouting.ts`, `surfacePaths.ts`, `verify` guards |
+| 6 | **Phase 6** — seeking activity dual-write (M1), then deprecate `demand` source | §8, Phase 6 | `participant-intents-store`, compose/find flows |
+| 7 | **Phase 7** — consumer `/host` link audit + redirects; notification meta URLs | §7 | `notificationRouting.ts`, `App.tsx` |
+| 8 | **Phase 8** — §11 acceptance + full `verify:system` | Phase 8 | CI / manual QA checklist |
+
+**Paused / explicit non-goals for now:** attention strip variants beyond needs-you (#1), goals projection polish, upcoming carousel (`plan-tab-ux-backlog.md`).
 
 ---
 
@@ -435,7 +457,11 @@ Use one PR per subsection where possible; check boxes when merged.
 |------|-------|------------|
 | 2026-10-09 | — | Plan doc created; partial Phase 1 routes (`/plan`, my-trips split) on branch |
 | 2026-10-09 | audit | §15–§17 coverage + anti-duplication pass |
-| | | |
+| 2026-10-10 | 5 + 1 | Availability API + Plan Available lens; People browse; areas; `planCalendarMarkers` projection; calendar lens placeholder |
+| 2026-10-10 | hygiene | PeopleBrowseTab canonical naming; ExploreBrowsePanel prop trim; Tier-1 NAVIGATION quota/tab copy |
+| 2026-10-10 | 6.1 | Plan needs-you strip (`PlanNeedsYouStrip`) — §19 #1 |
+| 2026-10-10 | 5.2b / §19 #2 | Plan Calendar lens UI |
+| | | **Next:** §19 #3 suggested rail, then Phase 6.1 |
 
 ---
 
@@ -513,7 +539,7 @@ Use this table to confirm nothing was lost. **Status:** C = captured in checklis
 |----|----------|---------|
 | OD-1 | Explore chrome: single visible **mode** (map / list / browse / people) | One title vs pills (experiment UX) |
 | OD-2 | Plan tab label | **Plan** vs **Home** / **This week** |
-| OD-3 | Availability UI | Dedicated `?lens=availability` vs block on `schedule` |
+| OD-3 | Availability UI | **Chosen:** dedicated `?lens=availability` (2026-10-10). Calendar month UI is separate lens, not schedule block. |
 | OD-4 | Business workspace route branding | Keep `/host/*` server routes with redirects vs rename to `/studio` |
 | OD-5 | `src/trips` rename | `member-plan` vs `commitments` |
 

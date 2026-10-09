@@ -2,7 +2,7 @@
 
 > **Superseded by checklist:** [`member-surfaces-implementation-plan.md`](./member-surfaces-implementation-plan.md) §6 Plan lenses.
 
-**Status:** Paused after Plan vs My trips route split (`PLAN_PATH`, `MY_TRIPS_PATH`). Resume via master implementation plan Phase 1 / 6.
+**Status:** Paused — resume via [`member-surfaces-implementation-plan.md`](./member-surfaces-implementation-plan.md) **§19 resume queue** (start with **#1 needs-you strip**, not this file’s carousel/rail items until #3).
 
 ## Not built yet
 

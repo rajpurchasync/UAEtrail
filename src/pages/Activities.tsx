@@ -25,6 +25,8 @@ import { TripsPlansUpcomingHeader } from '../components/trips/TripsPlansUpcoming
 import { PlanLensTabs } from '../components/plan/PlanLensTabs';
 import { PlanSavedSection } from '../components/plan/PlanSavedSection';
 import { PlanAvailabilitySection } from '../components/plan/PlanAvailabilitySection';
+import { PlanNeedsYouStrip } from '../components/plan/PlanNeedsYouStrip';
+import { PlanCalendarSection } from '../components/plan/PlanCalendarSection';
 import { MY_TRIPS_PATH } from '../config/surfacePaths';
 import { parsePlanLens, type PlanLens } from '../plan/planLens';
 import {
@@ -238,20 +240,21 @@ export const Activities = () => {
               <>
                 <PlanLensTabs active={planLens} onChange={setPlanLens} />
                 {planLens === 'schedule' ? (
-                  <TripsPlansUpcomingHeader
-                    activeRole={plansRole}
-                    onRoleChange={setPlansRole}
-                    canHost={canHost}
-                  />
+                  <>
+                    <PlanNeedsYouStrip refreshKey={refreshKey} canHost={canHost} />
+                    <TripsPlansUpcomingHeader
+                      activeRole={plansRole}
+                      onRoleChange={setPlansRole}
+                      canHost={canHost}
+                    />
+                  </>
                 ) : null}
               </>
             ) : null}
 
             {planLens === 'saved' ? <PlanSavedSection /> : null}
             {planLens === 'calendar' && user ? (
-              <p className="text-sm text-neutral-600">
-                Calendar view is coming soon — use Schedule and Available for now.
-              </p>
+              <PlanCalendarSection refreshKey={refreshKey} canHost={canHost} />
             ) : null}
             {planLens === 'availability' && user ? <PlanAvailabilitySection /> : null}
             {planLens === 'goals' && user ? (
