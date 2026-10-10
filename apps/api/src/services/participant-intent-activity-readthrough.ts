@@ -14,10 +14,11 @@ import { getMongoClient } from '../lib/mongo.js';
  * M2d — when `false`, Find posts only write `activities` (`activityMode: seeking`);
  * intent routes read/manage via activity read-through.
  */
+/** Opt-in dual-write — unset/false = M2d (activities only). Set `true` only for legacy rollback. */
 export const isParticipantIntentStubWriteEnabled = (): boolean => {
   const raw = process.env.PARTICIPANT_INTENT_STUB_WRITE?.trim().toLowerCase();
-  if (raw === '0' || raw === 'false' || raw === 'no') return false;
-  return true;
+  if (raw === '1' || raw === 'true' || raw === 'yes') return true;
+  return false;
 };
 
 const activitiesCollection = () =>

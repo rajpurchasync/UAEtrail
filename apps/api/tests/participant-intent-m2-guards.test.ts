@@ -29,6 +29,7 @@ describe('participant intent M2 guards', () => {
     const readthrough = read('src/services/participant-intent-activity-readthrough.ts');
     expect(readthrough).toMatch(/isParticipantIntentStubWriteEnabled/);
     expect(readthrough).toMatch(/PARTICIPANT_INTENT_STUB_WRITE/);
+    expect(readthrough).toMatch(/Opt-in dual-write/);
     expect(readthrough).toMatch(/activityDocToParticipantIntentDto/);
   });
 

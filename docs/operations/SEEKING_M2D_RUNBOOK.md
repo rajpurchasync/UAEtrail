@@ -36,9 +36,9 @@ npm --workspace @uaetrail/api run backfill-seeking-activities
 
 Re-run step 1 until `activeIntentsMissingSeekingActivity` is **0**.
 
-### 3. Flip M2d flag
+### 3. Confirm M2d flag (default off)
 
-In API `.env` (or compose env):
+API code defaults **stub write off**. In API `.env` (or compose env), **remove** `PARTICIPANT_INTENT_STUB_WRITE=true` if present, or set:
 
 ```env
 PARTICIPANT_INTENT_STUB_WRITE=false

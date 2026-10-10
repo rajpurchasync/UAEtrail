@@ -59,7 +59,7 @@ Storage: `activity_requests` vs `participant_intent_requests`.
 
 Clients may keep intent URLs until M2b; host queue for buddy seeking rows uses the mirrored `activity_requests` row.
 
-| **M2d** | Shipped (env-gated) | Set `PARTICIPANT_INTENT_STUB_WRITE=false` after `backfill-seeking-activities` per env. Find then writes only `activities` (`activityMode: seeking`); `/me/participant-intents/*` read-through and manage via `activityId` / `participantIntentId`. Default remains dual-write until ops flips the flag. |
+| **M2d** | Shipped | After `backfill-seeking-activities`, Find writes only `activities` (`activityMode: seeking`). `/me/participant-intents/*` read-through via `activityId` / `participantIntentId`. **Default:** stub write **off**; set `PARTICIPANT_INTENT_STUB_WRITE=true` only for legacy dual-write rollback. |
 
 ---
 

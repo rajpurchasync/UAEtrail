@@ -470,7 +470,7 @@ Use one PR per subsection where possible; check boxes when merged.
 | P0 QA | G-manage **browser** smoke on staging | Plan → Needs you → Hosted → manage sheet |
 | P1 wire | Explore map: retire public `source: 'demand'` projection | **Done (wire)** — `activity` + `activityMode: seeking`; legacy `demand:` pin ids + `source: 'demand'` compat in parsers |
 | P1 links | Seeking deep links prefer `pin=activity:{id}` | **Done** — `exploreSeekingMapItemPath` / `resolveSeekingExploreMapItemId`; API notifications + wishlist + FE share |
-| P1 storage | Drop `participant_intents` writes entirely; archive collection | After all envs M2d + retention policy |
+| P1 storage | Drop `participant_intents` writes entirely; archive collection | **Default stub write off** (opt-in `true` for rollback); collection archive after all envs backfilled |
 | P2 perf | Explore map bbox / light DTO; chat SSE multi-instance | Architecture backlog from coherence review |
 | P2 UX | `plan-tab-ux-backlog.md` (upcoming carousel, goals polish) | Explicitly paused in §19 |
 
@@ -511,7 +511,8 @@ Use one PR per subsection where possible; check boxes when merged.
 | 2026-10-10 | §20 P1 | Map wire `activity` + `activityMode: seeking`; `exploreSeekingMapItemPath` (API/FE/notifications/wishlist) |
 | 2026-10-10 | §20 ops | Root `seeking:m2d-status` forwards `--strict`; plan-tab backlog reconciled with §19 |
 | 2026-10-10 | §2.1 wire | `seekingOnMap` in People browse → `exploreMapItemPathFromSeekingRow` (peek path; no duplicate UI) |
-| | | **Next:** §20 P0 — staging/prod M2d runbook + G-manage UI smoke; then P1 storage |
+| 2026-10-10 | P1 storage | `PARTICIPANT_INTENT_STUB_WRITE` defaults **off** (opt-in dual-write); API `.env.example` + contract test |
+| | | **Next:** §20 P0 — staging/prod runbook + G-manage smoke; archive `participant_intents` after retention policy |
 
 ---
 
