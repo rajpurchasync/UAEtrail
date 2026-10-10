@@ -114,6 +114,16 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(wishlist).toMatch(/activityId|seekingActivityId/);
   });
 
+  it('G-seek: People browse wires seekingOnMap to explore pin routes (no activity detail hop)', () => {
+    const panel = read('src/explore/ui/PeopleBrowsePanel.tsx');
+    expect(panel).toContain('discoverySeekingOnMap');
+    expect(panel).toContain('seekingOnMap={discoverySeekingOnMap}');
+    const routing = read('src/explore/memberDiscoverySeekingRow.ts');
+    expect(routing).toContain('exploreMapItemSharePath');
+    const list = read('src/list/ListDiscoveryExperience.tsx');
+    expect(list).not.toMatch(/onOpenDiscoveryActivity.*activityDetailPath/);
+  });
+
   it('G-manage: coordination attention has API route contract test', () => {
     const routeTest = read('apps/api/tests/coordination-attention-route.test.ts');
     expect(routeTest).toContain('/me/coordination-attention');

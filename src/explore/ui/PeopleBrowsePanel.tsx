@@ -49,7 +49,6 @@ export interface PeopleBrowsePanelProps {
   discoveryQuota: MemberDiscoveryQuotaDTO | null;
   discoveryLoading: boolean;
   discoveryError: string | null;
-  onOpenDiscoveryActivity?: (activityId: string) => void;
   onRefreshMemberDiscovery: () => void;
   availabilityPeople?: ExploreAvailablePersonDTO[];
   availabilityLoading?: boolean;
@@ -87,6 +86,7 @@ export const PeopleBrowsePanel = ({
   onActivityDatePresetChange,
   discoveryFriendsGoing,
   discoveryHostsGoing,
+  discoverySeekingOnMap,
   discoveryDirectory,
   discoveryQuota,
   discoveryLoading,
@@ -180,6 +180,7 @@ export const PeopleBrowsePanel = ({
           discoveryQuota={discoveryQuota}
           discoveryLoading={discoveryLoading}
           discoveryError={discoveryError}
+          seekingOnMap={discoverySeekingOnMap}
         />
       </div>
     </div>

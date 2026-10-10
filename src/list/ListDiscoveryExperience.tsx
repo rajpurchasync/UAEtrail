@@ -45,7 +45,6 @@ import { listDiscoveryEmbeddedOnExplore, type ListDiscoverySurface } from './lis
 import { useMemberDiscoveryRoster } from '../explore/useMemberDiscoveryRoster';
 import { useExplorePeopleAvailability } from '../explore/useExplorePeopleAvailability';
 import { parseExploreAreaSlug } from '../explore/exploreAreaFilter';
-import { activityDetailPath } from '../config/routingCatalog';
 
 const DiscoverHomeSkeleton = () => (
   <div className="space-y-6" aria-hidden>
@@ -369,7 +368,6 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
           discoveryLoading={memberRoster.loading}
           discoveryError={memberRoster.error}
           onRefreshMemberDiscovery={() => void memberRoster.refresh()}
-          onOpenDiscoveryActivity={(activityId) => navigate(activityDetailPath(activityId))}
           availabilityPeople={memberAvailability.people}
           availabilityLoading={memberAvailability.loading}
           availabilityError={memberAvailability.error}

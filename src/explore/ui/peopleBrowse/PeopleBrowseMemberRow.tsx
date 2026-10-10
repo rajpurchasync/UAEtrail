@@ -10,6 +10,8 @@ export type PeopleBrowseMemberBadge = {
 
 export type PeopleBrowseMemberRowProps = {
   profileHref: string;
+  /** When set, row navigates here (e.g. explore pin) instead of `profileHref`. */
+  actionHref?: string;
   displayName: string;
   avatarUrl?: string | null;
   buddyHighlight?: boolean;
@@ -44,6 +46,7 @@ const badgeClass =
  */
 export const PeopleBrowseMemberRow = ({
   profileHref,
+  actionHref,
   displayName,
   avatarUrl,
   buddyHighlight = false,
@@ -56,6 +59,7 @@ export const PeopleBrowseMemberRow = ({
   scheduleDetail,
   titleClamp = 'truncate',
 }: PeopleBrowseMemberRowProps) => {
+  const linkTo = actionHref ?? profileHref;
   const titleClass =
     titleClamp === 'wrap'
       ? `${EXPLORE_LIST_ROW.title} leading-snug`
@@ -95,7 +99,7 @@ export const PeopleBrowseMemberRow = ({
     return (
       <div className={EXPLORE_LIST_ROW.shell}>
         <Link
-          to={profileHref}
+          to={linkTo}
           className={`${mainRowClass} rounded-t-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/80`}
         >
           {mainInner}
@@ -107,7 +111,7 @@ export const PeopleBrowseMemberRow = ({
 
   return (
     <Link
-      to={profileHref}
+      to={linkTo}
       className={`${EXPLORE_LIST_ROW.shell} ${mainRowClass} focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/80`}
     >
       {mainInner}

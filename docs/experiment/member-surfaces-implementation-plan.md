@@ -95,7 +95,8 @@ Notifications (deep link to **activity**, **Plan row context**, **chat thread**,
 - [x] Add `activityMode: 'hosted' | 'seeking'` to domain schema (Zod + Mongo + `ActivityDTO`)
 - [x] Document in `DOMAIN.md` — seeking = former participant intent / “looking for”
 - [x] Map **all** time-bound pins to `ExploreMapSource: 'activity'` on API build (§20 P1 wire); legacy `demand` enum + `pin=demand:` parsers until compat aged out
-- [ ] Detail page `/activity/:id` renders variants for `hosted` vs `seeking` (CTA copy, join path) — eyebrow wired; full CTA/join polish open
+- [x] Seeking discovery UX — map/list/peek cards + `seekingOnMap` People browse rows route to explore pin (`exploreMapItemPathFromSeekingRow`); no duplicate seeking detail UI
+- [ ] `/activity/:id` for seeking — secondary deep link only; keep join aligned with `explore-presentation` / `activityJoinCtaLabel` (no parallel layout)
 - [x] Join requests: unify or alias `participant_intent_requests` → activity-scoped requests (M2a–M2c)
 
 **Kinds (unchanged wire, aligned names):**
@@ -509,7 +510,8 @@ Use one PR per subsection where possible; check boxes when merged.
 | 2026-10-10 | §19 close | Queue complete; `SEEKING_M2D_RUNBOOK.md`; §20 post-queue (demand wire, ops) |
 | 2026-10-10 | §20 P1 | Map wire `activity` + `activityMode: seeking`; `exploreSeekingMapItemPath` (API/FE/notifications/wishlist) |
 | 2026-10-10 | §20 ops | Root `seeking:m2d-status` forwards `--strict`; plan-tab backlog reconciled with §19 |
-| | | **Next:** §20 P0 — staging/prod M2d runbook + G-manage UI smoke; then P1 storage or activity detail seeking UX |
+| 2026-10-10 | §2.1 wire | `seekingOnMap` in People browse → `exploreMapItemPathFromSeekingRow` (peek path; no duplicate UI) |
+| | | **Next:** §20 P0 — staging/prod M2d runbook + G-manage UI smoke; then P1 storage |
 
 ---
 

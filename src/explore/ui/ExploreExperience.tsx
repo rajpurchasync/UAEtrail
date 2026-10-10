@@ -404,14 +404,12 @@ export const ExploreExperience = () => {
   const peopleBrowsePanelOpen = browse.listMode === 'people';
   const entityFollows = useEntityFollows(false);
   const memberAvailabilityEnabled = peopleBrowsePanelOpen && browse.peopleBrowseTab === 'available';
-  const memberDiscoveryEnabled =
-    peopleBrowsePanelOpen &&
-    Boolean(user) &&
-    (browse.peopleBrowseTab === 'going' || browse.peopleBrowseTab === 'connect');
+  const memberDiscoveryEnabled = peopleBrowsePanelOpen && Boolean(user);
   const memberDiscovery = useMemberDiscoveryRoster({
     enabled: memberDiscoveryEnabled,
     search: browse.query,
     activityDatePreset: browse.activityDatePreset,
+    omitDirectory: browse.peopleBrowseTab === 'available' || browse.peopleBrowseTab === 'going',
   });
   const peopleAvailability = useExplorePeopleAvailability({
     enabled: memberAvailabilityEnabled,
@@ -428,15 +426,6 @@ export const ExploreExperience = () => {
   const openExploreActivityFromRef = useCallback(
     (activity: { exploreItemId: string }) => {
       const item = mapItems.find((entry) => entry.id === activity.exploreItemId);
-      if (item) selection.openItem(item);
-    },
-    [mapItems, selection]
-  );
-
-  const openDiscoveryActivityOnMap = useCallback(
-    (activityId: string) => {
-      const exploreItemId = `activity:${activityId}`;
-      const item = mapItems.find((entry) => entry.id === exploreItemId);
       if (item) selection.openItem(item);
     },
     [mapItems, selection]
@@ -543,7 +532,6 @@ export const ExploreExperience = () => {
     discoveryQuota: memberDiscovery.quota,
     discoveryLoading: memberDiscovery.loading,
     discoveryError: memberDiscovery.error,
-    onOpenDiscoveryActivity: openDiscoveryActivityOnMap,
     onRefreshMemberDiscovery: () => void memberDiscovery.refresh(),
     availabilityPeople: peopleAvailability.people,
     availabilityLoading: peopleAvailability.loading,

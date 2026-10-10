@@ -3,6 +3,7 @@ import type {
   ExploreAvailablePersonDTO,
   MemberBrowseCardDTO,
   MemberDiscoveryQuotaDTO,
+  MemberDiscoverySeekingRowDTO,
   SocialPersonRowDTO,
 } from '@uaetrail/shared-types';
 import { proMembershipPath } from '../../../config/routingCatalog';
@@ -26,6 +27,7 @@ import { availabilityKindLabels } from './peopleBrowseAvailabilityKinds';
 import { PEOPLE_BROWSE_LIST_STACK } from './peopleBrowseListTheme';
 import { PeopleBrowseListEmpty, PeopleBrowseListError, PeopleBrowseListLoading } from './PeopleBrowseListStates';
 import { PeopleBrowseMemberRow } from './PeopleBrowseMemberRow';
+import { PeopleBrowseSeekingOnMapSection } from './PeopleBrowseSeekingOnMapSection';
 import { ExploreGuestSignInCard } from '../ExploreGuestSignInCard';
 
 export type PeopleBrowseTabKey = 'available' | 'going' | 'connect';
@@ -42,6 +44,7 @@ export type PeopleBrowseTabContentProps = {
   discoveryQuota: MemberDiscoveryQuotaDTO | null;
   discoveryLoading: boolean;
   discoveryError: string | null;
+  seekingOnMap: MemberDiscoverySeekingRowDTO[];
 };
 
 const AvailabilityRows = ({ people }: { people: ExploreAvailablePersonDTO[] }) => (
@@ -145,27 +148,52 @@ export const PeopleBrowseTabContent = ({
   discoveryQuota,
   discoveryLoading,
   discoveryError,
+  seekingOnMap,
 }: PeopleBrowseTabContentProps) => {
   if (tab !== 'available' && !isSignedIn) {
     return <ExploreGuestSignInCard intent="explore-people-browse" compact />;
   }
 
   if (tab === 'available') {
-    if (availabilityLoading) return <PeopleBrowseListLoading rows={5} />;
-    if (availabilityError) return <PeopleBrowseListError message={availabilityError} />;
-    if (availabilityPeople.length === 0) {
+    const seekingSection = <PeopleBrowseSeekingOnMapSection rows={seekingOnMap} />;
+
+    if (availabilityLoading) {
       return (
-        <PeopleBrowseListEmpty>
-          <p>{EXPLORE_PEOPLE_BROWSE_AVAILABILITY_EMPTY}</p>
-          {isSignedIn ? (
-            <Link to={planLensPath('availability')} className="mt-3 inline-block font-semibold text-emerald-700">
-              Add yours on Plan
-            </Link>
-          ) : null}
-        </PeopleBrowseListEmpty>
+        <>
+          {seekingSection}
+          <PeopleBrowseListLoading rows={5} />
+        </>
       );
     }
-    return <AvailabilityRows people={availabilityPeople} />;
+    if (availabilityError) {
+      return (
+        <>
+          {seekingSection}
+          <PeopleBrowseListError message={availabilityError} />
+        </>
+      );
+    }
+    if (availabilityPeople.length === 0) {
+      return (
+        <>
+          {seekingSection}
+          <PeopleBrowseListEmpty>
+            <p>{EXPLORE_PEOPLE_BROWSE_AVAILABILITY_EMPTY}</p>
+            {isSignedIn ? (
+              <Link to={planLensPath('availability')} className="mt-3 inline-block font-semibold text-emerald-700">
+                Add yours on Plan
+              </Link>
+            ) : null}
+          </PeopleBrowseListEmpty>
+        </>
+      );
+    }
+    return (
+      <>
+        {seekingSection}
+        <AvailabilityRows people={availabilityPeople} />
+      </>
+    );
   }
 
   if (discoveryLoading) {
@@ -179,10 +207,21 @@ export const PeopleBrowseTabContent = ({
   if (discoveryError) return <PeopleBrowseListError message={discoveryError} />;
 
   if (tab === 'going') {
+    const seekingSection = <PeopleBrowseSeekingOnMapSection rows={seekingOnMap} />;
     if (friendsGoing.length === 0) {
-      return <PeopleBrowseListEmpty>{EXPLORE_PEOPLE_BROWSE_FRIENDS_GOING_EMPTY}</PeopleBrowseListEmpty>;
+      return (
+        <>
+          {seekingSection}
+          <PeopleBrowseListEmpty>{EXPLORE_PEOPLE_BROWSE_FRIENDS_GOING_EMPTY}</PeopleBrowseListEmpty>
+        </>
+      );
     }
-    return <GoingRows friendsGoing={friendsGoing} />;
+    return (
+      <>
+        {seekingSection}
+        <GoingRows friendsGoing={friendsGoing} />
+      </>
+    );
   }
 
   const friendUserIds = new Set(friendsGoing.map((person) => person.userId));
