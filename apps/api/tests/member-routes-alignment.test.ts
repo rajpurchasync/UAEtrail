@@ -57,4 +57,11 @@ describe('member-routes alignment (API notification meta ↔ FE surfacePaths)', 
       exportStringConst('PRO_MEMBERSHIP_PATH', memberRoutes)
     );
   });
+
+  it('seeking explore pins use explorePublishedActivityPinPath (no exploreDemandPinPath)', () => {
+    const apiRoutes = readFileSync(join(apiRoot, 'src/lib/member-routes.ts'), 'utf8');
+    expect(apiRoutes).toContain('explorePublishedActivityPinPath');
+    expect(apiRoutes).toContain('exploreSeekingMapItemPath');
+    expect(apiRoutes).not.toMatch(/exploreDemandPinPath/);
+  });
 });

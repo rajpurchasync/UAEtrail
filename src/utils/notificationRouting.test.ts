@@ -146,6 +146,26 @@ describe('inferNotificationPath', () => {
     ).toBe('/explore?list=1&pin=activity%3Aact-seek-1');
   });
 
+  it('routes friend publish notifications to seeking explore pins when no top-level activityId', () => {
+    expect(
+      inferNotificationPath(
+        notif({
+          kind: 'friend_published',
+          intentId: 'int-2',
+          seekingActivityId: 'act-seek-2',
+        })
+      )
+    ).toBe('/explore?pin=activity%3Aact-seek-2&list=1&panel=activities');
+    expect(
+      inferNotificationPath(
+        notif({
+          kind: 'friend_published',
+          intentId: 'int-legacy',
+        })
+      )
+    ).toBe('/explore?pin=demand%3Aint-legacy&list=1&panel=activities');
+  });
+
   it('rewrites stale host overview notification paths to pro membership', () => {
     expect(
       inferNotificationPath(
