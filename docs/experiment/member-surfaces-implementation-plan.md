@@ -1,7 +1,7 @@
 # Member surfaces — implementation plan (master checklist)
 
-**Status:** Approved direction · **not** fully implemented  
-**Last updated:** 2026-10-09 (coverage audit §15–§17)  
+**Status:** Approved direction · **§19 eng complete** · **§20** ops + storage/UX remain  
+**Last updated:** 2026-10-10 (§20 P1 wire, progress log §14)  
 **Audience:** Eng + product — use this so context is not lost across PRs.
 
 **Tier 1 defers to:** [`NAVIGATION.md`](../NAVIGATION.md), [`DOMAIN.md`](../DOMAIN.md), [`DOMAIN_CANONICALS.md`](../DOMAIN_CANONICALS.md), [`SYSTEM_COHERENCE.md`](../SYSTEM_COHERENCE.md), [`CREATE_FLOW.md`](../CREATE_FLOW.md), [`MEMBER_MODEL.md`](../MEMBER_MODEL.md) — **update those as each phase ships** (see §10).
@@ -92,11 +92,11 @@ Notifications (deep link to **activity**, **Plan row context**, **chat thread**,
 
 ### 2.1 Activity (unified time-bound)
 
-- [ ] Add `activityMode: 'hosted' | 'seeking'` to domain schema (Zod + Mongo + `ActivityDTO`)
-- [ ] Document in `DOMAIN.md` — seeking = former participant intent / “looking for”
-- [ ] Map **all** time-bound pins to `ExploreMapSource: 'activity'` (remove public `demand` source)
-- [ ] Detail page `/activity/:id` renders variants for `hosted` vs `seeking` (CTA copy, join path)
-- [ ] Join requests: unify or alias `participant_intent_requests` → activity-scoped requests (phased)
+- [x] Add `activityMode: 'hosted' | 'seeking'` to domain schema (Zod + Mongo + `ActivityDTO`)
+- [x] Document in `DOMAIN.md` — seeking = former participant intent / “looking for”
+- [x] Map **all** time-bound pins to `ExploreMapSource: 'activity'` on API build (§20 P1 wire); legacy `demand` enum + `pin=demand:` parsers until compat aged out
+- [ ] Detail page `/activity/:id` renders variants for `hosted` vs `seeking` (CTA copy, join path) — eyebrow wired; full CTA/join polish open
+- [x] Join requests: unify or alias `participant_intent_requests` → activity-scoped requests (M2a–M2c)
 
 **Kinds (unchanged wire, aligned names):**
 
@@ -432,7 +432,7 @@ Use one PR per subsection where possible; check boxes when merged.
 | Legacy redirects | `src/member-plan/legacyTripsRedirect.ts`, `src/App.tsx` |
 | Areas (new) | TBD `apps/api/src/routes/areas`, `src/pages/AreaDetail.tsx` |
 
-**Handoff phrase:** “Continue **member-surfaces-implementation-plan** from §19 resume queue.”
+**Handoff phrase:** “Continue **member-surfaces-implementation-plan** from **§20** (P0 ops, P1 storage, P2 UX, or §2.1 activity detail seeking).”
 
 ---
 
@@ -508,7 +508,8 @@ Use one PR per subsection where possible; check boxes when merged.
 | 2026-10-10 | §19 #12 API | `g-manage-coordination-join-approve.test.ts`; PRE_DEPLOY staging ops ordered steps |
 | 2026-10-10 | §19 close | Queue complete; `SEEKING_M2D_RUNBOOK.md`; §20 post-queue (demand wire, ops) |
 | 2026-10-10 | §20 P1 | Map wire `activity` + `activityMode: seeking`; `exploreSeekingMapItemPath` (API/FE/notifications/wishlist) |
-| | | **Next:** §20 P0 — staging/prod M2d runbook + G-manage UI smoke |
+| 2026-10-10 | §20 ops | Root `seeking:m2d-status` forwards `--strict`; plan-tab backlog reconciled with §19 |
+| | | **Next:** §20 P0 — staging/prod M2d runbook + G-manage UI smoke; then P1 storage or activity detail seeking UX |
 
 ---
 

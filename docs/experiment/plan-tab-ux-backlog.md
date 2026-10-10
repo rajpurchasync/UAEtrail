@@ -1,20 +1,21 @@
 # Plan tab UX backlog (deferred)
 
-> **Superseded by checklist:** [`member-surfaces-implementation-plan.md`](./member-surfaces-implementation-plan.md) §6 Plan lenses.
+> **Canonical checklist:** [`member-surfaces-implementation-plan.md`](./member-surfaces-implementation-plan.md) §6 Plan lenses · **§20 P2 UX**.
 
-**Status:** Paused — resume via [`member-surfaces-implementation-plan.md`](./member-surfaces-implementation-plan.md) **§19 resume queue** (start with **#1 needs-you strip**, not this file’s carousel/rail items until #3).
+**Status:** Paused — §19 queue (#1 needs-you, #2 calendar, #3 suggested rail) **shipped** (2026-10-10). Do not use this file as a task list; use **§20** for what remains.
 
-## Not built yet
+## Not built yet (P2 — optional polish)
 
-- Attention strip (hidden when empty)
-- Goals projection polish beyond current `ProfileGoalsSection`
-- Upcoming carousel
-- Suggested horizontal rail + wishlist matching rules
-- Goal create flows scoped to Profile only
+- Goals projection polish beyond current `ProfileGoalsSection` on Plan
+- **Upcoming carousel** on Schedule (lists + role tabs ship today)
+- Extra attention-strip variants beyond **Needs you** (`PlanNeedsYouStrip`)
+- Goal create flows scoped to Profile only (goals CRUD already on Plan `?lens=goals`)
 
-## Done in tangling fix
+## Shipped (reference only)
 
-- `/plan` canonical tab; `/profile/my-trips` history + map
+- `/plan` canonical tab; profile history + journey map off Plan
 - Legacy `/trips` / `/activities` redirects
-- Explore pin kind label **Activities** (filter key unchanged)
-- Plan screen without Plans | Completed | Map chrome
+- Plan lenses: Schedule · Calendar · Available · Saved · Goals
+- **Needs you** strip (`GET /me/coordination-attention`)
+- **Suggested rail** + wishlist ↔ explore matches
+- Explore pin kind **Activities**; seeking on map as `activity` + `activityMode: seeking`

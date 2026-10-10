@@ -21,7 +21,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.app.json",
     "typecheck:api": "npm --workspace @uaetrail/api run typecheck",
     "seed": "npm --workspace @uaetrail/api run seed",
-    "seeking:m2d-status": "npm --workspace @uaetrail/api run seeking-m2d-status",
+    "seeking:m2d-status": "npm --workspace @uaetrail/api run seeking-m2d-status --",
     "verify:host-member": "node scripts/verify-host-member.mjs",
     "verify:docs": "node scripts/verify-docs-tier1.mjs",
     "verify:domain": "node scripts/verify-domain-canonicals.mjs",
