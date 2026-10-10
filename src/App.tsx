@@ -25,7 +25,7 @@ import { discoveryToExploreSearch, explorePath, legacyCreateParamToOrganizePath,
 import { organisationManagePath, SIGNIN_PATH, SIGNUP_PATH } from './config/routingCatalog';
 import { GuestTabPlaceholder } from './components/auth/GuestTabPlaceholder';
 import { JOURNEY_MAP_PATH, PLAN_PATH, PROFILE_HISTORY_PATH } from './config/surfacePaths';
-import { resolveLegacyTripsHubRedirect } from './trips/legacyTripsRedirect';
+import { resolveLegacyTripsHubRedirect } from './member-plan/legacyTripsRedirect';
 import { useHostStatus } from './hooks/useHostStatus';
 import { memberCanManageHostedActivities } from './utils/hostedActivitiesGate';
 

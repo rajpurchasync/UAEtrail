@@ -8,6 +8,13 @@ export const GROUPS_PATH = '/groups';
 export const MESSAGES_PATH = '/chat';
 export const HOST_MESSAGES_PATH = '/host/messages';
 export const MY_REQUESTS_PATH = '/my-requests';
+export const BUDDIES_PATH = '/buddies';
+export const NOTIFICATIONS_PATH = '/notifications';
+
+export const buddiesIncomingRequestsPath = (): string => `${BUDDIES_PATH}?tab=requests`;
+
+export const exploreActivityInvitePath = (activityId: string): string =>
+  `/activity/${encodeURIComponent(activityId)}?join=1`;
 
 export const HOST_REQUESTS_PATH = '/host/requests';
 export const HOST_ACTIVITIES_PATH = '/host/activities';
@@ -26,6 +33,9 @@ export const EXPLORE_VENUES_LIST_PATH = '/explore?panel=venues&list=1';
 /** Plan schedule → joined outings — FE `tripsLegacyJoinedTabPath()`. */
 export const planJoinedSchedulePath = (): string => `${PLAN_PATH}?view=plans&role=joined`;
 
+/** Buddy host join queue on Plan (not tenant `/host/requests`) — FE `tripsPlansPath('hosted')`. */
+export const planHostedSchedulePath = (): string => `${PLAN_PATH}?view=plans&role=hosted`;
+
 /** @deprecated Name kept for imports — value is canonical {@link PLAN_PATH}. */
 export const TRIPS_JOINED_TAB_PATH = planJoinedSchedulePath();
 
@@ -40,8 +50,11 @@ export const planSelfDemandPeekPath = (intentId: string): string => {
 export const messagesToUserPath = (userId: string): string =>
   `${MESSAGES_PATH}?to=${encodeURIComponent(userId)}`;
 
-export const messagesGroupPath = (groupId: string): string =>
-  `${MESSAGES_PATH}?group=${encodeURIComponent(groupId)}`;
+export const messagesGroupPath = (groupId: string, activityId?: string): string => {
+  const params = new URLSearchParams({ group: groupId });
+  if (activityId?.trim()) params.set('activity', activityId.trim());
+  return `${MESSAGES_PATH}?${params.toString()}`;
+};
 
 export const myRequestDetailPath = (requestId: string): string =>
   `${MY_REQUESTS_PATH}/${encodeURIComponent(requestId)}`;
@@ -55,10 +68,20 @@ export const exploreActivityPinPath = (activityId: string): string =>
 export const exploreDemandPinPath = (intentId: string): string =>
   `/explore?pin=demand:${encodeURIComponent(intentId)}&list=1&panel=activities`;
 
+/** Deep link when a find post has a published activity row (any `activityMode`). */
+export const explorePublishedActivityPinPath = (input: {
+  intentId: string;
+  activityId?: string | null;
+}): string =>
+  input.activityId ? exploreActivityPinPath(input.activityId) : exploreDemandPinPath(input.intentId);
+
+/** @deprecated Use {@link explorePublishedActivityPinPath} with `activityId`. */
 export const exploreSeekingPinPath = (input: {
   intentId: string;
   seekingActivityId?: string | null;
+  activityId?: string | null;
 }): string =>
-  input.seekingActivityId
-    ? exploreActivityPinPath(input.seekingActivityId)
-    : exploreDemandPinPath(input.intentId);
+  explorePublishedActivityPinPath({
+    intentId: input.intentId,
+    activityId: input.activityId ?? input.seekingActivityId ?? null,
+  });

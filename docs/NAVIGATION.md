@@ -14,11 +14,14 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 | **Personal hub** | `/profile`, `/profile/settings`, `/profile/edit`, `/profile/history` | Account hub, settings stack, outing **history** + journey map |
 | **Plan tab** | `/plan` | Active layer — goals, upcoming outings (bottom nav middle tab; UI label **Plan**) |
 | **Mobile tabs (signed-in)** | `/explore`, `/plan`, `/chat` | **Three tabs only** — **Explore** · **Plan** · **Chat** (`md:hidden`). **No List tab.** Map-aligned list from the **List** pill (`list=1`); discover browse from hamburger **Browse** (`browse=1`) or optional full-screen `/list` (`listDiscoveryPathFromExploreSearch()`), not bottom nav. **Facebook / Instagram / WhatsApp** icon row above tabs (`src/config/socialLinks.ts`); same bar on **`/profile`**, settings stack, **Friends**, **Contributions**, and related profile stack routes |
+| **Mobile tabs (guests)** | `/explore`, `/plan`, `/chat` | Same three tabs; **Explore** is the live map. **Plan** and **Chat** show `GuestTabPlaceholder` + sign-in (`App.tsx` `PlanBrowseRoute`, `MessagesGate`) — not a second marketing home. **Profile** is not a tab; guests reach account flows via sign-in CTAs. |
 | **Entity detail** | `/trail`, `/camp`, `/venue`, `/activity`, `/shop`, `/guide`, `/agency`, `/partner`, `/area/:slug` | Place, scheduled outing, shop, brand profile, or curated **area** hub |
 
 ### Profile hub (`/profile`)
 
-- **Priority order:** Consumer hub (identity card + **stats row**, About you bio/speaks, **year goal**, plan **carousel**, launcher **tiles**) — not stacked settings menus. **Settings** via More sheet or `/profile/settings`.
+- **Priority order:** Consumer hub (identity card + **stats row**, About you bio/speaks, **Goals teaser** → Plan `?lens=goals`, launcher **tiles**) — not stacked settings menus. **Settings** via More sheet or `/profile/settings`.
+- **Badges:** `/profile/badges` — earned badges + share (`ProfileBadges.tsx`); launcher tile + badge-earn notifications → `PROFILE_BADGES_PATH`. Legacy `/rewards`, `/trail-points` redirect here. **Not** on Plan.
+- **Contributions:** `/contributions` — places you submitted (`getMySubmittedPlaces`) + link to **Reviews** (`/profile/reviews`). Launcher tile; back stack → Profile. **Add** on Explore map (`compose=add`) is the create path; inventory lives here, not Plan.
 - **Edit profile:** `/profile/edit` — name, gender, bio, speaks, location (no DOB edit on this screen).
 - **Pull-to-refresh** reloads hub data at scroll top.
 - **Sign out:** Profile hub (bottom) and Settings → Account.
@@ -52,7 +55,7 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 - **Host = user kind** (capabilities from `GET /me/host-status`); console is **tenant-scoped** manage UI, not a second activity entity.
 - **Shell nav:** `HOST_CONSOLE_LINKS` + `ConsoleShell` (`src/console/*`); route pages in `src/pages/host/*`.
 - **`/host/overview`:** `ConsoleHubSections` — stats, **Up next** preview, header **Add activity** — not a second copy of the shell link list. Below that: **personal** shortcuts (trips as participant, messages, explore map).
-- **Member profile (`/profile`):** consumer hub only; hosts open **Hosting** → `/host/overview` (no host tool menu on profile).
+- **Member profile (`/profile`):** consumer hub only; buddy hosts open **Hosting** → Plan `?view=plans&role=hosted` (`tripsPlansPath('hosted')`), not `/host/overview`. Pro/agency console remains `/host/*` for tenant operators.
 
 ### Admin console (`/admin/*`)
 
@@ -66,22 +69,22 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 ### Friends (`/buddies`)
 
 - Consumer label **Friends**; tabs `?tab=friends|requests|following`.
-- **Explore map people panel → Followed:** sub-segments **People** (member follows), **Places** and **Hosts & shops** (entity follows from map/profile); URL `followedKind=places|events`. (Panel URL `view=people`; legacy `view=social` — browse people, not chat; see § Browse — people & crew below.) Private **wishlist** saves (venues + activities) live under **Trips → Wishlist** (`/profile/wishlist` redirects to trips).
+- **Explore map people panel → Followed:** sub-segments **People** (member follows), **Places** and **Hosts & shops** (entity follows from map/profile); URL `followedKind=places|events`. (Panel URL `view=people`; legacy `view=social` — browse people, not chat; see § Browse — people & crew below.) Private **wishlist** saves live on **Plan → Saved** (`planSavedPath()`; `/profile/wishlist` redirects).
 
-### Chat (`/messages`)
+### Chat (`/chat`)
 
-Canonical detail: **[`COMMUNICATION.md`](./COMMUNICATION.md)**.
+Canonical detail: **[`COMMUNICATION.md`](./COMMUNICATION.md)**. Legacy `/messages` redirects here.
 
 - **Inbox:** Direct chats, **Groups** (family/friends), and **Outing chats** (activity crew) in one list; filters `people` / `groups` / `outings`.
-- **Direct thread:** `/messages?to=<userId>` (optional `activity` context).
-- **Group / crew thread:** `/messages?group=<groupId>` — all wall chat UI lives here (not on `/groups`).
-- **Hosts:** same component at `/host/messages` (org shell); deep links still use `?group=` / `?to=`.
+- **Direct thread:** `/chat?to=<userId>` (optional `activity` context).
+- **Group / crew thread:** `/chat?group=<groupId>` (optional `activity=<activityId>` for outing crew) — all wall chat UI lives here (not on `/groups`).
+- **Hosts:** same component at `/host/messages` (org shell); consumer notification meta normalizes to `/chat` with the same query params.
 - **API:** prefer **`GET /chat/inbox`** (direct + groups with `chatPreview`); wall supports `?since=` and `POST .../wall/read`; optional `replyToMessageId` on wall POST.
 
 ### Groups (`/groups`)
 
-- **List + manage:** create family/friends groups, members, invites, kids, **who can message** (wall post policy).
-- **Chat:** tap **Message** → `/messages?group=<id>` (single chat surface).
+- **List + manage:** create family/friends groups, members, invites, kids, **who can message** (wall post policy). Manage deep links use `groupsManagePath()` (`?group=&tab=members|manage`).
+- **Chat:** tap **Message** → `/chat?group=<id>` (single chat surface).
 
 ### Post-auth member details (`/welcome`)
 
@@ -138,7 +141,7 @@ Legacy browse URLs (`/map`, `/discovery`, `/calendar`, bare `/activities` as bro
 | Discover browse on explore | `exploreDiscoverBrowsePath()` | `src/explore/routing.ts` |
 | Sign-in with return | `buildSignInRedirect(location)`, `signInPathForReturn(path)` | `src/utils/authReturnContext.ts` |
 | Post-auth fallback | `resolveAuthExitFallback()` → explore | `src/utils/authRedirect.ts` |
-| Trips hub URLs | `tripsPlansPath()`, `parseTripsSegment`, … | `src/trips/tripsRouting.ts` |
+| Plan hub URLs | `tripsPlansPath()`, `parseTripsSegment`, … | `src/member-plan/tripsRouting.ts` |
 | List discovery URLs | `listDiscoveryPath()`, `listDiscoveryPathFromExploreSearch()` | `src/list/routing.ts` |
 | Crew chat deep link | `activityGroupChatPath()`, `navigateToActivityGroupChat()` | `src/utils/activityGroupChatNav.ts` |
 | Open crew chat from activity id | `openActivityGroupChat()` | `src/utils/openActivityGroupChat.ts` |

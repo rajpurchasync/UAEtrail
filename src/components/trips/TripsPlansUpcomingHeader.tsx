@@ -1,5 +1,5 @@
 import { TripsSubviewPills } from './TripsSubviewPills';
-import { tripsPlansRoleChips, type TripsPlansRole } from '../../trips/tripsRouting';
+import { tripsPlansRoleChips, type TripsPlansRole } from '../../member-plan/tripsRouting';
 
 type TripsPlansUpcomingHeaderProps = {
   activeRole: TripsPlansRole;

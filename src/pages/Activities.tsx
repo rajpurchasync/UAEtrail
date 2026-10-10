@@ -13,7 +13,6 @@ import { explorePath } from '../explore/routing';
 import { useHostStatus } from '../hooks/useHostStatus';
 import { memberCanManageHostedActivities } from '../utils/hostedActivitiesGate';
 import { signInPathForReturn } from '../utils/authReturnContext';
-import { JoinedSection } from './activities/JoinedSection';
 import { HostedActivitiesSection } from './activities/HostedActivitiesSection';
 import { SelfPlansSection } from './activities/SelfPlansSection';
 import { ActivitiesHubView } from './activities/ActivitiesHubView';
@@ -35,8 +34,8 @@ import {
   parseTripsPlansRole,
   parseTripsSegment,
   type TripsPlansRole,
-} from '../trips/tripsRouting';
-import { resolveTripsContent, tripsContentShowsComposeFab } from '../trips/resolveTripsContent';
+} from '../member-plan/tripsRouting';
+import { resolveTripsContent, tripsContentShowsComposeFab } from '../member-plan/resolveTripsContent';
 
 export const Activities = () => {
   const { user } = useAuth();
@@ -179,30 +178,6 @@ export const Activities = () => {
             layout="embedded"
           />
         );
-      case 'joined-completed':
-        return (
-          <JoinedSection
-            refreshKey={refreshKey}
-            searchQuery={listSearchQuery}
-            scope="attended-only"
-          />
-        );
-      case 'hosted-completed':
-        return (
-          <HostedActivitiesSection
-            refreshKey={refreshKey}
-            searchQuery={listSearchQuery}
-            timeScope="past"
-          />
-        );
-      case 'self-completed':
-        return (
-          <SelfPlansSection
-            segment="completed"
-            refreshKey={refreshKey}
-            searchQuery={listSearchQuery}
-          />
-        );
       case 'hosted-needs-approval':
         return (
           <div className="glass-card p-6 text-center">
@@ -227,7 +202,7 @@ export const Activities = () => {
     <>
       <PageMeta
         title="Plan — your outings on UAE Trail"
-        description="Upcoming and past outings you joined or host on UAE Trail."
+        description="What you are planning next — joined, hosting, and seeking outings on UAE Trail."
         path={PLAN_PATH}
       />
 

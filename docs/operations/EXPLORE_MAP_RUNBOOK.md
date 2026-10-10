@@ -14,7 +14,7 @@ Per-request **`viewerAccess`** on activity/demand rows is applied **after** the 
 |------|---------|
 | **Places** (`locations`) | `writeLocationToMongo`, `deleteLocationFromMongo` (admin, host submit, member contribute, catalog import). Map payload includes **hiking + camping** venues only (not event-type location rows). |
 | **Activities** | Publish / cancel / update while `PUBLISHED` (`activities-store`) |
-| **Demand** | Participant intent create/update (`participant-intents-store`) |
+| **Seeking activities** | Activity create/update (`activityMode: seeking`) + intent alias writes (`participant-intents-store` when stub write enabled) |
 | **Shops** | Shop tenant `writeTenantToMongo`, shop profile sync routes, admin shop tenant status |
 | **Admin** | Place create/patch/delete (also covered by location writers) |
 

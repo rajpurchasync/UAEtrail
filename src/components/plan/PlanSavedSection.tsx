@@ -4,7 +4,7 @@ import { socialApi } from '../../api/domains/social';
 import type { WishlistItemDTO } from '@uaetrail/shared-types';
 import { EXPLORE_MAP_PATH } from '../../config/routingCatalog';
 import { explorePath } from '../../explore/routing';
-import { resolveWishlistItemPath, wishlistItemTitle } from '../../trips/wishlistDemandBookmark';
+import { resolveWishlistItemPath, wishlistItemTitle } from '../../member-plan/wishlistDemandBookmark';
 
 export const PlanSavedSection = () => {
   const [items, setItems] = useState<WishlistItemDTO[]>([]);

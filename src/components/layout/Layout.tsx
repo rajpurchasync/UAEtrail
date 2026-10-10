@@ -2,6 +2,7 @@ import { ReactNode, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { ComposeRailProvider } from '../../context/ComposeRailContext';
 import { isConsumerChromeHidden, hasConsumerSelfHeader } from '../../config/platform';
+import { isJourneyMapPath } from '../../config/surfacePaths';
 import { useMobileBottomNav } from '../../hooks/useMobileBottomNav';
 import { Footer } from './Footer';
 import { ComposeRail } from './ComposeRail';
@@ -25,11 +26,11 @@ export const Layout = ({ children }: LayoutProps) => {
   }, [location.pathname]);
 
   const isExploreMap = location.pathname === '/explore';
-  const isTripsPersonalMap = location.pathname === '/trips/map';
+  const isJourneyMap = isJourneyMapPath(location.pathname);
   const hideChrome = isConsumerChromeHidden(location.pathname);
-  const showConsumerChrome = !hideChrome && !isExploreMap && !isTripsPersonalMap;
+  const showConsumerChrome = !hideChrome && !isExploreMap && !isJourneyMap;
 
-  if (isExploreMap || isTripsPersonalMap) {
+  if (isExploreMap || isJourneyMap) {
     return (
       <ComposeRailProvider>
         <MobileMenuProvider>

@@ -134,13 +134,13 @@ describe('inferNotificationPath', () => {
     ).toBe('/plan?view=plans&role=joined');
   });
 
-  it('rewrites demand explore pins when seekingActivityId is on meta', () => {
+  it('rewrites demand explore pins when activityId is on meta', () => {
     expect(
       inferNotificationPath(
         notif({
           kind: 'wishlist_match',
           path: '/explore?pin=demand:int-1&list=1',
-          seekingActivityId: 'act-seek-1',
+          activityId: 'act-seek-1',
         })
       )
     ).toBe('/explore?list=1&pin=activity%3Aact-seek-1');
@@ -152,5 +152,36 @@ describe('inferNotificationPath', () => {
         notif({ kind: 'host_application_approved', path: '/host/overview' })
       )
     ).toBe('/profile/pro-membership');
+  });
+
+  it('rewrites legacy inbox and stale group chat paths to /chat', () => {
+    expect(inferNotificationPath(notif({ path: '/messages?to=u-1' }))).toBe('/chat?to=u-1');
+    expect(inferNotificationPath(notif({ path: '/host/messages?group=g-1' }))).toBe('/chat?group=g-1');
+    expect(
+      inferNotificationPath(
+        notif({
+          kind: 'group_message',
+          groupId: 'g-2',
+          path: '/groups?group=g-2',
+        })
+      )
+    ).toBe('/chat?group=g-2');
+    expect(
+      inferNotificationPath(
+        notif({
+          kind: 'group_message',
+          activityId: 'act-1',
+          path: '/groups?group=g-2',
+        })
+      )
+    ).toBe('/chat?group=g-2&activity=act-1');
+  });
+
+  it('routes join approved crew chat with activity context when present', () => {
+    expect(
+      inferNotificationPath(
+        notif({ kind: 'join_request_approved', groupId: 'g-9', activityId: 'act-9' })
+      )
+    ).toBe('/chat?group=g-9&activity=act-9');
   });
 });

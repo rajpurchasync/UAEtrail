@@ -302,6 +302,8 @@ const toEventDto = ({
   displayLatitude: displayCoords.latitude,
   displayLongitude: displayCoords.longitude,
   outingCategory: event.outingCategory ?? null,
-  outingTopic: event.outingTopic ?? null
+  outingTopic: event.outingTopic ?? null,
+  activityMode: event.activityMode ?? null,
+  participantIntentId: event.participantIntentId ?? null
 };
 };

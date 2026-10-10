@@ -45,9 +45,10 @@ describe('participant intent seeking dual-write (M1)', () => {
       .db()
       .collection(COLLECTIONS.PARTICIPANT_INTENTS)
       .findOne({ _id: intent.id });
-    expect(intentDoc?.seekingActivityId).toBeTruthy();
+    const publishedActivityId = intentDoc?.activityId ?? intentDoc?.seekingActivityId;
+    expect(publishedActivityId).toBeTruthy();
 
-    const activity = await findActivityDocInMongo(intentDoc!.seekingActivityId as string);
+    const activity = await findActivityDocInMongo(publishedActivityId as string);
     expect(activity?.activityMode).toBe('seeking');
     expect(activity?.participantIntentId).toBe(intent.id);
     expect(activity?.status).toBe('PUBLISHED');

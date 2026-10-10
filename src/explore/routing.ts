@@ -2,7 +2,7 @@ import { exploreAreaQueryParam, exploreDemandMapItemPath } from '@uaetrail/share
 import type { OrganizeComposeKind } from './compose';
 import { EXPLORE_MAP_PATH } from '../config/platform';
 import { PLAN_PATH } from '../constants';
-import { tripsPlansPath } from '../trips/tripsRouting';
+import { tripsPlansPath } from '../member-plan/tripsRouting';
 import type { ContributeVenueKind } from './contributeTypes';
 import { formatComposeQuery, type ExploreCompose } from './compose';
 import {
@@ -89,6 +89,24 @@ export const parseExplorePinMapItemId = (searchParams: Pick<URLSearchParams, 'ge
 /** Deep link from Profile wishlist or notifications → map peek. */
 export const exploreSavedPinPath = (mapItemId: string): string =>
   explorePath({ pin: mapItemId, panel: 'activities', list: true });
+
+/** Map item id for a find post — `activity:` when M1 row exists, else legacy `demand:`. */
+export const resolveParticipantIntentMapItemId = (intent: {
+  id: string;
+  activityId?: string | null;
+  seekingActivityId?: string | null;
+}): string => {
+  const activityId = intent.activityId ?? intent.seekingActivityId ?? null;
+  return activityId ? `activity:${activityId}` : `demand:${intent.id}`;
+};
+
+export const participantIntentExplorePinPath = (
+  intent: {
+    id: string;
+    activityId?: string | null;
+    seekingActivityId?: string | null;
+  }
+): string => exploreSavedPinPath(resolveParticipantIntentMapItemId(intent));
 
 /** Share link for map items — opens explore peek (guests and members). */
 export const exploreMapItemSharePath = (mapItemId: string): string => {

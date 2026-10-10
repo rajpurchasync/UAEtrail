@@ -248,6 +248,9 @@ export const cancelBuddyRequest = async (
   return mapRequestDto(updated, users);
 };
 
+export const countPendingIncomingBuddyRequests = async (userId: string): Promise<number> =>
+  requestsCollection().countDocuments({ toUserId: userId, status: 'pending' });
+
 export const listBuddyRequestsForUser = async (
   userId: string,
   direction: 'incoming' | 'outgoing' | 'all' = 'all'

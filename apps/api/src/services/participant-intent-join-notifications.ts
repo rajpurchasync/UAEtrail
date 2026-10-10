@@ -1,8 +1,5 @@
 import { NotificationType } from '../domain/enums.js';
-import {
-  exploreSeekingPinPath,
-  planSelfDemandPeekPath,
-} from '../lib/member-routes.js';
+import { explorePublishedActivityPinPath, planSelfDemandPeekPath } from '../lib/member-routes.js';
 import { dispatchNotification } from './notifications.js';
 
 export const notifyDemandJoinRequestSubmitted = async (input: {
@@ -11,7 +8,7 @@ export const notifyDemandJoinRequestSubmitted = async (input: {
   intentId: string;
   intentTitle: string;
   requestId: string;
-  seekingActivityId?: string | null;
+  activityId?: string | null;
 }): Promise<void> => {
   await dispatchNotification({
     userId: input.hostUserId,
@@ -36,9 +33,9 @@ export const notifyDemandJoinRequestSubmitted = async (input: {
       kind: 'demand_join_request_pending',
       intentId: input.intentId,
       requestId: input.requestId,
-      path: exploreSeekingPinPath({
+      path: explorePublishedActivityPinPath({
         intentId: input.intentId,
-        seekingActivityId: input.seekingActivityId,
+        activityId: input.activityId,
       }),
     },
   }).catch(() => undefined);
@@ -50,7 +47,7 @@ export const notifyDemandJoinRequestDecided = async (input: {
   intentId: string;
   requestId: string;
   approved: boolean;
-  seekingActivityId?: string | null;
+  activityId?: string | null;
 }): Promise<void> => {
   await dispatchNotification({
     userId: input.requesterUserId,
@@ -63,9 +60,9 @@ export const notifyDemandJoinRequestDecided = async (input: {
       kind: input.approved ? 'demand_join_request_approved' : 'demand_join_request_rejected',
       intentId: input.intentId,
       requestId: input.requestId,
-      path: exploreSeekingPinPath({
+      path: explorePublishedActivityPinPath({
         intentId: input.intentId,
-        seekingActivityId: input.seekingActivityId,
+        activityId: input.activityId,
       }),
     },
   }).catch(() => undefined);

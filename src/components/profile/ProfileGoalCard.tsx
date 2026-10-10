@@ -534,7 +534,7 @@ const MemberGoalSheet = ({
       </div>
     ) : (
       <p className="text-center text-[11px] leading-relaxed text-neutral-500">
-        Aligns with My Map visited pins and Trips wishlist (saves only).
+        Aligns with My Map visited pins and Plan saved (wishlist).
       </p>
     );
 

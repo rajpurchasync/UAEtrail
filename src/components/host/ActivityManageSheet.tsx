@@ -21,7 +21,7 @@ import {
   type HostActivityManageInitialView,
   type HostActivityManageSubview,
 } from './hostActivityManageViews';
-import { tripsHostedActivityPath } from '../../trips/tripsRouting';
+import { tripsHostedActivityPath } from '../../member-plan/tripsRouting';
 import { useModalA11y } from '../../hooks/useModalA11y';
 import { useAuth } from '../../context/AuthContext';
 

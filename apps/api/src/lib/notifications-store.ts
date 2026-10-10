@@ -84,6 +84,24 @@ export const createNotificationsMany = async (rows: Array<{
   return rows.length;
 };
 
+export const countUnreadNotificationsByMetaKind = async (
+  userId: string,
+  kinds: string[]
+): Promise<Record<string, number>> => {
+  if (kinds.length === 0) return {};
+  const rows = await notificationsCollection()
+    .find({ userId, isRead: false, 'meta.kind': { $in: kinds } })
+    .project({ meta: 1 })
+    .toArray();
+  const counts: Record<string, number> = {};
+  for (const kind of kinds) counts[kind] = 0;
+  for (const row of rows) {
+    const kind = row.meta?.kind;
+    if (typeof kind === 'string' && kind in counts) counts[kind] += 1;
+  }
+  return counts;
+};
+
 export const listUserNotifications = async (input: {
   userId: string;
   skip: number;

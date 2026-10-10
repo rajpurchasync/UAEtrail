@@ -24,8 +24,8 @@ import {
   parseTripsMainView,
   parseTripsRole,
   type TripsRole,
-} from '../trips/tripsRouting';
-import { resolveTripsContent } from '../trips/resolveTripsContent';
+} from '../member-plan/tripsRouting';
+import { resolveTripsContent } from '../member-plan/resolveTripsContent';
 
 export const MyTrips = () => {
   const { user } = useAuth();

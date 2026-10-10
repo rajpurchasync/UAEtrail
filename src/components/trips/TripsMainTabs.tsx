@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { History, Map, type LucideIcon } from 'lucide-react';
-import { PROFILE_HISTORY_MAIN_TABS, type TripsMainView } from '../../trips/tripsRouting';
+import { PROFILE_HISTORY_MAIN_TABS, type TripsMainView } from '../../member-plan/tripsRouting';
 
 const tabIcons: Partial<Record<TripsMainView, LucideIcon>> = {
   completed: History,

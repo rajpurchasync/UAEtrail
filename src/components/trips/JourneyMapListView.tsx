@@ -1,9 +1,9 @@
 import { MapPin } from 'lucide-react';
 import type { JourneyMapEntryDTO } from '@uaetrail/shared-types';
 import { ActivityHubListRow } from '../mobile/ActivityHubListRow';
-import { formatJourneyListSubtitle } from '../../trips/journeyMapListMeta';
-import { journeyEntryCategoryBadge } from '../../trips/journeyMapCategoryBadge';
-import { resolveJourneyPinStyle } from '../../trips/journeyMapPinStyle';
+import { formatJourneyListSubtitle } from '../../member-plan/journeyMapListMeta';
+import { journeyEntryCategoryBadge } from '../../member-plan/journeyMapCategoryBadge';
+import { resolveJourneyPinStyle } from '../../member-plan/journeyMapPinStyle';
 import { JourneyMapListPinIcon } from './JourneyMapListPinIcon';
 
 interface JourneyMapListViewProps {

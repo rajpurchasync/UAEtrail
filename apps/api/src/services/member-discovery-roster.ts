@@ -2,7 +2,7 @@ import { exploreMapItemIsSeeking } from '@uaetrail/shared-types';
 import type {
   ExploreMapItemDTO,
   MemberBrowseCardDTO,
-  MemberDiscoveryLookingRowDTO,
+  MemberDiscoverySeekingRowDTO,
   MemberDiscoveryQuotaDTO,
   MemberDiscoveryRosterDTO,
 } from '@uaetrail/shared-types';
@@ -35,8 +35,8 @@ const matchesMemberDiscoverySearch = (
   return haystack.includes(needle);
 };
 
-/** Members with active demand posts on the explore map. */
-export const buildMemberDiscoveryLookingRowsFromMapItems = (
+/** Members with active seeking posts on the explore map. */
+export const buildMemberDiscoverySeekingRowsFromMapItems = (
   items: ExploreMapItemDTO[],
   input: {
     viewerUserId: string;
@@ -44,9 +44,9 @@ export const buildMemberDiscoveryLookingRowsFromMapItems = (
     datePreset: ExploreActivityDatePreset;
     search?: string;
   }
-): MemberDiscoveryLookingRowDTO[] => {
+): MemberDiscoverySeekingRowDTO[] => {
   const seen = new Set<string>();
-  const rows: MemberDiscoveryLookingRowDTO[] = [];
+  const rows: MemberDiscoverySeekingRowDTO[] = [];
 
   for (const item of items) {
     if (!exploreMapItemIsSeeking(item)) continue;
@@ -58,9 +58,9 @@ export const buildMemberDiscoveryLookingRowsFromMapItems = (
 
     const displayName =
       item.featuredPerson?.displayName ?? item.hostName ?? 'Member';
-    const demandTitle = item.title?.trim() || 'Looking for company';
+    const seekingTitle = item.title?.trim() || 'Looking for company';
     if (
-      !matchesMemberDiscoverySearch([displayName, demandTitle, item.subtitle ?? null], input.search)
+      !matchesMemberDiscoverySearch([displayName, seekingTitle, item.subtitle ?? null], input.search)
     ) {
       continue;
     }
@@ -72,7 +72,7 @@ export const buildMemberDiscoveryLookingRowsFromMapItems = (
       displayName,
       avatarUrl: item.featuredPerson?.avatarUrl ?? item.hostAvatar ?? null,
       participantIntentId: intentId,
-      demandTitle,
+      seekingTitle,
       exploreItemId: item.id,
     });
   }
@@ -157,7 +157,7 @@ export const loadMemberDiscoveryRoster = async (input: {
     }
   );
 
-  const [friendsGoing, hostsGoing, lookingFor, followed] = await Promise.all([
+  const [friendsGoing, hostsGoing, seekingOnMap, followed] = await Promise.all([
     buildMemberDiscoveryFriendsGoing(input.viewerUserId, buddies, mapItems, datePreset),
     buildMemberDiscoveryHostsGoing(
       input.viewerUserId,
@@ -167,7 +167,7 @@ export const loadMemberDiscoveryRoster = async (input: {
       input.search
     ),
     Promise.resolve(
-      buildMemberDiscoveryLookingRowsFromMapItems(mapItems, {
+      buildMemberDiscoverySeekingRowsFromMapItems(mapItems, {
         viewerUserId: input.viewerUserId,
         excludeUserIds,
         datePreset,
@@ -185,7 +185,7 @@ export const loadMemberDiscoveryRoster = async (input: {
   );
 
   return {
-    data: { friendsGoing: friendsFiltered, hostsGoing, lookingFor, followed, directory },
+    data: { friendsGoing: friendsFiltered, hostsGoing, seekingOnMap, followed, directory },
     quota,
   };
 };

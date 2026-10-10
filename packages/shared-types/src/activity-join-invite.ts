@@ -14,3 +14,11 @@ export type ActivityJoinInviteForViewerDTO = {
   fromUserId: string;
   inviterDisplayName: string;
 };
+
+/** Inbox row for Plan “Needs you” and notifications — pending friend Join me invite. */
+export type PendingActivityJoinInviteDTO = {
+  activityId: string;
+  activityTitle: string;
+  fromUserId: string;
+  inviterDisplayName: string;
+};

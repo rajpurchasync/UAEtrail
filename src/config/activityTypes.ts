@@ -97,6 +97,15 @@ export const activityDetailEyebrow = (type: ActivityType | 'rideshare'): string 
   return 'Event';
 };
 
+/** Banner eyebrow when `activityMode` is on the wire (seeking Find posts). */
+export const activityDetailEyebrowForActivity = (
+  type: ActivityType | 'rideshare',
+  activityMode?: 'hosted' | 'seeking' | null
+): string => {
+  const kind = activityDetailEyebrow(type);
+  return activityMode === 'seeking' ? `Seeking · ${kind}` : kind;
+};
+
 /** Empty-state copy when filtering Activities by kind. */
 export const noScheduledActivitiesMessage = (type: ActivityType): string => {
   if (type === 'event') return 'No events on the calendar right now.';

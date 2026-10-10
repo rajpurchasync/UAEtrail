@@ -17,14 +17,14 @@ import { MobileBackButton } from '../components/mobile/MobileBackButton';
 import { FloatingActionButton } from '../components/mobile/FloatingActionButton';
 import { shareJourneyMapSummary } from '../components/trips/journeyMapShare';
 import { memberJourneyMapApi } from '../api/domains/memberJourneyMap';
-import { tripsCompletedPath } from '../trips/tripsRouting';
+import { tripsCompletedPath } from '../member-plan/tripsRouting';
 import { TripsMainTabs } from '../components/trips/TripsMainTabs';
 import {
   filterJourneyMapEntries,
   mappableJourneyMapEntries,
   parseJourneyMapFilter,
-} from '../trips/journeyMapFilters';
-import { resolveJourneyPinStyle } from '../trips/journeyMapPinStyle';
+} from '../member-plan/journeyMapFilters';
+import { resolveJourneyPinStyle } from '../member-plan/journeyMapPinStyle';
 
 const emptyStats = (): MemberJourneyMapStatsDTO => ({
   totalPins: 0,

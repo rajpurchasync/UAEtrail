@@ -1,5 +1,5 @@
 import type { NavigateFunction } from 'react-router-dom';
-import { tripsHostedActivityPath } from '../trips/tripsRouting';
+import { tripsHostedActivityPath } from '../member-plan/tripsRouting';
 
 /** Open Trips → Hosted manage sheet (or check-in view) for a hosted activity. */
 export const navigateToHostedActivityManage = (

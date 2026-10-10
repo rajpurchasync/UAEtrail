@@ -8,11 +8,14 @@ import { findActivityParticipantByEventAndUser } from '../lib/activity-engagemen
 import { findPublishedActivityWithPreviewsById } from '../lib/activities-store.js';
 import {
   countActivityJoinInvitesFromSenderSince,
+  countPendingActivityInvitesForInvitee,
   findPendingActivityInviteForInvitee,
   findPendingActivityInviteForPair,
   listPendingActivityInviteeIdsForSender,
+  listPendingActivityInvitesForInvitee,
   upsertActivityInvite,
 } from '../lib/activity-invites-store.js';
+import type { PendingActivityJoinInviteDTO } from '@uaetrail/shared-types';
 import { notifyActivityJoinInvite } from './activity-invite-notifications.js';
 import { resolveNotificationActorDisplayName } from './notification-actor-label.js';
 
@@ -107,6 +110,42 @@ export const createActivityJoinInvites = async (input: {
     }
   }
   return { sent: inviteeUserIds.length, inviteeUserIds };
+};
+
+export const countPendingActivityJoinInvitesForUser = async (userId: string): Promise<number> =>
+  countPendingActivityInvitesForInvitee(userId);
+
+export const listPendingActivityJoinInvitesForUser = async (
+  userId: string,
+  limit = 50
+): Promise<PendingActivityJoinInviteDTO[]> => {
+  const rows = await listPendingActivityInvitesForInvitee(userId, limit);
+  if (rows.length === 0) return [];
+
+  const activityIds = [...new Set(rows.map((row) => row.activityId))];
+  const activities = await Promise.all(
+    activityIds.map((id) => findPublishedActivityWithPreviewsById(id))
+  );
+  const titleById = new Map(
+    activities.filter(Boolean).map((activity) => [activity!.id, activity!.title])
+  );
+
+  const result: PendingActivityJoinInviteDTO[] = [];
+  for (const row of rows) {
+    const title = titleById.get(row.activityId);
+    if (!title) continue;
+    const inviterDisplayName = await resolveNotificationActorDisplayName(
+      row.fromUserId,
+      userId
+    );
+    result.push({
+      activityId: row.activityId,
+      activityTitle: title,
+      fromUserId: row.fromUserId,
+      inviterDisplayName,
+    });
+  }
+  return result;
 };
 
 export const resolveViewerPendingJoinInvite = async (

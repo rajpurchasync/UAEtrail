@@ -199,7 +199,7 @@ Explore URL builders live in `src/explore/routing.ts` (re-exported from `config/
 
 **When a new path is justified:** marketing/SEO landings that **deep-link into** `explorePath({ … })` with the same filter params; partner embeds; or a **new bounded context** with its own read API (document in Tier-1 before shipping).
 
-**Three maps (do not conflate):** (1) **Explore** — public discovery; (2) **Journey map** — `/trips/map`, personal pins; (3) **Host console** — tenant tools under `/host/*`. See [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §3.1 and §4.1.
+**Three maps (do not conflate):** (1) **Explore** — public discovery; (2) **Journey map** — `/profile/history/map` (consumer), `GET /me/journey-map` + `POST/PATCH/DELETE /me/map-pins`; (3) **Host console** — tenant tools under `/host/*`. See [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §3.1 and §4.1.
 
 IA detail (pills, topics): [`experiment/explore-browse-ia.md`](./experiment/explore-browse-ia.md).
 
@@ -217,6 +217,16 @@ IA detail (pills, topics): [`experiment/explore-browse-ia.md`](./experiment/expl
 **Kebab-case plurals** on URLs: `participant-intents`, not `intents` or `demand`.
 
 **Client modules:** `src/api/domains/*.ts` — canonical method names (`getOrganisationProfile`, `getMemberHostStatus`, `getPublicPlaces`). No legacy alias layer on `api` (see `apiLegacyGuard.test.ts`).
+
+### 5.1 API vs UI (read-models)
+
+| Layer | Names | Wire payload |
+|-------|--------|----------------|
+| **HTTP `/me/*`** | Entity or **capability** (`coordination-attention`, `profile-stats`, `host-status`) | Facts: ids, counts, enums — **not** tab copy (`Needs you`, `Plan`) |
+| **shared-types** | `MemberCoordinationAttention*`, `MemberProfileStatsDTO` | No English `label` or consumer `path` on list rows |
+| **SPA** | `PlanNeedsYouStrip`, `coordinationAttentionPresentation.ts` | Labels + `surfacePaths` / `tripsPlansPath` |
+
+**Aggregates:** One bounded read-model per hot screen is allowed (e.g. coordination attention for Plan). Kinds must map to existing entities (`activity_requests`, `buddy_requests`, `activity_invites`, `notifications`). Enforced: `api-surface-route-naming.test.ts`, `coordination-attention-contract.test.ts`.
 
 ---
 
@@ -320,23 +330,24 @@ Use this when naming files, hooks, and utils — **one product word per concept*
 | Product (UI copy) | API / wire | Preferred FE symbol / folder | Do not use for new code |
 |-------------------|------------|------------------------------|-------------------------|
 | **Find** (FAB) | `participant_intents` | `participantIntent*`, `demandFlow.ts` | “wishlist”, “lookingFor” in filenames |
-| **Seeking pin** (public map) | same | Map DTO: `source: 'activity'`, `activityMode: 'seeking'`, id `demand:{intentId}`; helpers `exploreMapItemIsSeeking`, `resolveExploreMapActivityMode` (`@uaetrail/shared-types`). Card/presentation: `ExploreCardSource` `'demand'` via `resolveExploreItemSource` | `item.source === 'demand'` in map/list code; mixing with personal save |
+| **Seeking pin** (public map) | `activities` (`activityMode: seeking`) + intent stub | Map item id **`activity:{activityId}`**; DTO `activityMode: 'seeking'`; helpers `exploreMapItemIsSeeking`, `resolveExploreMapActivityMode`. Presentation `source: 'demand'` is **card-only** (not map species). Legacy `demand:{intentId}` pins only pre-M1 backfill. | `item.source === 'demand'` for filters; parallel `participant_intent_requests` writes (M2c: reads alias `activity_requests`) |
 | **Follow** (venue / host brand / shop alerts) | `entity_follows` | `EntityFollowDTO`, `GET/POST /me/entity-follows` | Wishlist UI, “favorites”, `user_favorites` |
 | **Follow** (people) | `user_follows` | `MemberFollowControls`, `/me/following/:userId` | Buddies are **friends**; accepting a buddy **auto-follows** both ways |
 | **Wishlist** (private saves) | `user_favorites` (wire) | `WishlistItemDTO`, `GET/POST /me/wishlist` | “Favorite”, demand bookmarks, saving people/shops to wishlist |
 | **Goal** (time + count) | `user_goals` | `MemberGoalDTO`, `GET/POST /me/goals` | Wishlist rows, visited map pins as goal progress |
 | **Organize** (FAB) | `activities` publish | `organizeFlow*`, `organizeActivityPublish` | `hostActivity` in consumer explore |
-| **Trips** (tab) | joined/hosted/self plans | `src/trips/tripsRouting.ts`, `components/trips/*` | `/activities` hub naming, wishlist segment |
-| **My trips map** (`/trips/map`) | `GET /me/trips/map`, `JourneyMapEntryDTO` (`OutdoorMapEntryDTO` deprecated alias) | `journeyMap*` (`src/trips/journeyMap*`, `JourneyMap*` components) | `outdoorMap*` (removed from FE) |
+| **Plan** (tab) | joined/hosted/self plans | `src/member-plan/tripsRouting.ts`, `components/trips/*` (journey UI) | `/activities` hub naming, wishlist segment |
+| **Member discovery roster** | map + directory compose | `seekingOnMap[]` (`seekingTitle`, `participantIntentId`) on `GET /me/member-discovery/roster` | Wire field `lookingFor`, `demandTitle` |
+| **Journey map** (`/profile/history/map`) | `GET /me/journey-map`, `POST/PATCH/DELETE /me/map-pins`, `JourneyMapEntryDTO` | `memberJourneyMapApi`, `src/member-plan/journeyMap*` | `GET /me/trips/map`, `outdoorMap*` |
 | **Explore map** | `GET /explore/map` | `src/explore/*`, `exploreMapPinModel` | `journeyMap*` (wrong surface) |
 | **Area** (curated zone) | `GET /areas`, `GET /areas/:slug` | `areas-store`, `area-resolution`, `/area/:slug`, explore `?area=` | `areaLabel` string as third concept |
 | **Place / venue** | `locations` | `place*`, `venue` panel, `Place` in UI | `location` in new routes/components |
 | **Friends** | buddies API | `BUDDIES_PATH`, `buddy*` stores only on API | `buddyUserId`, “buddy entity” |
 | **Host console** | `/host/*`, tenant | `src/pages/host/*`, `src/console/*`, `useHostStatus`, `useConsoleHubData`, `listHostActivities` | `tenant` in consumer UI strings (wire: `x-organisation-id`) |
 
-**Three maps (do not conflate):** (1) **Explore** — public discovery; (2) **Journey map** — personal history + wishlist pins on `/trips/map`; (3) **Place catalog** — venues/shops layers on Explore.
+**Three maps (do not conflate):** (1) **Explore** — public discovery; (2) **Journey map** — `/profile/history/map` + `GET /me/journey-map`; (3) **Place catalog** — venues/shops layers on Explore.
 
-**`src/utils/` policy:** cross-surface helpers only (`authRedirect`, `notificationRouting`, `authReturnContext`, `routingCatalog` consumers). Domain logic belongs in `src/explore/`, `src/trips/`, `src/member/` (`organisationPaths.ts`), `src/host/` (`hostCopy.ts`), `src/components/<domain>/` — not new `utils/demand*.ts` / `utils/outdoor*.ts`.
+**`src/utils/` policy:** cross-surface helpers only (`authRedirect`, `notificationRouting`, `authReturnContext`, `routingCatalog` consumers). Domain logic belongs in `src/explore/`, `src/member-plan/`, `src/member/` (`organisationPaths.ts`), `src/host/` (`hostCopy.ts`), `src/components/<domain>/` — not new `utils/demand*.ts` / `utils/outdoor*.ts`.
 
 ---
 

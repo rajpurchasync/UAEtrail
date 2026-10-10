@@ -545,11 +545,14 @@ export const publishDemandRequest = async (draft: DemandDraft): Promise<DemandSu
 
   const created = await api.createParticipantIntent(payload);
 
-  const seekingActivityId = created.data.seekingActivityId ?? null;
+  const publishedActivityId =
+    created.data.activityId ?? created.data.seekingActivityId ?? null;
   return {
     visibleOnMap: payload.latitude != null && payload.longitude != null,
     participantIntentId: created.data.id,
-    mapItemId: seekingActivityId ? `activity:${seekingActivityId}` : `demand:${created.data.id}`,
+    mapItemId: publishedActivityId
+      ? `activity:${publishedActivityId}`
+      : `demand:${created.data.id}`,
   };
 };
 

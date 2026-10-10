@@ -129,7 +129,9 @@ export const registerHostActivityRequestRoutes = (hostRouter: Router): void => {
               groupId: groupId ?? null,
               actorUserId: req.auth!.userId,
               organizerNote: organizerNote?.trim() || null,
-              path: groupId ? messagesGroupPath(groupId) : TRIPS_JOINED_TAB_PATH,
+              path: groupId
+                ? messagesGroupPath(groupId, request.activityId)
+                : TRIPS_JOINED_TAB_PATH,
             },
           });
         } else {

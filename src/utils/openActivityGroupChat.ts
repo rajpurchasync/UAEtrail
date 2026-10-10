@@ -10,9 +10,9 @@ export const openActivityGroupChat = async (
   options?: { returnTo?: string }
 ): Promise<void> => {
   if (groupChatId) {
-    navigateToActivityGroupChat(navigate, groupChatId, options?.returnTo);
+    navigateToActivityGroupChat(navigate, groupChatId, options?.returnTo, activityId);
     return;
   }
   const res = await api.getActivityGroupChat(activityId);
-  navigateToActivityGroupChat(navigate, res.data.groupId, options?.returnTo);
+  navigateToActivityGroupChat(navigate, res.data.groupId, options?.returnTo, activityId);
 };

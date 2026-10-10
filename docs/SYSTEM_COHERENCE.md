@@ -15,10 +15,10 @@ From [`NORTHSTAR.md`](./NORTHSTAR.md), the product delivers five **capabilities*
 | Capability | Member outcome | Primary surfaces |
 |------------|----------------|------------------|
 | **Discover** | See real outdoor plans near me | `/explore`, entity detail (`/activity`, `/trail`, …) |
-| **Express demand** | Say what I want when nothing fits | Explore FAB → Find; `participant_intents` on map |
+| **Express demand** | Say what I want when nothing fits | Explore FAB → Find → **`activities`** (`activityMode: seeking`); intent stub for manage |
 | **Connect** | Align with people before the day | **Browse — member people** (who’s going / looking / your crew on map & list) → **Chat** (`/messages`, group & outing threads) |
 | **Participate** | Join or host a specific outing | Activity detail join/RSVP; host join queue |
-| **Return** | Same crew, next time | `/profile`, `/trips`, notifications, goals |
+| **Return** | Same crew, next time | `/profile`, **`/plan`**, notifications, goals |
 
 Everything else (shops, rewards, place registry, admin, Pro agencies) **supports** these capabilities or serves a **secondary** audience (hosts, merchants, platform ops).
 
@@ -31,7 +31,7 @@ flowchart TB
   subgraph surfaces [Consumer surfaces]
     M["/ guest marketing"]
     E["/explore browse + FAB"]
-    P["/profile /trips hub"]
+    P["/profile /plan hub"]
     D["/activity /trail detail"]
     MSG["/messages /buddies /groups"]
   end
@@ -45,7 +45,7 @@ flowchart TB
 
   subgraph participation [Participation subsystem]
     JOIN["activity_requests + RSVP"]
-    DEMAND["participant_intent_requests"]
+    INTENT["participant_intents stub"]
     CREW["activity crew groups"]
   end
 
@@ -73,9 +73,8 @@ flowchart TB
   FAB --> ADD
   ORG --> TEN
   ORG --> JOIN
-  FIND --> DEMAND
+  FIND --> INTENT
   D --> JOIN
-  D --> DEMAND
   JOIN --> CREW
   CREW --> MSG
   WEL --> HS
@@ -97,7 +96,7 @@ Each context has **one write path** and **one public read model** where possible
 |---------|----------------|---------------|----------|--------------------------------|
 | **Discovery** | Map/list payload, pins, filters, card projection | `src/explore/*`, `src/list/*` (`/list` + embedded list on `/explore`) | `lib/explore-map.ts`, `GET /explore/map` | `activities`, `locations`, `participant_intents`, `tenants` (shops) |
 | **Compose** | FAB intents, wizards, draft → publish payload | `src/explore/ui/*`, `compose.ts`, `organizeFlow.ts` | `POST /host/activities`, `POST /me/participant-intents` | `activities`, `participant_intents` |
-| **Participation** | Join, waitlist, RSVP, demand requests, **Join me** invites | `useActivityJoin*`, detail + explore selection | `join-request.ts`, `activity-invite.ts`, `registerActivityJoinInviteRoutes` | `activity_requests`, `participant_intent_requests`, `activity_participants`, `activity_invites` |
+| **Participation** | Join, waitlist, RSVP, seeking joins, **Join me** invites | `useActivityJoin*`, detail + explore selection | `join-request.ts`, `activity-invite.ts`, intent join **aliases** (`participant-intent-requests-store`) | **`activity_requests`** (canonical); `participant_intent_requests` legacy-only; `activity_participants`, `activity_invites` |
 | **Browse — member people** | Who can I go with? Network roster + map outing status + discover directory (quota) | `PeopleBrowsePanel`, `PeopleBrowseTabContent`, `ListDiscoverPeopleView` | `member-people-engagement.ts`, `member-discovery-roster.ts`, `registerMemberDiscoveryRoutes`, `registerSocialPeopleRoutes` (`GET /social/people`) | Composes `buddy_*`, `user_follows`, explore map, `member_profile_views` |
 | **Member identity** | Profile, welcome gate, visibility, public card | `src/pages/Profile*`, `src/member/*` | `registerProfileRoutes`, `public-member-profile`, `profile-viewer-access` | `auth_users` profile fields |
 | **Host capabilities** | Who may publish & console access (host **user kind**, not onboarding verb) | `useHostStatus`, `organizePublishGate` | **`services/member-host-status.ts` only** | `tenants`, `tenant_memberships` |
@@ -121,7 +120,7 @@ Pick a **context id** when changing code; touch registrar + `src/api/domains/*` 
 |---------|-------------------|----------|------------------|----------|
 | discovery | `activities`, `locations`, `participant_intents`, shop tenants | `GET /explore/map` · browse also `/list` | `exploreApi` | `src/explore/*`, `src/list/*` |
 | compose | `activities`, `participant_intents` | `POST /host/activities`, `POST /me/participant-intents` | `exploreApi`, `organisationApi` | `src/explore/ui/*` |
-| participation | `activity_requests`, `participant_intent_requests`, `activity_participants`, `activity_invites` | `/activities/.../requests`, `GET/POST /activities/:id/invites`, `/host/requests` | `activitiesApi`, `exploreApi` | Activity detail, `JoinRequestDetail` |
+| participation | `activity_requests`, `activity_participants`, `activity_invites` (+ intent join alias) | **`POST /activities/:id/requests`** (canonical seeking + hosted); `/me/participant-intents/.../requests` alias; tenant **`GET /host/requests`** (console API, also Plan manage) | `activitiesApi`, `exploreApi` | Activity detail, Plan manage sheet, `JoinRequestDetail` |
 | *(cross-cut)* | — | `GET /activities/:id` (`viewerAccess`, `myJoinInvite`) | — | **`activity-viewer-access.ts`**, **`activity-invite.ts`** |
 | member_discovery | `member_profile_views` (+ read-only compose from map/users) | `/me/member-discovery/*`, `/social/people` (browse network roster), `/users/browse`, `public-profile?from=discover` | `accountApi` (`getMemberPeopleNetwork*`, discovery roster) | Explore map **People** panel (`view=people`; legacy `view=social`), list **Buddies** (`listCat=people`), `MemberProfile` discover |
 | member_identity | `auth_users` profile | `/me/profile`, `/users/:id` | `accountApi`, `memberApi` | `Profile*`, `src/member/*` |
@@ -159,11 +158,11 @@ Canonical navigation: [`NAVIGATION.md`](./NAVIGATION.md). Structural rules:
 |---------|--------------|-------------------|
 | Marketing | `/` | Product home (`/explore`) |
 | Browse + create | `/explore?compose=…` | `/host/activities/new` as consumer default |
-| Personal hub | `/profile`, `/trips` | Legacy `/activities` browse |
+| Personal hub | `/profile`, **`/plan`** | Legacy `/trips` redirects; not `/activities` browse |
 | Entity | `/activity/:id`, place URLs | “Trip” entity (does not exist) |
-| Host console | `/host/*` | Buddy Organize (map FAB, `/welcome` gate) |
+| Host console | `/host/*` (tenant workspace) | Buddy **Organize** (map FAB) + **Plan hosted** manage (same APIs, consumer surface) |
 | Pro / business | `/profile/pro-membership` | `/become-host` as product entry (redirect only) |
-| Messaging | `/messages` (+ `?group=` / `?to=`) | Chat embedded on `/trips` |
+| Messaging | `/messages` (+ `?group=` / `?to=`) | Chat embedded only on entity/Plan flows → `/chat` |
 | List layout (browse) | `/list?…` (handoff) · mobile **List** pill on `/explore` | A second product home, `/map`, or **List bottom-nav tab** |
 
 **Auth shells:** `ProtectedRoute` uses **`UserRole`** for coarse access (admin, host console shell). **Product gates** (Organize, paid host, profile chips) use **`HostStatusDTO`** from `GET /me/host-status`. See [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) — mixing these layers is a top source of incoherence.

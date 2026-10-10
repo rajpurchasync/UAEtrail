@@ -11,6 +11,7 @@ import type {
   OutingTopic,
 } from './explore-plan-projection.js';
 import type { HostParticipantRosterStatus, ParticipantHostRatingDTO } from './participant-roster.js';
+import type { ExploreActivityMode } from './explore-activity-mode.js';
 
 export type UserRole =
   | 'platform_admin'
@@ -233,6 +234,10 @@ export interface ActivityDTO {
   outingTopic?: OutingTopic | null;
   /** Activity crew chat — one group per outing (host list / manage). */
   groupChatId?: string | null;
+  /** Map/Plan mode — `seeking` = Find post (M1 activity row); default hosted outings omit or `hosted`. */
+  activityMode?: ExploreActivityMode | null;
+  /** Back-link to `participant_intents` when `activityMode: seeking`. */
+  participantIntentId?: string | null;
 }
 
 
@@ -296,7 +301,7 @@ import type { NotificationMeta } from './notification-meta.js';
 export type { MemberFollowStateDTO, MemberFollowSummaryDTO } from './member-follow.js';
 export type { EntityFollowCheckDTO, EntityFollowDTO, EntityFollowKind } from './entity-follow.js';
 export type { WishlistCheckDTO, WishlistItemDTO } from './wishlist.js';
-export type { MemberHubStatsDTO } from './member-hub-stats.js';
+export type { MemberProfileStatsDTO } from './member-profile-stats.js';
 export type { MemberBrowseCardDTO, MemberProfileViewStatsDTO } from './member-pro-engagement.js';
 export {
   MEMBER_DISCOVERY_QUOTA_LIMIT,
@@ -306,7 +311,7 @@ export {
   type MemberDiscoveryQuotaDTO,
 } from './member-discovery-quota.js';
 export type {
-  MemberDiscoveryLookingRowDTO,
+  MemberDiscoverySeekingRowDTO,
   MemberDiscoveryOnTripRowDTO,
   MemberDiscoveryRosterDTO,
 } from './member-discovery-roster.js';
@@ -331,7 +336,14 @@ export {
   ACTIVITY_JOIN_INVITE_WINDOW_MS,
   type ActivityJoinInviteForViewerDTO,
   type ActivityJoinInvitesSentDTO,
+  type PendingActivityJoinInviteDTO,
 } from './activity-join-invite.js';
+export {
+  MEMBER_COORDINATION_ATTENTION_KINDS,
+  type MemberCoordinationAttentionDTO,
+  type MemberCoordinationAttentionItemDTO,
+  type MemberCoordinationAttentionKind,
+} from './member-coordination-attention.js';
 export type {
   HostPublishingTier,
   HostTierFlags,
@@ -640,7 +652,12 @@ export interface ParticipantIntentDTO {
   comment: string;
   status: 'active' | 'fulfilled' | 'cancelled';
   convertedActivityId?: string | null;
-  /** M1 dual-write — published seeking activity mirror (`activityMode: seeking`). */
+  /**
+   * Published map **Activity** for this find post (`activityMode: seeking` until fulfilled).
+   * Same id space as hosted outings — use activity detail / join APIs with this id.
+   */
+  activityId?: string | null;
+  /** @deprecated Use {@link activityId} — legacy M1 JSON field (same value when present). */
   seekingActivityId?: string | null;
   createdAt: string;
   requesterName?: string | null;

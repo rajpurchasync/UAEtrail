@@ -1,5 +1,5 @@
 import type { MemberMapPinActivityType } from '@uaetrail/shared-types';
-import { JOURNEY_MAP_ACTIVITY_OPTIONS } from '../../trips/journeyMapActivityTypes';
+import { JOURNEY_MAP_ACTIVITY_OPTIONS } from '../../member-plan/journeyMapActivityTypes';
 
 interface JourneyMapActivityTypePickerProps {
   value: MemberMapPinActivityType;

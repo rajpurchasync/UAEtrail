@@ -362,7 +362,7 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
           onRefreshMemberPeople={() => {}}
           discoveryFriendsGoing={memberRoster.friendsGoing}
           discoveryHostsGoing={memberRoster.hostsGoing}
-          discoveryLookingFor={memberRoster.lookingFor}
+          discoverySeekingOnMap={memberRoster.seekingOnMap}
           discoveryFollowed={memberRoster.followed}
           discoveryDirectory={memberRoster.directory}
           discoveryQuota={memberRoster.quota}

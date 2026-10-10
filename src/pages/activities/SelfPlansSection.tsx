@@ -15,7 +15,7 @@ import { matchesActivitySearch } from '../../utils/activitySearch';
 import {
   formatParticipantIntentMeta,
   partitionParticipantIntentsForTrips,
-} from '../../trips/participantIntentTrips';
+} from '../../member-plan/participantIntentTrips';
 
 const intentStatusClass: Record<ParticipantIntentDTO['status'], string> = {
   active: 'bg-emerald-500/15 text-emerald-700',

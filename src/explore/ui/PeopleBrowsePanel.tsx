@@ -43,7 +43,7 @@ export interface PeopleBrowsePanelProps {
   onOpenMemberPersonActivity?: (trip: { exploreItemId: string }) => void;
   discoveryFriendsGoing: SocialPersonRowDTO[];
   discoveryHostsGoing: SocialPersonRowDTO[];
-  discoveryLookingFor: import('@uaetrail/shared-types').MemberDiscoveryLookingRowDTO[];
+  discoverySeekingOnMap: import('@uaetrail/shared-types').MemberDiscoverySeekingRowDTO[];
   discoveryFollowed: MemberBrowseCardDTO[];
   discoveryDirectory: MemberBrowseCardDTO[];
   discoveryQuota: MemberDiscoveryQuotaDTO | null;

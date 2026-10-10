@@ -2,7 +2,11 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import bcrypt from 'bcryptjs';
 import { bootstrapTestApp } from './helpers/bootstrap.js';
 import { createParticipantIntent } from '../src/lib/participant-intents-store.js';
-import { createParticipantIntentJoinRequest } from '../src/lib/participant-intent-requests-store.js';
+import {
+  approveParticipantIntentJoinRequest,
+  createParticipantIntentJoinRequest,
+  listParticipantIntentJoinRequestsForOwner,
+} from '../src/lib/participant-intent-requests-store.js';
 import { createAuthUser } from '../src/lib/auth-users.js';
 import { generateReferralCode } from '../src/lib/referral-code.js';
 import { UserRole, UserStatus } from '../src/domain/enums.js';
@@ -13,8 +17,8 @@ beforeAll(async () => {
   await bootstrapTestApp();
 });
 
-describe('participant intent join dual-write (M2a)', () => {
-  it('mirrors join request to activity_requests when seekingActivityId exists', async () => {
+describe('participant intent join (M2c activity store)', () => {
+  it('intent POST writes activity_requests only when activityId exists', async () => {
     const suffix = `join-mirror-${Date.now()}`;
     const host = await createAuthUser({
       email: `host-${suffix}@test.local`,
@@ -56,7 +60,8 @@ describe('participant intent join dual-write (M2a)', () => {
       .db()
       .collection(COLLECTIONS.PARTICIPANT_INTENTS)
       .findOne({ _id: intent.id });
-    expect(intentDoc?.seekingActivityId).toBeTruthy();
+    const activityId = intentDoc?.activityId ?? intentDoc?.seekingActivityId;
+    expect(activityId).toBeTruthy();
 
     const joinRequest = await createParticipantIntentJoinRequest({
       intentId: intent.id,
@@ -64,17 +69,27 @@ describe('participant intent join dual-write (M2a)', () => {
       note: 'Can I join?',
     });
 
-    const requestDoc = await getMongoClient()!
+    const legacyDoc = await getMongoClient()!
       .db()
       .collection(COLLECTIONS.PARTICIPANT_INTENT_REQUESTS)
-      .findOne({ _id: joinRequest.id });
-    expect(requestDoc?.activityRequestId).toBeTruthy();
+      .findOne({ intentId: intent.id, userId: joiner._id });
+    expect(legacyDoc).toBeNull();
 
     const activityRequest = await getMongoClient()!
       .db()
       .collection(COLLECTIONS.ACTIVITY_REQUESTS)
-      .findOne({ _id: requestDoc!.activityRequestId as string });
-    expect(activityRequest?.activityId).toBe(intentDoc!.seekingActivityId);
+      .findOne({ _id: joinRequest.id });
+    expect(activityRequest?.activityId).toBe(activityId);
     expect(activityRequest?.userId).toBe(joiner._id);
+
+    const listed = await listParticipantIntentJoinRequestsForOwner(intent.id, host._id);
+    expect(listed.some((row) => row.id === joinRequest.id && row.status === 'pending')).toBe(true);
+
+    const approved = await approveParticipantIntentJoinRequest(
+      intent.id,
+      joinRequest.id,
+      host._id
+    );
+    expect(approved.status).toBe('approved');
   });
 });

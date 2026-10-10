@@ -217,28 +217,30 @@ Notifications (deep link to **activity**, **Plan row context**, **chat thread**,
 
 ### 6.1 Lenses (URL `?lens=`)
 
-- [ ] `schedule` — joining, organizing, **seeking** (open asks), **needs-you** (approvals, invites)
+- [x] `schedule` — joining, organizing, **seeking** (`SelfPlansSection`), **needs-you** (`PlanNeedsYouStrip`)
 - [x] `saved` — wishlist list shell (`PlanSavedSection`); heart on Explore → same API
 - [x] `goals` — full CRUD on Goals lens (moved off schedule default)
 - [x] `availability` — **dedicated lens** (`?lens=availability`, `PlanAvailabilitySection`) — **OD-3 locked** (see §19)
 - [x] `calendar` — month grid + day sheet (`PlanCalendarSection`, `planCalendarMarkers.ts`)
-- [x] **Needs-you** strip (host join queue + joiner requests awaiting host) atop `schedule` — `PlanNeedsYouStrip` (§19 #1; activity invites v2)
+- [x] **Needs-you** strip atop `schedule` — actionable coordination only (`PlanNeedsYouStrip`, `buildPlanNeedsYouRows`). **Not** “looking for” / seeking — see **Seeking** (`SelfPlansSection`) + Explore Find.
+
+**API:** `GET /me/coordination-attention` → `{ items: MemberCoordinationAttentionItemDTO[] }` (`kind`, `count`, optional `activityId` / `inviterDisplayName`). Kinds: `host_join_queue`, `joiner_pending_host`, `buddy_request_incoming`, `activity_join_invite`, `join_request_withdrawn`, `participant_revoked`, `join_request_rejected`. Copy + routes: `src/member/coordinationAttentionPresentation.ts` (not API `label`/`path`).
 - [x] **Suggested** rail (wishlist ↔ explore map match; links out, no embedded map) — `PlanSuggestedRail` + `planWishlistExploreMatches` (§19 #3)
 
 ### 6.2 Manage outing (no /host)
 
-- [ ] Row tap → activity detail or manage sheet (roster, approve, check-in, invite, crew chat → `/chat?group=`)
-- [ ] “See all requests” for power hosts → business manage or filtered Plan list — not `/host` for buddies
+- [x] Row tap → manage sheet on Plan (`HostedActivitiesSection` / `SelfPlansSection` + `ActivityManageSheet` / `ParticipantIntentManageSheet`)
+- [x] Host join queue links → Plan hosted (`tripsPlansPath('hosted')`), not consumer `/host/requests`
 
 ### 6.3 Profile memory (not Plan)
 
 - [x] Rename routes: `PROFILE_HISTORY_PATH`, `JOURNEY_MAP_PATH` (redirect from `my-trips`)
-- [ ] Past activities, reviews, badges on Profile only
+- [x] Past activities on Profile only — `/plan` redirects non-`view=plans` to history; Plan UI has no completed/past sections
 
 ### 6.4 Code moves
 
-- [ ] Rename `src/trips` → `src/member-plan` (or `commitments`) + re-export deprecated aliases one release
-- [ ] Remove `TripsMainTabs` from Plan; no “trips” UI strings (`verify` + grep)
+- [x] Rename `src/trips` → `src/member-plan` — **`src/trips` shims removed** (Oct 2026)
+- [x] Remove `TripsMainTabs` from Plan; no “trips” UI strings (`verify` + grep) — Plan page uses `PlanLensTabs` only; `TripsMainTabs` remains on profile history / journey map
 
 ---
 
@@ -246,26 +248,26 @@ Notifications (deep link to **activity**, **Plan row context**, **chat thread**,
 
 ### 7.1 Chat
 
-- [ ] Context-first deep links from activity, notifications
-- [ ] Tab = inbox; de-emphasize empty-state DM discovery
-- [ ] **`/groups`** — list/manage only; thread always `/chat?group=` (no duplicate group chat UI)
+- [x] Context-first deep links from activity, notifications (`messagesGroupPath` + `activity` query; `openActivityGroupChat`; notification normalize)
+- [x] Tab = inbox; de-emphasize empty-state DM discovery (no empty-state compose CTA; toolbar compose when threads exist)
+- [x] **`/groups`** — list/manage only; thread always `/chat?group=` (`groupsManagePath`, `G-chat` acceptance guard)
 
 ### 7.2 Profile
 
-- [ ] Identity, settings, **visibility** (who sees profile + availability)
-- [ ] Badges, contributions (**reviews** + **place suggestions** via Add/contribute)
-- [ ] Memberships → **Pro / business / shop** → `/profile/pro-membership`, `/shop/manage`, etc. — **not** `/host/overview` for consumers
-- [ ] Friends (`/buddies`) launcher — not a fifth tab
-- [ ] **History** + **journey map** only here (not on Plan)
-- [ ] Teaser links to Plan lenses (counts OK; **no** duplicate goals/saved/upcoming lists)
-- [ ] Guest **bottom nav**: prefer Explore + sign-in **or** dead tabs with single promise — document in NAVIGATION (Phase 0)
+- [x] Identity, settings, **visibility** entry (`ProfileSettingsIndex` → privacy/visibility; `ProfileVisibilitySection`)
+- [x] Badges, contributions (**reviews** + **place suggestions** via Add/contribute) — Profile launcher → `/profile/badges`, `/contributions` (+ `/profile/reviews`); Explore `compose=add`; not duplicated on Plan (`memberSurfacesAcceptance`, `NAVIGATION.md` § Profile hub)
+- [x] Memberships → **Pro / business / shop** → `/profile/pro-membership`, `/shop/manage`, etc. — **not** `/host/overview` for consumers (`G-arch`, `G-profile`)
+- [x] Friends (`/buddies`) launcher — not a fifth tab (`ProfileQuickLauncher`)
+- [x] **History** + **journey map** only here (not on Plan) — `PROFILE_HISTORY_PATH`; Plan redirects `view=completed`
+- [x] Teaser links to Plan lenses (counts OK; **no** duplicate goals/saved/upcoming lists) — `ProfilePlanGoalsTeaser` → `planLensPath('goals')`
+- [x] Guest **bottom nav**: prefer Explore + sign-in **or** dead tabs with single promise — `NAVIGATION.md` guest tab row; `GuestTabPlaceholder` on Plan/Chat
 
 ### 7.3 Retire consumer `/host`
 
-- [ ] Inventory all `/host` links in `src/` (consumer)
-- [ ] Replace with Plan + activity manage + Profile business entry
-- [ ] `App.tsx` redirects for bookmarks
-- [ ] Keep host routes for **business workspace** only if renamed (`/studio` optional — document in API_ROUTING)
+- [x] Inventory all `/host` links in `src/` (consumer) — `hostMemberGuard` scans requests/activities/team + overview
+- [x] Replace with Plan + activity manage + Profile business entry (`EmptyActivitiesBanner`, `OrganisationPublicProfile` owner CTAs)
+- [x] `App.tsx` redirects for bookmarks (`participantHostBookmarkRedirect` + ProtectedRoute)
+- [x] Keep host routes for **business workspace** only if renamed (`/studio` optional — noted in `API_ROUTING.md` consumer vs console)
 
 ---
 
@@ -284,8 +286,9 @@ Notifications (deep link to **activity**, **Plan row context**, **chat thread**,
 
 ### Phase M2 — Single write
 
-- [ ] Stop writing intents; migrate join requests to activity id
-- [ ] Deprecate `participant_intents` in API docs
+- [x] Stop writing intents (M2d — `PARTICIPANT_INTENT_STUB_WRITE=false` per env)
+- [x] Join requests on seeking rows → `activity_requests` (M2b–M2c)
+- [x] Deprecate `participant_intents` in API docs (`API_ROUTING.md` M2d note)
 
 ### Phase M3 — Areas + availability
 
@@ -311,7 +314,7 @@ Use one PR per subsection where possible; check boxes when merged.
 - [x] 1.1 `PLAN_PATH`, `PROFILE_HISTORY_PATH` / `JOURNEY_MAP_PATH` + legacy redirects
 - [x] 1.2 Plan lenses shell (`?lens=schedule|calendar|availability|saved|goals`)
 - [x] 1.3 Profile history paths (`PROFILE_HISTORY_PATH`, `JOURNEY_MAP_PATH`); `tripsConsumerNamingGuard`; consumer copy → Plan / History
-- [ ] 1.4 Mobile tab label Plan/Home — product choice documented
+- [x] 1.4 Mobile tab label **Plan** (middle tab → `/plan`) — `NAVIGATION.md` § Mobile tabs
 
 ### Phase 2 — OutingTopic + explore layers
 
@@ -349,13 +352,13 @@ Use one PR per subsection where possible; check boxes when merged.
 ### Phase 6 — Activity storage merge (M1–M2)
 
 - [x] 6.1 Create seeking via activities API (M1 dual-write on `POST /me/participant-intents`)
-- [x] 6.2 Join request unification plan + **M2a** dual-write (`participant-intent-join-activity-sync.ts`)
+- [x] 6.2 Join unification **M2a–M2c** — `activity_requests` canonical for seeking; intent routes alias read/write
 - [x] 6.3 Explore map stops merging legacy `demand:` pins (seeking via `activities` only; run backfill for old intents)
 
 ### Phase 7 — Host retirement & business paths
 
 - [x] 7.1 Consumer `/host` bookmark redirect map (`participantHostBookmarkRedirect` in `ProtectedRoute`)
-- [ ] 7.2 Profile business entry audit
+- [x] 7.2 Profile business entry audit (`ProfileConsumerHub` → `PRO_MEMBERSHIP_PATH`; Plan needs-you → hosted Plan; guards in `memberSurfacesAcceptance.test.ts`)
 - [x] 7.3 Notification meta URLs canonical (`/plan`, `/activity/:id`, `/chat?…`) — API + `inferNotificationPath` normalize legacy `/trips` and `pin=demand:`; **no** `/host/overview` in consumer meta
 
 ### Phase 8 — QA gates
@@ -363,7 +366,7 @@ Use one PR per subsection where possible; check boxes when merged.
 - [x] 8.1 Run §11 acceptance tests (`src/member/memberSurfacesAcceptance.test.ts` + `verify:domain`)
 - [x] 8.2 `npm run verify:system` full (includes explore alignment)
 - [x] 8.3 Explore alignment tests in `npm run test:explore-alignment` (no change required this slice)
-- [ ] 8.4 PRE_DEPLOY_CHECKLIST items for map/seed if areas ship
+- [x] 8.4 PRE_DEPLOY_CHECKLIST — seeking backfill step added (`backfill-seeking-activities`)
 
 ---
 
@@ -396,7 +399,7 @@ Use one PR per subsection where possible; check boxes when merged.
 | G-avail | Multi-day availability on Plan visible in People search for matching dates (visibility respected) |
 | G-avail-map | From map: **People pill** opens **Available** roster (`peopleTab=available`); **no** per-user availability pins or area-cluster overlay on the canvas |
 | G-plan | Goals + saved + schedule + availability editable on Plan without Profile duplicate lists |
-| G-manage | Host approve join from Plan/detail without `/host` |
+| G-manage | Host approve join from Plan/detail without `/host` (Needs you → Hosted → manage sheet; automated guards in `memberSurfacesAcceptance.test.ts`) |
 
 ---
 
@@ -420,13 +423,13 @@ Use one PR per subsection where possible; check boxes when merged.
 
 | Area | Paths |
 |------|--------|
-| Plan page | `src/pages/Activities.tsx`, `src/member-plan` or `src/trips/*` |
+| Plan page | `src/pages/Activities.tsx`, `src/member-plan/*` |
 | Explore map | `apps/api/src/lib/explore-map.ts`, `src/explore/ui/exploreMapPinModel.ts` |
 | Pin pills | `src/explore/explorePinKindFilter.ts`, `exploreBrowseTaxonomy.ts` |
 | Find/demand | `src/explore/ui/demandFlow.ts`, `apps/api/src/lib/participant-intents-store.ts` |
 | Compose | `src/explore/compose.ts` |
 | Places/kinds | `packages/shared-types/src/place-kind.ts` |
-| Legacy redirects | `src/trips/legacyTripsRedirect.ts`, `src/App.tsx` |
+| Legacy redirects | `src/member-plan/legacyTripsRedirect.ts`, `src/App.tsx` |
 | Areas (new) | TBD `apps/api/src/routes/areas`, `src/pages/AreaDetail.tsx` |
 
 **Handoff phrase:** “Continue **member-surfaces-implementation-plan** from §19 resume queue.”
@@ -447,8 +450,27 @@ Use one PR per subsection where possible; check boxes when merged.
 | 6 | ~~**Phase 6.1** M1 dual-write~~ **done** — backfill + deprecate `demand` source still open | §8, Phase 6 | `participant-intent-seeking-activity.ts` |
 | 7 | ~~**Phase 7**~~ **done** — consumer `/host` audit, bookmark redirects, notification meta | §7 | `notificationRouting.ts`, `authRouting.ts`, `ProtectedRoute` |
 | 8 | ~~**Phase 8**~~ **done** — §11 automated gates + full `verify:system` green | Phase 8 | `memberSurfacesAcceptance.test.ts` |
+| 9 | ~~**§6.4 / §7.1 / §7.3 / §6.3**~~ **done** — `member-plan` rename, chat/groups, host guards, Plan forward-only | §6–7 | `hostMemberGuard`, `MessagesInboxList`, `Activities.tsx` |
+| 10 | ~~**M2d**~~ **done** — `PARTICIPANT_INTENT_STUB_WRITE=false` after backfill | §8 M2 | `participant-intent-activity-readthrough.ts` |
+| 11 | ~~**Ops tooling**~~ **done** — run `seeking:m2d-status` + backfill + `PARTICIPANT_INTENT_STUB_WRITE=false` **per env** (staging/prod) | §8 M1/M2d | `PRE_DEPLOY_CHECKLIST.md` |
+| 12 | ~~**G-manage QA**~~ **done (eng)** — API `g-manage-coordination-join-approve.test.ts` + §11 guards; **staging UI** smoke in [`SEEKING_M2D_RUNBOOK.md`](../operations/SEEKING_M2D_RUNBOOK.md) | §6.1 | PRE_DEPLOY G-manage step |
+
+**§19 queue:** **complete** for product engineering (2026-10-10). Remaining work is **ops per env** (#11 runbook) and optional **post-queue** (§20).
 
 **Paused / explicit non-goals for now:** attention strip variants beyond needs-you (#1), goals projection polish, upcoming carousel (`plan-tab-ux-backlog.md`), **map cluster overlay** (#4 — pill path is enough).
+
+---
+
+## 20. Post-queue (after §19 — not blocking release)
+
+| Priority | Item | Notes |
+|----------|------|--------|
+| P0 ops | Run [`SEEKING_M2D_RUNBOOK.md`](../operations/SEEKING_M2D_RUNBOOK.md) on **staging + prod** | `seeking:m2d-status --strict` before traffic |
+| P0 QA | G-manage **browser** smoke on staging | Plan → Needs you → Hosted → manage sheet |
+| P1 wire | Explore map: retire public `source: 'demand'` projection | Use `source: 'activity'` + `activityMode: seeking` end-to-end (`explore-map.ts`, `shared-types` presentation) |
+| P1 storage | Drop `participant_intents` writes entirely; archive collection | After all envs M2d + retention policy |
+| P2 perf | Explore map bbox / light DTO; chat SSE multi-instance | Architecture backlog from coherence review |
+| P2 UX | `plan-tab-ux-backlog.md` (upcoming carousel, goals polish) | Explicitly paused in §19 |
 
 ---
 
@@ -471,7 +493,20 @@ Use one PR per subsection where possible; check boxes when merged.
 | 2026-10-10 | Phase 7 | Consumer `/host/overview` links removed; notification `/plan` + `activity:` pins; bookmark redirects |
 | 2026-10-10 | Phase 8.1 | §11 automated acceptance tests wired into `verify:domain` |
 | 2026-10-10 | Phase 8 | Full `verify:system` + `memberSurfacesAcceptance.test.ts` in `verify:domain` |
-| | | **Next:** Phase 6.2 join unification · ops backfill · manual G-manage QA · commit local slice |
+| 2026-10-10 | 6.2 M2b–M2c | Activity-canonical seeking joins; intent routes alias `activity_requests` |
+| 2026-10-10 | 7.2 | Profile pro entry + Plan host queue links (no consumer `/host/requests` in needs-you) |
+| 2026-10-10 | §6.3 / §7.1 | Plan forward-only; chat inbox coordination-first |
+| 2026-10-10 | §6.4 | `src/member-plan` + deprecated `src/trips` shims |
+| 2026-10-10 | M2 guards | `participant-intent-m2-guards.test.ts` in `verify:domain` |
+| 2026-10-10 | M2d | Activity-primary Find (`PARTICIPANT_INTENT_STUB_WRITE=false`); `participant-intent-activity-readthrough.ts` |
+| 2026-10-10 | §7.2–7.3 | Badges/contributions inventory + NAVIGATION drift fix; API_ROUTING consumer vs `/host` |
+| 2026-10-10 | G-manage | Automated guards + PRE_DEPLOY staging step; §6.1 Needs-you ≠ seeking |
+| 2026-10-10 | API hygiene | `coordination-attention`, `profile-stats`, `GET /me/journey-map`; surface route guards |
+| 2026-10-10 | §19 #11 tooling | `seeking-m2d-status`, local backfill, roster `seekingOnMap`, removed `src/trips` shims |
+| 2026-10-10 | Coordination perf | Buddy + activity-invite **counts** on `coordination-attention` |
+| 2026-10-10 | §19 #12 API | `g-manage-coordination-join-approve.test.ts`; PRE_DEPLOY staging ops ordered steps |
+| 2026-10-10 | §19 close | Queue complete; `SEEKING_M2D_RUNBOOK.md`; §20 post-queue (demand wire, ops) |
+| | | **Next:** §20 P0 — staging/prod M2d runbook + G-manage UI smoke |
 
 ---
 

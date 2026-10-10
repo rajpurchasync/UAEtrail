@@ -1,7 +1,7 @@
 import { NotificationType } from '../domain/enums.js';
 import { findAuthUserById } from '../lib/auth-users.js';
 import { findActivityForRequestViewById } from '../lib/activities-store.js';
-import { HOST_REQUESTS_PATH } from '../lib/member-routes.js';
+import { planHostedSchedulePath } from '../lib/member-routes.js';
 import { dispatchNotification } from './notifications.js';
 
 export const notifyHostOfRequestWithdrawal = async (input: {
@@ -35,7 +35,7 @@ export const notifyHostOfRequestWithdrawal = async (input: {
       actorUserId: input.participantUserId,
       cancelReason: input.cancelReason,
       cancelMessage: input.cancelMessage,
-      path: HOST_REQUESTS_PATH,
+      path: planHostedSchedulePath(),
     },
   }).catch(() => undefined);
 };

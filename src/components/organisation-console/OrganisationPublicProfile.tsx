@@ -19,7 +19,7 @@ import { JsonLd } from '../seo/JsonLd';
 import { organizationSchema } from '../seo/schemas';
 import { HostMessageButton } from '../ui/HostMessageButton';
 import { EntityFollowControls } from '../profile/EntityFollowControls';
-import { HOST_ACTIVITIES_PATH, HOST_TEAM_PATH, SIGNIN_PATH } from '../../config/routingCatalog';
+import { PRO_MEMBERSHIP_PATH, SIGNIN_PATH, tripsPlansPath } from '../../config/routingCatalog';
 import { GlassCard } from '../mobile/GlassCard';
 import { AppButton } from '../mobile/AppButton';
 import { AppSelect } from '../ui/AppSelect';
@@ -443,7 +443,7 @@ export const OrganisationPublicProfile = ({
             ))}
           </div>
           {isOwner && (
-            <Link to={HOST_TEAM_PATH} className="mt-3 inline-block text-sm font-semibold text-emerald-700">
+            <Link to={PRO_MEMBERSHIP_PATH} className="mt-3 inline-block text-sm font-semibold text-emerald-700">
               Manage team →
             </Link>
           )}
@@ -462,7 +462,7 @@ export const OrganisationPublicProfile = ({
           </div>
         )}
         {isOwner && (
-          <Link to={HOST_ACTIVITIES_PATH} className="inline-block text-sm font-semibold text-emerald-700">
+          <Link to={tripsPlansPath('hosted')} className="inline-block text-sm font-semibold text-emerald-700">
             Manage events →
           </Link>
         )}

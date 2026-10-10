@@ -252,7 +252,7 @@ Host/member/join terms (do not duplicate in other docs — **update this section
 | **Pro / business host** | Agency, shop, professional guide | `/profile/pro-membership`, `host_applications` |
 | **Host console** | Tenant-scoped publish/manage (host **user** + active tenant) | `/host/*`, `x-organisation-id`, `src/console/*` |
 | **Activity join request** | Join a **published activity** (approval) | `activity_requests`, `/host/requests` |
-| **Demand join request** | Join a **Find** post | `participant_intent_requests`, `/me/participant-intents/.../requests` |
+| **Demand join request** | Join a **Find** post (seeking **activity** after M1) | **`activity_requests`** (canonical); `/me/participant-intents/.../requests` aliases for manage UI |
 | **Host application** | Pro/agency/shop onboarding | `host_applications` |
 | **Buddy connection (friends)** | Mutual link between **member accounts**; accept also creates **mutual follow** (`user_follows`, no separate follow notification) | `BuddySummaryDTO.userId` = other person’s user id (no “buddy id”) |
 | **`actorUserId` (notifications)** | Who triggered the action | Always a **user** id — see `DOMAIN_CANONICALS.md` §11 |

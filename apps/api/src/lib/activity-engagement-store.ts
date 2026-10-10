@@ -396,6 +396,14 @@ export const findActivityRequestByEventAndUser = async (
   return row ? toActivityRequestRecord(row) : null;
 };
 
+export const findActivityRequestByIdAndActivity = async (
+  requestId: string,
+  activityId: string
+): Promise<ActivityRequest | null> => {
+  const row = await activityRequestsCollection().findOne({ _id: requestId, activityId });
+  return row ? toActivityRequestRecord(row) : null;
+};
+
 export const findActivityRequestByIdForUser = async (
   id: string,
   userId: string
@@ -438,6 +446,39 @@ export const listUserActivityRequestsPaginated = async (input: {
 
 export const countUserActivityRequests = async (userId: string): Promise<number> =>
   activityRequestsCollection().countDocuments({ userId });
+
+/** Pending/waitlisted join requests on upcoming outings (excludes confirmed participants). */
+export const countUserUpcomingPendingJoinRequests = async (userId: string): Promise<number> => {
+  const pendingStatuses: RequestStatus[] = [RequestStatus.PENDING, RequestStatus.WAITLISTED];
+  const requestRows = await activityRequestsCollection()
+    .find({ userId, status: { $in: pendingStatuses } })
+    .project({ activityId: 1 })
+    .toArray();
+  if (requestRows.length === 0) return 0;
+
+  const activityIds = [...new Set(requestRows.map((row) => row.activityId))];
+  const participantRows = await activityParticipantsCollection()
+    .find({ userId, activityId: { $in: activityIds } })
+    .project({ activityId: 1 })
+    .toArray();
+  const confirmedIds = new Set(participantRows.map((row) => row.activityId));
+  const pendingActivityIds = activityIds.filter((id) => !confirmedIds.has(id));
+  if (pendingActivityIds.length === 0) return 0;
+
+  const { listActivitiesForRequestViews } = await import('./activities-store.js');
+  const activities = await listActivitiesForRequestViews(pendingActivityIds);
+  const { formatActivityLocal } = await import('./datetime.js');
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const upcomingIds = new Set<string>();
+  for (const activity of activities) {
+    const day = formatActivityLocal(activity.startAt, 'AE').date.slice(0, 10);
+    if (new Date(day) >= today) upcomingIds.add(activity.id);
+  }
+
+  return pendingActivityIds.filter((id) => upcomingIds.has(id)).length;
+};
 
 export const findActivityParticipantByEventAndUser = async (
   activityId: string,
@@ -754,6 +795,18 @@ export const listTenantActivityRequestsDetailed = async (input: {
         location: location ?? { id: event.locationId, name: '' }
       }
     };
+  });
+};
+
+export const countTenantPendingJoinRequests = async (tenantId: string): Promise<number> => {
+  const tenantEvents = await activitiesCollection()
+    .find({ tenantId }, { projection: { _id: 1 } })
+    .toArray();
+  const eventIds = tenantEvents.map((event) => event._id);
+  if (eventIds.length === 0) return 0;
+  return activityRequestsCollection().countDocuments({
+    activityId: { $in: eventIds },
+    status: RequestStatus.PENDING,
   });
 };
 

@@ -6,12 +6,14 @@ import {
   ACTIVITIES_LEGACY_PATH,
   EXPLORE_MAP_PATH,
   explorePath,
+  HOST_MESSAGES_PATH,
   isLegacyRewardsWalletPath,
+  LEGACY_MESSAGES_PATH,
   memberProfilePath,
   BUDDIES_PATH,
   GROUPS_PATH,
   groupsPath,
-  HOST_REQUESTS_PATH,
+  MESSAGES_PATH,
   PROFILE_BADGES_PATH,
   PROFILE_PATH,
   PRO_MEMBERSHIP_PATH,
@@ -21,15 +23,50 @@ import {
   myRequestDetailPath,
   tripsLegacyJoinedTabPath,
   tripsLegacyUpcomingSegmentPath,
+  tripsPlansPath,
 } from '../config/routingCatalog';
 import { NotificationDTO, placeDetailPath } from '@uaetrail/shared-types';
-import { resolveLegacyTripsHubRedirect } from '../trips/legacyTripsRedirect';
+import { resolveLegacyTripsHubRedirect } from '../member-plan/legacyTripsRedirect';
 
 const toMetaObject = (meta: NotificationDTO['meta']): Record<string, unknown> | null =>
   meta && typeof meta === 'object' ? (meta as Record<string, unknown>) : null;
 
 const toStringValue = (value: unknown): string | null =>
   typeof value === 'string' && value.trim().length > 0 ? value : null;
+
+const normalizeConsumerChatDeepLinkPath = (
+  path: string,
+  meta: Record<string, unknown> | null
+): string => {
+  const queryIndex = path.indexOf('?');
+  const pathname = queryIndex === -1 ? path : path.slice(0, queryIndex);
+  const search = queryIndex === -1 ? '' : path.slice(queryIndex);
+
+  if (pathname === LEGACY_MESSAGES_PATH || pathname === HOST_MESSAGES_PATH) {
+    return `${MESSAGES_PATH}${search}`;
+  }
+
+  if (pathname === GROUPS_PATH && search) {
+    const params = new URLSearchParams(search.startsWith('?') ? search.slice(1) : search);
+    const groupId = params.get('group');
+    const tab = params.get('tab');
+    const invite = params.get('invite');
+    const create = params.get('create');
+    const kind = toStringValue(meta?.kind)?.toLowerCase() ?? '';
+    if (
+      groupId &&
+      !tab &&
+      !invite &&
+      !create &&
+      (kind === 'group_message' || kind === 'group_invite_accepted')
+    ) {
+      const activityId = toStringValue(meta?.activityId);
+      return messagesGroupPath(groupId, activityId ?? undefined);
+    }
+  }
+
+  return path;
+};
 
 const normalizeDirectNotificationPath = (
   path: string,
@@ -66,16 +103,17 @@ const normalizeDirectNotificationPath = (
     if (resolved) return resolved;
   }
 
-  const seekingActivityId = toStringValue(meta?.seekingActivityId);
-  if (seekingActivityId && path.includes('pin=demand:')) {
+  const publishedActivityId =
+    toStringValue(meta?.activityId) ?? toStringValue(meta?.seekingActivityId);
+  if (publishedActivityId && path.includes('pin=demand:')) {
     return explorePath({
       list: true,
       panel: 'activities',
-      pin: `activity:${seekingActivityId}`,
+      pin: `activity:${publishedActivityId}`,
     });
   }
 
-  return path;
+  return normalizeConsumerChatDeepLinkPath(path, meta);
 };
 
 export const inferNotificationPath = (
@@ -122,6 +160,14 @@ export const inferNotificationPath = (
     return activityDetailInvitePath(activityId);
   }
 
+  if (kind === 'join_request_approved') {
+    const groupId = toStringValue(meta?.groupId);
+    if (groupId) {
+      return messagesGroupPath(groupId, activityId ?? undefined);
+    }
+    return tripsLegacyJoinedTabPath();
+  }
+
   if (activityId) {
     return activityDetailPath(activityId);
   }
@@ -132,11 +178,6 @@ export const inferNotificationPath = (
   const legacySenderId = toStringValue(meta?.senderId);
   if (legacySenderId) {
     return messagesToUserPath(legacySenderId);
-  }
-  if (kind === 'join_request_approved') {
-    const groupId = toStringValue(meta?.groupId);
-    if (groupId) return messagesGroupPath(groupId);
-    return tripsLegacyJoinedTabPath();
   }
   if (
     kind === 'join_request_pending' ||
@@ -163,7 +204,7 @@ export const inferNotificationPath = (
     return GROUPS_PATH;
   }
   if (kind === 'request_withdrawal') {
-    return HOST_REQUESTS_PATH;
+    return tripsPlansPath('hosted');
   }
   if (kind === 'badge') {
     return PROFILE_BADGES_PATH;
@@ -194,12 +235,13 @@ export const inferNotificationPath = (
     if (activityId) return activityDetailPath(activityId);
     const intentId = toStringValue(meta?.intentId);
     if (intentId) {
-      const seekingActivityId = toStringValue(meta?.seekingActivityId);
-      if (seekingActivityId) {
+      const publishedActivityId =
+        toStringValue(meta?.activityId) ?? toStringValue(meta?.seekingActivityId);
+      if (publishedActivityId) {
         return explorePath({
           list: true,
           panel: 'activities',
-          pin: `activity:${seekingActivityId}`,
+          pin: `activity:${publishedActivityId}`,
         });
       }
       return `${explorePath({ list: true, panel: 'activities' })}&pin=demand:${encodeURIComponent(intentId)}`;

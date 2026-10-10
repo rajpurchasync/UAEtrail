@@ -33,3 +33,5 @@ During dev run, quickly verify:
 - Group/team member disable surfaces `isActive` correctly.
 
 Explore FAB changes: [`CREATE_FLOW.md`](./CREATE_FLOW.md) + `src/explore/composeFlowCatalog.ts`. Automated guards: `npm run verify:system:quick` and `npm run test:explore-alignment`.
+
+Seeking M2d (backfill + stub-write flag): [`operations/SEEKING_M2D_RUNBOOK.md`](./operations/SEEKING_M2D_RUNBOOK.md). Local check: `npm run seeking:m2d-status`.

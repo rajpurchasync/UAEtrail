@@ -2,13 +2,12 @@ import { useMemo } from 'react';
 
 import { PRO_MEMBERSHIP_PATH } from '../../config/routingCatalog';
 
-import type { MemberGoalDTO } from '@uaetrail/shared-types';
 
 import { ProfileHubIdentityCard } from './ProfileHubIdentityCard';
 
 import { SettingsMenuGroup, SettingsMenuRow } from '../settings/SettingsMenuRow';
 
-import { ProfileGoalsSection } from './ProfileGoalsSection';
+import { ProfilePlanGoalsTeaser } from './ProfilePlanGoalsTeaser';
 
 import {
 
@@ -22,7 +21,6 @@ import type { ProfileCompletionItem } from '../../utils/profileCompletion';
 
 import type { ProfileHubStat } from './ProfileConsumerHub.types';
 
-import type { SaveMemberGoalInput } from './ProfileGoalCard';
 
 
 
@@ -66,17 +64,7 @@ type ProfileConsumerHubProps = {
 
   hubStats: ProfileHubStat[];
 
-  goals: MemberGoalDTO[];
-
-  goalSaving: boolean;
-
-  onCreateGoal: (input: SaveMemberGoalInput) => Promise<void>;
-
-  onUpdateGoal: (goalId: string, input: SaveMemberGoalInput) => Promise<void>;
-
-  onDeleteGoal: (goalId: string) => Promise<void>;
-
-  onReloadGoals?: () => void;
+  goalsCount: number;
 
   badgesEarnedCount?: number;
 
@@ -126,17 +114,7 @@ export const ProfileConsumerHub = ({
 
   hubStats,
 
-  goals,
-
-  goalSaving,
-
-  onCreateGoal,
-
-  onUpdateGoal,
-
-  onDeleteGoal,
-
-  onReloadGoals,
+  goalsCount,
 
   badgesEarnedCount = 0,
 
@@ -248,23 +226,7 @@ export const ProfileConsumerHub = ({
 
 
 
-      <ProfileGoalsSection
-
-        goals={goals}
-
-        saving={goalSaving}
-
-        onCreateGoal={onCreateGoal}
-
-        onUpdateGoal={onUpdateGoal}
-
-        onDeleteGoal={onDeleteGoal}
-
-        onReloadGoals={onReloadGoals}
-
-        layout="profile"
-
-      />
+      <ProfilePlanGoalsTeaser goalsCount={goalsCount} />
 
 
 

@@ -1,6 +1,6 @@
 import type { ExploreMapItemDTO, WishlistItemDTO } from '@uaetrail/shared-types';
 import { exploreMapItemIsSeeking } from '@uaetrail/shared-types';
-import { wishlistItemTitle } from '../trips/wishlistDemandBookmark';
+import { wishlistItemTitle } from '../member-plan/wishlistDemandBookmark';
 
 export type PlanWishlistSuggestion = {
   wishlistItemId: string;

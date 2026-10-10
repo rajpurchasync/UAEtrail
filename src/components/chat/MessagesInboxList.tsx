@@ -10,7 +10,6 @@ interface MessagesInboxListProps {
   selectedDirectId?: string | null;
   onSelectDirect: (userId: string) => void;
   onSelectGroup: (groupId: string) => void;
-  onCompose: () => void;
   formatTime: (dateStr: string) => string;
 }
 
@@ -108,7 +107,6 @@ export const MessagesInboxList = ({
   selectedDirectId,
   onSelectDirect,
   onSelectGroup,
-  onCompose,
   formatTime,
 }: MessagesInboxListProps) => {
   if (loading) {
@@ -120,20 +118,18 @@ export const MessagesInboxList = ({
   }
 
   if (threads.length === 0) {
+    const filteredEmpty = inboxFilter !== 'all' || inboxQuery.trim().length > 0;
     return (
       <div className="rounded-2xl border border-neutral-200 bg-white px-4 py-12 text-center shadow-ios-sm">
         <MessageSquare className="mx-auto mb-3 h-12 w-12 text-neutral-300" />
-        <p className="text-sm text-neutral-600">No conversations here yet.</p>
-        <p className="mt-2 text-xs text-neutral-500">
-          Direct chats with hosts and friends, groups you create, and outing crew chats when you join a plan.
+        <p className="text-sm font-medium text-neutral-700">
+          {filteredEmpty ? 'No matches' : 'Your inbox is quiet'}
         </p>
-        <button
-          type="button"
-          onClick={onCompose}
-          className="mt-4 text-sm font-semibold text-emerald-700"
-        >
-          Start a conversation
-        </button>
+        <p className="mt-2 text-xs leading-relaxed text-neutral-500">
+          {filteredEmpty
+            ? 'Try another filter or clear search.'
+            : 'Crew chats show up when you join an outing. Host and buddy messages land here too.'}
+        </p>
       </div>
     );
   }

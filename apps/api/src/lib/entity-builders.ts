@@ -254,6 +254,8 @@ export type MongoActivityDoc = {
   areaId?: string | null;
   activityMode?: 'hosted' | 'seeking' | null;
   participantIntentId?: string | null;
+  /** Hosted activity id when a seeking pin was fulfilled (M2d activity-primary rows). */
+  seekingConvertedActivityId?: string | null;
   createdAt: Date;
   updatedAt: Date;
 };

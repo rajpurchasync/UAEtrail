@@ -2,7 +2,7 @@
 
 Companion to [`NAVIGATION.md`](../NAVIGATION.md). Tracks the profile / trips / friends refactor on `main`.
 
-**Related:** personal journey map on `/trips/map` — [`NAVIGATION.md`](../NAVIGATION.md) · `src/trips/journeyMap*`.
+**Related:** personal journey map on `/profile/history/map` — [`NAVIGATION.md`](../NAVIGATION.md) · `src/member-plan/journeyMap*`.
 
 ## Bottom tabs (signed-in)
 
@@ -64,7 +64,7 @@ Canonical contract: [`../COMMUNICATION.md`](../COMMUNICATION.md) · routes in [`
 - **Looking for (demand)** stays on **`/explore`** — public participation (`participant_intents`). Not wishlist rows; Explore **Save** is disabled on demand cards. API rejects `participantIntentId` on `POST /me/wishlist`.
 - **Match notifications** (`wishlist_match`) are intent alerts only — they deep-link to the new public plan/demand pin; they do not mean demand was added to wishlist.
 
-Canonical code comments: `src/trips/wishlistDemandBookmark.ts`.
+Canonical code: `src/member-plan/wishlistDemandBookmark.ts`.
 - **Role chips** (Upcoming & Completed): **Joined** · **Hosted** (hosts) · **My plans** (`?role=self`; legacy `tab=` normalized away).
 - **Upcoming + Joined:** goal card + upcoming carousel + suggestions (no nested Past tab).
 - **Completed + Joined:** attended outings only; **Hosted:** past hosted; **My plans:** demand intents via `GET /me/participant-intents` + `ParticipantIntentManageSheet` (no crew chat until organized).

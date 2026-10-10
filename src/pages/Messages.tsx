@@ -269,6 +269,9 @@ export const Messages = () => {
     [threads, inboxFilter, inboxQuery]
   );
 
+  const hasInboxThreads = threads.length > 0;
+  const openCompose = hasInboxThreads ? () => setShowNewChat(true) : undefined;
+
   const startConversation = (userResult: SearchUser) => {
     directChat.seedPartnerBrief({
       displayName: userLabel(userResult),
@@ -520,7 +523,7 @@ export const Messages = () => {
             filter={inboxFilter}
             onQueryChange={setInboxQuery}
             onFilterChange={setInboxFilter}
-            onCompose={() => setShowNewChat(true)}
+            onCompose={openCompose}
           />
         }
       >
@@ -534,7 +537,6 @@ export const Messages = () => {
             selectedDirectId={selectedUserId}
             onSelectDirect={selectConversation}
             onSelectGroup={openGroupThread}
-            onCompose={() => setShowNewChat(true)}
             formatTime={formatTime}
           />
         </div>

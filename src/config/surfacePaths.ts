@@ -76,6 +76,15 @@ export const groupsPath = (options?: {
   return qs ? `${GROUPS_PATH}?${qs}` : GROUPS_PATH;
 };
 
+/** List/manage surface only — threads use {@link messagesGroupPath}. */
+export const groupsManagePath = (
+  groupId: string,
+  tab: 'members' | 'manage' = 'members'
+): string => {
+  const params = new URLSearchParams({ group: groupId, tab });
+  return `${GROUPS_PATH}?${params.toString()}`;
+};
+
 /** In-app notification inbox */
 export const NOTIFICATIONS_PATH = '/notifications' as const;
 
@@ -130,8 +139,11 @@ export const hostActivitiesCheckInPath = (activityId: string): string =>
 export const messagesToUserPath = (userId: string): string =>
   `${MESSAGES_PATH}?to=${encodeURIComponent(userId)}`;
 
-export const messagesGroupPath = (groupId: string): string =>
-  `${MESSAGES_PATH}?group=${encodeURIComponent(groupId)}`;
+export const messagesGroupPath = (groupId: string, activityId?: string): string => {
+  const params = new URLSearchParams({ group: groupId });
+  if (activityId?.trim()) params.set('activity', activityId.trim());
+  return `${MESSAGES_PATH}?${params.toString()}`;
+};
 
 export const myRequestDetailPath = (requestId: string): string =>
   `${MY_REQUESTS_PATH}/${encodeURIComponent(requestId)}`;

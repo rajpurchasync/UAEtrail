@@ -11,6 +11,8 @@ import {
   myActivitiesPath,
   parseFulfillIntentMapItemId,
   exploreSavedPinPath,
+  participantIntentExplorePinPath,
+  resolveParticipantIntentMapItemId,
   exploreDiscoverBrowsePath,
   parseExplorePinMapItemId,
 } from './routing';
@@ -41,6 +43,16 @@ describe('exploreRouting navigation contract', () => {
       explorePath({ filter: 'others', subtype: 'activities', outingTopic: 'climbing' })
     ).toBe('/explore?filter=others&subtype=activities&outingTopic=climbing');
     expect(explorePath({ filter: 'others', outingTopic: 'climbing' })).toBe('/explore?filter=others');
+  });
+
+  it('resolves participant intent pins to activity when activityId is set', () => {
+    expect(
+      resolveParticipantIntentMapItemId({ id: 'int-1', activityId: 'act-1' })
+    ).toBe('activity:act-1');
+    expect(participantIntentExplorePinPath({ id: 'int-1', activityId: 'act-1' })).toBe(
+      '/explore?list=1&pin=activity%3Aact-1'
+    );
+    expect(resolveParticipantIntentMapItemId({ id: 'int-1' })).toBe('demand:int-1');
   });
 
   it('encodes pin deep link for saved map items', () => {

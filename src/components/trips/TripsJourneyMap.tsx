@@ -2,8 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import L from 'leaflet';
 import { MapContainer, Marker, useMap, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import type { JourneyPinStyle } from '../../trips/journeyMapPinStyle';
-import { journeyMapPendingPinIcon, journeyMapPinDivIcon } from '../../trips/journeyMapPinIcon';
+import type { JourneyPinStyle } from '../../member-plan/journeyMapPinStyle';
+import { journeyMapPendingPinIcon, journeyMapPinDivIcon } from '../../member-plan/journeyMapPinIcon';
 import { MapTileLayers } from '../ui/MapTileLayers';
 
 export type JourneyMapMarker = {

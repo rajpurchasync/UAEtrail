@@ -25,7 +25,7 @@ import {
   activityGroupChatPath,
   MESSAGES_CHAT_RETURN_TO_KEY,
 } from '../utils/activityGroupChatNav';
-import { GROUPS_PATH, PROFILE_PATH } from '../config/routingCatalog';
+import { GROUPS_PATH, groupsManagePath, PROFILE_PATH } from '../config/routingCatalog';
 import { MobileScreen } from '../components/layout/MobileScreen';
 import { GlassCard } from '../components/mobile/GlassCard';
 import { Dialog } from '../components/ui/Dialog';
@@ -146,7 +146,7 @@ export const Groups = () => {
   const openGroupManage = (groupId: string, tab: GroupTab = 'members') => {
     setSelectedGroupId(groupId);
     setActiveTab(tab);
-    setSearchParams({ group: groupId, tab }, { replace: true });
+    navigate(groupsManagePath(groupId, tab), { replace: true });
   };
 
   const backToGroupList = () => {

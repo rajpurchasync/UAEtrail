@@ -179,11 +179,11 @@ The member who posts a **demand** pin is the **host** for that plan (they are lo
 | **Map visibility** | Always **public** when pinned — no `joinMode`, no private demand | `joinMode` open or private |
 | **How others join** | **Request to join** only — poster approves on the intent | **I'm going** (`rsvp`) or **Request to join** (`approval`) |
 | **RSVP / instant join** | **Never** — no `participationMode` on intents | Host chooses `participationMode` |
-| **Storage** | `participant_intent_requests` | RSVPs + `activity_requests` |
+| **Storage** | Intent stub + **`activity_requests`** (M2c canonical) | RSVPs + `activity_requests` |
 
 Demand is **not** a lightweight RSVP activity. Do not add **I'm going**, private pins, or `participationMode` to `participant_intents`.
 
-**Explore map wire (M0):** seeking pins on `GET /explore/map` use `source: 'activity'`, `activityMode: 'seeking'`, and id `demand:{intentId}` (`exploreMapItemIsSeeking` in `@uaetrail/shared-types`). Card/peek copy still resolves to presentation `source: 'demand'` for join CTAs.
+**Explore map wire:** seeking pins use `source: 'activity'`, `activityMode: 'seeking'`, id **`activity:{activityId}`** (legacy `demand:{intentId}` pre-M1 backfill only). Join: **`POST /activities/:id/requests`**. Card presentation may still use `source: 'demand'` for copy only.
 
 | Who | Peek actions |
 |-----|----------------|

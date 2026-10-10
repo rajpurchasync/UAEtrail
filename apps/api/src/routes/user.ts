@@ -19,6 +19,7 @@ import { registerMeAvailabilityRoutes } from './user/registerMeAvailabilityRoute
 import { registerExploreAvailabilityRoutes } from './user/registerExploreAvailabilityRoutes.js';
 import { registerMeMapPinsRoutes } from './user/registerMeMapPinsRoutes.js';
 import { registerMeWishlistRoutes } from './user/registerMeWishlistRoutes.js';
+import { registerMeCoordinationAttentionRoutes } from './user/registerMeCoordinationAttentionRoutes.js';
 import { registerMemberHostStatusRoutes } from './user/registerMemberHostStatusRoutes.js';
 import { registerMeSubmittedPlaceRoutes } from './user/registerMeSubmittedPlaceRoutes.js';
 import { registerNotificationRoutes } from './user/registerNotificationRoutes.js';
@@ -68,3 +69,4 @@ registerMeGoalsRoutes(userRouter);
 registerMeAvailabilityRoutes(userRouter);
 registerMeMapPinsRoutes(userRouter);
 registerMeWishlistRoutes(userRouter);
+registerMeCoordinationAttentionRoutes(userRouter);

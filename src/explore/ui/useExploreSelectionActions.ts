@@ -27,7 +27,7 @@ import { useParticipantIntentJoinContext } from '../../hooks/useParticipantInten
 import { useViewerProfileGender } from '../../hooks/useViewerProfileGender';
 import { womenOnlyJoinMessageForActivity } from '../../utils/activityWomenOnlyJoin';
 import { exploreMapQueryKey, reloadExploreMap } from '../../hooks/useExploreMap';
-import { navigateToParticipantIntentManage } from '../../trips/navigateParticipantIntentManage';
+import { navigateToParticipantIntentManage } from '../../member-plan/navigateParticipantIntentManage';
 import type { ContributeSubmitResult } from './contributeFlow';
 import type { DemandSubmitResult } from './demandFlow';
 import type { useExploreBrowseUrlState } from './useExploreBrowseUrlState';
@@ -135,9 +135,14 @@ export const useExploreSelectionActions = ({
     userId: user?.id,
   });
 
-  const demandJoinContextEnabled = Boolean(
-    selected && exploreMapItemIsSeeking(selected) &&
+  const seekingUsesLegacyIntentJoin = Boolean(
+    selected &&
+      exploreMapItemIsSeeking(selected) &&
       selected.participantIntentId &&
+      !selected.activity?.id
+  );
+  const demandJoinContextEnabled = Boolean(
+    seekingUsesLegacyIntentJoin &&
       !selectedCard?.showDemandOwnerActions &&
       user
   );
@@ -161,15 +166,12 @@ export const useExploreSelectionActions = ({
   );
 
   const peekJoinUiState =
-    selected && exploreMapItemIsSeeking(selected) && !selectedCard?.showDemandOwnerActions
+    demandJoinContextEnabled
       ? demandJoinUiState
       : activityPeekSkipsJoinContext
         ? undefined
         : joinUiState;
-  const peekJoinStateLoading =
-    selected && exploreMapItemIsSeeking(selected) && !selectedCard?.showDemandOwnerActions
-      ? demandJoinStateLoading
-      : joinStateLoading;
+  const peekJoinStateLoading = demandJoinContextEnabled ? demandJoinStateLoading : joinStateLoading;
 
   const joinActions = useActivityJoinActions({
     activity: selected?.activity ?? null,
@@ -215,12 +217,17 @@ export const useExploreSelectionActions = ({
 
   const handleJoin = useCallback(() => {
     if (selected && exploreMapItemIsSeeking(selected)) {
-      const intentId = selected.participantIntentId;
-      if (!intentId) return;
       if (!user) {
         joinActions.openGuestSheet('activity');
         return;
       }
+      if (selected.activity?.id) {
+        if (joinUiState.kind !== 'open') return;
+        joinActions.openJoinModal();
+        return;
+      }
+      const intentId = selected.participantIntentId;
+      if (!intentId) return;
       if (demandJoinUiState.kind !== 'open') return;
       void (async () => {
         try {

@@ -78,7 +78,7 @@ Time-bound map pins are **Activities** with `activityMode` (target wire name; mi
 | Mode | Meaning | Today (wire) | UX |
 |------|---------|--------------|-----|
 | **`hosted`** | Host-published outing | `activities` + organize compose | Join / RSVP / request on detail |
-| **`seeking`** | Member “looking for company” | `participant_intents` until merged | Find FAB; map wire: `source: activity`, `activityMode: seeking` (M0) |
+| **`seeking`** | Member “looking for company” | **`activities`** row (`activityMode: seeking`) + optional `participant_intents` stub (compose/manage) | Find FAB; map pin `activity:{id}`; join via **`activity_requests`** (M2c); intent routes alias |
 
 **Not an activity mode:** **Availability** — person + calendar slots (`member_availability` planned). Discover on Explore **People**; edit on Plan. Seeking ≠ availability.
 
@@ -93,7 +93,7 @@ Time-bound map pins are **Activities** with `activityMode` (target wire name; mi
 | Upcoming rail / Joined list | `GET /me/activities`, `GET /me/requests` |
 | Hosted list + manage sheet | Host user: `listHostActivities`, `getHostActivityJoinRequests` |
 | Saved lens (`?lens=saved`) | Private venue + activity saves (`/me/wishlist`) — not demand, not Follow |
-| Journey map (`/profile/my-trips/map`) | `memberJourneyMapApi` → `/me/trips/map` (legacy path name on server) |
+| Journey map (`/profile/history/map`) | `memberJourneyMapApi` → `GET /me/journey-map`; pin CRUD → `/me/map-pins` |
 
 Do **not** add `trips*` API clients or `Trip*` domain types for hosted/joined lists — reuse **activity** and **member engagement** APIs.
 

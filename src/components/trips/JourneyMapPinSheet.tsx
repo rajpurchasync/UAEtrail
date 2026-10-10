@@ -4,8 +4,8 @@ import { Trash2 } from 'lucide-react';
 import type { MemberMapPinActivityType, MemberMapPinDTO, JourneyMapEntryDTO } from '@uaetrail/shared-types';
 import { ConsumerBottomSheet } from '../mobile/ConsumerBottomSheet';
 import { JourneyMapActivityTypePicker } from './JourneyMapActivityTypePicker';
-import { normalizeJourneyMapActivityType, journeyMapActivityLabel } from '../../trips/journeyMapActivityTypes';
-import { journeyEntryCategoryBadge } from '../../trips/journeyMapCategoryBadge';
+import { normalizeJourneyMapActivityType, journeyMapActivityLabel } from '../../member-plan/journeyMapActivityTypes';
+import { journeyEntryCategoryBadge } from '../../member-plan/journeyMapCategoryBadge';
 
 export type NewPinSheet = { type: 'new'; lat: number; lng: number };
 export type ViewPinSheet = { type: 'view'; pin: MemberMapPinDTO };

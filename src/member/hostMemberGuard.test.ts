@@ -4,12 +4,13 @@ import { join, relative } from 'node:path';
 
 const SCAN_ROOT = join(process.cwd(), 'src');
 
-const ALLOW_HOST_OVERVIEW_PATH = new Set([
+const ALLOW_HOST_CONSOLE_PATHS = new Set([
   'src/App.tsx',
   'src/config/surfacePaths.ts',
   'src/config/routingCatalog.ts',
   'src/constants/index.ts',
   'src/console/ConsoleHubSections.tsx',
+  'src/components/layout/MobileMenu.tsx',
   'src/pages/SecurityPrivacy.tsx',
   'src/pages/Messages.tsx',
   'src/utils/authRouting.ts',
@@ -20,7 +21,15 @@ const ALLOW_HOST_OVERVIEW_PATH = new Set([
   'src/utils/notificationRouting.ts',
   'src/utils/notificationRouting.test.ts',
   'src/member/memberSurfacesAcceptance.test.ts',
+  'src/member/hostMemberGuard.test.ts',
 ]);
+
+/** Legacy host workspace (`/host/*` pages) — not consumer Plan/Profile surfaces. */
+const SKIP_HOST_CONSOLE_PREFIXES = [
+  'src/pages/host/',
+  'src/components/host/',
+  'src/console/',
+];
 
 const ALLOW_BECOME_HOST_PATH = new Set([
   'src/config/memberRoutes.ts',
@@ -74,9 +83,8 @@ describe('hostMemberGuard', () => {
     const files = collectSourceFiles(SCAN_ROOT).filter(
       (file) =>
         !SKIP_PREFIXES.some((prefix) => file.startsWith(prefix)) &&
-        !file.startsWith('src/pages/host/') &&
-        !file.startsWith('src/components/host/') &&
-        !ALLOW_HOST_OVERVIEW_PATH.has(file)
+        !SKIP_HOST_CONSOLE_PREFIXES.some((prefix) => file.startsWith(prefix)) &&
+        !ALLOW_HOST_CONSOLE_PATHS.has(file)
     );
     const violations: string[] = [];
 
@@ -88,6 +96,32 @@ describe('hostMemberGuard', () => {
         /to:\s*HOST_OVERVIEW_PATH/.test(content)
       ) {
         violations.push(`${file}: use exploreOrganizePath(), tripsPlansPath('hosted'), or PRO_MEMBERSHIP_PATH`);
+      }
+    }
+
+    expect(violations).toEqual([]);
+  });
+
+  it('consumer UI does not deep-link to /host/requests, /host/activities, or /host/team', () => {
+    const files = collectSourceFiles(SCAN_ROOT).filter(
+      (file) =>
+        !SKIP_PREFIXES.some((prefix) => file.startsWith(prefix)) &&
+        !SKIP_HOST_CONSOLE_PREFIXES.some((prefix) => file.startsWith(prefix)) &&
+        !ALLOW_HOST_CONSOLE_PATHS.has(file)
+    );
+    const violations: string[] = [];
+
+    const literalHostConsole =
+      /['"]\/host\/(requests|activities(?:\/new)?|team)['"]/;
+    const hostConsoleConstants =
+      /to=\{HOST_(REQUESTS|ACTIVITIES|TEAM)_PATH\}|to:\s*HOST_(REQUESTS|ACTIVITIES|TEAM)_PATH|to=\{HOST_ACTIVITIES_NEW_PATH\}/;
+
+    for (const file of files) {
+      const content = readFileSync(join(process.cwd(), file), 'utf8');
+      if (literalHostConsole.test(content) || hostConsoleConstants.test(content)) {
+        violations.push(
+          `${file}: use tripsPlansPath('hosted'), MY_REQUESTS_PATH, or PRO_MEMBERSHIP_PATH — not consumer /host/*`
+        );
       }
     }
 

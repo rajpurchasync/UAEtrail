@@ -1,5 +1,5 @@
-import type { JourneyPinStyle } from '../../trips/journeyMapPinStyle';
-import { JOURNEY_PIN_STYLES } from '../../trips/journeyMapPinStyle';
+import type { JourneyPinStyle } from '../../member-plan/journeyMapPinStyle';
+import { JOURNEY_PIN_STYLES } from '../../member-plan/journeyMapPinStyle';
 
 /** Same teardrop pin as the map — scaled for list rows. */
 export const JourneyMapListPinIcon = ({ style }: { style: JourneyPinStyle }) => {

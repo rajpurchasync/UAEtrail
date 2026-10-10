@@ -5,13 +5,14 @@ import { join, relative } from 'node:path';
 const SCAN_ROOT = join(process.cwd(), 'src');
 
 const ALLOWLIST = new Set([
-  'src/trips/tripsConsumerNamingGuard.test.ts',
+  'src/member-plan/tripsConsumerNamingGuard.test.ts',
   'src/config/surfacePaths.ts',
   'src/App.tsx',
-  'src/trips/legacyTripsRedirect.ts',
   'src/utils/notificationRouting.test.ts',
   'src/pages/host/Overview.tsx',
 ]);
+
+const DEPRECATED_TRIPS_SHIM_PREFIX = 'src/trips/';
 
 const collectSourceFiles = (dir: string): string[] => {
   const entries = readdirSync(dir);
@@ -43,6 +44,21 @@ describe('tripsConsumerNamingGuard', () => {
       }
       if (legacyHistoryLink.test(content)) {
         violations.push(`${file}: use PROFILE_HISTORY_PATH from routingCatalog`);
+      }
+    }
+
+    expect(violations).toEqual([]);
+  });
+
+  it('app code imports src/member-plan (not deprecated src/trips shims)', () => {
+    const violations: string[] = [];
+    const deprecatedImport = /from ['"](\.\.\/)+trips\/|from ['"]\.\/trips\//;
+
+    for (const file of collectSourceFiles(SCAN_ROOT)) {
+      if (file.startsWith(DEPRECATED_TRIPS_SHIM_PREFIX)) continue;
+      const content = readFileSync(join(process.cwd(), file), 'utf8');
+      if (deprecatedImport.test(content)) {
+        violations.push(`${file}: use src/member-plan/* — src/trips is a one-release shim`);
       }
     }
 

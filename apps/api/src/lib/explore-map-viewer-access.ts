@@ -185,7 +185,7 @@ export const attachExploreMapViewerAccess = (
   ctx: ExploreMapViewerAccessContext
 ): ExploreMapItemDTO[] =>
   items.map((item) => {
-    if (item.source === 'activity' && item.activity && !exploreMapItemIsSeeking(item)) {
+    if (item.source === 'activity' && item.activity) {
       const joinMode = resolveJoinMode(item.activity.joinMode, item.activity.requirements);
       const level = resolveActivityMapViewerLevel({
         viewerUserId: ctx.viewerUserId,

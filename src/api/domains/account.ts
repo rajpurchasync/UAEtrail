@@ -209,7 +209,7 @@ export const accountApi = {
         data: {
           friendsGoing: import('@uaetrail/shared-types').SocialPersonRowDTO[];
           hostsGoing: import('@uaetrail/shared-types').SocialPersonRowDTO[];
-          lookingFor: import('@uaetrail/shared-types').MemberDiscoveryLookingRowDTO[];
+          seekingOnMap: import('@uaetrail/shared-types').MemberDiscoverySeekingRowDTO[];
           followed: import('@uaetrail/shared-types').MemberBrowseCardDTO[];
           directory: import('@uaetrail/shared-types').MemberBrowseCardDTO[];
         };

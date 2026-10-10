@@ -73,6 +73,19 @@ export const countActivityJoinInvitesFromSenderSince = async (input: {
     createdAt: { $gte: input.since },
   });
 
+export const listPendingActivityInvitesForInvitee = async (
+  toUserId: string,
+  limit = 50
+): Promise<ActivityInviteDoc[]> =>
+  collection()
+    .find({ toUserId, status: 'pending' })
+    .sort({ createdAt: -1 })
+    .limit(limit)
+    .toArray();
+
+export const countPendingActivityInvitesForInvitee = async (toUserId: string): Promise<number> =>
+  collection().countDocuments({ toUserId, status: 'pending' });
+
 export const listPendingActivityInviteeIdsForSender = async (input: {
   activityId: string;
   fromUserId: string;

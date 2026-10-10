@@ -37,6 +37,7 @@ export {
   MEMBERSHIP_MARKETING_PATH,
   GROUPS_PATH,
   groupsPath,
+  groupsManagePath,
   NOTIFICATIONS_PATH,
   BUDDIES_PATH,
   CONTRIBUTIONS_PATH,
@@ -162,4 +163,4 @@ export {
   myTripsWishlistPath,
   tripsLegacyJoinedTabPath,
   tripsLegacyUpcomingSegmentPath,
-} from '../trips/tripsRouting';
+} from '../member-plan/tripsRouting';

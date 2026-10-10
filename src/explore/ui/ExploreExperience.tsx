@@ -537,7 +537,7 @@ export const ExploreExperience = () => {
     onOpenMemberPersonActivity: openExploreActivityFromRef,
     discoveryFriendsGoing: memberDiscovery.friendsGoing,
     discoveryHostsGoing: memberDiscovery.hostsGoing,
-    discoveryLookingFor: memberDiscovery.lookingFor,
+    discoverySeekingOnMap: memberDiscovery.seekingOnMap,
     discoveryFollowed: memberDiscovery.followed,
     discoveryDirectory: memberDiscovery.directory,
     discoveryQuota: memberDiscovery.quota,

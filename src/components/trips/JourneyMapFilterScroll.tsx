@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import type { JourneyMapEntryDTO, JourneyMapFilterCategory } from '@uaetrail/shared-types';
 import { FilterChips } from '../mobile/FilterChips';
-import { JOURNEY_MAP_FILTERS, countJourneyMapEntries } from '../../trips/journeyMapFilters';
+import { JOURNEY_MAP_FILTERS, countJourneyMapEntries } from '../../member-plan/journeyMapFilters';
 
 interface JourneyMapFilterScrollProps {
   filter: JourneyMapFilterCategory;
