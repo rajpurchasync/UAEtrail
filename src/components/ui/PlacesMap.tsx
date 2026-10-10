@@ -32,6 +32,7 @@ export interface PlaceMapPin {
   path: string;
   hostAvatar?: string | null;
   source?: MapPinSource;
+  activityMode?: 'hosted' | 'seeking';
   /** Base explore item id when this pin is a carpool endpoint. */
   exploreItemId?: string;
   rideshareEndpoint?: 'from' | 'to';
@@ -45,6 +46,7 @@ export interface PlaceMapPin {
 export interface ColocatedMapPinEntry {
   activityType: MapPinKind;
   source?: MapPinSource;
+  activityMode?: 'hosted' | 'seeking';
   exploreItemId: string;
   stackExploreItemIds?: string[];
   stackCount?: number;
@@ -135,7 +137,10 @@ const pinIcon = (
       return {
         kind: entry.activityType,
         source,
-        ringColor: exploreMapPinRingColor(entry.activityType, source),
+        ringColor: exploreMapPinRingColor(
+          entry.activityType,
+          entry.activityMode === 'seeking' ? 'demand' : source
+        ),
         exploreItemId: entry.exploreItemId,
         stackCount: entry.stackCount ?? 1,
         selected: entrySelected,
@@ -169,7 +174,10 @@ const pinIcon = (
     });
   }
 
-  const ringColor = exploreMapPinRingColor(kind, source);
+  const ringColor = exploreMapPinRingColor(
+    kind,
+    pin.activityMode === 'seeking' ? 'demand' : source
+  );
   const isVenue = source === 'venue';
   const size = isVenue ? (selected ? 36 : 32) : selected ? 44 : 40;
   const iconSize = isVenue ? 15 : 18;

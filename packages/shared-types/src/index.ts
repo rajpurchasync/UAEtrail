@@ -1158,6 +1158,8 @@ export {
   buildExploreMapPlanProjection,
   deriveOutingTopicFromRequirements,
   exploreDemandMapItemPath,
+  exploreSeekingMapItemPath,
+  resolveSeekingExploreMapItemId,
   exploreMapKindToPlanMapKind,
   exploreMapSourceToComposeIntent,
   outingCategoryToOrganizeCreateKind,

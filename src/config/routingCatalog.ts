@@ -120,6 +120,7 @@ export {
   resolveOrganisationProfilePath,
   parseEntityRefFromPathname,
   exploreDemandMapItemPath,
+  exploreSeekingMapItemPath,
   EXPLORE_SHOPS_PATH,
   EXPLORE_SHOPS_LIST_PATH,
   type EntityRef,

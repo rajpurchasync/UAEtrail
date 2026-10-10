@@ -38,6 +38,16 @@ describe('resolveMapPinEmoji', () => {
     expect(resolveMapPinEmoji('rideshare', 'demand')).toBe('🚗');
   });
 
+  it('keeps seeking pins on activity source (activityMode)', () => {
+    expect(
+      resolveExploreItemSource({
+        id: 'activity:seek-1',
+        source: 'activity',
+        activityMode: 'seeking',
+      })
+    ).toBe('activity');
+  });
+
   it('resolves source from id prefix when source is missing', () => {
     expect(resolveExploreItemSource({ id: 'venue:abc', source: 'activity' })).toBe('activity');
     expect(

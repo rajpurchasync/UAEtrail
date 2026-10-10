@@ -467,7 +467,8 @@ Use one PR per subsection where possible; check boxes when merged.
 |----------|------|--------|
 | P0 ops | Run [`SEEKING_M2D_RUNBOOK.md`](../operations/SEEKING_M2D_RUNBOOK.md) on **staging + prod** | `seeking:m2d-status --strict` before traffic |
 | P0 QA | G-manage **browser** smoke on staging | Plan → Needs you → Hosted → manage sheet |
-| P1 wire | Explore map: retire public `source: 'demand'` projection | Use `source: 'activity'` + `activityMode: seeking` end-to-end (`explore-map.ts`, `shared-types` presentation) |
+| P1 wire | Explore map: retire public `source: 'demand'` projection | **Done (wire)** — `activity` + `activityMode: seeking`; legacy `demand:` pin ids + `source: 'demand'` compat in parsers |
+| P1 links | Seeking deep links prefer `pin=activity:{id}` | **Done** — `exploreSeekingMapItemPath` / `resolveSeekingExploreMapItemId`; API notifications + wishlist + FE share |
 | P1 storage | Drop `participant_intents` writes entirely; archive collection | After all envs M2d + retention policy |
 | P2 perf | Explore map bbox / light DTO; chat SSE multi-instance | Architecture backlog from coherence review |
 | P2 UX | `plan-tab-ux-backlog.md` (upcoming carousel, goals polish) | Explicitly paused in §19 |
@@ -506,6 +507,7 @@ Use one PR per subsection where possible; check boxes when merged.
 | 2026-10-10 | Coordination perf | Buddy + activity-invite **counts** on `coordination-attention` |
 | 2026-10-10 | §19 #12 API | `g-manage-coordination-join-approve.test.ts`; PRE_DEPLOY staging ops ordered steps |
 | 2026-10-10 | §19 close | Queue complete; `SEEKING_M2D_RUNBOOK.md`; §20 post-queue (demand wire, ops) |
+| 2026-10-10 | §20 P1 | Map wire `activity` + `activityMode: seeking`; `exploreSeekingMapItemPath` (API/FE/notifications/wishlist) |
 | | | **Next:** §20 P0 — staging/prod M2d runbook + G-manage UI smoke |
 
 ---

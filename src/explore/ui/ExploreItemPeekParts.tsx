@@ -13,6 +13,7 @@ import type { JoinRequestUiState } from '../../utils/joinRequestUi';
 import { ExploreLinkedRidesharePeekIndication } from './ExploreLinkedRidesharePeekIndication';
 import {
   exploreCardHasMapCoords,
+  exploreCardIsSeeking,
   exploreCardShowsInlineDirections,
 } from '../exploreCardModel';
 import {
@@ -58,7 +59,7 @@ export const ExploreItemPeekActions = ({
   onGuestGatedAction,
 }: ExploreItemPeekActionsProps) => {
   const isShop = card.source === 'shop';
-  const isDemand = card.source === 'demand';
+  const isDemand = exploreCardIsSeeking(card);
   const externalUrl = card.websiteUrl?.trim() || null;
   const gate = onGuestGatedAction;
   const activityMapPeekActions =
@@ -258,7 +259,7 @@ export const ExploreItemPeekBody = ({
   const showPeopleRow =
     card.source === 'activity' ||
     card.source === 'shop' ||
-    (card.source === 'demand' && Boolean(card.listHost || card.hostAvatar));
+    (exploreCardIsSeeking(card) && Boolean(card.listHost || card.hostAvatar));
 
   return (
     <>

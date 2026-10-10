@@ -3,7 +3,7 @@ import { explorePersonRoleLabel } from '@uaetrail/shared-types';
 import { ChevronRight, Clock, MapPin, Route, Star, Tag, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { ExploreCardModel, ExploreCardTone } from '../exploreCardModel';
-import { exploreCardToneTextClass } from '../exploreCardModel';
+import { exploreCardIsSeeking, exploreCardToneTextClass } from '../exploreCardModel';
 import { EXPLORE_TYPE } from '../../config/exploreTheme';
 import type { ExploreCardDetail, ExploreCardDetailIcon, ExploreCardSections } from '../exploreCopy';
 import { personProfilePath } from '../../utils/organisationLinks';
@@ -378,7 +378,7 @@ export const ExploreCardPeopleRow = ({
     Boolean(hostName || card.hostAvatar) &&
     (card.source === 'activity' ||
       card.source === 'shop' ||
-      (card.source === 'demand' && participants.length === 0));
+      (exploreCardIsSeeking(card) && participants.length === 0));
 
   if (!showHostRow && participants.length === 0) return null;
 
@@ -398,7 +398,7 @@ export const ExploreCardPeopleRow = ({
           <p className={`text-xs font-medium ${EXPLORE_TYPE.muted}`}>
             {personRoleLabel
               ? `${personRoleLabel} · view profile`
-              : card.source === 'demand'
+              : exploreCardIsSeeking(card)
                 ? 'Posted this request · view profile'
                 : card.source === 'shop'
                   ? 'Shop contact · view profile'
@@ -423,7 +423,7 @@ export const ExploreCardPeopleRow = ({
           <p className={`text-xs font-medium ${EXPLORE_TYPE.muted}`}>
             {personRoleLabel
               ? `${personRoleLabel} · view profile`
-              : card.source === 'demand'
+              : exploreCardIsSeeking(card)
                 ? 'Posted this request · view profile'
                 : card.source === 'shop'
                   ? 'Shop contact · view profile'
@@ -442,7 +442,7 @@ export const ExploreCardPeopleRow = ({
         <div className="min-w-0">
           <p className="text-sm font-semibold text-gray-900">{hostName}</p>
           <p className={`text-xs font-medium ${EXPLORE_TYPE.muted}`}>
-            {personRoleLabel ?? (card.source === 'demand' ? 'Posted this request' : card.source === 'shop' ? 'Shop contact' : 'Host')}
+            {personRoleLabel ?? (exploreCardIsSeeking(card) ? 'Posted this request' : card.source === 'shop' ? 'Shop contact' : 'Host')}
           </p>
         </div>
       </div>

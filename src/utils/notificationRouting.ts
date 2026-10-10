@@ -25,7 +25,11 @@ import {
   tripsLegacyUpcomingSegmentPath,
   tripsPlansPath,
 } from '../config/routingCatalog';
-import { NotificationDTO, placeDetailPath } from '@uaetrail/shared-types';
+import {
+  NotificationDTO,
+  exploreSeekingMapItemPath,
+  placeDetailPath,
+} from '@uaetrail/shared-types';
 import { resolveLegacyTripsHubRedirect } from '../member-plan/legacyTripsRedirect';
 
 const toMetaObject = (meta: NotificationDTO['meta']): Record<string, unknown> | null =>
@@ -237,14 +241,10 @@ export const inferNotificationPath = (
     if (intentId) {
       const publishedActivityId =
         toStringValue(meta?.activityId) ?? toStringValue(meta?.seekingActivityId);
-      if (publishedActivityId) {
-        return explorePath({
-          list: true,
-          panel: 'activities',
-          pin: `activity:${publishedActivityId}`,
-        });
-      }
-      return `${explorePath({ list: true, panel: 'activities' })}&pin=demand:${encodeURIComponent(intentId)}`;
+      return exploreSeekingMapItemPath({
+        intentId,
+        activityId: publishedActivityId,
+      });
     }
     const actorUserId = toStringValue(meta?.actorUserId) ?? toStringValue(meta?.hostUserId);
     if (actorUserId) {

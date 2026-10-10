@@ -1,4 +1,8 @@
-import { exploreAreaQueryParam, exploreDemandMapItemPath } from '@uaetrail/shared-types';
+import {
+  exploreAreaQueryParam,
+  exploreSeekingMapItemPath,
+  resolveSeekingExploreMapItemId,
+} from '@uaetrail/shared-types';
 import type { OrganizeComposeKind } from './compose';
 import { EXPLORE_MAP_PATH } from '../config/platform';
 import { PLAN_PATH } from '../constants';
@@ -95,10 +99,11 @@ export const resolveParticipantIntentMapItemId = (intent: {
   id: string;
   activityId?: string | null;
   seekingActivityId?: string | null;
-}): string => {
-  const activityId = intent.activityId ?? intent.seekingActivityId ?? null;
-  return activityId ? `activity:${activityId}` : `demand:${intent.id}`;
-};
+}): string =>
+  resolveSeekingExploreMapItemId({
+    intentId: intent.id,
+    activityId: intent.activityId ?? intent.seekingActivityId ?? null,
+  });
 
 export const participantIntentExplorePinPath = (
   intent: {
@@ -109,9 +114,23 @@ export const participantIntentExplorePinPath = (
 ): string => exploreSavedPinPath(resolveParticipantIntentMapItemId(intent));
 
 /** Share link for map items — opens explore peek (guests and members). */
-export const exploreMapItemSharePath = (mapItemId: string): string => {
+export const exploreMapItemSharePath = (
+  mapItemId: string,
+  options?: { activityId?: string | null; intentId?: string | null }
+): string => {
   const id = mapItemId.trim();
-  if (id.startsWith('demand:')) return exploreDemandMapItemPath(id);
+  if (id.startsWith('demand:')) {
+    return exploreSeekingMapItemPath({
+      intentId: id.slice('demand:'.length),
+      activityId: options?.activityId,
+    });
+  }
+  if (options?.activityId && options.intentId) {
+    return exploreSeekingMapItemPath({
+      intentId: options.intentId,
+      activityId: options.activityId,
+    });
+  }
   return explorePath({ pin: id });
 };
 

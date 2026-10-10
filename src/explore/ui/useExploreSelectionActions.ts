@@ -350,14 +350,14 @@ export const useExploreSelectionActions = ({
 
   const handleDemandManage = useCallback(() => {
     const intentId = selected?.participantIntentId;
-    if (!intentId || selected?.source !== 'demand') return;
+    if (!intentId || !exploreMapItemIsSeeking(selected)) return;
     setSelectedId(null);
     navigateToParticipantIntentManage(navigate, intentId);
   }, [selected, navigate, setSelectedId]);
 
   const requestDemandRemove = useCallback(() => {
     const intentId = selected?.participantIntentId;
-    if (!intentId || selected?.source !== 'demand') return;
+    if (!intentId || !exploreMapItemIsSeeking(selected)) return;
     setDemandRemoveIntentId(intentId);
   }, [selected]);
 

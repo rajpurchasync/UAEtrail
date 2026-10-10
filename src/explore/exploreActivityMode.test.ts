@@ -14,11 +14,12 @@ describe('exploreActivityMode (M0)', () => {
     expect(resolveExploreMapActivityMode(legacyDemandExploreMapItem())).toBe('seeking');
   });
 
-  it('buildExploreCardModel adds Seeking badge and demand presentation', () => {
+  it('buildExploreCardModel adds Seeking badge with activity wire source', () => {
     const item = seekingExploreMapItem();
     const card = buildExploreCardModel(item);
     expect(exploreMapItemIsSeeking(item)).toBe(true);
-    expect(card.source).toBe('demand');
+    expect(card.source).toBe('activity');
+    expect(card.composeIntent).toBe('demand');
     expect(card.requirementBadges).toContain('Seeking');
   });
 });

@@ -5,7 +5,7 @@ import {
   resolveActivityMapPeekActions,
 } from '../explore/activityMapPeekActions';
 import { activityMapPeekActionLabel } from '../explore/exploreMapPeekActionCopy';
-import { exploreCardHasMapCoords } from '../explore/exploreCardModel';
+import { exploreCardHasMapCoords, exploreCardIsSeeking } from '../explore/exploreCardModel';
 import type { JoinRequestUiState } from '../utils/joinRequestUi';
 import {
   LIST_FEED_CTA_GET_DIRECTIONS,
@@ -137,7 +137,7 @@ export const resolveListFeedFooterModel = (
     if (fromPeek) return fromPeek;
   }
 
-  if (card.showJoinActions && card.source === 'demand' && !isGuest) {
+  if (card.showJoinActions && exploreCardIsSeeking(card) && !isGuest) {
     return {
       primary: { kind: 'link', label: card.primaryCta, href: card.path },
       secondary: card.secondaryCta ? { kind: 'link', label: card.secondaryCta, href: card.path } : null,
@@ -145,7 +145,7 @@ export const resolveListFeedFooterModel = (
     };
   }
 
-  if (card.showJoinActions && card.source === 'demand') {
+  if (card.showJoinActions && exploreCardIsSeeking(card)) {
     return {
       primary: { kind: 'guest_gate', label: card.primaryCta },
       secondary: card.secondaryCta ? { kind: 'link', label: card.secondaryCta, href: card.path } : null,

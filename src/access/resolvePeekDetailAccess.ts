@@ -1,11 +1,11 @@
 import type { ActivityViewerAccessDTO } from '@uaetrail/shared-types';
 import { mapViewerAccessToExplorePeekDetail, type ExplorePeekDetailAccess } from './mapViewerAccessToUi';
-import type { ExploreCardModel } from '../explore/exploreCardModel';
+import { exploreCardIsSeeking, type ExploreCardModel } from '../explore/exploreCardModel';
 
 export type { ExplorePeekDetailAccess };
 
 export const exploreCardIsHostedPlanPeek = (card: ExploreCardModel): boolean =>
-  card.source === 'activity' || card.source === 'demand';
+  card.source === 'activity' || exploreCardIsSeeking(card);
 
 const exploreCardIsCommerceCatalogPeek = (card: ExploreCardModel): boolean =>
   card.source === 'shop' || card.source === 'agency';

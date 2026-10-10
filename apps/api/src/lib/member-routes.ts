@@ -1,3 +1,5 @@
+import { exploreSeekingMapItemPath } from '@uaetrail/shared-types';
+
 /** Deep links in API notification meta — keep in sync with `src/config/surfacePaths.ts`. */
 export const PRO_MEMBERSHIP_PATH = '/profile/pro-membership';
 export const PLAN_PATH = '/plan';
@@ -63,25 +65,22 @@ export const activityDetailPath = (activityId: string): string =>
   `/activity/${encodeURIComponent(activityId)}`;
 
 export const exploreActivityPinPath = (activityId: string): string =>
-  `/explore?pin=activity:${encodeURIComponent(activityId)}&list=1&panel=activities`;
-
-export const exploreDemandPinPath = (intentId: string): string =>
-  `/explore?pin=demand:${encodeURIComponent(intentId)}&list=1&panel=activities`;
+  `/explore?${new URLSearchParams({
+    pin: `activity:${activityId}`,
+    list: '1',
+    panel: 'activities',
+  }).toString()}`;
 
 /** Deep link when a find post has a published activity row (any `activityMode`). */
-export const explorePublishedActivityPinPath = (input: {
-  intentId: string;
-  activityId?: string | null;
-}): string =>
-  input.activityId ? exploreActivityPinPath(input.activityId) : exploreDemandPinPath(input.intentId);
+export const explorePublishedActivityPinPath = exploreSeekingMapItemPath;
 
-/** @deprecated Use {@link explorePublishedActivityPinPath} with `activityId`. */
+/** @deprecated Use {@link explorePublishedActivityPinPath}. */
 export const exploreSeekingPinPath = (input: {
   intentId: string;
   seekingActivityId?: string | null;
   activityId?: string | null;
 }): string =>
-  explorePublishedActivityPinPath({
+  exploreSeekingMapItemPath({
     intentId: input.intentId,
     activityId: input.activityId ?? input.seekingActivityId ?? null,
   });

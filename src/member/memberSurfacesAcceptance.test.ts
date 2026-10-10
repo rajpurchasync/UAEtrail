@@ -98,12 +98,20 @@ describe('member surfaces §11 acceptance (automated)', () => {
   it('G-seek: explore map build does not merge legacy demand pins into payload', () => {
     const exploreMap = read('apps/api/src/lib/explore-map.ts');
     expect(exploreMap).not.toMatch(/listActiveParticipantIntentsForMap\(/);
+    expect(exploreMap).toMatch(/source: 'activity',\s*\n\s*activityMode,/);
+    expect(exploreMap).not.toMatch(/activityMode === 'seeking' \? 'demand'/);
   });
 
   it('G-seek: publish fan-out prefers activity pin when seeking id exists', () => {
     const publish = read('apps/api/src/services/member-publish-notifications.ts');
     expect(publish).toMatch(/explorePublishedActivityPinPath|exploreSeekingPinPath/);
     expect(publish).toContain('activityId');
+  });
+
+  it('G-seek: wishlist demand alerts use explorePublishedActivityPinPath with activityId', () => {
+    const wishlist = read('apps/api/src/services/wishlist-alerts.ts');
+    expect(wishlist).toContain('explorePublishedActivityPinPath');
+    expect(wishlist).toMatch(/activityId|seekingActivityId/);
   });
 
   it('G-manage: coordination attention has API route contract test', () => {

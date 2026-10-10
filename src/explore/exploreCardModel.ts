@@ -103,14 +103,17 @@ const resolveCoverImage = (item: ExploreMapItemDTO): string | null =>
   );
 
 const LIST_META_ICONS = new Set(['location', 'time', 'spots']);
-const LIST_META_ROUTE_SOURCES = new Set<ExploreCardModel['source']>(['demand']);
+/** Seeking pins — wire `activity` + `composeIntent: demand` (legacy `source: demand`). */
+export const exploreCardIsSeeking = (
+  card: Pick<ExploreCardModel, 'source' | 'composeIntent'>
+): boolean => card.composeIntent === 'demand' || card.source === 'demand';
 
 /** Compact second line for list rows (where · when · spots — not duplicate activity title). */
 export const buildExploreListMeta = (card: ExploreCardModel): string | null => {
   if (card.source === 'shop' || card.source === 'agency' || card.source === 'venue') {
     return null;
   }
-  const allowRoute = LIST_META_ROUTE_SOURCES.has(card.source) || card.kind === 'rideshare';
+  const allowRoute = exploreCardIsSeeking(card) || card.kind === 'rideshare';
   const labels = card.sections.details
     .filter(
       (detail) =>
@@ -134,8 +137,8 @@ export const buildExploreCardModel = (item: ExploreMapItemDTO): ExploreCardModel
   const fromLabel = item.fromLabel ?? activity?.meetingPoint ?? null;
   const toLabel = item.toLabel ?? activity?.startPoint ?? activity?.locationName ?? null;
   const routeLabel = presentation.routeLabel ?? buildExploreRouteLabel(fromLabel, toLabel, kind);
-  const whenSuffix =
-    source === 'demand' ? 'flexible' : kind === 'rideshare' ? 'fixed' : null;
+  const seeking = exploreMapItemIsSeeking(item);
+  const whenSuffix = seeking ? 'flexible' : kind === 'rideshare' ? 'fixed' : null;
   const whenLabel =
     presentation.whenLabel ??
     buildExploreWhenSegment(item.date, item.time ?? activity?.time ?? null, whenSuffix);
@@ -177,14 +180,17 @@ export const buildExploreCardModel = (item: ExploreMapItemDTO): ExploreCardModel
     secondaryCta: presentation.secondaryCta,
     showJoinActions:
       (source === 'activity' && Boolean(activity)) ||
-      (source === 'demand' && Boolean(item.requesterUserId)),
+      (seeking && Boolean(item.requesterUserId)),
     websiteUrl: item.websiteUrl ?? null,
     contactPhone: item.contactPhone ?? null,
     shareTitle: headline,
     sharePath:
       activity?.joinMode === 'private' && activity.id
         ? `/activity/${activity.id}`
-        : exploreMapItemSharePath(item.id),
+        : exploreMapItemSharePath(item.id, {
+            activityId: seeking ? activity?.id : undefined,
+            intentId: seeking ? item.participantIntentId ?? undefined : undefined,
+          }),
     shareText: presentation.shareText,
     requesterUserId: featuredPerson?.userId ?? item.requesterUserId ?? null,
     routeLabel,
@@ -291,7 +297,7 @@ export type ExploreEntityFollowPayload = {
 export const resolveExploreEntityFollowTarget = (
   card: ExploreCardModel
 ): ExploreEntityFollowPayload | null => {
-  if (card.source === 'demand') return null;
+  if (exploreCardIsSeeking(card)) return null;
   if (card.source === 'venue' && card.locationId) return { locationId: card.locationId };
   if (card.source === 'activity') {
     if (card.locationId) return { locationId: card.locationId };
@@ -332,7 +338,7 @@ const watchMetaFromCard = (card: ExploreCardModel) => ({
 /** Wishlist = private venue or activity save — not demand, shops, or people (use Follow). */
 export const resolveExploreWishlistTarget = (card: ExploreCardModel): ExploreWishlistTarget | null => {
   const watch = watchMetaFromCard(card);
-  if (card.source === 'demand') return null;
+  if (exploreCardIsSeeking(card)) return null;
   if (card.source === 'activity' && card.activityId) return { activityId: card.activityId, ...watch };
   if (card.source === 'venue' && card.locationId) return { locationId: card.locationId, ...watch };
   return null;

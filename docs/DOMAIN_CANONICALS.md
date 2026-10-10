@@ -24,7 +24,7 @@ There are **five public entity kinds** on the wire (`EntityKind` / `EntityRef`):
 | `shop` | **Shop** (outdoor retail brand + catalog) | `merchant_profiles` + SHOP `tenants` | “Merchant”, “Partner” for shops |
 | `person` | **Person** / member | `users` (profile fields) | “User” in consumer copy |
 
-**Demand (Find)** is not a sixth entity kind on URLs — it is a **`participant_intent`** row surfaced on the map; deep links use explore pin/query (`exploreDemandMapItemPath`), not `/demand/:id`.
+**Demand (Find)** is not a sixth entity kind on URLs — it is a **`participant_intent`** row surfaced on the map; deep links use **`exploreSeekingMapItemPath`** (`pin=activity:{id}` when M1 activity exists, else legacy `pin=demand:{intentId}`), not `/demand/:id`.
 
 **Plan** (`/plan`) is the active member tab (schedule, saved, goals lenses). **Outing history** (`/profile/history`) is profile inventory (past outings, journey map). Saved/wishlist primary UI: Plan `?lens=saved`. Legacy `/trips` redirects — not a domain type.
 
@@ -179,7 +179,7 @@ Built only via **`routingCatalog`** or `@uaetrail/shared-types` `entity-path` he
 | Map home | `EXPLORE_MAP_PATH` (`/explore`) | `/map`, bare `/shop` |
 | FAB deep link (wire) | `compose=organize:*` \| `find:*` \| `add:*` — param name **legacy**; product = **Organize · Find · Add** | User-facing “Compose”; `/host/activities/new` for consumers |
 | Panel/filter query | `explorePath({ panel, filter, … })` | Raw `` `/explore?${...}` `` outside `explore/routing.ts` |
-| Demand pin | `exploreDemandMapItemPath` (shared-types) | `/demand/:id` |
+| Seeking / demand pin | `exploreSeekingMapItemPath` (shared-types); `exploreDemandMapItemPath` intent-only legacy | `/demand/:id` |
 | Full-screen list browse | `LIST_DISCOVERY_PATH` (`/list`) + `listDiscoveryPath()` | `/list/hiking`, `/shops` as category site roots |
 | List ↔ map handoff | `exploreMapPathFromListSearch()`, `listDiscoveryPathFromExploreSearch()` | Second filter vocabulary on `/list` |
 
@@ -330,7 +330,7 @@ Use this when naming files, hooks, and utils — **one product word per concept*
 | Product (UI copy) | API / wire | Preferred FE symbol / folder | Do not use for new code |
 |-------------------|------------|------------------------------|-------------------------|
 | **Find** (FAB) | `participant_intents` | `participantIntent*`, `demandFlow.ts` | “wishlist”, “lookingFor” in filenames |
-| **Seeking pin** (public map) | `activities` (`activityMode: seeking`) + intent stub | Map item id **`activity:{activityId}`**; DTO `activityMode: 'seeking'`; helpers `exploreMapItemIsSeeking`, `resolveExploreMapActivityMode`. Presentation `source: 'demand'` is **card-only** (not map species). Legacy `demand:{intentId}` pins only pre-M1 backfill. | `item.source === 'demand'` for filters; parallel `participant_intent_requests` writes (M2c: reads alias `activity_requests`) |
+| **Seeking pin** (public map) | `activities` (`activityMode: seeking`) + intent stub | Map item id **`activity:{activityId}`**; DTO `activityMode: 'seeking'`; helpers `exploreMapItemIsSeeking`, `resolveExploreMapActivityMode`. Map/list wire **`source: 'activity'`** + **`activityMode: 'seeking'`**; UI copy uses **`composeIntent: 'demand'`** (not a separate map species). Legacy **`demand:{intentId}`** ids and **`source: 'demand'`** parse compat only until cache/backfill ages out. | `item.source === 'demand'` for filters; parallel `participant_intent_requests` writes (M2c: reads alias `activity_requests`) |
 | **Follow** (venue / host brand / shop alerts) | `entity_follows` | `EntityFollowDTO`, `GET/POST /me/entity-follows` | Wishlist UI, “favorites”, `user_favorites` |
 | **Follow** (people) | `user_follows` | `MemberFollowControls`, `/me/following/:userId` | Buddies are **friends**; accepting a buddy **auto-follows** both ways |
 | **Wishlist** (private saves) | `user_favorites` (wire) | `WishlistItemDTO`, `GET/POST /me/wishlist` | “Favorite”, demand bookmarks, saving people/shops to wishlist |

@@ -257,6 +257,7 @@ export const expandMapPins = (items: ExploreMapItemDTO[]): PlaceMapPin[] => {
       path: item.path,
       hostAvatar: item.hostAvatar,
       source: resolveMapPinItemSource(item),
+      activityMode: item.activityMode ?? undefined,
       rideshareEndpoint: hasDistinctTo ? 'from' : undefined,
     });
 
@@ -272,6 +273,7 @@ export const expandMapPins = (items: ExploreMapItemDTO[]): PlaceMapPin[] => {
         path: item.path,
         hostAvatar: item.hostAvatar,
         source: resolveMapPinItemSource(item),
+        activityMode: item.activityMode ?? undefined,
         rideshareEndpoint: item.kind === 'rideshare' ? 'to' : 'to',
       });
     }

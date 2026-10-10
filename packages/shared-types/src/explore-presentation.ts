@@ -130,7 +130,7 @@ export const resolveExploreItemSource = (
   item: Pick<ExplorePresentationBuildInput, 'id' | 'source' | 'activityMode' | 'participantIntentId'>
 ): ExploreCardSource => {
   const { id, source } = item;
-  if (exploreMapItemIsSeeking(item)) return 'demand';
+  if (exploreMapItemIsSeeking(item)) return 'activity';
   if (
     source === 'activity' ||
     source === 'venue' ||
@@ -141,19 +141,19 @@ export const resolveExploreItemSource = (
     return source;
   }
   if (id.startsWith('venue:')) return 'venue';
-  if (id.startsWith('demand:')) return 'demand';
+  if (id.startsWith('demand:')) return 'activity';
   if (id.startsWith('shop:')) return 'shop';
   if (id.startsWith('agency:')) return 'agency';
   return 'activity';
 };
 
-/** Map pin emoji source — id prefix wins so venues/demand are never mis-tagged. */
+/** Map pin emoji source — id prefix wins so venues are never mis-tagged. */
 export const resolveMapPinItemSource = (
-  item: Pick<ExplorePresentationBuildInput, 'id' | 'source'>
+  item: Pick<ExplorePresentationBuildInput, 'id' | 'source' | 'activityMode' | 'participantIntentId'>
 ): ExploreCardSource => {
   const { id } = item;
   if (id.startsWith('venue:')) return 'venue';
-  if (id.startsWith('demand:')) return 'demand';
+  if (id.startsWith('demand:')) return 'activity';
   if (id.startsWith('shop:')) return 'shop';
   if (id.startsWith('agency:')) return 'agency';
   return resolveExploreItemSource(item);
@@ -189,6 +189,8 @@ export const resolveMapPinEmoji = (
 
 interface ExploreHeadlineInput extends ExploreFeaturedPersonInput {
   source: ExploreCardSource;
+  /** Set when wire uses `activity` + `activityMode: seeking` (not legacy `source: demand`). */
+  isSeekingPin?: boolean;
   kind: ExploreCardKind;
   title: string;
   hostName?: string | null;
@@ -206,6 +208,9 @@ interface ExploreHeadlineInput extends ExploreFeaturedPersonInput {
   participantCount?: number;
   activity?: ExplorePresentationBuildInput['activity'];
 }
+
+const headlineIsSeeking = (input: ExploreHeadlineInput): boolean =>
+  input.isSeekingPin === true || input.source === 'demand';
 
 const joinExploreParts = (...parts: (string | null | undefined)[]): string =>
   parts.filter((part): part is string => Boolean(part?.trim())).join(' - ');
@@ -396,7 +401,7 @@ export const buildExploreListWhen = (date?: string | null, time?: string | null)
 const buildExploreListGoingLabel = (
   input: ExploreHeadlineInput & { participantCount?: number }
 ): string | null => {
-  if (input.source === 'demand') {
+  if (headlineIsSeeking(input)) {
     const count = input.slotsTotal ?? 0;
     return count > 0 ? `${count} going` : null;
   }
@@ -426,7 +431,7 @@ const resolveHeadlinePerson = (input: ExploreHeadlineInput): ExploreMapPersonDTO
 const exploreHeadlinePersonLabel = (input: ExploreHeadlineInput): string => {
   const person = resolveHeadlinePerson(input);
   if (person) return explorePersonFirstName(person);
-  if (input.source === 'demand') {
+  if (headlineIsSeeking(input)) {
     return getFirstName(formatRequesterDisplayName(input.hostName));
   }
   return exploreHostLabel(input);
@@ -437,7 +442,7 @@ const buildExploreListTitle = (input: ExploreHeadlineInput): string => {
     return input.title.trim() || 'Listing';
   }
 
-  if (input.source === 'demand') {
+  if (headlineIsSeeking(input)) {
     const user = exploreHeadlinePersonLabel(input);
     const trimmed = input.title.trim();
     if (trimmed && !isGenericDemandPlanTitle(trimmed, mapDemandTitleKind(input.kind))) {
@@ -465,11 +470,11 @@ export const exploreHeadline = (input: ExploreHeadlineInput): string => {
 
   const route = buildExploreRouteLabel(input.fromLabel, input.toLabel, input.kind);
   const whenSuffix =
-    input.source === 'demand' ? 'flexible' : input.kind === 'rideshare' ? 'fixed' : null;
+    headlineIsSeeking(input) ? 'flexible' : input.kind === 'rideshare' ? 'fixed' : null;
   const when = buildExploreWhenSegment(input.date, input.time, whenSuffix);
   const location = sanitizeExploreLocation(input.location);
 
-  if (input.source === 'demand') {
+  if (headlineIsSeeking(input)) {
     const user = exploreHeadlinePersonLabel(input);
     const day = formatExploreDayForHeadline(input.date);
     const activityLabel = resolveDemandActivityHighlight(input.title, input.kind);
@@ -559,18 +564,18 @@ export const buildExploreCardSections = (input: ExploreHeadlineInput): ExploreCa
 
   const route = buildExploreRouteLabel(input.fromLabel, input.toLabel, input.kind);
   const whenSuffix =
-    input.source === 'demand' ? 'flexible' : input.kind === 'rideshare' ? 'fixed' : null;
+    headlineIsSeeking(input) ? 'flexible' : input.kind === 'rideshare' ? 'fixed' : null;
   const when = buildExploreWhenSegment(input.date, input.time, whenSuffix);
   const spots =
-    input.source === 'activity' && input.kind !== 'rideshare'
+    input.source === 'activity' && !headlineIsSeeking(input) && input.kind !== 'rideshare'
       ? buildExploreSpotsSegment(input.slotsAvailable, input.slotsTotal)
       : null;
-  const partySize = input.source === 'demand' ? input.slotsTotal : null;
+  const partySize = headlineIsSeeking(input) ? input.slotsTotal : null;
   const partyLabel =
     partySize && partySize > 0 ? `${partySize} ${partySize === 1 ? 'person' : 'people'}` : null;
   const location = sanitizeExploreLocation(input.location);
 
-  if (input.source === 'demand') {
+  if (headlineIsSeeking(input)) {
     const user = exploreHeadlinePersonLabel(input);
     push('route', route);
     push('location', input.kind !== 'rideshare' ? location : null);
@@ -629,7 +634,7 @@ export const exploreSubtitle = (
   source: ExploreCardSource
 ): string | null => {
   if (source === 'venue') return item.subtitle?.trim() || null;
-  if (source === 'demand') {
+  if (exploreMapItemIsSeeking(item) || source === 'demand') {
     if (kind === 'rideshare') return null;
     return item.subtitle?.trim() || null;
   }
@@ -638,16 +643,20 @@ export const exploreSubtitle = (
 };
 
 export const exploreSpotsLabel = (item: ExplorePresentationBuildInput): string | null => {
-  if (item.source === 'demand') return null;
+  if (exploreMapItemIsSeeking(item) || item.source === 'demand') return null;
   if (item.source !== 'activity') return null;
   return buildExploreSpotsSegment(item.slotsAvailable, item.slotsTotal);
 };
 
 export const explorePrimaryCtaLabel = (
   source: ExploreCardSource,
-  options?: { participationMode?: ParticipationMode | null; requirements?: string[] | null }
+  options?: {
+    participationMode?: ParticipationMode | null;
+    requirements?: string[] | null;
+    seeking?: boolean;
+  }
 ): string => {
-  if (source === 'demand') return 'Request to join';
+  if (source === 'demand' || options?.seeking) return 'Request to join';
   if (source === 'shop') return 'View shop';
   if (source === 'agency') return 'View agency';
   if (source === 'activity') {
@@ -661,10 +670,10 @@ export const explorePrimaryCtaLabel = (
 
 export const exploreSecondaryCtaLabel = (
   source: ExploreCardSource,
-  options?: { websiteUrl?: string | null }
+  options?: { websiteUrl?: string | null; seeking?: boolean }
 ): string | null => {
-  if (source === 'activity') return 'View details';
-  if (source === 'demand') return 'Message';
+  if (source === 'activity' && !options?.seeking) return 'View details';
+  if (source === 'demand' || options?.seeking) return 'Message';
   if (source === 'shop' && options?.websiteUrl) return 'Visit website';
   return null;
 };
@@ -674,9 +683,10 @@ const exploreAgencyHint = (): string => 'Outdoor host on UAE Trail — see plans
 export const exploreVenueHint = (
   source: ExploreCardSource,
   kind: ExploreCardKind,
-  shopPresence?: 'physical' | 'online' | null
+  shopPresence?: 'physical' | 'online' | null,
+  seeking?: boolean
 ): string | null => {
-  if (source === 'demand') return null;
+  if (source === 'demand' || seeking) return null;
   if (source === 'shop') {
     return shopPresence === 'online' ? 'Online gear partner' : 'Gear shop on the map';
   }
@@ -722,12 +732,13 @@ export const buildExploreCardPresentation = (
 ): ExploreCardPresentationDTO => {
   const kind = resolveExploreCardKind(item);
   const source = resolveExploreItemSource(item);
+  const isSeekingPin = exploreMapItemIsSeeking(item);
   const activity = item.activity;
 
   const fromLabel = item.fromLabel ?? activity?.meetingPoint ?? null;
   const toLabel = item.toLabel ?? activity?.startPoint ?? activity?.locationName ?? null;
   const routeLabel = buildExploreRouteLabel(fromLabel, toLabel, kind);
-  const whenSuffix = source === 'demand' ? 'flexible' : kind === 'rideshare' ? 'fixed' : null;
+  const whenSuffix = isSeekingPin ? 'flexible' : kind === 'rideshare' ? 'fixed' : null;
   const whenLabel = buildExploreWhenSegment(item.date, item.time ?? activity?.time ?? null, whenSuffix);
   const location = sanitizeExploreLocation(
     item.subtitle?.trim() ||
@@ -740,6 +751,7 @@ export const buildExploreCardPresentation = (
 
   const headlineInput: ExploreHeadlineInput = {
     source,
+    isSeekingPin,
     kind,
     title: item.title,
     featuredPerson,
@@ -765,19 +777,23 @@ export const buildExploreCardPresentation = (
   return {
     kind,
     source,
-    emoji: resolveMapPinEmoji(kind, source),
+    emoji: resolveMapPinEmoji(kind, isSeekingPin ? 'demand' : source),
     headline: exploreHeadline(headlineInput),
     listTitle: sections.listTitle,
     listHost: featuredPerson?.displayName ?? null,
     featuredPerson,
     subtitle,
     spotsLabel: exploreSpotsLabel(item),
-    venueHint: exploreVenueHint(source, kind, item.shopPresence),
+    venueHint: exploreVenueHint(source, kind, item.shopPresence, isSeekingPin),
     primaryCta: explorePrimaryCtaLabel(source, {
       participationMode: itemParticipationMode(item),
       requirements: activity?.requirements,
+      seeking: isSeekingPin,
     }),
-    secondaryCta: exploreSecondaryCtaLabel(source, { websiteUrl: item.websiteUrl }),
+    secondaryCta: exploreSecondaryCtaLabel(source, {
+      websiteUrl: item.websiteUrl,
+      seeking: isSeekingPin,
+    }),
     shareText: [routeLabel, whenLabel].filter(Boolean).join(' · ') || item.subtitle || null,
     routeLabel,
     whenLabel,

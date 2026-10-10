@@ -1,6 +1,7 @@
 import { exploreActivityPublisherTypeLabel } from './activity-publisher-display.js';
 import type { PublishingProfileKind } from './publishing-profile-kind.js';
 import { isRolePlaceholderDisplayName } from './host-display.js';
+import { exploreMapItemIsSeeking, type ExploreMapItemActivityModeFields } from './explore-activity-mode.js';
 
 /** How a featured user relates to an explore map/list item. */
 export type ExploreMapPersonRole = 'host' | 'requester' | 'contact';
@@ -14,7 +15,7 @@ export interface ExploreMapPersonDTO {
 
 type ExploreMapSourceLike = 'activity' | 'venue' | 'shop' | 'agency' | 'demand';
 
-export type ExploreFeaturedPersonInput = {
+export type ExploreFeaturedPersonInput = ExploreMapItemActivityModeFields & {
   source?: ExploreMapSourceLike;
   featuredPerson?: ExploreMapPersonDTO | null;
   hostName?: string | null;
@@ -89,7 +90,7 @@ export const resolveExploreFeaturedPerson = (
   const source = item.source;
   const activity = item.activity;
 
-  if (source === 'demand') {
+  if (exploreMapItemIsSeeking(item) || source === 'demand') {
     return buildExploreFeaturedPerson({
       userId: item.requesterUserId,
       displayName: item.hostName,

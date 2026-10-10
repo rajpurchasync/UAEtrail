@@ -414,7 +414,8 @@ const buildExploreMapPayloadUncached = async (): Promise<{ items: ExploreMapItem
         item,
         { activityMode },
         buildExploreMapPlanProjection({
-          source: activityMode === 'seeking' ? 'demand' : 'activity',
+          source: 'activity',
+          activityMode,
           mapKind,
           participationMode: resolveParticipationMode(
             item.activity.participationMode,

@@ -617,7 +617,8 @@ export const listActiveParticipantIntentsForMap = async (limit = 200): Promise<E
         source: 'activity' as const,
         activityMode: 'seeking' as const,
         ...buildExploreMapPlanProjection({
-          source: 'demand',
+          source: 'activity',
+          activityMode: 'seeking',
           mapKind: exploreMapKindToPlanMapKind(mapKind),
           demandIntentKind: doc.kind,
           storedOutingCategory: doc.outingCategory ?? null,
