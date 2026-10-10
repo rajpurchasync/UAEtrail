@@ -72,3 +72,30 @@ API regression (no browser): `apps/api/tests/g-manage-coordination-join-approve.
 ## Rollback
 
 Set `PARTICIPANT_INTENT_STUB_WRITE=true` and restart API. Does not delete existing `activities` seeking rows; only re-enables dual-write on new Find posts.
+
+---
+
+## Residue cleanup (after migration — do not skip)
+
+**Gate (all must be true on staging + prod):**
+
+- `npm run seeking:m2d-status -- --strict` exits **0** on every env for **≥30 days** with no rollback.
+- `activeIntentsMissingSeekingActivity === 0` and no new `participant_intents` inserts in ops metrics.
+- Product still uses **map peek / explore cards** for Find — no parallel seeking UI was added.
+
+**Then remove or rename (no “M2*” left in Tier-1 / runbooks):**
+
+| Residue | Action |
+|---------|--------|
+| **M2a–M2d labels** in `API_ROUTING.md`, `DOMAIN.md`, `CREATE_FLOW.md` | Collapse to one **“Seeking storage (activity-canonical)”** subsection; drop phase letters |
+| **`PARTICIPANT_INTENT_STUB_WRITE`** + `isParticipantIntentStubWriteEnabled` | Remove env flag and branch; delete `insertOne` stub path in `participant-intents-store` |
+| **`participant_intents` collection** | Archive per retention policy; stop all reads except one-off admin export |
+| **`/me/participant-intents/*` alias routes** | Deprecate with sunset; clients use `activityId` + standard activity/join APIs only |
+| **`demand:` map id + `source: 'demand'` parse compat** | Remove after analytics show no `pin=demand:` traffic |
+| **Ops scripts** | Rename `seeking-m2d-status` → `seeking-storage-status` (or fold into general deploy check); update `package.json` script |
+| **Tests named `*m2*`, `*M2d*`** | Rename to `seeking-activity-canonical`, `participant-intent-stub-write` |
+| **This runbook title “M2d”** | Rename file/heading to **Seeking storage ops**; keep one-line stub in `archive/` if needed |
+
+**Keep (not migration residue):** `activityMode: seeking`, Find FAB, `exploreSeekingMapItemPath`, `seekingOnMap` roster field, **Available** vs **looking for** product split (`member-surfaces-implementation-plan` D14).
+
+Track completion in [`member-surfaces-implementation-plan.md`](../experiment/member-surfaces-implementation-plan.md) §20 **P1 storage — residue cleanup**; run `npm run verify:system` after the pass.

@@ -114,6 +114,13 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(wishlist).toMatch(/activityId|seekingActivityId/);
   });
 
+  it('G-seek: seeking migration runbook defines post-migration residue cleanup', () => {
+    const runbook = read('docs/operations/SEEKING_M2D_RUNBOOK.md');
+    expect(runbook).toContain('## Residue cleanup (after migration');
+    expect(runbook).toMatch(/PARTICIPANT_INTENT_STUB_WRITE/);
+    expect(runbook).toContain('demand:');
+  });
+
   it('G-seek: People browse wires seekingOnMap to explore pin routes (no activity detail hop)', () => {
     const panel = read('src/explore/ui/PeopleBrowsePanel.tsx');
     expect(panel).toContain('discoverySeekingOnMap');

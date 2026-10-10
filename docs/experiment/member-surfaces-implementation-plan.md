@@ -471,6 +471,7 @@ Use one PR per subsection where possible; check boxes when merged.
 | P1 wire | Explore map: retire public `source: 'demand'` projection | **Done (wire)** — `activity` + `activityMode: seeking`; legacy `demand:` pin ids + `source: 'demand'` compat in parsers |
 | P1 links | Seeking deep links prefer `pin=activity:{id}` | **Done** — `exploreSeekingMapItemPath` / `resolveSeekingExploreMapItemId`; API notifications + wishlist + FE share |
 | P1 storage | Drop `participant_intents` writes entirely; archive collection | **Default stub write off** (opt-in `true` for rollback); collection archive after all envs backfilled |
+| P1 cleanup | **Migration residue** (M2/M2d jargon, stub flag, demand pin compat, alias routes) | **After** runbook § “Residue cleanup” gates — see [`SEEKING_M2D_RUNBOOK.md`](../operations/SEEKING_M2D_RUNBOOK.md); no phase letters left in Tier-1 |
 | P2 perf | Explore map bbox / light DTO; chat SSE multi-instance | Architecture backlog from coherence review |
 | P2 UX | `plan-tab-ux-backlog.md` (upcoming carousel, goals polish) | Explicitly paused in §19 |
 
