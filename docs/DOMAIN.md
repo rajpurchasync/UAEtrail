@@ -92,7 +92,7 @@ Time-bound map pins are **Activities** with `activityMode` (target wire name; mi
 | **Place** | Admin `/admin/places` + member **Add** (`curatedArea` then pin) | Every place row has **`place.areaId`**; `POST /me/locations` requires **`areaId`** |
 | **Activity** | Member **Organize** or Find → seeking | **No stored `activity.areaId` on write** (legacy rows may still have one). Geography = **`activity.locationId` → `place.areaId`**. Public publish requires a catalog **place** with **`areaId`**. Meeting / going-from pin does not define area |
 
-**Explore map lenses:** **Activities** — emoji pin per outing. **Locations** (`pinKind=locations`) — one pin per curated **area** + rollup stats; **Spots** (`pinKind=places`) — catalog place pins. Area peek deep-links into area-scoped Activities / Spots / Shops.
+**Explore map lenses:** **Activities** — emoji pin per outing. **Locations** (`pinKind=locations`) — one pin per curated **Area** hub + rollup counts (hosted, seeking, trails, camps, facilities from catalog, shops). **Spots** (`pinKind=places`) — trail/camp (and shop-as-venue) **place** pins. **Shops** — shop layer. Facilities (toilet, parking, …) are **Place** rows with amenity `PlaceKind`; they roll into area stats and the area hub list; full Spots map pins for amenities are not wired yet. Detail: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §12.1.
 
 **Curated area catalog (seed + tests):** 12 published areas in `CURATED_AREA_CATALOG` (`@uaetrail/shared-types`) — Hatta, Jebel Jais, Wadi Shawka, Jebel Hafeet, Al Qudra, Love Lake, Khorfakkan, Jumeirah Coast, Fossil Rock, Dibba, Remah Dunes, Kalba. Each has stable `area-seed-*` id, map bounds, and `summary` (editable in admin; re-seed restores defaults).
 

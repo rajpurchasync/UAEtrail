@@ -269,7 +269,7 @@ Track what is **spec** vs **shipped**. Update this table in the same PR that lan
 | Add place **area-first** | âœ… | âœ… (`curatedArea`, `areaId` on submit) |
 | Organize **no custom trail anchor** (catalog or Add) | âœ… | âœ… (structured); rideshare anchor uses bounds match + `areaId` on place |
 | Explore **Locations** lens = area pins (not every place pin) | ✅ | ✅ (`pinKind=locations`) |
-| Area match notifications (seeking ↔ hosted in area) | âœ… | ðŸ”¶ phased |
+| Area match notifications (seeking ↔ hosted in area) | ✅ | ✅ (`seeking-area-match-notifications.ts`) |
 
 **Current code:** One compose route on `/explore?compose=â€¦` (menu, `organize:hiking`, `find:carpool`, `add:shop`). Legacy `request`, `contribute`, and `addLocation` params are parsed into the same contract. Desktop and mobile share the same URL + wizard components.
 

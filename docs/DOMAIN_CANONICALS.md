@@ -347,7 +347,47 @@ Use this when naming files, hooks, and utils — **one product word per concept*
 
 **Three maps (do not conflate):** (1) **Explore** — public discovery; (2) **Journey map** — `/profile/history/map` + `GET /me/journey-map`; (3) **Place catalog** — venues/shops layers on Explore.
 
-**`src/utils/` policy:** cross-surface helpers only (`authRedirect`, `notificationRouting`, `authReturnContext`, `routingCatalog` consumers). Domain logic belongs in `src/explore/`, `src/member-plan/`, `src/member/` (`organisationPaths.ts`), `src/host/` (`hostCopy.ts`), `src/components/<domain>/` — not new `utils/demand*.ts` / `utils/outdoor*.ts`.
+**`src/utils/` policy:** cross-surface helpers only (`authRedirect`, `notificationRouting`, `authReturnContext`, `routingCatalog` consumers). Domain logic belongs in `src/explore/`, `src/member-plan/`, `src/member/` (`organisationPaths.ts`), `src/host/` (`hostCopy.ts`), `src/components/<domain>/` — not new `utils/<domain>*.ts`.
+
+### 12.1 Geography — Area hub, Place catalog, Activity (authoritative)
+
+**Hierarchy:** **Region** (emirate label) → **Area** (curated hub, `areas` collection, stable `areaId`) → **Place** (single Mongo `locations` row; many **kinds** via `PlaceKind` / `place-kind.ts`) → **Activity** (scheduled outing; geography only through a place).
+
+**One Area, many children (all via `place.areaId` on catalog rows):**
+
+| Child on the hub | `PlaceKind` / wire | Explore **Spots** map pins today | Area lens rollup / hub |
+|------------------|-------------------|----------------------------------|-------------------------|
+| Trails | `hiking` (`activityType: hiking`) | Yes (`source: venue`, hiking) | `trailSpots` |
+| Camps / camp spots | `camping` | Yes | `campSpots` |
+| Outdoor spots (“Others” Add) | `outdoor_other` (often `event` + tag) | Partial (event venues not on map payload yet) | Grouped on `/area/:slug` preview |
+| Shops (catalog place) | `shop` | Yes (venue shop rows) | `shops` + Shops lens |
+| Facilities (toilet, parking, gas, water, viewpoint, picnic, …) | amenity kinds + `place-kind:*` tags | **Not** Spots pins yet — counted from `locations` for stats | `facilities` in `areaLensStats`; list on area hub `#places` |
+| Hosted / seeking outings | **Activity** (not a Place) | **Activities** lens (emoji pins) | `hostedActivities` / `seekingPosts` via `item.areaId` on map projection |
+
+**Assignment rules (write path — do not invert):**
+
+| Entity | Who sets `areaId` | Rule |
+|--------|-------------------|------|
+| **Area** | Admin `/admin/areas` | Slug, center, bounds (display hint only — **no** polygon auto-tag for hosted publish) |
+| **Place** | Admin `/admin/places` or member **Add** (`curatedArea` then pin) | **`locations.areaId` required** on submit (`POST /me/locations`, host `/locations`) |
+| **Hosted activity** | Organize publish | **No `activity.areaId` on write.** `activity.locationId` → catalog **place** with **`place.areaId`**. `validateOrganizePlaceArea` / publish gate. Meeting / going-from pin does **not** define area. |
+| **Seeking activity** | Find FAB | **`participant_intents.areaId`** + map pin; synthetic seeking **place** carries same **`areaId`** (not a separate activity-area field on write). |
+| **Availability** | Plan / profile | Member picks **`areaId`** (optional region fallback) — not an activity. |
+
+**Explore map lenses (orthogonal to tagging):**
+
+| Lens (`pinKind`) | What you see | Not this |
+|------------------|--------------|----------|
+| **activities** | One pin per hosted/seeking outing | Area hub pins |
+| **locations** | One pin per **published Area** + subtitle rollups (`source: area`, `id: area:{slug}`) | Per-trail pins |
+| **places** (“Spots”) | Catalog trail/camp (and shop-as-venue) pins with coords | Area polygons |
+| **shops** | Shop layer (catalog + tenant-backed pins) | — |
+
+**Discovery filters:** `?area={slug}` keeps rows whose projected **`areaSlug`** / **`areaId`** match (from place or intent). **Locations** lens pins are the registry hubs; they are **not** a substitute for **`place.areaId`** on every catalog row.
+
+**Code anchors:** `packages/shared-types/src/place-kind.ts` · `apps/api/src/lib/explore-map-area-lens.ts` · `apps/api/src/lib/explore-map.ts` (`attachExploreItemArea`) · `src/explore/organizePublishArea.ts` · `GET /areas/:slug` preview · [`DOMAIN.md`](./DOMAIN.md) § Geography.
+
+**Known read-path gap (do not confuse with write contract):** legacy or tenant-only shop pins may lack `areaId` on the explore payload until linked/backfilled; **new** catalog places and gated publishes must have **`place.areaId`**.
 
 ---
 

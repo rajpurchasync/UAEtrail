@@ -69,6 +69,16 @@ describe('doc coherence (Tier 1)', () => {
     expect(system).toMatch(/\/list/);
   });
 
+  it('geography canon: Area hub, Place kinds, activity via place.areaId', () => {
+    const canon = readFileSync(join(DOCS, 'DOMAIN_CANONICALS.md'), 'utf8');
+    const domain = readFileSync(join(DOCS, 'DOMAIN.md'), 'utf8');
+    expect(canon).toMatch(/### 12\.1 Geography/);
+    expect(canon).toMatch(/place\.areaId/);
+    expect(canon).toMatch(/No `activity\.areaId` on write/);
+    expect(canon).toMatch(/PlaceKind/);
+    expect(domain).toMatch(/activity\.locationId.*place\.areaId/);
+  });
+
   it('CREATE_FLOW defers to NORTHSTAR and MEMBER_MODEL for gates', () => {
     const create = readFileSync(join(DOCS, 'CREATE_FLOW.md'), 'utf8');
     expect(create).toMatch(/NORTHSTAR/);

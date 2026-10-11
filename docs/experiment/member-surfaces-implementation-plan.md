@@ -109,15 +109,15 @@ Notifications (deep link to **activity**, **Plan row context**, **chat thread**,
 
 - [x] Keep **one** entity `locations` / Place; kinds in `PlaceKind` (`place-kind.ts`)
 - [x] Add `areaId` on place rows (admin + seed + backfill)
-- [ ] Facilities (toilet, parking, …) = PlaceKind — surfaced on **Area** page, not mixed into topic=hiking unless grouped
+- [x] Facilities (toilet, parking, …) = `PlaceKind` — `areaLensStats.facilities` + area hub `#places`; Spots map pins for amenities **deferred** (see `DOMAIN_CANONICALS` §12.1)
 
 ### 2.3 Area
 
 - [x] Collection `areas` (or documented equivalent) with slug, name, region, bounds, center, status — **Phase 4**
 - [x] Admin CRUD + seed (Hatta, Jais, …)
 - [x] `GET /areas/:slug` public card + `/area/:slug` page
-- [x] `place.areaId` + `activity.areaId` (new field)
-- [x] **`activity.areaId` + `place.areaId`** — explicit catalog + organize pick (§4); polygon **not** authority for hosted publish
+- [x] **`place.areaId`** on every catalog place (admin + Add + seed backfill)
+- [x] Hosted geography = **`activity.locationId` → `place.areaId`** only on write (§4); legacy `activity.areaId` read fallback; polygon **not** authority for hosted publish
 
 ### 2.4 Availability (new)
 
