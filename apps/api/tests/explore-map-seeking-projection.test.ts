@@ -8,11 +8,16 @@ import { generateReferralCode } from '../src/lib/referral-code.js';
 import bcrypt from 'bcryptjs';
 import { bootstrapTestApp } from './helpers/bootstrap.js';
 import { invalidateExploreMapCache } from '../src/lib/explore-map-cache.js';
+import {
+  buildTestParticipantIntentInput,
+  ensureCuratedAreasSeeded,
+} from './helpers/test-seed.js';
 
 let app: Express;
 
 beforeAll(async () => {
   app = await bootstrapTestApp();
+  await ensureCuratedAreasSeeded();
 });
 
 describe('GET /api/v1/explore/map seeking projection (M0)', () => {
@@ -30,18 +35,15 @@ describe('GET /api/v1/explore/map seeking projection (M0)', () => {
       profile: { displayName: 'Seeker', phone: null, bio: null, avatarUrl: null },
     });
 
-    const intent = await createParticipantIntent(user._id, {
-      kind: 'hiking',
-      title: `Crew for Hatta ${suffix}`,
-      date: '2026-12-20',
-      time: '07:00',
-      preferredArea: 'Hatta',
-      partySize: 4,
-      comment: 'Looking for company',
-      latitude: 25.12,
-      longitude: 55.21,
-      locationPrecision: 'specific',
-    });
+    const intent = await createParticipantIntent(
+      user._id,
+      buildTestParticipantIntentInput({
+        title: `Crew for Hatta ${suffix}`,
+        partySize: 4,
+        latitude: 25.12,
+        longitude: 55.21,
+      })
+    );
 
     await invalidateExploreMapCache();
 

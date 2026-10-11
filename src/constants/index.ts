@@ -4,6 +4,7 @@ import {
   ADMIN_REPORTS_PATH,
   ADMIN_GROUPS_PATH,
   ADMIN_HOSTS_PATH,
+  ADMIN_AREAS_PATH,
   ADMIN_OVERVIEW_PATH,
   ADMIN_SETTINGS_PATH,
   ADMIN_SHOP_PATH,
@@ -58,6 +59,7 @@ export const HOST_DASHBOARD_LINKS = HOST_CONSOLE_LINKS;
 export const ADMIN_LINKS = [
   { to: ADMIN_OVERVIEW_PATH, label: 'Overview' },
   { to: ADMIN_PLACES_PATH, label: 'Places' },
+  { to: ADMIN_AREAS_PATH, label: 'Areas' },
   { to: ADMIN_USERS_PATH, label: 'Users' },
   { to: ADMIN_HOSTS_PATH, label: 'Hosts' },
   { to: ADMIN_ACTIVITIES_PATH, label: 'Activities' },

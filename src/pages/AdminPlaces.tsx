@@ -1,6 +1,6 @@
-import { useEffect, useState, useCallback } from 'react';
-import { PlaceDTO, placeDetailPath } from '@uaetrail/shared-types';
-import { Link } from 'react-router-dom';
+import { useEffect, useState, useCallback, useMemo } from 'react';
+import { type AreaDTO, PlaceDTO, placeDetailPath } from '@uaetrail/shared-types';
+import { Link, useSearchParams } from 'react-router-dom';
 import { api } from '../api/index';
 import { DashboardLayout } from '../components/layout';
 import { ADMIN_LINKS } from '../constants';
@@ -17,6 +17,7 @@ const HIKING_ACCESSIBLE = ['4X4 required', 'Any cars', 'Bike'];
 const CAMPING_ACCESSIBLE = ['4X4 required', 'Any cars'];
 const TAG_OPTIONS = ['Child-free', 'Pet-friendly', 'Family-friendly', 'Solo-friendly', 'Wheelchair-accessible', 'Night-hiking', 'Sunrise spot', 'Sunset spot'];
 import { SUPPORTED_COUNTRIES, DEFAULT_COUNTRY, getRegionsForCountry, CountryCode } from '../config/regions';
+import { ADMIN_AREAS_PATH } from '../config/adminSurfacePaths';
 import { VENUE_TYPE_LABELS } from '../config/activityTypes';
 const SEASONS = ['winter', 'spring', 'summer', 'autumn', 'year-round'];
 
@@ -64,6 +65,8 @@ const isCatalogMapPlace = (loc: Pick<PlaceDTO, 'tags'>): boolean =>
 
 /** Admin console for places (trails, camps, event venues). Canonical route: `/admin/places`. */
 export const AdminPlaces = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const filterAreaId = searchParams.get('areaId')?.trim() || null;
   const [places, setPlaces] = useState<PlaceDTO[]>([]);
   const [form, setForm] = useState<Partial<PlaceDTO>>(emptyForm);
   const [modalOpen, setModalOpen] = useState(false);
@@ -77,6 +80,7 @@ export const AdminPlaces = () => {
   const [confirmAction, setConfirmAction] = useState<{ type: 'status' | 'delete' | 'publish'; loc: PlaceDTO } | null>(null);
   const [previewLoc, setPreviewLoc] = useState<PlaceDTO | null>(null);
   const [formStep, setFormStep] = useState(0); // 0=type select, 1=form
+  const [adminAreas, setAdminAreas] = useState<AreaDTO[]>([]);
 
   const loadPlaces = async () => {
     setLoading(true);
@@ -92,9 +96,18 @@ export const AdminPlaces = () => {
 
   useEffect(() => { loadPlaces(); }, []);
 
+  useEffect(() => {
+    void api.listAdminAreas().then((res) => setAdminAreas(res.data)).catch(() => setAdminAreas([]));
+  }, []);
+
   const openCreate = () => {
     setEditingId(null);
-    setForm(emptyForm);
+    setForm({
+      ...emptyForm,
+      areaId: filterAreaId ?? undefined,
+      region: filterArea?.region ?? emptyForm.region,
+      countryCode: (filterArea?.countryCode as CountryCode) ?? emptyForm.countryCode,
+    });
     setHighlightInput('');
     setFormStep(0);
     setModalOpen(true);
@@ -178,13 +191,23 @@ export const AdminPlaces = () => {
     });
   };
 
+  const filterArea = filterAreaId
+    ? adminAreas.find((area) => area.id === filterAreaId) ?? null
+    : null;
+
   const filtered = places
     .filter((l) => {
+      if (filterAreaId && l.areaId !== filterAreaId) return false;
       if (activeTab === 'pending') return l.status === 'draft';
       if (activeTab === 'all') return true;
       return l.activityType === activeTab;
     })
     .filter((l) => !search || l.name.toLowerCase().includes(search.toLowerCase()) || l.region.toLowerCase().includes(search.toLowerCase()));
+
+  const areaNameById = useMemo(
+    () => new Map(adminAreas.map((area) => [area.id, area.name])),
+    [adminAreas]
+  );
 
   const hikingCount = places.filter((l) => l.activityType === 'hiking').length;
   const campingCount = places.filter((l) => l.activityType === 'camping').length;
@@ -221,6 +244,25 @@ export const AdminPlaces = () => {
           Curated explore pins can be corrected here — open <strong>Edit</strong>, move the map pin, and update name,
           region, and description. Saves refresh the map and are kept when the JSON catalog is re-imported.
         </p>
+        {filterArea ? (
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-950">
+            <span>
+              Showing places in <strong>{filterArea.name}</strong> — link more via Edit → Curated area, or add a new place below.
+            </span>
+            <div className="flex gap-2">
+              <Link to={ADMIN_AREAS_PATH} className="text-emerald-900 underline font-medium">
+                All areas
+              </Link>
+              <button
+                type="button"
+                onClick={() => setSearchParams({})}
+                className="text-emerald-900 underline font-medium"
+              >
+                Clear filter
+              </button>
+            </div>
+          </div>
+        ) : null}
         {/* Tabs + Header */}
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
@@ -263,6 +305,7 @@ export const AdminPlaces = () => {
               <tr>
                 <th className="text-left px-4 py-3">Place name</th>
                 <th className="text-left px-4 py-3">Region</th>
+                <th className="text-left px-4 py-3">Area</th>
                 <th className="text-left px-4 py-3">Type</th>
                 <th className="text-left px-4 py-3">Status</th>
                 <th className="text-left px-4 py-3">Actions</th>
@@ -270,11 +313,11 @@ export const AdminPlaces = () => {
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-500">
+                <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-500">
                   <div className="inline-block w-5 h-5 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin mr-2" />Loading...
                 </td></tr>
               ) : filtered.length === 0 ? (
-                <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-500">No places found</td></tr>
+                <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-500">No places found</td></tr>
               ) : filtered.map((loc) => (
                 <tr key={loc.id} className={`border-t hover:bg-gray-50 cursor-pointer ${loc.status === 'draft' ? 'bg-amber-50/40' : ''}`}
                   onClick={() => setPreviewLoc(loc)}>
@@ -296,6 +339,9 @@ export const AdminPlaces = () => {
                     </div>
                   </td>
                   <td className="px-4 py-3 text-gray-700">{loc.region}</td>
+                  <td className="px-4 py-3 text-gray-600 text-xs">
+                    {loc.areaId ? areaNameById.get(loc.areaId) ?? '—' : '—'}
+                  </td>
                   <td className="px-4 py-3">
                     <span className={`px-2 py-0.5 rounded text-xs font-medium ${activityTypeBadgeClass(loc.activityType)}`}>
                       {activityTypeLabel(loc.activityType)}
@@ -527,6 +573,22 @@ export const AdminPlaces = () => {
                         inputClassName={ADMIN_SELECT_CLASS}
                         aria-label="State or region"
                       />
+                    </div>
+                    <div className="col-span-2">
+                      <label className="text-sm font-medium text-gray-700 mb-1 block">Curated area</label>
+                      <AppSelect
+                        value={form.areaId ?? ''}
+                        onChange={(areaId) => setForm({ ...form, areaId: areaId || null })}
+                        options={adminAreas
+                          .filter((area) => area.status === 'published')
+                          .map((area) => ({ value: area.id, label: `${area.name} · ${area.region}` }))}
+                        placeholder="Link to Hatta, Jebel Jais, …"
+                        inputClassName={ADMIN_SELECT_CLASS}
+                        aria-label="Curated area"
+                      />
+                      <p className="mt-1 text-xs text-gray-500">
+                        Organize picks inherit this area when hosts choose this place from the registry.
+                      </p>
                     </div>
                   </div>
 

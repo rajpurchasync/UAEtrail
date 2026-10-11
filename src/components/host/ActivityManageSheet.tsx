@@ -12,7 +12,7 @@ import { resolveActivityTitle } from '../../utils/activityIdentity';
 import { buildActivitySharePayload } from '../../utils/activityShare';
 import { ActivityInviteModalBody } from '../activity/ActivityInviteModalBody';
 import type { HostActivityManageActions } from '../../hooks/useHostActivityManageActions';
-import type { ActivityDetailDTO } from '@uaetrail/shared-types';
+import type { ActivityDetailDTO, ActivityViewerEntitlementsDTO } from '@uaetrail/shared-types';
 import { ActivityDetailView } from '../activity/ActivityDetailView';
 import type { ActivityDetailTabId } from '../../activity/activityDetailTab';
 import { HostActivityManageFooterActions } from './HostActivityManageFooterActions';
@@ -61,6 +61,23 @@ export const ActivityManageSheet = ({
   const [activityRequests, setActivityRequests] = useState<ActivityRequestView[]>([]);
   const [requestsLoading, setRequestsLoading] = useState(false);
   const [detailTab, setDetailTab] = useState<ActivityDetailTabId>('plan');
+  const [sheetActivity, setSheetActivity] = useState<ActivityDTO | null>(activity);
+  const [viewerEntitlements, setViewerEntitlements] = useState<ActivityViewerEntitlementsDTO | null>(null);
+
+  useEffect(() => {
+    setSheetActivity(activity);
+  }, [activity]);
+
+  useEffect(() => {
+    if (!open || !activity?.id) {
+      setViewerEntitlements(null);
+      return;
+    }
+    void api
+      .getPublicActivityDetail(activity.id)
+      .then((res) => setViewerEntitlements(res.viewerAccess?.entitlements ?? null))
+      .catch(() => setViewerEntitlements(null));
+  }, [open, activity?.id]);
 
   useModalA11y(open, onClose, panelRef);
 
@@ -91,7 +108,11 @@ export const ActivityManageSheet = ({
       .finally(() => setRequestsLoading(false));
   }, [open, activity?.id, tenantId, pendingRequests]);
 
-  const caps = activity ? hostActivityManageCapabilities(activity) : null;
+  const caps = activity
+    ? hostActivityManageCapabilities(activity, {
+        canAddLinkedRide: viewerEntitlements?.canAddLinkedRide ?? false,
+      })
+    : null;
 
   const handleClose = () => {
     setView('overview');
@@ -253,14 +274,24 @@ export const ActivityManageSheet = ({
             </div>
           ) : null}
 
-          {view === 'overview' ? (
+          {view === 'overview' && sheetActivity ? (
             <div className="mx-auto w-full max-w-2xl">
               <ActivityDetailView
                 layout="embedded"
-                activity={activity as ActivityDetailDTO}
+                activity={sheetActivity as ActivityDetailDTO}
                 mobileTab={detailTab}
                 onMobileTabChange={setDetailTab}
                 canAccessCrewSurfaces
+                hostCrewChatPolicy={
+                  tenantId
+                    ? {
+                        tenantId,
+                        onSaved: (policy) =>
+                          setSheetActivity((prev) => (prev ? { ...prev, groupChatPostPolicy: policy } : prev)),
+                        onError: (message) => actions.setError(message),
+                      }
+                    : undefined
+                }
               />
             </div>
           ) : null}

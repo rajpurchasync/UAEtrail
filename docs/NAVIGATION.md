@@ -208,7 +208,16 @@ Signed-in members tap **+** on `/explore` to compose. **Guests** → sign-in, th
 
 ## Activity detail (`/activity/:id`)
 
-**Mobile:** icon tabs — **Plan** · **Place** · **Buddies** · **Transport** (`?tab=place|buddies|transport`; default Plan). **Transport** hides when the outing has no rideshare or linked transport listing. **Buddies** roster + group chat stay gated until the viewer is a confirmed joiner (API `viewerAccess.canAccessCrewSurfaces`; pending requests see a lock hint). Post-approve / RSVP welcome: `?joined=1` (notification deep link) → welcome sheet → group chat or meeting spot. **Host manage** reuses the same view embedded in the host sheet (`ActivityManageSheet`). Copy: `src/content/activityDetailCopy.ts` · tabs: `src/activity/activityDetailTab.ts`.
+**Mobile-first shell:** **Back** · chrome **emoji + activity kind** (not the outing title) · **Share**. **Hero** (all tabs): linked venue · smart date (Today / Tomorrow / weekday, no year) · **title** · fact chips (time, free/paid, who can join, type extras). **Icon tabs (UI labels only):** **Plan** · **Place** · **Buddies** · **Transport** (`?tab=place|buddies|transport`; default Plan). Wire/API names stay `activity`, `viewerAccess`, `rideshare`, `participant` — see [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §15.
+
+| Tab (UI) | Purpose |
+|----------|---------|
+| **Plan** | Merged requirements + about + itinerary; host row; transport teaser → Transport tab |
+| **Place** | Meeting / map — body only when `viewerAccess.canAccessCrewSurfaces` |
+| **Buddies** | Roster + host queue; primary **host manage** surface (no fifth Manage tab) |
+| **Transport** | **Always shown** — how to get there (reach-by / vehicle access from organize) + linked rideshare when present + sustainability nudge |
+
+**Crew gating:** roster, precise meeting, group chat entry gated on API `viewerAccess.canAccessCrewSurfaces` (confirmed participant or host; **pending / waitlisted** may open detail but see redacted crew — Buddies lock hint, Place tab lock card, no meeting body). Do not show locked meeting/chat rows for unconfirmed viewers; after RSVP or approval use welcome sheet (**Join group chat** · **See meeting location** → Place tab). Deep link: `?joined=1` (notification after host approve). **Host:** primary roster + pending queue on **Buddies** tab (`ActivityDetailHostBuddiesHub`); `ActivityManageSheet` still embeds the same detail for console deep links (`?tab=buddies`). **Mobile footers:** tab-primary actions via `activityDetailTabFooters.ts` (join on Plan, directions on Place, invite on Buddies, view ride on Transport when linked). Copy: `src/content/activityDetailCopy.ts` · tabs: `src/activity/activityDetailTab.ts` · engagement flags: `src/activity/activityDetailPresentation.ts` (peek: `activityPeekEngagement.ts`). Implementation checklist: [`experiment/member-surfaces-implementation-plan.md`](./experiment/member-surfaces-implementation-plan.md) §21.
 
 ## Back navigation
 

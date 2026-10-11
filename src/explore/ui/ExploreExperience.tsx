@@ -40,6 +40,7 @@ import {
 } from '../../utils/organizePublishGate';
 import { buildRideshareDraftFromDemandMapItem, buildRideshareDraftFromParentActivity } from '../linkRidesharePrefill';
 import {
+  areaDetailPath,
   exploreMapItemIsSeeking,
   memberHasUnlimitedDiscovery,
   type ActivityDTO,
@@ -65,10 +66,8 @@ import type { ExploreSearchScopeKey } from '../exploreBrowseTaxonomy';
 import { Dialog } from '../../components/ui/Dialog';
 import { AppButton } from '../../components/mobile/AppButton';
 import { useActivityInviteShareSheet } from '../../hooks/useActivityInviteShareSheet';
-import {
-  filterExploreMapItemsByAreaSlug,
-  parseExploreAreaSlug,
-} from '../exploreAreaFilter';
+import { filterExploreMapItemsByAreaSlug, parseExploreAreaSlug } from '../exploreAreaFilter';
+import { useExplorePublishedAreas } from '../useExplorePublishedAreas';
 
 export const ExploreExperience = () => {
   const { user } = useAuth();
@@ -446,6 +445,7 @@ export const ExploreExperience = () => {
       desktopBrowseTab: browse.desktopBrowseTab,
       buddySubtype: browse.buddySubtype,
       outingTopic: browse.outingTopic,
+      activityModeFilter: browse.activityModeFilter,
     });
 
   const peopleBrowseMapChip = useMemo(
@@ -495,6 +495,15 @@ export const ExploreExperience = () => {
 
   const [searchFocusNonce, setSearchFocusNonce] = useState(0);
   const [exploreSearchModalOpen, setExploreSearchModalOpen] = useState(false);
+  const publishedAreas = useExplorePublishedAreas();
+
+  const handlePickExploreArea = useCallback(
+    (slug: string) => {
+      setExploreSearchModalOpen(false);
+      navigate(areaDetailPath(slug));
+    },
+    [navigate]
+  );
 
   const handleExploreSearchCommit = useCallback(
     (scope?: ExploreSearchScopeKey | null) => {
@@ -560,6 +569,10 @@ export const ExploreExperience = () => {
     onMapFilterChange: browse.applyMapFilter,
     activityDatePreset: browse.activityDatePreset,
     onActivityDatePresetChange: browse.applyActivityDatePreset,
+    activityModeFilter: browse.activityModeFilter,
+    onActivityModeFilterChange: browse.applyActivityModeFilter,
+    publishedAreas,
+    onPickArea: handlePickExploreArea,
     venueRegions: browse.venueRegions,
     onVenueRegionsChange: browse.applyVenueRegions,
     onDesktopBrowseTabChange: browse.applyDesktopBrowseTab,
@@ -862,6 +875,8 @@ export const ExploreExperience = () => {
         onQueryChange={browse.setQuery}
         onCommit={handleExploreSearchCommit}
         scopeCounts={searchScopeCounts}
+        publishedAreas={publishedAreas}
+        onPickArea={handlePickExploreArea}
       />
 
       <ExploreResponsiveSheet

@@ -35,6 +35,7 @@ import { notifyHostOfRequestWithdrawal } from '../../services/request-notificati
 import { buildActivityRedactedDetail } from '../../lib/activity-redacted-detail.js';
 import { PRIVATE_ACTIVITY_MESSAGE } from '../../services/activity-viewer-access.js';
 import { composeActivityViewerAccess } from '../../services/compose-activity-viewer-access.js';
+import { resolveMemberHostStatus } from '../../services/member-host-status.js';
 import { resolveViewerPendingJoinInvite } from '../../services/activity-invite.js';
 import { createRequestSchema, eventIdParamSchema, requestIdParamSchema, rsvpSchema } from './schemas.js';
 
@@ -86,9 +87,14 @@ registerActivityRoute(router, 'get', '/:id', optionalAuth, validate({ params: ev
       throw new ApiError(404, 'activity_not_found', 'Activity not found.');
     }
 
+    const viewerUserId = req.auth?.userId ?? null;
+    const hostUserId = event.createdById ?? event.hostId ?? null;
+    const participantUserIds = event.participants.map((row) => row.userId);
+    const hostStatus = viewerUserId ? await resolveMemberHostStatus(viewerUserId) : null;
+
     const access = await composeActivityViewerAccess(
       {
-        viewerUserId: req.auth?.userId ?? null,
+        viewerUserId,
         activity: {
           id: event.id,
           tenantId: event.tenantId,
@@ -99,7 +105,8 @@ registerActivityRoute(router, 'get', '/:id', optionalAuth, validate({ params: ev
         },
         isPlatformAdmin: req.auth?.role === 'PLATFORM_ADMIN',
       },
-      { viewerUserId: req.auth?.userId ?? null, hostStatus: null }
+      { viewerUserId, hostStatus },
+      viewerUserId ? { hostUserId, participantUserIds } : undefined
     );
 
     let myParticipation = null;

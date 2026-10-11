@@ -12,9 +12,11 @@ import { generateReferralCode } from '../src/lib/referral-code.js';
 import { UserRole, UserStatus } from '../src/domain/enums.js';
 import { getMongoClient } from '../src/lib/mongo.js';
 import { COLLECTIONS } from '../src/lib/collections.js';
+import { ensureCuratedAreasSeeded, testAreas } from './helpers/test-seed.js';
 
 beforeAll(async () => {
   await bootstrapTestApp();
+  await ensureCuratedAreasSeeded();
 });
 
 describe('participant intent join (M2c activity store)', () => {
@@ -54,6 +56,7 @@ describe('participant intent join (M2c activity store)', () => {
       latitude: 25.1,
       longitude: 55.2,
       locationPrecision: 'specific',
+      areaId: testAreas.hatta.id,
     });
 
     const intentDoc = await getMongoClient()!

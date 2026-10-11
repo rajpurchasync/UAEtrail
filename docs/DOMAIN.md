@@ -82,9 +82,21 @@ Time-bound map pins are **Activities** with `activityMode` (target wire name; mi
 
 **Not an activity mode:** **Availability** — person + calendar slots (`member_availability` planned). Discover on Explore **People**; edit on Plan. Seeking ≠ availability.
 
-### Geography (Area — planned)
+### Geography (Area + Place catalog)
 
-**Region** (emirate) → **Area** (curated slug, e.g. Hatta) → **Place** → **Activity**. Public **`/area/:slug`** aggregates places and outings; `areaId` on publish from map pin (Phase 4).
+**Region** (emirate) → **Area** (admin registry, e.g. Hatta) → **Place** (trail, camp, shop, facility in `locations`) → **Activity** (scheduled outing).
+
+| Layer | Who maintains | Assignment rule |
+|-------|----------------|-----------------|
+| **Area** | Platform admin (`/admin/areas`) | System **`areaId`** on create; name, slug, region, map anchor (`center`); bounds are a **display hint only** — not used to auto-tag pins |
+| **Place** | Admin `/admin/places` + member **Add** (`curatedArea` then pin) | Every place row has **`place.areaId`**; `POST /me/locations` requires **`areaId`** |
+| **Activity** | Member **Organize** or Find → seeking | **No stored `activity.areaId` on write** (legacy rows may still have one). Geography = **`activity.locationId` → `place.areaId`**. Public publish requires a catalog **place** with **`areaId`**. Meeting / going-from pin does not define area |
+
+**Explore map lenses:** **Activities** — emoji pin per outing. **Locations** (`pinKind=locations`) — one pin per curated **area** + rollup stats; **Spots** (`pinKind=places`) — catalog place pins. Area peek deep-links into area-scoped Activities / Spots / Shops.
+
+**Curated area catalog (seed + tests):** 12 published areas in `CURATED_AREA_CATALOG` (`@uaetrail/shared-types`) — Hatta, Jebel Jais, Wadi Shawka, Jebel Hafeet, Al Qudra, Love Lake, Khorfakkan, Jumeirah Coast, Fossil Rock, Dibba, Remah Dunes, Kalba. Each has stable `area-seed-*` id, map bounds, and `summary` (editable in admin; re-seed restores defaults).
+
+Discovery: **`/area/:slug`**, area peek, and explore **`?area=`** filter by **`place.areaId`** (and seeking **`participant_intents.areaId`** + synthetic place on the intent). Private link-only activities skip public map listing.
 
 **Plan tab** (`/plan`) groups **your** forward layer — schedule, saved, goals — plus relationships to activities:
 

@@ -2,6 +2,7 @@
 
 export const SHOP_CONTRIBUTE_STEPS = [
   'title',
+  'curatedArea',
   'location',
   'about',
   'shop_products',

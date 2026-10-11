@@ -12,6 +12,7 @@ import type {
 } from './explore-plan-projection.js';
 import type { HostParticipantRosterStatus, ParticipantHostRatingDTO } from './participant-roster.js';
 import type { ExploreActivityMode } from './explore-activity-mode.js';
+import type { ActivityGroupChatPostPolicy } from './activity-group-chat-post-policy.js';
 
 export type UserRole =
   | 'platform_admin'
@@ -234,6 +235,8 @@ export interface ActivityDTO {
   outingTopic?: OutingTopic | null;
   /** Activity crew chat — one group per outing (host list / manage). */
   groupChatId?: string | null;
+  /** Crew group wall — who may post (`host_only` = host admin only; members may still read). */
+  groupChatPostPolicy?: ActivityGroupChatPostPolicy | null;
   /** Map/Plan mode — `seeking` = Find post (M1 activity row); default hosted outings omit or `hosted`. */
   activityMode?: ExploreActivityMode | null;
   /** Back-link to `participant_intents` when `activityMode: seeking`. */
@@ -621,8 +624,11 @@ export interface MerchantPublicDTO extends MerchantProfileDTO {
 /** Domain alias — public shop page payload. Storage/API remain `merchant_profiles` / `/shop/merchants/:id`. */
 export type ShopPublicDTO = MerchantPublicDTO;
 
-export type ExploreMapKind = ActivityType | 'shop' | 'agency';
-export type ExploreMapSource = 'activity' | 'venue' | 'shop' | 'agency' | 'demand';
+export type ExploreMapKind = ActivityType | 'shop' | 'agency' | 'area';
+export type ExploreMapSource = 'activity' | 'venue' | 'shop' | 'agency' | 'demand' | 'area';
+
+export type { ExploreAreaLensStatsDTO } from './explore-area-lens.js';
+export { exploreAreaLensStatsSummary } from './explore-area-lens.js';
 
 export type { ExploreActivityMode } from './explore-activity-mode.js';
 export {
@@ -793,6 +799,8 @@ export interface ExploreMapItemDTO {
   participationMode?: ParticipationMode | null;
   /** Rideshare activities linked to this parent plan (parent rows only). */
   linkedRideshareActivities?: ExploreLinkedRideshareDTO[];
+  /** Locations lens — counts for area map pin + peek (not stored in Redis). */
+  areaLensStats?: import('./explore-area-lens.js').ExploreAreaLensStatsDTO | null;
   /**
    * Per-viewer peek/detail hints for hosted plans (activity + demand).
    * Set on `GET /explore/map` after cache read — not stored in Redis payload.
@@ -1209,6 +1217,12 @@ export {
 } from './activity-join-mode.js';
 
 export {
+  ACTIVITY_GROUP_CHAT_POST_POLICIES,
+  resolveActivityGroupChatPostPolicy,
+  type ActivityGroupChatPostPolicy,
+} from './activity-group-chat-post-policy.js';
+
+export {
   activityViewerLevelCanAccessCrewSurfaces,
   activityViewerLevelHasFullDetail,
   computeActivityDetailExposure,
@@ -1217,6 +1231,12 @@ export {
   type DetailExposure,
   type ViewerGateReason,
 } from './activity-viewer-access.js';
+
+export {
+  computeActivityViewerEntitlements,
+  mergeActivityMapPeekActionsWithEntitlements,
+  type ActivityViewerEntitlementsDTO,
+} from './activity-viewer-entitlements.js';
 
 export {
   computeActivityMapPeekActions,
@@ -1457,6 +1477,22 @@ export {
   exploreAreaQueryParam,
   pointInAreaBounds,
 } from './area.js';
+
+export {
+  CURATED_AREA_SEED_IDS,
+  CURATED_AREA_SEED_SLUGS,
+  curatedAreaSeedId,
+  type CuratedAreaSeedKey,
+} from './curated-area-seeds.js';
+
+export {
+  CURATED_AREA_CATALOG,
+  CURATED_AREA_CATALOG_BY_KEY,
+  CURATED_AREA_CATALOG_BY_SLUG,
+  listCuratedAreaSeedKeys,
+  type CuratedAreaCatalogEntry,
+  type CuratedAreaBBox,
+} from './curated-area-catalog.js';
 
 export type { MemberInboxGroupDTO, MemberInboxGroupType } from './member-inbox.js';
 

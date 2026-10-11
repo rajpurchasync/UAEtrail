@@ -103,7 +103,8 @@ Each context has **one write path** and **one public read model** where possible
 | **Host console** | Tenant-scoped CRUD, check-in, activity join queue | `src/pages/host/*`, `src/console/*`, `components/host/` | `routes/host/*` registrars | same + `activities` |
 | **Communication** | DMs, inbox, group & outing chat (product label **Chat**) | `Messages.tsx`, `src/messaging`, `@/chat` | `routes/chat.ts`, `activity-group-chat`, `member-inbox` | `chat_messages`, `social_groups`, wall collections |
 | **Social graph** | Relationship **writes** & group metadata (not browse roster UI) | `Buddies.tsx`, `Groups.tsx`, `/buddies` | `registerBuddyRoutes`, `buddy-activity-presence.ts`, `registerGroupRoutes`, `registerFollowRoutes` | `buddy_*`, `user_follows`, `social_groups*` |
-| **Places** | Registry, contribute, venue detail | `PlaceDetail*`, `TrailDetail`, contribute flows | `place-registry`, `location-submit`, `/places` | `locations` |
+| **Places** | Registry, contribute, venue detail | `PlaceDetail*`, `TrailDetail`, contribute flows | `place-registry`, `location-submit`, `/places` | `locations` (+ **`areaId`** on catalog rows) |
+| **Areas** | Admin registry; explore Activities vs Locations lenses; `?area=` | `/area/:slug`, Find **Area & map pin**, admin place **area** link | `areas-store`, `organizePublishArea.ts`, `GET /areas` | `areas`, **`locations.areaId`**, `participant_intents.areaId` (seeking); read **`place.areaId`** for activities |
 | **Commerce** | Shop public + merchant manage (affiliate) | `ShopPublic`, `ShopManage` | `routes/shop.ts` | `merchant_profiles`, `tenants` (SHOP) |
 | **Engagement** | Goals, map pins, wishlist, follow | explore wishlist save, entity/member follow | `registerMeGoalsRoutes`, `registerMeWishlistRoutes`, `registerEntityFollowRoutes`, … | `user_goals`, `user_favorites`, `entity_follows`, `user_follows` |
 | **Platform ops** | Admin console, audit, applications, master-granted staff | `src/pages/Admin*` (`/admin/users` **Users** nav) | `routes/admin.ts` + `routes/admin/registerAdmin*` | `host_applications`, `audit_logs`, `auth_users` (staff role) |
@@ -255,8 +256,10 @@ Ordered for **coherence**, not feature count:
 | **S5** | Privacy notification matrix + viewer access everywhere | [`HOST_CLEANUP_ROADMAP.md`](./HOST_CLEANUP_ROADMAP.md) P2 |
 | **S6** | Place detail internal merge + SEO pass | ARCHITECTURE future |
 | **S7** | **Viewer access VA-1–VA-7** (activity detail + explore peek on API contract) | **Done** — §15.8; layer-7 hook `composeActivityViewerAccess` / `applyActivityViewEntitlements` |
+| **S7b** | **Activity detail tabs** (Plan · Place · Buddies · Transport) + single FE resolver | **Done** — plan §21 AD; `activityDetailPresentation.ts` + `activityPeekEngagement.ts`; [`NAVIGATION.md`](./NAVIGATION.md) § Activity detail |
+| **S7c** | **Viewer access naming** (wire-first, collapse resolver soup) | **Done (NA-1–NA-6)** — plan §22; API `buildActivityViewerAccess`; [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §15.11 |
 
-Phases **S0–S3** and **S7** are in place; **S4–S6** remain. **S7** supersedes ad-hoc peek/detail gating in the SPA (**C16** mitigated).
+Phases **S0–S3** and **S7** are in place; **S4–S6** remain; **S7b** extends S7 without duplicating join/crew policy in React. **S7c** tightens §15.10 pipeline names to route/DTO vocabulary without blocking AD-6. **S7** supersedes ad-hoc peek/detail gating in the SPA (**C16** mitigated).
 
 ---
 

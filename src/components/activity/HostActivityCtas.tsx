@@ -17,6 +17,8 @@ export type HostActivityCtaHandlers = {
 type HostActivityCtasProps = {
   activity: ActivityDTO;
   linkRideshareTenantId: string | null;
+  /** Wire `viewerAccess.entitlements.canAddLinkedRide`. */
+  canAddLinkedRide?: boolean;
   handlers: HostActivityCtaHandlers;
   disabled?: boolean;
   /** Map peek — sign-up instead of host actions. */
@@ -32,18 +34,17 @@ const manageRowClass =
 export const HostActivityCtas = ({
   activity,
   linkRideshareTenantId,
+  canAddLinkedRide = false,
   handlers,
   disabled = false,
   onGuestGatedAction,
   variant = 'default',
 }: HostActivityCtasProps) => {
   const [manageOpen, setManageOpen] = useState(false);
-  const caps = hostActivityManageCapabilities(activity);
+  const caps = hostActivityManageCapabilities(activity, { canAddLinkedRide });
   const published = activity.status === 'published';
   const showChat = caps.showGroupChat;
-  const showCarpool = Boolean(
-    handlers.onAddCarpool && linkRideshareTenantId && caps.showLinkRideshare
-  );
+  const showCarpool = Boolean(handlers.onAddCarpool && linkRideshareTenantId && caps.showLinkRideshare);
 
   const run = (action: () => void) => {
     if (onGuestGatedAction) {

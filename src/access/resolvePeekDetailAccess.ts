@@ -1,4 +1,7 @@
-import type { ActivityViewerAccessDTO } from '@uaetrail/shared-types';
+import {
+  computeActivityMapPeekActions,
+  type ActivityViewerAccessDTO,
+} from '@uaetrail/shared-types';
 import { mapViewerAccessToExplorePeekDetail, type ExplorePeekDetailAccess } from './mapViewerAccessToUi';
 import { exploreCardIsSeeking, type ExploreCardModel } from '../explore/exploreCardModel';
 
@@ -57,4 +60,9 @@ export const hostPublishedActivityPeekAccess = (
   canOpenDetailPage: true,
   joinMode,
   canAccessCrewSurfaces: true,
+  mapPeekActions: computeActivityMapPeekActions({
+    level: 'host',
+    activityPublished: true,
+    joinMode,
+  }),
 });

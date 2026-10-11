@@ -76,7 +76,10 @@ export const ExploreActivityMapPeekActions = ({
 
   const visible = actions.filter((action) => {
     if (action.id !== 'link_carpool') return true;
-    return Boolean(linkRideshareTenantId && activity && canLinkRideshareToActivity(activity));
+    const mayLink =
+      Boolean(linkRideshareTenantId && activity && canLinkRideshareToActivity(activity)) &&
+      Boolean(card.viewerAccess?.entitlements?.canAddLinkedRide);
+    return mayLink;
   });
 
   if (visible.length === 0) return null;

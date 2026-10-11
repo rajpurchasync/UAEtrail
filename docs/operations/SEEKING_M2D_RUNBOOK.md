@@ -19,6 +19,8 @@ Run from **repo root** on a machine that loads the same `.env` as the API (or `d
 npm run seeking:m2d-status
 ```
 
+**Deploy gate (step 4 in checklist):** `npm run seeking:deploy-gate` — same as `seeking:m2d-status -- --strict` (exit 0 required).
+
 Inspect JSON:
 
 | Field | Action if non-zero / false |
@@ -36,6 +38,15 @@ npm --workspace @uaetrail/api run backfill-seeking-activities
 
 Re-run step 1 until `activeIntentsMissingSeekingActivity` is **0**.
 
+If `activeIntentsMissingCoordsSkippedByBackfill` is non-zero, backfill will never create seeking rows for those pins — add coordinates in product/admin or cancel them:
+
+```bash
+npm --workspace @uaetrail/api run cancel-coordless-participant-intents -- --dry-run
+npm --workspace @uaetrail/api run cancel-coordless-participant-intents
+```
+
+Then re-run step 2 if needed and step 1 until counts are zero.
+
 ### 3. Confirm M2d flag (default off)
 
 API code defaults **stub write off**. In API `.env` (or compose env), **remove** `PARTICIPANT_INTENT_STUB_WRITE=true` if present, or set:
@@ -52,7 +63,7 @@ Restart API only (no frontend rebuild required for this flag).
 npm run seeking:m2d-status -- --strict
 ```
 
-Exit **0** required before sending traffic on that env. Fails when the DB is ready but stub write is still enabled.
+Exit **0** required before sending traffic on that env. Fails when any active intent still lacks a seeking activity **or** stub write is still enabled.
 
 ## Local dev
 

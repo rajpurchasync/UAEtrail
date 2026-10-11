@@ -1,9 +1,19 @@
 import { apiRequest } from '../client';
-import type { AreaDTO, AreaPublicDTO } from '@uaetrail/shared-types';
+import type {
+  ActivityDTO,
+  AreaBoundsRing,
+  AreaDTO,
+  AreaPublicDTO,
+  LocationDTO,
+} from '@uaetrail/shared-types';
 
 export type AreaDetailPayload = {
   area: AreaPublicDTO;
   counts: { activities: number; places: number; seeking: number };
+  preview: {
+    activities: ActivityDTO[];
+    places: LocationDTO[];
+  };
 };
 
 export const areasApi = {
@@ -12,7 +22,9 @@ export const areasApi = {
   getAreaBySlug: (slug: string) =>
     apiRequest<{ data: AreaDetailPayload }>(`/areas/${encodeURIComponent(slug)}`),
   listAdminAreas: () => apiRequest<{ data: AreaDTO[] }>('/admin/areas', { auth: true }),
-  createAdminArea: (payload: Omit<AreaDTO, 'id' | 'createdAt' | 'updatedAt'>) =>
+  createAdminArea: (
+    payload: Omit<AreaDTO, 'id' | 'createdAt' | 'updatedAt' | 'bounds'> & { bounds?: AreaBoundsRing }
+  ) =>
     apiRequest<{ data: AreaDTO }>('/admin/areas', {
       method: 'POST',
       auth: true,

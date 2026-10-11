@@ -13,7 +13,7 @@ export interface ExploreMapPersonDTO {
   role: ExploreMapPersonRole;
 }
 
-type ExploreMapSourceLike = 'activity' | 'venue' | 'shop' | 'agency' | 'demand';
+type ExploreMapSourceLike = 'activity' | 'venue' | 'shop' | 'agency' | 'demand' | 'area';
 
 export type ExploreFeaturedPersonInput = ExploreMapItemActivityModeFields & {
   source?: ExploreMapSourceLike;

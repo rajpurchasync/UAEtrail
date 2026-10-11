@@ -2,7 +2,9 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { PanelLeftClose, Search, X, ChevronLeft } from 'lucide-react';
 import type { ExploreCardModel } from '../exploreCardModel';
-import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
+import type { AreaPublicDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
+import { findPublishedAreaByQuery, isStrongPublishedAreaSearchMatch } from '../exploreAreaFilter';
+import type { ExploreActivityModeFilter } from '../exploreActivityModeFilter';
 import { PRODUCT_EXPLORE_EMPTY_FILTERS } from '../../content/productNorthStar';
 import { tripsLegacyJoinedTabPath } from '../../config/routingCatalog';
 import { EXPLORE_SHEET, EXPLORE_TYPE } from '../../config/exploreTheme';
@@ -29,6 +31,7 @@ import {
   type ExploreSearchScopeCounts,
   type ExploreSearchScopeKey,
 } from '../exploreBrowseTaxonomy';
+import { ExploreSearchAreaHints } from './ExploreSearchAreaHints';
 import { ExploreSearchScopeHints } from './ExploreSearchScopeHints';
 import type { ExploreBuddySubtypeKey } from '../exploreBuddySubtype';
 import type { ExploreOutingTopicKey } from '../exploreOutingTopic';
@@ -49,6 +52,10 @@ export interface ExploreBrowsePanelProps {
   onMapFilterChange: (filter: MapFilterKey) => void;
   activityDatePreset: ExploreActivityDatePreset;
   onActivityDatePresetChange: (preset: ExploreActivityDatePreset) => void;
+  activityModeFilter?: ExploreActivityModeFilter;
+  onActivityModeFilterChange?: (filter: ExploreActivityModeFilter) => void;
+  publishedAreas?: AreaPublicDTO[];
+  onPickArea?: (slug: string) => void;
   venueRegions: string[];
   onVenueRegionsChange: (regions: string[]) => void;
   onDesktopBrowseTabChange: (tab: DesktopBrowseTab) => void;
@@ -115,6 +122,10 @@ export const ExploreBrowsePanel = ({
   onMapFilterChange,
   activityDatePreset,
   onActivityDatePresetChange,
+  activityModeFilter = 'all',
+  onActivityModeFilterChange,
+  publishedAreas = [],
+  onPickArea,
   venueRegions,
   onVenueRegionsChange,
   onDesktopBrowseTabChange,
@@ -342,6 +353,11 @@ export const ExploreBrowsePanel = ({
                   onKeyDown={(event) => {
                     if (event.key === 'Enter') {
                       event.preventDefault();
+                      const area = findPublishedAreaByQuery(publishedAreas, query);
+                      if (area && onPickArea && isStrongPublishedAreaSearchMatch(area, query)) {
+                        onPickArea(area.slug);
+                        return;
+                      }
                       handleSearchScopePick(null);
                     }
                   }}
@@ -385,6 +401,16 @@ export const ExploreBrowsePanel = ({
                 role="presentation"
                 onMouseDown={(event) => event.preventDefault()}
               >
+                {onPickArea ? (
+                  <ExploreSearchAreaHints
+                    query={query}
+                    areas={publishedAreas}
+                    onPick={(slug) => {
+                      onPickArea(slug);
+                      setSearchScopeOpen(false);
+                    }}
+                  />
+                ) : null}
                 <ExploreSearchScopeHints
                   query={query}
                   counts={searchScopeCounts}
@@ -410,6 +436,8 @@ export const ExploreBrowsePanel = ({
             onBuddySubtypeChange={onBuddySubtypeChange}
             outingTopic={outingTopic}
             onOutingTopicChange={onOutingTopicChange}
+            activityModeFilter={activityModeFilter}
+            onActivityModeFilterChange={onActivityModeFilterChange}
             className={`mb-2 shrink-0 ${fullscreenBrowse && !isDesktop ? 'px-3' : ''}`}
           />
 

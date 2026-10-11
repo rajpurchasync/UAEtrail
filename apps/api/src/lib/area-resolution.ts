@@ -81,15 +81,21 @@ export const resolveActivityAnchorCoordinates = (
   return { latitude, longitude };
 };
 
+/** Geography for an activity comes from the linked **place** only (legacy `activity.areaId` read fallback). */
+export const resolveAreaIdForActivity = (
+  activity: Pick<MongoActivityDoc, 'areaId'>,
+  location?: Pick<Location, 'areaId'> | null
+): string | null => {
+  if (location?.areaId?.trim()) return location.areaId.trim();
+  if (activity.areaId?.trim()) return activity.areaId.trim();
+  return null;
+};
+
+/** Public publish requires `place.areaId` — members do not set area on the activity row. */
 export const resolveAreaIdForActivityPublish = async (
   activity: MongoActivityDoc,
   location?: Location | null
-): Promise<string | null> => {
-  const placeAreaId = location?.areaId ?? null;
-  const anchor = resolveActivityAnchorCoordinates(activity, location);
-  if (!anchor) return placeAreaId;
-  return resolveAreaIdForCoordinates(anchor.latitude, anchor.longitude, placeAreaId);
-};
+): Promise<string | null> => resolveAreaIdForActivity(activity, location);
 
 export const ringFromBBox = (
   south: number,

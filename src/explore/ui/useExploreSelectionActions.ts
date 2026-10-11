@@ -14,7 +14,7 @@ import { buildExploreMapItemFromActivity, parseActivityMapItemId } from '../priv
 import { api } from '../../api/index';
 import { buildExploreCardModel } from '../exploreCardModel';
 import { finalizeExploreCardLinkedRideshare } from '../linkedRideshareExplore';
-import { canOfferRideshareForDemandItem } from '../linkActivityRideshareOffer';
+import { canShowDemandLinkRideshareOffer } from '../linkActivityRideshareOffer';
 import { openActivityGroupChat } from '../../utils/openActivityGroupChat';
 import { messagesRouteForRole } from '../../utils/authRouting';
 import {
@@ -107,7 +107,7 @@ export const useExploreSelectionActions = ({
         ...card,
         showJoinActions: false,
         showDemandOwnerActions: true,
-        showDemandLinkRideshare: canOfferRideshareForDemandItem(selected),
+        showDemandLinkRideshare: canShowDemandLinkRideshareOffer(selected),
       };
     }
     if (!activityHostPeek) return card;

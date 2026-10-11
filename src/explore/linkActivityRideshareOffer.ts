@@ -80,6 +80,10 @@ export const canOfferRideshareForDemandItem = (item: ExploreMapItemDTO | null | 
   return item.kind === 'hiking' || item.kind === 'camping' || item.kind === 'event';
 };
 
+/** Demand owner rideshare CTA — structural rules + wire `canOfferTransport`. */
+export const canShowDemandLinkRideshareOffer = (item: ExploreMapItemDTO | null | undefined): boolean =>
+  canOfferRideshareForDemandItem(item) && Boolean(item?.viewerAccess?.entitlements?.canOfferTransport);
+
 /** Trips → My plans manage sheet — same rules as map owner peek. */
 export const canOfferRideshareForParticipantIntent = (
   intent: ParticipantIntentDTO | null | undefined

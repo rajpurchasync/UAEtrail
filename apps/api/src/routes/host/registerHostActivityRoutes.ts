@@ -14,7 +14,10 @@ import { validate } from '../../middleware/validate.js';
 import { notifyAdminsActivityPublished } from '../../services/platform-admin-events.js';
 import { awardPoints } from '../../services/rewards.js';
 import { findAuthUserById } from '../../lib/auth-users.js';
-import { ensureActivityGroupChat } from '../../services/activity-group-chat.js';
+import {
+  ensureActivityGroupChat,
+  syncActivityGroupChatWallPolicyFromActivity,
+} from '../../services/activity-group-chat.js';
 import { mapActivityIdsToGroupChatIds } from '../../lib/social-groups-store.js';
 import {
   assertRideshareActivityFields,
@@ -135,6 +138,7 @@ const eventCreateSchema = z.object({
   requirements: z.array(z.string()).default([]),
   joinMode: z.enum(['open', 'private']).optional(),
   participationMode: z.enum(['rsvp', 'approval']).optional(),
+  groupChatPostPolicy: z.enum(['all_participants', 'host_only']).optional(),
   price: z.number().int().min(0).default(0),
   pricePackages: activityPricePackagesSchema.optional(),
   capacity: z.number().int().positive(),
@@ -299,6 +303,7 @@ hostActivitiesRouter.post('/', requireOrgRole(ORG_ACTIVITY_EDIT_ROLES), validate
       outingTopic: body.outingTopic ?? null,
       linkedActivityId: body.linkedActivityId ?? null,
       linkedRideshareActivityId: body.linkedRideshareActivityId ?? null,
+      groupChatPostPolicy: body.groupChatPostPolicy ?? null,
     });
 
     await createAuditLog({
@@ -478,7 +483,12 @@ hostActivitiesRouter.patch('/:id', requireOrgRole(ORG_ACTIVITY_EDIT_ROLES), vali
       outingTopic: body.outingTopic,
       linkedActivityId: body.linkedActivityId,
       linkedRideshareActivityId: body.linkedRideshareActivityId,
+      groupChatPostPolicy: body.groupChatPostPolicy,
     });
+
+    if (body.groupChatPostPolicy !== undefined) {
+      await syncActivityGroupChatWallPolicyFromActivity(id);
+    }
 
     await createAuditLog({
       actorId: req.auth!.userId,

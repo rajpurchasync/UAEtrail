@@ -90,13 +90,15 @@ describe('attachExploreMapViewerAccess', () => {
       requestStatusByActivityId: new Map(),
       staffTenantIds: new Set(),
       demandJoinStatusByIntentId: new Map(),
+      hostStatus: null,
+      buddyUserIds: new Set(),
     });
 
     expect(enriched[0].viewerAccess?.gateReason).toBe('sign_in');
     expect(enriched[0].viewerAccess?.canOpenDetailPage).toBe(true);
     expect(enriched[0].viewerAccess?.mapPeekActions?.map((a) => a.id)).toEqual([
       'request_join',
-      'message_host',
+      'view_detail',
     ]);
   });
 
@@ -129,15 +131,17 @@ describe('attachExploreMapViewerAccess', () => {
       requestStatusByActivityId: new Map(),
       staffTenantIds: new Set(),
       demandJoinStatusByIntentId: new Map(),
+      hostStatus: null,
+      buddyUserIds: new Set(),
     });
 
     expect(enriched[0].viewerAccess?.level).toBe('host');
     expect(enriched[0].viewerAccess?.mapPeekActions?.map((a) => a.id)).toEqual([
       'open_crew_chat',
-      'link_carpool',
       'invite_crew',
       'view_detail',
     ]);
+    expect(enriched[0].viewerAccess?.entitlements?.canAddLinkedRide).toBe(false);
   });
 
   it('attaches participant mapPeekActions for approved roster viewer', () => {
@@ -169,11 +173,13 @@ describe('attachExploreMapViewerAccess', () => {
       requestStatusByActivityId: new Map(),
       staffTenantIds: new Set(),
       demandJoinStatusByIntentId: new Map(),
+      hostStatus: null,
+      buddyUserIds: new Set(),
     });
 
     expect(enriched[0].viewerAccess?.level).toBe('participant');
     expect(enriched[0].viewerAccess?.mapPeekActions?.map((a) => a.id)).toEqual([
-      'message_host',
+      'open_crew_chat',
       'invite_crew',
       'view_detail',
     ]);
@@ -187,12 +193,14 @@ describe('attachExploreMapViewerAccess', () => {
       requestStatusByActivityId: new Map(),
       staffTenantIds: new Set(),
       demandJoinStatusByIntentId: new Map(),
+      hostStatus: null,
+      buddyUserIds: new Set(),
     });
 
     expect(enriched[0].viewerAccess?.level).toBe('link_holder');
     expect(enriched[0].viewerAccess?.mapPeekActions?.map((a) => a.id)).toEqual([
       'request_join',
-      'message_host',
+      'view_detail',
     ]);
   });
 
@@ -204,12 +212,14 @@ describe('attachExploreMapViewerAccess', () => {
       requestStatusByActivityId: new Map([['a1', RequestStatus.PENDING]]),
       staffTenantIds: new Set(),
       demandJoinStatusByIntentId: new Map(),
+      hostStatus: null,
+      buddyUserIds: new Set(),
     });
 
     expect(enriched[0].viewerAccess?.level).toBe('join_request');
     expect(enriched[0].viewerAccess?.mapPeekActions).toEqual([
       { id: 'pending_join', prominence: 'primary', joinRequestStatus: 'pending' },
-      { id: 'message_host', prominence: 'secondary' },
+      { id: 'view_detail', prominence: 'text' },
     ]);
   });
 
@@ -221,6 +231,8 @@ describe('attachExploreMapViewerAccess', () => {
       requestStatusByActivityId: new Map(),
       staffTenantIds: new Set(['t1']),
       demandJoinStatusByIntentId: new Map(),
+      hostStatus: null,
+      buddyUserIds: new Set(),
     });
 
     expect(enriched[0].viewerAccess?.level).toBe('tenant_staff');
@@ -247,6 +259,8 @@ describe('attachExploreMapViewerAccess', () => {
       requestStatusByActivityId: new Map(),
       staffTenantIds: new Set(),
       demandJoinStatusByIntentId: new Map(),
+      hostStatus: null,
+      buddyUserIds: new Set(),
     });
 
     expect(enriched[0].viewerAccess?.gateReason).toBe('sign_in');

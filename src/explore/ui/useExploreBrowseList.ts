@@ -25,6 +25,10 @@ import {
 import type { ExploreBrowseListMode } from './useExploreBrowseUrlState';
 import { matchesActivityDateFilter } from '../exploreActivityDateFilter';
 import { countExploreSearchScopes, exploreItemMatchesQuery } from '../exploreSearchMatches';
+import {
+  exploreMapItemMatchesActivityModeFilter,
+  type ExploreActivityModeFilter,
+} from '../exploreActivityModeFilter';
 
 type UseExploreBrowseListArgs = {
   items: ExploreMapItemDTO[];
@@ -41,6 +45,7 @@ type UseExploreBrowseListArgs = {
   desktopBrowseTab: DesktopBrowseTab;
   buddySubtype: ExploreBuddySubtypeKey;
   outingTopic: ExploreOutingTopicKey;
+  activityModeFilter?: ExploreActivityModeFilter;
 };
 
 const dedupeExploreListById = (list: ExploreMapItemDTO[]): ExploreMapItemDTO[] => {
@@ -79,6 +84,7 @@ export const useExploreBrowseList = ({
   desktopBrowseTab,
   buddySubtype,
   outingTopic,
+  activityModeFilter = 'all',
 }: UseExploreBrowseListArgs) => {
   const mapItems = useMemo(() => {
     const itemIds = new Set(items.map((entry) => entry.id));
@@ -92,7 +98,9 @@ export const useExploreBrowseList = ({
       if (desktopBrowseTab === 'venues') {
         pool = pool.filter(isPlacesMapItem);
       } else {
-        pool = pool.filter(isBuddyMapItem);
+        pool = pool
+          .filter(isBuddyMapItem)
+          .filter((item) => exploreMapItemMatchesActivityModeFilter(item, activityModeFilter));
       }
     } else if (sidebarPanel === 'venues') {
       pool = pool
@@ -105,7 +113,8 @@ export const useExploreBrowseList = ({
       pool = pool
         .filter(isBuddyMapItem)
         .filter((item) => matchesBuddyMapFilter(item, mapFilter, buddySubtype, outingTopic))
-        .filter((item) => matchesActivityDateFilter(item, activityDatePreset));
+        .filter((item) => matchesActivityDateFilter(item, activityDatePreset))
+        .filter((item) => exploreMapItemMatchesActivityModeFilter(item, activityModeFilter));
     }
     if (query.trim()) {
       pool = pool.filter((item) => exploreItemMatchesQuery(item, query));
@@ -123,6 +132,7 @@ export const useExploreBrowseList = ({
     venueRegions,
     buddySubtype,
     outingTopic,
+    activityModeFilter,
   ]);
 
   const browseListMode: ExploreBrowseListMode = isDesktop ? 'default' : listMode;
@@ -141,6 +151,7 @@ export const useExploreBrowseList = ({
               .filter(isBuddyMapItem)
               .filter(matchesBuddy)
               .filter((item) => matchesActivityDateFilter(item, activityDatePreset))
+              .filter((item) => exploreMapItemMatchesActivityModeFilter(item, activityModeFilter))
           )
         );
       }
@@ -175,6 +186,7 @@ export const useExploreBrowseList = ({
           .filter(isBuddyMapItem)
           .filter(matchesBuddy)
           .filter((item) => matchesActivityDateFilter(item, activityDatePreset))
+          .filter((item) => exploreMapItemMatchesActivityModeFilter(item, activityModeFilter))
       )
     );
   }, [
@@ -187,6 +199,7 @@ export const useExploreBrowseList = ({
     sidebarPanel,
     buddySubtype,
     outingTopic,
+    activityModeFilter,
   ]);
 
   const listItems = useMemo(() => {
@@ -204,13 +217,15 @@ export const useExploreBrowseList = ({
       items
         .filter(isBuddyMapItem)
         .filter((item) => matchesBuddyMapFilter(item, mapFilter, buddySubtype, outingTopic))
-        .filter((item) => matchesActivityDateFilter(item, activityDatePreset));
+        .filter((item) => matchesActivityDateFilter(item, activityDatePreset))
+        .filter((item) => exploreMapItemMatchesActivityModeFilter(item, activityModeFilter));
 
     const hostedTripsPool = () =>
       items
         .filter((item) => mapItemMatchesSearchScope(item, 'activities'))
         .filter((item) => matchesBuddyMapFilter(item, mapFilter, buddySubtype, outingTopic))
-        .filter((item) => matchesActivityDateFilter(item, activityDatePreset));
+        .filter((item) => matchesActivityDateFilter(item, activityDatePreset))
+        .filter((item) => exploreMapItemMatchesActivityModeFilter(item, activityModeFilter));
 
     const peopleListPool = () =>
       items

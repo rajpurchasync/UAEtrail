@@ -9,6 +9,7 @@ import type { Place, PlaceAsCamp, PlaceAsEvent, PlaceAsTrail } from '../../types
 import { placeDetailPath } from '../../utils/placePaths';
 import type { TenantProfile } from '../../api/index';
 import { activityHostName } from '../../utils/hostLabels';
+import { activityPublicMetaDescription } from '../../utils/activityPublicSeo';
 import { explorePlacesPath } from '../../config/routingCatalog';
 
 const absImage = (url?: string | null) => toAbsoluteUrl(url) ?? undefined;
@@ -116,7 +117,7 @@ export const activityEventSchema = (activity: ActivityDetailDTO) => ({
   '@context': 'https://schema.org',
   '@type': 'Event',
   name: activity.title || activity.locationName,
-  description: activity.description,
+  description: activityPublicMetaDescription(activity),
   url: `${SITE_ORIGIN}/activity/${activity.id}`,
   image: absImage(activity.images?.[0] ?? activity.location?.images?.[0]),
   startDate: `${activity.date}T${activity.time}:00+04:00`,
@@ -125,8 +126,8 @@ export const activityEventSchema = (activity: ActivityDetailDTO) => ({
   ActivityStatus: 'https://schema.org/EventScheduled',
   location: {
     '@type': 'Place',
-    name: activity.locationName,
-    address: locationAddress(activity.location?.region)
+    name: activity.region ?? activity.locationName ?? 'UAE',
+    address: locationAddress(activity.region ?? activity.location?.region),
   },
   organizer: {
     '@type': 'Organization',

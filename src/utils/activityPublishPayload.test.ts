@@ -117,6 +117,26 @@ describe('buildHostActivityPublishPayload', () => {
     expect(payload).not.toHaveProperty('rideshareEnabled');
   });
 
+  it('includes groupChatPostPolicy when set on publish input', () => {
+    const payload = buildHostActivityPublishPayload({
+      activityType: 'hiking',
+      locationId: 'loc-1',
+      title: 'Sunrise hike',
+      description: 'Easy loop with friends',
+      date: '2026-09-24',
+      time: '06:00',
+      capacity: 8,
+      pricing: { pricingMode: 'free', price: 0, paymentTerms: null },
+      location: { meetingPoint: 'Trailhead', meetingLat: 25.1, meetingLng: 55.2 },
+      requirements: [],
+      joinMode: 'open',
+      participationMode: 'approval',
+      hostId: 'user-1',
+      groupChatPostPolicy: 'host_only',
+    });
+    expect(payload.groupChatPostPolicy).toBe('host_only');
+  });
+
   it('omits paymentTerms when empty so API zod validation passes', () => {
     const payload = buildHostActivityPublishPayload({
       activityType: 'camping',

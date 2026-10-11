@@ -68,6 +68,12 @@ import {
   serializePeopleBrowseTab,
   type PeopleBrowseTab,
 } from '../peopleBrowseTab.js';
+import {
+  EXPLORE_ACTIVITY_MODE_FILTER_PARAM,
+  parseExploreActivityModeFilter,
+  serializeExploreActivityModeFilter,
+  type ExploreActivityModeFilter,
+} from '../exploreActivityModeFilter';
 
 /** Browse list presentation — `people` maps to URL `view=people` (member people panel on map). */
 export type ExploreBrowseListMode = 'default' | 'people';
@@ -98,6 +104,7 @@ type SyncPatch = {
   q?: string;
   venueRegions?: string[];
   activityDatePreset?: ExploreActivityDatePreset;
+  activityModeFilter?: ExploreActivityModeFilter;
   buddySubtype?: ExploreBuddySubtypeKey;
   outingTopic?: ExploreOutingTopicKey;
   pinKind?: ExplorePinKindFilter;
@@ -151,6 +158,9 @@ export const useExploreBrowseUrlState = ({
   const [activityDatePreset, setActivityDatePreset] = useState<ExploreActivityDatePreset>(() =>
     parseExploreActivityDatePreset(searchParams.get('date'))
   );
+  const [activityModeFilter, setActivityModeFilter] = useState<ExploreActivityModeFilter>(() =>
+    parseExploreActivityModeFilter(searchParams.get(EXPLORE_ACTIVITY_MODE_FILTER_PARAM))
+  );
   const [buddySubtype, setBuddySubtype] = useState<ExploreBuddySubtypeKey>(() =>
     parseExploreBuddySubtype(searchParams.get('subtype'), parseMapFilter(searchParams.get('filter')))
   );
@@ -199,6 +209,8 @@ export const useExploreBrowseUrlState = ({
       const queryValue = next.q ?? query;
       const regionValue = next.venueRegions ?? venueRegions;
       const dateValue = next.activityDatePreset !== undefined ? next.activityDatePreset : activityDatePreset;
+      const activityModeValue =
+        next.activityModeFilter !== undefined ? next.activityModeFilter : activityModeFilter;
       const subtypeValue = next.buddySubtype ?? buddySubtype;
       const topicValue = next.outingTopic ?? outingTopic;
       const pinKindValue = next.pinKind ?? pinKind;
@@ -231,6 +243,10 @@ export const useExploreBrowseUrlState = ({
       const serializedDate = serializeExploreActivityDatePreset(dateValue);
       if (serializedDate) params.set('date', serializedDate);
       else params.delete('date');
+
+      const serializedActivityMode = serializeExploreActivityModeFilter(activityModeValue);
+      if (serializedActivityMode) params.set(EXPLORE_ACTIVITY_MODE_FILTER_PARAM, serializedActivityMode);
+      else params.delete(EXPLORE_ACTIVITY_MODE_FILTER_PARAM);
 
       const serializedSubtype = serializeExploreBuddySubtype(subtypeValue, filterValue);
       if (serializedSubtype) params.set('subtype', serializedSubtype);
@@ -303,6 +319,7 @@ export const useExploreBrowseUrlState = ({
       query,
       venueRegions,
       activityDatePreset,
+      activityModeFilter,
       buddySubtype,
       outingTopic,
       pinKind,
@@ -349,6 +366,9 @@ export const useExploreBrowseUrlState = ({
     setQuery(searchParams.get('q') ?? '');
     setVenueRegions(parseVenueRegionsParam(searchParams));
     setActivityDatePreset(parseExploreActivityDatePreset(searchParams.get('date')));
+    setActivityModeFilter(
+      parseExploreActivityModeFilter(searchParams.get(EXPLORE_ACTIVITY_MODE_FILTER_PARAM))
+    );
     const nextSubtype = parseExploreBuddySubtype(searchParams.get('subtype'), nextMapFilter);
     setBuddySubtype(nextSubtype);
     setOutingTopic(
@@ -652,6 +672,12 @@ export const useExploreBrowseUrlState = ({
     syncExploreUrl({ activityDatePreset: next, list: listOpen });
   };
 
+  const applyActivityModeFilter = (next: ExploreActivityModeFilter) => {
+    setActivityModeFilter(next);
+    clearSelection();
+    syncExploreUrl({ activityModeFilter: next, list: listOpen });
+  };
+
   const showListPanel = listOpen;
   const sidebarPanel: ExplorePanel = isDesktop
     ? panel === 'venues'
@@ -753,6 +779,8 @@ export const useExploreBrowseUrlState = ({
     setSearchExpanded,
     activityDatePreset,
     applyActivityDatePreset,
+    activityModeFilter,
+    applyActivityModeFilter,
     syncExploreUrl,
     applyMapFilter,
     applyDesktopBrowseTab,

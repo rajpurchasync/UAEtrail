@@ -7,19 +7,20 @@ import type { ExploreCardModel } from '../exploreCardModel';
 import { JoinRequestActions } from '../../components/ui/JoinRequestActions';
 import { ExploreShopPeekActions } from './ExploreShopPeekActions';
 import type { JoinRequestUiState } from '../../utils/joinRequestUi';
-import { ExploreLinkedRidesharePeekIndication } from './ExploreLinkedRidesharePeekIndication';
 import {
   exploreCardHasMapCoords,
   exploreCardIsSeeking,
   exploreCardShowsInlineDirections,
 } from '../exploreCardModel';
 import {
-  ExploreCardCapacityRow,
   ExploreCardDirectionsButton,
   ExploreCardPeopleRow,
   ExploreCardRequirementBadges,
+  ExploreCardCapacityRow,
 } from './ExploreCardPresentation';
+import { ExploreActivityPeekStrips } from './ExploreActivityPeekStrips';
 import { ExplorePeekDetailLink } from './ExplorePeekDetailLink';
+import { ExploreAreaPeekActions } from './ExploreAreaPeekActions';
 export interface ExploreItemPeekActionsProps {
   card: ExploreCardModel;
   onClose: () => void;
@@ -56,6 +57,7 @@ export const ExploreItemPeekActions = ({
   onGuestGatedAction,
 }: ExploreItemPeekActionsProps) => {
   const isShop = card.source === 'shop';
+  const isArea = card.source === 'area';
   const isDemand = exploreCardIsSeeking(card);
   const externalUrl = card.websiteUrl?.trim() || null;
   const gate = onGuestGatedAction;
@@ -77,6 +79,17 @@ export const ExploreItemPeekActions = ({
     />
   );
 
+  if (isArea && card.areaSlug) {
+    return (
+      <ExploreAreaPeekActions
+        areaSlug={card.areaSlug}
+        stats={card.areaLensStats}
+        areaPagePath={card.path}
+        onClose={onClose}
+      />
+    );
+  }
+
   return (
     <>
       {card.showDemandOwnerActions && onDemandRemove ? (
@@ -92,6 +105,7 @@ export const ExploreItemPeekActions = ({
           <HostActivityCtas
             activity={card.activity}
             linkRideshareTenantId={linkRideshareTenantId}
+            canAddLinkedRide={card.viewerAccess?.entitlements?.canAddLinkedRide ?? false}
             handlers={hostActivityCtaHandlers}
             onGuestGatedAction={gate}
           />
@@ -258,17 +272,32 @@ export const ExploreItemPeekBody = ({
     card.source === 'shop' ||
     (exploreCardIsSeeking(card) && Boolean(card.listHost || card.hostAvatar));
 
+  if (card.source === 'area') {
+    return card.subtitle ? (
+      <p className="mt-3 text-sm leading-relaxed text-gray-600">{card.subtitle}</p>
+    ) : null;
+  }
+
+  if (card.source === 'activity') {
+    return (
+      <ExploreActivityPeekStrips
+        card={card}
+        onGuestGatedAction={onGuestGatedAction}
+        onOpenExploreItem={onOpenExploreItem}
+      />
+    );
+  }
+
   return (
     <>
-      <ExploreLinkedRidesharePeekIndication card={card} onOpenExploreItem={onOpenExploreItem} />
       {isShop && card.sections.aboutLine && (
         <p className="mt-3 text-sm leading-relaxed text-gray-600">{card.sections.aboutLine}</p>
       )}
       <ExploreCardCapacityRow card={card} />
-      {card.source !== 'activity' && card.requirementBadges && card.requirementBadges.length > 0 && (
+      {card.requirementBadges && card.requirementBadges.length > 0 && (
         <ExploreCardRequirementBadges badges={card.requirementBadges} />
       )}
-      {card.price && card.source !== 'activity' && (
+      {card.price && (
         <p className="mt-3">
           <span
             className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${

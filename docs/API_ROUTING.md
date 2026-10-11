@@ -72,7 +72,7 @@ Clients may keep intent URLs until M2b; host queue for buddy seeking rows uses t
 | GET | `/me/participant-intents` | List my intents |
 | POST | `/me/participant-intents` | Create (Find flow); **M1** also writes `activities` row (`activityMode: seeking`, `participantIntentId`). Response includes **`activityId`** (published map activity; `seekingActivityId` is a deprecated alias). |
 | — | `npm run backfill-seeking-activities` | One-off **M1** backfill for active intents missing `seekingActivityId` (`--dry-run`, `--limit=N`) |
-| — | `npm run seeking:m2d-status` | Ops readiness report before flipping `PARTICIPANT_INTENT_STUB_WRITE=false` (`--strict` for CI/deploy gates) |
+| — | `npm run seeking:m2d-status` | Ops readiness report before flipping `PARTICIPANT_INTENT_STUB_WRITE=false` (`--strict` fails if backfill incomplete or stub write on) |
 | PATCH | `/me/participant-intents/:intentId` | Update own active intent |
 | POST | `/me/participant-intents/:intentId/cancel` | Remove from map |
 | POST | `/me/participant-intents/:intentId/link-activity` | **Poster** links published activity (`convertedActivityId`) |

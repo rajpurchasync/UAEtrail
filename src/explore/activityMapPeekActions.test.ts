@@ -4,7 +4,7 @@ import {
   activityMapPeekShowsJoinFlow,
   activityMapPeekSkipsJoinContext,
   resolveActivityMapPeekActions,
-} from './activityMapPeekActions';
+} from '../activity/resolveActivityPresentation';
 import type { ExploreCardModel } from './exploreCardModel';
 
 const activityCard = (overrides: Partial<ExploreCardModel> = {}): ExploreCardModel =>
@@ -40,7 +40,7 @@ const activityCard = (overrides: Partial<ExploreCardModel> = {}): ExploreCardMod
       joinMode: 'open',
       canAccessCrewSurfaces: true,
       mapPeekActions: [
-        { id: 'message_host', prominence: 'primary' },
+        { id: 'open_crew_chat', prominence: 'primary' },
         { id: 'view_detail', prominence: 'text' },
       ],
     },
@@ -50,10 +50,10 @@ const activityCard = (overrides: Partial<ExploreCardModel> = {}): ExploreCardMod
 describe('resolveActivityMapPeekActions', () => {
   it('uses API mapPeekActions when present', () => {
     const actions = resolveActivityMapPeekActions(activityCard());
-    expect(actions.map((a) => a.id)).toEqual(['message_host', 'view_detail']);
+    expect(actions.map((a) => a.id)).toEqual(['open_crew_chat', 'view_detail']);
   });
 
-  it('computes public wire affordances when API sends an empty list', () => {
+  it('honors empty mapPeekActions from wire (no client recompute)', () => {
     const card = activityCard({
       viewerAccess: {
         exposure: 'redacted',
@@ -66,11 +66,8 @@ describe('resolveActivityMapPeekActions', () => {
         mapPeekActions: [],
       },
     });
-    expect(resolveActivityMapPeekActions(card).map((a) => a.id)).toEqual([
-      'request_join',
-      'message_host',
-    ]);
-    expect(activityMapPeekShowsJoinFlow(card, { kind: 'open' })).toBe(false);
+    expect(resolveActivityMapPeekActions(card).map((a) => a.id)).toEqual([]);
+    expect(activityMapPeekShowsJoinFlow(card, { kind: 'open' })).toBe(true);
   });
 
   it('does not show legacy join flow when request_join is wired', () => {

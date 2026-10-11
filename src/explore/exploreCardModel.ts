@@ -1,5 +1,6 @@
 import type {
   ActivityViewerAccessDTO,
+  ExploreAreaLensStatsDTO,
   ExploreCardKind,
   ExploreCardSource,
   ExploreLinkedRideshareDTO,
@@ -92,6 +93,8 @@ export interface ExploreCardModel {
   linkedRideshares?: ExploreLinkedRideshareDTO[];
   /** From `GET /explore/map` for activity/demand rows (per viewer). */
   viewerAccess?: ActivityViewerAccessDTO | null;
+  areaSlug?: string | null;
+  areaLensStats?: ExploreAreaLensStatsDTO | null;
 }
 
 const resolveCoverImage = (item: ExploreMapItemDTO): string | null =>
@@ -238,6 +241,8 @@ export const buildExploreCardModel = (item: ExploreMapItemDTO): ExploreCardModel
     ],
     mapLatitude: item.latitude ?? null,
     mapLongitude: item.longitude ?? null,
+    areaSlug: item.areaSlug ?? null,
+    areaLensStats: item.areaLensStats ?? null,
     linkedRideshares:
       item.linkedRideshareActivities && item.linkedRideshareActivities.length > 0
         ? item.linkedRideshareActivities

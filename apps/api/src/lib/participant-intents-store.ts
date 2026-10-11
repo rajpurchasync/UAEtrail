@@ -145,10 +145,18 @@ export const createParticipantIntent = async (
   input: CreateParticipantIntentInput
 ): Promise<ParticipantIntentDTO> => {
   const now = new Date();
-  let areaId: string | null = null;
+  const areaId = input.areaId?.trim() ? input.areaId.trim() : null;
   if (input.latitude != null && input.longitude != null) {
-    const { resolveAreaIdForCoordinates } = await import('./area-resolution.js');
-    areaId = await resolveAreaIdForCoordinates(input.latitude, input.longitude, null);
+    if (!areaId) {
+      const { ApiError } = await import('./api-error.js');
+      throw new ApiError(400, 'activity_area_required', 'Choose a curated area for this map post.');
+    }
+    const { findPublishedAreaById } = await import('./areas-store.js');
+    const area = await findPublishedAreaById(areaId);
+    if (!area) {
+      const { ApiError } = await import('./api-error.js');
+      throw new ApiError(400, 'area_not_found', 'Choose a published area.');
+    }
   }
   const intentId = randomUUID();
   const { createSeekingActivityForIntent, cancelSeekingActivityForIntent } = await import(
@@ -168,6 +176,18 @@ export const createParticipantIntent = async (
       title: input.title.trim(),
       activityId: publishedActivityId,
     });
+    if (areaId) {
+      const { notifySeekerOfHostedActivitiesInArea } = await import(
+        '../services/seeking-area-match-notifications.js'
+      );
+      void notifySeekerOfHostedActivitiesInArea({
+        seekerUserId: userId,
+        areaId,
+        intentId,
+        seekingActivityId: publishedActivityId,
+        intentDate: input.date ?? null,
+      });
+    }
     const { findActivityDocInMongo } = await import('./entity-sync.js');
     const activity = await findActivityDocInMongo(publishedActivityId);
     if (!activity) {
@@ -216,6 +236,18 @@ export const createParticipantIntent = async (
     title: input.title.trim(),
     activityId: resolveIntentPublishedActivityId(doc),
   });
+  if (areaId) {
+    const { notifySeekerOfHostedActivitiesInArea } = await import(
+      '../services/seeking-area-match-notifications.js'
+    );
+    void notifySeekerOfHostedActivitiesInArea({
+      seekerUserId: userId,
+      areaId,
+      intentId: doc._id,
+      seekingActivityId: resolveIntentPublishedActivityId(doc),
+      intentDate: input.date ?? null,
+    });
+  }
   const user = await findAuthUserById(userId);
   return mapDto(doc, user);
 };
@@ -235,6 +267,7 @@ export const participantIntentDocToCreateInput = (
   toLongitude: doc.toLongitude,
   partySize: doc.partySize,
   comment: doc.comment,
+  areaId: doc.areaId ?? null,
 });
 
 export const updateParticipantIntent = async (
@@ -271,13 +304,9 @@ export const updateParticipantIntent = async (
       title: patch.title?.trim() ?? seekingActivityToCreateInput(activity).title,
     });
 
-    let areaId: string | null = activity.areaId ?? null;
-    if (merged.latitude != null && merged.longitude != null) {
-      const { resolveAreaIdForCoordinates } = await import('./area-resolution.js');
-      areaId = await resolveAreaIdForCoordinates(merged.latitude, merged.longitude, null);
-    } else {
-      areaId = null;
-    }
+    const areaId =
+      merged.areaId?.trim() ||
+      (merged.latitude != null && merged.longitude != null ? activity.areaId ?? null : null);
 
     const { patchActivityInMongo } = await import('./entity-sync.js');
     const { parseLocalDateTime } = await import('./datetime.js');
@@ -329,9 +358,10 @@ export const updateParticipantIntent = async (
     comment: merged.comment.trim(),
     updatedAt: now,
   };
-  if (update.latitude != null && update.longitude != null) {
-    const { resolveAreaIdForCoordinates } = await import('./area-resolution.js');
-    update.areaId = await resolveAreaIdForCoordinates(update.latitude, update.longitude, null);
+  if (patch.areaId !== undefined) {
+    update.areaId = patch.areaId?.trim() || null;
+  } else if (update.latitude != null && update.longitude != null) {
+    update.areaId = existing.areaId ?? null;
   } else {
     update.areaId = null;
   }

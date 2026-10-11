@@ -1,5 +1,9 @@
 import type { ParticipantIntentKind } from '@uaetrail/shared-types';
 import { api } from '../../api/index';
+import {
+  validateDemandCuratedAreaStep,
+  validateDemandPublishArea,
+} from '../organizePublishArea';
 import { MAP_CONFIG } from '../../config/platform';
 import { buildDateOptions, todayIso, type LocationPrecision, type TimeMode } from './organizeFlow';
 
@@ -12,6 +16,7 @@ export type DemandFlowStepId =
   | 'to'
   | 'from'
   | 'area'
+  | 'curatedArea'
   | 'route'
   | 'persons'
   | 'audience'
@@ -61,6 +66,8 @@ export type DemandDraft = {
   areaPinPlaced: boolean;
   fromPinPlaced: boolean;
   toPinPlaced: boolean;
+  /** Admin-registered area + map pin (Find / looking for). */
+  areaId: string | null;
 };
 
 /** Same order and labels as FAB `FIND_COMPOSE_OPTIONS` / compose catalog `find.*`. */
@@ -98,6 +105,7 @@ export const DEMAND_SELF_VEHICLE_OPTIONS: Array<{ value: DemandVehicleType; titl
 const HIKING_DEMAND_STEPS: DemandFlowStepId[] = [
   'title',
   'when',
+  'curatedArea',
   'destination',
   'persons',
   'audience',
@@ -110,6 +118,7 @@ const HIKING_DEMAND_STEPS: DemandFlowStepId[] = [
 const CAMPING_DEMAND_STEPS: DemandFlowStepId[] = [
   'title',
   'when',
+  'curatedArea',
   'destination',
   'persons',
   'audience',
@@ -122,6 +131,7 @@ const CAMPING_DEMAND_STEPS: DemandFlowStepId[] = [
 const RIDESHARE_DEMAND_STEPS: DemandFlowStepId[] = [
   'title',
   'when',
+  'curatedArea',
   'from',
   'to',
   'persons',
@@ -133,7 +143,7 @@ const RIDESHARE_DEMAND_STEPS: DemandFlowStepId[] = [
 const EVENT_DEMAND_STEPS: DemandFlowStepId[] = [
   'title',
   'when',
-  'area',
+  'curatedArea',
   'persons',
   'audience',
   'info',
@@ -191,6 +201,7 @@ export const emptyDemandDraft = (): DemandDraft => ({
   areaPinPlaced: false,
   fromPinPlaced: false,
   toPinPlaced: false,
+  areaId: null,
 });
 
 export const getDemandFlowSteps = (kind: DemandKind): DemandFlowStepId[] => {
@@ -202,11 +213,11 @@ export const getDemandFlowSteps = (kind: DemandKind): DemandFlowStepId[] => {
     case 'event':
       return EVENT_DEMAND_STEPS;
     case 'guide':
-      return ['title', 'area', 'when', 'persons', 'comment', 'review'];
+      return ['title', 'curatedArea', 'when', 'persons', 'comment', 'review'];
     case 'rideshare':
       return RIDESHARE_DEMAND_STEPS;
     case 'other':
-      return ['title', 'area', 'persons', 'comment', 'review'];
+      return ['title', 'curatedArea', 'persons', 'comment', 'review'];
     default:
       return ['title', 'comment', 'review'];
   }
@@ -214,6 +225,7 @@ export const getDemandFlowSteps = (kind: DemandKind): DemandFlowStepId[] => {
 
 /** Sheet heading for each step (shown under the header). */
 export const demandFlowStepTitle = (step: DemandFlowStepId, kind: DemandKind): string => {
+  if (step === 'curatedArea') return 'Area & map pin';
   if (step === 'destination') return 'Preferred destination';
   if (step === 'audience') return 'Looking for';
   if (step === 'transport') return 'Transport';
@@ -458,13 +470,9 @@ export const validateDemandStep = (step: DemandFlowStepId, draft: DemandDraft): 
       return null;
     case 'rideshare':
       return null;
+    case 'curatedArea':
+      return validateDemandCuratedAreaStep(draft);
     case 'area': {
-      if (kind === 'event') {
-        if (!draft.areaPinPlaced || draft.latitude == null || draft.longitude == null) {
-          return 'Drop a pin on the map.';
-        }
-        return null;
-      }
       if (demandAreaTextRequired(kind) && !draft.preferredArea.trim()) {
         return kind === 'guide'
           ? 'Describe what you are looking for.'
@@ -494,7 +502,7 @@ export const validateDemandStep = (step: DemandFlowStepId, draft: DemandDraft): 
       if (draft.comment.trim().length < 3) return 'Add a short comment (at least 3 characters).';
       return null;
     case 'review':
-      return null;
+      return validateDemandPublishArea(draft, kind);
     default:
       return null;
   }
@@ -509,7 +517,7 @@ export const validateDemandDraft = (draft: DemandDraft): string | null => {
     const message = validateDemandStep(step, draft);
     if (message) return message;
   }
-  return null;
+  return validateDemandPublishArea(draft, kind);
 };
 
 export type DemandSubmitResult = {
@@ -541,6 +549,7 @@ export const publishDemandRequest = async (draft: DemandDraft): Promise<DemandSu
     toLongitude: draft.toPinPlaced ? draft.toLongitude : null,
     partySize: draft.partySize,
     comment,
+    ...(draft.areaId?.trim() ? { areaId: draft.areaId.trim() } : {}),
   };
 
   const created = await api.createParticipantIntent(payload);

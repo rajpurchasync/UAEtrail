@@ -9,6 +9,8 @@ import { ExploreMapDateFilter } from './ExploreMapDateFilter';
 import { VenueStateFilterMenu } from './VenueStateFilterMenu';
 import { ExplorePinKindPillsRow } from './ExplorePinKindPillsRow';
 import type { ExplorePinKindFilter } from '../explorePinKindFilter';
+import { ExploreActivityModePillsRow } from './ExploreActivityModePillsRow';
+import type { ExploreActivityModeFilter } from '../exploreActivityModeFilter';
 
 export type ExploreBrowseFilterChromeProps = {
   mapFilter: MapFilterKey;
@@ -30,6 +32,8 @@ export type ExploreBrowseFilterChromeProps = {
   unifiedMapChrome?: boolean;
   pinKind?: ExplorePinKindFilter;
   onPinKindChange?: (pinKind: ExplorePinKindFilter) => void;
+  activityModeFilter?: ExploreActivityModeFilter;
+  onActivityModeFilterChange?: (filter: ExploreActivityModeFilter) => void;
   className?: string;
 };
 
@@ -88,6 +92,8 @@ export const ExploreBrowseFilterChrome = ({
   unifiedMapChrome = false,
   pinKind = 'all',
   onPinKindChange,
+  activityModeFilter = 'all',
+  onActivityModeFilterChange,
   className = '',
 }: ExploreBrowseFilterChromeProps) => {
   const unifiedMap = unifiedMapChrome && layout === 'map';
@@ -100,10 +106,22 @@ export const ExploreBrowseFilterChrome = ({
   const showPinKindRow = unifiedMap && onPinKindChange != null;
   const mapShowsPlans = pinKind === 'all' || pinKind === 'activities' || pinKind === 'looking';
   const mapShowsPlaces = pinKind === 'all' || pinKind === 'places';
+  const mapShowsLocations = pinKind === 'all' || pinKind === 'locations';
+  const showActivityModeRow =
+    onActivityModeFilterChange != null &&
+    filterEmojiContext !== 'venue' &&
+    (unifiedMap ? mapShowsPlans : true);
+  const activityModeRow = showActivityModeRow ? (
+    <ExploreActivityModePillsRow
+      value={activityModeFilter}
+      onChange={onActivityModeFilterChange}
+      layout={layout}
+    />
+  ) : null;
   const effectiveShowDate =
     unifiedMap ? mapShowsPlans && showDateFilter : showDateFilter;
   const effectiveShowState =
-    unifiedMap ? mapShowsPlaces && showStateFilter : showStateFilter;
+    unifiedMap ? mapShowsPlaces && !mapShowsLocations && showStateFilter : showStateFilter;
   const pinKindRow = showPinKindRow ? (
     <ExplorePinKindPillsRow pinKind={pinKind} onPinKindChange={onPinKindChange!} layout={layout} />
   ) : null;
@@ -158,6 +176,7 @@ export const ExploreBrowseFilterChrome = ({
             layout={layout}
           />
         ) : null}
+        {activityModeRow}
         {pinKindRow}
       </div>
 
@@ -180,6 +199,7 @@ export const ExploreBrowseFilterChrome = ({
               layout="map"
             />
           ) : null}
+          {activityModeRow}
           {secondary ? <div className="flex w-full justify-end">{secondary}</div> : null}
         </div>
       ) : (
@@ -199,6 +219,7 @@ export const ExploreBrowseFilterChrome = ({
               layout="list"
             />
           ) : null}
+          {activityModeRow}
         </div>
       )}
     </div>

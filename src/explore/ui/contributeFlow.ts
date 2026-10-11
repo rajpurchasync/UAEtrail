@@ -10,6 +10,7 @@ import { getOutdoorContributeFlowSteps, getShopContributeFlowSteps } from './con
 
 export type ContributeFlowStepId =
   | 'title'
+  | 'curatedArea'
   | 'location'
   | 'image'
   | 'description'
@@ -30,6 +31,8 @@ export type ContributeFlowStepId =
 export type ContributeDraft = {
   kind: ContributeVenueKind | null;
   title: string;
+  /** Admin-registered area (`locations.areaId`). */
+  areaId: string | null;
   /** Trailhead, wadi, or landmark — list poster location chip (`locations.areaLabel`). */
   areaLabel: string;
   emirate: string;
@@ -63,6 +66,7 @@ export type ContributeSubmitResult = { kind: 'location'; location: LocationDTO }
 
 const EVENT_CONTRIBUTE_STEPS: ContributeFlowStepId[] = [
   'title',
+  'curatedArea',
   'location',
   'image',
   'description',
@@ -91,6 +95,8 @@ export const contributeFlowStepTitle = (
   switch (step) {
     case 'title':
       return 'Title';
+    case 'curatedArea':
+      return 'Area';
     case 'location':
       if (kind === 'hiking') return 'Starting point';
       if (kind === 'camping') return 'Camp location';
@@ -148,6 +154,7 @@ export const contributeDescriptionPlaceholder = (kind: ContributeVenueKind): str
 export const emptyContributeDraft = (): ContributeDraft => ({
   kind: null,
   title: '',
+  areaId: null,
   areaLabel: '',
   emirate: 'Dubai',
   latitude: MAP_CONFIG.exploreDefaultCenter.lat,
@@ -197,6 +204,9 @@ export const validateContributeStep = (
   switch (step) {
     case 'title':
       if (!draft.title.trim()) return 'Enter a title.';
+      return null;
+    case 'curatedArea':
+      if (!draft.areaId?.trim()) return 'Choose which area this place belongs to.';
       return null;
     case 'location':
       if (!draft.emirate.trim()) return 'Choose the emirate / state.';
@@ -304,6 +314,7 @@ export const publishContributeVenue = async (
     countryCode: DEFAULT_COUNTRY,
     emirate: draft.emirate.trim(),
     region: draft.emirate.trim(),
+    areaId: draft.areaId!.trim(),
     activityType,
     description: draft.description.trim(),
     latitude: draft.latitude ?? undefined,

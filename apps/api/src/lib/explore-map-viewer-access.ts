@@ -14,7 +14,10 @@ import { resolveJoinMode } from '../domain/activity-join-mode.js';
 import { listActivityEngagementForUserOnActivities } from './activity-engagement-store.js';
 import { mapIntentJoinRequestStatusByIntentIdsForUser } from './participant-intent-requests-store.js';
 import { listActiveTenantMembershipsByUser } from './tenant-access.js';
+import { listBuddiesForUser } from './buddy-store.js';
+import { resolveMemberHostStatus } from '../services/member-host-status.js';
 import { applyActivityViewEntitlements } from '../services/member-entitlements.js';
+import type { HostStatusDTO } from '@uaetrail/shared-types';
 
 const ORGANIZER_ROLES: MembershipRole[] = [
   MembershipRole.TENANT_OWNER,
@@ -35,6 +38,8 @@ export type ExploreMapViewerAccessContext = {
   requestStatusByActivityId: Map<string, RequestStatus>;
   staffTenantIds: Set<string>;
   demandJoinStatusByIntentId: Map<string, 'pending' | 'approved'>;
+  hostStatus: HostStatusDTO | null;
+  buddyUserIds: Set<string>;
 };
 
 export const resolveDemandMapViewerAccess = (input: {
@@ -138,6 +143,8 @@ export const buildExploreMapViewerAccessContext = async (input: {
       requestStatusByActivityId: new Map(),
       staffTenantIds: new Set(),
       demandJoinStatusByIntentId: new Map(),
+      hostStatus: null,
+      buddyUserIds: new Set(),
     };
   }
 
@@ -149,10 +156,12 @@ export const buildExploreMapViewerAccessContext = async (input: {
     .filter((item) => exploreMapItemIsSeeking(item) && item.participantIntentId)
     .map((item) => item.participantIntentId as string);
 
-  const [engagement, memberships, demandJoinStatusByIntentId] = await Promise.all([
+  const [engagement, memberships, demandJoinStatusByIntentId, hostStatus, buddies] = await Promise.all([
     listActivityEngagementForUserOnActivities(viewerUserId, activityIds),
     listActiveTenantMembershipsByUser(viewerUserId),
     mapIntentJoinRequestStatusByIntentIdsForUser(viewerUserId, intentIds),
+    resolveMemberHostStatus(viewerUserId),
+    listBuddiesForUser(viewerUserId),
   ]);
 
   const staffTenantIds = new Set(
@@ -168,16 +177,31 @@ export const buildExploreMapViewerAccessContext = async (input: {
     requestStatusByActivityId: engagement.requestStatusByActivityId,
     staffTenantIds,
     demandJoinStatusByIntentId,
+    hostStatus,
+    buddyUserIds: new Set(buddies.map((buddy) => buddy.userId)),
   };
 };
 
 const withEntitlements = (
   ctx: ExploreMapViewerAccessContext,
-  viewerAccess: ActivityViewerAccessDTO
+  viewerAccess: ActivityViewerAccessDTO,
+  activityCtx?: {
+    hostUserId: string | null;
+    buddyUserIdsOnActivity: string[];
+  }
 ): ActivityViewerAccessDTO =>
   applyActivityViewEntitlements(
-    { viewerUserId: ctx.viewerUserId, hostStatus: null },
-    viewerAccess
+    { viewerUserId: ctx.viewerUserId, hostStatus: ctx.hostStatus },
+    viewerAccess,
+    activityCtx
+      ? {
+          hostUserId: activityCtx.hostUserId,
+          isFriendOfHost: Boolean(
+            activityCtx.hostUserId && ctx.buddyUserIds.has(activityCtx.hostUserId)
+          ),
+          buddyUserIdsOnActivity: activityCtx.buddyUserIdsOnActivity,
+        }
+      : undefined
   );
 
 export const attachExploreMapViewerAccess = (
@@ -214,17 +238,25 @@ export const attachExploreMapViewerAccess = (
           : rawRequestStatus === RequestStatus.WAITLISTED
             ? 'waitlisted'
             : null;
+      const hostUserId = item.activity.hostUserId ?? item.featuredPerson?.userId ?? null;
+      const participantUserIds = (item.participantPreviews ?? []).map((preview) => preview.id);
+      const buddyOnActivity = participantUserIds.filter((id) => ctx.buddyUserIds.has(id));
+
       return {
         ...item,
-        viewerAccess: withEntitlements(ctx, {
-          ...exposure,
-          mapPeekActions: computeActivityMapPeekActions({
-            level,
-            activityPublished,
-            joinMode,
-            joinRequestStatus,
-          }),
-        }),
+        viewerAccess: withEntitlements(
+          ctx,
+          {
+            ...exposure,
+            mapPeekActions: computeActivityMapPeekActions({
+              level,
+              activityPublished,
+              joinMode,
+              joinRequestStatus,
+            }),
+          },
+          { hostUserId, buddyUserIdsOnActivity: buddyOnActivity }
+        ),
       };
     }
 

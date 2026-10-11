@@ -7,9 +7,17 @@ import {
   listPublishedAreas,
   toAreaPublicDto,
 } from '../../lib/areas-store.js';
+import {
+  listActiveCatalogPlacesByArea,
+  listPublishedUpcomingActivitiesByArea,
+} from '../../lib/activities-store.js';
+import { buildActivityDto, toLocationDto } from '../../lib/mappers.js';
 import { COLLECTIONS } from '../../lib/collections.js';
 import { getMongoClient } from '../../lib/mongo.js';
 import { ActivityStatus, LocationStatus } from '../../domain/enums.js';
+
+const AREA_PREVIEW_ACTIVITY_LIMIT = 8;
+const AREA_PREVIEW_PLACE_LIMIT = 12;
 
 const slugParamSchema = z.object({ slug: z.string().min(1).max(80) });
 
@@ -54,10 +62,18 @@ export const registerPublicAreaRoutes = (router: Router): void => {
           throw new ApiError(404, 'area_not_found', 'Area not found.');
         }
         const counts = await countByAreaId(area.id);
+        const [activityRows, placeRows] = await Promise.all([
+          listPublishedUpcomingActivitiesByArea(area.id, AREA_PREVIEW_ACTIVITY_LIMIT),
+          listActiveCatalogPlacesByArea(area.id, AREA_PREVIEW_PLACE_LIMIT),
+        ]);
         res.json({
           data: {
             area: toAreaPublicDto(area),
             counts,
+            preview: {
+              activities: activityRows.map((event) => buildActivityDto(event)),
+              places: placeRows.map((place) => toLocationDto(place)),
+            },
           },
         });
       } catch (error) {

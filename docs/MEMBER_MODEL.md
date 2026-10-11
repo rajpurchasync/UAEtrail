@@ -4,7 +4,9 @@
 
 Do **not** re-implement tier logic in React hooks — consume **`GET /me/host-status`** (`HostStatusDTO` in `@uaetrail/shared-types`).
 
-**Capabilities ≠ viewer access:** `canPublish` / `canAccessHostConsole` answer whether this member may **act** as a host. They do **not** gate whether someone may **read** full activity detail or a member profile. That is **`resolveActivityViewerAccess`** / **`resolveProfileViewerAccess`** ([`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §15). Guest sign-in sheets (`guestBrowseGateCopy`) are presentation when `gateReason === sign_in` only.
+**Capabilities ≠ viewer access:** `canPublish` / `canAccessHostConsole` answer whether this member may **act** as a host. They do **not** gate whether someone may **read** full activity detail or a member profile. That is **`buildActivityViewerAccess`** / **`resolveProfileViewerAccess`** ([`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §15; `resolveActivityViewerAccess` remains a compatibility alias). Guest sign-in sheets (`guestBrowseGateCopy`) are presentation when `gateReason === sign_in` only.
+
+**Activity detail — Pro vs host vs crew:** **Community host** = profile-complete member who may Organize (`canPublish`). **Pro membership** = paid tier for **social depth** on outings (e.g. view host profile before join, full **Buddies** roster after join, offer/add transport when enforced) — applied in **`applyActivityViewEntitlements`** after social `viewerAccess`. **`canAccessCrewSurfaces`** on activity detail is **not** Pro and **not** host tier: it means confirmed **participant** or **host** on **this** outing (meeting precision, roster, group chat). Pending joiners stay on **Plan** + join CTAs only. Do not use `UserRole` or `canPublish` for consumer Buddies/Place gates.
 
 **Host = always a user:** Every publish action has a `userId` actor. A **business** is a **tenant** the user may represent; use **publish as self / {business}** when the member has multiple activity-capable tenants (`GET /me/host-status` → `ownedProfiles[].publishingProfileKind`; Organize publish step `OrganizePublishAsField`). Host console publish-as: TBD.
 

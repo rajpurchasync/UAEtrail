@@ -14,8 +14,8 @@ import {
 import { exploreMapItemIsSeeking } from './explore-activity-mode.js';
 import type { ExploreActivityMode } from './explore-activity-mode.js';
 
-export type ExploreCardSource = 'activity' | 'venue' | 'shop' | 'agency' | 'demand';
-export type ExploreCardKind = 'hiking' | 'camping' | 'event' | 'rideshare' | 'shop' | 'agency';
+export type ExploreCardSource = 'activity' | 'venue' | 'shop' | 'agency' | 'demand' | 'area';
+export type ExploreCardKind = 'hiking' | 'camping' | 'event' | 'rideshare' | 'shop' | 'agency' | 'area';
 
 export type ExplorePresentationBuildInput = {
   id: string;
@@ -136,10 +136,12 @@ export const resolveExploreItemSource = (
     source === 'venue' ||
     source === 'shop' ||
     source === 'agency' ||
-    source === 'demand'
+    source === 'demand' ||
+    source === 'area'
   ) {
     return source;
   }
+  if (id.startsWith('area:')) return 'area';
   if (id.startsWith('venue:')) return 'venue';
   if (id.startsWith('demand:')) return 'activity';
   if (id.startsWith('shop:')) return 'shop';
@@ -152,6 +154,7 @@ export const resolveMapPinItemSource = (
   item: Pick<ExplorePresentationBuildInput, 'id' | 'source' | 'activityMode' | 'participantIntentId'>
 ): ExploreCardSource => {
   const { id } = item;
+  if (id.startsWith('area:')) return 'area';
   if (id.startsWith('venue:')) return 'venue';
   if (id.startsWith('demand:')) return 'activity';
   if (id.startsWith('shop:')) return 'shop';
@@ -730,8 +733,33 @@ const resolveExploreCardKind = (item: ExplorePresentationBuildInput): ExploreCar
 export const buildExploreCardPresentation = (
   item: ExplorePresentationBuildInput
 ): ExploreCardPresentationDTO => {
-  const kind = resolveExploreCardKind(item);
   const source = resolveExploreItemSource(item);
+  if (source === 'area') {
+    const subtitle = item.subtitle?.trim() || null;
+    return {
+      kind: 'area',
+      source: 'area',
+      emoji: '🗺️',
+      headline: item.title,
+      listTitle: item.title,
+      listHost: subtitle,
+      subtitle,
+      spotsLabel: null,
+      venueHint: null,
+      primaryCta: 'See outings',
+      secondaryCta: 'Area page',
+      shareText: null,
+      routeLabel: null,
+      whenLabel: null,
+      sections: {
+        listTitle: item.title,
+        listWhen: null,
+        listGoing: null,
+        details: [],
+      },
+    };
+  }
+  const kind = resolveExploreCardKind(item);
   const isSeekingPin = exploreMapItemIsSeeking(item);
   const activity = item.activity;
 

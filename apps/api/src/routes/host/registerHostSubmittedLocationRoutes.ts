@@ -11,6 +11,8 @@ import { awardPoints } from '../../services/rewards.js';
 import { buildLocationCreateData } from '../../services/location-submit.js';
 import { locationSubmitBodySchema } from '../../domain/location-submit.js';
 import { createLocationRecord, listSubmittedLocationsByUser } from '../../lib/activities-store.js';
+import { findPublishedAreaById } from '../../lib/areas-store.js';
+import { ApiError } from '../../lib/api-error.js';
 
 /** Tenant host: list and submit venue/place drafts (organisation console). */
 export const registerHostSubmittedLocationRoutes = (hostRouter: Router): void => {
@@ -32,6 +34,10 @@ export const registerHostSubmittedLocationRoutes = (hostRouter: Router): void =>
     async (req, res, next) => {
       try {
         const body = req.body as z.infer<typeof locationSubmitBodySchema>;
+        const area = await findPublishedAreaById(body.areaId.trim());
+        if (!area) {
+          throw new ApiError(400, 'area_not_found', 'Choose a published area.');
+        }
 
         const created = await createLocationRecord(buildLocationCreateData(body, req.auth!.userId));
 

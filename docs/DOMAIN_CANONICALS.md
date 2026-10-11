@@ -340,7 +340,7 @@ Use this when naming files, hooks, and utils — **one product word per concept*
 | **Member discovery roster** | map + directory compose | `seekingOnMap[]` (`seekingTitle`, `participantIntentId`) on `GET /me/member-discovery/roster` | Wire field `lookingFor`, `demandTitle` |
 | **Journey map** (`/profile/history/map`) | `GET /me/journey-map`, `POST/PATCH/DELETE /me/map-pins`, `JourneyMapEntryDTO` | `memberJourneyMapApi`, `src/member-plan/journeyMap*` | `GET /me/trips/map`, `outdoorMap*` |
 | **Explore map** | `GET /explore/map` | `src/explore/*`, `exploreMapPinModel` | `journeyMap*` (wrong surface) |
-| **Area** (curated zone) | `GET /areas`, `GET /areas/:slug` | `areas-store`, `area-resolution`, `/area/:slug`, explore `?area=` | `areaLabel` string as third concept |
+| **Area** (curated zone) | `GET /areas`, `GET /areas/:slug` | `areas-store`, `organizePublishArea.ts`, `/area/:slug`, explore `?area=` | `areaLabel` string as third concept; **do not** assign area from meeting pin polygons for hosted publish |
 | **Place / venue** | `locations` | `place*`, `venue` panel, `Place` in UI | `location` in new routes/components |
 | **Friends** | buddies API | `BUDDIES_PATH`, `buddy*` stores only on API | `buddyUserId`, “buddy entity” |
 | **Host console** | `/host/*`, tenant | `src/pages/host/*`, `src/console/*`, `useHostStatus`, `useConsoleHubData`, `listHostActivities` | `tenant` in consumer UI strings (wire: `x-organisation-id`) |
@@ -417,7 +417,7 @@ Any **place, venue, activity meeting point, shop, parking pin**, or other consum
 
 | Entity | Resolver | Tests | HTTP surfaces |
 |--------|----------|-------|----------------|
-| **Activity** | `apps/api/src/services/activity-viewer-access.ts` → `resolveActivityViewerAccess` | `apps/api/tests/activity-viewer-access.test.ts` | `GET /activities/:id`, future redaction on `GET /explore/map` items |
+| **Activity** | `apps/api/src/services/activity-viewer-access.ts` → `buildActivityViewerAccess` (`resolveActivityViewerAccess` alias) | `apps/api/tests/activity-viewer-access.test.ts` | `GET /activities/:id`, future redaction on `GET /explore/map` items |
 | **Member profile** | `resolveProfileViewerAccess` + `computeProfileDetailExposure` (`profile-viewer-access.ts`) | `profile-viewer-access.test.ts`, shared-types | `GET /users/:id/public-profile` → `{ data, viewerAccess }`; guests `sign_in` only |
 | **Place (catalog)** | Public read today — no roster | — | `GET /places/:id` |
 | **Shop / operator** | **TBD** — policy in §15.4 row “commerce” | — | Shop public pages |
@@ -501,6 +501,8 @@ Computed server-side with `surface: 'explore_map'` (`computeActivityMapPeekActio
 | **Shop** | signed-in member | detail | `full` | `null` | **LIVE** |
 
 **Participation axis (unchanged):** `participationMode` only affects **how** you join (`I'm going` vs `Request to join`) and `joinRequestUi` — not map discovery. Demand never has `participationMode` ([`CREATE_FLOW.md`](./CREATE_FLOW.md)).
+
+**Consumer detail tabs (UI only):** **Plan · Place · Buddies · Transport** — not wire field names. Tab content maps to existing DTO slices (`description` / `meetingPoint` / `participants` / `rideshare*`). **`canAccessCrewSurfaces`** gates Place body + Buddies roster/chat surfaces; Transport **reach-by** remains visible without crew; linked rideshare summary may be public per peek policy.
 
 ---
 
@@ -630,11 +632,28 @@ ViewerRequestContext
 |-------|----------|
 | Capability tiers | `apps/api/src/services/member-host-status.ts` |
 | Activity social access | `activity-viewer-access.ts` + `computeActivityDetailExposure` |
-| Activity detail pipeline | `compose-activity-viewer-access.ts` → social then `applyActivityViewEntitlements` |
+| Activity detail pipeline | `compose-activity-viewer-access.ts` (loads buddy entitlement context) → social then `applyActivityViewEntitlements` |
 | Profile social access | `profile-viewer-access.ts` |
 | Member audience ladder | `packages/shared-types/src/member-access.ts` — `MemberAudience`, `organizeEntitlementDenial` |
 | Future entitlements | `apps/api/src/services/member-entitlements.ts` — composes **after** social exposure |
 | Wire DTO | `packages/shared-types` — `ActivityViewerAccessDTO`, later `EntitlementDenial[]` if needed |
 | Guest copy | `guestBrowseGateCopy` — **presentation** for `sign_in` only |
 
-**Refactor note:** When Pro-gated detail ships, **wrap** `resolveActivityViewerAccess` with `applyEntitlementsToActivityView(...)` — do not fold Pro into `computeActivityDetailExposure`.
+**Refactor note:** When Pro-gated detail ships, **wrap** `resolveActivityViewerAccess` with `applyActivityViewEntitlements` — do not fold Pro into `computeActivityDetailExposure`.
+
+---
+
+### 15.11 Naming vocabulary (wire vs pipeline vs UI)
+
+**Problem:** `resolve*` + sentence-long helpers (`activityViewerEntitlementsCanViewFullBuddyRoster`) read like React policy and hide the HTTP contract.
+
+| Layer | Lead with | Examples | Do not |
+|-------|-----------|----------|--------|
+| **HTTP / wire** | Route + DTO field | `GET /activities/:id` → `viewerAccess.entitlements.canViewFullBuddyRoster`; `GET /me/host-status` → `canPublish` | New public `resolve*` in `src/` that recomputes access |
+| **Shared policy** | `compute*` on inputs → DTO | `computeActivityDetailExposure`, `computeActivityMapPeekActions`, `computeActivityViewerEntitlements` | Export `activityViewerEntitlementsCan*` — use DTO booleans in UI |
+| **API composition** | One composer per surface | `composeActivityViewerAccess` for activity detail + map enrich; buddy/host context loaded **inside** route/composer, not a second public service name | Scatter `resolveActivityView*` loaders imported from routes |
+| **FE presentation** | `map*` / `*Presentation` / `*ToUi` | `mapViewerAccessToUi`, `resolvePeekDetailAccess` (wire → peek link kind), `activityDetailPresentation.ts` + `activityPeekEngagement.ts` (shim: `resolveActivityPresentation.ts`) | `computeActivityDetailExposure` in `src/`; crew gates from `isHostUser` when `viewerAccess` is present |
+
+**Repository / store names** (`listActiveTenantMembershipsByUser`, `findTenantMembershipContext`) are **data access** — not viewer-access vocabulary; rename only with a dedicated tenant-membership pass (out of §15 scope).
+
+**Phased cleanup:** [`experiment/member-surfaces-implementation-plan.md`](./experiment/member-surfaces-implementation-plan.md) **§22 (NA-*)** — runs **parallel** to §21 AD-*; NA-1–NA-4 should land before AD-7 close.

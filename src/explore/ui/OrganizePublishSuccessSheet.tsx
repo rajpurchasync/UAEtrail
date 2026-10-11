@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { api } from '../../api/index';
 import { CheckCircle2 } from 'lucide-react';
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import { EXPLORE_Z } from '../../config/exploreTheme';
@@ -62,9 +63,24 @@ export const OrganizePublishSuccessSheet = ({
   planWithBuddyUserId = null,
 }: OrganizePublishSuccessSheetProps) => {
   const [pasteOpen, setPasteOpen] = useState(false);
+  const [canAddLinkedRide, setCanAddLinkedRide] = useState(false);
+
+  useEffect(() => {
+    if (!open || !publishedActivity.id) {
+      setCanAddLinkedRide(false);
+      return;
+    }
+    void api
+      .getPublicActivityDetail(publishedActivity.id)
+      .then((res) => setCanAddLinkedRide(res.viewerAccess?.entitlements?.canAddLinkedRide ?? false))
+      .catch(() => setCanAddLinkedRide(false));
+  }, [open, publishedActivity.id]);
 
   const showLinkRideshare =
-    showPostPublishRideshare && tenantId && canLinkRideshareToActivity(publishedActivity);
+    showPostPublishRideshare &&
+    tenantId &&
+    canLinkRideshareToActivity(publishedActivity) &&
+    canAddLinkedRide;
 
   return (
     <ExploreResponsiveSheet

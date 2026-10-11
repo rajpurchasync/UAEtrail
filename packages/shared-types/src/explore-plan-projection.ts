@@ -56,8 +56,12 @@ export type ExploreMapKindForPlan =
   | 'agency';
 
 export const exploreMapKindToPlanMapKind = (
-  kind: ExploreMapKindForPlan
-): ExploreMapPlanActivityKind => (kind === 'agency' || kind === 'shop' ? 'shop' : kind);
+  kind: ExploreMapKindForPlan | 'area'
+): ExploreMapPlanActivityKind => {
+  if (kind === 'agency' || kind === 'shop') return 'shop';
+  if (kind === 'area') return 'hiking';
+  return kind;
+};
 
 export type ExploreMapPlanSource = 'activity' | 'demand' | 'venue' | 'shop';
 

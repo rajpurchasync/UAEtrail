@@ -135,6 +135,7 @@ export interface Activity {
   requirements: string[];
   joinMode?: 'open' | 'private' | null;
   participationMode?: 'rsvp' | 'approval' | null;
+  groupChatPostPolicy?: 'all_participants' | 'host_only' | null;
   images: string[];
   bannerUrl: string | null;
   signupUrl: string | null;

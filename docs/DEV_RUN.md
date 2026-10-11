@@ -34,7 +34,7 @@ During dev run, quickly verify:
 
 Explore FAB changes: [`CREATE_FLOW.md`](./CREATE_FLOW.md) + `src/explore/composeFlowCatalog.ts`. Automated guards: `npm run verify:system:quick` and `npm run test:explore-alignment`.
 
-Seeking storage (activity-canonical Find): [`operations/SEEKING_M2D_RUNBOOK.md`](./operations/SEEKING_M2D_RUNBOOK.md). Local readiness: `npm run seeking:m2d-status` (stub write should be **off** by default).
+Seeking storage (activity-canonical Find): [`operations/SEEKING_M2D_RUNBOOK.md`](./operations/SEEKING_M2D_RUNBOOK.md). Local readiness: `npm run seeking:m2d-status` (stub write should be **off** by default); gate before deploy: `npm run seeking:deploy-gate`. If backfill skips coord-less intents, use `cancel-coordless-participant-intents` (see runbook).
 
 **Local smoke — Find / looking for (manual, after `dev:local`):**
 

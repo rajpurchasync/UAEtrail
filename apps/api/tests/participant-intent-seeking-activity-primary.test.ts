@@ -8,11 +8,13 @@ import bcrypt from 'bcryptjs';
 import { UserRole, UserStatus } from '../src/domain/enums.js';
 import { getMongoClient } from '../src/lib/mongo.js';
 import { COLLECTIONS } from '../src/lib/collections.js';
+import { buildTestParticipantIntentInput, ensureCuratedAreasSeeded } from './helpers/test-seed.js';
 
 const ENV_KEY = 'PARTICIPANT_INTENT_STUB_WRITE';
 
 beforeAll(async () => {
   await bootstrapTestApp();
+  await ensureCuratedAreasSeeded();
 });
 
 describe('Find create (activity-canonical — stub write off)', () => {
@@ -35,18 +37,15 @@ describe('Find create (activity-canonical — stub write off)', () => {
       profile: { displayName: 'Seeker', phone: null, bio: null, avatarUrl: null },
     });
 
-    const intent = await createParticipantIntent(user._id, {
-      kind: 'hiking',
-      title: `Find post ${suffix}`,
-      date: '2026-12-22',
-      time: '07:00',
-      preferredArea: 'Hatta',
-      partySize: 2,
-      comment: 'Looking for company',
-      latitude: 24.85,
-      longitude: 56.12,
-      locationPrecision: 'specific',
-    });
+    const intent = await createParticipantIntent(
+      user._id,
+      buildTestParticipantIntentInput({
+        title: `Find post ${suffix}`,
+        date: '2026-12-22',
+        latitude: 24.85,
+        longitude: 56.12,
+      })
+    );
 
     expect(intent.activityId ?? intent.seekingActivityId).toBeTruthy();
     const activityId = (intent.activityId ?? intent.seekingActivityId) as string;

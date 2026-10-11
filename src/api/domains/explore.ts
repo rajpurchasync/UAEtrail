@@ -24,6 +24,7 @@ export const exploreApi = {
     toLongitude?: number | null;
     partySize: number;
     comment: string;
+    areaId?: string | null;
   }) =>
     apiRequest<{ data: import('@uaetrail/shared-types').ParticipantIntentDTO }>('/me/participant-intents', {
       method: 'POST',

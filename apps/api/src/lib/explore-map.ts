@@ -38,6 +38,7 @@ import {
 import { resolveVenueExploreLabels } from './venue-display-names.js';
 import { isWithinUaeFocusArea } from './uae-bbox.js';
 import { listPublishedAreas } from './areas-store.js';
+import { buildExploreAreaLensItems } from './explore-map-area-lens.js';
 
 export { invalidateExploreMapCache };
 
@@ -258,7 +259,7 @@ const buildExploreMapPayloadUncached = async (): Promise<{ items: ExploreMapItem
       toLabel: display.toLabel,
       activity
     },
-        activity.areaId,
+        event.location?.areaId ?? activity.areaId,
         areaSlugById
       )
     );
@@ -406,6 +407,8 @@ const buildExploreMapPayloadUncached = async (): Promise<{ items: ExploreMapItem
 
   attachLinkedRideshareMetadata(items);
 
+  items.push(...buildExploreAreaLensItems(publishedAreas, items));
+
   for (const item of items) {
     if (item.source === 'activity' && item.activity) {
       const activityMode = item.activityMode ?? 'hosted';
@@ -467,6 +470,7 @@ const buildExploreMapPayloadUncached = async (): Promise<{ items: ExploreMapItem
 
   for (const item of items) {
     item.presentation = buildExploreCardPresentation(item);
+    if (item.source === 'area') continue;
     if (item.source === 'venue') {
       const id = item.locationCard?.id ?? item.id.replace(/^venue:/, '');
       const stat = locationStats.get(id);

@@ -7,6 +7,7 @@ import { api } from '../api/index';
 import { explorePath } from '../explore/routing';
 import { EXPLORE_MAP_PATH } from '../config/routingCatalog';
 import { PRODUCT_EXPLORE_CTA } from '../content/productNorthStar';
+import { AreaHubPreviewSections } from '../components/area/AreaHubPreviewSections';
 
 /** Curated area hub — links into explore with `?area=` filter (Phase 4). */
 export const AreaDetailPage = () => {
@@ -70,16 +71,23 @@ export const AreaDetailPage = () => {
     );
   }
 
-  const { area, counts } = data;
+  const { area, counts, preview } = data;
   const exploreInArea = explorePath({ list: true, area: area.slug });
 
   return (
     <main className="mx-auto max-w-lg px-4 py-8">
+      {area.imageUrl ? (
+        <img
+          src={area.imageUrl}
+          alt=""
+          className="-mx-4 mb-6 w-[calc(100%+2rem)] max-w-none rounded-2xl object-cover aspect-[16/9]"
+        />
+      ) : null}
       <p className="text-sm font-medium text-emerald-800">{area.region}</p>
       <h1 className="mt-1 text-3xl font-bold text-slate-900">{area.name}</h1>
       <p className="mt-3 text-slate-600">
-        Outings, trails, and people looking for crew in this zone — filter the map to what is happening
-        here.
+        {area.summary?.trim() ||
+          'Outings, trails, and people looking for crew in this zone — filter the map to what is happening here.'}
       </p>
 
       <dl className="mt-6 grid grid-cols-3 gap-3 text-center">
@@ -96,6 +104,12 @@ export const AreaDetailPage = () => {
           <dd className="text-2xl font-semibold text-slate-900">{counts.seeking}</dd>
         </div>
       </dl>
+
+      <AreaHubPreviewSections
+        areaSlug={area.slug}
+        activities={preview?.activities ?? []}
+        places={preview?.places ?? []}
+      />
 
       {availabilityIndex && availabilityIndex.people.length > 0 ? (
         <section className="mt-8 space-y-2">

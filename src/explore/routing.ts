@@ -13,6 +13,7 @@ import {
   parseExploreActivityDatePreset,
   serializeExploreActivityDatePreset,
 } from './exploreActivityDateFilter';
+import { serializeExplorePinKindFilter, type ExplorePinKindFilter } from './explorePinKindFilter';
 import {
   serializeExploreBuddySubtype,
   type ExploreBuddySubtypeKey,
@@ -310,6 +311,8 @@ export const explorePath = (options?: {
   joinInvite?: boolean;
   /** Curated area slug — constrains map/list rows (`exploreAreaQueryParam`). */
   area?: string;
+  /** Map pin-kind row (`activities` | `locations` | `places` | `shops`). */
+  pinKind?: ExplorePinKindFilter;
 }): string => {
   const params = new URLSearchParams();
   if (options?.filter && options.filter !== 'all') {
@@ -392,6 +395,11 @@ export const explorePath = (options?: {
   }
   if (options?.area?.trim()) {
     params.set(exploreAreaQueryParam, options.area.trim().toLowerCase());
+  }
+  if (options?.pinKind) {
+    const serializedPinKind = serializeExplorePinKindFilter(options.pinKind);
+    if (serializedPinKind) params.set('pinKind', serializedPinKind);
+    else params.delete('pinKind');
   }
   const qs = params.toString();
   return qs ? `${EXPLORE_MAP_PATH}?${qs}` : EXPLORE_MAP_PATH;

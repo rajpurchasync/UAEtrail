@@ -237,6 +237,132 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(messages).toMatch(/hasInboxThreads/);
   });
 
+  it('AD-arch: activity detail uses single shell (no HostActivityDetailView shim)', () => {
+    const files = [
+      'src/components/host/ActivityManageSheet.tsx',
+      'src/pages/ActivityDetail.tsx',
+    ];
+    for (const file of files) {
+      const content = read(file);
+      expect(content).toContain('ActivityDetailView');
+      expect(content).not.toContain('HostActivityDetailView');
+    }
+    expect(() => read('src/components/host/HostActivityDetailView.tsx')).toThrow();
+    expect(() => read('src/explore/activityMapPeekActions.ts')).toThrow();
+  });
+
+  it('AD-arch: Tier-1 documents Transport tab always visible', () => {
+    const nav = read('docs/NAVIGATION.md');
+    expect(nav).toMatch(/Transport.*[Aa]lways/);
+    expect(nav).not.toMatch(/Transport\*\* hides when/);
+    const create = read('docs/CREATE_FLOW.md');
+    expect(create).toContain('resolveActivityPresentation.ts');
+    expect(create).toMatch(/Transport tab.*always/i);
+  });
+
+  it('AD-arch: member-surfaces §21 tracks activity detail phases', () => {
+    const plan = read('docs/experiment/member-surfaces-implementation-plan.md');
+    expect(plan).toContain('## 21. Activity detail tabs');
+    expect(plan).toContain('AD-4');
+  });
+
+  it('NA-3: crew surfaces come from wire only (no client fallback)', () => {
+    const presentation = read('src/activity/activityDetailPresentation.ts');
+    expect(presentation).toMatch(
+      /canAccessCrewSurfaces = input\.viewerAccess\?\.canAccessCrewSurfaces \?\? false/
+    );
+    expect(presentation).not.toMatch(/isHostUser \|\| input\.isConfirmedParticipant/);
+    const detail = read('src/pages/ActivityDetail.tsx');
+    expect(detail).not.toMatch(/canAccessCrewSurfaces \?\? true/);
+  });
+
+  it('AD-6: host crew chat policy UI patches activity groupChatPostPolicy', () => {
+    const detail = read('src/components/activity/ActivityDetailView.tsx');
+    expect(detail).toContain('ActivityCrewChatPostPolicyCard');
+    expect(detail).toContain('groupChatPostPolicy');
+    const card = read('src/components/activity/ActivityCrewChatPostPolicyCard.tsx');
+    expect(card).toContain('updateHostActivity');
+    const audience = read('src/explore/ui/organizeWizard/steps/audience-step.tsx');
+    expect(audience).toContain('OrganizeCrewChatPostPolicyField');
+    expect(audience).toContain('groupChatPostPolicy');
+  });
+
+  it('AD-8: post check-in review prompts on activity detail Plan/Buddies', () => {
+    const detail = read('src/components/activity/ActivityDetailView.tsx');
+    expect(detail).toContain('ActivityPostCheckInReviewPrompts');
+    expect(detail).toContain('ActivityHostCheckInReviewPrompt');
+    expect(detail).toContain('buildParticipantPostCheckInReviewPrompts');
+    const copy = read('src/content/activityDetailCopy.ts');
+    expect(copy).toContain('ACTIVITY_DETAIL_POST_CHECK_IN_REVIEWS_TITLE');
+  });
+
+  it('AD-5: transport offer/add gated on wire entitlements', () => {
+    const hostCtas = read('src/components/activity/HostActivityCtas.tsx');
+    expect(hostCtas).toContain('canAddLinkedRide');
+    const caps = read('src/host/hostActivityManageCapabilities.ts');
+    expect(caps).toContain('canAddLinkedRide');
+    const offer = read('src/explore/linkActivityRideshareOffer.ts');
+    expect(offer).toContain('canShowDemandLinkRideshareOffer');
+    expect(offer).toMatch(/canOfferTransport/);
+    const entitlements = read('packages/shared-types/src/activity-viewer-entitlements.ts');
+    expect(entitlements).toMatch(/link_carpool.*canAddLinkedRide/);
+  });
+
+  it('AD-6: public activity SEO omits meeting from JSON-LD', () => {
+    const schemas = read('src/components/seo/schemas.ts');
+    expect(schemas).toContain('activityPublicMetaDescription');
+    expect(schemas).not.toMatch(/meetingPoint/);
+  });
+
+  it('NA-6: API viewer access uses buildActivityViewerAccess', () => {
+    const mod = read('apps/api/src/services/activity-viewer-access.ts');
+    expect(mod).toContain('export const buildActivityViewerAccess');
+    expect(mod).toContain('export const resolveActivityViewerAccess = buildActivityViewerAccess');
+    const compose = read('apps/api/src/services/compose-activity-viewer-access.ts');
+    expect(compose).toMatch(/buildActivityViewerAccess/);
+    expect(compose).not.toMatch(/resolveActivityViewerAccess\(/);
+  });
+
+  it('NA-4: peek actions prefer wire mapPeekActions (no client recompute on empty list)', () => {
+    const peekEngagement = read('src/activity/activityPeekEngagement.ts');
+    expect(peekEngagement).toMatch(/fromApi !== undefined\s*\?\s*fromApi/);
+    const presentation = read('src/activity/resolveActivityPresentation.ts');
+    expect(presentation).toContain("from './activityPeekEngagement'");
+    expect(presentation).toContain("from './activityDetailPresentation'");
+    const privateItem = read('src/explore/privateActivityExploreItem.ts');
+    expect(privateItem).not.toMatch(/computeActivityMapPeekActions/);
+  });
+
+  it('NA-2: activity detail route does not import entitlement context resolver', () => {
+    const routes = read('apps/api/src/routes/user/registerPublicActivityRoutes.ts');
+    expect(routes).not.toMatch(/resolveActivityViewEntitlementContext/);
+    expect(routes).not.toMatch(/activity-view-entitlement-context/);
+    expect(routes).toContain('composeActivityViewerAccess');
+  });
+
+  it('NA-arch: §22 viewer-access naming track + no sentence-long entitlement helpers', () => {
+    const plan = read('docs/experiment/member-surfaces-implementation-plan.md');
+    expect(plan).toContain('## 22. Viewer access naming');
+    expect(plan).toContain('NA-1');
+    const canon = read('docs/DOMAIN_CANONICALS.md');
+    expect(canon).toContain('### 15.11 Naming vocabulary');
+
+    const entitlements = read('packages/shared-types/src/activity-viewer-entitlements.ts');
+    expect(entitlements).not.toMatch(/activityViewerEntitlementsCan/);
+    const barrel = read('packages/shared-types/src/index.ts');
+    expect(barrel).not.toMatch(/activityViewerEntitlementsCan/);
+  });
+
+  it('AD-4: activity peek uses strip component and presentation resolver', () => {
+    const body = read('src/explore/ui/ExploreItemPeekParts.tsx');
+    expect(body).toContain('ExploreActivityPeekStrips');
+    expect(body).toContain('resolveActivityPeekEngagement');
+    expect(() => read('src/explore/activityMapPeekActions.ts')).toThrow();
+    const shared = read('packages/shared-types/src/activity-map-peek-actions.ts');
+    expect(shared).toContain("id: 'open_crew_chat'");
+    expect(shared).not.toMatch(/level === 'public'[\s\S]*message_host/);
+  });
+
   it('G-chat: /groups is manage-only; threads use /chat?group=', () => {
     const groups = read('src/pages/Groups.tsx');
     expect(groups).not.toMatch(/GroupChatThread/);

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
-import { canOfferRideshareForDemandItem } from './linkActivityRideshareOffer';
+import { canOfferRideshareForDemandItem, canShowDemandLinkRideshareOffer } from './linkActivityRideshareOffer';
 import { buildRideshareDraftFromDemandMapItem } from './linkRidesharePrefill';
 import { seekingExploreMapItem } from './exploreMapItemFixtures';
 
@@ -17,6 +17,31 @@ describe('demand carpool offer', () => {
   it('allows carpool offer for hiking demand', () => {
     expect(canOfferRideshareForDemandItem(demandItem())).toBe(true);
     expect(canOfferRideshareForDemandItem(demandItem({ kind: 'rideshare' }))).toBe(false);
+  });
+
+  it('requires wire canOfferTransport for demand link rideshare CTA', () => {
+    expect(canShowDemandLinkRideshareOffer(demandItem())).toBe(false);
+    expect(
+      canShowDemandLinkRideshareOffer(
+        demandItem({
+          viewerAccess: {
+            level: 'host',
+            exposure: 'full',
+            gateReason: null,
+            canAccessCrewSurfaces: true,
+            entitlements: {
+              isProMember: true,
+              canViewHostProfileBeforeJoin: true,
+              canViewFullBuddyRoster: true,
+              canOfferTransport: true,
+              canAddLinkedRide: true,
+              canMessageHostBeforeJoin: true,
+              buddyUserIdsOnActivity: [],
+            },
+          },
+        })
+      )
+    ).toBe(true);
   });
 
   it('prefills rideshare draft from demand map item', () => {

@@ -1,8 +1,10 @@
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { bootstrapTestApp } from './helpers/bootstrap.js';
+import { buildTestParticipantIntentInput, ensureCuratedAreasSeeded } from './helpers/test-seed.js';
 
 beforeAll(async () => {
   await bootstrapTestApp();
+  await ensureCuratedAreasSeeded();
 });
 import { createParticipantIntent } from '../src/lib/participant-intents-store.js';
 import { findActivityDocInMongo } from '../src/lib/entity-sync.js';
@@ -35,18 +37,19 @@ describe('participant intent seeking dual-write (legacy stub)', () => {
       profile: { displayName: 'Seeker', phone: null, bio: null, avatarUrl: null },
     });
 
-    const intent = await createParticipantIntent(user._id, {
-      kind: 'hiking',
-      title: `Dual write ${suffix}`,
-      date: '2026-12-21',
-      time: '08:00',
-      preferredArea: 'Wadi Shawka',
-      partySize: 3,
-      comment: 'Need a hiking buddy',
-      latitude: 25.1,
-      longitude: 55.2,
-      locationPrecision: 'specific',
-    });
+    const intent = await createParticipantIntent(
+      user._id,
+      buildTestParticipantIntentInput({
+        title: `Dual write ${suffix}`,
+        date: '2026-12-21',
+        time: '08:00',
+        preferredArea: 'Wadi Shawka',
+        partySize: 3,
+        comment: 'Need a hiking buddy for integration test.',
+        latitude: 25.1,
+        longitude: 55.2,
+      })
+    );
 
     const intentDoc = await getMongoClient()!
       .db()

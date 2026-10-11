@@ -1,6 +1,7 @@
 import {
   exploreMapItemIsSeeking,
   isTimeBoundExploreMapItem,
+  resolveExploreMapActivityMode,
   type ExploreMapItemDTO,
 } from '@uaetrail/shared-types';
 import type { MapPinKind } from '../../components/ui/mapPinTypes';
@@ -50,6 +51,7 @@ export const isShopMapItem = isShopListItem;
 const isMapPin = (item: ExploreMapItemDTO): boolean => {
   if (item.latitude == null || item.longitude == null) return false;
   if (!isShopMapItem(item) && item.source === 'shop' && item.id.startsWith('product:')) return false;
+  if (item.source === 'area') return true;
   return true;
 };
 
@@ -87,10 +89,13 @@ export const matchesBuddyMapFilter = (
   return false;
 };
 
+export const isAreaLensMapItem = (item: ExploreMapItemDTO): boolean => item.source === 'area';
+
 export const matchesExplorePinKindFilter = (item: ExploreMapItemDTO, pinKind: ExplorePinKindFilter): boolean => {
   if (pinKind === 'all') return true;
   if (pinKind === 'activities') return isTimeBoundExploreMapItem(item);
   if (pinKind === 'looking') return exploreMapItemIsSeeking(item);
+  if (pinKind === 'locations') return isAreaLensMapItem(item);
   if (pinKind === 'places') return isPlacesMapItem(item) && !isShopListItem(item);
   if (pinKind === 'shops') return isShopListItem(item);
   return true;
@@ -225,6 +230,7 @@ export const resolveExploreItemScheduleDate = (item: ExploreMapItemDTO): string 
 };
 
 const mapPinKind = (item: ExploreMapItemDTO): MapPinKind => {
+  if (item.source === 'area') return 'area';
   if (exploreMapItemIsSeeking(item)) return item.kind === 'rideshare' ? 'rideshare' : (item.kind as MapPinKind);
   if (item.kind === 'shop') return 'shop';
   if (item.kind === 'rideshare') return 'rideshare';
@@ -241,6 +247,7 @@ export const expandMapPins = (items: ExploreMapItemDTO[]): PlaceMapPin[] => {
   const pins: PlaceMapPin[] = [];
 
   for (const item of items.filter(isMapPin)) {
+    const resolvedMode = resolveExploreMapActivityMode(item);
     const hasDistinctTo =
       item.toLatitude != null &&
       item.toLongitude != null &&
@@ -257,7 +264,7 @@ export const expandMapPins = (items: ExploreMapItemDTO[]): PlaceMapPin[] => {
       path: item.path,
       hostAvatar: item.hostAvatar,
       source: resolveMapPinItemSource(item),
-      activityMode: item.activityMode ?? undefined,
+      activityMode: resolvedMode ?? undefined,
       rideshareEndpoint: hasDistinctTo ? 'from' : undefined,
     });
 
@@ -273,7 +280,7 @@ export const expandMapPins = (items: ExploreMapItemDTO[]): PlaceMapPin[] => {
         path: item.path,
         hostAvatar: item.hostAvatar,
         source: resolveMapPinItemSource(item),
-        activityMode: item.activityMode ?? undefined,
+        activityMode: resolvedMode ?? undefined,
         rideshareEndpoint: item.kind === 'rideshare' ? 'to' : 'to',
       });
     }
@@ -312,6 +319,7 @@ const buildColocatedEntry = (groupPins: PlaceMapPin[]): ColocatedMapPinEntry => 
   return {
     activityType: lead.activityType,
     source: lead.source,
+    activityMode: lead.activityMode,
     exploreItemId: stackIds[0]!,
     stackExploreItemIds: stackIds.length > 1 ? stackIds : undefined,
     stackCount: stackIds.length,

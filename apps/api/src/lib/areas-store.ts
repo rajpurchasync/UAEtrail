@@ -13,6 +13,9 @@ type MongoAreaDoc = {
   center: AreaCenter;
   bounds: AreaBoundsRing;
   priority: number;
+  summary?: string | null;
+  countryCode?: string | null;
+  imageUrl?: string | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -29,6 +32,9 @@ const mapAreaDto = (doc: MongoAreaDoc): AreaDTO => ({
   center: doc.center,
   bounds: doc.bounds,
   priority: doc.priority,
+  summary: doc.summary ?? null,
+  countryCode: doc.countryCode ?? 'AE',
+  imageUrl: doc.imageUrl ?? null,
   createdAt: doc.createdAt.toISOString(),
   updatedAt: doc.updatedAt.toISOString(),
 });
@@ -40,6 +46,9 @@ export const toAreaPublicDto = (area: AreaDTO): AreaPublicDTO => ({
   region: area.region,
   center: area.center,
   bounds: area.bounds,
+  summary: area.summary ?? null,
+  countryCode: area.countryCode ?? 'AE',
+  imageUrl: area.imageUrl ?? null,
 });
 
 export const listPublishedAreas = async (): Promise<AreaDTO[]> => {
@@ -78,6 +87,9 @@ export type AdminAreaInput = {
   center: AreaCenter;
   bounds: AreaBoundsRing;
   priority?: number;
+  summary?: string | null;
+  countryCode?: string | null;
+  imageUrl?: string | null;
 };
 
 export const createAdminArea = async (input: AdminAreaInput): Promise<AreaDTO> => {
@@ -92,6 +104,9 @@ export const createAdminArea = async (input: AdminAreaInput): Promise<AreaDTO> =
     center: input.center,
     bounds: input.bounds,
     priority: input.priority ?? 100,
+    summary: input.summary?.trim() || null,
+    countryCode: input.countryCode?.trim() || 'AE',
+    imageUrl: input.imageUrl?.trim() || null,
     createdAt: now,
     updatedAt: now,
   };
@@ -111,6 +126,9 @@ export const updateAdminArea = async (
   if (patch.center !== undefined) update.center = patch.center;
   if (patch.bounds !== undefined) update.bounds = patch.bounds;
   if (patch.priority !== undefined) update.priority = patch.priority;
+  if (patch.summary !== undefined) update.summary = patch.summary?.trim() || null;
+  if (patch.countryCode !== undefined) update.countryCode = patch.countryCode?.trim() || 'AE';
+  if (patch.imageUrl !== undefined) update.imageUrl = patch.imageUrl?.trim() || null;
 
   const result = await collection().findOneAndUpdate(
     { _id: areaId },
@@ -139,6 +157,10 @@ export const upsertAreaBySlug = async (input: AdminAreaInput & { id?: string }):
       center: input.center,
       bounds: input.bounds,
       priority: input.priority ?? existing.priority,
+      summary: input.summary !== undefined ? input.summary?.trim() || null : existing.summary ?? null,
+      countryCode:
+        input.countryCode !== undefined ? input.countryCode?.trim() || 'AE' : existing.countryCode ?? 'AE',
+      imageUrl: input.imageUrl !== undefined ? input.imageUrl?.trim() || null : existing.imageUrl ?? null,
       updatedAt: now,
     };
     await collection().replaceOne({ _id: existing._id }, doc);
@@ -154,6 +176,9 @@ export const upsertAreaBySlug = async (input: AdminAreaInput & { id?: string }):
     center: input.center,
     bounds: input.bounds,
     priority: input.priority ?? 100,
+    summary: input.summary?.trim() || null,
+    countryCode: input.countryCode?.trim() || 'AE',
+    imageUrl: input.imageUrl?.trim() || null,
     createdAt: now,
     updatedAt: now,
   };

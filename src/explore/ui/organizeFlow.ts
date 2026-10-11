@@ -1,4 +1,4 @@
-import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
+import type { ActivityGroupChatPostPolicy, ExploreMapItemDTO } from '@uaetrail/shared-types';
 import {
   exploreMapKindToPlanMapKind,
   resolveOrganizeCreateKindFromDemandMapItem,
@@ -9,6 +9,7 @@ import {
   buildParticipationRequirementLines,
 } from '../../utils/activityPublishPayload';
 import { OFFLINE_PAYMENT_NOTE } from '../explorePriceLabel';
+import { validateOrganizePublishArea } from '../organizePublishArea';
 import type { ParticipationMode } from '../compose';
 
 export type { ParticipationMode } from '../compose';
@@ -128,6 +129,8 @@ export type CreateActivityDraft = {
   limitedWomenOnly: boolean;
   limitedFamilyOnly: boolean;
   limitedMinAgeEnabled: boolean;
+  /** Crew group chat — who can post after publish (synced to activity group wall). */
+  groupChatPostPolicy: ActivityGroupChatPostPolicy;
 };
 
 export const resolveLimitedAudienceAccess = (draft: Pick<
@@ -434,6 +437,7 @@ export const emptyCreateActivityDraft = (): CreateActivityDraft => ({
   limitedWomenOnly: false,
   limitedFamilyOnly: false,
   limitedMinAgeEnabled: false,
+  groupChatPostPolicy: 'all_participants',
 });
 
 export const todayIso = (): string => {
@@ -625,7 +629,10 @@ export const validateDraftStep = (step: CreateFlowStepId, draft: CreateActivityD
   if (draft.genericBuddy && step === 'title' && !draft.title.trim()) {
     return 'Tell us what you want to do.';
   }
-  return validateOrganizeCatalogStep(draft.kind, step, draft);
+  const catalogErr = validateOrganizeCatalogStep(draft.kind, step, draft);
+  if (catalogErr) return catalogErr;
+  if (step === 'publish') return validateOrganizePublishArea(draft);
+  return null;
 };
 
 export const ACTIVITY_ORGANIZE_TOPIC_OPTIONS: Array<{

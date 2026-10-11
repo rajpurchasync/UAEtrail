@@ -25,6 +25,7 @@ export type LocationCreateData = {
   emirate?: string;
   region: string;
   areaLabel?: string | null;
+  areaId?: string | null;
   childFriendly?: boolean;
   accessibility?: Accessibility;
   activityType: ActivityType;
@@ -94,6 +95,7 @@ export const buildLocationCreateData = (
   emirate: body.emirate,
   region: body.region,
   areaLabel: body.areaLabel?.trim() || null,
+  areaId: body.areaId.trim(),
   activityType: toActivityType(body.activityType),
   description: body.description,
   difficulty: shop ? undefined : toDifficulty(body.difficulty),

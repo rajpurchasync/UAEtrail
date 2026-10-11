@@ -96,10 +96,6 @@ export const createSeekingActivityForIntent = async (
     activityMode: 'seeking',
     participantIntentId: intentId,
   });
-
-  if (areaId) {
-    await patchActivityInMongo(created.id, { areaId });
-  }
   if (!options?.deferCacheInvalidate) {
     await invalidateExploreMapCache();
   }

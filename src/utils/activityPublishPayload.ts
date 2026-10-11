@@ -5,7 +5,13 @@
  * - Explore FAB: `src/services/organizeActivityPublish.ts` → `buildOrganizeActivityPublishInput` / `publishOrganizeActivity`
  * - Explore Organize: `src/services/organizeActivityPublish.ts` → `buildHostActivityPublishPayload`
  */
-import type { ActivityJoinMode, OutingCategory, OutingTopic, ParticipationMode } from '@uaetrail/shared-types';
+import type {
+  ActivityGroupChatPostPolicy,
+  ActivityJoinMode,
+  OutingCategory,
+  OutingTopic,
+  ParticipationMode,
+} from '@uaetrail/shared-types';
 import {
   APPROVAL_PARTICIPATION_REQUIREMENT,
   PRIVATE_JOIN_REQUIREMENT_PREFIX,
@@ -77,6 +83,7 @@ export type ActivityPublishInput = {
   clonedFromActivityId?: string | null;
   /** Parent hike/camp/event when publishing a linked rideshare. */
   linkedActivityId?: string | null;
+  groupChatPostPolicy?: ActivityGroupChatPostPolicy;
 };
 
 export const defaultParticipationModeForActivityType = (activityType: string): ParticipationMode =>
@@ -176,6 +183,9 @@ export const buildHostActivityPublishPayload = (input: ActivityPublishInput): Re
   }
   if (input.linkedActivityId?.trim()) {
     payload.linkedActivityId = input.linkedActivityId.trim();
+  }
+  if (input.groupChatPostPolicy) {
+    payload.groupChatPostPolicy = input.groupChatPostPolicy;
   }
 
   if (pricing.pricePackages && pricing.pricePackages.length > 0) {

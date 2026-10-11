@@ -6,6 +6,9 @@ import {
   type ExploreSearchScopeCounts,
   type ExploreSearchScopeKey,
 } from '../exploreBrowseTaxonomy';
+import type { AreaPublicDTO } from '@uaetrail/shared-types';
+import { findPublishedAreaByQuery, isStrongPublishedAreaSearchMatch } from '../exploreAreaFilter';
+import { ExploreSearchAreaHints } from './ExploreSearchAreaHints';
 import { ExploreSearchScopeHints } from './ExploreSearchScopeHints';
 import { EXPLORE_MAP_SEARCH_INPUT_FONT_PX } from './exploreMapPillDropdown';
 
@@ -14,6 +17,8 @@ export type ExploreBrowseSearchPanelProps = {
   onQueryChange: (value: string) => void;
   onCommit: (scope?: ExploreSearchScopeKey | null) => void;
   scopeCounts: ExploreSearchScopeCounts;
+  publishedAreas?: AreaPublicDTO[];
+  onPickArea?: (slug: string) => void;
   /** Focus input on mount (map search modal). */
   autoFocus?: boolean;
   variant?: 'modal' | 'inline';
@@ -25,6 +30,8 @@ export const ExploreBrowseSearchPanel = ({
   onQueryChange,
   onCommit,
   scopeCounts,
+  publishedAreas = [],
+  onPickArea,
   autoFocus = false,
   variant = 'inline',
 }: ExploreBrowseSearchPanelProps) => {
@@ -67,6 +74,11 @@ export const ExploreBrowseSearchPanel = ({
           onKeyDown={(event) => {
             if (event.key === 'Enter') {
               event.preventDefault();
+              const area = findPublishedAreaByQuery(publishedAreas, query);
+              if (area && onPickArea && isStrongPublishedAreaSearchMatch(area, query)) {
+                onPickArea(area.slug);
+                return;
+              }
               commit(null);
             }
           }}
@@ -87,12 +99,22 @@ export const ExploreBrowseSearchPanel = ({
         ) : null}
       </label>
       {showHints ? (
-        <ExploreSearchScopeHints
-          query={query}
-          counts={scopeCounts}
-          onPick={(scope) => commit(scope)}
-          className={variant === 'modal' ? 'mt-3 border-t border-neutral-100 pt-1' : ''}
-        />
+        <>
+          {onPickArea ? (
+            <ExploreSearchAreaHints
+              query={query}
+              areas={publishedAreas}
+              onPick={onPickArea}
+              className={variant === 'modal' ? 'mt-3 border-t border-neutral-100' : 'mt-2 border-t border-neutral-100'}
+            />
+          ) : null}
+          <ExploreSearchScopeHints
+            query={query}
+            counts={scopeCounts}
+            onPick={(scope) => commit(scope)}
+            className={variant === 'modal' ? 'border-t border-neutral-100 pt-1' : ''}
+          />
+        </>
       ) : null}
     </div>
   );

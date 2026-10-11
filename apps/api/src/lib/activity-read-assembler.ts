@@ -113,6 +113,7 @@ const mongoEventToEvent = (doc: MongoActivityDoc): Activity => {
   areaId: doc.areaId ?? null,
   activityMode: doc.activityMode ?? null,
   participantIntentId: doc.participantIntentId ?? null,
+  groupChatPostPolicy: doc.groupChatPostPolicy ?? null,
   createdAt: doc.createdAt,
   updatedAt: doc.updatedAt,
   };
@@ -409,6 +410,58 @@ export const listPublishedUpcomingActivitiesByMemberFromMongo = async (
 
   const filtered = await filterPublishedDocs(docs, 'upcoming');
   return assembleEventsWithPublicRelations(filtered.slice(0, take));
+};
+
+/** Upcoming public map activities tagged with a curated area. */
+export const listPublishedUpcomingActivitiesByAreaFromMongo = async (
+  areaId: string,
+  take: number
+): Promise<ActivityWithPublicRelations[]> => {
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+  const locationIds = await locationsCollection()
+    .find({ areaId, status: LocationStatus.ACTIVE })
+    .project({ _id: 1 })
+    .limit(500)
+    .toArray();
+  const locationIdList = locationIds.map((row) => row._id);
+
+  const docs = await activitiesCollection()
+    .find({
+      status: ActivityStatus.PUBLISHED,
+      startAt: { $gte: startOfToday },
+      joinMode: { $ne: 'private' },
+      $or: [
+        { locationId: { $in: locationIdList } },
+        { areaId },
+      ],
+    })
+    .sort({ startAt: 1 })
+    .limit(Math.max(take, 1) * 3)
+    .toArray();
+
+  const visible = docs.filter(
+    (doc) => !shouldHideActivityFromExploreMap(doc.joinMode, doc.requirements)
+  );
+  return assembleEventsWithPublicRelations(visible.slice(0, take));
+};
+
+/** Active catalog places linked to a curated area (`place.areaId`). */
+export const listActiveCatalogPlacesByAreaFromMongo = async (
+  areaId: string,
+  take: number
+): Promise<Location[]> => {
+  const docs = await locationsCollection()
+    .find({
+      areaId,
+      status: LocationStatus.ACTIVE,
+      $or: [{ registryListed: { $exists: false } }, { registryListed: { $ne: false } }],
+    })
+    .sort({ name: 1 })
+    .limit(Math.max(take, 1))
+    .toArray();
+
+  return docs.map((doc) => mapMongoLocation(doc));
 };
 
 export type ActivityWithTenantRelations = Activity & {

@@ -96,4 +96,30 @@ describe('mapPinIcons', () => {
     expect(html).toContain('uaetrail-map-cluster-badge');
     expect(html).toContain('>1<');
   });
+
+  it('renders hosted vs seeking mode corner badges on activity pins', () => {
+    const hosted = buildMapPinFaceHtml({
+      kind: 'hiking',
+      source: 'activity',
+      ringColor: '#059669',
+      size: 40,
+      fontSizePx: 18,
+      ringWidth: 2.5,
+      stackCount: 1,
+      activityMode: 'hosted',
+    });
+    expect(hosted).toContain('uaetrail-map-activity-mode-badge--hosted');
+
+    const seeking = buildMapPinFaceHtml({
+      kind: 'hiking',
+      source: 'activity',
+      ringColor: '#7c3aed',
+      size: 40,
+      fontSizePx: 18,
+      ringWidth: 2.5,
+      stackCount: 1,
+      activityMode: 'seeking',
+    });
+    expect(seeking).toContain('uaetrail-map-activity-mode-badge--seeking');
+  });
 });

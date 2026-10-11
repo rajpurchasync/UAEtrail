@@ -166,7 +166,9 @@ participationMode: 'rsvp' | 'approval'
 
 **Full detail page vs map peek** is **not** `participationMode` or `joinMode` alone — it is **viewer access / detail exposure** (who may open `/activity/:id` with a full payload). Canonical model: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §15. UI maps API `viewerAccess` via `src/access/resolvePeekDetailAccess.ts` — do not add client-side policy.
 
-**Consumer activity detail** (`/activity/:id`): mobile tabs Plan · Place · Buddies · Transport; crew roster/chat gated on `viewerAccess.canAccessCrewSurfaces`; post-join welcome `?joined=1`. **Single FE engagement resolver:** `src/activity/resolveActivityPresentation.ts` (detail flags + `resolveActivityPeekEngagement` for map peek / list feed wire CTAs). Peek action ids: `packages/shared-types` `computeActivityMapPeekActions`. Navigation: [`NAVIGATION.md`](./NAVIGATION.md) § Activity detail.
+**Consumer activity detail** (`/activity/:id`): mobile tabs **Plan · Place · Buddies · Transport** (UI labels only). **Participation → crew:** `participationMode: rsvp` creates **participant** immediately → `canAccessCrewSurfaces: true` + welcome sheet; **approval** flow grants crew only after host approve (same welcome + `?joined=1` deep link). **Pending / waitlisted** may open detail but **not** crew surfaces (`canAccessCrewSurfaces: false`) — no meeting precision or group chat in UI. **Transport tab** always on (reach-by from published organize fields; linked child rideshare when set). **Pro** (paid) vs **host** (profile + publish): Pro unlocks social depth on activity (full buddy roster, pre-join host profile, offer/add transport when product rules ship) — **not** `canPublish`; see [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) · Layer 7 `applyActivityViewEntitlements` after social access.
+
+**Single FE engagement resolver:** `src/activity/activityDetailPresentation.ts` (detail flags) + `src/activity/activityPeekEngagement.ts` (map peek / list feed); legacy import path `resolveActivityPresentation.ts` re-exports both. **Peek wire actions:** API `viewerAccess.mapPeekActions` from `computeActivityMapPeekActions`; client resolves via `resolveActivityMapPeekActions` (fallback when wire empty, strips pre-join `message_host` until Pro entitlements). Peek body: **Going** + **Rides & spots** strips (`ExploreActivityPeekStrips`). Do not add a second role matrix in components. Navigation: [`NAVIGATION.md`](./NAVIGATION.md) § Activity detail · checklist §21 in [`experiment/member-surfaces-implementation-plan.md`](./experiment/member-surfaces-implementation-plan.md).
 
 ---
 
@@ -223,6 +225,26 @@ Deep link: `exploreReorganizeActivityPath(activityId, kind)` in `src/explore/rou
 
 Validation: cannot continue without a placed pin (and label where applicable).
 
+### Area (registry — not the meeting pin)
+
+Organize **does not** infer area from meeting or going-from pins. **Area** is an admin-registered row (`areaId`). **Place** rows carry **`place.areaId`**. Activities inherit geography only through **`locationId` → place**.
+
+| Organize | Rule |
+|----------|------|
+| **Public map** | Pick a **catalog place** from the registry; that place must have **`place.areaId`** (admin links in `/admin/places`). No separate area field on publish. |
+| **Custom trail name** (no registry row) | Not valid for public map — use **Add** to create a place (select **area** first), then Organize from catalog. |
+| **Private** link-only | Not on public explore map; place area optional |
+
+Publish gate (API): `place_area_required` / `activity_area_required` when linked place has no **`areaId`**.
+
+**Add (place):** **Area** step first (`curatedArea`), then emirate + map pin; API **`POST /me/locations`** requires **`areaId`** (published area validated server-side).
+
+### Find (looking for)
+
+Dedicated step **Area & map pin**: choose registered **Area**, drop a pin → `POST /me/participant-intents` **`areaId`** + coordinates. Seeking activity dual-write sets **`place.areaId`** on the synthetic location (not `activity.areaId`).
+
+**`preferredArea`** (emirate chip on hiking/camp) is region copy only — not the **Area** registry id. Area + pin enables matching hosted outings in the same area (notifications phased).
+
 ---
 
 ## Implementation status
@@ -242,6 +264,12 @@ Track what is **spec** vs **shipped**. Update this table in the same PR that lan
 | Profile Up next unified feed | âœ… | âœ… |
 | Warm copy pass in wizards | âœ… | âœ… |
 | `outingCategory` / `outingTopic` on organize publish | âœ… | âœ… (host create; map projection + Others browse filters) |
+| Organize **area via place** (registry `place.areaId` only) | âœ… | âœ… (`validateOrganizePlaceArea`, publish gate) |
+| Find **area + pin** step | âœ… | âœ… (`curatedArea`, `participant_intents.areaId`) |
+| Add place **area-first** | âœ… | âœ… (`curatedArea`, `areaId` on submit) |
+| Organize **no custom trail anchor** (catalog or Add) | âœ… | âœ… (structured); rideshare anchor uses bounds match + `areaId` on place |
+| Explore **Locations** lens = area pins (not every place pin) | ✅ | ✅ (`pinKind=locations`) |
+| Area match notifications (seeking ↔ hosted in area) | âœ… | ðŸ”¶ phased |
 
 **Current code:** One compose route on `/explore?compose=â€¦` (menu, `organize:hiking`, `find:carpool`, `add:shop`). Legacy `request`, `contribute`, and `addLocation` params are parsed into the same contract. Desktop and mobile share the same URL + wizard components.
 

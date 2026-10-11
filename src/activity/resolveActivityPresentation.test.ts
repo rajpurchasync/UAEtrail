@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import type { ExploreCardModel } from '../explore/exploreCardModel';
 import {
+  filterActivityMapPeekActionsForViewer,
+  resolveActivityMapPeekActions,
   resolveActivityPeekEngagement,
   resolveActivityPresentation,
   resolveActivityPresentationFromExploreCard,
@@ -38,7 +40,6 @@ const activityCard = (overrides: Partial<ExploreCardModel> = {}): ExploreCardMod
       canOpenDetailPage: true,
       joinMode: 'open',
       canAccessCrewSurfaces: false,
-      mapPeekActions: [],
     },
     ...overrides,
   }) as ExploreCardModel;
@@ -112,9 +113,67 @@ describe('resolveActivityPresentation', () => {
 describe('resolveActivityPeekEngagement', () => {
   it('bundles wire actions and legacy join flow flags', () => {
     const engagement = resolveActivityPeekEngagement(activityCard(), { kind: 'open' });
-    expect(engagement.mapPeekActions.map((a) => a.id)).toEqual(['request_join', 'message_host']);
+    expect(engagement.mapPeekActions.map((a) => a.id)).toEqual(['request_join', 'view_detail']);
     expect(engagement.showsLegacyJoinFlow).toBe(false);
     expect(engagement.needsJoinContext).toBe(true);
     expect(engagement.skipsJoinContext).toBe(false);
+  });
+});
+
+describe('filterActivityMapPeekActionsForViewer', () => {
+  it('strips message_host when entitlements are absent', () => {
+    const filtered = filterActivityMapPeekActionsForViewer([
+      { id: 'request_join', prominence: 'primary' },
+      { id: 'message_host', prominence: 'secondary' },
+    ]);
+    expect(filtered.map((a) => a.id)).toEqual(['request_join']);
+  });
+
+  it('restores message_host when entitlements allow pre-join DM', () => {
+    const filtered = filterActivityMapPeekActionsForViewer(
+      [
+        { id: 'request_join', prominence: 'primary' },
+        { id: 'view_detail', prominence: 'text' },
+      ],
+      {
+        level: 'link_holder',
+        entitlements: {
+          isProMember: true,
+          canViewHostProfileBeforeJoin: true,
+          canViewFullBuddyRoster: false,
+          canOfferTransport: false,
+          canAddLinkedRide: false,
+          canMessageHostBeforeJoin: true,
+          buddyUserIdsOnActivity: [],
+        },
+      }
+    );
+    expect(filtered.map((a) => a.id)).toContain('message_host');
+  });
+});
+
+describe('resolveActivityMapPeekActions participant fallback', () => {
+  it('uses crew chat not DM host for joined members', () => {
+    const card = activityCard({
+      viewerAccess: {
+        exposure: 'full',
+        level: 'participant',
+        gateReason: null,
+        canViewFullActivity: true,
+        canOpenDetailPage: true,
+        joinMode: 'open',
+        canAccessCrewSurfaces: true,
+        mapPeekActions: [
+          { id: 'open_crew_chat', prominence: 'primary' },
+          { id: 'invite_crew', prominence: 'secondary' },
+          { id: 'view_detail', prominence: 'text' },
+        ],
+      },
+    });
+    expect(resolveActivityMapPeekActions(card).map((a) => a.id)).toEqual([
+      'open_crew_chat',
+      'invite_crew',
+      'view_detail',
+    ]);
   });
 });

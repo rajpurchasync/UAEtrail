@@ -1,8 +1,9 @@
-import { useState, type ReactNode } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, Clock, Users, ChevronRight, CheckCircle2, Car } from 'lucide-react';
 import type {
   ActivityDetailDTO,
+  ActivityGroupChatPostPolicy,
   MyActivityRequestDTO,
   ActivityParticipationDTO,
   ReviewDTO,
@@ -21,6 +22,7 @@ import { resolveActivityPublisherProfilePath } from '@uaetrail/shared-types';
 import { activityDetailEyebrowForActivity } from '../../config/activityTypes';
 import { detailBackPath } from '../../config/routingCatalog';
 import { PARTICIPANT_PRIVACY } from '../../config/platform';
+import type { ActivityViewerEntitlementsDTO } from '@uaetrail/shared-types';
 import { buildGoogleMapsSearchUrl } from '../../utils/mapLinks';
 import { ViewOnMapLink } from '../ui/ViewOnMapLink';
 import { MobileDetailShell } from '../mobile/MobileDetailShell';
@@ -37,13 +39,11 @@ import {
 import { resolveJoinRequestUiState } from '../../utils/joinRequestUi';
 import {
   extractJoinInstructionLines,
-  extractNonJoinRequirements,
   MANDATORY_INSTRUCTIONS_LABEL,
 } from '../../utils/joinInstructions';
 import { activityRegistryPlacePath } from '../../utils/activityRegistryPlacePath';
 import { linkedParentRidesharePeekCopy } from '../../explore/exploreLinkedParentRideshareCopy';
 import { ActivityInviteLauncher } from './ActivityInviteLauncher';
-import { buildActivitySharePayload } from '../../utils/activityShare';
 import { EXPLORE_RIDESHARE_AVAILABLE_LABEL } from '../../explore/createFlowCopy';
 import { ReviewSection } from '../ui/ReviewSection';
 import { ActivityDetailMobileFooter } from './ActivityDetailMobileFooter';
@@ -54,8 +54,43 @@ import { ActivityDetailMobileHero } from './detail/ActivityDetailMobileHero';
 import {
   ACTIVITY_DETAIL_CREW_LOCKED_HINT,
   ACTIVITY_DETAIL_TRANSPORT_EMPTY_HINT,
+  ACTIVITY_DETAIL_TRANSPORT_PRO_HOST_HINT,
+  ACTIVITY_DETAIL_TRANSPORT_PRO_PARTICIPANT_HINT,
+  ACTIVITY_DETAIL_PRO_HOST_PROFILE_HINT,
+  ACTIVITY_DETAIL_PRO_ROSTER_HINT,
+  ACTIVITY_DETAIL_PRO_SOCIAL_CTA,
 } from '../../content/activityDetailCopy';
-import { activityHasTransportDetailContent } from '../../activity/activityDetailTransport';
+import {
+  activityDetailShowHostProfileProUpsell,
+  activityDetailShowRosterProUpsell,
+} from '../../activity/activityDetailProSocial';
+import { activityDetailPath, proMembershipPath, PRO_MEMBERSHIP_PATH } from '../../config/routingCatalog';
+import { ActivityCrewChatPostPolicyCard } from './ActivityCrewChatPostPolicyCard';
+import { buildActivitySharePayload, activityShareInputFromActivity } from '../../utils/activityShare';
+import { useAuth } from '../../context/AuthContext';
+import {
+  buildParticipantPostCheckInReviewPrompts,
+  participantPostCheckInReviewsPending,
+} from '../../activity/activityPostCheckInReviewPrompts';
+import { ActivityPostCheckInReviewPrompts } from './ActivityPostCheckInReviewPrompts';
+import { ActivityHostCheckInReviewPrompt } from './ActivityHostCheckInReviewPrompt';
+import { useHostParticipantReviewHints } from '../../hooks/useHostParticipantReviewHints';
+import { extractActivityPlanDetailLines, extractActivityTransportReachLines } from '../../activity/activityDetailReachBy';
+import { resolveActivityDetailTabFooterKind } from '../../activity/activityDetailTabFooters';
+import type { ActivityRequestView } from '../../api/index';
+import { ActivityDetailHostBuddiesHub } from './detail/ActivityDetailHostBuddiesHub';
+import {
+  ACTIVITY_DETAIL_HOST_BUDDIES_TOOLS_HINT,
+  ACTIVITY_DETAIL_PLACE_LOCKED_BODY,
+  ACTIVITY_DETAIL_PLACE_LOCKED_CTA,
+  ACTIVITY_DETAIL_PLAN_SUSTAINABILITY_LINE,
+  ACTIVITY_DETAIL_PLAN_TRANSPORT_TEASER_BODY,
+  ACTIVITY_DETAIL_PLAN_TRANSPORT_TEASER_CTA,
+  ACTIVITY_DETAIL_PLAN_TRANSPORT_TEASER_TITLE,
+  ACTIVITY_DETAIL_TAB_FOOTER_DIRECTIONS,
+  ACTIVITY_DETAIL_TAB_FOOTER_VIEW_RIDE,
+  ACTIVITY_DETAIL_TRANSPORT_REACH_TITLE,
+} from '../../content/activityDetailCopy';
 
 const mobileTabPanelClass = (tab: ActivityDetailTabId, active: ActivityDetailTabId): string =>
   active === tab ? 'block md:contents' : 'hidden md:contents';
@@ -91,10 +126,24 @@ export interface ActivityDetailViewProps {
   showParticipantFooterShortcuts?: boolean;
   /** Mobile Buddies tab lock card — from `resolveActivityPresentation.showCrewLockedHint`. */
   showCrewLockedHint?: boolean;
+  /** Layer 7 from `viewerAccess.entitlements` — roster / host profile gates. */
+  viewerEntitlements?: ActivityViewerEntitlementsDTO | null;
   /** Host manage sheet — same tabs/content without page chrome or sticky join footer. */
   layout?: 'page' | 'embedded';
   /** Host ⋯ on mobile Plan hero (duplicate, delete, …). */
   hostMobilePlanAccessory?: ReactNode;
+  /** Host — crew chat post policy (`groupChatPostPolicy` on activity). */
+  hostCrewChatPolicy?: {
+    tenantId: string;
+    onSaved?: (policy: ActivityGroupChatPostPolicy) => void;
+    onError?: (message: string) => void;
+  };
+  /** Host Buddies tab — roster, pending queue, check-in (v3.2). */
+  hostBuddiesHub?: {
+    joinRequests: ActivityRequestView[];
+    requestsLoading: boolean;
+    onRequestsChanged: () => void | Promise<void>;
+  };
 }
 
 export const ActivityDetailView = ({
@@ -120,12 +169,16 @@ export const ActivityDetailView = ({
   canWriteActivityReview = false,
   mobileTab = 'plan',
   onMobileTabChange,
-  canAccessCrewSurfaces = true,
+  canAccessCrewSurfaces = false,
   showParticipantFooterShortcuts = false,
   showCrewLockedHint = false,
+  viewerEntitlements = null,
   layout = 'page',
   hostMobilePlanAccessory,
+  hostCrewChatPolicy,
+  hostBuddiesHub,
 }: ActivityDetailViewProps) => {
+  const { user } = useAuth();
   const isEmbedded = layout === 'embedded';
   const [internalPackageIndex, setInternalPackageIndex] = useState(0);
   const selectedPackageIndex = controlledPackageIndex ?? internalPackageIndex;
@@ -156,15 +209,47 @@ export const ActivityDetailView = ({
   const usesExternalSignup = Boolean(externalSignupUrl) && !previewMode;
 
   const participants = activity.participants ?? [];
-  const previewParticipants = PARTICIPANT_PRIVACY.showPreJoin ? participants : [];
+  const rosterParticipants = useMemo(() => {
+    if (!canAccessCrewSurfaces || !PARTICIPANT_PRIVACY.showPreJoin) return [];
+    if (!viewerEntitlements || viewerEntitlements.canViewFullBuddyRoster) {
+      return participants;
+    }
+    const buddySet = new Set(viewerEntitlements?.buddyUserIdsOnActivity ?? []);
+    return participants.filter((row) => buddySet.has(row.id));
+  }, [participants, viewerEntitlements, canAccessCrewSurfaces]);
+  const participantReviewPrompts = useMemo(
+    () =>
+      buildParticipantPostCheckInReviewPrompts({
+        activity,
+        viewerUserId: user?.id ?? null,
+        activityReviews,
+        checkedIn: canWriteActivityReview,
+      }),
+    [activity, user?.id, activityReviews, canWriteActivityReview]
+  );
+  const showParticipantReviewPrompts =
+    !previewMode && participantPostCheckInReviewsPending(participantReviewPrompts);
+
+  const hostReviewHints = useHostParticipantReviewHints(
+    hostCrewChatPolicy?.tenantId ?? null,
+    activity.id,
+    Boolean(hostCrewChatPolicy && !previewMode)
+  );
+  const showHostCheckInPrompt = Boolean(
+    hostCrewChatPolicy && !previewMode && !hostReviewHints.loading
+  );
+
   const publishingProfileKind = activity.publishingProfileKind ?? 'community';
-  const hostPath = previewMode
+  const hostProfilePath = previewMode
     ? null
     : resolveActivityPublisherProfilePath({
         publishingProfileKind,
         tenantSlug: activity.tenantSlug,
         hostUserId: activityHostUserId(activity),
       });
+  const canOpenHostProfile =
+    !viewerEntitlements || viewerEntitlements.canViewHostProfileBeforeJoin;
+  const hostPath = hostProfilePath && canOpenHostProfile ? hostProfilePath : null;
   const hostProfileHint =
     publishingProfileKind && publishingProfileKind !== 'community'
       ? 'Runs this activity · view host profile'
@@ -184,20 +269,36 @@ export const ActivityDetailView = ({
     ? `${formatDate(activity.date)} – ${formatDate(activity.endDate)}`
     : formatDate(activity.date);
 
-  const sharePayload = buildActivitySharePayload({
-    id: activity.id,
-    title: activity.title || activity.locationName,
-    activityType: activity.activityType,
-    date: activity.date,
-    locationName: activity.locationName,
-  });
+  const sharePayload = buildActivitySharePayload(activityShareInputFromActivity(activity));
 
   const activityTitle = activity.title || activity.locationName;
   const kindChromeTitle = `${activityKindChromeEmoji(activity.activityType)} ${activityKindChromeLabel(activity.activityType)}`;
   const showMobileTabs = !previewMode && Boolean(onMobileTabChange);
-  const showTransportTab = activityHasTransportDetailContent(activity);
-  const showTransportEmptyMobile =
-    showMobileTabs && mobileTab === 'transport' && !showTransportTab;
+  const showTransportTab = true;
+  const showPlaceCrewBody = canAccessCrewSurfaces && !previewMode;
+  const transportReachLines = useMemo(
+    () => extractActivityTransportReachLines(activity.requirements),
+    [activity.requirements]
+  );
+  const linkedRideshareId =
+    activity.linkedRideshare?.id ?? activity.linkedParentActivity?.id ?? null;
+  const joinUiState = resolveJoinRequestUiState({ myRequest, participation });
+  const showTransportEncouragementMobile =
+    showMobileTabs &&
+    mobileTab === 'transport' &&
+    !activity.rideshareEnabled &&
+    !activity.linkedParentActivity &&
+    !activity.linkedRideshare;
+  const showTransportHostProUpsell =
+    showTransportEncouragementMobile &&
+    Boolean(hostCrewChatPolicy) &&
+    viewerEntitlements &&
+    !viewerEntitlements.canAddLinkedRide;
+  const showTransportParticipantProUpsell =
+    showTransportEncouragementMobile &&
+    showParticipantFooterShortcuts &&
+    viewerEntitlements &&
+    !viewerEntitlements.canOfferTransport;
   const mobilePlanPanel = mobileTabPanelClass('plan', mobileTab);
   const mobilePlacePanel = mobileTabPanelClass('place', mobileTab);
   const mobileBuddiesPanel = mobileTabPanelClass('buddies', mobileTab);
@@ -222,8 +323,42 @@ export const ActivityDetailView = ({
     }
     onJoin?.();
   };
-  const joinUiState = resolveJoinRequestUiState({ myRequest, participation });
+  const tabFooterKind = resolveActivityDetailTabFooterKind({
+    tab: mobileTab,
+    isHostUser: Boolean(hostCrewChatPolicy),
+    isEmbedded,
+    previewMode,
+    canAccessCrewSurfaces,
+    joinUiState,
+    hasMeetingCoordinates: hasAccessCoordinates,
+    linkedRideshareId,
+    rideshareEnabled: Boolean(activity.rideshareEnabled),
+    showParticipantFooterShortcuts,
+  });
   const consumerJoinEnabled = !isEmbedded && !previewMode;
+  const hostUserId = activityHostUserId(activity);
+  const showFooterMessageHost =
+    consumerJoinEnabled &&
+    !canAccessCrewSurfaces &&
+    !hostCrewChatPolicy &&
+    viewerEntitlements?.canMessageHostBeforeJoin &&
+    Boolean(hostUserId);
+  const showHostProfileProUpsell = activityDetailShowHostProfileProUpsell(
+    viewerEntitlements,
+    Boolean(hostProfilePath),
+    previewMode,
+    Boolean(hostCrewChatPolicy)
+  );
+  const showRosterProUpsell = activityDetailShowRosterProUpsell(
+    viewerEntitlements,
+    canAccessCrewSurfaces,
+    participants.length,
+    rosterParticipants.length
+  );
+  const proSocialMembershipPath = proMembershipPath({
+    intent: 'discover-members',
+    redirect: activityDetailPath(activity.id),
+  });
 
   const previewFooter = (
     <div className="rounded-2xl bg-amber-50 border border-amber-200 p-4 text-center">
@@ -239,6 +374,8 @@ export const ActivityDetailView = ({
       <ActivityDetailMobileFooter
         activityId={activity.id}
         showParticipantShortcuts={showParticipantShortcuts}
+        showMessageHost={showFooterMessageHost}
+        hostUserId={hostUserId}
       >
         {content}
       </ActivityDetailMobileFooter>
@@ -276,6 +413,51 @@ export const ActivityDetailView = ({
             showParticipantFooterShortcuts
           ))
     : undefined;
+
+  const stickyFooter = (() => {
+    if (!showMobileTabs || previewMode || !consumerJoinEnabled) return joinButton;
+    if (tabFooterKind === 'place_directions' && hasAccessCoordinates && accessLat != null && accessLng != null) {
+      return wrapMobileFooter(
+        <DirectionsControl
+          lat={accessLat}
+          lng={accessLng}
+          variant="button"
+          className="w-full shadow-lg"
+          label={ACTIVITY_DETAIL_TAB_FOOTER_DIRECTIONS}
+        />,
+        showParticipantFooterShortcuts
+      );
+    }
+    if (tabFooterKind === 'buddies_invite' && canSendJoinInvites) {
+      return wrapMobileFooter(
+        <ActivityInviteLauncher
+          activity={{
+            id: activity.id,
+            title: activity.title || activity.locationName,
+            activityType: activity.activityType,
+            date: activity.date,
+            locationName: activity.locationName,
+          }}
+          canSendBuddyInvites
+          className="shadow-lg"
+        />,
+        showParticipantFooterShortcuts
+      );
+    }
+    if (tabFooterKind === 'transport_linked_ride' && linkedRideshareId) {
+      return wrapMobileFooter(
+        <Link
+          to={activityDetailPath(linkedRideshareId)}
+          className="ios-btn flex w-full items-center justify-center gap-2 rounded-xl bg-sky-600 px-4 py-3 text-sm font-bold text-white shadow-lg active:bg-sky-700"
+        >
+          {ACTIVITY_DETAIL_TAB_FOOTER_VIEW_RIDE}
+          <ChevronRight className="h-4 w-4" aria-hidden />
+        </Link>,
+        showParticipantFooterShortcuts
+      );
+    }
+    return joinButton;
+  })();
 
   const sidebarJoin = consumerJoinEnabled
     ? sidebarJoinOverride ??
@@ -362,6 +544,14 @@ export const ActivityDetailView = ({
                 locationName: activity.locationName,
               }}
               canSendBuddyInvites
+            />
+          ) : null}
+
+          {showParticipantReviewPrompts ? (
+            <ActivityPostCheckInReviewPrompts
+              items={participantReviewPrompts}
+              panelClassName={mobilePlanPanel}
+              onMobileTabChange={onMobileTabChange}
             />
           ) : null}
 
@@ -473,6 +663,22 @@ export const ActivityDetailView = ({
               </div>
             )}
 
+            {showMobileTabs && onMobileTabChange ? (
+              <div className="mt-6 rounded-xl border border-sky-100 bg-sky-50/80 p-4">
+                <p className="text-sm font-semibold text-gray-900">{ACTIVITY_DETAIL_PLAN_TRANSPORT_TEASER_TITLE}</p>
+                <p className="mt-1 text-sm text-gray-600 leading-relaxed">{ACTIVITY_DETAIL_PLAN_TRANSPORT_TEASER_BODY}</p>
+                <button
+                  type="button"
+                  onClick={() => onMobileTabChange('transport')}
+                  className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-sky-700 hover:text-sky-800"
+                >
+                  {ACTIVITY_DETAIL_PLAN_TRANSPORT_TEASER_CTA}
+                  <ChevronRight className="h-4 w-4" aria-hidden />
+                </button>
+                <p className="mt-3 text-xs text-gray-500 leading-relaxed">{ACTIVITY_DETAIL_PLAN_SUSTAINABILITY_LINE}</p>
+              </div>
+            ) : null}
+
           </div>
 
           {registryPlacePath && registryPlaceName && (
@@ -490,7 +696,24 @@ export const ActivityDetailView = ({
             </div>
           )}
 
-          {(activity.startPoint || activity.meetingPoint || activity.parkingPoint || openInGoogleMapsUrl || hasAccessCoordinates) && (
+          {!showPlaceCrewBody && showMobileTabs ? (
+            <div className={`bg-white rounded-2xl border border-gray-100 p-6 text-center ${mobilePlacePanel}`}>
+              <Car className="mx-auto h-8 w-8 text-neutral-400" aria-hidden />
+              <p className="mt-3 text-sm text-neutral-600 leading-relaxed">{ACTIVITY_DETAIL_PLACE_LOCKED_BODY}</p>
+              {onMobileTabChange ? (
+                <button
+                  type="button"
+                  onClick={() => onMobileTabChange('plan')}
+                  className="mt-4 text-sm font-semibold text-emerald-700 hover:text-emerald-800"
+                >
+                  {ACTIVITY_DETAIL_PLACE_LOCKED_CTA}
+                </button>
+              ) : null}
+            </div>
+          ) : null}
+
+          {showPlaceCrewBody &&
+          (activity.startPoint || activity.meetingPoint || activity.parkingPoint || openInGoogleMapsUrl || hasAccessCoordinates) && (
             <div className={`bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 ${mobilePlacePanel}`}>
               <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
                 <div className="flex items-start gap-3">
@@ -545,12 +768,46 @@ export const ActivityDetailView = ({
             </div>
           )}
 
-          {showTransportEmptyMobile ? (
+          <div className={`bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 ${mobileTransportPanel}`}>
+            <h2 className="text-lg font-bold text-gray-900 mb-2">{ACTIVITY_DETAIL_TRANSPORT_REACH_TITLE}</h2>
+            {transportReachLines.length > 0 ? (
+              <ul className="list-disc list-inside space-y-1 text-gray-700 text-sm">
+                {transportReachLines.map((line, i) => (
+                  <li key={i}>{line}</li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-gray-500 leading-relaxed">
+                {activity.meetingPoint || activity.parkingPoint
+                  ? 'Meeting and parking notes are on Place once you join.'
+                  : 'Reach-by details appear here when the host adds them.'}
+              </p>
+            )}
+            <p className="mt-3 text-xs text-gray-500 leading-relaxed">{ACTIVITY_DETAIL_PLAN_SUSTAINABILITY_LINE}</p>
+          </div>
+
+          {showTransportEncouragementMobile ? (
             <div
               className={`md:hidden rounded-2xl border border-neutral-100 bg-white p-6 text-center ${mobileTransportPanel}`}
             >
               <Car className="mx-auto h-8 w-8 text-neutral-400" aria-hidden />
               <p className="mt-3 text-sm text-neutral-600 leading-relaxed">{ACTIVITY_DETAIL_TRANSPORT_EMPTY_HINT}</p>
+              {showTransportHostProUpsell ? (
+                <p className="mt-3 text-sm text-neutral-600">
+                  {ACTIVITY_DETAIL_TRANSPORT_PRO_HOST_HINT}{' '}
+                  <Link to={PRO_MEMBERSHIP_PATH} className="font-semibold text-emerald-700 hover:text-emerald-800">
+                    Learn about Pro
+                  </Link>
+                </p>
+              ) : null}
+              {showTransportParticipantProUpsell ? (
+                <p className="mt-3 text-sm text-neutral-600">
+                  {ACTIVITY_DETAIL_TRANSPORT_PRO_PARTICIPANT_HINT}{' '}
+                  <Link to={PRO_MEMBERSHIP_PATH} className="font-semibold text-emerald-700 hover:text-emerald-800">
+                    Learn about Pro
+                  </Link>
+                </p>
+              ) : null}
             </div>
           ) : null}
 
@@ -633,7 +890,7 @@ export const ActivityDetailView = ({
 
           {(() => {
             const mandatoryInstructions = extractJoinInstructionLines(activity.requirements);
-            const otherRequirements = extractNonJoinRequirements(activity.requirements);
+            const planDetailLines = extractActivityPlanDetailLines(activity.requirements);
             return (
               <>
                 {mandatoryInstructions.length > 0 && (
@@ -647,11 +904,11 @@ export const ActivityDetailView = ({
                     </ul>
                   </div>
                 )}
-                {otherRequirements.length > 0 && (
+                {planDetailLines.length > 0 && (
                   <div className={`bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 ${mobilePlanPanel}`}>
                     <h2 className="text-lg font-bold text-gray-900 mb-3">Activity details</h2>
                     <ul className="list-disc list-inside space-y-1 text-gray-700 text-sm">
-                      {otherRequirements.map((item, i) => (
+                      {planDetailLines.map((item, i) => (
                         <li key={i}>{item}</li>
                       ))}
                     </ul>
@@ -680,12 +937,28 @@ export const ActivityDetailView = ({
               onReviewSubmitted={onActivityReviewSubmitted}
               canWriteReview={canWriteActivityReview}
               collapsible
-              defaultExpanded={false}
+              defaultExpanded={canWriteActivityReview}
             />
           ) : null}
         </div>
 
         <div className={`space-y-4 ${mobileSidebarPanel}`}>
+          {hostBuddiesHub && hostCrewChatPolicy && !previewMode ? (
+            <div className={`space-y-2 ${mobileBuddiesPanel}`}>
+              <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                {ACTIVITY_DETAIL_HOST_BUDDIES_TOOLS_HINT}
+              </p>
+              <ActivityDetailHostBuddiesHub
+                tenantId={hostCrewChatPolicy.tenantId}
+                activityId={activity.id}
+                activityTitle={activity.title || activity.locationName}
+                joinRequests={hostBuddiesHub.joinRequests}
+                requestsLoading={hostBuddiesHub.requestsLoading}
+                onRequestsChanged={hostBuddiesHub.onRequestsChanged}
+                onError={hostCrewChatPolicy.onError}
+              />
+            </div>
+          ) : null}
           {showCrewLockedHint && showMobileTabs ? (
             <div className={`md:hidden bg-white rounded-2xl border border-gray-100 p-6 text-center ${mobileBuddiesPanel}`}>
               <Users className="mx-auto h-8 w-8 text-neutral-400" aria-hidden />
@@ -701,9 +974,9 @@ export const ActivityDetailView = ({
               {!previewMode && (
                 <div className="hidden md:block">
                   <ShareButton
-                    title={activity.title || activity.locationName}
-                    text={`${dateRangeLabel} · Join this ${activity.activityType} activity on UAE Trails`}
-                    path={`/activity/${activity.id}`}
+                    title={sharePayload.title}
+                    text={sharePayload.text}
+                    path={sharePayload.path}
                   />
                 </div>
               )}
@@ -749,15 +1022,55 @@ export const ActivityDetailView = ({
                       {showTenantBrand(activity) && activity.tenantName && (
                         <p className="text-xs text-gray-500 truncate">{activity.tenantName}</p>
                       )}
+                      {!hostPath && hostProfileHint ? (
+                        <p className="text-xs text-gray-500">{hostProfileHint}</p>
+                      ) : null}
                     </div>
                   </div>
                 )}
-                {!previewMode && (
-                  <HostMessageButton hostUserId={activityHostUserId(activity)} activityId={activity.id} size="md" />
+                {!previewMode && canOpenHostProfile && (
+                  <HostMessageButton hostUserId={hostUserId} activityId={activity.id} size="md" />
                 )}
               </div>
+              {showHostProfileProUpsell ? (
+                <p className="mt-3 text-xs leading-relaxed text-amber-900/90">
+                  {ACTIVITY_DETAIL_PRO_HOST_PROFILE_HINT}{' '}
+                  <Link to={proSocialMembershipPath} className="font-semibold text-emerald-700 hover:underline">
+                    {ACTIVITY_DETAIL_PRO_SOCIAL_CTA}
+                  </Link>
+                </p>
+              ) : null}
               {activity.hostBio && <p className="mt-3 text-sm text-gray-600 leading-relaxed">{activity.hostBio}</p>}
             </div>
+
+            {showHostCheckInPrompt ? (
+              <ActivityHostCheckInReviewPrompt
+                activityId={activity.id}
+                rateableCount={hostReviewHints.rateableCount}
+                activityEnded={hostReviewHints.activityEnded}
+                panelClassName={showMobileTabs ? `${mobileBuddiesPanel} mt-5` : 'mt-5'}
+              />
+            ) : null}
+
+            {showParticipantReviewPrompts ? (
+              <ActivityPostCheckInReviewPrompts
+                items={participantReviewPrompts}
+                panelClassName={showMobileTabs ? `${mobileBuddiesPanel} mt-5` : 'mt-5'}
+                onMobileTabChange={onMobileTabChange}
+              />
+            ) : null}
+
+            {hostCrewChatPolicy && !previewMode ? (
+              <div className={`${showMobileTabs ? mobileBuddiesPanel : ''} mb-4`}>
+                <ActivityCrewChatPostPolicyCard
+                  activityId={activity.id}
+                  tenantId={hostCrewChatPolicy.tenantId}
+                  value={activity.groupChatPostPolicy}
+                  onSaved={hostCrewChatPolicy.onSaved}
+                  onError={hostCrewChatPolicy.onError}
+                />
+              </div>
+            ) : null}
 
             {PARTICIPANT_PRIVACY.showPreJoin && !previewMode && canAccessCrewSurfaces && (
               <div
@@ -767,15 +1080,23 @@ export const ActivityDetailView = ({
                   Who&apos;s going ({participants.length})
                 </p>
                 <ParticipantPreview
-                  participants={previewParticipants}
+                  participants={rosterParticipants}
                   size="md"
                   showNames
                   linkToProfile
                   emptyLabel="No confirmed participants yet — be the first to join!"
                 />
-                {previewParticipants.length > 0 && (
+                {rosterParticipants.length > 0 && (
                   <p className="mt-2 text-[11px] text-gray-400">Tap a name to view profile</p>
                 )}
+                {showRosterProUpsell ? (
+                  <p className="mt-3 text-xs leading-relaxed text-amber-900/90">
+                    {ACTIVITY_DETAIL_PRO_ROSTER_HINT}{' '}
+                    <Link to={proSocialMembershipPath} className="font-semibold text-emerald-700 hover:underline">
+                      {ACTIVITY_DETAIL_PRO_SOCIAL_CTA}
+                    </Link>
+                  </p>
+                ) : null}
               </div>
             )}
           </div>
@@ -792,7 +1113,7 @@ export const ActivityDetailView = ({
     <MobileDetailShell
       backTo={backTo}
       backLabel={backLabel}
-      footer={joinButton}
+      footer={stickyFooter}
       headerAction={
         showInviteShare ? (
           <ShareButton

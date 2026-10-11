@@ -9,6 +9,7 @@ import {
   updateAdminArea,
 } from '../../lib/areas-store.js';
 import { invalidatePublishedAreasCache } from '../../lib/area-resolution.js';
+import { boundsRingFromCenter } from '../../lib/area-bounds.js';
 import { invalidateExploreMapCache } from '../../lib/explore-map-cache.js';
 
 const centerSchema = z.object({
@@ -31,8 +32,11 @@ const areaBodySchema = z.object({
   region: z.string().min(2).max(80),
   status: z.enum(['draft', 'published']),
   center: centerSchema,
-  bounds: boundsSchema,
+  bounds: boundsSchema.optional(),
   priority: z.number().int().min(0).max(9999).optional(),
+  summary: z.string().max(2000).optional().nullable(),
+  countryCode: z.string().min(2).max(8).optional(),
+  imageUrl: z.union([z.string().url(), z.literal(''), z.null()]).optional(),
 });
 
 const areaPatchSchema = areaBodySchema.partial();
@@ -53,7 +57,8 @@ export const registerAdminAreaRoutes = (adminRouter: Router): void => {
   adminRouter.post('/areas', validate({ body: areaBodySchema }), async (req, res, next) => {
     try {
       const body = req.body as z.infer<typeof areaBodySchema>;
-      const created = await createAdminArea(body);
+      const bounds = body.bounds ?? boundsRingFromCenter(body.center);
+      const created = await createAdminArea({ ...body, bounds });
       invalidatePublishedAreasCache();
       await invalidateExploreMapCache();
       res.status(201).json({ data: created });
@@ -68,7 +73,12 @@ export const registerAdminAreaRoutes = (adminRouter: Router): void => {
     async (req, res, next) => {
       try {
         const { id } = req.params as z.infer<typeof idParamSchema>;
-        const updated = await updateAdminArea(id, req.body);
+        const body = req.body as z.infer<typeof areaPatchSchema>;
+        const patch =
+          body.center && !body.bounds
+            ? { ...body, bounds: boundsRingFromCenter(body.center) }
+            : body;
+        const updated = await updateAdminArea(id, patch);
         if (!updated) {
           throw new ApiError(404, 'area_not_found', 'Area not found.');
         }

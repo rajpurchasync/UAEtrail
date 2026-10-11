@@ -1,21 +1,59 @@
 import type { ActivityViewerAccessDTO } from '@uaetrail/shared-types';
+import { listBuddiesForUser } from '../lib/buddy-store.js';
 import {
   applyActivityViewEntitlements,
+  type ActivityViewEntitlementActivityContext,
+  type ActivityViewEntitlementLoadInput,
   type MemberEntitlementContext,
 } from './member-entitlements.js';
 import {
-  resolveActivityViewerAccess,
+  buildActivityViewerAccess,
   type ActivityViewerAccessInput,
 } from './activity-viewer-access.js';
 
+const loadActivityViewEntitlementContext = async (
+  viewerUserId: string,
+  input: ActivityViewEntitlementLoadInput
+): Promise<ActivityViewEntitlementActivityContext> => {
+  const buddies = await listBuddiesForUser(viewerUserId);
+  const buddySet = new Set(buddies.map((buddy) => buddy.userId));
+  const hostUserId = input.hostUserId;
+  const isFriendOfHost =
+    hostUserId !== null && hostUserId !== undefined && buddySet.has(hostUserId);
+
+  return {
+    hostUserId,
+    isFriendOfHost,
+    buddyUserIdsOnActivity: input.participantUserIds.filter((id) => buddySet.has(id)),
+  };
+};
+
+const isResolvedEntitlementActivityContext = (
+  value: ActivityViewEntitlementLoadInput | ActivityViewEntitlementActivityContext
+): value is ActivityViewEntitlementActivityContext => 'isFriendOfHost' in value;
+
 /**
  * Social viewer access (layers 3–6) then entitlement policy (layer 7).
- * `hostStatus` is optional until paid SKUs need it — avoid loading on every anonymous read.
+ * Pass `entitlementActivity` with host + participant ids — buddy context loads here (not from routes).
  */
 export const composeActivityViewerAccess = async (
   input: ActivityViewerAccessInput,
-  entitlementCtx: MemberEntitlementContext
+  entitlementCtx: MemberEntitlementContext,
+  entitlementActivity?: ActivityViewEntitlementLoadInput | ActivityViewEntitlementActivityContext
 ): Promise<ActivityViewerAccessDTO> => {
-  const socialAccess = await resolveActivityViewerAccess(input);
-  return applyActivityViewEntitlements(entitlementCtx, socialAccess);
+  const socialAccess = await buildActivityViewerAccess(input);
+
+  let activityCtx: ActivityViewEntitlementActivityContext | undefined;
+  if (entitlementActivity) {
+    if (isResolvedEntitlementActivityContext(entitlementActivity)) {
+      activityCtx = entitlementActivity;
+    } else if (entitlementCtx.viewerUserId) {
+      activityCtx = await loadActivityViewEntitlementContext(
+        entitlementCtx.viewerUserId,
+        entitlementActivity
+      );
+    }
+  }
+
+  return applyActivityViewEntitlements(entitlementCtx, socialAccess, activityCtx);
 };

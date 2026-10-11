@@ -11,7 +11,7 @@ globs:
 
 # Viewer access (detail exposure)
 
-**Canonical spec:** `docs/DOMAIN_CANONICALS.md` §15 · **Debt / phases:** `docs/SYSTEM_COHERENCE.md` C16, S7 (VA-0–VA-7).
+**Canonical spec:** `docs/DOMAIN_CANONICALS.md` §15 (+ **§15.11 naming**) · **Phases:** `docs/SYSTEM_COHERENCE.md` S7, S7b, **S7c** · **Checklist:** `docs/experiment/member-surfaces-implementation-plan.md` **§22 (NA-*)** parallel to §21 AD-*.
 
 ## Layers (see `DOMAIN_CANONICALS.md` §15.1 + §15.10)
 
@@ -27,13 +27,14 @@ globs:
 
 ## Rules
 
-1. **Policy lives on the API** — extend `resolveActivityViewerAccess` + tests before changing product rules.
+1. **Policy lives on the API** — extend `buildActivityViewerAccess` (+ `activity-viewer-access.test.ts`) before changing product rules; `resolveActivityViewerAccess` is a compatibility alias.
 2. Peek/detail UI uses **`resolvePeekDetailAccess`** + API `viewerAccess` — never **`computeActivityDetailExposure`** in React.
 3. **Guest UI** — `guestBrowseGateCopy` / `openGuestSheet` when `gateReason === sign_in` only; `join_required` uses join/footer CTAs.
 4. **VA-3 done:** `GET /activities/:id` returns `viewerAccess`; Activity detail page must consume it.
 5. **Map peek:** `GET /explore/map` `viewerAccess` + `mapViewerAccessToExplorePeekDetail` — no `computeActivityDetailExposure` in React.
 6. **Commerce / venues on map:** `resolveCommerceMapViewerAccess` / `resolvePublicPlaceMapViewerAccess` on explore map rows.
 7. **Organize gates:** `organizePublishGateHref` ← `organizeEntitlementDenial` (not ad-hoc profile checks).
-8. **Next:** entitlements layer when paid SKUs ship (`applyActivityViewEntitlements`).
+8. **Entitlements:** `applyActivityViewEntitlements` after social exposure — flags on `viewerAccess.entitlements`; UI reads DTO fields, not `activityViewerEntitlementsCan*` helpers (§22 NA-1).
+9. **Naming:** wire-first per §15.11 — no new public `resolveActivityView*` loaders from routes (NA-2); no crew policy fallback in `activityDetailPresentation` when wire present (NA-3).
 
 Before done: `npm run verify:system:quick`; API changes must keep `activity-viewer-access.test.ts` as the contract.

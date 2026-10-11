@@ -19,9 +19,9 @@ describe('computeActivityMapPeekActions', () => {
     ]);
   });
 
-  it('returns participant message, invite, and detail', () => {
+  it('returns participant crew chat, invite, and detail', () => {
     expect(computeActivityMapPeekActions({ level: 'participant', activityPublished: true })).toEqual([
-      { id: 'message_host', prominence: 'primary' },
+      { id: 'open_crew_chat', prominence: 'primary' },
       { id: 'invite_crew', prominence: 'secondary' },
       { id: 'view_detail', prominence: 'text' },
     ]);
@@ -29,13 +29,13 @@ describe('computeActivityMapPeekActions', () => {
 
   it('omits invite when activity is not published', () => {
     const actions = computeActivityMapPeekActions({ level: 'participant', activityPublished: false });
-    expect(actions.map((a) => a.id)).toEqual(['message_host', 'view_detail']);
+    expect(actions.map((a) => a.id)).toEqual(['open_crew_chat', 'view_detail']);
   });
 
   it('returns request_join for link_holder viewers', () => {
     expect(
       computeActivityMapPeekActions({ level: 'link_holder', activityPublished: true }).map((a) => a.id)
-    ).toEqual(['request_join', 'message_host']);
+    ).toEqual(['request_join', 'view_detail']);
   });
 
   it('returns pending_join when join_request level has pending status', () => {
@@ -47,7 +47,7 @@ describe('computeActivityMapPeekActions', () => {
       })
     ).toEqual([
       { id: 'pending_join', prominence: 'primary', joinRequestStatus: 'pending' },
-      { id: 'message_host', prominence: 'secondary' },
+      { id: 'view_detail', prominence: 'text' },
     ]);
   });
 
@@ -57,10 +57,10 @@ describe('computeActivityMapPeekActions', () => {
     ]);
   });
 
-  it('returns join + view detail for public guests', () => {
+  it('returns join + view detail for public guests (no pre-join DM host)', () => {
     expect(computeActivityMapPeekActions({ level: 'public', activityPublished: true }).map((a) => a.id)).toEqual([
       'request_join',
-      'message_host',
+      'view_detail',
     ]);
   });
 });

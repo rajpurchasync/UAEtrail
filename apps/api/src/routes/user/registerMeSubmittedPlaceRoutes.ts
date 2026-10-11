@@ -12,6 +12,8 @@ import { findAuthUserById } from '../../lib/auth-users.js';
 import { RewardAction } from '../../domain/enums.js';
 import { fromPrismaActivityType } from '../../domain/activity-type.js';
 import { awardPoints } from '../../services/rewards.js';
+import { findPublishedAreaById } from '../../lib/areas-store.js';
+import { ApiError } from '../../lib/api-error.js';
 
 /** Signed-in place submission (`/me/locations`). Requires prior auth middleware. */
 export const registerMeSubmittedPlaceRoutes = (router: Router): void => {
@@ -27,6 +29,10 @@ export const registerMeSubmittedPlaceRoutes = (router: Router): void => {
   registerPlaceAlias(router, 'post', '/me/locations', validate({ body: locationSubmitBodySchema }), async (req, res, next) => {
     try {
       const body = req.body as z.infer<typeof locationSubmitBodySchema>;
+      const area = await findPublishedAreaById(body.areaId.trim());
+      if (!area) {
+        throw new ApiError(400, 'area_not_found', 'Choose a published area.');
+      }
 
       const created = await createLocationRecord(buildLocationCreateData(body, req.auth!.userId));
 

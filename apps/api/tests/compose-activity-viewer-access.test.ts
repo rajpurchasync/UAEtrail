@@ -14,7 +14,7 @@ describe('composeActivityViewerAccess', () => {
       joinMode: 'open' as const,
       canAccessCrewSurfaces: false,
     };
-    vi.spyOn(activityViewerAccess, 'resolveActivityViewerAccess').mockResolvedValue(social);
+    vi.spyOn(activityViewerAccess, 'buildActivityViewerAccess').mockResolvedValue(social);
     const entitlementsSpy = vi
       .spyOn(memberEntitlements, 'applyActivityViewEntitlements')
       .mockReturnValue(social);
@@ -34,7 +34,11 @@ describe('composeActivityViewerAccess', () => {
     );
 
     expect(result).toEqual(social);
-    expect(entitlementsSpy).toHaveBeenCalledWith({ viewerUserId: null, hostStatus: null }, social);
+    expect(entitlementsSpy).toHaveBeenCalledWith(
+      { viewerUserId: null, hostStatus: null },
+      social,
+      undefined
+    );
     vi.restoreAllMocks();
   });
 });

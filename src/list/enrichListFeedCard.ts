@@ -1,7 +1,7 @@
 import { exploreMapItemIsHostedActivity, exploreMapItemIsSeeking, type ExploreMapItemDTO } from '@uaetrail/shared-types';
 import type { ExploreCardModel } from '../explore/exploreCardModel';
 import { finalizeExploreCardLinkedRideshare } from '../explore/linkedRideshareExplore';
-import { canOfferRideshareForDemandItem } from '../explore/linkActivityRideshareOffer';
+import { canShowDemandLinkRideshareOffer } from '../explore/linkActivityRideshareOffer';
 import { viewerIsActivityHostUser } from '../utils/viewerHostsActivity';
 
 /** Same host/demand flags as explore map peek selection. */
@@ -30,7 +30,7 @@ export const enrichListFeedCardModel = (
       ...next,
       showJoinActions: false,
       showDemandOwnerActions: true,
-      showDemandLinkRideshare: canOfferRideshareForDemandItem(item),
+      showDemandLinkRideshare: canShowDemandLinkRideshareOffer(item),
     };
   }
 

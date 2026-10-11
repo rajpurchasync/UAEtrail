@@ -48,6 +48,8 @@ import {
 import { DEMO_ACCOUNTS } from '../src/lib/demo-accounts.js';
 import { logOmarHostQaPlaybook } from './logOmarHostQaPlaybook.js';
 import { seedCuratedAreas } from '../src/lib/seed-areas.js';
+import { curatedAreaSeedId } from '@uaetrail/shared-types';
+import { backfillSeedCatalogLocationAreaIds, seedLocationAreaId } from './seed-location-area-map.js';
 import {
   createGroupWallMessage,
   createSocialGroup,
@@ -498,7 +500,11 @@ const upsertTenant = async (input: {
 };
 
 const upsertLocation = async (id: string, data: LocationCreateInput) => {
-  const location = buildLocationFromCreateInput({ ...data, status: LocationStatus.ACTIVE }, id);
+  const areaId = data.areaId ?? seedLocationAreaId(id) ?? undefined;
+  const location = buildLocationFromCreateInput(
+    { ...data, areaId, status: LocationStatus.ACTIVE },
+    id
+  );
   const existing = await findLocationInMongo(id);
   if (existing) {
     location.createdAt = existing.createdAt;
@@ -961,6 +967,9 @@ async function main() {
   }
 
   if (!(await shouldRunSeed())) {
+    await seedCuratedAreas();
+    await backfillSeedCatalogLocationAreaIds();
+    console.log('[seed] Curated areas upserted and catalog place areaIds backfilled');
     if (isMobileInboxSeedEnabled()) {
       await runMobileInboxDemoSeed();
     }
@@ -1533,6 +1542,338 @@ Drive via Dubai–Hatta Road (E44). Main car park is signed at the dam visitor a
       }
     },
     {
+      id: 'hatta-wadi-hub-loop',
+      data: {
+        name: 'Hatta Wadi Hub Trail',
+        region: 'Dubai',
+        areaLabel: 'Hatta Wadi Hub',
+        areaId: curatedAreaSeedId('hatta'),
+        activityType: ActivityType.HIKING,
+        difficulty: Difficulty.MODERATE,
+        accessibility: Accessibility.CAR_ACCESSIBLE,
+        description:
+          'Marked red-and-white trail from Hatta Wadi Hub through rocky wadi sections — popular weekend loop with bike park nearby.',
+        season: ['winter', 'year-round'],
+        childFriendly: true,
+        images: ['https://images.unsplash.com/photo-1501555088652-021faa106b9b?w=800'],
+        featured: true,
+        distance: 9,
+        duration: 3.5,
+        elevation: 280,
+        latitude: 24.8195,
+        longitude: 56.1285,
+        highlights: ['Wadi views', 'Bike park nearby', 'Marked trail'],
+        surfaceType: ['rocky', 'gravel'],
+        tags: ['hatta', 'wadi', 'area:Hatta Wadi Hub'],
+        accessibleBy: ['car'],
+        parkingLink: 'https://www.google.com/maps/search/?api=1&query=Hatta+Wadi+Hub',
+        parkingLat: 24.8198,
+        parkingLng: 56.1292,
+        unlockPriceAed: 12,
+        guidePreview: 'Hub parking, trail markers, and summer start-time tips.',
+        guideMarkdown: '## Route\n9 km loop from Wadi Hub — follow red-white markers.\n\n## Services\nCafés and rentals at the hub.'
+      }
+    },
+    {
+      id: 'hatta-hill-park-camp',
+      data: {
+        name: 'Hatta Hill Park Camp',
+        region: 'Dubai',
+        areaLabel: 'Hatta Hill Park',
+        areaId: curatedAreaSeedId('hatta'),
+        activityType: ActivityType.CAMPING,
+        description:
+          'Terraced hill park with designated BBQ and overnight camp zones overlooking Hatta — family-friendly with sunset views.',
+        season: ['winter'],
+        childFriendly: true,
+        maxGroupSize: 16,
+        accessibility: Accessibility.CAR_ACCESSIBLE,
+        images: ['https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=800'],
+        featured: true,
+        campingType: 'self-guided',
+        latitude: 24.8022,
+        longitude: 56.1055,
+        highlights: ['Sunset views', 'BBQ terraces', 'Family camping'],
+        surfaceType: ['gravel'],
+        tags: ['hatta', 'camping', 'area:Hatta Hill Park'],
+        accessibleBy: ['car'],
+        parkingLink: 'https://www.google.com/maps/search/?api=1&query=Hatta+Hill+Park',
+        parkingLat: 24.8025,
+        parkingLng: 56.1058,
+        unlockPriceAed: 15,
+        guidePreview: 'Camp zones, BBQ rules, and quiet hours.',
+        guideMarkdown: '## Overnight\nArrive before sunset on busy weekends.\n\n## Rules\nNo ground fires — use raised BBQ stands only.'
+      }
+    },
+    {
+      id: 'hatta-wadi-gear-shop',
+      data: {
+        name: 'Hatta Wadi Gear Shop',
+        region: 'Dubai',
+        areaLabel: 'Hatta Wadi Hub',
+        areaId: curatedAreaSeedId('hatta'),
+        activityType: ActivityType.SHOP,
+        description:
+          'Trail snacks, hydration, and basic camp kit at the Wadi Hub — last-minute supplies before dam or wadi loops.',
+        season: ['year-round'],
+        childFriendly: true,
+        images: ['https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=400'],
+        featured: false,
+        latitude: 24.8192,
+        longitude: 56.1288,
+        highlights: ['Hydration', 'Snacks', 'Camp basics'],
+        surfaceType: [],
+        tags: ['shop', 'gear', 'hatta', 'area:Hatta Wadi Hub'],
+        accessibleBy: ['car'],
+        parkingLat: 24.8195,
+        parkingLng: 56.129,
+        unlockPriceAed: 0,
+        guidePreview: 'Opening hours and stock for weekend hikers.',
+        guideMarkdown: '## Location\nInside Hatta Wadi Hub retail strip.'
+      }
+    },
+    {
+      id: 'hatta-dam-services-stop',
+      data: {
+        name: 'Hatta Dam ADNOC',
+        region: 'Dubai',
+        areaLabel: 'Hatta Dam visitor park',
+        areaId: curatedAreaSeedId('hatta'),
+        activityType: ActivityType.SHOP,
+        description: 'Fuel and convenience stop on the approach to Hatta Dam — handy before early-morning hikes.',
+        season: ['year-round'],
+        childFriendly: true,
+        images: ['https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400'],
+        latitude: 24.7885,
+        longitude: 56.1085,
+        highlights: ['Fuel', 'Convenience'],
+        surfaceType: [],
+        tags: ['facility:fuel', 'facility:shop', 'hatta', 'area:Hatta Dam visitor park'],
+        accessibleBy: ['car'],
+        parkingLat: 24.7888,
+        parkingLng: 56.1088,
+        unlockPriceAed: 0,
+        guidePreview: '24h fuel on E44 approach.',
+        guideMarkdown: 'Plan fuel before returning to Dubai.'
+      }
+    },
+    {
+      id: 'hatta-dam-restroom',
+      data: {
+        name: 'Hatta Dam Restrooms',
+        region: 'Dubai',
+        areaLabel: 'Hatta Dam visitor park',
+        areaId: curatedAreaSeedId('hatta'),
+        activityType: ActivityType.HIKING,
+        difficulty: Difficulty.EASY,
+        accessibility: Accessibility.CAR_ACCESSIBLE,
+        description:
+          'Visitor park facilities at Hatta Dam — toilets, picnic lawns, and kayak hire (not a hike; map pin for amenities).',
+        season: ['year-round'],
+        childFriendly: true,
+        images: ['https://images.unsplash.com/photo-1646641678252-52aee3025261?w=800'],
+        distance: 0.3,
+        duration: 0.25,
+        latitude: 24.7858,
+        longitude: 56.1145,
+        highlights: ['Toilets', 'Picnic lawns', 'Kayak hire'],
+        surfaceType: ['gravel'],
+        tags: ['facility:toilet', 'facility:water', 'hatta', 'area:Hatta Dam visitor park'],
+        accessibleBy: ['car'],
+        parkingLink: 'https://www.google.com/maps/search/?api=1&query=Hatta+Dam',
+        parkingLat: 24.7855,
+        parkingLng: 56.1142,
+        unlockPriceAed: 0,
+        guidePreview: 'Public toilets and shaded picnic spots.',
+        guideMarkdown: '## Facilities\nOpen during visitor park hours.'
+      }
+    },
+    {
+      id: 'al-qudra-cycling-loop',
+      data: {
+        name: 'Al Qudra Cycling Loop',
+        region: 'Dubai',
+        areaLabel: 'Al Qudra Lakes',
+        areaId: curatedAreaSeedId('alQudra'),
+        activityType: ActivityType.HIKING,
+        difficulty: Difficulty.EASY,
+        accessibility: Accessibility.CAR_ACCESSIBLE,
+        description:
+          'Shared cycling and walking loop around Al Qudra lakes — flat gravel, bird hides, and desert lake views.',
+        season: ['winter', 'year-round'],
+        childFriendly: true,
+        images: ['https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800'],
+        featured: true,
+        distance: 18,
+        duration: 4,
+        elevation: 40,
+        latitude: 24.872,
+        longitude: 55.52,
+        highlights: ['Lake views', 'Cycling', 'Birding'],
+        surfaceType: ['gravel'],
+        tags: ['al qudra', 'cycling', 'area:Al Qudra Lakes'],
+        accessibleBy: ['car'],
+        parkingLat: 24.871,
+        parkingLng: 55.518,
+        unlockPriceAed: 0,
+        guidePreview: 'Loop direction, water stops, and night riding rules.',
+        guideMarkdown: '## Loop\n18 km shared path — yield to faster cyclists.'
+      }
+    },
+    {
+      id: 'love-lake-walk',
+      data: {
+        name: 'Love Lake Walk',
+        region: 'Dubai',
+        areaLabel: 'Love Lake',
+        areaId: curatedAreaSeedId('loveLake'),
+        activityType: ActivityType.HIKING,
+        difficulty: Difficulty.EASY,
+        accessibility: Accessibility.CAR_ACCESSIBLE,
+        description:
+          'Short desert walk to the heart-shaped Love Lake — photo stops and sunset picnics inside Al Qudra district.',
+        season: ['winter', 'year-round'],
+        childFriendly: true,
+        images: ['https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800'],
+        distance: 2.5,
+        duration: 1,
+        latitude: 24.8612,
+        longitude: 55.4868,
+        highlights: ['Photo spot', 'Sunset', 'Short walk'],
+        surfaceType: ['sand', 'gravel'],
+        tags: ['love lake', 'area:Love Lake'],
+        accessibleBy: ['car', '4x4'],
+        parkingLat: 24.8605,
+        parkingLng: 55.486,
+        unlockPriceAed: 0,
+        guidePreview: 'Parking pin and best light for photos.',
+        guideMarkdown: '## Access\n4×4 recommended after rain.'
+      }
+    },
+    {
+      id: 'jumeirah-kite-beach',
+      data: {
+        name: 'Jumeirah Kite Beach Track',
+        region: 'Dubai',
+        areaLabel: 'Kite Beach',
+        areaId: curatedAreaSeedId('jumeirah'),
+        activityType: ActivityType.HIKING,
+        difficulty: Difficulty.EASY,
+        accessibility: Accessibility.CAR_ACCESSIBLE,
+        description:
+          'Paved seaside running and walking track along Kite Beach — community runs and sunset strolls.',
+        season: ['year-round'],
+        childFriendly: true,
+        images: ['https://images.unsplash.com/photo-1683028135155-7638f285b662?w=800'],
+        featured: true,
+        distance: 5,
+        duration: 1,
+        latitude: 25.1654,
+        longitude: 55.2553,
+        highlights: ['Sea views', 'Running track', 'Community events'],
+        surfaceType: ['gravel'],
+        tags: ['jumeirah', 'kite beach', 'run', 'area:Kite Beach'],
+        accessibleBy: ['car'],
+        parkingLink: 'https://www.google.com/maps/search/?api=1&query=Kite+Beach+Dubai',
+        parkingLat: 25.165,
+        parkingLng: 55.255,
+        unlockPriceAed: 0,
+        guidePreview: 'Track segment map and parking.',
+        guideMarkdown: '## Meetups\nCommon start point for sunrise 5K groups.'
+      }
+    },
+    {
+      id: 'khorfakkan-beach-trail',
+      data: {
+        name: 'Khorfakkan Beach Walk',
+        region: 'Fujairah',
+        areaLabel: 'Khorfakkan corniche',
+        areaId: curatedAreaSeedId('khorfakkan'),
+        activityType: ActivityType.HIKING,
+        difficulty: Difficulty.EASY,
+        accessibility: Accessibility.CAR_ACCESSIBLE,
+        description:
+          'Corniche and beachside path under the Hajar Mountains — swimming stops and café breaks.',
+        season: ['winter', 'year-round'],
+        childFriendly: true,
+        images: ['https://images.unsplash.com/photo-1683028135155-7638f285b662?w=800'],
+        distance: 4,
+        duration: 1.5,
+        latitude: 25.365,
+        longitude: 56.352,
+        highlights: ['Mountain backdrop', 'Swimming', 'Corniche'],
+        surfaceType: ['gravel'],
+        tags: ['khorfakkan', 'beach', 'area:Khorfakkan corniche'],
+        accessibleBy: ['car'],
+        parkingLat: 25.3645,
+        parkingLng: 56.3515,
+        unlockPriceAed: 0,
+        guidePreview: 'Corniche parking and swim flags.',
+        guideMarkdown: '## Coast\nCheck surf conditions before swimming.'
+      }
+    },
+    {
+      id: 'jebel-hafeet-viewpoint-hike',
+      data: {
+        name: 'Jebel Hafeet Summit Walk',
+        region: 'Al Ain',
+        areaLabel: 'Jebel Hafeet summit',
+        areaId: curatedAreaSeedId('jebelHafeet'),
+        activityType: ActivityType.HIKING,
+        difficulty: Difficulty.MODERATE,
+        accessibility: Accessibility.CAR_ACCESSIBLE,
+        description:
+          'Short summit viewpoint walks near the top of Jebel Hafeet — cooler air and desert panoramas over Al Ain.',
+        season: ['winter'],
+        childFriendly: true,
+        images: ['https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800'],
+        distance: 3,
+        duration: 1.5,
+        elevation: 200,
+        latitude: 24.062,
+        longitude: 55.776,
+        highlights: ['Summit views', 'Cooler temps', 'Mercury Grand Hotel area'],
+        surfaceType: ['rocky'],
+        tags: ['jebel hafeet', 'al ain', 'area:Jebel Hafeet summit'],
+        accessibleBy: ['car'],
+        parkingLat: 24.0615,
+        parkingLng: 55.7755,
+        unlockPriceAed: 10,
+        guidePreview: 'Viewpoint parking and winter layers.',
+        guideMarkdown: '## Summit\nMind road cyclists on the upper switchbacks.'
+      }
+    },
+    {
+      id: 'kalba-mangrove-kayak',
+      data: {
+        name: 'Kalba Mangrove Kayak',
+        region: 'Sharjah',
+        areaLabel: 'Kalba mangroves',
+        areaId: curatedAreaSeedId('kalba'),
+        activityType: ActivityType.HIKING,
+        difficulty: Difficulty.EASY,
+        accessibility: Accessibility.CAR_ACCESSIBLE,
+        description:
+          'Paddle and board launch point in Kalba mangroves — bird hides and calm channels on the east coast.',
+        season: ['winter', 'year-round'],
+        childFriendly: true,
+        images: ['https://images.unsplash.com/photo-1501555088652-021faa106b9b?w=800'],
+        distance: 5,
+        duration: 2,
+        latitude: 25.065,
+        longitude: 56.358,
+        highlights: ['Mangroves', 'Kayak', 'Birding'],
+        surfaceType: ['gravel'],
+        tags: ['kalba', 'kayak', 'area:Kalba mangroves'],
+        accessibleBy: ['car'],
+        parkingLat: 25.0645,
+        parkingLng: 56.3575,
+        unlockPriceAed: 15,
+        guidePreview: 'Tide windows and rental operators.',
+        guideMarkdown: '## Paddle\nBest at high tide for channel access.'
+      }
+    },
+    {
       id: 'al-ain-desert-camp',
       data: {
         name: 'Al Ain Desert Camp',
@@ -1575,6 +1916,8 @@ Share your live location and carry extra water in summer months.`
   for (const location of seedLocations) {
     await upsertLocation(location.id, location.data);
   }
+
+  await backfillSeedCatalogLocationAreaIds();
 
   const start = new Date();
   start.setDate(start.getDate() + 7);
@@ -1723,7 +2066,7 @@ Share your live location and carry extra water in summer months.`
 
   await upsertEvent('seed-event-kite-beach-run', {
     tenant: { connect: { id: agencyTenant.id } },
-    location: { connect: { id: 'hatta-dam-loop' } },
+    location: { connect: { id: 'jumeirah-kite-beach' } },
     createdBy: { connect: { id: agencyOwner._id } },
     host: { connect: { id: agencyGuide._id } },
     activityType: ActivityType.EVENT,

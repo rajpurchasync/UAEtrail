@@ -9,9 +9,11 @@ import { UserRole, UserStatus } from '../src/domain/enums.js';
 import { getMongoClient } from '../src/lib/mongo.js';
 import { COLLECTIONS } from '../src/lib/collections.js';
 import { findParticipantIntentJoinRequestForUser } from '../src/lib/participant-intent-requests-store.js';
+import { ensureCuratedAreasSeeded, testAreas } from './helpers/test-seed.js';
 
 beforeAll(async () => {
   await bootstrapTestApp();
+  await ensureCuratedAreasSeeded();
 });
 
 describe('seeking join M2b/M2c (activity canonical)', () => {
@@ -51,13 +53,10 @@ describe('seeking join M2b/M2c (activity canonical)', () => {
       latitude: 25.1,
       longitude: 55.2,
       locationPrecision: 'specific',
+      areaId: testAreas.hatta.id,
     });
 
-    const intentDoc = await getMongoClient()!
-      .db()
-      .collection(COLLECTIONS.PARTICIPANT_INTENTS)
-      .findOne({ _id: intent.id });
-    const activityId = intentDoc?.activityId ?? intentDoc?.seekingActivityId;
+    const activityId = intent.activityId ?? intent.seekingActivityId;
     expect(activityId).toBeTruthy();
 
     const { request } = await createJoinOrWaitlistRequest({

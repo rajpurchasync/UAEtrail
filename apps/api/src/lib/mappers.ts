@@ -133,7 +133,8 @@ export const buildActivityDto = (event : ActivityWithRelations): ActivityDTO => 
     participantPreviews: participantsWithUser.length > 0 ? toParticipantPreviews(participantsWithUser) : undefined,
     countryCode: event.location.countryCode ?? event.tenant.countryCode ?? 'AE',
     locationLatitude: event.location.latitude ?? null,
-    locationLongitude: event.location.longitude ?? null
+    locationLongitude: event.location.longitude ?? null,
+    locationAreaId: event.location.areaId ?? null
   });
 };
 
@@ -205,7 +206,8 @@ const toEventDto = ({
   participantPreviews,
   countryCode = 'AE',
   locationLatitude,
-  locationLongitude
+  locationLongitude,
+  locationAreaId
 }: {
   event : Activity;
   locationName: string;
@@ -226,6 +228,7 @@ const toEventDto = ({
   countryCode?: string;
   locationLatitude?: number | null;
   locationLongitude?: number | null;
+  locationAreaId?: string | null;
 }): ActivityDTO => {
   const local = formatActivityLocal(event.startAt, countryCode);
   const endLocal = event.endAt ? formatActivityLocal(event.endAt, countryCode) : null;
@@ -246,7 +249,11 @@ const toEventDto = ({
   locationId: event.locationId,
   locationName,
   region,
-  areaId: event.areaId ?? null,
+  areaId: locationAreaId?.trim()
+    ? locationAreaId.trim()
+    : event.areaId?.trim()
+      ? event.areaId.trim()
+      : null,
   activityType: mapScheduledActivityType(activityType),
   title: event.title,
   description: event.description,
@@ -304,6 +311,7 @@ const toEventDto = ({
   outingCategory: event.outingCategory ?? null,
   outingTopic: event.outingTopic ?? null,
   activityMode: event.activityMode ?? null,
-  participantIntentId: event.participantIntentId ?? null
+  participantIntentId: event.participantIntentId ?? null,
+  groupChatPostPolicy: event.groupChatPostPolicy ?? null
 };
 };

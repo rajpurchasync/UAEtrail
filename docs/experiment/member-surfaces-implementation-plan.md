@@ -1,7 +1,7 @@
 # Member surfaces — implementation plan (master checklist)
 
-**Status:** Approved direction · **§19 eng complete** · **§20** ops + storage/UX remain  
-**Last updated:** 2026-10-10 (§20 P1 wire, progress log §14)  
+**Status:** Approved direction · **§19–§22 eng complete** · **§20** ops + post-migration residue remain  
+**Last updated:** 2026-10-12 (§4.3–4.5 Locations lens, area matching, Phase E fixtures queued)  
 **Audience:** Eng + product — use this so context is not lost across PRs.
 
 **Tier 1 defers to:** [`NAVIGATION.md`](../NAVIGATION.md), [`DOMAIN.md`](../DOMAIN.md), [`DOMAIN_CANONICALS.md`](../DOMAIN_CANONICALS.md), [`SYSTEM_COHERENCE.md`](../SYSTEM_COHERENCE.md), [`CREATE_FLOW.md`](../CREATE_FLOW.md), [`MEMBER_MODEL.md`](../MEMBER_MODEL.md) — **update those as each phase ships** (see §10).
@@ -113,23 +113,23 @@ Notifications (deep link to **activity**, **Plan row context**, **chat thread**,
 
 ### 2.3 Area (new)
 
-- [ ] Collection `areas` (or documented equivalent) with slug, name, region, bounds, center, status
-- [ ] Admin CRUD + seed (Hatta, Jais, …)
-- [ ] `GET /areas/:slug` public card
-- [ ] `place.areaId` + `activity.areaId` (new field)
-- [ ] Point-in-polygon (+ place.areaId precedence) on publish — §4
+- [x] Collection `areas` (or documented equivalent) with slug, name, region, bounds, center, status — **Phase 4**
+- [x] Admin CRUD + seed (Hatta, Jais, …)
+- [x] `GET /areas/:slug` public card + `/area/:slug` page
+- [x] `place.areaId` + `activity.areaId` (new field)
+- [x] **`activity.areaId` + `place.areaId`** — explicit catalog + organize pick (§4); polygon **not** authority for hosted publish
 
 ### 2.4 Availability (new)
 
-- [ ] Collection `member_availability` (or `availability_slots`) — see §5
-- [ ] **Not** an Activity; **not** merged with seeking posts
-- [ ] Visibility: public | buddies | hidden (MEMBER_MODEL)
+- [x] Collection `member_availability` (or `availability_slots`) — see §5 — **Phase 5**
+- [x] **Not** an Activity; **not** merged with seeking posts
+- [x] Visibility: public | buddies | hidden (MEMBER_MODEL)
 
 ### 2.5 OutingTopic (browse projection)
 
-- [ ] Add `OutingTopic` + helpers: `topicFromActivity`, `topicFromPlaceKind`, `topicFromAvailabilityKind`
-- [ ] Single matcher used by explore map/list (`explore-map.ts`, `exploreMapPinModel.ts`)
-- [ ] Retire separate “Looking for” pill — use Activities layer + optional chip Hosted | Seeking | All
+- [x] Add `OutingTopic` + helpers — **Phase 2**
+- [x] Single matcher used by explore map/list (`explore-map.ts`, `exploreMapPinModel.ts`)
+- [x] Retire separate “Looking for” pill — use Activities layer + optional chip Hosted | Seeking | All
 
 ---
 
@@ -145,13 +145,13 @@ Notifications (deep link to **activity**, **Plan row context**, **chat thread**,
 
 ### 3.2 Map pins
 
-- [ ] Activity pins: badge **Seeking** vs **Hosted** (iconography)
+- [x] Activity pins: badge **Seeking** vs **Hosted** (corner chips on map emoji pins — `mapPinIcons` + `resolveExploreMapActivityMode`)
 - [x] Map **People pill** → **Available** tab (`ExploreMapPeopleBrowseButton`, `PeopleBrowsePanel`) — **shipped**; supersedes area-cluster overlay idea
 - [x] ~~Separate **area cluster** pins on map canvas~~ — **not needed** (2026-10-10); pill + panel already covers discovery
 
 ### 3.3 Search
 
-- [ ] Query “Hatta” → **Area** card first → `/area/:slug`
+- [x] Query “Hatta” → **Area** card first → `/area/:slug` (`ExploreSearchAreaHints` + `searchPublishedAreasForQuery`)
 - [ ] Topic + area + when returns activities (both modes), places, people index
 
 ### 3.4 FAB
@@ -162,20 +162,57 @@ Notifications (deep link to **activity**, **Plan row context**, **chat thread**,
 
 ### 3.5 Area detail page
 
-- [ ] Route `/area/:slug`
-- [ ] Sections: map strip, **activities** (hosted+seeking), places by kind, shops/operators, **available people** (week filter)
-- [ ] CTAs: FAB with `areaId` prefill
+- [x] Route `/area/:slug`
+- [x] Sections: **upcoming activities** + **catalog places** previews; **available people** (week filter); map CTA via explore `?area=`
+- [ ] Map strip embed, places by kind grouping, shops/operators rails
+- [ ] CTAs: FAB compose with `?area=` slug prefill (organize area pick still manual unless catalog place)
 
 ---
 
-## 4. Area resolution on create (checklist)
+## 4. Geography (locked product contract)
 
-- [ ] On activity publish (`hosted` and `seeking`): compute `areaId` from (1) `registryPlaceId` → place.areaId, (2) else point-in-polygon on anchor lat/lng
-- [ ] Tie-break: smallest area by area km² or admin `priority`
-- [ ] Review step shows “Area: {name}” with override picker (published areas list)
-- [ ] Persist `activity.areaId`; keep `region` emirate
-- [ ] Demand migration: same for legacy intents → activities
-- [ ] Availability: user selects `areaId` (+ region fallback); no required GPS home pin
+**Authority:** admin **Area** registry (`areaId`) + **`place.areaId`** on every catalog row. Activities **do not** get a separate area field on write — `activity.locationId` → place. **No** polygon hit tests for tagging.
+
+### 4.1 Shipped (Phase A — place-derived area)
+
+- [x] Organize public publish: registry **place** must have **`place.areaId`** (`validateOrganizePlaceArea`; no activity-level area picker)
+- [x] Host create: no **`areaId`** on activity body; publish gate uses **`place.areaId`**
+- [x] Explore map activity items: **`areaSlug`** from linked place (legacy `activity.areaId` read fallback)
+- [x] Area hub lists: activities by **`location.areaId`** (+ legacy activity row)
+- [x] Find: **Area & map pin** step → `participant_intents.areaId`; seeking synthetic **`place.areaId`**
+- [x] Admin places UI: **`areaId`** on catalog rows
+- [x] Tier-1 docs: `DOMAIN.md`, `CREATE_FLOW.md`, `SYSTEM_COHERENCE.md`
+
+### 4.2 Phase B — Add place & custom anchors (shipped)
+
+- [x] **Add** wizard: **`curatedArea`** step before pin (hiking, camping, shop, others)
+- [x] `POST /me/locations` + host `/locations`: require **`areaId`**; validate published area
+- [x] Structured organize: catalog place only (no custom trail anchor); rideshare/generic anchor place gets **`areaId`** via bounds match on going-from pin
+
+### 4.3 Phase C — Explore **Locations** lens (shipped)
+
+- [x] Map canvas: **area name pins** + rollup stats (`source: area`, `pinKind=locations`)
+- [x] Area peek sheet → Activities, Trails, camp spots, Shops + area page (`ExploreAreaPeekActions`)
+- [x] Keep **Activities** lens: per-outing emoji pins (unchanged)
+
+### 4.4 Phase D — Matching & notifications (shipped)
+
+- [x] Find in **area A**: in-app notification when upcoming **hosted** activities share `areaId` / `place.areaId`
+- [x] Hosted publish in **area A**: notify active Find posters in same area (`seeking-area-match-notifications.ts`)
+- [x] Copy: “An outing in {area} matches your looking-for post” / “Outings in {area} match what you are looking for”
+- [ ] Optional: buddy overlap rules (deferred)
+
+### 4.5 Phase E — Integration test fixtures (queued)
+
+- [x] **12 curated areas** in `CURATED_AREA_CATALOG` + `seedCuratedAreas` (summaries, bounds) — admin can edit live rows
+- [x] Seed catalog places + Hatta multi-pin cluster wired via `seed-location-area-map.ts` + `backfillSeedCatalogLocationAreaIds`
+- [x] Finish routing remaining API vitest files through `apps/api/tests/helpers/test-seed.ts` (`createTestLocation`, `defaultTestAreaId`, `buildTestParticipantIntentInput`)
+- [x] No new literal `area-seed-*` in test files — use `@uaetrail/shared-types` `curatedAreaSeedId` (guarded by `test-seed-coherence.test.ts`)
+- [x] `apps/api/tests/README.md` — one-page fixture guide
+
+### 4.5 Availability (unchanged track)
+
+- [x] Availability: user selects `areaId` (+ region fallback); no required GPS home pin
 
 ---
 
@@ -293,8 +330,8 @@ Notifications (deep link to **activity**, **Plan row context**, **chat thread**,
 
 ### Phase M3 — Areas + availability
 
-- [ ] `areas` + `areaId` on activities/places
-- [ ] `member_availability` + explore people index
+- [x] `areas` + `areaId` on activities/places — **Phase 4**
+- [x] `member_availability` + explore people index — **Phase 5**
 
 ---
 
@@ -335,7 +372,7 @@ Use one PR per subsection where possible; check boxes when merged.
 
 - [x] 4.1 Admin areas CRUD + seed
 - [x] 4.2 `place.areaId` + admin link UI (API + `areaId` on admin place create/patch; visual picker TBD)
-- [x] 4.3 `activity.areaId` + point-in-polygon on publish (seeking intents on create/update; organize review picker TBD)
+- [x] 4.3 `activity.areaId` on publish — organize explicit pick + place link (polygon demoted for hosted)
 - [x] 4.4 `/area/:slug` page + `?area=` explore filter
 - [x] 4.5 Search boosts area entity (`areaSlug` in explore haystack; dedicated area search card TBD)
 
@@ -396,7 +433,7 @@ Use one PR per subsection where possible; check boxes when merged.
 | G-lang | No user-facing “Trips” tab/hub; activities terminology on Explore |
 | G-topic | Topic=hiking returns hosted + seeking activities + hiking places in one filter API |
 | G-seek | Find FAB creates seeking activity; appears as activity pin (not demand source) |
-| G-area | Publish activity in Hatta bounds sets `areaId`; `/area/hatta` lists it |
+| G-area | Publish with `areaId` = Hatta (or place linked to Hatta); `/area/hatta` + `?area=hatta` list it |
 | G-avail | Multi-day availability on Plan visible in People search for matching dates (visibility respected) |
 | G-avail-map | From map: **People pill** opens **Available** roster (`peopleTab=available`); **no** per-user availability pins or area-cluster overlay on the canvas |
 | G-plan | Goals + saved + schedule + availability editable on Plan without Profile duplicate lists |
@@ -433,7 +470,7 @@ Use one PR per subsection where possible; check boxes when merged.
 | Legacy redirects | `src/member-plan/legacyTripsRedirect.ts`, `src/App.tsx` |
 | Areas (new) | TBD `apps/api/src/routes/areas`, `src/pages/AreaDetail.tsx` |
 
-**Handoff phrase:** “Continue **member-surfaces-implementation-plan** from **§20** (P0 ops, P1 storage, P2 UX, or §2.1 activity detail seeking).”
+**Handoff phrase:** “Continue **member-surfaces-implementation-plan** from **§23** (staging `seeking:deploy-gate` + G-manage smoke) or **§23 P1** explore polish; §19–§22 eng is closed.”
 
 ---
 
@@ -459,6 +496,174 @@ Use one PR per subsection where possible; check boxes when merged.
 **§19 queue:** **complete** for product engineering (2026-10-10). Remaining work is **ops per env** (#11 runbook) and optional **post-queue** (§20).
 
 **Paused / explicit non-goals for now:** attention strip variants beyond needs-you (#1), goals projection polish, upcoming carousel (`plan-tab-ux-backlog.md`), **map cluster overlay** (#4 — pill path is enough).
+
+---
+
+## 21. Activity detail tabs (Plan · Place · Buddies · Transport)
+
+**Tier-1:** [`NAVIGATION.md`](../NAVIGATION.md) § Activity detail · [`CREATE_FLOW.md`](../CREATE_FLOW.md) (participation → crew) · [`DOMAIN_CANONICALS.md`](../DOMAIN_CANONICALS.md) §15.4 · [`MEMBER_MODEL.md`](../MEMBER_MODEL.md) (Pro vs crew) · [`COMMUNICATION.md`](../COMMUNICATION.md) (crew entry).
+
+**Anti-duplication:** one policy owner per concern — API `viewerAccess` + `computeActivityMapPeekActions`; FE `resolveActivityPresentation.ts`. Adding a new path **requires deleting** the old shim/matrix in the same PR.
+
+### AD-0 — Decisions (locked 2026-10-11)
+
+| # | Decision |
+|---|----------|
+| AD-1 | UI tabs **Plan · Place · Buddies · Transport** only; wire unchanged (`activity`, `rideshare`, `viewerAccess`, …). |
+| AD-2 | Chrome: **emoji + activity kind**; **title in hero** (not in chrome). |
+| AD-3 | **Transport tab always visible** (reach-by + sustainability; linked ride deepens content). |
+| AD-4 | **RSVP** → participant + crew immediately; **approve** → crew + `?joined=1`; **pending/waitlist** → `canAccessCrewSurfaces: false`. |
+| AD-5 | Host ops on **Buddies**; destructive/edit in **⋯** — no fifth Manage tab. |
+| AD-6 | Pro = paid social depth via `applyActivityViewEntitlements`; not `canPublish`. |
+| AD-7 | Peek layout mostly unchanged; strips + wire actions align with detail (phase AD-4). |
+
+### AD phases (implement in order; tick when exit criteria met)
+
+#### AD-0 — Alignment (docs + guards)
+
+- [x] Tier-1 updated (NAVIGATION, CREATE_FLOW, DOMAIN_CANONICALS §15, MEMBER_MODEL, COMMUNICATION, SYSTEM_COHERENCE S7b)
+- [x] Transport tab product rule matches code (always on)
+- [x] Remove deprecated peek shim file; remove orphan `HostActivityDetailView`
+- [x] `memberSurfacesAcceptance` AD-arch guards
+
+#### AD-1 — Shell (mostly done)
+
+- [x] `activityDetailCopy.ts`, `activityDetailTab.ts`, tab bar, mobile hero, kind chrome
+- [x] `ActivityManageSheet` embeds `ActivityDetailView`
+- [ ] Mobile UX pass: icon-forward footers, minimal copy (ongoing polish)
+
+#### AD-2 — API crew exposure (mostly done)
+
+- [x] `canAccessCrewSurfaces` on `viewerAccess`; pending redacted crew fields
+- [x] RSVP + approve → group chat enroll; approve notification `?joined=1`
+- [x] `activity-viewer-access.test.ts` / engagement tests
+- [x] Remove client-only crew fallback when detail always sends wire flag (§22 NA-3)
+
+#### AD-3 — Tab bodies (v3.2 aligned 2026-10-11)
+
+- [x] Plan merge + host row + transport teaser (`activityDetailCopy` + Plan tab CTA → Transport); sustainability line on Plan + Transport
+- [x] Place gated empty state (`ACTIVITY_DETAIL_PLACE_LOCKED_*`); crew-only access body + map
+- [x] Buddies lock hint; **host hub on `/activity/:id`** (`ActivityDetailHostBuddiesHub` + `getHostActivityJoinRequests`); manage sheet remains secondary embed
+- [x] Transport **reach-by** block always on Transport tab (`activityDetailReachBy.ts`); linked ride + empty encouragement
+- [x] Welcome sheet (group chat + Place)
+- [x] Tab-scoped sticky footer **intent** (`activityDetailTabFooters.ts` → directions / invite / view ride / join); participant shortcuts via `ActivityDetailMobileFooter`
+- [x] Peek ↔ detail Plan footer parity helper (`activityEngagementCtas.ts` + tests); tab-scoped footers stay in `activityDetailTabFooters.ts`
+- [ ] **Deferred:** one React resolver for all §9 surfaces; split tab modules (`ActivityPlanTab.tsx`, …); `ActivityPresentationDTO` slices
+
+#### AD-4 — Peek parity
+
+- [x] Three strips (facts in peek meta; **Going** + **Rides & spots** in `ExploreActivityPeekStrips`)
+- [x] Single peek-action pipeline (`computeActivityMapPeekActions` + `resolveActivityMapPeekActions`; strip legacy `message_host` until AD-5)
+- [x] Pro-gated `message_host` / host profile peek rules (AD-5 entitlements)
+
+#### AD-5 — Pro entitlements
+
+- [x] `ActivityViewerEntitlementsDTO` + `applyActivityViewEntitlements` (detail + explore map)
+- [x] Roster mask + host profile / message host gates in detail + peek people row
+- [x] Dev Pro: `UAETRAIL_CONSUMER_PRO_DEV=1` (until billing SKU)
+- [x] Transport offer/add UI gated on `canOfferTransport` / `canAddLinkedRide` (surface-level polish)
+- [x] Pro upsell links on locked host/roster (detail + explore people row)
+
+#### AD-6 — Chat policy + share
+
+- [x] `groupChatPostPolicy` on activity wire + sync to crew group wall (POST enforce via existing wall policy)
+- [x] Host Buddies / manage sheet — `ActivityCrewChatPostPolicyCard` → `PATCH /host/activities/:id`
+- [x] Share / OG — `activityPublicMetaDescription` + JSON-LD region-only location (no meeting in schema)
+- [x] Organize wizard field for `groupChatPostPolicy` on create (optional)
+
+#### AD-7 — Dedupe + convergence
+
+- [x] Grep: no `HostActivityDetailView`, no `activityMapPeekActions.ts` re-export
+- [x] `verify:system` green after AD-4–AD-6
+
+#### AD-8 — Reviews UX
+
+- [x] Post check-in review CTAs on Plan/Buddies (participant ↔ host/place; host ↔ participant)
+
+**Gate per AD phase:** `npm run verify:system:quick` minimum; full `verify:system` before AD-7 close.
+
+**Cross-track:** §22 **NA-*** runs in parallel — NA-1–NA-4 should complete **before** AD-7; NA-5+ optional after AD-8.
+
+---
+
+## 22. Viewer access naming & wire-first alignment (NA-*)
+
+**Tier-1:** [`DOMAIN_CANONICALS.md`](../DOMAIN_CANONICALS.md) §15.10–§15.11 · [`SYSTEM_COHERENCE.md`](../SYSTEM_COHERENCE.md) **S7c** · rule `.cursor/rules/viewer-access.mdc`.
+
+**Goal:** Policy stays on **`GET /activities/:id`** / **`GET /explore/map`** `viewerAccess` (+ `entitlements`, `mapPeekActions`). React only **maps wire → UI**; no second matrices, no sentence-long `CanView*` helpers.
+
+### NA-0 — Audit inventory (locked 2026-10-11)
+
+| ID | Symbol / area | Layer | Verdict | Phase |
+|----|----------------|-------|---------|-------|
+| A1 | `GET /activities/:id` → `viewerAccess` | HTTP | **Canonical** | — |
+| A2 | `GET /explore/map` enrich → `viewerAccess.mapPeekActions` | HTTP | **Canonical** | NA-4 (mandatory wire) |
+| A3 | `GET /me/host-status` → `HostStatusDTO` | HTTP | **Canonical** — capabilities only | — |
+| A4 | `resolveActivityViewerAccess` | API social | **Keep** (documented §15); optional rename NA-6 | NA-6 |
+| A5 | `composeActivityViewerAccess` → `applyActivityViewEntitlements` | API pipeline | **Keep** | NA-2 (inline context load) |
+| A6 | ~~`resolveActivityViewEntitlementContext`~~ | API glue | **Done (NA-2)** — `loadActivityViewEntitlementContext` private in composer | — |
+| A7 | `computeActivityDetailExposure`, `computeActivityViewerEntitlements`, `computeActivityMapPeekActions` | shared-types | **Keep** (`compute*` = policy) | — |
+| A8 | `activityViewerEntitlementsCanViewFullBuddyRoster` | shared-types | **Remove** — use `entitlements.canViewFullBuddyRoster` | NA-1 |
+| A9 | `activityViewerLevelCanAccessCrewSurfaces` | shared-types | **OK** — used inside `computeActivityDetailExposure` only | — |
+| A10 | `listActiveTenantMembershipsByUser` | store | **OK** — tenant data access, not viewer UX | out of scope |
+| A11 | `resolveActivityPresentation` + crew `?? (isHostUser \|\| isConfirmedParticipant)` | FE | **Drift** — wire must own crew | NA-3 |
+| A12 | `resolveActivityMapPeekActions` client `computeActivityMapPeekActions` fallback | FE | **Drift** when map always enriches | NA-4 |
+| A13 | `privateActivityExploreItem` client `mapPeekActions` compute | FE | **Drift** — optimistic host publish only | NA-4 |
+| A14 | `resolvePeekDetailAccess` + `mapViewerAccessToUi` | FE | **OK** — wire → link/guest kind | — |
+| A15 | `resolveBrowsePoster*` / `resolveListFeed*` | FE | **OK** — copy/layout, not access policy | — |
+| A16 | Duplicate `src/explore/activityMapPeekActions.ts` | FE | **Gone** — canonical `resolveActivityPresentation.ts`; keep tests only | AD-7 ✓ |
+
+### NA phases (order; tick when exit criteria met)
+
+#### NA-0 — Audit + Tier-1
+
+- [x] Inventory table (above) + §15.11 + S7c
+- [x] Handoff phrase includes §22
+
+#### NA-1 — DTO-first UI (small)
+
+- [x] Remove `activityViewerEntitlementsCanViewFullBuddyRoster` export; components use `viewerAccess.entitlements?.canViewFullBuddyRoster` (+ `canAccessCrewSurfaces`)
+- [x] No new `activityViewerEntitlementsCan*` exports in `packages/shared-types`
+- [x] Gate: `memberSurfacesAcceptance` NA-arch helper ban
+
+#### NA-2 — API pipeline surface area
+
+- [x] Move buddy/host entitlement **load** into `composeActivityViewerAccess` — removed `activity-view-entitlement-context.ts`
+- [x] `GET /activities/:id` calls **one** composer with `{ hostUserId, participantUserIds }`
+
+#### NA-3 — FE crew wire-only (closes AD-2 open item)
+
+- [x] `resolveActivityPresentation`: `canAccessCrewSurfaces` from `viewerAccess` only (default `false`)
+- [x] `ActivityDetail` / `ActivityDetailView` defaults — no `?? true` crew fallback
+- [x] Gate: `memberSurfacesAcceptance` NA-2 / NA-3
+
+#### NA-4 — Peek wire mandatory
+
+- [x] Explore map enrich sets `mapPeekActions` (incl. entitlements merge on API)
+- [x] FE `resolveActivityMapPeekActions`: use wire when `mapPeekActions` defined (incl. `[]`); compute only when wire missing
+- [x] `hostPublishedActivityPeekAccess` includes wire peek actions; `privateActivityExploreItem` no client compute
+
+#### NA-5 — Presentation module names (optional, larger)
+
+- [x] Peek engagement → `activityPeekEngagement.ts`; detail → `activityDetailPresentation.ts` (shim `resolveActivityPresentation.ts`)
+- [ ] Update CREATE_FLOW / NAVIGATION pointers once; no duplicate modules
+
+#### NA-6 — API `resolve*` → `build*` / `get*` (optional, high churn)
+
+- [x] `buildActivityViewerAccess` canonical; `resolveActivityViewerAccess` alias; `composeActivityViewerAccess` uses `build*`
+- [ ] **Only** if team wants HTTP-shaped verbs everywhere — not required for product ship
+
+**Gate per NA phase:** `npm run verify:system:quick`; NA-3/NA-4 require `activity-viewer-access.test.ts` + `explore-map-viewer-access.test.ts` green.
+
+### Schedule vs §21 AD
+
+| NA phase | Best paired with AD | Notes |
+|----------|---------------------|--------|
+| NA-1 | AD-5 polish | Roster/host gates already on wire |
+| NA-2 | AD-5 / AD-6 | Before more entitlement fields |
+| NA-3 | AD-2 checkbox | Same PR encouraged |
+| NA-4 | AD-7 dedupe | With peek parity guards |
+| NA-5–NA-6 | After AD-8 or parallel §20 | Rename-only; no product block |
 
 ---
 
@@ -514,7 +719,58 @@ Use one PR per subsection where possible; check boxes when merged.
 | 2026-10-10 | §2.1 wire | `seekingOnMap` in People browse → `exploreMapItemPathFromSeekingRow` (peek path; no duplicate UI) |
 | 2026-10-10 | P1 storage | `PARTICIPANT_INTENT_STUB_WRITE` defaults **off** (opt-in dual-write); API `.env.example` + contract test |
 | 2026-10-10 | Local test | `test:seeking-local` (store + **POST /me/participant-intents** + map projection); DEV_RUN Find + G-manage API notes |
-| | | **Next:** manual DEV_RUN smoke on `dev:local`; §20 P0 staging/prod runbook + G-manage browser smoke |
+| 2026-10-11 | §21 AD-0 | Tier-1 alignment (NAVIGATION, CREATE_FLOW, DOMAIN §15, MEMBER_MODEL, COMMUNICATION, S7b); Transport always; removed `HostActivityDetailView` + peek re-export shim; AD-arch guards |
+| 2026-10-11 | §21 AD-4 | Peek strips + `computeActivityMapPeekActions` parity (crew chat for joiners; no pre-join `message_host`); `filterActivityMapPeekActionsForViewer` |
+| 2026-10-11 | §21 AD-5 | Pro entitlements on detail + explore map; `ActivityViewerEntitlementsDTO` |
+| 2026-10-11 | §22 NA-0 | Viewer-access naming audit + §15.11 + S7c; phased NA-1–NA-6 |
+| 2026-10-11 | §22 NA-1 | Dropped `activityViewerEntitlementsCanViewFullBuddyRoster`; detail roster uses wire `canViewFullBuddyRoster` |
+| 2026-10-11 | §22 NA-2–NA-3 | Entitlement buddy load inside `composeActivityViewerAccess`; crew surfaces wire-only on detail |
+| 2026-10-11 | §22 NA-4 | Peek actions wire-first; optimistic host publish includes `mapPeekActions` |
+| 2026-10-11 | §21 AD-6 (partial) | `groupChatPostPolicy` on activity + crew group wall sync |
+| 2026-10-11 | §21 AD-6 | Host `ActivityCrewChatPostPolicyCard`; public OG/JSON-LD without meeting |
+| 2026-10-11 | §21 AD-8 | Post check-in review CTAs (Plan/Buddies); host roster link |
+| 2026-10-11 | §21 AD-5/AD-6 | Transport entitlement gates; organize wizard `groupChatPostPolicy`; API create persists policy |
+| 2026-10-11 | §20 local | Backfill seeking activities (4 created); strict gate includes backfill completeness |
+| 2026-10-11 | §20 ops | `cancel-coordless-participant-intents` for intents backfill cannot migrate |
+| 2026-10-11 | §21 AD-3/5 | Footer `message_host` parity; Pro upsell on locked host/roster; NA-5 peek module split |
+| 2026-10-11 | §21 AD-3 v3.2 | Host Buddies hub on detail; Plan transport teaser; Place lock; Transport reach-by; tab footer resolver + tests |
+| 2026-10-11 | §23 P1 / §3.2 | Map pin hosted/seeking corner badges; `activityEngagementCtas` peek↔detail Plan footer parity |
+| 2026-10-11 | §23 P1 / §3.3 | Area-first explore search hints; Hosted/Seeking/All activity mode filter on map list |
+| 2026-10-11 | §3.5 / §4 | Area hub previews (`GET /areas/:slug` preview + `AreaHubPreviewSections`) |
+| 2026-10-11 | §4 Find | Seeking create requires explicit `areaId` when map pin; review picker in `CreateDemandFlow` |
+| 2026-10-11 | §4 | Explicit organize publish area + Tier-1 geography contract |
+| 2026-10-11 | §22 NA-5/6 | `activityDetailPresentation.ts`; API `buildActivityViewerAccess`; Tier-1 + S7b/S7c closed |
+| 2026-10-11 | §20 tooling | Root `seeking:deploy-gate` alias; plan §2/M3 reconciled with Phases 4–5 |
+| | | **Next:** §23 ops + polish backlog |
+
+---
+
+## 23. Post–§22 closure (ops + polish — not blocking local dev)
+
+**Member-surfaces program (§19–§22):** engineering **complete**. Remaining work is **environment ops**, **doc drift hygiene**, and **explore polish** — not another AD/NA phase.
+
+### P0 — per environment (staging → prod)
+
+| Step | Command / action |
+|------|------------------|
+| Readiness | `npm run seeking:m2d-status` |
+| Backfill | `npm --workspace @uaetrail/api run backfill-seeking-activities` |
+| Coord-less orphans | `cancel-coordless-participant-intents` if needed ([`SEEKING_M2D_RUNBOOK.md`](../operations/SEEKING_M2D_RUNBOOK.md)) |
+| **Gate** | `npm run seeking:deploy-gate` (exit **0**) |
+| Stub write | `PARTICIPANT_INTENT_STUB_WRITE=false`; restart API |
+| UI smoke | G-manage: Plan → Needs you → Hosted → manage → approve ([`PRE_DEPLOY_CHECKLIST.md`](../PRE_DEPLOY_CHECKLIST.md)) |
+
+### P1 — product polish (pick from §2–§3 open items)
+
+- [x] Map pin **Hosted vs Seeking** badge/iconography (§3.2; cards/peek already mode-aware)
+- [x] Explore search **Area** card first for “Hatta” (§3.3; `ExploreSearchAreaHints` + `/area/:slug`)
+- [x] Organize publish **area** on review step (§4 — required pick; catalog pre-fill)
+- [ ] `activityTypes.ts` **rideshare** vs wire `activityType` alignment (§2.1 — organize/demand flows already use rideshare)
+- [x] Hosted \| Seeking \| All chip on Activities layer (`?activityMode=`, `ExploreActivityModePillsRow`)
+
+### P2 — migration residue (after 30-day gate)
+
+See [`SEEKING_M2D_RUNBOOK.md`](../operations/SEEKING_M2D_RUNBOOK.md) § Residue cleanup — stub flag removal, `demand:` compat, rename ops scripts.
 
 ---
 
@@ -532,7 +788,7 @@ Use this table to confirm nothing was lost. **Status:** C = captured in checklis
 | 6 | shop/guide/agency = catalog projections | D4, §1.2 | C |
 | 7 | Retire **trips** naming (arch + UI) | D3, §6.4, Phase 1 | C |
 | 8 | Region → Area → Place → Activity | D5, §2.3, §4, Phase 4 | C |
-| 9 | areaId from pin on publish + admin areas | §4, Phase 4 | C |
+| 9 | areaId explicit on organize/find + admin place link | §4, Phase 4 | C |
 | 10 | Activity kind + Place kind + **OutingTopic** for “hiking” unified filter | §2.5, Phase 2, G-topic | C |
 | 11 | **Seeking merged into Activity** (no demand map species) | D6, D9, §8 M0–M2, Phase 3 | C |
 | 12 | **Availability** separate; multi-day calendar; map People pill + Available tab (no cluster overlay) | D7, D14, §5, Phase 5 | C |

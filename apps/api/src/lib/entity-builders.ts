@@ -101,6 +101,8 @@ export type ActivityCreateInput = {
   outingTopic?: string | null;
   activityMode?: 'hosted' | 'seeking' | null;
   participantIntentId?: string | null;
+  groupChatPostPolicy?: 'all_participants' | 'host_only' | null;
+  areaId?: string | null;
 };
 
 export type ActivityUpdateInput = {
@@ -147,6 +149,8 @@ export type ActivityUpdateInput = {
   outingTopic?: string | null;
   activityMode?: 'hosted' | 'seeking' | null;
   participantIntentId?: string | null;
+  groupChatPostPolicy?: 'all_participants' | 'host_only' | null;
+  areaId?: string | null;
 };
 
 const extractConnectedId = (relation?: RelationConnect): string | null => {
@@ -256,6 +260,7 @@ export type MongoActivityDoc = {
   participantIntentId?: string | null;
   /** Hosted activity id when a seeking pin was fulfilled (M2d activity-primary rows). */
   seekingConvertedActivityId?: string | null;
+  groupChatPostPolicy?: 'all_participants' | 'host_only' | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -308,9 +313,10 @@ export const buildActivityFromCreateInput = (data: ActivityCreateInput, id: stri
     publishedAt: data.publishedAt ?? null,
     outingCategory: data.outingCategory ?? null,
     outingTopic: data.outingTopic ?? null,
-    areaId: null,
+    areaId: data.areaId?.trim() ? data.areaId.trim() : null,
     activityMode: data.activityMode ?? 'hosted',
     participantIntentId: data.participantIntentId ?? null,
+    groupChatPostPolicy: data.groupChatPostPolicy ?? null,
     createdAt: now,
     updatedAt: now
   };

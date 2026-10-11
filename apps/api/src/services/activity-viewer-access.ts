@@ -89,7 +89,7 @@ const resolveActivityViewerLevel = async (
 };
 
 /** Viewer-aware authorization for activity detail and explore peek hints. */
-export const resolveActivityViewerAccess = async (
+export const buildActivityViewerAccess = async (
   input: ActivityViewerAccessInput
 ): Promise<ActivityViewerAccessResult> => {
   const joinMode = resolveJoinMode(input.activity.joinMode, input.activity.requirements);
@@ -100,3 +100,6 @@ export const resolveActivityViewerAccess = async (
     viewerUserId: input.viewerUserId,
   });
 };
+
+/** @deprecated Use `buildActivityViewerAccess` — kept for route/docs compatibility during NA-6. */
+export const resolveActivityViewerAccess = buildActivityViewerAccess;

@@ -14,6 +14,11 @@ import { SecureAvatar } from '../../components/ui/SecureAvatar';
 import { ParticipantPreview } from '../../components/ui/ParticipantPreview';
 import { ExploreCardTypeIcon } from './ExploreCardTypeIcon';
 import type { ExplorePeekDetailAccess } from '../../access/mapViewerAccessToUi';
+import { proMembershipPath } from '../../config/routingCatalog';
+import {
+  ACTIVITY_DETAIL_PRO_HOST_PROFILE_HINT,
+  ACTIVITY_DETAIL_PRO_SOCIAL_CTA,
+} from '../../content/activityDetailCopy';
 
 const detailIcon = (icon: ExploreCardDetailIcon) => {
   switch (icon) {
@@ -362,7 +367,7 @@ export const ExploreCardPeopleRow = ({
   const person = card.featuredPerson;
   const hostName = card.listHost ?? person?.displayName ?? card.sections.hostName ?? card.sections.highlightName;
   const publishingProfileKind = card.activity?.publishingProfileKind;
-  const hostPath =
+  const hostProfilePath =
     card.source === 'activity' && card.activity && publishingProfileKind
       ? resolveActivityPublisherProfilePath({
           publishingProfileKind,
@@ -370,6 +375,16 @@ export const ExploreCardPeopleRow = ({
           hostUserId: card.activity.hostUserId ?? person?.userId,
         })
       : personProfilePath(person?.userId ?? card.requesterUserId);
+  const canOpenHostProfile =
+    card.source !== 'activity' ||
+    !card.viewerAccess?.entitlements ||
+    card.viewerAccess.entitlements.canViewHostProfileBeforeJoin;
+  const hostPath = canOpenHostProfile ? hostProfilePath : null;
+  const showHostProfileProUpsell =
+    card.source === 'activity' &&
+    Boolean(hostProfilePath) &&
+    card.viewerAccess?.entitlements != null &&
+    !card.viewerAccess.entitlements.canViewHostProfileBeforeJoin;
   const personRoleLabel = person
     ? explorePersonRoleLabel(person.role, publishingProfileKind)
     : null;
@@ -452,6 +467,17 @@ export const ExploreCardPeopleRow = ({
   return (
     <div className="mt-5 border-t border-neutral-100 pt-4 space-y-4">
       {hostRow}
+      {showHostProfileProUpsell ? (
+        <p className="text-xs leading-relaxed text-amber-900/90">
+          {ACTIVITY_DETAIL_PRO_HOST_PROFILE_HINT}{' '}
+          <Link
+            to={proMembershipPath({ intent: 'discover-members' })}
+            className="font-semibold text-emerald-700 hover:underline"
+          >
+            {ACTIVITY_DETAIL_PRO_SOCIAL_CTA}
+          </Link>
+        </p>
+      ) : null}
       {participants.length > 0 && (
         <div>
           <p className={`mb-2 text-xs font-bold uppercase tracking-wider ${EXPLORE_TYPE.muted}`}>

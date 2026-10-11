@@ -10,20 +10,10 @@ const base = (): ActivityDetailDTO =>
   }) as ActivityDetailDTO;
 
 describe('activityHasTransportDetailContent', () => {
-  it('is false without rideshare or linked parent', () => {
-    expect(activityHasTransportDetailContent(base())).toBe(false);
-  });
-
-  it('is true when rideshare is enabled', () => {
-    expect(activityHasTransportDetailContent({ ...base(), rideshareEnabled: true })).toBe(true);
-  });
-
-  it('is true when a linked parent outing exists', () => {
+  it('is always true so Transport tab stays visible (reach-by + sustainability)', () => {
+    expect(activityHasTransportDetailContent(base())).toBe(true);
     expect(
-      activityHasTransportDetailContent({
-        ...base(),
-        linkedParentActivity: { id: 'p1', title: 'Main hike', activityType: 'hiking' },
-      })
+      activityHasTransportDetailContent({ ...base(), rideshareEnabled: true })
     ).toBe(true);
   });
 });

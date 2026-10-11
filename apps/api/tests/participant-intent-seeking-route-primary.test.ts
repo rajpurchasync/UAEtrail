@@ -8,7 +8,8 @@ import { bootstrapTestApp } from './helpers/bootstrap.js';
 import { cleanupTestUsers, registerVerifiedVisitor } from './helpers/fixtures.js';
 import { getMongoClient } from '../src/lib/mongo.js';
 import { COLLECTIONS } from '../src/lib/collections.js';
-import { findActivityDocInMongo } from '../src/lib/entity-sync.js';
+import { findActivityDocInMongo, findLocationInMongo } from '../src/lib/entity-sync.js';
+import { buildTestParticipantIntentInput, ensureCuratedAreasSeeded, testAreas } from './helpers/test-seed.js';
 
 const ENV_KEY = 'PARTICIPANT_INTENT_STUB_WRITE';
 
@@ -16,6 +17,7 @@ let app: Express;
 
 beforeAll(async () => {
   app = await bootstrapTestApp();
+  await ensureCuratedAreasSeeded();
 });
 
 describe('POST /me/participant-intents (activity-canonical — stub write off)', () => {
@@ -29,18 +31,12 @@ describe('POST /me/participant-intents (activity-canonical — stub write off)',
     const suffix = `route-primary-${Date.now()}`;
     const visitor = await registerVerifiedVisitor(app, suffix);
 
-    const body = {
-      kind: 'hiking',
+    const body = buildTestParticipantIntentInput({
       title: `Find via API ${suffix}`,
       date: '2026-12-23',
       time: '07:30',
-      preferredArea: 'Hatta',
-      partySize: 2,
-      comment: 'Looking for company on the trail',
-      latitude: 24.86,
-      longitude: 56.13,
-      locationPrecision: 'specific',
-    };
+      comment: 'Looking for company on the trail today.',
+    });
 
     const res = await request(app)
       .post('/api/v1/me/participant-intents')
@@ -67,5 +63,10 @@ describe('POST /me/participant-intents (activity-canonical — stub write off)',
     expect(activity?.activityMode).toBe('seeking');
     expect(activity?.participantIntentId).toBe(data.id);
     expect(activity?.status).toBe('PUBLISHED');
+    expect(activity?.areaId ?? null).toBeNull();
+    const location = activity?.locationId
+      ? await findLocationInMongo(activity.locationId)
+      : null;
+    expect(location?.areaId).toBe(testAreas.hatta.id);
   });
 });

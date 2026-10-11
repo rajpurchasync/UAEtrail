@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
-import { seekingExploreMapItem, venueExploreMapItem } from '../exploreMapItemFixtures';
+import { hostedExploreMapItem, seekingExploreMapItem, venueExploreMapItem } from '../exploreMapItemFixtures';
 import { matchesActivityDateFilter } from '../exploreActivityDateFilter';
 import { expandMapPins, isShopListItem, layoutColocatedMapPins, matchesMapFilter, matchesPlacesMapFilter, matchesBuddyMapFilter, isPlacesMapItem, isBuddyMapItem } from './exploreMapPinModel';
 
@@ -49,6 +49,13 @@ describe('exploreMapPinModel', () => {
     const venue = baseItem({ id: 'v1', source: 'venue', kind: 'hiking' });
     expect(matchesActivityDateFilter(activity, 'anyday')).toBe(true);
     expect(matchesActivityDateFilter(venue, 'today')).toBe(true);
+  });
+
+  it('expandMapPins resolves activityMode for hosted and seeking', () => {
+    const hosted = expandMapPins([hostedExploreMapItem()])[0];
+    const seeking = expandMapPins([seekingExploreMapItem()])[0];
+    expect(hosted.activityMode).toBe('hosted');
+    expect(seeking.activityMode).toBe('seeking');
   });
 
   it('expandMapPins adds carpool destination pin when to-coords differ', () => {

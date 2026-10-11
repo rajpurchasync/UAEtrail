@@ -13,6 +13,7 @@ import {
 } from '../../utils/organizePublishGate';
 import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
 import { EXPLORE_Z } from '../../config/exploreTheme';
+import { validateOrganizePlaceArea } from '../organizePublishArea';
 import {
   buildDateOptions,
   createFlowStepTitle,
@@ -420,6 +421,11 @@ export const CreateActivityFlow = ({
     const validation = validateDraftStep('publish', draft);
     if (validation) {
       setError(validation);
+      return;
+    }
+    const placeAreaValidation = validateOrganizePlaceArea(draft, registryPlaces);
+    if (placeAreaValidation) {
+      setError(placeAreaValidation);
       return;
     }
 

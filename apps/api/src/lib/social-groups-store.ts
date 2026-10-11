@@ -259,6 +259,7 @@ export const createActivityGroup = async (input: {
   activityId: string;
   activityTitle: string;
   hostUserId: string;
+  wallPostPolicy?: GroupWallPostPolicy;
 }): Promise<GroupRecord> => {
   const now = new Date();
   const groupId = newEntityId();
@@ -272,7 +273,7 @@ export const createActivityGroup = async (input: {
     adminUserId: input.hostUserId,
     activityId: input.activityId,
     status: 'active',
-    wallPostPolicy: 'all_members',
+    wallPostPolicy: input.wallPostPolicy ?? 'all_members',
     createdAt: now,
     updatedAt: now
   };

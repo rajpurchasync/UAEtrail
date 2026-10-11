@@ -9,7 +9,7 @@ import {
   type MyActivityRequestDTO,
   type ReviewDTO,
 } from '@uaetrail/shared-types';
-import { api } from '../api/index';
+import { api, type ActivityRequestView } from '../api/index';
 import { detailBackPath } from '../config/routingCatalog';
 import { signInPathForReturn } from '../utils/authReturnContext';
 import { useAuth } from '../context/AuthContext';
@@ -19,6 +19,7 @@ import { womenOnlyJoinMessageForActivity } from '../utils/activityWomenOnlyJoin'
 import { PageMeta } from '../components/seo/PageMeta';
 import { JsonLd } from '../components/seo/JsonLd';
 import { activityEventSchema } from '../components/seo/schemas';
+import { activityPublicMetaDescription } from '../utils/activityPublicSeo';
 import { MobileDetailShell } from '../components/mobile/MobileDetailShell';
 import { JoinRequestModal, WithdrawRequestModal } from '../components/ui';
 import { ActivityChatCallout } from '../components/ui/ActivityChatCallout';
@@ -43,7 +44,6 @@ import {
   type ActivityDetailTabId,
 } from '../activity/activityDetailTab';
 import { resolveActivityPresentation } from '../activity/resolveActivityPresentation';
-import { activityHasTransportDetailContent } from '../activity/activityDetailTransport';
 import { ActivityDetailJoinWelcomeSheet } from '../components/activity/detail/ActivityDetailJoinWelcomeSheet';
 import { activityDetailPath } from '../config/routingCatalog';
 
@@ -68,6 +68,8 @@ export const ActivityDetail = () => {
   const [hostRemoveConfirm, setHostRemoveConfirm] = useState<ActivityDTO | null>(null);
   const [hostRemoveBusy, setHostRemoveBusy] = useState(false);
   const [joinWelcomeOpen, setJoinWelcomeOpen] = useState(false);
+  const [hostJoinRequests, setHostJoinRequests] = useState<ActivityRequestView[]>([]);
+  const [hostJoinRequestsLoading, setHostJoinRequestsLoading] = useState(false);
   const inviteShare = useActivityInviteShareSheet();
 
   const loadActivity = useCallback(() => {
@@ -146,12 +148,6 @@ export const ActivityDetail = () => {
     [searchParams, setSearchParams]
   );
 
-  useEffect(() => {
-    if (!activity || mobileTab !== 'transport') return;
-    if (activityHasTransportDetailContent(activity)) return;
-    setMobileTab('plan');
-  }, [activity, mobileTab, setMobileTab]);
-
   const canWriteActivityReview = Boolean(participation?.checkedInAt);
 
   const detailExposure = useMemo(() => {
@@ -165,6 +161,23 @@ export const ActivityDetail = () => {
       detailExposure !== 'none' &&
       viewerIsActivityHostUser(activity, user.id)
   );
+
+  const loadHostJoinRequests = useCallback(() => {
+    if (!id || !gate.tenantId || !isActivityHostUser) {
+      setHostJoinRequests([]);
+      return;
+    }
+    setHostJoinRequestsLoading(true);
+    void api
+      .getHostActivityJoinRequests(gate.tenantId, { activityId: id })
+      .then((res) => setHostJoinRequests(res.data.filter((request) => request.status === 'pending')))
+      .catch(() => setHostJoinRequests([]))
+      .finally(() => setHostJoinRequestsLoading(false));
+  }, [id, gate.tenantId, isActivityHostUser]);
+
+  useEffect(() => {
+    loadHostJoinRequests();
+  }, [loadHostJoinRequests]);
 
   const presentation = useMemo(
     () =>
@@ -212,6 +225,8 @@ export const ActivityDetail = () => {
     },
     [joinActions, presentation]
   );
+
+  const canAddLinkedRide = viewerAccess?.entitlements?.canAddLinkedRide ?? false;
 
   const hostActivityCtaHandlers = useMemo(() => {
     if (!isActivityHostUser || !activity) return null;
@@ -367,8 +382,9 @@ export const ActivityDetail = () => {
       <PageMeta
         title={activity.title || activity.locationName}
         description={
-          activity.description?.slice(0, 160) ??
-          `Join this ${activity.activityType} activity in the UAE on UAE Trail`
+          isRedactedPreview || !presentation?.canAccessCrewSurfaces
+            ? activityPublicMetaDescription(activity)
+            : activity.description?.slice(0, 160) ?? activityPublicMetaDescription(activity)
         }
         path={`/activity/${activity.id}`}
         image={heroImage}
@@ -413,6 +429,7 @@ export const ActivityDetail = () => {
             <HostActivityCtas
               activity={activity}
               linkRideshareTenantId={gate.tenantId}
+              canAddLinkedRide={canAddLinkedRide}
               handlers={hostActivityCtaHandlers}
             />
           ) : undefined
@@ -423,6 +440,7 @@ export const ActivityDetail = () => {
               <HostActivityCtas
                 activity={activity}
                 linkRideshareTenantId={gate.tenantId}
+                canAddLinkedRide={canAddLinkedRide}
                 handlers={hostActivityCtaHandlers}
               />
             </div>
@@ -440,18 +458,38 @@ export const ActivityDetail = () => {
         canWriteActivityReview={canWriteActivityReview}
         mobileTab={mobileTab}
         onMobileTabChange={isRedactedPreview ? undefined : setMobileTab}
-        canAccessCrewSurfaces={presentation?.canAccessCrewSurfaces ?? true}
+        canAccessCrewSurfaces={presentation?.canAccessCrewSurfaces ?? false}
         showParticipantFooterShortcuts={presentation?.showParticipantFooterShortcuts ?? false}
         showCrewLockedHint={presentation?.showCrewLockedHint ?? false}
+        viewerEntitlements={viewerAccess?.entitlements ?? null}
+        hostCrewChatPolicy={
+          isActivityHostUser && gate.tenantId
+            ? {
+                tenantId: gate.tenantId,
+                onSaved: (policy) => setActivity((prev) => (prev ? { ...prev, groupChatPostPolicy: policy } : prev)),
+                onError: setError,
+              }
+            : undefined
+        }
         hostMobilePlanAccessory={
           isActivityHostUser && hostActivityCtaHandlers && mobileTab === 'plan' && !isRedactedPreview ? (
             <HostActivityCtas
               variant="menuOnly"
               activity={activity}
               linkRideshareTenantId={gate.tenantId}
+              canAddLinkedRide={canAddLinkedRide}
               handlers={hostActivityCtaHandlers}
             />
           ) : undefined
+        }
+        hostBuddiesHub={
+          isActivityHostUser && gate.tenantId && !isRedactedPreview
+            ? {
+                joinRequests: hostJoinRequests,
+                requestsLoading: hostJoinRequestsLoading,
+                onRequestsChanged: loadHostJoinRequests,
+              }
+            : undefined
         }
       />
       {activity && id ? (

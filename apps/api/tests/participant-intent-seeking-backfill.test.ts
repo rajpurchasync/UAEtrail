@@ -9,11 +9,13 @@ import { generateReferralCode } from '../src/lib/referral-code.js';
 import bcrypt from 'bcryptjs';
 import { UserRole, UserStatus } from '../src/domain/enums.js';
 import { bootstrapTestApp } from './helpers/bootstrap.js';
+import { buildTestParticipantIntentInput, ensureCuratedAreasSeeded } from './helpers/test-seed.js';
 import { getMongoClient } from '../src/lib/mongo.js';
 import { COLLECTIONS } from '../src/lib/collections.js';
 
 beforeAll(async () => {
   await bootstrapTestApp();
+  await ensureCuratedAreasSeeded();
 });
 
 describe('backfillSeekingActivitiesForActiveIntents', () => {
@@ -31,18 +33,16 @@ describe('backfillSeekingActivitiesForActiveIntents', () => {
       profile: { displayName: 'Legacy', phone: null, bio: null, avatarUrl: null },
     });
 
-    const intent = await createParticipantIntent(user._id, {
-      kind: 'hiking',
-      title: `Legacy ${suffix}`,
-      date: '2026-12-22',
-      time: '09:00',
-      preferredArea: 'Hatta',
-      partySize: 2,
-      comment: 'Backfill me',
-      latitude: 25.11,
-      longitude: 55.22,
-      locationPrecision: 'specific',
-    });
+    const intent = await createParticipantIntent(
+      user._id,
+      buildTestParticipantIntentInput({
+        title: `Legacy ${suffix}`,
+        time: '09:00',
+        comment: 'Backfill me on this integration test post.',
+        latitude: 25.11,
+        longitude: 55.22,
+      })
+    );
 
     await getMongoClient()!
       .db()

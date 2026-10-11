@@ -21,6 +21,12 @@ export interface AreaDTO {
   bounds: AreaBoundsRing;
   /** Lower number wins when a point lies in multiple polygons. */
   priority: number;
+  /** Short public blurb for area hub and map peek. */
+  summary?: string | null;
+  /** ISO country code (catalog default `AE`). */
+  countryCode?: string | null;
+  /** Hero image for `/area/:slug` and admin. */
+  imageUrl?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -28,7 +34,7 @@ export interface AreaDTO {
 /** Public card — no admin-only fields beyond status filter at API. */
 export type AreaPublicDTO = Pick<
   AreaDTO,
-  'id' | 'slug' | 'name' | 'region' | 'center' | 'bounds'
+  'id' | 'slug' | 'name' | 'region' | 'center' | 'bounds' | 'summary' | 'countryCode' | 'imageUrl'
 >;
 
 export const areaDetailPath = (slug: string): string => `/area/${encodeURIComponent(slug)}`;

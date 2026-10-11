@@ -12,31 +12,34 @@ const socialAccess = {
 };
 
 describe('applyActivityViewEntitlements', () => {
-  it('passthrough social access until paid SKU rules ship', () => {
+  it('attaches entitlements and does not strip crew surfaces', () => {
     const result = applyActivityViewEntitlements(
       { viewerUserId: 'u1', hostStatus: null },
-      socialAccess
-    );
-    expect(result).toEqual(socialAccess);
-  });
-
-  it('does not strip crew surfaces for hosts without billing snapshot', () => {
-    const result = applyActivityViewEntitlements(
-      {
-        viewerUserId: 'host-1',
-        hostStatus: {
-          signupProfileComplete: true,
-          hostTiers: { community: true, professional: false, business: false },
-          isCommunityHost: true,
-          canPublish: true,
-          canHostPaidActivities: false,
-          canAccessHostConsole: true,
-          publishingPurpose: 'community',
-          tenantId: 't1',
-        },
-      },
-      socialAccess
+      socialAccess,
+      { hostUserId: 'host-1', isFriendOfHost: false, buddyUserIdsOnActivity: [] }
     );
     expect(result.canAccessCrewSurfaces).toBe(true);
+    expect(result.entitlements?.isProMember).toBe(false);
+    expect(result.entitlements?.canViewFullBuddyRoster).toBe(false);
+  });
+
+  it('merges message_host on peek when friend of host pre-join', () => {
+    const result = applyActivityViewEntitlements(
+      { viewerUserId: 'u1', hostStatus: null },
+      {
+        ...socialAccess,
+        level: 'link_holder',
+        canAccessCrewSurfaces: false,
+        exposure: 'redacted',
+        canViewFullActivity: false,
+        mapPeekActions: [
+          { id: 'request_join', prominence: 'primary' },
+          { id: 'view_detail', prominence: 'text' },
+        ],
+      },
+      { hostUserId: 'host-1', isFriendOfHost: true, buddyUserIdsOnActivity: [] }
+    );
+    expect(result.entitlements?.canMessageHostBeforeJoin).toBe(true);
+    expect(result.mapPeekActions?.map((action) => action.id)).toContain('message_host');
   });
 });

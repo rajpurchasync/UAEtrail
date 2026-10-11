@@ -96,6 +96,7 @@ const boundsFromPins = (pins: PlaceMapPin[], fallback: MapBounds): MapBounds => 
 };
 
 const resolvePinSource = (pin: Pick<PlaceMapPin, 'id' | 'source'>): MapPinSource => {
+  if (pin.id.startsWith('area:')) return 'area';
   if (pin.id.startsWith('venue:')) return 'venue';
   if (pin.id.startsWith('demand:')) return 'demand';
   if (pin.id.startsWith('shop:')) return 'shop';
@@ -105,7 +106,8 @@ const resolvePinSource = (pin: Pick<PlaceMapPin, 'id' | 'source'>): MapPinSource
     pin.source === 'venue' ||
     pin.source === 'shop' ||
     pin.source === 'agency' ||
-    pin.source === 'demand'
+    pin.source === 'demand' ||
+    pin.source === 'area'
   ) {
     return pin.source;
   }
@@ -144,6 +146,7 @@ const pinIcon = (
         exploreItemId: entry.exploreItemId,
         stackCount: entry.stackCount ?? 1,
         selected: entrySelected,
+        activityMode: entry.activityMode ?? null,
       };
     });
     const { html, size } = buildMapColocatedPinIconHtml(entries);
@@ -157,6 +160,22 @@ const pinIcon = (
   }
 
   const source = resolvePinSource(pin);
+  if (source === 'area' || kind === 'area') {
+    const layout = buildVenueMapPinHtml({
+      kind: 'event',
+      label: pin.name,
+      mapZoom,
+      selected,
+      stackCount: pin.stackCount,
+    });
+    return L.divIcon({
+      className: 'uaetrail-map-pin uaetrail-map-venue-pin-wrap uaetrail-map-area-pin-wrap',
+      html: layout.html,
+      iconSize: [layout.width, layout.height],
+      iconAnchor: layout.iconAnchor,
+      popupAnchor: [0, -layout.iconAnchor[1] - 4],
+    });
+  }
   if (isCatalogVenueMapPin(kind, source)) {
     const layout = buildVenueMapPinHtml({
       kind,
@@ -192,6 +211,7 @@ const pinIcon = (
     ringWidth,
     selected,
     stackCount: indicativeCount,
+    activityMode: pin.activityMode ?? null,
   });
 
   return L.divIcon({
