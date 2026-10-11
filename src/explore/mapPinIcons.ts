@@ -1,4 +1,9 @@
-import { resolveMapPinEmoji, type ExploreActivityMode, type ExploreCardKind } from '@uaetrail/shared-types';
+import {
+  resolveMapPinEmoji,
+  type ExploreActivityMode,
+  type ExploreCardKind,
+  type PlaceKind,
+} from '@uaetrail/shared-types';
 import type { MapPinKind, MapPinSource } from '../components/ui/mapPinTypes';
 import { buildVenueMapBadgeHtml } from './venueMapGlyphs';
 import {
@@ -83,9 +88,10 @@ export const buildVenueMapPinHtml = (options: {
 export const resolveMapPinIconHtml = (
   kind: MapPinKind,
   source: MapPinSource = 'activity',
-  fontSizePx = 18
+  fontSizePx = 18,
+  placeKind?: PlaceKind
 ): string => {
-  const emoji = resolveMapPinEmoji(kind as ExploreCardKind, source);
+  const emoji = resolveMapPinEmoji(kind as ExploreCardKind, source, undefined, placeKind);
   return `<span class="uaetrail-map-pin-emoji font-emoji" style="font-size:${fontSizePx}px" aria-hidden="true">${emoji}</span>`;
 };
 
@@ -118,6 +124,7 @@ export type MapPinFaceOptions = {
   positionStyle?: string;
   /** Time-bound activity pins — corner badge (hosted vs seeking). */
   activityMode?: ExploreActivityMode | null;
+  placeKind?: PlaceKind;
 };
 
 /** One map circle — optional count badge and click target id. */
@@ -133,9 +140,10 @@ export const buildMapPinFaceHtml = ({
   exploreItemId,
   positionStyle = '',
   activityMode = null,
+  placeKind,
 }: MapPinFaceOptions): string => {
   const selectedClass = selected ? ' uaetrail-map-pin-marker--selected' : '';
-  const iconHtml = resolveMapPinIconHtml(kind, source, fontSizePx);
+  const iconHtml = resolveMapPinIconHtml(kind, source, fontSizePx, placeKind);
   const countLabel = stackCount > 99 ? '99+' : String(stackCount);
   const showIndicativeCount = stackCount >= 1;
   const badge = showIndicativeCount

@@ -1,3 +1,4 @@
+/** Ops readiness for activity-canonical seeking storage — per-env runbook only. */
 import { COLLECTIONS } from './collections.js';
 import { getMongoClient } from './mongo.js';
 import { isParticipantIntentStubWriteEnabled } from '../services/participant-intent-activity-readthrough.js';
@@ -27,7 +28,7 @@ export const activeParticipantIntentMissingCoordsFilter = {
   $and: [...activeIntentMissingSeekingActivityFilter.$and, missingMapCoordinatesClause],
 };
 
-export type SeekingM2dStatusReport = {
+export type SeekingStorageStatusReport = {
   participantIntentStubWriteEnabled: boolean;
   activeIntentsMissingSeekingActivity: number;
   activeIntentsMissingCoordsSkippedByBackfill: number;
@@ -35,7 +36,7 @@ export type SeekingM2dStatusReport = {
   recommendedSteps: string[];
 };
 
-export const loadSeekingM2dStatus = async (): Promise<SeekingM2dStatusReport> => {
+export const loadSeekingStorageStatus = async (): Promise<SeekingStorageStatusReport> => {
   const participantIntentStubWriteEnabled = isParticipantIntentStubWriteEnabled();
 
   const [missingSeekingActivity, missingCoords] = await Promise.all([
@@ -58,11 +59,11 @@ export const loadSeekingM2dStatus = async (): Promise<SeekingM2dStatusReport> =>
   }
   if (readyToDisableStubWrite && participantIntentStubWriteEnabled) {
     recommendedSteps.push(
-      'Set PARTICIPANT_INTENT_STUB_WRITE=false on API after deploy (M2d — Find writes activities only).'
+      'Set PARTICIPANT_INTENT_STUB_WRITE=false on API after deploy (Find writes activities only).'
     );
   }
   if (readyToDisableStubWrite && !participantIntentStubWriteEnabled) {
-    recommendedSteps.push('M2d complete for this database — stub write is already disabled.');
+    recommendedSteps.push('Seeking storage ready — stub write is already disabled for this database.');
   }
   if (recommendedSteps.length === 0) {
     recommendedSteps.push('No action required.');
@@ -77,8 +78,8 @@ export const loadSeekingM2dStatus = async (): Promise<SeekingM2dStatusReport> =>
   };
 };
 
-/** Deploy gate — backfill complete and stub write off (or not yet ready to flip). */
-export const seekingM2dStrictGateFails = (report: SeekingM2dStatusReport): boolean =>
+/** Deploy gate — backfill complete and stub write off. */
+export const seekingStorageStrictGateFails = (report: SeekingStorageStatusReport): boolean =>
   !report.readyToDisableStubWrite || report.participantIntentStubWriteEnabled;
 
 export type CancelCoordlessParticipantIntentsResult = {
@@ -88,10 +89,6 @@ export type CancelCoordlessParticipantIntentsResult = {
   intentIds: string[];
 };
 
-/**
- * Ops helper — active intents without map coordinates cannot backfill to seeking activities.
- * Cancels them so `activeIntentsMissingSeekingActivity` can reach 0.
- */
 export const cancelActiveParticipantIntentsMissingCoords = async (options?: {
   dryRun?: boolean;
 }): Promise<CancelCoordlessParticipantIntentsResult> => {

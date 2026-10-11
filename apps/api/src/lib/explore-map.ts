@@ -5,7 +5,12 @@ import {
   buildExploreMapPlanProjection,
   exploreMapKindToPlanMapKind,
   EXPLORE_SHOPS_LIST_PATH,
+  exploreMapPeekPath,
+  isFacilityPlaceKind,
+  PLACE_KIND_LABELS,
   placeDetailPath,
+  placeDetailRouteKindFromPlaceKind,
+  placeKindFromLocationRow,
   resolveActivityHostAvatar,
   resolveActivityHostDisplayName,
   resolveActivityHostUserId,
@@ -38,6 +43,7 @@ import {
 import { resolveVenueExploreLabels } from './venue-display-names.js';
 import { isWithinUaeFocusArea } from './uae-bbox.js';
 import { listPublishedAreas } from './areas-store.js';
+import { resolveAreaIdFromPoint } from './area-resolution.js';
 import { buildExploreAreaLensItems } from './explore-map-area-lens.js';
 
 export { invalidateExploreMapCache };
@@ -290,9 +296,10 @@ const buildExploreMapPayloadUncached = async (): Promise<{ items: ExploreMapItem
             subtitle: dto.region ?? null,
             latitude,
             longitude,
-            path: placeDetailPath(dto.activityType, dto.id),
+            path: exploreMapPeekPath(`venue:${dto.id}`, 'shops'),
             image: dto.images?.[0] ?? null,
             about: dto.description,
+            catalogProfileExposure: 'peek',
           },
           dto.areaId,
           areaSlugById
@@ -301,8 +308,10 @@ const buildExploreMapPayloadUncached = async (): Promise<{ items: ExploreMapItem
       continue;
     }
 
-    const kind = venueKind(dto.activityType);
-    if (kind !== 'hiking' && kind !== 'camping') continue;
+    const catalogPlaceKind = placeKindFromLocationRow({
+      activityType: dto.activityType,
+      tags: location.tags,
+    });
 
     const latitude = dto.latitude ?? null;
     const longitude = dto.longitude ?? null;
@@ -313,6 +322,78 @@ const buildExploreMapPayloadUncached = async (): Promise<{ items: ExploreMapItem
     ) {
       continue;
     }
+
+    if (isFacilityPlaceKind(catalogPlaceKind)) {
+      if (latitude == null || longitude == null) continue;
+      const routeKind = placeDetailRouteKindFromPlaceKind(catalogPlaceKind);
+      items.push(
+        attachExploreItemArea(
+          {
+            id: `venue:${dto.id}`,
+            kind: 'event',
+            source: 'venue',
+            title: dto.name,
+            subtitle: PLACE_KIND_LABELS[catalogPlaceKind],
+            latitude,
+            longitude,
+            path: placeDetailPath(routeKind, dto.id),
+            image: dto.images?.[0] ?? null,
+            about: dto.description,
+            placeKind: catalogPlaceKind,
+            locationCard: {
+              id: dto.id,
+              activityType: 'event',
+              region: dto.region,
+              description: dto.description,
+              childFriendly: dto.childFriendly,
+              season: dto.season ?? [],
+              images: dto.images ?? [],
+              featured: dto.featured,
+            },
+          },
+          dto.areaId,
+          areaSlugById
+        )
+      );
+      continue;
+    }
+
+    if (catalogPlaceKind === 'outdoor_other') {
+      if (latitude == null || longitude == null) continue;
+      items.push(
+        attachExploreItemArea(
+          {
+            id: `venue:${dto.id}`,
+            kind: 'event',
+            source: 'venue',
+            title: dto.name,
+            subtitle: PLACE_KIND_LABELS.outdoor_other,
+            latitude,
+            longitude,
+            path: placeDetailPath('event', dto.id),
+            image: dto.images?.[0] ?? null,
+            about: dto.description,
+            placeKind: 'outdoor_other',
+            locationCard: {
+              id: dto.id,
+              activityType: 'event',
+              region: dto.region,
+              description: dto.description,
+              childFriendly: dto.childFriendly,
+              season: dto.season ?? [],
+              images: dto.images ?? [],
+              featured: dto.featured,
+            },
+          },
+          dto.areaId,
+          areaSlugById
+        )
+      );
+      continue;
+    }
+
+    const kind = venueKind(dto.activityType);
+    if (kind !== 'hiking' && kind !== 'camping') continue;
 
     const venueLabels = resolveVenueExploreLabels(
       dto.name,
@@ -376,33 +457,44 @@ const buildExploreMapPayloadUncached = async (): Promise<{ items: ExploreMapItem
 
     if (shopPresence === 'online' && !websiteUrl && !merchant?.description && !shop.description) continue;
 
-    items.push({
-      id: `shop:${shop.id}`,
-      kind: 'shop',
-      source: 'shop',
-      title: merchant?.shopName ?? shop.name,
-      subtitle: shopPresence === 'online' ? 'Online partner' : shop.region ?? merchant?.region ?? null,
-      about: merchant?.description ?? shop.description ?? null,
-      latitude,
-      longitude,
-      path: shopPublicPath({ merchantId: merchant?.id, slug: shop.slug }, EXPLORE_SHOPS_LIST_PATH),
-      image: shop.logoUrl ?? merchant?.logo ?? null,
-      merchantId: merchant?.id,
-      tenantId: shop.id,
-      websiteUrl,
-      contactPhone: merchant?.contactPhone ?? null,
-      shopPresence,
-      discoverFeatured: shop.discoverFeatured ?? false,
-      featuredPerson: buildExploreFeaturedPerson({
-        userId: owner?.userId,
-        displayName: owner?.name,
-        avatarUrl: owner?.avatarUrl,
-        role: 'contact',
-      }),
-      hostName: owner?.name ?? null,
-      hostAvatar: owner?.avatarUrl ?? null,
-      requesterUserId: owner?.userId ?? null,
-    });
+    const shopAreaId =
+      latitude != null && longitude != null
+        ? resolveAreaIdFromPoint(latitude, longitude, publishedAreas, null)
+        : null;
+    items.push(
+      attachExploreItemArea(
+        {
+          id: `shop:${shop.id}`,
+          kind: 'shop',
+          source: 'shop',
+          title: merchant?.shopName ?? shop.name,
+          subtitle: shopPresence === 'online' ? 'Online partner' : shop.region ?? merchant?.region ?? null,
+          about: merchant?.description ?? shop.description ?? null,
+          latitude,
+          longitude,
+          path: shopPublicPath({ merchantId: merchant?.id, slug: shop.slug }, EXPLORE_SHOPS_LIST_PATH),
+          image: shop.logoUrl ?? merchant?.logo ?? null,
+          merchantId: merchant?.id,
+          tenantId: shop.id,
+          websiteUrl,
+          contactPhone: merchant?.contactPhone ?? null,
+          shopPresence,
+          catalogProfileExposure: 'full',
+          discoverFeatured: shop.discoverFeatured ?? false,
+          featuredPerson: buildExploreFeaturedPerson({
+            userId: owner?.userId,
+            displayName: owner?.name,
+            avatarUrl: owner?.avatarUrl,
+            role: 'contact',
+          }),
+          hostName: owner?.name ?? null,
+          hostAvatar: owner?.avatarUrl ?? null,
+          requesterUserId: owner?.userId ?? null,
+        },
+        shopAreaId,
+        areaSlugById
+      )
+    );
   }
 
   attachLinkedRideshareMetadata(items);

@@ -18,6 +18,7 @@ import {
   matchesPlacesMapFilter,
 } from './exploreMapPinModel';
 import {
+  mapItemIsAgencyHostedActivity,
   mapItemMatchesFilterPills,
   mapItemMatchesSearchScope,
   type ExploreSearchScopeKey,
@@ -255,7 +256,9 @@ export const useExploreBrowseList = ({
     }
 
     if (hasQuery && searchScope === 'agencies') {
-      return sortExploreVenues(items.filter((item) => item.source === 'agency').filter(matchesQuery));
+      return sortExploreVenues(
+        items.filter((item) => mapItemIsAgencyHostedActivity(item)).filter(matchesQuery)
+      );
     }
 
     if (hasQuery && searchScope === null) {

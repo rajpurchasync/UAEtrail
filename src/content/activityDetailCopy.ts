@@ -53,3 +53,4 @@ export const ACTIVITY_DETAIL_HOST_BUDDIES_TOOLS_HINT = 'Host tools on Buddies';
 
 export const ACTIVITY_DETAIL_TAB_FOOTER_VIEW_RIDE = 'View shared ride';
 export const ACTIVITY_DETAIL_TAB_FOOTER_DIRECTIONS = 'Directions';
+export const ACTIVITY_DETAIL_TAB_FOOTER_SHARE_OUTING = 'Share outing';

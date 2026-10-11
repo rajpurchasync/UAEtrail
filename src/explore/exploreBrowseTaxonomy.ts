@@ -81,7 +81,7 @@ export const EXPLORE_SEARCH_SCOPE_COPY: Record<
   },
   agencies: {
     label: 'Agencies',
-    description: 'Outdoor operators and guides',
+    description: 'Tour operators on hosted activities (no map pin)',
     shipped: true,
   },
   facilities: {
@@ -93,6 +93,12 @@ export const EXPLORE_SEARCH_SCOPE_COPY: Record<
 
 const isShopPin = (item: ExploreMapItemDTO): boolean =>
   item.source === 'shop' && item.kind === 'shop' && !item.id.startsWith('product:');
+
+/** Agency storefronts are not map pins — match hosted activities they publish. */
+export const mapItemIsAgencyHostedActivity = (item: ExploreMapItemDTO): boolean =>
+  item.source === 'activity' &&
+  item.activityMode !== 'seeking' &&
+  item.activity?.publishingProfileKind === 'agency';
 
 /** Hosted + seeking time-bound plans (unified activity pins). */
 export const mapItemMatchesTripsPill = (item: ExploreMapItemDTO): boolean =>
@@ -145,7 +151,7 @@ export const mapItemMatchesSearchScope = (
     case 'shops':
       return mapItemMatchesShopsPill(item);
     case 'agencies':
-      return item.source === 'agency';
+      return mapItemIsAgencyHostedActivity(item);
     case 'facilities':
       return false;
     default:

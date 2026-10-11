@@ -144,12 +144,6 @@ export interface ParticipantPreviewDTO {
   avatar?: string | null;
 }
 
-export interface ActivityPricePackageDTO {
-  label: string;
-  amount: number;
-  currency: string;
-}
-
 export interface ActivityDTO {
   id: string;
   tenantId: string;
@@ -166,7 +160,6 @@ export interface ActivityDTO {
   endDate?: string | null;
   endTime?: string | null;
   price: number;
-  pricePackages?: ActivityPricePackageDTO[];
   slotsTotal: number;
   slotsAvailable: number;
   status: ActivityStatus;
@@ -200,8 +193,6 @@ export interface ActivityDTO {
   images?: string[];
   /** Wide hero banner (outdoor events) */
   bannerUrl?: string | null;
-  /** External registration or join link */
-  signupUrl?: string | null;
   /** Person responsible for hosting this activity on the ground */
   hostName?: string;
   hostUserId?: string;
@@ -778,6 +769,10 @@ export interface ExploreMapItemDTO {
   about?: string | null;
   /** Trail/camp/event catalog fields for rich location list cards. */
   locationCard?: ExploreLocationCardDTO | null;
+  /** Canonical catalog kind when wire `kind` alone is ambiguous (`event` amenities). */
+  placeKind?: import('./place-kind.js').PlaceKind | null;
+  /** Contributed catalog shop — `peek` (map only) vs merchant `full` profile. */
+  catalogProfileExposure?: import('./catalog-profile-exposure.js').CatalogProfileExposure | null;
   /** Aggregate review stats for venues (location) and shops/agencies (tenant). */
   averageRating?: number | null;
   reviewCount?: number;
@@ -1373,19 +1368,14 @@ export {
 } from './activity-coordinates.js';
 
 export {
-  ACTIVITY_CURRENCIES,
+  ACTIVITY_PRICING_INDICATION_NOTE,
+  allowedActivityPricingModes,
   activityHasPaidPricing,
   activityPriceLabel,
   activityPricingModeLabel,
-  derivePriceAed,
   eventHasPaidPricing,
-  formatPackagePrice,
   inferActivityPricingMode,
-  isActivityPricePackage,
   normalizeActivityPricing,
-  parseStoredPricePackages,
-  type ActivityCurrency,
-  type ActivityPricePackage,
   type ActivityPricingInput,
   type ActivityPricingMode,
 } from './activity-pricing.js';
@@ -1430,9 +1420,13 @@ export {
 } from './entity-path.js';
 
 export {
+  FACILITY_PLACE_KINDS,
   PLACE_KINDS,
   PLACE_KIND_LABELS,
   PLACE_STORAGE_COLLECTION,
+  exploreVenueIsPlacesSpot,
+  facilityPlaceKindPinEmoji,
+  isFacilityPlaceKind,
   isLocationActivityTypeWire,
   isPlaceKind,
   locationActivityTypeForPlaceKind,
@@ -1452,6 +1446,12 @@ export {
   type DecodedShopContributeTags,
   type ShopContributeTagInput,
 } from './shop-contribute.js';
+
+export {
+  exploreMapPeekPath,
+  isPeekOnlyCatalogProfile,
+  type CatalogProfileExposure,
+} from './catalog-profile-exposure.js';
 
 export type {
   GroupWallMessageAuthorDTO,

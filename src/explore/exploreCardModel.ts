@@ -10,10 +10,12 @@ import type {
   ExplorePlanComposeIntent,
   OutingCategory,
   ParticipantPreviewDTO,
+  CatalogProfileExposure,
 } from '@uaetrail/shared-types';
 import {
   buildExploreCardPresentation,
   exploreMapItemIsSeeking,
+  isPeekOnlyCatalogProfile,
   resolveExploreFeaturedPerson,
 } from '@uaetrail/shared-types';
 import {
@@ -71,6 +73,7 @@ export interface ExploreCardModel {
   averageRating?: number | null;
   reviewCount?: number;
   reviewPath?: string | null;
+  catalogProfileExposure?: CatalogProfileExposure | null;
   locationId?: string | null;
   activityId?: string | null;
   participantIntentId?: string | null;
@@ -210,7 +213,11 @@ export const buildExploreCardModel = (item: ExploreMapItemDTO): ExploreCardModel
     coverImage: resolveCoverImage(item),
     averageRating: item.averageRating ?? null,
     reviewCount: item.reviewCount ?? 0,
-    reviewPath: catalogSource ? `${item.path}#reviews` : null,
+    reviewPath:
+      catalogSource && !isPeekOnlyCatalogProfile(item.catalogProfileExposure)
+        ? `${item.path}#reviews`
+        : null,
+    catalogProfileExposure: item.catalogProfileExposure ?? null,
     locationId: item.locationCard?.id ?? item.activity?.locationId ?? null,
     activityId: item.activity?.id ?? null,
     participantIntentId: item.participantIntentId ?? null,

@@ -21,6 +21,8 @@ interface ShareButtonProps {
   iconClassName?: string;
   disabled?: boolean;
   className?: string;
+  /** Overrides default “Share” label on full button variant. */
+  label?: string;
 }
 
 const WhatsAppIcon = ({ className }: { className?: string }) => (
@@ -41,6 +43,7 @@ export const ShareButton = ({
   iconClassName,
   disabled = false,
   className = '',
+  label,
 }: ShareButtonProps) => {
   const [showShareMenu, setShowShareMenu] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -128,7 +131,7 @@ export const ShareButton = ({
         ) : (
           <Share2 className={iconClassName ?? (iconOnly ? 'w-3.5 h-3.5' : 'w-5 h-5')} aria-hidden />
         )}
-        {!compact && !iconOnly && 'Share'}
+        {!compact && !iconOnly && (label ?? 'Share')}
       </button>
 
       {showShareMenu && (

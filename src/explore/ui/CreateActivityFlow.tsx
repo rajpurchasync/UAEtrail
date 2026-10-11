@@ -1,7 +1,7 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { MapPin } from 'lucide-react';
-import type { ActivityDTO } from '@uaetrail/shared-types';
+import { allowedActivityPricingModes, type ActivityDTO } from '@uaetrail/shared-types';
 import { publishOrganizeActivity as publishCreateActivity } from '../../services/organizeActivityPublish';
 import { useAuth } from '../../context/AuthContext';
 import { useHostStatus } from '../../hooks/useHostStatus';
@@ -317,10 +317,11 @@ export const CreateActivityFlow = ({
   }, []);
 
   useEffect(() => {
-    if (!canHostPaidActivities && draft.priceMode === 'paid') {
+    const allowed = new Set(allowedActivityPricingModes(hostTiers));
+    if (!allowed.has(draft.priceMode)) {
       patchDraft({ priceMode: 'free', priceAmount: 0 });
     }
-  }, [canHostPaidActivities, draft.priceMode, patchDraft]);
+  }, [hostTiers, draft.priceMode, patchDraft]);
 
   const handleClose = () => {
     if (submitting) return;
@@ -521,6 +522,7 @@ export const CreateActivityFlow = ({
     memberDisplayName,
     registryPlaces,
     canPublish,
+    hostTiers,
     canHostPaidActivities,
     hostGateLoading,
     submitting,
@@ -565,6 +567,7 @@ export const CreateActivityFlow = ({
     memberDisplayName,
     registryPlaces,
     canPublish,
+    hostTiers,
     canHostPaidActivities,
     hostGateLoading,
     submitting,

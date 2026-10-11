@@ -6,7 +6,7 @@
  *   npm --workspace @uaetrail/api run cancel-coordless-participant-intents
  */
 import { connectMongo, disconnectMongo } from '../src/lib/mongo.js';
-import { cancelActiveParticipantIntentsMissingCoords } from '../src/lib/seeking-m2d-ops.js';
+import { cancelActiveParticipantIntentsMissingCoords } from '../src/lib/seeking-storage-ops.js';
 
 const dryRun = process.argv.includes('--dry-run');
 
@@ -16,7 +16,7 @@ const main = async () => {
   console.log(JSON.stringify(result, null, 2));
 
   if (!dryRun && result.cancelled > 0) {
-    console.log('Re-run: npm run seeking:m2d-status -- --strict');
+    console.log('Re-run: npm run seeking:storage-status -- --strict');
   }
 };
 

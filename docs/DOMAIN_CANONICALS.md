@@ -359,9 +359,11 @@ Use this when naming files, hooks, and utils — **one product word per concept*
 |------------------|-------------------|----------------------------------|-------------------------|
 | Trails | `hiking` (`activityType: hiking`) | Yes (`source: venue`, hiking) | `trailSpots` |
 | Camps / camp spots | `camping` | Yes | `campSpots` |
-| Outdoor spots (“Others” Add) | `outdoor_other` (often `event` + tag) | Partial (event venues not on map payload yet) | Grouped on `/area/:slug` preview |
-| Shops (catalog place) | `shop` | Yes (venue shop rows) | `shops` + Shops lens |
-| Facilities (toilet, parking, gas, water, viewpoint, picnic, …) | amenity kinds + `place-kind:*` tags | **Not** Spots pins yet — counted from `locations` for stats | `facilities` in `areaLensStats`; list on area hub `#places` |
+| Outdoor spots (“Others” Add) | `outdoor_other` (`event` + `outdoor-other` tag) | Yes (`placeKind: outdoor_other`) | Grouped on `/area/:slug` preview |
+| Shops (member Add) | `shop` + `community-shop` tag | Yes — **Shops** lens, `catalogProfileExposure: peek` (map peek only) | Area hub + rollups |
+| Shops (merchant / Pro tenant) | `shop:` tenant rows | Yes — **Shops** lens, `catalogProfileExposure: full` → `/shop/…` | Merchant profile + reviews |
+| Guides / tour agencies (Pro tenant) | `tenants` + `/guide` · `/agency` | **No map pin** — discover via **hosted activities** + storefront URL (`catalogProfileExposure: full`) | Area hub `#operators` rail = Pro hosts with outings in this area (not tenant lat/lng) |
+| Facilities (toilet, parking, gas, water, viewpoint, picnic, …) | amenity kinds + `place-kind:*` tags | Yes (Spots lens, `placeKind` on payload) | `facilities` in `areaLensStats`; list on area hub `#places` |
 | Hosted / seeking outings | **Activity** (not a Place) | **Activities** lens (emoji pins) | `hostedActivities` / `seekingPosts` via `item.areaId` on map projection |
 
 **Assignment rules (write path — do not invert):**
@@ -384,6 +386,17 @@ Use this when naming files, hooks, and utils — **one product word per concept*
 | **shops** | Shop layer (catalog + tenant-backed pins) | — |
 
 **Discovery filters:** `?area={slug}` keeps rows whose projected **`areaSlug`** / **`areaId`** match (from place or intent). **Locations** lens pins are the registry hubs; they are **not** a substitute for **`place.areaId`** on every catalog row.
+
+**Pro account storefronts (one user, optional tenant per subtype)** — each has a **public profile URL**; map and People discovery differ by subtype:
+
+| Subtype | Profile URL | Map pin? | How members find them |
+|---------|-------------|----------|------------------------|
+| **Professional** (`pro_guide`) | `/guide/:slug` | **No** | **People** browse (member directory) **or** host row on activity peek/detail |
+| **Shop** (`shop` tenant) | `/shop/:id` | **Yes** (Shops lens) | Map pin + shop profile |
+| **Tour agency** (`agency`) | `/agency/:slug` | **No** | **Host / operator row** on activity peek and `/activity/:id` only (brand name → agency profile) |
+| **Buddy / community host** | `/member/:userId` | Via activities only | People + activity host row |
+
+Wire: `publishingProfileKind` on `ActivityDTO`; paths via `resolveActivityPublisherProfilePath` (`packages/shared-types/src/activity-publisher-display.ts`). **Do not** emit `source: agency` explore map rows.
 
 **Code anchors:** `packages/shared-types/src/place-kind.ts` · `apps/api/src/lib/explore-map-area-lens.ts` · `apps/api/src/lib/explore-map.ts` (`attachExploreItemArea`) · `src/explore/organizePublishArea.ts` · `GET /areas/:slug` preview · [`DOMAIN.md`](./DOMAIN.md) § Geography.
 

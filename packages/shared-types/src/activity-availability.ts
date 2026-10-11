@@ -1,4 +1,4 @@
-import { activityHasPaidPricing, type ActivityPricePackage } from './activity-pricing.js';
+import { activityHasPaidPricing } from './activity-pricing.js';
 
 /** UI availability badge — derived from slots and pricing, not Mongo activity status. */
 export type ActivityAvailabilityStatus = 'free' | 'paid' | 'full';
@@ -6,7 +6,7 @@ export type ActivityAvailabilityStatus = 'free' | 'paid' | 'full';
 export type ActivityAvailabilityInput = {
   slotsAvailable: number;
   price: number;
-  pricePackages?: ActivityPricePackage[] | null;
+  pricingMode?: 'free' | 'shared' | 'paid' | null;
 };
 
 export const deriveActivityAvailability = (activity: ActivityAvailabilityInput): ActivityAvailabilityStatus => {

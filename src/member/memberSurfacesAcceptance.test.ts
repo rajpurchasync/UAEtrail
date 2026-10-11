@@ -122,7 +122,7 @@ describe('member surfaces §11 acceptance (automated)', () => {
   });
 
   it('G-seek: seeking migration runbook defines post-migration residue cleanup', () => {
-    const runbook = read('docs/operations/SEEKING_M2D_RUNBOOK.md');
+    const runbook = read('docs/operations/SEEKING_STORAGE_RUNBOOK.md');
     expect(runbook).toContain('## Residue cleanup (after migration');
     expect(runbook).toMatch(/PARTICIPANT_INTENT_STUB_WRITE/);
     expect(runbook).toContain('demand:');
@@ -285,6 +285,22 @@ describe('member surfaces §11 acceptance (automated)', () => {
     const audience = read('src/explore/ui/organizeWizard/steps/audience-step.tsx');
     expect(audience).toContain('OrganizeCrewChatPostPolicyField');
     expect(audience).toContain('groupChatPostPolicy');
+  });
+
+  it('AD-3 v3.2: tab footers, host Buddies hub, hero status on activity detail', () => {
+    const detail = read('src/components/activity/ActivityDetailView.tsx');
+    expect(detail).toContain('resolveActivityDetailEngagementFooterKind');
+    expect(read('src/activity/resolveActivityDetailEngagement.ts')).toContain(
+      'resolveActivityDetailEngagementFooterKind'
+    );
+    expect(detail).toContain('ActivityDetailBuddiesAside');
+    expect(detail).toContain('ActivityDetailPlanExtras');
+    const buddiesAside = read('src/components/activity/detail/tabs/ActivityDetailBuddiesAside.tsx');
+    expect(buddiesAside).toContain('ActivityDetailHostBuddiesHub');
+    expect(detail).toContain('resolveActivityDetailHeroStatusChips');
+    const footers = read('src/activity/activityDetailTabFooters.ts');
+    expect(footers).toContain('transport_empty');
+    expect(footers).toContain('plan_host_share');
   });
 
   it('AD-8: post check-in review prompts on activity detail Plan/Buddies', () => {

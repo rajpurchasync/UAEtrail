@@ -193,7 +193,7 @@ describe('buildHostActivityPublishPayload', () => {
     });
   });
 
-  it('includes paid price packages from host console input', () => {
+  it('includes paid pricing mode from host console input', () => {
     const payload = buildHostActivityPublishPayload({
       activityType: 'event',
       locationId: 'loc-3',
@@ -205,7 +205,6 @@ describe('buildHostActivityPublishPayload', () => {
       pricing: {
         pricingMode: 'paid',
         price: 50,
-        pricePackages: [{ label: 'Standard', amount: 50, currency: 'AED' }],
         paymentTerms: null,
       },
       location: {},
@@ -214,7 +213,8 @@ describe('buildHostActivityPublishPayload', () => {
       participationMode: 'rsvp',
     });
 
-    expect(payload.pricePackages).toEqual([{ label: 'Standard', amount: 50, currency: 'AED' }]);
+    expect(payload.pricingMode).toBe('paid');
+    expect(payload.price).toBe(50);
     expect(payload.participationMode).toBe('rsvp');
   });
 });

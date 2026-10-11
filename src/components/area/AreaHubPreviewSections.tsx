@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import type { ActivityDTO, LocationDTO } from '@uaetrail/shared-types';
 import { activityDetailPath, placeDetailPath } from '@uaetrail/shared-types';
 import { explorePath, exploreShopsPath } from '../../explore/routing';
-import { shopPublicPath } from '../../utils/shopPaths';
+import { exploreMapPeekPath } from '@uaetrail/shared-types';
 import { communityShopPlaceToView } from '../../utils/communityShopPlace';
 import {
   groupAreaHubPlaces,
@@ -10,10 +10,19 @@ import {
   placeKindLabelForRow,
 } from './areaHubPlaceGroups';
 
+export type AreaHubOperatorPreview = {
+  id: string;
+  name: string;
+  slug: string;
+  profileKind: 'agency' | 'pro_guide';
+  path: string;
+};
+
 type AreaHubPreviewSectionsProps = {
   areaSlug: string;
   activities: ActivityDTO[];
   places: LocationDTO[];
+  operators?: AreaHubOperatorPreview[];
 };
 
 const PREVIEW_PER_GROUP = 5;
@@ -25,7 +34,7 @@ const formatActivityWhen = (activity: ActivityDTO): string => {
 
 const shopHrefForPlace = (place: LocationDTO): string => {
   const view = communityShopPlaceToView(place);
-  if (view) return shopPublicPath({ id: place.id });
+  if (view) return exploreMapPeekPath(`venue:${place.id}`, 'shops');
   return placeDetailPath('shop', place.id);
 };
 
@@ -34,6 +43,7 @@ export const AreaHubPreviewSections = ({
   areaSlug,
   activities,
   places,
+  operators = [],
 }: AreaHubPreviewSectionsProps) => {
   const exploreActivities = explorePath({ list: true, area: areaSlug, panel: 'activities' });
   const exploreToday = explorePath({ list: true, area: areaSlug, panel: 'activities', date: 'today' });
@@ -89,6 +99,32 @@ export const AreaHubPreviewSections = ({
           <Link to={exploreShopsPath()} className="text-sm text-slate-600 underline-offset-2 hover:underline">
             Browse all gear shops
           </Link>
+        </section>
+      ) : null}
+
+      {operators.length > 0 ? (
+        <section className="space-y-3" id="operators">
+          <div className="flex items-end justify-between gap-2">
+            <h2 className="text-lg font-semibold text-slate-900">Guides & operators</h2>
+            <Link to={exploreActivities} className="text-sm font-semibold text-emerald-800">
+              Outings here
+            </Link>
+          </div>
+          <ul className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-1 snap-x">
+            {operators.map((operator) => (
+              <li key={operator.id} className="w-[min(72vw,220px)] shrink-0 snap-start">
+                <Link
+                  to={operator.path}
+                  className="flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-4 shadow-sm hover:border-indigo-200"
+                >
+                  <span className="font-medium text-slate-900 line-clamp-2">{operator.name}</span>
+                  <span className="mt-1 text-xs text-slate-500">
+                    {operator.profileKind === 'agency' ? 'Tour operator' : 'Pro guide'}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
         </section>
       ) : null}
 

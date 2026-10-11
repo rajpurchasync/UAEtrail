@@ -13,6 +13,13 @@ export type AreaDetailPayload = {
   preview: {
     activities: ActivityDTO[];
     places: LocationDTO[];
+    operators: Array<{
+      id: string;
+      name: string;
+      slug: string;
+      profileKind: 'agency' | 'pro_guide';
+      path: string;
+    }>;
   };
 };
 

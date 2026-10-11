@@ -32,7 +32,6 @@ export interface ActivityListing {
   hostAvatar?: string;
   images?: string[];
   price: number;
-  pricePackages?: Array<{ label: string; amount: number; currency: string }>;
   pricingMode?: 'free' | 'shared' | 'paid' | null;
   slotsAvailable: number;
   slotsTotal: number;

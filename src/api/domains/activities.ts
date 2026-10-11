@@ -93,25 +93,20 @@ export const activitiesApi = {
       auth: true,
     }),
 
-    createJoinRequest: (activityId: string, note?: string, selectedPackageIndex?: number) =>
+    createJoinRequest: (activityId: string, note?: string) =>
     apiRequest<{ data: JoinRequestDTO }>(`/activities/${activityId}/requests`, {
       method: 'POST',
       auth: true,
-      body: JSON.stringify({
-        ...(note !== undefined ? { note } : {}),
-        ...(selectedPackageIndex !== undefined ? { selectedPackageIndex } : {})
-      })
+      body: JSON.stringify(note !== undefined ? { note } : {}),
     }),
 
-    rsvpActivity: (activityId: string, selectedPackageIndex?: number) =>
+    rsvpActivity: (activityId: string) =>
     apiRequest<{ data: { request: JoinRequestDTO; participation: MyActivityDTO['participation'] } }>(
       `/activities/${activityId}/rsvp`,
       {
         method: 'POST',
         auth: true,
-        body: JSON.stringify({
-          ...(selectedPackageIndex !== undefined ? { selectedPackageIndex } : {})
-        })
+        body: JSON.stringify({}),
       }
     ),
 

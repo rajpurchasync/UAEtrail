@@ -17,7 +17,6 @@ import {
   tryReserveActivityParticipantSlot
 } from './entity-sync.js';
 import { getMongoClient } from './mongo.js';
-import { parseStoredPricePackages } from './activity-pricing.js';
 import { myRequestDetailPath } from './member-routes.js';
 import { dispatchNotification } from '../services/notifications.js';
 import {
@@ -163,7 +162,6 @@ export async function createJoinOrWaitlistRequest(opts: {
   activityId: string;
   userId: string;
   note?: string;
-  selectedPackageIndex?: number;
 }) {
   const event = await loadPublishedEventForJoin(opts.activityId);
   if (!event) {
@@ -183,16 +181,6 @@ export async function createJoinOrWaitlistRequest(opts: {
   }
 
   await assertParticipantMeetsWomenOnlyRequirement(opts.userId, event.requirements);
-
-  const packages = parseStoredPricePackages(event.pricePackages);
-  if (packages.length > 1) {
-    if (opts.selectedPackageIndex === undefined) {
-      throw new ApiError(400, 'package_required', 'Select a package option to join this activity.');
-    }
-    if (opts.selectedPackageIndex < 0 || opts.selectedPackageIndex >= packages.length) {
-      throw new ApiError(400, 'invalid_package', 'Selected package is not valid for this activity.');
-    }
-  }
 
   const existing = await findActivityRequestByEventAndUser(opts.activityId, opts.userId);
 
@@ -217,10 +205,7 @@ export async function createJoinOrWaitlistRequest(opts: {
         cancelReason: null,
         cancelMessage: null,
         cancelledAt: null,
-        selectedPackageIndex:
-          opts.selectedPackageIndex !== undefined
-            ? opts.selectedPackageIndex
-            : existing?.selectedPackageIndex ?? null,
+        selectedPackageIndex: null,
         reviewedAt: null,
         reviewedById: null,
         updatedAt: now,
@@ -241,7 +226,6 @@ export async function createJoinOrWaitlistRequest(opts: {
 export async function createRsvpParticipation(opts: {
   activityId: string;
   userId: string;
-  selectedPackageIndex?: number;
 }) {
   const event = await loadPublishedEventForJoin(opts.activityId);
   if (!event) {
@@ -265,16 +249,6 @@ export async function createRsvpParticipation(opts: {
   const existingParticipant = await findActivityParticipantByEventAndUser(opts.activityId, opts.userId);
   if (existingParticipant) {
     throw new ApiError(409, 'already_joined', 'You are already going to this activity.');
-  }
-
-  const packages = parseStoredPricePackages(event.pricePackages);
-  if (packages.length > 1) {
-    if (opts.selectedPackageIndex === undefined) {
-      throw new ApiError(400, 'package_required', 'Select a package option to join this activity.');
-    }
-    if (opts.selectedPackageIndex < 0 || opts.selectedPackageIndex >= packages.length) {
-      throw new ApiError(400, 'invalid_package', 'Selected package is not valid for this activity.');
-    }
   }
 
   const existing = await findActivityRequestByEventAndUser(opts.activityId, opts.userId);
@@ -309,10 +283,7 @@ export async function createRsvpParticipation(opts: {
           cancelReason: null,
           cancelMessage: null,
           cancelledAt: null,
-          selectedPackageIndex:
-            opts.selectedPackageIndex !== undefined
-              ? opts.selectedPackageIndex
-              : existing?.selectedPackageIndex ?? null,
+          selectedPackageIndex: null,
           reviewedAt: now,
           reviewedById: reviewerId,
           updatedAt: now,

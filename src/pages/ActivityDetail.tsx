@@ -62,7 +62,6 @@ export const ActivityDetail = () => {
   const [message, setMessage] = useState<string | null>(null);
   const [participation, setParticipation] = useState<ActivityParticipationDTO | null | undefined>(undefined);
   const [myRequest, setMyRequest] = useState<MyActivityRequestDTO | null | undefined>(undefined);
-  const [selectedPackageIndex, setSelectedPackageIndex] = useState(0);
   const [viewerAccess, setViewerAccess] = useState<ActivityViewerAccessDTO | null>(null);
   const [activityReviews, setActivityReviews] = useState<ReviewDTO[]>([]);
   const [hostRemoveConfirm, setHostRemoveConfirm] = useState<ActivityDTO | null>(null);
@@ -129,12 +128,6 @@ export const ActivityDetail = () => {
     onError: setError,
   });
 
-  const pricePackages = useMemo(
-    () => activity?.pricePackages?.filter((pkg) => pkg.label.trim()) ?? [],
-    [activity?.pricePackages]
-  );
-  const hasMultiplePackages = pricePackages.length > 1;
-  const packageSelected = !hasMultiplePackages || selectedPackageIndex >= 0;
   const isConfirmedParticipant = Boolean(participation) || joinUiState.kind === 'confirmed';
 
   const mobileTab = parseActivityDetailTabParam(searchParams.get(ACTIVITY_DETAIL_TAB_QUERY));
@@ -447,9 +440,6 @@ export const ActivityDetail = () => {
           ) : undefined
         }
         confirmedSidebarExtras={isActivityHostUser ? null : confirmedSidebarExtras}
-        selectedPackageIndex={selectedPackageIndex}
-        onSelectedPackageIndexChange={setSelectedPackageIndex}
-        joinDisabled={!packageSelected}
         canSendJoinInvites={isConfirmedParticipant}
         activityReviews={activityReviews}
         onActivityReviewSubmitted={(review) =>
@@ -515,7 +505,6 @@ export const ActivityDetail = () => {
         onClose={joinActions.closeJoinModal}
         activity={activity}
         isFull={activity.slotsAvailable <= 0}
-        selectedPackageIndex={hasMultiplePackages ? selectedPackageIndex : pricePackages.length === 1 ? 0 : undefined}
         onSuccess={handleJoinSuccess}
       />
       {inviteShare.sheet}

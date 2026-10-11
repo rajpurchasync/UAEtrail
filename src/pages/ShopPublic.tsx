@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { exploreMapPeekPath } from '@uaetrail/shared-types';
 import { api, TenantProfile } from '../api/index';
 import { PageMeta } from '../components/seo/PageMeta';
 import { ShopPublicPage, type ShopPublicView } from '../components/shop/ShopPublicPage';
@@ -37,8 +38,10 @@ const tenantToShopView = (tenant: TenantProfile): ShopPublicView => ({
 /** Public gear shop — resolves merchant id or tenant slug to one page. */
 export const ShopPublic = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [shop, setShop] = useState<ShopPublicView | null>(null);
   const [loading, setLoading] = useState(true);
+  const [communityPeekOnly, setCommunityPeekOnly] = useState(false);
   const mapBack = explorePath({ panel: 'shops', filter: 'shops' });
 
   useEffect(() => {
@@ -83,14 +86,27 @@ export const ShopPublic = () => {
           .catch(() =>
             api
               .getPublicPlaceDetail(id)
-              .then((res) => setShop(communityShopPlaceToView(res.data)))
+              .then((res) => {
+                const view = communityShopPlaceToView(res.data);
+                if (view) {
+                  setCommunityPeekOnly(true);
+                  setShop(view);
+                } else {
+                  setShop(null);
+                }
+              })
               .catch(() => setShop(null))
           )
       )
       .finally(() => setLoading(false));
   }, [id]);
 
-  if (loading) {
+  useEffect(() => {
+    if (!communityPeekOnly || !id) return;
+    navigate(exploreMapPeekPath(`venue:${id}`, 'shops'), { replace: true });
+  }, [communityPeekOnly, id, navigate]);
+
+  if (loading || communityPeekOnly) {
     return (
       <>
         <PageMeta title="Loading shop" path={id ? shopPublicPath({ id }) : undefined} />

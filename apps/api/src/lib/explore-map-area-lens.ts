@@ -5,17 +5,9 @@ import {
   exploreAreaLensStatsSummary,
   exploreMapItemIsSeeking,
   isTimeBoundExploreMapItem,
+  isFacilityPlaceKind,
   placeKindFromLocationRow,
 } from '@uaetrail/shared-types';
-
-const FACILITY_PLACE_KINDS = new Set<PlaceKind>([
-  'toilet',
-  'gas_station',
-  'water_refill',
-  'parking',
-  'viewpoint',
-  'picnic',
-]);
 
 const emptyStats = (): ExploreAreaLensStatsDTO => ({
   hostedActivities: 0,
@@ -68,7 +60,7 @@ type LocationAreaRow = {
   tags?: string[] | null;
 };
 
-/** Roll amenity / facility rows into area stats (map may not render them on Spots lens yet). */
+/** Roll amenity / facility rows into area stats (Spots lens uses `placeKind` on explore items). */
 export const mergeFacilityStatsFromLocations = (
   statsByArea: Map<string, ExploreAreaLensStatsDTO>,
   locations: LocationAreaRow[]
@@ -80,7 +72,7 @@ export const mergeFacilityStatsFromLocations = (
       activityType: location.activityType,
       tags: location.tags,
     });
-    if (!FACILITY_PLACE_KINDS.has(kind)) continue;
+    if (!isFacilityPlaceKind(kind)) continue;
     const stats = statsByArea.get(areaId) ?? emptyStats();
     stats.facilities += 1;
     statsByArea.set(areaId, stats);

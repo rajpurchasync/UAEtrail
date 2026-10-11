@@ -1,5 +1,7 @@
 import {
   exploreMapItemIsSeeking,
+  exploreVenueIsPlacesSpot,
+  isPeekOnlyCatalogProfile,
   isTimeBoundExploreMapItem,
   resolveExploreMapActivityMode,
   type ExploreMapItemDTO,
@@ -26,14 +28,21 @@ export const matchesVenueFilter = (item: ExploreMapItemDTO, venueFilter: VenueLi
   return true;
 };
 
-export const isShopListItem = (item: ExploreMapItemDTO): boolean =>
+export const isMerchantShopMapItem = (item: ExploreMapItemDTO): boolean =>
   item.source === 'shop' && item.kind === 'shop' && !item.id.startsWith('product:');
+
+/** Member-contributed gear shop pin — map peek only (not merchant profile). */
+export const isContributedShopMapItem = (item: ExploreMapItemDTO): boolean =>
+  item.kind === 'shop' && isPeekOnlyCatalogProfile(item.catalogProfileExposure);
+
+export const isShopListItem = (item: ExploreMapItemDTO): boolean =>
+  isMerchantShopMapItem(item) || isContributedShopMapItem(item);
 
 /** Permanent catalog: trails, camp spots, shops — not outings or event venues. */
 export const isPlacesMapItem = (item: ExploreMapItemDTO): boolean => {
   if (isShopListItem(item)) return true;
   if (item.source !== 'venue') return false;
-  return item.kind === 'hiking' || item.kind === 'camping';
+  return exploreVenueIsPlacesSpot(item.kind, item.placeKind);
 };
 
 /** Time-bound social layer: hosted outings and looking-for posts. */
@@ -266,6 +275,7 @@ export const expandMapPins = (items: ExploreMapItemDTO[]): PlaceMapPin[] => {
       source: resolveMapPinItemSource(item),
       activityMode: resolvedMode ?? undefined,
       rideshareEndpoint: hasDistinctTo ? 'from' : undefined,
+      placeKind: item.placeKind ?? undefined,
     });
 
     if (hasDistinctTo) {
@@ -303,6 +313,14 @@ export const mapPinEmojiGroupKey = (pin: PlaceMapPin): string => {
   const source = pin.source ?? 'activity';
   if (source === 'venue' && (pin.activityType === 'hiking' || pin.activityType === 'camping')) {
     return `venue:${pin.activityType}`;
+  }
+  if (pin.placeKind) {
+    return resolveMapPinEmoji(
+      pin.activityType as ExploreCardKind,
+      source,
+      undefined,
+      pin.placeKind
+    );
   }
   return resolveMapPinEmoji(pin.activityType as ExploreCardKind, source);
 };

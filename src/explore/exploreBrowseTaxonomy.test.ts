@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import {
   hostedExploreMapItem,
   legacyDemandExploreMapItem,
@@ -47,16 +48,14 @@ describe('exploreBrowseTaxonomy', () => {
   it('maps search scopes to item sources', () => {
     const hosted = hostedExploreMapItem({ id: 'activity:a1', kind: 'event' });
     const demand = legacyDemandExploreMapItem({ id: 'demand:d1' });
-    const agency = venueExploreMapItem({
-      id: 'agency:g1',
-      source: 'agency',
-      kind: 'agency',
-      path: '/agency/g1',
+    const agencyTrip = hostedExploreMapItem({
+      id: 'activity:a2',
+      activity: { publishingProfileKind: 'agency', tenantSlug: 'uae-adventure' } as ExploreMapItemDTO['activity'],
     });
     expect(mapItemMatchesSearchScope(hosted, 'activities')).toBe(true);
     expect(mapItemMatchesSearchScope(demand, 'people')).toBe(false);
     expect(pinKindForSearchScope('people')).toBe('all');
-    expect(mapItemMatchesSearchScope(agency, 'agencies')).toBe(true);
+    expect(mapItemMatchesSearchScope(agencyTrip, 'agencies')).toBe(true);
   });
 
 });

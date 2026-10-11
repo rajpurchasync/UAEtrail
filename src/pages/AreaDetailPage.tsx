@@ -117,6 +117,7 @@ export const AreaDetailPage = () => {
           areaSlug={area.slug}
           activities={preview?.activities ?? []}
           places={preview?.places ?? []}
+          operators={preview?.operators ?? []}
         />
       </div>
 

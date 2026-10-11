@@ -11,7 +11,7 @@
     "seed": "tsx scripts/seed.ts",
     "bump-activity-dates": "tsx scripts/bump-activity-dates.ts",
     "backfill-seeking-activities": "tsx scripts/backfill-seeking-activities.ts",
-    "seeking-m2d-status": "tsx scripts/seeking-m2d-status.ts",
+    "seeking-storage-status": "tsx scripts/seeking-storage-status.ts",
     "cancel-coordless-participant-intents": "tsx scripts/cancel-coordless-participant-intents.ts",
     "import-venue-catalog": "tsx scripts/import-venue-catalog.ts",
     "cleanup:test-users": "node scripts/cleanup-test-users.mjs",

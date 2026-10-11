@@ -54,4 +54,15 @@ describe('resolveActivityDetailTabFooterKind', () => {
       })
     ).toBe('plan_host_share');
   });
+
+  it('transport empty when no linked ride', () => {
+    expect(
+      resolveActivityDetailTabFooterKind({
+        ...base,
+        tab: 'transport',
+        linkedRideshareId: null,
+        rideshareEnabled: false,
+      })
+    ).toBe('transport_empty');
+  });
 });

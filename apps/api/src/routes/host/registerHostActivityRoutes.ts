@@ -52,11 +52,8 @@ import { registerHostTeamRoutes } from './registerHostTeamRoutes.js';
 import { registerHostActivityParticipantRoutes } from './registerHostActivityParticipantRoutes.js';
 import { idParamSchema } from './host-route-schemas.js';
 import { parseLocalDateTime } from '../../lib/datetime.js';
-import {
-  activityPricePackagesSchema,
-  normalizeActivityPricing,
-  parseStoredPricePackages,
-} from '../../lib/activity-pricing.js';
+import { normalizeActivityPricing } from '../../lib/activity-pricing.js';
+import { resolveMemberHostStatus } from '../../services/member-host-status.js';
 import {
   notifyParticipantsOfScheduleChange,
   scheduleInstantChanged,
@@ -140,11 +137,9 @@ const eventCreateSchema = z.object({
   participationMode: z.enum(['rsvp', 'approval']).optional(),
   groupChatPostPolicy: z.enum(['all_participants', 'host_only']).optional(),
   price: z.number().int().min(0).default(0),
-  pricePackages: activityPricePackagesSchema.optional(),
   capacity: z.number().int().positive(),
   images: z.array(z.string()).default([]),
   bannerUrl: optionalHttpUrlSchema,
-  signupUrl: optionalHttpUrlSchema,
   hostId: z.string().optional(),
   pricingMode: z.enum(['free', 'shared', 'paid']).optional(),
   outingCategory: outingCategorySchema.optional(),
@@ -229,21 +224,21 @@ hostActivitiesRouter.post('/', requireOrgRole(ORG_ACTIVITY_EDIT_ROLES), validate
     await assertActivityHost(tenantId, hostId, tenant, { platformAdmin });
 
     const countryCode = tenant.countryCode ?? location.countryCode ?? 'AE';
+    const hostStatus = await resolveMemberHostStatus(req.auth!.userId);
     const pricing = normalizeActivityPricing({
       price: body.price,
-      pricePackages: body.pricePackages,
       pricingMode: body.pricingMode,
     });
     const isRideshare = body.activityType === 'rideshare';
     assertActivityPricingAllowed({
-      tenantType: tenant.type,
-      pricingMode: body.pricingMode,
-      pricing,
+      hostTiers: hostStatus.hostTiers,
+      pricingMode: body.pricingMode ?? pricing.pricingMode,
+      priceAed: pricing.priceAed,
       sharedAmountAed: isRideshare
         ? body.rideshareFree === false
           ? body.ridesharePriceAed ?? body.price ?? 0
           : null
-        : body.pricingMode === 'shared'
+        : (body.pricingMode ?? pricing.pricingMode) === 'shared'
           ? pricing.priceAed
           : null,
     });
@@ -294,9 +289,8 @@ hostActivitiesRouter.post('/', requireOrgRole(ORG_ACTIVITY_EDIT_ROLES), validate
       }),
       images: body.images,
       bannerUrl: body.bannerUrl ?? null,
-      signupUrl: body.signupUrl ?? null,
       priceAed: pricing.priceAed,
-      pricePackages: pricing.pricePackages,
+      pricePackages: [],
       pricingMode: pricing.pricingMode,
       capacity: body.capacity,
       outingCategory: body.outingCategory ?? null,
@@ -373,33 +367,30 @@ hostActivitiesRouter.patch('/:id', requireOrgRole(ORG_ACTIVITY_EDIT_ROLES), vali
       scheduleInstantChanged(existing.startAt, nextStartAt, countryCode);
 
     const pricing =
-      body.price !== undefined || body.pricePackages !== undefined
+      body.price !== undefined || body.pricingMode !== undefined
         ? normalizeActivityPricing({
             price: body.price ?? existing.priceAed,
-            pricePackages: body.pricePackages ?? parseStoredPricePackages(existing.pricePackages),
             pricingMode: body.pricingMode ?? existing.pricingMode ?? undefined,
           })
         : null;
 
     if (pricing) {
-      const tenant = await findTenantById(tenantId);
-      if (tenant) {
-        const isRideshare =
-          body.activityType === 'rideshare' ||
-          String(existing.activityType ?? '').toLowerCase() === 'rideshare';
-        assertActivityPricingAllowed({
-          tenantType: tenant.type,
-          pricingMode: body.pricingMode ?? pricing.pricingMode,
-          pricing,
-          sharedAmountAed: isRideshare
-            ? body.rideshareFree === false
-              ? body.ridesharePriceAed ?? body.price ?? existing.ridesharePriceAed ?? 0
-              : null
-            : (body.pricingMode ?? pricing.pricingMode) === 'shared'
-              ? pricing.priceAed
-              : null,
-        });
-      }
+      const hostStatus = await resolveMemberHostStatus(req.auth!.userId);
+      const isRideshare =
+        body.activityType === 'rideshare' ||
+        String(existing.activityType ?? '').toLowerCase() === 'rideshare';
+      assertActivityPricingAllowed({
+        hostTiers: hostStatus.hostTiers,
+        pricingMode: body.pricingMode ?? pricing.pricingMode,
+        priceAed: pricing.priceAed,
+        sharedAmountAed: isRideshare
+          ? body.rideshareFree === false
+            ? body.ridesharePriceAed ?? body.price ?? existing.ridesharePriceAed ?? 0
+            : null
+          : (body.pricingMode ?? pricing.pricingMode) === 'shared'
+            ? pricing.priceAed
+            : null,
+      });
     }
 
     if (existing.status === ActivityStatus.PUBLISHED) {
@@ -466,11 +457,10 @@ hostActivitiesRouter.patch('/:id', requireOrgRole(ORG_ACTIVITY_EDIT_ROLES), vali
       })(),
       images: body.images,
       bannerUrl: body.bannerUrl,
-      signupUrl: body.signupUrl,
       ...(pricing
         ? {
             priceAed: pricing.priceAed,
-            pricePackages: pricing.pricePackages,
+            pricePackages: [],
             pricingMode: pricing.pricingMode,
           }
         : body.price !== undefined

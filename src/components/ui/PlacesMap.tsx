@@ -41,6 +41,8 @@ export interface PlaceMapPin {
   stackCount?: number;
   /** Multiple emoji types at one coordinate — rendered as one Leaflet marker. */
   colocatedEntries?: ColocatedMapPinEntry[];
+  /** Amenity catalog kind when `activityType` is `event`. */
+  placeKind?: import('@uaetrail/shared-types').PlaceKind;
 }
 
 export interface ColocatedMapPinEntry {
@@ -119,7 +121,7 @@ const pinIcon = (
   selected: boolean,
   pin: Pick<
     PlaceMapPin,
-    'id' | 'name' | 'source' | 'stackCount' | 'colocatedEntries' | 'activityMode'
+    'id' | 'name' | 'source' | 'stackCount' | 'colocatedEntries' | 'activityMode' | 'placeKind'
   >,
   _rideshareEndpoint?: 'from' | 'to',
   selectedExploreItemId?: string,
@@ -212,6 +214,7 @@ const pinIcon = (
     selected,
     stackCount: indicativeCount,
     activityMode: pin.activityMode ?? null,
+    placeKind: pin.placeKind,
   });
 
   return L.divIcon({

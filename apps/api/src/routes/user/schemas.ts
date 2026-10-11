@@ -8,12 +8,9 @@ export const requestIdParamSchema = z.object({ id: z.string().min(1), requestId:
 
 export const createRequestSchema = z.object({
   note: z.string().max(300).optional(),
-  selectedPackageIndex: z.number().int().min(0).max(11).optional()
 });
 
-export const rsvpSchema = z.object({
-  selectedPackageIndex: z.number().int().min(0).max(11).optional()
-});
+export const rsvpSchema = z.object({});
 
 const mediaUrlSchema = z.string().min(1).refine(
   (value) => value.startsWith('/') || /^https?:\/\//i.test(value),

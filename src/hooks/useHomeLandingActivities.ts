@@ -27,7 +27,6 @@ const toLandingActivity = (activity: ActivityDTO): HomeLandingActivity => ({
     activity.date,
   activityType: activity.activityType,
   price: activity.price,
-  pricePackages: activity.pricePackages,
   paymentTerms: activity.paymentTerms,
   pricingMode: activity.pricingMode,
   path: `/activity/${activity.id}`,

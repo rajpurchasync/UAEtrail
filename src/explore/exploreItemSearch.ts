@@ -88,9 +88,20 @@ const exploreItemCategorySearchTerms = (item: ExploreMapItemDTO): string[] => {
     terms.push('shop', 'shops', 'gear');
     push(terms, EXPLORE_SEARCH_SCOPE_COPY.shops.label);
   }
-  if (item.source === 'agency') {
-    terms.push('agency', 'agencies', 'operator', 'operators', 'guide', 'guides');
+  if (
+    item.source === 'activity' &&
+    item.activityMode !== 'seeking' &&
+    item.activity?.publishingProfileKind === 'agency'
+  ) {
+    terms.push('agency', 'agencies', 'operator', 'operators', 'tour');
     push(terms, EXPLORE_SEARCH_SCOPE_COPY.agencies.label);
+  }
+  if (
+    item.source === 'activity' &&
+    item.activity?.publishingProfileKind === 'pro_guide'
+  ) {
+    terms.push('professional', 'guide', 'guides');
+    push(terms, EXPLORE_SEARCH_SCOPE_COPY.people.label);
   }
 
   switch (item.kind) {

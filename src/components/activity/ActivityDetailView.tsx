@@ -1,6 +1,6 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import { Calendar, Clock, Users, ChevronRight, CheckCircle2, Car } from 'lucide-react';
+import { Users, ChevronRight } from 'lucide-react';
 import type {
   ActivityDetailDTO,
   ActivityGroupChatPostPolicy,
@@ -10,25 +10,20 @@ import type {
 } from '@uaetrail/shared-types';
 import { activityJoinCtaLabel } from '@uaetrail/shared-types';
 import { formatDate } from '../../utils';
-import {
-  formatPackagePrice,
-  inferActivityPricingMode,
-  activityPriceLabel,
-  activityPricingBadge,
-  activityPricingModeLabel,
-} from '../../utils/activityPricing';
+import { activityPriceLabel } from '../../utils/activityPricing';
 import { showTenantBrand, activityHostAvatar, activityHostName, activityHostUserId } from '../../utils/hostLabels';
-import { resolveActivityPublisherProfilePath } from '@uaetrail/shared-types';
+import {
+  exploreActivityPublisherTypeLabel,
+  resolveActivityPublisherProfilePath,
+} from '@uaetrail/shared-types';
 import { activityDetailEyebrowForActivity } from '../../config/activityTypes';
 import { detailBackPath } from '../../config/routingCatalog';
 import { PARTICIPANT_PRIVACY } from '../../config/platform';
 import type { ActivityViewerEntitlementsDTO } from '@uaetrail/shared-types';
 import { buildGoogleMapsSearchUrl } from '../../utils/mapLinks';
-import { ViewOnMapLink } from '../ui/ViewOnMapLink';
 import { MobileDetailShell } from '../mobile/MobileDetailShell';
 import {
   ShareButton,
-  MeetingPointMap,
   ParticipantPreview,
   HostMessageButton,
   ActivityParticipationStatus,
@@ -37,25 +32,15 @@ import {
   DirectionsControl,
 } from '../ui';
 import { resolveJoinRequestUiState } from '../../utils/joinRequestUi';
-import {
-  extractJoinInstructionLines,
-  MANDATORY_INSTRUCTIONS_LABEL,
-} from '../../utils/joinInstructions';
 import { activityRegistryPlacePath } from '../../utils/activityRegistryPlacePath';
-import { linkedParentRidesharePeekCopy } from '../../explore/exploreLinkedParentRideshareCopy';
 import { ActivityInviteLauncher } from './ActivityInviteLauncher';
-import { EXPLORE_RIDESHARE_AVAILABLE_LABEL } from '../../explore/createFlowCopy';
-import { ReviewSection } from '../ui/ReviewSection';
 import { ActivityDetailMobileFooter } from './ActivityDetailMobileFooter';
 import type { ActivityDetailTabId } from '../../activity/activityDetailTab';
 import { activityKindChromeEmoji, activityKindChromeLabel } from '../../activity/activityKindChrome';
 import { ActivityDetailTabBar } from './detail/ActivityDetailTabBar';
 import { ActivityDetailMobileHero } from './detail/ActivityDetailMobileHero';
 import {
-  ACTIVITY_DETAIL_CREW_LOCKED_HINT,
   ACTIVITY_DETAIL_TRANSPORT_EMPTY_HINT,
-  ACTIVITY_DETAIL_TRANSPORT_PRO_HOST_HINT,
-  ACTIVITY_DETAIL_TRANSPORT_PRO_PARTICIPANT_HINT,
   ACTIVITY_DETAIL_PRO_HOST_PROFILE_HINT,
   ACTIVITY_DETAIL_PRO_ROSTER_HINT,
   ACTIVITY_DETAIL_PRO_SOCIAL_CTA,
@@ -64,7 +49,7 @@ import {
   activityDetailShowHostProfileProUpsell,
   activityDetailShowRosterProUpsell,
 } from '../../activity/activityDetailProSocial';
-import { activityDetailPath, proMembershipPath, PRO_MEMBERSHIP_PATH } from '../../config/routingCatalog';
+import { activityDetailPath, proMembershipPath } from '../../config/routingCatalog';
 import { ActivityCrewChatPostPolicyCard } from './ActivityCrewChatPostPolicyCard';
 import { buildActivitySharePayload, activityShareInputFromActivity } from '../../utils/activityShare';
 import { useAuth } from '../../context/AuthContext';
@@ -75,25 +60,21 @@ import {
 import { ActivityPostCheckInReviewPrompts } from './ActivityPostCheckInReviewPrompts';
 import { ActivityHostCheckInReviewPrompt } from './ActivityHostCheckInReviewPrompt';
 import { useHostParticipantReviewHints } from '../../hooks/useHostParticipantReviewHints';
-import { extractActivityPlanDetailLines, extractActivityTransportReachLines } from '../../activity/activityDetailReachBy';
-import { resolveActivityDetailTabFooterKind } from '../../activity/activityDetailTabFooters';
+import { extractActivityTransportReachLines } from '../../activity/activityDetailReachBy';
+import { resolveActivityDetailEngagementFooterKind } from '../../activity/resolveActivityDetailEngagement';
+import { resolveActivityDetailHeroStatusChips } from '../../activity/activityDetailHeroStatus';
+import { activityDetailTabPanelClass } from './detail/activityDetailTabPanelClass';
+import { ActivityDetailPlanAboutCard } from './detail/tabs/ActivityDetailPlanAboutCard';
+import { ActivityDetailPlaceTabPanels } from './detail/tabs/ActivityDetailPlaceTabPanels';
+import { ActivityDetailTransportTabPanels } from './detail/tabs/ActivityDetailTransportTabPanels';
+import { ActivityDetailBuddiesAside } from './detail/tabs/ActivityDetailBuddiesAside';
+import { ActivityDetailPlanExtras } from './detail/tabs/ActivityDetailPlanExtras';
 import type { ActivityRequestView } from '../../api/index';
-import { ActivityDetailHostBuddiesHub } from './detail/ActivityDetailHostBuddiesHub';
 import {
-  ACTIVITY_DETAIL_HOST_BUDDIES_TOOLS_HINT,
-  ACTIVITY_DETAIL_PLACE_LOCKED_BODY,
-  ACTIVITY_DETAIL_PLACE_LOCKED_CTA,
-  ACTIVITY_DETAIL_PLAN_SUSTAINABILITY_LINE,
-  ACTIVITY_DETAIL_PLAN_TRANSPORT_TEASER_BODY,
-  ACTIVITY_DETAIL_PLAN_TRANSPORT_TEASER_CTA,
-  ACTIVITY_DETAIL_PLAN_TRANSPORT_TEASER_TITLE,
   ACTIVITY_DETAIL_TAB_FOOTER_DIRECTIONS,
+  ACTIVITY_DETAIL_TAB_FOOTER_SHARE_OUTING,
   ACTIVITY_DETAIL_TAB_FOOTER_VIEW_RIDE,
-  ACTIVITY_DETAIL_TRANSPORT_REACH_TITLE,
 } from '../../content/activityDetailCopy';
-
-const mobileTabPanelClass = (tab: ActivityDetailTabId, active: ActivityDetailTabId): string =>
-  active === tab ? 'block md:contents' : 'hidden md:contents';
 
 export interface ActivityDetailViewProps {
   activity: ActivityDetailDTO;
@@ -110,8 +91,6 @@ export interface ActivityDetailViewProps {
   sidebarJoinOverride?: ReactNode;
   /** Desktop sidebar — full crew chat / notifications cards (hidden on mobile; use footer shortcuts). */
   confirmedSidebarExtras?: ReactNode;
-  selectedPackageIndex?: number;
-  onSelectedPackageIndexChange?: (index: number) => void;
   joinDisabled?: boolean;
   /** Confirmed participant — may send Join me invites to buddies (host uses console). */
   canSendJoinInvites?: boolean;
@@ -160,8 +139,6 @@ export const ActivityDetailView = ({
   footerOverride,
   sidebarJoinOverride,
   confirmedSidebarExtras,
-  selectedPackageIndex: controlledPackageIndex,
-  onSelectedPackageIndexChange,
   joinDisabled,
   canSendJoinInvites = false,
   activityReviews = [],
@@ -180,21 +157,7 @@ export const ActivityDetailView = ({
 }: ActivityDetailViewProps) => {
   const { user } = useAuth();
   const isEmbedded = layout === 'embedded';
-  const [internalPackageIndex, setInternalPackageIndex] = useState(0);
-  const selectedPackageIndex = controlledPackageIndex ?? internalPackageIndex;
-  const setSelectedPackageIndex = (index: number) => {
-    if (controlledPackageIndex === undefined) {
-      setInternalPackageIndex(index);
-    }
-    onSelectedPackageIndexChange?.(index);
-  };
-
-  const pricePackages = activity.pricePackages?.filter((p) => p.label.trim()) ?? [];
-  const hasMultiplePackages = pricePackages.length > 1;
-  const pricingMode = inferActivityPricingMode(activity);
-  const pricingBadge = activityPricingBadge(activity);
-  const packageSelected = !hasMultiplePackages || selectedPackageIndex >= 0;
-  const joinActionDisabled = joinDisabled ?? !packageSelected;
+  const joinActionDisabled = joinDisabled ?? false;
 
   const heroImage =
     activity.images?.[0] ??
@@ -204,9 +167,6 @@ export const ActivityDetailView = ({
       : activity.activityType === 'event'
         ? 'https://images.unsplash.com/photo-1452626038306-9fff603b72e5?w=1600'
         : 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=1600');
-
-  const externalSignupUrl = activity.signupUrl?.trim() || null;
-  const usesExternalSignup = Boolean(externalSignupUrl) && !previewMode;
 
   const participants = activity.participants ?? [];
   const rosterParticipants = useMemo(() => {
@@ -252,7 +212,7 @@ export const ActivityDetailView = ({
   const hostPath = hostProfilePath && canOpenHostProfile ? hostProfilePath : null;
   const hostProfileHint =
     publishingProfileKind && publishingProfileKind !== 'community'
-      ? 'Runs this activity · view host profile'
+      ? `${exploreActivityPublisherTypeLabel(publishingProfileKind)} · view profile`
       : 'Runs this activity · view profile';
   const isFull = (activity.slotsAvailable ?? 0) <= 0;
   const accessLat =
@@ -299,41 +259,47 @@ export const ActivityDetailView = ({
     showParticipantFooterShortcuts &&
     viewerEntitlements &&
     !viewerEntitlements.canOfferTransport;
-  const mobilePlanPanel = mobileTabPanelClass('plan', mobileTab);
-  const mobilePlacePanel = mobileTabPanelClass('place', mobileTab);
-  const mobileBuddiesPanel = mobileTabPanelClass('buddies', mobileTab);
-  const mobileTransportPanel = mobileTabPanelClass('transport', mobileTab);
+  const mobilePlanPanel = activityDetailTabPanelClass('plan', mobileTab);
+  const mobilePlacePanel = activityDetailTabPanelClass('place', mobileTab);
+  const mobileBuddiesPanel = activityDetailTabPanelClass('buddies', mobileTab);
+  const mobileTransportPanel = activityDetailTabPanelClass('transport', mobileTab);
   const mobileSidebarPanel =
     mobileTab === 'plan' || mobileTab === 'buddies' ? 'block' : 'hidden md:block';
 
   const showInviteShare = !previewMode && activity.status === 'published';
 
-  const joinLabel = usesExternalSignup
-    ? 'Sign up / Join'
-    : activityJoinCtaLabel({
-        participationMode: activity.participationMode,
-        requirements: activity.requirements,
-        isFull,
-      });
+  const joinLabel = activityJoinCtaLabel({
+    participationMode: activity.participationMode,
+    requirements: activity.requirements,
+    isFull,
+  });
 
   const handleJoinClick = () => {
-    if (usesExternalSignup && externalSignupUrl) {
-      window.open(externalSignupUrl, '_blank', 'noopener,noreferrer');
-      return;
-    }
     onJoin?.();
   };
-  const tabFooterKind = resolveActivityDetailTabFooterKind({
-    tab: mobileTab,
-    isHostUser: Boolean(hostCrewChatPolicy),
-    isEmbedded,
-    previewMode,
-    canAccessCrewSurfaces,
+  const isHostUser = Boolean(hostCrewChatPolicy);
+  const heroStatusChips = resolveActivityDetailHeroStatusChips({
     joinUiState,
-    hasMeetingCoordinates: hasAccessCoordinates,
-    linkedRideshareId,
-    rideshareEnabled: Boolean(activity.rideshareEnabled),
-    showParticipantFooterShortcuts,
+    slotsAvailable: activity.slotsAvailable ?? 0,
+    slotsTotal: activity.slotsTotal ?? 0,
+    previewMode,
+    isHostUser,
+  });
+
+  const tabFooterKind = resolveActivityDetailEngagementFooterKind({
+    surface: 'activity_detail',
+    tab: mobileTab,
+    tabFooter: {
+      isHostUser,
+      isEmbedded,
+      previewMode,
+      canAccessCrewSurfaces,
+      joinUiState,
+      hasMeetingCoordinates: hasAccessCoordinates,
+      linkedRideshareId,
+      rideshareEnabled: Boolean(activity.rideshareEnabled),
+      showParticipantFooterShortcuts,
+    },
   });
   const consumerJoinEnabled = !isEmbedded && !previewMode;
   const hostUserId = activityHostUserId(activity);
@@ -416,6 +382,7 @@ export const ActivityDetailView = ({
 
   const stickyFooter = (() => {
     if (!showMobileTabs || previewMode || !consumerJoinEnabled) return joinButton;
+
     if (tabFooterKind === 'place_directions' && hasAccessCoordinates && accessLat != null && accessLng != null) {
       return wrapMobileFooter(
         <DirectionsControl
@@ -456,6 +423,29 @@ export const ActivityDetailView = ({
         showParticipantFooterShortcuts
       );
     }
+    if (tabFooterKind === 'transport_empty') {
+      return wrapMobileFooter(
+        <p className="w-full rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-3 text-center text-sm text-neutral-600">
+          {ACTIVITY_DETAIL_TRANSPORT_EMPTY_HINT}
+        </p>,
+        showParticipantFooterShortcuts
+      );
+    }
+    if (tabFooterKind === 'plan_host_share' && showInviteShare) {
+      return wrapMobileFooter(
+        <div className="w-full [&_button]:flex [&_button]:w-full [&_button]:justify-center [&_button]:rounded-xl [&_button]:bg-emerald-600 [&_button]:px-4 [&_button]:py-3 [&_button]:text-sm [&_button]:font-bold [&_button]:text-white [&_button]:shadow-lg [&_button]:glass-0">
+          <ShareButton
+            title={sharePayload.title}
+            text={sharePayload.text}
+            path={sharePayload.path}
+            label={ACTIVITY_DETAIL_TAB_FOOTER_SHARE_OUTING}
+            iconClassName="h-4 w-4 text-white"
+          />
+        </div>,
+        false
+      );
+    }
+
     return joinButton;
   })();
 
@@ -516,6 +506,7 @@ export const ActivityDetailView = ({
         <ActivityDetailMobileHero
           date={activity.date}
           title={activityTitle}
+          statusChips={heroStatusChips}
           venueLine={
             registryPlacePath && registryPlaceName ? (
               <Link to={registryPlacePath} className="font-medium text-emerald-800">
@@ -555,421 +546,63 @@ export const ActivityDetailView = ({
             />
           ) : null}
 
-          <div className={`bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 ${mobilePlanPanel}`}>
-            <h2 className="text-lg font-bold text-gray-900 mb-3 hidden md:block">
-              About this {activity.activityType === 'event' ? 'event' : 'activity'}
-            </h2>
-            <p className="text-gray-600 leading-relaxed whitespace-pre-line">{activity.description}</p>
+          <ActivityDetailPlanAboutCard
+            panelClassName={mobilePlanPanel}
+            activity={activity}
+            showMobileTabs={showMobileTabs}
+            onMobileTabChange={onMobileTabChange}
+          />
 
-            {externalSignupUrl && (
-              <div className="mt-4 rounded-xl border border-violet-100 bg-violet-50 px-4 py-3">
-                <p className="text-sm font-medium text-violet-900">Registration</p>
-                <p className="text-xs text-violet-800 mt-1">
-                  Sign up on the host&apos;s external page to secure your spot.
-                </p>
-                <a
-                  href={externalSignupUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex mt-2 text-sm font-semibold text-violet-700 hover:text-violet-900 underline underline-offset-2"
-                >
-                  Open signup link
-                </a>
-              </div>
-            )}
+          <ActivityDetailPlaceTabPanels
+            panelClassName={mobilePlacePanel}
+            activity={activity}
+            previewMode={previewMode}
+            showMobileTabs={showMobileTabs}
+            showPlaceCrewBody={showPlaceCrewBody}
+            registryPlacePath={registryPlacePath}
+            registryPlaceName={registryPlaceName}
+            hasAccessCoordinates={hasAccessCoordinates}
+            accessLat={accessLat}
+            accessLng={accessLng}
+            openInGoogleMapsUrl={openInGoogleMapsUrl}
+            onMobileTabChange={onMobileTabChange}
+          />
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6">
-              <div className="bg-gray-50 rounded-xl p-3">
-                <Calendar className="w-4 h-4 text-emerald-600 mb-1" />
-                <p className="text-xs text-gray-500">Start</p>
-                <p className="text-sm font-semibold text-gray-900">{formatDate(activity.date)}</p>
-              </div>
-              {activity.endDate && (
-                <div className="bg-gray-50 rounded-xl p-3">
-                  <Calendar className="w-4 h-4 text-emerald-600 mb-1" />
-                  <p className="text-xs text-gray-500">End</p>
-                  <p className="text-sm font-semibold text-gray-900">{formatDate(activity.endDate)}</p>
-                </div>
-              )}
-              <div className="bg-gray-50 rounded-xl p-3">
-                <Clock className="w-4 h-4 text-emerald-600 mb-1" />
-                <p className="text-xs text-gray-500">Time</p>
-                <p className="text-sm font-semibold text-gray-900">
-                  {activity.time}
-                  {activity.endTime ? ` – ${activity.endTime}` : ''}
-                </p>
-              </div>
-              <div className="bg-gray-50 rounded-xl p-3">
-                <Users className="w-4 h-4 text-emerald-600 mb-1" />
-                <p className="text-xs text-gray-500">Spots</p>
-                <p className="text-sm font-semibold text-gray-900">
-                  {activity.slotsAvailable}/{activity.slotsTotal} left
-                </p>
-              </div>
-              <div className="bg-gray-50 rounded-xl p-3">
-                <p className="text-xs text-gray-500 mb-1">Pricing</p>
-                <p className={`text-sm font-semibold inline-flex px-2 py-0.5 rounded-lg ${pricingBadge.bg} ${pricingBadge.text}`}>
-                  {activityPricingModeLabel(activity)}
-                </p>
-                {pricingMode !== 'free' && (
-                  <p className="text-sm font-semibold text-gray-900 mt-1">{activityPriceLabel(activity)}</p>
-                )}
-              </div>
-            </div>
+          <ActivityDetailTransportTabPanels
+            panelClassName={mobileTransportPanel}
+            activity={activity}
+            transportReachLines={transportReachLines}
+            showTransportEncouragementMobile={showTransportEncouragementMobile}
+            showTransportHostProUpsell={showTransportHostProUpsell}
+            showTransportParticipantProUpsell={showTransportParticipantProUpsell}
+          />
 
-            {pricePackages.length > 0 && (
-              <div className="mt-6">
-                <h3 className="text-sm font-semibold text-gray-900 mb-3">Join options</h3>
-                <div className="space-y-2">
-                  {pricePackages.map((pkg, index) => (
-                    <label
-                      key={`${pkg.label}-${index}`}
-                      className={`flex items-center justify-between gap-3 rounded-xl border px-4 py-3 ${
-                        previewMode ? '' : 'cursor-pointer'
-                      } transition-colors ${
-                        hasMultiplePackages && selectedPackageIndex === index
-                          ? 'border-emerald-500 bg-emerald-50'
-                          : hasMultiplePackages
-                            ? 'border-gray-200 hover:border-gray-300'
-                            : 'border-gray-100 bg-gray-50'
-                      }`}
-                    >
-                      {hasMultiplePackages ? (
-                        <>
-                          <span className="flex items-center gap-3 min-w-0">
-                            <input
-                              type="radio"
-                              name="activity-package"
-                              checked={selectedPackageIndex === index}
-                              onChange={() => setSelectedPackageIndex(index)}
-                              disabled={previewMode}
-                              className="text-emerald-600 focus:ring-emerald-500"
-                            />
-                            <span className="text-sm text-gray-800">{pkg.label}</span>
-                          </span>
-                          <span className="text-sm font-semibold text-gray-900 shrink-0">
-                            {formatPackagePrice(pkg)}
-                          </span>
-                        </>
-                      ) : (
-                        <>
-                          <span className="text-sm text-gray-800">{pkg.label}</span>
-                          <span className="text-sm font-semibold text-gray-900">{formatPackagePrice(pkg)}</span>
-                        </>
-                      )}
-                    </label>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {showMobileTabs && onMobileTabChange ? (
-              <div className="mt-6 rounded-xl border border-sky-100 bg-sky-50/80 p-4">
-                <p className="text-sm font-semibold text-gray-900">{ACTIVITY_DETAIL_PLAN_TRANSPORT_TEASER_TITLE}</p>
-                <p className="mt-1 text-sm text-gray-600 leading-relaxed">{ACTIVITY_DETAIL_PLAN_TRANSPORT_TEASER_BODY}</p>
-                <button
-                  type="button"
-                  onClick={() => onMobileTabChange('transport')}
-                  className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-sky-700 hover:text-sky-800"
-                >
-                  {ACTIVITY_DETAIL_PLAN_TRANSPORT_TEASER_CTA}
-                  <ChevronRight className="h-4 w-4" aria-hidden />
-                </button>
-                <p className="mt-3 text-xs text-gray-500 leading-relaxed">{ACTIVITY_DETAIL_PLAN_SUSTAINABILITY_LINE}</p>
-              </div>
-            ) : null}
-
-          </div>
-
-          {registryPlacePath && registryPlaceName && (
-            <div className={`bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 ${mobilePlacePanel}`}>
-              <Link
-                to={registryPlacePath}
-                className="flex items-center justify-between gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-left transition hover:bg-gray-100"
-              >
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold text-gray-900 truncate">{registryPlaceName}</p>
-                  <p className="mt-0.5 text-xs text-gray-600">Venue guide</p>
-                </div>
-                <ChevronRight className="h-5 w-5 shrink-0 text-gray-400" aria-hidden />
-              </Link>
-            </div>
-          )}
-
-          {!showPlaceCrewBody && showMobileTabs ? (
-            <div className={`bg-white rounded-2xl border border-gray-100 p-6 text-center ${mobilePlacePanel}`}>
-              <Car className="mx-auto h-8 w-8 text-neutral-400" aria-hidden />
-              <p className="mt-3 text-sm text-neutral-600 leading-relaxed">{ACTIVITY_DETAIL_PLACE_LOCKED_BODY}</p>
-              {onMobileTabChange ? (
-                <button
-                  type="button"
-                  onClick={() => onMobileTabChange('plan')}
-                  className="mt-4 text-sm font-semibold text-emerald-700 hover:text-emerald-800"
-                >
-                  {ACTIVITY_DETAIL_PLACE_LOCKED_CTA}
-                </button>
-              ) : null}
-            </div>
-          ) : null}
-
-          {showPlaceCrewBody &&
-          (activity.startPoint || activity.meetingPoint || activity.parkingPoint || openInGoogleMapsUrl || hasAccessCoordinates) && (
-            <div className={`bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 ${mobilePlacePanel}`}>
-              <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
-                <div className="flex items-start gap-3">
-                  <Car className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                  <div className="space-y-3 w-full">
-                    <p className="text-sm font-semibold text-gray-900">Access details</p>
-                    {(activity.startPoint || activity.meetingPoint || activity.parkingPoint) && (
-                      <div className="space-y-1 text-sm text-gray-700">
-                        {activity.startPoint && (
-                          <p>
-                            <span className="font-medium text-gray-900">Hike start point:</span> {activity.startPoint}
-                          </p>
-                        )}
-                        {activity.meetingPoint && (
-                          <p>
-                            <span className="font-medium text-gray-900">Meeting point:</span> {activity.meetingPoint}
-                            <span className="block text-xs font-normal text-gray-500 mt-0.5">
-                              Information only — not a join requirement.
-                            </span>
-                          </p>
-                        )}
-                        {activity.parkingPoint && (
-                          <p>
-                            <span className="font-medium text-gray-900">Parking:</span> {activity.parkingPoint}
-                          </p>
-                        )}
-                      </div>
-                    )}
-                    {hasAccessCoordinates && !previewMode && (
-                      <MeetingPointMap
-                        lat={accessLat}
-                        lng={accessLng}
-                        label={activity.meetingPoint ?? activity.parkingPoint ?? activity.locationName}
-                        hideExternalLink
-                      />
-                    )}
-                    {hasAccessCoordinates && previewMode && (
-                      <ViewOnMapLink
-                        lat={accessLat}
-                        lng={accessLng}
-                        className="inline-flex text-sm font-medium text-emerald-700 hover:text-emerald-800"
-                      >
-                        View location on Google Maps →
-                      </ViewOnMapLink>
-                    )}
-                    {!previewMode && hasAccessCoordinates && (
-                      <DirectionsControl lat={accessLat} lng={accessLng} variant="compact" />
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          <div className={`bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 ${mobileTransportPanel}`}>
-            <h2 className="text-lg font-bold text-gray-900 mb-2">{ACTIVITY_DETAIL_TRANSPORT_REACH_TITLE}</h2>
-            {transportReachLines.length > 0 ? (
-              <ul className="list-disc list-inside space-y-1 text-gray-700 text-sm">
-                {transportReachLines.map((line, i) => (
-                  <li key={i}>{line}</li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-sm text-gray-500 leading-relaxed">
-                {activity.meetingPoint || activity.parkingPoint
-                  ? 'Meeting and parking notes are on Place once you join.'
-                  : 'Reach-by details appear here when the host adds them.'}
-              </p>
-            )}
-            <p className="mt-3 text-xs text-gray-500 leading-relaxed">{ACTIVITY_DETAIL_PLAN_SUSTAINABILITY_LINE}</p>
-          </div>
-
-          {showTransportEncouragementMobile ? (
-            <div
-              className={`md:hidden rounded-2xl border border-neutral-100 bg-white p-6 text-center ${mobileTransportPanel}`}
-            >
-              <Car className="mx-auto h-8 w-8 text-neutral-400" aria-hidden />
-              <p className="mt-3 text-sm text-neutral-600 leading-relaxed">{ACTIVITY_DETAIL_TRANSPORT_EMPTY_HINT}</p>
-              {showTransportHostProUpsell ? (
-                <p className="mt-3 text-sm text-neutral-600">
-                  {ACTIVITY_DETAIL_TRANSPORT_PRO_HOST_HINT}{' '}
-                  <Link to={PRO_MEMBERSHIP_PATH} className="font-semibold text-emerald-700 hover:text-emerald-800">
-                    Learn about Pro
-                  </Link>
-                </p>
-              ) : null}
-              {showTransportParticipantProUpsell ? (
-                <p className="mt-3 text-sm text-neutral-600">
-                  {ACTIVITY_DETAIL_TRANSPORT_PRO_PARTICIPANT_HINT}{' '}
-                  <Link to={PRO_MEMBERSHIP_PATH} className="font-semibold text-emerald-700 hover:text-emerald-800">
-                    Learn about Pro
-                  </Link>
-                </p>
-              ) : null}
-            </div>
-          ) : null}
-
-          {activity.rideshareEnabled && (
-            <div className={`rounded-2xl border border-sky-100 bg-sky-50/70 p-4 ${mobileTransportPanel}`}>
-                <div className="flex items-start gap-2 text-sm text-gray-700">
-                  <Car className="w-4 h-4 text-sky-600 mt-0.5 flex-shrink-0" />
-                  <div className="min-w-0 flex-1">
-                    <p className="font-medium text-gray-900">{EXPLORE_RIDESHARE_AVAILABLE_LABEL}</p>
-                    <p className="mt-1">
-                      {activity.rideshareSeats != null && activity.rideshareSeats > 0
-                        ? `${activity.rideshareSeats} seat${activity.rideshareSeats === 1 ? '' : 's'} · `
-                        : ''}
-                      {activity.rideshareFree
-                        ? 'Free shared ride'
-                        : activity.ridesharePriceAed != null
-                          ? `AED ${activity.ridesharePriceAed} per seat`
-                          : 'Shared ride'}
-                    </p>
-                    {activity.rideshareDetails && (
-                      <p className="text-gray-600 mt-1 whitespace-pre-line">{activity.rideshareDetails}</p>
-                    )}
-                    {activity.linkedRideshare && (
-                      <div className="mt-3 rounded-xl border border-sky-200 bg-white px-3 py-2.5">
-                        <p className="text-xs font-semibold uppercase tracking-wide text-sky-700">
-                          Linked rideshare listing
-                        </p>
-                        <p className="mt-1 text-sm text-gray-800">
-                          {activity.linkedRideshare.meetingPoint && activity.linkedRideshare.startPoint
-                            ? `${activity.linkedRideshare.meetingPoint} → ${activity.linkedRideshare.startPoint}`
-                            : activity.linkedRideshare.title}
-                        </p>
-                        <Link
-                          to={`/activity/${activity.linkedRideshare.id}`}
-                          className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-sky-700 hover:text-sky-800"
-                        >
-                          View rideshare details
-                          <ChevronRight className="h-4 w-4" />
-                        </Link>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-          )}
-
-          {activity.linkedParentActivity && (() => {
-              const parent = activity.linkedParentActivity;
-              const linkedCopy = linkedParentRidesharePeekCopy(parent.activityType, parent.title);
-              return (
-                <div className={`rounded-2xl border border-sky-100 bg-sky-50/70 p-4 text-sm text-gray-700 ${mobileTransportPanel}`}>
-                  <p className="font-semibold text-gray-900">{linkedCopy.eyebrow}</p>
-                  {linkedCopy.showTitleSubtitle ? (
-                    <p className="mt-1 text-gray-800">{parent.title}</p>
-                  ) : null}
-                  <Link
-                    to={`/activity/${parent.id}`}
-                    className="mt-2 inline-flex items-center gap-1 font-semibold text-sky-700 hover:text-sky-800"
-                  >
-                    View outing
-                    <ChevronRight className="h-4 w-4" aria-hidden />
-                  </Link>
-                </div>
-              );
-            })()}
-
-          {activity.itinerary && activity.itinerary.length > 0 && (
-            <div className={`bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 ${mobilePlanPanel}`}>
-              <h2 className="text-lg font-bold text-gray-900 mb-3">Itinerary</h2>
-              <ul className="space-y-2">
-                {activity.itinerary.map((item, i) => (
-                  <li key={i} className="flex items-start gap-2 text-gray-700 text-sm">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {(() => {
-            const mandatoryInstructions = extractJoinInstructionLines(activity.requirements);
-            const planDetailLines = extractActivityPlanDetailLines(activity.requirements);
-            return (
-              <>
-                {mandatoryInstructions.length > 0 && (
-                  <div className={`bg-white rounded-2xl border border-amber-100 p-5 sm:p-6 ${mobilePlanPanel}`}>
-                    <h2 className="text-lg font-bold text-gray-900 mb-1">{MANDATORY_INSTRUCTIONS_LABEL}</h2>
-                    <p className="text-xs text-gray-500 mb-3">Joiners must agree to these when requesting a spot.</p>
-                    <ul className="list-disc list-inside space-y-1 text-gray-700 text-sm">
-                      {mandatoryInstructions.map((item, i) => (
-                        <li key={i}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                {planDetailLines.length > 0 && (
-                  <div className={`bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 ${mobilePlanPanel}`}>
-                    <h2 className="text-lg font-bold text-gray-900 mb-3">Activity details</h2>
-                    <ul className="list-disc list-inside space-y-1 text-gray-700 text-sm">
-                      {planDetailLines.map((item, i) => (
-                        <li key={i}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </>
-            );
-          })()}
-
-          {activity.images && activity.images.length > 1 && (
-            <div className={`bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 ${mobilePlanPanel}`}>
-              <h2 className="text-lg font-bold text-gray-900 mb-3">Photos</h2>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {activity.images.map((img, i) => (
-                  <img key={i} src={img} alt="" className="rounded-xl aspect-video object-cover" />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {!previewMode && activity.status === 'published' && onActivityReviewSubmitted ? (
-            <ReviewSection
-              targetType="activity"
-              targetId={activity.id}
-              reviews={activityReviews}
-              onReviewSubmitted={onActivityReviewSubmitted}
-              canWriteReview={canWriteActivityReview}
-              collapsible
-              defaultExpanded={canWriteActivityReview}
-            />
-          ) : null}
+          <ActivityDetailPlanExtras
+            panelClassName={mobilePlanPanel}
+            activity={activity}
+            previewMode={previewMode}
+            activityReviews={activityReviews}
+            canWriteActivityReview={canWriteActivityReview}
+            onActivityReviewSubmitted={onActivityReviewSubmitted}
+          />
         </div>
 
         <div className={`space-y-4 ${mobileSidebarPanel}`}>
-          {hostBuddiesHub && hostCrewChatPolicy && !previewMode ? (
-            <div className={`space-y-2 ${mobileBuddiesPanel}`}>
-              <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-                {ACTIVITY_DETAIL_HOST_BUDDIES_TOOLS_HINT}
-              </p>
-              <ActivityDetailHostBuddiesHub
-                tenantId={hostCrewChatPolicy.tenantId}
-                activityId={activity.id}
-                activityTitle={activity.title || activity.locationName}
-                joinRequests={hostBuddiesHub.joinRequests}
-                requestsLoading={hostBuddiesHub.requestsLoading}
-                onRequestsChanged={hostBuddiesHub.onRequestsChanged}
-                onError={hostCrewChatPolicy.onError}
-              />
-            </div>
-          ) : null}
-          {showCrewLockedHint && showMobileTabs ? (
-            <div className={`md:hidden bg-white rounded-2xl border border-gray-100 p-6 text-center ${mobileBuddiesPanel}`}>
-              <Users className="mx-auto h-8 w-8 text-neutral-400" aria-hidden />
-              <p className="mt-3 text-sm text-neutral-600 leading-relaxed">{ACTIVITY_DETAIL_CREW_LOCKED_HINT}</p>
-            </div>
-          ) : null}
+          <ActivityDetailBuddiesAside
+            panelClassName={mobileBuddiesPanel}
+            previewMode={previewMode}
+            showMobileTabs={showMobileTabs}
+            showCrewLockedHint={showCrewLockedHint}
+            activityId={activity.id}
+            activityTitle={activity.title || activity.locationName}
+            hostBuddiesHub={hostBuddiesHub}
+            hostCrewChatPolicy={hostCrewChatPolicy}
+          />
           <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 lg:sticky lg:top-20">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-2xl font-bold text-gray-900">{activityPriceLabel(activity)}</p>
-                <p className="text-sm text-gray-500">{pricePackages.length > 1 ? 'options available' : 'per person'}</p>
+                <p className="text-sm text-gray-500">Indicative — pay host directly</p>
               </div>
               {!previewMode && (
                 <div className="hidden md:block">

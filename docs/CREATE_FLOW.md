@@ -60,6 +60,8 @@ Three compact choices (drill-down in the same sheet â€” not three tall arch
 
 **Organize (buddy host)** requires **profile completion** (`signupProfileComplete` — same member details as `/welcome`). `GET /me/host-status` → `canPublish` provisions a personal guide-owned tenant on first check. Gate failure → `/welcome?redirect=…` (not Pro Membership). **Agency / shop / professional** → `/profile/pro-membership` and `canHostPaidActivities` / business tenants.
 
+**Activity pricing (Organize + host publish):** one mode per outing — `free` · `shared` · `paid` — with a single indicative AED amount when not free. **No tiered packages** and **no in-app payments** (amounts are informational; members settle with the host offline). **Who may set which mode** (`allowedActivityPricingModes` on `hostTiers`): community buddy → **free only**; Pro guide (no business tenant) → **free + shared**; business (agency/shop) → **free + shared + paid**. External registration URLs are **parked** (not in product UI/API).
+
 ### Find â†’ (demand / â€œlooking forâ€)
 
 | UI label | Maps to (`ParticipantIntentKind`) |

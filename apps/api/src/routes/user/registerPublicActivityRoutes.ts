@@ -205,13 +205,12 @@ registerActivityRoute(
   async (req, res, next) => {
     try {
       const { id } = req.params as z.infer<typeof eventIdParamSchema>;
-      const { note, selectedPackageIndex } = req.body as z.infer<typeof createRequestSchema>;
+      const { note } = req.body as z.infer<typeof createRequestSchema>;
 
       const { request, waitlisted } = await createJoinOrWaitlistRequest({
         activityId: id,
         userId: req.auth!.userId,
         note,
-        selectedPackageIndex
       });
 
       void notifyParticipantJoinRequestSubmitted({
@@ -250,12 +249,9 @@ registerActivityRoute(
   async (req, res, next) => {
     try {
       const { id } = req.params as z.infer<typeof eventIdParamSchema>;
-      const { selectedPackageIndex } = req.body as z.infer<typeof rsvpSchema>;
-
       const { request, participation } = await createRsvpParticipation({
         activityId: id,
         userId: req.auth!.userId,
-        selectedPackageIndex
       });
 
       const eventDoc = await findActivityDocInMongo(id);

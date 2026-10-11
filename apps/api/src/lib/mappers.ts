@@ -20,7 +20,6 @@ import {
 } from '@uaetrail/shared-types';
 
 import { formatActivityLocal } from './datetime.js';
-import { parseStoredPricePackages } from './activity-pricing.js';
 import { resolveActivityDtoType } from '../domain/activity-type.js';
 
 const enumMap = <T extends string>(value: string | null | undefined): T =>
@@ -262,7 +261,6 @@ const toEventDto = ({
   endDate: endLocal?.date ?? null,
   endTime: endLocal?.time ?? null,
   price: event.priceAed,
-  pricePackages: parseStoredPricePackages(event.pricePackages),
   slotsTotal: event.capacity,
   slotsAvailable,
   status: mapActivityStatus(event.status),
@@ -291,7 +289,6 @@ const toEventDto = ({
   participationMode: resolveParticipationMode(event.participationMode, event.requirements),
   images: event.images ?? [],
   bannerUrl: event.bannerUrl ?? null,
-  signupUrl: event.signupUrl ?? null,
   hostName,
   hostUserId,
   hostAvatar: hostAvatar ?? undefined,

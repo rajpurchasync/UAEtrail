@@ -109,7 +109,7 @@ Notifications (deep link to **activity**, **Plan row context**, **chat thread**,
 
 - [x] Keep **one** entity `locations` / Place; kinds in `PlaceKind` (`place-kind.ts`)
 - [x] Add `areaId` on place rows (admin + seed + backfill)
-- [x] Facilities (toilet, parking, …) = `PlaceKind` — `areaLensStats.facilities` + area hub `#places`; Spots map pins for amenities **deferred** (see `DOMAIN_CANONICALS` §12.1)
+- [x] Facilities (toilet, parking, …) = `PlaceKind` — area rollups + hub + **Spots** map pins (`placeKind` on explore payload)
 
 ### 2.3 Area
 
@@ -164,7 +164,7 @@ Notifications (deep link to **activity**, **Plan row context**, **chat thread**,
 
 - [x] Route `/area/:slug`
 - [x] Sections: **upcoming activities** + **catalog places** previews; **available people** (week filter); map CTA via explore `?area=`
-- [x] Map strip embed (`AreaHubMapStrip`), places by kind grouping, shops rail (tenant operators on map — explore shops panel)
+- [x] Map strip embed (`AreaHubMapStrip`), places by kind grouping, shops rail (shop pins only; pro/agency via activity host + profiles)
 - [x] CTAs: FAB compose with `?area=` slug prefill on Find/Add curated area step (organize still uses catalog place `areaId`)
 
 ---
@@ -490,8 +490,8 @@ Use one PR per subsection where possible; check boxes when merged.
 | 8 | ~~**Phase 8**~~ **done** — §11 automated gates + full `verify:system` green | Phase 8 | `memberSurfacesAcceptance.test.ts` |
 | 9 | ~~**§6.4 / §7.1 / §7.3 / §6.3**~~ **done** — `member-plan` rename, chat/groups, host guards, Plan forward-only | §6–7 | `hostMemberGuard`, `MessagesInboxList`, `Activities.tsx` |
 | 10 | ~~**M2d**~~ **done** — `PARTICIPANT_INTENT_STUB_WRITE=false` after backfill | §8 M2 | `participant-intent-activity-readthrough.ts` |
-| 11 | ~~**Ops tooling**~~ **done** — run `seeking:m2d-status` + backfill + `PARTICIPANT_INTENT_STUB_WRITE=false` **per env** (staging/prod) | §8 M1/M2d | `PRE_DEPLOY_CHECKLIST.md` |
-| 12 | ~~**G-manage QA**~~ **done (eng)** — API `g-manage-coordination-join-approve.test.ts` + §11 guards; **staging UI** smoke in [`SEEKING_M2D_RUNBOOK.md`](../operations/SEEKING_M2D_RUNBOOK.md) | §6.1 | PRE_DEPLOY G-manage step |
+| 11 | ~~**Ops tooling**~~ **done** — run `seeking:storage-status` + backfill + `PARTICIPANT_INTENT_STUB_WRITE=false` **per env** (staging/prod) | §8 seeking storage | `PRE_DEPLOY_CHECKLIST.md` |
+| 12 | ~~**G-manage QA**~~ **done (eng)** — API `g-manage-coordination-join-approve.test.ts` + §11 guards; **staging UI** smoke in [`SEEKING_STORAGE_RUNBOOK.md`](../operations/SEEKING_STORAGE_RUNBOOK.md) | §6.1 | PRE_DEPLOY G-manage step |
 
 **§19 queue:** **complete** for product engineering (2026-10-10). Remaining work is **ops per env** (#11 runbook) and optional **post-queue** (§20).
 
@@ -548,7 +548,11 @@ Use one PR per subsection where possible; check boxes when merged.
 - [x] Welcome sheet (group chat + Place)
 - [x] Tab-scoped sticky footer **intent** (`activityDetailTabFooters.ts` → directions / invite / view ride / join); participant shortcuts via `ActivityDetailMobileFooter`
 - [x] Peek ↔ detail Plan footer parity helper (`activityEngagementCtas.ts` + tests); tab-scoped footers stay in `activityDetailTabFooters.ts`
-- [ ] **Deferred:** one React resolver for all §9 surfaces; split tab modules (`ActivityPlanTab.tsx`, …); `ActivityPresentationDTO` slices
+- [x] Tab-scoped sticky footers wired (`plan_host_share`, `transport_empty`, directions, invite, view ride) — host no longer bypasses tab intent via global `HostActivityCtas` on mobile tabs
+- [x] Mobile hero status strip (join state + spots); Plan Start/End grid hidden on mobile when tabs on
+- [x] §9 footer-kind resolver (`resolveActivityDetailEngagement.ts`) — peek + detail tabs; tab panel modules under `detail/tabs/*` (Plan about, extras, place, transport, buddies)
+- [ ] **Deferred:** render-layer §9 parity component; `ActivityPresentationDTO` slices
+- [x] Single pricing mode per activity (free / shared / paid) — no tiered packages; indicative amounts only; external signup parked
 
 #### AD-4 — Peek parity
 
@@ -671,12 +675,12 @@ Use one PR per subsection where possible; check boxes when merged.
 
 | Priority | Item | Notes |
 |----------|------|--------|
-| P0 ops | Run [`SEEKING_M2D_RUNBOOK.md`](../operations/SEEKING_M2D_RUNBOOK.md) on **staging + prod** | `seeking:m2d-status --strict` before traffic |
+| P0 ops | Run [`SEEKING_STORAGE_RUNBOOK.md`](../operations/SEEKING_STORAGE_RUNBOOK.md) on **staging + prod** | `seeking:deploy-gate` before traffic |
 | P0 QA | G-manage **browser** smoke on staging | Plan → Needs you → Hosted → manage sheet |
 | P1 wire | Explore map: retire public `source: 'demand'` projection | **Done (wire)** — `activity` + `activityMode: seeking`; legacy `demand:` pin ids + `source: 'demand'` compat in parsers |
 | P1 links | Seeking deep links prefer `pin=activity:{id}` | **Done** — `exploreSeekingMapItemPath` / `resolveSeekingExploreMapItemId`; API notifications + wishlist + FE share |
 | P1 storage | Drop `participant_intents` writes entirely; archive collection | **Default stub write off** (opt-in `true` for rollback); collection archive after all envs backfilled |
-| P1 cleanup | **Migration residue** (M2/M2d jargon, stub flag, demand pin compat, alias routes) | **After** runbook § “Residue cleanup” gates — see [`SEEKING_M2D_RUNBOOK.md`](../operations/SEEKING_M2D_RUNBOOK.md); no phase letters left in Tier-1 |
+| P1 cleanup | **Migration residue** (stub flag, demand pin compat, alias routes) | **After** runbook § “Residue cleanup” gates — see [`SEEKING_STORAGE_RUNBOOK.md`](../operations/SEEKING_STORAGE_RUNBOOK.md); no phase letters left in Tier-1 |
 | P2 perf | Explore map bbox / light DTO; chat SSE multi-instance | Architecture backlog from coherence review |
 | P2 UX | `plan-tab-ux-backlog.md` (upcoming carousel, goals polish) | Explicitly paused in §19 |
 
@@ -752,11 +756,13 @@ Use one PR per subsection where possible; check boxes when merged.
 
 ### P0 — per environment (staging → prod)
 
+**Engineering is shipped** (`seeking-storage-ops.ts`, backfill scripts, default stub write off). **Do not re-implement** — run the checklist on each database only. Canonical steps: [`SEEKING_STORAGE_RUNBOOK.md`](../operations/SEEKING_STORAGE_RUNBOOK.md).
+
 | Step | Command / action |
 |------|------------------|
-| Readiness | `npm run seeking:m2d-status` |
+| Readiness | `npm run seeking:storage-status` |
 | Backfill | `npm --workspace @uaetrail/api run backfill-seeking-activities` |
-| Coord-less orphans | `cancel-coordless-participant-intents` if needed ([`SEEKING_M2D_RUNBOOK.md`](../operations/SEEKING_M2D_RUNBOOK.md)) |
+| Coord-less orphans | `cancel-coordless-participant-intents` if needed ([`SEEKING_STORAGE_RUNBOOK.md`](../operations/SEEKING_STORAGE_RUNBOOK.md)) |
 | **Gate** | `npm run seeking:deploy-gate` (exit **0**) |
 | Stub write | `PARTICIPANT_INTENT_STUB_WRITE=false`; restart API |
 | UI smoke | G-manage: Plan → Needs you → Hosted → manage → approve ([`PRE_DEPLOY_CHECKLIST.md`](../PRE_DEPLOY_CHECKLIST.md)) |
@@ -771,7 +777,7 @@ Use one PR per subsection where possible; check boxes when merged.
 
 ### P2 — migration residue (after 30-day gate)
 
-See [`SEEKING_M2D_RUNBOOK.md`](../operations/SEEKING_M2D_RUNBOOK.md) § Residue cleanup — stub flag removal, `demand:` compat, rename ops scripts.
+See [`SEEKING_STORAGE_RUNBOOK.md`](../operations/SEEKING_STORAGE_RUNBOOK.md) § Residue cleanup — stub flag removal, `demand:` compat, rename legacy test identifiers.
 
 ---
 

@@ -13,6 +13,12 @@ import {
 } from './activity-participation-mode.js';
 import { exploreMapItemIsSeeking } from './explore-activity-mode.js';
 import type { ExploreActivityMode } from './explore-activity-mode.js';
+import {
+  facilityPlaceKindPinEmoji,
+  isFacilityPlaceKind,
+  outdoorPlaceKindPinEmoji,
+  type PlaceKind,
+} from './place-kind.js';
 
 export type ExploreCardSource = 'activity' | 'venue' | 'shop' | 'agency' | 'demand' | 'area';
 export type ExploreCardKind = 'hiking' | 'camping' | 'event' | 'rideshare' | 'shop' | 'agency' | 'area';
@@ -51,6 +57,7 @@ export type ExplorePresentationBuildInput = {
     participationMode?: ParticipationMode | null;
     rideshareEnabled?: boolean;
   } | null;
+  placeKind?: PlaceKind | null;
 };
 
 const itemParticipationMode = (item: ExplorePresentationBuildInput): ParticipationMode =>
@@ -165,8 +172,16 @@ export const resolveMapPinItemSource = (
 export const resolveMapPinEmoji = (
   kind: ExploreCardKind,
   source: ExploreCardSource = 'activity',
-  _rideshareEndpoint?: 'from' | 'to'
+  _rideshareEndpoint?: 'from' | 'to',
+  placeKind?: PlaceKind
 ): string => {
+  if (placeKind && isFacilityPlaceKind(placeKind)) {
+    return facilityPlaceKindPinEmoji(placeKind);
+  }
+  if (placeKind === 'outdoor_other') {
+    return outdoorPlaceKindPinEmoji();
+  }
+
   if (source === 'venue') {
     if (kind === 'hiking') return HIKING_VENUE_EMOJI;
     if (kind === 'camping') return CAMPING_VENUE_EMOJI;
@@ -805,7 +820,12 @@ export const buildExploreCardPresentation = (
   return {
     kind,
     source,
-    emoji: resolveMapPinEmoji(kind, isSeekingPin ? 'demand' : source),
+    emoji: resolveMapPinEmoji(
+      kind,
+      isSeekingPin ? 'demand' : source,
+      undefined,
+      item.placeKind ?? undefined
+    ),
     headline: exploreHeadline(headlineInput),
     listTitle: sections.listTitle,
     listHost: featuredPerson?.displayName ?? null,

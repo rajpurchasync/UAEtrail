@@ -79,6 +79,89 @@ describe('GET /api/v1/explore/map layer separation', () => {
     expect(venueItem?.outingCategory).toBeNull();
   });
 
+  it('includes facility catalog rows on the map with placeKind', async () => {
+    const suffix = `facility-${Date.now()}`;
+    const venue = await createLocationRecord({
+      name: `Trail toilet ${suffix}`,
+      region: 'Dubai',
+      activityType: ActivityType.EVENT,
+      status: LocationStatus.ACTIVE,
+      featured: false,
+      latitude: 25.135,
+      longitude: 55.225,
+      countryCode: 'AE',
+      images: [],
+      tags: ['place-kind:toilet'],
+      registryListed: true,
+      externalSource: 'catalog',
+      externalId: `facility-${suffix}`,
+    });
+
+    await invalidateExploreMapCache();
+
+    const response = await request(app).get('/api/v1/explore/map');
+    expect(response.status).toBe(200);
+    const items = response.body.data.items as Array<{
+      id: string;
+      kind: string;
+      source: string;
+      placeKind?: string;
+    }>;
+    const facilityItem = items.find((item) => item.id === `venue:${venue.id}`);
+    expect(facilityItem?.source).toBe('venue');
+    expect(facilityItem?.kind).toBe('event');
+    expect(facilityItem?.placeKind).toBe('toilet');
+  });
+
+  it('includes outdoor_other spots and contributed shops with peek exposure', async () => {
+    const suffix = `outdoor-shop-${Date.now()}`;
+    const outdoor = await createLocationRecord({
+      name: `Beach spot ${suffix}`,
+      region: 'Dubai',
+      activityType: ActivityType.EVENT,
+      status: LocationStatus.ACTIVE,
+      featured: false,
+      latitude: 25.136,
+      longitude: 55.226,
+      countryCode: 'AE',
+      images: [],
+      tags: ['outdoor-other'],
+      registryListed: true,
+      externalSource: 'catalog',
+      externalId: `outdoor-${suffix}`,
+    });
+    const contributedShop = await createLocationRecord({
+      name: `Community gear ${suffix}`,
+      region: 'Dubai',
+      activityType: ActivityType.SHOP,
+      status: LocationStatus.ACTIVE,
+      featured: false,
+      latitude: 25.137,
+      longitude: 55.227,
+      countryCode: 'AE',
+      images: [],
+      tags: ['community-shop'],
+      registryListed: true,
+      externalSource: 'catalog',
+      externalId: `cshop-${suffix}`,
+    });
+
+    await invalidateExploreMapCache();
+
+    const response = await request(app).get('/api/v1/explore/map');
+    expect(response.status).toBe(200);
+    const items = response.body.data.items as Array<{
+      id: string;
+      placeKind?: string;
+      catalogProfileExposure?: string;
+      path?: string;
+    }>;
+    expect(items.find((item) => item.id === `venue:${outdoor.id}`)?.placeKind).toBe('outdoor_other');
+    const shopItem = items.find((item) => item.id === `venue:${contributedShop.id}`);
+    expect(shopItem?.catalogProfileExposure).toBe('peek');
+    expect(shopItem?.path).toContain('pin=venue%3A');
+  });
+
   it('refreshes explore map after a new active location without manual cache clear', async () => {
     const suffix = `cache-${Date.now()}`;
     await invalidateExploreMapCache();

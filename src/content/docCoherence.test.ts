@@ -69,6 +69,24 @@ describe('doc coherence (Tier 1)', () => {
     expect(system).toMatch(/\/list/);
   });
 
+  it('member plan P0 ops defers to SEEKING_STORAGE_RUNBOOK (no re-implement)', () => {
+    const plan = readFileSync(
+      join(DOCS, 'experiment/member-surfaces-implementation-plan.md'),
+      'utf8'
+    );
+    expect(plan).toMatch(/Do not re-implement/);
+    expect(plan).toMatch(/SEEKING_STORAGE_RUNBOOK/);
+  });
+
+  it('Pro storefront discovery: shop pin, guide/agency via profile surfaces', () => {
+    const canon = readFileSync(join(DOCS, 'DOMAIN_CANONICALS.md'), 'utf8');
+    const domain = readFileSync(join(DOCS, 'DOMAIN.md'), 'utf8');
+    expect(canon).toMatch(/Pro account storefronts/);
+    expect(canon).toMatch(/Do not.*emit.*agency.*explore map/i);
+    expect(domain).toMatch(/No agency\/guide map pins/);
+    expect(domain).toMatch(/Shops.*map pin/i);
+  });
+
   it('geography canon: Area hub, Place kinds, activity via place.areaId', () => {
     const canon = readFileSync(join(DOCS, 'DOMAIN_CANONICALS.md'), 'utf8');
     const domain = readFileSync(join(DOCS, 'DOMAIN.md'), 'utf8');

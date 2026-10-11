@@ -61,6 +61,7 @@ describe('resolveMapPinEmoji', () => {
   it('uses car emoji for all carpool map pins', () => {
     expect(resolveMapPinEmoji('rideshare', 'activity', 'to')).toBe('🚗');
     expect(resolveMapPinEmoji('rideshare', 'activity', 'from')).toBe('🚗');
+    expect(resolveMapPinEmoji('event', 'venue', undefined, 'toilet')).toBe('🚻');
   });
 });
 
