@@ -12,6 +12,7 @@ Use full run-project scripts only when explicitly requested.
 ### Demo data (`SEED_DATA`)
 
 - Seed **does not** run on every dev start. Use `SEED_DATA=true` (or `FORCE_SEED=1`) when you need demo users, map pins, and host fixtures — see `README.md` and `docs/DEPLOYMENT.md`.
+- **`npm run seed` without `SEED_DATA`:** still **upserts curated areas** and **backfills `place.areaId`** on catalog rows (safe on existing DBs).
 - After pulling member/host changes, restart the API once so Mongo migrations run (`tenant_memberships` owner backfill, `publishingPurpose` on tenants).
 - Buddy **Organize** requires **signup profile complete** (`PATCH /me/profile/signup-details`); `GET /me/host-status` exposes `canPublish`. Publish/create on `/host/activities` enforces the same server-side.
 - **`npm run dev:local`:** prints a reminder to run `SEED_DATA=true npm run seed` when the map has no pins (see [`operations/EXPLORE_MAP_RUNBOOK.md`](./operations/EXPLORE_MAP_RUNBOOK.md)).

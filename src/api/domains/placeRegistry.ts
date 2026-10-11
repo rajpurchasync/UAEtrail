@@ -1,10 +1,10 @@
 import type { PlaceDTO } from '@uaetrail/shared-types';
-import type { ActivityType } from '../../config/activityTypes';
+import type { ActivityPickerType } from '../../config/activityTypes';
 import { apiRequest } from '../client';
 
 /** Query for the venue place registry (catalog trails, camps, event spots). */
 export type PlaceRegistryQuery = {
-  placeType?: ActivityType;
+  placeType?: ActivityPickerType;
   countryCode?: string;
 };
 

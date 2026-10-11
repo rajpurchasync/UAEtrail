@@ -421,7 +421,7 @@ Any **place, venue, activity meeting point, shop, parking pin**, or other consum
 | **Member profile** | `resolveProfileViewerAccess` + `computeProfileDetailExposure` (`profile-viewer-access.ts`) | `profile-viewer-access.test.ts`, shared-types | `GET /users/:id/public-profile` → `{ data, viewerAccess }`; guests `sign_in` only |
 | **Place (catalog)** | Public read today — no roster | — | `GET /places/:id` |
 | **Shop / operator** | **TBD** — policy in §15.4 row “commerce” | — | Shop public pages |
-| **Demand (intent)** | **TBD** — `resolveDemandViewerAccess` or intent detail API | — | Map peek; no `/demand/:id` URL |
+| **Seeking activity** (`activityMode: seeking`) | Same as **Activity** — `buildActivityViewerAccess` on `GET /activities/:id`; map peek via explore enrich | `activity-viewer-access.test.ts`, `explore-map-viewer-access.test.ts` | `/activity/:id` secondary; primary discovery = explore pin |
 
 **Rule:** Routes call the resolver; they do **not** embed parallel `if (!user)` trees. Frontend **must not** invent roster/detail policy (see §15.6 interim drift).
 

@@ -1,7 +1,7 @@
 # Member surfaces — implementation plan (master checklist)
 
 **Status:** Approved direction · **§19–§22 eng complete** · **§20** ops + post-migration residue remain  
-**Last updated:** 2026-10-12 (§4.3–4.5 Locations lens, area matching, Phase E fixtures queued)  
+**Last updated:** 2026-10-12 (§4.3–4.6 geography shipped incl. admin areas UI + Phase E fixtures)  
 **Audience:** Eng + product — use this so context is not lost across PRs.
 
 **Tier 1 defers to:** [`NAVIGATION.md`](../NAVIGATION.md), [`DOMAIN.md`](../DOMAIN.md), [`DOMAIN_CANONICALS.md`](../DOMAIN_CANONICALS.md), [`SYSTEM_COHERENCE.md`](../SYSTEM_COHERENCE.md), [`CREATE_FLOW.md`](../CREATE_FLOW.md), [`MEMBER_MODEL.md`](../MEMBER_MODEL.md) — **update those as each phase ships** (see §10).
@@ -101,17 +101,17 @@ Notifications (deep link to **activity**, **Plan row context**, **chat thread**,
 
 **Kinds (unchanged wire, aligned names):**
 
-- [ ] `activityType`: hiking, camping, event, rideshare (+ generic “activity” organize)
-- [ ] Align `src/config/activityTypes.ts` with rideshare on wire
+- [x] `activityType`: hiking, camping, event, rideshare (+ generic “activity” organize)
+- [x] Align `src/config/activityTypes.ts` with `ScheduledActivityType` on wire
 - [ ] `ParticipantIntentKind` values map into `activityType` + `seeking` mode (incl. guide → policy in MEMBER_MODEL)
 
 ### 2.2 Place
 
-- [ ] Keep **one** entity `locations` / Place; kinds in `PlaceKind` (`place-kind.ts`)
-- [ ] Add `areaId?: ObjectId` on place rows
+- [x] Keep **one** entity `locations` / Place; kinds in `PlaceKind` (`place-kind.ts`)
+- [x] Add `areaId` on place rows (admin + seed + backfill)
 - [ ] Facilities (toilet, parking, …) = PlaceKind — surfaced on **Area** page, not mixed into topic=hiking unless grouped
 
-### 2.3 Area (new)
+### 2.3 Area
 
 - [x] Collection `areas` (or documented equivalent) with slug, name, region, bounds, center, status — **Phase 4**
 - [x] Admin CRUD + seed (Hatta, Jais, …)
@@ -139,7 +139,7 @@ Notifications (deep link to **activity**, **Plan row context**, **chat thread**,
 
 - [ ] **Topic** row: hiking, camping, rideshare, events, shops, … (`explore-browse-ia.md` updated)
 - [ ] **Layer** row: Activities (hosted+seeking) | Places | Shops | **People** (availability)
-- [ ] Remove `pinKind=looking` / **Looking for** pill (`explorePinKindFilter.ts` — rename wire `trips` → `activities` when safe)
+- [x] Remove **Looking for** map pill (seeking rolls into Activities); keep `pinKind=looking` / list `filter=looking` as **URL compat** only (`explorePinKindFilter.ts`, browse list handoff)
 - [ ] `?area=:slug` constrains bbox + membership
 - [ ] When / date presets apply to activities; availability uses date range on People
 
@@ -202,7 +202,7 @@ Notifications (deep link to **activity**, **Plan row context**, **chat thread**,
 - [x] Copy: “An outing in {area} matches your looking-for post” / “Outings in {area} match what you are looking for”
 - [ ] Optional: buddy overlap rules (deferred)
 
-### 4.5 Phase E — Integration test fixtures (queued)
+### 4.5 Phase E — Integration test fixtures (shipped)
 
 - [x] **12 curated areas** in `CURATED_AREA_CATALOG` + `seedCuratedAreas` (summaries, bounds) — admin can edit live rows
 - [x] Seed catalog places + Hatta multi-pin cluster wired via `seed-location-area-map.ts` + `backfillSeedCatalogLocationAreaIds`
@@ -210,7 +210,7 @@ Notifications (deep link to **activity**, **Plan row context**, **chat thread**,
 - [x] No new literal `area-seed-*` in test files — use `@uaetrail/shared-types` `curatedAreaSeedId` (guarded by `test-seed-coherence.test.ts`)
 - [x] `apps/api/tests/README.md` — one-page fixture guide
 
-### 4.5 Availability (unchanged track)
+### 4.6 Availability (unchanged track)
 
 - [x] Availability: user selects `areaId` (+ region fallback); no required GPS home pin
 
@@ -371,10 +371,10 @@ Use one PR per subsection where possible; check boxes when merged.
 ### Phase 4 — Areas
 
 - [x] 4.1 Admin areas CRUD + seed
-- [x] 4.2 `place.areaId` + admin link UI (API + `areaId` on admin place create/patch; visual picker TBD)
+- [x] 4.2 `place.areaId` + admin link UI (`/admin/places` curated area + `/admin/areas` catalog CRUD)
 - [x] 4.3 `activity.areaId` on publish — organize explicit pick + place link (polygon demoted for hosted)
 - [x] 4.4 `/area/:slug` page + `?area=` explore filter
-- [x] 4.5 Search boosts area entity (`areaSlug` in explore haystack; dedicated area search card TBD)
+- [x] 4.5 Search boosts area entity (`ExploreSearchAreaHints` + `/area/:slug`)
 
 ### Phase 5 — Availability (M3)
 
@@ -468,9 +468,9 @@ Use one PR per subsection where possible; check boxes when merged.
 | Compose | `src/explore/compose.ts` |
 | Places/kinds | `packages/shared-types/src/place-kind.ts` |
 | Legacy redirects | `src/member-plan/legacyTripsRedirect.ts`, `src/App.tsx` |
-| Areas (new) | TBD `apps/api/src/routes/areas`, `src/pages/AreaDetail.tsx` |
+| Areas | `registerPublicAreaRoutes.ts`, `registerAdminAreaRoutes.ts`, `src/pages/AreaDetailPage.tsx`, `explore-map-area-lens.ts` |
 
-**Handoff phrase:** “Continue **member-surfaces-implementation-plan** from **§23** (staging `seeking:deploy-gate` + G-manage smoke) or **§23 P1** explore polish; §19–§22 eng is closed.”
+**Handoff phrase:** “Continue **member-surfaces-implementation-plan** from **§23 P0** (per-env `seeking:deploy-gate`) then **§23 P1** open items (rideshare wire), **§5** availability depth, **§20 P2** migration residue — geography §4.3–4.6 and §19–§22 eng are closed.”
 
 ---
 
@@ -741,7 +741,8 @@ Use one PR per subsection where possible; check boxes when merged.
 | 2026-10-11 | §4 | Explicit organize publish area + Tier-1 geography contract |
 | 2026-10-11 | §22 NA-5/6 | `activityDetailPresentation.ts`; API `buildActivityViewerAccess`; Tier-1 + S7b/S7c closed |
 | 2026-10-11 | §20 tooling | Root `seeking:deploy-gate` alias; plan §2/M3 reconciled with Phases 4–5 |
-| | | **Next:** §23 ops + polish backlog |
+| 2026-10-12 | §4.3–4.6 | Locations lens, area-match notifications, 12-area catalog + seed sync, admin areas UI, Phase E test fixtures |
+| | | **Next:** §23 P0 ops per env → §23 P1 / §5 / §20 P2 (not another geography phase) |
 
 ---
 
@@ -765,7 +766,7 @@ Use one PR per subsection where possible; check boxes when merged.
 - [x] Map pin **Hosted vs Seeking** badge/iconography (§3.2; cards/peek already mode-aware)
 - [x] Explore search **Area** card first for “Hatta” (§3.3; `ExploreSearchAreaHints` + `/area/:slug`)
 - [x] Organize publish **area** on review step (§4 — required pick; catalog pre-fill)
-- [ ] `activityTypes.ts` **rideshare** vs wire `activityType` alignment (§2.1 — organize/demand flows already use rideshare)
+- [x] `activityTypes.ts` **rideshare** vs wire `ScheduledActivityType` alignment (§2.1 — picker stays hiking/camping/event)
 - [x] Hosted \| Seeking \| All chip on Activities layer (`?activityMode=`, `ExploreActivityModePillsRow`)
 
 ### P2 — migration residue (after 30-day gate)
