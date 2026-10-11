@@ -1,12 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import type { ExploreCardModel } from '../explore/exploreCardModel';
 import {
+  resolveActivityDetailPresentation,
+  resolveActivityPresentationFromExploreCard,
+} from './activityDetailPresentation';
+import {
   filterActivityMapPeekActionsForViewer,
   resolveActivityMapPeekActions,
   resolveActivityPeekEngagement,
-  resolveActivityPresentation,
-  resolveActivityPresentationFromExploreCard,
-} from './resolveActivityPresentation';
+} from './activityPeekEngagement';
 
 const activityCard = (overrides: Partial<ExploreCardModel> = {}): ExploreCardModel =>
   ({
@@ -46,7 +48,7 @@ const activityCard = (overrides: Partial<ExploreCardModel> = {}): ExploreCardMod
 
 describe('resolveActivityPresentation', () => {
   it('opens crew welcome only for instant RSVP joins', () => {
-    const rsvp = resolveActivityPresentation({
+    const rsvp = resolveActivityDetailPresentation({
       viewerAccess: {
         exposure: 'full',
         level: 'participant',
@@ -65,7 +67,7 @@ describe('resolveActivityPresentation', () => {
     });
     expect(rsvp.showCrewWelcomeAfterInstantJoin).toBe(true);
 
-    const approval = resolveActivityPresentation({
+    const approval = resolveActivityDetailPresentation({
       viewerAccess: null,
       joinUiState: { kind: 'open' },
       participationMode: 'approval',
@@ -78,7 +80,7 @@ describe('resolveActivityPresentation', () => {
   });
 
   it('hides footer chat shortcuts until crew access', () => {
-    const locked = resolveActivityPresentation({
+    const locked = resolveActivityDetailPresentation({
       viewerAccess: {
         exposure: 'redacted',
         level: 'join_request',

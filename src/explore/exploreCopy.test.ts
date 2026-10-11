@@ -219,10 +219,11 @@ describe('exploreHeadline', () => {
     ).toBe('Desert Gear Co');
   });
 
-  it('formats rideshare demand with route and flexible tag', () => {
+  it('formats rideshare seeking with route and flexible tag', () => {
     expect(
       exploreHeadline({
-        source: 'demand',
+        source: 'activity',
+        isSeekingPin: true,
         kind: 'rideshare',
         title: 'Rideshare request',
         hostName: 'Alex Rider',
@@ -234,10 +235,11 @@ describe('exploreHeadline', () => {
     ).toBe('Alex is looking for Rideshare on Sunday 13th - Dubai to Fujairah - Sun at 2 PM (flexible)');
   });
 
-  it('formats hiking demand with location and flexible tag', () => {
+  it('formats hiking seeking with location and flexible tag', () => {
     expect(
       exploreHeadline({
-        source: 'demand',
+        source: 'activity',
+        isSeekingPin: true,
         kind: 'hiking',
         title: 'Morning hike',
         hostName: 'Sarah Host',
@@ -248,10 +250,11 @@ describe('exploreHeadline', () => {
     ).toBe('Sarah is looking for Morning hike on Saturday 12th - Wadi Shawka - Sat at 7:00 (flexible)');
   });
 
-  it('formats event demand with the requester title instead of a generic category', () => {
+  it('formats event seeking with the requester title instead of a generic category', () => {
     expect(
       exploreHeadline({
-        source: 'demand',
+        source: 'activity',
+        isSeekingPin: true,
         kind: 'event',
         title: 'Sunrise run at Kite Beach',
         hostName: 'Fatima Host',
@@ -264,10 +267,11 @@ describe('exploreHeadline', () => {
     );
   });
 
-  it('falls back to Other Outdoors when the demand title is generic', () => {
+  it('falls back to Other Outdoors when the seeking title is generic', () => {
     expect(
       exploreHeadline({
-        source: 'demand',
+        source: 'activity',
+        isSeekingPin: true,
         kind: 'event',
         title: 'Looking for an event',
         hostName: 'Fatima Host',
@@ -492,7 +496,7 @@ describe('buildExploreCardModel', () => {
 
   it('builds one-line demand card', () => {
     const demand: ExploreMapItemDTO = seekingExploreMapItem({
-      id: 'demand:1',
+      intentId: '1',
       intentId: '1',
       kind: 'rideshare',
       title: 'Rideshare request',

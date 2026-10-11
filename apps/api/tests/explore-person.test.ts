@@ -23,10 +23,11 @@ describe('explore featured person', () => {
     });
   });
 
-  it('resolves demand legacy hostName into requester role', () => {
+  it('resolves seeking activity hostName into requester role', () => {
     expect(
       resolveExploreFeaturedPerson({
-        source: 'demand',
+        source: 'activity',
+        activityMode: 'seeking',
         requesterUserId: 'u2',
         hostName: 'Sarah Host',
         hostAvatar: null,
@@ -41,7 +42,8 @@ describe('explore featured person', () => {
   it('prefers featuredPerson over legacy fields', () => {
     expect(
       resolveExploreFeaturedPerson({
-        source: 'demand',
+        source: 'activity',
+        activityMode: 'seeking',
         featuredPerson: {
           userId: 'u3',
           displayName: 'Maya Hassan',

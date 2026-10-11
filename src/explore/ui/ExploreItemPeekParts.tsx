@@ -2,7 +2,7 @@ import type { ActivityMapPeekActionId } from '@uaetrail/shared-types';
 import { ExploreActivityMapPeekActions } from './ExploreActivityMapPeekActions';
 import { ExploreDemandOwnerPeekActions } from './ExploreDemandOwnerPeekActions';
 import { HostActivityCtas, type HostActivityCtaHandlers } from '../../components/activity/HostActivityCtas';
-import { resolveActivityPeekEngagement } from '../../activity/resolveActivityPresentation';
+import { resolveActivityPeekEngagement } from '../../activity/activityPeekEngagement';
 import type { ExploreCardModel } from '../exploreCardModel';
 import { JoinRequestActions } from '../../components/ui/JoinRequestActions';
 import { ExploreShopPeekActions } from './ExploreShopPeekActions';
@@ -63,7 +63,7 @@ export const ExploreItemPeekActions = ({
   const gate = onGuestGatedAction;
   const activityPeekEngagement =
     card.source === 'activity' ? resolveActivityPeekEngagement(card, joinUiState) : null;
-  const activityMapPeekActions = activityPeekEngagement?.mapPeekActions ?? [];
+  const activityPeekActions = activityPeekEngagement?.mapPeekActions ?? [];
   const showActivityJoinFlow = activityPeekEngagement?.showsLegacyJoinFlow ?? false;
   const peekWithdraw =
     card.source === 'activity' ? undefined : onWithdraw;
@@ -114,10 +114,10 @@ export const ExploreItemPeekActions = ({
             'block w-full py-2.5 text-center text-sm font-semibold text-gray-600'
           )}
         </>
-      ) : activityMapPeekActions.length > 0 && onActivityMapPeekAction ? (
+      ) : activityPeekActions.length > 0 && onActivityMapPeekAction ? (
         <ExploreActivityMapPeekActions
           card={card}
-          actions={activityMapPeekActions}
+          actions={activityPeekActions}
           linkRideshareTenantId={linkRideshareTenantId}
           onAction={onActivityMapPeekAction}
           onGuestGatedAction={gate}

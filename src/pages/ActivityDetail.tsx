@@ -43,7 +43,7 @@ import {
   parseActivityDetailTabParam,
   type ActivityDetailTabId,
 } from '../activity/activityDetailTab';
-import { resolveActivityPresentation } from '../activity/resolveActivityPresentation';
+import { resolveActivityDetailPresentation } from '../activity/activityDetailPresentation';
 import { ActivityDetailJoinWelcomeSheet } from '../components/activity/detail/ActivityDetailJoinWelcomeSheet';
 import { activityDetailPath } from '../config/routingCatalog';
 
@@ -182,7 +182,7 @@ export const ActivityDetail = () => {
   const presentation = useMemo(
     () =>
       activity
-        ? resolveActivityPresentation({
+        ? resolveActivityDetailPresentation({
             viewerAccess,
             joinUiState,
             participationMode: activity.participationMode,

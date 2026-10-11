@@ -16,15 +16,14 @@ import type { ExploreCardModel } from '../explore/exploreCardModel';
 import { seekingExploreMapItem } from '../explore/exploreMapItemFixtures';
 
 describe('list poster presentation', () => {
-  it('joins demand highlight and date with a space', () => {
+  it('joins seeking highlight and date with a space', () => {
     const card = buildExploreCardModel({
-      ...seekingExploreMapItem({ id: 'demand:d1', intentId: 'd1', kind: 'hiking', title: 'Looking' }),
+      ...seekingExploreMapItem({ intentId: 'd1', kind: 'hiking', title: 'Looking' }),
       latitude: 25,
       longitude: 56,
-      path: '/demand/d1',
       presentation: {
         kind: 'hiking',
-        source: 'demand',
+        source: 'activity',
         emoji: '🙋',
         headline: 'Hiking on Monday',
         listTitle: 'Hiking',

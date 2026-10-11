@@ -1,5 +1,6 @@
 import type {
   ActivityViewerAccessDTO,
+  ExploreActivityMode,
   ExploreAreaLensStatsDTO,
   ExploreCardKind,
   ExploreCardSource,
@@ -93,6 +94,7 @@ export interface ExploreCardModel {
   linkedRideshares?: ExploreLinkedRideshareDTO[];
   /** From `GET /explore/map` for activity/demand rows (per viewer). */
   viewerAccess?: ActivityViewerAccessDTO | null;
+  activityMode?: ExploreActivityMode | null;
   areaSlug?: string | null;
   areaLensStats?: ExploreAreaLensStatsDTO | null;
 }
@@ -106,10 +108,13 @@ const resolveCoverImage = (item: ExploreMapItemDTO): string | null =>
   );
 
 const LIST_META_ICONS = new Set(['location', 'time', 'spots']);
-/** Seeking pins — wire `activity` + `composeIntent: demand` (legacy `source: demand`). */
+/** Seeking pins — same rules as `exploreMapItemIsSeeking` on map wire. */
 export const exploreCardIsSeeking = (
-  card: Pick<ExploreCardModel, 'source' | 'composeIntent'>
-): boolean => card.composeIntent === 'demand' || card.source === 'demand';
+  card: Pick<
+    ExploreCardModel,
+    'source' | 'composeIntent' | 'participantIntentId' | 'id' | 'activityMode'
+  >
+): boolean => exploreMapItemIsSeeking(card);
 
 /** Compact second line for list rows (where · when · spots — not duplicate activity title). */
 export const buildExploreListMeta = (card: ExploreCardModel): string | null => {
@@ -248,6 +253,7 @@ export const buildExploreCardModel = (item: ExploreMapItemDTO): ExploreCardModel
         ? item.linkedRideshareActivities
         : undefined,
     viewerAccess: item.viewerAccess ?? null,
+    activityMode: item.activityMode ?? (seeking ? 'seeking' : source === 'activity' ? 'hosted' : null),
   };
 };
 

@@ -32,7 +32,15 @@ describe('resolveExploreEntityFollowTarget', () => {
 
   it('returns null for demand pins', () => {
     expect(
-      resolveExploreEntityFollowTarget(card({ source: 'demand', participantIntentId: 'd1', locationId: 'loc-1' }))
+      resolveExploreEntityFollowTarget(
+        card({
+          source: 'activity',
+          activityMode: 'seeking',
+          composeIntent: 'demand',
+          participantIntentId: 'd1',
+          locationId: 'loc-1',
+        })
+      )
     ).toBeNull();
   });
 });

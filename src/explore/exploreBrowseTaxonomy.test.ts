@@ -28,7 +28,7 @@ describe('exploreBrowseTaxonomy', () => {
     const trail = venueExploreMapItem({ id: 'venue:v1' });
     const hosted = hostedExploreMapItem({ id: 'activity:a1', kind: 'event' });
     const demand = legacyDemandExploreMapItem({ id: 'demand:d1' });
-    const seeking = seekingExploreMapItem({ intentId: 'x', id: 'demand:x' });
+    const seeking = seekingExploreMapItem({ intentId: 'x' });
     expect(mapItemMatchesFilterPill(trail, 'spots')).toBe(true);
     expect(mapItemMatchesFilterPill(hosted, 'trips')).toBe(true);
     expect(mapItemMatchesFilterPill(seeking, 'trips')).toBe(true);

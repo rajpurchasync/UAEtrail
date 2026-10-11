@@ -1,4 +1,5 @@
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
+import { exploreSeekingMapItemPath } from '@uaetrail/shared-types';
 
 const base = (
   partial: Partial<ExploreMapItemDTO> & Pick<ExploreMapItemDTO, 'id' | 'kind'>
@@ -25,19 +26,20 @@ export const hostedExploreMapItem = (
     ...partial,
   });
 
-/** Canonical M0 seeking pin (participant intent on map). */
+/** Canonical M0 seeking pin (published seeking activity on map). */
 export const seekingExploreMapItem = (
-  partial: Partial<ExploreMapItemDTO> & { intentId?: string } = {}
+  partial: Partial<ExploreMapItemDTO> & { intentId?: string; activityId?: string } = {}
 ): ExploreMapItemDTO => {
   const intentId = partial.intentId ?? partial.participantIntentId ?? 'intent-1';
-  const id = partial.id ?? `demand:${intentId}`;
+  const activityId = partial.activityId ?? `seek-${intentId}`;
+  const id = partial.id ?? `activity:${activityId}`;
   return base({
     id,
     kind: 'hiking',
     source: 'activity',
     activityMode: 'seeking',
     participantIntentId: intentId,
-    path: `/explore?pin=${encodeURIComponent(id)}`,
+    path: exploreSeekingMapItemPath({ intentId, activityId }),
     composeIntent: 'demand',
     ...partial,
   });

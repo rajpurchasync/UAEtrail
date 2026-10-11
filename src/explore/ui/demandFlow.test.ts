@@ -6,6 +6,7 @@ describe('demandFlow steps', () => {
     expect(getDemandFlowSteps('hiking')).toEqual([
       'title',
       'when',
+      'curatedArea',
       'destination',
       'persons',
       'audience',
@@ -20,6 +21,7 @@ describe('demandFlow steps', () => {
     expect(getDemandFlowSteps('camping')).toEqual([
       'title',
       'when',
+      'curatedArea',
       'destination',
       'persons',
       'audience',
@@ -34,6 +36,7 @@ describe('demandFlow steps', () => {
     expect(getDemandFlowSteps('rideshare')).toEqual([
       'title',
       'when',
+      'curatedArea',
       'from',
       'to',
       'persons',
@@ -47,7 +50,7 @@ describe('demandFlow steps', () => {
     expect(getDemandFlowSteps('event')).toEqual([
       'title',
       'when',
-      'area',
+      'curatedArea',
       'persons',
       'audience',
       'info',

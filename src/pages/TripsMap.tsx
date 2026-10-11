@@ -9,13 +9,13 @@ import type {
   JourneyMapFilterCategory,
 } from '@uaetrail/shared-types';
 import { PageMeta } from '../components/seo/PageMeta';
-import { TripsJourneyMap, type JourneyMapMarker } from '../components/trips/TripsJourneyMap';
-import { JourneyMapPinSheet, type JourneyMapSheetState } from '../components/trips/JourneyMapPinSheet';
-import { JourneyMapFilterScroll } from '../components/trips/JourneyMapFilterScroll';
-import { JourneyMapListSheet } from '../components/trips/JourneyMapListSheet';
+import { JourneyMap, type JourneyMapMarker } from '../components/journey/JourneyMap';
+import { JourneyMapPinSheet, type JourneyMapSheetState } from '../components/journey/JourneyMapPinSheet';
+import { JourneyMapFilterScroll } from '../components/journey/JourneyMapFilterScroll';
+import { JourneyMapListSheet } from '../components/journey/JourneyMapListSheet';
 import { MobileBackButton } from '../components/mobile/MobileBackButton';
 import { FloatingActionButton } from '../components/mobile/FloatingActionButton';
-import { shareJourneyMapSummary } from '../components/trips/journeyMapShare';
+import { shareJourneyMapSummary } from '../components/journey/journeyMapShare';
 import { memberJourneyMapApi } from '../api/domains/memberJourneyMap';
 import { tripsCompletedPath } from '../member-plan/tripsRouting';
 import { TripsMainTabs } from '../components/trips/TripsMainTabs';
@@ -255,7 +255,7 @@ export const TripsMap = () => {
       ) : null}
 
       <div className="relative z-0 min-h-0 flex-1">
-        <TripsJourneyMap
+        <JourneyMap
           className="absolute inset-0"
           markers={mapMarkers}
           pendingLatLng={pendingLatLng}

@@ -27,7 +27,7 @@ describe('exploreMapPinModel', () => {
 
   it('Places layer excludes activities and demand', () => {
     const activity = baseItem({ id: 'a1', source: 'activity', kind: 'hiking' });
-    const demand = seekingExploreMapItem({ id: 'demand:d1', intentId: 'd1' });
+    const demand = seekingExploreMapItem({ intentId: 'd1' });
     const venue = venueExploreMapItem({ id: 'venue:v1' });
     const eventVenue = baseItem({ id: 'ev1', source: 'venue', kind: 'event' });
     expect(isPlacesMapItem(activity)).toBe(false);

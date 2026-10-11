@@ -90,7 +90,7 @@ const MapTapPick = ({
   return null;
 };
 
-interface TripsJourneyMapProps {
+interface JourneyMapProps {
   markers: JourneyMapMarker[];
   pendingLatLng: { lat: number; lng: number } | null;
   focusLatLng: { lat: number; lng: number } | null;
@@ -100,7 +100,7 @@ interface TripsJourneyMapProps {
   className?: string;
 }
 
-export const TripsJourneyMap = ({
+export const JourneyMap = ({
   markers,
   pendingLatLng,
   focusLatLng,
@@ -108,7 +108,7 @@ export const TripsJourneyMap = ({
   onMarkerTap,
   pickMode,
   className = '',
-}: TripsJourneyMapProps) => {
+}: JourneyMapProps) => {
   const [mapReady, setMapReady] = useState(false);
 
   useEffect(() => {

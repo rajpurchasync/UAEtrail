@@ -64,4 +64,19 @@ describe('tripsConsumerNamingGuard', () => {
 
     expect(violations).toEqual([]);
   });
+
+  it('profile history map UI lives under components/journey (not components/trips)', () => {
+    const violations: string[] = [];
+    const legacyJourneyImport =
+      /from ['"](\.\.\/)+components\/trips\/(JourneyMap|TripsJourneyMap|journeyMapShare)/;
+
+    for (const file of collectSourceFiles(SCAN_ROOT)) {
+      const content = readFileSync(join(process.cwd(), file), 'utf8');
+      if (legacyJourneyImport.test(content)) {
+        violations.push(`${file}: use src/components/journey/* for outdoor history map UI`);
+      }
+    }
+
+    expect(violations).toEqual([]);
+  });
 });

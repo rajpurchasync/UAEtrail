@@ -237,14 +237,14 @@ export const exploreVenueListFilterActiveClass = (key: VenueListFilterKey): stri
 };
 
 export type MapPinRingKind = 'hiking' | 'camping' | 'event' | 'shop' | 'agency' | 'rideshare';
-export type MapPinRingSource = 'activity' | 'venue' | 'shop' | 'agency' | 'demand';
+export type MapPinRingSource = 'activity' | 'venue' | 'shop' | 'agency' | 'seeking' | 'demand';
 
 /** Type-colored ring on map pins — matches filter / badge colors. */
 export const exploreMapPinRingColor = (
   kind: MapPinRingKind,
   source?: MapPinRingSource
 ): string => {
-  if (source === 'demand') return '#0d9488';
+  if (source === 'seeking' || source === 'demand') return '#0d9488';
   switch (kind) {
     case 'camping':
       return '#d97706';

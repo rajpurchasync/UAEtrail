@@ -4,7 +4,7 @@ import {
   activityMapPeekShowsJoinFlow,
   activityMapPeekSkipsJoinContext,
   resolveActivityMapPeekActions,
-} from '../activity/resolveActivityPresentation';
+} from '../activity/activityPeekEngagement';
 import type { ExploreCardModel } from './exploreCardModel';
 
 const activityCard = (overrides: Partial<ExploreCardModel> = {}): ExploreCardModel =>

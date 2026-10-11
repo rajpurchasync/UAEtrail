@@ -339,8 +339,8 @@ export const locationPickerHint = (
 export const defaultCapacityForKind = (kind: CreateActivityKind): number =>
   kind === 'rideshare' ? 4 : 6;
 
-/** Prefill a host publish draft from a community request map item. */
-export const createDraftFromDemand = (item: ExploreMapItemDTO): CreateActivityDraft => {
+/** Prefill a host publish draft from a seeking map item (Find post / legacy demand wire). */
+export const createDraftFromSeekingMapItem = (item: ExploreMapItemDTO): CreateActivityDraft => {
   const kind = resolveOrganizeCreateKindFromDemandMapItem({
     outingCategory: item.outingCategory ?? null,
     kind: exploreMapKindToPlanMapKind(item.kind),

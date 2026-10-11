@@ -141,7 +141,7 @@ const pinIcon = (
         source,
         ringColor: exploreMapPinRingColor(
           entry.activityType,
-          entry.activityMode === 'seeking' ? 'demand' : source
+          entry.activityMode === 'seeking' ? 'seeking' : source
         ),
         exploreItemId: entry.exploreItemId,
         stackCount: entry.stackCount ?? 1,
@@ -195,7 +195,7 @@ const pinIcon = (
 
   const ringColor = exploreMapPinRingColor(
     kind,
-    pin.activityMode === 'seeking' ? 'demand' : source
+    pin.activityMode === 'seeking' ? 'seeking' : source
   );
   const isVenue = source === 'venue';
   const size = isVenue ? (selected ? 36 : 32) : selected ? 44 : 40;

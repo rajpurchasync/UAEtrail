@@ -1,6 +1,6 @@
 import type { ActivityMapPeekAction, ActivityMapPeekActionId } from '@uaetrail/shared-types';
 import type { ExploreCardModel } from '../explore/exploreCardModel';
-import { resolveActivityPeekEngagement } from '../activity/resolveActivityPresentation';
+import { resolveActivityPeekEngagement } from '../activity/activityPeekEngagement';
 import { activityMapPeekActionLabel } from '../explore/exploreMapPeekActionCopy';
 import { exploreCardHasMapCoords, exploreCardIsSeeking } from '../explore/exploreCardModel';
 import type { JoinRequestUiState } from '../utils/joinRequestUi';

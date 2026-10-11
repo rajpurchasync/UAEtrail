@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { execSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
+import { listGitTrackedFiles } from '../testing/gitTrackedFiles';
 
-const SCAN_GLOBS = [
-  'git ls-files "src/explore/**/*.ts" "src/explore/**/*.tsx" "src/list/**/*.ts" "src/list/**/*.tsx" "src/pages/activities/**/*.tsx" "apps/api/src/**/*.ts"',
+const SCAN_PATHSPECS = [
+  '"src/explore/**/*.ts" "src/explore/**/*.tsx"',
+  '"src/list/**/*.ts" "src/list/**/*.tsx"',
+  '"src/pages/activities/**/*.tsx"',
+  '"apps/api/src/**/*.ts"',
 ];
 
 const ALLOWLIST = new Set([
@@ -18,8 +21,8 @@ const BANNED = [
 ];
 
 const listFiles = (): string[] => {
-  const raw = SCAN_GLOBS.map((cmd) => execSync(cmd, { encoding: 'utf8' }).trim()).join('\n');
-  return [...new Set(raw.split('\n').filter(Boolean))].filter((f) => !ALLOWLIST.has(f));
+  const files = SCAN_PATHSPECS.flatMap((pathspec) => listGitTrackedFiles(pathspec));
+  return [...new Set(files)].filter((f) => !ALLOWLIST.has(f));
 };
 
 describe('exploreMapItemWireGuard (M0)', () => {
