@@ -13,3 +13,8 @@ export const resolveActivityPeekPrimaryActionId = (
   const primary = actions.find((action) => action.prominence === 'primary');
   return primary?.id ?? null;
 };
+
+/** Map peek primary CTA → same footer kind family as activity detail Plan tab (§9). */
+export const resolveExploreMapEngagementFooterKind = (
+  peekPrimaryActionId: import('@uaetrail/shared-types').ActivityMapPeekActionId | null
+) => detailPlanFooterKindForPeekPrimary(peekPrimaryActionId);

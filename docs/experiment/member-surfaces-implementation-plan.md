@@ -551,7 +551,8 @@ Use one PR per subsection where possible; check boxes when merged.
 - [x] Tab-scoped sticky footers wired (`plan_host_share`, `transport_empty`, directions, invite, view ride) — host no longer bypasses tab intent via global `HostActivityCtas` on mobile tabs
 - [x] Mobile hero status strip (join state + spots); Plan Start/End grid hidden on mobile when tabs on
 - [x] §9 footer-kind resolver (`resolveActivityDetailEngagement.ts`) — peek + detail tabs; tab panel modules under `detail/tabs/*` (Plan about, extras, place, transport, buddies)
-- [ ] **Deferred:** render-layer §9 parity component; `ActivityPresentationDTO` slices
+- [x] Tab-scoped sticky footer render module (`ActivityDetailStickyFooter.tsx`) — kinds from `resolveActivityDetailEngagementFooterKind`
+- [ ] **Deferred:** `ActivityPresentationDTO` tab slices on API
 - [x] Single pricing mode per activity (free / shared / paid) — no tiered packages; indicative amounts only; external signup parked
 
 #### AD-4 — Peek parity

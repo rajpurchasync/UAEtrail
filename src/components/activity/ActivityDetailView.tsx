@@ -29,7 +29,6 @@ import {
   ActivityParticipationStatus,
   SecureAvatar,
   JoinRequestActions,
-  DirectionsControl,
 } from '../ui';
 import { resolveJoinRequestUiState } from '../../utils/joinRequestUi';
 import { activityRegistryPlacePath } from '../../utils/activityRegistryPlacePath';
@@ -40,7 +39,6 @@ import { activityKindChromeEmoji, activityKindChromeLabel } from '../../activity
 import { ActivityDetailTabBar } from './detail/ActivityDetailTabBar';
 import { ActivityDetailMobileHero } from './detail/ActivityDetailMobileHero';
 import {
-  ACTIVITY_DETAIL_TRANSPORT_EMPTY_HINT,
   ACTIVITY_DETAIL_PRO_HOST_PROFILE_HINT,
   ACTIVITY_DETAIL_PRO_ROSTER_HINT,
   ACTIVITY_DETAIL_PRO_SOCIAL_CTA,
@@ -69,12 +67,8 @@ import { ActivityDetailPlaceTabPanels } from './detail/tabs/ActivityDetailPlaceT
 import { ActivityDetailTransportTabPanels } from './detail/tabs/ActivityDetailTransportTabPanels';
 import { ActivityDetailBuddiesAside } from './detail/tabs/ActivityDetailBuddiesAside';
 import { ActivityDetailPlanExtras } from './detail/tabs/ActivityDetailPlanExtras';
+import { ActivityDetailStickyFooter } from './detail/ActivityDetailStickyFooter';
 import type { ActivityRequestView } from '../../api/index';
-import {
-  ACTIVITY_DETAIL_TAB_FOOTER_DIRECTIONS,
-  ACTIVITY_DETAIL_TAB_FOOTER_SHARE_OUTING,
-  ACTIVITY_DETAIL_TAB_FOOTER_VIEW_RIDE,
-} from '../../content/activityDetailCopy';
 
 export interface ActivityDetailViewProps {
   activity: ActivityDetailDTO;
@@ -380,74 +374,29 @@ export const ActivityDetailView = ({
           ))
     : undefined;
 
-  const stickyFooter = (() => {
-    if (!showMobileTabs || previewMode || !consumerJoinEnabled) return joinButton;
-
-    if (tabFooterKind === 'place_directions' && hasAccessCoordinates && accessLat != null && accessLng != null) {
-      return wrapMobileFooter(
-        <DirectionsControl
-          lat={accessLat}
-          lng={accessLng}
-          variant="button"
-          className="w-full shadow-lg"
-          label={ACTIVITY_DETAIL_TAB_FOOTER_DIRECTIONS}
-        />,
-        showParticipantFooterShortcuts
-      );
-    }
-    if (tabFooterKind === 'buddies_invite' && canSendJoinInvites) {
-      return wrapMobileFooter(
-        <ActivityInviteLauncher
-          activity={{
-            id: activity.id,
-            title: activity.title || activity.locationName,
-            activityType: activity.activityType,
-            date: activity.date,
-            locationName: activity.locationName,
-          }}
-          canSendBuddyInvites
-          className="shadow-lg"
-        />,
-        showParticipantFooterShortcuts
-      );
-    }
-    if (tabFooterKind === 'transport_linked_ride' && linkedRideshareId) {
-      return wrapMobileFooter(
-        <Link
-          to={activityDetailPath(linkedRideshareId)}
-          className="ios-btn flex w-full items-center justify-center gap-2 rounded-xl bg-sky-600 px-4 py-3 text-sm font-bold text-white shadow-lg active:bg-sky-700"
-        >
-          {ACTIVITY_DETAIL_TAB_FOOTER_VIEW_RIDE}
-          <ChevronRight className="h-4 w-4" aria-hidden />
-        </Link>,
-        showParticipantFooterShortcuts
-      );
-    }
-    if (tabFooterKind === 'transport_empty') {
-      return wrapMobileFooter(
-        <p className="w-full rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-3 text-center text-sm text-neutral-600">
-          {ACTIVITY_DETAIL_TRANSPORT_EMPTY_HINT}
-        </p>,
-        showParticipantFooterShortcuts
-      );
-    }
-    if (tabFooterKind === 'plan_host_share' && showInviteShare) {
-      return wrapMobileFooter(
-        <div className="w-full [&_button]:flex [&_button]:w-full [&_button]:justify-center [&_button]:rounded-xl [&_button]:bg-emerald-600 [&_button]:px-4 [&_button]:py-3 [&_button]:text-sm [&_button]:font-bold [&_button]:text-white [&_button]:shadow-lg [&_button]:glass-0">
-          <ShareButton
-            title={sharePayload.title}
-            text={sharePayload.text}
-            path={sharePayload.path}
-            label={ACTIVITY_DETAIL_TAB_FOOTER_SHARE_OUTING}
-            iconClassName="h-4 w-4 text-white"
-          />
-        </div>,
-        false
-      );
-    }
-
-    return joinButton;
-  })();
+  const stickyFooter = (
+    <ActivityDetailStickyFooter
+      tabScopedFooterEnabled={showMobileTabs && !previewMode && consumerJoinEnabled}
+      tabFooterKind={tabFooterKind}
+      joinButton={joinButton}
+      wrapMobileFooter={wrapMobileFooter}
+      hasAccessCoordinates={hasAccessCoordinates}
+      accessLat={accessLat}
+      accessLng={accessLng}
+      canSendJoinInvites={canSendJoinInvites}
+      inviteActivity={{
+        id: activity.id,
+        title: activity.title || activity.locationName,
+        activityType: activity.activityType,
+        date: activity.date,
+        locationName: activity.locationName,
+      }}
+      linkedRideshareId={linkedRideshareId}
+      showInviteShare={showInviteShare}
+      sharePayload={sharePayload}
+      showParticipantFooterShortcuts={showParticipantFooterShortcuts}
+    />
+  );
 
   const sidebarJoin = consumerJoinEnabled
     ? sidebarJoinOverride ??

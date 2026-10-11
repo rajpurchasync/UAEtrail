@@ -295,6 +295,10 @@ describe('member surfaces §11 acceptance (automated)', () => {
     );
     expect(detail).toContain('ActivityDetailBuddiesAside');
     expect(detail).toContain('ActivityDetailPlanExtras');
+    expect(detail).toContain('ActivityDetailStickyFooter');
+    expect(read('src/components/activity/detail/ActivityDetailStickyFooter.tsx')).toContain(
+      'ActivityDetailStickyFooter'
+    );
     const buddiesAside = read('src/components/activity/detail/tabs/ActivityDetailBuddiesAside.tsx');
     expect(buddiesAside).toContain('ActivityDetailHostBuddiesHub');
     expect(detail).toContain('resolveActivityDetailHeroStatusChips');

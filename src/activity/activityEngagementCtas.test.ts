@@ -3,6 +3,7 @@ import { computeActivityMapPeekActions } from '@uaetrail/shared-types';
 import {
   detailPlanFooterKindForPeekPrimary,
   resolveActivityPeekPrimaryActionId,
+  resolveExploreMapEngagementFooterKind,
 } from './activityEngagementCtas';
 import { resolveActivityDetailTabFooterKind } from './activityDetailTabFooters';
 import type { JoinRequestUiState } from '../utils/joinRequestUi';
@@ -29,6 +30,11 @@ describe('activityEngagementCtas', () => {
         showParticipantFooterShortcuts: false,
       })
     ).toBe('plan_join');
+  });
+
+  it('resolveExploreMapEngagementFooterKind mirrors peek primary mapping', () => {
+    expect(resolveExploreMapEngagementFooterKind('link_carpool')).toBe('transport_linked_ride');
+    expect(resolveExploreMapEngagementFooterKind('request_join')).toBe('plan_join');
   });
 
   it('maps host invite_crew peek to buddies invite footer intent', () => {
