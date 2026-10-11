@@ -56,4 +56,5 @@ export const hostPublishedActivityPeekAccess = (
   canViewFullActivity: true,
   canOpenDetailPage: true,
   joinMode,
+  canAccessCrewSurfaces: true,
 });

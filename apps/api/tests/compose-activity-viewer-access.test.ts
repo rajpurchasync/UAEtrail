@@ -12,6 +12,7 @@ describe('composeActivityViewerAccess', () => {
       canViewFullActivity: false,
       canOpenDetailPage: true,
       joinMode: 'open' as const,
+      canAccessCrewSurfaces: false,
     };
     vi.spyOn(activityViewerAccess, 'resolveActivityViewerAccess').mockResolvedValue(social);
     const entitlementsSpy = vi

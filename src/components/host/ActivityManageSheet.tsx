@@ -12,7 +12,9 @@ import { resolveActivityTitle } from '../../utils/activityIdentity';
 import { buildActivitySharePayload } from '../../utils/activityShare';
 import { ActivityInviteModalBody } from '../activity/ActivityInviteModalBody';
 import type { HostActivityManageActions } from '../../hooks/useHostActivityManageActions';
-import { HostActivityDetailView } from './HostActivityDetailView';
+import type { ActivityDetailDTO } from '@uaetrail/shared-types';
+import { ActivityDetailView } from '../activity/ActivityDetailView';
+import type { ActivityDetailTabId } from '../../activity/activityDetailTab';
 import { HostActivityManageFooterActions } from './HostActivityManageFooterActions';
 import { HostActivityManageOptionsSheet } from './HostActivityManageOptionsSheet';
 import {
@@ -58,6 +60,7 @@ export const ActivityManageSheet = ({
   const [rideshareNotice, setRideshareNotice] = useState<string | null>(null);
   const [activityRequests, setActivityRequests] = useState<ActivityRequestView[]>([]);
   const [requestsLoading, setRequestsLoading] = useState(false);
+  const [detailTab, setDetailTab] = useState<ActivityDetailTabId>('plan');
 
   useModalA11y(open, onClose, panelRef);
 
@@ -66,6 +69,7 @@ export const ActivityManageSheet = ({
     setView(normalizeHostActivityManageView(initialView));
     setRideshareNotice(null);
     setManageOptionsOpen(false);
+    setDetailTab('plan');
   }, [open, initialView, activity?.id]);
 
   useEffect(() => {
@@ -251,7 +255,13 @@ export const ActivityManageSheet = ({
 
           {view === 'overview' ? (
             <div className="mx-auto w-full max-w-2xl">
-              <HostActivityDetailView activity={activity} />
+              <ActivityDetailView
+                layout="embedded"
+                activity={activity as ActivityDetailDTO}
+                mobileTab={detailTab}
+                onMobileTabChange={setDetailTab}
+                canAccessCrewSurfaces
+              />
             </div>
           ) : null}
         </div>

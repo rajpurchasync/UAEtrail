@@ -1,16 +1,19 @@
 import { useEffect, useMemo, useState } from 'react';
-import type { ActivityDTO, ExploreMapItemDTO, MyActivityDTO } from '@uaetrail/shared-types';
+import type { ActivityDTO, MyActivityDTO } from '@uaetrail/shared-types';
 import { api, type ActivityRequestView } from '../api/index';
-import { activityDetailPath } from '../config/routingCatalog';
 import { useAuth } from '../context/AuthContext';
 import { useConsoleHubData } from '../console/useHubData';
-import { useExploreMap } from './useExploreMap';
 import { useMemberAvailability } from './useMemberAvailability';
 import {
   buildPlanCalendarMaps,
+  filterPlanCalendarByCommitment,
   type PlanCalendarDayDetail,
   type PlanCalendarDayMarkers,
 } from '../plan/planCalendarMarkers';
+import type { PlanCommitmentFilter } from '../plan/planTab';
+import { tripsHostedActivityPath, tripsSelfDemandPath } from '../member-plan/tripsRouting';
+import { activityDetailPath } from '../config/routingCatalog';
+import { partitionParticipantIntentsForTrips } from '../member-plan/participantIntentTrips';
 
 type PlanCalendarData = {
   loading: boolean;
@@ -23,68 +26,77 @@ type PlanCalendarData = {
 export const usePlanCalendarData = (
   enabled: boolean,
   canHost: boolean,
+  filter: PlanCommitmentFilter,
   refreshKey = 0
 ): PlanCalendarData => {
   const { user } = useAuth();
   const availability = useMemberAvailability(enabled);
-  const explore = useExploreMap({ enabled });
   const host = useConsoleHubData();
 
   const [joined, setJoined] = useState<MyActivityDTO[]>([]);
   const [requests, setRequests] = useState<ActivityRequestView[]>([]);
+  const [seekingIntents, setSeekingIntents] = useState<Awaited<ReturnType<typeof api.listMyParticipantIntents>>['data']>([]);
   const [memberLoading, setMemberLoading] = useState(false);
   const [memberError, setMemberError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!enabled || !user) return;
+  const loadMember = () => {
+    if (!enabled || !user) return Promise.resolve();
     setMemberLoading(true);
     setMemberError(null);
-    Promise.all([api.getMeActivities(), api.getMeRequests()])
-      .then(([activitiesRes, requestsRes]) => {
+    return Promise.all([
+      api.getMeActivities(),
+      api.getMeRequests(),
+      api.listMyParticipantIntents(),
+    ])
+      .then(([activitiesRes, requestsRes, intentsRes]) => {
         setJoined(activitiesRes.data);
         setRequests(requestsRes.data);
+        setSeekingIntents(intentsRes.data);
       })
       .catch(() => setMemberError('Could not load your plans.'))
       .finally(() => setMemberLoading(false));
+  };
+
+  useEffect(() => {
+    void loadMember();
   }, [enabled, user?.id, refreshKey]);
 
-  const activityHref = (activityId: string) => activityDetailPath(activityId);
-  const exploreItemHref = (item: ExploreMapItemDTO) => item.path;
-
   const hostedActivities = canHost ? ((host.activities ?? []) as ActivityDTO[]) : [];
-
-  const { markers, details } = useMemo(
-    () =>
-      buildPlanCalendarMaps({
-        availabilitySlots: availability.data?.slots ?? [],
-        joinedActivities: joined,
-        joinRequests: requests,
-        hostedActivities,
-        exploreItems: explore.data ?? [],
-        viewerUserId: user?.id ?? null,
-        activityHref,
-        exploreItemHref,
-      }),
-    [availability.data?.slots, joined, requests, hostedActivities, explore.data, user?.id]
+  const activeSeeking = useMemo(
+    () => partitionParticipantIntentsForTrips(seekingIntents).upcoming,
+    [seekingIntents]
   );
 
-  const loading =
-    enabled && (availability.loading || memberLoading || explore.isLoading || (canHost && host.loading));
-  const error =
-    memberError ?? availability.error ?? (explore.error ? 'Could not load map outings.' : null);
+  const { markers, details } = useMemo(() => {
+    const built = buildPlanCalendarMaps({
+      availabilitySlots: availability.data?.slots ?? [],
+      joinedActivities: joined,
+      joinRequests: requests,
+      hostedActivities,
+      seekingIntents: activeSeeking,
+      viewerUserId: user?.id ?? null,
+      activityHref: activityDetailPath,
+      seekingIntentHref: tripsSelfDemandPath,
+      hostingManageHref: (activityId) => tripsHostedActivityPath(activityId),
+    });
+    return filterPlanCalendarByCommitment(built.markers, built.details, filter);
+  }, [
+    availability.data?.slots,
+    joined,
+    requests,
+    hostedActivities,
+    activeSeeking,
+    user?.id,
+    filter,
+  ]);
+
+  const loading = enabled && (availability.loading || memberLoading || (canHost && host.loading));
+  const error = memberError ?? availability.error ?? null;
 
   const reload = () => {
     void availability.reload();
-    void explore.refetch();
     if (canHost) void host.reload();
-    if (!enabled || !user) return;
-    setMemberLoading(true);
-    Promise.all([api.getMeActivities(), api.getMeRequests()])
-      .then(([activitiesRes, requestsRes]) => {
-        setJoined(activitiesRes.data);
-        setRequests(requestsRes.data);
-      })
-      .finally(() => setMemberLoading(false));
+    void loadMember();
   };
 
   return { loading, error, markers, details, reload };

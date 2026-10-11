@@ -20,7 +20,7 @@ import { messagesRouteForRole } from '../../utils/authRouting';
 import {
   activityMapPeekNeedsJoinContext,
   activityMapPeekSkipsJoinContext,
-} from '../activityMapPeekActions';
+} from '../../activity/resolveActivityPresentation';
 import { viewerIsActivityHostUser } from '../../utils/viewerHostsActivity';
 import { useActivityJoinActions, useActivityJoinContext } from '../../hooks/useActivityJoinFlow';
 import { useParticipantIntentJoinContext } from '../../hooks/useParticipantIntentJoinContext';

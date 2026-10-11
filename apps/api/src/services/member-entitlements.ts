@@ -3,7 +3,7 @@ import type {
   HostStatusDTO,
   ProfileViewerAccessDTO,
 } from '@uaetrail/shared-types';
-import { viewerMaySeeProfileViewStats } from '@uaetrail/shared-types';
+import { resolvePaidMembershipSku, viewerMaySeeProfileViewStats } from '@uaetrail/shared-types';
 
 export type MemberEntitlementContext = {
   viewerUserId: string | null;
@@ -18,9 +18,16 @@ export type MemberEntitlementContext = {
  * @see docs/DOMAIN_CANONICALS.md §15.10
  */
 export const applyActivityViewEntitlements = (
-  _ctx: MemberEntitlementContext,
+  ctx: MemberEntitlementContext,
   socialAccess: ActivityViewerAccessDTO
-): ActivityViewerAccessDTO => socialAccess;
+): ActivityViewerAccessDTO => {
+  const paidSku = resolvePaidMembershipSku(ctx.hostStatus);
+  // Layer 7 hooks (billing not wired): `activity_pro_transport`, `paid_consumer_detail`, …
+  if (paidSku === 'none') {
+    return socialAccess;
+  }
+  return socialAccess;
+};
 
 /** Layer 7 — profile detail (passthrough until paid consumer rules ship). */
 export const applyProfileViewEntitlements = (

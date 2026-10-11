@@ -40,6 +40,7 @@ export const ListDiscoverPeopleView = ({
       discoveryQuota={roster.quota}
       discoveryLoading={roster.loading}
       discoveryError={roster.error}
+      seekingOnMap={roster.seekingOnMap}
     />
   );
 };

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { MemberGoalActivityFilter, MemberMapPinActivityType } from '@uaetrail/shared-types';
 import { ConsumerBottomSheet } from '../mobile/ConsumerBottomSheet';
-import { JourneyMapActivityTypePicker } from '../member-plan/JourneyMapActivityTypePicker';
+import { JourneyMapActivityTypePicker } from '../journey/JourneyMapActivityTypePicker';
 import { api } from '../../api/index';
 import { PERSONAL_MAP_LOG_DEFAULT } from '../../config/personalMapDefaults';
 import { tripsMapPath } from '../../member-plan/tripsRouting';

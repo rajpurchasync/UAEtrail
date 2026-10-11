@@ -19,7 +19,7 @@ import { messagesRouteForRole } from '../../utils/authRouting';
 import { useActivityJoinActions, useActivityJoinContext } from '../../hooks/useActivityJoinFlow';
 import { useViewerProfileGender } from '../../hooks/useViewerProfileGender';
 import { womenOnlyJoinMessageForActivity } from '../../utils/activityWomenOnlyJoin';
-import { activityMapPeekNeedsJoinContext } from '../../explore/activityMapPeekActions';
+import { activityMapPeekNeedsJoinContext } from '../../activity/resolveActivityPresentation';
 import { resolveListFeedFooterModel } from '../listFeedFooterActions';
 
 type ListFeedActionsContextValue = {

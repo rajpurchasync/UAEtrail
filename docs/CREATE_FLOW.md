@@ -161,10 +161,12 @@ participationMode: 'rsvp' | 'approval'
 
 | `participationMode` | Primary CTA | Secondary |
 |---------------------|-------------|-----------|
-| `rsvp` | **Iâ€™m going** | View details |
+| `rsvp` | **I'm going** | View details |
 | `approval` | **Request to join** | View details |
 
 **Full detail page vs map peek** is **not** `participationMode` or `joinMode` alone — it is **viewer access / detail exposure** (who may open `/activity/:id` with a full payload). Canonical model: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §15. UI maps API `viewerAccess` via `src/access/resolvePeekDetailAccess.ts` — do not add client-side policy.
+
+**Consumer activity detail** (`/activity/:id`): mobile tabs Plan · Place · Buddies · Transport; crew roster/chat gated on `viewerAccess.canAccessCrewSurfaces`; post-join welcome `?joined=1`. **Single FE engagement resolver:** `src/activity/resolveActivityPresentation.ts` (detail flags + `resolveActivityPeekEngagement` for map peek / list feed wire CTAs). Peek action ids: `packages/shared-types` `computeActivityMapPeekActions`. Navigation: [`NAVIGATION.md`](./NAVIGATION.md) § Activity detail.
 
 ---
 

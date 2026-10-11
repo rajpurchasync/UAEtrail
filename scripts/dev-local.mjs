@@ -41,6 +41,9 @@ const main = async () => {
   console.log(
     '[dev:local] Explore map empty?  SEED_DATA=true npm run seed  — see docs/operations/EXPLORE_MAP_RUNBOOK.md'
   );
+  console.log(
+    '[dev:local] After Find changes: npm run test:seeking-local  — manual smoke: docs/DEV_RUN.md § Find'
+  );
   const env = {
     ...process.env,
     MONGODB_URI: localMongoUri,

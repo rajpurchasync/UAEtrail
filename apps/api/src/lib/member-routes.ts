@@ -33,10 +33,10 @@ export const ADMIN_HOSTS_PATH = '/admin/hosts';
 export const EXPLORE_VENUES_LIST_PATH = '/explore?panel=venues&list=1';
 
 /** Plan schedule → joined outings — FE `tripsLegacyJoinedTabPath()`. */
-export const planJoinedSchedulePath = (): string => `${PLAN_PATH}?view=plans&role=joined`;
+export const planJoinedSchedulePath = (): string => `${PLAN_PATH}?view=plans&filter=joined`;
 
-/** Buddy host join queue on Plan (not tenant `/host/requests`) — FE `tripsPlansPath('hosted')`. */
-export const planHostedSchedulePath = (): string => `${PLAN_PATH}?view=plans&role=hosted`;
+/** Buddy host join queue on Plan (not tenant `/host/requests`) — FE `planHostingFilterPath()`. */
+export const planHostedSchedulePath = (): string => `${PLAN_PATH}?view=plans&filter=hosting`;
 
 /** @deprecated Name kept for imports — value is canonical {@link PLAN_PATH}. */
 export const TRIPS_JOINED_TAB_PATH = planJoinedSchedulePath();
@@ -63,6 +63,10 @@ export const myRequestDetailPath = (requestId: string): string =>
 
 export const activityDetailPath = (activityId: string): string =>
   `/activity/${encodeURIComponent(activityId)}`;
+
+/** Post-approve / joined — opens consumer welcome sheet on activity detail. */
+export const activityDetailJoinedWelcomePath = (activityId: string): string =>
+  `${activityDetailPath(activityId)}?joined=1`;
 
 export const exploreActivityPinPath = (activityId: string): string =>
   `/explore?${new URLSearchParams({

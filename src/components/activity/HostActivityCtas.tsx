@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { ActivityDTO } from '@uaetrail/shared-types';
+import { MoreHorizontal } from 'lucide-react';
 import { EXPLORE_PEEK_CTA, EXPLORE_Z } from '../../config/exploreTheme';
 import { hostActivityManageCapabilities } from '../../host/hostActivityManageCapabilities';
 import { ExploreResponsiveSheet } from '../../explore/ui/ExploreResponsiveSheet';
@@ -20,6 +21,8 @@ type HostActivityCtasProps = {
   disabled?: boolean;
   /** Map peek — sign-up instead of host actions. */
   onGuestGatedAction?: () => void;
+  /** Plan tab — icon-only overflow (no chat/manage row). */
+  variant?: 'default' | 'menuOnly';
 };
 
 const manageRowClass =
@@ -32,6 +35,7 @@ export const HostActivityCtas = ({
   handlers,
   disabled = false,
   onGuestGatedAction,
+  variant = 'default',
 }: HostActivityCtasProps) => {
   const [manageOpen, setManageOpen] = useState(false);
   const caps = hostActivityManageCapabilities(activity);
@@ -53,6 +57,78 @@ export const HostActivityCtas = ({
     setManageOpen(false);
     run(action);
   };
+
+  const manageSheet = (
+    <ExploreResponsiveSheet
+      open={manageOpen}
+      onClose={() => setManageOpen(false)}
+      zClass={EXPLORE_Z.composeFlow}
+      maxWidthClass="max-w-md"
+      ariaLabel="Manage activity"
+    >
+      <div className="space-y-2 px-1 pb-[calc(var(--safe-bottom)+8px)] pt-1">
+        <p className="px-1 pb-1 text-center text-xs font-semibold uppercase tracking-wide text-neutral-500">
+          Manage
+        </p>
+        <button
+          type="button"
+          className={manageRowClass}
+          onClick={() => runManageAction(handlers.onViewParticipants)}
+        >
+          View participants:
+        </button>
+        {published ? (
+          <button
+            type="button"
+            className={manageRowClass}
+            onClick={() => runManageAction(handlers.onInvite)}
+          >
+            Invite
+          </button>
+        ) : null}
+        {showCarpool ? (
+          <button
+            type="button"
+            className={manageRowClass}
+            onClick={() => runManageAction(handlers.onAddCarpool!)}
+          >
+            Add carpool
+          </button>
+        ) : null}
+        <button
+          type="button"
+          className={manageRowClass}
+          onClick={() => runManageAction(handlers.onDuplicate)}
+        >
+          Duplicate
+        </button>
+        <button
+          type="button"
+          className="w-full rounded-xl border border-red-200 bg-white px-4 py-3.5 text-left text-sm font-bold text-red-700 active:bg-red-50"
+          onClick={() => runManageAction(handlers.onDelete)}
+        >
+          Delete
+        </button>
+      </div>
+    </ExploreResponsiveSheet>
+  );
+
+  if (variant === 'menuOnly') {
+    return (
+      <>
+        <button
+          type="button"
+          disabled={disabled}
+          onClick={() => run(() => setManageOpen(true))}
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-neutral-200 bg-white text-neutral-700 active:bg-neutral-50 disabled:opacity-50"
+          aria-label="Plan options"
+        >
+          <MoreHorizontal className="h-5 w-5" aria-hidden />
+        </button>
+        {manageSheet}
+      </>
+    );
+  }
 
   return (
     <>
@@ -77,58 +153,7 @@ export const HostActivityCtas = ({
         </button>
       </div>
 
-      <ExploreResponsiveSheet
-        open={manageOpen}
-        onClose={() => setManageOpen(false)}
-        zClass={EXPLORE_Z.composeFlow}
-        maxWidthClass="max-w-md"
-        ariaLabel="Manage activity"
-      >
-        <div className="space-y-2 px-1 pb-[calc(var(--safe-bottom)+8px)] pt-1">
-          <p className="px-1 pb-1 text-center text-xs font-semibold uppercase tracking-wide text-neutral-500">
-            Manage
-          </p>
-          <button
-            type="button"
-            className={manageRowClass}
-            onClick={() => runManageAction(handlers.onViewParticipants)}
-          >
-            View participants:
-          </button>
-          {published ? (
-            <button
-              type="button"
-              className={manageRowClass}
-              onClick={() => runManageAction(handlers.onInvite)}
-            >
-              Invite
-            </button>
-          ) : null}
-          {showCarpool ? (
-            <button
-              type="button"
-              className={manageRowClass}
-              onClick={() => runManageAction(handlers.onAddCarpool!)}
-            >
-              Add carpool
-            </button>
-          ) : null}
-          <button
-            type="button"
-            className={manageRowClass}
-            onClick={() => runManageAction(handlers.onDuplicate)}
-          >
-            Duplicate
-          </button>
-          <button
-            type="button"
-            className="w-full rounded-xl border border-red-200 bg-white px-4 py-3.5 text-left text-sm font-bold text-red-700 active:bg-red-50"
-            onClick={() => runManageAction(handlers.onDelete)}
-          >
-            Delete
-          </button>
-        </div>
-      </ExploreResponsiveSheet>
+      {manageSheet}
     </>
   );
 };

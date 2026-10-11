@@ -24,6 +24,7 @@ import { BrowseListPage } from './list/BrowseListPage';
 import { discoveryToExploreSearch, explorePath, legacyCreateParamToOrganizePath, parseActivityListFilter, LIST_DISCOVERY_PATH } from './config/routingCatalog';
 import { organisationManagePath, SIGNIN_PATH, SIGNUP_PATH } from './config/routingCatalog';
 import { GuestTabPlaceholder } from './components/auth/GuestTabPlaceholder';
+import { PRODUCT_PLAN_SURFACE_TITLE } from './content/productNorthStar';
 import { JOURNEY_MAP_PATH, PLAN_PATH, PROFILE_HISTORY_PATH } from './config/surfacePaths';
 import { resolveLegacyTripsHubRedirect } from './member-plan/legacyTripsRedirect';
 import { useHostStatus } from './hooks/useHostStatus';
@@ -88,7 +89,7 @@ const PlanBrowseRoute = () => {
   if (tab === 'joined' || tab === 'hosted' || searchParams.get('checkin') || !tab) {
     return (
       <GuestTabPlaceholder
-        title="Plan"
+        title={PRODUCT_PLAN_SURFACE_TITLE}
         description="Sign in to see what is next on your calendar and track outdoor goals."
         intent="explore-browse"
       />

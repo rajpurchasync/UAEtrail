@@ -2,10 +2,7 @@ import type { ActivityMapPeekActionId } from '@uaetrail/shared-types';
 import { ExploreActivityMapPeekActions } from './ExploreActivityMapPeekActions';
 import { ExploreDemandOwnerPeekActions } from './ExploreDemandOwnerPeekActions';
 import { HostActivityCtas, type HostActivityCtaHandlers } from '../../components/activity/HostActivityCtas';
-import {
-  activityMapPeekShowsJoinFlow,
-  resolveActivityMapPeekActions,
-} from '../activityMapPeekActions';
+import { resolveActivityPeekEngagement } from '../../activity/resolveActivityPresentation';
 import type { ExploreCardModel } from '../exploreCardModel';
 import { JoinRequestActions } from '../../components/ui/JoinRequestActions';
 import { ExploreShopPeekActions } from './ExploreShopPeekActions';
@@ -62,10 +59,10 @@ export const ExploreItemPeekActions = ({
   const isDemand = exploreCardIsSeeking(card);
   const externalUrl = card.websiteUrl?.trim() || null;
   const gate = onGuestGatedAction;
-  const activityMapPeekActions =
-    card.source === 'activity' ? resolveActivityMapPeekActions(card, joinUiState) : [];
-  const showActivityJoinFlow =
-    card.source === 'activity' && activityMapPeekShowsJoinFlow(card, joinUiState);
+  const activityPeekEngagement =
+    card.source === 'activity' ? resolveActivityPeekEngagement(card, joinUiState) : null;
+  const activityMapPeekActions = activityPeekEngagement?.mapPeekActions ?? [];
+  const showActivityJoinFlow = activityPeekEngagement?.showsLegacyJoinFlow ?? false;
   const peekWithdraw =
     card.source === 'activity' ? undefined : onWithdraw;
 

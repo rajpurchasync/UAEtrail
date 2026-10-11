@@ -100,7 +100,9 @@ describe('resolveActivityViewerAccess', () => {
       activity,
     });
 
-    expect(access.canViewFullActivity).toBe(true);
+    expect(access.canViewFullActivity).toBe(false);
+    expect(access.exposure).toBe('redacted');
+    expect(access.canAccessCrewSurfaces).toBe(false);
     expect(access.level).toBe('join_request');
   });
 
@@ -133,7 +135,9 @@ describe('resolveActivityViewerAccess', () => {
       activity,
     });
 
-    expect(access.canViewFullActivity).toBe(true);
+    expect(access.canViewFullActivity).toBe(false);
+    expect(access.exposure).toBe('redacted');
+    expect(access.canAccessCrewSurfaces).toBe(false);
     expect(access.level).toBe('activity_group_member');
   });
 

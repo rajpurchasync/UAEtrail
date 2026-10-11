@@ -1,40 +1,48 @@
 import { Link } from 'react-router-dom';
+import { ChevronRight } from 'lucide-react';
+import type { MemberCoordinationAttentionItemDTO } from '@uaetrail/shared-types';
 import { useMemberCoordinationAttention } from '../../hooks/useMemberCoordinationAttention';
 import {
   coordinationAttentionLabel,
   coordinationAttentionPath,
 } from '../../member/coordinationAttentionPresentation';
 
+const PARTICIPATION_KINDS = new Set<MemberCoordinationAttentionItemDTO['kind']>([
+  'host_join_queue',
+  'join_request_withdrawn',
+  'joiner_pending_host',
+  'join_request_rejected',
+  'participant_revoked',
+  'activity_join_invite',
+]);
+
 type PlanNeedsYouStripProps = {
   refreshKey?: number;
-  /** @deprecated Host queue is resolved server-side via `GET /me/coordination-attention`. */
-  canHost?: boolean;
 };
 
-/** Plan “Needs you” UI — data from `GET /me/coordination-attention` (coordination only, not seeking). */
+/** Compact participation-only strip — not buddy requests or seeking. */
 export const PlanNeedsYouStrip = ({ refreshKey = 0 }: PlanNeedsYouStripProps) => {
   const { items, loading } = useMemberCoordinationAttention(true, refreshKey);
+  const participation = items.filter((item) => PARTICIPATION_KINDS.has(item.kind));
 
-  if (loading || items.length === 0) return null;
+  if (loading || participation.length === 0) return null;
+
+  const primary = participation[0];
+  const extra = participation.length - 1;
+  const label = coordinationAttentionLabel(primary);
+  const href = coordinationAttentionPath(primary);
 
   return (
-    <section
-      className="rounded-2xl border border-amber-200/90 bg-amber-50/90 px-4 py-3"
-      aria-label="Needs your attention"
+    <Link
+      to={href}
+      className="flex items-center gap-3 rounded-2xl border border-amber-200/70 bg-amber-50/80 px-4 py-3 active:bg-amber-50"
     >
-      <p className="text-xs font-bold uppercase tracking-wide text-amber-900/80">Needs you</p>
-      <ul className="mt-2 space-y-2">
-        {items.map((item) => (
-          <li key={item.kind}>
-            <Link
-              to={coordinationAttentionPath(item)}
-              className="block text-sm font-semibold text-amber-950 underline-offset-2 hover:underline"
-            >
-              {coordinationAttentionLabel(item)}
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </section>
+      <span className="flex h-2 w-2 shrink-0 rounded-full bg-amber-500" aria-hidden />
+      <span className="min-w-0 flex-1 text-sm font-semibold text-amber-950">
+        Needs you · {label}
+        {extra > 0 ? ` (+${extra} more)` : ''}
+      </span>
+      <ChevronRight className="h-4 w-4 shrink-0 text-amber-800/70" aria-hidden />
+    </Link>
   );
 };

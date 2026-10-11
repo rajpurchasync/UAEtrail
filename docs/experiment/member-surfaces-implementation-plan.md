@@ -96,7 +96,7 @@ Notifications (deep link to **activity**, **Plan row context**, **chat thread**,
 - [x] Document in `DOMAIN.md` — seeking = former participant intent / “looking for”
 - [x] Map **all** time-bound pins to `ExploreMapSource: 'activity'` on API build (§20 P1 wire); legacy `demand` enum + `pin=demand:` parsers until compat aged out
 - [x] Seeking discovery UX — map/list/peek cards + `seekingOnMap` People browse rows route to explore pin (`exploreMapItemPathFromSeekingRow`); no duplicate seeking detail UI
-- [ ] `/activity/:id` for seeking — secondary deep link only; keep join aligned with `explore-presentation` / `activityJoinCtaLabel` (no parallel layout)
+- [x] `/activity/:id` for seeking — secondary deep link only (`activitySharePath`); join via `activityJoinCtaLabel` + same detail view eyebrow (`activityDetailEyebrowForActivity`); primary discovery stays explore pin/peek
 - [x] Join requests: unify or alias `participant_intent_requests` → activity-scoped requests (M2a–M2c)
 
 **Kinds (unchanged wire, aligned names):**
@@ -513,7 +513,8 @@ Use one PR per subsection where possible; check boxes when merged.
 | 2026-10-10 | §20 ops | Root `seeking:m2d-status` forwards `--strict`; plan-tab backlog reconciled with §19 |
 | 2026-10-10 | §2.1 wire | `seekingOnMap` in People browse → `exploreMapItemPathFromSeekingRow` (peek path; no duplicate UI) |
 | 2026-10-10 | P1 storage | `PARTICIPANT_INTENT_STUB_WRITE` defaults **off** (opt-in dual-write); API `.env.example` + contract test |
-| | | **Next:** §20 P0 — staging/prod runbook + G-manage smoke; archive `participant_intents` after retention policy |
+| 2026-10-10 | Local test | `test:seeking-local` (store + **POST /me/participant-intents** + map projection); DEV_RUN Find + G-manage API notes |
+| | | **Next:** manual DEV_RUN smoke on `dev:local`; §20 P0 staging/prod runbook + G-manage browser smoke |
 
 ---
 

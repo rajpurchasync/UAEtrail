@@ -12,9 +12,9 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 | **Browse** | `/explore` | Map-first discovery — activities, places, shops |
 | **List discovery** | `/list` | Full-screen poster/list browse (same filters as explore; `listDiscoveryPath()` ↔ map via `exploreMapPathFromListSearch()`) |
 | **Personal hub** | `/profile`, `/profile/settings`, `/profile/edit`, `/profile/history` | Account hub, settings stack, outing **history** + journey map |
-| **Plan tab** | `/plan` | Active layer — goals, upcoming outings (bottom nav middle tab; UI label **Plan**) |
-| **Mobile tabs (signed-in)** | `/explore`, `/plan`, `/chat` | **Three tabs only** — **Explore** · **Plan** · **Chat** (`md:hidden`). **No List tab.** Map-aligned list from the **List** pill (`list=1`); discover browse from hamburger **Browse** (`browse=1`) or optional full-screen `/list` (`listDiscoveryPathFromExploreSearch()`), not bottom nav. **Facebook / Instagram / WhatsApp** icon row above tabs (`src/config/socialLinks.ts`); same bar on **`/profile`**, settings stack, **Friends**, **Contributions**, and related profile stack routes |
-| **Mobile tabs (guests)** | `/explore`, `/plan`, `/chat` | Same three tabs; **Explore** is the live map. **Plan** and **Chat** show `GuestTabPlaceholder` + sign-in (`App.tsx` `PlanBrowseRoute`, `MessagesGate`) — not a second marketing home. **Profile** is not a tab; guests reach account flows via sign-in CTAs. |
+| **Plan tab** | `/plan` | Active layer — goals, upcoming outings (bottom nav middle tab; UI label **My Plans** — `PRODUCT_PLAN_SURFACE_TITLE`) |
+| **Mobile tabs (signed-in)** | `/explore`, `/plan`, `/chat` | **Three tabs only** — **Explore** · **My Plans** · **Chat** (`md:hidden`). **No List tab.** Map-aligned list from the **List** pill (`list=1`); discover browse from hamburger **Browse** (`browse=1`) or optional full-screen `/list` (`listDiscoveryPathFromExploreSearch()`), not bottom nav. **Facebook / Instagram / WhatsApp** icon row above tabs (`src/config/socialLinks.ts`); same bar on **`/profile`**, settings stack, **Friends**, **Contributions**, and related profile stack routes |
+| **Mobile tabs (guests)** | `/explore`, `/plan`, `/chat` | Same three tabs; **Explore** is the live map. **My Plans** and **Chat** show `GuestTabPlaceholder` + sign-in (`App.tsx` `PlanBrowseRoute`, `MessagesGate`) — not a second marketing home. **Profile** is not a tab; guests reach account flows via sign-in CTAs. |
 | **Entity detail** | `/trail`, `/camp`, `/venue`, `/activity`, `/shop`, `/guide`, `/agency`, `/partner`, `/area/:slug` | Place, scheduled outing, shop, brand profile, or curated **area** hub |
 
 ### Profile hub (`/profile`)
@@ -40,7 +40,7 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 ### Plan (`/plan`)
 
 - **Bottom nav middle tab** — forward commitments, not past history (history → **My trips**).
-- **Lenses** (`?view=plans&lens=` — `src/plan/planLens.ts`): **Schedule** (default) · **Calendar** (placeholder; day markers in `planCalendarMarkers.ts`) · **Available** (edit `GET/PUT /me/availability`) · **Saved** · **Goals**. Schedule shows **Upcoming** role chips (All · Hosted · Joined · Seeking).
+- **Mobile tabs** (`?view=plans&tab=` — `src/plan/planTab.ts`): collapsible **goal progress** bar above **Upcoming** · **Wishlist** tabs. Upcoming: **Hosting | Joined** filters; **list ↔ calendar** toggle (`layout=calendar`); **Needs you** (participation only). Legacy `?lens=saved|goals|calendar` normalizes to tab/layout. **Available** editor: `?lens=availability` until moved to Profile.
 - **Query helpers:** `tripsPlansPath()`, `planSavedPath()`, `planLensPath()`. Legacy `segment` / `tab` / `segment=wishlist` normalize on load.
 - **`/trips`**, **`/activities`** redirect to `/plan` or `/profile/history` preserving query (`legacyTripsRedirect.ts`).
 
@@ -205,6 +205,10 @@ Signed-in members tap **+** on `/explore` to compose. **Guests** → sign-in, th
 **Going from:** required map pin on all Organize and Find **activity** flows; Add uses place location pin only.
 
 **Components:** `CreateIntentSheet.tsx`, `ExploreExperience.tsx` (compose URL via `parseExploreCompose`).
+
+## Activity detail (`/activity/:id`)
+
+**Mobile:** icon tabs — **Plan** · **Place** · **Buddies** · **Transport** (`?tab=place|buddies|transport`; default Plan). **Transport** hides when the outing has no rideshare or linked transport listing. **Buddies** roster + group chat stay gated until the viewer is a confirmed joiner (API `viewerAccess.canAccessCrewSurfaces`; pending requests see a lock hint). Post-approve / RSVP welcome: `?joined=1` (notification deep link) → welcome sheet → group chat or meeting spot. **Host manage** reuses the same view embedded in the host sheet (`ActivityManageSheet`). Copy: `src/content/activityDetailCopy.ts` · tabs: `src/activity/activityDetailTab.ts`.
 
 ## Back navigation
 

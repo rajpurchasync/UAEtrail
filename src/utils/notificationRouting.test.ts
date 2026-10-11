@@ -18,29 +18,34 @@ describe('inferNotificationPath', () => {
       inferNotificationPath(notif({ kind: 'join_request_pending', requestId: 'r1' }))
     ).toBe('/my-requests/r1');
     expect(inferNotificationPath(notif({ kind: 'join_request_waitlisted' }))).toBe(
-      '/plan?view=plans&role=joined'
+      '/plan?view=plans&filter=joined'
     );
     expect(inferNotificationPath(notif({ kind: 'join_request_rejected' }))).toBe(
-      '/plan?view=plans&role=joined'
+      '/plan?view=plans&filter=joined'
     );
   });
 
-  it('routes approved join without group chat to My trips', () => {
+  it('routes approved join to activity welcome when activity id is known', () => {
     expect(inferNotificationPath(notif({ kind: 'join_request_approved' }))).toBe(
-      '/plan?view=plans&role=joined'
+      '/plan?view=plans&filter=joined'
     );
     expect(
       inferNotificationPath(
-        notif({ kind: 'join_request_approved', groupId: 'g-1' })
+        notif({ kind: 'join_request_approved', activityId: 'act-1', groupId: 'g-1' })
       )
-    ).toBe('/chat?group=g-1');
+    ).toBe('/activity/act-1?joined=1');
+    expect(
+      inferNotificationPath(
+        notif({ kind: 'join_request_approved', path: '/activity/act-2?joined=1' })
+      )
+    ).toBe('/activity/act-2?joined=1');
   });
 
   it('routes member goal milestones to profile or trips', () => {
-    expect(inferNotificationPath(notif({ kind: 'goal_halfway' }))).toBe('/plan?view=plans&role=all');
-    expect(inferNotificationPath(notif({ kind: 'goal_complete' }))).toBe('/plan?view=plans&role=all');
+    expect(inferNotificationPath(notif({ kind: 'goal_halfway' }))).toBe('/plan?view=plans&tab=wishlist');
+    expect(inferNotificationPath(notif({ kind: 'goal_complete' }))).toBe('/plan?view=plans&tab=wishlist');
     expect(inferNotificationPath(notif({ kind: 'goal_behind_pace' }))).toBe(
-      '/plan?view=plans&role=joined'
+      '/plan?view=plans&tab=wishlist'
     );
   });
 
@@ -123,7 +128,7 @@ describe('inferNotificationPath', () => {
           path: '/trips?segment=upcoming&tab=joined',
         })
       )
-    ).toBe('/plan?view=plans&role=joined');
+    ).toBe('/plan?view=plans&filter=joined');
     expect(
       inferNotificationPath(
         notif({
@@ -131,7 +136,7 @@ describe('inferNotificationPath', () => {
           path: '/trips?segment=upcoming&tab=joined',
         })
       )
-    ).toBe('/plan?view=plans&role=joined');
+    ).toBe('/plan?view=plans&filter=joined');
   });
 
   it('rewrites demand explore pins when activityId is on meta', () => {
@@ -197,11 +202,4 @@ describe('inferNotificationPath', () => {
     ).toBe('/chat?group=g-2&activity=act-1');
   });
 
-  it('routes join approved crew chat with activity context when present', () => {
-    expect(
-      inferNotificationPath(
-        notif({ kind: 'join_request_approved', groupId: 'g-9', activityId: 'act-9' })
-      )
-    ).toBe('/chat?group=g-9&activity=act-9');
-  });
 });

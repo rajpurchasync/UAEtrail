@@ -4,6 +4,7 @@ import {
   findActivityRequestByEventAndUser,
 } from '../lib/activity-engagement-store.js';
 import { findActivityDocInMongo } from '../lib/entity-sync.js';
+import { isDuplicateKeyError } from '../lib/mongo-errors.js';
 import {
   createActivityGroup,
   ensureGroupMember,
@@ -59,11 +60,22 @@ export const ensureActivityGroupChat = async (activityId: string): Promise<strin
 
   let group = await findGroupByActivityId(activityId);
   if (!group) {
-    group = await createActivityGroup({
-      activityId,
-      activityTitle: eventDoc.title,
-      hostUserId,
-    });
+    try {
+      group = await createActivityGroup({
+        activityId,
+        activityTitle: eventDoc.title,
+        hostUserId,
+      });
+    } catch (error) {
+      if (!isDuplicateKeyError(error)) {
+        throw error;
+      }
+      group = await findGroupByActivityId(activityId);
+    }
+  }
+
+  if (!group) {
+    return null;
   }
 
   await syncActivityGroupChatRoster(activityId, group.id);

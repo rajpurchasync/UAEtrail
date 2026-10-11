@@ -20,7 +20,10 @@ import { getMongoClient } from './mongo.js';
 import { parseStoredPricePackages } from './activity-pricing.js';
 import { myRequestDetailPath } from './member-routes.js';
 import { dispatchNotification } from '../services/notifications.js';
-import { removeParticipantFromActivityGroupChat } from '../services/activity-group-chat.js';
+import {
+  addParticipantToActivityGroupChat,
+  removeParticipantFromActivityGroupChat,
+} from '../services/activity-group-chat.js';
 import { resolveParticipationMode } from '../domain/activity-participation-mode.js';
 import { assertParticipantMeetsWomenOnlyRequirement } from '../domain/activity-audience-requirements.js';
 
@@ -320,7 +323,7 @@ export async function createRsvpParticipation(opts: {
     );
 
     await activityParticipantsCollection().updateOne(
-      { _id: participantId },
+      { activityId: opts.activityId, userId: opts.userId },
       {
         $set: {
           activityId: opts.activityId,
@@ -328,8 +331,11 @@ export async function createRsvpParticipation(opts: {
           userId: opts.userId,
           approvedById: reviewerId,
           checkedInAt: null,
-          createdAt: now
-        }
+        },
+        $setOnInsert: {
+          _id: participantId,
+          createdAt: now,
+        },
       },
       { upsert: true }
     );
@@ -347,6 +353,11 @@ export async function createRsvpParticipation(opts: {
   if (!participant) {
     throw new ApiError(500, 'participation_persist_failed', 'Failed to persist RSVP participation.');
   }
+
+  void addParticipantToActivityGroupChat({
+    activityId: opts.activityId,
+    userId: opts.userId,
+  }).catch(() => undefined);
 
   return {
     request: toActivityRequestRecord(mongoRow),
@@ -864,6 +875,8 @@ export const enrollHostApprovedActivityParticipant = async (opts: {
   activityId: string;
   userId: string;
   reviewerId: string;
+  /** Host queue row id — avoids request upsert races on activityId+userId unique index. */
+  requestId?: string;
   organizerNote?: string | null;
   /** When true, skip users who fail audience rules or capacity instead of throwing. */
   lenient?: boolean;
@@ -900,17 +913,19 @@ export const enrollHostApprovedActivityParticipant = async (opts: {
   }
 
   const existing = await findActivityRequestByEventAndUser(opts.activityId, opts.userId);
-  const requestId = existing?.id ?? newEntityId();
+  const requestId = opts.requestId ?? existing?.id;
+  if (!requestId) {
+    if (opts.lenient) return 'skipped';
+    throw new ApiError(404, 'request_not_found', 'Join request not found.');
+  }
   const participantId = newEntityId();
   const reviewedAt = new Date();
 
   try {
-    await activityRequestsCollection().updateOne(
-      { _id: requestId },
+    const requestUpdate = await activityRequestsCollection().updateOne(
+      { activityId: opts.activityId, userId: opts.userId },
       {
         $set: {
-          activityId: opts.activityId,
-          userId: opts.userId,
           status: RequestStatus.APPROVED,
           note: existing?.note ?? null,
           organizerNote: opts.organizerNote ?? null,
@@ -921,14 +936,16 @@ export const enrollHostApprovedActivityParticipant = async (opts: {
           reviewedAt,
           reviewedById: opts.reviewerId,
           updatedAt: reviewedAt,
-          createdAt: existing?.createdAt ?? reviewedAt,
         },
-      },
-      { upsert: true }
+      }
     );
+    if (requestUpdate.matchedCount === 0) {
+      if (opts.lenient) return 'skipped';
+      throw new ApiError(404, 'request_not_found', 'Join request not found.');
+    }
 
     await activityParticipantsCollection().updateOne(
-      { _id: participantId },
+      { activityId: opts.activityId, userId: opts.userId },
       {
         $set: {
           activityId: opts.activityId,
@@ -936,6 +953,9 @@ export const enrollHostApprovedActivityParticipant = async (opts: {
           userId: opts.userId,
           approvedById: opts.reviewerId,
           checkedInAt: null,
+        },
+        $setOnInsert: {
+          _id: participantId,
           createdAt: reviewedAt,
         },
       },
@@ -945,6 +965,11 @@ export const enrollHostApprovedActivityParticipant = async (opts: {
     await releaseActivityParticipantSlot(opts.activityId);
     throw error;
   }
+
+  void addParticipantToActivityGroupChat({
+    activityId: opts.activityId,
+    userId: opts.userId,
+  }).catch(() => undefined);
 
   return 'enrolled';
 };
@@ -964,6 +989,7 @@ export const applyTenantActivityRequestDecision = async (input: {
       activityId: input.activityId,
       userId: input.userId,
       reviewerId: input.reviewerId,
+      requestId: input.requestId,
       organizerNote: input.organizerNote ?? null,
     });
 

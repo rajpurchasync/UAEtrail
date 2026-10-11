@@ -1209,6 +1209,7 @@ export {
 } from './activity-join-mode.js';
 
 export {
+  activityViewerLevelCanAccessCrewSurfaces,
   activityViewerLevelHasFullDetail,
   computeActivityDetailExposure,
   type ActivityViewerAccessDTO,

@@ -1,4 +1,3 @@
-import { PRO_MEMBERSHIP_PATH } from '../config/routingCatalog';
 import { useCallback, useEffect, useState } from 'react';
 import { Plus } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -8,41 +7,33 @@ import { FloatingActionButton } from '../components/mobile/FloatingActionButton'
 import { PullToRefresh } from '../components/mobile/PullToRefresh';
 import { PageMeta } from '../components/seo/PageMeta';
 import { PLAN_PATH } from '../constants';
-
+import { PRODUCT_PLAN_SURFACE_TITLE } from '../content/productNorthStar';
 import { explorePath } from '../explore/routing';
 import { useHostStatus } from '../hooks/useHostStatus';
 import { memberCanManageHostedActivities } from '../utils/hostedActivitiesGate';
 import { signInPathForReturn } from '../utils/authReturnContext';
-import { HostedActivitiesSection } from './activities/HostedActivitiesSection';
-import { SelfPlansSection } from './activities/SelfPlansSection';
-import { ActivitiesHubView } from './activities/ActivitiesHubView';
-import { PlansUpcomingAllView } from './activities/PlansUpcomingAllView';
-import { ProfileGoalCard } from '../components/profile/ProfileGoalCard';
-import { ProfileGoalsSection } from '../components/profile/ProfileGoalsSection';
 import { useMemberGoals } from '../hooks/useMemberGoals';
-import { TripsPlansUpcomingHeader } from '../components/trips/TripsPlansUpcomingHeader';
-import { PlanLensTabs } from '../components/plan/PlanLensTabs';
-import { PlanSavedSection } from '../components/plan/PlanSavedSection';
-import { PlanAvailabilitySection } from '../components/plan/PlanAvailabilitySection';
-import { PlanNeedsYouStrip } from '../components/plan/PlanNeedsYouStrip';
-import { PlanSuggestedRail } from '../components/plan/PlanSuggestedRail';
-import { PlanCalendarSection } from '../components/plan/PlanCalendarSection';
+import { PlanGoalsProgressSummary } from '../components/plan/PlanGoalsProgressSummary';
+import { PlanPageTabs } from '../components/plan/PlanPageTabs';
+import { PlanUpcomingView } from '../components/plan/PlanUpcomingView';
+import { PlanWishlistView } from '../components/plan/PlanWishlistView';
 import { PROFILE_HISTORY_PATH } from '../config/surfacePaths';
-import { parsePlanLens, type PlanLens } from '../plan/planLens';
 import {
-  normalizeTripsSearchParams,
-  parseTripsPlansRole,
-  parseTripsSegment,
-  type TripsPlansRole,
-} from '../member-plan/tripsRouting';
-import { resolveTripsContent, tripsContentShowsComposeFab } from '../member-plan/resolveTripsContent';
+  normalizePlanMobileParams,
+  parsePlanCommitmentFilter,
+  parsePlanMainTab,
+  parsePlanUpcomingLayout,
+  type PlanCommitmentFilter,
+  type PlanMainTab,
+  type PlanUpcomingLayout,
+} from '../plan/planTab';
+import { normalizeTripsSearchParams } from '../member-plan/tripsRouting';
 
 export const Activities = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [refreshKey, setRefreshKey] = useState(0);
-  const [goalSheetOpen, setGoalSheetOpen] = useState(false);
   const [goalAddSheet, setGoalAddSheet] = useState(false);
   const gate = useHostStatus({ enabled: Boolean(user) });
   const canHost = memberCanManageHostedActivities(user, gate.canAccessHostConsole);
@@ -68,38 +59,67 @@ export const Activities = () => {
     }
     if (!user) return;
     const next = new URLSearchParams(searchParams);
-    const { changed } = normalizeTripsSearchParams(next, canHost);
+    let { changed } = normalizeTripsSearchParams(next, canHost);
+    const planNorm = normalizePlanMobileParams(next, canHost);
+    changed = changed || planNorm.changed;
     if (changed) setSearchParams(next, { replace: true });
   }, [canHost, navigate, searchParams, setSearchParams, user]);
 
-  const segment = parseTripsSegment(searchParams.get('segment'));
-  const planLens = parsePlanLens(searchParams.get('lens'));
-  const plansRole = parseTripsPlansRole(segment, searchParams.get('role'), canHost);
-
-  const contentKey = resolveTripsContent({
-    signedIn: Boolean(user),
-    mainView: 'plans',
-    plansRole,
-    role: 'joined',
-    canHost,
-  });
+  const mainTab = parsePlanMainTab(searchParams.get('tab'), searchParams.get('lens'));
+  const commitmentFilter = parsePlanCommitmentFilter(
+    searchParams.get('filter'),
+    searchParams.get('role'),
+    canHost
+  );
+  const upcomingLayout = parsePlanUpcomingLayout(searchParams.get('layout'), searchParams.get('lens'));
+  const lensRaw = searchParams.get('lens');
 
   const handleRefresh = useCallback(async () => {
     setRefreshKey((key) => key + 1);
     reloadGoals();
   }, [reloadGoals]);
 
-  const setPlansRole = useCallback(
-    (role: TripsPlansRole) => {
+  const setMainTab = useCallback(
+    (tab: PlanMainTab) => {
       const next = new URLSearchParams(searchParams);
       next.set('view', 'plans');
       next.delete('segment');
-      if (role === 'all') {
-        next.set('role', 'all');
+      next.delete('lens');
+      next.delete('role');
+      if (tab === 'wishlist') {
+        next.set('tab', 'wishlist');
+        next.delete('filter');
+        next.delete('layout');
       } else {
-        next.set('role', role);
+        next.delete('tab');
+        if (!next.get('filter')) next.set('filter', canHost ? 'hosting' : 'joined');
       }
-      next.delete('saved');
+      setSearchParams(next, { replace: true });
+    },
+    [canHost, searchParams, setSearchParams]
+  );
+
+  const setCommitmentFilter = useCallback(
+    (filter: PlanCommitmentFilter) => {
+      const next = new URLSearchParams(searchParams);
+      next.set('view', 'plans');
+      next.delete('tab');
+      next.set('filter', filter);
+      next.delete('role');
+      setSearchParams(next, { replace: true });
+    },
+    [searchParams, setSearchParams]
+  );
+
+  const setUpcomingLayout = useCallback(
+    (layout: PlanUpcomingLayout) => {
+      const next = new URLSearchParams(searchParams);
+      next.set('view', 'plans');
+      if (layout === 'calendar') {
+        next.set('layout', 'calendar');
+      } else {
+        next.delete('layout');
+      }
       setSearchParams(next, { replace: true });
     },
     [searchParams, setSearchParams]
@@ -114,101 +134,19 @@ export const Activities = () => {
     navigate(composePath);
   }, [navigate, user]);
 
-  const showFab =
-    planLens === 'schedule' && tripsContentShowsComposeFab(contentKey) && Boolean(user);
-
-  const setPlanLens = useCallback(
-    (lens: PlanLens) => {
-      const next = new URLSearchParams(searchParams);
-      next.set('view', 'plans');
-      next.delete('segment');
-      if (lens === 'schedule') {
-        next.delete('lens');
-        if (!next.get('role')) next.set('role', 'all');
-      } else {
-        next.set('lens', lens);
-        next.delete('role');
-      }
-      setSearchParams(next, { replace: true });
-    },
-    [searchParams, setSearchParams]
-  );
-
-  const listSearchQuery = '';
-
-  const renderContent = () => {
-    if (!user) {
-      return (
-        <div className="glass-card p-6 text-center text-sm text-neutral-600">
-          Sign in to see what you are planning next and track goals.
-        </div>
-      );
-    }
-
-    switch (contentKey) {
-      case 'plans-all':
-        return (
-          <PlansUpcomingAllView refreshKey={refreshKey} canHost={canHost} />
-        );
-      case 'plans-joined':
-        return (
-          <>
-            <ActivitiesHubView refreshKey={refreshKey} searchQuery={listSearchQuery} />
-            <section aria-labelledby="plans-joined-seeking-heading" className="mt-6">
-              <h2
-                id="plans-joined-seeking-heading"
-                className="mb-2 text-xs font-bold uppercase tracking-wide text-neutral-400"
-              >
-                Seeking
-              </h2>
-              <SelfPlansSection
-                segment="upcoming"
-                refreshKey={refreshKey}
-                searchQuery={listSearchQuery}
-              />
-            </section>
-          </>
-        );
-      case 'plans-hosted':
-        return (
-          <HostedActivitiesSection
-            refreshKey={refreshKey}
-            searchQuery={listSearchQuery}
-            timeScope="upcoming"
-            layout="embedded"
-          />
-        );
-      case 'hosted-needs-approval':
-        return (
-          <div className="glass-card p-6 text-center">
-            <p className="mb-3 text-sm text-neutral-600">
-              Host activities on the map to share them with the community.
-            </p>
-            <button
-              type="button"
-              onClick={() => navigate(PRO_MEMBERSHIP_PATH)}
-              className="text-sm font-semibold text-emerald-700"
-            >
-              Pro Membership
-            </button>
-          </div>
-        );
-      default:
-        return null;
-    }
-  };
+  const showFab = mainTab === 'upcoming' && upcomingLayout === 'list' && Boolean(user);
 
   return (
     <>
       <PageMeta
-        title="Plan — your outings on UAE Trail"
-        description="What you are planning next — joined, hosting, and seeking outings on UAE Trail."
+        title={`${PRODUCT_PLAN_SURFACE_TITLE} — your outings on UAE Trail`}
+        description="What you are planning next — joined, hosting, and looking for company on UAE Trail."
         path={PLAN_PATH}
       />
 
       <ConsumerShell
         layout="tab"
-        title="Plan"
+        title={PRODUCT_PLAN_SURFACE_TITLE}
         suppressMobileHeader
         suppressMobileToolbarBorder
         maxWidth="4xl"
@@ -217,54 +155,46 @@ export const Activities = () => {
           <div className={`space-y-4 pt-1 ${showFab ? 'pb-mobile-fab' : 'pb-bottom-nav-safe'}`}>
             {user ? (
               <>
-                <PlanLensTabs active={planLens} onChange={setPlanLens} />
-                {planLens === 'schedule' ? (
-                  <>
-                    <PlanNeedsYouStrip refreshKey={refreshKey} canHost={canHost} />
-                    <PlanSuggestedRail refreshKey={refreshKey} />
-                    <TripsPlansUpcomingHeader
-                      activeRole={plansRole}
-                      onRoleChange={setPlansRole}
-                      canHost={canHost}
-                    />
-                  </>
-                ) : null}
-              </>
-            ) : null}
-
-            {planLens === 'saved' ? <PlanSavedSection /> : null}
-            {planLens === 'calendar' && user ? (
-              <PlanCalendarSection refreshKey={refreshKey} canHost={canHost} />
-            ) : null}
-            {planLens === 'availability' && user ? <PlanAvailabilitySection /> : null}
-            {planLens === 'goals' && user ? (
-              <>
-                <ProfileGoalsSection
-                  layout="trips"
-                  goals={goals}
+                <PlanGoalsProgressSummary
+                  primaryGoal={primaryGoal}
                   saving={goalSaving}
-                  onCreateGoal={createGoal}
-                  onUpdateGoal={updateGoal}
-                  onDeleteGoal={deleteGoal}
+                  onSaveGoal={(input) =>
+                    primaryGoal ? updateGoal(primaryGoal.id, input) : createGoal(input)
+                  }
+                  onClearGoal={() =>
+                    primaryGoal ? deleteGoal(primaryGoal.id) : Promise.resolve()
+                  }
                   onReloadGoals={reloadGoals}
-                  openAddSheet={goalAddSheet}
-                  onOpenAddSheetHandled={() => setGoalAddSheet(false)}
                 />
-                {primaryGoal ? (
-                  <ProfileGoalCard
-                    surfaceHidden
-                    goal={primaryGoal}
-                    saving={goalSaving}
-                    onSave={(input) => updateGoal(primaryGoal.id, input)}
-                    onClear={() => deleteGoal(primaryGoal.id)}
-                    onReloadGoal={reloadGoals}
-                    sheetOpen={goalSheetOpen}
-                    onSheetOpenChange={setGoalSheetOpen}
+                <PlanPageTabs active={mainTab} onChange={setMainTab} />
+                {mainTab === 'upcoming' ? (
+                  <PlanUpcomingView
+                    refreshKey={refreshKey}
+                    canHost={canHost}
+                    filter={commitmentFilter}
+                    layout={upcomingLayout}
+                    lensRaw={lensRaw}
+                    onFilterChange={setCommitmentFilter}
+                    onLayoutChange={setUpcomingLayout}
                   />
-                ) : null}
+                ) : (
+                  <PlanWishlistView
+                    goals={goals}
+                    saving={goalSaving}
+                    onCreateGoal={createGoal}
+                    onUpdateGoal={updateGoal}
+                    onDeleteGoal={deleteGoal}
+                    onReloadGoals={reloadGoals}
+                    openAddSheet={goalAddSheet}
+                    onOpenAddSheetHandled={() => setGoalAddSheet(false)}
+                  />
+                )}
               </>
-            ) : null}
-            {planLens === 'schedule' ? renderContent() : null}
+            ) : (
+              <div className="glass-card p-6 text-center text-sm text-neutral-600">
+                Sign in to see what you are planning next and track goals.
+              </div>
+            )}
           </div>
         </PullToRefresh>
       </ConsumerShell>

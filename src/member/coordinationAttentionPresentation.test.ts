@@ -10,7 +10,7 @@ describe('coordinationAttentionPresentation', () => {
     const item: MemberCoordinationAttentionItemDTO = { kind: 'host_join_queue', count: 2 };
     const path = coordinationAttentionPath(item);
     expect(path).toContain('/plan');
-    expect(path).toContain('role=hosted');
+    expect(path).toContain('filter=hosting');
     expect(path).not.toContain('/host');
     expect(coordinationAttentionLabel(item)).toContain('2 people');
   });

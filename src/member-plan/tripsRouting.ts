@@ -84,12 +84,13 @@ export const tripsPlansPath = (
   params.set('view', 'plans');
   if (role === 'wishlist') {
     return planSavedPath();
-  } else if (role === 'upcoming') {
-    params.set('role', 'all');
-  } else if (role !== 'all') {
-    params.set('role', role);
-  } else {
-    params.set('role', 'all');
+  }
+  if (role === 'joined') {
+    params.set('filter', 'joined');
+  } else if (role === 'hosted') {
+    params.set('filter', 'hosting');
+  } else if (role === 'upcoming' || role === 'all') {
+    params.delete('filter');
   }
   return `${PLAN_PATH}?${params.toString()}`;
 };
@@ -236,7 +237,7 @@ export const normalizeTripsSearchParams = (
 export const tripsSelfDemandPath = (intentId: string): string => {
   const params = new URLSearchParams();
   params.set('view', 'plans');
-  params.set('role', 'joined');
+  params.set('filter', 'hosting');
   params.set('peek', intentId);
   return `${PLAN_PATH}?${params.toString()}`;
 };
@@ -247,7 +248,7 @@ export const tripsHostedActivityPath = (
 ): string => {
   const params = new URLSearchParams();
   params.set('view', 'plans');
-  params.set('role', 'hosted');
+  params.set('filter', 'hosting');
   if (view === 'checkin') {
     params.set('roster', activityId);
   } else {

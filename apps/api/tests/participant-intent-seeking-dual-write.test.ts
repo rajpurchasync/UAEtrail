@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { bootstrapTestApp } from './helpers/bootstrap.js';
 
 beforeAll(async () => {
@@ -13,8 +13,15 @@ import { UserRole, UserStatus } from '../src/domain/enums.js';
 import { getMongoClient } from '../src/lib/mongo.js';
 import { COLLECTIONS } from '../src/lib/collections.js';
 
-describe('participant intent seeking dual-write (M1)', () => {
-  it('creates a published seeking activity linked to the intent', async () => {
+const ENV_KEY = 'PARTICIPANT_INTENT_STUB_WRITE';
+
+describe('participant intent seeking dual-write (legacy stub)', () => {
+  afterEach(() => {
+    delete process.env[ENV_KEY];
+  });
+
+  it('creates a published seeking activity linked to the intent stub row', async () => {
+    process.env[ENV_KEY] = 'true';
     const suffix = `dual-${Date.now()}`;
     const user = await createAuthUser({
       email: `dual-${suffix}@test.local`,

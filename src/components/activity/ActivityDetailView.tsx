@@ -47,6 +47,18 @@ import { buildActivitySharePayload } from '../../utils/activityShare';
 import { EXPLORE_RIDESHARE_AVAILABLE_LABEL } from '../../explore/createFlowCopy';
 import { ReviewSection } from '../ui/ReviewSection';
 import { ActivityDetailMobileFooter } from './ActivityDetailMobileFooter';
+import type { ActivityDetailTabId } from '../../activity/activityDetailTab';
+import { activityKindChromeEmoji, activityKindChromeLabel } from '../../activity/activityKindChrome';
+import { ActivityDetailTabBar } from './detail/ActivityDetailTabBar';
+import { ActivityDetailMobileHero } from './detail/ActivityDetailMobileHero';
+import {
+  ACTIVITY_DETAIL_CREW_LOCKED_HINT,
+  ACTIVITY_DETAIL_TRANSPORT_EMPTY_HINT,
+} from '../../content/activityDetailCopy';
+import { activityHasTransportDetailContent } from '../../activity/activityDetailTransport';
+
+const mobileTabPanelClass = (tab: ActivityDetailTabId, active: ActivityDetailTabId): string =>
+  active === tab ? 'block md:contents' : 'hidden md:contents';
 
 export interface ActivityDetailViewProps {
   activity: ActivityDetailDTO;
@@ -71,6 +83,18 @@ export interface ActivityDetailViewProps {
   activityReviews?: ReviewDTO[];
   onActivityReviewSubmitted?: (review: ReviewDTO) => void;
   canWriteActivityReview?: boolean;
+  mobileTab?: ActivityDetailTabId;
+  onMobileTabChange?: (tab: ActivityDetailTabId) => void;
+  /** Meeting point + group roster — confirmed joiners and hosts only. */
+  canAccessCrewSurfaces?: boolean;
+  /** Mobile sticky footer — group chat + alerts (confirmed participant, not host). */
+  showParticipantFooterShortcuts?: boolean;
+  /** Mobile Buddies tab lock card — from `resolveActivityPresentation.showCrewLockedHint`. */
+  showCrewLockedHint?: boolean;
+  /** Host manage sheet — same tabs/content without page chrome or sticky join footer. */
+  layout?: 'page' | 'embedded';
+  /** Host ⋯ on mobile Plan hero (duplicate, delete, …). */
+  hostMobilePlanAccessory?: ReactNode;
 }
 
 export const ActivityDetailView = ({
@@ -94,7 +118,15 @@ export const ActivityDetailView = ({
   activityReviews = [],
   onActivityReviewSubmitted,
   canWriteActivityReview = false,
+  mobileTab = 'plan',
+  onMobileTabChange,
+  canAccessCrewSurfaces = true,
+  showParticipantFooterShortcuts = false,
+  showCrewLockedHint = false,
+  layout = 'page',
+  hostMobilePlanAccessory,
 }: ActivityDetailViewProps) => {
+  const isEmbedded = layout === 'embedded';
   const [internalPackageIndex, setInternalPackageIndex] = useState(0);
   const selectedPackageIndex = controlledPackageIndex ?? internalPackageIndex;
   const setSelectedPackageIndex = (index: number) => {
@@ -160,6 +192,19 @@ export const ActivityDetailView = ({
     locationName: activity.locationName,
   });
 
+  const activityTitle = activity.title || activity.locationName;
+  const kindChromeTitle = `${activityKindChromeEmoji(activity.activityType)} ${activityKindChromeLabel(activity.activityType)}`;
+  const showMobileTabs = !previewMode && Boolean(onMobileTabChange);
+  const showTransportTab = activityHasTransportDetailContent(activity);
+  const showTransportEmptyMobile =
+    showMobileTabs && mobileTab === 'transport' && !showTransportTab;
+  const mobilePlanPanel = mobileTabPanelClass('plan', mobileTab);
+  const mobilePlacePanel = mobileTabPanelClass('place', mobileTab);
+  const mobileBuddiesPanel = mobileTabPanelClass('buddies', mobileTab);
+  const mobileTransportPanel = mobileTabPanelClass('transport', mobileTab);
+  const mobileSidebarPanel =
+    mobileTab === 'plan' || mobileTab === 'buddies' ? 'block' : 'hidden md:block';
+
   const showInviteShare = !previewMode && activity.status === 'published';
 
   const joinLabel = usesExternalSignup
@@ -178,6 +223,7 @@ export const ActivityDetailView = ({
     onJoin?.();
   };
   const joinUiState = resolveJoinRequestUiState({ myRequest, participation });
+  const consumerJoinEnabled = !isEmbedded && !previewMode;
 
   const previewFooter = (
     <div className="rounded-2xl bg-amber-50 border border-amber-200 p-4 text-center">
@@ -208,31 +254,32 @@ export const ActivityDetailView = ({
             onWithdraw={onWithdraw}
             joinButtonClassName="ios-btn shadow-lg"
           />,
-          Boolean(participation)
+          showParticipantFooterShortcuts
         )
       : null;
 
-  const joinButton =
-    footerOverride ??
-    (previewMode
-      ? previewFooter
-      : pendingOrConfirmedFooter ??
-        wrapMobileFooter(
-          <JoinRequestActions
-            uiState={joinUiState}
-            joinLabel={joinLabel}
-            isFull={isFull}
-            onJoin={handleJoinClick}
-            onWithdraw={onWithdraw}
-            joinDisabled={joinActionDisabled}
-            joinButtonClassName="ios-btn shadow-lg"
-          />,
-          Boolean(participation)
-        ));
+  const joinButton = consumerJoinEnabled
+    ? footerOverride ??
+      (previewMode
+        ? previewFooter
+        : pendingOrConfirmedFooter ??
+          wrapMobileFooter(
+            <JoinRequestActions
+              uiState={joinUiState}
+              joinLabel={joinLabel}
+              isFull={isFull}
+              onJoin={handleJoinClick}
+              onWithdraw={onWithdraw}
+              joinDisabled={joinActionDisabled}
+              joinButtonClassName="ios-btn shadow-lg"
+            />,
+            showParticipantFooterShortcuts
+          ))
+    : undefined;
 
-  const sidebarJoin =
-    sidebarJoinOverride ??
-    (previewMode ? (
+  const sidebarJoin = consumerJoinEnabled
+    ? sidebarJoinOverride ??
+      (previewMode ? (
       <p className="mt-4 text-sm text-amber-800 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
         Preview only — join is disabled until you publish.
       </p>
@@ -271,36 +318,39 @@ export const ActivityDetailView = ({
       >
         {joinLabel}
       </button>
-    ));
+    ))
+    : null;
 
-  return (
-    <MobileDetailShell
-      backTo={backTo}
-      backLabel={backLabel}
-      footer={joinButton}
-      headerAction={
-        showInviteShare ? (
-          <ShareButton
-            title={sharePayload.title}
-            text={sharePayload.text}
-            path={sharePayload.path}
-            iconOnly
-            light
-          />
-        ) : undefined
-      }
-      banner={{
-        src: heroImage,
-        alt: activity.title || activity.locationName,
-        title: activity.title || activity.locationName,
-        eyebrow: activityDetailEyebrowForActivity(activity.activityType, activity.activityMode),
-        showMobileChrome: !previewMode,
-        showJourney: !previewMode,
-        journeyFallbackTo: backTo,
-        journeyLabel: backLabel,
-      }}
-    >
-      <div className="max-w-6xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+  const detailBody = (
+    <>
+      {showMobileTabs && onMobileTabChange ? (
+        <ActivityDetailTabBar
+          active={mobileTab}
+          onChange={onMobileTabChange}
+          showTransportTab={showTransportTab}
+        />
+      ) : null}
+      {showMobileTabs && !isEmbedded ? (
+        <ActivityDetailMobileHero
+          date={activity.date}
+          title={activityTitle}
+          venueLine={
+            registryPlacePath && registryPlaceName ? (
+              <Link to={registryPlacePath} className="font-medium text-emerald-800">
+                {registryPlaceName}
+              </Link>
+            ) : (
+              activity.locationName
+            )
+          }
+          trailing={mobileTab === 'plan' ? hostMobilePlanAccessory : undefined}
+        />
+      ) : null}
+      <div
+        className={`max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6 ${
+          isEmbedded ? 'px-0 py-2' : 'px-4 py-6'
+        }`}
+      >
         <div className="lg:col-span-2 space-y-4">
           {showInviteShare && canSendJoinInvites ? (
             <ActivityInviteLauncher
@@ -315,24 +365,11 @@ export const ActivityDetailView = ({
             />
           ) : null}
 
-          <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-3">About this {activity.activityType === 'event' ? 'event' : 'activity'}</h2>
+          <div className={`bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 ${mobilePlanPanel}`}>
+            <h2 className="text-lg font-bold text-gray-900 mb-3 hidden md:block">
+              About this {activity.activityType === 'event' ? 'event' : 'activity'}
+            </h2>
             <p className="text-gray-600 leading-relaxed whitespace-pre-line">{activity.description}</p>
-
-            {registryPlacePath && registryPlaceName && (
-              <Link
-                to={registryPlacePath}
-                className="mt-4 flex items-center justify-between gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-left transition hover:bg-gray-100"
-              >
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold text-gray-900 truncate">{registryPlaceName}</p>
-                  <p className="mt-0.5 text-xs text-gray-600">
-                    Venue details — toilets, fuel, shops, access
-                  </p>
-                </div>
-                <ChevronRight className="h-5 w-5 shrink-0 text-gray-400" aria-hidden />
-              </Link>
-            )}
 
             {externalSignupUrl && (
               <div className="mt-4 rounded-xl border border-violet-100 bg-violet-50 px-4 py-3">
@@ -436,8 +473,26 @@ export const ActivityDetailView = ({
               </div>
             )}
 
-            {(activity.startPoint || activity.meetingPoint || activity.parkingPoint || openInGoogleMapsUrl || hasAccessCoordinates) && (
-              <div className="mt-4 rounded-xl border border-gray-200 bg-gray-50 p-4">
+          </div>
+
+          {registryPlacePath && registryPlaceName && (
+            <div className={`bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 ${mobilePlacePanel}`}>
+              <Link
+                to={registryPlacePath}
+                className="flex items-center justify-between gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-left transition hover:bg-gray-100"
+              >
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-gray-900 truncate">{registryPlaceName}</p>
+                  <p className="mt-0.5 text-xs text-gray-600">Venue guide</p>
+                </div>
+                <ChevronRight className="h-5 w-5 shrink-0 text-gray-400" aria-hidden />
+              </Link>
+            </div>
+          )}
+
+          {(activity.startPoint || activity.meetingPoint || activity.parkingPoint || openInGoogleMapsUrl || hasAccessCoordinates) && (
+            <div className={`bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 ${mobilePlacePanel}`}>
+              <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
                 <div className="flex items-start gap-3">
                   <Car className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
                   <div className="space-y-3 w-full">
@@ -487,10 +542,20 @@ export const ActivityDetailView = ({
                   </div>
                 </div>
               </div>
-            )}
+            </div>
+          )}
 
-            {activity.rideshareEnabled && (
-              <div className="mt-4 rounded-2xl border border-sky-100 bg-sky-50/70 p-4">
+          {showTransportEmptyMobile ? (
+            <div
+              className={`md:hidden rounded-2xl border border-neutral-100 bg-white p-6 text-center ${mobileTransportPanel}`}
+            >
+              <Car className="mx-auto h-8 w-8 text-neutral-400" aria-hidden />
+              <p className="mt-3 text-sm text-neutral-600 leading-relaxed">{ACTIVITY_DETAIL_TRANSPORT_EMPTY_HINT}</p>
+            </div>
+          ) : null}
+
+          {activity.rideshareEnabled && (
+            <div className={`rounded-2xl border border-sky-100 bg-sky-50/70 p-4 ${mobileTransportPanel}`}>
                 <div className="flex items-start gap-2 text-sm text-gray-700">
                   <Car className="w-4 h-4 text-sky-600 mt-0.5 flex-shrink-0" />
                   <div className="min-w-0 flex-1">
@@ -530,13 +595,13 @@ export const ActivityDetailView = ({
                   </div>
                 </div>
               </div>
-            )}
+          )}
 
-            {activity.linkedParentActivity && (() => {
+          {activity.linkedParentActivity && (() => {
               const parent = activity.linkedParentActivity;
               const linkedCopy = linkedParentRidesharePeekCopy(parent.activityType, parent.title);
               return (
-                <div className="mt-4 rounded-2xl border border-sky-100 bg-sky-50/70 p-4 text-sm text-gray-700">
+                <div className={`rounded-2xl border border-sky-100 bg-sky-50/70 p-4 text-sm text-gray-700 ${mobileTransportPanel}`}>
                   <p className="font-semibold text-gray-900">{linkedCopy.eyebrow}</p>
                   {linkedCopy.showTitleSubtitle ? (
                     <p className="mt-1 text-gray-800">{parent.title}</p>
@@ -551,10 +616,9 @@ export const ActivityDetailView = ({
                 </div>
               );
             })()}
-          </div>
 
           {activity.itinerary && activity.itinerary.length > 0 && (
-            <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6">
+            <div className={`bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 ${mobilePlanPanel}`}>
               <h2 className="text-lg font-bold text-gray-900 mb-3">Itinerary</h2>
               <ul className="space-y-2">
                 {activity.itinerary.map((item, i) => (
@@ -573,7 +637,7 @@ export const ActivityDetailView = ({
             return (
               <>
                 {mandatoryInstructions.length > 0 && (
-                  <div className="bg-white rounded-2xl border border-amber-100 p-5 sm:p-6">
+                  <div className={`bg-white rounded-2xl border border-amber-100 p-5 sm:p-6 ${mobilePlanPanel}`}>
                     <h2 className="text-lg font-bold text-gray-900 mb-1">{MANDATORY_INSTRUCTIONS_LABEL}</h2>
                     <p className="text-xs text-gray-500 mb-3">Joiners must agree to these when requesting a spot.</p>
                     <ul className="list-disc list-inside space-y-1 text-gray-700 text-sm">
@@ -584,7 +648,7 @@ export const ActivityDetailView = ({
                   </div>
                 )}
                 {otherRequirements.length > 0 && (
-                  <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6">
+                  <div className={`bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 ${mobilePlanPanel}`}>
                     <h2 className="text-lg font-bold text-gray-900 mb-3">Activity details</h2>
                     <ul className="list-disc list-inside space-y-1 text-gray-700 text-sm">
                       {otherRequirements.map((item, i) => (
@@ -598,7 +662,7 @@ export const ActivityDetailView = ({
           })()}
 
           {activity.images && activity.images.length > 1 && (
-            <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6">
+            <div className={`bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 ${mobilePlanPanel}`}>
               <h2 className="text-lg font-bold text-gray-900 mb-3">Photos</h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {activity.images.map((img, i) => (
@@ -621,7 +685,13 @@ export const ActivityDetailView = ({
           ) : null}
         </div>
 
-        <div className="space-y-4">
+        <div className={`space-y-4 ${mobileSidebarPanel}`}>
+          {showCrewLockedHint && showMobileTabs ? (
+            <div className={`md:hidden bg-white rounded-2xl border border-gray-100 p-6 text-center ${mobileBuddiesPanel}`}>
+              <Users className="mx-auto h-8 w-8 text-neutral-400" aria-hidden />
+              <p className="mt-3 text-sm text-neutral-600 leading-relaxed">{ACTIVITY_DETAIL_CREW_LOCKED_HINT}</p>
+            </div>
+          ) : null}
           <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 lg:sticky lg:top-20">
             <div className="flex items-start justify-between gap-3">
               <div>
@@ -644,7 +714,9 @@ export const ActivityDetailView = ({
             {message && <p className="mt-3 text-sm text-emerald-700 bg-emerald-50 px-3 py-2 rounded-lg">{message}</p>}
             {error && <p className="mt-3 text-sm text-amber-800 bg-amber-50 px-3 py-2 rounded-lg">{error}</p>}
 
-            <div className="mt-5 pt-5 border-t border-gray-100">
+            <div
+              className={`mt-5 pt-5 border-t border-gray-100 ${showMobileTabs ? mobileBuddiesPanel : ''}`}
+            >
               <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Host</p>
               <div className="flex items-center gap-2">
                 {hostPath ? (
@@ -687,8 +759,10 @@ export const ActivityDetailView = ({
               {activity.hostBio && <p className="mt-3 text-sm text-gray-600 leading-relaxed">{activity.hostBio}</p>}
             </div>
 
-            {PARTICIPANT_PRIVACY.showPreJoin && !previewMode && (
-              <div className="mt-5 pt-5 border-t border-gray-100">
+            {PARTICIPANT_PRIVACY.showPreJoin && !previewMode && canAccessCrewSurfaces && (
+              <div
+                className={`mt-5 pt-5 border-t border-gray-100 ${showMobileTabs ? mobileBuddiesPanel : ''}`}
+              >
                 <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
                   Who&apos;s going ({participants.length})
                 </p>
@@ -707,6 +781,41 @@ export const ActivityDetailView = ({
           </div>
         </div>
       </div>
+    </>
+  );
+
+  if (isEmbedded) {
+    return detailBody;
+  }
+
+  return (
+    <MobileDetailShell
+      backTo={backTo}
+      backLabel={backLabel}
+      footer={joinButton}
+      headerAction={
+        showInviteShare ? (
+          <ShareButton
+            title={sharePayload.title}
+            text={sharePayload.text}
+            path={sharePayload.path}
+            iconOnly
+            light
+          />
+        ) : undefined
+      }
+      banner={{
+        src: heroImage,
+        alt: activityTitle,
+        title: previewMode ? activityTitle : kindChromeTitle,
+        eyebrow: activityDetailEyebrowForActivity(activity.activityType, activity.activityMode),
+        showMobileChrome: !previewMode,
+        showJourney: !previewMode,
+        journeyFallbackTo: backTo,
+        journeyLabel: backLabel,
+      }}
+    >
+      {detailBody}
     </MobileDetailShell>
   );
 };

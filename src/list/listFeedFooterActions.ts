@@ -1,9 +1,6 @@
 import type { ActivityMapPeekAction, ActivityMapPeekActionId } from '@uaetrail/shared-types';
 import type { ExploreCardModel } from '../explore/exploreCardModel';
-import {
-  activityMapPeekShowsJoinFlow,
-  resolveActivityMapPeekActions,
-} from '../explore/activityMapPeekActions';
+import { resolveActivityPeekEngagement } from '../activity/resolveActivityPresentation';
 import { activityMapPeekActionLabel } from '../explore/exploreMapPeekActionCopy';
 import { exploreCardHasMapCoords, exploreCardIsSeeking } from '../explore/exploreCardModel';
 import type { JoinRequestUiState } from '../utils/joinRequestUi';
@@ -89,16 +86,16 @@ const resolveActivityJoinFooter = (
   options: { isGuest: boolean; joinUiState?: JoinRequestUiState }
 ): ListFeedFooterModel | null => {
   const { isGuest, joinUiState } = options;
-  const actions = resolveActivityMapPeekActions(card, joinUiState);
-  const primaryAction = actions.find((action) => action.prominence === 'primary');
-  const secondaryAction = actions.find((action) => action.prominence === 'secondary');
+  const engagement = resolveActivityPeekEngagement(card, joinUiState);
+  const primaryAction = engagement.mapPeekActions.find((action) => action.prominence === 'primary');
+  const secondaryAction = engagement.mapPeekActions.find((action) => action.prominence === 'secondary');
 
   if (!primaryAction) return null;
 
   return {
     primary: peekActionToFooterButton(primaryAction, card, isGuest),
     secondary: secondaryAction ? peekActionToFooterButton(secondaryAction, card, isGuest) : null,
-    usesJoinFlow: activityMapPeekShowsJoinFlow(card, joinUiState),
+    usesJoinFlow: engagement.showsLegacyJoinFlow,
   };
 };
 

@@ -34,4 +34,14 @@ During dev run, quickly verify:
 
 Explore FAB changes: [`CREATE_FLOW.md`](./CREATE_FLOW.md) + `src/explore/composeFlowCatalog.ts`. Automated guards: `npm run verify:system:quick` and `npm run test:explore-alignment`.
 
-Seeking M2d (backfill + stub-write flag): [`operations/SEEKING_M2D_RUNBOOK.md`](./operations/SEEKING_M2D_RUNBOOK.md). Local check: `npm run seeking:m2d-status`; deploy gate: `npm run seeking:m2d-status -- --strict` (exit 0 only after `PARTICIPANT_INTENT_STUB_WRITE=false` when DB is ready).
+Seeking storage (activity-canonical Find): [`operations/SEEKING_M2D_RUNBOOK.md`](./operations/SEEKING_M2D_RUNBOOK.md). Local readiness: `npm run seeking:m2d-status` (stub write should be **off** by default).
+
+**Local smoke — Find / looking for (manual, after `dev:local`):**
+
+1. Signed-in → Explore → **Find** (FAB) → publish a pin with location.
+2. Map/list: pin opens **same peek/card UX** as other activities (not a separate “demand” screen).
+3. **People** panel → **Available** tab: **Looking for company** row opens explore pin URL (`pin=activity:…` when backfilled).
+4. Plan → **Schedule** → **Seeking**: your post appears; **Needs you** is only for host coordination (not Find).
+5. API contracts (Mongo test DB): `npm run test:seeking-local` (stub default off, store + **POST /me/participant-intents**, explore map `activity` + `activityMode: seeking`).
+
+**G-manage (Needs you, not Find):** joiner requests on a hosted activity → host sees `host_join_queue` on `GET /me/coordination-attention` → approve via host console or Plan manage flow. API slice: `tests/g-manage-coordination-join-approve.test.ts` (included in `verify:system:quick`).

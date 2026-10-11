@@ -154,7 +154,7 @@ Built only via **`routingCatalog`** or `@uaetrail/shared-types` `entity-path` he
 | Person (community host) | `/member/:userId` | `memberProfilePath(userId)` |
 | Shop | `/shop/:id` | `shopPublicPath({ id })` |
 | Browse | `/explore` (+ query) | `explorePath()` in `src/explore/routing.ts` |
-| Plan tab | `/plan` | `PLAN_PATH` |
+| Plan tab | `/plan` | `PLAN_PATH` · UI label **My Plans** (`PRODUCT_PLAN_SURFACE_TITLE`) |
 | Outing history (profile) | `/profile/history` | `PROFILE_HISTORY_PATH` |
 | Journey map | `/profile/history/map` | `JOURNEY_MAP_PATH` |
 | Legacy my-trips URL | `/profile/my-trips` | Redirect → `PROFILE_HISTORY_PATH` (`MY_TRIPS_PATH` deprecated) |
@@ -459,6 +459,7 @@ Same activity may resolve differently by `surface` (e.g. link-only private plan 
     level: ActivityViewerAccessLevel;
     gateReason: ViewerGateReason;
     canOpenDetailPage: boolean;  // FE route + title link
+    canAccessCrewSurfaces: boolean; // meeting precision + group roster/chat (not consumer tab labels)
   };
 }
 ```
@@ -487,7 +488,8 @@ Computed server-side with `surface: 'explore_map'` (`computeActivityMapPeekActio
 |------------------------|--------|---------|-------------------|--------------|--------|
 | `open` | anonymous | map + `/activity/:id` | `redacted` | `sign_in` | **TARGET** — today **LIVE** API returns **full** for guests |
 | `open` | member, not on roster | map + `/activity/:id` | `redacted` | `join_required` | **TARGET** |
-| `open` | participant or active request¹ | any | `full` | `null` | Align with participation resolver |
+| `open` | confirmed participant / host / staff | any | `full` | `null` | Roster on crew |
+| `open` | pending / waitlisted request | detail | `redacted` | `null` | May open page; no meeting/roster/chat (`canAccessCrewSurfaces: false`) |
 | `open` | host / tenant staff | any | `full` | `null` | **LIVE** |
 | `private` | anonymous | `/activity/:id` | `none` | `sign_in` | **LIVE** (`visibilityState: private` stub) |
 | `private` | signed-in, not roster | `/activity/:id` | `redacted` | `join_required` | **LIVE** — `link_holder` → redacted preview + join CTA |
@@ -497,8 +499,6 @@ Computed server-side with `surface: 'explore_map'` (`computeActivityMapPeekActio
 | **Place** | anyone | detail pages | `full` | `null` | Public catalog |
 | **Shop** | guest | map peek + detail | `redacted` | `sign_in` | **LIVE** — `resolveCommerceMapViewerAccess`; FE uses `viewerAccess` |
 | **Shop** | signed-in member | detail | `full` | `null` | **LIVE** |
-
-¹ **Active request** for private activities today includes **waitlisted** (`join_request` level) — see API tests.
 
 **Participation axis (unchanged):** `participationMode` only affects **how** you join (`I'm going` vs `Request to join`) and `joinRequestUi` — not map discovery. Demand never has `participationMode` ([`CREATE_FLOW.md`](./CREATE_FLOW.md)).
 

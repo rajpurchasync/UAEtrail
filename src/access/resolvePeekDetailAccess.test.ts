@@ -34,6 +34,7 @@ describe('resolvePeekDetailAccess', () => {
         canViewFullActivity: false,
         canOpenDetailPage: false,
         joinMode: 'open',
+        canAccessCrewSurfaces: false,
       },
     });
     expect(resolvePeekDetailAccess(card, { isGuest: true })).toEqual({ kind: 'guest_gate' });
@@ -48,6 +49,7 @@ describe('resolvePeekDetailAccess', () => {
         canViewFullActivity: false,
         canOpenDetailPage: true,
         joinMode: 'open',
+        canAccessCrewSurfaces: false,
       },
     });
     expect(resolvePeekDetailAccess(card, { isGuest: true })).toEqual({ kind: 'guest_gate' });
@@ -62,6 +64,7 @@ describe('resolvePeekDetailAccess', () => {
         canViewFullActivity: true,
         canOpenDetailPage: true,
         joinMode: 'open',
+        canAccessCrewSurfaces: true,
       },
     });
     expect(resolvePeekDetailAccess(card, { isGuest: false })).toEqual({
@@ -89,6 +92,7 @@ describe('resolvePeekDetailAccess', () => {
         canViewFullActivity: false,
         canOpenDetailPage: true,
         joinMode: 'open',
+        canAccessCrewSurfaces: false,
       },
     });
     expect(resolvePeekDetailAccess(card, { isGuest: false })).toEqual({

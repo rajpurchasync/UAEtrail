@@ -227,6 +227,7 @@ describe('resolveListFeedFooterModel', () => {
         canViewFullActivity: false,
         canOpenDetailPage: true,
         joinMode: 'open',
+        canAccessCrewSurfaces: false,
       },
     };
 

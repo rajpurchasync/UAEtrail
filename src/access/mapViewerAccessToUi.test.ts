@@ -12,6 +12,7 @@ describe('mapViewerAccessToExplorePeekDetail', () => {
           canViewFullActivity: true,
           canOpenDetailPage: true,
           joinMode: 'open',
+          canAccessCrewSurfaces: true,
         },
         '/activity/1'
       )
@@ -28,6 +29,7 @@ describe('mapViewerAccessToExplorePeekDetail', () => {
           canViewFullActivity: false,
           canOpenDetailPage: true,
           joinMode: 'open',
+          canAccessCrewSurfaces: false,
         },
         '/activity/1'
       )
@@ -44,6 +46,7 @@ describe('mapViewerAccessToExplorePeekDetail', () => {
           canViewFullActivity: false,
           canOpenDetailPage: true,
           joinMode: 'open',
+          canAccessCrewSurfaces: false,
         },
         '/activity/1'
       )
@@ -59,6 +62,7 @@ describe('mapViewerAccessToExplorePeekDetail', () => {
         canViewFullActivity: false,
         canOpenDetailPage: false,
         joinMode: 'open',
+        canAccessCrewSurfaces: false,
       },
       '/activity/1'
     );

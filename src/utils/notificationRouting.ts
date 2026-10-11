@@ -3,7 +3,7 @@ import {
   activityDetailPath,
   ADMIN_HOSTS_PATH,
   ADMIN_PLACES_PATH,
-  ACTIVITIES_LEGACY_PATH,
+  ACTIVITIES_PATH,
   EXPLORE_MAP_PATH,
   explorePath,
   HOST_MESSAGES_PATH,
@@ -22,9 +22,9 @@ import {
   messagesToUserPath,
   myRequestDetailPath,
   tripsLegacyJoinedTabPath,
-  tripsLegacyUpcomingSegmentPath,
   tripsPlansPath,
 } from '../config/routingCatalog';
+import { planWishlistTabPath } from '../plan/planTab';
 import {
   NotificationDTO,
   exploreSeekingMapItemPath,
@@ -84,7 +84,7 @@ const normalizeDirectNotificationPath = (
     const legacyUrl = new URL(path, 'http://local');
     const legacyPathname = legacyUrl.pathname;
     if (
-      (legacyPathname === TRIPS_PATH || legacyPathname === ACTIVITIES_LEGACY_PATH) &&
+      (legacyPathname === TRIPS_PATH || legacyPathname === ACTIVITIES_PATH) &&
       legacyUrl.searchParams.get('tab') === 'joined' &&
       legacyUrl.searchParams.get('segment') === 'upcoming'
     ) {
@@ -100,7 +100,7 @@ const normalizeDirectNotificationPath = (
 
   if (
     pathname === TRIPS_PATH ||
-    pathname === ACTIVITIES_LEGACY_PATH ||
+    pathname === ACTIVITIES_PATH ||
     pathname === '/trips/map'
   ) {
     const resolved = resolveLegacyTripsHubRedirect(pathname, search);
@@ -165,9 +165,10 @@ export const inferNotificationPath = (
   }
 
   if (kind === 'join_request_approved') {
-    const groupId = toStringValue(meta?.groupId);
-    if (groupId) {
-      return messagesGroupPath(groupId, activityId ?? undefined);
+    const path = toStringValue(meta?.path);
+    if (path) return path;
+    if (activityId) {
+      return `${activityDetailPath(activityId)}?joined=1`;
     }
     return tripsLegacyJoinedTabPath();
   }
@@ -216,11 +217,8 @@ export const inferNotificationPath = (
   if (kind === 'reward' || kind === 'tier_upgrade') {
     return PROFILE_BADGES_PATH;
   }
-  if (kind === 'goal_halfway' || kind === 'goal_complete') {
-    return tripsLegacyUpcomingSegmentPath();
-  }
-  if (kind === 'goal_behind_pace') {
-    return tripsLegacyJoinedTabPath();
+  if (kind === 'goal_halfway' || kind === 'goal_complete' || kind === 'goal_behind_pace') {
+    return planWishlistTabPath();
   }
   if (kind === 'connection_buddy_request' || kind === 'connection_buddy_accepted') {
     const actorUserId =

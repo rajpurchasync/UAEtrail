@@ -10,6 +10,7 @@ import { useEffect } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { ClipboardList, Map, MessageSquare, type LucideIcon } from 'lucide-react';
 
+import { PRODUCT_PLAN_SURFACE_TITLE } from '../../content/productNorthStar';
 import { useInboxUnreadCount } from '../../hooks/useInboxUnreadCount';
 import { useMobileBottomNav } from '../../hooks/useMobileBottomNav';
 
@@ -30,7 +31,7 @@ const TabIcon = ({ icon: Icon, active }: { icon: LucideIcon; active: boolean }) 
   />
 );
 
-/** Mobile tab bar — Explore · Plan · Chat (`/trips`). */
+/** Mobile tab bar — Explore · My Plans · Chat (`/plan`). */
 export const MobileBottomNav = () => {
   const visible = useMobileBottomNav();
   const { pathname } = useLocation();
@@ -74,10 +75,10 @@ export const MobileBottomNav = () => {
           to={PLAN_PATH}
           className={tabShellClass(tripsActive)}
           aria-current={tripsActive ? 'page' : undefined}
-          aria-label="Plan"
+          aria-label={PRODUCT_PLAN_SURFACE_TITLE}
         >
           <TabIcon icon={ClipboardList} active={tripsActive} />
-          <span className={tabLabelClass(tripsActive)}>Plan</span>
+          <span className={tabLabelClass(tripsActive)}>{PRODUCT_PLAN_SURFACE_TITLE}</span>
         </Link>
 
         <NavLink to={CHAT_PATH} end className={({ isActive }) => tabShellClass(isActive)} aria-label="Chat">

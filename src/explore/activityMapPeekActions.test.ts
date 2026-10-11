@@ -38,6 +38,7 @@ const activityCard = (overrides: Partial<ExploreCardModel> = {}): ExploreCardMod
       canViewFullActivity: true,
       canOpenDetailPage: true,
       joinMode: 'open',
+      canAccessCrewSurfaces: true,
       mapPeekActions: [
         { id: 'message_host', prominence: 'primary' },
         { id: 'view_detail', prominence: 'text' },
@@ -61,6 +62,7 @@ describe('resolveActivityMapPeekActions', () => {
         canViewFullActivity: false,
         canOpenDetailPage: true,
         joinMode: 'open',
+        canAccessCrewSurfaces: false,
         mapPeekActions: [],
       },
     });
@@ -80,6 +82,7 @@ describe('resolveActivityMapPeekActions', () => {
         canViewFullActivity: false,
         canOpenDetailPage: true,
         joinMode: 'open',
+        canAccessCrewSurfaces: false,
         mapPeekActions: [
           { id: 'request_join', prominence: 'primary' },
           { id: 'view_detail', prominence: 'text' },
@@ -93,12 +96,13 @@ describe('resolveActivityMapPeekActions', () => {
   it('does not fetch join context for pending_join wire only', () => {
     const card = activityCard({
       viewerAccess: {
-        exposure: 'full',
+        exposure: 'redacted',
         level: 'join_request',
         gateReason: null,
-        canViewFullActivity: true,
+        canViewFullActivity: false,
         canOpenDetailPage: true,
         joinMode: 'open',
+        canAccessCrewSurfaces: false,
         mapPeekActions: [
           { id: 'pending_join', prominence: 'primary', joinRequestStatus: 'pending' },
           { id: 'view_detail', prominence: 'text' },
@@ -119,6 +123,7 @@ describe('activityMapPeekSkipsJoinContext', () => {
         canViewFullActivity: true,
         canOpenDetailPage: true,
         joinMode: 'open',
+        canAccessCrewSurfaces: true,
         mapPeekActions: [
           { id: 'open_crew_chat', prominence: 'primary' },
           { id: 'link_carpool', prominence: 'link' },

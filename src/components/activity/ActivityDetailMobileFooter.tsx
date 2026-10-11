@@ -34,7 +34,7 @@ export const ActivityDetailMobileFooter = ({
           disabled={chat.busy}
           onClick={() => void chat.openChat()}
           className={quickActionClass}
-          aria-label={chat.isMember ? 'Open crew chat' : 'Join crew chat'}
+          aria-label={chat.isMember ? 'Open group chat' : 'Join group chat'}
         >
           <MessageCircle className="h-5 w-5 text-emerald-600" aria-hidden />
           Chat

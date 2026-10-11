@@ -36,15 +36,26 @@ import { hostActivityCtaHandlers as buildHostActivityCtaHandlers } from '../host
 import { navigateToCreateLinkedRideshare } from '../explore/navigateCreateLinkedRideshare';
 import { useActivityInviteShareSheet } from '../hooks/useActivityInviteShareSheet';
 import { EXPLORE_MAP_PATH } from '../config/routingCatalog';
+import {
+  ACTIVITY_DETAIL_JOINED_QUERY,
+  ACTIVITY_DETAIL_TAB_QUERY,
+  parseActivityDetailTabParam,
+  type ActivityDetailTabId,
+} from '../activity/activityDetailTab';
+import { resolveActivityPresentation } from '../activity/resolveActivityPresentation';
+import { activityHasTransportDetailContent } from '../activity/activityDetailTransport';
+import { ActivityDetailJoinWelcomeSheet } from '../components/activity/detail/ActivityDetailJoinWelcomeSheet';
+import { activityDetailPath } from '../config/routingCatalog';
 
 export const ActivityDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const gate = useHostStatus({ enabled: Boolean(user) });
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const fromJoinInvite = searchParams.get('invite') === '1';
   const joinInviteAutoOpenRef = useRef(false);
+  const joinedWelcomeHandledRef = useRef(false);
   const [activity, setActivity] = useState<ActivityDetailDTO | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -56,6 +67,7 @@ export const ActivityDetail = () => {
   const [activityReviews, setActivityReviews] = useState<ReviewDTO[]>([]);
   const [hostRemoveConfirm, setHostRemoveConfirm] = useState<ActivityDTO | null>(null);
   const [hostRemoveBusy, setHostRemoveBusy] = useState(false);
+  const [joinWelcomeOpen, setJoinWelcomeOpen] = useState(false);
   const inviteShare = useActivityInviteShareSheet();
 
   const loadActivity = useCallback(() => {
@@ -81,6 +93,10 @@ export const ActivityDetail = () => {
   useEffect(() => {
     loadActivity();
   }, [loadActivity]);
+
+  useEffect(() => {
+    joinedWelcomeHandledRef.current = false;
+  }, [id]);
 
   useEffect(() => {
     if (!id || activity?.status !== 'published') {
@@ -118,6 +134,24 @@ export const ActivityDetail = () => {
   const hasMultiplePackages = pricePackages.length > 1;
   const packageSelected = !hasMultiplePackages || selectedPackageIndex >= 0;
   const isConfirmedParticipant = Boolean(participation) || joinUiState.kind === 'confirmed';
+
+  const mobileTab = parseActivityDetailTabParam(searchParams.get(ACTIVITY_DETAIL_TAB_QUERY));
+  const setMobileTab = useCallback(
+    (tab: ActivityDetailTabId) => {
+      const next = new URLSearchParams(searchParams);
+      if (tab === 'plan') next.delete(ACTIVITY_DETAIL_TAB_QUERY);
+      else next.set(ACTIVITY_DETAIL_TAB_QUERY, tab);
+      setSearchParams(next, { replace: true });
+    },
+    [searchParams, setSearchParams]
+  );
+
+  useEffect(() => {
+    if (!activity || mobileTab !== 'transport') return;
+    if (activityHasTransportDetailContent(activity)) return;
+    setMobileTab('plan');
+  }, [activity, mobileTab, setMobileTab]);
+
   const canWriteActivityReview = Boolean(participation?.checkedInAt);
 
   const detailExposure = useMemo(() => {
@@ -130,6 +164,53 @@ export const ActivityDetail = () => {
       user &&
       detailExposure !== 'none' &&
       viewerIsActivityHostUser(activity, user.id)
+  );
+
+  const presentation = useMemo(
+    () =>
+      activity
+        ? resolveActivityPresentation({
+            viewerAccess,
+            joinUiState,
+            participationMode: activity.participationMode,
+            requirements: activity.requirements,
+            activityPublished: activity.status === 'published',
+            isHostUser: isActivityHostUser,
+            isConfirmedParticipant,
+          })
+        : null,
+    [activity, viewerAccess, joinUiState, isActivityHostUser, isConfirmedParticipant]
+  );
+
+  const joinedWelcomeQuery = searchParams.get(ACTIVITY_DETAIL_JOINED_QUERY) === '1';
+
+  useEffect(() => {
+    if (!joinedWelcomeQuery || loading || !activity || joinedWelcomeHandledRef.current) return;
+    if (!isConfirmedParticipant) return;
+    if (presentation && !presentation.canAccessCrewSurfaces) return;
+    joinedWelcomeHandledRef.current = true;
+    setJoinWelcomeOpen(true);
+    const next = new URLSearchParams(searchParams);
+    next.delete(ACTIVITY_DETAIL_JOINED_QUERY);
+    setSearchParams(next, { replace: true });
+  }, [
+    joinedWelcomeQuery,
+    loading,
+    activity,
+    isConfirmedParticipant,
+    presentation,
+    searchParams,
+    setSearchParams,
+  ]);
+
+  const handleJoinSuccess = useCallback(
+    (successMessage: string) => {
+      joinActions.handleJoinSuccess(successMessage);
+      if (presentation?.showCrewWelcomeAfterInstantJoin) {
+        setJoinWelcomeOpen(true);
+      }
+    },
+    [joinActions, presentation]
   );
 
   const hostActivityCtaHandlers = useMemo(() => {
@@ -310,7 +391,7 @@ export const ActivityDetail = () => {
       ) : null}
       {isRedactedPreview && viewerAccess?.gateReason === 'join_required' && user ? (
         <p className="mx-auto max-w-3xl px-4 pt-4 text-sm font-medium text-neutral-700">
-          Request to join or RSVP to unlock the full plan — meeting point, host notes, and crew chat.
+          RSVP or request a spot to unlock meeting details and the group chat.
         </p>
       ) : null}
       {isRedactedPreview && activity.message ? (
@@ -357,7 +438,31 @@ export const ActivityDetail = () => {
           setActivityReviews((prev) => [review, ...prev.filter((row) => row.id !== review.id)])
         }
         canWriteActivityReview={canWriteActivityReview}
+        mobileTab={mobileTab}
+        onMobileTabChange={isRedactedPreview ? undefined : setMobileTab}
+        canAccessCrewSurfaces={presentation?.canAccessCrewSurfaces ?? true}
+        showParticipantFooterShortcuts={presentation?.showParticipantFooterShortcuts ?? false}
+        showCrewLockedHint={presentation?.showCrewLockedHint ?? false}
+        hostMobilePlanAccessory={
+          isActivityHostUser && hostActivityCtaHandlers && mobileTab === 'plan' && !isRedactedPreview ? (
+            <HostActivityCtas
+              variant="menuOnly"
+              activity={activity}
+              linkRideshareTenantId={gate.tenantId}
+              handlers={hostActivityCtaHandlers}
+            />
+          ) : undefined
+        }
       />
+      {activity && id ? (
+        <ActivityDetailJoinWelcomeSheet
+          open={joinWelcomeOpen}
+          activityId={activity.id}
+          detailPath={activityDetailPath(activity.id)}
+          onClose={() => setJoinWelcomeOpen(false)}
+          onOpenPlaceTab={() => setMobileTab('place')}
+        />
+      ) : null}
       <WithdrawRequestModal
         open={joinActions.showWithdraw}
         onClose={() => joinActions.setShowWithdraw(false)}
@@ -373,7 +478,7 @@ export const ActivityDetail = () => {
         activity={activity}
         isFull={activity.slotsAvailable <= 0}
         selectedPackageIndex={hasMultiplePackages ? selectedPackageIndex : pricePackages.length === 1 ? 0 : undefined}
-        onSuccess={joinActions.handleJoinSuccess}
+        onSuccess={handleJoinSuccess}
       />
       {inviteShare.sheet}
       <HostActivityCancelDialog

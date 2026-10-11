@@ -1,4 +1,5 @@
 import { PLAN_PATH } from '../config/surfacePaths';
+import { planWishlistTabPath } from './planTab';
 
 /** Plan tab sections — URL `?lens=` (with `view=plans`). */
 export type PlanLens = 'schedule' | 'calendar' | 'saved' | 'goals' | 'availability';
@@ -33,4 +34,4 @@ export const planLensPath = (lens: PlanLens = 'schedule'): string => {
 };
 
 /** Canonical saved / wishlist entry on Plan (`D13` in member-surfaces-implementation-plan). */
-export const planSavedPath = (): string => planLensPath('saved');
+export const planSavedPath = (): string => planWishlistTabPath();

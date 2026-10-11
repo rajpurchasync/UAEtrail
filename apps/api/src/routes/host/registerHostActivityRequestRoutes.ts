@@ -16,7 +16,7 @@ import { ORG_ACTIVITY_EDIT_ROLES } from '../../lib/org-permissions.js';
 import { requireOrgRole } from '../../middleware/tenant.js';
 import { validate } from '../../middleware/validate.js';
 import { ensureActivityGroupChat } from '../../services/activity-group-chat.js';
-import { messagesGroupPath, TRIPS_JOINED_TAB_PATH } from '../../lib/member-routes.js';
+import { activityDetailJoinedWelcomePath, TRIPS_JOINED_TAB_PATH } from '../../lib/member-routes.js';
 import { dispatchNotification } from '../../services/notifications.js';
 import { activityRequestDecisionSchema, idParamSchema } from './host-route-schemas.js';
 
@@ -129,9 +129,7 @@ export const registerHostActivityRequestRoutes = (hostRouter: Router): void => {
               groupId: groupId ?? null,
               actorUserId: req.auth!.userId,
               organizerNote: organizerNote?.trim() || null,
-              path: groupId
-                ? messagesGroupPath(groupId, request.activityId)
-                : TRIPS_JOINED_TAB_PATH,
+              path: activityDetailJoinedWelcomePath(request.activityId),
             },
           });
         } else {

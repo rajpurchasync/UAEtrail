@@ -17,6 +17,7 @@ import {
 import { joinedSubViewTitle } from '../../pages/activities/shared';
 import { useHostStatus } from '../../hooks/useHostStatus';
 import { memberCanManageHostedActivities } from '../../utils/hostedActivitiesGate';
+import { PRODUCT_PLAN_SURFACE_TITLE } from '../../content/productNorthStar';
 import { ConsumerHeaderActions } from '../layout/ConsumerHeaderActions';
 import { MobileUnifiedTabHeader } from './MobileUnifiedTabHeader';
 
@@ -31,7 +32,7 @@ const resolveCenter = (
     const params = new URLSearchParams(search);
     const subTitle = joinedSubViewTitle(params.get('sub'));
     if (subTitle) return { kind: 'title', text: subTitle };
-    return { kind: 'title', text: 'Plan' };
+    return { kind: 'title', text: PRODUCT_PLAN_SURFACE_TITLE };
   }
   if (isProfileHistoryListPath(pathname) || isJourneyMapPath(pathname)) {
     return { kind: 'title', text: isJourneyMapPath(pathname) ? 'My Map' : 'History' };

@@ -73,7 +73,7 @@ describe('exploreRouting navigation contract', () => {
 
   it('myActivitiesPath targets trips hub tabs', () => {
     expect(myActivitiesPath()).toBe('/plan');
-    expect(myActivitiesPath('hosted')).toBe('/plan?view=plans&role=hosted');
+    expect(myActivitiesPath('hosted')).toBe('/plan?view=plans&filter=hosting');
   });
 
   it('explorePath supports join-invite deep link on activity pin', () => {

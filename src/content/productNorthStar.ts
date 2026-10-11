@@ -25,6 +25,9 @@ export const PRODUCT_SITE_DESCRIPTION =
 /** Browse CTA label (aligned with explore nav). */
 export const PRODUCT_EXPLORE_CTA = 'Explore the map';
 
+/** Signed-in hub tab + mobile header title (`/plan`). */
+export const PRODUCT_PLAN_SURFACE_TITLE = 'My Plans';
+
 /** Join CTA label. */
 export const PRODUCT_JOIN_CTA = 'Join free';
 

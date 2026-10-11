@@ -117,7 +117,7 @@ const pinIcon = (
   selected: boolean,
   pin: Pick<
     PlaceMapPin,
-    'id' | 'name' | 'source' | 'stackCount' | 'colocatedEntries'
+    'id' | 'name' | 'source' | 'stackCount' | 'colocatedEntries' | 'activityMode'
   >,
   _rideshareEndpoint?: 'from' | 'to',
   selectedExploreItemId?: string,

@@ -6,7 +6,7 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { parsePeopleBrowseTabFromUrl } from '../explore/peopleBrowseTab';
-import { PLAN_LENS_SEGMENTS } from '../plan/planLens';
+import { PLAN_MAIN_TABS } from '../plan/planTab';
 import { participantHostBookmarkRedirect } from '../utils/authRouting';
 import { inferNotificationPath } from '../utils/notificationRouting';
 import type { NotificationDTO } from '@uaetrail/shared-types';
@@ -61,7 +61,7 @@ describe('member surfaces §11 acceptance (automated)', () => {
       inferNotificationPath(
         notif({ path: '/trips?segment=upcoming&tab=joined', kind: 'join_request_waitlisted' })
       )
-    ).toBe('/plan?view=plans&role=joined');
+    ).toBe('/plan?view=plans&filter=joined');
   });
 
   it('G-arch: participant /host bookmarks redirect off host console', () => {
@@ -69,19 +69,26 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(participantHostBookmarkRedirect('/host/activities')).toContain('/plan');
   });
 
-  it('G-lang: mobile tab bar labels Plan (not Trips hub)', () => {
+  it('G-lang: mobile tab bar labels My Plans (not Trips hub)', () => {
     const nav = read('src/components/layout/MobileBottomNav.tsx');
-    expect(nav).toMatch(/aria-label="Plan"/);
-    expect(nav).toMatch(/>Plan</);
+    expect(nav).toContain('PRODUCT_PLAN_SURFACE_TITLE');
     expect(nav).not.toMatch(/aria-label="Trips"/);
+    const northStar = read('src/content/productNorthStar.ts');
+    expect(northStar).toContain("PRODUCT_PLAN_SURFACE_TITLE = 'My Plans'");
   });
 
-  it('G-plan: Plan lenses cover schedule, saved, goals, availability', () => {
-    const keys = PLAN_LENS_SEGMENTS.map((row) => row.key);
-    expect(keys).toContain('schedule');
-    expect(keys).toContain('saved');
-    expect(keys).toContain('goals');
-    expect(keys).toContain('availability');
+  it('G-plan: Plan mobile tabs are Upcoming and Wishlist (goals + saved)', () => {
+    const keys = PLAN_MAIN_TABS.map((row) => row.key);
+    expect(keys).toEqual(['upcoming', 'wishlist']);
+    const activities = read('src/pages/Activities.tsx');
+    expect(activities).toContain('PlanGoalsProgressSummary');
+    expect(activities.indexOf('PlanGoalsProgressSummary')).toBeLessThan(
+      activities.indexOf('PlanPageTabs')
+    );
+    expect(activities).toContain('PlanPageTabs');
+    expect(activities).not.toContain('PlanLensTabs');
+    const goalBar = read('src/components/plan/PlanGoalsProgressSummary.tsx');
+    expect(goalBar).not.toMatch(/goalCount === 0.*return null/);
   });
 
   it('G-avail-map: People browse defaults to Available tab', () => {
@@ -154,9 +161,10 @@ describe('member surfaces §11 acceptance (automated)', () => {
 
   it('G-manage: hosted Plan opens ActivityManageSheet (approve via host API, not /host shell)', () => {
     const plan = read('src/pages/Activities.tsx');
-    expect(plan).toContain('HostedActivitiesSection');
-    expect(plan).toContain('PlanNeedsYouStrip');
-    const hosted = read('src/pages/activities/HostedActivitiesSection.tsx');
+    expect(plan).toContain('PlanUpcomingView');
+    const upcoming = read('src/components/plan/PlanUpcomingView.tsx');
+    expect(upcoming).toContain('PlanHostingUpcoming');
+    const hosted = read('src/components/plan/PlanHostingUpcoming.tsx');
     expect(hosted).toContain('ActivityManageSheet');
     expect(hosted).not.toMatch(/\/host\/requests|HOST_REQUESTS_PATH/);
     const sheet = read('src/components/host/ActivityManageSheet.tsx');
