@@ -69,3 +69,17 @@ export const searchPublishedAreasForQuery = (
   });
   return matches.slice(0, limit);
 };
+
+export const findPublishedAreaBySlug = (
+  areas: AreaPublicDTO[],
+  slug: string | null | undefined
+): AreaPublicDTO | null => {
+  const normalized = slug?.trim().toLowerCase();
+  if (!normalized) return null;
+  return areas.find((area) => area.slug.toLowerCase() === normalized) ?? null;
+};
+
+export const areaIdForExploreAreaSlug = (
+  areas: AreaPublicDTO[],
+  slug: string | null | undefined
+): string | null => findPublishedAreaBySlug(areas, slug)?.id ?? null;

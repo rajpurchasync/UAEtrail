@@ -165,7 +165,7 @@ Notifications (deep link to **activity**, **Plan row context**, **chat thread**,
 - [x] Route `/area/:slug`
 - [x] Sections: **upcoming activities** + **catalog places** previews; **available people** (week filter); map CTA via explore `?area=`
 - [ ] Map strip embed, places by kind grouping, shops/operators rails
-- [ ] CTAs: FAB compose with `?area=` slug prefill (organize area pick still manual unless catalog place)
+- [x] CTAs: FAB compose with `?area=` slug prefill on Find/Add curated area step (organize still uses catalog place `areaId`)
 
 ---
 
@@ -192,7 +192,7 @@ Notifications (deep link to **activity**, **Plan row context**, **chat thread**,
 ### 4.3 Phase C — Explore **Locations** lens (shipped)
 
 - [x] Map canvas: **area name pins** + rollup stats (`source: area`, `pinKind=locations`)
-- [x] Area peek sheet → Activities, Trails, camp spots, Shops + area page (`ExploreAreaPeekActions`)
+- [x] Area peek sheet → Activities, seeking, Trails, Spots, Facilities (area page), Shops + area page (`ExploreAreaPeekActions`)
 - [x] Keep **Activities** lens: per-outing emoji pins (unchanged)
 
 ### 4.4 Phase D — Matching & notifications (shipped)

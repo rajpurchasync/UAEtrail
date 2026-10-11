@@ -34,6 +34,26 @@ export const AreaHubPreviewSections = ({
   const explorePlaces = explorePath({ list: true, area: areaSlug, panel: 'venues' });
   return (
     <div className="mt-8 space-y-8">
+      <section className="flex flex-wrap gap-2">
+        <Link
+          to={explorePath({ area: areaSlug, compose: { intent: 'find', kind: 'hiking' } })}
+          className="rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-900"
+        >
+          Find crew
+        </Link>
+        <Link
+          to={explorePath({ area: areaSlug, compose: { intent: 'organize', kind: 'hiking' } })}
+          className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-900"
+        >
+          Organize outing
+        </Link>
+        <Link
+          to={explorePath({ area: areaSlug, compose: { intent: 'add', kind: 'hiking' } })}
+          className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-900"
+        >
+          Add a place
+        </Link>
+      </section>
       <section className="space-y-3">
         <div className="flex items-end justify-between gap-2">
           <h2 className="text-lg font-semibold text-slate-900">Happening soon</h2>

@@ -5,6 +5,8 @@ export interface ExploreAreaLensStatsDTO {
   seekingPosts: number;
   trailSpots: number;
   campSpots: number;
+  /** Amenities (toilet, parking, …) — counted from catalog rows, not Spots lens pins yet. */
+  facilities: number;
   shops: number;
 }
 
@@ -19,6 +21,9 @@ export const exploreAreaLensStatsSummary = (stats: ExploreAreaLensStatsDTO): str
   const spots = stats.trailSpots + stats.campSpots;
   if (spots > 0) {
     parts.push(`${spots} spot${spots === 1 ? '' : 's'}`);
+  }
+  if (stats.facilities > 0) {
+    parts.push(`${stats.facilities} facilit${stats.facilities === 1 ? 'y' : 'ies'}`);
   }
   if (stats.shops > 0) {
     parts.push(`${stats.shops} shop${stats.shops === 1 ? '' : 's'}`);

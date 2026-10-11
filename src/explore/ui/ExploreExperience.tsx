@@ -823,6 +823,7 @@ export const ExploreExperience = () => {
         }}
         onCreateLinkedRideshare={handleCreateLinkedRideshare}
         planWithBuddyUserId={planWithBuddyUserId}
+        composeAreaSlug={areaSlug}
         onOpenHostApplication={() => {
           closeCreateFlow();
           const returnPath = `${pathname}${search}`;

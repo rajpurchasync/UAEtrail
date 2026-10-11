@@ -12,6 +12,7 @@ import { FlowSheetChrome } from './ExploreFlowSheetChrome';
 import { FlowStepTextInput } from './useFlowSheetPrimaryFieldFocus';
 import type { ContributeVenueKind } from '../contributeTypes';
 import { useExplorePublishedAreas } from '../useExplorePublishedAreas';
+import { areaIdForExploreAreaSlug } from '../exploreAreaFilter';
 import { ContributeCuratedAreaStep } from './ContributeCuratedAreaStep';
 import {
   ACTIVITY_DIFFICULTY_OPTIONS,
@@ -56,6 +57,7 @@ interface CreateContributeFlowProps {
   onBackToIntent?: () => void;
   onSubmitted?: (result: ContributeSubmitResult) => void;
   signInHref: string;
+  exploreAreaSlug?: string | null;
 }
 
 const KIND_LABELS: Record<ContributeVenueKind, { title: string; icon: typeof Mountain }> = {
@@ -113,6 +115,7 @@ export const CreateContributeFlow = ({
   onBackToIntent,
   onSubmitted,
   signInHref,
+  exploreAreaSlug = null,
 }: CreateContributeFlowProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -154,7 +157,12 @@ export const CreateContributeFlow = ({
         setStep(saved.step as ContributeFlowStepId);
       } else {
         setStep('title');
-        setDraft({ ...emptyContributeDraft(), kind });
+        const areaId = areaIdForExploreAreaSlug(publishedAreas, exploreAreaSlug);
+        setDraft({
+          ...emptyContributeDraft(),
+          kind,
+          ...(areaId ? { areaId } : {}),
+        });
       }
       setSubmitResult(null);
       contributeInitializedRef.current = contributeInitKey;
@@ -163,7 +171,7 @@ export const CreateContributeFlow = ({
       navigate(signInHref);
       onClose();
     }
-  }, [open, user, navigate, signInHref, onClose, kind, contributeInitKey]);
+  }, [open, user, navigate, signInHref, onClose, kind, contributeInitKey, exploreAreaSlug, publishedAreas]);
 
   useEffect(() => {
     if (!open || submitResult) return;

@@ -50,4 +50,16 @@ describe('buildExploreAreaLensItems', () => {
     expect(rows[0]?.areaLensStats?.trailSpots).toBe(1);
     expect(rows[0]?.subtitle).toContain('outing');
   });
+
+  it('counts facility place kinds from location rows', () => {
+    const areas = [area(testAreas.hatta.slug, testAreas.hatta.id)];
+    const rows = buildExploreAreaLensItems(areas, [], [
+      {
+        areaId: testAreas.hatta.id,
+        activityType: 'event',
+        tags: ['place-kind:toilet'],
+      },
+    ]);
+    expect(rows[0]?.areaLensStats?.facilities).toBe(1);
+  });
 });

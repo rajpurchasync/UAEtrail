@@ -1,16 +1,27 @@
-import type { AreaDTO, ExploreAreaLensStatsDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
+import type { AreaDTO, ExploreAreaLensStatsDTO, ExploreMapItemDTO, PlaceKind } from '@uaetrail/shared-types';
 import {
   areaDetailPath,
   exploreAreaLensStatsSummary,
   exploreMapItemIsSeeking,
   isTimeBoundExploreMapItem,
+  placeKindFromLocationRow,
 } from '@uaetrail/shared-types';
+
+const FACILITY_PLACE_KINDS = new Set<PlaceKind>([
+  'toilet',
+  'gas_station',
+  'water_refill',
+  'parking',
+  'viewpoint',
+  'picnic',
+]);
 
 const emptyStats = (): ExploreAreaLensStatsDTO => ({
   hostedActivities: 0,
   seekingPosts: 0,
   trailSpots: 0,
   campSpots: 0,
+  facilities: 0,
   shops: 0,
 });
 
@@ -50,12 +61,39 @@ const accumulateAreaLensStats = (items: ExploreMapItemDTO[]): Map<string, Explor
   return byArea;
 };
 
+type LocationAreaRow = {
+  areaId?: string | null;
+  activityType: string;
+  tags?: string[] | null;
+};
+
+/** Roll amenity / facility rows into area stats (map may not render them on Spots lens yet). */
+export const mergeFacilityStatsFromLocations = (
+  statsByArea: Map<string, ExploreAreaLensStatsDTO>,
+  locations: LocationAreaRow[]
+): void => {
+  for (const location of locations) {
+    const areaId = location.areaId?.trim();
+    if (!areaId) continue;
+    const kind = placeKindFromLocationRow({
+      activityType: location.activityType,
+      tags: location.tags,
+    });
+    if (!FACILITY_PLACE_KINDS.has(kind)) continue;
+    const stats = statsByArea.get(areaId) ?? emptyStats();
+    stats.facilities += 1;
+    statsByArea.set(areaId, stats);
+  }
+};
+
 /** Synthetic map rows for the Locations lens — area anchor + rollup stats. */
 export const buildExploreAreaLensItems = (
   publishedAreas: AreaDTO[],
-  catalogItems: ExploreMapItemDTO[]
+  catalogItems: ExploreMapItemDTO[],
+  locations: LocationAreaRow[] = []
 ): ExploreMapItemDTO[] => {
   const statsByArea = accumulateAreaLensStats(catalogItems);
+  mergeFacilityStatsFromLocations(statsByArea, locations);
   const rows: ExploreMapItemDTO[] = [];
 
   for (const area of publishedAreas) {

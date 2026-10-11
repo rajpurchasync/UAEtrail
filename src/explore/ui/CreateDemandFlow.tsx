@@ -48,6 +48,7 @@ import {
 import type { LocationPrecision, TimeMode } from './organizeFlow';
 import type { FindComposeKind } from '../compose';
 import { areaLabelForId, demandPostVisibleOnMap } from '../organizePublishArea';
+import { areaIdForExploreAreaSlug } from '../exploreAreaFilter';
 import { useExplorePublishedAreas } from '../useExplorePublishedAreas';
 import { SeekingCuratedAreaStep } from './SeekingCuratedAreaStep';
 import { composeFlowIdFromRoute } from '../composeFlowCatalog';
@@ -79,6 +80,7 @@ interface CreateDemandFlowProps {
   onSubmitted?: (result: DemandSubmitResult) => void;
   signInHref: string;
   findKind?: FindComposeKind | null;
+  exploreAreaSlug?: string | null;
 }
 
 const NextButton = ({
@@ -128,6 +130,7 @@ export const CreateDemandFlow = ({
   onSubmitted,
   signInHref,
   findKind = null,
+  exploreAreaSlug = null,
 }: CreateDemandFlowProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -187,7 +190,12 @@ export const CreateDemandFlow = ({
         return;
       }
 
-      setDraft({ ...emptyDemandDraft(), kind: findKind });
+      const areaId = areaIdForExploreAreaSlug(publishedAreas, exploreAreaSlug);
+      setDraft({
+        ...emptyDemandDraft(),
+        kind: findKind,
+        ...(areaId ? { areaId } : {}),
+      });
       setSelectedKind(findKind);
       setStep(getDemandFlowSteps(findKind)[0]);
       setError(null);
@@ -203,7 +211,18 @@ export const CreateDemandFlow = ({
       navigate(signInHref);
       onClose();
     }
-  }, [open, user, navigate, signInHref, onClose, findKind, demandFlowId, demandInitKey]);
+  }, [
+    open,
+    user,
+    navigate,
+    signInHref,
+    onClose,
+    findKind,
+    demandFlowId,
+    demandInitKey,
+    exploreAreaSlug,
+    publishedAreas,
+  ]);
 
   useEffect(() => {
     if (!open || !demandFlowId || submitResult) return;

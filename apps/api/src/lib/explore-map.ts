@@ -407,7 +407,17 @@ const buildExploreMapPayloadUncached = async (): Promise<{ items: ExploreMapItem
 
   attachLinkedRideshareMetadata(items);
 
-  items.push(...buildExploreAreaLensItems(publishedAreas, items));
+  items.push(
+    ...buildExploreAreaLensItems(
+      publishedAreas,
+      items,
+      locationsResult.items.map((row) => ({
+        areaId: row.areaId,
+        activityType: String(row.activityType),
+        tags: row.tags,
+      }))
+    )
+  );
 
   for (const item of items) {
     if (item.source === 'activity' && item.activity) {

@@ -105,11 +105,13 @@ export const AreaDetailPage = () => {
         </div>
       </dl>
 
-      <AreaHubPreviewSections
-        areaSlug={area.slug}
-        activities={preview?.activities ?? []}
-        places={preview?.places ?? []}
-      />
+      <div id="places">
+        <AreaHubPreviewSections
+          areaSlug={area.slug}
+          activities={preview?.activities ?? []}
+          places={preview?.places ?? []}
+        />
+      </div>
 
       {availabilityIndex && availabilityIndex.people.length > 0 ? (
         <section className="mt-8 space-y-2">

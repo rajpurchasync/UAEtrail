@@ -29,9 +29,12 @@ export const ExploreAreaPeekActions = ({
   onClose,
 }: ExploreAreaPeekActionsProps) => {
   const hosted = stats?.hostedActivities ?? 0;
+  const seeking = stats?.seekingPosts ?? 0;
   const trails = stats?.trailSpots ?? 0;
   const camps = stats?.campSpots ?? 0;
+  const facilities = stats?.facilities ?? 0;
   const shops = stats?.shops ?? 0;
+  const spots = trails + camps;
 
   const linkClass =
     'block w-full rounded-2xl border border-slate-200 bg-white py-3 text-center text-sm font-semibold text-slate-900';
@@ -43,14 +46,24 @@ export const ExploreAreaPeekActions = ({
           Activities ({hosted})
         </Link>
       ) : null}
+      {seeking > 0 ? (
+        <Link to={scopedExplore(areaSlug, 'looking')} className={linkClass} onClick={onClose}>
+          Looking for crew ({seeking})
+        </Link>
+      ) : null}
       {trails > 0 ? (
         <Link to={scopedExplore(areaSlug, 'places', 'hiking')} className={linkClass} onClick={onClose}>
           Trails ({trails})
         </Link>
       ) : null}
-      {camps > 0 ? (
-        <Link to={scopedExplore(areaSlug, 'places', 'camping')} className={linkClass} onClick={onClose}>
-          Camp spots ({camps})
+      {spots > 0 ? (
+        <Link to={scopedExplore(areaSlug, 'places')} className={linkClass} onClick={onClose}>
+          Spots ({spots})
+        </Link>
+      ) : null}
+      {facilities > 0 ? (
+        <Link to={`${areaPagePath}#places`} className={linkClass} onClick={onClose}>
+          Facilities ({facilities})
         </Link>
       ) : null}
       {shops > 0 ? (

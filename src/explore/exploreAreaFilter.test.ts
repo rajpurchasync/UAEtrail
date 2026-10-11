@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { seekingExploreMapItem } from './exploreMapItemFixtures';
 import type { AreaPublicDTO } from '@uaetrail/shared-types';
 import {
+  areaIdForExploreAreaSlug,
   filterExploreMapItemsByAreaSlug,
   exploreMapItemMatchesAreaSlug,
+  findPublishedAreaBySlug,
   isStrongPublishedAreaSearchMatch,
   searchPublishedAreasForQuery,
 } from './exploreAreaFilter';
@@ -35,5 +37,12 @@ describe('exploreAreaFilter', () => {
     const matches = searchPublishedAreasForQuery(areas, 'hatta');
     expect(matches[0]?.slug).toBe('hatta');
     expect(isStrongPublishedAreaSearchMatch(hattaArea(), 'Hatta')).toBe(true);
+  });
+
+  it('resolves compose area prefill from published slug', () => {
+    const areas = [hattaArea()];
+    expect(findPublishedAreaBySlug(areas, 'hatta')?.id).toBe('a1');
+    expect(areaIdForExploreAreaSlug(areas, 'hatta')).toBe('a1');
+    expect(areaIdForExploreAreaSlug(areas, 'missing')).toBeNull();
   });
 });
