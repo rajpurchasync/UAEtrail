@@ -17,7 +17,7 @@ import { getMongoClient } from '../../lib/mongo.js';
 import { ActivityStatus, LocationStatus } from '../../domain/enums.js';
 
 const AREA_PREVIEW_ACTIVITY_LIMIT = 8;
-const AREA_PREVIEW_PLACE_LIMIT = 12;
+const AREA_PREVIEW_PLACE_LIMIT = 40;
 
 const slugParamSchema = z.object({ slug: z.string().min(1).max(80) });
 

@@ -4,9 +4,9 @@ import { Link, useParams } from 'react-router-dom';
 import { areaDetailPath } from '@uaetrail/shared-types';
 import { areasApi } from '../api/domains/areas';
 import { api } from '../api/index';
-import { explorePath } from '../explore/routing';
 import { EXPLORE_MAP_PATH } from '../config/routingCatalog';
 import { PRODUCT_EXPLORE_CTA } from '../content/productNorthStar';
+import { AreaHubMapStrip } from '../components/area/AreaHubMapStrip';
 import { AreaHubPreviewSections } from '../components/area/AreaHubPreviewSections';
 
 /** Curated area hub — links into explore with `?area=` filter (Phase 4). */
@@ -72,7 +72,6 @@ export const AreaDetailPage = () => {
   }
 
   const { area, counts, preview } = data;
-  const exploreInArea = explorePath({ list: true, area: area.slug });
 
   return (
     <main className="mx-auto max-w-lg px-4 py-8">
@@ -105,6 +104,14 @@ export const AreaDetailPage = () => {
         </div>
       </dl>
 
+      <AreaHubMapStrip
+        areaSlug={area.slug}
+        areaName={area.name}
+        center={area.center}
+        boundsRing={area.bounds}
+        places={preview?.places ?? []}
+      />
+
       <div id="places">
         <AreaHubPreviewSections
           areaSlug={area.slug}
@@ -126,14 +133,7 @@ export const AreaDetailPage = () => {
         </section>
       ) : null}
 
-      <Link
-        to={exploreInArea}
-        className="mt-8 flex w-full items-center justify-center rounded-2xl bg-emerald-700 px-4 py-3 text-center font-semibold text-white shadow-sm"
-      >
-        See on the map
-      </Link>
-
-      <p className="mt-4 text-center text-xs text-slate-500">
+      <p className="mt-8 text-center text-xs text-slate-500">
         Canonical path: {areaDetailPath(area.slug)}
       </p>
     </main>

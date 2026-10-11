@@ -164,7 +164,7 @@ Notifications (deep link to **activity**, **Plan row context**, **chat thread**,
 
 - [x] Route `/area/:slug`
 - [x] Sections: **upcoming activities** + **catalog places** previews; **available people** (week filter); map CTA via explore `?area=`
-- [ ] Map strip embed, places by kind grouping, shops/operators rails
+- [x] Map strip embed (`AreaHubMapStrip`), places by kind grouping, shops rail (tenant operators on map — explore shops panel)
 - [x] CTAs: FAB compose with `?area=` slug prefill on Find/Add curated area step (organize still uses catalog place `areaId`)
 
 ---
