@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import type { ActivityDTO } from '@uaetrail/shared-types';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../context/AuthContext';
@@ -39,6 +40,11 @@ import { ListDiscoveryHeader } from './ui/ListDiscoveryHeader';
 import { ListDiscoveryResults } from './ui/ListDiscoveryResults';
 import { ListRefineSheet } from './ui/ListRefineSheet';
 import { ListFeedActionsProvider } from './ui/ListFeedActionsProvider';
+import { useActivityInviteShareSheet } from '../hooks/useActivityInviteShareSheet';
+import { useHostActivityManageActions } from '../hooks/useHostActivityManageActions';
+import { ActivityManageSheet } from '../components/host/ActivityManageSheet';
+import type { HostActivityManageInitialView } from '../components/host/hostActivityManageViews';
+import { activityDetailPath } from '../config/routingCatalog';
 import { BROWSE_DISCOVER_PARAM } from './browseListUrlState';
 import { exploreMapPathFromListSearch, listDiscoveryPathFromExploreSearch } from './routing';
 import { listDiscoveryEmbeddedOnExplore, type ListDiscoverySurface } from './listDiscoverySurface';
@@ -96,7 +102,44 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
     hostTiers,
     loading: hostGateLoading,
     refresh: refreshHostGate,
+    tenantId,
   } = useHostStatus({ enabled: Boolean(user) });
+
+  const inviteShare = useActivityInviteShareSheet();
+  const [listManageActivity, setListManageActivity] = useState<ActivityDTO | null>(null);
+  const [listManageInitialView, setListManageInitialView] =
+    useState<HostActivityManageInitialView>('overview');
+  const listHostManageActions = useHostActivityManageActions(tenantId ?? null, () =>
+    reloadExploreMap(queryClient)
+  );
+
+  const openListHostManage = useCallback(
+    (activity: ActivityDTO, initialView: HostActivityManageInitialView = 'participants') => {
+      setListManageActivity(activity);
+      setListManageInitialView(initialView);
+    },
+    []
+  );
+
+  const shareHostedActivity = useCallback(
+    (activity: ActivityDTO) => {
+      if (activity.status !== 'published') return;
+      inviteShare.openInviteFromActivity(activity, { canSendBuddyInvites: true });
+    },
+    [inviteShare.openInviteFromActivity]
+  );
+
+  const listFeedHostActions = useMemo(
+    () => ({
+      onShareHostedActivity: shareHostedActivity,
+      onOpenHostManage: tenantId ? openListHostManage : undefined,
+      onInviteCrew: (activity: ActivityDTO) => {
+        if (activity.status !== 'published') return;
+        inviteShare.openInviteFromActivity(activity, { canSendBuddyInvites: true });
+      },
+    }),
+    [shareHostedActivity, tenantId, openListHostManage, inviteShare.openInviteFromActivity]
+  );
 
   const navigateOrganizePublishGate = useCallback(
     (returnPath: string) =>
@@ -415,14 +458,14 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
     }
     if (view === 'category' && category) {
       return (
-        <ListFeedActionsProvider>
+        <ListFeedActionsProvider {...listFeedHostActions}>
           <ListCategoryDedicatedView category={category} cards={cards} />
         </ListFeedActionsProvider>
       );
     }
     if (view === 'search') {
       return (
-        <ListFeedActionsProvider>
+        <ListFeedActionsProvider {...listFeedHostActions}>
           <ListDiscoveryResults
             cards={cards}
             showClearAll={hasActiveFilters}
@@ -534,6 +577,26 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
             <p className="mt-4 text-center text-xs font-medium text-neutral-500">Updating…</p>
           ) : null}
         </BrowseListPageShell>
+
+      {inviteShare.sheet}
+
+      {tenantId ? (
+        <ActivityManageSheet
+          open={Boolean(listManageActivity)}
+          activity={listManageActivity}
+          tenantId={tenantId}
+          pendingRequests={[]}
+          actions={listHostManageActions}
+          initialView={listManageInitialView}
+          onOpenPublicPage={(a) => navigate(activityDetailPath(a.id))}
+          onShare={(a) => inviteShare.openInviteFromActivity(a)}
+          onClose={() => {
+            setListManageActivity(null);
+            setListManageInitialView('overview');
+          }}
+          onRequestsChanged={() => void reloadExploreMap(queryClient)}
+        />
+      ) : null}
 
       <ExploreComposeHost
         exploreCompose={compose.exploreCompose}
