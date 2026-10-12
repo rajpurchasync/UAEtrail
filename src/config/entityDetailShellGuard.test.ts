@@ -9,10 +9,15 @@ const ENTITY_DETAIL_PAGES: Array<{ path: string; mustMatch: RegExp }> = [
   { path: 'src/pages/AreaDetailPage.tsx', mustMatch: /MobileDetailShell|AreaDetailView/ },
   { path: 'src/pages/PlaceDetailPage.tsx', mustMatch: /PlaceDetailCore/ },
   { path: 'src/pages/ActivityDetail.tsx', mustMatch: /ActivityDetailView|MobileDetailShell/ },
+  { path: 'src/pages/ShopPublic.tsx', mustMatch: /ShopPublicPage/ },
   { path: 'src/components/place/PlaceDetailCore.tsx', mustMatch: /MobileDetailShell/ },
+  { path: 'src/components/area/AreaDetailView.tsx', mustMatch: /MobileDetailShell/ },
   { path: 'src/components/shop/ShopPublicPage.tsx', mustMatch: /EntityPublicDetailShell/ },
   { path: 'src/pages/OrganisationProfile.tsx', mustMatch: /EntityPublicDetailShell/ },
 ];
+
+/** Page modules must not be full-screen roots without an approved shell (S9 Phase 7.2b). */
+const ENTITY_DETAIL_PAGE_ROOTS = ENTITY_DETAIL_PAGES.filter(({ path }) => path.startsWith('src/pages/'));
 
 describe('entityDetailShellGuard', () => {
   it('catalog entity pages use MobileDetailShell or approved view wrapper', () => {
@@ -21,6 +26,27 @@ describe('entityDetailShellGuard', () => {
       const source = read(path);
       if (!mustMatch.test(source)) {
         violations.push(`${path}: missing shell wrapper`);
+      }
+    }
+    expect(violations).toEqual([]);
+  });
+
+  it('entity detail page modules delegate to shell views (no bare min-h-screen page roots)', () => {
+    const violations: string[] = [];
+    for (const { path, mustMatch } of ENTITY_DETAIL_PAGE_ROOTS) {
+      const source = read(path);
+      if (!mustMatch.test(source)) {
+        violations.push(`${path}: missing delegated shell/view`);
+      }
+      const hasShellDelegate =
+        /MobileDetailShell|EntityPublicDetailShell|ActivityDetailView|PlaceDetailCore|AreaDetailView|ShopPublicPage/.test(
+          source
+        );
+      if (!hasShellDelegate) {
+        violations.push(`${path}: page must delegate to approved detail view`);
+      }
+      if (/return\s*\(\s*<div[^>]*className="[^"]*min-h-screen/.test(source) && !hasShellDelegate) {
+        violations.push(`${path}: ad-hoc min-h-screen root without shell delegate`);
       }
     }
     expect(violations).toEqual([]);

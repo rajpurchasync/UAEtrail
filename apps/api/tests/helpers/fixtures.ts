@@ -11,7 +11,7 @@ import {
   UserStatus
 } from '../../src/domain/enums.js';
 import bcrypt from 'bcryptjs';
-import { createAuthUser } from '../../src/lib/auth-users.js';
+import { createAuthUser, findAuthUserByEmail, updateAuthUserCore } from '../../src/lib/auth-users.js';
 import { newEntityId } from '../../src/lib/entity-builders.js';
 import { createActivityDetailed, createLocationRecord } from '../../src/lib/activities-store.js';
 import { getMongoClient } from '../../src/lib/mongo.js';
@@ -200,6 +200,33 @@ export const getVerificationOtp = (email: string): string => {
     throw new Error(`No verification OTP captured for ${email}`);
   }
   return otp;
+};
+
+/** Verified email + `PLATFORM_ADMIN` for `/api/v1/admin/*` integration tests. */
+export const registerVerifiedPlatformAdmin = async (
+  app: import('express').Express,
+  suffix: string
+): Promise<{ email: string; password: string; accessToken: string }> => {
+  const visitor = await registerVerifiedVisitor(app, `admin-${suffix}`);
+  const user = await findAuthUserByEmail(visitor.email);
+  if (!user) {
+    throw new Error(`Platform admin seed user missing: ${visitor.email}`);
+  }
+  await updateAuthUserCore({ userId: user._id, role: UserRole.PLATFORM_ADMIN });
+
+  const request = (await import('supertest')).default;
+  const login = await request(app)
+    .post('/api/v1/auth/login')
+    .send({ email: visitor.email, password: visitor.password });
+  if (login.status !== 200) {
+    throw new Error(`Platform admin login failed: ${login.status}`);
+  }
+
+  return {
+    email: visitor.email,
+    password: visitor.password,
+    accessToken: login.body.tokens.accessToken as string,
+  };
 };
 
 export const registerVerifiedVisitor = async (

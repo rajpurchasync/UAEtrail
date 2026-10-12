@@ -10,7 +10,7 @@ Shipped on **`main`**. **Product truth:** [`../DOCS_INDEX.md`](../DOCS_INDEX.md)
 | [**programme-aggregate-spec.md**](./programme-aggregate-spec.md) | **R7** — programme/series aggregate (spec only; no code until PM gate) |
 | [**system-structure-deep-audit.md**](./system-structure-deep-audit.md) | **Repo-level** FE/BE/read-model critique (explore blob, domain taxes, scale) — not doc alignment |
 | [**member-surfaces-implementation-plan.md**](./member-surfaces-implementation-plan.md) | Plan hub / seeking / §11 guards; §21 **points** at activity-detail program for exit criteria |
-| [**consumer-detail-surfaces-plan.md**](./consumer-detail-surfaces-plan.md) | **Phased UX** — 17-surface checklist, phases 0–7, **§14 handoff** + **§15 anti-drift**; area/place/shop/agency vs activity reference (`SYSTEM_COHERENCE` **S9**) |
+| [**consumer-detail-surfaces-plan.md**](./consumer-detail-surfaces-plan.md) | **S9 eng complete** — shells, guards (`consumerDetailQaMatrixGuard`, `detail-surface-lineage-contract`), **§3.2** lineage; §8 manual QA pending |
 | [explore-ux-spec.md](./explore-ux-spec.md) | Map card copy, emojis, CTAs |
 | [explore-browse-ia.md](./explore-browse-ia.md) · [explore-browse-taxonomy.md](./explore-browse-taxonomy.md) | Browse pills, search scopes, pin kinds (`src/explore/exploreBrowseTaxonomy.ts`) |
 | [consumer-mobile-ia.md](./consumer-mobile-ia.md) | Profile / Plan / Messages tabs (**superseded in part by member-surfaces-implementation-plan**) |

@@ -1,16 +1,16 @@
 # Consumer mobile IA
 
-Companion to [`NAVIGATION.md`](../NAVIGATION.md). Tracks the profile / trips / friends refactor on `main`.
+> **Canonical routes & tab labels:** [`NAVIGATION.md`](../NAVIGATION.md) · Plan hub detail: [`member-surfaces-implementation-plan.md`](./member-surfaces-implementation-plan.md). This file keeps **profile hub** notes only — do not duplicate navigation tables here.
 
-**Related:** personal journey map on `/profile/history/map` — [`NAVIGATION.md`](../NAVIGATION.md) · `src/member-plan/journeyMap*`.
+**Related:** journey map on `/profile/history/map` — [`NAVIGATION.md`](../NAVIGATION.md) · `src/member-plan/journeyMap*`.
 
-## Bottom tabs (signed-in)
+## Bottom tabs (signed-in) — see NAVIGATION
 
 | Tab | Route | Label |
 |-----|--------|--------|
 | Map | `/explore` | Map |
-| Trips | `/trips` (`/activities` redirects) | My trips |
-| Messages | `/messages` | Messages |
+| Plan | `/plan` | My Plans |
+| Chat | `/chat` | Chat |
 
 Profile is reached from the header avatar (`/profile`), not a fourth tab.
 

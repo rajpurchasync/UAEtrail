@@ -172,7 +172,7 @@ Built only via **`routingCatalog`** or `@uaetrail/shared-types` `entity-path` he
 
 ### 3.1 Consumer detail tab wire ids
 
-Query param **`tab`** where noted. **UI labels** may differ from wire ids (activity). **Code:** activity `src/activity/activityDetailTab.ts`; place `src/components/ui/PlaceDetailTabs.tsx` (`LocationTab` — migrating). **Plan:** [`experiment/consumer-detail-surfaces-plan.md`](./experiment/consumer-detail-surfaces-plan.md).
+Query param **`tab`** where noted. **UI labels** may differ from wire ids (activity). **Code:** activity `src/activity/activityDetailTab.ts`; place `src/place/placeDetailTab.ts`; area/shop/org `src/area|shop|organisation/*DetailTab.ts`; guard canon `src/config/consumerDetailTabWireCanon.ts`. **Plan:** [`experiment/consumer-detail-surfaces-plan.md`](./experiment/consumer-detail-surfaces-plan.md).
 
 | Surface | Route prefix | Wire tab ids (canonical → target) | Deep link |
 |---------|--------------|-----------------------------------|-----------|
@@ -194,12 +194,14 @@ Detail UIs must load from the **canonical read API** for that entity; writes use
 |---------|-------|------------------------------|------------|-----------|----------------------|--------|
 | **Activity** | `/activity/:id` | `activities` + participation | Member **Organize/Find** FAB, host publish (`member-publish-gate`) | `GET /activities/:id` (`viewerAccess`, presentation) | `usePublicActivityDetail` | Not trail inventory — scheduled outing |
 | **Member (person)** | `/member/:userId` | `users` profile | Member `PATCH /me/profile` | `GET /users/:id/public-profile` | `memberPublicProfileApi` | ≠ tenant storefront |
-| **Organisation (pro)** | `/guide`, `/agency`, `/partner` | `tenants` storefront | Host onboarding / `organisationConsoleApi` | `GET /organisations/:slug` (public profile bundle) | `organisationConsoleApi` | Shop tenants → `/shop/:id` |
-| **Shop** | `/shop/:id` | `tenants` / merchant + optional community `locations` | Admin/host shop setup; map **Add** shop contribute | `GET /shops/:id/public` (+ place fallback in `ShopPublic.tsx`) | `shopPublicClientApi`, `placeDetailClientApi` | Reviews on tenant id |
+| **Organisation (pro)** | `/guide`, `/agency`, `/partner` | `tenants` storefront | Host onboarding / `organisationConsoleApi` | `GET /tenants/:slug` (public profile bundle) | `organisationConsoleApi` | Shop tenants → `/shop/:id` |
+| **Shop** | `/shop/:id` | `tenants` / merchant + optional community `locations` | Admin/host shop setup; map **Add** shop contribute | `GET /shop/shops/:id` (`getShopPublic`; + place fallback in `ShopPublic.tsx`) | `shopPublicClientApi`, `placeDetailClientApi` | Reviews on tenant id |
 | **Place** | `/trail`, `/camp`, `/venue` | `locations` (catalog) | **Admin** `/admin/places`; member **Add** contribute; host `/locations` with `areaId` | `GET /places/:id` | `placeDetailClientApi` | `place.areaId` required on new catalog rows |
 | **Area** | `/area/:slug` | `areas` curated hubs | **Admin** `/admin/areas` (publish `status`) | `GET /areas/:slug` (preview slices) | `areaHubClientApi` | Previews filter published activities + active places by `areaId` |
 
 **Registry:** place catalog browse uses `GET /places/registry` (explore map) — detail pages use **per-id** `GET /places/:id`, not the registry blob.
+
+**API lineage contracts:** `apps/api/tests/detail-surface-lineage-contract.test.ts` (admin area/place publish → public GET; member profile → public profile).
 
 **Cross-links:** [`CREATE_FLOW.md`](./CREATE_FLOW.md) (member writes) · [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) · geography § in this doc · [`experiment/consumer-detail-surfaces-plan.md`](./experiment/consumer-detail-surfaces-plan.md) §18.
 

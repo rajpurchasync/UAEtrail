@@ -1,6 +1,6 @@
 # Consumer detail surfaces — phased implementation plan
 
-**Status:** Planning (not started) · **Last updated:** 2026-10-13  
+**Status:** Eng complete (Phases 1–7 + §18 lineage) · **Product:** §0 + §8 manual QA sign-off pending · **Last updated:** 2026-10-13  
 **Audience:** Product + design + eng — one surface family per PR wave; **no big-bang UI rewrite.**  
 **Handoff:** §14 (conversation record) · §15 (design anti-drift) · §16 (code anchors) — read before any phase PR.
 
@@ -336,6 +336,21 @@ Phase 4 is the only likely **read-model** enhancement (tab-scoped previews); def
 | Landing | `/` (guest) | CTA → explore; signed-in redirect |
 | Auth | sign-in → `/explore` or return URL | |
 
+### 8.1 Automated coverage (entity detail — not a substitute for full §8)
+
+Run via `npm run verify:domain` / `verify:system:quick`. Guard: `src/config/consumerDetailQaMatrixGuard.test.ts`.
+
+| §8 surface | Route registered | Shell / lineage guards |
+|------------|------------------|-------------------------|
+| Activity | `App.tsx` `/activity/:id` | `activityDetailAcceptance`, `mapDetailEngagementParity`, API `detail-surface-lineage-contract` |
+| Place | `/trail`, `/camp`, `/venue` | `placeDetailCore`, `placeDetailTab`, API place lineage |
+| Area | `/area/:slug` | `areaDetailAcceptance`, API area lineage |
+| Shop | `/shop/:id` | `publicEntityShellAcceptance`, API `/shop/shops/:id` |
+| Agency/guide | `/guide`, `/agency`, `/partner` | `publicEntityShellAcceptance`, API `/tenants/:slug` |
+| Member | `/member/:userId` | `detailSurfaceDataLineageGuard`, API profile lineage |
+
+Explore, Plan, Chat, Notifications, badges, settings, landing: covered by existing `memberSurfacesAcceptance`, `exploreCopy`, `notificationRouting` tests — still require **manual** UX pass per table above.
+
 ---
 
 ## 9. Suggested timeline (indicative)
@@ -393,6 +408,9 @@ Phase 4 is the only likely **read-model** enhancement (tab-scoped previews); def
 | 2026-10-13 | **Phase 3 (core) shipped** — place tabs IA + `ConsumerEntityTabBar` + `?tab=` deep links | Recorded |
 | 2026-10-13 | **Phase 4 shipped** — area tabbed `MobileDetailShell`; people on overview (no people tab) | Recorded |
 | 2026-10-13 | **Phase 7 (partial)** — `entityDetailShellGuard.test.ts` for entity pages | Recorded |
+| 2026-10-13 | **Phase 7 (guards)** — tab wire canon + `detailSurfaceTabWireGuard`; `consumerDetailSurfacesAcceptance`; §8 manual QA still human sign-off | Recorded |
+| 2026-10-13 | **§18.4** API lineage contract — admin area/place + member profile public read | Recorded |
+| 2026-10-13 | **Eng close** — Phases 1–7 + §8.1 automated matrix; §8 manual + Phase 0 product ⬜ | Recorded |
 | 2026-10-13 | **Phase 5 shipped** — `EntityPublicDetailShell`; shop + organisation public tabs | Recorded |
 | 2026-10-13 | **Phase 6 shipped** — Plan/People copy, `/people` redirect, goals → Wishlist path | Recorded |
 | 2026-10-13 | **Data lineage** — DOMAIN_CANONICALS §3.2 + §18 + `detailSurfaceDataLineageGuard` | Recorded |
@@ -416,6 +434,9 @@ Phase 4 is the only likely **read-model** enhancement (tab-scoped previews); def
 | 2026-10-13 | **Phase 4** area hub tabs + shell; **Phase 7** initial shell guard |
 | 2026-10-13 | **Phase 5** shop + agency/guide `EntityPublicDetailShell` and tab deep links |
 | 2026-10-13 | **Phase 6** people/plan/goals clarity; **§18** detail data lineage |
+| 2026-10-13 | **Phase 7** tab wire guards + consumer detail acceptance tests |
+| 2026-10-13 | **§18.4** `detail-surface-lineage-contract` API tests |
+| 2026-10-13 | **§18.4** extended — activity, `/tenants/:slug`, `/shop/shops/:id` lineage |
 
 ---
 
@@ -533,6 +554,8 @@ Full table: [`member-surfaces-implementation-plan.md`](./member-surfaces-impleme
 | Area hub | `src/pages/AreaDetailPage.tsx`, `src/components/area/AreaDetailView.tsx`, `areaHubClientApi` |
 | Public entity shell | `src/components/entity-public/EntityPublicDetailShell.tsx` |
 | Data lineage guard | `src/config/detailSurfaceDataLineageGuard.test.ts` |
+| §8 entity route matrix (automated) | `src/config/consumerDetailQaMatrixGuard.test.ts` |
+| API admin/member → public read | `apps/api/tests/detail-surface-lineage-contract.test.ts` |
 | Shop public | `src/components/shop/ShopPublicPage.tsx` |
 | Agency public | `src/pages/OrganisationProfile.tsx`, `OrganisationPublicProfile.tsx` |
 | Consumer mesh / glass tokens | `src/index.css` — `.consumer-bg`, `.glass-header` |
@@ -572,7 +595,21 @@ Full table: [`member-surfaces-implementation-plan.md`](./member-surfaces-impleme
 | Profile, activity, professional/shop | User + host capabilities | `memberPublicProfileApi`, `usePublicActivityDetail`, `organisationConsoleApi` / `shopPublicClientApi` |
 | Area + places | **Admin** areas/places (+ member Add with `areaId`) | `areaHubClientApi`, `placeDetailClientApi` |
 
-### 18.3 Known follow-ups (not blockers for shell phases)
+### 18.4 API contract tests (admin/member → public detail)
+
+| Flow | Test |
+|------|------|
+| Admin area draft → publish → `GET /areas/:slug` | `apps/api/tests/detail-surface-lineage-contract.test.ts` |
+| Admin place + `areaId` → `GET /places/:id` + area preview | same |
+| Member `PATCH /me/profile` → `GET /users/:id/public-profile` | same |
+| Host published activity → `GET /activities/:id` (+ draft hidden) | same |
+| Host `POST /host/activities` + `/:id/publish` → public detail | same |
+| Pro tenant slug → `GET /tenants/:slug` (guide/agency storefront) | same |
+| Shop merchant row → `GET /shop/shops/:id` (FE `getShopPublic`) | same |
+
+Run via `npm run verify:domain` (included in `verify:system:quick`).
+
+### 18.5 Known follow-ups (not blockers for shell phases)
 
 | Gap | Track |
 |-----|--------|

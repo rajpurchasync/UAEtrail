@@ -128,4 +128,14 @@ describe('doc coherence (Tier 1)', () => {
     expect(ia).toMatch(/\/profile\/badges/);
     expect(ia).not.toMatch(/\/profile\/badges` redirect to \*\*`\/profile`\*\*/);
   });
+
+  it('consumer detail surfaces plan records eng-complete S9 status', () => {
+    const plan = readFileSync(
+      join(DOCS, 'experiment/consumer-detail-surfaces-plan.md'),
+      'utf8'
+    );
+    expect(plan).toMatch(/\*\*Status:\*\* Eng complete/);
+    expect(plan).toMatch(/detail-surface-lineage-contract/);
+    expect(plan).toMatch(/consumerDetailQaMatrixGuard/);
+  });
 });
