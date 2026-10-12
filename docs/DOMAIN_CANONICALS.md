@@ -186,6 +186,23 @@ Query param **`tab`** where noted. **UI labels** may differ from wire ids (activ
 
 **Guards (Phase 7):** entity detail routes must use `MobileDetailShell` / `EntityPublicDetailShell`; tab ids must match this table.
 
+### 3.2 Detail surface data lineage (read ↔ write)
+
+Detail UIs must load from the **canonical read API** for that entity; writes use the **same bounded context** (no parallel Mongo shapes in pages). **FE:** `src/hooks/*ClientApi` facades only (`detailSurfaceDataLineageGuard.test.ts`). **Manifest:** `scripts/bounded-context-manifest.json`.
+
+| Surface | Route | Data owner (Mongo / service) | Who writes | Read HTTP | FE facade (consumer) | Notes |
+|---------|-------|------------------------------|------------|-----------|----------------------|--------|
+| **Activity** | `/activity/:id` | `activities` + participation | Member **Organize/Find** FAB, host publish (`member-publish-gate`) | `GET /activities/:id` (`viewerAccess`, presentation) | `usePublicActivityDetail` | Not trail inventory — scheduled outing |
+| **Member (person)** | `/member/:userId` | `users` profile | Member `PATCH /me/profile` | `GET /users/:id/public-profile` | `memberPublicProfileApi` | ≠ tenant storefront |
+| **Organisation (pro)** | `/guide`, `/agency`, `/partner` | `tenants` storefront | Host onboarding / `organisationConsoleApi` | `GET /organisations/:slug` (public profile bundle) | `organisationConsoleApi` | Shop tenants → `/shop/:id` |
+| **Shop** | `/shop/:id` | `tenants` / merchant + optional community `locations` | Admin/host shop setup; map **Add** shop contribute | `GET /shops/:id/public` (+ place fallback in `ShopPublic.tsx`) | `shopPublicClientApi`, `placeDetailClientApi` | Reviews on tenant id |
+| **Place** | `/trail`, `/camp`, `/venue` | `locations` (catalog) | **Admin** `/admin/places`; member **Add** contribute; host `/locations` with `areaId` | `GET /places/:id` | `placeDetailClientApi` | `place.areaId` required on new catalog rows |
+| **Area** | `/area/:slug` | `areas` curated hubs | **Admin** `/admin/areas` (publish `status`) | `GET /areas/:slug` (preview slices) | `areaHubClientApi` | Previews filter published activities + active places by `areaId` |
+
+**Registry:** place catalog browse uses `GET /places/registry` (explore map) — detail pages use **per-id** `GET /places/:id`, not the registry blob.
+
+**Cross-links:** [`CREATE_FLOW.md`](./CREATE_FLOW.md) (member writes) · [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) · geography § in this doc · [`experiment/consumer-detail-surfaces-plan.md`](./experiment/consumer-detail-surfaces-plan.md) §18.
+
 ---
 
 ## 4. Explore URL canon

@@ -394,6 +394,8 @@ Phase 4 is the only likely **read-model** enhancement (tab-scoped previews); def
 | 2026-10-13 | **Phase 4 shipped** — area tabbed `MobileDetailShell`; people on overview (no people tab) | Recorded |
 | 2026-10-13 | **Phase 7 (partial)** — `entityDetailShellGuard.test.ts` for entity pages | Recorded |
 | 2026-10-13 | **Phase 5 shipped** — `EntityPublicDetailShell`; shop + organisation public tabs | Recorded |
+| 2026-10-13 | **Phase 6 shipped** — Plan/People copy, `/people` redirect, goals → Wishlist path | Recorded |
+| 2026-10-13 | **Data lineage** — DOMAIN_CANONICALS §3.2 + §18 + `detailSurfaceDataLineageGuard` | Recorded |
 | | Phase 0.3 — Guide tab on place (product confirm) | ⬜ Pending |
 | | Phase 0.4 — Area people tab vs section | ⬜ Pending |
 | | Phase 0.5 — Shop/agency tab names | ⬜ Pending |
@@ -413,6 +415,7 @@ Phase 4 is the only likely **read-model** enhancement (tab-scoped previews); def
 | 2026-10-13 | **Phase 3** place tab IA + shared `ConsumerEntityTabBar` (activity + place) |
 | 2026-10-13 | **Phase 4** area hub tabs + shell; **Phase 7** initial shell guard |
 | 2026-10-13 | **Phase 5** shop + agency/guide `EntityPublicDetailShell` and tab deep links |
+| 2026-10-13 | **Phase 6** people/plan/goals clarity; **§18** detail data lineage |
 
 ---
 
@@ -510,10 +513,11 @@ Full table: [`member-surfaces-implementation-plan.md`](./member-surfaces-impleme
 
 | Vector | Today | Fix |
 |--------|-------|-----|
-| Area hub | `AreaDetailPage` — no `MobileDetailShell` | Phase 4 |
-| Place tabs | `PlaceDetailTabs` — different tab UX than activity | Phase 3 + `ConsumerEntityTabBar` |
-| Agency vs shop shell | `ConsumerShell` vs `MobileDetailShell` | Phase 5 `EntityPublicDetailShell` |
-| NAVIGATION | Stale `/trips` mobile tab wording | Phase 1 |
+| Area hub | — | **Fixed** Phase 4 |
+| Place tabs | — | **Fixed** Phase 3 |
+| Agency vs shop shell | — | **Fixed** Phase 5 |
+| NAVIGATION `/trips` | — | **Fixed** Phase 1 |
+| Detail page bypasses hook facades | — | Guard §18 + `detailSurfaceDataLineageGuard` |
 
 ---
 
@@ -526,7 +530,9 @@ Full table: [`member-surfaces-implementation-plan.md`](./member-surfaces-impleme
 | Activity detail (reference) | `src/components/activity/ActivityDetailView.tsx`, `detail/ActivityDetailTabBar.tsx` |
 | Activity tab ids | `src/activity/activityDetailTab.ts` |
 | Place detail body | `src/components/place/PlaceDetailCore.tsx`, `src/components/ui/PlaceDetailTabs.tsx` |
-| Area hub (pre-tabs) | `src/pages/AreaDetailPage.tsx`, `src/components/area/*` |
+| Area hub | `src/pages/AreaDetailPage.tsx`, `src/components/area/AreaDetailView.tsx`, `areaHubClientApi` |
+| Public entity shell | `src/components/entity-public/EntityPublicDetailShell.tsx` |
+| Data lineage guard | `src/config/detailSurfaceDataLineageGuard.test.ts` |
 | Shop public | `src/components/shop/ShopPublicPage.tsx` |
 | Agency public | `src/pages/OrganisationProfile.tsx`, `OrganisationPublicProfile.tsx` |
 | Consumer mesh / glass tokens | `src/index.css` — `.consumer-bg`, `.glass-header` |
@@ -545,3 +551,31 @@ Full table: [`member-surfaces-implementation-plan.md`](./member-surfaces-impleme
 5. Tick **§12** decision log if you resolve a Phase 0 item.
 6. Add a line to **§13** changelog when a phase completes.
 7. Cross-check **member-surfaces D3/D4/D10/D11** before changing Plan/People/Goals copy or routes.
+
+---
+
+## 18. Detail surface data lineage (registry → UI)
+
+**Tier-1 table:** [`DOMAIN_CANONICALS.md`](../DOMAIN_CANONICALS.md) **§3.2** (authoritative). This section is the implementation checklist — every detail route must trace **write owner → read API → hook facade → shell UI**.
+
+### 18.1 Rules
+
+1. **Pages** (`src/pages/*Detail*`, `MemberProfile`, `ShopPublic`, `OrganisationProfile`) fetch only via **`src/hooks/*ClientApi`** — never `api.*` inline (`detailSurfaceDataLineageGuard.test.ts`).
+2. **Admin/catalog** entities (area, place) appear on detail only when **publish/active** flags pass API filters (`areas.status`, `locations.status`).
+3. **Member/member-capability** entities (activity, person, tenant storefront) are written through **compose**, **profile**, or **host/pro** flows — detail reads unified DTOs with `viewerAccess` where applicable.
+4. New detail surfaces: add a row to **DOMAIN_CANONICALS §3.2**, extend `bounded-context-manifest.json` `feRoots`, and add a guard row in `detailSurfaceDataLineageGuard.test.ts`.
+
+### 18.2 Surface → source (summary)
+
+| Your examples | Write registry | Detail read |
+|---------------|----------------|-------------|
+| Profile, activity, professional/shop | User + host capabilities | `memberPublicProfileApi`, `usePublicActivityDetail`, `organisationConsoleApi` / `shopPublicClientApi` |
+| Area + places | **Admin** areas/places (+ member Add with `areaId`) | `areaHubClientApi`, `placeDetailClientApi` |
+
+### 18.3 Known follow-ups (not blockers for shell phases)
+
+| Gap | Track |
+|-----|--------|
+| Legacy shop pins missing `areaId` on explore payload | `DOMAIN_CANONICALS` geography known read-path gap |
+| Programme / campaign entity (R7) | PM gate — no consumer detail yet |
+| Host console owner preview of org profile | `OrganisationPublicProfile` `mode="owner"` — not consumer shell |

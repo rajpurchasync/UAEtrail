@@ -165,7 +165,7 @@ export const CONSUMER_HAMBURGER_MENU: readonly ConsumerHamburgerMenuItem[] = [
   },
   {
     kind: 'link',
-    label: 'Messages',
+    label: 'Chat',
     emoji: '💬',
     to: MESSAGES_PATH,
     match: [MESSAGES_PATH],

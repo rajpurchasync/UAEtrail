@@ -208,7 +208,12 @@
         "apps/api/src/routes/admin/registerAdminAreaRoutes.ts"
       ],
       "feDomains": ["src/api/domains/areas.ts"],
-      "feRoots": ["src/pages/AreaDetailPage.tsx", "src/explore/exploreAreaFilter.ts"]
+      "feRoots": [
+        "src/pages/AreaDetailPage.tsx",
+        "src/components/area/AreaDetailView.tsx",
+        "src/hooks/areaHubClientApi.ts",
+        "src/explore/exploreAreaFilter.ts"
+      ]
     },
     {
       "id": "availability",

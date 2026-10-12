@@ -28,6 +28,14 @@ export const PRODUCT_EXPLORE_CTA = 'Explore the map';
 /** Signed-in hub tab + mobile header title (`/plan`). */
 export const PRODUCT_PLAN_SURFACE_TITLE = 'My Plans';
 
+/** Goals CRUD lives on Plan → Wishlist — not a standalone route. */
+export const PRODUCT_PLAN_GOALS_ON_WISHLIST =
+  'Set outdoor goals on your Wishlist tab — track progress next to saved plans.';
+
+/** Explore people panel vs friends list (D11). */
+export const PRODUCT_PEOPLE_DISCOVERY_LABEL = 'Find your crew';
+export const PRODUCT_FRIENDS_SURFACE_LABEL = 'Friends';
+
 /** Join CTA label. */
 export const PRODUCT_JOIN_CTA = 'Join free';
 

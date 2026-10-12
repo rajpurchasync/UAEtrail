@@ -255,6 +255,7 @@ Canonical paths only in **new UI**. Legacy URLs redirect in `src/App.tsx` — do
 | `/admin/locations` | `/admin/places` | 2026-Q4 |
 | `/host/locations` | `/host/places` | 2026-Q4 |
 | `/event-spot/:id`, `/community-activity/:id`, `/event/:id` (place) | `/venue/:id` | 2026-Q4 |
+| `/people` | `/explore?…` people browse (`explorePeopleBrowsePath`) | 2026-Q4 |
 | `/merchant/:id` | legacy merchant page | TBD |
 | `/sign-up`, `/sign-in` | auth aliases | keep |
 
@@ -287,8 +288,8 @@ Canonical paths only in **new UI**. Legacy URLs redirect in `src/App.tsx` — do
 | **Agency / guide** | `/guide`, `/agency`, `/partner` | `EntityPublicDetailShell` — **About · Outings · Contact** (`?tab=`) | — |
 | **Member (person)** | `/member/:userId` | Profile card — not a tenant storefront | — |
 | **Goals** | — | Embedded on **Plan → Wishlist** (`planLensPath('goals')`) | No `/goals` route |
-| **People (discovery)** | Explore `view=people` | Map panel — **Available · Friends going · Everyone** | No `/people` route (optional redirect TBD) |
-| **People (friends)** | `/buddies` | Friends · Requests · Following | — |
+| **People (discovery)** | Explore `view=people` | Map panel **Find your crew** — **Available · Friends going · Everyone** | Legacy `/people` → explore people browse |
+| **People (friends)** | `/buddies` | **Friends** — requests · following (not the same as map People panel) | — |
 | **My Map** | `/profile/history/map` | Journey map under **history** stack | Not a root tab |
 | **Explore / Plan / Chat** | see above | Discovery and commitments — **do not** force entity-detail template | — |
 

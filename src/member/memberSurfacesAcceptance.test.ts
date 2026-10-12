@@ -202,7 +202,7 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(hub).toContain('ProfilePlanGoalsTeaser');
     expect(hub).not.toContain('ProfileGoalsSection');
     const teaser = read('src/components/profile/ProfilePlanGoalsTeaser.tsx');
-    expect(teaser).toContain("planLensPath('goals')");
+    expect(teaser).toContain('planGoalsWishlistPath');
   });
 
   it('G-arch: Profile business entry uses pro membership (not host overview)', () => {

@@ -21,7 +21,14 @@ import { Membership } from './pages/Membership';
 import { ExploreExperience } from './explore';
 import { BrowseListPage } from './list/BrowseListPage';
 
-import { discoveryToExploreSearch, explorePath, legacyCreateParamToOrganizePath, parseActivityListFilter, LIST_DISCOVERY_PATH } from './config/routingCatalog';
+import {
+  discoveryToExploreSearch,
+  explorePath,
+  explorePeopleBrowsePath,
+  legacyCreateParamToOrganizePath,
+  parseActivityListFilter,
+  LIST_DISCOVERY_PATH,
+} from './config/routingCatalog';
 import { organisationManagePath, SIGNIN_PATH, SIGNUP_PATH } from './config/routingCatalog';
 import { GuestTabPlaceholder } from './components/auth/GuestTabPlaceholder';
 import { PRODUCT_PLAN_SURFACE_TITLE } from './content/productNorthStar';
@@ -331,6 +338,7 @@ function App() {
           <Route path="/event-spot/:id" element={<EventSpotRedirect />} />
           <Route path="/community-activity/:id" element={<CommunityActivityRedirect />} />
           <Route path="/calendar" element={<Navigate to={explorePath({ panel: 'activities' })} replace />} />
+          <Route path="/people" element={<Navigate to={explorePeopleBrowsePath()} replace />} />
           <Route
             path="/area/:slug"
             element={

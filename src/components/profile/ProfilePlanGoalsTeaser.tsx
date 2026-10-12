@@ -1,15 +1,15 @@
 import { Link } from 'react-router-dom';
 import { ChevronRight, Target } from 'lucide-react';
-import { planLensPath } from '../../plan/planLens';
+import { planGoalsWishlistPath } from '../../plan/planLens';
 
 type ProfilePlanGoalsTeaserProps = {
   goalsCount: number;
 };
 
-/** Profile shows counts + Plan deep link — full goals CRUD lives on Plan (`?lens=goals`). */
+/** Profile shows counts + Plan deep link — full goals CRUD lives on Plan → Wishlist. */
 export const ProfilePlanGoalsTeaser = ({ goalsCount }: ProfilePlanGoalsTeaserProps) => (
   <Link
-    to={planLensPath('goals')}
+    to={planGoalsWishlistPath()}
     className="glass-card-interactive flex items-center gap-3 px-4 py-3.5"
   >
     <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-800">

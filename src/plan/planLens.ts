@@ -35,3 +35,6 @@ export const planLensPath = (lens: PlanLens = 'schedule'): string => {
 
 /** Canonical saved / wishlist entry on Plan (`D13` in member-surfaces-implementation-plan). */
 export const planSavedPath = (): string => planWishlistTabPath();
+
+/** Goals block on Plan — same tab as wishlist (`?view=plans&tab=wishlist`). */
+export const planGoalsWishlistPath = (): string => planWishlistTabPath();
