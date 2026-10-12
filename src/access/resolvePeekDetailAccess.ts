@@ -1,5 +1,6 @@
 import {
-  computeActivityMapPeekActions,
+  resolveActivityEngagementMapPeekActionsBase,
+  resolveActivityEngagementMapPeekStrips,
   type ActivityViewerAccessDTO,
 } from '@uaetrail/shared-types';
 import { mapViewerAccessToExplorePeekDetail, type ExplorePeekDetailAccess } from './mapViewerAccessToUi';
@@ -60,9 +61,40 @@ export const hostPublishedActivityPeekAccess = (
   canOpenDetailPage: true,
   joinMode,
   canAccessCrewSurfaces: true,
-  mapPeekActions: computeActivityMapPeekActions({
-    level: 'host',
+  mapPeekActions: resolveActivityEngagementMapPeekActionsBase({
+    viewerAccess: {
+      exposure: 'full',
+      level: 'host',
+      gateReason: null,
+      canViewFullActivity: true,
+      canOpenDetailPage: true,
+      joinMode,
+      canAccessCrewSurfaces: true,
+      mapPeekActions: [],
+      entitlements: null,
+    },
+    isHostUser: true,
     activityPublished: true,
     joinMode,
+    myParticipation: null,
+    myRequest: null,
+  }),
+  mapPeekStrips: resolveActivityEngagementMapPeekStrips({
+    viewerAccess: {
+      exposure: 'full',
+      level: 'host',
+      gateReason: null,
+      canViewFullActivity: true,
+      canOpenDetailPage: true,
+      joinMode,
+      canAccessCrewSurfaces: true,
+      mapPeekActions: [],
+      entitlements: null,
+    },
+    isHostUser: true,
+    activityPublished: true,
+    joinMode,
+    myParticipation: null,
+    myRequest: null,
   }),
 });

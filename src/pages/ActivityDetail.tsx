@@ -5,6 +5,7 @@ import {
   type ActivityDetailDTO,
   type ActivityDTO,
   type ActivityParticipationDTO,
+  type ActivityPresentationDTO,
   type ActivityViewerAccessDTO,
   type MyActivityRequestDTO,
   type ReviewDTO,
@@ -43,7 +44,7 @@ import {
   parseActivityDetailTabParam,
   type ActivityDetailTabId,
 } from '../activity/activityDetailTab';
-import { resolveActivityDetailPresentation } from '../activity/activityDetailPresentation';
+import { resolveActivityDetailWirePresentation } from '../activity/resolveActivityDetailWirePresentation';
 import { ActivityDetailJoinWelcomeSheet } from '../components/activity/detail/ActivityDetailJoinWelcomeSheet';
 import { activityDetailPath } from '../config/routingCatalog';
 
@@ -63,6 +64,7 @@ export const ActivityDetail = () => {
   const [participation, setParticipation] = useState<ActivityParticipationDTO | null | undefined>(undefined);
   const [myRequest, setMyRequest] = useState<MyActivityRequestDTO | null | undefined>(undefined);
   const [viewerAccess, setViewerAccess] = useState<ActivityViewerAccessDTO | null>(null);
+  const [wirePresentation, setWirePresentation] = useState<ActivityPresentationDTO | null>(null);
   const [activityReviews, setActivityReviews] = useState<ReviewDTO[]>([]);
   const [hostRemoveConfirm, setHostRemoveConfirm] = useState<ActivityDTO | null>(null);
   const [hostRemoveBusy, setHostRemoveBusy] = useState(false);
@@ -77,11 +79,13 @@ export const ActivityDetail = () => {
     setParticipation(undefined);
     setMyRequest(undefined);
     setViewerAccess(null);
+    setWirePresentation(null);
     api
       .getPublicActivityDetail(id)
       .then((res) => {
         setActivity(res.data);
         setViewerAccess(res.viewerAccess ?? null);
+        setWirePresentation(res.presentation ?? null);
         setParticipation(res.data.myParticipation ?? null);
         setMyRequest(res.data.myRequest ?? null);
       })
@@ -172,21 +176,32 @@ export const ActivityDetail = () => {
     loadHostJoinRequests();
   }, [loadHostJoinRequests]);
 
-  const presentation = useMemo(
-    () =>
-      activity
-        ? resolveActivityDetailPresentation({
-            viewerAccess,
-            joinUiState,
-            participationMode: activity.participationMode,
-            requirements: activity.requirements,
-            activityPublished: activity.status === 'published',
-            isHostUser: isActivityHostUser,
-            isConfirmedParticipant,
-          })
-        : null,
-    [activity, viewerAccess, joinUiState, isActivityHostUser, isConfirmedParticipant]
-  );
+  const effectiveWirePresentation = useMemo(() => {
+    if (wirePresentation) return wirePresentation;
+    if (!activity) return null;
+    return resolveActivityDetailWirePresentation({
+      activity,
+      viewerAccess,
+      isHostUser: isActivityHostUser,
+      joinUiState,
+      myParticipation: participation ?? null,
+      myRequest: myRequest ?? null,
+    });
+  }, [
+    wirePresentation,
+    activity,
+    viewerAccess,
+    isActivityHostUser,
+    joinUiState,
+    participation,
+    myRequest,
+  ]);
+
+  const presentation = useMemo(() => {
+    if (!activity || !effectiveWirePresentation?.engagement) return null;
+    const { joinEngagement: _joinEngagement, ...engagement } = effectiveWirePresentation.engagement;
+    return engagement;
+  }, [activity, effectiveWirePresentation]);
 
   const joinedWelcomeQuery = searchParams.get(ACTIVITY_DETAIL_JOINED_QUERY) === '1';
 
@@ -481,6 +496,8 @@ export const ActivityDetail = () => {
               }
             : undefined
         }
+        wireFooterByTab={effectiveWirePresentation?.footerByTab ?? null}
+        wireTabs={effectiveWirePresentation?.tabs ?? null}
       />
       {activity && id ? (
         <ActivityDetailJoinWelcomeSheet

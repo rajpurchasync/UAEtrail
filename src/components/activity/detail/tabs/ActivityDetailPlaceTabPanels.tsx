@@ -18,6 +18,7 @@ type ActivityDetailPlaceTabPanelsProps = {
   previewMode: boolean;
   showMobileTabs: boolean;
   showPlaceCrewBody: boolean;
+  showPlaceLockedOnMobile?: boolean;
   registryPlacePath: string | null;
   registryPlaceName: string | null;
   hasAccessCoordinates: boolean;
@@ -33,6 +34,7 @@ export const ActivityDetailPlaceTabPanels = ({
   previewMode,
   showMobileTabs,
   showPlaceCrewBody,
+  showPlaceLockedOnMobile,
   registryPlacePath,
   registryPlaceName,
   hasAccessCoordinates,
@@ -56,7 +58,7 @@ export const ActivityDetailPlaceTabPanels = ({
       </div>
     ) : null}
 
-    {!showPlaceCrewBody && showMobileTabs ? (
+    {(showPlaceLockedOnMobile ?? (!showPlaceCrewBody && showMobileTabs)) ? (
       <div className={`bg-white rounded-2xl border border-gray-100 p-6 text-center ${panelClassName}`}>
         <Car className="mx-auto h-8 w-8 text-neutral-400" aria-hidden />
         <p className="mt-3 text-sm text-neutral-600 leading-relaxed">{ACTIVITY_DETAIL_PLACE_LOCKED_BODY}</p>

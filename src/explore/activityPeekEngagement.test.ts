@@ -4,6 +4,8 @@ import {
   activityMapPeekShowsJoinFlow,
   activityMapPeekSkipsJoinContext,
   resolveActivityMapPeekActions,
+  resolveActivityMapPeekStrips,
+  resolveActivityPeekEngagement,
 } from '../activity/activityPeekEngagement';
 import type { ExploreCardModel } from './exploreCardModel';
 
@@ -46,6 +48,36 @@ const activityCard = (overrides: Partial<ExploreCardModel> = {}): ExploreCardMod
     },
     ...overrides,
   }) as ExploreCardModel;
+
+describe('resolveActivityMapPeekStrips', () => {
+  it('uses API mapPeekStrips when present', () => {
+    const strips = resolveActivityMapPeekStrips(
+      activityCard({
+        viewerAccess: {
+          ...activityCard().viewerAccess!,
+          mapPeekStrips: {
+            showParticipantsStrip: true,
+            showLogisticsStrip: false,
+            showJoinedStatusChipOnPeek: true,
+            showHostSelfProfileLink: false,
+            showOfferRideInLogistics: false,
+            maskRosterToFriendsOnly: false,
+            pendingJoinInviteCount: 3,
+          },
+        },
+      })
+    );
+    expect(strips.showLogisticsStrip).toBe(false);
+    expect(strips.showJoinedStatusChipOnPeek).toBe(true);
+    expect(strips.pendingJoinInviteCount).toBe(3);
+  });
+
+  it('bundles strips in resolveActivityPeekEngagement', () => {
+    const engagement = resolveActivityPeekEngagement(activityCard());
+    expect(engagement.mapPeekStrips.showParticipantsStrip).toBe(true);
+    expect(engagement.mapPeekActions.length).toBeGreaterThan(0);
+  });
+});
 
 describe('resolveActivityMapPeekActions', () => {
   it('uses API mapPeekActions when present', () => {
@@ -123,7 +155,7 @@ describe('activityMapPeekSkipsJoinContext', () => {
         canAccessCrewSurfaces: true,
         mapPeekActions: [
           { id: 'open_crew_chat', prominence: 'primary' },
-          { id: 'link_carpool', prominence: 'link' },
+          { id: 'link_rideshare', prominence: 'link' },
         ],
       },
     });

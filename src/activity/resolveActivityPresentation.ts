@@ -7,6 +7,11 @@ export {
 } from './activityDetailPresentation';
 
 export {
+  resolveActivityDetailWirePresentation,
+  type ResolveActivityDetailWirePresentationInput,
+} from './resolveActivityDetailWirePresentation';
+
+export {
   activityMapPeekNeedsJoinContext,
   activityMapPeekShowsJoinFlow,
   activityMapPeekSkipsJoinContext,

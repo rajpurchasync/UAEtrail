@@ -4,7 +4,8 @@ Shipped on **`main`**. **Product truth:** [`../DOCS_INDEX.md`](../DOCS_INDEX.md)
 
 | Doc | Purpose |
 |-----|---------|
-| [**member-surfaces-implementation-plan.md**](./member-surfaces-implementation-plan.md) | **Master checklist** — 4 tabs, Activity (hosted/seeking), Area, Availability, retire trips/host |
+| [**activity-detail-tabs-implementation-plan.md**](./activity-detail-tabs-implementation-plan.md) | **Activity peek + detail program** — **§6 dynamic CTAs** (peek/detail/profile), phases, trace tests (`activityDetailAcceptance.test.ts`, `activity-detail-cta-matrix.test.ts`) |
+| [**member-surfaces-implementation-plan.md**](./member-surfaces-implementation-plan.md) | Plan hub / seeking / §11 guards; §21 **points** at activity-detail program for exit criteria |
 | [explore-ux-spec.md](./explore-ux-spec.md) | Map card copy, emojis, CTAs |
 | [explore-browse-ia.md](./explore-browse-ia.md) · [explore-browse-taxonomy.md](./explore-browse-taxonomy.md) | Browse pills, search scopes, pin kinds (`src/explore/exploreBrowseTaxonomy.ts`) |
 | [consumer-mobile-ia.md](./consumer-mobile-ia.md) | Profile / Plan / Messages tabs (**superseded in part by member-surfaces-implementation-plan**) |

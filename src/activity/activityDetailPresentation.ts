@@ -1,7 +1,9 @@
 import {
+  resolveActivityEngagementPolicy,
   resolveParticipationMode,
-  type ActivityParticipationMode,
   type ActivityViewerAccessDTO,
+  type MapPeekJoinRequestStatus,
+  type ParticipationMode,
 } from '@uaetrail/shared-types';
 import type { ExploreCardModel } from '../explore/exploreCardModel';
 import type { JoinRequestUiState } from '../utils/joinRequestUi';
@@ -9,37 +11,46 @@ import type { JoinRequestUiState } from '../utils/joinRequestUi';
 export type ActivityPresentationInput = {
   viewerAccess: ActivityViewerAccessDTO | null;
   joinUiState: JoinRequestUiState;
-  participationMode?: ActivityParticipationMode | null;
+  participationMode?: ParticipationMode | null;
   requirements?: string[] | null;
   activityPublished: boolean;
   isHostUser: boolean;
   isConfirmedParticipant: boolean;
 };
 
-/** Activity detail engagement flags — join/crew from API `viewerAccess` only. */
+const joinRequestStatusFromUi = (
+  joinUiState: JoinRequestUiState
+): MapPeekJoinRequestStatus | null => {
+  if (joinUiState.kind !== 'pending') return null;
+  return joinUiState.status === 'waitlisted' ? 'waitlisted' : 'pending';
+};
+
+/** Activity detail engagement flags — from L1 policy when `viewerAccess` is present. */
 export const resolveActivityDetailPresentation = (input: ActivityPresentationInput) => {
   const participationMode = resolveParticipationMode(input.participationMode, input.requirements);
-  const canAccessCrewSurfaces = input.viewerAccess?.canAccessCrewSurfaces ?? false;
 
-  const showParticipantFooterShortcuts =
-    canAccessCrewSurfaces && input.isConfirmedParticipant && !input.isHostUser;
-
-  const showCrewWelcomeAfterInstantJoin =
-    participationMode === 'rsvp' && canAccessCrewSurfaces;
-
-  const showCrewLockedHint =
-    !canAccessCrewSurfaces &&
-    !input.isHostUser &&
-    (input.joinUiState.kind === 'open' ||
-      input.joinUiState.kind === 'pending' ||
-      input.viewerAccess?.level === 'public');
+  if (input.viewerAccess) {
+    const { presentation } = resolveActivityEngagementPolicy({
+      viewerAccess: input.viewerAccess,
+      isHostUser: input.isHostUser,
+      activityPublished: input.activityPublished,
+      participationMode: input.participationMode,
+      requirements: input.requirements,
+      joinRequestStatus: joinRequestStatusFromUi(input.joinUiState),
+      myParticipation: input.isConfirmedParticipant ? { onRoster: true } : null,
+      myRequest: null,
+    });
+    const { joinEngagement: _joinEngagement, participationMode: _pm, ...flags } =
+      presentation.engagement;
+    return { participationMode, ...flags };
+  }
 
   return {
     participationMode,
-    canAccessCrewSurfaces,
-    showParticipantFooterShortcuts,
-    showCrewWelcomeAfterInstantJoin,
-    showCrewLockedHint,
+    canAccessCrewSurfaces: false,
+    showParticipantFooterShortcuts: false,
+    showCrewWelcomeAfterInstantJoin: false,
+    showCrewLockedHint: false,
   };
 };
 

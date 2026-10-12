@@ -39,7 +39,7 @@ export type MemberEntitlementId =
   | 'host_console'
   | 'paid_consumer_detail'
   | 'paid_host_commercial'
-  /** Pro carpool / transport tab on activity detail (layer 7 — not crew surfaces). */
+  /** Pro rideshare / transport tab on activity detail (layer 7 — not crew surfaces). */
   | 'activity_pro_transport'
   | 'pro_member_directory'
   | 'pro_profile_view_stats';

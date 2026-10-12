@@ -1,0 +1,57 @@
+---
+description: Activity detail tabs + map peek — program checklist, one policy brain, matrix tests
+globs:
+  - src/activity/**
+  - src/components/activity/**
+  - src/pages/ActivityDetail.tsx
+  - src/explore/ui/ExploreItemPeekParts.tsx
+  - src/explore/ui/ExploreActivityPeekStrips.tsx
+  - src/explore/ui/useExploreSelectionActions.ts
+  - apps/api/src/routes/user/registerPublicActivityRoutes.ts
+  - apps/api/src/lib/build-activity-presentation.ts
+  - apps/api/src/lib/explore-map-viewer-access.ts
+  - packages/shared-types/src/activity-detail-presentation.ts
+  - packages/shared-types/src/activity-map-peek-actions.ts
+  - packages/shared-types/src/activity-detail-tab-footers.ts
+---
+
+# Activity detail & peek program
+
+**Canonical checklist:** `docs/experiment/activity-detail-tabs-implementation-plan.md` (exit criteria, trace matrix §8).  
+**Dynamic CTA product spec (mandatory before peek/detail CTA work):** same doc **§6.2** (states A–E), cross-rules **§6.2.1**, implementation order **§6.7**.
+**Tier-1:** `docs/NAVIGATION.md` § Activity detail · `docs/DOMAIN_CANONICALS.md` §15 · `docs/MEMBER_MODEL.md` (Pro vs host).  
+**Summary pointer only:** `docs/experiment/member-surfaces-implementation-plan.md` §21 — do not tick AD-4/AD-5 peek parity there without closing tests here.
+
+Also read: `.cursor/rules/viewer-access.mdc` for wire-first exposure rules.
+
+## Definition of done (every PR)
+
+1. Name **requirement IDs** from program doc §8 in the PR / commit message.
+2. **Remove list** — delete bypassed paths in the same PR (no second CTA matrix in components).
+3. **L1** `packages/shared-types` policy tests for any new behavior row.
+4. **Horizontal pass:** API registrar + `src/api/domains/*` + UI + **one** Tier-1 section if product changed.
+5. Flip checkboxes **only** in `activity-detail-tabs-implementation-plan.md` when `src/activity/activityDetailAcceptance.test.ts` rows are green (not `it.fails`).
+6. `npm run verify:system:quick` minimum; full `verify:system` before closing a **phase**.
+
+## Policy architecture
+
+| Layer | Owner |
+|-------|--------|
+| L1 | `resolveActivityEngagementPolicy` + `projectActivityMapPeekActions` in shared-types |
+| L2 | `GET /activities/:id` `presentation` from policy; explore `mapPeekActions` from policy intents |
+| L3 | React maps wire ids → buttons; **no** `isHostUser` peek CTA matrices |
+
+## Forbidden without explicit program ID + remove target
+
+- New `showHostActivityCtas` branches for **activity** peek/list.
+- Client `computeActivityMapPeekActions` outside `activityPeekEngagement` fallback.
+- Marking peek/detail parity complete without matrix tests (**AD-CTA-01** / `activity-detail-cta-matrix.test.ts`).
+- Implementing CTAs not listed in §6.2 without updating the program doc first.
+- Chrome/copy changes without `activityDetailCopy.ts` + NAVIGATION § Activity detail.
+
+## North star reminders
+
+- Tabs: **Plan · Place · Buddies · Transport** (UI labels only).
+- **AD-2b:** Chrome = emoji + **activity title**; hero = venue + date + large title + chips.
+- Pending: no Place body, no locked meeting/chat rows — welcome modal after join.
+- Pro = social depth (`entitlements`), not `canPublish`.

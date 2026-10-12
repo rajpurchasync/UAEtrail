@@ -33,14 +33,16 @@ describe('activityEngagementCtas', () => {
   });
 
   it('resolveExploreMapEngagementFooterKind mirrors peek primary mapping', () => {
-    expect(resolveExploreMapEngagementFooterKind('link_carpool')).toBe('transport_linked_ride');
+    expect(resolveExploreMapEngagementFooterKind('link_rideshare')).toBe('transport_linked_ride');
     expect(resolveExploreMapEngagementFooterKind('request_join')).toBe('plan_join');
   });
 
-  it('maps host invite_crew peek to buddies invite footer intent', () => {
+  it('maps host share peek primary and invite_crew to buddies invite footer intent', () => {
     const peek = computeActivityMapPeekActions({ level: 'host', activityPublished: true });
     const primary = resolveActivityPeekPrimaryActionId(peek);
-    expect(primary).toBe('open_crew_chat');
+    expect(primary).toBe('share_activity');
     expect(detailPlanFooterKindForPeekPrimary('invite_crew')).toBe('buddies_invite');
+    expect(detailPlanFooterKindForPeekPrimary('share_activity')).toBe('plan_host_share');
+    expect(detailPlanFooterKindForPeekPrimary('open_crew_chat')).toBe('plan_join');
   });
 });

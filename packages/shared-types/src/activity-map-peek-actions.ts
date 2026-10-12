@@ -4,12 +4,16 @@ import type { ActivityViewerAccessLevel } from './activity-viewer-access.js';
 /** Wire ids for explore map peek actions — UI maps to handlers; not React component names. */
 export type ActivityMapPeekActionId =
   | 'open_crew_chat'
-  | 'link_carpool'
+  | 'link_rideshare'
+  | 'offer_rideshare'
   | 'message_host'
   | 'invite_crew'
   | 'view_detail'
   | 'request_join'
-  | 'pending_join';
+  | 'pending_join'
+  | 'share_activity'
+  | 'manage_activity'
+  | 'withdraw_join';
 
 export type ActivityMapPeekActionProminence = 'primary' | 'secondary' | 'link' | 'text';
 
@@ -27,6 +31,7 @@ export type ActivityMapPeekActionsInput = {
   activityPublished: boolean;
   joinMode?: ActivityJoinMode;
   joinRequestStatus?: MapPeekJoinRequestStatus | null;
+  confirmedParticipantCount?: number;
 };
 
 const joinEligibleLevels: ReadonlySet<ActivityViewerAccessLevel> = new Set(['link_holder']);
@@ -38,12 +43,19 @@ export const computeActivityMapPeekActions = (
   const { level, activityPublished, joinRequestStatus } = input;
 
   if (level === 'host' || level === 'platform_admin') {
-    const actions: ActivityMapPeekAction[] = [
-      { id: 'open_crew_chat', prominence: 'primary' },
-      { id: 'link_carpool', prominence: 'link' },
-    ];
+    const hostHasJoiners = (input.confirmedParticipantCount ?? 0) > 0;
+    const actions: ActivityMapPeekAction[] = hostHasJoiners
+      ? [
+          { id: 'open_crew_chat', prominence: 'primary' },
+          { id: 'share_activity', prominence: 'secondary' },
+          { id: 'manage_activity', prominence: 'secondary' },
+        ]
+      : [
+          { id: 'share_activity', prominence: 'primary' },
+          { id: 'manage_activity', prominence: 'secondary' },
+        ];
     if (activityPublished) {
-      actions.push({ id: 'invite_crew', prominence: 'secondary' });
+      actions.push({ id: 'link_rideshare', prominence: 'link' });
     }
     actions.push({ id: 'view_detail', prominence: 'text' });
     return actions;

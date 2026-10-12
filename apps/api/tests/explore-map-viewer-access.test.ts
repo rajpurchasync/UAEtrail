@@ -92,6 +92,7 @@ describe('attachExploreMapViewerAccess', () => {
       demandJoinStatusByIntentId: new Map(),
       hostStatus: null,
       buddyUserIds: new Set(),
+      pendingJoinInviteCountByActivityId: new Map(),
     });
 
     expect(enriched[0].viewerAccess?.gateReason).toBe('sign_in');
@@ -133,15 +134,75 @@ describe('attachExploreMapViewerAccess', () => {
       demandJoinStatusByIntentId: new Map(),
       hostStatus: null,
       buddyUserIds: new Set(),
+      pendingJoinInviteCountByActivityId: new Map(),
     });
 
     expect(enriched[0].viewerAccess?.level).toBe('host');
     expect(enriched[0].viewerAccess?.mapPeekActions?.map((a) => a.id)).toEqual([
-      'open_crew_chat',
-      'invite_crew',
+      'share_activity',
+      'manage_activity',
       'view_detail',
     ]);
     expect(enriched[0].viewerAccess?.entitlements?.canAddLinkedRide).toBe(false);
+  });
+
+  it('attaches pending join-invite count on mapPeekStrips for host', () => {
+    const enriched = attachExploreMapViewerAccess([openActivityItem()], {
+      viewerUserId: 'host-1',
+      isPlatformAdmin: false,
+      participantActivityIds: new Set(),
+      requestStatusByActivityId: new Map(),
+      staffTenantIds: new Set(),
+      demandJoinStatusByIntentId: new Map(),
+      hostStatus: null,
+      buddyUserIds: new Set(),
+      pendingJoinInviteCountByActivityId: new Map([['a1', 2]]),
+    });
+
+    expect(enriched[0].viewerAccess?.mapPeekStrips?.pendingJoinInviteCount).toBe(2);
+  });
+
+  it('attaches host message-first peek actions when joiners are on the map row', () => {
+    const items: ExploreMapItemDTO[] = [
+      {
+        id: 'activity:a1',
+        kind: 'hiking',
+        source: 'activity',
+        title: 'Hike',
+        latitude: 25,
+        longitude: 55,
+        path: '/activity/a1',
+        participantPreviews: [{ id: 'p1', name: 'Alex', avatar: null }],
+        activity: {
+          id: 'a1',
+          tenantId: 't1',
+          hostUserId: 'host-1',
+          status: 'published',
+          title: 'Hike',
+          joinMode: 'open',
+          requirements: [],
+        } as ExploreMapItemDTO['activity'],
+      },
+    ];
+
+    const enriched = attachExploreMapViewerAccess(items, {
+      viewerUserId: 'host-1',
+      isPlatformAdmin: false,
+      participantActivityIds: new Set(),
+      requestStatusByActivityId: new Map(),
+      staffTenantIds: new Set(),
+      demandJoinStatusByIntentId: new Map(),
+      hostStatus: null,
+      buddyUserIds: new Set(),
+      pendingJoinInviteCountByActivityId: new Map(),
+    });
+
+    expect(enriched[0].viewerAccess?.mapPeekActions?.map((a) => a.id)).toEqual([
+      'open_crew_chat',
+      'share_activity',
+      'manage_activity',
+      'view_detail',
+    ]);
   });
 
   it('attaches participant mapPeekActions for approved roster viewer', () => {
@@ -175,14 +236,18 @@ describe('attachExploreMapViewerAccess', () => {
       demandJoinStatusByIntentId: new Map(),
       hostStatus: null,
       buddyUserIds: new Set(),
+      pendingJoinInviteCountByActivityId: new Map(),
     });
 
     expect(enriched[0].viewerAccess?.level).toBe('participant');
     expect(enriched[0].viewerAccess?.mapPeekActions?.map((a) => a.id)).toEqual([
       'open_crew_chat',
       'invite_crew',
+      'withdraw_join',
       'view_detail',
     ]);
+    expect(enriched[0].viewerAccess?.mapPeekStrips?.showJoinedStatusChipOnPeek).toBe(true);
+    expect(enriched[0].viewerAccess?.mapPeekStrips?.maskRosterToFriendsOnly).toBe(true);
   });
 
   it('attaches request_join for signed-in non-roster member', () => {
@@ -195,6 +260,7 @@ describe('attachExploreMapViewerAccess', () => {
       demandJoinStatusByIntentId: new Map(),
       hostStatus: null,
       buddyUserIds: new Set(),
+      pendingJoinInviteCountByActivityId: new Map(),
     });
 
     expect(enriched[0].viewerAccess?.level).toBe('link_holder');
@@ -214,6 +280,7 @@ describe('attachExploreMapViewerAccess', () => {
       demandJoinStatusByIntentId: new Map(),
       hostStatus: null,
       buddyUserIds: new Set(),
+      pendingJoinInviteCountByActivityId: new Map(),
     });
 
     expect(enriched[0].viewerAccess?.level).toBe('join_request');
@@ -233,6 +300,7 @@ describe('attachExploreMapViewerAccess', () => {
       demandJoinStatusByIntentId: new Map(),
       hostStatus: null,
       buddyUserIds: new Set(),
+      pendingJoinInviteCountByActivityId: new Map(),
     });
 
     expect(enriched[0].viewerAccess?.level).toBe('tenant_staff');
@@ -261,6 +329,7 @@ describe('attachExploreMapViewerAccess', () => {
       demandJoinStatusByIntentId: new Map(),
       hostStatus: null,
       buddyUserIds: new Set(),
+      pendingJoinInviteCountByActivityId: new Map(),
     });
 
     expect(enriched[0].viewerAccess?.gateReason).toBe('sign_in');

@@ -256,10 +256,10 @@ Ordered for **coherence**, not feature count:
 | **S5** | Privacy notification matrix + viewer access everywhere | [`HOST_CLEANUP_ROADMAP.md`](./HOST_CLEANUP_ROADMAP.md) P2 |
 | **S6** | Place detail internal merge + SEO pass | ARCHITECTURE future |
 | **S7** | **Viewer access VA-1–VA-7** (activity detail + explore peek on API contract) | **Done** — §15.8; layer-7 hook `composeActivityViewerAccess` / `applyActivityViewEntitlements` |
-| **S7b** | **Activity detail tabs** (Plan · Place · Buddies · Transport) + single FE resolver | **Done** — plan §21 AD; `activityDetailPresentation.ts` + `activityPeekEngagement.ts`; [`NAVIGATION.md`](./NAVIGATION.md) § Activity detail |
+| **S7b** | **Activity detail tabs** (Plan · Place · Buddies · Transport) + unified engagement policy | **In progress** — shell + API exposure shipped; Phase 4–5 open ([`experiment/activity-detail-tabs-implementation-plan.md`](./experiment/activity-detail-tabs-implementation-plan.md)); L1 `buildActivityPresentationDTO` |
 | **S7c** | **Viewer access naming** (wire-first, collapse resolver soup) | **Done (NA-1–NA-6)** — plan §22; API `buildActivityViewerAccess`; [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §15.11 |
 
-Phases **S0–S3** and **S7** are in place; **S4–S6** remain; **S7b** extends S7 without duplicating join/crew policy in React. **S7c** tightens §15.10 pipeline names to route/DTO vocabulary without blocking AD-6. **S7** supersedes ad-hoc peek/detail gating in the SPA (**C16** mitigated).
+Phases **S0–S3** and **S7** are in place; **S4–S6** remain; **S7b** extends S7 — tabs/chrome shipped; peek/detail **one brain** not closed until program Phase 4. **S7c** tightens §15.10 pipeline names to route/DTO vocabulary. **S7** supersedes ad-hoc peek/detail gating in the SPA (**C16** mitigated).
 
 ---
 

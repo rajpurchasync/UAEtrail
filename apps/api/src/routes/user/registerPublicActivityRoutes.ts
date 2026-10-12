@@ -35,6 +35,7 @@ import { notifyHostOfRequestWithdrawal } from '../../services/request-notificati
 import { buildActivityRedactedDetail } from '../../lib/activity-redacted-detail.js';
 import { PRIVATE_ACTIVITY_MESSAGE } from '../../services/activity-viewer-access.js';
 import { composeActivityViewerAccess } from '../../services/compose-activity-viewer-access.js';
+import { buildActivityPresentationForDetail } from '../../lib/build-activity-presentation.js';
 import { resolveMemberHostStatus } from '../../services/member-host-status.js';
 import { resolveViewerPendingJoinInvite } from '../../services/activity-invite.js';
 import { createRequestSchema, eventIdParamSchema, requestIdParamSchema, rsvpSchema } from './schemas.js';
@@ -131,6 +132,16 @@ registerActivityRoute(router, 'get', '/:id', optionalAuth, validate({ params: ev
       }
     }
 
+    const presentation = buildActivityPresentationForDetail({
+      event,
+      viewerAccess: access,
+      viewerUserId,
+      myParticipation,
+      myRequest: myRequest
+        ? { status: myRequest.status, canWithdraw: myRequest.canWithdraw }
+        : null,
+    });
+
     if (access.exposure === 'none') {
       res.json({
         data: {
@@ -139,6 +150,7 @@ registerActivityRoute(router, 'get', '/:id', optionalAuth, validate({ params: ev
           message: PRIVATE_ACTIVITY_MESSAGE,
         },
         viewerAccess: access,
+        presentation,
       });
       return;
     }
@@ -152,6 +164,7 @@ registerActivityRoute(router, 'get', '/:id', optionalAuth, validate({ params: ev
           myJoinInvite,
         },
         viewerAccess: access,
+        presentation,
       });
       return;
     }
@@ -189,6 +202,7 @@ registerActivityRoute(router, 'get', '/:id', optionalAuth, validate({ params: ev
         myJoinInvite,
       },
       viewerAccess: access,
+      presentation,
     });
   } catch (error) {
     next(error);

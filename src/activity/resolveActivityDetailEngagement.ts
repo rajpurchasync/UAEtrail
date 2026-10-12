@@ -18,8 +18,11 @@ export const detailPlanFooterKindForPeekPrimary = (
   switch (peekPrimaryId) {
     case 'invite_crew':
       return 'buddies_invite';
-    case 'link_carpool':
+    case 'link_rideshare':
       return 'transport_linked_ride';
+    case 'share_activity':
+    case 'manage_activity':
+      return 'plan_host_share';
     case 'open_crew_chat':
     case 'message_host':
     case 'request_join':

@@ -20,6 +20,7 @@ type ActivityDetailPlanAboutCardProps = {
   panelClassName: string;
   activity: ActivityDetailDTO;
   showMobileTabs: boolean;
+  showPlanTransportTeaser?: boolean;
   onMobileTabChange?: (tab: ActivityDetailTabId) => void;
 };
 
@@ -27,6 +28,7 @@ export const ActivityDetailPlanAboutCard = ({
   panelClassName,
   activity,
   showMobileTabs,
+  showPlanTransportTeaser = false,
   onMobileTabChange,
 }: ActivityDetailPlanAboutCardProps) => {
   const pricingMode = inferActivityPricingMode(activity);
@@ -88,7 +90,7 @@ export const ActivityDetailPlanAboutCard = ({
         <p className="mt-4 text-xs text-gray-500 leading-relaxed">{ACTIVITY_PRICING_INDICATION_NOTE}</p>
       ) : null}
 
-      {showMobileTabs && onMobileTabChange ? (
+      {showPlanTransportTeaser && onMobileTabChange ? (
         <div className="mt-6 rounded-xl border border-sky-100 bg-sky-50/80 p-4">
           <p className="text-sm font-semibold text-gray-900">{ACTIVITY_DETAIL_PLAN_TRANSPORT_TEASER_TITLE}</p>
           <p className="mt-1 text-sm text-gray-600 leading-relaxed">{ACTIVITY_DETAIL_PLAN_TRANSPORT_TEASER_BODY}</p>

@@ -1,8 +1,9 @@
-import type { ReactNode } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import type { ActivityDetailDTO } from '@uaetrail/shared-types';
+import type { ActivityDetailDTO, ActivityViewerAccessDTO } from '@uaetrail/shared-types';
 import { ActivityDetailView } from '../activity/ActivityDetailView';
 import { detailBackPath } from '../../config/routingCatalog';
+import { resolveActivityDetailWirePresentation } from '../../activity/resolveActivityDetailWirePresentation';
 
 type ActivityPreviewOverlayProps = {
   activity: ActivityDetailDTO;
@@ -148,6 +149,25 @@ export const ActivityPreviewOverlay = (props: ActivityPreviewOverlayProps) => {
 
   const footerOverride = listFooter ?? formFooter;
 
+  const previewWirePresentation = useMemo(() => {
+    const viewerAccess: ActivityViewerAccessDTO = {
+      exposure: 'full',
+      level: 'host',
+      gateReason: null,
+      canViewFullActivity: true,
+      canOpenDetailPage: true,
+      joinMode: activity.joinMode ?? 'open',
+      canAccessCrewSurfaces: true,
+    };
+    return resolveActivityDetailWirePresentation({
+      activity,
+      viewerAccess,
+      isHostUser: true,
+      previewMode: true,
+      joinUiState: { kind: 'open' },
+    });
+  }, [activity]);
+
   return createPortal(
     <div className="fixed inset-0 z-[100] overflow-y-auto bg-gray-50">
       <button
@@ -163,6 +183,8 @@ export const ActivityPreviewOverlay = (props: ActivityPreviewOverlayProps) => {
         backTo={detailBackPath('activity')}
         backLabel={backLabel}
         footerOverride={footerOverride}
+        wireFooterByTab={previewWirePresentation?.footerByTab ?? null}
+        wireTabs={previewWirePresentation?.tabs ?? null}
         sidebarJoinOverride={
           footerOverride ? <div className="hidden md:block mt-4">{footerOverride}</div> : undefined
         }

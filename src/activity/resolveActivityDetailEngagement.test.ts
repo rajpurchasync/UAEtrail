@@ -40,7 +40,7 @@ describe('resolveActivityDetailEngagement', () => {
       resolveActivityDetailEngagementFooterKind({
         surface: 'explore_map',
         tabFooter: tabFooterBase,
-        peekPrimaryActionId: 'link_carpool',
+        peekPrimaryActionId: 'link_rideshare',
       })
     ).toBe('transport_linked_ride');
   });

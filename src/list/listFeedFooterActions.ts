@@ -58,7 +58,17 @@ const peekActionToFooterButton = (
       label: activityMapPeekActionLabel(action.id, action),
     };
   }
-  if (action.id === 'request_join' || action.id === 'message_host') {
+  if (
+    action.id === 'request_join' ||
+    action.id === 'message_host' ||
+    action.id === 'share_activity' ||
+    action.id === 'manage_activity' ||
+    action.id === 'withdraw_join' ||
+    action.id === 'offer_rideshare' ||
+    action.id === 'open_crew_chat' ||
+    action.id === 'invite_crew' ||
+    action.id === 'link_rideshare'
+  ) {
     if (isGuest) {
       return { kind: 'guest_gate', label: peekActionLabel(action, card) };
     }
@@ -121,7 +131,7 @@ export const resolveListFeedFooterModel = (
     };
   }
 
-  if (card.showHostActivityCtas || card.showDemandOwnerActions) {
+  if (card.showDemandOwnerActions) {
     return {
       primary: { kind: 'link', label: card.primaryCta, href: card.path },
       secondary: null,
@@ -129,7 +139,7 @@ export const resolveListFeedFooterModel = (
     };
   }
 
-  if (card.source === 'activity' && card.showJoinActions) {
+  if (card.source === 'activity') {
     const fromPeek = resolveActivityJoinFooter(card, options);
     if (fromPeek) return fromPeek;
   }

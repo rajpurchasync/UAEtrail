@@ -44,7 +44,7 @@ describe('computeActivityViewerEntitlements', () => {
 });
 
 describe('mergeActivityMapPeekActionsWithEntitlements', () => {
-  it('strips link_carpool when host is not Pro', () => {
+  it('strips link_rideshare when host is not Pro', () => {
     const ent = computeActivityViewerEntitlements({
       isProMember: false,
       isFriendOfHost: false,
@@ -55,7 +55,7 @@ describe('mergeActivityMapPeekActionsWithEntitlements', () => {
     const merged = mergeActivityMapPeekActionsWithEntitlements(
       [
         { id: 'open_crew_chat', prominence: 'primary' },
-        { id: 'link_carpool', prominence: 'link' },
+        { id: 'link_rideshare', prominence: 'link' },
         { id: 'view_detail', prominence: 'text' },
       ],
       ent,

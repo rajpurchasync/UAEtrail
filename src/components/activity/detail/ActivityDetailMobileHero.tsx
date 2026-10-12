@@ -11,7 +11,7 @@ type ActivityDetailMobileHeroProps = {
   statusChips?: ActivityDetailHeroStatusChip[];
 };
 
-/** Title + when block below mobile tabs (banner stays kind-only). */
+/** Venue + date + title + fact chips below tabs (banner/chrome = emoji + title). */
 export const ActivityDetailMobileHero = ({
   venueLine,
   date,

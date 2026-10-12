@@ -38,7 +38,6 @@ export const enrichListFeedCardModel = (
     return {
       ...next,
       showJoinActions: false,
-      showHostActivityCtas: true,
     };
   }
 

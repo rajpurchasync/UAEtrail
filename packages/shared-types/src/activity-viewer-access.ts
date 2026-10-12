@@ -1,5 +1,6 @@
 import type { ActivityJoinMode } from './activity-join-mode.js';
 import type { ActivityMapPeekAction } from './activity-map-peek-actions.js';
+import type { ActivityEngagementStripsDTO } from './activity-engagement-policy.js';
 import type { ActivityViewerEntitlementsDTO } from './activity-viewer-entitlements.js';
 
 /** Payload depth for activity detail / peek surfaces. */
@@ -40,6 +41,8 @@ export type ActivityViewerAccessDTO = {
   canAccessCrewSurfaces: boolean;
   /** Explore map peek footer — set on `GET /explore/map` activity rows only. */
   mapPeekActions?: ActivityMapPeekAction[];
+  /** Explore map peek Participants + Logistics strips — `GET /explore/map` activity rows only. */
+  mapPeekStrips?: ActivityEngagementStripsDTO;
   /** Layer 7 — Pro / friend social depth (not crew surfaces). */
   entitlements?: ActivityViewerEntitlementsDTO;
 };

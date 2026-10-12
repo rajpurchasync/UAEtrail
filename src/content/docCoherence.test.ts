@@ -69,6 +69,19 @@ describe('doc coherence (Tier 1)', () => {
     expect(system).toMatch(/\/list/);
   });
 
+  it('activity detail program doc is indexed and in_progress', () => {
+    const plan = readFileSync(
+      join(DOCS, 'experiment/activity-detail-tabs-implementation-plan.md'),
+      'utf8'
+    );
+    expect(plan).toMatch(/in_progress/);
+    expect(plan).toMatch(/activityDetailAcceptance\.test\.ts/);
+    expect(plan).toMatch(/## 6\. Dynamic CTAs/);
+    expect(plan).toMatch(/#### E — Host, published, \*\*with joiners\*\*/);
+    const index = readFileSync(join(DOCS, 'DOCS_INDEX.md'), 'utf8');
+    expect(index).toMatch(/activity-detail-tabs-implementation-plan/);
+  });
+
   it('member plan P0 ops defers to SEEKING_STORAGE_RUNBOOK (no re-implement)', () => {
     const plan = readFileSync(
       join(DOCS, 'experiment/member-surfaces-implementation-plan.md'),

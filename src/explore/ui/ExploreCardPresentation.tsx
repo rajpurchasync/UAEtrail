@@ -17,8 +17,11 @@ import type { ExplorePeekDetailAccess } from '../../access/mapViewerAccessToUi';
 import { proMembershipPath } from '../../config/routingCatalog';
 import {
   ACTIVITY_DETAIL_PRO_HOST_PROFILE_HINT,
+  ACTIVITY_DETAIL_PRO_ROSTER_HINT,
   ACTIVITY_DETAIL_PRO_SOCIAL_CTA,
 } from '../../content/activityDetailCopy';
+import { ACTIVITY_PEEK_MY_HOST_PROFILE_SUBTITLE } from '../../content/activityPeekCopy';
+import { resolveActivityMapPeekStrips } from '../../activity/activityPeekEngagement';
 
 const detailIcon = (icon: ExploreCardDetailIcon) => {
   switch (icon) {
@@ -364,6 +367,18 @@ export const ExploreCardPeopleRow = ({
   onGuestGatedAction?: () => void;
 }) => {
   const participants = card.participantPreviews ?? [];
+  const entitlements = card.viewerAccess?.entitlements;
+  const isHostViewer = card.viewerAccess?.level === 'host';
+  const visibleParticipants =
+    card.source !== 'activity' || !entitlements || entitlements.canViewFullBuddyRoster || isHostViewer
+      ? participants
+      : participants.filter((row) => entitlements.buddyUserIdsOnActivity.includes(row.id));
+  const showRosterProUpsell =
+    card.source === 'activity' &&
+    Boolean(entitlements) &&
+    !entitlements!.canViewFullBuddyRoster &&
+    !isHostViewer &&
+    participants.length > visibleParticipants.length;
   const person = card.featuredPerson;
   const hostName = card.listHost ?? person?.displayName ?? card.sections.hostName ?? card.sections.highlightName;
   const publishingProfileKind = card.activity?.publishingProfileKind;
@@ -388,6 +403,10 @@ export const ExploreCardPeopleRow = ({
   const personRoleLabel = person
     ? explorePersonRoleLabel(person.role, publishingProfileKind)
     : null;
+  const showMyHostProfileSubtitle =
+    card.source === 'activity' && resolveActivityMapPeekStrips(card).showHostSelfProfileLink;
+  const hostProfileSubtitle = (base: string) =>
+    showMyHostProfileSubtitle ? ACTIVITY_PEEK_MY_HOST_PROFILE_SUBTITLE : base;
 
   const showHostRow =
     Boolean(hostName || card.hostAvatar) &&
@@ -411,13 +430,15 @@ export const ExploreCardPeopleRow = ({
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold text-gray-900 group-hover:text-emerald-700 truncate">{hostName}</p>
           <p className={`text-xs font-medium ${EXPLORE_TYPE.muted}`}>
-            {personRoleLabel
-              ? `${personRoleLabel} · view profile`
-              : exploreCardIsSeeking(card)
-                ? 'Posted this request · view profile'
-                : card.source === 'shop'
-                  ? 'Shop contact · view profile'
-                  : 'Host · view profile'}
+            {hostProfileSubtitle(
+              personRoleLabel
+                ? `${personRoleLabel} · view profile`
+                : exploreCardIsSeeking(card)
+                  ? 'Posted this request · view profile'
+                  : card.source === 'shop'
+                    ? 'Shop contact · view profile'
+                    : 'Host · view profile'
+            )}
           </p>
         </div>
         <ChevronRight className="h-4 w-4 text-gray-400 shrink-0" />
@@ -436,13 +457,15 @@ export const ExploreCardPeopleRow = ({
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold text-gray-900 truncate">{hostName}</p>
           <p className={`text-xs font-medium ${EXPLORE_TYPE.muted}`}>
-            {personRoleLabel
-              ? `${personRoleLabel} · view profile`
-              : exploreCardIsSeeking(card)
-                ? 'Posted this request · view profile'
-                : card.source === 'shop'
-                  ? 'Shop contact · view profile'
-                  : 'Host · view profile'}
+            {hostProfileSubtitle(
+              personRoleLabel
+                ? `${personRoleLabel} · view profile`
+                : exploreCardIsSeeking(card)
+                  ? 'Posted this request · view profile'
+                  : card.source === 'shop'
+                    ? 'Shop contact · view profile'
+                    : 'Host · view profile'
+            )}
           </p>
         </div>
         <ChevronRight className="h-4 w-4 text-gray-400 shrink-0" />
@@ -457,7 +480,10 @@ export const ExploreCardPeopleRow = ({
         <div className="min-w-0">
           <p className="text-sm font-semibold text-gray-900">{hostName}</p>
           <p className={`text-xs font-medium ${EXPLORE_TYPE.muted}`}>
-            {personRoleLabel ?? (exploreCardIsSeeking(card) ? 'Posted this request' : card.source === 'shop' ? 'Shop contact' : 'Host')}
+            {showMyHostProfileSubtitle
+              ? ACTIVITY_PEEK_MY_HOST_PROFILE_SUBTITLE
+              : personRoleLabel ??
+                (exploreCardIsSeeking(card) ? 'Posted this request' : card.source === 'shop' ? 'Shop contact' : 'Host')}
           </p>
         </div>
       </div>
@@ -478,13 +504,24 @@ export const ExploreCardPeopleRow = ({
           </Link>
         </p>
       ) : null}
-      {participants.length > 0 && (
+      {showRosterProUpsell ? (
+        <p className="text-xs leading-relaxed text-amber-900/90">
+          {ACTIVITY_DETAIL_PRO_ROSTER_HINT}{' '}
+          <Link
+            to={proMembershipPath({ intent: 'discover-members' })}
+            className="font-semibold text-emerald-700 hover:underline"
+          >
+            {ACTIVITY_DETAIL_PRO_SOCIAL_CTA}
+          </Link>
+        </p>
+      ) : null}
+      {visibleParticipants.length > 0 && (
         <div>
           <p className={`mb-2 text-xs font-bold uppercase tracking-wider ${EXPLORE_TYPE.muted}`}>
-            Who&apos;s going ({participants.length})
+            Who&apos;s going ({showRosterProUpsell ? visibleParticipants.length : participants.length})
           </p>
           <ParticipantPreview
-            participants={participants}
+            participants={visibleParticipants}
             size="md"
             linkToProfile={!onGuestGatedAction}
             onGuestProfileClick={onGuestGatedAction}

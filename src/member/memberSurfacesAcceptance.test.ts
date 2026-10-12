@@ -268,9 +268,7 @@ describe('member surfaces §11 acceptance (automated)', () => {
 
   it('NA-3: crew surfaces come from wire only (no client fallback)', () => {
     const presentation = read('src/activity/activityDetailPresentation.ts');
-    expect(presentation).toMatch(
-      /canAccessCrewSurfaces = input\.viewerAccess\?\.canAccessCrewSurfaces \?\? false/
-    );
+    expect(presentation).toMatch(/resolveActivityEngagementPolicy/);
     expect(presentation).not.toMatch(/isHostUser \|\| input\.isConfirmedParticipant/);
     const detail = read('src/pages/ActivityDetail.tsx');
     expect(detail).not.toMatch(/canAccessCrewSurfaces \?\? true/);
@@ -289,7 +287,8 @@ describe('member surfaces §11 acceptance (automated)', () => {
 
   it('AD-3 v3.2: tab footers, host Buddies hub, hero status on activity detail', () => {
     const detail = read('src/components/activity/ActivityDetailView.tsx');
-    expect(detail).toContain('resolveActivityDetailEngagementFooterKind');
+    expect(detail).toContain('wireFooterByTab');
+    expect(read('src/pages/ActivityDetail.tsx')).toContain('resolveActivityDetailWirePresentation');
     expect(read('src/activity/resolveActivityDetailEngagement.ts')).toContain(
       'resolveActivityDetailEngagementFooterKind'
     );
@@ -302,9 +301,15 @@ describe('member surfaces §11 acceptance (automated)', () => {
     const buddiesAside = read('src/components/activity/detail/tabs/ActivityDetailBuddiesAside.tsx');
     expect(buddiesAside).toContain('ActivityDetailHostBuddiesHub');
     expect(detail).toContain('resolveActivityDetailHeroStatusChips');
-    const footers = read('src/activity/activityDetailTabFooters.ts');
-    expect(footers).toContain('transport_empty');
-    expect(footers).toContain('plan_host_share');
+    const footersShim = read('src/activity/activityDetailTabFooters.ts');
+    expect(footersShim).toContain('@uaetrail/shared-types');
+    const footersPolicy = read('packages/shared-types/src/activity-detail-tab-footers.ts');
+    expect(footersPolicy).toContain('transport_empty');
+    expect(footersPolicy).toContain('plan_host_share');
+    expect(read('packages/shared-types/src/activity-detail-presentation.ts')).toContain(
+      'buildActivityPresentationDTO'
+    );
+    expect(read('apps/api/src/routes/user/registerPublicActivityRoutes.ts')).toContain('presentation');
   });
 
   it('AD-8: post check-in review prompts on activity detail Plan/Buddies', () => {
@@ -325,7 +330,7 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(offer).toContain('canShowDemandLinkRideshareOffer');
     expect(offer).toMatch(/canOfferTransport/);
     const entitlements = read('packages/shared-types/src/activity-viewer-entitlements.ts');
-    expect(entitlements).toMatch(/link_carpool.*canAddLinkedRide/);
+    expect(entitlements).toMatch(/link_rideshare.*canAddLinkedRide/);
   });
 
   it('AD-6: public activity SEO omits meeting from JSON-LD', () => {
@@ -345,7 +350,8 @@ describe('member surfaces §11 acceptance (automated)', () => {
 
   it('NA-4: peek actions prefer wire mapPeekActions (no client recompute on empty list)', () => {
     const peekEngagement = read('src/activity/activityPeekEngagement.ts');
-    expect(peekEngagement).toMatch(/fromApi !== undefined\s*\?\s*fromApi/);
+    expect(peekEngagement).toMatch(/if \(fromApi !== undefined\)/);
+    expect(peekEngagement).toMatch(/resolveActivityEngagementPolicy/);
     const presentation = read('src/activity/resolveActivityPresentation.ts');
     expect(presentation).toContain("from './activityPeekEngagement'");
     expect(presentation).toContain("from './activityDetailPresentation'");

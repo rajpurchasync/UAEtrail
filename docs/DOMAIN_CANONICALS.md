@@ -526,10 +526,11 @@ viewerAccess: {
   canOpenDetailPage: boolean;
   gateReason: ViewerGateReason;
   mapPeekActions?: ActivityMapPeekAction[]; // explore map activity pins only
+  mapPeekStrips?: ActivityEngagementStripsDTO; // peek Participants + Logistics zones (`pendingJoinInviteCount` for host/crew invite chip)
 };
 ```
 
-Computed server-side with `surface: 'explore_map'` (`computeActivityMapPeekActions`) so peek actions do not re-derive engagement in the client (`request_join`, `pending_join`, crew/DM invite ids).
+Computed server-side via **`resolveActivityEngagementPolicy`** → `intents` (+ `projectActivityMapPeekActions` after entitlements) on explore map; activity detail returns `policy.presentation` on `GET /activities/:id`. Client maps wire ids; do not re-derive role matrices in React (`request_join`, `pending_join`, crew/DM invite ids). **Wire vocabulary:** use **rideshare** in `ActivityMapPeekActionId` and domain fields (`link_rideshare`, `offer_rideshare`, `rideshareEnabled`, `linkedRideshareActivityId`) — not `carpool` (UI copy may still say “carpool” where product prefers plain language).
 
 ---
 
@@ -554,6 +555,8 @@ Computed server-side with `surface: 'explore_map'` (`computeActivityMapPeekActio
 | **Shop** | signed-in member | detail | `full` | `null` | **LIVE** |
 
 **Participation axis (unchanged):** `participationMode` only affects **how** you join (`I'm going` vs `Request to join`) and `joinRequestUi` — not map discovery. Demand never has `participationMode` ([`CREATE_FLOW.md`](./CREATE_FLOW.md)).
+
+**Engagement CTAs (peek footer + detail footers + strips):** Same viewer state → same affordances on map peek and `/activity/:id`. Full state matrix (guest, Pro, joined, host): [`experiment/activity-detail-tabs-implementation-plan.md`](./experiment/activity-detail-tabs-implementation-plan.md) **§6.2**; wire vocabulary **§6.3**; implementation order **§6.7**.
 
 **Consumer detail tabs (UI only):** **Plan · Place · Buddies · Transport** — not wire field names. Tab content maps to existing DTO slices (`description` / `meetingPoint` / `participants` / `rideshare*`). **`canAccessCrewSurfaces`** gates Place body + Buddies roster/chat surfaces; Transport **reach-by** remains visible without crew; linked rideshare summary may be public per peek policy.
 
@@ -703,9 +706,9 @@ ViewerRequestContext
 | Layer | Lead with | Examples | Do not |
 |-------|-----------|----------|--------|
 | **HTTP / wire** | Route + DTO field | `GET /activities/:id` → `viewerAccess.entitlements.canViewFullBuddyRoster`; `GET /me/host-status` → `canPublish` | New public `resolve*` in `src/` that recomputes access |
-| **Shared policy** | `compute*` on inputs → DTO | `computeActivityDetailExposure`, `computeActivityMapPeekActions`, `computeActivityViewerEntitlements` | Export `activityViewerEntitlementsCan*` — use DTO booleans in UI |
+| **Shared policy** | `compute*` / `build*` on inputs → DTO | `computeActivityDetailExposure`, `buildActivityPresentationDTO`, `computeActivityMapPeekActions`, `computeActivityViewerEntitlements` | Export `activityViewerEntitlementsCan*` — use DTO booleans in UI |
 | **API composition** | One composer per surface | `composeActivityViewerAccess` for activity detail + map enrich; buddy/host context loaded **inside** route/composer, not a second public service name | Scatter `resolveActivityView*` loaders imported from routes |
-| **FE presentation** | `map*` / `*Presentation` / `*ToUi` | `mapViewerAccessToUi`, `resolvePeekDetailAccess` (wire → peek link kind), `activityDetailPresentation.ts` + `activityPeekEngagement.ts` (shim: `resolveActivityPresentation.ts`) | `computeActivityDetailExposure` in `src/`; crew gates from `isHostUser` when `viewerAccess` is present |
+| **FE presentation** | `map*` / `*Presentation` / `*ToUi` | `mapViewerAccessToUi`, `resolvePeekDetailAccess`, wire `presentation` + `mapPeekActions` → components (shim during Phase 4: `activityDetailPresentation.ts`, `activityPeekEngagement.ts`) | `computeActivityDetailExposure` in `src/`; crew gates from `isHostUser` when `viewerAccess` is present |
 
 **Repository / store names** (`listActiveTenantMembershipsByUser`, `findTenantMembershipContext`) are **data access** — not viewer-access vocabulary; rename only with a dedicated tenant-membership pass (out of §15 scope).
 

@@ -125,9 +125,9 @@ export interface Activity {
   ridesharePriceAed: number | null;
   rideshareSeats: number | null;
   rideshareDetails: string | null;
-  /** Parent hike/camp/event when this is a linked carpool listing. */
+  /** Parent hike/camp/event when this is a linked rideshare listing. */
   linkedActivityId: string | null;
-  /** Linked carpool activity id when car pool is offered for this listing. */
+  /** Linked rideshare activity id when a ride offer is enabled for this listing. */
   linkedRideshareActivityId: string | null;
   paymentTerms: string | null;
   pricingMode: 'free' | 'shared' | 'paid' | null;

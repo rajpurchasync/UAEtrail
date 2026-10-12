@@ -8,7 +8,12 @@ import {
   type ExploreMapItemDTO,
   type UserRole,
 } from '@uaetrail/shared-types';
-import { resolveActivityDisplayCoordinates, resolveActivityHostUserId } from '@uaetrail/shared-types';
+import {
+  activityDetailPath,
+  resolveActivityDisplayCoordinates,
+  resolveActivityHostUserId,
+} from '@uaetrail/shared-types';
+import { buildShareText, buildShareUrl } from '../../utils/share';
 import { hostPublishedActivityPeekAccess } from '../../access/resolvePeekDetailAccess';
 import { buildExploreMapItemFromActivity, parseActivityMapItemId } from '../privateActivityExploreItem';
 import { api } from '../../api/index';
@@ -114,7 +119,6 @@ export const useExploreSelectionActions = ({
     return {
       ...card,
       showJoinActions: false,
-      showHostActivityCtas: true,
     };
   }, [selected, items, user]);
 
@@ -322,7 +326,7 @@ export const useExploreSelectionActions = ({
         case 'invite_crew':
           handleInviteCrew();
           return;
-        case 'link_carpool':
+        case 'link_rideshare':
           if (activity && onCreateLinkedRideshare) {
             onCreateLinkedRideshare(activity);
           }
@@ -332,21 +336,53 @@ export const useExploreSelectionActions = ({
           return;
         case 'pending_join':
           return;
+        case 'share_activity': {
+          const card = selectedCard;
+          if (!card?.sharePath) return;
+          const url = buildShareUrl(card.sharePath);
+          const text = buildShareText(card.shareTitle, card.shareText ?? undefined);
+          if (typeof navigator !== 'undefined' && navigator.share) {
+            void navigator.share({ title: card.shareTitle, text, url }).catch(() => undefined);
+          }
+          return;
+        }
+        case 'manage_activity':
+          if (!activity) return;
+          setSelectedId(null);
+          navigate(`${activityDetailPath(activity.id)}?tab=buddies`);
+          return;
+        case 'withdraw_join':
+          if (joinUiState.kind === 'pending' || joinUiState.kind === 'confirmed') {
+            joinActions.setShowWithdraw(true);
+          }
+          return;
+        case 'offer_rideshare':
+          if (activity && onCreateLinkedRideshare) {
+            onCreateLinkedRideshare(activity);
+          }
+          return;
         default:
           return;
       }
     },
     [
       selected?.activity,
+      selectedCard,
       handleHostMessage,
       handleMessageActivityHost,
       handleInviteCrew,
       handleJoin,
+      joinActions,
+      joinUiState.kind,
       onCreateLinkedRideshare,
       navigate,
       setSelectedId,
     ]
   );
+
+  const handleOfferTransport = useCallback(() => {
+    handleActivityMapPeekAction('offer_rideshare');
+  }, [handleActivityMapPeekAction]);
 
   const handleDemandManage = useCallback(() => {
     const intentId = selected?.participantIntentId;
@@ -507,6 +543,7 @@ export const useExploreSelectionActions = ({
     selectedCard,
     activityPeekSkipsJoinContext,
     handleActivityMapPeekAction,
+    handleOfferTransport,
     joinUiState,
     joinStateLoading,
     peekJoinUiState,

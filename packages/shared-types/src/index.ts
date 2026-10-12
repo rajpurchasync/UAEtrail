@@ -25,7 +25,7 @@ export type UserRole =
 export type TenantType = 'company' | 'guide_owned';
 export type MembershipRole = 'tenant_owner' | 'tenant_admin' | 'tenant_guide';
 
-/** Scheduled listings on the map (host activities, carpools). */
+/** Scheduled listings on the map (host activities, rideshares). */
 export type ScheduledActivityType = 'hiking' | 'camping' | 'event' | 'rideshare';
 
 /** Wire `activityType` on place/location rows (includes community shop pins). */
@@ -1286,6 +1286,44 @@ export {
   resolveParticipationModeForJoinMode,
   type ParticipationMode,
 } from './activity-participation-mode.js';
+
+export {
+  resolveActivityJoinEngagementKind,
+  type ActivityJoinEngagementKind,
+} from './activity-join-engagement.js';
+
+export {
+  ACTIVITY_DETAIL_TAB_IDS,
+  resolveActivityDetailTabFooterKind,
+  type ActivityDetailTabFooterInput,
+  type ActivityDetailTabFooterKind,
+  type ActivityDetailTabId,
+} from './activity-detail-tab-footers.js';
+
+export {
+  buildActivityPresentationDTO,
+  type ActivityPresentationBuddiesTabDTO,
+  type ActivityPresentationDTO,
+  type ActivityPresentationEngagementDTO,
+  type ActivityPresentationPlaceTabDTO,
+  type ActivityPresentationPlanTabDTO,
+  type ActivityPresentationTabsDTO,
+  type ActivityPresentationTransportTabDTO,
+  type BuildActivityPresentationInput,
+} from './activity-detail-presentation.js';
+
+export {
+  projectActivityMapPeekActions,
+  resolveActivityEngagementMapPeekActionsBase,
+  resolveActivityEngagementMapPeekStrips,
+  resolveActivityEngagementPolicy,
+  type ActivityEngagementCapabilities,
+  type ActivityEngagementIntent,
+  type ActivityEngagementIntentId,
+  type ActivityEngagementPolicyDTO,
+  type ActivityEngagementStripsDTO,
+  type ResolveActivityEngagementPolicyInput,
+} from './activity-engagement-policy.js';
 
 export {
   isWomenOnlyActivityRequirements,

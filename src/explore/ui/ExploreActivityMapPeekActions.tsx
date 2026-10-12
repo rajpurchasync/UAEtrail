@@ -75,11 +75,16 @@ export const ExploreActivityMapPeekActions = ({
   };
 
   const visible = actions.filter((action) => {
-    if (action.id !== 'link_carpool') return true;
-    const mayLink =
-      Boolean(linkRideshareTenantId && activity && canLinkRideshareToActivity(activity)) &&
-      Boolean(card.viewerAccess?.entitlements?.canAddLinkedRide);
-    return mayLink;
+    if (action.id === 'link_rideshare') {
+      return (
+        Boolean(linkRideshareTenantId && activity && canLinkRideshareToActivity(activity)) &&
+        Boolean(card.viewerAccess?.entitlements?.canAddLinkedRide)
+      );
+    }
+    if (action.id === 'offer_rideshare') {
+      return Boolean(card.viewerAccess?.entitlements?.canOfferTransport);
+    }
+    return true;
   });
 
   if (visible.length === 0) return null;

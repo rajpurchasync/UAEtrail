@@ -9,8 +9,15 @@ export const activityMapPeekActionLabel = (
   switch (id) {
     case 'open_crew_chat':
       return 'Message';
-    case 'link_carpool':
+    case 'link_rideshare':
+    case 'offer_rideshare':
       return ORGANIZE_LINK_RIDESHARE_LABEL;
+    case 'share_activity':
+      return 'Share outing';
+    case 'manage_activity':
+      return 'Manage';
+    case 'withdraw_join':
+      return 'Withdraw';
     case 'message_host':
       return 'Message Host';
     case 'invite_crew':

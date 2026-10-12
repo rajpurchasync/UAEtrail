@@ -501,21 +501,24 @@ Use one PR per subsection where possible; check boxes when merged.
 
 ## 21. Activity detail tabs (Plan · Place · Buddies · Transport)
 
+**Canonical program (exit criteria, phases, trace matrix):** [`activity-detail-tabs-implementation-plan.md`](./activity-detail-tabs-implementation-plan.md) — **tick boxes there only**; this section is a summary for §11 guards.
+
 **Tier-1:** [`NAVIGATION.md`](../NAVIGATION.md) § Activity detail · [`CREATE_FLOW.md`](../CREATE_FLOW.md) (participation → crew) · [`DOMAIN_CANONICALS.md`](../DOMAIN_CANONICALS.md) §15.4 · [`MEMBER_MODEL.md`](../MEMBER_MODEL.md) (Pro vs crew) · [`COMMUNICATION.md`](../COMMUNICATION.md) (crew entry).
 
-**Anti-duplication:** one policy owner per concern — API `viewerAccess` + `computeActivityMapPeekActions`; FE `resolveActivityPresentation.ts`. Adding a new path **requires deleting** the old shim/matrix in the same PR.
+**Anti-duplication:** one policy owner per concern — converge on `buildActivityPresentationDTO` + wire `presentation` / `mapPeekActions`; FE maps wire → UI. Adding a new path **requires deleting** the old shim/matrix in the same PR (`activityDetailAcceptance.test.ts`).
 
 ### AD-0 — Decisions (locked 2026-10-11)
 
 | # | Decision |
 |---|----------|
 | AD-1 | UI tabs **Plan · Place · Buddies · Transport** only; wire unchanged (`activity`, `rideshare`, `viewerAccess`, …). |
-| AD-2 | Chrome: **emoji + activity kind**; **title in hero** (not in chrome). |
+| AD-2 | Chrome: **emoji + activity title** (AD-2b); kind in hero chips. Tier-1 sync pending — see program doc D2. |
 | AD-3 | **Transport tab always visible** (reach-by + sustainability; linked ride deepens content). |
 | AD-4 | **RSVP** → participant + crew immediately; **approve** → crew + `?joined=1`; **pending/waitlist** → `canAccessCrewSurfaces: false`. |
 | AD-5 | Host ops on **Buddies**; destructive/edit in **⋯** — no fifth Manage tab. |
 | AD-6 | Pro = paid social depth via `applyActivityViewEntitlements`; not `canPublish`. |
-| AD-7 | Peek layout mostly unchanged; strips + wire actions align with detail (phase AD-4). |
+| AD-7 | Peek: hero + **Participants** + **Logistics** strips; footer CTAs match detail policy per viewer state (§6 in program doc). |
+| AD-8 | **Dynamic CTA matrix** (pre/joined × free/Pro × host empty/full × profile + rideshare touchpoints) — **§6.2** in program doc; golden tests **AD-CTA-01**. |
 
 ### AD phases (implement in order; tick when exit criteria met)
 
@@ -528,7 +531,7 @@ Use one PR per subsection where possible; check boxes when merged.
 
 #### AD-1 — Shell (mostly done)
 
-- [x] `activityDetailCopy.ts`, `activityDetailTab.ts`, tab bar, mobile hero, kind chrome
+- [x] `activityDetailCopy.ts`, `activityDetailTab.ts`, tab bar, mobile hero; **AD-2b title chrome** (kind in hero chips) — see program doc
 - [x] `ActivityManageSheet` embeds `ActivityDetailView`
 - [ ] Mobile UX pass: icon-forward footers, minimal copy (ongoing polish)
 
@@ -552,19 +555,22 @@ Use one PR per subsection where possible; check boxes when merged.
 - [x] Mobile hero status strip (join state + spots); Plan Start/End grid hidden on mobile when tabs on
 - [x] §9 footer-kind resolver (`resolveActivityDetailEngagement.ts`) — peek + detail tabs; tab panel modules under `detail/tabs/*` (Plan about, extras, place, transport, buddies)
 - [x] Tab-scoped sticky footer render module (`ActivityDetailStickyFooter.tsx`) — kinds from `resolveActivityDetailEngagementFooterKind`
-- [ ] **Deferred:** `ActivityPresentationDTO` tab slices on API
+- [x] `ActivityPresentationDTO` on `GET /activities/:id` (wire); [x] FE consumes full `presentation` (tabs + `footerByTab`) — **AD-PRES-02** in program doc
 - [x] Single pricing mode per activity (free / shared / paid) — no tiered packages; indicative amounts only; external signup parked
 
 #### AD-4 — Peek parity
 
 - [x] Three strips (facts in peek meta; **Going** + **Rides & spots** in `ExploreActivityPeekStrips`)
-- [x] Single peek-action pipeline (`computeActivityMapPeekActions` + `resolveActivityMapPeekActions`; strip legacy `message_host` until AD-5)
-- [x] Pro-gated `message_host` / host profile peek rules (AD-5 entitlements)
+- [x] Product spec captured — program **§6.2** (states A–E, profile, host manage, rideshare); **§6.7** implementation order
+- [x] **One brain:** L1 drives peek + detail actions; host peek via wire ids (**AD-PEEK-02/03**)
+- [x] Matrix parity guest / joined / host states (**AD-PEEK-04**, **AD-CTA-01**)
+- [x] Pro-gated `message_host` on wire (entitlements merge); peek host profile upsell partial
 
 #### AD-5 — Pro entitlements
 
 - [x] `ActivityViewerEntitlementsDTO` + `applyActivityViewEntitlements` (detail + explore map)
-- [x] Roster mask + host profile / message host gates in detail + peek people row
+- [x] Roster mask + host profile gates on **detail**
+- [x] Roster mask on **peek** people strip (**AD-PRO-01**)
 - [x] Dev Pro: `UAETRAIL_CONSUMER_PRO_DEV=1` (until billing SKU)
 - [x] Transport offer/add UI gated on `canOfferTransport` / `canAddLinkedRide` (surface-level polish)
 - [x] Pro upsell links on locked host/roster (detail + explore people row)
@@ -579,7 +585,8 @@ Use one PR per subsection where possible; check boxes when merged.
 #### AD-7 — Dedupe + convergence
 
 - [x] Grep: no `HostActivityDetailView`, no `activityMapPeekActions.ts` re-export
-- [x] `verify:system` green after AD-4–AD-6
+- [x] Single L1 engagement owner; remove host peek bypass (**AD-DEDUPE-01**)
+- [x] `verify:system:quick` green with Phase 4–5 matrix tests (**AD-CTA-01**)
 
 #### AD-8 — Reviews UX
 
@@ -747,7 +754,8 @@ Use one PR per subsection where possible; check boxes when merged.
 | 2026-10-11 | §22 NA-5/6 | `activityDetailPresentation.ts`; API `buildActivityViewerAccess`; Tier-1 + S7b/S7c closed |
 | 2026-10-11 | §20 tooling | Root `seeking:deploy-gate` alias; plan §2/M3 reconciled with Phases 4–5 |
 | 2026-10-12 | §4.3–4.6 | Locations lens, area-match notifications, 12-area catalog + seed sync, admin areas UI, Phase E test fixtures |
-| | | **Next:** §23 P0 ops per env → §23 P1 / §5 / §20 P2 (not another geography phase) |
+| 2026-10-12 | §21 AD-8 | Dynamic peek/detail CTA matrix locked in activity-detail program **§6.2–§6.7**; Tier-1 pointers (NAVIGATION, CREATE_FLOW, DOMAIN §15.4) |
+| | | **Next:** Implement program **§6.7** (Phase 4–5) → §23 P0 ops per env |
 
 ---
 

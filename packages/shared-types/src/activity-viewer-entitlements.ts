@@ -47,9 +47,11 @@ export const mergeActivityMapPeekActionsWithEntitlements = (
   entitlements: ActivityViewerEntitlementsDTO,
   level: ActivityViewerAccessLevel
 ): ActivityMapPeekAction[] => {
-  const transportGated = actions.filter(
-    (action) => action.id !== 'link_carpool' || entitlements.canAddLinkedRide
-  );
+  const transportGated = actions.filter((action) => {
+    if (action.id === 'link_rideshare') return entitlements.canAddLinkedRide;
+    if (action.id === 'offer_rideshare') return entitlements.canOfferTransport;
+    return true;
+  });
   const withoutHostDm = transportGated.filter((action) => action.id !== 'message_host');
   const preJoinLevels: ActivityViewerAccessLevel[] = ['public', 'link_holder', 'join_request'];
   if (!preJoinLevels.includes(level) || !entitlements.canMessageHostBeforeJoin) {

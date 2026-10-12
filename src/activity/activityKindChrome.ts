@@ -9,9 +9,19 @@ const normalizeActivityType = (activityType: ActivityType | string): LocalActivi
   return 'hiking';
 };
 
-/** Header chrome: emoji + short kind label (not the outing title). */
+/** Hero fact chip / type label (AD-2b — kind is not chrome-only). */
 export const activityKindChromeLabel = (activityType: ActivityType | string): string =>
   ACTIVITY_TYPE_LABELS[normalizeActivityType(activityType)];
 
 export const activityKindChromeEmoji = (activityType: ActivityType | string): string =>
   resolveMapPinEmoji(normalizeActivityType(activityType), 'activity');
+
+/** Sticky header + banner chrome: emoji + outing title (AD-2b). */
+export const activityTitleChromeLine = (
+  activityType: ActivityType | string,
+  title: string
+): string => {
+  const trimmed = title.trim();
+  const emoji = activityKindChromeEmoji(activityType);
+  return trimmed ? `${emoji} ${trimmed}` : `${emoji} ${activityKindChromeLabel(activityType)}`;
+};

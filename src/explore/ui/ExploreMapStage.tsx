@@ -78,11 +78,11 @@ export type ExploreMapStageProps = {
   onWithdraw: () => void;
   activityPeekSkipsJoinContext?: boolean;
   onActivityMapPeekAction?: (actionId: import('@uaetrail/shared-types').ActivityMapPeekActionId) => void;
+  onOfferTransport?: () => void;
   linkRideshareTenantId?: string | null;
   onDemandRemove?: () => void;
   onDemandFullManage?: () => void;
   onDemandLinkRideshare?: () => void;
-  hostActivityCtaHandlers?: import('../../components/activity/HostActivityCtas').HostActivityCtaHandlers | null;
   onOpenExploreItem?: (exploreItemId: string) => void;
   onGuestGatedAction?: () => void;
   joinInvitePeekBanner?: string | null;
@@ -141,11 +141,11 @@ export const ExploreMapStage = ({
   onWithdraw,
   activityPeekSkipsJoinContext = false,
   onActivityMapPeekAction,
+  onOfferTransport,
   linkRideshareTenantId = null,
   onDemandRemove,
   onDemandFullManage,
   onDemandLinkRideshare,
-  hostActivityCtaHandlers = null,
   onOpenExploreItem,
   onGuestGatedAction,
   joinInvitePeekBanner = null,
@@ -305,12 +305,12 @@ export const ExploreMapStage = ({
           onDemandRemove={onDemandRemove}
           onDemandFullManage={onDemandFullManage}
           onDemandLinkRideshare={onDemandLinkRideshare}
-          hostActivityCtaHandlers={hostActivityCtaHandlers}
           onOpenExploreItem={onOpenExploreItem}
           joinUiState={activityPeekSkipsJoinContext ? undefined : joinUiState}
           onWithdraw={onWithdraw}
           joinStateLoading={joinStateLoading}
           onActivityMapPeekAction={onActivityMapPeekAction}
+          onOfferTransport={onOfferTransport}
           joinInvitePeekBanner={joinInvitePeekBanner}
         />
       ) : null}

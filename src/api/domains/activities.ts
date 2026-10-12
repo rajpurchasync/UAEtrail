@@ -1,5 +1,6 @@
 import {
   ActivityDTO,
+  ActivityPresentationDTO,
   ActivityViewerAccessDTO,
   JoinRequestDTO,
   MyActivityDTO,
@@ -30,7 +31,11 @@ export const activitiesApi = {
     apiRequest<{ data: ActivityDTO[] }>(`/activities/featured?limit=${limit}`),
 
     getPublicActivityDetail: (id: string) =>
-    apiRequest<{ data: ActivityDetail; viewerAccess: ActivityViewerAccessDTO }>(`/activities/${id}`, {
+    apiRequest<{
+      data: ActivityDetail;
+      viewerAccess: ActivityViewerAccessDTO;
+      presentation?: ActivityPresentationDTO;
+    }>(`/activities/${id}`, {
       auth: Boolean(getStoredSession()),
     }),
 

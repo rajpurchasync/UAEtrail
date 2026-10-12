@@ -51,7 +51,6 @@ export interface ExploreCardModel {
   secondaryCta: string | null;
   showJoinActions: boolean;
   /** Host viewing their own activity — Chat · Manage CTAs (not join/wire peek). */
-  showHostActivityCtas?: boolean;
   /** Requester viewing their own active demand pin. */
   showDemandOwnerActions?: boolean;
   /** Hiking / camping / activity demand — host can publish a linked rideshare offer. */

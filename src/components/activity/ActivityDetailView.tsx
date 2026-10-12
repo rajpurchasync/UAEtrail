@@ -4,6 +4,7 @@ import { Users, ChevronRight } from 'lucide-react';
 import type {
   ActivityDetailDTO,
   ActivityGroupChatPostPolicy,
+  ActivityPresentationTabsDTO,
   MyActivityRequestDTO,
   ActivityParticipationDTO,
   ReviewDTO,
@@ -35,7 +36,11 @@ import { activityRegistryPlacePath } from '../../utils/activityRegistryPlacePath
 import { ActivityInviteLauncher } from './ActivityInviteLauncher';
 import { ActivityDetailMobileFooter } from './ActivityDetailMobileFooter';
 import type { ActivityDetailTabId } from '../../activity/activityDetailTab';
-import { activityKindChromeEmoji, activityKindChromeLabel } from '../../activity/activityKindChrome';
+import {
+  activityKindChromeEmoji,
+  activityKindChromeLabel,
+  activityTitleChromeLine,
+} from '../../activity/activityKindChrome';
 import { ActivityDetailTabBar } from './detail/ActivityDetailTabBar';
 import { ActivityDetailMobileHero } from './detail/ActivityDetailMobileHero';
 import {
@@ -59,7 +64,8 @@ import { ActivityPostCheckInReviewPrompts } from './ActivityPostCheckInReviewPro
 import { ActivityHostCheckInReviewPrompt } from './ActivityHostCheckInReviewPrompt';
 import { useHostParticipantReviewHints } from '../../hooks/useHostParticipantReviewHints';
 import { extractActivityTransportReachLines } from '../../activity/activityDetailReachBy';
-import { resolveActivityDetailEngagementFooterKind } from '../../activity/resolveActivityDetailEngagement';
+import { resolveActivityDetailTabUi } from '../../activity/resolveActivityDetailTabUi';
+import type { ActivityDetailTabFooterKind } from '../../activity/activityDetailTabFooters';
 import { resolveActivityDetailHeroStatusChips } from '../../activity/activityDetailHeroStatus';
 import { activityDetailTabPanelClass } from './detail/activityDetailTabPanelClass';
 import { ActivityDetailPlanAboutCard } from './detail/tabs/ActivityDetailPlanAboutCard';
@@ -117,6 +123,10 @@ export interface ActivityDetailViewProps {
     requestsLoading: boolean;
     onRequestsChanged: () => void | Promise<void>;
   };
+  /** Wire `presentation.footerByTab` from GET /activities/:id (AD-PRES-02). */
+  wireFooterByTab?: Record<ActivityDetailTabId, ActivityDetailTabFooterKind> | null;
+  /** Wire `presentation.tabs` from GET /activities/:id (AD-PRES-02). */
+  wireTabs?: ActivityPresentationTabsDTO | null;
 }
 
 export const ActivityDetailView = ({
@@ -148,10 +158,54 @@ export const ActivityDetailView = ({
   hostMobilePlanAccessory,
   hostCrewChatPolicy,
   hostBuddiesHub,
+  wireFooterByTab = null,
+  wireTabs = null,
 }: ActivityDetailViewProps) => {
   const { user } = useAuth();
   const isEmbedded = layout === 'embedded';
   const joinActionDisabled = joinDisabled ?? false;
+
+  const linkedRideshareId =
+    activity.linkedRideshare?.id ?? activity.linkedParentActivity?.id ?? null;
+  const tabUi = useMemo(
+    () =>
+      resolveActivityDetailTabUi({
+        wireTabs,
+        previewMode,
+        isEmbedded,
+        onMobileTabChange,
+        canAccessCrewSurfaces,
+        showCrewLockedHint,
+        showParticipantFooterShortcuts,
+        rideshareEnabled: Boolean(activity.rideshareEnabled),
+        hasLinkedRideshare: Boolean(
+          linkedRideshareId || activity.linkedParentActivity || activity.linkedRideshare
+        ),
+      }),
+    [
+      wireTabs,
+      previewMode,
+      isEmbedded,
+      onMobileTabChange,
+      canAccessCrewSurfaces,
+      showCrewLockedHint,
+      showParticipantFooterShortcuts,
+      activity.rideshareEnabled,
+      activity.linkedParentActivity,
+      activity.linkedRideshare,
+      linkedRideshareId,
+    ]
+  );
+  const {
+    showMobileTabs,
+    showPlanTransportTeaser,
+    showPlaceCrewBody,
+    showPlaceLockedOnMobile,
+    showCrewLockedHint: buddiesCrewLockedHint,
+    showParticipantFooterShortcuts: participantFooterShortcuts,
+    showHostManageHub,
+    showTransportEncouragementOnTab,
+  } = tabUi;
 
   const heroImage =
     activity.images?.[0] ??
@@ -226,23 +280,14 @@ export const ActivityDetailView = ({
   const sharePayload = buildActivitySharePayload(activityShareInputFromActivity(activity));
 
   const activityTitle = activity.title || activity.locationName;
-  const kindChromeTitle = `${activityKindChromeEmoji(activity.activityType)} ${activityKindChromeLabel(activity.activityType)}`;
-  const showMobileTabs = !previewMode && Boolean(onMobileTabChange);
+  const titleChromeLine = activityTitleChromeLine(activity.activityType, activityTitle);
   const showTransportTab = true;
-  const showPlaceCrewBody = canAccessCrewSurfaces && !previewMode;
   const transportReachLines = useMemo(
     () => extractActivityTransportReachLines(activity.requirements),
     [activity.requirements]
   );
-  const linkedRideshareId =
-    activity.linkedRideshare?.id ?? activity.linkedParentActivity?.id ?? null;
   const joinUiState = resolveJoinRequestUiState({ myRequest, participation });
-  const showTransportEncouragementMobile =
-    showMobileTabs &&
-    mobileTab === 'transport' &&
-    !activity.rideshareEnabled &&
-    !activity.linkedParentActivity &&
-    !activity.linkedRideshare;
+  const showTransportEncouragementMobile = showTransportEncouragementOnTab(mobileTab);
   const showTransportHostProUpsell =
     showTransportEncouragementMobile &&
     Boolean(hostCrewChatPolicy) &&
@@ -250,7 +295,7 @@ export const ActivityDetailView = ({
     !viewerEntitlements.canAddLinkedRide;
   const showTransportParticipantProUpsell =
     showTransportEncouragementMobile &&
-    showParticipantFooterShortcuts &&
+    participantFooterShortcuts &&
     viewerEntitlements &&
     !viewerEntitlements.canOfferTransport;
   const mobilePlanPanel = activityDetailTabPanelClass('plan', mobileTab);
@@ -279,22 +324,18 @@ export const ActivityDetailView = ({
     previewMode,
     isHostUser,
   });
+  const heroFactChips =
+    showMobileTabs && !previewMode
+      ? [
+          {
+            label: `${activityKindChromeEmoji(activity.activityType)} ${activityKindChromeLabel(activity.activityType)}`,
+            tone: 'neutral' as const,
+          },
+          ...heroStatusChips,
+        ]
+      : heroStatusChips;
 
-  const tabFooterKind = resolveActivityDetailEngagementFooterKind({
-    surface: 'activity_detail',
-    tab: mobileTab,
-    tabFooter: {
-      isHostUser,
-      isEmbedded,
-      previewMode,
-      canAccessCrewSurfaces,
-      joinUiState,
-      hasMeetingCoordinates: hasAccessCoordinates,
-      linkedRideshareId,
-      rideshareEnabled: Boolean(activity.rideshareEnabled),
-      showParticipantFooterShortcuts,
-    },
-  });
+  const tabFooterKind = wireFooterByTab?.[mobileTab] ?? 'plan_join';
   const consumerJoinEnabled = !isEmbedded && !previewMode;
   const hostUserId = activityHostUserId(activity);
   const showFooterMessageHost =
@@ -351,7 +392,7 @@ export const ActivityDetailView = ({
             onWithdraw={onWithdraw}
             joinButtonClassName="ios-btn shadow-lg"
           />,
-          showParticipantFooterShortcuts
+          participantFooterShortcuts
         )
       : null;
 
@@ -370,7 +411,7 @@ export const ActivityDetailView = ({
               joinDisabled={joinActionDisabled}
               joinButtonClassName="ios-btn shadow-lg"
             />,
-            showParticipantFooterShortcuts
+            participantFooterShortcuts
           ))
     : undefined;
 
@@ -394,7 +435,7 @@ export const ActivityDetailView = ({
       linkedRideshareId={linkedRideshareId}
       showInviteShare={showInviteShare}
       sharePayload={sharePayload}
-      showParticipantFooterShortcuts={showParticipantFooterShortcuts}
+      showParticipantFooterShortcuts={participantFooterShortcuts}
     />
   );
 
@@ -455,7 +496,7 @@ export const ActivityDetailView = ({
         <ActivityDetailMobileHero
           date={activity.date}
           title={activityTitle}
-          statusChips={heroStatusChips}
+          statusChips={heroFactChips}
           venueLine={
             registryPlacePath && registryPlaceName ? (
               <Link to={registryPlacePath} className="font-medium text-emerald-800">
@@ -499,6 +540,7 @@ export const ActivityDetailView = ({
             panelClassName={mobilePlanPanel}
             activity={activity}
             showMobileTabs={showMobileTabs}
+            showPlanTransportTeaser={showPlanTransportTeaser}
             onMobileTabChange={onMobileTabChange}
           />
 
@@ -508,6 +550,7 @@ export const ActivityDetailView = ({
             previewMode={previewMode}
             showMobileTabs={showMobileTabs}
             showPlaceCrewBody={showPlaceCrewBody}
+            showPlaceLockedOnMobile={showPlaceLockedOnMobile}
             registryPlacePath={registryPlacePath}
             registryPlaceName={registryPlaceName}
             hasAccessCoordinates={hasAccessCoordinates}
@@ -541,10 +584,12 @@ export const ActivityDetailView = ({
             panelClassName={mobileBuddiesPanel}
             previewMode={previewMode}
             showMobileTabs={showMobileTabs}
-            showCrewLockedHint={showCrewLockedHint}
+            showCrewLockedHint={buddiesCrewLockedHint}
             activityId={activity.id}
             activityTitle={activity.title || activity.locationName}
-            hostBuddiesHub={hostBuddiesHub}
+            hostBuddiesHub={
+              showHostManageHub ? hostBuddiesHub : undefined
+            }
             hostCrewChatPolicy={hostCrewChatPolicy}
           />
           <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 lg:sticky lg:top-20">
@@ -710,7 +755,7 @@ export const ActivityDetailView = ({
       banner={{
         src: heroImage,
         alt: activityTitle,
-        title: previewMode ? activityTitle : kindChromeTitle,
+        title: previewMode ? activityTitle : titleChromeLine,
         eyebrow: activityDetailEyebrowForActivity(activity.activityType, activity.activityMode),
         showMobileChrome: !previewMode,
         showJourney: !previewMode,

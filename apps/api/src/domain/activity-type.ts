@@ -66,7 +66,7 @@ const hasLegacyLinkedRideshareRouteFields = (body: {
   Boolean(body.rideshareFromPoint?.trim()) ||
   Boolean(body.rideshareToPoint?.trim());
 
-/** Reject legacy linked carpool *route* fields on hiking/camping/events — not `rideshareEnabled` ride offers. */
+/** Reject legacy linked rideshare *route* fields on hiking/camping/events — not `rideshareEnabled` ride offers. */
 export const assertNoLegacyLinkedRideshareFields = (
   activityType: SharedActivityType | string | undefined,
   body: {

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import type { ActivityRequestView } from '../../api/index';
 import { LinkRidesharePanel } from '../../explore/ui/LinkRidesharePanel';
@@ -12,7 +12,13 @@ import { resolveActivityTitle } from '../../utils/activityIdentity';
 import { buildActivitySharePayload } from '../../utils/activityShare';
 import { ActivityInviteModalBody } from '../activity/ActivityInviteModalBody';
 import type { HostActivityManageActions } from '../../hooks/useHostActivityManageActions';
-import type { ActivityDetailDTO, ActivityViewerEntitlementsDTO } from '@uaetrail/shared-types';
+import type {
+  ActivityDetailDTO,
+  ActivityPresentationDTO,
+  ActivityViewerAccessDTO,
+  ActivityViewerEntitlementsDTO,
+} from '@uaetrail/shared-types';
+import { resolveActivityDetailWirePresentation } from '../../activity/resolveActivityDetailWirePresentation';
 import { ActivityDetailView } from '../activity/ActivityDetailView';
 import type { ActivityDetailTabId } from '../../activity/activityDetailTab';
 import { HostActivityManageFooterActions } from './HostActivityManageFooterActions';
@@ -63,6 +69,7 @@ export const ActivityManageSheet = ({
   const [detailTab, setDetailTab] = useState<ActivityDetailTabId>('plan');
   const [sheetActivity, setSheetActivity] = useState<ActivityDTO | null>(activity);
   const [viewerEntitlements, setViewerEntitlements] = useState<ActivityViewerEntitlementsDTO | null>(null);
+  const [wirePresentation, setWirePresentation] = useState<ActivityPresentationDTO | null>(null);
 
   useEffect(() => {
     setSheetActivity(activity);
@@ -71,15 +78,44 @@ export const ActivityManageSheet = ({
   useEffect(() => {
     if (!open || !activity?.id) {
       setViewerEntitlements(null);
+      setWirePresentation(null);
       return;
     }
     void api
       .getPublicActivityDetail(activity.id)
-      .then((res) => setViewerEntitlements(res.viewerAccess?.entitlements ?? null))
-      .catch(() => setViewerEntitlements(null));
+      .then((res) => {
+        setViewerEntitlements(res.viewerAccess?.entitlements ?? null);
+        setWirePresentation(res.presentation ?? null);
+      })
+      .catch(() => {
+        setViewerEntitlements(null);
+        setWirePresentation(null);
+      });
   }, [open, activity?.id]);
 
   useModalA11y(open, onClose, panelRef);
+
+  const embeddedWirePresentation = useMemo(() => {
+    if (wirePresentation) return wirePresentation;
+    if (!sheetActivity) return null;
+    const viewerAccess: ActivityViewerAccessDTO = {
+      exposure: 'full',
+      level: 'host',
+      gateReason: null,
+      canViewFullActivity: true,
+      canOpenDetailPage: true,
+      joinMode: sheetActivity.joinMode ?? 'open',
+      canAccessCrewSurfaces: true,
+      entitlements: viewerEntitlements ?? undefined,
+    };
+    return resolveActivityDetailWirePresentation({
+      activity: sheetActivity as ActivityDetailDTO,
+      viewerAccess,
+      isHostUser: true,
+      isEmbedded: true,
+      joinUiState: { kind: 'open' },
+    });
+  }, [wirePresentation, sheetActivity, viewerEntitlements]);
 
   useEffect(() => {
     if (!open) return;
@@ -292,6 +328,8 @@ export const ActivityManageSheet = ({
                       }
                     : undefined
                 }
+                wireFooterByTab={embeddedWirePresentation?.footerByTab ?? null}
+                wireTabs={embeddedWirePresentation?.tabs ?? null}
               />
             </div>
           ) : null}

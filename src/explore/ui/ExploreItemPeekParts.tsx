@@ -1,7 +1,6 @@
 import type { ActivityMapPeekActionId } from '@uaetrail/shared-types';
 import { ExploreActivityMapPeekActions } from './ExploreActivityMapPeekActions';
 import { ExploreDemandOwnerPeekActions } from './ExploreDemandOwnerPeekActions';
-import { HostActivityCtas, type HostActivityCtaHandlers } from '../../components/activity/HostActivityCtas';
 import { resolveActivityPeekEngagement } from '../../activity/activityPeekEngagement';
 import type { ExploreCardModel } from '../exploreCardModel';
 import { JoinRequestActions } from '../../components/ui/JoinRequestActions';
@@ -18,6 +17,7 @@ import {
   ExploreCardRequirementBadges,
   ExploreCardCapacityRow,
 } from './ExploreCardPresentation';
+import { resolveActivityMapPeekStrips } from '../../activity/activityPeekEngagement';
 import { ExploreActivityPeekStrips } from './ExploreActivityPeekStrips';
 import { ExplorePeekDetailLink } from './ExplorePeekDetailLink';
 import { ExploreAreaPeekActions } from './ExploreAreaPeekActions';
@@ -34,7 +34,6 @@ export interface ExploreItemPeekActionsProps {
   onDemandRemove?: () => void;
   onDemandFullManage?: () => void;
   onDemandLinkRideshare?: () => void;
-  hostActivityCtaHandlers?: HostActivityCtaHandlers | null;
   /** Guests — detail, join-adjacent, and profile navigation show sign-up instead. */
   onGuestGatedAction?: () => void;
 }
@@ -53,7 +52,6 @@ export const ExploreItemPeekActions = ({
   onDemandRemove,
   onDemandFullManage,
   onDemandLinkRideshare,
-  hostActivityCtaHandlers = null,
   onGuestGatedAction,
 }: ExploreItemPeekActionsProps) => {
   const isShop = card.source === 'shop';
@@ -100,20 +98,6 @@ export const ExploreItemPeekActions = ({
           onLinkRideshare={onDemandLinkRideshare}
           onGuestGatedAction={gate}
         />
-      ) : card.showHostActivityCtas && hostActivityCtaHandlers && card.activity ? (
-        <>
-          <HostActivityCtas
-            activity={card.activity}
-            linkRideshareTenantId={linkRideshareTenantId}
-            canAddLinkedRide={card.viewerAccess?.entitlements?.canAddLinkedRide ?? false}
-            handlers={hostActivityCtaHandlers}
-            onGuestGatedAction={gate}
-          />
-          {detailLink(
-            card.secondaryCta ?? 'View details',
-            'block w-full py-2.5 text-center text-sm font-semibold text-gray-600'
-          )}
-        </>
       ) : activityPeekActions.length > 0 && onActivityMapPeekAction ? (
         <ExploreActivityMapPeekActions
           card={card}
@@ -261,10 +245,14 @@ export const ExploreItemPeekBody = ({
   card,
   onGuestGatedAction,
   onOpenExploreItem,
+  onOfferTransport,
+  joinUiState,
 }: {
   card: ExploreCardModel;
   onGuestGatedAction?: () => void;
   onOpenExploreItem?: (exploreItemId: string) => void;
+  onOfferTransport?: () => void;
+  joinUiState?: JoinRequestUiState;
 }) => {
   const isShop = card.source === 'shop';
   const showPeopleRow =
@@ -279,12 +267,24 @@ export const ExploreItemPeekBody = ({
   }
 
   if (card.source === 'activity') {
+    const showJoinedChip = resolveActivityMapPeekStrips(card, joinUiState).showJoinedStatusChipOnPeek;
     return (
-      <ExploreActivityPeekStrips
-        card={card}
-        onGuestGatedAction={onGuestGatedAction}
-        onOpenExploreItem={onOpenExploreItem}
-      />
+      <>
+        {showJoinedChip ? (
+          <div className="mt-2 flex flex-wrap gap-2">
+            <span className="inline-flex rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-900">
+              Joined
+            </span>
+          </div>
+        ) : null}
+        <ExploreActivityPeekStrips
+          card={card}
+          joinUiState={joinUiState}
+          onGuestGatedAction={onGuestGatedAction}
+          onOpenExploreItem={onOpenExploreItem}
+          onOfferTransport={onOfferTransport}
+        />
+      </>
     );
   }
 

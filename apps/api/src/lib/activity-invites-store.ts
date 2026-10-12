@@ -86,6 +86,26 @@ export const listPendingActivityInvitesForInvitee = async (
 export const countPendingActivityInvitesForInvitee = async (toUserId: string): Promise<number> =>
   collection().countDocuments({ toUserId, status: 'pending' });
 
+export const countPendingActivityInvitesByActivityIdsForSender = async (input: {
+  fromUserId: string;
+  activityIds: string[];
+}): Promise<Map<string, number>> => {
+  if (!input.activityIds.length) return new Map();
+  const rows = await collection()
+    .aggregate<{ _id: string; count: number }>([
+      {
+        $match: {
+          fromUserId: input.fromUserId,
+          activityId: { $in: input.activityIds },
+          status: 'pending',
+        },
+      },
+      { $group: { _id: '$activityId', count: { $sum: 1 } } },
+    ])
+    .toArray();
+  return new Map(rows.map((row) => [row._id, row.count]));
+};
+
 export const listPendingActivityInviteeIdsForSender = async (input: {
   activityId: string;
   fromUserId: string;

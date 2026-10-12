@@ -48,7 +48,6 @@ import {
 } from '@uaetrail/shared-types';
 import { HostActivityCancelDialog } from '../../components/activity/HostActivityCancelDialog';
 import { hostActivityCancelParticipantNotice } from '../../host/hostActivityCancelParticipantNotice';
-import { hostActivityCtaHandlers as buildHostActivityCtaHandlers } from '../../host/hostActivityCtaHandlers';
 import { useExploreMapViewport } from './useExploreMapViewport';
 import { useExploreSelectionActions } from './useExploreSelectionActions';
 import {
@@ -282,28 +281,6 @@ export const ExploreExperience = () => {
     setJoinInvitePeekActivityId(null);
     selection.handleCloseSelection();
   }, [selection]);
-
-  const hostActivityCtaHandlers = useMemo(() => {
-    if (!selection.selectedCard?.showHostActivityCtas || !selection.selected?.activity) return null;
-    return buildHostActivityCtaHandlers({
-      activity: selection.selected.activity,
-      navigate,
-      onInviteActivity: inviteShare.openInviteFromActivity,
-      onCreateLinkedRideshare: handleCreateLinkedRideshare,
-      onRequestDelete: selection.requestHostRemove,
-      onBeforeNavigate: handleCloseMapSelection,
-      onChatError: (message) => selection.setDemandNotice(message),
-    });
-  }, [
-    selection.selectedCard?.showHostActivityCtas,
-    selection.selected?.activity,
-    selection.requestHostRemove,
-    selection.setDemandNotice,
-    navigate,
-    inviteShare.openInviteFromActivity,
-    handleCreateLinkedRideshare,
-    handleCloseMapSelection,
-  ]);
 
   const hostRemoveParticipantNotice = useMemo(() => {
     const activity = selection.hostRemoveConfirm;
@@ -730,6 +707,7 @@ export const ExploreExperience = () => {
           onJoin={selection.handleJoin}
           onMessage={selection.handleDemandMessage}
           onActivityMapPeekAction={selection.handleActivityMapPeekAction}
+          onOfferTransport={selection.handleOfferTransport}
           activityPeekSkipsJoinContext={selection.activityPeekSkipsJoinContext}
           linkRideshareTenantId={tenantId}
           onDemandRemove={
@@ -741,7 +719,6 @@ export const ExploreExperience = () => {
           onDemandLinkRideshare={
             selection.selectedCard?.showDemandLinkRideshare ? handleOfferRideshareForDemand : undefined
           }
-          hostActivityCtaHandlers={hostActivityCtaHandlers}
           onOpenExploreItem={(exploreItemId) => {
             const item = selectionItems.find((entry) => entry.id === exploreItemId);
             if (item) selection.openItem(item);

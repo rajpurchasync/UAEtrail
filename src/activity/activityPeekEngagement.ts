@@ -1,6 +1,8 @@
 import {
-  computeActivityMapPeekActions,
   mergeActivityMapPeekActionsWithEntitlements,
+  projectActivityMapPeekActions,
+  resolveActivityEngagementPolicy,
+  type ActivityEngagementStripsDTO,
   type ActivityMapPeekAction,
   type ActivityViewerAccessDTO,
   type ActivityViewerAccessLevel,
@@ -50,21 +52,78 @@ export const resolveActivityMapPeekActions = (
         : 'pending'
       : null;
 
-  const resolved =
-    fromApi !== undefined
-      ? fromApi
-      : (() => {
-          const level = levelForPeekActions(card, joinUiState);
-          if (!level) return [];
-          return computeActivityMapPeekActions({
-            level,
-            activityPublished: card.activity?.status === 'published',
-            joinMode: card.activity?.joinMode,
-            joinRequestStatus,
-          });
-        })();
+  if (fromApi !== undefined) {
+    return filterActivityMapPeekActionsForViewer(fromApi, card.viewerAccess ?? null);
+  }
 
-  return filterActivityMapPeekActionsForViewer(resolved, card.viewerAccess ?? null);
+  const level = levelForPeekActions(card, joinUiState);
+  if (!level || !card.viewerAccess) return [];
+
+  const policy = resolveActivityEngagementPolicy({
+    viewerAccess: { ...card.viewerAccess, level },
+    isHostUser: level === 'host',
+    activityPublished: card.activity?.status === 'published',
+    joinMode: card.activity?.joinMode,
+    joinRequestStatus,
+    participationMode: card.activity?.participationMode,
+    requirements: card.activity?.requirements,
+    rideshareEnabled: card.activity?.rideshareEnabled,
+    linkedRideshareActivityId: card.activity?.linkedRideshareActivityId ?? null,
+    myParticipation: null,
+    myRequest: null,
+    confirmedParticipantCount: card.participantPreviews?.length ?? 0,
+  });
+
+  return projectActivityMapPeekActions(
+    policy,
+    card.viewerAccess.entitlements ?? null,
+    level
+  );
+};
+
+const defaultPeekStrips = (): ActivityEngagementStripsDTO => ({
+  showParticipantsStrip: true,
+  showLogisticsStrip: true,
+  showJoinedStatusChipOnPeek: false,
+  showHostSelfProfileLink: false,
+  showOfferRideInLogistics: false,
+  maskRosterToFriendsOnly: true,
+  pendingJoinInviteCount: 0,
+});
+
+/** Peek strip affordances (API wire or L1 fallback). */
+export const resolveActivityMapPeekStrips = (
+  card: ExploreCardModel,
+  joinUiState?: JoinRequestUiState
+): ActivityEngagementStripsDTO => {
+  if (card.source !== 'activity') return defaultPeekStrips();
+  const fromApi = card.viewerAccess?.mapPeekStrips;
+  if (fromApi !== undefined) return fromApi;
+
+  const level = levelForPeekActions(card, joinUiState);
+  if (!level || !card.viewerAccess) return defaultPeekStrips();
+
+  const joinRequestStatus =
+    joinUiState?.kind === 'pending'
+      ? joinUiState.status === 'waitlisted'
+        ? 'waitlisted'
+        : 'pending'
+      : null;
+
+  return resolveActivityEngagementPolicy({
+    viewerAccess: { ...card.viewerAccess, level },
+    isHostUser: level === 'host',
+    activityPublished: card.activity?.status === 'published',
+    joinMode: card.activity?.joinMode,
+    joinRequestStatus,
+    participationMode: card.activity?.participationMode,
+    requirements: card.activity?.requirements,
+    rideshareEnabled: card.activity?.rideshareEnabled,
+    linkedRideshareActivityId: card.activity?.linkedRideshareActivityId ?? null,
+    myParticipation: null,
+    myRequest: null,
+    confirmedParticipantCount: card.participantPreviews?.length ?? 0,
+  }).strips;
 };
 
 export const resolveActivityPresentationPeekActions = (
@@ -101,6 +160,7 @@ export const activityMapPeekSkipsJoinContext = (
 
 export type ActivityPeekEngagement = {
   mapPeekActions: ActivityMapPeekAction[];
+  mapPeekStrips: ActivityEngagementStripsDTO;
   showsLegacyJoinFlow: boolean;
   needsJoinContext: boolean;
   skipsJoinContext: boolean;
@@ -112,9 +172,11 @@ export const resolveActivityPeekEngagement = (
   joinUiState?: JoinRequestUiState
 ): ActivityPeekEngagement => {
   const mapPeekActions = resolveActivityMapPeekActions(card, joinUiState);
+  const mapPeekStrips = resolveActivityMapPeekStrips(card, joinUiState);
   const showsLegacyJoinFlow = activityMapPeekShowsJoinFlow(card, joinUiState);
   return {
     mapPeekActions,
+    mapPeekStrips,
     showsLegacyJoinFlow,
     needsJoinContext: activityMapPeekNeedsJoinContext(card, joinUiState),
     skipsJoinContext: activityMapPeekSkipsJoinContext(card, joinUiState),
