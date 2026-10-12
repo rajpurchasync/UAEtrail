@@ -36,6 +36,7 @@ import { navigateToParticipantIntentManage } from '../../member-plan/navigatePar
 import type { ContributeSubmitResult } from './contributeFlow';
 import type { DemandSubmitResult } from './demandFlow';
 import type { useExploreBrowseUrlState } from './useExploreBrowseUrlState';
+import type { HostActivityManageInitialView } from '../../components/host/hostActivityManageViews';
 
 type BrowseState = ReturnType<typeof useExploreBrowseUrlState>;
 
@@ -57,6 +58,11 @@ type UseExploreSelectionActionsArgs = {
     options?: { canSendBuddyInvites?: boolean }
   ) => void;
   onCreateLinkedRideshare?: (parent: ActivityDTO) => void;
+  /** Host peek `manage_activity` — open manage sheet without leaving explore. */
+  onOpenHostManage?: (
+    activity: ActivityDTO,
+    initialView?: HostActivityManageInitialView
+  ) => void;
 };
 
 export const useExploreSelectionActions = ({
@@ -74,6 +80,7 @@ export const useExploreSelectionActions = ({
   setLinkOnlyPeekItems,
   onInviteActivity,
   onCreateLinkedRideshare,
+  onOpenHostManage,
 }: UseExploreSelectionActionsArgs) => {
   const [demandNotice, setDemandNotice] = useState<string | null>(null);
   const [venueNotice, setVenueNotice] = useState<string | null>(null);
@@ -348,6 +355,10 @@ export const useExploreSelectionActions = ({
         }
         case 'manage_activity':
           if (!activity) return;
+          if (onOpenHostManage) {
+            onOpenHostManage(activity, 'participants');
+            return;
+          }
           setSelectedId(null);
           navigate(`${activityDetailPath(activity.id)}?tab=buddies`);
           return;
@@ -375,6 +386,7 @@ export const useExploreSelectionActions = ({
       joinActions,
       joinUiState.kind,
       onCreateLinkedRideshare,
+      onOpenHostManage,
       navigate,
       setSelectedId,
     ]

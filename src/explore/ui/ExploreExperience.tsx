@@ -65,6 +65,10 @@ import type { ExploreSearchScopeKey } from '../exploreBrowseTaxonomy';
 import { Dialog } from '../../components/ui/Dialog';
 import { AppButton } from '../../components/mobile/AppButton';
 import { useActivityInviteShareSheet } from '../../hooks/useActivityInviteShareSheet';
+import { useHostActivityManageActions } from '../../hooks/useHostActivityManageActions';
+import { ActivityManageSheet } from '../../components/host/ActivityManageSheet';
+import type { HostActivityManageInitialView } from '../../components/host/hostActivityManageViews';
+import { activityDetailPath } from '../../config/routingCatalog';
 import { filterExploreMapItemsByAreaSlug, parseExploreAreaSlug } from '../exploreAreaFilter';
 import { useExplorePublishedAreas } from '../useExplorePublishedAreas';
 
@@ -251,6 +255,20 @@ export const ExploreExperience = () => {
   const inviteShare = useActivityInviteShareSheet();
   const planWithBuddyUserId = parsePlanWithUserId(searchParams);
   const [joinInvitePeekActivityId, setJoinInvitePeekActivityId] = useState<string | null>(null);
+  const [mapManageActivity, setMapManageActivity] = useState<ActivityDTO | null>(null);
+  const [mapManageInitialView, setMapManageInitialView] =
+    useState<HostActivityManageInitialView>('overview');
+  const exploreHostManageActions = useHostActivityManageActions(tenantId ?? null, () =>
+    reloadExploreMap(queryClient)
+  );
+
+  const openMapHostManage = useCallback(
+    (activity: ActivityDTO, initialView: HostActivityManageInitialView = 'participants') => {
+      setMapManageActivity(activity);
+      setMapManageInitialView(initialView);
+    },
+    []
+  );
 
   const selection = useExploreSelectionActions({
     items: selectionItems,
@@ -267,6 +285,7 @@ export const ExploreExperience = () => {
     setLinkOnlyPeekItems,
     onInviteActivity: inviteShare.openInviteFromActivity,
     onCreateLinkedRideshare: handleCreateLinkedRideshare,
+    onOpenHostManage: tenantId ? openMapHostManage : undefined,
   });
 
   const joinInvitePeekBanner = useMemo(() => {
@@ -744,6 +763,24 @@ export const ExploreExperience = () => {
         ) : null}
 
         {inviteShare.sheet}
+
+        {tenantId ? (
+          <ActivityManageSheet
+            open={Boolean(mapManageActivity)}
+            activity={mapManageActivity}
+            tenantId={tenantId}
+            pendingRequests={[]}
+            actions={exploreHostManageActions}
+            initialView={mapManageInitialView}
+            onOpenPublicPage={(a) => navigate(activityDetailPath(a.id))}
+            onShare={(a) => inviteShare.openInviteFromActivity(a)}
+            onClose={() => {
+              setMapManageActivity(null);
+              setMapManageInitialView('overview');
+            }}
+            onRequestsChanged={() => void reloadExploreMap(queryClient)}
+          />
+        ) : null}
 
         {isDesktop && browse.browseOpen ? (
           <aside

@@ -208,7 +208,7 @@ Host **tenant** public profiles (`/guide/:slug`, agency row, etc.) keep publishe
 | After confirm | **Review participant** flow (post check-in) | Plan/Buddies prompts (Phase 8 ✅); tie to attendance confirm |
 | Pending requests queue | Approve / decline join requests | `ActivityJoinRequestCard` in host hub |
 
-Peek **Manage** (target) = deep link `?tab=buddies` (D1), not duplicate full hub in peek sheet.
+Peek **Manage** = `ActivityManageSheet` on explore map (`manage_activity` wire); detail Buddies tab remains host hub (D1).
 
 ### 6.2.4 Peek ↔ detail parity checklist (per state bucket)
 

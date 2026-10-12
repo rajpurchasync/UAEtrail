@@ -83,7 +83,10 @@ describe('activity detail program — governance', () => {
     expect(actions).toMatch(/case 'share_activity'/);
     expect(actions).toMatch(/navigator\.share/);
     expect(actions).toMatch(/case 'manage_activity'/);
-    expect(actions).toMatch(/\?tab=buddies/);
+    expect(actions).toMatch(/onOpenHostManage/);
+    const experience = read('src/explore/ui/ExploreExperience.tsx');
+    expect(experience).toMatch(/ActivityManageSheet/);
+    expect(experience).toMatch(/onOpenHostManage: tenantId/);
   });
 
   it('AD-PEEK-03: activity map peek must not branch to HostActivityCtas', () => {
