@@ -3,9 +3,9 @@ import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { X } from 'lucide-react';
 import type { ChatConversationDTO, GroupWallStreamEventDTO } from '@uaetrail/shared-types';
-import { api } from '../api/index';
+import { searchMembersByQuery } from '../hooks/memberPeopleClientApi';
 import { messagingApi } from '../messaging';
-import type { SocialGroupView, SocialGroupWallMessageView } from '../api/index';
+import type { SocialGroupView, SocialGroupWallMessageView } from '../api/types';
 import { useAuth } from '../context/AuthContext';
 import { GuestTabPlaceholder } from '../components/auth/GuestTabPlaceholder';
 import { MobileScreen } from '../components/layout/MobileScreen';
@@ -248,8 +248,8 @@ export const Messages = () => {
     const timer = setTimeout(async () => {
       setSearching(true);
       try {
-        const res = await api.searchUsers(composeQuery);
-        setSearchResults(res.data);
+        const hits = await searchMembersByQuery(composeQuery);
+        setSearchResults(hits);
       } catch {
         setSearchResults([]);
       } finally {

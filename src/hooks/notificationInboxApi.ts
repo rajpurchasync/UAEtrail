@@ -23,3 +23,7 @@ export const markNotificationReadById = async (id: string): Promise<void> => {
 export const markAllMeNotificationsRead = async (): Promise<void> => {
   await api.markAllNotificationsRead();
 };
+
+export const acceptMeGroupInviteByToken = async (token: string): Promise<void> => {
+  await api.acceptMeGroupInvite(token);
+};

@@ -1,5 +1,5 @@
 import { EXPLORE_SHOPS_LIST_PATH, type ExploreMapItemDTO } from '@uaetrail/shared-types';
-import { buildDiscoveryCardViewModelCard } from '../discovery/discoveryCardViewModel';
+import { buildDiscoveryCardViewModelCard } from '../discovery';
 import type { ExploreCardModel } from '../explore/exploreCardModel';
 const PLACEHOLDER_SHOPS: readonly ExploreMapItemDTO[] = [
   {

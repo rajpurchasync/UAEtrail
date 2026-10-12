@@ -16,7 +16,12 @@ import { JourneyMapListSheet } from '../components/journey/JourneyMapListSheet';
 import { MobileBackButton } from '../components/mobile/MobileBackButton';
 import { FloatingActionButton } from '../components/mobile/FloatingActionButton';
 import { shareJourneyMapSummary } from '../components/journey/journeyMapShare';
-import { memberJourneyMapApi } from '../api/domains/memberJourneyMap';
+import {
+  createMemberMapPin,
+  deleteMemberMapPin,
+  fetchMemberJourneyMap,
+  updateMemberMapPin,
+} from '../hooks/memberJourneyMapApi';
 import { tripsCompletedPath } from '../member-plan/tripsRouting';
 import { TripsMainTabs } from '../components/trips/TripsMainTabs';
 import {
@@ -69,10 +74,10 @@ export const TripsMap = () => {
   const reload = useCallback(async () => {
     setError(null);
     try {
-      const res = await memberJourneyMapApi.getJourneyMap();
-      setPins(res.data.pins);
-      setEntries(res.data.entries ?? []);
-      setStats(res.data.stats);
+      const data = await fetchMemberJourneyMap();
+      setPins(data.pins);
+      setEntries(data.entries ?? []);
+      setStats(data.stats);
     } catch {
       setError('Could not load your map. Try again.');
     } finally {
@@ -144,7 +149,7 @@ export const TripsMap = () => {
     setSaving(true);
     setError(null);
     try {
-      await memberJourneyMapApi.createPin({
+      await createMemberMapPin({
         kind: input.kind,
         latitude: sheet.lat,
         longitude: sheet.lng,
@@ -175,7 +180,7 @@ export const TripsMap = () => {
     setSaving(true);
     setError(null);
     try {
-      await memberJourneyMapApi.updatePin(pinId, input);
+      await updateMemberMapPin(pinId, input);
       setSheet({ type: 'idle' });
       await reload();
     } catch {
@@ -189,7 +194,7 @@ export const TripsMap = () => {
     setSaving(true);
     setError(null);
     try {
-      await memberJourneyMapApi.deletePin(pinId);
+      await deleteMemberMapPin(pinId);
       setSheet({ type: 'idle' });
       await reload();
     } catch {

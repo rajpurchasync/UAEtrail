@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { Navigate, useParams } from 'react-router-dom';
 import { OrganisationPublicProfile } from '../components/organisation-console/OrganisationPublicProfile';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
-import { api, TenantProfile } from '../api/index';
+import type { TenantProfile } from '../api/types';
+import { fetchOrganisationProfileBySlug } from '../hooks/organisationConsoleApi';
 import { shopPublicPath } from '../utils/shopPaths';
 import { detailBackPath } from '../config/routingCatalog';
 
@@ -19,11 +20,10 @@ export const OrganisationProfile = () => {
   useEffect(() => {
     if (!id) return;
     setLoading(true);
-    api
-      .getOrganisationProfile(id)
-      .then((res) => {
-        setTenant(res.data);
-        setIsShop(isShopTenant(res.data));
+    fetchOrganisationProfileBySlug(id)
+      .then((tenant) => {
+        setTenant(tenant as TenantProfile);
+        setIsShop(isShopTenant(tenant as TenantProfile));
       })
       .catch(() => {
         setTenant(null);

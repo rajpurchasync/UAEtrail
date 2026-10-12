@@ -1,5 +1,5 @@
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
-import { buildDiscoveryCardViewModelCard } from '../../discovery/discoveryCardViewModel';
+import { buildDiscoveryCardViewModelCard } from '../../discovery';
 import { ExploreMapPeekCard, ExploreMapPeekPosition } from './ExploreMapPeekCard';
 import { ExploreVenuePeekActions } from './ExploreVenuePeekActions';
 

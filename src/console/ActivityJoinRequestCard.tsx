@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronDown, ChevronUp } from 'lucide-react';
-import type { ActivityRequestView } from '../api/index';
+import type { ActivityRequestView } from '../api/types';
 import { resolveJoinRequestActivity } from '../utils/joinRequestActivity';
 import { GlassCard } from '../components/mobile/GlassCard';
 import { AppButton } from '../components/mobile/AppButton';

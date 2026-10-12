@@ -1,3 +1,5 @@
+import { createNoDirectApiFacadeRule } from './r8-api-facade.mjs';
+
 /** @type {import('eslint').ESLint.Plugin} */
 const LEGACY_MESSAGING_API = {
   getInbox: 'Use messagingApi.getInbox from src/messaging',
@@ -14,6 +16,8 @@ const LEGACY_MESSAGING_API = {
 const plugin = {
   meta: { name: 'eslint-plugin-uaetrail' },
   rules: {
+    'no-direct-api-facade-ui': createNoDirectApiFacadeRule('ui'),
+    'no-direct-api-facade-hooks': createNoDirectApiFacadeRule('hooks'),
     'no-legacy-messaging-api': {
       meta: {
         type: 'problem',

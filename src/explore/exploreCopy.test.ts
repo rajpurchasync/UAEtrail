@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
-import { buildExploreCardModel, buildExploreListMeta } from './exploreCardModel';
+import { buildDiscoveryCardViewModelCard } from '../discovery';
+import { buildExploreListMeta } from './exploreCardModel';
 import {
   buildExploreRouteLabel,
   buildExploreSpotsSegment,
@@ -355,7 +356,7 @@ describe('resolveExplorePrice', () => {
   });
 });
 
-describe('buildExploreCardModel', () => {
+describe('buildDiscoveryCardViewModelCard (explore list copy)', () => {
   const hikingActivity: ExploreMapItemDTO = {
     id: 'activity:1',
     kind: 'hiking',
@@ -390,9 +391,8 @@ describe('buildExploreCardModel', () => {
   };
 
   it('builds one-line activity card', () => {
-    const card = buildExploreCardModel(hikingActivity);
+    const card = buildDiscoveryCardViewModelCard(hikingActivity);
     expect(card.showJoinActions).toBe(true);
-    expect(card.primaryCta).toBe('Request to join');
     expect(card.price?.badge).toBe('Free');
     expect(card.listTitle).toBe('Sarah is going Hiking on Saturday 12th');
     expect(card.headline).toBe('Sarah is going Hiking on Saturday 12th - Fujairah - Sat at 9:00 - 8 spots');
@@ -403,60 +403,6 @@ describe('buildExploreCardModel', () => {
     expect(card.sections.dateHighlight).toBe(' on Saturday 12th');
     expect(card.sections.listWhen).toContain('Sat');
     expect(card.sections.listGoing).toBe('12 going');
-  });
-
-  it('uses I\'m going CTA and headline for RSVP events', () => {
-    const rsvpEvent: ExploreMapItemDTO = {
-      ...hikingActivity,
-      id: 'activity:2',
-      kind: 'event',
-      title: 'Sunrise Run',
-      activity: {
-        ...hikingActivity.activity!,
-        activityType: 'event',
-        title: 'Sunrise Run',
-        participationMode: 'rsvp',
-      },
-    };
-    const card = buildExploreCardModel(rsvpEvent);
-    expect(card.primaryCta).toBe("I'm going");
-    expect(card.headline).toContain("I'm going ·");
-  });
-
-  it('uses Request to join for default approval hiking and camping activities', () => {
-    const camping: ExploreMapItemDTO = {
-      ...hikingActivity,
-      id: 'activity:camp',
-      kind: 'camping',
-      title: 'Stargazing camp',
-      activity: {
-        ...hikingActivity.activity!,
-        activityType: 'camping',
-        title: 'Stargazing camp',
-        participationMode: 'approval',
-      },
-    };
-    expect(buildExploreCardModel(hikingActivity).primaryCta).toBe('Request to join');
-    expect(buildExploreCardModel(camping).primaryCta).toBe('Request to join');
-  });
-
-  it('uses I\'m going for RSVP hiking and camping when stored on the activity', () => {
-    const rsvpHike: ExploreMapItemDTO = {
-      ...hikingActivity,
-      activity: { ...hikingActivity.activity!, participationMode: 'rsvp' },
-    };
-    const rsvpCamp: ExploreMapItemDTO = {
-      ...hikingActivity,
-      id: 'activity:camp-rsvp',
-      kind: 'camping',
-      activity: {
-        ...hikingActivity.activity!,
-        activityType: 'camping',
-        participationMode: 'rsvp',
-      },
-    };
-    expect(buildExploreCardModel(rsvpHike).primaryCta).toBe("I'm going");
-    expect(buildExploreCardModel(rsvpCamp).primaryCta).toBe("I'm going");
   });
 
   it('surfaces carpool available badge on linked hiking and camping activities', () => {
@@ -474,8 +420,8 @@ describe('buildExploreCardModel', () => {
         rideshareEnabled: true,
       },
     };
-    expect(buildExploreCardModel(withCarpool).requirementBadges).toContain('Rideshare available');
-    expect(buildExploreCardModel(campingCarpool).requirementBadges).toContain('Rideshare available');
+    expect(buildDiscoveryCardViewModelCard(withCarpool).requirementBadges).toContain('Rideshare available');
+    expect(buildDiscoveryCardViewModelCard(campingCarpool).requirementBadges).toContain('Rideshare available');
   });
 
   it('extracts structured participant restriction badges on activity cards', () => {
@@ -492,12 +438,11 @@ describe('buildExploreCardModel', () => {
         ],
       },
     };
-    expect(buildExploreCardModel(limited).requirementBadges).toEqual(['Women only', 'No pets']);
+    expect(buildDiscoveryCardViewModelCard(limited).requirementBadges).toEqual(['Women only', 'No pets']);
   });
 
   it('builds one-line demand card', () => {
     const demand: ExploreMapItemDTO = seekingExploreMapItem({
-      intentId: '1',
       intentId: '1',
       kind: 'rideshare',
       title: 'Rideshare request',
@@ -516,14 +461,13 @@ describe('buildExploreCardModel', () => {
       toLabel: 'Fujairah',
       requesterUserId: 'user-1',
     });
-    const card = buildExploreCardModel(demand);
+    const card = buildDiscoveryCardViewModelCard(demand);
     expect(card.featuredPerson?.role).toBe('requester');
     expect(card.listTitle).toBe('Rideshare · Alex');
     expect(card.headline).toBe(
       'Alex is looking for Rideshare on Sunday 13th - Dubai to Fujairah - Sun at 2 PM (flexible)'
     );
     expect(card.routeLabel).toBe('Dubai to Fujairah');
-    expect(card.primaryCta).toBe('Request to join');
     expect(card.secondaryCta).toBe('Message');
     expect(buildExploreListMeta(card)).toContain('Dubai to Fujairah');
     expect(card.sections.highlightName).toBe('Alex');

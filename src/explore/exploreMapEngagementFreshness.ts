@@ -5,9 +5,24 @@ import {
   coordinationAttentionQueryKey,
 } from '../hooks/clientQueryKeys';
 import {
+  exploreMapQueryKeyPrefix,
   patchExploreMapItemInCache,
   reloadExploreMap,
 } from '../hooks/useExploreMap';
+
+/** Scoped map caches (R5.4 / R8.3) — active viewport queries refetch without legacy full reload. */
+export const invalidateExploreMapQueries = (queryClient: QueryClient): void => {
+  void queryClient.invalidateQueries({ queryKey: exploreMapQueryKeyPrefix });
+};
+
+/** Coordination strip + activity detail/join context (R8.2 / R8.3). */
+export const invalidateActivityEngagementQueries = (
+  queryClient: QueryClient,
+  activityId: string
+): void => {
+  void queryClient.invalidateQueries({ queryKey: coordinationAttentionQueryKey });
+  void queryClient.invalidateQueries({ queryKey: activityDetailQueryKey(activityId) });
+};
 
 const activityIdFromExploreItemId = (exploreItemId: string | null | undefined): string | null => {
   if (!exploreItemId?.trim()) return null;
@@ -54,12 +69,16 @@ export const refreshExploreMapAfterActivityEngagement = async (
   const activityId =
     input.activityId?.trim() || activityIdFromExploreItemId(input.exploreItemId) || null;
 
-  void queryClient.invalidateQueries({ queryKey: coordinationAttentionQueryKey });
   if (activityId) {
-    void queryClient.invalidateQueries({ queryKey: activityDetailQueryKey(activityId) });
+    invalidateActivityEngagementQueries(queryClient, activityId);
   }
 
-  if (!input.exploreItemId || input.participationMode !== 'rsvp') return;
+  if (!input.exploreItemId || input.participationMode !== 'rsvp') {
+    if (isExploreMapVnextEnabled() && input.participationMode === 'approval') {
+      invalidateExploreMapQueries(queryClient);
+    }
+    return;
+  }
 
   patchExploreMapSlotsAfterRsvp(queryClient, input.exploreItemId);
 

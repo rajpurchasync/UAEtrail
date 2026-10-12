@@ -1,7 +1,7 @@
 import { EXPLORE_MAP_PATH } from '../../config/routingCatalog';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { api } from '../../api/index';
+import { useJoinedUpcomingPlanData } from '../../hooks/useJoinedUpcomingPlanData';
 import { exploreMapItemIsSeeking } from '@uaetrail/shared-types';
 import {
   ConsumerErrorCard,
@@ -13,7 +13,6 @@ import {
   PRODUCT_EXPLORE_CTA,
   PRODUCT_JOINED_UPCOMING_EMPTY_BODY,
   PRODUCT_JOINED_UPCOMING_EMPTY_TITLE,
-  PRODUCT_LOAD_ERROR,
 } from '../../content/productNorthStar';
 import { useExploreMap } from '../../hooks/useExploreMap';
 import { useAuth } from '../../context/AuthContext';
@@ -47,21 +46,22 @@ export const ActivitiesHubView = ({
   const navigate = useNavigate();
   const { user } = useAuth();
   const { data: mapItems = [], isLoading: mapLoading } = useExploreMap();
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [myActivityIds, setMyActivityIds] = useState<Set<string>>(new Set());
-  const [upcomingPlans, setUpcomingPlans] = useState<ReturnType<typeof buildUpcomingPlanRows>>([]);
+  const {
+    activities,
+    requests,
+    loading,
+    error: loadError,
+  } = useJoinedUpcomingPlanData(true, refreshKey);
+  const error = loadError ?? null;
 
-  useEffect(() => {
-    setLoading(true);
-    Promise.all([api.getMeActivities(), api.getMeRequests()])
-      .then(([activitiesRes, requestsRes]) => {
-        setMyActivityIds(new Set(activitiesRes.data.map((activity) => activity.id)));
-        setUpcomingPlans(buildUpcomingPlanRows(activitiesRes.data, requestsRes.data));
-      })
-      .catch((err) => setError(err instanceof Error ? err.message : PRODUCT_LOAD_ERROR))
-      .finally(() => setLoading(false));
-  }, [refreshKey]);
+  const myActivityIds = useMemo(
+    () => new Set(activities.map((activity) => activity.id)),
+    [activities]
+  );
+  const upcomingPlans = useMemo(
+    () => buildUpcomingPlanRows(activities, requests),
+    [activities, requests]
+  );
 
   const peekItems = useMemo(() => {
     const today = new Date(new Date().toDateString());

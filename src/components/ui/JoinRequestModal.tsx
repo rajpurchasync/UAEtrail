@@ -11,7 +11,7 @@ import {
   MANDATORY_INSTRUCTIONS_LABEL,
 } from '../../utils/joinInstructions';
 import { afterActivityJoinClientRefresh } from '../../hooks/activityJoinClientEffects';
-import { submitActivityJoin } from '../../hooks/activityJoinSubmit';
+import { submitActivityJoin } from '../../hooks/activityJoinClientApi';
 import { Dialog } from './Dialog';
 
 type JoinableActivity = Pick<

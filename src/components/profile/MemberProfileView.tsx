@@ -3,7 +3,7 @@ import { SIGNIN_PATH } from '../../config/routingCatalog';
 import type { ActivityDTO, BuddyRelationshipDTO } from '@uaetrail/shared-types';
 import { MemberFollowControls } from './MemberFollowControls';
 import { MemberProfileBuddyActions } from './MemberProfileBuddyActions';
-import type { PersonPublicProfileDTO } from '../../api/index';
+import type { PersonPublicProfileDTO } from '../../api/types';
 import { GlassCard } from '../mobile/GlassCard';
 import { PublicProfileSectionHeading } from './PublicProfileSectionHeading';
 import { SecureAvatar } from '../ui/SecureAvatar';

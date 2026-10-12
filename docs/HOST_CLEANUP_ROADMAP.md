@@ -73,7 +73,7 @@ Tracks the **no big-bang** plan from the host-flow audit (Oct 2026). Member tier
 | Join queue: host sees requester identity | ✅ | By design (activity host) |
 | Notifications actor names respect `profileVisibility` | ✅ | `notification-actor-label.ts` (buddy, follow, group, publish fan-out) |
 | Wishlist profile hydration PII | ✅ | `listWishlistItemsWithDetails` + `profileVisibility` |
-| FE smoke matrix (notification + profile edge cases) | 🔄 | API: `notification-actor-label.test.ts` in `verify:domain`; manual edge cases (group invite, private actor) still QA |
+| FE smoke matrix (notification + profile edge cases) | ✅ guards | API: `notification-actor-label.test.ts`; FE: `notificationRouting.test.ts`, `notificationConsumerGuard` (bell, inbox, admin, host overview → `inferNotificationPath`); manual QA for edge kinds only |
 
 ---
 

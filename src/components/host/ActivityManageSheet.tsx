@@ -1,4 +1,6 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { afterHostJoinDecisionClientRefresh } from '../../hooks/activityJoinClientEffects';
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import { LinkRidesharePanel } from '../../explore/ui/LinkRidesharePanel';
 import { hostActivityManageCapabilities } from '../../host/hostActivityManageCapabilities';
@@ -62,6 +64,7 @@ export const ActivityManageSheet = ({
   onRequestsChanged,
 }: ActivityManageSheetProps) => {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const panelRef = useRef<HTMLDivElement>(null);
   const [view, setView] = useState<HostActivityManageSubview>('overview');
   const [manageOptionsOpen, setManageOptionsOpen] = useState(false);
@@ -185,10 +188,11 @@ export const ActivityManageSheet = ({
     status: 'approved' | 'rejected',
     organizerNote?: string
   ) => {
-    if (!tenantId) return;
+    if (!tenantId || !activity) return;
     setBusyRequestId(requestId);
     try {
       await decideHostActivityJoinRequest(tenantId, requestId, status, organizerNote);
+      await afterHostJoinDecisionClientRefresh(queryClient, { activityId: activity.id, status });
       if (status === 'rejected') setDeclineRequest(null);
       await onRequestsChanged();
     } catch (err) {

@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type {
   ActivityDTO,
   ActivityDetailDTO,
@@ -7,7 +7,8 @@ import type {
   MyActivityRequestDTO,
   WithdrawReason,
 } from '@uaetrail/shared-types';
-import { api } from '../api/index';
+import { afterActivityWithdrawClientRefresh } from './activityJoinClientEffects';
+import { cancelJoinRequest } from './activityJoinClientApi';
 import { activityDetailQueryKey } from './clientQueryKeys';
 import { fetchPublicActivityDetail } from './usePublicActivityDetail';
 import {
@@ -89,6 +90,7 @@ export const useActivityJoinActions = ({
   onMessage,
   onError,
 }: UseActivityJoinActionsOptions) => {
+  const queryClient = useQueryClient();
   const [joinModalOpen, setJoinModalOpen] = useState(false);
   const [showWithdraw, setShowWithdraw] = useState(false);
   const [withdrawing, setWithdrawing] = useState(false);
@@ -140,13 +142,14 @@ export const useActivityJoinActions = ({
 
       setWithdrawing(true);
       try {
-        await api.cancelJoinRequest(activity.id, requestId, payload);
+        await cancelJoinRequest(activity.id, requestId, payload);
         setShowWithdraw(false);
         onMessage?.(
           uiState.kind === 'confirmed'
             ? 'Your request to join has been withdrawn.'
             : 'Join request cancelled.'
         );
+        await afterActivityWithdrawClientRefresh(queryClient, { activityId: activity.id });
         await onReload();
       } catch (err) {
         onError?.(err instanceof Error ? err.message : 'Could not withdraw');
@@ -155,7 +158,7 @@ export const useActivityJoinActions = ({
         setWithdrawing(false);
       }
     },
-    [activity, uiState, requestIdFallback, onMessage, onError, onReload]
+    [activity, uiState, requestIdFallback, onMessage, onError, onReload, queryClient]
   );
 
   return {

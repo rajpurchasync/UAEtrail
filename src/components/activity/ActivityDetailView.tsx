@@ -17,7 +17,7 @@ import type { ActivityDetailTabId } from '../../activity/activityDetailTab';
 import type { ActivityDetailTabFooterKind } from '../../activity/activityDetailTabFooters';
 import { ActivityDetailBody } from './detail/ActivityDetailBody';
 import { useActivityDetailViewModel } from './detail/useActivityDetailViewModel';
-import type { ActivityRequestView } from '../../api/index';
+import type { ActivityRequestView } from '../../api/types';
 
 export interface ActivityDetailViewProps {
   activity: ActivityDetailDTO;

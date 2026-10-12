@@ -1,5 +1,12 @@
 import { useEffect, useState } from 'react';
-import { api, TeamMember } from '../../api/index';
+import type { TeamMember } from '../../api/types';
+import {
+  createOrganisationTeamMember,
+  fetchOrganisationTeam,
+  removeOrganisationTeamMember,
+  toggleOrganisationTeamMemberStatus,
+  updateOrganisationTeamMemberRole,
+} from '../../hooks/organisationConsoleApi';
 import { getActiveTenantId } from '../../api/tenant';
 import { ConsoleShell } from '../../console/ConsoleShell';
 import { AppSelect } from '../../components/ui/AppSelect';
@@ -24,10 +31,10 @@ export const Team = () => {
   const loadMembers = async (activeTenantId: string) => {
     if (!activeTenantId) return;
     try {
-      const response = await api.getOrganisationTeam(activeTenantId);
-      setMembers(response.data);
+      const team = await fetchOrganisationTeam(activeTenantId);
+      setMembers(team);
       const drafts: Record<string, 'tenant_admin' | 'tenant_guide'> = {};
-      response.data.forEach((member: TeamMember) => {
+      team.forEach((member: TeamMember) => {
         if (member.role === 'tenant_admin' || member.role === 'tenant_guide') {
           drafts[member.id] = member.role;
         }
@@ -47,7 +54,7 @@ export const Team = () => {
     if (!tenantId) return;
     setError(null);
     try {
-      await api.createOrganisationTeamMember(tenantId, { email, displayName, role });
+      await createOrganisationTeamMember(tenantId, { email, displayName, role });
       setEmail('');
       setDisplayName('');
       setRole('tenant_guide');
@@ -64,7 +71,7 @@ export const Team = () => {
     setError(null);
     setSavingMemberId(memberId);
     try {
-      await api.updateOrganisationTeamMemberRole(tenantId, memberId, nextRole);
+      await updateOrganisationTeamMemberRole(tenantId, memberId, nextRole);
       await loadMembers(tenantId);
     } catch (updateError) {
       setError(updateError instanceof Error ? updateError.message : 'Failed to update member role');
@@ -78,7 +85,7 @@ export const Team = () => {
     setError(null);
     setBusyActionMemberId(memberId);
     try {
-      await api.toggleOrganisationTeamMemberStatus(tenantId, memberId, nextActive);
+      await toggleOrganisationTeamMemberStatus(tenantId, memberId, nextActive);
       await loadMembers(tenantId);
     } catch (updateError) {
       setError(updateError instanceof Error ? updateError.message : 'Failed to update member access');
@@ -92,7 +99,7 @@ export const Team = () => {
     setError(null);
     setBusyActionMemberId(memberId);
     try {
-      await api.removeOrganisationTeamMember(tenantId, memberId);
+      await removeOrganisationTeamMember(tenantId, memberId);
       await loadMembers(tenantId);
     } catch (updateError) {
       setError(updateError instanceof Error ? updateError.message : 'Failed to remove member');

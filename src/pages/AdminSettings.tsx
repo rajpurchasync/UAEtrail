@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react';
-import { api } from '../api/index';
+import {
+  fetchAdminNotificationBroadcasts,
+  sendAdminNotificationBroadcast,
+} from '../hooks/adminConsoleApi';
 import { DashboardLayout } from '../components/layout';
 import { ADMIN_LINKS } from '../constants';
 import { AppSelect, ADMIN_SELECT_CLASS } from '../components/ui/AppSelect';
@@ -35,8 +38,17 @@ export const AdminSettings = () => {
   const loadHistory = async () => {
     setLoadingHistory(true);
     try {
-      const res = await api.getAdminNotifications();
-      setHistory((res.data ?? []) as unknown as BroadcastHistory[]);
+      const rows = await fetchAdminNotificationBroadcasts();
+      setHistory(
+        rows.map((row) => ({
+          id: row.id,
+          title: row.title,
+          body: row.body,
+          targetRole: row.targetRole ?? 'all',
+          sentAt: row.createdAt,
+          recipientCount: row.recipientCount,
+        }))
+      );
     } catch {
       // silent fail for history
     } finally {
@@ -51,7 +63,7 @@ export const AdminSettings = () => {
     setError(null);
     setSuccess(null);
     try {
-      await api.sendAdminNotification({
+      await sendAdminNotificationBroadcast({
         title,
         body,
         targetRole: targetRole === 'all' ? undefined : targetRole

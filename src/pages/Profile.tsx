@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { api } from '../api/index';
+import {
+  fetchMemberBadges,
+  fetchMeProfile,
+  fetchMeProfileStats,
+  fetchMeProfileViewStats,
+  updateMeProfile,
+} from '../hooks/memberProfileApi';
 import { useAuth } from '../context/AuthContext';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { PullToRefresh } from '../components/mobile/PullToRefresh';
@@ -55,24 +61,25 @@ export const Profile = () => {
 
   useEffect(() => {
     if (!user) return;
-    void api.getMeProfile().then((profileRes) => {
-      setMemberSince(profileRes.data.memberSince ?? null);
-      setVisibility(profileRes.data.profileVisibility ?? 'public');
-    }).catch(() => undefined);
+    void fetchMeProfile()
+      .then((me) => {
+        setMemberSince(me.memberSince ?? null);
+        setVisibility(me.profileVisibility ?? 'public');
+      })
+      .catch(() => undefined);
   }, [user]);
 
   useEffect(() => {
     if (!user) return;
     reloadGoals();
-    void api.getMeProfileStats().then((res) => setHubStats(res.data)).catch(() => undefined);
+    void fetchMeProfileStats().then(setHubStats).catch(() => undefined);
     if (hostTiers.professional || hostTiers.business) {
-      void api.getMeProfileViewStats().then((res) => setProfileViewStats(res.data)).catch(() => undefined);
+      void fetchMeProfileViewStats().then(setProfileViewStats).catch(() => undefined);
     } else {
       setProfileViewStats(null);
     }
-    void api
-      .getMemberBadges()
-      .then((res) => setBadgesEarnedCount(res.data.filter((b) => b.earned).length))
+    void fetchMemberBadges()
+      .then((badges) => setBadgesEarnedCount(badges.filter((b) => b.earned).length))
       .catch(() => undefined);
   }, [user, hostTiers.professional, hostTiers.business]);
 
@@ -198,15 +205,14 @@ export const Profile = () => {
   const handleRefresh = useCallback(async () => {
     await reload();
     if (!user) return;
-    void api.getMeProfile().then((profileRes) => {
-      setMemberSince(profileRes.data.memberSince ?? null);
-      setVisibility(profileRes.data.profileVisibility ?? 'public');
+    void fetchMeProfile().then((me) => {
+      setMemberSince(me.memberSince ?? null);
+      setVisibility(me.profileVisibility ?? 'public');
     });
     reloadGoals();
-    void api.getMeProfileStats().then((res) => setHubStats(res.data)).catch(() => undefined);
-    void api
-      .getMemberBadges()
-      .then((res) => setBadgesEarnedCount(res.data.filter((b) => b.earned).length))
+    void fetchMeProfileStats().then(setHubStats).catch(() => undefined);
+    void fetchMemberBadges()
+      .then((badges) => setBadgesEarnedCount(badges.filter((b) => b.earned).length))
       .catch(() => undefined);
     void refreshHostGate();
   }, [reload, user, refreshHostGate, reloadGoals]);
@@ -215,7 +221,7 @@ export const Profile = () => {
     setAvatarMessage(null);
     setAvatarSaving(true);
     try {
-      await api.updateMeProfile({ avatarUrl: nextAvatarUrl });
+      await updateMeProfile({ avatarUrl: nextAvatarUrl });
       setProfile((prev) => ({ ...prev, avatarUrl: nextAvatarUrl }));
       await refreshUser();
       setAvatarMessage('Photo saved.');

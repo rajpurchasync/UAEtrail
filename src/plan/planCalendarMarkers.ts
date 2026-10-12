@@ -1,6 +1,6 @@
 import type { ActivityDTO, MemberAvailabilitySlotDTO, ParticipantIntentDTO } from '@uaetrail/shared-types';
 import { memberAvailabilityCalendarDays } from '@uaetrail/shared-types';
-import type { ActivityRequestView } from '../api/index';
+import type { ActivityRequestView } from '../api/types';
 import { getRequestEventDate } from '../utils/activityDates';
 import { viewerIsActivityHostUser } from '../utils/viewerHostsActivity';
 import type { PlanCommitmentFilter } from './planTab';

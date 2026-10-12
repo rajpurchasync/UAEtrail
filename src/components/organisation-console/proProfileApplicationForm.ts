@@ -1,6 +1,6 @@
 import type { HostProfileType, ShopPresence } from '@uaetrail/shared-types';
 import { DEFAULT_PHONE_DIAL, PHONE_COUNTRIES } from '../../constants/phoneCountries';
-import type { HostApplication } from '../../api/index';
+import type { HostApplication } from '../../api/types';
 import { formatE164Phone } from '../../utils/phone';
 
 /** Pro Membership application wizard — guide, agency, or shop (not community Organize). */

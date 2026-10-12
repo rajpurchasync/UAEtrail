@@ -1,6 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { api, AdminMetrics, HostApplication, AuditLogEntry } from '../api/index';
+import type { AdminMetrics, AuditLogEntry, HostApplication } from '../api/types';
+import {
+  fetchAdminAuditLogs,
+  fetchAdminMetrics,
+  fetchAdminModerationActivities,
+  fetchAdminOrganisationApplications,
+} from '../hooks/adminConsoleApi';
 import { DashboardLayout } from '../components/layout';
 import { ActivityDTO } from '@uaetrail/shared-types';
 import {
@@ -23,15 +29,15 @@ export const AdminOverview = () => {
   const loadData = () => {
     setLoading(true);
     Promise.all([
-      api.getAdminMetrics(),
-      api.getAdminActivities(),
-      api.getAdminOrganisationApplications(),
-      api.getAdminAuditLogs({ pageSize: 10 }).catch(() => ({ data: [] as AuditLogEntry[] }))
+      fetchAdminMetrics(),
+      fetchAdminModerationActivities(),
+      fetchAdminOrganisationApplications(),
+      fetchAdminAuditLogs({ pageSize: 10 }).catch(() => ({ data: [] as AuditLogEntry[] }))
     ])
-      .then(([metricsRes, eventsRes, appsRes, auditRes]) => {
-        setMetrics(metricsRes.data);
-        setRecentEvents([...eventsRes.data].sort((a, b) => b.date.localeCompare(a.date) || b.time.localeCompare(a.time)).slice(0, 5));
-        setRecentApps(appsRes.data.filter((a) => a.status === 'pending').slice(0, 5));
+      .then(([metrics, events, apps, auditRes]) => {
+        setMetrics(metrics);
+        setRecentEvents([...events].sort((a, b) => b.date.localeCompare(a.date) || b.time.localeCompare(a.time)).slice(0, 5));
+        setRecentApps(apps.filter((a) => a.status === 'pending').slice(0, 5));
         setAuditLogs(auditRes.data.slice(0, 10));
       })
       .catch((err) => setError(err instanceof Error ? err.message : 'Failed to load metrics'))

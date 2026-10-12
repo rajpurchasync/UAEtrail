@@ -1,6 +1,12 @@
 import { useEffect, useState } from 'react';
 import { AdminUserType } from '@uaetrail/shared-types';
-import { api } from '../api/index';
+import {
+  fetchAdminMemberDetail,
+  fetchAdminMembers,
+  grantPlatformAdminByEmail,
+  revokePlatformAdminByUserId,
+  updateAdminMemberStatus,
+} from '../hooks/adminConsoleApi';
 import { AdminUserDetail, AdminUserDetailPanel } from '../components/admin/AdminUserDetailPanel';
 import { DashboardLayout } from '../components/layout';
 import { ADMIN_LINKS } from '../constants';
@@ -69,7 +75,7 @@ export const AdminMembers = () => {
   const loadUsers = async () => {
     setLoading(true);
     try {
-      const res = await api.getAdminMembers({
+      const res = await fetchAdminMembers({
         role: roleFilter || undefined,
         userType: userTypeFilter || undefined,
         status: statusFilter || undefined,
@@ -103,7 +109,7 @@ export const AdminMembers = () => {
     }
     setActionLoading(true);
     try {
-      await api.updateAdminMemberStatus(
+      await updateAdminMemberStatus(
         confirmTarget.id,
         newStatus,
         newStatus === 'suspended' ? suspendComment.trim() : undefined
@@ -126,7 +132,7 @@ export const AdminMembers = () => {
     setError(null);
     setSuccessMessage(null);
     try {
-      await api.grantPlatformAdmin(email);
+      await grantPlatformAdminByEmail(email);
       setGrantEmail('');
       setSuccessMessage(`Platform admin access granted to ${email}.`);
       await loadUsers();
@@ -143,7 +149,7 @@ export const AdminMembers = () => {
     setError(null);
     setSuccessMessage(null);
     try {
-      await api.revokePlatformAdmin(row.id);
+      await revokePlatformAdminByUserId(row.id);
       setSuccessMessage('Platform admin access removed.');
       await loadUsers();
     } catch (err) {
@@ -155,8 +161,8 @@ export const AdminMembers = () => {
 
   const openDetail = async (id: string) => {
     try {
-      const res = await api.getAdminMemberDetail(id);
-      setSelectedUser(res.data as unknown as AdminUserDetail);
+      const detail = await fetchAdminMemberDetail(id);
+      setSelectedUser(detail as unknown as AdminUserDetail);
       setDetailOpen(true);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load member details');

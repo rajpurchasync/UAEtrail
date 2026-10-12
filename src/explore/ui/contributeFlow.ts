@@ -1,5 +1,5 @@
 import type { LocationDTO } from '@uaetrail/shared-types';
-import { api } from '../../api/index';
+import { submitUserLocationContribution } from '../../hooks/placeCatalogApi';
 import { DEFAULT_COUNTRY } from '../../config/regions';
 import { MAP_CONFIG } from '../../config/platform';
 import { DEFAULT_PHONE_DIAL } from '../../constants/phoneCountries';
@@ -358,8 +358,8 @@ export const publishContributeVenue = async (
     payload.shopContactPhoneE164 = formatE164Phone(draft.phoneCountryCode, draft.phone.trim());
   }
 
-  const res = await api.submitUserLocation(payload as Partial<LocationDTO>);
-  return { kind: 'location', location: res.data };
+  const location = await submitUserLocationContribution(payload as Partial<LocationDTO>);
+  return { kind: 'location', location };
 };
 
 export { ACTIVITY_DIFFICULTY_OPTIONS };

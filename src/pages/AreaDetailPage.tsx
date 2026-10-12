@@ -2,8 +2,9 @@ import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router-dom';
 import { areaDetailPath } from '@uaetrail/shared-types';
-import { areasApi } from '../api/domains/areas';
-import { api } from '../api/index';
+import { areaAvailabilityQueryKey, areaDetailQueryKey } from '../hooks/clientQueryKeys';
+import { fetchAreaDetailBySlug } from '../hooks/areaHubClientApi';
+import { fetchExplorePeopleAvailability } from '../hooks/memberPeopleClientApi';
 import { EXPLORE_MAP_PATH } from '../config/routingCatalog';
 import { PRODUCT_EXPLORE_CTA } from '../content/productNorthStar';
 import { AreaHubMapStrip } from '../components/area/AreaHubMapStrip';
@@ -20,23 +21,19 @@ export const AreaDetailPage = () => {
   }, []);
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['area', slug],
-    queryFn: async () => {
-      const res = await areasApi.getAreaBySlug(slug);
-      return res.data;
-    },
+    queryKey: areaDetailQueryKey(slug),
+    queryFn: () => fetchAreaDetailBySlug(slug),
     enabled: Boolean(slug),
   });
 
   const { data: availabilityIndex } = useQuery({
-    queryKey: ['area-availability', slug, weekRange.from],
+    queryKey: areaAvailabilityQueryKey(slug, weekRange.from),
     queryFn: async () => {
-      const res = await api.explorePeopleAvailability({
+      return fetchExplorePeopleAvailability({
         from: weekRange.from,
         to: weekRange.to,
         area: slug,
       });
-      return res.data;
     },
     enabled: Boolean(slug),
   });

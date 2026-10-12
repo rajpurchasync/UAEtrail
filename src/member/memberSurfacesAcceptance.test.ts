@@ -151,7 +151,9 @@ describe('member surfaces §11 acceptance (automated)', () => {
 
   it('G-manage: Plan needs-you uses domain read-model GET /me/coordination-attention', () => {
     const hook = read('src/hooks/useMemberCoordinationAttention.ts');
-    expect(hook).toContain('getMeCoordinationAttention');
+    expect(hook).toMatch(/fetchMeCoordinationAttention|getMeCoordinationAttention/);
+    const clientApi = read('src/hooks/memberCoordinationApi.ts');
+    expect(clientApi).toContain('getMeCoordinationAttention');
     const strip = read('src/components/plan/PlanNeedsYouStrip.tsx');
     expect(strip).toContain('useMemberCoordinationAttention');
     expect(strip).toContain('coordinationAttentionPresentation');

@@ -41,7 +41,7 @@ import { activityDetailTabPanelClass } from './activityDetailTabPanelClass';
 import { useActivityDetailJoinSurfaces } from './useActivityDetailJoinSurfaces';
 import { activityHostUserId } from '../../../utils/hostLabels';
 import type { ReactNode } from 'react';
-import type { ActivityRequestView } from '../../../api/index';
+import type { ActivityRequestView } from '../../../api/types';
 
 export type ActivityDetailViewModelInput = {
   activity: ActivityDetailDTO;

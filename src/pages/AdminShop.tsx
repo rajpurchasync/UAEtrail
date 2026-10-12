@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { ProductDTO } from '@uaetrail/shared-types';
-import { api } from '../api/index';
+import { fetchAdminProducts, updateAdminProductStatus } from '../hooks/adminConsoleApi';
 import { DashboardLayout } from '../components/layout';
 import { ADMIN_LINKS } from '../constants';
 import { AppSelect, ADMIN_FILTER_SELECT_CLASS } from '../components/ui/AppSelect';
@@ -32,7 +32,7 @@ export const AdminShop = () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await api.getAdminProducts({
+      const res = await fetchAdminProducts({
         page,
         pageSize: 20,
         status: view === 'draft' ? 'draft' : undefined,
@@ -55,7 +55,7 @@ export const AdminShop = () => {
   const executeStatusChange = async () => {
     if (!confirmTarget) return;
     try {
-      await api.updateAdminProductStatus(confirmTarget.product.id, confirmTarget.newStatus as 'active' | 'inactive');
+      await updateAdminProductStatus(confirmTarget.product.id, confirmTarget.newStatus as 'active' | 'inactive');
       setConfirmTarget(null);
       await loadProducts();
     } catch (err) {

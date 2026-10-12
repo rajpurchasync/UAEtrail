@@ -1,9 +1,11 @@
-import { useEffect, useMemo, useState } from 'react';
-import type { ActivityDTO, MyActivityDTO } from '@uaetrail/shared-types';
-import { api, type ActivityRequestView } from '../api/index';
+import { useMemo } from 'react';
+import type { ActivityDTO } from '@uaetrail/shared-types';
 import { useAuth } from '../context/AuthContext';
 import { useConsoleHubData } from '../console/useHubData';
 import { useMemberAvailability } from './useMemberAvailability';
+import { useMyActivityJoinRequests } from './useMyActivityJoinRequests';
+import { useMyJoinedActivities } from './useMyJoinedActivities';
+import { useMyParticipantIntents } from './useMyParticipantIntents';
 import {
   buildPlanCalendarMaps,
   filterPlanCalendarByCommitment,
@@ -30,48 +32,25 @@ export const usePlanCalendarData = (
   refreshKey = 0
 ): PlanCalendarData => {
   const { user } = useAuth();
+  const memberEnabled = enabled && Boolean(user);
   const availability = useMemberAvailability(enabled);
   const host = useConsoleHubData();
 
-  const [joined, setJoined] = useState<MyActivityDTO[]>([]);
-  const [requests, setRequests] = useState<ActivityRequestView[]>([]);
-  const [seekingIntents, setSeekingIntents] = useState<Awaited<ReturnType<typeof api.listMyParticipantIntents>>['data']>([]);
-  const [memberLoading, setMemberLoading] = useState(false);
-  const [memberError, setMemberError] = useState<string | null>(null);
-
-  const loadMember = () => {
-    if (!enabled || !user) return Promise.resolve();
-    setMemberLoading(true);
-    setMemberError(null);
-    return Promise.all([
-      api.getMeActivities(),
-      api.getMeRequests(),
-      api.listMyParticipantIntents(),
-    ])
-      .then(([activitiesRes, requestsRes, intentsRes]) => {
-        setJoined(activitiesRes.data);
-        setRequests(requestsRes.data);
-        setSeekingIntents(intentsRes.data);
-      })
-      .catch(() => setMemberError('Could not load your plans.'))
-      .finally(() => setMemberLoading(false));
-  };
-
-  useEffect(() => {
-    void loadMember();
-  }, [enabled, user?.id, refreshKey]);
+  const joinedQuery = useMyJoinedActivities(memberEnabled, refreshKey);
+  const requestsQuery = useMyActivityJoinRequests(memberEnabled, refreshKey);
+  const intentsQuery = useMyParticipantIntents(memberEnabled, refreshKey);
 
   const hostedActivities = canHost ? ((host.activities ?? []) as ActivityDTO[]) : [];
   const activeSeeking = useMemo(
-    () => partitionParticipantIntentsForTrips(seekingIntents).upcoming,
-    [seekingIntents]
+    () => partitionParticipantIntentsForTrips(intentsQuery.intents).upcoming,
+    [intentsQuery.intents]
   );
 
   const { markers, details } = useMemo(() => {
     const built = buildPlanCalendarMaps({
       availabilitySlots: availability.data?.slots ?? [],
-      joinedActivities: joined,
-      joinRequests: requests,
+      joinedActivities: joinedQuery.activities,
+      joinRequests: requestsQuery.requests,
       hostedActivities,
       seekingIntents: activeSeeking,
       viewerUserId: user?.id ?? null,
@@ -82,21 +61,25 @@ export const usePlanCalendarData = (
     return filterPlanCalendarByCommitment(built.markers, built.details, filter);
   }, [
     availability.data?.slots,
-    joined,
-    requests,
+    joinedQuery.activities,
+    requestsQuery.requests,
     hostedActivities,
     activeSeeking,
     user?.id,
     filter,
   ]);
 
+  const memberLoading = joinedQuery.loading || requestsQuery.loading || intentsQuery.loading;
+  const memberError = joinedQuery.error ?? requestsQuery.error ?? intentsQuery.error;
   const loading = enabled && (availability.loading || memberLoading || (canHost && host.loading));
   const error = memberError ?? availability.error ?? null;
 
   const reload = () => {
     void availability.reload();
     if (canHost) void host.reload();
-    void loadMember();
+    void joinedQuery.refetch();
+    void requestsQuery.refetch();
+    void intentsQuery.refetch();
   };
 
   return { loading, error, markers, details, reload };

@@ -10,6 +10,25 @@ describe('activityJoinSubmit (R8.1)', () => {
     expect(modal).toMatch(/submitActivityJoin/);
     expect(modal).toMatch(/afterActivityJoinClientRefresh/);
     expect(modal).not.toMatch(/\bapi\./);
-    expect(read('src/hooks/activityJoinSubmit.ts')).toMatch(/rsvpActivity/);
+    expect(read('src/hooks/activityJoinSubmit.ts')).toMatch(/submitActivityJoin/);
+    expect(read('src/hooks/activityJoinClientApi.ts')).toMatch(/rsvpActivity/);
+  });
+
+  it('withdraw flow refreshes client caches via hooks layer (R8.3)', () => {
+    const flow = read('src/hooks/useActivityJoinFlow.ts');
+    expect(flow).toMatch(/afterActivityWithdrawClientRefresh/);
+    expect(flow).not.toMatch(/\bapi\./);
+  });
+
+  it('host join decision surfaces refresh client caches (R8.3)', () => {
+    for (const file of [
+      'src/pages/host/JoinRequests.tsx',
+      'src/components/host/ActivityManageSheet.tsx',
+      'src/components/activity/detail/ActivityDetailHostBuddiesHub.tsx',
+    ]) {
+      const source = read(file);
+      expect(source).toMatch(/afterHostJoinDecisionClientRefresh/);
+      expect(source).not.toMatch(/\bapi\./);
+    }
   });
 });

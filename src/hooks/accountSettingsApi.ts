@@ -5,8 +5,13 @@ export type { AccountDeletionInfo };
 export const changeAccountPassword = async (input: {
   currentPassword: string;
   newPassword: string;
+  otpToken?: string;
 }): Promise<void> => {
   await api.changePassword(input);
+};
+
+export const requestChangePasswordOtp = async (): Promise<{ message: string; otpToken?: string }> => {
+  return api.requestChangePasswordOtp();
 };
 
 export const requestAccountEmailChange = async (

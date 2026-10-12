@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { ParticipantIntentDTO } from '@uaetrail/shared-types';
@@ -12,7 +13,10 @@ import { ORGANIZE_LINK_RIDESHARE_LABEL } from '../../explore/createFlowCopy';
 import { formatParticipantIntentMeta } from '../../member-plan/participantIntentTrips';
 import { AppButton, AppButtonLink } from '../mobile/AppButton';
 import { Dialog } from '../ui/Dialog';
-import { cancelParticipantIntent } from '../../hooks/participantIntentClientApi';
+import {
+  cancelParticipantIntent,
+  invalidateMyParticipantIntentsQueries,
+} from '../../hooks/participantIntentClientApi';
 import { useReloadExploreMap } from '../../hooks/useReloadExploreMap';
 import { useHostStatus } from '../../hooks/useHostStatus';
 import { useAuth } from '../../context/AuthContext';
@@ -43,6 +47,7 @@ export const ParticipantIntentManageSheet = ({
   onClose,
   onChanged,
 }: ParticipantIntentManageSheetProps) => {
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { user } = useAuth();
   const gate = useHostStatus({ enabled: Boolean(user) });
@@ -97,6 +102,7 @@ export const ParticipantIntentManageSheet = ({
     setError(null);
     try {
       await cancelParticipantIntent(intent.id);
+      invalidateMyParticipantIntentsQueries(queryClient);
       setConfirmRemove(false);
       await reloadExploreMap();
       await onChanged();

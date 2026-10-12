@@ -1,7 +1,18 @@
 import { useEffect, useState, Fragment } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ActivityDTO, LocationDTO } from '@uaetrail/shared-types';
-import { api } from '../api/index';
+import {
+  fetchAdminActivityEngagement,
+  fetchAdminModerationActivities,
+  fetchAdminPlacesCatalog,
+  moderateAdminActivity,
+  toggleAdminActivityFeatured,
+} from '../hooks/adminConsoleApi';
+import {
+  cancelHostActivityById,
+  duplicateHostActivityById,
+  publishHostActivityById,
+} from '../hooks/hostActivityClientApi';
 import { ActivityActionsMenu, ActivityListPreview, buildAdminActivityMenuItems, openPublishedActivityPreview } from '../components/activities';
 import { useReloadExploreMap } from '../hooks/useReloadExploreMap';
 import { Link } from 'react-router-dom';
@@ -64,8 +75,8 @@ export const AdminActivities = () => {
   const loadEvents = async () => {
     setLoading(true);
     try {
-      const res = await api.getAdminActivities();
-      setEvents(res.data);
+      const list = await fetchAdminModerationActivities();
+      setEvents(list);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not load events');
     } finally {
@@ -75,8 +86,8 @@ export const AdminActivities = () => {
 
   const loadRefs = async () => {
     try {
-      const locRes = await api.getAdminPlaces();
-      setLocations(locRes.data);
+      const places = await fetchAdminPlacesCatalog();
+      setLocations(places);
     } catch { /* non-critical */ }
   };
 
@@ -86,8 +97,8 @@ export const AdminActivities = () => {
     if (engagementByActivityId[activityId]) return;
     setEngagementLoadingId(activityId);
     try {
-      const res = await api.getAdminActivityEngagement(activityId);
-      setEngagementByActivityId((prev) => ({ ...prev, [activityId]: res.data }));
+      const engagement = await fetchAdminActivityEngagement(activityId);
+      setEngagementByActivityId((prev) => ({ ...prev, [activityId]: engagement }));
     } catch {
       setEngagementByActivityId((prev) => ({
         ...prev,
@@ -111,7 +122,7 @@ export const AdminActivities = () => {
       return;
     }
     try {
-      await api.moderateActivity(
+      await moderateAdminActivity(
         confirmTarget.activity.id,
         confirmTarget.action,
         confirmTarget.action === 'suspend' ? suspendComment.trim() : undefined
@@ -155,7 +166,7 @@ export const AdminActivities = () => {
 
   const toggleFeatured = async (activityId: string) => {
     try {
-      await api.toggleActivityFeatured(activityId);
+      await toggleAdminActivityFeatured(activityId);
       await loadEvents();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to toggle featured');
@@ -165,7 +176,7 @@ export const AdminActivities = () => {
   const publish = async (event: ActivityDTO) => {
     if (!event.tenantId) return;
     try {
-      await api.publishHostActivity(event.tenantId, event.id);
+      await publishHostActivityById(event.tenantId, event.id);
       await reloadExploreMap();
       await loadEvents();
     } catch (err) {
@@ -176,9 +187,9 @@ export const AdminActivities = () => {
   const duplicateActivity = async (event: ActivityDTO) => {
     if (!event.tenantId) return;
     try {
-      const res = await api.duplicateHostActivity(event.tenantId, event.id);
+      const duplicate = await duplicateHostActivityById(event.tenantId, event.id);
       await loadEvents();
-      navigateToReorganizeActivity(navigate, res.data);
+      navigateToReorganizeActivity(navigate, duplicate);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to duplicate activity');
     }
@@ -191,7 +202,7 @@ export const AdminActivities = () => {
   const deleteDraft = async () => {
     if (!confirmDelete?.tenantId) return;
     try {
-      await api.cancelHostActivity(confirmDelete.tenantId, confirmDelete.id);
+      await cancelHostActivityById(confirmDelete.tenantId, confirmDelete.id);
       setConfirmDelete(null);
       await loadEvents();
     } catch (err) {
@@ -203,7 +214,7 @@ export const AdminActivities = () => {
   const cancelActivity = async () => {
     if (!confirmCancel?.tenantId) return;
     try {
-      await api.cancelHostActivity(confirmCancel.tenantId, confirmCancel.id);
+      await cancelHostActivityById(confirmCancel.tenantId, confirmCancel.id);
       setConfirmCancel(null);
       await loadEvents();
     } catch (err) {
@@ -224,7 +235,7 @@ export const AdminActivities = () => {
     if (!event.tenantId) return;
     setPreviewPublishing(true);
     try {
-      await api.publishHostActivity(event.tenantId, event.id);
+      await publishHostActivityById(event.tenantId, event.id);
       await reloadExploreMap();
       setPreviewActivity(null);
       await loadEvents();

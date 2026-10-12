@@ -1,9 +1,11 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { MapPin } from 'lucide-react';
 import { allowedActivityPricingModes, type ActivityDTO } from '@uaetrail/shared-types';
 import { publishOrganizeActivity as publishCreateActivity } from '../../services/organizeActivityPublish';
 import { useAuth } from '../../context/AuthContext';
+import { afterOrganizeActivityPublishClientRefresh } from '../../hooks/organizePublishClientEffects';
 import { useHostStatus } from '../../hooks/useHostStatus';
 import { setActiveTenantId } from '../../api/tenant';
 import { listOrganizePublishProfiles, resolveOrganizePublishingProfileKind } from '../organizePublishTenants';
@@ -94,6 +96,7 @@ export const CreateActivityFlow = ({
 }: CreateActivityFlowProps) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const queryClient = useQueryClient();
   const { user } = useAuth();
   const {
     canPublish,
@@ -437,13 +440,18 @@ export const CreateActivityFlow = ({
     setSubmitting(true);
     setError(null);
     try {
+      const linkedIntentId = demandPrefill?.participantIntentId ?? null;
       const activity = await publishCreateActivity({
         draft: { ...draft, kind: draft.kind ?? selectedKind, rideshareEnabled: false },
         tenantId,
         userId: user.id,
-        participantIntentId: demandPrefill?.participantIntentId ?? null,
+        participantIntentId: linkedIntentId,
         sourceActivityId: demandPrefill?.sourceActivityId ?? null,
         linkToParentActivityId: demandPrefill?.linkToParentActivityId ?? null,
+      });
+      await afterOrganizeActivityPublishClientRefresh(queryClient, {
+        activityId: activity.id,
+        linkedParticipantIntentId: linkedIntentId,
       });
       if (organizeFlowId) clearOrganizeWizardSession(organizeFlowId, wizardSessionScope);
       setPublishedActivity(activity);

@@ -1,6 +1,6 @@
 import { useDeferredValue } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { api } from '../api/index';
+import { fetchMeMemberDiscoveryRoster } from '../hooks/memberPeopleClientApi';
 import {
   memberDiscoveryRosterQueryKey,
   type MemberDiscoveryRosterQueryParams,
@@ -40,19 +40,11 @@ export const useMemberDiscoveryRoster = ({
     staleTime: ROSTER_STALE_MS,
     queryFn: async () => {
       const date = serializeExploreActivityDatePreset(activityDatePreset);
-      const response = await api.getMeMemberDiscoveryRoster({
+      return fetchMeMemberDiscoveryRoster({
         q: deferredSearch || undefined,
         date: date || undefined,
         omitDirectory,
       });
-      return {
-        friendsGoing: response.data.friendsGoing ?? [],
-        hostsGoing: response.data.hostsGoing ?? [],
-        seekingOnMap: response.data.seekingOnMap ?? [],
-        followed: response.data.followed ?? [],
-        directory: response.data.directory ?? [],
-        quota: response.meta.quota,
-      };
     },
   });
 

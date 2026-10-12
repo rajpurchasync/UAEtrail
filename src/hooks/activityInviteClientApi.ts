@@ -1,10 +1,17 @@
-import type { BuddySummaryDTO } from '@uaetrail/shared-types';
+import type { BuddyRequestDTO, BuddySummaryDTO } from '@uaetrail/shared-types';
 import { api } from '../api/index';
-import type { SocialGroupView } from '../api/types';
+import { fetchMeSocialGroups } from './socialGroupClientApi';
 
 export const fetchMeBuddies = async (): Promise<BuddySummaryDTO[]> => {
   const res = await api.getMeBuddies();
   return res.data;
+};
+
+export const fetchMeBuddyRequests = async (
+  direction: 'incoming' | 'outgoing' | 'all' = 'all'
+): Promise<BuddyRequestDTO[]> => {
+  const res = await api.getMeBuddyRequests(direction);
+  return res.data ?? [];
 };
 
 export const fetchActivityJoinInvitesSentInviteeIds = async (
@@ -14,10 +21,7 @@ export const fetchActivityJoinInvitesSentInviteeIds = async (
   return res.data.inviteeUserIds;
 };
 
-export const fetchMeSocialGroups = async (): Promise<SocialGroupView[]> => {
-  const res = await api.getMeGroups();
-  return res.data;
-};
+export { fetchMeSocialGroups };
 
 export const sendActivityJoinInvitesToBuddies = async (
   activityId: string,

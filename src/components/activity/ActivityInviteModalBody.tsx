@@ -6,6 +6,11 @@ import { SecureAvatar } from '../ui';
 import { FormTabBar } from '../ui/FormTabBar';
 import { TabPageSearchRow } from '../mobile/TabPageSearchRow';
 import {
+  activityInviteBuddiesQueryKey,
+  activityJoinInvitesSentQueryKey,
+  meGroupsActivityInviteQueryKey,
+} from '../../hooks/clientQueryKeys';
+import {
   fetchActivityJoinInvitesSentInviteeIds,
   fetchMeBuddies,
   fetchMeSocialGroups,
@@ -73,19 +78,19 @@ export const ActivityInviteModalBody = ({
   }, [active]);
 
   const { data: buddies = [], isLoading: buddiesLoading } = useQuery({
-    queryKey: ['me-buddies', 'invite', activityId],
+    queryKey: activityInviteBuddiesQueryKey(activityId),
     queryFn: fetchMeBuddies,
     enabled: Boolean(user) && active,
   });
 
   const { data: sentInviteeIds = [], refetch: refetchSentInvites } = useQuery({
-    queryKey: ['activity-join-invites-sent', activityId],
+    queryKey: activityJoinInvitesSentQueryKey(activityId),
     queryFn: () => fetchActivityJoinInvitesSentInviteeIds(activityId),
     enabled: Boolean(user) && active,
   });
 
   const { data: groups = [], isLoading: groupsLoading } = useQuery({
-    queryKey: ['me-groups', 'activity-invite'],
+    queryKey: meGroupsActivityInviteQueryKey,
     queryFn: async () => userCreatedSocialGroups(await fetchMeSocialGroups()),
     enabled: Boolean(user) && active,
   });

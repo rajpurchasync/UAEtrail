@@ -1,34 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
-import type {
-  ActivityDetailDTO,
-  ActivityPresentationDTO,
-  ActivityViewerAccessDTO,
-  MyActivityRequestDTO,
-  ActivityParticipationDTO,
-} from '@uaetrail/shared-types';
-import { api } from '../api/index';
+import { fetchPublicActivityDetail } from './publicActivityClientApi';
 import { activityDetailQueryKey } from './clientQueryKeys';
 
-export type PublicActivityDetailPayload = {
-  activity: ActivityDetailDTO;
-  viewerAccess: ActivityViewerAccessDTO | null;
-  presentation: ActivityPresentationDTO | null;
-  participation: ActivityParticipationDTO | null;
-  myRequest: MyActivityRequestDTO | null;
-};
-
-export const fetchPublicActivityDetail = async (
-  activityId: string
-): Promise<PublicActivityDetailPayload> => {
-  const res = await api.getPublicActivityDetail(activityId);
-  return {
-    activity: res.data,
-    viewerAccess: res.viewerAccess ?? null,
-    presentation: res.presentation ?? null,
-    participation: res.data.myParticipation ?? null,
-    myRequest: res.data.myRequest ?? null,
-  };
-};
+export { fetchPublicActivityDetail, type PublicActivityDetailPayload } from './publicActivityClientApi';
 
 export const usePublicActivityDetail = (activityId: string | undefined) => {
   const query = useQuery({

@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
 import type { ActivityDTO, ParticipantIntentDTO } from '@uaetrail/shared-types';
-import { fetchMyParticipantIntents } from '../../hooks/planUpcomingApi';
+import { useMyParticipantIntents } from '../../hooks/useMyParticipantIntents';
 import { useConsoleHubData } from '../../console/useHubData';
 import { useHostActivityManageActions } from '../../hooks/useHostActivityManageActions';
 import { ActivityManageSheet } from '../host/ActivityManageSheet';
@@ -16,7 +15,7 @@ import { explorePath } from '../../explore/routing';
 import { PRO_MEMBERSHIP_PATH } from '../../config/routingCatalog';
 import { useActivityInviteShareSheet } from '../../hooks/useActivityInviteShareSheet';
 import { resolveJoinRequestActivity } from '../../utils/joinRequestActivity';
-import type { ActivityRequestView } from '../../api/index';
+import type { ActivityRequestView } from '../../api/types';
 import { formatDate } from '../../utils';
 import { formatActivityType, resolveActivityTitle } from '../../utils/activityIdentity';
 import {
@@ -49,16 +48,17 @@ export const PlanHostingUpcoming = ({ refreshKey = 0, canHost }: PlanHostingUpco
   const [manageActivity, setManageActivity] = useState<ActivityDTO | null>(null);
   const [manageIntent, setManageIntent] = useState<ParticipantIntentDTO | null>(null);
 
-  const intentsQuery = useQuery({
-    queryKey: ['my-participant-intents', refreshKey],
-    queryFn: fetchMyParticipantIntents,
-  });
+  const {
+    intents,
+    loading: intentsLoading,
+    refetch: refetchIntents,
+  } = useMyParticipantIntents(true, refreshKey);
 
   useEffect(() => {
     if (!refreshKey) return;
     void host.reload();
-    void intentsQuery.refetch();
-  }, [refreshKey, host.reload, intentsQuery]);
+    void refetchIntents();
+  }, [refreshKey, host.reload, refetchIntents]);
 
   const today = useMemo(() => new Date(new Date().toDateString()), []);
 
@@ -80,7 +80,7 @@ export const PlanHostingUpcoming = ({ refreshKey = 0, canHost }: PlanHostingUpco
         pending: pendingCountForActivity(event.id, host.pendingRequests),
       });
     }
-    const { upcoming } = partitionParticipantIntentsForTrips(intentsQuery.data ?? []);
+    const { upcoming } = partitionParticipantIntentsForTrips(intents);
     for (const intent of upcoming) {
       const activityId = intent.activityId ?? intent.seekingActivityId;
       if (activityId && hostedActivityIds.has(activityId)) continue;
@@ -90,7 +90,7 @@ export const PlanHostingUpcoming = ({ refreshKey = 0, canHost }: PlanHostingUpco
     return list.sort(
       (a, b) => new Date(a.sortDate).getTime() - new Date(b.sortDate).getTime()
     );
-  }, [host.activities, host.pendingRequests, intentsQuery.data, hostedActivityIds, today]);
+  }, [host.activities, host.pendingRequests, intents, hostedActivityIds, today]);
 
   const openManage = (activity: ActivityDTO) => setManageActivity(activity);
 
@@ -104,7 +104,7 @@ export const PlanHostingUpcoming = ({ refreshKey = 0, canHost }: PlanHostingUpco
       openedDeepLinkRef.current = openId;
       openManage(activity);
     } else {
-      const intent = (intentsQuery.data ?? []).find((entry) => entry.id === openId);
+      const intent = intents.find((entry) => entry.id === openId);
       if (intent) {
         openedDeepLinkRef.current = openId;
         setManageIntent(intent);
@@ -115,7 +115,7 @@ export const PlanHostingUpcoming = ({ refreshKey = 0, canHost }: PlanHostingUpco
     next.delete('checkin');
     next.delete('roster');
     setSearchParams(next, { replace: true });
-  }, [host.activities, host.loading, intentsQuery.data, searchParams, setSearchParams]);
+  }, [host.activities, host.loading, intents, searchParams, setSearchParams]);
 
   if (!canHost) {
     return (
@@ -127,7 +127,7 @@ export const PlanHostingUpcoming = ({ refreshKey = 0, canHost }: PlanHostingUpco
     );
   }
 
-  if (host.loading || intentsQuery.isLoading) {
+  if (host.loading || intentsLoading) {
     return <ConsumerLoadingSpinner className="py-12" />;
   }
 
@@ -214,7 +214,7 @@ export const PlanHostingUpcoming = ({ refreshKey = 0, canHost }: PlanHostingUpco
         open={Boolean(manageIntent)}
         intent={manageIntent}
         onClose={() => setManageIntent(null)}
-        onChanged={() => void intentsQuery.refetch()}
+        onChanged={() => void refetchIntents()}
       />
     </div>
   );

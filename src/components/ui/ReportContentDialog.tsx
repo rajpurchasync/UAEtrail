@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Flag } from 'lucide-react';
-import type { ContentReportReason, ContentReportTargetType } from '../../api/index';
+import type { ContentReportReason, ContentReportTargetType } from '../../hooks/contentReportClientApi';
 import { submitContentReport } from '../../hooks/contentReportSubmit';
 import { AppButton } from '../mobile/AppButton';
 import { AppSelect } from './AppSelect';

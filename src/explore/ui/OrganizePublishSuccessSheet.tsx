@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { api } from '../../api/index';
+import { fetchPublicActivityDetail } from '../../hooks/publicActivityClientApi';
 import { CheckCircle2 } from 'lucide-react';
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import { EXPLORE_Z } from '../../config/exploreTheme';
@@ -70,9 +70,10 @@ export const OrganizePublishSuccessSheet = ({
       setCanAddLinkedRide(false);
       return;
     }
-    void api
-      .getPublicActivityDetail(publishedActivity.id)
-      .then((res) => setCanAddLinkedRide(res.viewerAccess?.entitlements?.canAddLinkedRide ?? false))
+    void fetchPublicActivityDetail(publishedActivity.id)
+      .then((detail) =>
+        setCanAddLinkedRide(detail.viewerAccess?.entitlements?.canAddLinkedRide ?? false)
+      )
       .catch(() => setCanAddLinkedRide(false));
   }, [open, publishedActivity.id]);
 

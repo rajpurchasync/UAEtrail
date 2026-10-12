@@ -1,12 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import type { ReviewDTO } from '@uaetrail/shared-types';
-import { api } from '../api/index';
+import { fetchActivityReviews } from './activityReviewsClientApi';
 import { activityReviewsQueryKey } from './clientQueryKeys';
 
-export const fetchActivityReviews = async (activityId: string): Promise<ReviewDTO[]> => {
-  const res = await api.getActivityReviews(activityId);
-  return res.data;
-};
+export { fetchActivityReviews } from './activityReviewsClientApi';
 
 export const useActivityReviews = (
   activityId: string | undefined,

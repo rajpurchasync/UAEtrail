@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import { buildExploreWhenSegment } from '@uaetrail/shared-types';
-import { fetchApiActivities } from '../api/public';
+import { fetchApiActivities } from './publicCatalogClientApi';
 import { HOME_LANDING_FALLBACK_ACTIVITIES, type HomeLandingActivity } from '../content/homeLanding';
 
 export interface HomeLandingActivitiesState {

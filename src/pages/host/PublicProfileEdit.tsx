@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
-import { api } from '../../api/index';
-import { setStoredSession } from '../../api/client';
+import { persistAuthSessionTokens, switchMeRoleSession } from '../../hooks/accountSessionApi';
+import { fetchMyTenantMemberships } from '../../hooks/tenantMembershipApi';
 import { getActiveTenantId } from '../../api/tenant';
 import { useAuth } from '../../context/AuthContext';
 import { TenantSwitcher } from '../../components/ui';
@@ -21,11 +21,10 @@ export const PublicProfileEdit = () => {
 
   const resolveSlug = (tenantId?: string) => {
     setLoadingTenants(true);
-    api
-      .getMyTenants()
-      .then((res) => {
+    fetchMyTenantMemberships()
+      .then((memberships) => {
         const activeId = tenantId || getActiveTenantId();
-        const match = res.data.find((t) => t.tenantId === activeId) ?? res.data[0];
+        const match = memberships.find((t) => t.tenantId === activeId) ?? memberships[0];
         setTenantSlug(match?.tenantSlug ?? '');
       })
       .catch(() => setTenantSlug(''))
@@ -40,8 +39,8 @@ export const PublicProfileEdit = () => {
     setSwitchMessage(null);
     setSwitchingRole(true);
     try {
-      const res = await api.switchMeRole('participant');
-      setStoredSession(res.tokens);
+      const res = await switchMeRoleSession('participant');
+      persistAuthSessionTokens(res.tokens);
       await refreshUser();
       navigate(accountRouteByRole(res.data.role as Parameters<typeof accountRouteByRole>[0]), { replace: true });
     } catch (err) {

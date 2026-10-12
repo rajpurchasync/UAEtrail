@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { api } from '../api/index';
+import { fetchActivityJoinInvitesSentInviteeIds } from '../hooks/activityInviteClientApi';
 
 /** Pending Join me invitee ids per activity (caller must be host or going on each activity). */
 export const useSentActivityJoinInvites = (
@@ -14,10 +14,10 @@ export const useSentActivityJoinInvites = (
   >({});
 
   const loadActivity = useCallback(async (activityId: string) => {
-    const res = await api.listActivityJoinInvitesSent(activityId);
+    const inviteeUserIds = await fetchActivityJoinInvitesSentInviteeIds(activityId);
     setSentInviteeIdsByActivity((prev) => ({
       ...prev,
-      [activityId]: new Set(res.data.inviteeUserIds),
+      [activityId]: new Set(inviteeUserIds),
     }));
   }, []);
 
@@ -30,8 +30,8 @@ export const useSentActivityJoinInvites = (
     let cancelled = false;
     void Promise.all(
       activityIds.map(async (activityId) => {
-        const res = await api.listActivityJoinInvitesSent(activityId);
-        return [activityId, res.data.inviteeUserIds] as const;
+        const inviteeUserIds = await fetchActivityJoinInvitesSentInviteeIds(activityId);
+        return [activityId, inviteeUserIds] as const;
       })
     )
       .then((pairs) => {

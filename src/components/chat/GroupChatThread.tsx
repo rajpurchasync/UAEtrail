@@ -1,7 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Loader2, MessageSquare, Settings2, Users } from 'lucide-react';
 import { messagingApi, socialApi } from '../../messaging';
-import type { SocialGroupMemberView, SocialGroupView, SocialGroupWallMessageView } from '../../api/index';
+import type {
+  SocialGroupMemberView,
+  SocialGroupView,
+  SocialGroupWallMessageView,
+} from '../../api/types';
 import { ChatReplyComposer } from './ChatReplyComposer';
 import { runWithReplyTarget, useThreadReply } from './useThreadReply';
 import { ChatThreadShell } from './ChatThreadShell';

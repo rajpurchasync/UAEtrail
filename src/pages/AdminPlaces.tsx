@@ -1,7 +1,13 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { type AreaDTO, PlaceDTO, placeDetailPath } from '@uaetrail/shared-types';
 import { Link, useSearchParams } from 'react-router-dom';
-import { api } from '../api/index';
+import {
+  createAdminPlace,
+  deleteAdminPlace,
+  fetchAdminAreas,
+  fetchAdminPlacesCatalog,
+  updateAdminPlace,
+} from '../hooks/adminConsoleApi';
 import { DashboardLayout } from '../components/layout';
 import { ADMIN_LINKS } from '../constants';
 import { MapPinPicker } from '../components/ui/MapPinPicker';
@@ -85,8 +91,8 @@ export const AdminPlaces = () => {
   const loadPlaces = async () => {
     setLoading(true);
     try {
-      const res = await api.getAdminPlaces();
-      setPlaces(res.data);
+      const catalog = await fetchAdminPlacesCatalog();
+      setPlaces(catalog);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load places');
     } finally {
@@ -97,7 +103,7 @@ export const AdminPlaces = () => {
   useEffect(() => { loadPlaces(); }, []);
 
   useEffect(() => {
-    void api.listAdminAreas().then((res) => setAdminAreas(res.data)).catch(() => setAdminAreas([]));
+    void fetchAdminAreas().then(setAdminAreas).catch(() => setAdminAreas([]));
   }, []);
 
   const openCreate = () => {
@@ -142,9 +148,9 @@ export const AdminPlaces = () => {
         ...(form.activityType === 'hiking' || form.activityType === 'event' ? { campingType: undefined } : {})
       };
       if (editingId) {
-        await api.updateAdminPlace(editingId, payload);
+        await updateAdminPlace(editingId, payload);
       } else {
-        await api.createAdminPlace(payload);
+        await createAdminPlace(payload);
       }
       closeModal(); await loadPlaces();
     } catch (err) {
@@ -171,11 +177,11 @@ export const AdminPlaces = () => {
           openEdit(confirmAction.loc);
           return;
         }
-        await api.updateAdminPlace(confirmAction.loc.id, { status: 'active' });
+        await updateAdminPlace(confirmAction.loc.id, { status: 'active' });
       } else if (confirmAction.type === 'status') {
         const newStatus = confirmAction.loc.status === 'active' ? 'inactive' : 'active';
-        await api.updateAdminPlace(confirmAction.loc.id, { status: newStatus });
-      } else await api.deleteAdminPlace(confirmAction.loc.id);
+        await updateAdminPlace(confirmAction.loc.id, { status: newStatus });
+      } else await deleteAdminPlace(confirmAction.loc.id);
       setConfirmAction(null); await loadPlaces();
     } catch (err) { setError(err instanceof Error ? err.message : 'Action failed'); setConfirmAction(null); }
   };

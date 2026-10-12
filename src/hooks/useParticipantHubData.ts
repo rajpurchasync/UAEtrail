@@ -5,9 +5,13 @@ import {
   BuddySummaryDTO,
   ChatConversationDTO,
   MemberInboxGroupDTO,
-  MyActivityDTO,
 } from '@uaetrail/shared-types';
-import { api, ActivityRequestView, UserProfile } from '../api/index';
+import type { UserProfile } from '../api/types';
+import { fetchMeBuddies, fetchMeBuddyRequests } from './activityInviteClientApi';
+import { fetchMeProfile } from './memberProfileApi';
+import { fetchMeNotificationsPage } from './notificationInboxApi';
+import { participantHubQueryKey } from './clientQueryKeys';
+import { useJoinedUpcomingPlanData } from './useJoinedUpcomingPlanData';
 import { messagingApi } from '../messaging';
 import { useAuth } from '../context/AuthContext';
 import { isUpcomingActivity, upcomingActivitiesTotal } from '../utils/activityDates';
@@ -17,50 +21,54 @@ import {
   sortNotificationsNewestFirst,
 } from '../utils/notificationCategories';
 
-const participantHubKey = (userId: string) => ['participant-hub', userId] as const;
-
-async function fetchParticipantHub() {
-  const [profileRes, activitiesRes, requestsRes, notifRes, inboxRes, buddiesRes, buddyRequestsRes] =
-    await Promise.all([
-    api.getMeProfile(),
-    api.getMeActivities().catch(() => ({ data: [] as MyActivityDTO[] })),
-    api.getMeRequests().catch(() => ({ data: [] as ActivityRequestView[] })),
-    api.getMeNotifications(1).catch(() => ({ data: [], unreadCount: 0, total: 0 })),
-    messagingApi.getInbox().catch(() => ({ data: { direct: [] as ChatConversationDTO[], groups: [] as MemberInboxGroupDTO[] } })),
-    api.getMeBuddies().catch(() => ({ data: [] as BuddySummaryDTO[] })),
-    api.getMeBuddyRequests('incoming').catch(() => ({ data: [] as BuddyRequestDTO[] })),
+async function fetchParticipantHubSocial() {
+  const [profile, notifPage, inboxRes, buddies, incomingBuddyRequests] = await Promise.all([
+    fetchMeProfile(),
+    fetchMeNotificationsPage(1).catch(() => ({
+      data: [],
+      unreadCount: 0,
+      total: 0,
+    })),
+    messagingApi.getInbox().catch(() => ({
+      data: { direct: [] as ChatConversationDTO[], groups: [] as MemberInboxGroupDTO[] },
+    })),
+    fetchMeBuddies().catch(() => [] as BuddySummaryDTO[]),
+    fetchMeBuddyRequests('incoming').catch(() => [] as BuddyRequestDTO[]),
   ]);
 
   const inbox = inboxRes.data;
 
   return {
-    profile: profileRes.data,
-    activities: activitiesRes.data ?? [],
-    requests: requestsRes.data ?? [],
-    notifications: sortNotificationsNewestFirst(notifRes.data ?? [])
+    profile,
+    notifications: sortNotificationsNewestFirst(notifPage.data)
       .filter((notif) => isTopCardMessagingNotification(notif))
       .slice(0, 5),
-    unreadNotifications: notifRes.unreadCount ?? 0,
+    unreadNotifications: notifPage.unreadCount ?? 0,
     conversations: inbox.direct?.slice(0, 4) ?? [],
     groups: inbox.groups ?? [],
-    buddies: buddiesRes.data ?? [],
-    incomingBuddyRequests: (buddyRequestsRes.data ?? []).filter((request) => request.status === 'pending'),
+    buddies,
+    incomingBuddyRequests: incomingBuddyRequests.filter((request) => request.status === 'pending'),
   };
 }
 
 export const useParticipantHubData = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const {
+    activities,
+    requests,
+    loading: planLoading,
+    error: planError,
+    refetch: refetchJoinedPlan,
+  } = useJoinedUpcomingPlanData(Boolean(user));
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: user ? participantHubKey(user.id) : ['participant-hub', 'anonymous'],
-    queryFn: fetchParticipantHub,
+    queryKey: user ? participantHubQueryKey(user.id) : ['participant-hub', 'anonymous'],
+    queryFn: fetchParticipantHubSocial,
     enabled: !!user,
   });
 
   const profile = data?.profile ?? ({} as UserProfile);
-  const activities = data?.activities ?? [];
-  const requests = data?.requests ?? [];
   const conversations = data?.conversations ?? [];
   const notifications = data?.notifications ?? [];
   const unreadNotifications = data?.unreadNotifications ?? 0;
@@ -71,12 +79,15 @@ export const useParticipantHubData = () => {
   const setProfile = useCallback(
     (updater: SetStateAction<UserProfile>) => {
       if (!user) return;
-      queryClient.setQueryData(participantHubKey(user.id), (old: Awaited<ReturnType<typeof fetchParticipantHub>> | undefined) => {
-        if (!old) return old;
-        const nextProfile =
-          typeof updater === 'function' ? updater(old.profile) : updater;
-        return { ...old, profile: nextProfile };
-      });
+      queryClient.setQueryData(
+        participantHubQueryKey(user.id),
+        (old: Awaited<ReturnType<typeof fetchParticipantHubSocial>> | undefined) => {
+          if (!old) return old;
+          const nextProfile =
+            typeof updater === 'function' ? updater(old.profile) : updater;
+          return { ...old, profile: nextProfile };
+        }
+      );
     },
     [queryClient, user]
   );
@@ -113,8 +124,12 @@ export const useParticipantHubData = () => {
   }, [conversations, groups]);
 
   const reload = useCallback(async () => {
-    await refetch();
-  }, [refetch]);
+    await Promise.all([refetch(), Promise.resolve(refetchJoinedPlan())]);
+  }, [refetch, refetchJoinedPlan]);
+
+  const socialError =
+    error instanceof Error ? error.message : error ? 'Failed to load account data' : null;
+  const combinedError = socialError ?? planError;
 
   return {
     profile,
@@ -133,8 +148,8 @@ export const useParticipantHubData = () => {
     groups,
     buddies,
     incomingBuddyRequests,
-    loading: isLoading,
-    error: error instanceof Error ? error.message : error ? 'Failed to load account data' : null,
+    loading: isLoading || planLoading,
+    error: combinedError,
     reload,
   };
 };

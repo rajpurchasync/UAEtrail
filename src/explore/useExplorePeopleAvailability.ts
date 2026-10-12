@@ -1,7 +1,7 @@
 import { useDeferredValue } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import type { AvailabilityKind } from '@uaetrail/shared-types';
-import { api } from '../api/index';
+import { fetchExplorePeopleAvailability } from '../hooks/memberPeopleClientApi';
 import {
   explorePeopleAvailabilityQueryKey,
   type ExplorePeopleAvailabilityQueryParams,
@@ -52,13 +52,12 @@ export const useExplorePeopleAvailability = ({
     enabled,
     staleTime: STALE_MS,
     queryFn: async () => {
-      const response = await api.explorePeopleAvailability({
+      return fetchExplorePeopleAvailability({
         from: range.from,
         to: range.to,
         area: areaSlug?.trim() || undefined,
         kind: kind ?? undefined,
       });
-      return response.data;
     },
   });
 

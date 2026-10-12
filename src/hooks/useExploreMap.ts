@@ -1,6 +1,6 @@
 import { useQuery, type QueryClient } from '@tanstack/react-query';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
-import { api } from '../api/index';
+import { fetchExploreMapItems } from './exploreMapClientApi';
 import type { ExploreMapFetchScope } from '../explore/exploreMapVnext';
 import { isExploreMapVnextEnabled } from '../explore/exploreMapVnext';
 import { exploreMapQueryKey, exploreMapQueryKeyPrefix } from './exploreMapQuery';
@@ -31,14 +31,12 @@ export const useExploreMap = (options?: UseExploreMapOptions) => {
     enabled: options?.enabled ?? true,
     queryFn: async (): Promise<ExploreMapItemDTO[]> => {
       if (useVnextFetch && scope) {
-        const res = await api.getExploreMap({
+        return fetchExploreMapItems({
           bbox: scope.bbox,
           area: scope.area ?? undefined,
         });
-        return res.data.items;
       }
-      const res = await api.getExploreMap();
-      return res.data.items;
+      return fetchExploreMapItems();
     },
     staleTime: 60_000,
   });

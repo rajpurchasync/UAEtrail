@@ -17,8 +17,11 @@ export const commitMediaUpload = async (payload: {
   mimeType: string;
   size: number;
   kind?: string;
-}): Promise<void> => {
-  await api.commitUpload(payload);
+  tenantId?: string;
+  keyPrefix?: string;
+}): Promise<{ url: string }> => {
+  const res = await api.commitUpload(payload);
+  return { url: res.data.url };
 };
 
 export const resolveMediaUrl = async (key: string): Promise<string> => {

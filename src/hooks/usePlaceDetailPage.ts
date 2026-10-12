@@ -1,8 +1,12 @@
 import { useEffect, useState } from 'react';
 import type { SetURLSearchParams } from 'react-router-dom';
 import type { ActivityDTO, LocationPremiumSummaryDTO, ReviewDTO } from '@uaetrail/shared-types';
-import { api } from '../api/index';
-import { fetchPlaceDetail } from '../api/public';
+import {
+  fetchPlaceActivities,
+  fetchPlaceReviews,
+  trackPlaceDetailView,
+} from './placeDetailClientApi';
+import { fetchPlaceDetail } from './entityClientApi';
 import type { Place } from '../types/place';
 import type { PlaceDetailKind, PlaceDetailKindConfig } from '../pages/placeDetailConfig';
 
@@ -32,20 +36,20 @@ export const usePlaceDetailCore = ({
 
   useEffect(() => {
     if (!placeId) return;
-    api.trackPlaceView(placeId).catch(() => undefined);
+    void trackPlaceDetailView(placeId).catch(() => undefined);
     setLoading(true);
     Promise.all([
       fetchPlaceDetail(placeId),
-      api.getPlaceActivities(placeId).catch(() => ({ data: [] })),
-      api.getPlaceReviews(placeId).catch(() => ({ data: [] })),
+      fetchPlaceActivities(placeId).catch(() => []),
+      fetchPlaceReviews(placeId).catch(() => []),
     ])
-      .then(([placeResult, eventsRes, reviewsRes]) => {
+      .then(([placeResult, placeActivities, placeReviews]) => {
         const loaded =
           placeResult.place?.activityType === config.activityType ? placeResult.place : null;
         setPlace(loaded);
         setPremium(placeResult.premium ?? null);
-        setActivities(eventsRes.data);
-        setReviews(reviewsRes.data);
+        setActivities(placeActivities);
+        setReviews(placeReviews);
       })
       .catch(() => setPlace(null))
       .finally(() => setLoading(false));

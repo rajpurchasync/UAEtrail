@@ -8,7 +8,7 @@ import {
   normalizeMemberAvailabilitySlotsForStorage,
 } from '@uaetrail/shared-types';
 import type { AreaPublicDTO } from '@uaetrail/shared-types';
-import { areasApi } from '../../api/domains/areas';
+import { fetchPublishedAreas } from '../../hooks/areaHubClientApi';
 import { getRegionsForCountry } from '../../config/regions';
 import { AppButton } from '../mobile/AppButton';
 import { useMemberAvailability } from '../../hooks/useMemberAvailability';
@@ -61,10 +61,9 @@ export const PlanAvailabilitySection = () => {
 
   useEffect(() => {
     let cancelled = false;
-    void areasApi
-      .listPublishedAreas()
-      .then((res) => {
-        if (!cancelled) setPublishedAreas(res.data);
+    void fetchPublishedAreas()
+      .then((areas) => {
+        if (!cancelled) setPublishedAreas(areas);
       })
       .catch(() => {
         if (!cancelled) setAreasError('Could not load trail areas.');

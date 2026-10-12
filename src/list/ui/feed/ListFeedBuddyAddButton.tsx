@@ -3,7 +3,10 @@ import { UserPlus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { BuddyRelationshipDTO } from '@uaetrail/shared-types';
 import type { ExploreCardModel } from '../../../explore/exploreCardModel';
-import { api } from '../../../api/index';
+import {
+  fetchBuddyRelationship,
+  sendMemberBuddyRequest,
+} from '../../../hooks/memberPeopleClientApi';
 import { joinAuthPath } from '../../../config/routingCatalog';
 import { useAuth } from '../../../context/AuthContext';
 
@@ -44,10 +47,9 @@ export const ListFeedBuddyAddButton = ({ card, bare = false, overlay = false }: 
       return;
     }
     let cancelled = false;
-    void api
-      .getBuddyRelationship(targetUserId)
-      .then((res) => {
-        if (!cancelled) setRel(res.data);
+    void fetchBuddyRelationship(targetUserId)
+      .then((relationship) => {
+        if (!cancelled) setRel(relationship);
       })
       .catch(() => {
         if (!cancelled) setRel(null);
@@ -65,9 +67,9 @@ export const ListFeedBuddyAddButton = ({ card, bare = false, overlay = false }: 
     }
     setBusy(true);
     try {
-      await api.sendBuddyRequest({ targetUserId });
-      const res = await api.getBuddyRelationship(targetUserId);
-      setRel(res.data);
+      await sendMemberBuddyRequest(targetUserId);
+      const relationship = await fetchBuddyRelationship(targetUserId);
+      setRel(relationship);
     } catch {
       // ignore — menu sheet has fuller errors
     } finally {

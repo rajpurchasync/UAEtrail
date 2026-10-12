@@ -1,5 +1,5 @@
 import type { ParticipantIntentKind } from '@uaetrail/shared-types';
-import { api } from '../../api/index';
+import { createParticipantIntent } from '../../hooks/participantIntentClientApi';
 import {
   validateDemandCuratedAreaStep,
   validateDemandPublishArea,
@@ -552,16 +552,16 @@ export const publishDemandRequest = async (draft: DemandDraft): Promise<DemandSu
     ...(draft.areaId?.trim() ? { areaId: draft.areaId.trim() } : {}),
   };
 
-  const created = await api.createParticipantIntent(payload);
+  const created = await createParticipantIntent(payload);
 
   const publishedActivityId =
-    created.data.activityId ?? created.data.seekingActivityId ?? null;
+    created.activityId ?? created.seekingActivityId ?? null;
   return {
     visibleOnMap: payload.latitude != null && payload.longitude != null,
-    participantIntentId: created.data.id,
+    participantIntentId: created.id,
     mapItemId: publishedActivityId
       ? `activity:${publishedActivityId}`
-      : `demand:${created.data.id}`,
+      : `demand:${created.id}`,
   };
 };
 

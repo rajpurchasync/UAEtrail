@@ -1,4 +1,8 @@
-import type { ActivityGroupChatPostPolicy, ParticipantDTO } from '@uaetrail/shared-types';
+import type {
+  ActivityDTO,
+  ActivityGroupChatPostPolicy,
+  ParticipantDTO,
+} from '@uaetrail/shared-types';
 import type { ActivityRequestView } from '../api/types';
 import { api } from '../api/index';
 
@@ -76,5 +80,68 @@ export const fetchHostActivityJoinRequests = async (
   options?: { activityId?: string }
 ): Promise<ActivityRequestView[]> => {
   const res = await api.getHostActivityJoinRequests(tenantId, options);
+  return res.data;
+};
+
+export const listHostActivitiesForTenant = async (tenantId: string): Promise<ActivityDTO[]> => {
+  const res = await api.listHostActivities(tenantId);
+  return res.data;
+};
+
+export type HostActivityHistoryRow = {
+  id: string;
+  title: string;
+  locationName: string;
+  activityType: string;
+  startAt: string;
+  status: string;
+  capacity: number;
+  participantCount: number;
+  checkedInCount: number;
+};
+
+export const fetchHostActivityHistory = async (
+  tenantId: string
+): Promise<HostActivityHistoryRow[]> => {
+  const res = await api.getActivityHistory(tenantId);
+  return res.data;
+};
+
+export const cancelHostActivityById = async (
+  tenantId: string,
+  activityId: string
+): Promise<void> => {
+  await api.cancelHostActivity(tenantId, activityId);
+};
+
+export const publishHostActivityById = async (
+  tenantId: string,
+  activityId: string
+): Promise<void> => {
+  await api.publishHostActivity(tenantId, activityId);
+};
+
+export const duplicateHostActivityById = async (
+  tenantId: string,
+  activityId: string
+): Promise<ActivityDTO> => {
+  const res = await api.duplicateHostActivity(tenantId, activityId);
+  return res.data;
+};
+
+export const updateHostActivityForTenant = async (
+  tenantId: string,
+  activityId: string,
+  payload: Record<string, unknown>
+): Promise<ActivityDTO> => {
+  const res = await api.updateHostActivity(tenantId, activityId, payload);
+  return res.data;
+};
+
+export const createHostActivityForTenant = async (
+  tenantId: string,
+  payload: Record<string, unknown>
+): Promise<ActivityDTO> => {
+  const res = await api.createHostActivity(tenantId, payload);
   return res.data;
 };

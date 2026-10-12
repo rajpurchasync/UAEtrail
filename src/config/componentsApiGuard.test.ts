@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
+import { usesDirectApiFacade } from './apiGuardPatterns';
 
 const COMPONENTS_ROOT = join(process.cwd(), 'src', 'components');
 
@@ -27,9 +28,6 @@ const collectSourceFiles = (dir: string): string[] => {
   }
   return files;
 };
-
-const usesDirectApiFacade = (source: string): boolean =>
-  /\bapiRequest\s*\(/.test(source) || /\bapi[\s\n]*\.[a-zA-Z]/.test(source);
 
 describe('componentsApiGuard (R8.1)', () => {
   it('components do not add new direct api facade usage', () => {

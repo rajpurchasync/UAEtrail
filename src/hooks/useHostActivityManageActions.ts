@@ -1,7 +1,11 @@
 import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { ActivityDTO } from '@uaetrail/shared-types';
-import { api } from '../api/index';
+import {
+  cancelHostActivityById,
+  duplicateHostActivityById,
+  publishHostActivityById,
+} from './hostActivityClientApi';
 import { navigateToCreateLinkedRideshare } from '../explore/navigateCreateLinkedRideshare';
 import { navigateToReorganizeActivity } from '../explore/navigateReorganizeActivity';
 import { openPublishedActivityPreview } from '../components/activities';
@@ -54,7 +58,7 @@ export function useHostActivityManageActions(
       setBusy(true);
       setError(null);
       try {
-        await api.publishHostActivity(tenantId, activityId);
+        await publishHostActivityById(tenantId, activityId);
         await afterChange();
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Could not publish.');
@@ -71,9 +75,9 @@ export function useHostActivityManageActions(
       setBusy(true);
       setError(null);
       try {
-        const res = await api.duplicateHostActivity(tenantId, activity.id);
+        const duplicate = await duplicateHostActivityById(tenantId, activity.id);
         await afterChange();
-        navigateToReorganizeActivity(navigate, res.data);
+        navigateToReorganizeActivity(navigate, duplicate);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Could not duplicate.');
       } finally {
@@ -102,7 +106,7 @@ export function useHostActivityManageActions(
     setBusy(true);
     setError(null);
     try {
-      await api.cancelHostActivity(tenantId, confirmCancel.id);
+      await cancelHostActivityById(tenantId, confirmCancel.id);
       setConfirmCancel(null);
       await afterChange();
     } catch (err) {
@@ -117,7 +121,7 @@ export function useHostActivityManageActions(
     setBusy(true);
     setError(null);
     try {
-      await api.cancelHostActivity(tenantId, confirmDelete.id);
+      await cancelHostActivityById(tenantId, confirmDelete.id);
       setConfirmDelete(null);
       await afterChange();
     } catch (err) {

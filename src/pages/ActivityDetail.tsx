@@ -5,7 +5,11 @@ import { Lock } from 'lucide-react';
 import { type ActivityDTO, type ReviewDTO } from '@uaetrail/shared-types';
 import { activityReviewsQueryKey } from '../hooks/clientQueryKeys';
 import { useActivityReviews } from '../hooks/useActivityReviews';
-import { api, type ActivityRequestView } from '../api/index';
+import type { ActivityRequestView } from '../api/types';
+import {
+  cancelHostActivityById,
+  fetchHostActivityJoinRequests,
+} from '../hooks/hostActivityClientApi';
 import { detailBackPath } from '../config/routingCatalog';
 import { signInPathForReturn } from '../utils/authReturnContext';
 import { useAuth } from '../context/AuthContext';
@@ -140,9 +144,8 @@ export const ActivityDetail = () => {
       return;
     }
     setHostJoinRequestsLoading(true);
-    void api
-      .getHostActivityJoinRequests(gate.tenantId, { activityId: id })
-      .then((res) => setHostJoinRequests(res.data.filter((request) => request.status === 'pending')))
+    void fetchHostActivityJoinRequests(gate.tenantId, { activityId: id })
+      .then((requests) => setHostJoinRequests(requests.filter((request) => request.status === 'pending')))
       .catch(() => setHostJoinRequests([]))
       .finally(() => setHostJoinRequestsLoading(false));
   }, [id, gate.tenantId, isActivityHostUser]);
@@ -248,7 +251,7 @@ export const ActivityDetail = () => {
     if (!hostRemoveConfirm || !gate.tenantId) return;
     setHostRemoveBusy(true);
     try {
-      await api.cancelHostActivity(gate.tenantId, hostRemoveConfirm.id);
+      await cancelHostActivityById(gate.tenantId, hostRemoveConfirm.id);
       setHostRemoveConfirm(null);
       navigate(EXPLORE_MAP_PATH);
     } catch (err) {

@@ -1,33 +1,11 @@
-import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { socialApi } from '../../api/domains/social';
-import type { WishlistItemDTO } from '@uaetrail/shared-types';
+import { useMeWishlist } from '../../hooks/useMeWishlist';
 import { EXPLORE_MAP_PATH } from '../../config/routingCatalog';
 import { explorePath } from '../../explore/routing';
 import { resolveWishlistItemPath, wishlistItemTitle } from '../../member-plan/wishlistDemandBookmark';
 
 export const PlanSavedSection = () => {
-  const [items, setItems] = useState<WishlistItemDTO[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await socialApi.getMeWishlist();
-      setItems(res.data ?? []);
-    } catch {
-      setError('Could not load saved items.');
-      setItems([]);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
+  const { items, loading, error, refetch } = useMeWishlist();
 
   if (loading) {
     return <p className="text-sm text-neutral-500">Loading saved…</p>;
@@ -37,7 +15,11 @@ export const PlanSavedSection = () => {
     return (
       <div className="glass-card p-4 text-center text-sm text-neutral-600">
         {error}
-        <button type="button" onClick={() => void load()} className="mt-2 font-semibold text-emerald-700">
+        <button
+          type="button"
+          onClick={() => void refetch()}
+          className="mt-2 font-semibold text-emerald-700"
+        >
           Retry
         </button>
       </div>

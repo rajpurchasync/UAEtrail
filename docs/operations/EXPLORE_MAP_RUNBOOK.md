@@ -71,6 +71,15 @@ Enable **both** flags in a staging environment before considering production def
 
 **Watch:** p95 payload size and request rate per session; compare to full `GET /explore/map` baseline. Roll back by unsetting flags (wire falls back to full-region response).
 
+**p95 uncompressed size ratio (promotion gate — [`explore-map-vnext-spec.md`](../experiment/explore-map-vnext-spec.md) §8):**
+
+1. Staging API with `EXPLORE_MAP_VNEXT=1`. Record full map body size:  
+   `GET /api/v1/explore/map` → note response byte length (gzip off in dev, or decompress in prod sampling).
+2. Record a **representative viewport** bbox (e.g. Dubai `bbox=54.9,24.9,55.5,25.5`):  
+   `GET /api/v1/explore/map?bbox=54.9,24.9,55.5,25.5&limit=200`.
+3. Target: bbox JSON **&lt; 40%** of full map at comparable catalog size (pin count in bbox vs full is expected to be smaller — compare like-for-like sessions, not single bbox vs entire UAE).
+4. Automated regression: `npm run test:explore-alignment` (API `explore-map-vnext.test.ts`, seeking projection, FE map guards).
+
 ## Smoke checks (browse + map layers)
 
 Automated: `npm run test:explore-alignment` (includes `apps/api/tests/explore-map-layers.test.ts` and explore FE guards).  

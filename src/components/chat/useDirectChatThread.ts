@@ -5,7 +5,8 @@ import type {
   ChatMessageDTO,
   ChatMessageReactionDTO,
 } from '@uaetrail/shared-types';
-import { accountApi } from '../../api/domains/account';
+import { inboxUnreadQueryKey } from '../../hooks/clientQueryKeys';
+import { fetchUserBrief } from '../../hooks/memberPeopleClientApi';
 import { messagingApi } from '../../messaging';
 
 type PartnerBrief = { displayName: string; avatarUrl?: string | null };
@@ -50,7 +51,7 @@ export const useDirectChatThread = ({
           )
         );
         if (currentUserId) {
-          void queryClient.invalidateQueries({ queryKey: ['inbox-unread', currentUserId] });
+          void queryClient.invalidateQueries({ queryKey: inboxUnreadQueryKey(currentUserId) });
         }
       } catch (e) {
         if (!silent) {
@@ -83,8 +84,8 @@ export const useDirectChatThread = ({
       setPartnerBrief({ displayName: conv.displayName, avatarUrl: conv.avatarUrl });
       return;
     }
-    accountApi.getUserBrief(partnerUserId)
-      .then((res) => setPartnerBrief(res.data))
+    fetchUserBrief(partnerUserId)
+      .then((brief) => setPartnerBrief({ displayName: brief.displayName, avatarUrl: brief.avatarUrl }))
       .catch(() => setPartnerBrief(null));
   }, [partnerUserId, conversations]);
 

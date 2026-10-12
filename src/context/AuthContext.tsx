@@ -1,6 +1,15 @@
 import { AuthResponse, AuthUser } from '@uaetrail/shared-types';
 import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from 'react';
-import { apiRequest, getStoredSession, setStoredSession, setSessionInvalidatedHandler, USER_STORAGE_KEY } from '../api/client';
+import { getStoredSession, setStoredSession, setSessionInvalidatedHandler, USER_STORAGE_KEY } from '../api/client';
+import {
+  fetchMeProfileAuth,
+  loginDemo,
+  loginWithGoogle,
+  loginWithPassword,
+  logoutAuth,
+  registerAccount,
+  verifyEmailOtp,
+} from '../hooks/accountAuthClientApi';
 import {
   PendingEmailVerification,
   RegisterPendingVerification
@@ -91,9 +100,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return () => setSessionInvalidatedHandler(null);
     }
 
-    apiRequest<{ data: { id: string; email: string; role: string; displayName?: string; avatarUrl?: string; switchedFromRole?: string | null; platformMasterAdmin?: boolean } }>('/me/profile', { auth: true })
-      .then((res) => {
-        const profile = res.data;
+    fetchMeProfileAuth()
+      .then((profile) => {
         const revalidatedUser: AuthUser = {
           id: profile.id,
           email: profile.email,
@@ -121,8 +129,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const hydrateUserFromProfile = async (fallback: AuthUser): Promise<AuthUser> => {
     try {
-      const res = await apiRequest<{ data: { displayName?: string; avatarUrl?: string; switchedFromRole?: string | null; platformMasterAdmin?: boolean } }>('/me/profile', { auth: true });
-      const profile = res.data;
+      const profile = await fetchMeProfileAuth();
       // Role comes from the login response (token), not the profile endpoint — avoids stale DB reads
       return {
         ...fallback,
@@ -147,18 +154,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signIn = async (email: string, password: string): Promise<AuthUser | PendingEmailVerification> => {
     setLoading(true);
     try {
-      const response = await apiRequest<{
-          emailVerified?: boolean;
-          requiresEmailVerification?: boolean;
-          email?: string;
-          expiresAt?: string;
-          expiresInSeconds?: number;
-          message?: string;
-        } & Partial<AuthResponse>
-      >('/auth/login', {
-        method: 'POST',
-        body: JSON.stringify({ email, password })
-      });
+      const response = await loginWithPassword(email, password);
 
       if (response.requiresEmailVerification) {
         return {
@@ -183,10 +179,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signInDemo = async (email: string): Promise<AuthUser> => {
     setLoading(true);
     try {
-      const response = await apiRequest<AuthResponse & { emailVerified?: boolean; demoLogin?: boolean }>('/auth/demo-login', {
-        method: 'POST',
-        body: JSON.stringify({ email })
-      });
+      const response = await loginDemo(email);
       return await applyAuthResponse(response);
     } finally {
       setLoading(false);
@@ -196,13 +189,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const verifyEmail = async (email: string, otp: string): Promise<AuthUser> => {
     setLoading(true);
     try {
-      const response = await apiRequest<AuthResponse & { message?: string; emailVerified?: boolean }>(
-        '/auth/verify-email',
-        {
-          method: 'POST',
-          body: JSON.stringify({ email, otp })
-        }
-      );
+      const response = await verifyEmailOtp(email, otp);
       return await applyAuthResponse(response);
     } finally {
       setLoading(false);
@@ -231,23 +218,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }): Promise<RegisterPendingVerification> => {
     setLoading(true);
     try {
-      const response = await apiRequest<{
-        email: string;
-        expiresAt?: string;
-        expiresInSeconds?: number;
-        message?: string;
-      }>('/auth/register', {
-        method: 'POST',
-        body: JSON.stringify({
-          email,
-          password,
-          givenName,
-          surname,
-          accountType,
-          organizationName: hostName,
-          referralCode,
-          groupInviteToken
-        })
+      const response = await registerAccount({
+        email,
+        password,
+        givenName,
+        surname,
+        accountType,
+        organizationName: hostName,
+        referralCode,
+        groupInviteToken,
       });
 
       return {
@@ -264,10 +243,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signInWithGoogle = async (idToken: string, referralCode?: string, groupInviteToken?: string): Promise<AuthUser> => {
     setLoading(true);
     try {
-      const response = await apiRequest<AuthResponse & { isNewUser?: boolean; emailVerified?: boolean }>('/auth/google', {
-        method: 'POST',
-        body: JSON.stringify({ idToken, referralCode, groupInviteToken })
-      });
+      const response = await loginWithGoogle(idToken, referralCode, groupInviteToken);
       setStoredSession(response.tokens);
       const hydrated = await hydrateUserFromProfile(response.user);
       setStoredUser(hydrated);
@@ -279,10 +255,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signOut = async (): Promise<void> => {
-    await apiRequest('/auth/logout', {
-      method: 'POST',
-      body: JSON.stringify({})
-    }).catch(() => undefined);
+    await logoutAuth().catch(() => undefined);
     setStoredSession(null);
     setStoredUser(null);
     setUser(null);
@@ -294,18 +267,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const refreshUser = async (): Promise<void> => {
     const session = getStoredSession();
     if (!session?.accessToken) return;
-    const res = await apiRequest<{
-      data: {
-        id: string;
-        email: string;
-        role: string;
-        displayName?: string;
-        avatarUrl?: string;
-        switchedFromRole?: string | null;
-        platformMasterAdmin?: boolean;
-      };
-    }>('/me/profile', { auth: true });
-    const profile = res.data;
+    const profile = await fetchMeProfileAuth();
     const next: AuthUser = {
       id: profile.id,
       email: profile.email,

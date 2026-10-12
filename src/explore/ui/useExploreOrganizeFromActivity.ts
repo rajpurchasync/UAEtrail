@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { HostTierFlags } from '@uaetrail/shared-types';
 import type { NavigateFunction } from 'react-router-dom';
-import { api } from '../../api/index';
+import { fetchPublicActivityDetail } from '../../hooks/usePublicActivityDetail';
 import type { ExploreCompose, OrganizeComposeKind } from '../compose';
 import {
   clearOrganizeFromActivityParams,
@@ -94,7 +94,7 @@ export const useExploreOrganizeFromActivity = ({
 
     const load = async () => {
       try {
-        const { data } = await api.getPublicActivityDetail(sourceActivityId);
+        const { activity: data } = await fetchPublicActivityDetail(sourceActivityId);
         if (cancelled) return;
 
         if (tenantId && data.tenantId !== tenantId) {

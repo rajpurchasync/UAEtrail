@@ -1,5 +1,7 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useState } from 'react';
-import type { ActivityRequestView } from '../../../api/index';
+import { afterHostJoinDecisionClientRefresh } from '../../../hooks/activityJoinClientEffects';
+import type { ActivityRequestView } from '../../../api/types';
 import { decideHostActivityJoinRequest } from '../../../hooks/hostActivityClientApi';
 import { ActivityJoinRequestCard } from '../../../console/ActivityJoinRequestCard';
 import { ActivityJoinRequestDeclineDialog } from '../../../console/ActivityJoinRequestDeclineDialog';
@@ -25,6 +27,7 @@ export const ActivityDetailHostBuddiesHub = ({
   onRequestsChanged,
   onError,
 }: ActivityDetailHostBuddiesHubProps) => {
+  const queryClient = useQueryClient();
   const [busyRequestId, setBusyRequestId] = useState<string | null>(null);
   const [declineRequest, setDeclineRequest] = useState<ActivityRequestView | null>(null);
 
@@ -34,6 +37,7 @@ export const ActivityDetailHostBuddiesHub = ({
       setBusyRequestId(requestId);
       try {
         await decideHostActivityJoinRequest(tenantId, requestId, status, organizerNote);
+        await afterHostJoinDecisionClientRefresh(queryClient, { activityId, status });
         if (status === 'rejected') setDeclineRequest(null);
         await onRequestsChanged();
       } catch (err) {
@@ -42,7 +46,7 @@ export const ActivityDetailHostBuddiesHub = ({
         setBusyRequestId(null);
       }
     },
-    [tenantId, onRequestsChanged, onError]
+    [activityId, queryClient, tenantId, onRequestsChanged, onError]
   );
 
   return (

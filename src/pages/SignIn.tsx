@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { ChevronLeft, Mail, Lock, Mountain, X } from 'lucide-react';
-import { api } from '../api/index';
 import { setActiveTenantId } from '../api/tenant';
+import { fetchMeProfile } from '../hooks/memberProfileApi';
+import { fetchMyTenantMemberships } from '../hooks/tenantMembershipApi';
 import { GoogleAuthSection } from '../components/auth/GoogleAuthSection';
 import { useAuth } from '../context/AuthContext';
 import { accountRouteByRole, defaultRouteByRole } from '../utils/authRouting';
@@ -79,14 +80,14 @@ export const SignIn = () => {
       return;
     }
 
-    const profileRes = await api.getMeProfile().catch(() => null);
+    const profile = await fetchMeProfile().catch(() => null);
     const postAuthDefault =
       signedInUser.role === 'participant'
         ? defaultRouteByRole(signedInUser.role)
         : accountRouteByRole(signedInUser.role);
     const welcomeRedirectTo = from && canReturnAfterAuth(from, signedInUser.role) ? from : postAuthDefault;
 
-    if (profileRes && shouldForceSignupWelcome(signedInUser.role, profileRes.data)) {
+    if (profile && shouldForceSignupWelcome(signedInUser.role, profile)) {
       navigate('/welcome', {
         replace: true,
         state: { redirectTo: welcomeRedirectTo },
@@ -112,8 +113,8 @@ export const SignIn = () => {
       signedInUser.role === 'tenant_admin' ||
       signedInUser.role === 'tenant_guide'
     ) {
-      const tenants = await api.getMyTenants().catch(() => null);
-      const firstTenant = tenants?.data?.[0];
+      const memberships = await fetchMyTenantMemberships().catch(() => null);
+      const firstTenant = memberships?.[0];
       if (firstTenant) {
         setActiveTenantId(firstTenant.tenantId);
       }

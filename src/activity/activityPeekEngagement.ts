@@ -22,6 +22,53 @@ const levelForPeekActions = (
   return level;
 };
 
+const joinRequestStatusFromUi = (
+  joinUiState?: JoinRequestUiState
+): 'pending' | 'waitlisted' | null => {
+  if (joinUiState?.kind !== 'pending') return null;
+  return joinUiState.status === 'waitlisted' ? 'waitlisted' : 'pending';
+};
+
+const myRequestFromJoinUi = (
+  joinUiState?: JoinRequestUiState
+): { status: string; canWithdraw: boolean } | null => {
+  if (joinUiState?.kind !== 'pending') return null;
+  return { status: joinUiState.status, canWithdraw: true };
+};
+
+const myParticipationFromJoinUi = (joinUiState?: JoinRequestUiState): unknown | null => {
+  if (joinUiState?.kind === 'confirmed') {
+    return { participantId: joinUiState.requestId };
+  }
+  return null;
+};
+
+/** L1 policy when map enrich omitted wire peek actions — align with detail join context (R1.4). */
+const resolvePeekFallbackEngagementPolicy = (
+  card: ExploreCardModel,
+  joinUiState?: JoinRequestUiState
+) => {
+  const level = levelForPeekActions(card, joinUiState);
+  if (!level || !card.viewerAccess) return null;
+
+  return resolveActivityEngagementPolicy({
+    viewerAccess: { ...card.viewerAccess, level },
+    isHostUser: level === 'host',
+    activityPublished: card.activity?.status === 'published',
+    joinMode: card.activity?.joinMode,
+    joinRequestStatus: joinRequestStatusFromUi(joinUiState),
+    participationMode: card.activity?.participationMode,
+    requirements: card.activity?.requirements,
+    rideshareEnabled: card.activity?.rideshareEnabled,
+    linkedRideshareActivityId: card.activity?.linkedRideshareActivityId ?? null,
+    meetingLat: card.activity?.meetingLat ?? null,
+    meetingLng: card.activity?.meetingLng ?? null,
+    myParticipation: myParticipationFromJoinUi(joinUiState),
+    myRequest: myRequestFromJoinUi(joinUiState),
+    confirmedParticipantCount: card.participantPreviews?.length ?? 0,
+  });
+};
+
 /** Peek actions after layer-7 entitlements (strip or restore `message_host`). */
 export const filterActivityMapPeekActionsForViewer = (
   actions: ActivityMapPeekAction[],
@@ -45,38 +92,17 @@ export const resolveActivityMapPeekActions = (
 ): ActivityMapPeekAction[] => {
   if (card.source !== 'activity') return [];
   const fromApi = card.viewerAccess?.mapPeekActions;
-  const joinRequestStatus =
-    joinUiState?.kind === 'pending'
-      ? joinUiState.status === 'waitlisted'
-        ? 'waitlisted'
-        : 'pending'
-      : null;
-
   if (fromApi !== undefined) {
     return filterActivityMapPeekActionsForViewer(fromApi, card.viewerAccess ?? null);
   }
 
   const level = levelForPeekActions(card, joinUiState);
-  if (!level || !card.viewerAccess) return [];
-
-  const policy = resolveActivityEngagementPolicy({
-    viewerAccess: { ...card.viewerAccess, level },
-    isHostUser: level === 'host',
-    activityPublished: card.activity?.status === 'published',
-    joinMode: card.activity?.joinMode,
-    joinRequestStatus,
-    participationMode: card.activity?.participationMode,
-    requirements: card.activity?.requirements,
-    rideshareEnabled: card.activity?.rideshareEnabled,
-    linkedRideshareActivityId: card.activity?.linkedRideshareActivityId ?? null,
-    myParticipation: null,
-    myRequest: null,
-    confirmedParticipantCount: card.participantPreviews?.length ?? 0,
-  });
+  const policy = resolvePeekFallbackEngagementPolicy(card, joinUiState);
+  if (!level || !policy) return [];
 
   return projectActivityMapPeekActions(
     policy,
-    card.viewerAccess.entitlements ?? null,
+    card.viewerAccess!.entitlements ?? null,
     level
   );
 };
@@ -103,27 +129,8 @@ export const resolveActivityMapPeekStrips = (
   const level = levelForPeekActions(card, joinUiState);
   if (!level || !card.viewerAccess) return defaultPeekStrips();
 
-  const joinRequestStatus =
-    joinUiState?.kind === 'pending'
-      ? joinUiState.status === 'waitlisted'
-        ? 'waitlisted'
-        : 'pending'
-      : null;
-
-  return resolveActivityEngagementPolicy({
-    viewerAccess: { ...card.viewerAccess, level },
-    isHostUser: level === 'host',
-    activityPublished: card.activity?.status === 'published',
-    joinMode: card.activity?.joinMode,
-    joinRequestStatus,
-    participationMode: card.activity?.participationMode,
-    requirements: card.activity?.requirements,
-    rideshareEnabled: card.activity?.rideshareEnabled,
-    linkedRideshareActivityId: card.activity?.linkedRideshareActivityId ?? null,
-    myParticipation: null,
-    myRequest: null,
-    confirmedParticipantCount: card.participantPreviews?.length ?? 0,
-  }).strips;
+  const policy = resolvePeekFallbackEngagementPolicy(card, joinUiState);
+  return policy?.strips ?? defaultPeekStrips();
 };
 
 export const resolveActivityPresentationPeekActions = (

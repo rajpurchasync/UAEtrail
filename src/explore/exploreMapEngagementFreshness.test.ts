@@ -7,9 +7,18 @@ import {
   activityDetailQueryKey,
 } from '../hooks/clientQueryKeys';
 import {
+  afterActivityWithdrawClientRefresh,
+  afterHostJoinDecisionClientRefresh,
+} from '../hooks/activityJoinClientEffects';
+import { exploreMapQueryKeyPrefix } from '../hooks/useExploreMap';
+import {
   patchExploreMapSlotsAfterRsvp,
   refreshExploreMapAfterActivityEngagement,
 } from './exploreMapEngagementFreshness';
+
+vi.mock('./exploreMapVnext', () => ({
+  isExploreMapVnextEnabled: vi.fn(() => false),
+}));
 
 describe('exploreMapEngagementFreshness', () => {
   it('patchExploreMapSlotsAfterRsvp decrements slots on cached map rows', () => {
@@ -39,6 +48,23 @@ describe('exploreMapEngagementFreshness', () => {
     expect(cached?.[0]?.activity?.slotsAvailable).toBe(2);
   });
 
+  it('refreshExploreMapAfterActivityEngagement invalidates explore map on approval when vNext is on', async () => {
+    const { isExploreMapVnextEnabled } = await import('./exploreMapVnext');
+    vi.mocked(isExploreMapVnextEnabled).mockReturnValueOnce(true);
+
+    const queryClient = new QueryClient();
+    const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries').mockResolvedValue(undefined);
+
+    await refreshExploreMapAfterActivityEngagement(queryClient, {
+      exploreItemId: 'activity:act-approval',
+      activityId: 'act-approval',
+      participationMode: 'approval',
+    });
+
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: exploreMapQueryKeyPrefix });
+    invalidateSpy.mockRestore();
+  });
+
   it('refreshExploreMapAfterActivityEngagement invalidates coordination + activity queries', async () => {
     const queryClient = new QueryClient();
     const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries').mockResolvedValue(undefined);
@@ -51,6 +77,49 @@ describe('exploreMapEngagementFreshness', () => {
 
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: coordinationAttentionQueryKey });
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: activityDetailQueryKey('act-9') });
+    invalidateSpy.mockRestore();
+  });
+
+  it('afterHostJoinDecisionClientRefresh invalidates coordination + activity queries', async () => {
+    const queryClient = new QueryClient();
+    const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries').mockResolvedValue(undefined);
+
+    await afterHostJoinDecisionClientRefresh(queryClient, {
+      activityId: 'act-host-1',
+      status: 'rejected',
+    });
+
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: coordinationAttentionQueryKey });
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: activityDetailQueryKey('act-host-1') });
+    invalidateSpy.mockRestore();
+  });
+
+  it('afterHostJoinDecisionClientRefresh invalidates explore map on approve when vNext is on', async () => {
+    const { isExploreMapVnextEnabled } = await import('./exploreMapVnext');
+    vi.mocked(isExploreMapVnextEnabled).mockReturnValueOnce(true);
+
+    const queryClient = new QueryClient();
+    const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries').mockResolvedValue(undefined);
+
+    await afterHostJoinDecisionClientRefresh(queryClient, {
+      activityId: 'act-host-approve',
+      status: 'approved',
+    });
+
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: exploreMapQueryKeyPrefix });
+    invalidateSpy.mockRestore();
+  });
+
+  it('afterActivityWithdrawClientRefresh invalidates explore map when vNext is on', async () => {
+    const { isExploreMapVnextEnabled } = await import('./exploreMapVnext');
+    vi.mocked(isExploreMapVnextEnabled).mockReturnValueOnce(true);
+
+    const queryClient = new QueryClient();
+    const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries').mockResolvedValue(undefined);
+
+    await afterActivityWithdrawClientRefresh(queryClient, { activityId: 'act-withdraw' });
+
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: exploreMapQueryKeyPrefix });
     invalidateSpy.mockRestore();
   });
 });

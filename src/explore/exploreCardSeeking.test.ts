@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
-import { buildExploreCardModel } from './exploreCardModel';
+import { buildDiscoveryCardViewModelCard } from '../discovery';
+import { legacyDemandExploreMapItem } from './exploreMapItemFixtures';
 
 const seekingWithActivity = (): ExploreMapItemDTO =>
   ({
@@ -23,25 +24,21 @@ const seekingWithActivity = (): ExploreMapItemDTO =>
 
 describe('exploreCardModel seeking (R4.3)', () => {
   it('omits participantIntentId on card when published seeking activity exists', () => {
-    const card = buildExploreCardModel(seekingWithActivity());
+    const card = buildDiscoveryCardViewModelCard(seekingWithActivity());
     expect(card.activityId).toBe('act-1');
     expect(card.participantIntentId).toBeNull();
     expect(card.sharePath).toMatch(/pin=activity(%3A|:)act-1/);
   });
 
   it('keeps participantIntentId for legacy demand-only wire rows', () => {
-    const card = buildExploreCardModel({
-      id: 'demand:int-only',
-      kind: 'hiking',
-      source: 'demand',
-      activityMode: 'seeking',
-      title: 'Legacy',
-      latitude: 25,
-      longitude: 55,
-      path: '/explore',
-      participantIntentId: 'int-only',
-      requesterUserId: 'user-1',
-    } as ExploreMapItemDTO);
+    const card = buildDiscoveryCardViewModelCard(
+      legacyDemandExploreMapItem({
+        id: 'demand:int-only',
+        participantIntentId: 'int-only',
+        requesterUserId: 'user-1',
+        title: 'Legacy',
+      })
+    );
     expect(card.participantIntentId).toBe('int-only');
   });
 });

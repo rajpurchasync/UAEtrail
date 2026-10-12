@@ -21,8 +21,14 @@ import {
   findExploreMapItemForPinId,
   resolveActivityIdForExplorePinId,
 } from '../exploreMapPinResolve';
-import { api } from '../../api/index';
-import { buildDiscoveryCardViewModel } from '../../discovery/discoveryCardViewModel';
+import { cancelHostActivityById } from '../../hooks/hostActivityClientApi';
+import {
+  cancelParticipantIntent,
+  createParticipantIntentJoinRequest,
+  invalidateMyParticipantIntentsQueries,
+} from '../../hooks/participantIntentClientApi';
+import { fetchPublicActivityDetail } from '../../hooks/usePublicActivityDetail';
+import { buildDiscoveryCardViewModel } from '../../discovery';
 import { canShowDemandLinkRideshareOffer } from '../linkActivityRideshareOffer';
 import { openActivityGroupChat } from '../../utils/openActivityGroupChat';
 import { messagesRouteForRole } from '../../utils/authRouting';
@@ -37,6 +43,7 @@ import { useParticipantIntentJoinContext } from '../../hooks/useParticipantInten
 import { useViewerProfileGender } from '../../hooks/useViewerProfileGender';
 import { womenOnlyJoinMessageForActivity } from '../../utils/activityWomenOnlyJoin';
 import { readExploreMapItemsFromCache, reloadExploreMap } from '../../hooks/useExploreMap';
+import { isExploreMapVnextEnabled } from '../exploreMapVnext';
 import { navigateToParticipantIntentManage } from '../../member-plan/navigateParticipantIntentManage';
 import type { ContributeSubmitResult } from './contributeFlow';
 import type { DemandSubmitResult } from './demandFlow';
@@ -257,7 +264,7 @@ export const useExploreSelectionActions = ({
       if (demandJoinUiState.kind !== 'open') return;
       void (async () => {
         try {
-          await api.createParticipantIntentJoinRequest(intentId);
+          await createParticipantIntentJoinRequest(intentId);
           await reloadDemandJoinContext();
           setDemandNotice('Request sent — they’ll review your request.');
         } catch (err) {
@@ -322,7 +329,7 @@ export const useExploreSelectionActions = ({
     if (!hostRemoveConfirm || !tenantId) return;
     setHostRemoveBusy(true);
     try {
-      await api.cancelHostActivity(tenantId, hostRemoveConfirm.id);
+      await cancelHostActivityById(tenantId, hostRemoveConfirm.id);
       const wasDraft = hostRemoveConfirm.status === 'draft';
       setHostRemoveConfirm(null);
       setSelectedId(null);
@@ -421,7 +428,8 @@ export const useExploreSelectionActions = ({
     if (!demandRemoveIntentId) return;
     setDemandRemoveBusy(true);
     try {
-      await api.cancelParticipantIntent(demandRemoveIntentId);
+      await cancelParticipantIntent(demandRemoveIntentId);
+      invalidateMyParticipantIntentsQueries(queryClient);
       setDemandRemoveIntentId(null);
       setSelectedId(null);
       await reloadExploreMap(queryClient);
@@ -436,7 +444,9 @@ export const useExploreSelectionActions = ({
   const handleActivityPublished = useCallback(
     async (activity: ActivityDTO) => {
       if (activity.joinMode === 'private') {
-        await reloadExploreMap(queryClient);
+        if (isExploreMapVnextEnabled()) {
+          await reloadExploreMap(queryClient);
+        }
         const peekItem = buildExploreMapItemFromActivity(
           activity,
           hostPublishedActivityPeekAccess(activity.joinMode === 'private' ? 'private' : 'open')
@@ -460,7 +470,9 @@ export const useExploreSelectionActions = ({
       browse.setActivityFilter('all');
       browse.syncExploreUrl({ filter: 'all', activityFilter: 'all', panel: 'activities' });
 
-      await reloadExploreMap(queryClient);
+      if (isExploreMapVnextEnabled()) {
+        await reloadExploreMap(queryClient);
+      }
 
       const { latitude, longitude } = resolveActivityDisplayCoordinates(activity);
       if (latitude != null && longitude != null) {
@@ -487,19 +499,20 @@ export const useExploreSelectionActions = ({
       if (!user) return 'auth_required';
 
       try {
-        const res = await api.getPublicActivityDetail(activityId);
-        if (res.viewerAccess?.exposure === 'none') {
+        const detail = await fetchPublicActivityDetail(activityId);
+        if (detail.viewerAccess?.exposure === 'none') {
           setDemandNotice(
-            res.data.message ?? 'This private plan is only available to signed-in members with the link.'
+            detail.activity.message ??
+              'This private plan is only available to signed-in members with the link.'
           );
           return 'denied';
         }
-        const peekItem = buildExploreMapItemFromActivity(res.data, res.viewerAccess);
+        const peekItem = buildExploreMapItemFromActivity(detail.activity, detail.viewerAccess);
         setLinkOnlyPeekItems((prev) => {
           const rest = prev.filter((entry) => entry.id !== peekItem.id);
           return [...rest, peekItem];
         });
-        const { latitude, longitude } = resolveActivityDisplayCoordinates(res.data);
+        const { latitude, longitude } = resolveActivityDisplayCoordinates(detail.activity);
         if (latitude != null && longitude != null) {
           handleFocusMapLocation({ lat: latitude, lng: longitude });
         }
@@ -531,6 +544,7 @@ export const useExploreSelectionActions = ({
 
   const handleDemandSubmitted = useCallback(
     async (result: DemandSubmitResult) => {
+      invalidateMyParticipantIntentsQueries(queryClient);
       await reloadExploreMap(queryClient);
       if (!result.visibleOnMap) {
         return;

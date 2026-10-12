@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
 import type { ParticipantIntentDTO } from '@uaetrail/shared-types';
-import { api } from '../../api/index';
+import { useMyParticipantIntents } from '../../hooks/useMyParticipantIntents';
 import { ParticipantIntentManageSheet } from '../../components/participant-intent/ParticipantIntentManageSheet';
 import { ActivityHubListRow } from '../../components/mobile/ActivityHubListRow';
 import {
@@ -39,22 +38,17 @@ export const SelfPlansSection = ({
   const [searchParams, setSearchParams] = useSearchParams();
   const [manageIntent, setManageIntent] = useState<ParticipantIntentDTO | null>(null);
 
-  const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['my-participant-intents'],
-    queryFn: async () => {
-      const res = await api.listMyParticipantIntents();
-      return res.data;
-    },
-  });
-
-  useEffect(() => {
-    if (!refreshKey) return;
-    void refetch();
-  }, [refreshKey, refetch]);
+  const {
+    intents,
+    loading: isLoading,
+    error: loadError,
+    refetch,
+  } = useMyParticipantIntents(true, refreshKey);
+  const error = loadError ? new Error(loadError) : null;
 
   const { upcoming, completed } = useMemo(
-    () => partitionParticipantIntentsForTrips(data ?? []),
-    [data]
+    () => partitionParticipantIntentsForTrips(intents),
+    [intents]
   );
 
   const visibleIntents = segment === 'upcoming' ? upcoming : completed;
@@ -75,20 +69,20 @@ export const SelfPlansSection = ({
     const openId = searchParams.get('peek');
     if (!openId || isLoading) return;
     if (openedDeepLinkRef.current === openId) return;
-    const intent = (data ?? []).find((entry) => entry.id === openId);
+    const intent = intents.find((entry) => entry.id === openId);
     if (!intent) return;
     openedDeepLinkRef.current = openId;
     openManage(intent);
     const next = new URLSearchParams(searchParams);
     next.delete('peek');
     setSearchParams(next, { replace: true });
-  }, [data, isLoading, searchParams, setSearchParams]);
+  }, [intents, isLoading, searchParams, setSearchParams]);
 
   useEffect(() => {
     if (!manageIntent) return;
-    const fresh = (data ?? []).find((entry) => entry.id === manageIntent.id);
+    const fresh = intents.find((entry) => entry.id === manageIntent.id);
     if (fresh) setManageIntent(fresh);
-  }, [data, manageIntent?.id]);
+  }, [intents, manageIntent?.id]);
 
   const peekId = searchParams.get('peek');
   const showList = !peekBridgeOnly;

@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { api } from '../api/index';
+import {
+  fetchHostActivityJoinRequests,
+  listHostActivitiesForTenant,
+} from '../hooks/hostActivityClientApi';
 import { getActiveTenantId, setActiveTenantId } from '../api/tenant';
 import { useHostStatus } from '../hooks/useHostStatus';
 import { useAuth } from '../context/AuthContext';
@@ -8,13 +11,12 @@ import { useAuth } from '../context/AuthContext';
 const consoleHubKey = (tenantId: string) => ['console-hub', tenantId] as const;
 
 async function fetchConsoleHub(tenantId: string) {
-  const [activitiesResponse, requestsResponse] = await Promise.all([
-    api.listHostActivities(tenantId),
-    api.getHostActivityJoinRequests(tenantId),
+  const [activities, requests] = await Promise.all([
+    listHostActivitiesForTenant(tenantId),
+    fetchHostActivityJoinRequests(tenantId),
   ]);
-  const requests = requestsResponse.data;
   return {
-    activities: activitiesResponse.data,
+    activities,
     requests,
     pendingJoinRequests: requests.filter((request) => request.status === 'pending').length,
   };

@@ -7,7 +7,7 @@ import {
 import { SITE_DESCRIPTION, SITE_NAME, SITE_ORIGIN, toAbsoluteUrl } from '../../config/seo';
 import type { Place, PlaceAsCamp, PlaceAsEvent, PlaceAsTrail } from '../../types/place';
 import { placeDetailPath } from '../../utils/placePaths';
-import type { TenantProfile } from '../../api/index';
+import type { TenantProfile } from '../../api/types';
 import { activityHostName } from '../../utils/hostLabels';
 import { activityPublicMetaDescription } from '../../utils/activityPublicSeo';
 import { explorePlacesPath } from '../../config/routingCatalog';

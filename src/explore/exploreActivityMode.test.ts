@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { exploreMapItemIsSeeking, resolveExploreMapActivityMode } from '@uaetrail/shared-types';
-import { buildExploreCardModel } from './exploreCardModel';
+import { buildDiscoveryCardViewModelCard } from '../discovery';
 import {
   hostedExploreMapItem,
   legacyDemandExploreMapItem,
@@ -14,9 +14,9 @@ describe('exploreActivityMode (M0)', () => {
     expect(resolveExploreMapActivityMode(legacyDemandExploreMapItem())).toBe('seeking');
   });
 
-  it('buildExploreCardModel adds Seeking badge with activity wire source', () => {
+  it('discovery VM adds Seeking badge with activity wire source', () => {
     const item = seekingExploreMapItem();
-    const card = buildExploreCardModel(item);
+    const card = buildDiscoveryCardViewModelCard(item);
     expect(exploreMapItemIsSeeking(item)).toBe(true);
     expect(card.source).toBe('activity');
     expect(card.composeIntent).toBe('demand');

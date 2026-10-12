@@ -1,7 +1,11 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import type { ParticipantIntentDTO } from '@uaetrail/shared-types';
 import { AppButton } from '../mobile/AppButton';
-import { updateParticipantIntent } from '../../hooks/participantIntentClientApi';
+import {
+  invalidateMyParticipantIntentsQueries,
+  updateParticipantIntent,
+} from '../../hooks/participantIntentClientApi';
 import { useReloadExploreMap } from '../../hooks/useReloadExploreMap';
 import type { LocationPrecision } from '../../explore/ui/organizeFlow';
 import {
@@ -26,6 +30,7 @@ const locationFromIntent = (intent: ParticipantIntentDTO): ParticipantIntentLoca
 
 /** In-sheet edit for active participant intent — text fields and map pins. */
 export const ParticipantIntentEditForm = ({ intent, onSaved, onCancel }: ParticipantIntentEditFormProps) => {
+  const queryClient = useQueryClient();
   const reloadExploreMap = useReloadExploreMap();
   const [title, setTitle] = useState(intent.title);
   const [date, setDate] = useState(intent.date ?? '');
@@ -96,6 +101,7 @@ export const ParticipantIntentEditForm = ({ intent, onSaved, onCancel }: Partici
         partySize: size,
         comment: comment.trim(),
       });
+      invalidateMyParticipantIntentsQueries(queryClient);
       await reloadExploreMap();
       await onSaved();
     } catch (err) {

@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { api } from '../api/index';
+import { sendMemberBuddyRequest } from '../hooks/memberPeopleClientApi';
 
 type UseMemberPersonBuddyRequestArgs = {
   onSuccess?: () => void;
@@ -17,7 +17,7 @@ export const useMemberPersonBuddyRequest = ({ onSuccess }: UseMemberPersonBuddyR
       setActionError(null);
       setNotice(null);
       try {
-        await api.sendBuddyRequest({ targetUserId: userId });
+        await sendMemberBuddyRequest(userId);
         setNotice('Buddy request sent.');
         onSuccess?.();
       } catch (err) {

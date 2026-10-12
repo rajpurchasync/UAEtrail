@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { exploreMapPeekPath } from '@uaetrail/shared-types';
-import { api, TenantProfile } from '../api/index';
+import type { TenantProfile } from '../api/types';
+import { fetchOrganisationProfileBySlug } from '../hooks/organisationConsoleApi';
+import { fetchPublicPlaceDetail } from '../hooks/placeDetailClientApi';
+import { fetchShopPublic } from '../hooks/shopPublicClientApi';
 import { PageMeta } from '../components/seo/PageMeta';
 import { ShopPublicPage, type ShopPublicView } from '../components/shop/ShopPublicPage';
 import { explorePath } from '../config/routingCatalog';
@@ -48,10 +51,9 @@ export const ShopPublic = () => {
     if (!id) return;
     setLoading(true);
 
-    api
-      .getShopPublic(id)
-      .then((res) => {
-        const merchant = res.data;
+    void (async () => {
+      try {
+        const merchant = await fetchShopPublic(id);
         setShop({
           id: merchant.id,
           reviewTargetId: merchant.tenantId ?? null,
@@ -78,27 +80,28 @@ export const ShopPublic = () => {
           })),
           presence: resolvePresence(merchant.latitude, merchant.longitude),
         });
-      })
-      .catch(() =>
-        api
-          .getOrganisationProfile(id)
-          .then((res) => setShop(tenantToShopView(res.data)))
-          .catch(() =>
-            api
-              .getPublicPlaceDetail(id)
-              .then((res) => {
-                const view = communityShopPlaceToView(res.data);
-                if (view) {
-                  setCommunityPeekOnly(true);
-                  setShop(view);
-                } else {
-                  setShop(null);
-                }
-              })
-              .catch(() => setShop(null))
-          )
-      )
-      .finally(() => setLoading(false));
+      } catch {
+        try {
+          const tenant = await fetchOrganisationProfileBySlug(id);
+          setShop(tenantToShopView(tenant as TenantProfile));
+        } catch {
+          try {
+            const place = await fetchPublicPlaceDetail(id);
+            const view = communityShopPlaceToView(place);
+            if (view) {
+              setCommunityPeekOnly(true);
+              setShop(view);
+            } else {
+              setShop(null);
+            }
+          } catch {
+            setShop(null);
+          }
+        }
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, [id]);
 
   useEffect(() => {

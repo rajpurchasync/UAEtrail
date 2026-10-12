@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { api, AdminContentReportEntry } from '../api/index';
+import type { AdminContentReportEntry } from '../api/types';
+import { fetchAdminContentReports } from '../hooks/adminConsoleApi';
 import { DashboardLayout } from '../components/layout';
 import { ADMIN_LINKS } from '../constants';
 
@@ -19,7 +20,7 @@ export const AdminReports = () => {
   const loadReports = async () => {
     setLoading(true);
     try {
-      const res = await api.getAdminContentReports(page, 25);
+      const res = await fetchAdminContentReports(page, 25);
       setReports(res.data);
       setTotal(res.pagination?.total ?? 0);
     } catch (err) {

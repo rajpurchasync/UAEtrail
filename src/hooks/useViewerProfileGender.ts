@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { UserGenderWire } from '@uaetrail/shared-types';
-import { api } from '../api/index';
+import { fetchMeProfile } from './memberProfileApi';
 
 /** Signed-in member gender from `/me/profile` (for client-side join gates). */
 export const useViewerProfileGender = (userId: string | undefined) => {
@@ -11,9 +11,8 @@ export const useViewerProfileGender = (userId: string | undefined) => {
       setGender(null);
       return;
     }
-    void api
-      .getMeProfile()
-      .then((res) => setGender(res.data.gender ?? null))
+    void fetchMeProfile()
+      .then((profile) => setGender(profile.gender ?? null))
       .catch(() => setGender(null));
   }, [userId]);
 

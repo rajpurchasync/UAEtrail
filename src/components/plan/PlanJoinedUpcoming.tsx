@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
-import { fetchJoinedUpcomingPlanData } from '../../hooks/planUpcomingApi';
+import { useMemo, useState } from 'react';
+import { useMyActivityJoinRequests } from '../../hooks/useMyActivityJoinRequests';
+import { useMyJoinedActivities } from '../../hooks/useMyJoinedActivities';
 import {
   ConsumerErrorCard,
   ConsumerInlineEmpty,
@@ -31,19 +32,24 @@ type PeekState = {
 
 export const PlanJoinedUpcoming = ({ refreshKey = 0 }: PlanJoinedUpcomingProps) => {
   const [peek, setPeek] = useState<PeekState | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [rows, setRows] = useState<ReturnType<typeof buildUpcomingPlanRows>>([]);
+  const {
+    activities,
+    loading: joinedLoading,
+    error: joinedError,
+  } = useMyJoinedActivities(true, refreshKey);
+  const {
+    requests,
+    loading: requestsLoading,
+    error: requestsError,
+  } = useMyActivityJoinRequests(true, refreshKey);
 
-  useEffect(() => {
-    setLoading(true);
-    fetchJoinedUpcomingPlanData()
-      .then(({ activities, requests }) => {
-        setRows(buildUpcomingPlanRows(activities, requests));
-      })
-      .catch((err) => setError(err instanceof Error ? err.message : PRODUCT_LOAD_ERROR))
-      .finally(() => setLoading(false));
-  }, [refreshKey]);
+  const loading = joinedLoading || requestsLoading;
+  const error = joinedError ?? requestsError ?? null;
+
+  const rows = useMemo(
+    () => buildUpcomingPlanRows(activities, requests),
+    [activities, requests]
+  );
 
   const sorted = useMemo(
     () => [...rows].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()),
@@ -51,7 +57,7 @@ export const PlanJoinedUpcoming = ({ refreshKey = 0 }: PlanJoinedUpcomingProps) 
   );
 
   if (loading) return <ConsumerLoadingSpinner className="py-12" />;
-  if (error) return <ConsumerErrorCard message={error} />;
+  if (error) return <ConsumerErrorCard message={error || PRODUCT_LOAD_ERROR} />;
 
   if (sorted.length === 0) {
     return (

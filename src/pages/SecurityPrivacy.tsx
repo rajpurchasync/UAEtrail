@@ -1,7 +1,12 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { KeyRound, ShieldCheck, Smartphone, Eye, Lock, Download, Trash2, UserRound } from 'lucide-react';
-import { api, type UserProfile } from '../api/index';
+import type { UserProfile } from '../api/types';
+import {
+  changeAccountPassword,
+  requestChangePasswordOtp,
+} from '../hooks/accountSettingsApi';
+import { fetchMeProfile, updateMeProfile } from '../hooks/memberProfileApi';
 import { useAuth } from '../context/AuthContext';
 import { AccountDataExportSection, AccountDeleteSection } from '../components/account';
 import { PageMeta } from '../components/seo/PageMeta';
@@ -53,10 +58,9 @@ export const SecurityPrivacy = () => {
   const backLabel = isHostPath ? 'Host console' : 'Profile';
 
   useEffect(() => {
-    void api
-      .getMeProfile()
-      .then((res) => {
-        setProfileVisibility(res.data.profileVisibility ?? 'public');
+    void fetchMeProfile()
+      .then((profile) => {
+        setProfileVisibility(profile.profileVisibility ?? 'public');
       })
       .catch(() => {
         /* profile load is optional for this page */
@@ -72,7 +76,7 @@ export const SecurityPrivacy = () => {
     }
     setSavingPassword(true);
     try {
-      await api.changePassword({
+      await changeAccountPassword({
         currentPassword,
         newPassword,
         ...(otpToken.trim() ? { otpToken: otpToken.trim() } : {}),
@@ -92,7 +96,7 @@ export const SecurityPrivacy = () => {
     setPasswordMessage(null);
     setSendingOtp(true);
     try {
-      const res = await api.requestChangePasswordOtp();
+      const res = await requestChangePasswordOtp();
       if (res.otpToken) {
         setOtpToken(res.otpToken);
       }
@@ -110,7 +114,7 @@ export const SecurityPrivacy = () => {
     setSavingVisibility(true);
     setProfileVisibility(next);
     try {
-      await api.updateMeProfile({ profileVisibility: next });
+      await updateMeProfile({ profileVisibility: next });
       setVisibilityMessage('Profile visibility updated.');
     } catch (error) {
       setProfileVisibility(profileVisibility);

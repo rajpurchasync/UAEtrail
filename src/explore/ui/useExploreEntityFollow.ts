@@ -1,9 +1,15 @@
 import { joinAuthPath } from '../../config/routingCatalog';
 import { useCallback, useEffect, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import type { ExploreCardModel } from '../exploreCardModel';
 import { resolveExploreEntityFollowTarget } from '../exploreCardModel';
-import { api } from '../../api/index';
+import {
+  fetchEntityFollowState,
+  followEntityTarget,
+  invalidateEntityFollowsQueries,
+  unfollowEntityById,
+} from '../../hooks/entityFollowApi';
 import { useAuth } from '../../context/AuthContext';
 
 export type ExploreFollowState = {
@@ -17,6 +23,7 @@ export type ExploreFollowState = {
 
 export const useExploreEntityFollow = (card: ExploreCardModel): ExploreFollowState => {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const target = resolveExploreEntityFollowTarget(card);
   const [following, setFollowing] = useState(false);
@@ -31,12 +38,11 @@ export const useExploreEntityFollow = (card: ExploreCardModel): ExploreFollowSta
       return;
     }
     let cancelled = false;
-    void api
-      .checkEntityFollow(target)
-      .then((res) => {
+    void fetchEntityFollowState(target)
+      .then((state) => {
         if (cancelled) return;
-        setFollowing(res.data.following);
-        setFollowId(res.data.followId);
+        setFollowing(state.following);
+        setFollowId(state.followId);
       })
       .catch(() => {
         if (!cancelled) {
@@ -59,22 +65,23 @@ export const useExploreEntityFollow = (card: ExploreCardModel): ExploreFollowSta
     setNotice(null);
     try {
       if (following && followId) {
-        await api.unfollowEntity(followId);
+        await unfollowEntityById(followId);
         setFollowing(false);
         setFollowId(null);
         setNotice('Unfollowed.');
       } else {
-        const res = await api.followEntity(target);
+        const id = await followEntityTarget(target);
         setFollowing(true);
-        setFollowId(res.data.id);
+        setFollowId(id);
         setNotice('Following — we will notify you when outings are hosted here.');
       }
+      invalidateEntityFollowsQueries(queryClient);
     } catch (err) {
       setNotice(err instanceof Error ? err.message : 'Could not update follow.');
     } finally {
       setBusy(false);
     }
-  }, [card.sharePath, followId, following, navigate, target, user]);
+  }, [card.sharePath, followId, following, navigate, queryClient, target, user]);
 
   return {
     canFollow: Boolean(target),

@@ -1,8 +1,8 @@
 # System refactor plan — discovery, domains, surfaces
 
-**Status:** In progress — **R1–R6 core shipped**; **R4 read-path exit** guarded; **R5 vNext** behind flags; **R8** client layer ongoing (see phase status §4)  
+**Status:** **S8 core shipped (R0–R6, R4 read)** — **R5** vNext flagged (promote via [`EXPLORE_MAP_RUNBOOK.md`](../operations/EXPLORE_MAP_RUNBOOK.md)); **R8** client facades ongoing (`pagesApiGuard`, `hooksApiFacadeGuard`)  
 **Prerequisite read:** [`system-structure-deep-audit.md`](./system-structure-deep-audit.md) (§1–§15)  
-**Baseline:** Local `main` — `ExploreExperience.tsx` ~895 LOC · `explore-map.ts` ~596 LOC · `ActivityDetailView.tsx` ~776 LOC  
+**Baseline (Oct 2026):** pre-refactor ~895 / ~596 / ~776 LOC — current §10  
 **Gate for every phase:** `npm run verify:system:quick` minimum; phase close → `npm run verify:system`  
 **Tier-1 touch:** update [`SYSTEM_COHERENCE.md`](../SYSTEM_COHERENCE.md) §7 rows **C17–C20** when a phase closes — not new audit markdown.
 
@@ -114,6 +114,8 @@ Phases are **sequential within each track**; **R1** and **R3** can run in parall
 
 **Exit:** CI green; metrics table in this doc §10 updated.
 
+**Status (Oct 2026):** **R0 exit** — §10 metrics refreshed; `discovery` in `bounded-context-manifest.json`; **RF-01** in `activityDetailAcceptance.test.ts` (list feed footers → `resolveActivityPeekEngagement`, no `switch` / `participantIntentId` in `listFeedFooterActions.ts`).
+
 ---
 
 ### R1 — Discovery card unification (2–3 weeks, discovery context)
@@ -134,7 +136,7 @@ Phases are **sequential within each track**; **R1** and **R3** can run in parall
 
 **Exit:** `npm run test:explore-alignment` + new `discovery-card-projection.test.ts` (API + FE).
 
-**Status (Oct 2026):** R1.1–R1.3 shipped — shared-types + API projection, `discoveryCardViewModel`, list/map row builders; `discoveryCardViewModel.test.ts` (RF-02). R1.5 — peek, list feed, map row, browse rails, `listPosterPresentation` / `listVenuePoster` tests on VM; `exploreCopy.test.ts` still targets `buildExploreCardModel` internals. R1.6 — RF-02 matrix in `discoveryCardViewModel.test.ts` (activity, poster, row, venue). Host/pricing — paid outings gated on `hostTiers.business` + publish-as agency/shop/partner (`activity-pricing.ts`).
+**Status (Oct 2026):** **R1 exit (FE)** — R1.1–R1.3 shared-types + API projection, `discoveryCardViewModel`; R1.4 — `activity-engagement-policy-input.ts` (map peek + detail L1 bag, API tests). R1.5 — `buildDiscoveryEnrichedCard` unifies list row + poster base enrich; consumers via `src/discovery`; `discoveryCardBuilderGuard`. R1.6 — RF-02 matrix + `mapDetailEngagementParity` (AD-CTA A–E); peek join-context (`activityPeekEngagement.ts`). Host/pricing — `activity-pricing.ts` business tier gates.
 
 ---
 
@@ -170,7 +172,7 @@ Phases are **sequential within each track**; **R1** and **R3** can run in parall
 
 **Exit:** S6 row in SYSTEM_COHERENCE can move to “in progress”; `verify:system` green.
 
-**Status (Oct 2026):** R3.1 shipped — `usePlaceDetailPage` (fetch), `PlaceDetailCore`, thin `PlaceDetailPage`; `placeDetailCore.test.ts`. R3.2 — `TrailDetail` / `CampDetail` / `EventDetail` thin wrappers on `PlaceDetailPage`. R3.3 — `placeDetailCore.test.ts` covers wrappers + hook ownership. Components shim `usePlaceDetailCore.ts` re-exports hook (R8.1 baseline −1).
+**Status (Oct 2026):** **R3 exit** — `PlaceDetailCore` + `usePlaceDetailPage` / `placeDetailClientApi`; thin `TrailDetail` / `CampDetail` / `EventDetail` → `PlaceDetailPage`; `placeDetailCore.test.ts` (R3.1–R3.3). Shim `usePlaceDetailCore.ts` re-exports hook.
 
 ---
 
@@ -209,7 +211,7 @@ M2d already makes **activities** the write root. R4 removes **read** ambiguity:
 
 **Exit:** Load test note (p95 payload); no regression on default `GET /explore/map` without bbox.
 
-**Status (Oct 2026):** R5.1 shipped — [`explore-map-vnext-spec.md`](./explore-map-vnext-spec.md). R5.2 shipped — `explore-map-base.ts` + cache shell in `explore-map.ts` (wire-identical `GET /explore/map`). R5.3 shipped — `GET /explore/map?bbox=` (+ optional `cursor`, `limit`, `area`) behind `EXPLORE_MAP_VNEXT=1`; `explore-map-route.ts` + tests. R5.4 shipped — `VITE_EXPLORE_MAP_VNEXT` + scoped React Query keys, viewport bbox refetch on `/explore`, cache helpers (`exploreMapQuery.ts`); list browse keeps full fetch.
+**Status (Oct 2026):** R5.1–R5.4 shipped (spec, base/enrich split, bbox API + FE flags, engagement freshness). **Promotion** not default — staging p95 + smoke in [`EXPLORE_MAP_RUNBOOK.md`](../operations/EXPLORE_MAP_RUNBOOK.md) § vNext; production still full `GET /explore/map` unless both flags on.
 
 ---
 
@@ -226,7 +228,7 @@ M2d already makes **activities** the write root. R4 removes **read** ambiguity:
 
 **Exit:** `ActivityDetailView.tsx` **< 400 LOC**; activity detail acceptance tests green.
 
-**Status (Oct 2026):** R6.1–R6.2 — `useActivityDetailViewModel`, `ActivityDetailBody`, join/pricing sidebar; `ActivityDetailView` shell-only (~170 LOC).
+**Status (Oct 2026):** **R6 exit** — tab bodies under `detail/tabs/*`; `useActivityDetailViewModel` + wire `footerByTab` / `wireTabs`; `ActivityDetailView` shell &lt; 400 LOC; embedded preview + manage sheet use `resolveActivityDetailWirePresentation`; explore `useHostActivitySheetBundle` only (`activityDetailAcceptance` R6-01–03).
 
 ---
 
@@ -246,13 +248,30 @@ Deliverable: 1-page spec in experiment folder — aggregate fields, URL pattern,
 
 | Step | Deliverable |
 |------|-------------|
-| R8.1 | ESLint: no `apiRequest` / `api.` in `src/components/**` (except allowlist pages) |
+| R8.1 | Vitest guards + ESLint `uaetrail/no-direct-api-facade-*`: no `apiRequest` / `api.` in UI layers; facades in `src/hooks/*{Api,ClientApi}.ts` only |
 | R8.2 | Standard keys: `['explore','map']`, `['activity', id]`, `['coordination-attention']` |
 | R8.3 | Mutations: `joinActivity` invalidates activity + patches map query |
 
 Runs in parallel with R1–R2; do not block R1.
 
-**Status (Oct 2026):** R8.1 **done** — `componentsApiGuard` baseline **0** for `api.*` and **`api/client` imports** in `src/components/**`; fetch via `src/hooks/*ClientApi` + `accountSessionApi` / `lib/clientErrorReporting` for session + client error reporting. R8.2 — `clientQueryKeys.ts` (`coordination-attention`, `activity`, `reviews`, re-export `exploreMapQueryKey*`). R8.3 — `afterActivityJoinClientRefresh` in `JoinRequestModal` (single path for map + coordination + activity invalidation); `useMemberCoordinationAttention` on React Query. Pro naming — `ProProfileApplicationFlow` / `proProfileApplicationForm` (legacy `BecomeHost*` shims + `/become-host` redirect only). R5 ops — vNext promotion checklist in `EXPLORE_MAP_RUNBOOK.md`.
+**Status (Oct 2026):** R8.1 **done** — Vitest + ESLint (`apiGuardPatterns.ts`, `domainImportGuard`, `componentsApiIndexGuard`, `pagesApiIndexGuard`, `pagesApiGuard` incl. admin → `adminConsoleApi` / `notificationInboxApi`, `utilsListApiIndexGuard`, `consoleApiIndexGuard` — no `api/index` in UI/shared layers; DTOs via `api/types` or hook type re-exports). R8.2 — `clientQueryKeys.ts` (+ wishlist, joined activities, join requests, area hub, participant hub, inbox/badge, signup gate re-export); `useMeWishlist`, `useMyJoinedActivities`, `useMyActivityJoinRequests`, `useMyParticipantIntents` for Plan surfaces. R8.3 — join/withdraw + host join-decision engagement refresh (incl. joined + join-request plan queries); explore wishlist toggle invalidates `meWishlistQueryKey`; entity-follow toggle invalidates `entityFollowsQueryKey`; participant-intent mutations + `afterOrganizeActivityPublishClientRefresh` (map, coordination, hosted/joined strip, intent link); explore “view on map” skips legacy double `reloadExploreMap` when vNext off. Facades: `areaHubClientApi`, `accountAuthClientApi` (AuthContext), etc. `contextApiGuard` — no raw `apiRequest` in `src/context`. `useMemberCoordinationAttention` on React Query. R1.5 — RF-02 owns primary CTA parity; `exploreCopy.test` card block trimmed to list/section copy; Trips `ActivitiesSuggestedList` uses `buildDiscoveryMapListRowCard` (map list parity).
+
+#### R8.1 — Client boundary vs React hooks (same for admin and members)
+
+The folder `src/hooks/` is a **client data boundary**, not “everything must be a React hook.”
+
+| Piece | What it is | When to add |
+|-------|------------|-------------|
+| `*ClientApi.ts` / `*Api.ts` | Plain `async` functions wrapping `api.*` | **Every** new HTTP call used from pages, components, explore, utils, services, or console |
+| Naming | Prefer **`*ClientApi.ts`** for new facades | Legacy `*Api.ts` (e.g. `memberProfileApi`) stays until a touch migration — **no** repo-wide rename sprint |
+| `useSomething.ts` | React hook (often React Query) | Same data needed in **multiple** components, or you need cache, `isLoading`, refetch, or mutation invalidation (R8.2–R8.3) |
+| Page `useEffect` + facade | Imperative load | Admin tables, one-off screens, fire-and-forget actions — **prefer facade only**, not a wrapper hook |
+
+**Admin and members use the same pattern:** e.g. `adminConsoleApi.fetchAdminMembers()` and `activityJoinClientApi.fetchMyJoinRequests()` — neither is special-cased. Admins have fewer `use*` modules because screens are mostly load-on-mount CRUD, not because the architecture differs.
+
+**Do not:** one mega-hook per role, or force React Query on every button click. **Do:** keep `api.*` inside facades only (`hooksApiFacadeGuard` + ESLint); add `use*` when shared server state justifies it.
+
+**Legacy re-exports** (`activityJoinSubmit.ts`, `reviewSubmit.ts`, `contentReportSubmit.ts`) point at facades for stable import paths — new code should import the `*ClientApi` module directly.
 
 ---
 
@@ -264,6 +283,7 @@ Runs in parallel with R1–R2; do not block R1.
 4. **Activity engagement** changes → update L1 tests in `shared-types`.
 5. **User-facing route changes** → `NAVIGATION.md` + `routingCatalog.ts` in same PR.
 6. Feature flags for map breaking changes (`EXPLORE_MAP_*`).
+7. New HTTP from UI → add or extend `src/hooks/*{Api,ClientApi}.ts`; add `use*` + `clientQueryKeys` only when multiple consumers or invalidation need it (§ R8.1).
 
 ---
 
@@ -283,8 +303,8 @@ Runs in parallel with R1–R2; do not block R1.
 
 | Metric | Now (~) | After R1+R2 | After R4+R5 |
 |--------|---------|-------------|-------------|
-| `ExploreExperience` LOC | 895 | < 280 | < 280 |
-| Card builder entry points | 3+ | 1 VM | 1 VM |
+| `ExploreExperience` LOC | **97** (Oct 2026) | < 280 | < 280 |
+| Card builder entry points | **1 VM** (`discoveryCardBuilderGuard`) | 1 VM | 1 VM |
 | `exploreMapItemIsSeeking` FE branches | many | fewer | minimal |
 | Map payload | full region | full region | bbox optional |
 | Time-to-visible join count after RSVP | TTL-bound | patched query | < 5s target |
@@ -324,6 +344,8 @@ Adjust if **S7b** activity-detail polish still active — **do not** duplicate e
 | 2026-10-12 R1.1 | `list=1` rows + `buildListFeedCards` poster path | — | — |
 | 2026-10-12 R1.4 | `activity-engagement-policy-input.ts` map + detail L1 bag | — | — |
 | 2026-10-12 R2 start | `ExploreExperience` ~589 LOC — `src/explore/shell/*` | — | — |
+| 2026-10-13 R2 exit | **~97** (`explore/shell/*`) | **~42** shell (+ `explore-map-base`) | **~172** |
+| 2026-10-13 R0 | RF-01 list feed guard; card builders = `discoveryCardBuilderGuard` (2 allowlisted) | — | R6 acceptance R6-01–03 |
 
 ---
 
@@ -332,3 +354,5 @@ Adjust if **S7b** activity-detail polish still active — **do not** duplicate e
 | Date | Note |
 |------|------|
 | 2026-10-12 | Initial plan from deep audit + domain lens |
+| 2026-10-13 | R0 exit (RF-01, §10 metrics); R1/R6 status; vNext map invalidation on approval/withdraw/host approve |
+| 2026-10-13 | Places manifest + `npm run verify:system` green (explore-alignment); `exploreCardSeeking` uses `legacyDemandExploreMapItem` |

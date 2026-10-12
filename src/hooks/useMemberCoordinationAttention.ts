@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import type { MemberCoordinationAttentionDTO } from '@uaetrail/shared-types';
-import { api } from '../api/index';
+import { fetchMeCoordinationAttention } from './memberCoordinationApi';
 import { coordinationAttentionQueryKey } from './clientQueryKeys';
 
 export const useMemberCoordinationAttention = (
@@ -9,7 +9,7 @@ export const useMemberCoordinationAttention = (
 ): MemberCoordinationAttentionDTO & { loading: boolean } => {
   const { data, isLoading, isFetching } = useQuery({
     queryKey: [...coordinationAttentionQueryKey, refreshKey],
-    queryFn: async () => (await api.getMeCoordinationAttention()).data,
+    queryFn: () => fetchMeCoordinationAttention(),
     enabled,
   });
 

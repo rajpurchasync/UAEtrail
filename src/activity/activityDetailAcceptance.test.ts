@@ -203,3 +203,42 @@ describe('activity detail program — engagement wire (AD-PRO-01, AD-PRES-02)', 
     expect(pageWire).toMatch(/effectiveWirePresentation/);
   });
 });
+
+describe('discovery refactor — RF-01 list feed footers', () => {
+  it('RF-01: list feed footer actions delegate join CTAs to L1 peek engagement', () => {
+    const footerActions = read('src/list/listFeedFooterActions.ts');
+    expect(footerActions).toMatch(/resolveActivityPeekEngagement/);
+    expect(footerActions).toMatch(/resolveListFeedFooterModel/);
+    expect(footerActions).not.toMatch(/\bswitch\s*\(/);
+    expect(footerActions).not.toMatch(/participantIntentId/);
+
+    const provider = read('src/list/ui/ListFeedActionsProvider.tsx');
+    expect(provider).toMatch(/executeActivityMapPeekAction/);
+    expect(provider).toMatch(/resolveListFeedFooterModel/);
+    expect(provider).not.toMatch(/\bswitch\s*\([^)]*actionId/);
+  });
+});
+
+describe('activity detail program — structure (R6)', () => {
+  it('R6-01: embedded surfaces pass wire footers into ActivityDetailView', () => {
+    for (const file of [
+      'src/components/activities/ActivityPreviewOverlay.tsx',
+      'src/components/host/ActivityManageSheet.tsx',
+    ]) {
+      const source = read(file);
+      expect(source).toMatch(/resolveActivityDetailWirePresentation/);
+      expect(source).toMatch(/wireFooterByTab/);
+    }
+  });
+
+  it('R6-02: explore host manage uses useHostActivitySheetBundle (no second sheet path)', () => {
+    expect(read('src/explore/shell/useExploreExperienceModel.ts')).toMatch(/useHostActivitySheetBundle/);
+    const bundle = read('src/hooks/useHostActivitySheetBundle.tsx');
+    expect(bundle).toMatch(/ActivityManageSheet/);
+  });
+
+  it('R6-03: ActivityDetailView shell under 400 LOC', () => {
+    const lineCount = read('src/components/activity/ActivityDetailView.tsx').split(/\n/).length;
+    expect(lineCount).toBeLessThan(400);
+  });
+});

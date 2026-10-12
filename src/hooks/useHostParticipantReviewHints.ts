@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { ParticipantDTO } from '@uaetrail/shared-types';
-import { api } from '../api/index';
+import { fetchHostActivityParticipants } from './hostActivityClientApi';
 
 export type HostParticipantReviewHints = {
   rateableCount: number;
@@ -26,9 +26,9 @@ export const useHostParticipantReviewHints = (
     }
     setLoading(true);
     try {
-      const res = await api.getActivityParticipants(tenantId, activityId);
-      setParticipants(res.data.participants ?? []);
-      setActivityEnded(Boolean(res.data.activityEnded));
+      const snapshot = await fetchHostActivityParticipants(tenantId, activityId);
+      setParticipants(snapshot.participants);
+      setActivityEnded(snapshot.activityEnded);
     } catch {
       setParticipants([]);
       setActivityEnded(false);

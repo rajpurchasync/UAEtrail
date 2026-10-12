@@ -1,5 +1,11 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo, useState } from 'react';
-import { api, ActivityRequestView } from '../../api/index';
+import { afterHostJoinDecisionClientRefresh } from '../../hooks/activityJoinClientEffects';
+import type { ActivityRequestView } from '../../api/types';
+import {
+  decideHostActivityJoinRequest,
+  fetchHostActivityJoinRequests,
+} from '../../hooks/hostActivityClientApi';
 import { getActiveTenantId } from '../../api/tenant';
 import { ConsoleShell } from '../../console/ConsoleShell';
 import { ActivityJoinRequestCard } from '../../console/ActivityJoinRequestCard';
@@ -11,6 +17,7 @@ import { ActivityJoinRequestDeclineDialog } from '../../console/ActivityJoinRequ
 type RequestFilter = 'pending' | 'all';
 
 export const JoinRequests = () => {
+  const queryClient = useQueryClient();
   const [tenantId, setTenantId] = useState(getActiveTenantId());
   const [requests, setRequests] = useState<ActivityRequestView[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -21,8 +28,8 @@ export const JoinRequests = () => {
   const loadRequests = async (activeTenantId: string) => {
     if (!activeTenantId) return;
     try {
-      const res = await api.getHostActivityJoinRequests(activeTenantId);
-      setRequests(res.data);
+      const rows = await fetchHostActivityJoinRequests(activeTenantId);
+      setRequests(rows);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load requests');
     }
@@ -48,12 +55,19 @@ export const JoinRequests = () => {
     if (!tenantId || !declineRequest) return;
     setBusyRequestId(declineRequest.id);
     try {
-      await api.decideHostActivityJoinRequest(
+      await decideHostActivityJoinRequest(
         tenantId,
         declineRequest.id,
         'rejected',
         organizerNote
       );
+      const activityId = declineRequest.activity?.id;
+      if (activityId) {
+        await afterHostJoinDecisionClientRefresh(queryClient, {
+          activityId,
+          status: 'rejected',
+        });
+      }
       setDeclineRequest(null);
       await loadRequests(tenantId);
     } catch (err) {
@@ -67,7 +81,12 @@ export const JoinRequests = () => {
     if (!tenantId) return;
     setBusyRequestId(requestId);
     try {
-      await api.decideHostActivityJoinRequest(tenantId, requestId, status);
+      await decideHostActivityJoinRequest(tenantId, requestId, status);
+      const row = requests.find((request) => request.id === requestId);
+      const activityId = row?.activity?.id;
+      if (activityId) {
+        await afterHostJoinDecisionClientRefresh(queryClient, { activityId, status });
+      }
       await loadRequests(tenantId);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to process request');

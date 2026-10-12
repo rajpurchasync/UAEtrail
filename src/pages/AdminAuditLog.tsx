@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { api, AuditLogEntry } from '../api/index';
+import type { AuditLogEntry } from '../api/types';
+import { fetchAdminAuditLogs } from '../hooks/adminConsoleApi';
 import { DashboardLayout } from '../components/layout';
 import { ADMIN_LINKS } from '../constants';
 import { AppSelect, ADMIN_FILTER_SELECT_CLASS } from '../components/ui/AppSelect';
@@ -43,7 +44,7 @@ export const AdminAuditLog = () => {
   const loadLogs = async () => {
     setLoading(true);
     try {
-      const res = await api.getAdminAuditLogs({
+      const res = await fetchAdminAuditLogs({
         page,
         pageSize: 25,
         action: actionFilter || undefined,

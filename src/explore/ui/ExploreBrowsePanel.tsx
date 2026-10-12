@@ -9,7 +9,7 @@ import { PRODUCT_EXPLORE_EMPTY_FILTERS } from '../../content/productNorthStar';
 import { tripsLegacyJoinedTabPath } from '../../config/routingCatalog';
 import { EXPLORE_SHEET, EXPLORE_TYPE } from '../../config/exploreTheme';
 import type { ExploreActivityDatePreset, ExplorePanel, MapFilterKey } from '../routing';
-import { buildDiscoveryMapListRowCard } from '../../discovery/buildDiscoveryMapListRowCard';
+import { buildDiscoveryMapListRowCard } from '../../discovery';
 import { ExploreBrowseFilterChrome } from './ExploreBrowseFilterChrome';
 import { ExploreMapDateFilter } from './ExploreMapDateFilter';
 import { VenueStateFilterMenu } from './VenueStateFilterMenu';

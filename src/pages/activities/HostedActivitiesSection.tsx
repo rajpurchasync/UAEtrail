@@ -17,7 +17,7 @@ import {
 } from '../../config/routingCatalog';
 import { matchesActivitySearch } from '../../utils/activitySearch';
 import { resolveJoinRequestActivity } from '../../utils/joinRequestActivity';
-import type { ActivityRequestView } from '../../api/index';
+import type { ActivityRequestView } from '../../api/types';
 import { useActivityInviteShareSheet } from '../../hooks/useActivityInviteShareSheet';
 import { useNavigate } from 'react-router-dom';
 

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { getActiveTenantId, setActiveTenantId } from '../../api/tenant';
-import type { TenantMembershipView } from '../../api/index';
+import type { TenantMembershipView } from '../../api/types';
 import { fetchMyTenantMemberships } from '../../hooks/tenantMembershipApi';
 import { AppSelect } from './AppSelect';
 

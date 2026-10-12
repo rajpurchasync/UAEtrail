@@ -1,6 +1,6 @@
 import { Users } from 'lucide-react';
 import type { ActivityGroupChatPostPolicy } from '@uaetrail/shared-types';
-import type { ActivityRequestView } from '../../../../api/index';
+import type { ActivityRequestView } from '../../../../api/types';
 import { ACTIVITY_DETAIL_CREW_LOCKED_HINT, ACTIVITY_DETAIL_HOST_BUDDIES_TOOLS_HINT } from '../../../../content/activityDetailCopy';
 import { ActivityDetailHostBuddiesHub } from '../ActivityDetailHostBuddiesHub';
 

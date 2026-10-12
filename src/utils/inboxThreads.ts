@@ -1,5 +1,5 @@
 import type { ChatConversationDTO } from '@uaetrail/shared-types';
-import type { SocialGroupView } from '../api/index';
+import type { SocialGroupView } from '../api/types';
 import { messagingApi } from '../messaging';
 import { formatWallInboxPreview } from './wallMessagePreview';
 

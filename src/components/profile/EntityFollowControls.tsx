@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import type { EntityFollowCheckDTO } from '@uaetrail/shared-types';
 import {
   fetchEntityFollowState,
   followEntityTarget,
+  invalidateEntityFollowsQueries,
   unfollowEntityById,
   type EntityFollowTarget,
 } from '../../hooks/entityFollowApi';
@@ -25,6 +27,7 @@ export const EntityFollowControls = ({
   className,
   onStatusMessage,
 }: EntityFollowControlsProps) => {
+  const queryClient = useQueryClient();
   const target: EntityFollowTarget | null = locationId
     ? { locationId }
     : tenantId
@@ -64,6 +67,7 @@ export const EntityFollowControls = ({
         setState({ following: true, followId });
         onStatusMessage?.('Following — outing alerts on for this place or host.');
       }
+      invalidateEntityFollowsQueries(queryClient);
     } catch (err) {
       onStatusMessage?.(err instanceof Error ? err.message : 'Could not update follow.');
     } finally {

@@ -4,7 +4,8 @@ import {
   type ExploreMapItemDTO,
   type ParticipantIntentDTO,
 } from '@uaetrail/shared-types';
-import { api } from '../api/index';
+import { fetchPublicActivityDetail } from '../hooks/usePublicActivityDetail';
+import { updateHostActivityForTenant } from '../hooks/hostActivityClientApi';
 
 /** Parse `/activity/:id` or a bare UUID from user paste. */
 export const parseActivityIdFromShareInput = (input: string): string | null => {
@@ -46,17 +47,17 @@ export const linkParentToRideshareActivity = async (
   parentActivityId: string,
   rideshareActivityId: string
 ): Promise<void> => {
-  const detail = await api.getPublicActivityDetail(rideshareActivityId);
-  const rideshare = detail.data as ActivityDTO;
+  const detail = await fetchPublicActivityDetail(rideshareActivityId);
+  const rideshare = detail.activity as ActivityDTO;
   assertRideshareForLink(rideshare, tenantId, parentActivityId);
   if (rideshare.linkedActivityId === parentActivityId) {
     return;
   }
 
-  await api.updateHostActivity(tenantId, rideshareActivityId, {
+  await updateHostActivityForTenant(tenantId, rideshareActivityId, {
     linkedActivityId: parentActivityId,
   });
-  await api.updateHostActivity(tenantId, parentActivityId, {
+  await updateHostActivityForTenant(tenantId, parentActivityId, {
     linkedRideshareActivityId: rideshareActivityId,
   });
 };

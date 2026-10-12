@@ -2,7 +2,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { AreaDTO, AreaStatus } from '@uaetrail/shared-types';
 import { areaDetailPath } from '@uaetrail/shared-types';
 import { Link } from 'react-router-dom';
-import { api } from '../api/index';
+import {
+  createAdminArea,
+  deleteAdminArea,
+  fetchAdminAreas,
+  updateAdminArea,
+} from '../hooks/adminConsoleApi';
 import { DashboardLayout } from '../components/layout';
 import { ADMIN_LINKS } from '../constants';
 import { MapPinPicker } from '../components/ui/MapPinPicker';
@@ -76,8 +81,8 @@ export const AdminAreas = () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await api.listAdminAreas();
-      setAreas(res.data);
+      const list = await fetchAdminAreas();
+      setAreas(list);
     } catch {
       setError('Could not load areas.');
     } finally {
@@ -151,9 +156,9 @@ export const AdminAreas = () => {
         center: { latitude: form.latitude, longitude: form.longitude },
       };
       if (editingId) {
-        await api.updateAdminArea(editingId, payload);
+        await updateAdminArea(editingId, payload);
       } else {
-        await api.createAdminArea(payload);
+        await createAdminArea(payload);
       }
       closeModal();
       await load();
@@ -167,7 +172,7 @@ export const AdminAreas = () => {
   const executeDelete = async () => {
     if (!confirmDelete) return;
     try {
-      await api.deleteAdminArea(confirmDelete.id);
+      await deleteAdminArea(confirmDelete.id);
       setConfirmDelete(null);
       await load();
     } catch (err) {

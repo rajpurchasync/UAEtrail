@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { api } from '../api/index';
+import {
+  fetchActivityGroupChatStatus,
+  joinActivityGroupChatSession,
+  leaveActivityGroupChatSession,
+} from './activityGroupChatClientApi';
 import { useAuth } from '../context/AuthContext';
 import { activityGroupChatPath } from '../utils/activityGroupChatNav';
 
@@ -28,8 +32,8 @@ export const useActivityCrewChatAction = (activityId: string, groupChatId?: stri
     setLoading(true);
     setError(null);
     try {
-      const res = await api.getActivityGroupChatStatus(activityId);
-      setStatus(res.data);
+      const chatStatus = await fetchActivityGroupChatStatus(activityId);
+      setStatus(chatStatus);
     } catch (err) {
       setStatus(null);
       setError(err instanceof Error ? err.message : 'Could not load crew chat.');
@@ -46,10 +50,10 @@ export const useActivityCrewChatAction = (activityId: string, groupChatId?: stri
     setBusy(true);
     setError(null);
     try {
-      const res = await api.joinActivityGroupChat(activityId);
-      setStatus(res.data);
-      if (res.data.groupId) {
-        navigate(activityGroupChatPath(res.data.groupId));
+      const joined = await joinActivityGroupChatSession(activityId);
+      setStatus(joined);
+      if (joined.groupId) {
+        navigate(activityGroupChatPath(joined.groupId));
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not join crew chat.');
@@ -82,7 +86,7 @@ export const useActivityCrewChatAction = (activityId: string, groupChatId?: stri
     setBusy(true);
     setError(null);
     try {
-      await api.leaveActivityGroupChat(activityId);
+      await leaveActivityGroupChatSession(activityId);
       await loadStatus();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not leave crew chat.');

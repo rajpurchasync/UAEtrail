@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
-import { buildDiscoveryCardViewModelCard } from '../../discovery/discoveryCardViewModel';
+import { buildDiscoveryMapListRowCard } from '../../discovery';
 import { ExploreListRow } from '../../explore/ui/ExploreListRow';
 import { matchesActivitySearch } from '../../utils/activitySearch';
 
@@ -24,7 +24,7 @@ export const ActivitiesSuggestedList = ({ items, searchQuery = '' }: ActivitiesS
   return (
     <div className="space-y-3">
       {filtered.map((item) => {
-        const card = buildDiscoveryCardViewModelCard(item, items);
+        const card = buildDiscoveryMapListRowCard(item, items);
         return (
           <ExploreListRow
             key={item.id}

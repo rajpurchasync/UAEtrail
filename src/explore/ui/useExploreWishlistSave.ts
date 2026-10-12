@@ -1,9 +1,15 @@
 import { joinAuthPath } from '../../config/routingCatalog';
+import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { ExploreCardModel } from '../exploreCardModel';
 import { resolveExploreWishlistTarget } from '../exploreCardModel';
-import { api } from '../../api/index';
+import {
+  addWishlistTarget,
+  checkWishlistTarget,
+  invalidateMeWishlistQueries,
+  removeWishlistItemById,
+} from '../../hooks/wishlistClientApi';
 import { useAuth } from '../../context/AuthContext';
 
 export type ExploreWishlistSaveState = {
@@ -18,6 +24,7 @@ export type ExploreWishlistSaveState = {
 export const useExploreWishlistSave = (card: ExploreCardModel): ExploreWishlistSaveState => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const target = resolveExploreWishlistTarget(card);
   const [saved, setSaved] = useState(false);
   const [wishlistItemId, setWishlistItemId] = useState<string | null>(null);
@@ -31,12 +38,11 @@ export const useExploreWishlistSave = (card: ExploreCardModel): ExploreWishlistS
       return;
     }
     let cancelled = false;
-    void api
-      .checkWishlist(target)
-      .then((res) => {
+    void checkWishlistTarget(target)
+      .then((state) => {
         if (cancelled) return;
-        setSaved(res.data.saved);
-        setWishlistItemId(res.data.wishlistItemId);
+        setSaved(state.saved);
+        setWishlistItemId(state.wishlistItemId);
       })
       .catch(() => {
         if (!cancelled) {
@@ -59,22 +65,23 @@ export const useExploreWishlistSave = (card: ExploreCardModel): ExploreWishlistS
     setNotice(null);
     try {
       if (saved && wishlistItemId) {
-        await api.removeWishlistItem(wishlistItemId);
+        await removeWishlistItemById(wishlistItemId);
         setSaved(false);
         setWishlistItemId(null);
         setNotice('Removed from your wishlist.');
       } else {
-        const res = await api.addWishlistItem(target);
+        const item = await addWishlistTarget(target);
         setSaved(true);
-        setWishlistItemId(res.data.id);
+        setWishlistItemId(item.id);
         setNotice('Saved to your wishlist — we can alert you when similar plans show up.');
       }
+      invalidateMeWishlistQueries(queryClient);
     } catch (err) {
       setNotice(err instanceof Error ? err.message : 'Could not update wishlist.');
     } finally {
       setBusy(false);
     }
-  }, [card.sharePath, navigate, saved, target, user, wishlistItemId]);
+  }, [card.sharePath, navigate, queryClient, saved, target, user, wishlistItemId]);
 
   return {
     canSave: Boolean(target),

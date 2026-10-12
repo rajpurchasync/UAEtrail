@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { buildExploreCardModel, resolveExploreWishlistTarget } from './exploreCardModel';
+import { buildDiscoveryCardViewModelCard } from '../discovery';
+import { resolveExploreWishlistTarget } from './exploreCardModel';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { seekingExploreMapItem } from './exploreMapItemFixtures';
 
@@ -24,7 +25,7 @@ const baseItem = (overrides: Partial<ExploreMapItemDTO>): ExploreMapItemDTO =>
 
 describe('resolveExploreWishlistTarget', () => {
   it('includes activity id and watch metadata for organize pins', () => {
-    const card = buildExploreCardModel(baseItem({}));
+    const card = buildDiscoveryCardViewModelCard(baseItem({}));
     const target = resolveExploreWishlistTarget(card);
     expect(target?.activityId).toBe('1');
     expect(target?.watchOutingCategory).toBe('hiking');
@@ -32,7 +33,7 @@ describe('resolveExploreWishlistTarget', () => {
   });
 
   it('does not wishlist-save demand pins (participation is on Explore)', () => {
-    const card = buildExploreCardModel(
+    const card = buildDiscoveryCardViewModelCard(
       seekingExploreMapItem({
         kind: 'event',
         outingCategory: 'hiking',

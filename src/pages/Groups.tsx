@@ -14,12 +14,23 @@ import {
   Settings2,
   ChevronLeft,
 } from 'lucide-react';
-import {
-  api,
+import type {
   SocialGroupInviteView,
   SocialGroupMemberView,
   SocialGroupView,
-} from '../api/index';
+} from '../api/types';
+import {
+  acceptMeGroupInviteToken,
+  createMeGroupInviteLink,
+  createMeGroupKidMember,
+  createMeSocialGroup,
+  deleteMeSocialGroup,
+  fetchMeGroupDetail,
+  fetchMeSocialGroups,
+  removeMeGroupMember,
+  updateMeGroupMemberActive,
+  updateMeGroupMemberRole,
+} from '../hooks/socialGroupClientApi';
 import { groupWallPostPolicyLabel, resolveGroupWallPostPolicy } from '../utils/groupWallPostPolicy';
 import {
   activityGroupChatPath,
@@ -113,12 +124,12 @@ export const Groups = () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await api.getMeGroups();
-      setGroups(res.data);
+      const list = await fetchMeSocialGroups();
+      setGroups(list);
       setSelectedGroupId((current) => {
         const fromUrl = searchParams.get('group');
-        if (fromUrl && res.data.some((g) => g.id === fromUrl)) return fromUrl;
-        if (current && res.data.some((g) => g.id === current)) return current;
+        if (fromUrl && list.some((g) => g.id === fromUrl)) return fromUrl;
+        if (current && list.some((g) => g.id === current)) return current;
         return null;
       });
     } catch (err) {
@@ -130,8 +141,8 @@ export const Groups = () => {
 
   const loadDetail = async (groupId: string) => {
     try {
-      const detailRes = await api.getMeGroupDetail(groupId);
-      setDetail(detailRes.data);
+      const detailPayload = await fetchMeGroupDetail(groupId);
+      setDetail(detailPayload);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load group details');
     }
@@ -177,8 +188,7 @@ export const Groups = () => {
     processedInviteRef.current = inviteToken;
     setAcceptingInvite(true);
     setError(null);
-    api
-      .acceptMeGroupInvite(inviteToken)
+    acceptMeGroupInviteToken(inviteToken)
       .then(() => {
         setSuccess('You joined the group!');
         const next = new URLSearchParams(searchParams);
@@ -210,7 +220,7 @@ export const Groups = () => {
     setMemberActionId(memberId);
     setError(null);
     try {
-      await api.updateMeGroupMemberStatus(detail.group.id, memberId, nextActive);
+      await updateMeGroupMemberActive(detail.group.id, memberId, nextActive);
       await loadDetail(detail.group.id);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not update member access');
@@ -224,7 +234,7 @@ export const Groups = () => {
     setMemberActionId(memberId);
     setError(null);
     try {
-      await api.removeMeGroupMember(detail.group.id, memberId);
+      await removeMeGroupMember(detail.group.id, memberId);
       await loadDetail(detail.group.id);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not remove member');
@@ -238,7 +248,7 @@ export const Groups = () => {
     setMemberActionId(memberId);
     setError(null);
     try {
-      await api.updateMeGroupMemberRole(detail.group.id, memberId, role);
+      await updateMeGroupMemberRole(detail.group.id, memberId, role);
       await loadDetail(detail.group.id);
       setSuccess(role === 'admin' ? 'Member promoted to admin.' : 'Admin changed to member.');
     } catch (err) {
@@ -257,7 +267,7 @@ export const Groups = () => {
     setSaving(true);
     setError(null);
     try {
-      const res = await api.createMeGroup({
+      const created = await createMeSocialGroup({
         type: groupForm.type,
         name: groupForm.name,
         slogan: groupForm.slogan || undefined,
@@ -267,7 +277,7 @@ export const Groups = () => {
       setGroupForm(emptyGroupForm);
       setShowCreateModal(false);
       await loadGroups();
-      openGroupChat(res.data.id);
+      openGroupChat(created.id);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not create group');
     } finally {
@@ -280,7 +290,7 @@ export const Groups = () => {
     setSaving(true);
     setError(null);
     try {
-      await api.deleteMeGroup(detail.group.id);
+      await deleteMeSocialGroup(detail.group.id);
       setShowDeleteModal(false);
       setDeleteConfirmed(false);
       setDetail(null);
@@ -299,7 +309,7 @@ export const Groups = () => {
     setSaving(true);
     setError(null);
     try {
-      await api.removeMeGroupMember(detail.group.id, detail.membership.id);
+      await removeMeGroupMember(detail.group.id, detail.membership.id);
       setShowLeaveModal(false);
       setDetail(null);
       setSelectedGroupId(null);
@@ -498,11 +508,11 @@ export const Groups = () => {
               setError(null);
               const invitedEmail = inviteForm.email.trim();
               try {
-                const res = await api.createMeGroupInvite(detail.group.id, {
+                const { inviteLink: link } = await createMeGroupInviteLink(detail.group.id, {
                   email: invitedEmail,
                   role: inviteForm.role,
                 });
-                setInviteLink(res.inviteLink);
+                setInviteLink(link);
                 setInviteForm({ email: '', role: 'buddy' });
                 setSuccess(`Invite sent to ${invitedEmail}.`);
                 await loadDetail(detail.group.id);
@@ -553,7 +563,7 @@ export const Groups = () => {
                   setSaving(true);
                   setError(null);
                   try {
-                    await api.createMeGroupKid(detail.group.id, { displayName: kidName });
+                    await createMeGroupKidMember(detail.group.id, { displayName: kidName });
                     setKidName('');
                     await loadDetail(detail.group.id);
                   } catch (err) {

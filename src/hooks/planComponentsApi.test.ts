@@ -11,16 +11,39 @@ const expectNoDirectApi = (rel: string) => {
 
 describe('componentsClientApi (R8.1)', () => {
   it('plan upcoming strips use hooks layer', () => {
-    expect(read('src/components/plan/PlanJoinedUpcoming.tsx')).toMatch(/planUpcomingApi/);
+    expect(read('src/components/plan/PlanSavedSection.tsx')).toMatch(/useMeWishlist/);
+    expectNoDirectApi('src/components/plan/PlanSavedSection.tsx');
+    expect(read('src/hooks/usePlanWishlistSuggestions.ts')).toMatch(/useMyJoinedActivities/);
+    for (const file of [
+      'src/pages/activities/JoinedSection.tsx',
+      'src/pages/activities/ActivitiesHubView.tsx',
+      'src/hooks/useMemberJourneyMapPinIds.ts',
+    ]) {
+      expect(read(file)).toMatch(/useJoinedUpcomingPlanData/);
+      expect(read(file)).not.toMatch(/fetchJoinedUpcomingPlanData/);
+      expectNoDirectApi(file);
+    }
+    expect(read('src/pages/activities/SelfPlansSection.tsx')).toMatch(/useMyParticipantIntents/);
+    expectNoDirectApi('src/pages/activities/SelfPlansSection.tsx');
+    expect(read('src/components/plan/PlanJoinedUpcoming.tsx')).toMatch(/useMyJoinedActivities/);
+    expect(read('src/components/plan/PlanJoinedUpcoming.tsx')).toMatch(/useMyActivityJoinRequests/);
+    expectNoDirectApi('src/components/plan/PlanJoinedUpcoming.tsx');
     expect(read('src/components/plan/PlanJoinedUpcoming.tsx')).not.toMatch(/\bapi\./);
-    expect(read('src/components/plan/PlanHostingUpcoming.tsx')).toMatch(/planUpcomingApi/);
+    expect(read('src/components/plan/PlanHostingUpcoming.tsx')).toMatch(/useMyParticipantIntents/);
+    expectNoDirectApi('src/components/plan/PlanHostingUpcoming.tsx');
     expect(read('src/components/plan/PlanHostingUpcoming.tsx')).not.toMatch(/\bapi\./);
     expect(read('src/components/ui/TenantSwitcher.tsx')).toMatch(/tenantMembershipApi/);
     expect(read('src/components/ui/TenantSwitcher.tsx')).not.toMatch(/\bapi\./);
+    expect(read('src/pages/activities/ActivitiesSuggestedList.tsx')).toMatch(
+      /buildDiscoveryMapListRowCard/
+    );
+    expectNoDirectApi('src/pages/activities/ActivitiesSuggestedList.tsx');
   });
 
   it('notifications, signup, and participant-intent sheets use hooks layer', () => {
-    expect(read('src/components/layout/NotificationBellPopover.tsx')).toMatch(/notificationInboxApi/);
+    const bell = read('src/components/layout/NotificationBellPopover.tsx');
+    expect(bell).toMatch(/notificationInboxApi/);
+    expect(bell).toMatch(/inferNotificationPath/);
     expectNoDirectApi('src/components/layout/NotificationBellPopover.tsx');
     expect(read('src/components/signup/SignupProfileWizard.tsx')).toMatch(/signupProfileApi/);
     expectNoDirectApi('src/components/signup/SignupProfileWizard.tsx');

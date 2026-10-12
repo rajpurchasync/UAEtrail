@@ -125,7 +125,15 @@
         "apps/api/src/routes/user/registerMeSubmittedPlaceRoutes.ts"
       ],
       "feDomains": ["src/api/domains/places.ts", "src/api/domains/placeRegistry.ts"],
-      "feRoots": ["src/pages/TrailDetail.tsx", "src/pages/CampDetail.tsx", "src/components/place"]
+      "feRoots": [
+        "src/pages/TrailDetail.tsx",
+        "src/pages/CampDetail.tsx",
+        "src/pages/EventDetail.tsx",
+        "src/pages/PlaceDetailPage.tsx",
+        "src/components/place",
+        "src/hooks/usePlaceDetailPage.ts",
+        "src/hooks/placeDetailClientApi.ts"
+      ]
     },
     {
       "id": "commerce",

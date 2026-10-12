@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { MemberAvailabilityDTO, UpsertMemberAvailabilityInput } from '@uaetrail/shared-types';
-import { api } from '../api/index';
+import { fetchMyMemberAvailability, saveMyMemberAvailability } from './memberAvailabilityApi';
 
 export const useMemberAvailability = (enabled: boolean) => {
   const [data, setData] = useState<MemberAvailabilityDTO | null>(null);
@@ -13,8 +13,8 @@ export const useMemberAvailability = (enabled: boolean) => {
     setLoading(true);
     setError(null);
     try {
-      const res = await api.getMyAvailability();
-      setData(res.data);
+      const availability = await fetchMyMemberAvailability();
+      setData(availability);
     } catch {
       setError('Could not load availability.');
     } finally {
@@ -31,8 +31,8 @@ export const useMemberAvailability = (enabled: boolean) => {
       setSaving(true);
       setError(null);
       try {
-        const res = await api.putMyAvailability(input);
-        setData(res.data);
+        const availability = await saveMyMemberAvailability(input);
+        setData(availability);
       } catch {
         setError('Could not save availability.');
         throw new Error('save_failed');

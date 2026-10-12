@@ -1,5 +1,7 @@
-import type { EntityFollowCheckDTO } from '@uaetrail/shared-types';
+import type { EntityFollowCheckDTO, EntityFollowDTO } from '@uaetrail/shared-types';
+import type { QueryClient } from '@tanstack/react-query';
 import { api } from '../api/index';
+import { entityFollowsQueryKey } from './clientQueryKeys';
 
 export type EntityFollowTarget = {
   tenantId?: string;
@@ -23,4 +25,13 @@ export const followEntityTarget = async (
 
 export const unfollowEntityById = async (followId: string): Promise<void> => {
   await api.unfollowEntity(followId);
+};
+
+export const fetchMeEntityFollows = async (): Promise<EntityFollowDTO[]> => {
+  const res = await api.getMeEntityFollows();
+  return res.data ?? [];
+};
+
+export const invalidateEntityFollowsQueries = (queryClient: QueryClient): void => {
+  void queryClient.invalidateQueries({ queryKey: entityFollowsQueryKey });
 };

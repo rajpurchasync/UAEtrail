@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { AreaPublicDTO } from '@uaetrail/shared-types';
-import { areasApi } from '../api/domains/areas';
+import { fetchPublishedAreas } from '../hooks/areaHubClientApi';
 
 /** Cached published areas for explore search + area pickers. */
 export const useExplorePublishedAreas = (): AreaPublicDTO[] => {
@@ -8,10 +8,9 @@ export const useExplorePublishedAreas = (): AreaPublicDTO[] => {
 
   useEffect(() => {
     let cancelled = false;
-    void areasApi
-      .listPublishedAreas()
-      .then((res) => {
-        if (!cancelled) setAreas(res.data);
+    void fetchPublishedAreas()
+      .then((areas) => {
+        if (!cancelled) setAreas(areas);
       })
       .catch(() => {
         if (!cancelled) setAreas([]);

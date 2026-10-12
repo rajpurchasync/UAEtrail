@@ -1,6 +1,11 @@
 import { activityOrganizeTopicToOutingTopic, type ActivityDTO } from '@uaetrail/shared-types';
-import { areasApi } from '../api/domains/areas';
-import { api } from '../api/index';
+import { fetchPublishedAreas } from '../hooks/areaHubClientApi';
+import {
+  createHostActivityForTenant,
+  publishHostActivityById,
+} from '../hooks/hostActivityClientApi';
+import { linkParticipantIntentToActivity } from '../hooks/participantIntentClientApi';
+import { submitPlaceContribution } from '../hooks/placeCatalogApi';
 import { HOME_HERO_OG_PATH } from '../config/seo';
 import { resolvePublishedAreaIdForPoint } from '../explore/organizePublishArea';
 import {
@@ -72,8 +77,8 @@ export const resolveOrganizeActivityLocationId = async (
     throw new Error(event ? 'Drop a meeting point pin on the map first.' : 'Drop a pin on the map first.');
   }
 
-  const areasRes = await areasApi.listPublishedAreas();
-  const areaId = resolvePublishedAreaIdForPoint(anchorLat, anchorLng, areasRes.data);
+  const publishedAreas = await fetchPublishedAreas();
+  const areaId = resolvePublishedAreaIdForPoint(anchorLat, anchorLng, publishedAreas);
   if (!areaId) {
     throw new Error(
       'Could not match a registered area for this pin. Add your spot via Explore → Add (select an area first), then organize from the catalog.'
@@ -87,21 +92,24 @@ export const resolveOrganizeActivityLocationId = async (
   const anchorDescription =
     (activityHost ? draft.joinKit.trim() : draft.description.trim()) || defaultDescription(draft.kind);
 
-  const locationRes = await api.submitPlace(tenantId, {
-    name: anchorName,
-    countryCode: 'AE',
-    emirate: 'Dubai',
-    region: 'Dubai',
-    areaId,
-    activityType,
-    description: anchorDescription.slice(0, 3000),
-    latitude: lat,
-    longitude: lng,
-    images: [HOME_HERO_OG_PATH],
-    activityAnchor: true,
-  } as Record<string, unknown>);
+  const place = await submitPlaceContribution(
+    {
+      name: anchorName,
+      countryCode: 'AE',
+      emirate: 'Dubai',
+      region: 'Dubai',
+      areaId,
+      activityType,
+      description: anchorDescription.slice(0, 3000),
+      latitude: lat,
+      longitude: lng,
+      images: [HOME_HERO_OG_PATH],
+      activityAnchor: true,
+    } as Record<string, unknown>,
+    tenantId
+  );
 
-  return locationRes.data.id;
+  return place.id;
 };
 
 /** Build canonical host activity payload from an organize draft (shared publish pipeline). */
@@ -274,16 +282,16 @@ export const publishOrganizeActivity = async (input: {
     clonedFromActivityId: sourceActivityId?.trim() || null,
     linkedActivityId: draft.kind === 'rideshare' && parentLinkId ? parentLinkId : null,
   });
-  const created = await api.createHostActivity(tenantId, publishBody);
-  await api.publishHostActivity(tenantId, created.data.id);
+  const created = await createHostActivityForTenant(tenantId, publishBody);
+  await publishHostActivityById(tenantId, created.id);
 
   if (participantIntentId) {
-    await api.linkParticipantIntentToActivity(participantIntentId, created.data.id);
+    await linkParticipantIntentToActivity(participantIntentId, created.id);
   }
 
   if (parentLinkId && draft.kind === 'rideshare') {
-    await linkParentToRideshareActivity(tenantId, parentLinkId, created.data.id);
+    await linkParentToRideshareActivity(tenantId, parentLinkId, created.id);
   }
 
-  return created.data;
+  return created;
 };

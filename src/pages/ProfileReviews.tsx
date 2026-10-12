@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { ChevronRight, Loader2, Star } from 'lucide-react';
 import type { MyReviewDTO } from '@uaetrail/shared-types';
-import { api } from '../api/index';
+import { fetchMyReviews, updateMyReviewById } from '../hooks/memberReviewsApi';
 import { useAuth } from '../context/AuthContext';
 
 import { PRODUCT_EXPLORE_CTA } from '../content/productNorthStar';
@@ -42,8 +42,8 @@ const MyReviewCard = ({
     setSaving(true);
     setError(null);
     try {
-      const res = await api.updateMyReview(review.id, { rating, comment: comment.trim() });
-      onSaved(res.data);
+      const updated = await updateMyReviewById(review.id, { rating, comment: comment.trim() });
+      onSaved(updated);
       setEditing(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not save your review.');
@@ -170,8 +170,8 @@ export const ProfileReviews = () => {
   const load = useCallback(async () => {
     if (!user) return;
     setError(null);
-    const res = await api.getMyReviews(1, 100);
-    setReviews(res.data);
+    const rows = await fetchMyReviews(1, 100);
+    setReviews(rows);
   }, [user]);
 
   useEffect(() => {

@@ -1,4 +1,4 @@
-import type { PlaceDTO } from '@uaetrail/shared-types';
+import type { LocationDTO, PlaceDTO } from '@uaetrail/shared-types';
 import type { ActivityType } from '../config/activityTypes';
 import { fetchPlaceRegistry } from '../api/domains/placeRegistry';
 import { api } from '../api/index';
@@ -19,5 +19,17 @@ export const submitPlaceContribution = async (
   const res = tenantId
     ? await api.submitPlace(tenantId, payload)
     : await api.submitUserPlace(payload);
+  return res.data;
+};
+
+export const submitUserLocationContribution = async (
+  payload: Partial<LocationDTO>
+): Promise<LocationDTO> => {
+  const res = await api.submitUserLocation(payload);
+  return res.data;
+};
+
+export const fetchMySubmittedPlaces = async (): Promise<LocationDTO[]> => {
+  const res = await api.getMySubmittedPlaces();
   return res.data;
 };
