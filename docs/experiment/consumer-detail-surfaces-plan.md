@@ -391,6 +391,8 @@ Phase 4 is the only likely **read-model** enhancement (tab-scoped previews); def
 | 2026-10-13 | **Phase 0.3 engineering default:** keep **Guide** as 4th place tab until product reverses | Recorded |
 | 2026-10-13 | **Phase 1 complete** — `NAVIGATION.md` consumer detail § + mobile tabs; `DOMAIN_CANONICALS` §3.1 | Recorded |
 | 2026-10-13 | **Phase 3 (core) shipped** — place tabs IA + `ConsumerEntityTabBar` + `?tab=` deep links | Recorded |
+| 2026-10-13 | **Phase 4 shipped** — area tabbed `MobileDetailShell`; people on overview (no people tab) | Recorded |
+| 2026-10-13 | **Phase 7 (partial)** — `entityDetailShellGuard.test.ts` for entity pages | Recorded |
 | | Phase 0.3 — Guide tab on place (product confirm) | ⬜ Pending |
 | | Phase 0.4 — Area people tab vs section | ⬜ Pending |
 | | Phase 0.5 — Shop/agency tab names | ⬜ Pending |
@@ -408,6 +410,7 @@ Phase 4 is the only likely **read-model** enhancement (tab-scoped previews); def
 | 2026-10-13 | §14–§17 handoff: conversation record, anti-drift, code anchors, implementer workflow |
 | 2026-10-13 | **Phase 1** Tier-1 vocabulary shipped (`NAVIGATION`, `DOMAIN_CANONICALS` §3.1) |
 | 2026-10-13 | **Phase 3** place tab IA + shared `ConsumerEntityTabBar` (activity + place) |
+| 2026-10-13 | **Phase 4** area hub tabs + shell; **Phase 7** initial shell guard |
 
 ---
 

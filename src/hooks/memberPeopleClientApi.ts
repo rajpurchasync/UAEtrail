@@ -13,6 +13,8 @@ import type {
 import type { ExploreAvailabilityIndex } from '../api/domains/availability';
 import { api } from '../api/index';
 
+export type { ExploreAvailabilityIndex };
+
 export const fetchMemberPeopleNetwork = async (
   segment: SocialPeopleSegment = 'all'
 ): Promise<SocialPeopleDTO> => {

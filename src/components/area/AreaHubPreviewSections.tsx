@@ -18,11 +18,15 @@ export type AreaHubOperatorPreview = {
   path: string;
 };
 
+export type AreaHubPreviewMode = 'all' | 'activities' | 'places';
+
 type AreaHubPreviewSectionsProps = {
   areaSlug: string;
   activities: ActivityDTO[];
   places: LocationDTO[];
   operators?: AreaHubOperatorPreview[];
+  /** Split hub content across area detail tabs (S9 Phase 4). Default `all`. */
+  mode?: AreaHubPreviewMode;
 };
 
 const PREVIEW_PER_GROUP = 5;
@@ -44,7 +48,12 @@ export const AreaHubPreviewSections = ({
   activities,
   places,
   operators = [],
+  mode = 'all',
 }: AreaHubPreviewSectionsProps) => {
+  const showAll = mode === 'all';
+  const showActivities = showAll || mode === 'activities';
+  const showPlaces = showAll || mode === 'places';
+
   const exploreActivities = explorePath({ list: true, area: areaSlug, panel: 'activities' });
   const exploreToday = explorePath({ list: true, area: areaSlug, panel: 'activities', date: 'today' });
   const explorePlaces = explorePath({ list: true, area: areaSlug, panel: 'venues' });
@@ -53,7 +62,8 @@ export const AreaHubPreviewSections = ({
   const shopsForRail = placeGroups.find((g) => g.key === 'shops')?.places.slice(0, 8) ?? [];
 
   return (
-    <div className="mt-8 space-y-8">
+    <div className={showAll ? 'mt-8 space-y-8' : 'space-y-8'}>
+      {showActivities ? (
       <section className="flex flex-wrap gap-2">
         <Link
           to={explorePath({ area: areaSlug, compose: { intent: 'find', kind: 'hiking' } })}
@@ -74,8 +84,9 @@ export const AreaHubPreviewSections = ({
           Add a place
         </Link>
       </section>
+      ) : null}
 
-      {shopsForRail.length > 0 ? (
+      {showPlaces && shopsForRail.length > 0 ? (
         <section className="space-y-3">
           <div className="flex items-end justify-between gap-2">
             <h2 className="text-lg font-semibold text-slate-900">Gear & shops</h2>
@@ -102,7 +113,7 @@ export const AreaHubPreviewSections = ({
         </section>
       ) : null}
 
-      {operators.length > 0 ? (
+      {showPlaces && operators.length > 0 ? (
         <section className="space-y-3" id="operators">
           <div className="flex items-end justify-between gap-2">
             <h2 className="text-lg font-semibold text-slate-900">Guides & operators</h2>
@@ -128,6 +139,7 @@ export const AreaHubPreviewSections = ({
         </section>
       ) : null}
 
+      {showActivities ? (
       <section className="space-y-3">
         <div className="flex items-end justify-between gap-2">
           <h2 className="text-lg font-semibold text-slate-900">Happening soon</h2>
@@ -167,7 +179,9 @@ export const AreaHubPreviewSections = ({
           See today on the map
         </Link>
       </section>
+      ) : null}
 
+      {showPlaces ? (
       <section className="space-y-5" id="places-list">
         <div className="flex items-end justify-between gap-2">
           <h2 className="text-lg font-semibold text-slate-900">Places in this area</h2>
@@ -219,6 +233,7 @@ export const AreaHubPreviewSections = ({
           ))
         )}
       </section>
+      ) : null}
     </div>
   );
 };

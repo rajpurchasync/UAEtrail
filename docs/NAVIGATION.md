@@ -282,7 +282,7 @@ Canonical paths only in **new UI**. Legacy URLs redirect in `src/App.tsx` — do
 | **Place (trail)** | `/trail/:id` | **Overview · Facts · Transport · Guide** (`?tab=`; legacy `location` → transport) | — |
 | **Place (camp)** | `/camp/:id` | same as trail | — |
 | **Place (venue)** | `/venue/:id` | same as trail | — |
-| **Area** | `/area/:slug` | Scroll sections today → target **Overview · Places · Activities** (+ optional People) | — |
+| **Area** | `/area/:slug` | **Overview · Places · Activities** (`?tab=`); people preview on Overview | — |
 | **Shop** | `/shop/:id` | `MobileDetailShell`; custom body → target shared public entity tabs | — |
 | **Agency / guide** | `/guide`, `/agency`, `/partner` | `ConsumerShell` + `OrganisationPublicProfile` → target entity shell (Phase 5) | — |
 | **Member (person)** | `/member/:userId` | Profile card — not a tenant storefront | — |
