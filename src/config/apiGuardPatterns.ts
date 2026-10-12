@@ -12,9 +12,6 @@ export const isHooksApiFacadeModule = (posixPath: string): boolean =>
 /** Hook modules that are not facades — must not call `api.*` / `apiRequest`. */
 export const HOOKS_NON_FACADE_API_ALLOWLIST = new Set([
   'src/hooks/activityJoinClientEffects.ts',
-  'src/hooks/activityJoinSubmit.ts',
   'src/hooks/clientQueryKeys.ts',
-  'src/hooks/contentReportSubmit.ts',
   'src/hooks/exploreMapQuery.ts',
-  'src/hooks/reviewSubmit.ts',
 ]);

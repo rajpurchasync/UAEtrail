@@ -1,11 +1,20 @@
 import type { LocationDTO, PlaceDTO } from '@uaetrail/shared-types';
 import type { ActivityType } from '../config/activityTypes';
-import { fetchPlaceRegistry } from '../api/domains/placeRegistry';
+import {
+  fetchPlaceRegistry,
+  type PlaceRegistryQuery,
+} from '../api/domains/placeRegistry';
 import { api } from '../api/index';
+
+export type { PlaceRegistryQuery };
+
+export const fetchPlaceRegistryCatalog = (
+  query: PlaceRegistryQuery = {}
+): Promise<PlaceDTO[]> => fetchPlaceRegistry(query);
 
 export const loadPlaceRegistryForPicker = async (
   activityType?: ActivityType
-): Promise<PlaceDTO[]> => fetchPlaceRegistry({ placeType: activityType });
+): Promise<PlaceDTO[]> => fetchPlaceRegistryCatalog({ placeType: activityType });
 
 export const listPublicPlacesCatalog = async (): Promise<PlaceDTO[]> => {
   const res = await api.getPublicPlaces();

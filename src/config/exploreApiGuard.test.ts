@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { usesDirectApiFacade } from './apiGuardPatterns';
 
@@ -23,7 +23,19 @@ const collectSourceFiles = (dir: string): string[] => {
   return files;
 };
 
+const RETIRED_EXPLORE_HOOKS = [
+  'src/explore/useMemberPeople.ts',
+  'src/explore/useMemberPersonBuddyRequest.ts',
+  'src/explore/useSentActivityJoinInvites.ts',
+];
+
 describe('exploreApiGuard (R8.1)', () => {
+  it('retired duplicate explore hooks stay removed (use roster / clientApi / invite modal)', () => {
+    for (const file of RETIRED_EXPLORE_HOOKS) {
+      expect(existsSync(join(process.cwd(), file)), file).toBe(false);
+    }
+  });
+
   it('organize publish refreshes client caches via hooks layer (R8.3)', () => {
     const source = readFileSync(
       join(process.cwd(), 'src/explore/ui/CreateActivityFlow.tsx'),

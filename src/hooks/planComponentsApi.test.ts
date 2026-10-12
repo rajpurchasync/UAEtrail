@@ -11,6 +11,9 @@ const expectNoDirectApi = (rel: string) => {
 
 describe('componentsClientApi (R8.1)', () => {
   it('plan upcoming strips use hooks layer', () => {
+    expect(read('src/components/plan/PlanWishlistView.tsx')).toMatch(/PlanSuggestedRail/);
+    expect(read('src/components/plan/PlanSuggestedRail.tsx')).toMatch(/usePlanWishlistSuggestions/);
+    expectNoDirectApi('src/components/plan/PlanSuggestedRail.tsx');
     expect(read('src/components/plan/PlanSavedSection.tsx')).toMatch(/useMeWishlist/);
     expectNoDirectApi('src/components/plan/PlanSavedSection.tsx');
     expect(read('src/hooks/usePlanWishlistSuggestions.ts')).toMatch(/useMyJoinedActivities/);
@@ -87,6 +90,15 @@ describe('componentsClientApi (R8.1)', () => {
       expect(read(file)).toMatch(hook);
       expectNoDirectApi(file);
     }
+  });
+
+  it('reviews and content reports use hooks ClientApi', () => {
+    expect(read('src/components/ui/ReviewSection.tsx')).toMatch(/entityReviewsClientApi/);
+    expect(read('src/components/ui/ReviewSection.tsx')).not.toMatch(/reviewSubmit/);
+    expectNoDirectApi('src/components/ui/ReviewSection.tsx');
+    expect(read('src/components/ui/ReportContentDialog.tsx')).toMatch(/contentReportClientApi/);
+    expect(read('src/components/ui/ReportContentDialog.tsx')).not.toMatch(/contentReportSubmit/);
+    expectNoDirectApi('src/components/ui/ReportContentDialog.tsx');
   });
 
   it('profile and account settings use hooks layer', () => {

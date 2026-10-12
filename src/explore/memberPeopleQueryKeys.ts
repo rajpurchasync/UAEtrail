@@ -18,9 +18,6 @@ export const memberDiscoveryRosterQueryKey = (params: MemberDiscoveryRosterQuery
     },
   ] as const;
 
-export const memberPeopleNetworkQueryKey = (segment: string) =>
-  ['member-people', 'network', segment] as const;
-
 export const memberPeopleNetworkPreviewQueryKey = () =>
   ['member-people', 'network-preview'] as const;
 

@@ -221,6 +221,15 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(orgProfile).not.toMatch(/HOST_(ACTIVITIES|TEAM|REQUESTS)_PATH/);
   });
 
+  it('G-plan: wishlist tab surfaces saved-to-map suggested rail', () => {
+    const wishlist = read('src/components/plan/PlanWishlistView.tsx');
+    expect(wishlist).toContain('PlanSuggestedRail');
+    expect(wishlist).toContain('PlanSavedSection');
+    const rail = read('src/components/plan/PlanSuggestedRail.tsx');
+    expect(rail).toContain('usePlanWishlistSuggestions');
+    expect(rail).not.toMatch(/\bapi\./);
+  });
+
   it('G-plan: Plan page is forward-looking (past outings on profile history)', () => {
     const plan = read('src/pages/Activities.tsx');
     expect(plan).not.toMatch(/timeScope=["']past["']/);

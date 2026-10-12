@@ -10,6 +10,8 @@ describe('placeCatalogApi (R8.1)', () => {
     expect(read('src/components/ui/PlaceSelect.tsx')).not.toMatch(/\bapi\./);
     expect(read('src/components/ui/SubmitPlaceForm.tsx')).toMatch(/placeCatalogApi/);
     expect(read('src/components/ui/SubmitPlaceForm.tsx')).not.toMatch(/\bapi\./);
+    expect(read('src/hooks/usePlaceRegistry.ts')).toMatch(/placeCatalogApi/);
+    expect(read('src/hooks/usePlaceRegistry.ts')).not.toMatch(/api\/domains\/placeRegistry/);
     expect(read('src/components/ui/PlaceDetailTabs.tsx')).toMatch(/placePremiumApi/);
     expect(read('src/components/ui/PlaceDetailTabs.tsx')).not.toMatch(/\bapi\./);
   });

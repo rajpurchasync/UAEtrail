@@ -2,8 +2,10 @@ import type { MemberGoalDTO } from '@uaetrail/shared-types';
 import { ProfileGoalsSection } from '../profile/ProfileGoalsSection';
 import type { SaveMemberGoalInput } from '../profile/ProfileGoalCard';
 import { PlanSavedSection } from './PlanSavedSection';
+import { PlanSuggestedRail } from './PlanSuggestedRail';
 
 type PlanWishlistViewProps = {
+  refreshKey?: number;
   goals: MemberGoalDTO[];
   saving: boolean;
   onCreateGoal: (input: SaveMemberGoalInput) => Promise<void>;
@@ -15,6 +17,7 @@ type PlanWishlistViewProps = {
 };
 
 export const PlanWishlistView = ({
+  refreshKey = 0,
   goals,
   saving,
   onCreateGoal,
@@ -41,6 +44,7 @@ export const PlanWishlistView = ({
         onOpenAddSheetHandled={onOpenAddSheetHandled}
       />
     </section>
+    <PlanSuggestedRail refreshKey={refreshKey} />
     <section aria-labelledby="plan-wishlist-saved">
       <h2 id="plan-wishlist-saved" className="mb-3 text-sm font-bold text-neutral-900">
         Saved

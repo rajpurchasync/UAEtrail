@@ -4,11 +4,8 @@
 
 const HOOKS_NON_FACADE_ALLOWLIST = new Set([
   'src/hooks/activityJoinClientEffects.ts',
-  'src/hooks/activityJoinSubmit.ts',
   'src/hooks/clientQueryKeys.ts',
-  'src/hooks/contentReportSubmit.ts',
   'src/hooks/exploreMapQuery.ts',
-  'src/hooks/reviewSubmit.ts',
 ]);
 
 const UI_LAYER_GLOBS = [

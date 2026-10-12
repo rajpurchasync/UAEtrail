@@ -271,7 +271,7 @@ The folder `src/hooks/` is a **client data boundary**, not “everything must be
 
 **Do not:** one mega-hook per role, or force React Query on every button click. **Do:** keep `api.*` inside facades only (`hooksApiFacadeGuard` + ESLint); add `use*` when shared server state justifies it.
 
-**Legacy re-exports** (`activityJoinSubmit.ts`, `reviewSubmit.ts`, `contentReportSubmit.ts`) point at facades for stable import paths — new code should import the `*ClientApi` module directly.
+**Legacy re-export shims** (`activityJoinSubmit`, `reviewSubmit`, `contentReportSubmit`) are removed — import `*ClientApi` modules directly.
 
 ---
 

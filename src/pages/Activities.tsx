@@ -179,6 +179,7 @@ export const Activities = () => {
                   />
                 ) : (
                   <PlanWishlistView
+                    refreshKey={refreshKey}
                     goals={goals}
                     saving={goalSaving}
                     onCreateGoal={createGoal}
