@@ -256,15 +256,15 @@ Ordered for **coherence**, not feature count:
 | **S1** | One member capability resolver (`/me/host-status`) enforced server-side | `MEMBER_MODEL`, `verify:host-member` |
 | **S2** | Host route modularization + fulfill removal | **Done** — `HOST_CLEANUP_ROADMAP` P1–P2 |
 | **S3** | API mount shells: **`user.ts`**, **`admin.ts`** → `register*` modules only | **Done** — admin registrars + platform master staff; user already modular |
-| **S4** | Frontend `api.*` stays domain-only | `apiLegacyGuard`, `domainImportGuard`, `consumerApiIndexGuard` (+ layer index guards); `api/index` only in `src/hooks` facades |
+| **S4** | Frontend `api.*` stays domain-only | **Done (guards)** — `apiLegacyGuard`, `domainImportGuard`, `consumerApiIndexGuard`, `hooksApiFacadeGuard`, ESLint R8; `api/index` only in `src/hooks` facades |
 | **S5** | Privacy notification matrix + viewer access everywhere | [`HOST_CLEANUP_ROADMAP.md`](./HOST_CLEANUP_ROADMAP.md) P2 |
 | **S6** | Place detail internal merge + SEO pass | **Done** — R3 `PlaceDetailCore`, thin trail/camp/event wrappers (`placeDetailCore.test.ts`) |
 | **S7** | **Viewer access VA-1–VA-7** (activity detail + explore peek on API contract) | **Done** — §15.8; layer-7 hook `composeActivityViewerAccess` / `applyActivityViewEntitlements` |
 | **S7b** | **Activity detail tabs** (Plan · Place · Buddies · Transport) + unified engagement policy | **Done** — program `complete`; wire footers + `activityDetailAcceptance` / AD-CTA matrix |
 | **S7c** | **Viewer access naming** (wire-first, collapse resolver soup) | **Done (NA-1–NA-6)** — plan §22; API `buildActivityViewerAccess`; [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §15.11 |
-| **S8** | **Discovery architecture** — card VM, explore shell, seeking read cleanup, map vNext spec | **Core shipped (R0–R6, R4 read)** — R5 promote via runbook; **R8** ongoing (`pagesApiGuard`, facades) |
+| **S8** | **Discovery architecture** — card VM, explore shell, seeking read cleanup, map vNext spec | **Wave closed (R0–R6, R4 read, R8)** — R5 vNext **promote** via [`EXPLORE_MAP_RUNBOOK.md`](./operations/EXPLORE_MAP_RUNBOOK.md); §3 metrics (seeking branches, slim map default) = optional follow-up |
 
-Phases **S0–S4** (guards), **S6–S8** (core), and **S7/S7b/S7c** are in place; **S5** manual QA + knip optional. **S7** supersedes ad-hoc peek/detail gating in the SPA (**C16** mitigated).
+Phases **S0–S4** (guards), **S6–S8** (core), and **S7/S7b/S7c** are in place; **S5** manual QA + knip optional. **S8** coded tracks are complete — remaining discovery scale work is **R5 promotion** (ops) and debt in [`system-refactor-plan.md`](./experiment/system-refactor-plan.md) §7 (not blockers). **S7** supersedes ad-hoc peek/detail gating in the SPA (**C16** mitigated).
 
 ---
 

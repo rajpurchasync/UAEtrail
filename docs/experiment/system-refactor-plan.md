@@ -1,6 +1,6 @@
 # System refactor plan — discovery, domains, surfaces
 
-**Status:** **S8 core shipped (R0–R6, R4 read)** — **R5** vNext flagged (promote via [`EXPLORE_MAP_RUNBOOK.md`](../operations/EXPLORE_MAP_RUNBOOK.md)); **R8** client facades ongoing (`pagesApiGuard`, `hooksApiFacadeGuard`)  
+**Status:** **S8 implementation wave closed (R0–R6, R4 read, R8 guards + facades)** — **R5** vNext built; **promote** via [`EXPLORE_MAP_RUNBOOK.md`](../operations/EXPLORE_MAP_RUNBOOK.md) only. **R8** = maintenance (new HTTP → `*ClientApi`; guards enforce). **R7** code gated on PM.  
 **Prerequisite read:** [`system-structure-deep-audit.md`](./system-structure-deep-audit.md) (§1–§15)  
 **Baseline (Oct 2026):** pre-refactor ~895 / ~596 / ~776 LOC — current §10  
 **Gate for every phase:** `npm run verify:system:quick` minimum; phase close → `npm run verify:system`  
@@ -242,7 +242,7 @@ Deliverable: 1-page spec in experiment folder — aggregate fields, URL pattern,
 
 ---
 
-### R8 — Client data layer (ongoing, cross-cut)
+### R8 — Client data layer (maintenance, cross-cut)
 
 **Maps to:** S4 · F-D9
 
@@ -254,7 +254,9 @@ Deliverable: 1-page spec in experiment folder — aggregate fields, URL pattern,
 
 Runs in parallel with R1–R2; do not block R1.
 
-**Status (Oct 2026):** R8.1 **done** — Vitest + ESLint (`apiGuardPatterns.ts`, `domainImportGuard`, `componentsApiIndexGuard`, `pagesApiIndexGuard`, `pagesApiGuard` incl. admin → `adminConsoleApi` / `notificationInboxApi`, `utilsListApiIndexGuard`, `consoleApiIndexGuard` — no `api/index` in UI/shared layers; DTOs via `api/types` or hook type re-exports). R8.2 — `clientQueryKeys.ts` (+ wishlist, joined activities, join requests, area hub, participant hub, inbox/badge, signup gate re-export); `useMeWishlist`, `useMyJoinedActivities`, `useMyActivityJoinRequests`, `useMyParticipantIntents` for Plan surfaces. R8.3 — join/withdraw + host join-decision engagement refresh (incl. joined + join-request plan queries); explore wishlist toggle invalidates `meWishlistQueryKey`; entity-follow toggle invalidates `entityFollowsQueryKey`; participant-intent mutations + `afterOrganizeActivityPublishClientRefresh` (map, coordination, hosted/joined strip, intent link); explore “view on map” skips legacy double `reloadExploreMap` when vNext off. Facades: `areaHubClientApi`, `accountAuthClientApi` (AuthContext), etc. `contextApiGuard` — no raw `apiRequest` in `src/context`. `useMemberCoordinationAttention` on React Query. R1.5 — RF-02 owns primary CTA parity; `exploreCopy.test` card block trimmed to list/section copy; Trips `ActivitiesSuggestedList` uses `buildDiscoveryMapListRowCard` (map list parity).
+**Status (Oct 2026):** **R8 wave exit** — R8.1–R8.3 as below; legacy re-export shims removed (`activityJoinSubmit`, `reviewSubmit`, `contentReportSubmit`); `PlanSuggestedRail` on wishlist tab; `placeCatalogApi` for registry hook. Further work is incremental only (no phase gate).
+
+R8.1 **done** — Vitest + ESLint (`apiGuardPatterns.ts`, `domainImportGuard`, `componentsApiIndexGuard`, `pagesApiIndexGuard`, `pagesApiGuard` incl. admin → `adminConsoleApi` / `notificationInboxApi`, `utilsListApiIndexGuard`, `consoleApiIndexGuard` — no `api/index` in UI/shared layers; DTOs via `api/types` or hook type re-exports). R8.2 — `clientQueryKeys.ts` (+ wishlist, joined activities, join requests, area hub, participant hub, inbox/badge, signup gate re-export); `useMeWishlist`, `useMyJoinedActivities`, `useMyActivityJoinRequests`, `useMyParticipantIntents` for Plan surfaces. R8.3 — join/withdraw + host join-decision engagement refresh (incl. joined + join-request plan queries); explore wishlist toggle invalidates `meWishlistQueryKey`; entity-follow toggle invalidates `entityFollowsQueryKey`; participant-intent mutations + `afterOrganizeActivityPublishClientRefresh` (map, coordination, hosted/joined strip, intent link); explore “view on map” skips legacy double `reloadExploreMap` when vNext off. Facades: `areaHubClientApi`, `accountAuthClientApi` (AuthContext), etc. `contextApiGuard` — no raw `apiRequest` in `src/context`. `useMemberCoordinationAttention` on React Query. R1.5 — RF-02 owns primary CTA parity; `exploreCopy.test` card block trimmed to list/section copy; Trips `ActivitiesSuggestedList` uses `buildDiscoveryMapListRowCard` (map list parity).
 
 #### R8.1 — Client boundary vs React hooks (same for admin and members)
 
@@ -356,3 +358,4 @@ Adjust if **S7b** activity-detail polish still active — **do not** duplicate e
 | 2026-10-12 | Initial plan from deep audit + domain lens |
 | 2026-10-13 | R0 exit (RF-01, §10 metrics); R1/R6 status; vNext map invalidation on approval/withdraw/host approve |
 | 2026-10-13 | Places manifest + `npm run verify:system` green (explore-alignment); `exploreCardSeeking` uses `legacyDemandExploreMapItem` |
+| 2026-10-13 | S8 wave closed in docs — R8 maintenance; R5 promote = ops runbook only |

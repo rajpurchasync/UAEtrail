@@ -2,6 +2,8 @@
 
 How `/explore` stays in sync with MongoDB: venue catalog, cache, and local env.
 
+**Refactor (Oct 2026):** S8 discovery implementation is closed — vNext bbox + FE flags are shipped behind env vars. **Production default** still uses full-region `GET /explore/map` until § [vNext bbox fetch — staging promotion](#vnext-bbox-fetch--staging-promotion-r5) passes. Plan: [`system-refactor-plan.md`](../experiment/system-refactor-plan.md).
+
 ## When the map updates
 
 `GET /api/v1/explore/map` is cached in memory (~60s) and Redis (`explore:map:payload:v2`, 60s TTL). Any write that changes pins or cards must call **`invalidateExploreMapCache()`**.
