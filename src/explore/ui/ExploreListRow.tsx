@@ -7,6 +7,7 @@ import { EnvironmentImage } from '../../components/ui/EnvironmentImage';
 import { EXPLORE_LIST_ROW, EXPLORE_TYPE } from '../../config/exploreTheme';
 import { ExploreCardDetailList, ExploreCardLocationLink, ExploreCardRatingRow } from './ExploreCardPresentation';
 import { ExploreCardTypeIcon } from './ExploreCardTypeIcon';
+import { ExploreListRowWireFooter } from './ExploreListRowWireFooter';
 
 interface ExploreListRowProps {
   card: ExploreCardModel;
@@ -138,23 +139,21 @@ export const ExploreListRow = ({
   }
 
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      onMouseEnter={onPointerEnter}
-      className={`${rowShellClass} ${rowMainClass}`}
-    >
-      {iconCell}
-      <span className="min-w-0 flex-1">
-        {titleBlock}
-        {meta ? (
-          <p className={`mt-0.5 ${metaClamp} text-sm font-medium leading-snug ${EXPLORE_TYPE.muted}`}>{meta}</p>
-        ) : (
-          <ExploreCardDetailList details={details} compact />
-        )}
-        {showJoining ? <JoiningIndicator card={card} buddyUserIds={buddyUserIds} /> : null}
-      </span>
-      <ChevronRight className="h-4 w-4 shrink-0 text-gray-300" aria-hidden />
-    </button>
+    <div className={rowShellClass} onMouseEnter={onPointerEnter}>
+      <button type="button" onClick={onClick} className={`${rowMainClass} rounded-t-2xl`}>
+        {iconCell}
+        <span className="min-w-0 flex-1">
+          {titleBlock}
+          {meta ? (
+            <p className={`mt-0.5 ${metaClamp} text-sm font-medium leading-snug ${EXPLORE_TYPE.muted}`}>{meta}</p>
+          ) : (
+            <ExploreCardDetailList details={details} compact />
+          )}
+          {showJoining ? <JoiningIndicator card={card} buddyUserIds={buddyUserIds} /> : null}
+        </span>
+        <ChevronRight className="h-4 w-4 shrink-0 text-gray-300" aria-hidden />
+      </button>
+      <ExploreListRowWireFooter card={card} />
+    </div>
   );
 };

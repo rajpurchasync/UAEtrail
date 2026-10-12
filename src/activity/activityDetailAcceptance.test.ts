@@ -80,9 +80,10 @@ describe('activity detail program — governance', () => {
 
   it('AD-PEEK-06: host peek share_activity + manage_activity handlers wired', () => {
     const actions = read('src/explore/ui/useExploreSelectionActions.ts');
-    expect(actions).toMatch(/case 'share_activity'/);
+    expect(actions).toMatch(/executeActivityMapPeekAction/);
+    expect(actions).toMatch(/shareActivity:/);
     expect(actions).toMatch(/navigator\.share/);
-    expect(actions).toMatch(/case 'manage_activity'/);
+    expect(actions).toMatch(/manageActivity:/);
     expect(actions).toMatch(/onOpenHostManage/);
     const experience = read('src/explore/ui/ExploreExperience.tsx');
     expect(experience).toMatch(/useHostActivitySheetBundle/);
@@ -99,6 +100,47 @@ describe('activity detail program — governance', () => {
     expect(sticky).toMatch(/onHostShareOuting/);
   });
 
+  it('AD-HYGIENE-02: list wire footers share ListFeedWireFooterButtons', () => {
+    const shared = read('src/list/ui/ListFeedWireFooterButtons.tsx');
+    expect(shared).toMatch(/ListFeedWireFooterVariant/);
+    const poster = read('src/list/ui/ListFeedPosterFooter.tsx');
+    expect(poster).toMatch(/ListFeedWireFooterButtons/);
+    const compact = read('src/explore/ui/ExploreListRowWireFooter.tsx');
+    expect(compact).toMatch(/ListFeedWireFooterButtons/);
+  });
+
+  it('AD-HYGIENE-01: People browse panel is not wrapped in ListFeedActionsProvider', () => {
+    const experience = read('src/explore/ui/ExploreExperience.tsx');
+    const peoplePanelBlock = experience.match(
+      /const mobileListPeopleBrowsePanel = \([\s\S]*?\n  \);/
+    )?.[0];
+    expect(peoplePanelBlock).toBeTruthy();
+    expect(peoplePanelBlock!).toMatch(/PeopleBrowsePanel/);
+    expect(peoplePanelBlock!).not.toMatch(/ListFeedActionsProvider/);
+    expect(experience).toMatch(/const mobileMapListPanel[\s\S]*ListFeedActionsProvider/);
+  });
+
+  it('AD-LIST-08: list feed and map peek share executeActivityMapPeekAction', () => {
+    const executor = read('src/activity/executeActivityMapPeekAction.ts');
+    expect(executor).toMatch(/withdraw_join/);
+    expect(executor).toMatch(/offer_rideshare/);
+    const listFeed = read('src/list/ui/ListFeedActionsProvider.tsx');
+    expect(listFeed).toMatch(/executeActivityMapPeekAction/);
+    const exploreActions = read('src/explore/ui/useExploreSelectionActions.ts');
+    expect(exploreActions).toMatch(/executeActivityMapPeekAction/);
+  });
+
+  it('AD-PEEK-07: explore map list panel wraps ListFeedActionsProvider with host actions', () => {
+    const experience = read('src/explore/ui/ExploreExperience.tsx');
+    expect(experience).toMatch(/const desktopMapListPanel[\s\S]*ListFeedActionsProvider[\s\S]*listFeedHostActions/);
+    expect(experience).toMatch(/const mobileMapListPanel[\s\S]*ListFeedActionsProvider[\s\S]*listFeedHostActions/);
+    const listRow = read('src/explore/ui/ExploreListRow.tsx');
+    expect(listRow).toMatch(/ExploreListRowWireFooter/);
+    const wireFooter = read('src/explore/ui/ExploreListRowWireFooter.tsx');
+    expect(wireFooter).toMatch(/useListFeedActionsOptional/);
+    expect(wireFooter).toMatch(/onPrimaryFooter/);
+  });
+
   it('AD-PEEK-03: activity map peek must not branch to HostActivityCtas', () => {
     const peek = read('src/explore/ui/ExploreItemPeekParts.tsx');
     expect(peek).not.toMatch(/showHostActivityCtas[\s\S]*HostActivityCtas/);
@@ -112,7 +154,8 @@ describe('activity detail program — governance', () => {
     const page = read('src/pages/ActivityDetail.tsx');
     expect(page).toMatch(/hostDetailCtas/);
     expect(page).not.toMatch(/footerOverride/);
-    expect(page).not.toMatch(/hostMobilePlanAccessory/);
+    const view = read('src/components/activity/ActivityDetailView.tsx');
+    expect(view).not.toMatch(/hostMobilePlanAccessory/);
   });
 
   it('AD-PRES-01: public activity detail returns presentation envelope', () => {

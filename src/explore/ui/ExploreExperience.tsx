@@ -583,12 +583,14 @@ export const ExploreExperience = () => {
   };
 
   const desktopMapListPanel = (
-    <ExploreBrowsePanel
-      {...browsePanelShared}
-      listItems={listItems}
-      onClose={browse.closeListPanel}
-      closePanelAriaLabel="Close map list"
-    />
+    <ListFeedActionsProvider {...listFeedHostActions}>
+      <ExploreBrowsePanel
+        {...browsePanelShared}
+        listItems={listItems}
+        onClose={browse.closeListPanel}
+        closePanelAriaLabel="Close map list"
+      />
+    </ListFeedActionsProvider>
   );
 
   const desktopDiscoverBrowsePanel = (
@@ -608,27 +610,27 @@ export const ExploreExperience = () => {
   );
 
   const mobileListPeopleBrowsePanel = (
-    <ListFeedActionsProvider key="explore-list-people-browse" {...listFeedHostActions}>
-      <PeopleBrowsePanel
-        {...peopleBrowsePanelProps}
+    <PeopleBrowsePanel
+      key="explore-list-people-browse"
+      {...peopleBrowsePanelProps}
+      onClose={browse.closeListPanel}
+      closePanelAriaLabel="Close People"
+      closeButtonVariant="dismiss"
+      mobileSheetChrome
+    />
+  );
+
+  const mobileMapListPanel = (
+    <ListFeedActionsProvider key="explore-map-list" {...listFeedHostActions}>
+      <ExploreBrowsePanel
+        {...browsePanelShared}
+        listItems={listItems}
         onClose={browse.closeListPanel}
-        closePanelAriaLabel="Close People"
+        closePanelAriaLabel="Close list"
         closeButtonVariant="dismiss"
         mobileSheetChrome
       />
     </ListFeedActionsProvider>
-  );
-
-  const mobileMapListPanel = (
-    <ExploreBrowsePanel
-      key="explore-map-list"
-      {...browsePanelShared}
-      listItems={listItems}
-      onClose={browse.closeListPanel}
-      closePanelAriaLabel="Close list"
-      closeButtonVariant="dismiss"
-      mobileSheetChrome
-    />
   );
 
   const mobileDiscoverBrowsePanel = (

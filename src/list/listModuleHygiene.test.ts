@@ -98,6 +98,13 @@ describe('list module hygiene', () => {
     expect(experience).not.toMatch(/<ListFeedActionsProvider>\s*<BrowseListPageShell/);
   });
 
+  it('map list compact rows use optional list feed actions for L1 footers', () => {
+    const exploreShell = readFileSync(join(process.cwd(), 'src/explore/ui/ExploreExperience.tsx'), 'utf8');
+    const listRow = readFileSync(join(process.cwd(), 'src/explore/ui/ExploreListRow.tsx'), 'utf8');
+    expect(exploreShell).toMatch(/mobileMapListPanel[\s\S]*ListFeedActionsProvider[\s\S]*listFeedHostActions/);
+    expect(listRow).toMatch(/ExploreListRowWireFooter/);
+  });
+
   it('forbids legacy rail poster variant strings', () => {
     const violations: string[] = [];
     for (const file of sources) {

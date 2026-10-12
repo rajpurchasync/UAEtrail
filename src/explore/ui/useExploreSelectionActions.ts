@@ -22,6 +22,7 @@ import { finalizeExploreCardLinkedRideshare } from '../linkedRideshareExplore';
 import { canShowDemandLinkRideshareOffer } from '../linkActivityRideshareOffer';
 import { openActivityGroupChat } from '../../utils/openActivityGroupChat';
 import { messagesRouteForRole } from '../../utils/authRouting';
+import { executeActivityMapPeekAction } from '../../activity/executeActivityMapPeekAction';
 import {
   activityMapPeekNeedsJoinContext,
   activityMapPeekSkipsJoinContext,
@@ -326,27 +327,18 @@ export const useExploreSelectionActions = ({
   const handleActivityMapPeekAction = useCallback(
     (actionId: ActivityMapPeekActionId) => {
       const activity = selected?.activity;
-      switch (actionId) {
-        case 'open_crew_chat':
-          void handleHostMessage();
-          return;
-        case 'message_host':
-          handleMessageActivityHost();
-          return;
-        case 'invite_crew':
-          handleInviteCrew();
-          return;
-        case 'link_rideshare':
-          if (activity && onCreateLinkedRideshare) {
-            onCreateLinkedRideshare(activity);
-          }
-          return;
-        case 'request_join':
-          handleJoin();
-          return;
-        case 'pending_join':
-          return;
-        case 'share_activity': {
+      executeActivityMapPeekAction(actionId, {
+        openCrewChat: () => void handleHostMessage(),
+        messageHost: handleMessageActivityHost,
+        inviteCrew: handleInviteCrew,
+        linkRideshare: () => {
+          if (activity && onCreateLinkedRideshare) onCreateLinkedRideshare(activity);
+        },
+        offerRideshare: () => {
+          if (activity && onCreateLinkedRideshare) onCreateLinkedRideshare(activity);
+        },
+        requestJoin: handleJoin,
+        shareActivity: () => {
           if (activity && onShareHostedActivity) {
             onShareHostedActivity(activity);
             return;
@@ -358,9 +350,8 @@ export const useExploreSelectionActions = ({
           if (typeof navigator !== 'undefined' && navigator.share) {
             void navigator.share({ title: card.shareTitle, text, url }).catch(() => undefined);
           }
-          return;
-        }
-        case 'manage_activity':
+        },
+        manageActivity: () => {
           if (!activity) return;
           if (onOpenHostManage) {
             onOpenHostManage(activity, 'participants');
@@ -368,20 +359,18 @@ export const useExploreSelectionActions = ({
           }
           setSelectedId(null);
           navigate(`${activityDetailPath(activity.id)}?tab=buddies`);
-          return;
-        case 'withdraw_join':
+        },
+        withdrawJoin: () => {
           if (joinUiState.kind === 'pending' || joinUiState.kind === 'confirmed') {
             joinActions.setShowWithdraw(true);
           }
-          return;
-        case 'offer_rideshare':
-          if (activity && onCreateLinkedRideshare) {
-            onCreateLinkedRideshare(activity);
-          }
-          return;
-        default:
-          return;
-      }
+        },
+        viewDetail: () => {
+          if (!activity) return;
+          setSelectedId(null);
+          navigate(activityDetailPath(activity.id));
+        },
+      });
     },
     [
       selected?.activity,

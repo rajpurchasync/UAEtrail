@@ -235,8 +235,8 @@ Peek/detail **must not** diverge: same ordered action list per state after L1 `s
 | Layer | Status |
 |-------|--------|
 | **Planned** | Full §6.2 matrix + §6.0 three-zone peek + profile CTAs + host manage flows — **this section** |
-| **Partially implemented** | Host share picker (friends/groups beyond native share); §6.2 narrative polish only |
-| **Not implemented** | Host share picker (friends/groups) beyond native share sheet |
+| **Partially implemented** | §6.2 narrative table polish only (wire + AD-CTA-01 are source of truth) |
+| **Not implemented** | Deeper in-app share UX beyond `ActivityInviteShareSheet` (optional product polish) |
 | **Wrong path still live** | — peek bypass removed (AD-PEEK-03 ✅); host detail uses wire `plan_host_share` + `hostDetailCtas` (AD-PRES-03 ✅) |
 
 ### 6.5 Extension (camping, activity-kind plan bodies)
@@ -321,7 +321,7 @@ Reuse **same engagement policy**; add **presentation slices** per `activityType`
 |----|-----------|---------------|--------|
 | AD-ARCH-01 | Program doc is canonical checklist | `activityDetailAcceptance` governance | done |
 | AD-ARCH-04 | §6 dynamic CTA spec captured (A–E + §6.2.1–4) | `activity-detail-cta-matrix` governance | done |
-| AD-CHROME-01 | Chrome emoji + title (D2) | `activityDetailAcceptance` AD-CHROME-01 | done (uncommitted) |
+| AD-CHROME-01 | Chrome emoji + title (D2) | `activityDetailAcceptance` AD-CHROME-01 | done |
 | AD-PRES-01 | Wire `presentation` on GET detail | API route contains `presentation` | done |
 | AD-PRES-02 | FE uses `footerByTab` + `tabs` | `activityDetailAcceptance` + `resolveActivityDetailTabUi.test` | done |
 | AD-PEEK-01 | Three strips on peek | `memberSurfacesAcceptance` AD-4 | done |
@@ -335,6 +335,10 @@ Reuse **same engagement policy**; add **presentation slices** per `activityType`
 | AD-PEEK-05 | Host “My host profile” on peek people row | `activityDetailAcceptance` AD-PEEK-05 | done |
 | AD-PRES-03 | Host mobile footer Share + Chat/Manage via `plan_host_share` | `activityDetailAcceptance` AD-PRES-03 | done |
 | AD-PEEK-06 | Host peek `share_activity` / `manage_activity` handlers | `activityDetailAcceptance` AD-PEEK-06 | done |
+| AD-PEEK-07 | Map list (`list=1`) host/join wire footers | `activityDetailAcceptance` AD-PEEK-07 + `ExploreListRowWireFooter` | done |
+| AD-LIST-08 | One peek action executor (map peek + list feed) | `executeActivityMapPeekAction.test.ts` + `activityDetailAcceptance` AD-LIST-08 | done |
+| AD-HYGIENE-01 | No list-feed provider on People browse | `activityDetailAcceptance` AD-HYGIENE-01 | done |
+| AD-HYGIENE-02 | Poster + map list wire footers share one button row | `activityDetailAcceptance` AD-HYGIENE-02 + `ListFeedWireFooterButtons` | done |
 
 ---
 
@@ -342,10 +346,11 @@ Reuse **same engagement policy**; add **presentation slices** per `activityType`
 
 | Target | Replaced by |
 |--------|-------------|
-| `showHostActivityCtas` on activity map/list peek | Wire `mapPeekActions` + handlers |
-| Duplicate peek CTA logic in `ExploreItemPeekParts` | `resolveActivityPeekEngagement` only |
-| FE-only `computeActivityMapPeekActions` outside fallback module | API wire + one FE fallback |
-| Multiple engagement resolvers (consolidate) | `buildActivityPresentationDTO` (+ `surface`) |
+| `showHostActivityCtas` on activity map/list peek | Wire `mapPeekActions` + handlers ✅ |
+| Duplicate peek CTA logic in `ExploreItemPeekParts` | `resolveActivityPeekEngagement` only ✅ |
+| FE-only `computeActivityMapPeekActions` outside fallback module | API wire + `activityPeekEngagement` fallback ✅ |
+| Duplicate peek **action handlers** (map vs list) | `executeActivityMapPeekAction` (AD-LIST-08) ✅ |
+| Multiple engagement **resolvers** (flags vs wire vs peek) | L1 policy; optional FE barrel merge later |
 
 ---
 

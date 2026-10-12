@@ -111,8 +111,6 @@ export interface ActivityDetailViewProps {
   viewerEntitlements?: ActivityViewerEntitlementsDTO | null;
   /** Host manage sheet — same tabs/content without page chrome or sticky join footer. */
   layout?: 'page' | 'embedded';
-  /** Host ⋯ on mobile Plan hero (duplicate, delete, …). */
-  hostMobilePlanAccessory?: ReactNode;
   /** Host — crew chat post policy (`groupChatPostPolicy` on activity). */
   hostCrewChatPolicy?: {
     tenantId: string;
@@ -160,7 +158,6 @@ export const ActivityDetailView = ({
   showCrewLockedHint = false,
   viewerEntitlements = null,
   layout = 'page',
-  hostMobilePlanAccessory,
   hostCrewChatPolicy,
   hostBuddiesHub,
   wireFooterByTab = null,
@@ -517,7 +514,6 @@ export const ActivityDetailView = ({
               activity.locationName
             )
           }
-          trailing={mobileTab === 'plan' ? hostMobilePlanAccessory : undefined}
         />
       ) : null}
       <div

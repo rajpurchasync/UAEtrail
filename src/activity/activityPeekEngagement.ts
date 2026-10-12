@@ -148,6 +148,7 @@ export const activityMapPeekNeedsJoinContext = (
   if (card.source !== 'activity' || !card.showJoinActions) return false;
   const actions = resolveActivityMapPeekActions(card, joinUiState);
   if (actions.some((action) => action.id === 'request_join')) return true;
+  if (actions.some((action) => action.id === 'withdraw_join')) return true;
   return activityMapPeekShowsJoinFlow(card, joinUiState);
 };
 

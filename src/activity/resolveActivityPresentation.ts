@@ -21,3 +21,9 @@ export {
   resolveActivityPresentationPeekActions,
   type ActivityPeekEngagement,
 } from './activityPeekEngagement';
+
+export {
+  ACTIVITY_MAP_PEEK_ACTION_IDS,
+  executeActivityMapPeekAction,
+  type ActivityMapPeekActionHandlers,
+} from './executeActivityMapPeekAction';

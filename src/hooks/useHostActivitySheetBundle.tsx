@@ -5,6 +5,7 @@ import { activityDetailPath } from '../config/routingCatalog';
 import { ActivityManageSheet } from '../components/host/ActivityManageSheet';
 import type { HostActivityManageInitialView } from '../components/host/hostActivityManageViews';
 import type { ListFeedHostActivityActions } from '../list/ui/ListFeedActionsProvider';
+import { navigateToCreateLinkedRideshare } from '../explore/navigateCreateLinkedRideshare';
 import { useActivityInviteShareSheet } from './useActivityInviteShareSheet';
 import { useHostActivityManageActions } from './useHostActivityManageActions';
 
@@ -36,6 +37,11 @@ export const useHostActivitySheetBundle = (input: {
     [inviteShare.openInviteFromActivity]
   );
 
+  const onCreateLinkedRideshare = useCallback(
+    (parent: ActivityDTO) => navigateToCreateLinkedRideshare(navigate, parent),
+    [navigate]
+  );
+
   const listFeedHostActions: ListFeedHostActivityActions = useMemo(
     () => ({
       onShareHostedActivity: shareHostedActivity,
@@ -44,8 +50,15 @@ export const useHostActivitySheetBundle = (input: {
         if (activity.status !== 'published') return;
         inviteShare.openInviteFromActivity(activity, { canSendBuddyInvites: true });
       },
+      onCreateLinkedRideshare,
     }),
-    [shareHostedActivity, input.tenantId, openHostManage, inviteShare.openInviteFromActivity]
+    [
+      shareHostedActivity,
+      input.tenantId,
+      openHostManage,
+      inviteShare.openInviteFromActivity,
+      onCreateLinkedRideshare,
+    ]
   );
 
   const closeManage = useCallback(() => {
