@@ -17,7 +17,7 @@ import { ShopFeaturedPicksSection } from './ShopFeaturedPicksSection';
 import { ShareButton } from '../ui/ShareButton';
 import { ReviewSection } from '../ui/ReviewSection';
 import { CatalogRatingSummary, DetailReviewFooter, scrollToReviewAnchor } from '../ui/DetailReviewChrome';
-import { explorePath } from '../../config/routingCatalog';
+import { detailBackPath } from '../../config/routingCatalog';
 import { shopPublicPath } from '../../utils/shopPaths';
 import { fetchOrganisationReviews } from '../../hooks/organisationConsoleApi';
 import { useAuth } from '../../context/AuthContext';
@@ -85,7 +85,7 @@ export const ShopPublicPage = ({ shop }: ShopPublicPageProps) => {
   };
 
   const publicPath = shopPublicPath({ merchantId: shop.id });
-  const mapBack = explorePath({ panel: 'shops', filter: 'shops' });
+  const mapBack = detailBackPath('shop');
   const website = shop.websiteUrl?.trim() || null;
   const reviewTargetId = shop.reviewTargetId?.trim() || null;
   const [reviews, setReviews] = useState<ReviewDTO[]>([]);

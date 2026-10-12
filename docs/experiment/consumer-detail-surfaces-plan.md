@@ -109,12 +109,12 @@ flowchart LR
 | Step | Deliverable | Owner |
 |------|-------------|--------|
 | 0.1 | Product sign-off on **inventory table §1** (Goals on Plan, People split, My Map under history) | Product |
-| 0.2 | Design reference: 1 Figma frame per **entity template** (activity already canonical) | Design |
+| 0.2 | *(Waived — no Figma.)* Entity template reference = shipped **activity detail** in repo (`ActivityDetailView`, shells §16) | — |
 | 0.3 | Decision: **Place** — keep “Guided information” as 4th tab vs fold into Facts | Product + design |
 | 0.4 | Decision: **Area** — tab ids `overview \| places \| activities` (+ optional `people` tab vs section) | Product |
 | 0.5 | Decision: **Shop/Agency** — shared 3-tab model names (e.g. About · Offerings · Location) | Product |
 | 0.6 | Issue/PR template: “Surface phase X” checklist (tests + NAVIGATION delta) | Eng |
-| 0.7 | Design **entity detail** Figma frame annotated to code slots (§15.2); activity = reference | Design |
+| 0.7 | *(Waived — no Figma.)* Design contract = §15.2 code-first regions + PR screenshots | — |
 | 0.8 | Confirm **anti-drift stack** (§15) accepted: shells, shared tab bar, copy modules, wire CTAs | Eng lead |
 
 **Exit:** Checkbox row in this doc §12 decision log; no `verify:system` required.
@@ -314,6 +314,8 @@ Phase 4 is the only likely **read-model** enhancement (tab-scoped previews); def
 
 ## 8. Manual QA matrix (run at Phase 2, 4, 5 close)
 
+**Route checklist:** `BASE_URL=https://your-staging-host npm run consumer-detail:qa-routes` (substitute `:id` / `:slug` / `:userId` from seed).
+
 **Tester:** signed-in member + guest where noted.
 
 | Surface | Route | Checks |
@@ -399,7 +401,7 @@ Explore, Plan, Chat, Notifications, badges, settings, landing: covered by existi
 
 | Date | Decision | Status |
 |------|----------|--------|
-| 2026-10-13 | This plan created; implementation **not** started | Recorded |
+| 2026-10-13 | This plan created (superseded by eng-complete rows below) | Recorded |
 | 2026-10-13 | **Separate from R8/S8** — discovery refactor wave closed; this plan is UX shell / IA only (no R1–R8 scope) | Recorded |
 | 2026-10-13 | **Do not big-bang** — phases 0–7 sequential gates; Phase 2 ∥ Phase 3 after Phase 1 | Recorded |
 | 2026-10-13 | **17-surface inventory** (§1) accepted as planning baseline pending product 0.1 sign-off | Recorded |
@@ -418,8 +420,8 @@ Explore, Plan, Chat, Notifications, badges, settings, landing: covered by existi
 | | Phase 0.4 — Area people tab vs section | ⬜ Pending |
 | | Phase 0.5 — Shop/agency tab names | ⬜ Pending |
 | | Phase 0.1 — Inventory sign-off (product checkbox) | ⬜ Pending |
-| | Phase 0.7 — Figma entity template | ⬜ Pending |
-| | Phase 0.8 — Anti-drift stack (§15) | ⬜ Pending |
+| 2026-10-13 | **Phase 0.2 / 0.7 waived** — no Figma program; code reference + §15.2 PR screenshots | Recorded |
+| 2026-10-13 | **Phase 0.8 (eng):** §15.4 ladder in CI — shells, tab wire, lineage, `consumerDetailAntiDriftGuard` | Recorded |
 
 ---
 
@@ -437,6 +439,7 @@ Explore, Plan, Chat, Notifications, badges, settings, landing: covered by existi
 | 2026-10-13 | **Phase 7** tab wire guards + consumer detail acceptance tests |
 | 2026-10-13 | **§18.4** `detail-surface-lineage-contract` API tests |
 | 2026-10-13 | **§18.4** extended — activity, `/tenants/:slug`, `/shop/shops/:id` lineage |
+| 2026-10-13 | **§8** `consumer-detail:qa-routes` + **§15.3** `consumerDetailAntiDriftGuard`; shop back → `detailBackPath('shop')` |
 
 ---
 
@@ -459,7 +462,7 @@ Explore, Plan, Chat, Notifications, badges, settings, landing: covered by existi
 
 | Phase | Start when |
 |-------|------------|
-| **0** | Workshop scheduled; §12 rows 0.1, 0.3–0.5, 0.7–0.8 checked |
+| **0** | Workshop scheduled; §12 rows 0.1, 0.3–0.5 checked; 0.2/0.7 waived (no Figma); 0.8 eng in CI |
 | **1** | Phase 0.1 inventory agreed (or product waives with written note in §12) |
 | **2** | Phase 1 merged; activity tab ids in `DOMAIN_CANONICALS` |
 | **3** | Phase 0.3 Guide decision; Phase 1 done |
@@ -503,10 +506,10 @@ Full table: [`member-surfaces-implementation-plan.md`](./member-surfaces-impleme
 
 **Tenant branding (shop/agency):** Phase 5 standardizes **chrome slots only** — hero frame, tab rail, footer slot. Inner product/team content components keep operator imagery and copy.
 
-### 15.2 Design contract (Phase 0.7)
+### 15.2 Design contract (code-first — no Figma)
 
-1. One Figma **entity detail** frame: regions = §2.1 (chrome · hero · tabs · body · footer).
-2. **Activity detail** = reference implementation mapped to components.
+1. Entity detail **regions** = §2.1 (chrome · hero · tabs · body · footer), implemented via shells in §16.
+2. **Activity detail** = reference implementation in repo (`ActivityDetailView`, tab bar, footers).
 3. **Non-detail surfaces** listed in §2.2 — do not force entity template on Explore/Plan/Chat.
 4. PR screenshot: mobile hero + tab row for the surface touched.
 
@@ -526,7 +529,7 @@ Full table: [`member-surfaces-implementation-plan.md`](./member-surfaces-impleme
 | Docs | Tier 1 `NAVIGATION` + `DOMAIN_CANONICALS` tab ids | Phase 1+ per §10 |
 | Types | `ActivityDetailTabId`, place/area tab unions | Same PR as tab rename |
 | Tests | `activityDetailAcceptance`, `mapDetailEngagementParity`, `placeDetailCore.test.ts` | Activity + place |
-| Guards | `entityDetailShellGuard` (Phase 7) | CI on entity pages |
+| Guards | `entityDetailShellGuard`, `consumerDetailAntiDriftGuard` (§15.3 back + hub) | CI on entity pages |
 | Human | §8 manual QA matrix | Phase 2, 4, 5 close |
 | Optional later | Playwright screenshots on 2–3 golden routes | Not in scope until Phase 7 done |
 
@@ -555,6 +558,8 @@ Full table: [`member-surfaces-implementation-plan.md`](./member-surfaces-impleme
 | Public entity shell | `src/components/entity-public/EntityPublicDetailShell.tsx` |
 | Data lineage guard | `src/config/detailSurfaceDataLineageGuard.test.ts` |
 | §8 entity route matrix (automated) | `src/config/consumerDetailQaMatrixGuard.test.ts` |
+| §15.3 anti-drift (back + hub) | `src/config/consumerDetailAntiDriftGuard.test.ts` |
+| §8 manual route printer | `scripts/consumer-detail-manual-qa-routes.mjs` — `npm run consumer-detail:qa-routes` |
 | API admin/member → public read | `apps/api/tests/detail-surface-lineage-contract.test.ts` |
 | Shop public | `src/components/shop/ShopPublicPage.tsx` |
 | Agency public | `src/pages/OrganisationProfile.tsx`, `OrganisationPublicProfile.tsx` |

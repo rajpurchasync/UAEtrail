@@ -44,6 +44,11 @@ describe('consumerDetailSurfacesAcceptance', () => {
         wire: 'organisationPublicDetailTab',
         tabChrome: /ConsumerEntityTabBar/,
       },
+      {
+        file: 'src/components/activity/detail/ActivityDetailTabBar.tsx',
+        wire: 'activityDetailTab',
+        tabChrome: /ConsumerEntityTabBar/,
+      },
     ];
     const violations: string[] = [];
     for (const { file, wire, tabChrome } of surfaces) {

@@ -50,6 +50,7 @@ Complete these **on the VPS** when you connect. Use this list to track progress.
 - [ ] `npm run verify:system` (or `verify:system:quick` on CI) on the release commit
 - [ ] `npm run test:explore-alignment` when explore/FAB changed
 - [ ] Staging smoke aligned with [`NAVIGATION.md`](./NAVIGATION.md) (explore-first IA — not legacy organizer/community nav)
+- [ ] **Consumer detail (S9):** `BASE_URL=https://staging-host npm run consumer-detail:qa-routes` then run §8 matrix in [`experiment/consumer-detail-surfaces-plan.md`](./experiment/consumer-detail-surfaces-plan.md) (substitute seed ids)
 - [ ] **Staging ops (ordered, per env)** — detail: [`operations/SEEKING_STORAGE_RUNBOOK.md`](./operations/SEEKING_STORAGE_RUNBOOK.md). On the server with production `.env` / compose API container:
   1. `npm run seeking:storage-status` — read JSON; fix any `activeIntentsMissingSeekingActivity` before step 2
   2. `npm --workspace @uaetrail/api run backfill-seeking-activities -- --dry-run`, then without `--dry-run` until step 1 reports zero missing

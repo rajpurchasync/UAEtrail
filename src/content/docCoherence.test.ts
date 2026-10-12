@@ -137,5 +137,15 @@ describe('doc coherence (Tier 1)', () => {
     expect(plan).toMatch(/\*\*Status:\*\* Eng complete/);
     expect(plan).toMatch(/detail-surface-lineage-contract/);
     expect(plan).toMatch(/consumerDetailQaMatrixGuard/);
+    expect(plan).toMatch(/consumerDetailAntiDriftGuard/);
+    expect(plan).toMatch(/0\.2 \/ 0\.7 waived.*no Figma/i);
+    expect(plan).not.toMatch(/Figma entity template.*Pending/i);
+  });
+
+  it('DOCS_INDEX Tier 3 reflects S9 eng complete (not not-started)', () => {
+    const index = readFileSync(join(DOCS, 'DOCS_INDEX.md'), 'utf8');
+    expect(index).toMatch(/consumer detail shells \(S9 eng complete/i);
+    expect(index).not.toMatch(/consumer detail shells \(phased, not started\)/i);
+    expect(index).toMatch(/consumer-detail:qa-routes/);
   });
 });
