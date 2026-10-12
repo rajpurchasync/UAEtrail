@@ -36,6 +36,7 @@ import { buildActivityRedactedDetail } from '../../lib/activity-redacted-detail.
 import { PRIVATE_ACTIVITY_MESSAGE } from '../../services/activity-viewer-access.js';
 import { composeActivityViewerAccess } from '../../services/compose-activity-viewer-access.js';
 import { buildActivityPresentationForDetail } from '../../lib/build-activity-presentation.js';
+import { countPendingActivityInvitesForSenderOnActivity } from '../../lib/activity-invites-store.js';
 import { resolveMemberHostStatus } from '../../services/member-host-status.js';
 import { resolveViewerPendingJoinInvite } from '../../services/activity-invite.js';
 import { createRequestSchema, eventIdParamSchema, requestIdParamSchema, rsvpSchema } from './schemas.js';
@@ -132,6 +133,14 @@ registerActivityRoute(router, 'get', '/:id', optionalAuth, validate({ params: ev
       }
     }
 
+    const pendingJoinInviteCount =
+      viewerUserId != null
+        ? await countPendingActivityInvitesForSenderOnActivity({
+            activityId: id,
+            fromUserId: viewerUserId,
+          })
+        : 0;
+
     const presentation = buildActivityPresentationForDetail({
       event,
       viewerAccess: access,
@@ -140,6 +149,7 @@ registerActivityRoute(router, 'get', '/:id', optionalAuth, validate({ params: ev
       myRequest: myRequest
         ? { status: myRequest.status, canWithdraw: myRequest.canWithdraw }
         : null,
+      pendingJoinInviteCount,
     });
 
     if (access.exposure === 'none') {

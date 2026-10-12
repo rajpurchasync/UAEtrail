@@ -16,11 +16,12 @@ export const buildActivityPresentationForDetail = (input: {
   myRequest: { status: string; canWithdraw: boolean } | null;
   previewMode?: boolean;
   isEmbedded?: boolean;
+  pendingJoinInviteCount?: number;
 }): ActivityPresentationDTO => {
   const hostUserId = input.event.createdById ?? input.event.hostId ?? null;
   const isHostUser = Boolean(input.viewerUserId && hostUserId && input.viewerUserId === hostUserId);
 
-  return resolveActivityEngagementPolicy({
+  const policy = resolveActivityEngagementPolicy({
     viewerAccess: input.viewerAccess,
     isHostUser,
     previewMode: input.previewMode ?? false,
@@ -39,5 +40,11 @@ export const buildActivityPresentationForDetail = (input: {
     myParticipation: input.myParticipation,
     myRequest: input.myRequest,
     confirmedParticipantCount: input.event.participants?.length ?? 0,
-  }).presentation;
+    pendingJoinInviteCount: input.pendingJoinInviteCount ?? 0,
+  });
+
+  return {
+    ...policy.presentation,
+    strips: policy.strips,
+  };
 };

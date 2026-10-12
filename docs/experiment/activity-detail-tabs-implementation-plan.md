@@ -1,6 +1,6 @@
 # Activity detail & map peek — implementation program
 
-**Status:** `in_progress` · **Current phase:** program wrap (Phases 4–7 shipped; §6.7 step 9 Tier-1 parity)  
+**Status:** `complete` (Oct 2026) · **Phases 0–8 shipped**; §6.2 narrative rows may still show ◐ for polish — wire + AD-CTA-01 are source of truth  
 **Tier-1 (surgical only):** [`NAVIGATION.md`](../NAVIGATION.md) § Activity detail · [`CREATE_FLOW.md`](../CREATE_FLOW.md) · [`DOMAIN_CANONICALS.md`](../DOMAIN_CANONICALS.md) §15 · [`MEMBER_MODEL.md`](../MEMBER_MODEL.md) · [`COMMUNICATION.md`](../COMMUNICATION.md)  
 **Related track (do not merge backlogs):** [`member-surfaces-implementation-plan.md`](./member-surfaces-implementation-plan.md) §19 Plan hub / seeking — **complete** for eng.
 
@@ -135,7 +135,7 @@ Legend: **✅** implemented (rough parity) · **◐** partial / wrong surface / 
 | Primary join | Request to join (+ join mode label) | Same + sticky `plan_join` | — | ✅ wire `request_join` / `JoinRequestActions` |
 | Secondary | View details | Share (chrome) | — | ✅ `view_detail`; ✅ share on detail |
 | View host | Gated (upsell if not Pro/friend) | Same (`canViewHostProfileBeforeJoin`) | Not friend: Add friend + Follow | ◐ peek/detail host row; ✅ profile buddy + follow |
-| View participants | Pro-locked roster; **friends** visible/clickable | Buddies tab lock + friend subset | Friend profile: Message (no unfriend on profile — Buddies page only) | ◐ detail mask ✅; peek shows **full** previews ❌ (AD-PRO-01) |
+| View participants | Pro-locked roster; **friends** visible/clickable | Buddies tab lock + friend subset | Friend profile: Message (no unfriend on profile — Buddies page only) | ✅ AD-PRO-01 peek roster mask |
 | Rideshare | View linked → rideshare peek | Transport tab | — | ✅ logistics strip + transport tab; ◐ no **offer** in strip for free user |
 
 #### B — **Pro** participant, **before** crew
@@ -144,16 +144,16 @@ Legend: **✅** implemented (rough parity) · **◐** partial / wrong surface / 
 |------|------|--------|-------|--------|
 | Join row | Request + View details | Request + Share | Same as general | ✅ |
 | View host | Enabled → profile | Enabled | Host profile CTAs: Add friend + Follow; if friend: Message + **Unfollow** (follow control) | ◐ Message+Follow ✅; **Unfollow** = follow toggle ✅; friend **unfriend** not on profile |
-| View participants | Unlocked list + profile routes | Buddies unlocked | Pro connect on profiles | ✅ detail; 📋 peek roster |
-| Rideshare | View + **offer** (network) | View + offer (Pro) | Offer in **Logistics** strip + actions | 📋 AD-PRO-02 / missing wire `offer_rideshare` on participant |
+| View participants | Unlocked list + profile routes | Buddies unlocked | Pro connect on profiles | ✅ AD-PRO-01 |
+| Rideshare | View + **offer** (network) | View + offer (Pro) | Offer in **Logistics** strip + actions | ✅ AD-PRO-02 + `offer_rideshare` on wire (Pro) |
 
 #### C — General participant, **after** approval or RSVP (in crew)
 
 | Item | Peek | Detail | Status |
 |------|------|--------|--------|
-| Status | **Joined** chip (target) | Joined chip in hero strip | ◐ detail ✅; 📋 peek chip |
-| Main CTAs | Chat + Invite friends | Chat shortcuts + invite footer | ◐ `open_crew_chat` + `invite_crew` on peek; detail footer + `ActivityDetailMobileFooter` |
-| Secondary | Carpool available + offer (Pro); **Withdraw** | Same + withdraw in join UI | ◐ withdraw **detail only**; 📋 peek withdraw; 📋 carpool offer in peek footer/strip |
+| Status | **Joined** chip | Joined chip in hero strip | ✅ peek + detail |
+| Main CTAs | Chat + Invite friends | Chat shortcuts + invite footer | ✅ wire `open_crew_chat` + `invite_crew` |
+| Secondary | Rideshare offer (Pro); **Withdraw** | Same + withdraw in join UI | ✅ `withdraw_join` + `offer_rideshare` on peek (Pro); detail join UI |
 | View host | Enabled | Enabled | ✅ post-crew entitlements |
 | Participants | Pro lock + friends | Buddies lock | ◐ peek |
 | Rideshare | View + offer (Pro) | Transport | ◐ view ✅; offer gated in UI, not unified in peek actions |
@@ -162,16 +162,16 @@ Legend: **✅** implemented (rough parity) · **◐** partial / wrong surface / 
 
 | Item | Peek | Detail | Manage (Buddies) | Status |
 |------|------|--------|------------------|--------|
-| Primary | **Share** + **Manage** (invite friends/groups) | Share + Manage | No participants + Invite + invited chips | ◐ detail **Share** + host hub ✅; peek uses **`HostActivityCtas` bypass** or wire **chat-first** host actions — **not** Share+Manage spec (AD-PEEK-03) |
-| Host section | “My host profile” → public profile | Same | — | 📋 copy/route polish |
-| Participants | `0/N` + invited chip | Same | Empty state + invite | ◐ capacity row; 📋 invited chip |
+| Primary | **Share** + **Manage** | Share + Manage (`plan_host_share` + host CTAs) | No participants + Invite + invited chips | ✅ `share_activity` + `manage_activity` peek; AD-PRES-03 detail footer |
+| Host section | “My host profile” → public profile | Same | — | ✅ AD-PEEK-05 |
+| Participants | `0/N` + invited chip | Hero + peek strips | Empty state + invite | ✅ AD-DEDUPE-01 `pendingJoinInviteCount` |
 | Rideshare | No link + Add (Pro) | Transport empty + add | — | ◐ `link_rideshare` on wire for host; peek bypass |
 
 #### E — Host, published, **with joiners**
 
 | Item | Peek | Detail | Manage | Status |
 |------|------|--------|--------|--------|
-| CTAs | Message + Share + Manage (secondary → open detail) | Message + Manage sheet (invite, share, +rideshare, duplicate, delete) | All participants visible; friend labels; confirm attendance; bulk confirm → reviews | ◐ `HostActivityCtas` / chat-primary wire ≠ Message+Share+Manage; ✅ `ActivityParticipantsPanel` confirm |
+| CTAs | Crew chat + Share + Manage | Chat + Manage sheet | All participants visible; friend labels; confirm attendance | ✅ `open_crew_chat` first when joiners; share/manage wire; ✅ confirm attendance |
 | Rideshare | Linked + Add (Pro) | Transport | — | ◐ partial |
 
 ### 6.2.1 Cross-cutting rules (every row in §6.2)
@@ -202,7 +202,7 @@ Host **tenant** public profiles (`/guide/:slug`, agency row, etc.) keep publishe
 | Capability | Product | Module |
 |------------|---------|--------|
 | Empty roster | “No participants yet” + **Invite** | `ActivityDetailHostBuddiesHub`, invite footers |
-| Invited / pending | **Invited** chip on peek + detail capacity area when wire supports | 📋 chips |
+| Invited / pending | **Invited** chip on peek + detail hero | ✅ `pendingJoinInviteCount` wire |
 | With joiners | Host sees **all** participants (including private profiles) + **friend** label on buddies | `ActivityParticipantsPanel` |
 | Per participant | Name → profile; **Confirm attendance** per row; bulk select confirm | `ActivityParticipantsPanel` |
 | After confirm | **Review participant** flow (post check-in) | Plan/Buddies prompts (Phase 8 ✅); tie to attendance confirm |
@@ -235,9 +235,9 @@ Peek/detail **must not** diverge: same ordered action list per state after L1 `s
 | Layer | Status |
 |-------|--------|
 | **Planned** | Full §6.2 matrix + §6.0 three-zone peek + profile CTAs + host manage flows — **this section** |
-| **Partially implemented** | Public/join_request/participant **peek** wire actions; detail join/withdraw/share/tab footers; entitlements on host profile + detail roster; logistics **view** linked ride; host confirm attendance |
+| **Partially implemented** | Host share picker (friends/groups beyond native share); §6.2 narrative polish only |
 | **Not implemented** | Host share picker (friends/groups) beyond native share sheet |
-| **Wrong path still live** | Detail host hub still uses `HostActivityCtas` on Plan/Buddies (peek bypass removed — AD-PEEK-03 ✅) |
+| **Wrong path still live** | — peek bypass removed (AD-PEEK-03 ✅); host detail uses wire `plan_host_share` + `hostDetailCtas` (AD-PRES-03 ✅) |
 
 ### 6.5 Extension (camping, activity-kind plan bodies)
 
@@ -333,6 +333,8 @@ Reuse **same engagement policy**; add **presentation slices** per `activityType`
 | AD-CTA-01 | §6.2.4 parity (L1) | `activity-detail-cta-matrix.test.ts` runtime | done (E: `open_crew_chat` when joiners) |
 | AD-DEDUPE-01 | Host invited chip on peek | `activityDetailAcceptance` + `explore-map-viewer-access` | done |
 | AD-PEEK-05 | Host “My host profile” on peek people row | `activityDetailAcceptance` AD-PEEK-05 | done |
+| AD-PRES-03 | Host mobile footer Share + Chat/Manage via `plan_host_share` | `activityDetailAcceptance` AD-PRES-03 | done |
+| AD-PEEK-06 | Host peek `share_activity` / `manage_activity` handlers | `activityDetailAcceptance` AD-PEEK-06 | done |
 
 ---
 

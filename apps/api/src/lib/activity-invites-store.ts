@@ -86,6 +86,16 @@ export const listPendingActivityInvitesForInvitee = async (
 export const countPendingActivityInvitesForInvitee = async (toUserId: string): Promise<number> =>
   collection().countDocuments({ toUserId, status: 'pending' });
 
+export const countPendingActivityInvitesForSenderOnActivity = async (input: {
+  activityId: string;
+  fromUserId: string;
+}): Promise<number> =>
+  collection().countDocuments({
+    activityId: input.activityId,
+    fromUserId: input.fromUserId,
+    status: 'pending',
+  });
+
 export const countPendingActivityInvitesByActivityIdsForSender = async (input: {
   fromUserId: string;
   activityIds: string[];

@@ -8,6 +8,7 @@ import {
   type ActivityDetailTabId,
   resolveActivityDetailTabFooterKind,
 } from './activity-detail-tab-footers.js';
+import type { ActivityEngagementStripsDTO } from './activity-engagement-policy.js';
 
 const TRANSPORT_REQUIREMENT_PATTERN = /^(Reachable by|Vehicle:)/i;
 
@@ -61,6 +62,8 @@ export type ActivityPresentationDTO = {
   engagement: ActivityPresentationEngagementDTO;
   tabs: ActivityPresentationTabsDTO;
   footerByTab: Record<ActivityDetailTabId, ActivityDetailTabFooterKind>;
+  /** Peek-parity strip flags (detail hero invited chip, etc.). */
+  strips?: ActivityEngagementStripsDTO;
 };
 
 export type BuildActivityPresentationInput = {

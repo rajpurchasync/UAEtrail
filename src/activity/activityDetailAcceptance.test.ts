@@ -14,7 +14,7 @@ const MEMBER_SURFACES = 'docs/experiment/member-surfaces-implementation-plan.md'
 describe('activity detail program — governance', () => {
   it('AD-ARCH-01: canonical program doc exists with phase status', () => {
     const plan = read(PROGRAM_DOC);
-    expect(plan).toMatch(/Status:\*\* `in_progress`/);
+    expect(plan).toMatch(/\*\*Status:\*\* `(in_progress|complete)`/);
     expect(plan).toMatch(/## 8\. Trace matrix/);
     expect(plan).toMatch(/AD-PEEK-03/);
   });
@@ -78,16 +78,37 @@ describe('activity detail program — governance', () => {
     expect(strips).toMatch(/activityPeekPendingInviteChipLabel/);
   });
 
+  it('AD-PEEK-06: host peek share_activity + manage_activity handlers wired', () => {
+    const actions = read('src/explore/ui/useExploreSelectionActions.ts');
+    expect(actions).toMatch(/case 'share_activity'/);
+    expect(actions).toMatch(/navigator\.share/);
+    expect(actions).toMatch(/case 'manage_activity'/);
+    expect(actions).toMatch(/\?tab=buddies/);
+  });
+
   it('AD-PEEK-03: activity map peek must not branch to HostActivityCtas', () => {
     const peek = read('src/explore/ui/ExploreItemPeekParts.tsx');
     expect(peek).not.toMatch(/showHostActivityCtas[\s\S]*HostActivityCtas/);
     expect(peek).not.toMatch(/<HostActivityCtas/);
   });
 
+  it('AD-PRES-03: host detail uses wire plan_host_share footer + hostDetailCtas', () => {
+    const sticky = read('src/components/activity/detail/ActivityDetailStickyFooter.tsx');
+    expect(sticky).toMatch(/hostSecondaryActions/);
+    expect(sticky).toMatch(/plan_host_share/);
+    const page = read('src/pages/ActivityDetail.tsx');
+    expect(page).toMatch(/hostDetailCtas/);
+    expect(page).not.toMatch(/footerOverride/);
+    expect(page).not.toMatch(/hostMobilePlanAccessory/);
+  });
+
   it('AD-PRES-01: public activity detail returns presentation envelope', () => {
     const routes = read('apps/api/src/routes/user/registerPublicActivityRoutes.ts');
     expect(routes).toMatch(/presentation/);
     expect(routes).toMatch(/buildActivityPresentationForDetail/);
+    expect(routes).toMatch(/pendingJoinInviteCount/);
+    const hero = read('src/activity/activityDetailHeroStatus.ts');
+    expect(hero).toMatch(/pendingJoinInviteCount/);
   });
 
   it('AD-CHROME-01: mobile chrome uses emoji + activity title (AD-2b, not kind-only chrome)', () => {

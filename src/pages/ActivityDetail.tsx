@@ -248,6 +248,16 @@ export const ActivityDetail = () => {
     });
   }, [isActivityHostUser, activity, navigate, inviteShare.openInviteFromActivity]);
 
+  const hostDetailCtas =
+    isActivityHostUser && hostActivityCtaHandlers && activity ? (
+      <HostActivityCtas
+        activity={activity}
+        linkRideshareTenantId={gate.tenantId}
+        canAddLinkedRide={canAddLinkedRide}
+        handlers={hostActivityCtaHandlers}
+      />
+    ) : null;
+
   const hostRemoveParticipantNotice = useMemo(() => {
     if (!hostRemoveConfirm) return null;
     return hostActivityCancelParticipantNotice(hostRemoveConfirm, activity?.participants);
@@ -432,27 +442,9 @@ export const ActivityDetail = () => {
         error={error}
         onJoin={isActivityHostUser ? undefined : openJoinModal}
         onWithdraw={isActivityHostUser ? undefined : () => joinActions.setShowWithdraw(true)}
-        footerOverride={
-          isActivityHostUser && hostActivityCtaHandlers ? (
-            <HostActivityCtas
-              activity={activity}
-              linkRideshareTenantId={gate.tenantId}
-              canAddLinkedRide={canAddLinkedRide}
-              handlers={hostActivityCtaHandlers}
-            />
-          ) : undefined
-        }
+        hostDetailCtas={hostDetailCtas}
         sidebarJoinOverride={
-          isActivityHostUser && hostActivityCtaHandlers ? (
-            <div className="hidden md:block">
-              <HostActivityCtas
-                activity={activity}
-                linkRideshareTenantId={gate.tenantId}
-                canAddLinkedRide={canAddLinkedRide}
-                handlers={hostActivityCtaHandlers}
-              />
-            </div>
-          ) : undefined
+          hostDetailCtas ? <div className="hidden md:block">{hostDetailCtas}</div> : undefined
         }
         confirmedSidebarExtras={isActivityHostUser ? null : confirmedSidebarExtras}
         canSendJoinInvites={isConfirmedParticipant}
@@ -476,17 +468,6 @@ export const ActivityDetail = () => {
               }
             : undefined
         }
-        hostMobilePlanAccessory={
-          isActivityHostUser && hostActivityCtaHandlers && mobileTab === 'plan' && !isRedactedPreview ? (
-            <HostActivityCtas
-              variant="menuOnly"
-              activity={activity}
-              linkRideshareTenantId={gate.tenantId}
-              canAddLinkedRide={canAddLinkedRide}
-              handlers={hostActivityCtaHandlers}
-            />
-          ) : undefined
-        }
         hostBuddiesHub={
           isActivityHostUser && gate.tenantId && !isRedactedPreview
             ? {
@@ -498,6 +479,7 @@ export const ActivityDetail = () => {
         }
         wireFooterByTab={effectiveWirePresentation?.footerByTab ?? null}
         wireTabs={effectiveWirePresentation?.tabs ?? null}
+        wireStrips={effectiveWirePresentation?.strips ?? null}
       />
       {activity && id ? (
         <ActivityDetailJoinWelcomeSheet

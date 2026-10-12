@@ -33,6 +33,8 @@ export type ActivityDetailStickyFooterProps = {
   showInviteShare: boolean;
   sharePayload: { title: string; text: string; path: string };
   showParticipantFooterShortcuts: boolean;
+  /** Host Plan/Buddies footer — Chat + Manage under share (wire `plan_host_share`). */
+  hostSecondaryActions?: ReactNode;
 };
 
 /** v3.2 §9 — tab-scoped sticky footer (Plan join falls through to `joinButton`). */
@@ -50,6 +52,7 @@ export const ActivityDetailStickyFooter = ({
   showInviteShare,
   sharePayload,
   showParticipantFooterShortcuts,
+  hostSecondaryActions,
 }: ActivityDetailStickyFooterProps) => {
   if (!tabScopedFooterEnabled) return joinButton;
 
@@ -101,14 +104,17 @@ export const ActivityDetailStickyFooter = ({
 
   if (tabFooterKind === 'plan_host_share' && showInviteShare) {
     return wrapMobileFooter(
-      <div className="w-full [&_button]:flex [&_button]:w-full [&_button]:justify-center [&_button]:rounded-xl [&_button]:bg-emerald-600 [&_button]:px-4 [&_button]:py-3 [&_button]:text-sm [&_button]:font-bold [&_button]:text-white [&_button]:shadow-lg [&_button]:glass-0">
-        <ShareButton
-          title={sharePayload.title}
-          text={sharePayload.text}
-          path={sharePayload.path}
-          label={ACTIVITY_DETAIL_TAB_FOOTER_SHARE_OUTING}
-          iconClassName="h-4 w-4 text-white"
-        />
+      <div className="flex w-full flex-col gap-2">
+        <div className="w-full [&_button]:flex [&_button]:w-full [&_button]:justify-center [&_button]:rounded-xl [&_button]:bg-emerald-600 [&_button]:px-4 [&_button]:py-3 [&_button]:text-sm [&_button]:font-bold [&_button]:text-white [&_button]:shadow-lg [&_button]:glass-0">
+          <ShareButton
+            title={sharePayload.title}
+            text={sharePayload.text}
+            path={sharePayload.path}
+            label={ACTIVITY_DETAIL_TAB_FOOTER_SHARE_OUTING}
+            iconClassName="h-4 w-4 text-white"
+          />
+        </div>
+        {hostSecondaryActions}
       </div>,
       false
     );

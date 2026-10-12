@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Users, ChevronRight } from 'lucide-react';
 import type {
   ActivityDetailDTO,
+  ActivityEngagementStripsDTO,
   ActivityGroupChatPostPolicy,
   ActivityPresentationTabsDTO,
   MyActivityRequestDTO,
@@ -87,7 +88,8 @@ export interface ActivityDetailViewProps {
   error?: string | null;
   onJoin?: () => void;
   onWithdraw?: () => void;
-  footerOverride?: ReactNode;
+  /** Host Chat + Manage (sticky `plan_host_share` + desktop sidebar). */
+  hostDetailCtas?: ReactNode;
   sidebarJoinOverride?: ReactNode;
   /** Desktop sidebar — full crew chat / notifications cards (hidden on mobile; use footer shortcuts). */
   confirmedSidebarExtras?: ReactNode;
@@ -127,6 +129,8 @@ export interface ActivityDetailViewProps {
   wireFooterByTab?: Record<ActivityDetailTabId, ActivityDetailTabFooterKind> | null;
   /** Wire `presentation.tabs` from GET /activities/:id (AD-PRES-02). */
   wireTabs?: ActivityPresentationTabsDTO | null;
+  /** Wire `presentation.strips` — host invited chip on hero, etc. */
+  wireStrips?: ActivityEngagementStripsDTO | null;
 }
 
 export const ActivityDetailView = ({
@@ -140,7 +144,7 @@ export const ActivityDetailView = ({
   error = null,
   onJoin,
   onWithdraw,
-  footerOverride,
+  hostDetailCtas,
   sidebarJoinOverride,
   confirmedSidebarExtras,
   joinDisabled,
@@ -160,6 +164,7 @@ export const ActivityDetailView = ({
   hostBuddiesHub,
   wireFooterByTab = null,
   wireTabs = null,
+  wireStrips = null,
 }: ActivityDetailViewProps) => {
   const { user } = useAuth();
   const isEmbedded = layout === 'embedded';
@@ -323,6 +328,8 @@ export const ActivityDetailView = ({
     slotsTotal: activity.slotsTotal ?? 0,
     previewMode,
     isHostUser,
+    pendingJoinInviteCount: wireStrips?.pendingJoinInviteCount,
+    confirmedParticipantCount: activity.participants?.length ?? 0,
   });
   const heroFactChips =
     showMobileTabs && !previewMode
@@ -397,7 +404,7 @@ export const ActivityDetailView = ({
       : null;
 
   const joinButton = consumerJoinEnabled
-    ? footerOverride ??
+    ? hostDetailCtas ??
       (previewMode
         ? previewFooter
         : pendingOrConfirmedFooter ??
@@ -436,6 +443,7 @@ export const ActivityDetailView = ({
       showInviteShare={showInviteShare}
       sharePayload={sharePayload}
       showParticipantFooterShortcuts={participantFooterShortcuts}
+      hostSecondaryActions={hostDetailCtas}
     />
   );
 

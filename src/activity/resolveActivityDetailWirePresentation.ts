@@ -50,7 +50,7 @@ export const resolveActivityDetailWirePresentation = (
   const linkedRideshareActivityId =
     input.activity.linkedRideshare?.id ?? input.activity.linkedParentActivity?.id ?? null;
 
-  return resolveActivityEngagementPolicy({
+  const policy = resolveActivityEngagementPolicy({
     viewerAccess: input.viewerAccess,
     isHostUser: input.isHostUser,
     previewMode: input.previewMode ?? false,
@@ -71,5 +71,10 @@ export const resolveActivityDetailWirePresentation = (
     myParticipation: input.myParticipation ?? null,
     myRequest: input.myRequest ?? null,
     confirmedParticipantCount: input.activity.participants?.length ?? 0,
-  }).presentation;
+  });
+
+  return {
+    ...policy.presentation,
+    strips: policy.strips,
+  };
 };

@@ -69,12 +69,12 @@ describe('doc coherence (Tier 1)', () => {
     expect(system).toMatch(/\/list/);
   });
 
-  it('activity detail program doc is indexed and in_progress', () => {
+  it('activity detail program doc is indexed with status', () => {
     const plan = readFileSync(
       join(DOCS, 'experiment/activity-detail-tabs-implementation-plan.md'),
       'utf8'
     );
-    expect(plan).toMatch(/in_progress/);
+    expect(plan).toMatch(/\*\*Status:\*\* `(in_progress|complete)`/);
     expect(plan).toMatch(/activityDetailAcceptance\.test\.ts/);
     expect(plan).toMatch(/## 6\. Dynamic CTAs/);
     expect(plan).toMatch(/#### E — Host, published, \*\*with joiners\*\*/);

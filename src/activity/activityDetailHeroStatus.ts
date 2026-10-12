@@ -1,5 +1,6 @@
 import type { JoinRequestUiState } from '../utils/joinRequestUi';
 import { pendingApprovalLabel } from '../utils/joinRequestUi';
+import { activityPeekPendingInviteChipLabel } from '../content/activityPeekCopy';
 
 export type ActivityDetailHeroStatusChip = {
   label: string;
@@ -13,8 +14,32 @@ export const resolveActivityDetailHeroStatusChips = (input: {
   slotsTotal: number;
   previewMode: boolean;
   isHostUser: boolean;
+  pendingJoinInviteCount?: number;
+  confirmedParticipantCount?: number;
 }): ActivityDetailHeroStatusChip[] => {
-  if (input.previewMode || input.isHostUser) return [];
+  if (input.previewMode) return [];
+
+  if (input.isHostUser) {
+    const chips: ActivityDetailHeroStatusChip[] = [];
+    const total = input.slotsTotal;
+    const joined =
+      input.confirmedParticipantCount ??
+      (total > 0 ? Math.max(0, total - input.slotsAvailable) : 0);
+    if (total > 0) {
+      chips.push({
+        label: `${joined}/${total} going`,
+        tone: 'neutral',
+      });
+    }
+    const pendingInvites = input.pendingJoinInviteCount ?? 0;
+    if (pendingInvites > 0) {
+      chips.push({
+        label: activityPeekPendingInviteChipLabel(pendingInvites),
+        tone: 'neutral',
+      });
+    }
+    return chips;
+  }
 
   const chips: ActivityDetailHeroStatusChip[] = [];
 
