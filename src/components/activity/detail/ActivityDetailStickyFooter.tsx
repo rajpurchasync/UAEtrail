@@ -35,6 +35,8 @@ export type ActivityDetailStickyFooterProps = {
   showParticipantFooterShortcuts: boolean;
   /** Host Plan/Buddies footer — Chat + Manage under share (wire `plan_host_share`). */
   hostSecondaryActions?: ReactNode;
+  /** Host Plan/Buddies — open invite + share sheet (friends / link) instead of web Share API only. */
+  onHostShareOuting?: () => void;
 };
 
 /** v3.2 §9 — tab-scoped sticky footer (Plan join falls through to `joinButton`). */
@@ -53,6 +55,7 @@ export const ActivityDetailStickyFooter = ({
   sharePayload,
   showParticipantFooterShortcuts,
   hostSecondaryActions,
+  onHostShareOuting,
 }: ActivityDetailStickyFooterProps) => {
   if (!tabScopedFooterEnabled) return joinButton;
 
@@ -105,15 +108,25 @@ export const ActivityDetailStickyFooter = ({
   if (tabFooterKind === 'plan_host_share' && showInviteShare) {
     return wrapMobileFooter(
       <div className="flex w-full flex-col gap-2">
-        <div className="w-full [&_button]:flex [&_button]:w-full [&_button]:justify-center [&_button]:rounded-xl [&_button]:bg-emerald-600 [&_button]:px-4 [&_button]:py-3 [&_button]:text-sm [&_button]:font-bold [&_button]:text-white [&_button]:shadow-lg [&_button]:glass-0">
-          <ShareButton
-            title={sharePayload.title}
-            text={sharePayload.text}
-            path={sharePayload.path}
-            label={ACTIVITY_DETAIL_TAB_FOOTER_SHARE_OUTING}
-            iconClassName="h-4 w-4 text-white"
-          />
-        </div>
+        {onHostShareOuting ? (
+          <button
+            type="button"
+            onClick={onHostShareOuting}
+            className="ios-btn flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white shadow-lg active:bg-emerald-700"
+          >
+            {ACTIVITY_DETAIL_TAB_FOOTER_SHARE_OUTING}
+          </button>
+        ) : (
+          <div className="w-full [&_button]:flex [&_button]:w-full [&_button]:justify-center [&_button]:rounded-xl [&_button]:bg-emerald-600 [&_button]:px-4 [&_button]:py-3 [&_button]:text-sm [&_button]:font-bold [&_button]:text-white [&_button]:shadow-lg [&_button]:glass-0">
+            <ShareButton
+              title={sharePayload.title}
+              text={sharePayload.text}
+              path={sharePayload.path}
+              label={ACTIVITY_DETAIL_TAB_FOOTER_SHARE_OUTING}
+              iconClassName="h-4 w-4 text-white"
+            />
+          </div>
+        )}
         {hostSecondaryActions}
       </div>,
       false

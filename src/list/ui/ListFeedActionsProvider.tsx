@@ -8,7 +8,9 @@ import {
   type ReactNode,
 } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { ActivityMapPeekActionId, UserRole } from '@uaetrail/shared-types';
+import type { ActivityDTO, ActivityMapPeekActionId, UserRole } from '@uaetrail/shared-types';
+import { buildShareText, buildShareUrl } from '../../utils/share';
+import type { HostActivityManageInitialView } from '../../components/host/hostActivityManageViews';
 import { resolveActivityHostUserId } from '@uaetrail/shared-types';
 import { useAuth } from '../../context/AuthContext';
 import { joinAuthPath } from '../../config/routingCatalog';
@@ -39,7 +41,21 @@ export const useListFeedActions = (): ListFeedActionsContextValue => {
   return ctx;
 };
 
-export const ListFeedActionsProvider = ({ children }: { children: ReactNode }) => {
+export type ListFeedHostActivityActions = {
+  onShareHostedActivity?: (activity: ActivityDTO) => void;
+  onOpenHostManage?: (
+    activity: ActivityDTO,
+    initialView?: HostActivityManageInitialView
+  ) => void;
+  onInviteCrew?: (activity: ActivityDTO) => void;
+};
+
+export const ListFeedActionsProvider = ({
+  children,
+  onShareHostedActivity,
+  onOpenHostManage,
+  onInviteCrew,
+}: ListFeedHostActivityActions & { children: ReactNode }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const isGuest = !user;
@@ -122,9 +138,49 @@ export const ListFeedActionsProvider = ({ children }: { children: ReactNode }) =
         return;
       }
 
+      if (actionId === 'share_activity' && card.activity) {
+        if (onShareHostedActivity) {
+          onShareHostedActivity(card.activity);
+          return;
+        }
+        if (card.sharePath && typeof navigator !== 'undefined' && navigator.share) {
+          const url = buildShareUrl(card.sharePath);
+          const text = buildShareText(card.shareTitle, card.shareText ?? undefined);
+          void navigator.share({ title: card.shareTitle, text, url }).catch(() => undefined);
+        }
+        return;
+      }
+
+      if (actionId === 'manage_activity' && card.activity && onOpenHostManage) {
+        onOpenHostManage(card.activity, 'participants');
+        return;
+      }
+
+      if (actionId === 'invite_crew' && card.activity && onInviteCrew) {
+        onInviteCrew(card.activity);
+        return;
+      }
+
+      if (actionId === 'view_detail') {
+        navigate(card.path);
+        return;
+      }
+
+      if (actionId === 'pending_join') {
+        return;
+      }
+
       beginJoin(card);
     },
-    [user, guestGatedAction, beginJoin, navigate]
+    [
+      user,
+      guestGatedAction,
+      beginJoin,
+      navigate,
+      onShareHostedActivity,
+      onOpenHostManage,
+      onInviteCrew,
+    ]
   );
 
   const footerModel = useCallback(

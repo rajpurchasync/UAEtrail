@@ -248,6 +248,11 @@ export const ActivityDetail = () => {
     });
   }, [isActivityHostUser, activity, navigate, inviteShare.openInviteFromActivity]);
 
+  const onHostShareOuting = useCallback(() => {
+    if (!activity || activity.status !== 'published') return;
+    inviteShare.openInviteFromActivity(activity, { canSendBuddyInvites: true });
+  }, [activity, inviteShare.openInviteFromActivity]);
+
   const hostDetailCtas =
     isActivityHostUser && hostActivityCtaHandlers && activity ? (
       <HostActivityCtas
@@ -480,6 +485,7 @@ export const ActivityDetail = () => {
         wireFooterByTab={effectiveWirePresentation?.footerByTab ?? null}
         wireTabs={effectiveWirePresentation?.tabs ?? null}
         wireStrips={effectiveWirePresentation?.strips ?? null}
+        onHostShareOuting={isActivityHostUser ? onHostShareOuting : undefined}
       />
       {activity && id ? (
         <ActivityDetailJoinWelcomeSheet

@@ -87,6 +87,12 @@ describe('activity detail program — governance', () => {
     const experience = read('src/explore/ui/ExploreExperience.tsx');
     expect(experience).toMatch(/ActivityManageSheet/);
     expect(experience).toMatch(/onOpenHostManage: tenantId/);
+    expect(actions).toMatch(/onShareHostedActivity/);
+    expect(experience).toMatch(/onShareHostedActivity: shareHostedActivity/);
+    const listFeed = read('src/list/ui/ListFeedActionsProvider.tsx');
+    expect(listFeed).toMatch(/onShareHostedActivity/);
+    const sticky = read('src/components/activity/detail/ActivityDetailStickyFooter.tsx');
+    expect(sticky).toMatch(/onHostShareOuting/);
   });
 
   it('AD-PEEK-03: activity map peek must not branch to HostActivityCtas', () => {

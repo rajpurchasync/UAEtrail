@@ -63,6 +63,8 @@ type UseExploreSelectionActionsArgs = {
     activity: ActivityDTO,
     initialView?: HostActivityManageInitialView
   ) => void;
+  /** Host peek `share_activity` — invite + link share sheet (not web-only). */
+  onShareHostedActivity?: (activity: ActivityDTO) => void;
 };
 
 export const useExploreSelectionActions = ({
@@ -81,6 +83,7 @@ export const useExploreSelectionActions = ({
   onInviteActivity,
   onCreateLinkedRideshare,
   onOpenHostManage,
+  onShareHostedActivity,
 }: UseExploreSelectionActionsArgs) => {
   const [demandNotice, setDemandNotice] = useState<string | null>(null);
   const [venueNotice, setVenueNotice] = useState<string | null>(null);
@@ -344,6 +347,10 @@ export const useExploreSelectionActions = ({
         case 'pending_join':
           return;
         case 'share_activity': {
+          if (activity && onShareHostedActivity) {
+            onShareHostedActivity(activity);
+            return;
+          }
           const card = selectedCard;
           if (!card?.sharePath) return;
           const url = buildShareUrl(card.sharePath);
@@ -387,6 +394,7 @@ export const useExploreSelectionActions = ({
       joinUiState.kind,
       onCreateLinkedRideshare,
       onOpenHostManage,
+      onShareHostedActivity,
       navigate,
       setSelectedId,
     ]

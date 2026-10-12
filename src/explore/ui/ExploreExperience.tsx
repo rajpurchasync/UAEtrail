@@ -270,6 +270,26 @@ export const ExploreExperience = () => {
     []
   );
 
+  const shareHostedActivity = useCallback(
+    (activity: ActivityDTO) => {
+      if (activity.status !== 'published') return;
+      inviteShare.openInviteFromActivity(activity, { canSendBuddyInvites: true });
+    },
+    [inviteShare.openInviteFromActivity]
+  );
+
+  const listFeedHostActions = useMemo(
+    () => ({
+      onShareHostedActivity: shareHostedActivity,
+      onOpenHostManage: tenantId ? openMapHostManage : undefined,
+      onInviteCrew: (activity: ActivityDTO) => {
+        if (activity.status !== 'published') return;
+        inviteShare.openInviteFromActivity(activity, { canSendBuddyInvites: true });
+      },
+    }),
+    [shareHostedActivity, tenantId, openMapHostManage, inviteShare.openInviteFromActivity]
+  );
+
   const selection = useExploreSelectionActions({
     items: selectionItems,
     selectedId,
@@ -286,6 +306,7 @@ export const ExploreExperience = () => {
     onInviteActivity: inviteShare.openInviteFromActivity,
     onCreateLinkedRideshare: handleCreateLinkedRideshare,
     onOpenHostManage: tenantId ? openMapHostManage : undefined,
+    onShareHostedActivity: shareHostedActivity,
   });
 
   const joinInvitePeekBanner = useMemo(() => {
@@ -619,7 +640,7 @@ export const ExploreExperience = () => {
   );
 
   const mobileListPeopleBrowsePanel = (
-    <ListFeedActionsProvider key="explore-list-people-browse">
+    <ListFeedActionsProvider key="explore-list-people-browse" {...listFeedHostActions}>
       <PeopleBrowsePanel
         {...peopleBrowsePanelProps}
         onClose={browse.closeListPanel}

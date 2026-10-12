@@ -184,7 +184,7 @@ Legend: **✅** implemented (rough parity) · **◐** partial / wrong surface / 
 | Roster pre-crew | **Pro** = full list; **free** = locked with **friends on outing** still visible + tappable | `canViewFullBuddyRoster`, `buddyUserIdsOnActivity` (peek strip **must** filter — AD-PRO-01) |
 | Rideshare navigation | **View** opens linked **rideshare map peek** (or parent outing from rideshare card) | `ExploreLinkedRidesharePeekIndication`, `onOpenExploreItem` |
 | Rideshare offer | **Pro** participant (joined) or **Pro** host — offer/add in Logistics strip **and** aligned footer action | `canOfferTransport`, `canAddLinkedRide` (AD-PRO-02) |
-| Share (host) | Share outing — native share sheet; target UX includes pick **friends / groups** where product supports it | Today: `ShareButton` / sticky `plan_host_share`; wire `share_activity` (target) |
+| Share (host) | Share outing — invite friends + link share (`ActivityInviteShareSheet`) | `share_activity` peek/list; `plan_host_share` + `onHostShareOuting` on detail |
 | Withdraw | Confirmed or pending joiner may leave; comment required for host on some paths | Detail `JoinRequestActions`; target `withdraw_join` on peek |
 
 ### 6.2.2 Member profile CTAs (opened from host or participant row)

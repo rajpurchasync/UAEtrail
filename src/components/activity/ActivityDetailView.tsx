@@ -131,6 +131,7 @@ export interface ActivityDetailViewProps {
   wireTabs?: ActivityPresentationTabsDTO | null;
   /** Wire `presentation.strips` — host invited chip on hero, etc. */
   wireStrips?: ActivityEngagementStripsDTO | null;
+  onHostShareOuting?: () => void;
 }
 
 export const ActivityDetailView = ({
@@ -165,6 +166,7 @@ export const ActivityDetailView = ({
   wireFooterByTab = null,
   wireTabs = null,
   wireStrips = null,
+  onHostShareOuting,
 }: ActivityDetailViewProps) => {
   const { user } = useAuth();
   const isEmbedded = layout === 'embedded';
@@ -444,6 +446,7 @@ export const ActivityDetailView = ({
       sharePayload={sharePayload}
       showParticipantFooterShortcuts={participantFooterShortcuts}
       hostSecondaryActions={hostDetailCtas}
+      onHostShareOuting={onHostShareOuting}
     />
   );
 
