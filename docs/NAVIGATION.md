@@ -28,7 +28,7 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 - **Outing history + map:** `/profile/history` — joined / hosted / self **past** outings; **History · My Map** tabs (`PROFILE_HISTORY_MAIN_TABS`). Journey map at `/profile/history/map`. Legacy `/profile/my-trips` redirects; `/trips`, `/trips/map`, `/activities` → `/plan` or history via `resolveLegacyTripsHubRedirect`.
 - **Saved (wishlist):** `/plan?view=plans&lens=saved` (`planSavedPath()`). Legacy `/profile/wishlist` and `segment=wishlist` URLs normalize to the same lens. Profile shows a teaser only — not a second full list ([`experiment/member-surfaces-implementation-plan.md`](./experiment/member-surfaces-implementation-plan.md) D13).
 - **Settings stack:** `/profile/settings` index → Account, Privacy, Notifications sub-routes; **iPhone & iPad** (`#ios-install`, Safari steps) and **Android** (`#android-install`, Samsung Internet / Chrome manual steps — no in-app install prompt).
-- **Hamburger (header):** next to the notifications bell on tab chrome and desktop `Header` — Explore, My Trips, Messages, Profile/Signup, Download → Android / iOS (deep-link to the matching settings hash). Notifications are the bell only, not in the drawer.
+- **Hamburger (header):** next to the notifications bell on tab chrome and desktop `Header` — Explore, **My Plans**, Messages, Profile/Signup, Download → Android / iOS (deep-link to the matching settings hash). Notifications are the bell only, not in the drawer.
 - **View public card (eye):** opens `/member/:userId` — preview should match what **other signed-in members** see (`public` visibility), not the owner’s full hub (API P3).
 - **Pro membership:** `/profile/pro-membership` — Individual, Business (subtype required), or Partner paths ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md)).
 
@@ -39,7 +39,7 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 
 ### Plan (`/plan`)
 
-- **Bottom nav middle tab** — forward commitments, not past history (history → **My trips**).
+- **Bottom nav middle tab** — forward commitments, not past history (past outings → **`/profile/history`** · journey map → **`/profile/history/map`**).
 - **Mobile tabs** (`?view=plans&tab=` — `src/plan/planTab.ts`): collapsible **goal progress** bar above **Upcoming** · **Wishlist** tabs. Upcoming: **Hosting | Joined** filters; **list ↔ calendar** toggle (`layout=calendar`); **Needs you** (participation only). Legacy `?lens=saved|goals|calendar` normalizes to tab/layout. **Available** editor: `?lens=availability` until moved to Profile.
 - **Query helpers:** `tripsPlansPath()`, `planSavedPath()`, `planLensPath()`. Legacy `segment` / `tab` / `segment=wishlist` normalize on load.
 - **`/trips`**, **`/activities`** redirect to `/plan` or `/profile/history` preserving query (`legacyTripsRedirect.ts`).
@@ -127,7 +127,7 @@ Full spec: **[`LANDING.md`](./LANDING.md)** · Voice: **[`NORTHSTAR.md`](./NORTH
 - **Do not add** demand posting, become-host, buddies, shops, or full map UX to Home — those belong on `/explore` or in-app.
 - **Copy:** `src/content/homeLanding.ts`. **Components:** `src/components/home/*`.
 
-Legacy browse URLs (`/map`, `/discovery`, `/calendar`, bare `/activities` as browse) redirect via `App.tsx` — do not link to them from new UI. **`/activities` → `/trips`** is the personal hub exception.
+Legacy browse URLs (`/map`, `/discovery`, `/calendar`, bare `/activities` as browse) redirect via `App.tsx` — do not link to them from new UI. Legacy **`/trips`**, **`/activities`**, **`/trips/map`** redirect to **`/plan`**, **`/profile/history`**, or **`/profile/history/map`** (`legacyTripsRedirect.ts`) — canonical active hub is **`/plan`**.
 
 ## Source of truth (code)
 
@@ -243,7 +243,7 @@ Canonical paths only in **new UI**. Legacy URLs redirect in `src/App.tsx` — do
 | `/discovery` | `/explore` (+ param transform) | 2026-Q4 |
 | `/calendar` | `/explore` | 2026-Q4 |
 | `/shop` (bare) | `/explore?panel=shops` | 2026-Q4 |
-| `/activities` (any) | `/trips` (preserves query; `create=*` → explore compose) | 2026-Q4 |
+| `/trips`, `/trips/map`, `/activities` (any) | `/plan`, `/profile/history`, or `/profile/history/map` (preserves query; `create=*` → explore compose) | 2026-Q4 |
 | `/rewards`, `/my-rewards`, `/trail-points` | `/profile/badges` | 2026-Q4 (Trail Points wallet removed; badges kept) |
 | `/community` | `/explore` (`COMMUNITY_PATH` — legacy Q&A feed removed) | 2026-Q4 |
 | `/membership` | `/explore` (`Membership.tsx`; not product home) | 2026-Q4 or fold |
@@ -258,19 +258,39 @@ Canonical paths only in **new UI**. Legacy URLs redirect in `src/App.tsx` — do
 | `/merchant/:id` | legacy merchant page | TBD |
 | `/sign-up`, `/sign-in` | auth aliases | keep |
 
-Personal hub canonical route: **`/trips`** (`TRIPS_PATH`). Legacy `/activities` redirects to `/trips` in `App.tsx`.
+**Personal commitments (active):** canonical **`/plan`** (`PLAN_PATH`). **Outing history:** **`/profile/history`**. Legacy **`TRIPS_PATH`** (`/trips`) redirects only — do not link in new UI.
 
 ## Mobile tab shell (signed-in, `md:hidden`)
 
-| Tab | Route | Chrome |
-|-----|-------|--------|
+| Tab (UI label) | Route | Chrome |
+|----------------|-------|--------|
 | **Explore** | `/explore` | Unified tab header (avatar · brand · notifications) |
-| **Trips** | `/trips` | Plans · Completed · Map (`tripsRouting.ts`) |
-| **Messages** | `/messages` | Same header (avatar · title · compose); search + pills below |
-| **Profile** | `/profile` (avatar in header on other tabs) | Profile hub / settings stack |
+| **My Plans** | `/plan` | `ConsumerShell` — Upcoming · Wishlist (`planTab.ts`); goals block on Wishlist |
+| **Chat** | `/chat` | Inbox filters (people · groups · outings); legacy `/messages` → `/chat` |
 
-- One mobile header component in Layout for all four bottom-nav roots; sub-routes (e.g. `/profile/settings`, message threads) use their own back chrome.
-- User groups and activity outing chats appear in Messages inbox (Groups / Outings pills).
+- **Three bottom tabs only** — Profile is **not** a tab; open via header avatar / hamburger (`MOBILE_BOTTOM_NAV_TAB_PATHS`).
+- Sub-routes (e.g. `/profile/settings`, `/chat?group=`, entity detail) use **back** chrome (`MobileDetailShell` or stack `ConsumerShell`).
+- User groups and activity outing chats appear in Chat inbox (Groups / Outings filters).
+
+## Consumer detail surfaces (entity pages)
+
+**Execution plan:** [`experiment/consumer-detail-surfaces-plan.md`](./experiment/consumer-detail-surfaces-plan.md) (**S9**). **Shell:** `MobileDetailShell` for entity detail; hubs use `ConsumerShell`. Tab wire ids: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §3.1.
+
+| Surface | Route | Tabs / layout (today → target) | Not a standalone page |
+|---------|-------|--------------------------------|-------------------------|
+| **Activity** | `/activity/:id` | **Plan · Place · Buddies · Transport** (`?tab=`) — shipped | — |
+| **Place (trail)** | `/trail/:id` | **Overview · Facts · Transport · Guide** (`?tab=`; legacy `location` → transport) | — |
+| **Place (camp)** | `/camp/:id` | same as trail | — |
+| **Place (venue)** | `/venue/:id` | same as trail | — |
+| **Area** | `/area/:slug` | Scroll sections today → target **Overview · Places · Activities** (+ optional People) | — |
+| **Shop** | `/shop/:id` | `MobileDetailShell`; custom body → target shared public entity tabs | — |
+| **Agency / guide** | `/guide`, `/agency`, `/partner` | `ConsumerShell` + `OrganisationPublicProfile` → target entity shell (Phase 5) | — |
+| **Member (person)** | `/member/:userId` | Profile card — not a tenant storefront | — |
+| **Goals** | — | Embedded on **Plan → Wishlist** (`planLensPath('goals')`) | No `/goals` route |
+| **People (discovery)** | Explore `view=people` | Map panel — **Available · Friends going · Everyone** | No `/people` route (optional redirect TBD) |
+| **People (friends)** | `/buddies` | Friends · Requests · Following | — |
+| **My Map** | `/profile/history/map` | Journey map under **history** stack | Not a root tab |
+| **Explore / Plan / Chat** | see above | Discovery and commitments — **do not** force entity-detail template | — |
 
 ## Auth redirects
 

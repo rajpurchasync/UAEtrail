@@ -1,6 +1,18 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Car, MapPin, Mountain, TrendingUp, Clock, Map, Download, Lock, Loader2 } from 'lucide-react';
+import {
+  BookOpen,
+  Car,
+  Clock,
+  Download,
+  FileText,
+  Loader2,
+  Lock,
+  Map,
+  MapPin,
+  Mountain,
+  TrendingUp,
+} from 'lucide-react';
 import { ActivityType, LocationPremiumSummaryDTO, PremiumAccessReason } from '@uaetrail/shared-types';
 import { MeetingPointMap } from './MeetingPointMap';
 import { capitalize } from '../../utils';
@@ -14,6 +26,12 @@ import {
   startPlacePremiumCheckout,
 } from '../../hooks/placePremiumApi';
 import { AppButton } from '../mobile/AppButton';
+import { ConsumerEntityTabBar } from '../mobile/ConsumerEntityTabBar';
+import {
+  PLACE_DETAIL_TAB_LABELS,
+  PLACE_DETAIL_TABS,
+  type PlaceDetailTabId,
+} from '../../place/placeDetailTab';
 
 import { DirectionsControl } from './DirectionsControl';
 import { buildGoogleMapsSearchUrl } from '../../utils/mapLinks';
@@ -42,7 +60,7 @@ const premiumAccessLabel = (reason: PremiumAccessReason): string => {
   }
 };
 
-export type LocationTab = 'overview' | 'location' | 'guide';
+export type { LocationTab, PlaceDetailTabId } from '../../place/placeDetailTab';
 
 export interface PlaceDetailData {
   name: string;
@@ -76,7 +94,16 @@ interface PlaceDetailTabsProps {
   onPremiumChange?: (premium: LocationPremiumSummaryDTO) => void;
   unlockNotice?: string | null;
   onDismissUnlockNotice?: () => void;
+  activeTab?: PlaceDetailTabId;
+  onTabChange?: (tab: PlaceDetailTabId) => void;
 }
+
+const PLACE_TAB_ICONS = {
+  overview: FileText,
+  facts: Mountain,
+  transport: Car,
+  guide: BookOpen,
+} as const;
 
 const accentStyles = {
   emerald: {
@@ -105,8 +132,15 @@ export const PlaceDetailTabs = ({
   onPremiumChange,
   unlockNotice,
   onDismissUnlockNotice,
+  activeTab: activeTabProp,
+  onTabChange,
 }: PlaceDetailTabsProps) => {
-  const [activeTab, setActiveTab] = useState<LocationTab>('overview');
+  const [internalTab, setInternalTab] = useState<PlaceDetailTabId>('overview');
+  const activeTab = activeTabProp ?? internalTab;
+  const setActiveTab = (tab: PlaceDetailTabId) => {
+    if (onTabChange) onTabChange(tab);
+    else setInternalTab(tab);
+  };
   const [guideMarkdown, setGuideMarkdown] = useState<string | null>(null);
   const [guideLoading, setGuideLoading] = useState(false);
   const [guideError, setGuideError] = useState<string | null>(null);
@@ -137,13 +171,14 @@ export const PlaceDetailTabs = ({
   const practicalTags = splitPlacePracticalTags(data.tags);
   const displayTags = practicalTags.browseTags;
 
-  const tabClass = (tab: LocationTab) =>
+  const tabClass = (tab: PlaceDetailTabId) =>
     `py-4 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${
       activeTab === tab ? styles.active : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
     }`;
 
-  const hasOverviewContent =
-    Boolean(data.description?.trim()) ||
+  const hasOverviewContent = Boolean(data.description?.trim());
+
+  const hasFactsContent =
     (showTrailStats &&
       ((data.distance != null && data.distance > 0) ||
         (data.duration != null && data.duration > 0) ||
@@ -153,7 +188,7 @@ export const PlaceDetailTabs = ({
     (data.highlights && data.highlights.length > 0) ||
     Boolean(data.difficulty);
 
-  const hasLocationContent =
+  const hasTransportContent =
     Boolean(data.region) ||
     hasCoordinates ||
     hasParkingCoordinates ||
@@ -253,15 +288,38 @@ export const PlaceDetailTabs = ({
       ? `Unlock for AED ${premium.unlockPriceAed}`
       : 'Unlock free guide';
 
+  const guidePremiumBadge =
+    hasPremiumContent && !isPremiumUnlocked ? (
+      <span className="absolute -top-0.5 right-0 inline-flex h-2 w-2 rounded-full bg-amber-500" aria-hidden />
+    ) : null;
+
+  const mobileTabs = PLACE_DETAIL_TABS.map((id) => ({
+    id,
+    label: PLACE_DETAIL_TAB_LABELS[id],
+    icon: PLACE_TAB_ICONS[id],
+    badge: id === 'guide' ? guidePremiumBadge : undefined,
+  }));
+
   return (
     <>
-      <div className="border-b mt-8">
+      <ConsumerEntityTabBar
+        tabs={mobileTabs}
+        active={activeTab}
+        onChange={setActiveTab}
+        ariaLabel="Place sections"
+        className="mt-6 -mx-4 sm:mx-0"
+      />
+
+      <div className="border-b mt-4 hidden md:block">
         <nav className="flex space-x-6 sm:space-x-8 overflow-x-auto">
           <button type="button" onClick={() => setActiveTab('overview')} className={tabClass('overview')}>
             Overview
           </button>
-          <button type="button" onClick={() => setActiveTab('location')} className={tabClass('location')}>
-            Location & map
+          <button type="button" onClick={() => setActiveTab('facts')} className={tabClass('facts')}>
+            Facts
+          </button>
+          <button type="button" onClick={() => setActiveTab('transport')} className={tabClass('transport')}>
+            Transport
           </button>
           <button type="button" onClick={() => setActiveTab('guide')} className={tabClass('guide')}>
             Guided information
@@ -276,13 +334,19 @@ export const PlaceDetailTabs = ({
 
       {activeTab === 'overview' && (
         <div className="py-6 mt-4 space-y-4">
-          {data.description?.trim() && (
+          {data.description?.trim() ? (
             <div>
               <h3 className="text-sm font-semibold text-neutral-900 mb-2">About</h3>
               <p className="text-sm text-neutral-600 leading-relaxed whitespace-pre-wrap">{data.description}</p>
             </div>
+          ) : (
+            <p className="text-sm text-neutral-500 text-center py-4">More details coming soon.</p>
           )}
+        </div>
+      )}
 
+      {activeTab === 'facts' && (
+        <div className="py-6 mt-4 space-y-4">
           {showTrailStats ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {data.distance != null && data.distance > 0 && (
@@ -357,13 +421,13 @@ export const PlaceDetailTabs = ({
             </p>
           )}
 
-          {!hasOverviewContent && (
+          {!hasFactsContent && (
             <p className="text-sm text-neutral-500 text-center py-4">More details coming soon.</p>
           )}
         </div>
       )}
 
-      {activeTab === 'location' && (
+      {activeTab === 'transport' && (
         <div className="py-6 mt-4 space-y-4">
           {!user ? (
             <div className="rounded-2xl border border-dashed border-neutral-200 bg-neutral-50 px-6 py-12 text-center">
@@ -526,7 +590,7 @@ export const PlaceDetailTabs = ({
                 </div>
               )}
 
-              {!hasLocationContent && (
+              {!hasTransportContent && (
                 <p className="text-sm text-neutral-500 text-center py-4">Location details will be added soon.</p>
               )}
             </>

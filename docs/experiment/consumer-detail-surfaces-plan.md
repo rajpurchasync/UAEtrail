@@ -388,7 +388,10 @@ Phase 4 is the only likely **read-model** enhancement (tab-scoped previews); def
 | 2026-10-13 | **Separate from R8/S8** — discovery refactor wave closed; this plan is UX shell / IA only (no R1–R8 scope) | Recorded |
 | 2026-10-13 | **Do not big-bang** — phases 0–7 sequential gates; Phase 2 ∥ Phase 3 after Phase 1 | Recorded |
 | 2026-10-13 | **17-surface inventory** (§1) accepted as planning baseline pending product 0.1 sign-off | Recorded |
-| | Phase 0.3 — Guide tab on place | ⬜ Pending |
+| 2026-10-13 | **Phase 0.3 engineering default:** keep **Guide** as 4th place tab until product reverses | Recorded |
+| 2026-10-13 | **Phase 1 complete** — `NAVIGATION.md` consumer detail § + mobile tabs; `DOMAIN_CANONICALS` §3.1 | Recorded |
+| 2026-10-13 | **Phase 3 (core) shipped** — place tabs IA + `ConsumerEntityTabBar` + `?tab=` deep links | Recorded |
+| | Phase 0.3 — Guide tab on place (product confirm) | ⬜ Pending |
 | | Phase 0.4 — Area people tab vs section | ⬜ Pending |
 | | Phase 0.5 — Shop/agency tab names | ⬜ Pending |
 | | Phase 0.1 — Inventory sign-off (product checkbox) | ⬜ Pending |
@@ -403,6 +406,8 @@ Phase 4 is the only likely **read-model** enhancement (tab-scoped previews); def
 |------|------|
 | 2026-10-13 | Initial phased plan from product surface checklist alignment review |
 | 2026-10-13 | §14–§17 handoff: conversation record, anti-drift, code anchors, implementer workflow |
+| 2026-10-13 | **Phase 1** Tier-1 vocabulary shipped (`NAVIGATION`, `DOMAIN_CANONICALS` §3.1) |
+| 2026-10-13 | **Phase 3** place tab IA + shared `ConsumerEntityTabBar` (activity + place) |
 
 ---
 

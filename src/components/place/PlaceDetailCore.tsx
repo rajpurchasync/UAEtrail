@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { MapPin, TrendingUp, Clock, Mountain, Baby, Car, ChevronRight } from 'lucide-react';
 import type { ActivityDTO, LocationPremiumSummaryDTO, ReviewDTO } from '@uaetrail/shared-types';
 import {
@@ -24,6 +24,11 @@ import {
   CONTRIBUTE_PLACE_PENDING_BANNER_TITLE,
 } from '../../explore/createFlowCopy';
 import { linkClassForAccent, ringClassForAccent, seasonClassForAccent } from './placeDetailAccentStyles';
+import {
+  PLACE_DETAIL_TAB_QUERY,
+  parsePlaceDetailTabParam,
+  type PlaceDetailTabId,
+} from '../../place/placeDetailTab';
 
 const jsonLdForPlace = (_kind: PlaceDetailKind, place: Place) => placeSchema(place);
 
@@ -63,6 +68,14 @@ export const PlaceDetailCore = ({
   onReviewSubmitted,
   isAdmin,
 }: PlaceDetailCoreProps) => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const placeTab = parsePlaceDetailTabParam(searchParams.get(PLACE_DETAIL_TAB_QUERY));
+  const onPlaceTabChange = (tab: PlaceDetailTabId) => {
+    const next = new URLSearchParams(searchParams);
+    next.set(PLACE_DETAIL_TAB_QUERY, tab);
+    setSearchParams(next, { replace: true });
+  };
+
   const backKind = kind === 'trail' ? 'trail' : kind === 'camp' ? 'camp' : 'event';
   const shareText =
     kind === 'trail' && hasPositiveNumber(place.distance)
@@ -263,6 +276,8 @@ export const PlaceDetailCore = ({
               onPremiumChange={onPremiumChange}
               unlockNotice={unlockNotice}
               onDismissUnlockNotice={onDismissUnlockNotice}
+              activeTab={placeTab}
+              onTabChange={onPlaceTabChange}
             />
           </div>
         </div>

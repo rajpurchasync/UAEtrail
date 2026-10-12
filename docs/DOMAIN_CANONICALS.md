@@ -168,7 +168,23 @@ Built only via **`routingCatalog`** or `@uaetrail/shared-types` `entity-path` he
 
 **Parse inbound links:** `parseEntityRefFromPathname(pathname)` → `EntityRef`.
 
-**Legacy redirects only** (do not link in new UI): `/map`, `/discovery`, `/activities` → `/trips` or explore, `/become-host` → Pro Membership, `/merchant/:id`, `/organizer/*` → `/host/*`. Table: [`NAVIGATION.md`](./NAVIGATION.md) § Legacy redirects.
+**Legacy redirects only** (do not link in new UI): `/map`, `/discovery`, `/trips`, `/activities` → `/plan` or `/profile/history` (or journey map), `/become-host` → Pro Membership, `/merchant/:id`, `/organizer/*` → `/host/*`. Table: [`NAVIGATION.md`](./NAVIGATION.md) § Legacy redirects.
+
+### 3.1 Consumer detail tab wire ids
+
+Query param **`tab`** where noted. **UI labels** may differ from wire ids (activity). **Code:** activity `src/activity/activityDetailTab.ts`; place `src/components/ui/PlaceDetailTabs.tsx` (`LocationTab` — migrating). **Plan:** [`experiment/consumer-detail-surfaces-plan.md`](./experiment/consumer-detail-surfaces-plan.md).
+
+| Surface | Route prefix | Wire tab ids (canonical → target) | Deep link |
+|---------|--------------|-----------------------------------|-----------|
+| Activity | `/activity/:id` | `plan` · `place` · `buddies` · `transport` | `?tab=` — default `plan` |
+| Place (trail/camp/venue) | `/trail`, `/camp`, `/venue` | `overview` · `facts` · `transport` · `guide` (alias `location` → `transport`) | `?tab=` · `src/place/placeDetailTab.ts` |
+| Area hub | `/area/:slug` | **Target:** `overview` · `places` · `activities` · optional `people` | `?tab=` (Phase 4) |
+| Shop public | `/shop/:id` | **Target (Phase 0.5):** e.g. `about` · `products` · `location` | TBD |
+| Organisation public | `/guide`, `/agency`, `/partner` | **Target (Phase 0.5):** e.g. `about` · `outings` · `contact` | TBD |
+
+**Aliases (one release when renaming place tabs):** `location` → `transport`; document in Phase 3 PR.
+
+**Guards (Phase 7):** entity detail routes must use `MobileDetailShell` / `EntityPublicDetailShell`; tab ids must match this table.
 
 ---
 

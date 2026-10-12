@@ -32,6 +32,7 @@ describe('placeDetailCore (R3)', () => {
   it('PlaceDetailCore owns tabs, activities rail, and reviews', () => {
     const core = read('src/components/place/PlaceDetailCore.tsx');
     expect(core).toMatch(/PlaceDetailTabs/);
+    expect(core).toMatch(/placeDetailTab/);
     expect(core).toMatch(/ReviewSection/);
     expect(core).toMatch(/ProfileActivityListRow/);
   });
