@@ -7,11 +7,16 @@
       "label": "Discovery",
       "apiFiles": [
         "apps/api/src/lib/explore-map.ts",
-        "apps/api/src/lib/explore-map-viewer-access.ts"
+        "apps/api/src/lib/explore-map-base.ts",
+        "apps/api/src/lib/explore-map-vnext.ts",
+        "apps/api/src/lib/explore-map-route.ts",
+        "apps/api/src/lib/explore-map-viewer-access.ts",
+        "apps/api/src/lib/discovery-card-projection.ts",
+        "apps/api/src/lib/activity-engagement-policy-input.ts"
       ],
       "routeRegistrars": ["apps/api/src/routes/user/registerPublicActivityRoutes.ts"],
       "feDomains": ["src/api/domains/explore.ts"],
-      "feRoots": ["src/explore", "src/access", "src/list"]
+      "feRoots": ["src/explore", "src/explore/shell", "src/access", "src/list", "src/discovery"]
     },
     {
       "id": "compose",
@@ -120,7 +125,7 @@
         "apps/api/src/routes/user/registerMeSubmittedPlaceRoutes.ts"
       ],
       "feDomains": ["src/api/domains/places.ts", "src/api/domains/placeRegistry.ts"],
-      "feRoots": ["src/pages/TrailDetail.tsx", "src/pages/CampDetail.tsx"]
+      "feRoots": ["src/pages/TrailDetail.tsx", "src/pages/CampDetail.tsx", "src/components/place"]
     },
     {
       "id": "commerce",

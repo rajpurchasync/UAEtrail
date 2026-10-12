@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildExploreCardModel } from '../explore/exploreCardModel';
+import { buildDiscoveryCardViewModelCard } from '../discovery/discoveryCardViewModel';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import {
   DISCOVER_RAIL_LIMIT,
@@ -51,7 +51,7 @@ describe('listDiscoverRails', () => {
       activityItem('a', d1, true),
       activityItem('c', d1, false),
     ];
-    const cards = items.map((item) => buildExploreCardModel(item));
+    const cards = items.map((item) => buildDiscoveryCardViewModelCard(item));
     const picked = pickDiscoverTripRailCards(cards, DISCOVER_RAIL_LIMIT);
     expect(picked.map((c) => c.activity?.id)).toEqual(['a', 'c', 'b']);
   });
@@ -89,7 +89,7 @@ describe('listDiscoverRails', () => {
       activityItem('1', '2099-01-01', false, 'loc-a'),
       activityItem('2', '2099-01-02', false, 'loc-a'),
     ];
-    const cards = [venueA, venueB].map((item) => buildExploreCardModel(item));
+    const cards = [venueA, venueB].map((item) => buildDiscoveryCardViewModelCard(item));
     const picked = pickDiscoverVenueRailCards(cards, mapItems);
     expect(picked.map((c) => c.locationId)).toEqual(['loc-b', 'loc-a']);
   });
@@ -115,7 +115,7 @@ describe('listDiscoverRails', () => {
       path: '/shop/other',
       discoverFeatured: false,
     };
-    const cards = [featuredShop, otherShop].map((item) => buildExploreCardModel(item));
+    const cards = [featuredShop, otherShop].map((item) => buildDiscoveryCardViewModelCard(item));
     const picked = pickDiscoverShopRailCards(cards, [featuredShop, otherShop]);
     expect(picked.map((c) => c.id)).toEqual(['shop:featured', 'shop:other']);
   });

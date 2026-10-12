@@ -219,7 +219,9 @@ export const buildExploreCardModel = (item: ExploreMapItemDTO): ExploreCardModel
     catalogProfileExposure: item.catalogProfileExposure ?? null,
     locationId: item.locationCard?.id ?? item.activity?.locationId ?? null,
     activityId: item.activity?.id ?? null,
-    participantIntentId: item.participantIntentId ?? null,
+    /** Manage/deeplink only for legacy seeking rows without a published activity id. */
+    participantIntentId:
+      seeking && !activity?.id ? item.participantIntentId ?? null : null,
     outingCategory: item.outingCategory ?? null,
     composeIntent: item.composeIntent ?? null,
     merchantId: item.merchantId ?? null,

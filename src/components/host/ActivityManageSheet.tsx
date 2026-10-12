@@ -7,7 +7,7 @@ import { ActivityJoinRequestCard } from '../../console/ActivityJoinRequestCard';
 import { ActivityJoinRequestDeclineDialog } from '../../console/ActivityJoinRequestDeclineDialog';
 import { ActivityParticipantsPanel } from './ActivityParticipantsPanel';
 import { HostActivityManageCancelDialogs } from '../activity/HostActivityManageCancelDialogs';
-import { api } from '../../api/index';
+import { decideHostActivityJoinRequest } from '../../hooks/hostActivityClientApi';
 import { resolveActivityTitle } from '../../utils/activityIdentity';
 import { buildActivitySharePayload } from '../../utils/activityShare';
 import { ActivityInviteModalBody } from '../activity/ActivityInviteModalBody';
@@ -186,7 +186,7 @@ export const ActivityManageSheet = ({
     if (!tenantId) return;
     setBusyRequestId(requestId);
     try {
-      await api.decideHostActivityJoinRequest(tenantId, requestId, status, organizerNote);
+      await decideHostActivityJoinRequest(tenantId, requestId, status, organizerNote);
       if (status === 'rejected') setDeclineRequest(null);
       await onRequestsChanged();
     } catch (err) {

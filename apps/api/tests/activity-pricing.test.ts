@@ -26,12 +26,22 @@ describe('activity pricing', () => {
   it('allowed modes follow host tier ladder', () => {
     expect(allowedActivityPricingModes({ community: true, professional: false, business: false })).toEqual([
       'free',
+      'shared',
     ]);
     expect(
       allowedActivityPricingModes({ community: true, professional: true, business: false })
     ).toEqual(['free', 'shared']);
     expect(
-      allowedActivityPricingModes({ community: false, professional: false, business: true })
+      allowedActivityPricingModes(
+        { community: false, professional: false, business: true },
+        { publishProfileType: 'agency' }
+      )
+    ).toEqual(['free', 'shared', 'paid']);
+    expect(
+      allowedActivityPricingModes(
+        { community: false, professional: false, business: true },
+        { publishingProfileKind: 'shop' }
+      )
     ).toEqual(['free', 'shared', 'paid']);
   });
 
@@ -50,18 +60,41 @@ describe('activity pricing', () => {
     expect(() =>
       assertActivityPricingAllowed({
         hostTiers: { community: true, professional: false, business: false },
-        pricingMode: 'shared',
-        priceAed: 25,
-        sharedAmountAed: 25,
+        pricingMode: 'paid',
+        priceAed: 100,
       })
-    ).toThrow(/Shared-cost activities require/);
+    ).toThrow(/linked verified business/);
+
+    expect(() =>
+      assertActivityPricingAllowed({
+        hostTiers: { community: true, professional: false, business: false },
+        publishingProfileKind: 'agency',
+        pricingMode: 'paid',
+        priceAed: 100,
+      })
+    ).toThrow(/linked verified business/);
 
     expect(() =>
       assertActivityPricingAllowed({
         hostTiers: { community: true, professional: true, business: false },
+        publishingProfileKind: 'pro_guide',
         pricingMode: 'paid',
         priceAed: 100,
       })
-    ).toThrow(/Paid activities require a business host account/);
+    ).toThrow(/linked verified business/);
+
+    assertActivityPricingAllowed({
+      hostTiers: { community: false, professional: false, business: true },
+      publishingProfileKind: 'shop',
+      pricingMode: 'paid',
+      priceAed: 120,
+    });
+
+    assertActivityPricingAllowed({
+      hostTiers: { community: true, professional: false, business: false },
+      pricingMode: 'shared',
+      priceAed: 25,
+      sharedAmountAed: 25,
+    });
   });
 });

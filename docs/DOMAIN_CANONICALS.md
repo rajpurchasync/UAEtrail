@@ -280,7 +280,8 @@ When renaming or adding routes:
 | `LocationDTO` vs Place | Mongo `locations` + historical API |
 | `tenant` vs Organisation | `x-tenant-id` header |
 | `UserRole` vs `HostStatusDTO` | Auth shell vs product capabilities |
-| `BecomeHost.tsx` filename | Route component; redirects to Pro Membership |
+| `LegacyProMembershipRedirect` / `BecomeHost.tsx` shim | Legacy `/become-host` routes → `PRO_MEMBERSHIP_PATH` |
+| `ProProfileApplicationFlow` | Pro guide/agency/shop application wizard (not community Organize) |
 | `/activities` route | Redirects to `/trips` in `App.tsx` |
 
 ---

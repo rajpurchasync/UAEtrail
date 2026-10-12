@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { ChevronDown, MapPin, Plus, Search } from 'lucide-react';
 import { PlaceDTO } from '@uaetrail/shared-types';
 import type { ActivityType } from '../../config/activityTypes';
-import { api } from '../../api/index';
+import { loadPlaceRegistryForPicker } from '../../hooks/placeCatalogApi';
 
 interface PlaceSelectProps {
   value: string;
@@ -55,9 +55,7 @@ export const PlaceSelect = ({
       return;
     }
     try {
-      const merged = await api.fetchPlaceRegistry({
-        placeType: activityType,
-      });
+      const merged = await loadPlaceRegistryForPicker(activityType);
       setActiveLocations(merged.filter((place) => place.status !== 'draft'));
       setPendingLocations(merged.filter((place) => place.status === 'draft'));
     } catch {

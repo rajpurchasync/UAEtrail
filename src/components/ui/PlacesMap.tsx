@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import L from 'leaflet';
 import { MapContainer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet';
@@ -484,6 +484,57 @@ const RecenterMap = ({
   return null;
 };
 
+const MAP_BOUNDS_DEBOUNCE_MS = 400;
+
+const MapVisibleBoundsReporter = ({
+  onVisibleBoundsChange,
+}: {
+  onVisibleBoundsChange?: (bounds: MapBounds) => void;
+}) => {
+  const map = useMap();
+  const timerRef = useRef<number | null>(null);
+  const onChangeRef = useRef(onVisibleBoundsChange);
+
+  useEffect(() => {
+    onChangeRef.current = onVisibleBoundsChange;
+  }, [onVisibleBoundsChange]);
+
+  const report = useCallback(() => {
+    if (!onChangeRef.current) return;
+    const bounds = map.getBounds();
+    onChangeRef.current({
+      west: bounds.getWest(),
+      south: bounds.getSouth(),
+      east: bounds.getEast(),
+      north: bounds.getNorth(),
+    });
+  }, [map]);
+
+  const scheduleReport = useCallback(() => {
+    if (!onChangeRef.current) return;
+    if (timerRef.current != null) window.clearTimeout(timerRef.current);
+    timerRef.current = window.setTimeout(() => {
+      timerRef.current = null;
+      report();
+    }, MAP_BOUNDS_DEBOUNCE_MS);
+  }, [report]);
+
+  useMapEvents({
+    moveend: scheduleReport,
+    zoomend: scheduleReport,
+    load: report,
+  });
+
+  useEffect(() => {
+    report();
+    return () => {
+      if (timerRef.current != null) window.clearTimeout(timerRef.current);
+    };
+  }, [report]);
+
+  return null;
+};
+
 const MapZoomReporter = ({ onZoomChange }: { onZoomChange?: (zoom: number) => void }) => {
   const map = useMap();
 
@@ -669,6 +720,8 @@ interface PlacesMapProps {
   /** Overrides explore default center — device fix or regional UAE framing. */
   exploreMapCenter?: { lat: number; lng: number } | null;
   onZoomChange?: (zoom: number) => void;
+  /** Debounced viewport bounds (explore map vNext fetch). */
+  onVisibleBoundsChange?: (bounds: MapBounds) => void;
   tileAttribution?: string;
   minZoom?: number;
 }
@@ -692,6 +745,7 @@ export const PlacesMap = ({
   exploreMode = false,
   exploreMapCenter = null,
   onZoomChange,
+  onVisibleBoundsChange,
   tileAttribution,
   minZoom,
 }: PlacesMapProps) => {
@@ -790,6 +844,9 @@ export const PlacesMap = ({
           zoom={exploreMode ? MAP_CONFIG.exploreDefaultZoom : undefined}
         />
         <MapZoomReporter onZoomChange={onZoomChange} />
+        {onVisibleBoundsChange ? (
+          <MapVisibleBoundsReporter onVisibleBoundsChange={onVisibleBoundsChange} />
+        ) : null}
         <FlyToSelectedPin pins={pins} selectedExploreItemId={activeSelection} />
         {exploreMode ? (
           <ClusteredMarkers

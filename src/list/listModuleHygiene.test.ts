@@ -99,9 +99,12 @@ describe('list module hygiene', () => {
   });
 
   it('map list compact rows use optional list feed actions for L1 footers', () => {
-    const exploreShell = readFileSync(join(process.cwd(), 'src/explore/ui/ExploreExperience.tsx'), 'utf8');
+    const browsePanels = readFileSync(
+      join(process.cwd(), 'src/explore/shell/ExploreExperienceBrowsePanels.tsx'),
+      'utf8'
+    );
     const listRow = readFileSync(join(process.cwd(), 'src/explore/ui/ExploreListRow.tsx'), 'utf8');
-    expect(exploreShell).toMatch(/mobileMapListPanel[\s\S]*ListFeedActionsProvider[\s\S]*listFeedHostActions/);
+    expect(browsePanels).toMatch(/mobileMapListPanel[\s\S]*ListFeedActionsProvider[\s\S]*listFeedHostActions/);
     expect(listRow).toMatch(/ExploreListRowWireFooter/);
   });
 
@@ -132,12 +135,15 @@ describe('list module hygiene', () => {
   });
 
   it('keeps explore People panel separate from map list and discover browse', () => {
-    const experience = readFileSync(join(process.cwd(), 'src/explore/ui/ExploreExperience.tsx'), 'utf8');
+    const browsePanels = readFileSync(
+      join(process.cwd(), 'src/explore/shell/ExploreExperienceBrowsePanels.tsx'),
+      'utf8'
+    );
     const peoplePanel = readFileSync(join(process.cwd(), 'src/explore/ui/PeopleBrowsePanel.tsx'), 'utf8');
     const mapListPanel = readFileSync(join(process.cwd(), 'src/explore/ui/ExploreBrowsePanel.tsx'), 'utf8');
-    expect(experience).toMatch(/PeopleBrowsePanel/);
-    expect(experience).toMatch(/ListDiscoveryExperience/);
-    expect(experience).toMatch(/ExploreBrowsePanel/);
+    expect(browsePanels).toMatch(/PeopleBrowsePanel/);
+    expect(browsePanels).toMatch(/ListDiscoveryExperience/);
+    expect(browsePanels).toMatch(/ExploreBrowsePanel/);
     expect(mapListPanel).toMatch(/ExploreListRow/);
     expect(mapListPanel).toMatch(/PANEL_TABS/);
     expect(peoplePanel).toMatch(/from '\.\/peopleBrowse'/);
@@ -157,12 +163,12 @@ describe('list module hygiene', () => {
   it('builds enriched cards through buildListFeedCards', () => {
     const feed = readFileSync(join(process.cwd(), 'src/list/useBrowseListFeed.ts'), 'utf8');
     const experience = readFileSync(join(process.cwd(), 'src/list/ListDiscoveryExperience.tsx'), 'utf8');
-    const exploreShell = readFileSync(join(process.cwd(), 'src/explore/ui/ExploreExperience.tsx'), 'utf8');
+    const mapListPanel = readFileSync(join(process.cwd(), 'src/explore/ui/ExploreBrowsePanel.tsx'), 'utf8');
     expect(feed).toMatch(/buildListFeedCards/);
     expect(experience).toMatch(/buildListFeedCards/);
     expect(experience).not.toMatch(/buildBrowseCardsFromMapItems/);
-    expect(exploreShell).toMatch(/ExploreBrowsePanel/);
-    expect(exploreShell).not.toMatch(/usePosterFeed=\{true\}/);
+    expect(mapListPanel).toMatch(/buildListFeedCards/);
+    expect(mapListPanel).not.toMatch(/usePosterFeed=\{true\}/);
   });
 
   it('search results use topic pills only (no duplicate removable chip row)', () => {

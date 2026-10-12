@@ -7,7 +7,12 @@ import { capitalize } from '../../utils';
 import { splitPlacePracticalTags } from '../../utils/placePracticalInfo';
 import { signInPath } from '../../config/routingCatalog';
 import { useAuth } from '../../context/AuthContext';
-import { api } from '../../api/index';
+import {
+  downloadPlaceGuidePdfFile,
+  downloadPlaceRouteMapFile,
+  fetchPlaceGuideMarkdown,
+  startPlacePremiumCheckout,
+} from '../../hooks/placePremiumApi';
 import { AppButton } from '../mobile/AppButton';
 
 import { DirectionsControl } from './DirectionsControl';
@@ -173,11 +178,10 @@ export const PlaceDetailTabs = ({
     setGuideLoading(true);
     setGuideError(null);
 
-    api
-      .getPlaceGuide(resolvedPlaceId)
-      .then((response) => {
+    fetchPlaceGuideMarkdown(resolvedPlaceId)
+      .then((markdown) => {
         if (!cancelled) {
-          setGuideMarkdown(response.data.markdown);
+          setGuideMarkdown(markdown);
         }
       })
       .catch((err) => {
@@ -201,13 +205,13 @@ export const PlaceDetailTabs = ({
     setCheckoutLoading(true);
     setActionError(null);
     try {
-      const response = await api.checkoutPlacePremium(resolvedPlaceId);
-      if (response.data.url) {
-        window.location.href = response.data.url;
+      const checkout = await startPlacePremiumCheckout(resolvedPlaceId);
+      if (checkout.url) {
+        window.location.href = checkout.url;
         return;
       }
-      if (response.data.premium && onPremiumChange) {
-        onPremiumChange(response.data.premium);
+      if (checkout.premium && onPremiumChange) {
+        onPremiumChange(checkout.premium);
       }
     } catch (err) {
       setActionError(err instanceof Error ? err.message : 'Checkout failed');
@@ -221,7 +225,7 @@ export const PlaceDetailTabs = ({
     setMapDownloading(true);
     setActionError(null);
     try {
-      const { blob, filename } = await api.downloadPlaceRouteMap(resolvedPlaceId);
+      const { blob, filename } = await downloadPlaceRouteMapFile(resolvedPlaceId);
       triggerBlobDownload(blob, filename);
     } catch (err) {
       setActionError(err instanceof Error ? err.message : 'Route map download failed');
@@ -235,7 +239,7 @@ export const PlaceDetailTabs = ({
     setPdfDownloading(true);
     setActionError(null);
     try {
-      const { blob, filename } = await api.downloadPlaceGuidePdf(resolvedPlaceId);
+      const { blob, filename } = await downloadPlaceGuidePdfFile(resolvedPlaceId);
       triggerBlobDownload(blob, filename);
     } catch (err) {
       setActionError(err instanceof Error ? err.message : 'Guide PDF download failed');

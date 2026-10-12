@@ -1,20 +1,20 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { Lock } from 'lucide-react';
-import {
-  type ActivityDetailDTO,
-  type ActivityDTO,
-  type ActivityParticipationDTO,
-  type ActivityPresentationDTO,
-  type ActivityViewerAccessDTO,
-  type MyActivityRequestDTO,
-  type ReviewDTO,
-} from '@uaetrail/shared-types';
+import { type ActivityDTO, type ReviewDTO } from '@uaetrail/shared-types';
+import { activityReviewsQueryKey } from '../hooks/clientQueryKeys';
+import { useActivityReviews } from '../hooks/useActivityReviews';
 import { api, type ActivityRequestView } from '../api/index';
 import { detailBackPath } from '../config/routingCatalog';
 import { signInPathForReturn } from '../utils/authReturnContext';
 import { useAuth } from '../context/AuthContext';
 import { useActivityJoinActions } from '../hooks/useActivityJoinFlow';
+import { activityDetailQueryKey } from '../hooks/clientQueryKeys';
+import {
+  type PublicActivityDetailPayload,
+  usePublicActivityDetail,
+} from '../hooks/usePublicActivityDetail';
 import { useViewerProfileGender } from '../hooks/useViewerProfileGender';
 import { womenOnlyJoinMessageForActivity } from '../utils/activityWomenOnlyJoin';
 import { PageMeta } from '../components/seo/PageMeta';
@@ -50,6 +50,7 @@ import { activityDetailPath } from '../config/routingCatalog';
 
 export const ActivityDetail = () => {
   const { id } = useParams<{ id: string }>();
+  const queryClient = useQueryClient();
   const { user } = useAuth();
   const gate = useHostStatus({ enabled: Boolean(user) });
   const navigate = useNavigate();
@@ -57,15 +58,19 @@ export const ActivityDetail = () => {
   const fromJoinInvite = searchParams.get('invite') === '1';
   const joinInviteAutoOpenRef = useRef(false);
   const joinedWelcomeHandledRef = useRef(false);
-  const [activity, setActivity] = useState<ActivityDetailDTO | null>(null);
-  const [loading, setLoading] = useState(true);
+  const {
+    activity,
+    loading,
+    viewerAccess,
+    wirePresentation,
+    participation,
+    myRequest,
+    refetch: refetchActivityDetail,
+  } = usePublicActivityDetail(id);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
-  const [participation, setParticipation] = useState<ActivityParticipationDTO | null | undefined>(undefined);
-  const [myRequest, setMyRequest] = useState<MyActivityRequestDTO | null | undefined>(undefined);
-  const [viewerAccess, setViewerAccess] = useState<ActivityViewerAccessDTO | null>(null);
-  const [wirePresentation, setWirePresentation] = useState<ActivityPresentationDTO | null>(null);
-  const [activityReviews, setActivityReviews] = useState<ReviewDTO[]>([]);
+  const reviewsEnabled = Boolean(id && activity?.status === 'published');
+  const { reviews: activityReviews } = useActivityReviews(id, reviewsEnabled);
   const [hostRemoveConfirm, setHostRemoveConfirm] = useState<ActivityDTO | null>(null);
   const [hostRemoveBusy, setHostRemoveBusy] = useState(false);
   const [joinWelcomeOpen, setJoinWelcomeOpen] = useState(false);
@@ -74,42 +79,12 @@ export const ActivityDetail = () => {
   const inviteShare = useActivityInviteShareSheet();
 
   const loadActivity = useCallback(() => {
-    if (!id) return;
-    setLoading(true);
-    setParticipation(undefined);
-    setMyRequest(undefined);
-    setViewerAccess(null);
-    setWirePresentation(null);
-    api
-      .getPublicActivityDetail(id)
-      .then((res) => {
-        setActivity(res.data);
-        setViewerAccess(res.viewerAccess ?? null);
-        setWirePresentation(res.presentation ?? null);
-        setParticipation(res.data.myParticipation ?? null);
-        setMyRequest(res.data.myRequest ?? null);
-      })
-      .catch((loadError) =>
-        setError(loadError instanceof Error ? loadError.message : 'Couldn\'t load this activity — try again.')
-      )
-      .finally(() => setLoading(false));
-  }, [id]);
-
-  useEffect(() => {
-    loadActivity();
-  }, [loadActivity]);
+    void refetchActivityDetail();
+  }, [refetchActivityDetail]);
 
   useEffect(() => {
     joinedWelcomeHandledRef.current = false;
   }, [id]);
-
-  useEffect(() => {
-    if (!id || activity?.status !== 'published') {
-      setActivityReviews([]);
-      return;
-    }
-    void api.getActivityReviews(id).then((res) => setActivityReviews(res.data)).catch(() => setActivityReviews([]));
-  }, [id, activity?.status]);
 
   const joinUiState = resolveJoinRequestUiState({
     myRequest: myRequest ?? null,
@@ -455,9 +430,13 @@ export const ActivityDetail = () => {
         confirmedSidebarExtras={isActivityHostUser ? null : confirmedSidebarExtras}
         canSendJoinInvites={isConfirmedParticipant}
         activityReviews={activityReviews}
-        onActivityReviewSubmitted={(review) =>
-          setActivityReviews((prev) => [review, ...prev.filter((row) => row.id !== review.id)])
-        }
+        onActivityReviewSubmitted={(review) => {
+          if (!id) return;
+          queryClient.setQueryData<ReviewDTO[]>(activityReviewsQueryKey(id), (prev) => [
+            review,
+            ...(prev ?? []).filter((row) => row.id !== review.id),
+          ]);
+        }}
         canWriteActivityReview={canWriteActivityReview}
         mobileTab={mobileTab}
         onMobileTabChange={isRedactedPreview ? undefined : setMobileTab}
@@ -469,7 +448,19 @@ export const ActivityDetail = () => {
           isActivityHostUser && gate.tenantId
             ? {
                 tenantId: gate.tenantId,
-                onSaved: (policy) => setActivity((prev) => (prev ? { ...prev, groupChatPostPolicy: policy } : prev)),
+                onSaved: (policy) => {
+                  if (!id) return;
+                  queryClient.setQueryData<PublicActivityDetailPayload>(
+                    activityDetailQueryKey(id),
+                    (prev) =>
+                      prev
+                        ? {
+                            ...prev,
+                            activity: { ...prev.activity, groupChatPostPolicy: policy },
+                          }
+                        : prev
+                  );
+                },
                 onError: setError,
               }
             : undefined

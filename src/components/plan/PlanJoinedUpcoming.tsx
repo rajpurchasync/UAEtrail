@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { api } from '../../api/index';
+import { fetchJoinedUpcomingPlanData } from '../../hooks/planUpcomingApi';
 import {
   ConsumerErrorCard,
   ConsumerInlineEmpty,
@@ -37,9 +37,9 @@ export const PlanJoinedUpcoming = ({ refreshKey = 0 }: PlanJoinedUpcomingProps) 
 
   useEffect(() => {
     setLoading(true);
-    Promise.all([api.getMeActivities(), api.getMeRequests()])
-      .then(([activitiesRes, requestsRes]) => {
-        setRows(buildUpcomingPlanRows(activitiesRes.data, requestsRes.data));
+    fetchJoinedUpcomingPlanData()
+      .then(({ activities, requests }) => {
+        setRows(buildUpcomingPlanRows(activities, requests));
       })
       .catch((err) => setError(err instanceof Error ? err.message : PRODUCT_LOAD_ERROR))
       .finally(() => setLoading(false));

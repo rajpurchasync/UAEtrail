@@ -1,6 +1,30 @@
 import type { HostTierFlags } from './host-publishing-tier.js';
+import type { PublishingProfileKind } from './publishing-profile-kind.js';
 
 export type ActivityPricingMode = 'free' | 'shared' | 'paid';
+
+/** @deprecated Prefer `publishingProfileKind` on {@link ActivityPricingContext}. */
+export type ActivityPricingPublishProfile = 'guide' | 'agency' | 'shop';
+
+export type ActivityPricingContext = {
+  /** Storefront kind for the tenant selected in Organize / host publish. */
+  publishingProfileKind?: PublishingProfileKind | null;
+  /** Legacy publish-as wire type — mapped when `publishingProfileKind` is absent. */
+  publishProfileType?: ActivityPricingPublishProfile | null;
+};
+
+/** Verified business storefronts may list paid commercial outings (not individual pro guides). */
+export const publishingProfileKindAllowsPaidActivities = (
+  kind?: PublishingProfileKind | null
+): boolean => kind === 'agency' || kind === 'shop' || kind === 'partner';
+
+const resolvePricingPublishKind = (context?: ActivityPricingContext): PublishingProfileKind | null => {
+  if (context?.publishingProfileKind) return context.publishingProfileKind;
+  if (context?.publishProfileType === 'agency') return 'agency';
+  if (context?.publishProfileType === 'shop') return 'shop';
+  if (context?.publishProfileType === 'guide') return 'pro_guide';
+  return null;
+};
 
 const ACTIVITY_PRICING_MODE_LABELS: Record<ActivityPricingMode, string> = {
   free: 'Free',
@@ -18,10 +42,17 @@ export type ActivityPricingInput = {
 export const ACTIVITY_PRICING_INDICATION_NOTE =
   'Prices are indicative for planning. Payment is arranged directly with the host — not through UAE Trail.';
 
-export const allowedActivityPricingModes = (hostTiers: HostTierFlags): ActivityPricingMode[] => {
-  if (hostTiers.business) return ['free', 'shared', 'paid'];
-  if (hostTiers.professional) return ['free', 'shared'];
-  return ['free'];
+export const allowedActivityPricingModes = (
+  hostTiers: HostTierFlags,
+  context?: ActivityPricingContext
+): ActivityPricingMode[] => {
+  const kind = resolvePricingPublishKind(context);
+  const linkedBusinessPublish =
+    hostTiers.business && publishingProfileKindAllowsPaidActivities(kind);
+  if (linkedBusinessPublish) {
+    return ['free', 'shared', 'paid'];
+  }
+  return ['free', 'shared'];
 };
 
 export const normalizeActivityPricing = (input: {

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { ParticipantIntentDTO } from '@uaetrail/shared-types';
 import { AppButton } from '../mobile/AppButton';
-import { api } from '../../api/index';
+import { updateParticipantIntent } from '../../hooks/participantIntentClientApi';
 import { useReloadExploreMap } from '../../hooks/useReloadExploreMap';
 import type { LocationPrecision } from '../../explore/ui/organizeFlow';
 import {
@@ -82,7 +82,7 @@ export const ParticipantIntentEditForm = ({ intent, onSaved, onCancel }: Partici
         return;
       }
 
-      await api.updateParticipantIntent(intent.id, {
+      await updateParticipantIntent(intent.id, {
         kind: intent.kind,
         title: title.trim(),
         date: intent.kind === 'other' ? null : date || null,

@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ChevronDown, ChevronUp, Star } from 'lucide-react';
 import { ReviewDTO } from '@uaetrail/shared-types';
-import { api } from '../../api/index';
+import { submitReview } from '../../hooks/reviewSubmit';
 import { useAuth } from '../../context/AuthContext';
 import { MembershipTierBadge } from '../ui/MembershipTierBadge';
 import { ReportContentButton } from './ReportContentDialog';
@@ -94,25 +94,15 @@ export const ReviewSection = ({
     setError(null);
     try {
       const wireTarget = reviewWireTargetType(targetType);
-      const res =
+      const review = await submitReview(
         wireTarget === 'activity'
-          ? await api.createActivityReview({
-              activityId: targetId,
-              rating,
-              comment: comment.trim(),
-            })
+          ? { kind: 'activity', activityId: targetId }
           : wireTarget === 'tenant'
-            ? await api.createOrganisationReview({
-                organisationId: targetId,
-                rating,
-                comment: comment.trim(),
-              })
-            : await api.createPlaceReview({
-                placeId: targetId,
-                rating,
-                comment: comment.trim(),
-              });
-      onReviewSubmitted(res.data);
+            ? { kind: 'tenant', organisationId: targetId }
+            : { kind: 'place', placeId: targetId },
+        { rating, comment: comment.trim() }
+      );
+      onReviewSubmitted(review);
       setComment('');
       setSuccess(true);
     } catch (err) {

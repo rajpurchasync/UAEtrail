@@ -24,7 +24,7 @@ const listTrackedSourceFiles = (): string[] =>
     .split('\n')
     .filter(Boolean);
 
-describe('becomeHostSurfaceGuard', () => {
+describe('proMembershipSurfaceGuard', () => {
   it('does not reintroduce duplicate become-organisation page or wizard modules', () => {
     const violations: string[] = [];
 

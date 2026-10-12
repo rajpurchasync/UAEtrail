@@ -15,6 +15,7 @@ import {
   resolveParticipantIntentMapItemId,
   exploreDiscoverBrowsePath,
   parseExplorePinMapItemId,
+  exploreOfferRideshareForDemandPath,
 } from './routing';
 import { EXPLORE_MAP_PATH } from '../config/platform';
 
@@ -43,6 +44,13 @@ describe('exploreRouting navigation contract', () => {
       explorePath({ filter: 'others', subtype: 'activities', outingTopic: 'climbing' })
     ).toBe('/explore?filter=others&subtype=activities&outingTopic=climbing');
     expect(explorePath({ filter: 'others', outingTopic: 'climbing' })).toBe('/explore?filter=others');
+  });
+
+  it('rideshare offer deep link prefers activity pin when seeking activity exists', () => {
+    const href = exploreOfferRideshareForDemandPath({ id: 'int-1', activityId: 'act-1' });
+    const params = new URLSearchParams(href.split('?')[1] ?? '');
+    expect(params.get('pin')).toBe('activity:act-1');
+    expect(params.get('compose')).toBe('organize:rideshare');
   });
 
   it('resolves participant intent pins to activity when activityId is set', () => {

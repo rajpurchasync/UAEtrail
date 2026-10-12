@@ -173,7 +173,9 @@ const activityTenantSortKey = (tenant: TenantRecord): number => {
 export const pickActivityTenant = (tenants: TenantRecord[]): TenantRecord | null => {
   const activityCapable = tenants.filter(
     (tenant) =>
-      tenant.type === TenantType.GUIDE_OWNED || tenant.businessMode === TenantBusinessMode.AGENCY
+      tenant.type === TenantType.GUIDE_OWNED ||
+      tenant.businessMode === TenantBusinessMode.AGENCY ||
+      tenant.businessMode === TenantBusinessMode.SHOP
   );
   if (activityCapable.length === 0) return tenants[0] ?? null;
   return [...activityCapable].sort((a, b) => activityTenantSortKey(a) - activityTenantSortKey(b))[0];

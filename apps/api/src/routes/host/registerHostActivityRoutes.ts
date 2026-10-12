@@ -64,9 +64,11 @@ import {
   resolveActivityLocation,
 } from '../../services/host-activity.js';
 import { assertActivityPricingAllowed } from '../../domain/activity-pricing.js';
+import { resolveOwnedProfileType } from '../../lib/tenant-store.js';
 import { assertActivityJoinInstructions } from '../../domain/activity-join-instructions.js';
 import { resolveJoinMode } from '../../domain/activity-join-mode.js';
-import { resolveParticipationModeForJoinMode } from '@uaetrail/shared-types';
+import { resolveParticipationModeForJoinMode, resolvePublishingProfileKind } from '@uaetrail/shared-types';
+import { inferTenantPublishingPurpose } from '../../domain/tenant-publishing.js';
 
 const optionalHttpUrlSchema = z
   .string()
@@ -225,6 +227,10 @@ hostActivitiesRouter.post('/', requireOrgRole(ORG_ACTIVITY_EDIT_ROLES), validate
 
     const countryCode = tenant.countryCode ?? location.countryCode ?? 'AE';
     const hostStatus = await resolveMemberHostStatus(req.auth!.userId);
+    const publishingProfileKind = resolvePublishingProfileKind({
+      ownedType: resolveOwnedProfileType(tenant),
+      publishingTier: inferTenantPublishingPurpose(tenant),
+    });
     const pricing = normalizeActivityPricing({
       price: body.price,
       pricingMode: body.pricingMode,
@@ -232,6 +238,7 @@ hostActivitiesRouter.post('/', requireOrgRole(ORG_ACTIVITY_EDIT_ROLES), validate
     const isRideshare = body.activityType === 'rideshare';
     assertActivityPricingAllowed({
       hostTiers: hostStatus.hostTiers,
+      publishingProfileKind,
       pricingMode: body.pricingMode ?? pricing.pricingMode,
       priceAed: pricing.priceAed,
       sharedAmountAed: isRideshare
@@ -375,12 +382,21 @@ hostActivitiesRouter.patch('/:id', requireOrgRole(ORG_ACTIVITY_EDIT_ROLES), vali
         : null;
 
     if (pricing) {
+      const tenant = await findTenantById(tenantId);
+      if (!tenant) {
+        throw new ApiError(404, 'tenant_not_found', 'Host organization not found.');
+      }
       const hostStatus = await resolveMemberHostStatus(req.auth!.userId);
+      const publishingProfileKind = resolvePublishingProfileKind({
+        ownedType: resolveOwnedProfileType(tenant),
+        publishingTier: inferTenantPublishingPurpose(tenant),
+      });
       const isRideshare =
         body.activityType === 'rideshare' ||
         String(existing.activityType ?? '').toLowerCase() === 'rideshare';
       assertActivityPricingAllowed({
         hostTiers: hostStatus.hostTiers,
+        publishingProfileKind,
         pricingMode: body.pricingMode ?? pricing.pricingMode,
         priceAed: pricing.priceAed,
         sharedAmountAed: isRideshare

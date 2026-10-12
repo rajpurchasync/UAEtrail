@@ -17,8 +17,7 @@ import {
 import { PROFILE_SETTINGS_PATH } from '../../config/routingCatalog';
 import { ADMIN_LINKS, HOST_CONSOLE_LINKS } from '../../constants';
 import { useAuth } from '../../context/AuthContext';
-import { api } from '../../api/index';
-import { setStoredSession } from '../../api/client';
+import { persistAuthSessionTokens, switchMeRoleSession } from '../../hooks/accountSessionApi';
 import { accountRouteByRole } from '../../utils/authRouting';
 import { buildSignInRedirect, signInPathForReturn } from '../../utils/authReturnContext';
 import { SecureAvatar } from '../ui/SecureAvatar';
@@ -405,8 +404,8 @@ const MobileMenuPanel = () => {
   const switchRole = async (target: 'participant' | 'original') => {
     closeMenu();
     try {
-      const res = await api.switchMeRole(target);
-      setStoredSession(res.tokens);
+      const res = await switchMeRoleSession(target);
+      persistAuthSessionTokens(res.tokens);
       await refreshUser();
       navigate(target === 'participant' ? EXPLORE_MAP_PATH : accountRouteByRole(res.data.role as Parameters<typeof accountRouteByRole>[0]), { replace: true });
     } catch { /* noop */ }

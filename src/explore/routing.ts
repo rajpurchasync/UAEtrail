@@ -571,10 +571,14 @@ export const exploreOrganizePath = (kind?: OrganizeComposeKind): string =>
     ? explorePath({ compose: { intent: 'organize', kind } })
     : explorePath({ compose: { surface: 'menu', intent: 'organize' } });
 
-/** Host with publish access — prefill rideshare organize from an own demand intent. */
-export const exploreOfferRideshareForDemandPath = (intentId: string): string =>
+/** Host with publish access — prefill rideshare organize from an own seeking post. */
+export const exploreOfferRideshareForDemandPath = (intent: {
+  id: string;
+  activityId?: string | null;
+  seekingActivityId?: string | null;
+}): string =>
   explorePath({
-    pin: `demand:${intentId}`,
+    pin: resolveParticipantIntentMapItemId(intent),
     compose: { intent: 'organize', kind: 'rideshare' },
   });
 

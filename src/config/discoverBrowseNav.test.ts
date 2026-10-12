@@ -29,10 +29,16 @@ describe('discover browse navigation contract', () => {
 
   it('ExploreExperience wires map list and discover browse separately', () => {
     const experience = readFileSync(join(process.cwd(), 'src/explore/ui/ExploreExperience.tsx'), 'utf8');
-    expect(experience).toMatch(/ExploreBrowsePanel/);
-    expect(experience).toMatch(/openMapListPanel/);
-    expect(experience).toMatch(/closeDiscoverBrowse/);
-    expect(experience).toMatch(/browse\.browseOpen/);
+    const browsePanels = readFileSync(
+      join(process.cwd(), 'src/explore/shell/ExploreExperienceBrowsePanels.tsx'),
+      'utf8'
+    );
+    const mapShell = readFileSync(join(process.cwd(), 'src/explore/shell/ExploreMapShell.tsx'), 'utf8');
+    expect(experience).toMatch(/ExploreExperienceBrowsePanels/);
+    expect(experience).toMatch(/ExploreMapShell/);
+    expect(mapShell).toMatch(/openMapListPanel/);
+    expect(browsePanels).toMatch(/closeDiscoverBrowse/);
+    expect(browsePanels).toMatch(/browse\.browseOpen/);
   });
 
   it('consumer hamburger stays on map for host roles (organise drawer only on /host)', () => {

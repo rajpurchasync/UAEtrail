@@ -6,7 +6,7 @@ import { publishOrganizeActivity as publishCreateActivity } from '../../services
 import { useAuth } from '../../context/AuthContext';
 import { useHostStatus } from '../../hooks/useHostStatus';
 import { setActiveTenantId } from '../../api/tenant';
-import { listOrganizePublishProfiles } from '../organizePublishTenants';
+import { listOrganizePublishProfiles, resolveOrganizePublishingProfileKind } from '../organizePublishTenants';
 import {
   organizePublishGateHref,
   organizePublishGateInputFromHostGate,
@@ -127,6 +127,10 @@ export const CreateActivityFlow = ({
   }, []);
 
   const tenantId = publishTenantId ?? defaultTenantId;
+  const publishingProfileKind = useMemo(() => {
+    const profile = publishTenantOptions.find((p) => p.tenantId === tenantId);
+    return profile ? resolveOrganizePublishingProfileKind(profile) : null;
+  }, [publishTenantOptions, tenantId]);
   const memberDisplayName = user?.displayName ?? null;
 
   const [step, setStep] = useState<FlowStep>('type');
@@ -317,11 +321,11 @@ export const CreateActivityFlow = ({
   }, []);
 
   useEffect(() => {
-    const allowed = new Set(allowedActivityPricingModes(hostTiers));
+    const allowed = new Set(allowedActivityPricingModes(hostTiers, { publishingProfileKind }));
     if (!allowed.has(draft.priceMode)) {
       patchDraft({ priceMode: 'free', priceAmount: 0 });
     }
-  }, [hostTiers, draft.priceMode, patchDraft]);
+  }, [hostTiers, publishingProfileKind, draft.priceMode, patchDraft]);
 
   const handleClose = () => {
     if (submitting) return;
@@ -523,6 +527,7 @@ export const CreateActivityFlow = ({
     registryPlaces,
     canPublish,
     hostTiers,
+    publishingProfileKind,
     canHostPaidActivities,
     hostGateLoading,
     submitting,
@@ -568,6 +573,7 @@ export const CreateActivityFlow = ({
     registryPlaces,
     canPublish,
     hostTiers,
+    publishingProfileKind,
     canHostPaidActivities,
     hostGateLoading,
     submitting,

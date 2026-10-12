@@ -96,7 +96,8 @@ export const resolveMemberHostStatus = async (userId: string): Promise<HostStatu
           : null;
   }
 
-  const canHostPaidActivities = isPlatformAdmin || hasAgencyProfile;
+  /** Linked business tenant — paid only when publishing as that business (see `allowedActivityPricingModes`). */
+  const canHostPaidActivities = isPlatformAdmin || hostTiers.business;
   const profileRoleLabel = resolveMemberProfileRoleLabel({
     role,
     hostTiers,

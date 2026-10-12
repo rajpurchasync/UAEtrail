@@ -48,10 +48,28 @@ npm --workspace @uaetrail/api run import-venue-catalog
 
 | Variable | Purpose |
 |----------|---------|
+| `EXPLORE_MAP_VNEXT=1` | Enables `GET /explore/map?bbox=west,south,east,north` subset + `cursor` / `limit` / `area` (default off; full-region response unchanged) |
+| `EXPLORE_MAP_DEMAND_PINS` | **Deprecated** — must stay unset/off; map never emits `demand:` pins (seeking = `activity:`). Reserved for migration archaeology only. |
+| `VITE_EXPLORE_MAP_VNEXT=1` | Explore map uses viewport bbox fetch (requires API flag); `/list` still loads full map |
 | `APP_BASE_URL` | Primary frontend origin (default dev: `http://localhost:5175`) |
 | `APP_BASE_URLS` | Extra allowed CORS origins (comma-separated) |
 
 Vite dev server uses port **5175** (see root `README.md`). API default `APP_BASE_URL` matches 5175; set production URLs in deployment secrets.
+
+## vNext bbox fetch — staging promotion (R5)
+
+Enable **both** flags in a staging environment before considering production default:
+
+1. API: `EXPLORE_MAP_VNEXT=1`
+2. FE build: `VITE_EXPLORE_MAP_VNEXT=1`
+
+**Smoke (staging):**
+
+- Open `/explore`, pan/zoom — network shows `GET /explore/map?bbox=…` (not only full map).
+- Join an open-RSVP activity from map peek — slot count updates without full map reload when FE vNext is on.
+- Open `/list` — still uses full map fetch (no bbox scope).
+
+**Watch:** p95 payload size and request rate per session; compare to full `GET /explore/map` baseline. Roll back by unsetting flags (wire falls back to full-region response).
 
 ## Smoke checks (browse + map layers)
 

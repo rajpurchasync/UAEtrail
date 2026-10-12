@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import type {
   ActivityDTO,
   ActivityDetailDTO,
@@ -7,6 +8,8 @@ import type {
   WithdrawReason,
 } from '@uaetrail/shared-types';
 import { api } from '../api/index';
+import { activityDetailQueryKey } from './clientQueryKeys';
+import { fetchPublicActivityDetail } from './usePublicActivityDetail';
 import {
   resolveJoinRequestUiState,
   withdrawModalVariant,
@@ -32,43 +35,37 @@ export const useActivityJoinContext = ({
   enabled = true,
   userId,
 }: UseActivityJoinContextOptions) => {
-  const [context, setContext] = useState<ActivityJoinContext | null>(null);
-  const [loading, setLoading] = useState(false);
+  const queryEnabled = enabled && Boolean(activityId && userId);
+  const { data, isLoading, isFetching, refetch } = useQuery({
+    queryKey: activityId ? activityDetailQueryKey(activityId) : ['activity', ''],
+    queryFn: () => fetchPublicActivityDetail(activityId!),
+    enabled: queryEnabled,
+  });
+
+  const context = useMemo<ActivityJoinContext | null>(() => {
+    if (!data) return null;
+    return {
+      myRequest: data.myRequest,
+      participation: data.participation,
+    };
+  }, [data]);
 
   const reload = useCallback(async () => {
-    if (!activityId || !userId) {
-      setContext(null);
-      return;
-    }
-    setLoading(true);
-    try {
-      const res = await api.getPublicActivityDetail(activityId);
-      setContext({
-        myRequest: res.data.myRequest ?? null,
-        participation: res.data.myParticipation ?? null,
-      });
-    } catch {
-      setContext(null);
-    } finally {
-      setLoading(false);
-    }
-  }, [activityId, userId]);
-
-  useEffect(() => {
-    if (!enabled || !activityId || !userId) {
-      setContext(null);
-      setLoading(false);
-      return;
-    }
-    void reload();
-  }, [enabled, activityId, userId, reload]);
+    if (!queryEnabled) return;
+    await refetch();
+  }, [queryEnabled, refetch]);
 
   const uiState = useMemo(
     () => resolveJoinRequestUiState(context ?? {}),
     [context]
   );
 
-  return { context, uiState, loading, reload };
+  return {
+    context,
+    uiState,
+    loading: queryEnabled && (isLoading || isFetching),
+    reload,
+  };
 };
 
 export interface UseActivityJoinActionsOptions {

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getActiveTenantId, setActiveTenantId } from '../../api/tenant';
-import { api, TenantMembershipView } from '../../api/index';
+import type { TenantMembershipView } from '../../api/index';
+import { fetchMyTenantMemberships } from '../../hooks/tenantMembershipApi';
 import { AppSelect } from './AppSelect';
 
 export const TenantSwitcher = ({ onChange }: { onChange: (tenantId: string) => void }) => {
@@ -9,9 +10,8 @@ export const TenantSwitcher = ({ onChange }: { onChange: (tenantId: string) => v
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.getMyTenants()
-      .then((res) => {
-        const list = res.data ?? [];
+    fetchMyTenantMemberships()
+      .then((list) => {
         setTenants(list);
         if (!selected && list.length === 1) {
           const firstId = list[0].tenantId;

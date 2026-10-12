@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { EntityFollowCheckDTO } from '@uaetrail/shared-types';
-import { api } from '../../api/index';
+import {
+  fetchEntityFollowState,
+  followEntityTarget,
+  unfollowEntityById,
+  type EntityFollowTarget,
+} from '../../hooks/entityFollowApi';
 import { AppButton } from '../mobile/AppButton';
 
 type EntityFollowControlsProps = {
@@ -20,7 +25,7 @@ export const EntityFollowControls = ({
   className,
   onStatusMessage,
 }: EntityFollowControlsProps) => {
-  const target = locationId
+  const target: EntityFollowTarget | null = locationId
     ? { locationId }
     : tenantId
       ? { tenantId }
@@ -36,9 +41,8 @@ export const EntityFollowControls = ({
       setState(null);
       return;
     }
-    void api
-      .checkEntityFollow(target)
-      .then((res) => setState(res.data))
+    void fetchEntityFollowState(target)
+      .then(setState)
       .catch(() => setState(null));
   }, [disabled, target]);
 
@@ -52,12 +56,12 @@ export const EntityFollowControls = ({
     onStatusMessage?.(null);
     try {
       if (state.following && state.followId) {
-        await api.unfollowEntity(state.followId);
+        await unfollowEntityById(state.followId);
         setState({ following: false, followId: null });
         onStatusMessage?.('Unfollowed.');
       } else {
-        const res = await api.followEntity(target);
-        setState({ following: true, followId: res.data.id });
+        const followId = await followEntityTarget(target);
+        setState({ following: true, followId });
         onStatusMessage?.('Following — outing alerts on for this place or host.');
       }
     } catch (err) {

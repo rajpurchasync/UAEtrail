@@ -5,6 +5,10 @@ Shipped on **`main`**. **Product truth:** [`../DOCS_INDEX.md`](../DOCS_INDEX.md)
 | Doc | Purpose |
 |-----|---------|
 | [**activity-detail-tabs-implementation-plan.md**](./activity-detail-tabs-implementation-plan.md) | **Activity peek + detail program** — **§6 dynamic CTAs** (peek/detail/profile), phases, trace tests (`activityDetailAcceptance.test.ts`, `activity-detail-cta-matrix.test.ts`) |
+| [**system-refactor-plan.md**](./system-refactor-plan.md) | **Execution plan** — phases R0–R8 after deep audit (discovery VM, explore shell, seeking, map vNext) |
+| [**explore-map-vnext-spec.md**](./explore-map-vnext-spec.md) | **R5.1** — bbox/cursor map read model, base/enrich cache, slim card DTO (design only) |
+| [**programme-aggregate-spec.md**](./programme-aggregate-spec.md) | **R7** — programme/series aggregate (spec only; no code until PM gate) |
+| [**system-structure-deep-audit.md**](./system-structure-deep-audit.md) | **Repo-level** FE/BE/read-model critique (explore blob, domain taxes, scale) — not doc alignment |
 | [**member-surfaces-implementation-plan.md**](./member-surfaces-implementation-plan.md) | Plan hub / seeking / §11 guards; §21 **points** at activity-detail program for exit criteria |
 | [explore-ux-spec.md](./explore-ux-spec.md) | Map card copy, emojis, CTAs |
 | [explore-browse-ia.md](./explore-browse-ia.md) · [explore-browse-taxonomy.md](./explore-browse-taxonomy.md) | Browse pills, search scopes, pin kinds (`src/explore/exploreBrowseTaxonomy.ts`) |

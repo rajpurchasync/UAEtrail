@@ -97,6 +97,13 @@ export const ListFeedActionsProvider = ({
     onReload: reloadJoinContext,
   });
 
+  const handleListJoinSuccess = useCallback(
+    (message: string) => {
+      joinActions.handleJoinSuccess(message);
+    },
+    [joinActions]
+  );
+
   useEffect(() => {
     if (!pendingJoinOpen || joinStateLoading) return;
     if (joinUiState.kind === 'open') {
@@ -284,7 +291,12 @@ export const ListFeedActionsProvider = ({
   return (
     <ListFeedActionsContext.Provider value={value}>
       {children}
-      <ExploreJoinOverlays activity={joinCard?.activity} joinActions={joinActions} />
+      <ExploreJoinOverlays
+        activity={joinCard?.activity}
+        exploreMapItemId={joinCard?.id}
+        joinActions={joinActions}
+        onJoinSuccess={handleListJoinSuccess}
+      />
     </ListFeedActionsContext.Provider>
   );
 };

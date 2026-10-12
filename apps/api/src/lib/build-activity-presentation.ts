@@ -3,8 +3,8 @@ import {
   type ActivityPresentationDTO,
   type ActivityViewerAccessDTO,
 } from '@uaetrail/shared-types';
-import { ActivityStatus } from '../domain/enums.js';
 import type { buildActivityDto } from './mappers.js';
+import { buildDetailEngagementPolicyInput } from './activity-engagement-policy-input.js';
 
 type ActivityEventSource = Parameters<typeof buildActivityDto>[0];
 
@@ -18,30 +18,9 @@ export const buildActivityPresentationForDetail = (input: {
   isEmbedded?: boolean;
   pendingJoinInviteCount?: number;
 }): ActivityPresentationDTO => {
-  const hostUserId = input.event.createdById ?? input.event.hostId ?? null;
-  const isHostUser = Boolean(input.viewerUserId && hostUserId && input.viewerUserId === hostUserId);
-
-  const policy = resolveActivityEngagementPolicy({
-    viewerAccess: input.viewerAccess,
-    isHostUser,
-    previewMode: input.previewMode ?? false,
-    isEmbedded: input.isEmbedded ?? false,
-    activityPublished: input.event.status === ActivityStatus.PUBLISHED,
-    participationMode: input.event.participationMode,
-    requirements: input.event.requirements,
-    meetingLat: input.event.meetingLat ?? null,
-    meetingLng: input.event.meetingLng ?? null,
-    startLat: input.event.startLat ?? null,
-    startLng: input.event.startLng ?? null,
-    parkingLat: input.event.parkingLat ?? null,
-    parkingLng: input.event.parkingLng ?? null,
-    rideshareEnabled: Boolean(input.event.rideshareEnabled),
-    linkedRideshareActivityId: input.event.linkedRideshareActivityId ?? null,
-    myParticipation: input.myParticipation,
-    myRequest: input.myRequest,
-    confirmedParticipantCount: input.event.participants?.length ?? 0,
-    pendingJoinInviteCount: input.pendingJoinInviteCount ?? 0,
-  });
+  const policy = resolveActivityEngagementPolicy(
+    buildDetailEngagementPolicyInput(input)
+  );
 
   return {
     ...policy.presentation,

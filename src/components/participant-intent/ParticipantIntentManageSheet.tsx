@@ -12,7 +12,7 @@ import { ORGANIZE_LINK_RIDESHARE_LABEL } from '../../explore/createFlowCopy';
 import { formatParticipantIntentMeta } from '../../member-plan/participantIntentTrips';
 import { AppButton, AppButtonLink } from '../mobile/AppButton';
 import { Dialog } from '../ui/Dialog';
-import { api } from '../../api/index';
+import { cancelParticipantIntent } from '../../hooks/participantIntentClientApi';
 import { useReloadExploreMap } from '../../hooks/useReloadExploreMap';
 import { useHostStatus } from '../../hooks/useHostStatus';
 import { useAuth } from '../../context/AuthContext';
@@ -67,7 +67,7 @@ export const ParticipantIntentManageSheet = ({
   const showRideshareOffer = canOfferRideshareForParticipantIntent(intent);
 
   const handleOfferRideshare = () => {
-    const returnPath = exploreOfferRideshareForDemandPath(intent.id);
+    const returnPath = exploreOfferRideshareForDemandPath(intent);
     if (!user) {
       navigate(signInPathForReturn(returnPath));
       return;
@@ -96,7 +96,7 @@ export const ParticipantIntentManageSheet = ({
     setBusy(true);
     setError(null);
     try {
-      await api.cancelParticipantIntent(intent.id);
+      await cancelParticipantIntent(intent.id);
       setConfirmRemove(false);
       await reloadExploreMap();
       await onChanged();

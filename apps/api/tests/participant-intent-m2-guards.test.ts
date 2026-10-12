@@ -7,7 +7,16 @@ const read = (rel: string) => readFileSync(join(process.cwd(), rel), 'utf8');
 describe('participant intent M2 guards', () => {
   it('explore map does not merge legacy participant_intents pins', () => {
     const exploreMap = read('src/lib/explore-map.ts');
+    const exploreMapBase = read('src/lib/explore-map-base.ts');
     expect(exploreMap).not.toMatch(/listActiveParticipantIntentsForMap\(/);
+    expect(exploreMapBase).not.toMatch(/listActiveParticipantIntentsForMap\(/);
+  });
+
+  it('demand map pins stay disabled unless deprecated EXPLORE_MAP_DEMAND_PINS=1', () => {
+    const flags = read('src/lib/explore-map-demand-pins.ts');
+    const exploreMapBase = read('src/lib/explore-map-base.ts');
+    expect(flags).toMatch(/EXPLORE_MAP_DEMAND_PINS/);
+    expect(exploreMapBase).not.toMatch(/source:\s*'demand'/);
   });
 
   it('Find create writes seeking activity before intent stub row', () => {

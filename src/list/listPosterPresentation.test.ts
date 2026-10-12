@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildExploreCardModel } from '../explore/exploreCardModel';
+import { buildDiscoveryCardViewModelCard } from '../discovery/discoveryCardViewModel';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import {
   formatListFeedPosterTitleLines,
@@ -17,7 +17,7 @@ import { seekingExploreMapItem } from '../explore/exploreMapItemFixtures';
 
 describe('list poster presentation', () => {
   it('joins seeking highlight and date with a space', () => {
-    const card = buildExploreCardModel({
+    const card = buildDiscoveryCardViewModelCard({
       ...seekingExploreMapItem({ intentId: 'd1', kind: 'hiking', title: 'Looking' }),
       latitude: 25,
       longitude: 56,
@@ -42,7 +42,7 @@ describe('list poster presentation', () => {
   });
 
   it('resolves activity type and requirement labels from stored requirements', () => {
-    const card = buildExploreCardModel({
+    const card = buildDiscoveryCardViewModelCard({
       id: 'activity:a1',
       kind: 'hiking',
       source: 'activity',
@@ -76,7 +76,7 @@ describe('list poster presentation', () => {
   });
 
   it('does not infer pets welcome on posters when requirements omit pets', () => {
-    const card = buildExploreCardModel({
+    const card = buildDiscoveryCardViewModelCard({
       id: 'activity:a2',
       kind: 'hiking',
       source: 'activity',
@@ -119,7 +119,7 @@ describe('list poster presentation', () => {
   });
 
   it('uses calendar date, clock time, and short price', () => {
-    const card = buildExploreCardModel({
+    const card = buildDiscoveryCardViewModelCard({
       id: 'activity:a1',
       kind: 'hiking',
       source: 'activity',
@@ -191,7 +191,7 @@ describe('listCategoryResultsLabel', () => {
 describe('resolveListFeedFooterModel', () => {
   it('guest-gates join on activities', () => {
     const card: ExploreCardModel = {
-      ...buildExploreCardModel({
+      ...buildDiscoveryCardViewModelCard({
         id: 'activity:a1',
         kind: 'hiking',
         source: 'activity',

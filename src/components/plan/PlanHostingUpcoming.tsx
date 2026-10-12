@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import type { ActivityDTO, ParticipantIntentDTO } from '@uaetrail/shared-types';
-import { api } from '../../api/index';
+import { fetchMyParticipantIntents } from '../../hooks/planUpcomingApi';
 import { useConsoleHubData } from '../../console/useHubData';
 import { useHostActivityManageActions } from '../../hooks/useHostActivityManageActions';
 import { ActivityManageSheet } from '../host/ActivityManageSheet';
@@ -51,10 +51,7 @@ export const PlanHostingUpcoming = ({ refreshKey = 0, canHost }: PlanHostingUpco
 
   const intentsQuery = useQuery({
     queryKey: ['my-participant-intents', refreshKey],
-    queryFn: async () => {
-      const res = await api.listMyParticipantIntents();
-      return res.data;
-    },
+    queryFn: fetchMyParticipantIntents,
   });
 
   useEffect(() => {

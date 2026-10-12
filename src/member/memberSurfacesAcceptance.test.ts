@@ -104,9 +104,11 @@ describe('member surfaces §11 acceptance (automated)', () => {
 
   it('G-seek: explore map build does not merge legacy demand pins into payload', () => {
     const exploreMap = read('apps/api/src/lib/explore-map.ts');
+    const exploreMapBase = read('apps/api/src/lib/explore-map-base.ts');
     expect(exploreMap).not.toMatch(/listActiveParticipantIntentsForMap\(/);
-    expect(exploreMap).toMatch(/source: 'activity',\s*\n\s*activityMode,/);
-    expect(exploreMap).not.toMatch(/activityMode === 'seeking' \? 'demand'/);
+    expect(exploreMapBase).not.toMatch(/listActiveParticipantIntentsForMap\(/);
+    expect(exploreMapBase).toMatch(/source: 'activity',\s*\n\s*activityMode,/);
+    expect(exploreMapBase).not.toMatch(/activityMode === 'seeking' \? 'demand'/);
   });
 
   it('G-seek: publish fan-out prefers activity pin when seeking id exists', () => {
@@ -133,7 +135,7 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(panel).toContain('discoverySeekingOnMap');
     expect(panel).toContain('seekingOnMap={discoverySeekingOnMap}');
     const routing = read('src/explore/memberDiscoverySeekingRow.ts');
-    expect(routing).toContain('exploreMapItemSharePath');
+    expect(routing).toContain('exploreSeekingMapItemPath');
     const list = read('src/list/ListDiscoveryExperience.tsx');
     expect(list).not.toMatch(/onOpenDiscoveryActivity.*activityDetailPath/);
   });
@@ -275,9 +277,9 @@ describe('member surfaces §11 acceptance (automated)', () => {
   });
 
   it('AD-6: host crew chat policy UI patches activity groupChatPostPolicy', () => {
-    const detail = read('src/components/activity/ActivityDetailView.tsx');
-    expect(detail).toContain('ActivityCrewChatPostPolicyCard');
-    expect(detail).toContain('groupChatPostPolicy');
+    const sidebar = read('src/components/activity/detail/ActivityDetailPricingSidebar.tsx');
+    expect(sidebar).toContain('ActivityCrewChatPostPolicyCard');
+    expect(sidebar).toContain('groupChatPostPolicy');
     const card = read('src/components/activity/ActivityCrewChatPostPolicyCard.tsx');
     expect(card).toContain('updateHostActivity');
     const audience = read('src/explore/ui/organizeWizard/steps/audience-step.tsx');
@@ -286,21 +288,22 @@ describe('member surfaces §11 acceptance (automated)', () => {
   });
 
   it('AD-3 v3.2: tab footers, host Buddies hub, hero status on activity detail', () => {
-    const detail = read('src/components/activity/ActivityDetailView.tsx');
-    expect(detail).toContain('wireFooterByTab');
+    const body = read('src/components/activity/detail/ActivityDetailBody.tsx');
+    const model = read('src/components/activity/detail/useActivityDetailViewModel.ts');
+    expect(read('src/components/activity/ActivityDetailView.tsx')).toContain('wireFooterByTab');
     expect(read('src/pages/ActivityDetail.tsx')).toContain('resolveActivityDetailWirePresentation');
     expect(read('src/activity/resolveActivityDetailEngagement.ts')).toContain(
       'resolveActivityDetailEngagementFooterKind'
     );
-    expect(detail).toContain('ActivityDetailBuddiesAside');
-    expect(detail).toContain('ActivityDetailPlanExtras');
-    expect(detail).toContain('ActivityDetailStickyFooter');
-    expect(read('src/components/activity/detail/ActivityDetailStickyFooter.tsx')).toContain(
+    expect(body).toContain('ActivityDetailBuddiesAside');
+    expect(body).toContain('ActivityDetailPlanExtras');
+    expect(model).toContain('useActivityDetailJoinSurfaces');
+    expect(read('src/components/activity/detail/useActivityDetailJoinSurfaces.tsx')).toContain(
       'ActivityDetailStickyFooter'
     );
     const buddiesAside = read('src/components/activity/detail/tabs/ActivityDetailBuddiesAside.tsx');
     expect(buddiesAside).toContain('ActivityDetailHostBuddiesHub');
-    expect(detail).toContain('resolveActivityDetailHeroStatusChips');
+    expect(model).toContain('resolveActivityDetailHeroStatusChips');
     const footersShim = read('src/activity/activityDetailTabFooters.ts');
     expect(footersShim).toContain('@uaetrail/shared-types');
     const footersPolicy = read('packages/shared-types/src/activity-detail-tab-footers.ts');
@@ -313,10 +316,12 @@ describe('member surfaces §11 acceptance (automated)', () => {
   });
 
   it('AD-8: post check-in review prompts on activity detail Plan/Buddies', () => {
-    const detail = read('src/components/activity/ActivityDetailView.tsx');
-    expect(detail).toContain('ActivityPostCheckInReviewPrompts');
-    expect(detail).toContain('ActivityHostCheckInReviewPrompt');
-    expect(detail).toContain('buildParticipantPostCheckInReviewPrompts');
+    const body = read('src/components/activity/detail/ActivityDetailBody.tsx');
+    const sidebar = read('src/components/activity/detail/ActivityDetailPricingSidebar.tsx');
+    const model = read('src/components/activity/detail/useActivityDetailViewModel.ts');
+    expect(body).toContain('ActivityPostCheckInReviewPrompts');
+    expect(sidebar).toContain('ActivityHostCheckInReviewPrompt');
+    expect(model).toContain('buildParticipantPostCheckInReviewPrompts');
     const copy = read('src/content/activityDetailCopy.ts');
     expect(copy).toContain('ACTIVITY_DETAIL_POST_CHECK_IN_REVIEWS_TITLE');
   });

@@ -58,9 +58,9 @@ Three compact choices (drill-down in the same sheet â€” not three tall arch
 | **Event** | `activityType: event` | Open RSVP (**Iâ€™m going**) |
 | **Activity** | Generic buddy plan (see below) | Host approval |
 
-**Organize (buddy host)** requires **profile completion** (`signupProfileComplete` — same member details as `/welcome`). `GET /me/host-status` → `canPublish` provisions a personal guide-owned tenant on first check. Gate failure → `/welcome?redirect=…` (not Pro Membership). **Agency / shop / professional** → `/profile/pro-membership` and `canHostPaidActivities` / business tenants.
+**Organize (community host)** requires **profile completion** (`signupProfileComplete` — same member details as `/welcome`). `GET /me/host-status` → `canPublish` provisions a community tenant on first check. Gate failure → `/welcome?redirect=…` (not Pro Membership). **Pro membership** (`/profile/pro-membership`) adds a **guide**, **agency**, or **shop** public profile — not community Organize. **Paid** pricing (`canHostPaidActivities` = linked business tenant) requires publish-as **agency, shop, or partner**. Individual professionals (no business license on platform) stay **free + shared** only.
 
-**Activity pricing (Organize + host publish):** one mode per outing — `free` · `shared` · `paid` — with a single indicative AED amount when not free. **No tiered packages** and **no in-app payments** (amounts are informational; members settle with the host offline). **Who may set which mode** (`allowedActivityPricingModes` on `hostTiers`): community buddy → **free only**; Pro guide (no business tenant) → **free + shared**; business (agency/shop) → **free + shared + paid**. External registration URLs are **parked** (not in product UI/API).
+**Activity pricing (Organize + host publish):** one mode per outing — `free` · `shared` · `paid` — with a single indicative AED amount when not free. **No tiered packages** and **no in-app payments** (amounts are informational; members settle with the host offline). **Who may set which mode** (`allowedActivityPricingModes`): everyone with Organize → **free + shared**. **Paid** only when the member is **linked to a verified business** (`hostTiers.business`) **and** publishes as **agency, shop, or partner** — not as an individual guide (community / pro guide). External registration URLs are **parked** (not in product UI/API).
 
 ### Find â†’ (demand / â€œlooking forâ€)
 
@@ -72,6 +72,8 @@ Three compact choices (drill-down in the same sheet â€” not three tall arch
 | **Activities** | `event` (runs, jogs, general outdoors) |
 
 Any signed-in member â€” no host approval to post demand.
+
+**Map read path:** Find creates a **seeking activity** row (`activity:{activityId}` on the explore map). Intent manage APIs stay on `participant_intents`; join uses **`POST /activities/:id/requests`**. Legacy shared links may still use `pin=demand:{intentId}` — the client resolves those to the activity pin (see [Demand (Find)](#demand-find--who-is-the-host) below).
 
 ### Add â†’ (place catalog)
 

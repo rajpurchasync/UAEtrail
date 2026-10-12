@@ -5,7 +5,10 @@ import { MapPinFields, parseCoord } from './MeetingPointMap';
 import { ImageUpload } from './ImageUpload';
 import { AssetKeyUpload } from './AssetKeyUpload';
 import { AppSelect } from './AppSelect';
-import { api } from '../../api/index';
+import {
+  listPublicPlacesCatalog,
+  submitPlaceContribution,
+} from '../../hooks/placeCatalogApi';
 import { DEFAULT_COUNTRY } from '../../config/regions';
 import { UAE_EMIRATES, getStatesForEmirate } from '../../config/uaeRegions';
 import {
@@ -128,9 +131,9 @@ export const SubmitPlaceForm = ({
     setSearchLoading(true);
     setError(null);
     try {
-      const res = await api.getPublicPlaces();
+      const catalog = await listPublicPlacesCatalog();
       const q = searchQuery.trim().toLowerCase();
-      const matches = (res.data ?? []).filter((loc) => {
+      const matches = catalog.filter((loc) => {
         if (!q) return true;
         return (
           loc.name.toLowerCase().includes(q) ||
@@ -233,10 +236,8 @@ export const SubmitPlaceForm = ({
     setError(null);
     try {
       const payload = buildPayload();
-      const res = tenantId
-        ? await api.submitPlace(tenantId, payload as Partial<PlaceDTO>)
-        : await api.submitUserPlace(payload as Partial<PlaceDTO>);
-      onSubmitted?.(res.data);
+      const place = await submitPlaceContribution(payload as Partial<PlaceDTO>, tenantId);
+      onSubmitted?.(place);
       setForm({ ...emptyForm, activityType: defaultActivityType });
       setStep('search');
     } catch (err) {

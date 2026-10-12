@@ -3,7 +3,11 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Bell, X } from 'lucide-react';
 import { NotificationDTO } from '@uaetrail/shared-types';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { api } from '../../api/index';
+import {
+  fetchMeNotificationsPage,
+  markAllMeNotificationsRead,
+  markNotificationReadById,
+} from '../../hooks/notificationInboxApi';
 import { useAuth } from '../../context/AuthContext';
 import { useNotificationUnreadCount } from '../../hooks/useNotificationUnreadCount';
 import { invalidateNotificationUnreadBadge } from '../../utils/notificationBadge';
@@ -53,7 +57,7 @@ export const NotificationBellPopover = ({
 
     setLoading(true);
     try {
-      const res = await api.getMeNotifications(1);
+      const res = await fetchMeNotificationsPage(1);
       setNotifications(sortNotificationsNewestFirst(res.data));
     } catch {
       setNotifications([]);
@@ -73,7 +77,7 @@ export const NotificationBellPopover = ({
   );
 
   const markAllRead = async () => {
-    await api.markAllNotificationsRead().catch(() => undefined);
+    await markAllMeNotificationsRead().catch(() => undefined);
     setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
     syncUnreadBadge();
   };
@@ -84,7 +88,7 @@ export const NotificationBellPopover = ({
   };
 
   const handleItemClick = async (notif: NotificationDTO) => {
-    await api.markNotificationRead(notif.id).catch(() => undefined);
+    await markNotificationReadById(notif.id).catch(() => undefined);
     setNotifications((prev) => prev.filter((item) => item.id !== notif.id));
     syncUnreadBadge();
     setOpen(false);

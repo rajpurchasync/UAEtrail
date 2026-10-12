@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Flag } from 'lucide-react';
-import { api, ContentReportReason, ContentReportTargetType } from '../../api/index';
+import type { ContentReportReason, ContentReportTargetType } from '../../api/index';
+import { submitContentReport } from '../../hooks/contentReportSubmit';
 import { AppButton } from '../mobile/AppButton';
 import { AppSelect } from './AppSelect';
 import { Dialog } from '../ui/Dialog';
@@ -43,7 +44,7 @@ export const ReportContentDialog = ({
     }
     setSubmitting(true);
     try {
-      await api.reportContent({
+      await submitContentReport({
         targetType,
         targetId,
         reason,

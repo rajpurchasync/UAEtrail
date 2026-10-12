@@ -12,13 +12,17 @@ import {
   activityDetailPath,
   resolveActivityDisplayCoordinates,
   resolveActivityHostUserId,
+  resolveParticipationMode,
 } from '@uaetrail/shared-types';
 import { buildShareText, buildShareUrl } from '../../utils/share';
 import { hostPublishedActivityPeekAccess } from '../../access/resolvePeekDetailAccess';
-import { buildExploreMapItemFromActivity, parseActivityMapItemId } from '../privateActivityExploreItem';
+import { buildExploreMapItemFromActivity } from '../privateActivityExploreItem';
+import {
+  findExploreMapItemForPinId,
+  resolveActivityIdForExplorePinId,
+} from '../exploreMapPinResolve';
 import { api } from '../../api/index';
-import { buildExploreCardModel } from '../exploreCardModel';
-import { finalizeExploreCardLinkedRideshare } from '../linkedRideshareExplore';
+import { buildDiscoveryCardViewModel } from '../../discovery/discoveryCardViewModel';
 import { canShowDemandLinkRideshareOffer } from '../linkActivityRideshareOffer';
 import { openActivityGroupChat } from '../../utils/openActivityGroupChat';
 import { messagesRouteForRole } from '../../utils/authRouting';
@@ -32,7 +36,7 @@ import { useActivityJoinActions, useActivityJoinContext } from '../../hooks/useA
 import { useParticipantIntentJoinContext } from '../../hooks/useParticipantIntentJoinContext';
 import { useViewerProfileGender } from '../../hooks/useViewerProfileGender';
 import { womenOnlyJoinMessageForActivity } from '../../utils/activityWomenOnlyJoin';
-import { exploreMapQueryKey, reloadExploreMap } from '../../hooks/useExploreMap';
+import { readExploreMapItemsFromCache, reloadExploreMap } from '../../hooks/useExploreMap';
 import { navigateToParticipantIntentManage } from '../../member-plan/navigateParticipantIntentManage';
 import type { ContributeSubmitResult } from './contributeFlow';
 import type { DemandSubmitResult } from './demandFlow';
@@ -102,7 +106,7 @@ export const useExploreSelectionActions = ({
 
   const selectedCard = useMemo(() => {
     if (!selected) return null;
-    const card = finalizeExploreCardLinkedRideshare(buildExploreCardModel(selected), selected, items);
+    const card = buildDiscoveryCardViewModel(selected, { mapItems: items }).card;
     const activity = card.activity;
     const isOwnActivity = Boolean(
       user &&
@@ -197,6 +201,13 @@ export const useExploreSelectionActions = ({
     onMessage: setDemandNotice,
     onError: setDemandNotice,
   });
+
+  const handlePeekJoinSuccess = useCallback(
+    (message: string) => {
+      joinActions.handleJoinSuccess(message);
+    },
+    [joinActions]
+  );
 
   const openItem = useCallback(
     (item: ExploreMapItemDTO) => {
@@ -465,13 +476,13 @@ export const useExploreSelectionActions = ({
 
   const tryOpenActivityPinDeepLink = useCallback(
     async (mapItemId: string): Promise<ActivityPinDeepLinkResult> => {
-      const existing = items.find((entry) => entry.id === mapItemId);
+      const existing = findExploreMapItemForPinId(items, mapItemId);
       if (existing) {
         openItem(existing);
         return 'opened';
       }
 
-      const activityId = parseActivityMapItemId(mapItemId);
+      const activityId = resolveActivityIdForExplorePinId(items, mapItemId);
       if (!activityId) return 'not_activity';
       if (!user) return 'auth_required';
 
@@ -524,7 +535,7 @@ export const useExploreSelectionActions = ({
       if (!result.visibleOnMap) {
         return;
       }
-      const mapItems = queryClient.getQueryData<ExploreMapItemDTO[]>(exploreMapQueryKey);
+      const mapItems = readExploreMapItemsFromCache(queryClient);
       const pin = mapItems?.find((item) => item.id === result.mapItemId);
       if (pin?.latitude != null && pin?.longitude != null) {
         handleFocusMapLocation({ lat: pin.latitude, lng: pin.longitude });
@@ -558,6 +569,7 @@ export const useExploreSelectionActions = ({
     peekJoinUiState,
     peekJoinStateLoading,
     joinActions,
+    handlePeekJoinSuccess,
     demandNotice,
     venueNotice,
     setDemandNotice,

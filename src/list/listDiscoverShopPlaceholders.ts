@@ -1,5 +1,6 @@
 import { EXPLORE_SHOPS_LIST_PATH, type ExploreMapItemDTO } from '@uaetrail/shared-types';
-import { buildExploreCardModel, type ExploreCardModel } from '../explore/exploreCardModel';
+import { buildDiscoveryCardViewModelCard } from '../discovery/discoveryCardViewModel';
+import type { ExploreCardModel } from '../explore/exploreCardModel';
 const PLACEHOLDER_SHOPS: readonly ExploreMapItemDTO[] = [
   {
     id: 'shop:discover-placeholder-sandpeak',
@@ -72,4 +73,4 @@ const PLACEHOLDER_SHOPS: readonly ExploreMapItemDTO[] = [
 const PLACEHOLDER_LIMIT = 5;
 
 export const buildDiscoverShopPlaceholderCards = (): ExploreCardModel[] =>
-  PLACEHOLDER_SHOPS.slice(0, PLACEHOLDER_LIMIT).map((item) => buildExploreCardModel(item));
+  PLACEHOLDER_SHOPS.slice(0, PLACEHOLDER_LIMIT).map((item) => buildDiscoveryCardViewModelCard(item));

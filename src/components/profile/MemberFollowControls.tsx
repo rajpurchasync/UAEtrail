@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { MemberFollowStateDTO } from '@uaetrail/shared-types';
-import { api } from '../../api/index';
+import { fetchMemberFollowState, setMemberFollow } from '../../hooks/memberFollowApi';
 import { AppButton } from '../mobile/AppButton';
 
 type MemberFollowControlsProps = {
@@ -25,9 +25,8 @@ export const MemberFollowControls = ({
       setState(null);
       return;
     }
-    void api
-      .getMemberFollowState(targetUserId)
-      .then((res) => setState(res.data))
+    void fetchMemberFollowState(targetUserId)
+      .then(setState)
       .catch(() => setState(null));
   }, [disabled, targetUserId]);
 
@@ -40,12 +39,10 @@ export const MemberFollowControls = ({
     setBusy(true);
     onStatusMessage?.(null);
     try {
-      const res = state.isFollowing
-        ? await api.unfollowMember(targetUserId)
-        : await api.followMember(targetUserId);
-      setState(res.data);
+      const next = await setMemberFollow(targetUserId, !state.isFollowing);
+      setState(next);
       onStatusMessage?.(
-        res.data.isFollowing
+        next.isFollowing
           ? 'You will get notified when they host an outing.'
           : 'Unfollowed.'
       );

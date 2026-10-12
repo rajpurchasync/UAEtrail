@@ -4,12 +4,13 @@ import {
   type PublishingProfileKind,
 } from '@uaetrail/shared-types';
 
-/** Host tenants eligible for map Organize (buddy / guide / agency — not shop-only). */
+/** Host tenants eligible for map Organize (buddy / guide / agency / verified shop). */
 export const listOrganizePublishProfiles = (
   ownedProfiles: OwnedHostProfileDTO[]
 ): OwnedHostProfileDTO[] => ownedProfiles.filter((profile) => isOrganizeActivityHostProfileType(profile.type));
 
-const fallbackPublishingKind = (profile: OwnedHostProfileDTO): PublishingProfileKind => {
+export const resolveOrganizePublishingProfileKind = (profile: OwnedHostProfileDTO): PublishingProfileKind => {
+  if (profile.publishingProfileKind) return profile.publishingProfileKind;
   if (profile.type === 'agency') return 'agency';
   if (profile.type === 'shop') return 'shop';
   return 'community';
@@ -20,7 +21,7 @@ export const organizePublishAsLabel = (
   profile: OwnedHostProfileDTO,
   memberDisplayName?: string | null
 ): string => {
-  const kind = profile.publishingProfileKind ?? fallbackPublishingKind(profile);
+  const kind = resolveOrganizePublishingProfileKind(profile);
   if (kind === 'community') {
     const name = memberDisplayName?.trim();
     return name ? `As ${name}` : 'As yourself';

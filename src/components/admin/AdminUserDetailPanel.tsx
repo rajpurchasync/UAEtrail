@@ -2,10 +2,12 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AdminUserType, ActivityDTO } from '@uaetrail/shared-types';
 import {
-  AdminSocialGroupDetail,
-  api,
-  TenantDetail
-} from '../../api/index';
+  fetchAdminActivityDetail,
+  fetchAdminGroupDetail,
+  fetchAdminTenantDetail,
+  type AdminSocialGroupDetail,
+  type TenantDetail,
+} from '../../hooks/adminDrilldownApi';
 import { USER_TYPE_BADGE, USER_TYPE_LABELS } from '../../constants/userTypes';
 import { formatActivityType } from '../../utils/activityIdentity';
 import { activityHostName } from '../../utils/hostLabels';
@@ -402,14 +404,11 @@ export const AdminUserDetailPanel = ({
     const load = async () => {
       try {
         if (drillDown.type === 'tenant') {
-          const res = await api.getAdminTenantDetail(drillDown.id);
-          setTenantDetail(res.data);
+          setTenantDetail(await fetchAdminTenantDetail(drillDown.id));
         } else if (drillDown.type === 'group') {
-          const res = await api.getAdminGroupDetail(drillDown.id);
-          setGroupDetail(res.data);
+          setGroupDetail(await fetchAdminGroupDetail(drillDown.id));
         } else {
-          const res = await api.getAdminActivityDetail(drillDown.id);
-          setActivityDetail(res.data);
+          setActivityDetail(await fetchAdminActivityDetail(drillDown.id));
         }
       } catch (err) {
         setDrillError(err instanceof Error ? err.message : 'Failed to load details');

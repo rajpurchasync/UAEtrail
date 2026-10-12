@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import type { ActivityGroupChatPostPolicy } from '@uaetrail/shared-types';
-import { api } from '../../api/index';
+import { updateHostActivityGroupChatPostPolicy } from '../../hooks/hostActivityClientApi';
 import {
   activityGroupChatPostPolicyHint,
   activityGroupChatPostPolicyLabel,
@@ -33,7 +33,7 @@ export const ActivityCrewChatPostPolicyCard = ({
     setSaving(policy);
     onError?.('');
     try {
-      await api.updateHostActivity(tenantId, activityId, { groupChatPostPolicy: policy });
+      await updateHostActivityGroupChatPostPolicy(tenantId, activityId, policy);
       setCurrent(policy);
       onSaved?.(policy);
     } catch (err) {

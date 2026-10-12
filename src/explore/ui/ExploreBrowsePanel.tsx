@@ -9,7 +9,7 @@ import { PRODUCT_EXPLORE_EMPTY_FILTERS } from '../../content/productNorthStar';
 import { tripsLegacyJoinedTabPath } from '../../config/routingCatalog';
 import { EXPLORE_SHEET, EXPLORE_TYPE } from '../../config/exploreTheme';
 import type { ExploreActivityDatePreset, ExplorePanel, MapFilterKey } from '../routing';
-import { buildExploreCardModel } from '../exploreCardModel';
+import { buildDiscoveryMapListRowCard } from '../../discovery/buildDiscoveryMapListRowCard';
 import { ExploreBrowseFilterChrome } from './ExploreBrowseFilterChrome';
 import { ExploreMapDateFilter } from './ExploreMapDateFilter';
 import { VenueStateFilterMenu } from './VenueStateFilterMenu';
@@ -44,6 +44,8 @@ export interface ExploreBrowsePanelProps {
   isDesktop: boolean;
   loading: boolean;
   listItems: ExploreMapItemDTO[];
+  /** Full explore map pool for linked rideshare + card enrichment (defaults to `listItems`). */
+  mapPool?: ExploreMapItemDTO[];
   shopListSections: ShopListSections | null;
   desktopBrowseTab: DesktopBrowseTab;
   mapFilter: MapFilterKey;
@@ -114,6 +116,7 @@ export const ExploreBrowsePanel = ({
   isDesktop,
   loading,
   listItems,
+  mapPool: mapPoolProp,
   shopListSections,
   desktopBrowseTab,
   mapFilter,
@@ -156,11 +159,19 @@ export const ExploreBrowsePanel = ({
   fullscreenBrowse = false,
   mobileSheetChrome = false,
 }: ExploreBrowsePanelProps) => {
+  const mapPool = mapPoolProp ?? listItems;
   const mobileSheetPad = !isDesktop && (mobileSheetChrome || fullscreenBrowse);
   const sheetFillsViewport = fullscreenBrowse && !isDesktop;
+  const listRowCardById = useMemo(() => {
+    const map = new Map<string, ExploreCardModel>();
+    for (const item of listItems) {
+      map.set(item.id, buildDiscoveryMapListRowCard(item, mapPool));
+    }
+    return map;
+  }, [listItems, mapPool]);
   const posterFeedBuiltCards = useMemo(
-    () => (usePosterFeed ? buildListFeedCards(listItems, undefined, listItems) : []),
-    [usePosterFeed, listItems]
+    () => (usePosterFeed ? buildListFeedCards(listItems, undefined, mapPool) : []),
+    [usePosterFeed, listItems, mapPool]
   );
   const posterCardsToRender =
     posterFeedCards.length > 0 ? posterFeedCards : posterFeedBuiltCards;
@@ -487,7 +498,7 @@ export const ExploreBrowsePanel = ({
                   {shopListSections.physical.map((item) => (
                     <ExploreListRow
                       key={item.id}
-                      card={buildExploreCardModel(item)}
+                      card={listRowCardById.get(item.id)!}
                       onClick={() => onOpenItem(item)}
                       onPointerEnter={onListItemHover ? () => onListItemHover(item.id) : undefined}
                     />
@@ -506,7 +517,7 @@ export const ExploreBrowsePanel = ({
                   {shopListSections.online.map((item) => (
                     <ExploreListRow
                       key={item.id}
-                      card={buildExploreCardModel(item)}
+                      card={listRowCardById.get(item.id)!}
                       onClick={() => onOpenItem(item)}
                       onPointerEnter={onListItemHover ? () => onListItemHover(item.id) : undefined}
                     />
@@ -526,7 +537,7 @@ export const ExploreBrowsePanel = ({
               listItems.map((item) => (
                 <ExploreListRow
                   key={item.id}
-                  card={buildExploreCardModel(item)}
+                  card={listRowCardById.get(item.id)!}
                   onClick={() => onOpenItem(item)}
                   buddyUserIds={buddyUserIds}
                   onPointerEnter={onListItemHover ? () => onListItemHover(item.id) : undefined}

@@ -1,6 +1,6 @@
 import { MapPin, Truck } from 'lucide-react';
 import type { ContributeDraft } from './contributeFlow';
-import { formatHostPhonePreview } from '../../components/organisation-console/becomeHostForm';
+import { formatHostPhonePreview } from '../../components/organisation-console/proProfileApplicationForm';
 
 type ContributeShopPreviewProps = {
   draft: ContributeDraft;

@@ -2,7 +2,13 @@ import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { ParticipantDTO } from '@uaetrail/shared-types';
 import { MoreVertical } from 'lucide-react';
-import { api } from '../../api/index';
+import {
+  checkInHostActivityParticipant,
+  fetchHostActivityParticipants,
+  rateHostActivityParticipant,
+  revokeHostActivityParticipant,
+  undoHostActivityParticipantCheckIn,
+} from '../../hooks/hostActivityClientApi';
 import { HOST_MESSAGES_PATH } from '../../config/surfacePaths';
 import { hostActivitiesCheckInPath } from '../../config/routingCatalog';
 import { SecureAvatar } from '../ui';
@@ -49,9 +55,9 @@ export const ActivityParticipantsPanel = ({
     if (!tenantId || !activityId) return;
     setLoading(true);
     try {
-      const res = await api.getActivityParticipants(tenantId, activityId);
-      setParticipants(res.data.participants ?? []);
-      setActivityEnded(Boolean(res.data.activityEnded));
+      const snapshot = await fetchHostActivityParticipants(tenantId, activityId);
+      setParticipants(snapshot.participants);
+      setActivityEnded(snapshot.activityEnded);
     } catch (err) {
       onError?.(err instanceof Error ? err.message : 'Failed to load participants');
       setParticipants([]);
@@ -70,9 +76,9 @@ export const ActivityParticipantsPanel = ({
     setMenuOpenId(null);
     try {
       if (participant.checkedInAt) {
-        await api.undoCheckin(tenantId, activityId, participant.id);
+        await undoHostActivityParticipantCheckIn(tenantId, activityId, participant.id);
       } else {
-        await api.checkinParticipant(tenantId, activityId, participant.id);
+        await checkInHostActivityParticipant(tenantId, activityId, participant.id);
       }
       await loadParticipants();
     } catch (err) {
@@ -91,7 +97,12 @@ export const ActivityParticipantsPanel = ({
     if (!tenantId || !revokeTarget) return;
     setRevokeSubmitting(true);
     try {
-      await api.revokeActivityParticipant(tenantId, activityId, revokeTarget.id, organizerNote);
+      await revokeHostActivityParticipant(
+        tenantId,
+        activityId,
+        revokeTarget.id,
+        organizerNote
+      );
       setRevokeTarget(null);
       await loadParticipants();
     } catch (err) {
@@ -105,7 +116,7 @@ export const ActivityParticipantsPanel = ({
     if (!tenantId || !rateTarget) return;
     setRateSubmitting(true);
     try {
-      await api.rateActivityParticipant(tenantId, activityId, rateTarget.id, payload);
+      await rateHostActivityParticipant(tenantId, activityId, rateTarget.id, payload);
       setRateTarget(null);
       await loadParticipants();
     } catch (err) {

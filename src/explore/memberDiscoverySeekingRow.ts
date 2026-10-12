@@ -1,5 +1,5 @@
 import type { MemberDiscoverySeekingRowDTO } from '@uaetrail/shared-types';
-import { exploreMapItemSharePath } from './routing';
+import { exploreSeekingMapItemPath } from '@uaetrail/shared-types';
 
 export const activityIdFromExploreMapItemId = (exploreItemId: string): string | null => {
   const id = exploreItemId.trim();
@@ -8,9 +8,9 @@ export const activityIdFromExploreMapItemId = (exploreItemId: string): string | 
   return activityId.length > 0 ? activityId : null;
 };
 
-/** Deep link to map list + pin peek — same contract as explore cards (not `/activity` hub). */
+/** Deep link to map list + pin peek — prefers `activity:` when M1 row exists (R4). */
 export const exploreMapItemPathFromSeekingRow = (row: MemberDiscoverySeekingRowDTO): string =>
-  exploreMapItemSharePath(row.exploreItemId, {
+  exploreSeekingMapItemPath({
     intentId: row.participantIntentId,
     activityId: activityIdFromExploreMapItemId(row.exploreItemId),
   });

@@ -85,15 +85,15 @@ describe('activity detail program — governance', () => {
     expect(actions).toMatch(/navigator\.share/);
     expect(actions).toMatch(/manageActivity:/);
     expect(actions).toMatch(/onOpenHostManage/);
-    const experience = read('src/explore/ui/ExploreExperience.tsx');
-    expect(experience).toMatch(/useHostActivitySheetBundle/);
-    expect(experience).toMatch(/onOpenHostManage: tenantId/);
+    const model = read('src/explore/shell/useExploreExperienceModel.ts');
+    expect(model).toMatch(/useHostActivitySheetBundle/);
+    expect(model).toMatch(/onOpenHostManage: tenantId/);
     const hostHandlers = read('src/host/hostActivityCtaHandlers.ts');
     expect(hostHandlers).toMatch(/onViewParticipants\?:/);
     const detail = read('src/pages/ActivityDetail.tsx');
     expect(detail).toMatch(/onViewParticipants: \(\) => setMobileTab\('buddies'\)/);
     expect(actions).toMatch(/onShareHostedActivity/);
-    expect(experience).toMatch(/onShareHostedActivity: shareHostedActivity/);
+    expect(model).toMatch(/onShareHostedActivity: shareHostedActivity/);
     const listFeed = read('src/list/ui/ListFeedActionsProvider.tsx');
     expect(listFeed).toMatch(/onShareHostedActivity/);
     const sticky = read('src/components/activity/detail/ActivityDetailStickyFooter.tsx');
@@ -110,14 +110,14 @@ describe('activity detail program — governance', () => {
   });
 
   it('AD-HYGIENE-01: People browse panel is not wrapped in ListFeedActionsProvider', () => {
-    const experience = read('src/explore/ui/ExploreExperience.tsx');
-    const peoplePanelBlock = experience.match(
+    const browsePanels = read('src/explore/shell/ExploreExperienceBrowsePanels.tsx');
+    const peoplePanelBlock = browsePanels.match(
       /const mobileListPeopleBrowsePanel = \([\s\S]*?\n  \);/
     )?.[0];
     expect(peoplePanelBlock).toBeTruthy();
     expect(peoplePanelBlock!).toMatch(/PeopleBrowsePanel/);
     expect(peoplePanelBlock!).not.toMatch(/ListFeedActionsProvider/);
-    expect(experience).toMatch(/const mobileMapListPanel[\s\S]*ListFeedActionsProvider/);
+    expect(browsePanels).toMatch(/const mobileMapListPanel[\s\S]*ListFeedActionsProvider/);
   });
 
   it('AD-LIST-08: list feed and map peek share executeActivityMapPeekAction', () => {
@@ -132,8 +132,11 @@ describe('activity detail program — governance', () => {
 
   it('AD-PEEK-07: explore map list panel wraps ListFeedActionsProvider with host actions', () => {
     const experience = read('src/explore/ui/ExploreExperience.tsx');
-    expect(experience).toMatch(/const desktopMapListPanel[\s\S]*ListFeedActionsProvider[\s\S]*listFeedHostActions/);
-    expect(experience).toMatch(/const mobileMapListPanel[\s\S]*ListFeedActionsProvider[\s\S]*listFeedHostActions/);
+    expect(experience).toMatch(/ExploreExperienceBrowsePanels/);
+    expect(experience).toMatch(/listFeedHostActions/);
+    const browsePanels = read('src/explore/shell/ExploreExperienceBrowsePanels.tsx');
+    expect(browsePanels).toMatch(/const desktopMapListPanel[\s\S]*ListFeedActionsProvider[\s\S]*listFeedHostActions/);
+    expect(browsePanels).toMatch(/const mobileMapListPanel[\s\S]*ListFeedActionsProvider[\s\S]*listFeedHostActions/);
     const listRow = read('src/explore/ui/ExploreListRow.tsx');
     expect(listRow).toMatch(/ExploreListRowWireFooter/);
     const wireFooter = read('src/explore/ui/ExploreListRowWireFooter.tsx');
@@ -168,11 +171,12 @@ describe('activity detail program — governance', () => {
   });
 
   it('AD-CHROME-01: mobile chrome uses emoji + activity title (AD-2b, not kind-only chrome)', () => {
-    const detail = read('src/components/activity/ActivityDetailView.tsx');
+    const view = read('src/components/activity/ActivityDetailView.tsx');
+    const model = read('src/components/activity/detail/useActivityDetailViewModel.ts');
     const chrome = read('src/activity/activityKindChrome.ts');
-    expect(detail).not.toMatch(/kindChromeTitle/);
-    expect(detail).toMatch(/activityTitleChromeLine/);
-    expect(detail).toMatch(/titleChromeLine/);
+    expect(model).not.toMatch(/kindChromeTitle/);
+    expect(model).toMatch(/activityTitleChromeLine/);
+    expect(view).toMatch(/titleChromeLine/);
     expect(chrome).toMatch(/activityTitleChromeLine/);
   });
 });
@@ -188,11 +192,12 @@ describe('activity detail program — engagement wire (AD-PRO-01, AD-PRES-02)', 
     const page = read('src/pages/ActivityDetail.tsx');
     expect(page).toMatch(/footerByTab/);
     expect(page).toMatch(/wireTabs/);
-    const detail = read('src/components/activity/ActivityDetailView.tsx');
-    expect(detail).toMatch(/wireFooterByTab/);
-    expect(detail).toMatch(/wireTabs/);
-    expect(detail).toMatch(/resolveActivityDetailTabUi/);
-    expect(detail).not.toMatch(/resolveActivityDetailEngagementFooterKind/);
+    const view = read('src/components/activity/ActivityDetailView.tsx');
+    const model = read('src/components/activity/detail/useActivityDetailViewModel.ts');
+    expect(view).toMatch(/wireFooterByTab/);
+    expect(view).toMatch(/wireTabs/);
+    expect(model).toMatch(/resolveActivityDetailTabUi/);
+    expect(model).not.toMatch(/resolveActivityDetailEngagementFooterKind/);
     const pageWire = read('src/pages/ActivityDetail.tsx');
     expect(pageWire).toMatch(/resolveActivityDetailWirePresentation/);
     expect(pageWire).toMatch(/effectiveWirePresentation/);

@@ -11,8 +11,7 @@ import {
   listPopularActiveLocations,
   listPublishedUpcomingActivitiesByLocation,
 } from '../../lib/activities-store.js';
-import { buildExploreMapPayload } from '../../lib/explore-map.js';
-import { enrichExploreMapPayloadViewerAccess } from '../../lib/explore-map-viewer-access.js';
+import { loadExploreMapForRequest } from '../../lib/explore-map-route.js';
 import { listActiveLocations } from '../../lib/location-query.js';
 import { buildActivityDto, toLocationDto } from '../../lib/mappers.js';
 import { paginatedResponse } from '../../lib/pagination.js';
@@ -57,8 +56,14 @@ const listLocationActivitiesHandler: RequestHandler = async (req, res, next) => 
 export const registerPublicPlaceRoutes = (router: Router): void => {
   router.get('/explore/map', optionalAuth, async (req, res, next) => {
     try {
-      const cached = await buildExploreMapPayload();
-      const data = await enrichExploreMapPayloadViewerAccess(cached, {
+      const query = req.query as Record<string, string | undefined>;
+      const data = await loadExploreMapForRequest({
+        query: {
+          bbox: query.bbox,
+          cursor: query.cursor,
+          limit: query.limit,
+          area: query.area,
+        },
         viewerUserId: req.auth?.userId ?? null,
         userRole: req.auth?.role ?? null,
       });

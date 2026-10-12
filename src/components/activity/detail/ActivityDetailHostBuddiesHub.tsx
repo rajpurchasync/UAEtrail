@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import type { ActivityRequestView } from '../../../api/index';
-import { api } from '../../../api/index';
+import { decideHostActivityJoinRequest } from '../../../hooks/hostActivityClientApi';
 import { ActivityJoinRequestCard } from '../../../console/ActivityJoinRequestCard';
 import { ActivityJoinRequestDeclineDialog } from '../../../console/ActivityJoinRequestDeclineDialog';
 import { ActivityParticipantsPanel } from '../../host/ActivityParticipantsPanel';
@@ -33,7 +33,7 @@ export const ActivityDetailHostBuddiesHub = ({
       if (!tenantId) return;
       setBusyRequestId(requestId);
       try {
-        await api.decideHostActivityJoinRequest(tenantId, requestId, status, organizerNote);
+        await decideHostActivityJoinRequest(tenantId, requestId, status, organizerNote);
         if (status === 'rejected') setDeclineRequest(null);
         await onRequestsChanged();
       } catch (err) {

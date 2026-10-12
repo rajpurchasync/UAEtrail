@@ -176,7 +176,7 @@ A **host is always a user** (human actor on the activity). They publish **as the
 | Path | Product | Paid trips? | Code (today) |
 |------|---------|-------------|--------------|
 | **Community (buddy)** | Free / shared-cost outings after profile complete | **No** | `publishingPurpose: community`, `canPublish` |
-| **Pro — Individual** | Licensed-style **guide** brand | Future Pro rules | `hostProfileType: individual`, professional tenant |
+| **Pro — Individual** | Licensed-style **guide** brand | **No** (free + shared only) | `hostProfileType: individual`, `publishingPurpose: professional` |
 | **Pro — Business** | Must pick **subtype** (Shop, Tour agency, E-commerce, Hospitality, …) | Agency / business rules | `hostProfileType` + `TenantBusinessMode` |
 | **Pro — Partner** | Campaign / hospitality partner (detail later) | Campaign-linked | Planned |
 

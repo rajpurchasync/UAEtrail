@@ -1,4 +1,4 @@
-import type { HostTierFlags, OwnedHostProfileDTO, PlaceDTO } from '@uaetrail/shared-types';
+import type { HostTierFlags, OwnedHostProfileDTO, PlaceDTO, PublishingProfileKind } from '@uaetrail/shared-types';
 import type { ReactNode } from 'react';
 import type { OrganizeComposeKind } from '../../compose';
 import type { OrganizeCatalogFlow } from '../organizeFlows';
@@ -34,6 +34,7 @@ export type OrganizeWizardContext = {
   registryPlaces: PlaceDTO[];
   canPublish: boolean;
   hostTiers: HostTierFlags;
+  publishingProfileKind: PublishingProfileKind | null;
   canHostPaidActivities: boolean;
   hostGateLoading: boolean;
   submitting: boolean;

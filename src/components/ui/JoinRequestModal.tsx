@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { ActivityDetailDTO, activityJoinCtaLabel, resolveParticipationMode, type ActivityDTO } from '@uaetrail/shared-types';
 import { formatDate } from '../../utils';
 import { activityHostName, showTenantBrand } from '../../utils/hostLabels';
@@ -9,7 +10,8 @@ import {
   MEETING_POINT_LABEL,
   MANDATORY_INSTRUCTIONS_LABEL,
 } from '../../utils/joinInstructions';
-import { api } from '../../api/index';
+import { afterActivityJoinClientRefresh } from '../../hooks/activityJoinClientEffects';
+import { submitActivityJoin } from '../../hooks/activityJoinSubmit';
 import { Dialog } from './Dialog';
 
 type JoinableActivity = Pick<
@@ -35,6 +37,8 @@ interface JoinRequestModalProps {
   activity: JoinableActivity | ActivityDetailDTO;
   isFull?: boolean;
   onSuccess?: (message: string) => void;
+  /** Map list row id when known (defaults to `activity:{id}`). */
+  exploreMapItemId?: string | null;
   overlayClassName?: string;
 }
 
@@ -44,8 +48,10 @@ export const JoinRequestModal = ({
   activity,
   isFull,
   onSuccess,
+  exploreMapItemId,
   overlayClassName,
 }: JoinRequestModalProps) => {
+  const queryClient = useQueryClient();
   const [note, setNote] = useState('');
   const [agreed, setAgreed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -98,22 +104,15 @@ export const JoinRequestModal = ({
     setSubmitting(true);
     setError(null);
     try {
-      if (isRsvp) {
-        await api.rsvpActivity(activity.id);
-        const successMessage = "You're going! Find it on your Plan.";
-        setSubmitted(true);
-        onSuccess?.(successMessage);
-        setTimeout(() => {
-          onClose();
-        }, 1500);
-        return;
-      }
-
-      const res = await api.createJoinRequest(activity.id, note.trim() || undefined);
-      const successMessage =
-        res.data.waitlisted || res.data.status === 'waitlisted'
-          ? 'Added to the waitlist — we\'ll let you know when a spot opens.'
-          : 'Request sent! The host will get back to you soon.';
+      const { successMessage } = await submitActivityJoin(activity.id, {
+        participationMode,
+        note: note.trim() || undefined,
+      });
+      afterActivityJoinClientRefresh(queryClient, {
+        activityId: activity.id,
+        participationMode,
+        exploreMapItemId,
+      });
       setSubmitted(true);
       onSuccess?.(successMessage);
       setTimeout(() => {

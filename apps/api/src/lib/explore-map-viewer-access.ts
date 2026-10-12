@@ -20,6 +20,7 @@ import { countPendingActivityInvitesByActivityIdsForSender } from './activity-in
 import { resolveMemberHostStatus } from '../services/member-host-status.js';
 import { applyActivityViewEntitlements } from '../services/member-entitlements.js';
 import type { HostStatusDTO } from '@uaetrail/shared-types';
+import { buildMapPeekEngagementPolicyInput } from './activity-engagement-policy-input.js';
 
 const ORGANIZER_ROLES: MembershipRole[] = [
   MembershipRole.TENANT_OWNER,
@@ -240,7 +241,6 @@ export const attachExploreMapViewerAccess = (
         level,
         viewerUserId: ctx.viewerUserId,
       });
-      const activityPublished = item.activity.status === 'published';
       const rawRequestStatus = ctx.requestStatusByActivityId.get(item.activity.id);
       const joinRequestStatus: 'pending' | 'waitlisted' | null =
         rawRequestStatus === RequestStatus.PENDING
@@ -253,22 +253,17 @@ export const attachExploreMapViewerAccess = (
       const buddyOnActivity = participantUserIds.filter((id) => ctx.buddyUserIds.has(id));
       const isHostUser = level === 'host';
       const onRoster = ctx.participantActivityIds.has(item.activity.id);
-      const engagementPolicyInput = {
+      const engagementPolicyInput = buildMapPeekEngagementPolicyInput({
         viewerAccess: { ...exposure, level, mapPeekActions: [] },
+        activity: item.activity,
         isHostUser,
-        activityPublished,
         joinMode,
         joinRequestStatus,
-        participationMode: item.activity.participationMode,
-        requirements: item.activity.requirements,
-        rideshareEnabled: Boolean(item.activity.rideshareEnabled),
-        linkedRideshareActivityId: item.activity.linkedRideshareActivityId ?? null,
-        myParticipation: onRoster ? { onRoster: true } : null,
-        myRequest: null,
+        onRoster,
         confirmedParticipantCount: item.participantPreviews?.length ?? 0,
         pendingJoinInviteCount:
           ctx.pendingJoinInviteCountByActivityId.get(item.activity.id) ?? 0,
-      };
+      });
       const viewerAccessWithEntitlements = withEntitlements(
         ctx,
         {

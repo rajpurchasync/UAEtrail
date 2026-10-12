@@ -111,8 +111,8 @@ Detail: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §1.6.
 | Tier | Who | Tenant `publishingPurpose` | Paid Organize? | Entry |
 |------|-----|------------------------------|----------------|-------|
 | **Community** | Individual member | `community` | No (free / shared) | Profile complete → auto tenant (`ensureBuddyHostTenant`) |
-| **Professional** | Pro guide | `professional` | Future Pro rules | `/profile/pro-membership` → host application (`individual`) |
-| **Business** | Agency / shop owner or **employee** | `business` | Agency yes | Pro membership application or team invite → `tenant_memberships` |
+| **Professional** | Pro guide | `professional` | No — free + shared only | `/profile/pro-membership` → host application (`individual`) |
+| **Business** | Agency / shop owner or **employee** | `business` | Yes (agency; shop per product) | Pro membership application or team invite → `tenant_memberships` |
 
 **Profile badge (`profileRoleLabel`):**
 
@@ -134,8 +134,8 @@ All paths require a **signed-in user**. Upgrade entry: **`/profile/pro-membershi
 
 | Pro path | Who | Required choice | Storefront / capabilities (high level) |
 |----------|-----|-----------------|----------------------------------------|
-| **Individual** | Solo pro guide | — | `/guide/:slug` storefront; Organize as self + pro tenant |
-| **Business** | Company / brand | **Subtype required:** Shop · Tour agency · E-commerce · Hospitality · (extensible) | Tenant + console; paid trips / campaigns per subtype (detail later) |
+| **Individual** | Solo pro guide | — | `/guide/:slug` — manage **guide profile**; Organize **free + shared-cost** outings (not paid) |
+| **Business** | Company / brand | **Subtype required:** Shop · Tour agency · … | **Shop** → `/shop/:id` + shop details in console; **Agency** → `/agency/:slug` + agency profile; paid commercial trips where product allows |
 | **Partner** | Hotel / campaign partner | Detail later | Partner storefront + “What’s happening” campaigns (future) |
 
 **Business subtype** is **not** interchangeable: a **shop** is map/directions retail; a **tour agency** is trip operator without requiring a visit pin; **Partner** is a separate Pro path from generic business (see product split in `DOMAIN.md`).
@@ -167,7 +167,7 @@ Trusted fields (year goal, upcoming list, etc.) appear only on **trusted** expos
 | `signupProfileComplete` | `/welcome` member details done |
 | `canPublish` | May run Organize wizard (has activity-capable tenant) |
 | `canAccessHostConsole` | May use `/host/*` (publish queue, team) |
-| `canHostPaidActivities` | Agency commercial pricing |
+| `canHostPaidActivities` | Member is linked to a **business** tenant (`hostTiers.business`); paid only when publishing as agency / shop / partner |
 | `isCommunityHost` | Has map footprint as host (activity or demand) |
 
 **Demand (Find)** requires signed-in member only — **not** `canPublish`.

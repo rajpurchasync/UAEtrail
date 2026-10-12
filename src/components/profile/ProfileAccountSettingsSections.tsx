@@ -1,5 +1,9 @@
 import { FormEvent, useState } from 'react';
-import { api } from '../../api/index';
+import {
+  changeAccountPassword,
+  confirmAccountEmailChange,
+  requestAccountEmailChange,
+} from '../../hooks/accountSettingsApi';
 import { OtpInput } from '../auth/OtpInput';
 import { AppButton } from '../mobile/AppButton';
 import { GlassCard } from '../mobile/GlassCard';
@@ -46,7 +50,7 @@ export const ProfileAccountSettingsSections = ({
 
     setSavingPassword(true);
     try {
-      await api.changePassword({ currentPassword, newPassword });
+      await changeAccountPassword({ currentPassword, newPassword });
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
@@ -72,7 +76,7 @@ export const ProfileAccountSettingsSections = ({
     setEmailError(null);
     setEmailMessage(null);
     try {
-      const res = await api.requestEmailChange(trimmed);
+      const res = await requestAccountEmailChange(trimmed);
       setEmailStep('code-sent');
       setEmailMessage(`Verification code sent to ${res.email}.`);
       setEmailOtp('');
@@ -93,7 +97,7 @@ export const ProfileAccountSettingsSections = ({
     setEmailError(null);
     setEmailMessage(null);
     try {
-      await api.confirmEmailChange(trimmed, emailOtp);
+      await confirmAccountEmailChange(trimmed, emailOtp);
       setEmailStep('idle');
       setNewEmail('');
       setEmailOtp('');

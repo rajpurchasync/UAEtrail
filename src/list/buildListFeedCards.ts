@@ -1,5 +1,6 @@
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
-import { buildExploreCardModel, type ExploreCardModel } from '../explore/exploreCardModel';
+import type { ExploreCardModel } from '../explore/exploreCardModel';
+import { buildDiscoveryCardViewModel } from '../discovery/discoveryCardViewModel';
 import { buildVenueCoverByLocationId, enrichBrowsePosterCover } from './browsePosterCover';
 import { enrichListFeedCardModel } from './enrichListFeedCard';
 
@@ -11,7 +12,8 @@ export const buildListFeedCards = (
 ): ExploreCardModel[] => {
   const venueCoverByLocationId = buildVenueCoverByLocationId(mapPool);
   return items.map((item) => {
-    const card = enrichBrowsePosterCover(buildExploreCardModel(item), venueCoverByLocationId);
+    const { card: base } = buildDiscoveryCardViewModel(item, { mapItems: mapPool });
+    const card = enrichBrowsePosterCover(base, venueCoverByLocationId);
     return enrichListFeedCardModel(card, item, mapPool, user);
   });
 };

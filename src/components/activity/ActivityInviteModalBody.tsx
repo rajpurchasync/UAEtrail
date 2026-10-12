@@ -5,7 +5,12 @@ import { Link } from 'react-router-dom';
 import { SecureAvatar } from '../ui';
 import { FormTabBar } from '../ui/FormTabBar';
 import { TabPageSearchRow } from '../mobile/TabPageSearchRow';
-import { api } from '../../api/index';
+import {
+  fetchActivityJoinInvitesSentInviteeIds,
+  fetchMeBuddies,
+  fetchMeSocialGroups,
+  sendActivityJoinInvitesToBuddies,
+} from '../../hooks/activityInviteClientApi';
 import { messagingApi } from '../../messaging';
 import { BUDDIES_PATH, GROUPS_PATH } from '../../config/routingCatalog';
 import { useAuth } from '../../context/AuthContext';
@@ -69,28 +74,19 @@ export const ActivityInviteModalBody = ({
 
   const { data: buddies = [], isLoading: buddiesLoading } = useQuery({
     queryKey: ['me-buddies', 'invite', activityId],
-    queryFn: async () => {
-      const res = await api.getMeBuddies();
-      return res.data;
-    },
+    queryFn: fetchMeBuddies,
     enabled: Boolean(user) && active,
   });
 
   const { data: sentInviteeIds = [], refetch: refetchSentInvites } = useQuery({
     queryKey: ['activity-join-invites-sent', activityId],
-    queryFn: async () => {
-      const res = await api.listActivityJoinInvitesSent(activityId);
-      return res.data.inviteeUserIds;
-    },
+    queryFn: () => fetchActivityJoinInvitesSentInviteeIds(activityId),
     enabled: Boolean(user) && active,
   });
 
   const { data: groups = [], isLoading: groupsLoading } = useQuery({
     queryKey: ['me-groups', 'activity-invite'],
-    queryFn: async () => {
-      const res = await api.getMeGroups();
-      return userCreatedSocialGroups(res.data);
-    },
+    queryFn: async () => userCreatedSocialGroups(await fetchMeSocialGroups()),
     enabled: Boolean(user) && active,
   });
 
@@ -169,10 +165,10 @@ export const ActivityInviteModalBody = ({
       if (tab === 'friends') {
         const ids = [...selectedBuddyIds];
         if (ids.length === 0) return;
-        const res = await api.sendActivityJoinInvites(activityId, ids);
+        const sent = await sendActivityJoinInvitesToBuddies(activityId, ids);
         await refetchSentInvites();
         setSelectedBuddyIds(new Set());
-        setNotice(ACTIVITY_INVITE_SENT_TOAST(res.data.sent));
+        setNotice(ACTIVITY_INVITE_SENT_TOAST(sent));
         return;
       }
       const ids = [...selectedGroupIds];

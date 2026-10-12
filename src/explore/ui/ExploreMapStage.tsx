@@ -1,7 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { List, Plus } from 'lucide-react';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
-import type { PlaceMapPin } from '../../components/ui/PlacesMap';
+import type { MapBounds, PlaceMapPin } from '../../components/ui/PlacesMap';
 import { getMapBounds } from '../../config/regions';
 import { MAP_CONFIG, getExploreMapTiles, type ExploreMapStyle } from '../../config/platform';
 import { EXPLORE_FLOATING_CONTROL } from '../../config/exploreTheme';
@@ -53,6 +53,7 @@ export type ExploreMapStageProps = {
   recenterTo: { lat: number; lng: number } | null;
   exploreMapCenter: { lat: number; lng: number };
   onPinClick: (pin: PlaceMapPin) => void;
+  onVisibleBoundsChange?: (bounds: MapBounds) => void;
   loading: boolean;
   loadError: string | null;
   onReloadMap: () => void;
@@ -116,6 +117,7 @@ export const ExploreMapStage = ({
   recenterTo,
   exploreMapCenter,
   onPinClick,
+  onVisibleBoundsChange,
   loading,
   loadError,
   onReloadMap,
@@ -171,6 +173,7 @@ export const ExploreMapStage = ({
             tileAttribution={MAP_CONFIG.exploreTileAttribution}
             labelTileUrl={exploreMapTiles.labelTileUrl}
             onPinClick={onPinClick}
+            onVisibleBoundsChange={onVisibleBoundsChange}
             recenterTo={recenterTo}
             exploreMapCenter={exploreMapCenter}
             className="h-full w-full"

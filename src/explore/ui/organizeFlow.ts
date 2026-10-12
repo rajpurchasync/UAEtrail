@@ -1,6 +1,7 @@
 import type { ActivityGroupChatPostPolicy, ExploreMapItemDTO, HostTierFlags } from '@uaetrail/shared-types';
 import {
   allowedActivityPricingModes,
+  type PublishingProfileKind,
   exploreMapKindToPlanMapKind,
   resolveOrganizeCreateKindFromDemandMapItem,
 } from '@uaetrail/shared-types';
@@ -677,8 +678,11 @@ export const RIDESHARE_VEHICLE_OPTIONS: Array<{ value: VehicleAccess; title: str
 export const resolveRideshareVehicleLabel = (value: VehicleAccess): string =>
   RIDESHARE_VEHICLE_OPTIONS.find((option) => option.value === value)?.title ?? value;
 
-export const priceModeOptions = (_kind: CreateActivityKind, hostTiers: HostTierFlags): PriceMode[] =>
-  allowedActivityPricingModes(hostTiers);
+export const priceModeOptions = (
+  _kind: CreateActivityKind,
+  hostTiers: HostTierFlags,
+  publishingProfileKind?: PublishingProfileKind | null
+): PriceMode[] => allowedActivityPricingModes(hostTiers, { publishingProfileKind });
 
 export const priceModeLabel = (mode: PriceMode, kind: CreateActivityKind): string => {
   if (mode === 'free') return 'Free';

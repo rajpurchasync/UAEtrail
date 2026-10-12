@@ -10,7 +10,13 @@ import {
   Users,
 } from 'lucide-react';
 import { ReviewDTO, type ActivityDTO, type TenantPublicDTO } from '@uaetrail/shared-types';
-import { api, OrganisationDetails } from '../../api/index';
+import {
+  fetchOrganisationProfileBySlug,
+  fetchOrganisationReviews,
+  updateOrganisationDetails,
+  type HostDetails as OrganisationDetails,
+} from '../../hooks/organisationConsoleApi';
+import { updateMeProfile } from '../../hooks/memberProfileApi';
 import { ReviewSection } from '../ui/ReviewSection';
 import { SecureAvatar } from '../ui/SecureAvatar';
 import { ShareButton } from '../ui/ShareButton';
@@ -81,15 +87,14 @@ export const OrganisationPublicProfile = ({
   const loadProfile = () => {
     setLoading(true);
     setError(null);
-    api
-      .getOrganisationProfile(slug)
-      .then(async (tenantRes) => {
-        setTenant(tenantRes.data);
-        setActivities(tenantRes.data.activities);
-        setEditBio(tenantRes.data.ownerBio ?? '');
-        setEditDetails(tenantRes.data.hostDetails ?? tenantRes.data.organizerDetails ?? {});
-        const reviewsRes = await api.getOrganisationReviews(tenantRes.data.id).catch(() => ({ data: [] }));
-        setReviews(reviewsRes.data);
+    fetchOrganisationProfileBySlug(slug)
+      .then(async (tenantData) => {
+        setTenant(tenantData);
+        setActivities(tenantData.activities);
+        setEditBio(tenantData.ownerBio ?? '');
+        setEditDetails(tenantData.hostDetails ?? tenantData.organizerDetails ?? {});
+        const reviewList = await fetchOrganisationReviews(tenantData.id).catch(() => []);
+        setReviews(reviewList);
       })
       .catch(() => setError(`We couldn't find this ${hostProfileLabel(null).toLowerCase()}`))
       .finally(() => setLoading(false));
@@ -106,8 +111,8 @@ export const OrganisationPublicProfile = ({
     setSaveMessage(null);
     setSaveError(null);
     try {
-      await api.updateMeProfile({ bio: editBio.trim() || undefined });
-      await api.updateOrganisationDetails(editDetails);
+      await updateMeProfile({ bio: editBio.trim() || undefined });
+      await updateOrganisationDetails(editDetails);
       setSaveMessage('Public profile updated.');
       setEditing(false);
       loadProfile();

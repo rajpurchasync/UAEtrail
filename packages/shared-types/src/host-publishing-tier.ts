@@ -14,7 +14,7 @@ export type HostPublishingTier = 'community' | 'professional' | 'business';
 export type HostTierFlags = {
   /** Profile complete + community publish tenant (free / shared Organize). */
   community: boolean;
-  /** Approved professional guide tenant (Pro Membership path). */
+  /** Approved professional guide tenant — free + shared-cost Organize (not paid). */
   professional: boolean;
   /** Owner or active team member on agency / shop / company tenant. */
   business: boolean;

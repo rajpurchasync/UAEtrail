@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { emptyBecomeHostForm } from './becomeHostForm';
+import { emptyProProfileApplicationForm } from './proProfileApplicationForm';
 import {
   getHostFlowSteps,
   hostFlowIntentProfileType,
@@ -8,15 +8,16 @@ import {
 
 describe('hostWizardFlow', () => {
   it('parseHostFlowIntent maps profile add intents', () => {
-    expect(parseHostFlowIntent(null)).toBe('become-host');
+    expect(parseHostFlowIntent(null)).toBe('pro-application');
+    expect(parseHostFlowIntent('become-host')).toBe('pro-application');
     expect(parseHostFlowIntent('add-shop')).toBe('add-shop');
     expect(hostFlowIntentProfileType('add-shop')).toBe('shop');
-    expect(hostFlowIntentProfileType('become-host')).toBeNull();
+    expect(hostFlowIntentProfileType('pro-application')).toBeNull();
   });
 
   it('getHostFlowSteps omits map pin for online-only shops', () => {
     const form = {
-      ...emptyBecomeHostForm(),
+      ...emptyProProfileApplicationForm(),
       hostProfileType: 'shop' as const,
       shopPresence: 'online' as const,
     };

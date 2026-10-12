@@ -28,7 +28,7 @@ const resolveCreateKindFromActivity = (activity: ActivityDTO): CreateActivityKin
 const resolvePriceMode = (activity: ActivityDTO): CreateActivityDraft['priceMode'] => {
   if (activity.pricingMode === 'paid') return 'paid';
   if (activity.pricingMode === 'shared') return 'shared';
-  return activity.price > 0 ? 'paid' : 'free';
+  return activity.price > 0 ? 'shared' : 'free';
 };
 
 const isStructuredKind = (kind: CreateActivityKind): boolean =>

@@ -386,7 +386,7 @@ export interface HostStatusDTO {
   hasTenant: boolean;
   tenantType: TenantType | null;
   businessMode: TenantBusinessMode | null;
-  /** Licensed agencies only — paid commercial activities. */
+  /** Verified business profile (agency / shop / partner) — paid pricing when publishing as that business. */
   canHostPaidActivities: boolean;
   hasGuideProfile: boolean;
   hasAgencyProfile: boolean;
@@ -1156,6 +1156,15 @@ export {
 } from './explore-presentation.js';
 
 export {
+  buildDiscoveryCardProjectionFromMapItem,
+  resolveDiscoveryCardEntityRef,
+  type BuildDiscoveryCardProjectionOptions,
+  type DiscoveryCardEntityRef,
+  type DiscoveryCardProjection,
+  type DiscoveryMapItemWire,
+} from './discovery-card-projection.js';
+
+export {
   activityOrganizeTopicToOutingTopic,
   activityTypeToOutingCategory,
   buildExploreMapPlanProjection,
@@ -1408,14 +1417,17 @@ export {
 export {
   ACTIVITY_PRICING_INDICATION_NOTE,
   allowedActivityPricingModes,
+  publishingProfileKindAllowsPaidActivities,
   activityHasPaidPricing,
   activityPriceLabel,
   activityPricingModeLabel,
   eventHasPaidPricing,
   inferActivityPricingMode,
   normalizeActivityPricing,
+  type ActivityPricingContext,
   type ActivityPricingInput,
   type ActivityPricingMode,
+  type ActivityPricingPublishProfile,
 } from './activity-pricing.js';
 
 export {

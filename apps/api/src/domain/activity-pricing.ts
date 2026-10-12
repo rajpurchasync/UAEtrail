@@ -1,4 +1,4 @@
-import type { ActivityPricingMode, HostTierFlags } from '@uaetrail/shared-types';
+import type { ActivityPricingMode, HostTierFlags, PublishingProfileKind } from '@uaetrail/shared-types';
 import { allowedActivityPricingModes } from '@uaetrail/shared-types';
 import { ApiError } from '../lib/api-error.js';
 
@@ -6,26 +6,29 @@ export type { ActivityPricingMode };
 
 export const assertActivityPricingAllowed = (input: {
   hostTiers: HostTierFlags;
+  publishingProfileKind?: PublishingProfileKind | null;
   pricingMode?: ActivityPricingMode;
   priceAed: number;
   sharedAmountAed?: number | null;
 }): void => {
   const mode = input.pricingMode ?? (input.priceAed > 0 ? 'shared' : 'free');
-  const allowed = allowedActivityPricingModes(input.hostTiers);
+  const allowed = allowedActivityPricingModes(input.hostTiers, {
+    publishingProfileKind: input.publishingProfileKind,
+  });
 
   if (!allowed.includes(mode)) {
     if (mode === 'paid') {
       throw new ApiError(
         400,
         'paid_pricing_not_allowed',
-        'Paid activities require a business host account (agency or shop).'
+        'Paid activities require a linked verified business account (publish as agency, shop, or partner).'
       );
     }
     if (mode === 'shared') {
       throw new ApiError(
         400,
         'shared_pricing_not_allowed',
-        'Shared-cost activities require a Pro guide or business host account.'
+        'Shared-cost activities are not available for this host account.'
       );
     }
     throw new ApiError(400, 'pricing_not_allowed', 'This pricing option is not available for your account.');
