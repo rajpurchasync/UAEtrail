@@ -42,7 +42,7 @@
 
 ## Tier 3 — explore supplement (defers to Tier 1)
 
-[`experiment/README.md`](./experiment/README.md) — UX/browse/mobile IA; **activity peek/detail program:** [`experiment/activity-detail-tabs-implementation-plan.md`](./experiment/activity-detail-tabs-implementation-plan.md); FAB truth stays in `CREATE_FLOW.md`.
+[`experiment/README.md`](./experiment/README.md) — UX/browse/mobile IA; **activity peek/detail program:** [`experiment/activity-detail-tabs-implementation-plan.md`](./experiment/activity-detail-tabs-implementation-plan.md); **consumer detail shells (phased, not started):** [`experiment/consumer-detail-surfaces-plan.md`](./experiment/consumer-detail-surfaces-plan.md) §14 handoff; FAB truth stays in `CREATE_FLOW.md`.
 
 ---
 

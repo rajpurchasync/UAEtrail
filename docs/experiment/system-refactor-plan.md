@@ -4,7 +4,8 @@
 **Prerequisite read:** [`system-structure-deep-audit.md`](./system-structure-deep-audit.md) (§1–§15)  
 **Baseline (Oct 2026):** pre-refactor ~895 / ~596 / ~776 LOC — current §10  
 **Gate for every phase:** `npm run verify:system:quick` minimum; phase close → `npm run verify:system`  
-**Tier-1 touch:** update [`SYSTEM_COHERENCE.md`](../SYSTEM_COHERENCE.md) §7 rows **C17–C20** when a phase closes — not new audit markdown.
+**Tier-1 touch:** update [`SYSTEM_COHERENCE.md`](../SYSTEM_COHERENCE.md) §7 rows **C17–C20** when a phase closes — not new audit markdown.  
+**UX shell alignment (separate track):** [`consumer-detail-surfaces-plan.md`](./consumer-detail-surfaces-plan.md) (**S9**) — place/area/shop/agency; does **not** extend R-phases.
 
 ---
 

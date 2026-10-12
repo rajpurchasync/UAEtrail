@@ -1,8 +1,10 @@
 # Member surfaces — implementation plan (master checklist)
 
 **Status:** Approved direction · **§19–§22 eng complete** · **§20** ops + post-migration residue remain  
-**Last updated:** 2026-10-12 (§4.3–4.6 geography shipped incl. admin areas UI + Phase E fixtures)  
+**Last updated:** 2026-10-13 (D4 → consumer detail surfaces handoff doc)  
 **Audience:** Eng + product — use this so context is not lost across PRs.
+
+**Consumer detail shell work (D4):** execution checklist and conversation record live in [`consumer-detail-surfaces-plan.md`](./consumer-detail-surfaces-plan.md) — start at **§14** before coding phases 1–7.
 
 **Tier 1 defers to:** [`NAVIGATION.md`](../NAVIGATION.md), [`DOMAIN.md`](../DOMAIN.md), [`DOMAIN_CANONICALS.md`](../DOMAIN_CANONICALS.md), [`SYSTEM_COHERENCE.md`](../SYSTEM_COHERENCE.md), [`CREATE_FLOW.md`](../CREATE_FLOW.md), [`MEMBER_MODEL.md`](../MEMBER_MODEL.md) — **update those as each phase ships** (see §10).
 
@@ -19,7 +21,7 @@
 | D1 | **Four consumer tabs:** Explore · Plan · Chat · Profile (no Social tab, no Host tab). |
 | D2 | **No consumer `/host` shell** — host = capability; per-activity manage on Plan + activity detail; business manage via Profile → shop/agency/guide URLs. |
 | D3 | **Retire “trips”** as product + architecture term; **Activity** + **commitments** on Plan; redirects for legacy URLs. |
-| D4 | **Catalog projections:** `/activity`, places, `/shop`, `/guide`, `/agency` — same detail pattern; not a separate host app. |
+| D4 | **Catalog projections:** `/activity`, places, `/shop`, `/guide`, `/agency` — same detail pattern; not a separate host app. **Phased shell work:** [`consumer-detail-surfaces-plan.md`](./consumer-detail-surfaces-plan.md) (place/area/shop/agency; activity audit). |
 | D5 | **Geography:** Region (emirate) → **Area** (curated, e.g. Hatta) → Place → Activity. |
 | D6 | **Time-bound on map:** everything that is not a Place is an **Activity** with `activityMode`: **`hosted`** \| **`seeking`** (no separate map species “demand”). |
 | D7 | **Availability** is **person + calendar slots** — separate from Activity; discoverable on Explore via map **People pill** → **Available** tab (and list Buddies); edited on Plan. **No extra map cluster overlay** — pill + panel is the map entry. |
