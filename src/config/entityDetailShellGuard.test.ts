@@ -10,7 +10,8 @@ const ENTITY_DETAIL_PAGES: Array<{ path: string; mustMatch: RegExp }> = [
   { path: 'src/pages/PlaceDetailPage.tsx', mustMatch: /PlaceDetailCore/ },
   { path: 'src/pages/ActivityDetail.tsx', mustMatch: /ActivityDetailView|MobileDetailShell/ },
   { path: 'src/components/place/PlaceDetailCore.tsx', mustMatch: /MobileDetailShell/ },
-  { path: 'src/components/shop/ShopPublicPage.tsx', mustMatch: /MobileDetailShell/ },
+  { path: 'src/components/shop/ShopPublicPage.tsx', mustMatch: /EntityPublicDetailShell/ },
+  { path: 'src/pages/OrganisationProfile.tsx', mustMatch: /EntityPublicDetailShell/ },
 ];
 
 describe('entityDetailShellGuard', () => {

@@ -393,6 +393,7 @@ Phase 4 is the only likely **read-model** enhancement (tab-scoped previews); def
 | 2026-10-13 | **Phase 3 (core) shipped** — place tabs IA + `ConsumerEntityTabBar` + `?tab=` deep links | Recorded |
 | 2026-10-13 | **Phase 4 shipped** — area tabbed `MobileDetailShell`; people on overview (no people tab) | Recorded |
 | 2026-10-13 | **Phase 7 (partial)** — `entityDetailShellGuard.test.ts` for entity pages | Recorded |
+| 2026-10-13 | **Phase 5 shipped** — `EntityPublicDetailShell`; shop + organisation public tabs | Recorded |
 | | Phase 0.3 — Guide tab on place (product confirm) | ⬜ Pending |
 | | Phase 0.4 — Area people tab vs section | ⬜ Pending |
 | | Phase 0.5 — Shop/agency tab names | ⬜ Pending |
@@ -411,6 +412,7 @@ Phase 4 is the only likely **read-model** enhancement (tab-scoped previews); def
 | 2026-10-13 | **Phase 1** Tier-1 vocabulary shipped (`NAVIGATION`, `DOMAIN_CANONICALS` §3.1) |
 | 2026-10-13 | **Phase 3** place tab IA + shared `ConsumerEntityTabBar` (activity + place) |
 | 2026-10-13 | **Phase 4** area hub tabs + shell; **Phase 7** initial shell guard |
+| 2026-10-13 | **Phase 5** shop + agency/guide `EntityPublicDetailShell` and tab deep links |
 
 ---
 

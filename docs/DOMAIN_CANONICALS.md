@@ -179,8 +179,8 @@ Query param **`tab`** where noted. **UI labels** may differ from wire ids (activ
 | Activity | `/activity/:id` | `plan` · `place` · `buddies` · `transport` | `?tab=` — default `plan` |
 | Place (trail/camp/venue) | `/trail`, `/camp`, `/venue` | `overview` · `facts` · `transport` · `guide` (alias `location` → `transport`) | `?tab=` · `src/place/placeDetailTab.ts` |
 | Area hub | `/area/:slug` | `overview` · `places` · `activities` (people on overview) | `?tab=` · `src/area/areaDetailTab.ts` |
-| Shop public | `/shop/:id` | **Target (Phase 0.5):** e.g. `about` · `products` · `location` | TBD |
-| Organisation public | `/guide`, `/agency`, `/partner` | **Target (Phase 0.5):** e.g. `about` · `outings` · `contact` | TBD |
+| Shop public | `/shop/:id` | `about` · `products` · `location` | `?tab=` · `src/shop/shopPublicDetailTab.ts` |
+| Organisation public | `/guide`, `/agency`, `/partner` | `about` · `outings` · `contact` | `?tab=` · `src/organisation/organisationPublicDetailTab.ts` |
 
 **Aliases (one release when renaming place tabs):** `location` → `transport`; document in Phase 3 PR.
 

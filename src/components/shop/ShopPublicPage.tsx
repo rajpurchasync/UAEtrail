@@ -1,9 +1,17 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ExternalLink, MapPin } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { ExternalLink, Info, MapPin, Package } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
 import type { ReviewDTO } from '@uaetrail/shared-types';
 import { PageMeta } from '../seo/PageMeta';
-import { MobileDetailShell } from '../mobile/MobileDetailShell';
+import { EntityPublicDetailShell } from '../entity-public/EntityPublicDetailShell';
+import { ConsumerEntityTabBar } from '../mobile/ConsumerEntityTabBar';
+import {
+  SHOP_PUBLIC_TAB_LABELS,
+  SHOP_PUBLIC_TABS,
+  SHOP_PUBLIC_TAB_QUERY,
+  parseShopPublicDetailTabParam,
+  type ShopPublicDetailTabId,
+} from '../../shop/shopPublicDetailTab';
 import { ShopContactSection } from './ShopContactSection';
 import { ShopFeaturedPicksSection } from './ShopFeaturedPicksSection';
 import { ShareButton } from '../ui/ShareButton';
@@ -60,8 +68,22 @@ interface ShopPublicPageProps {
 }
 
 /** Unified public gear-shop page — intro, contact, and outbound featured picks. */
+const SHOP_TAB_ICONS = {
+  about: Info,
+  products: Package,
+  location: MapPin,
+} as const;
+
 export const ShopPublicPage = ({ shop }: ShopPublicPageProps) => {
   const { user } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = parseShopPublicDetailTabParam(searchParams.get(SHOP_PUBLIC_TAB_QUERY));
+  const onTabChange = (tab: ShopPublicDetailTabId) => {
+    const next = new URLSearchParams(searchParams);
+    next.set(SHOP_PUBLIC_TAB_QUERY, tab);
+    setSearchParams(next, { replace: true });
+  };
+
   const publicPath = shopPublicPath({ merchantId: shop.id });
   const mapBack = explorePath({ panel: 'shops', filter: 'shops' });
   const website = shop.websiteUrl?.trim() || null;
@@ -93,12 +115,26 @@ export const ShopPublicPage = ({ shop }: ShopPublicPageProps) => {
 
   const reviewFooter = reviewTargetId ? <DetailReviewFooter userReview={userReview} accent="amber" /> : undefined;
 
+  const mobileTabs = SHOP_PUBLIC_TABS.map((id) => ({
+    id,
+    label: SHOP_PUBLIC_TAB_LABELS[id],
+    icon: SHOP_TAB_ICONS[id],
+  }));
+
+  const tabClass = (tab: ShopPublicDetailTabId) =>
+    `py-3 text-sm font-semibold border-b-2 transition-colors ${
+      activeTab === tab
+        ? 'border-amber-600 text-amber-800'
+        : 'border-transparent text-gray-500 hover:text-gray-700'
+    }`;
+
   return (
-    <MobileDetailShell
+    <EntityPublicDetailShell
       backTo={mapBack}
       backLabel="Explore"
       showMenu={false}
       footer={reviewFooter}
+      maxWidthClass="max-w-3xl"
       headerAction={
         <ShareButton
           title={shop.shopName}
@@ -117,7 +153,7 @@ export const ShopPublicPage = ({ shop }: ShopPublicPageProps) => {
         imageAlt={shop.shopName}
       />
 
-      <div className="mx-auto max-w-3xl px-4 py-6 md:py-8">
+      <div className="-mx-4 px-4 md:mx-0 md:px-0">
         {shop.communityInfo?.status === 'draft' ? (
           <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
             <p className="font-semibold">{CONTRIBUTE_PLACE_PENDING_BANNER_TITLE}</p>
@@ -160,73 +196,95 @@ export const ShopPublicPage = ({ shop }: ShopPublicPageProps) => {
           />
         </section>
 
-        {website && (
-          <a
-            href={website}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-6 flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-4 py-3.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700"
-          >
-            Visit shop website
-            <ExternalLink className="h-4 w-4" aria-hidden />
-          </a>
-        )}
-
-        {shop.description && (
-          <section className="mt-8">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">About</h2>
-            <p className="mt-3 text-base leading-relaxed text-gray-700">{shop.description}</p>
-          </section>
-        )}
-
-        <ShopFeaturedPicksSection
-          products={shop.products}
-          shopWebsiteUrl={website}
-          shopName={shop.shopName}
+        <ConsumerEntityTabBar
+          tabs={mobileTabs}
+          active={activeTab}
+          onChange={onTabChange}
+          ariaLabel="Shop sections"
+          className="mt-6"
         />
 
-        {shop.products.length === 0 && !website && (
-          <p className="mt-8 text-sm text-neutral-500">
-            This shop has not added featured picks or a website link yet.
-          </p>
-        )}
+        <nav className="mt-4 hidden md:flex gap-6 border-b">
+          {SHOP_PUBLIC_TABS.map((id) => (
+            <button key={id} type="button" onClick={() => onTabChange(id)} className={tabClass(id)}>
+              {SHOP_PUBLIC_TAB_LABELS[id]}
+            </button>
+          ))}
+        </nav>
 
-        <ShopContactSection
-          shop={{
-            region: shop.region ?? undefined,
-            latitude: shop.latitude ?? null,
-            longitude: shop.longitude ?? null,
-            contactEmail: shop.contactEmail ?? undefined,
-            contactPhone: shop.contactPhone ?? undefined,
-            contactPersonName: shop.contactPersonName ?? undefined,
-            contactPersonAvatar: shop.contactPersonAvatar ?? undefined,
-            contactPersonUserId: shop.contactPersonUserId ?? undefined,
-          }}
-        />
+        {activeTab === 'about' && (
+          <div className="mt-6 space-y-8">
+            {website && (
+              <a
+                href={website}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-4 py-3.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700"
+              >
+                Visit shop website
+                <ExternalLink className="h-4 w-4" aria-hidden />
+              </a>
+            )}
 
-        {reviewTargetId && (
-          <ReviewSection
-            targetType="tenant"
-            targetId={reviewTargetId}
-            reviews={reviews}
-            accent="amber"
-            onReviewSubmitted={(review) => setReviews((prev) => [review, ...prev])}
-          />
-        )}
+            {shop.description ? (
+              <section>
+                <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">About</h2>
+                <p className="mt-3 text-base leading-relaxed text-gray-700">{shop.description}</p>
+              </section>
+            ) : (
+              <p className="text-sm text-neutral-500">No description yet.</p>
+            )}
 
-        {reviewTargetId && (
-          <div className="mt-8 hidden md:block">
-            <DetailReviewFooter userReview={userReview} accent="amber" />
+            {reviewTargetId && (
+              <ReviewSection
+                targetType="tenant"
+                targetId={reviewTargetId}
+                reviews={reviews}
+                accent="amber"
+                onReviewSubmitted={(review) => setReviews((prev) => [review, ...prev])}
+              />
+            )}
+
+            {reviewTargetId && (
+              <div className="hidden md:block">
+                <DetailReviewFooter userReview={userReview} accent="amber" />
+              </div>
+            )}
           </div>
         )}
 
-        <Link
-          to={mapBack}
-          className="mt-6 inline-flex text-sm font-semibold text-emerald-700 hover:text-emerald-800"
-        >
-          Back to explore
-        </Link>
+        {activeTab === 'products' && (
+          <div className="mt-6 space-y-6">
+            <ShopFeaturedPicksSection
+              products={shop.products}
+              shopWebsiteUrl={website}
+              shopName={shop.shopName}
+            />
+            {shop.products.length === 0 && !website && (
+              <p className="text-sm text-neutral-500">
+                This shop has not added featured picks or a website link yet.
+              </p>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'location' && (
+          <div className="mt-6">
+            <ShopContactSection
+              shop={{
+                region: shop.region ?? undefined,
+                latitude: shop.latitude ?? null,
+                longitude: shop.longitude ?? null,
+                contactEmail: shop.contactEmail ?? undefined,
+                contactPhone: shop.contactPhone ?? undefined,
+                contactPersonName: shop.contactPersonName ?? undefined,
+                contactPersonAvatar: shop.contactPersonAvatar ?? undefined,
+                contactPersonUserId: shop.contactPersonUserId ?? undefined,
+              }}
+            />
+          </div>
+        )}
       </div>
-    </MobileDetailShell>
+    </EntityPublicDetailShell>
   );
 };

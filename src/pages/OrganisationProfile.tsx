@@ -1,11 +1,16 @@
 import { useEffect, useState } from 'react';
-import { Navigate, useParams } from 'react-router-dom';
+import { Navigate, useParams, useSearchParams } from 'react-router-dom';
 import { OrganisationPublicProfile } from '../components/organisation-console/OrganisationPublicProfile';
-import { ConsumerShell } from '../components/mobile/ConsumerShell';
+import { EntityPublicDetailShell } from '../components/entity-public/EntityPublicDetailShell';
 import type { TenantProfile } from '../api/types';
 import { fetchOrganisationProfileBySlug } from '../hooks/organisationConsoleApi';
 import { shopPublicPath } from '../utils/shopPaths';
 import { detailBackPath } from '../config/routingCatalog';
+import {
+  ORGANISATION_PUBLIC_TAB_QUERY,
+  parseOrganisationPublicDetailTabParam,
+  type OrganisationPublicDetailTabId,
+} from '../organisation/organisationPublicDetailTab';
 
 const isShopTenant = (tenant: TenantProfile): boolean =>
   tenant.businessMode === 'SHOP' || tenant.type === 'shop' || tenant.type === 'SHOP';
@@ -13,9 +18,19 @@ const isShopTenant = (tenant: TenantProfile): boolean =>
 /** Public brand profile — `/guide`, `/agency`, or `/partner`. Shop tenants redirect to `/shop/:id`. */
 export const OrganisationProfile = () => {
   const { id } = useParams<{ id: string }>();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const publicTab = parseOrganisationPublicDetailTabParam(searchParams.get(ORGANISATION_PUBLIC_TAB_QUERY));
+  const onPublicTabChange = (tab: OrganisationPublicDetailTabId) => {
+    const next = new URLSearchParams(searchParams);
+    next.set(ORGANISATION_PUBLIC_TAB_QUERY, tab);
+    setSearchParams(next, { replace: true });
+  };
+
   const [tenant, setTenant] = useState<TenantProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [isShop, setIsShop] = useState(false);
+
+  const shellBack = detailBackPath('host');
 
   useEffect(() => {
     if (!id) return;
@@ -36,9 +51,11 @@ export const OrganisationProfile = () => {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-t-2 border-emerald-600" />
-      </div>
+      <EntityPublicDetailShell backTo={shellBack} backLabel="Explore" showMenu={false}>
+        <div className="flex justify-center py-16">
+          <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-t-2 border-emerald-600" />
+        </div>
+      </EntityPublicDetailShell>
     );
   }
 
@@ -52,13 +69,17 @@ export const OrganisationProfile = () => {
   }
 
   return (
-    <ConsumerShell
-      layout="stack"
-      title="Host profile"
-      showJourney={false}
-      back={{ fallbackTo: detailBackPath('host'), label: 'Explore' }}
-    >
-      <OrganisationPublicProfile slug={id} mode="public" backTo={detailBackPath('host')} backLabel="Back to map" />
-    </ConsumerShell>
+    <EntityPublicDetailShell backTo={shellBack} backLabel="Explore" showMenu={false} maxWidthClass="max-w-lg">
+      <OrganisationPublicProfile
+        slug={id}
+        mode="public"
+        compact={false}
+        entityTabLayout
+        publicDetailTab={publicTab}
+        onPublicDetailTabChange={onPublicTabChange}
+        backTo={shellBack}
+        backLabel="Explore"
+      />
+    </EntityPublicDetailShell>
   );
 };

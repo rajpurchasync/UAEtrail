@@ -283,8 +283,8 @@ Canonical paths only in **new UI**. Legacy URLs redirect in `src/App.tsx` — do
 | **Place (camp)** | `/camp/:id` | same as trail | — |
 | **Place (venue)** | `/venue/:id` | same as trail | — |
 | **Area** | `/area/:slug` | **Overview · Places · Activities** (`?tab=`); people preview on Overview | — |
-| **Shop** | `/shop/:id` | `MobileDetailShell`; custom body → target shared public entity tabs | — |
-| **Agency / guide** | `/guide`, `/agency`, `/partner` | `ConsumerShell` + `OrganisationPublicProfile` → target entity shell (Phase 5) | — |
+| **Shop** | `/shop/:id` | `EntityPublicDetailShell` — **About · Products · Location** (`?tab=`) | — |
+| **Agency / guide** | `/guide`, `/agency`, `/partner` | `EntityPublicDetailShell` — **About · Outings · Contact** (`?tab=`) | — |
 | **Member (person)** | `/member/:userId` | Profile card — not a tenant storefront | — |
 | **Goals** | — | Embedded on **Plan → Wishlist** (`planLensPath('goals')`) | No `/goals` route |
 | **People (discovery)** | Explore `view=people` | Map panel — **Available · Friends going · Everyone** | No `/people` route (optional redirect TBD) |
