@@ -245,8 +245,9 @@ export const ActivityDetail = () => {
       onCreateLinkedRideshare: (parent) => navigateToCreateLinkedRideshare(navigate, parent),
       onRequestDelete: setHostRemoveConfirm,
       onChatError: setError,
+      onViewParticipants: () => setMobileTab('buddies'),
     });
-  }, [isActivityHostUser, activity, navigate, inviteShare.openInviteFromActivity]);
+  }, [isActivityHostUser, activity, navigate, inviteShare.openInviteFromActivity, setMobileTab]);
 
   const onHostShareOuting = useCallback(() => {
     if (!activity || activity.status !== 'published') return;

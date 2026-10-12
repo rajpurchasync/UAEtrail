@@ -92,8 +92,8 @@ describe('list module hygiene', () => {
   it('scopes join actions provider to category and search feeds only', () => {
     const experience = readFileSync(join(process.cwd(), 'src/list/ListDiscoveryExperience.tsx'), 'utf8');
     expect(experience).toMatch(/ListFeedActionsProvider/);
-    expect(experience).toMatch(/listFeedHostActions/);
-    expect(experience).toMatch(/ActivityManageSheet/);
+    expect(experience).toMatch(/useHostActivitySheetBundle/);
+    expect(experience).toMatch(/hostManageSheet/);
     expect(experience).toMatch(/ListCategoryDedicatedView/);
     expect(experience).not.toMatch(/<ListFeedActionsProvider>\s*<BrowseListPageShell/);
   });

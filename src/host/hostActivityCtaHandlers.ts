@@ -13,6 +13,8 @@ type HostActivityCtaHandlersArgs = {
   onRequestDelete: (activity: ActivityDTO) => void;
   onBeforeNavigate?: () => void;
   onChatError?: (message: string) => void;
+  /** Detail in-page roster (e.g. Buddies tab) instead of Trips manage deep link. */
+  onViewParticipants?: () => void;
 };
 
 export const hostActivityCtaHandlers = ({
@@ -23,6 +25,7 @@ export const hostActivityCtaHandlers = ({
   onRequestDelete,
   onBeforeNavigate,
   onChatError,
+  onViewParticipants,
 }: HostActivityCtaHandlersArgs): HostActivityCtaHandlers | null => {
   if (!activity) return null;
 
@@ -34,6 +37,10 @@ export const hostActivityCtaHandlers = ({
       });
     },
     onViewParticipants: () => {
+      if (onViewParticipants) {
+        onViewParticipants();
+        return;
+      }
       onBeforeNavigate?.();
       navigateToHostedActivityManage(navigate, activity.id, 'checkin');
     },

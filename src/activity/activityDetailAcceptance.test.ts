@@ -85,8 +85,12 @@ describe('activity detail program — governance', () => {
     expect(actions).toMatch(/case 'manage_activity'/);
     expect(actions).toMatch(/onOpenHostManage/);
     const experience = read('src/explore/ui/ExploreExperience.tsx');
-    expect(experience).toMatch(/ActivityManageSheet/);
+    expect(experience).toMatch(/useHostActivitySheetBundle/);
     expect(experience).toMatch(/onOpenHostManage: tenantId/);
+    const hostHandlers = read('src/host/hostActivityCtaHandlers.ts');
+    expect(hostHandlers).toMatch(/onViewParticipants\?:/);
+    const detail = read('src/pages/ActivityDetail.tsx');
+    expect(detail).toMatch(/onViewParticipants: \(\) => setMobileTab\('buddies'\)/);
     expect(actions).toMatch(/onShareHostedActivity/);
     expect(experience).toMatch(/onShareHostedActivity: shareHostedActivity/);
     const listFeed = read('src/list/ui/ListFeedActionsProvider.tsx');

@@ -64,11 +64,7 @@ import { useMemberJourneyMapPinIds } from '../../hooks/useMemberJourneyMapPinIds
 import type { ExploreSearchScopeKey } from '../exploreBrowseTaxonomy';
 import { Dialog } from '../../components/ui/Dialog';
 import { AppButton } from '../../components/mobile/AppButton';
-import { useActivityInviteShareSheet } from '../../hooks/useActivityInviteShareSheet';
-import { useHostActivityManageActions } from '../../hooks/useHostActivityManageActions';
-import { ActivityManageSheet } from '../../components/host/ActivityManageSheet';
-import type { HostActivityManageInitialView } from '../../components/host/hostActivityManageViews';
-import { activityDetailPath } from '../../config/routingCatalog';
+import { useHostActivitySheetBundle } from '../../hooks/useHostActivitySheetBundle';
 import { filterExploreMapItemsByAreaSlug, parseExploreAreaSlug } from '../exploreAreaFilter';
 import { useExplorePublishedAreas } from '../useExplorePublishedAreas';
 
@@ -252,43 +248,15 @@ export const ExploreExperience = () => {
     return null;
   }, [rideshareLinkParent, rideshareLinkDemand, organizeFrom.organizeFromPrefill]);
 
-  const inviteShare = useActivityInviteShareSheet();
+  const hostSheets = useHostActivitySheetBundle({
+    tenantId,
+    onMapDataChanged: () => reloadExploreMap(queryClient),
+  });
+  const { inviteShare, shareHostedActivity, openHostManage, listFeedHostActions, hostManageSheet } =
+    hostSheets;
+
   const planWithBuddyUserId = parsePlanWithUserId(searchParams);
   const [joinInvitePeekActivityId, setJoinInvitePeekActivityId] = useState<string | null>(null);
-  const [mapManageActivity, setMapManageActivity] = useState<ActivityDTO | null>(null);
-  const [mapManageInitialView, setMapManageInitialView] =
-    useState<HostActivityManageInitialView>('overview');
-  const exploreHostManageActions = useHostActivityManageActions(tenantId ?? null, () =>
-    reloadExploreMap(queryClient)
-  );
-
-  const openMapHostManage = useCallback(
-    (activity: ActivityDTO, initialView: HostActivityManageInitialView = 'participants') => {
-      setMapManageActivity(activity);
-      setMapManageInitialView(initialView);
-    },
-    []
-  );
-
-  const shareHostedActivity = useCallback(
-    (activity: ActivityDTO) => {
-      if (activity.status !== 'published') return;
-      inviteShare.openInviteFromActivity(activity, { canSendBuddyInvites: true });
-    },
-    [inviteShare.openInviteFromActivity]
-  );
-
-  const listFeedHostActions = useMemo(
-    () => ({
-      onShareHostedActivity: shareHostedActivity,
-      onOpenHostManage: tenantId ? openMapHostManage : undefined,
-      onInviteCrew: (activity: ActivityDTO) => {
-        if (activity.status !== 'published') return;
-        inviteShare.openInviteFromActivity(activity, { canSendBuddyInvites: true });
-      },
-    }),
-    [shareHostedActivity, tenantId, openMapHostManage, inviteShare.openInviteFromActivity]
-  );
 
   const selection = useExploreSelectionActions({
     items: selectionItems,
@@ -305,7 +273,7 @@ export const ExploreExperience = () => {
     setLinkOnlyPeekItems,
     onInviteActivity: inviteShare.openInviteFromActivity,
     onCreateLinkedRideshare: handleCreateLinkedRideshare,
-    onOpenHostManage: tenantId ? openMapHostManage : undefined,
+    onOpenHostManage: tenantId ? openHostManage : undefined,
     onShareHostedActivity: shareHostedActivity,
   });
 
@@ -784,24 +752,7 @@ export const ExploreExperience = () => {
         ) : null}
 
         {inviteShare.sheet}
-
-        {tenantId ? (
-          <ActivityManageSheet
-            open={Boolean(mapManageActivity)}
-            activity={mapManageActivity}
-            tenantId={tenantId}
-            pendingRequests={[]}
-            actions={exploreHostManageActions}
-            initialView={mapManageInitialView}
-            onOpenPublicPage={(a) => navigate(activityDetailPath(a.id))}
-            onShare={(a) => inviteShare.openInviteFromActivity(a)}
-            onClose={() => {
-              setMapManageActivity(null);
-              setMapManageInitialView('overview');
-            }}
-            onRequestsChanged={() => void reloadExploreMap(queryClient)}
-          />
-        ) : null}
+        {hostManageSheet}
 
         {isDesktop && browse.browseOpen ? (
           <aside
