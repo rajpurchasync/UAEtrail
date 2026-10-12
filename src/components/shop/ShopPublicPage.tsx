@@ -11,7 +11,7 @@ import { ReviewSection } from '../ui/ReviewSection';
 import { CatalogRatingSummary, DetailReviewFooter, scrollToReviewAnchor } from '../ui/DetailReviewChrome';
 import { explorePath } from '../../config/routingCatalog';
 import { shopPublicPath } from '../../utils/shopPaths';
-import { api } from '../../api/index';
+import { fetchOrganisationReviews } from '../../hooks/organisationConsoleApi';
 import { useAuth } from '../../context/AuthContext';
 import {
   CONTRIBUTE_PLACE_PENDING_BANNER_BODY,
@@ -73,9 +73,8 @@ export const ShopPublicPage = ({ shop }: ShopPublicPageProps) => {
       setReviews([]);
       return;
     }
-    api
-      .getOrganisationReviews(reviewTargetId)
-      .then((res) => setReviews(res.data))
+    fetchOrganisationReviews(reviewTargetId)
+      .then((data) => setReviews(data))
       .catch(() => setReviews([]));
   }, [reviewTargetId]);
 

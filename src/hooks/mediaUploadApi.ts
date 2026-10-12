@@ -20,3 +20,8 @@ export const commitMediaUpload = async (payload: {
 }): Promise<void> => {
   await api.commitUpload(payload);
 };
+
+export const resolveMediaUrl = async (key: string): Promise<string> => {
+  const res = await api.resolveMedia(key);
+  return res.data.url;
+};

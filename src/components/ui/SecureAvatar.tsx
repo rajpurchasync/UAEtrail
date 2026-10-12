@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { api } from '../../api/index';
+import { resolveMediaUrl } from '../../hooks/mediaUploadApi';
 import { extractMediaKey } from '../../lib/mediaKey';
 import { formatEnvironmentUrl } from '../../utils/formatEnvironmentUrl';
 import { InitialsAvatar } from './InitialsAvatar';
@@ -48,11 +48,10 @@ export const SecureAvatar = ({ src, name, className = '', alt }: SecureAvatarPro
     }
 
     setState({ status: 'initials' });
-    void api
-      .resolveMedia(key)
-      .then((response) => {
+    void resolveMediaUrl(key)
+      .then((url) => {
         if (cancelled) return;
-        setState({ status: 'image', url: formatEnvironmentUrl(response.data.url) });
+        setState({ status: 'image', url: formatEnvironmentUrl(url) });
       })
       .catch((error: unknown) => {
         if (cancelled) return;

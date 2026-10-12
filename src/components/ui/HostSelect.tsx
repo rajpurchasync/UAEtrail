@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { api, TeamMember } from '../../api/index';
+import { fetchOrganisationTeam, type TeamMember } from '../../hooks/organisationConsoleApi';
 import { useAuth } from '../../context/AuthContext';
 import { AppSelect } from './AppSelect';
 
@@ -22,11 +22,8 @@ export const HostSelect = ({ tenantId, value, onChange, required, className = ''
       return;
     }
     setLoading(true);
-    api
-      .getOrganisationTeam(tenantId)
-      .then((res) => {
-        setHosts(res.data);
-      })
+    fetchOrganisationTeam(tenantId)
+      .then((data) => setHosts(data))
       .catch(() => setHosts([]))
       .finally(() => setLoading(false));
   }, [tenantId]);

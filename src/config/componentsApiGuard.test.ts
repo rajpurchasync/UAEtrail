@@ -29,7 +29,7 @@ const collectSourceFiles = (dir: string): string[] => {
 };
 
 const usesDirectApiFacade = (source: string): boolean =>
-  /\bapiRequest\s*\(/.test(source) || /\bapi\.[a-zA-Z]/.test(source);
+  /\bapiRequest\s*\(/.test(source) || /\bapi[\s\n]*\.[a-zA-Z]/.test(source);
 
 describe('componentsApiGuard (R8.1)', () => {
   it('components do not add new direct api facade usage', () => {

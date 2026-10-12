@@ -1,5 +1,8 @@
 import type { ActivityGroupChatPostPolicy, ParticipantDTO } from '@uaetrail/shared-types';
+import type { ActivityRequestView } from '../api/types';
 import { api } from '../api/index';
+
+export type { ActivityRequestView };
 
 export type HostActivityParticipantsSnapshot = {
   participants: ParticipantDTO[];
@@ -66,4 +69,12 @@ export const decideHostActivityJoinRequest = async (
   organizerNote?: string
 ): Promise<void> => {
   await api.decideHostActivityJoinRequest(tenantId, requestId, status, organizerNote);
+};
+
+export const fetchHostActivityJoinRequests = async (
+  tenantId: string,
+  options?: { activityId?: string }
+): Promise<ActivityRequestView[]> => {
+  const res = await api.getHostActivityJoinRequests(tenantId, options);
+  return res.data;
 };

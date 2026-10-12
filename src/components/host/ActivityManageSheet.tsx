@@ -1,13 +1,17 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ActivityDTO } from '@uaetrail/shared-types';
-import type { ActivityRequestView } from '../../api/index';
 import { LinkRidesharePanel } from '../../explore/ui/LinkRidesharePanel';
 import { hostActivityManageCapabilities } from '../../host/hostActivityManageCapabilities';
 import { ActivityJoinRequestCard } from '../../console/ActivityJoinRequestCard';
 import { ActivityJoinRequestDeclineDialog } from '../../console/ActivityJoinRequestDeclineDialog';
 import { ActivityParticipantsPanel } from './ActivityParticipantsPanel';
 import { HostActivityManageCancelDialogs } from '../activity/HostActivityManageCancelDialogs';
-import { decideHostActivityJoinRequest } from '../../hooks/hostActivityClientApi';
+import {
+  decideHostActivityJoinRequest,
+  fetchHostActivityJoinRequests,
+  type ActivityRequestView,
+} from '../../hooks/hostActivityClientApi';
+import { fetchPublicActivityDetail } from '../../hooks/usePublicActivityDetail';
 import { resolveActivityTitle } from '../../utils/activityIdentity';
 import { buildActivitySharePayload } from '../../utils/activityShare';
 import { ActivityInviteModalBody } from '../activity/ActivityInviteModalBody';
@@ -81,8 +85,7 @@ export const ActivityManageSheet = ({
       setWirePresentation(null);
       return;
     }
-    void api
-      .getPublicActivityDetail(activity.id)
+    void fetchPublicActivityDetail(activity.id)
       .then((res) => {
         setViewerEntitlements(res.viewerAccess?.entitlements ?? null);
         setWirePresentation(res.presentation ?? null);
@@ -131,10 +134,9 @@ export const ActivityManageSheet = ({
       return;
     }
     setRequestsLoading(true);
-    void api
-      .getHostActivityJoinRequests(tenantId, { activityId: activity.id })
-      .then((res) => {
-        setActivityRequests(res.data.filter((request) => request.status === 'pending'));
+    void fetchHostActivityJoinRequests(tenantId, { activityId: activity.id })
+      .then((data) => {
+        setActivityRequests(data.filter((request) => request.status === 'pending'));
       })
       .catch(() => {
         setActivityRequests(
