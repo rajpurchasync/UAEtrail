@@ -57,7 +57,7 @@ export const HomeHeroSection = () => {
 
             {/* Mobile — centered icon chips, label only */}
             <ul
-              className="flex w-full max-w-lg items-start justify-center gap-4 text-white/95 sm:gap-5 md:hidden"
+              className="flex w-full max-w-lg items-stretch justify-center gap-2.5 sm:gap-3 md:hidden"
               aria-label="Why UAE Trail"
             >
               {HOME_HERO.features.map((feature) => {
@@ -65,12 +65,12 @@ export const HomeHeroSection = () => {
                 return (
                   <li
                     key={feature.id}
-                    className="flex min-w-0 flex-1 flex-col items-center justify-center gap-1.5 text-center"
+                    className="home-marketing-chip-frost flex min-w-0 flex-1 flex-col items-center justify-center gap-1.5 rounded-2xl px-2 py-2.5 text-center sm:px-2.5 sm:py-3"
                   >
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center" aria-hidden>
-                      <Icon className="h-[18px] w-[18px] text-emerald-200" strokeWidth={2.25} />
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/45" aria-hidden>
+                      <Icon className="h-[18px] w-[18px] text-home-green-600" strokeWidth={2.25} />
                     </span>
-                    <span className="text-[11px] font-bold leading-tight tracking-tight sm:text-xs">
+                    <span className="text-[11px] font-bold leading-tight tracking-tight text-home-ink sm:text-xs">
                       {MOBILE_CHIP_LABEL[feature.id]}
                     </span>
                   </li>
@@ -80,27 +80,30 @@ export const HomeHeroSection = () => {
 
             {/* Desktop — three equal columns with icon, title, description */}
             <ul
-              className="hidden w-full grid-cols-3 gap-6 text-white/95 md:grid lg:gap-8"
+              className="hidden w-full grid-cols-3 gap-4 md:grid lg:gap-5"
               aria-label="Why UAE Trail"
             >
               {HOME_HERO.features.map((feature) => {
                 const Icon = HERO_FEATURE_ICONS[feature.id];
                 return (
-                  <li key={feature.id} className="flex min-w-0 items-center gap-4 text-left">
+                  <li
+                    key={feature.id}
+                    className="home-marketing-chip-frost flex min-w-0 items-center gap-3.5 rounded-2xl p-4 text-left lg:gap-4 lg:p-5"
+                  >
                     <span
-                      className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border border-white/25 bg-emerald-400/20 backdrop-blur-sm shadow-sm shadow-black/10"
+                      className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-white/80 bg-white/50 lg:h-16 lg:w-16"
                       aria-hidden
                     >
-                      <Icon className="h-7 w-7 text-emerald-200" strokeWidth={2.25} />
+                      <Icon className="h-7 w-7 text-home-green-600" strokeWidth={2.25} />
                     </span>
                     <div className="min-w-0 flex-1">
-                      <p className="text-base font-bold leading-tight text-white">
+                      <p className="text-base font-bold leading-tight text-home-ink">
                         {feature.label}
                         {'labelFootnote' in feature && feature.labelFootnote ? (
                           <span aria-hidden="true">{feature.labelFootnote}</span>
                         ) : null}
                       </p>
-                      <p className="mt-1 text-xs leading-snug text-white/75 lg:text-[13px] lg:leading-relaxed">
+                      <p className="mt-1 text-xs leading-snug text-[var(--gray-600)] lg:text-[13px] lg:leading-relaxed">
                         {feature.detail}
                       </p>
                     </div>

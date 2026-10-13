@@ -79,7 +79,7 @@ export const EmirateChips = ({
                 'home-v2-font home-focus-ring home-motion-safe inline-flex min-h-10 shrink-0 items-center gap-2 rounded-full px-3 py-2 text-[length:var(--text-sm)] font-semibold transition-all duration-[var(--duration-hover)]',
                 selected
                   ? 'bg-home-green-600 text-white shadow-md shadow-home-green-600/25 ring-2 ring-home-green-600/20'
-                  : 'border border-[var(--gray-200)] bg-white text-home-ink shadow-home-card hover:border-home-green-600/35 hover:bg-home-green-50/80'
+                  : 'home-marketing-chip-frost text-home-ink hover:border-home-green-600/30 hover:shadow-md'
               ].join(' ')}
             >
               <UaeEmirateFlagIcon

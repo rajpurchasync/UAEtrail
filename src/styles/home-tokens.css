@@ -146,6 +146,22 @@
   }
 }
 
+/** Light frosted pill — readable on bright hero slides and pale section backgrounds. */
+.home-marketing-chip-frost {
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.82) 0%,
+    rgba(255, 255, 255, 0.62) 42%,
+    rgba(236, 253, 245, 0.72) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  box-shadow:
+    0 1px 2px rgba(17, 24, 39, 0.06),
+    0 8px 24px rgba(17, 24, 39, 0.08);
+  -webkit-backdrop-filter: blur(14px) saturate(1.15);
+  backdrop-filter: blur(14px) saturate(1.15);
+}
+
 /**
  * Adaptive card row — grow to fill when there is room; never shrink below min-width.
  * Parent scrolls horizontally when cards do not fit (see carousel controls in JS).
