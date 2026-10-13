@@ -277,6 +277,17 @@ describe('systemCoherenceGuard', () => {
     expect(effectBlock).toMatch(/hostTiers/);
   });
 
+  it('C18 explore shell model composes map catalog, rideshare, and browse shared hooks', () => {
+    const modelPath = join(ROOT, 'src/explore/shell/useExploreExperienceModel.ts');
+    const model = readFileSync(modelPath, 'utf8');
+    expect(model).toMatch(/useExploreMapCatalog/);
+    expect(model).toMatch(/useExploreRideshareOrganizeLinks/);
+    expect(model).toMatch(/useExploreBrowsePanelShared/);
+    expect(model.split(/\r?\n/).length).toBeLessThan(430);
+    const experience = readFileSync(join(ROOT, 'src/explore/ui/ExploreExperience.tsx'), 'utf8');
+    expect(experience.split(/\r?\n/).length).toBeLessThan(280);
+  });
+
   it('S10d explore browse URL migrations patch search params without syncExploreUrl', () => {
     const content = readFileSync(
       join(ROOT, 'src/explore/ui/useExploreBrowseUrlState.ts'),

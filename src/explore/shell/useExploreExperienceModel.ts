@@ -2,11 +2,9 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import type { PlaceMapPin } from '../../components/ui/PlacesMap';
-import { describeExploreMapLoadError } from '../exploreMapErrors';
 import { useAuth } from '../../context/AuthContext';
 import { useHostStatus } from '../../hooks/useHostStatus';
-import { useExploreMap, reloadExploreMap } from '../../hooks/useExploreMap';
-import { useExploreMapFetchScope } from '../useExploreMapFetchScope';
+import { reloadExploreMap } from '../../hooks/useExploreMap';
 import { buildSignInRedirect } from '../../utils/authReturnContext';
 import { useMinWidthLg } from '../../hooks/useMinWidthLg';
 import { getExploreMapTiles } from '../../config/platform';
@@ -15,45 +13,29 @@ import { useExploreBrowseUrlState } from '../ui/useExploreBrowseUrlState';
 import { useExploreComposeRoute } from '../ui/useExploreComposeRoute';
 import { useExploreFulfillIntent } from '../ui/useExploreFulfillIntent';
 import { useExploreOrganizeFromActivity } from '../ui/useExploreOrganizeFromActivity';
-import type { OrganizeWizardPrefill } from '../ui/organizeWizardPrefill';
 import {
   organizePublishGateHref,
   organizePublishGateInputFromHostGate,
 } from '../../utils/organizePublishGate';
-import { buildRideshareDraftFromDemandMapItem, buildRideshareDraftFromParentActivity } from '../linkRidesharePrefill';
-import {
-  areaDetailPath,
-  exploreMapItemIsSeeking,
-  type ActivityDTO,
-  type ExploreMapItemDTO,
-} from '@uaetrail/shared-types';
+import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
+import { areaDetailPath } from '@uaetrail/shared-types';
 import { hostActivityCancelParticipantNotice } from '../../host/hostActivityCancelParticipantNotice';
 import { useExploreMapViewport } from '../ui/useExploreMapViewport';
 import { useExploreSelectionActions } from '../ui/useExploreSelectionActions';
-import {
-  MY_TRIPS_QUERY_KEY,
-  PLAN_WITH_QUERY_KEY,
-  parseOrganizeFromActivityId,
-  parsePlanWithUserId,
-} from '../routing';
+import { parsePlanWithUserId } from '../routing';
 import { activityJoinInviteBanner } from '../../content/exploreGoingPanelCopy';
-import { useMemberJourneyMapPinIds } from '../../hooks/useMemberJourneyMapPinIds';
 import type { ExploreSearchScopeKey } from '../exploreBrowseTaxonomy';
 import { useHostActivitySheetBundle } from '../../hooks/useHostActivitySheetBundle';
-import { filterExploreMapItemsByAreaSlug, parseExploreAreaSlug } from '../exploreAreaFilter';
 import { useExplorePublishedAreas } from '../useExplorePublishedAreas';
 import { useExplorePeopleBrowseBundle } from './useExplorePeopleBrowseBundle';
 import { useExplorePinDeepLink } from './useExplorePinDeepLink';
-import type { ExploreBrowsePanelProps } from '../ui/ExploreBrowsePanel';
 import type { ComponentProps } from 'react';
 import { PeopleBrowsePanel } from '../ui/PeopleBrowsePanel';
+import { useExploreMapCatalog } from './useExploreMapCatalog';
+import { useExploreRideshareOrganizeLinks } from './useExploreRideshareOrganizeLinks';
+import { useExploreBrowsePanelShared } from './useExploreBrowsePanelShared';
 
 type PeopleProps = ComponentProps<typeof PeopleBrowsePanel>;
-
-type BrowsePanelShared = Omit<
-  ExploreBrowsePanelProps,
-  'listItems' | 'mapPool' | 'onClose' | 'closePanelAriaLabel' | 'closeButtonVariant' | 'mobileSheetChrome'
->;
 
 /** Explore map + browse + compose + selection orchestration (R2). */
 export const useExploreExperienceModel = () => {
@@ -91,28 +73,12 @@ export const useExploreExperienceModel = () => {
   const queryClient = useQueryClient();
   const { pathname, search, state: locationState } = useLocation();
   const isDesktop = useMinWidthLg();
-  const myTripsMode = searchParams.get(MY_TRIPS_QUERY_KEY) === '1';
-  const { ids: myTripsPinIds, loading: myTripsPinsLoading } = useMemberJourneyMapPinIds(
-    myTripsMode ? user?.id : undefined
-  );
-  const areaSlug = parseExploreAreaSlug(searchParams);
-  const mapFetch = useExploreMapFetchScope(areaSlug);
-  const { data: items = [], isLoading: loading, error: mapError } = useExploreMap({
-    scope: mapFetch.scope,
-  });
-  const mapItems = useMemo(() => {
-    const areaScoped = filterExploreMapItemsByAreaSlug(items, areaSlug);
-    if (!myTripsMode) return areaScoped;
-    if (!myTripsPinIds) return [];
-    return areaScoped.filter((item) => myTripsPinIds.has(item.id));
-  }, [items, myTripsMode, myTripsPinIds, areaSlug]);
-  const mapLoading = loading || (myTripsMode && myTripsPinsLoading);
-  const loadError = mapError ? describeExploreMapLoadError(mapError) : null;
+
+  const { myTripsMode, areaSlug, mapItems, mapLoading, loadError, mapFetch, mapQueryLoading } =
+    useExploreMapCatalog({ userId: user?.id, searchParams });
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [linkOnlyPeekItems, setLinkOnlyPeekItems] = useState<ExploreMapItemDTO[]>([]);
-  const [rideshareLinkParent, setRideshareLinkParent] = useState<ActivityDTO | null>(null);
-  const [rideshareLinkDemand, setRideshareLinkDemand] = useState<ExploreMapItemDTO | null>(null);
   const clearSelection = useCallback(() => setSelectedId(null), []);
 
   const browse = useExploreBrowseUrlState({
@@ -175,70 +141,23 @@ export const useExploreExperienceModel = () => {
     organizeKind: compose.organizeRoute?.kind ?? null,
   });
 
-  const handleCreateLinkedRideshare = useCallback(
-    (parent: ActivityDTO) => {
-      setRideshareLinkDemand(null);
-      setRideshareLinkParent(parent);
-      setSelectedId(null);
-      compose.setComposeRoute({ intent: 'organize', kind: 'rideshare' });
-    },
-    [compose.setComposeRoute]
-  );
-
   const selected = selectionItems.find((item) => item.id === selectedId) ?? null;
 
-  const handleOfferRideshareForDemand = useCallback(() => {
-    if (!selected || !exploreMapItemIsSeeking(selected)) return;
-
-    const returnPath = `${pathname}${search}`;
-
-    if (!user) {
-      navigate(`/signup?redirect=${encodeURIComponent(returnPath)}`);
-      return;
-    }
-    if (hostGateLoading) return;
-    if (!canPublish) {
-      navigateOrganizePublishGate(returnPath);
-      return;
-    }
-
-    setRideshareLinkParent(null);
-    setRideshareLinkDemand(selected);
-    setSelectedId(null);
-    compose.setComposeRoute({ intent: 'organize', kind: 'rideshare' });
-  }, [
-    selected,
+  const rideshareOrganize = useExploreRideshareOrganizeLinks({
     pathname,
     search,
+    searchParams,
+    setSearchParams,
     user,
     hostGateLoading,
     canPublish,
     navigate,
     navigateOrganizePublishGate,
-    compose.setComposeRoute,
-  ]);
-
-  const organizeWizardPrefill = useMemo((): OrganizeWizardPrefill | null => {
-    if (rideshareLinkParent) {
-      return {
-        draft: buildRideshareDraftFromParentActivity(rideshareLinkParent),
-        linkToParentActivityId: rideshareLinkParent.id,
-      };
-    }
-    if (rideshareLinkDemand) {
-      return {
-        draft: buildRideshareDraftFromDemandMapItem(rideshareLinkDemand),
-        participantIntentId: rideshareLinkDemand.participantIntentId ?? undefined,
-      };
-    }
-    if (organizeFrom.organizeFromPrefill) {
-      return {
-        draft: organizeFrom.organizeFromPrefill.draft,
-        sourceActivityId: organizeFrom.organizeFromPrefill.sourceActivityId,
-      };
-    }
-    return null;
-  }, [rideshareLinkParent, rideshareLinkDemand, organizeFrom.organizeFromPrefill]);
+    compose,
+    organizeFrom,
+    selected,
+    setSelectedId,
+  });
 
   const hostSheets = useHostActivitySheetBundle({
     tenantId,
@@ -264,7 +183,7 @@ export const useExploreExperienceModel = () => {
     handleFocusMapLocation: viewport.handleFocusMapLocation,
     setLinkOnlyPeekItems,
     onInviteActivity: inviteShare.openInviteFromActivity,
-    onCreateLinkedRideshare: handleCreateLinkedRideshare,
+    onCreateLinkedRideshare: rideshareOrganize.handleCreateLinkedRideshare,
     onOpenHostManage: tenantId ? openHostManage : undefined,
     onShareHostedActivity: shareHostedActivity,
   });
@@ -291,13 +210,8 @@ export const useExploreExperienceModel = () => {
     );
   }, [selection.hostRemoveConfirm, selection.selectedCard?.participantPreviews]);
 
-  const organizeFromPending = Boolean(parseOrganizeFromActivityId(searchParams));
-  const organizeWizardOpen =
-    Boolean(organizeWizardPrefill) ||
-    (Boolean(compose.organizeRoute) && !organizeFromPending);
-
   useExplorePinDeepLink({
-    loading,
+    loading: mapQueryLoading,
     searchParams,
     setSearchParams,
     selectionItems,
@@ -306,8 +220,8 @@ export const useExploreExperienceModel = () => {
     pathname,
     search,
     composeOrganizeKind: compose.organizeRoute?.kind,
-    rideshareLinkDemand,
-    setRideshareLinkDemand,
+    rideshareLinkDemand: rideshareOrganize.rideshareLinkDemand,
+    setRideshareLinkDemand: rideshareOrganize.setRideshareLinkDemand,
     setJoinInvitePeekActivityId,
   });
 
@@ -380,20 +294,6 @@ export const useExploreExperienceModel = () => {
     [selectionItems, selectedId, selection]
   );
 
-  const closeCreateFlow = useCallback(() => {
-    compose.closeCompose();
-    organizeFrom.clearOrganizeFromPrefill();
-    setRideshareLinkParent(null);
-    setSearchParams(
-      (prev) => {
-        const next = new URLSearchParams(prev);
-        next.delete(PLAN_WITH_QUERY_KEY);
-        return next;
-      },
-      { replace: true }
-    );
-  }, [compose, organizeFrom, setSearchParams]);
-
   const handlePickExploreArea = useCallback(
     (slug: string) => {
       setExploreSearchModalOpen(false);
@@ -410,73 +310,27 @@ export const useExploreExperienceModel = () => {
     [browse]
   );
 
-  const browsePanelShared = useMemo((): BrowsePanelShared => {
-    return {
-      isDesktop,
-      loading: mapLoading,
-      myTripsMode,
-      shopListSections,
-      desktopBrowseTab: browse.desktopBrowseTab,
-      mapFilter: browse.mapFilter,
-      browseFilterKeys: browse.browseFilterKeys,
-      placesMode: browse.placesMode,
-      onMapFilterChange: browse.applyMapFilter,
-      activityDatePreset: browse.activityDatePreset,
-      onActivityDatePresetChange: browse.applyActivityDatePreset,
-      activityModeFilter: browse.activityModeFilter,
-      onActivityModeFilterChange: browse.applyActivityModeFilter,
-      publishedAreas,
-      onPickArea: handlePickExploreArea,
-      venueRegions: browse.venueRegions,
-      onVenueRegionsChange: browse.applyVenueRegions,
-      onDesktopBrowseTabChange: browse.applyDesktopBrowseTab,
-      panel: browse.panel,
-      sidebarPanel: browse.sidebarPanel,
-      onPanelChange: browse.applyPanel,
-      buddySubtype: browse.buddySubtype,
-      onBuddySubtypeChange: browse.applyBuddySubtype,
-      outingTopic: browse.outingTopic,
-      onOutingTopicChange: browse.applyOutingTopic,
-      query: browse.query,
-      onQueryChange: browse.setQuery,
-      onQuerySync: () => browse.syncExploreUrl({ q: browse.query }),
-      onClearQuery: () => {
-        browse.setQuery('');
-        browse.syncExploreUrl({ q: '' });
-      },
-      onOpenItem: selection.openItem,
-      searchScopeCounts,
-      onSearchScopePick: handleExploreSearchCommit,
-      searchFocusNonce,
-      buddyUserIds: user ? new Set(memberPeoplePreview.preview?.friendUserIds ?? []) : undefined,
-    };
-  }, [
+  const browsePanelShared = useExploreBrowsePanelShared({
     isDesktop,
     mapLoading,
     myTripsMode,
     shopListSections,
     browse,
     publishedAreas,
-    handlePickExploreArea,
-    selection.openItem,
+    onPickArea: handlePickExploreArea,
+    onOpenItem: selection.openItem,
     searchScopeCounts,
-    handleExploreSearchCommit,
+    onSearchScopePick: handleExploreSearchCommit,
     searchFocusNonce,
-    user,
-    memberPeoplePreview.preview?.friendUserIds,
-  ]);
-
-  const onOrganizeBackToIntent = useCallback(() => {
-    organizeFrom.clearOrganizeFromPrefill();
-    setRideshareLinkParent(null);
-    setRideshareLinkDemand(null);
-    compose.setComposeRoute({ surface: 'menu', intent: 'organize' });
-  }, [organizeFrom, compose.setComposeRoute]);
+    buddyUserIds: user ? new Set(memberPeoplePreview.preview?.friendUserIds ?? []) : undefined,
+  });
 
   const signInHref = useMemo(
     () => buildSignInRedirect({ pathname, search }).href,
     [pathname, search]
   );
+
+  const closeCreateFlow = rideshareOrganize.closeCreateFlow;
 
   const onOpenHostApplication = useCallback(() => {
     closeCreateFlow();
@@ -520,19 +374,19 @@ export const useExploreExperienceModel = () => {
     peopleBrowseMapChip,
     joinInvitePeekBanner,
     handleCloseMapSelection,
-    handleOfferRideshareForDemand,
-    handleCreateLinkedRideshare,
+    handleOfferRideshareForDemand: rideshareOrganize.handleOfferRideshareForDemand,
+    handleCreateLinkedRideshare: rideshareOrganize.handleCreateLinkedRideshare,
     primaryFabLabel: 'Add New' as const,
-    organizeWizardOpen,
-    organizeWizardPrefill,
+    organizeWizardOpen: rideshareOrganize.organizeWizardOpen,
+    organizeWizardPrefill: rideshareOrganize.organizeWizardPrefill,
     planWithBuddyUserId,
     hostRemoveParticipantNotice,
-    rideshareLinkParent,
-    rideshareLinkDemand,
-    setRideshareLinkParent,
-    setRideshareLinkDemand,
-    closeCreateFlow,
-    onOrganizeBackToIntent,
+    rideshareLinkParent: rideshareOrganize.rideshareLinkParent,
+    rideshareLinkDemand: rideshareOrganize.rideshareLinkDemand,
+    setRideshareLinkParent: rideshareOrganize.setRideshareLinkParent,
+    setRideshareLinkDemand: rideshareOrganize.setRideshareLinkDemand,
+    closeCreateFlow: rideshareOrganize.closeCreateFlow,
+    onOrganizeBackToIntent: rideshareOrganize.onOrganizeBackToIntent,
     refreshHostGate,
     exploreSearchModalOpen,
     setExploreSearchModalOpen,

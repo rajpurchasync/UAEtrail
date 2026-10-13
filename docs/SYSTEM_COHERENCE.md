@@ -240,7 +240,7 @@ Track consolidation here; sub-roadmaps link out but **this table is the system-w
 | **C15** | Buddy/friend vocabulary | Fake entity ids | User ids only | [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) § Naming vocabulary |
 | **C16** | ~~Parallel detail policy~~ | — | **Mitigated (Oct 2026):** API `viewerAccess`, map enrich, `mapViewerAccessToUi`; FE shim is wire-only | [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §15 |
 | **C17** | Discovery card projection sprawl | Optional API `DiscoveryCardProjection` on map wire | `src/discovery` VM + `buildDiscoveryEnrichedCard`; detail wire footers (`activityDetailAcceptance` AD-PRES-02, R6) | **R1 + R6 done (FE)** — slim map DTO promotion is R5 ops |
-| **C18** | `ExploreExperience` orchestration hub | Was ~900 LOC monolith | `ExploreMapShell` + browse/overlays hooks | **R2 done** — wiring shell under 280 LOC |
+| **C18** | `ExploreExperience` orchestration hub | Was ~900 LOC monolith | `ExploreMapShell` + `useExploreMapCatalog` / rideshare / browse-panel hooks + thin model | **R2 done** — `ExploreExperience.tsx` & model under guard budgets; URL/selection hooks stay separate modules |
 | **C19** | Global explore map blob | Full fetch default; bbox behind flags | `explore-map-base` + vNext bbox — [`explore-map-vnext-spec.md`](./experiment/explore-map-vnext-spec.md) | **R5 shipped (flagged)** — staging runbook |
 | **C20** | Seeking **read** paths (M2d write fixed) | Legacy `demand:` deep links only in routing + notification rewrite | Activity-primary map pins; `seekingPinHygieneGuard` | **R4 done (read)** — compat parsers remain |
 

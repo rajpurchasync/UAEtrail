@@ -156,7 +156,7 @@ Phases are **sequential within each track**; **R1** and **R3** can run in parall
 
 **Exit:** `ExploreExperience.tsx` **< 280 LOC** (~100 LOC wiring); `memberSurfacesAcceptance` / explore routing tests green; no behavior change (screenshot/manual QA map + browse=1 + list=1).
 
-**Status (Oct 2026):** `useExploreExperienceModel`, `ExploreMapShell`, `ExploreExperienceBrowsePanels`, `ExploreExperienceOverlays` shipped; R2 exit LOC met on `ExploreExperience.tsx`.
+**Status (Oct 2026):** `ExploreMapShell`, `ExploreExperienceBrowsePanels`, `ExploreExperienceOverlays`, and slim `useExploreExperienceModel` (composes `useExploreMapCatalog`, `useExploreRideshareOrganizeLinks`, `useExploreBrowsePanelShared`); R2 exit LOC met on `ExploreExperience.tsx` + `systemCoherenceGuard` C18 budgets. `useExploreBrowseUrlState` / `useExploreSelectionActions` remain large but are not the experience wiring surface.
 
 ---
 
