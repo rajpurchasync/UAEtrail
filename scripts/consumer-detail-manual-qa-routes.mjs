@@ -33,3 +33,34 @@ for (const { surface, path, note } of ROUTES) {
   console.log(`${surface.padEnd(22)} ${url}${suffix}`);
 }
 console.log('\nAuth: sign-in → return URL or /explore (see plan §8).');
+
+/** S10f / C9 — spot-check notification deep links (private actor labels are API-side). */
+const NOTIFICATION_EDGE = [
+  {
+    case: 'Group wall (group_message)',
+    steps: 'Post in a group wall → recipient taps bell → lands in /messages group thread',
+  },
+  {
+    case: 'Buddy request (connection_buddy_request)',
+    steps: 'Send buddy request → recipient notification → /buddies or profile path',
+  },
+  {
+    case: 'Join approved + group chat (join_request_approved)',
+    steps: 'Host approves joiner → notification opens activity or group thread when meta has groupId',
+  },
+  {
+    case: 'Entity follow publish (entity_activity_published)',
+    steps: 'Follow a place/shop → host publishes outing there → follower notification → activity detail',
+  },
+  {
+    case: 'Private actor label',
+    steps: 'Actor with private profile → group_message / publish fan-out shows generic actor copy, not PII',
+  },
+];
+
+console.log('\n# S10f notification edge cases (manual — see HOST_CLEANUP_ROADMAP notification matrix)\n');
+for (const { case: title, steps } of NOTIFICATION_EDGE) {
+  console.log(`- ${title}`);
+  console.log(`  ${steps}\n`);
+}
+console.log('Automated routing guards: src/utils/notificationRouting.test.ts, notificationConsumerGuard.test.ts');

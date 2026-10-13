@@ -243,6 +243,16 @@ describe('systemCoherenceGuard', () => {
     expect(missing).toEqual([]);
   });
 
+  it('S10e explore map vNext stays opt-in via explicit env flag', () => {
+    const fe = readFileSync(join(ROOT, 'src/explore/exploreMapVnext.ts'), 'utf8');
+    expect(fe).toMatch(/VITE_EXPLORE_MAP_VNEXT === '1'/);
+    const api = readFileSync(
+      join(ROOT, 'apps/api/src/lib/explore-map-vnext.ts'),
+      'utf8'
+    );
+    expect(api).toMatch(/EXPLORE_MAP_VNEXT\?\.trim\(\) === '1'/);
+  });
+
   it('S10d activity pin deep link callback avoids whole browse object in deps', () => {
     const content = readFileSync(
       join(ROOT, 'src/explore/ui/useExploreSelectionActions.ts'),
