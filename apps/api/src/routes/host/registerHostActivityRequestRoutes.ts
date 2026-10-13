@@ -17,6 +17,7 @@ import { requireOrgRole } from '../../middleware/tenant.js';
 import { validate } from '../../middleware/validate.js';
 import { ensureActivityGroupChat } from '../../services/activity-group-chat.js';
 import { activityDetailJoinedWelcomePath, TRIPS_JOINED_TAB_PATH } from '../../lib/member-routes.js';
+import { scheduleSideEffect } from '../../lib/schedule-side-effect.js';
 import { dispatchNotification } from '../../services/notifications.js';
 import { activityRequestDecisionSchema, idParamSchema } from './host-route-schemas.js';
 
@@ -168,14 +169,17 @@ export const registerHostActivityRequestRoutes = (hostRouter: Router): void => {
 
         const userName = request.user.profile?.displayName ?? request.user.email.split('@')[0];
         const activityDate = request.activity.startAt.toISOString().slice(0, 10);
-        notifyRequestDecision({
-          to: request.user.email,
-          userName,
-          activityTitle: request.activity.title,
-          activityDate,
-          approved: status === 'approved',
-          note: organizerNote,
-        }).catch(() => undefined);
+        scheduleSideEffect(
+          notifyRequestDecision({
+            to: request.user.email,
+            userName,
+            activityTitle: request.activity.title,
+            activityDate,
+            approved: status === 'approved',
+            note: organizerNote,
+          }),
+          'host.request_decision_email'
+        );
 
         res.json({ message: `Request ${status}.` });
       } catch (error) {

@@ -5,6 +5,7 @@ import { findAuthUserById } from '../lib/auth-users.js';
 import { getMongoClient } from '../lib/mongo.js';
 import { promptPostActivityReview } from './review-prompt.js';
 import { createAuditLog } from '../lib/audit.js';
+import { scheduleSideEffect } from '../lib/schedule-side-effect.js';
 import { awardPoints } from './rewards.js';
 
 type ActivityTiming = { startAt: Date; endAt: Date | null; status: ActivityStatus };
@@ -109,19 +110,25 @@ export async function performParticipantCheckIn(opts: {
 
   const hostUserId = activity.hostId ?? activity.createdById;
 
-  void awardPoints({
-    userId: participant.userId,
-    action: RewardAction.ACTIVITY_ATTENDED,
-    referenceId: `${activity.id}:${participant.userId}`,
-    label: `Attended: ${activity.title}`,
-  }).catch(() => undefined);
+  scheduleSideEffect(
+    awardPoints({
+      userId: participant.userId,
+      action: RewardAction.ACTIVITY_ATTENDED,
+      referenceId: `${activity.id}:${participant.userId}`,
+      label: `Attended: ${activity.title}`,
+    }),
+    'checkin.attendee_rewards'
+  );
 
-  void awardPoints({
-    userId: hostUserId,
-    action: RewardAction.ACTIVITY_HOSTED,
-    referenceId: activity.id,
-    label: `Hosted activity: ${activity.title}`,
-  }).catch(() => undefined);
+  scheduleSideEffect(
+    awardPoints({
+      userId: hostUserId,
+      action: RewardAction.ACTIVITY_HOSTED,
+      referenceId: activity.id,
+      label: `Hosted activity: ${activity.title}`,
+    }),
+    'checkin.host_rewards'
+  );
 
   await createAuditLog({
     actorId: opts.actorUserId,
@@ -145,20 +152,22 @@ export async function performParticipantCheckIn(opts: {
     activityType
   });
 
-  void import('../lib/member-map-pins-store.js')
-    .then((mod) =>
-      mod.upsertVisitedPinFromActivityCheckIn({
-        userId: participant.userId,
-        activityId: activity.id,
-        checkedInAt,
-      })
-    )
-    .then(() =>
-      import('./member-goal-notifications.js').then((mod) =>
-        mod.notifyMemberGoalAfterProgress(participant.userId)
+  scheduleSideEffect(
+    import('../lib/member-map-pins-store.js')
+      .then((mod) =>
+        mod.upsertVisitedPinFromActivityCheckIn({
+          userId: participant.userId,
+          activityId: activity.id,
+          checkedInAt,
+        })
       )
-    )
-    .catch(() => undefined);
+      .then(() =>
+        import('./member-goal-notifications.js').then((mod) =>
+          mod.notifyMemberGoalAfterProgress(participant.userId)
+        )
+      ),
+    'checkin.visited_pin_and_goals'
+  );
 
   return { checkedInAt, alreadyCheckedIn: false };
 }

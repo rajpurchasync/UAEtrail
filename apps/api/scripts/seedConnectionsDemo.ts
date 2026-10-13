@@ -186,8 +186,11 @@ export const seedConnectionsDemo = async (input: ConnectionsDemoInput): Promise<
 };
 
 export const logConnectionsDemoPlaybook = (): void => {
+  const passwordHint = process.env.DEMO_ACCOUNT_PASSWORD?.trim()
+    ? '(password: DEMO_ACCOUNT_PASSWORD from your .env)'
+    : '(set DEMO_ACCOUNT_PASSWORD in .env — see docs/DEV_RUN.md)';
   console.log(
-    'Connections QA (log in as visitor@uaetrails.app / Visitor@12345):\n' +
+    `Connections QA (log in as visitor@uaetrails.app ${passwordHint}):\n` +
       '  • Find your crew → Available: Maya, Fatima, Omar, Samira (public slots; map date Anyday)\n' +
       '  • Friends going (host@): Fatima hosting Wadi Shawka (+10d) — set date to This month\n' +
       '  • Buddies: Fatima (guide@) + Maya (visitor2@)\n' +

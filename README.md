@@ -107,17 +107,19 @@ npm run cap:android
 
 ## Seed Accounts (shared Atlas `uaetrail` DB)
 
-After seeding with `SEED_DATA=true` (or `FORCE_SEED=1`), the team can log in with:
+Set **`DEMO_ACCOUNT_PASSWORD`** in root `.env` before seeding (see `.env.example` and `docs/DEV_RUN.md`). All demo personas share that password — it is not stored in the repo.
 
-| Persona | Email | Password |
-|---------|-------|----------|
-| Admin | `admin@uaetrails.app` | `Admin@12345` |
-| Participant | `visitor@uaetrails.app` | `Visitor@12345` |
-| Individual host | `host@uaetrails.app` | `Host@12345` |
-| Agency | `organizer@uaetrails.app` | `Agency@12345` |
-| Shop | `shop@uaetrails.app` | `Shop@12345` |
+After seeding with `SEED_DATA=true` (or `FORCE_SEED=1`), log in with:
 
-Additional demo accounts: agency guide staff `guide@uaetrails.app` / `Guide@12345`, pending participant `visitor2@uaetrails.app` / `Visitor2@12345`.
+| Persona | Email |
+|---------|-------|
+| Admin | `admin@uaetrails.app` |
+| Participant | `visitor@uaetrails.app` |
+| Individual host | `host@uaetrails.app` |
+| Agency | `organizer@uaetrails.app` |
+| Shop | `shop@uaetrails.app` |
+
+Additional demo accounts: `guide@uaetrails.app`, `visitor2@uaetrails.app` (same shared password).
 
 **Connections QA (buddies, follows, pending requests):** after demo users exist, run `cd apps/api && SEED_CONNECTIONS=true npm run seed` (included automatically on full `SEED_DATA=true` seed). Log in as `visitor@` and follow the playbook printed in the seed output. See `docs/NAVIGATION.md` § Connections QA.
 

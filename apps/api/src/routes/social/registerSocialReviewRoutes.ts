@@ -11,6 +11,7 @@ import { paginatedResponse, paginationSchema } from '../../lib/pagination.js';
 import { requireAuth, requireVerifiedEmail } from '../../middleware/auth.js';
 import { validate } from '../../middleware/validate.js';
 import { tierEnumToDisplay } from '../../lib/membership-tier-display.js';
+import { scheduleSideEffect } from '../../lib/schedule-side-effect.js';
 import { awardPoints } from '../../services/rewards.js';
 import {
   findAuthUserById,
@@ -160,11 +161,14 @@ export const registerSocialReviewRoutes = (router: Router): void => {
           rating: body.rating,
           comment: sanitizedComment,
         });
-        void awardPoints({
-          userId: req.auth!.userId,
-          action: RewardAction.REVIEW_WRITTEN,
-          referenceId: review.id,
-        }).catch(() => undefined);
+        scheduleSideEffect(
+          awardPoints({
+            userId: req.auth!.userId,
+            action: RewardAction.REVIEW_WRITTEN,
+            referenceId: review.id,
+          }),
+          'social.review_written_rewards'
+        );
         const author = await findAuthUserById(req.auth!.userId);
         const authorMembershipTier = await getAuthUserMembershipTier(req.auth!.userId);
         res.status(201).json({

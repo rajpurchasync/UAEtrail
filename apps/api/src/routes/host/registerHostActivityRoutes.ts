@@ -12,6 +12,7 @@ import { requireOrgRole } from '../../middleware/tenant.js';
 import { ORG_ACTIVITY_EDIT_ROLES, ORG_ACTIVITY_PUBLISH_ROLES } from '../../lib/org-permissions.js';
 import { validate } from '../../middleware/validate.js';
 import { notifyAdminsActivityPublished } from '../../services/platform-admin-events.js';
+import { scheduleSideEffect } from '../../lib/schedule-side-effect.js';
 import { awardPoints } from '../../services/rewards.js';
 import { findAuthUserById } from '../../lib/auth-users.js';
 import {
@@ -630,14 +631,17 @@ hostActivitiesRouter.post('/:id/publish', requireOrgRole(ORG_ACTIVITY_PUBLISH_RO
       tenantId
     });
     const hostUserId = updated.hostId ?? updated.createdById;
-    void ensureActivityGroupChat(updated.id).catch(() => undefined);
+    scheduleSideEffect(ensureActivityGroupChat(updated.id), 'host.publish_ensure_group_chat');
     if (hostUserId) {
-      void awardPoints({
-        userId: hostUserId,
-        action: RewardAction.ACTIVITY_PUBLISHED,
-        referenceId: updated.id,
-        label: `Published activity: ${updated.title}`,
-      }).catch(() => undefined);
+      scheduleSideEffect(
+        awardPoints({
+          userId: hostUserId,
+          action: RewardAction.ACTIVITY_PUBLISHED,
+          referenceId: updated.id,
+          label: `Published activity: ${updated.title}`,
+        }),
+        'host.publish_rewards'
+      );
     }
     const hostUser = hostUserId ? await findAuthUserById(hostUserId) : null;
     const hostLabel = hostUser?.profile?.displayName?.trim() || hostUser?.email || 'A host';

@@ -6,9 +6,20 @@
 const API = process.env.API_BASE ?? 'http://localhost:4000/api/v1';
 
 const ORG_EMAIL = process.env.SMOKE_ORG_EMAIL ?? 'organizer@uaetrails.app';
-const ORG_PASS = process.env.SMOKE_ORG_PASS ?? 'Organizer@12345';
 const VIS_EMAIL = process.env.SMOKE_VIS_EMAIL ?? 'visitor@uaetrails.app';
-const VIS_PASS = process.env.SMOKE_VIS_PASS ?? 'Visitor@12345';
+
+const resolveSmokePassword = (override) => {
+  if (override?.trim()) return override.trim();
+  const demo = process.env.DEMO_ACCOUNT_PASSWORD?.trim();
+  if (demo) return demo;
+  console.error(
+    'Set DEMO_ACCOUNT_PASSWORD in .env (after seed) or SMOKE_ORG_PASS / SMOKE_VIS_PASS for this smoke script.'
+  );
+  process.exit(1);
+};
+
+const ORG_PASS = resolveSmokePassword(process.env.SMOKE_ORG_PASS);
+const VIS_PASS = resolveSmokePassword(process.env.SMOKE_VIS_PASS);
 
 const results = [];
 

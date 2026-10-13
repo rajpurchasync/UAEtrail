@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { registerPlaceAlias } from '../../lib/route-place-alias.js';
 import { createAuditLog } from '../../lib/audit.js';
 import { toLocationDto } from '../../lib/mappers.js';
+import { scheduleSideEffect } from '../../lib/schedule-side-effect.js';
 import { validate } from '../../middleware/validate.js';
 import { requireOrgRole } from '../../middleware/tenant.js';
 import { ORG_ACTIVITY_EDIT_ROLES } from '../../lib/org-permissions.js';
@@ -49,12 +50,15 @@ export const registerHostSubmittedLocationRoutes = (hostRouter: Router): void =>
           tenantId: req.tenantContext!.tenantId,
         });
 
-        void awardPoints({
-          userId: req.auth!.userId,
-          action: RewardAction.LOCATION_SUBMITTED,
-          referenceId: created.id,
-          label: `Submitted location: ${created.name}`,
-        }).catch(() => undefined);
+        scheduleSideEffect(
+          awardPoints({
+            userId: req.auth!.userId,
+            action: RewardAction.LOCATION_SUBMITTED,
+            referenceId: created.id,
+            label: `Submitted location: ${created.name}`,
+          }),
+          'host.location_submitted_rewards'
+        );
 
         res.status(201).json({ data: toLocationDto(created) });
       } catch (error) {

@@ -25,6 +25,7 @@ import {
 } from '../services/activity-group-chat.js';
 import { resolveParticipationMode } from '../domain/activity-participation-mode.js';
 import { assertParticipantMeetsWomenOnlyRequirement } from '../domain/activity-audience-requirements.js';
+import { scheduleSideEffect } from './schedule-side-effect.js';
 
 const ACTIVE_STATUSES: RequestStatus[] = ['PENDING', 'APPROVED', 'WAITLISTED'];
 
@@ -325,10 +326,13 @@ export async function createRsvpParticipation(opts: {
     throw new ApiError(500, 'participation_persist_failed', 'Failed to persist RSVP participation.');
   }
 
-  void addParticipantToActivityGroupChat({
-    activityId: opts.activityId,
-    userId: opts.userId,
-  }).catch(() => undefined);
+  scheduleSideEffect(
+    addParticipantToActivityGroupChat({
+      activityId: opts.activityId,
+      userId: opts.userId,
+    }),
+    'engagement.rsvp_add_group_chat'
+  );
 
   return {
     request: toActivityRequestRecord(mongoRow),
@@ -672,6 +676,195 @@ export const hasHostToParticipantLink = async (hostUserId: string, participantUs
   return false;
 };
 
+type ActivityHostFields = {
+  _id: string;
+  tenantId?: string;
+  hostId?: string | null;
+  createdById?: string;
+};
+
+const loadActivityHostFieldsByIds = async (activityIds: string[]): Promise<Map<string, ActivityHostFields>> => {
+  if (activityIds.length === 0) return new Map();
+  const docs = await getMongoClient()!
+    .db()
+    .collection<ActivityHostFields>('activities')
+    .find(
+      { _id: { $in: activityIds } },
+      { projection: { _id: 1, tenantId: 1, hostId: 1, createdById: 1 } }
+    )
+    .toArray();
+  return new Map(docs.map((doc) => [doc._id, doc]));
+};
+
+const buildOrganizerHostKeys = async (
+  events: ActivityHostFields[],
+  userIds: string[],
+  organizerRoles: MembershipRole[]
+): Promise<Set<string>> => {
+  const keys = new Set<string>();
+  const membershipPairs = new Map<string, { tenantId: string; userId: string }>();
+
+  for (const event of events) {
+    for (const userId of userIds) {
+      if (event.hostId === userId || event.createdById === userId) {
+        keys.add(`${event._id}:${userId}`);
+        continue;
+      }
+      if (event.tenantId) {
+        membershipPairs.set(`${event.tenantId}:${userId}`, { tenantId: event.tenantId, userId });
+      }
+    }
+  }
+
+  if (membershipPairs.size === 0) return keys;
+
+  const tenantIds = [...new Set([...membershipPairs.values()].map((pair) => pair.tenantId))];
+  const checkUserIds = [...new Set([...membershipPairs.values()].map((pair) => pair.userId))];
+
+  const memberships = await getMongoClient()!
+    .db()
+    .collection('tenant_memberships')
+    .find({
+      tenantId: { $in: tenantIds },
+      userId: { $in: checkUserIds },
+      role: { $in: organizerRoles },
+    })
+    .toArray();
+
+  const memberSet = new Set(memberships.map((row) => `${row.tenantId}:${row.userId}`));
+
+  for (const event of events) {
+    if (!event.tenantId) continue;
+    for (const userId of userIds) {
+      if (keys.has(`${event._id}:${userId}`)) continue;
+      if (memberSet.has(`${event.tenantId}:${userId}`)) {
+        keys.add(`${event._id}:${userId}`);
+      }
+    }
+  }
+
+  return keys;
+};
+
+/**
+ * Inbox batch: same rules as chat canMessageUser (no activityId inquiry), for viewer → many partners.
+ */
+export const batchCanMessagePartnersFromViewer = async (input: {
+  viewerId: string;
+  partnerIds: string[];
+  organizerRoles: MembershipRole[];
+  activeStatuses: RequestStatus[];
+}): Promise<Set<string>> => {
+  const partners = [...new Set(input.partnerIds.filter((id) => id && id !== input.viewerId))];
+  if (partners.length === 0) return new Set();
+
+  const allowed = new Set<string>();
+  const partnerSet = new Set(partners);
+
+  const viewerParticipation = await activityParticipantsCollection()
+    .find({ userId: input.viewerId }, { projection: { activityId: 1 } })
+    .toArray();
+  const viewerActivityIds = [...new Set(viewerParticipation.map((row) => row.activityId))];
+  if (viewerActivityIds.length > 0) {
+    const sharedRows = await activityParticipantsCollection()
+      .find(
+        { activityId: { $in: viewerActivityIds }, userId: { $in: partners } },
+        { projection: { userId: 1 } }
+      )
+      .toArray();
+    for (const row of sharedRows) {
+      if (partnerSet.has(row.userId)) allowed.add(row.userId);
+    }
+  }
+
+  let remaining = partners.filter((id) => !allowed.has(id));
+  if (remaining.length === 0) return allowed;
+
+  const relatedUserIds = [input.viewerId, ...remaining];
+  const participantRows = await activityParticipantsCollection()
+    .find({ userId: { $in: relatedUserIds } }, { projection: { userId: 1, activityId: 1 } })
+    .toArray();
+
+  const activityIds = [...new Set(participantRows.map((row) => row.activityId))];
+  const eventById = await loadActivityHostFieldsByIds(activityIds);
+  const hostUserIds = [input.viewerId, ...remaining];
+  const organizerHostKeys = await buildOrganizerHostKeys([...eventById.values()], hostUserIds, input.organizerRoles);
+
+  const isOrganizerHost = (activityId: string, userId: string) =>
+    organizerHostKeys.has(`${activityId}:${userId}`);
+  const isDirectHost = (activityId: string, userId: string) => {
+    const event = eventById.get(activityId);
+    if (!event) return false;
+    return event.hostId === userId || event.createdById === userId;
+  };
+
+  const viewerActivities = new Set(
+    participantRows.filter((row) => row.userId === input.viewerId).map((row) => row.activityId)
+  );
+  const partnerActivities = new Map<string, Set<string>>();
+  for (const row of participantRows) {
+    if (!partnerSet.has(row.userId)) continue;
+    const set = partnerActivities.get(row.userId) ?? new Set<string>();
+    set.add(row.activityId);
+    partnerActivities.set(row.userId, set);
+  }
+
+  for (const partnerId of remaining) {
+    let ok = false;
+    for (const activityId of viewerActivities) {
+      if (isOrganizerHost(activityId, partnerId)) {
+        ok = true;
+        break;
+      }
+    }
+    if (!ok) {
+      const partnerActivityIds = partnerActivities.get(partnerId);
+      if (partnerActivityIds) {
+        for (const activityId of partnerActivityIds) {
+          if (isDirectHost(activityId, input.viewerId)) {
+            ok = true;
+            break;
+          }
+        }
+      }
+    }
+    if (ok) allowed.add(partnerId);
+  }
+
+  remaining = partners.filter((id) => !allowed.has(id));
+  if (remaining.length === 0) return allowed;
+
+  const requests = await activityRequestsCollection()
+    .find({
+      status: { $in: input.activeStatuses },
+      userId: { $in: [input.viewerId, ...remaining] },
+    })
+    .toArray();
+
+  const missingActivityIds = [...new Set(requests.map((row) => row.activityId))].filter((id) => !eventById.has(id));
+  if (missingActivityIds.length > 0) {
+    const loaded = await loadActivityHostFieldsByIds(missingActivityIds);
+    for (const [id, event] of loaded) eventById.set(id, event);
+  }
+
+  const organizerKeys = await buildOrganizerHostKeys([...eventById.values()], hostUserIds, input.organizerRoles);
+  const isOrgHost = (activityId: string, userId: string) => organizerKeys.has(`${activityId}:${userId}`);
+
+  for (const partnerId of remaining) {
+    for (const request of requests) {
+      const requestUserId = request.userId;
+      if (requestUserId !== input.viewerId && requestUserId !== partnerId) continue;
+      const otherUserId = requestUserId === input.viewerId ? partnerId : input.viewerId;
+      if (isOrgHost(request.activityId, otherUserId)) {
+        allowed.add(partnerId);
+        break;
+      }
+    }
+  }
+
+  return allowed;
+};
+
 /** True when both users are co-participants or one hosts an event the other joined. */
 export const usersShareActivity = async (userA: string, userB: string): Promise<boolean> => {
   if (!userA || !userB) return false;
@@ -937,10 +1130,13 @@ export const enrollHostApprovedActivityParticipant = async (opts: {
     throw error;
   }
 
-  void addParticipantToActivityGroupChat({
-    activityId: opts.activityId,
-    userId: opts.userId,
-  }).catch(() => undefined);
+  scheduleSideEffect(
+    addParticipantToActivityGroupChat({
+      activityId: opts.activityId,
+      userId: opts.userId,
+    }),
+    'engagement.rsvp_add_group_chat'
+  );
 
   return 'enrolled';
 };
@@ -1006,10 +1202,13 @@ export const cancelUserActivityRequestAndPromoteWaitlist = async (input: {
   const deleted = await activityParticipantsCollection().deleteMany({ requestId: input.requestId });
   if (deleted.deletedCount > 0) {
     await releaseActivityParticipantSlot(input.activityId);
-    void removeParticipantFromActivityGroupChat({
-      activityId: input.activityId,
-      userId: input.userId
-    }).catch(() => undefined);
+    scheduleSideEffect(
+      removeParticipantFromActivityGroupChat({
+        activityId: input.activityId,
+        userId: input.userId,
+      }),
+      'engagement.cancel_remove_group_chat'
+    );
   }
   await promoteNextWaitlisted(input.activityId);
 };
@@ -1040,10 +1239,13 @@ export const revokeHostActivityParticipant = async (input: {
   const deleted = await activityParticipantsCollection().deleteOne({ _id: participant.id });
   if (deleted.deletedCount > 0) {
     await releaseActivityParticipantSlot(input.activityId);
-    void removeParticipantFromActivityGroupChat({
-      activityId: input.activityId,
-      userId: participant.userId
-    }).catch(() => undefined);
+    scheduleSideEffect(
+      removeParticipantFromActivityGroupChat({
+        activityId: input.activityId,
+        userId: participant.userId,
+      }),
+      'engagement.revoke_remove_group_chat'
+    );
   }
   await promoteNextWaitlisted(input.activityId);
 

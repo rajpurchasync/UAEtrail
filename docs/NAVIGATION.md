@@ -312,7 +312,7 @@ Buddy, follow, and group flows for manual QA use demo users from the main seed.
 | `cd apps/api && SEED_DATA=true npm run seed` | Full reset + `seedConnectionsDemo` (with demo users) |
 | `cd apps/api && SEED_CONNECTIONS=true npm run seed` | Refresh buddy/follow data only (demo users must already exist) |
 
-**Primary tester:** `visitor@uaetrails.app` / `Visitor@12345` (see root `README.md`).
+**Primary tester:** `visitor@uaetrails.app` with `DEMO_ACCOUNT_PASSWORD` from `.env` (see root `README.md`, `DEV_RUN.md`).
 
 After seed, the API logs a **Connections QA** playbook (buddies, incoming/outgoing requests, follow notifications, friends group). UI entry points:
 

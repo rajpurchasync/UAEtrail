@@ -2,6 +2,7 @@ import { MembershipRole, RequestStatus } from '../domain/enums.js';
 import { ApiError } from '../lib/api-error.js';
 import { countRecentMessagesBySender } from '../lib/chat-data.js';
 import {
+  batchCanMessagePartnersFromViewer,
   hasActiveJoinRequestLink,
   hasHostToParticipantLink,
   hasParticipantToHostLink,
@@ -116,14 +117,14 @@ export async function filterInboxMessageablePartnerIds(
   }
 
   if (toCheck.length > 0) {
-    const checks = await Promise.all(
-      toCheck.map(async (partnerId) => ({
-        partnerId,
-        ok: await canMessageUser(viewerId, partnerId),
-      }))
-    );
-    for (const { partnerId, ok } of checks) {
-      if (ok) allowed.add(partnerId);
+    const linked = await batchCanMessagePartnersFromViewer({
+      viewerId,
+      partnerIds: toCheck,
+      organizerRoles: ORGANIZER_ROLES,
+      activeStatuses: ACTIVE_REQUEST_STATUSES,
+    });
+    for (const partnerId of linked) {
+      allowed.add(partnerId);
     }
   }
 

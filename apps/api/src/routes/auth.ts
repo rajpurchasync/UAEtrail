@@ -12,6 +12,7 @@ import { validate } from '../middleware/validate.js';
 import { requireAuth } from '../middleware/auth.js';
 import { env } from '../config/env.js';
 import { isDemoLoginAllowedForRequest } from '../lib/demo-login-policy.js';
+import { scheduleSideEffect } from '../lib/schedule-side-effect.js';
 import { sendPasswordResetEmail, sendVerificationEmail } from '../lib/email.js';
 import { verifyGoogleIdToken } from '../lib/google-auth.js';
 import { createUniqueReferralCode } from '../lib/referral-code.js';
@@ -312,13 +313,17 @@ authRouter.post('/register', validate({ body: registerSchema }), async (req, res
       email: created.email,
       displayName: displayName,
     });
-    void processSignupRewards(created._id, referralCode).catch(() => undefined);
+    scheduleSideEffect(processSignupRewards(created._id, referralCode), 'auth.signup_rewards');
     if (groupInviteToken) {
-      void acceptGroupInviteByToken({ token: groupInviteToken, userId: created._id, email: created.email }).catch(
-        () => undefined
+      scheduleSideEffect(
+        acceptGroupInviteByToken({ token: groupInviteToken, userId: created._id, email: created.email }),
+        'auth.signup_group_invite_token'
       );
     } else {
-      void acceptPendingGroupInvitesForEmail({ userId: created._id, email: created.email }).catch(() => undefined);
+      scheduleSideEffect(
+        acceptPendingGroupInvitesForEmail({ userId: created._id, email: created.email }),
+        'auth.signup_pending_group_invites'
+      );
     }
 
     respondWithPendingVerification(res, 201, {
@@ -567,11 +572,14 @@ authRouter.post('/forgot-password', validate({ body: forgotSchema }), async (req
       expiresAt: new Date(Date.now() + 60 * 60 * 1000)
     });
 
-    void sendPasswordResetEmail({
-      to: user.email,
-      name: user.profile.displayName ?? user.email,
-      token
-    }).catch(() => undefined);
+    scheduleSideEffect(
+      sendPasswordResetEmail({
+        to: user.email,
+        name: user.profile.displayName ?? user.email,
+        token,
+      }),
+      'auth.forgot_password_email'
+    );
 
     res.json({
       message: 'If the account exists, a reset link was sent.',
@@ -699,13 +707,17 @@ authRouter.post('/google', validate({ body: googleAuthSchema }), async (req, res
         email: created.email,
         displayName: profile.displayName,
       });
-      void processSignupRewards(created._id, referralCode).catch(() => undefined);
+      scheduleSideEffect(processSignupRewards(created._id, referralCode), 'auth.google_signup_rewards');
       if (groupInviteToken) {
-        void acceptGroupInviteByToken({ token: groupInviteToken, userId: created._id, email: created.email }).catch(
-          () => undefined
+        scheduleSideEffect(
+          acceptGroupInviteByToken({ token: groupInviteToken, userId: created._id, email: created.email }),
+          'auth.google_signup_group_invite_token'
         );
       } else {
-        void acceptPendingGroupInvitesForEmail({ userId: created._id, email: created.email }).catch(() => undefined);
+        scheduleSideEffect(
+          acceptPendingGroupInvitesForEmail({ userId: created._id, email: created.email }),
+          'auth.google_signup_pending_group_invites'
+        );
       }
     }
 
@@ -781,11 +793,14 @@ authRouter.post('/change-password/request-otp', requireAuth, async (req, res, ne
       expiresAt: new Date(Date.now() + 15 * 60 * 1000)
     });
 
-    void sendPasswordResetEmail({
-      to: user.email,
-      name: user.profile.displayName ?? user.email,
-      token
-    }).catch(() => undefined);
+    scheduleSideEffect(
+      sendPasswordResetEmail({
+        to: user.email,
+        name: user.profile.displayName ?? user.email,
+        token,
+      }),
+      'auth.forgot_password_email'
+    );
 
     res.json({
       message: 'OTP sent to your email address.',

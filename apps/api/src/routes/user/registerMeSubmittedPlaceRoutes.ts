@@ -5,6 +5,7 @@ import { createLocationRecord, listSubmittedLocationsByUser } from '../../lib/ac
 import { createAuditLog } from '../../lib/audit.js';
 import { toLocationDto } from '../../lib/mappers.js';
 import { registerPlaceAlias } from '../../lib/route-place-alias.js';
+import { scheduleSideEffect } from '../../lib/schedule-side-effect.js';
 import { validate } from '../../middleware/validate.js';
 import { buildLocationCreateData } from '../../services/location-submit.js';
 import { notifyAdminsLocationSubmitted } from '../../services/platform-admin-events.js';
@@ -43,12 +44,15 @@ export const registerMeSubmittedPlaceRoutes = (router: Router): void => {
         entityId: created.id,
       });
 
-      void awardPoints({
-        userId: req.auth!.userId,
-        action: RewardAction.LOCATION_SUBMITTED,
-        referenceId: created.id,
-        label: `Submitted location: ${created.name}`,
-      }).catch(() => undefined);
+      scheduleSideEffect(
+        awardPoints({
+          userId: req.auth!.userId,
+          action: RewardAction.LOCATION_SUBMITTED,
+          referenceId: created.id,
+          label: `Submitted location: ${created.name}`,
+        }),
+        'member.location_submitted_rewards'
+      );
 
       const submitter = await findAuthUserById(req.auth!.userId);
       const submitterLabel =

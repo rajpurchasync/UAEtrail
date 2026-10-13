@@ -15,6 +15,7 @@ Use full run-project scripts only when explicitly requested.
 - **Demo login** (`POST /auth/demo-login`) is off in `NODE_ENV=production`. In development it only accepts loopback TCP peers unless you set `ALLOW_DEMO_LOGIN=true` (e.g. API in Docker, browser on host).
 - **Demo / seed passwords:** set `DEMO_ACCOUNT_PASSWORD` in root `.env` before `SEED_DATA=true npm run seed` or demo-login user creation (no plaintext passwords in source). API tests use a fixed in-memory password automatically.
 - **Prometheus `/metrics`:** requires `METRICS_TOKEN` bearer auth except in `NODE_ENV=test` or local dev loopback peers (same trust model as demo login).
+- **Async side effects** (rewards, emails, group-chat roster, notifications): failures log with `logContext` via `scheduleSideEffect` / `scheduleNotification` — check API warn logs if something did not fire.
 - **`npm run seed` without `SEED_DATA`:** still **upserts curated areas** and **backfills `place.areaId`** on catalog rows (safe on existing DBs).
 - After pulling member/host changes, restart the API once so Mongo migrations run (`tenant_memberships` owner backfill, `publishingPurpose` on tenants).
 - Buddy **Organize** requires **signup profile complete** (`PATCH /me/profile/signup-details`); `GET /me/host-status` exposes `canPublish`. Publish/create on `/host/activities` enforces the same server-side.

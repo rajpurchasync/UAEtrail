@@ -110,6 +110,18 @@ if (production) {
   if (process.env.SEED_ADMIN_PASSWORD === 'Admin@12345') {
     errors.push('SEED_ADMIN_PASSWORD — rotate default seed password before production');
   }
+  const legacyDemoPasswords = new Set([
+    'Admin@12345',
+    'Visitor@12345',
+    'Host@12345',
+    'Organizer@12345',
+    'Guide@12345',
+    'Shop@12345',
+  ]);
+  const demoPassword = process.env.DEMO_ACCOUNT_PASSWORD?.trim();
+  if (demoPassword && legacyDemoPasswords.has(demoPassword)) {
+    errors.push('DEMO_ACCOUNT_PASSWORD — do not use legacy default demo passwords in production');
+  }
 }
 
 const vapidPub = isSet('VAPID_PUBLIC_KEY');

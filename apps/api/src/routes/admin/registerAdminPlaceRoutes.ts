@@ -30,6 +30,7 @@ import {
   updateAdminLocation,
 } from '../../lib/admin-store.js';
 import { EXPLORE_VENUES_LIST_PATH } from '../../lib/member-routes.js';
+import { scheduleSideEffect } from '../../lib/schedule-side-effect.js';
 import { dispatchNotification } from '../../services/notifications.js';
 import { notifyUserAdminAction } from '../../services/admin-notifications.js';
 
@@ -324,12 +325,15 @@ export const registerAdminPlaceRoutes = (adminRouter: Router): void => {
               path: publicPath,
             },
           });
-          void awardPoints({
-            userId: updated.submittedById,
-            action: RewardAction.LOCATION_PUBLISHED,
-            referenceId: updated.id,
-            label: `Location approved: ${updated.name}`,
-          }).catch(() => undefined);
+          scheduleSideEffect(
+            awardPoints({
+              userId: updated.submittedById,
+              action: RewardAction.LOCATION_PUBLISHED,
+              referenceId: updated.id,
+              label: `Location approved: ${updated.name}`,
+            }),
+            'admin.location_approved_rewards'
+          );
         }
 
         if (deactivating && updated.submittedById) {
