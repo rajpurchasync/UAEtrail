@@ -37,6 +37,7 @@ console.log('');
 console.log('Restart API after API env change. Rebuild/redeploy FE after Vite flag change.\n');
 
 console.log('## 3. Local dev smoke (optional before staging)\n');
+console.log('With API running (`EXPLORE_MAP_VNEXT=1 npm run dev:api`): `npm run s10e:local-ratio` — full vs bbox byte ratio (exit 2 if above 40% target).\n');
 console.log('```');
 console.log('# Terminal A — API');
 console.log('EXPLORE_MAP_VNEXT=1 npm run dev:api');

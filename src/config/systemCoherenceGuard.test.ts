@@ -248,7 +248,9 @@ describe('systemCoherenceGuard', () => {
       readFileSync(join(ROOT, 'package.json'), 'utf8')
     ) as { scripts?: Record<string, string> };
     expect(pkg.scripts?.['s10e:staging-checklist']).toMatch(/s10e-staging-vnext-checklist/);
+    expect(pkg.scripts?.['s10e:local-ratio']).toMatch(/s10e-local-vnext-ratio/);
     expect(existsSync(join(ROOT, 'scripts/s10e-staging-vnext-checklist.mjs'))).toBe(true);
+    expect(existsSync(join(ROOT, 'scripts/s10e-local-vnext-ratio.mjs'))).toBe(true);
   });
 
   it('S10e explore map vNext stays opt-in via explicit env flag', () => {
