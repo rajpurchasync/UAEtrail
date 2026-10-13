@@ -85,5 +85,7 @@ describe('auth routing by role', () => {
     expect(participantHostBookmarkRedirect('/host/messages')).toBe('/chat');
     expect(participantHostBookmarkRedirect('/host/team')).toBe('/profile/pro-membership');
     expect(participantHostBookmarkRedirect('/host/places')).toBe('/organisation/manage');
+    expect(participantHostBookmarkRedirect('/operator/overview')).toBe('/explore?compose=organize');
+    expect(participantHostBookmarkRedirect('/organizer/activities')).toBe('/plan?view=plans&filter=hosting');
   });
 });

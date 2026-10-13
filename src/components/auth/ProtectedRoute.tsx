@@ -7,6 +7,7 @@ import { isSignupProfileComplete } from '../../constants/userProfileOptions';
 import { accountRouteByRole, participantHostBookmarkRedirect } from '../../utils/authRouting';
 import { isPlatformAdmin } from '../../utils/roles';
 import { WELCOME_PATH } from '../../config/routingCatalog';
+import { isPublishingConsolePath } from '../../config/surfacePaths';
 import { buildSignInRedirect } from '../../utils/authReturnContext';
 import {
   isSignupProfileGateExemptPath,
@@ -58,7 +59,7 @@ export const ProtectedRoute = ({ roles, children }: ProtectedRouteProps) => {
   }
 
   if (roles && !roles.includes(user.role)) {
-    if (!isPlatformAdmin(user.role) && location.pathname.startsWith('/host')) {
+    if (!isPlatformAdmin(user.role) && isPublishingConsolePath(location.pathname)) {
       return <Navigate to={participantHostBookmarkRedirect(location.pathname)} replace />;
     }
     return <Navigate to={accountRouteByRole(user.role)} replace />;

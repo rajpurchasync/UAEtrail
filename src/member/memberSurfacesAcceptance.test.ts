@@ -7,6 +7,7 @@ import { join, relative } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { parsePeopleBrowseTabFromUrl } from '../explore/peopleBrowseTab';
 import { PLAN_MAIN_TABS } from '../plan/planTab';
+import { isPublishingConsolePath } from '../config/surfacePaths';
 import { participantHostBookmarkRedirect } from '../utils/authRouting';
 import { inferNotificationPath } from '../utils/notificationRouting';
 import type { NotificationDTO } from '@uaetrail/shared-types';
@@ -67,6 +68,13 @@ describe('member surfaces §11 acceptance (automated)', () => {
   it('G-arch: participant /host bookmarks redirect off host console', () => {
     expect(participantHostBookmarkRedirect('/host/overview')).toBe('/explore?compose=organize');
     expect(participantHostBookmarkRedirect('/host/activities')).toContain('/plan');
+  });
+
+  it('G-arch: publishing console path helper includes canonical /operator routes', () => {
+    expect(isPublishingConsolePath('/operator/overview')).toBe(true);
+    expect(isPublishingConsolePath('/host/activities')).toBe(true);
+    expect(isPublishingConsolePath('/organizer/requests')).toBe(true);
+    expect(isPublishingConsolePath('/explore')).toBe(false);
   });
 
   it('G-lang: mobile tab bar labels My Plans (not Trips hub)', () => {

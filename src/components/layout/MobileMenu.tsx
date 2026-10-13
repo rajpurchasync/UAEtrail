@@ -15,7 +15,8 @@ import {
   IOS_INSTALL_SETTINGS_HASH,
 } from '../../config/phoneAppInstall';
 import { PROFILE_SETTINGS_PATH } from '../../config/routingCatalog';
-import { ADMIN_LINKS, HOST_CONSOLE_LINKS } from '../../constants';
+import { isPublishingConsolePath } from '../../config/surfacePaths';
+import { ADMIN_LINKS, OPERATOR_CONSOLE_LINKS } from '../../constants';
 import { useAuth } from '../../context/AuthContext';
 import { persistAuthSessionTokens, switchMeRoleSession } from '../../hooks/accountSessionApi';
 import { accountRouteByRole } from '../../utils/authRouting';
@@ -382,7 +383,7 @@ const MobileMenuPanel = () => {
   const isAdminRole = user?.role === 'platform_admin';
   const isPrivilegedRole = canAccessPublishingWorkspace || isAdminRole;
   const onAdminConsole = pathname.startsWith('/admin');
-  const onHostConsole = pathname.startsWith('/host') || pathname.startsWith('/organizer');
+  const onPublishingConsole = isPublishingConsolePath(pathname);
   const canSwitchBack = user?.role === 'participant' && Boolean(user?.switchedFromRole);
 
   // Console shells use dashboard drawers; consumer map/browse always use CONSUMER_HAMBURGER_MENU.
@@ -455,7 +456,7 @@ const MobileMenuPanel = () => {
     );
   }
 
-  if (canAccessPublishingWorkspace && onHostConsole) {
+  if (canAccessPublishingWorkspace && onPublishingConsole) {
     return (
       <MobileDrawer
         open={open}
@@ -464,7 +465,7 @@ const MobileMenuPanel = () => {
         title={user?.displayName || 'Account'}
         ariaLabel="Workspace navigation"
       >
-        <DashboardDrawerLinks links={HOST_CONSOLE_LINKS} pathname={pathname} closeMenu={closeMenu} />
+        <DashboardDrawerLinks links={OPERATOR_CONSOLE_LINKS} pathname={pathname} closeMenu={closeMenu} />
         <DashboardDrawerSiteLink closeMenu={closeMenu} />
         <button type="button" onClick={() => void switchRole('participant')} className={dashboardActionClass}>
           Switch to Visitor

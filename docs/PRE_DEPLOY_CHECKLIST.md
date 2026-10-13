@@ -58,7 +58,7 @@ Complete these **on the VPS** when you connect. Use this list to track progress.
   2b. If `activeIntentsMissingCoordsSkippedByBackfill` &gt; 0: fix coordinates or `npm --workspace @uaetrail/api run cancel-coordless-participant-intents` (after `--dry-run`), then repeat step 2 if needed
   3. Set `PARTICIPANT_INTENT_STUB_WRITE=false` in API env, restart API (`docker compose up -d --build api` or your deploy script)
   4. `npm run seeking:deploy-gate` (alias for `seeking:storage-status -- --strict`) — must exit 0 before traffic
-- [ ] **G-manage** (staging UI): second account requests join on a hosted outing → host sees **Plan → Needs you** → **Hosted** → manage sheet → approve; URL stays on `/plan` (not `/host/requests`). API regression: `g-manage-coordination-join-approve.test.ts` (coordination `host_join_queue` + `PATCH /host/requests/:id`).
+- [ ] **G-manage** (staging UI): second account requests join on a hosted outing → host sees **Plan → Needs you** → **Hosted** → manage sheet → approve; URL stays on `/plan` (not `/operator/requests`). API regression: `g-manage-coordination-join-approve.test.ts` (coordination `host_join_queue` + `PATCH /operator/requests/:id`; legacy `/host/requests` rewritten).
 
 ## Smoke test (production)
 

@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import type { ActivityDTO, ParticipantIntentDTO } from '@uaetrail/shared-types';
 import { useMyParticipantIntents } from '../../hooks/useMyParticipantIntents';
 import { useConsoleHubData } from '../../console/useHubData';
-import { useHostActivityManageActions } from '../../hooks/useHostActivityManageActions';
+import { useOperatorActivityManageActions } from '../../hooks/useOperatorActivityManageActions';
 import { ActivityManageSheet } from '../activity/ActivityManageSheet';
 import { ParticipantIntentManageSheet } from '../participant-intent/ParticipantIntentManageSheet';
 import {
@@ -43,7 +43,7 @@ export const PlanHostingUpcoming = ({ refreshKey = 0, canHost }: PlanHostingUpco
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const host = useConsoleHubData();
-  const hostActions = useHostActivityManageActions(host.tenantId, host.reload);
+  const hostActions = useOperatorActivityManageActions(host.tenantId, host.reload);
   const inviteShare = useActivityInviteShareSheet();
   const [manageActivity, setManageActivity] = useState<ActivityDTO | null>(null);
   const [manageIntent, setManageIntent] = useState<ParticipantIntentDTO | null>(null);

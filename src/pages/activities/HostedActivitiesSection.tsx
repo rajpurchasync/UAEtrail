@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import { useConsoleHubData } from '../../console/useHubData';
-import { useHostActivityManageActions } from '../../hooks/useHostActivityManageActions';
+import { useOperatorActivityManageActions } from '../../hooks/useOperatorActivityManageActions';
 import { AppSegmented } from '../../components/mobile/AppSegmented';
 import {
   ConsumerErrorCard,
@@ -47,7 +47,7 @@ export const HostedActivitiesSection = ({
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const host = useConsoleHubData();
-  const hostActions = useHostActivityManageActions(host.tenantId, host.reload);
+  const hostActions = useOperatorActivityManageActions(host.tenantId, host.reload);
   const inviteShare = useActivityInviteShareSheet();
   const [activityTab, setActivityTab] = useState<ActivityTab>(timeScope ?? 'upcoming');
   const [manageActivity, setManageActivity] = useState<ActivityDTO | null>(null);

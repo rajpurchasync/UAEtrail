@@ -207,6 +207,13 @@ describe('systemCoherenceGuard', () => {
     expect(missing).toEqual([]);
   });
 
+  it('ProtectedRoute redirects non-tenant roles off publishing console via isPublishingConsolePath', () => {
+    const content = readFileSync(join(ROOT, 'src/components/auth/ProtectedRoute.tsx'), 'utf8');
+    expect(content).toMatch(/isPublishingConsolePath/);
+    expect(content).toMatch(/participantHostBookmarkRedirect/);
+    expect(content).not.toMatch(/pathname\.startsWith\(['"]\/host['"]\)/);
+  });
+
   it('S10b host console guards mount fetches with useSafeAsyncEffect', () => {
     const hostPages = [
       'src/pages/operator/Activities.tsx',

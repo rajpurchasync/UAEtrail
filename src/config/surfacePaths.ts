@@ -140,7 +140,9 @@ export const rewriteLegacyPublishingConsolePath = (pathname: string): string => 
 };
 
 export const isPublishingConsolePath = (pathname: string): boolean =>
-  pathname.startsWith('/operator/') || pathname.startsWith('/host/');
+  pathname.startsWith('/operator/') ||
+  pathname.startsWith('/host/') ||
+  pathname.startsWith('/organizer/');
 
 /** Auth funnel */
 export const SIGNIN_PATH = '/signin' as const;

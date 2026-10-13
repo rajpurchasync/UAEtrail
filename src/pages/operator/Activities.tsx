@@ -31,7 +31,7 @@ import {
   resolveActivityTitle,
 } from '../../utils/activityIdentity';
 
-/** Host console: tenant-scoped list of **activities** (`GET /host/activities`). */
+/** Publishing workspace: tenant-scoped activities (`GET /operator/activities`). */
 export const Activities = () => {
   const navigate = useNavigate();
   const location = useLocation();

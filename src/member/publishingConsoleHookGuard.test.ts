@@ -2,7 +2,18 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
-const ROOTS = ['src/pages/operator', 'src/console', 'src/components/activity'];
+const ROOTS = [
+  'src/pages/operator',
+  'src/console',
+  'src/components/activity',
+  'src/components/plan',
+  'src/pages/activities',
+];
+
+const MANAGE_ACTION_SHIM_FILES = new Set([
+  'src/hooks/useHostActivityManageActions.ts',
+  'src/hooks/useOperatorActivityManageActions.ts',
+]);
 
 const collectTs = (dir: string): string[] => {
   const files: string[] = [];
@@ -46,9 +57,11 @@ describe('publishingConsoleHookGuard', () => {
 
   it('publishing UI uses useOperatorActivityManageActions (not legacy useHostActivityManageActions)', () => {
     const violations: string[] = [];
-    for (const root of ROOTS) {
+    const scanRoots = [...ROOTS, 'src/hooks'];
+    for (const root of scanRoots) {
       const abs = join(process.cwd(), root);
       for (const file of collectTs(abs)) {
+        if (MANAGE_ACTION_SHIM_FILES.has(file)) continue;
         const content = readFileSync(join(process.cwd(), file), 'utf8');
         if (/from\s+['"].*useHostActivityManageActions['"]/.test(content)) {
           violations.push(`${file}: import useOperatorActivityManageActions`);
