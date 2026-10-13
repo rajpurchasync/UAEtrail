@@ -65,12 +65,12 @@ export const HomeHeroSection = () => {
                 return (
                   <li
                     key={feature.id}
-                    className="home-marketing-chip-frost flex min-w-0 flex-1 flex-col items-center justify-center gap-1.5 rounded-2xl px-2 py-2.5 text-center sm:px-2.5 sm:py-3"
+                    className="home-hero-proof-chip flex min-w-0 flex-1 flex-col items-center justify-center gap-1.5 rounded-xl px-2 py-2 text-center sm:px-2.5 sm:py-2.5"
                   >
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/45" aria-hidden>
-                      <Icon className="h-[18px] w-[18px] text-home-green-600" strokeWidth={2.25} />
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center" aria-hidden>
+                      <Icon className="h-[18px] w-[18px] text-emerald-200/95" strokeWidth={2.25} />
                     </span>
-                    <span className="text-[11px] font-bold leading-tight tracking-tight text-home-ink sm:text-xs">
+                    <span className="text-[11px] font-semibold leading-tight tracking-tight text-white/92 [text-shadow:0_1px_8px_rgba(0,0,0,0.35)] sm:text-xs">
                       {MOBILE_CHIP_LABEL[feature.id]}
                     </span>
                   </li>
@@ -88,22 +88,19 @@ export const HomeHeroSection = () => {
                 return (
                   <li
                     key={feature.id}
-                    className="home-marketing-chip-frost flex min-w-0 items-center gap-3.5 rounded-2xl p-4 text-left lg:gap-4 lg:p-5"
+                    className="home-hero-proof-chip flex min-w-0 items-center gap-3 rounded-xl p-3.5 text-left lg:gap-3.5 lg:p-4"
                   >
-                    <span
-                      className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-white/80 bg-white/50 lg:h-16 lg:w-16"
-                      aria-hidden
-                    >
-                      <Icon className="h-7 w-7 text-home-green-600" strokeWidth={2.25} />
+                    <span className="flex h-12 w-12 shrink-0 items-center justify-center lg:h-14 lg:w-14" aria-hidden>
+                      <Icon className="h-6 w-6 text-emerald-200/95 lg:h-7 lg:w-7" strokeWidth={2.25} />
                     </span>
                     <div className="min-w-0 flex-1">
-                      <p className="text-base font-bold leading-tight text-home-ink">
+                      <p className="text-base font-semibold leading-tight text-white/95 [text-shadow:0_1px_10px_rgba(0,0,0,0.4)]">
                         {feature.label}
                         {'labelFootnote' in feature && feature.labelFootnote ? (
                           <span aria-hidden="true">{feature.labelFootnote}</span>
                         ) : null}
                       </p>
-                      <p className="mt-1 text-xs leading-snug text-[var(--gray-600)] lg:text-[13px] lg:leading-relaxed">
+                      <p className="mt-1 text-xs leading-snug text-white/78 lg:text-[13px] lg:leading-relaxed">
                         {feature.detail}
                       </p>
                     </div>
