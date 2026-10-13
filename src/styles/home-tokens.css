@@ -88,18 +88,19 @@
   --shadow-card-hover: 0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
   --shadow-header: 0 2px 8px rgba(0, 0, 0, 0.06);
 
-  /* Layout */
+  /* Layout — guest home uses full desktop width (see below) */
   --content-max-width: 1120px;
   --gutter-mobile: 16px;
   --gutter-tablet: 24px;
   --gutter-desktop: 32px;
+  --gutter-desktop-wide: 48px;
   --section-padding-y-mobile: 40px;
   --section-padding-y-desktop: 56px;
   --header-height-mobile: 56px;
   --header-height-desktop: 64px;
   --hero-content-max-width: 560px;
-  --hero-height-desktop: min(640px, max(560px, 88svh));
-  --hero-height-mobile: min(640px, 88svh);
+  --hero-height-desktop: min(520px, 72svh);
+  --hero-height-mobile: min(460px, 68svh);
   --touch-min: 44px;
 
   /* Motion */
@@ -125,6 +126,70 @@
 
 .home-v2-font {
   font-family: var(--font-sans);
+}
+
+/** Full-bleed marketing sections — horizontal padding only, no max-width cap. */
+.home-marketing-wrap {
+  width: 100%;
+  padding-inline: var(--gutter-mobile);
+}
+
+@media (min-width: 768px) {
+  .home-marketing-wrap {
+    padding-inline: var(--gutter-desktop);
+  }
+}
+
+@media (min-width: 1280px) {
+  .home-marketing-wrap {
+    padding-inline: var(--gutter-desktop-wide);
+  }
+}
+
+/**
+ * Adaptive card row — grow to fill when there is room; never shrink below min-width.
+ * Parent scrolls horizontally when cards do not fit (see carousel controls in JS).
+ */
+.home-marketing-adaptive-card {
+  flex: 1 0 17.5rem;
+  min-width: 17.5rem;
+  max-width: none;
+}
+
+.home-marketing-adaptive-review-card {
+  flex: 1 0 19rem;
+  min-width: 19rem;
+  max-width: none;
+}
+
+.home-marketing-adaptive-track {
+  display: flex;
+  width: 100%;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  gap: 1rem;
+}
+
+.home-marketing-adaptive-track--scroll {
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scroll-behavior: smooth;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.home-marketing-adaptive-track--scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.home-marketing-adaptive-track--scroll > * {
+  scroll-snap-align: start;
+}
+
+@media (min-width: 1024px) {
+  .home-marketing-adaptive-track {
+    gap: 1.25rem;
+  }
 }
 
 .home-focus-ring:focus-visible {

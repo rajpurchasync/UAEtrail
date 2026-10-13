@@ -1,45 +1,87 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import { stepCarouselIndex } from '../../../utils/heroCarouselState';
 import { useMarketingCarouselClock } from './HomeMarketingCarouselSync';
+import {
+  carouselPageCount,
+  carouselPageFromCardIndex,
+  carouselStartCardIndex,
+  measureVisibleCarouselCards
+} from './measureVisibleCarouselCards';
 import { scrollHorizontalTrackToIndex } from './scrollHorizontalTrackToIndex';
 import { usePrefersReducedMotion } from '../../../hooks/usePrefersReducedMotion';
 
 export const useMarketingPeekCarousel = ({
   itemCount,
   carouselMode,
-  resetWhen
+  resetWhen,
+  trackRef: trackRefProp
 }: {
   itemCount: number;
   carouselMode: boolean;
   /** When any value changes, scroll position and active index reset to 0. */
   resetWhen: unknown[];
+  trackRef?: RefObject<HTMLDivElement | null>;
 }) => {
   const reducedMotion = usePrefersReducedMotion();
-  const trackRef = useRef<HTMLDivElement>(null);
-  const [activeIndex, setActiveIndex] = useState(0);
-  const activeIndexRef = useRef(0);
+  const internalTrackRef = useRef<HTMLDivElement>(null);
+  const trackRef = trackRefProp ?? internalTrackRef;
+  const [activePage, setActivePage] = useState(0);
+  const activePageRef = useRef(0);
+  const [visibleCardCount, setVisibleCardCount] = useState(1);
   const [userPaused, setUserPaused] = useState(false);
   const [hoverPaused, setHoverPaused] = useState(false);
   const [progressCycle, setProgressCycle] = useState(0);
 
-  useEffect(() => {
-    activeIndexRef.current = activeIndex;
-  }, [activeIndex]);
+  const pageCount = carouselPageCount(itemCount, visibleCardCount);
 
-  const scrollToIndex = useCallback(
-    (index: number, options?: { bumpProgress?: boolean }) => {
+  useEffect(() => {
+    activePageRef.current = activePage;
+  }, [activePage]);
+
+  const remeasureVisible = useCallback(() => {
+    const track = trackRef.current;
+    if (!track) return;
+    const next = measureVisibleCarouselCards(track, track.scrollLeft);
+    setVisibleCardCount(next);
+  }, [trackRef]);
+
+  useLayoutEffect(() => {
+    if (!carouselMode) return;
+    remeasureVisible();
+    const track = trackRef.current;
+    if (!track) return;
+
+    const ro = new ResizeObserver(remeasureVisible);
+    ro.observe(track);
+    window.addEventListener('resize', remeasureVisible, { passive: true });
+
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', remeasureVisible);
+    };
+  }, [carouselMode, itemCount, remeasureVisible, trackRef]);
+
+  useEffect(() => {
+    if (activePage >= pageCount && pageCount > 0) {
+      setActivePage(pageCount - 1);
+    }
+  }, [activePage, pageCount]);
+
+  const scrollToPage = useCallback(
+    (page: number, options?: { bumpProgress?: boolean }) => {
       const track = trackRef.current;
-      if (!track || itemCount === 0) return;
-      const next = Math.max(0, Math.min(index, itemCount - 1));
-      if (options?.bumpProgress && next !== activeIndexRef.current) {
+      if (!track || itemCount === 0 || pageCount === 0) return;
+      const next = Math.max(0, Math.min(page, pageCount - 1));
+      if (options?.bumpProgress && next !== activePageRef.current) {
         setProgressCycle((cycle) => cycle + 1);
       }
       if (carouselMode) {
-        scrollHorizontalTrackToIndex(track, next, 'smooth');
+        const cardIndex = carouselStartCardIndex(next, visibleCardCount, itemCount);
+        scrollHorizontalTrackToIndex(track, cardIndex, 'smooth');
       }
-      setActiveIndex(next);
+      setActivePage(next);
     },
-    [carouselMode, itemCount]
+    [carouselMode, itemCount, pageCount, trackRef, visibleCardCount]
   );
 
   useEffect(() => {
@@ -50,24 +92,28 @@ export const useMarketingPeekCarousel = ({
       const children = Array.from(track.children) as HTMLElement[];
       if (children.length === 0) return;
       const trackLeft = track.scrollLeft;
-      let closest = 0;
+      let closestCard = 0;
       let minDist = Number.POSITIVE_INFINITY;
       children.forEach((child, i) => {
         const dist = Math.abs(child.offsetLeft - trackLeft);
         if (dist < minDist) {
           minDist = dist;
-          closest = i;
+          closestCard = i;
         }
       });
-      setActiveIndex(closest);
+      const visible = measureVisibleCarouselCards(track, trackLeft);
+      const pages = carouselPageCount(itemCount, visible);
+      const page = carouselPageFromCardIndex(closestCard, visible, pages);
+      setVisibleCardCount(visible);
+      setActivePage(page);
     };
 
     track.addEventListener('scroll', onScroll, { passive: true });
     return () => track.removeEventListener('scroll', onScroll);
-  }, [carouselMode, itemCount]);
+  }, [carouselMode, itemCount, trackRef]);
 
   useEffect(() => {
-    setActiveIndex(0);
+    setActivePage(0);
     trackRef.current?.scrollTo({ left: 0 });
     // eslint-disable-next-line react-hooks/exhaustive-deps -- explicit reset keys from caller
   }, resetWhen);
@@ -75,14 +121,16 @@ export const useMarketingPeekCarousel = ({
   const autoplayActive = carouselMode && !reducedMotion && !userPaused && !hoverPaused;
 
   useMarketingCarouselClock(() => {
-    scrollToIndex(stepCarouselIndex(activeIndexRef.current, itemCount, 1), { bumpProgress: false });
+    scrollToPage(stepCarouselIndex(activePageRef.current, pageCount, 1), { bumpProgress: false });
     setProgressCycle((cycle) => cycle + 1);
   }, autoplayActive);
 
   return {
     trackRef,
-    activeIndex,
-    scrollToIndex,
+    activePage,
+    pageCount,
+    visibleCardCount,
+    scrollToPage,
     userPaused,
     setUserPaused,
     hoverPaused,

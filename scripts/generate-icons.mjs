@@ -29,6 +29,7 @@ const pwaOutputs = [
   { path: 'public/icons/icon-512.png', size: 512, src: 'any' },
   { path: 'public/icons/apple-touch-icon.png', size: 180, src: 'any' },
   { path: 'public/icons/icon-1024.png', size: 1024, src: 'any' },
+  { path: 'public/favicon.ico', size: 32, src: 'any' },
   { path: 'public/icons/maskable-192.png', size: 192, src: 'maskable' },
   { path: 'public/icons/maskable-512.png', size: 512, src: 'maskable' },
   { path: 'resources/icon.png', size: 1024, src: 'any' }

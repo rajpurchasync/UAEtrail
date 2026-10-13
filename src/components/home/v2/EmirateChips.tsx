@@ -82,7 +82,15 @@ export const EmirateChips = ({
                   : 'border border-[var(--gray-200)] bg-white text-home-ink shadow-home-card hover:border-home-green-600/35 hover:bg-home-green-50/80'
               ].join(' ')}
             >
-              <UaeEmirateFlagIcon emirateId={flagId} title={option.label} />
+              <UaeEmirateFlagIcon
+                emirateId={flagId}
+                title={option.label}
+                className={
+                  selected
+                    ? 'h-3.5 w-[1.05rem] shrink-0 rounded-[2px] shadow-sm ring-2 ring-white/70 overflow-hidden'
+                    : 'h-3.5 w-[1.05rem] shrink-0 rounded-[2px] shadow-sm ring-2 ring-neutral-400/90 overflow-hidden'
+                }
+              />
               <span className="whitespace-nowrap">{option.label}</span>
               {countLabel}
             </button>

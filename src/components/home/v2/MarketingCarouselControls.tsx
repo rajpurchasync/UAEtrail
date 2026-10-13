@@ -5,6 +5,7 @@ const NAV_BUTTON_CLASS =
 
 export interface MarketingCarouselControlsProps {
   activeIndex: number;
+  /** Number of dots / steps (pages), not necessarily total cards. */
   itemCount: number;
   onPrevious: () => void;
   onNext: () => void;

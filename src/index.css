@@ -425,18 +425,20 @@
 
   /* ── Guest marketing hero (v2) ── */
   .landing-hero-headline {
-    @apply font-bold tracking-tight text-white;
+    @apply font-extrabold tracking-tight text-white;
+    text-shadow: 0 2px 28px rgb(0 0 0 / 45%);
+    letter-spacing: -0.02em;
   }
 
   @media (max-width: 767px) {
     .home-hero-copy {
       padding-inline: 0.25rem;
-      padding-block: 0.5rem;
+      padding-block: 0;
     }
 
     .home-hero-copy .landing-hero-headline {
-      font-size: clamp(1.625rem, 1.4vw + 1.2rem, 2.125rem);
-      line-height: 1.28;
+      font-size: clamp(1.875rem, 2.5vw + 1.15rem, 2.5rem);
+      line-height: 1.22;
       text-wrap: balance;
       white-space: normal;
     }
@@ -588,8 +590,6 @@
   }
 
   .landing-hero-btn {
-    width: 100%;
-    max-width: 100%;
     min-height: 2.75rem;
     padding: 0.625rem 1rem;
     font-size: 0.875rem;
@@ -598,11 +598,9 @@
 
   @media (max-width: 767px) {
     .landing-hero-desktop-ctas .landing-hero-btn {
-      width: auto;
-      flex: 1 1 0;
-      min-width: 0;
-      padding-inline: 0.625rem;
-      font-size: 0.8125rem;
+      width: 100%;
+      max-width: 20rem;
+      margin-inline: auto;
     }
 
     .landing-hero-join-cta {

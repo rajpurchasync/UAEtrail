@@ -6,6 +6,9 @@ import { PRODUCT_SITE_DESCRIPTION } from '../content/productNorthStar';
 
 export const SITE_NAME = 'UAE Trail';
 
+/** Browser tab prefix for guest-facing SEO (see `pageTitle`). */
+export const SITE_TITLE_BRAND = 'UAETrail';
+
 export const SITE_ORIGIN =
   import.meta.env.VITE_SITE_ORIGIN?.replace(/\/$/, '') ?? 'https://uaetrail.com';
 
@@ -34,5 +37,7 @@ export const LLMS_TXT_PATH = '/llms.txt';
 export const DEFAULT_OG_IMAGE_ALT =
   'Group getting outdoors in the UAE — find your crew on UAE Trail';
 
-export const pageTitle = (title: string): string =>
-  title.includes(SITE_NAME) ? title : `${title} | ${SITE_NAME}`;
+export const pageTitle = (title: string): string => {
+  if (title.includes(SITE_TITLE_BRAND) || title.includes(SITE_NAME)) return title;
+  return `${SITE_TITLE_BRAND} - ${title}`;
+};

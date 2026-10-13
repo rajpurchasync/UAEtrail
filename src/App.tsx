@@ -194,6 +194,8 @@ const Terms = lazy(() => import('./pages/Terms').then((m) => ({ default: m.Terms
 const Privacy = lazy(() => import('./pages/Privacy').then((m) => ({ default: m.Privacy })));
 const Faq = lazy(() => import('./pages/Faq').then((m) => ({ default: m.Faq })));
 const About = lazy(() => import('./pages/About').then((m) => ({ default: m.About })));
+const Contact = lazy(() => import('./pages/Contact').then((m) => ({ default: m.Contact })));
+const SiteMap = lazy(() => import('./pages/SiteMap').then((m) => ({ default: m.SiteMap })));
 const NotFound = lazy(() => import('./pages/NotFound').then((m) => ({ default: m.NotFound })));
 
 const PageLoader = () => (
@@ -533,6 +535,8 @@ function App() {
           />
           <Route path="/faq" element={<Faq />} />
           <Route path="/about" element={<About />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/sitemap" element={<SiteMap />} />
           <Route path="/verify" element={<VerifyOTP />} />
           <Route
             path="/welcome"

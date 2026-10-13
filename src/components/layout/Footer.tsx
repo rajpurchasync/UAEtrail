@@ -7,9 +7,11 @@ const HOME_FOOTER_FOUNDERS_SECTION_CLASS =
 
 const FOOTER_LINKS = [
   { label: 'About', to: '/about' },
+  { label: 'Contact Us', to: '/contact' },
   { label: 'Terms and Conditions', to: '/terms' },
   { label: 'FAQ', to: '/faq' },
-  { label: 'Privacy', to: '/privacy' }
+  { label: 'Privacy', to: '/privacy' },
+  { label: 'Site map', to: '/sitemap' }
 ] as const;
 
 const linkClass = 'text-xs text-gray-400 transition-colors hover:text-emerald-400 sm:text-sm';

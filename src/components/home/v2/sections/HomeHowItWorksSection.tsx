@@ -8,9 +8,9 @@ export const HomeHowItWorksSection = () => (
     className="bg-home-green-50 py-[var(--section-padding-y-mobile)] md:py-[var(--section-padding-y-desktop)]"
     aria-labelledby="home-how-heading"
   >
-    <div className="mx-auto max-w-[var(--content-max-width)] px-[var(--gutter-mobile)] md:px-[var(--gutter-desktop)]">
+    <div className="home-marketing-wrap">
       <SectionHeader id="home-how-heading" title={HOME_HOW_IT_WORKS.title} />
-      <div className="grid gap-4 md:grid-cols-3 md:gap-5">
+      <div className="grid gap-4 md:grid-cols-3 md:gap-6 lg:gap-8">
         {HOME_HOW_IT_WORKS.steps.map((step, index) => (
           <StepCard
             key={step.title}

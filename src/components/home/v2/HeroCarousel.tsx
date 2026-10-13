@@ -57,7 +57,9 @@ export const HeroCarousel = ({
 
   if (total === 0) {
     return (
-      <section className={`relative min-h-[var(--hero-height-mobile)] bg-home-ink md:min-h-[560px] ${className}`}>
+      <section
+        className={`relative min-h-[var(--hero-height-mobile)] bg-home-ink md:min-h-[var(--hero-height-desktop)] ${className}`}
+      >
         {children}
       </section>
     );
@@ -76,7 +78,7 @@ export const HeroCarousel = ({
     <section
       id={regionId}
       aria-label="Home hero"
-      className={`relative flex min-h-[var(--hero-height-mobile)] flex-col justify-end overflow-hidden md:min-h-[560px] md:max-h-[640px] ${className}`}
+      className={`relative flex min-h-[var(--hero-height-mobile)] flex-col justify-center overflow-hidden md:min-h-[var(--hero-height-desktop)] ${className}`}
       onTouchStart={(e) => {
         touchStartX.current = e.changedTouches[0]?.clientX ?? null;
       }}
@@ -132,7 +134,9 @@ export const HeroCarousel = ({
         {userInteracted ? liveMessage : ''}
       </div>
 
-      <div className="relative z-10 flex flex-1 flex-col justify-center">{children}</div>
+      <div className="relative z-10 flex w-full flex-col items-center justify-center pb-[var(--space-3)] md:pb-[var(--space-4)]">
+        {children}
+      </div>
     </section>
   );
 };

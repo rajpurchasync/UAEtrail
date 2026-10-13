@@ -1,29 +1,35 @@
+import { useRef } from 'react';
+import { useIsMobile } from '../../../hooks/useIsMobile';
 import { stepCarouselIndex } from '../../../utils/heroCarouselState';
 import { ReviewCard, type ReviewCardProps } from './ReviewCard';
 import { MarketingCarouselControls } from './MarketingCarouselControls';
+import { useMarketingAdaptiveOverflow } from './useMarketingAdaptiveOverflow';
 import { useMarketingPeekCarousel } from './useMarketingPeekCarousel';
 
-/** Wide peek cards — scroll when multiple reviews; avoids equal-column squeeze on desktop. */
 const CARD_PEEK_CLASS =
-  'w-[min(88vw,22rem)] shrink-0 snap-start scroll-ml-[var(--gutter-mobile)] sm:w-[min(78vw,24rem)] md:w-[calc((100%-1rem)/2.05)] md:scroll-ml-0 lg:w-[calc((100%-2rem)/2.35)] xl:w-[calc((100%-2rem)/2.55)]';
-
-const CARD_STATIC_CLASS = 'w-full max-w-lg mx-auto';
+  'w-[min(88vw,22rem)] shrink-0 snap-start scroll-ml-[var(--gutter-mobile)] sm:w-[min(78vw,24rem)]';
 
 const PEEK_TRACK_CLASS =
-  '-mx-[var(--gutter-mobile)] flex gap-4 overflow-x-auto overflow-y-visible scroll-smooth px-[var(--gutter-mobile)] pb-1 pt-0 snap-x snap-mandatory [-ms-overflow-style:none] [scrollbar-width:none] md:-mx-0 md:px-0 [&::-webkit-scrollbar]:hidden';
+  '-mx-[var(--gutter-mobile)] flex gap-4 overflow-x-auto overflow-y-visible scroll-smooth px-[var(--gutter-mobile)] pb-1 pt-0 snap-x snap-mandatory [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden';
 
 export interface ReviewCardCarouselProps {
   reviews: ReviewCardProps[];
 }
 
 export const ReviewCardCarousel = ({ reviews }: ReviewCardCarouselProps) => {
+  const isMobile = useIsMobile();
+  const trackRef = useRef<HTMLDivElement>(null);
   const total = reviews.length;
-  const carouselMode = total > 1;
+  const multi = total > 1;
+
+  const overflows = useMarketingAdaptiveOverflow(trackRef, !isMobile && multi, [reviews.length]);
+
+  const carouselMode = multi && (isMobile || overflows);
 
   const {
-    trackRef,
-    activeIndex,
-    scrollToIndex,
+    activePage,
+    pageCount,
+    scrollToPage,
     userPaused,
     setUserPaused,
     setHoverPaused,
@@ -33,13 +39,20 @@ export const ReviewCardCarousel = ({ reviews }: ReviewCardCarouselProps) => {
   } = useMarketingPeekCarousel({
     itemCount: total,
     carouselMode,
-    resetWhen: [reviews.length]
+    trackRef,
+    resetWhen: [reviews.length, isMobile, overflows]
   });
 
   if (total === 0) return null;
 
-  const itemClass = carouselMode ? CARD_PEEK_CLASS : CARD_STATIC_CLASS;
-  const trackClass = carouselMode ? PEEK_TRACK_CLASS : 'flex w-full gap-4 overflow-x-visible pb-1 pt-0';
+  const trackClass = isMobile
+    ? PEEK_TRACK_CLASS
+    : [
+        'home-marketing-adaptive-track pb-1 pt-0',
+        overflows ? 'home-marketing-adaptive-track--scroll' : 'overflow-x-visible'
+      ].join(' ');
+
+  const wrapClass = isMobile ? CARD_PEEK_CLASS : 'home-marketing-adaptive-review-card min-h-0';
 
   return (
     <div className="relative">
@@ -51,7 +64,7 @@ export const ReviewCardCarousel = ({ reviews }: ReviewCardCarouselProps) => {
         onMouseLeave={() => setHoverPaused(false)}
       >
         {reviews.map((review) => (
-          <div key={`${review.name}-${review.emirate}`} className={itemClass}>
+          <div key={`${review.name}-${review.emirate}`} className={wrapClass}>
             <ReviewCard {...review} className="h-full" />
           </div>
         ))}
@@ -59,19 +72,19 @@ export const ReviewCardCarousel = ({ reviews }: ReviewCardCarouselProps) => {
 
       {carouselMode ? (
         <MarketingCarouselControls
-          activeIndex={activeIndex}
-          itemCount={total}
+          activeIndex={activePage}
+          itemCount={pageCount}
           onPrevious={() =>
-            scrollToIndex(stepCarouselIndex(activeIndex, total, -1), { bumpProgress: true })
+            scrollToPage(stepCarouselIndex(activePage, pageCount, -1), { bumpProgress: true })
           }
           onNext={() =>
-            scrollToIndex(stepCarouselIndex(activeIndex, total, 1), { bumpProgress: true })
+            scrollToPage(stepCarouselIndex(activePage, pageCount, 1), { bumpProgress: true })
           }
-          onSelect={(i) => scrollToIndex(i, { bumpProgress: true })}
-          previousLabel="Previous review"
-          nextLabel="Next review"
-          dotsGroupLabel="Review slides"
-          dotLabel={(i) => `Review ${i + 1}`}
+          onSelect={(i) => scrollToPage(i, { bumpProgress: true })}
+          previousLabel="Previous reviews"
+          nextLabel="Next reviews"
+          dotsGroupLabel="Review pages"
+          dotLabel={(i) => `Reviews page ${i + 1} of ${pageCount}`}
           userPaused={userPaused}
           onTogglePause={() => setUserPaused((paused) => !paused)}
           showProgressRing={!reducedMotion}

@@ -13,15 +13,36 @@ export const HOME_HERO = {
   eyebrow: 'HOSTED HIKES & CAMPS · UAE',
   eyebrowShort: 'Hikes & camps · UAE',
   headline: 'Find your hiking or camping crew in the UAE',
-  /** One scan below the H1: what it is, how it works, who it's for — no separate proof row. */
-  subcopy:
-    'Real group plans on the map — join host-approved outings, connect in chat, and go together. Free for residents and visitors.',
+  /** Short line under H1 (mobile). */
+  subcopy: 'Browse live hikes and camps on the map, then head out with your crew.',
+  /** Expanded hero lead (desktop only) — chips below carry proof points. */
+  subcopyDesktop:
+    'Browse hikes, camps, and outings on a live UAE map. Chat with the host before you join, invite friends or family, and coordinate ride sharing in the group. Activities are host moderated.',
+  features: [
+    {
+      id: 'verified',
+      label: 'Verified hosts',
+      detail: 'Every activity has a named host who approves who joins.'
+    },
+    {
+      id: 'together',
+      label: 'Go together',
+      detail: 'Built by hikers for the UAE outdoor community.'
+    },
+    {
+      id: 'free',
+      label: 'Free to join',
+      labelFootnote: '*',
+      detail:
+        'Browsing and exploring is free; some outings may have shared costs or a fee.'
+    }
+  ] as const,
   primaryCta: PRODUCT_EXPLORE_CTA,
   secondaryCta: PRODUCT_JOIN_CTA
 } as const;
 
 export const HOME_ACTIVITIES = {
-  title: 'Upcoming outings',
+  title: 'Upcoming activities',
   subtitle: 'Real group plans from hosts and members. Pick one and go together.',
   viewAll: 'View all →',
   emptyFilter: (emirate: string) => `No plans in ${emirate} yet. Post one or view all`,

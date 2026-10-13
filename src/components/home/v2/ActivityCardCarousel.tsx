@@ -1,18 +1,17 @@
-import { type ReactNode } from 'react';
+import { useRef, type ReactNode } from 'react';
+import { useIsMobile } from '../../../hooks/useIsMobile';
 import { stepCarouselIndex } from '../../../utils/heroCarouselState';
 import type { ActivityCardProps } from './ActivityCard';
 import { ActivityCard, ActivityCardSkeleton } from './ActivityCard';
 import { MarketingCarouselControls } from './MarketingCarouselControls';
+import { useMarketingAdaptiveOverflow } from './useMarketingAdaptiveOverflow';
 import { useMarketingPeekCarousel } from './useMarketingPeekCarousel';
 
-/** Wide peek cards — horizontal scroll when multiple outings; avoids squeezing into equal columns. */
 const CARD_PEEK_CLASS =
-  'w-[min(88vw,20rem)] shrink-0 snap-start scroll-ml-[var(--gutter-mobile)] sm:w-[min(72vw,22rem)] md:w-[calc((100%-1rem)/1.9)] md:scroll-ml-0 lg:w-[calc((100%-2rem)/2.15)]';
-
-const CARD_STATIC_CLASS = 'w-full max-w-md mx-auto';
+  'w-[min(88vw,20rem)] shrink-0 snap-start scroll-ml-[var(--gutter-mobile)] sm:w-[min(72vw,22rem)]';
 
 const PEEK_TRACK_CLASS =
-  '-mx-[var(--gutter-mobile)] flex gap-4 overflow-x-auto overflow-y-visible scroll-smooth px-[var(--gutter-mobile)] pb-1 pt-0 snap-x snap-mandatory [-ms-overflow-style:none] [scrollbar-width:none] md:-mx-0 md:px-0 [&::-webkit-scrollbar]:hidden';
+  '-mx-[var(--gutter-mobile)] flex gap-4 overflow-x-auto overflow-y-visible scroll-smooth px-[var(--gutter-mobile)] pb-1 pt-0 snap-x snap-mandatory [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden';
 
 export interface ActivityCardCarouselProps {
   cards: ActivityCardProps[];
@@ -27,13 +26,22 @@ export const ActivityCardCarousel = ({
   skeletonCount = 4,
   emptyState
 }: ActivityCardCarouselProps) => {
+  const isMobile = useIsMobile();
+  const trackRef = useRef<HTMLDivElement>(null);
   const itemCount = loading ? skeletonCount : cards.length;
-  const carouselMode = itemCount > 1;
+  const multi = itemCount > 1;
+
+  const overflows = useMarketingAdaptiveOverflow(trackRef, !isMobile && multi, [
+    cards.length,
+    loading
+  ]);
+
+  const carouselMode = multi && (isMobile || overflows);
 
   const {
-    trackRef,
-    activeIndex,
-    scrollToIndex,
+    activePage,
+    pageCount,
+    scrollToPage,
     userPaused,
     setUserPaused,
     setHoverPaused,
@@ -43,15 +51,34 @@ export const ActivityCardCarousel = ({
   } = useMarketingPeekCarousel({
     itemCount,
     carouselMode,
-    resetWhen: [cards.length, loading]
+    trackRef,
+    resetWhen: [cards.length, loading, isMobile, overflows]
   });
 
   if (!loading && cards.length === 0 && emptyState) {
     return <div className="py-8 text-center">{emptyState}</div>;
   }
 
-  const itemClass = carouselMode ? CARD_PEEK_CLASS : CARD_STATIC_CLASS;
-  const trackClass = carouselMode ? PEEK_TRACK_CLASS : 'flex w-full gap-4 overflow-x-visible pb-1 pt-0';
+  const trackClass = isMobile
+    ? PEEK_TRACK_CLASS
+    : [
+        'home-marketing-adaptive-track pb-1 pt-0',
+        overflows ? 'home-marketing-adaptive-track--scroll' : 'overflow-x-visible'
+      ].join(' ');
+
+  const wrapClass = isMobile ? CARD_PEEK_CLASS : 'home-marketing-adaptive-card min-h-0';
+
+  const items = loading
+    ? Array.from({ length: skeletonCount }, (_, i) => (
+        <div key={i} className={wrapClass}>
+          <ActivityCardSkeleton />
+        </div>
+      ))
+    : cards.map((card) => (
+        <div key={card.href + card.title} className={wrapClass}>
+          <ActivityCard {...card} />
+        </div>
+      ));
 
   return (
     <div className="relative">
@@ -62,34 +89,24 @@ export const ActivityCardCarousel = ({
         onMouseEnter={() => setHoverPaused(true)}
         onMouseLeave={() => setHoverPaused(false)}
       >
-        {loading
-          ? Array.from({ length: skeletonCount }, (_, i) => (
-              <div key={i} className={itemClass}>
-                <ActivityCardSkeleton />
-              </div>
-            ))
-          : cards.map((card) => (
-              <div key={card.href + card.title} className={itemClass}>
-                <ActivityCard {...card} />
-              </div>
-            ))}
+        {items}
       </div>
 
       {carouselMode ? (
         <MarketingCarouselControls
-          activeIndex={activeIndex}
-          itemCount={itemCount}
+          activeIndex={activePage}
+          itemCount={pageCount}
           onPrevious={() =>
-            scrollToIndex(stepCarouselIndex(activeIndex, itemCount, -1), { bumpProgress: true })
+            scrollToPage(stepCarouselIndex(activePage, pageCount, -1), { bumpProgress: true })
           }
           onNext={() =>
-            scrollToIndex(stepCarouselIndex(activeIndex, itemCount, 1), { bumpProgress: true })
+            scrollToPage(stepCarouselIndex(activePage, pageCount, 1), { bumpProgress: true })
           }
-          onSelect={(i) => scrollToIndex(i, { bumpProgress: true })}
-          previousLabel="Previous activity"
-          nextLabel="Next activity"
-          dotsGroupLabel="Activity slides"
-          dotLabel={(i) => `Go to activity ${i + 1}`}
+          onSelect={(i) => scrollToPage(i, { bumpProgress: true })}
+          previousLabel="Previous activities"
+          nextLabel="Next activities"
+          dotsGroupLabel="Activity pages"
+          dotLabel={(i) => `Activities page ${i + 1} of ${pageCount}`}
           userPaused={userPaused}
           onTogglePause={() => setUserPaused((paused) => !paused)}
           showProgressRing={!reducedMotion}

@@ -94,7 +94,8 @@ Filter chip order when all are shown: `All · Dubai · Abu Dhabi · Sharjah · R
 |---------|------|
 | Eyebrow | HOSTED HIKES & CAMPS · UAE |
 | H1 | Find your hiking or camping crew in the UAE |
-| Subcopy | `HOME_HERO.subcopy` in `homeMarketing.ts` |
+| Subcopy (mobile) | `HOME_HERO.subcopy` in `homeMarketing.ts` |
+| Subcopy (desktop) | `HOME_HERO.subcopyDesktop` — guest hero only |
 | Primary button | Explore the map |
 | Secondary button | Join free |
 
@@ -115,13 +116,13 @@ Content types to cover: hike, camp, run, bouldering, rideshare. Image rules: [de
 
 ---
 
-## §4.2 Upcoming outings
+## §4.2 Upcoming activities
 
 ### Section header
 
 | Element | Copy |
 |---------|------|
-| H2 | Upcoming outings |
+| H2 | Upcoming activities |
 | Subtitle | Real group plans from hosts and members. Pick one and go together. |
 | Action | View all → |
 

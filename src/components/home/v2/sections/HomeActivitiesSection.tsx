@@ -54,11 +54,10 @@ export const HomeActivitiesSection = ({
       className="bg-home-surface py-[var(--section-padding-y-mobile)] md:py-[var(--section-padding-y-desktop)]"
       aria-labelledby="home-activities-heading"
     >
-      <div className="mx-auto max-w-[var(--content-max-width)] px-[var(--gutter-mobile)] md:px-[var(--gutter-desktop)]">
+      <div className="home-marketing-wrap">
         <SectionHeader
           id="home-activities-heading"
           title={HOME_ACTIVITIES.title}
-          subtitle={HOME_ACTIVITIES.subtitle}
           action={
             <Link to={EXPLORE_MAP_PATH} className="landing-text-cta shrink-0">
               {HOME_ACTIVITIES.viewAll}
