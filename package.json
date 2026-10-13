@@ -28,8 +28,10 @@
   },
   "scripts": {
     "dev": "vite",
+    "dev:fresh": "node scripts/clear-vite-cache.mjs && vite --force",
     "dev:api": "npm --workspace @uaetrail/api run dev",
     "dev:all": "concurrently \"npm run dev\" \"npm run dev:api\"",
+    "dev:all:fresh": "concurrently \"npm run dev:fresh\" \"npm run dev:api\"",
     "dev:local": "node scripts/dev-local.mjs",
     "dev:fast": "node scripts/run-project.mjs --fast",
     "deploy:stack": "node scripts/run-project.mjs --docker",

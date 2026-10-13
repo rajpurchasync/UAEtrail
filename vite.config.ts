@@ -50,6 +50,13 @@ export default defineConfig(({ mode }) => {
     },
     optimizeDeps: {
       exclude: ['lucide-react'],
+      include: [
+        'react',
+        'react-dom/client',
+        'react/jsx-dev-runtime',
+        '@tanstack/react-query',
+        '@react-oauth/google',
+      ],
     },
   };
 });
