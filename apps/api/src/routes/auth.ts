@@ -168,7 +168,7 @@ const readRefreshToken = (req: { cookies?: Record<string, string>; body?: { refr
   if (typeof fromCookie === 'string' && fromCookie.length >= 20) {
     return fromCookie;
   }
-  if (env.NODE_ENV === 'production') {
+  if (env.NODE_ENV !== 'test') {
     return null;
   }
   const fromBody = req.body?.refreshToken;

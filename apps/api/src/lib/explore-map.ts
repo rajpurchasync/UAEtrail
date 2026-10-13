@@ -1,4 +1,5 @@
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
+import { logger } from './logger.js';
 import { getRedisClient } from './redis.js';
 import {
   EXPLORE_MAP_CACHE_TTL_SEC,
@@ -28,19 +29,24 @@ export const buildExploreMapPayload = async (): Promise<{ items: ExploreMapItemD
         writeExploreMapMemoryCache(payload, now);
         return payload;
       }
-    } catch {
-      /* fall through to rebuild */
+    } catch (err) {
+      logger.warn({ err }, 'explore map redis read failed');
     }
   }
 
+  const rebuildStarted = Date.now();
   const payload = await buildExploreMapBasePayload();
+  logger.info(
+    { durationMs: Date.now() - rebuildStarted, itemCount: payload.items.length },
+    'explore map cache miss rebuild'
+  );
   writeExploreMapMemoryCache(payload, now);
 
   if (redis) {
     try {
       await redis.setEx(EXPLORE_MAP_REDIS_KEY, EXPLORE_MAP_CACHE_TTL_SEC, JSON.stringify(payload));
-    } catch {
-      /* non-fatal */
+    } catch (err) {
+      logger.warn({ err }, 'explore map redis write failed');
     }
   }
 

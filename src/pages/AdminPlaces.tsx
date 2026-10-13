@@ -1,4 +1,5 @@
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo } from 'react';
+import { useSafeAsyncEffect } from '../hooks/useSafeAsyncEffect';
 import { type AreaDTO, PlaceDTO, placeDetailPath } from '@uaetrail/shared-types';
 import { Link, useSearchParams } from 'react-router-dom';
 import {
@@ -88,22 +89,29 @@ export const AdminPlaces = () => {
   const [formStep, setFormStep] = useState(0); // 0=type select, 1=form
   const [adminAreas, setAdminAreas] = useState<AreaDTO[]>([]);
 
-  const loadPlaces = async () => {
+  const loadPlaces = async (isActive: () => boolean = () => true) => {
     setLoading(true);
     try {
       const catalog = await fetchAdminPlacesCatalog();
+      if (!isActive()) return;
       setPlaces(catalog);
     } catch (err) {
+      if (!isActive()) return;
       setError(err instanceof Error ? err.message : 'Failed to load places');
     } finally {
-      setLoading(false);
+      if (isActive()) setLoading(false);
     }
   };
 
-  useEffect(() => { loadPlaces(); }, []);
+  useSafeAsyncEffect((isActive) => loadPlaces(isActive), []);
 
-  useEffect(() => {
-    void fetchAdminAreas().then(setAdminAreas).catch(() => setAdminAreas([]));
+  useSafeAsyncEffect(async (isActive) => {
+    try {
+      const areas = await fetchAdminAreas();
+      if (isActive()) setAdminAreas(areas);
+    } catch {
+      if (isActive()) setAdminAreas([]);
+    }
   }, []);
 
   const openCreate = () => {

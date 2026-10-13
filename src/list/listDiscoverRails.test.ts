@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { buildDiscoveryCardViewModelCard } from '../discovery';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import {
+  buildListDiscoverRails,
   DISCOVER_RAIL_LIMIT,
   pickDiscoverShopRailCards,
   pickDiscoverTripRailCards,
@@ -123,5 +124,10 @@ describe('listDiscoverRails', () => {
   it('shops rail is empty when map has no shops (no fabricated placeholders)', () => {
     const picked = pickDiscoverShopRailCards([], []);
     expect(picked).toEqual([]);
+  });
+
+  it('buildListDiscoverRails omits shops rail when there are no shop cards', () => {
+    const rails = buildListDiscoverRails([], []);
+    expect(rails.some((rail) => rail.id === 'shops')).toBe(false);
   });
 });

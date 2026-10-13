@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useSafeAsyncEffect } from '../../hooks/useSafeAsyncEffect';
 import { Link } from 'react-router-dom';
 import { AdminUserType, ActivityDTO } from '@uaetrail/shared-types';
 import {
@@ -389,7 +390,7 @@ export const AdminUserDetailPanel = ({
     { key: 'requests', label: 'Requests', count: user.requests?.length }
   ];
 
-  useEffect(() => {
+  useSafeAsyncEffect(async (isActive) => {
     if (!drillDown) {
       setTenantDetail(null);
       setGroupDetail(null);
@@ -401,23 +402,26 @@ export const AdminUserDetailPanel = ({
     setDrillLoading(true);
     setDrillError(null);
 
-    const load = async () => {
-      try {
-        if (drillDown.type === 'tenant') {
-          setTenantDetail(await fetchAdminTenantDetail(drillDown.id));
-        } else if (drillDown.type === 'group') {
-          setGroupDetail(await fetchAdminGroupDetail(drillDown.id));
-        } else {
-          setActivityDetail(await fetchAdminActivityDetail(drillDown.id));
-        }
-      } catch (err) {
-        setDrillError(err instanceof Error ? err.message : 'Failed to load details');
-      } finally {
-        setDrillLoading(false);
+    try {
+      if (drillDown.type === 'tenant') {
+        const detail = await fetchAdminTenantDetail(drillDown.id);
+        if (!isActive()) return;
+        setTenantDetail(detail);
+      } else if (drillDown.type === 'group') {
+        const detail = await fetchAdminGroupDetail(drillDown.id);
+        if (!isActive()) return;
+        setGroupDetail(detail);
+      } else {
+        const detail = await fetchAdminActivityDetail(drillDown.id);
+        if (!isActive()) return;
+        setActivityDetail(detail);
       }
-    };
-
-    void load();
+    } catch (err) {
+      if (!isActive()) return;
+      setDrillError(err instanceof Error ? err.message : 'Failed to load details');
+    } finally {
+      if (isActive()) setDrillLoading(false);
+    }
   }, [drillDown]);
 
   const drillTitle = drillDown?.type === 'tenant'

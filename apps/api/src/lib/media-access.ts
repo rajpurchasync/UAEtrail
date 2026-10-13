@@ -52,6 +52,10 @@ export const canAccessMedia = (input: MediaAccessInput): boolean => {
     return true;
   }
 
+  if (!input.viewerUserId) {
+    return false;
+  }
+
   switch (input.visibility) {
     case 'public':
       return true;

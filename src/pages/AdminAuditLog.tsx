@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { useSafeAsyncEffect } from '../hooks/useSafeAsyncEffect';
 import type { AuditLogEntry } from '../api/types';
 import { fetchAdminAuditLogs } from '../hooks/adminConsoleApi';
 import { DashboardLayout } from '../components/layout';
@@ -41,25 +42,27 @@ export const AdminAuditLog = () => {
   const [actionFilter, setActionFilter] = useState('');
   const [entityFilter, setEntityFilter] = useState('');
 
-  const loadLogs = async () => {
+  const loadLogs = async (isActive: () => boolean = () => true) => {
     setLoading(true);
     try {
       const res = await fetchAdminAuditLogs({
         page,
         pageSize: 25,
         action: actionFilter || undefined,
-        entityType: entityFilter || undefined
+        entityType: entityFilter || undefined,
       });
+      if (!isActive()) return;
       setLogs(res.data);
       setTotal(res.pagination?.total ?? 0);
     } catch (err) {
+      if (!isActive()) return;
       setError(err instanceof Error ? err.message : 'Failed to load audit logs');
     } finally {
-      setLoading(false);
+      if (isActive()) setLoading(false);
     }
   };
 
-  useEffect(() => { loadLogs(); }, [page, actionFilter, entityFilter]);
+  useSafeAsyncEffect((isActive) => loadLogs(isActive), [page, actionFilter, entityFilter]);
 
   const actionBadge = (action: string) => {
     const colors: Record<string, string> = {

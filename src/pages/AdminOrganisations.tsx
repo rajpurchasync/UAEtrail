@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useSafeAsyncEffect } from '../hooks/useSafeAsyncEffect';
 import { Link } from 'react-router-dom';
 import { TenantListDTO } from '@uaetrail/shared-types';
 import type { OrganisationApplication, TenantDetail } from '../api/types';
@@ -34,23 +35,25 @@ export const AdminOrganisations = () => {
   const [suspendComment, setSuspendComment] = useState('');
   const [discoverFeaturedSaving, setDiscoverFeaturedSaving] = useState(false);
 
-  const loadData = async () => {
+  const loadData = async (isActive: () => boolean = () => true) => {
     setLoading(true);
     try {
       const [apps, tenantList] = await Promise.all([
         fetchAdminOrganisationApplications(),
         fetchAdminTenants(),
       ]);
+      if (!isActive()) return;
       setApplications(apps);
       setTenants(tenantList);
     } catch (err) {
+      if (!isActive()) return;
       setError(err instanceof Error ? err.message : 'Failed to load data');
     } finally {
-      setLoading(false);
+      if (isActive()) setLoading(false);
     }
   };
 
-  useEffect(() => { loadData(); }, []);
+  useSafeAsyncEffect((isActive) => loadData(isActive), []);
 
   const filteredTenants = useMemo(() => {
     if (tenantFilter === 'all') return tenants;

@@ -57,8 +57,11 @@ chatRouter.get('/inbox', async (req, res, next) => {
 
 chatRouter.get('/conversations', async (req, res, next) => {
   try {
-    const conversations = await listMemberDirectConversations(req.auth!.userId);
-    res.json({ data: conversations });
+    const { conversations, policyDegraded } = await listMemberDirectConversations(req.auth!.userId);
+    res.json({
+      data: conversations,
+      meta: policyDegraded ? { directConversationsDegraded: true } : undefined,
+    });
   } catch (error) {
     next(error);
   }

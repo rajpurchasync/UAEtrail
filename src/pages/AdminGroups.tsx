@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { useSafeAsyncEffect } from '../hooks/useSafeAsyncEffect';
 import type { AdminSocialGroupDetail, AdminSocialGroupListItem } from '../api/types';
 import { fetchAdminSocialGroups, updateAdminSocialGroupStatus } from '../hooks/adminConsoleApi';
 import { fetchAdminGroupDetail } from '../hooks/adminDrilldownApi';
@@ -38,7 +39,7 @@ export const AdminGroups = () => {
   const [suspendComment, setSuspendComment] = useState('');
   const pageSize = 20;
 
-  const loadGroups = async () => {
+  const loadGroups = async (isActive: () => boolean = () => true) => {
     setLoading(true);
     setError(null);
     try {
@@ -48,18 +49,18 @@ export const AdminGroups = () => {
         page,
         pageSize,
       });
+      if (!isActive()) return;
       setGroups(res.data);
       setTotal(res.meta.total);
     } catch (err) {
+      if (!isActive()) return;
       setError(err instanceof Error ? err.message : 'Failed to load groups');
     } finally {
-      setLoading(false);
+      if (isActive()) setLoading(false);
     }
   };
 
-  useEffect(() => {
-    void loadGroups();
-  }, [page, typeFilter]);
+  useSafeAsyncEffect((isActive) => loadGroups(isActive), [page, typeFilter]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

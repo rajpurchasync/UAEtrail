@@ -1,4 +1,5 @@
-import { useEffect, useState, Fragment } from 'react';
+import { useState, Fragment } from 'react';
+import { useSafeAsyncEffect } from '../hooks/useSafeAsyncEffect';
 import { useNavigate } from 'react-router-dom';
 import { ActivityDTO, LocationDTO } from '@uaetrail/shared-types';
 import {
@@ -72,26 +73,30 @@ export const AdminActivities = () => {
   const [suspendComment, setSuspendComment] = useState('');
   const reloadExploreMap = useReloadExploreMap();
 
-  const loadEvents = async () => {
+  const loadEvents = async (isActive: () => boolean = () => true) => {
     setLoading(true);
     try {
       const list = await fetchAdminModerationActivities();
+      if (!isActive()) return;
       setEvents(list);
     } catch (err) {
+      if (!isActive()) return;
       setError(err instanceof Error ? err.message : 'Could not load events');
     } finally {
-      setLoading(false);
+      if (isActive()) setLoading(false);
     }
   };
 
-  const loadRefs = async () => {
+  const loadRefs = async (isActive: () => boolean = () => true) => {
     try {
       const places = await fetchAdminPlacesCatalog();
-      setLocations(places);
+      if (isActive()) setLocations(places);
     } catch { /* non-critical */ }
   };
 
-  useEffect(() => { loadEvents(); loadRefs(); }, []);
+  useSafeAsyncEffect(async (isActive) => {
+    await Promise.all([loadEvents(isActive), loadRefs(isActive)]);
+  }, []);
 
   const loadEngagement = async (activityId: string) => {
     if (engagementByActivityId[activityId]) return;

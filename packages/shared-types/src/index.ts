@@ -1549,4 +1549,6 @@ export type { MemberInboxGroupDTO, MemberInboxGroupType } from './member-inbox.j
 export interface MemberInboxDTO {
   direct: ChatConversationDTO[];
   groups: import('./member-inbox.js').MemberInboxGroupDTO[];
+  /** When true, direct rows may be incomplete due to a policy evaluation error. */
+  directConversationsDegraded?: boolean;
 }

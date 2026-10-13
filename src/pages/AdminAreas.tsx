@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
+import { useSafeAsyncEffect } from '../hooks/useSafeAsyncEffect';
 import type { AreaDTO, AreaStatus } from '@uaetrail/shared-types';
 import { areaDetailPath } from '@uaetrail/shared-types';
 import { Link } from 'react-router-dom';
@@ -77,22 +78,22 @@ export const AdminAreas = () => {
     [form.countryCode]
   );
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (isActive: () => boolean = () => true) => {
     setLoading(true);
     setError(null);
     try {
       const list = await fetchAdminAreas();
+      if (!isActive()) return;
       setAreas(list);
     } catch {
+      if (!isActive()) return;
       setError('Could not load areas.');
     } finally {
-      setLoading(false);
+      if (isActive()) setLoading(false);
     }
   }, []);
 
-  useEffect(() => {
-    void load();
-  }, [load]);
+  useSafeAsyncEffect((isActive) => load(isActive), [load]);
 
   const openCreate = () => {
     setEditingId(null);

@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { useSafeAsyncEffect } from '../hooks/useSafeAsyncEffect';
 import { AdminUserType } from '@uaetrail/shared-types';
 import {
   fetchAdminMemberDetail,
@@ -72,7 +73,7 @@ export const AdminMembers = () => {
   const [grantLoading, setGrantLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const loadUsers = async () => {
+  const loadUsers = async (isActive: () => boolean = () => true) => {
     setLoading(true);
     try {
       const res = await fetchAdminMembers({
@@ -83,16 +84,18 @@ export const AdminMembers = () => {
         page,
         pageSize: 20
       });
+      if (!isActive()) return;
       setMembers(res.data as unknown as MemberRow[]);
       setTotal(res.total ?? 0);
     } catch (e) {
+      if (!isActive()) return;
       setError(e instanceof Error ? e.message : 'Failed to load members');
     } finally {
-      setLoading(false);
+      if (isActive()) setLoading(false);
     }
   };
 
-  useEffect(() => { loadUsers(); }, [page, roleFilter, userTypeFilter, statusFilter]);
+  useSafeAsyncEffect((isActive) => loadUsers(isActive), [page, roleFilter, userTypeFilter, statusFilter]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { useSafeAsyncEffect } from '../hooks/useSafeAsyncEffect';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { Bell } from 'lucide-react';
@@ -29,23 +30,23 @@ export const AdminNotifications = () => {
     void invalidateNotificationUnreadBadge(queryClient, user.id);
   };
 
-  const load = async () => {
+  const load = async (isActive: () => boolean = () => true) => {
     setLoading(true);
     setError(null);
     try {
       const page = await fetchMeNotificationsPage(1);
+      if (!isActive()) return;
       setNotifications(page.data);
       setUnreadCount(page.unreadCount ?? page.data.filter((item) => !item.isRead).length);
     } catch (err) {
+      if (!isActive()) return;
       setError(err instanceof Error ? err.message : 'Failed to load notifications');
     } finally {
-      setLoading(false);
+      if (isActive()) setLoading(false);
     }
   };
 
-  useEffect(() => {
-    void load();
-  }, []);
+  useSafeAsyncEffect((isActive) => load(isActive), []);
 
   const markRead = async (id: string) => {
     await markNotificationReadById(id).catch(() => undefined);

@@ -25,11 +25,18 @@ const serializeInboxGroup = (group: GroupRecordWithChatPreview): MemberInboxGrou
   chatPreview: group.chatPreview,
 });
 
-export const listMemberDirectConversations = async (userId: string): Promise<ChatConversationDTO[]> => {
+export type MemberDirectConversationsResult = {
+  conversations: ChatConversationDTO[];
+  policyDegraded?: boolean;
+};
+
+export const listMemberDirectConversations = async (
+  userId: string
+): Promise<MemberDirectConversationsResult> => {
   const partnerIds = await listConversationPartnerIds(userId);
 
   if (partnerIds.length === 0) {
-    return [];
+    return { conversations: [] };
   }
 
   const [partners, unreadCounts] = await Promise.all([
@@ -45,7 +52,7 @@ export const listMemberDirectConversations = async (userId: string): Promise<Cha
     messageableIds = await filterInboxMessageablePartnerIds(userId, partnerIds);
   } catch (error) {
     logger.warn({ err: error, userId }, 'member inbox message policy failed');
-    return [];
+    return { conversations: [], policyDegraded: true };
   }
 
   const conversationRows = partnerIds
@@ -63,19 +70,22 @@ export const listMemberDirectConversations = async (userId: string): Promise<Cha
       };
     });
 
-  return conversationRows
+  const conversations = conversationRows
     .filter((row): row is NonNullable<typeof row> => row !== null)
     .sort((a, b) => new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime());
+
+  return { conversations, policyDegraded: false };
 };
 
 export const loadMemberInbox = async (userId: string): Promise<MemberInboxDTO> => {
-  const [direct, groups] = await Promise.all([
+  const [directResult, groups] = await Promise.all([
     listMemberDirectConversations(userId),
     listGroupsForUserWithChatPreview(userId),
   ]);
 
   return {
-    direct,
+    direct: directResult.conversations,
     groups: groups.map(serializeInboxGroup),
+    directConversationsDegraded: directResult.policyDegraded ?? false,
   };
 };

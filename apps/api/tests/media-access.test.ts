@@ -52,6 +52,29 @@ describe('canAccessMedia', () => {
     }
   });
 
+  it('denies anonymous viewers for private media kinds', () => {
+    expect(
+      canAccessMedia({
+        kind: 'private_photo',
+        visibility: 'public',
+        viewerUserId: null,
+        ownerUserId: owner,
+        sharesGroupOrActivity: false,
+        isPlatformAdmin: false,
+      })
+    ).toBe(false);
+    expect(
+      canAccessMedia({
+        kind: 'waiver',
+        visibility: 'public',
+        viewerUserId: null,
+        ownerUserId: owner,
+        sharesGroupOrActivity: false,
+        isPlatformAdmin: false,
+      })
+    ).toBe(false);
+  });
+
   it('allows anyone to read public-bucket objects', () => {
     expect(
       canAccessMedia({
@@ -65,7 +88,7 @@ describe('canAccessMedia', () => {
     ).toBe(true);
   });
 
-  it('allows anonymous viewers when profileVisibility is public', () => {
+  it('denies anonymous viewers for private-bucket kinds even when visibility is public', () => {
     expect(
       canAccessMedia({
         kind: 'avatar',
@@ -75,7 +98,7 @@ describe('canAccessMedia', () => {
         sharesGroupOrActivity: false,
         isPlatformAdmin: false
       })
-    ).toBe(true);
+    ).toBe(false);
   });
 
   it('requires profile access grant for group_members visibility', () => {

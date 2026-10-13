@@ -87,9 +87,9 @@ export const Messages = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [conversations, setConversations] = useState<ChatConversationDTO[]>([]);
   const [groupThreads, setGroupThreads] = useState<InboxThread[]>([]);
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(searchParams.get('to'));
+  const selectedUserId = searchParams.get('to');
   const selectedGroupId = searchParams.get('group');
-  const [contextActivityId, setContextActivityId] = useState<string | null>(searchParams.get('activity'));
+  const contextActivityId = searchParams.get('activity');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showNewChat, setShowNewChat] = useState(false);
@@ -121,6 +121,9 @@ export const Messages = () => {
       const inboxRes = await messagingApi.getInbox();
       setConversations(inboxRes.data.direct);
       setGroupThreads(loadGroupThreadPreviews(inboxRes.data.groups as SocialGroupView[]));
+      if (inboxRes.data.directConversationsDegraded) {
+        setError('Some direct chats could not be loaded. Refresh to try again.');
+      }
     } catch {
       /* stream / retry fallback */
     } finally {
@@ -172,38 +175,21 @@ export const Messages = () => {
   }, [loadInbox]);
 
   useEffect(() => {
-    if (selectedUserId) {
+    setMobileShowThread(Boolean(searchParams.get('to') || searchParams.get('group')));
+  }, [searchParams]);
+
+  const openDirectConversation = useCallback(
+    (userId: string) => {
       setSearchParams((prev) => {
-        prev.set('to', selectedUserId);
-        if (contextActivityId) prev.set('activity', contextActivityId);
-        else prev.delete('activity');
-        return prev;
+        const next = new URLSearchParams(prev);
+        next.set('to', userId);
+        next.delete('group');
+        return next;
       });
-    }
-  }, [selectedUserId, contextActivityId, setSearchParams]);
-
-  useEffect(() => {
-    const toUser = searchParams.get('to');
-    const groupId = searchParams.get('group');
-    const activityId = searchParams.get('activity');
-    setContextActivityId(activityId);
-
-    if (groupId) {
-      if (toUser) setSelectedUserId(null);
       setMobileShowThread(true);
-      return;
-    }
-
-    if (toUser) {
-      if (toUser !== selectedUserId) setSelectedUserId(toUser);
-      setMobileShowThread(true);
-      return;
-    }
-
-    if (!toUser && selectedUserId && !mobileShowThread) {
-      setSelectedUserId(null);
-    }
-  }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
+    },
+    [setSearchParams]
+  );
 
   const handleGroupWallStream = useCallback((payload: GroupWallStreamEventDTO) => {
       const openGroupId = selectedGroupIdRef.current;
@@ -277,8 +263,7 @@ export const Messages = () => {
       displayName: userLabel(userResult),
       avatarUrl: userResult.avatarUrl,
     });
-    setSelectedUserId(userResult.id);
-    setMobileShowThread(true);
+    openDirectConversation(userResult.id);
     setShowNewChat(false);
     setComposeQuery('');
     setSearchResults([]);
@@ -299,14 +284,12 @@ export const Messages = () => {
   };
 
   const selectConversation = (userId: string) => {
-    setSelectedUserId(userId);
-    setMobileShowThread(true);
+    openDirectConversation(userId);
   };
 
   const openGroupThread = (groupId: string) => {
     setSearchParams({ group: groupId });
     setMobileShowThread(true);
-    setSelectedUserId(null);
   };
 
   const chatReturnTo = parseMessagesChatReturnTo(location.state);
@@ -321,8 +304,6 @@ export const Messages = () => {
       return;
     }
     setMobileShowThread(false);
-    setSelectedUserId(null);
-    setContextActivityId(null);
     setSearchParams({});
   }, [chatReturnTo, navigate, selectedGroupId, setSearchParams]);
 

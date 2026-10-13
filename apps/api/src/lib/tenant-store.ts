@@ -132,6 +132,13 @@ export const findTenantById = async (tenantId: string): Promise<TenantRecord | n
   return doc ? mapMongoTenant(doc) : null;
 };
 
+export const findTenantsByIds = async (tenantIds: string[]): Promise<Map<string, TenantRecord>> => {
+  const unique = [...new Set(tenantIds.filter(Boolean))];
+  if (unique.length === 0) return new Map();
+  const docs = await tenantsCollection().find({ _id: { $in: unique } }).toArray();
+  return new Map(docs.map((doc) => [doc._id, mapMongoTenant(doc)]));
+};
+
 export const findTenantByOwnerId = async (ownerId: string): Promise<TenantRecord | null> => {
   const doc = await tenantsCollection().findOne({ ownerId }, { sort: { createdAt: 1 } });
   return doc ? mapMongoTenant(doc) : null;

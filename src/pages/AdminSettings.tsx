@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { useSafeAsyncEffect } from '../hooks/useSafeAsyncEffect';
 import {
   fetchAdminNotificationBroadcasts,
   sendAdminNotificationBroadcast,
@@ -35,10 +36,11 @@ export const AdminSettings = () => {
   const [loadingHistory, setLoadingHistory] = useState(true);
   const [confirmSend, setConfirmSend] = useState(false);
 
-  const loadHistory = async () => {
+  const loadHistory = async (isActive: () => boolean = () => true) => {
     setLoadingHistory(true);
     try {
       const rows = await fetchAdminNotificationBroadcasts();
+      if (!isActive()) return;
       setHistory(
         rows.map((row) => ({
           id: row.id,
@@ -50,13 +52,13 @@ export const AdminSettings = () => {
         }))
       );
     } catch {
-      // silent fail for history
+      /* silent fail for history */
     } finally {
-      setLoadingHistory(false);
+      if (isActive()) setLoadingHistory(false);
     }
   };
 
-  useEffect(() => { loadHistory(); }, []);
+  useSafeAsyncEffect((isActive) => loadHistory(isActive), []);
 
   const handleSend = async () => {
     setSending(true);

@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { useSafeAsyncEffect } from '../hooks/useSafeAsyncEffect';
 import type { AdminContentReportEntry } from '../api/types';
 import { fetchAdminContentReports } from '../hooks/adminConsoleApi';
 import { DashboardLayout } from '../components/layout';
@@ -17,22 +18,22 @@ export const AdminReports = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const loadReports = async () => {
+  const loadReports = async (isActive: () => boolean = () => true) => {
     setLoading(true);
     try {
       const res = await fetchAdminContentReports(page, 25);
+      if (!isActive()) return;
       setReports(res.data);
       setTotal(res.pagination?.total ?? 0);
     } catch (err) {
+      if (!isActive()) return;
       setError(err instanceof Error ? err.message : 'Failed to load reports');
     } finally {
-      setLoading(false);
+      if (isActive()) setLoading(false);
     }
   };
 
-  useEffect(() => {
-    void loadReports();
-  }, [page]);
+  useSafeAsyncEffect((isActive) => loadReports(isActive), [page]);
 
   const totalPages = Math.max(1, Math.ceil(total / 25));
 
