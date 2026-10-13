@@ -6,7 +6,7 @@ import { JsonLd } from '../components/seo/JsonLd';
 import { websiteSchema } from '../components/seo/schemas';
 import { useAuth } from '../context/AuthContext';
 import { useHomeLandingActivities } from '../hooks/useHomeLandingActivities';
-import { HomeHeroPreload, HomeMarketingHeader } from '../components/home/v2';
+import { HomeMarketingHeader } from '../components/home/v2';
 import { HomeHeroSection } from '../components/home/v2/sections/HomeHeroSection';
 import { HomeActivitiesSection } from '../components/home/v2/sections/HomeActivitiesSection';
 import { HomeHowItWorksSection } from '../components/home/v2/sections/HomeHowItWorksSection';
@@ -31,8 +31,6 @@ export const Home = () => {
         image={DEFAULT_OG_IMAGE}
       />
       <JsonLd data={websiteSchema()} id="website" />
-      <HomeHeroPreload />
-
       <HomeMarketingCarouselSyncProvider>
         <HomeMarketingHeader signupHref={joinHref} />
         <div className="relative -mt-[var(--header-height-mobile)] md:-mt-[var(--header-height-desktop)]">

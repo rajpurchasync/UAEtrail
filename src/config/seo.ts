@@ -12,7 +12,7 @@ export const SITE_ORIGIN =
 
 export const SITE_DESCRIPTION = PRODUCT_SITE_DESCRIPTION;
 
-/** Summit hiker — first guest hero slide, OG, and LCP preload. */
+/** Summit hiker — first guest hero slide and OG default. */
 export const HOME_HERO_IMAGE_JPEG =
   '/traveler-hiking-mountains-while-having-his-essentials-backpack-optimized.jpg';
 export const HOME_HERO_IMAGE_WEBP =
