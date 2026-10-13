@@ -11,7 +11,7 @@
  */
 import { NotificationType } from '../domain/enums.js';
 import { listBuddiesForUser } from '../lib/buddy-store.js';
-import { resolveNotificationActorDisplayName } from './notification-actor-label.js';
+import { resolveNotificationActorDisplayNamesForRecipients } from './notification-actor-label.js';
 import { listFollowerIdsForUser } from '../lib/follow-store.js';
 import { createNotificationsMany } from '../lib/notifications-store.js';
 import { activityDetailPath, explorePublishedActivityPinPath } from '../lib/member-routes.js';
@@ -67,29 +67,31 @@ export const notifyMemberPublishSubscribers = async (
     const recipientIds = await listPublishSubscriberIds(publisherUserId, event);
     if (recipientIds.length === 0) return;
 
-    const rows = await Promise.all(
-      recipientIds.map(async (userId) => {
-        const actorName = await resolveNotificationActorDisplayName(publisherUserId, userId);
-        const { title, body, path, kind } = notificationCopy(actorName, event);
-        const meta: Record<string, string> = {
-          kind,
-          actorUserId: publisherUserId,
-          path,
-        };
-        if (event.publishType === 'activity') meta.activityId = event.activityId;
-        else {
-          meta.intentId = event.intentId;
-          if (event.activityId) meta.activityId = event.activityId;
-        }
-        return {
-          userId,
-          title,
-          body,
-          type: NotificationType.ACTIVITY,
-          meta,
-        };
-      })
+    const actorNames = await resolveNotificationActorDisplayNamesForRecipients(
+      publisherUserId,
+      recipientIds
     );
+    const rows = recipientIds.map((userId) => {
+      const actorName = actorNames.get(userId) ?? 'Someone on UAE Trail';
+      const { title, body, path, kind } = notificationCopy(actorName, event);
+      const meta: Record<string, string> = {
+        kind,
+        actorUserId: publisherUserId,
+        path,
+      };
+      if (event.publishType === 'activity') meta.activityId = event.activityId;
+      else {
+        meta.intentId = event.intentId;
+        if (event.activityId) meta.activityId = event.activityId;
+      }
+      return {
+        userId,
+        title,
+        body,
+        type: NotificationType.ACTIVITY,
+        meta,
+      };
+    });
 
     await createNotificationsMany(rows);
   } catch (error) {

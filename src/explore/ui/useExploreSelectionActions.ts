@@ -97,6 +97,8 @@ export const useExploreSelectionActions = ({
   onOpenHostManage,
   onShareHostedActivity,
 }: UseExploreSelectionActionsArgs) => {
+  const { setListOpen, setMapFilter, setActivityFilter, syncExploreUrl } = browse;
+
   const [demandNotice, setDemandNotice] = useState<string | null>(null);
   const [venueNotice, setVenueNotice] = useState<string | null>(null);
   const [hostRemoveConfirm, setHostRemoveConfirm] = useState<ActivityDTO | null>(null);
@@ -466,9 +468,9 @@ export const useExploreSelectionActions = ({
         return;
       }
 
-      browse.setMapFilter('all');
-      browse.setActivityFilter('all');
-      browse.syncExploreUrl({ filter: 'all', activityFilter: 'all', panel: 'activities' });
+      setMapFilter('all');
+      setActivityFilter('all');
+      syncExploreUrl({ filter: 'all', activityFilter: 'all', panel: 'activities' });
 
       if (isExploreMapVnextEnabled()) {
         await reloadExploreMap(queryClient);
@@ -481,7 +483,7 @@ export const useExploreSelectionActions = ({
       }
 
     },
-    [queryClient, browse, handleFocusMapLocation, setSelectedId, setLinkOnlyPeekItems]
+    [queryClient, syncExploreUrl, setMapFilter, setActivityFilter, handleFocusMapLocation, setSelectedId, setLinkOnlyPeekItems]
   );
 
   type ActivityPinDeepLinkResult = 'opened' | 'not_activity' | 'auth_required' | 'denied' | 'error';
@@ -518,7 +520,7 @@ export const useExploreSelectionActions = ({
         }
         setSelectedId(peekItem.id);
         if (!isDesktop) {
-          browse.setListOpen(false);
+          setListOpen(false);
         }
         return 'opened';
       } catch {
@@ -534,7 +536,7 @@ export const useExploreSelectionActions = ({
       handleFocusMapLocation,
       setSelectedId,
       isDesktop,
-      browse,
+      setListOpen,
     ]
   );
 

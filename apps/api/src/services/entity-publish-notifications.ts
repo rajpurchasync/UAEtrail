@@ -4,7 +4,7 @@ import { listEntityFollowerIds } from '../lib/entity-follow-store.js';
 import { activityDetailPath } from '../lib/member-routes.js';
 import { findMerchantProfileByTenantId } from '../lib/shop-store.js';
 import { createNotificationsMany } from '../lib/notifications-store.js';
-import { resolveNotificationActorDisplayName } from './notification-actor-label.js';
+import { resolveNotificationActorDisplayNamesForRecipients } from './notification-actor-label.js';
 import { logger } from '../lib/logger.js';
 
 const entityLabel = (kind: EntityFollowKind, name: string): string => {
@@ -67,26 +67,30 @@ export const notifyEntityFollowersOnActivityPublished = async (input: {
     if (recipientReasons.size === 0) return;
 
     const path = activityDetailPath(input.activityId);
-    const rows = await Promise.all(
-      [...recipientReasons.entries()].map(async ([userId, reason]) => {
-        const actorName = await resolveNotificationActorDisplayName(input.hostUserId, userId);
-        const placeLine = entityLabel(reason.kind, reason.label);
-        return {
-          userId,
-          title: `New outing at ${placeLine}`,
-          body: `${actorName}: ${input.title}`,
-          type: NotificationType.ACTIVITY,
-          meta: {
-            kind: 'entity_activity_published',
-            actorUserId: input.hostUserId,
-            activityId: input.activityId,
-            path,
-            locationId: input.locationId ?? undefined,
-            tenantId: input.tenantId ?? undefined,
-          },
-        };
-      })
+    const recipientIds = [...recipientReasons.keys()];
+    const actorNames = await resolveNotificationActorDisplayNamesForRecipients(
+      input.hostUserId,
+      recipientIds
     );
+    const rows = recipientIds.map((userId) => {
+      const reason = recipientReasons.get(userId)!;
+      const actorName = actorNames.get(userId) ?? 'Someone on UAE Trail';
+      const placeLine = entityLabel(reason.kind, reason.label);
+      return {
+        userId,
+        title: `New outing at ${placeLine}`,
+        body: `${actorName}: ${input.title}`,
+        type: NotificationType.ACTIVITY,
+        meta: {
+          kind: 'entity_activity_published',
+          actorUserId: input.hostUserId,
+          activityId: input.activityId,
+          path,
+          locationId: input.locationId ?? undefined,
+          tenantId: input.tenantId ?? undefined,
+        },
+      };
+    });
 
     await createNotificationsMany(rows);
   } catch (error) {

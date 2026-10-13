@@ -48,6 +48,7 @@ export const useExplorePinDeepLink = ({
   setJoinInvitePeekActivityId,
 }: Args) => {
   const deepLinkPinId = parseExplorePinMapItemId(searchParams);
+  const joinInviteFromUrl = parseExploreJoinInvitePeek(searchParams);
   const openedDeepLinkPinRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -69,8 +70,6 @@ export const useExplorePinDeepLink = ({
   useEffect(() => {
     if (!deepLinkPinId || loading) return;
     if (openedDeepLinkPinRef.current === deepLinkPinId) return;
-
-    const joinInviteFromUrl = parseExploreJoinInvitePeek(searchParams);
 
     const clearPinParam = () => {
       openedDeepLinkPinRef.current = deepLinkPinId;
@@ -118,7 +117,7 @@ export const useExplorePinDeepLink = ({
     navigate,
     pathname,
     search,
-    searchParams,
+    joinInviteFromUrl,
     setJoinInvitePeekActivityId,
   ]);
 };

@@ -77,6 +77,19 @@ describe('naming coherence (API)', () => {
     expect(content).not.toMatch(/resolveMemberHostStatus\(/);
   });
 
+  it('publish notification fan-out batches actor display names', () => {
+    for (const rel of [
+      'services/entity-publish-notifications.ts',
+      'services/member-publish-notifications.ts',
+      'services/social-notifications.ts',
+    ]) {
+      const content = readFileSync(join(API_SRC, rel), 'utf8');
+      expect(content, rel).toMatch(/resolveNotificationActorDisplayNamesForRecipients/);
+    }
+    const wall = readFileSync(join(API_SRC, 'services', 'social-notifications.ts'), 'utf8');
+    expect(wall).not.toMatch(/recipientIds\.map\(async \(userId\) => \{\s*\n\s*const authorName = await resolveNotificationActorDisplayName/);
+  });
+
   it('member people engagement batches message policy checks', () => {
     const content = readFileSync(join(API_SRC, 'services', 'member-people-engagement.ts'), 'utf8');
     expect(content).toMatch(/filterInboxMessageablePartnerIds/);

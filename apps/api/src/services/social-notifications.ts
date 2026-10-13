@@ -2,7 +2,10 @@ import { NotificationType } from '../domain/enums.js';
 import { findGroupById, listGroupMembersDetailed } from '../lib/social-groups-store.js';
 import { messagesGroupPath } from '../lib/member-routes.js';
 import { scheduleNotification } from './notifications.js';
-import { resolveNotificationActorDisplayName } from './notification-actor-label.js';
+import {
+  resolveNotificationActorDisplayName,
+  resolveNotificationActorDisplayNamesForRecipients,
+} from './notification-actor-label.js';
 
 export const notifyGroupInvite = async (input: {
   invitedUserId: string;
@@ -76,10 +79,14 @@ export const notifyGroupWallPost = async (input: {
 
   if (recipientIds.length === 0) return;
 
-  await Promise.all(
-    recipientIds.map(async (userId) => {
-      const authorName = await resolveNotificationActorDisplayName(input.authorUserId, userId);
-      scheduleNotification({
+  const authorNames = await resolveNotificationActorDisplayNamesForRecipients(
+    input.authorUserId,
+    recipientIds
+  );
+  for (const userId of recipientIds) {
+    const authorName = authorNames.get(userId) ?? 'Someone on UAE Trail';
+    scheduleNotification(
+      {
         userId,
         title: `New message in ${groupName}`,
         body: `${authorName}: ${preview}`,
@@ -92,7 +99,8 @@ export const notifyGroupWallPost = async (input: {
           actorUserId: input.authorUserId,
           path: messagesGroupPath(input.groupId),
         },
-      }, 'social_notification');
-    })
-  );
+      },
+      'social_notification'
+    );
+  }
 };

@@ -13,7 +13,10 @@ import { ensureBuddyHostTenant, ensureOwnerMembershipForTenant } from '../lib/bu
 import { findLatestHostApplicationByApplicant } from '../lib/host-applications-store.js';
 import { countPublishedActivitiesHostedByUserIds } from '../lib/activity-engagement-store.js';
 import { listActiveTenantMembershipsByUserIds } from '../lib/tenant-access.js';
-import { countParticipantIntentsByUser } from '../lib/participant-intents-store.js';
+import {
+  countNonCancelledParticipantIntentsByUserIds,
+  countParticipantIntentsByUser,
+} from '../lib/participant-intents-store.js';
 import {
   listTenantsByOwnerId,
   listTenantsByOwnerIds,
@@ -49,11 +52,21 @@ export const batchResolveMemberProfileRoleLabelsForDirectory = async (
     }
   }
   if (needIntentCheck.length > 0) {
-    const intentPairs = await Promise.all(
-      needIntentCheck.map(async (userId) => [userId, await countParticipantIntentsByUser(userId)] as const)
+    const { isParticipantIntentStubWriteEnabled } = await import(
+      '../services/participant-intent-activity-readthrough.js'
     );
-    for (const [userId, count] of intentPairs) {
-      communityHostByUserId.set(userId, count > 0);
+    if (isParticipantIntentStubWriteEnabled()) {
+      const intentCounts = await countNonCancelledParticipantIntentsByUserIds(needIntentCheck);
+      for (const userId of needIntentCheck) {
+        communityHostByUserId.set(userId, (intentCounts.get(userId) ?? 0) > 0);
+      }
+    } else {
+      const intentPairs = await Promise.all(
+        needIntentCheck.map(async (userId) => [userId, await countParticipantIntentsByUser(userId)] as const)
+      );
+      for (const [userId, count] of intentPairs) {
+        communityHostByUserId.set(userId, count > 0);
+      }
     }
   }
 

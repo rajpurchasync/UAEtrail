@@ -671,6 +671,27 @@ export const listActiveParticipantIntentsForMap = async (limit = 200): Promise<E
     });
 };
 
+/** Batch non-cancelled intent rows (stub-write path — no activity readthrough). */
+export const countNonCancelledParticipantIntentsByUserIds = async (
+  userIds: string[]
+): Promise<Map<string, number>> => {
+  const unique = [...new Set(userIds.filter(Boolean))];
+  const counts = new Map<string, number>();
+  if (unique.length === 0) return counts;
+  for (const userId of unique) counts.set(userId, 0);
+
+  const rows = await collection()
+    .aggregate<{ _id: string; count: number }>([
+      { $match: { userId: { $in: unique }, status: { $ne: 'cancelled' } } },
+      { $group: { _id: '$userId', count: { $sum: 1 } } },
+    ])
+    .toArray();
+  for (const row of rows) {
+    counts.set(row._id, row.count);
+  }
+  return counts;
+};
+
 /** Non-cancelled demand posts — counts toward community Host label. */
 export const countParticipantIntentsByUser = async (userId: string): Promise<number> => {
   const intentCount = await collection().countDocuments({ userId, status: { $ne: 'cancelled' } });
