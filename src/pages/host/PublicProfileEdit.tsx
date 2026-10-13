@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
+import { useSafeAsyncEffect, type IsActiveGuard } from '../../hooks/useSafeAsyncEffect';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { persistAuthSessionTokens, switchMeRoleSession } from '../../hooks/accountSessionApi';
 import { fetchMyTenantMemberships } from '../../hooks/tenantMembershipApi';
@@ -19,21 +20,33 @@ export const PublicProfileEdit = () => {
   const [switchingRole, setSwitchingRole] = useState(false);
   const [switchMessage, setSwitchMessage] = useState<string | null>(null);
 
-  const resolveSlug = (tenantId?: string) => {
-    setLoadingTenants(true);
-    fetchMyTenantMemberships()
-      .then((memberships) => {
-        const activeId = tenantId || getActiveTenantId();
-        const match = memberships.find((t) => t.tenantId === activeId) ?? memberships[0];
-        setTenantSlug(match?.tenantSlug ?? '');
-      })
-      .catch(() => setTenantSlug(''))
-      .finally(() => setLoadingTenants(false));
-  };
-
-  useEffect(() => {
-    resolveSlug();
+  const resolveSlug = useCallback(async (tenantId?: string, isActive: IsActiveGuard = () => true) => {
+    if (isActive()) {
+      setLoadingTenants(true);
+    }
+    try {
+      const memberships = await fetchMyTenantMemberships();
+      if (!isActive()) return;
+      const activeId = tenantId || getActiveTenantId();
+      const match = memberships.find((t) => t.tenantId === activeId) ?? memberships[0];
+      setTenantSlug(match?.tenantSlug ?? '');
+    } catch {
+      if (isActive()) {
+        setTenantSlug('');
+      }
+    } finally {
+      if (isActive()) {
+        setLoadingTenants(false);
+      }
+    }
   }, []);
+
+  useSafeAsyncEffect(
+    async (isActive) => {
+      await resolveSlug(undefined, isActive);
+    },
+    [resolveSlug]
+  );
 
   const switchToVisitorMode = async () => {
     setSwitchMessage(null);
@@ -67,7 +80,7 @@ export const PublicProfileEdit = () => {
   return (
     <ConsoleShell
       title="Public profile"
-      headerExtra={<TenantSwitcher onChange={(tenantId) => resolveSlug(tenantId)} />}
+      headerExtra={<TenantSwitcher onChange={(id) => void resolveSlug(id)} />}
     >
       <GlassCard padding className="mb-3 border border-emerald-100/80">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useSafeAsyncEffect, type IsActiveGuard } from '../../hooks/useSafeAsyncEffect';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import type { ActivityRequestView } from '../../api/types';
@@ -47,27 +48,33 @@ export const Activities = () => {
   const [manageActivity, setManageActivity] = useState<ActivityDTO | null>(null);
   const [manageInitialView, setManageInitialView] = useState<'overview' | 'checkin'>('overview');
 
-  const loadEvents = useCallback(async (tid: string) => {
+  const loadEvents = useCallback(async (tid: string, isActive: IsActiveGuard = () => true) => {
     if (!tid) return;
     try {
       const [activities, requests] = await Promise.all([
         listHostActivitiesForTenant(tid),
         fetchHostActivityJoinRequests(tid),
       ]);
+      if (!isActive()) return;
       setEvents(activities);
       setPendingRequests(requests.filter((request) => request.status === 'pending'));
       setLoadError(null);
     } catch (err) {
-      setLoadError(err instanceof Error ? err.message : 'Failed to load events');
+      if (isActive()) {
+        setLoadError(err instanceof Error ? err.message : 'Failed to load events');
+      }
     }
   }, []);
 
   const hostActions = useHostActivityManageActions(tenantId, () => loadEvents(tenantId));
   const inviteShare = useActivityInviteShareSheet();
 
-  useEffect(() => {
-    void loadEvents(tenantId);
-  }, [tenantId, loadEvents]);
+  useSafeAsyncEffect(
+    async (isActive) => {
+      await loadEvents(tenantId, isActive);
+    },
+    [tenantId, loadEvents]
+  );
 
   const openCreateActivity = () => {
     navigateToExploreOrganize(navigate);

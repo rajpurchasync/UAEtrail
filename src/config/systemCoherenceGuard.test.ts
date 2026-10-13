@@ -207,6 +207,26 @@ describe('systemCoherenceGuard', () => {
     expect(missing).toEqual([]);
   });
 
+  it('S10b host console guards mount fetches with useSafeAsyncEffect', () => {
+    const hostPages = [
+      'src/pages/host/Activities.tsx',
+      'src/pages/host/JoinRequests.tsx',
+      'src/pages/host/Places.tsx',
+      'src/pages/host/History.tsx',
+      'src/pages/host/Team.tsx',
+      'src/pages/host/PublicProfileEdit.tsx',
+    ];
+    const hostShell = ['src/console/ConsoleShell.tsx'];
+    const missing: string[] = [];
+    for (const rel of [...hostPages, ...hostShell]) {
+      const content = readFileSync(join(ROOT, rel), 'utf8');
+      if (!content.includes('useSafeAsyncEffect')) {
+        missing.push(rel);
+      }
+    }
+    expect(missing).toEqual([]);
+  });
+
   it('member profile hooks guard mount fetch with useSafeAsyncEffect', () => {
     const memberAsyncHooks = [
       'src/hooks/useMemberGoals.ts',

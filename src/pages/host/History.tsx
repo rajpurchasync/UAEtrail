@@ -1,29 +1,46 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { ConsoleShell } from '../../console/ConsoleShell';
 import {
   fetchHostActivityHistory,
   type HostActivityHistoryRow,
 } from '../../hooks/hostActivityClientApi';
 import { formatActivityType } from '../../utils/activityIdentity';
+import { getActiveTenantId } from '../../api/tenant';
+import { useSafeAsyncEffect } from '../../hooks/useSafeAsyncEffect';
 
 export const History = () => {
   const [events, setEvents] = useState<HostActivityHistoryRow[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const tenantId = localStorage.getItem('uaetrail_tenant') ?? '';
+  const tenantId = getActiveTenantId() ?? '';
 
-  useEffect(() => {
-    if (!tenantId) {
-      setError('No tenant selected. Please select a tenant first.');
-      setLoading(false);
-      return;
-    }
-    fetchHostActivityHistory(tenantId)
-      .then((rows) => setEvents(rows))
-      .catch((e) => setError(e instanceof Error ? e.message : 'Failed to load history'))
-      .finally(() => setLoading(false));
-  }, [tenantId]);
+  useSafeAsyncEffect(
+    async (isActive) => {
+      if (!tenantId) {
+        if (isActive()) {
+          setError('No tenant selected. Please select a tenant first.');
+          setLoading(false);
+        }
+        return;
+      }
+      try {
+        const rows = await fetchHostActivityHistory(tenantId);
+        if (isActive()) {
+          setEvents(rows);
+        }
+      } catch (e) {
+        if (isActive()) {
+          setError(e instanceof Error ? e.message : 'Failed to load history');
+        }
+      } finally {
+        if (isActive()) {
+          setLoading(false);
+        }
+      }
+    },
+    [tenantId]
+  );
 
   const statusBadge = (status: string) => {
     const colors: Record<string, string> = {

@@ -1,4 +1,5 @@
-import { ReactNode, useEffect, useState } from 'react';
+import { ReactNode, useState } from 'react';
+import { useSafeAsyncEffect } from '../hooks/useSafeAsyncEffect';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { fetchOrganisationReviews } from '../hooks/organisationConsoleApi';
 import { getActiveTenantId } from '../api/tenant';
@@ -33,17 +34,19 @@ export const ConsoleShell = ({ title, children, cta, headerExtra }: ConsoleShell
     HOST_CONSOLE_LINKS.find((link) => location.pathname.startsWith(`${link.to}/`))?.to ??
     location.pathname;
 
-  useEffect(() => {
+  useSafeAsyncEffect(async (isActive) => {
     const tenantId = getActiveTenantId();
     if (!tenantId) return;
-    fetchOrganisationReviews(tenantId)
-      .then((reviews) => {
-        setReviewCount(reviews.length);
-        if (reviews.length > 0) {
-          setAvgRating(reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length);
-        }
-      })
-      .catch(() => undefined);
+    try {
+      const reviews = await fetchOrganisationReviews(tenantId);
+      if (!isActive()) return;
+      setReviewCount(reviews.length);
+      if (reviews.length > 0) {
+        setAvgRating(reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length);
+      }
+    } catch {
+      // omit rating chip when reviews fail to load
+    }
   }, []);
 
   return (

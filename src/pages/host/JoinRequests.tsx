@@ -1,5 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
+import { useSafeAsyncEffect, type IsActiveGuard } from '../../hooks/useSafeAsyncEffect';
 import { afterHostJoinDecisionClientRefresh } from '../../hooks/activityJoinClientEffects';
 import type { ActivityRequestView } from '../../api/types';
 import {
@@ -25,19 +26,26 @@ export const JoinRequests = () => {
   const [busyRequestId, setBusyRequestId] = useState<string | null>(null);
   const [declineRequest, setDeclineRequest] = useState<ActivityRequestView | null>(null);
 
-  const loadRequests = async (activeTenantId: string) => {
+  const loadRequests = useCallback(async (activeTenantId: string, isActive: IsActiveGuard = () => true) => {
     if (!activeTenantId) return;
     try {
       const rows = await fetchHostActivityJoinRequests(activeTenantId);
-      setRequests(rows);
+      if (isActive()) {
+        setRequests(rows);
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load requests');
+      if (isActive()) {
+        setError(err instanceof Error ? err.message : 'Failed to load requests');
+      }
     }
-  };
+  }, []);
 
-  useEffect(() => {
-    void loadRequests(tenantId);
-  }, [tenantId]);
+  useSafeAsyncEffect(
+    async (isActive) => {
+      await loadRequests(tenantId, isActive);
+    },
+    [tenantId, loadRequests]
+  );
 
   const pendingCount = useMemo(
     () => requests.filter((request) => request.status === 'pending').length,

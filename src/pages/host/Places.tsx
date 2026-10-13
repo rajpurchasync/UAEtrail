@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
+import { useSafeAsyncEffect, type IsActiveGuard } from '../../hooks/useSafeAsyncEffect';
 import { PlaceDTO } from '@uaetrail/shared-types';
 import { fetchOrganisationSubmittedPlaces } from '../../hooks/organisationConsoleApi';
 import { getActiveTenantId } from '../../api/tenant';
@@ -18,22 +19,36 @@ export const Places = () => {
   const [submitted, setSubmitted] = useState<PlaceDTO[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const loadSubmitted = async () => {
-    if (!tenantId) return;
-    setLoading(true);
-    try {
-      const places = await fetchOrganisationSubmittedPlaces(tenantId);
-      setSubmitted(places);
-    } catch {
-      setSubmitted([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const loadSubmitted = useCallback(
+    async (isActive: IsActiveGuard = () => true) => {
+      if (!tenantId) return;
+      if (isActive()) {
+        setLoading(true);
+      }
+      try {
+        const places = await fetchOrganisationSubmittedPlaces(tenantId);
+        if (isActive()) {
+          setSubmitted(places);
+        }
+      } catch {
+        if (isActive()) {
+          setSubmitted([]);
+        }
+      } finally {
+        if (isActive()) {
+          setLoading(false);
+        }
+      }
+    },
+    [tenantId]
+  );
 
-  useEffect(() => {
-    void loadSubmitted();
-  }, [tenantId]);
+  useSafeAsyncEffect(
+    async (isActive) => {
+      await loadSubmitted(isActive);
+    },
+    [loadSubmitted]
+  );
 
   return (
     <ConsoleShell title="Places">

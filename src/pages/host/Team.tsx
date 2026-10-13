@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
+import { useSafeAsyncEffect, type IsActiveGuard } from '../../hooks/useSafeAsyncEffect';
 import type { TeamMember } from '../../api/types';
 import {
   createOrganisationTeamMember,
@@ -28,26 +29,35 @@ export const Team = () => {
   const [role, setRole] = useState<'tenant_admin' | 'tenant_guide'>('tenant_guide');
   const [error, setError] = useState<string | null>(null);
 
-  const loadMembers = async (activeTenantId: string) => {
-    if (!activeTenantId) return;
-    try {
-      const team = await fetchOrganisationTeam(activeTenantId);
-      setMembers(team);
-      const drafts: Record<string, 'tenant_admin' | 'tenant_guide'> = {};
-      team.forEach((member: TeamMember) => {
-        if (member.role === 'tenant_admin' || member.role === 'tenant_guide') {
-          drafts[member.id] = member.role;
+  const loadMembers = useCallback(
+    async (activeTenantId: string, isActive: IsActiveGuard = () => true) => {
+      if (!activeTenantId) return;
+      try {
+        const team = await fetchOrganisationTeam(activeTenantId);
+        if (!isActive()) return;
+        setMembers(team);
+        const drafts: Record<string, 'tenant_admin' | 'tenant_guide'> = {};
+        team.forEach((member: TeamMember) => {
+          if (member.role === 'tenant_admin' || member.role === 'tenant_guide') {
+            drafts[member.id] = member.role;
+          }
+        });
+        setRoleDrafts(drafts);
+      } catch (loadError) {
+        if (isActive()) {
+          setError(loadError instanceof Error ? loadError.message : 'Failed to load team');
         }
-      });
-      setRoleDrafts(drafts);
-    } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : 'Failed to load team');
-    }
-  };
+      }
+    },
+    []
+  );
 
-  useEffect(() => {
-    loadMembers(tenantId);
-  }, [tenantId]);
+  useSafeAsyncEffect(
+    async (isActive) => {
+      await loadMembers(tenantId, isActive);
+    },
+    [tenantId, loadMembers]
+  );
 
   const addMember = async (event: React.FormEvent) => {
     event.preventDefault();
