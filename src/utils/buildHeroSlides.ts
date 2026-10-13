@@ -8,6 +8,7 @@ export const MARKETING_HERO_CAROUSEL_SLIDES: readonly HeroCarouselSlide[] = [
     id: 'hero-summit-hiker',
     imageUrl: HOME_HERO_IMAGE_JPEG,
     imageSrcSet: `${HOME_HERO_IMAGE_WEBP} 1200w, ${HOME_HERO_IMAGE_JPEG} 1600w`,
+    placeholderUrl: '/landing/hero/hero-summit-hiker-lqip.webp',
     alt: 'Hiker at a mountain summit in the UAE'
   },
   {

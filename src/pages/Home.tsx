@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { EXPLORE_MAP_PATH, joinAuthPath } from '../config/routingCatalog';
 import { Navigate } from 'react-router-dom';
 import { DEFAULT_OG_IMAGE } from '../config/seo';
@@ -9,9 +10,18 @@ import { useHomeLandingActivities } from '../hooks/useHomeLandingActivities';
 import { HomeMarketingHeader } from '../components/home/v2';
 import { HomeHeroSection } from '../components/home/v2/sections/HomeHeroSection';
 import { HomeActivitiesSection } from '../components/home/v2/sections/HomeActivitiesSection';
-import { HomeHowItWorksSection } from '../components/home/v2/sections/HomeHowItWorksSection';
-import { HomeReviewsFaqSection } from '../components/home/v2/sections/HomeReviewsFaqSection';
 import { HomeMarketingCarouselSyncProvider } from '../components/home/v2/HomeMarketingCarouselSync';
+
+const HomeHowItWorksSection = lazy(() =>
+  import('../components/home/v2/sections/HomeHowItWorksSection').then((m) => ({
+    default: m.HomeHowItWorksSection
+  }))
+);
+const HomeReviewsFaqSection = lazy(() =>
+  import('../components/home/v2/sections/HomeReviewsFaqSection').then((m) => ({
+    default: m.HomeReviewsFaqSection
+  }))
+);
 /** Guest marketing funnel only — signed-in users redirect to /explore. See docs/LANDING.md */
 export const Home = () => {
   const { user } = useAuth();
@@ -42,8 +52,10 @@ export const Home = () => {
           error={error}
           onRetry={refetch}
         />
-        <HomeHowItWorksSection />
-        <HomeReviewsFaqSection />
+        <Suspense fallback={null}>
+          <HomeHowItWorksSection />
+          <HomeReviewsFaqSection />
+        </Suspense>
       </HomeMarketingCarouselSyncProvider>
     </div>
   );

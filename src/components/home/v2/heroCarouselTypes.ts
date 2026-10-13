@@ -9,6 +9,8 @@ export type HeroCarouselSlide = {
   id: string;
   imageUrl: string;
   imageSrcSet?: string;
+  /** Tiny blur preview (`public/landing/hero/*-lqip.webp`) — shown until full-res loads. */
+  placeholderUrl?: string;
   /** When set, hero uses `<picture>` so mobile/desktop crops follow layout breakpoint. */
   layoutSources?: HeroCarouselSlideLayoutSources;
   alt: string;

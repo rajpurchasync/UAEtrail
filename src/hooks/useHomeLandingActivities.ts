@@ -90,8 +90,28 @@ export const useHomeLandingActivities = (): HomeLandingActivitiesState => {
   }, []);
 
   useEffect(() => {
-    const cleanup = load();
-    return cleanup;
+    let cancelled = false;
+    let idleId: number | undefined;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
+    const run = () => {
+      if (cancelled) return;
+      load();
+    };
+
+    if (typeof requestIdleCallback !== 'undefined') {
+      idleId = requestIdleCallback(run, { timeout: 3000 });
+    } else {
+      timeoutId = setTimeout(run, 500);
+    }
+
+    return () => {
+      cancelled = true;
+      if (idleId !== undefined && typeof cancelIdleCallback !== 'undefined') {
+        cancelIdleCallback(idleId);
+      }
+      if (timeoutId !== undefined) clearTimeout(timeoutId);
+    };
   }, [load]);
 
   const refetch = useCallback(() => {
