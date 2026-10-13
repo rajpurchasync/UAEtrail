@@ -47,7 +47,7 @@ import { createHostApplicationRecord } from '../lib/host-applications-store.js';
 import { notifyAdminsMemberRegistered } from '../services/platform-admin-events.js';
 import { processSignupRewards } from '../services/rewards.js';
 import { acceptGroupInviteByToken, acceptPendingGroupInvitesForEmail } from '../lib/social-groups-store.js';
-import { DEMO_LOGIN_EMAILS, getDemoAccount } from '../lib/demo-accounts.js';
+import { DEMO_LOGIN_EMAILS, getDemoAccount, resolveDemoAccountPassword } from '../lib/demo-accounts.js';
 import { formatDisplayNameFromParts, personNameFieldsSchema } from '../domain/person-name.js';
 
 const registerSchema = z
@@ -407,7 +407,7 @@ authRouter.post('/demo-login', validate({ body: demoLoginSchema }), async (req, 
         throw new ApiError(404, 'demo_account_not_found', 'Demo account is not available.');
       }
 
-      const passwordHash = await hashPassword(defaults.password);
+      const passwordHash = await hashPassword(resolveDemoAccountPassword(normalizedEmail));
       const referralCode = await createUniqueReferralCode();
       user = await createAuthUser({
         email: normalizedEmail,

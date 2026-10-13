@@ -45,7 +45,7 @@ import {
   writeTenantToMongo,
   type TenantRecord
 } from '../src/lib/tenant-store.js';
-import { DEMO_ACCOUNTS } from '../src/lib/demo-accounts.js';
+import { DEMO_ACCOUNTS, resolveDemoAccountPassword } from '../src/lib/demo-accounts.js';
 import { logOmarHostQaPlaybook } from './logOmarHostQaPlaybook.js';
 import { seedCuratedAreas } from '../src/lib/seed-areas.js';
 import { curatedAreaSeedId } from '@uaetrail/shared-types';
@@ -379,7 +379,8 @@ const db = () => getMongoClient()!.db();
 const demoAccount = (email: keyof typeof DEMO_ACCOUNTS) => DEMO_ACCOUNTS[email];
 
 const upsertDemoUser = (email: keyof typeof DEMO_ACCOUNTS) => {
-  const { password, role, displayName } = DEMO_ACCOUNTS[email];
+  const { role, displayName } = DEMO_ACCOUNTS[email];
+  const password = resolveDemoAccountPassword(email);
   return upsertUser({ email, password, role, displayName });
 };
 
