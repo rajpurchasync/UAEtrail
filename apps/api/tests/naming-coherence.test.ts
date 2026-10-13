@@ -46,6 +46,13 @@ describe('naming coherence (API)', () => {
     const content = readFileSync(join(API_SRC, 'lib', 'activity-read-assembler.ts'), 'utf8');
     expect(content).toMatch(/findTenantsByIds/);
     expect(content).not.toMatch(/tenantIds\.map\(async \(tenantId\) => \[tenantId, await findTenantById/);
+    expect(content).not.toMatch(/findLocationInMongo\(id\)/);
+  });
+
+  it('area pro host preview batches tenant lookups', () => {
+    const content = readFileSync(join(API_SRC, 'lib', 'area-pro-host-preview.ts'), 'utf8');
+    expect(content).toMatch(/findTenantsByIds/);
+    expect(content).not.toMatch(/await findTenantById\(/);
   });
 
   it('user search endpoints escape regex via regex-search helper', () => {

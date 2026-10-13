@@ -2,7 +2,7 @@
 import { hostBrandProfilePath } from '@uaetrail/shared-types';
 import { TenantBusinessMode } from '../domain/enums.js';
 import { listPublishedUpcomingActivitiesByArea } from './activities-store.js';
-import { findTenantById } from './tenant-store.js';
+import { findTenantsByIds } from './tenant-store.js';
 
 export type AreaProHostPreview = {
   id: string;
@@ -19,15 +19,22 @@ export const listProHostStorefrontsForAreaPreview = async (
   limit = 8
 ): Promise<AreaProHostPreview[]> => {
   const events = await listPublishedUpcomingActivitiesByArea(areaId, ACTIVITY_SCAN);
+  const tenantIdsInOrder: string[] = [];
   const seen = new Set<string>();
-  const rows: AreaProHostPreview[] = [];
 
   for (const event of events) {
     const tenantId = event.tenant.id;
     if (seen.has(tenantId)) continue;
-    const tenant = await findTenantById(tenantId);
-    if (!tenant || tenant.businessMode === TenantBusinessMode.SHOP) continue;
     seen.add(tenantId);
+    tenantIdsInOrder.push(tenantId);
+  }
+
+  const tenantsById = await findTenantsByIds(tenantIdsInOrder);
+  const rows: AreaProHostPreview[] = [];
+
+  for (const tenantId of tenantIdsInOrder) {
+    const tenant = tenantsById.get(tenantId);
+    if (!tenant || tenant.businessMode === TenantBusinessMode.SHOP) continue;
     const profileKind =
       tenant.businessMode === TenantBusinessMode.AGENCY ? 'agency' : 'pro_guide';
     rows.push({

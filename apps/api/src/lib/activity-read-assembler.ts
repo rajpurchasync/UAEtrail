@@ -5,7 +5,6 @@ import { resolveJoinMode, shouldHideActivityFromExploreMap } from '../domain/act
 import { ActivityStatus, ActivityType, LocationStatus } from '../domain/enums.js';
 import { findAuthUsersByIds, type AuthUserRecord } from './auth-users.js';
 import type { MongoActivityDoc } from './entity-builders.js';
-import { findLocationInMongo } from './entity-sync.js';
 import { getMongoClient } from './mongo.js';
 import { findTenantById, findTenantBySlug, findTenantsByIds, type TenantRecord } from './tenant-store.js';
 
@@ -189,30 +188,28 @@ const fallbackLocationFromActivityDoc = (doc: MongoActivityDoc): Location =>
     updatedAt: doc.updatedAt
   }) as Location;
 
-const loadActiveLocations = async (locationIds: string[]): Promise<Map<string, Location>> => {
-  const uniqueIds = [...new Set(locationIds)];
+const loadLocationsByIds = async (
+  locationIds: string[],
+  activeOnly = false
+): Promise<Map<string, Location>> => {
+  const uniqueIds = [...new Set(locationIds.filter(Boolean))];
   const map = new Map<string, Location>();
-
   if (uniqueIds.length === 0) return map;
 
-  const docs = await locationsCollection()
-    .find({ _id: { $in: uniqueIds }, status: LocationStatus.ACTIVE })
-    .toArray();
+  const query = activeOnly
+    ? { _id: { $in: uniqueIds }, status: LocationStatus.ACTIVE }
+    : { _id: { $in: uniqueIds } };
 
+  const docs = await locationsCollection().find(query).toArray();
   for (const doc of docs) {
     map.set(doc._id, mapMongoLocation(doc));
   }
 
-  for (const id of uniqueIds) {
-    if (map.has(id)) continue;
-    const fallback = await findLocationInMongo(id);
-    if (fallback && fallback.status === LocationStatus.ACTIVE) {
-      map.set(id, fallback);
-    }
-  }
-
   return map;
 };
+
+const loadActiveLocations = (locationIds: string[]): Promise<Map<string, Location>> =>
+  loadLocationsByIds(locationIds, true);
 
 const assembleEventsWithPublicRelations = async (
   docs: MongoActivityDoc[]
@@ -473,34 +470,6 @@ export type ActivityWithTenantRelations = Activity & {
   createdBy: { profile: { displayName: string | null } | null } | null;
   tenantOwner: { profile: { displayName: string | null } | null };
   participants: Array<{ id: string; userId: string; checkedInAt?: Date | null }>;
-};
-
-const loadLocationsByIds = async (
-  locationIds: string[],
-  activeOnly = false
-): Promise<Map<string, Location>> => {
-  const uniqueIds = [...new Set(locationIds)];
-  const map = new Map<string, Location>();
-  if (uniqueIds.length === 0) return map;
-
-  const query = activeOnly
-    ? { _id: { $in: uniqueIds }, status: LocationStatus.ACTIVE }
-    : { _id: { $in: uniqueIds } };
-
-  const docs = await locationsCollection().find(query).toArray();
-  for (const doc of docs) {
-    map.set(doc._id, mapMongoLocation(doc));
-  }
-
-  for (const id of uniqueIds) {
-    if (map.has(id)) continue;
-    const fallback = await findLocationInMongo(id);
-    if (fallback && (!activeOnly || fallback.status === LocationStatus.ACTIVE)) {
-      map.set(id, fallback);
-    }
-  }
-
-  return map;
 };
 
 /** Like assembleEventsWithPublicRelations but includes draft/inactive venues (for explore map). */
