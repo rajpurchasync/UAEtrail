@@ -25,7 +25,7 @@ import { ShareButton } from '../ui/ShareButton';
 import { PageMeta } from '../seo/PageMeta';
 import { JsonLd } from '../seo/JsonLd';
 import { organizationSchema } from '../seo/schemas';
-import { HostMessageButton } from '../ui/HostMessageButton';
+import { MessageMemberButton } from '../chat/MessageMemberButton';
 import { EntityFollowControls } from '../profile/EntityFollowControls';
 import { PRO_MEMBERSHIP_PATH, SIGNIN_PATH, tripsPlansPath } from '../../config/routingCatalog';
 import { GlassCard } from '../mobile/GlassCard';
@@ -36,7 +36,12 @@ import { PublicProfileSectionHeading } from '../profile/PublicProfileSectionHead
 import { AccountSectionHeader } from '../account/AccountSectionHeader';
 import { useAuth } from '../../context/AuthContext';
 import { COUNTRIES } from '../../constants';
-import { hostNotFoundLabel, hostProfileLabel, hostPublicProfileLabel, normalizeHostKind } from '../../host/hostCopy';
+import {
+  normalizeWorkspaceBrandKind,
+  workspaceNotFoundLabel,
+  workspaceProfileLabel,
+  workspacePublicProfileLabel,
+} from '../../content/workspaceVocabulary';
 import { detailBackPath } from '../../config/routingCatalog';
 import { tenantBrandPublicPath } from '../../utils/organisationLinks';
 import { ConsumerEntityTabBar } from '../mobile/ConsumerEntityTabBar';
@@ -117,7 +122,7 @@ export const OrganisationPublicProfile = ({
         const reviewList = await fetchOrganisationReviews(tenantData.id).catch(() => []);
         setReviews(reviewList);
       })
-      .catch(() => setError(`We couldn't find this ${hostProfileLabel(null).toLowerCase()}`))
+      .catch(() => setError(`We couldn't find this ${workspaceProfileLabel(null).toLowerCase()}`))
       .finally(() => setLoading(false));
   };
 
@@ -145,7 +150,7 @@ export const OrganisationPublicProfile = ({
   };
 
   if (loading) {
-    const loadingTitle = `Loading ${hostProfileLabel(null).toLowerCase()}`;
+    const loadingTitle = `Loading ${workspaceProfileLabel(null).toLowerCase()}`;
     return (
       <>
         {!isOwner && <PageMeta title={loadingTitle} noIndex />}
@@ -159,7 +164,7 @@ export const OrganisationPublicProfile = ({
   if (error || !tenant) {
     return (
       <>
-        {!isOwner && <PageMeta title={hostNotFoundLabel(null)} noIndex />}
+        {!isOwner && <PageMeta title={workspaceNotFoundLabel(null)} noIndex />}
         <GlassCard padding className="text-center">
           <h1 className="text-lg font-bold text-neutral-900">We couldn&apos;t find this host</h1>
           {!compact && (
@@ -172,7 +177,7 @@ export const OrganisationPublicProfile = ({
     );
   }
 
-  const hostKind = normalizeHostKind(tenant.type);
+  const hostKind = normalizeWorkspaceBrandKind(tenant.type);
   const canonicalPublicPath =
     tenantBrandPublicPath(
       {
@@ -232,7 +237,7 @@ export const OrganisationPublicProfile = ({
       {isOwner && (
         <GlassCard padding className="border-emerald-100 bg-emerald-50/50">
           <p className="text-sm leading-relaxed text-neutral-700">
-            This is your <strong className="text-neutral-900">{hostPublicProfileLabel(hostKind)}</strong> — what visitors
+            This is your <strong className="text-neutral-900">{workspacePublicProfileLabel(hostKind)}</strong> — what visitors
             see when they browse your activities.
           </p>
           <Link
@@ -309,7 +314,12 @@ export const OrganisationPublicProfile = ({
                 Log in to follow host outing alerts
               </Link>
             )}
-            <HostMessageButton hostUserId={tenant.ownerId} size="md" className="w-full" />
+            <MessageMemberButton
+              memberUserId={tenant.ownerId}
+              size="md"
+              className="w-full"
+              messageLabel="Message"
+            />
           </div>
         )}
 

@@ -68,7 +68,7 @@ Do **not** put new product semantics only in `experiment/*` phase trackers or de
 |-------|-------------|
 | “Request to become host” for buddy Organize | Profile complete → `canPublish`; `/welcome` |
 | `/become-host?intent=…` as product entry | `/profile/pro-membership` |
-| `UserRole` / `isHostRole` for publish UI | `GET /me/host-status` |
+| `UserRole` / `isHostRole` for publish UI | `GET /me/status` (`useMemberStatus`) |
 | `/host/requests` as onboarding | Activity join queue |
 | Consumer lead = “trail inventory / host console” only | North star: find people · get outside · go together |
 

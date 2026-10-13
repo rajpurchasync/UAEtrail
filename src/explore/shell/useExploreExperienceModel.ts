@@ -3,7 +3,7 @@ import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import type { PlaceMapPin } from '../../components/ui/PlacesMap';
 import { useAuth } from '../../context/AuthContext';
-import { useHostStatus } from '../../hooks/useHostStatus';
+import { useMemberStatus } from '../../hooks/useMemberStatus';
 import { reloadExploreMap } from '../../hooks/useExploreMap';
 import { buildSignInRedirect } from '../../utils/authReturnContext';
 import { useMinWidthLg } from '../../hooks/useMinWidthLg';
@@ -15,11 +15,11 @@ import { useExploreFulfillIntent } from '../ui/useExploreFulfillIntent';
 import { useExploreOrganizeFromActivity } from '../ui/useExploreOrganizeFromActivity';
 import {
   organizePublishGateHref,
-  organizePublishGateInputFromHostGate,
+  organizePublishGateInputFromMemberStatus,
 } from '../../utils/organizePublishGate';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { areaDetailPath } from '@uaetrail/shared-types';
-import { hostActivityCancelParticipantNotice } from '../../host/hostActivityCancelParticipantNotice';
+import { activityCancelParticipantNotice } from '../../activity/activityCancelParticipantNotice';
 import { useExploreMapViewport } from '../ui/useExploreMapViewport';
 import { useExploreSelectionActions } from '../ui/useExploreSelectionActions';
 import { parsePlanWithUserId } from '../routing';
@@ -43,13 +43,13 @@ export const useExploreExperienceModel = () => {
   const {
     status: hostStatus,
     canPublish,
-    signupProfileComplete,
+    profileComplete,
     isCommunityHost,
     hostTiers,
     loading: hostGateLoading,
     tenantId,
     refresh: refreshHostGate,
-  } = useHostStatus({
+  } = useMemberStatus({
     enabled: Boolean(user),
   });
   const navigate = useNavigate();
@@ -58,16 +58,16 @@ export const useExploreExperienceModel = () => {
       navigate(
         organizePublishGateHref(
           returnPath,
-          organizePublishGateInputFromHostGate({
+          organizePublishGateInputFromMemberStatus({
             viewerUserId: user?.id ?? null,
-            signupProfileComplete,
+            profileComplete,
             canPublish,
             isCommunityHost,
             hostTiers,
           })
         )
       ),
-    [navigate, user?.id, signupProfileComplete, canPublish, isCommunityHost, hostTiers]
+    [navigate, user?.id, profileComplete, canPublish, isCommunityHost, hostTiers]
   );
   const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
@@ -103,7 +103,7 @@ export const useExploreExperienceModel = () => {
     setSearchParams,
     onOpenComposeMenu: clearSelection,
     canPublish,
-    signupProfileComplete,
+    profileComplete,
     hostGateLoading,
   });
 
@@ -130,7 +130,7 @@ export const useExploreExperienceModel = () => {
     tenantId,
     hostGateLoading,
     canPublish,
-    signupProfileComplete,
+    profileComplete,
     isCommunityHost,
     hostTiers,
     navigate,
@@ -204,7 +204,7 @@ export const useExploreExperienceModel = () => {
   const hostRemoveParticipantNotice = useMemo(() => {
     const activity = selection.hostRemoveConfirm;
     if (!activity) return null;
-    return hostActivityCancelParticipantNotice(
+    return activityCancelParticipantNotice(
       activity,
       selection.selectedCard?.participantPreviews
     );

@@ -24,7 +24,7 @@
       "apiFiles": ["apps/api/src/services/member-publish-gate.ts"],
       "routeRegistrars": [
         "apps/api/src/routes/user/registerMeParticipantIntentRoutes.ts",
-        "apps/api/src/routes/host.ts"
+        "apps/api/src/routes/operator.ts"
       ],
       "feDomains": ["src/api/domains/explore.ts"],
       "feRoots": ["src/explore/ui"]
@@ -43,7 +43,7 @@
       ],
       "routeRegistrars": [
         "apps/api/src/routes/user/registerPublicActivityRoutes.ts",
-        "apps/api/src/routes/host/registerHostActivityRequestRoutes.ts",
+        "apps/api/src/routes/operator/registerOperatorActivityRequestRoutes.ts",
         "apps/api/src/routes/user/registerMeParticipantIntentRoutes.ts",
         "apps/api/src/routes/user/registerActivityJoinInviteRoutes.ts"
       ],
@@ -65,31 +65,32 @@
       "feRoots": ["src/pages/Profile.tsx", "src/member"]
     },
     {
-      "id": "host_capabilities",
-      "label": "Host capabilities",
-      "apiFiles": ["apps/api/src/services/member-host-status.ts"],
-      "routeRegistrars": ["apps/api/src/routes/user/registerMemberHostStatusRoutes.ts"],
+      "id": "member_publish_capabilities",
+      "label": "Member publish capabilities",
+      "apiFiles": ["apps/api/src/services/member-status.ts"],
+      "routeRegistrars": ["apps/api/src/routes/user/registerMemberStatusRoutes.ts"],
       "feDomains": ["src/api/domains/member.ts"],
       "feRoots": ["src/member"]
     },
     {
-      "id": "host_console",
-      "label": "Host console",
-      "apiFiles": ["apps/api/src/routes/host.ts"],
+      "id": "publishing_workspace",
+      "label": "Publishing workspace",
+      "apiFiles": ["apps/api/src/routes/operator.ts"],
       "routeRegistrars": [
-        "apps/api/src/routes/host.ts",
-        "apps/api/src/routes/host/registerHostActivityRoutes.ts",
-        "apps/api/src/routes/host/registerHostActivityParticipantRoutes.ts",
-        "apps/api/src/routes/host/registerHostTeamRoutes.ts",
-        "apps/api/src/routes/host/registerHostActivityRequestRoutes.ts",
-        "apps/api/src/routes/host/registerHostSubmittedLocationRoutes.ts",
-        "apps/api/src/routes/host/registerHostDemandFulfillLegacy.ts"
+        "apps/api/src/routes/operator.ts",
+        "apps/api/src/routes/operator/registerOperatorActivityRoutes.ts",
+        "apps/api/src/routes/operator/registerOperatorActivityParticipantRoutes.ts",
+        "apps/api/src/routes/operator/registerOperatorTeamRoutes.ts",
+        "apps/api/src/routes/operator/registerOperatorActivityRequestRoutes.ts",
+        "apps/api/src/routes/operator/registerOperatorSubmittedLocationRoutes.ts",
+        "apps/api/src/routes/operator/registerOperatorDemandFulfillLegacy.ts"
       ],
       "feDomains": ["src/api/domains/organisation.ts", "src/api/domains/activities.ts"],
       "feRoots": [
-        "src/pages/host",
+        "src/pages/operator",
         "src/console",
-        "src/components/host",
+        "src/components/activity",
+        "src/activity",
         "src/components/organisation-console"
       ]
     },
@@ -255,7 +256,7 @@
   "apiMounts": [
     { "prefix": "/auth", "file": "apps/api/src/routes/auth.ts" },
     { "prefix": "/admin", "file": "apps/api/src/routes/admin.ts" },
-    { "prefix": "/host", "file": "apps/api/src/routes/host.ts" },
+    { "prefix": "/operator", "file": "apps/api/src/routes/operator.ts", "note": "legacy /host/* rewritten in middleware" },
     { "prefix": "/chat", "file": "apps/api/src/routes/chat.ts" },
     { "prefix": "/shop", "file": "apps/api/src/routes/shop.ts" },
     { "prefix": "/media", "file": "apps/api/src/routes/media.ts" },

@@ -104,13 +104,13 @@ describe('resolveExploreHostLabel', () => {
     ).toBe('Khalid');
   });
 
-  it('falls back to Host when only tenant or role labels are available', () => {
+  it('falls back to Organizer when only tenant or role labels are available', () => {
     expect(
       resolveExploreHostLabel({
         hostName: 'Agency Guide',
         tenantName: 'UAE Adventure Co',
       })
-    ).toBe('Host');
+    ).toBe('Organizer');
   });
 
   it('rejects org labels passed as hostName', () => {
@@ -430,7 +430,7 @@ describe('buildDiscoveryCardViewModelCard (explore list copy)', () => {
       activity: {
         ...hikingActivity.activity!,
         requirements: [
-          'Host approval required to join',
+          'Organizer approval required to join',
           'Open: anyone can request to join',
           'Women only',
           'No pets',

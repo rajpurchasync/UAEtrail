@@ -104,7 +104,7 @@ const approvalHikeItem = () =>
       status: 'published',
       participationMode: 'approval',
       ...meeting,
-      requirements: ['Host approval required to join'],
+      requirements: ['Organizer approval required to join'],
       joinMode: 'open',
     },
   } as Parameters<typeof hostedExploreMapItem>[0]);
@@ -185,7 +185,7 @@ describe('mapDetailEngagementParity (RF-02 / R1.4)', () => {
         status: 'published',
         participationMode: 'approval',
         ...meeting,
-        requirements: ['Host approval required to join'],
+        requirements: ['Organizer approval required to join'],
         joinMode: 'open',
       },
     } as Parameters<typeof hostedExploreMapItem>[0]);

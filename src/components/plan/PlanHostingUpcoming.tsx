@@ -4,7 +4,7 @@ import type { ActivityDTO, ParticipantIntentDTO } from '@uaetrail/shared-types';
 import { useMyParticipantIntents } from '../../hooks/useMyParticipantIntents';
 import { useConsoleHubData } from '../../console/useHubData';
 import { useHostActivityManageActions } from '../../hooks/useHostActivityManageActions';
-import { ActivityManageSheet } from '../host/ActivityManageSheet';
+import { ActivityManageSheet } from '../activity/ActivityManageSheet';
 import { ParticipantIntentManageSheet } from '../participant-intent/ParticipantIntentManageSheet';
 import {
   ConsumerErrorCard,
@@ -120,7 +120,7 @@ export const PlanHostingUpcoming = ({ refreshKey = 0, canHost }: PlanHostingUpco
   if (!canHost) {
     return (
       <ConsumerInlineEmpty
-        message="Host outings on the map to share them with others."
+        message="Organize outings on the map to share them with others."
         actionLabel="Pro membership"
         actionTo={PRO_MEMBERSHIP_PATH}
       />
@@ -138,7 +138,7 @@ export const PlanHostingUpcoming = ({ refreshKey = 0, canHost }: PlanHostingUpco
   if (!host.tenantId) {
     return (
       <ConsumerInlineEmpty
-        message="Host profile is still loading — try again in a moment."
+        message="Organizer profile is still loading — try again in a moment."
         actionLabel="Refresh"
         actionTo="/plan"
       />
@@ -173,7 +173,7 @@ export const PlanHostingUpcoming = ({ refreshKey = 0, canHost }: PlanHostingUpco
               timeLabel={activity.time}
               locationLabel={activity.locationName?.trim() || 'Location TBD'}
               activityTypeLabel={formatActivityType(activity.activityType)}
-              badge={isSeeking ? 'Looking for company' : 'Hosting'}
+              badge={isSeeking ? 'Looking for company' : 'Organizing'}
               participants={activity.participantPreviews}
               actionHint={pendingHint}
               onClick={() => openManage(activity)}

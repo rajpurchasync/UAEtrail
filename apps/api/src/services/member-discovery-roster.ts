@@ -23,7 +23,7 @@ import {
 } from './member-discovery-going.js';
 import { listBrowsablePublicMembers } from './member-discovery.js';
 import { resolveMemberDiscoveryQuota } from './member-discovery-quota.js';
-import { resolveMemberHostStatus } from './member-host-status.js';
+import { resolveMemberStatus } from './member-status.js';
 
 const matchesMemberDiscoverySearch = (
   parts: Array<string | null | undefined>,
@@ -112,7 +112,7 @@ export const loadMemberDiscoveryRoster = async (input: {
 }> => {
   const datePreset = parseExploreActivityDatePreset(input.datePresetRaw);
   const [hostStatus, mapItems, buddies] = await Promise.all([
-    resolveMemberHostStatus(input.viewerUserId),
+    resolveMemberStatus(input.viewerUserId),
     loadExploreMapItemsForMemberEngagement({
       viewerUserId: input.viewerUserId,
       userRole: input.userRole,

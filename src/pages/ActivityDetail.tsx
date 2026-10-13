@@ -7,10 +7,7 @@ import { type ActivityDTO, type ReviewDTO } from '@uaetrail/shared-types';
 import { activityReviewsQueryKey } from '../hooks/clientQueryKeys';
 import { useActivityReviews } from '../hooks/useActivityReviews';
 import type { ActivityRequestView } from '../api/types';
-import {
-  cancelHostActivityById,
-  fetchHostActivityJoinRequests,
-} from '../hooks/hostActivityClientApi';
+import { cancelActivity, getActivityJoinRequests } from '../hooks/tenantActivityClientApi';
 import { detailBackPath } from '../config/routingCatalog';
 import { signInPathForReturn } from '../utils/authReturnContext';
 import { useAuth } from '../context/AuthContext';
@@ -32,14 +29,14 @@ import { ActivityChatCallout } from '../components/ui/ActivityChatCallout';
 import { PushEnableBanner } from '../components/ui/PushEnableBanner';
 import { ActivityDetailView } from '../components/activity/ActivityDetailView';
 import { resolveJoinRequestUiState } from '../utils/joinRequestUi';
-import { useHostStatus } from '../hooks/useHostStatus';
+import { useMemberStatus } from '../hooks/useMemberStatus';
 import { viewerIsActivityHostUser } from '../utils/viewerHostsActivity';
 import { ExploreGuestSignInCard } from '../explore/ui/ExploreGuestSignInCard';
 import { activityJoinInviteBanner } from '../content/exploreGoingPanelCopy';
 import { HostActivityCancelDialog } from '../components/activity/HostActivityCancelDialog';
 import { HostActivityCtas } from '../components/activity/HostActivityCtas';
-import { hostActivityCancelParticipantNotice } from '../host/hostActivityCancelParticipantNotice';
-import { hostActivityCtaHandlers as buildHostActivityCtaHandlers } from '../host/hostActivityCtaHandlers';
+import { activityCancelParticipantNotice } from '../activity/activityCancelParticipantNotice';
+import { publishedActivityCtaHandlers as buildPublishedActivityCtaHandlers } from '../activity/publishedActivityCtaHandlers';
 import { navigateToCreateLinkedRideshare } from '../explore/navigateCreateLinkedRideshare';
 import { useActivityInviteShareSheet } from '../hooks/useActivityInviteShareSheet';
 import { EXPLORE_MAP_PATH } from '../config/routingCatalog';
@@ -57,7 +54,7 @@ export const ActivityDetail = () => {
   const { id } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
   const { user } = useAuth();
-  const gate = useHostStatus({ enabled: Boolean(user) });
+  const gate = useMemberStatus({ enabled: Boolean(user) });
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const fromJoinInvite = searchParams.get('invite') === '1';
@@ -151,7 +148,7 @@ export const ActivityDetail = () => {
         setHostJoinRequestsLoading(true);
       }
       try {
-        const requests = await fetchHostActivityJoinRequests(gate.tenantId, { activityId: id });
+        const requests = await getActivityJoinRequests(gate.tenantId, { activityId: id });
         if (isActive()) {
           setHostJoinRequests(requests.filter((request) => request.status === 'pending'));
         }
@@ -235,9 +232,9 @@ export const ActivityDetail = () => {
 
   const canAddLinkedRide = viewerAccess?.entitlements?.canAddLinkedRide ?? false;
 
-  const hostActivityCtaHandlers = useMemo(() => {
+  const publishedActivityCtaHandlers = useMemo(() => {
     if (!isActivityHostUser || !activity) return null;
-    return buildHostActivityCtaHandlers({
+    return buildPublishedActivityCtaHandlers({
       activity,
       navigate,
       onInviteActivity: inviteShare.openInviteFromActivity,
@@ -254,25 +251,25 @@ export const ActivityDetail = () => {
   }, [activity, inviteShare.openInviteFromActivity]);
 
   const hostDetailCtas =
-    isActivityHostUser && hostActivityCtaHandlers && activity ? (
+    isActivityHostUser && publishedActivityCtaHandlers && activity ? (
       <HostActivityCtas
         activity={activity}
         linkRideshareTenantId={gate.tenantId}
         canAddLinkedRide={canAddLinkedRide}
-        handlers={hostActivityCtaHandlers}
+        handlers={publishedActivityCtaHandlers}
       />
     ) : null;
 
   const hostRemoveParticipantNotice = useMemo(() => {
     if (!hostRemoveConfirm) return null;
-    return hostActivityCancelParticipantNotice(hostRemoveConfirm, activity?.participants);
+    return activityCancelParticipantNotice(hostRemoveConfirm, activity?.participants);
   }, [hostRemoveConfirm, activity?.participants]);
 
   const confirmHostRemove = useCallback(async () => {
     if (!hostRemoveConfirm || !gate.tenantId) return;
     setHostRemoveBusy(true);
     try {
-      await cancelHostActivityById(gate.tenantId, hostRemoveConfirm.id);
+      await cancelActivity(gate.tenantId, hostRemoveConfirm.id);
       setHostRemoveConfirm(null);
       navigate(EXPLORE_MAP_PATH);
     } catch (err) {

@@ -6,7 +6,7 @@ import { exploreCardHasMapCoords, exploreCardIsSeeking } from '../explore/explor
 import type { JoinRequestUiState } from '../utils/joinRequestUi';
 import {
   LIST_FEED_CTA_GET_DIRECTIONS,
-  LIST_FEED_CTA_MESSAGE_HOST,
+  LIST_FEED_CTA_MESSAGE_ORGANIZER,
   LIST_FEED_CTA_VIEW_DETAILS,
 } from './listFeedCtaCopy';
 
@@ -43,7 +43,7 @@ const detailButton = (card: ExploreCardModel): ListFeedFooterButton => ({
 
 const peekActionLabel = (action: ActivityMapPeekAction, card: ExploreCardModel): string => {
   if (action.id === 'request_join') return card.primaryCta;
-  if (action.id === 'message_host') return LIST_FEED_CTA_MESSAGE_HOST;
+  if (action.id === 'message_host') return LIST_FEED_CTA_MESSAGE_ORGANIZER;
   return activityMapPeekActionLabel(action.id, action);
 };
 

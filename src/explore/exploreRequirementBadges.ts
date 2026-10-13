@@ -27,7 +27,7 @@ const SKIP_BADGE_PATTERNS = [
   /^Trail:/i,
   /^Camp:/i,
   /^Going from:/i,
-  /^Host approval required/i,
+  /^(?:Host|Organizer) approval required/i,
   /^Open RSVP/i,
 ];
 

@@ -7,7 +7,11 @@ export { PlaceCard, TrailCard, CampingCard } from './PlaceCard';
 export { JoinRequestModal } from './JoinRequestModal';
 export { ShareButton } from './ShareButton';
 export { ParticipantPreview } from './ParticipantPreview';
+export { MessageMemberButton, type MessageMemberButtonProps } from '../chat/MessageMemberButton';
+/** @deprecated Use MessageMemberButton */
 export { HostMessageButton } from './HostMessageButton';
+/** @deprecated Use MessageMemberButton */
+export { OrganizerMessageButton } from './OrganizerMessageButton';
 export {
   PlaceDetailTabs,
   toPlaceDetailData,

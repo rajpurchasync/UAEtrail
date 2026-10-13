@@ -6,13 +6,13 @@ describe('resolveComposeRouteChange', () => {
     user: { id: 'u1' },
     hostGateLoading: false,
     canPublish: true,
-    signupProfileComplete: true,
+    profileComplete: true,
   };
   const signedOut = {
     user: null,
     hostGateLoading: false,
     canPublish: false,
-    signupProfileComplete: false,
+    profileComplete: false,
   };
 
   it('requires sign-in for organize wizard when logged out', () => {
@@ -32,7 +32,7 @@ describe('resolveComposeRouteChange', () => {
       user: { id: 'u1' },
       hostGateLoading: false,
       canPublish: false,
-      signupProfileComplete: false,
+      profileComplete: false,
     });
     expect(decision.type).toBe('complete-profile');
     if (decision.type === 'complete-profile') {
@@ -48,7 +48,7 @@ describe('resolveComposeRouteChange', () => {
         user: { id: 'u1' },
         hostGateLoading: true,
         canPublish: true,
-        signupProfileComplete: true,
+        profileComplete: true,
       })
     ).toEqual({ type: 'blocked' });
   });

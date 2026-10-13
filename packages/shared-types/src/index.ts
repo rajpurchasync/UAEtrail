@@ -364,11 +364,15 @@ export interface OwnedHostProfileDTO {
 }
 
 /**
- * Member publishing + host console eligibility (`GET /me/host-status`).
+ * Member publishing + publishing workspace eligibility (`GET /me/status`).
  * Single wire contract — clients must not re-derive tiers from `UserRole` alone.
  */
 export interface HostStatusDTO {
-  /** Member profile completion (DOB, gender, based-in) — required before buddy Organize. */
+  /**
+   * Member profile completion (DOB, gender, based-in) — required to **organize/publish**.
+   * Not required to join outings (authenticated member suffices).
+   * @deprecated Wire name; prefer `profileComplete` on `GET /me/status`.
+   */
   signupProfileComplete: boolean;
   /** First map publish (activity or demand) — earns Host badge. */
   isCommunityHost: boolean;
@@ -394,12 +398,69 @@ export interface HostStatusDTO {
   ownedProfiles: OwnedHostProfileDTO[];
 }
 
-/** Domain aliases — organisation console status (wire: `/me/host-status`). */
+/** Domain aliases — organisation console status (wire: `GET /me/status`). */
 export type OrganisationApplicationStatus = HostApplicationStatus;
 export type OrganisationProfileType = HostProfileType;
 export type OwnedOrganisationProfileType = OwnedHostProfileType;
 export type OwnedOrganisationProfileDTO = OwnedHostProfileDTO;
 export type OrganisationConsoleStatusDTO = HostStatusDTO;
+/**
+ * Publishing console eligibility slice on `GET /me/status` wire.
+ * Includes `canAccessOperatorConsole` (mirror of legacy `canAccessHostConsole` on wire).
+ */
+export type OperatorConsoleStatusDTO = HostStatusDTO & {
+  canAccessOperatorConsole: boolean;
+};
+
+/** Publish/workspace slice of {@link MemberStatusDTO} — not a separate HTTP resource. */
+export interface MemberPublishCapabilitiesDTO {
+  canPublish: boolean;
+  canAccessPublishingWorkspace: boolean;
+  canHostPaidActivities: boolean;
+  applicationStatus: HostApplicationStatus;
+  isCommunityHost: boolean;
+  hostTiers: HostTierFlags;
+  tenantId: string | null;
+  hasTenant: boolean;
+  tenantType: TenantType | null;
+  businessMode: TenantBusinessMode | null;
+  hasGuideProfile: boolean;
+  hasAgencyProfile: boolean;
+  hasShopProfile: boolean;
+  ownedProfiles: OwnedHostProfileDTO[];
+}
+
+/** Member capabilities (`GET /me/status`). Flat fields dual-read legacy `HostStatusDTO`. */
+export type MemberStatusDTO = HostStatusDTO & {
+  /** Same as `signupProfileComplete` — canonical name for organize/publish gates. */
+  profileComplete: boolean;
+  publish: MemberPublishCapabilitiesDTO;
+};
+
+export const buildMemberPublishCapabilities = (
+  status: HostStatusDTO
+): MemberPublishCapabilitiesDTO => ({
+  canPublish: status.canPublish,
+  canAccessPublishingWorkspace: status.canAccessHostConsole,
+  canHostPaidActivities: status.canHostPaidActivities,
+  applicationStatus: status.applicationStatus,
+  isCommunityHost: status.isCommunityHost,
+  hostTiers: status.hostTiers,
+  tenantId: status.tenantId,
+  hasTenant: status.hasTenant,
+  tenantType: status.tenantType,
+  businessMode: status.businessMode,
+  hasGuideProfile: status.hasGuideProfile,
+  hasAgencyProfile: status.hasAgencyProfile,
+  hasShopProfile: status.hasShopProfile,
+  ownedProfiles: status.ownedProfiles,
+});
+
+export const buildMemberStatusDto = (status: HostStatusDTO): MemberStatusDTO => ({
+  ...status,
+  profileComplete: status.signupProfileComplete,
+  publish: buildMemberPublishCapabilities(status),
+});
 
 /** Predefined reasons when a user withdraws from an activity */
 export const WITHDRAW_REASONS = [
@@ -1087,6 +1148,7 @@ export {
 
 export {
   buildExploreFeaturedPerson,
+  canonicalExploreMapPersonRole,
   explorePersonFirstName,
   explorePersonRoleLabel,
   formatExplorePersonDisplayName,
@@ -1274,6 +1336,7 @@ export {
 export {
   memberAudienceMayAttemptOrganize,
   memberHasHostFootprintBadge,
+  memberProfileComplete,
   organizeEntitlementDenial,
   resolveMemberAudience,
   resolvePaidMembershipSku,

@@ -21,18 +21,18 @@ export const explorePeopleBrowseMapButtonAriaLabel = (friendCount: number): stri
 
 export const EXPLORE_PEOPLE_BROWSE_LOADING = 'Loading your people…';
 export const EXPLORE_PEOPLE_BROWSE_EMPTY_ALL =
-  'No friends or follows yet — connect on outings or follow hosts you like.';
+  'No friends or follows yet — connect on outings or follow organizers you like.';
 export const EXPLORE_PEOPLE_BROWSE_EMPTY_FRIENDS =
   'No friends yet — send a buddy request from a member profile.';
 export const EXPLORE_PEOPLE_BROWSE_EMPTY_FOLLOWED =
-  'You are not following anyone yet — follow hosts and members from their profile.';
+  'You are not following anyone yet — follow organizers and members from their profile.';
 export const EXPLORE_PEOPLE_BROWSE_FOLLOWED_SEGMENT_PEOPLE = 'People';
 export const EXPLORE_PEOPLE_BROWSE_FOLLOWED_SEGMENT_PLACES = 'Places';
-export const EXPLORE_PEOPLE_BROWSE_FOLLOWED_SEGMENT_EVENTS = 'Hosts & shops';
+export const EXPLORE_PEOPLE_BROWSE_FOLLOWED_SEGMENT_EVENTS = 'Organizers & shops';
 export const EXPLORE_PEOPLE_BROWSE_EMPTY_FOLLOWED_PLACES =
   'No followed places yet — follow a trail or camp on the map for outing alerts.';
 export const EXPLORE_PEOPLE_BROWSE_EMPTY_FOLLOWED_HOSTS =
-  'No followed hosts or shops yet — follow from their profile or a shop on the map.';
+  'No followed organizers or shops yet — follow from their profile or a shop on the map.';
 
 export const EXPLORE_PEOPLE_BROWSE_SEARCH_PLACEHOLDER = 'Search people…';
 export const EXPLORE_PEOPLE_BROWSE_DISCOVER_SEARCH_PLACEHOLDER = 'Search by name or city…';
@@ -41,11 +41,11 @@ export const EXPLORE_PEOPLE_BROWSE_TAB_DISCOVER = 'Discover';
 
 export const EXPLORE_SEARCH_SCOPE_BUDDIES_LABEL = 'Buddies';
 export const EXPLORE_SEARCH_SCOPE_BUDDIES_DESCRIPTION =
-  'Find members on outings and public profiles — connect with hosts and hikers (Pro unlocks more)';
+  'Find members on outings and public profiles — connect with organizers and hikers (Pro unlocks more)';
 
 export const EXPLORE_PEOPLE_BROWSE_DISCOVER_ON_TRIPS_TITLE = 'On outings';
 export const EXPLORE_PEOPLE_BROWSE_DISCOVER_FRIENDS_GOING_TITLE = 'Friends';
-export const EXPLORE_PEOPLE_BROWSE_DISCOVER_HOSTS_GOING_TITLE = 'Hosts';
+export const EXPLORE_PEOPLE_BROWSE_DISCOVER_HOSTS_GOING_TITLE = 'Organizers';
 export const EXPLORE_PEOPLE_BROWSE_DISCOVER_LOOKING_TITLE = 'Looking for company';
 export const EXPLORE_PEOPLE_BROWSE_EMPTY_DISCOVER_LOOKING =
   'No one is posting “looking for” right now — try another date or check back later.';
@@ -59,7 +59,7 @@ export const EXPLORE_PEOPLE_BROWSE_CONNECT_EMPTY = 'No public profiles match rig
 export const EXPLORE_PEOPLE_BROWSE_EVERYONE_PRO_LOCK_LABEL =
   'Unlock unlimited profile views with pro membership';
 export const EXPLORE_PEOPLE_BROWSE_EMPTY_DISCOVER_FOLLOWED =
-  'You are not following anyone yet — follow hosts and members from their profile.';
+  'You are not following anyone yet — follow organizers and members from their profile.';
 export const BUDDIES_DISCOVERY_INTRO =
   'Find members on live outings or browse public profiles — add friends, message, or plan something together.';
 
@@ -100,7 +100,7 @@ export const memberPersonAttendedLine = (count: number): string =>
   count === 1 ? '1 outing attended' : `${count} outings attended`;
 
 export const memberPersonTripHintLine = (trip: SocialPersonTripHintDTO): string => {
-  const verb = trip.role === 'hosting' ? 'Hosting' : 'Going on';
+  const verb = trip.role === 'hosting' ? 'Organizing' : 'Going on';
   const datePart = trip.date ? formatMemberTripDate(trip.date) : 'soon';
   const title = trip.title.trim() || 'an outing';
   return `${verb} ${title} · ${datePart}`;
@@ -345,7 +345,7 @@ export const peopleBrowseGoingCopyParts = (
   }
   const outing = trip.title.trim() || 'an outing';
   const when = trip.date ? `on ${formatPeopleBrowseShortDate(trip.date)}` : 'soon';
-  const verb = trip.role === 'hosting' ? 'is hosting' : 'is going on';
+  const verb = trip.role === 'hosting' ? 'is organizing' : 'is going on';
   return {
     prefix: `${first} ${verb} `,
     outingLabel: outing,

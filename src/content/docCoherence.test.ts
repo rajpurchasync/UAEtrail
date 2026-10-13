@@ -22,10 +22,13 @@ describe('doc coherence (Tier 1)', () => {
     }
   });
 
-  it('MEMBER_MODEL points at host-status and inline naming vocabulary', () => {
+  it('MEMBER_MODEL points at /me/status and inline naming vocabulary', () => {
     const member = readFileSync(join(DOCS, 'MEMBER_MODEL.md'), 'utf8');
-    expect(member).toMatch(/GET \/me\/host-status/);
+    expect(member).toMatch(/GET \/me\/status/);
     expect(member).toMatch(/## Naming vocabulary/);
+    expect(member).toMatch(/workspaceVocabulary\.ts/);
+    expect(member).toMatch(/Host \(UI\)/);
+    expect(member).toMatch(/profileComplete/);
   });
 
   it('removed Tier-4 snapshots are not reintroduced at docs root', () => {

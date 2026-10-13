@@ -1,3 +1,6 @@
+/** When no person or brand name is available on consumer surfaces. */
+export const ORGANIZER_FALLBACK_DISPLAY_NAME = 'Organizer';
+
 /** Demo / onboarding role labels — never shown as a person's name. */
 export const ROLE_PLACEHOLDER_DISPLAY_NAME =
   /^(individual(\s+host)?|agency(\s+(owner|guide))?|shop(\s+owner)?|demo\s+participant|community\s+member|suspended\s+user|host|account)$/i;
@@ -36,7 +39,7 @@ export const resolveHostPersonDisplayName = (input: HostPersonNameInput): string
 export const hostPersonFirstName = (input: HostPersonNameInput): string => {
   const person = resolveHostPersonDisplayName(input);
   if (person) return person.split(/\s+/)[0];
-  return 'Host';
+  return ORGANIZER_FALLBACK_DISPLAY_NAME;
 };
 
 type HostIdentityFields = {
@@ -58,7 +61,7 @@ type HostAvatarIdentityFields = {
 export const resolveActivityHostDisplayName = (activity: HostIdentityFields): string => {
   const name = activity.hostName ?? activity.organizerName;
   if (name?.trim() && !isRolePlaceholderDisplayName(name)) return name.trim();
-  return 'Host';
+  return ORGANIZER_FALLBACK_DISPLAY_NAME;
 };
 
 export const resolveActivityHostUserId = (

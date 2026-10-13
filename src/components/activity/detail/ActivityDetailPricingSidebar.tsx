@@ -5,7 +5,7 @@ import type { ReactNode } from 'react';
 import {
   ShareButton,
   ParticipantPreview,
-  HostMessageButton,
+  MessageMemberButton,
   SecureAvatar,
 } from '../../ui';
 import { activityPriceLabel } from '../../../utils/activityPricing';
@@ -13,7 +13,7 @@ import { showTenantBrand, activityHostAvatar, activityHostName } from '../../../
 import { PARTICIPANT_PRIVACY } from '../../../config/platform';
 import { ActivityCrewChatPostPolicyCard } from '../ActivityCrewChatPostPolicyCard';
 import {
-  ACTIVITY_DETAIL_PRO_HOST_PROFILE_HINT,
+  ACTIVITY_DETAIL_PRO_ORGANIZER_PROFILE_HINT,
   ACTIVITY_DETAIL_PRO_ROSTER_HINT,
   ACTIVITY_DETAIL_PRO_SOCIAL_CTA,
 } from '../../../content/activityDetailCopy';
@@ -142,12 +142,17 @@ export const ActivityDetailPricingSidebar = ({
           </div>
         )}
         {!previewMode && canOpenHostProfile && hostUserId ? (
-          <HostMessageButton hostUserId={hostUserId} activityId={activity.id} size="md" />
+          <MessageMemberButton
+            memberUserId={hostUserId}
+            activityId={activity.id}
+            size="md"
+            messageLabel="Message organizer"
+          />
         ) : null}
       </div>
       {showHostProfileProUpsell ? (
         <p className="mt-3 text-xs leading-relaxed text-amber-900/90">
-          {ACTIVITY_DETAIL_PRO_HOST_PROFILE_HINT}{' '}
+          {ACTIVITY_DETAIL_PRO_ORGANIZER_PROFILE_HINT}{' '}
           <Link to={proSocialMembershipPath} className="font-semibold text-emerald-700 hover:underline">
             {ACTIVITY_DETAIL_PRO_SOCIAL_CTA}
           </Link>

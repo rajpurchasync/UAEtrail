@@ -18,13 +18,12 @@ import {
   MessagesComposeSheet,
   MessagesInboxList,
   MessagesInboxToolbar,
-  NewChatModal,
   useDirectChatThread,
   type DirectChatThreadProps,
   type GroupChatActivityPayload,
 } from '../components/chat';
 import { formatWallInboxPreview } from '../utils/wallMessagePreview';
-import { groupsPath, HOST_MESSAGES_PATH } from '../config/routingCatalog';
+import { groupsPath } from '../config/routingCatalog';
 import { parseMessagesChatReturnTo } from '../utils/activityGroupChatNav';
 import { useChatStream } from '../hooks/useChatStream';
 import { ReportContentDialog } from '../components/ui/ReportContentDialog';
@@ -71,7 +70,7 @@ export const MessagesGate = () => {
     return (
       <GuestTabPlaceholder
         title="Chat"
-        description="Sign in to chat with hosts and your crew."
+        description="Sign in to chat with organizers and your crew."
         intent="peek-details"
       />
     );
@@ -84,7 +83,6 @@ export const Messages = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const location = useLocation();
-  const isHostMessages = location.pathname === HOST_MESSAGES_PATH;
   const [searchParams, setSearchParams] = useSearchParams();
   const [conversations, setConversations] = useState<ChatConversationDTO[]>([]);
   const [groupThreads, setGroupThreads] = useState<InboxThread[]>([]);
@@ -358,22 +356,7 @@ export const Messages = () => {
     ]
   );
 
-  const newChatModal = isHostMessages ? (
-    <NewChatModal
-      open={showNewChat}
-      searchQuery={composeQuery}
-      searching={searching}
-      searchResults={searchResults}
-      onClose={() => {
-        setShowNewChat(false);
-        setComposeQuery('');
-        setSearchResults([]);
-      }}
-      onSearchChange={setComposeQuery}
-      onSelectUser={startConversation}
-      userLabel={userLabel}
-    />
-  ) : (
+  const newChatModal = (
     <MessagesComposeSheet
       open={showNewChat}
       searchQuery={composeQuery}
@@ -444,50 +427,6 @@ export const Messages = () => {
       {reportDialog}
     </>
   ) : null;
-
-  if (isHostMessages && inThread) {
-    return threadFullscreen;
-  }
-
-  if (isHostMessages) {
-    return (
-      <MobileScreen
-        title="Chat"
-        backTo="/host/overview"
-        backLabel="Host console"
-        showBanner={false}
-      >
-        <div className="flex min-h-0 flex-1 flex-col">
-          {error && (
-            <div className="mb-3 flex shrink-0 items-center justify-between rounded-ios border border-red-200 bg-red-50 p-3">
-              <p className="text-sm text-red-700">{error}</p>
-              <button
-                type="button"
-                onClick={() => setError(null)}
-                className="flex min-h-[44px] min-w-[44px] items-center justify-center text-red-400"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-          )}
-          <div className="flex min-h-0 flex-1 overflow-hidden rounded-ios-lg border border-neutral-200 bg-white shadow-ios-sm">
-            <ConversationListPanel
-              mobileShowThread={mobileShowThread}
-              loading={loading}
-              conversations={conversations}
-              selectedUserId={selectedUserId}
-              onNewChat={() => setShowNewChat(true)}
-              onSelect={selectConversation}
-              formatTime={formatTime}
-            />
-            <ChatThreadRouter mode="direct" direct={directThreadProps} />
-          </div>
-          {newChatModal}
-          {reportDialog}
-        </div>
-      </MobileScreen>
-    );
-  }
 
   if (inThread) {
     return threadFullscreen;

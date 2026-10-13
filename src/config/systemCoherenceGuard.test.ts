@@ -19,8 +19,8 @@ const SURFACE_LINKS: Array<{ path: string; constant: string }> = [
   { path: '/notifications', constant: 'NOTIFICATIONS_PATH' },
   { path: '/profile', constant: 'PROFILE_PATH' },
   { path: '/profile/settings', constant: 'PROFILE_SETTINGS_PATH' },
-  { path: '/host/activities', constant: 'HOST_ACTIVITIES_PATH' },
-  { path: '/host/requests', constant: 'HOST_REQUESTS_PATH' },
+  { path: '/operator/activities', constant: 'OPERATOR_ACTIVITIES_PATH' },
+  { path: '/operator/requests', constant: 'OPERATOR_REQUESTS_PATH' },
 ];
 
 const SURFACE_LITERAL_ALLOWLIST = new Set([
@@ -209,12 +209,12 @@ describe('systemCoherenceGuard', () => {
 
   it('S10b host console guards mount fetches with useSafeAsyncEffect', () => {
     const hostPages = [
-      'src/pages/host/Activities.tsx',
-      'src/pages/host/JoinRequests.tsx',
-      'src/pages/host/Places.tsx',
-      'src/pages/host/History.tsx',
-      'src/pages/host/Team.tsx',
-      'src/pages/host/PublicProfileEdit.tsx',
+      'src/pages/operator/Activities.tsx',
+      'src/pages/operator/JoinRequests.tsx',
+      'src/pages/operator/Places.tsx',
+      'src/pages/operator/History.tsx',
+      'src/pages/operator/Team.tsx',
+      'src/pages/operator/PublicProfileEdit.tsx',
     ];
     const hostShell = ['src/console/ConsoleShell.tsx'];
     const missing: string[] = [];
@@ -230,7 +230,7 @@ describe('systemCoherenceGuard', () => {
   it('member profile hooks guard mount fetch with useSafeAsyncEffect', () => {
     const memberAsyncHooks = [
       'src/hooks/useMemberGoals.ts',
-      'src/hooks/useHostStatus.ts',
+      'src/hooks/useMemberStatus.ts',
       'src/hooks/useMemberAvailability.ts',
     ];
     const missing: string[] = [];
@@ -241,6 +241,15 @@ describe('systemCoherenceGuard', () => {
       }
     }
     expect(missing).toEqual([]);
+  });
+
+  it('workspace vocabulary module is canonical for organizer/operator copy', () => {
+    expect(existsSync(join(ROOT, 'src/content/workspaceVocabulary.ts'))).toBe(true);
+    const vocab = readFileSync(join(ROOT, 'src/content/workspaceVocabulary.ts'), 'utf8');
+    expect(vocab).toMatch(/Organizer workspace/);
+    expect(vocab).toMatch(/Operator workspace/);
+    expect(existsSync(join(ROOT, 'src/content/workspaceVocabulary.ts'))).toBe(true);
+    expect(existsSync(join(ROOT, 'src/content/workspaceProductLanguageGuard.test.ts'))).toBe(true);
   });
 
   it('S10e staging checklist script is wired in package.json', () => {

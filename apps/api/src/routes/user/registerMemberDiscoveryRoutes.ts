@@ -8,7 +8,7 @@ import { listBrowsablePublicMembers } from '../../services/member-discovery.js';
 import { resolveMemberDiscoveryQuota } from '../../services/member-discovery-quota.js';
 import { loadMemberDiscoveryRoster } from '../../services/member-discovery-roster.js';
 import { maySeeProfileViewStats } from '../../services/member-entitlements.js';
-import { resolveMemberHostStatus } from '../../services/member-host-status.js';
+import { resolveMemberStatus } from '../../services/member-status.js';
 import {
   countMemberProfileViewsSince,
   countUniqueMemberProfileViewersSince,
@@ -55,7 +55,7 @@ export const registerMemberDiscoveryRoutes = (router: Router): void => {
   router.get('/me/member-discovery-quota', async (req, res, next) => {
     try {
       const viewerUserId = req.auth!.userId;
-      const hostStatus = await resolveMemberHostStatus(viewerUserId);
+      const hostStatus = await resolveMemberStatus(viewerUserId);
       const data = await resolveMemberDiscoveryQuota(viewerUserId, hostStatus);
       res.json({ data });
     } catch (error) {
@@ -93,7 +93,7 @@ export const registerMemberDiscoveryRoutes = (router: Router): void => {
   router.get('/me/profile-view-stats', async (req, res, next) => {
     try {
       const viewerUserId = req.auth!.userId;
-      const hostStatus = await resolveMemberHostStatus(viewerUserId);
+      const hostStatus = await resolveMemberStatus(viewerUserId);
       if (!maySeeProfileViewStats({ viewerUserId, hostStatus })) {
         throw new ApiError(
           403,

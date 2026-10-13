@@ -1,6 +1,7 @@
 import type { HostPersonNameInput } from './host-display.js';
 import {
   isRolePlaceholderDisplayName,
+  ORGANIZER_FALLBACK_DISPLAY_NAME,
   resolveHostPersonDisplayName,
 } from './host-display.js';
 import { hostBrandProfilePath, memberProfilePath, shopPublicPath } from './entity-path.js';
@@ -14,7 +15,7 @@ export const publishesActivityAsIndividual = (kind: PublishingProfileKind): bool
 export const exploreActivityPublisherTypeLabel = (
   kind: PublishingProfileKind | null | undefined
 ): string => {
-  if (!kind || publishesActivityAsIndividual(kind)) return 'Host';
+  if (!kind || publishesActivityAsIndividual(kind)) return ORGANIZER_FALLBACK_DISPLAY_NAME;
   switch (kind) {
     case 'pro_guide':
       return 'Professional';
@@ -29,7 +30,7 @@ export const exploreActivityPublisherTypeLabel = (
     case 'partner':
       return 'Partner';
     default:
-      return 'Host';
+      return ORGANIZER_FALLBACK_DISPLAY_NAME;
   }
 };
 
@@ -43,7 +44,7 @@ export const resolveActivityPublisherDisplayName = (input: {
   if (!publishesActivityAsIndividual(input.publishingProfileKind)) {
     if (tenant && !isRolePlaceholderDisplayName(tenant)) return tenant;
   }
-  return resolveHostPersonDisplayName(input.person) ?? 'Host';
+  return resolveHostPersonDisplayName(input.person) ?? ORGANIZER_FALLBACK_DISPLAY_NAME;
 };
 
 /** Where the publisher row should link — never treat a person as an “organisation” surface. */

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import { MoreHorizontal } from 'lucide-react';
 import { EXPLORE_PEEK_CTA, EXPLORE_Z } from '../../config/exploreTheme';
-import { hostActivityManageCapabilities } from '../../host/hostActivityManageCapabilities';
+import { activityManageCapabilities } from '../../activity/activityManageCapabilities';
 import { ExploreResponsiveSheet } from '../../explore/ui/ExploreResponsiveSheet';
 
 export type HostActivityCtaHandlers = {
@@ -41,7 +41,7 @@ export const HostActivityCtas = ({
   variant = 'default',
 }: HostActivityCtasProps) => {
   const [manageOpen, setManageOpen] = useState(false);
-  const caps = hostActivityManageCapabilities(activity, { canAddLinkedRide });
+  const caps = activityManageCapabilities(activity, { canAddLinkedRide });
   const published = activity.status === 'published';
   const showChat = caps.showGroupChat;
   const showCarpool = Boolean(handlers.onAddCarpool && linkRideshareTenantId && caps.showLinkRideshare);

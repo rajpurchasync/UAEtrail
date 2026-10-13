@@ -22,7 +22,7 @@ import { accountRouteByRole } from '../../utils/authRouting';
 import { buildSignInRedirect, signInPathForReturn } from '../../utils/authReturnContext';
 import { SecureAvatar } from '../ui/SecureAvatar';
 import { useNotificationUnreadCount } from '../../hooks/useNotificationUnreadCount';
-import { useHostStatus } from '../../hooks/useHostStatus';
+import { useMemberStatus } from '../../hooks/useMemberStatus';
 
 export type MobileMenuTone = 'default' | 'light';
 
@@ -375,12 +375,12 @@ const MobileMenuPanel = () => {
   const { pathname, search } = useLocation();
   const navigate = useNavigate();
   const { user, signOut, refreshUser } = useAuth();
-  const { canAccessHostConsole } = useHostStatus({ enabled: Boolean(user) });
+  const { canAccessPublishingWorkspace } = useMemberStatus({ enabled: Boolean(user) });
   const unreadNotifications = useNotificationUnreadCount();
   const { href: signInHref } = buildSignInRedirect({ pathname, search });
 
   const isAdminRole = user?.role === 'platform_admin';
-  const isPrivilegedRole = canAccessHostConsole || isAdminRole;
+  const isPrivilegedRole = canAccessPublishingWorkspace || isAdminRole;
   const onAdminConsole = pathname.startsWith('/admin');
   const onHostConsole = pathname.startsWith('/host') || pathname.startsWith('/organizer');
   const canSwitchBack = user?.role === 'participant' && Boolean(user?.switchedFromRole);
@@ -455,14 +455,14 @@ const MobileMenuPanel = () => {
     );
   }
 
-  if (canAccessHostConsole && onHostConsole) {
+  if (canAccessPublishingWorkspace && onHostConsole) {
     return (
       <MobileDrawer
         open={open}
         closeMenu={closeMenu}
         eyebrow="Organise"
         title={user?.displayName || 'Account'}
-        ariaLabel="Host console navigation"
+        ariaLabel="Workspace navigation"
       >
         <DashboardDrawerLinks links={HOST_CONSOLE_LINKS} pathname={pathname} closeMenu={closeMenu} />
         <DashboardDrawerSiteLink closeMenu={closeMenu} />

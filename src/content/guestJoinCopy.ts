@@ -7,7 +7,7 @@ export const GUEST_GATE_OOPS_TITLE = 'Oops — you are not signed in';
 
 /** Mobile explore dismissible banner (after coach marks). */
 export const guestJoinBannerBody = (): string =>
-  'Save outings, message hosts, and show up with a crew — free to join.';
+  'Save outings, message organizers, and show up with a crew — free to join.';
 
 export type GuestJoinSheetIntent = 'activity' | 'place';
 
@@ -35,6 +35,6 @@ export const guestJoinSheetBody = (input: GuestJoinCopyInput): string => {
       : 'Join the community today to say you’re going, meet the group, and keep your plans in one place.';
   }
   return title
-    ? `Join the community today to request a spot on “${title}” and message the host before you go together.`
-    : 'Join the community today to request outings and chat with hosts before you head outside.';
+    ? `Join the community today to request a spot on “${title}” and message the organizer before you go together.`
+    : 'Join the community today to request outings and chat with organizers before you head outside.';
 };

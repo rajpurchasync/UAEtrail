@@ -257,7 +257,7 @@ describe('detail surface lineage (host publish → activity detail)', () => {
     expect(res.body.presentation).toBeTruthy();
   });
 
-  it('host POST /host/activities + publish exposes GET /activities/:id', async () => {
+  it('operator POST /operator/activities + publish exposes GET /activities/:id', async () => {
     expect(hostFixture).toBeTruthy();
     const hostEmail = `org-${hostFixtureSuffix}@test.local`;
     const login = await request(app)
@@ -278,7 +278,7 @@ describe('detail surface lineage (host publish → activity detail)', () => {
     expect(signup.status).toBe(200);
 
     const create = await request(app)
-      .post('/api/v1/host/activities')
+      .post('/api/v1/operator/activities')
       .set('Authorization', `Bearer ${hostToken}`)
       .set('x-tenant-id', hostFixture!.tenantId)
       .send({
@@ -297,7 +297,7 @@ describe('detail surface lineage (host publish → activity detail)', () => {
     httpPublishedActivityId = create.body.data.id as string;
 
     const publish = await request(app)
-      .post(`/api/v1/host/activities/${httpPublishedActivityId}/publish`)
+      .post(`/api/v1/operator/activities/${httpPublishedActivityId}/publish`)
       .set('Authorization', `Bearer ${hostToken}`)
       .set('x-tenant-id', hostFixture!.tenantId);
 

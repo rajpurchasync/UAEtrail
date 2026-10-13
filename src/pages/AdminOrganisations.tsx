@@ -227,7 +227,7 @@ export const AdminOrganisations = () => {
                         )}
                         {app.requestedTenantId && (
                           <button onClick={() => openTenantDetail(app.requestedTenantId!)}
-                            className="px-2 py-1 rounded bg-gray-100 text-gray-800 hover:bg-gray-200 text-xs">Host profile</button>
+                            className="px-2 py-1 rounded bg-gray-100 text-gray-800 hover:bg-gray-200 text-xs">Publishing profile</button>
                         )}
                       </div>
                     </td>
@@ -253,7 +253,7 @@ export const AdminOrganisations = () => {
                     tenantFilter === f ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
-                  {f === 'all' ? 'All hosts' : f}
+                  {f === 'all' ? 'All publishers' : f}
                 </button>
               ))}
             </div>
@@ -297,7 +297,7 @@ export const AdminOrganisations = () => {
                     </tr>
                   ))}
                   {filteredTenants.length === 0 && (
-                    <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-500">No hosts found</td></tr>
+                    <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-500">No publishing accounts found</td></tr>
                   )}
                 </tbody>
               </table>
@@ -310,7 +310,7 @@ export const AdminOrganisations = () => {
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setConfirmTarget(null)}>
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              {confirmTarget.status === 'active' ? 'Suspend host?' : 'Reopen host?'}
+              {confirmTarget.status === 'active' ? 'Suspend publisher?' : 'Reopen publisher?'}
             </h3>
             <p className="text-sm text-gray-600 mb-1">
               {confirmTarget.status === 'active'
@@ -367,7 +367,7 @@ export const AdminOrganisations = () => {
             <div className="flex justify-between items-start mb-4">
               <div>
                 <h2 className="text-lg font-semibold text-gray-900">
-                  {applicationDetail.metadata?.hostProfileType === 'shop' ? 'Shop application' : 'Host application'}
+                  {applicationDetail.metadata?.hostProfileType === 'shop' ? 'Shop application' : 'Publishing application'}
                 </h2>
                 <p className="text-sm text-gray-500">{applicationDetail.requestedName} · {applicationDetail.requestedType.replace(/_/g, ' ')}</p>
               </div>
@@ -404,7 +404,7 @@ export const AdminOrganisations = () => {
 
               {metaField('Profile type', profileTypeLabel(applicationDetail))}
               {metaField('Display name', applicationDetail.metadata?.hostDisplayName)}
-              {metaField('Host name', applicationDetail.metadata?.requestedName)}
+              {metaField('Brand name', applicationDetail.metadata?.requestedName)}
               {metaField('Date of birth', applicationDetail.metadata?.dateOfBirth)}
               {metaField('Bio', applicationDetail.metadata?.bio)}
               {metaField('Website', applicationDetail.metadata?.website)}
@@ -453,7 +453,7 @@ export const AdminOrganisations = () => {
                 {applicationDetail.requestedTenantId && (
                   <button onClick={() => { setApplicationDetail(null); openTenantDetail(applicationDetail.requestedTenantId!); }}
                     className="px-3 py-2 rounded-lg bg-blue-100 text-blue-800 text-sm font-medium hover:bg-blue-200">
-                    View host
+                    View publisher
                   </button>
                 )}
                 {applicationDetail.requestedSlug && applicationDetail.status === 'approved' && (

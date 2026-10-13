@@ -16,11 +16,11 @@ import { ExploreCardTypeIcon } from './ExploreCardTypeIcon';
 import type { ExplorePeekDetailAccess } from '../../access/mapViewerAccessToUi';
 import { proMembershipPath } from '../../config/routingCatalog';
 import {
-  ACTIVITY_DETAIL_PRO_HOST_PROFILE_HINT,
+  ACTIVITY_DETAIL_PRO_ORGANIZER_PROFILE_HINT,
   ACTIVITY_DETAIL_PRO_ROSTER_HINT,
   ACTIVITY_DETAIL_PRO_SOCIAL_CTA,
 } from '../../content/activityDetailCopy';
-import { ACTIVITY_PEEK_MY_HOST_PROFILE_SUBTITLE } from '../../content/activityPeekCopy';
+import { ACTIVITY_PEEK_MY_ORGANIZER_PROFILE_SUBTITLE } from '../../content/activityPeekCopy';
 import { resolveActivityMapPeekStrips } from '../../activity/activityPeekEngagement';
 
 const detailIcon = (icon: ExploreCardDetailIcon) => {
@@ -406,7 +406,7 @@ export const ExploreCardPeopleRow = ({
   const showMyHostProfileSubtitle =
     card.source === 'activity' && resolveActivityMapPeekStrips(card).showHostSelfProfileLink;
   const hostProfileSubtitle = (base: string) =>
-    showMyHostProfileSubtitle ? ACTIVITY_PEEK_MY_HOST_PROFILE_SUBTITLE : base;
+    showMyHostProfileSubtitle ? ACTIVITY_PEEK_MY_ORGANIZER_PROFILE_SUBTITLE : base;
 
   const showHostRow =
     Boolean(hostName || card.hostAvatar) &&
@@ -481,9 +481,13 @@ export const ExploreCardPeopleRow = ({
           <p className="text-sm font-semibold text-gray-900">{hostName}</p>
           <p className={`text-xs font-medium ${EXPLORE_TYPE.muted}`}>
             {showMyHostProfileSubtitle
-              ? ACTIVITY_PEEK_MY_HOST_PROFILE_SUBTITLE
+              ? ACTIVITY_PEEK_MY_ORGANIZER_PROFILE_SUBTITLE
               : personRoleLabel ??
-                (exploreCardIsSeeking(card) ? 'Posted this request' : card.source === 'shop' ? 'Shop contact' : 'Host')}
+                (exploreCardIsSeeking(card)
+                  ? 'Posted this request'
+                  : card.source === 'shop'
+                    ? 'Shop contact'
+                    : 'Organizer')}
           </p>
         </div>
       </div>
@@ -495,7 +499,7 @@ export const ExploreCardPeopleRow = ({
       {hostRow}
       {showHostProfileProUpsell ? (
         <p className="text-xs leading-relaxed text-amber-900/90">
-          {ACTIVITY_DETAIL_PRO_HOST_PROFILE_HINT}{' '}
+          {ACTIVITY_DETAIL_PRO_ORGANIZER_PROFILE_HINT}{' '}
           <Link
             to={proMembershipPath({ intent: 'discover-members' })}
             className="font-semibold text-emerald-700 hover:underline"

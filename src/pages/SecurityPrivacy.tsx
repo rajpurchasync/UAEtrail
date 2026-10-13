@@ -53,9 +53,10 @@ export const SecurityPrivacy = () => {
   const [visibilityMessage, setVisibilityMessage] = useState<string | null>(null);
   const requiresOtp = import.meta.env.PROD;
 
-  const isHostPath = location.pathname.startsWith('/host/');
-  const backPath = isHostPath ? '/host/overview' : '/profile';
-  const backLabel = isHostPath ? 'Host console' : 'Profile';
+  const isConsolePath =
+    location.pathname.startsWith('/operator/') || location.pathname.startsWith('/host/');
+  const backPath = isConsolePath ? '/operator/overview' : '/profile';
+  const backLabel = isHostPath ? 'Workspace' : 'Profile';
 
   useEffect(() => {
     void fetchMeProfile()

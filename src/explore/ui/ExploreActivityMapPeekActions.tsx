@@ -1,6 +1,6 @@
 import type { ActivityMapPeekAction, ActivityMapPeekActionId } from '@uaetrail/shared-types';
 import { EXPLORE_PEEK_CTA } from '../../config/exploreTheme';
-import { LIST_FEED_CTA_MESSAGE_HOST } from '../../list/listFeedCtaCopy';
+import { LIST_FEED_CTA_MESSAGE_ORGANIZER } from '../../list/listFeedCtaCopy';
 import { activityMapPeekActionLabel } from '../exploreMapPeekActionCopy';
 import { canLinkRideshareToActivity } from '../linkActivityRideshareOffer';
 import type { ExploreCardModel } from '../exploreCardModel';
@@ -39,7 +39,7 @@ const dualSecondaryClass =
 
 const actionLabel = (action: ActivityMapPeekAction, card: ExploreCardModel): string => {
   if (action.id === 'request_join') return card.primaryCta;
-  if (action.id === 'message_host') return LIST_FEED_CTA_MESSAGE_HOST;
+  if (action.id === 'message_host') return LIST_FEED_CTA_MESSAGE_ORGANIZER;
   return activityMapPeekActionLabel(action.id, action);
 };
 

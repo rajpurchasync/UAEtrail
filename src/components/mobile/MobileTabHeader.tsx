@@ -15,7 +15,7 @@ import {
   isProfileHistoryListPath,
 } from '../../config/routingCatalog';
 import { joinedSubViewTitle } from '../../pages/activities/shared';
-import { useHostStatus } from '../../hooks/useHostStatus';
+import { useMemberStatus } from '../../hooks/useMemberStatus';
 import { memberCanManageHostedActivities } from '../../utils/hostedActivitiesGate';
 import { PRODUCT_PLAN_SURFACE_TITLE } from '../../content/productNorthStar';
 import { ConsumerHeaderActions } from '../layout/ConsumerHeaderActions';
@@ -46,8 +46,8 @@ const resolveCenter = (
 export const MobileTabHeader = () => {
   const { pathname, search } = useLocation();
   const { user } = useAuth();
-  const gate = useHostStatus({ enabled: Boolean(user) });
-  const canHost = memberCanManageHostedActivities(user, gate.canAccessHostConsole);
+  const gate = useMemberStatus({ enabled: Boolean(user) });
+  const canHost = memberCanManageHostedActivities(user, gate.canAccessPublishingWorkspace);
 
   const visible = shouldShowMobileUnifiedTabHeader(pathname, search, Boolean(user));
   const center = resolveCenter(pathname, search, canHost);

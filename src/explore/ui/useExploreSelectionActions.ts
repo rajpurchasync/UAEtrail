@@ -24,7 +24,7 @@ import { invalidateMyParticipantIntentsQueries } from '../../hooks/participantIn
 import type { ContributeSubmitResult } from './contributeFlow';
 import type { DemandSubmitResult } from './demandFlow';
 import type { useExploreBrowseUrlState } from './useExploreBrowseUrlState';
-import type { HostActivityManageInitialView } from '../../components/host/hostActivityManageViews';
+import type { ActivityManageInitialView } from '../../components/activity/activityManageViews';
 import { buildExploreSelectionSelectedCard } from '../exploreSelectionSelectedCard';
 import { useExploreSelectionPeekJoin } from './useExploreSelectionPeekJoin';
 import { useExploreActivityPinDeepLink } from './useExploreActivityPinDeepLink';
@@ -52,7 +52,7 @@ type UseExploreSelectionActionsArgs = {
   onCreateLinkedRideshare?: (parent: ActivityDTO) => void;
   onOpenHostManage?: (
     activity: ActivityDTO,
-    initialView?: HostActivityManageInitialView
+    initialView?: ActivityManageInitialView
   ) => void;
   onShareHostedActivity?: (activity: ActivityDTO) => void;
 };

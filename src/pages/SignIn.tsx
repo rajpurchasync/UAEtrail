@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-do
 import { ChevronLeft, Mail, Lock, Mountain, X } from 'lucide-react';
 import { setActiveTenantId } from '../api/tenant';
 import { fetchMeProfile } from '../hooks/memberProfileApi';
-import { fetchMemberHostStatus } from '../hooks/memberHostStatusApi';
+import { fetchMemberStatus } from '../hooks/memberStatusApi';
 import { GoogleAuthSection } from '../components/auth/GoogleAuthSection';
 import { useAuth } from '../context/AuthContext';
 import { accountRouteByRole, defaultRouteByRole } from '../utils/authRouting';
@@ -108,9 +108,10 @@ export const SignIn = () => {
 
     clearAuthReturnContext();
 
-    const hostStatus = await fetchMemberHostStatus().catch(() => null);
-    if (hostStatus?.tenantId) {
-      setActiveTenantId(hostStatus.tenantId);
+    const memberStatus = await fetchMemberStatus().catch(() => null);
+    const tenantId = memberStatus?.publish.tenantId ?? memberStatus?.tenantId;
+    if (tenantId) {
+      setActiveTenantId(tenantId);
     }
 
     navigate(

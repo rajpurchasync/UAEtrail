@@ -5,5 +5,5 @@ export const ACTIVITY_PEEK_SECTION_LOGISTICS = 'Rides & spots';
 export const activityPeekPendingInviteChipLabel = (count: number): string =>
   count === 1 ? '1 invited' : `${count} invited`;
 
-/** Host viewing their own outing on map peek (`mapPeekStrips.showHostSelfProfileLink`). */
-export const ACTIVITY_PEEK_MY_HOST_PROFILE_SUBTITLE = 'My host profile · view profile';
+/** Organizer viewing their own outing on map peek (`mapPeekStrips.showHostSelfProfileLink`). */
+export const ACTIVITY_PEEK_MY_ORGANIZER_PROFILE_SUBTITLE = 'My organizer profile · view profile';

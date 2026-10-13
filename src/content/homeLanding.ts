@@ -11,7 +11,7 @@ export const HOME_HERO_HEADLINE = 'Find your hike, camp and outdoor crew';
 export const HOME_HERO_HEADLINE_MOBILE = HOME_HERO_HEADLINE;
 
 export const HOME_HERO_SUBLINE =
-  'Discover trails and group outings on a live map, request to join with a verified host, and show up with people who actually follow through.';
+  'Discover trails and group outings on a live map, request to join with a verified organizer, and show up with people who actually follow through.';
 
 /** Shorter hero copy for mobile — outcome first; map/hosts live in sections below. */
 export const HOME_HERO_SUBLINE_MOBILE =
@@ -24,9 +24,9 @@ export const HOME_HERO_JOIN_CTA_DESKTOP = PRODUCT_JOIN_CTA;
 
 export const HOME_PROOF_STATS = [
   {
-    label: 'Verified Hosts',
+    label: 'Verified organizers',
     shortLabel: 'Verified',
-    detail: 'Every activity has a named host who approves who joins.',
+    detail: 'Every activity has a named organizer who approves who joins.',
   },
   {
     label: 'Community Driven',
@@ -49,13 +49,13 @@ export const HOME_PROOF_PILLS = HOME_PROOF_STATS.map((s) => ({
 export const HOME_VALUE_SECTION = {
   eyebrow: 'Why UAE Trail',
   title: 'Less scrolling group chats. More real plans on the map.',
-  subtitle: 'Discover outings, connect with hosts, and show up with people who follow through.',
+  subtitle: 'Discover outings, connect with organizers, and show up with people who follow through.',
 } as const;
 
 export const HOME_VALUE_PROPS = [
   {
     title: 'Real plans on the map',
-    tagline: 'Hikes, camps, and runs with date, time, price, and a named host.',
+    tagline: 'Hikes, camps, and runs with date, time, price, and a named organizer.',
     description:
       'Filter by emirate, read the full plan, then decide — not a vague “we should go sometime”.',
   },
@@ -63,7 +63,7 @@ export const HOME_VALUE_PROPS = [
     title: 'Join one or post yours',
     tagline: 'Request to join a plan, or post what you want if nothing fits today.',
     description:
-      'The host approves who joins. Group chat opens so you know who you are meeting.',
+      'The organizer approves who joins. Group chat opens so you know who you are meeting.',
   },
   {
     title: 'Same crew, next time',
@@ -78,7 +78,7 @@ export const HOME_PRODUCT_PREVIEW = {
   subtitle:
     'Outings near you on the map — tap a pin, connect with the group, and join when you’re ready.',
   activityTitle: 'Jebel Jais sunrise hike',
-  activityMeta: 'Saturday · RAK · Host approved',
+  activityMeta: 'Saturday · RAK · Organizer approved',
   activitySpots: '4 spots left',
 } as const;
 
@@ -130,7 +130,7 @@ export const HOME_LANDING_FALLBACK_ACTIVITIES: HomeLandingActivity[] = [
 
 export const HOME_LIVE_SECTION = {
   title: 'Activities near you',
-  subtitle: 'Real group plans posted by hosts and members — join from the map or say what you want.',
+  subtitle: 'Real group plans posted by organizers and members — join from the map or say what you want.',
   /** Shown on mobile when live API is healthy (full subtitle stays on desktop). */
   subtitleMobileLive: 'Real group plans on the map — tap to browse.',
   viewAllLabel: 'View all',
@@ -151,7 +151,7 @@ export const HOME_DAY_TIMELINE = {
       step: '02',
       title: 'Join or post yours',
       line: 'Request to join a plan, or post what you’re looking for.',
-      detail: 'The host approves who joins. Group chat opens so you can align before go-day.',
+      detail: 'The organizer approves who joins. Group chat opens so you can align before go-day.',
     },
     {
       step: '03',
@@ -172,7 +172,7 @@ export const HOME_TESTIMONIALS = [
     name: 'Fatima Al Mazrouei',
     location: 'Dubai',
     rating: 5,
-    text: 'Found a Jebel Jais group in minutes. The host was organised, the group chat was clear, and everyone showed up on time.',
+    text: 'Found a Jebel Jais group in minutes. The organizer was organised, the group chat was clear, and everyone showed up on time.',
   },
   {
     name: 'James Mitchell',
@@ -184,7 +184,7 @@ export const HOME_TESTIMONIALS = [
     name: 'Sara Ahmed',
     location: 'RAK',
     rating: 5,
-    text: 'My first solo hike felt safe because the activity had a verified host, a clear meeting point, and a visible group list.',
+    text: 'My first solo hike felt safe because the activity had a verified organizer, a clear meeting point, and a visible group list.',
   },
   {
     name: 'Mohammed Al Hashmi',

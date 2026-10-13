@@ -33,7 +33,7 @@ const GATE_COPY: Record<Exclude<GuestBrowseGateIntent, 'join-activity'>, GateCop
   'peek-details': {
     title: GUEST_GATE_OOPS_TITLE,
     body:
-      'Join the community today to meet hosts, say you’re going, save places you love, and message your crew before you head outside.',
+      'Join the community today to meet organizers, say you’re going, save places you love, and message your crew before you head outside.',
   },
   'member-profile': {
     title: GUEST_GATE_OOPS_TITLE,

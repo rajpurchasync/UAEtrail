@@ -14,7 +14,7 @@ Tracks the **no big-bang** plan from the host-flow audit (Oct 2026). Member tier
 |------|--------|--------|
 | Tenant middleware: **owner OR membership** + backfill row | ✅ | `middleware/tenant.ts`, `buddy-host-tenant.ts` |
 | Migration: missing owner `tenant_memberships` | ✅ | `mongo-migrations.ts` → `backfillTenantOwnerMemberships` |
-| `canPublish` + `signupProfileComplete` on `/me/host-status` | ✅ | `member-host-status.ts` |
+| `canPublish` + `profileComplete` on `/me/status` | ✅ | `member-status.ts` |
 | Server enforce on create/publish | ✅ | `member-publish-gate.ts` |
 | Product docs (`CREATE_FLOW`, `DOMAIN`, `NORTHSTAR` mechanisms) | ✅ | Tier-1 only; [`archive/README.md`](./archive/README.md) for removed plans |
 
@@ -47,7 +47,7 @@ Tracks the **no big-bang** plan from the host-flow audit (Oct 2026). Member tier
 | Item | Status | Where |
 |------|--------|--------|
 | Extract legacy fulfill route from `host.ts` | ✅ | `routes/host/registerHostDemandFulfillLegacy.ts` |
-| `GET /me/host-status` in dedicated registrar | ✅ | `registerMemberHostStatusRoutes.ts` |
+| `GET /me/status` in dedicated registrar | ✅ | `registerMemberStatusRoutes.ts` |
 | Split `host.ts` — team + activity request queue | ✅ | `registerHostTeamRoutes`, `registerHostActivityRequestRoutes` (`/host/requests`) |
 | Split remainder of `host.ts` (activities CRUD, roster) | ✅ | `registerHostActivityRoutes.ts`, `registerHostActivityParticipantRoutes.ts` |
 | Host submitted locations (`GET/POST /host/locations`) | ✅ | `registerHostSubmittedLocationRoutes.ts` |
@@ -83,6 +83,45 @@ Tracks the **no big-bang** plan from the host-flow audit (Oct 2026). Member tier
 |------|--------|--------|
 | `dev:local` console hint for seed + runbook | ✅ | `scripts/dev-local.mjs`, `DEV_RUN.md` |
 | Opt-in auto-seed when map empty | ⬜ | Needs API health probe; use manual `SEED_DATA=true` for now |
+
+---
+
+## P4 — Publishing console wire migration (`/operator/*`)
+
+| Item | Status | Where |
+|------|--------|--------|
+| Canonical FE routes `/operator/*`; legacy `/host/*` + `/organizer/*` redirect | ✅ | `App.tsx`, `surfacePaths.ts` |
+| API tenant router `/operator` only; legacy `/host/*` rewritten + deprecation headers | ✅ | `legacy-host-api-rewrite.ts`, `routes/operator/` |
+| FE HTTP client uses `/operator/…` for tenant CRUD | ✅ | `src/api/domains/activities.ts`, `organisation.ts`, `places.ts` |
+| Chat stays `/chat` only (`/host/messages` redirect) | ✅ | `App.tsx`, `NAVIGATION.md` |
+| **`GET /me/status`** (legacy `/me/host-status`, `/me/operator-status` rewritten — no parallel handlers) | ✅ | `registerMemberStatusRoutes.ts`, `legacy-member-status-path-rewrite.ts`, `memberApi.getMemberStatus` |
+| Explore map `featuredPerson.role: organizer` (wire `host` compat) | ✅ | `explore-person.ts` |
+| `src/pages/operator/*` + `useMemberStatus` | ✅ | `useHostStatus` / `useOperatorStatus` / `pages/host` removed |
+| `publish.canAccessPublishingWorkspace` on `/me/status` | ✅ | Wire `canAccessHostConsole` compat on DTO |
+| `registerOperatorActivityRoutes` (no `registerHost*` under `routes/operator/`) | ✅ | SN-8 |
+| `Deprecation` + `Link` (`rel=alternate`) on legacy `/host/*` and legacy member status URLs | ✅ | `legacy-publishing-path-deprecation.ts` |
+| `apiLegacyGuard` bans `api.listHostActivities` / `createHostActivity` / `getHostActivityJoinRequests` outside `src/api` | ✅ | Use tenant-scoped **activity** methods (see SN-3; interim `*Operator*` on `api`) |
+| `operatorActivityClientApi` import facade (ban `hostActivityClientApi` outside shim files) | ✅ | `hostMemberGuard`, `publishingConsoleHookGuard` — **rename** to tenant activity client in SN-3 |
+| `HostStatusDTO` field rename + drop legacy `/host` API mount | ⬜ | After clients consume `/operator` only |
+
+---
+
+## P5 — Structural naming (bounded context — not Host→Organizer swaps)
+
+**Policy:** [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §13 · **Guard:** `src/config/moduleNamingGuard.test.ts`
+
+| Phase | Outcome | Status |
+|-------|---------|--------|
+| **SN-1** | Communication: `MessageMemberButton`; remove `isHostMessages`; shims for `HostMessageButton` / `OrganizerMessageButton`; `COMMUNICATION.md` one inbox | ✅ |
+| **SN-2** | Activity manage: `src/activity/*` + `components/activity/*` (no `components/host`, `activity-manage`, or `activity/manage` trees) | ✅ |
+| **SN-3** | **Activity-centric client:** `tenantActivityClientApi`, `useMemberStatus`; legacy `operatorActivityClientApi` / status shims only — see [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §13.2.1 | ✅ |
+| **SN-4** | API `routes/operator/` + `operator.ts` mount; `/host` API prefix rewritten (no dual mount) | ✅ |
+| **SN-5** | **`GET /me/status`** + `MemberStatusDTO.publish`; client `useMemberStatus` / `getMemberStatus` (legacy `/me/host-status` + shims) | ✅ wire flatten → SN-8 |
+| **SN-6** | Explore/Plan/List: no new `Explore*` / `Plan*` / `Browse*` / `List*` exports outside owning folders (`moduleNamingGuard.test.ts`) | ✅ |
+| **SN-7** | `App.tsx` lazy symbols `Operator*` not `Host*` for console pages | ✅ |
+| **SN-8** | Delete deprecated shims + `registerHost*` operator registrars; canonical `member-status` / `registerOperator*` | ✅ |
+
+**Explicitly out of scope for P5:** renaming Mongo collections; changing public SEO URLs; consumer copy in `workspaceVocabulary.ts` (already separate).
 
 ---
 

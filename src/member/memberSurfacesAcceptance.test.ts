@@ -171,8 +171,8 @@ describe('member surfaces §11 acceptance (automated)', () => {
     const hosted = read('src/components/plan/PlanHostingUpcoming.tsx');
     expect(hosted).toContain('ActivityManageSheet');
     expect(hosted).not.toMatch(/\/host\/requests|HOST_REQUESTS_PATH/);
-    const sheet = read('src/components/host/ActivityManageSheet.tsx');
-    expect(sheet).toContain('decideHostActivityJoinRequest');
+    const sheet = read('src/components/activity/ActivityManageSheet.tsx');
+    expect(sheet).toContain('decideActivityJoinRequest');
     expect(sheet).toContain('tripsHostedActivityPath');
   });
 
@@ -252,7 +252,7 @@ describe('member surfaces §11 acceptance (automated)', () => {
 
   it('AD-arch: activity detail uses single shell (no HostActivityDetailView shim)', () => {
     const files = [
-      'src/components/host/ActivityManageSheet.tsx',
+      'src/components/activity/ActivityManageSheet.tsx',
       'src/pages/ActivityDetail.tsx',
     ];
     for (const file of files) {
@@ -260,7 +260,7 @@ describe('member surfaces §11 acceptance (automated)', () => {
       expect(content).toContain('ActivityDetailView');
       expect(content).not.toContain('HostActivityDetailView');
     }
-    expect(() => read('src/components/host/HostActivityDetailView.tsx')).toThrow();
+    expect(() => read('src/components/activity/HostActivityDetailView.tsx')).toThrow();
     expect(() => read('src/explore/activityMapPeekActions.ts')).toThrow();
   });
 
@@ -292,7 +292,7 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(sidebar).toContain('ActivityCrewChatPostPolicyCard');
     expect(sidebar).toContain('groupChatPostPolicy');
     const card = read('src/components/activity/ActivityCrewChatPostPolicyCard.tsx');
-    expect(card).toContain('updateHostActivity');
+    expect(card).toContain('updateActivityGroupChatPostPolicy');
     const audience = read('src/explore/ui/organizeWizard/steps/audience-step.tsx');
     expect(audience).toContain('OrganizeCrewChatPostPolicyField');
     expect(audience).toContain('groupChatPostPolicy');
@@ -340,7 +340,7 @@ describe('member surfaces §11 acceptance (automated)', () => {
   it('AD-5: transport offer/add gated on wire entitlements', () => {
     const hostCtas = read('src/components/activity/HostActivityCtas.tsx');
     expect(hostCtas).toContain('canAddLinkedRide');
-    const caps = read('src/host/hostActivityManageCapabilities.ts');
+    const caps = read('src/activity/activityManageCapabilities.ts');
     expect(caps).toContain('canAddLinkedRide');
     const offer = read('src/explore/linkActivityRideshareOffer.ts');
     expect(offer).toContain('canShowDemandLinkRideshareOffer');

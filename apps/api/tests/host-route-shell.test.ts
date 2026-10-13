@@ -1,15 +1,20 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 
 const read = (rel: string) => readFileSync(join(process.cwd(), rel), 'utf8');
 
-describe('host route mount shell', () => {
-  it('delegates to register* modules only', () => {
-    const host = read('src/routes/host.ts');
-    expect(host).toMatch(/registerHostSubmittedLocationRoutes/);
-    expect(host).toMatch(/registerHostActivityRoutes/);
-    expect(host).not.toMatch(/registerHostTenantActivityRoutes/);
-    expect(host).not.toMatch(/hostRouter\.(get|post|patch|delete)\(/);
+describe('operator route mount shell', () => {
+  it('delegates to registerOperator* modules only', () => {
+    const operator = read('src/routes/operator.ts');
+    expect(operator).toMatch(/registerOperatorSubmittedLocationRoutes/);
+    expect(operator).toMatch(/registerOperatorActivityRoutes/);
+    expect(operator).not.toMatch(/registerHost/);
+    expect(operator).not.toMatch(/operatorRouter\.(get|post|patch|delete)\(/);
+  });
+
+  it('does not ship a parallel routes/host mount shell', () => {
+    expect(existsSync(join(process.cwd(), 'src/routes/host.ts'))).toBe(false);
+    expect(existsSync(join(process.cwd(), 'src/routes/host'))).toBe(false);
   });
 });

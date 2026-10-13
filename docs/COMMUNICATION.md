@@ -8,14 +8,15 @@
 
 | Surface | Route | What it is |
 |---------|--------|------------|
-| **Chat inbox** (UI label; route `/messages`) | `/messages` | One inbox: **Direct**, **Groups** (family/friends), **Outing chats** (activity crew) |
-| **Host org inbox** | `/host/messages` | Same `Messages` UI in host shell; same `?to=` / `?group=` deep links |
+| **Chat inbox** (UI label; route `/messages`) | `/messages` | **One inbox** for everyone: **Direct**, **Groups**, **Outing chats** — `?to=`, `?group=`, optional `?activity=` |
 | **Groups admin** | `/groups` | Create/manage groups, members, **who can message** — **no inline chat** |
 | **Activity detail** | `/activity/:id` | Plan/Buddies footers + welcome sheet → **group chat**; invite via `ActivityInviteSharePanel`; crew only when `viewerAccess.canAccessCrewSurfaces` |
 | **Plan (My Plans)** | `/plan` | Hosted manage sheet (`ActivityManageSheet`) → same detail shell + **Message crew**; joined peek sheet → full plan / group chat |
 | **Explore** | `/explore` | Map peek **`viewerAccess.mapPeekActions`** (join, pending, participant, …); activity **host user** sees **Chat · Manage** + **View details** on own pins; shops use **`ExplorePeekDetailLink`** (View / Rate); cancel/delete via **`HostActivityCancelDialog`**; withdraw on activity detail only |
 
-Legacy: `/dashboard/messages` may still exist for older host console paths — prefer `/messages` and `/host/messages` for new UI.
+Legacy redirects only: `/host/messages`, `/operator/messages`, `/dashboard/messages` → `/messages` ([`NAVIGATION.md`](./NAVIGATION.md)). **Do not** add a second inbox route or host-only messages shell.
+
+**Open DM affordance (FE):** `MessageMemberButton` (`src/components/chat/MessageMemberButton.tsx`) — `memberUserId` + optional `activityId`; contextual label via `messageLabel`. Not `HostMessageButton` / `OrganizerMessageButton` (deprecated shims).
 
 ## Two transports (by design today)
 

@@ -20,7 +20,7 @@ type UseExploreComposeRouteArgs = {
   setSearchParams: (params: URLSearchParams, opts?: { replace?: boolean }) => void;
   onOpenComposeMenu: () => void;
   canPublish: boolean;
-  signupProfileComplete: boolean;
+  profileComplete: boolean;
   hostGateLoading: boolean;
 };
 
@@ -31,7 +31,7 @@ export const useExploreComposeRoute = ({
   setSearchParams,
   onOpenComposeMenu,
   canPublish,
-  signupProfileComplete,
+  profileComplete,
   hostGateLoading,
 }: UseExploreComposeRouteArgs) => {
   const exploreCompose = useMemo(() => parseExploreCompose(searchParams), [searchParams]);
@@ -83,7 +83,7 @@ export const useExploreComposeRoute = ({
         user,
         hostGateLoading,
         canPublish,
-        signupProfileComplete,
+        profileComplete,
       });
       if (decision.type === 'sign-in') {
         if (!user) {
@@ -100,7 +100,7 @@ export const useExploreComposeRoute = ({
       if (decision.type === 'blocked') return;
       setComposeRoute(decision.route);
     },
-    [user, hostGateLoading, canPublish, signupProfileComplete, navigate, setComposeRoute]
+    [user, hostGateLoading, canPublish, profileComplete, navigate, setComposeRoute]
   );
 
   const closeGuestComposeSignIn = useCallback(() => {

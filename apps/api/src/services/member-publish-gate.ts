@@ -1,15 +1,16 @@
+import { memberProfileComplete } from '@uaetrail/shared-types';
 import { ApiError } from '../lib/api-error.js';
-import { resolveMemberHostStatus } from './member-host-status.js';
+import { resolveMemberStatus } from './member-status.js';
 
-/** Enforce buddy-host rules before creating or publishing activities. */
+/** Enforce organize/publish rules before creating or publishing activities. */
 export const assertMemberCanPublishActivities = async (
   userId: string,
   options?: { platformAdmin?: boolean }
 ): Promise<void> => {
   if (options?.platformAdmin) return;
 
-  const status = await resolveMemberHostStatus(userId);
-  if (!status.signupProfileComplete) {
+  const status = await resolveMemberStatus(userId);
+  if (!memberProfileComplete(status)) {
     throw new ApiError(
       403,
       'profile_incomplete',

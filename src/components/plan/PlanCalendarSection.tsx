@@ -17,7 +17,7 @@ const legendForFilter = (filter: PlanCommitmentFilter) => {
   if (filter === 'hosting') {
     return [
       { className: 'bg-emerald-500', label: 'You’re available' },
-      { className: 'bg-amber-500', label: 'Hosting' },
+      { className: 'bg-amber-500', label: 'Organizing' },
       { className: 'bg-violet-500', label: 'Looking for company' },
     ];
   }
@@ -32,7 +32,7 @@ const detailLabel = (row: PlanCalendarDayDetail): string => {
     case 'available':
       return 'Available for buddies';
     case 'hosting':
-      return `Hosting · ${row.title}`;
+      return `Organizing · ${row.title}`;
     case 'seeking':
       return `Looking for company · ${row.title}`;
     case 'joined':

@@ -1,10 +1,9 @@
-import type { HostStatusDTO, MemberCoordinationAttentionDTO } from '@uaetrail/shared-types';
+import type { MemberCoordinationAttentionDTO, MemberStatusDTO } from '@uaetrail/shared-types';
 import { apiRequest } from '../client';
 
-/** Member capabilities + host tiers — canonical client for `GET /me/host-status`. */
+/** Member capabilities — canonical `GET /me/status` (publish nested under `publish`). */
 export const memberApi = {
-  getMemberHostStatus: () =>
-    apiRequest<{ data: HostStatusDTO }>('/me/host-status', { auth: true }),
+  getMemberStatus: () => apiRequest<{ data: MemberStatusDTO }>('/me/status', { auth: true }),
 
   getMeCoordinationAttention: () =>
     apiRequest<{ data: MemberCoordinationAttentionDTO }>('/me/coordination-attention', {

@@ -165,13 +165,13 @@ Anyone can explore and join outings after **basic signup**:
 | Languages | Optional on profile (member details) | `PATCH /me/profile` · Profile / Settings |
 | Default role | **Participant** — browse map, RSVP, request to join, demand posts, buddies, follow | `UserRole.PARTICIPANT` |
 
-**Profile completion** = member details above (DOB, gender, based-in) — `signupProfileComplete` on `GET /me/profile` and `/me/host-status`. Required before **Organize** (buddy host). Demand and Add do not require it beyond signed-in member.
+**Profile completion** = member details above (DOB, gender, based-in) — `profileComplete` / `signupProfileComplete` on `GET /me/profile` and **`GET /me/status`**. Required before **Organize** (buddy host). Demand and Add do not require it beyond signed-in member.
 
 This is **not** hosting. No tenant is created until profile is complete and the member opens Organize (API provisions a personal guide tenant).
 
-### Become a host (publish trips)
+### Publish trips (organizer / operator)
 
-A **host is always a user** (human actor on the activity). They publish **as themselves** (buddy / individual pro) or **on behalf of a business** they own or belong to (`x-organisation-id`). Businesses are **tenants** with a **storefront** — not a substitute for the user account.
+The **publishing actor is always a user** (human on the activity). They publish **as themselves** (buddy / individual pro) or **on behalf of a business** they own or belong to (`x-organisation-id`). Businesses are **tenants** with a **storefront** — not a substitute for the user account.
 
 | Path | Product | Paid trips? | Code (today) |
 |------|---------|-------------|--------------|
@@ -227,14 +227,14 @@ Entry UI: Profile → **Pro Membership** (`/profile/pro-membership`; legacy `/be
 
 | Context | Say | Avoid |
 |---------|-----|--------|
-| Umbrella (any publisher) | **Host**, **host profile**, **host console**, **host application** | “Organisation” for solo guides |
-| Individual guide | **Guide**, **guide profile**, **guide console** | “Organisation profile” |
-| Licensed business | **Agency**, **agency profile** | — |
-| Gear seller | **Shop**, **shop profile** | “Merchant” in UI |
-| On-day trip leader | **Host** (“Hosted by …”, `HostSelect`) | Confusing with publishing host — OK when scoped to the activity |
-| Code / filenames / API aliases | `Organisation*`, `tenant`, `/host/*` routes | Renaming wire layer without a migration |
+| Umbrella (any publisher) | **Organizer** (consumer outing), **publishing profile**, **workspace** (`/host/*`), **publishing application** | Retired product term: **host** |
+| Individual guide | **Guide**, **guide profile**, **guide workspace** | — |
+| Licensed business | **Agency**, **agency profile**, **operator workspace** | — |
+| Gear seller | **Shop**, **shop profile**, **operator workspace** | — |
+| On-day trip leader | **Organizer** (“Organized by …”) | Wire: `hostUserId`, `profileRoleLabel: host` |
+| Code / filenames / API aliases | `Organisation*`, `tenant`, `/host/*`, `HostStatusDTO` | Wire-only until a deliberate rename |
 
-Helpers: `src/utils/hostCopy.ts` — `hostConsoleLabel()`, `hostProfileLabel()`, `normalizeHostKind()`.
+Helpers: `src/content/workspaceVocabulary.ts` — `workspaceConsoleLabel()`, `workspaceProfileLabel()`, `normalizeWorkspaceBrandKind()`.
 
 ### Internal code identifiers (Phase 14)
 
@@ -296,15 +296,15 @@ Shop identity: **tenant** (Pro Membership onboarding) + **merchant profile** (Sh
 | File / export | Route | Notes |
 |---------------|-------|-------|
 | `OrganisationProfile` | `/guide/:id`, `/agency/:id`, `/partner/:id` | Public brand profile |
-| `pages/host/Overview` (`Overview`) | `/host/overview` | **Host console** hub |
-| `pages/host/Activities` (`Activities`) | `/host/activities` | Tenant activity list + manage sheet |
-| `pages/host/JoinRequests` (`JoinRequests`) | `/host/requests` | Activity join queue |
-| `pages/host/Manage` (`Manage`) | `/organisation/manage` | Agency / shop tenant panels |
+| `pages/operator/Overview` (`Overview`) | `/operator/overview` | **Publishing console** hub |
+| `pages/operator/Activities` (`Activities`) | `/operator/activities` | Tenant activity list + manage sheet |
+| `pages/operator/JoinRequests` (`JoinRequests`) | `/operator/requests` | Activity join queue |
+| `pages/operator/Manage` (`Manage`) | `/organisation/manage` | Agency / shop tenant panels |
 | `ProfileProMembership` (`BecomeHost` legacy export) | `/profile/pro-membership` · redirects from `/become-host`, `/become-organizer` | Pro / agency / shop applications — **not** buddy Organize (`canPublish` via profile complete) |
 | `ShopPublic` | `/shop/:id` | Public shop host |
 | `AdminOrganisations` | `/admin/hosts` | Admin copy: **Hosts** |
 
-**Code folder:** `src/components/organisation-console/` (implementation name). **UI:** host / guide / agency / shop per `hostCopy.ts`.
+**Code folder:** `src/components/organisation-console/` (implementation name). **UI:** organizer / guide / agency / shop per `workspaceVocabulary.ts`.
 
 ## Place registry vs activity anchors
 

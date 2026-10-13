@@ -14,7 +14,7 @@ import { PullToRefresh } from '../components/mobile/PullToRefresh';
 import { ConsumerErrorCard } from '../components/mobile/ConsumerFeedback';
 import { AccountAvatarModal } from '../components/account';
 import { useParticipantHubData } from '../hooks/useParticipantHubData';
-import { useHostStatus } from '../hooks/useHostStatus';
+import { useMemberStatus } from '../hooks/useMemberStatus';
 import type { MemberProfileStatsDTO, MemberProfileViewStatsDTO } from '@uaetrail/shared-types';
 import { useMemberGoals } from '../hooks/useMemberGoals';
 import { ProfileConsumerHub } from '../components/profile/ProfileConsumerHub';
@@ -41,13 +41,13 @@ export const Profile = () => {
 
   const {
     ownedProfiles,
-    canAccessHostConsole,
+    canAccessPublishingWorkspace,
     profileRoleLabel: profileRoleKey,
     isCommunityHost: gateCommunityHost,
     hostTiers,
     loading: hostGateLoading,
     refresh: refreshHostGate,
-  } = useHostStatus({ enabled: Boolean(user) });
+  } = useMemberStatus({ enabled: Boolean(user) });
 
   const [profileViewStats, setProfileViewStats] = useState<MemberProfileViewStatsDTO | null>(null);
 
@@ -105,7 +105,7 @@ export const Profile = () => {
 
   const hostProfileKind = useMemo(() => resolveProfileHostKind(ownedProfiles), [ownedProfiles]);
   const isActivityHost =
-    canAccessHostConsole && hostProfileKind !== 'shop' && (gateCommunityHost || (hubStats?.isCommunityHost ?? false));
+    canAccessPublishingWorkspace && hostProfileKind !== 'shop' && (gateCommunityHost || (hubStats?.isCommunityHost ?? false));
   const displayName = profile.displayName || user!.displayName || 'Explorer';
   const roleLabel = memberProfileRoleLabel(profileRoleKey);
   const avatarUrl = profile.avatarUrl ?? user?.avatarUrl ?? null;
@@ -172,7 +172,7 @@ export const Profile = () => {
     if (showHosted) {
       stats.push({
         key: 'hosted',
-        label: 'Hosted',
+        label: 'Organized',
         value: hostedCount,
         to: tripsPlansPath('hosted'),
       });

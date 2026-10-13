@@ -18,6 +18,7 @@ import {
   PLAN_PATH,
   TRIPS_PATH,
   ADMIN_PLACES_PATH,
+  OPERATOR_PLACES_PATH,
   HOST_PLACES_PATH,
   HOST_MESSAGES_PATH,
 } from './surfacePaths';
@@ -27,7 +28,7 @@ import {
   LEGACY_OPERATOR_PROFILE_PATH_PREFIX,
 } from '@uaetrail/shared-types';
 
-export { ADMIN_PLACES_PATH, HOST_PLACES_PATH };
+export { ADMIN_PLACES_PATH, OPERATOR_PLACES_PATH, HOST_PLACES_PATH };
 
 /** Full-screen explore map (mobile-first). */
 export const EXPLORE_MAP_PATH = '/explore' as const;
@@ -57,7 +58,7 @@ export const DOMAIN_GLOSSARY = {
     legacyApi: '/locations',
     publicRoutes: ['/trail/:id', '/camp/:id', '/venue/:id', '/shop/:id'],
     adminRoute: ADMIN_PLACES_PATH,
-    hostRoute: HOST_PLACES_PATH,
+    hostRoute: OPERATOR_PLACES_PATH,
   },
   Activity: {
     product: 'Activity',
@@ -70,8 +71,8 @@ export const DOMAIN_GLOSSARY = {
     product: 'Organisation',
     description: 'Host tenant — guide, agency, partner, or shop brand profiles.',
     storage: 'Tenant',
-    api: '/host, /tenants/:slug',
-    consoleRoute: '/host/*',
+    api: '/operator, /host (legacy), /tenants/:slug',
+    consoleRoute: '/operator/*',
     publicRoute: '/guide/:slug · /agency/:slug · /partner/:slug',
     manageRoute: '/organisation/manage',
   },
@@ -314,6 +315,7 @@ export const getExploreMapTiles = (style: ExploreMapStyle) => {
 /** Routes where bottom nav, footer padding, and mobile chrome are hidden. */
 const CONSUMER_CHROME_HIDDEN_PREFIXES = [
   '/admin',
+  '/operator',
   '/host',
   '/organizer',
   '/dashboard',
@@ -380,7 +382,7 @@ export const CONSUMER_SELF_HEADER_PREFIXES = [
   '/organisation/manage',
   '/shop/manage',
   '/agency/manage',
-  '/host/security-privacy',
+  '/operator/security-privacy',
 ] as const;
 
 export const hasConsumerSelfHeader = (pathname: string): boolean =>

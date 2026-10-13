@@ -66,13 +66,13 @@ Do **not** use Home to onboard signed-in users or document the full app.
 Put these on **`/explore`** or in-app flows — not on Home unless explicitly requested:
 
 - Demand / “find a group” posting mechanics  
-- Become-a-host / agency / shop signup flows  
+- Pro membership / agency / shop signup flows  
 - Buddies, social groups, DMs, badges hub  
 - Full map filters, venues panel, shops panel  
-- Host console, check-in, waitlist detail  
+- Publishing workspace, check-in, waitlist detail  
 - Profile hub IA  
 
-Home may **mention** host-approved joins and the map — that is the acquisition story. It must not **teach** the full two-sided marketplace.
+Home may **mention** organizer-approved joins and the map — that is the acquisition story. It must not **teach** the full two-sided marketplace.
 
 ## Copy source of truth
 

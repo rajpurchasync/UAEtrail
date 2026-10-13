@@ -28,7 +28,7 @@ export const ProfileSettingsIndex = ({ onRefresh }: ProfileSettingsIndexProps) =
           label="Privacy"
           to={PROFILE_SETTINGS_PRIVACY_PATH}
           icon={Shield}
-          subtitle="Profile visibility and host profiles"
+          subtitle="Profile visibility and publishing profiles"
         />
         <SettingsMenuRow
           label="Notifications"

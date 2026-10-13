@@ -1,13 +1,13 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 
-vi.mock('../src/services/member-host-status.js', () => ({
-  resolveMemberHostStatus: vi.fn(),
+vi.mock('../src/services/member-status.js', () => ({
+  resolveMemberStatus: vi.fn(),
 }));
 
-import { resolveMemberHostStatus } from '../src/services/member-host-status.js';
+import { resolveMemberStatus } from '../src/services/member-status.js';
 import { assertMemberCanPublishActivities } from '../src/services/member-publish-gate.js';
 
-const mockedStatus = vi.mocked(resolveMemberHostStatus);
+const mockedStatus = vi.mocked(resolveMemberStatus);
 
 describe('assertMemberCanPublishActivities', () => {
   beforeEach(() => {

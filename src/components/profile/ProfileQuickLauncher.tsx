@@ -122,7 +122,7 @@ export const buildProfileQuickLauncherItems = (input: {
   if (input.showHosting) {
     items.push({
       key: 'hosting',
-      label: 'Hosting',
+      label: 'Organizing',
       to: tripsPlansPath('hosted'),
       icon: Mountain,
       iconWrapClassName: 'bg-violet-50 text-violet-700',

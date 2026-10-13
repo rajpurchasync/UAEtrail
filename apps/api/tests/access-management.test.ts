@@ -47,7 +47,7 @@ describe('access management', () => {
     const ownerToken = ownerLogin.body.tokens.accessToken as string;
 
     const addRes = await request(app)
-      .post('/api/v1/host/team')
+      .post('/api/v1/operator/team')
       .set('Authorization', `Bearer ${ownerToken}`)
       .set('x-tenant-id', tenant.id)
       .send({ email: teammate.email, role: 'tenant_guide' });
@@ -56,7 +56,7 @@ describe('access management', () => {
     const membershipId = String(addRes.body.data.id);
 
     const disableRes = await request(app)
-      .patch(`/api/v1/host/team/${membershipId}`)
+      .patch(`/api/v1/operator/team/${membershipId}`)
       .set('Authorization', `Bearer ${ownerToken}`)
       .set('x-tenant-id', tenant.id)
       .send({ isActive: false });
@@ -65,7 +65,7 @@ describe('access management', () => {
     expect(disableRes.body.data.isActive).toBe(false);
 
     const listRes = await request(app)
-      .get('/api/v1/host/team')
+      .get('/api/v1/operator/team')
       .set('Authorization', `Bearer ${ownerToken}`)
       .set('x-tenant-id', tenant.id);
 
@@ -74,7 +74,7 @@ describe('access management', () => {
     expect(disabledMember.isActive).toBe(false);
 
     const blockedEventsRes = await request(app)
-      .get('/api/v1/host/activities')
+      .get('/api/v1/operator/activities')
       .set('Authorization', `Bearer ${teammate.accessToken}`)
       .set('x-tenant-id', tenant.id);
 

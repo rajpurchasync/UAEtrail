@@ -1,16 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import {
   organizePublishGateHref,
-  organizePublishGateInputFromHostGate,
+  organizePublishGateInputFromMemberStatus,
 } from './organizePublishGate';
 
 const signedInInput = (overrides: {
-  signupProfileComplete?: boolean;
+  profileComplete?: boolean;
   canPublish?: boolean;
 }) =>
-  organizePublishGateInputFromHostGate({
+  organizePublishGateInputFromMemberStatus({
     viewerUserId: 'user-1',
-    signupProfileComplete: overrides.signupProfileComplete ?? true,
+    profileComplete: overrides.profileComplete ?? true,
     canPublish: overrides.canPublish ?? true,
     hostTiers: { community: true, professional: false, business: false },
   });
@@ -20,9 +20,9 @@ describe('organizePublishGateHref', () => {
     expect(
       organizePublishGateHref(
         '/explore?compose=organize:hiking',
-        organizePublishGateInputFromHostGate({
+        organizePublishGateInputFromMemberStatus({
           viewerUserId: null,
-          signupProfileComplete: false,
+          profileComplete: false,
           canPublish: false,
         })
       )
@@ -30,9 +30,9 @@ describe('organizePublishGateHref', () => {
     expect(
       organizePublishGateHref(
         '/explore?compose=organize:hiking',
-        organizePublishGateInputFromHostGate({
+        organizePublishGateInputFromMemberStatus({
           viewerUserId: null,
-          signupProfileComplete: false,
+          profileComplete: false,
           canPublish: false,
         })
       )
@@ -43,14 +43,14 @@ describe('organizePublishGateHref', () => {
     expect(
       organizePublishGateHref(
         '/explore?compose=organize:hiking',
-        signedInInput({ signupProfileComplete: false, canPublish: false })
+        signedInInput({ profileComplete: false, canPublish: false })
       )
     ).toBe('/welcome?redirect=%2Fexplore%3Fcompose%3Dorganize%3Ahiking');
   });
 
   it('sends complete but blocked users to profile hub', () => {
     expect(
-      organizePublishGateHref('/explore', signedInInput({ signupProfileComplete: true, canPublish: false }))
+      organizePublishGateHref('/explore', signedInInput({ profileComplete: true, canPublish: false }))
     ).toBe('/profile?redirect=%2Fexplore');
   });
 });

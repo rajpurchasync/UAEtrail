@@ -34,13 +34,19 @@ import { GuestTabPlaceholder } from './components/auth/GuestTabPlaceholder';
 import { PRODUCT_PLAN_SURFACE_TITLE } from './content/productNorthStar';
 import { JOURNEY_MAP_PATH, PLAN_PATH, PROFILE_HISTORY_PATH } from './config/surfacePaths';
 import { resolveLegacyTripsHubRedirect } from './member-plan/legacyTripsRedirect';
-import { useHostStatus } from './hooks/useHostStatus';
+import { useMemberStatus } from './hooks/useMemberStatus';
 import { memberCanManageHostedActivities } from './utils/hostedActivitiesGate';
 
-const LegacyHostPathRedirect = () => {
+const LegacyPublishingConsoleRedirect = ({ legacyPrefix }: { legacyPrefix: '/host' | '/organizer' }) => {
   const { pathname, search, hash } = useLocation();
-  const next = pathname.replace(/^\/organizer/, '/host');
+  const next = pathname.replace(new RegExp(`^${legacyPrefix}`), '/operator');
   return <Navigate to={`${next}${search}${hash}`} replace />;
+};
+
+/** Chat has one canonical route (`/chat`) — legacy console URLs preserved query only. */
+const LegacyConsoleMessagesRedirect = () => {
+  const { search, hash } = useLocation();
+  return <Navigate to={`/chat${search}${hash}`} replace />;
 };
 
 const LegacyMessagesRedirect = () => {
@@ -72,8 +78,8 @@ const DiscoveryRedirect = () => {
 const LegacyTripsHubRedirect = () => {
   const { pathname, search } = useLocation();
   const { user } = useAuth();
-  const gate = useHostStatus({ enabled: Boolean(user) });
-  const canHost = memberCanManageHostedActivities(user, gate.canAccessHostConsole);
+  const gate = useMemberStatus({ enabled: Boolean(user) });
+  const canHost = memberCanManageHostedActivities(user, gate.canAccessPublishingWorkspace);
   const target = resolveLegacyTripsHubRedirect(pathname, search, { canHost });
   return <Navigate to={target ?? PLAN_PATH} replace />;
 };
@@ -162,26 +168,26 @@ const AdminShop = lazy(() => import('./pages/AdminShop').then((m) => ({ default:
 const AdminNotifications = lazy(() =>
   import('./pages/AdminNotifications').then((m) => ({ default: m.AdminNotifications }))
 );
-const HostOverview = lazy(() =>
-  import('./pages/host/Overview').then((m) => ({ default: m.Overview }))
+const OperatorOverview = lazy(() =>
+  import('./pages/operator/Overview').then((m) => ({ default: m.Overview }))
 );
-const HostActivities = lazy(() =>
-  import('./pages/host/Activities').then((m) => ({ default: m.Activities }))
+const OperatorActivities = lazy(() =>
+  import('./pages/operator/Activities').then((m) => ({ default: m.Activities }))
 );
-const HostJoinRequests = lazy(() =>
-  import('./pages/host/JoinRequests').then((m) => ({ default: m.JoinRequests }))
+const OperatorJoinRequests = lazy(() =>
+  import('./pages/operator/JoinRequests').then((m) => ({ default: m.JoinRequests }))
 );
-const HostTeam = lazy(() => import('./pages/host/Team').then((m) => ({ default: m.Team })));
-const HostPublicProfileEdit = lazy(() =>
-  import('./pages/host/PublicProfileEdit').then((m) => ({ default: m.PublicProfileEdit }))
+const OperatorTeam = lazy(() => import('./pages/operator/Team').then((m) => ({ default: m.Team })));
+const OperatorPublicProfileEdit = lazy(() =>
+  import('./pages/operator/PublicProfileEdit').then((m) => ({ default: m.PublicProfileEdit }))
 );
-const HostPlaces = lazy(() => import('./pages/host/Places').then((m) => ({ default: m.Places })));
-const HostHistory = lazy(() => import('./pages/host/History').then((m) => ({ default: m.History })));
+const OperatorPlaces = lazy(() => import('./pages/operator/Places').then((m) => ({ default: m.Places })));
+const OperatorHistory = lazy(() => import('./pages/operator/History').then((m) => ({ default: m.History })));
 const UserRequests = lazy(() => import('./pages/UserRequests').then((m) => ({ default: m.UserRequests })));
 const Messages = lazy(() => import('./pages/Messages').then((m) => ({ default: m.Messages })));
 const MessagesGate = lazy(() => import('./pages/Messages').then((m) => ({ default: m.MessagesGate })));
 const ShopManageRedirect = () => <Navigate to={organisationManagePath('shop')} replace />;
-const HostManage = lazy(() => import('./pages/host/Manage').then((m) => ({ default: m.Manage })));
+const OperatorManage = lazy(() => import('./pages/operator/Manage').then((m) => ({ default: m.Manage })));
 const ShopManage = lazy(() => import('./pages/ShopManage').then((m) => ({ default: m.ShopManage })));
 const AgencyManage = lazy(() => import('./pages/AgencyManage').then((m) => ({ default: m.AgencyManage })));
 const Activities = lazy(() => import('./pages/Activities').then((m) => ({ default: m.Activities })));
@@ -708,55 +714,55 @@ function App() {
             }
           />
           <Route
-            path="/host/overview"
+            path="/operator/overview"
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
-                <HostOverview />
+                <OperatorOverview />
               </ProtectedRoute>
             }
           />
           <Route
-            path="/host/activities"
+            path="/operator/activities"
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
-                <HostActivities />
+                <OperatorActivities />
               </ProtectedRoute>
             }
           />
           <Route
-            path="/host/activities/new"
+            path="/operator/activities/new"
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
-                <HostActivities />
+                <OperatorActivities />
               </ProtectedRoute>
             }
           />
           <Route
-            path="/host/requests"
+            path="/operator/requests"
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
-                <HostJoinRequests />
+                <OperatorJoinRequests />
               </ProtectedRoute>
             }
           />
           <Route
-            path="/host/team"
+            path="/operator/team"
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
-                <HostTeam />
+                <OperatorTeam />
               </ProtectedRoute>
             }
           />
           <Route
-            path="/host/profile"
+            path="/operator/profile"
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
-                <HostPublicProfileEdit />
+                <OperatorPublicProfileEdit />
               </ProtectedRoute>
             }
           />
           <Route
-            path="/host/security-privacy"
+            path="/operator/security-privacy"
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
                 <SecurityPrivacy />
@@ -764,31 +770,32 @@ function App() {
             }
           />
           <Route
-            path="/host/places"
+            path="/operator/places"
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
-                <HostPlaces />
+                <OperatorPlaces />
               </ProtectedRoute>
             }
           />
-          <Route path="/host/locations" element={<Navigate to="/host/places" replace />} />
+          <Route path="/operator/locations" element={<Navigate to="/operator/places" replace />} />
           <Route
-            path="/host/history"
+            path="/operator/history"
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
-                <HostHistory />
+                <OperatorHistory />
               </ProtectedRoute>
             }
           />
           <Route
             path="/host/messages"
-            element={
-              <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
-                <Messages />
-              </ProtectedRoute>
-            }
+            element={<LegacyConsoleMessagesRedirect />}
           />
-          <Route path="/organizer/*" element={<LegacyHostPathRedirect />} />
+          <Route
+            path="/operator/messages"
+            element={<LegacyConsoleMessagesRedirect />}
+          />
+          <Route path="/host/*" element={<LegacyPublishingConsoleRedirect legacyPrefix="/host" />} />
+          <Route path="/organizer/*" element={<LegacyPublishingConsoleRedirect legacyPrefix="/organizer" />} />
           <Route
             path="/dashboard/overview"
             element={
@@ -821,7 +828,7 @@ function App() {
             path="/organisation/manage"
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'merchant_admin']}>
-                <HostManage />
+                <OperatorManage />
               </ProtectedRoute>
             }
           />

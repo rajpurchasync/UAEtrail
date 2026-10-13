@@ -66,10 +66,10 @@ describe('componentsClientApi (R8.1)', () => {
     for (const file of [
       'src/components/activity/ActivityCrewChatPostPolicyCard.tsx',
       'src/components/activity/detail/ActivityDetailHostBuddiesHub.tsx',
-      'src/components/host/ActivityManageSheet.tsx',
-      'src/components/host/ActivityParticipantsPanel.tsx',
+      'src/components/activity/ActivityManageSheet.tsx',
+      'src/components/activity/ActivityParticipantsPanel.tsx',
     ]) {
-      expect(read(file)).toMatch(/hostActivityClientApi/);
+      expect(read(file)).toMatch(/tenantActivityClientApi/);
       expectNoDirectApi(file);
     }
   });

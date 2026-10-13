@@ -6,7 +6,7 @@ import type { DemandDraft, DemandKind } from './demandFlow';
 import type { ContributeDraft } from './contributeFlow';
 import type { ContributeVenueKind } from '../contributeTypes';
 
-const STORAGE_PREFIX = 'uaetrail:compose-wizard:v1';
+const STORAGE_PREFIX = 'uaetrail:compose-wizard';
 
 export type OrganizeWizardSession = {
   step: string;
@@ -28,6 +28,10 @@ export type ContributeWizardSession = {
 const sessionKey = (flowId: ComposeFlowId, scope?: string) =>
   `${STORAGE_PREFIX}:${flowId}${scope ? `:${scope}` : ''}`;
 
+/** Older builds used a suffixed storage namespace — read once, then write under canonical keys. */
+const legacySessionKey = (flowId: ComposeFlowId, scope?: string) =>
+  `uaetrail:compose-wizard:v1:${flowId}${scope ? `:${scope}` : ''}`;
+
 export const organizeWizardSessionScope = (prefill?: {
   participantIntentId?: string;
   sourceActivityId?: string;
@@ -43,7 +47,7 @@ export const organizeWizardSessionScope = (prefill?: {
 export const readOrganizeWizardSession = (
   flowId: ComposeFlowId,
   scope?: string
-): OrganizeWizardSession | null => readJson(sessionKey(flowId, scope));
+): OrganizeWizardSession | null => readSessionJson<OrganizeWizardSession>(flowId, scope);
 
 export const writeOrganizeWizardSession = (
   flowId: ComposeFlowId,
@@ -60,7 +64,7 @@ export const clearOrganizeWizardSession = (flowId: ComposeFlowId, scope?: string
 };
 
 export const readDemandWizardSession = (flowId: ComposeFlowId): DemandWizardSession | null =>
-  readJson(sessionKey(flowId));
+  readSessionJson<DemandWizardSession>(flowId);
 
 export const writeDemandWizardSession = (flowId: ComposeFlowId, data: DemandWizardSession): void =>
   writeJson(sessionKey(flowId), data);
@@ -80,7 +84,7 @@ export const readContributeWizardSession = (
   kind: ContributeVenueKind
 ): ContributeWizardSession | null => {
   const flowId = contributeFlowId(kind);
-  return flowId ? readJson(sessionKey(flowId)) : null;
+  return flowId ? readSessionJson<ContributeWizardSession>(flowId) : null;
 };
 
 export const writeContributeWizardSession = (
@@ -114,15 +118,29 @@ export const clearComposeWizardSessionForRoute = (route: ExploreCompose | null):
   }
 };
 
-function readJson<T>(key: string): T | null {
+function readJson<T>(key: string, legacyKey?: string): T | null {
   try {
-    const raw = sessionStorage.getItem(key);
+    let raw = sessionStorage.getItem(key);
+    if (!raw && legacyKey) {
+      raw = sessionStorage.getItem(legacyKey);
+      if (raw) {
+        try {
+          sessionStorage.setItem(key, raw);
+          sessionStorage.removeItem(legacyKey);
+        } catch {
+          /* quota / private mode */
+        }
+      }
+    }
     if (!raw) return null;
     return JSON.parse(raw) as T;
   } catch {
     return null;
   }
 }
+
+const readSessionJson = <T>(flowId: ComposeFlowId, scope?: string): T | null =>
+  readJson<T>(sessionKey(flowId, scope), legacySessionKey(flowId, scope));
 
 function writeJson(key: string, value: unknown): void {
   try {

@@ -1,0 +1,130 @@
+import { useCallback, useState } from 'react';
+import { useSafeAsyncEffect, type IsActiveGuard } from '../../hooks/useSafeAsyncEffect';
+import { PlaceDTO } from '@uaetrail/shared-types';
+import { fetchOrganisationSubmittedPlaces } from '../../hooks/organisationConsoleApi';
+import { getActiveTenantId } from '../../api/tenant';
+import { ConsoleShell } from '../../console/ConsoleShell';
+import { TenantSwitcher, SubmitPlaceForm, ShareButton } from '../../components/ui';
+import { placeSharePath } from '../../utils/share';
+
+const statusLabel = (status: PlaceDTO['status']) => {
+  if (status === 'draft') return 'Pending review';
+  if (status === 'active') return 'Approved';
+  return 'Inactive';
+};
+
+/** Organisation console for submitting places. Canonical route: `/host/places`. */
+export const Places = () => {
+  const [tenantId, setTenantId] = useState(getActiveTenantId());
+  const [submitted, setSubmitted] = useState<PlaceDTO[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const loadSubmitted = useCallback(
+    async (isActive: IsActiveGuard = () => true) => {
+      if (!tenantId) return;
+      if (isActive()) {
+        setLoading(true);
+      }
+      try {
+        const places = await fetchOrganisationSubmittedPlaces(tenantId);
+        if (isActive()) {
+          setSubmitted(places);
+        }
+      } catch {
+        if (isActive()) {
+          setSubmitted([]);
+        }
+      } finally {
+        if (isActive()) {
+          setLoading(false);
+        }
+      }
+    },
+    [tenantId]
+  );
+
+  useSafeAsyncEffect(
+    async (isActive) => {
+      await loadSubmitted(isActive);
+    },
+    [loadSubmitted]
+  );
+
+  return (
+    <ConsoleShell title="Places">
+      <div className="space-y-6 max-w-2xl">
+        <TenantSwitcher onChange={setTenantId} />
+        <div>
+          <h2 className="text-lg font-semibold text-gray-900">Submit a place</h2>
+          <p className="text-sm text-gray-600 mt-1">
+            Add a trail, camp, or outdoor place to the catalog. This is separate from scheduling an activity — once a
+            place is approved, you can pick it when you create an activity under Activities.
+          </p>
+        </div>
+
+        {tenantId ? (
+          <div className="bg-white border rounded-xl p-6">
+            <SubmitPlaceForm
+              tenantId={tenantId}
+              onSubmitted={() => void loadSubmitted()}
+            />
+          </div>
+        ) : (
+          <p className="text-sm text-amber-700 bg-amber-50 rounded-lg px-4 py-3">Select your publishing profile above.</p>
+        )}
+
+        <div>
+          <h3 className="font-semibold text-gray-900 mb-3">Your submissions</h3>
+          {loading && <p className="text-sm text-gray-400">Loading…</p>}
+          {!loading && submitted.length === 0 && (
+            <p className="text-sm text-gray-500">No places submitted yet.</p>
+          )}
+          <div className="space-y-2">
+            {submitted.map((loc) => (
+              <div key={loc.id} className="bg-white border rounded-lg p-4 flex justify-between items-center gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  {loc.images?.[0] ? (
+                    <img src={loc.images[0]} alt="" className="w-12 h-12 rounded-lg object-cover shrink-0" />
+                  ) : (
+                    <div className="w-12 h-12 rounded-lg bg-gray-100 shrink-0" />
+                  )}
+                  <div className="min-w-0">
+                    <p className="font-medium text-gray-900 truncate">{loc.name}</p>
+                    <p className="text-xs text-gray-500">
+                      {loc.region} · {loc.activityType}
+                      {loc.countryCode ? ` · ${loc.countryCode}` : ''}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  {loc.status === 'active' && (
+                    <ShareButton
+                      title={loc.name}
+                      text={`${loc.region} · ${loc.activityType} on UAE Trails`}
+                      path={placeSharePath(loc.activityType, loc.id)}
+                      iconOnly
+                      light
+                    />
+                  )}
+                  <span
+                  className={`px-2 py-0.5 rounded text-xs font-medium shrink-0 ${
+                    loc.status === 'active'
+                      ? 'bg-green-100 text-green-800'
+                      : loc.status === 'draft'
+                        ? 'bg-amber-100 text-amber-800'
+                        : 'bg-gray-100 text-gray-600'
+                  }`}
+                >
+                  {statusLabel(loc.status)}
+                </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </ConsoleShell>
+  );
+};
+
+

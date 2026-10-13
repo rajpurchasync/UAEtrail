@@ -10,12 +10,11 @@ import {
   ADMIN_SETTINGS_PATH,
   ADMIN_SHOP_PATH,
   ADMIN_USERS_PATH,
-  HOST_ACTIVITIES_PATH,
-  HOST_OVERVIEW_PATH,
-  HOST_PROFILE_PATH,
-  HOST_REQUESTS_PATH,
+  OPERATOR_ACTIVITIES_PATH,
+  OPERATOR_OVERVIEW_PATH,
+  OPERATOR_PROFILE_PATH,
+  OPERATOR_REQUESTS_PATH,
   MESSAGES_PATH,
-  HOST_MESSAGES_PATH,
   MY_REQUESTS_PATH,
   PLAN_PATH,
   PROFILE_PATH,
@@ -33,7 +32,7 @@ import { isPlatformAdmin } from './roles';
 export const defaultRouteByRole = (role: UserRole): string => {
   if (isPlatformAdmin(role)) return ADMIN_OVERVIEW_PATH;
   if (role === 'tenant_owner' || role === 'tenant_admin' || role === 'tenant_guide') {
-    return HOST_OVERVIEW_PATH;
+    return OPERATOR_OVERVIEW_PATH;
   }
   return EXPLORE_MAP_PATH;
 };
@@ -49,20 +48,30 @@ export const accountRouteByRole = (role: UserRole): string => {
  * Tenant guides still use real `/host/*` routes via {@link ProtectedRoute} role allowlist.
  */
 export const participantHostBookmarkRedirect = (pathname: string): string => {
-  if (pathname.startsWith('/host/messages')) return MESSAGES_PATH;
-  if (pathname.startsWith('/host/requests')) return MY_REQUESTS_PATH;
-  if (pathname.startsWith('/host/activities')) return tripsPlansPath('hosted');
-  if (pathname.startsWith('/host/places') || pathname.startsWith('/host/locations')) {
+  const normalized = pathname.startsWith('/host/')
+    ? pathname.replace(/^\/host/, '/operator')
+    : pathname.startsWith('/organizer/')
+      ? pathname.replace(/^\/organizer/, '/operator')
+      : pathname;
+  if (
+    normalized.startsWith('/operator/messages') ||
+    normalized.startsWith('/host/messages')
+  ) {
+    return MESSAGES_PATH;
+  }
+  if (normalized.startsWith('/operator/requests')) return MY_REQUESTS_PATH;
+  if (normalized.startsWith('/operator/activities')) return tripsPlansPath('hosted');
+  if (normalized.startsWith('/operator/places') || normalized.startsWith('/operator/locations')) {
     return organisationManagePath();
   }
-  if (pathname.startsWith('/host/team') || pathname.startsWith('/host/profile')) {
+  if (normalized.startsWith('/operator/team') || normalized.startsWith('/operator/profile')) {
     return PRO_MEMBERSHIP_PATH;
   }
-  if (pathname === '/host/overview' || pathname.startsWith('/host/overview')) {
+  if (normalized === '/operator/overview' || normalized.startsWith('/operator/overview')) {
     return exploreOrganizePath();
   }
-  if (pathname.startsWith('/host/history')) return PLAN_PATH;
-  if (pathname.startsWith('/host/security-privacy')) return PROFILE_PATH;
+  if (normalized.startsWith('/operator/history')) return PLAN_PATH;
+  if (normalized.startsWith('/operator/security-privacy')) return PROFILE_PATH;
   return PLAN_PATH;
 };
 
@@ -86,15 +95,15 @@ export const participantDashboardRedirect = (subpath: string): string => {
 export const hostDashboardRedirect = (subpath: string): string => {
   switch (subpath) {
     case 'messages':
-      return HOST_MESSAGES_PATH;
+      return MESSAGES_PATH;
     case 'requests':
-      return HOST_REQUESTS_PATH;
+      return OPERATOR_REQUESTS_PATH;
     case 'activities':
-      return HOST_ACTIVITIES_PATH;
+      return OPERATOR_ACTIVITIES_PATH;
     case 'profile':
-      return HOST_PROFILE_PATH;
+      return OPERATOR_PROFILE_PATH;
     default:
-      return HOST_OVERVIEW_PATH;
+      return OPERATOR_OVERVIEW_PATH;
   }
 };
 
@@ -138,14 +147,8 @@ export const messagesRouteForRole = (
   if (role === 'merchant_admin') return MESSAGES_PATH;
   const base = messagesToUserPath(userId);
   if (!options?.activityId) {
-    if (role === 'tenant_owner' || role === 'tenant_admin' || role === 'tenant_guide') {
-      return `${HOST_MESSAGES_PATH}?${new URLSearchParams({ to: userId }).toString()}`;
-    }
     return base;
   }
   const params = new URLSearchParams({ to: userId, activity: options.activityId });
-  if (role === 'tenant_owner' || role === 'tenant_admin' || role === 'tenant_guide') {
-    return `${HOST_MESSAGES_PATH}?${params.toString()}`;
-  }
   return `${MESSAGES_PATH}?${params.toString()}`;
 };

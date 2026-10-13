@@ -12,17 +12,30 @@ const BANNED_CALLS: Array<{ pattern: RegExp; hint: string }> = [
   { pattern: /\bapi\.getHostSubmittedLocations\b/, hint: 'Use api.getOrganisationSubmittedPlaces' },
   {
     pattern: /\bapi\.(create|publish|list|update|cancel|duplicate)OrganisationActivity\b/,
-    hint: 'Use *HostActivity (routes under /host/activities)',
+    hint: 'Use *OperatorActivity (routes under /operator/activities)',
   },
   {
     pattern: /\bapi\.(getOrganisationJoinRequests|decideOrganisationJoinRequest)\b/,
-    hint: 'Use getHostActivityJoinRequests / decideHostActivityJoinRequest',
+    hint: 'Use getOperatorActivityJoinRequests / decideActivityJoinRequest',
   },
-  { pattern: /\buseOrganisationGate\b/, hint: 'Use useHostStatus' },
+  { pattern: /\bapi\.listHostActivities\s*\(/, hint: 'Use api.listActivities' },
+  { pattern: /\bapi\.listOperatorActivities\s*\(/, hint: 'Use api.listActivities' },
+  { pattern: /\bapi\.createHostActivity\s*\(/, hint: 'Use api.createActivity' },
+  { pattern: /\bapi\.createOperatorActivity\s*\(/, hint: 'Use api.createActivity' },
+  {
+    pattern: /\bapi\.getHostActivityJoinRequests\s*\(/,
+    hint: 'Use api.getOperatorActivityJoinRequests',
+  },
+  { pattern: /\buseOrganisationGate\b/, hint: 'Use useMemberStatus' },
+  { pattern: /\bapi\.getMemberOperatorStatus\s*\(/, hint: 'Use api.getMemberStatus' },
+  { pattern: /\bapi\.getMemberHostStatus\s*\(/, hint: 'Use api.getMemberStatus' },
   { pattern: /\buseOrganisationHubData\b/, hint: 'Use useConsoleHubData' },
   { pattern: /\bOrganisationHubSections\b/, hint: 'Use ConsoleHubSections from src/console' },
-  { pattern: /\bapi\.listActivities\b/, hint: 'Use api.listHostActivities (host console tenant scope)' },
-  { pattern: /\bapi\.(getHostRequests|decideHostRequest|getHostTeam)\b/, hint: 'Use getHostActivityJoinRequests / getOrganisationTeam' },
+  {
+    pattern: /\bapi\.listActivities\s*\(/,
+    hint: 'Use tenantActivityClientApi.listActivities (not raw api in UI)',
+  },
+  { pattern: /\bapi\.(getHostRequests|decideHostRequest|getHostTeam)\b/, hint: 'Use getOperatorActivityJoinRequests / getOrganisationTeam' },
   { pattern: /\bapi\.(getMyHostStatus|getMyHostApplication|submitHostApplication)\b/, hint: 'Use getMyOrganisation* / submitOrganisationApplication' },
   { pattern: /\bapi\.fulfillParticipantIntent\b/, hint: 'Use api.linkParticipantIntentToActivity (demand poster)' },
   { pattern: /\bapi\.updateHostDetails\b/, hint: 'Use api.updateOrganisationDetails' },
@@ -58,6 +71,7 @@ const LEGACY_SYMBOL_ALLOW = new Set([
   'src/components/organisation-console/OrganisationJoinRequestDeclineDialog.tsx',
   'src/components/organisation-console/OrganisationRatingChip.tsx',
   'src/member/organisationNamingGuard.test.ts',
+  'src/hooks/tenantActivityClientApi.ts',
 ]);
 
 const collectSourceFiles = (dir: string): string[] => {

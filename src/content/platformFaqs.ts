@@ -20,7 +20,7 @@ export const PLATFORM_FAQ_SECTIONS: FaqSection[] = [
       {
         question: 'What is UAE Trail?',
         answer:
-          'UAE Trail helps you find people to get outside with in the UAE and GCC — hikes, camps, trail runs, jogs, and group outings. Browse what’s on, post what you’re looking for, connect and chat, then go together. Residents, expats, and visitors are all welcome. Free to browse; some activities may be paid depending on the host.'
+          'UAE Trail helps you find people to get outside with in the UAE and GCC — hikes, camps, trail runs, jogs, and group outings. Browse what’s on, post what you’re looking for, connect and chat, then go together. Residents, expats, and visitors are all welcome. Free to browse; some activities may be paid depending on the organizer.'
       },
       {
         question: 'Which regions does UAE Trail cover?',
@@ -30,7 +30,7 @@ export const PLATFORM_FAQ_SECTIONS: FaqSection[] = [
       {
         question: 'Is UAE Trail free to use?',
         answer:
-          'Creating an account and browsing trails, camps, and activities is free. Some location premium guides may require payment. Organized activities may be free or paid depending on the host.'
+          'Creating an account and browsing trails, camps, and activities is free. Some location premium guides may require payment. Organized activities may be free or paid depending on the organizer.'
       }
     ]
   },
@@ -52,7 +52,7 @@ export const PLATFORM_FAQ_SECTIONS: FaqSection[] = [
       {
         question: 'What is the difference between a trail page and an activity?',
         answer:
-          'A trail or camp page describes a location — route, terrain, access, and tips. An activity is a scheduled event at that location on a specific date, hosted by a host with a set capacity and meeting point.'
+          'A trail or camp page describes a location — route, terrain, access, and tips. An activity is a scheduled event at that location on a specific date, organized by a member or guide with a set capacity and meeting point.'
       },
       {
         question: 'When is the best time to hike in the UAE?',
@@ -63,17 +63,17 @@ export const PLATFORM_FAQ_SECTIONS: FaqSection[] = [
   },
   {
     id: 'hosts',
-    title: 'Hosts & hosting',
+    title: 'Organizers & operators',
     items: [
       {
         question: 'How do I run activities on UAE Trail?',
         answer:
-          'Apply at Become a host as an individual guide or registered outdoor business. Once approved, you can publish activities, manage join requests, and build a public host profile with reviews and certificates.'
+          'Apply via Pro membership as an individual guide or registered outdoor business. Once approved, you can publish activities, manage join requests, and build a public guide, agency, or shop profile with reviews and certificates.'
       },
       {
-        question: 'Are activity hosts verified?',
+        question: 'Are activity organizers verified?',
         answer:
-          'Host applications are reviewed by our team. Public profiles show experience, team members, and community reviews so participants can make informed choices before joining.'
+          'Pro and operator applications are reviewed by our team. Public profiles show experience, team members, and community reviews so participants can make informed choices before joining.'
       }
     ]
   },
@@ -84,7 +84,7 @@ export const PLATFORM_FAQ_SECTIONS: FaqSection[] = [
       {
         question: 'What should I bring on a UAE hike?',
         answer:
-          'At minimum: 2–3 litres of water per person, sun protection (hat, sunscreen, sunglasses), sturdy closed shoes, a fully charged phone, and a basic first-aid kit. Activity pages list host-specific requirements — read them before you go.'
+          'At minimum: 2–3 litres of water per person, sun protection (hat, sunscreen, sunglasses), sturdy closed shoes, a fully charged phone, and a basic first-aid kit. Activity pages list organizer-specific requirements — read them before you go.'
       },
       {
         question: 'Is it safe to hike alone in the UAE?',

@@ -19,7 +19,7 @@ describe('resolveActivityDetailWirePresentation', () => {
       activity: {
         status: 'published',
         participationMode: 'approval',
-        requirements: ['Host approval required to join'],
+        requirements: ['Organizer approval required to join'],
         joinMode: 'open',
         participants: [],
       },

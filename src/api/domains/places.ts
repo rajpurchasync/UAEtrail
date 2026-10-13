@@ -83,7 +83,7 @@ export const placeApi = {
     }),
 
   submitOrganisationPlace: (tenantId: string, payload: Partial<PlaceDTO>) =>
-    apiRequest<{ data: PlaceDTO }>('/host/places', {
+    apiRequest<{ data: PlaceDTO }>('/operator/places', {
       method: 'POST',
       auth: true,
       headers: organisationRequestHeaders(tenantId),
@@ -99,14 +99,14 @@ export const placeApi = {
   /** Legacy `/me/locations` list — prefer {@link placeApi.getMySubmittedPlaces}. */
   getMySubmittedLocations: () => apiRequest<{ data: LocationDTO[] }>('/me/locations', { auth: true }),
   getOrganisationSubmittedPlaces: (tenantId: string) =>
-    apiRequest<{ data: LocationDTO[] }>('/host/places', {
+    apiRequest<{ data: LocationDTO[] }>('/operator/places', {
       auth: true,
       headers: organisationRequestHeaders(tenantId),
     }),
 
   /** Legacy HTTP path `/host/locations` — prefer {@link placeApi.submitOrganisationPlace}. */
   submitLocation: (tenantId: string, payload: Partial<LocationDTO>) =>
-    apiRequest<{ data: LocationDTO }>('/host/locations', {
+    apiRequest<{ data: LocationDTO }>('/operator/locations', {
       method: 'POST',
       auth: true,
       headers: organisationRequestHeaders(tenantId),
@@ -121,7 +121,7 @@ export const placeApi = {
     }),
   /** Legacy HTTP path `/host/locations` — prefer {@link placeApi.getOrganisationSubmittedPlaces}. */
   getHostSubmittedLocations: (tenantId: string) =>
-    apiRequest<{ data: LocationDTO[] }>('/host/locations', {
+    apiRequest<{ data: LocationDTO[] }>('/operator/locations', {
       auth: true,
       headers: organisationRequestHeaders(tenantId),
     }),

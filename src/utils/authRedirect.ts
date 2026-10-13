@@ -23,6 +23,7 @@ const AUTH_GATED_PREFIXES = [
   NOTIFICATIONS_PATH,
   GROUPS_PATH,
   '/host',
+  '/operator',
   '/admin',
   '/merchant',
   '/organisation/manage',
@@ -47,7 +48,12 @@ export const canReturnAfterAuth = (path: string, role: UserRole | string): boole
 
   const hostConsoleRoles = ['tenant_owner', 'tenant_admin', 'tenant_guide'];
   if (hostConsoleRoles.includes(role)) {
-    return pathname.startsWith('/host') || pathname.startsWith('/organizer') || pathname.startsWith('/profile');
+    return (
+      pathname.startsWith('/operator') ||
+      pathname.startsWith('/host') ||
+      pathname.startsWith('/organizer') ||
+      pathname.startsWith('/profile')
+    );
   }
   if (role === 'platform_admin') return pathname.startsWith('/admin');
   if (role === 'merchant_admin') {

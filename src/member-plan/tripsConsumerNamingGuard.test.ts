@@ -9,7 +9,7 @@ const ALLOWLIST = new Set([
   'src/config/surfacePaths.ts',
   'src/App.tsx',
   'src/utils/notificationRouting.test.ts',
-  'src/pages/host/Overview.tsx',
+  'src/pages/operator/Overview.tsx',
 ]);
 
 const DEPRECATED_TRIPS_SHIM_PREFIX = 'src/trips/';

@@ -19,7 +19,7 @@ export const activityMapPeekActionLabel = (
     case 'withdraw_join':
       return 'Withdraw';
     case 'message_host':
-      return 'Message Host';
+      return 'Message organizer';
     case 'invite_crew':
       return 'Ask your crew to join';
     case 'view_detail':
@@ -29,7 +29,7 @@ export const activityMapPeekActionLabel = (
     case 'pending_join':
       return action?.joinRequestStatus
         ? pendingApprovalLabel(action.joinRequestStatus)
-        : 'Waiting for host';
+        : 'Waiting for organizer';
     default:
       return id;
   }

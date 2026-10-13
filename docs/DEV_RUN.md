@@ -18,7 +18,7 @@ Use full run-project scripts only when explicitly requested.
 - **Async side effects** (rewards, emails, group-chat roster, notifications): failures log with `logContext` via `scheduleSideEffect` / `scheduleNotification` — check API warn logs if something did not fire.
 - **`npm run seed` without `SEED_DATA`:** still **upserts curated areas** and **backfills `place.areaId`** on catalog rows (safe on existing DBs).
 - After pulling member/host changes, restart the API once so Mongo migrations run (`tenant_memberships` owner backfill, `publishingPurpose` on tenants).
-- Buddy **Organize** requires **signup profile complete** (`PATCH /me/profile/signup-details`); `GET /me/host-status` exposes `canPublish`. Publish/create on `/host/activities` enforces the same server-side.
+- Buddy **Organize** requires **signup profile complete** (`PATCH /me/profile/signup-details`); `GET /me/status` exposes `profileComplete` and `publish.canPublish`. Publish/create on `POST /operator/activities` enforces the same server-side.
 - **`npm run dev:local`:** prints a reminder to run `SEED_DATA=true npm run seed` when the map has no pins (see [`operations/EXPLORE_MAP_RUNBOOK.md`](./operations/EXPLORE_MAP_RUNBOOK.md)).
 - Set `QUERY_TIMING=1` to log store queries slower than 25ms (see `apps/api/src/lib/query-timing.ts`).
 
@@ -40,6 +40,8 @@ During dev run, quickly verify:
 Explore FAB changes: [`CREATE_FLOW.md`](./CREATE_FLOW.md) + `src/explore/composeFlowCatalog.ts`. Automated guards: `npm run verify:system:quick` and `npm run test:explore-alignment`.
 
 **Release verification (S10 hygiene, Oct 2026):** On the release commit run **`npm run verify:system`** (includes `test:explore-alignment`). Day-to-day: **`npm run verify:system:quick`**. Staging manual pass: **`BASE_URL=https://staging-host npm run s10f:qa-checklist`** (detail §8 routes + notification edge cases). Map vNext promote (**S10e**): `npm run s10e:staging-checklist` → [`PRE_DEPLOY_CHECKLIST.md`](./PRE_DEPLOY_CHECKLIST.md) + [`operations/EXPLORE_MAP_RUNBOOK.md`](./operations/EXPLORE_MAP_RUNBOOK.md) — flags only after staging p95 gate. **Local ratio spot-check** (API must be up): `EXPLORE_MAP_VNEXT=1 npm run dev:api` then **`npm run s10e:local-ratio`**. Tracker: [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.1.
+
+**Unpushed release stack (local `main`, Oct 2026):** `git log origin/main..HEAD --oneline` — themes in order (newest first): **C18** explore shell (`useExploreMapCatalog`, browse URL sync/hydrate/apply-handlers, selection sub-hooks; `exploreBrowseUrlHydrate.test.ts`); **S10** hygiene (S10a–b mount-fetch, S10c API batching, S10d explore runtime); **S10e/f** ops scripts (`s10e:staging-checklist`, `s10e:local-ratio`, consumer-detail QA routes). Engineering closed — remaining gates are **staging S10e** (flags + p95) and **S10f** manual matrix. Do not push until you explicitly want `origin/main` updated.
 
 Seeking storage (activity-canonical Find): [`operations/SEEKING_STORAGE_RUNBOOK.md`](./operations/SEEKING_STORAGE_RUNBOOK.md). Local readiness: `npm run seeking:storage-status` (stub write should be **off** by default); gate before deploy: `npm run seeking:deploy-gate`. If backfill skips coord-less intents, use `cancel-coordless-participant-intents` (see runbook).
 

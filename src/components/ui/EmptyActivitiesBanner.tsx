@@ -9,13 +9,13 @@ import { Plus, Sun } from 'lucide-react';
 
 
 import { useAuth } from '../../context/AuthContext';
-import { useHostStatus } from '../../hooks/useHostStatus';
+import { useMemberStatus } from '../../hooks/useMemberStatus';
 
 /** Shown when there are no upcoming activities. */
 export const EmptyActivitiesBanner = () => {
   const { user } = useAuth();
-  const { canAccessHostConsole, canPublish } = useHostStatus({ enabled: Boolean(user) });
-  const canHost = canAccessHostConsole;
+  const { canAccessPublishingWorkspace, canPublish } = useMemberStatus({ enabled: Boolean(user) });
+  const canHost = canAccessPublishingWorkspace;
   const memberHostCtaPath = canPublish ? EXPLORE_MAP_PATH : PRO_MEMBERSHIP_PATH;
 
   return (
@@ -35,7 +35,7 @@ export const EmptyActivitiesBanner = () => {
             className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-600 text-white rounded-full text-sm font-semibold hover:bg-emerald-700 transition-colors"
           >
             <Plus className="w-4 h-4" />
-            Host an activity
+            Organize an outing
           </Link>
         ) : user ? (
           <Link
@@ -51,7 +51,7 @@ export const EmptyActivitiesBanner = () => {
             className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-600 text-white rounded-full text-sm font-semibold hover:bg-emerald-700 transition-colors"
           >
             <Plus className="w-4 h-4" />
-            Host an activity
+            Organize an outing
           </Link>
         )}
       </div>

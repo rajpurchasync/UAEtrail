@@ -39,7 +39,7 @@ describe('collectGoingPeopleFromMapItems', () => {
             userId: 'host-1',
             displayName: 'Omar',
             avatarUrl: 'https://cdn.example/host.jpg',
-            role: 'host',
+            role: 'organizer',
           },
         }),
       ],

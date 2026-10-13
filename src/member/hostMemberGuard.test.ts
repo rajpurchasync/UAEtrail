@@ -26,8 +26,8 @@ const ALLOW_HOST_CONSOLE_PATHS = new Set([
 
 /** Legacy host workspace (`/host/*` pages) — not consumer Plan/Profile surfaces. */
 const SKIP_HOST_CONSOLE_PREFIXES = [
-  'src/pages/host/',
-  'src/components/host/',
+  'src/pages/operator/',
+  'src/components/activity/',
   'src/console/',
 ];
 
@@ -81,7 +81,7 @@ describe('hostMemberGuard', () => {
     expect(violations).toEqual([]);
   });
 
-  it('consumer UI does not deep-link to /host/overview (use Plan, explore organize, or pro membership)', () => {
+  it('consumer UI does not deep-link to publishing console overview (use Plan, explore organize, or pro membership)', () => {
     const files = collectSourceFiles(SCAN_ROOT).filter(
       (file) =>
         !SKIP_PREFIXES.some((prefix) => file.startsWith(prefix)) &&
@@ -94,8 +94,11 @@ describe('hostMemberGuard', () => {
       const content = readFileSync(join(process.cwd(), file), 'utf8');
       if (
         /['"]\/host\/overview['"]/.test(content) ||
+        /['"]\/operator\/overview['"]/.test(content) ||
         /to=\{HOST_OVERVIEW_PATH\}/.test(content) ||
-        /to:\s*HOST_OVERVIEW_PATH/.test(content)
+        /to=\{OPERATOR_OVERVIEW_PATH\}/.test(content) ||
+        /to:\s*HOST_OVERVIEW_PATH/.test(content) ||
+        /to:\s*OPERATOR_OVERVIEW_PATH/.test(content)
       ) {
         violations.push(`${file}: use exploreOrganizePath(), tripsPlansPath('hosted'), or PRO_MEMBERSHIP_PATH`);
       }
@@ -104,7 +107,7 @@ describe('hostMemberGuard', () => {
     expect(violations).toEqual([]);
   });
 
-  it('consumer UI does not deep-link to /host/requests, /host/activities, or /host/team', () => {
+  it('consumer UI does not deep-link to publishing console tenant routes', () => {
     const files = collectSourceFiles(SCAN_ROOT).filter(
       (file) =>
         !SKIP_PREFIXES.some((prefix) => file.startsWith(prefix)) &&
@@ -114,15 +117,15 @@ describe('hostMemberGuard', () => {
     const violations: string[] = [];
 
     const literalHostConsole =
-      /['"]\/host\/(requests|activities(?:\/new)?|team)['"]/;
+      /['"]\/(?:host|operator)\/(requests|activities(?:\/new)?|team)['"]/;
     const hostConsoleConstants =
-      /to=\{HOST_(REQUESTS|ACTIVITIES|TEAM)_PATH\}|to:\s*HOST_(REQUESTS|ACTIVITIES|TEAM)_PATH|to=\{HOST_ACTIVITIES_NEW_PATH\}/;
+      /to=\{(HOST|OPERATOR)_(REQUESTS|ACTIVITIES|TEAM)_PATH\}|to:\s*(HOST|OPERATOR)_(REQUESTS|ACTIVITIES|TEAM)_PATH|to=\{(HOST|OPERATOR)_ACTIVITIES_NEW_PATH\}/;
 
     for (const file of files) {
       const content = readFileSync(join(process.cwd(), file), 'utf8');
       if (literalHostConsole.test(content) || hostConsoleConstants.test(content)) {
         violations.push(
-          `${file}: use tripsPlansPath('hosted'), MY_REQUESTS_PATH, or PRO_MEMBERSHIP_PATH — not consumer /host/*`
+          `${file}: use tripsPlansPath('hosted'), MY_REQUESTS_PATH, or PRO_MEMBERSHIP_PATH — not consumer /operator/*`
         );
       }
     }
@@ -130,7 +133,7 @@ describe('hostMemberGuard', () => {
     expect(violations).toEqual([]);
   });
 
-  it('product gates do not use isHostRole (use canAccessHostConsole / canPublish from host-status)', () => {
+  it('product gates do not use isHostRole (use useMemberStatus / canAccessPublishingWorkspace)', () => {
     const files = collectSourceFiles(SCAN_ROOT).filter(
       (file) => file !== 'src/utils/roles.ts' && !file.endsWith('.test.ts')
     );
@@ -139,14 +142,54 @@ describe('hostMemberGuard', () => {
     for (const file of files) {
       const content = readFileSync(join(process.cwd(), file), 'utf8');
       if (/\bisHostRole\s*\(/.test(content)) {
-        violations.push(`${file}: use useHostStatus / canAccessHostConsole`);
+        violations.push(`${file}: use useMemberStatus / canAccessPublishingWorkspace`);
       }
     }
 
     expect(violations).toEqual([]);
   });
 
-  it('new host-status reads prefer getMemberHostStatus over getMyOrganisationStatus', () => {
+  it('app code imports tenantActivityClientApi (not legacy host/operator client shims)', () => {
+    const allow = new Set(['src/hooks/tenantActivityClientApi.ts']);
+    const files = collectSourceFiles(SCAN_ROOT).filter(
+      (file) => !allow.has(file) && !file.endsWith('.test.ts')
+    );
+    const violations: string[] = [];
+
+    for (const file of files) {
+      const content = readFileSync(join(process.cwd(), file), 'utf8');
+      if (/from\s+['"].*hostActivityClientApi['"]/.test(content)) {
+        violations.push(`${file}: import tenantActivityClientApi`);
+      }
+      if (/from\s+['"].*operatorActivityClientApi['"]/.test(content)) {
+        violations.push(`${file}: import tenantActivityClientApi`);
+      }
+    }
+
+    expect(violations).toEqual([]);
+  });
+
+  it('consumer code imports useMemberStatus (not deprecated status shims)', () => {
+    const files = collectSourceFiles(SCAN_ROOT).filter((file) => !file.endsWith('.test.ts'));
+    const violations: string[] = [];
+
+    for (const file of files) {
+      const content = readFileSync(join(process.cwd(), file), 'utf8');
+      if (/from\s+['"].*useHostStatus['"]/.test(content)) {
+        violations.push(`${file}: import useMemberStatus`);
+      }
+      if (/from\s+['"].*useOperatorStatus['"]/.test(content)) {
+        violations.push(`${file}: import useMemberStatus`);
+      }
+      if (/from\s+['"].*usePublishingAccess['"]/.test(content)) {
+        violations.push(`${file}: import useMemberStatus`);
+      }
+    }
+
+    expect(violations).toEqual([]);
+  });
+
+  it('member status reads prefer getMemberStatus over legacy aliases', () => {
     const files = collectSourceFiles(SCAN_ROOT).filter(
       (file) =>
         !SKIP_PREFIXES.some((prefix) => file.startsWith(prefix)) &&
@@ -159,7 +202,10 @@ describe('hostMemberGuard', () => {
     for (const file of files) {
       const content = readFileSync(join(process.cwd(), file), 'utf8');
       if (/\bapi\.getMyOrganisationStatus\s*\(/.test(content)) {
-        violations.push(`${file}: use api.getMemberHostStatus()`);
+        violations.push(`${file}: use api.getMemberStatus()`);
+      }
+      if (/\bapi\.getMember(Host|Operator)Status\s*\(/.test(content)) {
+        violations.push(`${file}: use api.getMemberStatus()`);
       }
     }
 

@@ -8,12 +8,12 @@ import { EXPLORE_BRAND_ACTIVE } from '../config/exploreTheme';
 import { ExploreComposeHost } from '../explore/ui/ExploreComposeHost';
 import { useExploreComposeRoute } from '../explore/ui/useExploreComposeRoute';
 import { isAddWizard, isFindWizard } from '../explore/compose';
-import { useHostStatus } from '../hooks/useHostStatus';
+import { useMemberStatus } from '../hooks/useMemberStatus';
 import { reloadExploreMap } from '../hooks/useExploreMap';
 import { buildSignInRedirect } from '../utils/authReturnContext';
 import {
   organizePublishGateHref,
-  organizePublishGateInputFromHostGate,
+  organizePublishGateInputFromMemberStatus,
 } from '../utils/organizePublishGate';
 import { browseListFilterPatchForSearchScope } from './listDiscoverySearchCommit';
 import { browseListShowsTripTopicRow } from './browseListTripTopics';
@@ -92,13 +92,13 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
 
   const {
     canPublish,
-    signupProfileComplete,
+    profileComplete,
     isCommunityHost,
     hostTiers,
     loading: hostGateLoading,
     refresh: refreshHostGate,
     tenantId,
-  } = useHostStatus({ enabled: Boolean(user) });
+  } = useMemberStatus({ enabled: Boolean(user) });
 
   const hostSheets = useHostActivitySheetBundle({
     tenantId,
@@ -111,16 +111,16 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
       navigate(
         organizePublishGateHref(
           returnPath,
-          organizePublishGateInputFromHostGate({
+          organizePublishGateInputFromMemberStatus({
             viewerUserId: user?.id ?? null,
-            signupProfileComplete,
+            profileComplete,
             canPublish,
             isCommunityHost,
             hostTiers,
           })
         )
       ),
-    [navigate, user?.id, signupProfileComplete, canPublish, isCommunityHost, hostTiers]
+    [navigate, user?.id, profileComplete, canPublish, isCommunityHost, hostTiers]
   );
 
   const compose = useExploreComposeRoute({
@@ -130,7 +130,7 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
     setSearchParams,
     onOpenComposeMenu: () => {},
     canPublish,
-    signupProfileComplete,
+    profileComplete,
     hostGateLoading,
   });
 

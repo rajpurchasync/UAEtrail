@@ -10,7 +10,7 @@ import { buildActivityDto } from '../../lib/mappers.js';
 import { resolveProfileViewerAccess } from '../../services/profile-viewer-access.js';
 import { recordMemberProfileView } from '../../lib/member-profile-views-store.js';
 import { assertAndRecordMemberDiscoveryProfileOpen } from '../../services/member-discovery-quota.js';
-import { resolveMemberHostStatus } from '../../services/member-host-status.js';
+import { resolveMemberStatus } from '../../services/member-status.js';
 import { buildPublicMemberProfile } from '../../services/public-member-profile.js';
 import { userBriefParamSchema } from './schemas.js';
 
@@ -76,7 +76,7 @@ export const registerPublicMemberRoutes = (router: Router): void => {
         (profile.viewerAccess.exposure === 'public' || profile.viewerAccess.exposure === 'full');
 
       if (fromDiscover && mayCountView && viewerUserId) {
-        const hostStatus = await resolveMemberHostStatus(viewerUserId);
+        const hostStatus = await resolveMemberStatus(viewerUserId);
         await assertAndRecordMemberDiscoveryProfileOpen({
           viewerUserId,
           profileUserId: userId,

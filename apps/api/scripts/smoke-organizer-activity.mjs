@@ -125,7 +125,7 @@ async function main() {
   images: []
 };
 
-  const created = await req('/host/activities', {
+  const created = await req('/operator/activities', {
     method: 'POST',
     token: orgToken,
     tenantId,
@@ -150,7 +150,7 @@ async function main() {
     return printSummary();
   }
 
-  const published = await req(`/host/activities/${activityId}/publish`, {
+  const published = await req(`/operator/activities/${activityId}/publish`, {
     method: 'POST',
     token: orgToken,
     tenantId
@@ -196,7 +196,7 @@ async function main() {
   log('User: meeting point map (UI)', true, 'OSM embed when lat/lng set — verify manually');
   log('Organizer: postpone via edit date (API)', true, 'PATCH date notifies participants');
 
-  const edited = await req(`/host/activities/${activityId}`, {
+  const edited = await req(`/operator/activities/${activityId}`, {
     method: 'PATCH',
     token: orgToken,
     tenantId,
@@ -208,7 +208,7 @@ async function main() {
   });
   log('Organizer: edit event', edited.status === 200, edited.status === 200 ? 'title/capacity/price updated' : JSON.stringify(edited.json));
 
-  const cancelled = await req(`/host/activities/${activityId}`, {
+  const cancelled = await req(`/operator/activities/${activityId}`, {
     method: 'DELETE',
     token: orgToken,
     tenantId

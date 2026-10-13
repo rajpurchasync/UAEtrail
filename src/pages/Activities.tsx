@@ -9,7 +9,7 @@ import { PageMeta } from '../components/seo/PageMeta';
 import { PLAN_PATH } from '../constants';
 import { PRODUCT_PLAN_SURFACE_TITLE } from '../content/productNorthStar';
 import { explorePath } from '../explore/routing';
-import { useHostStatus } from '../hooks/useHostStatus';
+import { useMemberStatus } from '../hooks/useMemberStatus';
 import { memberCanManageHostedActivities } from '../utils/hostedActivitiesGate';
 import { signInPathForReturn } from '../utils/authReturnContext';
 import { useMemberGoals } from '../hooks/useMemberGoals';
@@ -35,8 +35,8 @@ export const Activities = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [refreshKey, setRefreshKey] = useState(0);
   const [goalAddSheet, setGoalAddSheet] = useState(false);
-  const gate = useHostStatus({ enabled: Boolean(user) });
-  const canHost = memberCanManageHostedActivities(user, gate.canAccessHostConsole);
+  const gate = useMemberStatus({ enabled: Boolean(user) });
+  const canHost = memberCanManageHostedActivities(user, gate.canAccessPublishingWorkspace);
   const {
     goals,
     primaryGoal,

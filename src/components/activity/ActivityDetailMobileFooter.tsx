@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { Bell, MessageCircle } from 'lucide-react';
 import { useActivityCrewChatAction } from '../../hooks/useActivityCrewChatAction';
 import { usePushEnablePrompt } from '../../hooks/usePushEnablePrompt';
-import { HostMessageButton } from '../ui/HostMessageButton';
+import { MessageMemberButton } from '../chat/MessageMemberButton';
 
 const quickActionClass =
   'flex h-11 min-w-[3.25rem] shrink-0 flex-col items-center justify-center gap-0.5 rounded-xl border border-neutral-200 bg-white px-2 text-[10px] font-semibold leading-none text-neutral-800 active:bg-neutral-50 disabled:opacity-50';
@@ -37,7 +37,12 @@ export const ActivityDetailMobileFooter = ({
     <div className="flex items-stretch gap-2 rounded-2xl bg-white/95 p-2 shadow-lg shadow-black/10 ring-1 ring-black/[0.06] backdrop-blur-md">
       {showHostMessage ? (
         <div className="flex shrink-0 items-center">
-          <HostMessageButton hostUserId={hostUserId} activityId={activityId} size="md" />
+          <MessageMemberButton
+            memberUserId={hostUserId}
+            activityId={activityId}
+            size="md"
+            messageLabel="Message organizer"
+          />
         </div>
       ) : null}
       {showChat ? (

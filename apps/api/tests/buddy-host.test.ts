@@ -46,7 +46,7 @@ describe('buddy host access', () => {
     await db.collection('tenant_memberships').deleteMany({ tenantId: tenant.id, userId: user._id });
 
     const res = await request(app)
-      .get('/api/v1/host/activities')
+      .get('/api/v1/operator/activities')
       .set('Authorization', `Bearer ${visitor.accessToken}`)
       .set('x-organisation-id', tenant.id);
 
@@ -65,7 +65,7 @@ describe('buddy host access', () => {
     const visitor = await registerVerifiedVisitor(app, `buddy-publish-${Date.now()}`);
 
     const before = await request(app)
-      .get('/api/v1/me/host-status')
+      .get('/api/v1/me/status')
       .set('Authorization', `Bearer ${visitor.accessToken}`);
     expect(before.status).toBe(200);
     expect(before.body.data.canPublish).toBe(false);
@@ -74,7 +74,7 @@ describe('buddy host access', () => {
     await completeSignupProfile(visitor.accessToken);
 
     const after = await request(app)
-      .get('/api/v1/me/host-status')
+      .get('/api/v1/me/status')
       .set('Authorization', `Bearer ${visitor.accessToken}`);
     expect(after.status).toBe(200);
     expect(after.body.data.signupProfileComplete).toBe(true);

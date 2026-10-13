@@ -17,7 +17,7 @@ import { mapIntentJoinRequestStatusByIntentIdsForUser } from './participant-inte
 import { listActiveTenantMembershipsByUser } from './tenant-access.js';
 import { listBuddiesForUser } from './buddy-store.js';
 import { countPendingActivityInvitesByActivityIdsForSender } from './activity-invites-store.js';
-import { resolveMemberHostStatus } from '../services/member-host-status.js';
+import { resolveMemberStatus } from '../services/member-status.js';
 import { applyActivityViewEntitlements } from '../services/member-entitlements.js';
 import type { HostStatusDTO } from '@uaetrail/shared-types';
 import { buildMapPeekEngagementPolicyInput } from './activity-engagement-policy-input.js';
@@ -166,7 +166,7 @@ export const buildExploreMapViewerAccessContext = async (input: {
       listActivityEngagementForUserOnActivities(viewerUserId, activityIds),
       listActiveTenantMembershipsByUser(viewerUserId),
       mapIntentJoinRequestStatusByIntentIdsForUser(viewerUserId, intentIds),
-      resolveMemberHostStatus(viewerUserId),
+      resolveMemberStatus(viewerUserId),
       listBuddiesForUser(viewerUserId),
       countPendingActivityInvitesByActivityIdsForSender({
         fromUserId: viewerUserId,

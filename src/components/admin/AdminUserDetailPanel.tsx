@@ -161,10 +161,10 @@ const TenantDrillDown = ({
   onOpenUser?: (userId: string) => void;
 }) => {
   if (loading) {
-    return <p className="text-sm text-gray-500 py-8 text-center">Loading host profile…</p>;
+    return <p className="text-sm text-gray-500 py-8 text-center">Loading publishing profile…</p>;
   }
   if (!tenant) {
-    return <p className="text-sm text-gray-500 py-8 text-center">Host profile not found.</p>;
+    return <p className="text-sm text-gray-500 py-8 text-center">Publishing profile not found.</p>;
   }
 
   return (
@@ -239,7 +239,7 @@ const TenantDrillDown = ({
         target="_blank"
         className="inline-flex text-sm font-medium text-emerald-700 hover:text-emerald-800"
       >
-        View public host profile ↗
+        View public publishing profile ↗
       </Link>
     </div>
   );
@@ -383,9 +383,9 @@ export const AdminUserDetailPanel = ({
 
   const tabs: { key: Tab; label: string; count?: number }[] = [
     { key: 'overview', label: 'Profile' },
-    { key: 'hosts', label: 'Host profiles', count: (user.ownedTenants?.length ?? 0) + (user.memberships?.length ?? 0) },
+    { key: 'hosts', label: 'Publishing profiles', count: (user.ownedTenants?.length ?? 0) + (user.memberships?.length ?? 0) },
     { key: 'groups', label: 'Groups', count: user.groups?.length },
-    { key: 'hosted', label: 'Hosted', count: user.hostedActivities?.length },
+    { key: 'hosted', label: 'Organized', count: user.hostedActivities?.length },
     { key: 'participated', label: 'Joined', count: user.joinedActivities?.length },
     { key: 'requests', label: 'Requests', count: user.requests?.length }
   ];
@@ -425,7 +425,7 @@ export const AdminUserDetailPanel = ({
   }, [drillDown]);
 
   const drillTitle = drillDown?.type === 'tenant'
-    ? tenantDetail?.name ?? 'Host profile'
+    ? tenantDetail?.name ?? 'Publishing profile'
     : drillDown?.type === 'group'
       ? groupDetail?.group.name ?? 'Group'
       : activityDetail?.title ?? activityDetail?.locationName ?? 'Activity';
@@ -508,7 +508,7 @@ export const AdminUserDetailPanel = ({
                   <div className="flex flex-wrap gap-2">
                     {(user.ownedTenants?.length ?? 0) > 0 && (
                       <button type="button" onClick={() => setTab('hosts')} className="px-3 py-1.5 rounded-lg bg-blue-50 text-blue-800 text-sm font-medium">
-                        {user.ownedTenants!.length} host profile{user.ownedTenants!.length > 1 ? 's' : ''}
+                        {user.ownedTenants!.length} publishing profile{user.ownedTenants!.length > 1 ? 's' : ''}
                       </button>
                     )}
                     {(user.groups?.length ?? 0) > 0 && (
@@ -533,7 +533,7 @@ export const AdminUserDetailPanel = ({
 
             {tab === 'hosts' && (
               <div className="space-y-6">
-                <Section title={`Owned host profiles (${user.ownedTenants?.length ?? 0})`}>
+                <Section title={`Owned publishing profiles (${user.ownedTenants?.length ?? 0})`}>
                   {user.ownedTenants?.length ? (
                     <div className="space-y-2">
                       {user.ownedTenants.map((tenant) => (
@@ -549,7 +549,7 @@ export const AdminUserDetailPanel = ({
                       ))}
                     </div>
                   ) : (
-                    <p className="text-sm text-gray-500">No owned host profiles.</p>
+                    <p className="text-sm text-gray-500">No owned publishing profiles.</p>
                   )}
                 </Section>
 

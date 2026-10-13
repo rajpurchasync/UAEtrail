@@ -37,7 +37,7 @@ import { PRIVATE_ACTIVITY_MESSAGE } from '../../services/activity-viewer-access.
 import { composeActivityViewerAccess } from '../../services/compose-activity-viewer-access.js';
 import { buildActivityPresentationForDetail } from '../../lib/build-activity-presentation.js';
 import { countPendingActivityInvitesForSenderOnActivity } from '../../lib/activity-invites-store.js';
-import { resolveMemberHostStatus } from '../../services/member-host-status.js';
+import { resolveMemberStatus } from '../../services/member-status.js';
 import { resolveViewerPendingJoinInvite } from '../../services/activity-invite.js';
 import { createRequestSchema, eventIdParamSchema, requestIdParamSchema, rsvpSchema } from './schemas.js';
 
@@ -92,7 +92,7 @@ registerActivityRoute(router, 'get', '/:id', optionalAuth, validate({ params: ev
     const viewerUserId = req.auth?.userId ?? null;
     const hostUserId = event.createdById ?? event.hostId ?? null;
     const participantUserIds = event.participants.map((row) => row.userId);
-    const hostStatus = viewerUserId ? await resolveMemberHostStatus(viewerUserId) : null;
+    const hostStatus = viewerUserId ? await resolveMemberStatus(viewerUserId) : null;
 
     const access = await composeActivityViewerAccess(
       {

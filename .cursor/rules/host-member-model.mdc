@@ -14,20 +14,20 @@ alwaysApply: true
 
 | User action | Mechanism | NOT this |
 |-------------|-----------|----------|
-| **Buddy Organize** on map | `signupProfileComplete` → `canPublish` (`GET /me/host-status`) → `/welcome` if incomplete | `/become-host`, host application |
+| **Buddy Organize** on map | `profileComplete` → `publish.canPublish` (`GET /me/status`) → `/welcome` if incomplete | `/become-host`, host application |
 | **Pro / agency / shop** | `/profile/pro-membership`, `host_applications` | Bare “become host” funnel in consumer UI |
-| **Join an outing** | `activity_requests`, `POST /activities/:id/requests` | Host onboarding |
-| **Host reviews joiners** | `GET/PATCH /host/requests` (**activity** queue) | `registerHost*JoinRequest*` without **Activity** in the name |
+| **Join / participate** on an outing | `activity_requests`, `POST /activities/:id/requests` (signed-in only) | Profile completion, publish tier, or host onboarding |
+| **Host reviews joiners** | `GET/PATCH /operator/requests` (**activity** queue; legacy `/host/*` rewritten) | `registerHost*JoinRequest*` without **Activity** in the name |
 
-**`UserRole` (TENANT_GUIDE, …) ≠ host publishing tier.** UI gates use **`HostStatusDTO`** from `api.getMemberHostStatus()` / `useOrganisationGate`.
+**UI labels:** **Host** = individual on an outing; **Operator** = agency/shop workspace — not `/me/*` API names. **`UserRole` (TENANT_GUIDE, …) ≠ publish tier.** Gates: **`MemberStatusDTO`** / **`status.publish`** from `api.getMemberStatus()` / `useMemberStatus`.
 
 ## Code placement
 
 | Concern | Location |
 |---------|----------|
-| Tier resolver | `apps/api/src/services/member-host-status.ts` only |
+| Tier resolver | `apps/api/src/services/member-status.ts` (`resolveMemberStatus`) only |
 | Publish enforcement | `member-publish-gate.ts` on create/publish |
-| Client | `src/api/domains/member.ts` → `getMemberHostStatus` |
+| Client | `src/api/domains/member.ts` → `getMemberStatus` · `src/hooks/useMemberStatus.ts` |
 | Pro path constant (FE) | `src/config/memberRoutes.ts` |
 | Pro path constant (API meta) | `apps/api/src/lib/member-routes.ts` |
 
@@ -38,7 +38,7 @@ alwaysApply: true
 3. Domain types: use **`TenantPublishingPurpose`**, not `string`, for `publishingPurpose`.
 4. Grep: no new `path: '/become-host'` in `apps/api/src` (use `PRO_MEMBERSHIP_PATH`).
 5. No new consumer links to `/become-host` (redirect route only); use `PRO_MEMBERSHIP_PATH` / `proMembershipPath()`.
-6. No new `isHostRole(` for product gates in `src/` (console access → `canAccessHostConsole`).
+6. No new `isHostRole(` for product gates in `src/` (console access → `canAccessPublishingWorkspace` from `useMemberStatus`).
 
 ## Tests that guard this
 

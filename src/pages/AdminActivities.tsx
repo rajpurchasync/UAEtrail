@@ -10,10 +10,10 @@ import {
   toggleAdminActivityFeatured,
 } from '../hooks/adminConsoleApi';
 import {
-  cancelHostActivityById,
-  duplicateHostActivityById,
-  publishHostActivityById,
-} from '../hooks/hostActivityClientApi';
+  cancelActivity,
+  duplicateActivity,
+  publishActivity,
+} from '../hooks/tenantActivityClientApi';
 import { ActivityActionsMenu, ActivityListPreview, buildAdminActivityMenuItems, openPublishedActivityPreview } from '../components/activities';
 import { useReloadExploreMap } from '../hooks/useReloadExploreMap';
 import { Link } from 'react-router-dom';
@@ -181,7 +181,7 @@ export const AdminActivities = () => {
   const publish = async (event: ActivityDTO) => {
     if (!event.tenantId) return;
     try {
-      await publishHostActivityById(event.tenantId, event.id);
+      await publishActivity(event.tenantId, event.id);
       await reloadExploreMap();
       await loadEvents();
     } catch (err) {
@@ -192,7 +192,7 @@ export const AdminActivities = () => {
   const duplicateActivity = async (event: ActivityDTO) => {
     if (!event.tenantId) return;
     try {
-      const duplicate = await duplicateHostActivityById(event.tenantId, event.id);
+      const duplicate = await duplicateActivity(event.tenantId, event.id);
       await loadEvents();
       navigateToReorganizeActivity(navigate, duplicate);
     } catch (err) {
@@ -207,7 +207,7 @@ export const AdminActivities = () => {
   const deleteDraft = async () => {
     if (!confirmDelete?.tenantId) return;
     try {
-      await cancelHostActivityById(confirmDelete.tenantId, confirmDelete.id);
+      await cancelActivity(confirmDelete.tenantId, confirmDelete.id);
       setConfirmDelete(null);
       await loadEvents();
     } catch (err) {
@@ -219,7 +219,7 @@ export const AdminActivities = () => {
   const cancelActivity = async () => {
     if (!confirmCancel?.tenantId) return;
     try {
-      await cancelHostActivityById(confirmCancel.tenantId, confirmCancel.id);
+      await cancelActivity(confirmCancel.tenantId, confirmCancel.id);
       setConfirmCancel(null);
       await loadEvents();
     } catch (err) {
@@ -240,7 +240,7 @@ export const AdminActivities = () => {
     if (!event.tenantId) return;
     setPreviewPublishing(true);
     try {
-      await publishHostActivityById(event.tenantId, event.id);
+      await publishActivity(event.tenantId, event.id);
       await reloadExploreMap();
       setPreviewActivity(null);
       await loadEvents();

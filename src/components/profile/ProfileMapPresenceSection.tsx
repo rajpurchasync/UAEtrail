@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { GlassCard } from '../mobile/GlassCard';
 import type { HostFlowIntent } from '../organisation-console/hostWizardFlow';
-import { useHostStatus } from '../../hooks/useHostStatus';
+import { useMemberStatus } from '../../hooks/useMemberStatus';
 import { PRO_MEMBERSHIP_PATH } from '../../config/routingCatalog';
 import { organisationManagePath } from '../../config/routingCatalog';
 
@@ -11,11 +11,11 @@ const HOST_PROFILE_CHIPS = [
   { key: 'shop' as const, intent: 'add-shop' as HostFlowIntent, label: 'Shop', emoji: '🛍️' },
 ];
 
-/** Manage guide, agency, and shop host profiles. Only physical shops appear on the explore map. */
+/** Manage guide, agency, and shop publishing profiles. Only physical shops appear on the explore map. */
 export const ProfileMapPresenceSection = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { loading, hasGuideProfile, hasAgencyProfile, hasShopProfile, ownedProfiles } = useHostStatus();
+  const { loading, hasGuideProfile, hasAgencyProfile, hasShopProfile, ownedProfiles } = useMemberStatus();
 
   const isActive = (key: (typeof HOST_PROFILE_CHIPS)[number]['key']) => {
     if (key === 'guide') return hasGuideProfile;
@@ -33,7 +33,7 @@ export const ProfileMapPresenceSection = () => {
   return (
     <GlassCard padding id="host-profiles" className="scroll-mt-24 animate-fade-up">
       <div className="mb-3">
-        <h2 className="text-sm font-bold text-gray-900">Host profiles</h2>
+        <h2 className="text-sm font-bold text-gray-900">Publishing profiles</h2>
         <p className="mt-1 text-xs text-gray-500 leading-relaxed">
           Guides and agencies host activities on UAE Trail. Gear shops can pin a store on the map or list as an online
           partner — separate from your personal profile.
@@ -46,7 +46,7 @@ export const ProfileMapPresenceSection = () => {
         <>
           {activeCount > 0 && (
             <p className="mb-2 text-xs font-semibold text-emerald-700">
-              {activeCount} host profile{activeCount === 1 ? '' : 's'} active
+              {activeCount} publishing profile{activeCount === 1 ? '' : 's'} active
             </p>
           )}
           <div className="flex flex-wrap gap-2">

@@ -1,10 +1,16 @@
 import { exploreActivityPublisherTypeLabel } from './activity-publisher-display.js';
+import { ORGANIZER_FALLBACK_DISPLAY_NAME } from './host-display.js';
 import type { PublishingProfileKind } from './publishing-profile-kind.js';
 import { isRolePlaceholderDisplayName } from './host-display.js';
 import { exploreMapItemIsSeeking, type ExploreMapItemActivityModeFields } from './explore-activity-mode.js';
 
 /** How a featured user relates to an explore map/list item. */
-export type ExploreMapPersonRole = 'host' | 'requester' | 'contact';
+export type ExploreMapPersonRole = 'organizer' | 'host' | 'requester' | 'contact';
+
+/** Wire `host` is legacy — normalize for new payloads and UI. */
+export const canonicalExploreMapPersonRole = (
+  role: ExploreMapPersonRole
+): 'organizer' | 'requester' | 'contact' => (role === 'host' ? 'organizer' : role);
 
 export interface ExploreMapPersonDTO {
   userId: string;
@@ -42,7 +48,9 @@ export const formatExplorePersonDisplayName = (name?: string | null): string => 
 export const explorePersonFirstName = (person?: ExploreMapPersonDTO | null): string => {
   const displayName = formatExplorePersonDisplayName(person?.displayName);
   if (displayName === 'Community member') {
-    return person?.role === 'host' ? 'Host' : 'Community member';
+    return person?.role === 'host' || person?.role === 'organizer'
+      ? ORGANIZER_FALLBACK_DISPLAY_NAME
+      : 'Community member';
   }
   return displayName.split(/\s+/)[0];
 };
@@ -56,6 +64,7 @@ export const explorePersonRoleLabel = (
       return 'Posted this request';
     case 'contact':
       return 'Shop contact';
+    case 'organizer':
     case 'host':
     default:
       return exploreActivityPublisherTypeLabel(publishingProfileKind);
@@ -75,7 +84,7 @@ export const buildExploreFeaturedPerson = (input: {
     userId,
     displayName,
     avatarUrl: input.avatarUrl ?? null,
-    role: input.role,
+    role: canonicalExploreMapPersonRole(input.role),
   };
 };
 
@@ -84,7 +93,10 @@ export const resolveExploreFeaturedPerson = (
   item: ExploreFeaturedPersonInput
 ): ExploreMapPersonDTO | null => {
   if (item.featuredPerson?.userId && item.featuredPerson.displayName?.trim()) {
-    return item.featuredPerson;
+    return {
+      ...item.featuredPerson,
+      role: canonicalExploreMapPersonRole(item.featuredPerson.role),
+    };
   }
 
   const source = item.source;
@@ -113,7 +125,7 @@ export const resolveExploreFeaturedPerson = (
       userId: activity?.hostUserId,
       displayName: activity?.hostName ?? item.hostName,
       avatarUrl: activity?.hostAvatar ?? item.hostAvatar,
-      role: 'host',
+      role: 'organizer',
     });
   }
 

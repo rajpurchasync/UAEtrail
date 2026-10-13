@@ -8,7 +8,7 @@ import {
 } from '../lib/activity-engagement-store.js';
 import { countPendingIncomingBuddyRequests } from '../lib/buddy-store.js';
 import { countUnreadNotificationsByMetaKind } from '../lib/notifications-store.js';
-import { resolveMemberHostStatus } from './member-host-status.js';
+import { resolveMemberStatus } from './member-status.js';
 import {
   countPendingActivityJoinInvitesForUser,
   listPendingActivityJoinInvitesForUser,
@@ -18,7 +18,7 @@ import {
 export const loadMemberCoordinationAttention = async (
   userId: string
 ): Promise<MemberCoordinationAttentionDTO> => {
-  const hostStatus = await resolveMemberHostStatus(userId);
+  const hostStatus = await resolveMemberStatus(userId);
   const tenantId = hostStatus.tenantId;
 
   const [

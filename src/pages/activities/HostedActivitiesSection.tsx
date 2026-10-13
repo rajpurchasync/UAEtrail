@@ -9,8 +9,8 @@ import {
   ConsumerInlineEmpty,
   ConsumerLoadingSpinner,
 } from '../../components/mobile/ConsumerFeedback';
-import { ActivityManageSheet } from '../../components/host/ActivityManageSheet';
-import { HostedActivityListRow } from '../../components/host/HostedActivityListRow';
+import { ActivityManageSheet } from '../../components/activity/ActivityManageSheet';
+import { HostedActivityListRow } from '../../components/activity/HostedActivityListRow';
 import {
   exploreOrganizePath,
   tripsPlansPath,
@@ -158,7 +158,7 @@ export const HostedActivitiesSection = ({
     if (peekBridgeOnly) return null;
     return (
       <ConsumerInlineEmpty
-        message="Host profile is still loading — try again in a moment, or open your hosted plans."
+        message="Organizer profile is still loading — try again in a moment, or open your organizing plans."
         actionLabel="Hosted on Plan"
         actionTo={tripsPlansPath('hosted')}
       />

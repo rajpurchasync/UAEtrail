@@ -58,7 +58,7 @@ Lead with **feelings and outcomes**, not modules:
 | **Keep going** | Same crew, next outing easier |
 | **Low pressure** | Browse free; join when you're ready |
 
-**Mechanisms** (map, hosts, join requests, demand posts, buddies, group chat) exist to **deliver** these experiences. They are not the headline.
+**Mechanisms** (map, organizers, join requests, demand posts, buddies, group chat) exist to **deliver** these experiences. They are not the headline.
 
 ---
 
@@ -94,7 +94,7 @@ Avoid narrowing marketing to “hiking & camping platform” unless SEO metadata
 | **Browse** | `/explore` | **Find people and plans** — map/list of what's on + FAB to organize, find, or add |
 | **Entity detail** | `/activity`, `/trail`, … | **Understand the plan** → **I'm going** or **request to join** (see [`CREATE_FLOW.md`](./CREATE_FLOW.md)) |
 | **Personal hub** | `/profile` | **Your crew & what's next** — up next, messages, repeat outings |
-| **Host console** | `/host/*` | **Enable others to go together** (secondary audience; not landing lead) |
+| **Publishing workspace** | `/host/*` | **Organizer / operator tools** — enable others to go together (secondary audience; not landing lead) |
 
 **Hard rules**
 

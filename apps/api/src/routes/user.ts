@@ -20,7 +20,7 @@ import { registerExploreAvailabilityRoutes } from './user/registerExploreAvailab
 import { registerMeMapPinsRoutes } from './user/registerMeMapPinsRoutes.js';
 import { registerMeWishlistRoutes } from './user/registerMeWishlistRoutes.js';
 import { registerMeCoordinationAttentionRoutes } from './user/registerMeCoordinationAttentionRoutes.js';
-import { registerMemberHostStatusRoutes } from './user/registerMemberHostStatusRoutes.js';
+import { registerMemberStatusRoutes } from './user/registerMemberStatusRoutes.js';
 import { registerMeSubmittedPlaceRoutes } from './user/registerMeSubmittedPlaceRoutes.js';
 import { registerNotificationRoutes } from './user/registerNotificationRoutes.js';
 import { registerProfileRoutes } from './user/registerProfileRoutes.js';
@@ -60,7 +60,7 @@ registerEntityFollowRoutes(userRouter);
 registerGroupRoutes(userRouter);
 registerHostApplicationRoutes(userRouter);
 
-registerMemberHostStatusRoutes(userRouter);
+registerMemberStatusRoutes(userRouter);
 registerMeAccountSessionRoutes(userRouter);
 registerMeSubmittedPlaceRoutes(userRouter);
 registerMeParticipantIntentRoutes(userRouter);

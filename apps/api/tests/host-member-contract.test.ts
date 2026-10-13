@@ -4,7 +4,7 @@ import { join, relative } from 'node:path';
 import { allowedActivityPricingModes } from '@uaetrail/shared-types';
 
 const API_SRC = join(process.cwd(), 'src');
-const HOST_ROUTES_DIR = join(API_SRC, 'routes', 'host');
+const OPERATOR_ROUTES_DIR = join(API_SRC, 'routes', 'operator');
 
 const collectTsFiles = (dir: string): string[] => {
   if (!existsSync(dir)) return [];
@@ -22,25 +22,26 @@ const collectTsFiles = (dir: string): string[] => {
 
 describe('host-member API contracts', () => {
   it('does not reintroduce ambiguous host join-request registrar names', () => {
-    expect(existsSync(join(HOST_ROUTES_DIR, 'registerHostJoinRequestRoutes.ts'))).toBe(false);
+    expect(existsSync(join(OPERATOR_ROUTES_DIR, 'registerHostJoinRequestRoutes.ts'))).toBe(false);
 
-    const hostFiles = collectTsFiles(HOST_ROUTES_DIR);
+    const hostFiles = collectTsFiles(OPERATOR_ROUTES_DIR);
     const violations: string[] = [];
     for (const file of hostFiles) {
       const content = readFileSync(join(process.cwd(), file), 'utf8');
       if (/registerHostJoinRequestRoutes/.test(content)) {
-        violations.push(`${file}: use registerHostActivityRequestRoutes`);
+        violations.push(`${file}: use registerOperatorActivityRequestRoutes`);
       }
     }
     expect(violations).toEqual([]);
   });
 
-  it('host activity routes use Activity-named registrars (not TenantActivity)', () => {
-    expect(existsSync(join(HOST_ROUTES_DIR, 'registerHostActivityRoutes.ts'))).toBe(true);
-    expect(existsSync(join(HOST_ROUTES_DIR, 'registerHostActivityParticipantRoutes.ts'))).toBe(true);
-    const hostMount = readFileSync(join(API_SRC, 'routes', 'host.ts'), 'utf8');
-    expect(hostMount).toMatch(/registerHostActivityRoutes/);
-    expect(hostMount).not.toMatch(/registerHostTenantActivityRoutes/);
+  it('operator activity routes use Activity-named registrars (not TenantActivity)', () => {
+    expect(existsSync(join(OPERATOR_ROUTES_DIR, 'registerOperatorActivityRoutes.ts'))).toBe(true);
+    expect(existsSync(join(OPERATOR_ROUTES_DIR, 'registerOperatorActivityParticipantRoutes.ts'))).toBe(true);
+    const operatorMount = readFileSync(join(API_SRC, 'routes', 'operator.ts'), 'utf8');
+    expect(operatorMount).toMatch(/registerOperatorActivityRoutes/);
+    expect(operatorMount).not.toMatch(/registerHostTenantActivityRoutes/);
+    expect(operatorMount).not.toMatch(/registerHostActivityRoutes/);
   });
 
   it('notification meta uses PRO_MEMBERSHIP_PATH constant instead of raw /become-host', () => {
@@ -60,8 +61,35 @@ describe('host-member API contracts', () => {
     expect(violations).toEqual([]);
   });
 
+  it('API mounts publishing console on /operator only (legacy /host rewritten)', () => {
+    const index = readFileSync(join(API_SRC, 'routes', 'index.ts'), 'utf8');
+    expect(index).toMatch(/apiRouter\.use\(['"]\/operator['"]/);
+    expect(index).not.toMatch(/apiRouter\.use\(['"]\/host['"]/);
+    expect(index).toMatch(/legacyHostApiRewrite/);
+  });
+
+  it('does not register parallel legacy member status routes', () => {
+    expect(existsSync(join(API_SRC, 'routes', 'user', 'registerMemberHostStatusRoutes.ts'))).toBe(
+      false
+    );
+    const routes = readFileSync(
+      join(API_SRC, 'routes', 'user', 'registerMemberStatusRoutes.ts'),
+      'utf8'
+    );
+    expect(routes).not.toMatch(/['"]\/me\/host-status['"]/);
+    expect(routes).not.toMatch(/['"]\/me\/operator-status['"]/);
+  });
+
+  it('member capabilities resolver lives in member-status service only', () => {
+    expect(existsSync(join(API_SRC, 'services', 'member-status.ts'))).toBe(true);
+    expect(existsSync(join(API_SRC, 'services', 'member-host-status.ts'))).toBe(false);
+    const status = readFileSync(join(API_SRC, 'services', 'member-status.ts'), 'utf8');
+    expect(status).toMatch(/export const resolveMemberStatus/);
+    expect(status).not.toMatch(/resolveMemberHostStatus/);
+  });
+
   it('canHostPaidActivities resolver aligns with paid pricing tier gate', () => {
-    const path = join(API_SRC, 'services', 'member-host-status.ts');
+    const path = join(API_SRC, 'services', 'member-status.ts');
     const content = readFileSync(path, 'utf8');
     expect(content).toMatch(/canHostPaidActivities\s*=\s*isPlatformAdmin\s*\|\|\s*hostTiers\.business/);
     expect(
@@ -91,6 +119,18 @@ describe('host-member API contracts', () => {
     const content = readFileSync(path, 'utf8');
     expect(content).not.toMatch(/publishingPurpose\?:\s*string/);
     expect(content).toMatch(/TenantPublishingPurpose/);
+  });
+
+  it('does not use HTTP resource versioning in deprecation Link relations', () => {
+    const middlewareDir = join(API_SRC, 'middleware');
+    const violations: string[] = [];
+    for (const file of collectTsFiles(middlewareDir)) {
+      const content = readFileSync(join(process.cwd(), file), 'utf8');
+      if (/successor-version/.test(content)) {
+        violations.push(`${file}: use rel="alternate" only`);
+      }
+    }
+    expect(violations).toEqual([]);
   });
 
   it('does not reintroduce Trail Points wallet route registrars', () => {

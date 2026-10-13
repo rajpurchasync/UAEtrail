@@ -8,7 +8,6 @@ export const PROFILE_BADGES_PATH = '/profile/badges';
 export const GROUPS_PATH = '/groups';
 
 export const MESSAGES_PATH = '/chat';
-export const HOST_MESSAGES_PATH = '/host/messages';
 export const MY_REQUESTS_PATH = '/my-requests';
 export const BUDDIES_PATH = '/buddies';
 export const NOTIFICATIONS_PATH = '/notifications';
@@ -18,9 +17,15 @@ export const buddiesIncomingRequestsPath = (): string => `${BUDDIES_PATH}?tab=re
 export const exploreActivityInvitePath = (activityId: string): string =>
   `/activity/${encodeURIComponent(activityId)}?join=1`;
 
+/** Publishing console — canonical notification + email deep links. */
+export const OPERATOR_REQUESTS_PATH = '/operator/requests';
+export const OPERATOR_ACTIVITIES_PATH = '/operator/activities';
+export const OPERATOR_OVERVIEW_PATH = '/operator/overview';
+
+/** @deprecated Legacy meta paths — clients rewrite to {@link OPERATOR_*_PATH}. */
+export const HOST_MESSAGES_PATH = '/host/messages';
 export const HOST_REQUESTS_PATH = '/host/requests';
 export const HOST_ACTIVITIES_PATH = '/host/activities';
-/** Tenant console only — do not use in consumer notification meta (use {@link PRO_MEMBERSHIP_PATH} or entity paths). */
 export const HOST_OVERVIEW_PATH = '/host/overview';
 
 /** Admin console deep links (notification meta for platform admins). */
@@ -35,7 +40,7 @@ export const EXPLORE_VENUES_LIST_PATH = '/explore?panel=venues&list=1';
 /** Plan schedule → joined outings — FE `tripsLegacyJoinedTabPath()`. */
 export const planJoinedSchedulePath = (): string => `${PLAN_PATH}?view=plans&filter=joined`;
 
-/** Buddy host join queue on Plan (not tenant `/host/requests`) — FE `planHostingFilterPath()`. */
+/** Buddy organizer join queue on Plan (not tenant `/operator/requests`) — FE `planHostingFilterPath()`. */
 export const planHostedSchedulePath = (): string => `${PLAN_PATH}?view=plans&filter=hosting`;
 
 /** @deprecated Name kept for imports — value is canonical {@link PLAN_PATH}. */

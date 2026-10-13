@@ -15,7 +15,7 @@ export const Terms = () => (
         <h2 className="text-lg font-semibold text-neutral-900">Use of the platform</h2>
         <p>
           UAE Trails helps you discover trails, join organized activities, and connect with the outdoor community
-          in the UAE. You must provide accurate information, follow host instructions on activities, and
+          in the UAE. You must provide accurate information, follow organizer instructions on activities, and
           respect local regulations and leave-no-trace principles.
         </p>
         <h2 className="text-lg font-semibold text-neutral-900">Accounts</h2>
@@ -23,9 +23,9 @@ export const Terms = () => (
           You are responsible for keeping your login credentials secure. We may suspend accounts that violate
           these terms or pose a safety risk to the community.
         </p>
-        <h2 className="text-lg font-semibold text-neutral-900">Activities and hosts</h2>
+        <h2 className="text-lg font-semibold text-neutral-900">Activities and organizers</h2>
         <p>
-          Activity hosts (guides, agencies, and shops) are responsible for their events. UAE Trails facilitates discovery and booking requests
+          Activity organizers (guides, agencies, and shops) are responsible for their events. UAE Trails facilitates discovery and booking requests
           but does not guarantee activity quality or safety outcomes. Participate at your own risk and ensure you
           have appropriate fitness, gear, and insurance.
         </p>

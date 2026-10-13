@@ -12,10 +12,10 @@ export type OrganizePublishGateInput = {
   canPublish: boolean;
 };
 
-/** Build gate input from `useHostStatus` fields (single source with `organizeEntitlementDenial`). */
-export const organizePublishGateInputFromHostGate = (args: {
+/** Build gate input from `useMemberStatus` fields (single source with `organizeEntitlementDenial`). */
+export const organizePublishGateInputFromMemberStatus = (args: {
   viewerUserId: string | null;
-  signupProfileComplete: boolean;
+  profileComplete: boolean;
   canPublish: boolean;
   isCommunityHost?: boolean;
   hostTiers?: HostTierFlags;
@@ -26,7 +26,7 @@ export const organizePublishGateInputFromHostGate = (args: {
     args.viewerUserId === null
       ? null
       : {
-          signupProfileComplete: args.signupProfileComplete,
+          profileComplete: args.profileComplete,
           isCommunityHost: args.isCommunityHost ?? false,
           hostTiers:
             args.hostTiers ?? {

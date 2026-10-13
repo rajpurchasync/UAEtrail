@@ -18,12 +18,12 @@ import {
   invalidateMyParticipantIntentsQueries,
 } from '../../hooks/participantIntentClientApi';
 import { useReloadExploreMap } from '../../hooks/useReloadExploreMap';
-import { useHostStatus } from '../../hooks/useHostStatus';
+import { useMemberStatus } from '../../hooks/useMemberStatus';
 import { useAuth } from '../../context/AuthContext';
 import { signInPathForReturn } from '../../utils/authReturnContext';
 import {
   organizePublishGateHref,
-  organizePublishGateInputFromHostGate,
+  organizePublishGateInputFromMemberStatus,
 } from '../../utils/organizePublishGate';
 import { ParticipantIntentEditForm } from './ParticipantIntentEditForm';
 import { ParticipantIntentJoinRequestsSection } from './ParticipantIntentJoinRequestsSection';
@@ -50,7 +50,7 @@ export const ParticipantIntentManageSheet = ({
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const gate = useHostStatus({ enabled: Boolean(user) });
+  const gate = useMemberStatus({ enabled: Boolean(user) });
   const reloadExploreMap = useReloadExploreMap();
   const [confirmRemove, setConfirmRemove] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -82,9 +82,9 @@ export const ParticipantIntentManageSheet = ({
       navigate(
         organizePublishGateHref(
           returnPath,
-          organizePublishGateInputFromHostGate({
+          organizePublishGateInputFromMemberStatus({
             viewerUserId: user.id,
-            signupProfileComplete: gate.signupProfileComplete,
+            profileComplete: gate.profileComplete,
             canPublish: gate.canPublish,
             isCommunityHost: gate.isCommunityHost,
             hostTiers: gate.hostTiers,

@@ -1,4 +1,4 @@
-import { EXPLORE_MAP_PATH, HOST_MESSAGES_PATH, MESSAGES_PATH } from '../config/routingCatalog';
+import { EXPLORE_MAP_PATH, MESSAGES_PATH } from '../config/routingCatalog';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSafeAsyncEffect } from '../hooks/useSafeAsyncEffect';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
@@ -23,8 +23,6 @@ import { SecureAvatar } from '../components/ui/SecureAvatar';
 import { useAuth } from '../context/AuthContext';
 
 import { PRODUCT_EXPLORE_CTA } from '../content/productNorthStar';
-import { useHostStatus } from '../hooks/useHostStatus';
-
 type FriendsTab = 'friends' | 'requests' | 'following';
 
 const parseFriendsTab = (raw: string | null): FriendsTab => {
@@ -58,8 +56,7 @@ export const Buddies = () => {
   >([]);
   const [findSearching, setFindSearching] = useState(false);
 
-  const { canAccessHostConsole } = useHostStatus({ enabled: Boolean(user) });
-  const messagesPath = canAccessHostConsole ? HOST_MESSAGES_PATH : MESSAGES_PATH;
+  const messagesPath = MESSAGES_PATH;
 
   const loadCore = useCallback(async (isActive: () => boolean = () => true) => {
     setLoading(true);
@@ -489,7 +486,7 @@ export const Buddies = () => {
                   <GlassCard padding className="text-center">
                     <p className="font-semibold text-neutral-900">Not following anyone yet</p>
                     <p className="mt-1 text-sm text-neutral-500">
-                      Follow hosts from their profile to get notified when they publish an outing.
+                      Follow organizers from their profile to get notified when they publish an outing.
                     </p>
                   </GlassCard>
                 ) : (

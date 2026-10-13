@@ -53,7 +53,7 @@ describe('activity detail program — governance', () => {
     expect(model).not.toMatch(/showHostActivityCtas/);
     const experience = read('src/explore/ui/ExploreExperience.tsx');
     expect(experience).not.toMatch(/showHostActivityCtas/);
-    expect(experience).not.toMatch(/hostActivityCtaHandlers/);
+    expect(experience).not.toMatch(/publishedActivityCtaHandlers/);
     const peekParts = read('src/explore/ui/ExploreItemPeekParts.tsx');
     expect(peekParts).not.toMatch(/HostActivityCtas/);
     const presentation = read('src/activity/activityDetailPresentation.ts');
@@ -63,9 +63,9 @@ describe('activity detail program — governance', () => {
   it('AD-PEEK-05: host peek uses My host profile subtitle from mapPeekStrips wire', () => {
     const peopleRow = read('src/explore/ui/ExploreCardPresentation.tsx');
     expect(peopleRow).toMatch(/showHostSelfProfileLink/);
-    expect(peopleRow).toMatch(/ACTIVITY_PEEK_MY_HOST_PROFILE_SUBTITLE/);
+    expect(peopleRow).toMatch(/ACTIVITY_PEEK_MY_ORGANIZER_PROFILE_SUBTITLE/);
     const copy = read('src/content/activityPeekCopy.ts');
-    expect(copy).toMatch(/ACTIVITY_PEEK_MY_HOST_PROFILE_SUBTITLE/);
+    expect(copy).toMatch(/ACTIVITY_PEEK_MY_ORGANIZER_PROFILE_SUBTITLE/);
   });
 
   it('AD-DEDUPE-01 (finish): mapPeekStrips carries pendingJoinInviteCount + peek UI chip', () => {
@@ -88,7 +88,7 @@ describe('activity detail program — governance', () => {
     const model = read('src/explore/shell/useExploreExperienceModel.ts');
     expect(model).toMatch(/useHostActivitySheetBundle/);
     expect(model).toMatch(/onOpenHostManage: tenantId/);
-    const hostHandlers = read('src/host/hostActivityCtaHandlers.ts');
+    const hostHandlers = read('src/activity/publishedActivityCtaHandlers.ts');
     expect(hostHandlers).toMatch(/onViewParticipants\?:/);
     const detail = read('src/pages/ActivityDetail.tsx');
     expect(detail).toMatch(/onViewParticipants: \(\) => setMobileTab\('buddies'\)/);
@@ -223,7 +223,7 @@ describe('activity detail program — structure (R6)', () => {
   it('R6-01: embedded surfaces pass wire footers into ActivityDetailView', () => {
     for (const file of [
       'src/components/activities/ActivityPreviewOverlay.tsx',
-      'src/components/host/ActivityManageSheet.tsx',
+      'src/components/activity/ActivityManageSheet.tsx',
     ]) {
       const source = read(file);
       expect(source).toMatch(/resolveActivityDetailWirePresentation/);

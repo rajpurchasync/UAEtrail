@@ -13,33 +13,33 @@ export const organisationApi = {
   getOrganisationProfile: (slug: string) =>
     apiRequest<{ data: TenantPublicDTO }>(`/tenants/${slug}`),
 
-  /** Activity join queue for host user (`GET /host/requests`). */
-  getHostActivityJoinRequests: (tenantId: string, options?: { activityId?: string }) => {
+  /** Activity join queue (`GET /operator/requests`). */
+  getOperatorActivityJoinRequests: (tenantId: string, options?: { activityId?: string }) => {
     const params = new URLSearchParams({ pageSize: '100' });
     if (options?.activityId) {
       params.set('activityId', options.activityId);
     }
-    return apiRequest<{ data: ActivityRequestView[] }>(`/host/requests?${params.toString()}`, {
+    return apiRequest<{ data: ActivityRequestView[] }>(`/operator/requests?${params.toString()}`, {
       auth: true,
       headers: organisationRequestHeaders(tenantId),
     });
   },
 
-  decideHostActivityJoinRequest: (
+  decideActivityJoinRequest: (
     tenantId: string,
     requestId: string,
     status: 'approved' | 'rejected',
-    hostNote?: string
+    organizerNote?: string
   ) =>
-    apiRequest(`/host/requests/${requestId}`, {
+    apiRequest(`/operator/requests/${requestId}`, {
       method: 'PATCH',
       auth: true,
       headers: organisationRequestHeaders(tenantId),
-      body: JSON.stringify({ status, organizerNote: hostNote }),
+      body: JSON.stringify({ status, organizerNote }),
     }),
 
   getOrganisationTeam: (tenantId: string) =>
-    apiRequest<{ data: TeamMember[] }>('/host/team', {
+    apiRequest<{ data: TeamMember[] }>('/operator/team', {
       auth: true,
       headers: organisationRequestHeaders(tenantId),
     }),
@@ -48,7 +48,7 @@ export const organisationApi = {
     tenantId: string,
     payload: { email: string; displayName?: string; role: 'tenant_admin' | 'tenant_guide' }
   ) =>
-    apiRequest<{ data: TeamMember }>('/host/team', {
+    apiRequest<{ data: TeamMember }>('/operator/team', {
       method: 'POST',
       auth: true,
       headers: organisationRequestHeaders(tenantId),
@@ -56,7 +56,7 @@ export const organisationApi = {
     }),
 
   updateOrganisationTeamMemberRole: (tenantId: string, membershipId: string, role: 'tenant_admin' | 'tenant_guide') =>
-    apiRequest<{ data: { id: string; role: string } }>(`/host/team/${membershipId}`, {
+    apiRequest<{ data: { id: string; role: string } }>(`/operator/team/${membershipId}`, {
       method: 'PATCH',
       auth: true,
       headers: organisationRequestHeaders(tenantId),
@@ -64,7 +64,7 @@ export const organisationApi = {
     }),
 
   toggleOrganisationTeamMemberStatus: (tenantId: string, membershipId: string, isActive: boolean) =>
-    apiRequest<{ data: { id: string; role: string; isActive: boolean } }>(`/host/team/${membershipId}`, {
+    apiRequest<{ data: { id: string; role: string; isActive: boolean } }>(`/operator/team/${membershipId}`, {
       method: 'PATCH',
       auth: true,
       headers: organisationRequestHeaders(tenantId),
@@ -72,7 +72,7 @@ export const organisationApi = {
     }),
 
   removeOrganisationTeamMember: (tenantId: string, membershipId: string) =>
-    apiRequest(`/host/team/${membershipId}`, {
+    apiRequest(`/operator/team/${membershipId}`, {
       method: 'DELETE',
       auth: true,
       headers: organisationRequestHeaders(tenantId),
@@ -88,8 +88,8 @@ export const organisationApi = {
   getMyOrganisationApplication: () =>
     apiRequest<{ data: HostApplication | null }>('/me/host-application', { auth: true }),
 
-  /** @deprecated Prefer `memberApi.getMemberHostStatus` */
-  getMyOrganisationStatus: memberApi.getMemberHostStatus,
+  /** @deprecated Prefer `memberApi.getMemberStatus` */
+  getMyOrganisationStatus: memberApi.getMemberStatus,
 
   updateOrganisationDetails: (data: HostDetails) =>
     apiRequest<{ data: HostDetails }>('/me/host-details', {

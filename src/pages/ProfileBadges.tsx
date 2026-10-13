@@ -9,7 +9,7 @@ import { PageMeta } from '../components/seo/PageMeta';
 import { ProfileBadgeDetailDialog } from '../components/profile/ProfileBadgeDetailDialog';
 import { ProfileBadgeListCard } from '../components/profile/ProfileBadgeListCard';
 import { resolveProfileSharePath } from '../utils/profileShare';
-import { useHostStatus } from '../hooks/useHostStatus';
+import { useMemberStatus } from '../hooks/useMemberStatus';
 import { sortBadgesByCatalogOrder } from '../constants/memberBadges';
 
 const BadgeSection = ({
@@ -44,7 +44,7 @@ const BadgeSection = ({
 
 export const ProfileBadges = () => {
   const { user } = useAuth();
-  const { ownedProfiles } = useHostStatus({ enabled: Boolean(user) });
+  const { ownedProfiles } = useMemberStatus({ enabled: Boolean(user) });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [badges, setBadges] = useState<RewardBadgeDTO[]>([]);

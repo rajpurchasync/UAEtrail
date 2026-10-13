@@ -1,7 +1,7 @@
 import { signInPathForReturn } from '../utils/authReturnContext';
 import {
   organizePublishGateHref,
-  organizePublishGateInputFromHostGate,
+  organizePublishGateInputFromMemberStatus,
 } from '../utils/organizePublishGate';
 import { isAddWizard, isFindWizard, isOrganizeWizard, type ExploreCompose } from './compose';
 import { explorePath } from './routing';
@@ -16,7 +16,7 @@ type ComposeRouteGuardContext = {
   user: { id: string } | null | undefined;
   hostGateLoading: boolean;
   canPublish: boolean;
-  signupProfileComplete: boolean;
+  profileComplete: boolean;
 };
 
 /** Auth and host-gate checks before applying an explore compose URL change. */
@@ -35,9 +35,9 @@ export const resolveComposeRouteChange = (
         type: 'complete-profile',
         href: organizePublishGateHref(
           returnTo,
-          organizePublishGateInputFromHostGate({
+          organizePublishGateInputFromMemberStatus({
             viewerUserId: ctx.user?.id ?? null,
-            signupProfileComplete: ctx.signupProfileComplete,
+            profileComplete: ctx.profileComplete,
             canPublish: ctx.canPublish,
           })
         ),

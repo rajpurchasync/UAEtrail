@@ -26,7 +26,7 @@ Code (wire names): `src/explore/compose.ts`, `src/explore/routing.ts`, `CreateIn
 | Organize Â· Find Â· Add | **Compose** (FAB), Host Â· Find a group Â· Add a place |
 | Going from | Meeting point Â· Leaving from (in activity flows) |
 | Iâ€™m going | Request to join (when RSVP mode) |
-| Request to join | Host approval workflow (in consumer copy) |
+| Request to join | Organizer approval workflow (in consumer copy) |
 | Do people need my OK to join? | Participation mode Â· joinMode architecture |
 
 ---
@@ -53,12 +53,12 @@ Three compact choices (drill-down in the same sheet â€” not three tall arch
 
 | UI label | Maps to | Default participation |
 |----------|---------|------------------------|
-| **Hiking** | `activityType: hiking` | Host approval |
-| **Camping** | `activityType: camping` | Host approval |
+| **Hiking** | `activityType: hiking` | Organizer approval |
+| **Camping** | `activityType: camping` | Organizer approval |
 | **Event** | `activityType: event` | Open RSVP (**Iâ€™m going**) |
-| **Activity** | Generic buddy plan (see below) | Host approval |
+| **Activity** | Generic buddy plan (see below) | Organizer approval |
 
-**Organize (community host)** requires **profile completion** (`signupProfileComplete` — same member details as `/welcome`). `GET /me/host-status` → `canPublish` provisions a community tenant on first check. Gate failure → `/welcome?redirect=…` (not Pro Membership). **Pro membership** (`/profile/pro-membership`) adds a **guide**, **agency**, or **shop** public profile — not community Organize. **Paid** pricing (`canHostPaidActivities` = linked business tenant) requires publish-as **agency, shop, or partner**. Individual professionals (no business license on platform) stay **free + shared** only.
+**Organize / publish** requires **profile completion** (`profileComplete` on `GET /me/status` — same member details as `/welcome`). `publish.canPublish` provisions a community tenant on first check. Gate failure → `/welcome?redirect=…` (not Pro Membership). **Join / participate** on outings requires **sign-in only** — not profile completion. **Pro membership** (`/profile/pro-membership`) adds a **guide**, **agency**, or **shop** public profile — not community Organize. **Paid** pricing (`canHostPaidActivities` = linked business tenant) requires publish-as **agency, shop, or partner**. Individual professionals (no business license on platform) stay **free + shared** only.
 
 **Activity pricing (Organize + host publish):** one mode per outing — `free` · `shared` · `paid` — with a single indicative AED amount when not free. **No tiered packages** and **no in-app payments** (amounts are informational; members settle with the host offline). **Who may set which mode** (`allowedActivityPricingModes`): everyone with Organize → **free + shared**. **Paid** only when the member is **linked to a verified business** (`hostTiers.business`) **and** publishes as **agency, shop, or partner** — not as an individual guide (community / pro guide). External registration URLs are **parked** (not in product UI/API).
 

@@ -20,7 +20,7 @@ import { AppSegmented } from '../mobile/AppSegmented';
 import { ImageUpload } from '../ui';
 import { AppSelect } from '../ui/AppSelect';
 
-import { useHostStatus } from '../../hooks/useHostStatus';
+import { useMemberStatus } from '../../hooks/useMemberStatus';
 
 type Tab = 'shop' | 'products';
 
@@ -51,7 +51,7 @@ const productDefaults = {
 };
 
 export const ShopOrganisationPanel = () => {
-  const { hasShopProfile, loading: gateLoading } = useHostStatus();
+  const { hasShopProfile, loading: gateLoading } = useMemberStatus();
   const [tab, setTab] = useState<Tab>('shop');
   const [stores, setStores] = useState<ShopOrganisationDTO[]>([]);
   const [storesLoaded, setStoresLoaded] = useState(false);

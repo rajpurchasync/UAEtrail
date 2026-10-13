@@ -5,8 +5,8 @@ import { fetchOrganisationReviews } from '../hooks/organisationConsoleApi';
 import { getActiveTenantId } from '../api/tenant';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { FilterChips } from '../components/mobile/FilterChips';
-import { HOST_CONSOLE_LINKS } from '../constants';
-import { HOST_PROFILE_PATH, PROFILE_PATH } from '../config/routingCatalog';
+import { OPERATOR_CONSOLE_LINKS } from '../constants';
+import { OPERATOR_PROFILE_PATH, PROFILE_PATH } from '../config/routingCatalog';
 import { ConsoleRatingChip } from './ConsoleRatingChip';
 
 interface ConsoleShellProps {
@@ -24,14 +24,14 @@ export const ConsoleShell = ({ title, children, cta, headerExtra }: ConsoleShell
   const [avgRating, setAvgRating] = useState<number | null>(null);
   const [reviewCount, setReviewCount] = useState(0);
 
-  const navOptions = HOST_CONSOLE_LINKS.map((link) => ({
+  const navOptions = OPERATOR_CONSOLE_LINKS.map((link) => ({
     key: link.to,
     label: link.label,
   }));
 
   const activePath =
-    HOST_CONSOLE_LINKS.find((link) => location.pathname === link.to)?.to ??
-    HOST_CONSOLE_LINKS.find((link) => location.pathname.startsWith(`${link.to}/`))?.to ??
+    OPERATOR_CONSOLE_LINKS.find((link) => location.pathname === link.to)?.to ??
+    OPERATOR_CONSOLE_LINKS.find((link) => location.pathname.startsWith(`${link.to}/`))?.to ??
     location.pathname;
 
   useSafeAsyncEffect(async (isActive) => {
@@ -60,7 +60,7 @@ export const ConsoleShell = ({ title, children, cta, headerExtra }: ConsoleShell
           <ConsoleRatingChip
             rating={avgRating}
             reviewCount={reviewCount}
-            onClick={() => navigate(HOST_PROFILE_PATH)}
+            onClick={() => navigate(OPERATOR_PROFILE_PATH)}
           />
         ) : undefined
       }

@@ -10,7 +10,7 @@ import {
   PROFILE_HISTORY_PATH,
   isProfileHistoryListPath,
 } from '../config/surfacePaths';
-import { useHostStatus } from '../hooks/useHostStatus';
+import { useMemberStatus } from '../hooks/useMemberStatus';
 import { memberCanManageHostedActivities } from '../utils/hostedActivitiesGate';
 import { JoinedSection } from './activities/JoinedSection';
 import { HostedActivitiesSection } from './activities/HostedActivitiesSection';
@@ -35,8 +35,8 @@ export const MyTrips = () => {
   const [refreshKey, setRefreshKey] = useState(0);
   const [activitySearchQuery, setActivitySearchQuery] = useState('');
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const gate = useHostStatus({ enabled: Boolean(user) });
-  const canHost = memberCanManageHostedActivities(user, gate.canAccessHostConsole);
+  const gate = useMemberStatus({ enabled: Boolean(user) });
+  const canHost = memberCanManageHostedActivities(user, gate.canAccessPublishingWorkspace);
   const { goals, reload: reloadGoals } = useMemberGoals(Boolean(user));
 
   useEffect(() => {
@@ -146,7 +146,7 @@ export const MyTrips = () => {
         return (
           <div className="glass-card p-6 text-center">
             <p className="mb-3 text-sm text-neutral-600">
-              Host activities on the map to share them with the community.
+              Organize outings on the map to share them with the community.
             </p>
             <button
               type="button"

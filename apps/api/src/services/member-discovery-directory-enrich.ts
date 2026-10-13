@@ -7,7 +7,7 @@ import { countCheckedInParticipationsForUserIds } from '../lib/activity-engageme
 import { findAuthUsersByIds } from '../lib/auth-users.js';
 import { listBuddyRequestsForUser } from '../lib/buddy-store.js';
 import { filterInboxMessageablePartnerIds } from './chat-policy.js';
-import { batchResolveMemberProfileRoleLabelsForDirectory } from './member-host-status.js';
+import { batchResolveMemberProfileRoleLabelsForDirectory } from './member-status.js';
 
 const BIO_PREVIEW_MAX = 140;
 

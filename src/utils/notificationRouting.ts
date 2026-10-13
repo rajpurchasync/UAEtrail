@@ -17,6 +17,7 @@ import {
   PROFILE_BADGES_PATH,
   PROFILE_PATH,
   PRO_MEMBERSHIP_PATH,
+  rewriteLegacyPublishingConsolePath,
   TRIPS_PATH,
   messagesGroupPath,
   messagesToUserPath,
@@ -46,7 +47,11 @@ const normalizeConsumerChatDeepLinkPath = (
   const pathname = queryIndex === -1 ? path : path.slice(0, queryIndex);
   const search = queryIndex === -1 ? '' : path.slice(queryIndex);
 
-  if (pathname === LEGACY_MESSAGES_PATH || pathname === HOST_MESSAGES_PATH) {
+  if (
+    pathname === LEGACY_MESSAGES_PATH ||
+    pathname === HOST_MESSAGES_PATH ||
+    pathname === '/operator/messages'
+  ) {
     return `${MESSAGES_PATH}${search}`;
   }
 
@@ -76,7 +81,8 @@ const normalizeDirectNotificationPath = (
   path: string,
   meta: Record<string, unknown> | null
 ): string => {
-  if (path === '/host/overview' || path.startsWith('/host/overview?')) {
+  path = rewriteLegacyPublishingConsolePath(path);
+  if (path === '/operator/overview' || path.startsWith('/operator/overview?')) {
     return PRO_MEMBERSHIP_PATH;
   }
 

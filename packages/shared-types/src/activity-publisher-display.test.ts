@@ -46,7 +46,7 @@ describe('activity publisher display', () => {
   });
 
   it('labels never use organisation wording', () => {
-    expect(exploreActivityPublisherTypeLabel('community')).toBe('Host');
+    expect(exploreActivityPublisherTypeLabel('community')).toBe('Organizer');
     expect(exploreActivityPublisherTypeLabel('agency')).toBe('Tour operator');
     expect(exploreActivityPublisherTypeLabel('pro_guide')).toBe('Professional');
   });

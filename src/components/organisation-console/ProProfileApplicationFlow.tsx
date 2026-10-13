@@ -38,7 +38,7 @@ import {
   type HostFlowStep,
   type HostFlowStepId,
 } from './hostWizardFlow';
-import { useHostStatus } from '../../hooks/useHostStatus';
+import { useMemberStatus } from '../../hooks/useMemberStatus';
 
 const CreatePlacePicker = lazy(() =>
   import('../../explore/ui/CreatePlacePicker').then((m) => ({ default: m.CreatePlacePicker }))
@@ -119,7 +119,7 @@ export const ProProfileApplicationFlow = ({
 }: ProProfileApplicationFlowProps) => {
   const navigate = useNavigate();
   const { user, refreshUser } = useAuth();
-  const { hasGuideProfile, hasAgencyProfile, hasShopProfile } = useHostStatus({
+  const { hasGuideProfile, hasAgencyProfile, hasShopProfile } = useMemberStatus({
     enabled: open && Boolean(user),
   });
 

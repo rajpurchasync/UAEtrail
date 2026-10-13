@@ -1,4 +1,4 @@
-import { isRolePlaceholderDisplayName } from './host-display.js';
+import { isRolePlaceholderDisplayName, ORGANIZER_FALLBACK_DISPLAY_NAME } from './host-display.js';
 import {
   explorePersonFirstName,
   resolveExploreFeaturedPerson,
@@ -65,7 +65,7 @@ const itemParticipationMode = (item: ExplorePresentationBuildInput): Participati
 
 const getFirstName = (name?: string | null): string => {
   if (name?.trim()) return name.trim().split(/\s+/)[0];
-  return 'Host';
+  return ORGANIZER_FALLBACK_DISPLAY_NAME;
 };
 
 const PLACEHOLDER_FIRST_NAMES = new Set(['pending', 'user', 'guest', 'account', 'new']);
@@ -88,7 +88,7 @@ const resolveExploreHostLabel = (options: {
   if (host && !isRolePlaceholderDisplayName(host)) return getFirstName(host);
   const requester = options.participantName?.trim();
   if (requester && !isRolePlaceholderDisplayName(requester)) return getFirstName(requester);
-  return 'Host';
+  return ORGANIZER_FALLBACK_DISPLAY_NAME;
 };
 
 /** Hosted / scheduled hikes and hiking map filter. */

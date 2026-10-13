@@ -16,7 +16,7 @@ export const FOUNDERS_STORY_INTRO =
 
 export const FOUNDERS_MISSION_PILLARS = [
   { label: 'Find activities', detail: 'Discover hikes, camps, and events near you' },
-  { label: 'Host outings', detail: 'Share routes you know and grow your crew' },
+  { label: 'Organize outings', detail: 'Share routes you know and grow your crew' },
   { label: 'Build community', detail: 'Connect with hikers across the Emirates' },
 ] as const;
 
@@ -30,7 +30,7 @@ export const FOUNDER_PROFILES: Record<FounderProfileKey, FounderProfile> = {
     initials: 'R',
     quote: 'The trails changed my weekends. We built UAE Trail so more people could find their crew.',
     story:
-      "I've been hiking and camping across the UAE for years: wadis, dam loops, desert overnights, and everything in between. I kept meeting people who wanted to get outdoors but didn't know where to start or who to go with. UAE Trail makes that easier. Find what's on, host your own activity, and grow the community that got me hooked on these hills.",
+      "I've been hiking and camping across the UAE for years: wadis, dam loops, desert overnights, and everything in between. I kept meeting people who wanted to get outdoors but didn't know where to start or who to go with. UAE Trail makes that easier. Find what's on, organize your own outing, and grow the community that got me hooked on these hills.",
   },
   cofounder: {
     tabLabel: 'Co-founder',
@@ -41,7 +41,7 @@ export const FOUNDER_PROFILES: Record<FounderProfileKey, FounderProfile> = {
     initials: 'C',
     quote: 'Great routes and great people were already here. They just needed one place to meet.',
     story:
-      "I've spent years hiking, trail running, and leading teams on routes across the UAE, from group treks to organised trail runs. The passion was always there. What was missing was one place to discover activities and connect with hosts you could trust. That's why Raj and I launched UAE Trail, to support the hikers and runners who keep this scene alive.",
+      "I've spent years hiking, trail running, and leading teams on routes across the UAE, from group treks to organised trail runs. The passion was always there. What was missing was one place to discover activities and connect with organizers you could trust. That's why Raj and I launched UAE Trail, to support the hikers and runners who keep this scene alive.",
   },
 };
 

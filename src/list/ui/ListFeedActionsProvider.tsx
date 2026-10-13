@@ -10,7 +10,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import type { ActivityDTO, ActivityMapPeekActionId, UserRole } from '@uaetrail/shared-types';
 import { buildShareText, buildShareUrl } from '../../utils/share';
-import type { HostActivityManageInitialView } from '../../components/host/hostActivityManageViews';
+import type { ActivityManageInitialView } from '../../components/activity/activityManageViews';
 import { resolveActivityHostUserId } from '@uaetrail/shared-types';
 import { useAuth } from '../../context/AuthContext';
 import { joinAuthPath } from '../../config/routingCatalog';
@@ -51,7 +51,7 @@ export type ListFeedHostActivityActions = {
   onShareHostedActivity?: (activity: ActivityDTO) => void;
   onOpenHostManage?: (
     activity: ActivityDTO,
-    initialView?: HostActivityManageInitialView
+    initialView?: ActivityManageInitialView
   ) => void;
   onInviteCrew?: (activity: ActivityDTO) => void;
   onCreateLinkedRideshare?: (parent: ActivityDTO) => void;

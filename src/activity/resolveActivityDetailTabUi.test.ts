@@ -19,7 +19,7 @@ describe('resolveActivityDetailTabUi', () => {
       isHostUser: false,
       activityPublished: true,
       participationMode: 'approval',
-      requirements: ['Host approval required to join'],
+      requirements: ['Organizer approval required to join'],
       meetingLat: 25.1,
       meetingLng: 55.2,
       myParticipation: null,

@@ -1,19 +1,16 @@
 import { useCallback, useEffect, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import {
-  fetchHostActivityJoinRequests,
-  listHostActivitiesForTenant,
-} from '../hooks/hostActivityClientApi';
+import { getActivityJoinRequests, listActivities } from '../hooks/tenantActivityClientApi';
 import { getActiveTenantId, setActiveTenantId } from '../api/tenant';
-import { useHostStatus } from '../hooks/useHostStatus';
+import { useMemberStatus } from '../hooks/useMemberStatus';
 import { useAuth } from '../context/AuthContext';
 
 const consoleHubKey = (tenantId: string) => ['console-hub', tenantId] as const;
 
 async function fetchConsoleHub(tenantId: string) {
   const [activities, requests] = await Promise.all([
-    listHostActivitiesForTenant(tenantId),
-    fetchHostActivityJoinRequests(tenantId),
+    listActivities(tenantId),
+    getActivityJoinRequests(tenantId),
   ]);
   return {
     activities,
@@ -25,7 +22,7 @@ async function fetchConsoleHub(tenantId: string) {
 /** `/host/*` console: activities + join queue for active tenant. */
 export const useConsoleHubData = () => {
   const { user } = useAuth();
-  const hostStatus = useHostStatus({ enabled: Boolean(user) });
+  const hostStatus = useMemberStatus({ enabled: Boolean(user) });
   const storedTenantId = getActiveTenantId();
   const tenantId = hostStatus.tenantId ?? (storedTenantId || null);
   const queryClient = useQueryClient();

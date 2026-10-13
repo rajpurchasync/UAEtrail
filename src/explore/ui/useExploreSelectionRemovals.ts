@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react';
 import type { QueryClient } from '@tanstack/react-query';
 import type { NavigateFunction } from 'react-router-dom';
 import { exploreMapItemIsSeeking, type ActivityDTO, type ExploreMapItemDTO } from '@uaetrail/shared-types';
-import { cancelHostActivityById } from '../../hooks/hostActivityClientApi';
+import { cancelActivity } from '../../hooks/tenantActivityClientApi';
 import {
   cancelParticipantIntent,
   invalidateMyParticipantIntentsQueries,
@@ -34,7 +34,7 @@ export const useExploreSelectionRemovals = (input: {
     if (!hostRemoveConfirm || !input.tenantId) return;
     setHostRemoveBusy(true);
     try {
-      await cancelHostActivityById(input.tenantId, hostRemoveConfirm.id);
+      await cancelActivity(input.tenantId, hostRemoveConfirm.id);
       const wasDraft = hostRemoveConfirm.status === 'draft';
       setHostRemoveConfirm(null);
       input.setSelectedId(null);

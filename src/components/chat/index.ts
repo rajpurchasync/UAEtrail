@@ -10,4 +10,5 @@ export { MessagesInboxList } from './MessagesInboxList';
 export { MessagesInboxToolbar } from './MessagesInboxToolbar';
 export { ConversationListPanel, NewChatModal, MessageAvatar } from './MessagePanels';
 export { ChatMessageBubble } from './ChatMessageBubble';
+export { MessageMemberButton, type MessageMemberButtonProps } from './MessageMemberButton';
 export type { GroupWallReplyTarget } from '../../utils/groupWallReply';

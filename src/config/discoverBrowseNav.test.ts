@@ -41,10 +41,10 @@ describe('discover browse navigation contract', () => {
     expect(browsePanels).toMatch(/browse\.browseOpen/);
   });
 
-  it('consumer hamburger stays on map for host roles (organise drawer only on /host)', () => {
+  it('consumer hamburger stays on map for operators (organise drawer only on /operator)', () => {
     const menu = readFileSync(join(process.cwd(), 'src/components/layout/MobileMenu.tsx'), 'utf8');
-    expect(menu).toMatch(/canAccessHostConsole && onHostConsole/);
-    expect(menu).toMatch(/useHostStatus/);
+    expect(menu).toMatch(/canAccessPublishingWorkspace && onHostConsole/);
+    expect(menu).toMatch(/useMemberStatus/);
     expect(menu).toMatch(/CONSUMER_HAMBURGER_MENU/);
   });
 });

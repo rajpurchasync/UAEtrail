@@ -25,7 +25,7 @@ export const resolvePublicMemberRoleLabel = (profile: {
   if (profile.hostProfileKind === 'shop') return 'Shop owner';
   if (profile.hostProfileKind === 'agency') return 'Agency';
   if (profile.isGuideStaff) return 'Guide';
-  if (profile.isHost) return 'Host';
+  if (profile.isHost) return 'Organizer';
   return 'Community member';
 };
 
@@ -37,7 +37,7 @@ export const resolveProfileRoleLabel = (
   const hostKind = resolveProfileHostKind(ownedProfiles);
   if (hostKind === 'shop') return 'Shop owner';
   if (hostKind === 'agency') return 'Agency';
-  if (isCommunityHost) return 'Host';
+  if (isCommunityHost) return 'Organizer';
   if (hostKind === 'guide') return 'Guide';
   if (role === 'tenant_guide') return 'Guide';
   if (role === 'tenant_owner' || role === 'tenant_admin') return 'Explorer';

@@ -13,7 +13,7 @@ import {
 import { findTenantById, setTenantDiscoverFeatured } from '../../lib/tenant-store.js';
 import { TenantBusinessMode } from '../../domain/enums.js';
 import { validate } from '../../middleware/validate.js';
-import { HOST_OVERVIEW_PATH, PRO_MEMBERSHIP_PATH } from '../../lib/member-routes.js';
+import { OPERATOR_OVERVIEW_PATH, PRO_MEMBERSHIP_PATH } from '../../lib/member-routes.js';
 import { notifyUserAdminAction } from '../../services/admin-notifications.js';
 
 const idParamSchema = z.object({ id: z.string().min(1) });
@@ -164,7 +164,7 @@ export const registerAdminTenantRoutes = (adminRouter: Router): void => {
           meta: {
             kind: status === 'active' ? 'host_reopened' : 'host_suspended',
             tenantId: id,
-            path: status === 'active' ? HOST_OVERVIEW_PATH : PRO_MEMBERSHIP_PATH,
+            path: status === 'active' ? OPERATOR_OVERVIEW_PATH : PRO_MEMBERSHIP_PATH,
           },
         });
 

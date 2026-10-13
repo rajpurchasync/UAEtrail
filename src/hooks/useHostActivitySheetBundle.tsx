@@ -2,8 +2,8 @@ import { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import { activityDetailPath } from '../config/routingCatalog';
-import { ActivityManageSheet } from '../components/host/ActivityManageSheet';
-import type { HostActivityManageInitialView } from '../components/host/hostActivityManageViews';
+import { ActivityManageSheet } from '../components/activity/ActivityManageSheet';
+import type { ActivityManageInitialView } from '../components/activity/activityManageViews';
 import type { ListFeedHostActivityActions } from '../list/ui/ListFeedActionsProvider';
 import { navigateToCreateLinkedRideshare } from '../explore/navigateCreateLinkedRideshare';
 import { useActivityInviteShareSheet } from './useActivityInviteShareSheet';
@@ -18,11 +18,11 @@ export const useHostActivitySheetBundle = (input: {
   const inviteShare = useActivityInviteShareSheet();
   const [manageActivity, setManageActivity] = useState<ActivityDTO | null>(null);
   const [manageInitialView, setManageInitialView] =
-    useState<HostActivityManageInitialView>('overview');
+    useState<ActivityManageInitialView>('overview');
   const hostManageActions = useHostActivityManageActions(input.tenantId ?? null, input.onMapDataChanged);
 
   const openHostManage = useCallback(
-    (activity: ActivityDTO, initialView: HostActivityManageInitialView = 'participants') => {
+    (activity: ActivityDTO, initialView: ActivityManageInitialView = 'participants') => {
       setManageActivity(activity);
       setManageInitialView(initialView);
     },

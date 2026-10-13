@@ -6,7 +6,7 @@ import { join, relative } from 'node:path';
 const ROOT = process.cwd();
 const SCAN_ROOT = join(ROOT, 'src');
 
-/** Retired host-console / form-modal stack — must not exist on disk (use `pages/host/*`, Explore Organize). */
+/** Retired host-console / form-modal stack — must not exist on disk (use `pages/operator/*`, Explore Organize). */
 const RETIRED_PATHS = [
   'src/pages/OrganisationActivities.tsx',
   'src/pages/OrganisationConsoleOverview.tsx',
@@ -37,14 +37,14 @@ const DEPRECATED_HOST_PAGE_IMPORTS = RETIRED_PATHS.filter((p) => p.startsWith('s
 const ALLOWED_ORGANISATION_PAGE_FILES = new Set(['OrganisationProfile.tsx']);
 
 const REQUIRED_HOST_CONSOLE_PAGES = [
-  'src/pages/host/Overview.tsx',
-  'src/pages/host/Activities.tsx',
-  'src/pages/host/JoinRequests.tsx',
-  'src/pages/host/Team.tsx',
-  'src/pages/host/Places.tsx',
-  'src/pages/host/History.tsx',
-  'src/pages/host/PublicProfileEdit.tsx',
-  'src/pages/host/Manage.tsx',
+  'src/pages/operator/Overview.tsx',
+  'src/pages/operator/Activities.tsx',
+  'src/pages/operator/JoinRequests.tsx',
+  'src/pages/operator/Team.tsx',
+  'src/pages/operator/Places.tsx',
+  'src/pages/operator/History.tsx',
+  'src/pages/operator/PublicProfileEdit.tsx',
+  'src/pages/operator/Manage.tsx',
 ];
 
 const collectSourceFiles = (dir: string): string[] => {
@@ -68,7 +68,7 @@ describe('organisationNamingGuard', () => {
     expect(present).toEqual([]);
   });
 
-  it('host console route pages live under src/pages/host/', () => {
+  it('publishing console route pages live under src/pages/operator/', () => {
     const missing = REQUIRED_HOST_CONSOLE_PAGES.filter((rel) => !existsSync(join(ROOT, rel)));
     expect(missing).toEqual([]);
   });
@@ -95,7 +95,7 @@ describe('organisationNamingGuard', () => {
       for (const legacy of DEPRECATED_HOST_PAGE_IMPORTS) {
         const short = legacy.replace('src/pages/', '');
         if (content.includes(`/${legacy}`) || content.includes(`'./${short}`) || content.includes(`"./${short}`)) {
-          violations.push(`${file}: use src/pages/host/* instead of ${legacy}`);
+          violations.push(`${file}: use src/pages/operator/* instead of ${legacy}`);
         }
       }
     }

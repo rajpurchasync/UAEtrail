@@ -104,7 +104,7 @@ export const UserRequests = () => {
                 <p>
                   {request.activity.date} · {request.activity.time}
                 </p>
-                {activityHostName(request.activity) !== 'Host' && (
+                {activityHostName(request.activity) !== 'Organizer' && (
                   <p>Host: {activityHostName(request.activity)}</p>
                 )}
                 {request.note && <p className="text-neutral-500 line-clamp-2">{request.note}</p>}

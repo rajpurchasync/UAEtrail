@@ -198,7 +198,7 @@ export const MemberProfileView = ({
               to={profile.hostProfilePath}
               className="ios-btn glass w-full text-neutral-900 active:bg-white/80"
             >
-              View host profile
+              View organizer profile
             </Link>
           )}
 

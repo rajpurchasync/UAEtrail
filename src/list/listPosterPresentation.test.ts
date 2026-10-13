@@ -232,6 +232,6 @@ describe('resolveListFeedFooterModel', () => {
 
     const model = resolveListFeedFooterModel(card, { isGuest: true });
     expect(model.primary.kind).toBe('guest_gate');
-    expect(model.secondary).toMatchObject({ kind: 'guest_gate', label: 'Message Host' });
+    expect(model.secondary).toMatchObject({ kind: 'guest_gate', label: 'Message organizer' });
   });
 });

@@ -6,12 +6,12 @@ import { allowedActivityPricingModes, type ActivityDTO } from '@uaetrail/shared-
 import { publishOrganizeActivity as publishCreateActivity } from '../../services/organizeActivityPublish';
 import { useAuth } from '../../context/AuthContext';
 import { afterOrganizeActivityPublishClientRefresh } from '../../hooks/organizePublishClientEffects';
-import { useHostStatus } from '../../hooks/useHostStatus';
+import { useMemberStatus } from '../../hooks/useMemberStatus';
 import { setActiveTenantId } from '../../api/tenant';
 import { listOrganizePublishProfiles, resolveOrganizePublishingProfileKind } from '../organizePublishTenants';
 import {
   organizePublishGateHref,
-  organizePublishGateInputFromHostGate,
+  organizePublishGateInputFromMemberStatus,
 } from '../../utils/organizePublishGate';
 import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
 import { EXPLORE_Z } from '../../config/exploreTheme';
@@ -51,7 +51,7 @@ import {
   fromLocationLabel,
   ORGANIZE_DEMAND_PREFILL_TITLE,
   ORGANIZE_RIDESHARE_LINKED_NOTICE,
-  ORGANIZE_HOST_PROFILE_ERROR,
+  ORGANIZE_PROFILE_INCOMPLETE_ERROR,
   TO_LOCATION_LABEL,
 } from '../createFlowCopy';
 import { MAP_CONFIG } from '../../config/platform';
@@ -100,14 +100,14 @@ export const CreateActivityFlow = ({
   const { user } = useAuth();
   const {
     canPublish,
-    signupProfileComplete,
+    profileComplete,
     isCommunityHost,
     hostTiers,
     canHostPaidActivities,
     tenantId: defaultTenantId,
     ownedProfiles,
     loading: hostGateLoading,
-  } = useHostStatus({ enabled: open && Boolean(user) });
+  } = useMemberStatus({ enabled: open && Boolean(user) });
 
   const publishTenantOptions = useMemo(
     () => listOrganizePublishProfiles(ownedProfiles),
@@ -407,9 +407,9 @@ export const CreateActivityFlow = ({
         navigate(
           organizePublishGateHref(
             returnPath,
-            organizePublishGateInputFromHostGate({
+            organizePublishGateInputFromMemberStatus({
               viewerUserId: user?.id ?? null,
-              signupProfileComplete,
+              profileComplete,
               canPublish,
               isCommunityHost,
               hostTiers,
@@ -422,7 +422,7 @@ export const CreateActivityFlow = ({
     }
 
     if (!tenantId) {
-      setError(ORGANIZE_HOST_PROFILE_ERROR);
+      setError(ORGANIZE_PROFILE_INCOMPLETE_ERROR);
       return;
     }
 

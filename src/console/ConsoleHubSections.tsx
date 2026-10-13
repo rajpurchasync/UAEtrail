@@ -2,14 +2,14 @@ import { Link } from 'react-router-dom';
 import { ChevronRight, MapPin, Plus, UserCircle, Users, UsersRound } from 'lucide-react';
 import { ActivityDTO } from '@uaetrail/shared-types';
 import {
-  HOST_ACTIVITIES_NEW_PATH,
-  HOST_ACTIVITIES_PATH,
-  HOST_HISTORY_PATH,
-  HOST_PROFILE_PATH,
-  HOST_REQUESTS_PATH,
-  HOST_TEAM_PATH,
+  OPERATOR_ACTIVITIES_NEW_PATH,
+  OPERATOR_ACTIVITIES_PATH,
+  OPERATOR_HISTORY_PATH,
+  OPERATOR_PROFILE_PATH,
+  OPERATOR_REQUESTS_PATH,
+  OPERATOR_TEAM_PATH,
 } from '../config/routingCatalog';
-import { HOST_PLACES_PATH } from '../config/platform';
+import { OPERATOR_PLACES_PATH } from '../config/platform';
 import { AccountLinkList } from '../components/account/AccountLinkList';
 import { AccountSectionHeader } from '../components/account/AccountSectionHeader';
 import { AccountStat, AccountStatGrid } from '../components/account/AccountStatGrid';
@@ -30,21 +30,21 @@ const buildConsoleStats = ({
   upcomingActivitiesCount,
   pastActivitiesCount,
 }: Omit<ConsoleHubSectionsProps, 'upcomingActivities'>): AccountStat[] => [
-  { label: 'Activities', value: activitiesCount, to: HOST_ACTIVITIES_PATH },
+  { label: 'Activities', value: activitiesCount, to: OPERATOR_ACTIVITIES_PATH },
   {
     label: 'Pending',
     value: pendingJoinRequests,
-    to: HOST_REQUESTS_PATH,
+    to: OPERATOR_REQUESTS_PATH,
     highlight: pendingJoinRequests > 0,
     tone: 'amber',
   },
   {
     label: 'Upcoming',
     value: upcomingActivitiesCount,
-    to: HOST_ACTIVITIES_PATH,
+    to: OPERATOR_ACTIVITIES_PATH,
     highlight: upcomingActivitiesCount > 0,
   },
-  { label: 'History', value: pastActivitiesCount, to: HOST_HISTORY_PATH },
+  { label: 'History', value: pastActivitiesCount, to: OPERATOR_HISTORY_PATH },
 ];
 
 /** `/host/*` overview stats + optional shortcut links (host user kind + tenant scope). */
@@ -71,12 +71,12 @@ export const ConsoleHubSections = ({
 
       {previewActivities.length > 0 ? (
         <section>
-          <AccountSectionHeader title="Up next" actionTo={HOST_ACTIVITIES_PATH} actionLabel="All activities" />
+          <AccountSectionHeader title="Up next" actionTo={OPERATOR_ACTIVITIES_PATH} actionLabel="All activities" />
           <div className="space-y-2">
             {previewActivities.map((evt) => (
               <Link
                 key={evt.id}
-                to={HOST_ACTIVITIES_PATH}
+                to={OPERATOR_ACTIVITIES_PATH}
                 className="glass-card-interactive flex items-center gap-3 p-3.5"
               >
                 <div className="flex-1 min-w-0">
@@ -108,7 +108,7 @@ export const ConsoleHubSections = ({
         </section>
       ) : activitiesCount === 0 ? (
         <Link
-          to={HOST_ACTIVITIES_NEW_PATH}
+          to={OPERATOR_ACTIVITIES_NEW_PATH}
           className="glass-card-interactive flex items-center gap-3 p-4 text-center"
         >
           <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50">
@@ -128,31 +128,31 @@ export const ConsoleHubSections = ({
           <AccountLinkList
             items={[
               {
-                to: HOST_PROFILE_PATH,
+                to: OPERATOR_PROFILE_PATH,
                 icon: <UserCircle className="w-4 h-4" />,
-                label: 'Public host profile',
+                label: 'Public profile',
                 accent: 'emerald',
               },
               {
-                to: HOST_ACTIVITIES_NEW_PATH,
+                to: OPERATOR_ACTIVITIES_NEW_PATH,
                 icon: <Plus className="w-4 h-4" />,
                 label: 'Add activity',
               },
               {
-                to: HOST_REQUESTS_PATH,
+                to: OPERATOR_REQUESTS_PATH,
                 icon: <Users className="w-4 h-4" />,
                 label: 'Join requests',
                 badge: pendingJoinRequests || undefined,
                 accent: 'amber',
               },
               {
-                to: HOST_PLACES_PATH,
+                to: OPERATOR_PLACES_PATH,
                 icon: <MapPin className="w-4 h-4" />,
                 label: 'Submit a place',
                 accent: 'blue',
               },
               {
-                to: HOST_TEAM_PATH,
+                to: OPERATOR_TEAM_PATH,
                 icon: <UsersRound className="w-4 h-4" />,
                 label: 'Manage team',
               },

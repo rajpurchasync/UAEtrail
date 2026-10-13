@@ -10,10 +10,11 @@ Companion: [`DOMAIN.md`](./DOMAIN.md), [`CREATE_FLOW.md`](./CREATE_FLOW.md), [`M
 
 | Prefix | Auth | Purpose |
 |--------|------|---------|
-| **`/activities`** | Public read; write via `/host` | Published **Organize** outings (join, RSVP, detail) |
+| **`/activities`** | Public read; tenant write via `/operator` | Published **Organize** outings (join, RSVP, detail) |
 | **`/explore/map`** | Public | Discovery payload (activities, venues, shops, **demand**) |
 | **`/me/*`** | Signed-in member | Own profile, intents, groups, inbox, activity participation |
-| **`/host/*`** | Verified + **tenant** (`x-organisation-id`) | **Host console** (any publishing tier): publish, participant roster, **activity** join queue |
+| **`/operator/*`** | Verified + **tenant** (`x-organisation-id`) | **Publishing console** (any tier): publish, roster, **activity** join queue |
+| **`/host/*`** | Legacy (rewritten to `/operator/*`) | `Deprecation: true` + `Link` — no separate mount (`legacy-host-api-rewrite.ts`) |
 | **`/users/*`** | Optional auth | Public member profiles |
 | **`/chat/*`**, **`/social/*`** | Auth | DMs, reviews, people discovery |
 | **`/admin/*`** | `PLATFORM_ADMIN` | Moderation, **Users** (`GET/PATCH /admin/users*`), tenants, metrics — `admin.ts` mounts `registerAdmin*` only |
@@ -83,9 +84,9 @@ Clients may keep intent URLs until M2b; host queue for buddy seeking rows uses t
 
 **Legacy:** `POST /host/participant-intents/:intentId/fulfill` — deprecated (returns `Deprecation` header). Demand **posters** must use **`POST /me/participant-intents/:intentId/link-activity`**. Explore publish already calls `exploreApi.linkParticipantIntentToActivity`.
 
-**Publish gate:** `POST /host/activities` and `POST /host/activities/:id/publish` require `signupProfileComplete` + `canPublish` (see `member-publish-gate.ts`), except platform admin acting on a tenant.
+**Publish gate:** `POST /operator/activities` and `POST /operator/activities/:id/publish` (legacy `/host/*` rewritten) require `profileComplete` + `canPublish` (see `member-publish-gate.ts`), except platform admin acting on a tenant. **Join/participate** does not require profile completion.
 
-**Consumer vs console:** Buddy **organize / manage joins** use **Plan** + `/activity/:id` + `/me/participant-intents/*` — not consumer bookmarks to `/host/overview`. The `/host/*` prefix remains the **tenant workspace** API (pro/agency/shop). A future FE rename to `/studio` would be route-alias only; no duplicate host REST surface is planned.
+**Consumer vs console:** Buddy **organize / manage joins** use **Plan** + `/activity/:id` + `/me/participant-intents/*` — not consumer bookmarks to legacy `/host/overview` (redirects to `/operator/overview`). **Tenant publishing HTTP** is **`/operator/*` only**; legacy `/host/*` is rewritten + deprecation headers (`legacy-host-api-rewrite.ts`).
 
 Registration: `registerMeParticipantIntentRoutes.ts`.
 
@@ -115,12 +116,13 @@ Registration: `registerMeBadgesRoutes.ts` · service: `member-badges.ts`.
 | GET | `/me/profile-stats` | Profile counters (`followerCount`, `joinedCount`, `hostedCount`, `activeParticipantIntentCount`, `isCommunityHost`) |
 | GET | `/activities/:id/invites` | Pending **Join me** invitee ids the caller sent for this activity |
 | POST | `/activities/:id/invites` | **Join me** — host or confirmed participant invites another member (notification only; invitee still RSVPs / requests; host approval when required). Rate limit: **20 sends / activity / sender / 24h** (`ACTIVITY_JOIN_INVITE_DAILY_LIMIT_PER_ACTIVITY`) |
-| * | `/host/activities/*` | CRUD, publish, history (`registerHostActivityRoutes`) — FE: `listHostActivities`, `createHostActivity`, `publishHostActivity`, … (`activities.ts`) |
+| * | `/operator/activities/*` | CRUD, publish, history — canonical; `/host/activities/*` alias (`registerHostActivityRoutes`) — FE: `listHostActivities`, … (`activities.ts` → `/operator/…`) |
 | GET | `/host/activities/:id/participants` | Approved roster + flags (`registerHostActivityParticipantRoutes`) |
 | POST/DELETE | `/host/activities/:id/participants/:participantId/checkin` | Confirm / undo attendance |
 | POST | `/host/activities/:id/participants/:participantId/revoke` | Remove joiner (note → notification) |
 | POST | `/host/activities/:id/participants/:participantId/rating` | Host rates attended participant (after outing ends) |
-| GET/PATCH | `/host/requests` | Host queue for **activities** only |
+| GET/PATCH | `/operator/requests` | Activity join queue (canonical); `/host/requests` alias |
+| GET | `/me/status` | Member capabilities (`MemberStatusDTO`; **`publish`** nested); legacy `/me/host-status`, `/me/operator-status` |
 
 Storage: `activity_invites` (`COLLECTIONS.ACTIVITY_INVITES`) · indexes in `mongo-indexes.ts`.
 
@@ -264,22 +266,21 @@ Profile opens from Discover: `GET /users/:id/public-profile?from=discover` (quot
 
 ---
 
-## Member host capabilities (`GET /me/host-status`)
+## Member status (`GET /me/status`)
 
-Signed-in **member contract** for publish gates, host console access, and profile role labels. Resolved server-side in `apps/api/src/services/member-host-status.ts` — clients must not re-derive tiers from `UserRole`.
+Signed-in **member capabilities** — profile gates, **publish** workspace eligibility, role labels. **Publish is not its own route**; it is the **`publish`** object on this response (dual-read: same fields also appear flat for legacy clients). Resolved in `apps/api/src/services/member-status.ts` — do not re-derive tiers from `UserRole`.
 
 | Field (subset) | Meaning |
 |----------------|---------|
-| `signupProfileComplete` | Buddy **Organize** + demand allowed after `/welcome` |
-| `canPublish` | Can open host publish APIs (community buddy tenant or business) |
-| `canAccessHostConsole` | `/host/*` chrome (publish, messages, team) |
-| `isCommunityHost` | **Host** label after first map activity or demand post |
-| `hostTiers` | `community` \| `professional` \| `business` flags |
+| `profileComplete` | **Organize/publish** after `/welcome` (legacy wire: `signupProfileComplete`) |
+| `publish.canPublish` | May create/publish tenant activities |
+| `publish.canAccessPublishingWorkspace` | May open publishing workspace (`/operator/*` UI) |
+| `publish.ownedProfiles` | Tenants member may publish as |
 | `profileRoleLabel` | Display key for profile chrome |
 
-Canonical frontend client: `memberApi.getMemberHostStatus()` (`src/api/domains/member.ts`). Legacy: `organisationApi.getMyOrganisationStatus`.
+Canonical client: `memberApi.getMemberStatus()` · `useMemberStatus()`. Legacy routes: `/me/host-status`, `/me/operator-status` (`Deprecation` + `Link` → `/me/status`).
 
-Capability map: [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) · `GET /me/host-status`.
+Capability map: [`MEMBER_MODEL.md`](./MEMBER_MODEL.md).
 
 ---
 
@@ -287,7 +288,7 @@ Capability map: [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) · `GET /me/host-status`.
 
 | Domain module | Routes |
 |---------------|--------|
-| `member.ts` | **`/me/host-status`** |
+| `member.ts` | **`/me/status`** |
 | `badges.ts` | **`/me/badges`** |
 | `activities.ts` | `/activities`, `/me/requests`, `/host/activities`, `/host/requests` |
 | `explore.ts` | `/explore/map`, **`/me/participant-intents`** (+ requests, link-activity) |
@@ -300,6 +301,6 @@ Prefer **`exploreApi`** for demand; avoid `fulfillParticipantIntent` on host for
 
 ## UI component naming (related)
 
-Manage sheets for demand should align with API (**`ParticipantIntent*`**, not `MemberDemand*`) and live under Trips/explore — see [`TRIPS_HOST_MANAGE.md`](./TRIPS_HOST_MANAGE.md). **`src/components/host/*`** is for **`/host/*`** and Trips **hosted** manage (`ActivityManageSheet`, **`ActivityParticipantsPanel`** for roster / check-in / revoke / rate).
+Manage sheets for demand should align with API (**`ParticipantIntent*`**, not `MemberDemand*`) and live under Trips/explore — see [`TRIPS_HOST_MANAGE.md`](./TRIPS_HOST_MANAGE.md). **`src/components/activity/*`** is for **`/operator/*`** and Plan **hosted** manage (`ActivityManageSheet`, **`ActivityParticipantsPanel`** for roster / check-in / revoke / rate). Legacy import path `components/activity/*` is shim-only.
 
 Do **not** add `OrganisationActivity*` symbols or `*OrganisationActivity` client methods — one **Activity** model for community and business hosts; **organisation** naming is tenant storefront scope only ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md) § Organisation in filenames). Member read-only attendance: **`ActivityParticipationStatus`** (not a host roster panel).

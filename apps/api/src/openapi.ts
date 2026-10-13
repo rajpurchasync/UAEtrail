@@ -5,7 +5,12 @@ import { env } from './config/env.js';
 export const openApiTags = [
   { name: 'Places', description: 'Trails, camps, and event spots (`/locations`, `/admin/places`).' },
   { name: 'Activities', description: 'Scheduled activities and join requests.' },
-  { name: 'Host', description: 'Host console, tenant profile, team, and applications (`/host/*`).' },
+  {
+    name: 'Operator',
+    description:
+      'Publishing console — tenant activities, team, places (`/operator/*`). Legacy `/host/*` returns `Deprecation: true` with `Link` to `/operator/*`.',
+  },
+  { name: 'Host', description: 'Deprecated alias for Operator tag — prefer `/operator/*` paths in new clients.' },
   { name: 'Shop', description: 'Shop organisations, products, and checkout (`/shop/*`).' },
   { name: 'Members', description: 'Auth accounts, profiles, and admin member tools.' },
   { name: 'Explore', description: 'Map discovery and public browse endpoints.' },

@@ -112,7 +112,7 @@ export const hostFlowStepTitle = (step: HostFlowStepId, profileType: HostProfile
     case 'review':
       return 'Review & submit';
     default:
-      return 'Host profile';
+      return 'Organizer profile';
   }
 };
 

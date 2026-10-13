@@ -2,17 +2,17 @@ import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import {
-  cancelHostActivityById,
-  duplicateHostActivityById,
-  publishHostActivityById,
-} from './hostActivityClientApi';
+  cancelActivity as cancelTenantActivity,
+  duplicateActivity as duplicateTenantActivity,
+  publishActivity as publishTenantActivity,
+} from './tenantActivityClientApi';
 import { navigateToCreateLinkedRideshare } from '../explore/navigateCreateLinkedRideshare';
 import { navigateToReorganizeActivity } from '../explore/navigateReorganizeActivity';
 import { openPublishedActivityPreview } from '../components/activities';
 import { useReloadExploreMap } from './useReloadExploreMap';
 import { openActivityGroupChat } from '../utils/openActivityGroupChat';
 
-/** Host console actions for a single **activity** (`DELETE /host/activities/:id`, publish, duplicate, …). */
+/** Tenant activity manage actions (`DELETE /operator/activities/:id`, publish, duplicate, …). */
 export function useHostActivityManageActions(
   tenantId: string | null,
   onActivitiesChanged?: () => void | Promise<void>
@@ -58,7 +58,7 @@ export function useHostActivityManageActions(
       setBusy(true);
       setError(null);
       try {
-        await publishHostActivityById(tenantId, activityId);
+        await publishTenantActivity(tenantId, activityId);
         await afterChange();
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Could not publish.');
@@ -75,7 +75,7 @@ export function useHostActivityManageActions(
       setBusy(true);
       setError(null);
       try {
-        const duplicate = await duplicateHostActivityById(tenantId, activity.id);
+        const duplicate = await duplicateTenantActivity(tenantId, activity.id);
         await afterChange();
         navigateToReorganizeActivity(navigate, duplicate);
       } catch (err) {
@@ -106,7 +106,7 @@ export function useHostActivityManageActions(
     setBusy(true);
     setError(null);
     try {
-      await cancelHostActivityById(tenantId, confirmCancel.id);
+      await cancelTenantActivity(tenantId, confirmCancel.id);
       setConfirmCancel(null);
       await afterChange();
     } catch (err) {
@@ -121,7 +121,7 @@ export function useHostActivityManageActions(
     setBusy(true);
     setError(null);
     try {
-      await cancelHostActivityById(tenantId, confirmDelete.id);
+      await cancelTenantActivity(tenantId, confirmDelete.id);
       setConfirmDelete(null);
       await afterChange();
     } catch (err) {

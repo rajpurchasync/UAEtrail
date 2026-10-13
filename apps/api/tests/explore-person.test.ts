@@ -19,7 +19,7 @@ describe('explore featured person', () => {
       userId: 'u1',
       displayName: 'Omar Al Hosani',
       avatarUrl: 'https://example.com/a.jpg',
-      role: 'host',
+      role: 'organizer',
     });
   });
 
@@ -64,7 +64,8 @@ describe('explore featured person', () => {
       })
     ).toBe('Alex');
     expect(explorePersonRoleLabel('requester')).toBe('Posted this request');
-    expect(explorePersonRoleLabel('host')).toBe('Host');
+    expect(explorePersonRoleLabel('host')).toBe('Organizer');
+    expect(explorePersonRoleLabel('organizer')).toBe('Organizer');
     expect(explorePersonRoleLabel('contact')).toBe('Shop contact');
   });
 });

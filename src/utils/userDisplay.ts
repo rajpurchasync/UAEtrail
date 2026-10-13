@@ -3,6 +3,7 @@ import {
   isRolePlaceholderDisplayName,
   resolveHostPersonDisplayName,
 } from '@uaetrail/shared-types';
+import { ORGANIZER_FALLBACK_DISPLAY_NAME } from '../content/workspaceVocabulary';
 
 export { isRolePlaceholderDisplayName, resolveHostPersonDisplayName };
 
@@ -40,7 +41,7 @@ export const resolveExploreHostLabel = (options: {
     return getFirstName(requester);
   }
 
-  return 'Host';
+  return ORGANIZER_FALLBACK_DISPLAY_NAME;
 };
 
 /** Prefer a readable requester label — avoids showing placeholder first names like "Pending". */

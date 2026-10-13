@@ -9,7 +9,7 @@ export const activityTypeToOrganizeKind = (type: ScheduledActivityType): Organiz
   return type;
 };
 
-/** Host console / admin — open consumer Organize wizard on `/explore`. */
+/** Publishing workspace / admin — open consumer Organize wizard on `/explore`. */
 export const navigateToExploreOrganize = (
   navigate: NavigateFunction,
   kind?: OrganizeComposeKind | null

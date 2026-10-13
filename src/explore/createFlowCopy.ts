@@ -4,7 +4,7 @@ export const ORGANIZE_TYPE_SHEET_TITLE = 'What kind of plan?';
 
 export const ORGANIZE_DEMAND_PREFILL_TITLE = 'Propose Plan';
 
-export const ORGANIZE_HOST_PROFILE_ERROR =
+export const ORGANIZE_PROFILE_INCOMPLETE_ERROR =
   'Finish your profile first — then you can publish this plan on the map.';
 
 export const ORGANIZE_INTRO_PROMPT =
@@ -100,10 +100,10 @@ export const ORGANIZE_PUBLISH_SUCCESS_TITLE = 'You\u2019re live';
 export const DEMAND_SUBMIT_SUCCESS_TITLE = 'Request posted';
 
 export const DEMAND_SUBMIT_SUCCESS_BODY_ON_MAP =
-  'You\u2019re on the map. Hosts and explorers nearby can message you or propose a matching plan.';
+  'You\u2019re on the map. Organizers and explorers nearby can message you or propose a matching plan.';
 
 export const DEMAND_SUBMIT_SUCCESS_BODY_OFF_MAP =
-  'We saved your request. Add a map pin next time to show on Explore \u2014 hosts can still reach you when you message or get matched.';
+  'We saved your request. Add a map pin next time to show on Explore \u2014 organizers can still reach you when you message or get matched.';
 
 export const DEMAND_SUBMIT_VIEW_CTA = 'View';
 
@@ -160,7 +160,7 @@ export const ORGANIZE_LINK_RIDESHARE_PASTE_LABEL = 'Or paste your rideshare link
 export const ORGANIZE_LINK_RIDESHARE_PASTE_PLACEHOLDER = 'https://uaetrail.com/activity/…';
 
 export const ORGANIZE_LINK_RIDESHARE_HINT =
-  'Publish a rideshare on the map, or link one you already host — joiners see it on this plan.';
+  'Publish a rideshare on the map, or link one you already organize — joiners see it on this plan.';
 
 export const ORGANIZE_RIDESHARE_LINKED_NOTICE = 'Rideshare linked — joiners will see it on your plan.';
 

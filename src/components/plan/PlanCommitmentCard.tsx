@@ -5,14 +5,14 @@ import { formatDate } from '../../utils';
 import { formatActivityType, resolveActivityTitle } from '../../utils/activityIdentity';
 
 export type PlanCommitmentBadge =
-  | 'Hosting'
+  | 'Organizing'
   | 'Looking for company'
   | 'Going'
   | 'Pending'
   | 'Waitlist';
 
 const badgeClass: Record<PlanCommitmentBadge, string> = {
-  Hosting: 'bg-emerald-500/15 text-emerald-800',
+  Organizing: 'bg-emerald-500/15 text-emerald-800',
   'Looking for company': 'bg-violet-500/15 text-violet-800',
   Going: 'bg-sky-500/15 text-sky-800',
   Pending: 'bg-amber-500/15 text-amber-900',

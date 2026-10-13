@@ -12,14 +12,13 @@ import {
 } from '../config/adminSurfacePaths';
 import {
   ADMIN_PLACES_PATH,
-  HOST_ACTIVITIES_PATH,
-  HOST_HISTORY_PATH,
-  HOST_MESSAGES_PATH,
-  HOST_OVERVIEW_PATH,
-  HOST_PLACES_PATH,
-  HOST_PROFILE_PATH,
-  HOST_REQUESTS_PATH,
-  HOST_TEAM_PATH,
+  OPERATOR_ACTIVITIES_PATH,
+  OPERATOR_HISTORY_PATH,
+  OPERATOR_OVERVIEW_PATH,
+  OPERATOR_PLACES_PATH,
+  OPERATOR_PROFILE_PATH,
+  OPERATOR_REQUESTS_PATH,
+  OPERATOR_TEAM_PATH,
   JOURNEY_MAP_PATH,
   MY_TRIPS_PATH,
   PLAN_PATH,
@@ -38,23 +37,25 @@ export { PLAN_PATH, PROFILE_HISTORY_PATH, JOURNEY_MAP_PATH, MY_TRIPS_PATH, TRIPS
 /** @deprecated Personal hub bookmark — redirects to {@link PLAN_PATH} or {@link PROFILE_HISTORY_PATH}. */
 export const ACTIVITIES_PATH = '/activities' as const;
 
-/** Host publishing console nav — tools live under /host routes. */
-export const HOST_CONSOLE_LINKS = [
-  { to: HOST_OVERVIEW_PATH, label: 'Overview' },
-  { to: HOST_PROFILE_PATH, label: 'Public profile' },
-  { to: HOST_ACTIVITIES_PATH, label: 'Activities' },
-  { to: HOST_REQUESTS_PATH, label: 'Join requests' },
-  { to: HOST_TEAM_PATH, label: 'Team' },
-  { to: HOST_PLACES_PATH, label: 'Places' },
-  { to: HOST_MESSAGES_PATH, label: 'Messages' },
-  { to: HOST_HISTORY_PATH, label: 'History' },
+/** Publishing console nav — canonical `/operator/*` routes. */
+export const OPERATOR_CONSOLE_LINKS = [
+  { to: OPERATOR_OVERVIEW_PATH, label: 'Overview' },
+  { to: OPERATOR_PROFILE_PATH, label: 'Public profile' },
+  { to: OPERATOR_ACTIVITIES_PATH, label: 'Activities' },
+  { to: OPERATOR_REQUESTS_PATH, label: 'Join requests' },
+  { to: OPERATOR_TEAM_PATH, label: 'Team' },
+  { to: OPERATOR_PLACES_PATH, label: 'Places' },
+  { to: OPERATOR_HISTORY_PATH, label: 'History' },
 ];
 
-/** @deprecated Use HOST_CONSOLE_LINKS */
-export const ORGANISATION_CONSOLE_LINKS = HOST_CONSOLE_LINKS;
+/** @deprecated Use {@link OPERATOR_CONSOLE_LINKS} */
+export const HOST_CONSOLE_LINKS = OPERATOR_CONSOLE_LINKS;
 
-/** @deprecated Use HOST_CONSOLE_LINKS */
-export const HOST_DASHBOARD_LINKS = HOST_CONSOLE_LINKS;
+/** @deprecated Use {@link OPERATOR_CONSOLE_LINKS} */
+export const ORGANISATION_CONSOLE_LINKS = OPERATOR_CONSOLE_LINKS;
+
+/** @deprecated Use {@link OPERATOR_CONSOLE_LINKS} */
+export const HOST_DASHBOARD_LINKS = OPERATOR_CONSOLE_LINKS;
 
 export const ADMIN_LINKS = [
   { to: ADMIN_OVERVIEW_PATH, label: 'Overview' },

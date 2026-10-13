@@ -6,7 +6,7 @@ How `/explore` stays in sync with MongoDB: venue catalog, cache, and local env.
 
 ## When the map updates
 
-`GET /api/v1/explore/map` is cached in memory (~60s) and Redis (`explore:map:payload:v2`, 60s TTL). Any write that changes pins or cards must call **`invalidateExploreMapCache()`**.
+`GET /api/v1/explore/map` is cached in memory (~60s) and Redis (`explore:map:payload`, 60s TTL). Any write that changes pins or cards must call **`invalidateExploreMapCache()`**.
 
 Per-request **`viewerAccess`** on activity/demand rows is applied **after** the cache read (`explore-map-viewer-access.ts`) from the optional auth token — it is not stored in Redis.
 

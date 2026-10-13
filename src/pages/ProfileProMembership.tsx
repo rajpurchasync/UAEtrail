@@ -13,7 +13,7 @@ import {
   proMembershipPathIntent,
   type HostFlowIntent,
 } from '../components/organisation-console/hostWizardFlow';
-import { useHostStatus } from '../hooks/useHostStatus';
+import { useMemberStatus } from '../hooks/useMemberStatus';
 import { ProfileMapPresenceSection } from '../components/profile/ProfileMapPresenceSection';
 import { resolveAuthRedirect } from '../utils/authRedirect';
 
@@ -25,7 +25,7 @@ export const ProfileProMembership = () => {
   const intent = parseHostFlowIntent(searchParams.get('intent'));
   const returnTo = resolveAuthRedirect(null, searchParams.get('redirect')) ?? EXPLORE_MAP_PATH;
 
-  const { refresh: refreshHostGate } = useHostStatus({ enabled: Boolean(user) });
+  const { refresh: refreshHostGate } = useMemberStatus({ enabled: Boolean(user) });
   const [flowOpen, setFlowOpen] = useState(false);
 
   const proReturnPath = proMembershipPath({

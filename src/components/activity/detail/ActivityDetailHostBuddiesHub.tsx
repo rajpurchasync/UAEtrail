@@ -2,10 +2,10 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useState } from 'react';
 import { afterHostJoinDecisionClientRefresh } from '../../../hooks/activityJoinClientEffects';
 import type { ActivityRequestView } from '../../../api/types';
-import { decideHostActivityJoinRequest } from '../../../hooks/hostActivityClientApi';
+import { decideActivityJoinRequest } from '../../../hooks/tenantActivityClientApi';
 import { ActivityJoinRequestCard } from '../../../console/ActivityJoinRequestCard';
 import { ActivityJoinRequestDeclineDialog } from '../../../console/ActivityJoinRequestDeclineDialog';
-import { ActivityParticipantsPanel } from '../../host/ActivityParticipantsPanel';
+import { ActivityParticipantsPanel } from '../ActivityParticipantsPanel';
 
 type ActivityDetailHostBuddiesHubProps = {
   tenantId: string;
@@ -36,7 +36,7 @@ export const ActivityDetailHostBuddiesHub = ({
       if (!tenantId) return;
       setBusyRequestId(requestId);
       try {
-        await decideHostActivityJoinRequest(tenantId, requestId, status, organizerNote);
+        await decideActivityJoinRequest(tenantId, requestId, status, organizerNote);
         await afterHostJoinDecisionClientRefresh(queryClient, { activityId, status });
         if (status === 'rejected') setDeclineRequest(null);
         await onRequestsChanged();

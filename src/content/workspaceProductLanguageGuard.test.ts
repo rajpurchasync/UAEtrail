@@ -1,0 +1,210 @@
+import { describe, expect, it } from 'vitest';
+import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { join, relative } from 'node:path';
+
+/**
+ * Product copy must not use retired "host" vocabulary (organizer / operator / publishing workspace).
+ * Wire identifiers, `/host/*` routes, and API field names are allowed — see allowlists below.
+ */
+const SCAN_ROOTS = [
+  join(process.cwd(), 'src/content'),
+  join(process.cwd(), 'src/components/home'),
+  join(process.cwd(), 'src/components/profile'),
+  join(process.cwd(), 'src/components/plan'),
+  join(process.cwd(), 'src/components/layout'),
+  join(process.cwd(), 'src/components/ui'),
+  join(process.cwd(), 'src/components/admin'),
+  join(process.cwd(), 'src/pages'),
+  join(process.cwd(), 'src/explore'),
+  join(process.cwd(), 'src/list'),
+  join(process.cwd(), 'src/plan'),
+  join(process.cwd(), 'docs'),
+];
+
+const SKIP_DIR_NAMES = new Set(['host', 'node_modules']);
+
+const SKIP_FILE_PREFIXES = [
+  'src/pages/operator/',
+  'src/components/activity/',
+  'src/console/',
+  'src/api/',
+  'apps/',
+];
+
+const ALLOWLIST_FILES = new Set([
+  'src/content/workspaceProductLanguageGuard.test.ts',
+  'src/content/workspaceVocabulary.ts',
+  'src/content/workspaceVocabulary.test.ts',
+  'src/content/docCoherence.test.ts',
+  'src/member/hostMemberGuard.test.ts',
+  'src/config/systemCoherenceGuard.test.ts',
+  'src/components/organisation-console/proProfileApplicationForm.ts',
+  'src/components/seo/schemas.activity.test.ts',
+]);
+
+/** Lines containing these are wire/comments, not product copy. */
+const LINE_ALLOW_SUBSTRINGS = [
+  '/host',
+  'become-host',
+  'host-status',
+  'HostStatus',
+  'hostUserId',
+  'hostName',
+  'hostAvatar',
+  'hostTiers',
+  'hostGate',
+  'host-status',
+  'canAccessHostConsole',
+  'isCommunityHost',
+  'useHostStatus',
+  'hostDashboardRedirect',
+  'host_applications',
+  'hostProfileType',
+  'hostDisplayName',
+  'hostDisplay',
+  'host_only',
+  'message_host',
+  'plan_host',
+  'showHost',
+  'listHost',
+  'hosted',
+  'hosting',
+  'HOST_',
+  'HostActivity',
+  'HostManage',
+  'HostShell',
+  'createHost',
+  'fetchHost',
+  'cancelHost',
+  'updateHost',
+  'registerHost',
+  'resolveActivityHost',
+  'viewerIsActivityHost',
+  'hostMember',
+  'hostCopy',
+  'hostWizard',
+  'BecomeHost',
+  'hostBrandProfile',
+  'inferHost',
+  'localhost',
+  'ghost',
+  'wire:',
+  'Wire ',
+  'GET /me/host',
+  'Host*',
+  '/host/*',
+  'retired',
+  'LEGACY_',
+  'Host approval required', // legacy DB line in shared-types tests only — not in this scan roots for packages
+  '#### E — Host,', // experiment plan doc wire label in docCoherence
+  'host management tool', // NORTHSTAR anti-pattern quote
+  'HOST_CLEANUP',
+  'host-member',
+  'host console pages',
+  'Organisation* host',
+  'host console',
+  'host/overview',
+  'host roles',
+  'host peek',
+  'host chose', // test description
+  'host profiles (use guide', // routing hygiene test title
+  'host console and activity',
+  'host_join_queue',
+  'host console`',
+  'admin hosts',
+];
+
+const BANNED_LINE_PATTERNS: Array<{ pattern: RegExp; hint: string }> = [
+  { pattern: /\bHost profile\b/, hint: 'Use publishing profile or organizer profile (workspaceVocabulary)' },
+  { pattern: /\bhost profiles\b/i, hint: 'Use publishing profiles' },
+  { pattern: /\bHost console\b/, hint: 'Use Workspace or organizer/operator workspace' },
+  { pattern: /\bHost an activity\b/i, hint: 'Use Organize an outing' },
+  { pattern: /\bHost outings\b/, hint: 'Use Organize outings' },
+  { pattern: /\bHost tools\b/, hint: 'Use Organizer tools or workspace tools' },
+  { pattern: /\bverified host\b/i, hint: 'Use verified organizer' },
+  { pattern: /\bmessage the host\b/i, hint: 'Use message the organizer' },
+  { pattern: /\bwith hosts\b/i, hint: 'Use with organizers' },
+  { pattern: /\bmeet hosts\b/i, hint: 'Use meet organizers' },
+  { pattern: /\bHosts & shops\b/, hint: 'Use Organizers & shops' },
+  { pattern: /\bHosts & hosting\b/, hint: 'Use Organizers & operators' },
+  { pattern: /\bBecome a host\b/i, hint: 'Use Pro membership / guide or agency setup' },
+  { pattern: /\bHost application\b/, hint: 'Use Publishing application' },
+  { pattern: /\bAll hosts\b/, hint: 'Use All publishers or publishing accounts' },
+  { pattern: /\bSuspend host\b/i, hint: 'Use Suspend publishing account' },
+  { pattern: /\bNo hosts found\b/i, hint: 'Use No publishing accounts found' },
+  { pattern: /\bView host\b/, hint: 'Use View publisher / organizer' },
+  { pattern: /\bHost name\b/, hint: 'Use Display name or brand name' },
+  { pattern: /\bhost your own\b/i, hint: 'Use organize your own' },
+  { pattern: /\bconnect with hosts\b/i, hint: 'Use connect with organizers' },
+  { pattern: /\bfollow hosts\b/i, hint: 'Use follow organizers' },
+  { pattern: /\bActivity hosts\b/, hint: 'Use Activity organizers' },
+  { pattern: /\bfollow host instructions\b/i, hint: 'Use follow organizer instructions' },
+  { pattern: /\bHost approved\b/, hint: 'Use Organizer approved' },
+  { pattern: /label:\s*['"]Host['"]/, hint: 'Use Organizer' },
+  { pattern: /label:\s*['"]Hosted['"]/, hint: 'Use Organized' },
+  { pattern: /label:\s*['"]Hosting['"]/, hint: 'Use Organizing' },
+  { pattern: /\bMy host profile\b/i, hint: 'Use My organizer profile' },
+  { pattern: /\bMessage Host\b/, hint: 'Use Message organizer' },
+  { pattern: /\bHost outings\b/, hint: 'Use Organize outings' },
+  { pattern: /Community host\b/, hint: 'Use Community organizer' },
+  { pattern: /\bbuddy hosts\b/i, hint: 'Use buddy organizers' },
+  { pattern: /\bHost publishing console\b/i, hint: 'Use Publishing workspace' },
+  { pattern: /\bHost = user\b/, hint: 'Use Publishing actor = user (wire doc)' },
+  { pattern: /\bHost console \(`\/host/, hint: 'Use Publishing workspace (`/host' },
+];
+
+const collectFiles = (dir: string): string[] => {
+  const rel = relative(process.cwd(), dir).replace(/\\/g, '/');
+  if (!rel.startsWith('src') && !rel.startsWith('docs')) return [];
+  const files: string[] = [];
+  for (const entry of readdirSync(dir)) {
+    const full = join(dir, entry);
+    const stat = statSync(full);
+    if (stat.isDirectory()) {
+      if (SKIP_DIR_NAMES.has(entry)) continue;
+      files.push(...collectFiles(full));
+    } else if (
+      (entry.endsWith('.ts') || entry.endsWith('.tsx') || entry.endsWith('.md')) &&
+      !entry.endsWith('.d.ts')
+    ) {
+      files.push(relative(process.cwd(), full).replace(/\\/g, '/'));
+    }
+  }
+  return files;
+};
+
+const lineAllowed = (line: string): boolean =>
+  LINE_ALLOW_SUBSTRINGS.some((sub) => line.includes(sub));
+
+describe('workspaceProductLanguageGuard', () => {
+  it('consumer copy and Tier-1 docs avoid retired host product vocabulary', () => {
+    const violations: string[] = [];
+    const files = SCAN_ROOTS.flatMap((root) => collectFiles(root));
+
+    for (const file of files) {
+      if (ALLOWLIST_FILES.has(file)) continue;
+      if (SKIP_FILE_PREFIXES.some((prefix) => file.startsWith(prefix))) continue;
+      if (file.startsWith('src/explore/') && file.includes('.test.')) continue;
+      if (file.startsWith('docs/experiment/')) continue;
+
+      const content = readFileSync(join(process.cwd(), file), 'utf8');
+      const lines = content.split(/\r?\n/);
+      lines.forEach((line, index) => {
+        if (lineAllowed(line)) return;
+        for (const { pattern, hint } of BANNED_LINE_PATTERNS) {
+          if (pattern.test(line)) {
+            violations.push(`${file}:${index + 1}: ${hint} — ${line.trim().slice(0, 100)}`);
+            break;
+          }
+        }
+      });
+    }
+
+    expect(violations).toEqual([]);
+  });
+
+  it('hostCopy shim is removed — import workspaceVocabulary directly', () => {
+    const shim = join(process.cwd(), 'src/host/hostCopy.ts');
+    expect(() => readFileSync(shim, 'utf8')).toThrow();
+  });
+});

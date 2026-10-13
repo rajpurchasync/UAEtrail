@@ -105,7 +105,7 @@ One **person** account; zero or more **storefronts** (tenant-backed public brand
 | `shop` | Shop **storefront** + commerce DTO | `PublishingProfileKind: shop` |
 | `organisation` | Host **storefront** slug (`/guide`, `/agency`, `/partner`) | `PublishingProfileKind`: `pro_guide` \| `agency` \| `partner` |
 
-**Do not** rename `EntityKind.organisation` in a drive-by PR. Add `PublishingProfileKind` in `shared-types` and resolve from `tenants` + `host_applications`. Consumer copy: **host profile** / **guide** / **agency** / **shop** / **partner** — not “organisation” or “operator.”
+**Do not** rename `EntityKind.organisation` in a drive-by PR. Add `PublishingProfileKind` in `shared-types` and resolve from `tenants` + `host_applications`. Consumer copy: **Host** (individual on an outing) / **guide** / **agency** / **shop** / **partner** — not “organisation.” **Operator** = agency/shop **workspace** UI. **Organize/publish** = capabilities on **`GET /me/status`** (`profileComplete`, `publish.*`) — not `/me/*` personas. Retired in **architecture/API**: `host` paths and new `Host*` hooks; see `MEMBER_MODEL.md` § Naming vocabulary.
 
 ---
 
@@ -128,9 +128,9 @@ One **person** account; zero or more **storefronts** (tenant-backed public brand
 
 | Layer | Use for | Examples |
 |-------|---------|----------|
-| **Product / UI** | Copy, nav labels | Place, Activity, **Organize** (FAB), Friends, Pro Membership — not **Compose** for FAB |
-| **Code (preferred)** | New TS symbols, files | `PlaceDTO` semantics, **`Host*`** for activity console + publish (`createHostActivity`, `ActivityParticipantsPanel`), `getOrganisation*` only for **tenant storefront** wire, `getMemberHostStatus`, `PersonPublicProfile` |
-| **Wire / storage** | HTTP paths, Mongo | `/locations`, `LocationDTO`, `activity_requests`, `x-organisation-id` |
+| **Product / UI** | Copy, nav labels | Place, Activity, **Organize** (FAB), **Host** (individual), **Operator workspace** (agency/shop), Friends, Pro Membership — not **Compose** for FAB |
+| **Code (modules)** | Files, hooks, components — **bounded context** from [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §3 | `src/explore/*`, `src/member-plan/*`, `useMemberStatus`, `tenantActivityClientApi`, `routes/operator/*` — see **§13** |
+| **Wire / storage** | HTTP paths, Mongo until versioned migration | `/locations`, `LocationDTO`, `activity_requests`, `hostUserId`, `x-organisation-id` |
 
 **Rule:** Product says **Place**; API may still say `/locations` and `LocationDTO` until a deliberate migration. Do **not** introduce new `Location*` **product** names in UI.
 
@@ -164,11 +164,11 @@ Built only via **`routingCatalog`** or `@uaetrail/shared-types` `entity-path` he
 | Legacy community feed | `/community` | `COMMUNITY_PATH` → `/explore` redirect only (feed removed) |
 | Legacy membership marketing | `/membership` | `MEMBERSHIP_MARKETING_PATH` → explore redirect |
 | Pro / business | `/profile/pro-membership` | `PRO_MEMBERSHIP_PATH`, `proMembershipPath()` |
-| Host console | `/host/*` | `HOST_CONSOLE_LINKS` in `src/constants/index.ts` |
+| Publishing console | `/operator/*` (legacy `/host/*` redirect) | `OPERATOR_CONSOLE_LINKS` in `src/constants/index.ts` |
 
 **Parse inbound links:** `parseEntityRefFromPathname(pathname)` → `EntityRef`.
 
-**Legacy redirects only** (do not link in new UI): `/map`, `/discovery`, `/trips`, `/activities` → `/plan` or `/profile/history` (or journey map), `/become-host` → Pro Membership, `/merchant/:id`, `/organizer/*` → `/host/*`. Table: [`NAVIGATION.md`](./NAVIGATION.md) § Legacy redirects.
+**Legacy redirects only** (do not link in new UI): `/map`, `/discovery`, `/trips`, `/activities` → `/plan` or `/profile/history` (or journey map), `/become-host` → Pro Membership, `/merchant/:id`, `/host/*` and `/organizer/*` → `/operator/*` (except `/host/messages` → `/chat`). Table: [`NAVIGATION.md`](./NAVIGATION.md) § Legacy redirects.
 
 ### 3.1 Consumer detail tab wire ids
 
@@ -272,7 +272,7 @@ IA detail (pills, topics): [`experiment/explore-browse-ia.md`](./experiment/expl
 | `Place`, `getPublicPlaces` | Location (in UI) | `LocationDTO` = wire DTO |
 | `getOrganisationProfile`, `ShopOrganisation*`, `organisation-console/` (Pro storefront onboarding) | Merchant* (client), HostOrganization* | **Not** activity CRUD/roster — see `MEMBER_MODEL` § Organisation in filenames |
 | `listHostActivities`, `createHostActivity`, `publishHostActivity`, `ActivityParticipantsPanel`, `ActivityManageSheet` | `*OrganisationActivity*`, `OrganisationActivityCheckInPanel`, `listOrganisationActivities` | Guards: `apiLegacyGuard`, `organisationNamingGuard` |
-| `HOST_CONSOLE_LINKS`, `src/pages/host/*`, `src/console/*` | `ORGANISATION_CONSOLE_LINKS`, `pages/OrganisationActivities` | Host **user** console at `/host/*` |
+| `OPERATOR_CONSOLE_LINKS`, `src/pages/operator/*`, `src/console/*` | `HOST_CONSOLE_LINKS` (alias), `pages/OrganisationActivities` | Publishing console at `/operator/*` |
 | `getMemberHostStatus` | `getMyOrganisationStatus` | Tier flags |
 | `PersonPublicProfile` | `UserPublicProfile` | Public card |
 | `buildHostActivityPublishPayload`, `buildHostActivityMenuItems` | `buildOrganisationActivity*` | Single publish contract (`activityPublishPayload.ts`) |
@@ -379,11 +379,11 @@ Use this when naming files, hooks, and utils — **one product word per concept*
 | **Area** (curated zone) | `GET /areas`, `GET /areas/:slug` | `areas-store`, `organizePublishArea.ts`, `/area/:slug`, explore `?area=` | `areaLabel` string as third concept; **do not** assign area from meeting pin polygons for hosted publish |
 | **Place / venue** | `locations` | `place*`, `venue` panel, `Place` in UI | `location` in new routes/components |
 | **Friends** | buddies API | `BUDDIES_PATH`, `buddy*` stores only on API | `buddyUserId`, “buddy entity” |
-| **Host console** | `/host/*`, tenant | `src/pages/host/*`, `src/console/*`, `useHostStatus`, `useConsoleHubData`, `listHostActivities` | `tenant` in consumer UI strings (wire: `x-organisation-id`) |
+| **Publishing console** | `/operator/*`, tenant | `src/pages/operator/*`, `src/console/*`, `useOperatorStatus`, `useConsoleHubData`, `listHostActivities` | `tenant` in consumer UI strings (wire: `x-organisation-id`) |
 
 **Three maps (do not conflate):** (1) **Explore** — public discovery; (2) **Journey map** — `/profile/history/map` + `GET /me/journey-map`; (3) **Place catalog** — venues/shops layers on Explore.
 
-**`src/utils/` policy:** cross-surface helpers only (`authRedirect`, `notificationRouting`, `authReturnContext`, `routingCatalog` consumers). Domain logic belongs in `src/explore/`, `src/member-plan/`, `src/member/` (`organisationPaths.ts`), `src/host/` (`hostCopy.ts`), `src/components/<domain>/` — not new `utils/<domain>*.ts`.
+**`src/utils/` policy:** cross-surface helpers only (`authRedirect`, `notificationRouting`, `authReturnContext`, `routingCatalog` consumers). Domain logic belongs in `src/explore/`, `src/member-plan/`, `src/member/` (`organisationPaths.ts`), `src/content/workspaceVocabulary.ts`, `src/components/<domain>/` — not new `utils/<domain>*.ts`.
 
 ### 12.1 Geography — Area hub, Place catalog, Activity (authoritative)
 
@@ -440,20 +440,87 @@ Wire: `publishingProfileKind` on `ActivityDTO`; paths via `resolveActivityPublis
 
 ---
 
-## 13. Naming / alignment backlog (code — not new docs)
+## 13. Structural module naming (bounded context — not synonym swaps)
 
-Track progress here and in [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §7 (`C11`–`C15`). **Do not create a new markdown file per audit.**
+**Problem:** Early code prefixed symbols with **product surfaces** (`Host`, `Explore`, `Plan`, `Browse`, `Trip`) or **renamed synonyms** (`Host` → `Organizer` → `Operator`) in component filenames. That duplicates context already carried by **routes**, **headers**, or **props**, and breaks reuse (e.g. a “message” control used on activity detail, shop profile, and member cards).
+
+**Rule:** Name **modules** by **bounded context** ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §3). Name **props** with neutral ids (`memberUserId`, `activityId`). Put **role words** in **copy** (`messageLabel`, `workspaceVocabulary`), not in shared component filenames.
+
+**Mental model (canonical):** One **Activity** entity; **member capabilities** (`canPublish`, profile complete, tenants they may represent); **per-activity viewer access** (join, manage roster, crew surfaces). Do **not** invent a second product noun (**operator**, **host**) in TypeScript for things that are already scoped by **`tenantId`**, **`x-organisation-id`**, or **activity id**.
+
+| Layer | Question | Name in code (target) |
+|-------|----------|------------------------|
+| Entity | What is this outing? | **Activity** — DTOs, `src/activity/*`, `components/activity/*` |
+| Member-wide gates | May this user publish / open the publishing workspace? | **`useMemberStatus`** · **`GET /me/status`** (`publish` nested) — not `/me/publish-*` or “operator status” in UI |
+| Tenant-scoped HTTP | List/publish/manage for **this tenant** | **`GET /operator/activities`** (mount prefix only until SN-4); client **`listActivities(tenantId)`**, **`getActivityJoinRequests(tenantId)`** — not `*OperatorActivity*` / `*HostActivity*` on every symbol |
+| This activity, this viewer | May they see Buddies / approve joiners? | **`viewerAccess`**, entitlements on activity detail wire |
+
+**Freeze (Oct 2026):** Do **not** add new `Operator*` identifiers (hooks, client functions, component names) except **route/page shells** already named (`src/pages/operator/*`, lazy `Operator*` pages). Migrate **toward** activity + publishing-access vocabulary per [`HOST_CLEANUP_ROADMAP.md`](./HOST_CLEANUP_ROADMAP.md) **SN-3**.
+
+### 13.1 Anti-patterns (do not repeat)
+
+| Mistake | Example | Do instead |
+|---------|---------|------------|
+| **Synonym rename** | `HostMessageButton` → `OrganizerMessageButton` | `MessageMemberButton` in `src/components/chat/` |
+| **Surface prefix on shared UI** | `ExploreFooButton` used outside explore | `FooButton` in the owning context, or `explore/*` only |
+| **Role in filename when route/header already scopes** | `cancelHostActivityById`, `listOperatorActivities` | `cancelActivity(tenantId, id)` in **tenant activity client**; scope = `tenantId` + `/operator/*` |
+| **Fake persona in API names** | `useOperatorStatus`, `/me/operator-status` as canonical | **`useMemberStatus`** + **`GET /me/status`**; publish under **`status.publish`** |
+| **Marketing word as global prefix** | `Plan*` hooks in `src/utils` | `src/member-plan/*`, `src/components/plan/*` |
+| **Second inbox route** | `/host/messages` | `/messages` only (`COMMUNICATION.md`) |
+
+### 13.2 When a prefix is still correct
+
+| Prefix / name | OK because |
+|---------------|------------|
+| **`/operator/*` HTTP mount** (interim) | Stable tenant publishing routes; **not** a license to prefix every TS symbol with `Operator` ([`HOST_CLEANUP_ROADMAP.md`](./HOST_CLEANUP_ROADMAP.md) SN-4 drops `/host` mount). |
+| **`src/pages/operator/*`** | Console **surface** route folder (like `src/explore/*`); pages inside still operate on **activities**. |
+| **Legacy shims** | `useOperatorStatus`, `usePublishingAccess`, `/me/host-status`, `/me/operator-status`, flat-only `HostStatusDTO` — **deprecated**; no new call sites. |
+| `Explore*` under `src/explore/**` | Module boundary for discovery map/list shell. |
+| `Plan*` under `src/components/plan`, `src/member-plan` | Member schedule surface (`/plan`). |
+| `List*` under `src/list/**` | Discover browse feed (`/list`, `browse=1`). |
+| Wire `hostUserId`, `HostStatusDTO` | Storage/API until dual-read migration ([`HOST_CLEANUP_ROADMAP.md`](./HOST_CLEANUP_ROADMAP.md) P4–P5). |
+
+### 13.2.1 Target tenant activity client (SN-3)
+
+One facade (e.g. `src/hooks/tenantActivityClientApi.ts` — name TBD at implementation) exported from a single module; **ban** new imports of `hostActivityClientApi`. Preferred symbols:
+
+| Concern | Target (tenant-scoped) | Wire (unchanged) |
+|---------|------------------------|------------------|
+| List tenant outings | `listActivities(tenantId)` | `GET /operator/activities` |
+| Join queue | `getActivityJoinRequests(tenantId, { activityId? })` | `GET /operator/requests` |
+| Decide request | `decideActivityJoinRequest(tenantId, requestId, status, note?)` | `PATCH /operator/requests/:id` |
+| Roster | `getActivityParticipants(tenantId, activityId)` | `GET /operator/activities/:id/participants` |
+| Lifecycle | `publishActivity`, `cancelActivity`, `updateActivity`, `duplicateActivity` | `/operator/activities/:id` … |
+
+**Member capabilities** (not activity-scoped): **`useMemberStatus`** → `GET /me/status` with **`publish`** (`canPublish`, `canAccessPublishingWorkspace`, `ownedProfiles`, …). Flat top-level fields dual-read legacy wire.
+
+### 13.3 Communication slice (canonical)
+
+| Need | Symbol | Notes |
+|------|--------|--------|
+| Open DM with a member | `MessageMemberButton` | `memberUserId`, optional `activityId`, `messageLabel` for a11y |
+| Deprecated | `HostMessageButton`, `OrganizerMessageButton` | Shims only — `moduleNamingGuard.test.ts` |
+| Inbox route | `MESSAGES_PATH`, `messagesToUserPath` | One inbox; no host shell variant |
+
+### 13.4 Phased program (implementation)
+
+Tracked in [`HOST_CLEANUP_ROADMAP.md`](./HOST_CLEANUP_ROADMAP.md) **P5** and [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) **C21** / **S11**. Order: **policy + guards** → **folder moves with shims** → **client API normalize** → **wire dual-read** → **drop legacy mounts**.
+
+**Guards:** `src/config/moduleNamingGuard.test.ts`, `hostMemberGuard`, `publishingConsoleHookGuard`, `tripsConsumerNamingGuard`, `workspaceProductLanguageGuard`.
+
+### 13.5 Naming backlog (NC-*)
 
 | ID | Target |
 |----|--------|
 | NC-B | Normalize notification `meta` — **mostly done**; paths via `apps/api/src/lib/member-routes.ts` |
-| NC-C | Surface paths via `routingCatalog` — **in progress** (consumer + host + admin `adminSurfacePaths.ts` + `organisationManagePath` via catalog) |
+| NC-C | Surface paths via `routingCatalog` — **in progress** |
 | NC-D | Remove `legacyApi` spread — **done** |
 | NC-E | Optional dot-style notification `kind` migration |
-| NC-F | **Frontend naming** — `outdoorMap*` → `journeyMap*` **done** (FE); explore pin types unified via shared-types **done**; explore helpers moved to `src/explore/` **done**; remaining `src/utils/` domain files (§12) |
-| NC-G | **Demand vs wishlist** — demand not saved to wishlist; API `/me/wishlist` (venues + activities only); no “favorites” in UI |
+| NC-F | `outdoorMap*` → `journeyMap*` **done**; explore helpers under `src/explore/` **done**; shrink `src/utils/` domain files (§12) |
+| NC-G | Demand vs wishlist — **done** |
+| NC-H | **Structural naming P5** — activity-centric client + **`useMemberStatus`**; `/operator` HTTP-only; DTO dual-read |
 
-**Verify:** `npm run verify:system` · `apps/api/tests/naming-coherence.test.ts`
+**Verify:** `npm run verify:system` · `moduleNamingGuard.test.ts` · `apps/api/tests/naming-coherence.test.ts`
 
 ---
 
@@ -489,7 +556,7 @@ Any **place, venue, activity meeting point, shop, parking pin**, or other consum
 |-------|----------|------------------|---------------|
 | **0. Identity** | Is there a signed-in member? | `req.auth` / `viewerUserId` | Host tier, Pro, roster |
 | **1. Platform role** | Admin / merchant / tenant job on JWT? | `UserRole`, `PLATFORM_ADMIN` bypass | Consumer Organize gates |
-| **2. Member capability** | May this account **act** (Organize, host console, paid publish)? | `HostStatusDTO`, **`member-host-status.ts` only** | Reading someone else's activity |
+| **2. Member capability** | May this account **act** (Organize/publish, publishing workspace, paid publish)? | `MemberStatusDTO` / `publish`, **`member-status.ts` only** | Reading someone else's activity |
 | **3. Entity discovery** | Is this row on the explore map vs link-only? | `ActivityJoinMode` | RSVP vs approval |
 | **4. Participation** | How do you join the roster? | `ParticipationMode`, demand requests | Detail payload depth |
 | **5. Social viewer access** | Relationship to **this** entity (host, participant, …)? | `*-viewer-access.ts` resolvers | `canPublish`, Pro SKU |
@@ -694,7 +761,7 @@ ViewerRequestContext
 |-------|---------|
 | `viewerUserId` | `null` = guest |
 | `platformRole` | Coarse JWT role (`UserRole`) — shell routes, admin |
-| `hostStatus` | Optional snapshot from `GET /me/host-status` — **capabilities only**, loaded server-side for mutations; avoid shipping whole DTO on every public read |
+| `hostStatus` | Optional snapshot from **`GET /me/status`** — **capabilities only**, loaded server-side for mutations; avoid shipping whole DTO on every public read |
 | `surface` | `explore_map`, `activity_route`, `host_console`, … |
 | `tenantScope` | `x-organisation-id` when acting as business host |
 
@@ -722,7 +789,7 @@ ViewerRequestContext
 
 | Piece | Location |
 |-------|----------|
-| Capability tiers | `apps/api/src/services/member-host-status.ts` |
+| Capability tiers | `apps/api/src/services/member-status.ts` |
 | Activity social access | `activity-viewer-access.ts` + `computeActivityDetailExposure` |
 | Activity detail pipeline | `compose-activity-viewer-access.ts` (loads buddy entitlement context) → social then `applyActivityViewEntitlements` |
 | Profile social access | `profile-viewer-access.ts` |
@@ -741,7 +808,7 @@ ViewerRequestContext
 
 | Layer | Lead with | Examples | Do not |
 |-------|-----------|----------|--------|
-| **HTTP / wire** | Route + DTO field | `GET /activities/:id` → `viewerAccess.entitlements.canViewFullBuddyRoster`; `GET /me/host-status` → `canPublish` | New public `resolve*` in `src/` that recomputes access |
+| **HTTP / wire** | Route + DTO field | `GET /activities/:id` → `viewerAccess.entitlements.canViewFullBuddyRoster`; `GET /me/status` → `publish.canPublish` | New public `resolve*` in `src/` that recomputes access |
 | **Shared policy** | `compute*` / `build*` on inputs → DTO | `computeActivityDetailExposure`, `buildActivityPresentationDTO`, `computeActivityMapPeekActions`, `computeActivityViewerEntitlements` | Export `activityViewerEntitlementsCan*` — use DTO booleans in UI |
 | **API composition** | One composer per surface | `composeActivityViewerAccess` for activity detail + map enrich; buddy/host context loaded **inside** route/composer, not a second public service name | Scatter `resolveActivityView*` loaders imported from routes |
 | **FE presentation** | `map*` / `*Presentation` / `*ToUi` | `mapViewerAccessToUi`, `resolvePeekDetailAccess`, wire `presentation` + `mapPeekActions` → components (shim during Phase 4: `activityDetailPresentation.ts`, `activityPeekEngagement.ts`) | `computeActivityDetailExposure` in `src/`; crew gates from `isHostUser` when `viewerAccess` is present |

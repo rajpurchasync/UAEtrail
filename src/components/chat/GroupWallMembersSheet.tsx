@@ -10,7 +10,7 @@ type GroupWallMembersSheetProps = {
 };
 
 const memberLabel = (group: SocialGroupView, member: SocialGroupMemberView) => {
-  if (member.userId === group.adminUserId) return 'Host';
+  if (member.userId === group.adminUserId) return 'Organizer';
   if (member.role === 'admin') return 'Admin';
   return 'Member';
 };

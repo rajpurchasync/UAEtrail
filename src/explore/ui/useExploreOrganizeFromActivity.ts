@@ -14,7 +14,7 @@ import {
 } from './organizeFromActivity';
 import {
   organizePublishGateHref,
-  organizePublishGateInputFromHostGate,
+  organizePublishGateInputFromMemberStatus,
 } from '../../utils/organizePublishGate';
 import type { CreateActivityDraft } from './organizeFlow';
 
@@ -28,7 +28,7 @@ type UseExploreOrganizeFromActivityArgs = {
   tenantId: string | null | undefined;
   hostGateLoading: boolean;
   canPublish: boolean;
-  signupProfileComplete: boolean;
+  profileComplete: boolean;
   isCommunityHost?: boolean;
   hostTiers?: HostTierFlags;
   navigate: NavigateFunction;
@@ -44,7 +44,7 @@ export const useExploreOrganizeFromActivity = ({
   tenantId,
   hostGateLoading,
   canPublish,
-  signupProfileComplete,
+  profileComplete,
   isCommunityHost,
   hostTiers,
   navigate,
@@ -78,9 +78,9 @@ export const useExploreOrganizeFromActivity = ({
       navigate(
         organizePublishGateHref(
           returnPath,
-          organizePublishGateInputFromHostGate({
+          organizePublishGateInputFromMemberStatus({
             viewerUserId: user.id,
-            signupProfileComplete,
+            profileComplete,
             canPublish,
             isCommunityHost,
             hostTiers,
@@ -127,7 +127,7 @@ export const useExploreOrganizeFromActivity = ({
     user,
     hostGateLoading,
     canPublish,
-    signupProfileComplete,
+    profileComplete,
     isCommunityHost,
     hostTiers,
     navigate,

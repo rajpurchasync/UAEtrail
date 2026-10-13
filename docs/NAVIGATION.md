@@ -40,7 +40,7 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 ### Plan (`/plan`)
 
 - **Bottom nav middle tab** — forward commitments, not past history (past outings → **`/profile/history`** · journey map → **`/profile/history/map`**).
-- **Mobile tabs** (`?view=plans&tab=` — `src/plan/planTab.ts`): collapsible **goal progress** bar above **Upcoming** · **Wishlist** tabs. Upcoming: **Hosting | Joined** filters; **list ↔ calendar** toggle (`layout=calendar`); **Needs you** (participation only). Legacy `?lens=saved|goals|calendar` normalizes to tab/layout. **Available** editor: `?lens=availability` until moved to Profile.
+- **Mobile tabs** (`?view=plans&tab=` — `src/plan/planTab.ts`): collapsible **goal progress** bar above **Upcoming** · **Wishlist** tabs. Upcoming: **Organizing | Joined** filters; **list ↔ calendar** toggle (`layout=calendar`); **Needs you** (participation only). Legacy `?lens=saved|goals|calendar` normalizes to tab/layout. **Available** editor: `?lens=availability` until moved to Profile.
 - **Query helpers:** `tripsPlansPath()`, `planSavedPath()`, `planLensPath()`. Legacy `segment` / `tab` / `segment=wishlist` normalize on load.
 - **`/trips`**, **`/activities`** redirect to `/plan` or `/profile/history` preserving query (`legacyTripsRedirect.ts`).
 
@@ -50,12 +50,12 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 - **Main tabs (list surface):** History · My Map (`PROFILE_HISTORY_MAIN_TABS`).
 - **Manage & crew chat:** Hosted/joined **Manage outing** sheets and explore map peek **`open_crew_chat`** → **`/chat?group=<id>`**. See [`experiment/member-surfaces-implementation-plan.md`](./experiment/member-surfaces-implementation-plan.md) and [`COMMUNICATION.md`](./COMMUNICATION.md).
 
-### Host console (`/host/*`)
+### Publishing console (`/operator/*` routes)
 
-- **Host = user kind** (capabilities from `GET /me/host-status`); console is **tenant-scoped** manage UI, not a second activity entity.
-- **Shell nav:** `HOST_CONSOLE_LINKS` + `ConsoleShell` (`src/console/*`); route pages in `src/pages/host/*`.
-- **`/host/overview`:** `ConsoleHubSections` — stats, **Up next** preview, header **Add activity** — not a second copy of the shell link list. Below that: **personal** shortcuts (trips as participant, messages, explore map).
-- **Member profile (`/profile`):** consumer hub only; buddy hosts open **Hosting** → Plan `?view=plans&role=hosted` (`tripsPlansPath('hosted')`), not `/host/overview`. Pro/agency console remains `/host/*` for tenant operators.
+- **Canonical URL `/operator/*`** — product UI uses **Organizer workspace** (community / guide) or **Operator workspace** (agency / shop); capabilities from **`GET /me/status`** (`useMemberStatus`, `publish.*`). Legacy `/host/*` and `/organizer/*` redirect to `/operator/*`. Tenant HTTP API: **`/operator/*` only** (legacy `/host/*` rewritten server-side).
+- **Shell nav:** `OPERATOR_CONSOLE_LINKS` + `ConsoleShell` (`src/console/*`); route pages in `src/pages/operator/*`. Copy: `src/content/workspaceVocabulary.ts`.
+- **`/operator/overview`:** `ConsoleHubSections` — stats, **Up next** preview, header **Add activity** — not a second copy of the shell link list. Below that: **personal** shortcuts (trips as participant, **Chat** → `/chat`, explore map).
+- **Member profile (`/profile`):** consumer hub only; buddies open **Organizing** → Plan `?view=plans&role=hosted` (`tripsPlansPath('hosted')`), not `/operator/overview`. Pro/agency/shop management remains `/operator/*`.
 
 ### Admin console (`/admin/*`)
 
@@ -69,7 +69,7 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 ### Friends (`/buddies`)
 
 - Consumer label **Friends**; tabs `?tab=friends|requests|following`.
-- **Explore map people panel → Followed:** sub-segments **People** (member follows), **Places** and **Hosts & shops** (entity follows from map/profile); URL `followedKind=places|events`. (Panel URL `view=people`; legacy `view=social` — browse people, not chat; see § Browse — people & crew below.) Private **wishlist** saves live on **Plan → Saved** (`planSavedPath()`; `/profile/wishlist` redirects).
+- **Explore map people panel → Followed:** sub-segments **People** (member follows), **Places** and **Organizers & shops** (entity follows from map/profile); URL `followedKind=places|events`. (Panel URL `view=people`; legacy `view=social` — browse people, not chat; see § Browse — people & crew below.) Private **wishlist** saves live on **Plan → Saved** (`planSavedPath()`; `/profile/wishlist` redirects).
 
 ### Chat (`/chat`)
 
@@ -78,7 +78,7 @@ Canonical detail: **[`COMMUNICATION.md`](./COMMUNICATION.md)**. Legacy `/message
 - **Inbox:** Direct chats, **Groups** (family/friends), and **Outing chats** (activity crew) in one list; filters `people` / `groups` / `outings`.
 - **Direct thread:** `/chat?to=<userId>` (optional `activity` context).
 - **Group / crew thread:** `/chat?group=<groupId>` (optional `activity=<activityId>` for outing crew) — all wall chat UI lives here (not on `/groups`).
-- **Hosts:** same component at `/host/messages` (org shell); consumer notification meta normalizes to `/chat` with the same query params.
+- **Legacy `/host/messages` and `/operator/messages`:** redirect to `/chat` (one inbox). Notification meta normalizes to `/chat` with the same query params.
 - **API:** prefer **`GET /chat/inbox`** (direct + groups with `chatPreview`); wall supports `?since=` and `POST .../wall/read`; optional `replyToMessageId` on wall POST.
 
 ### Groups (`/groups`)
@@ -230,7 +230,7 @@ Signed-in members tap **+** on `/explore` to compose. **Guests** → sign-in, th
 | Camp | `'camp'` | `/explore?panel=venues&filter=camping` |
 | Event venue | `'event'` | `/explore?panel=venues&filter=others` |
 | Shop | `'shop'` | `/explore?panel=shops&filter=shops` |
-| Host profile | `'host'` | `/explore` |
+| Organizer profile (wire kind) | `'host'` | `/explore` |
 | Generic / 404 | `'explore'` | `/explore` |
 
 ## Legacy redirects (`App.tsx`)

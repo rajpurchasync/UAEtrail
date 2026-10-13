@@ -1,9 +1,6 @@
 import { activityOrganizeTopicToOutingTopic, type ActivityDTO } from '@uaetrail/shared-types';
 import { fetchPublishedAreas } from '../hooks/areaHubClientApi';
-import {
-  createHostActivityForTenant,
-  publishHostActivityById,
-} from '../hooks/hostActivityClientApi';
+import { createActivity, publishActivity } from '../hooks/tenantActivityClientApi';
 import { linkParticipantIntentToActivity } from '../hooks/participantIntentClientApi';
 import { submitPlaceContribution } from '../hooks/placeCatalogApi';
 import { HOME_HERO_OG_PATH } from '../config/seo';
@@ -282,8 +279,8 @@ export const publishOrganizeActivity = async (input: {
     clonedFromActivityId: sourceActivityId?.trim() || null,
     linkedActivityId: draft.kind === 'rideshare' && parentLinkId ? parentLinkId : null,
   });
-  const created = await createHostActivityForTenant(tenantId, publishBody);
-  await publishHostActivityById(tenantId, created.id);
+  const created = await createActivity(tenantId, publishBody);
+  await publishActivity(tenantId, created.id);
 
   if (participantIntentId) {
     await linkParticipantIntentToActivity(participantIntentId, created.id);

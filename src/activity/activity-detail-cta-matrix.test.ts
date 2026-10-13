@@ -87,7 +87,7 @@ describe('activity detail CTA matrix — runtime (AD-CTA-01)', () => {
       isHostUser: false,
       activityPublished: true,
       participationMode: 'approval',
-      requirements: ['Host approval required to join'],
+      requirements: ['Organizer approval required to join'],
       myParticipation: null,
       myRequest: null,
     });
@@ -112,7 +112,7 @@ describe('activity detail CTA matrix — runtime (AD-CTA-01)', () => {
       isHostUser: false,
       activityPublished: true,
       participationMode: 'approval',
-      requirements: ['Host approval required to join'],
+      requirements: ['Organizer approval required to join'],
       myParticipation: null,
       myRequest: null,
     });
