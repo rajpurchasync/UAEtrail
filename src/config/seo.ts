@@ -1,7 +1,5 @@
 /** Central SEO constants — keep brand and URLs consistent across meta, schema, and llms.txt */
 
-import homeHeroJpeg from '../assets/landing/home-hero.jpg';
-import homeHeroWebp from '../assets/landing/home-hero.webp';
 import { PRODUCT_SITE_DESCRIPTION } from '../content/productNorthStar';
 
 export const SITE_NAME = 'UAE Trail';
@@ -14,13 +12,14 @@ export const SITE_ORIGIN =
 
 export const SITE_DESCRIPTION = PRODUCT_SITE_DESCRIPTION;
 
-/** Bundled hero — resolved by Vite in dev and `/assets/*` in production builds. */
-export const HOME_HERO_IMAGE_WEBP = homeHeroWebp;
-export const HOME_HERO_IMAGE_JPEG = homeHeroJpeg;
-
-/** Stable public URL for Open Graph and API placeholders (copied from `public/` on build). */
-export const HOME_HERO_OG_PATH =
+/** Summit hiker — first guest hero slide, OG, and LCP preload. */
+export const HOME_HERO_IMAGE_JPEG =
   '/traveler-hiking-mountains-while-having-his-essentials-backpack-optimized.jpg';
+export const HOME_HERO_IMAGE_WEBP =
+  '/traveler-hiking-mountains-while-having-his-essentials-backpack.webp';
+
+/** Stable public URL for Open Graph and API placeholders. */
+export const HOME_HERO_OG_PATH = HOME_HERO_IMAGE_JPEG;
 
 export const toAbsoluteUrl = (pathOrUrl?: string | null): string | undefined => {
   if (!pathOrUrl) return undefined;

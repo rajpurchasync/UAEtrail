@@ -1,29 +1,30 @@
-import { ACTIVITY_TYPE_COVER_IMAGE_POOLS } from '../config/activityCoverImages';
 import { HOME_HERO_IMAGE_JPEG, HOME_HERO_IMAGE_WEBP } from '../config/seo';
+import { marketingHeroResponsiveSlide } from '../config/marketingHeroImages';
 import type { HeroCarouselSlide } from '../components/home/v2/heroCarouselTypes';
 
 /** Curated marketing backgrounds only — live outings appear in `HomeActivitiesSection`. */
 export const MARKETING_HERO_CAROUSEL_SLIDES: readonly HeroCarouselSlide[] = [
   {
-    id: 'hero-bundled',
+    id: 'hero-summit-hiker',
     imageUrl: HOME_HERO_IMAGE_JPEG,
     imageSrcSet: `${HOME_HERO_IMAGE_WEBP} 1200w, ${HOME_HERO_IMAGE_JPEG} 1600w`,
-    alt: 'Group getting outdoors in the UAE'
+    alt: 'Hiker at a mountain summit in the UAE'
   },
   {
-    id: 'hero-hike-hatta',
-    imageUrl: ACTIVITY_TYPE_COVER_IMAGE_POOLS.hiking[1],
-    alt: 'Hatta dam and Hajar mountain trails'
+    id: 'hero-al-rabi',
+    ...marketingHeroResponsiveSlide('al-rabi', 'Al Rabi mountain trail, Khorfakkan')
   },
   {
-    id: 'hero-camp-desert',
-    imageUrl: ACTIVITY_TYPE_COVER_IMAGE_POOLS.camping[0],
-    alt: 'Desert camping under UAE rock formations'
+    id: 'hero-arar',
+    ...marketingHeroResponsiveSlide('arar', 'Arar outdoor landscape in the UAE')
   },
   {
-    id: 'hero-hike-fujairah',
-    imageUrl: ACTIVITY_TYPE_COVER_IMAGE_POOLS.hiking[2],
-    alt: 'Hajar mountains along the Gulf of Oman'
+    id: 'hero-fossil-rock',
+    ...marketingHeroResponsiveSlide('fossil-rock', 'Fossil Rock, Sharjah desert')
+  },
+  {
+    id: 'hero-saliyat-al-baqal',
+    ...marketingHeroResponsiveSlide('saliyat-al-baqal', 'Saliyat al Baqal, UAE outdoors')
   }
 ];
 
