@@ -30,6 +30,8 @@ export type ContributeFlowStepId =
 export type ContributeDraft = {
   kind: ContributeVenueKind | null;
   title: string;
+  /** Trailhead, wadi, or landmark — list poster location chip (`locations.areaLabel`). */
+  areaLabel: string;
   emirate: string;
   latitude: number | null;
   longitude: number | null;
@@ -49,6 +51,7 @@ export type ContributeDraft = {
   trailElevationM: number | null;
   transportSedan: boolean;
   transport4x4: boolean;
+  childFriendly: boolean;
   surfaceTypes: string[];
   shopProductsServices: string;
   shopSearchKeywords: string;
@@ -145,6 +148,7 @@ export const contributeDescriptionPlaceholder = (kind: ContributeVenueKind): str
 export const emptyContributeDraft = (): ContributeDraft => ({
   kind: null,
   title: '',
+  areaLabel: '',
   emirate: 'Dubai',
   latitude: MAP_CONFIG.exploreDefaultCenter.lat,
   longitude: MAP_CONFIG.exploreDefaultCenter.lng,
@@ -162,6 +166,7 @@ export const emptyContributeDraft = (): ContributeDraft => ({
   trailElevationM: null,
   transportSedan: false,
   transport4x4: false,
+  childFriendly: false,
   surfaceTypes: [],
   shopProductsServices: '',
   shopSearchKeywords: '',
@@ -308,6 +313,11 @@ export const publishContributeVenue = async (
     images: draft.images,
   };
 
+  const trimmedArea = draft.areaLabel.trim();
+  if (trimmedArea.length >= 2) {
+    payload.areaLabel = trimmedArea;
+  }
+
   if (draft.kind === 'hiking' && draft.difficulty) {
     payload.difficulty = toApiDifficulty(draft.difficulty);
   }
@@ -316,11 +326,13 @@ export const publishContributeVenue = async (
     if (draft.trailDistanceKm != null) payload.distance = draft.trailDistanceKm;
     if (draft.trailElevationM != null) payload.elevation = Math.round(draft.trailElevationM);
     payload.accessibleBy = buildVenueAccessibleBy(draft);
+    payload.childFriendly = draft.childFriendly;
   }
 
   if (draft.kind === 'camping') {
     payload.surfaceType = draft.surfaceTypes;
     payload.accessibleBy = buildVenueAccessibleBy(draft);
+    payload.childFriendly = draft.childFriendly;
   }
 
   if (draft.kind === 'shop') {

@@ -46,7 +46,6 @@ import {
   type TenantRecord
 } from '../src/lib/tenant-store.js';
 import { DEMO_ACCOUNTS } from '../src/lib/demo-accounts.js';
-import { createUserFavorite } from '../src/lib/favorites-store.js';
 import { logOmarHostQaPlaybook } from './logOmarHostQaPlaybook.js';
 import {
   createGroupWallMessage,
@@ -447,6 +446,7 @@ const upsertTenant = async (input: {
   latitude?: number | null;
   longitude?: number | null;
   region?: string | null;
+  discoverFeatured?: boolean;
 }): Promise<TenantRecord> => {
   const existing = await findTenantBySlug(input.slug);
   if (existing) {
@@ -464,6 +464,7 @@ const upsertTenant = async (input: {
       latitude: input.latitude ?? existing.latitude ?? null,
       longitude: input.longitude ?? existing.longitude ?? null,
       region: input.region ?? existing.region ?? null,
+      discoverFeatured: input.discoverFeatured ?? existing.discoverFeatured ?? false,
       updatedAt: new Date()
     };
     await writeTenantToMongo(updated);
@@ -488,6 +489,7 @@ const upsertTenant = async (input: {
     latitude: input.latitude ?? null,
     longitude: input.longitude ?? null,
     region: input.region ?? null,
+    discoverFeatured: input.discoverFeatured ?? false,
     updatedAt: new Date()
   };
   await writeTenantToMongo(enriched);
@@ -1159,7 +1161,8 @@ async function main() {
     logoUrl: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400',
     latitude: 25.1972,
     longitude: 55.2744,
-    region: 'Dubai'
+    region: 'Dubai',
+    discoverFeatured: true,
   });
 
   await upsertTenantMembership({
@@ -1200,6 +1203,90 @@ async function main() {
     }
   });
 
+  const extraDiscoverShops = [
+    {
+      id: 'tenant-wadi-gear-hub',
+      name: 'Wadi Gear Hub',
+      slug: 'wadi-gear-hub',
+      description: 'Hydration, trekking poles, and desert camp kits for Hatta weekends.',
+      logoUrl: 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=400',
+      latitude: 24.8007,
+      longitude: 56.1153,
+      region: 'Hatta',
+      discoverFeatured: true,
+    },
+    {
+      id: 'tenant-sandpeak-outdoor',
+      name: 'SandPeak Outdoor',
+      slug: 'sandpeak-outdoor',
+      description: 'Trail shoes and day packs for Sharjah and Dubai crews.',
+      logoUrl: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400',
+      latitude: 25.3463,
+      longitude: 55.4209,
+      region: 'Sharjah',
+      discoverFeatured: true,
+    },
+    {
+      id: 'tenant-summit-supply-rak',
+      name: 'Summit Supply RAK',
+      slug: 'summit-supply-rak',
+      description: 'Mountain layers and headlamps for Jebel Jais and RAK hikes.',
+      logoUrl: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400',
+      latitude: 25.9434,
+      longitude: 56.1778,
+      region: 'RAK',
+      discoverFeatured: false,
+    },
+    {
+      id: 'tenant-gulf-trail-outfitters',
+      name: 'Gulf Trail Outfitters',
+      slug: 'gulf-trail-outfitters',
+      description: 'Group camp stoves, tents, and shared gear for bigger outings.',
+      logoUrl: 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=400',
+      latitude: 25.0657,
+      longitude: 55.1713,
+      region: 'Dubai',
+      discoverFeatured: false,
+    },
+  ] as const;
+
+  for (const shopSeed of extraDiscoverShops) {
+    const tenant = await upsertTenant({
+      id: shopSeed.id,
+      name: shopSeed.name,
+      slug: shopSeed.slug,
+      type: TenantType.COMPANY,
+      businessMode: TenantBusinessMode.SHOP,
+      status: TenantStatus.ACTIVE,
+      ownerId: shopOwner._id,
+      description: shopSeed.description,
+      logoUrl: shopSeed.logoUrl,
+      latitude: shopSeed.latitude,
+      longitude: shopSeed.longitude,
+      region: shopSeed.region,
+      discoverFeatured: shopSeed.discoverFeatured,
+    });
+    await upsertTenantMembership({
+      tenantId: tenant.id,
+      userId: shopOwner._id,
+      role: MembershipRole.TENANT_OWNER,
+    });
+    await upsertMerchantProfile(
+      [shopOwner._id],
+      {
+        shopName: shopSeed.name,
+        description: shopSeed.description,
+        logo: shopSeed.logoUrl,
+        contactEmail: 'shop@uaetrails.app',
+        contactPhone: '+971501100221',
+        latitude: shopSeed.latitude,
+        longitude: shopSeed.longitude,
+        region: shopSeed.region,
+      },
+      { tenantId: tenant.id }
+    );
+  }
+
   await upsertHostApplication({
     id: 'seed-app-pending',
     applicantId: pendingParticipant._id,
@@ -1221,14 +1308,17 @@ async function main() {
     }
   });
 
+  /** Catalog rows for list Places poster QA — area tags, parking pins, accessibility, surfaces. */
   const seedLocations: Array<{ id: string; data: LocationCreateInput }> = [
     {
       id: 'jebel-jais-summit-trail',
       data: {
         name: 'Jebel Jais Summit Trail',
         region: 'RAK',
+        areaLabel: 'Jebel Jais Viewing Deck',
         activityType: ActivityType.HIKING,
         difficulty: Difficulty.HARD,
+        accessibility: Accessibility.REMOTE,
         description:
           'A demanding mountain route with panoramic views of the Hajar Mountains. The trail traverses rugged terrain with steep ascents and descents, rewarding hikers with breathtaking vistas from the highest peak in the UAE.',
         season: ['winter', 'year-round'],
@@ -1242,9 +1332,11 @@ async function main() {
         longitude: 56.273,
         highlights: ['Summit views', 'Rock formations', 'Wildlife spotting', 'Via Ferrata option'],
         surfaceType: ['rocky', 'gravel'],
-        tags: ['summit', 'mountain', 'hard'],
+        tags: ['summit', 'mountain', 'hard', 'area:Jebel Jais Viewing Deck'],
         accessibleBy: ['car', '4x4'],
         parkingLink: 'https://www.google.com/maps/search/?api=1&query=Jebel+Jais+Viewing+Deck+Parking',
+        parkingLat: 25.9434,
+        parkingLng: 56.2448,
         gpxKey: 'locations/jebel-jais-summit-trail.gpx',
         unlockPriceAed: 29,
         guidePreview:
@@ -1274,8 +1366,10 @@ Your unlock includes access to our guide support line during your hike window (s
       data: {
         name: 'Wadi Shawka Loop',
         region: 'RAK',
+        areaLabel: 'Wadi Shawka Dam',
         activityType: ActivityType.HIKING,
         difficulty: Difficulty.MODERATE,
+        accessibility: Accessibility.CAR_ACCESSIBLE,
         description:
           'Scenic wadi route suitable for groups with beautiful pools and rock formations. The trail follows the seasonal riverbed through dramatic canyon walls.',
         season: ['winter', 'year-round'],
@@ -1293,11 +1387,14 @@ Your unlock includes access to our guide support line during your hike window (s
           'wadi',
           'family',
           'pools',
+          'area:Wadi Shawka Dam',
           'facility:Toilet at dam car park',
           'nearby:Fuel & shop ~10 km toward Kalba (plan a stop)',
         ],
         accessibleBy: ['car', '4x4'],
         parkingLink: 'https://www.google.com/maps/search/?api=1&query=Wadi+Shawka+Dam',
+        parkingLat: 25.3382,
+        parkingLng: 56.1178,
         gpxKey: 'locations/wadi-shawka-loop.gpx',
         unlockPriceAed: 19,
         guidePreview:
@@ -1321,6 +1418,7 @@ Unlock includes same-day guide support while you're on the trail.`
       data: {
         name: 'Fossil Rock Desert Camp',
         region: 'Sharjah',
+        areaLabel: 'Fossil Rock dunes',
         activityType: ActivityType.CAMPING,
         description:
           'Popular desert camping location for group overnights near the iconic Fossil Rock formation. Perfect for stargazing and exploring the surrounding desert landscape.',
@@ -1335,9 +1433,11 @@ Unlock includes same-day guide support while you're on the trail.`
         longitude: 55.85,
         highlights: ['Stargazing', 'Fossil hunting', 'Desert sunrise', 'BBQ area'],
         surfaceType: ['sand'],
-        tags: ['desert', 'camping', 'stargazing'],
+        tags: ['desert', 'camping', 'stargazing', 'area:Fossil Rock dunes'],
         accessibleBy: ['4x4', 'car'],
         parkingLink: 'https://www.google.com/maps/search/?api=1&query=Fossil+Rock+Sharjah',
+        parkingLat: 25.2185,
+        parkingLng: 55.8482,
         unlockPriceAed: 25,
         guidePreview: 'Desert camp setup guide — access tracks, wind shelter spots, and stargazing orientation.',
         guideMarkdown: `## Access
@@ -1356,6 +1456,7 @@ Overnight checklist, emergency contacts, and best months for clear skies.`
       data: {
         name: 'Dibba Beach Camp',
         region: 'Fujairah',
+        areaLabel: 'Dibba public beach',
         activityType: ActivityType.CAMPING,
         description:
           'Beach camping on the Gulf of Oman with the Hajar Mountains as a backdrop. Popular weekend spot for swimming, snorkelling, and stargazing.',
@@ -1370,9 +1471,11 @@ Overnight checklist, emergency contacts, and best months for clear skies.`
         longitude: 56.2728,
         highlights: ['Mountain views', 'Calm water', 'Beach camping', 'Snorkelling'],
         surfaceType: ['sand', 'rocky'],
-        tags: ['beach', 'dibba', 'camping', 'fujairah'],
+        tags: ['beach', 'dibba', 'camping', 'fujairah', 'area:Dibba public beach'],
         accessibleBy: ['car', '4x4'],
         parkingLink: 'https://www.google.com/maps/search/?api=1&query=Dibba+Beach+Fujairah',
+        parkingLat: 25.6188,
+        parkingLng: 56.2715,
         unlockPriceAed: 19,
         guidePreview: 'Beach camp zones, tide notes, and snorkel spots along the Dibba shoreline.',
         guideMarkdown: `## Getting there
@@ -1391,8 +1494,10 @@ Wind shelter notes, BBQ etiquette, and nearby shop stops.`
       data: {
         name: 'Hatta Dam Loop',
         region: 'Dubai',
+        areaLabel: 'Hatta Dam visitor park',
         activityType: ActivityType.HIKING,
         difficulty: Difficulty.EASY,
+        accessibility: Accessibility.CAR_ACCESSIBLE,
         description:
           'Easy lakeside loop around Hatta Dam with Hajar mountain views. Ideal for families and first-time hikers in the UAE.',
         season: ['winter', 'year-round'],
@@ -1406,9 +1511,11 @@ Wind shelter notes, BBQ etiquette, and nearby shop stops.`
         longitude: 56.1136,
         highlights: ['Dam views', 'Kayak rentals', 'Mountain backdrop', 'Family friendly'],
         surfaceType: ['gravel', 'rocky'],
-        tags: ['hatta', 'dam', 'family', 'easy'],
+        tags: ['hatta', 'dam', 'family', 'easy', 'area:Hatta Dam visitor park'],
         accessibleBy: ['car'],
         parkingLink: 'https://www.google.com/maps/search/?api=1&query=Hatta+Dam',
+        parkingLat: 24.7855,
+        parkingLng: 56.1142,
         unlockPriceAed: 15,
         guidePreview: 'Short dam loop with parking, kayak hire, and shaded picnic stops.',
         guideMarkdown: `## Getting there
@@ -1427,6 +1534,7 @@ Drive via Dubai–Hatta Road (E44). Main car park is signed at the dam visitor a
       data: {
         name: 'Al Ain Desert Camp',
         region: 'Al Ain',
+        areaLabel: 'Remah dune field',
         activityType: ActivityType.CAMPING,
         description:
           'Open desert camping south of Al Ain among rolling dunes. Quiet overnight spot for stargazing away from city lights.',
@@ -1441,9 +1549,11 @@ Drive via Dubai–Hatta Road (E44). Main car park is signed at the dam visitor a
         longitude: 55.55,
         highlights: ['Sand dunes', 'Stargazing', 'Sunrise views', 'Quiet desert'],
         surfaceType: ['sand'],
-        tags: ['desert', 'camping', 'al ain', 'dunes'],
+        tags: ['desert', 'camping', 'al ain', 'dunes', 'area:Remah dune field'],
         accessibleBy: ['4x4', 'car'],
         parkingLink: 'https://www.google.com/maps/search/?api=1&query=Al+Ain+desert+camping',
+        parkingLat: 24.0488,
+        parkingLng: 55.5521,
         unlockPriceAed: 19,
         guidePreview: 'Dune camp access tracks, wind orientation, and leave-no-trace checklist.',
         guideMarkdown: `## Access
@@ -1875,15 +1985,6 @@ Share your live location and carry extra water in summer months.`
   });
 
   await seedParticipant('seed-event-desert-meetup', pendingParticipant._id, individualHost._id);
-
-  await createUserFavorite({
-    userId: participant._id,
-    locationId: 'fossil-rock-desert-camp',
-  });
-  await createUserFavorite({
-    userId: participant._id,
-    activityId: 'seed-event-fossil-camp',
-  });
 
   await seedConnectionsDemo({
     visitorId: participant._id,

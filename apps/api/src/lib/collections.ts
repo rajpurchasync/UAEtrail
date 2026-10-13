@@ -46,9 +46,11 @@ export const COLLECTIONS = {
   BUDDY_REQUESTS: 'buddy_requests',
   BUDDY_PAIRS: 'buddy_pairs',
   USER_FOLLOWS: 'user_follows',
+  ENTITY_FOLLOWS: 'entity_follows',
 
   // User data
-  USER_FAVORITES: 'user_favorites',
+  /** Mongo collection name is legacy `user_favorites`; product term is wishlist. */
+  USER_WISHLIST: 'user_favorites',
   NOTIFICATIONS: 'notifications',
   REWARD_LEDGERS: 'reward_ledgers',
   USER_BADGES: 'user_badges',

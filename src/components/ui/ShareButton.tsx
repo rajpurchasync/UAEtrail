@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Share2, Facebook, Link as LinkIcon, Mail, Check } from 'lucide-react';
+import { Share2, Send, Facebook, Link as LinkIcon, Mail, Check } from 'lucide-react';
 import { buildShareText, buildShareUrl } from '../../utils/share';
 
 interface ShareButtonProps {
@@ -14,6 +14,11 @@ interface ShareButtonProps {
   iconOnly?: boolean;
   /** Icon button on light card backgrounds (default is dark overlay for photos) */
   light?: boolean;
+  /** Icon-only on photos — no circular background (list feed). */
+  bare?: boolean;
+  /** Instagram-style paper plane instead of share nodes. */
+  icon?: 'share' | 'send';
+  iconClassName?: string;
   disabled?: boolean;
   className?: string;
 }
@@ -31,6 +36,9 @@ export const ShareButton = ({
   compact = false,
   iconOnly = false,
   light = false,
+  bare = false,
+  icon = 'share',
+  iconClassName,
   disabled = false,
   className = '',
 }: ShareButtonProps) => {
@@ -93,9 +101,11 @@ export const ShareButton = ({
   };
 
   const buttonClass = iconOnly
-    ? light
-      ? 'inline-flex items-center justify-center w-8 h-8 rounded-full bg-white text-neutral-700 shadow-sm ring-1 ring-neutral-200/90 hover:bg-neutral-50 transition-colors'
-      : 'inline-flex items-center justify-center w-8 h-8 rounded-full bg-black/35 backdrop-blur-sm text-white hover:bg-black/50 transition-colors'
+    ? bare
+      ? 'inline-flex h-9 w-9 items-center justify-center text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.55)] transition-opacity hover:opacity-90'
+      : light
+        ? 'inline-flex items-center justify-center w-8 h-8 rounded-full bg-white text-neutral-700 shadow-sm ring-1 ring-neutral-200/90 hover:bg-neutral-50 transition-colors'
+        : 'inline-flex items-center justify-center w-8 h-8 rounded-full bg-black/35 backdrop-blur-sm text-white hover:bg-black/50 transition-colors'
     : compact
       ? 'inline-flex items-center justify-center min-h-[44px] min-w-[44px] rounded-full bg-black/40 backdrop-blur-sm text-white hover:bg-black/55 transition-colors'
       : 'inline-flex items-center gap-2 px-3.5 py-2 rounded-full glass text-neutral-800 text-sm font-semibold hover:bg-white/90 transition-colors';
@@ -109,7 +119,15 @@ export const ShareButton = ({
         className={`${buttonClass}${disabled ? ' opacity-50 pointer-events-none' : ''}`}
         aria-label="Share"
       >
-        <Share2 className={iconOnly ? 'w-3.5 h-3.5' : 'w-5 h-5'} />
+        {icon === 'send' ? (
+          <Send
+            className={iconClassName ?? (iconOnly ? 'h-[1.35rem] w-[1.35rem]' : 'h-5 w-5')}
+            strokeWidth={2}
+            aria-hidden
+          />
+        ) : (
+          <Share2 className={iconClassName ?? (iconOnly ? 'w-3.5 h-3.5' : 'w-5 h-5')} aria-hidden />
+        )}
         {!compact && !iconOnly && 'Share'}
       </button>
 

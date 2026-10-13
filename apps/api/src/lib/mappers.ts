@@ -11,7 +11,9 @@ import {
   ActivityDTO,
   LocationDTO,
   resolveActivityDisplayCoordinates,
-  resolveHostPersonDisplayName,
+  inferHostStorefrontKindFromTenantWire,
+  resolveActivityPublisherDisplayName,
+  type PublishingProfileKind,
   TenantBusinessMode,
   TenantType,
   UserRole as SharedUserRole
@@ -77,7 +79,15 @@ export const toParticipantPreviews = (participants: ParticipantWithUser[]) =>
 type ActivityWithRelations = Activity & {
   participantSlotsUsed?: number;
   location: Location;
-  tenant: { slug: string; name: string; countryCode?: string; ownerId: string };
+  tenant: {
+    slug: string;
+    name: string;
+    countryCode?: string;
+    ownerId: string;
+    type?: string;
+    businessMode?: string | null;
+    publishingPurpose?: string | null;
+  };
   guide?: { profile?: { displayName?: string | null; avatarUrl?: string | null; bio?: string | null } | null } | null;
   createdBy?: { profile?: { displayName?: string | null } | null } | null;
   tenantOwner?: { profile?: { displayName?: string | null } | null } | null;
@@ -93,13 +103,16 @@ export const buildActivityDto = (event : ActivityWithRelations): ActivityDTO => 
   const guideName = event.guide?.profile?.displayName ?? null;
   const createdByName = event.createdBy?.profile?.displayName ?? null;
   const tenantOwnerName = event.tenantOwner?.profile?.displayName ?? null;
-  const hostName =
-    resolveHostPersonDisplayName({
-      guideName,
-      createdByName,
-      tenantOwnerName,
-      tenantName,
-    }) ?? 'Host';
+  const publishingProfileKind = inferHostStorefrontKindFromTenantWire({
+    type: event.tenant.type,
+    businessMode: event.tenant.businessMode,
+    publishingPurpose: event.tenant.publishingPurpose,
+  });
+  const hostName = resolveActivityPublisherDisplayName({
+    publishingProfileKind,
+    tenantName,
+    person: { guideName, createdByName, tenantOwnerName, tenantName },
+  });
   const hostAvatar = event.guide?.profile?.avatarUrl ?? null;
   return toEventDto({
     event,
@@ -112,6 +125,7 @@ export const buildActivityDto = (event : ActivityWithRelations): ActivityDTO => 
     hostAvatar,
     hostBio: event.guide?.profile?.bio ?? null,
     tenantName,
+    publishingProfileKind,
     hostId: event.hostId ?? undefined,
     createdById: event.createdById,
     createdByName: createdByName ?? undefined,
@@ -127,6 +141,7 @@ export const toLocationDto = (location: Location, opts?: { admin?: boolean }): L
   id: location.id,
   name: location.name,
   region: location.region,
+  areaLabel: location.areaLabel ?? null,
   activityType: mapPlaceActivityType(location.activityType),
   description: location.description,
   difficulty: location.difficulty ? enumMap<'easy' | 'moderate' | 'hard'>(location.difficulty) : undefined,
@@ -181,6 +196,7 @@ const toEventDto = ({
   hostAvatar,
   hostBio,
   tenantName,
+  publishingProfileKind,
   hostId,
   createdById,
   createdByName,
@@ -200,6 +216,7 @@ const toEventDto = ({
   hostAvatar?: string | null;
   hostBio?: string | null;
   tenantName: string;
+  publishingProfileKind: PublishingProfileKind;
   hostId?: string;
   createdById?: string;
   createdByName?: string;
@@ -271,6 +288,7 @@ const toEventDto = ({
   hostAvatar: hostAvatar ?? undefined,
   hostBio: hostBio ?? undefined,
   tenantName,
+  publishingProfileKind,
   hostId: hostId ?? null,
   createdById,
   createdByName,

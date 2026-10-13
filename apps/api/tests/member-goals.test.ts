@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { activityTypeCountsForGoal } from '../src/lib/member-goals-store.js';
+import { activityTypeCountsForGoal } from '../src/lib/goal-activity-alignment.js';
 
 describe('member goal activity filters', () => {
   it('counts only matching outing types', () => {

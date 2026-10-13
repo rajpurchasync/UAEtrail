@@ -20,7 +20,7 @@ There are **five public entity kinds** on the wire (`EntityKind` / `EntityRef`):
 |------|--------------|--------------|-----------|
 | `place` | **Place** | `locations`, `LocationDTO` | Second “Venue” entity |
 | `activity` | **Activity** (outing / plan) | `activities`, `ActivityDTO` | `Trip`, `TripDTO`, `Event` row |
-| `organisation` | **Host storefront** (guide / agency / partner tenant) — wire name `organisation`; see §1.5 | `tenants`, `/operator/:slug` (partner route TBD) | A second “organizer” entity table |
+| `organisation` | **Host storefront** (guide / agency / partner tenant) — wire name `organisation`; see §1.5 | `tenants`, `/guide` · `/agency` · `/partner` | A second “organizer” entity table |
 | `shop` | **Shop** (outdoor retail brand + catalog) | `merchant_profiles` + SHOP `tenants` | “Merchant”, “Partner” for shops |
 | `person` | **Person** / member | `users` (profile fields) | “User” in consumer copy |
 
@@ -59,7 +59,7 @@ Explore and campaigns answer two questions. Do not merge them in copy or DTOs.
 | Lens | Question | Map / feed examples | Entity kinds |
 |------|----------|---------------------|--------------|
 | **Where** | What **place** or **pin** is here? | Trails, camps, venues, **shop pin**, future **partner pin** (hotel) | `place`, shop as **Place** + `shop` storefront |
-| **Who** | Friends, followed people, crew on outings | Activities, demand, Explore **Social** panel (`view=social`), member cards | `activity`, `person`, **buddy**, `/social/people` — not `whosGoing` in API/code |
+| **Who** | Who can I go with — friends, followed, hosts, demand (“looking”) | Activities, demand, explore **people browse panel** (`view=people`, list **Buddies**), member cards | `activity`, `person`, **buddy**, member-discovery roster — not `whosGoing` in API/code. **`/social/people`** is a legacy HTTP mount for browse network reads, not chat. |
 
 An **Activity** is **Who + When** (often anchored to **Where** via `locationId`). A **tour agency** is **Who** (brand + trips) without requiring a visit pin to participate. A **shop** is primarily **Where** (get directions) plus optional e-commerce on `/shop/:id`.
 
@@ -72,12 +72,12 @@ One **person** account; zero or more **storefronts** (tenant-backed public brand
 | Kind | Product | Map pin? | Join / book model | Public URL (today) |
 |------|---------|----------|-------------------|-------------------|
 | `community` | Buddy host (no brand page) | Via activities/demand only | Organize on map | `/member/:userId` only |
-| `pro_guide` | Pro individual guide | Optional | Activity join / request | `/operator/:slug` |
-| `agency` | Tour agency | **No** — not “go to this pin to join” | Activities + paid trips | `/operator/:slug` |
+| `pro_guide` | Pro individual guide | Optional | Activity join / request | `/guide/:slug` |
+| `agency` | Tour agency | **No** — not “go to this pin to join” | Activities + paid trips | `/agency/:slug` |
 | `shop` | Outdoor shop | **Yes** (Place pin) + online catalog | Directions, featured picks; not trip inventory | `/shop/:id` |
 | `ecommerce` | Business Pro — online retail | Optional pin | Catalog / campaigns; not a tour agency | `/shop/:id` or brand URL (TBD) |
 | `hospitality` | Business Pro — hotels, venues | Often **yes** | Stays + linked campaigns (future) | TBD |
-| `partner` | **Partner** Pro path (top-level) | Often **yes** (campaign pin) | Campaigns + linked Activities (future) | `/partner/:slug` (planned); may alias `/operator` interim |
+| `partner` | **Partner** Pro path (top-level) | Often **yes** (campaign pin) | Campaigns + linked Activities (future) | `/partner/:slug` |
 
 **Shops ≠ agencies ≠ partners ≠ e-commerce** — separate Pro applications and map rules. Code today: `hostProfileType` `individual` \| `agency` \| `shop`; extend with business **subtype** on Pro Business path ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md) § Pro membership ladder).
 
@@ -103,9 +103,24 @@ One **person** account; zero or more **storefronts** (tenant-backed public brand
 | `activity` | Scheduled outing | Host tenant + participation |
 | `person` | Member card | `profileVisibility` + profile `viewerAccess` (§15) |
 | `shop` | Shop **storefront** + commerce DTO | `PublishingProfileKind: shop` |
-| `organisation` | Host **storefront** slug (guide/agency/partner on `/operator` today) | `PublishingProfileKind`: `pro_guide` \| `agency` \| `partner` |
+| `organisation` | Host **storefront** slug (`/guide`, `/agency`, `/partner`) | `PublishingProfileKind`: `pro_guide` \| `agency` \| `partner` |
 
 **Do not** rename `EntityKind.organisation` in a drive-by PR. Add `PublishingProfileKind` in `shared-types` and resolve from `tenants` + `host_applications`. Consumer copy: **host profile** / **guide** / **agency** / **shop** / **partner** — not “organisation” or “operator.”
+
+---
+
+### 1.6 Member engagement: Follow · Wishlist · Goal (not “favorites”)
+
+| Product | What | Storage / API | Notes |
+|---------|------|---------------|--------|
+| **Follow** | People you want updates from | `user_follows` · `POST /me/following/:userId` | **Friends** (buddies) auto-follow on accept |
+| **Follow** | Venues and brands you watch | `entity_follows` · `/me/entity-follows` | Map/list **Follow** control — not the wishlist star |
+| **Wishlist** | Private “save for later” | `user_favorites` · `/me/wishlist` | **Venues** (`locationId`) and **activities** (`activityId`) only — not demand, not people |
+| **Goal** | Time-bounded target count | `user_goals` · `/me/goals` | Progress from joined/hosted outings + visited map pins — not wishlist saves |
+
+**Journey map** (`/trips/map`, `POST /me/map-pins`): personal **visited** vs **want to go** pins — complements wishlist; goal progress uses **visited** + attendance, not wishlist rows.
+
+**Retired product term:** “Favorites” — do not use in UI or new API paths.
 
 ---
 
@@ -129,10 +144,14 @@ Built only via **`routingCatalog`** or `@uaetrail/shared-types` `entity-path` he
 |--------|---------|---------|
 | Place (hike) | `/trail/:id` | `placeDetailPath('hiking', id)` |
 | Place (camp) | `/camp/:id` | `placeDetailPath('camping', id)` |
-| Place (event venue) | `/event/:id` | `placeDetailPath('event', id)` |
-| Activity | `/activity/:id` | `activityDetailPath(id)` |
-| Organisation | `/operator/:slug` | `organisationProfilePath(slug)` |
-| Person | `/member/:userId` | `memberProfilePath(userId)` |
+| Place (event venue) | `/venue/:id` | `placeDetailPath('event', id)` |
+| Activity (all outing types, incl. `activityType: event`) | `/activity/:id` | `activityDetailPath(id)` |
+| Legacy place URL | `/event/:id` → `/venue/:id` | redirect only |
+| Guide brand | `/guide/:slug` | `guideProfilePath(slug)` · `hostBrandProfilePath(slug, 'pro_guide')` |
+| Agency brand | `/agency/:slug` | `agencyProfilePath(slug)` |
+| Partner brand | `/partner/:slug` | `partnerProfilePath(slug)` |
+| Legacy operator URL | `/operator/:slug` → guide/agency/partner/shop | redirect only |
+| Person (community host) | `/member/:userId` | `memberProfilePath(userId)` |
 | Shop | `/shop/:id` | `shopPublicPath({ id })` |
 | Browse | `/explore` (+ query) | `explorePath()` in `src/explore/routing.ts` |
 | Personal hub | `/trips`, `/profile` | `TRIPS_PATH`, `PROFILE_PATH` |
@@ -157,8 +176,28 @@ Built only via **`routingCatalog`** or `@uaetrail/shared-types` `entity-path` he
 | FAB deep link (wire) | `compose=organize:*` \| `find:*` \| `add:*` — param name **legacy**; product = **Organize · Find · Add** | User-facing “Compose”; `/host/activities/new` for consumers |
 | Panel/filter query | `explorePath({ panel, filter, … })` | Raw `` `/explore?${...}` `` outside `explore/routing.ts` |
 | Demand pin | `exploreDemandMapItemPath` (shared-types) | `/demand/:id` |
+| Full-screen list browse | `LIST_DISCOVERY_PATH` (`/list`) + `listDiscoveryPath()` | `/list/hiking`, `/shops` as category site roots |
+| List ↔ map handoff | `exploreMapPathFromListSearch()`, `listDiscoveryPathFromExploreSearch()` | Second filter vocabulary on `/list` |
 
-Explore URL builders live in `src/explore/routing.ts` (re-exported from `config/routingCatalog`); the old `utils/exploreRouting` shim is **removed** (`exploreModuleBoundary.test.ts`).
+Explore URL builders live in `src/explore/routing.ts` (re-exported from `config/routingCatalog`); list helpers in `src/list/routing.ts`. The old `utils/exploreRouting` shim is **removed** (`exploreModuleBoundary.test.ts`).
+
+### 4.1 Browse vs entity paths (mental model)
+
+**North star:** members **discover people and plans** on one browse surface; they **open one record** when they care about join, follow, or share.
+
+| Layer | URL pattern | Job | Cache / load |
+|-------|-------------|-----|----------------|
+| **Browse (feed)** | `/explore?…` and optionally `/list?…` | Map-first discovery; topic + pin-kind filters (Trips, Looking for, Spots, Shops) live in **query**, not path segments | One read model: `GET /explore/map` (filters on query). Client cache keys = **canonical serialized browse state** (`explorePath`, list URL state). Embedded list on explore uses `list=1` — same state, different chrome. **Explore map list** = `ListDiscoveryExperience` only; **People** side panel = `ExplorePeopleBrowsePanel` (legacy `ExploreBrowsePanel` map-row list removed). **List posters (Activities):** `buildListFeedCards` → `listFeedPosterStandard.ts` + `listPosterPresentation.ts` (title/place/schedule from `ActivityDTO`; requirement pills from stored `requirements[]`). **List posters (Places category, `listCat=venues`):** location-bounded **venues + gear shops** (no separate list category for shops; legacy `listCat=shops` → Places + `filter=shop`). Same 4:5 feed chrome as activities; **catalog header above image** (place name + area/location left, star rating right — mirrors activity host row); **on-image** region eyebrow + large place name + fact pills (unchanged from earlier Places posters); primary CTA **Get directions**. Engagement: **Like** (wishlist) + **Share** + **Follow** for trails/camps; **shops** omit Like (Follow + Share per § Wishlist). Topic pills: **Trails · Spots · Shops** only (no more-filters icon on Places category; `listVenuePlaceTopics.ts`). **Agencies** stay a separate list category (brand/operators, not map pins). **Places poster data** persists on `locations`: `areaLabel` (+ synced `area:` tag), `childFriendly`, `accessibility`, `parkingLat`/`parkingLng` — set via member/host `POST …/locations` (`locationSubmitBodySchema`), admin place CRUD, and explore contribute publish. **Buddies** list/search bucket (`listCat=people`, `searchScope=people`, UI label Buddies) uses **member_discovery** roster (`ExploreMemberDiscoveryList`) — not demand/`GET /explore/map`; **Looking for** stays Trips sub-filter + map pill only. List home chrome stays “discover” / “What are you looking for?” — Buddies is one category circle, not a second discover surface. |
+| **Entity (document)** | `/activity/:id`, `/trail/:id`, `/venue/:id`, `/shop/:id`, `/guide/:slug`, … | Share link, notification target, SEO snippet, per-record auth (`viewerAccess`) | Per-entity fetch + cache (`activity`, place, shop, tenant). **Not** used as “browse all hikes” hubs. |
+| **Personal (not public browse)** | `/trips`, `/trips/map`, `/profile` | Your upcoming outings, journey map, settings | `/me/*` APIs; separate from explore map payload. |
+
+**Do not add** parallel browse roots such as `/map`, `/activities` (catalog), `/places`, `/shops` as top-level **category pages** — that duplicates filters already expressed on `/explore` and `/list`, splits analytics, and invites divergent APIs. Legacy `/map` and `/activities` → redirect only ([`NAVIGATION.md`](./NAVIGATION.md)). **Do not add a List item to mobile bottom nav** — mobile browse list opens from the **List** pill on the explore map (`list=1`); `/list` is optional full-screen handoff only.
+
+**When a new path is justified:** marketing/SEO landings that **deep-link into** `explorePath({ … })` with the same filter params; partner embeds; or a **new bounded context** with its own read API (document in Tier-1 before shipping).
+
+**Three maps (do not conflate):** (1) **Explore** — public discovery; (2) **Journey map** — `/trips/map`, personal pins; (3) **Host console** — tenant tools under `/host/*`. See [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §3.1 and §4.1.
+
+IA detail (pills, topics): [`experiment/explore-browse-ia.md`](./experiment/explore-browse-ia.md).
 
 ---
 
@@ -278,10 +317,12 @@ Use this when naming files, hooks, and utils — **one product word per concept*
 |-------------------|------------|------------------------------|-------------------------|
 | **Find** (FAB) | `participant_intents` | `participantIntent*`, `demandFlow.ts`, explore `source: 'demand'` | “wishlist”, “lookingFor” in filenames |
 | **Demand pin** (public map) | same | `ExploreCardSource` `'demand'`, `participantIntentId` on DTOs | Mixing with personal save |
-| **Saved map & alerts** (profile/trips) | `user_favorites` (+ watch fields) | `favoriteIsPersonalWishlist`, trips `wishlist` segment | “demand” in wishlist UI |
-| **Demand bookmark** (legacy favorite row) | `favorite.participantIntentId` | `favoriteIsDemandBookmark` (`favoriteDemandBookmark.ts`) | Treating as wishlist |
+| **Follow** (venue / host brand / shop alerts) | `entity_follows` | `EntityFollowDTO`, `GET/POST /me/entity-follows` | Wishlist UI, “favorites”, `user_favorites` |
+| **Follow** (people) | `user_follows` | `MemberFollowControls`, `/me/following/:userId` | Buddies are **friends**; accepting a buddy **auto-follows** both ways |
+| **Wishlist** (private saves) | `user_favorites` (wire) | `WishlistItemDTO`, `GET/POST /me/wishlist` | “Favorite”, demand bookmarks, saving people/shops to wishlist |
+| **Goal** (time + count) | `user_goals` | `MemberGoalDTO`, `GET/POST /me/goals` | Wishlist rows, visited map pins as goal progress |
 | **Organize** (FAB) | `activities` publish | `organizeFlow*`, `organizeActivityPublish` | `hostActivity` in consumer explore |
-| **Trips** (tab) | joined/hosted/self + favorites | `src/trips/tripsRouting.ts`, `components/trips/*` | `/activities` hub naming |
+| **Trips** (tab) | joined/hosted/self plans | `src/trips/tripsRouting.ts`, `components/trips/*` | `/activities` hub naming, wishlist segment |
 | **My trips map** (`/trips/map`) | `GET /me/trips/map`, `JourneyMapEntryDTO` (`OutdoorMapEntryDTO` deprecated alias) | `journeyMap*` (`src/trips/journeyMap*`, `JourneyMap*` components) | `outdoorMap*` (removed from FE) |
 | **Explore map** | `GET /explore/map` | `src/explore/*`, `exploreMapPinModel` | `journeyMap*` (wrong surface) |
 | **Place / venue** | `locations` | `place*`, `venue` panel, `Place` in UI | `location` in new routes/components |
@@ -305,7 +346,7 @@ Track progress here and in [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §7 (`
 | NC-D | Remove `legacyApi` spread — **done** |
 | NC-E | Optional dot-style notification `kind` migration |
 | NC-F | **Frontend naming** — `outdoorMap*` → `journeyMap*` **done** (FE); explore pin types unified via shared-types **done**; explore helpers moved to `src/explore/` **done**; remaining `src/utils/` domain files (§12) |
-| NC-G | **Demand vs wishlist** — `favoriteDemandBookmark.ts` **done**; removed `favoriteIsLookingForWatch` |
+| NC-G | **Demand vs wishlist** — demand not saved to wishlist; API `/me/wishlist` (venues + activities only); no “favorites” in UI |
 
 **Verify:** `npm run verify:system` · `apps/api/tests/naming-coherence.test.ts`
 
@@ -462,7 +503,7 @@ Computed server-side with `surface: 'explore_map'` (`computeActivityMapPeekActio
 |--------|------|
 | `peek-details` | Guest tapped detail-adjacent surface on explore |
 | `join-activity` | Guest tapped join / gated plan trip |
-| `explore-browse` / `explore-social` | Browse list / Explore Social panel (`view=social`; legacy `view=going`) |
+| `explore-browse` / `explore-people-browse` / `explore-social` | Activities/places list / **browse people panel** on map (`view=people`; legacy `view=social`, `view=going`) — **not** Messages or group chat |
 
 **Rule:** Authorization outcome comes from **§15.2**; guest copy only explains **why to sign in**.
 

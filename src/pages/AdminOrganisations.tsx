@@ -6,6 +6,7 @@ import { DashboardLayout } from '../components/layout';
 import { ADMIN_LINKS } from '../constants';
 import { SecureAvatar } from '../components/ui/SecureAvatar';
 import { formatPhoneDisplay } from '../utils/phone';
+import { guideProfilePath, tenantBrandPublicPath } from '../utils/organisationLinks';
 
 type Tab = 'applications' | 'tenants';
 type TenantFilter = 'all' | 'active' | 'suspended';
@@ -23,6 +24,7 @@ export const AdminOrganisations = () => {
   const [tenantDetail, setTenantDetail] = useState<TenantDetail | null>(null);
   const [confirmTarget, setConfirmTarget] = useState<TenantListDTO | null>(null);
   const [suspendComment, setSuspendComment] = useState('');
+  const [discoverFeaturedSaving, setDiscoverFeaturedSaving] = useState(false);
 
   const loadData = async () => {
     setLoading(true);
@@ -87,6 +89,20 @@ export const AdminOrganisations = () => {
       setTenantDetail(res.data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load tenant details');
+    }
+  };
+
+  const toggleShopDiscoverFeatured = async () => {
+    if (!tenantDetail || tenantDetail.businessMode !== 'shop') return;
+    setDiscoverFeaturedSaving(true);
+    try {
+      const next = !tenantDetail.discoverFeatured;
+      await api.setAdminTenantDiscoverFeatured(tenantDetail.id, next);
+      setTenantDetail({ ...tenantDetail, discoverFeatured: next });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update discover featuring');
+    } finally {
+      setDiscoverFeaturedSaving(false);
     }
   };
 
@@ -427,7 +443,9 @@ export const AdminOrganisations = () => {
                   </button>
                 )}
                 {applicationDetail.requestedSlug && applicationDetail.status === 'approved' && (
-                  <Link to={`/operator/${applicationDetail.requestedSlug}`} target="_blank"
+                  <Link
+                    to={guideProfilePath(applicationDetail.requestedSlug) ?? '/explore'}
+                    target="_blank"
                     className="px-3 py-2 rounded-lg bg-gray-100 text-gray-800 text-sm font-medium hover:bg-gray-200">
                     Public profile ↗
                   </Link>
@@ -464,7 +482,9 @@ export const AdminOrganisations = () => {
                   <span className="text-xs text-gray-500">Created {new Date(tenantDetail.createdAt).toLocaleDateString()}</span>
                 </div>
                 <div className="flex gap-2">
-                  <Link to={`/operator/${tenantDetail.slug}`} target="_blank"
+                  <Link
+                    to={tenantBrandPublicPath(tenantDetail, tenantDetail.slug) ?? '/explore'}
+                    target="_blank"
                     className="px-3 py-1.5 rounded-lg bg-gray-100 text-gray-800 text-xs font-medium hover:bg-gray-200">
                     Public profile ↗
                   </Link>
@@ -492,6 +512,23 @@ export const AdminOrganisations = () => {
                   )}
                 </div>
               </div>
+
+              {tenantDetail.businessMode === 'shop' ? (
+                <div className="rounded-lg border border-amber-100 bg-amber-50/80 p-4">
+                  <p className="text-xs font-medium uppercase tracking-wide text-amber-900">Discover home</p>
+                  <p className="mt-1 text-sm text-amber-950/80">
+                    Gear Shops carousel on list / explore discover (max 5 featured shops).
+                  </p>
+                  <button
+                    type="button"
+                    disabled={discoverFeaturedSaving}
+                    onClick={() => void toggleShopDiscoverFeatured()}
+                    className="mt-3 rounded-lg bg-white px-3 py-2 text-sm font-semibold text-amber-900 ring-1 ring-amber-200 hover:bg-amber-50 disabled:opacity-60"
+                  >
+                    {tenantDetail.discoverFeatured ? 'Remove from Gear Shops rail' : 'Feature on Gear Shops rail'}
+                  </button>
+                </div>
+              ) : null}
 
               <div className="bg-gray-50 rounded-lg p-4">
                 <p className="text-xs text-gray-500 uppercase font-medium mb-2">Owner</p>

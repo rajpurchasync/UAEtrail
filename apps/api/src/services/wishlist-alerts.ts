@@ -6,7 +6,7 @@ import {
 import { NotificationType } from '../domain/enums.js';
 import { findActivityDocInMongo } from '../lib/entity-sync.js';
 import { createNotificationsMany } from '../lib/notifications-store.js';
-import { listWishlistWatchCandidates } from '../lib/favorites-store.js';
+import { listWishlistWatchCandidates } from '../lib/wishlist-store.js';
 import { getMongoClient } from '../lib/mongo.js';
 import { COLLECTIONS } from '../lib/collections.js';
 import { wishlistWatchMatchesPin, type WishlistPinEvent } from '../lib/wishlist-match.js';
@@ -69,7 +69,7 @@ const fanOutWishlistNotifications = async (
       meta: {
         kind: 'wishlist_match',
         path,
-        favoriteId: watch.favoriteId,
+        wishlistItemId: watch.wishlistItemId,
         ...(entityMeta.activityId ? { activityId: entityMeta.activityId } : {}),
         ...(entityMeta.intentId ? { intentId: entityMeta.intentId } : {}),
         ...(event.actorUserId ? { actorUserId: event.actorUserId } : {}),

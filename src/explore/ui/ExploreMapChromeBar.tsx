@@ -1,6 +1,6 @@
 import type { ExploreSearchScopeCounts, ExploreSearchScopeKey } from '../exploreBrowseTaxonomy';
 import { EXPLORE_MOBILE_MAP_CHROME, EXPLORE_Z } from '../../config/exploreTheme';
-import { ExploreMapSocialPanelButton } from './ExploreMapSocialPanelButton';
+import { ExploreMapPeopleBrowseButton } from './ExploreMapPeopleBrowseButton';
 import { ExploreMapMobileLayerChrome } from './ExploreMapMobileLayerChrome';
 import type { ExplorePanel, MapFilterKey } from '../routing';
 import type { ExploreActivityDatePreset } from '../exploreActivityDateFilter';
@@ -18,10 +18,11 @@ type ExploreMapChromeBarProps = {
   onMapFilterChange: (filter: MapFilterKey) => void;
   onActivityDatePresetChange: (preset: ExploreActivityDatePreset) => void;
   onVenueRegionsChange: (regions: string[]) => void;
-  onOpenSocialPanel?: () => void;
-  socialPanelAvatars?: Array<{ id: string; name: string; avatar?: string | null }>;
-  socialPanelExtraCount?: number;
-  socialPanelFriendCount?: number;
+  onOpenPeopleBrowsePanel?: () => void;
+  peopleBrowsePanelAvatars?: Array<{ id: string; name: string; avatar?: string | null }>;
+  peopleBrowsePanelExtraCount?: number;
+  peopleBrowsePanelFriendCount?: number;
+  onOpenExploreSearch?: () => void;
 };
 
 /** Map toolbar — same Activities / Places browse context as the list panel. */
@@ -38,10 +39,11 @@ export const ExploreMapChromeBar = ({
   onMapFilterChange,
   onActivityDatePresetChange,
   onVenueRegionsChange,
-  onOpenSocialPanel,
-  socialPanelAvatars = [],
-  socialPanelExtraCount = 0,
-  socialPanelFriendCount = 0,
+  onOpenPeopleBrowsePanel,
+  peopleBrowsePanelAvatars = [],
+  peopleBrowsePanelExtraCount = 0,
+  peopleBrowsePanelFriendCount = 0,
+  onOpenExploreSearch,
 }: ExploreMapChromeBarProps) => (
   <div
     className={`pointer-events-none absolute inset-x-0 top-0 px-3 pt-2 lg:px-4 lg:pt-3 ${EXPLORE_MOBILE_MAP_CHROME.filterTop} ${EXPLORE_Z.mapFilters}`}
@@ -62,22 +64,23 @@ export const ExploreMapChromeBar = ({
         onSearchQueryChange={onSearchQueryChange}
         onSearchCommit={onSearchCommit}
         searchScopeCounts={searchScopeCounts}
+        onOpenExploreSearch={onOpenExploreSearch}
       />
-      {onOpenSocialPanel ? (
-        <ExploreMapSocialPanelButton
-          avatars={socialPanelAvatars}
-          extraCount={socialPanelExtraCount}
-          friendCount={socialPanelFriendCount}
-          onClick={onOpenSocialPanel}
+      {onOpenPeopleBrowsePanel ? (
+        <ExploreMapPeopleBrowseButton
+          avatars={peopleBrowsePanelAvatars}
+          extraCount={peopleBrowsePanelExtraCount}
+          friendCount={peopleBrowsePanelFriendCount}
+          onClick={onOpenPeopleBrowsePanel}
           className="col-start-2 row-start-1 shrink-0 justify-self-end lg:hidden"
         />
       ) : null}
-      {onOpenSocialPanel ? (
-        <ExploreMapSocialPanelButton
-          avatars={socialPanelAvatars}
-          extraCount={socialPanelExtraCount}
-          friendCount={socialPanelFriendCount}
-          onClick={onOpenSocialPanel}
+      {onOpenPeopleBrowsePanel ? (
+        <ExploreMapPeopleBrowseButton
+          avatars={peopleBrowsePanelAvatars}
+          extraCount={peopleBrowsePanelExtraCount}
+          friendCount={peopleBrowsePanelFriendCount}
+          onClick={onOpenPeopleBrowsePanel}
           className="hidden shrink-0 lg:inline-flex"
         />
       ) : null}

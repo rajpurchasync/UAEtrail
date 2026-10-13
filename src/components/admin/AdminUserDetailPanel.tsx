@@ -9,6 +9,7 @@ import {
 import { USER_TYPE_BADGE, USER_TYPE_LABELS } from '../../constants/userTypes';
 import { formatActivityType } from '../../utils/activityIdentity';
 import { activityHostName } from '../../utils/hostLabels';
+import { guideProfilePath, tenantBrandPublicPath } from '../../utils/organisationLinks';
 
 export interface AdminUserDetail {
   id: string;
@@ -231,7 +232,7 @@ const TenantDrillDown = ({
       </Section>
 
       <Link
-        to={`/operator/${tenant.slug}`}
+        to={tenantBrandPublicPath(tenant, tenant.slug) ?? guideProfilePath(tenant.slug) ?? '/explore'}
         target="_blank"
         className="inline-flex text-sm font-medium text-emerald-700 hover:text-emerald-800"
       >
@@ -540,7 +541,7 @@ export const AdminUserDetailPanel = ({
                           meta={<span className="text-xs text-gray-500">/{tenant.slug}</span>}
                           status={statusBadge(tenant.status)}
                           onView={() => setDrillDown({ type: 'tenant', id: tenant.id })}
-                          href={tenant.slug ? `/operator/${tenant.slug}` : undefined}
+                          href={tenant.slug ? guideProfilePath(tenant.slug) ?? undefined : undefined}
                         />
                       ))}
                     </div>
@@ -559,7 +560,7 @@ export const AdminUserDetailPanel = ({
                           subtitle={`${m.role.replace(/_/g, ' ')} · Joined ${new Date(m.joinedAt).toLocaleDateString()}`}
                           meta={m.tenantSlug ? <span className="text-xs text-gray-500">/{m.tenantSlug}</span> : undefined}
                           onView={() => setDrillDown({ type: 'tenant', id: m.tenantId })}
-                          href={m.tenantSlug ? `/operator/${m.tenantSlug}` : undefined}
+                          href={m.tenantSlug ? guideProfilePath(m.tenantSlug) ?? undefined : undefined}
                         />
                       ))}
                     </div>

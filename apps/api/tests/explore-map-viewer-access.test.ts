@@ -96,7 +96,7 @@ describe('attachExploreMapViewerAccess', () => {
     expect(enriched[0].viewerAccess?.canOpenDetailPage).toBe(true);
     expect(enriched[0].viewerAccess?.mapPeekActions?.map((a) => a.id)).toEqual([
       'request_join',
-      'view_detail',
+      'message_host',
     ]);
   });
 
@@ -192,7 +192,7 @@ describe('attachExploreMapViewerAccess', () => {
     expect(enriched[0].viewerAccess?.level).toBe('link_holder');
     expect(enriched[0].viewerAccess?.mapPeekActions?.map((a) => a.id)).toEqual([
       'request_join',
-      'view_detail',
+      'message_host',
     ]);
   });
 
@@ -209,7 +209,7 @@ describe('attachExploreMapViewerAccess', () => {
     expect(enriched[0].viewerAccess?.level).toBe('join_request');
     expect(enriched[0].viewerAccess?.mapPeekActions).toEqual([
       { id: 'pending_join', prominence: 'primary', joinRequestStatus: 'pending' },
-      { id: 'view_detail', prominence: 'text' },
+      { id: 'message_host', prominence: 'secondary' },
     ]);
   });
 

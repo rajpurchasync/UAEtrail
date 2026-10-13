@@ -44,10 +44,12 @@ When the member types, show **indicative match counts** per scope (not pre-selec
 |------------|------------------|--------|
 | **Trips** | Hosted activities only (same as **Trips** pill) | Ship now |
 | **Spots** | Venues / catalog places (same as **Spots** pill) | Ship now |
+| **Buddies** (`searchScope=people`) | **Member discovery** — same roster as Explore Social → Discover tab (`GET /me/member-discovery/roster`); not map pins | Ship now — opens `/list?listCat=people` (or explore list overlay); profile opens use discover quota. List/Social Discover segment pills: **Who's going** (on outings) · **Looking for** (demand posters) · **Followed** (`?buddies=looking\|followed`). |
 | **Shops** | Shop pins | Ship now |
+| **Agencies** | Operator / guide tenant brands on map | Ship now |
 | **Facilities** | Toilets, water, fuel-at-trailhead, etc. | **Later** — venue tags (`facility:*`), place registry, or dedicated facility layer |
 
-**Not a search scope row:** **Looking for** — discover via map pill or free-text that may still match demand copy; no separate “Looking for” search bucket in v1 unless product adds it.
+**Not a search scope row:** **Looking for** (demand posts) — map pill **Looking for** and Trips type filter only; do not conflate with **Buddies** / `people` scope.
 
 **Open search (Enter, no scope row):** combined results across scopes that are shipped (Trips + Spots + Shops; + Facilities when live).
 

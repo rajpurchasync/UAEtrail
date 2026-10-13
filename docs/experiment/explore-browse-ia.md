@@ -28,7 +28,7 @@ Everything on explore can have a **location pin**. Two **kinds** of thing differ
 | **Places** | **Fixed** catalog — visit anytime | Yes (approved catalog) | Trail, camp spot, outdoor venue, shop |
 
 **Plans** = consumer word for the whole time-bound layer (**Organize + Demand** in architecture).  
-Do **not** confuse with backend **`outingCategory: events`** (marathon / group run category) or URL `/event/` venue pages.
+Do **not** confuse with backend **`outingCategory: events`** (marathon / group run category) or URL `/venue/` place pages.
 
 **Places** = trails, camps, shops, and other catalog pins (**venue** + **shop** `source`).
 
@@ -159,7 +159,7 @@ This page is the **source of truth** for “can I do this comfortably?” — no
 | | **Venue** | **Activity** (hosted trip) |
 |---|-----------|----------------------------|
 | **What** | Fixed place on the catalog | Scheduled outing (host, date, join rules) |
-| **URL** | `/trail/…`, `/camp/…`, `/event/…` (place) | `/activity/…` |
+| **URL** | `/trail/…`, `/camp/…`, `/venue/…` (place) | `/activity/…` |
 | **Toilet / fuel / shop** | Shown on **venue detail** | Shown by **linking to the same venue** when the host picked a registry place |
 
 **Hiking and camping trips** often **select a location** at publish (registry place or anchor). In UX:

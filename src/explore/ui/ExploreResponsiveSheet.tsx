@@ -14,7 +14,7 @@ interface ExploreResponsiveSheetProps {
   overlayFixed?: boolean;
   showHandle?: boolean;
   /** Bottom sheet on small screens; centered dialog on lg+. */
-  layout?: 'responsive' | 'centered';
+  layout?: 'responsive' | 'centered' | 'fullscreen';
   /** Top-right dismiss control (recommended with `layout="centered"`). */
   showCloseButton?: boolean;
   /** Visible title wired to `aria-labelledby`. */
@@ -46,26 +46,37 @@ export const ExploreResponsiveSheet = ({
 
   const overlayPosition = overlayFixed ? 'fixed' : 'absolute';
   const centered = layout === 'centered';
-  const shellClass = centered
-    ? `items-center justify-center p-4 sm:p-6`
-    : `flex-col justify-end lg:items-center lg:justify-center lg:p-6`;
+  const fullscreen = layout === 'fullscreen';
+  const shellClass = fullscreen
+    ? 'items-stretch justify-stretch p-0'
+    : centered
+      ? `items-center justify-center p-4 sm:p-6`
+      : `flex-col justify-end lg:items-center lg:justify-center lg:p-6`;
+
+  const panelSurfaceClass = fullscreen
+    ? `relative flex h-[100dvh] max-h-[100dvh] w-full max-w-none flex-col overflow-hidden rounded-none bg-neutral-50 shadow-none ${panelClassName}`
+    : `relative w-full max-h-[min(90dvh,640px)] overflow-y-auto explore-sheet-panel ${exploreSheetPanelClass} ${maxWidthClass} ${panelClassName} ${
+        centered
+          ? 'rounded-2xl shadow-2xl'
+          : 'shadow-[0_-8px_40px_rgba(15,23,42,.12)] lg:shadow-2xl'
+      }`;
 
   return (
     <div
-      className={`${overlayPosition} inset-0 ${zClass} flex ${shellClass} ${EXPLORE_SHEET.scrim} ${overlayFixed ? '' : 'lg:fixed'}`}
+      className={`${overlayPosition} inset-0 ${zClass} flex ${shellClass} ${EXPLORE_SHEET.scrim} ${overlayFixed || fullscreen ? '' : 'lg:fixed'}`}
     >
-      <button type="button" className="absolute inset-0" aria-label="Close" onClick={onClose} />
+      {!fullscreen ? (
+        <button type="button" className="absolute inset-0" aria-label="Close" onClick={onClose} />
+      ) : (
+        <button type="button" className="absolute inset-0" aria-label="Close browse" onClick={onClose} />
+      )}
       <div
         ref={panelRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby={title ? titleId : undefined}
         aria-label={title ? undefined : ariaLabel}
-        className={`relative w-full max-h-[min(90dvh,640px)] overflow-y-auto explore-sheet-panel ${exploreSheetPanelClass} ${maxWidthClass} ${panelClassName} ${
-          centered
-            ? 'rounded-2xl shadow-2xl'
-            : 'shadow-[0_-8px_40px_rgba(15,23,42,.12)] lg:shadow-2xl'
-        }`}
+        className={panelSurfaceClass}
         onClick={(event) => event.stopPropagation()}
       >
         {title ? (

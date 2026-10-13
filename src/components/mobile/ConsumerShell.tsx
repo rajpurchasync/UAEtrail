@@ -77,7 +77,7 @@ export const ConsumerShell = ({
   const journeyLabel = journey?.label ?? back?.label ?? 'Back';
 
   return (
-    <div className="min-h-screen consumer-bg md:bg-gray-50 overflow-x-clip max-w-full">
+    <div className="min-h-full consumer-bg md:bg-gray-50 overflow-x-clip max-w-full">
       {(layout === 'tab' || layout === 'editorial') && banner && (
         <div className={`hidden md:block ${maxWidthClass[maxWidth]} mx-auto min-w-0 max-w-full ${bannerPad} md:pt-safe-plus-2`}>
           <ConsumerHeroBanner

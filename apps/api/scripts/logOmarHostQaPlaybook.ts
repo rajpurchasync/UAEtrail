@@ -10,7 +10,7 @@ export const logOmarHostQaPlaybook = (): void => {
       '  • Hosted + roster — Desert Sunset Meetup with participant — Trips manage → Message crew, check-in on detail/manage',
       '  • Published “looking for” — demand pins on map (not host-owned); Omar hosts supply pins separately',
       '  • Notifications — visitor@: join approved + follow alerts; invite crew after you are approved (activity detail / peek)',
-      '  • Friends — visitor@ Social → Friends; Followed → People (Omar, Khalid) | Places | Outings (saved favorites)',
+      '  • Friends — visitor@ Social → Friends; Followed → People (Omar, Khalid) | Places | Outings (wishlist saves)',
       '  • Withdraw — approved participants: “Withdraw request” + comment on activity detail; pending: “Cancel request”',
       '  • Join invite notification → /activity/:id?invite=1 (join modal + banner)',
       '  • Back — mobile header uses browser history (previous screen), not a hard-coded hub',

@@ -10,8 +10,7 @@
     --safe-bottom: env(safe-area-inset-bottom, 0px);
     --cta-height: 56px;
     --bottom-nav-height: 3.75rem;
-    --bottom-nav-social-row: 2.75rem;
-    --bottom-nav-chrome-height: calc(var(--bottom-nav-height) + var(--bottom-nav-social-row));
+    --bottom-nav-chrome-height: var(--bottom-nav-height);
     --explore-float-base: var(--safe-bottom);
     /** Extra lift for map “+” FAB above bottom nav / safe area */
     --explore-map-fab-inset: 2.75rem;

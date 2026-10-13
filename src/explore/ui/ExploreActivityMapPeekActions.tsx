@@ -1,5 +1,6 @@
 import type { ActivityMapPeekAction, ActivityMapPeekActionId } from '@uaetrail/shared-types';
 import { EXPLORE_PEEK_CTA } from '../../config/exploreTheme';
+import { LIST_FEED_CTA_MESSAGE_HOST } from '../../list/listFeedCtaCopy';
 import { activityMapPeekActionLabel } from '../exploreMapPeekActionCopy';
 import { canLinkRideshareToActivity } from '../linkActivityRideshareOffer';
 import type { ExploreCardModel } from '../exploreCardModel';
@@ -30,6 +31,28 @@ const prominenceClass = (prominence: ActivityMapPeekAction['prominence']): strin
   }
 };
 
+const dualPrimaryClass =
+  'flex min-h-[3.25rem] flex-1 items-center justify-center rounded-xl bg-emerald-600 px-3 text-center text-sm font-bold text-white shadow-sm hover:bg-emerald-700';
+
+const dualSecondaryClass =
+  'flex min-h-[3.25rem] flex-1 items-center justify-center rounded-xl border border-neutral-200 bg-white px-3 text-center text-sm font-bold text-neutral-800';
+
+const actionLabel = (action: ActivityMapPeekAction, card: ExploreCardModel): string => {
+  if (action.id === 'request_join') return card.primaryCta;
+  if (action.id === 'message_host') return LIST_FEED_CTA_MESSAGE_HOST;
+  return activityMapPeekActionLabel(action.id, action);
+};
+
+const isConsumerDualRow = (
+  primary: ActivityMapPeekAction | undefined,
+  secondary: ActivityMapPeekAction | undefined
+): boolean =>
+  Boolean(
+    primary &&
+      secondary?.id === 'message_host' &&
+      (primary.id === 'request_join' || primary.id === 'pending_join')
+  );
+
 /** Activity map peek — render `viewerAccess.mapPeekActions` (wire ids, not roles). */
 export const ExploreActivityMapPeekActions = ({
   card,
@@ -58,9 +81,50 @@ export const ExploreActivityMapPeekActions = ({
 
   if (visible.length === 0) return null;
 
+  const primaryAction = visible.find((action) => action.prominence === 'primary');
+  const secondaryAction = visible.find((action) => action.prominence === 'secondary');
+  const dualRow = isConsumerDualRow(primaryAction, secondaryAction);
+  const paired = new Set(
+    dualRow && primaryAction && secondaryAction ? [primaryAction, secondaryAction] : []
+  );
+
   return (
     <div className="space-y-3">
+      {dualRow && primaryAction && secondaryAction ? (
+        <div className="space-y-2">
+          <div className="flex w-full gap-2">
+            {primaryAction.id === 'pending_join' ? (
+              <button
+                type="button"
+                disabled
+                className={`${dualPrimaryClass} bg-amber-100 text-amber-900`}
+              >
+                {actionLabel(primaryAction, card)}
+              </button>
+            ) : (
+              <button type="button" onClick={() => runGated(primaryAction.id)} className={dualPrimaryClass}>
+                {actionLabel(primaryAction, card)}
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => runGated(secondaryAction.id)}
+              className={dualSecondaryClass}
+            >
+              {actionLabel(secondaryAction, card)}
+            </button>
+          </div>
+          {primaryAction.id === 'pending_join' ? (
+            <p className="text-center text-xs text-neutral-500">
+              To withdraw your request, open full details — comment required for the host.
+            </p>
+          ) : null}
+        </div>
+      ) : null}
+
       {visible.map((action) => {
+        if (paired.has(action)) return null;
+
         if (action.id === 'view_detail') {
           const className = prominenceClass(action.prominence);
           const label = activityMapPeekActionLabel(action.id, action);
@@ -94,8 +158,7 @@ export const ExploreActivityMapPeekActions = ({
           );
         }
 
-        const joinLabel =
-          action.id === 'request_join' ? card.primaryCta : activityMapPeekActionLabel(action.id, action);
+        const joinLabel = actionLabel(action, card);
 
         return (
           <button

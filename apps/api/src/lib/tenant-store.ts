@@ -23,6 +23,7 @@ export type TenantRecord = {
   longitude?: number | null;
   region?: string | null;
   publishingPurpose?: TenantPublishingPurpose | null;
+  discoverFeatured?: boolean;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -44,6 +45,7 @@ type MongoTenantDoc = {
   longitude?: number | null;
   region?: string | null;
   publishingPurpose?: TenantPublishingPurpose | null;
+  discoverFeatured?: boolean;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -68,6 +70,7 @@ const mapMongoTenant = (doc: MongoTenantDoc): TenantRecord => ({
   longitude: doc.longitude ?? null,
   region: doc.region ?? null,
   publishingPurpose: doc.publishingPurpose ?? null,
+  discoverFeatured: doc.discoverFeatured ?? false,
   createdAt: doc.createdAt,
   updatedAt: doc.updatedAt
 });
@@ -89,6 +92,7 @@ const tenantRowToMongoDoc = (row: TenantRecord): MongoTenantDoc => ({
   longitude: row.longitude ?? null,
   region: row.region ?? null,
   publishingPurpose: row.publishingPurpose ?? null,
+  discoverFeatured: row.discoverFeatured ?? false,
   createdAt: row.createdAt,
   updatedAt: row.updatedAt
 });
@@ -275,4 +279,22 @@ export const listPublicShopTenantsForExplore = async (limit = 250): Promise<Tena
     .limit(limit)
     .toArray();
   return docs.map(mapMongoTenant);
+};
+
+export const setTenantDiscoverFeatured = async (
+  tenantId: string,
+  discoverFeatured: boolean
+): Promise<TenantRecord | null> => {
+  const existing = await findTenantById(tenantId);
+  if (!existing) return null;
+  if (existing.businessMode !== TenantBusinessMode.SHOP) {
+    throw new Error('discover_featured_shop_only');
+  }
+  const updated: TenantRecord = {
+    ...existing,
+    discoverFeatured,
+    updatedAt: new Date(),
+  };
+  await writeTenantToMongo(updated);
+  return updated;
 };

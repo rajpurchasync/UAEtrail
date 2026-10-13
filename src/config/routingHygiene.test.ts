@@ -17,6 +17,19 @@ const EXPLORE_QUERY_ALLOWLIST = new Set([
 ]);
 
 /** Files allowed to reference `/activities` as a path (legacy redirect / active-state match). */
+const LEGACY_OPERATOR_PATH_ALLOWLIST = new Set([
+  'src/App.tsx',
+  'src/config/platform.ts',
+  'src/pages/LegacyOperatorProfileRedirect.tsx',
+  'src/config/routingHygiene.test.ts',
+]);
+
+const LEGACY_EVENT_PLACE_PATH_ALLOWLIST = new Set([
+  'src/App.tsx',
+  'src/utils/placePaths.test.ts',
+  'src/config/routingHygiene.test.ts',
+]);
+
 const ACTIVITIES_PATH_ALLOWLIST = new Set([
   'src/App.tsx',
   'src/constants/index.ts',
@@ -24,6 +37,12 @@ const ACTIVITIES_PATH_ALLOWLIST = new Set([
   'src/config/routingCatalog.ts',
   'src/components/layout/MobileBottomNav.tsx',
   'src/config/routingCatalog.ts',
+  'src/config/routingHygiene.test.ts',
+]);
+
+const LEGACY_MAP_BROWSE_ALLOWLIST = new Set([
+  'src/App.tsx',
+  'src/config/platform.ts',
   'src/config/routingHygiene.test.ts',
 ]);
 
@@ -83,6 +102,73 @@ describe('routingHygiene', () => {
     }
 
     expect(violations).toEqual([]);
+  });
+
+  it('app code does not link to retired /operator host profiles (use guide/agency/partner helpers)', () => {
+    const files = collectSourceFiles(SCAN_ROOT);
+    const violations: string[] = [];
+    const linkPattern =
+      /(?:to|href)=\{?[`"']\/operator\/|(?:to|href)=["']\/operator\/|navigate\(\s*[`"']\/operator\/|`\/operator\/\$\{/;
+
+    for (const file of files) {
+      if (LEGACY_OPERATOR_PATH_ALLOWLIST.has(file)) continue;
+      if (file.includes('/api/')) continue;
+      const content = readFileSync(join(process.cwd(), file), 'utf8');
+      if (linkPattern.test(content)) {
+        violations.push(`${file}: use hostBrandProfilePath / tenantBrandPublicPath / routingCatalog`);
+      }
+    }
+
+    expect(violations).toEqual([]);
+  });
+
+  it('app code does not link to legacy /event/ place URLs (use /venue/ via placeDetailPath)', () => {
+    const files = collectSourceFiles(SCAN_ROOT);
+    const violations: string[] = [];
+    const linkPattern =
+      /(?:to|href)=\{?[`"']\/event\/|(?:to|href)=["']\/event\/|navigate\(\s*[`"']\/event\//;
+
+    for (const file of files) {
+      if (LEGACY_EVENT_PLACE_PATH_ALLOWLIST.has(file)) continue;
+      if (file.includes('/api/')) continue;
+      const content = readFileSync(join(process.cwd(), file), 'utf8');
+      if (linkPattern.test(content)) {
+        violations.push(`${file}: use placeDetailPath("event", id) → /venue/:id`);
+      }
+    }
+
+    expect(violations).toEqual([]);
+  });
+
+  it('app code does not link to /map as browse home (use EXPLORE_MAP_PATH / explorePath)', () => {
+    const files = collectSourceFiles(SCAN_ROOT);
+    const violations: string[] = [];
+    const linkPattern =
+      /(?:to|href)=["']\/map(?:[?'"])|navigate\(\s*["']\/map|path:\s*["']\/map["']/;
+
+    for (const file of files) {
+      if (LEGACY_MAP_BROWSE_ALLOWLIST.has(file)) continue;
+      if (file.includes('/api/')) continue;
+      const content = readFileSync(join(process.cwd(), file), 'utf8');
+      if (linkPattern.test(content)) {
+        violations.push(`${file}: use EXPLORE_MAP_PATH or explorePath() — /map is redirect-only`);
+      }
+    }
+
+    expect(violations).toEqual([]);
+  });
+
+  it('App does not register category browse path segments (/browse, catalog /places)', () => {
+    const app = readFileSync(join(process.cwd(), 'src/App.tsx'), 'utf8');
+    const banned = [
+      /path="\/browse\//,
+      /path="\/places"/,
+      /path="\/places\//,
+      /path="\/shops"/,
+      /path="\/shops\//,
+    ];
+    const hits = banned.filter((pattern) => pattern.test(app));
+    expect(hits, 'use /explore or /list with query filters per DOMAIN_CANONICALS §4.1').toHaveLength(0);
   });
 
   it('app code does not introduce /demand/ detail routes', () => {

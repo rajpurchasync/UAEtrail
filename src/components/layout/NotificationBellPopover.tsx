@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Bell, X } from 'lucide-react';
 import { NotificationDTO } from '@uaetrail/shared-types';
@@ -7,19 +7,25 @@ import { api } from '../../api/index';
 import { useAuth } from '../../context/AuthContext';
 import { useNotificationUnreadCount } from '../../hooks/useNotificationUnreadCount';
 import { invalidateNotificationUnreadBadge } from '../../utils/notificationBadge';
-import { notificationReasonLine } from '../../utils/notificationDisplay';
+import { sortNotificationsNewestFirst } from '../../utils/notificationCategories';
+import { NotificationListItem } from '../notifications/NotificationListItem';
 import { inferNotificationPath } from '../../utils/notificationRouting';
 import { buildSignInRedirect } from '../../utils/authReturnContext';
 
 interface NotificationBellPopoverProps {
   tone?: 'default' | 'light';
+  /** Matches consumer header chrome (map tab vs marketing desktop bar). */
+  triggerVariant?: 'tab' | 'desktop';
   className?: string;
   viewAllPath?: string;
   preferAdminRoutes?: boolean;
 }
 
+const UNREAD_PREVIEW_LIMIT = 12;
+
 export const NotificationBellPopover = ({
   tone = 'default',
+  triggerVariant = 'tab',
   className = '',
   viewAllPath = '/notifications',
   preferAdminRoutes = false,
@@ -32,7 +38,6 @@ export const NotificationBellPopover = ({
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [notifications, setNotifications] = useState<NotificationDTO[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
   const rootRef = useRef<HTMLDivElement | null>(null);
 
   const syncUnreadBadge = () => {
@@ -43,27 +48,33 @@ export const NotificationBellPopover = ({
   const loadNotifications = async () => {
     if (!user) {
       setNotifications([]);
-      setUnreadCount(0);
       return;
     }
 
     setLoading(true);
     try {
       const res = await api.getMeNotifications(1);
-      setNotifications(res.data);
-      setUnreadCount(res.unreadCount ?? res.data.filter((n) => !n.isRead).length);
+      setNotifications(sortNotificationsNewestFirst(res.data));
     } catch {
       setNotifications([]);
-      setUnreadCount(0);
     } finally {
       setLoading(false);
     }
   };
 
+  const unreadPreview = useMemo(
+    () => notifications.filter((notif) => !notif.isRead).slice(0, UNREAD_PREVIEW_LIMIT),
+    [notifications]
+  );
+
+  const unreadTotal = useMemo(
+    () => notifications.filter((notif) => !notif.isRead).length,
+    [notifications]
+  );
+
   const markAllRead = async () => {
     await api.markAllNotificationsRead().catch(() => undefined);
     setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
-    setUnreadCount(0);
     syncUnreadBadge();
   };
 
@@ -73,15 +84,9 @@ export const NotificationBellPopover = ({
   };
 
   const handleItemClick = async (notif: NotificationDTO) => {
-    if (!notif.isRead) {
-      await api.markNotificationRead(notif.id).catch(() => undefined);
-      setNotifications((prev) =>
-        prev.map((item) => (item.id === notif.id ? { ...item, isRead: true } : item))
-      );
-      setUnreadCount((count) => Math.max(0, count - 1));
-      syncUnreadBadge();
-    }
-
+    await api.markNotificationRead(notif.id).catch(() => undefined);
+    setNotifications((prev) => prev.filter((item) => item.id !== notif.id));
+    syncUnreadBadge();
     setOpen(false);
     navigate(inferNotificationPath(notif, { preferAdminRoutes }));
   };
@@ -119,7 +124,11 @@ export const NotificationBellPopover = ({
   const toneClass =
     tone === 'light'
       ? 'text-white bg-white/15 backdrop-blur-sm border border-white/25 hover:bg-white/25'
-      : 'text-emerald-700 bg-emerald-50 border border-emerald-100 hover:bg-emerald-100';
+      : triggerVariant === 'desktop'
+        ? 'text-gray-600 bg-transparent border border-transparent hover:bg-gray-50 hover:text-gray-900'
+        : 'text-emerald-700 bg-emerald-50 border border-emerald-100 hover:bg-emerald-100';
+
+  const bellSizeClass = triggerVariant === 'desktop' ? 'h-10 w-10' : 'h-11 w-11';
 
   return (
     <div ref={rootRef} className={`relative shrink-0 ${className}`}>
@@ -132,10 +141,12 @@ export const NotificationBellPopover = ({
           }
           setOpen((current) => !current);
         }}
-        className={`relative h-11 w-11 shrink-0 inline-flex items-center justify-center rounded-full transition-colors active:scale-95 ${toneClass}`}
-        aria-label={user ? 'Open notifications' : 'Sign in to view notifications'}
+        className={`relative ${bellSizeClass} shrink-0 inline-flex items-center justify-center rounded-full transition-colors active:scale-95 ${toneClass}`}
+        aria-label={user ? 'Open unread notifications' : 'Sign in to view notifications'}
+        aria-expanded={open}
+        aria-haspopup="dialog"
       >
-        <Bell className="w-5 h-5" strokeWidth={2.25} />
+        <Bell className={triggerVariant === 'desktop' ? 'w-5 h-5' : 'w-5 h-5'} strokeWidth={2.25} />
         {user && badgeUnreadCount > 0 && (
           <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-white">
             {badgeUnreadCount > 99 ? '99+' : badgeUnreadCount}
@@ -144,74 +155,81 @@ export const NotificationBellPopover = ({
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-80 max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-xl border border-gray-100 z-[80] overflow-hidden">
-          <div className="px-4 py-3 border-b flex items-center justify-between bg-gray-50/70">
-            <p className="text-sm font-bold text-gray-900">Notifications</p>
-            <div className="flex items-center gap-2">
-              {unreadCount > 0 && (
-                <button
-                  type="button"
-                  onClick={() => void markAllRead()}
-                  className="text-xs text-emerald-600 hover:text-emerald-700 font-medium"
-                >
-                  Mark all read
-                </button>
-              )}
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-                aria-label="Close notifications"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-
-          <div className="max-h-80 overflow-y-auto divide-y divide-gray-50">
-            {loading ? (
-              <div className="px-4 py-8 text-center">
-                <div className="w-5 h-5 border-2 border-gray-200 border-t-emerald-500 rounded-full animate-spin mx-auto" />
-              </div>
-            ) : notifications.length === 0 ? (
-              <div className="px-4 py-8 text-center">
-                <Bell className="w-8 h-8 text-gray-200 mx-auto mb-2" />
-                <p className="text-sm text-gray-500">You&apos;re all caught up</p>
-              </div>
-            ) : (
-              notifications.map((notif) => {
-                const reasonLine = notificationReasonLine(notif);
-                return (
-                <button
-                  key={notif.id}
-                  type="button"
-                  onClick={() => void handleItemClick(notif)}
-                  className={`w-full text-left px-4 py-3 hover:bg-gray-50/70 transition-colors ${
-                    !notif.isRead ? 'bg-emerald-50/40' : ''
-                  }`}
-                >
-                  <p className="text-sm font-semibold text-gray-900 line-clamp-1">{notif.title}</p>
-                  <p className="text-xs text-gray-600 mt-0.5 line-clamp-2">{notif.body}</p>
-                  {reasonLine && (
-                    <p className="text-[11px] font-medium text-gray-700 mt-1 line-clamp-2">{reasonLine}</p>
-                  )}
-                </button>
-              );
-              })
-            )}
-          </div>
-
+        <>
           <button
             type="button"
-            onClick={() => {
-              setOpen(false);
-              navigate(viewAllPath);
-            }}
-            className="w-full text-left px-4 py-2.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-50/60 border-t border-gray-100"
+            className="fixed inset-0 z-[1250] bg-black/25 md:bg-transparent"
+            aria-label="Close notifications"
+            onClick={() => setOpen(false)}
+          />
+          <div
+            role="dialog"
+            aria-label="Unread notifications"
+            className="fixed z-[1300] left-3 right-3 top-[calc(var(--safe-top)+3.25rem)] max-h-[min(70dvh,28rem)] flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-xl md:absolute md:left-auto md:right-0 md:top-full md:mt-2 md:w-96 md:max-w-[calc(100vw-2rem)]"
           >
-            See all notifications
-          </button>
-        </div>
+            <div className="px-4 py-3 border-b flex items-center justify-between bg-gray-50/70 shrink-0">
+              <div>
+                <p className="text-sm font-bold text-gray-900">Unread</p>
+                {unreadTotal > 0 ? (
+                  <p className="text-xs text-gray-500 mt-0.5">{unreadTotal} notification{unreadTotal === 1 ? '' : 's'}</p>
+                ) : null}
+              </div>
+              <div className="flex items-center gap-2">
+                {unreadTotal > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => void markAllRead()}
+                    className="text-xs text-emerald-600 hover:text-emerald-700 font-medium"
+                  >
+                    Mark all read
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setOpen(false)}
+                  className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                  aria-label="Close"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain scroll-touch touch-pan-y p-3 space-y-2 bg-neutral-50/50">
+              {loading ? (
+                <div className="px-4 py-8 text-center">
+                  <div className="w-5 h-5 border-2 border-gray-200 border-t-emerald-500 rounded-full animate-spin mx-auto" />
+                </div>
+              ) : unreadPreview.length === 0 ? (
+                <div className="px-2 py-8 text-center">
+                  <Bell className="w-8 h-8 text-gray-200 mx-auto mb-2" />
+                  <p className="text-sm text-gray-500">You&apos;re all caught up</p>
+                </div>
+              ) : (
+                unreadPreview.map((notif) => (
+                  <NotificationListItem
+                    key={notif.id}
+                    notif={notif}
+                    compact
+                    showTimestamp
+                    onClick={() => void handleItemClick(notif)}
+                  />
+                ))
+              )}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                setOpen(false);
+                navigate(viewAllPath);
+              }}
+              className="w-full shrink-0 text-left px-4 py-3 text-sm font-semibold text-emerald-700 hover:bg-emerald-50/60 border-t border-gray-100"
+            >
+              View all notifications
+            </button>
+          </div>
+        </>
       )}
     </div>
   );

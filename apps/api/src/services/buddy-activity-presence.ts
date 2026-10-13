@@ -11,8 +11,7 @@ import {
   parseExploreActivityDatePreset,
   type ExploreActivityDatePreset,
 } from '../lib/explore-activity-date-filter.js';
-import { buildExploreMapPayload } from '../lib/explore-map.js';
-import { enrichExploreMapPayloadViewerAccess } from '../lib/explore-map-viewer-access.js';
+import { loadExploreMapItemsForMemberEngagement } from '../lib/explore-map-member-engagement.js';
 
 const activityHostUserId = (item: ExploreMapItemDTO): string | null => {
   if (item.source !== 'activity') return null;
@@ -62,16 +61,14 @@ export const loadBuddyActivityPresence = async (input: {
   datePresetRaw?: string | null;
 }): Promise<BuddyActivityPresenceDTO> => {
   const datePreset = parseExploreActivityDatePreset(input.datePresetRaw);
-  const [buddies, payload] = await Promise.all([
+  const [buddies, mapItems] = await Promise.all([
     listBuddiesForUser(input.viewerUserId),
-    buildExploreMapPayload(),
+    loadExploreMapItemsForMemberEngagement({
+      viewerUserId: input.viewerUserId,
+      userRole: input.userRole,
+    }),
   ]);
 
-  const enriched = await enrichExploreMapPayloadViewerAccess(payload, {
-    viewerUserId: input.viewerUserId,
-    userRole: input.userRole,
-  });
-
-  const rows = buildBuddyActivityPresenceRows(buddies, enriched.items, datePreset);
+  const rows = buildBuddyActivityPresenceRows(buddies, mapItems, datePreset);
   return { rows };
 };

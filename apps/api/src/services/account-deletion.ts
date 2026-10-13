@@ -3,7 +3,8 @@ import { ApiError } from '../lib/api-error.js';
 import { deleteAuthTokensByUser } from '../lib/auth-tokens.js';
 import { findAuthUserById, updateAuthUserCore } from '../lib/auth-users.js';
 import { purgeUserChatMessages } from '../lib/chat-data.js';
-import { deleteUserFavoritesByUser } from '../lib/favorites-store.js';
+import { COLLECTIONS } from '../lib/collections.js';
+import { deleteEntityFollowsByUser } from '../lib/entity-follow-store.js';
 import { purgeUserActivityEngagement } from '../lib/activity-engagement-store.js';
 import { purgeActivityInvitesForUser } from '../lib/activity-invites-store.js';
 import { purgeMemberProfileViewsForUser } from '../lib/member-profile-views-store.js';
@@ -89,7 +90,8 @@ export const deleteUserAccount = async (
   const anonymizedEmail = `deleted+${userId}@deleted.uaetrail.internal`;
 
   await deleteAuthTokensByUser(userId);
-  await deleteUserFavoritesByUser(userId);
+  await getMongoClient()!.db().collection(COLLECTIONS.USER_WISHLIST).deleteMany({ userId });
+  await deleteEntityFollowsByUser(userId);
   await deleteLocationUnlocksByUser(userId);
   await deletePushSubscriptionsByUser(userId);
   await deleteNotificationsByUser(userId);

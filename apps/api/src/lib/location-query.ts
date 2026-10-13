@@ -26,7 +26,7 @@ const locationsCollection = (): Collection<MongoLocationDoc> =>
 
 const mapMongoLocation = (item: MongoLocationDoc): Location => {
   const { _id, geo: _geo, ...rest } = item;
-  return { id: _id, ...rest };
+  return { id: _id, ...rest, areaLabel: rest.areaLabel ?? null };
 };
 
 export const locationDocForMongo = (location: Location): MongoLocationDoc => {

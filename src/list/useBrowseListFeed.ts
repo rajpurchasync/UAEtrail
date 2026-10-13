@@ -1,0 +1,51 @@
+import { useMemo } from 'react';
+import { useAuth } from '../context/AuthContext';
+import type { ExploreCardModel } from '../explore/exploreCardModel';
+import { useExploreMap } from '../hooks/useExploreMap';
+import { buildListFeedCards } from './buildListFeedCards';
+import {
+  cardMatchesBrowsePrice,
+  filterExploreMapItemsForList,
+  type BrowseListFilterState,
+} from './browseListFilters';
+
+type UseBrowseListFeedArgs = {
+  filters: BrowseListFilterState;
+  venueRegions: string[];
+  /** Buddies category uses member-discovery only — skip map fetch. */
+  mapEnabled?: boolean;
+};
+
+export const useBrowseListFeed = ({
+  filters,
+  venueRegions,
+  mapEnabled = true,
+}: UseBrowseListFeedArgs) => {
+  const { user } = useAuth();
+  const { data: items = [], isError, error, refetch, isFetching, isPending } = useExploreMap({
+    enabled: mapEnabled,
+  });
+  const feedLoading = mapEnabled && isPending && items.length === 0;
+
+  const filteredItems = useMemo(
+    () => (mapEnabled ? filterExploreMapItemsForList(items, filters, venueRegions) : []),
+    [mapEnabled, items, filters, venueRegions]
+  );
+
+  const cards: ExploreCardModel[] = useMemo(() => {
+    if (!mapEnabled) return [];
+    const built = buildListFeedCards(filteredItems, user, items);
+    return built.filter((card) => cardMatchesBrowsePrice(card, filters.price));
+  }, [mapEnabled, filteredItems, filters.price, items, user]);
+
+  return {
+    cards,
+    items: mapEnabled ? items : [],
+    isLoading: feedLoading,
+    isError: mapEnabled ? isError : false,
+    error: mapEnabled ? error : null,
+    refetch,
+    isFetching: mapEnabled ? isFetching : false,
+    itemCount: mapEnabled ? items.length : 0,
+  };
+};

@@ -25,7 +25,7 @@ export async function promptPostActivityReview(opts: {
       ? `/trail/${opts.locationId}`
       : opts.activityType === 'camping'
         ? `/camp/${opts.locationId}`
-        : `/event/${opts.locationId}`;
+        : `/venue/${opts.locationId}`;
 
   await dispatchNotification({
     userId: opts.userId,

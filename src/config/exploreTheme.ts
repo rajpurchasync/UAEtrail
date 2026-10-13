@@ -20,6 +20,8 @@ export const EXPLORE_SHEET = {
   panel: 'bg-white shadow-2xl lg:shadow-xl',
   maxHeight: 'lg:max-h-[min(85vh,720px)]',
   browseHeight: 'flex h-[82dvh] min-h-0 flex-col bg-[#f8fafb]',
+  browseFullscreen:
+    'flex min-h-0 flex-1 flex-col bg-neutral-50 pt-[var(--safe-top)] pb-[calc(var(--bottom-nav-height,56px)+var(--safe-bottom,0px))]',
   browseList: 'min-h-0 flex-1 space-y-2.5 overflow-y-auto px-1 pb-[calc(var(--safe-bottom)+12px)] lg:px-0 lg:pb-4',
 } as const;
 
@@ -86,7 +88,7 @@ export const EXPLORE_BROWSE_PANEL_TAB = {
   inactive: 'text-neutral-500 hover:text-neutral-800',
 } as const;
 
-/** Explore Social panel segment tabs (All | Friends | Followed). */
+/** Explore People browse panel segment tabs (All | Friends | Followed | Discover). */
 export const EXPLORE_BROWSE_SEGMENT_TAB = {
   row: `${EXPLORE_BROWSE_PANEL_TAB.row} gap-3`,
   active: `${EXPLORE_BROWSE_PANEL_TAB.tab} ${EXPLORE_BROWSE_PANEL_TAB.active}`,

@@ -24,16 +24,26 @@ export const countExploreSearchScopes = (
 
   for (const item of items) {
     if (!exploreItemMatchesQuery(item, q)) continue;
-    if (mapItemMatchesSearchScope(item, 'trips') && matchesActivityDateFilter(item, activityDatePreset)) {
-      counts.trips += 1;
+    if (
+      mapItemMatchesSearchScope(item, 'activities') &&
+      matchesActivityDateFilter(item, activityDatePreset)
+    ) {
+      counts.activities += 1;
       continue;
     }
-    if (mapItemMatchesSearchScope(item, 'spots') && venueItemMatchesRegions(item, venueRegions)) {
-      counts.spots += 1;
+    if (
+      mapItemMatchesSearchScope(item, 'places') &&
+      venueItemMatchesRegions(item, venueRegions)
+    ) {
+      counts.places += 1;
       continue;
     }
     if (mapItemMatchesSearchScope(item, 'shops')) {
       counts.shops += 1;
+      continue;
+    }
+    if (mapItemMatchesSearchScope(item, 'agencies')) {
+      counts.agencies += 1;
     }
   }
 

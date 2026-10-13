@@ -5,7 +5,9 @@ import type {
   MemberDiscoveryQuotaDTO,
   ProfileViewerAccessDTO,
   BuddyActivityPresenceRowDTO,
-  MemberDiscoveryOnTripRowDTO,
+  SocialPeopleDTO,
+  SocialPeoplePreviewDTO,
+  SocialPeopleSegment,
 } from '@uaetrail/shared-types';
 import type {
   AccountDeletionInfo,
@@ -27,6 +29,13 @@ export const accountApi = {
 
     getMeMemberDiscoveryQuota: () =>
       apiRequest<{ data: MemberDiscoveryQuotaDTO }>('/me/member-discovery-quota', { auth: true }),
+
+    /** Browse people network roster (map panel — friends / following). HTTP: `/social/people`. */
+    getMemberPeopleNetwork: (segment: SocialPeopleSegment = 'all') =>
+      apiRequest<{ data: SocialPeopleDTO }>(`/social/people?segment=${segment}`, { auth: true }),
+
+    getMemberPeopleNetworkPreview: () =>
+      apiRequest<{ data: SocialPeoplePreviewDTO }>('/social/people/preview', { auth: true }),
 
     getMeProfilePublicPreview: () =>
     apiRequest<{ data: PublicMemberProfileDTO; viewerAccess: ProfileViewerAccessDTO }>(
@@ -187,6 +196,7 @@ export const accountApi = {
       pageSize?: number;
       q?: string;
       date?: string | null;
+      omitDirectory?: boolean;
     }) => {
       const params = new URLSearchParams({
         page: String(options?.page ?? 1),
@@ -194,9 +204,13 @@ export const accountApi = {
       });
       if (options?.q?.trim()) params.set('q', options.q.trim());
       if (options?.date) params.set('date', options.date);
+      if (options?.omitDirectory) params.set('omitDirectory', '1');
       return apiRequest<{
         data: {
-          onTrips: MemberDiscoveryOnTripRowDTO[];
+          friendsGoing: import('@uaetrail/shared-types').SocialPersonRowDTO[];
+          hostsGoing: import('@uaetrail/shared-types').SocialPersonRowDTO[];
+          lookingFor: import('@uaetrail/shared-types').MemberDiscoveryLookingRowDTO[];
+          followed: import('@uaetrail/shared-types').MemberBrowseCardDTO[];
           directory: import('@uaetrail/shared-types').MemberBrowseCardDTO[];
         };
         meta: {

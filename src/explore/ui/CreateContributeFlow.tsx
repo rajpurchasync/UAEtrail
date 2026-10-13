@@ -271,7 +271,7 @@ export const CreateContributeFlow = ({
     } else if (type === 'camping') {
       navigate(`/camp/${submitResult.location.id}`);
     } else if (type === 'event') {
-      navigate(`/event/${submitResult.location.id}`);
+      navigate(`/venue/${submitResult.location.id}`);
     } else {
       navigate(`/trail/${submitResult.location.id}`);
     }
@@ -385,6 +385,20 @@ export const CreateContributeFlow = ({
               ))}
             </select>
           </label>
+          {(kind === 'hiking' || kind === 'camping' || kind === 'event') && (
+            <label className="mb-4 block">
+              <span className="mb-1.5 block text-sm font-semibold text-gray-800">
+                Area or landmark <span className="font-normal text-gray-500">(optional)</span>
+              </span>
+              <FlowStepTextInput
+                value={draft.areaLabel}
+                onChange={(event) => patchDraft({ areaLabel: event.target.value })}
+                placeholder="e.g. Wadi Shawka Dam, Hatta visitor park"
+                className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-base text-gray-900 outline-none focus:border-emerald-400"
+                maxLength={120}
+              />
+            </label>
+          )}
           <p className="mb-4 text-sm text-gray-600">
             {kind === 'hiking'
               ? 'Pin where the trail starts.'
@@ -456,6 +470,17 @@ export const CreateContributeFlow = ({
             maxLength={3000}
             autoFocus
           />
+          {(kind === 'hiking' || kind === 'camping') && step === 'about' && (
+            <label className="mt-4 flex cursor-pointer items-center gap-3 rounded-2xl border border-neutral-200 px-4 py-3">
+              <input
+                type="checkbox"
+                checked={draft.childFriendly}
+                onChange={(event) => patchDraft({ childFriendly: event.target.checked })}
+                className="size-5 rounded border-neutral-300 text-emerald-600 focus:ring-emerald-500"
+              />
+              <span className="text-sm font-medium text-gray-800">Family-friendly spot</span>
+            </label>
+          )}
           <p className="mt-2 text-xs text-gray-500">At least 20 characters.</p>
           {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
           <div className="mt-5 pb-2">

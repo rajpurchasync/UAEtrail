@@ -4,7 +4,7 @@ import type { ExploreCardModel } from '../exploreCardModel';
 import { EXPLORE_PEEK, EXPLORE_SHEET } from '../../config/exploreTheme';
 import { EnvironmentImage } from '../../components/ui/EnvironmentImage';
 import { ShareButton } from '../../components/ui/ShareButton';
-import { ExploreSaveButton } from './ExploreSaveButton';
+import { ExploreFollowButton } from './ExploreFollowButton';
 import { exploreCardShowPeekBodyDirections } from '../exploreCardModel';
 import { PlaceDirectionLinks } from '../../components/ui/PlaceDirectionLinks';
 import {
@@ -82,7 +82,7 @@ export const ExploreMapPeekCard = ({
       <div className={`flex shrink-0 items-start justify-between gap-3 px-4 ${card.coverImage ? 'pt-3' : 'pt-4'}`}>
         <ExploreCardTypeBadge card={card} size="sm" />
         <div className="flex items-center gap-1.5">
-          <ExploreSaveButton card={card} light={!card.coverImage} />
+          <ExploreFollowButton card={card} light={!card.coverImage} />
           <ShareButton
             title={card.shareTitle}
             text={card.shareText ?? undefined}

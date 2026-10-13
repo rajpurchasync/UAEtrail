@@ -1,11 +1,10 @@
-import type { MemberGoalActivityFilter } from '@uaetrail/shared-types';
+import type { MemberGoalActivityFilter, MemberGoalCountMode } from '@uaetrail/shared-types';
 import { NotificationType } from '../domain/enums.js';
-import { findActivityDocInMongo, findLocationInMongo } from '../lib/entity-sync.js';
 import {
-  activityTypeCountsForGoal,
-  countCheckedInOutingsForGoal,
+  countGoalProgress,
   endOfGoalDateUtc,
   getActiveMemberGoal,
+  resolveGoalTargetDate,
 } from '../lib/member-goals-store.js';
 import { COLLECTIONS } from '../lib/collections.js';
 import { createNotificationRecord } from '../lib/notifications-store.js';
@@ -24,39 +23,25 @@ const formatGoalDeadline = (targetDate: string): string => {
   return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
 };
 
-/** Fire in-app milestones after a successful check-in (50% and complete). */
-export const notifyMemberGoalAfterCheckIn = async (
-  userId: string,
-  activityId: string
-): Promise<void> => {
-  const goalRow = await getMongoClient()!
-    .db()
-    .collection<{
-      _id: string;
-      activityFilter: MemberGoalActivityFilter;
-      targetCount: number;
-      targetDate?: string;
-      year: number;
-      createdAt: Date;
-      notifiedHalf?: boolean;
-      notifiedComplete?: boolean;
-    }>(COLLECTIONS.USER_GOALS)
-    .findOne({ userId }, { sort: { updatedAt: -1 } });
-  if (!goalRow) return;
+type GoalRow = {
+  _id: string;
+  activityFilter: MemberGoalActivityFilter;
+  countMode?: MemberGoalCountMode;
+  targetCount: number;
+  targetDate?: string;
+  year: number;
+  createdAt: Date;
+  notifiedHalf?: boolean;
+  notifiedComplete?: boolean;
+};
 
-  const eventDoc = await findActivityDocInMongo(activityId);
-  if (!eventDoc) return;
-  const location = await findLocationInMongo(eventDoc.locationId);
-  const effectiveType = eventDoc.activityType ?? location?.activityType ?? null;
-  if (!activityTypeCountsForGoal(effectiveType, goalRow.activityFilter)) return;
-
-  const targetDate =
-    goalRow.targetDate && /^\d{4}-\d{2}-\d{2}$/.test(goalRow.targetDate)
-      ? goalRow.targetDate
-      : `${goalRow.year}-12-31`;
-  const currentCount = await countCheckedInOutingsForGoal(
+const evaluateGoalMilestones = async (userId: string, goalRow: GoalRow): Promise<void> => {
+  const targetDate = resolveGoalTargetDate(goalRow);
+  const countMode = goalRow.countMode === 'host' ? 'host' : 'join';
+  const currentCount = await countGoalProgress(
     userId,
     goalRow.activityFilter,
+    countMode,
     goalRow.createdAt,
     endOfGoalDateUtc(targetDate)
   );
@@ -95,6 +80,24 @@ export const notifyMemberGoalAfterCheckIn = async (
   }
 };
 
+/** Fire in-app milestones after progress changes (check-in, manual log, host outing). */
+export const notifyMemberGoalAfterProgress = async (userId: string): Promise<void> => {
+  const rows = await getMongoClient()!
+    .db()
+    .collection<GoalRow>(COLLECTIONS.USER_GOALS)
+    .find({ userId })
+    .toArray();
+
+  for (const goalRow of rows) {
+    await evaluateGoalMilestones(userId, goalRow);
+  }
+};
+
+/** @deprecated Prefer notifyMemberGoalAfterProgress */
+export const notifyMemberGoalAfterCheckIn = async (userId: string, _activityId: string): Promise<void> => {
+  await notifyMemberGoalAfterProgress(userId);
+};
+
 /** Optional nudge when loading goal if user is behind a simple linear pace (once per month max). */
 export const maybeNotifyGoalBehindPace = async (userId: string): Promise<void> => {
   const goal = await getActiveMemberGoal(userId);
@@ -114,7 +117,7 @@ export const maybeNotifyGoalBehindPace = async (userId: string): Promise<void> =
   const row = await getMongoClient()!
     .db()
     .collection<{ _id: string; lastPaceNudgeAt?: Date }>(COLLECTIONS.USER_GOALS)
-    .findOne({ userId }, { sort: { updatedAt: -1 } });
+    .findOne({ _id: goal.id });
   if (!row) return;
 
   const last = row.lastPaceNudgeAt;
@@ -124,7 +127,7 @@ export const maybeNotifyGoalBehindPace = async (userId: string): Promise<void> =
     userId,
     type: NotificationType.SYSTEM,
     title: 'Your outdoor goal',
-    body: `${goal.currentCount} of ${goal.targetCount} ${goalLabel(goal.activityFilter)} so far — explore trips to catch up.`,
+    body: `${goal.currentCount} of ${goal.targetCount} ${goalLabel(goal.activityFilter)} so far — log outings or explore trips to catch up.`,
     meta: { kind: 'goal_behind_pace', path: TRIPS_JOINED_TAB_PATH },
   });
 

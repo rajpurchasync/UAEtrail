@@ -85,7 +85,13 @@ export const createManualMemberMapPin = async (
     updatedAt: now,
   };
   await pinsCollection().insertOne(doc);
-  return mapPinDto(doc);
+  const dto = mapPinDto(doc);
+  if (input.kind === 'visited') {
+    void import('../services/member-goal-notifications.js')
+      .then((mod) => mod.notifyMemberGoalAfterProgress(userId))
+      .catch(() => undefined);
+  }
+  return dto;
 };
 
 export const updateMemberMapPin = async (

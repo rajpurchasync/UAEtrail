@@ -9,7 +9,7 @@ import { detailBackPath } from '../config/routingCatalog';
 const isShopTenant = (tenant: TenantProfile): boolean =>
   tenant.businessMode === 'SHOP' || tenant.type === 'shop' || tenant.type === 'SHOP';
 
-/** Public organisation profile — agency/guide host. Shop tenants redirect to `/shop/:id`. Route stays `/operator/:id`. */
+/** Public brand profile — `/guide`, `/agency`, or `/partner`. Shop tenants redirect to `/shop/:id`. */
 export const OrganisationProfile = () => {
   const { id } = useParams<{ id: string }>();
   const [tenant, setTenant] = useState<TenantProfile | null>(null);

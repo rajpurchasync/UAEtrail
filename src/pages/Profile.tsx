@@ -8,7 +8,8 @@ import { ConsumerErrorCard } from '../components/mobile/ConsumerFeedback';
 import { AccountAvatarModal } from '../components/account';
 import { useParticipantHubData } from '../hooks/useParticipantHubData';
 import { useHostStatus } from '../hooks/useHostStatus';
-import type { MemberGoalDTO, MemberHubStatsDTO, MemberProfileViewStatsDTO } from '@uaetrail/shared-types';
+import type { MemberHubStatsDTO, MemberProfileViewStatsDTO } from '@uaetrail/shared-types';
+import { useMemberGoals } from '../hooks/useMemberGoals';
 import { ProfileConsumerHub } from '../components/profile/ProfileConsumerHub';
 import { buildProfileCompletion } from '../utils/profileCompletion';
 import { resolveProfileSharePath, resolveProfileShareText } from '../utils/profileShare';
@@ -48,8 +49,14 @@ export const Profile = () => {
   const [showAvatarEdit, setShowAvatarEdit] = useState(false);
   const [memberSince, setMemberSince] = useState<string | null>(null);
   const [visibility, setVisibility] = useState<'public' | 'group_members' | 'private'>('public');
-  const [goal, setGoal] = useState<MemberGoalDTO | null>(null);
-  const [goalSaving, setGoalSaving] = useState(false);
+  const {
+    goals,
+    saving: goalSaving,
+    createGoal,
+    updateGoal,
+    deleteGoal,
+    reload: reloadGoals,
+  } = useMemberGoals(Boolean(user));
   const [hubStats, setHubStats] = useState<MemberHubStatsDTO | null>(null);
   const [badgesEarnedCount, setBadgesEarnedCount] = useState(0);
 
@@ -63,7 +70,7 @@ export const Profile = () => {
 
   useEffect(() => {
     if (!user) return;
-    void api.getActiveGoal().then((res) => setGoal(res.data)).catch(() => undefined);
+    reloadGoals();
     void api.getMeMemberHubStats().then((res) => setHubStats(res.data)).catch(() => undefined);
     if (hostTiers.professional || hostTiers.business) {
       void api.getMeProfileViewStats().then((res) => setProfileViewStats(res.data)).catch(() => undefined);
@@ -168,33 +175,6 @@ export const Profile = () => {
     return stats;
   }, [hubStats, isActivityHost, profileViewStats]);
 
-  const saveGoal = useCallback(
-    async (input: {
-      activityFilter: MemberGoalDTO['activityFilter'];
-      targetCount: number;
-      targetDate: string;
-    }) => {
-      setGoalSaving(true);
-      try {
-        const res = await api.upsertActiveGoal(input);
-        setGoal(res.data);
-      } finally {
-        setGoalSaving(false);
-      }
-    },
-    []
-  );
-
-  const clearGoal = useCallback(async () => {
-    setGoalSaving(true);
-    try {
-      await api.clearActiveGoal();
-      setGoal(null);
-    } finally {
-      setGoalSaving(false);
-    }
-  }, []);
-
   const openPublicProfile = useCallback(() => {
     if (!user?.id) return;
     navigate(`/member/${user.id}?view=public`);
@@ -229,14 +209,14 @@ export const Profile = () => {
       setMemberSince(profileRes.data.memberSince ?? null);
       setVisibility(profileRes.data.profileVisibility ?? 'public');
     });
-    void api.getActiveGoal().then((res) => setGoal(res.data)).catch(() => undefined);
+    reloadGoals();
     void api.getMeMemberHubStats().then((res) => setHubStats(res.data)).catch(() => undefined);
     void api
       .getMemberBadges()
       .then((res) => setBadgesEarnedCount(res.data.filter((b) => b.earned).length))
       .catch(() => undefined);
     void refreshHostGate();
-  }, [reload, user, refreshHostGate]);
+  }, [reload, user, refreshHostGate, reloadGoals]);
 
   const saveAvatar = async (nextAvatarUrl: string) => {
     setAvatarMessage(null);
@@ -283,10 +263,12 @@ export const Profile = () => {
             visibilityLabel={profileVisibilityLabel(visibility)}
             cityLabel={profileCityLabel}
             hubStats={profileHubStats}
-            goal={goal}
+            goals={goals}
             goalSaving={goalSaving}
-            onSaveGoal={saveGoal}
-            onClearGoal={clearGoal}
+            onCreateGoal={createGoal}
+            onUpdateGoal={updateGoal}
+            onDeleteGoal={deleteGoal}
+            onReloadGoals={reloadGoals}
             badgesEarnedCount={badgesEarnedCount}
             buddyBadge={buddyBadge}
             showHosting={isActivityHost}

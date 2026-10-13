@@ -283,7 +283,12 @@ const buildExploreMapPayloadUncached = async (): Promise<{ items: ExploreMapItem
       continue;
     }
 
-    const venueLabels = resolveVenueExploreLabels(dto.name, location.tags, dto.region);
+    const venueLabels = resolveVenueExploreLabels(
+      dto.name,
+      location.tags,
+      dto.region,
+      location.areaLabel ?? dto.areaLabel ?? null
+    );
 
     items.push({
       id: `venue:${dto.id}`,
@@ -313,6 +318,9 @@ const buildExploreMapPayloadUncached = async (): Promise<{ items: ExploreMapItem
         surfaceType: dto.surfaceType ?? [],
         images: dto.images ?? [],
         featured: dto.featured,
+        parkingLat: dto.parkingLat ?? null,
+        parkingLng: dto.parkingLng ?? null,
+        parkingPoint: location.parkingLink ?? null,
       },
     });
   }
@@ -347,6 +355,7 @@ const buildExploreMapPayloadUncached = async (): Promise<{ items: ExploreMapItem
       websiteUrl,
       contactPhone: merchant?.contactPhone ?? null,
       shopPresence,
+      discoverFeatured: shop.discoverFeatured ?? false,
       featuredPerson: buildExploreFeaturedPerson({
         userId: owner?.userId,
         displayName: owner?.name,

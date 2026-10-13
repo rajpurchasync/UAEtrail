@@ -52,7 +52,7 @@ export const computeActivityMapPeekActions = (
   if (level === 'public') {
     return [
       { id: 'request_join', prominence: 'primary' },
-      { id: 'view_detail', prominence: 'text' },
+      { id: 'message_host', prominence: 'secondary' },
     ];
   }
 
@@ -64,19 +64,19 @@ export const computeActivityMapPeekActions = (
     if (joinRequestStatus === 'pending' || joinRequestStatus === 'waitlisted') {
       return [
         { id: 'pending_join', prominence: 'primary', joinRequestStatus },
-        { id: 'view_detail', prominence: 'text' },
+        { id: 'message_host', prominence: 'secondary' },
       ];
     }
     return [
       { id: 'request_join', prominence: 'primary' },
-      { id: 'view_detail', prominence: 'text' },
+      { id: 'message_host', prominence: 'secondary' },
     ];
   }
 
   if (joinEligibleLevels.has(level)) {
     return [
       { id: 'request_join', prominence: 'primary' },
-      { id: 'view_detail', prominence: 'text' },
+      { id: 'message_host', prominence: 'secondary' },
     ];
   }
 

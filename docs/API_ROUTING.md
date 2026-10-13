@@ -15,7 +15,7 @@ Companion: [`DOMAIN.md`](./DOMAIN.md), [`CREATE_FLOW.md`](./CREATE_FLOW.md), [`M
 | **`/me/*`** | Signed-in member | Own profile, intents, groups, inbox, activity participation |
 | **`/host/*`** | Verified + **tenant** (`x-organisation-id`) | **Host console** (any publishing tier): publish, participant roster, **activity** join queue |
 | **`/users/*`** | Optional auth | Public member profiles |
-| **`/chat/*`**, **`/social/*`** | Auth | DMs, reviews, favorites |
+| **`/chat/*`**, **`/social/*`** | Auth | DMs, reviews, people discovery |
 | **`/admin/*`** | `PLATFORM_ADMIN` | Moderation, **Users** (`GET/PATCH /admin/users*`), tenants, metrics — `admin.ts` mounts `registerAdmin*` only |
 | **`POST /admin/platform-admins`** | Master admin only | Grant `PLATFORM_ADMIN` to an existing member by email |
 | **`DELETE /admin/platform-admins/:userId`** | Master admin only | Revoke platform staff (not master accounts) |
@@ -114,19 +114,21 @@ Storage: `activity_invites` (`COLLECTIONS.ACTIVITY_INVITES`) · indexes in `mong
 
 Registration: `registerBuddyRoutes.ts` · service: `buddy-activity-presence.ts`.
 
-Explore **Social** panel (UI) uses **`GET /social/people`** (see below) — `activity-presence` remains for map-adjacent tooling.
+Explore **people browse panel** (map; URL `view=people`; legacy `view=social` / `view=going`) uses **`GET /social/people`** (see below) — `activity-presence` remains for map-adjacent tooling. **Chat** is `/chat/*` and `/messages` — not these routes.
 
 ---
 
-## Social people roster (`/social`)
+## Member people reads (browse)
+
+**Bounded context:** `member_discovery` ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §3.2). **Mount:** `/social` is historical; paths below are **browse** (relationship + outing status), not messaging.
 
 | Method | Path | Who |
 |--------|------|-----|
-| GET | `/social/people/preview` | Friend avatars + counts for Explore map pill |
-| GET | `/social/people` | Friends / following roster for Explore Social panel. Query: `segment=all\|friends\|followed` |
-| GET | `/me/member-discovery/roster` | Explore Social **Discover** tab — on-trip strangers + public directory (`q`, `date`, pagination); `meta.quota` |
+| GET | `/social/people/preview` | Network avatars + counts for explore map people pill (map-going faces merged on client from `GET /explore/map`) |
+| GET | `/social/people` | **Network roster** — friends / following for map people panel. Query: `segment=all\|friends\|followed` |
+| GET | `/me/member-discovery/roster` | **Discovery roster** — who’s going, hosts, looking-for, followed, directory (`q`, `date`, `omitDirectory`, pagination); `meta.quota`. Same list component as `/list?listCat=people` (**Buddies**) |
 
-Registration: `apps/api/src/routes/social/registerSocialPeopleRoutes.ts` · service: `social-people.ts`.
+Registration: `registerSocialPeopleRoutes.ts` · `registerMemberDiscoveryRoutes.ts` · services: `member-people-engagement.ts`, `member-discovery-roster.ts`.
 
 ---
 
@@ -139,7 +141,77 @@ Registration: `apps/api/src/routes/social/registerSocialPeopleRoutes.ts` · serv
 | GET | `/me/reviews` | Signed-in member's reviews |
 | PATCH | `/me/reviews/:id` | Edit own review |
 
-Registration: `registerSocialReviewRoutes.ts` (mounted on root `socialRouter` in `routes/social.ts`). Favorites remain on the same `socialRouter`.
+Registration: `registerSocialReviewRoutes.ts` (mounted on root `socialRouter` in `routes/social.ts`).
+
+---
+
+## Wishlist (`/me/wishlist`)
+
+Private saves — **venue** (`locationId`) or **activity** (`activityId`) only. Mongo: `user_favorites` (`COLLECTIONS.USER_WISHLIST`). Not demand, not member follows.
+
+| Method | Path | Who |
+|--------|------|-----|
+| GET | `/me/wishlist` | List wishlist rows with hydrated place/activity labels |
+| POST | `/me/wishlist` | Create (exactly one of `locationId`, `activityId`) |
+| PATCH | `/me/wishlist/:id` | Toggle `alertOnMatch` for geographic/category alerts |
+| DELETE | `/me/wishlist/:id` | Remove row |
+| GET | `/me/wishlist/check` | Query `locationId` or `activityId` → `{ saved, wishlistItemId }` |
+
+Registration: `registerMeWishlistRoutes.ts` · store: `wishlist-store.ts` · match alerts: `wishlist-alerts.ts`.
+
+---
+
+## Entity follow (`/me/entity-follows`)
+
+Public **follow** for places, host brands, and shops — outing alerts when followed entities publish (not private wishlist).
+
+| Method | Path | Who |
+|--------|------|-----|
+| GET | `/me/entity-follows` | List follows with hydrated labels |
+| POST | `/me/entity-follows` | Follow (`locationId` \| `tenantId` \| `merchantId`) |
+| DELETE | `/me/entity-follows/:id` | Unfollow |
+| GET | `/me/entity-follows/check` | Query one target → `{ following, followId }` |
+
+Registration: `registerEntityFollowRoutes.ts` · store: `entity-follow-store.ts` · publish fan-out: `entity-publish-notifications.ts`.
+
+---
+
+## Member follow (`/me/following`)
+
+**People** you follow for social graph and publish alerts — not entity follows (`/me/entity-follows`) or wishlist.
+
+| Method | Path | Who |
+|--------|------|-----|
+| GET | `/me/following` | List followed members (summary rows) |
+| POST | `/me/following/:userId` | Follow a member |
+| DELETE | `/me/following/:userId` | Unfollow |
+| GET | `/me/follow-state/:userId` | `{ isFollowing, canFollow }` |
+
+Registration: `registerFollowRoutes.ts` · store: `follow-store.ts` (`user_follows`).
+
+---
+
+## Personal goals (`/me/goals`)
+
+Time-bounded outdoor targets — progress from joined/hosted outings and visited map pins in the goal window. Mongo: `user_goals`. Not wishlist saves.
+
+| Method | Path | Who |
+|--------|------|-----|
+| GET | `/me/goals` | List up to **3** concurrent goals (`MemberGoalDTO`) |
+| POST | `/me/goals` | Create goal (`activityFilter`, `countMode`, `targetCount`, `targetDate`) |
+| PATCH | `/me/goals/:id` | Update goal |
+| DELETE | `/me/goals/:id` | Remove goal |
+| GET | `/me/goals/active` | Legacy primary goal only |
+| PUT | `/me/goals/active` | Legacy upsert primary |
+| DELETE | `/me/goals/active` | Legacy clear primary |
+
+Registration: `registerMeGoalsRoutes.ts` · store: `member-goals-store.ts`.
+
+---
+
+## Account data export (`GET /me/export`)
+
+JSON download of profile, join requests, participations, **wishlist**, **entity follows**, **member following**, **goals**, **badges**, **journey map pins**, shop orders, and push subscription count. Registration: `registerAccountLifecycleRoutes.ts` · `buildUserDataExport` in `data-export.ts`. Rate-limited (`sensitiveDataLimiter`).
 
 ---
 
@@ -148,7 +220,7 @@ Registration: `registerSocialReviewRoutes.ts` (mounted on root `socialRouter` in
 | Method | Path | Who |
 |--------|------|-----|
 | GET | `/me/member-discovery-quota` | Free vs Pro profile-open quota |
-| GET | `/me/member-discovery/roster` | Strangers on trips (`onTrips`) + public directory + `meta.quota`. Query: `date`, `q`, pagination |
+| GET | `/me/member-discovery/roster` | `friendsGoing`, `hostsGoing`, `lookingFor`, `followed`, paginated `directory`, `meta.quota`. Query: `date`, `q` |
 | GET | `/users/browse` | Directory only (paginated public members; excludes self + buddies) |
 
 Profile opens from Discover: `GET /users/:id/public-profile?from=discover` (quota). Registration: `registerMemberDiscoveryRoutes.ts` · roster: `member-discovery-roster.ts` · views: `member_profile_views` collection.

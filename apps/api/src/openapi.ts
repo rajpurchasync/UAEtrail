@@ -9,7 +9,8 @@ export const openApiTags = [
   { name: 'Shop', description: 'Shop organisations, products, and checkout (`/shop/*`).' },
   { name: 'Members', description: 'Auth accounts, profiles, and admin member tools.' },
   { name: 'Explore', description: 'Map discovery and public browse endpoints.' },
-  { name: 'Social', description: 'Reviews, favorites, buddies, and groups.' },
+  { name: 'Social', description: 'Reviews, buddies, and groups.' },
+  { name: 'Engagement', description: 'Wishlist saves, entity follows, goals, badges, and map pins.' },
   { name: 'Media', description: 'Presigned upload and private media resolve.' },
   { name: 'Admin', description: 'Platform admin moderation and audit.' }
 ] as const;
@@ -164,6 +165,168 @@ export const openApiSpec = swaggerJsdoc({
           responses: {
             200: { description: 'Public shop profile and active products.' }
           }
+        }
+      },
+      '/me/wishlist': {
+        get: {
+          tags: ['Engagement', 'Members'],
+          summary: 'List wishlist items',
+          description:
+            'Private venue and activity saves (`user_favorites` collection). Not demand bookmarks or entity follows.',
+          security: [{ bearerAuth: [] }],
+          responses: { 200: { description: 'Hydrated wishlist rows.' } }
+        },
+        post: {
+          tags: ['Engagement', 'Members'],
+          summary: 'Add wishlist item',
+          description: 'Body: exactly one of `locationId` or `activityId`. Optional match-alert watch fields.',
+          security: [{ bearerAuth: [] }],
+          responses: { 201: { description: 'Created or existing row.' } }
+        }
+      },
+      '/me/wishlist/{id}': {
+        patch: {
+          tags: ['Engagement', 'Members'],
+          summary: 'Update wishlist alert preference',
+          description: 'Body: `{ alertOnMatch: boolean }`.',
+          security: [{ bearerAuth: [] }],
+          parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+          responses: { 200: { description: 'Updated row.' } }
+        },
+        delete: {
+          tags: ['Engagement', 'Members'],
+          summary: 'Remove wishlist item',
+          security: [{ bearerAuth: [] }],
+          parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+          responses: { 200: { description: 'Removed.' } }
+        }
+      },
+      '/me/wishlist/check': {
+        get: {
+          tags: ['Engagement', 'Members'],
+          summary: 'Check wishlist save state',
+          security: [{ bearerAuth: [] }],
+          responses: { 200: { description: '{ saved, wishlistItemId }' } }
+        }
+      },
+      '/me/entity-follows': {
+        get: {
+          tags: ['Engagement', 'Members'],
+          summary: 'List entity follows',
+          description: 'Followed places, host brands, and shops for publish alerts.',
+          security: [{ bearerAuth: [] }],
+          responses: { 200: { description: 'Hydrated follow rows.' } }
+        },
+        post: {
+          tags: ['Engagement', 'Members'],
+          summary: 'Follow an entity',
+          description: 'Body: exactly one of `locationId`, `tenantId`, `merchantId`.',
+          security: [{ bearerAuth: [] }],
+          responses: { 201: { description: 'Follow row.' } }
+        }
+      },
+      '/me/entity-follows/{id}': {
+        delete: {
+          tags: ['Engagement', 'Members'],
+          summary: 'Unfollow an entity',
+          security: [{ bearerAuth: [] }],
+          parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+          responses: { 200: { description: 'Removed.' } }
+        }
+      },
+      '/me/entity-follows/check': {
+        get: {
+          tags: ['Engagement', 'Members'],
+          summary: 'Check entity follow state',
+          security: [{ bearerAuth: [] }],
+          responses: { 200: { description: '{ following, followId }' } }
+        }
+      },
+      '/me/following': {
+        get: {
+          tags: ['Engagement', 'Members', 'Social'],
+          summary: 'List people you follow',
+          description: 'Member follow graph (`user_follows`). Distinct from entity follows and wishlist.',
+          security: [{ bearerAuth: [] }],
+          responses: { 200: { description: 'Member follow summaries.' } }
+        }
+      },
+      '/me/following/{userId}': {
+        post: {
+          tags: ['Engagement', 'Members', 'Social'],
+          summary: 'Follow a member',
+          security: [{ bearerAuth: [] }],
+          parameters: [{ name: 'userId', in: 'path', required: true, schema: { type: 'string' } }],
+          responses: { 201: { description: 'Follow row.' } }
+        },
+        delete: {
+          tags: ['Engagement', 'Members', 'Social'],
+          summary: 'Unfollow a member',
+          security: [{ bearerAuth: [] }],
+          parameters: [{ name: 'userId', in: 'path', required: true, schema: { type: 'string' } }],
+          responses: { 200: { description: 'Unfollowed.' } }
+        }
+      },
+      '/me/goals': {
+        get: {
+          tags: ['Engagement', 'Members'],
+          summary: 'List personal outdoor goals',
+          description: 'Up to 3 concurrent goals per member (`user_goals`). Progress from join/host counts in the goal window.',
+          security: [{ bearerAuth: [] }],
+          responses: { 200: { description: '{ data: MemberGoalDTO[] }' } }
+        },
+        post: {
+          tags: ['Engagement', 'Members'],
+          summary: 'Create a personal goal',
+          security: [{ bearerAuth: [] }],
+          responses: { 201: { description: 'Created goal.' } }
+        }
+      },
+      '/me/goals/{id}': {
+        patch: {
+          tags: ['Engagement', 'Members'],
+          summary: 'Update a personal goal',
+          security: [{ bearerAuth: [] }],
+          parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+          responses: { 200: { description: 'Updated goal.' } }
+        },
+        delete: {
+          tags: ['Engagement', 'Members'],
+          summary: 'Delete a personal goal',
+          security: [{ bearerAuth: [] }],
+          parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+          responses: { 200: { description: 'Removed.' } }
+        }
+      },
+      '/me/goals/active': {
+        get: {
+          tags: ['Engagement', 'Members'],
+          summary: 'Get primary goal (legacy)',
+          description: 'Legacy single-goal read. Prefer `GET /me/goals` for the full list.',
+          security: [{ bearerAuth: [] }],
+          responses: { 200: { description: 'Primary goal or null.' } }
+        },
+        put: {
+          tags: ['Engagement', 'Members'],
+          summary: 'Upsert primary goal (legacy)',
+          security: [{ bearerAuth: [] }],
+          responses: { 200: { description: 'Upserted primary goal.' } }
+        },
+        delete: {
+          tags: ['Engagement', 'Members'],
+          summary: 'Clear primary goal (legacy)',
+          security: [{ bearerAuth: [] }],
+          responses: { 200: { description: 'Cleared.' } }
+        }
+      },
+      '/me/export': {
+        get: {
+          tags: ['Members'],
+          summary: 'Download account data (JSON)',
+          description:
+            'Includes profile, activity requests, participations, wishlist, entity follows, member following, goals, badges, journey map pins, shop orders, and push subscription count.',
+          security: [{ bearerAuth: [] }],
+          responses: { 200: { description: 'JSON attachment.' } }
         }
       },
       '/media/resolve': {

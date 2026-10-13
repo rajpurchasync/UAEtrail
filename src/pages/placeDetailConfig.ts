@@ -1,7 +1,7 @@
 import type { ActivityType } from '@uaetrail/shared-types';
 import { VENUE_TYPE_LABELS } from '../config/activityTypes';
 
-/** URL segment kind for place detail pages (`/trail`, `/camp`, `/event`). */
+/** URL segment kind for place detail pages (`/trail`, `/camp`, `/venue`). */
 export type PlaceDetailKind = 'trail' | 'camp' | 'event';
 
 export type PlaceDetailAccent = 'emerald' | 'amber' | 'violet';
@@ -11,7 +11,7 @@ type PlaceActivityType = Extract<ActivityType, 'hiking' | 'camping' | 'event'>;
 export interface PlaceDetailKindConfig {
   activityType: PlaceActivityType;
   accent: PlaceDetailAccent;
-  pathPrefix: `/trail` | `/camp` | `/event`;
+  pathPrefix: `/trail` | `/camp` | `/venue`;
   backLabel: string;
   loadingTitle: string;
   notFoundTitle: string;
@@ -65,7 +65,7 @@ export const PLACE_DETAIL_CONFIG: Record<PlaceDetailKind, PlaceDetailKindConfig>
   event: {
     activityType: 'event',
     accent: 'violet',
-    pathPrefix: '/event',
+    pathPrefix: '/venue',
     backLabel: 'Event venues',
     loadingTitle: 'Loading event venue',
     notFoundTitle: `${VENUE_TYPE_LABELS.event} not found`,

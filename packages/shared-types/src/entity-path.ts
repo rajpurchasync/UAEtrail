@@ -1,3 +1,5 @@
+import type { PublishingProfileKind } from './publishing-profile-kind.js';
+
 /** Public venue kinds that map to place detail routes. */
 export type PlaceVenueKind = 'hiking' | 'camping' | 'event' | 'shop';
 
@@ -6,15 +8,32 @@ export type EntityKind = 'place' | 'activity' | 'organisation' | 'shop' | 'perso
 export type EntityRef =
   | { kind: 'place'; id: string; activityType: string }
   | { kind: 'activity'; id: string }
-  | { kind: 'organisation'; slug: string }
+  | {
+      kind: 'organisation';
+      slug: string;
+      /** Guide · agency · partner — required for canonical URLs when known. */
+      brandProfileKind?: PublishingProfileKind;
+    }
   | { kind: 'shop'; id?: string | null; merchantId?: string | null; slug?: string | null }
   | { kind: 'person'; userId: string };
+
+export const GUIDE_PROFILE_PATH_PREFIX = '/guide' as const;
+export const AGENCY_PROFILE_PATH_PREFIX = '/agency' as const;
+export const PARTNER_PROFILE_PATH_PREFIX = '/partner' as const;
+/** Legacy — redirect only; do not link in new UI. */
+export const LEGACY_OPERATOR_PROFILE_PATH_PREFIX = '/operator' as const;
 
 /** Default explore map target when a shop has no public id yet. */
 export const EXPLORE_SHOPS_PATH = '/explore?filter=shops&panel=shops';
 
 /** Explore map with shop list panel open (API explore-map fallback). */
 export const EXPLORE_SHOPS_LIST_PATH = '/explore?filter=shops&panel=shops&list=1';
+
+/** Public URL segment for event-type **places** (venues), not scheduled activities. */
+export const VENUE_PLACE_PATH_PREFIX = '/venue' as const;
+
+/** @deprecated Place URLs only — redirects to {@link VENUE_PLACE_PATH_PREFIX}. */
+export const LEGACY_EVENT_PLACE_PATH_PREFIX = '/event' as const;
 
 /** Normalise trail / camp / event activity type strings. */
 export const normalizePlaceActivityType = (activityType: string): PlaceVenueKind => {
@@ -30,7 +49,7 @@ export const placeDetailPath = (activityType: string, placeId: string): string =
   const kind = normalizePlaceActivityType(activityType);
   if (kind === 'shop') return `/shop/${placeId}`;
   if (kind === 'camping') return `/camp/${placeId}`;
-  if (kind === 'event') return `/event/${placeId}`;
+  if (kind === 'event') return `${VENUE_PLACE_PATH_PREFIX}/${placeId}`;
   return `/trail/${placeId}`;
 };
 
@@ -44,20 +63,6 @@ export const activityDetailInvitePath = (activityId: string): string =>
 export const exploreActivityInvitePath = (activityId: string): string =>
   `/explore?pin=activity:${activityId}&invite=1&list=1`;
 
-/** Public organisation profile URL (tenant slug). */
-export const organisationProfilePath = (tenantSlug?: string | null): string | null =>
-  tenantSlug ? `/operator/${tenantSlug}` : null;
-
-/** Member profile for individuals without a public operator page. */
-export const memberProfilePath = (userId?: string | null): string | null =>
-  userId ? `/member/${userId}` : null;
-
-/** Prefer operator page; fall back to member profile when no tenant slug. */
-export const resolveOrganisationProfilePath = (opts: {
-  tenantSlug?: string | null;
-  hostUserId?: string | null;
-}): string | null => organisationProfilePath(opts.tenantSlug) ?? memberProfilePath(opts.hostUserId);
-
 /** Canonical public URL for a gear shop (merchant id or tenant slug). */
 export const shopPublicPath = (
   input: { merchantId?: string | null; slug?: string | null; id?: string | null },
@@ -67,6 +72,58 @@ export const shopPublicPath = (
   if (!key) return fallback;
   return `/shop/${encodeURIComponent(key)}`;
 };
+
+/** Public brand profile URL (guide · agency · partner · shop kinds). */
+export const hostBrandProfilePath = (
+  tenantSlug?: string | null,
+  kind: PublishingProfileKind = 'pro_guide'
+): string | null => {
+  const slug = tenantSlug?.trim();
+  if (!slug) return null;
+  if (kind === 'shop' || kind === 'ecommerce') return shopPublicPath({ slug });
+  if (kind === 'agency' || kind === 'hospitality') return `${AGENCY_PROFILE_PATH_PREFIX}/${encodeURIComponent(slug)}`;
+  if (kind === 'partner') return `${PARTNER_PROFILE_PATH_PREFIX}/${encodeURIComponent(slug)}`;
+  if (kind === 'community') return null;
+  return `${GUIDE_PROFILE_PATH_PREFIX}/${encodeURIComponent(slug)}`;
+};
+
+export const guideProfilePath = (tenantSlug?: string | null): string | null =>
+  hostBrandProfilePath(tenantSlug, 'pro_guide');
+
+export const agencyProfilePath = (tenantSlug?: string | null): string | null =>
+  hostBrandProfilePath(tenantSlug, 'agency');
+
+export const partnerProfilePath = (tenantSlug?: string | null): string | null =>
+  hostBrandProfilePath(tenantSlug, 'partner');
+
+/**
+ * @deprecated Use {@link hostBrandProfilePath} with {@link PublishingProfileKind}.
+ * Defaults to guide profile (not `/operator`).
+ */
+export const organisationProfilePath = (
+  tenantSlug?: string | null,
+  kind: PublishingProfileKind = 'pro_guide'
+): string | null => hostBrandProfilePath(tenantSlug, kind);
+
+/** @deprecated Use {@link hostBrandProfilePath} */
+export const hostStorefrontProfilePath = hostBrandProfilePath;
+
+/** Member profile for community hosts and demand requesters. */
+export const memberProfilePath = (userId?: string | null): string | null =>
+  userId ? `/member/${userId}` : null;
+
+/**
+ * @deprecated Prefer {@link resolveActivityPublisherProfilePath} for activities.
+ * Without `brandProfileKind`, falls back to guide profile then member.
+ */
+export const resolveOrganisationProfilePath = (opts: {
+  tenantSlug?: string | null;
+  hostUserId?: string | null;
+  brandProfileKind?: PublishingProfileKind;
+}): string | null =>
+  (opts.brandProfileKind
+    ? hostBrandProfilePath(opts.tenantSlug, opts.brandProfileKind)
+    : hostBrandProfilePath(opts.tenantSlug, 'pro_guide')) ?? memberProfilePath(opts.hostUserId);
 
 export type ResolveEntityPathOptions = {
   shopFallback?: string;
@@ -84,7 +141,7 @@ export const resolveEntityPath = (ref: EntityRef, options?: ResolveEntityPathOpt
     case 'activity':
       return activityDetailPath(ref.id);
     case 'organisation': {
-      const path = organisationProfilePath(ref.slug);
+      const path = hostBrandProfilePath(ref.slug, ref.brandProfileKind ?? 'pro_guide');
       return path ?? missingFallback;
     }
     case 'shop':
@@ -103,11 +160,20 @@ export const resolveEntityPath = (ref: EntityRef, options?: ResolveEntityPathOpt
   }
 };
 
-const PLACE_PATH_RE = /^\/(trail|camp|event)\/([^/?#]+)/;
+const PLACE_PATH_RE = /^\/(trail|camp|venue)\/([^/?#]+)/;
+const LEGACY_EVENT_PLACE_PATH_RE = /^\/event\/([^/?#]+)/;
 const ACTIVITY_PATH_RE = /^\/activity\/([^/?#]+)/;
-const OPERATOR_PATH_RE = /^\/operator\/([^/?#]+)/;
+const GUIDE_PROFILE_PATH_RE = /^\/guide\/([^/?#]+)/;
+const AGENCY_PROFILE_PATH_RE = /^\/agency\/([^/?#]+)/;
+const PARTNER_PROFILE_PATH_RE = /^\/partner\/([^/?#]+)/;
+const LEGACY_OPERATOR_PATH_RE = /^\/operator\/([^/?#]+)/;
 const SHOP_PATH_RE = /^\/shop\/([^/?#]+)/;
 const MEMBER_PATH_RE = /^\/member\/([^/?#]+)/;
+
+const parseOrganisationRef = (
+  slug: string,
+  brandProfileKind: PublishingProfileKind
+): EntityRef => ({ kind: 'organisation', slug, brandProfileKind });
 
 /** Parse a browser pathname into an entity ref when it matches a public detail route. */
 export const parseEntityRefFromPathname = (pathname: string): EntityRef | null => {
@@ -117,9 +183,17 @@ export const parseEntityRefFromPathname = (pathname: string): EntityRef | null =
   if (placeMatch) {
     const segment = placeMatch[1];
     const id = decodeURIComponent(placeMatch[2]);
-    const activityType =
-      segment === 'camp' ? 'camping' : segment === 'event' ? 'event' : 'hiking';
+    const activityType = segment === 'camp' ? 'camping' : segment === 'venue' ? 'event' : 'hiking';
     return { kind: 'place', id, activityType };
+  }
+
+  const legacyEventPlaceMatch = path.match(LEGACY_EVENT_PLACE_PATH_RE);
+  if (legacyEventPlaceMatch) {
+    return {
+      kind: 'place',
+      id: decodeURIComponent(legacyEventPlaceMatch[1]),
+      activityType: 'event',
+    };
   }
 
   const activityMatch = path.match(ACTIVITY_PATH_RE);
@@ -127,9 +201,24 @@ export const parseEntityRefFromPathname = (pathname: string): EntityRef | null =
     return { kind: 'activity', id: decodeURIComponent(activityMatch[1]) };
   }
 
-  const operatorMatch = path.match(OPERATOR_PATH_RE);
-  if (operatorMatch) {
-    return { kind: 'organisation', slug: decodeURIComponent(operatorMatch[1]) };
+  const guideMatch = path.match(GUIDE_PROFILE_PATH_RE);
+  if (guideMatch) {
+    return parseOrganisationRef(decodeURIComponent(guideMatch[1]), 'pro_guide');
+  }
+
+  const agencyMatch = path.match(AGENCY_PROFILE_PATH_RE);
+  if (agencyMatch) {
+    return parseOrganisationRef(decodeURIComponent(agencyMatch[1]), 'agency');
+  }
+
+  const partnerMatch = path.match(PARTNER_PROFILE_PATH_RE);
+  if (partnerMatch) {
+    return parseOrganisationRef(decodeURIComponent(partnerMatch[1]), 'partner');
+  }
+
+  const legacyOperatorMatch = path.match(LEGACY_OPERATOR_PATH_RE);
+  if (legacyOperatorMatch) {
+    return { kind: 'organisation', slug: decodeURIComponent(legacyOperatorMatch[1]) };
   }
 
   const shopMatch = path.match(SHOP_PATH_RE);

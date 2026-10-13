@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
-import { buildMemberDiscoveryOnTripRowsFromMapItems } from '../src/services/member-discovery-roster.js';
+import { buildMemberDiscoveryOnTripRowsFromMapItems } from '../src/services/member-discovery-on-trip-rows.js';
 
 describe('buildMemberDiscoveryOnTripRowsFromMapItems', () => {
   it('returns public strangers on filtered activities', () => {

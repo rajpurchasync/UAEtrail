@@ -18,7 +18,7 @@ import { PageMeta } from '../seo/PageMeta';
 import { JsonLd } from '../seo/JsonLd';
 import { organizationSchema } from '../seo/schemas';
 import { HostMessageButton } from '../ui/HostMessageButton';
-import { MemberFollowControls } from '../profile/MemberFollowControls';
+import { EntityFollowControls } from '../profile/EntityFollowControls';
 import { HOST_ACTIVITIES_PATH, HOST_TEAM_PATH, SIGNIN_PATH } from '../../config/routingCatalog';
 import { GlassCard } from '../mobile/GlassCard';
 import { AppButton } from '../mobile/AppButton';
@@ -30,6 +30,7 @@ import { useAuth } from '../../context/AuthContext';
 import { COUNTRIES } from '../../constants';
 import { hostNotFoundLabel, hostProfileLabel, hostPublicProfileLabel, normalizeHostKind } from '../../host/hostCopy';
 import { detailBackPath } from '../../config/routingCatalog';
+import { tenantBrandPublicPath } from '../../utils/organisationLinks';
 
 const EXPERIENCE_OPTIONS = [
   { value: '<1 year', label: 'Less than 1 year' },
@@ -146,6 +147,15 @@ export const OrganisationPublicProfile = ({
   }
 
   const hostKind = normalizeHostKind(tenant.type);
+  const canonicalPublicPath =
+    tenantBrandPublicPath(
+      {
+        slug: tenant.slug ?? slug,
+        type: tenant.type,
+        businessMode: tenant.businessMode,
+      },
+      slug
+    ) ?? `/guide/${slug}`;
 
   const details = tenant.hostDetails ?? tenant.organizerDetails ?? {};
   const avgRating =
@@ -170,11 +180,14 @@ export const OrganisationPublicProfile = ({
             description={
               tenant.ownerBio?.slice(0, 160) ?? `Outdoor activities and hikes with ${tenant.name} in the UAE.`
             }
-            path={`/operator/${slug}`}
+            path={canonicalPublicPath}
             image={tenant.ownerAvatar}
             imageAlt={`${tenant.name} — UAE Trail host`}
           />
-          <JsonLd data={organizationSchema(tenant, slug, reviews)} id={`org-${tenant.id}`} />
+          <JsonLd
+            data={organizationSchema(tenant, slug, reviews, canonicalPublicPath)}
+            id={`org-${tenant.id}`}
+          />
         </>
       )}
 
@@ -185,7 +198,7 @@ export const OrganisationPublicProfile = ({
             see when they browse your activities.
           </p>
           <Link
-            to={`/operator/${tenant.slug}`}
+            to={canonicalPublicPath}
             className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-700"
           >
             Open live page <ExternalLink className="h-3.5 w-3.5" />
@@ -199,7 +212,7 @@ export const OrganisationPublicProfile = ({
             <ShareButton
               title={tenant.name}
               text={`Check out ${tenant.name} on UAE Trail — hikes, camps, and outdoor activities in the UAE.`}
-              path={`/operator/${slug}`}
+              path={canonicalPublicPath}
               iconOnly
               light
             />
@@ -248,11 +261,11 @@ export const OrganisationPublicProfile = ({
         {!isOwner && user?.id !== tenant.ownerId && tenant.ownerId && (
           <div className="space-y-3 border-t border-neutral-100 px-4 py-4">
             {user ? (
-              <MemberFollowControls targetUserId={tenant.ownerId} />
+              <EntityFollowControls tenantId={tenant.id} />
             ) : (
               <Link
                 to={SIGNIN_PATH}
-                state={{ from: `/operator/${slug}` }}
+                state={{ from: canonicalPublicPath }}
                 className="block text-center text-sm font-semibold text-emerald-700"
               >
                 Log in to follow host outing alerts

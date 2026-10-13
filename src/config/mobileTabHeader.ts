@@ -15,7 +15,10 @@ export const shouldShowMobileUnifiedTabHeader = (
   search: string,
   signedIn: boolean
 ): boolean => {
-  if (pathname === '/explore') return true;
+  if (pathname === '/explore') {
+    // List overlay is a search/discover sheet under this header — keep avatar + actions visible.
+    return true;
+  }
   if (!isMobileTabHeaderRoute(pathname)) return false;
   if (!signedIn) return false;
   return shouldShowMobileBottomNav(pathname, search, signedIn);

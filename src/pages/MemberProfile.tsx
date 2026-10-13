@@ -208,7 +208,7 @@ export const MemberProfile = () => {
           <Link
             to={proMembershipPath({
               intent: 'discover-members',
-              redirect: `${EXPLORE_MAP_PATH}?view=social&list=1`,
+              redirect: `${EXPLORE_MAP_PATH}?view=people&list=1`,
             })}
             className="mt-4 inline-flex items-center justify-center rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700"
           >

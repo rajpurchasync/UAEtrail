@@ -55,14 +55,4 @@ describe('resolveTripsContent', () => {
     expect(tripsContentShowsJoinedHub(key)).toBe(false);
   });
 
-  it('maps plans wishlist', () => {
-    const key = resolveTripsContent({
-      signedIn: true,
-      mainView: 'plans',
-      plansRole: 'wishlist',
-      role: 'joined',
-      canHost: true,
-    });
-    expect(key).toBe('wishlist');
-  });
 });

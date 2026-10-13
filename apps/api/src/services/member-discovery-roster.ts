@@ -1,67 +1,100 @@
 import type {
   ExploreMapItemDTO,
   MemberBrowseCardDTO,
-  MemberDiscoveryOnTripRowDTO,
+  MemberDiscoveryLookingRowDTO,
   MemberDiscoveryQuotaDTO,
   MemberDiscoveryRosterDTO,
 } from '@uaetrail/shared-types';
+import { USER_CITY_LABELS, type UserCity } from '../domain/user-profile.js';
 import { findAuthUsersByIds } from '../lib/auth-users.js';
 import { listBuddiesForUser } from '../lib/buddy-store.js';
+import { listFollowingForUser } from '../lib/follow-store.js';
 import {
   matchesExploreActivityDateFilter,
   parseExploreActivityDatePreset,
   type ExploreActivityDatePreset,
 } from '../lib/explore-activity-date-filter.js';
-import { buildExploreMapPayload } from '../lib/explore-map.js';
-import { enrichExploreMapPayloadViewerAccess } from '../lib/explore-map-viewer-access.js';
-import { normalizeProfileVisibility } from '../lib/media-access.js';
+import { loadExploreMapItemsForMemberEngagement } from '../lib/explore-map-member-engagement.js';
+import { enrichMemberBrowseDirectory } from './member-discovery-directory-enrich.js';
+import {
+  buildMemberDiscoveryFriendsGoing,
+  buildMemberDiscoveryHostsGoing,
+} from './member-discovery-going.js';
 import { listBrowsablePublicMembers } from './member-discovery.js';
 import { resolveMemberDiscoveryQuota } from './member-discovery-quota.js';
 import { resolveMemberHostStatus } from './member-host-status.js';
-import { shouldHideFromMapMemberDiscovery } from './profile-viewer-access.js';
 
-const isPublicProfile = (profileVisibility: unknown): boolean =>
-  normalizeProfileVisibility(profileVisibility) === 'public';
+const matchesMemberDiscoverySearch = (
+  parts: Array<string | null | undefined>,
+  search?: string
+): boolean => {
+  const needle = search?.trim().toLowerCase();
+  if (!needle) return true;
+  const haystack = parts.filter(Boolean).join(' ').toLowerCase();
+  return haystack.includes(needle);
+};
 
-/** Strangers on published activities (explore map participant previews + public profile rules). */
-export const buildMemberDiscoveryOnTripRowsFromMapItems = (
+/** Members with active demand posts on the explore map. */
+export const buildMemberDiscoveryLookingRowsFromMapItems = (
   items: ExploreMapItemDTO[],
   input: {
     viewerUserId: string;
     excludeUserIds: Set<string>;
     datePreset: ExploreActivityDatePreset;
-    discoverableUserIds: Set<string>;
+    search?: string;
   }
-): MemberDiscoveryOnTripRowDTO[] => {
+): MemberDiscoveryLookingRowDTO[] => {
   const seen = new Set<string>();
-  const rows: MemberDiscoveryOnTripRowDTO[] = [];
+  const rows: MemberDiscoveryLookingRowDTO[] = [];
 
   for (const item of items) {
-    if (item.source !== 'activity' || !item.activity) continue;
+    if (item.source !== 'demand') continue;
     if (!matchesExploreActivityDateFilter(item, input.datePreset)) continue;
     if (item.viewerAccess?.exposure === 'none') continue;
 
-    const activityId = item.activity.id;
-    const activityTitle = item.activity.title ?? item.title ?? 'Outing';
-    const hostUserId =
-      item.activity.hostId ?? item.activity.hostUserId ?? item.activity.createdById ?? null;
+    const userId = item.featuredPerson?.userId ?? item.requesterUserId ?? null;
+    if (!userId || input.excludeUserIds.has(userId) || seen.has(userId)) continue;
 
-    for (const preview of item.participantPreviews ?? []) {
-      const userId = preview.id;
-      if (!userId || input.excludeUserIds.has(userId) || userId === hostUserId) continue;
-      if (!input.discoverableUserIds.has(userId) || seen.has(userId)) continue;
-      seen.add(userId);
-      rows.push({
-        userId,
-        displayName: preview.name || 'Member',
-        avatarUrl: preview.avatar ?? null,
-        activityId,
-        activityTitle,
-      });
+    const displayName =
+      item.featuredPerson?.displayName ?? item.hostName ?? 'Member';
+    const demandTitle = item.title?.trim() || 'Looking for company';
+    if (
+      !matchesMemberDiscoverySearch([displayName, demandTitle, item.subtitle ?? null], input.search)
+    ) {
+      continue;
     }
+
+    const intentId = item.participantIntentId ?? item.id.replace(/^demand:/, '');
+    seen.add(userId);
+    rows.push({
+      userId,
+      displayName,
+      avatarUrl: item.featuredPerson?.avatarUrl ?? item.hostAvatar ?? null,
+      participantIntentId: intentId,
+      demandTitle,
+      exploreItemId: item.id,
+    });
   }
 
   return rows;
+};
+
+const buildFollowedBrowseCards = async (
+  viewerUserId: string,
+  buddyIds: Set<string>,
+  search?: string
+): Promise<MemberBrowseCardDTO[]> => {
+  const following = await listFollowingForUser(viewerUserId);
+  const rows = following.filter((row) => !buddyIds.has(row.userId));
+  const filtered = rows.filter((row) =>
+    matchesMemberDiscoverySearch([row.displayName], search)
+  );
+  return filtered.map((row) => ({
+    id: row.userId,
+    displayName: row.displayName,
+    avatarUrl: row.avatarUrl,
+    city: null,
+  }));
 };
 
 export const loadMemberDiscoveryRoster = async (input: {
@@ -71,67 +104,87 @@ export const loadMemberDiscoveryRoster = async (input: {
   search?: string;
   skip: number;
   take: number;
+  omitDirectory?: boolean;
 }): Promise<{
   data: MemberDiscoveryRosterDTO & { directory: MemberBrowseCardDTO[] };
   quota: MemberDiscoveryQuotaDTO;
 }> => {
   const datePreset = parseExploreActivityDatePreset(input.datePresetRaw);
-  const hostStatus = await resolveMemberHostStatus(input.viewerUserId);
-  const [payload, buddies, quota] = await Promise.all([
-    buildExploreMapPayload(),
+  const [hostStatus, mapItems, buddies] = await Promise.all([
+    resolveMemberHostStatus(input.viewerUserId),
+    loadExploreMapItemsForMemberEngagement({
+      viewerUserId: input.viewerUserId,
+      userRole: input.userRole,
+    }),
     listBuddiesForUser(input.viewerUserId),
-    resolveMemberDiscoveryQuota(input.viewerUserId, hostStatus),
   ]);
+  const quota = await resolveMemberDiscoveryQuota(input.viewerUserId, hostStatus);
 
   const excludeUserIds = new Set<string>([input.viewerUserId]);
+  const buddyIds = new Set<string>();
   for (const buddy of buddies) {
-    if (buddy.userId) excludeUserIds.add(buddy.userId);
-  }
-
-  const directory = await listBrowsablePublicMembers({
-    excludeUserId: input.viewerUserId,
-    excludeUserIds,
-    search: input.search,
-    skip: input.skip,
-    take: input.take,
-  });
-
-  const enriched = await enrichExploreMapPayloadViewerAccess(payload, {
-    viewerUserId: input.viewerUserId,
-    userRole: input.userRole,
-  });
-
-  const candidateUserIds = new Set<string>();
-  for (const item of enriched.items) {
-    if (item.source !== 'activity') continue;
-    for (const preview of item.participantPreviews ?? []) {
-      if (preview.id && !excludeUserIds.has(preview.id)) {
-        candidateUserIds.add(preview.id);
-      }
+    if (buddy.userId) {
+      excludeUserIds.add(buddy.userId);
+      buddyIds.add(buddy.userId);
     }
   }
 
-  const users = await findAuthUsersByIds([...candidateUserIds]);
-  const publicUsers = users.filter((user) => isPublicProfile(user.profile?.profileVisibility));
-  const hideFlags = await Promise.all(
-    publicUsers.map(async (user) => ({
-      id: user._id,
-      hide: await shouldHideFromMapMemberDiscovery(user._id, user.profile?.profileVisibility),
-    }))
-  );
-  const discoverableUserIds = new Set(
-    hideFlags.filter((row) => !row.hide).map((row) => row.id)
+  const directoryPromise = input.omitDirectory
+    ? Promise.resolve([] as MemberBrowseCardDTO[])
+    : listBrowsablePublicMembers({
+        excludeUserId: input.viewerUserId,
+        excludeUserIds,
+        search: input.search,
+        skip: input.skip,
+        take: input.take,
+      }).then((directoryRaw) => enrichMemberBrowseDirectory(input.viewerUserId, directoryRaw));
+
+  const directory = await directoryPromise;
+
+  const followedPromise = buildFollowedBrowseCards(input.viewerUserId, buddyIds, input.search).then(
+    async (followedRaw) => {
+      const followedUsers = await findAuthUsersByIds(followedRaw.map((card) => card.id));
+      const followedWithCity = followedRaw.map((card) => {
+        const user = followedUsers.find((u) => u._id === card.id);
+        const city = user?.profile?.city;
+        return {
+          ...card,
+          city: city ? USER_CITY_LABELS[city as UserCity] ?? null : null,
+        };
+      });
+      return enrichMemberBrowseDirectory(input.viewerUserId, followedWithCity);
+    }
   );
 
-  const onTrips = buildMemberDiscoveryOnTripRowsFromMapItems(enriched.items, {
-    viewerUserId: input.viewerUserId,
-    excludeUserIds,
-    datePreset,
-    discoverableUserIds,
-  });
+  const [friendsGoing, hostsGoing, lookingFor, followed] = await Promise.all([
+    buildMemberDiscoveryFriendsGoing(input.viewerUserId, buddies, mapItems, datePreset),
+    buildMemberDiscoveryHostsGoing(
+      input.viewerUserId,
+      buddyIds,
+      mapItems,
+      datePreset,
+      input.search
+    ),
+    Promise.resolve(
+      buildMemberDiscoveryLookingRowsFromMapItems(mapItems, {
+        viewerUserId: input.viewerUserId,
+        excludeUserIds,
+        datePreset,
+        search: input.search,
+      })
+    ),
+    followedPromise,
+  ]);
+
+  const friendsFiltered = friendsGoing.filter((row) =>
+    matchesMemberDiscoverySearch(
+      [row.displayName, row.upcomingTrip?.title ?? null, row.cityLabel],
+      input.search
+    )
+  );
 
   return {
-    data: { onTrips, directory },
+    data: { friendsGoing: friendsFiltered, hostsGoing, lookingFor, followed, directory },
     quota,
   };
 };

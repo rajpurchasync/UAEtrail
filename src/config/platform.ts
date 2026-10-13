@@ -18,11 +18,18 @@ import {
   HOST_MESSAGES_PATH,
 } from './surfacePaths';
 import { LEGACY_BECOME_HOST_PATH } from './memberRoutes';
+import {
+  GUIDE_PROFILE_PATH_PREFIX,
+  LEGACY_OPERATOR_PROFILE_PATH_PREFIX,
+} from '@uaetrail/shared-types';
 
 export { ADMIN_PLACES_PATH, HOST_PLACES_PATH };
 
 /** Full-screen explore map (mobile-first). */
 export const EXPLORE_MAP_PATH = '/explore' as const;
+
+/** Scroll-first discovery feed (mobile-first layout; desktop centered column). */
+export const LIST_DISCOVERY_PATH = '/list' as const;
 
 /** @deprecated Use {@link ADMIN_PLACES_PATH} */
 export const ADMIN_LOCATIONS_PATH = ADMIN_PLACES_PATH;
@@ -41,7 +48,7 @@ export const DOMAIN_GLOSSARY = {
     storage: 'Location',
     api: '/places',
     legacyApi: '/locations',
-    publicRoutes: ['/trail/:id', '/camp/:id', '/event/:id', '/shop/:id'],
+    publicRoutes: ['/trail/:id', '/camp/:id', '/venue/:id', '/shop/:id'],
     adminRoute: ADMIN_PLACES_PATH,
     hostRoute: HOST_PLACES_PATH,
   },
@@ -54,11 +61,11 @@ export const DOMAIN_GLOSSARY = {
   },
   Organisation: {
     product: 'Organisation',
-    description: 'Host tenant — agency (guides) or shop operator.',
+    description: 'Host tenant — guide, agency, partner, or shop brand profiles.',
     storage: 'Tenant',
     api: '/host, /tenants/:slug',
     consoleRoute: '/host/*',
-    publicRoute: '/operator/:slug',
+    publicRoute: '/guide/:slug · /agency/:slug · /partner/:slug',
     manageRoute: '/organisation/manage',
   },
   Shop: {
@@ -79,10 +86,14 @@ export const DOMAIN_GLOSSARY = {
 /** Post-auth destination for landing “Join” CTA. */
 export const PARTICIPANT_JOIN_REDIRECT = EXPLORE_MAP_PATH;
 
-export const ORGANISATION_PUBLIC_PATH_PREFIX = '/operator' as const;
+/** Default brand profile segment when kind is unknown (guide storefront). */
+export const ORGANISATION_PUBLIC_PATH_PREFIX = GUIDE_PROFILE_PATH_PREFIX;
 
-/** @deprecated Use {@link ORGANISATION_PUBLIC_PATH_PREFIX} */
-export const OPERATOR_PUBLIC_PATH_PREFIX = ORGANISATION_PUBLIC_PATH_PREFIX;
+/** Retired `/operator` — redirect only; do not link in new UI. */
+export const LEGACY_OPERATOR_PUBLIC_PATH_PREFIX = LEGACY_OPERATOR_PROFILE_PATH_PREFIX;
+
+/** @deprecated Use {@link LEGACY_OPERATOR_PUBLIC_PATH_PREFIX} */
+export const OPERATOR_PUBLIC_PATH_PREFIX = LEGACY_OPERATOR_PUBLIC_PATH_PREFIX;
 
 /** Desktop top nav — map-first; browse pages redirect into explore. */
 export const DESKTOP_NAV_LINKS = [
@@ -310,7 +321,7 @@ export const isConsumerChromeHidden = (pathname: string): boolean =>
 
 /** Mobile detail pages render their own back header (activity, trail, camp, product). */
 export const isMobileDetailRoute = (pathname: string): boolean =>
-  /^\/(trail|camp|event|product|activity|event-spot|community-activity)\//.test(pathname);
+  /^\/(trail|camp|venue|event|product|activity|event-spot|community-activity)\//.test(pathname);
 
 /**
  * Consumer pages that render their own sticky header (ConsumerShell / MobileScreen / MobileDetailShell).
@@ -319,6 +330,7 @@ export const isMobileDetailRoute = (pathname: string): boolean =>
 export const CONSUMER_SELF_HEADER_EXACT = [
   '/',
   '/explore',
+  LIST_DISCOVERY_PATH,
   '/trips',
   '/trips/map',
   '/activities',
@@ -343,6 +355,10 @@ export const CONSUMER_SELF_HEADER_PREFIXES = [
   '/profile/',
   '/my-requests/',
   '/member/',
+  '/guide/',
+  '/agency/',
+  '/partner/',
+  '/venue/',
   '/operator/',
   '/organisation/manage',
   '/shop/manage',
@@ -361,7 +377,9 @@ export const MOBILE_BOTTOM_NAV_TAB_PATHS = [EXPLORE_MAP_PATH, '/trips', MESSAGES
 export type MobileBottomNavTabPath = (typeof MOBILE_BOTTOM_NAV_TAB_PATHS)[number];
 
 export const isMobileBottomNavTabPath = (pathname: string): pathname is MobileBottomNavTabPath =>
-  (MOBILE_BOTTOM_NAV_TAB_PATHS as readonly string[]).includes(pathname) || pathname === '/activities';
+  (MOBILE_BOTTOM_NAV_TAB_PATHS as readonly string[]).includes(pathname) ||
+  pathname === '/activities' ||
+  pathname === LIST_DISCOVERY_PATH;
 
 /** Personal hub routes that keep the mobile tab bar visible (profile is not a tab). */
 export const MOBILE_BOTTOM_NAV_PROFILE_PATHS = [
@@ -385,6 +403,10 @@ export const shouldShowMobileBottomNav = (
   signedIn: boolean
 ): boolean => {
   if (isConsumerChromeHidden(pathname)) return false;
+  if (pathname === EXPLORE_MAP_PATH) {
+    const params = new URLSearchParams(search);
+    if (params.get('list') === '1') return false;
+  }
   if (pathname === MESSAGES_PATH || pathname === HOST_MESSAGES_PATH) {
     const params = new URLSearchParams(search);
     if (params.get('to') || params.get('group')) return false;

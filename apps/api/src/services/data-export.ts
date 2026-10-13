@@ -1,8 +1,13 @@
 import { findAuthUserById } from '../lib/auth-users.js';
 import { listUserActivityParticipantsBasic, listUserActivityRequestsBasic } from '../lib/activity-engagement-store.js';
-import { listUserFavorites } from '../lib/favorites-store.js';
+import { listEntityFollowsWithDetails } from '../lib/entity-follow-store.js';
+import { listFollowingForUser } from '../lib/follow-store.js';
+import { findUserBadges } from '../lib/member-badge-store.js';
+import { listMemberGoals } from '../lib/member-goals-store.js';
+import { listMemberMapPinsForUser } from '../lib/member-map-pins-store.js';
 import { countPushSubscriptions } from '../lib/push-subscriptions.js';
 import { listUserShopOrdersBasic } from '../lib/shop-store.js';
+import { listUserWishlistItems } from '../lib/wishlist-store.js';
 
 export interface UserDataExport {
   exportedAt: string;
@@ -20,19 +25,63 @@ export interface UserDataExport {
     bio: string | null;
     avatarUrl: string | null;
   } | null;
-  favorites: Array<{
-    id: string;
-    locationId: string | null;
-    activityId: string | null;
-    productId: string | null;
-    merchantId: string | null;
-    tenantId: string | null;
-    profileUserId: string | null;
-    createdAt: Date;
-  }>;
   activityRequests: Array<{ id: string; activityId: string; status: string; createdAt: Date }>;
   participations: Array<{ id: string; activityId: string; checkedInAt: Date | null; createdAt: Date }>;
   shopOrders: Array<{ id: string; status: string; totalAed: number; createdAt: Date }>;
+  wishlist: Array<{
+    id: string;
+    locationId: string | null;
+    activityId: string | null;
+    alertOnMatch: boolean;
+    watchOutingCategory: string | null;
+    watchLatitude: number | null;
+    watchLongitude: number | null;
+    createdAt: Date;
+  }>;
+  entityFollows: Array<{
+    id: string;
+    kind: string;
+    targetId: string;
+    createdAt: string;
+    locationName: string | null;
+    tenantName: string | null;
+    merchantName: string | null;
+  }>;
+  memberGoals: Array<{
+    id: string;
+    activityFilter: string;
+    countMode: string;
+    targetCount: number;
+    targetDate: string;
+    currentCount: number;
+    completed: boolean;
+    createdAt: string;
+    updatedAt: string;
+  }>;
+  memberFollowing: Array<{
+    userId: string;
+    displayName: string;
+    followedAt: string;
+  }>;
+  badges: Array<{
+    badgeKey: string;
+    earnedAt: string;
+  }>;
+  mapPins: Array<{
+    id: string;
+    kind: string;
+    source: string;
+    title: string;
+    placeDate: string;
+    latitude: number;
+    longitude: number;
+    activityId: string | null;
+    locationId: string | null;
+    notes: string | null;
+    activityType: string | null;
+    createdAt: string;
+    updatedAt: string;
+  }>;
   pushSubscriptionCount: number;
 }
 
@@ -43,13 +92,52 @@ export async function buildUserDataExport(userId: string): Promise<UserDataExpor
     throw new Error('User not found');
   }
 
-  const [favorites, requests, participants, shopOrders, pushSubscriptionCount] = await Promise.all([
-    listUserFavorites(userId),
+  const [
+    requests,
+    participants,
+    shopOrders,
+    pushSubscriptionCount,
+    wishlistRows,
+    entityFollowRows,
+    memberGoalRows,
+    memberFollowingRows,
+    badgeRows,
+    mapPinRows,
+  ] = await Promise.all([
     listUserActivityRequestsBasic(userId, 200),
     listUserActivityParticipantsBasic(userId, 200),
     listUserShopOrdersBasic(userId, 100),
     countPushSubscriptions(userId),
+    listUserWishlistItems(userId),
+    listEntityFollowsWithDetails(userId),
+    listMemberGoals(userId),
+    listFollowingForUser(userId),
+    findUserBadges(userId),
+    listMemberMapPinsForUser(userId),
   ]);
+
+  const wishlist = wishlistRows
+    .filter((row) => row.locationId || row.activityId)
+    .map((row) => ({
+      id: row.id,
+      locationId: row.locationId,
+      activityId: row.activityId,
+      alertOnMatch: row.alertOnMatch,
+      watchOutingCategory: row.watchOutingCategory,
+      watchLatitude: row.watchLatitude,
+      watchLongitude: row.watchLongitude,
+      createdAt: row.createdAt,
+    }));
+
+  const entityFollows = entityFollowRows.map((row) => ({
+    id: row.id,
+    kind: row.kind,
+    targetId: row.targetId,
+    createdAt: row.createdAt,
+    locationName: row.location?.name ?? null,
+    tenantName: row.tenant?.name ?? null,
+    merchantName: row.merchant?.shopName ?? null,
+  }));
 
   return {
     exportedAt: new Date().toISOString(),
@@ -69,7 +157,6 @@ export async function buildUserDataExport(userId: string): Promise<UserDataExpor
           avatarUrl: user.profile.avatarUrl,
         }
       : null,
-    favorites,
     activityRequests: requests.map((r: (typeof requests)[number]) => ({
       id: r.id,
       activityId: r.activityId,
@@ -83,6 +170,43 @@ export async function buildUserDataExport(userId: string): Promise<UserDataExpor
       createdAt: p.createdAt,
     })),
     shopOrders,
+    wishlist,
+    entityFollows,
+    memberGoals: memberGoalRows.map((goal) => ({
+      id: goal.id,
+      activityFilter: goal.activityFilter,
+      countMode: goal.countMode,
+      targetCount: goal.targetCount,
+      targetDate: goal.targetDate,
+      currentCount: goal.currentCount,
+      completed: goal.completed,
+      createdAt: goal.createdAt,
+      updatedAt: goal.updatedAt,
+    })),
+    memberFollowing: memberFollowingRows.map((row) => ({
+      userId: row.userId,
+      displayName: row.displayName,
+      followedAt: row.followedAt,
+    })),
+    badges: badgeRows.map((badge) => ({
+      badgeKey: badge.badgeKey,
+      earnedAt: badge.earnedAt.toISOString(),
+    })),
+    mapPins: mapPinRows.slice(0, 500).map((pin) => ({
+      id: pin.id,
+      kind: pin.kind,
+      source: pin.source,
+      title: pin.title,
+      placeDate: pin.placeDate,
+      latitude: pin.latitude,
+      longitude: pin.longitude,
+      activityId: pin.activityId,
+      locationId: pin.locationId,
+      notes: pin.notes,
+      activityType: pin.activityType,
+      createdAt: pin.createdAt,
+      updatedAt: pin.updatedAt,
+    })),
     pushSubscriptionCount,
   };
 }

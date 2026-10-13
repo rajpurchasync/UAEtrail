@@ -2,7 +2,7 @@ import { Bookmark } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { ExploreCardModel } from '../exploreCardModel';
 import { tripsPath } from '../../trips/tripsRouting';
-import { useExploreSaveFavorite } from './useExploreSaveFavorite';
+import { useExploreWishlistSave } from './useExploreWishlistSave';
 
 interface ExploreSaveButtonProps {
   card: ExploreCardModel;
@@ -10,7 +10,7 @@ interface ExploreSaveButtonProps {
 }
 
 export const ExploreSaveButton = ({ card, light = false }: ExploreSaveButtonProps) => {
-  const { canSave, saved, busy, notice, toggle } = useExploreSaveFavorite(card);
+  const { canSave, saved, busy, notice, toggle } = useExploreWishlistSave(card);
 
   if (card.viewerAccess?.level === 'host' || !canSave) return null;
 

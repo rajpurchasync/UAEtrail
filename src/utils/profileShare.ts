@@ -1,6 +1,7 @@
 import type { OwnedOrganisationProfileDTO } from '@uaetrail/shared-types';
 import {
-  organisationProfilePath,
+  agencyProfilePath,
+  guideProfilePath,
   shopPublicPath,
   tripsLegacyJoinedTabPath,
 } from '../config/routingCatalog';
@@ -16,11 +17,11 @@ export const resolveProfileSharePath = (
   options: ProfileShareOptions = {}
 ): string => {
   const agency = ownedProfiles.find((profile) => profile.type === 'agency' && profile.slug);
-  const agencyPath = organisationProfilePath(agency?.slug);
+  const agencyPath = agencyProfilePath(agency?.slug);
   if (agencyPath) return agencyPath;
 
   const guide = ownedProfiles.find((profile) => profile.type === 'guide' && profile.slug);
-  const guidePath = organisationProfilePath(guide?.slug);
+  const guidePath = guideProfilePath(guide?.slug);
   if (guidePath) return guidePath;
 
   const shop = ownedProfiles.find((profile) => profile.type === 'shop' && profile.slug);

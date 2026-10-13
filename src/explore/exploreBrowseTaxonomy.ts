@@ -1,4 +1,8 @@
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
+import {
+  EXPLORE_SEARCH_SCOPE_BUDDIES_DESCRIPTION,
+  EXPLORE_SEARCH_SCOPE_BUDDIES_LABEL,
+} from '../content/explorePeopleBrowseCopy';
 import type { ExplorePanel } from './routing';
 import type { ExplorePinKindFilter } from './explorePinKindFilter';
 import type { DesktopBrowseTab } from './ui/exploreBrowsePanelCopy';
@@ -10,7 +14,7 @@ import type { DesktopBrowseTab } from './ui/exploreBrowsePanelCopy';
 
 export const EXPLORE_SEARCH_PROMPT = 'What are you looking for?';
 
-export const EXPLORE_SEARCH_OPEN_PLACEHOLDER = 'Trips, spots, shops, hosts…';
+export const EXPLORE_SEARCH_OPEN_PLACEHOLDER = 'Activities, places, people, shops…';
 
 /** Map chrome — multi-select filter pills. */
 export type ExploreMapFilterPillKey = 'trips' | 'looking' | 'spots' | 'shops';
@@ -22,28 +26,58 @@ export const EXPLORE_MAP_FILTER_PILLS: ReadonlyArray<{ key: ExploreMapFilterPill
   { key: 'shops', label: 'Shops' },
 ];
 
-/** Search type-ahead scopes (Facilities = later). */
-export type ExploreSearchScopeKey = 'trips' | 'spots' | 'shops' | 'facilities';
+/** Search commit scopes — URL `searchScope=` (legacy `trips` / `spots` parsed in {@link parseExploreSearchScope}). */
+export type ExploreSearchScopeKey =
+  | 'activities'
+  | 'places'
+  | 'people'
+  | 'shops'
+  | 'agencies'
+  | 'facilities';
 
-export const EXPLORE_SEARCH_SCOPES_SHIPPED: readonly ExploreSearchScopeKey[] = ['trips', 'spots', 'shops'];
+export const EXPLORE_SEARCH_SCOPE_UI_ORDER: readonly ExploreSearchScopeKey[] = [
+  'activities',
+  'places',
+  'people',
+  'shops',
+  'agencies',
+];
+
+export const EXPLORE_SEARCH_SCOPES_SHIPPED: readonly ExploreSearchScopeKey[] = [
+  'activities',
+  'places',
+  'people',
+  'shops',
+  'agencies',
+];
 
 export const EXPLORE_SEARCH_SCOPE_COPY: Record<
   ExploreSearchScopeKey,
   { label: string; description: string; shipped: boolean }
 > = {
-  trips: {
-    label: 'Trips',
+  activities: {
+    label: 'Activities',
     description: 'Hosted hikes, camps, rideshares, events',
     shipped: true,
   },
-  spots: {
-    label: 'Spots',
-    description: 'Trails, camps, outdoor places',
+  places: {
+    label: 'Places',
+    description: 'Trails, camps, outdoor venues',
+    shipped: true,
+  },
+  people: {
+    label: EXPLORE_SEARCH_SCOPE_BUDDIES_LABEL,
+    description: EXPLORE_SEARCH_SCOPE_BUDDIES_DESCRIPTION,
     shipped: true,
   },
   shops: {
     label: 'Shops',
     description: 'Gear and outdoor shops',
+    shipped: true,
+  },
+  agencies: {
+    label: 'Agencies',
+    description: 'Outdoor operators and guides',
     shipped: true,
   },
   facilities: {
@@ -97,14 +131,17 @@ export const mapItemMatchesSearchScope = (
   scope: ExploreSearchScopeKey
 ): boolean => {
   switch (scope) {
-    case 'trips':
+    case 'activities':
       return mapItemMatchesTripsPill(item);
-    case 'spots':
+    case 'places':
       return mapItemMatchesSpotsPill(item);
+    case 'people':
+      return false;
     case 'shops':
       return mapItemMatchesShopsPill(item);
+    case 'agencies':
+      return item.source === 'agency';
     case 'facilities':
-      // Later: facility tags on venues or dedicated pins.
       return false;
     default:
       return false;
@@ -148,14 +185,24 @@ export const toggleExploreMapFilterPill = (
   return EXPLORE_MAP_FILTER_PILLS.map((p) => p.key).filter((k) => set.has(k));
 };
 
-const SEARCH_SCOPE_SET = new Set<ExploreSearchScopeKey>(['trips', 'spots', 'shops', 'facilities']);
+const SEARCH_SCOPE_SET = new Set<ExploreSearchScopeKey>([
+  'activities',
+  'places',
+  'people',
+  'shops',
+  'agencies',
+  'facilities',
+]);
 
 export const parseExploreSearchScope = (value: string | null): ExploreSearchScopeKey | null => {
   const key = value?.trim().toLowerCase();
   if (!key) return null;
-  if (key === 'venue' || key === 'venues' || key === 'spot') return 'spots';
-  if (key === 'trip') return 'trips';
-  if (key === 'shop') return 'shops';
+  if (key === 'trips' || key === 'trip' || key === 'activity' || key === 'activities') return 'activities';
+  if (key === 'spots' || key === 'spot' || key === 'venue' || key === 'venues' || key === 'place' || key === 'places')
+    return 'places';
+  if (key === 'looking' || key === 'demand' || key === 'people' || key === 'person') return 'people';
+  if (key === 'shop' || key === 'shops') return 'shops';
+  if (key === 'agency' || key === 'agencies' || key === 'operator' || key === 'operators') return 'agencies';
   if (SEARCH_SCOPE_SET.has(key as ExploreSearchScopeKey)) return key as ExploreSearchScopeKey;
   return null;
 };
@@ -163,28 +210,31 @@ export const parseExploreSearchScope = (value: string | null): ExploreSearchScop
 export const serializeExploreSearchScope = (value: ExploreSearchScopeKey | null): string | null => value ?? null;
 
 export const explorePanelForSearchScope = (scope: ExploreSearchScopeKey): ExplorePanel => {
-  if (scope === 'spots') return 'venues';
-  if (scope === 'shops') return 'shops';
+  if (scope === 'places') return 'venues';
+  if (scope === 'shops' || scope === 'agencies') return 'shops';
   return 'activities';
 };
 
 export const desktopBrowseTabForSearchScope = (scope: ExploreSearchScopeKey): DesktopBrowseTab => {
-  if (scope === 'spots') return 'venues';
+  if (scope === 'places' || scope === 'shops' || scope === 'agencies') return 'venues';
   return 'activities';
 };
 
 export const pinKindForSearchScope = (scope: ExploreSearchScopeKey): ExplorePinKindFilter => {
-  if (scope === 'spots') return 'places';
-  if (scope === 'shops') return 'shops';
-  if (scope === 'trips') return 'trips';
+  if (scope === 'places') return 'places';
+  if (scope === 'shops' || scope === 'agencies') return 'shops';
+  if (scope === 'activities') return 'trips';
+  if (scope === 'people') return 'all';
   return 'all';
 };
 
 export type ExploreSearchScopeCounts = Record<ExploreSearchScopeKey, number>;
 
 export const emptyExploreSearchScopeCounts = (): ExploreSearchScopeCounts => ({
-  trips: 0,
-  spots: 0,
+  activities: 0,
+  places: 0,
+  people: 0,
   shops: 0,
+  agencies: 0,
   facilities: 0,
 });

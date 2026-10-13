@@ -123,7 +123,7 @@ const activityParticipantsCollection = (): Collection<MongoActivityParticipantDo
 
 const mapMongoLocation = (doc: MongoAdminLocationDoc): Location => {
   const { _id, ...rest } = doc;
-  return { id: _id, ...rest };
+  return { id: _id, ...rest, areaLabel: rest.areaLabel ?? null };
 };
 
 const mapMongoTenant = (doc: MongoTenantDoc): Tenant => {

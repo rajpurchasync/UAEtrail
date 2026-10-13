@@ -60,6 +60,15 @@ describe('doc coherence (Tier 1)', () => {
     expect(system).toMatch(/src\/explore/);
   });
 
+  it('browse vs entity routing canon is documented in Tier-1', () => {
+    const canon = readFileSync(join(DOCS, 'DOMAIN_CANONICALS.md'), 'utf8');
+    const system = readFileSync(join(DOCS, 'SYSTEM_COHERENCE.md'), 'utf8');
+    expect(canon).toMatch(/### 4\.1 Browse vs entity paths/);
+    expect(canon).toMatch(/GET \/explore\/map/);
+    expect(system).toMatch(/### 4\.1 Browse routing strategy/);
+    expect(system).toMatch(/\/list/);
+  });
+
   it('CREATE_FLOW defers to NORTHSTAR and MEMBER_MODEL for gates', () => {
     const create = readFileSync(join(DOCS, 'CREATE_FLOW.md'), 'utf8');
     expect(create).toMatch(/NORTHSTAR/);

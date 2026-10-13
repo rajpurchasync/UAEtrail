@@ -118,6 +118,6 @@ export const activitiesBrowsePath = (activityType?: ActivityType | null): string
 
 export const locationPathForActivity = (activityType: ActivityType, id: string): string => {
   if (activityType === 'camping') return `/camp/${id}`;
-  if (activityType === 'event') return `/event/${id}`;
+  if (activityType === 'event') return `/venue/${id}`;
   return `/trail/${id}`;
 };

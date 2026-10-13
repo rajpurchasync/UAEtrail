@@ -35,7 +35,7 @@ describe('computeActivityMapPeekActions', () => {
   it('returns request_join for link_holder viewers', () => {
     expect(
       computeActivityMapPeekActions({ level: 'link_holder', activityPublished: true }).map((a) => a.id)
-    ).toEqual(['request_join', 'view_detail']);
+    ).toEqual(['request_join', 'message_host']);
   });
 
   it('returns pending_join when join_request level has pending status', () => {
@@ -47,7 +47,7 @@ describe('computeActivityMapPeekActions', () => {
       })
     ).toEqual([
       { id: 'pending_join', prominence: 'primary', joinRequestStatus: 'pending' },
-      { id: 'view_detail', prominence: 'text' },
+      { id: 'message_host', prominence: 'secondary' },
     ]);
   });
 
@@ -60,7 +60,7 @@ describe('computeActivityMapPeekActions', () => {
   it('returns join + view detail for public guests', () => {
     expect(computeActivityMapPeekActions({ level: 'public', activityPublished: true }).map((a) => a.id)).toEqual([
       'request_join',
-      'view_detail',
+      'message_host',
     ]);
   });
 });

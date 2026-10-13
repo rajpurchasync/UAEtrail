@@ -4,7 +4,7 @@ import { wishlistWatchMatchesPin } from '../src/lib/wishlist-match.js';
 describe('wishlistWatchMatchesPin', () => {
   const watch = {
     userId: 'user-a',
-    favoriteId: 'fav-1',
+    wishlistItemId: 'wl-1',
     alertOnMatch: true,
     watchOutingCategory: 'hiking' as const,
     watchLatitude: 25.1,

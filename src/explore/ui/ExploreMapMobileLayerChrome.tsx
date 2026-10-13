@@ -15,7 +15,6 @@ import {
   exploreMapFilterActiveClass,
 } from '../../config/exploreTheme';
 import type { ExploreSearchScopeCounts, ExploreSearchScopeKey } from '../exploreBrowseTaxonomy';
-import { ExploreSearchIntentMenu } from './ExploreSearchIntentMenu';
 import {
   EXPLORE_MOBILE_ACTIVITY_MENU,
   EXPLORE_MOBILE_PLACES_MENU,
@@ -62,6 +61,8 @@ type ExploreMapMobileLayerChromeProps = {
   onSearchQueryChange?: (value: string) => void;
   onSearchCommit?: (scope?: ExploreSearchScopeKey | null) => void;
   searchScopeCounts?: ExploreSearchScopeCounts;
+  /** Open explore search modal (not list discover). */
+  onOpenExploreSearch?: () => void;
 };
 
 const pillClass = (active: boolean, activeKey: 'all' | 'hiking' | 'camping' | 'rideshare' | 'others' | 'shops') =>
@@ -76,15 +77,11 @@ export const ExploreMapMobileLayerChrome = ({
   onMapFilterChange,
   onActivityDatePresetChange,
   onVenueRegionsChange,
-  searchQuery = '',
-  onSearchQueryChange,
-  onSearchCommit,
-  searchScopeCounts,
+  onOpenExploreSearch,
 }: ExploreMapMobileLayerChromeProps) => {
   const [expandedLayer, setExpandedLayer] = useState<MobileLayer | null>(() =>
     defaultMobileMapExpandedLayer(panel)
   );
-  const [searchMenuOpen, setSearchMenuOpen] = useState(false);
   const intentBarRef = useRef<HTMLDivElement>(null);
 
   const onActivities = panel === 'activities';
@@ -103,7 +100,6 @@ export const ExploreMapMobileLayerChrome = ({
   const placesSelection = mapFilterToMobilePlacesMenu(mapFilter);
 
   const openLayer = (layer: MobileLayer) => {
-    setSearchMenuOpen(false);
     onBrowsePanelChange(browsePanelForMobileLayer(layer));
     setExpandedLayer((current) => (current === layer ? null : layer));
   };
@@ -185,21 +181,18 @@ export const ExploreMapMobileLayerChrome = ({
           <span className="font-emoji" aria-hidden>{EXPLORE_PLACES_LAYER_EMOJI}</span>
         </button>
         <span className={SEGMENT_DIVIDER} aria-hidden />
-        {onSearchQueryChange && onSearchCommit ? (
-          <ExploreSearchIntentMenu
-            variant="mapSegment"
-            query={searchQuery}
-            onQueryChange={onSearchQueryChange}
-            onQueryCommit={onSearchCommit}
-            scopeCounts={searchScopeCounts}
-            className={INTENT_SEGMENT_HIT}
-            menuOpen={searchMenuOpen}
-            onMenuOpenChange={(open) => {
-              setSearchMenuOpen(open);
-              if (open) setExpandedLayer(null);
+        {onOpenExploreSearch ? (
+          <button
+            type="button"
+            className={segmentButtonClass(false)}
+            aria-label="Search explore"
+            onClick={() => {
+              setExpandedLayer(null);
+              onOpenExploreSearch();
             }}
-            dropdownPositionBelowRef={intentBarRef}
-          />
+          >
+            <span className="font-emoji" aria-hidden>🔍</span>
+          </button>
         ) : (
           <span className={`inline-flex ${INTENT_SEGMENT_HIT} items-center justify-center text-lg opacity-40`} aria-hidden>
             🔍

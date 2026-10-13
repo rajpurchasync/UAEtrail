@@ -4,6 +4,7 @@ import { Search, X } from 'lucide-react';
 import {
   EXPLORE_SEARCH_OPEN_PLACEHOLDER,
   EXPLORE_SEARCH_PROMPT,
+  emptyExploreSearchScopeCounts,
   type ExploreSearchScopeCounts,
   type ExploreSearchScopeKey,
 } from '../exploreBrowseTaxonomy';
@@ -38,7 +39,7 @@ export const ExploreSearchIntentMenu = ({
   query = '',
   onQueryChange,
   onQueryCommit,
-  scopeCounts = { trips: 0, spots: 0, shops: 0, facilities: 0 },
+  scopeCounts = emptyExploreSearchScopeCounts(),
   variant = 'field',
   className = '',
   ariaLabel = 'Search',
@@ -179,6 +180,7 @@ export const ExploreSearchIntentMenu = ({
       </div>
       {showHints ? (
         <ExploreSearchScopeHints
+          query={query}
           counts={scopeCounts}
           onPick={(scope) => commitSearch(scope)}
           className="border-t border-neutral-100"

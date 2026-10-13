@@ -18,9 +18,9 @@ import { HostedActivitiesSection } from './activities/HostedActivitiesSection';
 import { SelfPlansSection } from './activities/SelfPlansSection';
 import { ActivitiesHubView } from './activities/ActivitiesHubView';
 import { PlansUpcomingAllView } from './activities/PlansUpcomingAllView';
-import { ProfileWishlistPanel } from '../components/trips/ProfileWishlistPanel';
 import { ProfileGoalCard } from '../components/profile/ProfileGoalCard';
-import { useMemberGoal } from '../hooks/useMemberGoal';
+import { ProfileGoalsSection } from '../components/profile/ProfileGoalsSection';
+import { useMemberGoals } from '../hooks/useMemberGoals';
 import { TripsPageToolbar } from '../components/trips/TripsPageToolbar';
 import { TripsPlansUpcomingHeader } from '../components/trips/TripsPlansUpcomingHeader';
 import { TripsFiltersSheet } from '../components/trips/TripsFiltersSheet';
@@ -29,11 +29,9 @@ import {
   parseTripsMainView,
   parseTripsPlansRole,
   parseTripsRole,
-  parseTripsSavedLayer,
   parseTripsSegment,
   type TripsPlansRole,
   type TripsRole,
-  type TripsSavedLayer,
 } from '../trips/tripsRouting';
 import { resolveTripsContent, tripsContentShowsComposeFab } from '../trips/resolveTripsContent';
 
@@ -46,9 +44,18 @@ export const Activities = () => {
   const [activitySearchQuery, setActivitySearchQuery] = useState('');
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [goalSheetOpen, setGoalSheetOpen] = useState(false);
+  const [goalAddSheet, setGoalAddSheet] = useState(false);
   const gate = useHostStatus({ enabled: Boolean(user) });
   const canHost = memberCanManageHostedActivities(user, gate.canAccessHostConsole);
-  const { goal, saving: goalSaving, saveGoal, clearGoal, reload: reloadGoal } = useMemberGoal(Boolean(user));
+  const {
+    goals,
+    primaryGoal,
+    saving: goalSaving,
+    createGoal,
+    updateGoal,
+    deleteGoal,
+    reload: reloadGoals,
+  } = useMemberGoals(Boolean(user));
 
   useEffect(() => {
     if (!user) return;
@@ -60,7 +67,6 @@ export const Activities = () => {
   const mainView = parseTripsMainView(location.pathname, searchParams.get('view'));
   const segment = parseTripsSegment(searchParams.get('segment'));
   const plansRole = parseTripsPlansRole(segment, searchParams.get('role'), canHost);
-  const savedLayer = parseTripsSavedLayer(searchParams.get('saved'));
   const historyRole: TripsRole =
     mainView === 'completed'
       ? parseTripsRole(searchParams.get('role'), 'completed', {
@@ -79,23 +85,18 @@ export const Activities = () => {
 
   const handleRefresh = useCallback(async () => {
     setRefreshKey((key) => key + 1);
-    reloadGoal();
-  }, [reloadGoal]);
+    reloadGoals();
+  }, [reloadGoals]);
 
   const setPlansRole = useCallback(
     (role: TripsPlansRole) => {
       const next = new URLSearchParams(searchParams);
       next.set('view', 'plans');
-      if (role === 'wishlist') {
-        next.set('segment', 'wishlist');
-        next.delete('role');
+      next.delete('segment');
+      if (role === 'all') {
+        next.set('role', 'all');
       } else {
-        next.delete('segment');
-        if (role === 'all') {
-          next.set('role', 'all');
-        } else {
-          next.set('role', role);
-        }
+        next.set('role', role);
       }
       next.delete('saved');
       setSearchParams(next, { replace: true });
@@ -110,21 +111,6 @@ export const Activities = () => {
       next.set('role', role);
       next.delete('segment');
       next.delete('saved');
-      setSearchParams(next, { replace: true });
-    },
-    [searchParams, setSearchParams]
-  );
-
-  const setSavedLayer = useCallback(
-    (nextLayer: TripsSavedLayer) => {
-      const next = new URLSearchParams(searchParams);
-      next.set('view', 'plans');
-      next.set('segment', 'wishlist');
-      if (nextLayer === 'trips') {
-        next.delete('saved');
-      } else {
-        next.set('saved', nextLayer);
-      }
       setSearchParams(next, { replace: true });
     },
     [searchParams, setSearchParams]
@@ -171,14 +157,6 @@ export const Activities = () => {
     }
 
     switch (contentKey) {
-      case 'wishlist':
-        return (
-          <ProfileWishlistPanel
-            key={`wishlist-${savedLayer}-${refreshKey}`}
-            layer={savedLayer}
-            searchQuery={listSearchQuery}
-          />
-        );
       case 'plans-all':
         return (
           <PlansUpcomingAllView refreshKey={refreshKey} canHost={canHost} />
@@ -251,14 +229,14 @@ export const Activities = () => {
   return (
     <>
       <PageMeta
-        title="Trips — your outings on UAE Trail"
+        title="Plan — your outings on UAE Trail"
         description="Upcoming and past outings you joined or host on UAE Trail."
         path={TRIPS_PATH}
       />
 
       <ConsumerShell
         layout="tab"
-        title="Trips"
+        title="Plan"
         suppressMobileHeader
         suppressMobileToolbarBorder
         maxWidth="4xl"
@@ -268,22 +246,29 @@ export const Activities = () => {
           <div className={`space-y-4 pt-1 ${showFab ? 'pb-mobile-fab' : 'pb-bottom-nav-safe'}`}>
             {user && mainView === 'plans' ? (
               <>
-                <ProfileGoalCard
-                  variant="compact"
-                  goal={goal}
+                <ProfileGoalsSection
+                  layout="trips"
+                  goals={goals}
                   saving={goalSaving}
-                  onSave={saveGoal}
-                  onClear={clearGoal}
+                  onCreateGoal={createGoal}
+                  onUpdateGoal={updateGoal}
+                  onDeleteGoal={deleteGoal}
+                  onReloadGoals={reloadGoals}
+                  openAddSheet={goalAddSheet}
+                  onOpenAddSheetHandled={() => setGoalAddSheet(false)}
                 />
-                <ProfileGoalCard
-                  surfaceHidden
-                  goal={goal}
-                  saving={goalSaving}
-                  onSave={saveGoal}
-                  onClear={clearGoal}
-                  sheetOpen={goalSheetOpen}
-                  onSheetOpenChange={setGoalSheetOpen}
-                />
+                {primaryGoal ? (
+                  <ProfileGoalCard
+                    surfaceHidden
+                    goal={primaryGoal}
+                    saving={goalSaving}
+                    onSave={(input) => updateGoal(primaryGoal.id, input)}
+                    onClear={() => deleteGoal(primaryGoal.id)}
+                    onReloadGoal={reloadGoals}
+                    sheetOpen={goalSheetOpen}
+                    onSheetOpenChange={setGoalSheetOpen}
+                  />
+                ) : null}
                 <TripsPlansUpcomingHeader
                   activeRole={plansRole}
                   onRoleChange={setPlansRole}
@@ -301,13 +286,11 @@ export const Activities = () => {
         <TripsFiltersSheet
           open={filtersOpen}
           onClose={() => setFiltersOpen(false)}
-          segment="completed"
-          hasActiveGoal={Boolean(goal)}
-          savedLayer={savedLayer}
-          onSavedLayerChange={setSavedLayer}
+          hasActiveGoal={goals.length > 0}
           onOpenGoal={() => {
             setFiltersOpen(false);
-            setGoalSheetOpen(true);
+            if (primaryGoal) setGoalSheetOpen(true);
+            else setGoalAddSheet(true);
           }}
         />
       ) : null}

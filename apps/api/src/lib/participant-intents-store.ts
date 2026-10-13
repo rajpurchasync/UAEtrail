@@ -147,8 +147,6 @@ export const createParticipantIntent = async (
 
   await collection().insertOne(doc);
   await invalidateExploreMapCache();
-  const { notifyWishlistForNewDemand } = await import('../services/wishlist-alerts.js');
-  void notifyWishlistForNewDemand(doc._id, userId);
   const { notifyMemberPublishSubscribers } = await import('../services/member-publish-notifications.js');
   void notifyMemberPublishSubscribers(userId, {
     publishType: 'demand',

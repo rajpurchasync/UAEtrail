@@ -6,7 +6,8 @@ import type { ExploreCardModel, ExploreCardTone } from '../exploreCardModel';
 import { exploreCardToneTextClass } from '../exploreCardModel';
 import { EXPLORE_TYPE } from '../../config/exploreTheme';
 import type { ExploreCardDetail, ExploreCardDetailIcon, ExploreCardSections } from '../exploreCopy';
-import { personProfilePath, resolveOrganisationProfilePath } from '../../utils/organisationLinks';
+import { personProfilePath } from '../../utils/organisationLinks';
+import { resolveActivityPublisherProfilePath } from '@uaetrail/shared-types';
 import { DirectionsControl } from '../../components/ui/DirectionsControl';
 import { capitalize } from '../../utils';
 import { SecureAvatar } from '../../components/ui/SecureAvatar';
@@ -360,14 +361,19 @@ export const ExploreCardPeopleRow = ({
   const participants = card.participantPreviews ?? [];
   const person = card.featuredPerson;
   const hostName = card.listHost ?? person?.displayName ?? card.sections.hostName ?? card.sections.highlightName;
+  const publishingProfileKind = card.activity?.publishingProfileKind;
   const hostPath =
-    card.source === 'activity'
-      ? resolveOrganisationProfilePath({
-          tenantSlug: card.activity?.tenantSlug,
-          hostUserId: card.activity?.hostUserId ?? person?.userId,
+    card.source === 'activity' && card.activity && publishingProfileKind
+      ? resolveActivityPublisherProfilePath({
+          publishingProfileKind,
+          tenantSlug: card.activity.tenantSlug,
+          hostUserId: card.activity.hostUserId ?? person?.userId,
         })
       : personProfilePath(person?.userId ?? card.requesterUserId);
-  const personRoleLabel = person ? explorePersonRoleLabel(person.role) : null;
+  const personRoleLabel = person
+    ? explorePersonRoleLabel(person.role, publishingProfileKind)
+    : null;
+
   const showHostRow =
     Boolean(hostName || card.hostAvatar) &&
     (card.source === 'activity' ||

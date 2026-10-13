@@ -12,6 +12,10 @@ import { messagingApi } from '../messaging';
 import { useAuth } from '../context/AuthContext';
 import { isUpcomingActivity, upcomingActivitiesTotal } from '../utils/activityDates';
 import { buildUpcomingPlanRows } from '../utils/activityHubSections';
+import {
+  isTopCardMessagingNotification,
+  sortNotificationsNewestFirst,
+} from '../utils/notificationCategories';
 
 const participantHubKey = (userId: string) => ['participant-hub', userId] as const;
 
@@ -33,7 +37,9 @@ async function fetchParticipantHub() {
     profile: profileRes.data,
     activities: activitiesRes.data ?? [],
     requests: requestsRes.data ?? [],
-    notifications: notifRes.data?.slice(0, 3) ?? [],
+    notifications: sortNotificationsNewestFirst(notifRes.data ?? [])
+      .filter((notif) => isTopCardMessagingNotification(notif))
+      .slice(0, 5),
     unreadNotifications: notifRes.unreadCount ?? 0,
     conversations: inbox.direct?.slice(0, 4) ?? [],
     groups: inbox.groups ?? [],

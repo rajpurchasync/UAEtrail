@@ -66,7 +66,7 @@ describe('resolveActivityMapPeekActions', () => {
     });
     expect(resolveActivityMapPeekActions(card).map((a) => a.id)).toEqual([
       'request_join',
-      'view_detail',
+      'message_host',
     ]);
     expect(activityMapPeekShowsJoinFlow(card, { kind: 'open' })).toBe(false);
   });

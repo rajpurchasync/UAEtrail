@@ -9,6 +9,7 @@ import {
 export type GuestBrowseGateIntent =
   | 'explore-browse'
   | 'explore-social'
+  | 'explore-people-browse'
   | 'peek-details'
   | 'join-activity'
   | 'member-profile';
@@ -23,7 +24,11 @@ const GATE_COPY: Record<Exclude<GuestBrowseGateIntent, 'join-activity'>, GateCop
   },
   'explore-social': {
     title: GUEST_GATE_OOPS_TITLE,
-    body: 'Sign in to see your friends, people you follow, and message your crew.',
+    body: 'Sign in to see who’s going, people you follow, and find a crew for your next outing.',
+  },
+  'explore-people-browse': {
+    title: GUEST_GATE_OOPS_TITLE,
+    body: 'Sign in to see who’s going, people you follow, and find a crew for your next outing.',
   },
   'peek-details': {
     title: GUEST_GATE_OOPS_TITLE,

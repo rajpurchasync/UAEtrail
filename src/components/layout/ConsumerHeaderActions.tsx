@@ -1,6 +1,6 @@
 import { useAuth } from '../../context/AuthContext';
 import { MobileMenuButton, type MobileMenuTone } from './MobileMenu';
-import { NotificationHeaderLink } from './NotificationHeaderLink';
+import { NotificationBellPopover } from './NotificationBellPopover';
 
 type ConsumerHeaderActionsProps = {
   tone?: MobileMenuTone;
@@ -21,7 +21,7 @@ export const ConsumerHeaderActions = ({
 
   return (
     <div className={`flex shrink-0 items-center gap-0.5 ${className}`}>
-      {user ? <NotificationHeaderLink variant={notificationVariant} /> : null}
+      {user ? <NotificationBellPopover triggerVariant={notificationVariant} tone={tone} /> : null}
       <MobileMenuButton tone={tone} showOnDesktop={showOnDesktop} />
     </div>
   );

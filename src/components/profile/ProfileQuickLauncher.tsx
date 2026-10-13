@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import {
   BUDDIES_PATH,
   CONTRIBUTIONS_PATH,
-  exploreSocialPath,
+  explorePeopleBrowsePath,
   HOST_OVERVIEW_PATH,
   MESSAGES_PATH,
   PROFILE_BADGES_PATH,
@@ -66,9 +66,9 @@ export const buildProfileQuickLauncherItems = (input: {
 }): ProfileQuickLauncherItem[] => {
   const items: ProfileQuickLauncherItem[] = [
     {
-      key: 'social',
-      label: 'Social',
-      to: exploreSocialPath(),
+      key: 'people-browse',
+      label: 'People',
+      to: explorePeopleBrowsePath(),
       icon: UserRound,
       iconWrapClassName: 'bg-emerald-50 text-emerald-800',
     },

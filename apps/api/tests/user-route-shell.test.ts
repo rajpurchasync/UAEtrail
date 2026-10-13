@@ -9,6 +9,7 @@ describe('user route mount shell', () => {
     const user = read('src/routes/user.ts');
     expect(user).toMatch(/registerMemberDiscoveryRoutes/);
     expect(user).toMatch(/registerProfileRoutes/);
+    expect(user).toMatch(/registerMeWishlistRoutes/);
     expect(user).not.toMatch(/userRouter\.(post|patch|delete)\(['"]\/me\//);
   });
 

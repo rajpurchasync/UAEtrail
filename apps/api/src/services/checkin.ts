@@ -145,10 +145,6 @@ export async function performParticipantCheckIn(opts: {
     activityType
   });
 
-  void import('./member-goal-notifications.js')
-    .then((mod) => mod.notifyMemberGoalAfterCheckIn(participant.userId, activity.id))
-    .catch(() => undefined);
-
   void import('../lib/member-map-pins-store.js')
     .then((mod) =>
       mod.upsertVisitedPinFromActivityCheckIn({
@@ -156,6 +152,11 @@ export async function performParticipantCheckIn(opts: {
         activityId: activity.id,
         checkedInAt,
       })
+    )
+    .then(() =>
+      import('./member-goal-notifications.js').then((mod) =>
+        mod.notifyMemberGoalAfterProgress(participant.userId)
+      )
     )
     .catch(() => undefined);
 

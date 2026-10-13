@@ -18,20 +18,12 @@ export const useMemberJourneyMapPinIds = (userId: string | undefined) => {
     setError(null);
     void (async () => {
       try {
-        const [favoritesRes, activitiesRes, requestsRes] = await Promise.all([
-          api.getMeFavorites(),
+        const [activitiesRes, requestsRes] = await Promise.all([
           api.getMeActivities(),
           api.getMeRequests(),
         ]);
         if (cancelled) return;
         const pinIds = new Set<string>();
-        for (const fav of favoritesRes.data) {
-          if (fav.participantIntentId) continue;
-          if (fav.locationId) pinIds.add(`venue:${fav.locationId}`);
-          const plan = fav.activity ?? fav.event;
-          if (fav.activityId) pinIds.add(`activity:${fav.activityId}`);
-          else if (plan?.id) pinIds.add(`activity:${plan.id}`);
-        }
         for (const activity of activitiesRes.data) {
           pinIds.add(`activity:${activity.id}`);
         }

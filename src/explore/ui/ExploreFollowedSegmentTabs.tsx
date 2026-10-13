@@ -1,9 +1,9 @@
 import { EXPLORE_BROWSE_SEGMENT_TAB } from '../../config/exploreTheme';
 import {
-  EXPLORE_SOCIAL_FOLLOWED_SEGMENT_EVENTS,
-  EXPLORE_SOCIAL_FOLLOWED_SEGMENT_PEOPLE,
-  EXPLORE_SOCIAL_FOLLOWED_SEGMENT_PLACES,
-} from '../../content/exploreSocialPanelCopy';
+  EXPLORE_PEOPLE_BROWSE_FOLLOWED_SEGMENT_EVENTS,
+  EXPLORE_PEOPLE_BROWSE_FOLLOWED_SEGMENT_PEOPLE,
+  EXPLORE_PEOPLE_BROWSE_FOLLOWED_SEGMENT_PLACES,
+} from '../../content/explorePeopleBrowseCopy';
 import type { ExploreFollowedSegment } from './useExploreBrowseUrlState';
 
 type ExploreFollowedSegmentTabsProps = {
@@ -22,9 +22,9 @@ export const ExploreFollowedSegmentTabs = ({
   >
     {(
       [
-        ['people', EXPLORE_SOCIAL_FOLLOWED_SEGMENT_PEOPLE],
-        ['places', EXPLORE_SOCIAL_FOLLOWED_SEGMENT_PLACES],
-        ['events', EXPLORE_SOCIAL_FOLLOWED_SEGMENT_EVENTS],
+        ['people', EXPLORE_PEOPLE_BROWSE_FOLLOWED_SEGMENT_PEOPLE],
+        ['places', EXPLORE_PEOPLE_BROWSE_FOLLOWED_SEGMENT_PLACES],
+        ['events', EXPLORE_PEOPLE_BROWSE_FOLLOWED_SEGMENT_EVENTS],
       ] as const
     ).map(([key, label]) => (
       <button

@@ -3,7 +3,10 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { requireAuth, requireVerifiedEmail } from '../../middleware/auth.js';
 import { validate } from '../../middleware/validate.js';
-import { loadSocialPeople, loadSocialPeoplePreview } from '../../services/social-people.js';
+import {
+  loadMemberPeopleNetworkPreview,
+  loadMemberPeopleNetworkRoster,
+} from '../../services/member-people-engagement.js';
 
 const segmentSchema = z.object({
   segment: z.enum(['all', 'friends', 'followed']).default('all'),
@@ -16,7 +19,10 @@ export const registerSocialPeopleRoutes = (router: Router): void => {
     requireVerifiedEmail,
     async (req, res, next) => {
       try {
-        const data = await loadSocialPeoplePreview({ viewerUserId: req.auth!.userId });
+        const data = await loadMemberPeopleNetworkPreview({
+          viewerUserId: req.auth!.userId,
+          userRole: req.auth!.role,
+        });
         res.json({ data });
       } catch (error) {
         next(error);
@@ -32,7 +38,7 @@ export const registerSocialPeopleRoutes = (router: Router): void => {
     async (req, res, next) => {
       try {
         const { segment } = req.query as unknown as { segment: SocialPeopleSegment };
-        const data = await loadSocialPeople({
+        const data = await loadMemberPeopleNetworkRoster({
           viewerUserId: req.auth!.userId,
           userRole: req.auth!.role,
           segment,

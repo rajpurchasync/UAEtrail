@@ -63,7 +63,7 @@ There is **no** `Trip` table, `TripDTO`, or trips API. Everything on the map tha
 | **Activity** | Domain | Scheduled outing (hike, camp, rideshare, run, …) | `ActivityDTO`, `activityId`, org/host activity APIs |
 | **Outing / plan** | Product copy | Same as activity — emotional, member-facing | UI strings, north star |
 | **Organize** | Action (FAB) | Host flow that **creates or edits** an activity | `compose=organize`, organize wizards — not an entity |
-| **Event** | Overloaded — read context | (1) **Place kind** → venue page `/event/:id` (2) **Organize chip** → `activityType: event` (3) Legacy JSON `event` on some payloads → use **`activity`** | Never a fourth entity; prefer **place** vs **activity** in code |
+| **Event** | Overloaded — read context | (1) **Place kind** → venue page `/venue/:id` (2) **Organize chip** → scheduled outing `activityType: event` → `/activity/:id` (3) Legacy JSON `event` on some payloads → use **`activity`** | Never a fourth entity; prefer **place** vs **activity** in code |
 | **Trip / Trips** | **UI only** | Bottom nav + `/trips` = **your** calendar (joined, hosting, wishlist) | `tripsRouting.ts`, `components/trips/*`, tab title “Trips” — **not** API module names |
 | **Hosted** | Relationship | You publish/manage an activity as a host tenant | `HostedActivitiesSection`, org hub — not a type of outing |
 | **Joined** | Relationship | You RSVP’d or have a pending join request | `getMeActivities`, `getMeRequests` |
@@ -77,7 +77,7 @@ There is **no** `Trip` table, `TripDTO`, or trips API. Everything on the map tha
 |----------|-------------|
 | Upcoming rail / Joined list | `GET /me/activities`, `GET /me/requests` |
 | Hosted list + manage sheet | Host user: `listHostActivities`, `getHostActivityJoinRequests` |
-| Wishlist / Places / Shops layers | Favorites / place registry — not activities |
+| Wishlist (Trips) | Private venue + activity saves (`/me/wishlist`) — not demand, not Follow |
 | `/trips/map` (outdoor map) | `memberJourneyMapApi` → `/me/trips/map` (legacy path name on server) |
 
 Do **not** add `trips*` API clients or `Trip*` domain types for hosted/joined lists — reuse **activity** and **member engagement** APIs.
@@ -112,8 +112,8 @@ Use **Place** in product copy and new code. **Do not** introduce parallel “ven
 |-------------|---------|----------------------|------------|
 | `hiking` | Hiking trail | `activityType: hiking` | `/trail/:id` |
 | `camping` | Camping spot | `activityType: camping` | `/camp/:id` |
-| `event` | Event / meetup venue | `activityType: event` | `/event/:id` |
-| `outdoor_other` | Parks, beaches (FAB Add “Others”) | `activityType: event` + `outdoor-other` tag | `/event/:id` |
+| `event` | Event / meetup venue | `activityType: event` | `/venue/:id` |
+| `outdoor_other` | Parks, beaches (FAB Add “Others”) | `activityType: event` + `outdoor-other` tag | `/venue/:id` |
 | `shop` | Gear shop | `place-kind:shop` tag (+ tenant link); migrating from `merchant_profiles` | `/shop/:id` |
 | `toilet`, `gas_station`, `water_refill`, `parking`, `viewpoint`, `picnic`, … | Trail amenities | `activityType: event` + `place-kind:<kind>` tag | `/event/:id` until dedicated routes |
 
@@ -178,7 +178,7 @@ Entry UI: Profile → **Pro Membership** (`/profile/pro-membership`; legacy `/be
 | Surface | Who it represents | Route |
 |---------|-------------------|-------|
 | **Member profile** | The **person** (participant or host human) | `/member/:userId` |
-| **Host public profile** | The **business or guide brand** (tenant) | `/operator/:slug` (guide/agency) |
+| **Host public profile** | The **business or guide brand** (tenant) | `/guide/:slug`, `/agency/:slug`, `/partner/:slug` |
 | **Self hub** | Signed-in account settings | `/profile` |
 
 **Follow** and **map publish notifications** attach to the **user id** of whoever published (owner or guide user on the activity), not to the tenant slug. See [`COMMUNICATION.md`](./COMMUNICATION.md) and `profile-viewer-access` for peek visibility rules.
@@ -244,7 +244,7 @@ The route `/member/:userId` uses a user id in the URL (storage key). In UI, pref
 
 | Subtype | Role | Map pin? | Manage |
 |---------|------|----------|--------|
-| **Guide** | Individual host; public intro at `/operator/:slug` | No | `/host/*` console; buddy Organize via `canPublish` |
+| **Guide** | Individual host; public intro at `/guide/:slug` | No | `/host/*` console; buddy Organize via `canPublish` |
 | **Agency** | Business host; paid trips | No | `/host/*`, `/organisation/manage?kind=agency` |
 | **Shop** | Outdoor retail (pin + `/shop/:id`) | Physical pin typical | `/shop/:id` |
 | **E-commerce** (Business Pro) | Online-first retail | Optional pin | TBD |
@@ -259,7 +259,7 @@ Shop identity: **tenant** (Pro Membership onboarding) + **merchant profile** (Sh
 |-------------|-------------------|--------------|
 | Location | **Place** (entity) | API `/locations`, `LocationDTO` — storage name only |
 | Venue | **Place** (word) | Explore panel `?panel=venues` — not a second entity |
-| Operator | Host public profile | Route `/operator/:id` |
+| Legacy operator URL | Retired host profile | `/operator/:id` → `/guide` / `/agency` / `/partner` / `/shop` (redirect) |
 | Merchant | Shop | `merchant_profiles`, `/merchant/:id` redirect |
 | Organizer | Host or agency | — |
 | Tenant | Host (copy) / Organisation (code) | `tenants`, `x-tenant-id` |
@@ -268,7 +268,7 @@ Shop identity: **tenant** (Pro Membership onboarding) + **merchant profile** (Sh
 
 | File / export | Route | Notes |
 |---------------|-------|-------|
-| `OrganisationProfile` | `/operator/:id` | Public guide/agency host profile |
+| `OrganisationProfile` | `/guide/:id`, `/agency/:id`, `/partner/:id` | Public brand profile |
 | `pages/host/Overview` (`Overview`) | `/host/overview` | **Host console** hub |
 | `pages/host/Activities` (`Activities`) | `/host/activities` | Tenant activity list + manage sheet |
 | `pages/host/JoinRequests` (`JoinRequests`) | `/host/requests` | Activity join queue |
@@ -311,8 +311,8 @@ Every durable entity has a **stable UUID** in Mongo and a **canonical public rou
 | Entity | Collection / store | Primary id | Public route |
 |--------|-------------------|------------|--------------|
 | **User** (auth + profile) | `users` | `user.id` | `/member/:userId`, `/profile` (self) |
-| **Host** (publishing tenant) | `tenants` | `tenant.id` | `/operator/:slug` |
-| **Place** (venue / registry) | `locations` | `location.id` | `/trail/:id`, `/camp/:id`, `/event/:id` |
+| **Host** (publishing tenant) | `tenants` | `tenant.id` | `/guide/:slug`, `/agency/:slug`, `/partner/:slug` |
+| **Place** (venue / registry) | `locations` | `location.id` | `/trail/:id`, `/camp/:id`, `/venue/:id` |
 | **Activity** (scheduled outing) | `activities` | `activity.id` | `/activity/:id` |
 | **Demand** (find a crew) | `participant_intents` | intent id | Map item `demand:…` |
 
