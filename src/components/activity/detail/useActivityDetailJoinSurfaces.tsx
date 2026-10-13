@@ -10,10 +10,7 @@ import { resolveJoinRequestUiState } from '../../../utils/joinRequestUi';
 import { ActivityDetailMobileFooter } from '../ActivityDetailMobileFooter';
 import { ActivityDetailStickyFooter } from './ActivityDetailStickyFooter';
 import type { ActivityDetailTabFooterKind } from '../../../activity/activityDetailTabFooters';
-import type { ActivityDetailTabId } from '../../../activity/activityDetailTab';
 import { buildActivitySharePayload, activityShareInputFromActivity } from '../../../utils/activityShare';
-
-type SharePayload = ReturnType<typeof buildActivitySharePayload>;
 
 type Args = {
   activity: ActivityDetailDTO;

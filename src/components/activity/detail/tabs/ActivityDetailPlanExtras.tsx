@@ -13,7 +13,7 @@ type ActivityDetailPlanExtrasProps = {
   previewMode: boolean;
   activityReviews: ReviewDTO[];
   canWriteActivityReview: boolean;
-  onActivityReviewSubmitted?: () => void;
+  onActivityReviewSubmitted?: (review: import('@uaetrail/shared-types').ReviewDTO) => void;
 };
 
 export const ActivityDetailPlanExtras = ({

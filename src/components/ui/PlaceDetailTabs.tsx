@@ -176,8 +176,6 @@ export const PlaceDetailTabs = ({
       activeTab === tab ? styles.active : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
     }`;
 
-  const hasOverviewContent = Boolean(data.description?.trim());
-
   const hasFactsContent =
     (showTrailStats &&
       ((data.distance != null && data.distance > 0) ||

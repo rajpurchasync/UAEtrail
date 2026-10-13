@@ -71,7 +71,7 @@ export const finalizeExploreCardLinkedRideshare = (
     Boolean(mapItem.rideshareEnabled ?? activity?.rideshareEnabled ?? hasLinkedRides);
 
   const requirementBadges = enrichExploreActivityRequirementBadges(activity?.requirements, {
-    kind: card.kind,
+    kind: card.kind === 'area' ? 'event' : card.kind,
     rideshareEnabled: rideshareForBadges,
     venueDifficulty: card.difficulty ?? null,
   });

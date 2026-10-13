@@ -47,6 +47,7 @@ const FALLBACK_GRADIENT: Record<ExploreCardTone, string> = {
   shop: 'from-rose-100 via-pink-100 to-neutral-100',
   agency: 'from-indigo-100 via-blue-100 to-neutral-100',
   rideshare: 'from-sky-100 via-cyan-100 to-neutral-100',
+  area: 'from-slate-100 via-gray-100 to-neutral-100',
 };
 
 export const browsePosterFallbackClass = (tone: ExploreCardTone): string => {

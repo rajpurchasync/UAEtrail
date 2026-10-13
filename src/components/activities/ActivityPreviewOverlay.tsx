@@ -182,7 +182,6 @@ export const ActivityPreviewOverlay = (props: ActivityPreviewOverlayProps) => {
         previewMode
         backTo={detailBackPath('activity')}
         backLabel={backLabel}
-        footerOverride={footerOverride}
         wireFooterByTab={previewWirePresentation?.footerByTab ?? null}
         wireTabs={previewWirePresentation?.tabs ?? null}
         sidebarJoinOverride={

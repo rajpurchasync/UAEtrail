@@ -268,10 +268,6 @@ export const ActivityDetail = () => {
       navigate(signInPathForReturn(returnPath));
       return;
     }
-    if (!packageSelected) {
-      setError('Please select a package option.');
-      return;
-    }
     setError(null);
     joinActions.openJoinModal();
   };

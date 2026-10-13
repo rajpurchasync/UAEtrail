@@ -19,7 +19,7 @@ import { useMemberGoals } from '../hooks/useMemberGoals';
 import { ProfileConsumerHub } from '../components/profile/ProfileConsumerHub';
 import { buildProfileCompletion } from '../utils/profileCompletion';
 import { resolveProfileSharePath, resolveProfileShareText } from '../utils/profileShare';
-import { USER_CITY_LABELS } from '../constants/userProfileOptions';
+import { USER_CITY_LABELS, type UserCity } from '../constants/userProfileOptions';
 import { formatMemberJoinedLabel } from '../utils/formatMemberSince';
 import { profileVisibilityLabel } from '../utils/profileVisibilityLabel';
 import { memberProfileRoleLabel } from '../member/memberProfileRoleLabel';
@@ -95,7 +95,10 @@ export const Profile = () => {
   const displayName = profile.displayName || user!.displayName || 'Explorer';
   const roleLabel = memberProfileRoleLabel(profileRoleKey);
   const avatarUrl = profile.avatarUrl ?? user?.avatarUrl ?? null;
-  const profileCityLabel = profile.city ? USER_CITY_LABELS[profile.city] : null;
+  const profileCityLabel =
+    profile.city && profile.city in USER_CITY_LABELS
+      ? USER_CITY_LABELS[profile.city as UserCity]
+      : null;
   const memberSinceLabel = memberSince ? formatMemberJoinedLabel(memberSince) : null;
   const completion = useMemo(
     () =>

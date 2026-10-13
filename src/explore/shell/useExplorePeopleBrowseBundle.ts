@@ -110,6 +110,7 @@ export const useExplorePeopleBrowseBundle = ({
     isSignedIn: Boolean(user),
     userRole: user?.role,
     canBrowseAllMembers,
+    onClose: browse.closePeopleBrowsePanel,
   };
 
   return {

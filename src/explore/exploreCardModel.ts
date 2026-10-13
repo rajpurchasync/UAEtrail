@@ -241,7 +241,7 @@ export const buildExploreCardModel = (item: ExploreMapItemDTO): ExploreCardModel
     requirementBadges: [
       ...(exploreMapItemIsSeeking(item) ? ['Seeking'] : []),
       ...enrichExploreActivityRequirementBadges(activity?.requirements, {
-        kind,
+        kind: kind === 'area' ? 'event' : kind,
         rideshareEnabled: Boolean(
           source === 'activity' &&
             kind !== 'rideshare' &&
@@ -272,6 +272,7 @@ export const exploreCardToneClass: Record<ExploreCardTone, string> = {
   shop: 'bg-rose-50 text-rose-900',
   agency: 'bg-indigo-50 text-indigo-900',
   rideshare: 'bg-sky-50 text-sky-900',
+  area: 'bg-slate-50 text-slate-900',
 };
 
 export const exploreCardToneTextClass: Record<ExploreCardTone, string> = {
@@ -281,6 +282,7 @@ export const exploreCardToneTextClass: Record<ExploreCardTone, string> = {
   shop: 'text-rose-800',
   agency: 'text-indigo-800',
   rideshare: 'text-sky-800',
+  area: 'text-slate-800',
 };
 
 export const exploreCardHasMapCoords = (card: ExploreCardModel): boolean =>

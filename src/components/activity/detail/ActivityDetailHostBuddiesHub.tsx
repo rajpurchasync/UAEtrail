@@ -83,9 +83,10 @@ export const ActivityDetailHostBuddiesHub = ({
         request={declineRequest}
         submitting={busyRequestId === declineRequest?.id}
         onClose={() => setDeclineRequest(null)}
-        onConfirm={(organizerNote) =>
-          declineRequest && void decideRequest(declineRequest.id, 'rejected', organizerNote)
-        }
+        onConfirm={(organizerNote) => {
+          if (!declineRequest) return;
+          void decideRequest(declineRequest.id, 'rejected', organizerNote);
+        }}
       />
     </div>
   );

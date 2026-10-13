@@ -65,6 +65,7 @@ const KIND_LABELS: Record<ContributeVenueKind, { title: string; icon: typeof Mou
   camping: { title: 'Camping Spots', icon: Tent },
   shop: { title: 'Shops', icon: ShoppingBag },
   event: { title: 'Others', icon: Sparkles },
+  rideshare: { title: 'Rideshare', icon: Car },
 };
 
 const REVIEW_EDIT_LABELS: Partial<Record<ContributeFlowStepId, string>> = {

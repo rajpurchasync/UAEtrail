@@ -2,8 +2,8 @@ import type {
   MemberProfileStatsDTO,
   MemberProfileViewStatsDTO,
   RewardBadgeDTO,
-  UserProfile,
 } from '@uaetrail/shared-types';
+import type { UserProfile } from '../api/types';
 import { api } from '../api/index';
 
 export const fetchMeProfile = async (): Promise<UserProfile> => {

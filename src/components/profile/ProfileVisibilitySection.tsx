@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import type { UserProfile } from '@uaetrail/shared-types';
+import type { UserProfile } from '../../api/types';
 import { fetchMeProfile, updateMeProfile } from '../../hooks/memberProfileApi';
 import { GlassCard } from '../mobile/GlassCard';
 

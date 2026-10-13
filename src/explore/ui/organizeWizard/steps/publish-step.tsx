@@ -36,7 +36,6 @@ export function renderPublishStep(ctx: OrganizeWizardContext): ReactNode | null 
     publishTenantId,
     setPublishTenantId,
     memberDisplayName,
-    registryPlaces,
     hikingFlow,
     campingFlow,
     eventFlow,

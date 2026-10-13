@@ -18,7 +18,7 @@ export const fetchJoinedUpcomingPlanData = async (): Promise<{
   ]);
   return {
     activities: activitiesRes.data,
-    requests: requestsRes.data,
+    requests: requestsRes.data as unknown as MyActivityRequestDTO[],
   };
 };
 

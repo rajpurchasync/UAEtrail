@@ -224,7 +224,11 @@ export const fetchAdminAreas = async (): Promise<AreaDTO[]> => {
   return res.data;
 };
 
-export const createAdminArea = async (payload: Partial<AreaDTO>): Promise<AreaDTO> => {
+export const createAdminArea = async (
+  payload: Omit<AreaDTO, 'id' | 'bounds' | 'createdAt' | 'updatedAt'> & {
+    bounds?: AreaDTO['bounds'];
+  }
+): Promise<AreaDTO> => {
   const res = await api.createAdminArea(payload);
   return res.data;
 };
