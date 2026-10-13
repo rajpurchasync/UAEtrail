@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useSafeAsyncEffect } from '../hooks/useSafeAsyncEffect';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   fetchMemberBadges,
@@ -59,29 +60,42 @@ export const Profile = () => {
   const [hubStats, setHubStats] = useState<MemberProfileStatsDTO | null>(null);
   const [badgesEarnedCount, setBadgesEarnedCount] = useState(0);
 
-  useEffect(() => {
+  useSafeAsyncEffect(async (isActive) => {
     if (!user) return;
-    void fetchMeProfile()
-      .then((me) => {
+    try {
+      const me = await fetchMeProfile();
+      if (isActive()) {
         setMemberSince(me.memberSince ?? null);
         setVisibility(me.profileVisibility ?? 'public');
-      })
-      .catch(() => undefined);
+      }
+    } catch {
+      // keep prior member-since / visibility
+    }
   }, [user]);
 
-  useEffect(() => {
-    if (!user) return;
-    reloadGoals();
-    void fetchMeProfileStats().then(setHubStats).catch(() => undefined);
-    if (hostTiers.professional || hostTiers.business) {
-      void fetchMeProfileViewStats().then(setProfileViewStats).catch(() => undefined);
-    } else {
-      setProfileViewStats(null);
-    }
-    void fetchMemberBadges()
-      .then((badges) => setBadgesEarnedCount(badges.filter((b) => b.earned).length))
-      .catch(() => undefined);
-  }, [user, hostTiers.professional, hostTiers.business]);
+  useSafeAsyncEffect(
+    async (isActive) => {
+      if (!user) return;
+      try {
+        const [stats, badges] = await Promise.all([fetchMeProfileStats(), fetchMemberBadges()]);
+        if (isActive()) {
+          setHubStats(stats);
+          setBadgesEarnedCount(badges.filter((badge) => badge.earned).length);
+        }
+        if (hostTiers.professional || hostTiers.business) {
+          const viewStats = await fetchMeProfileViewStats();
+          if (isActive()) {
+            setProfileViewStats(viewStats);
+          }
+        } else if (isActive()) {
+          setProfileViewStats(null);
+        }
+      } catch {
+        // keep prior hub stats / badges
+      }
+    },
+    [user, hostTiers.professional, hostTiers.business]
+  );
 
   useEffect(() => {
     const state = location.state as { openEdit?: boolean } | null;
@@ -205,17 +219,27 @@ export const Profile = () => {
   const handleRefresh = useCallback(async () => {
     await reload();
     if (!user) return;
-    void fetchMeProfile().then((me) => {
+    try {
+      const [me, stats, badges] = await Promise.all([
+        fetchMeProfile(),
+        fetchMeProfileStats(),
+        fetchMemberBadges(),
+      ]);
       setMemberSince(me.memberSince ?? null);
       setVisibility(me.profileVisibility ?? 'public');
-    });
+      setHubStats(stats);
+      setBadgesEarnedCount(badges.filter((badge) => badge.earned).length);
+      if (hostTiers.professional || hostTiers.business) {
+        setProfileViewStats(await fetchMeProfileViewStats());
+      } else {
+        setProfileViewStats(null);
+      }
+    } catch {
+      // partial refresh failure — hub query reload still applied
+    }
     reloadGoals();
-    void fetchMeProfileStats().then(setHubStats).catch(() => undefined);
-    void fetchMemberBadges()
-      .then((badges) => setBadgesEarnedCount(badges.filter((b) => b.earned).length))
-      .catch(() => undefined);
-    void refreshHostGate();
-  }, [reload, user, refreshHostGate, reloadGoals]);
+    await refreshHostGate();
+  }, [reload, user, refreshHostGate, reloadGoals, hostTiers.professional, hostTiers.business]);
 
   const saveAvatar = async (nextAvatarUrl: string) => {
     setAvatarMessage(null);

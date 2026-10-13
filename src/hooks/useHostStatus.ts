@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import type { HostStatusDTO } from '@uaetrail/shared-types';
 import { fetchMemberHostStatus } from './memberHostStatusApi';
 import { setActiveTenantId } from '../api/tenant';
 import { useAuth } from '../context/AuthContext';
+import { useSafeAsyncEffect, type IsActiveGuard } from './useSafeAsyncEffect';
 
 interface UseHostStatusOptions {
   enabled?: boolean;
@@ -15,38 +16,56 @@ export const useHostStatus = ({ enabled = true }: UseHostStatusOptions = {}) => 
   const [loading, setLoading] = useState(Boolean(enabled && user));
   const [error, setError] = useState<string | null>(null);
 
-  const refresh = useCallback(async () => {
-    if (!user) {
-      setStatus(null);
-      setLoading(false);
-      return null;
-    }
-
-    setLoading(true);
-    setError(null);
-    try {
-      const hostStatus = await fetchMemberHostStatus();
-      setStatus(hostStatus);
-      if (hostStatus.tenantId) {
-        setActiveTenantId(hostStatus.tenantId);
+  const loadHostStatus = useCallback(
+    async (isActive: IsActiveGuard = () => true) => {
+      if (!user) {
+        if (isActive()) {
+          setStatus(null);
+          setLoading(false);
+        }
+        return null;
       }
-      return hostStatus;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not load host status');
-      setStatus(null);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
 
-  useEffect(() => {
-    if (!enabled || !user) {
-      setLoading(false);
-      return;
-    }
-    void refresh();
-  }, [enabled, user, refresh]);
+      if (isActive()) {
+        setLoading(true);
+        setError(null);
+      }
+      try {
+        const hostStatus = await fetchMemberHostStatus();
+        if (isActive()) {
+          setStatus(hostStatus);
+          if (hostStatus.tenantId) {
+            setActiveTenantId(hostStatus.tenantId);
+          }
+        }
+        return hostStatus;
+      } catch (err) {
+        if (isActive()) {
+          setError(err instanceof Error ? err.message : 'Could not load host status');
+          setStatus(null);
+        }
+        return null;
+      } finally {
+        if (isActive()) {
+          setLoading(false);
+        }
+      }
+    },
+    [user]
+  );
+
+  const refresh = useCallback(() => loadHostStatus(), [loadHostStatus]);
+
+  useSafeAsyncEffect(
+    async (isActive) => {
+      if (!enabled || !user) {
+        setLoading(false);
+        return;
+      }
+      await loadHostStatus(isActive);
+    },
+    [enabled, user, loadHostStatus]
+  );
 
   return {
     status,

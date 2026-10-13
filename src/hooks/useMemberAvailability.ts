@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import type { MemberAvailabilityDTO, UpsertMemberAvailabilityInput } from '@uaetrail/shared-types';
 import { fetchMyMemberAvailability, saveMyMemberAvailability } from './memberAvailabilityApi';
+import { useSafeAsyncEffect, type IsActiveGuard } from './useSafeAsyncEffect';
 
 export const useMemberAvailability = (enabled: boolean) => {
   const [data, setData] = useState<MemberAvailabilityDTO | null>(null);
@@ -8,22 +9,33 @@ export const useMemberAvailability = (enabled: boolean) => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const reload = useCallback(async () => {
-    if (!enabled) return;
-    setLoading(true);
-    setError(null);
-    try {
-      const availability = await fetchMyMemberAvailability();
-      setData(availability);
-    } catch {
-      setError('Could not load availability.');
-    } finally {
-      setLoading(false);
-    }
-  }, [enabled]);
+  const reload = useCallback(
+    async (isActive: IsActiveGuard = () => true) => {
+      if (!enabled) return;
+      if (isActive()) {
+        setLoading(true);
+        setError(null);
+      }
+      try {
+        const availability = await fetchMyMemberAvailability();
+        if (isActive()) {
+          setData(availability);
+        }
+      } catch {
+        if (isActive()) {
+          setError('Could not load availability.');
+        }
+      } finally {
+        if (isActive()) {
+          setLoading(false);
+        }
+      }
+    },
+    [enabled]
+  );
 
-  useEffect(() => {
-    void reload();
+  useSafeAsyncEffect(async (isActive) => {
+    await reload(isActive);
   }, [reload]);
 
   const save = useCallback(

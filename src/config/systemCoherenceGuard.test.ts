@@ -151,7 +151,12 @@ describe('systemCoherenceGuard', () => {
   });
 
   it('member inbox surfaces guard mount fetches with useSafeAsyncEffect', () => {
-    const memberAsyncPages = ['src/pages/Messages.tsx', 'src/pages/Notifications.tsx', 'src/pages/Buddies.tsx'];
+    const memberAsyncPages = [
+      'src/pages/Messages.tsx',
+      'src/pages/Notifications.tsx',
+      'src/pages/Buddies.tsx',
+      'src/pages/Profile.tsx',
+    ];
     const missing: string[] = [];
     for (const rel of memberAsyncPages) {
       const content = readFileSync(join(ROOT, rel), 'utf8');
@@ -162,9 +167,20 @@ describe('systemCoherenceGuard', () => {
     expect(missing).toEqual([]);
   });
 
-  it('member goals hook guards mount fetch with useSafeAsyncEffect', () => {
-    const content = readFileSync(join(ROOT, 'src/hooks/useMemberGoals.ts'), 'utf8');
-    expect(content).toMatch(/useSafeAsyncEffect/);
+  it('member profile hooks guard mount fetch with useSafeAsyncEffect', () => {
+    const memberAsyncHooks = [
+      'src/hooks/useMemberGoals.ts',
+      'src/hooks/useHostStatus.ts',
+      'src/hooks/useMemberAvailability.ts',
+    ];
+    const missing: string[] = [];
+    for (const rel of memberAsyncHooks) {
+      const content = readFileSync(join(ROOT, rel), 'utf8');
+      if (!content.includes('useSafeAsyncEffect')) {
+        missing.push(rel);
+      }
+    }
+    expect(missing).toEqual([]);
   });
 
   it('admin console pages guard mount fetches with useSafeAsyncEffect', () => {
