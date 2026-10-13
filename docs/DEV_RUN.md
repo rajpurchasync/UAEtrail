@@ -39,6 +39,8 @@ During dev run, quickly verify:
 
 Explore FAB changes: [`CREATE_FLOW.md`](./CREATE_FLOW.md) + `src/explore/composeFlowCatalog.ts`. Automated guards: `npm run verify:system:quick` and `npm run test:explore-alignment`.
 
+**Release verification (S10 hygiene, Oct 2026):** On the release commit run **`npm run verify:system`** (includes `test:explore-alignment`). Day-to-day: **`npm run verify:system:quick`**. Staging manual pass: **`BASE_URL=https://staging-host npm run s10f:qa-checklist`** (detail §8 routes + notification edge cases). Map vNext promote (**S10e**): [`PRE_DEPLOY_CHECKLIST.md`](./PRE_DEPLOY_CHECKLIST.md) + [`operations/EXPLORE_MAP_RUNBOOK.md`](./operations/EXPLORE_MAP_RUNBOOK.md) — flags only after staging p95 gate. Tracker: [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.1.
+
 Seeking storage (activity-canonical Find): [`operations/SEEKING_STORAGE_RUNBOOK.md`](./operations/SEEKING_STORAGE_RUNBOOK.md). Local readiness: `npm run seeking:storage-status` (stub write should be **off** by default); gate before deploy: `npm run seeking:deploy-gate`. If backfill skips coord-less intents, use `cancel-coordless-participant-intents` (see runbook).
 
 **Local smoke — Find / looking for (manual, after `dev:local`):**

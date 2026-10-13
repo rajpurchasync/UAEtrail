@@ -10,7 +10,7 @@ Shipped on **`main`**. **Product truth:** [`../DOCS_INDEX.md`](../DOCS_INDEX.md)
 | [**programme-aggregate-spec.md**](./programme-aggregate-spec.md) | **R7** — programme/series aggregate (spec only; no code until PM gate) |
 | [**system-structure-deep-audit.md**](./system-structure-deep-audit.md) | **Repo-level** FE/BE/read-model critique (explore blob, domain taxes, scale) — not doc alignment |
 | [**member-surfaces-implementation-plan.md**](./member-surfaces-implementation-plan.md) | Plan hub / seeking / §11 guards; §21 **points** at activity-detail program for exit criteria |
-| [**consumer-detail-surfaces-plan.md**](./consumer-detail-surfaces-plan.md) | **S9 eng complete** — shells, guards (`consumerDetailQaMatrixGuard`, `detail-surface-lineage-contract`), **§3.2** lineage; §8 manual QA via `npm run consumer-detail:qa-routes` |
+| [**consumer-detail-surfaces-plan.md**](./consumer-detail-surfaces-plan.md) | **S9 eng complete** — shells, guards (`consumerDetailQaMatrixGuard`, `detail-surface-lineage-contract`), **§3.2** lineage; §8 + **S10f** manual QA via `npm run s10f:qa-checklist` (alias: `consumer-detail:qa-routes`) |
 | [explore-ux-spec.md](./explore-ux-spec.md) | Map card copy, emojis, CTAs |
 | [explore-browse-ia.md](./explore-browse-ia.md) · [explore-browse-taxonomy.md](./explore-browse-taxonomy.md) | Browse pills, search scopes, pin kinds (`src/explore/exploreBrowseTaxonomy.ts`) |
 | [consumer-mobile-ia.md](./consumer-mobile-ia.md) | Profile / Plan / Messages tabs (**superseded in part by member-surfaces-implementation-plan**) |
@@ -18,6 +18,6 @@ Shipped on **`main`**. **Product truth:** [`../DOCS_INDEX.md`](../DOCS_INDEX.md)
 
 **Code catalog:** `src/explore/composeFlowCatalog.ts` mirrors FAB Organize · Find · Add paths documented in `CREATE_FLOW.md`.
 
-**QA:** `npm run test:explore-alignment` · map seed/smoke: [`../operations/EXPLORE_MAP_RUNBOOK.md`](../operations/EXPLORE_MAP_RUNBOOK.md).
+**QA:** `npm run verify:system` before release · `npm run test:explore-alignment` when explore changes · `npm run s10f:qa-checklist` on staging · map seed/smoke: [`../operations/EXPLORE_MAP_RUNBOOK.md`](../operations/EXPLORE_MAP_RUNBOOK.md).
 
 Removed phase trackers and per-flow markdown — see [`../archive/README.md`](../archive/README.md).
