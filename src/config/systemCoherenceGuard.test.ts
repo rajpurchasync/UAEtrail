@@ -167,12 +167,31 @@ describe('systemCoherenceGuard', () => {
     expect(missing).toEqual([]);
   });
 
+  it('S10a consumer pages guard async mount fetches with useSafeAsyncEffect', () => {
+    const s10aPages = [
+      'src/pages/MemberProfile.tsx',
+      'src/pages/ProductDetail.tsx',
+      'src/pages/ActivityDetail.tsx',
+    ];
+    const missing: string[] = [];
+    for (const rel of s10aPages) {
+      const content = readFileSync(join(ROOT, rel), 'utf8');
+      if (!content.includes('useSafeAsyncEffect')) {
+        missing.push(rel);
+      }
+    }
+    expect(missing).toEqual([]);
+  });
+
   it('explore detail and peek hooks guard mount fetch with useSafeAsyncEffect', () => {
     const exploreAsyncHooks = [
       'src/hooks/usePlaceDetailPage.ts',
       'src/hooks/useParticipantIntentJoinContext.ts',
       'src/explore/useExplorePublishedAreas.ts',
       'src/explore/ui/useExploreEntityFollow.ts',
+      'src/explore/ui/useExploreWishlistSave.ts',
+      'src/explore/ui/OrganizePublishSuccessSheet.tsx',
+      'src/hooks/useHomeLandingActivities.ts',
     ];
     const missing: string[] = [];
     for (const rel of exploreAsyncHooks) {

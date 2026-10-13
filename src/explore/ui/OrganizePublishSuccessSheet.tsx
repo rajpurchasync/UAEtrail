@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { fetchPublicActivityDetail } from '../../hooks/publicActivityClientApi';
+import { useSafeAsyncEffect } from '../../hooks/useSafeAsyncEffect';
 import { CheckCircle2 } from 'lucide-react';
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import { EXPLORE_Z } from '../../config/exploreTheme';
@@ -65,17 +66,27 @@ export const OrganizePublishSuccessSheet = ({
   const [pasteOpen, setPasteOpen] = useState(false);
   const [canAddLinkedRide, setCanAddLinkedRide] = useState(false);
 
-  useEffect(() => {
-    if (!open || !publishedActivity.id) {
-      setCanAddLinkedRide(false);
-      return;
-    }
-    void fetchPublicActivityDetail(publishedActivity.id)
-      .then((detail) =>
-        setCanAddLinkedRide(detail.viewerAccess?.entitlements?.canAddLinkedRide ?? false)
-      )
-      .catch(() => setCanAddLinkedRide(false));
-  }, [open, publishedActivity.id]);
+  useSafeAsyncEffect(
+    async (isActive) => {
+      if (!open || !publishedActivity.id) {
+        if (isActive()) {
+          setCanAddLinkedRide(false);
+        }
+        return;
+      }
+      try {
+        const detail = await fetchPublicActivityDetail(publishedActivity.id);
+        if (isActive()) {
+          setCanAddLinkedRide(detail.viewerAccess?.entitlements?.canAddLinkedRide ?? false);
+        }
+      } catch {
+        if (isActive()) {
+          setCanAddLinkedRide(false);
+        }
+      }
+    },
+    [open, publishedActivity.id]
+  );
 
   const showLinkRideshare =
     showPostPublishRideshare &&

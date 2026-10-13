@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useSafeAsyncEffect, type IsActiveGuard } from '../hooks/useSafeAsyncEffect';
 import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { Lock } from 'lucide-react';
@@ -138,21 +139,41 @@ export const ActivityDetail = () => {
       viewerIsActivityHostUser(activity, user.id)
   );
 
-  const loadHostJoinRequests = useCallback(() => {
-    if (!id || !gate.tenantId || !isActivityHostUser) {
-      setHostJoinRequests([]);
-      return;
-    }
-    setHostJoinRequestsLoading(true);
-    void fetchHostActivityJoinRequests(gate.tenantId, { activityId: id })
-      .then((requests) => setHostJoinRequests(requests.filter((request) => request.status === 'pending')))
-      .catch(() => setHostJoinRequests([]))
-      .finally(() => setHostJoinRequestsLoading(false));
-  }, [id, gate.tenantId, isActivityHostUser]);
+  const loadHostJoinRequests = useCallback(
+    async (isActive: IsActiveGuard = () => true) => {
+      if (!id || !gate.tenantId || !isActivityHostUser) {
+        if (isActive()) {
+          setHostJoinRequests([]);
+        }
+        return;
+      }
+      if (isActive()) {
+        setHostJoinRequestsLoading(true);
+      }
+      try {
+        const requests = await fetchHostActivityJoinRequests(gate.tenantId, { activityId: id });
+        if (isActive()) {
+          setHostJoinRequests(requests.filter((request) => request.status === 'pending'));
+        }
+      } catch {
+        if (isActive()) {
+          setHostJoinRequests([]);
+        }
+      } finally {
+        if (isActive()) {
+          setHostJoinRequestsLoading(false);
+        }
+      }
+    },
+    [id, gate.tenantId, isActivityHostUser]
+  );
 
-  useEffect(() => {
-    loadHostJoinRequests();
-  }, [loadHostJoinRequests]);
+  useSafeAsyncEffect(
+    async (isActive) => {
+      await loadHostJoinRequests(isActive);
+    },
+    [loadHostJoinRequests]
+  );
 
   const effectiveWirePresentation = useMemo(() => {
     if (wirePresentation) return wirePresentation;

@@ -1,6 +1,7 @@
 import { joinAuthPath } from '../../config/routingCatalog';
 import { useQueryClient } from '@tanstack/react-query';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
+import { useSafeAsyncEffect } from '../../hooks/useSafeAsyncEffect';
 import { useNavigate } from 'react-router-dom';
 import type { ExploreCardModel } from '../exploreCardModel';
 import { resolveExploreWishlistTarget } from '../exploreCardModel';
@@ -31,29 +32,30 @@ export const useExploreWishlistSave = (card: ExploreCardModel): ExploreWishlistS
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!user || !target) {
-      setSaved(false);
-      setWishlistItemId(null);
-      return;
-    }
-    let cancelled = false;
-    void checkWishlistTarget(target)
-      .then((state) => {
-        if (cancelled) return;
-        setSaved(state.saved);
-        setWishlistItemId(state.wishlistItemId);
-      })
-      .catch(() => {
-        if (!cancelled) {
+  useSafeAsyncEffect(
+    async (isActive) => {
+      if (!user || !target) {
+        if (isActive()) {
           setSaved(false);
           setWishlistItemId(null);
         }
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [user, card.id, target?.activityId, target?.locationId]);
+        return;
+      }
+      try {
+        const state = await checkWishlistTarget(target);
+        if (isActive()) {
+          setSaved(state.saved);
+          setWishlistItemId(state.wishlistItemId);
+        }
+      } catch {
+        if (isActive()) {
+          setSaved(false);
+          setWishlistItemId(null);
+        }
+      }
+    },
+    [user, card.id, target?.activityId, target?.locationId]
+  );
 
   const toggle = useCallback(async () => {
     if (!target) return;

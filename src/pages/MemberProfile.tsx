@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
+import { useSafeAsyncEffect, type IsActiveGuard } from '../hooks/useSafeAsyncEffect';
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import type { ProfileViewerAccessDTO } from '@uaetrail/shared-types';
 import { Loader2, Lock } from 'lucide-react';
@@ -55,21 +56,26 @@ export const MemberProfile = () => {
   const [viewerAccess, setViewerAccess] = useState<ProfileViewerAccessDTO | null>(null);
   const [discoveryUpgradeRequired, setDiscoveryUpgradeRequired] = useState(false);
 
-  useEffect(() => {
-    if (!userId) return;
-    setLoading(true);
-    setError(null);
-    setDiscoveryUpgradeRequired(false);
-    const load =
-      previewAsPublic && user?.id === userId
-        ? fetchMeProfilePublicPreview()
-        : fetchPersonPublicProfile(userId, { discover: fromDiscover });
-    void load
-      .then(({ profile: loaded, viewerAccess: access }) => {
-        setProfile(loaded);
-        setViewerAccess(access);
-      })
-      .catch((err) => {
+  useSafeAsyncEffect(
+    async (isActive) => {
+      if (!userId) return;
+      if (isActive()) {
+        setLoading(true);
+        setError(null);
+        setDiscoveryUpgradeRequired(false);
+      }
+      const load =
+        previewAsPublic && user?.id === userId
+          ? fetchMeProfilePublicPreview()
+          : fetchPersonPublicProfile(userId, { discover: fromDiscover });
+      try {
+        const { profile: loaded, viewerAccess: access } = await load;
+        if (isActive()) {
+          setProfile(loaded);
+          setViewerAccess(access);
+        }
+      } catch (err) {
+        if (!isActive()) return;
         const apiErr = err as Error & { code?: string };
         if (apiErr.code === 'upgrade_required' && fromDiscover) {
           setDiscoveryUpgradeRequired(true);
@@ -79,30 +85,60 @@ export const MemberProfile = () => {
         }
         const message = err instanceof Error ? err.message : 'We couldn\'t find this profile';
         setError(message);
-      })
-      .finally(() => setLoading(false));
-  }, [userId, previewAsPublic, fromDiscover, user?.id]);
+      } finally {
+        if (isActive()) {
+          setLoading(false);
+        }
+      }
+    },
+    [userId, previewAsPublic, fromDiscover, user?.id]
+  );
 
-  useEffect(() => {
-    if (!userId || viewerAccess?.exposure !== 'full') {
-      setUpcomingActivities([]);
-      return;
-    }
-    void fetchPersonUpcomingActivities(userId)
-      .then(setUpcomingActivities)
-      .catch(() => setUpcomingActivities([]));
-  }, [userId, viewerAccess?.exposure]);
+  useSafeAsyncEffect(
+    async (isActive) => {
+      if (!userId || viewerAccess?.exposure !== 'full') {
+        if (isActive()) {
+          setUpcomingActivities([]);
+        }
+        return;
+      }
+      try {
+        const activities = await fetchPersonUpcomingActivities(userId);
+        if (isActive()) {
+          setUpcomingActivities(activities);
+        }
+      } catch {
+        if (isActive()) {
+          setUpcomingActivities([]);
+        }
+      }
+    },
+    [userId, viewerAccess?.exposure]
+  );
 
-  const loadBuddyRelationship = () => {
-    if (!userId || !user || user.id === userId) return;
-    void fetchBuddyRelationship(userId)
-      .then(setBuddyRel)
-      .catch(() => setBuddyRel(null));
-  };
+  const loadBuddyRelationship = useCallback(
+    async (isActive: IsActiveGuard = () => true) => {
+      if (!userId || !user || user.id === userId) return;
+      try {
+        const rel = await fetchBuddyRelationship(userId);
+        if (isActive()) {
+          setBuddyRel(rel);
+        }
+      } catch {
+        if (isActive()) {
+          setBuddyRel(null);
+        }
+      }
+    },
+    [userId, user]
+  );
 
-  useEffect(() => {
-    loadBuddyRelationship();
-  }, [userId, user?.id]);
+  useSafeAsyncEffect(
+    async (isActive) => {
+      await loadBuddyRelationship(isActive);
+    },
+    [loadBuddyRelationship]
+  );
 
   const handleSendBuddyRequest = async () => {
     if (!userId || buddyBusy) return;

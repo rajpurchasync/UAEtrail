@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import { buildExploreWhenSegment } from '@uaetrail/shared-types';
 import { fetchApiActivities } from './publicCatalogClientApi';
 import { HOME_LANDING_FALLBACK_ACTIVITIES, type HomeLandingActivity } from '../content/homeLanding';
+import { useSafeAsyncEffect } from './useSafeAsyncEffect';
 
 export interface HomeLandingActivitiesState {
   activities: HomeLandingActivity[];
@@ -32,6 +33,13 @@ const toLandingActivity = (activity: ActivityDTO): HomeLandingActivity => ({
   path: `/activity/${activity.id}`,
 });
 
+const fallbackState = (): HomeLandingActivitiesState => ({
+  activities: HOME_LANDING_FALLBACK_ACTIVITIES,
+  totalCount: HOME_LANDING_FALLBACK_ACTIVITIES.length,
+  loading: false,
+  fromLiveApi: false,
+});
+
 /** Public upcoming activities for marketing landing — falls back to curated cards. */
 export const useHomeLandingActivities = (): HomeLandingActivitiesState => {
   const [state, setState] = useState<HomeLandingActivitiesState>({
@@ -41,42 +49,26 @@ export const useHomeLandingActivities = (): HomeLandingActivitiesState => {
     fromLiveApi: false,
   });
 
-  useEffect(() => {
-    let cancelled = false;
-
-    void fetchApiActivities('upcoming')
-      .then((listings) => {
-        if (cancelled) return;
-        const upcoming = listings.slice(0, 6);
-        if (upcoming.length === 0) {
-          setState({
-            activities: HOME_LANDING_FALLBACK_ACTIVITIES,
-            totalCount: HOME_LANDING_FALLBACK_ACTIVITIES.length,
-            loading: false,
-            fromLiveApi: false,
-          });
-          return;
-        }
-        setState({
-          activities: upcoming.map(toLandingActivity),
-          totalCount: listings.length,
-          loading: false,
-          fromLiveApi: true,
-        });
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setState({
-          activities: HOME_LANDING_FALLBACK_ACTIVITIES,
-          totalCount: HOME_LANDING_FALLBACK_ACTIVITIES.length,
-          loading: false,
-          fromLiveApi: false,
-        });
+  useSafeAsyncEffect(async (isActive) => {
+    try {
+      const listings = await fetchApiActivities('upcoming');
+      if (!isActive()) return;
+      const upcoming = listings.slice(0, 6);
+      if (upcoming.length === 0) {
+        setState(fallbackState());
+        return;
+      }
+      setState({
+        activities: upcoming.map(toLandingActivity),
+        totalCount: listings.length,
+        loading: false,
+        fromLiveApi: true,
       });
-
-    return () => {
-      cancelled = true;
-    };
+    } catch {
+      if (isActive()) {
+        setState(fallbackState());
+      }
+    }
   }, []);
 
   return state;

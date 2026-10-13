@@ -1,43 +1,48 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { fetchShopProductDetail } from '../hooks/shopPublicClientApi';
 import { exploreShopsPath } from '../config/routingCatalog';
 import { shopPublicPath } from '../utils/shopPaths';
 import { PageMeta } from '../components/seo/PageMeta';
+import { useSafeAsyncEffect } from '../hooks/useSafeAsyncEffect';
 
 /** Legacy product URLs — redirect to outbound link or the shop page. */
 export const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const [state, setState] = useState<{ kind: 'loading' } | { kind: 'external'; url: string } | { kind: 'shop'; merchantId: string } | { kind: 'missing' }>({ kind: 'loading' });
+  const [state, setState] = useState<
+    | { kind: 'loading' }
+    | { kind: 'external'; url: string }
+    | { kind: 'shop'; merchantId: string }
+    | { kind: 'missing' }
+  >({ kind: 'loading' });
 
-  useEffect(() => {
+  useSafeAsyncEffect(async (isActive) => {
     if (!id) {
-      setState({ kind: 'missing' });
+      if (isActive()) {
+        setState({ kind: 'missing' });
+      }
       return;
     }
-    let cancelled = false;
-    fetchShopProductDetail(id)
-      .then((product) => {
-        if (cancelled) return;
-        const external = product.externalUrl?.trim();
-        if (external) {
-          window.location.replace(external);
-          setState({ kind: 'external', url: external });
-          return;
-        }
-        const merchantId = product.merchantId ?? product.merchant?.id;
-        if (!merchantId) {
-          setState({ kind: 'missing' });
-          return;
-        }
-        setState({ kind: 'shop', merchantId });
-      })
-      .catch(() => {
-        if (!cancelled) setState({ kind: 'missing' });
-      });
-    return () => {
-      cancelled = true;
-    };
+    try {
+      const product = await fetchShopProductDetail(id);
+      if (!isActive()) return;
+      const external = product.externalUrl?.trim();
+      if (external) {
+        window.location.replace(external);
+        setState({ kind: 'external', url: external });
+        return;
+      }
+      const merchantId = product.merchantId ?? product.merchant?.id;
+      if (!merchantId) {
+        setState({ kind: 'missing' });
+        return;
+      }
+      setState({ kind: 'shop', merchantId });
+    } catch {
+      if (isActive()) {
+        setState({ kind: 'missing' });
+      }
+    }
   }, [id]);
 
   if (state.kind === 'loading') {
