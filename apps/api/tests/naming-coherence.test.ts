@@ -55,6 +55,13 @@ describe('naming coherence (API)', () => {
     expect(content).not.toMatch(/await findTenantById\(/);
   });
 
+  it('entity follow list batches tenant and merchant lookups', () => {
+    const content = readFileSync(join(API_SRC, 'lib', 'entity-follow-store.ts'), 'utf8');
+    expect(content).toMatch(/findTenantsByIds/);
+    expect(content).not.toMatch(/for \(const tenantId of tenantIds\)/);
+    expect(content).not.toMatch(/findMerchantPublicById\(merchantId\)/);
+  });
+
   it('user search endpoints escape regex via regex-search helper', () => {
     const searchStores = [
       'lib/auth-users.ts',

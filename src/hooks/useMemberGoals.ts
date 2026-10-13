@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
+import { useSafeAsyncEffect } from './useSafeAsyncEffect';
 import type { MemberGoalDTO } from '@uaetrail/shared-types';
 import type { SaveMemberGoalInput } from '../components/profile/ProfileGoalCard';
 import {
@@ -17,9 +18,15 @@ export const useMemberGoals = (enabled: boolean) => {
     void fetchMemberGoals().then(setGoals).catch(() => undefined);
   }, [enabled]);
 
-  useEffect(() => {
-    reload();
-  }, [reload]);
+  useSafeAsyncEffect(async (isActive) => {
+    if (!enabled) return;
+    try {
+      const next = await fetchMemberGoals();
+      if (isActive()) setGoals(next);
+    } catch {
+      // keep prior goals on load failure
+    }
+  }, [enabled]);
 
   const primaryGoal = useMemo(() => {
     if (goals.length === 0) return null;

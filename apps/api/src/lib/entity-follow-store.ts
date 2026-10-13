@@ -12,7 +12,7 @@ import { newEntityId } from './entity-builders.js';
 import { findLocationInMongo } from './entity-sync.js';
 import { getMongoClient } from './mongo.js';
 import { findMerchantPublicById } from './shop-store.js';
-import { findTenantById } from './tenant-store.js';
+import { findTenantById, findTenantsByIds } from './tenant-store.js';
 
 type MongoEntityFollow = {
   _id: string;
@@ -133,29 +133,33 @@ export const listEntityFollowsWithDetails = async (
     string,
     { id: string; name: string; slug: string; logoUrl: string | null; brandProfileKind: PublishingProfileKind }
   >();
-  for (const tenantId of tenantIds) {
-    const tenant = await findTenantById(tenantId);
-    if (tenant) {
-      tenantMap.set(tenantId, {
-        id: tenant.id,
-        name: tenant.name,
-        slug: tenant.slug,
-        logoUrl: tenant.logoUrl ?? null,
-        brandProfileKind: inferHostStorefrontKindFromTenantWire({
-          type: tenant.type,
-          businessMode: tenant.businessMode,
-          publishingPurpose: tenant.publishingPurpose,
-        }),
-      });
-    }
+  const tenantsById = await findTenantsByIds(tenantIds);
+  for (const [tenantId, tenant] of tenantsById) {
+    tenantMap.set(tenantId, {
+      id: tenant.id,
+      name: tenant.name,
+      slug: tenant.slug,
+      logoUrl: tenant.logoUrl ?? null,
+      brandProfileKind: inferHostStorefrontKindFromTenantWire({
+        type: tenant.type,
+        businessMode: tenant.businessMode,
+        publishingPurpose: tenant.publishingPurpose,
+      }),
+    });
   }
 
   const merchantMap = new Map<string, { id: string; shopName: string; logo: string | null }>();
-  for (const merchantId of merchantIds) {
-    const merchant = await findMerchantPublicById(merchantId);
-    if (merchant) {
-      merchantMap.set(merchantId, {
-        id: merchant.id,
+  if (merchantIds.length > 0) {
+    type MerchantRow = { _id: string; shopName: string; logo?: string | null };
+    const merchants = await getMongoClient()!
+      .db()
+      .collection<MerchantRow>(COLLECTIONS.MERCHANT_PROFILES)
+      .find({ _id: { $in: merchantIds } })
+      .project({ shopName: 1, logo: 1 })
+      .toArray();
+    for (const merchant of merchants) {
+      merchantMap.set(merchant._id, {
+        id: merchant._id,
         shopName: merchant.shopName,
         logo: merchant.logo ?? null,
       });

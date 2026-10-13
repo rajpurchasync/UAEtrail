@@ -162,6 +162,11 @@ describe('systemCoherenceGuard', () => {
     expect(missing).toEqual([]);
   });
 
+  it('member goals hook guards mount fetch with useSafeAsyncEffect', () => {
+    const content = readFileSync(join(ROOT, 'src/hooks/useMemberGoals.ts'), 'utf8');
+    expect(content).toMatch(/useSafeAsyncEffect/);
+  });
+
   it('admin console pages guard mount fetches with useSafeAsyncEffect', () => {
     const pagesDir = join(SRC, 'pages');
     const adminPages = readdirSync(pagesDir).filter((name) => name.startsWith('Admin') && name.endsWith('.tsx'));
