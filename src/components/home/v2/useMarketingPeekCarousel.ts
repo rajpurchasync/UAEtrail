@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import { stepCarouselIndex } from '../../../utils/heroCarouselState';
-import { useMarketingCarouselClock } from './HomeMarketingCarouselSync';
 import {
   carouselPageCount,
   carouselPageFromCardIndex,
@@ -9,6 +8,7 @@ import {
 } from './measureVisibleCarouselCards';
 import { scrollHorizontalTrackToIndex } from './scrollHorizontalTrackToIndex';
 import { usePrefersReducedMotion } from '../../../hooks/usePrefersReducedMotion';
+import { HERO_CAROUSEL_AUTOPLAY_MS } from './heroCarouselTypes';
 
 export const useMarketingPeekCarousel = ({
   itemCount,
@@ -34,10 +34,24 @@ export const useMarketingPeekCarousel = ({
   const [progressCycle, setProgressCycle] = useState(0);
 
   const pageCount = carouselPageCount(itemCount, visibleCardCount);
+  const pageCountRef = useRef(pageCount);
+  const [tabVisible, setTabVisible] = useState(
+    () => typeof document === 'undefined' || document.visibilityState === 'visible'
+  );
 
   useEffect(() => {
     activePageRef.current = activePage;
   }, [activePage]);
+
+  useEffect(() => {
+    pageCountRef.current = pageCount;
+  }, [pageCount]);
+
+  useEffect(() => {
+    const onVisibility = () => setTabVisible(document.visibilityState === 'visible');
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => document.removeEventListener('visibilitychange', onVisibility);
+  }, []);
 
   const remeasureVisible = useCallback(() => {
     const track = trackRef.current;
@@ -72,19 +86,24 @@ export const useMarketingPeekCarousel = ({
   const scrollToPage = useCallback(
     (page: number, options?: { bumpProgress?: boolean }) => {
       const track = trackRef.current;
-      if (!track || itemCount === 0 || pageCount === 0) return;
-      const next = Math.max(0, Math.min(page, pageCount - 1));
+      const pages = pageCountRef.current;
+      const visible = visibleCardCountRef.current;
+      if (!track || itemCount === 0 || pages === 0) return;
+      const next = Math.max(0, Math.min(page, pages - 1));
       if (options?.bumpProgress && next !== activePageRef.current) {
         setProgressCycle((cycle) => cycle + 1);
       }
       if (carouselMode) {
-        const cardIndex = carouselStartCardIndex(next, visibleCardCount, itemCount);
+        const cardIndex = carouselStartCardIndex(next, visible, itemCount);
         scrollHorizontalTrackToIndex(track, cardIndex, 'smooth');
       }
       setActivePage(next);
     },
-    [carouselMode, itemCount, pageCount, trackRef, visibleCardCount]
+    [carouselMode, itemCount, trackRef]
   );
+
+  const scrollToPageRef = useRef(scrollToPage);
+  scrollToPageRef.current = scrollToPage;
 
   useEffect(() => {
     const track = trackRef.current;
@@ -115,16 +134,42 @@ export const useMarketingPeekCarousel = ({
 
   useEffect(() => {
     setActivePage(0);
+    setProgressCycle((cycle) => cycle + 1);
     trackRef.current?.scrollTo({ left: 0 });
     // eslint-disable-next-line react-hooks/exhaustive-deps -- explicit reset keys from caller
   }, resetWhen);
 
-  const autoplayActive = carouselMode && !reducedMotion && !userPaused && !hoverPaused;
+  const autoplayActive =
+    carouselMode &&
+    pageCount > 1 &&
+    !reducedMotion &&
+    !userPaused &&
+    !hoverPaused &&
+    tabVisible;
 
-  useMarketingCarouselClock(() => {
-    scrollToPage(stepCarouselIndex(activePageRef.current, pageCount, 1), { bumpProgress: false });
+  /** Per-carousel timer keeps the progress ring and slide advance on the same 5.5s beat (hover/tab pause included). */
+  useEffect(() => {
+    if (!autoplayActive) return;
+
     setProgressCycle((cycle) => cycle + 1);
-  }, autoplayActive);
+
+    let timeoutId = 0;
+    const scheduleTick = () => {
+      timeoutId = window.setTimeout(() => {
+        const pages = pageCountRef.current;
+        if (pages <= 1) return;
+        const current = activePageRef.current;
+        const next = stepCarouselIndex(current, pages, 1);
+        scrollToPageRef.current(next, { bumpProgress: false });
+        setProgressCycle((cycle) => cycle + 1);
+        scheduleTick();
+      }, HERO_CAROUSEL_AUTOPLAY_MS);
+    };
+
+    scheduleTick();
+    return () => window.clearTimeout(timeoutId);
+  }, [autoplayActive]);
+
 
   return {
     trackRef,
