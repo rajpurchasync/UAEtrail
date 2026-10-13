@@ -205,10 +205,7 @@ export const findTenantMembershipByUser = async (
 export const listActiveTenantMembershipsByUser = async (userId: string) => {
   const memberships = await tenantMembershipsCollection().find({ userId }).sort({ createdAt: 1 }).toArray();
 
-  const tenantEntries = await Promise.all(
-    memberships.map(async (membership) => [membership.tenantId, await findTenantRecordById(membership.tenantId)] as const)
-  );
-  const tenantMap = new Map(tenantEntries.filter((entry): entry is [string, NonNullable<(typeof entry)[1]>] => Boolean(entry[1])));
+  const tenantMap = await findTenantsByIds(memberships.map((membership) => membership.tenantId));
 
   return memberships.flatMap((membership) => {
     const tenant = tenantMap.get(membership.tenantId);

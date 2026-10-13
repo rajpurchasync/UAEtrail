@@ -12,6 +12,7 @@ import { newEntityId } from './entity-builders.js';
 import {
   findActivityDocInMongo,
   findLocationInMongo,
+  findLocationsByIds,
   patchActivityInMongo,
   releaseActivityParticipantSlot,
   tryReserveActivityParticipantSlot
@@ -969,12 +970,7 @@ export const listTenantActivityRequestsDetailed = async (input: {
   );
 
   const locationIds = [...new Set(tenantEvents.map((event) => event.locationId))];
-  const locationEntries = await Promise.all(
-    locationIds.map(async (locationId) => [locationId, await findLocationInMongo(locationId)] as const)
-  );
-  const locationMap = new Map(
-    locationEntries.filter((entry): entry is [string, NonNullable<(typeof entry)[1]>] => Boolean(entry[1]))
-  );
+  const locationMap = await findLocationsByIds(locationIds);
 
   const requests = await activityRequestsCollection()
     .find({ activityId: { $in: eventIds } })

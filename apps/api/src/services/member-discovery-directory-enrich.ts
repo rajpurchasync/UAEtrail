@@ -5,7 +5,7 @@ import type {
 } from '@uaetrail/shared-types';
 import { resolveMemberProfileRoleLabel } from '../domain/member-profile-label.js';
 import { UserRole } from '../domain/enums.js';
-import { countUserCheckedInParticipations } from '../lib/activity-engagement-store.js';
+import { countCheckedInParticipationsForUserIds } from '../lib/activity-engagement-store.js';
 import { findAuthUsersByIds } from '../lib/auth-users.js';
 import { listBuddyRequestsForUser } from '../lib/buddy-store.js';
 import { resolveMemberHostStatus } from './member-host-status.js';
@@ -40,11 +40,9 @@ export const enrichMemberBrowseDirectory = async (
   const users = await findAuthUsersByIds(userIds);
   const userMap = new Map(users.map((user) => [user._id, user]));
 
-  const [requests, attendedPairs, messagePairs, rolePairs] = await Promise.all([
+  const [requests, attendedMap, messagePairs, rolePairs] = await Promise.all([
     listBuddyRequestsForUser(viewerUserId, 'all'),
-    Promise.all(
-      userIds.map(async (userId) => [userId, await countUserCheckedInParticipations(userId)] as const)
-    ),
+    countCheckedInParticipationsForUserIds(userIds),
     Promise.all(
       userIds.map(async (userId) => [userId, await canMessageUser(viewerUserId, userId)] as const)
     ),
@@ -64,7 +62,6 @@ export const enrichMemberBrowseDirectory = async (
     ),
   ]);
 
-  const attendedMap = new Map(attendedPairs);
   const messageMap = new Map(messagePairs);
   const roleMap = new Map(rolePairs);
   const pendingIncoming = new Set(

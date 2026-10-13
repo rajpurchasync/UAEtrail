@@ -64,6 +64,31 @@ describe('naming coherence (API)', () => {
     expect(engagement).toMatch(/countPublishedActivitiesHostedByUserIds/);
   });
 
+  it('member browse directory batches checked-in participation counts', () => {
+    const content = readFileSync(
+      join(API_SRC, 'services', 'member-discovery-directory-enrich.ts'),
+      'utf8'
+    );
+    expect(content).toMatch(/countCheckedInParticipationsForUserIds/);
+    expect(content).not.toMatch(/countUserCheckedInParticipations\(/);
+  });
+
+  it('active tenant memberships batch tenant record lookups', () => {
+    const content = readFileSync(join(API_SRC, 'lib', 'tenant-access.ts'), 'utf8');
+    expect(content).toMatch(/findTenantsByIds/);
+    expect(content).not.toMatch(
+      /memberships\.map\(async \(membership\) => \[membership\.tenantId, await findTenantRecordById/
+    );
+  });
+
+  it('tenant activity request list batches location lookups', () => {
+    const content = readFileSync(join(API_SRC, 'lib', 'activity-engagement-store.ts'), 'utf8');
+    expect(content).toMatch(/findLocationsByIds/);
+    expect(content).not.toMatch(
+      /locationIds\.map\(async \(locationId\) => \[locationId, await findLocationInMongo/
+    );
+  });
+
   it('entity follow list batches tenant and merchant lookups', () => {
     const content = readFileSync(join(API_SRC, 'lib', 'entity-follow-store.ts'), 'utf8');
     expect(content).toMatch(/findTenantsByIds/);
