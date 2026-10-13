@@ -108,6 +108,9 @@
   --duration-ui: 250ms;
   --duration-carousel: 500ms;
   --duration-faq: 200ms;
+  --hero-crossfade-duration: 1.15s;
+  --hero-crossfade-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --hero-kenburns-duration: 8s;
   --ease-out: cubic-bezier(0, 0, 0.2, 1);
 
   /* Breakpoints (for reference in JS / media queries) */
@@ -158,6 +161,31 @@
   box-shadow: 0 1px 6px rgba(17, 24, 39, 0.03);
   -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
+}
+
+/** Guest hero — soft crossfade between photos (wrapper stays under overlay). */
+.home-hero-slide {
+  transition: opacity var(--hero-crossfade-duration) var(--hero-crossfade-ease);
+}
+
+.home-hero-slide-image {
+  transform-origin: center center;
+  transition: opacity 0.7s var(--hero-crossfade-ease);
+}
+
+.home-hero-slide-image--live {
+  animation: home-hero-kenburns var(--hero-kenburns-duration) ease-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-hero-slide,
+  .home-hero-slide-image {
+    transition: none;
+  }
+
+  .home-hero-slide-image--live {
+    animation: none;
+  }
 }
 
 /** Hero proof chips — barely-there glass over photography. */
@@ -228,6 +256,15 @@
   .home-motion-safe {
     transition: none !important;
     animation: none !important;
+  }
+}
+
+@keyframes home-hero-kenburns {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.05);
   }
 }
 

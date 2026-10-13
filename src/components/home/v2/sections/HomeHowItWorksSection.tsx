@@ -1,7 +1,8 @@
 import { EXPLORE_MAP_PATH } from '../../../../config/routingCatalog';
 import { HOME_HOW_IT_WORKS } from '../../../../content/homeMarketing';
 import { AppButtonLink } from '../../../mobile/AppButton';
-import { SectionHeader, StepCard } from '../index';
+import { SectionHeader } from '../SectionHeader';
+import { StepCard } from '../StepCard';
 
 export const HomeHowItWorksSection = () => (
   <section

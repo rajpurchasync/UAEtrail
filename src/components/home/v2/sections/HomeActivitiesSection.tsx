@@ -7,7 +7,8 @@ import { emirateLabelFromId } from '../../../../utils/homeLandingEmirate';
 import { mapHomeLandingActivityToCard } from '../../../../utils/mapHomeLandingActivity';
 import { ActivityCardCarousel } from '../ActivityCardCarousel';
 import { AppButton } from '../../../mobile/AppButton';
-import { EmirateChips, SectionHeader } from '../index';
+import { EmirateChips } from '../EmirateChips';
+import { SectionHeader } from '../SectionHeader';
 
 interface HomeActivitiesSectionProps {
   activities: HomeLandingActivity[];

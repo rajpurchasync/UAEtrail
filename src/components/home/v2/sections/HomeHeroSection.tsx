@@ -94,13 +94,13 @@ export const HomeHeroSection = () => {
                       <Icon className="h-6 w-6 text-emerald-200/95 lg:h-7 lg:w-7" strokeWidth={2.25} />
                     </span>
                     <div className="min-w-0 flex-1">
-                      <p className="text-base font-semibold leading-tight text-white/95 [text-shadow:0_1px_10px_rgba(0,0,0,0.4)]">
+                      <p className="text-base font-semibold leading-tight text-white/95 [text-shadow:0_1px_10px_rgba(0,0,0,0.4)] lg:text-[17px]">
                         {feature.label}
                         {'labelFootnote' in feature && feature.labelFootnote ? (
                           <span aria-hidden="true">{feature.labelFootnote}</span>
                         ) : null}
                       </p>
-                      <p className="mt-1 text-xs leading-snug text-white/78 lg:text-[13px] lg:leading-relaxed">
+                      <p className="mt-1 text-[11px] font-medium leading-snug text-white/82 lg:text-xs lg:leading-snug">
                         {feature.detail}
                       </p>
                     </div>

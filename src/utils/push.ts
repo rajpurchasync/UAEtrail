@@ -6,6 +6,7 @@ import {
 const SW_PATH = '/sw.js';
 
 export async function registerPushNotifications(): Promise<boolean> {
+  if (import.meta.env.DEV) return false;
   if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
     return false;
   }

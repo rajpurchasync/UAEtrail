@@ -185,8 +185,11 @@ Base unit: **4px**. Use token names in layout; avoid arbitrary pixel values.
 | `--header-height-mobile` | `56px` | Sticky header |
 | `--header-height-desktop` | `64px` | Sticky header |
 | `--hero-content-max-width` | `560px` | Hero text column |
-| `--hero-height-desktop` | `min(640px, max(560px, 88svh))` | Hero region (560–640px desktop target) |
-| `--hero-height-mobile` | `min(640px, 88svh)` | Hero region mobile cap |
+| `--hero-height-desktop` | `min(520px, 72svh)` | Hero region desktop cap |
+| `--hero-height-mobile` | `min(460px, 68svh)` | Hero region mobile cap |
+| `--hero-crossfade-duration` | `1.15s` | Hero slide opacity crossfade |
+| `--hero-crossfade-ease` | `cubic-bezier(0.22, 1, 0.36, 1)` | Hero crossfade easing |
+| `--hero-kenburns-duration` | `8s` | Subtle zoom on active slide (disabled with reduced motion) |
 
 **Touch targets:** minimum **44×44px** for interactive controls.
 
@@ -277,7 +280,7 @@ From [UAE_Trail_Homepage.md](./UAE_Trail_Homepage.md) §3.1.
 
 **Alt text:** Descriptive sentences (e.g. “Hikers walking the Jebel Jais ridge at sunrise”), not generic “activity image”.
 
-**Loading:** First hero slide `eager` + `fetchpriority="high"`; others `lazy`. Placeholder: blurred first frame or `--ink` solid.
+**Loading:** Active slide `eager` + `fetchpriority="high"` with `decoding="async"`; neighbor slides prefetch after LCP. Optional LQIP (`*-lqip.webp`) per slide; assets live under `public/landing/hero/`. No document-level hero preload — avoids competing with JS on first paint.
 
 ---
 

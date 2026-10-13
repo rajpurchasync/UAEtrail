@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { HOME_FAQ, HOME_REVIEWS } from '../../../../content/homeMarketing';
-import { FaqAccordion, SectionHeader } from '../index';
+import { FaqAccordion } from '../FaqAccordion';
+import { SectionHeader } from '../SectionHeader';
 import { ReviewCardCarousel } from '../ReviewCardCarousel';
 
 const reviewItems = [

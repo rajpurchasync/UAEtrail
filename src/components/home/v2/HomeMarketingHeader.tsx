@@ -78,7 +78,7 @@ export const HomeMarketingHeader = ({
             id="home-header-signup-cta"
             to={signupHref}
             variant="primary"
-            className="min-h-10 px-4 text-[14px] shadow-lg shadow-black/20 md:px-5"
+            className="min-h-10 px-4 text-[14px] font-bold shadow-lg shadow-black/20 md:px-5"
           >
             {HOME_HEADER_NAV.signup}
           </AppButtonLink>

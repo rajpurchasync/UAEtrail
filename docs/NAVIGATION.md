@@ -120,6 +120,7 @@ Full spec: **[`LANDING.md`](./LANDING.md)** · Voice: **[`NORTHSTAR.md`](./NORTH
   4. Reviews + FAQ (`HomeReviewsFaqSection`)
 - **Do not add** demand posting, become-host, buddies, shops, or full map UX to Home — those belong on `/explore` or in-app.
 - **Copy:** `src/content/homeMarketing.ts` · fallback cards: `homeLanding.ts` · **Components:** `src/components/home/v2/**`
+- **Layout:** Guest `/` uses a minimal wrapper in `Layout.tsx` (main + deferred site footer only). Signed-in product chrome (`ProductShell`: header, bottom nav, compose rail) loads only on non-marketing routes.
 
 Legacy browse URLs (`/map`, `/discovery`, `/calendar`, bare `/activities` as browse) redirect via `App.tsx` — do not link to them from new UI. Legacy **`/trips`**, **`/activities`**, **`/trips/map`** redirect to **`/plan`**, **`/profile/history`**, or **`/profile/history/map`** (`legacyTripsRedirect.ts`) — canonical active hub is **`/plan`**.
 

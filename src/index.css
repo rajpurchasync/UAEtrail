@@ -1,3 +1,4 @@
+@import './styles/fonts.css';
 @import './styles/home-tokens.css';
 @import 'tailwindcss';
 @config '../tailwind.config.js';

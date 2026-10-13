@@ -73,7 +73,20 @@ Home may **mention** host-approved joins and the map — that is the acquisition
 | Canonical CTA labels | `src/content/productNorthStar.ts` (`PRODUCT_EXPLORE_CTA`, `PRODUCT_JOIN_CTA`) |
 | Full FAQ corpus + JSON-LD | `src/content/platformFaqs.ts` |
 | Page shell | `src/pages/Home.tsx` |
+| Guest layout chrome | `src/components/layout/Layout.tsx` (minimal shell on `/`; no bottom nav / compose rail) |
+| Product chrome (other routes) | `src/components/layout/ProductShell.tsx` (lazy) |
 | Section UI | `src/components/home/v2/**` |
+| Hero image paths | `src/config/marketingHeroImages.ts`, `public/landing/hero/*` |
+| Hero slides | `src/utils/buildHeroSlides.ts` |
+
+## Performance (guest `/`)
+
+- **Route / bundle:** `Home` and heavy sections (`HomeActivitiesBlock`, how-it-works, reviews/FAQ, site footer) load via `React.lazy` + `Suspense`; activities API runs on `requestIdleCallback` inside the deferred block.
+- **Layout:** Guest `/` skips `ProductShell` (map nav, compose rail, API banner on marketing path) so first paint is hero + header only.
+- **Hero images:** Art-directed `<picture>` at 768px; tiny LQIP optional per slide; first slide uses `landing/hero/hero-summit-hiker-*` (OG JPEG/WebP at repo root kept for meta). Neighbor slides prefetch after LCP; carousel crossfade uses `--hero-crossfade-*` in `home-tokens.css`.
+- **Fonts:** Self-hosted Plus Jakarta (`src/styles/fonts.css`) — no Google Fonts CDN.
+- **Dev:** Service worker is unregistered on localhost; production PWA uses `public/sw.js` (localhost fetch passthrough).
+- **Assets:** `npm run heroes:optimize` / `heroes:lqip` after banner imports (`scripts/optimize-hero-images.mjs`, `scripts/generate-hero-lqips.mjs`).
 
 ## Hero (v2 — current)
 

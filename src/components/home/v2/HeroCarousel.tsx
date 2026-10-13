@@ -24,10 +24,13 @@ export const HeroCarousel = ({
   const [userInteracted, setUserInteracted] = useState(false);
   const touchStartX = useRef<number | null>(null);
   const [prefetchNeighbors, setPrefetchNeighbors] = useState(false);
+  const [lcpReady, setLcpReady] = useState(false);
   const total = slides.length;
   const multi = total > 1;
 
   useEffect(() => {
+    if (!lcpReady) return;
+
     let timeoutId: ReturnType<typeof setTimeout> | undefined;
     let idleId: number | undefined;
     const enable = () => setPrefetchNeighbors(true);
@@ -44,7 +47,9 @@ export const HeroCarousel = ({
       }
       if (timeoutId !== undefined) window.clearTimeout(timeoutId);
     };
-  }, []);
+  }, [lcpReady]);
+
+  const markLcpReady = useCallback(() => setLcpReady(true), []);
 
   const goTo = useCallback(
     (next: number) => {
@@ -64,8 +69,8 @@ export const HeroCarousel = ({
     [goTo, index, total]
   );
 
-  /** Background-only hero — keep rotating even when the pointer is over the hero on load/refresh. */
-  const autoplayActive = multi && !reducedMotion;
+  /** Wait for the first full-res paint so autoplay does not steal bandwidth from LCP. */
+  const autoplayActive = multi && !reducedMotion && lcpReady;
 
   useMarketingCarouselClock(() => {
     if (total <= 1) return;
@@ -89,10 +94,11 @@ export const HeroCarousel = ({
   const liveMessage = `Slide ${index + 1} of ${total}`;
 
   const slideShouldMount = (slideIndex: number) => {
-    if (total <= 1) return slideIndex === index;
+    if (slideIndex === index) return true;
+    if (!prefetchNeighbors || total <= 1) return false;
     const prev = (index - 1 + total) % total;
     const next = (index + 1) % total;
-    return slideIndex === index || slideIndex === prev || slideIndex === next;
+    return slideIndex === prev || slideIndex === next;
   };
 
   return (
@@ -114,34 +120,37 @@ export const HeroCarousel = ({
         step(delta > 0 ? -1 : 1);
       }}
     >
-      <div className="absolute inset-0 bg-home-ink" aria-hidden />
+      <div className="absolute inset-0 z-0" aria-hidden>
+        <div className="absolute inset-0 bg-home-ink" />
 
-      {slides.map((slide, slideIndex) => {
-        if (!slideShouldMount(slideIndex)) return null;
-        const active = slideIndex === index;
-        const prev = (index - 1 + total) % total;
-        const next = (index + 1) % total;
-        const isNeighbor = slideIndex === prev || slideIndex === next;
-        const loadFullResolution = active || (prefetchNeighbors && isNeighbor);
+        {slides.map((slide, slideIndex) => {
+          if (!slideShouldMount(slideIndex)) return null;
+          const active = slideIndex === index;
+          const prev = (index - 1 + total) % total;
+          const next = (index + 1) % total;
+          const isNeighbor = slideIndex === prev || slideIndex === next;
+          const loadFullResolution = active || (prefetchNeighbors && isNeighbor);
 
-        return (
-          <HeroCarouselSlideImage
-            key={slide.id}
-            slide={slide}
-            active={active}
-            reducedMotion={reducedMotion}
-            loadFullResolution={loadFullResolution}
-          />
-        );
-      })}
+          return (
+            <HeroCarouselSlideImage
+              key={slide.id}
+              slide={slide}
+              active={active}
+              reducedMotion={reducedMotion}
+              loadFullResolution={loadFullResolution}
+              onHiResReady={active ? markLcpReady : undefined}
+            />
+          );
+        })}
+      </div>
 
       <div
-        className="pointer-events-none absolute inset-0 md:hidden"
+        className="pointer-events-none absolute inset-0 z-[2] md:hidden"
         style={{ background: 'var(--hero-overlay-mobile)' }}
         aria-hidden
       />
       <div
-        className="pointer-events-none absolute inset-0 hidden md:block"
+        className="pointer-events-none absolute inset-0 z-[2] hidden md:block"
         style={{ background: 'var(--hero-overlay)' }}
         aria-hidden
       />

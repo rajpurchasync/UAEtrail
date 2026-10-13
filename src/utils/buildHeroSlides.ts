@@ -6,10 +6,9 @@ import type { HeroCarouselSlide } from '../components/home/v2/heroCarouselTypes'
 export const MARKETING_HERO_CAROUSEL_SLIDES: readonly HeroCarouselSlide[] = [
   {
     id: 'hero-summit-hiker',
+    ...marketingHeroLayoutSlide('summit-hiker', 'Hiker at a mountain summit in the UAE'),
     imageUrl: HOME_HERO_IMAGE_JPEG,
-    imageSrcSet: `${HOME_HERO_IMAGE_WEBP} 1200w, ${HOME_HERO_IMAGE_JPEG} 1600w`,
-    placeholderUrl: '/landing/hero/hero-summit-hiker-lqip.webp',
-    alt: 'Hiker at a mountain summit in the UAE'
+    imageSrcSet: `${HOME_HERO_IMAGE_WEBP} 1200w, ${HOME_HERO_IMAGE_JPEG} 1600w`
   },
   {
     id: 'hero-al-rabi',

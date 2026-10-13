@@ -8,6 +8,8 @@ Paste into the GitHub pull request description (screenshots to be added separate
 - Marketing copy centralized in `src/content/homeMarketing.ts`; plan updated in `docs/UAE_Trail_Homepage.md`, `docs/LANDING.md`, `docs/content.md`.
 - Final CTA dark band not rendered on `/` (hero + site footer founders card in site footer).
 - Merged latest `main`; CI lint + buddy-notification contract test fixes included.
+- Guest `/` performance: lazy route sections, `ProductShell` split, compressed hero assets under `public/landing/hero/`, self-hosted fonts, explore/map chunks not on initial `/` load.
+- PWA: service worker disabled in Vite dev; hero carousel soft crossfade; desktop proof-chip typography tuned.
 
 ## Test plan
 

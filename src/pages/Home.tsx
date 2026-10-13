@@ -6,12 +6,16 @@ import { PageMeta } from '../components/seo/PageMeta';
 import { JsonLd } from '../components/seo/JsonLd';
 import { websiteSchema } from '../components/seo/schemas';
 import { useAuth } from '../context/AuthContext';
-import { useHomeLandingActivities } from '../hooks/useHomeLandingActivities';
-import { HomeMarketingHeader } from '../components/home/v2';
+import { HomeDeferredMount } from '../components/home/v2/HomeDeferredMount';
+import { HomeMarketingHeader } from '../components/home/v2/HomeMarketingHeader';
 import { HomeHeroSection } from '../components/home/v2/sections/HomeHeroSection';
-import { HomeActivitiesSection } from '../components/home/v2/sections/HomeActivitiesSection';
 import { HomeMarketingCarouselSyncProvider } from '../components/home/v2/HomeMarketingCarouselSync';
 
+const HomeActivitiesBlock = lazy(() =>
+  import('../components/home/v2/sections/HomeActivitiesBlock').then((m) => ({
+    default: m.HomeActivitiesBlock
+  }))
+);
 const HomeHowItWorksSection = lazy(() =>
   import('../components/home/v2/sections/HomeHowItWorksSection').then((m) => ({
     default: m.HomeHowItWorksSection
@@ -22,10 +26,10 @@ const HomeReviewsFaqSection = lazy(() =>
     default: m.HomeReviewsFaqSection
   }))
 );
+
 /** Guest marketing funnel only — signed-in users redirect to /explore. See docs/LANDING.md */
 export const Home = () => {
   const { user } = useAuth();
-  const { activities, loading, error, refetch } = useHomeLandingActivities();
 
   if (user) {
     return <Navigate to={EXPLORE_MAP_PATH} replace />;
@@ -46,16 +50,17 @@ export const Home = () => {
         <div className="relative -mt-[var(--header-height-mobile)] md:-mt-[var(--header-height-desktop)]">
           <HomeHeroSection />
         </div>
-        <HomeActivitiesSection
-          activities={activities}
-          loading={loading}
-          error={error}
-          onRetry={refetch}
-        />
-        <Suspense fallback={null}>
-          <HomeHowItWorksSection />
-          <HomeReviewsFaqSection />
-        </Suspense>
+        <HomeDeferredMount>
+          <Suspense fallback={null}>
+            <HomeActivitiesBlock />
+          </Suspense>
+        </HomeDeferredMount>
+        <HomeDeferredMount minHeightClass="min-h-[min(36rem,70vh)]">
+          <Suspense fallback={null}>
+            <HomeHowItWorksSection />
+            <HomeReviewsFaqSection />
+          </Suspense>
+        </HomeDeferredMount>
       </HomeMarketingCarouselSyncProvider>
     </div>
   );

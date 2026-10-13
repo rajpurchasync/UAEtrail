@@ -1,12 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { MARKETING_HERO_LAYOUT_MIN_WIDTH_PX } from '../../../config/marketingHeroImages';
 import type { HeroCarouselSlide } from './heroCarouselTypes';
 
-const slideImageClass = (active: boolean, reducedMotion: boolean, hiResVisible: boolean) =>
+const hiResClass = (hiResVisible: boolean, reducedMotion: boolean) =>
   [
-    'absolute inset-0 h-full w-full object-cover',
-    reducedMotion ? '' : 'transition-opacity duration-500 ease-out',
-    active && hiResVisible ? 'opacity-100' : 'opacity-0'
+    'home-hero-slide-image absolute inset-0 h-full w-full object-cover',
+    hiResVisible ? 'opacity-100' : 'opacity-0',
+    hiResVisible && !reducedMotion ? 'home-hero-slide-image--live' : ''
   ].join(' ');
 
 const placeholderClass =
@@ -16,39 +16,65 @@ export const HeroCarouselSlideImage = ({
   slide,
   active,
   reducedMotion,
-  loadFullResolution
+  loadFullResolution,
+  onHiResReady
 }: {
   slide: HeroCarouselSlide;
   active: boolean;
   reducedMotion: boolean;
   /** When false, only the LQIP placeholder is shown (saves bandwidth until slide is needed). */
   loadFullResolution: boolean;
+  onHiResReady?: () => void;
 }) => {
+  const imgRef = useRef<HTMLImageElement>(null);
   const [hiResReady, setHiResReady] = useState(false);
 
   useEffect(() => {
     setHiResReady(false);
-  }, [slide.id, loadFullResolution]);
+  }, [slide.id]);
 
-  const showPlaceholder = Boolean(slide.placeholderUrl);
+  useEffect(() => {
+    if (!loadFullResolution) return;
+    const img = imgRef.current;
+    if (img?.complete && img.naturalWidth > 0) {
+      setHiResReady(true);
+    }
+  }, [loadFullResolution, slide.id]);
+
+  useEffect(() => {
+    if (hiResReady) onHiResReady?.();
+  }, [hiResReady, onHiResReady]);
+
+  const showPlaceholder =
+    active && !loadFullResolution && Boolean(slide.placeholderUrl) && !hiResReady;
   const showHiRes = loadFullResolution;
 
+  const onHiResLoad = () => setHiResReady(true);
+
   const imgProps = {
+    ref: imgRef,
     alt: active ? slide.alt : '',
     width: 1600,
     height: 900,
-    decoding: active ? ('sync' as const) : ('async' as const),
-    loading: 'eager' as const,
+    sizes: '100vw',
+    decoding: 'async' as const,
+    loading: active ? ('eager' as const) : ('lazy' as const),
     fetchPriority: active ? ('high' as const) : ('low' as const),
-    onLoad: () => setHiResReady(true),
-    className: slideImageClass(active, reducedMotion, hiResReady),
+    onLoad: onHiResLoad,
+    className: hiResClass(hiResReady, reducedMotion),
     'aria-hidden': !active
   };
 
   const layout = slide.layoutSources;
 
   return (
-    <div className="absolute inset-0 bg-home-ink" aria-hidden={!active}>
+    <div
+      className={[
+        'home-hero-slide absolute inset-0',
+        active ? 'z-[1] opacity-100' : 'z-0 opacity-0'
+      ].join(' ')}
+      aria-hidden={!active}
+    >
       {showPlaceholder ? (
         <img
           src={slide.placeholderUrl}

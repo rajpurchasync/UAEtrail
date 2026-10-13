@@ -7,19 +7,14 @@ import { devQrPlugin } from './scripts/vite-plugin-dev-qr.mjs';
 
 const projectRoot = path.dirname(fileURLToPath(import.meta.url));
 
-// https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
-  // Load environment variables for the current mode
   const env = loadEnv(mode, process.cwd(), '');
-
-  // Generic target resolution: checks process environment first, then loaded env, defaults to local loopback
   const apiTarget = process.env.API_BASE_URL || env.API_BASE_URL || 'http://127.0.0.1:4000';
 
   return {
     plugins: [tailwindcss(), react(), devQrPlugin()],
     resolve: {
       alias: [
-        // More specific paths before `@` → `src` (otherwise `@/chat` becomes `src/chat`).
         {
           find: '@/chat',
           replacement: path.resolve(projectRoot, 'src/components/chat/index.ts'),
@@ -31,6 +26,9 @@ export default defineConfig(({ mode }) => {
       port: 5175,
       strictPort: true,
       host: true,
+      warmup: {
+        clientFiles: ['./src/main.tsx', './src/pages/Home.tsx', './src/App.tsx'],
+      },
       proxy: {
         '/api/v1': {
           target: apiTarget,
@@ -49,14 +47,36 @@ export default defineConfig(({ mode }) => {
       strictPort: true,
     },
     optimizeDeps: {
-      exclude: ['lucide-react'],
       include: [
         'react',
+        'react-dom',
         'react-dom/client',
         'react/jsx-dev-runtime',
+        'react-router-dom',
         '@tanstack/react-query',
-        '@react-oauth/google',
+        'lucide-react',
       ],
+    },
+    build: {
+      cssCodeSplit: true,
+      modulePreload: { polyfill: false },
+      assetsInlineLimit: 4096,
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (!id.includes('node_modules')) return;
+            if (id.includes('react-router')) return 'vendor-router';
+            if (id.includes('react-dom') || id.includes('/react/') || id.includes('\\react\\')) {
+              return 'vendor-react';
+            }
+            if (id.includes('@tanstack/react-query')) return 'vendor-query';
+            if (id.includes('leaflet')) return 'vendor-map';
+            if (id.includes('@react-oauth') || id.includes('google-auth')) return 'vendor-google';
+            if (id.includes('lucide-react')) return 'vendor-icons';
+            if (id.includes('@capacitor')) return 'vendor-capacitor';
+          },
+        },
+      },
     },
   };
 });
