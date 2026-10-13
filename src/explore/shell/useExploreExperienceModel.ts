@@ -212,6 +212,8 @@ export const useExploreExperienceModel = () => {
     search,
     user,
     hostGateLoading,
+    canPublish,
+    navigate,
     navigateOrganizePublishGate,
     compose.setComposeRoute,
   ]);

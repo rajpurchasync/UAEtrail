@@ -243,6 +243,23 @@ describe('systemCoherenceGuard', () => {
     expect(missing).toEqual([]);
   });
 
+  it('S10d explore browse URL migrations patch search params without syncExploreUrl', () => {
+    const content = readFileSync(
+      join(ROOT, 'src/explore/ui/useExploreBrowseUrlState.ts'),
+      'utf8'
+    );
+    const legacyBlock = content.slice(
+      content.indexOf('Legacy: `list=1` + `listCat`'),
+      content.indexOf('const applyMapFilter')
+    );
+    expect(legacyBlock).not.toMatch(/syncExploreUrl\(\{ browse: true, list: false \}\)/);
+    const desktopListBlock = content.slice(
+      content.indexOf('if (listParam === \'0\' || listParam === \'1\') return;'),
+      content.indexOf('Legacy: `list=1` + `listCat`')
+    );
+    expect(desktopListBlock).not.toMatch(/syncExploreUrl\(\{ list: true \}\)/);
+  });
+
   it('admin console pages guard mount fetches with useSafeAsyncEffect', () => {
     const pagesDir = join(SRC, 'pages');
     const adminPages = readdirSync(pagesDir).filter((name) => name.startsWith('Admin') && name.endsWith('.tsx'));

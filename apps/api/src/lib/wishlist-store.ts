@@ -334,20 +334,42 @@ export const listWishlistItemsWithDetails = async (userId: string): Promise<Wish
       : [];
   const productMerchantMap = new Map(productMerchantDocs.map((merchant) => [merchant._id, merchant.shopName]));
 
-  const resolveSavedProfile = async (
-    profileUserId: string
-  ): Promise<WishlistItemWithDetails['profile']> => {
+  const profileUserIdsNeedingAccess = profileUserIds.filter((profileUserId) => {
+    if (profileUserId === userId) return false;
+    const row = profileMap.get(profileUserId);
+    if (!row) return false;
+    return normalizeProfileVisibility(row.profile?.profileVisibility) !== 'public';
+  });
+  const accessEntries = await Promise.all(
+    profileUserIdsNeedingAccess.map(async (profileUserId) => {
+      const row = profileMap.get(profileUserId)!;
+      const visibility = normalizeProfileVisibility(row.profile?.profileVisibility);
+      const access = await resolveProfileViewerAccess({
+        viewerUserId: userId,
+        targetUserId: profileUserId,
+        targetVisibility: visibility,
+      });
+      return [profileUserId, access] as const;
+    })
+  );
+  const profileAccessMap = new Map(accessEntries);
+
+  const resolveSavedProfile = (profileUserId: string): WishlistItemWithDetails['profile'] => {
     const row = profileMap.get(profileUserId);
     if (!row) return null;
 
     const visibility = normalizeProfileVisibility(row.profile?.profileVisibility);
-    const access = await resolveProfileViewerAccess({
-      viewerUserId: userId,
-      targetUserId: profileUserId,
-      targetVisibility: visibility,
-    });
+    if (profileUserId === userId || visibility === 'public') {
+      const displayName = row.profile?.displayName?.trim() || PRIVATE_SAVED_PROFILE_LABEL;
+      return {
+        id: profileUserId,
+        displayName,
+        avatarUrl: row.profile?.avatarUrl ?? null,
+      };
+    }
 
-    if (!canViewProfileField(visibility, access, 'identity')) {
+    const access = profileAccessMap.get(profileUserId);
+    if (!access || !canViewProfileField(visibility, access, 'identity')) {
       return {
         id: profileUserId,
         displayName: PRIVATE_SAVED_PROFILE_LABEL,
@@ -363,8 +385,7 @@ export const listWishlistItemsWithDetails = async (userId: string): Promise<Wish
     };
   };
 
-  return Promise.all(
-    wishlistRows.map(async (item) => ({
+  return wishlistRows.map((item) => ({
     ...item,
     location: item.locationId
       ? (() => {
@@ -413,7 +434,7 @@ export const listWishlistItemsWithDetails = async (userId: string): Promise<Wish
             : null;
         })()
       : null,
-    profile: item.profileUserId ? await resolveSavedProfile(item.profileUserId) : null,
+    profile: item.profileUserId ? resolveSavedProfile(item.profileUserId) : null,
     product: item.productId
       ? (() => {
           const product = productMap.get(item.productId);
@@ -430,9 +451,8 @@ export const listWishlistItemsWithDetails = async (userId: string): Promise<Wish
               }
             : null;
         })()
-      : null
-  }))
-  );
+      : null,
+  }));
 };
 
 export const deleteWishlistItemsForUser = async (userId: string): Promise<void> => {

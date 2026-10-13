@@ -89,6 +89,21 @@ describe('naming coherence (API)', () => {
     );
   });
 
+  it('group list chat preview batches wall unread counts', () => {
+    const content = readFileSync(join(API_SRC, 'lib', 'social-groups-store.ts'), 'utf8');
+    expect(content).toMatch(/listGroupsForUserWithChatPreview/);
+    expect(content).not.toMatch(
+      /groupIds\.map\(async \(groupId\) => \{\s*\n\s*const since = readAtByGroup\.get\(groupId\)/
+    );
+  });
+
+  it('wishlist list avoids per-row async profile hydration', () => {
+    const content = readFileSync(join(API_SRC, 'lib', 'wishlist-store.ts'), 'utf8');
+    expect(content).toMatch(/listWishlistItemsWithDetails/);
+    expect(content).toMatch(/wishlistRows\.map\(\(item\)/);
+    expect(content).not.toMatch(/wishlistRows\.map\(async \(item\)/);
+  });
+
   it('entity follow list batches tenant and merchant lookups', () => {
     const content = readFileSync(join(API_SRC, 'lib', 'entity-follow-store.ts'), 'utf8');
     expect(content).toMatch(/findTenantsByIds/);

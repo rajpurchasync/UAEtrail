@@ -424,18 +424,39 @@ export const listGroupsForUserWithChatPreview = async (
     .toArray();
   const latestByGroup = new Map(latestRows.map((row) => [row._id, row]));
 
-  const unreadEntries = await Promise.all(
-    groupIds.map(async (groupId) => {
-      const since = readAtByGroup.get(groupId) ?? new Date(0);
-      const unreadCount = await wallCollection().countDocuments({
-        groupId,
-        createdAt: { $gt: since },
-        authorUserId: { $ne: userId },
-      });
-      return [groupId, unreadCount] as const;
-    })
-  );
-  const unreadByGroup = new Map(unreadEntries);
+  const readAtBranches = groupIds.map((groupId) => ({
+    case: { $eq: ['$groupId', groupId] },
+    then: readAtByGroup.get(groupId) ?? new Date(0),
+  }));
+  const unreadRows =
+    groupIds.length === 0
+      ? []
+      : await wallCollection()
+          .aggregate<{ _id: string; unreadCount: number }>([
+            {
+              $match: {
+                groupId: { $in: groupIds },
+                authorUserId: { $ne: userId },
+              },
+            },
+            {
+              $addFields: {
+                readAt: {
+                  $switch: {
+                    branches: readAtBranches,
+                    default: new Date(0),
+                  },
+                },
+              },
+            },
+            { $match: { $expr: { $gt: ['$createdAt', '$readAt'] } } },
+            { $group: { _id: '$groupId', unreadCount: { $sum: 1 } } },
+          ])
+          .toArray();
+  const unreadByGroup = new Map(groupIds.map((groupId) => [groupId, 0]));
+  for (const row of unreadRows) {
+    unreadByGroup.set(row._id, row.unreadCount);
+  }
 
   return groups.map((group) => {
     const latest = latestByGroup.get(group.id);

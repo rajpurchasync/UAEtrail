@@ -396,8 +396,15 @@ export const useExploreBrowseUrlState = ({
     if (parseBrowseDiscoverOpen(searchParams.get(BROWSE_DISCOVER_PARAM))) return;
     const listParam = searchParams.get('list');
     if (listParam === '0' || listParam === '1') return;
-    syncExploreUrl({ list: true });
-  }, [isDesktop, searchParams, syncExploreUrl]);
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        next.set('list', '1');
+        return next;
+      },
+      { replace: true }
+    );
+  }, [isDesktop, searchParams, setSearchParams]);
 
   /** Legacy: `list=1` + `listCat` opened discover browse — migrate to `browse=1`. */
   useEffect(() => {
@@ -405,9 +412,17 @@ export const useExploreBrowseUrlState = ({
     const browseParam = searchParams.get(BROWSE_DISCOVER_PARAM);
     const legacyListCat = parseListCatParam(searchParams.get(LIST_CAT_PARAM));
     if (listParam === '1' && legacyListCat && browseParam !== '1') {
-      syncExploreUrl({ browse: true, list: false });
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          next.set(BROWSE_DISCOVER_PARAM, '1');
+          next.set('list', '0');
+          return next;
+        },
+        { replace: true }
+      );
     }
-  }, [searchParams, syncExploreUrl]);
+  }, [searchParams, setSearchParams]);
 
   const applyMapFilter = (next: MapFilterKey) => {
     setMapFilter(next);
