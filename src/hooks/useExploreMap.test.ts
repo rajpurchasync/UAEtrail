@@ -1,6 +1,6 @@
 import { QueryClient } from '@tanstack/react-query';
 import { describe, expect, it, vi } from 'vitest';
-import { exploreMapQueryKey, exploreMapQueryKeyPrefix, reloadExploreMap } from './useExploreMap';
+import { exploreMapQueryKeyPrefix, reloadExploreMap } from './useExploreMap';
 
 describe('reloadExploreMap', () => {
   it('invalidates and refetches the explore map query', async () => {

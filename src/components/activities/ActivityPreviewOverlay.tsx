@@ -31,6 +31,25 @@ export const ActivityPreviewOverlay = (props: ActivityPreviewOverlayProps) => {
   const variant = props.variant ?? 'form';
   const backLabel = props.backLabel ?? (variant === 'list' ? 'Back to activities' : 'Back to form');
 
+  const previewWirePresentation = useMemo(() => {
+    const viewerAccess: ActivityViewerAccessDTO = {
+      exposure: 'full',
+      level: 'host',
+      gateReason: null,
+      canViewFullActivity: true,
+      canOpenDetailPage: true,
+      joinMode: activity.joinMode ?? 'open',
+      canAccessCrewSurfaces: true,
+    };
+    return resolveActivityDetailWirePresentation({
+      activity,
+      viewerAccess,
+      isHostUser: true,
+      previewMode: true,
+      joinUiState: { kind: 'open' },
+    });
+  }, [activity]);
+
   if (typeof document === 'undefined') return null;
 
   const listFooter =
@@ -148,25 +167,6 @@ export const ActivityPreviewOverlay = (props: ActivityPreviewOverlayProps) => {
     );
 
   const footerOverride = listFooter ?? formFooter;
-
-  const previewWirePresentation = useMemo(() => {
-    const viewerAccess: ActivityViewerAccessDTO = {
-      exposure: 'full',
-      level: 'host',
-      gateReason: null,
-      canViewFullActivity: true,
-      canOpenDetailPage: true,
-      joinMode: activity.joinMode ?? 'open',
-      canAccessCrewSurfaces: true,
-    };
-    return resolveActivityDetailWirePresentation({
-      activity,
-      viewerAccess,
-      isHostUser: true,
-      previewMode: true,
-      joinUiState: { kind: 'open' },
-    });
-  }, [activity]);
 
   return createPortal(
     <div className="fixed inset-0 z-[100] overflow-y-auto bg-gray-50">
