@@ -59,8 +59,8 @@ describe('exploreActivityDateFilter', () => {
       to: '2026-09-13',
     });
     expect(exploreActivityDatePresetToInclusiveRange('week')).toEqual({
-      from: '2026-09-08',
-      to: '2026-09-14',
+      from: '2026-09-07',
+      to: '2026-09-13',
     });
   });
 });

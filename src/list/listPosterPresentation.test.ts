@@ -232,6 +232,7 @@ describe('resolveListFeedFooterModel', () => {
 
     const model = resolveListFeedFooterModel(card, { isGuest: true });
     expect(model.primary.kind).toBe('guest_gate');
-    expect(model.secondary).toMatchObject({ kind: 'guest_gate', label: 'Message Host' });
+    // Pre-join Message Host is entitlement-gated; guests without wire entitlements only see join.
+    expect(model.secondary).toBeNull();
   });
 });
