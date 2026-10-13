@@ -3,8 +3,8 @@ set -eu
 
 cd "$(dirname "$0")"
 
-NODE_MIN_VERSION="20.19.0"
-NODE_BOOTSTRAP_VERSION="20.19.0"
+NODE_MIN_VERSION="24.18.0"
+NODE_BOOTSTRAP_VERSION="24.18.0"
 NODE_PLATFORM="$(uname -s | tr '[:upper:]' '[:lower:]')"
 NODE_ARCH="$(uname -m)"
 

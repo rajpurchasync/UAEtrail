@@ -1,4 +1,4 @@
-FROM node:22-alpine AS build
+FROM node:24.18.0-alpine AS build
 
 WORKDIR /app
 
@@ -8,7 +8,7 @@ RUN npm install
 
 RUN npm run build:api
 
-FROM node:22-alpine
+FROM node:24.18.0-alpine
 
 WORKDIR /app
 ENV NODE_ENV=production

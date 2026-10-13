@@ -67,9 +67,9 @@ The launch scripts are the source of truth for local runtime prerequisites. They
 
 | Platform | Auto-checked | Auto-installed or repaired | Version source |
 |----------|--------------|----------------------------|----------------|
-| Windows | Node.js >= 20.19.0, npm, Docker Desktop >= 24, Docker Compose >= 2 | Node.js via official ZIP download if below minimum; Docker Desktop via `winget`; Docker service start attempt | `run-project.bat` + `scripts/run-project-preflight.mjs` |
-| Linux / RHEL | Node.js >= 20.19.0, npm, Docker Engine >= 24, Docker Compose >= 2 | Node.js via official tarball if below minimum; Docker via `apt-get`, `dnf`, or `yum`; Docker service start attempt | `run-project.sh` + `scripts/run-project-preflight.mjs` |
-| macOS | Node.js >= 20.19.0, npm, Docker Desktop >= 24, Docker Compose >= 2 | Node.js via official tarball if below minimum; Docker Desktop via `brew install --cask docker`; Docker app launch attempt | `run-project-mac.sh` + `scripts/run-project-preflight.mjs` |
+| Windows | Node.js >= 24.18.0, npm >= 11.16.0, Docker Desktop >= 24, Docker Compose >= 2 | Node.js via official ZIP download if below minimum; Docker Desktop via `winget`; Docker service start attempt | `run-project.bat` + `scripts/run-project-preflight.mjs` (see `.nvmrc`) |
+| Linux / RHEL | Node.js >= 24.18.0, npm >= 11.16.0, Docker Engine >= 24, Docker Compose >= 2 | Node.js via official tarball if below minimum; Docker via `apt-get`, `dnf`, or `yum`; Docker service start attempt | `run-project.sh` + `scripts/run-project-preflight.mjs` |
+| macOS | Node.js >= 24.18.0, npm >= 11.16.0, Docker Desktop >= 24, Docker Compose >= 2 | Node.js via official tarball if below minimum; Docker Desktop via `brew install --cask docker`; Docker app launch attempt | `run-project-mac.sh` + `scripts/run-project-preflight.mjs` |
 
 The workspace dependencies are also handled automatically: if `node_modules` is missing, the preflight runs `npm install`.
 

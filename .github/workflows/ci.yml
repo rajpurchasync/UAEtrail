@@ -32,7 +32,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24.18.0
           cache: npm
 
       - name: Install dependencies
@@ -75,3 +75,6 @@ jobs:
 
       - name: Build API Docker image
         run: docker compose build api
+
+      - name: Build frontend Docker image
+        run: docker compose build frontend
