@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import type { ParticipantIntentJoinRequestDTO } from '@uaetrail/shared-types';
 import { fetchMyParticipantIntentJoinRequest } from './participantIntentClientApi';
 import type { JoinRequestUiState } from '../utils/joinRequestUi';
+import { useSafeAsyncEffect, type IsActiveGuard } from './useSafeAsyncEffect';
 
 export const resolveParticipantIntentJoinUiState = (
   request: ParticipantIntentJoinRequestDTO | null | undefined
@@ -30,30 +31,46 @@ export const useParticipantIntentJoinContext = ({
   const [request, setRequest] = useState<ParticipantIntentJoinRequestDTO | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const reload = useCallback(async () => {
-    if (!intentId || !userId) {
-      setRequest(null);
-      return;
-    }
-    setLoading(true);
-    try {
-      const row = await fetchMyParticipantIntentJoinRequest(intentId);
-      setRequest(row);
-    } catch {
-      setRequest(null);
-    } finally {
-      setLoading(false);
-    }
-  }, [intentId, userId]);
+  const reload = useCallback(
+    async (isActive: IsActiveGuard = () => true) => {
+      if (!intentId || !userId) {
+        if (isActive()) {
+          setRequest(null);
+        }
+        return;
+      }
+      if (isActive()) {
+        setLoading(true);
+      }
+      try {
+        const row = await fetchMyParticipantIntentJoinRequest(intentId);
+        if (isActive()) {
+          setRequest(row);
+        }
+      } catch {
+        if (isActive()) {
+          setRequest(null);
+        }
+      } finally {
+        if (isActive()) {
+          setLoading(false);
+        }
+      }
+    },
+    [intentId, userId]
+  );
 
-  useEffect(() => {
-    if (!enabled || !intentId || !userId) {
-      setRequest(null);
-      setLoading(false);
-      return;
-    }
-    void reload();
-  }, [enabled, intentId, userId, reload]);
+  useSafeAsyncEffect(
+    async (isActive) => {
+      if (!enabled || !intentId || !userId) {
+        setRequest(null);
+        setLoading(false);
+        return;
+      }
+      await reload(isActive);
+    },
+    [enabled, intentId, userId, reload]
+  );
 
   const uiState = resolveParticipantIntentJoinUiState(request);
 

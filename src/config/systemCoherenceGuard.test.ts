@@ -167,6 +167,23 @@ describe('systemCoherenceGuard', () => {
     expect(missing).toEqual([]);
   });
 
+  it('explore detail and peek hooks guard mount fetch with useSafeAsyncEffect', () => {
+    const exploreAsyncHooks = [
+      'src/hooks/usePlaceDetailPage.ts',
+      'src/hooks/useParticipantIntentJoinContext.ts',
+      'src/explore/useExplorePublishedAreas.ts',
+      'src/explore/ui/useExploreEntityFollow.ts',
+    ];
+    const missing: string[] = [];
+    for (const rel of exploreAsyncHooks) {
+      const content = readFileSync(join(ROOT, rel), 'utf8');
+      if (!content.includes('useSafeAsyncEffect')) {
+        missing.push(rel);
+      }
+    }
+    expect(missing).toEqual([]);
+  });
+
   it('member profile hooks guard mount fetch with useSafeAsyncEffect', () => {
     const memberAsyncHooks = [
       'src/hooks/useMemberGoals.ts',

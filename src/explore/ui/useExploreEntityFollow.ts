@@ -1,5 +1,6 @@
 import { joinAuthPath } from '../../config/routingCatalog';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
+import { useSafeAsyncEffect } from '../../hooks/useSafeAsyncEffect';
 import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import type { ExploreCardModel } from '../exploreCardModel';
@@ -31,29 +32,30 @@ export const useExploreEntityFollow = (card: ExploreCardModel): ExploreFollowSta
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!user || !target) {
-      setFollowing(false);
-      setFollowId(null);
-      return;
-    }
-    let cancelled = false;
-    void fetchEntityFollowState(target)
-      .then((state) => {
-        if (cancelled) return;
-        setFollowing(state.following);
-        setFollowId(state.followId);
-      })
-      .catch(() => {
-        if (!cancelled) {
+  useSafeAsyncEffect(
+    async (isActive) => {
+      if (!user || !target) {
+        if (isActive()) {
           setFollowing(false);
           setFollowId(null);
         }
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [user, card.id, target?.locationId, target?.tenantId, target?.merchantId]);
+        return;
+      }
+      try {
+        const state = await fetchEntityFollowState(target);
+        if (isActive()) {
+          setFollowing(state.following);
+          setFollowId(state.followId);
+        }
+      } catch {
+        if (isActive()) {
+          setFollowing(false);
+          setFollowId(null);
+        }
+      }
+    },
+    [user, card.id, target?.locationId, target?.tenantId, target?.merchantId]
+  );
 
   const toggle = useCallback(async () => {
     if (!target) return;

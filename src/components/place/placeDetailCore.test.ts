@@ -25,6 +25,7 @@ describe('placeDetailCore (R3)', () => {
   it('usePlaceDetailCore centralizes fetch in hooks layer', () => {
     const hook = read('src/hooks/usePlaceDetailPage.ts');
     expect(hook).toMatch(/fetchPlaceDetail|placeDetailClientApi/);
+    expect(hook).toMatch(/useSafeAsyncEffect/);
     expect(hook).not.toMatch(/PlaceDetailTabs/);
     expect(hook).not.toMatch(/\bapi\./);
   });
