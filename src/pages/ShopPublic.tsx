@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useSafeAsyncEffect } from '../hooks/useSafeAsyncEffect';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { exploreMapPeekPath } from '@uaetrail/shared-types';
 import type { TenantProfile } from '../api/types';
@@ -47,14 +48,24 @@ export const ShopPublic = () => {
   const [communityPeekOnly, setCommunityPeekOnly] = useState(false);
   const mapBack = explorePath({ panel: 'shops', filter: 'shops' });
 
-  useEffect(() => {
-    if (!id) return;
-    setLoading(true);
+  useSafeAsyncEffect(
+    async (isActive) => {
+      if (!id) return;
+      if (isActive()) {
+        setLoading(true);
+        setCommunityPeekOnly(false);
+      }
 
-    void (async () => {
+      const applyShop = (next: ShopPublicView | null, peekOnly = false) => {
+        if (!isActive()) return;
+        setCommunityPeekOnly(peekOnly);
+        setShop(next);
+      };
+
       try {
         const merchant = await fetchShopPublic(id);
-        setShop({
+        if (!isActive()) return;
+        applyShop({
           id: merchant.id,
           reviewTargetId: merchant.tenantId ?? null,
           shopName: merchant.shopName,
@@ -83,26 +94,30 @@ export const ShopPublic = () => {
       } catch {
         try {
           const tenant = await fetchOrganisationProfileBySlug(id);
-          setShop(tenantToShopView(tenant as TenantProfile));
+          if (!isActive()) return;
+          applyShop(tenantToShopView(tenant as TenantProfile));
         } catch {
           try {
             const place = await fetchPublicPlaceDetail(id);
+            if (!isActive()) return;
             const view = communityShopPlaceToView(place);
             if (view) {
-              setCommunityPeekOnly(true);
-              setShop(view);
+              applyShop(view, true);
             } else {
-              setShop(null);
+              applyShop(null);
             }
           } catch {
-            setShop(null);
+            applyShop(null);
           }
         }
       } finally {
-        setLoading(false);
+        if (isActive()) {
+          setLoading(false);
+        }
       }
-    })();
-  }, [id]);
+    },
+    [id]
+  );
 
   useEffect(() => {
     if (!communityPeekOnly || !id) return;

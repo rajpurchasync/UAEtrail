@@ -1,4 +1,5 @@
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useState } from 'react';
+import { useSafeAsyncEffect } from '../hooks/useSafeAsyncEffect';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { fetchMeProfile, updateMeProfile } from '../hooks/memberProfileApi';
@@ -39,22 +40,28 @@ export const ProfileEdit = () => {
   const [city, setCity] = useState<UserCity | ''>('');
   const [languages, setLanguages] = useState<string[]>([]);
 
-  useEffect(() => {
-    void fetchMeProfile()
-      .then((p) => {
-        const names =
-          p.givenName && p.surname
-            ? { givenName: p.givenName, surname: p.surname }
-            : splitLegacyDisplayName(p.displayName ?? '');
-        setGivenName(names.givenName);
-        setSurname(names.surname);
-        setBio(p.bio ?? '');
-        setGender(p.gender ?? '');
-        setCountryCode(p.countryCode ?? (p.city ? 'AE' : ''));
-        setCity(p.city ?? '');
-        setLanguages(parseLanguagesList(p.languages));
-      })
-      .finally(() => setLoading(false));
+  useSafeAsyncEffect(async (isActive) => {
+    try {
+      const p = await fetchMeProfile();
+      if (!isActive()) return;
+      const names =
+        p.givenName && p.surname
+          ? { givenName: p.givenName, surname: p.surname }
+          : splitLegacyDisplayName(p.displayName ?? '');
+      setGivenName(names.givenName);
+      setSurname(names.surname);
+      setBio(p.bio ?? '');
+      setGender(p.gender ?? '');
+      setCountryCode(p.countryCode ?? (p.city ? 'AE' : ''));
+      setCity(p.city ?? '');
+      setLanguages(parseLanguagesList(p.languages));
+    } catch {
+      // keep empty form; user can still navigate away
+    } finally {
+      if (isActive()) {
+        setLoading(false);
+      }
+    }
   }, []);
 
   const onSubmit = async (event: FormEvent) => {

@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
+import { useSafeAsyncEffect, type IsActiveGuard } from '../hooks/useSafeAsyncEffect';
 import { useSearchParams } from 'react-router-dom';
 import { List, Plus, Share2 } from 'lucide-react';
 import type {
@@ -71,23 +72,34 @@ export const TripsMap = () => {
     setSearchParams(params, { replace: true });
   };
 
-  const reload = useCallback(async () => {
-    setError(null);
+  const reload = useCallback(async (isActive: IsActiveGuard = () => true) => {
+    if (isActive()) {
+      setError(null);
+    }
     try {
       const data = await fetchMemberJourneyMap();
-      setPins(data.pins);
-      setEntries(data.entries ?? []);
-      setStats(data.stats);
+      if (isActive()) {
+        setPins(data.pins);
+        setEntries(data.entries ?? []);
+        setStats(data.stats);
+      }
     } catch {
-      setError('Could not load your map. Try again.');
+      if (isActive()) {
+        setError('Could not load your map. Try again.');
+      }
     } finally {
-      setLoading(false);
+      if (isActive()) {
+        setLoading(false);
+      }
     }
   }, []);
 
-  useEffect(() => {
-    void reload();
-  }, [reload]);
+  useSafeAsyncEffect(
+    async (isActive) => {
+      await reload(isActive);
+    },
+    [reload]
+  );
 
   const filteredEntries = useMemo(() => filterJourneyMapEntries(entries, filter), [entries, filter]);
   const mapMarkers = useMemo(

@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useSafeAsyncEffect } from '../hooks/useSafeAsyncEffect';
 import type { RewardBadgeDTO } from '@uaetrail/shared-types';
 import { fetchMemberBadges } from '../hooks/memberProfileApi';
 import { useAuth } from '../context/AuthContext';
@@ -54,17 +55,25 @@ export const ProfileBadges = () => {
     fallbackPath: user?.id ? `/member/${user.id}` : '/explore',
   });
 
-  useEffect(() => {
-    setLoading(true);
-    void fetchMemberBadges()
-      .then((list) => {
+  useSafeAsyncEffect(async (isActive) => {
+    if (isActive()) {
+      setLoading(true);
+    }
+    try {
+      const list = await fetchMemberBadges();
+      if (isActive()) {
         setBadges(list);
         setError(null);
-      })
-      .catch((err) => {
+      }
+    } catch (err) {
+      if (isActive()) {
         setError(err instanceof Error ? err.message : 'Could not load badges');
-      })
-      .finally(() => setLoading(false));
+      }
+    } finally {
+      if (isActive()) {
+        setLoading(false);
+      }
+    }
   }, []);
 
   const earned = useMemo(
