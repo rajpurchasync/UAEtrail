@@ -27,6 +27,7 @@
     "verify:host-member": "node scripts/verify-host-member.mjs",
     "verify:docs": "node scripts/verify-docs-tier1.mjs",
     "consumer-detail:qa-routes": "node scripts/consumer-detail-manual-qa-routes.mjs",
+    "s10f:qa-checklist": "npm run consumer-detail:qa-routes",
     "verify:domain": "node scripts/verify-domain-canonicals.mjs",
     "verify:system": "node scripts/verify-system-coherence.mjs",
     "verify:system:quick": "node scripts/verify-system-coherence.mjs --quick",
