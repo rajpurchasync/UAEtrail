@@ -106,6 +106,18 @@ export const findLocationInMongo = async (locationId: string): Promise<Location 
   return { id: _id, ...rest };
 };
 
+export const findLocationsByIds = async (locationIds: string[]): Promise<Map<string, Location>> => {
+  const unique = [...new Set(locationIds.filter(Boolean))];
+  if (unique.length === 0) return new Map();
+  const docs = await locationsCollection().find({ _id: { $in: unique } }).toArray();
+  const map = new Map<string, Location>();
+  for (const doc of docs) {
+    const { _id, geo: _geo, ...rest } = doc;
+    map.set(_id, { id: _id, ...rest });
+  }
+  return map;
+};
+
 export const mapMongoActivityToPublishResult = (doc: MongoActivityDoc) => ({
   id: doc._id,
   tenantId: doc.tenantId,

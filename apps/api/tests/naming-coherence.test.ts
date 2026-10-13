@@ -42,6 +42,12 @@ describe('naming coherence (API)', () => {
     expect(buddyNotif).not.toMatch(/fromUserId:\s*input/);
   });
 
+  it('activity read assembler batches tenant lookups', () => {
+    const content = readFileSync(join(API_SRC, 'lib', 'activity-read-assembler.ts'), 'utf8');
+    expect(content).toMatch(/findTenantsByIds/);
+    expect(content).not.toMatch(/tenantIds\.map\(async \(tenantId\) => \[tenantId, await findTenantById/);
+  });
+
   it('user search endpoints escape regex via regex-search helper', () => {
     const searchStores = [
       'lib/auth-users.ts',

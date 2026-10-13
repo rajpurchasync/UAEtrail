@@ -436,6 +436,20 @@ export const listPublishedUpcomingActivitiesByArea = async (areaId: string, take
 export const listActiveCatalogPlacesByArea = async (areaId: string, take = 12) =>
   listActiveCatalogPlacesByAreaFromMongo(areaId, take);
 
+export const findActivityTitlesByIds = async (activityIds: string[]): Promise<Map<string, string>> => {
+  const unique = [...new Set(activityIds.filter(Boolean))];
+  if (unique.length === 0) return new Map();
+  const rows = await activitiesCollection()
+    .find({ _id: { $in: unique } })
+    .project({ title: 1 })
+    .toArray();
+  const map = new Map<string, string>();
+  for (const row of rows) {
+    map.set(row._id, row.title?.trim() || 'Outing');
+  }
+  return map;
+};
+
 export const findActivityTimingById = async (activityId: string) => {
   const item = await activitiesCollection().findOne({ _id: activityId });
   if (!item) return null;

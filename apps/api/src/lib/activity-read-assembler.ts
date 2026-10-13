@@ -7,7 +7,13 @@ import { findAuthUsersByIds, type AuthUserRecord } from './auth-users.js';
 import type { MongoActivityDoc } from './entity-builders.js';
 import { findLocationInMongo } from './entity-sync.js';
 import { getMongoClient } from './mongo.js';
-import { findTenantById, findTenantBySlug, type TenantRecord } from './tenant-store.js';
+import { findTenantById, findTenantBySlug, findTenantsByIds, type TenantRecord } from './tenant-store.js';
+
+const tenantMapForIds = async (tenantIds: string[]): Promise<Map<string, TenantRecord>> => {
+  const unique = [...new Set(tenantIds.filter(Boolean))];
+  if (unique.length === 0) return new Map();
+  return findTenantsByIds(unique);
+};
 
 type MongoActivityParticipant = {
   _id: string;
@@ -217,11 +223,7 @@ const assembleEventsWithPublicRelations = async (
   const filteredDocs = docs.filter((doc) => locationMap.has(doc.locationId));
   if (filteredDocs.length === 0) return [];
 
-  const tenantIds = [...new Set(filteredDocs.map((doc) => doc.tenantId))];
-  const tenantEntries = await Promise.all(
-    tenantIds.map(async (tenantId) => [tenantId, await findTenantById(tenantId)] as const)
-  );
-  const tenantMap = new Map(tenantEntries.filter((entry): entry is [string, TenantRecord] => Boolean(entry[1])));
+  const tenantMap = await tenantMapForIds(filteredDocs.map((doc) => doc.tenantId));
 
   const eventIds = filteredDocs.map((doc) => doc._id);
   const participantDocs = await activityParticipantsCollection().find({ activityId: { $in: eventIds } }).toArray();
@@ -520,11 +522,7 @@ const assembleEventsForExploreMap = async (
   );
   if (filteredDocs.length === 0) return [];
 
-  const tenantIds = [...new Set(filteredDocs.map((doc) => doc.tenantId))];
-  const tenantEntries = await Promise.all(
-    tenantIds.map(async (tenantId) => [tenantId, await findTenantById(tenantId)] as const)
-  );
-  const tenantMap = new Map(tenantEntries.filter((entry): entry is [string, TenantRecord] => Boolean(entry[1])));
+  const tenantMap = await tenantMapForIds(filteredDocs.map((doc) => doc.tenantId));
 
   const eventIds = filteredDocs.map((doc) => doc._id);
   const participantDocs = await activityParticipantsCollection().find({ activityId: { $in: eventIds } }).toArray();
@@ -608,11 +606,7 @@ const assembleTenantEventsWithRelations = async (
   if (docs.length === 0) return [];
 
   const locationMap = await loadLocationsByIds(docs.map((doc) => doc.locationId));
-  const tenantIds = [...new Set(docs.map((doc) => doc.tenantId))];
-  const tenantEntries = await Promise.all(
-    tenantIds.map(async (tenantId) => [tenantId, await findTenantById(tenantId)] as const)
-  );
-  const tenantMap = new Map(tenantEntries.filter((entry): entry is [string, TenantRecord] => Boolean(entry[1])));
+  const tenantMap = await tenantMapForIds(docs.map((doc) => doc.tenantId));
 
   const eventIds = docs.map((doc) => doc._id);
   const participantDocs = await activityParticipantsCollection().find({ activityId: { $in: eventIds } }).toArray();
