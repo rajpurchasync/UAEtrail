@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
+import { useSafeAsyncEffect } from '../hooks/useSafeAsyncEffect';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { X } from 'lucide-react';
@@ -116,9 +117,10 @@ export const Messages = () => {
     selectedGroupIdRef.current = selectedGroupId;
   }, [selectedGroupId]);
 
-  const loadInbox = useCallback(async () => {
+  const loadInbox = useCallback(async (isActive: () => boolean = () => true) => {
     try {
       const inboxRes = await messagingApi.getInbox();
+      if (!isActive()) return;
       setConversations(inboxRes.data.direct);
       setGroupThreads(loadGroupThreadPreviews(inboxRes.data.groups as SocialGroupView[]));
       if (inboxRes.data.directConversationsDegraded) {
@@ -127,7 +129,7 @@ export const Messages = () => {
     } catch {
       /* stream / retry fallback */
     } finally {
-      setLoading(false);
+      if (isActive()) setLoading(false);
     }
   }, []);
 
@@ -170,9 +172,7 @@ export const Messages = () => {
     );
   }, [selectedGroupId]);
 
-  useEffect(() => {
-    void loadInbox();
-  }, [loadInbox]);
+  useSafeAsyncEffect((isActive) => loadInbox(isActive), [loadInbox]);
 
   useEffect(() => {
     setMobileShowThread(Boolean(searchParams.get('to') || searchParams.get('group')));
@@ -231,18 +231,22 @@ export const Messages = () => {
       setSearchResults([]);
       return;
     }
+    let cancelled = false;
     const timer = setTimeout(async () => {
       setSearching(true);
       try {
         const hits = await searchMembersByQuery(composeQuery);
-        setSearchResults(hits);
+        if (!cancelled) setSearchResults(hits);
       } catch {
-        setSearchResults([]);
+        if (!cancelled) setSearchResults([]);
       } finally {
-        setSearching(false);
+        if (!cancelled) setSearching(false);
       }
     }, 400);
-    return () => clearTimeout(timer);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
   }, [composeQuery]);
 
   const threads = useMemo(

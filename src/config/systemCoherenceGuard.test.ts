@@ -151,7 +151,7 @@ describe('systemCoherenceGuard', () => {
   });
 
   it('member inbox surfaces guard mount fetches with useSafeAsyncEffect', () => {
-    const memberAsyncPages = ['src/pages/Notifications.tsx', 'src/pages/Buddies.tsx'];
+    const memberAsyncPages = ['src/pages/Messages.tsx', 'src/pages/Notifications.tsx', 'src/pages/Buddies.tsx'];
     const missing: string[] = [];
     for (const rel of memberAsyncPages) {
       const content = readFileSync(join(ROOT, rel), 'utf8');
