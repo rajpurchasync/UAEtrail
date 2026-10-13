@@ -1,3 +1,5 @@
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { buildDiscoveryCardViewModelCard } from '../discovery';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
@@ -129,5 +131,10 @@ describe('listDiscoverRails', () => {
   it('buildListDiscoverRails omits shops rail when there are no shop cards', () => {
     const rails = buildListDiscoverRails([], []);
     expect(rails.some((rail) => rail.id === 'shops')).toBe(false);
+  });
+
+  it('does not ship fabricated discover shop placeholder data module', () => {
+    const placeholderModule = join(process.cwd(), 'src/list/listDiscoverShopPlaceholders.ts');
+    expect(existsSync(placeholderModule)).toBe(false);
   });
 });

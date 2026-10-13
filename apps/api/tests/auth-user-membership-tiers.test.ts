@@ -1,8 +1,15 @@
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import { MembershipTier } from '../src/domain/enums.js';
 import { getAuthUserMembershipTiers } from '../src/lib/auth-users.js';
+import { configureTestEnv } from './helpers/bootstrap.js';
+import { connectMongo } from '../src/lib/mongo.js';
 
 describe('getAuthUserMembershipTiers', () => {
+  beforeAll(async () => {
+    configureTestEnv();
+    await connectMongo();
+  });
+
   it('returns empty map for no ids', async () => {
     const map = await getAuthUserMembershipTiers([]);
     expect(map.size).toBe(0);
