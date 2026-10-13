@@ -1,6 +1,7 @@
 import { MembershipRole, RequestStatus } from '../domain/enums.js';
 import {
   countPublishedActivitiesHostedByUser,
+  countPublishedActivitiesHostedByUserIds,
   hasParticipantToHostLink,
   hasSharedActivityParticipation,
   hostHasActiveJoinRequestFromUser,
@@ -76,6 +77,33 @@ export const shouldHideFromMapMemberDiscovery = async (
   if (normalizeProfileVisibility(profileVisibility) !== 'private') return false;
   const hostedCount = await countPublishedActivitiesHostedByUser(userId);
   return hostedCount === 0;
+};
+
+/** Batch map discovery hide for legacy demand pins — one host-count aggregation. */
+export const batchShouldHideFromMapMemberDiscovery = async (
+  userIds: string[],
+  usersById: Map<string, { profile?: { profileVisibility?: unknown } } | undefined>
+): Promise<Map<string, boolean>> => {
+  const hideByUserId = new Map<string, boolean>();
+  const privateUserIds: string[] = [];
+
+  for (const userId of userIds) {
+    const visibility = usersById.get(userId)?.profile?.profileVisibility;
+    if (normalizeProfileVisibility(visibility) === 'private') {
+      privateUserIds.push(userId);
+    } else {
+      hideByUserId.set(userId, false);
+    }
+  }
+
+  if (privateUserIds.length === 0) return hideByUserId;
+
+  const hostedCounts = await countPublishedActivitiesHostedByUserIds(privateUserIds);
+  for (const userId of privateUserIds) {
+    hideByUserId.set(userId, (hostedCounts.get(userId) ?? 0) === 0);
+  }
+
+  return hideByUserId;
 };
 
 /** Viewer-aware authorization for member profiles and private media. */

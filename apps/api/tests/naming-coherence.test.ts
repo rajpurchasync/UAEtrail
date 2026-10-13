@@ -55,6 +55,15 @@ describe('naming coherence (API)', () => {
     expect(content).not.toMatch(/await findTenantById\(/);
   });
 
+  it('participant intent map list batches users and discovery hide', () => {
+    const content = readFileSync(join(API_SRC, 'lib', 'participant-intents-store.ts'), 'utf8');
+    expect(content).toMatch(/findAuthUsersByIds/);
+    expect(content).toMatch(/batchShouldHideFromMapMemberDiscovery/);
+    expect(content).not.toMatch(/shouldHideFromMapMemberDiscovery\(/);
+    const engagement = readFileSync(join(API_SRC, 'lib', 'activity-engagement-store.ts'), 'utf8');
+    expect(engagement).toMatch(/countPublishedActivitiesHostedByUserIds/);
+  });
+
   it('entity follow list batches tenant and merchant lookups', () => {
     const content = readFileSync(join(API_SRC, 'lib', 'entity-follow-store.ts'), 'utf8');
     expect(content).toMatch(/findTenantsByIds/);

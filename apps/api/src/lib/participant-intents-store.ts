@@ -22,7 +22,7 @@ import { invalidateExploreMapCache } from './explore-map-cache.js';
 import { COLLECTIONS } from './collections.js';
 import { getMongoClient } from './mongo.js';
 import { ActivityStatus } from '../domain/enums.js';
-import { shouldHideFromMapMemberDiscovery } from '../services/profile-viewer-access.js';
+import { batchShouldHideFromMapMemberDiscovery } from '../services/profile-viewer-access.js';
 
 type MongoParticipantIntent = {
   _id: string;
@@ -620,17 +620,7 @@ export const listActiveParticipantIntentsForMap = async (limit = 200): Promise<E
   const users = await findAuthUsersByIds(userIds);
   const userMap = new Map(users.map((user) => [user._id, user]));
 
-  const hideFromMapByUserId = new Map<string, boolean>();
-  await Promise.all(
-    userIds.map(async (userId) => {
-      const user = userMap.get(userId);
-      const hidden = await shouldHideFromMapMemberDiscovery(
-        userId,
-        user?.profile?.profileVisibility
-      );
-      hideFromMapByUserId.set(userId, hidden);
-    })
-  );
+  const hideFromMapByUserId = await batchShouldHideFromMapMemberDiscovery(userIds, userMap);
 
   return docs
     .filter((doc) => !resolveIntentPublishedActivityId(doc))

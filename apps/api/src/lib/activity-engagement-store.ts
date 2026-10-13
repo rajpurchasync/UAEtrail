@@ -575,6 +575,44 @@ export const countPublishedActivitiesHostedByUser = async (userId: string): Prom
     $or: [{ hostId: userId }, { createdById: userId }],
   });
 
+export const countPublishedActivitiesHostedByUserIds = async (
+  userIds: string[]
+): Promise<Map<string, number>> => {
+  const unique = [...new Set(userIds.filter(Boolean))];
+  const counts = new Map<string, number>();
+  for (const userId of unique) counts.set(userId, 0);
+  if (unique.length === 0) return counts;
+
+  const rows = await activitiesCollection()
+    .aggregate<{ _id: string; count: number }>([
+      {
+        $match: {
+          status: ActivityStatus.PUBLISHED,
+          $or: [{ hostId: { $in: unique } }, { createdById: { $in: unique } }],
+        },
+      },
+      {
+        $project: {
+          owners: {
+            $filter: {
+              input: { $setUnion: [['$hostId'], ['$createdById']] },
+              cond: { $and: [{ $ne: ['$$this', null] }, { $in: ['$$this', unique] }] },
+            },
+          },
+        },
+      },
+      { $unwind: '$owners' },
+      { $group: { _id: '$owners', activityIds: { $addToSet: '$_id' } } },
+      { $project: { _id: 1, count: { $size: '$activityIds' } } },
+    ])
+    .toArray();
+
+  for (const row of rows) {
+    if (row._id) counts.set(row._id, row.count);
+  }
+  return counts;
+};
+
 export const hasSharedActivityParticipation = async (firstUserId: string, secondUserId: string): Promise<boolean> => {
   const firstUserEvents = await activityParticipantsCollection()
     .aggregate<{ _id: string }>([
