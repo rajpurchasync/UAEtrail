@@ -3,7 +3,6 @@ export function measureVisibleCarouselCards(track: HTMLElement, scrollLeft = tra
   const children = Array.from(track.children) as HTMLElement[];
   if (children.length === 0) return 1;
 
-  const gap = parseFloat(getComputedStyle(track).columnGap || getComputedStyle(track).gap) || 0;
   const viewportRight = scrollLeft + track.clientWidth;
   let count = 0;
 
