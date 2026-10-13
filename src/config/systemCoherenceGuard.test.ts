@@ -289,20 +289,26 @@ describe('systemCoherenceGuard', () => {
   });
 
   it('S10d explore browse URL migrations patch search params without syncExploreUrl', () => {
-    const content = readFileSync(
+    const migrations = readFileSync(
+      join(ROOT, 'src/explore/ui/useExploreBrowseUrlLegacyMigrations.ts'),
+      'utf8'
+    );
+    expect(migrations).not.toMatch(/syncExploreUrl/);
+    const legacyBlock = migrations.slice(
+      migrations.indexOf('legacyListCat'),
+      migrations.indexOf('}, [input.searchParams')
+    );
+    expect(legacyBlock).not.toMatch(/syncExploreUrl\(\{ browse: true, list: false \}\)/);
+    const desktopListBlock = migrations.slice(
+      migrations.indexOf("if (listParam === '0' || listParam === '1') return;"),
+      migrations.indexOf('}, [input.isDesktop')
+    );
+    expect(desktopListBlock).not.toMatch(/syncExploreUrl\(\{ list: true \}\)/);
+    const browseHook = readFileSync(
       join(ROOT, 'src/explore/ui/useExploreBrowseUrlState.ts'),
       'utf8'
     );
-    const legacyBlock = content.slice(
-      content.indexOf('Legacy: `list=1` + `listCat`'),
-      content.indexOf('const applyMapFilter')
-    );
-    expect(legacyBlock).not.toMatch(/syncExploreUrl\(\{ browse: true, list: false \}\)/);
-    const desktopListBlock = content.slice(
-      content.indexOf('if (listParam === \'0\' || listParam === \'1\') return;'),
-      content.indexOf('Legacy: `list=1` + `listCat`')
-    );
-    expect(desktopListBlock).not.toMatch(/syncExploreUrl\(\{ list: true \}\)/);
+    expect(browseHook).toMatch(/buildExploreBrowseSearchParams/);
   });
 
   it('admin console pages guard mount fetches with useSafeAsyncEffect', () => {
