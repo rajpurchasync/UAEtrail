@@ -3,13 +3,11 @@ import type {
   MemberProfileRoleLabel,
   SocialPersonBuddyRequestState,
 } from '@uaetrail/shared-types';
-import { resolveMemberProfileRoleLabel } from '../domain/member-profile-label.js';
-import { UserRole } from '../domain/enums.js';
 import { countCheckedInParticipationsForUserIds } from '../lib/activity-engagement-store.js';
 import { findAuthUsersByIds } from '../lib/auth-users.js';
 import { listBuddyRequestsForUser } from '../lib/buddy-store.js';
-import { resolveMemberHostStatus } from './member-host-status.js';
-import { canMessageUser } from './chat-policy.js';
+import { filterInboxMessageablePartnerIds } from './chat-policy.js';
+import { batchResolveMemberProfileRoleLabelsForDirectory } from './member-host-status.js';
 
 const BIO_PREVIEW_MAX = 140;
 
@@ -40,30 +38,12 @@ export const enrichMemberBrowseDirectory = async (
   const users = await findAuthUsersByIds(userIds);
   const userMap = new Map(users.map((user) => [user._id, user]));
 
-  const [requests, attendedMap, messagePairs, rolePairs] = await Promise.all([
+  const [requests, attendedMap, messageablePartnerIds, roleMap] = await Promise.all([
     listBuddyRequestsForUser(viewerUserId, 'all'),
     countCheckedInParticipationsForUserIds(userIds),
-    Promise.all(
-      userIds.map(async (userId) => [userId, await canMessageUser(viewerUserId, userId)] as const)
-    ),
-    Promise.all(
-      userIds.map(async (userId) => {
-        const hostStatus = await resolveMemberHostStatus(userId);
-        const user = userMap.get(userId);
-        const label = resolveMemberProfileRoleLabel({
-          role: (user?.role as UserRole) ?? UserRole.PARTICIPANT,
-          hostTiers: hostStatus.hostTiers,
-          isCommunityHost: hostStatus.isCommunityHost,
-          hasAgencyProfile: hostStatus.hasAgencyProfile,
-          hasShopProfile: hostStatus.hasShopProfile,
-        });
-        return [userId, label] as const;
-      })
-    ),
+    filterInboxMessageablePartnerIds(viewerUserId, userIds),
+    batchResolveMemberProfileRoleLabelsForDirectory(users),
   ]);
-
-  const messageMap = new Map(messagePairs);
-  const roleMap = new Map(rolePairs);
   const pendingIncoming = new Set(
     requests
       .filter((r) => r.status === 'pending' && r.toUserId === viewerUserId)
@@ -88,7 +68,7 @@ export const enrichMemberBrowseDirectory = async (
       bioPreview: trimBio(user?.profile?.bio ?? null),
       activitiesAttended: attendedMap.get(card.id) ?? 0,
       profileRoleLabel: (roleMap.get(card.id) ?? 'community_member') as MemberProfileRoleLabel,
-      canMessage: messageMap.get(card.id) ?? false,
+      canMessage: messageablePartnerIds.has(card.id),
       canSendBuddyRequest,
       buddyRequestState,
     };

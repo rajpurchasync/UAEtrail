@@ -14,7 +14,7 @@ import { findAuthUsersByIds } from '../lib/auth-users.js';
 import { listBuddiesForUser, listBuddyRequestsForUser } from '../lib/buddy-store.js';
 import { listFollowingForUser } from '../lib/follow-store.js';
 import { loadExploreMapItemsForMemberEngagement } from '../lib/explore-map-member-engagement.js';
-import { canMessageUser } from './chat-policy.js';
+import { filterInboxMessageablePartnerIds } from './chat-policy.js';
 import { buildMemberTripHintMap } from './member-trip-hints.js';
 
 export type MemberPersonRowSeed = {
@@ -43,20 +43,14 @@ export const enrichMemberPersonRows = async (
   if (seeds.length === 0) return [];
 
   const userIds = seeds.map((s) => s.userId);
-  const [users, requests, attendedMap, messagePairs] = await Promise.all([
+  const [users, requests, attendedMap, messageablePartnerIds] = await Promise.all([
     findAuthUsersByIds(userIds),
     listBuddyRequestsForUser(viewerUserId, 'all'),
     countCheckedInParticipationsForUserIds(userIds),
-    Promise.all(
-      userIds.map(async (id) => {
-        if (buddyIds.has(id)) return [id, true] as const;
-        return [id, await canMessageUser(viewerUserId, id)] as const;
-      })
-    ),
+    filterInboxMessageablePartnerIds(viewerUserId, userIds),
   ]);
 
   const userMap = new Map(users.map((u) => [u._id, u]));
-  const messageMap = new Map(messagePairs);
   const pendingIncoming = new Set(
     requests
       .filter((r) => r.status === 'pending' && r.toUserId === viewerUserId)
@@ -91,7 +85,7 @@ export const enrichMemberPersonRows = async (
       activitiesAttended: attendedMap.get(seed.userId) ?? 0,
       relationship,
       buddyRequestState,
-      canMessage: messageMap.get(seed.userId) ?? false,
+      canMessage: buddyIds.has(seed.userId) || messageablePartnerIds.has(seed.userId),
       canSendBuddyRequest:
         !areBuddies && buddyRequestState === 'none' && seed.userId !== viewerUserId,
       upcomingTrip: seed.upcomingTrip,

@@ -71,6 +71,16 @@ describe('naming coherence (API)', () => {
     );
     expect(content).toMatch(/countCheckedInParticipationsForUserIds/);
     expect(content).not.toMatch(/countUserCheckedInParticipations\(/);
+    expect(content).toMatch(/filterInboxMessageablePartnerIds/);
+    expect(content).toMatch(/batchResolveMemberProfileRoleLabelsForDirectory/);
+    expect(content).not.toMatch(/canMessageUser\(/);
+    expect(content).not.toMatch(/resolveMemberHostStatus\(/);
+  });
+
+  it('member people engagement batches message policy checks', () => {
+    const content = readFileSync(join(API_SRC, 'services', 'member-people-engagement.ts'), 'utf8');
+    expect(content).toMatch(/filterInboxMessageablePartnerIds/);
+    expect(content).not.toMatch(/canMessageUser\(/);
   });
 
   it('active tenant memberships batch tenant record lookups', () => {

@@ -243,6 +243,16 @@ describe('systemCoherenceGuard', () => {
     expect(missing).toEqual([]);
   });
 
+  it('S10d organize-from-activity effect includes host gate inputs in deps', () => {
+    const content = readFileSync(
+      join(ROOT, 'src/explore/ui/useExploreOrganizeFromActivity.ts'),
+      'utf8'
+    );
+    const effectBlock = content.slice(content.indexOf('parseOrganizeFromActivityId(searchParams)'), content.indexOf('const clearOrganizeFromPrefill'));
+    expect(effectBlock).toMatch(/isCommunityHost/);
+    expect(effectBlock).toMatch(/hostTiers/);
+  });
+
   it('S10d explore browse URL migrations patch search params without syncExploreUrl', () => {
     const content = readFileSync(
       join(ROOT, 'src/explore/ui/useExploreBrowseUrlState.ts'),

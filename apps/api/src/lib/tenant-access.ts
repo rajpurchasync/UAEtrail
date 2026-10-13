@@ -7,6 +7,7 @@ import {
   findTenantById as findTenantRecordById,
   findTenantsByIds,
   findTenantStatus,
+  type TenantRecord,
 } from './tenant-store.js';
 import { getMongoClient } from './mongo.js';
 
@@ -200,6 +201,30 @@ export const findTenantMembershipByUser = async (
     role: row.role,
     createdAt: row.createdAt
   };
+};
+
+export const listActiveTenantMembershipsByUserIds = async (
+  userIds: string[]
+): Promise<Map<string, Array<{ role: MembershipRole; tenant: TenantRecord }>>> => {
+  const unique = [...new Set(userIds.filter(Boolean))];
+  const byUser = new Map<string, Array<{ role: MembershipRole; tenant: TenantRecord }>>();
+  if (unique.length === 0) return byUser;
+  for (const id of unique) byUser.set(id, []);
+
+  const memberships = await tenantMembershipsCollection()
+    .find({ userId: { $in: unique } })
+    .sort({ createdAt: 1 })
+    .toArray();
+  const tenantMap = await findTenantsByIds(memberships.map((membership) => membership.tenantId));
+
+  for (const membership of memberships) {
+    const tenant = tenantMap.get(membership.tenantId);
+    if (!tenant || tenant.status !== TenantStatus.ACTIVE || membership.isActive === false) continue;
+    const list = byUser.get(membership.userId) ?? [];
+    list.push({ role: membership.role, tenant });
+    byUser.set(membership.userId, list);
+  }
+  return byUser;
 };
 
 export const listActiveTenantMembershipsByUser = async (userId: string) => {

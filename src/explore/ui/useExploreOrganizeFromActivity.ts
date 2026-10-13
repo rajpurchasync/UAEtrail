@@ -128,6 +128,8 @@ export const useExploreOrganizeFromActivity = ({
     hostGateLoading,
     canPublish,
     signupProfileComplete,
+    isCommunityHost,
+    hostTiers,
     navigate,
     pathname,
     tenantId,

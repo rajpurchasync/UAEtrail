@@ -152,6 +152,25 @@ export const listTenantsByOwnerId = async (ownerId: string): Promise<TenantRecor
   return docs.map(mapMongoTenant);
 };
 
+export const listTenantsByOwnerIds = async (ownerIds: string[]): Promise<Map<string, TenantRecord[]>> => {
+  const unique = [...new Set(ownerIds.filter(Boolean))];
+  const byOwner = new Map<string, TenantRecord[]>();
+  if (unique.length === 0) return byOwner;
+
+  const docs = await tenantsCollection()
+    .find({ ownerId: { $in: unique }, status: TenantStatus.ACTIVE })
+    .sort({ createdAt: 1 })
+    .toArray();
+
+  for (const doc of docs) {
+    const tenant = mapMongoTenant(doc);
+    const list = byOwner.get(doc.ownerId) ?? [];
+    list.push(tenant);
+    byOwner.set(doc.ownerId, list);
+  }
+  return byOwner;
+};
+
 export type OwnedHostProfileType = 'guide' | 'agency' | 'shop';
 
 export const resolveOwnedProfileType = (tenant: TenantRecord): OwnedHostProfileType => {

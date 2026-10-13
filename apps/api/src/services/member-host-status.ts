@@ -7,19 +7,80 @@ import { isSignupProfileComplete } from '../domain/user-profile.js';
 import { resolveHostTiersFromTenants } from '../domain/member-host-tiers.js';
 import { resolveMemberProfileRoleLabel } from '../domain/member-profile-label.js';
 import { listActiveTenantMembershipsByUser } from '../lib/activities-store.js';
-import { findAuthUserById } from '../lib/auth-users.js';
+import { findAuthUserById, type AuthUserRecord } from '../lib/auth-users.js';
 import { isCommunityHostByUserId } from '../lib/community-host.js';
 import { ensureBuddyHostTenant, ensureOwnerMembershipForTenant } from '../lib/buddy-host-tenant.js';
 import { findLatestHostApplicationByApplicant } from '../lib/host-applications-store.js';
+import { countPublishedActivitiesHostedByUserIds } from '../lib/activity-engagement-store.js';
+import { listActiveTenantMembershipsByUserIds } from '../lib/tenant-access.js';
+import { countParticipantIntentsByUser } from '../lib/participant-intents-store.js';
 import {
   listTenantsByOwnerId,
+  listTenantsByOwnerIds,
   mergeActiveTenantsForHostStatus,
   pickActivityTenant,
   resolveOwnedProfileType,
 } from '../lib/tenant-store.js';
 import { resolvePublishingProfileKind } from '@uaetrail/shared-types';
-import type { HostStatusDTO } from '@uaetrail/shared-types';
+import type { HostStatusDTO, MemberProfileRoleLabel } from '@uaetrail/shared-types';
 import { inferTenantPublishingPurpose } from '../domain/tenant-publishing.js';
+
+/** Read-only role labels for member browse directory (no buddy-tenant side effects). */
+export const batchResolveMemberProfileRoleLabelsForDirectory = async (
+  users: AuthUserRecord[]
+): Promise<Map<string, MemberProfileRoleLabel>> => {
+  const labels = new Map<string, MemberProfileRoleLabel>();
+  if (users.length === 0) return labels;
+
+  const userIds = users.map((user) => user._id);
+  const [ownedByOwnerId, membershipsByUser, hostedCounts] = await Promise.all([
+    listTenantsByOwnerIds(userIds),
+    listActiveTenantMembershipsByUserIds(userIds),
+    countPublishedActivitiesHostedByUserIds(userIds),
+  ]);
+
+  const needIntentCheck: string[] = [];
+  const communityHostByUserId = new Map<string, boolean>();
+  for (const userId of userIds) {
+    if ((hostedCounts.get(userId) ?? 0) > 0) {
+      communityHostByUserId.set(userId, true);
+    } else {
+      needIntentCheck.push(userId);
+    }
+  }
+  if (needIntentCheck.length > 0) {
+    const intentPairs = await Promise.all(
+      needIntentCheck.map(async (userId) => [userId, await countParticipantIntentsByUser(userId)] as const)
+    );
+    for (const [userId, count] of intentPairs) {
+      communityHostByUserId.set(userId, count > 0);
+    }
+  }
+
+  for (const user of users) {
+    const role = user.role ?? UserRole.PARTICIPANT;
+    const profileComplete = isSignupProfileComplete(user.profile);
+    const ownedTenants = mergeActiveTenantsForHostStatus(
+      ownedByOwnerId.get(user._id) ?? [],
+      membershipsByUser.get(user._id) ?? []
+    );
+    const hostTiers = resolveHostTiersFromTenants(ownedTenants, profileComplete);
+    const hasAgencyProfile = ownedTenants.some((tenant) => resolveOwnedProfileType(tenant) === 'agency');
+    const hasShopProfile = ownedTenants.some((tenant) => resolveOwnedProfileType(tenant) === 'shop');
+    labels.set(
+      user._id,
+      resolveMemberProfileRoleLabel({
+        role,
+        hostTiers,
+        isCommunityHost: communityHostByUserId.get(user._id) ?? false,
+        hasAgencyProfile,
+        hasShopProfile,
+      })
+    );
+  }
+
+  return labels;
+};
 
 /** Canonical resolver for `GET /me/host-status` — keep all tier logic here. */
 export const resolveMemberHostStatus = async (userId: string): Promise<HostStatusDTO> => {
