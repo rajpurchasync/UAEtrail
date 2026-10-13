@@ -52,7 +52,7 @@ export const getRedisClient = async (): Promise<RedisClientType | null> => {
         client = null;
         const message = err instanceof Error ? err.message : String(err);
         if (env.NODE_ENV === 'production') {
-          throw new Error(`Redis connection failed in production: ${message}`);
+          throw new Error(`Redis connection failed in production: ${message}`, { cause: err });
         }
         console.warn('[redis] Unavailable — using in-memory fallbacks.', message);
         return null;

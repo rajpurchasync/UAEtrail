@@ -75,7 +75,7 @@ export const registerPublicPlaceRoutes = (router: Router): void => {
 
   registerPlaceAlias(router, 'get', '/locations', validate({ query: listFilterSchema }), async (req, res, next) => {
     try {
-      const filters = req.query as z.infer<typeof listFilterSchema>;
+      const filters = req.query as unknown as z.infer<typeof listFilterSchema>;
       const pg = { page: filters.page ?? 1, pageSize: filters.pageSize ?? 20 };
       const { items, total } = await listActiveLocations({
         activityType: filters.activityType,

@@ -1,6 +1,7 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig, loadEnv } from 'vite';
+import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import { devQrPlugin } from './scripts/vite-plugin-dev-qr.mjs';
 
@@ -15,7 +16,7 @@ export default defineConfig(({ mode }) => {
   const apiTarget = process.env.API_BASE_URL || env.API_BASE_URL || 'http://127.0.0.1:4000';
 
   return {
-    plugins: [react(), devQrPlugin()],
+    plugins: [tailwindcss(), react(), devQrPlugin()],
     resolve: {
       alias: [
         // More specific paths before `@` → `src` (otherwise `@/chat` becomes `src/chat`).

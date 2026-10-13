@@ -19,6 +19,8 @@ apps/api/dist
 # TLS certificates (never commit)
 nginx/certs/*.pem
 nginx/certs/*.key
+postgress_ca.pem
+qr-local.png
 
 .vscode/*
 !.vscode/extensions.json
@@ -42,6 +44,9 @@ src/explore/ui/organizeWizard/.regen-wizard-slice.tsx
 
 # Local debug dumps (explore payload, one-off stats)
 .tmp-*.json
+_acts.json
+_map.json
+List.txt
 tmp-*.txt
 tmp-osm-stats.txt
 

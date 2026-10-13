@@ -28,6 +28,7 @@ export const useMarketingPeekCarousel = ({
   const [activePage, setActivePage] = useState(0);
   const activePageRef = useRef(0);
   const [visibleCardCount, setVisibleCardCount] = useState(1);
+  const visibleCardCountRef = useRef(1);
   const [userPaused, setUserPaused] = useState(false);
   const [hoverPaused, setHoverPaused] = useState(false);
   const [progressCycle, setProgressCycle] = useState(0);
@@ -41,7 +42,8 @@ export const useMarketingPeekCarousel = ({
   const remeasureVisible = useCallback(() => {
     const track = trackRef.current;
     if (!track) return;
-    const next = measureVisibleCarouselCards(track, track.scrollLeft);
+    const next = measureVisibleCarouselCards(track, 0);
+    visibleCardCountRef.current = next;
     setVisibleCardCount(next);
   }, [trackRef]);
 
@@ -101,10 +103,9 @@ export const useMarketingPeekCarousel = ({
           closestCard = i;
         }
       });
-      const visible = measureVisibleCarouselCards(track, trackLeft);
+      const visible = visibleCardCountRef.current;
       const pages = carouselPageCount(itemCount, visible);
       const page = carouselPageFromCardIndex(closestCard, visible, pages);
-      setVisibleCardCount(visible);
       setActivePage(page);
     };
 

@@ -1,8 +1,6 @@
 @import './styles/home-tokens.css';
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+@config '../tailwind.config.js';
 
 @layer base {
   :root {
@@ -160,11 +158,11 @@
   }
 
   .glass-card {
-    @apply glass rounded-glass shadow-glass;
+    @apply bg-white/65 backdrop-blur-xl border border-white/70 rounded-glass shadow-glass;
   }
 
   .glass-card-interactive {
-    @apply glass-card transition-all duration-300 ease-out active:scale-[0.98] hover:shadow-glass-lg;
+    @apply bg-white/65 backdrop-blur-xl border border-white/70 rounded-glass shadow-glass transition-all duration-300 ease-out active:scale-[0.98] hover:shadow-glass-lg;
   }
 
   .glass-nav {
@@ -172,15 +170,15 @@
   }
 
   .glass-pill {
-    @apply app-chip-inactive;
+    @apply inline-flex items-center justify-center min-h-[var(--touch-min)] px-3.5 rounded-full text-xs font-medium whitespace-nowrap transition-all duration-150 active:scale-[0.97] bg-white text-neutral-600 ring-1 ring-inset ring-neutral-200/90;
   }
 
   .glass-pill-active {
-    @apply app-chip-active;
+    @apply inline-flex items-center justify-center min-h-[var(--touch-min)] px-3.5 rounded-full text-xs font-medium whitespace-nowrap transition-all duration-150 active:scale-[0.97] bg-emerald-600 text-white shadow-sm shadow-emerald-600/15;
   }
 
   .glass-pill-inactive {
-    @apply app-chip-inactive;
+    @apply inline-flex items-center justify-center min-h-[var(--touch-min)] px-3.5 rounded-full text-xs font-medium whitespace-nowrap transition-all duration-150 active:scale-[0.97] bg-white text-neutral-600 ring-1 ring-inset ring-neutral-200/90;
   }
 
   /* ── Standard consumer controls ── */
@@ -189,15 +187,15 @@
   }
 
   .app-chip-active {
-    @apply app-chip bg-emerald-600 text-white shadow-sm shadow-emerald-600/15;
+    @apply inline-flex items-center justify-center min-h-[var(--touch-min)] px-3.5 rounded-full text-xs font-medium whitespace-nowrap transition-all duration-150 active:scale-[0.97] bg-emerald-600 text-white shadow-sm shadow-emerald-600/15;
   }
 
   .app-chip-active-neutral {
-    @apply app-chip bg-neutral-900 text-white shadow-sm;
+    @apply inline-flex items-center justify-center min-h-[var(--touch-min)] px-3.5 rounded-full text-xs font-medium whitespace-nowrap transition-all duration-150 active:scale-[0.97] bg-neutral-900 text-white shadow-sm;
   }
 
   .app-chip-inactive {
-    @apply app-chip bg-white text-neutral-600 ring-1 ring-inset ring-neutral-200/90;
+    @apply inline-flex items-center justify-center min-h-[var(--touch-min)] px-3.5 rounded-full text-xs font-medium whitespace-nowrap transition-all duration-150 active:scale-[0.97] bg-white text-neutral-600 ring-1 ring-inset ring-neutral-200/90;
   }
 
   .app-chip-row {
@@ -253,7 +251,7 @@
   }
 
   .app-segment-active {
-    @apply app-segment bg-emerald-600 text-white shadow-sm shadow-emerald-600/15;
+    @apply inline-flex items-center justify-center h-7 px-3 rounded-[10px] text-xs font-medium transition-all active:scale-[0.98] bg-emerald-600 text-white shadow-sm shadow-emerald-600/15;
   }
 
   .app-cta-sm {
@@ -339,7 +337,7 @@
   }
 
   .ios-large-title {
-    @apply consumer-page-heading;
+    @apply text-[26px] md:text-[2rem] font-bold tracking-[-0.02em] text-neutral-900 leading-[1.15];
   }
 
   .ios-section-title {
@@ -352,7 +350,7 @@
 
   /* ── Surfaces (legacy + modern) ── */
   .ios-grouped {
-    @apply mx-0 md:mx-0 rounded-glass glass-card overflow-hidden;
+    @apply mx-0 md:mx-0 rounded-glass bg-white/65 backdrop-blur-xl border border-white/70 shadow-glass overflow-hidden;
   }
 
   .ios-row {
@@ -368,24 +366,24 @@
   }
 
   .ios-input {
-    @apply w-full min-h-[48px] px-4 py-2.5 rounded-2xl glass text-[16px] text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-shadow;
+    @apply w-full min-h-[48px] px-4 py-2.5 rounded-2xl bg-white/65 backdrop-blur-xl border border-white/70 text-[16px] text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-shadow;
   }
 
   .ios-search,
   .glass-search {
-    @apply w-full min-h-[44px] pl-11 pr-4 rounded-2xl glass text-[16px] placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/25 transition-shadow;
+    @apply w-full min-h-[44px] pl-11 pr-4 rounded-2xl bg-white/65 backdrop-blur-xl border border-white/70 text-[16px] placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/25 transition-shadow;
   }
 
   .ios-chip {
-    @apply app-chip-inactive;
+    @apply inline-flex items-center justify-center min-h-[var(--touch-min)] px-3.5 rounded-full text-xs font-medium whitespace-nowrap transition-all duration-150 active:scale-[0.97] bg-white text-neutral-600 ring-1 ring-inset ring-neutral-200/90;
   }
 
   .ios-chip-active {
-    @apply app-chip-active;
+    @apply inline-flex items-center justify-center min-h-[var(--touch-min)] px-3.5 rounded-full text-xs font-medium whitespace-nowrap transition-all duration-150 active:scale-[0.97] bg-emerald-600 text-white shadow-sm shadow-emerald-600/15;
   }
 
   .ios-chip-inactive {
-    @apply app-chip-inactive;
+    @apply inline-flex items-center justify-center min-h-[var(--touch-min)] px-3.5 rounded-full text-xs font-medium whitespace-nowrap transition-all duration-150 active:scale-[0.97] bg-white text-neutral-600 ring-1 ring-inset ring-neutral-200/90;
   }
 
   /* ── Touch expand ── */

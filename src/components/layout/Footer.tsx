@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { LLMS_TXT_PATH } from '../../config/seo';
 import { HOME_FOOTER_FOUNDERS, HOME_FOOTER_FOUNDERS_HEADING } from '../../content/homeMarketing';
+import { SocialChannelLinks } from './SocialChannelLinks';
 
 const HOME_FOOTER_FOUNDERS_SECTION_CLASS =
   'mb-8 rounded-2xl border border-emerald-700/35 bg-gradient-to-b from-emerald-950/50 to-gray-900/80 px-5 py-6 text-left shadow-[inset_0_1px_0_rgba(52,211,153,0.12)] sm:px-6 md:mb-10 md:px-8 md:py-8';
@@ -67,6 +68,8 @@ export const Footer = () => {
             </div>
           </section>
         ) : null}
+
+        <SocialChannelLinks className="mb-6 md:mb-7" />
 
         <nav aria-label="Footer">
           <ul className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 sm:gap-x-6">

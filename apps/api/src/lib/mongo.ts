@@ -110,9 +110,9 @@ export const connectMongo = async (): Promise<MongoClient> => {
           }
         }
 
-        throw new Error(
-          `Failed to connect to MongoDB at ${env.MONGODB_URI}: ${message}`
-        );
+        throw new Error(`Failed to connect to MongoDB at ${env.MONGODB_URI}: ${message}`, {
+          cause: error,
+        });
       } finally {
         connecting = null;
       }
