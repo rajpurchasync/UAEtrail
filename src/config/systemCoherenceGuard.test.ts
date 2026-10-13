@@ -255,16 +255,23 @@ describe('systemCoherenceGuard', () => {
 
   it('S10d activity pin deep link callback avoids whole browse object in deps', () => {
     const content = readFileSync(
-      join(ROOT, 'src/explore/ui/useExploreSelectionActions.ts'),
+      join(ROOT, 'src/explore/ui/useExploreActivityPinDeepLink.ts'),
       'utf8'
     );
     const block = content.slice(
       content.indexOf('const tryOpenActivityPinDeepLink = useCallback'),
-      content.indexOf('const handleCloseSelection = useCallback')
+      content.indexOf('return { tryOpenActivityPinDeepLink }')
     );
     expect(block).toMatch(/setListOpen/);
     expect(block).not.toMatch(/browse,/);
     expect(block).not.toMatch(/browse\./);
+    const selection = readFileSync(
+      join(ROOT, 'src/explore/ui/useExploreSelectionActions.ts'),
+      'utf8'
+    );
+    expect(selection).toMatch(/useExploreActivityPinDeepLink/);
+    expect(selection).toMatch(/useExploreSelectionPeekJoin/);
+    expect(selection.split(/\r?\n/).length).toBeLessThan(380);
   });
 
   it('S10d organize-from-activity effect includes host gate inputs in deps', () => {

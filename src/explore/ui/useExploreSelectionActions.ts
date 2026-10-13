@@ -2,7 +2,6 @@ import { useCallback, useMemo, useState, type Dispatch, type SetStateAction } fr
 import type { QueryClient } from '@tanstack/react-query';
 import type { NavigateFunction } from 'react-router-dom';
 import {
-  exploreMapItemIsSeeking,
   type ActivityDTO,
   type ActivityMapPeekActionId,
   type ExploreMapItemDTO,
@@ -12,43 +11,24 @@ import {
   activityDetailPath,
   resolveActivityDisplayCoordinates,
   resolveActivityHostUserId,
-  resolveParticipationMode,
 } from '@uaetrail/shared-types';
 import { buildShareText, buildShareUrl } from '../../utils/share';
 import { hostPublishedActivityPeekAccess } from '../../access/resolvePeekDetailAccess';
 import { buildExploreMapItemFromActivity } from '../privateActivityExploreItem';
-import {
-  findExploreMapItemForPinId,
-  resolveActivityIdForExplorePinId,
-} from '../exploreMapPinResolve';
-import { cancelHostActivityById } from '../../hooks/hostActivityClientApi';
-import {
-  cancelParticipantIntent,
-  createParticipantIntentJoinRequest,
-  invalidateMyParticipantIntentsQueries,
-} from '../../hooks/participantIntentClientApi';
-import { fetchPublicActivityDetail } from '../../hooks/usePublicActivityDetail';
-import { buildDiscoveryCardViewModel } from '../../discovery';
-import { canShowDemandLinkRideshareOffer } from '../linkActivityRideshareOffer';
 import { openActivityGroupChat } from '../../utils/openActivityGroupChat';
 import { messagesRouteForRole } from '../../utils/authRouting';
 import { executeActivityMapPeekAction } from '../../activity/executeActivityMapPeekAction';
-import {
-  activityMapPeekNeedsJoinContext,
-  activityMapPeekSkipsJoinContext,
-} from '../../activity/activityPeekEngagement';
-import { viewerIsActivityHostUser } from '../../utils/viewerHostsActivity';
-import { useActivityJoinActions, useActivityJoinContext } from '../../hooks/useActivityJoinFlow';
-import { useParticipantIntentJoinContext } from '../../hooks/useParticipantIntentJoinContext';
-import { useViewerProfileGender } from '../../hooks/useViewerProfileGender';
-import { womenOnlyJoinMessageForActivity } from '../../utils/activityWomenOnlyJoin';
 import { readExploreMapItemsFromCache, reloadExploreMap } from '../../hooks/useExploreMap';
 import { isExploreMapVnextEnabled } from '../exploreMapVnext';
-import { navigateToParticipantIntentManage } from '../../member-plan/navigateParticipantIntentManage';
+import { invalidateMyParticipantIntentsQueries } from '../../hooks/participantIntentClientApi';
 import type { ContributeSubmitResult } from './contributeFlow';
 import type { DemandSubmitResult } from './demandFlow';
 import type { useExploreBrowseUrlState } from './useExploreBrowseUrlState';
 import type { HostActivityManageInitialView } from '../../components/host/hostActivityManageViews';
+import { buildExploreSelectionSelectedCard } from '../exploreSelectionSelectedCard';
+import { useExploreSelectionPeekJoin } from './useExploreSelectionPeekJoin';
+import { useExploreActivityPinDeepLink } from './useExploreActivityPinDeepLink';
+import { useExploreSelectionRemovals } from './useExploreSelectionRemovals';
 
 type BrowseState = ReturnType<typeof useExploreBrowseUrlState>;
 
@@ -70,12 +50,10 @@ type UseExploreSelectionActionsArgs = {
     options?: { canSendBuddyInvites?: boolean }
   ) => void;
   onCreateLinkedRideshare?: (parent: ActivityDTO) => void;
-  /** Host peek `manage_activity` — open manage sheet without leaving explore. */
   onOpenHostManage?: (
     activity: ActivityDTO,
     initialView?: HostActivityManageInitialView
   ) => void;
-  /** Host peek `share_activity` — invite + link share sheet (not web-only). */
   onShareHostedActivity?: (activity: ActivityDTO) => void;
 };
 
@@ -101,192 +79,54 @@ export const useExploreSelectionActions = ({
 
   const [demandNotice, setDemandNotice] = useState<string | null>(null);
   const [venueNotice, setVenueNotice] = useState<string | null>(null);
-  const [hostRemoveConfirm, setHostRemoveConfirm] = useState<ActivityDTO | null>(null);
-  const [hostRemoveBusy, setHostRemoveBusy] = useState(false);
-  const [demandRemoveIntentId, setDemandRemoveIntentId] = useState<string | null>(null);
-  const [demandRemoveBusy, setDemandRemoveBusy] = useState(false);
 
   const selected = items.find((item) => item.id === selectedId) ?? null;
-  const viewerGender = useViewerProfileGender(user?.id);
-  const joinGuardMessage = useMemo(
-    () => womenOnlyJoinMessageForActivity(selected?.activity?.requirements, viewerGender),
-    [selected?.activity?.requirements, viewerGender]
+  const selectedCard = useMemo(
+    () => buildExploreSelectionSelectedCard(selected, items, user),
+    [selected, items, user]
   );
 
-  const selectedCard = useMemo(() => {
-    if (!selected) return null;
-    const card = buildDiscoveryCardViewModel(selected, { mapItems: items }).card;
-    const activity = card.activity;
-    const isOwnActivity = Boolean(
-      user &&
-        activity &&
-        selected.source === 'activity' &&
-        viewerIsActivityHostUser(activity, user.id)
-    );
-    const activityHostPeek = isOwnActivity;
-    const isOwnDemand = Boolean(
-      user &&
-        exploreMapItemIsSeeking(selected) &&
-        selected.requesterUserId === user.id &&
-        selected.participantIntentId &&
-        !selected.convertedActivityId
-    );
-    if (isOwnDemand) {
-      return {
-        ...card,
-        showJoinActions: false,
-        showDemandOwnerActions: true,
-        showDemandLinkRideshare: canShowDemandLinkRideshareOffer(selected),
-      };
-    }
-    if (!activityHostPeek) return card;
-    return {
-      ...card,
-      showJoinActions: false,
-    };
-  }, [selected, items, user]);
-
-  const joinContextEnabled = Boolean(
-    selected?.activity?.id &&
-      user &&
-      selectedCard &&
-      activityMapPeekNeedsJoinContext(selectedCard)
-  );
-  const {
-    context: joinContext,
-    uiState: joinUiState,
-    loading: joinStateLoading,
-    reload: reloadJoinContext,
-  } = useActivityJoinContext({
-    activityId: selected?.activity?.id,
-    enabled: joinContextEnabled,
-    userId: user?.id,
+  const peekJoin = useExploreSelectionPeekJoin({
+    selected,
+    selectedCard,
+    user,
+    setDemandNotice,
+    setSelectedId,
+    navigate,
   });
 
-  const seekingUsesLegacyIntentJoin = Boolean(
-    selected &&
-      exploreMapItemIsSeeking(selected) &&
-      selected.participantIntentId &&
-      !selected.activity?.id
-  );
-  const demandJoinContextEnabled = Boolean(
-    seekingUsesLegacyIntentJoin &&
-      !selectedCard?.showDemandOwnerActions &&
-      user
-  );
-  const {
-    uiState: demandJoinUiState,
-    loading: demandJoinStateLoading,
-    reload: reloadDemandJoinContext,
-  } = useParticipantIntentJoinContext({
-    intentId: selected?.participantIntentId,
-    enabled: demandJoinContextEnabled,
-    userId: user?.id,
+  const removals = useExploreSelectionRemovals({
+    selected,
+    tenantId,
+    queryClient,
+    navigate,
+    setSelectedId,
+    setDemandNotice,
+    setVenueNotice,
   });
-
-  const activityPeekSkipsJoinContext = useMemo(
-    () =>
-      Boolean(
-        selectedCard &&
-          activityMapPeekSkipsJoinContext(selectedCard, joinUiState)
-      ),
-    [selectedCard, joinUiState]
-  );
-
-  const peekJoinUiState =
-    demandJoinContextEnabled
-      ? demandJoinUiState
-      : activityPeekSkipsJoinContext
-        ? undefined
-        : joinUiState;
-  const peekJoinStateLoading = demandJoinContextEnabled ? demandJoinStateLoading : joinStateLoading;
-
-  const joinActions = useActivityJoinActions({
-    activity: selected?.activity ?? null,
-    uiState: joinUiState,
-    requestIdFallback: joinContext?.myRequest?.id ?? null,
-    joinGuardMessage,
-    onReload: reloadJoinContext,
-    onMessage: setDemandNotice,
-    onError: setDemandNotice,
-  });
-
-  const handlePeekJoinSuccess = useCallback(
-    (message: string) => {
-      joinActions.handleJoinSuccess(message);
-    },
-    [joinActions]
-  );
 
   const openItem = useCallback(
     (item: ExploreMapItemDTO) => {
       closeCompose();
       setSelectedId(item.id);
       if (!isDesktop) {
-        browse.setListOpen(false);
+        setListOpen(false);
       }
     },
-    [closeCompose, isDesktop, browse, setSelectedId]
+    [closeCompose, isDesktop, setListOpen, setSelectedId]
   );
 
-  const respondToDemand = useCallback(
-    (item: ExploreMapItemDTO) => {
-      const requesterId = item.requesterUserId;
-      if (!requesterId) return;
-      if (!user) {
-        joinActions.openGuestSheet('activity');
-        return;
-      }
-      navigate(messagesRouteForRole((user.role ?? 'participant') as UserRole, requesterId));
-      setSelectedId(null);
-    },
-    [user, navigate, joinActions, setSelectedId]
-  );
-
-  const handleGuestGatedAction = useCallback(() => {
-    if (user) return;
-    const intent =
-      selected?.source === 'venue' || selected?.source === 'shop' ? 'place' : 'activity';
-    joinActions.openGuestSheet(intent);
-  }, [user, selected?.source, joinActions]);
-
-  const handleJoin = useCallback(() => {
-    if (selected && exploreMapItemIsSeeking(selected)) {
-      if (!user) {
-        joinActions.openGuestSheet('activity');
-        return;
-      }
-      if (selected.activity?.id) {
-        if (joinUiState.kind !== 'open') return;
-        joinActions.openJoinModal();
-        return;
-      }
-      const intentId = selected.participantIntentId;
-      if (!intentId) return;
-      if (demandJoinUiState.kind !== 'open') return;
-      void (async () => {
-        try {
-          await createParticipantIntentJoinRequest(intentId);
-          await reloadDemandJoinContext();
-          setDemandNotice('Request sent — they’ll review your request.');
-        } catch (err) {
-          setDemandNotice(err instanceof Error ? err.message : 'Could not send your request.');
-        }
-      })();
-      return;
-    }
-    if (!selected?.activity) return;
-    if (!user) {
-      joinActions.openGuestSheet('activity');
-      return;
-    }
-    if (joinUiState.kind !== 'open') return;
-    joinActions.openJoinModal();
-  }, [selected, user, joinUiState.kind, demandJoinUiState.kind, joinActions, reloadDemandJoinContext]);
-
-  const handleDemandMessage = useCallback(() => {
-    if (selected) respondToDemand(selected);
-  }, [selected, respondToDemand]);
+  const { tryOpenActivityPinDeepLink } = useExploreActivityPinDeepLink({
+    items,
+    user,
+    isDesktop,
+    setListOpen,
+    setLinkOnlyPeekItems,
+    setSelectedId,
+    setDemandNotice,
+    handleFocusMapLocation,
+    openItem,
+  });
 
   const handleHostMessage = useCallback(async () => {
     const activity = selected?.activity;
@@ -305,7 +145,7 @@ export const useExploreSelectionActions = ({
     const hostUserId = resolveActivityHostUserId(activity);
     if (!hostUserId) return;
     if (!user) {
-      joinActions.openGuestSheet('activity');
+      peekJoin.joinActions.openGuestSheet('activity');
       return;
     }
     setSelectedId(null);
@@ -314,35 +154,13 @@ export const useExploreSelectionActions = ({
         activityId: activity.id,
       })
     );
-  }, [selected, user, navigate, setSelectedId, joinActions]);
+  }, [selected, user, navigate, setSelectedId, peekJoin.joinActions]);
 
   const handleInviteCrew = useCallback(() => {
     const activity = selected?.activity;
     if (!activity || activity.status !== 'published') return;
     onInviteActivity?.(activity, { canSendBuddyInvites: true });
   }, [onInviteActivity, selected?.activity]);
-
-  const requestHostRemove = useCallback((activity: ActivityDTO) => {
-    if (activity.status !== 'draft' && activity.status !== 'published') return;
-    setHostRemoveConfirm(activity);
-  }, []);
-
-  const confirmHostRemove = useCallback(async () => {
-    if (!hostRemoveConfirm || !tenantId) return;
-    setHostRemoveBusy(true);
-    try {
-      await cancelHostActivityById(tenantId, hostRemoveConfirm.id);
-      const wasDraft = hostRemoveConfirm.status === 'draft';
-      setHostRemoveConfirm(null);
-      setSelectedId(null);
-      await reloadExploreMap(queryClient);
-      setVenueNotice(wasDraft ? 'Draft deleted.' : 'Activity cancelled.');
-    } catch (err) {
-      setVenueNotice(err instanceof Error ? err.message : 'Could not update activity.');
-    } finally {
-      setHostRemoveBusy(false);
-    }
-  }, [hostRemoveConfirm, tenantId, queryClient, setSelectedId]);
 
   const handleActivityMapPeekAction = useCallback(
     (actionId: ActivityMapPeekActionId) => {
@@ -357,7 +175,7 @@ export const useExploreSelectionActions = ({
         offerRideshare: () => {
           if (activity && onCreateLinkedRideshare) onCreateLinkedRideshare(activity);
         },
-        requestJoin: handleJoin,
+        requestJoin: peekJoin.handleJoin,
         shareActivity: () => {
           if (activity && onShareHostedActivity) {
             onShareHostedActivity(activity);
@@ -381,8 +199,8 @@ export const useExploreSelectionActions = ({
           navigate(`${activityDetailPath(activity.id)}?tab=buddies`);
         },
         withdrawJoin: () => {
-          if (joinUiState.kind === 'pending' || joinUiState.kind === 'confirmed') {
-            joinActions.setShowWithdraw(true);
+          if (peekJoin.joinUiState.kind === 'pending' || peekJoin.joinUiState.kind === 'confirmed') {
+            peekJoin.joinActions.setShowWithdraw(true);
           }
         },
         viewDetail: () => {
@@ -398,9 +216,9 @@ export const useExploreSelectionActions = ({
       handleHostMessage,
       handleMessageActivityHost,
       handleInviteCrew,
-      handleJoin,
-      joinActions,
-      joinUiState.kind,
+      peekJoin.handleJoin,
+      peekJoin.joinActions,
+      peekJoin.joinUiState.kind,
       onCreateLinkedRideshare,
       onOpenHostManage,
       onShareHostedActivity,
@@ -412,36 +230,6 @@ export const useExploreSelectionActions = ({
   const handleOfferTransport = useCallback(() => {
     handleActivityMapPeekAction('offer_rideshare');
   }, [handleActivityMapPeekAction]);
-
-  const handleDemandManage = useCallback(() => {
-    const intentId = selected?.participantIntentId;
-    if (!intentId || !exploreMapItemIsSeeking(selected)) return;
-    setSelectedId(null);
-    navigateToParticipantIntentManage(navigate, intentId);
-  }, [selected, navigate, setSelectedId]);
-
-  const requestDemandRemove = useCallback(() => {
-    const intentId = selected?.participantIntentId;
-    if (!intentId || !exploreMapItemIsSeeking(selected)) return;
-    setDemandRemoveIntentId(intentId);
-  }, [selected]);
-
-  const confirmDemandRemove = useCallback(async () => {
-    if (!demandRemoveIntentId) return;
-    setDemandRemoveBusy(true);
-    try {
-      await cancelParticipantIntent(demandRemoveIntentId);
-      invalidateMyParticipantIntentsQueries(queryClient);
-      setDemandRemoveIntentId(null);
-      setSelectedId(null);
-      await reloadExploreMap(queryClient);
-      setDemandNotice('Request removed from the map.');
-    } catch (err) {
-      setDemandNotice(err instanceof Error ? err.message : 'Could not remove this request.');
-    } finally {
-      setDemandRemoveBusy(false);
-    }
-  }, [demandRemoveIntentId, queryClient, setSelectedId]);
 
   const handleActivityPublished = useCallback(
     async (activity: ActivityDTO) => {
@@ -481,62 +269,15 @@ export const useExploreSelectionActions = ({
         handleFocusMapLocation({ lat: latitude, lng: longitude });
         setSelectedId(`activity:${activity.id}`);
       }
-
-    },
-    [queryClient, syncExploreUrl, setMapFilter, setActivityFilter, handleFocusMapLocation, setSelectedId, setLinkOnlyPeekItems]
-  );
-
-  type ActivityPinDeepLinkResult = 'opened' | 'not_activity' | 'auth_required' | 'denied' | 'error';
-
-  const tryOpenActivityPinDeepLink = useCallback(
-    async (mapItemId: string): Promise<ActivityPinDeepLinkResult> => {
-      const existing = findExploreMapItemForPinId(items, mapItemId);
-      if (existing) {
-        openItem(existing);
-        return 'opened';
-      }
-
-      const activityId = resolveActivityIdForExplorePinId(items, mapItemId);
-      if (!activityId) return 'not_activity';
-      if (!user) return 'auth_required';
-
-      try {
-        const detail = await fetchPublicActivityDetail(activityId);
-        if (detail.viewerAccess?.exposure === 'none') {
-          setDemandNotice(
-            detail.activity.message ??
-              'This private plan is only available to signed-in members with the link.'
-          );
-          return 'denied';
-        }
-        const peekItem = buildExploreMapItemFromActivity(detail.activity, detail.viewerAccess);
-        setLinkOnlyPeekItems((prev) => {
-          const rest = prev.filter((entry) => entry.id !== peekItem.id);
-          return [...rest, peekItem];
-        });
-        const { latitude, longitude } = resolveActivityDisplayCoordinates(detail.activity);
-        if (latitude != null && longitude != null) {
-          handleFocusMapLocation({ lat: latitude, lng: longitude });
-        }
-        setSelectedId(peekItem.id);
-        if (!isDesktop) {
-          setListOpen(false);
-        }
-        return 'opened';
-      } catch {
-        setDemandNotice('Could not open this plan — check the link or try again.');
-        return 'error';
-      }
     },
     [
-      items,
-      openItem,
-      user,
-      setLinkOnlyPeekItems,
+      queryClient,
+      syncExploreUrl,
+      setMapFilter,
+      setActivityFilter,
       handleFocusMapLocation,
       setSelectedId,
-      isDesktop,
-      setListOpen,
+      setLinkOnlyPeekItems,
     ]
   );
 
@@ -558,10 +299,10 @@ export const useExploreSelectionActions = ({
       }
       setSelectedId(result.mapItemId);
       if (!isDesktop) {
-        browse.setListOpen(false);
+        setListOpen(false);
       }
     },
-    [queryClient, setSelectedId, handleFocusMapLocation, isDesktop, browse]
+    [queryClient, setSelectedId, handleFocusMapLocation, isDesktop, setListOpen]
   );
 
   const handleContributeSubmitted = useCallback(
@@ -577,36 +318,36 @@ export const useExploreSelectionActions = ({
   return {
     selected,
     selectedCard,
-    activityPeekSkipsJoinContext,
+    activityPeekSkipsJoinContext: peekJoin.activityPeekSkipsJoinContext,
     handleActivityMapPeekAction,
     handleOfferTransport,
-    joinUiState,
-    joinStateLoading,
-    peekJoinUiState,
-    peekJoinStateLoading,
-    joinActions,
-    handlePeekJoinSuccess,
+    joinUiState: peekJoin.joinUiState,
+    joinStateLoading: peekJoin.joinStateLoading,
+    peekJoinUiState: peekJoin.peekJoinUiState,
+    peekJoinStateLoading: peekJoin.peekJoinStateLoading,
+    joinActions: peekJoin.joinActions,
+    handlePeekJoinSuccess: peekJoin.handlePeekJoinSuccess,
     demandNotice,
     venueNotice,
     setDemandNotice,
     setVenueNotice,
     openItem,
-    handleGuestGatedAction,
-    handleJoin,
-    handleDemandMessage,
+    handleGuestGatedAction: peekJoin.handleGuestGatedAction,
+    handleJoin: peekJoin.handleJoin,
+    handleDemandMessage: peekJoin.handleDemandMessage,
     handleHostMessage,
     handleInviteCrew,
-    requestHostRemove,
-    hostRemoveConfirm,
-    setHostRemoveConfirm,
-    confirmHostRemove,
-    hostRemoveBusy,
-    demandRemoveIntentId,
-    setDemandRemoveIntentId,
-    handleDemandManage,
-    requestDemandRemove,
-    confirmDemandRemove,
-    demandRemoveBusy,
+    requestHostRemove: removals.requestHostRemove,
+    hostRemoveConfirm: removals.hostRemoveConfirm,
+    setHostRemoveConfirm: removals.setHostRemoveConfirm,
+    confirmHostRemove: removals.confirmHostRemove,
+    hostRemoveBusy: removals.hostRemoveBusy,
+    demandRemoveIntentId: removals.demandRemoveIntentId,
+    setDemandRemoveIntentId: removals.setDemandRemoveIntentId,
+    handleDemandManage: removals.handleDemandManage,
+    requestDemandRemove: removals.requestDemandRemove,
+    confirmDemandRemove: removals.confirmDemandRemove,
+    demandRemoveBusy: removals.demandRemoveBusy,
     handleActivityPublished,
     tryOpenActivityPinDeepLink,
     handleCloseSelection,
