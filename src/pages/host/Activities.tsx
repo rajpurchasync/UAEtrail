@@ -120,7 +120,7 @@ export const Activities = () => {
     if (!manageActivity) return;
     const fresh = events.find((item) => item.id === manageActivity.id);
     if (fresh) setManageActivity(fresh);
-  }, [events, manageActivity?.id]);
+  }, [events, manageActivity]);
 
   const statusBadge = (status: string) => {
     const colors: Record<string, string> = {

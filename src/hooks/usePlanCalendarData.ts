@@ -40,7 +40,10 @@ export const usePlanCalendarData = (
   const requestsQuery = useMyActivityJoinRequests(memberEnabled, refreshKey);
   const intentsQuery = useMyParticipantIntents(memberEnabled, refreshKey);
 
-  const hostedActivities = canHost ? ((host.activities ?? []) as ActivityDTO[]) : [];
+  const hostedActivities = useMemo(
+    () => (canHost ? ((host.activities ?? []) as ActivityDTO[]) : []),
+    [canHost, host.activities]
+  );
   const activeSeeking = useMemo(
     () => partitionParticipantIntentsForTrips(intentsQuery.intents).upcoming,
     [intentsQuery.intents]

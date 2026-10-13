@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   BookOpen,
@@ -137,10 +137,13 @@ export const PlaceDetailTabs = ({
 }: PlaceDetailTabsProps) => {
   const [internalTab, setInternalTab] = useState<PlaceDetailTabId>('overview');
   const activeTab = activeTabProp ?? internalTab;
-  const setActiveTab = (tab: PlaceDetailTabId) => {
-    if (onTabChange) onTabChange(tab);
-    else setInternalTab(tab);
-  };
+  const setActiveTab = useCallback(
+    (tab: PlaceDetailTabId) => {
+      if (onTabChange) onTabChange(tab);
+      else setInternalTab(tab);
+    },
+    [onTabChange]
+  );
   const [guideMarkdown, setGuideMarkdown] = useState<string | null>(null);
   const [guideLoading, setGuideLoading] = useState(false);
   const [guideError, setGuideError] = useState<string | null>(null);
@@ -200,7 +203,7 @@ export const PlaceDetailTabs = ({
     if (unlockNotice?.toLowerCase().includes('unlocked')) {
       setActiveTab('guide');
     }
-  }, [unlockNotice]);
+  }, [unlockNotice, setActiveTab]);
 
   useEffect(() => {
     if (activeTab !== 'guide' || !resolvedPlaceId || !isPremiumUnlocked || !premium?.hasGuide) {

@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useState } from 'react';
 import type { MemberGoalDTO, MemberGoalActivityFilter, MemberGoalCountMode } from '@uaetrail/shared-types';
 import { LogOutdoorOutingSheet } from './LogOutdoorOutingSheet';
 import { goalCountModeLabel, goalProgressHint } from '../../utils/goalActivityAlignment';
@@ -74,7 +74,7 @@ export const ProfileGoalCard = ({
   const dateInputMin =
     goal && goal.targetDate < minDate ? goal.targetDate : minDate;
 
-  const primeSheetForm = () => {
+  const primeSheetForm = useCallback(() => {
     if (goal) {
       setStep('customize');
       setFilter(goal.activityFilter);
@@ -89,7 +89,7 @@ export const ProfileGoalCard = ({
       setCountMode('join');
     }
     setCountingHelpOpen(false);
-  };
+  }, [goal]);
 
   const openSheet = () => {
     primeSheetForm();
@@ -99,7 +99,7 @@ export const ProfileGoalCard = ({
   useEffect(() => {
     if (!sheetOpenProp) return;
     primeSheetForm();
-  }, [sheetOpenProp, goal]);
+  }, [sheetOpenProp, goal, primeSheetForm]);
 
   const closeSheet = () => setSheetOpen(false);
 

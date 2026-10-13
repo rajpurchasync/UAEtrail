@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import type { ProfileViewerAccessDTO } from '@uaetrail/shared-types';
 import { Loader2, Lock } from 'lucide-react';
@@ -93,16 +93,16 @@ export const MemberProfile = () => {
       .catch(() => setUpcomingActivities([]));
   }, [userId, viewerAccess?.exposure]);
 
-  const loadBuddyRelationship = () => {
+  const loadBuddyRelationship = useCallback(() => {
     if (!userId || !user || user.id === userId) return;
     void fetchBuddyRelationship(userId)
       .then(setBuddyRel)
       .catch(() => setBuddyRel(null));
-  };
+  }, [userId, user]);
 
   useEffect(() => {
     loadBuddyRelationship();
-  }, [userId, user?.id]);
+  }, [loadBuddyRelationship]);
 
   const handleSendBuddyRequest = async () => {
     if (!userId || buddyBusy) return;

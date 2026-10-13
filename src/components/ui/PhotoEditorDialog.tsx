@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { RotateCcw, RotateCw } from 'lucide-react';
 import { Dialog } from './Dialog';
 
@@ -211,14 +211,17 @@ export const PhotoEditorDialog = ({
     };
   }, [baseScale, imageSize, previewFrame.height, previewFrame.width, zoom]);
 
-  const clampOffset = (next: Point): Point => ({
-    x: clamp(next.x, -maxOffset.x, maxOffset.x),
-    y: clamp(next.y, -maxOffset.y, maxOffset.y),
-  });
+  const clampOffset = useCallback(
+    (next: Point): Point => ({
+      x: clamp(next.x, -maxOffset.x, maxOffset.x),
+      y: clamp(next.y, -maxOffset.y, maxOffset.y),
+    }),
+    [maxOffset.x, maxOffset.y]
+  );
 
   useEffect(() => {
     setOffset((current) => clampOffset(current));
-  }, [maxOffset.x, maxOffset.y]);
+  }, [clampOffset]);
 
   const onPointerDown: React.PointerEventHandler<HTMLDivElement> = (event) => {
     if (!src || !imageSize) return;

@@ -77,6 +77,7 @@ export const useExploreMapPillDropdown = ({
   const [menuStyle, setMenuStyle] = useState<CSSProperties>({});
   const lastStyleKeyRef = useRef('');
   const rafRef = useRef(0);
+  const repositionKey = JSON.stringify(repositionDeps);
 
   const applyPosition = useCallback(() => {
     const positionEl = positionBelowRef?.current ?? anchorRef.current;
@@ -145,7 +146,7 @@ export const useExploreMapPillDropdown = ({
       return;
     }
     schedulePosition();
-  }, [open, schedulePosition, ...repositionDeps]);
+  }, [open, schedulePosition, repositionKey]);
 
   useEffect(() => {
     if (!open) return;

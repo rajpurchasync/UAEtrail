@@ -230,7 +230,7 @@ export const ActivityDetail = () => {
   const onHostShareOuting = useCallback(() => {
     if (!activity || activity.status !== 'published') return;
     inviteShare.openInviteFromActivity(activity, { canSendBuddyInvites: true });
-  }, [activity, inviteShare.openInviteFromActivity]);
+  }, [activity, inviteShare]);
 
   const hostDetailCtas =
     isActivityHostUser && hostActivityCtaHandlers && activity ? (
@@ -261,7 +261,7 @@ export const ActivityDetail = () => {
     }
   }, [hostRemoveConfirm, gate.tenantId, navigate]);
 
-  const openJoinModal = () => {
+  const openJoinModal = useCallback(() => {
     if (!id || !activity) return;
     if (!user) {
       const returnPath = fromJoinInvite ? `/activity/${id}?invite=1` : `/activity/${id}`;
@@ -270,7 +270,7 @@ export const ActivityDetail = () => {
     }
     setError(null);
     joinActions.openJoinModal();
-  };
+  }, [id, activity, user, fromJoinInvite, navigate, joinActions]);
 
   useEffect(() => {
     if (!fromJoinInvite || loading || !activity || joinInviteAutoOpenRef.current) return;

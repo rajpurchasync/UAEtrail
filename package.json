@@ -20,7 +20,7 @@
     "deploy:stack": "node scripts/run-project.mjs --docker",
     "build": "vite build",
     "build:api": "npm --workspace @uaetrail/api run build",
-    "lint": "eslint .",
+    "lint": "eslint . --max-warnings 0",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit -p tsconfig.app.json",
     "typecheck:api": "npm --workspace @uaetrail/api run typecheck",

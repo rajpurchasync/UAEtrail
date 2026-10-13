@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Users,
@@ -118,9 +118,10 @@ export const Groups = () => {
       next.delete('create');
       return next;
     }, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- consume create query param once on mount
   }, []);
 
-  const loadGroups = async () => {
+  const loadGroups = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -137,7 +138,7 @@ export const Groups = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [searchParams]);
 
   const loadDetail = async (groupId: string) => {
     try {
@@ -168,7 +169,7 @@ export const Groups = () => {
 
   useEffect(() => {
     void loadGroups();
-  }, []);
+  }, [loadGroups]);
 
   useEffect(() => {
     if (!selectedGroupId) {
@@ -181,7 +182,7 @@ export const Groups = () => {
       return next;
     }, { replace: true });
     void loadDetail(selectedGroupId);
-  }, [selectedGroupId]);
+  }, [selectedGroupId, setSearchParams]);
 
   useEffect(() => {
     if (!inviteToken || processedInviteRef.current === inviteToken) return;
@@ -200,7 +201,7 @@ export const Groups = () => {
         setError(err instanceof Error ? err.message : 'Could not accept invite');
       })
       .finally(() => setAcceptingInvite(false));
-  }, [inviteToken]);
+  }, [inviteToken, loadGroups, searchParams, setSearchParams]);
 
   const isAdmin = detail?.membership.role === 'admin';
   const isCreator = detail?.group.adminUserId === user?.id;

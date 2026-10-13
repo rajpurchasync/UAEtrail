@@ -81,7 +81,7 @@ export const Profile = () => {
     void fetchMemberBadges()
       .then((badges) => setBadgesEarnedCount(badges.filter((b) => b.earned).length))
       .catch(() => undefined);
-  }, [user, hostTiers.professional, hostTiers.business]);
+  }, [user, hostTiers.professional, hostTiers.business, reloadGoals]);
 
   useEffect(() => {
     const state = location.state as { openEdit?: boolean } | null;

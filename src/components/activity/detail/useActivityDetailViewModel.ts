@@ -169,7 +169,7 @@ export const useActivityDetailViewModel = ({
         ? 'https://images.unsplash.com/photo-1452626038306-9fff603b72e5?w=1600'
         : 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=1600');
 
-  const participants = activity.participants ?? [];
+  const participants = useMemo(() => activity.participants ?? [], [activity.participants]);
   const rosterParticipants = useMemo(() => {
     if (!canAccessCrewSurfaces || !PARTICIPANT_PRIVACY.showPreJoin) return [];
     if (!viewerEntitlements || viewerEntitlements.canViewFullBuddyRoster) {

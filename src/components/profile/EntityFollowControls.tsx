@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import type { EntityFollowCheckDTO } from '@uaetrail/shared-types';
 import {
@@ -28,13 +28,12 @@ export const EntityFollowControls = ({
   onStatusMessage,
 }: EntityFollowControlsProps) => {
   const queryClient = useQueryClient();
-  const target: EntityFollowTarget | null = locationId
-    ? { locationId }
-    : tenantId
-      ? { tenantId }
-      : merchantId
-        ? { merchantId }
-        : null;
+  const target = useMemo((): EntityFollowTarget | null => {
+    if (locationId) return { locationId };
+    if (tenantId) return { tenantId };
+    if (merchantId) return { merchantId };
+    return null;
+  }, [locationId, tenantId, merchantId]);
 
   const [state, setState] = useState<EntityFollowCheckDTO | null>(null);
   const [busy, setBusy] = useState(false);

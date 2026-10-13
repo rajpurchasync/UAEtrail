@@ -278,6 +278,7 @@ export const useExploreBrowseList = ({
     venueRegions,
     buddySubtype,
     outingTopic,
+    activityModeFilter,
     isDesktop,
   ]);
 

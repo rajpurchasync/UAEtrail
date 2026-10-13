@@ -71,10 +71,10 @@ export const useParticipantHubData = () => {
   });
 
   const profile = data?.profile ?? ({} as UserProfile);
-  const conversations = data?.conversations ?? [];
+  const conversations = useMemo(() => data?.conversations ?? [], [data?.conversations]);
   const notifications = data?.notifications ?? [];
   const unreadNotifications = data?.unreadNotifications ?? 0;
-  const groups = data?.groups ?? [];
+  const groups = useMemo(() => data?.groups ?? [], [data?.groups]);
   const buddies = data?.buddies ?? [];
   const incomingBuddyRequests = data?.incomingBuddyRequests ?? [];
 

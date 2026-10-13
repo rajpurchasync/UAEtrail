@@ -34,7 +34,7 @@ export const useHostActivitySheetBundle = (input: {
       if (activity.status !== 'published') return;
       inviteShare.openInviteFromActivity(activity, { canSendBuddyInvites: true });
     },
-    [inviteShare.openInviteFromActivity]
+    [inviteShare]
   );
 
   const onCreateLinkedRideshare = useCallback(
@@ -52,13 +52,7 @@ export const useHostActivitySheetBundle = (input: {
       },
       onCreateLinkedRideshare,
     }),
-    [
-      shareHostedActivity,
-      input.tenantId,
-      openHostManage,
-      inviteShare.openInviteFromActivity,
-      onCreateLinkedRideshare,
-    ]
+    [shareHostedActivity, input.tenantId, openHostManage, inviteShare, onCreateLinkedRideshare]
   );
 
   const closeManage = useCallback(() => {

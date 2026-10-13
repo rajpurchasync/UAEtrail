@@ -1,5 +1,5 @@
 import { joinAuthPath } from '../../config/routingCatalog';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import type { ExploreCardModel } from '../exploreCardModel';
@@ -25,7 +25,7 @@ export const useExploreEntityFollow = (card: ExploreCardModel): ExploreFollowSta
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const target = resolveExploreEntityFollowTarget(card);
+  const target = useMemo(() => resolveExploreEntityFollowTarget(card), [card]);
   const [following, setFollowing] = useState(false);
   const [followId, setFollowId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -53,7 +53,7 @@ export const useExploreEntityFollow = (card: ExploreCardModel): ExploreFollowSta
     return () => {
       cancelled = true;
     };
-  }, [user, card.id, target?.locationId, target?.tenantId, target?.merchantId]);
+  }, [user, target]);
 
   const toggle = useCallback(async () => {
     if (!target) return;

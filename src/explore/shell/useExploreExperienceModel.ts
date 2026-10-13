@@ -182,7 +182,7 @@ export const useExploreExperienceModel = () => {
       setSelectedId(null);
       compose.setComposeRoute({ intent: 'organize', kind: 'rideshare' });
     },
-    [compose.setComposeRoute]
+    [compose]
   );
 
   const selected = selectionItems.find((item) => item.id === selectedId) ?? null;
@@ -212,8 +212,10 @@ export const useExploreExperienceModel = () => {
     search,
     user,
     hostGateLoading,
+    canPublish,
+    navigate,
     navigateOrganizePublishGate,
-    compose.setComposeRoute,
+    compose,
   ]);
 
   const organizeWizardPrefill = useMemo((): OrganizeWizardPrefill | null => {
@@ -469,7 +471,7 @@ export const useExploreExperienceModel = () => {
     setRideshareLinkParent(null);
     setRideshareLinkDemand(null);
     compose.setComposeRoute({ surface: 'menu', intent: 'organize' });
-  }, [organizeFrom, compose.setComposeRoute]);
+  }, [organizeFrom, compose]);
 
   const signInHref = useMemo(
     () => buildSignInRedirect({ pathname, search }).href,

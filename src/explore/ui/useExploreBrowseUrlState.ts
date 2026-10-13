@@ -327,8 +327,6 @@ export const useExploreBrowseUrlState = ({
       listMode,
       searchScope,
       peopleBrowseTab,
-      buddiesDiscoverSegment,
-      followedSegment,
       searchParams,
       setSearchParams,
       isDesktop,
