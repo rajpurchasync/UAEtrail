@@ -28,7 +28,7 @@ Internet
 | Container | Image | Purpose |
 |-----------|-------|---------|
 | `frontend` | nginx:1.25‑alpine | Serves the Vite SPA, reverse-proxies `/api/*` to the API |
-| `api` | node:20‑alpine (custom) | Express + MongoDB backend |
+| `api` | node:22‑alpine (custom) | Express + MongoDB backend |
 | `minio` | minio/minio:latest | S3‑compatible media storage |
 | `redis` | redis:7‑alpine | Rate limits and SSE tickets |
 
