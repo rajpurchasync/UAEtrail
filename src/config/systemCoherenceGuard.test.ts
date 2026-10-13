@@ -316,6 +316,9 @@ describe('systemCoherenceGuard', () => {
       'utf8'
     );
     expect(browseHook).toMatch(/buildExploreBrowseSearchParams/);
+    expect(browseHook).toMatch(/parseExploreBrowseStateFromSearchParams/);
+    expect(browseHook).toMatch(/useExploreBrowseUrlApplyHandlers/);
+    expect(browseHook.split(/\r?\n/).length).toBeLessThan(320);
   });
 
   it('admin console pages guard mount fetches with useSafeAsyncEffect', () => {
