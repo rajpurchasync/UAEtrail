@@ -3,6 +3,7 @@ import type { HeroCarouselSlide } from './heroCarouselTypes';
 import { usePrefersReducedMotion } from '../../../hooks/usePrefersReducedMotion';
 import { stepCarouselIndex } from '../../../utils/heroCarouselState';
 import { useMarketingCarouselClock } from './HomeMarketingCarouselSync';
+import { HeroCarouselSlideImage } from './HeroCarouselSlideImage';
 
 export interface HeroCarouselProps {
   slides: HeroCarouselSlide[];
@@ -99,22 +100,11 @@ export const HeroCarousel = ({
         if (!slideShouldMount(slideIndex)) return null;
         const active = slideIndex === index;
         return (
-          <img
+          <HeroCarouselSlideImage
             key={slide.id}
-            src={slide.imageUrl}
-            srcSet={slide.imageSrcSet}
-            alt={active ? slide.alt : ''}
-            width={1600}
-            height={900}
-            decoding={active ? 'sync' : 'async'}
-            loading={active ? 'eager' : 'lazy'}
-            fetchPriority={active ? 'high' : 'auto'}
-            className={[
-              'absolute inset-0 h-full w-full object-cover',
-              reducedMotion ? '' : 'transition-opacity duration-[var(--duration-carousel)] ease-[var(--ease-out)]',
-              active ? 'opacity-100' : 'opacity-0'
-            ].join(' ')}
-            aria-hidden={!active}
+            slide={slide}
+            active={active}
+            reducedMotion={reducedMotion}
           />
         );
       })}

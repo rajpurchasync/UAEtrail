@@ -11,5 +11,13 @@ describe('buildHeroSlides', () => {
       expect(slide.alt).toBeTruthy();
       expect(slide).not.toHaveProperty('href');
     }
+    const layoutSlides = slides.filter((slide) => slide.layoutSources);
+    expect(layoutSlides).toHaveLength(4);
+    for (const slide of layoutSlides) {
+      const { mobile, desktop } = slide.layoutSources!;
+      expect(mobile.jpeg).toContain('-mobile.jpg');
+      expect(desktop.jpeg).toContain('-desktop.jpg');
+      expect(slide.layoutSources!.layoutMinWidthPx).toBe(768);
+    }
   });
 });
