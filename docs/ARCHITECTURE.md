@@ -68,7 +68,7 @@ context/        AuthContext
 utils/          authRouting, shopPaths — explore URL builders live in `src/explore/routing.ts` (`routingCatalog`)
 ```
 
-**Mobile IA:** Bottom tabs **Explore · Trips · Messages**; Profile via header avatar. Signed-in default landing is `/explore`. Guest marketing is `/` only — see [`NAVIGATION.md`](./NAVIGATION.md), [`LANDING.md`](./LANDING.md), [`NORTHSTAR.md`](./NORTHSTAR.md). Trips manage surfaces link to Messages for crew chat — not embedded chat on `/trips`.
+**Mobile IA:** Bottom tabs **Explore · My Plans · Chat** (`/explore`, `/plan`, `/chat`); Profile via header avatar. Signed-in default landing is `/explore`. Guest marketing is `/` only — see [`NAVIGATION.md`](./NAVIGATION.md), [`LANDING.md`](./LANDING.md), [`NORTHSTAR.md`](./NORTHSTAR.md). Plan manage surfaces link to Chat for crew threads — not embedded chat on `/plan`.
 
 **SEO:** `PageMeta` updates title/description/canonical per route; static `robots.txt` + `sitemap.xml` in `public/`.
 

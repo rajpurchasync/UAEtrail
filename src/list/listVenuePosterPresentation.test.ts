@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildExploreCardModel } from '../explore/exploreCardModel';
+import { buildDiscoveryCardViewModelCard } from '../discovery';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { resolveListFeedFooterModel } from './listFeedFooterActions';
 import {
@@ -50,7 +50,7 @@ const venueItem = (overrides: Partial<ExploreMapItemDTO> = {}): ExploreMapItemDT
 
 describe('listVenuePosterPresentation', () => {
   it('shows region above place name and hike fact pills', () => {
-    const card = buildExploreCardModel(venueItem());
+    const card = buildDiscoveryCardViewModelCard(venueItem());
     const copy = resolveListVenuePosterCopy(card);
     expect(copy.placeLine).toBe('RAK');
     expect(resolveCatalogHeaderAreaLocationLine(card)).toBe('RAK · Wadi Ghalilah');
@@ -67,7 +67,7 @@ describe('listVenuePosterPresentation', () => {
   });
 
   it('uses Get Directions + View Details on venue posters', () => {
-    const card = buildExploreCardModel(venueItem());
+    const card = buildDiscoveryCardViewModelCard(venueItem());
     const model = resolveListFeedFooterModel(card, { isGuest: true });
     expect(model.primary).toMatchObject({
       kind: 'directions',

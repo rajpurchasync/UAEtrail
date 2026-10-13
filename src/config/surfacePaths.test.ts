@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { GROUPS_PATH, SIGNIN_PATH, groupsPath, signInPath } from './surfacePaths';
+import {
+  GROUPS_PATH,
+  SIGNIN_PATH,
+  groupsManagePath,
+  groupsPath,
+  messagesGroupPath,
+  signInPath,
+} from './surfacePaths';
 
 describe('surfacePaths', () => {
   it('signInPath builds auth URLs with optional query', () => {
@@ -16,5 +23,8 @@ describe('surfacePaths', () => {
       `${GROUPS_PATH}?create=1&from=profile`
     );
     expect(groupsPath({ invite: 'tok' })).toBe(`${GROUPS_PATH}?invite=tok`);
+    expect(groupsManagePath('g-1')).toBe(`${GROUPS_PATH}?group=g-1&tab=members`);
+    expect(groupsManagePath('g-1', 'manage')).toBe(`${GROUPS_PATH}?group=g-1&tab=manage`);
+    expect(messagesGroupPath('g-1', 'act-1')).toBe('/chat?group=g-1&activity=act-1');
   });
 });

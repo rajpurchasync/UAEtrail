@@ -1,17 +1,23 @@
 import type { NextFunction, Request, Response } from 'express';
 import { env } from '../config/env.js';
+import { isLoopbackAddress } from '../lib/demo-login-policy.js';
 
-/** Require bearer token in production; open in development/test. */
+/** Require bearer token except in test or local dev loopback peers. */
 export const requireMetricsAuth = (req: Request, res: Response, next: NextFunction): void => {
-  if (env.NODE_ENV !== 'production') {
+  if (env.NODE_ENV === 'test') {
     next();
     return;
   }
 
-  const expected = process.env.METRICS_TOKEN;
+  if (env.NODE_ENV === 'development' && isLoopbackAddress(req.socket?.remoteAddress)) {
+    next();
+    return;
+  }
+
+  const expected = process.env.METRICS_TOKEN?.trim();
   if (!expected) {
     res.status(503).json({
-      error: { code: 'metrics_unavailable', message: 'Metrics endpoint is not configured.' }
+      error: { code: 'metrics_unavailable', message: 'Metrics endpoint is not configured.' },
     });
     return;
   }

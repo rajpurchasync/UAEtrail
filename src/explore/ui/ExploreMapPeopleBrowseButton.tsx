@@ -9,7 +9,6 @@ type Preview = { id: string; name: string; avatar?: string | null };
 
 type ExploreMapPeopleBrowseButtonProps = {
   avatars: Preview[];
-  extraCount: number;
   friendCount: number;
   onClick: () => void;
   className?: string;
@@ -19,7 +18,6 @@ const PLACEHOLDER_SLOTS = 3;
 
 export const ExploreMapPeopleBrowseButton = ({
   avatars,
-  extraCount,
   friendCount,
   onClick,
   className = '',
@@ -47,9 +45,6 @@ export const ExploreMapPeopleBrowseButton = ({
                 />
               ))}
             </span>
-            {extraCount > 0 ? (
-              <span className="ml-1 text-xs font-bold text-gray-600">+{extraCount}</span>
-            ) : null}
           </>
         ) : (
           <span className="flex -space-x-2" aria-hidden>

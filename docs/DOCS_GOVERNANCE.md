@@ -33,6 +33,8 @@ Tier-1 is a **fixed list** (see `scripts/verify-docs-tier1.mjs`). When behavior 
 
 Tier-2: ops (`DEV_RUN.md`, `DEPLOYMENT.md`, `PRE_DEPLOY_CHECKLIST.md`, …). Tier-3: `experiment/*` supplement only (must defer to Tier-1). Tier-4: removed — see `archive/README.md`.
 
+**Migration jargon (M0–M2d):** allowed in `experiment/*` history tables only; ops canon is [`SEEKING_STORAGE_RUNBOOK.md`](./operations/SEEKING_STORAGE_RUNBOOK.md) (`seeking:storage-status`). Strip phase letters from Tier-1 API/product docs.
+
 ---
 
 ## When code ships, update docs in this order

@@ -1,6 +1,6 @@
 import { ReactNode, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { api } from '../api/index';
+import { fetchOrganisationReviews } from '../hooks/organisationConsoleApi';
 import { getActiveTenantId } from '../api/tenant';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { FilterChips } from '../components/mobile/FilterChips';
@@ -36,9 +36,8 @@ export const ConsoleShell = ({ title, children, cta, headerExtra }: ConsoleShell
   useEffect(() => {
     const tenantId = getActiveTenantId();
     if (!tenantId) return;
-    api.getOrganisationReviews(tenantId)
-      .then((res) => {
-        const reviews = res.data;
+    fetchOrganisationReviews(tenantId)
+      .then((reviews) => {
         setReviewCount(reviews.length);
         if (reviews.length > 0) {
           setAvgRating(reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length);

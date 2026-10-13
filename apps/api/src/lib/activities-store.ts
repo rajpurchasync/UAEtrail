@@ -23,6 +23,8 @@ import {
   listPublishedActivitiesForExploreMapFromMongo,
   listPublishedUpcomingActivitiesByLocationFromMongo,
   listPublishedUpcomingActivitiesByMemberFromMongo,
+  listPublishedUpcomingActivitiesByAreaFromMongo,
+  listActiveCatalogPlacesByAreaFromMongo,
   listTenantActivitiesFromMongo,
   type ActivityWithTenantRelations
 } from './activity-read-assembler.js';
@@ -142,6 +144,7 @@ export const updateActivityDetailed = async (
   if (data.publishedAt !== undefined) patch.publishedAt = data.publishedAt;
   if (data.outingCategory !== undefined) patch.outingCategory = data.outingCategory;
   if (data.outingTopic !== undefined) patch.outingTopic = data.outingTopic;
+  if (data.groupChatPostPolicy !== undefined) patch.groupChatPostPolicy = data.groupChatPostPolicy;
   if (data.host !== undefined) {
     patch.hostId =
       'disconnect' in data.host && data.host.disconnect ? null : data.host.connect?.id ?? null;
@@ -260,7 +263,28 @@ export const duplicateTenantActivity = async (
 
 export const publishActivityById = async (activityId: string) => {
   const publishedAt = new Date();
-  await patchActivityInMongo(activityId, { status: ActivityStatus.PUBLISHED, publishedAt });
+  const draftDoc = await findActivityDocInMongo(activityId);
+  const publishLocation =
+    draftDoc?.locationId ? await findLocationInMongo(draftDoc.locationId) : null;
+  const { resolveAreaIdForActivityPublish } = await import('./area-resolution.js');
+  const { resolveJoinMode } = await import('../domain/activity-join-mode.js');
+  const areaId =
+    draftDoc && (await resolveAreaIdForActivityPublish(draftDoc, publishLocation));
+  const joinMode = draftDoc
+    ? resolveJoinMode(draftDoc.joinMode, draftDoc.requirements)
+    : 'open';
+  if (joinMode !== 'private' && !areaId) {
+    const { ApiError } = await import('./api-error.js');
+    throw new ApiError(
+      400,
+      'activity_area_required',
+      'Link a catalog place with an area before publishing to the explore map.'
+    );
+  }
+  await patchActivityInMongo(activityId, {
+    status: ActivityStatus.PUBLISHED,
+    publishedAt,
+  });
   const mongoDoc = await findActivityDocInMongo(activityId);
   if (!mongoDoc) {
     throw new Error('Failed to publish event.');
@@ -288,6 +312,16 @@ export const publishActivityById = async (activityId: string) => {
     locationName: location?.name ?? null,
     tenantName: tenant?.name ?? null,
   });
+  if (areaId && mongoDoc.activityMode !== 'seeking') {
+    const { notifySeekersOfHostedActivityInArea } = await import('../services/seeking-area-match-notifications.js');
+    void notifySeekersOfHostedActivityInArea({
+      activityId,
+      hostUserId: actorUserId,
+      areaId,
+      activityTitle: mongoDoc.title,
+      activityStartAt: mongoDoc.startAt ?? publishedAt,
+    });
+  }
   return mapMongoActivityToPublishResult({ ...mongoDoc, status: ActivityStatus.PUBLISHED, publishedAt });
 };
 
@@ -395,6 +429,12 @@ export const findPublishedActivityWithPreviewsById = async (activityId: string) 
 
 export const listPublishedUpcomingActivitiesByMember = async (userId: string, take = 8) =>
   listPublishedUpcomingActivitiesByMemberFromMongo(userId, take);
+
+export const listPublishedUpcomingActivitiesByArea = async (areaId: string, take = 8) =>
+  listPublishedUpcomingActivitiesByAreaFromMongo(areaId, take);
+
+export const listActiveCatalogPlacesByArea = async (areaId: string, take = 12) =>
+  listActiveCatalogPlacesByAreaFromMongo(areaId, take);
 
 export const findActivityTimingById = async (activityId: string) => {
   const item = await activitiesCollection().findOne({ _id: activityId });

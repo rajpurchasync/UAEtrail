@@ -71,14 +71,41 @@ There is **no** `Trip` table, `TripDTO`, or trips API. Everything on the map tha
 
 **Organize menu labels** (Hiking, Camping, Event, Activity, Rideshare) are **kinds of activity** (`activityType` / compose intent), not separate products. **“Organized activities”** in conversation means activities created via **Organize** — still one `Activity` row.
 
-**Trips tab** (`/trips`) groups **your** relationships to activities and saved places:
+### Activity modes (map + Plan — phased)
+
+Time-bound map pins are **Activities** with `activityMode` (target wire name; migration M0–M2 in [`experiment/member-surfaces-implementation-plan.md`](./experiment/member-surfaces-implementation-plan.md)):
+
+| Mode | Meaning | Today (wire) | UX |
+|------|---------|--------------|-----|
+| **`hosted`** | Host-published outing | `activities` + organize compose | Join / RSVP / request on detail |
+| **`seeking`** | Member “looking for company” | **`activities`** row (`activityMode: seeking`) + optional `participant_intents` stub (compose/manage) | Find FAB; map pin `activity:{id}`; join via **`activity_requests`** (M2c); intent routes alias |
+
+**Not an activity mode:** **Availability** — person + calendar slots (`member_availability` planned). Discover on Explore **People**; edit on Plan. Seeking ≠ availability.
+
+### Geography (Area + Place catalog)
+
+**Region** (emirate) → **Area** (admin registry, e.g. Hatta) → **Place** (trail, camp, shop, facility in `locations`) → **Activity** (scheduled outing).
+
+| Layer | Who maintains | Assignment rule |
+|-------|----------------|-----------------|
+| **Area** | Platform admin (`/admin/areas`) | System **`areaId`** on create; name, slug, region, map anchor (`center`); bounds are a **display hint only** — not used to auto-tag pins |
+| **Place** | Admin `/admin/places` + member **Add** (`curatedArea` then pin) | Every place row has **`place.areaId`**; `POST /me/locations` requires **`areaId`** |
+| **Activity** | Member **Organize** or Find → seeking | **No stored `activity.areaId` on write** (legacy rows may still have one). Geography = **`activity.locationId` → `place.areaId`**. Public publish requires a catalog **place** with **`areaId`**. Meeting / going-from pin does not define area |
+
+**Explore map lenses:** **Activities** — emoji pin per outing (host row links to the right profile: member, `/guide`, or `/agency`). **Locations** — area hub pins + rollups. **Spots** — trails, camps, outdoor spots, facilities. **Shops** — **only** subtype with a dedicated **map pin** (+ `/shop/…` full profile). **Professionals** — People browse and/or activity host → `/guide/:slug`. **Tour agencies** — activity peek/detail host row only → `/agency/:slug` (no map pin, not a People-directory substitute). Detail: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §12.1 Pro storefronts table.
+
+**Curated area catalog (seed + tests):** 12 published areas in `CURATED_AREA_CATALOG` (`@uaetrail/shared-types`) — Hatta, Jebel Jais, Wadi Shawka, Jebel Hafeet, Al Qudra, Love Lake, Khorfakkan, Jumeirah Coast, Fossil Rock, Dibba, Remah Dunes, Kalba. Each has stable `area-seed-*` id, map bounds, and `summary` (editable in admin; re-seed restores defaults).
+
+Discovery: **`/area/:slug`**, area peek, and explore **`?area=`** filter by **`place.areaId`** (and seeking **`participant_intents.areaId`** + synthetic place on the intent). Private link-only activities skip public map listing.
+
+**Plan tab** (`/plan`) groups **your** forward layer — schedule, saved, goals — plus relationships to activities:
 
 | Trips UI | Domain data |
 |----------|-------------|
 | Upcoming rail / Joined list | `GET /me/activities`, `GET /me/requests` |
 | Hosted list + manage sheet | Host user: `listHostActivities`, `getHostActivityJoinRequests` |
-| Wishlist (Trips) | Private venue + activity saves (`/me/wishlist`) — not demand, not Follow |
-| `/trips/map` (outdoor map) | `memberJourneyMapApi` → `/me/trips/map` (legacy path name on server) |
+| Saved lens (`?lens=saved`) | Private venue + activity saves (`/me/wishlist`) — not demand, not Follow |
+| Journey map (`/profile/history/map`) | `memberJourneyMapApi` → `GET /me/journey-map`; pin CRUD → `/me/map-pins` |
 
 Do **not** add `trips*` API clients or `Trip*` domain types for hosted/joined lists — reuse **activity** and **member engagement** APIs.
 
@@ -149,7 +176,7 @@ A **host is always a user** (human actor on the activity). They publish **as the
 | Path | Product | Paid trips? | Code (today) |
 |------|---------|-------------|--------------|
 | **Community (buddy)** | Free / shared-cost outings after profile complete | **No** | `publishingPurpose: community`, `canPublish` |
-| **Pro — Individual** | Licensed-style **guide** brand | Future Pro rules | `hostProfileType: individual`, professional tenant |
+| **Pro — Individual** | Licensed-style **guide** brand | **No** (free + shared only) | `hostProfileType: individual`, `publishingPurpose: professional` |
 | **Pro — Business** | Must pick **subtype** (Shop, Tour agency, E-commerce, Hospitality, …) | Agency / business rules | `hostProfileType` + `TenantBusinessMode` |
 | **Pro — Partner** | Campaign / hospitality partner (detail later) | Campaign-linked | Planned |
 

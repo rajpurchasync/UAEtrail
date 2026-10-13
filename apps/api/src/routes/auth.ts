@@ -11,6 +11,8 @@ import { slugify } from '../lib/slug.js';
 import { validate } from '../middleware/validate.js';
 import { requireAuth } from '../middleware/auth.js';
 import { env } from '../config/env.js';
+import { isDemoLoginAllowedForRequest } from '../lib/demo-login-policy.js';
+import { scheduleSideEffect } from '../lib/schedule-side-effect.js';
 import { sendPasswordResetEmail, sendVerificationEmail } from '../lib/email.js';
 import { verifyGoogleIdToken } from '../lib/google-auth.js';
 import { createUniqueReferralCode } from '../lib/referral-code.js';
@@ -46,7 +48,7 @@ import { createHostApplicationRecord } from '../lib/host-applications-store.js';
 import { notifyAdminsMemberRegistered } from '../services/platform-admin-events.js';
 import { processSignupRewards } from '../services/rewards.js';
 import { acceptGroupInviteByToken, acceptPendingGroupInvitesForEmail } from '../lib/social-groups-store.js';
-import { DEMO_LOGIN_EMAILS, getDemoAccount } from '../lib/demo-accounts.js';
+import { DEMO_LOGIN_EMAILS, getDemoAccount, resolveDemoAccountPassword } from '../lib/demo-accounts.js';
 import { formatDisplayNameFromParts, personNameFieldsSchema } from '../domain/person-name.js';
 
 const registerSchema = z
@@ -145,26 +147,12 @@ const issueEmailVerificationOtp = async (input: {
   };
 };
 
-const isDemoLoginAllowed = (req: Request): boolean => env.NODE_ENV === 'test' || isLocalRequest(req);
-
-const isLocalHost = (value: string): boolean => {
-  const host = value.split(',')[0]?.trim() ?? '';
-  if (!host) return false;
-  const normalized = host.split(':')[0]?.toLowerCase() ?? '';
-  return normalized === 'localhost' || normalized === '127.0.0.1';
-};
-
-const isLocalRequest = (req: Request): boolean => {
-  const forwardedHost = req.headers['x-forwarded-host'];
-  if (typeof forwardedHost === 'string' && isLocalHost(forwardedHost)) {
-    return true;
-  }
-  const host = req.headers.host;
-  if (typeof host === 'string' && isLocalHost(host)) {
-    return true;
-  }
-  return isLocalHost(req.hostname ?? '');
-};
+const isDemoLoginAllowed = (req: Request): boolean =>
+  isDemoLoginAllowedForRequest(
+    env.NODE_ENV,
+    req.socket?.remoteAddress,
+    process.env.ALLOW_DEMO_LOGIN
+  );
 
 const buildAuthResponse = (user: { id: string; email: string; role: UserRole }, tokens: { accessToken: string }) => ({
   user: {
@@ -180,7 +168,7 @@ const readRefreshToken = (req: { cookies?: Record<string, string>; body?: { refr
   if (typeof fromCookie === 'string' && fromCookie.length >= 20) {
     return fromCookie;
   }
-  if (env.NODE_ENV === 'production') {
+  if (env.NODE_ENV !== 'test') {
     return null;
   }
   const fromBody = req.body?.refreshToken;
@@ -325,13 +313,17 @@ authRouter.post('/register', validate({ body: registerSchema }), async (req, res
       email: created.email,
       displayName: displayName,
     });
-    void processSignupRewards(created._id, referralCode).catch(() => undefined);
+    scheduleSideEffect(processSignupRewards(created._id, referralCode), 'auth.signup_rewards');
     if (groupInviteToken) {
-      void acceptGroupInviteByToken({ token: groupInviteToken, userId: created._id, email: created.email }).catch(
-        () => undefined
+      scheduleSideEffect(
+        acceptGroupInviteByToken({ token: groupInviteToken, userId: created._id, email: created.email }),
+        'auth.signup_group_invite_token'
       );
     } else {
-      void acceptPendingGroupInvitesForEmail({ userId: created._id, email: created.email }).catch(() => undefined);
+      scheduleSideEffect(
+        acceptPendingGroupInvitesForEmail({ userId: created._id, email: created.email }),
+        'auth.signup_pending_group_invites'
+      );
     }
 
     respondWithPendingVerification(res, 201, {
@@ -420,7 +412,7 @@ authRouter.post('/demo-login', validate({ body: demoLoginSchema }), async (req, 
         throw new ApiError(404, 'demo_account_not_found', 'Demo account is not available.');
       }
 
-      const passwordHash = await hashPassword(defaults.password);
+      const passwordHash = await hashPassword(resolveDemoAccountPassword(normalizedEmail));
       const referralCode = await createUniqueReferralCode();
       user = await createAuthUser({
         email: normalizedEmail,
@@ -580,11 +572,14 @@ authRouter.post('/forgot-password', validate({ body: forgotSchema }), async (req
       expiresAt: new Date(Date.now() + 60 * 60 * 1000)
     });
 
-    void sendPasswordResetEmail({
-      to: user.email,
-      name: user.profile.displayName ?? user.email,
-      token
-    }).catch(() => undefined);
+    scheduleSideEffect(
+      sendPasswordResetEmail({
+        to: user.email,
+        name: user.profile.displayName ?? user.email,
+        token,
+      }),
+      'auth.forgot_password_email'
+    );
 
     res.json({
       message: 'If the account exists, a reset link was sent.',
@@ -712,13 +707,17 @@ authRouter.post('/google', validate({ body: googleAuthSchema }), async (req, res
         email: created.email,
         displayName: profile.displayName,
       });
-      void processSignupRewards(created._id, referralCode).catch(() => undefined);
+      scheduleSideEffect(processSignupRewards(created._id, referralCode), 'auth.google_signup_rewards');
       if (groupInviteToken) {
-        void acceptGroupInviteByToken({ token: groupInviteToken, userId: created._id, email: created.email }).catch(
-          () => undefined
+        scheduleSideEffect(
+          acceptGroupInviteByToken({ token: groupInviteToken, userId: created._id, email: created.email }),
+          'auth.google_signup_group_invite_token'
         );
       } else {
-        void acceptPendingGroupInvitesForEmail({ userId: created._id, email: created.email }).catch(() => undefined);
+        scheduleSideEffect(
+          acceptPendingGroupInvitesForEmail({ userId: created._id, email: created.email }),
+          'auth.google_signup_pending_group_invites'
+        );
       }
     }
 
@@ -794,11 +793,14 @@ authRouter.post('/change-password/request-otp', requireAuth, async (req, res, ne
       expiresAt: new Date(Date.now() + 15 * 60 * 1000)
     });
 
-    void sendPasswordResetEmail({
-      to: user.email,
-      name: user.profile.displayName ?? user.email,
-      token
-    }).catch(() => undefined);
+    scheduleSideEffect(
+      sendPasswordResetEmail({
+        to: user.email,
+        name: user.profile.displayName ?? user.email,
+        token,
+      }),
+      'auth.forgot_password_email'
+    );
 
     res.json({
       message: 'OTP sent to your email address.',

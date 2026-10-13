@@ -1,4 +1,11 @@
-import { ACTIVITIES_PATH, EXPLORE_MAP_PATH, TRIPS_PATH } from '../../config/routingCatalog';
+import {
+  ACTIVITIES_PATH,
+  EXPLORE_DISCOVER_BROWSE_PATH,
+  EXPLORE_MAP_PATH,
+  PLAN_PATH,
+  TRIPS_PATH,
+} from '../../config/routingCatalog';
+import { isDiscoverBrowseRoute } from '../../explore/exploreDiscoverBrowse';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { Mountain } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
@@ -20,11 +27,14 @@ export const Header = () => {
 
   const isActiveLink = (to: string) => {
     if (to === '/') return pathname === '/';
+    if (to === EXPLORE_DISCOVER_BROWSE_PATH) {
+      return isDiscoverBrowseRoute(pathname, search);
+    }
     if (to === EXPLORE_MAP_PATH) {
       if (pathname === EXPLORE_MAP_PATH || pathname === '/discovery') {
-        return true;
+        return !isDiscoverBrowseRoute(pathname, search);
       }
-      if (pathname === TRIPS_PATH || pathname === ACTIVITIES_PATH) {
+      if (pathname === PLAN_PATH || pathname === TRIPS_PATH || pathname === ACTIVITIES_PATH) {
         const tab = searchParams.get('tab');
         return tab !== 'joined' && tab !== 'hosted';
       }

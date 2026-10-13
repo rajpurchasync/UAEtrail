@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { MyActivityDTO } from '@uaetrail/shared-types';
-import type { ActivityRequestView } from '../api/index';
+import type { ActivityRequestView } from '../api/types';
 import { buildUpcomingPlanRows } from './activityHubSections';
 
 const futureDate = () => {

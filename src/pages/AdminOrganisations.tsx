@@ -1,7 +1,16 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useSafeAsyncEffect } from '../hooks/useSafeAsyncEffect';
 import { Link } from 'react-router-dom';
 import { TenantListDTO } from '@uaetrail/shared-types';
-import { api, OrganisationApplication, TenantDetail } from '../api/index';
+import type { OrganisationApplication, TenantDetail } from '../api/types';
+import {
+  fetchAdminOrganisationApplications,
+  fetchAdminTenants,
+  reviewAdminOrganisationApplication,
+  setAdminTenantDiscoverFeatured,
+  updateAdminTenantStatus,
+} from '../hooks/adminConsoleApi';
+import { fetchAdminTenantDetail } from '../hooks/adminDrilldownApi';
 import { DashboardLayout } from '../components/layout';
 import { ADMIN_LINKS } from '../constants';
 import { SecureAvatar } from '../components/ui/SecureAvatar';
@@ -26,20 +35,25 @@ export const AdminOrganisations = () => {
   const [suspendComment, setSuspendComment] = useState('');
   const [discoverFeaturedSaving, setDiscoverFeaturedSaving] = useState(false);
 
-  const loadData = async () => {
+  const loadData = async (isActive: () => boolean = () => true) => {
     setLoading(true);
     try {
-      const [appRes, tenantRes] = await Promise.all([api.getAdminOrganisationApplications(), api.getAdminTenants()]);
-      setApplications(appRes.data);
-      setTenants(tenantRes.data);
+      const [apps, tenantList] = await Promise.all([
+        fetchAdminOrganisationApplications(),
+        fetchAdminTenants(),
+      ]);
+      if (!isActive()) return;
+      setApplications(apps);
+      setTenants(tenantList);
     } catch (err) {
+      if (!isActive()) return;
       setError(err instanceof Error ? err.message : 'Failed to load data');
     } finally {
-      setLoading(false);
+      if (isActive()) setLoading(false);
     }
   };
 
-  useEffect(() => { loadData(); }, []);
+  useSafeAsyncEffect((isActive) => loadData(isActive), []);
 
   const filteredTenants = useMemo(() => {
     if (tenantFilter === 'all') return tenants;
@@ -48,7 +62,7 @@ export const AdminOrganisations = () => {
 
   const review = async (id: string, status: 'approved' | 'rejected', note?: string) => {
     try {
-      await api.reviewAdminApplication(id, status, note);
+      await reviewAdminOrganisationApplication(id, status, note);
       setNoteModal(null);
       setReviewNote('');
       setApplicationDetail(null);
@@ -67,7 +81,7 @@ export const AdminOrganisations = () => {
       return;
     }
     try {
-      await api.updateAdminTenantStatus(
+      await updateAdminTenantStatus(
         target.id,
         newStatus as 'active' | 'suspended',
         newStatus === 'suspended' ? suspendComment.trim() : undefined
@@ -85,8 +99,8 @@ export const AdminOrganisations = () => {
 
   const openTenantDetail = async (id: string) => {
     try {
-      const res = await api.getAdminTenantDetail(id);
-      setTenantDetail(res.data);
+      const detail = await fetchAdminTenantDetail(id);
+      setTenantDetail(detail);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load tenant details');
     }
@@ -97,7 +111,7 @@ export const AdminOrganisations = () => {
     setDiscoverFeaturedSaving(true);
     try {
       const next = !tenantDetail.discoverFeatured;
-      await api.setAdminTenantDiscoverFeatured(tenantDetail.id, next);
+      await setAdminTenantDiscoverFeatured(tenantDetail.id, next);
       setTenantDetail({ ...tenantDetail, discoverFeatured: next });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update discover featuring');

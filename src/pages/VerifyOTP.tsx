@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Mail, Mountain } from 'lucide-react';
-import { apiRequest } from '../api/client';
+import { resendEmailVerification } from '../hooks/accountAuthClientApi';
+import { requestPasswordReset } from '../hooks/accountPasswordClientApi';
 import { OtpInput } from '../components/auth/OtpInput';
 import { SIGNIN_PATH } from '../config/routingCatalog';
 import { PageMeta } from '../components/seo/PageMeta';
@@ -16,12 +17,6 @@ type VerifyLocationState = {
   mode?: 'email' | 'password-reset';
   redirectTo?: string;
   notice?: string;
-};
-
-type ResendResponse = {
-  expiresAt?: string;
-  expiresInSeconds?: number;
-  resetToken?: string;
 };
 
 export const VerifyOTP = () => {
@@ -109,16 +104,10 @@ export const VerifyOTP = () => {
     setOtp('');
     try {
       if (mode === 'password-reset') {
-        await apiRequest<ResendResponse>('/auth/forgot-password', {
-          method: 'POST',
-          body: JSON.stringify({ email })
-        });
+        await requestPasswordReset(email);
         setExpiresAt(Date.now() + 60_000);
       } else {
-        const res = await apiRequest<ResendResponse>('/auth/resend-verification', {
-          method: 'POST',
-          body: JSON.stringify({ email })
-        });
+        const res = await resendEmailVerification(email);
         if (res.expiresAt) {
           setExpiresAt(new Date(res.expiresAt).getTime());
         } else if (res.expiresInSeconds) {

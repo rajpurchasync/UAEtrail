@@ -27,7 +27,7 @@ export const listDiscoveryPath = (options?: ListDiscoveryPathOptions): string =>
     price: options?.price ?? 'all',
     when: options?.when ?? 'any',
     activityDatePreset: options?.activityDatePreset ?? 'anyday',
-    buddiesSegment: options?.buddiesSegment ?? 'going',
+    buddiesSegment: options?.buddiesSegment ?? 'available',
   };
   const params = serializeBrowseListSearchParams(state, options?.regions ?? []);
   const qs = params.toString();
@@ -53,8 +53,10 @@ export const listDiscoveryPathFromExploreSearch = (search: string): string => {
   const state = parseBrowseListFilterState(params);
   const regions = parseBrowseListVenueRegions(params);
   const listParams = serializeBrowseListSearchParams(state, regions);
+  const explicitListCat = parseListCatParam(params.get(LIST_CAT_PARAM));
   const inferredListCat = inferListCatFromExploreHandoff(state, params);
-  if (inferredListCat) listParams.set(LIST_CAT_PARAM, inferredListCat);
+  const listCat = explicitListCat ?? inferredListCat;
+  if (listCat) listParams.set(LIST_CAT_PARAM, listCat);
   const qs = listParams.toString();
   return qs ? `${LIST_DISCOVERY_PATH}?${qs}` : LIST_DISCOVERY_PATH;
 };

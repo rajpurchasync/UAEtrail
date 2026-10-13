@@ -4,6 +4,7 @@ import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
 import tseslint from 'typescript-eslint';
 import uaetrail from './eslint/uaetrail-plugin.mjs';
+import { r8HooksNonFacadeFiles, r8UiLayerFiles } from './eslint/r8-api-facade.mjs';
 
 export default tseslint.config(
   { ignores: ['dist', 'public/sw.js'] },
@@ -47,6 +48,21 @@ export default tseslint.config(
           ],
         },
       ],
+    },
+  },
+  {
+    files: r8UiLayerFiles,
+    plugins: { uaetrail },
+    rules: {
+      'uaetrail/no-direct-api-facade-ui': 'error',
+    },
+  },
+  {
+    files: r8HooksNonFacadeFiles,
+    ignores: ['**/*Api.ts', '**/*ClientApi.ts', '**/*.test.ts'],
+    plugins: { uaetrail },
+    rules: {
+      'uaetrail/no-direct-api-facade-hooks': 'error',
     },
   },
   {

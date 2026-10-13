@@ -7,6 +7,8 @@ import { ExploreGuestJoinSheet } from './ExploreGuestJoinSheet';
 interface ExploreJoinOverlaysProps {
   activity: ActivityDTO | null | undefined;
   joinActions: ActivityJoinActions;
+  onJoinSuccess?: (message: string) => void;
+  exploreMapItemId?: string | null;
   guestPlaceTitle?: string | null;
 }
 
@@ -14,6 +16,8 @@ interface ExploreJoinOverlaysProps {
 export const ExploreJoinOverlays = ({
   activity,
   joinActions,
+  onJoinSuccess,
+  exploreMapItemId,
   guestPlaceTitle,
 }: ExploreJoinOverlaysProps) => (
   <>
@@ -22,8 +26,9 @@ export const ExploreJoinOverlays = ({
         open={joinActions.joinModalOpen}
         onClose={joinActions.closeJoinModal}
         activity={activity}
+        exploreMapItemId={exploreMapItemId}
         overlayClassName="z-[6000]"
-        onSuccess={joinActions.handleJoinSuccess}
+        onSuccess={onJoinSuccess ?? joinActions.handleJoinSuccess}
       />
     )}
 

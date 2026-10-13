@@ -1,7 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import type { ActivityDTO } from '@uaetrail/shared-types';
-import { api, type ActivityRequestView } from '../../api/index';
+import type { ActivityRequestView } from '../../api/types';
+import {
+  fetchHostActivityJoinRequests,
+  listHostActivitiesForTenant,
+} from '../../hooks/hostActivityClientApi';
 import { getActiveTenantId } from '../../api/tenant';
 import { parseActivityTypeParam } from '../../config/activityTypes';
 import {
@@ -46,12 +50,12 @@ export const Activities = () => {
   const loadEvents = useCallback(async (tid: string) => {
     if (!tid) return;
     try {
-      const [activitiesRes, requestsRes] = await Promise.all([
-        api.listHostActivities(tid),
-        api.getHostActivityJoinRequests(tid),
+      const [activities, requests] = await Promise.all([
+        listHostActivitiesForTenant(tid),
+        fetchHostActivityJoinRequests(tid),
       ]);
-      setEvents(activitiesRes.data);
-      setPendingRequests(requestsRes.data.filter((request) => request.status === 'pending'));
+      setEvents(activities);
+      setPendingRequests(requests.filter((request) => request.status === 'pending'));
       setLoadError(null);
     } catch (err) {
       setLoadError(err instanceof Error ? err.message : 'Failed to load events');

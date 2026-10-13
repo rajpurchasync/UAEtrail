@@ -149,4 +149,30 @@ describe('systemCoherenceGuard', () => {
     }
     expect(violations).toEqual([]);
   });
+
+  it('member inbox surfaces guard mount fetches with useSafeAsyncEffect', () => {
+    const memberAsyncPages = ['src/pages/Messages.tsx', 'src/pages/Notifications.tsx', 'src/pages/Buddies.tsx'];
+    const missing: string[] = [];
+    for (const rel of memberAsyncPages) {
+      const content = readFileSync(join(ROOT, rel), 'utf8');
+      if (!content.includes('useSafeAsyncEffect')) {
+        missing.push(rel);
+      }
+    }
+    expect(missing).toEqual([]);
+  });
+
+  it('admin console pages guard mount fetches with useSafeAsyncEffect', () => {
+    const pagesDir = join(SRC, 'pages');
+    const adminPages = readdirSync(pagesDir).filter((name) => name.startsWith('Admin') && name.endsWith('.tsx'));
+    const missing: string[] = [];
+    for (const name of adminPages) {
+      const rel = `src/pages/${name}`;
+      const content = readFileSync(join(ROOT, rel), 'utf8');
+      if (!content.includes('useSafeAsyncEffect')) {
+        missing.push(rel);
+      }
+    }
+    expect(missing).toEqual([]);
+  });
 });

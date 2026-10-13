@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { Loader2, X } from 'lucide-react';
-import type { GroupWallPostPolicy, SocialGroupView } from '../../api/types';
-import { api } from '../../api/index';
+import {
+  updateMyGroupSettings,
+  type GroupWallPostPolicy,
+  type SocialGroupView,
+} from '../../hooks/socialGroupSettingsApi';
 import { ProfilePhotoEditorField } from '../account/ProfilePhotoEditorField';
 import { groupWallPostPolicyLabel } from '../../utils/groupWallPostPolicy';
 
@@ -32,8 +35,8 @@ export const GroupWallChatSettingsSheet = ({
     setSavingPolicy(true);
     onError('');
     try {
-      const res = await api.updateMeGroupSettings(group.id, { wallPostPolicy });
-      onUpdated(res.data);
+      const updated = await updateMyGroupSettings(group.id, { wallPostPolicy });
+      onUpdated(updated);
       onClose();
     } catch (err) {
       onError(err instanceof Error ? err.message : 'Could not update chat settings.');
@@ -49,8 +52,8 @@ export const GroupWallChatSettingsSheet = ({
     setSavingPhoto(true);
     onError('');
     try {
-      const res = await api.updateMeGroupSettings(group.id, { photoUrl });
-      onUpdated(res.data);
+      const updated = await updateMyGroupSettings(group.id, { photoUrl });
+      onUpdated(updated);
     } catch (err) {
       onError(err instanceof Error ? err.message : 'Could not update group image.');
     } finally {

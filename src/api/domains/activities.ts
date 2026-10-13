@@ -1,5 +1,6 @@
 import {
   ActivityDTO,
+  ActivityPresentationDTO,
   ActivityViewerAccessDTO,
   JoinRequestDTO,
   MyActivityDTO,
@@ -30,7 +31,11 @@ export const activitiesApi = {
     apiRequest<{ data: ActivityDTO[] }>(`/activities/featured?limit=${limit}`),
 
     getPublicActivityDetail: (id: string) =>
-    apiRequest<{ data: ActivityDetail; viewerAccess: ActivityViewerAccessDTO }>(`/activities/${id}`, {
+    apiRequest<{
+      data: ActivityDetail;
+      viewerAccess: ActivityViewerAccessDTO;
+      presentation?: ActivityPresentationDTO;
+    }>(`/activities/${id}`, {
       auth: Boolean(getStoredSession()),
     }),
 
@@ -93,25 +98,20 @@ export const activitiesApi = {
       auth: true,
     }),
 
-    createJoinRequest: (activityId: string, note?: string, selectedPackageIndex?: number) =>
+    createJoinRequest: (activityId: string, note?: string) =>
     apiRequest<{ data: JoinRequestDTO }>(`/activities/${activityId}/requests`, {
       method: 'POST',
       auth: true,
-      body: JSON.stringify({
-        ...(note !== undefined ? { note } : {}),
-        ...(selectedPackageIndex !== undefined ? { selectedPackageIndex } : {})
-      })
+      body: JSON.stringify(note !== undefined ? { note } : {}),
     }),
 
-    rsvpActivity: (activityId: string, selectedPackageIndex?: number) =>
+    rsvpActivity: (activityId: string) =>
     apiRequest<{ data: { request: JoinRequestDTO; participation: MyActivityDTO['participation'] } }>(
       `/activities/${activityId}/rsvp`,
       {
         method: 'POST',
         auth: true,
-        body: JSON.stringify({
-          ...(selectedPackageIndex !== undefined ? { selectedPackageIndex } : {})
-        })
+        body: JSON.stringify({}),
       }
     ),
 

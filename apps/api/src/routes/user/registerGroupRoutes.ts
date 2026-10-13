@@ -7,6 +7,7 @@ import { findAuthUserByEmail, findAuthUserById } from '../../lib/auth-users.js';
 import { findActivityDocInMongo } from '../../lib/entity-sync.js';
 import { messagesGroupPath } from '../../lib/member-routes.js';
 import { createNotificationRecord } from '../../lib/notifications-store.js';
+import { scheduleSideEffect } from '../../lib/schedule-side-effect.js';
 import { isActivityGroupChatOpen } from '../../services/activity-group-chat.js';
 import { notifyGroupInvite, notifyGroupWallPost } from '../../services/social-notifications.js';
 import { publishGroupWallStreamToMembers } from '../../services/group-wall-stream.js';
@@ -207,18 +208,21 @@ router.post('/me/group-invites/accept', validate({ body: acceptInviteSchema }), 
 
     const group = await findGroupById(accepted.groupId);
     if (group) {
-      await createNotificationRecord({
-        userId: group.adminUserId,
-        title: 'Invite accepted',
-        body: `${user.profile.displayName ?? user.email} joined ${group.name}.`,
-        type: NotificationType.SYSTEM,
-        meta: {
-          kind: 'group_invite_accepted',
-          groupId: accepted.groupId,
-          actorUserId: user._id,
-          path: messagesGroupPath(accepted.groupId),
-        },
-      }).catch(() => undefined);
+      scheduleSideEffect(
+        createNotificationRecord({
+          userId: group.adminUserId,
+          title: 'Invite accepted',
+          body: `${user.profile.displayName ?? user.email} joined ${group.name}.`,
+          type: NotificationType.SYSTEM,
+          meta: {
+            kind: 'group_invite_accepted',
+            groupId: accepted.groupId,
+            actorUserId: user._id,
+            path: messagesGroupPath(accepted.groupId),
+          },
+        }),
+        'group.invite_accepted_notification'
+      );
     }
 
     res.json({ message: 'Invite accepted.', data: accepted });

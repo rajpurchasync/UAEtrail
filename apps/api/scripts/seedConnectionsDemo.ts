@@ -11,6 +11,61 @@ import { followUser } from '../src/lib/follow-store.js';
 import { COLLECTIONS } from '../src/lib/collections.js';
 import { getMongoClient } from '../src/lib/mongo.js';
 import { notifyMemberFollowed } from '../src/services/social-notifications.js';
+import { upsertMemberAvailability } from '../src/lib/member-availability-store.js';
+import { RequestStatus } from '../src/domain/enums.js';
+import crypto from 'node:crypto';
+
+const isoDayOffset = (days: number): string => {
+  const d = new Date();
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+};
+
+const seedPeopleBrowseDemoAvailability = async (
+  userId: string,
+  input: { kinds: ('hiking' | 'camping')[]; region: string; slotDays: { start: number; end: number } }
+): Promise<void> => {
+  await upsertMemberAvailability(userId, {
+    kinds: input.kinds,
+    visibility: 'public',
+    region: input.region,
+    slots: [
+      {
+        startDate: isoDayOffset(input.slotDays.start),
+        endDate: isoDayOffset(input.slotDays.end),
+        timeBand: 'any',
+      },
+    ],
+  });
+};
+
+const seedBuddyOnShawkaHike = async (guideId: string, reviewerId: string): Promise<void> => {
+  const db = getMongoClient()!.db();
+  const activityId = 'seed-event-shawka-free';
+  const now = new Date();
+  await db.collection('activity_requests').updateOne(
+    { activityId, userId: guideId },
+    {
+      $set: {
+        status: RequestStatus.APPROVED,
+        reviewedById: reviewerId,
+        reviewedAt: now,
+        updatedAt: now,
+      },
+      $setOnInsert: {
+        _id: crypto.randomUUID(),
+        note: 'Leading this one — listed as going for crew browse QA',
+        organizerNote: null,
+        cancelReason: null,
+        cancelMessage: null,
+        cancelledAt: null,
+        selectedPackageIndex: null,
+        createdAt: now,
+      },
+    },
+    { upsert: true }
+  );
+};
 
 export type ConnectionsDemoInput = {
   visitorId: string;
@@ -93,13 +148,52 @@ export const seedConnectionsDemo = async (input: ConnectionsDemoInput): Promise<
   await followUser(input.visitorId, input.organizerId);
   await followUser(input.visitorId, input.hostId);
 
-  console.log('[seed] Connections demo seeded for visitor@ (buddies, pending, follow notifications)');
+  const hostGuide = await createBuddyRequest({
+    fromUserId: input.hostId,
+    toUserId: input.guideId,
+    message: 'Shawka crew — connect on UAE Trail?',
+  });
+  if (hostGuide.status === 'pending') {
+    await acceptBuddyRequest(hostGuide.id, input.guideId);
+  }
+
+  await seedPeopleBrowseDemoAvailability(input.visitor2Id, {
+    kinds: ['hiking', 'camping'],
+    region: 'Dubai',
+    slotDays: { start: 1, end: 4 },
+  });
+  await seedPeopleBrowseDemoAvailability(input.guideId, {
+    kinds: ['hiking'],
+    region: 'Sharjah',
+    slotDays: { start: 2, end: 5 },
+  });
+  await seedPeopleBrowseDemoAvailability(input.hostId, {
+    kinds: ['camping', 'hiking'],
+    region: 'Ras Al Khaimah',
+    slotDays: { start: 0, end: 2 },
+  });
+  await seedPeopleBrowseDemoAvailability(input.visitorId, {
+    kinds: ['hiking'],
+    region: 'Dubai',
+    slotDays: { start: 3, end: 6 },
+  });
+
+  await seedBuddyOnShawkaHike(input.guideId, input.organizerId);
+
+  console.log(
+    '[seed] Connections demo seeded (buddies, follows, people browse availability, host↔guide buddy)'
+  );
 };
 
 export const logConnectionsDemoPlaybook = (): void => {
+  const passwordHint = process.env.DEMO_ACCOUNT_PASSWORD?.trim()
+    ? '(password: DEMO_ACCOUNT_PASSWORD from your .env)'
+    : '(set DEMO_ACCOUNT_PASSWORD in .env — see docs/DEV_RUN.md)';
   console.log(
-    'Connections QA (log in as visitor@uaetrails.app / Visitor@12345):\n' +
-      '  • Buddies: Fatima (guide@) + Maya (visitor2@) — Explore Social → Friends\n' +
+    `Connections QA (log in as visitor@uaetrails.app ${passwordHint}):\n` +
+      '  • Find your crew → Available: Maya, Fatima, Omar, Samira (public slots; map date Anyday)\n' +
+      '  • Friends going (host@): Fatima hosting Wadi Shawka (+10d) — set date to This month\n' +
+      '  • Buddies: Fatima (guide@) + Maya (visitor2@)\n' +
       '  • Outgoing pending: Omar (host@) — cancel on /buddies (Sent) or his profile\n' +
       '  • Declined history: Khalid (organizer@) — declined in DB; re-request allowed via profile\n' +
       '  • Friends group: Weekend Hikers UAE — log in as guide@ and use Leave group on /groups\n' +

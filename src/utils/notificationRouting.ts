@@ -3,31 +3,122 @@ import {
   activityDetailPath,
   ADMIN_HOSTS_PATH,
   ADMIN_PLACES_PATH,
+  ACTIVITIES_PATH,
   EXPLORE_MAP_PATH,
   explorePath,
+  HOST_MESSAGES_PATH,
   isLegacyRewardsWalletPath,
+  LEGACY_MESSAGES_PATH,
   memberProfilePath,
   BUDDIES_PATH,
   GROUPS_PATH,
   groupsPath,
-  HOST_OVERVIEW_PATH,
-  HOST_REQUESTS_PATH,
+  MESSAGES_PATH,
   PROFILE_BADGES_PATH,
   PROFILE_PATH,
   PRO_MEMBERSHIP_PATH,
+  TRIPS_PATH,
   messagesGroupPath,
   messagesToUserPath,
   myRequestDetailPath,
   tripsLegacyJoinedTabPath,
-  tripsLegacyUpcomingSegmentPath,
+  tripsPlansPath,
 } from '../config/routingCatalog';
-import { NotificationDTO, placeDetailPath } from '@uaetrail/shared-types';
+import { planWishlistTabPath } from '../plan/planTab';
+import {
+  NotificationDTO,
+  exploreSeekingMapItemPath,
+  placeDetailPath,
+} from '@uaetrail/shared-types';
+import { resolveLegacyTripsHubRedirect } from '../member-plan/legacyTripsRedirect';
 
 const toMetaObject = (meta: NotificationDTO['meta']): Record<string, unknown> | null =>
   meta && typeof meta === 'object' ? (meta as Record<string, unknown>) : null;
 
 const toStringValue = (value: unknown): string | null =>
   typeof value === 'string' && value.trim().length > 0 ? value : null;
+
+const normalizeConsumerChatDeepLinkPath = (
+  path: string,
+  meta: Record<string, unknown> | null
+): string => {
+  const queryIndex = path.indexOf('?');
+  const pathname = queryIndex === -1 ? path : path.slice(0, queryIndex);
+  const search = queryIndex === -1 ? '' : path.slice(queryIndex);
+
+  if (pathname === LEGACY_MESSAGES_PATH || pathname === HOST_MESSAGES_PATH) {
+    return `${MESSAGES_PATH}${search}`;
+  }
+
+  if (pathname === GROUPS_PATH && search) {
+    const params = new URLSearchParams(search.startsWith('?') ? search.slice(1) : search);
+    const groupId = params.get('group');
+    const tab = params.get('tab');
+    const invite = params.get('invite');
+    const create = params.get('create');
+    const kind = toStringValue(meta?.kind)?.toLowerCase() ?? '';
+    if (
+      groupId &&
+      !tab &&
+      !invite &&
+      !create &&
+      (kind === 'group_message' || kind === 'group_invite_accepted')
+    ) {
+      const activityId = toStringValue(meta?.activityId);
+      return messagesGroupPath(groupId, activityId ?? undefined);
+    }
+  }
+
+  return path;
+};
+
+const normalizeDirectNotificationPath = (
+  path: string,
+  meta: Record<string, unknown> | null
+): string => {
+  if (path === '/host/overview' || path.startsWith('/host/overview?')) {
+    return PRO_MEMBERSHIP_PATH;
+  }
+
+  try {
+    const legacyUrl = new URL(path, 'http://local');
+    const legacyPathname = legacyUrl.pathname;
+    if (
+      (legacyPathname === TRIPS_PATH || legacyPathname === ACTIVITIES_PATH) &&
+      legacyUrl.searchParams.get('tab') === 'joined' &&
+      legacyUrl.searchParams.get('segment') === 'upcoming'
+    ) {
+      return tripsLegacyJoinedTabPath();
+    }
+  } catch {
+    // ignore malformed paths
+  }
+
+  const queryIndex = path.indexOf('?');
+  const pathname = queryIndex === -1 ? path : path.slice(0, queryIndex);
+  const search = queryIndex === -1 ? '' : path.slice(queryIndex);
+
+  if (
+    pathname === TRIPS_PATH ||
+    pathname === ACTIVITIES_PATH ||
+    pathname === '/trips/map'
+  ) {
+    const resolved = resolveLegacyTripsHubRedirect(pathname, search);
+    if (resolved) return resolved;
+  }
+
+  const publishedActivityId =
+    toStringValue(meta?.activityId) ?? toStringValue(meta?.seekingActivityId);
+  if (publishedActivityId && path.includes('pin=demand:')) {
+    return explorePath({
+      list: true,
+      panel: 'activities',
+      pin: `activity:${publishedActivityId}`,
+    });
+  }
+
+  return normalizeConsumerChatDeepLinkPath(path, meta);
+};
 
 export const inferNotificationPath = (
   notif: NotificationDTO,
@@ -54,7 +145,7 @@ export const inferNotificationPath = (
     ) {
       return activityDetailInvitePath(activityIdFromMeta);
     }
-    return directPath;
+    return normalizeDirectNotificationPath(directPath, meta);
   }
 
   const reviewPath = toStringValue(meta?.reviewPath);
@@ -73,6 +164,15 @@ export const inferNotificationPath = (
     return activityDetailInvitePath(activityId);
   }
 
+  if (kind === 'join_request_approved') {
+    const path = toStringValue(meta?.path);
+    if (path) return path;
+    if (activityId) {
+      return `${activityDetailPath(activityId)}?joined=1`;
+    }
+    return tripsLegacyJoinedTabPath();
+  }
+
   if (activityId) {
     return activityDetailPath(activityId);
   }
@@ -83,11 +183,6 @@ export const inferNotificationPath = (
   const legacySenderId = toStringValue(meta?.senderId);
   if (legacySenderId) {
     return messagesToUserPath(legacySenderId);
-  }
-  if (kind === 'join_request_approved') {
-    const groupId = toStringValue(meta?.groupId);
-    if (groupId) return messagesGroupPath(groupId);
-    return tripsLegacyJoinedTabPath();
   }
   if (
     kind === 'join_request_pending' ||
@@ -114,7 +209,7 @@ export const inferNotificationPath = (
     return GROUPS_PATH;
   }
   if (kind === 'request_withdrawal') {
-    return HOST_REQUESTS_PATH;
+    return tripsPlansPath('hosted');
   }
   if (kind === 'badge') {
     return PROFILE_BADGES_PATH;
@@ -122,11 +217,8 @@ export const inferNotificationPath = (
   if (kind === 'reward' || kind === 'tier_upgrade') {
     return PROFILE_BADGES_PATH;
   }
-  if (kind === 'goal_halfway' || kind === 'goal_complete') {
-    return tripsLegacyUpcomingSegmentPath();
-  }
-  if (kind === 'goal_behind_pace') {
-    return tripsLegacyJoinedTabPath();
+  if (kind === 'goal_halfway' || kind === 'goal_complete' || kind === 'goal_behind_pace') {
+    return planWishlistTabPath();
   }
   if (kind === 'connection_buddy_request' || kind === 'connection_buddy_accepted') {
     const actorUserId =
@@ -145,7 +237,12 @@ export const inferNotificationPath = (
     if (activityId) return activityDetailPath(activityId);
     const intentId = toStringValue(meta?.intentId);
     if (intentId) {
-      return `${explorePath({ list: true, panel: 'activities' })}&pin=demand:${encodeURIComponent(intentId)}`;
+      const publishedActivityId =
+        toStringValue(meta?.activityId) ?? toStringValue(meta?.seekingActivityId);
+      return exploreSeekingMapItemPath({
+        intentId,
+        activityId: publishedActivityId,
+      });
     }
     const actorUserId = toStringValue(meta?.actorUserId) ?? toStringValue(meta?.hostUserId);
     if (actorUserId) {
@@ -172,13 +269,13 @@ export const inferNotificationPath = (
   if (kind === 'host_application_approved' || kind === 'organizer_application_approved') {
     const shopPath = toStringValue(meta?.path);
     if (shopPath && shopPath.startsWith('/shop/')) return shopPath;
-    return HOST_OVERVIEW_PATH;
+    return PRO_MEMBERSHIP_PATH;
   }
   if (kind === 'host_application_rejected' || kind === 'organizer_application_rejected') {
     return PRO_MEMBERSHIP_PATH;
   }
   if (kind === 'host_suspended' || kind === 'host_reopened') {
-    return kind === 'host_suspended' ? PRO_MEMBERSHIP_PATH : HOST_OVERVIEW_PATH;
+    return PRO_MEMBERSHIP_PATH;
   }
   if (kind === 'user_suspended' || kind === 'user_reactivated') {
     return PROFILE_PATH;

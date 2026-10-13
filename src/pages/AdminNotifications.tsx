@@ -1,9 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { useSafeAsyncEffect } from '../hooks/useSafeAsyncEffect';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { Bell } from 'lucide-react';
 import { NotificationDTO } from '@uaetrail/shared-types';
-import { api } from '../api/index';
+import {
+  fetchMeNotificationsPage,
+  markAllMeNotificationsRead,
+  markNotificationReadById,
+} from '../hooks/notificationInboxApi';
 import { DashboardLayout } from '../components/layout';
 import { ADMIN_LINKS } from '../constants';
 import { useAuth } from '../context/AuthContext';
@@ -25,33 +30,33 @@ export const AdminNotifications = () => {
     void invalidateNotificationUnreadBadge(queryClient, user.id);
   };
 
-  const load = async () => {
+  const load = async (isActive: () => boolean = () => true) => {
     setLoading(true);
     setError(null);
     try {
-      const res = await api.getMeNotifications(1);
-      setNotifications(res.data);
-      setUnreadCount(res.unreadCount ?? res.data.filter((item) => !item.isRead).length);
+      const page = await fetchMeNotificationsPage(1);
+      if (!isActive()) return;
+      setNotifications(page.data);
+      setUnreadCount(page.unreadCount ?? page.data.filter((item) => !item.isRead).length);
     } catch (err) {
+      if (!isActive()) return;
       setError(err instanceof Error ? err.message : 'Failed to load notifications');
     } finally {
-      setLoading(false);
+      if (isActive()) setLoading(false);
     }
   };
 
-  useEffect(() => {
-    void load();
-  }, []);
+  useSafeAsyncEffect((isActive) => load(isActive), []);
 
   const markRead = async (id: string) => {
-    await api.markNotificationRead(id).catch(() => undefined);
+    await markNotificationReadById(id).catch(() => undefined);
     setNotifications((prev) => prev.map((item) => (item.id === id ? { ...item, isRead: true } : item)));
     setUnreadCount((count) => Math.max(0, count - 1));
     syncUnreadBadge();
   };
 
   const markAllRead = async () => {
-    await api.markAllNotificationsRead().catch(() => undefined);
+    await markAllMeNotificationsRead().catch(() => undefined);
     setNotifications((prev) => prev.map((item) => ({ ...item, isRead: true })));
     setUnreadCount(0);
     syncUnreadBadge();

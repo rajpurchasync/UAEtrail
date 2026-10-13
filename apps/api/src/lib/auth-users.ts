@@ -3,6 +3,7 @@ import { MembershipTier } from '../domain/enums.js';
 import type { UserCity, UserCountryCode, UserGender } from '../domain/user-profile.js';
 import { getMongoClient } from './mongo.js';
 import { invalidateExploreMapCache } from './explore-map-cache.js';
+import { normalizeSearchRegexInput } from './regex-search.js';
 
 export type AuthUserRecord = {
   _id: string;
@@ -71,11 +72,12 @@ const buildUserQuery = (input: {
   if (input.userIds !== undefined) {
     query._id = input.userIds.length > 0 ? { $in: input.userIds } : { $in: ['__none__'] };
   }
-  if (input.search) {
+  const searchRegex = normalizeSearchRegexInput(input.search);
+  if (searchRegex) {
     andClauses.push({
       $or: [
-        { email: { $regex: input.search, $options: 'i' } },
-        { 'profile.displayName': { $regex: input.search, $options: 'i' } },
+        { email: { $regex: searchRegex, $options: 'i' } },
+        { 'profile.displayName': { $regex: searchRegex, $options: 'i' } },
       ],
     });
   }
@@ -140,8 +142,28 @@ export const findAuthUsersByIds = async (ids: string[]): Promise<AuthUserRecord[
 };
 
 export const getAuthUserMembershipTier = async (userId: string): Promise<MembershipTier> => {
-  const user = await usersCollection().findOne({ _id: userId }, { projection: { profile: 1 } });
-  return user?.profile?.membershipTier ?? MembershipTier.FREE;
+  const tiers = await getAuthUserMembershipTiers([userId]);
+  return tiers.get(userId) ?? MembershipTier.FREE;
+};
+
+export const getAuthUserMembershipTiers = async (
+  userIds: string[]
+): Promise<Map<string, MembershipTier>> => {
+  const unique = [...new Set(userIds.filter(Boolean))];
+  const map = new Map<string, MembershipTier>();
+  if (unique.length === 0) return map;
+
+  const rows = await usersCollection()
+    .find({ _id: { $in: unique } }, { projection: { profile: 1 } })
+    .toArray();
+
+  for (const id of unique) {
+    map.set(id, MembershipTier.FREE);
+  }
+  for (const row of rows) {
+    map.set(row._id, row.profile?.membershipTier ?? MembershipTier.FREE);
+  }
+  return map;
 };
 
 export const createAuthUser = async (input: {

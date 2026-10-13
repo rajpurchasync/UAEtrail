@@ -28,7 +28,7 @@ const resolveCreateKindFromActivity = (activity: ActivityDTO): CreateActivityKin
 const resolvePriceMode = (activity: ActivityDTO): CreateActivityDraft['priceMode'] => {
   if (activity.pricingMode === 'paid') return 'paid';
   if (activity.pricingMode === 'shared') return 'shared';
-  return activity.price > 0 ? 'paid' : 'free';
+  return activity.price > 0 ? 'shared' : 'free';
 };
 
 const isStructuredKind = (kind: CreateActivityKind): boolean =>
@@ -41,7 +41,7 @@ const isStructuredKind = (kind: CreateActivityKind): boolean =>
 export const createDraftFromPastActivity = (activity: ActivityDTO): CreateActivityDraft => {
   const kind = resolveCreateKindFromActivity(activity);
   const structured = isStructuredKind(kind);
-  const carpool = kind === 'rideshare';
+  const isRideshare = kind === 'rideshare';
   const genericActivity = kind === 'activity';
 
   const meetingLat = activity.meetingLat ?? activity.displayLatitude ?? activity.locationLatitude ?? null;
@@ -64,12 +64,12 @@ export const createDraftFromPastActivity = (activity: ActivityDTO): CreateActivi
     activityTopic,
     participationMode: activity.participationMode ?? base.participationMode,
     title: activity.title.trim(),
-    latitude: carpool ? startLat : structured ? startLat : meetingLat,
-    longitude: carpool ? startLng : structured ? startLng : meetingLng,
+    latitude: isRideshare ? startLat : structured ? startLat : meetingLat,
+    longitude: isRideshare ? startLng : structured ? startLng : meetingLng,
     fromLabel: activity.startPoint?.trim() || '',
-    toLatitude: carpool ? activity.parkingLat ?? null : null,
-    toLongitude: carpool ? activity.parkingLng ?? null : null,
-    toLabel: carpool ? activity.parkingPoint?.trim() || '' : '',
+    toLatitude: isRideshare ? activity.parkingLat ?? null : null,
+    toLongitude: isRideshare ? activity.parkingLng ?? null : null,
+    toLabel: isRideshare ? activity.parkingPoint?.trim() || '' : '',
     locationPrecision:
       meetingLat != null && meetingLng != null ? 'specific' : base.locationPrecision,
     date: activity.date?.trim() || todayIso(),

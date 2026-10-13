@@ -1,22 +1,13 @@
 import { useEffect, useState } from 'react';
-import { api } from '../../api/index';
 import { ConsoleShell } from '../../console/ConsoleShell';
+import {
+  fetchHostActivityHistory,
+  type HostActivityHistoryRow,
+} from '../../hooks/hostActivityClientApi';
 import { formatActivityType } from '../../utils/activityIdentity';
 
-interface HistoryEvent {
-  id: string;
-  title: string;
-  locationName: string;
-  activityType: string;
-  startAt: string;
-  status: string;
-  capacity: number;
-  participantCount: number;
-  checkedInCount: number;
-}
-
 export const History = () => {
-  const [events, setEvents] = useState<HistoryEvent[]>([]);
+  const [events, setEvents] = useState<HostActivityHistoryRow[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -28,8 +19,8 @@ export const History = () => {
       setLoading(false);
       return;
     }
-    api.getActivityHistory(tenantId)
-      .then((res) => setEvents(res.data))
+    fetchHostActivityHistory(tenantId)
+      .then((rows) => setEvents(rows))
       .catch((e) => setError(e instanceof Error ? e.message : 'Failed to load history'))
       .finally(() => setLoading(false));
   }, [tenantId]);

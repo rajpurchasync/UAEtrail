@@ -91,7 +91,7 @@ export const registerAdminHostApplicationRoutes = (router: Router): void => {
 
           const approvedPath = isShop
             ? shopPublicPath({ slug: application.requestedSlug })
-            : '/host/overview';
+            : PRO_MEMBERSHIP_PATH;
           const approvedTitle = isShop ? 'Shop approved' : 'Host application approved';
           const approvedBody = isShop
             ? reviewerNote

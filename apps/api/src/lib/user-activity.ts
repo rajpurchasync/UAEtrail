@@ -1,4 +1,5 @@
 import { updateAuthUserLastActive } from './auth-users.js';
+import { logger } from './logger.js';
 import { getRedisClient } from './redis.js';
 
 /** Minimum interval between persisted lastActiveAt writes per user. */
@@ -21,7 +22,11 @@ export async function touchLastActive(userId: string): Promise<void> {
     memoryLastTouch.set(userId, now);
   }
 
-  await updateAuthUserLastActive(userId).catch(() => undefined);
+  try {
+    await updateAuthUserLastActive(userId);
+  } catch (err) {
+    logger.warn({ err, userId }, 'last_active_update_failed');
+  }
 }
 
 /** Test helper — reset in-memory throttle state. */

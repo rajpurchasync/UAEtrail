@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { api, TenantProfile } from '../api/index';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { exploreMapPeekPath } from '@uaetrail/shared-types';
+import type { TenantProfile } from '../api/types';
+import { fetchOrganisationProfileBySlug } from '../hooks/organisationConsoleApi';
+import { fetchPublicPlaceDetail } from '../hooks/placeDetailClientApi';
+import { fetchShopPublic } from '../hooks/shopPublicClientApi';
 import { PageMeta } from '../components/seo/PageMeta';
 import { ShopPublicPage, type ShopPublicView } from '../components/shop/ShopPublicPage';
 import { explorePath } from '../config/routingCatalog';
@@ -37,18 +41,19 @@ const tenantToShopView = (tenant: TenantProfile): ShopPublicView => ({
 /** Public gear shop — resolves merchant id or tenant slug to one page. */
 export const ShopPublic = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [shop, setShop] = useState<ShopPublicView | null>(null);
   const [loading, setLoading] = useState(true);
+  const [communityPeekOnly, setCommunityPeekOnly] = useState(false);
   const mapBack = explorePath({ panel: 'shops', filter: 'shops' });
 
   useEffect(() => {
     if (!id) return;
     setLoading(true);
 
-    api
-      .getShopPublic(id)
-      .then((res) => {
-        const merchant = res.data;
+    void (async () => {
+      try {
+        const merchant = await fetchShopPublic(id);
         setShop({
           id: merchant.id,
           reviewTargetId: merchant.tenantId ?? null,
@@ -75,22 +80,36 @@ export const ShopPublic = () => {
           })),
           presence: resolvePresence(merchant.latitude, merchant.longitude),
         });
-      })
-      .catch(() =>
-        api
-          .getOrganisationProfile(id)
-          .then((res) => setShop(tenantToShopView(res.data)))
-          .catch(() =>
-            api
-              .getPublicPlaceDetail(id)
-              .then((res) => setShop(communityShopPlaceToView(res.data)))
-              .catch(() => setShop(null))
-          )
-      )
-      .finally(() => setLoading(false));
+      } catch {
+        try {
+          const tenant = await fetchOrganisationProfileBySlug(id);
+          setShop(tenantToShopView(tenant as TenantProfile));
+        } catch {
+          try {
+            const place = await fetchPublicPlaceDetail(id);
+            const view = communityShopPlaceToView(place);
+            if (view) {
+              setCommunityPeekOnly(true);
+              setShop(view);
+            } else {
+              setShop(null);
+            }
+          } catch {
+            setShop(null);
+          }
+        }
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, [id]);
 
-  if (loading) {
+  useEffect(() => {
+    if (!communityPeekOnly || !id) return;
+    navigate(exploreMapPeekPath(`venue:${id}`, 'shops'), { replace: true });
+  }, [communityPeekOnly, id, navigate]);
+
+  if (loading || communityPeekOnly) {
     return (
       <>
         <PageMeta title="Loading shop" path={id ? shopPublicPath({ id }) : undefined} />

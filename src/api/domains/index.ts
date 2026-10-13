@@ -1,8 +1,10 @@
 export { placeApi } from './places';
+export { areasApi } from './areas';
 export { fetchPlaceRegistry, type PlaceRegistryQuery } from './placeRegistry';
 export { exploreApi } from './explore';
 export { badgesApi } from './badges';
 export { goalsApi } from './goals';
+export { availabilityApi } from './availability';
 export { memberJourneyMapApi } from './memberJourneyMap';
 export { activitiesApi } from './activities';
 export { accountApi } from './account';

@@ -5,7 +5,7 @@ import {
   inferHostStorefrontKindFromTenantWire,
   shopPublicPath,
 } from '@uaetrail/shared-types';
-import { api } from '../api/index';
+import { fetchOrganisationProfileBySlug } from '../hooks/organisationConsoleApi';
 
 /** Permanent redirect from retired `/operator/:slug` to `/guide`, `/agency`, `/partner`, or `/shop`. */
 export const LegacyOperatorProfileRedirect = () => {
@@ -16,11 +16,9 @@ export const LegacyOperatorProfileRedirect = () => {
   useEffect(() => {
     if (!slug) return;
     let cancelled = false;
-    api
-      .getOrganisationProfile(slug)
-      .then((res) => {
+    fetchOrganisationProfileBySlug(slug)
+      .then((tenant) => {
         if (cancelled) return;
-        const tenant = res.data;
         if (tenant.businessMode === 'SHOP' || tenant.type === 'shop' || tenant.type === 'SHOP') {
           setTarget(shopPublicPath({ slug: tenant.slug ?? slug }));
           return;

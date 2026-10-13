@@ -1,0 +1,41 @@
+import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+const read = (relativePath: string) => readFileSync(join(process.cwd(), relativePath), 'utf8');
+
+/**
+ * consumer-detail-surfaces plan §15.3 — back nav + tab chrome on entity detail surfaces.
+ */
+const DETAIL_BACK_VIA_CATALOG: Array<{ path: string; pattern: RegExp }> = [
+  { path: 'src/pages/ActivityDetail.tsx', pattern: /detailBackPath/ },
+  { path: 'src/components/activity/ActivityDetailView.tsx', pattern: /detailBackPath/ },
+  { path: 'src/components/place/PlaceDetailCore.tsx', pattern: /detailBackPath/ },
+  { path: 'src/pages/AreaDetailPage.tsx', pattern: /detailBackPath/ },
+  { path: 'src/components/shop/ShopPublicPage.tsx', pattern: /detailBackPath\(['"]shop['"]\)/ },
+  { path: 'src/components/organisation-console/OrganisationPublicProfile.tsx', pattern: /detailBackPath/ },
+];
+
+const MEMBER_HUB_SHELL = [{ path: 'src/pages/MemberProfile.tsx', pattern: /ConsumerShell/ }];
+
+describe('consumerDetailAntiDriftGuard (plan §15.3)', () => {
+  it('entity detail surfaces use detailBackPath from routing catalog for shell back', () => {
+    const violations: string[] = [];
+    for (const { path, pattern } of DETAIL_BACK_VIA_CATALOG) {
+      if (!pattern.test(read(path))) {
+        violations.push(path);
+      }
+    }
+    expect(violations).toEqual([]);
+  });
+
+  it('member public profile uses ConsumerShell hub layout (not entity detail shell)', () => {
+    const violations: string[] = [];
+    for (const { path, pattern } of MEMBER_HUB_SHELL) {
+      if (!pattern.test(read(path))) {
+        violations.push(path);
+      }
+    }
+    expect(violations).toEqual([]);
+  });
+});

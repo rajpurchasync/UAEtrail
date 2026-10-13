@@ -3,7 +3,16 @@ import { useEffect, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { ExternalLink, Package, Store, Trash2 } from 'lucide-react';
 import type { ProductDTO, ShopOrganisationDTO } from '@uaetrail/shared-types';
-import { api } from '../../api/index';
+import {
+  addShopOrganisationProduct,
+  createShopOrganisationProfile,
+  deleteShopOrganisationProduct,
+  fetchShopOrganisationProducts,
+  fetchShopOrganisationProfile,
+  fetchShopOrganisationStores,
+  updateShopOrganisationProduct,
+  updateShopOrganisationProfile,
+} from '../../hooks/shopOrganisationClientApi';
 import { shopPublicPath } from '../../utils/shopPaths';
 import { GlassCard } from '../mobile/GlassCard';
 import { AppButton } from '../mobile/AppButton';
@@ -60,11 +69,11 @@ export const ShopOrganisationPanel = () => {
 
   const loadStores = async () => {
     try {
-      const res = await api.getShopOrganisationStores();
-      setStores(res.data);
+      const data = await fetchShopOrganisationStores();
+      setStores(data);
       setSelectedStoreId((current) => {
-        if (current && res.data.some((store) => store.id === current)) return current;
-        return res.data[0]?.id ?? null;
+        if (current && data.some((store) => store.id === current)) return current;
+        return data[0]?.id ?? null;
       });
     } catch {
       setStores([]);
@@ -75,21 +84,21 @@ export const ShopOrganisationPanel = () => {
   };
 
   const loadProfile = async (merchantId: string) => {
-    const res = await api.getShopOrganisationProfile(merchantId);
+    const profile = await fetchShopOrganisationProfile(merchantId);
     setProfileForm({
-      shopName: res.data.shopName,
-      description: res.data.description ?? '',
-      logo: res.data.logo ?? '',
-      websiteUrl: res.data.websiteUrl ?? '',
-      contactEmail: res.data.contactEmail ?? '',
-      contactPhone: res.data.contactPhone ?? '',
-      region: res.data.region ?? '',
+      shopName: profile.shopName,
+      description: profile.description ?? '',
+      logo: profile.logo ?? '',
+      websiteUrl: profile.websiteUrl ?? '',
+      contactEmail: profile.contactEmail ?? '',
+      contactPhone: profile.contactPhone ?? '',
+      region: profile.region ?? '',
     });
   };
 
   const loadProducts = async (merchantId: string) => {
-    const res = await api.getShopOrganisationProducts(merchantId);
-    setProducts(res.data);
+    const list = await fetchShopOrganisationProducts(merchantId);
+    setProducts(list);
   };
 
   useEffect(() => {
@@ -108,16 +117,16 @@ export const ShopOrganisationPanel = () => {
     setError(null);
     try {
       if (selectedStoreId) {
-        await api.updateShopOrganisationProfile(selectedStoreId, {
+        await updateShopOrganisationProfile(selectedStoreId, {
           ...profileForm,
           websiteUrl: profileForm.websiteUrl.trim() || null,
         });
       } else {
-        const created = await api.createShopOrganisationProfile({
+        const created = await createShopOrganisationProfile({
           ...profileForm,
           websiteUrl: profileForm.websiteUrl.trim() || undefined,
         });
-        setSelectedStoreId(created.data.id);
+        setSelectedStoreId(created.id);
       }
       await loadStores();
       if (selectedStoreId) await loadProfile(selectedStoreId);
@@ -148,9 +157,9 @@ export const ShopOrganisationPanel = () => {
         ...productDefaults,
       };
       if (editingProductId) {
-        await api.updateShopOrganisationProduct(editingProductId, payload);
+        await updateShopOrganisationProduct(editingProductId, payload);
       } else {
-        await api.addShopOrganisationProduct({ shopId: selectedStoreId, ...payload });
+        await addShopOrganisationProduct({ shopId: selectedStoreId, ...payload });
       }
       setShowProductForm(false);
       setEditingProductId(null);
@@ -182,7 +191,7 @@ export const ShopOrganisationPanel = () => {
     if (!window.confirm(`Remove "${product.name}" from your shop profile?`)) return;
     setError(null);
     try {
-      await api.deleteShopOrganisationProduct(product.id);
+      await deleteShopOrganisationProduct(product.id);
       if (editingProductId === product.id) {
         setShowProductForm(false);
         setEditingProductId(null);

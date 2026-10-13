@@ -27,4 +27,12 @@ describe('member-discovery API contract', () => {
     expect(buddyRoutes).toMatch(/\/me\/buddies\/activity-presence/);
     expect(buddyRoutes).not.toMatch(/whos-going/i);
   });
+
+  it('discovery roster uses domain seekingOnMap wire field (not lookingFor)', () => {
+    const roster = read('src/services/member-discovery-roster.ts');
+    expect(roster).toContain('seekingOnMap');
+    expect(roster).not.toMatch(/\blookingFor\b/);
+    expect(roster).toContain('seekingTitle');
+    expect(roster).not.toMatch(/\bdemandTitle\b/);
+  });
 });

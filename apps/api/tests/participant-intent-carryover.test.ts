@@ -23,6 +23,7 @@ import {
   createPublishedEventFixture,
   type PublishedEventFixture,
 } from './helpers/fixtures.js';
+import { testAreas } from './helpers/test-seed.js';
 
 const db = () => getMongoClient()!.db();
 
@@ -56,6 +57,7 @@ beforeAll(async () => {
     comment: 'Looking for people to hike with this weekend.',
     latitude: 25.0657,
     longitude: 55.1713,
+    areaId: testAreas.hatta.id,
   });
   intentId = intent.id;
 

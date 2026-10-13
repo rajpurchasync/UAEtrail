@@ -5,6 +5,7 @@ import {
   resolveActivityPublisherProfilePath,
 } from '@uaetrail/shared-types';
 import type { ExploreCardModel } from '../explore/exploreCardModel';
+import { exploreCardIsSeeking } from '../explore/exploreCardModel';
 
 export type ListFeedPublisher = {
   name: string;
@@ -20,7 +21,7 @@ const resolveListFeedPublisherTypeLabel = (card: ExploreCardModel): string => {
   }
   const role = card.featuredPerson?.role;
   if (role) return explorePersonRoleLabel(role, kind);
-  if (card.source === 'demand') return 'Looking for crew';
+  if (exploreCardIsSeeking(card)) return 'Looking for crew';
   if (card.source === 'shop' || card.source === 'agency') return 'Shop contact';
   if (card.source === 'activity') return 'Host';
   if (card.source === 'venue') return 'Place';

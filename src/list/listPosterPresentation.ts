@@ -1,5 +1,5 @@
 import type { ExploreCardModel } from '../explore/exploreCardModel';
-import { buildExploreListMeta } from '../explore/exploreCardModel';
+import { buildExploreListMeta, exploreCardIsSeeking } from '../explore/exploreCardModel';
 import { ACTIVITY_TYPE_LABELS, type ActivityType } from '../config/activityTypes';
 import { resolveListFeedPosterRequirementLabels } from './listFeedPosterStandard';
 
@@ -7,7 +7,7 @@ export type BrowsePosterMetaPart = { key: string; label: string };
 
 /** Small eye row — venue / meeting place name. */
 export const resolveBrowsePosterPlaceLine = (card: ExploreCardModel): string | null => {
-  if (card.source === 'activity' || card.source === 'demand') {
+  if (card.source === 'activity' || exploreCardIsSeeking(card)) {
     const activity = card.activity;
     const fromActivity =
       activity?.locationName?.trim() ||
@@ -141,7 +141,7 @@ const resolveListFeedPriceLabel = (card: ExploreCardModel): string | null => {
 };
 
 const resolveListFeedSpotsLabel = (card: ExploreCardModel): string | null => {
-  if (card.source !== 'activity' && card.source !== 'demand') return null;
+  if (card.source !== 'activity' && !exploreCardIsSeeking(card)) return null;
 
   const activity = card.activity;
   if (activity && card.source === 'activity') {
@@ -186,7 +186,7 @@ export const resolveBrowsePosterScheduleGrid = (card: ExploreCardModel): BrowseP
     timeLabel = split.time ?? timeLabel;
   }
 
-  if (timeLabel && (card.source === 'activity' || card.source === 'demand')) {
+  if (timeLabel && (card.source === 'activity' || exploreCardIsSeeking(card))) {
     timeLabel = withStartsTimePrefix(timeLabel);
   }
 
@@ -259,7 +259,7 @@ export const resolveBrowsePosterActivityTypeLabel = (card: ExploreCardModel): st
     return ACTIVITY_TYPE_LABELS[card.kind as ActivityType];
   }
   if (card.kind === 'rideshare') return 'Rideshare';
-  if (card.source === 'demand' && card.sections.activityHighlight?.trim()) {
+  if (exploreCardIsSeeking(card) && card.sections.activityHighlight?.trim()) {
     const word = card.sections.activityHighlight.trim().split(/\s+/)[0];
     if (word) return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
   }
@@ -273,7 +273,7 @@ export const resolveBrowsePosterRequirementLabels = resolveListFeedPosterRequire
 export const resolveBrowsePosterLabels = (card: ExploreCardModel): string[] => {
   const labels: string[] = [];
   if (card.source === 'activity') labels.push('Trip');
-  if (card.source === 'demand') labels.push('Looking for');
+  if (exploreCardIsSeeking(card)) labels.push('Looking for');
   if (card.source === 'venue') labels.push('Spot');
   if (card.source === 'shop') labels.push('Shop');
   const typeLabel = resolveBrowsePosterActivityTypeLabel(card);

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { SocialGroupWallMessageView } from '../../api/index';
+import type { SocialGroupWallMessageView } from '../../api/types';
 import { messagingApi } from '../../messaging';
 import type { GroupWallReactionKind } from '../../constants/groupReactions';
 import { ChatMessageBubble, ChatMessageReactionRow } from './ChatMessageBubble';

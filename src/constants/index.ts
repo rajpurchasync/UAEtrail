@@ -4,6 +4,7 @@ import {
   ADMIN_REPORTS_PATH,
   ADMIN_GROUPS_PATH,
   ADMIN_HOSTS_PATH,
+  ADMIN_AREAS_PATH,
   ADMIN_OVERVIEW_PATH,
   ADMIN_SETTINGS_PATH,
   ADMIN_SHOP_PATH,
@@ -19,6 +20,10 @@ import {
   HOST_PROFILE_PATH,
   HOST_REQUESTS_PATH,
   HOST_TEAM_PATH,
+  JOURNEY_MAP_PATH,
+  MY_TRIPS_PATH,
+  PLAN_PATH,
+  PROFILE_HISTORY_PATH,
   TRIPS_PATH,
 } from '../config/surfacePaths';
 
@@ -28,10 +33,10 @@ export const DIFFICULTY_COLORS = {
   hard: 'bg-red-100 text-red-800'
 };
 
-/** Public activities browse + dashboard tab. */
-export { TRIPS_PATH };
-/** @deprecated Use {@link TRIPS_PATH} */
-export const ACTIVITIES_PATH = TRIPS_PATH;
+/** Active Plan tab + legacy trip hub aliases. */
+export { PLAN_PATH, PROFILE_HISTORY_PATH, JOURNEY_MAP_PATH, MY_TRIPS_PATH, TRIPS_PATH };
+/** @deprecated Personal hub bookmark — redirects to {@link PLAN_PATH} or {@link PROFILE_HISTORY_PATH}. */
+export const ACTIVITIES_PATH = '/activities' as const;
 
 /** Host publishing console nav — tools live under /host routes. */
 export const HOST_CONSOLE_LINKS = [
@@ -54,6 +59,7 @@ export const HOST_DASHBOARD_LINKS = HOST_CONSOLE_LINKS;
 export const ADMIN_LINKS = [
   { to: ADMIN_OVERVIEW_PATH, label: 'Overview' },
   { to: ADMIN_PLACES_PATH, label: 'Places' },
+  { to: ADMIN_AREAS_PATH, label: 'Areas' },
   { to: ADMIN_USERS_PATH, label: 'Users' },
   { to: ADMIN_HOSTS_PATH, label: 'Hosts' },
   { to: ADMIN_ACTIVITIES_PATH, label: 'Activities' },

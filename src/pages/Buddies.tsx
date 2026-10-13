@@ -1,9 +1,19 @@
 import { EXPLORE_MAP_PATH, HOST_MESSAGES_PATH, MESSAGES_PATH } from '../config/routingCatalog';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useSafeAsyncEffect } from '../hooks/useSafeAsyncEffect';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { MessageCircle, UserMinus, UserRound } from 'lucide-react';
 import type { BuddyRequestDTO, BuddySummaryDTO, MemberFollowSummaryDTO } from '@uaetrail/shared-types';
-import { api } from '../api/index';
+import { fetchMeBuddies, fetchMeBuddyRequests } from '../hooks/activityInviteClientApi';
+import { setMemberFollow } from '../hooks/memberFollowApi';
+import {
+  acceptMemberBuddyRequest,
+  cancelMemberBuddyRequest,
+  declineMemberBuddyRequest,
+  fetchMeFollowingMembers,
+  searchMembersByQuery,
+  unfriendMemberBuddy,
+} from '../hooks/memberPeopleClientApi';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { GlassCard } from '../components/mobile/GlassCard';
 import { TabPageSearchRow } from '../components/mobile/TabPageSearchRow';
@@ -51,42 +61,44 @@ export const Buddies = () => {
   const { canAccessHostConsole } = useHostStatus({ enabled: Boolean(user) });
   const messagesPath = canAccessHostConsole ? HOST_MESSAGES_PATH : MESSAGES_PATH;
 
-  const loadCore = useCallback(async () => {
+  const loadCore = useCallback(async (isActive: () => boolean = () => true) => {
     setLoading(true);
     setError(null);
     try {
-      const [buddiesRes, incomingRes, outgoingRes] = await Promise.all([
-        api.getMeBuddies(),
-        api.getMeBuddyRequests('incoming'),
-        api.getMeBuddyRequests('outgoing'),
+      const [buddyList, incoming, outgoing] = await Promise.all([
+        fetchMeBuddies(),
+        fetchMeBuddyRequests('incoming'),
+        fetchMeBuddyRequests('outgoing'),
       ]);
-      setBuddies(buddiesRes.data);
-      setIncomingRequests(incomingRes.data.filter((request) => request.status === 'pending'));
-      setOutgoingRequests(outgoingRes.data.filter((request) => request.status === 'pending'));
+      if (!isActive()) return;
+      setBuddies(buddyList);
+      setIncomingRequests(incoming.filter((request) => request.status === 'pending'));
+      setOutgoingRequests(outgoing.filter((request) => request.status === 'pending'));
     } catch (err) {
+      if (!isActive()) return;
       setError(err instanceof Error ? err.message : 'Failed to load friends');
     } finally {
-      setLoading(false);
+      if (isActive()) setLoading(false);
     }
   }, []);
 
-  const loadFollowing = useCallback(async () => {
+  const loadFollowing = useCallback(async (isActive: () => boolean = () => true) => {
     try {
-      const res = await api.getMeFollowing();
-      setFollowing(res.data);
+      const rows = await fetchMeFollowingMembers();
+      if (!isActive()) return;
+      setFollowing(rows);
       setFollowingLoaded(true);
     } catch (err) {
+      if (!isActive()) return;
       setError(err instanceof Error ? err.message : 'Failed to load following');
     }
   }, []);
 
-  useEffect(() => {
-    void loadCore();
-  }, [loadCore]);
+  useSafeAsyncEffect((isActive) => loadCore(isActive), [loadCore]);
 
-  useEffect(() => {
-    if (activeTab !== 'following' || followingLoaded) return;
-    void loadFollowing();
+  useSafeAsyncEffect((isActive) => {
+    if (activeTab !== 'following' || followingLoaded) return Promise.resolve();
+    return loadFollowing(isActive);
   }, [activeTab, followingLoaded, loadFollowing]);
 
   useEffect(() => {
@@ -98,8 +110,8 @@ export const Buddies = () => {
     const timer = setTimeout(async () => {
       setFindSearching(true);
       try {
-        const res = await api.searchUsers(q);
-        setFindResults(res.data.filter((row) => row.id !== user?.id));
+        const hits = await searchMembersByQuery(q);
+        setFindResults(hits.filter((row) => row.id !== user?.id));
       } catch {
         setFindResults([]);
       } finally {
@@ -137,7 +149,7 @@ export const Buddies = () => {
     setBusyRequestId(request.id);
     setError(null);
     try {
-      await api.acceptBuddyRequest(request.id);
+      await acceptMemberBuddyRequest(request.id);
       await loadCore();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not accept request');
@@ -150,7 +162,7 @@ export const Buddies = () => {
     setBusyRequestId(request.id);
     setError(null);
     try {
-      await api.declineBuddyRequest(request.id);
+      await declineMemberBuddyRequest(request.id);
       setIncomingRequests((prev) => prev.filter((item) => item.id !== request.id));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not decline request');
@@ -163,7 +175,7 @@ export const Buddies = () => {
     setBusyRequestId(request.id);
     setError(null);
     try {
-      await api.cancelBuddyRequest(request.id);
+      await cancelMemberBuddyRequest(request.id);
       setOutgoingRequests((prev) => prev.filter((item) => item.id !== request.id));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not cancel request');
@@ -177,7 +189,7 @@ export const Buddies = () => {
     setUnfriendBusy(true);
     setError(null);
     try {
-      await api.unfriendBuddy(unfriendingBuddy.userId);
+      await unfriendMemberBuddy(unfriendingBuddy.userId);
       setBuddies((prev) => prev.filter((buddy) => buddy.userId !== unfriendingBuddy.userId));
       setUnfriendingBuddy(null);
     } catch (err) {
@@ -191,7 +203,7 @@ export const Buddies = () => {
     setUnfollowBusyId(member.userId);
     setError(null);
     try {
-      await api.unfollowMember(member.userId);
+      await setMemberFollow(member.userId, false);
       setFollowing((prev) => prev.filter((row) => row.userId !== member.userId));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not unfollow');

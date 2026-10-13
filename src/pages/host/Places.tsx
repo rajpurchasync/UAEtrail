@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { PlaceDTO } from '@uaetrail/shared-types';
-import { api } from '../../api/index';
+import { fetchOrganisationSubmittedPlaces } from '../../hooks/organisationConsoleApi';
 import { getActiveTenantId } from '../../api/tenant';
 import { ConsoleShell } from '../../console/ConsoleShell';
 import { TenantSwitcher, SubmitPlaceForm, ShareButton } from '../../components/ui';
@@ -22,8 +22,8 @@ export const Places = () => {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const res = await api.getOrganisationSubmittedPlaces(tenantId);
-      setSubmitted(res.data);
+      const places = await fetchOrganisationSubmittedPlaces(tenantId);
+      setSubmitted(places);
     } catch {
       setSubmitted([]);
     } finally {

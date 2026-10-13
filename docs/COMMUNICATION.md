@@ -11,8 +11,8 @@
 | **Chat inbox** (UI label; route `/messages`) | `/messages` | One inbox: **Direct**, **Groups** (family/friends), **Outing chats** (activity crew) |
 | **Host org inbox** | `/host/messages` | Same `Messages` UI in host shell; same `?to=` / `?group=` deep links |
 | **Groups admin** | `/groups` | Create/manage groups, members, **who can message** — **no inline chat** |
-| **Activity detail** | `/activity/:id` | Crew callout (join/open chat), invite share panel |
-| **Trips** | `/trips` | Hosted/joined manage sheets → **Message crew** → `/messages?group=` |
+| **Activity detail** | `/activity/:id` | Plan/Buddies footers + welcome sheet → **group chat**; invite via `ActivityInviteSharePanel`; crew only when `viewerAccess.canAccessCrewSurfaces` |
+| **Plan (My Plans)** | `/plan` | Hosted manage sheet (`ActivityManageSheet`) → same detail shell + **Message crew**; joined peek sheet → full plan / group chat |
 | **Explore** | `/explore` | Map peek **`viewerAccess.mapPeekActions`** (join, pending, participant, …); activity **host user** sees **Chat · Manage** + **View details** on own pins; shops use **`ExplorePeekDetailLink`** (View / Rate); cancel/delete via **`HostActivityCancelDialog`**; withdraw on activity detail only |
 
 Legacy: `/dashboard/messages` may still exist for older host console paths — prefer `/messages` and `/host/messages` for new UI.
@@ -72,31 +72,35 @@ Used for **family/friends groups** and **activity crew** (`social_groups.type ==
 
 Shared types: `GroupWallPostPolicy`, `SocialGroupChatPreviewDTO`, `GroupWallReplyPreviewDTO`, `groupWallBodySnippet` in `@uaetrail/shared-types`.
 
-## Activity crew chat (Trips ↔ Explore ↔ Messages)
+## Activity crew chat (Plan · detail · Explore ↔ Messages)
 
 **One group per published activity** — not a second chat product.
 
 | Concern | Implementation |
 |---------|----------------|
 | Create group | `ensureActivityGroupChat` on publish / organize (`activity-group-chat.ts`) |
-| Roster | Host always in group; **confirmed** joiners opt in via `POST …/group-chat/join` (`joinActivityGroupChatForUser`) |
+| Auto-enroll | **RSVP** and **host-approved** joiners added to activity group (idempotent); welcome UI on detail (`?joined=1` after approve notification) |
+| Roster | Host always in group; confirmed participants in crew surfaces when `canAccessCrewSurfaces` |
 | Resolve id | `GET` activity group chat endpoints on activities domain; `groupChatId` on activity DTO when known |
 | Open thread | `openActivityGroupChat()` → `navigateToActivityGroupChat()` → `/messages?group=` |
-| Return after chat | `messagesReturnTo` router state — e.g. back to Trips manage sheet |
+| Return after chat | `messagesReturnTo` router state — e.g. back to Plan manage sheet or `/activity/:id` |
 | Closed chat | Server rejects wall post **1 week after** activity `startAt` |
-| Pending joiners | Join **request note** only — no crew chat until **approved** |
+| Pending joiners | No crew chat or meeting precision until **participant** (RSVP instant or approved request) |
 
-**Demand / “My plans”** intents do **not** get an activity crew chat until converted to an organized activity.
+**Activity crew post policy (§21 AD-6):** `ActivityDTO.groupChatPostPolicy` (`all_participants` \| `host_only`) syncs to the activity group `wallPostPolicy` (`all_members` \| `admins_only`); wall **POST** enforces via `canMemberPostToGroupWall` — participants may **read** when `host_only`. Host PATCH may set policy; organize/manage UI still open.
 
-### Trips entry points
+**Demand / seeking** activities use the same crew rules once the viewer is a confirmed participant on the linked hosted activity.
+
+### Entry points
 
 | User action | UI | Chat route |
 |-------------|-----|------------|
-| Hosted → Manage outing → Message crew | `HostActivityManageSheet` | `/messages?group=` + return to `/trips?...` |
-| Joined → row actions | Trips lists / `ActivityInviteSharePanel` | Same |
-| Check-in / roster | Manage sheet | Chat separate from roster |
+| Plan → Hosted → manage sheet → Message crew | `ActivityManageSheet` | `/messages?group=` + return to `/plan` or detail |
+| Activity detail → Buddies / Plan footer (joined) | `ActivityDetailView` | Same |
+| Explore peek (participant/host) | `mapPeekActions` chat id | Same |
+| Approve join notification | `meta.path` → `/activity/:id?joined=1` | Welcome sheet → group chat |
 
-See [`TRIPS_HOST_MANAGE.md`](./TRIPS_HOST_MANAGE.md) for manage capabilities and deep links (`peek=`, `checkin=` / `roster=` → participants roster).
+See [`NAVIGATION.md`](./NAVIGATION.md) § Activity detail and [`TRIPS_HOST_MANAGE.md`](./TRIPS_HOST_MANAGE.md) (legacy name; manage lives on Plan + embedded detail).
 
 ## Invites vs chat
 

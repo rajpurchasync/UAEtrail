@@ -1,4 +1,7 @@
-import { api } from '../api/index';
+import {
+  fetchVapidPublicKey,
+  savePushNotificationSubscription,
+} from '../hooks/pushNotificationsClientApi';
 
 const SW_PATH = '/sw.js';
 
@@ -8,8 +11,8 @@ export async function registerPushNotifications(): Promise<boolean> {
   }
 
   try {
-    const { data } = await api.getVapidPublicKey();
-    if (!data.publicKey) return false;
+    const publicKey = await fetchVapidPublicKey();
+    if (!publicKey) return false;
 
     const permission = await Notification.requestPermission();
     if (permission !== 'granted') return false;
@@ -19,13 +22,13 @@ export async function registerPushNotifications(): Promise<boolean> {
 
     const subscription = await registration.pushManager.subscribe({
       userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(data.publicKey) as BufferSource
+      applicationServerKey: urlBase64ToUint8Array(publicKey) as BufferSource
     });
 
     const json = subscription.toJSON();
     if (!json.endpoint || !json.keys?.p256dh || !json.keys?.auth) return false;
 
-    await api.savePushSubscription({
+    await savePushNotificationSubscription({
       endpoint: json.endpoint,
       keys: { p256dh: json.keys.p256dh, auth: json.keys.auth }
     });

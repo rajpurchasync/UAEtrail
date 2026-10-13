@@ -3,7 +3,10 @@ import {
   activityTypeToOutingCategory,
   buildExploreMapPlanProjection,
   deriveOutingTopicFromRequirements,
+  mapItemMatchesOutingTopic,
+  parseOutingTopic,
   exploreDemandMapItemPath,
+  exploreSeekingMapItemPath,
   participantIntentKindToOutingCategory,
   resolveActivityOutingTopic,
   resolveOrganizeCreateKindFromDemandMapItem,
@@ -41,6 +44,12 @@ describe('explore plan projection mappers', () => {
     expect(exploreDemandMapItemPath('abc')).toBe('/explore?pin=demand%3Aabc&list=1&panel=activities');
   });
 
+  it('exploreSeekingMapItemPath prefers activity pin when activityId is set', () => {
+    expect(
+      exploreSeekingMapItemPath({ intentId: 'int-1', activityId: 'act-9' })
+    ).toBe('/explore?pin=activity%3Aact-9&list=1&panel=activities');
+  });
+
   it('prefers stored outing category over mapKind for activities', () => {
     const projection = buildExploreMapPlanProjection({
       source: 'activity',
@@ -76,6 +85,18 @@ describe('explore plan projection mappers', () => {
     expect(projection.participationMode).toBeNull();
   });
 
+  it('maps activityMode seeking to demand compose intent (canonical wire)', () => {
+    const projection = buildExploreMapPlanProjection({
+      source: 'activity',
+      activityMode: 'seeking',
+      mapKind: 'hiking',
+      demandIntentKind: 'hiking',
+    });
+    expect(projection.composeIntent).toBe('demand');
+    expect(projection.outingCategory).toBe('hiking');
+    expect(projection.participationMode).toBeNull();
+  });
+
   it('sets find.event demand projection to activities outing category', () => {
     const projection = buildExploreMapPlanProjection({
       source: 'demand',
@@ -83,6 +104,23 @@ describe('explore plan projection mappers', () => {
       demandIntentKind: 'event',
     });
     expect(projection.outingCategory).toBe('activities');
+  });
+
+  it('parseOutingTopic and mapItemMatchesOutingTopic', () => {
+    expect(parseOutingTopic('climbing')).toBe('climbing');
+    expect(parseOutingTopic('invalid')).toBeNull();
+    expect(
+      mapItemMatchesOutingTopic(
+        { outingCategory: 'activities', outingTopic: 'trail_run', source: 'activity' },
+        'trail_run'
+      )
+    ).toBe(true);
+    expect(
+      mapItemMatchesOutingTopic({ source: 'venue', outingTopic: 'workshop' }, 'workshop')
+    ).toBe(true);
+    expect(
+      mapItemMatchesOutingTopic({ outingCategory: 'events', outingTopic: 'workshop' }, 'workshop')
+    ).toBe(false);
   });
 
   it('derives outing topic from activity type requirement line', () => {

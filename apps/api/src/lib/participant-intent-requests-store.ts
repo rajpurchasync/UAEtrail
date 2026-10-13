@@ -3,11 +3,22 @@ import type {
   ParticipantIntentJoinRequestDTO,
   ParticipantIntentJoinRequestViewDTO,
 } from '@uaetrail/shared-types';
+import type { ActivityRequest } from '../domain/types.js';
 import { ObjectId, type Filter } from 'mongodb';
 import { findAuthUsersByIds } from './auth-users.js';
 import { ApiError } from './api-error.js';
 import { COLLECTIONS } from './collections.js';
 import { getMongoClient } from './mongo.js';
+import {
+  applyTenantActivityRequestDecision,
+  createJoinOrWaitlistRequest,
+  findActivityRequestByEventAndUser,
+  findActivityRequestByIdAndActivity,
+  listActivityEngagementForUserOnActivities,
+  listActivityRequestsForActivity,
+} from './activity-engagement-store.js';
+import { RequestStatus } from '../domain/enums.js';
+import { resolveIntentPublishedActivityId } from './participant-intents-store.js';
 
 type MongoParticipantIntentJoinRequest = {
   _id: string;
@@ -15,6 +26,7 @@ type MongoParticipantIntentJoinRequest = {
   userId: string;
   status: 'pending' | 'approved' | 'rejected' | 'withdrawn';
   note: string | null;
+  activityRequestId?: string | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -23,7 +35,15 @@ type MongoParticipantIntent = {
   _id: string;
   userId: string;
   status: 'active' | 'fulfilled' | 'cancelled';
+  activityId?: string | null;
+  seekingActivityId?: string | null;
 };
+
+const ACTIVE_ACTIVITY_REQUEST_STATUSES: RequestStatus[] = [
+  RequestStatus.PENDING,
+  RequestStatus.APPROVED,
+  RequestStatus.WAITLISTED,
+];
 
 const requestsCollection = () =>
   getMongoClient()!.db().collection<MongoParticipantIntentJoinRequest>(
@@ -48,6 +68,91 @@ const mapDto = (doc: MongoParticipantIntentJoinRequest): ParticipantIntentJoinRe
   updatedAt: doc.updatedAt.toISOString(),
 });
 
+const activityRequestToIntentStatus = (
+  status: RequestStatus
+): ParticipantIntentJoinRequestDTO['status'] | null => {
+  if (status === RequestStatus.APPROVED) return 'approved';
+  if (status === RequestStatus.PENDING || status === RequestStatus.WAITLISTED) return 'pending';
+  if (status === RequestStatus.REJECTED) return 'rejected';
+  if (status === RequestStatus.CANCELLED) return 'withdrawn';
+  return null;
+};
+
+const activityRequestToDto = (
+  intentId: string,
+  request: ActivityRequest
+): ParticipantIntentJoinRequestDTO => {
+  const status = activityRequestToIntentStatus(request.status) ?? 'pending';
+  return {
+    id: request.id,
+    intentId,
+    userId: request.userId,
+    status,
+    note: request.note ?? null,
+    createdAt: request.createdAt.toISOString(),
+    updatedAt: request.updatedAt.toISOString(),
+  };
+};
+
+const loadIntentJoinRequestsFromActivity = async (
+  intent: MongoParticipantIntent,
+  activityId: string
+): Promise<ParticipantIntentJoinRequestViewDTO[]> => {
+  const rows = await listActivityRequestsForActivity(activityId);
+  const visible = rows.filter(
+    (row) => activityRequestToIntentStatus(row.status) !== 'withdrawn'
+  );
+  if (visible.length === 0) return [];
+
+  const userIds = [...new Set(visible.map((row) => row.userId))];
+  const users = await findAuthUsersByIds(userIds);
+  const userMap = new Map(users.map((user) => [user._id, user]));
+
+  return visible.map((row) => {
+    const requester = userMap.get(row.userId);
+    const dto = activityRequestToDto(intent._id, row);
+    return {
+      ...dto,
+      requester: {
+        userId: row.userId,
+        displayName: requester?.profile?.displayName ?? null,
+        avatarUrl: requester?.profile?.avatarUrl ?? null,
+      },
+    };
+  });
+};
+
+const resolvePendingActivityJoinRequest = async (
+  intent: MongoParticipantIntent,
+  requestId: string,
+  publishedActivityId: string
+): Promise<ActivityRequest> => {
+  const direct = await findActivityRequestByIdAndActivity(requestId, publishedActivityId);
+  if (direct) {
+    if (direct.status !== RequestStatus.PENDING && direct.status !== RequestStatus.WAITLISTED) {
+      throw new ApiError(400, 'request_not_pending', 'This request was already handled.');
+    }
+    return direct;
+  }
+
+  const legacyIntentRow = await requestsCollection().findOne({
+    _id: requestId,
+    intentId: intent._id,
+  });
+  const linkedId = legacyIntentRow?.activityRequestId;
+  if (linkedId) {
+    const linked = await findActivityRequestByIdAndActivity(linkedId, publishedActivityId);
+    if (linked) {
+      if (linked.status !== RequestStatus.PENDING && linked.status !== RequestStatus.WAITLISTED) {
+        throw new ApiError(400, 'request_not_pending', 'This request was already handled.');
+      }
+      return linked;
+    }
+  }
+
+  throw new ApiError(404, 'request_not_found', 'Join request not found.');
+};
+
 export const createParticipantIntentJoinRequest = async (input: {
   intentId: string;
   userId: string;
@@ -63,6 +168,22 @@ export const createParticipantIntentJoinRequest = async (input: {
   }
   if (intent.userId === input.userId) {
     throw new ApiError(400, 'cannot_join_own_intent', 'You posted this plan.');
+  }
+
+  const publishedActivityId = resolveIntentPublishedActivityId(intent);
+
+  if (publishedActivityId) {
+    const existing = await findActivityRequestByEventAndUser(publishedActivityId, input.userId);
+    if (existing && ACTIVE_ACTIVITY_REQUEST_STATUSES.includes(existing.status)) {
+      throw new ApiError(409, 'request_exists', 'You already requested to join this plan.');
+    }
+
+    const { request } = await createJoinOrWaitlistRequest({
+      activityId: publishedActivityId,
+      userId: input.userId,
+      note: input.note ?? undefined,
+    });
+    return activityRequestToDto(intent._id, request);
   }
 
   const existing = await requestsCollection().findOne({
@@ -107,6 +228,11 @@ export const listParticipantIntentJoinRequestsForOwner = async (
   const intent = await findActiveIntentForOwner(intentId, ownerUserId);
   if (!intent) {
     throw new ApiError(404, 'intent_not_found', 'Demand not found or already closed.');
+  }
+
+  const publishedActivityId = resolveIntentPublishedActivityId(intent);
+  if (publishedActivityId) {
+    return loadIntentJoinRequestsFromActivity(intent, publishedActivityId);
   }
 
   const docs = await requestsCollection()
@@ -164,6 +290,35 @@ export const approveParticipantIntentJoinRequest = async (
   requestId: string,
   ownerUserId: string
 ): Promise<ParticipantIntentJoinRequestDTO> => {
+  const intent = await findActiveIntentForOwner(intentId, ownerUserId);
+  if (!intent) {
+    throw new ApiError(404, 'intent_not_found', 'Demand not found or already closed.');
+  }
+
+  const publishedActivityId = resolveIntentPublishedActivityId(intent);
+  if (publishedActivityId) {
+    const activityRequest = await resolvePendingActivityJoinRequest(
+      intent,
+      requestId,
+      publishedActivityId
+    );
+    await applyTenantActivityRequestDecision({
+      requestId: activityRequest.id,
+      activityId: publishedActivityId,
+      userId: activityRequest.userId,
+      reviewerId: ownerUserId,
+      decision: 'approved',
+    });
+    const updated = await findActivityRequestByIdAndActivity(
+      activityRequest.id,
+      publishedActivityId
+    );
+    if (!updated) {
+      throw new ApiError(500, 'approval_failed', 'Could not approve this join request.');
+    }
+    return activityRequestToDto(intent._id, updated);
+  }
+
   const { request } = await resolveJoinRequestForIntent(intentId, requestId, ownerUserId);
   const now = new Date();
   const updated = await requestsCollection().findOneAndUpdate(
@@ -184,6 +339,35 @@ export const rejectParticipantIntentJoinRequest = async (
   requestId: string,
   ownerUserId: string
 ): Promise<ParticipantIntentJoinRequestDTO> => {
+  const intent = await findActiveIntentForOwner(intentId, ownerUserId);
+  if (!intent) {
+    throw new ApiError(404, 'intent_not_found', 'Demand not found or already closed.');
+  }
+
+  const publishedActivityId = resolveIntentPublishedActivityId(intent);
+  if (publishedActivityId) {
+    const activityRequest = await resolvePendingActivityJoinRequest(
+      intent,
+      requestId,
+      publishedActivityId
+    );
+    await applyTenantActivityRequestDecision({
+      requestId: activityRequest.id,
+      activityId: publishedActivityId,
+      userId: activityRequest.userId,
+      reviewerId: ownerUserId,
+      decision: 'rejected',
+    });
+    const updated = await findActivityRequestByIdAndActivity(
+      activityRequest.id,
+      publishedActivityId
+    );
+    if (!updated) {
+      throw new ApiError(500, 'rejection_failed', 'Could not decline this join request.');
+    }
+    return activityRequestToDto(intent._id, updated);
+  }
+
   const { request } = await resolveJoinRequestForIntent(intentId, requestId, ownerUserId);
   const now = new Date();
   const updated = await requestsCollection().findOneAndUpdate(
@@ -208,6 +392,15 @@ export const listApprovedParticipantIntentJoinerUserIds = async (
   );
   if (!intent) return [];
 
+  const publishedActivityId = resolveIntentPublishedActivityId(intent);
+  if (publishedActivityId) {
+    const rows = await listActivityRequestsForActivity(publishedActivityId);
+    return rows
+      .filter((row) => row.status === RequestStatus.APPROVED)
+      .map((row) => row.userId)
+      .filter((userId) => userId !== intent.userId);
+  }
+
   const docs = await requestsCollection()
     .find({ intentId: intent._id, status: 'approved' })
     .toArray();
@@ -223,21 +416,56 @@ export const mapIntentJoinRequestStatusByIntentIdsForUser = async (
   const uniqueIds = [...new Set(intentIds.filter(Boolean))];
   if (uniqueIds.length === 0) return new Map();
 
-  const docs = await requestsCollection()
-    .find({
-      userId,
-      intentId: { $in: uniqueIds },
-      status: { $in: ['pending', 'approved'] },
-    })
-    .project({ intentId: 1, status: 1 })
+  const intents = await intentsCollection()
+    .find({ _id: { $in: uniqueIds } } as Filter<MongoParticipantIntent>)
     .toArray();
 
-  const result = new Map<string, 'pending' | 'approved'>();
-  for (const doc of docs) {
-    if (doc.status === 'pending' || doc.status === 'approved') {
-      result.set(doc.intentId, doc.status);
+  const activityIdByIntentId = new Map<string, string>();
+  const legacyIntentIds: string[] = [];
+  for (const intent of intents) {
+    const activityId = resolveIntentPublishedActivityId(intent);
+    if (activityId) {
+      activityIdByIntentId.set(intent._id, activityId);
+    } else {
+      legacyIntentIds.push(intent._id);
     }
   }
+
+  const result = new Map<string, 'pending' | 'approved'>();
+
+  if (activityIdByIntentId.size > 0) {
+    const activityIds = [...new Set(activityIdByIntentId.values())];
+    const engagement = await listActivityEngagementForUserOnActivities(userId, activityIds);
+    for (const [intentId, activityId] of activityIdByIntentId) {
+      const status = engagement.requestStatusByActivityId.get(activityId);
+      if (status === RequestStatus.APPROVED) {
+        result.set(intentId, 'approved');
+      } else if (
+        status === RequestStatus.PENDING ||
+        status === RequestStatus.WAITLISTED
+      ) {
+        result.set(intentId, 'pending');
+      }
+    }
+  }
+
+  if (legacyIntentIds.length > 0) {
+    const docs = await requestsCollection()
+      .find({
+        userId,
+        intentId: { $in: legacyIntentIds },
+        status: { $in: ['pending', 'approved'] },
+      })
+      .project({ intentId: 1, status: 1 })
+      .toArray();
+
+    for (const doc of docs) {
+      if (doc.status === 'pending' || doc.status === 'approved') {
+        result.set(doc.intentId, doc.status);
+      }
+    }
+  }
+
   return result;
 };
 
@@ -250,6 +478,15 @@ export const findParticipantIntentJoinRequestForUser = async (
     status: 'active',
   } as Filter<MongoParticipantIntent>);
   if (!intent) return null;
+
+  const publishedActivityId = resolveIntentPublishedActivityId(intent);
+  if (publishedActivityId) {
+    const activityRequest = await findActivityRequestByEventAndUser(publishedActivityId, userId);
+    if (!activityRequest) return null;
+    const status = activityRequestToIntentStatus(activityRequest.status);
+    if (!status || status === 'withdrawn' || status === 'rejected') return null;
+    return activityRequestToDto(intent._id, activityRequest);
+  }
 
   const doc = await requestsCollection().findOne({
     intentId: intent._id,

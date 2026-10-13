@@ -1,9 +1,8 @@
 import { ExternalLink } from 'lucide-react';
 import type { ExploreCardModel } from '../exploreCardModel';
-import {
-  exploreCardHasMapCoords,
-  exploreCardShowsInlineDirections,
-} from '../exploreCardModel';
+import { exploreCardHasMapCoords, exploreCardShowsInlineDirections } from '../exploreCardModel';
+import { isPeekOnlyCatalogProfile } from '@uaetrail/shared-types';
+import { PRO_MEMBERSHIP_PATH } from '../../config/memberRoutes';
 import { ExploreCardDirectionsButton } from './ExploreCardPresentation';
 import { ExplorePeekDetailLink } from './ExplorePeekDetailLink';
 
@@ -28,6 +27,36 @@ export const ExploreShopPeekActions = ({
   externalUrl = null,
 }: ExploreShopPeekActionsProps) => {
   const gate = onGuestGatedAction;
+  const peekOnly = isPeekOnlyCatalogProfile(card.catalogProfileExposure);
+
+  if (peekOnly) {
+    return (
+      <div className="flex flex-col gap-2">
+        {exploreCardHasMapCoords(card) ? (
+          <ExploreCardDirectionsButton
+            latitude={card.mapLatitude}
+            longitude={card.mapLongitude}
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 py-2.5 text-sm font-bold text-white"
+          />
+        ) : null}
+        <p className="text-center text-xs text-slate-600">
+          Community-submitted shop — map info only. Business accounts can claim a full shop profile via{' '}
+          <a href={PRO_MEMBERSHIP_PATH} className="font-semibold text-emerald-800">
+            Pro membership
+          </a>
+          .
+        </p>
+        <button
+          type="button"
+          onClick={onClose}
+          className="w-full py-2.5 text-center text-sm font-semibold text-gray-600"
+        >
+          Close
+        </button>
+      </div>
+    );
+  }
+
   const showGuestDirections =
     Boolean(gate) &&
     exploreCardHasMapCoords(card) &&

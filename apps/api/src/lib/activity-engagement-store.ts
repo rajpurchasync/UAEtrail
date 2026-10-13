@@ -17,12 +17,15 @@ import {
   tryReserveActivityParticipantSlot
 } from './entity-sync.js';
 import { getMongoClient } from './mongo.js';
-import { parseStoredPricePackages } from './activity-pricing.js';
 import { myRequestDetailPath } from './member-routes.js';
 import { dispatchNotification } from '../services/notifications.js';
-import { removeParticipantFromActivityGroupChat } from '../services/activity-group-chat.js';
+import {
+  addParticipantToActivityGroupChat,
+  removeParticipantFromActivityGroupChat,
+} from '../services/activity-group-chat.js';
 import { resolveParticipationMode } from '../domain/activity-participation-mode.js';
 import { assertParticipantMeetsWomenOnlyRequirement } from '../domain/activity-audience-requirements.js';
+import { scheduleSideEffect } from './schedule-side-effect.js';
 
 const ACTIVE_STATUSES: RequestStatus[] = ['PENDING', 'APPROVED', 'WAITLISTED'];
 
@@ -160,7 +163,6 @@ export async function createJoinOrWaitlistRequest(opts: {
   activityId: string;
   userId: string;
   note?: string;
-  selectedPackageIndex?: number;
 }) {
   const event = await loadPublishedEventForJoin(opts.activityId);
   if (!event) {
@@ -180,16 +182,6 @@ export async function createJoinOrWaitlistRequest(opts: {
   }
 
   await assertParticipantMeetsWomenOnlyRequirement(opts.userId, event.requirements);
-
-  const packages = parseStoredPricePackages(event.pricePackages);
-  if (packages.length > 1) {
-    if (opts.selectedPackageIndex === undefined) {
-      throw new ApiError(400, 'package_required', 'Select a package option to join this activity.');
-    }
-    if (opts.selectedPackageIndex < 0 || opts.selectedPackageIndex >= packages.length) {
-      throw new ApiError(400, 'invalid_package', 'Selected package is not valid for this activity.');
-    }
-  }
 
   const existing = await findActivityRequestByEventAndUser(opts.activityId, opts.userId);
 
@@ -214,10 +206,7 @@ export async function createJoinOrWaitlistRequest(opts: {
         cancelReason: null,
         cancelMessage: null,
         cancelledAt: null,
-        selectedPackageIndex:
-          opts.selectedPackageIndex !== undefined
-            ? opts.selectedPackageIndex
-            : existing?.selectedPackageIndex ?? null,
+        selectedPackageIndex: null,
         reviewedAt: null,
         reviewedById: null,
         updatedAt: now,
@@ -238,7 +227,6 @@ export async function createJoinOrWaitlistRequest(opts: {
 export async function createRsvpParticipation(opts: {
   activityId: string;
   userId: string;
-  selectedPackageIndex?: number;
 }) {
   const event = await loadPublishedEventForJoin(opts.activityId);
   if (!event) {
@@ -262,16 +250,6 @@ export async function createRsvpParticipation(opts: {
   const existingParticipant = await findActivityParticipantByEventAndUser(opts.activityId, opts.userId);
   if (existingParticipant) {
     throw new ApiError(409, 'already_joined', 'You are already going to this activity.');
-  }
-
-  const packages = parseStoredPricePackages(event.pricePackages);
-  if (packages.length > 1) {
-    if (opts.selectedPackageIndex === undefined) {
-      throw new ApiError(400, 'package_required', 'Select a package option to join this activity.');
-    }
-    if (opts.selectedPackageIndex < 0 || opts.selectedPackageIndex >= packages.length) {
-      throw new ApiError(400, 'invalid_package', 'Selected package is not valid for this activity.');
-    }
   }
 
   const existing = await findActivityRequestByEventAndUser(opts.activityId, opts.userId);
@@ -306,10 +284,7 @@ export async function createRsvpParticipation(opts: {
           cancelReason: null,
           cancelMessage: null,
           cancelledAt: null,
-          selectedPackageIndex:
-            opts.selectedPackageIndex !== undefined
-              ? opts.selectedPackageIndex
-              : existing?.selectedPackageIndex ?? null,
+          selectedPackageIndex: null,
           reviewedAt: now,
           reviewedById: reviewerId,
           updatedAt: now,
@@ -320,7 +295,7 @@ export async function createRsvpParticipation(opts: {
     );
 
     await activityParticipantsCollection().updateOne(
-      { _id: participantId },
+      { activityId: opts.activityId, userId: opts.userId },
       {
         $set: {
           activityId: opts.activityId,
@@ -328,8 +303,11 @@ export async function createRsvpParticipation(opts: {
           userId: opts.userId,
           approvedById: reviewerId,
           checkedInAt: null,
-          createdAt: now
-        }
+        },
+        $setOnInsert: {
+          _id: participantId,
+          createdAt: now,
+        },
       },
       { upsert: true }
     );
@@ -347,6 +325,14 @@ export async function createRsvpParticipation(opts: {
   if (!participant) {
     throw new ApiError(500, 'participation_persist_failed', 'Failed to persist RSVP participation.');
   }
+
+  scheduleSideEffect(
+    addParticipantToActivityGroupChat({
+      activityId: opts.activityId,
+      userId: opts.userId,
+    }),
+    'engagement.rsvp_add_group_chat'
+  );
 
   return {
     request: toActivityRequestRecord(mongoRow),
@@ -396,6 +382,14 @@ export const findActivityRequestByEventAndUser = async (
   return row ? toActivityRequestRecord(row) : null;
 };
 
+export const findActivityRequestByIdAndActivity = async (
+  requestId: string,
+  activityId: string
+): Promise<ActivityRequest | null> => {
+  const row = await activityRequestsCollection().findOne({ _id: requestId, activityId });
+  return row ? toActivityRequestRecord(row) : null;
+};
+
 export const findActivityRequestByIdForUser = async (
   id: string,
   userId: string
@@ -438,6 +432,39 @@ export const listUserActivityRequestsPaginated = async (input: {
 
 export const countUserActivityRequests = async (userId: string): Promise<number> =>
   activityRequestsCollection().countDocuments({ userId });
+
+/** Pending/waitlisted join requests on upcoming outings (excludes confirmed participants). */
+export const countUserUpcomingPendingJoinRequests = async (userId: string): Promise<number> => {
+  const pendingStatuses: RequestStatus[] = [RequestStatus.PENDING, RequestStatus.WAITLISTED];
+  const requestRows = await activityRequestsCollection()
+    .find({ userId, status: { $in: pendingStatuses } })
+    .project({ activityId: 1 })
+    .toArray();
+  if (requestRows.length === 0) return 0;
+
+  const activityIds = [...new Set(requestRows.map((row) => row.activityId))];
+  const participantRows = await activityParticipantsCollection()
+    .find({ userId, activityId: { $in: activityIds } })
+    .project({ activityId: 1 })
+    .toArray();
+  const confirmedIds = new Set(participantRows.map((row) => row.activityId));
+  const pendingActivityIds = activityIds.filter((id) => !confirmedIds.has(id));
+  if (pendingActivityIds.length === 0) return 0;
+
+  const { listActivitiesForRequestViews } = await import('./activities-store.js');
+  const activities = await listActivitiesForRequestViews(pendingActivityIds);
+  const { formatActivityLocal } = await import('./datetime.js');
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const upcomingIds = new Set<string>();
+  for (const activity of activities) {
+    const day = formatActivityLocal(activity.startAt, 'AE').date.slice(0, 10);
+    if (new Date(day) >= today) upcomingIds.add(activity.id);
+  }
+
+  return pendingActivityIds.filter((id) => upcomingIds.has(id)).length;
+};
 
 export const findActivityParticipantByEventAndUser = async (
   activityId: string,
@@ -649,6 +676,195 @@ export const hasHostToParticipantLink = async (hostUserId: string, participantUs
   return false;
 };
 
+type ActivityHostFields = {
+  _id: string;
+  tenantId?: string;
+  hostId?: string | null;
+  createdById?: string;
+};
+
+const loadActivityHostFieldsByIds = async (activityIds: string[]): Promise<Map<string, ActivityHostFields>> => {
+  if (activityIds.length === 0) return new Map();
+  const docs = await getMongoClient()!
+    .db()
+    .collection<ActivityHostFields>('activities')
+    .find(
+      { _id: { $in: activityIds } },
+      { projection: { _id: 1, tenantId: 1, hostId: 1, createdById: 1 } }
+    )
+    .toArray();
+  return new Map(docs.map((doc) => [doc._id, doc]));
+};
+
+const buildOrganizerHostKeys = async (
+  events: ActivityHostFields[],
+  userIds: string[],
+  organizerRoles: MembershipRole[]
+): Promise<Set<string>> => {
+  const keys = new Set<string>();
+  const membershipPairs = new Map<string, { tenantId: string; userId: string }>();
+
+  for (const event of events) {
+    for (const userId of userIds) {
+      if (event.hostId === userId || event.createdById === userId) {
+        keys.add(`${event._id}:${userId}`);
+        continue;
+      }
+      if (event.tenantId) {
+        membershipPairs.set(`${event.tenantId}:${userId}`, { tenantId: event.tenantId, userId });
+      }
+    }
+  }
+
+  if (membershipPairs.size === 0) return keys;
+
+  const tenantIds = [...new Set([...membershipPairs.values()].map((pair) => pair.tenantId))];
+  const checkUserIds = [...new Set([...membershipPairs.values()].map((pair) => pair.userId))];
+
+  const memberships = await getMongoClient()!
+    .db()
+    .collection('tenant_memberships')
+    .find({
+      tenantId: { $in: tenantIds },
+      userId: { $in: checkUserIds },
+      role: { $in: organizerRoles },
+    })
+    .toArray();
+
+  const memberSet = new Set(memberships.map((row) => `${row.tenantId}:${row.userId}`));
+
+  for (const event of events) {
+    if (!event.tenantId) continue;
+    for (const userId of userIds) {
+      if (keys.has(`${event._id}:${userId}`)) continue;
+      if (memberSet.has(`${event.tenantId}:${userId}`)) {
+        keys.add(`${event._id}:${userId}`);
+      }
+    }
+  }
+
+  return keys;
+};
+
+/**
+ * Inbox batch: same rules as chat canMessageUser (no activityId inquiry), for viewer → many partners.
+ */
+export const batchCanMessagePartnersFromViewer = async (input: {
+  viewerId: string;
+  partnerIds: string[];
+  organizerRoles: MembershipRole[];
+  activeStatuses: RequestStatus[];
+}): Promise<Set<string>> => {
+  const partners = [...new Set(input.partnerIds.filter((id) => id && id !== input.viewerId))];
+  if (partners.length === 0) return new Set();
+
+  const allowed = new Set<string>();
+  const partnerSet = new Set(partners);
+
+  const viewerParticipation = await activityParticipantsCollection()
+    .find({ userId: input.viewerId }, { projection: { activityId: 1 } })
+    .toArray();
+  const viewerActivityIds = [...new Set(viewerParticipation.map((row) => row.activityId))];
+  if (viewerActivityIds.length > 0) {
+    const sharedRows = await activityParticipantsCollection()
+      .find(
+        { activityId: { $in: viewerActivityIds }, userId: { $in: partners } },
+        { projection: { userId: 1 } }
+      )
+      .toArray();
+    for (const row of sharedRows) {
+      if (partnerSet.has(row.userId)) allowed.add(row.userId);
+    }
+  }
+
+  let remaining = partners.filter((id) => !allowed.has(id));
+  if (remaining.length === 0) return allowed;
+
+  const relatedUserIds = [input.viewerId, ...remaining];
+  const participantRows = await activityParticipantsCollection()
+    .find({ userId: { $in: relatedUserIds } }, { projection: { userId: 1, activityId: 1 } })
+    .toArray();
+
+  const activityIds = [...new Set(participantRows.map((row) => row.activityId))];
+  const eventById = await loadActivityHostFieldsByIds(activityIds);
+  const hostUserIds = [input.viewerId, ...remaining];
+  const organizerHostKeys = await buildOrganizerHostKeys([...eventById.values()], hostUserIds, input.organizerRoles);
+
+  const isOrganizerHost = (activityId: string, userId: string) =>
+    organizerHostKeys.has(`${activityId}:${userId}`);
+  const isDirectHost = (activityId: string, userId: string) => {
+    const event = eventById.get(activityId);
+    if (!event) return false;
+    return event.hostId === userId || event.createdById === userId;
+  };
+
+  const viewerActivities = new Set(
+    participantRows.filter((row) => row.userId === input.viewerId).map((row) => row.activityId)
+  );
+  const partnerActivities = new Map<string, Set<string>>();
+  for (const row of participantRows) {
+    if (!partnerSet.has(row.userId)) continue;
+    const set = partnerActivities.get(row.userId) ?? new Set<string>();
+    set.add(row.activityId);
+    partnerActivities.set(row.userId, set);
+  }
+
+  for (const partnerId of remaining) {
+    let ok = false;
+    for (const activityId of viewerActivities) {
+      if (isOrganizerHost(activityId, partnerId)) {
+        ok = true;
+        break;
+      }
+    }
+    if (!ok) {
+      const partnerActivityIds = partnerActivities.get(partnerId);
+      if (partnerActivityIds) {
+        for (const activityId of partnerActivityIds) {
+          if (isDirectHost(activityId, input.viewerId)) {
+            ok = true;
+            break;
+          }
+        }
+      }
+    }
+    if (ok) allowed.add(partnerId);
+  }
+
+  remaining = partners.filter((id) => !allowed.has(id));
+  if (remaining.length === 0) return allowed;
+
+  const requests = await activityRequestsCollection()
+    .find({
+      status: { $in: input.activeStatuses },
+      userId: { $in: [input.viewerId, ...remaining] },
+    })
+    .toArray();
+
+  const missingActivityIds = [...new Set(requests.map((row) => row.activityId))].filter((id) => !eventById.has(id));
+  if (missingActivityIds.length > 0) {
+    const loaded = await loadActivityHostFieldsByIds(missingActivityIds);
+    for (const [id, event] of loaded) eventById.set(id, event);
+  }
+
+  const organizerKeys = await buildOrganizerHostKeys([...eventById.values()], hostUserIds, input.organizerRoles);
+  const isOrgHost = (activityId: string, userId: string) => organizerKeys.has(`${activityId}:${userId}`);
+
+  for (const partnerId of remaining) {
+    for (const request of requests) {
+      const requestUserId = request.userId;
+      if (requestUserId !== input.viewerId && requestUserId !== partnerId) continue;
+      const otherUserId = requestUserId === input.viewerId ? partnerId : input.viewerId;
+      if (isOrgHost(request.activityId, otherUserId)) {
+        allowed.add(partnerId);
+        break;
+      }
+    }
+  }
+
+  return allowed;
+};
+
 /** True when both users are co-participants or one hosts an event the other joined. */
 export const usersShareActivity = async (userA: string, userB: string): Promise<boolean> => {
   if (!userA || !userB) return false;
@@ -757,6 +973,18 @@ export const listTenantActivityRequestsDetailed = async (input: {
   });
 };
 
+export const countTenantPendingJoinRequests = async (tenantId: string): Promise<number> => {
+  const tenantEvents = await activitiesCollection()
+    .find({ tenantId }, { projection: { _id: 1 } })
+    .toArray();
+  const eventIds = tenantEvents.map((event) => event._id);
+  if (eventIds.length === 0) return 0;
+  return activityRequestsCollection().countDocuments({
+    activityId: { $in: eventIds },
+    status: RequestStatus.PENDING,
+  });
+};
+
 export const countTenantActivityRequests = async (
   tenantId: string,
   activityId?: string
@@ -811,6 +1039,8 @@ export const enrollHostApprovedActivityParticipant = async (opts: {
   activityId: string;
   userId: string;
   reviewerId: string;
+  /** Host queue row id — avoids request upsert races on activityId+userId unique index. */
+  requestId?: string;
   organizerNote?: string | null;
   /** When true, skip users who fail audience rules or capacity instead of throwing. */
   lenient?: boolean;
@@ -847,17 +1077,19 @@ export const enrollHostApprovedActivityParticipant = async (opts: {
   }
 
   const existing = await findActivityRequestByEventAndUser(opts.activityId, opts.userId);
-  const requestId = existing?.id ?? newEntityId();
+  const requestId = opts.requestId ?? existing?.id;
+  if (!requestId) {
+    if (opts.lenient) return 'skipped';
+    throw new ApiError(404, 'request_not_found', 'Join request not found.');
+  }
   const participantId = newEntityId();
   const reviewedAt = new Date();
 
   try {
-    await activityRequestsCollection().updateOne(
-      { _id: requestId },
+    const requestUpdate = await activityRequestsCollection().updateOne(
+      { activityId: opts.activityId, userId: opts.userId },
       {
         $set: {
-          activityId: opts.activityId,
-          userId: opts.userId,
           status: RequestStatus.APPROVED,
           note: existing?.note ?? null,
           organizerNote: opts.organizerNote ?? null,
@@ -868,14 +1100,16 @@ export const enrollHostApprovedActivityParticipant = async (opts: {
           reviewedAt,
           reviewedById: opts.reviewerId,
           updatedAt: reviewedAt,
-          createdAt: existing?.createdAt ?? reviewedAt,
         },
-      },
-      { upsert: true }
+      }
     );
+    if (requestUpdate.matchedCount === 0) {
+      if (opts.lenient) return 'skipped';
+      throw new ApiError(404, 'request_not_found', 'Join request not found.');
+    }
 
     await activityParticipantsCollection().updateOne(
-      { _id: participantId },
+      { activityId: opts.activityId, userId: opts.userId },
       {
         $set: {
           activityId: opts.activityId,
@@ -883,6 +1117,9 @@ export const enrollHostApprovedActivityParticipant = async (opts: {
           userId: opts.userId,
           approvedById: opts.reviewerId,
           checkedInAt: null,
+        },
+        $setOnInsert: {
+          _id: participantId,
           createdAt: reviewedAt,
         },
       },
@@ -892,6 +1129,14 @@ export const enrollHostApprovedActivityParticipant = async (opts: {
     await releaseActivityParticipantSlot(opts.activityId);
     throw error;
   }
+
+  scheduleSideEffect(
+    addParticipantToActivityGroupChat({
+      activityId: opts.activityId,
+      userId: opts.userId,
+    }),
+    'engagement.rsvp_add_group_chat'
+  );
 
   return 'enrolled';
 };
@@ -911,6 +1156,7 @@ export const applyTenantActivityRequestDecision = async (input: {
       activityId: input.activityId,
       userId: input.userId,
       reviewerId: input.reviewerId,
+      requestId: input.requestId,
       organizerNote: input.organizerNote ?? null,
     });
 
@@ -956,10 +1202,13 @@ export const cancelUserActivityRequestAndPromoteWaitlist = async (input: {
   const deleted = await activityParticipantsCollection().deleteMany({ requestId: input.requestId });
   if (deleted.deletedCount > 0) {
     await releaseActivityParticipantSlot(input.activityId);
-    void removeParticipantFromActivityGroupChat({
-      activityId: input.activityId,
-      userId: input.userId
-    }).catch(() => undefined);
+    scheduleSideEffect(
+      removeParticipantFromActivityGroupChat({
+        activityId: input.activityId,
+        userId: input.userId,
+      }),
+      'engagement.cancel_remove_group_chat'
+    );
   }
   await promoteNextWaitlisted(input.activityId);
 };
@@ -990,10 +1239,13 @@ export const revokeHostActivityParticipant = async (input: {
   const deleted = await activityParticipantsCollection().deleteOne({ _id: participant.id });
   if (deleted.deletedCount > 0) {
     await releaseActivityParticipantSlot(input.activityId);
-    void removeParticipantFromActivityGroupChat({
-      activityId: input.activityId,
-      userId: participant.userId
-    }).catch(() => undefined);
+    scheduleSideEffect(
+      removeParticipantFromActivityGroupChat({
+        activityId: input.activityId,
+        userId: participant.userId,
+      }),
+      'engagement.revoke_remove_group_chat'
+    );
   }
   await promoteNextWaitlisted(input.activityId);
 

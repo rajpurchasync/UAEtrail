@@ -7,7 +7,7 @@ import { GlassCard } from '../components/mobile/GlassCard';
 import { AppButton } from '../components/mobile/AppButton';
 import { PageMeta } from '../components/seo/PageMeta';
 import { useAuth } from '../context/AuthContext';
-import { BecomeHostFlow } from '../components/organisation-console/BecomeHostFlow';
+import { ProProfileApplicationFlow } from '../components/organisation-console/ProProfileApplicationFlow';
 import {
   parseHostFlowIntent,
   proMembershipPathIntent,
@@ -17,7 +17,7 @@ import { useHostStatus } from '../hooks/useHostStatus';
 import { ProfileMapPresenceSection } from '../components/profile/ProfileMapPresenceSection';
 import { resolveAuthRedirect } from '../utils/authRedirect';
 
-/** Pro / professional host onboarding — moved from `/become-host`. */
+/** Pro Membership — professional guide, agency, or shop application (community Organize uses profile complete + `/welcome`). */
 export const ProfileProMembership = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -81,8 +81,11 @@ export const ProfileProMembership = () => {
               <div>
                 <h2 className="text-lg font-bold text-neutral-900">Go pro on the trail</h2>
                 <p className="mt-1 text-sm leading-relaxed text-neutral-600">
-                  Anyone with a completed profile can organize free outings on the map. Pro membership is for
-                  licensed guides, agencies, and gear shops — paid trips, team access, and a public operator profile.
+                  Anyone with a completed profile can organize free and shared-cost outings on the map. Pro
+                  membership is for a public operator profile: professional guides (individual), tour agencies, or
+                  gear shops — each with their own profile page. Guides host free and shared-cost trips only;
+                  verified **business** accounts (agency, shop, or partner) may list paid commercial trips when you
+                  publish as that business; individual guides stay free and shared-cost only.
                 </p>
                 <p className="mt-2 text-xs font-medium text-neutral-500">
                   Membership tiers and billing are coming soon. You can still apply for a professional profile below.
@@ -114,12 +117,12 @@ export const ProfileProMembership = () => {
       </ConsumerShell>
 
       {user && flowOpen ? (
-        <BecomeHostFlow
+        <ProProfileApplicationFlow
           open={flowOpen}
           onClose={() => setFlowOpen(false)}
           onSubmitted={handleSubmitted}
           signInHref={signInHref}
-          intent={intent === 'become-host' ? 'add-agency' : intent}
+          intent={intent}
         />
       ) : null}
     </>

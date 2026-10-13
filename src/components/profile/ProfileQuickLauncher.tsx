@@ -3,13 +3,14 @@ import {
   BUDDIES_PATH,
   CONTRIBUTIONS_PATH,
   explorePeopleBrowsePath,
-  HOST_OVERVIEW_PATH,
   MESSAGES_PATH,
+  tripsPlansPath,
+  PROFILE_HISTORY_PATH,
   PROFILE_BADGES_PATH,
   PROFILE_SETTINGS_PATH,
 } from '../../config/routingCatalog';
 import type { LucideIcon } from 'lucide-react';
-import { Award, MapPin, MessageCircle, Mountain, Settings, UserRound, Users } from 'lucide-react';
+import { Award, MapPin, MessageCircle, Mountain, Settings, UserRound, Users, Backpack } from 'lucide-react';
 
 export type ProfileQuickLauncherItem = {
   key: string;
@@ -96,6 +97,13 @@ export const buildProfileQuickLauncherItems = (input: {
       badge: input.badgesEarnedCount > 0 ? input.badgesEarnedCount : undefined,
     },
     {
+      key: 'history',
+      label: 'History',
+      to: PROFILE_HISTORY_PATH,
+      icon: Backpack,
+      iconWrapClassName: 'bg-sky-50 text-sky-800',
+    },
+    {
       key: 'contributions',
       label: 'Contributions',
       to: CONTRIBUTIONS_PATH,
@@ -115,7 +123,7 @@ export const buildProfileQuickLauncherItems = (input: {
     items.push({
       key: 'hosting',
       label: 'Hosting',
-      to: HOST_OVERVIEW_PATH,
+      to: tripsPlansPath('hosted'),
       icon: Mountain,
       iconWrapClassName: 'bg-violet-50 text-violet-700',
     });

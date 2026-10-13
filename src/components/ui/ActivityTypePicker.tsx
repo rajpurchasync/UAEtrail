@@ -3,20 +3,20 @@ import {
   ACTIVITY_TYPES,
   ACTIVITY_TYPE_DESCRIPTIONS,
   ACTIVITY_TYPE_PICKER_LABELS,
-  type ActivityType,
+  type ActivityPickerType,
 } from '../../config/activityTypes';
 
 interface ActivityTypePickerProps {
-  onSelect: (type: ActivityType) => void;
+  onSelect: (type: ActivityPickerType) => void;
 }
 
-const CARD_ICONS: Record<ActivityType, typeof Mountain> = {
+const CARD_ICONS: Record<ActivityPickerType, typeof Mountain> = {
   hiking: Mountain,
   camping: Tent,
   event: CalendarDays,
 };
 
-const CARD_ACCENTS: Record<ActivityType, string> = {
+const CARD_ACCENTS: Record<ActivityPickerType, string> = {
   hiking: 'bg-emerald-500/12 text-emerald-600',
   camping: 'bg-amber-500/12 text-amber-600',
   event: 'bg-violet-500/12 text-violet-600',

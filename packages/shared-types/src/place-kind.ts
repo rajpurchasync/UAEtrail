@@ -72,6 +72,52 @@ const KINDS_USING_PLACE_KIND_TAG: PlaceKind[] = [
   'picnic',
 ];
 
+/** Amenity rows on the catalog — Spots lens + area rollups (`facilities`). */
+export const FACILITY_PLACE_KINDS: readonly PlaceKind[] = [
+  'toilet',
+  'gas_station',
+  'water_refill',
+  'parking',
+  'viewpoint',
+  'picnic',
+];
+
+const FACILITY_PLACE_KIND_SET = new Set<PlaceKind>(FACILITY_PLACE_KINDS);
+
+export const isFacilityPlaceKind = (kind: PlaceKind): boolean => FACILITY_PLACE_KIND_SET.has(kind);
+
+/** Trail, camp, or amenity catalog pin — Spots lens (not shops layer). */
+export const exploreVenueIsPlacesSpot = (
+  mapKind: string,
+  placeKind?: PlaceKind | null
+): boolean => {
+  if (mapKind === 'hiking' || mapKind === 'camping') return true;
+  if (placeKind && isFacilityPlaceKind(placeKind)) return true;
+  if (placeKind === 'outdoor_other') return true;
+  return false;
+};
+
+export const outdoorPlaceKindPinEmoji = (): string => '🌳';
+
+export const facilityPlaceKindPinEmoji = (kind: PlaceKind): string => {
+  switch (kind) {
+    case 'toilet':
+      return '🚻';
+    case 'gas_station':
+      return '⛽';
+    case 'water_refill':
+      return '💧';
+    case 'parking':
+      return '🅿️';
+    case 'viewpoint':
+      return '👀';
+    case 'picnic':
+      return '🧺';
+    default:
+      return '📍';
+  }
+};
+
 /**
  * Read canonical kind from a `locations` row (today: `activityType` + optional tags).
  */

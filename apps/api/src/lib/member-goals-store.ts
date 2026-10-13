@@ -11,6 +11,7 @@ import { ActivityStatus } from '../domain/enums.js';
 import { ApiError } from './api-error.js';
 import { COLLECTIONS } from './collections.js';
 import { getMongoClient } from './mongo.js';
+import { scheduleSideEffect } from './schedule-side-effect.js';
 import {
   activityTypeCountsForGoal,
   mapPinActivityTypeCountsForGoal,
@@ -199,9 +200,10 @@ export const getActiveMemberGoal = async (userId: string): Promise<MemberGoalDTO
   const doc = await findPrimaryGoalDoc(userId);
   if (!doc) return null;
   const dto = await toDto(doc);
-  void import('../services/member-goal-notifications.js')
-    .then((mod) => mod.maybeNotifyGoalBehindPace(userId))
-    .catch(() => undefined);
+  scheduleSideEffect(
+    import('../services/member-goal-notifications.js').then((mod) => mod.maybeNotifyGoalBehindPace(userId)),
+    'member_goals.behind_pace_notify'
+  );
   return dto;
 };
 

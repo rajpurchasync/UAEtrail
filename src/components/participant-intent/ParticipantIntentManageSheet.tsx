@@ -1,15 +1,22 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { ParticipantIntentDTO } from '@uaetrail/shared-types';
 import { ExploreResponsiveSheet } from '../../explore/ui/ExploreResponsiveSheet';
-import { exploreOfferRideshareForDemandPath, exploreSavedPinPath } from '../../explore/routing';
+import {
+  exploreOfferRideshareForDemandPath,
+  participantIntentExplorePinPath,
+} from '../../explore/routing';
 import { ShareButton } from '../ui/ShareButton';
 import { canOfferRideshareForParticipantIntent } from '../../explore/linkActivityRideshareOffer';
 import { ORGANIZE_LINK_RIDESHARE_LABEL } from '../../explore/createFlowCopy';
-import { formatParticipantIntentMeta } from '../../trips/participantIntentTrips';
+import { formatParticipantIntentMeta } from '../../member-plan/participantIntentTrips';
 import { AppButton, AppButtonLink } from '../mobile/AppButton';
 import { Dialog } from '../ui/Dialog';
-import { api } from '../../api/index';
+import {
+  cancelParticipantIntent,
+  invalidateMyParticipantIntentsQueries,
+} from '../../hooks/participantIntentClientApi';
 import { useReloadExploreMap } from '../../hooks/useReloadExploreMap';
 import { useHostStatus } from '../../hooks/useHostStatus';
 import { useAuth } from '../../context/AuthContext';
@@ -40,6 +47,7 @@ export const ParticipantIntentManageSheet = ({
   onClose,
   onChanged,
 }: ParticipantIntentManageSheetProps) => {
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { user } = useAuth();
   const gate = useHostStatus({ enabled: Boolean(user) });
@@ -59,12 +67,12 @@ export const ParticipantIntentManageSheet = ({
 
   if (!intent) return null;
 
-  const mapPinId = `demand:${intent.id}`;
+  const mapPinPath = participantIntentExplorePinPath(intent);
   const meta = formatParticipantIntentMeta(intent);
   const showRideshareOffer = canOfferRideshareForParticipantIntent(intent);
 
   const handleOfferRideshare = () => {
-    const returnPath = exploreOfferRideshareForDemandPath(intent.id);
+    const returnPath = exploreOfferRideshareForDemandPath(intent);
     if (!user) {
       navigate(signInPathForReturn(returnPath));
       return;
@@ -93,7 +101,8 @@ export const ParticipantIntentManageSheet = ({
     setBusy(true);
     setError(null);
     try {
-      await api.cancelParticipantIntent(intent.id);
+      await cancelParticipantIntent(intent.id);
+      invalidateMyParticipantIntentsQueries(queryClient);
       setConfirmRemove(false);
       await reloadExploreMap();
       await onChanged();
@@ -152,13 +161,13 @@ export const ParticipantIntentManageSheet = ({
                 <ShareButton
                   title={intent.title}
                   text="Looking for crew on UAE Trail"
-                  path={exploreSavedPinPath(mapPinId)}
+                  path={mapPinPath}
                   iconOnly
                   light
                 />
               </div>
               <AppButtonLink
-                to={exploreSavedPinPath(mapPinId)}
+                to={mapPinPath}
                 variant="secondary"
                 fullWidth
                 onClick={onClose}

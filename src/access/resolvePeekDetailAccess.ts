@@ -1,11 +1,15 @@
-import type { ActivityViewerAccessDTO } from '@uaetrail/shared-types';
+import {
+  resolveActivityEngagementMapPeekActionsBase,
+  resolveActivityEngagementMapPeekStrips,
+  type ActivityViewerAccessDTO,
+} from '@uaetrail/shared-types';
 import { mapViewerAccessToExplorePeekDetail, type ExplorePeekDetailAccess } from './mapViewerAccessToUi';
-import type { ExploreCardModel } from '../explore/exploreCardModel';
+import { exploreCardIsSeeking, type ExploreCardModel } from '../explore/exploreCardModel';
 
 export type { ExplorePeekDetailAccess };
 
 export const exploreCardIsHostedPlanPeek = (card: ExploreCardModel): boolean =>
-  card.source === 'activity' || card.source === 'demand';
+  card.source === 'activity' || exploreCardIsSeeking(card);
 
 const exploreCardIsCommerceCatalogPeek = (card: ExploreCardModel): boolean =>
   card.source === 'shop' || card.source === 'agency';
@@ -56,4 +60,41 @@ export const hostPublishedActivityPeekAccess = (
   canViewFullActivity: true,
   canOpenDetailPage: true,
   joinMode,
+  canAccessCrewSurfaces: true,
+  mapPeekActions: resolveActivityEngagementMapPeekActionsBase({
+    viewerAccess: {
+      exposure: 'full',
+      level: 'host',
+      gateReason: null,
+      canViewFullActivity: true,
+      canOpenDetailPage: true,
+      joinMode,
+      canAccessCrewSurfaces: true,
+      mapPeekActions: [],
+      entitlements: null,
+    },
+    isHostUser: true,
+    activityPublished: true,
+    joinMode,
+    myParticipation: null,
+    myRequest: null,
+  }),
+  mapPeekStrips: resolveActivityEngagementMapPeekStrips({
+    viewerAccess: {
+      exposure: 'full',
+      level: 'host',
+      gateReason: null,
+      canViewFullActivity: true,
+      canOpenDetailPage: true,
+      joinMode,
+      canAccessCrewSurfaces: true,
+      mapPeekActions: [],
+      entitlements: null,
+    },
+    isHostUser: true,
+    activityPublished: true,
+    joinMode,
+    myParticipation: null,
+    myRequest: null,
+  }),
 });

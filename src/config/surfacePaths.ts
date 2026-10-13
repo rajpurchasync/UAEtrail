@@ -8,7 +8,35 @@
 /** Personal hub */
 export const PROFILE_PATH = '/profile' as const;
 
-/** Trips hub — upcoming, past, wishlist (`docs/NAVIGATION.md`) */
+/** Active member tab — goals, upcoming, plan attention (`docs/NAVIGATION.md`). */
+export const PLAN_PATH = '/plan' as const;
+
+/** Profile outing history (joined / hosted / self past) — canonical URL. */
+export const PROFILE_HISTORY_PATH = '/profile/history' as const;
+/** Member journey map (pins + wishlist visited). */
+export const JOURNEY_MAP_PATH = '/profile/history/map' as const;
+
+/** @deprecated Bookmark — `App.tsx` redirects to {@link PROFILE_HISTORY_PATH}. */
+export const MY_TRIPS_PATH = '/profile/my-trips' as const;
+/** @deprecated Bookmark — `App.tsx` redirects to {@link JOURNEY_MAP_PATH}. */
+export const MY_TRIPS_MAP_PATH = '/profile/my-trips/map' as const;
+
+export const isProfileHistoryListPath = (pathname: string): boolean =>
+  pathname === PROFILE_HISTORY_PATH ||
+  pathname === MY_TRIPS_PATH ||
+  pathname.endsWith('/profile/history') ||
+  pathname.endsWith('/my-trips');
+
+export const isJourneyMapPath = (pathname: string): boolean =>
+  pathname === JOURNEY_MAP_PATH ||
+  pathname === MY_TRIPS_MAP_PATH ||
+  pathname.endsWith('/profile/history/map') ||
+  pathname.endsWith('/my-trips/map');
+
+/** Legacy personal hub bookmark (`/activities`). */
+export const ACTIVITIES_LEGACY_PATH = '/activities' as const;
+
+/** @deprecated Legacy URL — `App.tsx` redirects to {@link PLAN_PATH} or {@link PROFILE_HISTORY_PATH}. */
 export const TRIPS_PATH = '/trips' as const;
 
 /** Admin / host place registry consoles */
@@ -46,6 +74,15 @@ export const groupsPath = (options?: {
   if (options?.invite) params.set('invite', options.invite);
   const qs = params.toString();
   return qs ? `${GROUPS_PATH}?${qs}` : GROUPS_PATH;
+};
+
+/** List/manage surface only — threads use {@link messagesGroupPath}. */
+export const groupsManagePath = (
+  groupId: string,
+  tab: 'members' | 'manage' = 'members'
+): string => {
+  const params = new URLSearchParams({ group: groupId, tab });
+  return `${GROUPS_PATH}?${params.toString()}`;
 };
 
 /** In-app notification inbox */
@@ -102,8 +139,11 @@ export const hostActivitiesCheckInPath = (activityId: string): string =>
 export const messagesToUserPath = (userId: string): string =>
   `${MESSAGES_PATH}?to=${encodeURIComponent(userId)}`;
 
-export const messagesGroupPath = (groupId: string): string =>
-  `${MESSAGES_PATH}?group=${encodeURIComponent(groupId)}`;
+export const messagesGroupPath = (groupId: string, activityId?: string): string => {
+  const params = new URLSearchParams({ group: groupId });
+  if (activityId?.trim()) params.set('activity', activityId.trim());
+  return `${MESSAGES_PATH}?${params.toString()}`;
+};
 
 export const myRequestDetailPath = (requestId: string): string =>
   `${MY_REQUESTS_PATH}/${encodeURIComponent(requestId)}`;

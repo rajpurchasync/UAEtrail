@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
 import { join, relative } from 'node:path';
+import { allowedActivityPricingModes } from '@uaetrail/shared-types';
 
 const API_SRC = join(process.cwd(), 'src');
 const HOST_ROUTES_DIR = join(API_SRC, 'routes', 'host');
@@ -57,6 +58,32 @@ describe('host-member API contracts', () => {
     }
 
     expect(violations).toEqual([]);
+  });
+
+  it('canHostPaidActivities resolver aligns with paid pricing tier gate', () => {
+    const path = join(API_SRC, 'services', 'member-host-status.ts');
+    const content = readFileSync(path, 'utf8');
+    expect(content).toMatch(/canHostPaidActivities\s*=\s*isPlatformAdmin\s*\|\|\s*hostTiers\.business/);
+    expect(
+      allowedActivityPricingModes({ community: true, professional: true, business: false }, {
+        publishingProfileKind: 'pro_guide',
+      })
+    ).not.toContain('paid');
+    expect(
+      allowedActivityPricingModes({ community: false, professional: false, business: true }, {
+        publishingProfileKind: 'agency',
+      })
+    ).toContain('paid');
+    expect(
+      allowedActivityPricingModes({ community: false, professional: false, business: true }, {
+        publishingProfileKind: 'shop',
+      })
+    ).toContain('paid');
+    expect(
+      allowedActivityPricingModes({ community: true, professional: false, business: false }, {
+        publishingProfileKind: 'agency',
+      })
+    ).not.toContain('paid');
   });
 
   it('member-host-tiers uses TenantPublishingPurpose not string', () => {

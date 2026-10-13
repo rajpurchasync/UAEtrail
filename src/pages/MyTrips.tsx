@@ -1,0 +1,196 @@
+import { useCallback, useEffect, useState } from 'react';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { ConsumerShell } from '../components/mobile/ConsumerShell';
+import { PullToRefresh } from '../components/mobile/PullToRefresh';
+import { PageMeta } from '../components/seo/PageMeta';
+import {
+  JOURNEY_MAP_PATH,
+  PLAN_PATH,
+  PROFILE_HISTORY_PATH,
+  isProfileHistoryListPath,
+} from '../config/surfacePaths';
+import { useHostStatus } from '../hooks/useHostStatus';
+import { memberCanManageHostedActivities } from '../utils/hostedActivitiesGate';
+import { JoinedSection } from './activities/JoinedSection';
+import { HostedActivitiesSection } from './activities/HostedActivitiesSection';
+import { SelfPlansSection } from './activities/SelfPlansSection';
+import { TripsPageToolbar } from '../components/trips/TripsPageToolbar';
+import { TripsFiltersSheet } from '../components/trips/TripsFiltersSheet';
+import { useMemberGoals } from '../hooks/useMemberGoals';
+import { PRO_MEMBERSHIP_PATH } from '../config/routingCatalog';
+import {
+  normalizeTripsSearchParams,
+  parseTripsMainView,
+  parseTripsRole,
+  type TripsRole,
+} from '../member-plan/tripsRouting';
+import { resolveTripsContent } from '../member-plan/resolveTripsContent';
+
+export const MyTrips = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [activitySearchQuery, setActivitySearchQuery] = useState('');
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const gate = useHostStatus({ enabled: Boolean(user) });
+  const canHost = memberCanManageHostedActivities(user, gate.canAccessHostConsole);
+  const { goals, reload: reloadGoals } = useMemberGoals(Boolean(user));
+
+  useEffect(() => {
+    const view = searchParams.get('view');
+    if (view === 'plans') {
+      const qs = searchParams.toString();
+      navigate(qs ? `${PLAN_PATH}?${qs}` : PLAN_PATH, { replace: true });
+      return;
+    }
+    if (view === 'map') {
+      const qs = searchParams.toString();
+      navigate(qs ? `${JOURNEY_MAP_PATH}?${qs}` : JOURNEY_MAP_PATH, { replace: true });
+      return;
+    }
+    if (!user) return;
+    const next = new URLSearchParams(searchParams);
+    const { changed } = normalizeTripsSearchParams(next, canHost);
+    let shouldReplace = changed;
+    if (!next.get('view') && isProfileHistoryListPath(location.pathname)) {
+      next.set('view', 'completed');
+      shouldReplace = true;
+    }
+    if (shouldReplace) setSearchParams(next, { replace: true });
+  }, [canHost, location.pathname, navigate, searchParams, setSearchParams, user]);
+
+  const mainView = parseTripsMainView(location.pathname, searchParams.get('view'));
+  const historyRole: TripsRole = parseTripsRole(searchParams.get('role'), 'completed', {
+    canHost,
+    legacyTab: searchParams.get('tab'),
+  });
+
+  const contentKey = resolveTripsContent({
+    signedIn: Boolean(user),
+    mainView: 'completed',
+    plansRole: 'all',
+    role: historyRole,
+    canHost,
+  });
+
+  const handleRefresh = useCallback(async () => {
+    setRefreshKey((key) => key + 1);
+    reloadGoals();
+  }, [reloadGoals]);
+
+  const setHistoryRole = useCallback(
+    (role: TripsRole) => {
+      const next = new URLSearchParams(searchParams);
+      next.set('view', 'completed');
+      next.set('role', role);
+      next.delete('segment');
+      next.delete('saved');
+      setSearchParams(next, { replace: true });
+    },
+    [searchParams, setSearchParams]
+  );
+
+  const tripsToolbar = user ? (
+    <TripsPageToolbar
+      surface="my-trips"
+      mainView={mainView === 'map' ? 'completed' : mainView}
+      searchQuery={activitySearchQuery}
+      onSearchChange={setActivitySearchQuery}
+      searchPlaceholder="Search past outings"
+      filtersActive={false}
+      onOpenFilters={() => setFiltersOpen(true)}
+      historyRole={historyRole}
+      onHistoryRoleChange={setHistoryRole}
+      canHost={canHost}
+    />
+  ) : null;
+
+  const renderContent = () => {
+    if (!user) {
+      return (
+        <div className="glass-card p-6 text-center text-sm text-neutral-600">
+          Sign in to see trips you hosted, joined, or logged on your map.
+        </div>
+      );
+    }
+
+    switch (contentKey) {
+      case 'joined-completed':
+        return (
+          <JoinedSection
+            refreshKey={refreshKey}
+            searchQuery={activitySearchQuery}
+            scope="attended-only"
+          />
+        );
+      case 'hosted-completed':
+        return (
+          <HostedActivitiesSection
+            refreshKey={refreshKey}
+            searchQuery={activitySearchQuery}
+            timeScope="past"
+          />
+        );
+      case 'self-completed':
+        return (
+          <SelfPlansSection
+            segment="completed"
+            refreshKey={refreshKey}
+            searchQuery={activitySearchQuery}
+          />
+        );
+      case 'hosted-needs-approval':
+        return (
+          <div className="glass-card p-6 text-center">
+            <p className="mb-3 text-sm text-neutral-600">
+              Host activities on the map to share them with the community.
+            </p>
+            <button
+              type="button"
+              onClick={() => navigate(PRO_MEMBERSHIP_PATH)}
+              className="text-sm font-semibold text-emerald-700"
+            >
+              Pro Membership
+            </button>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <>
+      <PageMeta
+        title="Outing history — UAE Trail"
+        description="Outings you joined, hosted, or logged — plus your journey map."
+        path={PROFILE_HISTORY_PATH}
+      />
+
+      <ConsumerShell
+        layout="tab"
+        title="History"
+        suppressMobileHeader
+        suppressMobileToolbarBorder
+        maxWidth="4xl"
+        toolbar={tripsToolbar}
+      >
+        <PullToRefresh onRefresh={handleRefresh}>
+          <div className="space-y-4 pt-1 pb-bottom-nav-safe">{renderContent()}</div>
+        </PullToRefresh>
+      </ConsumerShell>
+
+      {user ? (
+        <TripsFiltersSheet
+          open={filtersOpen}
+          onClose={() => setFiltersOpen(false)}
+          hasActiveGoal={goals.length > 0}
+          onOpenGoal={() => setFiltersOpen(false)}
+        />
+      ) : null}
+    </>
+  );
+};

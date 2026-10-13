@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
-import { api } from '../api/index';
+import { fetchMeProfile, updateMeProfile } from '../hooks/memberProfileApi';
 import { useAuth } from '../context/AuthContext';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { AppButton } from '../components/mobile/AppButton';
@@ -40,10 +40,8 @@ export const ProfileEdit = () => {
   const [languages, setLanguages] = useState<string[]>([]);
 
   useEffect(() => {
-    void api
-      .getMeProfile()
-      .then((res) => {
-        const p = res.data;
+    void fetchMeProfile()
+      .then((p) => {
         const names =
           p.givenName && p.surname
             ? { givenName: p.givenName, surname: p.surname }
@@ -89,7 +87,7 @@ export const ProfileEdit = () => {
     try {
       const trimmedGiven = givenName.trim();
       const trimmedSurname = surname.trim();
-      await api.updateMeProfile({
+      await updateMeProfile({
         givenName: trimmedGiven,
         surname: trimmedSurname,
         displayName: formatDisplayNameFromParts(trimmedGiven, trimmedSurname),

@@ -1,62 +1,100 @@
 import { describe, expect, it } from 'vitest';
 import {
-  derivePriceAed,
-  inferActivityPricingMode,
-  normalizeActivityPricing,
-  parseStoredPricePackages,
   activityHasPaidPricing,
   activityPriceLabel,
+  allowedActivityPricingModes,
+  normalizeActivityPricing,
 } from '@uaetrail/shared-types';
+import { assertActivityPricingAllowed } from '../src/domain/activity-pricing.js';
 
 describe('activity pricing', () => {
-  it('normalizes free pricing', () => {
-    expect(normalizeActivityPricing({ price: 0, pricePackages: [] })).toEqual({
+  it('normalizes free / shared / paid from pricingMode + price', () => {
+    expect(normalizeActivityPricing({ price: 0, pricingMode: 'free' })).toEqual({
       priceAed: 0,
-      pricePackages: [],
       pricingMode: 'free',
     });
-  });
-
-  it('normalizes paid packages and derives minimum AED price', () => {
-    const pricing = normalizeActivityPricing({
-      pricingMode: 'paid',
-      pricePackages: [
-        { label: 'Standard', amount: 120, currency: 'AED' },
-        { label: 'VIP', amount: 200, currency: 'AED' },
-      ],
+    expect(normalizeActivityPricing({ price: 40, pricingMode: 'shared' })).toEqual({
+      priceAed: 40,
+      pricingMode: 'shared',
     });
-    expect(pricing.pricingMode).toBe('paid');
-    expect(pricing.priceAed).toBe(120);
-    expect(derivePriceAed(pricing.pricePackages)).toBe(120);
+    expect(normalizeActivityPricing({ price: 120, pricingMode: 'paid' })).toEqual({
+      priceAed: 120,
+      pricingMode: 'paid',
+    });
   });
 
-  it('parses stored packages leniently', () => {
-    expect(parseStoredPricePackages([{ label: 'Adult', amount: 50, currency: 'AED' }])).toHaveLength(1);
-    expect(parseStoredPricePackages([{ label: '', amount: 50, currency: 'AED' }])).toHaveLength(0);
+  it('allowed modes follow host tier ladder', () => {
+    expect(allowedActivityPricingModes({ community: true, professional: false, business: false })).toEqual([
+      'free',
+      'shared',
+    ]);
+    expect(
+      allowedActivityPricingModes({ community: true, professional: true, business: false })
+    ).toEqual(['free', 'shared']);
+    expect(
+      allowedActivityPricingModes(
+        { community: false, professional: false, business: true },
+        { publishProfileType: 'agency' }
+      )
+    ).toEqual(['free', 'shared', 'paid']);
+    expect(
+      allowedActivityPricingModes(
+        { community: false, professional: false, business: true },
+        { publishingProfileKind: 'shop' }
+      )
+    ).toEqual(['free', 'shared', 'paid']);
   });
 
-  it('infers pricing mode and labels', () => {
-    expect(
-      inferActivityPricingMode({
-        price: 0,
-        pricePackages: [],
-        paymentTerms: null,
-        pricingMode: 'free',
-      })
-    ).toBe('free');
+  it('activityPriceLabel uses single indicative amount', () => {
+    expect(activityPriceLabel({ price: 0, pricingMode: 'free' })).toBe('Free');
+    expect(activityPriceLabel({ price: 50, pricingMode: 'shared' })).toBe('AED 50');
+  });
 
-    expect(
-      activityPriceLabel({
-        price: 0,
-        pricePackages: [
-          { label: 'Adult', amount: 80, currency: 'AED' },
-          { label: 'Child', amount: 40, currency: 'AED' },
-        ],
-      })
-    ).toBe('From AED 40');
+  it('activityHasPaidPricing respects pricingMode', () => {
+    expect(activityHasPaidPricing({ price: 0, pricingMode: 'free' })).toBe(false);
+    expect(activityHasPaidPricing({ price: 10, pricingMode: 'shared' })).toBe(true);
+    expect(activityHasPaidPricing({ price: 0, pricingMode: 'paid' })).toBe(true);
+  });
 
-    expect(activityHasPaidPricing({ price: 0, pricePackages: [{ label: 'Adult', amount: 80, currency: 'AED' }] })).toBe(
-      true
-    );
+  it('assertActivityPricingAllowed enforces tier gates', () => {
+    expect(() =>
+      assertActivityPricingAllowed({
+        hostTiers: { community: true, professional: false, business: false },
+        pricingMode: 'paid',
+        priceAed: 100,
+      })
+    ).toThrow(/linked verified business/);
+
+    expect(() =>
+      assertActivityPricingAllowed({
+        hostTiers: { community: true, professional: false, business: false },
+        publishingProfileKind: 'agency',
+        pricingMode: 'paid',
+        priceAed: 100,
+      })
+    ).toThrow(/linked verified business/);
+
+    expect(() =>
+      assertActivityPricingAllowed({
+        hostTiers: { community: true, professional: true, business: false },
+        publishingProfileKind: 'pro_guide',
+        pricingMode: 'paid',
+        priceAed: 100,
+      })
+    ).toThrow(/linked verified business/);
+
+    assertActivityPricingAllowed({
+      hostTiers: { community: false, professional: false, business: true },
+      publishingProfileKind: 'shop',
+      pricingMode: 'paid',
+      priceAed: 120,
+    });
+
+    assertActivityPricingAllowed({
+      hostTiers: { community: true, professional: false, business: false },
+      pricingMode: 'shared',
+      priceAed: 25,
+      sharedAmountAed: 25,
+    });
   });
 });

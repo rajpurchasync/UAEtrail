@@ -1,5 +1,10 @@
 import { useEffect, useState } from 'react';
-import { api, type TeamMember } from '../../api/index';
+import {
+  createOrganisationTeamMember,
+  fetchOrganisationTeam,
+  removeOrganisationTeamMember,
+  type TeamMember,
+} from '../../hooks/organisationConsoleApi';
 import { GlassCard } from '../mobile/GlassCard';
 import { AppButton } from '../mobile/AppButton';
 import { AppSelect } from '../ui/AppSelect';
@@ -26,8 +31,8 @@ export const AgencyTeamSection = ({ tenantId }: AgencyTeamSectionProps) => {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const response = await api.getOrganisationTeam(tenantId);
-      setMembers(response.data);
+      const data = await fetchOrganisationTeam(tenantId);
+      setMembers(data);
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : 'Failed to load team');
     } finally {
@@ -45,7 +50,7 @@ export const AgencyTeamSection = ({ tenantId }: AgencyTeamSectionProps) => {
     setError(null);
     setBusy(true);
     try {
-      await api.createOrganisationTeamMember(tenantId, { email: email.trim(), role });
+      await createOrganisationTeamMember(tenantId, { email: email.trim(), role });
       setEmail('');
       setRole('tenant_guide');
       await loadMembers();
@@ -61,7 +66,7 @@ export const AgencyTeamSection = ({ tenantId }: AgencyTeamSectionProps) => {
     setBusy(true);
     setError(null);
     try {
-      await api.removeOrganisationTeamMember(tenantId, memberId);
+      await removeOrganisationTeamMember(tenantId, memberId);
       await loadMembers();
     } catch (removeError) {
       setError(removeError instanceof Error ? removeError.message : 'Failed to remove member');

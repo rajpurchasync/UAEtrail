@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { ChevronLeft, Mail, Lock, Mountain, X } from 'lucide-react';
-import { api } from '../api/index';
 import { setActiveTenantId } from '../api/tenant';
+import { fetchMeProfile } from '../hooks/memberProfileApi';
+import { fetchMemberHostStatus } from '../hooks/memberHostStatusApi';
 import { GoogleAuthSection } from '../components/auth/GoogleAuthSection';
 import { useAuth } from '../context/AuthContext';
 import { accountRouteByRole, defaultRouteByRole } from '../utils/authRouting';
@@ -79,14 +80,14 @@ export const SignIn = () => {
       return;
     }
 
-    const profileRes = await api.getMeProfile().catch(() => null);
+    const profile = await fetchMeProfile().catch(() => null);
     const postAuthDefault =
       signedInUser.role === 'participant'
         ? defaultRouteByRole(signedInUser.role)
         : accountRouteByRole(signedInUser.role);
     const welcomeRedirectTo = from && canReturnAfterAuth(from, signedInUser.role) ? from : postAuthDefault;
 
-    if (profileRes && shouldForceSignupWelcome(signedInUser.role, profileRes.data)) {
+    if (profile && shouldForceSignupWelcome(signedInUser.role, profile)) {
       navigate('/welcome', {
         replace: true,
         state: { redirectTo: welcomeRedirectTo },
@@ -107,16 +108,9 @@ export const SignIn = () => {
 
     clearAuthReturnContext();
 
-    if (
-      signedInUser.role === 'tenant_owner' ||
-      signedInUser.role === 'tenant_admin' ||
-      signedInUser.role === 'tenant_guide'
-    ) {
-      const tenants = await api.getMyTenants().catch(() => null);
-      const firstTenant = tenants?.data?.[0];
-      if (firstTenant) {
-        setActiveTenantId(firstTenant.tenantId);
-      }
+    const hostStatus = await fetchMemberHostStatus().catch(() => null);
+    if (hostStatus?.tenantId) {
+      setActiveTenantId(hostStatus.tenantId);
     }
 
     navigate(
@@ -128,17 +122,17 @@ export const SignIn = () => {
   };
 
   const demoAccounts = [
-    { label: 'Admin', email: 'admin@uaetrails.app', password: 'Admin@12345' },
-    { label: 'Participant', email: 'visitor@uaetrails.app', password: 'Visitor@12345' },
-    { label: 'Individual host', email: 'host@uaetrails.app', password: 'Host@12345' },
-    { label: 'Agency', email: 'organizer@uaetrails.app', password: 'Agency@12345' },
-    { label: 'Shop', email: 'shop@uaetrails.app', password: 'Shop@12345' }
+    { label: 'Admin', email: 'admin@uaetrails.app' },
+    { label: 'Participant', email: 'visitor@uaetrails.app' },
+    { label: 'Individual host', email: 'host@uaetrails.app' },
+    { label: 'Agency', email: 'organizer@uaetrails.app' },
+    { label: 'Shop', email: 'shop@uaetrails.app' },
   ];
 
   const quickLogin = async (account: (typeof demoAccounts)[number]) => {
     setError(null);
     setEmail(account.email);
-    setPassword(account.password);
+    setPassword('');
     try {
       await completeAuth(await signInDemo(account.email));
     } catch (submissionError) {

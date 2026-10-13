@@ -8,7 +8,9 @@ import {
   type ReactNode,
 } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { ActivityMapPeekActionId, UserRole } from '@uaetrail/shared-types';
+import type { ActivityDTO, ActivityMapPeekActionId, UserRole } from '@uaetrail/shared-types';
+import { buildShareText, buildShareUrl } from '../../utils/share';
+import type { HostActivityManageInitialView } from '../../components/host/hostActivityManageViews';
 import { resolveActivityHostUserId } from '@uaetrail/shared-types';
 import { useAuth } from '../../context/AuthContext';
 import { joinAuthPath } from '../../config/routingCatalog';
@@ -19,8 +21,10 @@ import { messagesRouteForRole } from '../../utils/authRouting';
 import { useActivityJoinActions, useActivityJoinContext } from '../../hooks/useActivityJoinFlow';
 import { useViewerProfileGender } from '../../hooks/useViewerProfileGender';
 import { womenOnlyJoinMessageForActivity } from '../../utils/activityWomenOnlyJoin';
-import { activityMapPeekNeedsJoinContext } from '../../explore/activityMapPeekActions';
+import { executeActivityMapPeekAction } from '../../activity/executeActivityMapPeekAction';
+import { activityMapPeekNeedsJoinContext } from '../../activity/activityPeekEngagement';
 import { resolveListFeedFooterModel } from '../listFeedFooterActions';
+import { activityDetailPath } from '../../config/routingCatalog';
 
 type ListFeedActionsContextValue = {
   isGuest: boolean;
@@ -39,7 +43,27 @@ export const useListFeedActions = (): ListFeedActionsContextValue => {
   return ctx;
 };
 
-export const ListFeedActionsProvider = ({ children }: { children: ReactNode }) => {
+/** Map list compact rows — no-op when provider is absent (e.g. tests). */
+export const useListFeedActionsOptional = (): ListFeedActionsContextValue | null =>
+  useContext(ListFeedActionsContext);
+
+export type ListFeedHostActivityActions = {
+  onShareHostedActivity?: (activity: ActivityDTO) => void;
+  onOpenHostManage?: (
+    activity: ActivityDTO,
+    initialView?: HostActivityManageInitialView
+  ) => void;
+  onInviteCrew?: (activity: ActivityDTO) => void;
+  onCreateLinkedRideshare?: (parent: ActivityDTO) => void;
+};
+
+export const ListFeedActionsProvider = ({
+  children,
+  onShareHostedActivity,
+  onOpenHostManage,
+  onInviteCrew,
+  onCreateLinkedRideshare,
+}: ListFeedHostActivityActions & { children: ReactNode }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const isGuest = !user;
@@ -47,6 +71,7 @@ export const ListFeedActionsProvider = ({ children }: { children: ReactNode }) =
   const [joinActivityId, setJoinActivityId] = useState<string | null>(null);
   const [joinCard, setJoinCard] = useState<ExploreCardModel | null>(null);
   const [pendingJoinOpen, setPendingJoinOpen] = useState(false);
+  const [pendingWithdrawOpen, setPendingWithdrawOpen] = useState(false);
 
   const joinContextEnabled = Boolean(
     joinActivityId && joinCard && activityMapPeekNeedsJoinContext(joinCard)
@@ -72,6 +97,13 @@ export const ListFeedActionsProvider = ({ children }: { children: ReactNode }) =
     onReload: reloadJoinContext,
   });
 
+  const handleListJoinSuccess = useCallback(
+    (message: string) => {
+      joinActions.handleJoinSuccess(message);
+    },
+    [joinActions]
+  );
+
   useEffect(() => {
     if (!pendingJoinOpen || joinStateLoading) return;
     if (joinUiState.kind === 'open') {
@@ -79,6 +111,14 @@ export const ListFeedActionsProvider = ({ children }: { children: ReactNode }) =
       setPendingJoinOpen(false);
     }
   }, [pendingJoinOpen, joinStateLoading, joinUiState.kind, joinActions]);
+
+  useEffect(() => {
+    if (!pendingWithdrawOpen || joinStateLoading) return;
+    if (joinUiState.kind === 'pending' || joinUiState.kind === 'confirmed') {
+      joinActions.setShowWithdraw(true);
+      setPendingWithdrawOpen(false);
+    }
+  }, [pendingWithdrawOpen, joinStateLoading, joinUiState.kind, joinActions]);
 
   const guestGatedAction = useCallback(() => {
     if (!user) {
@@ -101,30 +141,81 @@ export const ListFeedActionsProvider = ({ children }: { children: ReactNode }) =
         return;
       }
 
-      if (actionId === 'request_join') {
-        beginJoin(card);
-        return;
-      }
+      const activity = card.activity;
+      const joinUiForCard =
+        joinActivityId === activity?.id ? joinUiState : undefined;
 
-      if (actionId === 'open_crew_chat' && card.activity) {
-        void openActivityGroupChat(navigate, card.activity.id, card.activity.groupChatId);
-        return;
-      }
-
-      if (actionId === 'message_host' && card.activity) {
-        const hostUserId = resolveActivityHostUserId(card.activity);
-        if (!hostUserId) return;
-        navigate(
-          messagesRouteForRole((user.role ?? 'participant') as UserRole, hostUserId, {
-            activityId: card.activity.id,
-          })
-        );
-        return;
-      }
-
-      beginJoin(card);
+      executeActivityMapPeekAction(actionId, {
+        requestJoin: () => beginJoin(card),
+        openCrewChat: () => {
+          if (!activity) return;
+          void openActivityGroupChat(navigate, activity.id, activity.groupChatId);
+        },
+        messageHost: () => {
+          if (!activity) return;
+          const hostUserId = resolveActivityHostUserId(activity);
+          if (!hostUserId) return;
+          navigate(
+            messagesRouteForRole((user.role ?? 'participant') as UserRole, hostUserId, {
+              activityId: activity.id,
+            })
+          );
+        },
+        shareActivity: () => {
+          if (!activity) return;
+          if (onShareHostedActivity) {
+            onShareHostedActivity(activity);
+            return;
+          }
+          if (card.sharePath && typeof navigator !== 'undefined' && navigator.share) {
+            const url = buildShareUrl(card.sharePath);
+            const text = buildShareText(card.shareTitle, card.shareText ?? undefined);
+            void navigator.share({ title: card.shareTitle, text, url }).catch(() => undefined);
+          }
+        },
+        manageActivity: () => {
+          if (!activity) return;
+          if (onOpenHostManage) {
+            onOpenHostManage(activity, 'participants');
+            return;
+          }
+          navigate(`${activityDetailPath(activity.id)}?tab=buddies`);
+        },
+        inviteCrew: () => {
+          if (activity && onInviteCrew) onInviteCrew(activity);
+        },
+        linkRideshare: () => {
+          if (activity && onCreateLinkedRideshare) onCreateLinkedRideshare(activity);
+        },
+        offerRideshare: () => {
+          if (activity && onCreateLinkedRideshare) onCreateLinkedRideshare(activity);
+        },
+        viewDetail: () => navigate(card.path),
+        withdrawJoin: () => {
+          if (joinUiForCard?.kind === 'pending' || joinUiForCard?.kind === 'confirmed') {
+            joinActions.setShowWithdraw(true);
+            return;
+          }
+          if (!activity?.id) return;
+          setJoinCard(card);
+          setJoinActivityId(activity.id);
+          setPendingWithdrawOpen(true);
+        },
+      });
     },
-    [user, guestGatedAction, beginJoin, navigate]
+    [
+      user,
+      guestGatedAction,
+      beginJoin,
+      navigate,
+      joinActivityId,
+      joinUiState,
+      joinActions,
+      onShareHostedActivity,
+      onOpenHostManage,
+      onInviteCrew,
+      onCreateLinkedRideshare,
+    ]
   );
 
   const footerModel = useCallback(
@@ -200,7 +291,12 @@ export const ListFeedActionsProvider = ({ children }: { children: ReactNode }) =
   return (
     <ListFeedActionsContext.Provider value={value}>
       {children}
-      <ExploreJoinOverlays activity={joinCard?.activity} joinActions={joinActions} />
+      <ExploreJoinOverlays
+        activity={joinCard?.activity}
+        exploreMapItemId={joinCard?.id}
+        joinActions={joinActions}
+        onJoinSuccess={handleListJoinSuccess}
+      />
     </ListFeedActionsContext.Provider>
   );
 };

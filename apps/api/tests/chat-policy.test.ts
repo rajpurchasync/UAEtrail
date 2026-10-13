@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import request from 'supertest';
 import type { Express } from 'express';
 import { findAuthUserByEmail } from '../src/lib/auth-users.js';
+import { canMessageUser, filterInboxMessageablePartnerIds } from '../src/services/chat-policy.js';
 import { getMongoClient } from '../src/lib/mongo.js';
 import { bootstrapTestApp } from './helpers/bootstrap.js';
 import {
@@ -188,5 +189,26 @@ describe('chat messaging policy', () => {
 
     expect(blockedRead.status).toBe(403);
     expect(blockedRead.body.error?.code).toBe('message_not_allowed');
+  });
+
+  it('inbox batch policy matches canMessageUser for activity-linked partners', async () => {
+    const visitor = await findAuthUserByEmail(visitorB.email);
+    expect(visitor).toBeTruthy();
+
+    // visitorB already has a pending join request on this activity from earlier cases in this file.
+    const partnerIds = [organizerId, (await findAuthUserByEmail(visitorA.email))!._id];
+    const batchAllowed = await filterInboxMessageablePartnerIds(visitor!._id, partnerIds);
+
+    for (const partnerId of partnerIds) {
+      const single = await canMessageUser(visitor!._id, partnerId);
+      expect(batchAllowed.has(partnerId)).toBe(single);
+    }
+
+    const inboxRes = await request(app)
+      .get('/api/v1/chat/inbox')
+      .set('Authorization', `Bearer ${visitorB.accessToken}`);
+    expect(inboxRes.status).toBe(200);
+    const directIds = (inboxRes.body.data?.direct ?? []).map((row: { userId: string }) => row.userId);
+    expect(directIds).toContain(organizerId);
   });
 });

@@ -14,12 +14,12 @@ import { listBuddiesForUser } from '../lib/buddy-store.js';
 import { resolveNotificationActorDisplayName } from './notification-actor-label.js';
 import { listFollowerIdsForUser } from '../lib/follow-store.js';
 import { createNotificationsMany } from '../lib/notifications-store.js';
-import { activityDetailPath, exploreDemandPinPath } from '../lib/member-routes.js';
+import { activityDetailPath, explorePublishedActivityPinPath } from '../lib/member-routes.js';
 import { logger } from '../lib/logger.js';
 
 export type MemberPublishEvent =
   | { publishType: 'activity'; activityId: string; title: string }
-  | { publishType: 'demand'; intentId: string; title: string };
+  | { publishType: 'demand'; intentId: string; title: string; activityId?: string | null };
 
 const notificationCopy = (
   actorName: string,
@@ -36,7 +36,10 @@ const notificationCopy = (
   return {
     title: `${actorName} posted on the map`,
     body: event.title,
-    path: exploreDemandPinPath(event.intentId),
+    path: explorePublishedActivityPinPath({
+      intentId: event.intentId,
+      activityId: event.activityId,
+    }),
     kind: 'friend_published',
   };
 };
@@ -74,7 +77,10 @@ export const notifyMemberPublishSubscribers = async (
           path,
         };
         if (event.publishType === 'activity') meta.activityId = event.activityId;
-        else meta.intentId = event.intentId;
+        else {
+          meta.intentId = event.intentId;
+          if (event.activityId) meta.activityId = event.activityId;
+        }
         return {
           userId,
           title,

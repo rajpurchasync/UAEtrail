@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
-import { buildExploreCardModel } from './exploreCardModel';
+import { buildDiscoveryCardViewModelCard } from '../discovery';
 import {
   finalizeExploreCardLinkedRideshare,
   listLinkedRideshareExploreRows,
@@ -46,7 +46,11 @@ describe('finalizeExploreCardLinkedRideshare', () => {
       activity: { id: parentId, activityType: 'hiking', requirements: [] },
     } as unknown as ExploreMapItemDTO;
     const items = [parentItem, ride(parentId, 'r1')];
-    const card = finalizeExploreCardLinkedRideshare(buildExploreCardModel(parentItem), parentItem, items);
+    const card = finalizeExploreCardLinkedRideshare(
+      buildDiscoveryCardViewModelCard(parentItem),
+      parentItem,
+      items
+    );
     expect(card.linkedRideshares).toHaveLength(1);
     expect(card.requirementBadges).toContain('Rideshare available');
   });
@@ -65,7 +69,7 @@ describe('finalizeExploreCardLinkedRideshare', () => {
     } as ExploreMapItemDTO;
     const carpoolItem = ride(parentId, 'r1');
     const card = finalizeExploreCardLinkedRideshare(
-      buildExploreCardModel(carpoolItem),
+      buildDiscoveryCardViewModelCard(carpoolItem),
       carpoolItem,
       [parentItem, carpoolItem]
     );

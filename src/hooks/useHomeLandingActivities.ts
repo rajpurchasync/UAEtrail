@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import { buildExploreWhenSegment } from '@uaetrail/shared-types';
-import { fetchApiActivities } from '../api/public';
+import { fetchApiActivities } from './publicCatalogClientApi';
 import { HOME_LANDING_FALLBACK_ACTIVITIES, type HomeLandingActivity } from '../content/homeLanding';
 
 export interface HomeLandingActivitiesState {
@@ -32,7 +32,6 @@ const toLandingActivity = (activity: ActivityDTO): HomeLandingActivity => ({
     activity.date,
   activityType: activity.activityType,
   price: activity.price,
-  pricePackages: activity.pricePackages,
   paymentTerms: activity.paymentTerms,
   pricingMode: activity.pricingMode,
   path: `/activity/${activity.id}`,

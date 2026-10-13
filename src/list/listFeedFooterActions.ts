@@ -1,11 +1,8 @@
 import type { ActivityMapPeekAction, ActivityMapPeekActionId } from '@uaetrail/shared-types';
 import type { ExploreCardModel } from '../explore/exploreCardModel';
-import {
-  activityMapPeekShowsJoinFlow,
-  resolveActivityMapPeekActions,
-} from '../explore/activityMapPeekActions';
+import { resolveActivityPeekEngagement } from '../activity/activityPeekEngagement';
 import { activityMapPeekActionLabel } from '../explore/exploreMapPeekActionCopy';
-import { exploreCardHasMapCoords } from '../explore/exploreCardModel';
+import { exploreCardHasMapCoords, exploreCardIsSeeking } from '../explore/exploreCardModel';
 import type { JoinRequestUiState } from '../utils/joinRequestUi';
 import {
   LIST_FEED_CTA_GET_DIRECTIONS,
@@ -61,7 +58,17 @@ const peekActionToFooterButton = (
       label: activityMapPeekActionLabel(action.id, action),
     };
   }
-  if (action.id === 'request_join' || action.id === 'message_host') {
+  if (
+    action.id === 'request_join' ||
+    action.id === 'message_host' ||
+    action.id === 'share_activity' ||
+    action.id === 'manage_activity' ||
+    action.id === 'withdraw_join' ||
+    action.id === 'offer_rideshare' ||
+    action.id === 'open_crew_chat' ||
+    action.id === 'invite_crew' ||
+    action.id === 'link_rideshare'
+  ) {
     if (isGuest) {
       return { kind: 'guest_gate', label: peekActionLabel(action, card) };
     }
@@ -89,16 +96,16 @@ const resolveActivityJoinFooter = (
   options: { isGuest: boolean; joinUiState?: JoinRequestUiState }
 ): ListFeedFooterModel | null => {
   const { isGuest, joinUiState } = options;
-  const actions = resolveActivityMapPeekActions(card, joinUiState);
-  const primaryAction = actions.find((action) => action.prominence === 'primary');
-  const secondaryAction = actions.find((action) => action.prominence === 'secondary');
+  const engagement = resolveActivityPeekEngagement(card, joinUiState);
+  const primaryAction = engagement.mapPeekActions.find((action) => action.prominence === 'primary');
+  const secondaryAction = engagement.mapPeekActions.find((action) => action.prominence === 'secondary');
 
   if (!primaryAction) return null;
 
   return {
     primary: peekActionToFooterButton(primaryAction, card, isGuest),
     secondary: secondaryAction ? peekActionToFooterButton(secondaryAction, card, isGuest) : null,
-    usesJoinFlow: activityMapPeekShowsJoinFlow(card, joinUiState),
+    usesJoinFlow: engagement.showsLegacyJoinFlow,
   };
 };
 
@@ -124,7 +131,7 @@ export const resolveListFeedFooterModel = (
     };
   }
 
-  if (card.showHostActivityCtas || card.showDemandOwnerActions) {
+  if (card.showDemandOwnerActions) {
     return {
       primary: { kind: 'link', label: card.primaryCta, href: card.path },
       secondary: null,
@@ -132,12 +139,12 @@ export const resolveListFeedFooterModel = (
     };
   }
 
-  if (card.source === 'activity' && card.showJoinActions) {
+  if (card.source === 'activity') {
     const fromPeek = resolveActivityJoinFooter(card, options);
     if (fromPeek) return fromPeek;
   }
 
-  if (card.showJoinActions && card.source === 'demand' && !isGuest) {
+  if (card.showJoinActions && exploreCardIsSeeking(card) && !isGuest) {
     return {
       primary: { kind: 'link', label: card.primaryCta, href: card.path },
       secondary: card.secondaryCta ? { kind: 'link', label: card.secondaryCta, href: card.path } : null,
@@ -145,7 +152,7 @@ export const resolveListFeedFooterModel = (
     };
   }
 
-  if (card.showJoinActions && card.source === 'demand') {
+  if (card.showJoinActions && exploreCardIsSeeking(card)) {
     return {
       primary: { kind: 'guest_gate', label: card.primaryCta },
       secondary: card.secondaryCta ? { kind: 'link', label: card.secondaryCta, href: card.path } : null,

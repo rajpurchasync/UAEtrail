@@ -1,4 +1,4 @@
-/** Filter tabs on the personal journey map (`/trips/map`), not Explore. */
+/** Filter tabs on the personal journey map (`/profile/history/map`), not Explore. */
 
 export type JourneyMapFilterCategory = 'all' | 'wishlist' | 'joined' | 'hosted' | 'self';
 

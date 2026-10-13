@@ -5,6 +5,7 @@ import type { BrowseTripTopicKey } from './browseListTripTopics';
 import type { BrowseListFilterState } from './browseListFilters';
 import type { BrowseMainCategoryKey } from './browseListTaxonomy';
 import {
+  BROWSE_DISCOVER_PARAM,
   LIST_CAT_PARAM,
   parseBrowseListFilterState,
   parseBrowseListVenueRegions,
@@ -33,9 +34,6 @@ const EXPLORE_PRESERVE_PARAM_KEYS = [
   'panel',
   'pinKind',
   'view',
-  'peopleTab',
-  'socialTab',
-  'buddies',
   'places',
   'activity',
   'subtype',
@@ -45,7 +43,7 @@ const EXPLORE_PRESERVE_PARAM_KEYS = [
 ] as const;
 
 type UseListDiscoveryUrlStateOptions = {
-  /** Keep `list=1` on `/explore` when filters change. */
+  /** Keep `browse=1` on `/explore` when discover filters change. */
   mapOverlay?: boolean;
 };
 
@@ -97,7 +95,8 @@ export const useListDiscoveryUrlState = (options?: UseListDiscoveryUrlStateOptio
         params.set(LIST_CAT_PARAM, listCat);
       }
       if (mapOverlay) {
-        params.set('list', '1');
+        params.set(BROWSE_DISCOVER_PARAM, '1');
+        params.set('list', '0');
       }
       setSearchParams(params, { replace: true });
     },

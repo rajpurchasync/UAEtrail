@@ -1,5 +1,5 @@
 import type { MyActivityDTO } from '@uaetrail/shared-types';
-import type { ActivityRequestView } from '../api/index';
+import type { ActivityRequestView } from '../api/types';
 import { getRequestEventDate, isUpcomingActivity } from './activityDates';
 
 export type JoinedSubTab = 'upcoming' | 'attended' | 'cancelled' | 'rejected';

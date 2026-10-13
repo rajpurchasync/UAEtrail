@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { api } from '../../api/index';
+import { completeSignupProfile } from '../../hooks/signupProfileApi';
 import { useAuth } from '../../context/AuthContext';
 import type { UserCountryCode, UserGender } from '../../constants/userProfileOptions';
 import {
@@ -111,7 +111,7 @@ export const SignupProfileWizard = ({ initialProfile, onComplete }: SignupProfil
 
     setSubmitting(true);
     try {
-      await api.completeSignupProfile({
+      await completeSignupProfile({
         dateOfBirth: form.dateOfBirth,
         gender: form.gender as UserGender,
         countryCode: form.countryCode,

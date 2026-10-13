@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { useSafeAsyncEffect } from '../hooks/useSafeAsyncEffect';
 import { ProductDTO } from '@uaetrail/shared-types';
-import { api } from '../api/index';
+import { fetchAdminProducts, updateAdminProductStatus } from '../hooks/adminConsoleApi';
 import { DashboardLayout } from '../components/layout';
 import { ADMIN_LINKS } from '../constants';
 import { AppSelect, ADMIN_FILTER_SELECT_CLASS } from '../components/ui/AppSelect';
@@ -28,34 +29,34 @@ export const AdminShop = () => {
   const [categoryFilter, setCategoryFilter] = useState('');
   const [confirmTarget, setConfirmTarget] = useState<{ product: AdminProduct; newStatus: string } | null>(null);
 
-  const loadProducts = async () => {
+  const loadProducts = async (isActive: () => boolean = () => true) => {
     setLoading(true);
     setError(null);
     try {
-      const res = await api.getAdminProducts({
+      const res = await fetchAdminProducts({
         page,
         pageSize: 20,
         status: view === 'draft' ? 'draft' : undefined,
         featured: view === 'featured' ? true : undefined,
         category: categoryFilter || undefined,
       });
+      if (!isActive()) return;
       setProducts(res.data ?? []);
       setTotal(res.pagination?.total ?? 0);
     } catch (err) {
+      if (!isActive()) return;
       setError(err instanceof Error ? err.message : 'Failed to load products');
     } finally {
-      setLoading(false);
+      if (isActive()) setLoading(false);
     }
   };
 
-  useEffect(() => {
-    loadProducts();
-  }, [page, view, categoryFilter]);
+  useSafeAsyncEffect((isActive) => loadProducts(isActive), [page, view, categoryFilter]);
 
   const executeStatusChange = async () => {
     if (!confirmTarget) return;
     try {
-      await api.updateAdminProductStatus(confirmTarget.product.id, confirmTarget.newStatus as 'active' | 'inactive');
+      await updateAdminProductStatus(confirmTarget.product.id, confirmTarget.newStatus as 'active' | 'inactive');
       setConfirmTarget(null);
       await loadProducts();
     } catch (err) {

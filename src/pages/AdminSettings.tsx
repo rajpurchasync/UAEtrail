@@ -1,5 +1,9 @@
-import { useEffect, useState } from 'react';
-import { api } from '../api/index';
+import { useState } from 'react';
+import { useSafeAsyncEffect } from '../hooks/useSafeAsyncEffect';
+import {
+  fetchAdminNotificationBroadcasts,
+  sendAdminNotificationBroadcast,
+} from '../hooks/adminConsoleApi';
 import { DashboardLayout } from '../components/layout';
 import { ADMIN_LINKS } from '../constants';
 import { AppSelect, ADMIN_SELECT_CLASS } from '../components/ui/AppSelect';
@@ -32,26 +36,36 @@ export const AdminSettings = () => {
   const [loadingHistory, setLoadingHistory] = useState(true);
   const [confirmSend, setConfirmSend] = useState(false);
 
-  const loadHistory = async () => {
+  const loadHistory = async (isActive: () => boolean = () => true) => {
     setLoadingHistory(true);
     try {
-      const res = await api.getAdminNotifications();
-      setHistory((res.data ?? []) as unknown as BroadcastHistory[]);
+      const rows = await fetchAdminNotificationBroadcasts();
+      if (!isActive()) return;
+      setHistory(
+        rows.map((row) => ({
+          id: row.id,
+          title: row.title,
+          body: row.body,
+          targetRole: row.targetRole ?? 'all',
+          sentAt: row.createdAt,
+          recipientCount: row.recipientCount,
+        }))
+      );
     } catch {
-      // silent fail for history
+      /* silent fail for history */
     } finally {
-      setLoadingHistory(false);
+      if (isActive()) setLoadingHistory(false);
     }
   };
 
-  useEffect(() => { loadHistory(); }, []);
+  useSafeAsyncEffect((isActive) => loadHistory(isActive), []);
 
   const handleSend = async () => {
     setSending(true);
     setError(null);
     setSuccess(null);
     try {
-      await api.sendAdminNotification({
+      await sendAdminNotificationBroadcast({
         title,
         body,
         targetRole: targetRole === 'all' ? undefined : targetRole

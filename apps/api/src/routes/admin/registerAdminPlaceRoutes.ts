@@ -30,6 +30,7 @@ import {
   updateAdminLocation,
 } from '../../lib/admin-store.js';
 import { EXPLORE_VENUES_LIST_PATH } from '../../lib/member-routes.js';
+import { scheduleSideEffect } from '../../lib/schedule-side-effect.js';
 import { dispatchNotification } from '../../services/notifications.js';
 import { notifyUserAdminAction } from '../../services/admin-notifications.js';
 
@@ -37,6 +38,7 @@ const locationCreateSchema = z.object({
   name: z.string().min(2),
   region: z.string().min(2),
   areaLabel: z.string().min(2).max(120).optional().nullable(),
+  areaId: z.string().min(1).max(80).optional().nullable(),
   activityType: z.enum(['hiking', 'camping', 'event', 'shop', 'EVENT', 'community_activity', 'COMMUNITY_ACTIVITY']),
   description: z.string().min(20),
   difficulty: z.enum(['easy', 'moderate', 'hard']).optional(),
@@ -130,6 +132,7 @@ export const registerAdminPlaceRoutes = (adminRouter: Router): void => {
           name: body.name,
           region: body.region,
           areaLabel,
+          areaId: body.areaId?.trim() || null,
           activityType: toPrismaActivityType(body.activityType),
           description: body.description,
           difficulty: toPrismaDifficulty(body.difficulty),
@@ -245,6 +248,7 @@ export const registerAdminPlaceRoutes = (adminRouter: Router): void => {
           name: body.name,
           region: body.region,
           areaLabel: body.areaLabel !== undefined ? nextAreaLabel : undefined,
+          areaId: body.areaId !== undefined ? body.areaId?.trim() || null : undefined,
           countryCode: body.countryCode?.toUpperCase(),
           activityType: body.activityType ? toPrismaActivityType(body.activityType) : undefined,
           description: body.description,
@@ -321,12 +325,15 @@ export const registerAdminPlaceRoutes = (adminRouter: Router): void => {
               path: publicPath,
             },
           });
-          void awardPoints({
-            userId: updated.submittedById,
-            action: RewardAction.LOCATION_PUBLISHED,
-            referenceId: updated.id,
-            label: `Location approved: ${updated.name}`,
-          }).catch(() => undefined);
+          scheduleSideEffect(
+            awardPoints({
+              userId: updated.submittedById,
+              action: RewardAction.LOCATION_PUBLISHED,
+              referenceId: updated.id,
+              label: `Location approved: ${updated.name}`,
+            }),
+            'admin.location_approved_rewards'
+          );
         }
 
         if (deactivating && updated.submittedById) {

@@ -35,6 +35,9 @@ import { notifyHostOfRequestWithdrawal } from '../../services/request-notificati
 import { buildActivityRedactedDetail } from '../../lib/activity-redacted-detail.js';
 import { PRIVATE_ACTIVITY_MESSAGE } from '../../services/activity-viewer-access.js';
 import { composeActivityViewerAccess } from '../../services/compose-activity-viewer-access.js';
+import { buildActivityPresentationForDetail } from '../../lib/build-activity-presentation.js';
+import { countPendingActivityInvitesForSenderOnActivity } from '../../lib/activity-invites-store.js';
+import { resolveMemberHostStatus } from '../../services/member-host-status.js';
 import { resolveViewerPendingJoinInvite } from '../../services/activity-invite.js';
 import { createRequestSchema, eventIdParamSchema, requestIdParamSchema, rsvpSchema } from './schemas.js';
 
@@ -86,9 +89,14 @@ registerActivityRoute(router, 'get', '/:id', optionalAuth, validate({ params: ev
       throw new ApiError(404, 'activity_not_found', 'Activity not found.');
     }
 
+    const viewerUserId = req.auth?.userId ?? null;
+    const hostUserId = event.createdById ?? event.hostId ?? null;
+    const participantUserIds = event.participants.map((row) => row.userId);
+    const hostStatus = viewerUserId ? await resolveMemberHostStatus(viewerUserId) : null;
+
     const access = await composeActivityViewerAccess(
       {
-        viewerUserId: req.auth?.userId ?? null,
+        viewerUserId,
         activity: {
           id: event.id,
           tenantId: event.tenantId,
@@ -99,7 +107,8 @@ registerActivityRoute(router, 'get', '/:id', optionalAuth, validate({ params: ev
         },
         isPlatformAdmin: req.auth?.role === 'PLATFORM_ADMIN',
       },
-      { viewerUserId: req.auth?.userId ?? null, hostStatus: null }
+      { viewerUserId, hostStatus },
+      viewerUserId ? { hostUserId, participantUserIds } : undefined
     );
 
     let myParticipation = null;
@@ -124,6 +133,25 @@ registerActivityRoute(router, 'get', '/:id', optionalAuth, validate({ params: ev
       }
     }
 
+    const pendingJoinInviteCount =
+      viewerUserId != null
+        ? await countPendingActivityInvitesForSenderOnActivity({
+            activityId: id,
+            fromUserId: viewerUserId,
+          })
+        : 0;
+
+    const presentation = buildActivityPresentationForDetail({
+      event,
+      viewerAccess: access,
+      viewerUserId,
+      myParticipation,
+      myRequest: myRequest
+        ? { status: myRequest.status, canWithdraw: myRequest.canWithdraw }
+        : null,
+      pendingJoinInviteCount,
+    });
+
     if (access.exposure === 'none') {
       res.json({
         data: {
@@ -132,6 +160,7 @@ registerActivityRoute(router, 'get', '/:id', optionalAuth, validate({ params: ev
           message: PRIVATE_ACTIVITY_MESSAGE,
         },
         viewerAccess: access,
+        presentation,
       });
       return;
     }
@@ -145,6 +174,7 @@ registerActivityRoute(router, 'get', '/:id', optionalAuth, validate({ params: ev
           myJoinInvite,
         },
         viewerAccess: access,
+        presentation,
       });
       return;
     }
@@ -182,6 +212,7 @@ registerActivityRoute(router, 'get', '/:id', optionalAuth, validate({ params: ev
         myJoinInvite,
       },
       viewerAccess: access,
+      presentation,
     });
   } catch (error) {
     next(error);
@@ -198,13 +229,12 @@ registerActivityRoute(
   async (req, res, next) => {
     try {
       const { id } = req.params as z.infer<typeof eventIdParamSchema>;
-      const { note, selectedPackageIndex } = req.body as z.infer<typeof createRequestSchema>;
+      const { note } = req.body as z.infer<typeof createRequestSchema>;
 
       const { request, waitlisted } = await createJoinOrWaitlistRequest({
         activityId: id,
         userId: req.auth!.userId,
         note,
-        selectedPackageIndex
       });
 
       void notifyParticipantJoinRequestSubmitted({
@@ -243,12 +273,9 @@ registerActivityRoute(
   async (req, res, next) => {
     try {
       const { id } = req.params as z.infer<typeof eventIdParamSchema>;
-      const { selectedPackageIndex } = req.body as z.infer<typeof rsvpSchema>;
-
       const { request, participation } = await createRsvpParticipation({
         activityId: id,
         userId: req.auth!.userId,
-        selectedPackageIndex
       });
 
       const eventDoc = await findActivityDocInMongo(id);

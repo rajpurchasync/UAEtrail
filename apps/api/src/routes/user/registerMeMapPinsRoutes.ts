@@ -34,7 +34,7 @@ const updatePinSchema = z.object({
 const idParamSchema = z.object({ id: z.string().min(1) });
 
 export const registerMeMapPinsRoutes = (router: Router): void => {
-  router.get('/me/trips/map', requireAuth, async (req, res, next) => {
+  router.get('/me/journey-map', requireAuth, async (req, res, next) => {
     try {
       const data = await buildMemberJourneyMap(req.auth!.userId);
       res.json({ data });

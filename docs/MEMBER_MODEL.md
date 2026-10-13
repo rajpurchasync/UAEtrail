@@ -4,7 +4,9 @@
 
 Do **not** re-implement tier logic in React hooks — consume **`GET /me/host-status`** (`HostStatusDTO` in `@uaetrail/shared-types`).
 
-**Capabilities ≠ viewer access:** `canPublish` / `canAccessHostConsole` answer whether this member may **act** as a host. They do **not** gate whether someone may **read** full activity detail or a member profile. That is **`resolveActivityViewerAccess`** / **`resolveProfileViewerAccess`** ([`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §15). Guest sign-in sheets (`guestBrowseGateCopy`) are presentation when `gateReason === sign_in` only.
+**Capabilities ≠ viewer access:** `canPublish` / `canAccessHostConsole` answer whether this member may **act** as a host. They do **not** gate whether someone may **read** full activity detail or a member profile. That is **`buildActivityViewerAccess`** / **`resolveProfileViewerAccess`** ([`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §15; `resolveActivityViewerAccess` remains a compatibility alias). Guest sign-in sheets (`guestBrowseGateCopy`) are presentation when `gateReason === sign_in` only.
+
+**Activity detail — Pro vs host vs crew:** **Community host** = profile-complete member who may Organize (`canPublish`). **Pro membership** = paid tier for **social depth** on outings (e.g. view host profile before join, full **Buddies** roster after join, offer/add transport when enforced) — applied in **`applyActivityViewEntitlements`** after social `viewerAccess`. **`canAccessCrewSurfaces`** on activity detail is **not** Pro and **not** host tier: it means confirmed **participant** or **host** on **this** outing (meeting precision, roster, group chat). Pending joiners stay on **Plan** + join CTAs only. Do not use `UserRole` or `canPublish` for consumer Buddies/Place gates.
 
 **Host = always a user:** Every publish action has a `userId` actor. A **business** is a **tenant** the user may represent; use **publish as self / {business}** when the member has multiple activity-capable tenants (`GET /me/host-status` → `ownedProfiles[].publishingProfileKind`; Organize publish step `OrganizePublishAsField`). Host console publish-as: TBD.
 
@@ -109,8 +111,8 @@ Detail: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §1.6.
 | Tier | Who | Tenant `publishingPurpose` | Paid Organize? | Entry |
 |------|-----|------------------------------|----------------|-------|
 | **Community** | Individual member | `community` | No (free / shared) | Profile complete → auto tenant (`ensureBuddyHostTenant`) |
-| **Professional** | Pro guide | `professional` | Future Pro rules | `/profile/pro-membership` → host application (`individual`) |
-| **Business** | Agency / shop owner or **employee** | `business` | Agency yes | Pro membership application or team invite → `tenant_memberships` |
+| **Professional** | Pro guide | `professional` | No — free + shared only | `/profile/pro-membership` → host application (`individual`) |
+| **Business** | Agency / shop owner or **employee** | `business` | Yes (agency; shop per product) | Pro membership application or team invite → `tenant_memberships` |
 
 **Profile badge (`profileRoleLabel`):**
 
@@ -132,8 +134,8 @@ All paths require a **signed-in user**. Upgrade entry: **`/profile/pro-membershi
 
 | Pro path | Who | Required choice | Storefront / capabilities (high level) |
 |----------|-----|-----------------|----------------------------------------|
-| **Individual** | Solo pro guide | — | `/guide/:slug` storefront; Organize as self + pro tenant |
-| **Business** | Company / brand | **Subtype required:** Shop · Tour agency · E-commerce · Hospitality · (extensible) | Tenant + console; paid trips / campaigns per subtype (detail later) |
+| **Individual** | Solo pro guide | — | `/guide/:slug` — manage **guide profile**; Organize **free + shared-cost** outings (not paid) |
+| **Business** | Company / brand | **Subtype required:** Shop · Tour agency · … | **Shop** → `/shop/:id` + shop details in console; **Agency** → `/agency/:slug` + agency profile; paid commercial trips where product allows |
 | **Partner** | Hotel / campaign partner | Detail later | Partner storefront + “What’s happening” campaigns (future) |
 
 **Business subtype** is **not** interchangeable: a **shop** is map/directions retail; a **tour agency** is trip operator without requiring a visit pin; **Partner** is a separate Pro path from generic business (see product split in `DOMAIN.md`).
@@ -152,7 +154,7 @@ Billing / `PaidMembershipSku` enforcement: layer **7** in `member-entitlements.t
 
 Trusted fields (year goal, upcoming list, etc.) appear only on **trusted** exposure, not on the public card.
 
-**Browse — member people (not chat):** Map People panel (`view=people`; legacy `view=social`) and list **Buddies** share `ExploreMemberDiscoveryList`. **Network roster:** `GET /social/people` — friends + followed with trip hints; pill via `GET /social/people/preview`. **Discovery roster:** `GET /me/member-discovery/roster` — going / looking / directory; **quota:** `GET /me/member-discovery-quota`, `GET /users/browse`; profile opens `GET /users/:id/public-profile?from=discover` (**5 unique profiles / 30d**; Pro unlimited). **Chat** is [`COMMUNICATION.md`](./COMMUNICATION.md) (`/messages`, `/chat/*`). **Join me (participation):** `GET/POST /activities/:id/invites` — in-app nudge only; invitee still RSVPs or requests to join; host approval when required. See [`NAVIGATION.md`](./NAVIGATION.md) § Browse — people & crew and [`API_ROUTING.md`](./API_ROUTING.md).
+**Browse — member people (not chat):** Map People panel (`view=people`; legacy `view=social`) and list **Buddies** share `PeopleBrowseTabContent` (`PeopleBrowsePanel` on map). **Network roster:** `GET /social/people` — friends + followed with trip hints; pill via `GET /social/people/preview`. **Discovery roster:** `GET /me/member-discovery/roster` — going / looking / directory; **quota:** `GET /me/member-discovery-quota`, `GET /users/browse`; profile opens `GET /users/:id/public-profile?from=discover` (**3 unique profiles / 30d**; Pro unlimited). **Chat** is [`COMMUNICATION.md`](./COMMUNICATION.md) (`/messages`, `/chat/*`). **Join me (participation):** `GET/POST /activities/:id/invites` — in-app nudge only; invitee still RSVPs or requests to join; host approval when required. See [`NAVIGATION.md`](./NAVIGATION.md) § Browse — people & crew and [`API_ROUTING.md`](./API_ROUTING.md).
 
 **Profile view analytics (shipped):** views recorded on `GET /users/:id/public-profile`; owners with host Pro/business see `GET /me/profile-view-stats`.
 
@@ -165,7 +167,7 @@ Trusted fields (year goal, upcoming list, etc.) appear only on **trusted** expos
 | `signupProfileComplete` | `/welcome` member details done |
 | `canPublish` | May run Organize wizard (has activity-capable tenant) |
 | `canAccessHostConsole` | May use `/host/*` (publish queue, team) |
-| `canHostPaidActivities` | Agency commercial pricing |
+| `canHostPaidActivities` | Member is linked to a **business** tenant (`hostTiers.business`); paid only when publishing as agency / shop / partner |
 | `isCommunityHost` | Has map footprint as host (activity or demand) |
 
 **Demand (Find)** requires signed-in member only — **not** `canPublish`.
@@ -229,6 +231,19 @@ Product-facing **who is viewing** for **capabilities** (Organize, console, futur
 
 ---
 
+## Member availability (calendar — not seeking)
+
+| Concern | Rule |
+|---------|------|
+| **Storage** | `member_availability` — one row per user with `slots[]`, `kinds[]`, optional `areaId` / `region` |
+| **Edit** | Plan → **Available** lens (`lens=availability`) |
+| **Discover** | `GET /explore/people/availability` · Explore People filters (date range, area, kind) |
+| **Visibility** | `public` · `buddies` · `hidden` — enforced on index and public profile `availability` slice |
+| **vs seeking** | Seeking = time-bound **Activity** on the map (`activityMode: seeking`). Availability = person slots only. |
+| **Guide kind** | Casual “can guide” on availability; paid/commercial guiding = **hosted** activity or agency profile |
+
+---
+
 ## Naming vocabulary
 
 Host/member/join terms (do not duplicate in other docs — **update this section** when semantics change).
@@ -239,7 +254,7 @@ Host/member/join terms (do not duplicate in other docs — **update this section
 | **Pro / business host** | Agency, shop, professional guide | `/profile/pro-membership`, `host_applications` |
 | **Host console** | Tenant-scoped publish/manage (host **user** + active tenant) | `/host/*`, `x-organisation-id`, `src/console/*` |
 | **Activity join request** | Join a **published activity** (approval) | `activity_requests`, `/host/requests` |
-| **Demand join request** | Join a **Find** post | `participant_intent_requests`, `/me/participant-intents/.../requests` |
+| **Demand join request** | Join a **Find** post (seeking **activity** after M1) | **`activity_requests`** (canonical); `/me/participant-intents/.../requests` aliases for manage UI |
 | **Host application** | Pro/agency/shop onboarding | `host_applications` |
 | **Buddy connection (friends)** | Mutual link between **member accounts**; accept also creates **mutual follow** (`user_follows`, no separate follow notification) | `BuddySummaryDTO.userId` = other person’s user id (no “buddy id”) |
 | **`actorUserId` (notifications)** | Who triggered the action | Always a **user** id — see `DOMAIN_CANONICALS.md` §11 |

@@ -1,18 +1,21 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { MapPin } from 'lucide-react';
-import type { ActivityDTO } from '@uaetrail/shared-types';
+import { allowedActivityPricingModes, type ActivityDTO } from '@uaetrail/shared-types';
 import { publishOrganizeActivity as publishCreateActivity } from '../../services/organizeActivityPublish';
 import { useAuth } from '../../context/AuthContext';
+import { afterOrganizeActivityPublishClientRefresh } from '../../hooks/organizePublishClientEffects';
 import { useHostStatus } from '../../hooks/useHostStatus';
 import { setActiveTenantId } from '../../api/tenant';
-import { listOrganizePublishProfiles } from '../organizePublishTenants';
+import { listOrganizePublishProfiles, resolveOrganizePublishingProfileKind } from '../organizePublishTenants';
 import {
   organizePublishGateHref,
   organizePublishGateInputFromHostGate,
 } from '../../utils/organizePublishGate';
 import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
 import { EXPLORE_Z } from '../../config/exploreTheme';
+import { validateOrganizePlaceArea } from '../organizePublishArea';
 import {
   buildDateOptions,
   createFlowStepTitle,
@@ -93,6 +96,7 @@ export const CreateActivityFlow = ({
 }: CreateActivityFlowProps) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const queryClient = useQueryClient();
   const { user } = useAuth();
   const {
     canPublish,
@@ -126,6 +130,10 @@ export const CreateActivityFlow = ({
   }, []);
 
   const tenantId = publishTenantId ?? defaultTenantId;
+  const publishingProfileKind = useMemo(() => {
+    const profile = publishTenantOptions.find((p) => p.tenantId === tenantId);
+    return profile ? resolveOrganizePublishingProfileKind(profile) : null;
+  }, [publishTenantOptions, tenantId]);
   const memberDisplayName = user?.displayName ?? null;
 
   const [step, setStep] = useState<FlowStep>('type');
@@ -316,10 +324,11 @@ export const CreateActivityFlow = ({
   }, []);
 
   useEffect(() => {
-    if (!canHostPaidActivities && draft.priceMode === 'paid') {
+    const allowed = new Set(allowedActivityPricingModes(hostTiers, { publishingProfileKind }));
+    if (!allowed.has(draft.priceMode)) {
       patchDraft({ priceMode: 'free', priceAmount: 0 });
     }
-  }, [canHostPaidActivities, draft.priceMode, patchDraft]);
+  }, [hostTiers, publishingProfileKind, draft.priceMode, patchDraft]);
 
   const handleClose = () => {
     if (submitting) return;
@@ -422,17 +431,27 @@ export const CreateActivityFlow = ({
       setError(validation);
       return;
     }
+    const placeAreaValidation = validateOrganizePlaceArea(draft, registryPlaces);
+    if (placeAreaValidation) {
+      setError(placeAreaValidation);
+      return;
+    }
 
     setSubmitting(true);
     setError(null);
     try {
+      const linkedIntentId = demandPrefill?.participantIntentId ?? null;
       const activity = await publishCreateActivity({
         draft: { ...draft, kind: draft.kind ?? selectedKind, rideshareEnabled: false },
         tenantId,
         userId: user.id,
-        participantIntentId: demandPrefill?.participantIntentId ?? null,
+        participantIntentId: linkedIntentId,
         sourceActivityId: demandPrefill?.sourceActivityId ?? null,
         linkToParentActivityId: demandPrefill?.linkToParentActivityId ?? null,
+      });
+      await afterOrganizeActivityPublishClientRefresh(queryClient, {
+        activityId: activity.id,
+        linkedParticipantIntentId: linkedIntentId,
       });
       if (organizeFlowId) clearOrganizeWizardSession(organizeFlowId, wizardSessionScope);
       setPublishedActivity(activity);
@@ -515,6 +534,8 @@ export const CreateActivityFlow = ({
     memberDisplayName,
     registryPlaces,
     canPublish,
+    hostTiers,
+    publishingProfileKind,
     canHostPaidActivities,
     hostGateLoading,
     submitting,
@@ -559,6 +580,8 @@ export const CreateActivityFlow = ({
     memberDisplayName,
     registryPlaces,
     canPublish,
+    hostTiers,
+    publishingProfileKind,
     canHostPaidActivities,
     hostGateLoading,
     submitting,

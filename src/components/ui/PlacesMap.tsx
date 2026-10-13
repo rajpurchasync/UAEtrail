@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import L from 'leaflet';
 import { MapContainer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet';
@@ -32,6 +32,7 @@ export interface PlaceMapPin {
   path: string;
   hostAvatar?: string | null;
   source?: MapPinSource;
+  activityMode?: 'hosted' | 'seeking';
   /** Base explore item id when this pin is a carpool endpoint. */
   exploreItemId?: string;
   rideshareEndpoint?: 'from' | 'to';
@@ -40,11 +41,14 @@ export interface PlaceMapPin {
   stackCount?: number;
   /** Multiple emoji types at one coordinate — rendered as one Leaflet marker. */
   colocatedEntries?: ColocatedMapPinEntry[];
+  /** Amenity catalog kind when `activityType` is `event`. */
+  placeKind?: import('@uaetrail/shared-types').PlaceKind;
 }
 
 export interface ColocatedMapPinEntry {
   activityType: MapPinKind;
   source?: MapPinSource;
+  activityMode?: 'hosted' | 'seeking';
   exploreItemId: string;
   stackExploreItemIds?: string[];
   stackCount?: number;
@@ -94,6 +98,7 @@ const boundsFromPins = (pins: PlaceMapPin[], fallback: MapBounds): MapBounds => 
 };
 
 const resolvePinSource = (pin: Pick<PlaceMapPin, 'id' | 'source'>): MapPinSource => {
+  if (pin.id.startsWith('area:')) return 'area';
   if (pin.id.startsWith('venue:')) return 'venue';
   if (pin.id.startsWith('demand:')) return 'demand';
   if (pin.id.startsWith('shop:')) return 'shop';
@@ -103,7 +108,8 @@ const resolvePinSource = (pin: Pick<PlaceMapPin, 'id' | 'source'>): MapPinSource
     pin.source === 'venue' ||
     pin.source === 'shop' ||
     pin.source === 'agency' ||
-    pin.source === 'demand'
+    pin.source === 'demand' ||
+    pin.source === 'area'
   ) {
     return pin.source;
   }
@@ -115,7 +121,7 @@ const pinIcon = (
   selected: boolean,
   pin: Pick<
     PlaceMapPin,
-    'id' | 'name' | 'source' | 'stackCount' | 'colocatedEntries'
+    'id' | 'name' | 'source' | 'stackCount' | 'colocatedEntries' | 'activityMode' | 'placeKind'
   >,
   _rideshareEndpoint?: 'from' | 'to',
   selectedExploreItemId?: string,
@@ -135,10 +141,14 @@ const pinIcon = (
       return {
         kind: entry.activityType,
         source,
-        ringColor: exploreMapPinRingColor(entry.activityType, source),
+        ringColor: exploreMapPinRingColor(
+          entry.activityType,
+          entry.activityMode === 'seeking' ? 'seeking' : source
+        ),
         exploreItemId: entry.exploreItemId,
         stackCount: entry.stackCount ?? 1,
         selected: entrySelected,
+        activityMode: entry.activityMode ?? null,
       };
     });
     const { html, size } = buildMapColocatedPinIconHtml(entries);
@@ -152,6 +162,22 @@ const pinIcon = (
   }
 
   const source = resolvePinSource(pin);
+  if (source === 'area' || kind === 'area') {
+    const layout = buildVenueMapPinHtml({
+      kind: 'event',
+      label: pin.name,
+      mapZoom,
+      selected,
+      stackCount: pin.stackCount,
+    });
+    return L.divIcon({
+      className: 'uaetrail-map-pin uaetrail-map-venue-pin-wrap uaetrail-map-area-pin-wrap',
+      html: layout.html,
+      iconSize: [layout.width, layout.height],
+      iconAnchor: layout.iconAnchor,
+      popupAnchor: [0, -layout.iconAnchor[1] - 4],
+    });
+  }
   if (isCatalogVenueMapPin(kind, source)) {
     const layout = buildVenueMapPinHtml({
       kind,
@@ -169,7 +195,10 @@ const pinIcon = (
     });
   }
 
-  const ringColor = exploreMapPinRingColor(kind, source);
+  const ringColor = exploreMapPinRingColor(
+    kind,
+    pin.activityMode === 'seeking' ? 'seeking' : source
+  );
   const isVenue = source === 'venue';
   const size = isVenue ? (selected ? 36 : 32) : selected ? 44 : 40;
   const iconSize = isVenue ? 15 : 18;
@@ -184,6 +213,8 @@ const pinIcon = (
     ringWidth,
     selected,
     stackCount: indicativeCount,
+    activityMode: pin.activityMode ?? null,
+    placeKind: pin.placeKind,
   });
 
   return L.divIcon({
@@ -453,6 +484,57 @@ const RecenterMap = ({
   return null;
 };
 
+const MAP_BOUNDS_DEBOUNCE_MS = 400;
+
+const MapVisibleBoundsReporter = ({
+  onVisibleBoundsChange,
+}: {
+  onVisibleBoundsChange?: (bounds: MapBounds) => void;
+}) => {
+  const map = useMap();
+  const timerRef = useRef<number | null>(null);
+  const onChangeRef = useRef(onVisibleBoundsChange);
+
+  useEffect(() => {
+    onChangeRef.current = onVisibleBoundsChange;
+  }, [onVisibleBoundsChange]);
+
+  const report = useCallback(() => {
+    if (!onChangeRef.current) return;
+    const bounds = map.getBounds();
+    onChangeRef.current({
+      west: bounds.getWest(),
+      south: bounds.getSouth(),
+      east: bounds.getEast(),
+      north: bounds.getNorth(),
+    });
+  }, [map]);
+
+  const scheduleReport = useCallback(() => {
+    if (!onChangeRef.current) return;
+    if (timerRef.current != null) window.clearTimeout(timerRef.current);
+    timerRef.current = window.setTimeout(() => {
+      timerRef.current = null;
+      report();
+    }, MAP_BOUNDS_DEBOUNCE_MS);
+  }, [report]);
+
+  useMapEvents({
+    moveend: scheduleReport,
+    zoomend: scheduleReport,
+    load: report,
+  });
+
+  useEffect(() => {
+    report();
+    return () => {
+      if (timerRef.current != null) window.clearTimeout(timerRef.current);
+    };
+  }, [report]);
+
+  return null;
+};
+
 const MapZoomReporter = ({ onZoomChange }: { onZoomChange?: (zoom: number) => void }) => {
   const map = useMap();
 
@@ -638,6 +720,8 @@ interface PlacesMapProps {
   /** Overrides explore default center — device fix or regional UAE framing. */
   exploreMapCenter?: { lat: number; lng: number } | null;
   onZoomChange?: (zoom: number) => void;
+  /** Debounced viewport bounds (explore map vNext fetch). */
+  onVisibleBoundsChange?: (bounds: MapBounds) => void;
   tileAttribution?: string;
   minZoom?: number;
 }
@@ -661,6 +745,7 @@ export const PlacesMap = ({
   exploreMode = false,
   exploreMapCenter = null,
   onZoomChange,
+  onVisibleBoundsChange,
   tileAttribution,
   minZoom,
 }: PlacesMapProps) => {
@@ -759,6 +844,9 @@ export const PlacesMap = ({
           zoom={exploreMode ? MAP_CONFIG.exploreDefaultZoom : undefined}
         />
         <MapZoomReporter onZoomChange={onZoomChange} />
+        {onVisibleBoundsChange ? (
+          <MapVisibleBoundsReporter onVisibleBoundsChange={onVisibleBoundsChange} />
+        ) : null}
         <FlyToSelectedPin pins={pins} selectedExploreItemId={activeSelection} />
         {exploreMode ? (
           <ClusteredMarkers

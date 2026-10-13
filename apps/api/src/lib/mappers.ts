@@ -20,7 +20,6 @@ import {
 } from '@uaetrail/shared-types';
 
 import { formatActivityLocal } from './datetime.js';
-import { parseStoredPricePackages } from './activity-pricing.js';
 import { resolveActivityDtoType } from '../domain/activity-type.js';
 
 const enumMap = <T extends string>(value: string | null | undefined): T =>
@@ -133,7 +132,8 @@ export const buildActivityDto = (event : ActivityWithRelations): ActivityDTO => 
     participantPreviews: participantsWithUser.length > 0 ? toParticipantPreviews(participantsWithUser) : undefined,
     countryCode: event.location.countryCode ?? event.tenant.countryCode ?? 'AE',
     locationLatitude: event.location.latitude ?? null,
-    locationLongitude: event.location.longitude ?? null
+    locationLongitude: event.location.longitude ?? null,
+    locationAreaId: event.location.areaId ?? null
   });
 };
 
@@ -142,6 +142,7 @@ export const toLocationDto = (location: Location, opts?: { admin?: boolean }): L
   name: location.name,
   region: location.region,
   areaLabel: location.areaLabel ?? null,
+  areaId: location.areaId ?? null,
   activityType: mapPlaceActivityType(location.activityType),
   description: location.description,
   difficulty: location.difficulty ? enumMap<'easy' | 'moderate' | 'hard'>(location.difficulty) : undefined,
@@ -204,7 +205,8 @@ const toEventDto = ({
   participantPreviews,
   countryCode = 'AE',
   locationLatitude,
-  locationLongitude
+  locationLongitude,
+  locationAreaId
 }: {
   event : Activity;
   locationName: string;
@@ -225,6 +227,7 @@ const toEventDto = ({
   countryCode?: string;
   locationLatitude?: number | null;
   locationLongitude?: number | null;
+  locationAreaId?: string | null;
 }): ActivityDTO => {
   const local = formatActivityLocal(event.startAt, countryCode);
   const endLocal = event.endAt ? formatActivityLocal(event.endAt, countryCode) : null;
@@ -245,6 +248,11 @@ const toEventDto = ({
   locationId: event.locationId,
   locationName,
   region,
+  areaId: locationAreaId?.trim()
+    ? locationAreaId.trim()
+    : event.areaId?.trim()
+      ? event.areaId.trim()
+      : null,
   activityType: mapScheduledActivityType(activityType),
   title: event.title,
   description: event.description,
@@ -253,7 +261,6 @@ const toEventDto = ({
   endDate: endLocal?.date ?? null,
   endTime: endLocal?.time ?? null,
   price: event.priceAed,
-  pricePackages: parseStoredPricePackages(event.pricePackages),
   slotsTotal: event.capacity,
   slotsAvailable,
   status: mapActivityStatus(event.status),
@@ -282,7 +289,6 @@ const toEventDto = ({
   participationMode: resolveParticipationMode(event.participationMode, event.requirements),
   images: event.images ?? [],
   bannerUrl: event.bannerUrl ?? null,
-  signupUrl: event.signupUrl ?? null,
   hostName,
   hostUserId,
   hostAvatar: hostAvatar ?? undefined,
@@ -300,6 +306,9 @@ const toEventDto = ({
   displayLatitude: displayCoords.latitude,
   displayLongitude: displayCoords.longitude,
   outingCategory: event.outingCategory ?? null,
-  outingTopic: event.outingTopic ?? null
+  outingTopic: event.outingTopic ?? null,
+  activityMode: event.activityMode ?? null,
+  participantIntentId: event.participantIntentId ?? null,
+  groupChatPostPolicy: event.groupChatPostPolicy ?? null
 };
 };

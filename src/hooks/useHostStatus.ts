@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { HostStatusDTO } from '@uaetrail/shared-types';
-import { api } from '../api/index';
+import { fetchMemberHostStatus } from './memberHostStatusApi';
 import { setActiveTenantId } from '../api/tenant';
 import { useAuth } from '../context/AuthContext';
 
@@ -25,12 +25,12 @@ export const useHostStatus = ({ enabled = true }: UseHostStatusOptions = {}) => 
     setLoading(true);
     setError(null);
     try {
-      const res = await api.getMemberHostStatus();
-      setStatus(res.data);
-      if (res.data.tenantId) {
-        setActiveTenantId(res.data.tenantId);
+      const hostStatus = await fetchMemberHostStatus();
+      setStatus(hostStatus);
+      if (hostStatus.tenantId) {
+        setActiveTenantId(hostStatus.tenantId);
       }
-      return res.data;
+      return hostStatus;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not load host status');
       setStatus(null);

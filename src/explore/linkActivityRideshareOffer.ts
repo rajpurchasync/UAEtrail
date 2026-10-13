@@ -1,5 +1,11 @@
-import type { ActivityDTO, ExploreMapItemDTO, ParticipantIntentDTO } from '@uaetrail/shared-types';
-import { api } from '../api/index';
+import {
+  exploreMapItemIsSeeking,
+  type ActivityDTO,
+  type ExploreMapItemDTO,
+  type ParticipantIntentDTO,
+} from '@uaetrail/shared-types';
+import { fetchPublicActivityDetail } from '../hooks/usePublicActivityDetail';
+import { updateHostActivityForTenant } from '../hooks/hostActivityClientApi';
 
 /** Parse `/activity/:id` or a bare UUID from user paste. */
 export const parseActivityIdFromShareInput = (input: string): string | null => {
@@ -41,17 +47,17 @@ export const linkParentToRideshareActivity = async (
   parentActivityId: string,
   rideshareActivityId: string
 ): Promise<void> => {
-  const detail = await api.getPublicActivityDetail(rideshareActivityId);
-  const rideshare = detail.data as ActivityDTO;
+  const detail = await fetchPublicActivityDetail(rideshareActivityId);
+  const rideshare = detail.activity as ActivityDTO;
   assertRideshareForLink(rideshare, tenantId, parentActivityId);
   if (rideshare.linkedActivityId === parentActivityId) {
     return;
   }
 
-  await api.updateHostActivity(tenantId, rideshareActivityId, {
+  await updateHostActivityForTenant(tenantId, rideshareActivityId, {
     linkedActivityId: parentActivityId,
   });
-  await api.updateHostActivity(tenantId, parentActivityId, {
+  await updateHostActivityForTenant(tenantId, parentActivityId, {
     linkedRideshareActivityId: rideshareActivityId,
   });
 };
@@ -69,11 +75,15 @@ export const canLinkRideshareToActivity = (activity: ActivityDTO | null | undefi
 
 /** Own-demand peek — offer a rideshare alongside a looking-for pin (not rideshare demands). */
 export const canOfferRideshareForDemandItem = (item: ExploreMapItemDTO | null | undefined): boolean => {
-  if (!item || item.source !== 'demand') return false;
+  if (!item || !exploreMapItemIsSeeking(item)) return false;
   if (item.convertedActivityId) return false;
   if (item.kind === 'rideshare') return false;
   return item.kind === 'hiking' || item.kind === 'camping' || item.kind === 'event';
 };
+
+/** Demand owner rideshare CTA — structural rules + wire `canOfferTransport`. */
+export const canShowDemandLinkRideshareOffer = (item: ExploreMapItemDTO | null | undefined): boolean =>
+  canOfferRideshareForDemandItem(item) && Boolean(item?.viewerAccess?.entitlements?.canOfferTransport);
 
 /** Trips → My plans manage sheet — same rules as map owner peek. */
 export const canOfferRideshareForParticipantIntent = (

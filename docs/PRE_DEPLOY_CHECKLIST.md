@@ -13,7 +13,7 @@ Complete these **on the VPS** when you connect. Use this list to track progress.
 ## Docker deploy
 
 - [ ] `./run-project.sh`
-- [ ] Do **not** run demo seed in production
+- [ ] Do **not** run demo seed in production; leave `DEMO_ACCOUNT_PASSWORD` unset on the VPS
 - [ ] First-time dev/staging only (if needed): `SEED_DATA=true docker compose exec -T api npm --workspace @uaetrail/api run seed`
 - [ ] `curl https://uaetrail.com/health` returns OK
 
@@ -50,6 +50,14 @@ Complete these **on the VPS** when you connect. Use this list to track progress.
 - [ ] `npm run verify:system` (or `verify:system:quick` on CI) on the release commit
 - [ ] `npm run test:explore-alignment` when explore/FAB changed
 - [ ] Staging smoke aligned with [`NAVIGATION.md`](./NAVIGATION.md) (explore-first IA — not legacy organizer/community nav)
+- [ ] **Consumer detail (S9):** `BASE_URL=https://staging-host npm run consumer-detail:qa-routes` then run §8 matrix in [`experiment/consumer-detail-surfaces-plan.md`](./experiment/consumer-detail-surfaces-plan.md) (substitute seed ids)
+- [ ] **Staging ops (ordered, per env)** — detail: [`operations/SEEKING_STORAGE_RUNBOOK.md`](./operations/SEEKING_STORAGE_RUNBOOK.md). On the server with production `.env` / compose API container:
+  1. `npm run seeking:storage-status` — read JSON; fix any `activeIntentsMissingSeekingActivity` before step 2
+  2. `npm --workspace @uaetrail/api run backfill-seeking-activities -- --dry-run`, then without `--dry-run` until step 1 reports zero missing
+  2b. If `activeIntentsMissingCoordsSkippedByBackfill` &gt; 0: fix coordinates or `npm --workspace @uaetrail/api run cancel-coordless-participant-intents` (after `--dry-run`), then repeat step 2 if needed
+  3. Set `PARTICIPANT_INTENT_STUB_WRITE=false` in API env, restart API (`docker compose up -d --build api` or your deploy script)
+  4. `npm run seeking:deploy-gate` (alias for `seeking:storage-status -- --strict`) — must exit 0 before traffic
+- [ ] **G-manage** (staging UI): second account requests join on a hosted outing → host sees **Plan → Needs you** → **Hosted** → manage sheet → approve; URL stays on `/plan` (not `/host/requests`). API regression: `g-manage-coordination-join-approve.test.ts` (coordination `host_join_queue` + `PATCH /host/requests/:id`).
 
 ## Smoke test (production)
 

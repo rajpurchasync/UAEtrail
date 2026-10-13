@@ -1,8 +1,8 @@
 import { EXPLORE_MAP_PATH } from '../../config/routingCatalog';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import type { MyActivityDTO } from '@uaetrail/shared-types';
-import { api, ActivityRequestView } from '../../api/index';
+import { useJoinedUpcomingPlanData } from '../../hooks/useJoinedUpcomingPlanData';
 import { ActivityHubEmptyState } from '../../components/mobile/ActivityHubEmptyState';
 import { AppSegmented } from '../../components/mobile/AppSegmented';
 import {
@@ -15,7 +15,6 @@ import {
   PRODUCT_EXPLORE_CTA,
   PRODUCT_JOINED_UPCOMING_EMPTY_BODY,
   PRODUCT_JOINED_UPCOMING_EMPTY_TITLE,
-  PRODUCT_LOAD_ERROR,
 } from '../../content/productNorthStar';
 import { ActivityHubListRow } from '../../components/mobile/ActivityHubListRow';
 import { formatActivityType } from '../../utils/activityIdentity';
@@ -65,10 +64,13 @@ export const JoinedSection = ({
   const inviteShare = useActivityInviteShareSheet();
   const [searchParams, setSearchParams] = useSearchParams();
   const subTab = parseJoinedSubTab(searchParams.get('sub'));
-  const [activities, setActivities] = useState<MyActivityDTO[]>([]);
-  const [requests, setRequests] = useState<ActivityRequestView[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    activities,
+    requests,
+    loading,
+    error: loadError,
+  } = useJoinedUpcomingPlanData(true, refreshKey);
+  const error = loadError ?? null;
 
   const setSubTab = (key: JoinedSubTab) => {
     const next = new URLSearchParams(searchParams);
@@ -77,17 +79,6 @@ export const JoinedSection = ({
     else next.set('sub', key);
     setSearchParams(next, { replace: true });
   };
-
-  useEffect(() => {
-    setLoading(true);
-    Promise.all([api.getMeActivities(), api.getMeRequests()])
-      .then(([activitiesRes, requestsRes]) => {
-        setActivities(activitiesRes.data);
-        setRequests(requestsRes.data);
-      })
-      .catch((err) => setError(err instanceof Error ? err.message : PRODUCT_LOAD_ERROR))
-      .finally(() => setLoading(false));
-  }, [refreshKey]);
 
   const attended = useMemo(() => attendedActivities(activities), [activities]);
   const upcomingRows = useMemo(() => buildUpcomingPlanRows(activities, requests), [activities, requests]);

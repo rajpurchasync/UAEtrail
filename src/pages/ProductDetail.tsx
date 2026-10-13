@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
-import { api } from '../api/index';
+import { fetchShopProductDetail } from '../hooks/shopPublicClientApi';
 import { exploreShopsPath } from '../config/routingCatalog';
 import { shopPublicPath } from '../utils/shopPaths';
 import { PageMeta } from '../components/seo/PageMeta';
@@ -15,18 +15,29 @@ export const ProductDetail = () => {
       setState({ kind: 'missing' });
       return;
     }
-    api
-      .getShopProductDetail(id)
-      .then((res) => {
-        const external = res.data.externalUrl?.trim();
+    let cancelled = false;
+    fetchShopProductDetail(id)
+      .then((product) => {
+        if (cancelled) return;
+        const external = product.externalUrl?.trim();
         if (external) {
           window.location.replace(external);
           setState({ kind: 'external', url: external });
           return;
         }
-        setState({ kind: 'shop', merchantId: res.data.merchantId });
+        const merchantId = product.merchantId ?? product.merchant?.id;
+        if (!merchantId) {
+          setState({ kind: 'missing' });
+          return;
+        }
+        setState({ kind: 'shop', merchantId });
       })
-      .catch(() => setState({ kind: 'missing' }));
+      .catch(() => {
+        if (!cancelled) setState({ kind: 'missing' });
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
 
   if (state.kind === 'loading') {

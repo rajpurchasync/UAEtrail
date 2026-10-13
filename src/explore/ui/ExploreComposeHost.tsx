@@ -30,6 +30,8 @@ interface ExploreComposeHostProps {
   onDemandSubmitted: (result: DemandSubmitResult) => void;
   onCreateLinkedRideshare?: (parentActivity: ActivityDTO) => void;
   planWithBuddyUserId?: string | null;
+  /** When explore is scoped with `?area=`, prefill Find/Add curated area steps. */
+  composeAreaSlug?: string | null;
 }
 
 /** FAB compose menu and create wizards — mounted once at explore shell level. */
@@ -56,6 +58,7 @@ export const ExploreComposeHost = ({
   onDemandSubmitted,
   onCreateLinkedRideshare,
   planWithBuddyUserId = null,
+  composeAreaSlug = null,
 }: ExploreComposeHostProps) => (
   <>
     {composeMenuOpen && exploreCompose && (
@@ -70,6 +73,7 @@ export const ExploreComposeHost = ({
       <CreateContributeFlow
         open={addWizardOpen}
         kind={addKind}
+        exploreAreaSlug={composeAreaSlug}
         onClose={onCloseCompose}
         onBackToIntent={onAddBackToIntent}
         onSubmitted={onContributeSubmitted}
@@ -97,6 +101,7 @@ export const ExploreComposeHost = ({
         open={findWizardOpen}
         onClose={onCloseCompose}
         findKind={findKind ?? null}
+        exploreAreaSlug={composeAreaSlug}
         onBackToIntent={onFindBackToIntent}
         onSubmitted={onDemandSubmitted}
         signInHref={signInHref}

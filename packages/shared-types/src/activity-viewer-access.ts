@@ -1,5 +1,7 @@
 import type { ActivityJoinMode } from './activity-join-mode.js';
 import type { ActivityMapPeekAction } from './activity-map-peek-actions.js';
+import type { ActivityEngagementStripsDTO } from './activity-engagement-policy.js';
+import type { ActivityViewerEntitlementsDTO } from './activity-viewer-entitlements.js';
 
 /** Payload depth for activity detail / peek surfaces. */
 export type DetailExposure = 'full' | 'redacted' | 'none';
@@ -35,8 +37,14 @@ export type ActivityViewerAccessDTO = {
   canViewFullActivity: boolean;
   canOpenDetailPage: boolean;
   joinMode: ActivityJoinMode;
+  /** Meeting point, crew chat, full itinerary — host or confirmed participant only. */
+  canAccessCrewSurfaces: boolean;
   /** Explore map peek footer — set on `GET /explore/map` activity rows only. */
   mapPeekActions?: ActivityMapPeekAction[];
+  /** Explore map peek Participants + Logistics strips — `GET /explore/map` activity rows only. */
+  mapPeekStrips?: ActivityEngagementStripsDTO;
+  /** Layer 7 — Pro / friend social depth (not crew surfaces). */
+  entitlements?: ActivityViewerEntitlementsDTO;
 };
 
 const ROSTER_FULL_LEVELS: ReadonlySet<ActivityViewerAccessLevel> = new Set([
@@ -44,13 +52,17 @@ const ROSTER_FULL_LEVELS: ReadonlySet<ActivityViewerAccessLevel> = new Set([
   'host',
   'tenant_staff',
   'participant',
-  'join_request',
-  'activity_group_member',
 ]);
+
+const CREW_SURFACES_LEVELS: ReadonlySet<ActivityViewerAccessLevel> = ROSTER_FULL_LEVELS;
 
 /** Whether this access level may receive the full activity detail payload. */
 export const activityViewerLevelHasFullDetail = (level: ActivityViewerAccessLevel): boolean =>
   ROSTER_FULL_LEVELS.has(level);
+
+export const activityViewerLevelCanAccessCrewSurfaces = (
+  level: ActivityViewerAccessLevel
+): boolean => CREW_SURFACES_LEVELS.has(level);
 
 /**
  * Social/roster policy for activity detail exposure (layers 3 + 5 → 6).
@@ -63,6 +75,19 @@ export const computeActivityDetailExposure = (input: {
   viewerUserId: string | null;
 }): ActivityViewerAccessDTO => {
   const { joinMode, level, viewerUserId } = input;
+  const canAccessCrewSurfaces = activityViewerLevelCanAccessCrewSurfaces(level);
+
+  if (level === 'join_request' || level === 'activity_group_member') {
+    return {
+      exposure: 'redacted',
+      level,
+      gateReason: null,
+      canViewFullActivity: false,
+      canOpenDetailPage: true,
+      joinMode,
+      canAccessCrewSurfaces: false,
+    };
+  }
 
   if (activityViewerLevelHasFullDetail(level)) {
     return {
@@ -72,6 +97,7 @@ export const computeActivityDetailExposure = (input: {
       canViewFullActivity: true,
       canOpenDetailPage: true,
       joinMode,
+      canAccessCrewSurfaces,
     };
   }
 
@@ -84,6 +110,7 @@ export const computeActivityDetailExposure = (input: {
         canViewFullActivity: false,
         canOpenDetailPage: false,
         joinMode,
+        canAccessCrewSurfaces: false,
       };
     }
     return {
@@ -93,6 +120,7 @@ export const computeActivityDetailExposure = (input: {
       canViewFullActivity: false,
       canOpenDetailPage: true,
       joinMode,
+      canAccessCrewSurfaces: false,
     };
   }
 
@@ -105,6 +133,7 @@ export const computeActivityDetailExposure = (input: {
       canViewFullActivity: false,
       canOpenDetailPage: true,
       joinMode,
+      canAccessCrewSurfaces: false,
     };
   }
 
@@ -115,5 +144,6 @@ export const computeActivityDetailExposure = (input: {
     canViewFullActivity: false,
     canOpenDetailPage: true,
     joinMode,
+    canAccessCrewSurfaces: false,
   };
 };

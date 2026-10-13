@@ -4,12 +4,15 @@ import {
   findActivityRequestByEventAndUser,
 } from '../lib/activity-engagement-store.js';
 import { findActivityDocInMongo } from '../lib/entity-sync.js';
+import { isDuplicateKeyError } from '../lib/mongo-errors.js';
+import { resolveActivityWallPostPolicyFromDoc } from '../lib/activity-group-chat-post-policy.js';
 import {
   createActivityGroup,
   ensureGroupMember,
   findGroupByActivityId,
   getGroupMembership,
   removeGroupMember,
+  updateGroupWallPostPolicy,
 } from '../lib/social-groups-store.js';
 
 /** Activity chat stays open until one week after the scheduled activity start. */
@@ -57,17 +60,46 @@ export const ensureActivityGroupChat = async (activityId: string): Promise<strin
   const hostUserId = resolveActivityHostUserId(eventDoc);
   if (!hostUserId) return null;
 
+  const wallPostPolicy = resolveActivityWallPostPolicyFromDoc(eventDoc.groupChatPostPolicy);
+
   let group = await findGroupByActivityId(activityId);
   if (!group) {
-    group = await createActivityGroup({
-      activityId,
-      activityTitle: eventDoc.title,
-      hostUserId,
-    });
+    try {
+      group = await createActivityGroup({
+        activityId,
+        activityTitle: eventDoc.title,
+        hostUserId,
+        wallPostPolicy,
+      });
+    } catch (error) {
+      if (!isDuplicateKeyError(error)) {
+        throw error;
+      }
+      group = await findGroupByActivityId(activityId);
+    }
+  }
+
+  if (!group) {
+    return null;
   }
 
   await syncActivityGroupChatRoster(activityId, group.id);
+  await syncActivityGroupChatWallPolicyFromActivity(activityId);
   return group.id;
+};
+
+/** Keep activity crew group wall policy aligned with `activities.groupChatPostPolicy`. */
+export const syncActivityGroupChatWallPolicyFromActivity = async (
+  activityId: string
+): Promise<void> => {
+  const eventDoc = await findActivityDocInMongo(activityId);
+  if (!eventDoc) return;
+  const group = await findGroupByActivityId(activityId);
+  if (!group) return;
+  const wallPolicy = resolveActivityWallPostPolicyFromDoc(eventDoc.groupChatPostPolicy);
+  if (group.wallPostPolicy !== wallPolicy) {
+    await updateGroupWallPostPolicy(group.id, wallPolicy);
+  }
 };
 
 /** Open chat: one group per activity — resolve existing, or provision once if legacy data has none. */
@@ -78,6 +110,7 @@ export const openActivityGroupChat = async (activityId: string): Promise<string 
   }
   if (!groupId) return null;
   await syncActivityGroupChatRoster(activityId, groupId);
+  await syncActivityGroupChatWallPolicyFromActivity(activityId);
   return groupId;
 };
 

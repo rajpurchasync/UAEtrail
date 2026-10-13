@@ -1,7 +1,7 @@
-import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
+import { exploreMapItemIsHostedActivity, exploreMapItemIsSeeking, type ExploreMapItemDTO } from '@uaetrail/shared-types';
 import type { ExploreCardModel } from '../explore/exploreCardModel';
 import { finalizeExploreCardLinkedRideshare } from '../explore/linkedRideshareExplore';
-import { canOfferRideshareForDemandItem } from '../explore/linkActivityRideshareOffer';
+import { canShowDemandLinkRideshareOffer } from '../explore/linkActivityRideshareOffer';
 import { viewerIsActivityHostUser } from '../utils/viewerHostsActivity';
 
 /** Same host/demand flags as explore map peek selection. */
@@ -15,11 +15,11 @@ export const enrichListFeedCardModel = (
 
   const activity = next.activity;
   const isOwnActivity = Boolean(
-    user && activity && item.source === 'activity' && viewerIsActivityHostUser(activity, user.id)
+    user && activity && exploreMapItemIsHostedActivity(item) && viewerIsActivityHostUser(activity, user.id)
   );
   const isOwnDemand = Boolean(
     user &&
-      item.source === 'demand' &&
+      exploreMapItemIsSeeking(item) &&
       item.requesterUserId === user.id &&
       item.participantIntentId &&
       !item.convertedActivityId
@@ -30,7 +30,7 @@ export const enrichListFeedCardModel = (
       ...next,
       showJoinActions: false,
       showDemandOwnerActions: true,
-      showDemandLinkRideshare: canOfferRideshareForDemandItem(item),
+      showDemandLinkRideshare: canShowDemandLinkRideshareOffer(item),
     };
   }
 
@@ -38,7 +38,6 @@ export const enrichListFeedCardModel = (
     return {
       ...next,
       showJoinActions: false,
-      showHostActivityCtas: true,
     };
   }
 

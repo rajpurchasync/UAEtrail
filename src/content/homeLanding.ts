@@ -13,7 +13,6 @@ export type HomeLandingActivity = {
   whenLabel: string;
   activityType: 'hiking' | 'camping' | 'event' | 'rideshare';
   price: number;
-  pricePackages?: { label: string; amount: number; currency: string }[];
   paymentTerms?: string | null;
   pricingMode?: 'free' | 'shared' | 'paid' | null;
   path: string;
@@ -58,7 +57,6 @@ export const HOME_LANDING_FALLBACK_ACTIVITIES: HomeLandingActivity[] = [
     activityType: 'hiking',
     price: 120,
     pricingMode: 'paid',
-    pricePackages: [{ label: 'Standard', amount: 120, currency: 'AED' }],
     path: EXPLORE_MAP_PATH,
   },
 ];

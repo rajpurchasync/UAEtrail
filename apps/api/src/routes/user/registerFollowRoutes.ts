@@ -19,10 +19,11 @@ import { notifyMemberFollowed } from '../../services/social-notifications.js';
 import { buddyRelationshipParamSchema } from './schemas.js';
 
 export const registerFollowRoutes = (router: Router): void => {
-  router.get('/me/member-hub-stats', async (req, res, next) => {
+  router.get('/me/profile-stats', async (req, res, next) => {
     try {
       const userId = req.auth!.userId;
-      const [followerCount, joinedCount, hostedCount, demandPostCount, isCommunityHost] = await Promise.all([
+      const [followerCount, joinedCount, hostedCount, activeParticipantIntentCount, isCommunityHost] =
+        await Promise.all([
         countFollowersForUser(userId),
         countUserCheckedInParticipations(userId),
         countPublishedActivitiesHostedByUser(userId),
@@ -30,7 +31,13 @@ export const registerFollowRoutes = (router: Router): void => {
         isCommunityHostByUserId(userId),
       ]);
       res.json({
-        data: { followerCount, joinedCount, hostedCount, demandPostCount, isCommunityHost },
+        data: {
+          followerCount,
+          joinedCount,
+          hostedCount,
+          activeParticipantIntentCount,
+          isCommunityHost,
+        },
       });
     } catch (error) {
       next(error);

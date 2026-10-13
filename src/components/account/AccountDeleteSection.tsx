@@ -1,5 +1,9 @@
 import { useEffect, useState } from 'react';
-import { api, AccountDeletionInfo } from '../../api/index';
+import {
+  deleteMemberAccount,
+  fetchAccountDeletionInfo,
+  type AccountDeletionInfo,
+} from '../../hooks/accountSettingsApi';
 import { AppButton } from '../mobile/AppButton';
 import { Dialog } from '../ui/Dialog';
 
@@ -17,9 +21,8 @@ export const AccountDeleteSection = ({ onDeleted }: AccountDeleteSectionProps) =
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
-    api
-      .getAccountDeletionInfo()
-      .then((res) => setInfo(res.data))
+    fetchAccountDeletionInfo()
+      .then((data) => setInfo(data))
       .catch(() => setInfo({ canDelete: false, blockers: ['Could not load account settings.'], requiresPassword: false }))
       .finally(() => setLoading(false));
   }, []);
@@ -29,7 +32,7 @@ export const AccountDeleteSection = ({ onDeleted }: AccountDeleteSectionProps) =
     setError(null);
     setDeleting(true);
     try {
-      await api.deleteAccount({
+      await deleteMemberAccount({
         ...(info?.requiresPassword ? { password } : { confirmPhrase: confirmPhrase as 'DELETE' })
       });
       setOpen(false);

@@ -21,8 +21,8 @@ interface ExploreItemSheetProps {
   onDemandLinkRideshare?: () => void;
   onGuestGatedAction?: () => void;
   onActivityMapPeekAction?: (actionId: ActivityMapPeekActionId) => void;
-  hostActivityCtaHandlers?: import('../../components/activity/HostActivityCtas').HostActivityCtaHandlers | null;
   onOpenExploreItem?: (exploreItemId: string) => void;
+  onOfferTransport?: () => void;
   joinInvitePeekBanner?: string | null;
   /** Map stage anchor vs portaled sheet (hosted activity manage from member hub, etc.). */
   presentation?: 'map' | 'modal';
@@ -42,8 +42,8 @@ const ExploreItemPeekCard = ({
   onDemandLinkRideshare,
   onGuestGatedAction,
   onActivityMapPeekAction,
-  hostActivityCtaHandlers = null,
   onOpenExploreItem,
+  onOfferTransport,
   joinInvitePeekBanner = null,
 }: ExploreItemSheetProps) => (
   <ExploreMapPeekCard
@@ -67,7 +67,6 @@ const ExploreItemPeekCard = ({
         joinStateLoading={joinStateLoading}
         onGuestGatedAction={onGuestGatedAction}
         onActivityMapPeekAction={onActivityMapPeekAction}
-        hostActivityCtaHandlers={hostActivityCtaHandlers}
       />
     }
   >
@@ -75,6 +74,8 @@ const ExploreItemPeekCard = ({
       card={card}
       onGuestGatedAction={onGuestGatedAction}
       onOpenExploreItem={onOpenExploreItem}
+      onOfferTransport={onOfferTransport}
+      joinUiState={joinUiState}
     />
   </ExploreMapPeekCard>
 );

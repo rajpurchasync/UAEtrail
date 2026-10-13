@@ -23,6 +23,7 @@ import {
 import { findGroupByActivityId, getGroupMembership } from '../src/lib/social-groups-store.js';
 import { findTenantMembershipContext } from '../src/lib/tenant-access.js';
 import {
+  buildActivityViewerAccess,
   resolveActivityViewerAccess,
 } from '../src/services/activity-viewer-access.js';
 
@@ -35,7 +36,11 @@ const activity = {
   requirements: ['Private: group or invite only — approval required'],
 };
 
-describe('resolveActivityViewerAccess', () => {
+describe('buildActivityViewerAccess', () => {
+  it('keeps resolveActivityViewerAccess as an alias', () => {
+    expect(resolveActivityViewerAccess).toBe(buildActivityViewerAccess);
+  });
+
   beforeEach(() => {
     vi.mocked(findActivityParticipantByEventAndUser).mockResolvedValue(null);
     vi.mocked(findActivityRequestByEventAndUser).mockResolvedValue(null);
@@ -45,7 +50,7 @@ describe('resolveActivityViewerAccess', () => {
   });
 
   it('redacts open map activities for guests', async () => {
-    const access = await resolveActivityViewerAccess({
+    const access = await buildActivityViewerAccess({
       viewerUserId: null,
       activity: { ...activity, joinMode: 'open', requirements: ['Open: anyone can request to join'] },
     });
@@ -57,7 +62,7 @@ describe('resolveActivityViewerAccess', () => {
   });
 
   it('denies anonymous viewers of private activities', async () => {
-    const access = await resolveActivityViewerAccess({
+    const access = await buildActivityViewerAccess({
       viewerUserId: null,
       activity,
     });
@@ -68,7 +73,7 @@ describe('resolveActivityViewerAccess', () => {
   });
 
   it('allows the host to view a private activity', async () => {
-    const access = await resolveActivityViewerAccess({
+    const access = await buildActivityViewerAccess({
       viewerUserId: 'host-1',
       activity,
     });
@@ -95,12 +100,14 @@ describe('resolveActivityViewerAccess', () => {
       updatedAt: new Date(),
     });
 
-    const access = await resolveActivityViewerAccess({
+    const access = await buildActivityViewerAccess({
       viewerUserId: 'guest-1',
       activity,
     });
 
-    expect(access.canViewFullActivity).toBe(true);
+    expect(access.canViewFullActivity).toBe(false);
+    expect(access.exposure).toBe('redacted');
+    expect(access.canAccessCrewSurfaces).toBe(false);
     expect(access.level).toBe('join_request');
   });
 
@@ -128,17 +135,19 @@ describe('resolveActivityViewerAccess', () => {
       isActive: true,
     });
 
-    const access = await resolveActivityViewerAccess({
+    const access = await buildActivityViewerAccess({
       viewerUserId: 'guest-2',
       activity,
     });
 
-    expect(access.canViewFullActivity).toBe(true);
+    expect(access.canViewFullActivity).toBe(false);
+    expect(access.exposure).toBe('redacted');
+    expect(access.canAccessCrewSurfaces).toBe(false);
     expect(access.level).toBe('activity_group_member');
   });
 
   it('redacts private link visits for signed-in non-roster members', async () => {
-    const access = await resolveActivityViewerAccess({
+    const access = await buildActivityViewerAccess({
       viewerUserId: 'member-with-link-1',
       activity,
     });
@@ -155,7 +164,7 @@ describe('resolveActivityViewerAccess', () => {
       tenant: { status: 'ACTIVE' as never },
     });
 
-    const access = await resolveActivityViewerAccess({
+    const access = await buildActivityViewerAccess({
       viewerUserId: 'staff-1',
       activity,
     });
@@ -179,7 +188,7 @@ describe('computeActivityDetailExposure (shared policy)', () => {
 
 describe('join mode inference fallback', () => {
   it('treats legacy requirements text as private when joinMode is missing', async () => {
-    const access = await resolveActivityViewerAccess({
+    const access = await buildActivityViewerAccess({
       viewerUserId: null,
       activity: {
         ...activity,

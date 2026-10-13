@@ -56,7 +56,7 @@ const resolveLinkedParentOnActivity = (
 export const isExploreParentOutingCard = (card: ExploreCardModel): boolean =>
   card.source === 'activity' && card.kind !== 'rideshare';
 
-/** Apply linked rideshare rows, parent back-link on carpool cards, and carpool peek badges. */
+/** Apply linked rideshare rows, parent back-link on rideshare cards, and rideshare peek badges. */
 export const finalizeExploreCardLinkedRideshare = (
   card: ExploreCardModel,
   mapItem: ExploreMapItemDTO,

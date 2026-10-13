@@ -1,11 +1,21 @@
-import { MESSAGES_PATH } from './surfacePaths';
+import { MESSAGES_PATH, PLAN_PATH, PROFILE_HISTORY_PATH, JOURNEY_MAP_PATH, MY_TRIPS_PATH } from './surfacePaths';
 import { shouldShowMobileBottomNav } from './platform';
 
 export type MobileTabHeaderCenter =
   | { kind: 'brand' }
   | { kind: 'title'; text: string };
 
-const TAB_HEADER_ROUTES = new Set(['/explore', '/profile', '/trips', '/activities', MESSAGES_PATH]);
+const TAB_HEADER_ROUTES = new Set([
+  '/explore',
+  '/profile',
+  PLAN_PATH,
+  '/trips',
+  '/activities',
+  PROFILE_HISTORY_PATH,
+  JOURNEY_MAP_PATH,
+  MY_TRIPS_PATH,
+  MESSAGES_PATH,
+]);
 
 export const isMobileTabHeaderRoute = (pathname: string): boolean => TAB_HEADER_ROUTES.has(pathname);
 

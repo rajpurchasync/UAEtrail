@@ -5,9 +5,9 @@ describe('browseListUrlState trip topics', () => {
   it('parses buddies segment for people list', () => {
     const params = new URLSearchParams('listCat=people&buddies=looking');
     const state = parseBrowseListFilterState(params);
-    expect(state.buddiesSegment).toBe('looking');
+    expect(state.buddiesSegment).toBe('available');
     const serialized = serializeBrowseListSearchParams(state, []);
-    expect(serialized.get('buddies')).toBe('looking');
+    expect(serialized.get('buddies')).toBeNull();
   });
 
   it('round-trips multiple filter topics', () => {
@@ -47,7 +47,7 @@ describe('browseListUrlState trip topics', () => {
         price: 'all',
         when: 'any',
         activityDatePreset: 'anyday',
-        buddiesSegment: 'going',
+        buddiesSegment: 'available',
       },
       []
     );

@@ -1,5 +1,5 @@
 import type { NavigateFunction } from 'react-router-dom';
-import { api } from '../api/index';
+import { fetchActivityGroupChatGroupId } from '../hooks/activityGroupChatClientApi';
 import { navigateToActivityGroupChat } from './activityGroupChatNav';
 
 /** Resolve activity crew chat group id (if needed) and open Messages thread. */
@@ -10,9 +10,9 @@ export const openActivityGroupChat = async (
   options?: { returnTo?: string }
 ): Promise<void> => {
   if (groupChatId) {
-    navigateToActivityGroupChat(navigate, groupChatId, options?.returnTo);
+    navigateToActivityGroupChat(navigate, groupChatId, options?.returnTo, activityId);
     return;
   }
-  const res = await api.getActivityGroupChat(activityId);
-  navigateToActivityGroupChat(navigate, res.data.groupId, options?.returnTo);
+  const groupId = await fetchActivityGroupChatGroupId(activityId);
+  navigateToActivityGroupChat(navigate, groupId, options?.returnTo, activityId);
 };

@@ -10,7 +10,7 @@ import { listWishlistWatchCandidates } from '../lib/wishlist-store.js';
 import { getMongoClient } from '../lib/mongo.js';
 import { COLLECTIONS } from '../lib/collections.js';
 import { wishlistWatchMatchesPin, type WishlistPinEvent } from '../lib/wishlist-match.js';
-import { activityDetailPath, exploreDemandPinPath } from '../lib/member-routes.js';
+import { activityDetailPath, explorePublishedActivityPinPath } from '../lib/member-routes.js';
 import { logger } from '../lib/logger.js';
 
 const resolveActivityPinCoords = (doc: {
@@ -120,6 +120,8 @@ export const notifyWishlistForNewDemand = async (intentId: string, requesterUser
         title: string;
         latitude: number | null;
         longitude: number | null;
+        activityId?: string | null;
+        seekingActivityId?: string | null;
       }>(COLLECTIONS.PARTICIPANT_INTENTS)
       .findOne({ _id: intentId });
 
@@ -138,7 +140,10 @@ export const notifyWishlistForNewDemand = async (intentId: string, requesterUser
       event,
       'Someone is looking for a crew near you',
       doc.title,
-      exploreDemandPinPath(intentId),
+      explorePublishedActivityPinPath({
+        intentId,
+        activityId: doc.activityId ?? doc.seekingActivityId ?? null,
+      }),
       { intentId }
     );
   } catch (error) {

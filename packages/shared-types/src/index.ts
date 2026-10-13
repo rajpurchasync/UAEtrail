@@ -11,6 +11,8 @@ import type {
   OutingTopic,
 } from './explore-plan-projection.js';
 import type { HostParticipantRosterStatus, ParticipantHostRatingDTO } from './participant-roster.js';
+import type { ExploreActivityMode } from './explore-activity-mode.js';
+import type { ActivityGroupChatPostPolicy } from './activity-group-chat-post-policy.js';
 
 export type UserRole =
   | 'platform_admin'
@@ -23,7 +25,7 @@ export type UserRole =
 export type TenantType = 'company' | 'guide_owned';
 export type MembershipRole = 'tenant_owner' | 'tenant_admin' | 'tenant_guide';
 
-/** Scheduled listings on the map (host activities, carpools). */
+/** Scheduled listings on the map (host activities, rideshares). */
 export type ScheduledActivityType = 'hiking' | 'camping' | 'event' | 'rideshare';
 
 /** Wire `activityType` on place/location rows (includes community shop pins). */
@@ -59,6 +61,8 @@ export interface LocationDTO {
   region: string;
   /** Trailhead, wadi, or beach zone — list poster location chip (emirate stays in `region`). */
   areaLabel?: string | null;
+  /** Curated geographic area (`GET /areas/:slug`). */
+  areaId?: string | null;
   /** @deprecated Prefer {@link PlaceKind} in new code — persisted as `activityType` on Mongo today. */
   activityType: PlaceActivityType;
   description: string;
@@ -140,12 +144,6 @@ export interface ParticipantPreviewDTO {
   avatar?: string | null;
 }
 
-export interface ActivityPricePackageDTO {
-  label: string;
-  amount: number;
-  currency: string;
-}
-
 export interface ActivityDTO {
   id: string;
   tenantId: string;
@@ -153,6 +151,7 @@ export interface ActivityDTO {
   locationId: string;
   locationName: string;
   region?: string;
+  areaId?: string | null;
   activityType: ScheduledActivityType;
   title: string;
   description: string;
@@ -161,7 +160,6 @@ export interface ActivityDTO {
   endDate?: string | null;
   endTime?: string | null;
   price: number;
-  pricePackages?: ActivityPricePackageDTO[];
   slotsTotal: number;
   slotsAvailable: number;
   status: ActivityStatus;
@@ -195,8 +193,6 @@ export interface ActivityDTO {
   images?: string[];
   /** Wide hero banner (outdoor events) */
   bannerUrl?: string | null;
-  /** External registration or join link */
-  signupUrl?: string | null;
   /** Person responsible for hosting this activity on the ground */
   hostName?: string;
   hostUserId?: string;
@@ -230,6 +226,12 @@ export interface ActivityDTO {
   outingTopic?: OutingTopic | null;
   /** Activity crew chat — one group per outing (host list / manage). */
   groupChatId?: string | null;
+  /** Crew group wall — who may post (`host_only` = host admin only; members may still read). */
+  groupChatPostPolicy?: ActivityGroupChatPostPolicy | null;
+  /** Map/Plan mode — `seeking` = Find post (M1 activity row); default hosted outings omit or `hosted`. */
+  activityMode?: ExploreActivityMode | null;
+  /** Back-link to `participant_intents` when `activityMode: seeking`. */
+  participantIntentId?: string | null;
 }
 
 
@@ -293,7 +295,7 @@ import type { NotificationMeta } from './notification-meta.js';
 export type { MemberFollowStateDTO, MemberFollowSummaryDTO } from './member-follow.js';
 export type { EntityFollowCheckDTO, EntityFollowDTO, EntityFollowKind } from './entity-follow.js';
 export type { WishlistCheckDTO, WishlistItemDTO } from './wishlist.js';
-export type { MemberHubStatsDTO } from './member-hub-stats.js';
+export type { MemberProfileStatsDTO } from './member-profile-stats.js';
 export type { MemberBrowseCardDTO, MemberProfileViewStatsDTO } from './member-pro-engagement.js';
 export {
   MEMBER_DISCOVERY_QUOTA_LIMIT,
@@ -303,7 +305,7 @@ export {
   type MemberDiscoveryQuotaDTO,
 } from './member-discovery-quota.js';
 export type {
-  MemberDiscoveryLookingRowDTO,
+  MemberDiscoverySeekingRowDTO,
   MemberDiscoveryOnTripRowDTO,
   MemberDiscoveryRosterDTO,
 } from './member-discovery-roster.js';
@@ -328,7 +330,14 @@ export {
   ACTIVITY_JOIN_INVITE_WINDOW_MS,
   type ActivityJoinInviteForViewerDTO,
   type ActivityJoinInvitesSentDTO,
+  type PendingActivityJoinInviteDTO,
 } from './activity-join-invite.js';
+export {
+  MEMBER_COORDINATION_ATTENTION_KINDS,
+  type MemberCoordinationAttentionDTO,
+  type MemberCoordinationAttentionItemDTO,
+  type MemberCoordinationAttentionKind,
+} from './member-coordination-attention.js';
 export type {
   HostPublishingTier,
   HostTierFlags,
@@ -377,7 +386,7 @@ export interface HostStatusDTO {
   hasTenant: boolean;
   tenantType: TenantType | null;
   businessMode: TenantBusinessMode | null;
-  /** Licensed agencies only — paid commercial activities. */
+  /** Verified business profile (agency / shop / partner) — paid pricing when publishing as that business. */
   canHostPaidActivities: boolean;
   hasGuideProfile: boolean;
   hasAgencyProfile: boolean;
@@ -606,8 +615,19 @@ export interface MerchantPublicDTO extends MerchantProfileDTO {
 /** Domain alias — public shop page payload. Storage/API remain `merchant_profiles` / `/shop/merchants/:id`. */
 export type ShopPublicDTO = MerchantPublicDTO;
 
-export type ExploreMapKind = ActivityType | 'shop' | 'agency';
-export type ExploreMapSource = 'activity' | 'venue' | 'shop' | 'agency' | 'demand';
+export type ExploreMapKind = ActivityType | 'shop' | 'agency' | 'area';
+export type ExploreMapSource = 'activity' | 'venue' | 'shop' | 'agency' | 'demand' | 'area';
+
+export type { ExploreAreaLensStatsDTO } from './explore-area-lens.js';
+export { exploreAreaLensStatsSummary } from './explore-area-lens.js';
+
+export type { ExploreActivityMode } from './explore-activity-mode.js';
+export {
+  exploreMapItemIsHostedActivity,
+  exploreMapItemIsSeeking,
+  isTimeBoundExploreMapItem,
+  resolveExploreMapActivityMode,
+} from './explore-activity-mode.js';
 
 export type ParticipantIntentKind = 'hiking' | 'camping' | 'event' | 'guide' | 'rideshare' | 'other';
 
@@ -629,6 +649,13 @@ export interface ParticipantIntentDTO {
   comment: string;
   status: 'active' | 'fulfilled' | 'cancelled';
   convertedActivityId?: string | null;
+  /**
+   * Published map **Activity** for this find post (`activityMode: seeking` until fulfilled).
+   * Same id space as hosted outings — use activity detail / join APIs with this id.
+   */
+  activityId?: string | null;
+  /** @deprecated Use {@link activityId} — legacy M1 JSON field (same value when present). */
+  seekingActivityId?: string | null;
   createdAt: string;
   requesterName?: string | null;
   requesterAvatar?: string | null;
@@ -728,12 +755,24 @@ export interface ExploreMapItemDTO {
   requesterUserId?: string | null;
   /** Demand request id (without demand: prefix). */
   participantIntentId?: string | null;
+  /**
+   * Time-bound map mode — `hosted` for published outings; `seeking` for Find / participant intents (M0).
+   * Legacy payloads may omit this and use `source: demand` instead.
+   */
+  activityMode?: 'hosted' | 'seeking' | null;
+  /** Curated area membership for explore `?area=` filters. */
+  areaId?: string | null;
+  areaSlug?: string | null;
   /** Set when a host converts this request into a published activity. */
   convertedActivityId?: string | null;
   /** Shop/agency about one-liner for map cards. */
   about?: string | null;
   /** Trail/camp/event catalog fields for rich location list cards. */
   locationCard?: ExploreLocationCardDTO | null;
+  /** Canonical catalog kind when wire `kind` alone is ambiguous (`event` amenities). */
+  placeKind?: import('./place-kind.js').PlaceKind | null;
+  /** Contributed catalog shop — `peek` (map only) vs merchant `full` profile. */
+  catalogProfileExposure?: import('./catalog-profile-exposure.js').CatalogProfileExposure | null;
   /** Aggregate review stats for venues (location) and shops/agencies (tenant). */
   averageRating?: number | null;
   reviewCount?: number;
@@ -755,6 +794,8 @@ export interface ExploreMapItemDTO {
   participationMode?: ParticipationMode | null;
   /** Rideshare activities linked to this parent plan (parent rows only). */
   linkedRideshareActivities?: ExploreLinkedRideshareDTO[];
+  /** Locations lens — counts for area map pin + peek (not stored in Redis). */
+  areaLensStats?: import('./explore-area-lens.js').ExploreAreaLensStatsDTO | null;
   /**
    * Per-viewer peek/detail hints for hosted plans (activity + demand).
    * Set on `GET /explore/map` after cache read — not stored in Redis payload.
@@ -1115,17 +1156,31 @@ export {
 } from './explore-presentation.js';
 
 export {
+  buildDiscoveryCardProjectionFromMapItem,
+  resolveDiscoveryCardEntityRef,
+  type BuildDiscoveryCardProjectionOptions,
+  type DiscoveryCardEntityRef,
+  type DiscoveryCardProjection,
+  type DiscoveryMapItemWire,
+} from './discovery-card-projection.js';
+
+export {
   activityOrganizeTopicToOutingTopic,
   activityTypeToOutingCategory,
   buildExploreMapPlanProjection,
   deriveOutingTopicFromRequirements,
   exploreDemandMapItemPath,
+  exploreSeekingMapItemPath,
+  resolveSeekingExploreMapItemId,
   exploreMapKindToPlanMapKind,
   exploreMapSourceToComposeIntent,
   outingCategoryToOrganizeCreateKind,
   participantIntentKindToOutingCategory,
   resolveActivityOutingTopic,
   resolveOrganizeCreateKindFromDemandMapItem,
+  OUTING_TOPICS,
+  mapItemMatchesOutingTopic,
+  parseOutingTopic,
   type ExploreMapKindForPlan,
   type ExploreMapPlanActivityKind,
   type ExploreMapPlanProjection,
@@ -1166,6 +1221,13 @@ export {
 } from './activity-join-mode.js';
 
 export {
+  ACTIVITY_GROUP_CHAT_POST_POLICIES,
+  resolveActivityGroupChatPostPolicy,
+  type ActivityGroupChatPostPolicy,
+} from './activity-group-chat-post-policy.js';
+
+export {
+  activityViewerLevelCanAccessCrewSurfaces,
   activityViewerLevelHasFullDetail,
   computeActivityDetailExposure,
   type ActivityViewerAccessDTO,
@@ -1173,6 +1235,12 @@ export {
   type DetailExposure,
   type ViewerGateReason,
 } from './activity-viewer-access.js';
+
+export {
+  computeActivityViewerEntitlements,
+  mergeActivityMapPeekActionsWithEntitlements,
+  type ActivityViewerEntitlementsDTO,
+} from './activity-viewer-entitlements.js';
 
 export {
   computeActivityMapPeekActions,
@@ -1229,6 +1297,44 @@ export {
 } from './activity-participation-mode.js';
 
 export {
+  resolveActivityJoinEngagementKind,
+  type ActivityJoinEngagementKind,
+} from './activity-join-engagement.js';
+
+export {
+  ACTIVITY_DETAIL_TAB_IDS,
+  resolveActivityDetailTabFooterKind,
+  type ActivityDetailTabFooterInput,
+  type ActivityDetailTabFooterKind,
+  type ActivityDetailTabId,
+} from './activity-detail-tab-footers.js';
+
+export {
+  buildActivityPresentationDTO,
+  type ActivityPresentationBuddiesTabDTO,
+  type ActivityPresentationDTO,
+  type ActivityPresentationEngagementDTO,
+  type ActivityPresentationPlaceTabDTO,
+  type ActivityPresentationPlanTabDTO,
+  type ActivityPresentationTabsDTO,
+  type ActivityPresentationTransportTabDTO,
+  type BuildActivityPresentationInput,
+} from './activity-detail-presentation.js';
+
+export {
+  projectActivityMapPeekActions,
+  resolveActivityEngagementMapPeekActionsBase,
+  resolveActivityEngagementMapPeekStrips,
+  resolveActivityEngagementPolicy,
+  type ActivityEngagementCapabilities,
+  type ActivityEngagementIntent,
+  type ActivityEngagementIntentId,
+  type ActivityEngagementPolicyDTO,
+  type ActivityEngagementStripsDTO,
+  type ResolveActivityEngagementPolicyInput,
+} from './activity-engagement-policy.js';
+
+export {
   isWomenOnlyActivityRequirements,
   resolveWomenOnlyJoinEligibility,
   womenOnlyJoinBlockMessage,
@@ -1245,6 +1351,31 @@ export type {
   MemberGoalPublicDTO,
   UpsertMemberGoalInput,
 } from './member-goals.js';
+
+export {
+  AVAILABILITY_KINDS,
+  areMemberAvailabilityDaysContiguous,
+  availabilitySlotOverlapsRange,
+  expandMemberAvailabilitySlotDays,
+  groupConsecutiveMemberAvailabilityDays,
+  isValidAvailabilitySlot,
+  memberAvailabilityCalendarDays,
+  memberAvailabilitySlotsAsDayPicks,
+  normalizeMemberAvailabilitySlotsForStorage,
+  prunePastAvailabilitySlots,
+} from './member-availability.js';
+export type { MemberAvailabilityDayBlock } from './member-availability.js';
+export type {
+  AvailabilityKind,
+  AvailabilityTimeBand,
+  AvailabilityVisibility,
+  ExploreAvailabilityClusterDTO,
+  ExploreAvailablePersonDTO,
+  MemberAvailabilityDTO,
+  MemberAvailabilityPublicDTO,
+  MemberAvailabilitySlotDTO,
+  UpsertMemberAvailabilityInput,
+} from './member-availability.js';
 
 export {
   MEMBER_MAP_PIN_ACTIVITY_TYPES,
@@ -1284,21 +1415,19 @@ export {
 } from './activity-coordinates.js';
 
 export {
-  ACTIVITY_CURRENCIES,
+  ACTIVITY_PRICING_INDICATION_NOTE,
+  allowedActivityPricingModes,
+  publishingProfileKindAllowsPaidActivities,
   activityHasPaidPricing,
   activityPriceLabel,
   activityPricingModeLabel,
-  derivePriceAed,
   eventHasPaidPricing,
-  formatPackagePrice,
   inferActivityPricingMode,
-  isActivityPricePackage,
   normalizeActivityPricing,
-  parseStoredPricePackages,
-  type ActivityCurrency,
-  type ActivityPricePackage,
+  type ActivityPricingContext,
   type ActivityPricingInput,
   type ActivityPricingMode,
+  type ActivityPricingPublishProfile,
 } from './activity-pricing.js';
 
 export {
@@ -1341,9 +1470,13 @@ export {
 } from './entity-path.js';
 
 export {
+  FACILITY_PLACE_KINDS,
   PLACE_KINDS,
   PLACE_KIND_LABELS,
   PLACE_STORAGE_COLLECTION,
+  exploreVenueIsPlacesSpot,
+  facilityPlaceKindPinEmoji,
+  isFacilityPlaceKind,
   isLocationActivityTypeWire,
   isPlaceKind,
   locationActivityTypeForPlaceKind,
@@ -1364,6 +1497,12 @@ export {
   type ShopContributeTagInput,
 } from './shop-contribute.js';
 
+export {
+  exploreMapPeekPath,
+  isPeekOnlyCatalogProfile,
+  type CatalogProfileExposure,
+} from './catalog-profile-exposure.js';
+
 export type {
   GroupWallMessageAuthorDTO,
   GroupWallPostPolicy,
@@ -1375,9 +1514,41 @@ export type {
 
 export { groupWallBodySnippet } from './group-wall.js';
 
+export type {
+  AreaBoundsRing,
+  AreaCenter,
+  AreaDTO,
+  AreaPublicDTO,
+  AreaStatus,
+} from './area.js';
+export {
+  approximateAreaBoundsKm2,
+  areaDetailPath,
+  exploreAreaQueryParam,
+  pointInAreaBounds,
+} from './area.js';
+
+export {
+  CURATED_AREA_SEED_IDS,
+  CURATED_AREA_SEED_SLUGS,
+  curatedAreaSeedId,
+  type CuratedAreaSeedKey,
+} from './curated-area-seeds.js';
+
+export {
+  CURATED_AREA_CATALOG,
+  CURATED_AREA_CATALOG_BY_KEY,
+  CURATED_AREA_CATALOG_BY_SLUG,
+  listCuratedAreaSeedKeys,
+  type CuratedAreaCatalogEntry,
+  type CuratedAreaBBox,
+} from './curated-area-catalog.js';
+
 export type { MemberInboxGroupDTO, MemberInboxGroupType } from './member-inbox.js';
 
 export interface MemberInboxDTO {
   direct: ChatConversationDTO[];
   groups: import('./member-inbox.js').MemberInboxGroupDTO[];
+  /** When true, direct rows may be incomplete due to a policy evaluation error. */
+  directConversationsDegraded?: boolean;
 }

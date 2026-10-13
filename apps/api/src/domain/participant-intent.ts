@@ -24,6 +24,8 @@ const participantIntentFieldsSchema = z.object({
   toLongitude: z.number().min(-180).max(180).optional().nullable(),
   partySize: z.number().int().min(1).max(50),
   comment: z.string().trim().min(3).max(1000),
+  /** Admin-registered area — required with map pin (Find **Area & map pin** step; matching/notifications phased). */
+  areaId: z.string().min(1).max(80).optional().nullable(),
 });
 
 const refineParticipantIntent = (
@@ -64,6 +66,13 @@ const refineParticipantIntent = (
     if (body.toLatitude == null || body.toLongitude == null) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Drop a to pin on the map.', path: ['toLatitude'] });
     }
+  }
+  if (body.latitude != null && body.longitude != null && !body.areaId?.trim()) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Choose an area and drop a pin on the map.',
+      path: ['areaId'],
+    });
   }
 };
 

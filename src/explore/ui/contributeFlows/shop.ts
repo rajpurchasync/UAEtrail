@@ -1,7 +1,8 @@
-/** Explore Add → Shop (`add.shop`) — separate from become-host shop wizard. */
+/** Explore Add → Shop (`add.shop`) — separate from Pro Membership shop application wizard. */
 
 export const SHOP_CONTRIBUTE_STEPS = [
   'title',
+  'curatedArea',
   'location',
   'about',
   'shop_products',

@@ -13,12 +13,11 @@ import { ActivityManageSheet } from '../../components/host/ActivityManageSheet';
 import { HostedActivityListRow } from '../../components/host/HostedActivityListRow';
 import {
   exploreOrganizePath,
-  HOST_OVERVIEW_PATH,
-  HOST_REQUESTS_PATH,
+  tripsPlansPath,
 } from '../../config/routingCatalog';
 import { matchesActivitySearch } from '../../utils/activitySearch';
 import { resolveJoinRequestActivity } from '../../utils/joinRequestActivity';
-import type { ActivityRequestView } from '../../api/index';
+import type { ActivityRequestView } from '../../api/types';
 import { useActivityInviteShareSheet } from '../../hooks/useActivityInviteShareSheet';
 import { useNavigate } from 'react-router-dom';
 
@@ -159,9 +158,9 @@ export const HostedActivitiesSection = ({
     if (peekBridgeOnly) return null;
     return (
       <ConsumerInlineEmpty
-        message="Host profile is still loading — try again in a moment, or open the host console."
-        actionLabel="Host console"
-        actionTo={HOST_OVERVIEW_PATH}
+        message="Host profile is still loading — try again in a moment, or open your hosted plans."
+        actionLabel="Hosted on Plan"
+        actionTo={tripsPlansPath('hosted')}
       />
     );
   }
@@ -178,7 +177,7 @@ export const HostedActivitiesSection = ({
             <h3 className="text-sm font-bold text-neutral-800">
               Incoming requests ({host.pendingRequests.length})
             </h3>
-            <Link to={HOST_REQUESTS_PATH} className="text-xs font-semibold text-emerald-600">
+            <Link to={tripsPlansPath('hosted')} className="text-xs font-semibold text-emerald-600">
               View all
             </Link>
           </div>

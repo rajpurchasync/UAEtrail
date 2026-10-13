@@ -11,8 +11,14 @@ import { paginatedResponse, paginationSchema } from '../../lib/pagination.js';
 import { requireAuth, requireVerifiedEmail } from '../../middleware/auth.js';
 import { validate } from '../../middleware/validate.js';
 import { tierEnumToDisplay } from '../../lib/membership-tier-display.js';
+import { scheduleSideEffect } from '../../lib/schedule-side-effect.js';
 import { awardPoints } from '../../services/rewards.js';
-import { findAuthUserById, findAuthUsersByIds, getAuthUserMembershipTier } from '../../lib/auth-users.js';
+import {
+  findAuthUserById,
+  findAuthUsersByIds,
+  getAuthUserMembershipTier,
+  getAuthUserMembershipTiers,
+} from '../../lib/auth-users.js';
 import { createSocialReview, listSocialReviews, type SocialReview } from '../../lib/social-data.js';
 import { sanitizeUserGeneratedText } from '../../lib/content-moderation.js';
 import { listMyReviews, updateMyReview } from '../../services/my-reviews.js';
@@ -124,10 +130,7 @@ export const registerSocialReviewRoutes = (router: Router): void => {
       const reviewerIds = [...new Set(reviews.map((review) => review.userId))];
       const reviewers = await findAuthUsersByIds(reviewerIds);
       const reviewerMap = new Map(reviewers.map((reviewer) => [reviewer._id, reviewer]));
-      const tierEntries = await Promise.all(
-        reviewerIds.map(async (userId) => [userId, await getAuthUserMembershipTier(userId)] as const)
-      );
-      const tierMap = new Map(tierEntries);
+      const tierMap = await getAuthUserMembershipTiers(reviewerIds);
       const rows = await Promise.all(reviews.map((r) => mapReviewRow(r, reviewerMap, tierMap)));
       res.json(paginatedResponse(rows, total, pg));
     } catch (error) {
@@ -158,11 +161,14 @@ export const registerSocialReviewRoutes = (router: Router): void => {
           rating: body.rating,
           comment: sanitizedComment,
         });
-        void awardPoints({
-          userId: req.auth!.userId,
-          action: RewardAction.REVIEW_WRITTEN,
-          referenceId: review.id,
-        }).catch(() => undefined);
+        scheduleSideEffect(
+          awardPoints({
+            userId: req.auth!.userId,
+            action: RewardAction.REVIEW_WRITTEN,
+            referenceId: review.id,
+          }),
+          'social.review_written_rewards'
+        );
         const author = await findAuthUserById(req.auth!.userId);
         const authorMembershipTier = await getAuthUserMembershipTier(req.auth!.userId);
         res.status(201).json({

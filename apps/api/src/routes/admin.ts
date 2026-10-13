@@ -10,6 +10,7 @@ import { registerAdminHostApplicationRoutes } from './admin/registerAdminHostApp
 import { registerAdminMetricsRoutes } from './admin/registerAdminMetricsRoutes.js';
 import { registerAdminNotificationRoutes } from './admin/registerAdminNotificationRoutes.js';
 import { registerAdminPlaceRoutes } from './admin/registerAdminPlaceRoutes.js';
+import { registerAdminAreaRoutes } from './admin/registerAdminAreaRoutes.js';
 import { registerAdminPlatformStaffRoutes } from './admin/registerAdminPlatformStaffRoutes.js';
 import { registerAdminProductRoutes } from './admin/registerAdminProductRoutes.js';
 import { registerAdminTenantRoutes } from './admin/registerAdminTenantRoutes.js';
@@ -21,6 +22,7 @@ adminRouter.use(requireAuth, requireVerifiedEmail, requireRole([UserRole.PLATFOR
 
 registerAdminHostApplicationRoutes(adminRouter);
 registerAdminPlaceRoutes(adminRouter);
+registerAdminAreaRoutes(adminRouter);
 // Activity creation for platform admins uses POST/PATCH /host/activities with x-tenant-id.
 registerAdminActivityModerationRoutes(adminRouter);
 registerAdminMetricsRoutes(adminRouter);

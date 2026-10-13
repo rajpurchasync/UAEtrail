@@ -1,3 +1,4 @@
+import type { AreaPublicDTO } from '@uaetrail/shared-types';
 import type { ExploreSearchScopeCounts, ExploreSearchScopeKey } from '../exploreBrowseTaxonomy';
 import { EXPLORE_Z } from '../../config/exploreTheme';
 import { ExploreBrowseSearchPanel } from './ExploreBrowseSearchPanel';
@@ -10,6 +11,8 @@ type ExploreBrowseSearchModalProps = {
   onQueryChange: (value: string) => void;
   onCommit: (scope?: ExploreSearchScopeKey | null) => void;
   scopeCounts: ExploreSearchScopeCounts;
+  publishedAreas?: AreaPublicDTO[];
+  onPickArea?: (slug: string) => void;
 };
 
 /** Map toolbar search — modal layer over the map (not the list discover sheet). */
@@ -20,6 +23,8 @@ export const ExploreBrowseSearchModal = ({
   onQueryChange,
   onCommit,
   scopeCounts,
+  publishedAreas = [],
+  onPickArea,
 }: ExploreBrowseSearchModalProps) => {
   const handleCommit = (scope?: ExploreSearchScopeKey | null) => {
     onCommit(scope);
@@ -45,6 +50,8 @@ export const ExploreBrowseSearchModal = ({
         onQueryChange={onQueryChange}
         onCommit={handleCommit}
         scopeCounts={scopeCounts}
+        publishedAreas={publishedAreas}
+        onPickArea={onPickArea}
       />
     </ExploreResponsiveSheet>
   );

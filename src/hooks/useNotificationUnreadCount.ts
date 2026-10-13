@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { api } from '../api/index';
+import { fetchMeNotificationsPage } from './notificationInboxApi';
 import { useAuth } from '../context/AuthContext';
 import { notificationUnreadBadgeKey } from '../utils/notificationBadge';
 
@@ -9,8 +9,8 @@ export const useNotificationUnreadCount = () => {
   const { data } = useQuery({
     queryKey: notificationUnreadBadgeKey(user?.id),
     queryFn: async () => {
-      const res = await api.getMeNotifications(1);
-      return res.unreadCount ?? res.data.filter((n) => !n.isRead).length;
+      const res = await fetchMeNotificationsPage(1);
+      return res.unreadCount;
     },
     enabled: !!user,
     staleTime: 30_000,

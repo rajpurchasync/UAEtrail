@@ -1,9 +1,25 @@
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { apiRequest } from '../client';
 
+export type ExploreMapQueryParams = {
+  bbox?: string;
+  cursor?: string | null;
+  limit?: number;
+  area?: string | null;
+};
+
 export const exploreApi = {
-  getExploreMap: () =>
-    apiRequest<{ data: { items: ExploreMapItemDTO[] } }>('/explore/map'),
+  getExploreMap: (params?: ExploreMapQueryParams) => {
+    const search = new URLSearchParams();
+    if (params?.bbox) search.set('bbox', params.bbox);
+    if (params?.cursor) search.set('cursor', params.cursor);
+    if (params?.limit != null) search.set('limit', String(params.limit));
+    if (params?.area) search.set('area', params.area);
+    const qs = search.toString();
+    return apiRequest<{ data: { items: ExploreMapItemDTO[] } }>(
+      qs ? `/explore/map?${qs}` : '/explore/map'
+    );
+  },
 
   listMyParticipantIntents: () =>
     apiRequest<{ data: import('@uaetrail/shared-types').ParticipantIntentDTO[] }>(
@@ -24,6 +40,7 @@ export const exploreApi = {
     toLongitude?: number | null;
     partySize: number;
     comment: string;
+    areaId?: string | null;
   }) =>
     apiRequest<{ data: import('@uaetrail/shared-types').ParticipantIntentDTO }>('/me/participant-intents', {
       method: 'POST',

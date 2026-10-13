@@ -1,13 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
-import { api } from '../api/index';
+import { entityFollowsQueryKey } from './clientQueryKeys';
+import { fetchMeEntityFollows } from './entityFollowApi';
 
 export const useEntityFollows = (enabled: boolean) => {
   const query = useQuery({
-    queryKey: ['me', 'entity-follows'],
-    queryFn: async () => {
-      const res = await api.getMeEntityFollows();
-      return res.data;
-    },
+    queryKey: entityFollowsQueryKey,
+    queryFn: () => fetchMeEntityFollows(),
     enabled,
     staleTime: 60_000,
   });

@@ -47,6 +47,10 @@ import {
 } from './demandFlow';
 import type { LocationPrecision, TimeMode } from './organizeFlow';
 import type { FindComposeKind } from '../compose';
+import { areaLabelForId, demandPostVisibleOnMap } from '../organizePublishArea';
+import { areaIdForExploreAreaSlug } from '../exploreAreaFilter';
+import { useExplorePublishedAreas } from '../useExplorePublishedAreas';
+import { SeekingCuratedAreaStep } from './SeekingCuratedAreaStep';
 import { composeFlowIdFromRoute } from '../composeFlowCatalog';
 import {
   clearDemandWizardSession,
@@ -76,6 +80,7 @@ interface CreateDemandFlowProps {
   onSubmitted?: (result: DemandSubmitResult) => void;
   signInHref: string;
   findKind?: FindComposeKind | null;
+  exploreAreaSlug?: string | null;
 }
 
 const NextButton = ({
@@ -103,6 +108,7 @@ const REVIEW_EDIT_LABELS: Partial<Record<DemandFlowStepId, string>> = {
   title: 'Title',
   destination: 'Destination',
   area: 'Where',
+  curatedArea: 'Area & pin',
   when: 'When',
   from: 'Going from',
   to: 'Destination',
@@ -124,6 +130,7 @@ export const CreateDemandFlow = ({
   onSubmitted,
   signInHref,
   findKind = null,
+  exploreAreaSlug = null,
 }: CreateDemandFlowProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -136,6 +143,7 @@ export const CreateDemandFlow = ({
   const [error, setError] = useState<string | null>(null);
   const [showMonthView, setShowMonthView] = useState(false);
   const [areaMapOpen, setAreaMapOpen] = useState(false);
+  const publishedAreas = useExplorePublishedAreas();
   const [routeMapTarget, setRouteMapTarget] = useState<'from' | 'to' | null>(null);
 
   const kind = draft.kind ?? selectedKind;
@@ -182,7 +190,12 @@ export const CreateDemandFlow = ({
         return;
       }
 
-      setDraft({ ...emptyDemandDraft(), kind: findKind });
+      const areaId = areaIdForExploreAreaSlug(publishedAreas, exploreAreaSlug);
+      setDraft({
+        ...emptyDemandDraft(),
+        kind: findKind,
+        ...(areaId ? { areaId } : {}),
+      });
       setSelectedKind(findKind);
       setStep(getDemandFlowSteps(findKind)[0]);
       setError(null);
@@ -198,7 +211,18 @@ export const CreateDemandFlow = ({
       navigate(signInHref);
       onClose();
     }
-  }, [open, user, navigate, signInHref, onClose, findKind, demandFlowId, demandInitKey]);
+  }, [
+    open,
+    user,
+    navigate,
+    signInHref,
+    onClose,
+    findKind,
+    demandFlowId,
+    demandInitKey,
+    exploreAreaSlug,
+    publishedAreas,
+  ]);
 
   useEffect(() => {
     if (!open || !demandFlowId || submitResult) return;
@@ -285,7 +309,7 @@ export const CreateDemandFlow = ({
   };
 
   const isMapOverlay =
-    (step === 'area' && areaMapOpen) ||
+    ((step === 'area' || step === 'curatedArea') && areaMapOpen) ||
     (step === 'route' && routeMapTarget !== null) ||
     ((step === 'to' || step === 'from') && routeMapTarget !== null);
 
@@ -375,12 +399,15 @@ export const CreateDemandFlow = ({
   if (isMapOverlay && kind) {
     const isToStep = routeMapTarget === 'to';
     const isFromStep = routeMapTarget === 'from';
+    const curatedCenter = draft.areaId
+      ? publishedAreas.find((area) => area.id === draft.areaId)?.center
+      : null;
     const lat = isToStep
       ? draft.toLatitude ?? MAP_CONFIG.exploreDefaultCenter.lat
-      : draft.latitude ?? MAP_CONFIG.exploreDefaultCenter.lat;
+      : curatedCenter?.latitude ?? draft.latitude ?? MAP_CONFIG.exploreDefaultCenter.lat;
     const lng = isToStep
       ? draft.toLongitude ?? MAP_CONFIG.exploreDefaultCenter.lng
-      : draft.longitude ?? MAP_CONFIG.exploreDefaultCenter.lng;
+      : curatedCenter?.longitude ?? draft.longitude ?? MAP_CONFIG.exploreDefaultCenter.lng;
 
     const mapTitle =
       step === 'to'
@@ -505,6 +532,35 @@ export const CreateDemandFlow = ({
             {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
             <div className="mt-5 pb-2">
               <NextButton disabled={!draft.title.trim()} onClick={goNext} />
+            </div>
+          </FlowSheetChrome>
+        )}
+
+        {step === 'curatedArea' && kind && (
+          <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
+            <SeekingCuratedAreaStep
+              areaId={draft.areaId}
+              pinPlaced={draft.areaPinPlaced}
+              latitude={draft.latitude}
+              longitude={draft.longitude}
+              onAreaIdChange={(next) => {
+                const center = next ? publishedAreas.find((area) => area.id === next)?.center : null;
+                patchDraft({
+                  areaId: next,
+                  areaPinPlaced: false,
+                  ...(center
+                    ? { latitude: center.latitude, longitude: center.longitude }
+                    : {}),
+                });
+              }}
+              onOpenMap={() => setAreaMapOpen(true)}
+            />
+            {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+            <div className="mt-5 pb-2">
+              <NextButton
+                disabled={!draft.areaId || !draft.areaPinPlaced}
+                onClick={goNext}
+              />
             </div>
           </FlowSheetChrome>
         )}
@@ -924,6 +980,12 @@ export const CreateDemandFlow = ({
                   );
                 })}
             </div>
+
+            {draft.areaId ? (
+              <p className="mt-3 text-xs text-gray-600">
+                Area: <span className="font-semibold">{areaLabelForId(draft.areaId, publishedAreas) ?? draft.areaId}</span>
+              </p>
+            ) : null}
 
             <p className="mt-3 text-xs text-gray-500">
               Check everything looks right before posting. Hosts and explorers nearby can message you or propose a

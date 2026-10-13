@@ -65,7 +65,7 @@ When the member types, show **indicative match counts** per scope (not pre-selec
 |--------------------------|-----|
 | Places (ambiguous) | **Spots** (map + search) |
 | Venues (search row) | **Spots** |
-| Activities (tab/pill) | **Trips** (hosted only) |
+| Activities (tab/pill) | **Trips** pill label (hosted only); URL `pinKind=activities` (legacy `trips` parsed on read) |
 | Find a venue / Find a trip | Removed — open search + scope rows |
 
 Backend types stay unchanged: `activity`, `demand`, `venue`, `shop` on `ExploreMapItemDTO`.

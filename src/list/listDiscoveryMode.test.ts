@@ -11,7 +11,7 @@ const homeFilters: BrowseListFilterState = {
   price: 'all',
   when: 'any',
   activityDatePreset: 'anyday',
-  buddiesSegment: 'going',
+  buddiesSegment: 'available',
 };
 
 describe('resolveListDiscoveryView', () => {

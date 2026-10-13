@@ -1,10 +1,11 @@
 import { UserRole } from '@uaetrail/shared-types';
 import { useQuery } from '@tanstack/react-query';
 import { Navigate, useLocation } from 'react-router-dom';
-import { api } from '../../api/index';
+import { fetchMeProfile } from '../../hooks/memberProfileApi';
 import { useAuth } from '../../context/AuthContext';
 import { isSignupProfileComplete } from '../../constants/userProfileOptions';
-import { accountRouteByRole } from '../../utils/authRouting';
+import { accountRouteByRole, participantHostBookmarkRedirect } from '../../utils/authRouting';
+import { isPlatformAdmin } from '../../utils/roles';
 import { WELCOME_PATH } from '../../config/routingCatalog';
 import { buildSignInRedirect } from '../../utils/authReturnContext';
 import {
@@ -30,8 +31,8 @@ export const ProtectedRoute = ({ roles, children }: ProtectedRouteProps) => {
   const { data: signupComplete, isLoading: signupGateLoading } = useQuery({
     queryKey: user ? meProfileSignupGateKey(user.id) : ['me-profile-signup-gate', 'anonymous'],
     queryFn: async () => {
-      const res = await api.getMeProfile();
-      return isSignupProfileComplete(res.data);
+      const profile = await fetchMeProfile();
+      return isSignupProfileComplete(profile);
     },
     enabled: gateEnabled,
     staleTime: 30_000,
@@ -57,6 +58,9 @@ export const ProtectedRoute = ({ roles, children }: ProtectedRouteProps) => {
   }
 
   if (roles && !roles.includes(user.role)) {
+    if (!isPlatformAdmin(user.role) && location.pathname.startsWith('/host')) {
+      return <Navigate to={participantHostBookmarkRedirect(location.pathname)} replace />;
+    }
     return <Navigate to={accountRouteByRole(user.role)} replace />;
   }
 

@@ -1,5 +1,7 @@
 import type {
   ActivityViewerAccessDTO,
+  ExploreActivityMode,
+  ExploreAreaLensStatsDTO,
   ExploreCardKind,
   ExploreCardSource,
   ExploreLinkedRideshareDTO,
@@ -8,8 +10,14 @@ import type {
   ExplorePlanComposeIntent,
   OutingCategory,
   ParticipantPreviewDTO,
+  CatalogProfileExposure,
 } from '@uaetrail/shared-types';
-import { buildExploreCardPresentation, resolveExploreFeaturedPerson } from '@uaetrail/shared-types';
+import {
+  buildExploreCardPresentation,
+  exploreMapItemIsSeeking,
+  isPeekOnlyCatalogProfile,
+  resolveExploreFeaturedPerson,
+} from '@uaetrail/shared-types';
 import {
   buildExploreRouteLabel,
   buildExploreWhenSegment,
@@ -43,7 +51,6 @@ export interface ExploreCardModel {
   secondaryCta: string | null;
   showJoinActions: boolean;
   /** Host viewing their own activity — Chat · Manage CTAs (not join/wire peek). */
-  showHostActivityCtas?: boolean;
   /** Requester viewing their own active demand pin. */
   showDemandOwnerActions?: boolean;
   /** Hiking / camping / activity demand — host can publish a linked rideshare offer. */
@@ -65,6 +72,7 @@ export interface ExploreCardModel {
   averageRating?: number | null;
   reviewCount?: number;
   reviewPath?: string | null;
+  catalogProfileExposure?: CatalogProfileExposure | null;
   locationId?: string | null;
   activityId?: string | null;
   participantIntentId?: string | null;
@@ -88,6 +96,9 @@ export interface ExploreCardModel {
   linkedRideshares?: ExploreLinkedRideshareDTO[];
   /** From `GET /explore/map` for activity/demand rows (per viewer). */
   viewerAccess?: ActivityViewerAccessDTO | null;
+  activityMode?: ExploreActivityMode | null;
+  areaSlug?: string | null;
+  areaLensStats?: ExploreAreaLensStatsDTO | null;
 }
 
 const resolveCoverImage = (item: ExploreMapItemDTO): string | null =>
@@ -99,14 +110,20 @@ const resolveCoverImage = (item: ExploreMapItemDTO): string | null =>
   );
 
 const LIST_META_ICONS = new Set(['location', 'time', 'spots']);
-const LIST_META_ROUTE_SOURCES = new Set<ExploreCardModel['source']>(['demand']);
+/** Seeking pins — same rules as `exploreMapItemIsSeeking` on map wire. */
+export const exploreCardIsSeeking = (
+  card: Pick<
+    ExploreCardModel,
+    'source' | 'composeIntent' | 'participantIntentId' | 'id' | 'activityMode'
+  >
+): boolean => exploreMapItemIsSeeking(card);
 
 /** Compact second line for list rows (where · when · spots — not duplicate activity title). */
 export const buildExploreListMeta = (card: ExploreCardModel): string | null => {
   if (card.source === 'shop' || card.source === 'agency' || card.source === 'venue') {
     return null;
   }
-  const allowRoute = LIST_META_ROUTE_SOURCES.has(card.source) || card.kind === 'rideshare';
+  const allowRoute = exploreCardIsSeeking(card) || card.kind === 'rideshare';
   const labels = card.sections.details
     .filter(
       (detail) =>
@@ -130,8 +147,8 @@ export const buildExploreCardModel = (item: ExploreMapItemDTO): ExploreCardModel
   const fromLabel = item.fromLabel ?? activity?.meetingPoint ?? null;
   const toLabel = item.toLabel ?? activity?.startPoint ?? activity?.locationName ?? null;
   const routeLabel = presentation.routeLabel ?? buildExploreRouteLabel(fromLabel, toLabel, kind);
-  const whenSuffix =
-    source === 'demand' ? 'flexible' : kind === 'rideshare' ? 'fixed' : null;
+  const seeking = exploreMapItemIsSeeking(item);
+  const whenSuffix = seeking ? 'flexible' : kind === 'rideshare' ? 'fixed' : null;
   const whenLabel =
     presentation.whenLabel ??
     buildExploreWhenSegment(item.date, item.time ?? activity?.time ?? null, whenSuffix);
@@ -173,14 +190,17 @@ export const buildExploreCardModel = (item: ExploreMapItemDTO): ExploreCardModel
     secondaryCta: presentation.secondaryCta,
     showJoinActions:
       (source === 'activity' && Boolean(activity)) ||
-      (source === 'demand' && Boolean(item.requesterUserId)),
+      (seeking && Boolean(item.requesterUserId)),
     websiteUrl: item.websiteUrl ?? null,
     contactPhone: item.contactPhone ?? null,
     shareTitle: headline,
     sharePath:
       activity?.joinMode === 'private' && activity.id
         ? `/activity/${activity.id}`
-        : exploreMapItemSharePath(item.id),
+        : exploreMapItemSharePath(item.id, {
+            activityId: seeking ? activity?.id : undefined,
+            intentId: seeking ? item.participantIntentId ?? undefined : undefined,
+          }),
     shareText: presentation.shareText,
     requesterUserId: featuredPerson?.userId ?? item.requesterUserId ?? null,
     routeLabel,
@@ -192,10 +212,16 @@ export const buildExploreCardModel = (item: ExploreMapItemDTO): ExploreCardModel
     coverImage: resolveCoverImage(item),
     averageRating: item.averageRating ?? null,
     reviewCount: item.reviewCount ?? 0,
-    reviewPath: catalogSource ? `${item.path}#reviews` : null,
+    reviewPath:
+      catalogSource && !isPeekOnlyCatalogProfile(item.catalogProfileExposure)
+        ? `${item.path}#reviews`
+        : null,
+    catalogProfileExposure: item.catalogProfileExposure ?? null,
     locationId: item.locationCard?.id ?? item.activity?.locationId ?? null,
     activityId: item.activity?.id ?? null,
-    participantIntentId: item.participantIntentId ?? null,
+    /** Manage/deeplink only for legacy seeking rows without a published activity id. */
+    participantIntentId:
+      seeking && !activity?.id ? item.participantIntentId ?? null : null,
     outingCategory: item.outingCategory ?? null,
     composeIntent: item.composeIntent ?? null,
     merchantId: item.merchantId ?? null,
@@ -212,24 +238,30 @@ export const buildExploreCardModel = (item: ExploreMapItemDTO): ExploreCardModel
         (item.locationCard?.parkingLat != null && item.locationCard?.parkingLng != null)
     ),
     venueDistanceKm: item.locationCard?.distance ?? null,
-    requirementBadges: enrichExploreActivityRequirementBadges(activity?.requirements, {
-      kind,
-      rideshareEnabled: Boolean(
-        source === 'activity' &&
-          kind !== 'rideshare' &&
-          (item.rideshareEnabled ??
-            activity?.rideshareEnabled ??
-            (item.linkedRideshareActivities?.length ?? 0) > 0)
-      ),
-      venueDifficulty: item.locationCard?.difficulty ?? null,
-    }),
+    requirementBadges: [
+      ...(exploreMapItemIsSeeking(item) ? ['Seeking'] : []),
+      ...enrichExploreActivityRequirementBadges(activity?.requirements, {
+        kind,
+        rideshareEnabled: Boolean(
+          source === 'activity' &&
+            kind !== 'rideshare' &&
+            (item.rideshareEnabled ??
+              activity?.rideshareEnabled ??
+              (item.linkedRideshareActivities?.length ?? 0) > 0)
+        ),
+        venueDifficulty: item.locationCard?.difficulty ?? null,
+      }),
+    ],
     mapLatitude: item.latitude ?? null,
     mapLongitude: item.longitude ?? null,
+    areaSlug: item.areaSlug ?? null,
+    areaLensStats: item.areaLensStats ?? null,
     linkedRideshares:
       item.linkedRideshareActivities && item.linkedRideshareActivities.length > 0
         ? item.linkedRideshareActivities
         : undefined,
     viewerAccess: item.viewerAccess ?? null,
+    activityMode: item.activityMode ?? (seeking ? 'seeking' : source === 'activity' ? 'hosted' : null),
   };
 };
 
@@ -284,7 +316,7 @@ export type ExploreEntityFollowPayload = {
 export const resolveExploreEntityFollowTarget = (
   card: ExploreCardModel
 ): ExploreEntityFollowPayload | null => {
-  if (card.source === 'demand') return null;
+  if (exploreCardIsSeeking(card)) return null;
   if (card.source === 'venue' && card.locationId) return { locationId: card.locationId };
   if (card.source === 'activity') {
     if (card.locationId) return { locationId: card.locationId };
@@ -325,7 +357,7 @@ const watchMetaFromCard = (card: ExploreCardModel) => ({
 /** Wishlist = private venue or activity save — not demand, shops, or people (use Follow). */
 export const resolveExploreWishlistTarget = (card: ExploreCardModel): ExploreWishlistTarget | null => {
   const watch = watchMetaFromCard(card);
-  if (card.source === 'demand') return null;
+  if (exploreCardIsSeeking(card)) return null;
   if (card.source === 'activity' && card.activityId) return { activityId: card.activityId, ...watch };
   if (card.source === 'venue' && card.locationId) return { locationId: card.locationId, ...watch };
   return null;

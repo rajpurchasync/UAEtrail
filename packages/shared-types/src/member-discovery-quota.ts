@@ -1,6 +1,6 @@
 import type { HostTierFlags } from './host-publishing-tier.js';
 
-export const MEMBER_DISCOVERY_QUOTA_LIMIT = 5;
+export const MEMBER_DISCOVERY_QUOTA_LIMIT = 3;
 export const MEMBER_DISCOVERY_WINDOW_DAYS = 30;
 
 export type MemberDiscoveryQuotaDTO = {

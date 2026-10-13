@@ -1,12 +1,11 @@
 import { useMemo } from 'react';
-import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
+import { isTimeBoundExploreMapItem, type ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { sortExploreActivities, sortExploreVenues } from '../exploreListSort';
 import { venueItemMatchesRegions } from '../../utils/venueRegionFilter';
 import type { ExploreActivityDatePreset, ExplorePanel, MapFilterKey } from '../routing';
 import type { ExploreBuddySubtypeKey } from '../exploreBuddySubtype';
 import type { ExploreOutingTopicKey } from '../exploreOutingTopic';
 import type { DesktopBrowseTab } from './exploreBrowsePanelCopy';
-import type { ExplorePinKindFilter } from '../explorePinKindFilter';
 import {
   expandMapPins,
   isBuddyMapItem,
@@ -17,17 +16,20 @@ import {
   layoutColocatedMapPins,
   matchesBuddyMapFilter,
   matchesPlacesMapFilter,
-  matchesUnifiedExploreMapItem,
 } from './exploreMapPinModel';
 import {
+  mapItemIsAgencyHostedActivity,
   mapItemMatchesFilterPills,
   mapItemMatchesSearchScope,
-  type ExploreMapFilterPillKey,
   type ExploreSearchScopeKey,
 } from '../exploreBrowseTaxonomy';
 import type { ExploreBrowseListMode } from './useExploreBrowseUrlState';
 import { matchesActivityDateFilter } from '../exploreActivityDateFilter';
 import { countExploreSearchScopes, exploreItemMatchesQuery } from '../exploreSearchMatches';
+import {
+  exploreMapItemMatchesActivityModeFilter,
+  type ExploreActivityModeFilter,
+} from '../exploreActivityModeFilter';
 
 type UseExploreBrowseListArgs = {
   items: ExploreMapItemDTO[];
@@ -44,8 +46,7 @@ type UseExploreBrowseListArgs = {
   desktopBrowseTab: DesktopBrowseTab;
   buddySubtype: ExploreBuddySubtypeKey;
   outingTopic: ExploreOutingTopicKey;
-  pinKind: ExplorePinKindFilter;
-  topicPills: readonly ExploreMapFilterPillKey[];
+  activityModeFilter?: ExploreActivityModeFilter;
 };
 
 const dedupeExploreListById = (list: ExploreMapItemDTO[]): ExploreMapItemDTO[] => {
@@ -61,7 +62,7 @@ const dedupeExploreListById = (list: ExploreMapItemDTO[]): ExploreMapItemDTO[] =
 
 const listFromPool = (pool: ExploreMapItemDTO[], matchesQuery: (item: ExploreMapItemDTO) => boolean) => {
   const matching = dedupeExploreListById(pool.filter(matchesQuery));
-  const plans = matching.filter((item) => item.source === 'activity' || item.source === 'demand');
+  const plans = matching.filter((item) => isTimeBoundExploreMapItem(item));
   const spots = matching.filter((item) => mapItemMatchesSearchScope(item, 'places'));
   const shops = matching.filter((item) => mapItemMatchesSearchScope(item, 'shops'));
   return dedupeExploreListById([
@@ -84,8 +85,7 @@ export const useExploreBrowseList = ({
   desktopBrowseTab,
   buddySubtype,
   outingTopic,
-  pinKind,
-  topicPills,
+  activityModeFilter = 'all',
 }: UseExploreBrowseListArgs) => {
   const mapItems = useMemo(() => {
     const itemIds = new Set(items.map((entry) => entry.id));
@@ -93,17 +93,29 @@ export const useExploreBrowseList = ({
       ...items,
       ...ephemeralMapItems.filter((entry) => !itemIds.has(entry.id)),
     ];
-    const unifiedMapInput = {
-      mapFilter,
-      pinKind,
-      buddySubtype,
-      outingTopic,
-      activityDatePreset,
-      venueRegions,
-    };
-    let pool = merged.filter((item) => matchesUnifiedExploreMapItem(item, unifiedMapInput));
-    if (topicPills.length > 0) {
-      pool = pool.filter((item) => mapItemMatchesFilterPills(item, topicPills));
+    let pool = merged;
+    if (isDesktop) {
+      pool = pool.filter((item) => mapItemMatchesFilterPills(item, []));
+      if (desktopBrowseTab === 'venues') {
+        pool = pool.filter(isPlacesMapItem);
+      } else {
+        pool = pool
+          .filter(isBuddyMapItem)
+          .filter((item) => exploreMapItemMatchesActivityModeFilter(item, activityModeFilter));
+      }
+    } else if (sidebarPanel === 'venues') {
+      pool = pool
+        .filter(isPlacesMapItem)
+        .filter((item) => matchesPlacesMapFilter(item, mapFilter))
+        .filter((item) => venueItemMatchesRegions(item, venueRegions));
+    } else if (sidebarPanel === 'shops') {
+      pool = pool.filter(isShopListItem);
+    } else {
+      pool = pool
+        .filter(isBuddyMapItem)
+        .filter((item) => matchesBuddyMapFilter(item, mapFilter, buddySubtype, outingTopic))
+        .filter((item) => matchesActivityDateFilter(item, activityDatePreset))
+        .filter((item) => exploreMapItemMatchesActivityModeFilter(item, activityModeFilter));
     }
     if (query.trim()) {
       pool = pool.filter((item) => exploreItemMatchesQuery(item, query));
@@ -113,13 +125,15 @@ export const useExploreBrowseList = ({
     items,
     ephemeralMapItems,
     query,
+    isDesktop,
+    desktopBrowseTab,
+    sidebarPanel,
     mapFilter,
     activityDatePreset,
     venueRegions,
     buddySubtype,
     outingTopic,
-    pinKind,
-    topicPills,
+    activityModeFilter,
   ]);
 
   const browseListMode: ExploreBrowseListMode = isDesktop ? 'default' : listMode;
@@ -138,6 +152,7 @@ export const useExploreBrowseList = ({
               .filter(isBuddyMapItem)
               .filter(matchesBuddy)
               .filter((item) => matchesActivityDateFilter(item, activityDatePreset))
+              .filter((item) => exploreMapItemMatchesActivityModeFilter(item, activityModeFilter))
           )
         );
       }
@@ -172,6 +187,7 @@ export const useExploreBrowseList = ({
           .filter(isBuddyMapItem)
           .filter(matchesBuddy)
           .filter((item) => matchesActivityDateFilter(item, activityDatePreset))
+          .filter((item) => exploreMapItemMatchesActivityModeFilter(item, activityModeFilter))
       )
     );
   }, [
@@ -184,6 +200,7 @@ export const useExploreBrowseList = ({
     sidebarPanel,
     buddySubtype,
     outingTopic,
+    activityModeFilter,
   ]);
 
   const listItems = useMemo(() => {
@@ -201,13 +218,15 @@ export const useExploreBrowseList = ({
       items
         .filter(isBuddyMapItem)
         .filter((item) => matchesBuddyMapFilter(item, mapFilter, buddySubtype, outingTopic))
-        .filter((item) => matchesActivityDateFilter(item, activityDatePreset));
+        .filter((item) => matchesActivityDateFilter(item, activityDatePreset))
+        .filter((item) => exploreMapItemMatchesActivityModeFilter(item, activityModeFilter));
 
     const hostedTripsPool = () =>
       items
         .filter((item) => mapItemMatchesSearchScope(item, 'activities'))
         .filter((item) => matchesBuddyMapFilter(item, mapFilter, buddySubtype, outingTopic))
-        .filter((item) => matchesActivityDateFilter(item, activityDatePreset));
+        .filter((item) => matchesActivityDateFilter(item, activityDatePreset))
+        .filter((item) => exploreMapItemMatchesActivityModeFilter(item, activityModeFilter));
 
     const peopleListPool = () =>
       items
@@ -237,7 +256,9 @@ export const useExploreBrowseList = ({
     }
 
     if (hasQuery && searchScope === 'agencies') {
-      return sortExploreVenues(items.filter((item) => item.source === 'agency').filter(matchesQuery));
+      return sortExploreVenues(
+        items.filter((item) => mapItemIsAgencyHostedActivity(item)).filter(matchesQuery)
+      );
     }
 
     if (hasQuery && searchScope === null) {

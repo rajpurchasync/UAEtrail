@@ -5,14 +5,18 @@
  * - Explore FAB: `src/services/organizeActivityPublish.ts` → `buildOrganizeActivityPublishInput` / `publishOrganizeActivity`
  * - Explore Organize: `src/services/organizeActivityPublish.ts` → `buildHostActivityPublishPayload`
  */
-import type { ActivityJoinMode, OutingCategory, OutingTopic, ParticipationMode } from '@uaetrail/shared-types';
+import type {
+  ActivityGroupChatPostPolicy,
+  ActivityJoinMode,
+  OutingCategory,
+  OutingTopic,
+  ParticipationMode,
+} from '@uaetrail/shared-types';
 import {
   APPROVAL_PARTICIPATION_REQUIREMENT,
   PRIVATE_JOIN_REQUIREMENT_PREFIX,
   RSVP_PARTICIPATION_REQUIREMENT,
 } from '@uaetrail/shared-types';
-import type { ActivityPricePackage } from './activityPricing';
-
 export const OPEN_JOIN_REQUIREMENT = 'Open: anyone can request to join';
 
 export const PRIVATE_JOIN_REQUIREMENT = `${PRIVATE_JOIN_REQUIREMENT_PREFIX} — approval required`;
@@ -25,7 +29,6 @@ export const privateJoinRequirementLine = (participationMode: ParticipationMode)
 export type ActivityPublishPricing = {
   pricingMode: 'free' | 'shared' | 'paid';
   price: number;
-  pricePackages?: ActivityPricePackage[];
   paymentTerms?: string | null;
 };
 
@@ -68,7 +71,6 @@ export type ActivityPublishInput = {
   participationMode?: ParticipationMode;
   images?: string[];
   bannerUrl?: string | null;
-  signupUrl?: string | null;
   hostId?: string;
   rideshare?: ActivityPublishRideshare;
   outingCategory?: OutingCategory | null;
@@ -77,6 +79,7 @@ export type ActivityPublishInput = {
   clonedFromActivityId?: string | null;
   /** Parent hike/camp/event when publishing a linked rideshare. */
   linkedActivityId?: string | null;
+  groupChatPostPolicy?: ActivityGroupChatPostPolicy;
 };
 
 export const defaultParticipationModeForActivityType = (activityType: string): ParticipationMode =>
@@ -161,7 +164,6 @@ export const buildHostActivityPublishPayload = (input: ActivityPublishInput): Re
     participationMode: input.participationMode,
     images: input.images ?? [],
     bannerUrl: input.bannerUrl ?? null,
-    signupUrl: input.signupUrl ?? null,
     hostId: input.hostId,
   };
 
@@ -177,9 +179,8 @@ export const buildHostActivityPublishPayload = (input: ActivityPublishInput): Re
   if (input.linkedActivityId?.trim()) {
     payload.linkedActivityId = input.linkedActivityId.trim();
   }
-
-  if (pricing.pricePackages && pricing.pricePackages.length > 0) {
-    payload.pricePackages = pricing.pricePackages;
+  if (input.groupChatPostPolicy) {
+    payload.groupChatPostPolicy = input.groupChatPostPolicy;
   }
 
   if (isRideshare || rideshare.rideshareEnabled) {

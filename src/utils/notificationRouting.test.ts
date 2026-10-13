@@ -18,29 +18,34 @@ describe('inferNotificationPath', () => {
       inferNotificationPath(notif({ kind: 'join_request_pending', requestId: 'r1' }))
     ).toBe('/my-requests/r1');
     expect(inferNotificationPath(notif({ kind: 'join_request_waitlisted' }))).toBe(
-      '/trips?segment=upcoming&tab=joined'
+      '/plan?view=plans&filter=joined'
     );
     expect(inferNotificationPath(notif({ kind: 'join_request_rejected' }))).toBe(
-      '/trips?segment=upcoming&tab=joined'
+      '/plan?view=plans&filter=joined'
     );
   });
 
-  it('routes approved join without group chat to My trips', () => {
+  it('routes approved join to activity welcome when activity id is known', () => {
     expect(inferNotificationPath(notif({ kind: 'join_request_approved' }))).toBe(
-      '/trips?segment=upcoming&tab=joined'
+      '/plan?view=plans&filter=joined'
     );
     expect(
       inferNotificationPath(
-        notif({ kind: 'join_request_approved', groupId: 'g-1' })
+        notif({ kind: 'join_request_approved', activityId: 'act-1', groupId: 'g-1' })
       )
-    ).toBe('/chat?group=g-1');
+    ).toBe('/activity/act-1?joined=1');
+    expect(
+      inferNotificationPath(
+        notif({ kind: 'join_request_approved', path: '/activity/act-2?joined=1' })
+      )
+    ).toBe('/activity/act-2?joined=1');
   });
 
   it('routes member goal milestones to profile or trips', () => {
-    expect(inferNotificationPath(notif({ kind: 'goal_halfway' }))).toBe('/trips?segment=upcoming');
-    expect(inferNotificationPath(notif({ kind: 'goal_complete' }))).toBe('/trips?segment=upcoming');
+    expect(inferNotificationPath(notif({ kind: 'goal_halfway' }))).toBe('/plan?view=plans&tab=wishlist');
+    expect(inferNotificationPath(notif({ kind: 'goal_complete' }))).toBe('/plan?view=plans&tab=wishlist');
     expect(inferNotificationPath(notif({ kind: 'goal_behind_pace' }))).toBe(
-      '/trips?segment=upcoming&tab=joined'
+      '/plan?view=plans&tab=wishlist'
     );
   });
 
@@ -115,7 +120,7 @@ describe('inferNotificationPath', () => {
     ).toBe('/explore?pin=demand:int-1');
   });
 
-  it('prefers explicit meta.path when present', () => {
+  it('rewrites legacy trips hub paths in meta.path to Plan', () => {
     expect(
       inferNotificationPath(
         notif({
@@ -123,6 +128,78 @@ describe('inferNotificationPath', () => {
           path: '/trips?segment=upcoming&tab=joined',
         })
       )
-    ).toBe('/trips?segment=upcoming&tab=joined');
+    ).toBe('/plan?view=plans&filter=joined');
+    expect(
+      inferNotificationPath(
+        notif({
+          kind: 'goal_behind_pace',
+          path: '/trips?segment=upcoming&tab=joined',
+        })
+      )
+    ).toBe('/plan?view=plans&filter=joined');
   });
+
+  it('rewrites demand explore pins when activityId is on meta', () => {
+    expect(
+      inferNotificationPath(
+        notif({
+          kind: 'wishlist_match',
+          path: '/explore?pin=demand:int-1&list=1',
+          activityId: 'act-seek-1',
+        })
+      )
+    ).toBe('/explore?list=1&pin=activity%3Aact-seek-1');
+  });
+
+  it('routes friend publish notifications to seeking explore pins when no top-level activityId', () => {
+    expect(
+      inferNotificationPath(
+        notif({
+          kind: 'friend_published',
+          intentId: 'int-2',
+          seekingActivityId: 'act-seek-2',
+        })
+      )
+    ).toBe('/explore?pin=activity%3Aact-seek-2&list=1&panel=activities');
+    expect(
+      inferNotificationPath(
+        notif({
+          kind: 'friend_published',
+          intentId: 'int-legacy',
+        })
+      )
+    ).toBe('/explore?pin=demand%3Aint-legacy&list=1&panel=activities');
+  });
+
+  it('rewrites stale host overview notification paths to pro membership', () => {
+    expect(
+      inferNotificationPath(
+        notif({ kind: 'host_application_approved', path: '/host/overview' })
+      )
+    ).toBe('/profile/pro-membership');
+  });
+
+  it('rewrites legacy inbox and stale group chat paths to /chat', () => {
+    expect(inferNotificationPath(notif({ path: '/messages?to=u-1' }))).toBe('/chat?to=u-1');
+    expect(inferNotificationPath(notif({ path: '/host/messages?group=g-1' }))).toBe('/chat?group=g-1');
+    expect(
+      inferNotificationPath(
+        notif({
+          kind: 'group_message',
+          groupId: 'g-2',
+          path: '/groups?group=g-2',
+        })
+      )
+    ).toBe('/chat?group=g-2');
+    expect(
+      inferNotificationPath(
+        notif({
+          kind: 'group_message',
+          activityId: 'act-1',
+          path: '/groups?group=g-2',
+        })
+      )
+    ).toBe('/chat?group=g-2&activity=act-1');
+  });
+
 });

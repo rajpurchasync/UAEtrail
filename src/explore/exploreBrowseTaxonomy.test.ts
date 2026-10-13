@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import {
+  hostedExploreMapItem,
+  legacyDemandExploreMapItem,
+  seekingExploreMapItem,
+  venueExploreMapItem,
+} from './exploreMapItemFixtures';
+import {
   mapItemMatchesFilterPill,
   mapItemMatchesSearchScope,
   parseExploreMapFilterPillsParam,
@@ -8,9 +14,6 @@ import {
   pinKindForSearchScope,
   toggleExploreMapFilterPill,
 } from './exploreBrowseTaxonomy';
-
-const item = (partial: Partial<ExploreMapItemDTO> & Pick<ExploreMapItemDTO, 'id' | 'source' | 'kind'>): ExploreMapItemDTO =>
-  ({ title: 't', latitude: 1, longitude: 2, path: '/', ...partial }) as ExploreMapItemDTO;
 
 describe('exploreBrowseTaxonomy', () => {
   it('toggles filter pills', () => {
@@ -23,12 +26,15 @@ describe('exploreBrowseTaxonomy', () => {
   });
 
   it('classifies trips vs spots', () => {
-    const trail = item({ id: 'v1', source: 'venue', kind: 'hiking' });
-    const hosted = item({ id: 'a1', source: 'activity', kind: 'event' });
-    const demand = item({ id: 'd1', source: 'demand', kind: 'hiking' });
+    const trail = venueExploreMapItem({ id: 'venue:v1' });
+    const hosted = hostedExploreMapItem({ id: 'activity:a1', kind: 'event' });
+    const demand = legacyDemandExploreMapItem({ id: 'demand:d1' });
+    const seeking = seekingExploreMapItem({ intentId: 'x' });
     expect(mapItemMatchesFilterPill(trail, 'spots')).toBe(true);
     expect(mapItemMatchesFilterPill(hosted, 'trips')).toBe(true);
+    expect(mapItemMatchesFilterPill(seeking, 'trips')).toBe(true);
     expect(mapItemMatchesFilterPill(demand, 'looking')).toBe(true);
+    expect(mapItemMatchesFilterPill(seeking, 'looking')).toBe(true);
     expect(mapItemMatchesFilterPill(hosted, 'looking')).toBe(false);
   });
 
@@ -40,13 +46,16 @@ describe('exploreBrowseTaxonomy', () => {
   });
 
   it('maps search scopes to item sources', () => {
-    const hosted = item({ id: 'a1', source: 'activity', kind: 'event' });
-    const demand = item({ id: 'd1', source: 'demand', kind: 'hiking' });
-    const agency = item({ id: 'g1', source: 'agency', kind: 'agency' });
+    const hosted = hostedExploreMapItem({ id: 'activity:a1', kind: 'event' });
+    const demand = legacyDemandExploreMapItem({ id: 'demand:d1' });
+    const agencyTrip = hostedExploreMapItem({
+      id: 'activity:a2',
+      activity: { publishingProfileKind: 'agency', tenantSlug: 'uae-adventure' } as ExploreMapItemDTO['activity'],
+    });
     expect(mapItemMatchesSearchScope(hosted, 'activities')).toBe(true);
     expect(mapItemMatchesSearchScope(demand, 'people')).toBe(false);
     expect(pinKindForSearchScope('people')).toBe('all');
-    expect(mapItemMatchesSearchScope(agency, 'agencies')).toBe(true);
+    expect(mapItemMatchesSearchScope(agencyTrip, 'agencies')).toBe(true);
   });
 
 });

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { RewardBadgeDTO } from '@uaetrail/shared-types';
-import { api } from '../api/index';
+import { fetchMemberBadges } from '../hooks/memberProfileApi';
 import { useAuth } from '../context/AuthContext';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { ConsumerLoadingSpinner, ConsumerErrorCard } from '../components/mobile/ConsumerFeedback';
@@ -56,10 +56,9 @@ export const ProfileBadges = () => {
 
   useEffect(() => {
     setLoading(true);
-    void api
-      .getMemberBadges()
-      .then((res) => {
-        setBadges(res.data);
+    void fetchMemberBadges()
+      .then((list) => {
+        setBadges(list);
         setError(null);
       })
       .catch((err) => {

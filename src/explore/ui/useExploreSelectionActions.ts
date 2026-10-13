@@ -1,30 +1,54 @@
 import { useCallback, useMemo, useState, type Dispatch, type SetStateAction } from 'react';
 import type { QueryClient } from '@tanstack/react-query';
 import type { NavigateFunction } from 'react-router-dom';
-import type { ActivityDTO, ActivityMapPeekActionId, ExploreMapItemDTO, UserRole } from '@uaetrail/shared-types';
-import { resolveActivityDisplayCoordinates, resolveActivityHostUserId } from '@uaetrail/shared-types';
+import {
+  exploreMapItemIsSeeking,
+  type ActivityDTO,
+  type ActivityMapPeekActionId,
+  type ExploreMapItemDTO,
+  type UserRole,
+} from '@uaetrail/shared-types';
+import {
+  activityDetailPath,
+  resolveActivityDisplayCoordinates,
+  resolveActivityHostUserId,
+  resolveParticipationMode,
+} from '@uaetrail/shared-types';
+import { buildShareText, buildShareUrl } from '../../utils/share';
 import { hostPublishedActivityPeekAccess } from '../../access/resolvePeekDetailAccess';
-import { buildExploreMapItemFromActivity, parseActivityMapItemId } from '../privateActivityExploreItem';
-import { api } from '../../api/index';
-import { buildExploreCardModel } from '../exploreCardModel';
-import { finalizeExploreCardLinkedRideshare } from '../linkedRideshareExplore';
-import { canOfferRideshareForDemandItem } from '../linkActivityRideshareOffer';
+import { buildExploreMapItemFromActivity } from '../privateActivityExploreItem';
+import {
+  findExploreMapItemForPinId,
+  resolveActivityIdForExplorePinId,
+} from '../exploreMapPinResolve';
+import { cancelHostActivityById } from '../../hooks/hostActivityClientApi';
+import {
+  cancelParticipantIntent,
+  createParticipantIntentJoinRequest,
+  invalidateMyParticipantIntentsQueries,
+} from '../../hooks/participantIntentClientApi';
+import { fetchPublicActivityDetail } from '../../hooks/usePublicActivityDetail';
+import { buildDiscoveryCardViewModel } from '../../discovery';
+import { canShowDemandLinkRideshareOffer } from '../linkActivityRideshareOffer';
 import { openActivityGroupChat } from '../../utils/openActivityGroupChat';
 import { messagesRouteForRole } from '../../utils/authRouting';
+import { executeActivityMapPeekAction } from '../../activity/executeActivityMapPeekAction';
 import {
   activityMapPeekNeedsJoinContext,
   activityMapPeekSkipsJoinContext,
-} from '../activityMapPeekActions';
+} from '../../activity/activityPeekEngagement';
 import { viewerIsActivityHostUser } from '../../utils/viewerHostsActivity';
 import { useActivityJoinActions, useActivityJoinContext } from '../../hooks/useActivityJoinFlow';
 import { useParticipantIntentJoinContext } from '../../hooks/useParticipantIntentJoinContext';
 import { useViewerProfileGender } from '../../hooks/useViewerProfileGender';
 import { womenOnlyJoinMessageForActivity } from '../../utils/activityWomenOnlyJoin';
-import { exploreMapQueryKey, reloadExploreMap } from '../../hooks/useExploreMap';
-import { navigateToParticipantIntentManage } from '../../trips/navigateParticipantIntentManage';
+import { readExploreMapItemsFromCache, reloadExploreMap } from '../../hooks/useExploreMap';
+import { isExploreMapVnextEnabled } from '../exploreMapVnext';
+import { navigateToParticipantIntentManage } from '../../member-plan/navigateParticipantIntentManage';
 import type { ContributeSubmitResult } from './contributeFlow';
 import type { DemandSubmitResult } from './demandFlow';
 import type { useExploreBrowseUrlState } from './useExploreBrowseUrlState';
+import type { HostActivityManageInitialView } from '../../components/host/hostActivityManageViews';
 
 type BrowseState = ReturnType<typeof useExploreBrowseUrlState>;
 
@@ -46,6 +70,13 @@ type UseExploreSelectionActionsArgs = {
     options?: { canSendBuddyInvites?: boolean }
   ) => void;
   onCreateLinkedRideshare?: (parent: ActivityDTO) => void;
+  /** Host peek `manage_activity` — open manage sheet without leaving explore. */
+  onOpenHostManage?: (
+    activity: ActivityDTO,
+    initialView?: HostActivityManageInitialView
+  ) => void;
+  /** Host peek `share_activity` — invite + link share sheet (not web-only). */
+  onShareHostedActivity?: (activity: ActivityDTO) => void;
 };
 
 export const useExploreSelectionActions = ({
@@ -63,6 +94,8 @@ export const useExploreSelectionActions = ({
   setLinkOnlyPeekItems,
   onInviteActivity,
   onCreateLinkedRideshare,
+  onOpenHostManage,
+  onShareHostedActivity,
 }: UseExploreSelectionActionsArgs) => {
   const [demandNotice, setDemandNotice] = useState<string | null>(null);
   const [venueNotice, setVenueNotice] = useState<string | null>(null);
@@ -80,7 +113,7 @@ export const useExploreSelectionActions = ({
 
   const selectedCard = useMemo(() => {
     if (!selected) return null;
-    const card = finalizeExploreCardLinkedRideshare(buildExploreCardModel(selected), selected, items);
+    const card = buildDiscoveryCardViewModel(selected, { mapItems: items }).card;
     const activity = card.activity;
     const isOwnActivity = Boolean(
       user &&
@@ -91,7 +124,7 @@ export const useExploreSelectionActions = ({
     const activityHostPeek = isOwnActivity;
     const isOwnDemand = Boolean(
       user &&
-        selected.source === 'demand' &&
+        exploreMapItemIsSeeking(selected) &&
         selected.requesterUserId === user.id &&
         selected.participantIntentId &&
         !selected.convertedActivityId
@@ -101,14 +134,13 @@ export const useExploreSelectionActions = ({
         ...card,
         showJoinActions: false,
         showDemandOwnerActions: true,
-        showDemandLinkRideshare: canOfferRideshareForDemandItem(selected),
+        showDemandLinkRideshare: canShowDemandLinkRideshareOffer(selected),
       };
     }
     if (!activityHostPeek) return card;
     return {
       ...card,
       showJoinActions: false,
-      showHostActivityCtas: true,
     };
   }, [selected, items, user]);
 
@@ -129,9 +161,14 @@ export const useExploreSelectionActions = ({
     userId: user?.id,
   });
 
-  const demandJoinContextEnabled = Boolean(
-    selected?.source === 'demand' &&
+  const seekingUsesLegacyIntentJoin = Boolean(
+    selected &&
+      exploreMapItemIsSeeking(selected) &&
       selected.participantIntentId &&
+      !selected.activity?.id
+  );
+  const demandJoinContextEnabled = Boolean(
+    seekingUsesLegacyIntentJoin &&
       !selectedCard?.showDemandOwnerActions &&
       user
   );
@@ -155,15 +192,12 @@ export const useExploreSelectionActions = ({
   );
 
   const peekJoinUiState =
-    selected?.source === 'demand' && !selectedCard?.showDemandOwnerActions
+    demandJoinContextEnabled
       ? demandJoinUiState
       : activityPeekSkipsJoinContext
         ? undefined
         : joinUiState;
-  const peekJoinStateLoading =
-    selected?.source === 'demand' && !selectedCard?.showDemandOwnerActions
-      ? demandJoinStateLoading
-      : joinStateLoading;
+  const peekJoinStateLoading = demandJoinContextEnabled ? demandJoinStateLoading : joinStateLoading;
 
   const joinActions = useActivityJoinActions({
     activity: selected?.activity ?? null,
@@ -174,6 +208,13 @@ export const useExploreSelectionActions = ({
     onMessage: setDemandNotice,
     onError: setDemandNotice,
   });
+
+  const handlePeekJoinSuccess = useCallback(
+    (message: string) => {
+      joinActions.handleJoinSuccess(message);
+    },
+    [joinActions]
+  );
 
   const openItem = useCallback(
     (item: ExploreMapItemDTO) => {
@@ -208,17 +249,22 @@ export const useExploreSelectionActions = ({
   }, [user, selected?.source, joinActions]);
 
   const handleJoin = useCallback(() => {
-    if (selected?.source === 'demand') {
-      const intentId = selected.participantIntentId;
-      if (!intentId) return;
+    if (selected && exploreMapItemIsSeeking(selected)) {
       if (!user) {
         joinActions.openGuestSheet('activity');
         return;
       }
+      if (selected.activity?.id) {
+        if (joinUiState.kind !== 'open') return;
+        joinActions.openJoinModal();
+        return;
+      }
+      const intentId = selected.participantIntentId;
+      if (!intentId) return;
       if (demandJoinUiState.kind !== 'open') return;
       void (async () => {
         try {
-          await api.createParticipantIntentJoinRequest(intentId);
+          await createParticipantIntentJoinRequest(intentId);
           await reloadDemandJoinContext();
           setDemandNotice('Request sent — they’ll review your request.');
         } catch (err) {
@@ -283,7 +329,7 @@ export const useExploreSelectionActions = ({
     if (!hostRemoveConfirm || !tenantId) return;
     setHostRemoveBusy(true);
     try {
-      await api.cancelHostActivity(tenantId, hostRemoveConfirm.id);
+      await cancelHostActivityById(tenantId, hostRemoveConfirm.id);
       const wasDraft = hostRemoveConfirm.status === 'draft';
       setHostRemoveConfirm(null);
       setSelectedId(null);
@@ -299,52 +345,82 @@ export const useExploreSelectionActions = ({
   const handleActivityMapPeekAction = useCallback(
     (actionId: ActivityMapPeekActionId) => {
       const activity = selected?.activity;
-      switch (actionId) {
-        case 'open_crew_chat':
-          void handleHostMessage();
-          return;
-        case 'message_host':
-          handleMessageActivityHost();
-          return;
-        case 'invite_crew':
-          handleInviteCrew();
-          return;
-        case 'link_carpool':
-          if (activity && onCreateLinkedRideshare) {
-            onCreateLinkedRideshare(activity);
+      executeActivityMapPeekAction(actionId, {
+        openCrewChat: () => void handleHostMessage(),
+        messageHost: handleMessageActivityHost,
+        inviteCrew: handleInviteCrew,
+        linkRideshare: () => {
+          if (activity && onCreateLinkedRideshare) onCreateLinkedRideshare(activity);
+        },
+        offerRideshare: () => {
+          if (activity && onCreateLinkedRideshare) onCreateLinkedRideshare(activity);
+        },
+        requestJoin: handleJoin,
+        shareActivity: () => {
+          if (activity && onShareHostedActivity) {
+            onShareHostedActivity(activity);
+            return;
           }
-          return;
-        case 'request_join':
-          handleJoin();
-          return;
-        case 'pending_join':
-          return;
-        default:
-          return;
-      }
+          const card = selectedCard;
+          if (!card?.sharePath) return;
+          const url = buildShareUrl(card.sharePath);
+          const text = buildShareText(card.shareTitle, card.shareText ?? undefined);
+          if (typeof navigator !== 'undefined' && navigator.share) {
+            void navigator.share({ title: card.shareTitle, text, url }).catch(() => undefined);
+          }
+        },
+        manageActivity: () => {
+          if (!activity) return;
+          if (onOpenHostManage) {
+            onOpenHostManage(activity, 'participants');
+            return;
+          }
+          setSelectedId(null);
+          navigate(`${activityDetailPath(activity.id)}?tab=buddies`);
+        },
+        withdrawJoin: () => {
+          if (joinUiState.kind === 'pending' || joinUiState.kind === 'confirmed') {
+            joinActions.setShowWithdraw(true);
+          }
+        },
+        viewDetail: () => {
+          if (!activity) return;
+          setSelectedId(null);
+          navigate(activityDetailPath(activity.id));
+        },
+      });
     },
     [
       selected?.activity,
+      selectedCard,
       handleHostMessage,
       handleMessageActivityHost,
       handleInviteCrew,
       handleJoin,
+      joinActions,
+      joinUiState.kind,
       onCreateLinkedRideshare,
+      onOpenHostManage,
+      onShareHostedActivity,
       navigate,
       setSelectedId,
     ]
   );
 
+  const handleOfferTransport = useCallback(() => {
+    handleActivityMapPeekAction('offer_rideshare');
+  }, [handleActivityMapPeekAction]);
+
   const handleDemandManage = useCallback(() => {
     const intentId = selected?.participantIntentId;
-    if (!intentId || selected?.source !== 'demand') return;
+    if (!intentId || !exploreMapItemIsSeeking(selected)) return;
     setSelectedId(null);
     navigateToParticipantIntentManage(navigate, intentId);
   }, [selected, navigate, setSelectedId]);
 
   const requestDemandRemove = useCallback(() => {
     const intentId = selected?.participantIntentId;
-    if (!intentId || selected?.source !== 'demand') return;
+    if (!intentId || !exploreMapItemIsSeeking(selected)) return;
     setDemandRemoveIntentId(intentId);
   }, [selected]);
 
@@ -352,7 +428,8 @@ export const useExploreSelectionActions = ({
     if (!demandRemoveIntentId) return;
     setDemandRemoveBusy(true);
     try {
-      await api.cancelParticipantIntent(demandRemoveIntentId);
+      await cancelParticipantIntent(demandRemoveIntentId);
+      invalidateMyParticipantIntentsQueries(queryClient);
       setDemandRemoveIntentId(null);
       setSelectedId(null);
       await reloadExploreMap(queryClient);
@@ -367,7 +444,9 @@ export const useExploreSelectionActions = ({
   const handleActivityPublished = useCallback(
     async (activity: ActivityDTO) => {
       if (activity.joinMode === 'private') {
-        await reloadExploreMap(queryClient);
+        if (isExploreMapVnextEnabled()) {
+          await reloadExploreMap(queryClient);
+        }
         const peekItem = buildExploreMapItemFromActivity(
           activity,
           hostPublishedActivityPeekAccess(activity.joinMode === 'private' ? 'private' : 'open')
@@ -391,7 +470,9 @@ export const useExploreSelectionActions = ({
       browse.setActivityFilter('all');
       browse.syncExploreUrl({ filter: 'all', activityFilter: 'all', panel: 'activities' });
 
-      await reloadExploreMap(queryClient);
+      if (isExploreMapVnextEnabled()) {
+        await reloadExploreMap(queryClient);
+      }
 
       const { latitude, longitude } = resolveActivityDisplayCoordinates(activity);
       if (latitude != null && longitude != null) {
@@ -407,30 +488,31 @@ export const useExploreSelectionActions = ({
 
   const tryOpenActivityPinDeepLink = useCallback(
     async (mapItemId: string): Promise<ActivityPinDeepLinkResult> => {
-      const existing = items.find((entry) => entry.id === mapItemId);
+      const existing = findExploreMapItemForPinId(items, mapItemId);
       if (existing) {
         openItem(existing);
         return 'opened';
       }
 
-      const activityId = parseActivityMapItemId(mapItemId);
+      const activityId = resolveActivityIdForExplorePinId(items, mapItemId);
       if (!activityId) return 'not_activity';
       if (!user) return 'auth_required';
 
       try {
-        const res = await api.getPublicActivityDetail(activityId);
-        if (res.viewerAccess?.exposure === 'none') {
+        const detail = await fetchPublicActivityDetail(activityId);
+        if (detail.viewerAccess?.exposure === 'none') {
           setDemandNotice(
-            res.data.message ?? 'This private plan is only available to signed-in members with the link.'
+            detail.activity.message ??
+              'This private plan is only available to signed-in members with the link.'
           );
           return 'denied';
         }
-        const peekItem = buildExploreMapItemFromActivity(res.data, res.viewerAccess);
+        const peekItem = buildExploreMapItemFromActivity(detail.activity, detail.viewerAccess);
         setLinkOnlyPeekItems((prev) => {
           const rest = prev.filter((entry) => entry.id !== peekItem.id);
           return [...rest, peekItem];
         });
-        const { latitude, longitude } = resolveActivityDisplayCoordinates(res.data);
+        const { latitude, longitude } = resolveActivityDisplayCoordinates(detail.activity);
         if (latitude != null && longitude != null) {
           handleFocusMapLocation({ lat: latitude, lng: longitude });
         }
@@ -462,11 +544,12 @@ export const useExploreSelectionActions = ({
 
   const handleDemandSubmitted = useCallback(
     async (result: DemandSubmitResult) => {
+      invalidateMyParticipantIntentsQueries(queryClient);
       await reloadExploreMap(queryClient);
       if (!result.visibleOnMap) {
         return;
       }
-      const mapItems = queryClient.getQueryData<ExploreMapItemDTO[]>(exploreMapQueryKey);
+      const mapItems = readExploreMapItemsFromCache(queryClient);
       const pin = mapItems?.find((item) => item.id === result.mapItemId);
       if (pin?.latitude != null && pin?.longitude != null) {
         handleFocusMapLocation({ lat: pin.latitude, lng: pin.longitude });
@@ -494,11 +577,13 @@ export const useExploreSelectionActions = ({
     selectedCard,
     activityPeekSkipsJoinContext,
     handleActivityMapPeekAction,
+    handleOfferTransport,
     joinUiState,
     joinStateLoading,
     peekJoinUiState,
     peekJoinStateLoading,
     joinActions,
+    handlePeekJoinSuccess,
     demandNotice,
     venueNotice,
     setDemandNotice,

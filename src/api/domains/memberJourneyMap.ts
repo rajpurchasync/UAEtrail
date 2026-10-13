@@ -6,9 +6,9 @@ import type {
 } from '@uaetrail/shared-types';
 import { apiRequest } from '../client';
 
-/** Member outdoor journey map — HTTP path `/me/trips/map` is legacy; not the Trips tab UI module. */
+/** Member journey map read model — pins + outing entries (`GET /me/journey-map`). CRUD: `/me/map-pins`. */
 export const memberJourneyMapApi = {
-  getJourneyMap: () => apiRequest<{ data: MemberJourneyMapDTO }>('/me/trips/map', { auth: true }),
+  getJourneyMap: () => apiRequest<{ data: MemberJourneyMapDTO }>('/me/journey-map', { auth: true }),
   createPin: (body: CreateMemberMapPinInput) =>
     apiRequest<{ data: MemberMapPinDTO }>('/me/map-pins', {
       method: 'POST',

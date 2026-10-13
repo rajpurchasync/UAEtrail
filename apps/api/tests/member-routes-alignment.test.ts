@@ -22,6 +22,7 @@ const SHARED_PATH_CONSTANTS = [
   'HOST_REQUESTS_PATH',
   'HOST_ACTIVITIES_PATH',
   'HOST_OVERVIEW_PATH',
+  'PLAN_PATH',
   'ADMIN_USERS_PATH',
   'ADMIN_ACTIVITIES_PATH',
   'ADMIN_PLACES_PATH',
@@ -55,5 +56,12 @@ describe('member-routes alignment (API notification meta ↔ FE surfacePaths)', 
     expect(exportStringConst('PRO_MEMBERSHIP_PATH', apiRoutes)).toBe(
       exportStringConst('PRO_MEMBERSHIP_PATH', memberRoutes)
     );
+  });
+
+  it('seeking explore pins use explorePublishedActivityPinPath (no exploreDemandPinPath)', () => {
+    const apiRoutes = readFileSync(join(apiRoot, 'src/lib/member-routes.ts'), 'utf8');
+    expect(apiRoutes).toContain('explorePublishedActivityPinPath');
+    expect(apiRoutes).toContain('exploreSeekingMapItemPath');
+    expect(apiRoutes).not.toMatch(/exploreDemandPinPath/);
   });
 });

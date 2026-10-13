@@ -1,14 +1,19 @@
-import { exploreDemandMapItemPath } from '@uaetrail/shared-types';
+import {
+  exploreAreaQueryParam,
+  exploreSeekingMapItemPath,
+  resolveSeekingExploreMapItemId,
+} from '@uaetrail/shared-types';
 import type { OrganizeComposeKind } from './compose';
 import { EXPLORE_MAP_PATH } from '../config/platform';
-import { TRIPS_PATH } from '../constants';
-import { tripsPlansPath } from '../trips/tripsRouting';
+import { PLAN_PATH } from '../constants';
+import { tripsPlansPath } from '../member-plan/tripsRouting';
 import type { ContributeVenueKind } from './contributeTypes';
 import { formatComposeQuery, type ExploreCompose } from './compose';
 import {
   parseExploreActivityDatePreset,
   serializeExploreActivityDatePreset,
 } from './exploreActivityDateFilter';
+import { serializeExplorePinKindFilter, type ExplorePinKindFilter } from './explorePinKindFilter';
 import {
   serializeExploreBuddySubtype,
   type ExploreBuddySubtypeKey,
@@ -90,10 +95,43 @@ export const parseExplorePinMapItemId = (searchParams: Pick<URLSearchParams, 'ge
 export const exploreSavedPinPath = (mapItemId: string): string =>
   explorePath({ pin: mapItemId, panel: 'activities', list: true });
 
+/** Map item id for a find post — `activity:` when M1 row exists, else legacy `demand:`. */
+export const resolveParticipantIntentMapItemId = (intent: {
+  id: string;
+  activityId?: string | null;
+  seekingActivityId?: string | null;
+}): string =>
+  resolveSeekingExploreMapItemId({
+    intentId: intent.id,
+    activityId: intent.activityId ?? intent.seekingActivityId ?? null,
+  });
+
+export const participantIntentExplorePinPath = (
+  intent: {
+    id: string;
+    activityId?: string | null;
+    seekingActivityId?: string | null;
+  }
+): string => exploreSavedPinPath(resolveParticipantIntentMapItemId(intent));
+
 /** Share link for map items — opens explore peek (guests and members). */
-export const exploreMapItemSharePath = (mapItemId: string): string => {
+export const exploreMapItemSharePath = (
+  mapItemId: string,
+  options?: { activityId?: string | null; intentId?: string | null }
+): string => {
   const id = mapItemId.trim();
-  if (id.startsWith('demand:')) return exploreDemandMapItemPath(id);
+  if (id.startsWith('demand:')) {
+    return exploreSeekingMapItemPath({
+      intentId: id.slice('demand:'.length),
+      activityId: options?.activityId,
+    });
+  }
+  if (options?.activityId && options.intentId) {
+    return exploreSeekingMapItemPath({
+      intentId: options.intentId,
+      activityId: options.activityId,
+    });
+  }
   return explorePath({ pin: id });
 };
 
@@ -230,6 +268,8 @@ export const explorePath = (options?: {
   activity?: ActivityListFilterKey;
   panel?: ExplorePanel;
   list?: boolean;
+  /** Open visual discover browse (`browse=1`) — poster feed, not map-aligned list. */
+  browse?: boolean;
   /** @deprecated Prefer `regions` for multi-select venue filters. */
   region?: string;
   /** Selected venue states/emirates (multi-select). */
@@ -269,6 +309,10 @@ export const explorePath = (options?: {
   planWith?: string;
   /** Activity join-invite deep link — use with `pin=activity:{id}`. */
   joinInvite?: boolean;
+  /** Curated area slug — constrains map/list rows (`exploreAreaQueryParam`). */
+  area?: string;
+  /** Map pin-kind row (`activities` | `locations` | `places` | `shops`). */
+  pinKind?: ExplorePinKindFilter;
 }): string => {
   const params = new URLSearchParams();
   if (options?.filter && options.filter !== 'all') {
@@ -280,7 +324,9 @@ export const explorePath = (options?: {
   if (options?.panel && options.panel !== 'activities') {
     params.set('panel', options.panel);
   }
-  if (options?.list) {
+  if (options?.browse) {
+    params.set('browse', '1');
+  } else if (options?.list) {
     params.set('list', '1');
   }
   if (options?.regions && options.regions.length > 0) {
@@ -347,6 +393,14 @@ export const explorePath = (options?: {
   if (options?.joinInvite) {
     params.set(EXPLORE_JOIN_INVITE_QUERY_KEY, '1');
   }
+  if (options?.area?.trim()) {
+    params.set(exploreAreaQueryParam, options.area.trim().toLowerCase());
+  }
+  if (options?.pinKind) {
+    const serializedPinKind = serializeExplorePinKindFilter(options.pinKind);
+    if (serializedPinKind) params.set('pinKind', serializedPinKind);
+    else params.delete('pinKind');
+  }
   const qs = params.toString();
   return qs ? `${EXPLORE_MAP_PATH}?${qs}` : EXPLORE_MAP_PATH;
 };
@@ -354,6 +408,10 @@ export const explorePath = (options?: {
 /** Explore map with member people browse panel open. */
 export const explorePeopleBrowsePath = (options?: { list?: boolean }): string =>
   explorePath({ peopleBrowse: true, list: options?.list ?? true });
+
+/** Explore with visual discover browse open (`browse=1` — categories, rails, posters). */
+export const exploreDiscoverBrowsePath = (): string =>
+  explorePath({ browse: true });
 
 /** Start create flow with optional buddy to plan with. */
 export const explorePlanWithBuddyPath = (
@@ -505,7 +563,7 @@ export const detailBackPath = (kind: DetailBackKind): string => {
 
 /** Personal activities hub — joined/hosted tabs only (not public browse). */
 export const myActivitiesPath = (tab: 'joined' | 'hosted' = 'joined'): string =>
-  tab === 'hosted' ? tripsPlansPath('hosted') : TRIPS_PATH;
+  tab === 'hosted' ? tripsPlansPath('hosted') : PLAN_PATH;
 
 /** Consumer create flow — explore compose organize menu or a specific kind. */
 export const exploreOrganizePath = (kind?: OrganizeComposeKind): string =>
@@ -513,10 +571,14 @@ export const exploreOrganizePath = (kind?: OrganizeComposeKind): string =>
     ? explorePath({ compose: { intent: 'organize', kind } })
     : explorePath({ compose: { surface: 'menu', intent: 'organize' } });
 
-/** Host with publish access — prefill rideshare organize from an own demand intent. */
-export const exploreOfferRideshareForDemandPath = (intentId: string): string =>
+/** Host with publish access — prefill rideshare organize from an own seeking post. */
+export const exploreOfferRideshareForDemandPath = (intent: {
+  id: string;
+  activityId?: string | null;
+  seekingActivityId?: string | null;
+}): string =>
   explorePath({
-    pin: `demand:${intentId}`,
+    pin: resolveParticipantIntentMapItemId(intent),
     compose: { intent: 'organize', kind: 'rideshare' },
   });
 

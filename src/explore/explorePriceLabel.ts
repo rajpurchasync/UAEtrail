@@ -1,11 +1,18 @@
+import {
+  ACTIVITY_PRICING_INDICATION_NOTE,
+  buildExploreActivityDisplay,
+  resolveExplorePrice,
+  type ExploreActivityDisplayFields,
+  type ExplorePriceInfo,
+  type ExplorePriceLabelKind,
+} from '@uaetrail/shared-types';
+
 export {
   buildExploreActivityDisplay,
   resolveExplorePrice,
   type ExploreActivityDisplayFields,
   type ExplorePriceInfo,
-} from '@uaetrail/shared-types';
+  type ExplorePriceLabelKind,
+};
 
-/** @deprecated Explore cards no longer show offline payment copy. */
-export const OFFLINE_PAYMENT_NOTE = 'Payment arranged directly with the host.';
-
-export type { ExplorePriceLabelKind } from '@uaetrail/shared-types';
+export const OFFLINE_PAYMENT_NOTE = ACTIVITY_PRICING_INDICATION_NOTE;

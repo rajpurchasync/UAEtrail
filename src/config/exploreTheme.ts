@@ -25,6 +25,21 @@ export const EXPLORE_SHEET = {
   browseList: 'min-h-0 flex-1 space-y-2.5 overflow-y-auto px-1 pb-[calc(var(--safe-bottom)+12px)] lg:px-0 lg:pb-4',
 } as const;
 
+/** Map list panel rows — activities, venues, shops, people browse. */
+export const EXPLORE_LIST_ROW = {
+  shell:
+    'rounded-2xl border border-neutral-200/75 bg-white shadow-[0_1px_8px_rgba(15,23,42,.06)] ring-1 ring-black/[0.02] transition',
+  main:
+    'flex w-full items-center gap-3 p-3.5 text-left transition active:scale-[0.995] active:bg-neutral-50/80',
+  bodyIndent: 'space-y-0 px-3 pb-3 pl-[4.25rem]',
+  title: 'text-[15px] font-bold leading-snug text-neutral-950',
+  meta: 'mt-0.5 truncate text-sm font-medium leading-snug text-neutral-700',
+  footer: 'text-sm font-medium leading-snug text-neutral-800',
+  /** Inline text button inside list footer copy (e.g. outing title). */
+  inlineAction:
+    'font-semibold text-neutral-950 underline decoration-neutral-300 underline-offset-2',
+} as const;
+
 export const exploreSheetPanelClass = `${EXPLORE_SHAPE.sheetTop} ${EXPLORE_SHAPE.sheetDesktop} ${EXPLORE_SHEET.panel} ${EXPLORE_SHEET.maxHeight}`;
 
 /** Primary chrome — brand actions, default filters (Nomadtable-style: darker, higher contrast). */
@@ -222,14 +237,14 @@ export const exploreVenueListFilterActiveClass = (key: VenueListFilterKey): stri
 };
 
 export type MapPinRingKind = 'hiking' | 'camping' | 'event' | 'shop' | 'agency' | 'rideshare';
-export type MapPinRingSource = 'activity' | 'venue' | 'shop' | 'agency' | 'demand';
+export type MapPinRingSource = 'activity' | 'venue' | 'shop' | 'agency' | 'seeking' | 'demand';
 
 /** Type-colored ring on map pins — matches filter / badge colors. */
 export const exploreMapPinRingColor = (
   kind: MapPinRingKind,
   source?: MapPinRingSource
 ): string => {
-  if (source === 'demand') return '#0d9488';
+  if (source === 'seeking' || source === 'demand') return '#0d9488';
   switch (kind) {
     case 'camping':
       return '#d97706';

@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { Upload, Loader2, FileText } from 'lucide-react';
-import { api } from '../../api/index';
-import { getStoredSession } from '../../api/client';
+import { readStoredAccessToken } from '../../hooks/accountSessionApi';
+import { commitMediaUpload, presignMediaUpload } from '../../hooks/mediaUploadApi';
 import { formatEnvironmentUrl } from '../../utils/formatEnvironmentUrl';
 
 interface AssetKeyUploadProps {
@@ -30,7 +30,7 @@ export const AssetKeyUpload = ({
     setUploading(true);
     setError(null);
     try {
-      const presign = await api.presignUpload({
+      const presignData = await presignMediaUpload({
         filename: file.name,
         mimeType: file.type || 'application/octet-stream',
         size: file.size,
@@ -38,29 +38,29 @@ export const AssetKeyUpload = ({
         kind,
       });
 
-      const uploadUrl = formatEnvironmentUrl(presign.data.uploadUrl);
+      const uploadUrl = formatEnvironmentUrl(presignData.uploadUrl);
       const isLocalUpload = uploadUrl.includes('/media/upload-local/');
       const headers: Record<string, string> = {
         'Content-Type': file.type || 'application/octet-stream',
       };
       if (isLocalUpload) {
-        const session = getStoredSession();
-        if (session?.accessToken) {
-          headers.Authorization = `Bearer ${session.accessToken}`;
+        const accessToken = readStoredAccessToken();
+        if (accessToken) {
+          headers.Authorization = `Bearer ${accessToken}`;
         }
       }
 
       const putRes = await fetch(uploadUrl, { method: 'PUT', headers, body: file });
       if (!putRes.ok) throw new Error(`Upload failed (${putRes.status})`);
 
-      await api.commitUpload({
-        key: presign.data.key,
+      await commitMediaUpload({
+        key: presignData.key,
         mimeType: file.type || 'application/octet-stream',
         size: file.size,
         kind,
       });
 
-      onChange(presign.data.key);
+      onChange(presignData.key);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Upload failed');
     } finally {

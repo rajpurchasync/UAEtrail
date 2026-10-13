@@ -2,7 +2,11 @@ import { useCallback, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { Bell, Calendar, Compass, Crown, MessageCircle, Plus, ShieldCheck } from 'lucide-react';
-import { api } from '../../api/index';
+import { updateMeProfile } from '../../hooks/memberProfileApi';
+import {
+  markAllMeNotificationsRead,
+  markNotificationReadById,
+} from '../../hooks/notificationInboxApi';
 import { useAuth } from '../../context/AuthContext';
 import { ConsoleHubSections, ConsoleShell, useConsoleHubData } from '../../console';
 import { TenantSwitcher } from '../../components/ui';
@@ -50,7 +54,7 @@ export const Overview = () => {
     setMessage(null);
     setSaving(true);
     try {
-      await api.updateMeProfile(payload);
+      await updateMeProfile(payload);
       await refreshUser();
       setMessage('Profile saved.');
       setShowEdit(false);
@@ -146,7 +150,7 @@ export const Overview = () => {
                 <button
                   type="button"
                   onClick={async () => {
-                    await api.markAllNotificationsRead();
+                    await markAllMeNotificationsRead();
                     setShowNotifPopover(false);
                     await participant.reload();
                     if (user?.id) {
@@ -172,7 +176,7 @@ export const Overview = () => {
                   showTimestamp={false}
                   onClick={async () => {
                     if (!notif.isRead) {
-                      await api.markNotificationRead(notif.id).catch(() => undefined);
+                      await markNotificationReadById(notif.id).catch(() => undefined);
                       if (user?.id) {
                         void invalidateNotificationUnreadBadge(queryClient, user.id);
                       }

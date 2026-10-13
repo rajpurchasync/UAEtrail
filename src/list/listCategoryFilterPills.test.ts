@@ -11,7 +11,7 @@ const baseFilters: BrowseListFilterState = {
   price: 'all',
   when: 'any',
   activityDatePreset: 'anyday',
-  buddiesSegment: 'going',
+  buddiesSegment: 'available',
 };
 
 describe('buildListCategoryPrimaryPills', () => {

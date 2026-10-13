@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Download } from 'lucide-react';
-import { api } from '../../api/index';
+import { downloadAccountDataExport } from '../../hooks/accountSettingsApi';
 import { AppButton } from '../mobile/AppButton';
 
 export const AccountDataExportSection = () => {
@@ -11,7 +11,7 @@ export const AccountDataExportSection = () => {
     setMessage(null);
     setExporting(true);
     try {
-      const blob = await api.downloadMyDataExport();
+      const blob = await downloadAccountDataExport();
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement('a');
       anchor.href = url;

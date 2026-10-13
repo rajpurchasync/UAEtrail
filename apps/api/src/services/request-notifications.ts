@@ -1,8 +1,8 @@
 import { NotificationType } from '../domain/enums.js';
 import { findAuthUserById } from '../lib/auth-users.js';
 import { findActivityForRequestViewById } from '../lib/activities-store.js';
-import { HOST_REQUESTS_PATH } from '../lib/member-routes.js';
-import { dispatchNotification } from './notifications.js';
+import { planHostedSchedulePath } from '../lib/member-routes.js';
+import { scheduleNotification } from './notifications.js';
 
 export const notifyHostOfRequestWithdrawal = async (input: {
   activityId: string;
@@ -23,19 +23,22 @@ export const notifyHostOfRequestWithdrawal = async (input: {
 
   const participantName = participant?.profile.displayName ?? participant?.email ?? 'A participant';
 
-  await dispatchNotification({
-    userId: hostUserId,
-    title: 'Participant withdrew',
-    body: `${participantName} withdrew from "${activity.title}".`,
-    type: NotificationType.REQUEST_UPDATE,
-    meta: {
-      kind: 'request_withdrawal',
-      activityId: input.activityId,
-      requestId: input.requestId,
-      actorUserId: input.participantUserId,
-      cancelReason: input.cancelReason,
-      cancelMessage: input.cancelMessage,
-      path: HOST_REQUESTS_PATH,
+  scheduleNotification(
+    {
+      userId: hostUserId,
+      title: 'Participant withdrew',
+      body: `${participantName} withdrew from "${activity.title}".`,
+      type: NotificationType.REQUEST_UPDATE,
+      meta: {
+        kind: 'request_withdrawal',
+        activityId: input.activityId,
+        requestId: input.requestId,
+        actorUserId: input.participantUserId,
+        cancelReason: input.cancelReason,
+        cancelMessage: input.cancelMessage,
+        path: planHostedSchedulePath(),
+      },
     },
-  }).catch(() => undefined);
+    'request_withdrawal'
+  );
 };

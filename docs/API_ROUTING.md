@@ -23,6 +23,7 @@ Companion: [`DOMAIN.md`](./DOMAIN.md), [`CREATE_FLOW.md`](./CREATE_FLOW.md), [`M
 **Naming**
 
 - **Resource paths** use kebab-case plural nouns (`participant-intents`, not `intents` or `demand`).
+- **No tab or marketing names** on `/me/*` (`plan-needs-you`, `member-hub-stats` are forbidden — use capability names like `coordination-attention`, `profile-stats`). Presentation (`label`, consumer `path`) belongs in the SPA, not JSON.
 - **DB collection** `participant_intents` → URL **`/me/participant-intents`** (product copy: *demand* / *Find*).
 - **Type field** on intents: `kind` (`ParticipantIntentKind`) — parallels activity `activityType` / shared `outingCategory`.
 - Do **not** add catch-all `/plans` or `/me/intents` (legacy plan doc paths are obsolete).
@@ -47,14 +48,31 @@ Deprecated alias (do not use in new clients): `…/join-requests` mirrors `…/r
 
 Storage: `activity_requests` vs `participant_intent_requests`.
 
+### M2 join unification (in progress)
+
+| Step | Status | Behavior |
+|------|--------|----------|
+| **M1** | Shipped | Find post → `activities` row (`activityMode: seeking`, `participantIntentId`). |
+| **M2a** | Superseded by M2c | Transitional dual-write (Oct 2026); replaced by single **`activity_requests`** store. |
+| **M2b** | Shipped | `POST /activities/:id/requests` is canonical for seeking pins (mirrors `participant_intent_requests`); intent `POST` delegates to activity when **`activityId`** is set; `GET …/requests/mine` reads `activity_requests` when needed. |
+| **M2c** | Shipped | Seeking joins read/write **`activity_requests`** only; `/me/participant-intents/…/requests` is an alias (no new `participant_intent_requests` when **`activityId`** is set). Legacy intents without **`activityId`** still use the intent collection. |
+
+Clients may keep intent URLs until M2b; host queue for buddy seeking rows uses the mirrored `activity_requests` row.
+
+| **M2d** | Shipped | After `backfill-seeking-activities`, Find writes only `activities` (`activityMode: seeking`). `/me/participant-intents/*` read-through via `activityId` / `participantIntentId`. **Default:** stub write **off**; set `PARTICIPANT_INTENT_STUB_WRITE=true` only for legacy dual-write rollback. |
+
 ---
 
 ## Participant intents (`/me/participant-intents`)
 
+**Deprecation (M2d):** New clients should treat **`activityId`** on seeking rows as canonical (map pin, join, manage). These routes remain **compatibility aliases** over `activities` + `activity_requests` after `PARTICIPANT_INTENT_STUB_WRITE=false`. Do not add new product flows that depend on `participant_intents` persistence.
+
 | Method | Path | Who |
 |--------|------|-----|
 | GET | `/me/participant-intents` | List my intents |
-| POST | `/me/participant-intents` | Create (Find flow) |
+| POST | `/me/participant-intents` | Create (Find flow); **M1** also writes `activities` row (`activityMode: seeking`, `participantIntentId`). Response includes **`activityId`** (published map activity; `seekingActivityId` is a deprecated alias). |
+| — | `npm run backfill-seeking-activities` | One-off **M1** backfill for active intents missing `seekingActivityId` (`--dry-run`, `--limit=N`) |
+| — | `npm run seeking:storage-status` | Ops readiness report before flipping `PARTICIPANT_INTENT_STUB_WRITE=false` (`--strict` fails if backfill incomplete or stub write on) |
 | PATCH | `/me/participant-intents/:intentId` | Update own active intent |
 | POST | `/me/participant-intents/:intentId/cancel` | Remove from map |
 | POST | `/me/participant-intents/:intentId/link-activity` | **Poster** links published activity (`convertedActivityId`) |
@@ -66,6 +84,8 @@ Storage: `activity_requests` vs `participant_intent_requests`.
 **Legacy:** `POST /host/participant-intents/:intentId/fulfill` — deprecated (returns `Deprecation` header). Demand **posters** must use **`POST /me/participant-intents/:intentId/link-activity`**. Explore publish already calls `exploreApi.linkParticipantIntentToActivity`.
 
 **Publish gate:** `POST /host/activities` and `POST /host/activities/:id/publish` require `signupProfileComplete` + `canPublish` (see `member-publish-gate.ts`), except platform admin acting on a tenant.
+
+**Consumer vs console:** Buddy **organize / manage joins** use **Plan** + `/activity/:id` + `/me/participant-intents/*` — not consumer bookmarks to `/host/overview`. The `/host/*` prefix remains the **tenant workspace** API (pro/agency/shop). A future FE rename to `/studio` would be route-alias only; no duplicate host REST surface is planned.
 
 Registration: `registerMeParticipantIntentRoutes.ts`.
 
@@ -91,6 +111,8 @@ Registration: `registerMeBadgesRoutes.ts` · service: `member-badges.ts`.
 | POST | `/activities/:id/rsvp` | I'm going |
 | GET/PATCH | `/me/requests` | Member’s activity requests |
 | GET | `/activities/:id` | Activity detail includes `myJoinInvite` when the signed-in viewer has a pending Join me invite (and is not already going) |
+| GET | `/me/coordination-attention` | Member coordination read-model — `items[]` with `kind`, `count`, optional `activityId` / `inviterDisplayName` (no UI copy or routes on wire). Plan **Needs you** strip maps kinds client-side. |
+| GET | `/me/profile-stats` | Profile counters (`followerCount`, `joinedCount`, `hostedCount`, `activeParticipantIntentCount`, `isCommunityHost`) |
 | GET | `/activities/:id/invites` | Pending **Join me** invitee ids the caller sent for this activity |
 | POST | `/activities/:id/invites` | **Join me** — host or confirmed participant invites another member (notification only; invitee still RSVPs / requests; host approval when required). Rate limit: **20 sends / activity / sender / 24h** (`ACTIVITY_JOIN_INVITE_DAILY_LIMIT_PER_ACTIVITY`) |
 | * | `/host/activities/*` | CRUD, publish, history (`registerHostActivityRoutes`) — FE: `listHostActivities`, `createHostActivity`, `publishHostActivity`, … (`activities.ts`) |
@@ -209,6 +231,21 @@ Registration: `registerMeGoalsRoutes.ts` · store: `member-goals-store.ts`.
 
 ---
 
+## Member journey map (`/me/journey-map`, `/me/map-pins`)
+
+Personal visited / wishlist pins and composed journey entries — not Explore.
+
+| Method | Path | Who |
+|--------|------|-----|
+| GET | `/me/journey-map` | Signed-in — `MemberJourneyMapDTO` (pins + outing entries) |
+| POST | `/me/map-pins` | Create manual pin |
+| PATCH | `/me/map-pins/:id` | Update pin |
+| DELETE | `/me/map-pins/:id` | Remove pin |
+
+Registration: `registerMeMapPinsRoutes.ts` · service: `member-journey-map.ts`.
+
+---
+
 ## Account data export (`GET /me/export`)
 
 JSON download of profile, join requests, participations, **wishlist**, **entity follows**, **member following**, **goals**, **badges**, **journey map pins**, shop orders, and push subscription count. Registration: `registerAccountLifecycleRoutes.ts` · `buildUserDataExport` in `data-export.ts`. Rate-limited (`sensitiveDataLimiter`).
@@ -220,7 +257,7 @@ JSON download of profile, join requests, participations, **wishlist**, **entity 
 | Method | Path | Who |
 |--------|------|-----|
 | GET | `/me/member-discovery-quota` | Free vs Pro profile-open quota |
-| GET | `/me/member-discovery/roster` | `friendsGoing`, `hostsGoing`, `lookingFor`, `followed`, paginated `directory`, `meta.quota`. Query: `date`, `q` |
+| GET | `/me/member-discovery/roster` | `friendsGoing`, `hostsGoing`, `seekingOnMap`, `followed`, paginated `directory`, `meta.quota`. Query: `date`, `q` |
 | GET | `/users/browse` | Directory only (paginated public members; excludes self + buddies) |
 
 Profile opens from Discover: `GET /users/:id/public-profile?from=discover` (quota). Registration: `registerMemberDiscoveryRoutes.ts` · roster: `member-discovery-roster.ts` · views: `member_profile_views` collection.

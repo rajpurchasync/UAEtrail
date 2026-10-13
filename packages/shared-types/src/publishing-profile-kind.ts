@@ -34,9 +34,9 @@ export const resolvePublishingProfileKind = (input: {
   return 'community';
 };
 
-/** Tenants that may host Organize activities (not shop-only storefronts). */
+/** Tenants that may host Organize activities (verified business shops included). */
 export const isOrganizeActivityHostProfileType = (ownedType: 'guide' | 'agency' | 'shop'): boolean =>
-  ownedType === 'guide' || ownedType === 'agency';
+  ownedType === 'guide' || ownedType === 'agency' || ownedType === 'shop';
 
 /** Map public tenant wire fields → storefront kind (explore links, redirects). */
 export const inferHostStorefrontKindFromTenantWire = (tenant: {

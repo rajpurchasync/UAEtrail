@@ -20,6 +20,8 @@ export const TO_LOCATION_LABEL = 'To location';
 
 export const EXTRA_DIRECTIONS_LABEL = 'Extra directions';
 
+export const ORGANIZE_CREW_CHAT_POLICY_TITLE = 'Crew chat messages';
+
 export const JOIN_RULES_STEP_TITLE = 'Before they join';
 
 export const JOIN_RULES_LABEL = 'What to know before joining *';

@@ -12,7 +12,8 @@ import {
 } from '../lib/chat-data.js';
 import { presentChatMessageAsDto, presentChatMessagesAsDtos } from '../lib/chat-message-presenter.js';
 import { messagesToUserPath } from '../lib/member-routes.js';
-import { dispatchNotification } from '../services/notifications.js';
+import { scheduleSideEffect } from '../lib/schedule-side-effect.js';
+import { scheduleNotification } from '../services/notifications.js';
 import { requireAuth, requireSseTicket, requireVerifiedEmail } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
 import { createSseTicket, SSE_TICKET_TTL_SECONDS } from '../lib/sse-ticket.js';
@@ -56,8 +57,11 @@ chatRouter.get('/inbox', async (req, res, next) => {
 
 chatRouter.get('/conversations', async (req, res, next) => {
   try {
-    const conversations = await listMemberDirectConversations(req.auth!.userId);
-    res.json({ data: conversations });
+    const { conversations, policyDegraded } = await listMemberDirectConversations(req.auth!.userId);
+    res.json({
+      data: conversations,
+      meta: policyDegraded ? { directConversationsDegraded: true } : undefined,
+    });
   } catch (error) {
     next(error);
   }
@@ -149,21 +153,27 @@ chatRouter.post('/messages', validate({ body: sendMessageSchema }), async (req, 
     const messageDto = await presentChatMessageAsDto(message, senderId);
     void publishChatStreamEvent(receiverId, { type: 'chat_message', data: messageDto });
 
-    void findAuthUserById(senderId).then((sender) => {
-      const senderName = sender?.profile.displayName ?? sender?.email ?? 'Someone';
-      return dispatchNotification({
-        userId: receiverId,
-        title: 'New message',
-        body: `${senderName}: ${content.substring(0, 100)}`,
-        type: NotificationType.SYSTEM,
-        meta: {
-          kind: 'message',
-          chatMessageId: message.id,
-          actorUserId: senderId,
-          path: messagesToUserPath(senderId),
-        },
-      });
-    }).catch(() => undefined);
+    scheduleSideEffect(
+      findAuthUserById(senderId).then((sender) => {
+        const senderName = sender?.profile.displayName ?? sender?.email ?? 'Someone';
+        scheduleNotification(
+          {
+            userId: receiverId,
+            title: 'New message',
+            body: `${senderName}: ${content.substring(0, 100)}`,
+            type: NotificationType.SYSTEM,
+            meta: {
+              kind: 'message',
+              chatMessageId: message.id,
+              actorUserId: senderId,
+              path: messagesToUserPath(senderId),
+            },
+          },
+          'chat.direct_message'
+        );
+      }),
+      'chat.direct_message_lookup'
+    );
 
     res.status(201).json({
       data: messageDto

@@ -1,5 +1,8 @@
-import { useEffect, useState } from 'react';
-import { api, AdminSocialGroupDetail, AdminSocialGroupListItem } from '../api/index';
+import { useState } from 'react';
+import { useSafeAsyncEffect } from '../hooks/useSafeAsyncEffect';
+import type { AdminSocialGroupDetail, AdminSocialGroupListItem } from '../api/types';
+import { fetchAdminSocialGroups, updateAdminSocialGroupStatus } from '../hooks/adminConsoleApi';
+import { fetchAdminGroupDetail } from '../hooks/adminDrilldownApi';
 import { DashboardLayout } from '../components/layout';
 import { ADMIN_LINKS } from '../constants';
 import { AppSelect, ADMIN_FILTER_SELECT_CLASS } from '../components/ui/AppSelect';
@@ -36,28 +39,28 @@ export const AdminGroups = () => {
   const [suspendComment, setSuspendComment] = useState('');
   const pageSize = 20;
 
-  const loadGroups = async () => {
+  const loadGroups = async (isActive: () => boolean = () => true) => {
     setLoading(true);
     setError(null);
     try {
-      const res = await api.getAdminGroups({
+      const res = await fetchAdminSocialGroups({
         search: search || undefined,
         type: typeFilter ? (typeFilter as 'family' | 'friends') : undefined,
         page,
         pageSize,
       });
+      if (!isActive()) return;
       setGroups(res.data);
       setTotal(res.meta.total);
     } catch (err) {
+      if (!isActive()) return;
       setError(err instanceof Error ? err.message : 'Failed to load groups');
     } finally {
-      setLoading(false);
+      if (isActive()) setLoading(false);
     }
   };
 
-  useEffect(() => {
-    void loadGroups();
-  }, [page, typeFilter]);
+  useSafeAsyncEffect((isActive) => loadGroups(isActive), [page, typeFilter]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,8 +71,8 @@ export const AdminGroups = () => {
   const openDetail = async (id: string) => {
     setError(null);
     try {
-      const res = await api.getAdminGroupDetail(id);
-      setDetail(res.data);
+      const groupDetail = await fetchAdminGroupDetail(id);
+      setDetail(groupDetail);
       setDetailOpen(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load group details');
@@ -95,7 +98,7 @@ export const AdminGroups = () => {
       return;
     }
     try {
-      await api.updateAdminGroupStatus(
+      await updateAdminSocialGroupStatus(
         confirmTarget.id,
         newStatus,
         newStatus === 'suspended' ? suspendComment.trim() : undefined

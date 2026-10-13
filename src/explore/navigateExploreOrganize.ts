@@ -1,10 +1,11 @@
 import type { NavigateFunction } from 'react-router-dom';
-import type { ActivityType } from '../config/activityTypes';
+import type { ScheduledActivityType } from '@uaetrail/shared-types';
 import type { OrganizeComposeKind } from './compose';
 import { exploreOrganizePath } from './routing';
 
-export const activityTypeToOrganizeKind = (type: ActivityType): OrganizeComposeKind => {
+export const activityTypeToOrganizeKind = (type: ScheduledActivityType): OrganizeComposeKind => {
   if (type === 'event') return 'event';
+  if (type === 'rideshare') return 'rideshare';
   return type;
 };
 

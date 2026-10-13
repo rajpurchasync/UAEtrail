@@ -1,20 +1,31 @@
 /**
  * Product taxonomy
  * ─────────────────
- * Activities (scheduled host listings)
- *   ├── Hiking
- *   ├── Camping
- *   └── Event
+ * Scheduled activities (map + `/activity/:id`) — wire `ScheduledActivityType` in `@uaetrail/shared-types`:
+ *   hiking · camping · event · rideshare
  *
- * Places (trails, camps, shops, …) are a separate catalog — one Place entity, `PlaceKind` in `@uaetrail/shared-types`.
+ * Places (trails, camps, shops, …) are a separate catalog — `PlaceActivityType` on `LocationDTO`.
  */
 
+import type { ScheduledActivityType } from '@uaetrail/shared-types';
 import { EXPLORE_MAP_PATH } from './platform';
 import { PRODUCT_ACTIVITIES_EXPLORE_BLURB } from '../content/productNorthStar';
 
-export const ACTIVITY_TYPES = ['hiking', 'camping', 'event'] as const;
+/** All scheduled listing kinds on the API wire. */
+export const SCHEDULED_ACTIVITY_TYPES: readonly ScheduledActivityType[] = [
+  'hiking',
+  'camping',
+  'event',
+  'rideshare',
+];
 
-export type ActivityType = (typeof ACTIVITY_TYPES)[number];
+/** Host create picker — rideshare is usually offered from Transport / linked flow, not this grid. */
+export const ACTIVITY_TYPES = ['hiking', 'camping', 'event'] as const satisfies readonly ScheduledActivityType[];
+
+export type ActivityPickerType = (typeof ACTIVITY_TYPES)[number];
+
+/** @deprecated Prefer {@link ScheduledActivityType} from shared-types — alias for wire parity. */
+export type ActivityType = ScheduledActivityType;
 
 /** Umbrella product name for scheduled listings (singular). */
 export const ACTIVITY_PRODUCT_SINGULAR = 'Activity';
@@ -27,35 +38,37 @@ export const ACTIVITY_KINDS_SUMMARY = 'Hikes, camps, runs, and group outings';
 
 /** Consumer explore blurb under the Activities section. */
 export const activitiesExploreBlurb = (): string => PRODUCT_ACTIVITIES_EXPLORE_BLURB;
-export const ACTIVITY_TYPE_LABELS: Record<ActivityType, string> = {
+export const ACTIVITY_TYPE_LABELS: Record<ScheduledActivityType, string> = {
   hiking: 'Hiking',
   camping: 'Camping',
   event: 'Event',
+  rideshare: 'Rideshare',
 };
 
 /** Plural labels for browse filters and grouped sections. */
-export const ACTIVITY_TYPE_GROUP_LABELS: Record<ActivityType, string> = {
+export const ACTIVITY_TYPE_GROUP_LABELS: Record<ScheduledActivityType, string> = {
   hiking: 'Hiking',
   camping: 'Camping',
   event: 'Events',
+  rideshare: 'Rideshare',
 };
 
 /** Labels on the add-activity type picker cards. */
-export const ACTIVITY_TYPE_PICKER_LABELS: Record<ActivityType, string> = {
+export const ACTIVITY_TYPE_PICKER_LABELS: Record<ActivityPickerType, string> = {
   hiking: 'Hiking',
   camping: 'Camping',
   event: 'Event',
 };
 
 /** Short descriptions for the activity-type picker when creating. */
-export const ACTIVITY_TYPE_DESCRIPTIONS: Record<ActivityType, string> = {
+export const ACTIVITY_TYPE_DESCRIPTIONS: Record<ActivityPickerType, string> = {
   hiking: 'Trail outings with meeting points, itinerary, transport, and join requests.',
   camping: 'Overnight or multi-day camping experiences at outdoor venues.',
   event: 'Trail runs, clean-ups, workshops, and other outdoor events with optional external signup.',
 };
 
 /** Location catalog labels (not the same as a scheduled activity listing). */
-export const LOCATION_TYPE_LABELS: Record<ActivityType, string> = {
+export const LOCATION_TYPE_LABELS: Record<ActivityPickerType, string> = {
   hiking: 'Hiking trail',
   camping: 'Camping location',
   event: 'Event location',
@@ -65,14 +78,22 @@ export const LOCATION_TYPE_LABELS: Record<ActivityType, string> = {
 export const VENUE_TYPE_LABELS = LOCATION_TYPE_LABELS;
 
 /** Normalize API/query aliases to the canonical activity type. */
-export const parseActivityTypeParam = (value: string | null | undefined): ActivityType | null => {
-  if (value === 'hiking' || value === 'camping' || value === 'event') return value;
+export const parseActivityTypeParam = (value: string | null | undefined): ScheduledActivityType | null => {
+  if (
+    value === 'hiking' ||
+    value === 'camping' ||
+    value === 'event' ||
+    value === 'rideshare'
+  ) {
+    return value;
+  }
   if (value === 'community_activity' || value === 'COMMUNITY_ACTIVITY' || value === 'EVENT') return 'event';
+  if (value === 'RIDESHARE') return 'rideshare';
   return null;
 };
 
 /** Browse filter chips: All + Hiking / Camping / Events. */
-export const ACTIVITY_BROWSE_FILTER_OPTIONS: Array<{ key: 'all' | ActivityType; label: string }> = [
+export const ACTIVITY_BROWSE_FILTER_OPTIONS: Array<{ key: 'all' | ScheduledActivityType; label: string }> = [
   { key: 'all', label: 'All' },
   ...ACTIVITY_TYPES.map((type) => ({
     key: type,
@@ -81,42 +102,52 @@ export const ACTIVITY_BROWSE_FILTER_OPTIONS: Array<{ key: 'all' | ActivityType; 
 ];
 
 /** Title for host create/edit activity forms. */
-export const activityFormTitle = (type: ActivityType, mode: 'create' | 'edit'): string => {
+export const activityFormTitle = (type: ScheduledActivityType, mode: 'create' | 'edit'): string => {
   if (type === 'event') {
     return mode === 'edit' ? 'Edit Event' : 'New Event';
+  }
+  if (type === 'rideshare') {
+    return mode === 'edit' ? 'Edit Rideshare' : 'New Rideshare';
   }
   const verb = mode === 'edit' ? 'Edit' : 'New';
   return `${verb} ${ACTIVITY_TYPE_LABELS[type]} ${ACTIVITY_PRODUCT_SINGULAR}`;
 };
 
 /** Detail page banner eyebrow for a scheduled listing. */
-export const activityDetailEyebrow = (type: ActivityType | 'rideshare'): string => {
-  if (type === 'rideshare') return 'Rideshare';
-  if (type === 'hiking') return 'Hiking';
-  if (type === 'camping') return 'Camping';
-  return 'Event';
+export const activityDetailEyebrow = (type: ScheduledActivityType): string =>
+  ACTIVITY_TYPE_LABELS[type] ?? 'Activity';
+
+/** Banner eyebrow when `activityMode` is on the wire (seeking Find posts). */
+export const activityDetailEyebrowForActivity = (
+  type: ScheduledActivityType,
+  activityMode?: 'hosted' | 'seeking' | null
+): string => {
+  const kind = activityDetailEyebrow(type);
+  return activityMode === 'seeking' ? `Seeking · ${kind}` : kind;
 };
 
 /** Empty-state copy when filtering Activities by kind. */
-export const noScheduledActivitiesMessage = (type: ActivityType): string => {
+export const noScheduledActivitiesMessage = (type: ScheduledActivityType): string => {
   if (type === 'event') return 'No events on the calendar right now.';
+  if (type === 'rideshare') return 'No rideshare offers on the calendar right now.';
   return `No ${ACTIVITY_TYPE_GROUP_LABELS[type].toLowerCase()} activities on the calendar right now.`;
 };
 
 /** Link label for browsing all of one activity kind. */
-export const browseAllActivitiesOfTypeLabel = (type: ActivityType): string => {
+export const browseAllActivitiesOfTypeLabel = (type: ScheduledActivityType): string => {
   if (type === 'event') return 'Browse all events';
+  if (type === 'rideshare') return 'Browse all rideshare offers';
   return `Browse all ${ACTIVITY_TYPE_GROUP_LABELS[type].toLowerCase()} activities`;
 };
 
 /** Public browse page for scheduled activities, optionally filtered by type. */
-export const activitiesBrowsePath = (activityType?: ActivityType | null): string => {
+export const activitiesBrowsePath = (activityType?: ScheduledActivityType | null): string => {
   if (!activityType) return EXPLORE_MAP_PATH;
   const params = new URLSearchParams({ activity: activityType });
   return `${EXPLORE_MAP_PATH}?${params.toString()}`;
 };
 
-export const locationPathForActivity = (activityType: ActivityType, id: string): string => {
+export const locationPathForActivity = (activityType: ActivityPickerType, id: string): string => {
   if (activityType === 'camping') return `/camp/${id}`;
   if (activityType === 'event') return `/venue/${id}`;
   return `/trail/${id}`;

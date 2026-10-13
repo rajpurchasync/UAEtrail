@@ -92,8 +92,20 @@ describe('list module hygiene', () => {
   it('scopes join actions provider to category and search feeds only', () => {
     const experience = readFileSync(join(process.cwd(), 'src/list/ListDiscoveryExperience.tsx'), 'utf8');
     expect(experience).toMatch(/ListFeedActionsProvider/);
+    expect(experience).toMatch(/useHostActivitySheetBundle/);
+    expect(experience).toMatch(/hostManageSheet/);
     expect(experience).toMatch(/ListCategoryDedicatedView/);
     expect(experience).not.toMatch(/<ListFeedActionsProvider>\s*<BrowseListPageShell/);
+  });
+
+  it('map list compact rows use optional list feed actions for L1 footers', () => {
+    const browsePanels = readFileSync(
+      join(process.cwd(), 'src/explore/shell/ExploreExperienceBrowsePanels.tsx'),
+      'utf8'
+    );
+    const listRow = readFileSync(join(process.cwd(), 'src/explore/ui/ExploreListRow.tsx'), 'utf8');
+    expect(browsePanels).toMatch(/mobileMapListPanel[\s\S]*ListFeedActionsProvider[\s\S]*listFeedHostActions/);
+    expect(listRow).toMatch(/ExploreListRowWireFooter/);
   });
 
   it('forbids legacy rail poster variant strings', () => {
@@ -122,31 +134,41 @@ describe('list module hygiene', () => {
     });
   });
 
-  it('keeps explore People panel separate from legacy map list shell', () => {
-    const experience = readFileSync(join(process.cwd(), 'src/explore/ui/ExploreExperience.tsx'), 'utf8');
-    const peoplePanel = readFileSync(join(process.cwd(), 'src/explore/ui/ExplorePeopleBrowsePanel.tsx'), 'utf8');
-    expect(experience).toMatch(/ExplorePeopleBrowsePanel/);
-    expect(experience).toMatch(/ListDiscoveryExperience/);
+  it('keeps explore People panel separate from map list and discover browse', () => {
+    const browsePanels = readFileSync(
+      join(process.cwd(), 'src/explore/shell/ExploreExperienceBrowsePanels.tsx'),
+      'utf8'
+    );
+    const peoplePanel = readFileSync(join(process.cwd(), 'src/explore/ui/PeopleBrowsePanel.tsx'), 'utf8');
+    const mapListPanel = readFileSync(join(process.cwd(), 'src/explore/ui/ExploreBrowsePanel.tsx'), 'utf8');
+    expect(browsePanels).toMatch(/PeopleBrowsePanel/);
+    expect(browsePanels).toMatch(/ListDiscoveryExperience/);
+    expect(browsePanels).toMatch(/ExploreBrowsePanel/);
+    expect(mapListPanel).toMatch(/ExploreListRow/);
+    expect(mapListPanel).toMatch(/PANEL_TABS/);
+    expect(peoplePanel).toMatch(/from '\.\/peopleBrowse'/);
     expect(peoplePanel).not.toMatch(/ExploreListRow/);
     expect(peoplePanel).not.toMatch(/buildListFeedCards/);
   });
 
   it('list discover people category uses member discovery roster (not map poster feed)', () => {
     const experience = readFileSync(join(process.cwd(), 'src/list/ListDiscoveryExperience.tsx'), 'utf8');
-    const peopleView = readFileSync(join(process.cwd(), 'src/list/ui/ListDiscoverPeopleView.tsx'), 'utf8');
-    expect(experience).toMatch(/ListDiscoverPeopleView/);
+    expect(experience).toMatch(/PeopleBrowsePanel/);
+    expect(experience).toMatch(/embedded/);
     expect(experience).toMatch(/listCat: 'people'/);
-    expect(peopleView).toMatch(/useMemberDiscoveryRoster/);
-    expect(peopleView).toMatch(/ExploreMemberDiscoveryList/);
+    expect(experience).toMatch(/useMemberDiscoveryRoster/);
+    expect(experience).toMatch(/PeopleBrowseTabContent|PeopleBrowsePanel/);
   });
 
   it('builds enriched cards through buildListFeedCards', () => {
     const feed = readFileSync(join(process.cwd(), 'src/list/useBrowseListFeed.ts'), 'utf8');
     const experience = readFileSync(join(process.cwd(), 'src/list/ListDiscoveryExperience.tsx'), 'utf8');
+    const mapListPanel = readFileSync(join(process.cwd(), 'src/explore/ui/ExploreBrowsePanel.tsx'), 'utf8');
     expect(feed).toMatch(/buildListFeedCards/);
     expect(experience).toMatch(/buildListFeedCards/);
     expect(experience).not.toMatch(/buildBrowseCardsFromMapItems/);
-    expect(experience).not.toMatch(/ExploreBrowsePanel/);
+    expect(mapListPanel).toMatch(/buildListFeedCards/);
+    expect(mapListPanel).not.toMatch(/usePosterFeed=\{true\}/);
   });
 
   it('search results use topic pills only (no duplicate removable chip row)', () => {

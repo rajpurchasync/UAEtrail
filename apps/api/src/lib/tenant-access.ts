@@ -3,7 +3,11 @@ import { MembershipRole, TenantStatus, type TenantStatus as TenantStatusType } f
 import type { TenantMembership } from '../domain/types.js';
 import { findAuthUsersByIds } from './auth-users.js';
 import { newEntityId } from './entity-builders.js';
-import { findTenantById as findTenantRecordById, findTenantStatus } from './tenant-store.js';
+import {
+  findTenantById as findTenantRecordById,
+  findTenantsByIds,
+  findTenantStatus,
+} from './tenant-store.js';
 import { getMongoClient } from './mongo.js';
 
 export type TenantMembershipContext = {
@@ -98,9 +102,14 @@ export const findCompanyGuideMembershipForUser = async (userId: string, tenantId
     .find({ userId, role: MembershipRole.TENANT_GUIDE })
     .toArray();
 
+  const tenantIds = memberships
+    .map((membership) => membership.tenantId)
+    .filter((tenantId) => !tenantIdToExclude || tenantId !== tenantIdToExclude);
+  const tenantsById = await findTenantsByIds(tenantIds);
+
   for (const membership of memberships) {
     if (tenantIdToExclude && membership.tenantId === tenantIdToExclude) continue;
-    const tenant = await findTenantRecordById(membership.tenantId);
+    const tenant = tenantsById.get(membership.tenantId);
     if (tenant?.status === TenantStatus.ACTIVE && membership.isActive !== false) {
       return {
         id: membership._id,

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { PROFILE_SETTINGS_PATH } from '../../config/routingCatalog';
-import { UserProfile } from '../../api/index';
+import type { UserProfile } from '../../api/types';
 import { DEFAULT_PHONE_DIAL } from '../../constants/phoneCountries';
 import type { UserCountryCode, UserGender } from '../../constants/userProfileOptions';
 import { AppButton } from '../mobile/AppButton';

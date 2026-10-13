@@ -11,7 +11,7 @@ const baseState: BrowseListFilterState = {
   price: 'all',
   when: 'any',
   activityDatePreset: 'anyday',
-  buddiesSegment: 'going',
+  buddiesSegment: 'available',
 };
 
 const hikingActivity = (id: string): ExploreMapItemDTO =>
@@ -49,7 +49,7 @@ describe('filterExploreMapItemsForList', () => {
     };
     const filtered = filterExploreMapItemsForList(items, state, []);
     expect(filtered.some((i) => i.source === 'activity')).toBe(true);
-    expect(filtered.every((i) => i.source === 'activity' || i.source === 'demand')).toBe(true);
+    expect(filtered.every((i) => i.source === 'activity')).toBe(true);
   });
 
   it('filters venues by place topics on Places category only', () => {

@@ -36,6 +36,7 @@ export function renderPublishStep(ctx: OrganizeWizardContext): ReactNode | null 
     publishTenantId,
     setPublishTenantId,
     memberDisplayName,
+    registryPlaces,
     hikingFlow,
     campingFlow,
     eventFlow,
@@ -311,13 +312,20 @@ export function renderPublishStep(ctx: OrganizeWizardContext): ReactNode | null 
 
       {canPublish && draft.joinMode !== 'private' && (
         <p className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50/80 px-3 py-2 text-sm text-emerald-900">
-          Publishing adds your activity to the explore map at the pin you chose. You can manage it from My trips.
+          Publishing adds your activity to the explore map at the pin you chose. You can manage it from Plan.
         </p>
       )}
 
       {!canPublish && !hostGateLoading && (
         <p className="mt-3 rounded-xl bg-emerald-50 px-3 py-2 text-sm text-emerald-900">{ORGANIZE_INTRO_PROMPT}</p>
       )}
+
+      {canPublish && draft.joinMode !== 'private' ? (
+        <p className="mt-3 text-xs text-gray-600">
+          Map and area filters use your <span className="font-semibold">catalog place</span> — pick a registry trail or
+          spot that admin linked to an area.
+        </p>
+      ) : null}
 
       {canPublish && publishTenantId ? (
         <OrganizePublishAsField

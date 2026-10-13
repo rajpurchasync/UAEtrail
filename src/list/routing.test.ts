@@ -20,20 +20,22 @@ describe('list discovery routing', () => {
 
   it('exploreMapPathFromListSearch drops list-only price and keeps plan topics', () => {
     expect(exploreMapPathFromListSearch('q=dxb&topics=trips&price=paid&when=weekend')).toBe(
-      '/explore?q=dxb&topics=trips%2Clooking&pinKind=trips'
+      '/explore?q=dxb&topics=trips%2Clooking&pinKind=activities&browse=1&list=0'
     );
   });
 
   it('exploreMapPathFromListSearch keeps shared browse params including filter', () => {
     expect(exploreMapPathFromListSearch('q=jais&topics=spots&filter=camping&date=week&regions=Dubai')).toBe(
-      '/explore?q=jais&topics=spots%2Cshops&filter=camping&date=week&regions=Dubai&pinKind=places'
+      '/explore?q=jais&topics=spots%2Cshops&filter=camping&date=week&regions=Dubai&pinKind=places&browse=1&list=0'
     );
   });
 
   it('exploreMapPathFromListSearch adds pinKind=places for listCat=venues', () => {
     expect(
       exploreMapPathFromListSearch('listCat=venues&topics=spots&filter=hiking&regions=Dubai')
-    ).toBe('/explore?topics=spots%2Cshops&filter=hiking&regions=Dubai&pinKind=places');
+    ).toBe(
+      '/explore?topics=spots%2Cshops&filter=hiking&regions=Dubai&pinKind=places&listCat=venues&browse=1&list=0'
+    );
   });
 
   it('listDiscoveryPathFromExploreSearch infers listCat from pinKind=places', () => {
@@ -46,5 +48,11 @@ describe('list discovery routing', () => {
     expect(
       listDiscoveryPathFromExploreSearch('?q=hatta&topics=trips&filter=hiking&date=week&regions=Dubai')
     ).toBe('/list?q=hatta&topics=trips%2Clooking&filter=hiking&date=week&regions=Dubai&listCat=trips');
+  });
+
+  it('listDiscoveryPathFromExploreSearch keeps explicit listCat from explore', () => {
+    expect(listDiscoveryPathFromExploreSearch('?browse=1&listCat=agencies&q=desert')).toBe(
+      '/list?q=desert&listCat=agencies'
+    );
   });
 });

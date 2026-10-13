@@ -9,11 +9,15 @@ import {
   ACTIVITIES_PATH,
   EXPLORE_MAP_PATH,
   MESSAGES_PATH,
+  PLAN_PATH,
   TRIPS_PATH,
+  isJourneyMapPath,
+  isProfileHistoryListPath,
 } from '../../config/routingCatalog';
 import { joinedSubViewTitle } from '../../pages/activities/shared';
 import { useHostStatus } from '../../hooks/useHostStatus';
 import { memberCanManageHostedActivities } from '../../utils/hostedActivitiesGate';
+import { PRODUCT_PLAN_SURFACE_TITLE } from '../../content/productNorthStar';
 import { ConsumerHeaderActions } from '../layout/ConsumerHeaderActions';
 import { MobileUnifiedTabHeader } from './MobileUnifiedTabHeader';
 
@@ -24,11 +28,14 @@ const resolveCenter = (
 ): MobileTabHeaderCenter | null => {
   if (pathname === EXPLORE_MAP_PATH) return { kind: 'brand' };
   if (pathname === '/profile') return { kind: 'title', text: 'Profile' };
-  if (pathname === TRIPS_PATH || pathname === ACTIVITIES_PATH) {
+  if (pathname === PLAN_PATH || pathname === TRIPS_PATH || pathname === ACTIVITIES_PATH) {
     const params = new URLSearchParams(search);
     const subTitle = joinedSubViewTitle(params.get('sub'));
     if (subTitle) return { kind: 'title', text: subTitle };
-    return { kind: 'title', text: 'Trips' };
+    return { kind: 'title', text: PRODUCT_PLAN_SURFACE_TITLE };
+  }
+  if (isProfileHistoryListPath(pathname) || isJourneyMapPath(pathname)) {
+    return { kind: 'title', text: isJourneyMapPath(pathname) ? 'My Map' : 'History' };
   }
   if (pathname === MESSAGES_PATH) return { kind: 'title', text: 'Chat' };
   if (!isMobileTabHeaderRoute(pathname)) return null;
@@ -51,7 +58,10 @@ export const MobileTabHeader = () => {
     pathname === EXPLORE_MAP_PATH ||
     pathname === '/profile' ||
     pathname === ACTIVITIES_PATH ||
+    pathname === PLAN_PATH ||
     pathname === TRIPS_PATH ||
+    isProfileHistoryListPath(pathname) ||
+    isJourneyMapPath(pathname) ||
     pathname === MESSAGES_PATH;
 
   const trailing = showHeaderActions ? <ConsumerHeaderActions /> : null;

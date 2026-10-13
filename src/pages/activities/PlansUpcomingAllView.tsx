@@ -37,6 +37,14 @@ export const PlansUpcomingAllView = ({ refreshKey, canHost }: PlansUpcomingAllVi
       <ActivitiesHubView refreshKey={refreshKey} searchQuery="" />
     </section>
 
-    <SelfPlansSection segment="upcoming" refreshKey={refreshKey} searchQuery="" peekBridgeOnly />
+    <section aria-labelledby="plans-all-seeking-heading">
+      <h2
+        id="plans-all-seeking-heading"
+        className="mb-2 text-xs font-bold uppercase tracking-wide text-neutral-400"
+      >
+        Seeking
+      </h2>
+      <SelfPlansSection segment="upcoming" refreshKey={refreshKey} searchQuery="" />
+    </section>
   </div>
 );

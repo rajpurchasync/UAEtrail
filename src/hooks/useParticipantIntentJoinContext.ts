@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { ParticipantIntentJoinRequestDTO } from '@uaetrail/shared-types';
-import { api } from '../api/index';
+import { fetchMyParticipantIntentJoinRequest } from './participantIntentClientApi';
 import type { JoinRequestUiState } from '../utils/joinRequestUi';
 
 export const resolveParticipantIntentJoinUiState = (
@@ -37,8 +37,8 @@ export const useParticipantIntentJoinContext = ({
     }
     setLoading(true);
     try {
-      const res = await api.getMyParticipantIntentJoinRequest(intentId);
-      setRequest(res.data);
+      const row = await fetchMyParticipantIntentJoinRequest(intentId);
+      setRequest(row);
     } catch {
       setRequest(null);
     } finally {

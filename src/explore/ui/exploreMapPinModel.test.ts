@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
+import { hostedExploreMapItem, seekingExploreMapItem, venueExploreMapItem } from '../exploreMapItemFixtures';
 import { matchesActivityDateFilter } from '../exploreActivityDateFilter';
 import { expandMapPins, isShopListItem, layoutColocatedMapPins, matchesMapFilter, matchesPlacesMapFilter, matchesBuddyMapFilter, isPlacesMapItem, isBuddyMapItem } from './exploreMapPinModel';
 
@@ -26,8 +27,8 @@ describe('exploreMapPinModel', () => {
 
   it('Places layer excludes activities and demand', () => {
     const activity = baseItem({ id: 'a1', source: 'activity', kind: 'hiking' });
-    const demand = baseItem({ id: 'd1', source: 'demand', kind: 'hiking' });
-    const venue = baseItem({ id: 'v1', source: 'venue', kind: 'hiking' });
+    const demand = seekingExploreMapItem({ intentId: 'd1' });
+    const venue = venueExploreMapItem({ id: 'venue:v1' });
     const eventVenue = baseItem({ id: 'ev1', source: 'venue', kind: 'event' });
     expect(isPlacesMapItem(activity)).toBe(false);
     expect(isBuddyMapItem(activity)).toBe(true);
@@ -48,6 +49,13 @@ describe('exploreMapPinModel', () => {
     const venue = baseItem({ id: 'v1', source: 'venue', kind: 'hiking' });
     expect(matchesActivityDateFilter(activity, 'anyday')).toBe(true);
     expect(matchesActivityDateFilter(venue, 'today')).toBe(true);
+  });
+
+  it('expandMapPins resolves activityMode for hosted and seeking', () => {
+    const hosted = expandMapPins([hostedExploreMapItem()])[0];
+    const seeking = expandMapPins([seekingExploreMapItem()])[0];
+    expect(hosted.activityMode).toBe('hosted');
+    expect(seeking.activityMode).toBe('seeking');
   });
 
   it('expandMapPins adds carpool destination pin when to-coords differ', () => {

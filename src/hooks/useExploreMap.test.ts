@@ -1,6 +1,6 @@
 import { QueryClient } from '@tanstack/react-query';
 import { describe, expect, it, vi } from 'vitest';
-import { exploreMapQueryKey, reloadExploreMap } from './useExploreMap';
+import { exploreMapQueryKey, exploreMapQueryKeyPrefix, reloadExploreMap } from './useExploreMap';
 
 describe('reloadExploreMap', () => {
   it('invalidates and refetches the explore map query', async () => {
@@ -10,7 +10,7 @@ describe('reloadExploreMap', () => {
 
     await reloadExploreMap(queryClient);
 
-    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: exploreMapQueryKey });
-    expect(refetchSpy).toHaveBeenCalledWith({ queryKey: exploreMapQueryKey, type: 'active' });
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: exploreMapQueryKeyPrefix });
+    expect(refetchSpy).toHaveBeenCalledWith({ queryKey: exploreMapQueryKeyPrefix, type: 'active' });
   });
 });

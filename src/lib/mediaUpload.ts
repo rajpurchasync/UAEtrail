@@ -1,5 +1,5 @@
-import { api } from '../api/index';
 import { getStoredSession } from '../api/client';
+import { commitMediaUpload, presignMediaUpload } from '../hooks/mediaUploadApi';
 import { formatEnvironmentUrl } from '../utils/formatEnvironmentUrl';
 import { formatMediaUrl } from '../utils/formatMediaUrl';
 
@@ -37,7 +37,7 @@ export const uploadMediaBlob = async ({
   const suffix = filenameSuffix ? `-${filenameSuffix}` : '';
   const filename = `${safeBaseName(originalName)}${suffix}.${ext}`;
 
-  const presign = await api.presignUpload({
+  const presign = await presignMediaUpload({
     filename,
     mimeType,
     size: blob.size,
@@ -46,7 +46,7 @@ export const uploadMediaBlob = async ({
     kind,
   });
 
-  const uploadUrl = formatEnvironmentUrl(presign.data.uploadUrl);
+  const uploadUrl = formatEnvironmentUrl(presign.uploadUrl);
   const headers: Record<string, string> = { 'Content-Type': mimeType };
   if (uploadUrl.includes('/media/upload-local/')) {
     const session = getStoredSession();
@@ -64,8 +64,8 @@ export const uploadMediaBlob = async ({
     throw new Error(`Upload failed (${uploadRes.status}).`);
   }
 
-  const committed = await api.commitUpload({
-    key: presign.data.key,
+  const committed = await commitMediaUpload({
+    key: presign.key,
     mimeType,
     size: blob.size,
     tenantId,
@@ -73,5 +73,5 @@ export const uploadMediaBlob = async ({
     keyPrefix,
   });
 
-  return formatMediaUrl(formatEnvironmentUrl(committed.data.url));
+  return formatMediaUrl(formatEnvironmentUrl(committed.url));
 };

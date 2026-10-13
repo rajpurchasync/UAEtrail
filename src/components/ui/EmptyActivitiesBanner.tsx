@@ -1,8 +1,8 @@
 import {
   EXPLORE_MAP_PATH,
-  HOST_ACTIVITIES_PATH,
   PRO_MEMBERSHIP_PATH,
   SIGNUP_PATH,
+  tripsPlansPath,
 } from '../../config/routingCatalog';
 import { Link } from 'react-router-dom';
 import { Plus, Sun } from 'lucide-react';
@@ -31,7 +31,7 @@ export const EmptyActivitiesBanner = () => {
       <div className="mt-6 flex justify-center">
         {canHost ? (
           <Link
-            to={HOST_ACTIVITIES_PATH}
+            to={tripsPlansPath('hosted')}
             className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-600 text-white rounded-full text-sm font-semibold hover:bg-emerald-700 transition-colors"
           >
             <Plus className="w-4 h-4" />

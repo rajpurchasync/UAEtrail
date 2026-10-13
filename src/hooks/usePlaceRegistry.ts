@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react';
 import type { PlaceDTO } from '@uaetrail/shared-types';
-import { fetchPlaceRegistry, type PlaceRegistryQuery } from '../api/domains/placeRegistry';
+import {
+  fetchPlaceRegistryCatalog,
+  type PlaceRegistryQuery,
+} from './placeCatalogApi';
 
 type UsePlaceRegistryOptions = PlaceRegistryQuery & {
   enabled?: boolean;
 };
 
-/** React hook over {@link fetchPlaceRegistry} — venue catalog for place pickers. */
+/** React hook over {@link fetchPlaceRegistryCatalog} — venue catalog for place pickers. */
 export const usePlaceRegistry = ({
   enabled = true,
   placeType,
@@ -22,7 +25,7 @@ export const usePlaceRegistry = ({
 
     let disposed = false;
 
-    void fetchPlaceRegistry({ placeType, countryCode })
+    void fetchPlaceRegistryCatalog({ placeType, countryCode })
       .then((data) => {
         if (!disposed) setPlaces(data);
       })

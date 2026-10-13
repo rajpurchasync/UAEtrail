@@ -1,38 +1,46 @@
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { ExploreMemberDiscoveryList } from '../../explore/ui/ExploreMemberDiscoveryList';
+import { PeopleBrowseTabContent } from '../../explore/ui/peopleBrowse';
 import type { useMemberDiscoveryRoster } from '../../explore/useMemberDiscoveryRoster';
-import { activityDetailPath } from '../../config/routingCatalog';
+import type { useExplorePeopleAvailability } from '../../explore/useExplorePeopleAvailability';
 import type { BuddiesDiscoverySegment } from '../buddiesDiscoverySegment';
 
 type MemberDiscoveryRosterState = ReturnType<typeof useMemberDiscoveryRoster>;
+type PeopleAvailabilityState = ReturnType<typeof useExplorePeopleAvailability>;
 
 type ListDiscoverPeopleViewProps = {
   segment: BuddiesDiscoverySegment;
   roster: MemberDiscoveryRosterState;
+  availability: PeopleAvailabilityState;
 };
 
-export const ListDiscoverPeopleView = ({ segment, roster }: ListDiscoverPeopleViewProps) => {
+const segmentToTab = (segment: BuddiesDiscoverySegment) => {
+  if (segment === 'available') return 'available' as const;
+  if (segment === 'going') return 'going' as const;
+  return 'connect' as const;
+};
+
+export const ListDiscoverPeopleView = ({
+  segment,
+  roster,
+  availability,
+}: ListDiscoverPeopleViewProps) => {
   const { user } = useAuth();
-  const userRole = user?.role;
-  const navigate = useNavigate();
+  const tab = segmentToTab(segment);
 
   return (
-    <ExploreMemberDiscoveryList
-      variant="list"
-      segment={segment}
+    <PeopleBrowseTabContent
+      tab={tab}
+      isSignedIn={Boolean(user)}
+      availabilityPeople={tab === 'available' ? availability.people : []}
+      availabilityLoading={tab === 'available' ? availability.loading : false}
+      availabilityError={tab === 'available' ? availability.error : null}
       friendsGoing={roster.friendsGoing}
       hostsGoing={roster.hostsGoing}
-      lookingFor={roster.lookingFor}
-      followed={roster.followed}
       directory={roster.directory}
-      quota={roster.quota}
-      loading={roster.loading}
-      error={roster.error}
-      isSignedIn={Boolean(user)}
-      userRole={userRole}
-      onRefresh={() => void roster.refresh()}
-      onOpenActivity={(activityId) => navigate(activityDetailPath(activityId))}
+      discoveryQuota={roster.quota}
+      discoveryLoading={roster.loading}
+      discoveryError={roster.error}
+      seekingOnMap={roster.seekingOnMap}
     />
   );
 };

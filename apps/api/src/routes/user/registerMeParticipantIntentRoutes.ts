@@ -134,6 +134,7 @@ export const registerMeParticipantIntentRoutes = (router: Router): void => {
           intentId: intent.id,
           intentTitle: intent.title,
           requestId: data.id,
+          activityId: intent.activityId ?? intent.seekingActivityId,
         });
       }
       res.status(201).json({ data });
@@ -174,6 +175,7 @@ export const registerMeParticipantIntentRoutes = (router: Router): void => {
           intentId: intent.id,
           requestId: data.id,
           approved: true,
+          activityId: intent.activityId ?? intent.seekingActivityId,
         });
       }
       res.json({ data });
@@ -194,6 +196,7 @@ export const registerMeParticipantIntentRoutes = (router: Router): void => {
           intentId: intent.id,
           requestId: data.id,
           approved: false,
+          activityId: intent.activityId ?? intent.seekingActivityId,
         });
       }
       res.json({ data });

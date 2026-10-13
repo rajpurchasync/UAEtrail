@@ -17,9 +17,9 @@ export const exploreActivityPublisherTypeLabel = (
   if (!kind || publishesActivityAsIndividual(kind)) return 'Host';
   switch (kind) {
     case 'pro_guide':
-      return 'Guide';
+      return 'Professional';
     case 'agency':
-      return 'Agency';
+      return 'Tour operator';
     case 'shop':
       return 'Shop';
     case 'ecommerce':

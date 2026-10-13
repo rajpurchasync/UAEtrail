@@ -4,7 +4,7 @@ import {
   BuddySummaryDTO,
   MemberFollowStateDTO,
   MemberFollowSummaryDTO,
-  MemberHubStatsDTO,
+  MemberProfileStatsDTO,
   EntityFollowCheckDTO,
   EntityFollowDTO,
   WishlistItemDTO,
@@ -74,8 +74,8 @@ export const socialApi = {
       auth: true,
     }),
 
-    getMeMemberHubStats: () =>
-      apiRequest<{ data: MemberHubStatsDTO }>('/me/member-hub-stats', { auth: true }),
+    getMeProfileStats: () =>
+      apiRequest<{ data: MemberProfileStatsDTO }>('/me/profile-stats', { auth: true }),
 
     getMeFollowing: () =>
       apiRequest<{ data: MemberFollowSummaryDTO[] }>('/me/following', { auth: true }),

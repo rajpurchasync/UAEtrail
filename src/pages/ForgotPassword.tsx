@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Mail, Lock, ArrowLeft, ShieldCheck, CheckCircle } from 'lucide-react';
-import { apiRequest } from '../api/client';
+import {
+  completePasswordReset,
+  requestPasswordReset,
+} from '../hooks/accountPasswordClientApi';
 import { SIGNIN_PATH } from '../config/routingCatalog';
 import { PageMeta } from '../components/seo/PageMeta';
 
@@ -30,10 +33,7 @@ export const ForgotPassword = () => {
     setError(null);
     setLoading(true);
     try {
-      const res = await apiRequest<{ message: string; resetToken?: string }>('/auth/forgot-password', {
-        method: 'POST',
-        body: JSON.stringify({ email }),
-      });
+      const res = await requestPasswordReset(email);
       if (res.resetToken) {
         setResetToken(res.resetToken);
       }
@@ -67,10 +67,7 @@ export const ForgotPassword = () => {
 
     setLoading(true);
     try {
-      await apiRequest('/auth/reset-password', {
-        method: 'POST',
-        body: JSON.stringify({ token: resetToken, password: newPassword }),
-      });
+      await completePasswordReset(resetToken, newPassword);
       setStep('done');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to reset password.');

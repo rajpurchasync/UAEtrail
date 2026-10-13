@@ -1,7 +1,7 @@
 import { NotificationType } from '../domain/enums.js';
 import { findGroupById, listGroupMembersDetailed } from '../lib/social-groups-store.js';
 import { messagesGroupPath } from '../lib/member-routes.js';
-import { dispatchNotification } from './notifications.js';
+import { scheduleNotification } from './notifications.js';
 import { resolveNotificationActorDisplayName } from './notification-actor-label.js';
 
 export const notifyGroupInvite = async (input: {
@@ -18,7 +18,7 @@ export const notifyGroupInvite = async (input: {
     input.invitedUserId
   );
 
-  await dispatchNotification({
+  scheduleNotification({
     userId: input.invitedUserId,
     title: 'Group invite',
     body: `${inviterName} invited you to join ${groupName}.`,
@@ -31,7 +31,7 @@ export const notifyGroupInvite = async (input: {
       actorUserId: input.invitedByUserId,
       path: `/groups?invite=${encodeURIComponent(input.inviteToken)}`,
     },
-  }).catch(() => undefined);
+  }, 'social_notification');
 };
 
 export const notifyMemberFollowed = async (input: {
@@ -43,7 +43,7 @@ export const notifyMemberFollowed = async (input: {
     input.followingUserId
   );
 
-  await dispatchNotification({
+  scheduleNotification({
     userId: input.followingUserId,
     title: 'New follower',
     body: `${followerName} started following you — they'll get notified when you host an outing.`,
@@ -54,7 +54,7 @@ export const notifyMemberFollowed = async (input: {
       followerUserId: input.followerUserId,
       path: `/member/${input.followerUserId}`,
     },
-  }).catch(() => undefined);
+  }, 'social_notification');
 };
 
 export const notifyGroupWallPost = async (input: {
@@ -79,7 +79,7 @@ export const notifyGroupWallPost = async (input: {
   await Promise.all(
     recipientIds.map(async (userId) => {
       const authorName = await resolveNotificationActorDisplayName(input.authorUserId, userId);
-      return dispatchNotification({
+      scheduleNotification({
         userId,
         title: `New message in ${groupName}`,
         body: `${authorName}: ${preview}`,
@@ -92,7 +92,7 @@ export const notifyGroupWallPost = async (input: {
           actorUserId: input.authorUserId,
           path: messagesGroupPath(input.groupId),
         },
-      }).catch(() => undefined);
+      }, 'social_notification');
     })
   );
 };

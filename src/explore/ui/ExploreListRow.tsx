@@ -4,9 +4,10 @@ import { SecureAvatar } from '../../components/ui';
 import type { ExploreCardModel } from '../exploreCardModel';
 import { buildExploreListMeta, exploreCardToneTextClass } from '../exploreCardModel';
 import { EnvironmentImage } from '../../components/ui/EnvironmentImage';
-import { EXPLORE_TYPE } from '../../config/exploreTheme';
+import { EXPLORE_LIST_ROW, EXPLORE_TYPE } from '../../config/exploreTheme';
 import { ExploreCardDetailList, ExploreCardLocationLink, ExploreCardRatingRow } from './ExploreCardPresentation';
 import { ExploreCardTypeIcon } from './ExploreCardTypeIcon';
+import { ExploreListRowWireFooter } from './ExploreListRowWireFooter';
 
 interface ExploreListRowProps {
   card: ExploreCardModel;
@@ -19,11 +20,8 @@ interface ExploreListRowProps {
   buddyUserIds?: Set<string>;
 }
 
-const rowShellClass =
-  'rounded-2xl border border-neutral-200/75 bg-white shadow-[0_1px_8px_rgba(15,23,42,.06)] ring-1 ring-black/[0.02] transition';
-
-const rowMainClass =
-  'flex w-full items-center gap-3 p-3.5 text-left transition active:scale-[0.995] active:bg-neutral-50/80';
+const rowShellClass = EXPLORE_LIST_ROW.shell;
+const rowMainClass = EXPLORE_LIST_ROW.main;
 
 const JoiningIndicator = ({
   card,
@@ -125,7 +123,7 @@ export const ExploreListRow = ({
           <span className="min-w-0 flex-1">{titleBlock}</span>
           <ChevronRight className="h-4 w-4 shrink-0 text-gray-300" aria-hidden />
         </button>
-        <div className="space-y-0 px-3 pb-3 pl-[4.25rem]">
+        <div className={EXPLORE_LIST_ROW.bodyIndent}>
           {card.subtitle ? (
             <ExploreCardLocationLink
               label={card.subtitle}
@@ -141,23 +139,21 @@ export const ExploreListRow = ({
   }
 
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      onMouseEnter={onPointerEnter}
-      className={`${rowShellClass} ${rowMainClass}`}
-    >
-      {iconCell}
-      <span className="min-w-0 flex-1">
-        {titleBlock}
-        {meta ? (
-          <p className={`mt-0.5 ${metaClamp} text-sm font-medium leading-snug ${EXPLORE_TYPE.muted}`}>{meta}</p>
-        ) : (
-          <ExploreCardDetailList details={details} compact />
-        )}
-        {showJoining ? <JoiningIndicator card={card} buddyUserIds={buddyUserIds} /> : null}
-      </span>
-      <ChevronRight className="h-4 w-4 shrink-0 text-gray-300" aria-hidden />
-    </button>
+    <div className={rowShellClass} onMouseEnter={onPointerEnter}>
+      <button type="button" onClick={onClick} className={`${rowMainClass} rounded-t-2xl`}>
+        {iconCell}
+        <span className="min-w-0 flex-1">
+          {titleBlock}
+          {meta ? (
+            <p className={`mt-0.5 ${metaClamp} text-sm font-medium leading-snug ${EXPLORE_TYPE.muted}`}>{meta}</p>
+          ) : (
+            <ExploreCardDetailList details={details} compact />
+          )}
+          {showJoining ? <JoiningIndicator card={card} buddyUserIds={buddyUserIds} /> : null}
+        </span>
+        <ChevronRight className="h-4 w-4 shrink-0 text-gray-300" aria-hidden />
+      </button>
+      <ExploreListRowWireFooter card={card} />
+    </div>
   );
 };

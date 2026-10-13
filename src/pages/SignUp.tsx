@@ -8,7 +8,7 @@ import { defaultRouteByRole } from '../utils/authRouting';
 import { navigateAuthBack, navigateAuthClose, resolveAuthRedirect } from '../utils/authRedirect';
 import { getPasswordValidationError } from '../utils/passwordPolicy';
 import { PageMeta } from '../components/seo/PageMeta';
-import { api } from '../api/index';
+import { fetchMeProfile } from '../hooks/memberProfileApi';
 import { shouldForceSignupWelcome } from '../utils/signupProfileGate';
 import { signInPath } from '../config/routingCatalog';
 import { PRODUCT_AUTH_SIGNUP_SUBLINE } from '../content/productNorthStar';
@@ -46,8 +46,8 @@ export const SignUp = () => {
     }
     try {
       const user = await signInWithGoogle(idToken, referralCode, groupInviteToken);
-      const profile = await api.getMeProfile().catch(() => null);
-      if (profile && shouldForceSignupWelcome(user.role, profile.data)) {
+      const profile = await fetchMeProfile().catch(() => null);
+      if (profile && shouldForceSignupWelcome(user.role, profile)) {
         navigate('/welcome', { replace: true, state: { redirectTo } });
         return;
       }

@@ -9,8 +9,6 @@ import type { BrowseMainCategoryKey } from './browseListTaxonomy';
 
 /** Discover home horizontal rails — `shops` is a Places sub-topic, not a main list category. */
 export type ListDiscoverRailId = BrowseMainCategoryKey | 'shops';
-import { buildDiscoverShopPlaceholderCards } from './listDiscoverShopPlaceholders';
-
 export const DISCOVER_RAIL_LIMIT = 5;
 
 export type ListDiscoverRail = {
@@ -103,7 +101,7 @@ export const pickDiscoverShopRailCards = (
 ): ExploreCardModel[] => {
   const shops = cards.filter((c) => c.source === 'shop' || c.source === 'agency');
   if (!shops.length) {
-    return buildDiscoverShopPlaceholderCards().slice(0, limit);
+    return [];
   }
 
   const byId = cardById(shops);
@@ -127,9 +125,6 @@ export const pickDiscoverShopRailCards = (
     merged.push(card);
   }
 
-  if (!merged.length) {
-    return buildDiscoverShopPlaceholderCards().slice(0, limit);
-  }
   return merged;
 };
 
@@ -143,6 +138,8 @@ export const buildListDiscoverRails = (
   const shops = pickDiscoverShopRailCards(cards, mapItems);
   if (trips.length) rails.push({ id: 'trips', title: LIST_DISCOVER_RAIL_TRIPS, items: trips });
   if (venues.length) rails.push({ id: 'venues', title: LIST_DISCOVER_RAIL_PLACES, items: venues });
-  rails.push({ id: 'shops', title: LIST_DISCOVER_RAIL_SHOPS, items: shops });
+  if (shops.length > 0) {
+    rails.push({ id: 'shops', title: LIST_DISCOVER_RAIL_SHOPS, items: shops });
+  }
   return rails;
 };

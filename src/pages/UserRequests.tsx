@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { api, ActivityRequestView } from '../api/index';
+import type { ActivityRequestView } from '../api/types';
+import { fetchMyJoinRequests } from '../hooks/activityJoinClientApi';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { ConsumerErrorCard, ConsumerLoadingSpinner } from '../components/mobile/ConsumerFeedback';
 import { PageMeta } from '../components/seo/PageMeta';
@@ -34,9 +35,8 @@ export const UserRequests = () => {
 
   useEffect(() => {
     setLoading(true);
-    api
-      .getMeRequests()
-      .then((response) => setRequests(response.data))
+    fetchMyJoinRequests()
+      .then((list) => setRequests(list))
       .catch((loadError) => {
         setError(loadError instanceof Error ? loadError.message : 'Couldn\'t load your requests — try again.');
       })

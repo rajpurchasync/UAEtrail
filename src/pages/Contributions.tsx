@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight, Loader2, Star } from 'lucide-react';
-import { api } from '../api/index';
+import { fetchMySubmittedPlaces } from '../hooks/placeCatalogApi';
 import type { LocationDTO } from '@uaetrail/shared-types';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { GlassCard } from '../components/mobile/GlassCard';
@@ -17,8 +17,8 @@ export const Contributions = () => {
   const load = useCallback(async () => {
     setError(null);
     try {
-      const res = await api.getMySubmittedPlaces();
-      setPlaces(res.data);
+      const list = await fetchMySubmittedPlaces();
+      setPlaces(list);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not load contributions.');
     } finally {

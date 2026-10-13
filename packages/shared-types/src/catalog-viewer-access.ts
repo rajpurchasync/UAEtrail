@@ -15,6 +15,7 @@ export const resolveCommerceMapViewerAccess = (
       canViewFullActivity: false,
       canOpenDetailPage: false,
       joinMode: 'open',
+      canAccessCrewSurfaces: false,
     };
   }
   return {
@@ -24,6 +25,7 @@ export const resolveCommerceMapViewerAccess = (
     canViewFullActivity: true,
     canOpenDetailPage: true,
     joinMode: 'open',
+    canAccessCrewSurfaces: false,
   };
 };
 
@@ -35,4 +37,5 @@ export const resolvePublicPlaceMapViewerAccess = (): ActivityViewerAccessDTO => 
   canViewFullActivity: true,
   canOpenDetailPage: true,
   joinMode: 'open',
+  canAccessCrewSurfaces: false,
 });

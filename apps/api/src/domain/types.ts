@@ -53,6 +53,8 @@ export interface Location {
   region: string;
   /** Trailhead / wadi / beach zone for explore list subtitle and poster location chip. */
   areaLabel: string | null;
+  /** Curated geographic area (`areas` collection). */
+  areaId?: string | null;
   activityType: ActivityType;
   description: string;
   difficulty: Difficulty | null;
@@ -123,9 +125,9 @@ export interface Activity {
   ridesharePriceAed: number | null;
   rideshareSeats: number | null;
   rideshareDetails: string | null;
-  /** Parent hike/camp/event when this is a linked carpool listing. */
+  /** Parent hike/camp/event when this is a linked rideshare listing. */
   linkedActivityId: string | null;
-  /** Linked carpool activity id when car pool is offered for this listing. */
+  /** Linked rideshare activity id when a ride offer is enabled for this listing. */
   linkedRideshareActivityId: string | null;
   paymentTerms: string | null;
   pricingMode: 'free' | 'shared' | 'paid' | null;
@@ -133,6 +135,7 @@ export interface Activity {
   requirements: string[];
   joinMode?: 'open' | 'private' | null;
   participationMode?: 'rsvp' | 'approval' | null;
+  groupChatPostPolicy?: 'all_participants' | 'host_only' | null;
   images: string[];
   bannerUrl: string | null;
   signupUrl: string | null;
@@ -145,6 +148,10 @@ export interface Activity {
   publishedAt: Date | null;
   outingCategory?: OutingCategory | null;
   outingTopic?: OutingTopic | null;
+  /** Curated area slug target — set on publish from place or point-in-polygon. */
+  areaId?: string | null;
+  activityMode?: 'hosted' | 'seeking' | null;
+  participantIntentId?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }

@@ -1,4 +1,8 @@
-import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
+import {
+  exploreMapItemIsSeeking,
+  isTimeBoundExploreMapItem,
+  type ExploreMapItemDTO,
+} from '@uaetrail/shared-types';
 import { EXPLORE_REGION_PILL_LABELS } from '../config/regions';
 import { normalizeVenueRegionToken, resolveVenueItemRegion } from '../utils/venueRegionFilter';
 import { OUTING_TOPIC_PILLS } from './exploreOutingTopic';
@@ -68,12 +72,12 @@ const exploreItemCategorySearchTerms = (item: ExploreMapItemDTO): string[] => {
   push(terms, item.activity?.activityType);
   push(terms, item.participationMode ?? undefined);
 
-  if (item.source === 'activity') {
+  if (isTimeBoundExploreMapItem(item)) {
     terms.push('trip', 'trips', 'outing', 'outings', 'activity', 'activities');
     push(terms, EXPLORE_SEARCH_SCOPE_COPY.activities.label);
   }
-  if (item.source === 'demand') {
-    terms.push('looking for', 'looking', 'demand', 'buddy', 'people', 'person');
+  if (exploreMapItemIsSeeking(item)) {
+    terms.push('seeking', 'looking for', 'looking', 'demand', 'buddy', 'people', 'person');
     push(terms, EXPLORE_SEARCH_SCOPE_COPY.people.label);
   }
   if (item.source === 'venue') {
@@ -84,9 +88,20 @@ const exploreItemCategorySearchTerms = (item: ExploreMapItemDTO): string[] => {
     terms.push('shop', 'shops', 'gear');
     push(terms, EXPLORE_SEARCH_SCOPE_COPY.shops.label);
   }
-  if (item.source === 'agency') {
-    terms.push('agency', 'agencies', 'operator', 'operators', 'guide', 'guides');
+  if (
+    item.source === 'activity' &&
+    item.activityMode !== 'seeking' &&
+    item.activity?.publishingProfileKind === 'agency'
+  ) {
+    terms.push('agency', 'agencies', 'operator', 'operators', 'tour');
     push(terms, EXPLORE_SEARCH_SCOPE_COPY.agencies.label);
+  }
+  if (
+    item.source === 'activity' &&
+    item.activity?.publishingProfileKind === 'pro_guide'
+  ) {
+    terms.push('professional', 'guide', 'guides');
+    push(terms, EXPLORE_SEARCH_SCOPE_COPY.people.label);
   }
 
   switch (item.kind) {
@@ -145,6 +160,7 @@ export const exploreItemSearchHaystack = (item: ExploreMapItemDTO): string => {
     item.hostName,
     item.featuredPerson?.displayName,
     item.priceDisplay,
+    item.areaSlug,
   ]);
 
   const activity = item.activity;

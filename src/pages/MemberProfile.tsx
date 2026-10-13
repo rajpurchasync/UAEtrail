@@ -3,7 +3,19 @@ import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'reac
 import type { ProfileViewerAccessDTO } from '@uaetrail/shared-types';
 import { Loader2, Lock } from 'lucide-react';
 import type { ActivityDTO, BuddyRelationshipDTO } from '@uaetrail/shared-types';
-import { api, type PersonPublicProfileDTO } from '../api/index';
+import type { PersonPublicProfileDTO } from '../api/types';
+import {
+  acceptMemberBuddyRequest,
+  cancelMemberBuddyRequest,
+  declineMemberBuddyRequest,
+  fetchBuddyRelationship,
+  sendMemberBuddyRequest,
+} from '../hooks/memberPeopleClientApi';
+import {
+  fetchMeProfilePublicPreview,
+  fetchPersonPublicProfile,
+  fetchPersonUpcomingActivities,
+} from '../hooks/memberPublicProfileApi';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { GlassCard } from '../components/mobile/GlassCard';
 import { MemberProfileView } from '../components/profile/MemberProfileView';
@@ -50,12 +62,12 @@ export const MemberProfile = () => {
     setDiscoveryUpgradeRequired(false);
     const load =
       previewAsPublic && user?.id === userId
-        ? api.getMeProfilePublicPreview()
-        : api.getPersonPublicProfile(userId, { discover: fromDiscover });
+        ? fetchMeProfilePublicPreview()
+        : fetchPersonPublicProfile(userId, { discover: fromDiscover });
     void load
-      .then((res) => {
-        setProfile(res.data);
-        setViewerAccess(res.viewerAccess ?? null);
+      .then(({ profile: loaded, viewerAccess: access }) => {
+        setProfile(loaded);
+        setViewerAccess(access);
       })
       .catch((err) => {
         const apiErr = err as Error & { code?: string };
@@ -76,17 +88,15 @@ export const MemberProfile = () => {
       setUpcomingActivities([]);
       return;
     }
-    void api
-      .getPersonUpcomingActivities(userId)
-      .then((res) => setUpcomingActivities(res.data))
+    void fetchPersonUpcomingActivities(userId)
+      .then(setUpcomingActivities)
       .catch(() => setUpcomingActivities([]));
   }, [userId, viewerAccess?.exposure]);
 
   const loadBuddyRelationship = () => {
     if (!userId || !user || user.id === userId) return;
-    void api
-      .getBuddyRelationship(userId)
-      .then((res) => setBuddyRel(res.data))
+    void fetchBuddyRelationship(userId)
+      .then(setBuddyRel)
       .catch(() => setBuddyRel(null));
   };
 
@@ -99,23 +109,23 @@ export const MemberProfile = () => {
     setBuddyBusy(true);
     setBuddyMessage(null);
     try {
-      const res = await api.sendBuddyRequest({ targetUserId: userId });
+      const request = await sendMemberBuddyRequest(userId);
       setBuddyRel((prev: BuddyRelationshipDTO | null) =>
         prev
           ? {
               ...prev,
-              areBuddies: res.data.status === 'accepted',
-              outgoingRequest: res.data.status === 'pending' ? res.data : null,
+              areBuddies: request.status === 'accepted',
+              outgoingRequest: request.status === 'pending' ? request : null,
               incomingRequest: null,
               canSendRequest: false,
             }
           : null
       );
-      setBuddyMessage(res.data.status === 'accepted' ? 'You are now friends.' : 'Friend request sent.');
-      if (res.data.status === 'accepted') {
-        void api.getPersonPublicProfile(userId).then((profileRes) => {
-          setProfile(profileRes.data);
-          setViewerAccess(profileRes.viewerAccess ?? null);
+      setBuddyMessage(request.status === 'accepted' ? 'You are now friends.' : 'Friend request sent.');
+      if (request.status === 'accepted') {
+        void fetchPersonPublicProfile(userId).then(({ profile: loaded, viewerAccess: access }) => {
+          setProfile(loaded);
+          setViewerAccess(access);
         });
       }
     } catch (err) {
@@ -130,13 +140,13 @@ export const MemberProfile = () => {
     setBuddyBusy(true);
     setBuddyMessage(null);
     try {
-      await api.acceptBuddyRequest(buddyRel.incomingRequest.id);
+      await acceptMemberBuddyRequest(buddyRel.incomingRequest.id);
       setBuddyMessage('Friend request accepted.');
       loadBuddyRelationship();
       if (userId) {
-        void api.getPersonPublicProfile(userId).then((profileRes) => {
-          setProfile(profileRes.data);
-          setViewerAccess(profileRes.viewerAccess ?? null);
+        void fetchPersonPublicProfile(userId).then(({ profile: loaded, viewerAccess: access }) => {
+          setProfile(loaded);
+          setViewerAccess(access);
         });
       }
     } catch (err) {
@@ -151,7 +161,7 @@ export const MemberProfile = () => {
     setBuddyBusy(true);
     setBuddyMessage(null);
     try {
-      await api.declineBuddyRequest(buddyRel.incomingRequest.id);
+      await declineMemberBuddyRequest(buddyRel.incomingRequest.id);
       setBuddyMessage('Buddy request declined.');
       loadBuddyRelationship();
     } catch (err) {
@@ -166,7 +176,7 @@ export const MemberProfile = () => {
     setBuddyBusy(true);
     setBuddyMessage(null);
     try {
-      await api.cancelBuddyRequest(buddyRel.outgoingRequest.id);
+      await cancelMemberBuddyRequest(buddyRel.outgoingRequest.id);
       setBuddyMessage('Buddy request cancelled.');
       loadBuddyRelationship();
     } catch (err) {
@@ -192,7 +202,7 @@ export const MemberProfile = () => {
       showJourney={false}
       back={{
         fallbackTo: profileReturn?.from ?? myActivitiesPath(),
-        label: profileReturn?.backLabel ?? 'My trips',
+        label: profileReturn?.backLabel ?? 'History',
       }}
     >
       <PageMeta title={pageTitle} noIndex />

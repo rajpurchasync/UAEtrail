@@ -1,6 +1,13 @@
 import { activityOrganizeTopicToOutingTopic, type ActivityDTO } from '@uaetrail/shared-types';
-import { api } from '../api/index';
+import { fetchPublishedAreas } from '../hooks/areaHubClientApi';
+import {
+  createHostActivityForTenant,
+  publishHostActivityById,
+} from '../hooks/hostActivityClientApi';
+import { linkParticipantIntentToActivity } from '../hooks/participantIntentClientApi';
+import { submitPlaceContribution } from '../hooks/placeCatalogApi';
 import { HOME_HERO_OG_PATH } from '../config/seo';
+import { resolvePublishedAreaIdForPoint } from '../explore/organizePublishArea';
 import {
   buildHostActivityPublishPayload,
   type ActivityPublishInput,
@@ -39,15 +46,14 @@ export type OrganizePublishContext = {
   userId: string;
 };
 
-/** Resolve `locationId` for explore organize publish — registry venue or activity-only anchor. */
+/** Resolve `locationId` for explore organize publish — catalog place with `place.areaId` only. */
 export const resolveOrganizeActivityLocationId = async (
   ctx: OrganizePublishContext
 ): Promise<string> => {
   const { draft, tenantId } = ctx;
   if (!draft.kind) throw new Error('Choose an activity type.');
-  const structured = isStructuredOrganizeFlow(draft.kind, draft.genericBuddy);
-  const activityHost = isActivityOrganizeFlow(draft.kind, draft.genericBuddy);
   const activityType = resolveActivityType(draft.kind);
+  const structured = isStructuredOrganizeFlow(draft.kind, draft.genericBuddy);
 
   const registryVenueId =
     structured && draft.registryPlaceId && draft.placeLabelSource === 'registry'
@@ -56,7 +62,14 @@ export const resolveOrganizeActivityLocationId = async (
 
   if (registryVenueId) return registryVenueId;
 
+  if (structured) {
+    throw new Error(
+      'Choose a catalog place linked to an area, or add your spot via Explore → Add (select an area first).'
+    );
+  }
+
   const event = isEventOrganizeFlow(draft.kind, draft.genericBuddy);
+  const activityHost = isActivityOrganizeFlow(draft.kind, draft.genericBuddy);
   const anchorLat = event || activityHost ? draft.meetingLatitude : draft.latitude;
   const anchorLng = event || activityHost ? draft.meetingLongitude : draft.longitude;
 
@@ -64,32 +77,39 @@ export const resolveOrganizeActivityLocationId = async (
     throw new Error(event ? 'Drop a meeting point pin on the map first.' : 'Drop a pin on the map first.');
   }
 
+  const publishedAreas = await fetchPublishedAreas();
+  const areaId = resolvePublishedAreaIdForPoint(anchorLat, anchorLng, publishedAreas);
+  if (!areaId) {
+    throw new Error(
+      'Could not match a registered area for this pin. Add your spot via Explore → Add (select an area first), then organize from the catalog.'
+    );
+  }
+
   const lat = anchorLat;
   const lng = anchorLng;
   const fromLabel = resolveFromLabel(draft, lat, lng);
-  const anchorName =
-    structured && draft.trailName.trim()
-      ? draft.trailName.trim().slice(0, 120)
-      : `Outing · ${fromLabel}`.slice(0, 120);
+  const anchorName = `Outing · ${fromLabel}`.slice(0, 120);
   const anchorDescription =
-    (structured ? draft.aboutTrail.trim() : activityHost ? draft.joinKit.trim() : draft.description.trim()) ||
-    defaultDescription(draft.kind);
+    (activityHost ? draft.joinKit.trim() : draft.description.trim()) || defaultDescription(draft.kind);
 
-  const locationRes = await api.submitPlace(tenantId, {
-    name: anchorName,
-    countryCode: 'AE',
-    emirate: 'Dubai',
-    region: 'Dubai',
-    activityType,
-    description: anchorDescription.slice(0, 3000),
-    latitude: lat,
-    longitude: lng,
-    images: [HOME_HERO_OG_PATH],
-    difficulty: draft.difficulty === 'easy' ? 'easy' : draft.difficulty === 'medium' ? 'moderate' : 'hard',
-    activityAnchor: true,
-  } as Record<string, unknown>);
+  const place = await submitPlaceContribution(
+    {
+      name: anchorName,
+      countryCode: 'AE',
+      emirate: 'Dubai',
+      region: 'Dubai',
+      areaId,
+      activityType,
+      description: anchorDescription.slice(0, 3000),
+      latitude: lat,
+      longitude: lng,
+      images: [HOME_HERO_OG_PATH],
+      activityAnchor: true,
+    } as Record<string, unknown>,
+    tenantId
+  );
 
-  return locationRes.data.id;
+  return place.id;
 };
 
 /** Build canonical host activity payload from an organize draft (shared publish pipeline). */
@@ -211,6 +231,7 @@ export const buildOrganizeActivityPublishInput = (
             rideshareDetails: 'Host offers rideshare — coordinate seats in activity chat after joining.',
           }
         : undefined,
+    groupChatPostPolicy: draft.groupChatPostPolicy,
   };
 };
 
@@ -261,16 +282,16 @@ export const publishOrganizeActivity = async (input: {
     clonedFromActivityId: sourceActivityId?.trim() || null,
     linkedActivityId: draft.kind === 'rideshare' && parentLinkId ? parentLinkId : null,
   });
-  const created = await api.createHostActivity(tenantId, publishBody);
-  await api.publishHostActivity(tenantId, created.data.id);
+  const created = await createHostActivityForTenant(tenantId, publishBody);
+  await publishHostActivityById(tenantId, created.id);
 
   if (participantIntentId) {
-    await api.linkParticipantIntentToActivity(participantIntentId, created.data.id);
+    await linkParticipantIntentToActivity(participantIntentId, created.id);
   }
 
   if (parentLinkId && draft.kind === 'rideshare') {
-    await linkParentToRideshareActivity(tenantId, parentLinkId, created.data.id);
+    await linkParentToRideshareActivity(tenantId, parentLinkId, created.id);
   }
 
-  return created.data;
+  return created;
 };

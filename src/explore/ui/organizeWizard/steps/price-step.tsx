@@ -16,7 +16,8 @@ export function renderPriceStep(ctx: OrganizeWizardContext): ReactNode | null {
     draft,
     patchDraft,
     error,
-    canHostPaidActivities,
+    hostTiers,
+    publishingProfileKind,
     goNext,
     goBack,
     handleClose,
@@ -31,7 +32,7 @@ export function renderPriceStep(ctx: OrganizeWizardContext): ReactNode | null {
   return (
           <OrganizeWizardChrome title={stepTitle} onClose={handleClose} onBack={goBack}>
             <div className="grid grid-cols-2 gap-2">
-              {priceModeOptions(kind, canHostPaidActivities).map((mode) => {
+              {priceModeOptions(kind, hostTiers, publishingProfileKind).map((mode) => {
                 const active = draft.priceMode === mode;
                 return (
                   <button

@@ -1,18 +1,32 @@
-import { useEffect, useRef, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { afterHostJoinDecisionClientRefresh } from '../../hooks/activityJoinClientEffects';
 import type { ActivityDTO } from '@uaetrail/shared-types';
-import type { ActivityRequestView } from '../../api/index';
 import { LinkRidesharePanel } from '../../explore/ui/LinkRidesharePanel';
 import { hostActivityManageCapabilities } from '../../host/hostActivityManageCapabilities';
 import { ActivityJoinRequestCard } from '../../console/ActivityJoinRequestCard';
 import { ActivityJoinRequestDeclineDialog } from '../../console/ActivityJoinRequestDeclineDialog';
 import { ActivityParticipantsPanel } from './ActivityParticipantsPanel';
 import { HostActivityManageCancelDialogs } from '../activity/HostActivityManageCancelDialogs';
-import { api } from '../../api/index';
+import {
+  decideHostActivityJoinRequest,
+  fetchHostActivityJoinRequests,
+  type ActivityRequestView,
+} from '../../hooks/hostActivityClientApi';
+import { fetchPublicActivityDetail } from '../../hooks/usePublicActivityDetail';
 import { resolveActivityTitle } from '../../utils/activityIdentity';
 import { buildActivitySharePayload } from '../../utils/activityShare';
 import { ActivityInviteModalBody } from '../activity/ActivityInviteModalBody';
 import type { HostActivityManageActions } from '../../hooks/useHostActivityManageActions';
-import { HostActivityDetailView } from './HostActivityDetailView';
+import type {
+  ActivityDetailDTO,
+  ActivityPresentationDTO,
+  ActivityViewerAccessDTO,
+  ActivityViewerEntitlementsDTO,
+} from '@uaetrail/shared-types';
+import { resolveActivityDetailWirePresentation } from '../../activity/resolveActivityDetailWirePresentation';
+import { ActivityDetailView } from '../activity/ActivityDetailView';
+import type { ActivityDetailTabId } from '../../activity/activityDetailTab';
 import { HostActivityManageFooterActions } from './HostActivityManageFooterActions';
 import { HostActivityManageOptionsSheet } from './HostActivityManageOptionsSheet';
 import {
@@ -21,7 +35,7 @@ import {
   type HostActivityManageInitialView,
   type HostActivityManageSubview,
 } from './hostActivityManageViews';
-import { tripsHostedActivityPath } from '../../trips/tripsRouting';
+import { tripsHostedActivityPath } from '../../member-plan/tripsRouting';
 import { useModalA11y } from '../../hooks/useModalA11y';
 import { useAuth } from '../../context/AuthContext';
 
@@ -50,6 +64,7 @@ export const ActivityManageSheet = ({
   onRequestsChanged,
 }: ActivityManageSheetProps) => {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const panelRef = useRef<HTMLDivElement>(null);
   const [view, setView] = useState<HostActivityManageSubview>('overview');
   const [manageOptionsOpen, setManageOptionsOpen] = useState(false);
@@ -58,14 +73,62 @@ export const ActivityManageSheet = ({
   const [rideshareNotice, setRideshareNotice] = useState<string | null>(null);
   const [activityRequests, setActivityRequests] = useState<ActivityRequestView[]>([]);
   const [requestsLoading, setRequestsLoading] = useState(false);
+  const [detailTab, setDetailTab] = useState<ActivityDetailTabId>('plan');
+  const [sheetActivity, setSheetActivity] = useState<ActivityDTO | null>(activity);
+  const [viewerEntitlements, setViewerEntitlements] = useState<ActivityViewerEntitlementsDTO | null>(null);
+  const [wirePresentation, setWirePresentation] = useState<ActivityPresentationDTO | null>(null);
+
+  useEffect(() => {
+    setSheetActivity(activity);
+  }, [activity]);
+
+  useEffect(() => {
+    if (!open || !activity?.id) {
+      setViewerEntitlements(null);
+      setWirePresentation(null);
+      return;
+    }
+    void fetchPublicActivityDetail(activity.id)
+      .then((res) => {
+        setViewerEntitlements(res.viewerAccess?.entitlements ?? null);
+        setWirePresentation(res.presentation ?? null);
+      })
+      .catch(() => {
+        setViewerEntitlements(null);
+        setWirePresentation(null);
+      });
+  }, [open, activity?.id]);
 
   useModalA11y(open, onClose, panelRef);
+
+  const embeddedWirePresentation = useMemo(() => {
+    if (wirePresentation) return wirePresentation;
+    if (!sheetActivity) return null;
+    const viewerAccess: ActivityViewerAccessDTO = {
+      exposure: 'full',
+      level: 'host',
+      gateReason: null,
+      canViewFullActivity: true,
+      canOpenDetailPage: true,
+      joinMode: sheetActivity.joinMode ?? 'open',
+      canAccessCrewSurfaces: true,
+      entitlements: viewerEntitlements ?? undefined,
+    };
+    return resolveActivityDetailWirePresentation({
+      activity: sheetActivity as ActivityDetailDTO,
+      viewerAccess,
+      isHostUser: true,
+      isEmbedded: true,
+      joinUiState: { kind: 'open' },
+    });
+  }, [wirePresentation, sheetActivity, viewerEntitlements]);
 
   useEffect(() => {
     if (!open) return;
     setView(normalizeHostActivityManageView(initialView));
     setRideshareNotice(null);
     setManageOptionsOpen(false);
+    setDetailTab('plan');
   }, [open, initialView, activity?.id]);
 
   useEffect(() => {
@@ -74,10 +137,9 @@ export const ActivityManageSheet = ({
       return;
     }
     setRequestsLoading(true);
-    void api
-      .getHostActivityJoinRequests(tenantId, { activityId: activity.id })
-      .then((res) => {
-        setActivityRequests(res.data.filter((request) => request.status === 'pending'));
+    void fetchHostActivityJoinRequests(tenantId, { activityId: activity.id })
+      .then((data) => {
+        setActivityRequests(data.filter((request) => request.status === 'pending'));
       })
       .catch(() => {
         setActivityRequests(
@@ -87,7 +149,11 @@ export const ActivityManageSheet = ({
       .finally(() => setRequestsLoading(false));
   }, [open, activity?.id, tenantId, pendingRequests]);
 
-  const caps = activity ? hostActivityManageCapabilities(activity) : null;
+  const caps = activity
+    ? hostActivityManageCapabilities(activity, {
+        canAddLinkedRide: viewerEntitlements?.canAddLinkedRide ?? false,
+      })
+    : null;
 
   const handleClose = () => {
     setView('overview');
@@ -122,10 +188,11 @@ export const ActivityManageSheet = ({
     status: 'approved' | 'rejected',
     organizerNote?: string
   ) => {
-    if (!tenantId) return;
+    if (!tenantId || !activity) return;
     setBusyRequestId(requestId);
     try {
-      await api.decideHostActivityJoinRequest(tenantId, requestId, status, organizerNote);
+      await decideHostActivityJoinRequest(tenantId, requestId, status, organizerNote);
+      await afterHostJoinDecisionClientRefresh(queryClient, { activityId: activity.id, status });
       if (status === 'rejected') setDeclineRequest(null);
       await onRequestsChanged();
     } catch (err) {
@@ -249,9 +316,27 @@ export const ActivityManageSheet = ({
             </div>
           ) : null}
 
-          {view === 'overview' ? (
+          {view === 'overview' && sheetActivity ? (
             <div className="mx-auto w-full max-w-2xl">
-              <HostActivityDetailView activity={activity} />
+              <ActivityDetailView
+                layout="embedded"
+                activity={sheetActivity as ActivityDetailDTO}
+                mobileTab={detailTab}
+                onMobileTabChange={setDetailTab}
+                canAccessCrewSurfaces
+                hostCrewChatPolicy={
+                  tenantId
+                    ? {
+                        tenantId,
+                        onSaved: (policy) =>
+                          setSheetActivity((prev) => (prev ? { ...prev, groupChatPostPolicy: policy } : prev)),
+                        onError: (message) => actions.setError(message),
+                      }
+                    : undefined
+                }
+                wireFooterByTab={embeddedWirePresentation?.footerByTab ?? null}
+                wireTabs={embeddedWirePresentation?.tabs ?? null}
+              />
             </div>
           ) : null}
         </div>

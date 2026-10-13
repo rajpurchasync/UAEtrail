@@ -4,6 +4,7 @@ import { buildGroupWallReplyPreview } from './reply-preview.js';
 import { newEntityId } from './entity-builders.js';
 import { findAuthUsersByIds } from './auth-users.js';
 import { getMongoClient } from './mongo.js';
+import { normalizeSearchRegexInput } from './regex-search.js';
 
 export type GroupType = 'family' | 'friends' | 'activity';
 export type GroupRole = 'admin' | 'buddy';
@@ -259,6 +260,7 @@ export const createActivityGroup = async (input: {
   activityId: string;
   activityTitle: string;
   hostUserId: string;
+  wallPostPolicy?: GroupWallPostPolicy;
 }): Promise<GroupRecord> => {
   const now = new Date();
   const groupId = newEntityId();
@@ -272,7 +274,7 @@ export const createActivityGroup = async (input: {
     adminUserId: input.hostUserId,
     activityId: input.activityId,
     status: 'active',
-    wallPostPolicy: 'all_members',
+    wallPostPolicy: input.wallPostPolicy ?? 'all_members',
     createdAt: now,
     updatedAt: now
   };
@@ -1073,8 +1075,9 @@ export const listAllSocialGroupsAdmin = async (input: {
 }) => {
   const filter: Record<string, unknown> = {};
   if (input.type) filter.type = input.type;
-  if (input.search?.trim()) {
-    filter.name = { $regex: input.search.trim(), $options: 'i' };
+  const searchRegex = normalizeSearchRegexInput(input.search);
+  if (searchRegex) {
+    filter.name = { $regex: searchRegex, $options: 'i' };
   }
 
   const [rows, total] = await Promise.all([

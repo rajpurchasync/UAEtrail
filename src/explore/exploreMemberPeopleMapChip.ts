@@ -1,5 +1,9 @@
-import type { ExploreMapItemDTO, SocialPeoplePreviewDTO } from '@uaetrail/shared-types';
-import { resolveExploreFeaturedPerson } from '@uaetrail/shared-types';
+import {
+  isTimeBoundExploreMapItem,
+  resolveExploreFeaturedPerson,
+  type ExploreMapItemDTO,
+  type SocialPeoplePreviewDTO,
+} from '@uaetrail/shared-types';
 import {
   matchesActivityDateFilter,
   type ExploreActivityDatePreset,
@@ -32,7 +36,7 @@ export const collectGoingPeopleFromMapItems = (
   const { excludeUserId, activityDatePreset = 'anyday', friendUserIds } = input;
 
   const activities = items
-    .filter((item) => item.source === 'activity' || item.source === 'demand')
+    .filter((item) => isTimeBoundExploreMapItem(item))
     .filter((item) => matchesActivityDateFilter(item, activityDatePreset))
     .filter(
       (item) =>

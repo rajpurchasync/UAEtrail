@@ -1,6 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { useSafeAsyncEffect } from '../hooks/useSafeAsyncEffect';
 import { Link } from 'react-router-dom';
-import { api, AdminMetrics, HostApplication, AuditLogEntry } from '../api/index';
+import type { AdminMetrics, AuditLogEntry, HostApplication } from '../api/types';
+import {
+  fetchAdminAuditLogs,
+  fetchAdminMetrics,
+  fetchAdminModerationActivities,
+  fetchAdminOrganisationApplications,
+} from '../hooks/adminConsoleApi';
 import { DashboardLayout } from '../components/layout';
 import { ActivityDTO } from '@uaetrail/shared-types';
 import {
@@ -20,25 +27,32 @@ export const AdminOverview = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const loadData = () => {
+  const loadData = async (isActive: () => boolean = () => true) => {
     setLoading(true);
-    Promise.all([
-      api.getAdminMetrics(),
-      api.getAdminActivities(),
-      api.getAdminOrganisationApplications(),
-      api.getAdminAuditLogs({ pageSize: 10 }).catch(() => ({ data: [] as AuditLogEntry[] }))
-    ])
-      .then(([metricsRes, eventsRes, appsRes, auditRes]) => {
-        setMetrics(metricsRes.data);
-        setRecentEvents([...eventsRes.data].sort((a, b) => b.date.localeCompare(a.date) || b.time.localeCompare(a.time)).slice(0, 5));
-        setRecentApps(appsRes.data.filter((a) => a.status === 'pending').slice(0, 5));
-        setAuditLogs(auditRes.data.slice(0, 10));
-      })
-      .catch((err) => setError(err instanceof Error ? err.message : 'Failed to load metrics'))
-      .finally(() => setLoading(false));
+    setError(null);
+    try {
+      const [metrics, events, apps, auditRes] = await Promise.all([
+        fetchAdminMetrics(),
+        fetchAdminModerationActivities(),
+        fetchAdminOrganisationApplications(),
+        fetchAdminAuditLogs({ pageSize: 10 }).catch(() => ({ data: [] as AuditLogEntry[] })),
+      ]);
+      if (!isActive()) return;
+      setMetrics(metrics);
+      setRecentEvents(
+        [...events].sort((a, b) => b.date.localeCompare(a.date) || b.time.localeCompare(a.time)).slice(0, 5)
+      );
+      setRecentApps(apps.filter((a) => a.status === 'pending').slice(0, 5));
+      setAuditLogs(auditRes.data.slice(0, 10));
+    } catch (err) {
+      if (!isActive()) return;
+      setError(err instanceof Error ? err.message : 'Failed to load metrics');
+    } finally {
+      if (isActive()) setLoading(false);
+    }
   };
 
-  useEffect(() => { loadData(); }, []);
+  useSafeAsyncEffect((isActive) => loadData(isActive), []);
 
   const metricCards = [
     { label: 'Pending host applications', value: metrics?.pendingApplications ?? '-', color: 'bg-amber-50 text-amber-800', icon: '📝', link: ADMIN_HOSTS_PATH },
@@ -70,7 +84,7 @@ export const AdminOverview = () => {
       {/* Header with refresh */}
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold text-gray-900">Platform Overview</h2>
-        <button onClick={loadData} className="text-sm px-3 py-1.5 border rounded-lg hover:bg-gray-50 text-gray-600 flex items-center gap-1.5">
+        <button onClick={() => void loadData()} className="text-sm px-3 py-1.5 border rounded-lg hover:bg-gray-50 text-gray-600 flex items-center gap-1.5">
           ↻ Refresh
         </button>
       </div>

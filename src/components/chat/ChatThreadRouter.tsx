@@ -1,4 +1,4 @@
-import type { SocialGroupView, SocialGroupWallMessageView } from '../../api/index';
+import type { SocialGroupView, SocialGroupWallMessageView } from '../../api/types';
 import { DirectChatThread, type DirectChatThreadProps } from './DirectChatThread';
 import { GroupChatThread, type GroupChatActivityPayload } from './GroupChatThread';
 

@@ -1,4 +1,8 @@
-import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
+import {
+  exploreMapItemIsSeeking,
+  isTimeBoundExploreMapItem,
+  type ExploreMapItemDTO,
+} from '@uaetrail/shared-types';
 import {
   EXPLORE_SEARCH_SCOPE_BUDDIES_DESCRIPTION,
   EXPLORE_SEARCH_SCOPE_BUDDIES_LABEL,
@@ -19,9 +23,9 @@ export const EXPLORE_SEARCH_OPEN_PLACEHOLDER = 'Activities, places, people, shop
 /** Map chrome — multi-select filter pills. */
 export type ExploreMapFilterPillKey = 'trips' | 'looking' | 'spots' | 'shops';
 
+/** Map multi-select pills — seeking rolls into **Activities** (M0); `looking` key kept for legacy `topics=` parse. */
 export const EXPLORE_MAP_FILTER_PILLS: ReadonlyArray<{ key: ExploreMapFilterPillKey; label: string }> = [
-  { key: 'trips', label: 'Trips' },
-  { key: 'looking', label: 'Looking for' },
+  { key: 'trips', label: 'Activities' },
   { key: 'spots', label: 'Spots' },
   { key: 'shops', label: 'Shops' },
 ];
@@ -77,7 +81,7 @@ export const EXPLORE_SEARCH_SCOPE_COPY: Record<
   },
   agencies: {
     label: 'Agencies',
-    description: 'Outdoor operators and guides',
+    description: 'Tour operators on hosted activities (no map pin)',
     shipped: true,
   },
   facilities: {
@@ -90,10 +94,17 @@ export const EXPLORE_SEARCH_SCOPE_COPY: Record<
 const isShopPin = (item: ExploreMapItemDTO): boolean =>
   item.source === 'shop' && item.kind === 'shop' && !item.id.startsWith('product:');
 
-/** Hosted organize layer only — all activity kinds. */
-export const mapItemMatchesTripsPill = (item: ExploreMapItemDTO): boolean => item.source === 'activity';
+/** Agency storefronts are not map pins — match hosted activities they publish. */
+export const mapItemIsAgencyHostedActivity = (item: ExploreMapItemDTO): boolean =>
+  item.source === 'activity' &&
+  item.activityMode !== 'seeking' &&
+  item.activity?.publishingProfileKind === 'agency';
 
-export const mapItemMatchesLookingPill = (item: ExploreMapItemDTO): boolean => item.source === 'demand';
+/** Hosted + seeking time-bound plans (unified activity pins). */
+export const mapItemMatchesTripsPill = (item: ExploreMapItemDTO): boolean =>
+  isTimeBoundExploreMapItem(item);
+
+export const mapItemMatchesLookingPill = (item: ExploreMapItemDTO): boolean => exploreMapItemIsSeeking(item);
 
 /** Catalog venues (trails, camps, places) — not shops. */
 export const mapItemMatchesSpotsPill = (item: ExploreMapItemDTO): boolean =>
@@ -140,7 +151,7 @@ export const mapItemMatchesSearchScope = (
     case 'shops':
       return mapItemMatchesShopsPill(item);
     case 'agencies':
-      return item.source === 'agency';
+      return mapItemIsAgencyHostedActivity(item);
     case 'facilities':
       return false;
     default:
@@ -154,7 +165,7 @@ const LEGACY_TOPIC_TO_PILL: Record<string, ExploreMapFilterPillKey> = {
   hiking: 'trips',
   camping: 'trips',
   activity: 'trips',
-  looking: 'looking',
+  looking: 'trips',
   shop: 'shops',
 };
 
@@ -223,7 +234,7 @@ export const desktopBrowseTabForSearchScope = (scope: ExploreSearchScopeKey): De
 export const pinKindForSearchScope = (scope: ExploreSearchScopeKey): ExplorePinKindFilter => {
   if (scope === 'places') return 'places';
   if (scope === 'shops' || scope === 'agencies') return 'shops';
-  if (scope === 'activities') return 'trips';
+  if (scope === 'activities') return 'activities';
   if (scope === 'people') return 'all';
   return 'all';
 };

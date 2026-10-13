@@ -2,7 +2,7 @@ import { EXPLORE_MAP_PATH } from '../config/routingCatalog';
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Mountain } from 'lucide-react';
-import { api } from '../api/index';
+import { fetchMeProfile } from '../hooks/memberProfileApi';
 import { SignupProfileWizard } from '../components/signup/SignupProfileWizard';
 import { PageMeta } from '../components/seo/PageMeta';
 
@@ -38,14 +38,13 @@ export const WelcomeSignup = () => {
   };
 
   useEffect(() => {
-    void api
-      .getMeProfile()
-      .then((res) => {
-        if (isSignupProfileComplete(res.data)) {
+    void fetchMeProfile()
+      .then((profile) => {
+        if (isSignupProfileComplete(profile)) {
           navigate(redirectTo, { replace: true, state: EXPLORE_WELCOME_FINISH_STATE });
           return;
         }
-        setProfileDraft(res.data);
+        setProfileDraft(profile);
       })
       .catch(() => undefined)
       .finally(() => setLoadingProfile(false));

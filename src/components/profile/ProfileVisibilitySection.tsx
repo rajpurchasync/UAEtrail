@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { api, type UserProfile } from '../../api/index';
+import type { UserProfile } from '@uaetrail/shared-types';
+import { fetchMeProfile, updateMeProfile } from '../../hooks/memberProfileApi';
 import { GlassCard } from '../mobile/GlassCard';
 
 type ProfileVisibility = NonNullable<UserProfile['profileVisibility']>;
@@ -32,8 +33,8 @@ export const ProfileVisibilitySection = () => {
   const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    void api.getMeProfile().then((res) => {
-      setProfileVisibility(res.data.profileVisibility ?? 'public');
+    void fetchMeProfile().then((profile) => {
+      setProfileVisibility(profile.profileVisibility ?? 'public');
     });
   }, []);
 
@@ -42,7 +43,7 @@ export const ProfileVisibilitySection = () => {
     setSaving(true);
     setMessage(null);
     try {
-      await api.updateMeProfile({ profileVisibility: next });
+      await updateMeProfile({ profileVisibility: next });
       setProfileVisibility(next);
       setMessage('Visibility updated.');
     } catch {

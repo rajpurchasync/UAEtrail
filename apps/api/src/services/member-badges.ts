@@ -10,7 +10,8 @@ import {
 } from '../lib/member-badge-store.js';
 import { isBusinessHostById } from '../lib/user-type.js';
 import { PROFILE_BADGES_PATH } from '../lib/member-routes.js';
-import { dispatchNotification } from './notifications.js';
+import { scheduleSideEffect } from '../lib/schedule-side-effect.js';
+import { scheduleNotification } from './notifications.js';
 import { getMongoClient } from '../lib/mongo.js';
 
 const ACTION_LABELS: Record<RewardAction, string> = {
@@ -48,7 +49,7 @@ export async function recordMemberAction(input: RecordMemberActionInput): Promis
   });
 
   if (logged) {
-    void evaluateMemberBadges(input.userId).catch(() => undefined);
+    scheduleSideEffect(evaluateMemberBadges(input.userId), 'member_badges.evaluate_after_action');
     return { recorded: true };
   }
 
@@ -108,13 +109,16 @@ export async function evaluateMemberBadges(userId: string): Promise<string[]> {
 
       const badge = MEMBER_BADGE_DEFINITIONS.find((b) => b.key === check.key);
       if (badge) {
-        void dispatchNotification({
-          userId,
-          title: `Badge unlocked: ${badge.name}`,
-          body: badge.description,
-          type: 'SYSTEM',
-          meta: { kind: 'badge', badgeKey: check.key, path: PROFILE_BADGES_PATH },
-        }).catch(() => undefined);
+        scheduleNotification(
+          {
+            userId,
+            title: `Badge unlocked: ${badge.name}`,
+            body: badge.description,
+            type: 'SYSTEM',
+            meta: { kind: 'badge', badgeKey: check.key, path: PROFILE_BADGES_PATH },
+          },
+          'member_badges.unlocked'
+        );
       }
     }
   }

@@ -52,4 +52,23 @@ describe('buildOrganizeActivityPublishInput', () => {
     expect(input.joinMode).toBe('private');
     expect(input.participationMode).toBe('rsvp');
   });
+
+  it('does not send activity areaId on host payload (area lives on place)', () => {
+    const draft = {
+      ...emptyCreateActivityDraft(),
+      kind: 'event' as const,
+      title: 'Park run',
+      meetingLatitude: 25.1,
+      meetingLongitude: 55.2,
+    };
+
+    const input = buildOrganizeActivityPublishInput({
+      draft,
+      tenantId: 'tenant-1',
+      userId: 'user-1',
+      locationId: 'loc-1',
+    });
+
+    expect('areaId' in input && input.areaId).toBeFalsy();
+  });
 });

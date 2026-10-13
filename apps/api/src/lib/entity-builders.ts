@@ -16,6 +16,7 @@ export type LocationCreateInput = {
   name: string;
   region?: string;
   areaLabel?: string | null;
+  areaId?: string | null;
   activityType: ActivityType | string;
   description?: string;
   difficulty?: Difficulty | string | null;
@@ -98,6 +99,10 @@ export type ActivityCreateInput = {
   publishedAt?: Date | null;
   outingCategory?: string | null;
   outingTopic?: string | null;
+  activityMode?: 'hosted' | 'seeking' | null;
+  participantIntentId?: string | null;
+  groupChatPostPolicy?: 'all_participants' | 'host_only' | null;
+  areaId?: string | null;
 };
 
 export type ActivityUpdateInput = {
@@ -142,6 +147,10 @@ export type ActivityUpdateInput = {
   location?: RelationConnect;
   outingCategory?: string | null;
   outingTopic?: string | null;
+  activityMode?: 'hosted' | 'seeking' | null;
+  participantIntentId?: string | null;
+  groupChatPostPolicy?: 'all_participants' | 'host_only' | null;
+  areaId?: string | null;
 };
 
 const extractConnectedId = (relation?: RelationConnect): string | null => {
@@ -158,6 +167,7 @@ export const buildLocationFromCreateInput = (data: LocationCreateInput, id: stri
     name: data.name,
     region: data.region ?? '',
     areaLabel: data.areaLabel?.trim() ? data.areaLabel.trim() : null,
+    areaId: data.areaId?.trim() ? data.areaId.trim() : null,
     activityType: data.activityType as Location['activityType'],
     description: data.description ?? '',
     difficulty: (data.difficulty as Location['difficulty']) ?? null,
@@ -245,6 +255,12 @@ export type MongoActivityDoc = {
   publishedAt: Date | null;
   outingCategory?: string | null;
   outingTopic?: string | null;
+  areaId?: string | null;
+  activityMode?: 'hosted' | 'seeking' | null;
+  participantIntentId?: string | null;
+  /** Hosted activity id when a seeking pin was fulfilled (M2d activity-primary rows). */
+  seekingConvertedActivityId?: string | null;
+  groupChatPostPolicy?: 'all_participants' | 'host_only' | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -297,6 +313,10 @@ export const buildActivityFromCreateInput = (data: ActivityCreateInput, id: stri
     publishedAt: data.publishedAt ?? null,
     outingCategory: data.outingCategory ?? null,
     outingTopic: data.outingTopic ?? null,
+    areaId: data.areaId?.trim() ? data.areaId.trim() : null,
+    activityMode: data.activityMode ?? 'hosted',
+    participantIntentId: data.participantIntentId ?? null,
+    groupChatPostPolicy: data.groupChatPostPolicy ?? null,
     createdAt: now,
     updatedAt: now
   };

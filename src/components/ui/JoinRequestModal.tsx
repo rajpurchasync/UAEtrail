@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { ActivityDetailDTO, activityJoinCtaLabel, resolveParticipationMode, type ActivityDTO } from '@uaetrail/shared-types';
 import { formatDate } from '../../utils';
-import { formatPackagePrice } from '../../utils/activityPricing';
 import { activityHostName, showTenantBrand } from '../../utils/hostLabels';
 import { resolveExplorePrice } from '../../explore/explorePriceLabel';
 import {
@@ -10,7 +10,8 @@ import {
   MEETING_POINT_LABEL,
   MANDATORY_INSTRUCTIONS_LABEL,
 } from '../../utils/joinInstructions';
-import { api } from '../../api/index';
+import { afterActivityJoinClientRefresh } from '../../hooks/activityJoinClientEffects';
+import { submitActivityJoin } from '../../hooks/activityJoinClientApi';
 import { Dialog } from './Dialog';
 
 type JoinableActivity = Pick<
@@ -25,7 +26,6 @@ type JoinableActivity = Pick<
   | 'slotsTotal'
   | 'requirements'
   | 'meetingPoint'
-  | 'pricePackages'
   | 'tenantName'
   | 'hostName'
   | 'participationMode'
@@ -36,8 +36,9 @@ interface JoinRequestModalProps {
   onClose: () => void;
   activity: JoinableActivity | ActivityDetailDTO;
   isFull?: boolean;
-  selectedPackageIndex?: number;
   onSuccess?: (message: string) => void;
+  /** Map list row id when known (defaults to `activity:{id}`). */
+  exploreMapItemId?: string | null;
   overlayClassName?: string;
 }
 
@@ -46,10 +47,11 @@ export const JoinRequestModal = ({
   onClose,
   activity,
   isFull,
-  selectedPackageIndex,
   onSuccess,
+  exploreMapItemId,
   overlayClassName,
 }: JoinRequestModalProps) => {
+  const queryClient = useQueryClient();
   const [note, setNote] = useState('');
   const [agreed, setAgreed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -65,12 +67,6 @@ export const JoinRequestModal = ({
   const hasInstructions = instructions.length > 0;
   const full = isFull ?? activity.slotsAvailable <= 0;
   const needsAgreement = hasInstructions;
-
-  const pricePackages = activity.pricePackages?.filter((p) => p.label.trim()) ?? [];
-  const selectedPackage =
-    selectedPackageIndex != null && selectedPackageIndex >= 0
-      ? pricePackages[selectedPackageIndex]
-      : pricePackages[0];
 
   const priceInfo = resolveExplorePrice({
     isRideshare: false,
@@ -108,29 +104,15 @@ export const JoinRequestModal = ({
     setSubmitting(true);
     setError(null);
     try {
-      const packageIndex =
-        selectedPackageIndex != null && selectedPackageIndex >= 0
-          ? selectedPackageIndex
-          : pricePackages.length === 1
-            ? 0
-            : undefined;
-
-      if (isRsvp) {
-        await api.rsvpActivity(activity.id, packageIndex);
-        const successMessage = "You're going! Find it under My trips.";
-        setSubmitted(true);
-        onSuccess?.(successMessage);
-        setTimeout(() => {
-          onClose();
-        }, 1500);
-        return;
-      }
-
-      const res = await api.createJoinRequest(activity.id, note.trim() || undefined, packageIndex);
-      const successMessage =
-        res.data.waitlisted || res.data.status === 'waitlisted'
-          ? 'Added to the waitlist — we\'ll let you know when a spot opens.'
-          : 'Request sent! The host will get back to you soon.';
+      const { successMessage } = await submitActivityJoin(activity.id, {
+        participationMode,
+        note: note.trim() || undefined,
+      });
+      afterActivityJoinClientRefresh(queryClient, {
+        activityId: activity.id,
+        participationMode,
+        exploreMapItemId,
+      });
       setSubmitted(true);
       onSuccess?.(successMessage);
       setTimeout(() => {
@@ -178,9 +160,6 @@ export const JoinRequestModal = ({
                 {activity.slotsAvailable} / {activity.slotsTotal} slots available
               </p>
             </div>
-            {selectedPackage && pricePackages.length > 1 && (
-              <p className="text-xs text-gray-600 mt-1">Selected: {formatPackagePrice(selectedPackage)}</p>
-            )}
             {hostName && (
               <p className="text-xs text-gray-500 mt-1">
                 Hosted by {hostName}
@@ -261,7 +240,7 @@ export const JoinRequestModal = ({
               {submitLabel}
             </button>
             <p className="text-xs text-gray-500 text-center">
-              {isRsvp ? 'You\'ll show up in My trips right away.' : 'The host will review your request'}
+              {isRsvp ? 'You\'ll show up on Plan right away.' : 'The host will review your request'}
             </p>
           </form>
         </>
@@ -276,7 +255,7 @@ export const JoinRequestModal = ({
             {isRsvp ? "You're going!" : 'Request sent!'}
           </h3>
           <p className="text-gray-600">
-            {isRsvp ? 'See it in My trips.' : 'We\'ll let you know as soon as the host replies.'}
+            {isRsvp ? 'See it on Plan.' : 'We\'ll let you know as soon as the host replies.'}
           </p>
         </div>
       )}

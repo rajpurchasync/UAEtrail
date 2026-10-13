@@ -116,8 +116,7 @@ SEED_DATA=true docker compose exec -T api npm --workspace @uaetrail/api run seed
 
 Aliases: `FORCE_SEED=1` or `RUN_PROJECT_FORCE_SEED=1`.
 
-> **First admin credentials** (dev seed): `admin@uaetrails.app` / `Admin@12345`
-> **Change this password immediately** after first login.
+> **Dev seed:** set `DEMO_ACCOUNT_PASSWORD` in `.env` before seeding; first admin email is `admin@uaetrails.app` (shared demo password — see `DEV_RUN.md`). **Change it immediately** after first login.
 
 **Production:** the seed script never runs demo data when `NODE_ENV=production`. Create admin users through your normal signup/admin provisioning flow instead.
 
@@ -264,7 +263,7 @@ docker compose down -v
 SEED_DATA=true npm run seed
 ```
 
-Creates `admin@uaetrails.app` / `Admin@12345` — change immediately. Production blocks demo seed (`NODE_ENV=production`).
+Creates `admin@uaetrails.app` using `DEMO_ACCOUNT_PASSWORD` from `.env` — change immediately. Production blocks demo seed (`NODE_ENV=production`).
 
 ---
 

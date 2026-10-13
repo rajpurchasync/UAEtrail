@@ -3,7 +3,12 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Calendar, MapPin, MessageCircle } from 'lucide-react';
 import { activityHostName, activityHostUserId } from '../utils/hostLabels';
 import { WithdrawReason, withdrawReasonLabel } from '@uaetrail/shared-types';
-import { api, ActivityRequestView } from '../api/index';
+import type { ActivityRequestView } from '../api/types';
+import {
+  cancelJoinRequest,
+  fetchMeJoinRequest,
+  updateJoinRequestNote,
+} from '../hooks/activityJoinClientApi';
 import { MobileScreen } from '../components/layout/MobileScreen';
 import { GlassCard } from '../components/mobile/GlassCard';
 import { AppButton } from '../components/mobile/AppButton';
@@ -33,11 +38,10 @@ export const JoinRequestDetail = () => {
   useEffect(() => {
     if (!requestId) return;
     setLoading(true);
-    api
-      .getMeRequest(requestId)
-      .then((res) => {
-        setRequest(res.data);
-        setNote(res.data.note ?? '');
+    fetchMeJoinRequest(requestId)
+      .then((row) => {
+        setRequest(row);
+        setNote(row.note ?? '');
       })
       .catch((err) => setError(err instanceof Error ? err.message : 'Couldn\'t load this request — try again.'))
       .finally(() => setLoading(false));
@@ -49,7 +53,7 @@ export const JoinRequestDetail = () => {
     setError(null);
     setMessage(null);
     try {
-      await api.updateJoinRequestNote(request.activity.id, request.id, note.trim());
+      await updateJoinRequestNote(request.activity.id, request.id, note.trim());
       setMessage('Your note to the host was updated.');
       setRequest((r) => (r ? { ...r, note: note.trim() } : r));
     } catch (err) {
@@ -64,7 +68,7 @@ export const JoinRequestDetail = () => {
     setSaving(true);
     setError(null);
     try {
-      await api.cancelJoinRequest(request.activity.id, request.id, payload);
+      await cancelJoinRequest(request.activity.id, request.id, payload);
       navigate(MY_REQUESTS_PATH, { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Couldn\'t cancel your request — try again.');

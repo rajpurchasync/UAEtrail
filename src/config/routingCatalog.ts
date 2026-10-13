@@ -6,6 +6,7 @@
  */
 export {
   EXPLORE_MAP_PATH,
+  EXPLORE_DISCOVER_BROWSE_PATH,
   LIST_DISCOVERY_PATH,
   PARTICIPANT_JOIN_REDIRECT,
   joinAuthPath,
@@ -36,6 +37,7 @@ export {
   MEMBERSHIP_MARKETING_PATH,
   GROUPS_PATH,
   groupsPath,
+  groupsManagePath,
   NOTIFICATIONS_PATH,
   BUDDIES_PATH,
   CONTRIBUTIONS_PATH,
@@ -65,6 +67,12 @@ export {
   LEGACY_MY_REWARDS_PATH,
   LEGACY_REWARDS_PATH,
   isLegacyRewardsWalletPath,
+  PROFILE_HISTORY_PATH,
+  JOURNEY_MAP_PATH,
+  MY_TRIPS_PATH,
+  MY_TRIPS_MAP_PATH,
+  isProfileHistoryListPath,
+  isJourneyMapPath,
 } from './surfacePaths';
 
 export {
@@ -77,6 +85,7 @@ export {
   ADMIN_NOTIFICATIONS_PATH,
   ADMIN_AUDIT_LOG_PATH,
   ADMIN_SETTINGS_PATH,
+  ADMIN_AREAS_PATH,
 } from './adminSurfacePaths';
 
 export {
@@ -86,7 +95,13 @@ export {
   type OrganisationKind,
 } from '../member/organisationPaths';
 
-export { TRIPS_PATH, ACTIVITIES_PATH, HOST_CONSOLE_LINKS, ADMIN_LINKS } from '../constants';
+export {
+  PLAN_PATH,
+  TRIPS_PATH,
+  ACTIVITIES_PATH,
+  HOST_CONSOLE_LINKS,
+  ADMIN_LINKS,
+} from '../constants';
 
 export {
   placeDetailPath,
@@ -105,6 +120,7 @@ export {
   resolveOrganisationProfilePath,
   parseEntityRefFromPathname,
   exploreDemandMapItemPath,
+  exploreSeekingMapItemPath,
   EXPLORE_SHOPS_PATH,
   EXPLORE_SHOPS_LIST_PATH,
   type EntityRef,
@@ -120,6 +136,7 @@ export {
   exploreActivitiesPath,
   exploreOrganizePath,
   explorePeopleBrowsePath,
+  exploreDiscoverBrowsePath,
   explorePlanWithBuddyPath,
   detailBackPath,
   myActivitiesPath,
@@ -144,6 +161,7 @@ export {
   tripsPlansPath,
   tripsCompletedPath,
   tripsMapPath,
+  myTripsWishlistPath,
   tripsLegacyJoinedTabPath,
   tripsLegacyUpcomingSegmentPath,
-} from '../trips/tripsRouting';
+} from '../member-plan/tripsRouting';

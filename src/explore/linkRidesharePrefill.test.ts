@@ -1,26 +1,47 @@
 import { describe, expect, it } from 'vitest';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
-import { canOfferRideshareForDemandItem } from './linkActivityRideshareOffer';
+import { canOfferRideshareForDemandItem, canShowDemandLinkRideshareOffer } from './linkActivityRideshareOffer';
 import { buildRideshareDraftFromDemandMapItem } from './linkRidesharePrefill';
+import { seekingExploreMapItem } from './exploreMapItemFixtures';
 
 const demandItem = (overrides: Partial<ExploreMapItemDTO> = {}): ExploreMapItemDTO =>
-  ({
-    id: 'demand:int-1',
-    source: 'demand',
+  seekingExploreMapItem({
+    intentId: 'int-1',
     kind: 'hiking',
     title: 'Jebel hike crew',
-    path: '/explore',
-    latitude: 25.1,
-    longitude: 55.2,
     slotsTotal: 3,
-    participantIntentId: 'int-1',
     ...overrides,
-  }) as ExploreMapItemDTO;
+  });
 
 describe('demand carpool offer', () => {
   it('allows carpool offer for hiking demand', () => {
     expect(canOfferRideshareForDemandItem(demandItem())).toBe(true);
     expect(canOfferRideshareForDemandItem(demandItem({ kind: 'rideshare' }))).toBe(false);
+  });
+
+  it('requires wire canOfferTransport for demand link rideshare CTA', () => {
+    expect(canShowDemandLinkRideshareOffer(demandItem())).toBe(false);
+    expect(
+      canShowDemandLinkRideshareOffer(
+        demandItem({
+          viewerAccess: {
+            level: 'host',
+            exposure: 'full',
+            gateReason: null,
+            canAccessCrewSurfaces: true,
+            entitlements: {
+              isProMember: true,
+              canViewHostProfileBeforeJoin: true,
+              canViewFullBuddyRoster: true,
+              canOfferTransport: true,
+              canAddLinkedRide: true,
+              canMessageHostBeforeJoin: true,
+              buddyUserIdsOnActivity: [],
+            },
+          },
+        })
+      )
+    ).toBe(true);
   });
 
   it('prefills rideshare draft from demand map item', () => {

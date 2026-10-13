@@ -1,6 +1,6 @@
 import type { HostProfileType } from '@uaetrail/shared-types';
 import { isValidNationalPhone } from '../../utils/phone';
-import type { BecomeHostFormState } from './becomeHostForm';
+import type { ProProfileApplicationFormState } from './proProfileApplicationForm';
 
 export type HostFlowStepId =
   | 'name'
@@ -15,8 +15,11 @@ export type HostFlowStepId =
 
 export type HostFlowStep = 'pick' | HostFlowStepId;
 
-/** How the host wizard was opened — drives sheet title and submit label. */
-export type HostFlowIntent = 'become-host' | 'add-guide' | 'add-shop' | 'add-agency';
+/**
+ * How the Pro application wizard was opened — drives sheet title and submit label.
+ * Community Organize on the map does not use this flow (`canPublish` + profile complete).
+ */
+export type HostFlowIntent = 'pro-application' | 'add-guide' | 'add-shop' | 'add-agency';
 
 export const hostFlowIntentProfileType = (intent: HostFlowIntent): HostProfileType | null => {
   if (intent === 'add-shop') return 'shop';
@@ -29,10 +32,12 @@ export const parseHostFlowIntent = (value: string | null | undefined): HostFlowI
   if (value === 'add-shop') return 'add-shop';
   if (value === 'add-agency') return 'add-agency';
   if (value === 'add-guide') return 'add-guide';
-  return 'become-host';
+  // Legacy `/become-host?intent=…` query values (redirect lands on Pro Membership).
+  if (value === 'become-host' || value === 'become-organizer') return 'pro-application';
+  return 'pro-application';
 };
 
-/** Map wizard intent → `proMembershipPath` query (excludes legacy `become-host`). */
+/** Map wizard intent → `proMembershipPath` query (excludes type-picker `pro-application`). */
 export const proMembershipPathIntent = (
   intent: HostFlowIntent
 ): 'add-guide' | 'add-agency' | 'add-shop' | undefined => {
@@ -46,12 +51,30 @@ export const PROFILE_TYPE_OPTIONS: Array<{
   subtitle: string;
   emoji: string;
 }> = [
-  { key: 'individual', title: 'Guide', subtitle: 'Free & shared community activities', emoji: '👤' },
-  { key: 'agency', title: 'Agency', subtitle: 'Licensed business — paid activities', emoji: '🏢' },
-  { key: 'shop', title: 'Shop', subtitle: 'Physical store or online gear partner', emoji: '🛍️' },
+  {
+    key: 'individual',
+    title: 'Professional guide',
+    subtitle: 'Your guide profile — free & shared-cost outings (not paid)',
+    emoji: '👤',
+  },
+  {
+    key: 'agency',
+    title: 'Tour agency',
+    subtitle: 'Agency profile — team console & commercial trips',
+    emoji: '🏢',
+  },
+  {
+    key: 'shop',
+    title: 'Shop',
+    subtitle: 'Shop profile — retail details & partner presence',
+    emoji: '🛍️',
+  },
 ];
 
-export const getHostFlowSteps = (profileType: HostProfileType, form?: BecomeHostFormState): HostFlowStepId[] => {
+export const getHostFlowSteps = (
+  profileType: HostProfileType,
+  form?: ProProfileApplicationFormState
+): HostFlowStepId[] => {
   switch (profileType) {
     case 'individual':
       return ['name', 'about', 'photo', 'contact', 'details', 'review'];
@@ -121,7 +144,7 @@ export const hostFlowPickSubtitle = (intent: HostFlowIntent): string => {
 
 export const validateHostFlowStep = (
   step: HostFlowStepId,
-  form: BecomeHostFormState
+  form: ProProfileApplicationFormState
 ): string | null => {
   const profileType = form.hostProfileType;
   if (!profileType) return 'Pick how you\'d like to show up — guide, agency, or shop.';

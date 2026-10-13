@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Award,
+  CalendarDays,
   ExternalLink,
+  Info,
   Loader2,
   MapPin,
   Pencil,
@@ -10,7 +12,13 @@ import {
   Users,
 } from 'lucide-react';
 import { ReviewDTO, type ActivityDTO, type TenantPublicDTO } from '@uaetrail/shared-types';
-import { api, OrganisationDetails } from '../../api/index';
+import {
+  fetchOrganisationProfileBySlug,
+  fetchOrganisationReviews,
+  updateOrganisationDetails,
+  type HostDetails as OrganisationDetails,
+} from '../../hooks/organisationConsoleApi';
+import { updateMeProfile } from '../../hooks/memberProfileApi';
 import { ReviewSection } from '../ui/ReviewSection';
 import { SecureAvatar } from '../ui/SecureAvatar';
 import { ShareButton } from '../ui/ShareButton';
@@ -19,7 +27,7 @@ import { JsonLd } from '../seo/JsonLd';
 import { organizationSchema } from '../seo/schemas';
 import { HostMessageButton } from '../ui/HostMessageButton';
 import { EntityFollowControls } from '../profile/EntityFollowControls';
-import { HOST_ACTIVITIES_PATH, HOST_TEAM_PATH, SIGNIN_PATH } from '../../config/routingCatalog';
+import { PRO_MEMBERSHIP_PATH, SIGNIN_PATH, tripsPlansPath } from '../../config/routingCatalog';
 import { GlassCard } from '../mobile/GlassCard';
 import { AppButton } from '../mobile/AppButton';
 import { AppSelect } from '../ui/AppSelect';
@@ -31,6 +39,18 @@ import { COUNTRIES } from '../../constants';
 import { hostNotFoundLabel, hostProfileLabel, hostPublicProfileLabel, normalizeHostKind } from '../../host/hostCopy';
 import { detailBackPath } from '../../config/routingCatalog';
 import { tenantBrandPublicPath } from '../../utils/organisationLinks';
+import { ConsumerEntityTabBar } from '../mobile/ConsumerEntityTabBar';
+import {
+  ORGANISATION_PUBLIC_TAB_LABELS,
+  ORGANISATION_PUBLIC_TABS,
+  type OrganisationPublicDetailTabId,
+} from '../../organisation/organisationPublicDetailTab';
+
+const ORG_TAB_ICONS = {
+  about: Info,
+  outings: CalendarDays,
+  contact: Users,
+} as const;
 
 const EXPERIENCE_OPTIONS = [
   { value: '<1 year', label: 'Less than 1 year' },
@@ -53,6 +73,10 @@ interface OrganisationPublicProfileProps {
   backLabel?: string;
   /** When true (default), parent shell provides back/title — use GlassCard layout. */
   compact?: boolean;
+  /** Public storefront tab layout (S9) — only for `mode="public"` on `/guide` etc. */
+  entityTabLayout?: boolean;
+  publicDetailTab?: OrganisationPublicDetailTabId;
+  onPublicDetailTabChange?: (tab: OrganisationPublicDetailTabId) => void;
 }
 
 export const OrganisationPublicProfile = ({
@@ -61,6 +85,9 @@ export const OrganisationPublicProfile = ({
   backTo = detailBackPath('host'),
   backLabel = 'Back to map',
   compact = true,
+  entityTabLayout = false,
+  publicDetailTab = 'about',
+  onPublicDetailTabChange,
 }: OrganisationPublicProfileProps) => {
   const { user } = useAuth();
   const isOwner = mode === 'owner';
@@ -81,15 +108,14 @@ export const OrganisationPublicProfile = ({
   const loadProfile = () => {
     setLoading(true);
     setError(null);
-    api
-      .getOrganisationProfile(slug)
-      .then(async (tenantRes) => {
-        setTenant(tenantRes.data);
-        setActivities(tenantRes.data.activities);
-        setEditBio(tenantRes.data.ownerBio ?? '');
-        setEditDetails(tenantRes.data.hostDetails ?? tenantRes.data.organizerDetails ?? {});
-        const reviewsRes = await api.getOrganisationReviews(tenantRes.data.id).catch(() => ({ data: [] }));
-        setReviews(reviewsRes.data);
+    fetchOrganisationProfileBySlug(slug)
+      .then(async (tenantData) => {
+        setTenant(tenantData);
+        setActivities(tenantData.activities);
+        setEditBio(tenantData.ownerBio ?? '');
+        setEditDetails(tenantData.hostDetails ?? tenantData.organizerDetails ?? {});
+        const reviewList = await fetchOrganisationReviews(tenantData.id).catch(() => []);
+        setReviews(reviewList);
       })
       .catch(() => setError(`We couldn't find this ${hostProfileLabel(null).toLowerCase()}`))
       .finally(() => setLoading(false));
@@ -106,8 +132,8 @@ export const OrganisationPublicProfile = ({
     setSaveMessage(null);
     setSaveError(null);
     try {
-      await api.updateMeProfile({ bio: editBio.trim() || undefined });
-      await api.updateOrganisationDetails(editDetails);
+      await updateMeProfile({ bio: editBio.trim() || undefined });
+      await updateOrganisationDetails(editDetails);
       setSaveMessage('Public profile updated.');
       setEditing(false);
       loadProfile();
@@ -170,6 +196,18 @@ export const OrganisationPublicProfile = ({
     { label: 'Nationality', value: details.nationality },
     { label: 'Based in', value: details.residence },
   ].filter((item) => item.value);
+
+  const useEntityTabs = entityTabLayout && !isOwner && Boolean(onPublicDetailTabChange);
+  const activePublicTab = publicDetailTab;
+  const showAboutPanel = !useEntityTabs || activePublicTab === 'about';
+  const showOutingsPanel = !useEntityTabs || activePublicTab === 'outings';
+  const showContactPanel = !useEntityTabs || activePublicTab === 'contact';
+
+  const orgMobileTabs = ORGANISATION_PUBLIC_TABS.map((id) => ({
+    id,
+    label: ORGANISATION_PUBLIC_TAB_LABELS[id],
+    icon: ORG_TAB_ICONS[id],
+  }));
 
   return (
     <div className="animate-fade-up space-y-3">
@@ -290,6 +328,33 @@ export const OrganisationPublicProfile = ({
         )}
       </GlassCard>
 
+      {useEntityTabs && onPublicDetailTabChange ? (
+        <>
+          <ConsumerEntityTabBar
+            tabs={orgMobileTabs}
+            active={activePublicTab}
+            onChange={onPublicDetailTabChange}
+            ariaLabel="Host profile sections"
+          />
+          <nav className="hidden md:flex gap-6 border-b border-neutral-200/80 pb-0">
+            {ORGANISATION_PUBLIC_TABS.map((id) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => onPublicDetailTabChange(id)}
+                className={`py-3 text-sm font-semibold border-b-2 transition-colors ${
+                  activePublicTab === id
+                    ? 'border-emerald-600 text-emerald-800'
+                    : 'border-transparent text-neutral-500 hover:text-neutral-800'
+                }`}
+              >
+                {ORGANISATION_PUBLIC_TAB_LABELS[id]}
+              </button>
+            ))}
+          </nav>
+        </>
+      ) : null}
+
       {isOwner && editing && (
         <GlassCard padding>
           <h2 className="mb-4 text-base font-bold text-neutral-900">Edit public profile</h2>
@@ -391,7 +456,7 @@ export const OrganisationPublicProfile = ({
         </GlassCard>
       )}
 
-      {!editing && detailItems.length > 0 && (
+      {showAboutPanel && !editing && detailItems.length > 0 && (
         <GlassCard padding>
           <PublicProfileSectionHeading>About</PublicProfileSectionHeading>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -405,7 +470,7 @@ export const OrganisationPublicProfile = ({
         </GlassCard>
       )}
 
-      {!editing && details.certificates && (
+      {showAboutPanel && !editing && details.certificates && (
         <GlassCard padding>
           <h2 className="mb-2 flex items-center gap-2 text-base font-bold text-neutral-900">
             <Award className="h-4 w-4 text-emerald-600" /> Certificates
@@ -414,7 +479,7 @@ export const OrganisationPublicProfile = ({
         </GlassCard>
       )}
 
-      {!editing && details.notableHikes && (
+      {showAboutPanel && !editing && details.notableHikes && (
         <GlassCard padding>
           <h2 className="mb-2 flex items-center gap-2 text-base font-bold text-neutral-900">
             <MapPin className="h-4 w-4 text-emerald-600" /> Notable hikes
@@ -423,7 +488,7 @@ export const OrganisationPublicProfile = ({
         </GlassCard>
       )}
 
-      {tenant.team.length > 1 && (
+      {showContactPanel && tenant.team.length > 1 && (
         <GlassCard padding>
           <h2 className="mb-1 flex items-center gap-2 text-base font-bold text-neutral-900">
             <Users className="h-4 w-4 text-emerald-600" /> Team
@@ -443,13 +508,14 @@ export const OrganisationPublicProfile = ({
             ))}
           </div>
           {isOwner && (
-            <Link to={HOST_TEAM_PATH} className="mt-3 inline-block text-sm font-semibold text-emerald-700">
+            <Link to={PRO_MEMBERSHIP_PATH} className="mt-3 inline-block text-sm font-semibold text-emerald-700">
               Manage team →
             </Link>
           )}
         </GlassCard>
       )}
 
+      {showOutingsPanel && (
       <GlassCard padding className="space-y-3">
         <AccountSectionHeader title="Activities hosted" />
         {activities.length === 0 ? (
@@ -462,18 +528,21 @@ export const OrganisationPublicProfile = ({
           </div>
         )}
         {isOwner && (
-          <Link to={HOST_ACTIVITIES_PATH} className="inline-block text-sm font-semibold text-emerald-700">
+          <Link to={tripsPlansPath('hosted')} className="inline-block text-sm font-semibold text-emerald-700">
             Manage events →
           </Link>
         )}
       </GlassCard>
+      )}
 
+      {showContactPanel && (
       <ReviewSection
         targetType="tenant"
         targetId={tenant.id}
         reviews={reviews}
         onReviewSubmitted={(review) => setReviews((prev) => [review, ...prev])}
       />
+      )}
     </div>
   );
 };

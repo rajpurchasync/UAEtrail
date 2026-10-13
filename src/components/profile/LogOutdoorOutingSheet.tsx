@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { MemberGoalActivityFilter, MemberMapPinActivityType } from '@uaetrail/shared-types';
 import { ConsumerBottomSheet } from '../mobile/ConsumerBottomSheet';
-import { JourneyMapActivityTypePicker } from '../trips/JourneyMapActivityTypePicker';
-import { api } from '../../api/index';
+import { JourneyMapActivityTypePicker } from '../journey/JourneyMapActivityTypePicker';
+import { createMemberMapPin } from '../../hooks/memberJourneyMapApi';
 import { PERSONAL_MAP_LOG_DEFAULT } from '../../config/personalMapDefaults';
-import { tripsMapPath } from '../../trips/tripsRouting';
+import { tripsMapPath } from '../../member-plan/tripsRouting';
 import { defaultPinTypeForGoalFilter } from '../../utils/goalActivityAlignment';
 import { todayIsoDateLocal } from './goalCopy';
 
@@ -41,7 +41,7 @@ export const LogOutdoorOutingSheet = ({
     setSaving(true);
     setError(null);
     try {
-      await api.createPin({
+      await createMemberMapPin({
         kind: 'visited',
         latitude: PERSONAL_MAP_LOG_DEFAULT.latitude,
         longitude: PERSONAL_MAP_LOG_DEFAULT.longitude,

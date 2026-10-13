@@ -12,9 +12,13 @@ import { requireOrgRole } from '../../middleware/tenant.js';
 import { ORG_ACTIVITY_EDIT_ROLES, ORG_ACTIVITY_PUBLISH_ROLES } from '../../lib/org-permissions.js';
 import { validate } from '../../middleware/validate.js';
 import { notifyAdminsActivityPublished } from '../../services/platform-admin-events.js';
+import { scheduleSideEffect } from '../../lib/schedule-side-effect.js';
 import { awardPoints } from '../../services/rewards.js';
 import { findAuthUserById } from '../../lib/auth-users.js';
-import { ensureActivityGroupChat } from '../../services/activity-group-chat.js';
+import {
+  ensureActivityGroupChat,
+  syncActivityGroupChatWallPolicyFromActivity,
+} from '../../services/activity-group-chat.js';
 import { mapActivityIdsToGroupChatIds } from '../../lib/social-groups-store.js';
 import {
   assertRideshareActivityFields,
@@ -49,11 +53,8 @@ import { registerHostTeamRoutes } from './registerHostTeamRoutes.js';
 import { registerHostActivityParticipantRoutes } from './registerHostActivityParticipantRoutes.js';
 import { idParamSchema } from './host-route-schemas.js';
 import { parseLocalDateTime } from '../../lib/datetime.js';
-import {
-  activityPricePackagesSchema,
-  normalizeActivityPricing,
-  parseStoredPricePackages,
-} from '../../lib/activity-pricing.js';
+import { normalizeActivityPricing } from '../../lib/activity-pricing.js';
+import { resolveMemberHostStatus } from '../../services/member-host-status.js';
 import {
   notifyParticipantsOfScheduleChange,
   scheduleInstantChanged,
@@ -64,9 +65,11 @@ import {
   resolveActivityLocation,
 } from '../../services/host-activity.js';
 import { assertActivityPricingAllowed } from '../../domain/activity-pricing.js';
+import { resolveOwnedProfileType } from '../../lib/tenant-store.js';
 import { assertActivityJoinInstructions } from '../../domain/activity-join-instructions.js';
 import { resolveJoinMode } from '../../domain/activity-join-mode.js';
-import { resolveParticipationModeForJoinMode } from '@uaetrail/shared-types';
+import { resolveParticipationModeForJoinMode, resolvePublishingProfileKind } from '@uaetrail/shared-types';
+import { inferTenantPublishingPurpose } from '../../domain/tenant-publishing.js';
 
 const optionalHttpUrlSchema = z
   .string()
@@ -135,12 +138,11 @@ const eventCreateSchema = z.object({
   requirements: z.array(z.string()).default([]),
   joinMode: z.enum(['open', 'private']).optional(),
   participationMode: z.enum(['rsvp', 'approval']).optional(),
+  groupChatPostPolicy: z.enum(['all_participants', 'host_only']).optional(),
   price: z.number().int().min(0).default(0),
-  pricePackages: activityPricePackagesSchema.optional(),
   capacity: z.number().int().positive(),
   images: z.array(z.string()).default([]),
   bannerUrl: optionalHttpUrlSchema,
-  signupUrl: optionalHttpUrlSchema,
   hostId: z.string().optional(),
   pricingMode: z.enum(['free', 'shared', 'paid']).optional(),
   outingCategory: outingCategorySchema.optional(),
@@ -225,21 +227,26 @@ hostActivitiesRouter.post('/', requireOrgRole(ORG_ACTIVITY_EDIT_ROLES), validate
     await assertActivityHost(tenantId, hostId, tenant, { platformAdmin });
 
     const countryCode = tenant.countryCode ?? location.countryCode ?? 'AE';
+    const hostStatus = await resolveMemberHostStatus(req.auth!.userId);
+    const publishingProfileKind = resolvePublishingProfileKind({
+      ownedType: resolveOwnedProfileType(tenant),
+      publishingTier: inferTenantPublishingPurpose(tenant),
+    });
     const pricing = normalizeActivityPricing({
       price: body.price,
-      pricePackages: body.pricePackages,
       pricingMode: body.pricingMode,
     });
     const isRideshare = body.activityType === 'rideshare';
     assertActivityPricingAllowed({
-      tenantType: tenant.type,
-      pricingMode: body.pricingMode,
-      pricing,
+      hostTiers: hostStatus.hostTiers,
+      publishingProfileKind,
+      pricingMode: body.pricingMode ?? pricing.pricingMode,
+      priceAed: pricing.priceAed,
       sharedAmountAed: isRideshare
         ? body.rideshareFree === false
           ? body.ridesharePriceAed ?? body.price ?? 0
           : null
-        : body.pricingMode === 'shared'
+        : (body.pricingMode ?? pricing.pricingMode) === 'shared'
           ? pricing.priceAed
           : null,
     });
@@ -290,15 +297,15 @@ hostActivitiesRouter.post('/', requireOrgRole(ORG_ACTIVITY_EDIT_ROLES), validate
       }),
       images: body.images,
       bannerUrl: body.bannerUrl ?? null,
-      signupUrl: body.signupUrl ?? null,
       priceAed: pricing.priceAed,
-      pricePackages: pricing.pricePackages,
+      pricePackages: [],
       pricingMode: pricing.pricingMode,
       capacity: body.capacity,
       outingCategory: body.outingCategory ?? null,
       outingTopic: body.outingTopic ?? null,
       linkedActivityId: body.linkedActivityId ?? null,
       linkedRideshareActivityId: body.linkedRideshareActivityId ?? null,
+      groupChatPostPolicy: body.groupChatPostPolicy ?? null,
     });
 
     await createAuditLog({
@@ -368,33 +375,39 @@ hostActivitiesRouter.patch('/:id', requireOrgRole(ORG_ACTIVITY_EDIT_ROLES), vali
       scheduleInstantChanged(existing.startAt, nextStartAt, countryCode);
 
     const pricing =
-      body.price !== undefined || body.pricePackages !== undefined
+      body.price !== undefined || body.pricingMode !== undefined
         ? normalizeActivityPricing({
             price: body.price ?? existing.priceAed,
-            pricePackages: body.pricePackages ?? parseStoredPricePackages(existing.pricePackages),
             pricingMode: body.pricingMode ?? existing.pricingMode ?? undefined,
           })
         : null;
 
     if (pricing) {
       const tenant = await findTenantById(tenantId);
-      if (tenant) {
-        const isRideshare =
-          body.activityType === 'rideshare' ||
-          String(existing.activityType ?? '').toLowerCase() === 'rideshare';
-        assertActivityPricingAllowed({
-          tenantType: tenant.type,
-          pricingMode: body.pricingMode ?? pricing.pricingMode,
-          pricing,
-          sharedAmountAed: isRideshare
-            ? body.rideshareFree === false
-              ? body.ridesharePriceAed ?? body.price ?? existing.ridesharePriceAed ?? 0
-              : null
-            : (body.pricingMode ?? pricing.pricingMode) === 'shared'
-              ? pricing.priceAed
-              : null,
-        });
+      if (!tenant) {
+        throw new ApiError(404, 'tenant_not_found', 'Host organization not found.');
       }
+      const hostStatus = await resolveMemberHostStatus(req.auth!.userId);
+      const publishingProfileKind = resolvePublishingProfileKind({
+        ownedType: resolveOwnedProfileType(tenant),
+        publishingTier: inferTenantPublishingPurpose(tenant),
+      });
+      const isRideshare =
+        body.activityType === 'rideshare' ||
+        String(existing.activityType ?? '').toLowerCase() === 'rideshare';
+      assertActivityPricingAllowed({
+        hostTiers: hostStatus.hostTiers,
+        publishingProfileKind,
+        pricingMode: body.pricingMode ?? pricing.pricingMode,
+        priceAed: pricing.priceAed,
+        sharedAmountAed: isRideshare
+          ? body.rideshareFree === false
+            ? body.ridesharePriceAed ?? body.price ?? existing.ridesharePriceAed ?? 0
+            : null
+          : (body.pricingMode ?? pricing.pricingMode) === 'shared'
+            ? pricing.priceAed
+            : null,
+      });
     }
 
     if (existing.status === ActivityStatus.PUBLISHED) {
@@ -461,11 +474,10 @@ hostActivitiesRouter.patch('/:id', requireOrgRole(ORG_ACTIVITY_EDIT_ROLES), vali
       })(),
       images: body.images,
       bannerUrl: body.bannerUrl,
-      signupUrl: body.signupUrl,
       ...(pricing
         ? {
             priceAed: pricing.priceAed,
-            pricePackages: pricing.pricePackages,
+            pricePackages: [],
             pricingMode: pricing.pricingMode,
           }
         : body.price !== undefined
@@ -478,7 +490,12 @@ hostActivitiesRouter.patch('/:id', requireOrgRole(ORG_ACTIVITY_EDIT_ROLES), vali
       outingTopic: body.outingTopic,
       linkedActivityId: body.linkedActivityId,
       linkedRideshareActivityId: body.linkedRideshareActivityId,
+      groupChatPostPolicy: body.groupChatPostPolicy,
     });
+
+    if (body.groupChatPostPolicy !== undefined) {
+      await syncActivityGroupChatWallPolicyFromActivity(id);
+    }
 
     await createAuditLog({
       actorId: req.auth!.userId,
@@ -614,14 +631,17 @@ hostActivitiesRouter.post('/:id/publish', requireOrgRole(ORG_ACTIVITY_PUBLISH_RO
       tenantId
     });
     const hostUserId = updated.hostId ?? updated.createdById;
-    void ensureActivityGroupChat(updated.id).catch(() => undefined);
+    scheduleSideEffect(ensureActivityGroupChat(updated.id), 'host.publish_ensure_group_chat');
     if (hostUserId) {
-      void awardPoints({
-        userId: hostUserId,
-        action: RewardAction.ACTIVITY_PUBLISHED,
-        referenceId: updated.id,
-        label: `Published activity: ${updated.title}`,
-      }).catch(() => undefined);
+      scheduleSideEffect(
+        awardPoints({
+          userId: hostUserId,
+          action: RewardAction.ACTIVITY_PUBLISHED,
+          referenceId: updated.id,
+          label: `Published activity: ${updated.title}`,
+        }),
+        'host.publish_rewards'
+      );
     }
     const hostUser = hostUserId ? await findAuthUserById(hostUserId) : null;
     const hostLabel = hostUser?.profile?.displayName?.trim() || hostUser?.email || 'A host';

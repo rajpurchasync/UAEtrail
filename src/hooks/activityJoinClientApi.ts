@@ -1,0 +1,52 @@
+import type { WithdrawReason } from '@uaetrail/shared-types';
+import { api, type ActivityRequestView } from '../api/index';
+
+export type { ActivityRequestView };
+
+export const fetchMeJoinRequest = async (requestId: string): Promise<ActivityRequestView> => {
+  const res = await api.getMeRequest(requestId);
+  return res.data;
+};
+
+export const fetchMyJoinRequests = async (): Promise<ActivityRequestView[]> => {
+  const res = await api.getMeRequests();
+  return res.data;
+};
+
+export const updateJoinRequestNote = async (
+  activityId: string,
+  requestId: string,
+  note: string
+): Promise<void> => {
+  await api.updateJoinRequestNote(activityId, requestId, note);
+};
+
+export const cancelJoinRequest = async (
+  activityId: string,
+  requestId: string,
+  payload: { reason: WithdrawReason; message?: string }
+): Promise<void> => {
+  await api.cancelJoinRequest(activityId, requestId, payload);
+};
+
+export type ActivityJoinSubmitResult = {
+  successMessage: string;
+};
+
+/** RSVP or approval join request — shared by join modal (R8.1: no api in components). */
+export const submitActivityJoin = async (
+  activityId: string,
+  input: { participationMode: 'rsvp' | 'approval' | string; note?: string }
+): Promise<ActivityJoinSubmitResult> => {
+  if (input.participationMode === 'rsvp') {
+    await api.rsvpActivity(activityId);
+    return { successMessage: "You're going! Find it on your Plan." };
+  }
+
+  const res = await api.createJoinRequest(activityId, input.note?.trim() || undefined);
+  const successMessage =
+    res.data.waitlisted || res.data.status === 'waitlisted'
+      ? "Added to the waitlist — we'll let you know when a spot opens."
+      : 'Request sent! The host will get back to you soon.';
+  return { successMessage };
+};

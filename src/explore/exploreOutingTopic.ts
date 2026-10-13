@@ -1,17 +1,13 @@
-import type { ExploreMapItemDTO, OutingTopic } from '@uaetrail/shared-types';
+import {
+  mapItemMatchesOutingTopic,
+  parseOutingTopic,
+  type ExploreMapItemDTO,
+  type OutingTopic,
+} from '@uaetrail/shared-types';
 import type { ExploreBuddySubtypeKey } from './exploreBuddySubtype';
 import type { MapFilterKey } from './routing';
 
 export type ExploreOutingTopicKey = 'all' | OutingTopic;
-
-const OUTING_TOPIC_KEYS = new Set<string>([
-  'climbing',
-  'trail_run',
-  'road_run',
-  'swim',
-  'workshop',
-  'community',
-]);
 
 export const OUTING_TOPIC_PILLS: ReadonlyArray<{ key: ExploreOutingTopicKey; label: string }> = [
   { key: 'all', label: 'All' },
@@ -27,7 +23,8 @@ export const parseExploreOutingTopic = (
   buddySubtype: ExploreBuddySubtypeKey
 ): ExploreOutingTopicKey => {
   if (mapFilter !== 'others' || buddySubtype !== 'activities') return 'all';
-  if (value && OUTING_TOPIC_KEYS.has(value)) return value as OutingTopic;
+  const parsed = parseOutingTopic(value);
+  if (parsed) return parsed;
   return 'all';
 };
 
@@ -45,6 +42,5 @@ export const matchesOutingTopicFilter = (
   topic: ExploreOutingTopicKey
 ): boolean => {
   if (topic === 'all') return true;
-  if (item.outingCategory !== 'activities') return false;
-  return item.outingTopic === topic;
+  return mapItemMatchesOutingTopic(item, topic);
 };

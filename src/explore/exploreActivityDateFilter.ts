@@ -81,6 +81,28 @@ export const exploreActivityDatePresetLabel = (preset: ExploreActivityDatePreset
 export const serializeExploreActivityDatePreset = (preset: ExploreActivityDatePreset): string | null =>
   preset === 'anyday' ? null : preset;
 
+/** Inclusive ISO range for Explore People availability (`GET /explore/people/availability`). */
+export const exploreActivityDatePresetToInclusiveRange = (
+  preset: ExploreActivityDatePreset
+): { from: string; to: string } => {
+  const today = todayIso();
+  switch (preset) {
+    case 'today':
+      return { from: today, to: today };
+    case 'tomorrow': {
+      const day = addDaysIso(today, 1);
+      return { from: day, to: day };
+    }
+    case 'week':
+      return { from: startOfWeekIso(today), to: endOfWeekIso(today) };
+    case 'month':
+      return { from: startOfMonthIso(today), to: endOfMonthIso(today) };
+    case 'anyday':
+    default:
+      return { from: today, to: addDaysIso(today, 13) };
+  }
+};
+
 /** When set, scheduled activities/demand must match; venues and shops stay visible. */
 export const matchesActivityDateFilter = (
   item: ExploreMapItemDTO,

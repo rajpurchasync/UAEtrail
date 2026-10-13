@@ -69,6 +69,47 @@ describe('doc coherence (Tier 1)', () => {
     expect(system).toMatch(/\/list/);
   });
 
+  it('activity detail program doc is indexed with status', () => {
+    const plan = readFileSync(
+      join(DOCS, 'experiment/activity-detail-tabs-implementation-plan.md'),
+      'utf8'
+    );
+    expect(plan).toMatch(/\*\*Status:\*\* `(in_progress|complete)`/);
+    expect(plan).toMatch(/activityDetailAcceptance\.test\.ts/);
+    expect(plan).toMatch(/## 6\. Dynamic CTAs/);
+    expect(plan).toMatch(/#### E — Host, published, \*\*with joiners\*\*/);
+    const index = readFileSync(join(DOCS, 'DOCS_INDEX.md'), 'utf8');
+    expect(index).toMatch(/activity-detail-tabs-implementation-plan/);
+  });
+
+  it('member plan P0 ops defers to SEEKING_STORAGE_RUNBOOK (no re-implement)', () => {
+    const plan = readFileSync(
+      join(DOCS, 'experiment/member-surfaces-implementation-plan.md'),
+      'utf8'
+    );
+    expect(plan).toMatch(/Do not re-implement/);
+    expect(plan).toMatch(/SEEKING_STORAGE_RUNBOOK/);
+  });
+
+  it('Pro storefront discovery: shop pin, guide/agency via profile surfaces', () => {
+    const canon = readFileSync(join(DOCS, 'DOMAIN_CANONICALS.md'), 'utf8');
+    const domain = readFileSync(join(DOCS, 'DOMAIN.md'), 'utf8');
+    expect(canon).toMatch(/Pro account storefronts/);
+    expect(canon).toMatch(/Do not.*emit.*agency.*explore map/i);
+    expect(domain).toMatch(/No agency\/guide map pins/);
+    expect(domain).toMatch(/Shops.*map pin/i);
+  });
+
+  it('geography canon: Area hub, Place kinds, activity via place.areaId', () => {
+    const canon = readFileSync(join(DOCS, 'DOMAIN_CANONICALS.md'), 'utf8');
+    const domain = readFileSync(join(DOCS, 'DOMAIN.md'), 'utf8');
+    expect(canon).toMatch(/### 12\.1 Geography/);
+    expect(canon).toMatch(/place\.areaId/);
+    expect(canon).toMatch(/No `activity\.areaId` on write/);
+    expect(canon).toMatch(/PlaceKind/);
+    expect(domain).toMatch(/activity\.locationId.*place\.areaId/);
+  });
+
   it('CREATE_FLOW defers to NORTHSTAR and MEMBER_MODEL for gates', () => {
     const create = readFileSync(join(DOCS, 'CREATE_FLOW.md'), 'utf8');
     expect(create).toMatch(/NORTHSTAR/);
@@ -86,5 +127,25 @@ describe('doc coherence (Tier 1)', () => {
     const ia = readFileSync(join(DOCS, 'experiment/consumer-mobile-ia.md'), 'utf8');
     expect(ia).toMatch(/\/profile\/badges/);
     expect(ia).not.toMatch(/\/profile\/badges` redirect to \*\*`\/profile`\*\*/);
+  });
+
+  it('consumer detail surfaces plan records eng-complete S9 status', () => {
+    const plan = readFileSync(
+      join(DOCS, 'experiment/consumer-detail-surfaces-plan.md'),
+      'utf8'
+    );
+    expect(plan).toMatch(/\*\*Status:\*\* Eng complete/);
+    expect(plan).toMatch(/detail-surface-lineage-contract/);
+    expect(plan).toMatch(/consumerDetailQaMatrixGuard/);
+    expect(plan).toMatch(/consumerDetailAntiDriftGuard/);
+    expect(plan).toMatch(/0\.2 \/ 0\.7 waived.*no Figma/i);
+    expect(plan).not.toMatch(/Figma entity template.*Pending/i);
+  });
+
+  it('DOCS_INDEX Tier 3 reflects S9 eng complete (not not-started)', () => {
+    const index = readFileSync(join(DOCS, 'DOCS_INDEX.md'), 'utf8');
+    expect(index).toMatch(/consumer detail shells \(S9 eng complete/i);
+    expect(index).not.toMatch(/consumer detail shells \(phased, not started\)/i);
+    expect(index).toMatch(/consumer-detail:qa-routes/);
   });
 });

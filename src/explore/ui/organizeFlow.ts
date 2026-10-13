@@ -1,5 +1,7 @@
-import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
+import type { ActivityGroupChatPostPolicy, ExploreMapItemDTO, HostTierFlags } from '@uaetrail/shared-types';
 import {
+  allowedActivityPricingModes,
+  type PublishingProfileKind,
   exploreMapKindToPlanMapKind,
   resolveOrganizeCreateKindFromDemandMapItem,
 } from '@uaetrail/shared-types';
@@ -9,6 +11,7 @@ import {
   buildParticipationRequirementLines,
 } from '../../utils/activityPublishPayload';
 import { OFFLINE_PAYMENT_NOTE } from '../explorePriceLabel';
+import { validateOrganizePublishArea } from '../organizePublishArea';
 import type { ParticipationMode } from '../compose';
 
 export type { ParticipationMode } from '../compose';
@@ -128,6 +131,8 @@ export type CreateActivityDraft = {
   limitedWomenOnly: boolean;
   limitedFamilyOnly: boolean;
   limitedMinAgeEnabled: boolean;
+  /** Crew group chat — who can post after publish (synced to activity group wall). */
+  groupChatPostPolicy: ActivityGroupChatPostPolicy;
 };
 
 export const resolveLimitedAudienceAccess = (draft: Pick<
@@ -336,8 +341,8 @@ export const locationPickerHint = (
 export const defaultCapacityForKind = (kind: CreateActivityKind): number =>
   kind === 'rideshare' ? 4 : 6;
 
-/** Prefill a host publish draft from a community request map item. */
-export const createDraftFromDemand = (item: ExploreMapItemDTO): CreateActivityDraft => {
+/** Prefill a host publish draft from a seeking map item (Find post / legacy demand wire). */
+export const createDraftFromSeekingMapItem = (item: ExploreMapItemDTO): CreateActivityDraft => {
   const kind = resolveOrganizeCreateKindFromDemandMapItem({
     outingCategory: item.outingCategory ?? null,
     kind: exploreMapKindToPlanMapKind(item.kind),
@@ -434,6 +439,7 @@ export const emptyCreateActivityDraft = (): CreateActivityDraft => ({
   limitedWomenOnly: false,
   limitedFamilyOnly: false,
   limitedMinAgeEnabled: false,
+  groupChatPostPolicy: 'all_participants',
 });
 
 export const todayIso = (): string => {
@@ -625,7 +631,10 @@ export const validateDraftStep = (step: CreateFlowStepId, draft: CreateActivityD
   if (draft.genericBuddy && step === 'title' && !draft.title.trim()) {
     return 'Tell us what you want to do.';
   }
-  return validateOrganizeCatalogStep(draft.kind, step, draft);
+  const catalogErr = validateOrganizeCatalogStep(draft.kind, step, draft);
+  if (catalogErr) return catalogErr;
+  if (step === 'publish') return validateOrganizePublishArea(draft);
+  return null;
 };
 
 export const ACTIVITY_ORGANIZE_TOPIC_OPTIONS: Array<{
@@ -670,14 +679,10 @@ export const resolveRideshareVehicleLabel = (value: VehicleAccess): string =>
   RIDESHARE_VEHICLE_OPTIONS.find((option) => option.value === value)?.title ?? value;
 
 export const priceModeOptions = (
-  kind: CreateActivityKind,
-  canHostPaidActivities = false
-): PriceMode[] => {
-  if (kind === 'rideshare') {
-    return canHostPaidActivities ? ['free', 'shared', 'paid'] : ['free', 'shared'];
-  }
-  return canHostPaidActivities ? ['free', 'shared', 'paid'] : ['free', 'shared'];
-};
+  _kind: CreateActivityKind,
+  hostTiers: HostTierFlags,
+  publishingProfileKind?: PublishingProfileKind | null
+): PriceMode[] => allowedActivityPricingModes(hostTiers, { publishingProfileKind });
 
 export const priceModeLabel = (mode: PriceMode, kind: CreateActivityKind): string => {
   if (mode === 'free') return 'Free';

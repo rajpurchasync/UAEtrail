@@ -10,7 +10,11 @@ import { MobileMenuButton } from '../../components/layout/MobileMenu';
 
 import type { ExploreSearchScopeCounts, ExploreSearchScopeKey } from '../../explore/exploreBrowseTaxonomy';
 
-import { BROWSE_LIST_MAP_CTA, LIST_DISCOVER_LOOKING_PROMPT } from '../browseListCopy';
+import {
+  BROWSE_LIST_FULL_SCREEN_CTA,
+  BROWSE_LIST_MAP_CTA,
+  LIST_DISCOVER_LOOKING_PROMPT,
+} from '../browseListCopy';
 
 import { LIST_CATEGORY_PAGE_TITLE } from '../listCategoryCopy';
 
@@ -59,6 +63,8 @@ interface ListDiscoveryHeaderProps {
 
   showMapLink?: boolean;
 
+  fullScreenDiscoverHref?: string | null;
+
   onCloseMapOverlay?: () => void;
 
   closeVariant?: 'collapse' | 'dismiss';
@@ -101,6 +107,8 @@ export const ListDiscoveryHeader = ({
   searchActiveFiltersRow = null,
 
   showMapLink = false,
+
+  fullScreenDiscoverHref = null,
 
   onCloseMapOverlay,
 
@@ -192,7 +200,7 @@ export const ListDiscoveryHeader = ({
 
       compactTop
 
-      hideMapLink={isHome || dedicatedCategoryChrome || embeddedOnExplore ? true : !showMapLink}
+      hideMapLink={isHome || dedicatedCategoryChrome ? true : !showMapLink}
 
       className="!mt-0"
 
@@ -298,18 +306,8 @@ export const ListDiscoveryHeader = ({
 
               <div className="flex items-center justify-end">
 
-                {embeddedOnExplore ? (
-
-                  closeButton
-
-                ) : user ? (
-
+                {embeddedOnExplore ? closeButton : (
                   <MobileMenuButton tone="default" showOnDesktop className={LIST_CHROME.menuButton} />
-
-                ) : (
-
-                  <span className="w-10 shrink-0" aria-hidden />
-
                 )}
 
               </div>
@@ -317,6 +315,15 @@ export const ListDiscoveryHeader = ({
             </div>
 
             {searchField}
+
+            {embeddedOnExplore && fullScreenDiscoverHref ? (
+              <Link
+                to={fullScreenDiscoverHref}
+                className="block text-center text-xs font-semibold text-emerald-700 hover:text-emerald-800"
+              >
+                {BROWSE_LIST_FULL_SCREEN_CTA}
+              </Link>
+            ) : null}
 
           </>
 

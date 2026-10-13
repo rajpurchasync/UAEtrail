@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildExploreCardModel } from '../explore/exploreCardModel';
+import { buildDiscoveryCardViewModelCard } from '../discovery';
 import { HOME_HERO_OG_PATH } from '../config/seo';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import {
@@ -86,7 +86,7 @@ describe('browsePosterCover', () => {
     };
 
     const venueCovers = buildVenueCoverByLocationId([venue]);
-    const card = enrichBrowsePosterCover(buildExploreCardModel(activity), venueCovers);
+    const card = enrichBrowsePosterCover(buildDiscoveryCardViewModelCard(activity), venueCovers);
 
     expect(resolveBrowsePosterCoverUrl(card)).toBe('/uploads/wadi-shawka.jpg');
   });

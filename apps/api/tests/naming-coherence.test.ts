@@ -42,6 +42,19 @@ describe('naming coherence (API)', () => {
     expect(buddyNotif).not.toMatch(/fromUserId:\s*input/);
   });
 
+  it('user search endpoints escape regex via regex-search helper', () => {
+    const searchStores = [
+      'lib/auth-users.ts',
+      'lib/shop-store.ts',
+      'lib/social-groups-store.ts',
+      'lib/admin-store.ts',
+    ];
+    for (const rel of searchStores) {
+      const content = readFileSync(join(API_SRC, rel), 'utf8');
+      expect(content, rel).toMatch(/normalizeSearchRegexInput|escapeRegexLiteral/);
+    }
+  });
+
   it('social notification services set actorUserId on actionable payloads', () => {
     const socialNotif = readFileSync(join(API_SRC, 'services', 'social-notifications.ts'), 'utf8');
     const metaBlocks = socialNotif.match(/meta:\s*\{[\s\S]*?\n\s*\},/g) ?? [];

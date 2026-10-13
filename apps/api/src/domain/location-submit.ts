@@ -11,6 +11,8 @@ export const locationSubmitBodySchema = z.object({
   countryCode: z.string().length(2).default('AE'),
   emirate: z.string().min(2).max(80).optional(),
   region: z.string().min(2).max(80),
+  /** Admin-registered area — required for every place row. */
+  areaId: z.string().min(1).max(80),
   areaLabel: z.string().min(2).max(120).optional(),
   childFriendly: z.boolean().optional(),
   accessibility: z.enum(['car-accessible', 'remote']).optional(),

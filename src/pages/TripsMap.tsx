@@ -9,22 +9,27 @@ import type {
   JourneyMapFilterCategory,
 } from '@uaetrail/shared-types';
 import { PageMeta } from '../components/seo/PageMeta';
-import { TripsJourneyMap, type JourneyMapMarker } from '../components/trips/TripsJourneyMap';
-import { JourneyMapPinSheet, type JourneyMapSheetState } from '../components/trips/JourneyMapPinSheet';
-import { JourneyMapFilterScroll } from '../components/trips/JourneyMapFilterScroll';
-import { JourneyMapListSheet } from '../components/trips/JourneyMapListSheet';
+import { JourneyMap, type JourneyMapMarker } from '../components/journey/JourneyMap';
+import { JourneyMapPinSheet, type JourneyMapSheetState } from '../components/journey/JourneyMapPinSheet';
+import { JourneyMapFilterScroll } from '../components/journey/JourneyMapFilterScroll';
+import { JourneyMapListSheet } from '../components/journey/JourneyMapListSheet';
 import { MobileBackButton } from '../components/mobile/MobileBackButton';
 import { FloatingActionButton } from '../components/mobile/FloatingActionButton';
-import { shareJourneyMapSummary } from '../components/trips/journeyMapShare';
-import { memberJourneyMapApi } from '../api/domains/memberJourneyMap';
-import { tripsPlansPath } from '../trips/tripsRouting';
+import { shareJourneyMapSummary } from '../components/journey/journeyMapShare';
+import {
+  createMemberMapPin,
+  deleteMemberMapPin,
+  fetchMemberJourneyMap,
+  updateMemberMapPin,
+} from '../hooks/memberJourneyMapApi';
+import { tripsCompletedPath } from '../member-plan/tripsRouting';
 import { TripsMainTabs } from '../components/trips/TripsMainTabs';
 import {
   filterJourneyMapEntries,
   mappableJourneyMapEntries,
   parseJourneyMapFilter,
-} from '../trips/journeyMapFilters';
-import { resolveJourneyPinStyle } from '../trips/journeyMapPinStyle';
+} from '../member-plan/journeyMapFilters';
+import { resolveJourneyPinStyle } from '../member-plan/journeyMapPinStyle';
 
 const emptyStats = (): MemberJourneyMapStatsDTO => ({
   totalPins: 0,
@@ -69,10 +74,10 @@ export const TripsMap = () => {
   const reload = useCallback(async () => {
     setError(null);
     try {
-      const res = await memberJourneyMapApi.getJourneyMap();
-      setPins(res.data.pins);
-      setEntries(res.data.entries ?? []);
-      setStats(res.data.stats);
+      const data = await fetchMemberJourneyMap();
+      setPins(data.pins);
+      setEntries(data.entries ?? []);
+      setStats(data.stats);
     } catch {
       setError('Could not load your map. Try again.');
     } finally {
@@ -144,7 +149,7 @@ export const TripsMap = () => {
     setSaving(true);
     setError(null);
     try {
-      await memberJourneyMapApi.createPin({
+      await createMemberMapPin({
         kind: input.kind,
         latitude: sheet.lat,
         longitude: sheet.lng,
@@ -175,7 +180,7 @@ export const TripsMap = () => {
     setSaving(true);
     setError(null);
     try {
-      await memberJourneyMapApi.updatePin(pinId, input);
+      await updateMemberMapPin(pinId, input);
       setSheet({ type: 'idle' });
       await reload();
     } catch {
@@ -189,7 +194,7 @@ export const TripsMap = () => {
     setSaving(true);
     setError(null);
     try {
-      await memberJourneyMapApi.deletePin(pinId);
+      await deleteMemberMapPin(pinId);
       setSheet({ type: 'idle' });
       await reload();
     } catch {
@@ -225,7 +230,7 @@ export const TripsMap = () => {
 
       <header className="z-[100] glass-header flex shrink-0 flex-col gap-2 px-4 pb-2 pt-safe-plus-2">
         <div className="flex items-center gap-2">
-          <MobileBackButton fallbackTo={tripsPlansPath()} label="Trips" className="shrink-0" />
+          <MobileBackButton fallbackTo={tripsCompletedPath()} label="History" className="shrink-0" />
           <h1 className="min-w-0 flex-1 truncate text-center text-[17px] font-semibold text-neutral-900">
             My Map
           </h1>
@@ -255,7 +260,7 @@ export const TripsMap = () => {
       ) : null}
 
       <div className="relative z-0 min-h-0 flex-1">
-        <TripsJourneyMap
+        <JourneyMap
           className="absolute inset-0"
           markers={mapMarkers}
           pendingLatLng={pendingLatLng}

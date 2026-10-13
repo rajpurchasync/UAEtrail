@@ -7,11 +7,16 @@
       "label": "Discovery",
       "apiFiles": [
         "apps/api/src/lib/explore-map.ts",
-        "apps/api/src/lib/explore-map-viewer-access.ts"
+        "apps/api/src/lib/explore-map-base.ts",
+        "apps/api/src/lib/explore-map-vnext.ts",
+        "apps/api/src/lib/explore-map-route.ts",
+        "apps/api/src/lib/explore-map-viewer-access.ts",
+        "apps/api/src/lib/discovery-card-projection.ts",
+        "apps/api/src/lib/activity-engagement-policy-input.ts"
       ],
       "routeRegistrars": ["apps/api/src/routes/user/registerPublicActivityRoutes.ts"],
       "feDomains": ["src/api/domains/explore.ts"],
-      "feRoots": ["src/explore", "src/access", "src/list"]
+      "feRoots": ["src/explore", "src/explore/shell", "src/access", "src/list", "src/discovery"]
     },
     {
       "id": "compose",
@@ -29,6 +34,7 @@
       "label": "Participation",
       "apiFiles": [
         "apps/api/src/services/join-request.ts",
+        "apps/api/src/lib/participant-intent-requests-store.ts",
         "apps/api/src/services/activity-viewer-access.ts",
         "apps/api/src/services/compose-activity-viewer-access.ts",
         "apps/api/src/services/member-entitlements.ts",
@@ -119,7 +125,15 @@
         "apps/api/src/routes/user/registerMeSubmittedPlaceRoutes.ts"
       ],
       "feDomains": ["src/api/domains/places.ts", "src/api/domains/placeRegistry.ts"],
-      "feRoots": ["src/pages/TrailDetail.tsx", "src/pages/CampDetail.tsx"]
+      "feRoots": [
+        "src/pages/TrailDetail.tsx",
+        "src/pages/CampDetail.tsx",
+        "src/pages/EventDetail.tsx",
+        "src/pages/PlaceDetailPage.tsx",
+        "src/components/place",
+        "src/hooks/usePlaceDetailPage.ts",
+        "src/hooks/placeDetailClientApi.ts"
+      ]
     },
     {
       "id": "commerce",
@@ -146,8 +160,8 @@
       "feDomains": ["src/api/domains/account.ts", "src/api/domains/social.ts"],
       "feRoots": [
         "src/pages/MemberProfile.tsx",
-        "src/explore/ui/ExploreMemberDiscoveryList.tsx",
-        "src/explore/ui/ExploreMemberPeopleNetworkList.tsx",
+        "src/explore/ui/PeopleBrowsePanel.tsx",
+        "src/explore/ui/peopleBrowse/PeopleBrowseTabContent.tsx",
         "src/list/ui/ListDiscoverPeopleView.tsx"
       ]
     },
@@ -178,8 +192,39 @@
       "feRoots": [
         "src/pages/ProfileBadges.tsx",
         "src/hooks/useEntityFollows.ts",
-        "src/wishlist"
+        "src/wishlist",
+        "src/plan"
       ]
+    },
+    {
+      "id": "areas",
+      "label": "Geographic areas",
+      "apiFiles": [
+        "apps/api/src/lib/areas-store.ts",
+        "apps/api/src/lib/area-resolution.ts"
+      ],
+      "routeRegistrars": [
+        "apps/api/src/routes/user/registerPublicAreaRoutes.ts",
+        "apps/api/src/routes/admin/registerAdminAreaRoutes.ts"
+      ],
+      "feDomains": ["src/api/domains/areas.ts"],
+      "feRoots": [
+        "src/pages/AreaDetailPage.tsx",
+        "src/components/area/AreaDetailView.tsx",
+        "src/hooks/areaHubClientApi.ts",
+        "src/explore/exploreAreaFilter.ts"
+      ]
+    },
+    {
+      "id": "availability",
+      "label": "Member availability",
+      "apiFiles": ["apps/api/src/lib/member-availability-store.ts"],
+      "routeRegistrars": [
+        "apps/api/src/routes/user/registerMeAvailabilityRoutes.ts",
+        "apps/api/src/routes/user/registerExploreAvailabilityRoutes.ts"
+      ],
+      "feDomains": ["src/api/domains/availability.ts"],
+      "feRoots": ["src/plan", "src/components/plan/PlanAvailabilitySection.tsx"]
     },
     {
       "id": "platform_ops",

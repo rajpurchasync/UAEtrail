@@ -34,6 +34,7 @@
 | [`PRE_DEPLOY_CHECKLIST.md`](./PRE_DEPLOY_CHECKLIST.md) | Go-live + release gates |
 | [`HOST_CLEANUP_ROADMAP.md`](./HOST_CLEANUP_ROADMAP.md) | Host/tenant technical debt |
 | [`operations/EXPLORE_MAP_RUNBOOK.md`](./operations/EXPLORE_MAP_RUNBOOK.md) | Map seed, venue import, browse smoke |
+| [`operations/SEEKING_STORAGE_RUNBOOK.md`](./operations/SEEKING_STORAGE_RUNBOOK.md) | Seeking backfill, `PARTICIPANT_INTENT_STUB_WRITE`, G-manage staging smoke |
 | [`ANDROID_RELEASE.md`](./ANDROID_RELEASE.md) · [`IOS_RELEASE.md`](./IOS_RELEASE.md) · [`PLAY_STORE_LISTING.md`](./PLAY_STORE_LISTING.md) | Native store ship |
 | [`MODERATION.md`](./MODERATION.md) | UGC reports |
 
@@ -41,7 +42,7 @@
 
 ## Tier 3 — explore supplement (defers to Tier 1)
 
-[`experiment/README.md`](./experiment/README.md) — UX/browse/mobile IA only; FAB truth stays in `CREATE_FLOW.md`.
+[`experiment/README.md`](./experiment/README.md) — UX/browse/mobile IA; **activity peek/detail program:** [`experiment/activity-detail-tabs-implementation-plan.md`](./experiment/activity-detail-tabs-implementation-plan.md); **consumer detail shells (S9 eng complete, §8 manual QA pending):** [`experiment/consumer-detail-surfaces-plan.md`](./experiment/consumer-detail-surfaces-plan.md) §14 handoff · `npm run consumer-detail:qa-routes`; FAB truth stays in `CREATE_FLOW.md`.
 
 ---
 

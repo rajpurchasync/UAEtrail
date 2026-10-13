@@ -11,6 +11,9 @@ import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
 import { FlowSheetChrome } from './ExploreFlowSheetChrome';
 import { FlowStepTextInput } from './useFlowSheetPrimaryFieldFocus';
 import type { ContributeVenueKind } from '../contributeTypes';
+import { useExplorePublishedAreas } from '../useExplorePublishedAreas';
+import { areaIdForExploreAreaSlug } from '../exploreAreaFilter';
+import { ContributeCuratedAreaStep } from './ContributeCuratedAreaStep';
 import {
   ACTIVITY_DIFFICULTY_OPTIONS,
   contributeDescriptionPlaceholder,
@@ -54,6 +57,7 @@ interface CreateContributeFlowProps {
   onBackToIntent?: () => void;
   onSubmitted?: (result: ContributeSubmitResult) => void;
   signInHref: string;
+  exploreAreaSlug?: string | null;
 }
 
 const KIND_LABELS: Record<ContributeVenueKind, { title: string; icon: typeof Mountain }> = {
@@ -65,6 +69,7 @@ const KIND_LABELS: Record<ContributeVenueKind, { title: string; icon: typeof Mou
 
 const REVIEW_EDIT_LABELS: Partial<Record<ContributeFlowStepId, string>> = {
   title: 'Title',
+  curatedArea: 'Area',
   location: 'Location',
   surface: 'Surface',
   image: 'Photos',
@@ -110,9 +115,11 @@ export const CreateContributeFlow = ({
   onBackToIntent,
   onSubmitted,
   signInHref,
+  exploreAreaSlug = null,
 }: CreateContributeFlowProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const publishedAreas = useExplorePublishedAreas();
 
   const [step, setStep] = useState<ContributeFlowStepId>('title');
   const [draft, setDraft] = useState<ContributeDraft>(() => ({
@@ -150,7 +157,12 @@ export const CreateContributeFlow = ({
         setStep(saved.step as ContributeFlowStepId);
       } else {
         setStep('title');
-        setDraft({ ...emptyContributeDraft(), kind });
+        const areaId = areaIdForExploreAreaSlug(publishedAreas, exploreAreaSlug);
+        setDraft({
+          ...emptyContributeDraft(),
+          kind,
+          ...(areaId ? { areaId } : {}),
+        });
       }
       setSubmitResult(null);
       contributeInitializedRef.current = contributeInitKey;
@@ -159,7 +171,7 @@ export const CreateContributeFlow = ({
       navigate(signInHref);
       onClose();
     }
-  }, [open, user, navigate, signInHref, onClose, kind, contributeInitKey]);
+  }, [open, user, navigate, signInHref, onClose, kind, contributeInitKey, exploreAreaSlug, publishedAreas]);
 
   useEffect(() => {
     if (!open || submitResult) return;
@@ -292,12 +304,15 @@ export const CreateContributeFlow = ({
 
   if (locationMapOpen || parkingMapOpen) {
     const isParking = parkingMapOpen;
+    const curatedCenter = draft.areaId
+      ? publishedAreas.find((area) => area.id === draft.areaId)?.center
+      : null;
     const lat = isParking
       ? draft.parkingLat ?? MAP_CONFIG.exploreDefaultCenter.lat
-      : draft.latitude ?? MAP_CONFIG.exploreDefaultCenter.lat;
+      : curatedCenter?.latitude ?? draft.latitude ?? MAP_CONFIG.exploreDefaultCenter.lat;
     const lng = isParking
       ? draft.parkingLng ?? MAP_CONFIG.exploreDefaultCenter.lng
-      : draft.longitude ?? MAP_CONFIG.exploreDefaultCenter.lng;
+      : curatedCenter?.longitude ?? draft.longitude ?? MAP_CONFIG.exploreDefaultCenter.lng;
 
     return (
       <div className={`fixed inset-0 ${EXPLORE_Z.composeFlow} bg-neutral-100`}>
@@ -365,6 +380,26 @@ export const CreateContributeFlow = ({
           {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
           <div className="mt-5 pb-2">
             <NextButton disabled={!draft.title.trim()} onClick={goNext} />
+          </div>
+        </FlowSheetChrome>
+      )}
+
+      {step === 'curatedArea' && (
+        <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
+          <ContributeCuratedAreaStep
+            areaId={draft.areaId}
+            onAreaIdChange={(next) => {
+              const center = next ? publishedAreas.find((area) => area.id === next)?.center : null;
+              patchDraft({
+                areaId: next,
+                locationPinPlaced: false,
+                ...(center ? { latitude: center.latitude, longitude: center.longitude } : {}),
+              });
+            }}
+          />
+          {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+          <div className="mt-5 pb-2">
+            <NextButton disabled={!draft.areaId} onClick={goNext} />
           </div>
         </FlowSheetChrome>
       )}

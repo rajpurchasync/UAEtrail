@@ -1,7 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { List, Plus } from 'lucide-react';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
-import type { PlaceMapPin } from '../../components/ui/PlacesMap';
+import type { MapBounds, PlaceMapPin } from '../../components/ui/PlacesMap';
 import { getMapBounds } from '../../config/regions';
 import { MAP_CONFIG, getExploreMapTiles, type ExploreMapStyle } from '../../config/platform';
 import { EXPLORE_FLOATING_CONTROL } from '../../config/exploreTheme';
@@ -43,7 +43,6 @@ export type ExploreMapStageProps = {
   onVenueRegionsChange: (regions: string[]) => void;
   onOpenPeopleBrowsePanel: () => void;
   peopleBrowsePanelAvatars?: Array<{ id: string; name: string; avatar?: string | null }>;
-  peopleBrowsePanelExtraCount?: number;
   peopleBrowsePanelFriendCount?: number;
   exploreMapStyle: ExploreMapStyle;
   exploreMapTiles: ExploreMapTiles;
@@ -54,6 +53,7 @@ export type ExploreMapStageProps = {
   recenterTo: { lat: number; lng: number } | null;
   exploreMapCenter: { lat: number; lng: number };
   onPinClick: (pin: PlaceMapPin) => void;
+  onVisibleBoundsChange?: (bounds: MapBounds) => void;
   loading: boolean;
   loadError: string | null;
   onReloadMap: () => void;
@@ -79,11 +79,11 @@ export type ExploreMapStageProps = {
   onWithdraw: () => void;
   activityPeekSkipsJoinContext?: boolean;
   onActivityMapPeekAction?: (actionId: import('@uaetrail/shared-types').ActivityMapPeekActionId) => void;
+  onOfferTransport?: () => void;
   linkRideshareTenantId?: string | null;
   onDemandRemove?: () => void;
   onDemandFullManage?: () => void;
   onDemandLinkRideshare?: () => void;
-  hostActivityCtaHandlers?: import('../../components/activity/HostActivityCtas').HostActivityCtaHandlers | null;
   onOpenExploreItem?: (exploreItemId: string) => void;
   onGuestGatedAction?: () => void;
   joinInvitePeekBanner?: string | null;
@@ -107,7 +107,6 @@ export const ExploreMapStage = ({
   onVenueRegionsChange,
   onOpenPeopleBrowsePanel,
   peopleBrowsePanelAvatars,
-  peopleBrowsePanelExtraCount,
   peopleBrowsePanelFriendCount,
   exploreMapStyle,
   exploreMapTiles,
@@ -118,6 +117,7 @@ export const ExploreMapStage = ({
   recenterTo,
   exploreMapCenter,
   onPinClick,
+  onVisibleBoundsChange,
   loading,
   loadError,
   onReloadMap,
@@ -143,11 +143,11 @@ export const ExploreMapStage = ({
   onWithdraw,
   activityPeekSkipsJoinContext = false,
   onActivityMapPeekAction,
+  onOfferTransport,
   linkRideshareTenantId = null,
   onDemandRemove,
   onDemandFullManage,
   onDemandLinkRideshare,
-  hostActivityCtaHandlers = null,
   onOpenExploreItem,
   onGuestGatedAction,
   joinInvitePeekBanner = null,
@@ -173,6 +173,7 @@ export const ExploreMapStage = ({
             tileAttribution={MAP_CONFIG.exploreTileAttribution}
             labelTileUrl={exploreMapTiles.labelTileUrl}
             onPinClick={onPinClick}
+            onVisibleBoundsChange={onVisibleBoundsChange}
             recenterTo={recenterTo}
             exploreMapCenter={exploreMapCenter}
             className="h-full w-full"
@@ -194,7 +195,6 @@ export const ExploreMapStage = ({
         onVenueRegionsChange={onVenueRegionsChange}
         onOpenPeopleBrowsePanel={onOpenPeopleBrowsePanel}
         peopleBrowsePanelAvatars={peopleBrowsePanelAvatars}
-        peopleBrowsePanelExtraCount={peopleBrowsePanelExtraCount}
         peopleBrowsePanelFriendCount={peopleBrowsePanelFriendCount}
         searchQuery={searchQuery}
         onSearchQueryChange={onSearchQueryChange}
@@ -308,12 +308,12 @@ export const ExploreMapStage = ({
           onDemandRemove={onDemandRemove}
           onDemandFullManage={onDemandFullManage}
           onDemandLinkRideshare={onDemandLinkRideshare}
-          hostActivityCtaHandlers={hostActivityCtaHandlers}
           onOpenExploreItem={onOpenExploreItem}
           joinUiState={activityPeekSkipsJoinContext ? undefined : joinUiState}
           onWithdraw={onWithdraw}
           joinStateLoading={joinStateLoading}
           onActivityMapPeekAction={onActivityMapPeekAction}
+          onOfferTransport={onOfferTransport}
           joinInvitePeekBanner={joinInvitePeekBanner}
         />
       ) : null}

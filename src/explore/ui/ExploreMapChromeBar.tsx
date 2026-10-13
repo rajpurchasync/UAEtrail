@@ -20,7 +20,6 @@ type ExploreMapChromeBarProps = {
   onVenueRegionsChange: (regions: string[]) => void;
   onOpenPeopleBrowsePanel?: () => void;
   peopleBrowsePanelAvatars?: Array<{ id: string; name: string; avatar?: string | null }>;
-  peopleBrowsePanelExtraCount?: number;
   peopleBrowsePanelFriendCount?: number;
   onOpenExploreSearch?: () => void;
 };
@@ -41,7 +40,6 @@ export const ExploreMapChromeBar = ({
   onVenueRegionsChange,
   onOpenPeopleBrowsePanel,
   peopleBrowsePanelAvatars = [],
-  peopleBrowsePanelExtraCount = 0,
   peopleBrowsePanelFriendCount = 0,
   onOpenExploreSearch,
 }: ExploreMapChromeBarProps) => (
@@ -69,7 +67,6 @@ export const ExploreMapChromeBar = ({
       {onOpenPeopleBrowsePanel ? (
         <ExploreMapPeopleBrowseButton
           avatars={peopleBrowsePanelAvatars}
-          extraCount={peopleBrowsePanelExtraCount}
           friendCount={peopleBrowsePanelFriendCount}
           onClick={onOpenPeopleBrowsePanel}
           className="col-start-2 row-start-1 shrink-0 justify-self-end lg:hidden"
@@ -78,7 +75,6 @@ export const ExploreMapChromeBar = ({
       {onOpenPeopleBrowsePanel ? (
         <ExploreMapPeopleBrowseButton
           avatars={peopleBrowsePanelAvatars}
-          extraCount={peopleBrowsePanelExtraCount}
           friendCount={peopleBrowsePanelFriendCount}
           onClick={onOpenPeopleBrowsePanel}
           className="hidden shrink-0 lg:inline-flex"

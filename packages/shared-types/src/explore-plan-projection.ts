@@ -1,4 +1,5 @@
 import type { ParticipationMode } from './activity-participation-mode.js';
+import type { ExploreActivityMode } from './explore-activity-mode.js';
 
 /**
  * Map/list plan projection — Organize vs Demand only.
@@ -16,6 +17,38 @@ export type OutingTopic =
   | 'workshop'
   | 'community';
 
+export const OUTING_TOPICS: readonly OutingTopic[] = [
+  'climbing',
+  'trail_run',
+  'road_run',
+  'swim',
+  'workshop',
+  'community',
+];
+
+const OUTING_TOPIC_SET = new Set<string>(OUTING_TOPICS);
+
+export const parseOutingTopic = (raw: string | null | undefined): OutingTopic | null => {
+  const key = raw?.trim();
+  if (!key || !OUTING_TOPIC_SET.has(key)) return null;
+  return key as OutingTopic;
+};
+
+/** Topic drill-down on map/list — activities (`outingCategory: activities`) and tagged places. */
+export const mapItemMatchesOutingTopic = (
+  item: {
+    outingCategory?: OutingCategory | null;
+    outingTopic?: OutingTopic | null;
+    source?: string;
+  },
+  topic: OutingTopic
+): boolean => {
+  if (!item.outingTopic || item.outingTopic !== topic) return false;
+  if (item.outingCategory === 'activities') return true;
+  if (item.source === 'venue') return true;
+  return false;
+};
+
 export type ExploreMapPlanActivityKind = 'hiking' | 'camping' | 'event' | 'rideshare' | 'shop';
 
 export type ExploreMapKindForPlan =
@@ -23,8 +56,12 @@ export type ExploreMapKindForPlan =
   | 'agency';
 
 export const exploreMapKindToPlanMapKind = (
-  kind: ExploreMapKindForPlan
-): ExploreMapPlanActivityKind => (kind === 'agency' || kind === 'shop' ? 'shop' : kind);
+  kind: ExploreMapKindForPlan | 'area'
+): ExploreMapPlanActivityKind => {
+  if (kind === 'agency' || kind === 'shop') return 'shop';
+  if (kind === 'area') return 'hiking';
+  return kind;
+};
 
 export type ExploreMapPlanSource = 'activity' | 'demand' | 'venue' | 'shop';
 
@@ -97,17 +134,32 @@ export const resolveOrganizeCreateKindFromDemandMapItem = (item: {
   return 'event';
 };
 
-/** Explore deep link — opens map peek for `demand:{intentId}` (share, notifications, `path`). */
-export const exploreDemandMapItemPath = (intentId: string): string => {
-  const bare = intentId.trim();
-  const mapItemId = bare.startsWith('demand:') ? bare : `demand:${bare}`;
+/** Map item id for a find post — `activity:` when published row exists, else legacy `demand:`. */
+export const resolveSeekingExploreMapItemId = (input: {
+  intentId: string;
+  activityId?: string | null;
+}): string => {
+  const bareIntent = input.intentId.replace(/^demand:/, '').trim();
+  const activityId = input.activityId?.trim();
+  return activityId ? `activity:${activityId}` : `demand:${bareIntent}`;
+};
+
+/** Canonical explore deep link for seeking (notifications, share, map `path`). */
+export const exploreSeekingMapItemPath = (input: {
+  intentId: string;
+  activityId?: string | null;
+}): string => {
   const params = new URLSearchParams({
-    pin: mapItemId,
+    pin: resolveSeekingExploreMapItemId(input),
     list: '1',
     panel: 'activities',
   });
   return `/explore?${params.toString()}`;
 };
+
+/** @deprecated Prefer {@link exploreSeekingMapItemPath} when `activityId` may exist. Legacy intent-only pins. */
+export const exploreDemandMapItemPath = (intentId: string): string =>
+  exploreSeekingMapItemPath({ intentId });
 
 /** FLOW-05 organize activity wizard chip → persisted `outingTopic`. */
 export const activityOrganizeTopicToOutingTopic = (topic: string): OutingTopic | null => {
@@ -169,6 +221,8 @@ export type ExploreMapPlanProjection = {
 
 export const buildExploreMapPlanProjection = (options: {
   source: ExploreMapPlanSource;
+  /** Canonical seeking signal on map wire (`source: activity` + `activityMode: seeking`). */
+  activityMode?: ExploreActivityMode | null;
   mapKind: ExploreMapPlanActivityKind;
   participationMode?: ParticipationMode | null;
   demandIntentKind?: ParticipantIntentKindForPlan;
@@ -176,13 +230,16 @@ export const buildExploreMapPlanProjection = (options: {
   storedOutingCategory?: OutingCategory | null;
   storedOutingTopic?: OutingTopic | null;
 }): ExploreMapPlanProjection => {
-  const composeIntent = exploreMapSourceToComposeIntent(options.source);
+  const isSeeking = options.activityMode === 'seeking' || options.source === 'demand';
+  const composeIntent: ExplorePlanComposeIntent | null = isSeeking
+    ? 'demand'
+    : exploreMapSourceToComposeIntent(options.source);
 
   let outingCategory: OutingCategory | null = null;
-  if (options.source === 'activity' && options.mapKind !== 'shop') {
+  if (options.source === 'activity' && !isSeeking && options.mapKind !== 'shop') {
     outingCategory =
       options.storedOutingCategory ?? activityTypeToOutingCategory(options.mapKind);
-  } else if (options.source === 'demand') {
+  } else if (isSeeking) {
     outingCategory =
       options.storedOutingCategory ??
       (options.demandIntentKind

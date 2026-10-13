@@ -46,7 +46,12 @@ import {
   type ExploreSearchScopeKey,
 } from '../exploreBrowseTaxonomy';
 import type { BrowseMainCategoryKey } from '../../list/browseListTaxonomy';
-import { LIST_CAT_PARAM } from '../../list/browseListUrlState';
+import {
+  BROWSE_DISCOVER_PARAM,
+  LIST_CAT_PARAM,
+  parseBrowseDiscoverOpen,
+  parseListCatParam,
+} from '../../list/browseListUrlState';
 import {
   BUDDIES_SEGMENT_URL_PARAM,
   parseBuddiesDiscoverySegment,
@@ -58,12 +63,20 @@ import {
   serializeExplorePinKindFilter,
   type ExplorePinKindFilter,
 } from '../explorePinKindFilter';
+import {
+  parsePeopleBrowseTabFromUrl,
+  serializePeopleBrowseTab,
+  type PeopleBrowseTab,
+} from '../peopleBrowseTab.js';
+import {
+  EXPLORE_ACTIVITY_MODE_FILTER_PARAM,
+  parseExploreActivityModeFilter,
+  serializeExploreActivityModeFilter,
+  type ExploreActivityModeFilter,
+} from '../exploreActivityModeFilter';
 
 /** Browse list presentation — `people` maps to URL `view=people` (member people panel on map). */
 export type ExploreBrowseListMode = 'default' | 'people';
-
-/** People browse panel segment (`peopleTab` query; legacy `socialTab`). */
-export type ExplorePeopleBrowseTab = 'all' | 'friends' | 'followed' | 'discover';
 
 /** Sub-segment on People → Followed (people vs entity-follow places vs hosts/shops). */
 export type ExploreFollowedSegment = 'people' | 'places' | 'events';
@@ -76,18 +89,6 @@ export const parseExploreFollowedSegment = (raw: string | null): ExploreFollowed
 const readPeopleBrowseTabParam = (params: URLSearchParams): string | null =>
   params.get('peopleTab') ?? params.get('socialTab');
 
-export const parseExplorePeopleBrowseTab = (
-  peopleTab: string | null,
-  legacyGoingTab: string | null
-): ExplorePeopleBrowseTab => {
-  if (peopleTab === 'friends' || peopleTab === 'followed' || peopleTab === 'discover') return peopleTab;
-  if (peopleTab === 'all') return 'all';
-  if (legacyGoingTab === 'people') return 'friends';
-  if (legacyGoingTab === 'discover') return 'discover';
-  if (legacyGoingTab === 'trips') return 'all';
-  return 'all';
-};
-
 const isPeopleBrowseListView = (view: string | null): boolean =>
   view === 'people' || view === 'social' || view === 'going';
 
@@ -99,16 +100,18 @@ type SyncPatch = {
   placesFilter?: VenueListFilterKey;
   panel?: ExplorePanel;
   list?: boolean;
+  browse?: boolean;
   q?: string;
   venueRegions?: string[];
   activityDatePreset?: ExploreActivityDatePreset;
+  activityModeFilter?: ExploreActivityModeFilter;
   buddySubtype?: ExploreBuddySubtypeKey;
   outingTopic?: ExploreOutingTopicKey;
   pinKind?: ExplorePinKindFilter;
   topicPills?: ExploreMapFilterPillKey[];
   listMode?: ExploreBrowseListMode;
   searchScope?: ExploreSearchScopeKey | null;
-  peopleBrowseTab?: ExplorePeopleBrowseTab;
+  peopleBrowseTab?: PeopleBrowseTab;
   buddiesDiscoverSegment?: BuddiesDiscoverySegment;
   followedSegment?: ExploreFollowedSegment;
   /** Clear list category page when opening browse home from the map List pill. */
@@ -133,7 +136,12 @@ export const useExploreBrowseUrlState = ({
     parseActivityListFilter(searchParams.get('activity'))
   );
   const [panel, setPanel] = useState<ExplorePanel>(() => parseExplorePanel(searchParams.get('panel')));
-  const [listOpen, setListOpen] = useState(() => readInitialListOpen(searchParams.get('list')));
+  const [listOpen, setListOpen] = useState(() =>
+    readInitialListOpen(searchParams.get('list'), searchParams.get(BROWSE_DISCOVER_PARAM))
+  );
+  const [browseOpen, setBrowseOpen] = useState(() =>
+    parseBrowseDiscoverOpen(searchParams.get(BROWSE_DISCOVER_PARAM))
+  );
   const [query, setQuery] = useState(() => searchParams.get('q') ?? '');
   const [venueFilter, setVenueFilter] = useState<VenueListFilterKey>(() =>
     parseVenueListFilter(
@@ -149,6 +157,9 @@ export const useExploreBrowseUrlState = ({
   const [searchExpanded, setSearchExpanded] = useState(() => Boolean(searchParams.get('q')?.trim()));
   const [activityDatePreset, setActivityDatePreset] = useState<ExploreActivityDatePreset>(() =>
     parseExploreActivityDatePreset(searchParams.get('date'))
+  );
+  const [activityModeFilter, setActivityModeFilter] = useState<ExploreActivityModeFilter>(() =>
+    parseExploreActivityModeFilter(searchParams.get(EXPLORE_ACTIVITY_MODE_FILTER_PARAM))
   );
   const [buddySubtype, setBuddySubtype] = useState<ExploreBuddySubtypeKey>(() =>
     parseExploreBuddySubtype(searchParams.get('subtype'), parseMapFilter(searchParams.get('filter')))
@@ -172,8 +183,8 @@ export const useExploreBrowseUrlState = ({
   const [searchScope, setSearchScope] = useState<ExploreSearchScopeKey | null>(() =>
     parseExploreSearchScope(searchParams.get('searchScope') ?? searchParams.get('searchFocus'))
   );
-  const [peopleBrowseTab, setPeopleBrowseTab] = useState<ExplorePeopleBrowseTab>(() =>
-    parseExplorePeopleBrowseTab(readPeopleBrowseTabParam(searchParams), searchParams.get('goingTab'))
+  const [peopleBrowseTab, setPeopleBrowseTab] = useState<PeopleBrowseTab>(() =>
+    parsePeopleBrowseTabFromUrl(readPeopleBrowseTabParam(searchParams), searchParams.get('goingTab'))
   );
   const [followedSegment, setFollowedSegment] = useState<ExploreFollowedSegment>(() =>
     parseExploreFollowedSegment(searchParams.get('followedKind'))
@@ -189,10 +200,17 @@ export const useExploreBrowseUrlState = ({
       const activityFilterValue = next.activityFilter ?? activityFilter;
       const placesFilterValue = next.placesFilter ?? venueFilter;
       const panelValue = next.panel ?? panel;
-      const listValue = next.list ?? listOpen;
+      let listValue = next.list ?? listOpen;
+      let browseValue = next.browse ?? browseOpen;
+      if (!isDesktop) {
+        if (next.browse === true) listValue = false;
+        if (next.list === true) browseValue = false;
+      }
       const queryValue = next.q ?? query;
       const regionValue = next.venueRegions ?? venueRegions;
       const dateValue = next.activityDatePreset !== undefined ? next.activityDatePreset : activityDatePreset;
+      const activityModeValue =
+        next.activityModeFilter !== undefined ? next.activityModeFilter : activityModeFilter;
       const subtypeValue = next.buddySubtype ?? buddySubtype;
       const topicValue = next.outingTopic ?? outingTopic;
       const pinKindValue = next.pinKind ?? pinKind;
@@ -216,12 +234,19 @@ export const useExploreBrowseUrlState = ({
       if (listValue) params.set('list', '1');
       else params.set('list', '0');
 
+      if (browseValue) params.set(BROWSE_DISCOVER_PARAM, '1');
+      else params.delete(BROWSE_DISCOVER_PARAM);
+
       if (queryValue.trim()) params.set('q', queryValue.trim());
       else params.delete('q');
 
       const serializedDate = serializeExploreActivityDatePreset(dateValue);
       if (serializedDate) params.set('date', serializedDate);
       else params.delete('date');
+
+      const serializedActivityMode = serializeExploreActivityModeFilter(activityModeValue);
+      if (serializedActivityMode) params.set(EXPLORE_ACTIVITY_MODE_FILTER_PARAM, serializedActivityMode);
+      else params.delete(EXPLORE_ACTIVITY_MODE_FILTER_PARAM);
 
       const serializedSubtype = serializeExploreBuddySubtype(subtypeValue, filterValue);
       if (serializedSubtype) params.set('subtype', serializedSubtype);
@@ -240,20 +265,16 @@ export const useExploreBrowseUrlState = ({
       else params.delete('topics');
 
       const peopleBrowseTabValue = next.peopleBrowseTab ?? peopleBrowseTab;
-      const buddiesSegmentValue = next.buddiesDiscoverSegment ?? buddiesDiscoverSegment;
       if (listModeValue === 'people') {
         params.set('view', 'people');
         params.delete('goingTab');
         params.delete('socialTab');
-        if (peopleBrowseTabValue === 'all') params.delete('peopleTab');
-        else params.set('peopleTab', peopleBrowseTabValue);
-        if (peopleBrowseTabValue === 'discover') {
-          const serializedBuddies = serializeBuddiesDiscoverySegment(buddiesSegmentValue);
-          if (serializedBuddies) params.set(BUDDIES_SEGMENT_URL_PARAM, serializedBuddies);
-          else params.delete(BUDDIES_SEGMENT_URL_PARAM);
-        } else {
-          params.delete(BUDDIES_SEGMENT_URL_PARAM);
-        }
+        const serializedPeopleTab = serializePeopleBrowseTab(peopleBrowseTabValue);
+        if (serializedPeopleTab) params.set('peopleTab', serializedPeopleTab);
+        else params.delete('peopleTab');
+        const serializedBuddies = serializeBuddiesDiscoverySegment(peopleBrowseTabValue);
+        if (serializedBuddies) params.set(BUDDIES_SEGMENT_URL_PARAM, serializedBuddies);
+        else params.delete(BUDDIES_SEGMENT_URL_PARAM);
       } else {
         params.delete('view');
         params.delete('peopleTab');
@@ -262,12 +283,7 @@ export const useExploreBrowseUrlState = ({
         params.delete('followedKind');
       }
 
-      const followedSegmentValue = next.followedSegment ?? followedSegment;
-      if (listModeValue === 'people' && peopleBrowseTabValue === 'followed' && followedSegmentValue !== 'people') {
-        params.set('followedKind', followedSegmentValue);
-      } else {
-        params.delete('followedKind');
-      }
+      params.delete('followedKind');
 
       const serializedSearchScope = serializeExploreSearchScope(searchScopeValue);
       if (serializedSearchScope) params.set('searchScope', serializedSearchScope);
@@ -299,9 +315,11 @@ export const useExploreBrowseUrlState = ({
       venueFilter,
       panel,
       listOpen,
+      browseOpen,
       query,
       venueRegions,
       activityDatePreset,
+      activityModeFilter,
       buddySubtype,
       outingTopic,
       pinKind,
@@ -313,6 +331,7 @@ export const useExploreBrowseUrlState = ({
       followedSegment,
       searchParams,
       setSearchParams,
+      isDesktop,
     ]
   );
 
@@ -340,10 +359,16 @@ export const useExploreBrowseUrlState = ({
       )
     );
     setPanel(nextPanel);
-    setListOpen(parseListOpen(searchParams.get('list'), isDesktop));
+    setListOpen(
+      parseListOpen(searchParams.get('list'), isDesktop, searchParams.get(BROWSE_DISCOVER_PARAM))
+    );
+    setBrowseOpen(parseBrowseDiscoverOpen(searchParams.get(BROWSE_DISCOVER_PARAM)));
     setQuery(searchParams.get('q') ?? '');
     setVenueRegions(parseVenueRegionsParam(searchParams));
     setActivityDatePreset(parseExploreActivityDatePreset(searchParams.get('date')));
+    setActivityModeFilter(
+      parseExploreActivityModeFilter(searchParams.get(EXPLORE_ACTIVITY_MODE_FILTER_PARAM))
+    );
     const nextSubtype = parseExploreBuddySubtype(searchParams.get('subtype'), nextMapFilter);
     setBuddySubtype(nextSubtype);
     setOutingTopic(
@@ -356,7 +381,7 @@ export const useExploreBrowseUrlState = ({
       parseExploreSearchScope(searchParams.get('searchScope') ?? searchParams.get('searchFocus'))
     );
     setPeopleBrowseTab(
-      parseExplorePeopleBrowseTab(readPeopleBrowseTabParam(searchParams), searchParams.get('goingTab'))
+      parsePeopleBrowseTabFromUrl(readPeopleBrowseTabParam(searchParams), searchParams.get('goingTab'))
     );
     setFollowedSegment(parseExploreFollowedSegment(searchParams.get('followedKind')));
     setBuddiesDiscoverSegment(parseBuddiesDiscoverySegment(searchParams.get(BUDDIES_SEGMENT_URL_PARAM)));
@@ -368,10 +393,21 @@ export const useExploreBrowseUrlState = ({
 
   useEffect(() => {
     if (!isDesktop) return;
+    if (parseBrowseDiscoverOpen(searchParams.get(BROWSE_DISCOVER_PARAM))) return;
     const listParam = searchParams.get('list');
     if (listParam === '0' || listParam === '1') return;
     syncExploreUrl({ list: true });
   }, [isDesktop, searchParams, syncExploreUrl]);
+
+  /** Legacy: `list=1` + `listCat` opened discover browse — migrate to `browse=1`. */
+  useEffect(() => {
+    const listParam = searchParams.get('list');
+    const browseParam = searchParams.get(BROWSE_DISCOVER_PARAM);
+    const legacyListCat = parseListCatParam(searchParams.get(LIST_CAT_PARAM));
+    if (listParam === '1' && legacyListCat && browseParam !== '1') {
+      syncExploreUrl({ browse: true, list: false });
+    }
+  }, [searchParams, syncExploreUrl]);
 
   const applyMapFilter = (next: MapFilterKey) => {
     setMapFilter(next);
@@ -415,7 +451,7 @@ export const useExploreBrowseUrlState = ({
     syncExploreUrl({ topicPills: [], list: listOpen });
   };
 
-  const openPeopleBrowsePanel = (initialTab: ExplorePeopleBrowseTab = 'all') => {
+  const openPeopleBrowsePanel = (initialTab: PeopleBrowseTab = 'available') => {
     clearSelection();
     setListMode('people');
     setPeopleBrowseTab(initialTab);
@@ -440,28 +476,28 @@ export const useExploreBrowseUrlState = ({
     syncExploreUrl({ listMode: 'default' });
   };
 
-  const applyPeopleBrowseTab = (tab: ExplorePeopleBrowseTab) => {
+  const applyPeopleBrowseTab = (tab: PeopleBrowseTab) => {
     setPeopleBrowseTab(tab);
-    if (tab !== 'followed') {
-      setFollowedSegment('people');
-    }
+    setBuddiesDiscoverSegment(tab);
+    setFollowedSegment('people');
     syncExploreUrl({
+      listMode: 'people',
       peopleBrowseTab: tab,
+      buddiesDiscoverSegment: tab,
       list: listOpen,
-      followedSegment: tab === 'followed' ? followedSegment : 'people',
     });
   };
 
   const applyFollowedSegment = (segment: ExploreFollowedSegment) => {
     setFollowedSegment(segment);
-    syncExploreUrl({ followedSegment: segment, peopleBrowseTab: 'followed', list: listOpen });
   };
 
   const applyBuddiesDiscoverSegment = (segment: BuddiesDiscoverySegment) => {
     setBuddiesDiscoverSegment(segment);
+    setPeopleBrowseTab(segment);
     syncExploreUrl({
       buddiesDiscoverSegment: segment,
-      peopleBrowseTab: 'discover',
+      peopleBrowseTab: segment,
       listMode: 'people',
       list: listOpen,
     });
@@ -564,12 +600,41 @@ export const useExploreBrowseUrlState = ({
 
   const applyPanel = (next: ExplorePanel) => applyBrowsePanel(next, { openList: true });
 
-  const openBrowse = () => {
+  const openMapListPanel = () => {
     clearSelection();
     setListMode('default');
+    if (!isDesktop) {
+      setBrowseOpen(false);
+    }
     setListOpen(true);
-    syncExploreUrl({ list: true, panel, listCat: null, listMode: 'default' });
+    syncExploreUrl({
+      list: true,
+      browse: isDesktop ? browseOpen : false,
+      panel,
+      listCat: null,
+      listMode: 'default',
+    });
   };
+
+  const openDiscoverBrowse = () => {
+    clearSelection();
+    setListMode('default');
+    setBrowseOpen(true);
+    if (!isDesktop) {
+      setListOpen(false);
+      syncExploreUrl({ browse: true, list: false, listCat: null, listMode: 'default' });
+      return;
+    }
+    syncExploreUrl({ browse: true, list: listOpen, listCat: null, listMode: 'default' });
+  };
+
+  const closeDiscoverBrowse = () => {
+    setBrowseOpen(false);
+    syncExploreUrl({ browse: false });
+  };
+
+  /** @deprecated Use {@link openMapListPanel} */
+  const openBrowse = openMapListPanel;
 
   const applyVenueFilter = (next: VenueListFilterKey) => {
     setVenueFilter(next);
@@ -607,6 +672,12 @@ export const useExploreBrowseUrlState = ({
     syncExploreUrl({ activityDatePreset: next, list: listOpen });
   };
 
+  const applyActivityModeFilter = (next: ExploreActivityModeFilter) => {
+    setActivityModeFilter(next);
+    clearSelection();
+    syncExploreUrl({ activityModeFilter: next, list: listOpen });
+  };
+
   const showListPanel = listOpen;
   const sidebarPanel: ExplorePanel = isDesktop
     ? panel === 'venues'
@@ -641,7 +712,7 @@ export const useExploreBrowseUrlState = ({
     syncExploreUrl({ venueRegions: next, list: listOpen });
   };
 
-  /** Apply explore search (`q` + optional scope) to map filters — does not open list discover. */
+  /** Apply map search (`q` + scope): map list for pins; discover browse for people/agencies. */
   const commitExploreSearch = (scope?: ExploreSearchScopeKey | null) => {
     if (scope === 'facilities') return;
     clearSelection();
@@ -655,21 +726,29 @@ export const useExploreBrowseUrlState = ({
       setPanel(syncedPanel);
       setDesktopBrowseTab(syncedTab);
       setPinKind(syncedPinKind);
-      if (resolved === 'people') {
+      const discoverCategory =
+        resolved === 'people' ? 'people' : resolved === 'agencies' ? 'agencies' : null;
+      if (discoverCategory) {
+        setBrowseOpen(true);
+        setListOpen(false);
         syncExploreUrl({
           q: query,
-          list: true,
+          browse: true,
+          list: false,
           listMode: 'default',
           panel: syncedPanel,
           pinKind: syncedPinKind,
           searchScope: resolved,
-          listCat: 'people',
+          listCat: discoverCategory,
         });
         return;
       }
+      setBrowseOpen(false);
+      setListOpen(true);
       syncExploreUrl({
         q: query,
-        list: listOpen,
+        list: true,
+        browse: false,
         listMode: 'default',
         panel: syncedPanel,
         pinKind: syncedPinKind,
@@ -700,6 +779,8 @@ export const useExploreBrowseUrlState = ({
     setSearchExpanded,
     activityDatePreset,
     applyActivityDatePreset,
+    activityModeFilter,
+    applyActivityModeFilter,
     syncExploreUrl,
     applyMapFilter,
     applyDesktopBrowseTab,
@@ -708,6 +789,10 @@ export const useExploreBrowseUrlState = ({
     applyVenueFilter,
     applyBrowsePanel,
     openBrowse,
+    openMapListPanel,
+    openDiscoverBrowse,
+    closeDiscoverBrowse,
+    browseOpen,
     closeListPanel,
     showListPanel,
     sidebarPanel,

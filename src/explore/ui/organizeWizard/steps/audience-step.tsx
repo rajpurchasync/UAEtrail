@@ -13,6 +13,7 @@ import { HikingAudienceStepBody } from '../../organizeHikingWizardSteps';
 import { RideshareAudienceStepBody } from '../../organizeRideshareWizardSteps';
 import type { ReactNode } from 'react';
 import type { OrganizeWizardContext } from '../organizeWizardContext';
+import { OrganizeCrewChatPostPolicyField } from '../OrganizeCrewChatPostPolicyField';
 
 export function renderAudienceStep(ctx: OrganizeWizardContext): ReactNode | null {
     const {
@@ -213,6 +214,11 @@ export function renderAudienceStep(ctx: OrganizeWizardContext): ReactNode | null
             )}
               </>
             )}
+
+            <OrganizeCrewChatPostPolicyField
+              value={draft.groupChatPostPolicy}
+              onChange={(policy) => patchDraft({ groupChatPostPolicy: policy })}
+            />
 
             <OrganizeWizardStepError error={error} />
             <OrganizeWizardStepNext

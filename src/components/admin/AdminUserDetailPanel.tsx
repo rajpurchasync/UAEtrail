@@ -1,11 +1,14 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useSafeAsyncEffect } from '../../hooks/useSafeAsyncEffect';
 import { Link } from 'react-router-dom';
 import { AdminUserType, ActivityDTO } from '@uaetrail/shared-types';
 import {
-  AdminSocialGroupDetail,
-  api,
-  TenantDetail
-} from '../../api/index';
+  fetchAdminActivityDetail,
+  fetchAdminGroupDetail,
+  fetchAdminTenantDetail,
+  type AdminSocialGroupDetail,
+  type TenantDetail,
+} from '../../hooks/adminDrilldownApi';
 import { USER_TYPE_BADGE, USER_TYPE_LABELS } from '../../constants/userTypes';
 import { formatActivityType } from '../../utils/activityIdentity';
 import { activityHostName } from '../../utils/hostLabels';
@@ -387,7 +390,7 @@ export const AdminUserDetailPanel = ({
     { key: 'requests', label: 'Requests', count: user.requests?.length }
   ];
 
-  useEffect(() => {
+  useSafeAsyncEffect(async (isActive) => {
     if (!drillDown) {
       setTenantDetail(null);
       setGroupDetail(null);
@@ -399,26 +402,26 @@ export const AdminUserDetailPanel = ({
     setDrillLoading(true);
     setDrillError(null);
 
-    const load = async () => {
-      try {
-        if (drillDown.type === 'tenant') {
-          const res = await api.getAdminTenantDetail(drillDown.id);
-          setTenantDetail(res.data);
-        } else if (drillDown.type === 'group') {
-          const res = await api.getAdminGroupDetail(drillDown.id);
-          setGroupDetail(res.data);
-        } else {
-          const res = await api.getAdminActivityDetail(drillDown.id);
-          setActivityDetail(res.data);
-        }
-      } catch (err) {
-        setDrillError(err instanceof Error ? err.message : 'Failed to load details');
-      } finally {
-        setDrillLoading(false);
+    try {
+      if (drillDown.type === 'tenant') {
+        const detail = await fetchAdminTenantDetail(drillDown.id);
+        if (!isActive()) return;
+        setTenantDetail(detail);
+      } else if (drillDown.type === 'group') {
+        const detail = await fetchAdminGroupDetail(drillDown.id);
+        if (!isActive()) return;
+        setGroupDetail(detail);
+      } else {
+        const detail = await fetchAdminActivityDetail(drillDown.id);
+        if (!isActive()) return;
+        setActivityDetail(detail);
       }
-    };
-
-    void load();
+    } catch (err) {
+      if (!isActive()) return;
+      setDrillError(err instanceof Error ? err.message : 'Failed to load details');
+    } finally {
+      if (isActive()) setDrillLoading(false);
+    }
   }, [drillDown]);
 
   const drillTitle = drillDown?.type === 'tenant'

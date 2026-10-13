@@ -10,6 +10,7 @@ import { ApiError } from './api-error.js';
 import { COLLECTIONS } from './collections.js';
 import { findActivityDocInMongo, findLocationInMongo } from './entity-sync.js';
 import { getMongoClient } from './mongo.js';
+import { scheduleSideEffect } from './schedule-side-effect.js';
 import {
   parseMemberMapPinActivityType,
   scheduledLocationToPinActivityType,
@@ -87,9 +88,12 @@ export const createManualMemberMapPin = async (
   await pinsCollection().insertOne(doc);
   const dto = mapPinDto(doc);
   if (input.kind === 'visited') {
-    void import('../services/member-goal-notifications.js')
-      .then((mod) => mod.notifyMemberGoalAfterProgress(userId))
-      .catch(() => undefined);
+    scheduleSideEffect(
+      import('../services/member-goal-notifications.js').then((mod) =>
+        mod.notifyMemberGoalAfterProgress(userId)
+      ),
+      'member_map_pin.goal_progress'
+    );
   }
   return dto;
 };
