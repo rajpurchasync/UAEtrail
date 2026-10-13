@@ -1,6 +1,6 @@
 /** Public routes for the HTML site map and `public/sitemap.xml` (SEO). */
 
-import { EXPLORE_MAP_PATH } from '../config/routingCatalog';
+import { EXPLORE_MAP_PATH, TRIPS_PATH } from '../config/routingCatalog';
 
 export type SiteMapEntry = {
   path: string;
@@ -20,8 +20,8 @@ export const PUBLIC_SITE_MAP: SiteMapEntry[] = [
     description: 'Browse live activities, places, and outdoor plans on the map.'
   },
   {
-    path: '/activities',
-    label: 'Activities',
+    path: TRIPS_PATH,
+    label: 'Trips',
     description: 'Upcoming hikes, camps, and group outings you can join.'
   },
   {
