@@ -22,8 +22,9 @@ export const HeroCarouselSlideImage = ({
     width: 1600,
     height: 900,
     decoding: active ? ('sync' as const) : ('async' as const),
-    loading: active ? ('eager' as const) : ('lazy' as const),
-    fetchPriority: active ? ('high' as const) : ('auto' as const),
+    // Mounted hero slides (active + neighbors) stay eager — lazy off-screen slides trigger Edge interventions.
+    loading: 'eager' as const,
+    fetchPriority: active ? ('high' as const) : ('low' as const),
     className: slideImageClass(active, reducedMotion),
     'aria-hidden': !active
   };

@@ -8,10 +8,8 @@ import { AuthProvider } from './context/AuthContext';
 import { getGoogleClientId } from './components/auth/GoogleSignInButton';
 import { queryClient } from './lib/queryClient';
 import { initPwaDisplayMode, registerAppServiceWorker } from './utils/pwa';
-import { initPwaInstallPromptCapture } from './utils/pwaInstallPrompt';
 
 initPwaDisplayMode();
-initPwaInstallPromptCapture();
 registerAppServiceWorker();
 
 const googleClientId = getGoogleClientId();
