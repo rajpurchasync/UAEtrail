@@ -49,7 +49,7 @@ Complete these **on the VPS** when you connect. Use this list to track progress.
 
 - [ ] `npm run verify:system` (or `verify:system:quick` on CI) on the release commit
 - [ ] `npm run test:explore-alignment` when explore/FAB changed (S10e automated gate before C19 promote)
-- [ ] **Explore map vNext promote (S10e / C19):** staging only until runbook p95 gate — set `EXPLORE_MAP_VNEXT=1` (API) and `VITE_EXPLORE_MAP_VNEXT=1` (FE build); smoke per [`operations/EXPLORE_MAP_RUNBOOK.md`](./operations/EXPLORE_MAP_RUNBOOK.md) § vNext bbox fetch; do **not** enable in production until metrics pass
+- [ ] **Explore map vNext promote (S10e / C19):** `npm run s10e:staging-checklist` (add `--verify` for quick system gate); then set `EXPLORE_MAP_VNEXT=1` (API) and `VITE_EXPLORE_MAP_VNEXT=1` (FE build) on **staging only**; smoke per [`operations/EXPLORE_MAP_RUNBOOK.md`](./operations/EXPLORE_MAP_RUNBOOK.md) § vNext bbox fetch; do **not** enable in production until p95 metrics pass
 - [ ] Staging smoke aligned with [`NAVIGATION.md`](./NAVIGATION.md) (explore-first IA — not legacy organizer/community nav)
 - [ ] **Consumer detail + notifications (S9 / S10f):** `BASE_URL=https://staging-host npm run consumer-detail:qa-routes` (prints §8 routes + S10f notification edge checklist) then run §8 matrix in [`experiment/consumer-detail-surfaces-plan.md`](./experiment/consumer-detail-surfaces-plan.md) (substitute seed ids)
 - [ ] **Staging ops (ordered, per env)** — detail: [`operations/SEEKING_STORAGE_RUNBOOK.md`](./operations/SEEKING_STORAGE_RUNBOOK.md). On the server with production `.env` / compose API container:

@@ -243,6 +243,14 @@ describe('systemCoherenceGuard', () => {
     expect(missing).toEqual([]);
   });
 
+  it('S10e staging checklist script is wired in package.json', () => {
+    const pkg = JSON.parse(
+      readFileSync(join(ROOT, 'package.json'), 'utf8')
+    ) as { scripts?: Record<string, string> };
+    expect(pkg.scripts?.['s10e:staging-checklist']).toMatch(/s10e-staging-vnext-checklist/);
+    expect(existsSync(join(ROOT, 'scripts/s10e-staging-vnext-checklist.mjs'))).toBe(true);
+  });
+
   it('S10e explore map vNext stays opt-in via explicit env flag', () => {
     const fe = readFileSync(join(ROOT, 'src/explore/exploreMapVnext.ts'), 'utf8');
     expect(fe).toMatch(/VITE_EXPLORE_MAP_VNEXT === '1'/);

@@ -279,7 +279,7 @@ Work **in order**; extend `systemCoherenceGuard.test.ts` / `naming-coherence.tes
 | **S10b** | Host console mount-fetch races | `Activities`, `JoinRequests`, `Places`, `History`, `Team`, `PublicProfileEdit`, `ConsoleShell` reviews chip; hub via `useConsoleHubData` (React Query) | `systemCoherenceGuard` S10b | **Done** (Oct 2026) |
 | **S10c** | API **read batching** (N+1) | Read/list paths batched (incl. member browse, wishlist, group unread, publish notify actor labels); private-profile notify fan-out may still resolve per recipient | `naming-coherence.test.ts` | **Done** (Oct 2026) |
 | **S10d** | Explore **runtime hygiene** (not C18 rewrite) | Browse URL migrations, organize/pin-deep-link callback deps, rideshare gate deps | `systemCoherenceGuard` S10d | **Done** (Oct 2026) |
-| **S10e** | **C19** map vNext **promote** | Staging flags `EXPLORE_MAP_VNEXT` + `VITE_EXPLORE_MAP_VNEXT`; p95 bbox vs full map per runbook | `npm run verify:system` + `test:explore-alignment`; [`PRE_DEPLOY_CHECKLIST.md`](./PRE_DEPLOY_CHECKLIST.md) | **Pending (ops)** — code shipped flagged |
+| **S10e** | **C19** map vNext **promote** | Staging flags `EXPLORE_MAP_VNEXT` + `VITE_EXPLORE_MAP_VNEXT`; p95 bbox vs full map per runbook | `npm run s10e:staging-checklist` (`--verify` optional); [`PRE_DEPLOY_CHECKLIST.md`](./PRE_DEPLOY_CHECKLIST.md) | **Pending (ops)** — code shipped flagged |
 | **S10f** | **Manual QA** | S9 §8 routes + C9 notification edge cases | `npm run consumer-detail:qa-routes` (prints both checklists) | **Pending (human)** |
 | **S10g** | **C1** platform admin hardening | MFA, impersonation, cross-tenant — not a quick slice | `MEMBER_MODEL` / security review | Deferred |
 

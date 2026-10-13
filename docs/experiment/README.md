@@ -18,6 +18,6 @@ Shipped on **`main`**. **Product truth:** [`../DOCS_INDEX.md`](../DOCS_INDEX.md)
 
 **Code catalog:** `src/explore/composeFlowCatalog.ts` mirrors FAB Organize · Find · Add paths documented in `CREATE_FLOW.md`.
 
-**QA:** `npm run verify:system` before release · `npm run test:explore-alignment` when explore changes · `npm run s10f:qa-checklist` on staging · map seed/smoke: [`../operations/EXPLORE_MAP_RUNBOOK.md`](../operations/EXPLORE_MAP_RUNBOOK.md).
+**QA:** `npm run verify:system` before release · `npm run test:explore-alignment` when explore changes · **S10e** `npm run s10e:staging-checklist` · **S10f** `npm run s10f:qa-checklist` on staging · map seed/smoke: [`../operations/EXPLORE_MAP_RUNBOOK.md`](../operations/EXPLORE_MAP_RUNBOOK.md).
 
 Removed phase trackers and per-flow markdown — see [`../archive/README.md`](../archive/README.md).
