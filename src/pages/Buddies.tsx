@@ -1,5 +1,6 @@
 import { EXPLORE_MAP_PATH, HOST_MESSAGES_PATH, MESSAGES_PATH } from '../config/routingCatalog';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useSafeAsyncEffect } from '../hooks/useSafeAsyncEffect';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { MessageCircle, UserMinus, UserRound } from 'lucide-react';
 import type { BuddyRequestDTO, BuddySummaryDTO, MemberFollowSummaryDTO } from '@uaetrail/shared-types';
@@ -60,7 +61,7 @@ export const Buddies = () => {
   const { canAccessHostConsole } = useHostStatus({ enabled: Boolean(user) });
   const messagesPath = canAccessHostConsole ? HOST_MESSAGES_PATH : MESSAGES_PATH;
 
-  const loadCore = useCallback(async () => {
+  const loadCore = useCallback(async (isActive: () => boolean = () => true) => {
     setLoading(true);
     setError(null);
     try {
@@ -69,33 +70,35 @@ export const Buddies = () => {
         fetchMeBuddyRequests('incoming'),
         fetchMeBuddyRequests('outgoing'),
       ]);
+      if (!isActive()) return;
       setBuddies(buddyList);
       setIncomingRequests(incoming.filter((request) => request.status === 'pending'));
       setOutgoingRequests(outgoing.filter((request) => request.status === 'pending'));
     } catch (err) {
+      if (!isActive()) return;
       setError(err instanceof Error ? err.message : 'Failed to load friends');
     } finally {
-      setLoading(false);
+      if (isActive()) setLoading(false);
     }
   }, []);
 
-  const loadFollowing = useCallback(async () => {
+  const loadFollowing = useCallback(async (isActive: () => boolean = () => true) => {
     try {
       const rows = await fetchMeFollowingMembers();
+      if (!isActive()) return;
       setFollowing(rows);
       setFollowingLoaded(true);
     } catch (err) {
+      if (!isActive()) return;
       setError(err instanceof Error ? err.message : 'Failed to load following');
     }
   }, []);
 
-  useEffect(() => {
-    void loadCore();
-  }, [loadCore]);
+  useSafeAsyncEffect((isActive) => loadCore(isActive), [loadCore]);
 
-  useEffect(() => {
-    if (activeTab !== 'following' || followingLoaded) return;
-    void loadFollowing();
+  useSafeAsyncEffect((isActive) => {
+    if (activeTab !== 'following' || followingLoaded) return Promise.resolve();
+    return loadFollowing(isActive);
   }, [activeTab, followingLoaded, loadFollowing]);
 
   useEffect(() => {

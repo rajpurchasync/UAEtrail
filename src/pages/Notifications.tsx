@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useSafeAsyncEffect } from '../hooks/useSafeAsyncEffect';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { NotificationDTO } from '@uaetrail/shared-types';
@@ -78,23 +79,25 @@ export const Notifications = () => {
     void invalidateNotificationUnreadBadge(queryClient, user.id);
   };
 
-  const load = async () => {
+  const load = async (isActive: () => boolean = () => true) => {
     setLoading(true);
     setError(null);
     try {
       const page = await fetchMeNotificationsPage(1);
+      if (!isActive()) return;
       setNotifications(sortNotificationsNewestFirst(page.data));
       setUnreadCount(page.unreadCount);
     } catch (err) {
+      if (!isActive()) return;
       setError(err instanceof Error ? err.message : 'Couldn\'t load notifications — tap to retry.');
     } finally {
-      setLoading(false);
+      if (isActive()) setLoading(false);
     }
   };
 
-  useEffect(() => {
+  useSafeAsyncEffect(async (isActive) => {
     if (user?.role === 'platform_admin') return;
-    void load();
+    await load(isActive);
   }, [user?.role]);
 
   const sorted = useMemo(() => sortNotificationsNewestFirst(notifications), [notifications]);
