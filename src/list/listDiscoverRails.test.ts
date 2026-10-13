@@ -120,10 +120,8 @@ describe('listDiscoverRails', () => {
     expect(picked.map((c) => c.id)).toEqual(['shop:featured', 'shop:other']);
   });
 
-  it('shops rail uses demo placeholders when map has no shops', () => {
+  it('shops rail is empty when map has no shops (no fabricated placeholders)', () => {
     const picked = pickDiscoverShopRailCards([], []);
-    expect(picked).toHaveLength(DISCOVER_RAIL_LIMIT);
-    expect(picked.every((c) => c.source === 'shop')).toBe(true);
-    expect(picked[0]?.id).toMatch(/^shop:discover-placeholder-/);
+    expect(picked).toEqual([]);
   });
 });

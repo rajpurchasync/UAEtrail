@@ -20,6 +20,7 @@ import {
 import { getMongoClient } from './mongo.js';
 import { findTenantById } from './tenant-store.js';
 import { syncTenantMembershipStatusForTenant } from './tenant-access.js';
+import { normalizeSearchRegexInput } from './regex-search.js';
 
 type MongoAuditLog = {
   _id: string;
@@ -190,9 +191,9 @@ const toMongoAuditQuery = (where: AuditLogFilter): Record<string, unknown> => {
   if (where.action && typeof where.action === 'string') {
     query.action = where.action;
   } else if (where.action && typeof where.action === 'object' && 'contains' in where.action) {
-    const contains = where.action.contains;
-    if (contains) {
-      query.action = { $regex: contains, $options: 'i' };
+    const searchRegex = normalizeSearchRegexInput(where.action.contains);
+    if (searchRegex) {
+      query.action = { $regex: searchRegex, $options: 'i' };
     }
   }
   return query;

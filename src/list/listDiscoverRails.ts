@@ -9,8 +9,6 @@ import type { BrowseMainCategoryKey } from './browseListTaxonomy';
 
 /** Discover home horizontal rails — `shops` is a Places sub-topic, not a main list category. */
 export type ListDiscoverRailId = BrowseMainCategoryKey | 'shops';
-import { buildDiscoverShopPlaceholderCards } from './listDiscoverShopPlaceholders';
-
 export const DISCOVER_RAIL_LIMIT = 5;
 
 export type ListDiscoverRail = {
@@ -103,7 +101,7 @@ export const pickDiscoverShopRailCards = (
 ): ExploreCardModel[] => {
   const shops = cards.filter((c) => c.source === 'shop' || c.source === 'agency');
   if (!shops.length) {
-    return buildDiscoverShopPlaceholderCards().slice(0, limit);
+    return [];
   }
 
   const byId = cardById(shops);
@@ -127,9 +125,6 @@ export const pickDiscoverShopRailCards = (
     merged.push(card);
   }
 
-  if (!merged.length) {
-    return buildDiscoverShopPlaceholderCards().slice(0, limit);
-  }
   return merged;
 };
 

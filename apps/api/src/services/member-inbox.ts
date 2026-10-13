@@ -6,7 +6,8 @@ import {
   listConversationPartnerIds,
 } from '../lib/chat-data.js';
 import { listGroupsForUserWithChatPreview, type GroupRecordWithChatPreview } from '../lib/social-groups-store.js';
-import { canMessageUser } from './chat-policy.js';
+import { filterInboxMessageablePartnerIds } from './chat-policy.js';
+import { logger } from '../lib/logger.js';
 
 const serializeInboxGroup = (group: GroupRecordWithChatPreview): MemberInboxGroupDTO => ({
   id: group.id,
@@ -39,15 +40,17 @@ export const listMemberDirectConversations = async (userId: string): Promise<Cha
   const partnerMap = new Map(partners.map((p) => [p._id, p]));
   const lastMessageMap = await getLastMessageByPartner(userId, partnerIds);
 
-  const conversationRows = await Promise.all(
-    partnerIds.map(async (partnerId) => {
-      try {
-        const allowed = await canMessageUser(userId, partnerId);
-        if (!allowed) return null;
-      } catch {
-        return null;
-      }
+  let messageableIds: Set<string>;
+  try {
+    messageableIds = await filterInboxMessageablePartnerIds(userId, partnerIds);
+  } catch (error) {
+    logger.warn({ err: error, userId }, 'member inbox message policy failed');
+    return [];
+  }
 
+  const conversationRows = partnerIds
+    .filter((partnerId) => messageableIds.has(partnerId))
+    .map((partnerId) => {
       const partner = partnerMap.get(partnerId);
       const lastMsg = lastMessageMap.get(partnerId);
       return {
@@ -58,8 +61,7 @@ export const listMemberDirectConversations = async (userId: string): Promise<Cha
         lastMessageAt: lastMsg?.createdAt?.toISOString() ?? '',
         unreadCount: unreadCounts.get(partnerId) ?? 0,
       };
-    })
-  );
+    });
 
   return conversationRows
     .filter((row): row is NonNullable<typeof row> => row !== null)

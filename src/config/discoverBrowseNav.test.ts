@@ -43,7 +43,8 @@ describe('discover browse navigation contract', () => {
 
   it('consumer hamburger stays on map for host roles (organise drawer only on /host)', () => {
     const menu = readFileSync(join(process.cwd(), 'src/components/layout/MobileMenu.tsx'), 'utf8');
-    expect(menu).toMatch(/isHostConsoleRole && onHostConsole/);
+    expect(menu).toMatch(/canAccessHostConsole && onHostConsole/);
+    expect(menu).toMatch(/useHostStatus/);
     expect(menu).toMatch(/CONSUMER_HAMBURGER_MENU/);
   });
 });

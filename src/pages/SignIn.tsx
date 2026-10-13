@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-do
 import { ChevronLeft, Mail, Lock, Mountain, X } from 'lucide-react';
 import { setActiveTenantId } from '../api/tenant';
 import { fetchMeProfile } from '../hooks/memberProfileApi';
-import { fetchMyTenantMemberships } from '../hooks/tenantMembershipApi';
+import { fetchMemberHostStatus } from '../hooks/memberHostStatusApi';
 import { GoogleAuthSection } from '../components/auth/GoogleAuthSection';
 import { useAuth } from '../context/AuthContext';
 import { accountRouteByRole, defaultRouteByRole } from '../utils/authRouting';
@@ -108,16 +108,9 @@ export const SignIn = () => {
 
     clearAuthReturnContext();
 
-    if (
-      signedInUser.role === 'tenant_owner' ||
-      signedInUser.role === 'tenant_admin' ||
-      signedInUser.role === 'tenant_guide'
-    ) {
-      const memberships = await fetchMyTenantMemberships().catch(() => null);
-      const firstTenant = memberships?.[0];
-      if (firstTenant) {
-        setActiveTenantId(firstTenant.tenantId);
-      }
+    const hostStatus = await fetchMemberHostStatus().catch(() => null);
+    if (hostStatus?.tenantId) {
+      setActiveTenantId(hostStatus.tenantId);
     }
 
     navigate(
@@ -129,17 +122,17 @@ export const SignIn = () => {
   };
 
   const demoAccounts = [
-    { label: 'Admin', email: 'admin@uaetrails.app', password: 'Admin@12345' },
-    { label: 'Participant', email: 'visitor@uaetrails.app', password: 'Visitor@12345' },
-    { label: 'Individual host', email: 'host@uaetrails.app', password: 'Host@12345' },
-    { label: 'Agency', email: 'organizer@uaetrails.app', password: 'Agency@12345' },
-    { label: 'Shop', email: 'shop@uaetrails.app', password: 'Shop@12345' }
+    { label: 'Admin', email: 'admin@uaetrails.app' },
+    { label: 'Participant', email: 'visitor@uaetrails.app' },
+    { label: 'Individual host', email: 'host@uaetrails.app' },
+    { label: 'Agency', email: 'organizer@uaetrails.app' },
+    { label: 'Shop', email: 'shop@uaetrails.app' },
   ];
 
   const quickLogin = async (account: (typeof demoAccounts)[number]) => {
     setError(null);
     setEmail(account.email);
-    setPassword(account.password);
+    setPassword('');
     try {
       await completeAuth(await signInDemo(account.email));
     } catch (submissionError) {

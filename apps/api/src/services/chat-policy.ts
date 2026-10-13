@@ -8,7 +8,7 @@ import {
   hasSharedActivityParticipation,
   hasActivityInquiryAccess
 } from '../lib/activity-engagement-store.js';
-import { areAcceptedBuddies } from '../lib/buddy-store.js';
+import { areAcceptedBuddies, listBuddiesForUser } from '../lib/buddy-store.js';
 
 const ACTIVE_REQUEST_STATUSES: RequestStatus[] = [
   RequestStatus.PENDING,
@@ -92,4 +92,40 @@ export async function assertCanMessageUser(
     'message_not_allowed',
     'You can only message people you are connected with as buddies or share an activity connection with.'
   );
+}
+
+/** Inbox: one buddy list read, then policy checks only for non-buddy partners. */
+export async function filterInboxMessageablePartnerIds(
+  viewerId: string,
+  partnerIds: string[]
+): Promise<Set<string>> {
+  const unique = [...new Set(partnerIds.filter(Boolean))];
+  if (unique.length === 0) return new Set();
+
+  const buddies = await listBuddiesForUser(viewerId);
+  const buddyIds = new Set(buddies.map((b) => b.userId));
+  const allowed = new Set<string>();
+  const toCheck: string[] = [];
+
+  for (const partnerId of unique) {
+    if (buddyIds.has(partnerId)) {
+      allowed.add(partnerId);
+    } else {
+      toCheck.push(partnerId);
+    }
+  }
+
+  if (toCheck.length > 0) {
+    const checks = await Promise.all(
+      toCheck.map(async (partnerId) => ({
+        partnerId,
+        ok: await canMessageUser(viewerId, partnerId),
+      }))
+    );
+    for (const { partnerId, ok } of checks) {
+      if (ok) allowed.add(partnerId);
+    }
+  }
+
+  return allowed;
 }

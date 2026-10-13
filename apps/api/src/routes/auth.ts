@@ -11,6 +11,7 @@ import { slugify } from '../lib/slug.js';
 import { validate } from '../middleware/validate.js';
 import { requireAuth } from '../middleware/auth.js';
 import { env } from '../config/env.js';
+import { isDemoLoginAllowedForRequest } from '../lib/demo-login-policy.js';
 import { sendPasswordResetEmail, sendVerificationEmail } from '../lib/email.js';
 import { verifyGoogleIdToken } from '../lib/google-auth.js';
 import { createUniqueReferralCode } from '../lib/referral-code.js';
@@ -145,26 +146,12 @@ const issueEmailVerificationOtp = async (input: {
   };
 };
 
-const isDemoLoginAllowed = (req: Request): boolean => env.NODE_ENV === 'test' || isLocalRequest(req);
-
-const isLocalHost = (value: string): boolean => {
-  const host = value.split(',')[0]?.trim() ?? '';
-  if (!host) return false;
-  const normalized = host.split(':')[0]?.toLowerCase() ?? '';
-  return normalized === 'localhost' || normalized === '127.0.0.1';
-};
-
-const isLocalRequest = (req: Request): boolean => {
-  const forwardedHost = req.headers['x-forwarded-host'];
-  if (typeof forwardedHost === 'string' && isLocalHost(forwardedHost)) {
-    return true;
-  }
-  const host = req.headers.host;
-  if (typeof host === 'string' && isLocalHost(host)) {
-    return true;
-  }
-  return isLocalHost(req.hostname ?? '');
-};
+const isDemoLoginAllowed = (req: Request): boolean =>
+  isDemoLoginAllowedForRequest(
+    env.NODE_ENV,
+    req.socket?.remoteAddress,
+    process.env.ALLOW_DEMO_LOGIN
+  );
 
 const buildAuthResponse = (user: { id: string; email: string; role: UserRole }, tokens: { accessToken: string }) => ({
   user: {

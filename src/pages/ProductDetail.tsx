@@ -15,8 +15,10 @@ export const ProductDetail = () => {
       setState({ kind: 'missing' });
       return;
     }
+    let cancelled = false;
     fetchShopProductDetail(id)
       .then((product) => {
+        if (cancelled) return;
         const external = product.externalUrl?.trim();
         if (external) {
           window.location.replace(external);
@@ -30,7 +32,12 @@ export const ProductDetail = () => {
         }
         setState({ kind: 'shop', merchantId });
       })
-      .catch(() => setState({ kind: 'missing' }));
+      .catch(() => {
+        if (!cancelled) setState({ kind: 'missing' });
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
 
   if (state.kind === 'loading') {

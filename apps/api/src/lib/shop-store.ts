@@ -8,6 +8,7 @@ import { COLLECTIONS } from './collections.js';
 import type { Collection } from 'mongodb';
 import { getMongoClient } from './mongo.js';
 import { listTenantsByOwnerId, findTenantById, writeTenantToMongo, type TenantRecord } from './tenant-store.js';
+import { normalizeSearchRegexInput } from './regex-search.js';
 
 type MongoStripeWebhookEvent = {
   _id: string;
@@ -292,10 +293,11 @@ export const listPublicProducts = async (input: {
   skip: number;
   take: number;
 }) => {
+  const searchRegex = normalizeSearchRegexInput(input.search);
   const query: Record<string, unknown> = {
     status: ProductStatus.ACTIVE,
     ...(input.category ? { category: input.category } : {}),
-    ...(input.search ? { name: { $regex: input.search, $options: 'i' } } : {})
+    ...(searchRegex ? { name: { $regex: searchRegex, $options: 'i' } } : {}),
   };
 
   const [items, total] = await Promise.all([
