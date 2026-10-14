@@ -117,7 +117,8 @@ describe('activity detail program — governance', () => {
     expect(peoplePanelBlock).toBeTruthy();
     expect(peoplePanelBlock!).toMatch(/PeopleBrowsePanel/);
     expect(peoplePanelBlock!).not.toMatch(/ListFeedActionsProvider/);
-    expect(browsePanels).toMatch(/const mobileMapListPanel[\s\S]*ListFeedActionsProvider/);
+    expect(browsePanels).toMatch(/const mobileMapListPanel[\s\S]*ExploreBrowsePanel/);
+    expect(browsePanels).not.toMatch(/const mobileMapListPanel[\s\S]*ListFeedActionsProvider/);
   });
 
   it('AD-LIST-08: list feed and map peek share executeActivityMapPeekAction', () => {
@@ -130,18 +131,13 @@ describe('activity detail program — governance', () => {
     expect(exploreActions).toMatch(/executeActivityMapPeekAction/);
   });
 
-  it('AD-PEEK-07: explore map list panel wraps ListFeedActionsProvider with host actions', () => {
-    const experience = read('src/explore/ui/ExploreExperience.tsx');
-    expect(experience).toMatch(/ExploreExperienceBrowsePanels/);
-    expect(experience).toMatch(/listFeedHostActions/);
+  it('AD-PEEK-07: explore map list rows open peek without inline join CTAs', () => {
     const browsePanels = read('src/explore/shell/ExploreExperienceBrowsePanels.tsx');
-    expect(browsePanels).toMatch(/const desktopMapListPanel[\s\S]*ListFeedActionsProvider[\s\S]*listFeedHostActions/);
-    expect(browsePanels).toMatch(/const mobileMapListPanel[\s\S]*ListFeedActionsProvider[\s\S]*listFeedHostActions/);
+    expect(browsePanels).not.toMatch(/ListFeedActionsProvider/);
     const listRow = read('src/explore/ui/ExploreListRow.tsx');
     expect(listRow).toMatch(/ExploreListRowWireFooter/);
     const wireFooter = read('src/explore/ui/ExploreListRowWireFooter.tsx');
     expect(wireFooter).toMatch(/useListFeedActionsOptional/);
-    expect(wireFooter).toMatch(/onPrimaryFooter/);
   });
 
   it('AD-PEEK-03: activity map peek must not branch to HostActivityCtas', () => {

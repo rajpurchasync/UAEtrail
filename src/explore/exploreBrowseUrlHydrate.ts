@@ -65,6 +65,7 @@ export type ExploreBrowseUrlHydratedState = {
   pinKind: ExplorePinKindFilter;
   topicPills: ExploreMapFilterPillKey[];
   listMode: ExploreBrowseListMode;
+  peopleBrowseOpen: boolean;
   searchScope: ExploreSearchScopeKey | null;
   peopleBrowseTab: PeopleBrowseTab;
   followedSegment: ExploreFollowedSegment;
@@ -114,7 +115,9 @@ export const parseExploreBrowseStateFromSearchParams = (
     outingTopic: parseExploreOutingTopic(searchParams.get('outingTopic'), nextMapFilter, nextSubtype),
     pinKind: parseExplorePinKindFilter(searchParams.get('pinKind')),
     topicPills: parseExploreMapFilterPillsParam(searchParams.get('topics')),
-    listMode: isPeopleBrowseListView(searchParams.get('view')) ? 'people' : 'default',
+    listMode:
+      !isDesktop && isPeopleBrowseListView(searchParams.get('view')) ? 'people' : 'default',
+    peopleBrowseOpen: isDesktop && isPeopleBrowseListView(searchParams.get('view')),
     searchScope: parseExploreSearchScope(
       searchParams.get('searchScope') ?? searchParams.get('searchFocus')
     ),

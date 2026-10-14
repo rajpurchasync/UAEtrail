@@ -5,7 +5,7 @@ describe('browseListUrlState trip topics', () => {
   it('parses buddies segment for people list', () => {
     const params = new URLSearchParams('listCat=people&buddies=looking');
     const state = parseBrowseListFilterState(params);
-    expect(state.buddiesSegment).toBe('available');
+    expect(state.buddiesSegment).toBe('looking');
     const serialized = serializeBrowseListSearchParams(state, []);
     expect(serialized.get('buddies')).toBeNull();
   });

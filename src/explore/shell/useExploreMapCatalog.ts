@@ -28,7 +28,7 @@ export const useExploreMapCatalog = (input: {
     return areaScoped.filter((item) => myTripsPinIds.has(item.id));
   }, [items, myTripsMode, myTripsPinIds, areaSlug]);
 
-  const mapLoading = loading || (myTripsMode && myTripsPinsLoading);
+  const mapLoading = (loading && items.length === 0) || (myTripsMode && myTripsPinsLoading);
   const loadError = mapError ? describeExploreMapLoadError(mapError) : null;
 
   return {

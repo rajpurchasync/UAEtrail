@@ -48,6 +48,7 @@ import {
 import { DEMO_ACCOUNTS, resolveDemoAccountPassword } from '../src/lib/demo-accounts.js';
 import { logOmarHostQaPlaybook } from './logOmarHostQaPlaybook.js';
 import { seedCuratedAreas } from '../src/lib/seed-areas.js';
+import { backfillSeekingActivitiesForActiveIntents } from '../src/lib/participant-intents-store.js';
 import { curatedAreaSeedId } from '@uaetrail/shared-types';
 import { backfillSeedCatalogLocationAreaIds, seedLocationAreaId } from './seed-location-area-map.js';
 import {
@@ -58,6 +59,8 @@ import {
 } from '../src/lib/social-groups-store.js';
 import { ensureActivityGroupChat } from '../src/services/activity-group-chat.js';
 import { logConnectionsDemoPlaybook, seedConnectionsDemo } from './seedConnectionsDemo.js';
+import { ensureDemoExploreActivities, seedDemoScheduledActivities } from './seed-demo-scheduled-activities.js';
+import { refreshSeedParticipantSeekingSchedules } from './seed-demo-seeking-schedules.js';
 
 const seedChatThread = async (
   messages: Array<{
@@ -971,6 +974,7 @@ async function main() {
     await seedCuratedAreas();
     await backfillSeedCatalogLocationAreaIds();
     console.log('[seed] Curated areas upserted and catalog place areaIds backfilled');
+    await ensureDemoExploreActivities();
     if (isMobileInboxSeedEnabled()) {
       await runMobileInboxDemoSeed();
     }
@@ -1920,238 +1924,18 @@ Share your live location and carry extra water in summer months.`
 
   await backfillSeedCatalogLocationAreaIds();
 
-  const start = new Date();
-  start.setDate(start.getDate() + 7);
-  start.setHours(6, 0, 0, 0);
-
-  const event =   await upsertEvent('seed-event-jais', {
-    tenant: { connect: { id: agencyTenant.id } },
-    location: { connect: { id: 'jebel-jais-summit-trail' } },
-    createdBy: { connect: { id: agencyOwner._id } },
-    host: { connect: { id: agencyGuide._id } },
-    activityType: ActivityType.HIKING,
-    title: 'Jebel Jais Group Hike',
-    description: 'Guided early morning summit trek.',
-    startAt: start,
-    meetingPoint: 'Jebel Jais Base Parking',
-    meetingLat: 25.9433,
-    meetingLng: 56.1422,
-    priceAed: 120,
-    capacity: 15,
-    status: ActivityStatus.PUBLISHED,
-    publishedAt: new Date(),
-    itinerary: ['Meet at 6:00 AM', 'Summit climb', 'Return by noon'],
-    requirements: ['Water 2L', 'Hiking shoes', 'Cap and sunscreen'],
-    outingCategory: 'hiking',
+  const { jaisActivityId } = await seedDemoScheduledActivities({
+    agencyTenantId: agencyTenant.id,
+    individualHostTenantId: individualHostTenant.id,
+    agencyOwnerId: agencyOwner._id,
+    agencyGuideId: agencyGuide._id,
+    individualHostId: individualHost._id,
   });
 
-  const start2 = new Date();
-  start2.setDate(start2.getDate() + 14);
-  start2.setHours(16, 0, 0, 0);
-
-  await upsertEvent('seed-event-fossil-camp', {
-    tenant: { connect: { id: individualHostTenant.id } },
-    location: { connect: { id: 'fossil-rock-desert-camp' } },
-    createdBy: { connect: { id: individualHost._id } },
-    host: { connect: { id: individualHost._id } },
-    activityType: ActivityType.CAMPING,
-    title: 'Fossil Rock Overnight Camp',
-    description: 'Desert camping with stargazing and sunrise photography.',
-    startAt: start2,
-    meetingPoint: 'Sharjah Desert Road (coordinates shared upon booking)',
-    meetingLat: 25.2185,
-    meetingLng: 55.8521,
-    priceAed: 200,
-    capacity: 12,
-    featured: true,
-    status: ActivityStatus.PUBLISHED,
-    publishedAt: new Date(),
-    itinerary: [
-      'Arrive by 4 PM',
-      'Set up camp',
-      'Sunset BBQ',
-      'Stargazing session',
-      'Sunrise photography'
-    ],
-    requirements: ['Sleeping bag', 'Warm jacket', 'Camera (optional)', 'Water 3L'],
-    outingCategory: 'camping',
-  });
-
-  const freeHikeStart = new Date();
-  freeHikeStart.setDate(freeHikeStart.getDate() + 10);
-  freeHikeStart.setHours(7, 0, 0, 0);
-
-  await upsertEvent('seed-event-shawka-free', {
-    tenant: { connect: { id: agencyTenant.id } },
-    location: { connect: { id: 'wadi-shawka-loop' } },
-    createdBy: { connect: { id: agencyOwner._id } },
-    host: { connect: { id: agencyGuide._id } },
-    activityType: ActivityType.HIKING,
-    title: 'Wadi Shawka Community Hike',
-    description:
-      'Free guided group hike through Wadi Shawka — open to all skill levels. A great intro to UAE trail culture with no cost to join.',
-    startAt: freeHikeStart,
-    meetingPoint: 'Wadi Shawka Dam parking',
-    meetingLat: 25.3385,
-    meetingLng: 56.1188,
-    priceAed: 0,
-    capacity: 20,
-    featured: true,
-    status: ActivityStatus.PUBLISHED,
-    publishedAt: new Date(),
-    itinerary: ['Meet at 7:00 AM', 'Loop trail through the wadi', 'Return by 11:00 AM'],
-    requirements: ['Water 1.5L', 'Trail shoes', 'Sun protection'],
-    outingCategory: 'hiking',
-  });
-
-  const freeCampStart = new Date();
-  freeCampStart.setDate(freeCampStart.getDate() + 21);
-  freeCampStart.setHours(15, 0, 0, 0);
-
-  const omarDraftStart = new Date();
-  omarDraftStart.setDate(omarDraftStart.getDate() + 30);
-  omarDraftStart.setHours(9, 0, 0, 0);
-
-  await upsertEvent('seed-event-omar-draft', {
-    tenant: { connect: { id: individualHostTenant.id } },
-    location: { connect: { id: 'fossil-rock-desert-camp' } },
-    createdBy: { connect: { id: individualHost._id } },
-    host: { connect: { id: individualHost._id } },
-    activityType: ActivityType.HIKING,
-    title: 'Omar — Wadi loop (draft)',
-    description: 'Draft plan for host QA — publish from Trips when ready.',
-    startAt: omarDraftStart,
-    meetingPoint: 'Sharjah — exact pin after publish',
-    meetingLat: 25.22,
-    meetingLng: 55.85,
-    priceAed: 0,
-    capacity: 8,
-    status: ActivityStatus.DRAFT,
-    itinerary: ['Draft — edit before publish'],
-    requirements: ['Water'],
-    outingCategory: 'hiking',
-  });
-
-  await upsertEvent('seed-event-desert-meetup', {
-    tenant: { connect: { id: individualHostTenant.id } },
-    location: { connect: { id: 'fossil-rock-desert-camp' } },
-    createdBy: { connect: { id: individualHost._id } },
-    host: { connect: { id: individualHost._id } },
-    activityType: ActivityType.EVENT,
-    title: 'Desert Sunset Meetup (Free)',
-    description:
-      'Free afternoon desert meetup — stargazing tips, campfire chat, and sunset views. Bring your own gear; no overnight stay required.',
-    startAt: freeCampStart,
-    meetingPoint: 'Fossil Rock approach road',
-    meetingLat: 25.2192,
-    meetingLng: 55.8495,
-    priceAed: 0,
-    capacity: 25,
-    featured: true,
-    status: ActivityStatus.PUBLISHED,
-    publishedAt: new Date(),
-    itinerary: [
-      'Arrive by 3 PM',
-      'Sunset viewpoint',
-      'Campfire & stargazing intro',
-      'Wrap up by 9 PM'
-    ],
-    requirements: ['Chair or mat', 'Warm layer', 'Snacks & water'],
-    outingCategory: 'events',
-    participationMode: 'rsvp',
-  });
-
-  const eventRunStart = new Date();
-  eventRunStart.setDate(eventRunStart.getDate() + 5);
-  eventRunStart.setHours(6, 30, 0, 0);
-
-  await upsertEvent('seed-event-kite-beach-run', {
-    tenant: { connect: { id: agencyTenant.id } },
-    location: { connect: { id: 'jumeirah-kite-beach' } },
-    createdBy: { connect: { id: agencyOwner._id } },
-    host: { connect: { id: agencyGuide._id } },
-    activityType: ActivityType.EVENT,
-    title: 'Kite Beach Sunrise Run',
-    description: 'Community 5K along the Dubai Marina/Kite Beach track — all paces welcome.',
-    startAt: eventRunStart,
-    meetingPoint: 'Kite Beach running track',
-    meetingLat: 25.1654,
-    meetingLng: 55.2553,
-    priceAed: 0,
-    capacity: 30,
-    featured: true,
-    status: ActivityStatus.PUBLISHED,
-    publishedAt: new Date(),
-    itinerary: ['Warm-up 6:30 AM', '5K out-and-back', 'Stretch & coffee'],
-    requirements: ['Running shoes', 'Water bottle', 'High-vis top'],
-    outingCategory: 'events',
-    participationMode: 'rsvp',
-  });
-
-  const carpoolStart = new Date();
-  carpoolStart.setDate(carpoolStart.getDate() + 4);
-  carpoolStart.setHours(5, 0, 0, 0);
-
-  await upsertEvent('seed-event-rideshare-marina-jais', {
-    tenant: { connect: { id: individualHostTenant.id } },
-    location: { connect: { id: 'jebel-jais-summit-trail' } },
-    createdBy: { connect: { id: individualHost._id } },
-    host: { connect: { id: individualHost._id } },
-    activityType: ActivityType.RIDESHARE,
-    title: 'Rideshare Dubai Marina → Jebel Jais',
-    description: 'Shared ride for the Jebel Jais hike — split fuel costs.',
-    startAt: carpoolStart,
-    meetingPoint: 'Dubai Marina Mall parking',
-    meetingLat: 25.0782,
-    meetingLng: 55.1394,
-    startPoint: 'Jebel Jais Viewing Deck',
-    startLat: 25.9433,
-    startLng: 56.1422,
-    pricingMode: 'shared',
-    rideshareFree: false,
-    ridesharePriceAed: 35,
-    priceAed: 35,
-    capacity: 4,
-    featured: true,
-    status: ActivityStatus.PUBLISHED,
-    publishedAt: new Date(),
-    itinerary: ['Depart Marina 5:00 AM', 'Arrive Jebel Jais ~7:00 AM'],
-    requirements: ['Be on time', 'Share fuel cost at pickup', 'Max 1 bag per seat'],
-    outingCategory: 'rideshare',
-  });
-
-  const boulderStart = new Date();
-  boulderStart.setDate(boulderStart.getDate() + 9);
-  boulderStart.setHours(17, 0, 0, 0);
-
-  await upsertEvent('seed-event-boulder-session', {
-    tenant: { connect: { id: agencyTenant.id } },
-    location: { connect: { id: 'hatta-dam-loop' } },
-    createdBy: { connect: { id: agencyOwner._id } },
-    host: { connect: { id: agencyGuide._id } },
-    activityType: ActivityType.EVENT,
-    outingCategory: 'activities',
-    outingTopic: 'climbing',
-    title: 'Evening boulder session (Hatta)',
-    description: 'Outdoor bouldering meetup — all levels welcome; crash pads shared.',
-    startAt: boulderStart,
-    meetingPoint: 'Hatta Wadi Hub parking',
-    meetingLat: 24.82,
-    meetingLng: 56.13,
-    priceAed: 0,
-    capacity: 10,
-    featured: true,
-    status: ActivityStatus.PUBLISHED,
-    publishedAt: new Date(),
-    itinerary: ['Meet 5 PM', 'Warm-up problems', 'Wrap by 8 PM'],
-    requirements: ['Activity type: Climb', 'Climbing shoes', 'Water'],
-    participationMode: 'approval',
-  });
-
-  await seedParticipant(event._id, participant._id, agencyOwner._id);
+  await seedParticipant(jaisActivityId, participant._id, agencyOwner._id);
 
   const approvedRequest = await db().collection('activity_requests').findOne({
-    activityId: event._id,
+    activityId: jaisActivityId,
     userId: participant._id
   });
   if (approvedRequest) {
@@ -2166,12 +1950,12 @@ Share your live location and carry extra water in summer months.`
     );
   }
 
-  await seedParticipant(event._id, agencyGuide._id, agencyOwner._id);
-  await seedParticipant(event._id, admin._id, agencyOwner._id);
+  await seedParticipant(jaisActivityId, agencyGuide._id, agencyOwner._id);
+  await seedParticipant(jaisActivityId, admin._id, agencyOwner._id);
 
   const pendingNow = new Date();
   await db().collection('activity_requests').updateOne(
-    { activityId: event._id, userId: pendingParticipant._id },
+    { activityId: jaisActivityId, userId: pendingParticipant._id },
     {
       $set: {
         status: RequestStatus.PENDING,
@@ -2318,7 +2102,7 @@ Share your live location and carry extra water in summer months.`
     title: 'Join request approved',
     body: 'Your request to join an activity was approved. Check My activities for details.',
     type: NotificationType.REQUEST_UPDATE,
-    meta: { activityId: event._id }
+    meta: { activityId: jaisActivityId }
   });
 
   await seedMobileInboxDemo({
@@ -2326,7 +2110,7 @@ Share your live location and carry extra water in summer months.`
     agencyOwnerId: agencyOwner._id,
     agencyGuideId: agencyGuide._id,
     individualHostId: individualHost._id,
-    jaisActivityId: event._id,
+    jaisActivityId,
     fossilCampActivityId: 'seed-event-fossil-camp',
     shawkaActivityId: 'seed-event-shawka-free',
   });
@@ -2345,7 +2129,7 @@ Share your live location and carry extra water in summer months.`
   logOmarHostQaPlaybook();
 
   const participantRecord = await db().collection('activity_participants').findOne({
-    activityId: event._id,
+    activityId: jaisActivityId,
     userId: participant._id
   });
   if (participantRecord) {
@@ -2475,6 +2259,14 @@ Share your live location and carry extra water in summer months.`
     },
     { upsert: true }
   );
+
+  const seekingBackfill = await backfillSeekingActivitiesForActiveIntents({ limit: 50 });
+  console.log(
+    `Seeking activities backfill: created=${seekingBackfill.created} skipped=${seekingBackfill.skipped} errors=${seekingBackfill.errors.length}`
+  );
+
+  const seekingScheduleRefresh = await refreshSeedParticipantSeekingSchedules();
+  console.log(`Seeking demo schedule refresh: updated=${seekingScheduleRefresh.updated}`);
 
   console.log('Seed complete.');
   console.log(`Admin: admin@uaetrails.app (${admin.profile?.displayName ?? demoAccount('admin@uaetrails.app').displayName}) / ${demoAccount('admin@uaetrails.app').password}`);

@@ -330,6 +330,10 @@ export const mapPinDisplayGroupKey = (pin: PlaceMapPin): string => mapPinEmojiGr
 
 const exploreItemIdForPin = (pin: PlaceMapPin): string => pin.exploreItemId ?? pin.id;
 
+/** After map click resolution — prefer explicit explore item id over stack defaults. */
+export const resolveExploreItemIdFromMapPin = (pin: PlaceMapPin): string =>
+  pin.exploreItemId ?? pin.stackExploreItemIds?.[0] ?? pin.id;
+
 const buildColocatedEntry = (groupPins: PlaceMapPin[]): ColocatedMapPinEntry => {
   const sorted = [...groupPins].sort((a, b) => exploreItemIdForPin(a).localeCompare(exploreItemIdForPin(b)));
   const lead = sorted[0]!;

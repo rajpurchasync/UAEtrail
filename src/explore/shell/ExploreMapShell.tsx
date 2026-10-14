@@ -1,4 +1,5 @@
 import { ExploreMapStage } from '../ui/ExploreMapStage';
+import { PeopleBrowsePanel } from '@/people-discovery/panel/PeopleBrowsePanel';
 import type { useExploreExperienceModel } from './useExploreExperienceModel';
 
 type Model = ReturnType<typeof useExploreExperienceModel>;
@@ -29,6 +30,7 @@ type Props = Pick<
   | 'searchScopeCounts'
   | 'setExploreSearchModalOpen'
   | 'onVisibleMapBoundsChange'
+  | 'peopleBrowsePanelProps'
 >;
 
 /** Map stage: filters chrome, pins, peek sheet (R2). */
@@ -57,6 +59,7 @@ export const ExploreMapShell = ({
   searchScopeCounts,
   setExploreSearchModalOpen,
   onVisibleMapBoundsChange,
+  peopleBrowsePanelProps,
 }: Props) => (
   <ExploreMapStage
     isDesktop={isDesktop}
@@ -125,5 +128,20 @@ export const ExploreMapShell = ({
     onOpenExploreItem={handleOpenExploreItem}
     onWithdraw={() => selection.joinActions.setShowWithdraw(true)}
     onGuestGatedAction={selection.handleGuestGatedAction}
+    desktopPeopleBrowseOverlay={
+      isDesktop && browse.peopleBrowseOpen ? (
+        <aside
+          className="pointer-events-auto flex h-full min-h-0 w-[min(400px,32vw)] max-w-full shrink-0 flex-col overflow-hidden border-l border-neutral-200 bg-white px-5 py-4 shadow-[-12px_0_32px_rgba(15,23,42,0.08)]"
+          aria-label="Find crew"
+        >
+          <PeopleBrowsePanel
+            {...peopleBrowsePanelProps}
+            onClose={browse.closePeopleBrowsePanel}
+            closePanelAriaLabel="Close Find crew"
+            closeButtonVariant="dismiss"
+          />
+        </aside>
+      ) : null
+    }
   />
 );

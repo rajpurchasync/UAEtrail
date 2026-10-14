@@ -23,6 +23,22 @@ export const writeExploreMapMemoryCache = <T>(payload: T, now = Date.now()): voi
   exploreMapMemoryCache = { expiresAt: now + EXPLORE_MAP_CACHE_MS, payload };
 };
 
+export const clearExploreMapMemoryCache = (): void => {
+  exploreMapMemoryCache = null;
+};
+
+/** When Redis is used, in-process memory is invalid if the shared payload key was deleted (e.g. after seed). */
+export const exploreMapRedisPayloadExists = async (): Promise<boolean | null> => {
+  const redis = await getRedisClient();
+  if (!redis) return null;
+  try {
+    const exists = await redis.exists(EXPLORE_MAP_REDIS_KEY);
+    return exists > 0;
+  } catch {
+    return null;
+  }
+};
+
 /** Drop in-process and Redis explore map payloads after data writes. */
 export const invalidateExploreMapCache = async (): Promise<void> => {
   exploreMapMemoryCache = null;

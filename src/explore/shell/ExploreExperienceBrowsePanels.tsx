@@ -1,11 +1,8 @@
 import { ListDiscoveryExperience } from '../../list/ListDiscoveryExperience';
-import { ListFeedActionsProvider } from '../../list/ui/ListFeedActionsProvider';
 import { ExploreBrowsePanel, type ExploreBrowsePanelProps } from '../ui/ExploreBrowsePanel';
 import { ExploreMobileBrowseOverlay } from '../ui/ExploreMobileBrowseOverlay';
-import { PeopleBrowsePanel } from '../ui/PeopleBrowsePanel';
+import { PeopleBrowsePanel } from '@/people-discovery/panel/PeopleBrowsePanel';
 import type { ComponentProps, ReactNode } from 'react';
-import type { ListFeedHostActivityActions } from '../../list/ui/ListFeedActionsProvider';
-
 type PeopleProps = ComponentProps<typeof PeopleBrowsePanel>;
 
 type BrowsePanelShared = Omit<
@@ -18,6 +15,7 @@ type Props = {
   browse: {
     showListPanel: boolean;
     listMode: string;
+    peopleBrowseOpen: boolean;
     browseOpen: boolean;
     listOpen: boolean;
     closeListPanel: () => void;
@@ -27,7 +25,6 @@ type Props = {
   browsePanelShared: BrowsePanelShared;
   listItems: ExploreBrowsePanelProps['listItems'];
   mapItems: ExploreBrowsePanelProps['listItems'];
-  listFeedHostActions: ListFeedHostActivityActions;
   peopleBrowsePanelProps: PeopleProps;
   mapStage: ReactNode;
 };
@@ -39,34 +36,29 @@ export const ExploreExperienceBrowsePanels = ({
   browsePanelShared,
   listItems,
   mapItems,
-  listFeedHostActions,
   peopleBrowsePanelProps,
   mapStage,
 }: Props) => {
   const desktopMapListPanel = (
-    <ListFeedActionsProvider {...listFeedHostActions}>
-      <ExploreBrowsePanel
-        {...browsePanelShared}
-        listItems={listItems}
-        mapPool={mapItems}
-        onClose={browse.closeListPanel}
-        closePanelAriaLabel="Close map list"
-      />
-    </ListFeedActionsProvider>
+    <ExploreBrowsePanel
+      {...browsePanelShared}
+      listItems={listItems}
+      mapPool={mapItems}
+      onClose={browse.closeListPanel}
+      closePanelAriaLabel="Close map list"
+    />
   );
 
   const mobileMapListPanel = (
-    <ListFeedActionsProvider {...listFeedHostActions}>
-      <ExploreBrowsePanel
-        {...browsePanelShared}
-        listItems={listItems}
-        mapPool={mapItems}
-        onClose={browse.closeListPanel}
-        closePanelAriaLabel="Close list"
-        closeButtonVariant="dismiss"
-        mobileSheetChrome
-      />
-    </ListFeedActionsProvider>
+    <ExploreBrowsePanel
+      {...browsePanelShared}
+      listItems={listItems}
+      mapPool={mapItems}
+      onClose={browse.closeListPanel}
+      closePanelAriaLabel="Close list"
+      closeButtonVariant="dismiss"
+      mobileSheetChrome
+    />
   );
 
   const mobileListPeopleBrowsePanel = (
@@ -85,7 +77,7 @@ export const ExploreExperienceBrowsePanels = ({
 
   return (
     <>
-      {browse.showListPanel && isDesktop && browse.listMode !== 'people' ? (
+      {browse.showListPanel && isDesktop ? (
         <aside className="hidden lg:flex lg:min-h-0 lg:w-[min(400px,32vw)] lg:shrink-0 lg:flex-col lg:overflow-hidden lg:border-r lg:border-neutral-200 lg:bg-neutral-50 lg:px-4 lg:py-4 lg:transition-[width] lg:duration-300">
           {desktopMapListPanel}
         </aside>
@@ -111,16 +103,6 @@ export const ExploreExperienceBrowsePanels = ({
         </aside>
       ) : null}
 
-      {isDesktop && browse.listMode === 'people' ? (
-        <aside className="hidden lg:flex lg:min-h-0 lg:w-[min(400px,32vw)] lg:shrink-0 lg:flex-col lg:overflow-hidden lg:border-l lg:border-neutral-200 lg:bg-white lg:px-5 lg:py-4 lg:transition-[width] lg:duration-300">
-          <PeopleBrowsePanel
-            {...peopleBrowsePanelProps}
-            onClose={browse.closePeopleBrowsePanel}
-            closePanelAriaLabel="Close People panel"
-            closeButtonVariant="dismiss"
-          />
-        </aside>
-      ) : null}
     </>
   );
 };

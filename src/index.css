@@ -1027,6 +1027,30 @@
     font-family: inherit;
   }
 
+  .explore-map-rich .leaflet-container {
+    min-height: 280px;
+    height: 100%;
+  }
+
+  @media (max-width: 1023px) {
+    .explore-map-stage {
+      min-height: calc(
+        100dvh - var(--safe-top, 0px) - 3.5rem - var(--bottom-nav-height, 56px)
+      );
+    }
+
+    html:not([data-mobile-bottom-nav]) .explore-map-stage {
+      min-height: calc(100dvh - var(--safe-top, 0px) - 3.5rem);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .uaetrail-explore-desktop-zoom {
+      margin-bottom: 7rem !important;
+      margin-right: 0.75rem !important;
+    }
+  }
+
   .leaflet-tile-pane img {
     image-rendering: auto;
   }
@@ -1135,11 +1159,13 @@
   .uaetrail-map-pin-multi {
     position: relative;
     display: block;
+    pointer-events: none;
   }
 
   .uaetrail-map-pin-slot {
     position: absolute;
     cursor: pointer;
+    pointer-events: auto;
   }
 
   .uaetrail-map-pin-slot .uaetrail-map-pin-marker {

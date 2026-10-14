@@ -30,9 +30,10 @@ import { useExplorePublishedAreas } from '../useExplorePublishedAreas';
 import { useExplorePeopleBrowseBundle } from './useExplorePeopleBrowseBundle';
 import { useExplorePinDeepLink } from './useExplorePinDeepLink';
 import type { ComponentProps } from 'react';
-import { PeopleBrowsePanel } from '../ui/PeopleBrowsePanel';
+import { PeopleBrowsePanel } from '@/people-discovery/panel/PeopleBrowsePanel';
 import { useExploreMapCatalog } from './useExploreMapCatalog';
 import { useExploreRideshareOrganizeLinks } from './useExploreRideshareOrganizeLinks';
+import { resolveExploreItemIdFromMapPin } from '../ui/exploreMapPinModel';
 import { useExploreBrowsePanelShared } from './useExploreBrowsePanelShared';
 
 type PeopleProps = ComponentProps<typeof PeopleBrowsePanel>;
@@ -267,10 +268,12 @@ export const useExploreExperienceModel = () => {
       user,
       hostStatus,
       browse,
-      mapItems,
+      exploreCatalogItems: mapItems,
       areaSlug,
       isDesktop,
+      mapLoading,
       onOpenExploreActivity: openExploreActivityFromRef,
+      onOpenSeekingActivity: selection.openItem,
       searchFocusNonce,
     });
 
@@ -285,13 +288,11 @@ export const useExploreExperienceModel = () => {
 
   const handleMapPinClick = useCallback(
     (pin: PlaceMapPin) => {
-      const stack = pin.stackExploreItemIds;
-      const itemId =
-        (stack?.find((id) => id === selectedId) ?? stack?.[0]) ?? pin.exploreItemId ?? pin.id;
+      const itemId = resolveExploreItemIdFromMapPin(pin);
       const item = selectionItems.find((entry) => entry.id === itemId);
       if (item) selection.openItem(item);
     },
-    [selectionItems, selectedId, selection]
+    [selectionItems, selection]
   );
 
   const handlePickExploreArea = useCallback(

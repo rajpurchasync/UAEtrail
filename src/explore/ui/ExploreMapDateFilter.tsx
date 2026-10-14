@@ -18,6 +18,8 @@ interface ExploreMapDateFilterProps {
   textTrigger?: boolean;
   /** Optional class for text trigger button (list category pills). */
   textTriggerClassName?: string;
+  /** Optional class for icon-only trigger (map chrome). */
+  iconTriggerClassName?: string;
 }
 
 /** Map date preset — Today, Tomorrow, This week, This month (optional Anyday on list). */
@@ -28,6 +30,7 @@ export const ExploreMapDateFilter = ({
   iconOnly = false,
   textTrigger = false,
   textTriggerClassName,
+  iconTriggerClassName,
 }: ExploreMapDateFilterProps) => {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -77,9 +80,11 @@ export const ExploreMapDateFilter = ({
               `${EXPLORE_FLOATING_CONTROL} inline-flex h-9 items-center gap-0.5 px-3.5 text-[13px] font-semibold text-neutral-800 ${
                 active ? 'ring-2 ring-emerald-500/40' : ''
               }`
-            : `${EXPLORE_FLOATING_CONTROL} inline-flex h-10 items-center justify-center text-emerald-950 ${
-                iconOnly ? 'w-10 shrink-0 px-0' : 'gap-1.5 px-3 text-sm font-bold leading-snug'
-              } ${active ? 'ring-2 ring-emerald-500/40' : ''}`
+            : iconTriggerClassName
+              ? `${iconTriggerClassName} ${active ? 'ring-2 ring-emerald-500/40' : ''}`
+              : `${EXPLORE_FLOATING_CONTROL} inline-flex h-10 items-center justify-center text-emerald-950 ${
+                  iconOnly ? 'w-10 shrink-0 px-0' : 'gap-1.5 px-3 text-sm font-bold leading-snug'
+                } ${active ? 'ring-2 ring-emerald-500/40' : ''}`
         }
         aria-expanded={open}
         aria-controls={panelId}

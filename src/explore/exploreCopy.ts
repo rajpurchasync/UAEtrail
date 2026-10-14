@@ -23,6 +23,7 @@ export {
   exploreSubtitle,
   exploreVenueHint,
   formatExploreDayForHeadline,
+  formatExploreRelativeScheduleLabel,
   formatExploreDayShort,
   formatExploreTime,
   formatPlanPhrase,

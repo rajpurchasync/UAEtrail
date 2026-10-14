@@ -5,6 +5,8 @@ import {
   EXPLORE_MAP_CACHE_TTL_SEC,
   EXPLORE_MAP_REDIS_KEY,
   invalidateExploreMapCache,
+  clearExploreMapMemoryCache,
+  exploreMapRedisPayloadExists,
   readExploreMapMemoryCache,
   writeExploreMapMemoryCache,
 } from './explore-map-cache.js';
@@ -17,7 +19,12 @@ export const buildExploreMapPayload = async (): Promise<{ items: ExploreMapItemD
   const now = Date.now();
   const memoryCached = readExploreMapMemoryCache<{ items: ExploreMapItemDTO[] }>(now);
   if (memoryCached) {
-    return memoryCached;
+    const redisPayload = await exploreMapRedisPayloadExists();
+    if (redisPayload === false) {
+      clearExploreMapMemoryCache();
+    } else {
+      return memoryCached;
+    }
   }
 
   const redis = await getRedisClient();

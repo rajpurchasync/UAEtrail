@@ -34,7 +34,8 @@ import { BrowseListPageShell } from './ui/BrowseListPageShell';
 import { ListCategoryDedicatedView } from './ui/ListCategoryDedicatedView';
 import { ListCategoryFilterBar } from './ui/ListCategoryFilterBar';
 import { ListDiscoverHome } from './ui/ListDiscoverHome';
-import { PeopleBrowsePanel } from '../explore/ui/PeopleBrowsePanel';
+import { PeopleBrowsePanel } from '@/people-discovery/panel/PeopleBrowsePanel';
+import { usePeopleDiscoverySeekingActivities } from '@/people-discovery/hooks/usePeopleDiscoverySeekingActivities';
 import { ListDiscoveryHeader } from './ui/ListDiscoveryHeader';
 import { ListDiscoveryResults } from './ui/ListDiscoveryResults';
 import { ListRefineSheet } from './ui/ListRefineSheet';
@@ -43,8 +44,8 @@ import { useHostActivitySheetBundle } from '../hooks/useHostActivitySheetBundle'
 import { BROWSE_DISCOVER_PARAM } from './browseListUrlState';
 import { exploreMapPathFromListSearch, listDiscoveryPathFromExploreSearch } from './routing';
 import { listDiscoveryEmbeddedOnExplore, type ListDiscoverySurface } from './listDiscoverySurface';
-import { useMemberDiscoveryRoster } from '../explore/useMemberDiscoveryRoster';
-import { useExplorePeopleAvailability } from '../explore/useExplorePeopleAvailability';
+import { useMemberDiscoveryRoster } from '@/people-discovery/hooks/useMemberDiscoveryRoster';
+import { useExplorePeopleAvailability } from '@/people-discovery/hooks/usePeopleAvailability';
 import { parseExploreAreaSlug } from '../explore/exploreAreaFilter';
 
 const DiscoverHomeSkeleton = () => (
@@ -151,13 +152,15 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
   const peopleSegment = filters.buddiesSegment;
   const memberRoster = useMemberDiscoveryRoster({
     enabled:
-      isPeopleCategory && Boolean(user) && (peopleSegment === 'going' || peopleSegment === 'connect'),
+      isPeopleCategory &&
+      Boolean(user) &&
+      (peopleSegment === 'looking' || peopleSegment === 'going' || peopleSegment === 'connect'),
     search: filters.query,
     activityDatePreset: filters.activityDatePreset,
     omitDirectory: peopleSegment !== 'connect',
   });
   const memberAvailability = useExplorePeopleAvailability({
-    enabled: isPeopleCategory && peopleSegment === 'available',
+    enabled: isPeopleCategory && Boolean(user) && peopleSegment === 'available',
     search: filters.query,
     activityDatePreset: filters.activityDatePreset,
     areaSlug,
@@ -172,8 +175,27 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
   const { cards, items, isLoading, isError, refetch: reloadMap, isFetching } = useBrowseListFeed({
     filters: feedFilters,
     venueRegions,
-    mapEnabled: !isPeopleCategory,
+    mapEnabled: !isPeopleCategory || peopleSegment === 'looking',
   });
+
+  const peopleLookingSegment = isPeopleCategory && peopleSegment === 'looking';
+  const { seekingActivities } = usePeopleDiscoverySeekingActivities({
+    enabled: peopleLookingSegment,
+    exploreCatalogFallback: items,
+    filters: {
+      mapFilter: 'all',
+      buddySubtype: 'all',
+      outingTopic: 'all',
+      query: filters.query,
+    },
+  });
+
+  const handleOpenSeekingActivity = useCallback(
+    (item: { path: string }) => {
+      navigate(item.path);
+    },
+    [navigate]
+  );
 
   const discoverHomeCards = useMemo(() => buildListFeedCards(items, user), [items, user]);
 
@@ -221,6 +243,7 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
 
   const peopleResultCount = useMemo(() => {
     const seg = filters.buddiesSegment;
+    if (seg === 'looking') return seekingActivities.length;
     if (seg === 'available') return memberAvailability.people.length;
     if (seg === 'going') return memberRoster.friendsGoing.length;
     if (seg === 'connect') return memberRoster.directory.length;
@@ -230,6 +253,7 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
     memberAvailability.people.length,
     memberRoster.directory.length,
     memberRoster.friendsGoing.length,
+    seekingActivities.length,
   ]);
 
   const categoryResultsLabel = useMemo(() => {
@@ -359,8 +383,6 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
           onClose={() => {}}
           peopleBrowseTab={filters.buddiesSegment}
           onPeopleBrowseTabChange={(tab) => syncUrl({ buddiesSegment: tab })}
-          activityDatePreset={filters.activityDatePreset}
-          onActivityDatePresetChange={(preset) => syncUrl({ activityDatePreset: preset })}
           buddiesDiscoverSegment={filters.buddiesSegment}
           onBuddiesDiscoverSegmentChange={(segment) => syncUrl({ buddiesSegment: segment })}
           memberPeopleNetwork={[]}
@@ -387,6 +409,10 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
           entityFollowsError={null}
           isSignedIn={Boolean(user)}
           userRole={user?.role}
+          seekingActivities={seekingActivities}
+          exploreCatalogItems={items}
+          exploreCatalogLoading={isLoading}
+          onOpenSeekingActivity={handleOpenSeekingActivity}
         />
       );
     }

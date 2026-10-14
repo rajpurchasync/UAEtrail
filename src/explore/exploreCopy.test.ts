@@ -7,6 +7,7 @@ import {
   buildExploreSpotsSegment,
   buildExploreListWhen,
   buildExploreWhenSegment,
+  formatExploreRelativeScheduleLabel,
   exploreHeadline,
   formatExploreDayShort,
   formatExploreTime,
@@ -307,9 +308,43 @@ describe('sanitizeExploreLocation', () => {
   });
 });
 
+describe('formatExploreRelativeScheduleLabel', () => {
+  const anchor = new Date('2026-10-14T10:00:00');
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(anchor);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('buckets today, tomorrow, week, and month', () => {
+    expect(formatExploreRelativeScheduleLabel('2026-10-14')).toBe('Today');
+    expect(formatExploreRelativeScheduleLabel('2026-10-15')).toBe('Tomorrow');
+    expect(formatExploreRelativeScheduleLabel('2026-10-17')).toBe('This week');
+    expect(formatExploreRelativeScheduleLabel('2026-10-20')).toBe('Next week');
+    expect(formatExploreRelativeScheduleLabel('2026-10-28')).toBe('This month');
+    expect(formatExploreRelativeScheduleLabel('2026-11-05')).toBe('Next month');
+    expect(formatExploreRelativeScheduleLabel('2026-09-13')).toBe('Sep 13');
+  });
+});
+
 describe('buildExploreListWhen', () => {
-  it('uses compact day labels', () => {
-    expect(buildExploreListWhen('2026-09-13', '14:00')).toBe('Sun · 2 PM');
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-10-14T10:00:00'));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('uses relative schedule labels with compact tomorrow', () => {
+    expect(buildExploreListWhen('2026-10-15', '14:00')).toBe('Tmr · 2 PM');
+    expect(buildExploreListWhen('2026-10-17', '09:30')).toBe('This week · 9:30 AM');
+    expect(buildExploreListWhen('2026-09-13', '14:00')).toBe('Sep 13 · 2 PM');
   });
 });
 
@@ -401,7 +436,7 @@ describe('buildDiscoveryCardViewModelCard (explore list copy)', () => {
     expect(card.sections.suffix).toBe(' is going ');
     expect(card.sections.activityHighlight).toBe('Hiking');
     expect(card.sections.dateHighlight).toBe(' on Saturday 12th');
-    expect(card.sections.listWhen).toContain('Sat');
+    expect(card.sections.listWhen).toContain('Sep 12');
     expect(card.sections.listGoing).toBe('12 going');
   });
 
@@ -472,6 +507,6 @@ describe('buildDiscoveryCardViewModelCard (explore list copy)', () => {
     expect(buildExploreListMeta(card)).toContain('Dubai to Fujairah');
     expect(card.sections.highlightName).toBe('Alex');
     expect(card.sections.listTitle).toBe('Rideshare · Alex');
-    expect(card.sections.listWhen).toContain('Sun');
+    expect(card.sections.listWhen).toContain('Sep 13');
   });
 });

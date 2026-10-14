@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { SetURLSearchParams } from 'react-router-dom';
 import { MAP_FILTER_PILLS } from '../../config/exploreMapFilters';
 import {
-  mapFilterToPanel,
   type ActivityListFilterKey,
   type ExplorePanel,
   type MapFilterKey,
@@ -10,7 +9,7 @@ import {
   type ExploreActivityDatePreset,
 } from '../routing';
 import { MAP_FILTERS_BY_BROWSE_TAB, type DesktopBrowseTab } from './exploreBrowsePanelCopy';
-import { readInitialListOpen } from './exploreListPanelUrl';
+import { mapFilterToPanel, readInitialListOpen } from './exploreListPanelUrl';
 import { BROWSE_DISCOVER_PARAM } from '../../list/browseListUrlState';
 import { type ExploreMapFilterPillKey, type ExploreSearchScopeKey } from '../exploreBrowseTaxonomy';
 import {
@@ -80,6 +79,7 @@ export const useExploreBrowseUrlState = ({
   const [pinKind, setPinKind] = useState<ExplorePinKindFilter>(initial.pinKind);
   const [topicPills, setTopicPills] = useState<ExploreMapFilterPillKey[]>(initial.topicPills);
   const [listMode, setListMode] = useState<ExploreBrowseListMode>(initial.listMode);
+  const [peopleBrowseOpen, setPeopleBrowseOpen] = useState(initial.peopleBrowseOpen);
   const [searchScope, setSearchScope] = useState<ExploreSearchScopeKey | null>(initial.searchScope);
   const [peopleBrowseTab, setPeopleBrowseTab] = useState<PeopleBrowseTab>(initial.peopleBrowseTab);
   const [followedSegment, setFollowedSegment] = useState<ExploreFollowedSegment>(initial.followedSegment);
@@ -108,6 +108,7 @@ export const useExploreBrowseUrlState = ({
           pinKind,
           topicPills,
           listMode,
+          peopleBrowseOpen,
           searchScope,
           peopleBrowseTab,
         },
@@ -131,6 +132,7 @@ export const useExploreBrowseUrlState = ({
       pinKind,
       topicPills,
       listMode,
+      peopleBrowseOpen,
       searchScope,
       peopleBrowseTab,
       searchParams,
@@ -155,6 +157,7 @@ export const useExploreBrowseUrlState = ({
     setPinKind(state.pinKind);
     setTopicPills(state.topicPills);
     setListMode(state.listMode);
+    setPeopleBrowseOpen(state.peopleBrowseOpen);
     setSearchScope(state.searchScope);
     setPeopleBrowseTab(state.peopleBrowseTab);
     setFollowedSegment(state.followedSegment);
@@ -184,6 +187,7 @@ export const useExploreBrowseUrlState = ({
       setPinKind,
       setTopicPills,
       setListMode,
+      setPeopleBrowseOpen,
       setPeopleBrowseTab,
       setBuddiesDiscoverSegment,
       setFollowedSegment,
@@ -302,5 +306,6 @@ export const useExploreBrowseUrlState = ({
     followedSegment,
     applyFollowedSegment: handlers.applyFollowedSegment,
     listMode,
+    peopleBrowseOpen,
   };
 };

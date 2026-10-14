@@ -2,7 +2,17 @@ import { describe, expect, it } from 'vitest';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { hostedExploreMapItem, seekingExploreMapItem, venueExploreMapItem } from '../exploreMapItemFixtures';
 import { matchesActivityDateFilter } from '../exploreActivityDateFilter';
-import { expandMapPins, isShopListItem, layoutColocatedMapPins, matchesMapFilter, matchesPlacesMapFilter, matchesBuddyMapFilter, isPlacesMapItem, isBuddyMapItem } from './exploreMapPinModel';
+import {
+  expandMapPins,
+  isShopListItem,
+  layoutColocatedMapPins,
+  matchesMapFilter,
+  matchesPlacesMapFilter,
+  matchesBuddyMapFilter,
+  isPlacesMapItem,
+  isBuddyMapItem,
+  resolveExploreItemIdFromMapPin,
+} from './exploreMapPinModel';
 
 const baseItem = (overrides: Partial<ExploreMapItemDTO>): ExploreMapItemDTO =>
   ({
@@ -101,6 +111,15 @@ describe('exploreMapPinModel', () => {
     expect(laidOut).toHaveLength(1);
     expect(laidOut[0].colocatedEntries).toBeUndefined();
     expect(laidOut[0].stackCount).toBe(2);
+  });
+
+  it('resolveExploreItemIdFromMapPin prefers explicit exploreItemId', () => {
+    const pin = {
+      id: 'colocate:a+b',
+      exploreItemId: 'ride',
+      stackExploreItemIds: ['hike'],
+    } as ReturnType<typeof expandMapPins>[0];
+    expect(resolveExploreItemIdFromMapPin(pin)).toBe('ride');
   });
 
   it('layoutColocatedMapPins sets stackCount 1 for a lone pin at a coordinate', () => {

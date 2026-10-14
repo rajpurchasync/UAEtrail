@@ -53,9 +53,14 @@ describe('member availability', () => {
     expect(put.status).toBe(200);
     expect(put.body.data.slots).toHaveLength(1);
 
-    const explore = await request(app).get(
+    const exploreGuest = await request(app).get(
       `/api/v1/explore/people/availability?from=${start}&to=${end}&kind=hiking`
     );
+    expect(exploreGuest.status).toBe(401);
+
+    const explore = await request(app)
+      .get(`/api/v1/explore/people/availability?from=${start}&to=${end}&kind=hiking`)
+      .set('Authorization', `Bearer ${token}`);
     expect(explore.status).toBe(200);
     expect(
       explore.body.data.people.some((p: { userId: string }) => p.userId === user._id)
@@ -105,9 +110,11 @@ describe('member availability', () => {
         slots: [{ startDate: iso, endDate: iso }],
       });
 
-    const strangerRes = await request(app).get(
-      `/api/v1/explore/people/availability?from=${iso}&to=${iso}`
-    );
+    const strangerToken = await signInToken(stranger.email, password);
+    const strangerRes = await request(app)
+      .get(`/api/v1/explore/people/availability?from=${iso}&to=${iso}`)
+      .set('Authorization', `Bearer ${strangerToken}`);
+    expect(strangerRes.status).toBe(200);
     expect(
       strangerRes.body.data.people.some((p: { userId: string }) => p.userId === owner._id)
     ).toBe(false);

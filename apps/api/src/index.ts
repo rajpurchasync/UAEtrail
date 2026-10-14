@@ -41,6 +41,14 @@ const start = async () => {
     await getRedisClient();
   }
   await connectMongo();
+  if (env.NODE_ENV !== 'production') {
+    try {
+      const { ensureDemoExploreActivities } = await import('../scripts/seed-demo-scheduled-activities.js');
+      await ensureDemoExploreActivities();
+    } catch (err) {
+      logger.warn({ err }, 'demo explore activity ensure skipped on startup');
+    }
+  }
   await initChatStreamPubSub();
   registerRateLimiters(await createRateLimiters());
   const app = await bootstrapApp();

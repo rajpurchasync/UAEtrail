@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
+import { seekingExploreMapItem, hostedExploreMapItem } from '../explore/exploreMapItemFixtures';
 import { filterExploreMapItemsForList, type BrowseListFilterState } from './browseListFilters';
 
 const baseState: BrowseListFilterState = {
@@ -63,5 +64,19 @@ describe('filterExploreMapItemsForList', () => {
     const filtered = filterExploreMapItemsForList(items, state, []);
     expect(filtered).toHaveLength(1);
     expect(filtered[0].source).toBe('venue');
+  });
+
+  it('tripLookingOnly uses activity-discovery seeking selector', () => {
+    const items = [
+      hostedExploreMapItem({ id: 'activity:host-1' }),
+      seekingExploreMapItem({ id: 'activity:seek-1' }),
+    ];
+    const state: BrowseListFilterState = {
+      ...baseState,
+      tripLookingOnly: true,
+    };
+    const filtered = filterExploreMapItemsForList(items, state, []);
+    expect(filtered).toHaveLength(1);
+    expect(filtered[0].id).toBe('activity:seek-1');
   });
 });

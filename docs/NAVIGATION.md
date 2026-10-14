@@ -9,7 +9,7 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 | Surface | Route | Purpose |
 |---------|-------|---------|
 | **Marketing** | `/` | First impression — story, trust, sign up (not live catalog) |
-| **Browse** | `/explore` | Map-first discovery — activities, places, shops |
+| **Browse** | `/explore` | Map-first discovery — activities (`activity-discovery`), places/shops (`places-discovery`), people (`people-discovery`); map/list/search are projections |
 | **List discovery** | `/list` | Full-screen poster/list browse (same filters as explore; `listDiscoveryPath()` ↔ map via `exploreMapPathFromListSearch()`) |
 | **Personal hub** | `/profile`, `/profile/settings`, `/profile/edit`, `/profile/history` | Account hub, settings stack, outing **history** + journey map |
 | **Plan tab** | `/plan` | Active layer — goals, upcoming outings (bottom nav middle tab; UI label **My Plans** — `PRODUCT_PLAN_SURFACE_TITLE`) |
@@ -168,12 +168,13 @@ Legacy browse URLs (`/map`, `/discovery`, `/calendar`, bare `/activities` as bro
 
 **Job:** who can I go with, who’s going, who’s looking — **not** chat. Chat is [`/messages`](#chat-messages) ([`COMMUNICATION.md`](./COMMUNICATION.md)).
 
-Map pill label **Find your crew** (see `explorePeopleBrowseCopy.ts`); opens `view=people` (`listMode=people`; legacy `view=social` / `view=going` still parse). Query `peopleTab=available|going|connect` (legacy `socialTab`, `all`→`connect`, `friends`→`going`, `discover`→`available`). Panel title **People** — same rows as list **Buddies** (`listCat=people`, URL `buddies=` mirrors `peopleTab`). Guests → sign-in (`explore-people-browse`).
+Map pill label **Find your crew** (see `explorePeopleBrowseCopy.ts`); opens `view=people` on desktop (`peopleBrowseOpen`; mobile `listMode=people`; legacy `view=social` / `view=going` still parse). Query `peopleTab=looking|available|going|connect` (default **looking** omitted in URL; legacy `socialTab`, `all`→`connect`, `friends`→`going`, `discover`→`available`). Panel title **Find your crew** — list **Buddies** (`listCat=people`, URL `buddies=` mirrors `peopleTab`). **Looking for** tab is public (published seeking activities); other tabs → sign-in when needed.
 
 | Segment (`peopleTab`) | Label | Data / actions |
 |-----------------------|-------|----------------|
-| `available` | Available | `GET /explore/people/availability` — members who marked days + kinds; edit yours on Plan → **Available** (`planLensPath('availability')`). |
-| `going` | Friends going | `GET /me/member-discovery/roster` + social trip hints — buddies with upcoming outings. |
+| `looking` | Looking for | Published **`activities`** (`activityMode: seeking`) from **`GET /explore/map`** — same `ExploreListRow` as Activities list; not member availability. |
+| `available` | Free | `GET /explore/people/availability` — members who marked days + kinds; edit yours on Plan → **Available** (`planLensPath('availability')`). |
+| `going` | Friends | `GET /me/member-discovery/roster` + social trip hints — buddies with upcoming outings. |
 | `connect` | Everyone | Directory from `GET /users/browse` / roster; **3** directory rows preview free, then Pro lock; profile opens count toward **3 unique profiles / 30d** (`MEMBER_DISCOVERY_QUOTA_LIMIT`). |
 
 Cards show city, outings attended, and a subtle upcoming trip hint (link opens activity on map). **Friends → Plan a trip** opens compose (`explorePlanWithBuddyPath`). Profile quick launcher: **People** (this panel), **Friends** (`/buddies`), **Messages** (chat). **Join me** on activity detail (`ActivityInviteSharePanel`). APIs: [`API_ROUTING.md`](./API_ROUTING.md) § Member people reads (browse).

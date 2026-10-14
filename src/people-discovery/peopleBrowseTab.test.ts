@@ -6,11 +6,12 @@ import {
 } from './peopleBrowseTab';
 
 describe('parsePeopleBrowseTab', () => {
-  it('defaults to available', () => {
-    expect(parsePeopleBrowseTab(null)).toBe('available');
+  it('defaults to looking', () => {
+    expect(parsePeopleBrowseTab(null)).toBe('looking');
   });
 
   it('accepts primary tabs', () => {
+    expect(parsePeopleBrowseTab('looking')).toBe('looking');
     expect(parsePeopleBrowseTab('available')).toBe('available');
     expect(parsePeopleBrowseTab('going')).toBe('going');
     expect(parsePeopleBrowseTab('connect')).toBe('connect');
@@ -21,13 +22,12 @@ describe('parsePeopleBrowseTab', () => {
     expect(parsePeopleBrowseTab('friends')).toBe('going');
     expect(parsePeopleBrowseTab('followed')).toBe('going');
     expect(parsePeopleBrowseTab('discover')).toBe('available');
-    expect(parsePeopleBrowseTab('looking')).toBe('available');
   });
 });
 
 describe('parsePeopleBrowseTabFromUrl', () => {
-  it('defaults to available', () => {
-    expect(parsePeopleBrowseTabFromUrl(null, null)).toBe('available');
+  it('defaults to looking', () => {
+    expect(parsePeopleBrowseTabFromUrl(null, null)).toBe('looking');
   });
 
   it('prefers peopleTab over goingTab', () => {
@@ -42,8 +42,9 @@ describe('parsePeopleBrowseTabFromUrl', () => {
 });
 
 describe('serializePeopleBrowseTab', () => {
-  it('omits default available', () => {
-    expect(serializePeopleBrowseTab('available')).toBeNull();
+  it('omits default looking', () => {
+    expect(serializePeopleBrowseTab('looking')).toBeNull();
+    expect(serializePeopleBrowseTab('available')).toBe('available');
     expect(serializePeopleBrowseTab('going')).toBe('going');
     expect(serializePeopleBrowseTab('connect')).toBe('connect');
   });

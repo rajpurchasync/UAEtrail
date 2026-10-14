@@ -16,6 +16,7 @@ import {
   buildMapColocatedPinIconHtml,
   buildVenueMapPinHtml,
   isCatalogVenueMapPin,
+  resolveColocatedExploreItemIdFromPointer,
   type ColocatedPinIconEntry,
 } from '../../explore/mapPinIcons';
 import { MapTileLayers } from './MapTileLayers';
@@ -200,10 +201,10 @@ const pinIcon = (
     pin.activityMode === 'seeking' ? 'seeking' : source
   );
   const isVenue = source === 'venue';
-  const size = isVenue ? (selected ? 36 : 32) : selected ? 44 : 40;
+  const size = isVenue ? (selected ? 36 : 32) : selected ? 36 : 32;
   const iconSize = isVenue ? 15 : 18;
   const ringWidth = selected ? 3 : 2.5;
-  const indicativeCount = pin.stackCount ?? 1;
+  const stackCount = pin.stackCount ?? 0;
   const html = buildMapPinFaceHtml({
     kind,
     source,
@@ -212,9 +213,10 @@ const pinIcon = (
     fontSizePx: iconSize,
     ringWidth,
     selected,
-    stackCount: indicativeCount,
+    stackCount,
     activityMode: pin.activityMode ?? null,
     placeKind: pin.placeKind,
+    exploreItemId: pin.exploreItemId ?? pin.id,
   });
 
   return L.divIcon({
@@ -264,13 +266,101 @@ const pinForExploreItemClick = (pin: PlaceMapPin, exploreItemId: string): PlaceM
     )?.stackExploreItemIds ?? pin.stackExploreItemIds,
 });
 
-const resolvePinClick = (pin: PlaceMapPin, event?: L.LeafletMouseEvent): PlaceMapPin => {
+const pinMatchesExploreItemId = (pin: PlaceMapPin, exploreItemId: string): boolean => {
+  if (pin.colocatedEntries?.length) {
+    return pin.colocatedEntries.some(
+      (entry) =>
+        entry.exploreItemId === exploreItemId || entry.stackExploreItemIds?.includes(exploreItemId)
+    );
+  }
+  return (
+    pin.exploreItemId === exploreItemId ||
+    pin.id === exploreItemId ||
+    Boolean(pin.stackExploreItemIds?.includes(exploreItemId))
+  );
+};
+
+const resolvePinForExploreItemId = (
+  pins: PlaceMapPin[],
+  exploreItemId: string
+): PlaceMapPin | null => {
+  for (const pin of pins) {
+    if (!pinMatchesExploreItemId(pin, exploreItemId)) continue;
+    if (pin.colocatedEntries?.length) return pinForExploreItemClick(pin, exploreItemId);
+    return { ...pin, exploreItemId };
+  }
+  return null;
+};
+
+const colocatedIconRootFromEvent = (event?: L.LeafletMouseEvent): HTMLElement | null => {
+  const target = event?.originalEvent?.target as HTMLElement | null;
+  if (!target) return null;
+  return (
+    target.closest('.uaetrail-map-pin-multi') ??
+    target.closest('.leaflet-marker-icon') ??
+    target.closest('.uaetrail-map-cluster-wrap')
+  );
+};
+
+const exploreItemIdFromMapPointer = (
+  pin: PlaceMapPin,
+  event?: L.LeafletMouseEvent
+): string | null => {
   const target = (event?.originalEvent?.target as HTMLElement | null)?.closest?.('[data-explore-item-id]');
-  const itemId = target?.getAttribute('data-explore-item-id');
+  const fromTarget = target?.getAttribute('data-explore-item-id');
+  if (fromTarget) return fromTarget;
+
+  const entries = pin.colocatedEntries;
+  if (!entries?.length || !event?.originalEvent) return null;
+
+  const iconRoot = colocatedIconRootFromEvent(event);
+  if (!iconRoot) return null;
+
+  const rect = iconRoot.getBoundingClientRect();
+  const x = event.originalEvent.clientX - rect.left;
+  const y = event.originalEvent.clientY - rect.top;
+  return resolveColocatedExploreItemIdFromPointer(entries, x, y, rect.width, rect.height);
+};
+
+const resolvePinClick = (pin: PlaceMapPin, event?: L.LeafletMouseEvent): PlaceMapPin => {
+  const itemId = exploreItemIdFromMapPointer(pin, event);
   if (itemId && pin.colocatedEntries?.length) {
     return pinForExploreItemClick(pin, itemId);
   }
   return pin;
+};
+
+const resolveClusterMapClick = (
+  clusterPins: PlaceMapPin[],
+  event: L.LeafletMouseEvent,
+  selectedExploreItemId?: string,
+  highlightedExploreItemId?: string
+): PlaceMapPin | null => {
+  const target = (event.originalEvent?.target as HTMLElement | null)?.closest?.('[data-explore-item-id]');
+  const fromTarget = target?.getAttribute('data-explore-item-id');
+  if (fromTarget) return resolvePinForExploreItemId(clusterPins, fromTarget);
+
+  const iconRoot = colocatedIconRootFromEvent(event);
+  const pointerEntries =
+    clusterPins.find((pin) => (pin.colocatedEntries?.length ?? 0) > 1)?.colocatedEntries ??
+    aggregateClusterPinEntries(clusterPins, selectedExploreItemId, highlightedExploreItemId);
+
+  if (pointerEntries.length > 1 && iconRoot) {
+    const rect = iconRoot.getBoundingClientRect();
+    const x = event.originalEvent.clientX - rect.left;
+    const y = event.originalEvent.clientY - rect.top;
+    const itemId = resolveColocatedExploreItemIdFromPointer(
+      pointerEntries,
+      x,
+      y,
+      rect.width,
+      rect.height
+    );
+    if (itemId) return resolvePinForExploreItemId(clusterPins, itemId);
+  }
+
+  if (clusterPins.length === 1) return resolvePinClick(clusterPins[0]!, event);
+  return null;
 };
 
 const markerZIndex = (
@@ -433,7 +523,26 @@ const FitMapBounds = ({
   return null;
 };
 
-const MapResize = () => {
+/** Desktop explore — Leaflet +/- (default control is off when map fills stage). */
+const ExploreMapDesktopZoomControl = () => {
+  const map = useMap();
+
+  useEffect(() => {
+    const control = L.control.zoom({ position: 'bottomright' });
+    control.addTo(map);
+    const container = control.getContainer();
+    if (container) {
+      container.classList.add('uaetrail-explore-desktop-zoom');
+    }
+    return () => {
+      control.remove();
+    };
+  }, [map]);
+
+  return null;
+};
+
+const MapResize = ({ layoutRevision }: { layoutRevision?: number | string | boolean }) => {
   const map = useMap();
 
   useEffect(() => {
@@ -461,7 +570,7 @@ const MapResize = () => {
       window.removeEventListener('resize', invalidate);
       observer?.disconnect();
     };
-  }, [map]);
+  }, [map, layoutRevision]);
 
   return null;
 };
@@ -614,7 +723,7 @@ const ClusteredMarkers = ({
         showCoverageOnHover: false,
         maxClusterRadius: 32,
         spiderfyOnMaxZoom: true,
-        zoomToBoundsOnClick: true,
+        zoomToBoundsOnClick: false,
         disableClusteringAtZoom: 18,
         iconCreateFunction: (cluster) => {
           const clusterPins = pinsFromCluster(cluster);
@@ -657,6 +766,22 @@ const ClusteredMarkers = ({
             iconAnchor: [size / 2, size / 2],
           });
         },
+      });
+
+      group.on('clusterclick', (event) => {
+        const cluster = event.layer;
+        const clusterPins = pinsFromCluster(cluster);
+        const resolved = resolveClusterMapClick(
+          clusterPins,
+          event,
+          selectedExploreItemId,
+          highlightedExploreItemId
+        );
+        if (resolved) {
+          onPinClickRef.current?.(resolved);
+          return;
+        }
+        cluster.zoomToBounds({ padding: [72, 72], maxZoom: 17 });
       });
 
       for (let index = 0; index < pins.length; index += 1) {
@@ -724,6 +849,9 @@ interface PlacesMapProps {
   onVisibleBoundsChange?: (bounds: MapBounds) => void;
   tileAttribution?: string;
   minZoom?: number;
+  showDesktopZoomControl?: boolean;
+  /** Bumps Leaflet invalidateSize when mobile list sheet / layout chrome changes. */
+  layoutRevision?: number | string | boolean;
 }
 
 /** Interactive map with location pins anchored to coordinates (Leaflet map tiles). */
@@ -748,6 +876,8 @@ export const PlacesMap = ({
   onVisibleBoundsChange,
   tileAttribution,
   minZoom,
+  showDesktopZoomControl = false,
+  layoutRevision,
 }: PlacesMapProps) => {
   const mapBounds = useMemo(() => boundsFromPins(pins, bounds), [pins, bounds]);
   const pinsKeyValue = useMemo(() => pinsKey(pins), [pins]);
@@ -766,7 +896,9 @@ export const PlacesMap = ({
     );
   }
 
+  const exploreFillMinPx = 280;
   const mapHeight = fill ? '100%' : minHeight;
+  const resolvedFillMinHeight = fill ? Math.max(minHeight || 0, exploreFillMinPx) : minHeight;
   const activeSelection = selectedExploreItemId ?? selectedPinId;
 
   const renderMarker = (pin: PlaceMapPin) => (
@@ -819,7 +951,11 @@ export const PlacesMap = ({
   return (
     <div
       className={`relative overflow-hidden bg-[#2a3441] ${exploreMode ? 'explore-map-rich ' : ''}${fill ? '' : 'rounded-2xl border border-emerald-100'} ${className}`}
-      style={fill ? { height: '100%', minHeight: '100%' } : { minHeight }}
+      style={
+        fill
+          ? { height: '100%', minHeight: resolvedFillMinHeight }
+          : { minHeight: resolvedFillMinHeight }
+      }
     >
       <MapContainer
         center={exploreMode ? exploreCenter : [MAP_CONFIG.defaultCenter.lat, MAP_CONFIG.defaultCenter.lng]}
@@ -830,7 +966,11 @@ export const PlacesMap = ({
         zoomControl={!fill}
         attributionControl={!fill}
         className="z-0 h-full w-full"
-        style={{ height: mapHeight, minHeight: mapHeight, width: '100%' }}
+        style={{
+          height: mapHeight,
+          minHeight: fill ? resolvedFillMinHeight : mapHeight,
+          width: '100%',
+        }}
       >
         <MapTileLayers tileUrl={tileUrl} labelTileUrl={labelTileUrl} attribution={tileAttribution} maxZoom={18} />
         {exploreMode ? (
@@ -838,7 +978,7 @@ export const PlacesMap = ({
         ) : (
           <FitMapBounds mapBounds={mapBounds} maxZoom={14} pinCount={pins.length} pinsKeyValue={pinsKeyValue} />
         )}
-        <MapResize />
+        <MapResize layoutRevision={layoutRevision} />
         <RecenterMap
           target={recenterTo}
           zoom={exploreMode ? MAP_CONFIG.exploreDefaultZoom : undefined}
@@ -848,6 +988,7 @@ export const PlacesMap = ({
           <MapVisibleBoundsReporter onVisibleBoundsChange={onVisibleBoundsChange} />
         ) : null}
         <FlyToSelectedPin pins={pins} selectedExploreItemId={activeSelection} />
+        {exploreMode && showDesktopZoomControl ? <ExploreMapDesktopZoomControl /> : null}
         {exploreMode ? (
           <ClusteredMarkers
             pins={pins}

@@ -3,7 +3,10 @@ import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { usesDirectApiFacade } from './apiGuardPatterns';
 
-const EXPLORE_ROOT = join(process.cwd(), 'src', 'explore');
+const EXPLORE_API_GUARD_ROOTS = [
+  join(process.cwd(), 'src', 'explore'),
+  join(process.cwd(), 'src', 'people-discovery'),
+];
 
 /** R8.1 — explore UI must not call `api.*` / `apiRequest` directly; use hooks *ClientApi. */
 const API_DOT_BASELINE = new Set<string>([]);
@@ -46,7 +49,7 @@ describe('exploreApiGuard (R8.1)', () => {
   });
 
   it('explore does not add new direct api facade usage', () => {
-    const files = collectSourceFiles(EXPLORE_ROOT);
+    const files = EXPLORE_API_GUARD_ROOTS.flatMap((root) => collectSourceFiles(root));
     const offenders: string[] = [];
 
     for (const file of files) {

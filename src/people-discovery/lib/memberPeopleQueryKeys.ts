@@ -1,5 +1,5 @@
-import type { ExploreActivityDatePreset } from './routing';
-import { serializeExploreActivityDatePreset } from './routing';
+import type { ExploreActivityDatePreset } from '@/explore/routing';
+import { serializeExploreActivityDatePreset } from '@/explore/routing';
 
 export type MemberDiscoveryRosterQueryParams = {
   q: string;

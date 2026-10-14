@@ -270,62 +270,76 @@ export const ExploreBrowsePanel = ({
           <div className="flex items-center gap-1">
             {closeButton}
             <h2 className="min-w-0 flex-1 truncate text-base font-bold tracking-tight text-neutral-900">
-              {heading}
+              {EXPLORE_SEARCH_PROMPT}
             </h2>
           </div>
         </div>
       ) : (
         <div
-          className={`mb-2 flex shrink-0 items-start justify-between gap-2 ${
+          className={`mb-2 flex shrink-0 flex-col gap-2 ${
             isDesktop ? 'border-b border-neutral-200 pb-0' : 'pb-0'
           }`}
         >
-          <div className="min-w-0 flex-1">
-            {isDesktop ? (
-              <div className="flex min-w-0 items-center gap-2">
-                <div className="flex min-w-0 flex-1">
-                  {DESKTOP_BROWSE_TABS.map((tab) => {
-                    const active = desktopBrowseTab === tab.key;
-                    return (
-                      <button
-                        key={tab.key}
-                        type="button"
-                        onClick={() => onDesktopBrowseTabChange(tab.key)}
-                        className={`shrink-0 border-b-2 px-3 py-2.5 text-sm font-semibold transition ${
-                          active
-                            ? 'border-emerald-600 text-emerald-700'
-                            : 'border-transparent text-gray-500 hover:text-gray-700'
-                        }`}
-                      >
-                        {tab.label}
-                      </button>
-                    );
-                  })}
+          {!isDesktop && !myTripsMode ? (
+            <div className="flex items-start justify-between gap-2">
+              <h2 className={`min-w-0 flex-1 text-base font-bold tracking-tight ${EXPLORE_TYPE.title}`}>
+                {EXPLORE_SEARCH_PROMPT}
+              </h2>
+              {closeButton}
+            </div>
+          ) : null}
+          <div className="flex min-w-0 items-start justify-between gap-2">
+            <div className="min-w-0 flex-1">
+              {isDesktop ? (
+                <div className="flex min-w-0 items-center gap-2">
+                  <div className="flex min-w-0 flex-1">
+                    {DESKTOP_BROWSE_TABS.map((tab) => {
+                      const active = desktopBrowseTab === tab.key;
+                      return (
+                        <button
+                          key={tab.key}
+                          type="button"
+                          onClick={() => onDesktopBrowseTabChange(tab.key)}
+                          className={`shrink-0 border-b-2 px-3 py-2.5 text-sm font-semibold transition ${
+                            active
+                              ? 'border-emerald-600 text-emerald-700'
+                              : 'border-transparent text-gray-500 hover:text-gray-700'
+                          }`}
+                        >
+                          {tab.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <div className="flex shrink-0 items-center gap-1 pb-1">{closeButton}</div>
                 </div>
-                <div className="flex shrink-0 items-center gap-1 pb-1">{closeButton}</div>
-              </div>
-            ) : (
-              <div className="flex min-w-0 items-center gap-2">
-                <div className="flex min-w-0 flex-1">
-                  {PANEL_TABS.map((tab) => {
-                    const active = panel === tab.key;
-                    return (
-                      <button
-                        key={tab.key}
-                        type="button"
-                        onClick={() => onPanelChange(tab.key)}
-                        className={`shrink-0 px-3 py-2.5 text-sm font-semibold transition [-webkit-tap-highlight-color:transparent] ${
-                          active ? 'text-emerald-700' : 'text-gray-500 active:text-gray-700'
-                        }`}
-                      >
-                        {tab.label}
-                      </button>
-                    );
-                  })}
+              ) : (
+                <div className="flex min-w-0 items-center gap-2 border-b border-neutral-200">
+                  <div className="flex min-w-0 flex-1">
+                    {PANEL_TABS.map((tab) => {
+                      const active = panel === tab.key;
+                      return (
+                        <button
+                          key={tab.key}
+                          type="button"
+                          onClick={() => onPanelChange(tab.key)}
+                          className={`shrink-0 border-b-2 px-3 py-2.5 text-sm font-semibold transition [-webkit-tap-highlight-color:transparent] ${
+                            active
+                              ? 'border-emerald-600 text-emerald-700'
+                              : 'border-transparent text-gray-500 active:text-gray-700'
+                          }`}
+                        >
+                          {tab.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {myTripsMode ? (
+                    <div className="flex shrink-0 items-center gap-1 pb-1">{closeButton}</div>
+                  ) : null}
                 </div>
-                <div className="flex shrink-0 items-center gap-1 pb-1">{closeButton}</div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -347,9 +361,6 @@ export const ExploreBrowsePanel = ({
             ref={searchScopeAnchorRef}
             className={`relative mb-2 shrink-0 ${fullscreenBrowse && !isDesktop ? 'px-3' : ''}`}
           >
-            {fullscreenBrowse && !isDesktop ? null : (
-              <p className={`mb-1.5 text-sm font-bold ${EXPLORE_TYPE.title} lg:hidden`}>{EXPLORE_SEARCH_PROMPT}</p>
-            )}
             <div className="flex items-stretch gap-2">
               <label className="flex min-w-0 flex-1 items-center gap-2 rounded-xl border border-neutral-200/80 bg-white px-3 py-2 shadow-sm lg:rounded-2xl lg:bg-neutral-100 lg:py-2.5 lg:shadow-none">
                 <Search className="h-4 w-4 shrink-0 text-gray-400" />
@@ -391,7 +402,7 @@ export const ExploreBrowsePanel = ({
                   </button>
                 ) : null}
               </label>
-              {!placesMode ? (
+              {!placesMode && !isDesktop ? (
                 <ExploreMapDateFilter
                   activityDatePreset={activityDatePreset}
                   onActivityDatePresetChange={onActivityDatePresetChange}

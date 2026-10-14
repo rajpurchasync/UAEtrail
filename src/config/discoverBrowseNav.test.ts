@@ -9,7 +9,7 @@ import {
 } from './platform';
 
 describe('discover browse navigation contract', () => {
-  it('hamburger and desktop nav open discover browse (not bare map)', () => {
+  it('hamburger opens discover browse; desktop top nav does not duplicate Browse', () => {
     const hamburgerLink = CONSUMER_HAMBURGER_MENU.find(
       (item) => item.kind === 'link' && item.label === 'Browse'
     );
@@ -17,7 +17,7 @@ describe('discover browse navigation contract', () => {
     if (hamburgerLink?.kind === 'link') {
       expect(hamburgerLink.to).toBe(EXPLORE_DISCOVER_BROWSE_PATH);
     }
-    expect(DESKTOP_NAV_LINKS.some((link) => link.to === EXPLORE_DISCOVER_BROWSE_PATH)).toBe(true);
+    expect(DESKTOP_NAV_LINKS.some((link) => link.to === EXPLORE_DISCOVER_BROWSE_PATH)).toBe(false);
   });
 
   it('guest landing drawer exposes map and discover browse separately', () => {

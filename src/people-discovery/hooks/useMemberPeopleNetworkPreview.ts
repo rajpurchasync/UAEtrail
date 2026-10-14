@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { fetchMemberPeopleNetworkPreview } from '../hooks/memberPeopleClientApi';
-import { memberPeopleNetworkPreviewQueryKey } from './memberPeopleQueryKeys';
+import { fetchMemberPeopleNetworkPreview } from '@/hooks/memberPeopleClientApi';
+import { memberPeopleNetworkPreviewQueryKey } from '../lib/memberPeopleQueryKeys';
 
 const MEMBER_PEOPLE_PREVIEW_STALE_MS = 120_000;
 

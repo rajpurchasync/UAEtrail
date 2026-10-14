@@ -4,6 +4,7 @@ import type { ListCategoryPill } from '../listCategoryFilterPills';
 import { ListCategoryTopicCircleFilter } from './ListCategoryTopicCircleFilter';
 
 const BUDDIES_SEGMENT_EMOJI: Record<BuddiesDiscoverySegment, string> = {
+  looking: '🔎',
   available: '📅',
   going: '🧑‍🤝‍🧑',
   connect: '🌐',

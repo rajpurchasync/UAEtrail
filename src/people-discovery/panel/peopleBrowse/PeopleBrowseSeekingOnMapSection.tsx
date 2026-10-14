@@ -1,8 +1,8 @@
 import type { MemberDiscoverySeekingRowDTO } from '@uaetrail/shared-types';
 import { EXPLORE_TYPE } from '../../../config/exploreTheme';
 import { EXPLORE_PEOPLE_BROWSE_DISCOVER_LOOKING_TITLE } from '../../../content/explorePeopleBrowseCopy';
-import { memberDiscoverProfilePath } from '../../memberDiscoveryExplore';
-import { exploreMapItemPathFromSeekingRow } from '../../memberDiscoverySeekingRow';
+import { memberDiscoverProfilePath } from '@/explore/memberDiscoveryExplore';
+import { exploreMapItemPathFromSeekingRow } from '@/explore/memberDiscoverySeekingRow';
 import { PEOPLE_BROWSE_LIST_STACK } from './peopleBrowseListTheme';
 import { PeopleBrowseMemberRow } from './PeopleBrowseMemberRow';
 

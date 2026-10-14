@@ -28,7 +28,12 @@ const toTripHint = (
   role,
 });
 
-/** Accepted buddies on outings for the date filter (hosting or joining). */
+const tripSortRank = (trip: SocialPersonTripHintDTO | null): number => {
+  if (!trip) return 0;
+  return trip.role === 'hosting' ? 2 : 1;
+};
+
+/** All accepted buddies — those hosting or joining an outing (date filter) sort to the top. */
 export const buildMemberDiscoveryFriendsGoing = async (
   viewerUserId: string,
   buddies: BuddySummaryDTO[],
@@ -36,29 +41,31 @@ export const buildMemberDiscoveryFriendsGoing = async (
   datePreset: ExploreActivityDatePreset
 ): Promise<SocialPersonRowDTO[]> => {
   const buddyIds = new Set(buddies.map((b) => b.userId));
-  const presence = buildBuddyActivityPresenceRows(buddies, mapItems, datePreset).filter(
-    (row) => row.hosting || row.joining
-  );
+  const presence = buildBuddyActivityPresenceRows(buddies, mapItems, datePreset);
 
   const itemByExploreId = new Map(mapItems.map((item) => [item.id, item]));
 
   const seeds = presence.map((row) => {
-    const ref = row.hosting ?? row.joining!;
-    const item = itemByExploreId.get(ref.exploreItemId);
-    const role: SocialPersonTripHintDTO['role'] = row.hosting ? 'hosting' : 'joining';
-    const upcomingTrip: SocialPersonTripHintDTO =
-      item && row.hosting
-        ? toTripHint(item, 'hosting')
-        : item && row.joining
-          ? toTripHint(item, 'joining')
-          : {
-              activityId: ref.activityId,
-              exploreItemId: ref.exploreItemId,
-              title: ref.title,
-              date: null,
-              time: null,
-              role,
-            };
+    const ref = row.hosting ?? row.joining;
+    let upcomingTrip: SocialPersonTripHintDTO | null = null;
+
+    if (ref) {
+      const item = itemByExploreId.get(ref.exploreItemId);
+      const role: SocialPersonTripHintDTO['role'] = row.hosting ? 'hosting' : 'joining';
+      upcomingTrip =
+        item && row.hosting
+          ? toTripHint(item, 'hosting')
+          : item && row.joining
+            ? toTripHint(item, 'joining')
+            : {
+                activityId: ref.activityId,
+                exploreItemId: ref.exploreItemId,
+                title: ref.title,
+                date: null,
+                time: null,
+                role,
+              };
+    }
 
     return {
       userId: row.buddy.userId,
@@ -69,7 +76,11 @@ export const buildMemberDiscoveryFriendsGoing = async (
   });
 
   const rows = await enrichMemberPersonRows(viewerUserId, buddyIds, seeds);
-  return [...rows].sort((a, b) => a.displayName.localeCompare(b.displayName, undefined, { sensitivity: 'base' }));
+  return [...rows].sort((a, b) => {
+    const rankDiff = tripSortRank(b.upcomingTrip) - tripSortRank(a.upcomingTrip);
+    if (rankDiff !== 0) return rankDiff;
+    return a.displayName.localeCompare(b.displayName, undefined, { sensitivity: 'base' });
+  });
 };
 
 /** Activity hosts on the map (non-buddies) for the date filter. */

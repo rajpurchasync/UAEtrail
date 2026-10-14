@@ -351,8 +351,12 @@ export const listPublishedActivitiesForExploreMapFromMongo = async (
   const docs = await activitiesCollection()
     .find({
       status: ActivityStatus.PUBLISHED,
-      startAt: { $gte: startOfToday },
       joinMode: { $ne: 'private' },
+      $or: [
+        { startAt: { $gte: startOfToday } },
+        /** Member “looking for” stays discoverable while published — not gated like fixed hosted departures. */
+        { activityMode: 'seeking' },
+      ],
     })
     .sort({ startAt: 1 })
     .limit(take * 3)

@@ -1,7 +1,6 @@
-import { lazy, Suspense } from 'react';
 import { List, Plus } from 'lucide-react';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
-import type { MapBounds, PlaceMapPin } from '../../components/ui/PlacesMap';
+import { PlacesMap, type MapBounds, type PlaceMapPin } from '../../components/ui/PlacesMap';
 import { getMapBounds } from '../../config/regions';
 import { MAP_CONFIG, getExploreMapTiles, type ExploreMapStyle } from '../../config/platform';
 import { EXPLORE_FLOATING_CONTROL } from '../../config/exploreTheme';
@@ -11,6 +10,7 @@ import { ExploreCoachMarks } from './ExploreCoachMarks';
 import { ExploreDismissibleNotice } from './ExploreDismissibleNotice';
 import { ExploreItemSheet } from './ExploreItemSheet';
 import { ExploreMapChromeBar } from './ExploreMapChromeBar';
+import { ExploreMapLoadErrorBoundary } from './ExploreMapLoadErrorBoundary';
 import { ExploreMapLoadingSkeleton } from './ExploreMapLoadingSkeleton';
 import { ExploreMapLocationPrompt } from './ExploreMapLocationPrompt';
 import { ExploreMapStyleToggle } from './ExploreMapStyleToggle';
@@ -18,12 +18,9 @@ import { ExplorePlaceMapPreview } from './ExplorePlaceMapPreview';
 import type { ExploreSearchScopeCounts, ExploreSearchScopeKey } from '../exploreBrowseTaxonomy';
 import type { ExplorePanel, MapFilterKey } from '../routing';
 import type { ExploreActivityDatePreset } from '../exploreActivityDateFilter';
+import type { ReactNode } from 'react';
 
 type ExploreMapTiles = ReturnType<typeof getExploreMapTiles>;
-
-const PlacesMap = lazy(() =>
-  import('../../components/ui/PlacesMap').then((m) => ({ default: m.PlacesMap }))
-);
 
 export type ExploreMapStageProps = {
   isDesktop: boolean;
@@ -87,6 +84,8 @@ export type ExploreMapStageProps = {
   onOpenExploreItem?: (exploreItemId: string) => void;
   onGuestGatedAction?: () => void;
   joinInvitePeekBanner?: string | null;
+  /** Desktop Find crew sheet over the map (keeps mapStage a direct flex child in the explore row). */
+  desktopPeopleBrowseOverlay?: ReactNode;
 };
 
 export const ExploreMapStage = ({
@@ -151,35 +150,37 @@ export const ExploreMapStage = ({
   onOpenExploreItem,
   onGuestGatedAction,
   joinInvitePeekBanner = null,
+  desktopPeopleBrowseOverlay = null,
 }: ExploreMapStageProps) => {
   const guestGatedAction = user ? undefined : onGuestGatedAction;
 
   return (
-  <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+  <div className="explore-map-stage relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
     <div className="relative z-0 min-h-0 flex-1 isolate overflow-hidden">
-      <div className="absolute inset-0 z-0">
-        <Suspense fallback={<div className="h-full w-full animate-pulse bg-[#eef2f6]" />}>
-          <PlacesMap
-            key={exploreMapStyle}
-            pins={mapPins}
-            bounds={getMapBounds()}
-            fill
-            allowEmpty
-            exploreMode
-            showLegend={false}
-            selectedExploreItemId={selectedId ?? undefined}
-            highlightedExploreItemId={highlightedExploreItemId ?? undefined}
-            tileUrl={exploreMapTiles.tileUrl}
-            tileAttribution={MAP_CONFIG.exploreTileAttribution}
-            labelTileUrl={exploreMapTiles.labelTileUrl}
-            onPinClick={onPinClick}
-            onVisibleBoundsChange={onVisibleBoundsChange}
-            recenterTo={recenterTo}
-            exploreMapCenter={exploreMapCenter}
-            className="h-full w-full"
-            minHeight={0}
-          />
-        </Suspense>
+      <div className="absolute inset-0 z-0 min-h-[280px]">
+        <ExploreMapLoadErrorBoundary onRetry={onReloadMap}>
+        <PlacesMap
+          key={exploreMapStyle}
+          pins={mapPins}
+          bounds={getMapBounds()}
+          fill
+          allowEmpty
+          exploreMode
+          showLegend={false}
+          selectedExploreItemId={selectedId ?? undefined}
+          highlightedExploreItemId={highlightedExploreItemId ?? undefined}
+          tileUrl={exploreMapTiles.tileUrl}
+          tileAttribution={MAP_CONFIG.exploreTileAttribution}
+          labelTileUrl={exploreMapTiles.labelTileUrl}
+          onPinClick={onPinClick}
+          onVisibleBoundsChange={onVisibleBoundsChange}
+          recenterTo={recenterTo}
+          exploreMapCenter={exploreMapCenter}
+          className="h-full w-full min-h-[280px]"
+          showDesktopZoomControl={isDesktop}
+          layoutRevision={listOpen}
+        />
+        </ExploreMapLoadErrorBoundary>
       </div>
 
       {!listOpen && !isDesktop && user ? <ExploreCoachMarks /> : null}
@@ -233,7 +234,7 @@ export const ExploreMapStage = ({
         </div>
       ) : null}
 
-      {loading ? <ExploreMapLoadingSkeleton /> : null}
+      {loading && mapPins.length === 0 ? <ExploreMapLoadingSkeleton /> : null}
 
       {!listOpen && isDesktop ? (
         <button
@@ -276,7 +277,7 @@ export const ExploreMapStage = ({
       ) : null}
 
       <div
-        className="pointer-events-none absolute bottom-12 right-4 z-[1100] hidden lg:flex lg:flex-col lg:items-center"
+        className="pointer-events-none absolute bottom-12 right-4 z-[1100] hidden lg:flex lg:flex-col lg:items-end"
         style={{ gap: 'var(--explore-map-fab-stack-gap)' }}
       >
         <ExploreMapStyleToggle style={exploreMapStyle} onToggle={onToggleMapStyle} />
@@ -318,6 +319,15 @@ export const ExploreMapStage = ({
         />
       ) : null}
     </div>
+
+    {desktopPeopleBrowseOverlay ? (
+      <div
+        className="pointer-events-none absolute inset-0 z-[1200] flex justify-end"
+        role="presentation"
+      >
+        {desktopPeopleBrowseOverlay}
+      </div>
+    ) : null}
   </div>
   );
 };

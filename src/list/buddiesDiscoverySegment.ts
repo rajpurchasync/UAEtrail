@@ -3,7 +3,7 @@ import {
   type PeopleBrowseTab,
   parsePeopleBrowseTab,
   serializePeopleBrowseTab,
-} from '../explore/peopleBrowseTab';
+} from '@/people-discovery/peopleBrowseTab';
 
 /** @deprecated Name kept for list URL `buddies=` — same values as explore `peopleTab`. */
 export type BuddiesDiscoverySegment = PeopleBrowseTab;
@@ -12,8 +12,9 @@ export const BUDDIES_DISCOVERY_SEGMENTS: ReadonlyArray<{
   key: BuddiesDiscoverySegment;
   label: string;
 }> = [
-  { key: 'available', label: 'Available' },
-  { key: 'going', label: 'Friends going' },
+  { key: 'looking', label: PEOPLE_BROWSE_TAB_LABELS.looking },
+  { key: 'available', label: PEOPLE_BROWSE_TAB_LABELS.available },
+  { key: 'going', label: PEOPLE_BROWSE_TAB_LABELS.going },
   { key: 'connect', label: PEOPLE_BROWSE_TAB_LABELS.connect },
 ];
 

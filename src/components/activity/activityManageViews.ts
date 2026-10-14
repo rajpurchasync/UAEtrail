@@ -23,11 +23,5 @@ export const activityManageSubviewTitle = (
   }
 };
 
-/** @deprecated Use {@link ActivityManageInitialView}. */
-export type ActivityManageInitialView = ActivityManageInitialView;
-/** @deprecated Use {@link ActivityManageSubview}. */
-export type ActivityManageSubview = ActivityManageSubview;
-/** @deprecated Use {@link normalizeActivityManageView}. */
-export const normalizeActivityManageView = normalizeActivityManageView;
 /** @deprecated Use {@link activityManageSubviewTitle}. */
 export const hostActivityManageSubviewTitle = activityManageSubviewTitle;

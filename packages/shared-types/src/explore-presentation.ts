@@ -301,6 +301,74 @@ const resolveDemandActivityHighlight = (title: string, kind: ExploreCardKind): s
   return demandKindLabel(kind);
 };
 
+const exploreScheduleDayStart = (value: Date): Date => {
+  const copy = new Date(value);
+  copy.setHours(0, 0, 0, 0);
+  return copy;
+};
+
+const exploreScheduleIso = (value: Date): string => {
+  const year = value.getFullYear();
+  const month = String(value.getMonth() + 1).padStart(2, '0');
+  const day = String(value.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const exploreMondayOfWeek = (value: Date): Date => {
+  const copy = exploreScheduleDayStart(value);
+  const mondayOffset = (copy.getDay() + 6) % 7;
+  copy.setDate(copy.getDate() - mondayOffset);
+  return copy;
+};
+
+const exploreWeekRange = (anchor: Date): { start: string; end: string } => {
+  const start = exploreMondayOfWeek(anchor);
+  const end = new Date(start);
+  end.setDate(end.getDate() + 6);
+  return { start: exploreScheduleIso(start), end: exploreScheduleIso(end) };
+};
+
+const exploreMonthRange = (anchor: Date): { start: string; end: string } => {
+  const start = new Date(anchor.getFullYear(), anchor.getMonth(), 1);
+  const end = new Date(anchor.getFullYear(), anchor.getMonth() + 1, 0);
+  return { start: exploreScheduleIso(start), end: exploreScheduleIso(end) };
+};
+
+/** Smart schedule chip — Today, Tomorrow, This week, Next week, This month, Next month, or short date. */
+export const formatExploreRelativeScheduleLabel = (
+  date?: string | null,
+  now: Date = new Date()
+): string | null => {
+  if (!date?.trim()) return null;
+  const target = new Date(`${date.trim()}T12:00:00`);
+  if (Number.isNaN(target.getTime())) return null;
+
+  const today = exploreScheduleDayStart(now);
+  const targetDay = exploreScheduleDayStart(target);
+  const diff = Math.round((targetDay.getTime() - today.getTime()) / 86400000);
+
+  if (diff === 0) return 'Today';
+  if (diff === 1) return 'Tomorrow';
+
+  const targetIso = exploreScheduleIso(targetDay);
+  const thisWeek = exploreWeekRange(today);
+  if (targetIso >= thisWeek.start && targetIso <= thisWeek.end) return 'This week';
+
+  const nextWeekAnchor = new Date(thisWeek.start);
+  nextWeekAnchor.setDate(nextWeekAnchor.getDate() + 7);
+  const nextWeek = exploreWeekRange(nextWeekAnchor);
+  if (targetIso >= nextWeek.start && targetIso <= nextWeek.end) return 'Next week';
+
+  const thisMonth = exploreMonthRange(today);
+  if (targetIso >= thisMonth.start && targetIso <= thisMonth.end) return 'This month';
+
+  const nextMonthAnchor = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+  const nextMonth = exploreMonthRange(nextMonthAnchor);
+  if (targetIso >= nextMonth.start && targetIso <= nextMonth.end) return 'Next month';
+
+  return target.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+};
+
 export const formatExploreDayShort = (date?: string | null): string | null => {
   if (!date) return null;
   const target = new Date(`${date}T00:00:00`);
@@ -409,7 +477,7 @@ export const sanitizeExploreLocation = (label?: string | null): string | null =>
 };
 
 export const buildExploreListWhen = (date?: string | null, time?: string | null): string | null => {
-  const day = formatExploreDayShort(date);
+  const day = date ? formatExploreRelativeScheduleLabel(date) : null;
   if (!day) return formatExploreTime(time);
   const shortDay = day === 'Tomorrow' ? 'Tmr' : day;
   const clock = formatExploreTime(time);

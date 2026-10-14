@@ -14,6 +14,9 @@ const SKIP_FILES = new Set(['src/config/moduleNamingGuard.test.ts']);
 
 const EXPLORE_PREFIX_ALLOW_PREFIXES = [
   'src/explore/',
+  'src/activity-discovery/',
+  'src/people-discovery/',
+  'src/places-discovery/',
   'src/api/domains/explore.ts',
   'src/api/domains/availability.ts',
   'src/config/platform.ts',

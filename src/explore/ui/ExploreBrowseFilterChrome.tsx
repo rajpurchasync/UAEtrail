@@ -108,6 +108,7 @@ export const ExploreBrowseFilterChrome = ({
   const mapShowsPlaces = pinKind === 'all' || pinKind === 'places';
   const mapShowsLocations = pinKind === 'all' || pinKind === 'locations';
   const showActivityModeRow =
+    layout === 'map' &&
     onActivityModeFilterChange != null &&
     filterEmojiContext !== 'venue' &&
     (unifiedMap ? mapShowsPlans : true);

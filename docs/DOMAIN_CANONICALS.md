@@ -244,7 +244,7 @@ IA detail (pills, topics): [`experiment/explore-browse-ia.md`](./experiment/expl
 
 | Scope | Prefix | Header | Examples |
 |-------|--------|--------|----------|
-| Public read | `/activities`, `/explore/map`, `/places` | — | Browse |
+| Public read | `/activities`, `/explore/map`, `/explore/seeking-activities`, `/places` | — | Browse; seeking slice = published `activityMode: seeking` (`explore-seeking-activities-read.ts`) |
 | Member | `/me/*` | Bearer | `participant-intents`, `host-status`, profile |
 | Host console (tenant scope) | `/host/*` | Bearer + `x-organisation-id` | `activities`, **`/host/requests`** (activity join queue) |
 | Person public | `/users/:id` | optional | Public profile |

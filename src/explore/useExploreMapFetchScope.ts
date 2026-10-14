@@ -15,7 +15,8 @@ export const useExploreMapFetchScope = (areaSlug: string | null) => {
   const onVisibleBoundsChange = useCallback(
     (bounds: MapBounds) => {
       if (!vnextEnabled) return;
-      setBbox(formatExploreMapBboxParam(bounds));
+      const next = formatExploreMapBboxParam(bounds);
+      setBbox((prev) => (prev === next ? prev : next));
     },
     [vnextEnabled]
   );

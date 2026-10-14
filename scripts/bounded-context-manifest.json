@@ -12,11 +12,20 @@
         "apps/api/src/lib/explore-map-route.ts",
         "apps/api/src/lib/explore-map-viewer-access.ts",
         "apps/api/src/lib/discovery-card-projection.ts",
-        "apps/api/src/lib/activity-engagement-policy-input.ts"
+        "apps/api/src/lib/activity-engagement-policy-input.ts",
+        "apps/api/src/services/explore-seeking-activities-read.ts"
       ],
       "routeRegistrars": ["apps/api/src/routes/user/registerPublicActivityRoutes.ts"],
       "feDomains": ["src/api/domains/explore.ts"],
-      "feRoots": ["src/explore", "src/explore/shell", "src/access", "src/list", "src/discovery"]
+      "feRoots": [
+        "src/explore",
+        "src/explore/shell",
+        "src/activity-discovery",
+        "src/places-discovery",
+        "src/access",
+        "src/list",
+        "src/discovery"
+      ]
     },
     {
       "id": "compose",
@@ -127,6 +136,7 @@
       ],
       "feDomains": ["src/api/domains/places.ts", "src/api/domains/placeRegistry.ts"],
       "feRoots": [
+        "src/places-discovery",
         "src/pages/TrailDetail.tsx",
         "src/pages/CampDetail.tsx",
         "src/pages/EventDetail.tsx",
@@ -161,8 +171,7 @@
       "feDomains": ["src/api/domains/account.ts", "src/api/domains/social.ts"],
       "feRoots": [
         "src/pages/MemberProfile.tsx",
-        "src/explore/ui/PeopleBrowsePanel.tsx",
-        "src/explore/ui/peopleBrowse/PeopleBrowseTabContent.tsx",
+        "src/people-discovery",
         "src/list/ui/ListDiscoverPeopleView.tsx"
       ]
     },

@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { EXPLORE_TYPE } from '../../../config/exploreTheme';
-import { ExploreListSkeleton } from '../ExploreListSkeleton';
+import { ExploreListSkeleton } from '@/explore/ui/ExploreListSkeleton';
 
 /** Empty state — same as map list (`ExploreBrowsePanel`). */
 export const PeopleBrowseListEmpty = ({ children }: { children: ReactNode }) => (

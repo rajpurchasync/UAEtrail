@@ -12,12 +12,12 @@ import {
 
 export const EXPLORE_PEOPLE_BROWSE_PANEL_TITLE = 'Find your crew';
 
-export const EXPLORE_PEOPLE_BROWSE_MAP_BUTTON_LABEL = 'Available';
+export const EXPLORE_PEOPLE_BROWSE_MAP_BUTTON_LABEL = 'Find Crew';
 
 export const explorePeopleBrowseMapButtonAriaLabel = (friendCount: number): string =>
   friendCount > 0
-    ? `Available. ${friendCount} friends`
-    : 'Available. Browse members free to get outside';
+    ? `Find crew. ${friendCount} friends`
+    : 'Find crew. Browse members free to get outside';
 
 export const EXPLORE_PEOPLE_BROWSE_LOADING = 'Loading your people…';
 export const EXPLORE_PEOPLE_BROWSE_EMPTY_ALL =
@@ -48,11 +48,14 @@ export const EXPLORE_PEOPLE_BROWSE_DISCOVER_FRIENDS_GOING_TITLE = 'Friends';
 export const EXPLORE_PEOPLE_BROWSE_DISCOVER_HOSTS_GOING_TITLE = 'Organizers';
 export const EXPLORE_PEOPLE_BROWSE_DISCOVER_LOOKING_TITLE = 'Looking for company';
 export const EXPLORE_PEOPLE_BROWSE_EMPTY_DISCOVER_LOOKING =
-  'No one is posting “looking for” right now — try another date or check back later.';
+  'No one is looking for crew in this view yet — try another tab, zoom out, or post from Find on the map.';
 
 export const EXPLORE_PEOPLE_BROWSE_AVAILABILITY_LOADING = 'Loading…';
 export const EXPLORE_PEOPLE_BROWSE_AVAILABILITY_EMPTY = 'No one available for these dates.';
-export const EXPLORE_PEOPLE_BROWSE_FRIENDS_GOING_EMPTY = 'No friends on an outing for this map filter.';
+export const EXPLORE_PEOPLE_BROWSE_FRIENDS_GOING_EMPTY =
+  'No friends yet — send a buddy request from a member profile.';
+export const EXPLORE_PEOPLE_BROWSE_FRIEND_NO_OUTING_FOR_FILTER =
+  'No outing on the map for these dates';
 export const EXPLORE_PEOPLE_BROWSE_CONNECT_EMPTY = 'No public profiles match right now.';
 
 /** Shown on Everyone rows beyond the free preview (see `MEMBER_DISCOVERY_QUOTA_LIMIT`). */
@@ -337,9 +340,9 @@ export const peopleBrowseGoingCopyParts = (
   const first = peopleBrowseFirstName(displayName);
   if (!trip) {
     return {
-      prefix: `${first} is going on an outing `,
+      prefix: first,
       outingLabel: '',
-      suffix: 'soon.',
+      suffix: '',
       clickable: false,
     };
   }

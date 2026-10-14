@@ -103,11 +103,10 @@ export const LEGACY_OPERATOR_PUBLIC_PATH_PREFIX = LEGACY_OPERATOR_PROFILE_PATH_P
 /** @deprecated Use {@link LEGACY_OPERATOR_PUBLIC_PATH_PREFIX} */
 export const OPERATOR_PUBLIC_PATH_PREFIX = LEGACY_OPERATOR_PUBLIC_PATH_PREFIX;
 
-/** Desktop top nav — map-first; browse pages redirect into explore. */
+/** Desktop top nav — map-first; discover browse is hamburger-only. */
 export const DESKTOP_NAV_LINKS = [
   { to: '/', label: 'Home' },
   { to: EXPLORE_MAP_PATH, label: 'Explore' },
-  { to: EXPLORE_DISCOVER_BROWSE_PATH, label: 'Browse' },
   { to: '/faq', label: 'Help' },
 ] as const;
 
@@ -239,12 +238,14 @@ export const PARTICIPANT_PRIVACY = {
  * Map provider for Explore (Phase 2).
  * Esri light-gray base + reference labels — free, no API key, English place names.
  */
-const envTileUrl =
-  typeof import.meta.env.VITE_MAP_TILE_URL === 'string' ? import.meta.env.VITE_MAP_TILE_URL : undefined;
-const envLabelTileUrl =
-  typeof import.meta.env.VITE_MAP_LABEL_TILE_URL === 'string'
-    ? import.meta.env.VITE_MAP_LABEL_TILE_URL
-    : undefined;
+const readEnvTileUrl = (raw: unknown): string | undefined => {
+  if (typeof raw !== 'string') return undefined;
+  const trimmed = raw.trim();
+  return trimmed.length > 0 ? trimmed : undefined;
+};
+
+const envTileUrl = readEnvTileUrl(import.meta.env.VITE_MAP_TILE_URL);
+const envLabelTileUrl = readEnvTileUrl(import.meta.env.VITE_MAP_LABEL_TILE_URL);
 
 export const MAP_CONFIG = {
   provider: 'esri' as const,

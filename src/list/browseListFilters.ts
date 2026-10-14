@@ -1,14 +1,17 @@
-import { exploreMapItemIsSeeking, isTimeBoundExploreMapItem, type ExploreMapItemDTO } from '@uaetrail/shared-types';
+import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
+import { selectSeekingActivitiesForListCatalog } from '@/activity-discovery/catalog/listSeeking';
+import {
+  filterListCatalogByVenueRegions,
+  mergeListCatalogPlansAndPlaces,
+} from '@/places-discovery/catalog/listCatalog';
 import type { ExploreCardModel } from '../explore/exploreCardModel';
 import {
   matchesActivityDateFilter,
   type ExploreActivityDatePreset,
 } from '../explore/exploreActivityDateFilter';
 import { exploreItemMatchesQuery } from '../explore/exploreSearchMatches';
-import { sortExploreActivities, sortExploreVenues } from '../explore/exploreListSort';
 import { matchesUnifiedTopicFilter } from '../explore/ui/exploreMapPinModel';
 import { resolveExploreItemScheduleDate } from '../explore/ui/exploreMapPinModel';
-import { venueItemMatchesRegions } from '../utils/venueRegionFilter';
 import type { BrowseMainCategoryKey } from './browseListTaxonomy';
 import { mapItemMatchesBrowseMainCategories } from './browseListTaxonomy';
 import type { BrowseTripTopicKey } from './browseListTripTopics';
@@ -87,7 +90,7 @@ export const filterExploreMapItemsForList = (
     state.categories.length === 0 || state.categories.includes('venues');
 
   if (tripsCategoryInScope && state.tripLookingOnly) {
-    pool = pool.filter((item) => exploreMapItemIsSeeking(item));
+    pool = selectSeekingActivitiesForListCatalog(pool);
   } else if (tripsCategoryInScope && state.tripTopics.length > 0) {
     pool = pool.filter((item) =>
       state.tripTopics.some((topic) => matchesUnifiedTopicFilter(item, topic, 'all', 'all'))
@@ -112,18 +115,7 @@ export const filterExploreMapItemsForList = (
     pool = pool.filter(matchesWeekendBrowseFilter);
   }
 
-  if (venueRegions.length > 0) {
-    pool = pool.filter((item) => {
-      if (item.source === 'venue' || item.source === 'shop' || item.source === 'agency') {
-        return venueItemMatchesRegions(item, venueRegions);
-      }
-      return true;
-    });
-  }
+  pool = filterListCatalogByVenueRegions(pool, venueRegions);
 
-  const plans = pool.filter((item) => isTimeBoundExploreMapItem(item));
-  const places = pool.filter(
-    (item) => item.source === 'venue' || item.source === 'shop' || item.source === 'agency'
-  );
-  return [...sortExploreActivities(plans), ...sortExploreVenues(places)];
+  return mergeListCatalogPlansAndPlaces(pool);
 };

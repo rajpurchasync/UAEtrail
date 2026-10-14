@@ -7,7 +7,7 @@ import {
 import {
   matchesActivityDateFilter,
   type ExploreActivityDatePreset,
-} from './exploreActivityDateFilter';
+} from '@/explore/exploreActivityDateFilter';
 
 export type SocialMapChipAvatar = {
   id: string;

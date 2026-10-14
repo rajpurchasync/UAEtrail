@@ -1,14 +1,14 @@
 import { useDeferredValue } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { fetchMeMemberDiscoveryRoster } from '../hooks/memberPeopleClientApi';
+import { fetchMeMemberDiscoveryRoster } from '@/hooks/memberPeopleClientApi';
 import {
   memberDiscoveryRosterQueryKey,
   type MemberDiscoveryRosterQueryParams,
-} from './memberPeopleQueryKeys';
+} from '../lib/memberPeopleQueryKeys';
 import {
   serializeExploreActivityDatePreset,
   type ExploreActivityDatePreset,
-} from './routing';
+} from '@/explore/routing';
 
 type UseMemberDiscoveryRosterArgs = {
   enabled: boolean;

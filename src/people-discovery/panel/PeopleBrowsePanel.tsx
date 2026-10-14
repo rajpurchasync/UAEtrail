@@ -3,8 +3,7 @@ import { X } from 'lucide-react';
 import { EXPLORE_SHEET, EXPLORE_TYPE } from '../../config/exploreTheme';
 import type { PeopleBrowseTab } from '../peopleBrowseTab';
 import { PeopleBrowsePanelTabs } from './PeopleBrowsePanelTabs';
-import type { ExploreActivityDatePreset } from '../exploreActivityDateFilter';
-import type { ExploreAvailablePersonDTO } from '@uaetrail/shared-types';
+import type { ExploreAvailablePersonDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
 import type { BuddiesDiscoverySegment } from '../../list/buddiesDiscoverySegment';
 import { EXPLORE_PEOPLE_BROWSE_PANEL_TITLE } from '../../content/explorePeopleBrowseCopy';
 import type {
@@ -14,7 +13,7 @@ import type {
   SocialPersonRowDTO,
 } from '@uaetrail/shared-types';
 import type { UserRole } from '@uaetrail/shared-types';
-import type { ExploreFollowedSegment } from './useExploreBrowseUrlState';
+import type { ExploreFollowedSegment } from '@/explore/ui/useExploreBrowseUrlState';
 import { PeopleBrowseSearchField, PeopleBrowseTabContent } from './peopleBrowse';
 
 export interface PeopleBrowsePanelProps {
@@ -29,8 +28,6 @@ export interface PeopleBrowsePanelProps {
   searchFocusNonce?: number;
   peopleBrowseTab: PeopleBrowseTab;
   onPeopleBrowseTabChange: (tab: PeopleBrowseTab) => void;
-  activityDatePreset: ExploreActivityDatePreset;
-  onActivityDatePresetChange: (preset: ExploreActivityDatePreset) => void;
   buddiesDiscoverSegment: BuddiesDiscoverySegment;
   onBuddiesDiscoverSegmentChange: (segment: BuddiesDiscoverySegment) => void;
   memberPeopleAllCount?: number;
@@ -64,6 +61,11 @@ export interface PeopleBrowsePanelProps {
   userRole?: UserRole;
   canBrowseAllMembers?: boolean;
   mobileSheetChrome?: boolean;
+  seekingActivities: ExploreMapItemDTO[];
+  exploreCatalogItems: ExploreMapItemDTO[];
+  exploreCatalogLoading: boolean;
+  onOpenSeekingActivity: (item: ExploreMapItemDTO) => void;
+  buddyUserIds?: Set<string>;
 }
 
 /**
@@ -82,8 +84,6 @@ export const PeopleBrowsePanel = ({
   searchFocusNonce = 0,
   peopleBrowseTab,
   onPeopleBrowseTabChange,
-  activityDatePreset,
-  onActivityDatePresetChange,
   discoveryFriendsGoing,
   discoveryHostsGoing,
   discoverySeekingOnMap,
@@ -96,6 +96,11 @@ export const PeopleBrowsePanel = ({
   availabilityError = null,
   isSignedIn,
   mobileSheetChrome = false,
+  seekingActivities,
+  exploreCatalogItems,
+  exploreCatalogLoading,
+  onOpenSeekingActivity,
+  buddyUserIds,
 }: PeopleBrowsePanelProps) => {
   const mobileSheetPad = !isDesktop && mobileSheetChrome && !embedded;
   const queryInputRef = useRef<HTMLInputElement>(null);
@@ -157,8 +162,6 @@ export const PeopleBrowsePanel = ({
           onQueryChange={onQueryChange}
           onQuerySync={onQuerySync}
           inputRef={queryInputRef}
-          activityDatePreset={activityDatePreset}
-          onActivityDatePresetChange={onActivityDatePresetChange}
         />
         <PeopleBrowsePanelTabs tab={peopleBrowseTab} onTabChange={onPeopleBrowseTabChange} />
       </div>
@@ -171,6 +174,11 @@ export const PeopleBrowsePanel = ({
         <PeopleBrowseTabContent
           tab={peopleBrowseTab}
           isSignedIn={isSignedIn}
+          seekingActivities={seekingActivities}
+          exploreCatalogItems={exploreCatalogItems}
+          exploreCatalogLoading={exploreCatalogLoading}
+          onOpenSeekingActivity={onOpenSeekingActivity}
+          buddyUserIds={buddyUserIds}
           availabilityPeople={availabilityPeople}
           availabilityLoading={availabilityLoading}
           availabilityError={availabilityError}

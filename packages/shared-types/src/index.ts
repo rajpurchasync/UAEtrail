@@ -1203,6 +1203,7 @@ export {
   exploreVenueHint,
   formatExploreDayForHeadline,
   formatExploreDayShort,
+  formatExploreRelativeScheduleLabel,
   formatExploreTime,
   formatPlanPhrase,
   resolveExploreItemSource,

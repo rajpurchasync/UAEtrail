@@ -12,6 +12,7 @@ import {
   listPublishedUpcomingActivitiesByLocation,
 } from '../../lib/activities-store.js';
 import { loadExploreMapForRequest } from '../../lib/explore-map-route.js';
+import { loadExploreSeekingActivitiesForViewer } from '../../services/explore-seeking-activities-read.js';
 import { listActiveLocations } from '../../lib/location-query.js';
 import { buildActivityDto, toLocationDto } from '../../lib/mappers.js';
 import { paginatedResponse } from '../../lib/pagination.js';
@@ -64,6 +65,18 @@ export const registerPublicPlaceRoutes = (router: Router): void => {
           limit: query.limit,
           area: query.area,
         },
+        viewerUserId: req.auth?.userId ?? null,
+        userRole: req.auth?.role ?? null,
+      });
+      res.json({ data });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.get('/explore/seeking-activities', optionalAuth, async (req, res, next) => {
+    try {
+      const data = await loadExploreSeekingActivitiesForViewer({
         viewerUserId: req.auth?.userId ?? null,
         userRole: req.auth?.role ?? null,
       });

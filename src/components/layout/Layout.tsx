@@ -40,7 +40,9 @@ export const Layout = ({ children }: LayoutProps) => {
                 <Header />
               </div>
               <MobileTabHeader />
-              <div className="relative z-0 min-h-0 flex-1 isolate overflow-hidden">{children}</div>
+              <div className="relative z-0 flex h-full min-h-0 flex-1 isolate overflow-hidden">
+                {children}
+              </div>
               <MobileBottomNav />
             </div>
         </MobileMenuProvider>

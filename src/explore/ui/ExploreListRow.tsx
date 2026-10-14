@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { ChevronRight, Users } from 'lucide-react';
 import { SecureAvatar } from '../../components/ui';
+import { formatExploreRelativeScheduleLabel } from '@uaetrail/shared-types';
 import type { ExploreCardModel } from '../exploreCardModel';
 import { buildExploreListMeta, exploreCardToneTextClass } from '../exploreCardModel';
 import { EnvironmentImage } from '../../components/ui/EnvironmentImage';
@@ -81,6 +82,10 @@ export const ExploreListRow = ({
   const meta = buildExploreListMeta(card);
   const toneTextClass = exploreCardToneTextClass[card.tone];
   const isCatalogRow = card.source === 'shop' || card.source === 'agency' || card.source === 'venue';
+  const scheduleChipLabel =
+    !isCatalogRow && card.activity?.date
+      ? formatExploreRelativeScheduleLabel(card.activity.date)
+      : null;
 
   const iconCell = card.coverImage ? (
     <div className="relative h-14 w-14 shrink-0">
@@ -143,6 +148,13 @@ export const ExploreListRow = ({
       <button type="button" onClick={onClick} className={`${rowMainClass} rounded-t-2xl`}>
         {iconCell}
         <span className="min-w-0 flex-1">
+          {scheduleChipLabel ? (
+            <span
+              className={`mb-1 inline-block rounded-md bg-neutral-100 px-1.5 py-0.5 text-[11px] font-semibold tracking-wide ${EXPLORE_TYPE.caption}`}
+            >
+              {scheduleChipLabel}
+            </span>
+          ) : null}
           {titleBlock}
           {meta ? (
             <p className={`mt-0.5 ${metaClamp} text-sm font-medium leading-snug ${EXPLORE_TYPE.muted}`}>{meta}</p>

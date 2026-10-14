@@ -24,14 +24,13 @@ export const ExploreExperience = () => {
         path={EXPLORE_MAP_PATH}
       />
 
-      <div className="relative flex min-h-0 flex-1 lg:flex-row">
+      <div className="relative flex h-full min-h-0 flex-1 max-lg:flex-col lg:flex-row lg:items-stretch">
         <ExploreExperienceBrowsePanels
           isDesktop={model.isDesktop}
           browse={model.browse}
           browsePanelShared={model.browsePanelShared}
           listItems={model.listItems}
           mapItems={model.mapItems}
-          listFeedHostActions={model.listFeedHostActions}
           peopleBrowsePanelProps={model.peopleBrowsePanelProps}
           mapStage={
             <ExploreMapShell
@@ -59,6 +58,7 @@ export const ExploreExperience = () => {
               searchScopeCounts={model.searchScopeCounts}
               setExploreSearchModalOpen={model.setExploreSearchModalOpen}
               onVisibleMapBoundsChange={model.onVisibleMapBoundsChange}
+              peopleBrowsePanelProps={model.peopleBrowsePanelProps}
             />
           }
         />

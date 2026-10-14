@@ -98,14 +98,16 @@ describe('list module hygiene', () => {
     expect(experience).not.toMatch(/<ListFeedActionsProvider>\s*<BrowseListPageShell/);
   });
 
-  it('map list compact rows use optional list feed actions for L1 footers', () => {
+  it('map list compact rows omit join CTAs (tap row opens peek)', () => {
     const browsePanels = readFileSync(
       join(process.cwd(), 'src/explore/shell/ExploreExperienceBrowsePanels.tsx'),
       'utf8'
     );
-    const listRow = readFileSync(join(process.cwd(), 'src/explore/ui/ExploreListRow.tsx'), 'utf8');
-    expect(browsePanels).toMatch(/mobileMapListPanel[\s\S]*ListFeedActionsProvider[\s\S]*listFeedHostActions/);
-    expect(listRow).toMatch(/ExploreListRowWireFooter/);
+    expect(browsePanels).not.toMatch(/ListFeedActionsProvider/);
+    expect(browsePanels).toMatch(/ExploreBrowsePanel/);
+    expect(browsePanels).toMatch(/\{mapStage\}/);
+    const mapStage = readFileSync(join(process.cwd(), 'src/explore/ui/ExploreMapStage.tsx'), 'utf8');
+    expect(mapStage).toMatch(/desktopPeopleBrowseOverlay/);
   });
 
   it('forbids legacy rail poster variant strings', () => {
@@ -139,7 +141,10 @@ describe('list module hygiene', () => {
       join(process.cwd(), 'src/explore/shell/ExploreExperienceBrowsePanels.tsx'),
       'utf8'
     );
-    const peoplePanel = readFileSync(join(process.cwd(), 'src/explore/ui/PeopleBrowsePanel.tsx'), 'utf8');
+    const peoplePanel = readFileSync(
+      join(process.cwd(), 'src/people-discovery/panel/PeopleBrowsePanel.tsx'),
+      'utf8'
+    );
     const mapListPanel = readFileSync(join(process.cwd(), 'src/explore/ui/ExploreBrowsePanel.tsx'), 'utf8');
     expect(browsePanels).toMatch(/PeopleBrowsePanel/);
     expect(browsePanels).toMatch(/ListDiscoveryExperience/);
@@ -147,7 +152,11 @@ describe('list module hygiene', () => {
     expect(mapListPanel).toMatch(/ExploreListRow/);
     expect(mapListPanel).toMatch(/PANEL_TABS/);
     expect(peoplePanel).toMatch(/from '\.\/peopleBrowse'/);
-    expect(peoplePanel).not.toMatch(/ExploreListRow/);
+    const peopleLookingList = readFileSync(
+      join(process.cwd(), 'src/people-discovery/panel/peopleBrowse/PeopleBrowseLookingList.tsx'),
+      'utf8'
+    );
+    expect(peopleLookingList).toMatch(/ExploreListRow/);
     expect(peoplePanel).not.toMatch(/buildListFeedCards/);
   });
 
@@ -158,6 +167,32 @@ describe('list module hygiene', () => {
     expect(experience).toMatch(/listCat: 'people'/);
     expect(experience).toMatch(/useMemberDiscoveryRoster/);
     expect(experience).toMatch(/PeopleBrowseTabContent|PeopleBrowsePanel/);
+  });
+
+  it('explore map pin pool uses discovery selectors via shell composer', () => {
+    const browseList = readFileSync(join(process.cwd(), 'src/explore/ui/useExploreBrowseList.ts'), 'utf8');
+    expect(browseList).toMatch(/selectExploreMapPinCatalog/);
+    expect(browseList).toMatch(/selectActivitiesFromExploreCatalog/);
+    expect(browseList).not.toMatch(/matchesBuddyMapFilter/);
+  });
+
+  it('people Looking for uses dedicated seeking-activities read hook', () => {
+    const experience = readFileSync(join(process.cwd(), 'src/list/ListDiscoveryExperience.tsx'), 'utf8');
+    const bundle = readFileSync(
+      join(process.cwd(), 'src/people-discovery/hooks/usePeopleDiscoveryBrowseBundle.ts'),
+      'utf8'
+    );
+    expect(experience).toMatch(/usePeopleDiscoverySeekingActivities/);
+    expect(bundle).toMatch(/usePeopleDiscoverySeekingActivities/);
+    expect(bundle).toMatch(/usePeopleDiscoverySeekingActivities/);
+    expect(bundle).not.toMatch(/from ['"]@\/api\/domains\//);
+  });
+
+  it('list map feed filters delegate seeking and place merge to discovery modules', () => {
+    const filters = readFileSync(join(process.cwd(), 'src/list/browseListFilters.ts'), 'utf8');
+    expect(filters).toMatch(/activity-discovery\/catalog\/listSeeking/);
+    expect(filters).toMatch(/places-discovery\/catalog\/listCatalog/);
+    expect(filters).not.toMatch(/exploreMapItemIsSeeking/);
   });
 
   it('builds enriched cards through buildListFeedCards', () => {

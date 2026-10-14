@@ -1,7 +1,9 @@
 import type { ExploreSearchScopeCounts, ExploreSearchScopeKey } from '../exploreBrowseTaxonomy';
 import { EXPLORE_MOBILE_MAP_CHROME, EXPLORE_Z } from '../../config/exploreTheme';
-import { ExploreMapPeopleBrowseButton } from './ExploreMapPeopleBrowseButton';
+import { ExploreMapDateFilter } from './ExploreMapDateFilter';
+import { ExploreMapPeopleBrowseButton } from '@/people-discovery/panel/ExploreMapPeopleBrowseButton';
 import { ExploreMapMobileLayerChrome } from './ExploreMapMobileLayerChrome';
+import { EXPLORE_FLOATING_CONTROL } from '../../config/exploreTheme';
 import type { ExplorePanel, MapFilterKey } from '../routing';
 import type { ExploreActivityDatePreset } from '../exploreActivityDateFilter';
 
@@ -73,12 +75,21 @@ export const ExploreMapChromeBar = ({
         />
       ) : null}
       {onOpenPeopleBrowsePanel ? (
-        <ExploreMapPeopleBrowseButton
-          avatars={peopleBrowsePanelAvatars}
-          friendCount={peopleBrowsePanelFriendCount}
-          onClick={onOpenPeopleBrowsePanel}
-          className="hidden shrink-0 lg:inline-flex"
-        />
+        <div className="hidden shrink-0 items-center gap-3 lg:flex">
+          <ExploreMapDateFilter
+            activityDatePreset={activityDatePreset}
+            onActivityDatePresetChange={onActivityDatePresetChange}
+            includeAnyday={false}
+            iconOnly
+            iconTriggerClassName={`${EXPLORE_FLOATING_CONTROL} inline-flex h-10 w-10 items-center justify-center text-emerald-950`}
+          />
+          <ExploreMapPeopleBrowseButton
+            avatars={peopleBrowsePanelAvatars}
+            friendCount={peopleBrowsePanelFriendCount}
+            onClick={onOpenPeopleBrowsePanel}
+            className="shrink-0"
+          />
+        </div>
       ) : null}
     </div>
   </div>

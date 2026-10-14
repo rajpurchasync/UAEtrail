@@ -15,12 +15,13 @@ describe('buddiesDiscoverySegment', () => {
   it('maps legacy buddies values', () => {
     expect(parseBuddiesDiscoverySegment('friends')).toBe('going');
     expect(parseBuddiesDiscoverySegment('all')).toBe('connect');
-    expect(parseBuddiesDiscoverySegment('looking')).toBe('available');
+    expect(parseBuddiesDiscoverySegment('looking')).toBe('looking');
     expect(parseBuddiesDiscoverySegment('followed')).toBe('going');
   });
 
   it('serializes non-default segments only', () => {
     expect(serializeBuddiesDiscoverySegment('available')).toBeNull();
+    expect(serializeBuddiesDiscoverySegment('looking')).toBe('looking');
     expect(serializeBuddiesDiscoverySegment('going')).toBe('going');
     expect(serializeBuddiesDiscoverySegment('connect')).toBe('connect');
   });

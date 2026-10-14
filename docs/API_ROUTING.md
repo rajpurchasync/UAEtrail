@@ -150,9 +150,10 @@ Explore **people browse panel** (map; URL `view=people`; legacy `view=social` / 
 |--------|------|-----|
 | GET | `/social/people/preview` | Network avatars + counts for explore map people pill (map-going faces merged on client from `GET /explore/map`) |
 | GET | `/social/people` | **Network roster** — friends / following for map people panel. Query: `segment=all\|friends\|followed` |
-| GET | `/me/member-discovery/roster` | **Discovery roster** — who’s going, hosts, looking-for, followed, directory (`q`, `date`, `omitDirectory`, pagination); `meta.quota`. Same list component as `/list?listCat=people` (**Buddies**) |
+| GET | `/me/member-discovery/roster` | **Discovery roster** — who’s going, hosts, looking-for **person rows**, followed, directory (`q`, `date`, `omitDirectory`, pagination); `meta.quota`. Same list component as `/list?listCat=people` (**Buddies**) |
+| GET | `/explore/seeking-activities` | **Looking for outings** — published `activityMode: seeking` as `ExploreMapItemDTO[]` (same assembler as map; optional auth). People **Looking for** tab + list Buddies segment use this read, then client `activity-discovery` filters |
 
-Registration: `registerSocialPeopleRoutes.ts` · `registerMemberDiscoveryRoutes.ts` · services: `member-people-engagement.ts`, `member-discovery-roster.ts`.
+Registration: `registerSocialPeopleRoutes.ts` · `registerMemberDiscoveryRoutes.ts` · `registerPublicPlaceRoutes.ts` (`/explore/seeking-activities`) · services: `member-people-engagement.ts`, `member-discovery-roster.ts`, `explore-seeking-activities-read.ts`.
 
 ---
 

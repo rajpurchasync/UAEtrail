@@ -6,7 +6,8 @@ describe('exploreBrowseUrlHydrate', () => {
   it('parses people browse view and round-trips through sync', () => {
     const params = new URLSearchParams('view=people&peopleTab=available&list=1');
     const state = parseExploreBrowseStateFromSearchParams(params, true);
-    expect(state.listMode).toBe('people');
+    expect(state.listMode).toBe('default');
+    expect(state.peopleBrowseOpen).toBe(true);
     expect(state.peopleBrowseTab).toBe('available');
 
     const next = buildExploreBrowseSearchParams({
@@ -28,13 +29,14 @@ describe('exploreBrowseUrlHydrate', () => {
         pinKind: state.pinKind,
         topicPills: state.topicPills,
         listMode: state.listMode,
+        peopleBrowseOpen: state.peopleBrowseOpen,
         searchScope: state.searchScope,
         peopleBrowseTab: state.peopleBrowseTab,
       },
       patch: {},
     });
     expect(next.get('view')).toBe('people');
-    expect(next.get('peopleTab')).toBeNull();
+    expect(next.get('peopleTab')).toBe('available');
     expect(
       parseExploreBrowseStateFromSearchParams(next, true).peopleBrowseTab
     ).toBe('available');

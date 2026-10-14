@@ -4,6 +4,8 @@ import {
   buildMapColocatedPinIconHtml,
   buildMapPinFaceHtml,
   buildVenueMapPinHtml,
+  colocatedPinCanvasMetrics,
+  resolveColocatedExploreItemIdFromPointer,
   resolveMapPinIconHtml,
 } from './mapPinIcons';
 
@@ -83,43 +85,45 @@ describe('mapPinIcons', () => {
     expect(html).not.toContain('uaetrail-map-venue-chip--colocated');
   });
 
-  it('shows indicative count badge for a single item at one pin', () => {
+  it('omits count badge for a single item at one pin', () => {
     const html = buildMapPinFaceHtml({
       kind: 'hiking',
       source: 'activity',
       ringColor: '#059669',
-      size: 40,
+      size: 32,
       fontSizePx: 18,
       ringWidth: 2.5,
       stackCount: 1,
     });
-    expect(html).toContain('uaetrail-map-cluster-badge');
-    expect(html).toContain('>1<');
+    expect(html).not.toContain('uaetrail-map-cluster-badge');
   });
 
-  it('renders hosted vs seeking mode corner badges on activity pins', () => {
-    const hosted = buildMapPinFaceHtml({
+  it('resolveColocatedExploreItemIdFromPointer picks nearest fan slot', () => {
+    const { canvas, orbit } = colocatedPinCanvasMetrics(2);
+    const entries = [{ exploreItemId: 'hike' }, { exploreItemId: 'ride' }];
+    const center = canvas / 2;
+    const topY = center - orbit;
+    expect(
+      resolveColocatedExploreItemIdFromPointer(entries, center, topY, canvas, canvas)
+    ).toBe('hike');
+    const bottomY = center + orbit;
+    expect(
+      resolveColocatedExploreItemIdFromPointer(entries, center, bottomY, canvas, canvas)
+    ).toBe('ride');
+  });
+
+  it('shows stack count badge only when multiple items share one pin', () => {
+    const stacked = buildMapPinFaceHtml({
       kind: 'hiking',
       source: 'activity',
       ringColor: '#059669',
-      size: 40,
+      size: 32,
       fontSizePx: 18,
       ringWidth: 2.5,
-      stackCount: 1,
-      activityMode: 'hosted',
+      stackCount: 3,
     });
-    expect(hosted).toContain('uaetrail-map-activity-mode-badge--hosted');
-
-    const seeking = buildMapPinFaceHtml({
-      kind: 'hiking',
-      source: 'activity',
-      ringColor: '#7c3aed',
-      size: 40,
-      fontSizePx: 18,
-      ringWidth: 2.5,
-      stackCount: 1,
-      activityMode: 'seeking',
-    });
-    expect(seeking).toContain('uaetrail-map-activity-mode-badge--seeking');
+    expect(stacked).toContain('uaetrail-map-cluster-badge');
+    expect(stacked).toContain('>3<');
+    expect(stacked).not.toContain('uaetrail-map-activity-mode-badge');
   });
 });

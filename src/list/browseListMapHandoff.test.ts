@@ -15,7 +15,7 @@ const baseState: BrowseListFilterState = {
   price: 'all',
   when: 'any',
   activityDatePreset: 'anyday',
-  buddiesSegment: 'available',
+  buddiesSegment: 'looking',
 };
 
 describe('browseListMapHandoff', () => {

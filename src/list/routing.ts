@@ -27,7 +27,7 @@ export const listDiscoveryPath = (options?: ListDiscoveryPathOptions): string =>
     price: options?.price ?? 'all',
     when: options?.when ?? 'any',
     activityDatePreset: options?.activityDatePreset ?? 'anyday',
-    buddiesSegment: options?.buddiesSegment ?? 'available',
+    buddiesSegment: options?.buddiesSegment ?? 'looking',
   };
   const params = serializeBrowseListSearchParams(state, options?.regions ?? []);
   const qs = params.toString();

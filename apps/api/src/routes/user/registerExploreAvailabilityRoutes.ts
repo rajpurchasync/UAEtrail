@@ -5,7 +5,7 @@ import { AVAILABILITY_KINDS, type AvailabilityKind } from '@uaetrail/shared-type
 const availabilityKindEnum = z.enum(
   AVAILABILITY_KINDS as unknown as [AvailabilityKind, ...AvailabilityKind[]]
 );
-import { optionalAuth } from '../../middleware/optional-auth.js';
+import { requireAuth } from '../../middleware/auth.js';
 import { validate } from '../../middleware/validate.js';
 import { loadExploreAvailabilityIndex } from '../../lib/member-availability-store.js';
 
@@ -23,7 +23,7 @@ const exploreAvailabilityQuerySchema = z.object({
 export const registerExploreAvailabilityRoutes = (router: Router): void => {
   router.get(
     '/explore/people/availability',
-    optionalAuth,
+    requireAuth,
     validate({ query: exploreAvailabilityQuerySchema }),
     async (req, res, next) => {
       try {

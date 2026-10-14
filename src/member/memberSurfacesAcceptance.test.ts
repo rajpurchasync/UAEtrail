@@ -5,7 +5,7 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { parsePeopleBrowseTabFromUrl } from '../explore/peopleBrowseTab';
+import { parsePeopleBrowseTabFromUrl } from '../people-discovery/peopleBrowseTab';
 import { PLAN_MAIN_TABS } from '../plan/planTab';
 import { isPublishingConsolePath } from '../config/surfacePaths';
 import { participantHostBookmarkRedirect } from '../utils/authRouting';
@@ -99,8 +99,19 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(goalBar).not.toMatch(/goalCount === 0.*return null/);
   });
 
-  it('G-avail-map: People browse defaults to Available tab', () => {
-    expect(parsePeopleBrowseTabFromUrl(null, null)).toBe('available');
+  it('G-avail-map: People browse defaults to Free tab', () => {
+    expect(parsePeopleBrowseTabFromUrl(null, null)).toBe('looking');
+    expect(read('src/people-discovery/peopleBrowseTab.ts')).toMatch(/available: 'Free'/);
+  });
+
+  it('G-avail-guest: People browse requires sign-in (UI + API)', () => {
+    const tabContent = read(
+      'src/people-discovery/panel/peopleBrowse/PeopleBrowseTabContent.tsx'
+    );
+    expect(tabContent).toMatch(/!isSignedIn/);
+    const availabilityRoute = read('apps/api/src/routes/user/registerExploreAvailabilityRoutes.ts');
+    expect(availabilityRoute).toMatch(/requireAuth/);
+    expect(availabilityRoute).not.toMatch(/optionalAuth/);
   });
 
   it('G-seek: ActivityDTO wire includes activityMode for /activity/:id', () => {
@@ -139,7 +150,7 @@ describe('member surfaces §11 acceptance (automated)', () => {
   });
 
   it('G-seek: People browse wires seekingOnMap to explore pin routes (no activity detail hop)', () => {
-    const panel = read('src/explore/ui/PeopleBrowsePanel.tsx');
+    const panel = read('src/people-discovery/panel/PeopleBrowsePanel.tsx');
     expect(panel).toContain('discoverySeekingOnMap');
     expect(panel).toContain('seekingOnMap={discoverySeekingOnMap}');
     const routing = read('src/explore/memberDiscoverySeekingRow.ts');

@@ -1,4 +1,4 @@
-import { useQuery, type QueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useQuery, type QueryClient } from '@tanstack/react-query';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { fetchExploreMapItems } from './exploreMapClientApi';
 import type { ExploreMapFetchScope } from '../explore/exploreMapVnext';
@@ -39,5 +39,6 @@ export const useExploreMap = (options?: UseExploreMapOptions) => {
       return fetchExploreMapItems();
     },
     staleTime: 60_000,
+    placeholderData: keepPreviousData,
   });
 };

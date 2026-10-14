@@ -21,6 +21,10 @@ export const exploreApi = {
     );
   },
 
+  /** Published seeking outings — activity-discovery read for people **Looking for** (optional auth). */
+  getExploreSeekingActivities: () =>
+    apiRequest<{ data: ExploreMapItemDTO[] }>('/explore/seeking-activities'),
+
   listMyParticipantIntents: () =>
     apiRequest<{ data: import('@uaetrail/shared-types').ParticipantIntentDTO[] }>(
       '/me/participant-intents',

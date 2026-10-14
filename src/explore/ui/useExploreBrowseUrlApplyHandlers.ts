@@ -44,6 +44,7 @@ type Setters = {
   setPinKind: (v: ExplorePinKindFilter) => void;
   setTopicPills: (v: ExploreMapFilterPillKey[]) => void;
   setListMode: (v: ExploreBrowseListMode) => void;
+  setPeopleBrowseOpen: (v: boolean) => void;
   setPeopleBrowseTab: (v: PeopleBrowseTab) => void;
   setBuddiesDiscoverSegment: (v: BuddiesDiscoverySegment) => void;
   setFollowedSegment: (v: ExploreFollowedSegment) => void;
@@ -199,16 +200,24 @@ export const useExploreBrowseUrlApplyHandlers = (args: UseExploreBrowseUrlApplyH
   }, [clearSelection, listOpen, setters, syncExploreUrl]);
 
   const openPeopleBrowsePanel = useCallback(
-    (initialTab: PeopleBrowseTab = 'available') => {
+    (initialTab: PeopleBrowseTab = 'looking') => {
       clearSelection();
-      setters.setListMode('people');
       setters.setPeopleBrowseTab(initialTab);
       setters.setPanel('activities');
       setters.setDesktopBrowseTab('activities');
       if (isDesktop) {
-        syncExploreUrl({ listMode: 'people', peopleBrowseTab: initialTab, panel: 'activities' });
+        setters.setPeopleBrowseOpen(true);
+        setters.setListMode('default');
+        syncExploreUrl({
+          peopleBrowseOpen: true,
+          listMode: 'default',
+          peopleBrowseTab: initialTab,
+          panel: 'activities',
+          list: true,
+        });
         return;
       }
+      setters.setListMode('people');
       setters.setListOpen(true);
       syncExploreUrl({
         listMode: 'people',
@@ -221,16 +230,32 @@ export const useExploreBrowseUrlApplyHandlers = (args: UseExploreBrowseUrlApplyH
   );
 
   const closePeopleBrowsePanel = useCallback(() => {
-    setters.setListMode('default');
     clearSelection();
+    if (isDesktop) {
+      setters.setPeopleBrowseOpen(false);
+      setters.setListMode('default');
+      syncExploreUrl({ peopleBrowseOpen: false, listMode: 'default' });
+      return;
+    }
+    setters.setListMode('default');
     syncExploreUrl({ listMode: 'default' });
-  }, [clearSelection, setters, syncExploreUrl]);
+  }, [isDesktop, clearSelection, setters, syncExploreUrl]);
 
   const applyPeopleBrowseTab = useCallback(
     (tab: PeopleBrowseTab) => {
       setters.setPeopleBrowseTab(tab);
       setters.setBuddiesDiscoverSegment(tab);
       setters.setFollowedSegment('people');
+      if (isDesktop) {
+        syncExploreUrl({
+          peopleBrowseOpen: true,
+          listMode: 'default',
+          peopleBrowseTab: tab,
+          buddiesDiscoverSegment: tab,
+          list: listOpen,
+        });
+        return;
+      }
       syncExploreUrl({
         listMode: 'people',
         peopleBrowseTab: tab,
@@ -238,7 +263,7 @@ export const useExploreBrowseUrlApplyHandlers = (args: UseExploreBrowseUrlApplyH
         list: listOpen,
       });
     },
-    [listOpen, setters, syncExploreUrl]
+    [isDesktop, listOpen, setters, syncExploreUrl]
   );
 
   const applyFollowedSegment = useCallback(
@@ -252,6 +277,16 @@ export const useExploreBrowseUrlApplyHandlers = (args: UseExploreBrowseUrlApplyH
     (segment: BuddiesDiscoverySegment) => {
       setters.setBuddiesDiscoverSegment(segment);
       setters.setPeopleBrowseTab(segment);
+      if (isDesktop) {
+        syncExploreUrl({
+          buddiesDiscoverSegment: segment,
+          peopleBrowseTab: segment,
+          peopleBrowseOpen: true,
+          listMode: 'default',
+          list: listOpen,
+        });
+        return;
+      }
       syncExploreUrl({
         buddiesDiscoverSegment: segment,
         peopleBrowseTab: segment,
@@ -259,7 +294,7 @@ export const useExploreBrowseUrlApplyHandlers = (args: UseExploreBrowseUrlApplyH
         list: listOpen,
       });
     },
-    [listOpen, setters, syncExploreUrl]
+    [isDesktop, listOpen, setters, syncExploreUrl]
   );
 
   const closeListPanel = useCallback(() => {

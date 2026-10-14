@@ -1,9 +1,11 @@
 import { spawn } from 'node:child_process';
+import dotenv from 'dotenv';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const rootDir = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
-const localMongoUri = process.env.MONGODB_URI ?? 'mongodb://127.0.0.1:27017/uaetrail';
+dotenv.config({ path: path.join(rootDir, '.env') });
+const localMongoUri = process.env.MONGODB_URI?.trim() || 'mongodb://127.0.0.1:27017/uaetrail';
 
 const run = (command, args, options = {}) =>
   new Promise((resolve, reject) => {
@@ -39,7 +41,7 @@ const main = async () => {
 
   console.log(`[dev:local] Starting Vite + API with MONGODB_URI=${localMongoUri}`);
   console.log(
-    '[dev:local] Explore map empty?  SEED_DATA=true npm run seed  — see docs/operations/EXPLORE_MAP_RUNBOOK.md'
+    '[dev:local] Explore map sparse?  npm run seed  (refreshes demo activity dates) or SEED_DATA=true npm run seed for full reseed'
   );
   console.log(
     '[dev:local] After Find changes: npm run test:seeking-local  — manual smoke: docs/DEV_RUN.md § Find'

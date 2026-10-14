@@ -1,16 +1,16 @@
 import { useDeferredValue } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import type { AvailabilityKind } from '@uaetrail/shared-types';
-import { fetchExplorePeopleAvailability } from '../hooks/memberPeopleClientApi';
+import { fetchExplorePeopleAvailability } from '@/hooks/memberPeopleClientApi';
 import {
   explorePeopleAvailabilityQueryKey,
   type ExplorePeopleAvailabilityQueryParams,
-} from './memberPeopleQueryKeys';
+} from '../lib/memberPeopleQueryKeys';
 import {
   exploreActivityDatePresetToInclusiveRange,
   type ExploreActivityDatePreset,
-} from './exploreActivityDateFilter';
-import type { MapFilterKey } from './routing';
+} from '@/explore/exploreActivityDateFilter';
+import type { MapFilterKey } from '@/explore/routing';
 
 const STALE_MS = 60_000;
 

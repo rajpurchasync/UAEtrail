@@ -60,6 +60,7 @@ export type ExploreBrowseUrlSyncPatch = {
   pinKind?: ExplorePinKindFilter;
   topicPills?: ExploreMapFilterPillKey[];
   listMode?: ExploreBrowseListMode;
+  peopleBrowseOpen?: boolean;
   searchScope?: ExploreSearchScopeKey | null;
   peopleBrowseTab?: PeopleBrowseTab;
   buddiesDiscoverSegment?: BuddiesDiscoverySegment;
@@ -82,6 +83,7 @@ export type ExploreBrowseUrlSyncState = {
   pinKind: ExplorePinKindFilter;
   topicPills: ExploreMapFilterPillKey[];
   listMode: ExploreBrowseListMode;
+  peopleBrowseOpen: boolean;
   searchScope: ExploreSearchScopeKey | null;
   peopleBrowseTab: PeopleBrowseTab;
 };
@@ -116,6 +118,8 @@ export const buildExploreBrowseSearchParams = (input: {
   const pinKindValue = patch.pinKind ?? state.pinKind;
   const topicPillsValue = patch.topicPills ?? state.topicPills;
   const listModeValue = patch.listMode ?? state.listMode;
+  const peopleBrowseOpenValue = patch.peopleBrowseOpen ?? state.peopleBrowseOpen;
+  const peoplePanelActive = peopleBrowseOpenValue || listModeValue === 'people';
   const searchScopeValue = patch.searchScope !== undefined ? patch.searchScope : state.searchScope;
 
   if (filterValue === 'all') params.delete('filter');
@@ -165,7 +169,7 @@ export const buildExploreBrowseSearchParams = (input: {
   else params.delete('topics');
 
   const peopleBrowseTabValue = patch.peopleBrowseTab ?? state.peopleBrowseTab;
-  if (listModeValue === 'people') {
+  if (peoplePanelActive) {
     params.set('view', 'people');
     params.delete('goingTab');
     params.delete('socialTab');
