@@ -286,6 +286,7 @@ describe('attachExploreMapViewerAccess', () => {
     expect(enriched[0].viewerAccess?.level).toBe('join_request');
     expect(enriched[0].viewerAccess?.mapPeekActions).toEqual([
       { id: 'pending_join', prominence: 'primary', joinRequestStatus: 'pending' },
+      { id: 'withdraw_join', prominence: 'text' },
       { id: 'view_detail', prominence: 'text' },
     ]);
   });
