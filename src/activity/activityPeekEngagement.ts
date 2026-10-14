@@ -91,7 +91,7 @@ const applyJoinUiStateToMapPeekActions = (
 ): ActivityMapPeekAction[] => {
   if (joinUiState?.kind !== 'pending') return actions;
   const joinRequestStatus = joinUiState.status;
-  const remapped = actions.map((action) => {
+  const remapped = actions.map((action): ActivityMapPeekAction => {
     if (action.id !== 'request_join') return action;
     return {
       id: 'pending_join',
@@ -106,11 +106,8 @@ const applyJoinUiStateToMapPeekActions = (
   const core = remapped.filter(
     (action) => action.id !== 'view_detail' && action.id !== 'withdraw_join'
   );
-  return [
-    ...core,
-    { id: 'withdraw_join', prominence: 'text' },
-    ...(viewDetail ? [viewDetail] : []),
-  ];
+  const withdrawAction: ActivityMapPeekAction = { id: 'withdraw_join', prominence: 'text' };
+  return [...core, withdrawAction, ...(viewDetail ? [viewDetail] : [])];
 };
 
 /** Resolved wire actions for an activity map peek (API list or computed fallback). */
