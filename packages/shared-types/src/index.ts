@@ -1247,6 +1247,7 @@ export {
   type ActivityMapPeekAction,
   type ActivityMapPeekActionId,
   type ActivityMapPeekActionProminence,
+  type MapPeekJoinRequestStatus,
 } from './activity-map-peek-actions.js';
 
 export {

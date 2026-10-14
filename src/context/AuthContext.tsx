@@ -1,5 +1,5 @@
 import { AuthResponse, AuthUser } from '@uaetrail/shared-types';
-import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { getStoredSession, setStoredSession, setSessionInvalidatedHandler, USER_STORAGE_KEY } from '../api/client';
 import {
   fetchMeProfileAuth,
@@ -127,7 +127,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => setSessionInvalidatedHandler(null);
   }, []);
 
-  const hydrateUserFromProfile = async (fallback: AuthUser): Promise<AuthUser> => {
+  const hydrateUserFromProfile = useCallback(async (fallback: AuthUser): Promise<AuthUser> => {
     try {
       const profile = await fetchMeProfileAuth();
       // Role comes from the login response (token), not the profile endpoint — avoids stale DB reads
@@ -141,17 +141,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } catch {
       return fallback;
     }
-  };
+  }, []);
 
-  const applyAuthResponse = async (response: AuthResponse): Promise<AuthUser> => {
+  const applyAuthResponse = useCallback(async (response: AuthResponse): Promise<AuthUser> => {
     setStoredSession(response.tokens);
     const hydrated = await hydrateUserFromProfile(response.user);
     setStoredUser(hydrated);
     setUser(hydrated);
     return hydrated;
-  };
+  }, [hydrateUserFromProfile]);
 
-  const signIn = async (email: string, password: string): Promise<AuthUser | PendingEmailVerification> => {
+  const signIn = useCallback(async (email: string, password: string): Promise<AuthUser | PendingEmailVerification> => {
     setLoading(true);
     try {
       const response = await loginWithPassword(email, password);
@@ -174,9 +174,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [applyAuthResponse]);
 
-  const signInDemo = async (email: string): Promise<AuthUser> => {
+  const signInDemo = useCallback(async (email: string): Promise<AuthUser> => {
     setLoading(true);
     try {
       const response = await loginDemo(email);
@@ -184,9 +184,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [applyAuthResponse]);
 
-  const verifyEmail = async (email: string, otp: string): Promise<AuthUser> => {
+  const verifyEmail = useCallback(async (email: string, otp: string): Promise<AuthUser> => {
     setLoading(true);
     try {
       const response = await verifyEmailOtp(email, otp);
@@ -194,7 +194,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [applyAuthResponse]);
 
   const register = async ({
     email,
@@ -240,19 +240,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const signInWithGoogle = async (idToken: string, referralCode?: string, groupInviteToken?: string): Promise<AuthUser> => {
-    setLoading(true);
-    try {
-      const response = await loginWithGoogle(idToken, referralCode, groupInviteToken);
-      setStoredSession(response.tokens);
-      const hydrated = await hydrateUserFromProfile(response.user);
-      setStoredUser(hydrated);
-      setUser(hydrated);
-      return hydrated;
-    } finally {
-      setLoading(false);
-    }
-  };
+  const signInWithGoogle = useCallback(
+    async (idToken: string, referralCode?: string, groupInviteToken?: string): Promise<AuthUser> => {
+      setLoading(true);
+      try {
+        const response = await loginWithGoogle(idToken, referralCode, groupInviteToken);
+        setStoredSession(response.tokens);
+        const hydrated = await hydrateUserFromProfile(response.user);
+        setStoredUser(hydrated);
+        setUser(hydrated);
+        return hydrated;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [hydrateUserFromProfile]
+  );
 
   const signOut = async (): Promise<void> => {
     await logoutAuth().catch(() => undefined);
@@ -294,7 +297,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       register,
       verifyEmail,
     }),
-    [user, loading, initializing]
+    [user, loading, initializing, signIn, signInDemo, signInWithGoogle, verifyEmail]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

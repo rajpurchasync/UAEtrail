@@ -1,0 +1,11 @@
+# UAE Trail homepage rules
+- Stack: React 18, TypeScript, Vite, Tailwind CSS, Vitest. No new libs without asking.
+- Theme: green/white. Only tokens from docs/design-tokens.md; no hard-coded colors/sizes.
+- One component per file under `src/components/home/v2/` (homepage v2); typed props; compose on guest `/` only.
+- Accessibility: semantic HTML, keyboard support, visible focus, alt text, contrast >= 4.5:1,
+  respect prefers-reduced-motion.
+- Images: real <img> with alt, width/height or aspect-ratio, lazy except the first hero slide.
+- Time format: formatActivityTime() everywhere.
+- Copy comes from docs/content.md; do not invent copy or testimonial names.
+- Mobile-first; verify 360/768/1024/1440.
+- Before large edits, present a file-by-file plan and wait for approval.

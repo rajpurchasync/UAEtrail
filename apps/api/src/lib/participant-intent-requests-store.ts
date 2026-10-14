@@ -17,8 +17,10 @@ import {
   listActivityEngagementForUserOnActivities,
   listActivityRequestsForActivity,
 } from './activity-engagement-store.js';
-import { RequestStatus } from '../domain/enums.js';
+import { ActivityStatus, RequestStatus } from '../domain/enums.js';
+import type { MongoActivityDoc } from './entity-builders.js';
 import { resolveIntentPublishedActivityId } from './participant-intents-store.js';
+import { findSeekingActivityByParticipantIntentId } from '../services/participant-intent-activity-readthrough.js';
 
 type MongoParticipantIntentJoinRequest = {
   _id: string;
@@ -57,6 +59,54 @@ const intentLookupFilter = (intentId: string): Record<string, unknown> =>
   /^[a-f0-9]{24}$/i.test(intentId) && ObjectId.isValid(intentId)
     ? { $or: [{ _id: intentId }, { _id: new ObjectId(intentId) }] }
     : { _id: intentId };
+
+const seekingActivityToIntentRecord = (activity: MongoActivityDoc): MongoParticipantIntent | null => {
+  const intentId = activity.participantIntentId?.trim();
+  if (!intentId) return null;
+  const ownerUserId = activity.hostId ?? activity.createdById;
+  if (!ownerUserId) return null;
+
+  let status: MongoParticipantIntent['status'] = 'active';
+  if (activity.seekingConvertedActivityId) status = 'fulfilled';
+  else if (activity.status === ActivityStatus.CANCELLED) status = 'cancelled';
+
+  return {
+    _id: intentId,
+    userId: ownerUserId,
+    status,
+    activityId: activity._id,
+    seekingActivityId: activity._id,
+  };
+};
+
+/** Demand post for join/carryover — includes fulfilled/cancelled seeking rows (M2d read-through). */
+const findIntentRecordForEngagement = async (
+  intentId: string
+): Promise<MongoParticipantIntent | null> => {
+  const fromCollection = await intentsCollection().findOne(
+    intentLookupFilter(intentId) as Filter<MongoParticipantIntent>
+  );
+  if (fromCollection) return fromCollection;
+
+  const activity = await findSeekingActivityByParticipantIntentId(intentId);
+  if (!activity) return null;
+  return seekingActivityToIntentRecord(activity);
+};
+
+/** Active demand post — `participant_intents` row or M2d seeking activity read-through. */
+const findActiveIntentRecord = async (intentId: string): Promise<MongoParticipantIntent | null> => {
+  const fromCollection = await intentsCollection().findOne({
+    ...intentLookupFilter(intentId),
+    status: 'active',
+  } as Filter<MongoParticipantIntent>);
+  if (fromCollection) return fromCollection;
+
+  const activity = await findSeekingActivityByParticipantIntentId(intentId);
+  if (!activity) return null;
+  const mapped = seekingActivityToIntentRecord(activity);
+  if (!mapped || mapped.status !== 'active') return null;
+  return mapped;
+};
 
 const mapDto = (doc: MongoParticipantIntentJoinRequest): ParticipantIntentJoinRequestDTO => ({
   id: doc._id,
@@ -158,10 +208,7 @@ export const createParticipantIntentJoinRequest = async (input: {
   userId: string;
   note?: string | null;
 }): Promise<ParticipantIntentJoinRequestDTO> => {
-  const intent = await intentsCollection().findOne({
-    ...intentLookupFilter(input.intentId),
-    status: 'active',
-  } as Filter<MongoParticipantIntent>);
+  const intent = await findActiveIntentRecord(input.intentId);
 
   if (!intent) {
     throw new ApiError(404, 'intent_not_found', 'This plan is no longer on the map.');
@@ -214,12 +261,11 @@ export const createParticipantIntentJoinRequest = async (input: {
 const findActiveIntentForOwner = async (
   intentId: string,
   ownerUserId: string
-): Promise<MongoParticipantIntent | null> =>
-  intentsCollection().findOne({
-    ...intentLookupFilter(intentId),
-    userId: ownerUserId,
-    status: 'active',
-  } as Filter<MongoParticipantIntent>);
+): Promise<MongoParticipantIntent | null> => {
+  const intent = await findActiveIntentRecord(intentId);
+  if (!intent || intent.userId !== ownerUserId) return null;
+  return intent;
+};
 
 export const listParticipantIntentJoinRequestsForOwner = async (
   intentId: string,
@@ -387,9 +433,7 @@ export const rejectParticipantIntentJoinRequest = async (
 export const listApprovedParticipantIntentJoinerUserIds = async (
   intentId: string
 ): Promise<string[]> => {
-  const intent = await intentsCollection().findOne(
-    intentLookupFilter(intentId) as Filter<MongoParticipantIntent>
-  );
+  const intent = await findIntentRecordForEngagement(intentId);
   if (!intent) return [];
 
   const publishedActivityId = resolveIntentPublishedActivityId(intent);
@@ -422,12 +466,33 @@ export const mapIntentJoinRequestStatusByIntentIdsForUser = async (
 
   const activityIdByIntentId = new Map<string, string>();
   const legacyIntentIds: string[] = [];
+  const resolvedFromCollection = new Set(intents.map((intent) => intent._id));
   for (const intent of intents) {
     const activityId = resolveIntentPublishedActivityId(intent);
     if (activityId) {
       activityIdByIntentId.set(intent._id, activityId);
     } else {
       legacyIntentIds.push(intent._id);
+    }
+  }
+
+  const activityOnlyIntentIds = uniqueIds.filter((id) => !resolvedFromCollection.has(id));
+  if (activityOnlyIntentIds.length > 0) {
+    const activities = await getMongoClient()!
+      .db()
+      .collection<MongoActivityDoc>(COLLECTIONS.ACTIVITIES)
+      .find({
+        participantIntentId: { $in: activityOnlyIntentIds },
+        activityMode: 'seeking',
+      })
+      .toArray();
+    for (const activity of activities) {
+      const mapped = seekingActivityToIntentRecord(activity);
+      if (!mapped || mapped.status !== 'active') continue;
+      const activityId = resolveIntentPublishedActivityId(mapped);
+      if (activityId) {
+        activityIdByIntentId.set(mapped._id, activityId);
+      }
     }
   }
 
@@ -473,10 +538,7 @@ export const findParticipantIntentJoinRequestForUser = async (
   intentId: string,
   userId: string
 ): Promise<ParticipantIntentJoinRequestDTO | null> => {
-  const intent = await intentsCollection().findOne({
-    ...intentLookupFilter(intentId),
-    status: 'active',
-  } as Filter<MongoParticipantIntent>);
+  const intent = await findActiveIntentRecord(intentId);
   if (!intent) return null;
 
   const publishedActivityId = resolveIntentPublishedActivityId(intent);

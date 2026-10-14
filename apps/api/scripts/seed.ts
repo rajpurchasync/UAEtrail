@@ -2491,6 +2491,9 @@ Share your live location and carry extra water in summer months.`
   console.log(`Pending application: Hatta Hiking Club (by ${pendingParticipant.email})`);
   console.log(`Seeded by admin id: ${admin._id}`);
   console.log(`Merchant stores: ${nikeMerchantProfile.shopName}, ${adidasMerchantProfile.shopName} (${seedProducts.length} products)`);
+  const { invalidateExploreMapCache } = await import('../src/lib/explore-map-cache.js');
+  await invalidateExploreMapCache();
+
   console.log('Explore map demo pins: supply (hiking, camping, event, rideshare) + demand (all four types) + shops + agency');
   console.log(`Chat messages: mobile inbox demo (DMs, friends wall, outing chat) seeded`);
   console.log(

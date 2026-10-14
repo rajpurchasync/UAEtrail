@@ -1,0 +1,287 @@
+/**
+ * Homepage v2 design tokens — canonical values in docs/design-tokens.md
+ */
+:root {
+  /* Primary green */
+  --green-600: #059669;
+  --green-700: #047857;
+  --green-50: #ecfdf5;
+
+  /* Neutrals */
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+  --gray-800: #1f2937;
+  --gray-900: #111827;
+
+  /* Semantic */
+  --ink: #111827;
+  --surface: #ffffff;
+  --surface-muted: #f9fafb;
+
+  /* Hero overlay */
+  --hero-overlay: linear-gradient(
+    90deg,
+    rgba(17, 24, 39, 0.88) 0%,
+    rgba(17, 24, 39, 0.72) 42%,
+    rgba(17, 24, 39, 0.35) 70%,
+    rgba(17, 24, 39, 0.15) 100%
+  );
+  --hero-overlay-mobile: linear-gradient(
+    0deg,
+    rgba(17, 24, 39, 0.92) 0%,
+    rgba(17, 24, 39, 0.75) 45%,
+    rgba(17, 24, 39, 0.25) 100%
+  );
+
+  /* Price tags */
+  --tag-free-bg: #ecfdf5;
+  --tag-free-text: #047857;
+  --tag-free-border: #a7f3d0;
+  --tag-shared-bg: #fffbeb;
+  --tag-shared-text: #b45309;
+  --tag-shared-border: #fde68a;
+  --tag-paid-bg: #eff6ff;
+  --tag-paid-text: #1d4ed8;
+  --tag-paid-border: #bfdbfe;
+
+  /* Typography */
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, system-ui, 'Segoe UI', Roboto,
+    sans-serif;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 18px;
+  --text-xl: 24px;
+  --text-2xl: 32px;
+  --text-5xl: 48px;
+  --text-hero: clamp(2.25rem, 4vw + 1rem, 3.5rem);
+  --leading-heading: 1.25;
+  --leading-body: 1.5;
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-24: 96px;
+
+  /* Radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+
+  /* Shadow */
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-card-hover: 0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-header: 0 2px 8px rgba(0, 0, 0, 0.06);
+
+  /* Layout — guest home uses full desktop width (see below) */
+  --content-max-width: 1120px;
+  --gutter-mobile: 16px;
+  --gutter-tablet: 24px;
+  --gutter-desktop: 32px;
+  --gutter-desktop-wide: 48px;
+  --section-padding-y-mobile: 40px;
+  --section-padding-y-desktop: 56px;
+  --header-height-mobile: 56px;
+  --header-height-desktop: 64px;
+  --hero-content-max-width: 560px;
+  --hero-height-desktop: min(520px, 72svh);
+  --hero-height-mobile: min(460px, 68svh);
+  --touch-min: 44px;
+
+  /* Motion */
+  --duration-hover: 150ms;
+  --duration-ui: 250ms;
+  --duration-carousel: 500ms;
+  --duration-faq: 200ms;
+  --hero-crossfade-duration: 1.15s;
+  --hero-crossfade-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --hero-kenburns-duration: 8s;
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+
+  /* Breakpoints (for reference in JS / media queries) */
+  --bp-min: 360px;
+  --bp-sm: 640px;
+  --bp-md: 768px;
+  --bp-lg: 1024px;
+  --bp-xl: 1280px;
+
+  /* Focus */
+  --focus-ring-width: 2px;
+  --focus-ring-color: var(--green-600);
+  --focus-ring-offset: 2px;
+  --focus-ring: 2px solid var(--green-600);
+}
+
+.home-v2-font {
+  font-family: var(--font-sans);
+}
+
+/** Full-bleed marketing sections — horizontal padding only, no max-width cap. */
+.home-marketing-wrap {
+  width: 100%;
+  padding-inline: var(--gutter-mobile);
+}
+
+@media (min-width: 768px) {
+  .home-marketing-wrap {
+    padding-inline: var(--gutter-desktop);
+  }
+}
+
+@media (min-width: 1280px) {
+  .home-marketing-wrap {
+    padding-inline: var(--gutter-desktop-wide);
+  }
+}
+
+/** Soft frosted pill — legibility hint, not a solid card. */
+.home-marketing-chip-frost {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.16) 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0.14) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 1px 6px rgba(17, 24, 39, 0.03);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+/** Guest hero — soft crossfade between photos (wrapper stays under overlay). */
+.home-hero-slide {
+  transition: opacity var(--hero-crossfade-duration) var(--hero-crossfade-ease);
+}
+
+.home-hero-slide-image {
+  transform-origin: center center;
+  transition: opacity 0.7s var(--hero-crossfade-ease);
+}
+
+.home-hero-slide-image--live {
+  animation: home-hero-kenburns var(--hero-kenburns-duration) ease-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-hero-slide,
+  .home-hero-slide-image {
+    transition: none;
+  }
+
+  .home-hero-slide-image--live {
+    animation: none;
+  }
+}
+
+/** Hero proof chips — barely-there glass over photography. */
+.home-hero-proof-chip {
+  background: linear-gradient(
+    180deg,
+    rgba(17, 24, 39, 0.1) 0%,
+    rgba(17, 24, 39, 0.03) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: none;
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
+}
+
+/**
+ * Adaptive card row — grow to fill when there is room; never shrink below min-width.
+ * Parent scrolls horizontally when cards do not fit (see carousel controls in JS).
+ */
+.home-marketing-adaptive-card {
+  flex: 1 0 17.5rem;
+  min-width: 17.5rem;
+  max-width: none;
+}
+
+.home-marketing-adaptive-review-card {
+  flex: 1 0 19rem;
+  min-width: 19rem;
+  max-width: none;
+}
+
+.home-marketing-adaptive-track {
+  display: flex;
+  width: 100%;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  gap: 1rem;
+}
+
+.home-marketing-adaptive-track--scroll {
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scroll-behavior: smooth;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.home-marketing-adaptive-track--scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.home-marketing-adaptive-track--scroll > * {
+  scroll-snap-align: start;
+}
+
+@media (min-width: 1024px) {
+  .home-marketing-adaptive-track {
+    gap: 1.25rem;
+  }
+}
+
+.home-focus-ring:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-motion-safe {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+@keyframes home-hero-kenburns {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes hero-dot-fill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes carousel-ring-progress {
+  from {
+    stroke-dashoffset: var(--carousel-ring-circumference);
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}

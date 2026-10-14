@@ -1,17 +1,9 @@
-import { ReactNode, useEffect } from 'react';
+import { lazy, Suspense, useEffect, type ReactNode } from 'react';
 import { useLocation } from 'react-router-dom';
-import { ComposeRailProvider } from '../../context/ComposeRailContext';
-import { isConsumerChromeHidden, hasConsumerSelfHeader } from '../../config/platform';
-import { isJourneyMapPath } from '../../config/surfacePaths';
-import { useMobileBottomNav } from '../../hooks/useMobileBottomNav';
-import { Footer } from './Footer';
-import { ComposeRail } from './ComposeRail';
-import { Header } from './Header';
-import { MobileBottomNav } from './MobileBottomNav';
-import { MobileTabHeader } from '../mobile/MobileTabHeader';
-import { MobileConsumerNavBar } from './MobileConsumerNavBar';
-import { MobileMenuProvider } from './MobileMenu';
-import { ApiStatusBanner } from './ApiStatusBanner';
+import { HomeDeferredMount } from '../home/v2/HomeDeferredMount';
+
+const ProductShell = lazy(() => import('./ProductShell').then((m) => ({ default: m.ProductShell })));
+const Footer = lazy(() => import('./Footer').then((m) => ({ default: m.Footer })));
 
 interface LayoutProps {
   children: ReactNode;
@@ -19,92 +11,27 @@ interface LayoutProps {
 
 export const Layout = ({ children }: LayoutProps) => {
   const location = useLocation();
-  const showMobileBottomNav = useMobileBottomNav();
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [location.pathname]);
 
-  const isExploreMap = location.pathname === '/explore';
-  const isJourneyMap = isJourneyMapPath(location.pathname);
-  const hideChrome = isConsumerChromeHidden(location.pathname);
-  const showConsumerChrome = !hideChrome && !isExploreMap && !isJourneyMap;
-
-  if (isExploreMap || isJourneyMap) {
+  if (location.pathname === '/') {
     return (
-      <ComposeRailProvider>
-        <MobileMenuProvider>
-            <div className="flex h-[100dvh] w-full flex-col overflow-hidden consumer-bg">
-              <ApiStatusBanner />
-              <div className="hidden shrink-0 lg:block">
-                <Header />
-              </div>
-              <MobileTabHeader />
-              <div className="relative z-0 min-h-0 flex-1 isolate overflow-hidden">{children}</div>
-              <MobileBottomNav />
-            </div>
-        </MobileMenuProvider>
-      </ComposeRailProvider>
+      <div className="flex min-h-screen w-full max-w-full flex-col overflow-x-clip max-md:bg-white md:bg-gray-50">
+        <main className="flex-1 scroll-touch min-w-0 max-w-full overflow-x-clip">{children}</main>
+        <HomeDeferredMount minHeightClass="min-h-[12rem]" rootMargin="480px 0px">
+          <Suspense fallback={null}>
+            <Footer />
+          </Suspense>
+        </HomeDeferredMount>
+      </div>
     );
   }
 
-  const showMobileConsumerNavBar =
-    showConsumerChrome &&
-    !hasConsumerSelfHeader(location.pathname);
-
-  const guestMarketingHome = location.pathname === '/';
-
-  const main = (
-    <main className="flex-1 scroll-touch min-w-0 max-w-full overflow-x-clip">
-      {children}
-    </main>
-  );
-
-  const siteFooter =
-    showConsumerChrome && !showMobileBottomNav && (
-      <div className="shrink-0">
-        <Footer />
-      </div>
-    );
-
   return (
-    <ComposeRailProvider>
-      <MobileMenuProvider>
-          <div
-            className={`flex min-h-screen w-full max-w-full flex-col overflow-x-clip ${
-              guestMarketingHome ? 'max-md:bg-white md:bg-gray-50' : 'consumer-bg md:bg-gray-50'
-            }`}
-          >
-            <ApiStatusBanner />
-            {showMobileConsumerNavBar && <MobileConsumerNavBar />}
-            {showConsumerChrome && location.pathname !== '/' && (
-              <div className="hidden md:block shrink-0">
-                <Header />
-              </div>
-            )}
-            <MobileTabHeader />
-            {guestMarketingHome ? (
-              <div className="flex min-h-0 w-full max-w-full flex-1 flex-col">
-                {main}
-                {siteFooter}
-              </div>
-            ) : showConsumerChrome ? (
-            <div className="flex flex-1 min-h-0 w-full md:flex-row">
-              <div className="flex flex-1 min-w-0 flex-col min-h-0">
-                {main}
-                {siteFooter}
-              </div>
-              <ComposeRail />
-            </div>
-          ) : (
-            <div className="flex flex-1 flex-col min-h-0">
-              {main}
-              {siteFooter}
-            </div>
-          )}
-          <MobileBottomNav />
-        </div>
-      </MobileMenuProvider>
-    </ComposeRailProvider>
+    <Suspense fallback={<div className="min-h-[100dvh] w-full consumer-bg">{children}</div>}>
+      <ProductShell>{children}</ProductShell>
+    </Suspense>
   );
 };

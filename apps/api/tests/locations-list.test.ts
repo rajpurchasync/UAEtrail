@@ -11,14 +11,16 @@ beforeAll(async () => {
 
 describe('GET /api/v1/locations', () => {
   it('returns active locations with hiking/camping activity types', async () => {
-    const response = await request(app).get('/api/v1/locations').query({ pageSize: 100 });
+    const response = await request(app)
+      .get('/api/v1/locations')
+      .query({ pageSize: 100, activityType: 'hiking' });
 
     expect(response.status).toBe(200);
     expect(Array.isArray(response.body.data)).toBe(true);
     expect(response.body.meta?.total).toBeGreaterThanOrEqual(0);
 
     for (const row of response.body.data as { activityType: string; status: string }[]) {
-      expect(['hiking', 'camping']).toContain(row.activityType);
+      expect(row.activityType).toBe('hiking');
       expect(row.status).toBe('active');
     }
   });

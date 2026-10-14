@@ -1,5 +1,5 @@
 import { createPortal } from 'react-dom';
-import { useEffect, useId, useRef, useState, type RefObject } from 'react';
+import { useCallback, useEffect, useId, useRef, useState, type RefObject } from 'react';
 import { Search, X } from 'lucide-react';
 import {
   EXPLORE_SEARCH_OPEN_PLACEHOLDER,
@@ -51,11 +51,14 @@ export const ExploreSearchIntentMenu = ({
 }: ExploreSearchIntentMenuProps) => {
   const [internalOpen, setInternalOpen] = useState(false);
   const open = menuOpenProp ?? internalOpen;
-  const setOpen = (next: boolean | ((current: boolean) => boolean)) => {
-    const resolved = typeof next === 'function' ? next(open) : next;
-    if (menuOpenProp === undefined) setInternalOpen(resolved);
-    onMenuOpenChange?.(resolved);
-  };
+  const setOpen = useCallback(
+    (next: boolean | ((current: boolean) => boolean)) => {
+      const resolved = typeof next === 'function' ? next(open) : next;
+      if (menuOpenProp === undefined) setInternalOpen(resolved);
+      onMenuOpenChange?.(resolved);
+    },
+    [open, menuOpenProp, onMenuOpenChange]
+  );
   const rootRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const menuId = useId();
@@ -90,7 +93,7 @@ export const ExploreSearchIntentMenu = ({
       document.removeEventListener('touchstart', onPointerDown);
       document.removeEventListener('keydown', onKeyDown);
     };
-  }, [open, mapFloatingMenu]);
+  }, [open, mapFloatingMenu, setOpen]);
 
   useEffect(() => {
     if (!open || !mapSearch) return;

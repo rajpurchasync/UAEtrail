@@ -3,8 +3,8 @@ setlocal EnableExtensions EnableDelayedExpansion
 
 cd /d "%~dp0"
 
-set "NODE_MIN_VERSION=20.19.0"
-set "NODE_BOOTSTRAP_VERSION=20.19.0"
+set "NODE_MIN_VERSION=24.18.0"
+set "NODE_BOOTSTRAP_VERSION=24.18.0"
 if /i "%PROCESSOR_ARCHITECTURE%"=="ARM64" (
   set "NODE_ARCH=arm64"
 ) else (

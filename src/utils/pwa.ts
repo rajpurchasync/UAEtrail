@@ -61,6 +61,16 @@ export function initPwaDisplayMode(): void {
 export function registerAppServiceWorker(): void {
   if (!('serviceWorker' in navigator)) return;
 
+  if (import.meta.env.DEV) {
+    // Vite HMR + `?t=` module URLs break when an old SW intercepts fetch (e.g. after dev:fresh).
+    void navigator.serviceWorker.getRegistrations().then((registrations) => {
+      for (const registration of registrations) {
+        void registration.unregister();
+      }
+    });
+    return;
+  }
+
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js').catch(() => {
       /* non-fatal — push registration retries on user action */

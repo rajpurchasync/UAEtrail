@@ -12,7 +12,6 @@ import {
   activityDetailPath,
   resolveActivityDisplayCoordinates,
   resolveActivityHostUserId,
-  resolveParticipationMode,
 } from '@uaetrail/shared-types';
 import { buildShareText, buildShareUrl } from '../../utils/share';
 import { hostPublishedActivityPeekAccess } from '../../access/resolvePeekDetailAccess';

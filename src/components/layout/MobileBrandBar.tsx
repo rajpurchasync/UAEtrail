@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, Mountain } from 'lucide-react';
-import { HOME_HERO_JOIN_CTA } from '../../content/homeLanding';
+import { PRODUCT_JOIN_CTA } from '../../content/productNorthStar';
 import { ConsumerHeaderActions } from './ConsumerHeaderActions';
 import { MobileMenuButton, MobileUserMenuButton } from './MobileMenu';
 import { MobileSessionHeaderActions } from './MobileSessionHeaderActions';
@@ -80,7 +80,7 @@ export const MobileBrandBar = ({
               : 'border border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100'
           }`}
         >
-          {HOME_HERO_JOIN_CTA}
+          {PRODUCT_JOIN_CTA}
         </Link>
       ) : menuVariant === 'user' ? (
         <MobileUserMenuButton tone={tone} showOnDesktop={menuOnDesktop} />

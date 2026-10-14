@@ -8,6 +8,7 @@ import { accountRouteByRole, participantHostBookmarkRedirect } from '../../utils
 import { isPlatformAdmin } from '../../utils/roles';
 import { WELCOME_PATH } from '../../config/routingCatalog';
 import { buildSignInRedirect } from '../../utils/authReturnContext';
+import type { ReactElement } from 'react';
 import {
   isSignupProfileGateExemptPath,
   meProfileSignupGateKey,
@@ -16,7 +17,7 @@ import {
 
 interface ProtectedRouteProps {
   roles?: UserRole[];
-  children: JSX.Element;
+  children: ReactElement;
 }
 
 export const ProtectedRoute = ({ roles, children }: ProtectedRouteProps) => {

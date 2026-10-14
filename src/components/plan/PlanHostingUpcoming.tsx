@@ -58,6 +58,7 @@ export const PlanHostingUpcoming = ({ refreshKey = 0, canHost }: PlanHostingUpco
     if (!refreshKey) return;
     void host.reload();
     void refetchIntents();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- refresh when refreshKey bumps; host.reload is stable
   }, [refreshKey, host.reload, refetchIntents]);
 
   const today = useMemo(() => new Date(new Date().toDateString()), []);

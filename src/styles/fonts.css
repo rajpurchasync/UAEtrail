@@ -1,0 +1,4 @@
+/* Critical weights only — 500/600 synthesize from these on first paint */
+@import '@fontsource/plus-jakarta-sans/latin-400.css';
+@import '@fontsource/plus-jakarta-sans/latin-700.css';
+@import '@fontsource/plus-jakarta-sans/latin-800.css';

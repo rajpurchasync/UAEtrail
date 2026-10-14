@@ -1,8 +1,5 @@
-import type {
-  ActivityDTO,
-  ProfileViewerAccessDTO,
-  PublicMemberProfileDTO,
-} from '@uaetrail/shared-types';
+import type { ActivityDTO, ProfileViewerAccessDTO } from '@uaetrail/shared-types';
+import type { PublicMemberProfileDTO } from '../api/types';
 import { api } from '../api/index';
 
 export type PersonPublicProfilePayload = {

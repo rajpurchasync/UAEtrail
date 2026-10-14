@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import { buildExploreWhenSegment } from '@uaetrail/shared-types';
 import { fetchApiActivities } from './publicCatalogClientApi';
@@ -9,6 +9,8 @@ export interface HomeLandingActivitiesState {
   totalCount: number;
   loading: boolean;
   fromLiveApi: boolean;
+  error: boolean;
+  refetch: () => void;
 }
 
 const resolveWhenSuffix = (activity: ActivityDTO): 'flexible' | 'fixed' | null => {
@@ -21,7 +23,10 @@ const resolveWhenSuffix = (activity: ActivityDTO): 'flexible' | 'fixed' | null =
 const toLandingActivity = (activity: ActivityDTO): HomeLandingActivity => ({
   id: activity.id,
   title: activity.title || activity.locationName,
+  description: activity.description?.trim() || null,
   region: activity.region ?? 'UAE',
+  date: activity.date,
+  time: activity.time,
   whenLabel:
     buildExploreWhenSegment(activity.date, activity.time, resolveWhenSuffix(activity)) ??
     activity.date,
@@ -34,26 +39,29 @@ const toLandingActivity = (activity: ActivityDTO): HomeLandingActivity => ({
 
 /** Public upcoming activities for marketing landing — falls back to curated cards. */
 export const useHomeLandingActivities = (): HomeLandingActivitiesState => {
-  const [state, setState] = useState<HomeLandingActivitiesState>({
+  const [state, setState] = useState<Omit<HomeLandingActivitiesState, 'refetch'>>({
     activities: HOME_LANDING_FALLBACK_ACTIVITIES,
     totalCount: HOME_LANDING_FALLBACK_ACTIVITIES.length,
     loading: true,
     fromLiveApi: false,
+    error: false
   });
 
-  useEffect(() => {
+  const load = useCallback(() => {
     let cancelled = false;
+    setState((prev) => ({ ...prev, loading: true, error: false }));
 
     void fetchApiActivities('upcoming')
       .then((listings) => {
         if (cancelled) return;
-        const upcoming = listings.slice(0, 6);
+        const upcoming = listings.slice(0, 12);
         if (upcoming.length === 0) {
           setState({
             activities: HOME_LANDING_FALLBACK_ACTIVITIES,
             totalCount: HOME_LANDING_FALLBACK_ACTIVITIES.length,
             loading: false,
             fromLiveApi: false,
+            error: false
           });
           return;
         }
@@ -62,6 +70,7 @@ export const useHomeLandingActivities = (): HomeLandingActivitiesState => {
           totalCount: listings.length,
           loading: false,
           fromLiveApi: true,
+          error: false
         });
       })
       .catch(() => {
@@ -71,6 +80,7 @@ export const useHomeLandingActivities = (): HomeLandingActivitiesState => {
           totalCount: HOME_LANDING_FALLBACK_ACTIVITIES.length,
           loading: false,
           fromLiveApi: false,
+          error: true
         });
       });
 
@@ -79,5 +89,34 @@ export const useHomeLandingActivities = (): HomeLandingActivitiesState => {
     };
   }, []);
 
-  return state;
+  useEffect(() => {
+    let cancelled = false;
+    let idleId: number | undefined;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
+    const run = () => {
+      if (cancelled) return;
+      load();
+    };
+
+    if (typeof requestIdleCallback !== 'undefined') {
+      idleId = requestIdleCallback(run, { timeout: 3000 });
+    } else {
+      timeoutId = setTimeout(run, 500);
+    }
+
+    return () => {
+      cancelled = true;
+      if (idleId !== undefined && typeof cancelIdleCallback !== 'undefined') {
+        cancelIdleCallback(idleId);
+      }
+      if (timeoutId !== undefined) clearTimeout(timeoutId);
+    };
+  }, [load]);
+
+  const refetch = useCallback(() => {
+    load();
+  }, [load]);
+
+  return { ...state, refetch };
 };

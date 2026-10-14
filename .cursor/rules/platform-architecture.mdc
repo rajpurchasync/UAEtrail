@@ -40,6 +40,6 @@ Canonical detail: **`docs/DOCS_INDEX.md`** · **`docs/SYSTEM_COHERENCE.md`** · 
 - **Hosting UI** → `/host/*` only — not on `/explore` browse chrome or `/` marketing  
 - **Explore copy** → `src/explore/exploreCopy.ts` + `docs/experiment/explore-ux-spec.md`  
 - **Create / FAB** → `docs/CREATE_FLOW.md` + `src/explore/ui/*Create*`  
-- **Landing copy** → `src/content/homeLanding.ts` + `docs/LANDING.md` + `docs/NORTHSTAR.md`  
+- **Landing copy** → `src/content/homeMarketing.ts` + `docs/LANDING.md` + `docs/NORTHSTAR.md` (+ fallback activities in `homeLanding.ts`)  
 - **Canonical voice strings** → `src/content/productNorthStar.ts`  
 - Avoid legacy route names in new UI: bare `/activities` as browse, OrganizerActivitiesPath, Trips page

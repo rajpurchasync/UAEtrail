@@ -104,7 +104,7 @@ describe('organisationNamingGuard', () => {
   });
 
   it('git index does not re-add retired host console pages (commit deletions)', () => {
-    let tracked: string[] = [];
+    let tracked: string[];
     try {
       tracked = execSync('git ls-files "src/pages/Organisation*.tsx"', { encoding: 'utf8' })
         .trim()

@@ -147,7 +147,7 @@ export const ProProfileApplicationFlow = ({
   const profileType = form.hostProfileType ?? selectedType ?? lockedProfileType;
   const flowSteps = useMemo(
     () => (profileType ? getHostFlowSteps(profileType, form) : []),
-    [profileType, form.shopPresence]
+    [profileType, form]
   );
   const currentStepIndex =
     step !== 'pick' && profileType ? flowSteps.indexOf(step as HostFlowStepId) : -1;

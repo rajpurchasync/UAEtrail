@@ -87,7 +87,7 @@ export const SignupProfileWizard = ({ initialProfile, onComplete }: SignupProfil
     if (step === 'gender') return !form.gender;
     if (step === 'countryCode') return !form.countryCode;
     return false;
-  }, [step, form.dateOfBirth, form.gender, form.countryCode, form.languages.length]);
+  }, [step, form.dateOfBirth, form.gender, form.countryCode]);
 
   const handleContinue = async () => {
     setError(null);

@@ -13,7 +13,11 @@ function notifyListeners(): void {
   }
 }
 
-/** Capture the install prompt once per page load (call from main entry). */
+/**
+ * Capture the install prompt for a custom in-app install button (`triggerPwaInstall`).
+ * Do not call from `main` unless that UI exists — `preventDefault` suppresses the browser
+ * banner and Chrome logs a warning if `prompt()` is never called.
+ */
 export function initPwaInstallPromptCapture(): void {
   if (typeof window === 'undefined') return;
 

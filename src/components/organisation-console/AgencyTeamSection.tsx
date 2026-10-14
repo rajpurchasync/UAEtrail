@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   createOrganisationTeamMember,
   fetchOrganisationTeam,
@@ -27,7 +27,7 @@ export const AgencyTeamSection = ({ tenantId }: AgencyTeamSectionProps) => {
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const loadMembers = async () => {
+  const loadMembers = useCallback(async () => {
     if (!tenantId) return;
     setLoading(true);
     try {
@@ -38,11 +38,11 @@ export const AgencyTeamSection = ({ tenantId }: AgencyTeamSectionProps) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [tenantId]);
 
   useEffect(() => {
     void loadMembers();
-  }, [tenantId]);
+  }, [loadMembers]);
 
   const addMember = async (event: React.FormEvent) => {
     event.preventDefault();

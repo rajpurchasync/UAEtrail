@@ -1,6 +1,7 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import './styles/fonts.css';
+@import './styles/home-tokens.css';
+@import 'tailwindcss';
+@config '../tailwind.config.js';
 
 @layer base {
   :root {
@@ -158,11 +159,11 @@
   }
 
   .glass-card {
-    @apply glass rounded-glass shadow-glass;
+    @apply bg-white/65 backdrop-blur-xl border border-white/70 rounded-glass shadow-glass;
   }
 
   .glass-card-interactive {
-    @apply glass-card transition-all duration-300 ease-out active:scale-[0.98] hover:shadow-glass-lg;
+    @apply bg-white/65 backdrop-blur-xl border border-white/70 rounded-glass shadow-glass transition-all duration-300 ease-out active:scale-[0.98] hover:shadow-glass-lg;
   }
 
   .glass-nav {
@@ -170,15 +171,15 @@
   }
 
   .glass-pill {
-    @apply app-chip-inactive;
+    @apply inline-flex items-center justify-center min-h-[var(--touch-min)] px-3.5 rounded-full text-xs font-medium whitespace-nowrap transition-all duration-150 active:scale-[0.97] bg-white text-neutral-600 ring-1 ring-inset ring-neutral-200/90;
   }
 
   .glass-pill-active {
-    @apply app-chip-active;
+    @apply inline-flex items-center justify-center min-h-[var(--touch-min)] px-3.5 rounded-full text-xs font-medium whitespace-nowrap transition-all duration-150 active:scale-[0.97] bg-emerald-600 text-white shadow-sm shadow-emerald-600/15;
   }
 
   .glass-pill-inactive {
-    @apply app-chip-inactive;
+    @apply inline-flex items-center justify-center min-h-[var(--touch-min)] px-3.5 rounded-full text-xs font-medium whitespace-nowrap transition-all duration-150 active:scale-[0.97] bg-white text-neutral-600 ring-1 ring-inset ring-neutral-200/90;
   }
 
   /* ── Standard consumer controls ── */
@@ -187,15 +188,15 @@
   }
 
   .app-chip-active {
-    @apply app-chip bg-emerald-600 text-white shadow-sm shadow-emerald-600/15;
+    @apply inline-flex items-center justify-center min-h-[var(--touch-min)] px-3.5 rounded-full text-xs font-medium whitespace-nowrap transition-all duration-150 active:scale-[0.97] bg-emerald-600 text-white shadow-sm shadow-emerald-600/15;
   }
 
   .app-chip-active-neutral {
-    @apply app-chip bg-neutral-900 text-white shadow-sm;
+    @apply inline-flex items-center justify-center min-h-[var(--touch-min)] px-3.5 rounded-full text-xs font-medium whitespace-nowrap transition-all duration-150 active:scale-[0.97] bg-neutral-900 text-white shadow-sm;
   }
 
   .app-chip-inactive {
-    @apply app-chip bg-white text-neutral-600 ring-1 ring-inset ring-neutral-200/90;
+    @apply inline-flex items-center justify-center min-h-[var(--touch-min)] px-3.5 rounded-full text-xs font-medium whitespace-nowrap transition-all duration-150 active:scale-[0.97] bg-white text-neutral-600 ring-1 ring-inset ring-neutral-200/90;
   }
 
   .app-chip-row {
@@ -251,7 +252,7 @@
   }
 
   .app-segment-active {
-    @apply app-segment bg-emerald-600 text-white shadow-sm shadow-emerald-600/15;
+    @apply inline-flex items-center justify-center h-7 px-3 rounded-[10px] text-xs font-medium transition-all active:scale-[0.98] bg-emerald-600 text-white shadow-sm shadow-emerald-600/15;
   }
 
   .app-cta-sm {
@@ -337,7 +338,7 @@
   }
 
   .ios-large-title {
-    @apply consumer-page-heading;
+    @apply text-[26px] md:text-[2rem] font-bold tracking-[-0.02em] text-neutral-900 leading-[1.15];
   }
 
   .ios-section-title {
@@ -350,7 +351,7 @@
 
   /* ── Surfaces (legacy + modern) ── */
   .ios-grouped {
-    @apply mx-0 md:mx-0 rounded-glass glass-card overflow-hidden;
+    @apply mx-0 md:mx-0 rounded-glass bg-white/65 backdrop-blur-xl border border-white/70 shadow-glass overflow-hidden;
   }
 
   .ios-row {
@@ -366,24 +367,24 @@
   }
 
   .ios-input {
-    @apply w-full min-h-[48px] px-4 py-2.5 rounded-2xl glass text-[16px] text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-shadow;
+    @apply w-full min-h-[48px] px-4 py-2.5 rounded-2xl bg-white/65 backdrop-blur-xl border border-white/70 text-[16px] text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-shadow;
   }
 
   .ios-search,
   .glass-search {
-    @apply w-full min-h-[44px] pl-11 pr-4 rounded-2xl glass text-[16px] placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/25 transition-shadow;
+    @apply w-full min-h-[44px] pl-11 pr-4 rounded-2xl bg-white/65 backdrop-blur-xl border border-white/70 text-[16px] placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/25 transition-shadow;
   }
 
   .ios-chip {
-    @apply app-chip-inactive;
+    @apply inline-flex items-center justify-center min-h-[var(--touch-min)] px-3.5 rounded-full text-xs font-medium whitespace-nowrap transition-all duration-150 active:scale-[0.97] bg-white text-neutral-600 ring-1 ring-inset ring-neutral-200/90;
   }
 
   .ios-chip-active {
-    @apply app-chip-active;
+    @apply inline-flex items-center justify-center min-h-[var(--touch-min)] px-3.5 rounded-full text-xs font-medium whitespace-nowrap transition-all duration-150 active:scale-[0.97] bg-emerald-600 text-white shadow-sm shadow-emerald-600/15;
   }
 
   .ios-chip-inactive {
-    @apply app-chip-inactive;
+    @apply inline-flex items-center justify-center min-h-[var(--touch-min)] px-3.5 rounded-full text-xs font-medium whitespace-nowrap transition-all duration-150 active:scale-[0.97] bg-white text-neutral-600 ring-1 ring-inset ring-neutral-200/90;
   }
 
   /* ── Touch expand ── */
@@ -420,41 +421,25 @@
     padding-top: calc(var(--safe-top) + 8px);
   }
 
-  /* ── Landing page ── */
-  .home-landing-sheet {
-    @apply -mt-7 rounded-t-[1.25rem] bg-white pt-7 shadow-[0_-16px_40px_rgba(0,0,0,0.1)];
-  }
-
-  .landing-hero-frame {
-    @apply box-border w-full;
-  }
-
-  .landing-hero-copy {
-    padding-bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
-  }
-
+  /* ── Guest marketing hero (v2) ── */
   .landing-hero-headline {
-    @apply font-bold tracking-tight text-white;
+    @apply font-extrabold tracking-tight text-white;
+    text-shadow: 0 2px 28px rgb(0 0 0 / 45%);
+    letter-spacing: -0.02em;
   }
 
-  .landing-hero-secondary-cta {
-    @apply inline-flex min-h-11 items-center justify-center text-[13px] font-semibold text-white underline underline-offset-[3px];
-  }
+  @media (max-width: 767px) {
+    .home-hero-copy {
+      padding-inline: 0.25rem;
+      padding-block: 0;
+    }
 
-  .landing-hero-image {
-    @apply home-launch-hero h-full w-full object-cover object-[center_30%];
-  }
-
-  .landing-hero-overlay-r {
-    @apply absolute inset-0 bg-gradient-to-r from-black/75 via-black/45 to-black/25;
-  }
-
-  .landing-hero-overlay-t {
-    @apply absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30;
-  }
-
-  .landing-hero-overlay-mobile {
-    display: none;
+    .home-hero-copy .landing-hero-headline {
+      font-size: clamp(1.875rem, 2.5vw + 1.15rem, 2.5rem);
+      line-height: 1.22;
+      text-wrap: balance;
+      white-space: normal;
+    }
   }
 
   .landing-section-title {
@@ -529,10 +514,6 @@
     @apply h-1.5 w-1.5 rounded-full bg-emerald-500;
   }
 
-  .landing-activity-card {
-    @apply overflow-hidden rounded-2xl bg-white ring-1 ring-black/[0.06] transition active:scale-[0.99];
-  }
-
   .landing-text-cta {
     @apply rounded-sm text-[14px] font-semibold text-emerald-700 transition hover:text-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/45 focus-visible:ring-offset-2 focus-visible:ring-offset-white;
   }
@@ -557,17 +538,24 @@
     @apply rounded-[1.75rem] border-[5px] border-neutral-900 bg-neutral-900 p-1 shadow-[0_24px_48px_-12px_rgba(0,0,0,0.35)];
   }
 
-  .landing-close {
-    @apply bg-neutral-900 py-10 md:py-14;
+  .home-hero-intro {
+    text-wrap: pretty;
   }
 
-  .home-hero-proof {
-    @apply rounded-full border border-white/15 bg-black/40 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur-md;
+  .home-marketing-card {
+    @apply overflow-hidden bg-home-surface shadow-home-card ring-1 ring-black/[0.06];
+    border-radius: var(--radius-lg);
   }
 
-  .home-hero-proof-dot {
-    @apply h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)];
-    animation: hero-proof-pulse 2s ease-in-out infinite;
+  .home-carousel-ring-progress {
+    stroke-dashoffset: var(--carousel-ring-circumference);
+    animation: carousel-ring-progress var(--carousel-ring-duration, 5500ms) linear forwards;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .home-carousel-ring-progress {
+      animation: none;
+    }
   }
 
   .home-landing-lead {
@@ -600,12 +588,35 @@
   }
 
   .landing-hero-btn {
-    width: 100%;
-    max-width: 100%;
     min-height: 2.75rem;
     padding: 0.625rem 1rem;
     font-size: 0.875rem;
     line-height: 1.25rem;
+  }
+
+  @media (max-width: 767px) {
+    .landing-hero-desktop-ctas .landing-hero-btn {
+      width: 100%;
+      max-width: 20rem;
+      margin-inline: auto;
+    }
+
+    .landing-hero-join-cta {
+      min-height: 2.875rem;
+      border: 1px solid rgb(255 255 255 / 0.32);
+      background-color: rgb(255 255 255 / 0.14);
+      color: rgb(255 255 255 / 0.95);
+      font-size: 0.875rem;
+      font-weight: 600;
+      text-decoration: none;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 4px 16px rgb(0 0 0 / 0.2);
+    }
+
+    .landing-hero-join-cta:hover {
+      color: white;
+      background-color: rgb(255 255 255 / 0.2);
+    }
   }
 
   @media (min-width: 768px) {
@@ -623,7 +634,7 @@
       flex-direction: row;
       flex-wrap: wrap;
       align-items: center;
-      gap: 0.75rem;
+      gap: 1rem;
     }
 
     .landing-hero-btn-secondary {
@@ -639,248 +650,6 @@
     .landing-hero-btn-secondary:hover {
       background-color: rgb(255 255 255 / 0.2);
       color: white;
-    }
-  }
-
-  /* ── Home marketing — MOBILE ONLY (max-md). Single layout system; no shared landing-hero-copy on mobile. ── */
-  @media (max-width: 767px) {
-    /*
-     * Hero height tracks viewport *width* (not 90svh). A tall portrait box + landscape photo
-     * + object-cover zooms in until you only see a narrow slice of the image.
-     */
-    .home-launch {
-      position: relative;
-      isolation: isolate;
-      box-sizing: border-box;
-      width: 100%;
-      max-width: 100%;
-      height: clamp(26rem, 98vw, 42rem);
-      max-height: min(88dvh, 42rem);
-      overflow: hidden;
-      background-color: rgb(23 23 23);
-    }
-
-    .home-launch-media {
-      pointer-events: none;
-      position: absolute;
-      inset: 0;
-      z-index: 0;
-      display: block;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-    }
-
-    .home-launch-photo {
-      display: block;
-      width: 100%;
-      height: 100%;
-      min-width: 100%;
-      min-height: 100%;
-      max-width: none;
-      object-fit: cover;
-      object-position: center 38%;
-    }
-
-    .home-launch .landing-hero-overlay-r,
-    .home-launch .landing-hero-overlay-t {
-      pointer-events: none;
-      position: absolute;
-      inset: 0;
-      z-index: 1;
-    }
-
-    .home-launch-scrim {
-      pointer-events: none;
-      position: absolute;
-      inset: 0;
-      z-index: 2;
-      background: linear-gradient(
-        180deg,
-        rgb(0 0 0 / 0.35) 0%,
-        rgb(0 0 0 / 0.45) 45%,
-        rgb(0 0 0 / 0.55) 100%
-      );
-    }
-
-    .home-launch-body {
-      position: absolute;
-      inset: 0;
-      z-index: 10;
-      display: flex;
-      flex-direction: column;
-      box-sizing: border-box;
-      width: 100%;
-      max-width: 100%;
-      min-height: 0;
-      padding-top: calc(var(--safe-top) + 0.625rem);
-      padding-left: var(--landing-pad-inline);
-      padding-right: var(--landing-pad-inline-end);
-      padding-bottom: calc(0.25rem + env(safe-area-inset-bottom, 0px));
-      color: white;
-    }
-
-    .home-launch-brand {
-      flex-shrink: 0;
-      width: 100%;
-      margin-top: 0.375rem;
-    }
-
-    .home-launch-brand .landing-hero-join-pill {
-      min-height: 2.25rem;
-      height: 2.25rem;
-      padding-top: 0;
-      padding-bottom: 0;
-    }
-
-    .home-launch-message {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      box-sizing: border-box;
-      width: 100%;
-      max-width: 24rem;
-      margin-top: auto;
-      margin-bottom: clamp(0.625rem, 5vw, 1.25rem);
-      gap: 0;
-      text-align: center;
-    }
-
-    .home-launch-message .landing-hero-headline {
-      margin: 0;
-      width: 100%;
-      max-width: 23rem;
-      font-size: clamp(1.875rem, 8.35vw, 2.3125rem);
-      line-height: 1.13;
-      letter-spacing: -0.025em;
-      text-wrap: balance;
-      text-shadow: 0 2px 16px rgb(0 0 0 / 0.35);
-    }
-
-    .home-launch-message .home-launch-subline {
-      margin: 1rem 0 0;
-      width: 100%;
-      max-width: 20.5rem;
-      font-size: clamp(0.9375rem, 3.85vw, 1.0625rem);
-      line-height: 1.5;
-      text-wrap: balance;
-      color: rgb(255 255 255 / 0.92);
-      text-shadow: 0 1px 10px rgb(0 0 0 / 0.3);
-    }
-
-    /* AppButtonLink uses .ios-btn (inline-flex) — centered block, matched width */
-    .home-launch-message a.home-launch-cta {
-      display: flex !important;
-      box-sizing: border-box;
-      width: 100% !important;
-      max-width: 16.5rem !important;
-      min-width: 0;
-      margin-top: 1.375rem;
-      margin-bottom: 0;
-      justify-content: center;
-      text-align: center;
-      font-size: clamp(0.9375rem, 3.6vw, 1.0625rem);
-      box-shadow:
-        0 10px 15px -3px rgb(0 0 0 / 0.25),
-        0 4px 6px -4px rgb(0 0 0 / 0.2);
-    }
-
-    html[data-pwa-installed='true'] .home-launch-media {
-      top: calc(-1 * env(safe-area-inset-top, 0px));
-      height: calc(100% + env(safe-area-inset-top, 0px));
-    }
-
-    .home-launch-cta:focus-visible {
-      outline: none;
-      box-shadow:
-        0 0 0 2px rgb(255 255 255 / 0.95),
-        0 0 0 4px rgb(16 185 129 / 0.85);
-    }
-
-    .home-proof-stat-label {
-      font-size: 0.6875rem;
-      line-height: 1.2;
-      letter-spacing: -0.01em;
-    }
-
-    .home-landing-scroll {
-      background-color: white;
-    }
-
-    .home-landing-scroll.home-landing-sheet {
-      margin-top: -1.75rem;
-      border-top-left-radius: 1.25rem;
-      border-top-right-radius: 1.25rem;
-      padding-top: 1.75rem;
-      box-shadow: 0 -16px 40px rgb(0 0 0 / 0.1);
-    }
-  }
-
-  @media (max-width: 360px) {
-    .home-proof-stat-label {
-      font-size: 0.6875rem;
-      line-height: 1.25;
-    }
-  }
-
-  @media (min-width: 400px) and (max-width: 767px) {
-    .home-proof-stat-label {
-      font-size: 0.75rem;
-      line-height: 1.25;
-    }
-  }
-
-  @media (min-width: 768px) {
-    .home-landing-scroll {
-      display: contents;
-    }
-  }
-
-  @media (prefers-reduced-motion: no-preference) {
-    .home-launch-hero {
-      animation: hero-ken-burns 18s ease-in-out infinite alternate;
-      transform-origin: center center;
-    }
-
-    .landing-map-pin-pulse {
-      animation: map-pin-pulse 2.4s ease-in-out infinite;
-    }
-  }
-
-  @keyframes hero-ken-burns {
-    0% {
-      transform: scale(1);
-    }
-    100% {
-      transform: scale(1.06);
-    }
-  }
-
-  @keyframes map-pin-pulse {
-    0%,
-    100% {
-      transform: scale(1);
-      opacity: 1;
-    }
-    50% {
-      transform: scale(1.15);
-      opacity: 0.85;
-    }
-  }
-
-  @keyframes hero-proof-pulse {
-    0%,
-    100% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0.55;
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .home-hero-proof-dot {
-      animation: none;
     }
   }
 

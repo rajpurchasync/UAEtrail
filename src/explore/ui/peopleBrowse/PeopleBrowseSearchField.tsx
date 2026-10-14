@@ -9,7 +9,7 @@ type PeopleBrowseSearchFieldProps = {
   query: string;
   onQueryChange: (value: string) => void;
   onQuerySync: () => void;
-  inputRef?: RefObject<HTMLInputElement>;
+  inputRef?: RefObject<HTMLInputElement | null>;
   activityDatePreset: ExploreActivityDatePreset;
   onActivityDatePresetChange: (preset: ExploreActivityDatePreset) => void;
   className?: string;

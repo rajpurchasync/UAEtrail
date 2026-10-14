@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Bell, X } from 'lucide-react';
 import { NotificationDTO } from '@uaetrail/shared-types';
@@ -49,7 +49,7 @@ export const NotificationBellPopover = ({
     void invalidateNotificationUnreadBadge(queryClient, user.id);
   };
 
-  const loadNotifications = async () => {
+  const loadNotifications = useCallback(async () => {
     if (!user) {
       setNotifications([]);
       return;
@@ -64,7 +64,7 @@ export const NotificationBellPopover = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
   const unreadPreview = useMemo(
     () => notifications.filter((notif) => !notif.isRead).slice(0, UNREAD_PREVIEW_LIMIT),
@@ -123,7 +123,7 @@ export const NotificationBellPopover = ({
   useEffect(() => {
     if (!open) return;
     void loadNotifications();
-  }, [open]);
+  }, [open, loadNotifications]);
 
   const toneClass =
     tone === 'light'

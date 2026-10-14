@@ -236,7 +236,7 @@ export const exploreVenueListFilterActiveClass = (key: VenueListFilterKey): stri
   }
 };
 
-export type MapPinRingKind = 'hiking' | 'camping' | 'event' | 'shop' | 'agency' | 'rideshare';
+export type MapPinRingKind = 'hiking' | 'camping' | 'event' | 'shop' | 'agency' | 'rideshare' | 'area';
 export type MapPinRingSource = 'activity' | 'venue' | 'shop' | 'agency' | 'seeking' | 'demand';
 
 /** Type-colored ring on map pins — matches filter / badge colors. */
@@ -256,6 +256,8 @@ export const exploreMapPinRingColor = (
       return '#e11d48';
     case 'agency':
       return '#4f46e5';
+    case 'area':
+      return '#64748b';
     default:
       return '#059669';
   }

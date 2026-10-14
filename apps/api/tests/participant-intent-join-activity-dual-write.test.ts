@@ -59,11 +59,7 @@ describe('participant intent join (M2c activity store)', () => {
       areaId: testAreas.hatta.id,
     });
 
-    const intentDoc = await getMongoClient()!
-      .db()
-      .collection(COLLECTIONS.PARTICIPANT_INTENTS)
-      .findOne({ _id: intent.id });
-    const activityId = intentDoc?.activityId ?? intentDoc?.seekingActivityId;
+    const activityId = intent.activityId ?? intent.seekingActivityId;
     expect(activityId).toBeTruthy();
 
     const joinRequest = await createParticipantIntentJoinRequest({

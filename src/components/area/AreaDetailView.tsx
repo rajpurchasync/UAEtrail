@@ -6,7 +6,6 @@ import { ConsumerEntityTabBar } from '../mobile/ConsumerEntityTabBar';
 import { PageMeta } from '../seo/PageMeta';
 import { explorePath } from '../../explore/routing';
 import { areaDetailPath } from '@uaetrail/shared-types';
-import { PRODUCT_EXPLORE_CTA } from '../../content/productNorthStar';
 import {
   AREA_DETAIL_TAB_LABELS,
   AREA_DETAIL_TABS,

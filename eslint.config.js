@@ -20,15 +20,15 @@ export default tseslint.config(
       'react-refresh': reactRefresh,
     },
     rules: {
-      ...reactHooks.configs.recommended.rules,
+      // React Hooks v7 `recommended` adds compiler-style rules; keep classic hooks lint until migrated.
+      'react-hooks/rules-of-hooks': 'error',
+      'react-hooks/exhaustive-deps': 'warn',
       '@typescript-eslint/no-unused-vars': [
         'error',
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }
       ],
-      'react-refresh/only-export-components': [
-        'warn',
-        { allowConstantExport: true },
-      ],
+      // HMR-only; co-located non-component exports are intentional
+      'react-refresh/only-export-components': 'off',
     },
   },
   {

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { PlaceDTO } from '@uaetrail/shared-types';
 import { fetchOrganisationSubmittedPlaces } from '../../hooks/organisationConsoleApi';
 import { getActiveTenantId } from '../../api/tenant';
@@ -18,7 +18,7 @@ export const Places = () => {
   const [submitted, setSubmitted] = useState<PlaceDTO[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const loadSubmitted = async () => {
+  const loadSubmitted = useCallback(async () => {
     if (!tenantId) return;
     setLoading(true);
     try {
@@ -29,11 +29,11 @@ export const Places = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [tenantId]);
 
   useEffect(() => {
     void loadSubmitted();
-  }, [tenantId]);
+  }, [loadSubmitted]);
 
   return (
     <ConsoleShell title="Places">

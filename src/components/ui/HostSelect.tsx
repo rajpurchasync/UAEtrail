@@ -32,7 +32,7 @@ export const HostSelect = ({ tenantId, value, onChange, required, className = ''
     if (value || hosts.length === 0) return;
     const self = user ? hosts.find((m) => m.userId === user.id) : undefined;
     onChange(self?.userId ?? hosts[0].userId);
-  }, [hosts, value, user?.id, onChange]);
+  }, [hosts, value, user, onChange]);
 
   const hostOptions = hosts.map((member) => ({
     value: member.userId,

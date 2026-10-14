@@ -12,14 +12,25 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useParam
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { Layout } from './components/layout/Layout';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
-import { DashboardRedirect } from './components/auth/DashboardRedirect';
-import { NativeDeepLinkHandler } from './components/NativeDeepLinkHandler';
 import { clearAuthReturnContext, loadAuthReturnContext } from './utils/authReturnContext';
 import { useAuth } from './context/AuthContext';
-import { Home } from './pages/Home';
-import { Membership } from './pages/Membership';
-import { ExploreExperience } from './explore';
-import { BrowseListPage } from './list/BrowseListPage';
+const Home = lazy(() => import('./pages/Home').then((m) => ({ default: m.Home })));
+const Membership = lazy(() => import('./pages/Membership').then((m) => ({ default: m.Membership })));
+const ExploreExperience = lazy(() =>
+  import('./explore/ui/ExploreExperience').then((m) => ({ default: m.ExploreExperience }))
+);
+const BrowseListPage = lazy(() =>
+  import('./list/BrowseListPage').then((m) => ({ default: m.BrowseListPage }))
+);
+const NativeDeepLinkHandler = lazy(() =>
+  import('./components/NativeDeepLinkHandler').then((m) => ({ default: m.NativeDeepLinkHandler }))
+);
+const DashboardRedirect = lazy(() =>
+  import('./components/auth/DashboardRedirect').then((m) => ({ default: m.DashboardRedirect }))
+);
+const GuestTabPlaceholder = lazy(() =>
+  import('./components/auth/GuestTabPlaceholder').then((m) => ({ default: m.GuestTabPlaceholder }))
+);
 
 import {
   discoveryToExploreSearch,
@@ -30,7 +41,6 @@ import {
   LIST_DISCOVERY_PATH,
 } from './config/routingCatalog';
 import { organisationManagePath, SIGNIN_PATH, SIGNUP_PATH } from './config/routingCatalog';
-import { GuestTabPlaceholder } from './components/auth/GuestTabPlaceholder';
 import { PRODUCT_PLAN_SURFACE_TITLE } from './content/productNorthStar';
 import { JOURNEY_MAP_PATH, PLAN_PATH, PROFILE_HISTORY_PATH } from './config/surfacePaths';
 import { resolveLegacyTripsHubRedirect } from './member-plan/legacyTripsRedirect';
@@ -217,6 +227,9 @@ const SecurityPrivacy = lazy(() =>
 const Terms = lazy(() => import('./pages/Terms').then((m) => ({ default: m.Terms })));
 const Privacy = lazy(() => import('./pages/Privacy').then((m) => ({ default: m.Privacy })));
 const Faq = lazy(() => import('./pages/Faq').then((m) => ({ default: m.Faq })));
+const About = lazy(() => import('./pages/About').then((m) => ({ default: m.About })));
+const Contact = lazy(() => import('./pages/Contact').then((m) => ({ default: m.Contact })));
+const SiteMap = lazy(() => import('./pages/SiteMap').then((m) => ({ default: m.SiteMap })));
 const NotFound = lazy(() => import('./pages/NotFound').then((m) => ({ default: m.NotFound })));
 
 const PageLoader = () => (
@@ -297,7 +310,9 @@ function App() {
   return (
     <ErrorBoundary>
       <Router>
-        <NativeDeepLinkHandler />
+        <Suspense fallback={null}>
+          <NativeDeepLinkHandler />
+        </Suspense>
         <AuthReturnContextRestorer />
         <Layout>
         <Suspense fallback={<PageLoader />}>
@@ -592,6 +607,9 @@ function App() {
             }
           />
           <Route path="/faq" element={<Faq />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/sitemap" element={<SiteMap />} />
           <Route path="/verify" element={<VerifyOTP />} />
           <Route
             path="/welcome"

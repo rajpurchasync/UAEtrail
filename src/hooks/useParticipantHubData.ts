@@ -47,7 +47,9 @@ async function fetchParticipantHubSocial() {
     conversations: inbox.direct?.slice(0, 4) ?? [],
     groups: inbox.groups ?? [],
     buddies,
-    incomingBuddyRequests: incomingBuddyRequests.filter((request) => request.status === 'pending'),
+    incomingBuddyRequests: incomingBuddyRequests.filter(
+      (request: BuddyRequestDTO) => request.status === 'pending'
+    ),
   };
 }
 
@@ -69,10 +71,10 @@ export const useParticipantHubData = () => {
   });
 
   const profile = data?.profile ?? ({} as UserProfile);
-  const conversations = data?.conversations ?? [];
+  const conversations = useMemo(() => data?.conversations ?? [], [data?.conversations]);
   const notifications = data?.notifications ?? [];
   const unreadNotifications = data?.unreadNotifications ?? 0;
-  const groups = data?.groups ?? [];
+  const groups = useMemo(() => data?.groups ?? [], [data?.groups]);
   const buddies = data?.buddies ?? [];
   const incomingBuddyRequests = data?.incomingBuddyRequests ?? [];
 
@@ -118,8 +120,14 @@ export const useParticipantHubData = () => {
   );
 
   const unreadMessages = useMemo(() => {
-    const direct = conversations.reduce((sum, c) => sum + (c.unreadCount ?? 0), 0);
-    const crew = groups.reduce((sum, g) => sum + (g.chatPreview?.unreadCount ?? 0), 0);
+    const direct = conversations.reduce(
+      (sum: number, c: ChatConversationDTO) => sum + (c.unreadCount ?? 0),
+      0
+    );
+    const crew = groups.reduce(
+      (sum: number, g: MemberInboxGroupDTO) => sum + (g.chatPreview?.unreadCount ?? 0),
+      0
+    );
     return direct + crew;
   }, [conversations, groups]);
 

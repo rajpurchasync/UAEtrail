@@ -38,6 +38,7 @@ export const useExploreMap = (options?: UseExploreMapOptions) => {
       }
       return fetchExploreMapItems();
     },
-    staleTime: 60_000,
+    staleTime: 30_000,
+    refetchOnMount: 'always',
   });
 };

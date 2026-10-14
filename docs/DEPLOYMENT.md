@@ -28,7 +28,7 @@ Internet
 | Container | Image | Purpose |
 |-----------|-------|---------|
 | `frontend` | nginx:1.25‑alpine | Serves the Vite SPA, reverse-proxies `/api/*` to the API |
-| `api` | node:20‑alpine (custom) | Express + MongoDB backend |
+| `api` | node:24‑alpine (custom) | Express + MongoDB backend |
 | `minio` | minio/minio:latest | S3‑compatible media storage |
 | `redis` | redis:7‑alpine | Rate limits and SSE tickets |
 
@@ -39,7 +39,7 @@ All defined in `docker-compose.yml`.
 ## Prerequisites
 
 - Docker Engine ≥ 24 and Docker Compose v2
-- Node.js 20.19+ on the host (used by `run-project.sh` / `run-project-mac.sh` / `run-project.bat`)
+- Node.js 24.18+ and npm 11.16+ on the host (used by `run-project.sh` / `run-project-mac.sh` / `run-project.bat`; see `.nvmrc`)
 - A domain name (for HTTPS)
 - SSH access to the VPS
 - MongoDB Atlas URIs for test, staging, and production

@@ -34,12 +34,13 @@ export const FOUNDER_PROFILES: Record<FounderProfileKey, FounderProfile> = {
   },
   cofounder: {
     tabLabel: 'Co-founder',
-    name: 'Co-founder',
+    name: 'Husnain Ashfaq',
     role: 'Co-founder',
     originPlace: 'From Pakistan',
-    originDetail: 'Leading hikes in the UAE since 2016',
-    initials: 'C',
-    quote: 'Great routes and great people were already here. They just needed one place to meet.',
+    originDetail: 'Enthusiast hiker and leader in the UAE since 2019',
+    initials: 'HA',
+    quote:
+      'Leading hikes and building communities since 2019 — I kept feeling the same gap: the UAE needed UAE Trail to run outdoor plans properly.',
     story:
       "I've spent years hiking, trail running, and leading teams on routes across the UAE, from group treks to organised trail runs. The passion was always there. What was missing was one place to discover activities and connect with hosts you could trust. That's why Raj and I launched UAE Trail, to support the hikers and runners who keep this scene alive.",
   },
