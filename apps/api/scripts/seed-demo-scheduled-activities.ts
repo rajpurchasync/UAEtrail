@@ -188,15 +188,17 @@ export const seedDemoScheduledActivities = async (
     participationMode: 'rsvp',
   });
 
+  // Linked to `seed-event-jais` — explore map peek shows “Rideshare available” on the parent hike.
   await upsertEvent('seed-event-rideshare-marina-jais', {
     tenant: { connect: { id: ctx.individualHostTenantId } },
     location: { connect: { id: 'jebel-jais-summit-trail' } },
     createdBy: { connect: { id: ctx.individualHostId } },
     host: { connect: { id: ctx.individualHostId } },
     activityType: ActivityType.RIDESHARE,
+    linkedActivityId: 'seed-event-jais',
     title: 'Rideshare Dubai Marina → Jebel Jais',
     description: 'Shared ride for the Jebel Jais hike — split fuel costs.',
-    startAt: daysFromNow(4, 5),
+    startAt: daysFromNow(6, 5),
     meetingPoint: 'Dubai Marina Mall parking',
     meetingLat: 25.0782,
     meetingLng: 55.1394,

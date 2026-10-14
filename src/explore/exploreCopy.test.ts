@@ -136,6 +136,27 @@ describe('exploreHeadline', () => {
     vi.useRealTimers();
   });
 
+  it('uses guide name on agency headline, not operator brand', () => {
+    expect(
+      exploreHeadline({
+        source: 'activity',
+        kind: 'hiking',
+        title: 'Jebel Jais Group Hike',
+        hostName: 'UAE Adventure Co',
+        tenantName: 'UAE Adventure Co',
+        activity: {
+          publishingProfileKind: 'agency',
+          tenantName: 'UAE Adventure Co',
+          hostName: 'UAE Adventure Co',
+          createdByName: 'Maya Hassan',
+        },
+        location: 'Jebel Jais',
+        date: '2026-09-12',
+        time: '06:00',
+      })
+    ).toBe('Maya Hassan is going Hiking on Saturday 12th - Jebel Jais - Sat at 6:00');
+  });
+
   it('uses a real host name instead of demo role labels', () => {
     expect(
       exploreHeadline({

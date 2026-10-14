@@ -7,8 +7,10 @@ import { JoinRequestActions } from '../../components/ui/JoinRequestActions';
 import { ExploreShopPeekActions } from './ExploreShopPeekActions';
 import type { JoinRequestUiState } from '../../utils/joinRequestUi';
 import {
+  exploreCardActivityJoinIsFull,
   exploreCardHasMapCoords,
   exploreCardIsSeeking,
+  exploreCardPeekShowsDirections,
   exploreCardShowsInlineDirections,
 } from '../exploreCardModel';
 import {
@@ -113,7 +115,7 @@ export const ExploreItemPeekActions = ({
           <JoinRequestActions
             uiState={joinUiState}
             joinLabel={card.primaryCta}
-            isFull={(card.activity?.slotsAvailable ?? 1) <= 0}
+            isFull={exploreCardActivityJoinIsFull(card)}
             onJoin={gate ?? onJoin}
           />
           {card.secondaryCta ? (
@@ -159,7 +161,7 @@ export const ExploreItemPeekActions = ({
           <JoinRequestActions
             uiState={joinUiState}
             joinLabel={card.primaryCta}
-            isFull={(card.activity?.slotsAvailable ?? 1) <= 0}
+            isFull={exploreCardActivityJoinIsFull(card)}
             onJoin={gate ?? onJoin}
             onWithdraw={peekWithdraw}
           />
@@ -182,7 +184,12 @@ export const ExploreItemPeekActions = ({
           <button
             type="button"
             onClick={gate ?? onJoin}
-            className="w-full rounded-2xl bg-emerald-500 py-3.5 text-base font-bold text-white"
+            disabled={card.source === 'activity' && exploreCardActivityJoinIsFull(card)}
+            className={`w-full rounded-2xl py-3.5 text-base font-bold ${
+              card.source === 'activity' && exploreCardActivityJoinIsFull(card)
+                ? 'cursor-not-allowed bg-neutral-200 text-neutral-500'
+                : 'bg-emerald-500 text-white'
+            }`}
           >
             {card.primaryCta}
           </button>
@@ -219,6 +226,7 @@ export const ExploreItemPeekActions = ({
       ) : card.showJoinActions ? (
         <>
           {gate &&
+          exploreCardPeekShowsDirections(card) &&
           exploreCardHasMapCoords(card) &&
           !exploreCardShowsInlineDirections(card) ? (
             <ExploreCardDirectionsButton

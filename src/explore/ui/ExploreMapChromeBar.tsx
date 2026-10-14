@@ -1,6 +1,7 @@
 import type { ExploreSearchScopeCounts, ExploreSearchScopeKey } from '../exploreBrowseTaxonomy';
 import { EXPLORE_MOBILE_MAP_CHROME, EXPLORE_Z } from '../../config/exploreTheme';
 import { ExploreMapDateFilter } from './ExploreMapDateFilter';
+import { VenueStateFilterMenu } from './VenueStateFilterMenu';
 import { ExploreMapPeopleBrowseButton } from '@/people-discovery/panel/ExploreMapPeopleBrowseButton';
 import { ExploreMapMobileLayerChrome } from './ExploreMapMobileLayerChrome';
 import { EXPLORE_FLOATING_CONTROL } from '../../config/exploreTheme';
@@ -44,7 +45,11 @@ export const ExploreMapChromeBar = ({
   peopleBrowsePanelAvatars = [],
   peopleBrowsePanelFriendCount = 0,
   onOpenExploreSearch,
-}: ExploreMapChromeBarProps) => (
+}: ExploreMapChromeBarProps) => {
+  const onActivitiesBrowse = panel === 'activities';
+  const onPlacesBrowse = panel === 'venues' || panel === 'shops';
+
+  return (
   <div
     className={`pointer-events-none absolute inset-x-0 top-0 px-3 pt-2 lg:px-4 lg:pt-3 ${EXPLORE_MOBILE_MAP_CHROME.filterTop} ${EXPLORE_Z.mapFilters}`}
   >
@@ -76,13 +81,21 @@ export const ExploreMapChromeBar = ({
       ) : null}
       {onOpenPeopleBrowsePanel ? (
         <div className="hidden shrink-0 items-center gap-3 lg:flex">
-          <ExploreMapDateFilter
-            activityDatePreset={activityDatePreset}
-            onActivityDatePresetChange={onActivityDatePresetChange}
-            includeAnyday={false}
-            iconOnly
-            iconTriggerClassName={`${EXPLORE_FLOATING_CONTROL} inline-flex h-10 w-10 items-center justify-center text-emerald-950`}
-          />
+          {onActivitiesBrowse ? (
+            <ExploreMapDateFilter
+              activityDatePreset={activityDatePreset}
+              onActivityDatePresetChange={onActivityDatePresetChange}
+              includeAnyday={false}
+              iconOnly
+              iconTriggerClassName={`${EXPLORE_FLOATING_CONTROL} inline-flex h-10 w-10 items-center justify-center text-emerald-950`}
+            />
+          ) : onPlacesBrowse ? (
+            <VenueStateFilterMenu
+              selected={venueRegions}
+              onChange={onVenueRegionsChange}
+              toolbarTrigger
+            />
+          ) : null}
           <ExploreMapPeopleBrowseButton
             avatars={peopleBrowsePanelAvatars}
             friendCount={peopleBrowsePanelFriendCount}
@@ -93,4 +106,5 @@ export const ExploreMapChromeBar = ({
       ) : null}
     </div>
   </div>
-);
+  );
+};

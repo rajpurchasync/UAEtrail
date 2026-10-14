@@ -79,6 +79,7 @@ export const useExploreExperienceModel = () => {
     useExploreMapCatalog({ userId: user?.id, searchParams });
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [highlightedExploreItemId, setHighlightedExploreItemId] = useState<string | null>(null);
   const [linkOnlyPeekItems, setLinkOnlyPeekItems] = useState<ExploreMapItemDTO[]>([]);
   const clearSelection = useCallback(() => setSelectedId(null), []);
 
@@ -88,6 +89,23 @@ export const useExploreExperienceModel = () => {
     setSearchParams,
     clearSelection,
   });
+
+  useEffect(() => {
+    if (!browse.listOpen) setHighlightedExploreItemId(null);
+  }, [browse.listOpen]);
+
+  const handleListItemHover = useCallback(
+    (itemId: string) => {
+      if (!isDesktop) return;
+      setHighlightedExploreItemId(itemId);
+    },
+    [isDesktop]
+  );
+
+  const handleListItemHoverEnd = useCallback(() => {
+    if (!isDesktop) return;
+    setHighlightedExploreItemId(null);
+  }, [isDesktop]);
 
   const viewport = useExploreMapViewport({
     user,
@@ -324,6 +342,8 @@ export const useExploreExperienceModel = () => {
     onSearchScopePick: handleExploreSearchCommit,
     searchFocusNonce,
     buddyUserIds: user ? new Set(memberPeoplePreview.preview?.friendUserIds ?? []) : undefined,
+    onListItemHover: handleListItemHover,
+    onListItemHoverEnd: handleListItemHoverEnd,
   });
 
   const signInHref = useMemo(
@@ -364,6 +384,7 @@ export const useExploreExperienceModel = () => {
     selection,
     selectionItems,
     selectedId,
+    highlightedExploreItemId,
     viewport,
     mapPins,
     exploreMapTiles,

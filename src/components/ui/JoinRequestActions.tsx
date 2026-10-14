@@ -65,14 +65,18 @@ export const JoinRequestActions = ({
     );
   }
 
+  const joinBlocked = joinDisabled || isFull;
+
   return (
     <div className={className}>
       <button
         type="button"
         onClick={onJoin}
-        disabled={joinDisabled}
-        className={`w-full rounded-2xl py-3.5 text-base font-bold text-white disabled:opacity-60 ${
-          isFull ? 'bg-amber-500' : 'bg-emerald-500'
+        disabled={joinBlocked}
+        className={`w-full rounded-2xl py-3.5 text-base font-bold disabled:cursor-not-allowed ${
+          isFull
+            ? 'bg-neutral-200 text-neutral-500 disabled:opacity-100'
+            : 'bg-emerald-500 text-white disabled:opacity-60'
         } ${joinButtonClassName}`}
       >
         {joinLabel}

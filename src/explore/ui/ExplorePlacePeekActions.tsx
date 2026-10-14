@@ -1,39 +1,40 @@
 import type { ExploreCardModel } from '../exploreCardModel';
 import { exploreCardHasMapCoords } from '../exploreCardModel';
 import { LIST_FEED_CTA_VIEW_DETAILS } from '../../list/listFeedCtaCopy';
+import { EXPLORE_PEEK_CTA } from '../../config/exploreTheme';
 import { ExploreCardDirectionsButton } from './ExploreCardPresentation';
 import { ExplorePeekDetailLink } from './ExplorePeekDetailLink';
 
-interface ExploreVenuePeekActionsProps {
+interface ExplorePlacePeekActionsProps {
   card: ExploreCardModel;
   onClose: () => void;
   /** Guests: sign-up before directions (detail link still gated). */
   onGuestGatedPlanTrip?: () => void;
 }
 
-/** Place map peek — Get Directions + View Details (category-aligned). */
-export const ExploreVenuePeekActions = ({
+/** Catalog place map peek — stacked Get directions + View details. */
+export const ExplorePlacePeekActions = ({
   card,
   onClose,
   onGuestGatedPlanTrip,
-}: ExploreVenuePeekActionsProps) => {
+}: ExplorePlacePeekActionsProps) => {
   const hasCoords = exploreCardHasMapCoords(card);
 
   return (
-    <div className="flex w-full gap-2">
+    <div className="space-y-2">
       {hasCoords ? (
         <ExploreCardDirectionsButton
           latitude={card.mapLatitude}
           longitude={card.mapLongitude}
-          className="flex min-h-[3.25rem] flex-1 items-center justify-center rounded-xl bg-emerald-600 px-3 text-sm font-bold text-white shadow-sm hover:bg-emerald-700"
+          showAppPickerAffordance={false}
+          showLeadingIcon={false}
+          className={EXPLORE_PEEK_CTA.primary}
         />
       ) : null}
       <ExplorePeekDetailLink
         card={card}
         label={LIST_FEED_CTA_VIEW_DETAILS}
-        className={`flex min-h-[3.25rem] flex-1 items-center justify-center rounded-xl border border-neutral-200 bg-white px-3 text-center text-sm font-bold text-neutral-800 shadow-sm ${
-          hasCoords ? '' : 'w-full'
-        }`}
+        className={EXPLORE_PEEK_CTA.secondary}
         onGuestGatedAction={onGuestGatedPlanTrip}
         onBeforeNavigate={onClose}
       />

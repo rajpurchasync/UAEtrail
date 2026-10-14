@@ -1,5 +1,7 @@
 /** Map peek — host / requester row (not the participant roster). */
 export const ACTIVITY_PEEK_SECTION_HOST = 'Host';
+export const ACTIVITY_PEEK_SECTION_SPOTS = 'Spots';
+export const ACTIVITY_PEEK_FULL_CAPACITY_LABEL = 'Full capacity';
 /** @deprecated Use ACTIVITY_PEEK_SECTION_HOST */
 export const ACTIVITY_PEEK_SECTION_BUDDIES = ACTIVITY_PEEK_SECTION_HOST;
 

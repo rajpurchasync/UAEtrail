@@ -19,6 +19,8 @@ import {
   mapCatalogEntryToLocationCreateInput,
   VENUE_CATALOG_EXTERNAL_SOURCE,
 } from '../src/lib/venue-catalog.js';
+import { fillMissingLocationFields } from '../src/lib/location-field-fill.js';
+import { backfillSeedCatalogLocationAreaIds } from './seed-location-area-map.js';
 
 const PRESERVE_KEYS: (keyof Location)[] = [
   'guideMarkdown',
@@ -100,7 +102,8 @@ const importVenueCatalog = async () => {
     const existingDoc = await collection!.findOne({ _id: entry.id });
     if (existingDoc) {
       const existing = { id: String(existingDoc._id), ...existingDoc } as Location;
-      const merged = mergeWithExisting(existing, built);
+      let merged = mergeWithExisting(existing, built);
+      merged = fillMissingLocationFields(merged, built);
       merged.updatedAt = new Date();
       await collection!.updateOne({ _id: entry.id }, { $set: locationDocForMongo(merged) });
       updated += 1;
@@ -115,6 +118,10 @@ const importVenueCatalog = async () => {
   }
 
   let osmDeactivated = 0;
+  if (!dryRun) {
+    await backfillSeedCatalogLocationAreaIds();
+  }
+
   if (!keepOsm && !dryRun && collection) {
     const result = await collection.updateMany(
       { externalSource: 'osm' },

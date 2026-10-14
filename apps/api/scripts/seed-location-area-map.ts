@@ -2,6 +2,7 @@ import { curatedAreaSeedId, type CuratedAreaSeedKey } from '@uaetrail/shared-typ
 import type { AreaDTO } from '@uaetrail/shared-types';
 import { resolveAreaIdFromPoint } from '../src/lib/area-resolution.js';
 import { listPublishedAreas } from '../src/lib/areas-store.js';
+import { resolveCatalogLocationAreaKey } from '../src/lib/venue-catalog-enrichment.js';
 
 /** Explicit catalog place → curated area (overrides point-in-polygon when set). */
 export const SEED_CATALOG_LOCATION_AREA_KEYS: Record<string, CuratedAreaSeedKey> = {
@@ -22,10 +23,13 @@ export const SEED_CATALOG_LOCATION_AREA_KEYS: Record<string, CuratedAreaSeedKey>
   'khorfakkan-beach-trail': 'khorfakkan',
   'jebel-hafeet-viewpoint-hike': 'jebelHafeet',
   'kalba-mangrove-kayak': 'kalba',
+  'mleiha-desert-camp': 'fossilRock',
+  'al-badayer-desert-camp': 'fossilRock',
 };
 
 export const seedLocationAreaId = (locationId: string): string | null => {
-  const key = SEED_CATALOG_LOCATION_AREA_KEYS[locationId];
+  const key =
+    SEED_CATALOG_LOCATION_AREA_KEYS[locationId] ?? resolveCatalogLocationAreaKey(locationId);
   return key ? curatedAreaSeedId(key) : null;
 };
 

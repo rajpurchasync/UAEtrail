@@ -5,7 +5,11 @@ import { EXPLORE_PEEK, EXPLORE_SHEET } from '../../config/exploreTheme';
 import { EnvironmentImage } from '../../components/ui/EnvironmentImage';
 import { ShareButton } from '../../components/ui/ShareButton';
 import { ExploreFollowButton } from './ExploreFollowButton';
-import { exploreCardShowPeekBodyDirections } from '../exploreCardModel';
+import {
+  exploreCardPeekShowsDirections,
+  exploreCardPeekShowsFollow,
+  exploreCardShowPeekBodyDirections,
+} from '../exploreCardModel';
 import { PlaceDirectionLinks } from '../../components/ui/PlaceDirectionLinks';
 import {
   ExploreCardDetailList,
@@ -15,6 +19,7 @@ import {
   ExploreActivityPeekMeta,
   ExploreVenueImageBadges,
 } from './ExploreCardPresentation';
+import { ExplorePlacePeekBody } from './ExplorePlacePeekBody';
 import { resolvePeekDetailAccess } from '../../access/resolvePeekDetailAccess';
 
 interface ExploreMapPeekCardProps {
@@ -29,6 +34,8 @@ interface ExploreMapPeekCardProps {
   embedMode?: boolean;
   /** Join-me invite nudge above peek actions. */
   statusBanner?: string | null;
+  /** Catalog place pins (`source: venue`) — structured body (facts, reviews, hosted activities). */
+  placePeekLayout?: boolean;
 }
 
 /** Unified floating peek card above map chrome — venues, activities, shops. */
@@ -41,6 +48,7 @@ export const ExploreMapPeekCard = ({
   onGuestGatedAction,
   embedMode = false,
   statusBanner = null,
+  placePeekLayout = false,
 }: ExploreMapPeekCardProps) => {
   const titleDetailAccess = resolvePeekDetailAccess(card, {
     isGuest: Boolean(onGuestGatedAction),
@@ -49,10 +57,11 @@ export const ExploreMapPeekCard = ({
   const shellClass = embedMode
     ? 'overflow-hidden rounded-2xl bg-white shadow-[0_8px_32px_rgba(15,23,42,.16)] ring-1 ring-black/5'
     : EXPLORE_PEEK.shell;
+  const showCoverHero = Boolean(card.coverImage) && !placePeekLayout;
 
   return (
     <div className={shellClass}>
-      {card.coverImage ? (
+      {showCoverHero ? (
         <div
           className={`relative w-full shrink-0 overflow-hidden bg-neutral-100${
             embedMode ? ' aspect-[2/1]' : ' h-[min(28dvh,220px)]'
@@ -79,18 +88,20 @@ export const ExploreMapPeekCard = ({
         </div>
       ) : null}
 
-      <div className={`flex shrink-0 items-start justify-between gap-3 px-4 ${card.coverImage ? 'pt-3' : 'pt-4'}`}>
+      <div className={`flex shrink-0 items-start justify-between gap-3 px-4 ${showCoverHero ? 'pt-3' : 'pt-4'}`}>
         <ExploreCardTypeBadge card={card} size="sm" />
         <div className="flex items-center gap-1.5">
-          <ExploreFollowButton card={card} light={!card.coverImage} />
+          {exploreCardPeekShowsFollow(card) ? (
+            <ExploreFollowButton card={card} light={!showCoverHero} />
+          ) : null}
           <ShareButton
             title={card.shareTitle}
             text={card.shareText ?? undefined}
             path={card.sharePath}
             iconOnly
-            light={!card.coverImage}
+            light={!showCoverHero}
           />
-          {!card.coverImage && !embedMode && (
+          {!showCoverHero && !embedMode && (
             <button
               type="button"
               onClick={onClose}
@@ -110,29 +121,41 @@ export const ExploreMapPeekCard = ({
             : 'min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pt-3'
         }
       >
-        <ExploreCardHeadline
-          sections={card.sections}
-          size="lg"
-          tone={card.tone}
-          detailAccess={titleDetailAccess}
-          onGuestGatedDetail={onGuestGatedAction}
-          onBeforeDetailNavigate={onClose}
-        />
-        {card.source === 'activity' ? <ExploreActivityPeekMeta card={card} /> : null}
-        <ExploreCardRatingRow card={card} />
-        <ExploreCardDetailList
-          details={card.sections.details}
-          compact
-          mapLatitude={card.mapLatitude}
-          mapLongitude={card.mapLongitude}
-        />
-        {exploreCardShowPeekBodyDirections(card) ? (
-          <PlaceDirectionLinks
-            lat={card.mapLatitude as number}
-            lng={card.mapLongitude as number}
-            className="mt-3"
+        {placePeekLayout ? (
+          <ExplorePlacePeekBody
+            card={card}
+            detailAccess={titleDetailAccess}
+            onGuestGatedDetail={onGuestGatedAction}
+            onBeforeDetailNavigate={onClose}
           />
-        ) : null}
+        ) : (
+          <>
+            <ExploreCardHeadline
+              sections={card.sections}
+              size="lg"
+              tone={card.tone}
+              detailAccess={titleDetailAccess}
+              onGuestGatedDetail={onGuestGatedAction}
+              onBeforeDetailNavigate={onClose}
+            />
+            {card.source === 'activity' ? <ExploreActivityPeekMeta card={card} /> : null}
+            <ExploreCardRatingRow card={card} />
+            <ExploreCardDetailList
+              details={card.sections.details}
+              compact
+              mapLatitude={card.mapLatitude}
+              mapLongitude={card.mapLongitude}
+              showDirections={exploreCardPeekShowsDirections(card)}
+            />
+            {exploreCardShowPeekBodyDirections(card) ? (
+              <PlaceDirectionLinks
+                lat={card.mapLatitude as number}
+                lng={card.mapLongitude as number}
+                className="mt-3"
+              />
+            ) : null}
+          </>
+        )}
         {children}
         {statusBanner ? (
           <p

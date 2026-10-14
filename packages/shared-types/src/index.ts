@@ -824,6 +824,8 @@ export interface ExploreMapItemDTO {
   /** Curated area membership for explore `?area=` filters. */
   areaId?: string | null;
   areaSlug?: string | null;
+  /** Published curated area hub title when `areaId` is set. */
+  areaName?: string | null;
   /** Set when a host converts this request into a published activity. */
   convertedActivityId?: string | null;
   /** Shop/agency about one-liner for map cards. */
@@ -1161,6 +1163,7 @@ export {
 
 export {
   ROLE_PLACEHOLDER_DISPLAY_NAME,
+  ORGANIZER_FALLBACK_DISPLAY_NAME,
   hostPersonFirstName,
   isRolePlaceholderDisplayName,
   resolveActivityHostAvatar,
@@ -1177,6 +1180,13 @@ export {
   resolveActivityPublisherDisplayName,
   resolveActivityPublisherProfilePath,
 } from './activity-publisher-display.js';
+
+export {
+  exploreActivityPublisherSectionNoun,
+  resolveActivityHeadlinePersonName,
+  resolveActivityPublisherRowPrimaryName,
+  type ActivityActorNameInput,
+} from './activity-actor-display.js';
 
 export {
   HIKING_ACTIVITY_EMOJI,

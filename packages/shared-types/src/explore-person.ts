@@ -1,5 +1,5 @@
 import { exploreActivityPublisherTypeLabel } from './activity-publisher-display.js';
-import { ORGANIZER_FALLBACK_DISPLAY_NAME } from './host-display.js';
+import { ORGANIZER_FALLBACK_DISPLAY_NAME, resolveHostPersonDisplayName } from './host-display.js';
 import type { PublishingProfileKind } from './publishing-profile-kind.js';
 import { isRolePlaceholderDisplayName } from './host-display.js';
 import { exploreMapItemIsSeeking, type ExploreMapItemActivityModeFields } from './explore-activity-mode.js';
@@ -31,6 +31,9 @@ export type ExploreFeaturedPersonInput = ExploreMapItemActivityModeFields & {
     hostName?: string | null;
     hostUserId?: string | null;
     hostAvatar?: string | null;
+    createdByName?: string | null;
+    tenantName?: string | null;
+    publishingProfileKind?: PublishingProfileKind | null;
   } | null;
 };
 
@@ -132,9 +135,17 @@ export const resolveExploreFeaturedPerson = (
   }
 
   if (source === 'activity') {
+    const displayName =
+      resolveHostPersonDisplayName({
+        guideName: activity?.hostName ?? item.hostName,
+        createdByName: activity?.createdByName,
+        tenantName: activity?.tenantName,
+      }) ??
+      activity?.hostName ??
+      item.hostName;
     return buildExploreFeaturedPerson({
       userId: activity?.hostUserId,
-      displayName: activity?.hostName ?? item.hostName,
+      displayName,
       avatarUrl: activity?.hostAvatar ?? item.hostAvatar,
       role: 'organizer',
     });

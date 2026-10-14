@@ -423,6 +423,17 @@ Use this when naming files, hooks, and utils — **one product word per concept*
 
 **Discovery filters:** `?area={slug}` keeps rows whose projected **`areaSlug`** / **`areaId`** match (from place or intent). **Locations** lens pins are the registry hubs; they are **not** a substitute for **`place.areaId`** on every catalog row.
 
+#### 12.1.1 Explore UI — Place vs `venue` (wire) vs Area (no extra entities)
+
+| Concept | Product meaning | Wire / storage | Map peek UI |
+|---------|-----------------|----------------|-------------|
+| **Place** | One catalog row (`locations`) — trail, camp, amenity, shop pin | `GET /places/:id`, `EntityKind: place` | **`ExplorePlaceMapPreview`** + `placePeekLayout` |
+| **`venue`** | **Explore card source only** — a Place pin on the **Spots** layer (`id` prefix `venue:`) | `ExploreCardSource: 'venue'`, `ExploreMapItemDTO.source` | Same peek as Place (not a second object) |
+| **Area** | Curated hub polygon + `/area/:slug` | `areas` collection; map row `source: 'area'`, `id: area:{slug}` | **`ExploreItemSheet`** + **`ExploreAreaPeekActions`** |
+| **`place.areaId`** | Links a **Place** to its **Area** hub | `locations.areaId` → explore `areaId` / `areaSlug` / `areaName` on **venue** rows | **Area · {hub name}** on place peek — **not** the area lens pin |
+
+**Naming rules (FE):** New place peek modules use **`ExplorePlace*`** / **`placePeek*`** / **`PLACE_PEEK_*`**. Reserve **`venue`** for `card.source === 'venue'`, list `listCat=venues`, and `venueRegion` (emirate on card model). Do **not** add `ExploreVenuePeek*` UI. Do **not** render `ExplorePlacePeekBody` when `card.source === 'area'`.
+
 **Pro account storefronts (one user, optional tenant per subtype)** — each has a **public profile URL**; map and People discovery differ by subtype:
 
 | Subtype | Profile URL | Map pin? | How members find them |
@@ -432,7 +443,7 @@ Use this when naming files, hooks, and utils — **one product word per concept*
 | **Tour agency** (`agency`) | `/agency/:slug` | **No** | **Host / operator row** on activity peek and `/activity/:id` only (brand name → agency profile) |
 | **Buddy / community host** | `/member/:userId` | Via activities only | People + activity host row |
 
-Wire: `publishingProfileKind` on `ActivityDTO`; paths via `resolveActivityPublisherProfilePath` (`packages/shared-types/src/activity-publisher-display.ts`). **Do not** emit `source: agency` explore map rows.
+Wire: `publishingProfileKind` on `ActivityDTO`; paths via `resolveActivityPublisherProfilePath` (`packages/shared-types/src/activity-publisher-display.ts`). **Explore copy:** headlines always use `resolveActivityHeadlinePersonName` (human); peek/list publisher row uses `resolveActivityPublisherRowPrimaryName` (person vs operator brand); section noun `exploreActivityPublisherSectionNoun` — all in `packages/shared-types/src/activity-actor-display.ts`. **`ActivityDTO.hostName`** is the on-ground **person**, not tenant brand. **Do not** emit `source: agency` explore map rows.
 
 **Code anchors:** `packages/shared-types/src/place-kind.ts` · `apps/api/src/lib/explore-map-area-lens.ts` · `apps/api/src/lib/explore-map.ts` (`attachExploreItemArea`) · `src/explore/organizePublishArea.ts` · `GET /areas/:slug` preview · [`DOMAIN.md`](./DOMAIN.md) § Geography.
 

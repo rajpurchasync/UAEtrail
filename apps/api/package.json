@@ -14,6 +14,7 @@
     "seeking-storage-status": "tsx scripts/seeking-storage-status.ts",
     "cancel-coordless-participant-intents": "tsx scripts/cancel-coordless-participant-intents.ts",
     "import-venue-catalog": "tsx scripts/import-venue-catalog.ts",
+    "backfill-catalog-locations": "tsx scripts/import-venue-catalog.ts -- --keep-osm",
     "cleanup:test-users": "node scripts/cleanup-test-users.mjs",
     "purge-demand-wishlist-rows": "tsx scripts/purge-demand-wishlist-rows.ts",
     "test": "vitest run"

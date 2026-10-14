@@ -31,6 +31,8 @@ interface DirectionsControlProps {
   includeViewOnMap?: boolean;
   viewOnMapLabel?: string;
   showAppPickerAffordance?: boolean;
+  /** Primary button / link — hide compass icon on full-width peek CTAs. */
+  showLeadingIcon?: boolean;
   navigationMode?: NavigationMode;
 }
 
@@ -51,6 +53,7 @@ export const DirectionsControl = ({
   includeViewOnMap = false,
   viewOnMapLabel = 'View on map',
   showAppPickerAffordance = true,
+  showLeadingIcon = true,
   navigationMode = 'drive',
 }: DirectionsControlProps) => {
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -99,7 +102,7 @@ export const DirectionsControl = ({
       onPointerDown={stopEvent}
       className={variant === 'button' ? buttonClassName : 'inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3.5 py-2 text-sm font-semibold text-gray-800 hover:bg-gray-100'}
     >
-      <Navigation className="h-4 w-4 shrink-0" aria-hidden />
+      {showLeadingIcon ? <Navigation className="h-4 w-4 shrink-0" aria-hidden /> : null}
       {label}
     </button>
   );
@@ -114,7 +117,7 @@ export const DirectionsControl = ({
       onPointerDown={stopEvent}
       className={linkClassName}
     >
-      <Navigation className="h-3.5 w-3.5 shrink-0" aria-hidden />
+      {showLeadingIcon ? <Navigation className="h-3.5 w-3.5 shrink-0" aria-hidden /> : null}
       {label}
     </button>
   );

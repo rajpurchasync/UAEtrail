@@ -2,7 +2,10 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ActivityType, LocationStatus } from '../domain/enums.js';
-import type { LocationCreateInput } from './entity-builders.js';
+import type { Location } from '../domain/types.js';
+import { buildLocationFromCreateInput, type LocationCreateInput } from './entity-builders.js';
+import { fillMissingLocationFields } from './location-field-fill.js';
+import { enrichCatalogEntryFields } from './venue-catalog-enrichment.js';
 import {
   VENUE_NAME_AR_TAG_PREFIX,
   VENUE_NAME_EN_TAG_PREFIX,
@@ -37,6 +40,23 @@ export type VenueCatalogEntry = {
   longitude: number;
   description?: string;
   featured?: boolean;
+  areaLabel?: string;
+  areaId?: string;
+  difficulty?: 'easy' | 'moderate' | 'hard';
+  distance?: number;
+  duration?: number;
+  elevation?: number;
+  accessibility?: 'car-accessible' | 'remote';
+  childFriendly?: boolean;
+  maxGroupSize?: number;
+  campingType?: 'self-guided' | 'operator-led';
+  surfaceType?: string[];
+  accessibleBy?: string[];
+  season?: string[];
+  images?: string[];
+  parkingLat?: number;
+  parkingLng?: number;
+  tags?: string[];
 };
 
 export type VenueCatalogFile = {
@@ -70,19 +90,55 @@ export const buildCatalogLocationTags = (entry: VenueCatalogEntry): string[] => 
 const CATALOG_DESCRIPTION =
   'Outdoor place on UAE Trail — coordinates and copy are curated for hikers and campers. Add photos and trip details as the community grows.';
 
-export const mapCatalogEntryToLocationCreateInput = (entry: VenueCatalogEntry): LocationCreateInput => ({
-  name: entry.name,
-  region: entry.region,
-  activityType: toActivityType(entry.activityType),
-  description: entry.description?.trim() || CATALOG_DESCRIPTION,
-  status: LocationStatus.ACTIVE,
-  featured: entry.featured ?? false,
-  latitude: entry.latitude,
-  longitude: entry.longitude,
-  countryCode: 'AE',
-  images: [],
-  tags: buildCatalogLocationTags(entry),
-  registryListed: true,
-  externalSource: VENUE_CATALOG_EXTERNAL_SOURCE,
-  externalId: entry.id,
-});
+export const mapCatalogEntryToLocationCreateInput = (entry: VenueCatalogEntry): LocationCreateInput => {
+  const enriched = enrichCatalogEntryFields(entry);
+  const baseTags = buildCatalogLocationTags(entry);
+  const extraTags = enriched.tags ?? [];
+  const tags = [...new Set([...baseTags, ...extraTags])];
+
+  return {
+    name: entry.name,
+    region: entry.region,
+    activityType: toActivityType(entry.activityType),
+    description: entry.description?.trim() || CATALOG_DESCRIPTION,
+    status: LocationStatus.ACTIVE,
+    featured: entry.featured ?? false,
+    latitude: entry.latitude,
+    longitude: entry.longitude,
+    countryCode: 'AE',
+    tags,
+    registryListed: true,
+    externalSource: VENUE_CATALOG_EXTERNAL_SOURCE,
+    externalId: entry.id,
+    ...enriched,
+  };
+};
+
+let catalogEntryById: Map<string, VenueCatalogEntry> | null = null;
+
+export const getVenueCatalogEntryById = (locationId: string): VenueCatalogEntry | null => {
+  if (!catalogEntryById) {
+    const { venues } = loadVenueCatalog();
+    catalogEntryById = new Map(venues.map((entry) => [entry.id, entry]));
+  }
+  return catalogEntryById.get(locationId) ?? null;
+};
+
+const resolveCatalogLocationId = (location: Location): string | null => {
+  const fromTag = location.tags?.find((tag) => tag.startsWith('catalog:'))?.slice('catalog:'.length);
+  if (fromTag) return fromTag;
+  if (location.externalSource === VENUE_CATALOG_EXTERNAL_SOURCE && location.externalId) {
+    return location.externalId;
+  }
+  return getVenueCatalogEntryById(location.id) ? location.id : null;
+};
+
+/** Fill sparse DB rows from curated JSON — safe on every explore map read (no wipe of admin/GPX data). */
+export const overlayCatalogDefaultsOnLocation = (location: Location): Location => {
+  const catalogId = resolveCatalogLocationId(location);
+  if (!catalogId) return location;
+  const entry = getVenueCatalogEntryById(catalogId);
+  if (!entry) return location;
+  const built = buildLocationFromCreateInput(mapCatalogEntryToLocationCreateInput(entry), entry.id);
+  return fillMissingLocationFields(location, built);
+};

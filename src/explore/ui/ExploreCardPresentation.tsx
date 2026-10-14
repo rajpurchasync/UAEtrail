@@ -1,13 +1,22 @@
 import type { ReactNode } from 'react';
 import { explorePersonRoleLabel } from '@uaetrail/shared-types';
-import { ChevronRight, Clock, MapPin, Route, Star, Tag, Users } from 'lucide-react';
+import { ChevronRight, Clock, MapPin, Route, Star, Tag, Ticket, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { ExploreCardModel, ExploreCardTone } from '../exploreCardModel';
-import { exploreCardIsSeeking, exploreCardToneTextClass } from '../exploreCardModel';
+import {
+  exploreCardActivityJoinIsFull,
+  exploreCardActivityShowsPeekSpots,
+  exploreCardCanOpenHostProfile,
+  exploreCardIsSeeking,
+  exploreCardToneTextClass,
+  resolveExploreCardHostProfilePath,
+} from '../exploreCardModel';
+import {
+  ACTIVITY_PEEK_FULL_CAPACITY_LABEL,
+  ACTIVITY_PEEK_SECTION_SPOTS,
+} from '../../content/activityPeekCopy';
 import { EXPLORE_TYPE } from '../../config/exploreTheme';
 import type { ExploreCardDetail, ExploreCardDetailIcon, ExploreCardSections } from '../exploreCopy';
-import { personProfilePath } from '../../utils/organisationLinks';
-import { resolveActivityPublisherProfilePath } from '@uaetrail/shared-types';
 import { DirectionsControl } from '../../components/ui/DirectionsControl';
 import { capitalize } from '../../utils';
 import { SecureAvatar } from '../../components/ui/SecureAvatar';
@@ -190,10 +199,14 @@ export const ExploreCardDirectionsButton = ({
   latitude,
   longitude,
   className = 'flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-500 py-3.5 text-base font-bold text-white',
+  showAppPickerAffordance = true,
+  showLeadingIcon = true,
 }: {
   latitude?: number | null;
   longitude?: number | null;
   className?: string;
+  showAppPickerAffordance?: boolean;
+  showLeadingIcon?: boolean;
 }) => {
   if (latitude == null || longitude == null) return null;
   return (
@@ -203,6 +216,8 @@ export const ExploreCardDirectionsButton = ({
       variant="button"
       className="w-full"
       buttonClassName={className}
+      showAppPickerAffordance={showAppPickerAffordance}
+      showLeadingIcon={showLeadingIcon}
     />
   );
 };
@@ -214,14 +229,17 @@ export const ExploreCardLocationLink = ({
   longitude,
   className = '',
   iconClassName = 'h-4 w-4 shrink-0 text-gray-400',
+  showDirections = true,
 }: {
   label: string;
   latitude?: number | null;
   longitude?: number | null;
   className?: string;
   iconClassName?: string;
+  /** Activity peek — location label only (no Get Directions). */
+  showDirections?: boolean;
 }) => {
-  const hasCoords = latitude != null && longitude != null;
+  const hasCoords = showDirections && latitude != null && longitude != null;
   const linkClass =
     'inline-flex items-center gap-1 font-medium text-emerald-700 underline decoration-emerald-700/30 underline-offset-2 hover:text-emerald-800 hover:decoration-emerald-800';
 
@@ -259,11 +277,13 @@ export const ExploreCardDetailList = ({
   compact = false,
   mapLatitude,
   mapLongitude,
+  showDirections = true,
 }: {
   details: ExploreCardDetail[];
   compact?: boolean;
   mapLatitude?: number | null;
   mapLongitude?: number | null;
+  showDirections?: boolean;
 }) => {
   if (details.length === 0) return null;
 
@@ -275,6 +295,7 @@ export const ExploreCardDetailList = ({
           label={locationDetail.label}
           latitude={mapLatitude}
           longitude={mapLongitude}
+          showDirections={showDirections}
           className={`mt-2 text-sm ${EXPLORE_TYPE.body}`}
         />
       );
@@ -297,11 +318,12 @@ export const ExploreCardDetailList = ({
             key={`${detail.icon}-${detail.label}`}
             className={`flex items-start gap-2.5 text-sm font-medium leading-snug ${EXPLORE_TYPE.body}`}
           >
-            {isLocation && mapLatitude != null && mapLongitude != null ? (
+            {isLocation ? (
               <ExploreCardLocationLink
                 label={detail.label}
                 latitude={mapLatitude}
                 longitude={mapLongitude}
+                showDirections={showDirections}
                 className="items-start"
                 iconClassName="mt-0.5 h-4 w-4 shrink-0 text-gray-400"
               />
@@ -389,19 +411,11 @@ export const ExploreCardPeopleRow = ({
   const person = card.featuredPerson;
   const hostName = card.listHost ?? person?.displayName ?? card.sections.hostName ?? card.sections.highlightName;
   const publishingProfileKind = card.activity?.publishingProfileKind;
-  const hostProfilePath =
-    card.source === 'activity' && card.activity && publishingProfileKind
-      ? resolveActivityPublisherProfilePath({
-          publishingProfileKind,
-          tenantSlug: card.activity.tenantSlug,
-          hostUserId: card.activity.hostUserId ?? person?.userId,
-        })
-      : personProfilePath(person?.userId ?? card.requesterUserId);
-  const canOpenHostProfile =
-    card.source !== 'activity' ||
-    !card.viewerAccess?.entitlements ||
-    card.viewerAccess.entitlements.canViewHostProfileBeforeJoin;
-  const hostPath = canOpenHostProfile ? hostProfilePath : null;
+  const hostProfilePath = resolveExploreCardHostProfilePath(card);
+  const isGuestViewer = Boolean(onGuestGatedAction);
+  const canOpenHostProfile = exploreCardCanOpenHostProfile(card, { isGuest: isGuestViewer });
+  const hostPath =
+    hostProfilePath && canOpenHostProfile && !isGuestViewer ? hostProfilePath : null;
   const showHostProfileProUpsell =
     !hideProMembershipUpsell &&
     card.source === 'activity' &&
@@ -425,7 +439,7 @@ export const ExploreCardPeopleRow = ({
   if (!showHostRow && participants.length === 0) return null;
 
   const hostRow = showHostRow && hostName ? (
-    hostPath && !onGuestGatedAction ? (
+    hostPath ? (
       <Link
         to={hostPath}
         className="flex items-center gap-3 group rounded-xl -mx-1 px-1 py-1 hover:bg-neutral-50 transition-colors"
@@ -451,7 +465,7 @@ export const ExploreCardPeopleRow = ({
         </div>
         <ChevronRight className="h-4 w-4 text-gray-400 shrink-0" />
       </Link>
-    ) : hostPath && onGuestGatedAction ? (
+    ) : hostProfilePath && isGuestViewer ? (
       <button
         type="button"
         onClick={onGuestGatedAction}
@@ -605,3 +619,26 @@ export const ExploreCardCapacityRow = ({ card }: { card: ExploreCardModel }) => 
   );
 };
 
+const peekStripShell = 'mt-3 rounded-xl border border-neutral-100 bg-neutral-50/80 px-3 py-2.5';
+const peekStripLabel =
+  'mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-neutral-500';
+
+/** Map peek — capacity above host; not grouped with rideshare. */
+export const ExploreActivityPeekSpotsSection = ({ card }: { card: ExploreCardModel }) => {
+  if (!exploreCardActivityShowsPeekSpots(card)) return null;
+  const isFull = exploreCardActivityJoinIsFull(card);
+
+  return (
+    <section className={peekStripShell} aria-label={ACTIVITY_PEEK_SECTION_SPOTS}>
+      <div className={peekStripLabel}>
+        <Ticket className="h-3.5 w-3.5" aria-hidden />
+        {ACTIVITY_PEEK_SECTION_SPOTS}
+      </div>
+      {isFull ? (
+        <p className={`text-sm font-semibold ${EXPLORE_TYPE.body}`}>{ACTIVITY_PEEK_FULL_CAPACITY_LABEL}</p>
+      ) : (
+        <ExploreCardCapacityRow card={card} />
+      )}
+    </section>
+  );
+};

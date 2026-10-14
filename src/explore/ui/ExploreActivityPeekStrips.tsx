@@ -1,16 +1,17 @@
 import { Users } from 'lucide-react';
-import type { ExploreCardModel } from '../exploreCardModel';
-import {
-  ACTIVITY_PEEK_SECTION_HOST,
-  activityPeekPendingInviteChipLabel,
-} from '../../content/activityPeekCopy';
+import { exploreCardActivityShowsPeekSpots, type ExploreCardModel } from '../exploreCardModel';
+import { exploreActivityPublisherSectionNoun } from '@uaetrail/shared-types';
+import { activityPeekPendingInviteChipLabel } from '../../content/activityPeekCopy';
 import { ORGANIZE_LINK_RIDESHARE_LABEL } from '../createFlowCopy';
 import { resolveActivityMapPeekStrips } from '../../activity/activityPeekEngagement';
 import {
   ExploreLinkedRidesharePeekIndication,
   explorePeekHasLinkedRideshareAffordance,
 } from './ExploreLinkedRidesharePeekIndication';
-import { ExploreCardCapacityRow, ExploreCardPeopleRow } from './ExploreCardPresentation';
+import {
+  ExploreActivityPeekSpotsSection,
+  ExploreCardPeopleRow,
+} from './ExploreCardPresentation';
 import type { JoinRequestUiState } from '../../utils/joinRequestUi';
 
 const stripShell = 'mt-3 rounded-xl border border-neutral-100 bg-neutral-50/80 px-3 py-2.5';
@@ -24,7 +25,7 @@ type ExploreActivityPeekStripsProps = {
   onOfferTransport?: () => void;
 };
 
-/** Activity map peek — host row + spots / linked rideshare (no Pro upsell copy). */
+/** Activity map peek — spots, host, then transport / linked rideshare (no Pro upsell copy). */
 export const ExploreActivityPeekStrips = ({
   card,
   joinUiState,
@@ -34,18 +35,22 @@ export const ExploreActivityPeekStrips = ({
 }: ExploreActivityPeekStripsProps) => {
   const strips = resolveActivityMapPeekStrips(card, joinUiState);
   const showOfferTransport = Boolean(onOfferTransport) && strips.showOfferRideInLogistics;
-  const hasSpots = Boolean(card.sections.partyLabel);
   const hasRideshareAffordance = explorePeekHasLinkedRideshareAffordance(card);
-  const showLogisticsSection =
-    strips.showLogisticsStrip && (hasSpots || hasRideshareAffordance || showOfferTransport);
+  const showTransportSection =
+    strips.showLogisticsStrip && (hasRideshareAffordance || showOfferTransport);
+  const publisherSectionLabel = exploreActivityPublisherSectionNoun(
+    card.activity?.publishingProfileKind
+  );
+  const showSpotsSection = strips.showLogisticsStrip && exploreCardActivityShowsPeekSpots(card);
 
   return (
     <div className="space-y-2">
+      {showSpotsSection ? <ExploreActivityPeekSpotsSection card={card} /> : null}
       {strips.showParticipantsStrip ? (
-        <section className={stripShell} aria-label={ACTIVITY_PEEK_SECTION_HOST}>
+        <section className={stripShell} aria-label={publisherSectionLabel}>
           <div className={stripLabel}>
             <Users className="h-3.5 w-3.5" aria-hidden />
-            {ACTIVITY_PEEK_SECTION_HOST}
+            {publisherSectionLabel}
           </div>
           <ExploreCardPeopleRow
             card={card}
@@ -62,9 +67,8 @@ export const ExploreActivityPeekStrips = ({
           ) : null}
         </section>
       ) : null}
-      {showLogisticsSection ? (
-        <section className={stripShell} aria-label="Spots and transport">
-          <ExploreCardCapacityRow card={card} />
+      {showTransportSection ? (
+        <section className={stripShell} aria-label="Transport">
           <ExploreLinkedRidesharePeekIndication card={card} onOpenExploreItem={onOpenExploreItem} />
           {showOfferTransport ? (
             <button

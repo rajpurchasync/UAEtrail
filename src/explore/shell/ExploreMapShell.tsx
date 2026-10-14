@@ -13,6 +13,7 @@ type Props = Pick<
   | 'compose'
   | 'selection'
   | 'selectedId'
+  | 'highlightedExploreItemId'
   | 'viewport'
   | 'mapPins'
   | 'exploreMapTiles'
@@ -42,6 +43,7 @@ export const ExploreMapShell = ({
   compose,
   selection,
   selectedId,
+  highlightedExploreItemId,
   viewport,
   mapPins,
   exploreMapTiles,
@@ -84,7 +86,7 @@ export const ExploreMapShell = ({
     onToggleMapStyle={viewport.toggleExploreMapStyle}
     mapPins={mapPins}
     selectedId={selectedId}
-    highlightedExploreItemId={null}
+    highlightedExploreItemId={highlightedExploreItemId}
     recenterTo={viewport.recenterTo}
     exploreMapCenter={viewport.exploreMapCenter}
     onPinClick={handleMapPinClick}

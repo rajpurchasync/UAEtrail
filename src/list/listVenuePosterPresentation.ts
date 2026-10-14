@@ -92,25 +92,47 @@ const resolveDistanceLabel = (card: ExploreCardModel): string | null => {
   return `${rounded} km`;
 };
 
-const resolveShopPosterFactLabels = (card: ExploreCardModel): string[] => {
-  const labels: string[] = [];
-  const region = card.venueRegion?.trim() || card.subtitle?.trim();
-  if (region && normalize(region) !== normalize(resolveCatalogEntityName(card))) {
-    labels.push(region);
-  }
-  labels.push('Outdoor shop');
-  return [...new Set(labels)].slice(0, 6);
+const resolveElevationLabel = (card: ExploreCardModel): string | null => {
+  const meters = card.venueElevationM;
+  if (meters == null || !Number.isFinite(meters) || meters <= 0) return null;
+  const rounded = meters % 1 === 0 ? String(meters) : meters.toFixed(0);
+  return `${rounded} m elevation`;
 };
 
-/** Fact pills on place / shop posters. */
-export const resolveListVenuePosterFactLabels = (card: ExploreCardModel): string[] => {
+const resolveDurationLabel = (card: ExploreCardModel): string | null => {
+  const hours = card.venueDurationHours;
+  if (hours == null || !Number.isFinite(hours) || hours <= 0) return null;
+  const rounded = hours % 1 === 0 ? String(hours) : hours.toFixed(1);
+  return `${rounded} hr${hours === 1 ? '' : 's'}`;
+};
+
+const resolveCampingTypeLabel = (card: ExploreCardModel): string | null => {
+  if (card.kind !== 'camping') return null;
+  if (card.venueCampingType === 'self-guided') return 'Self-guided camping';
+  if (card.venueCampingType === 'operator-led') return 'Operator-led camping';
+  return null;
+};
+
+const resolveMaxGroupLabel = (card: ExploreCardModel): string | null => {
+  const size = card.venueMaxGroupSize;
+  if (size == null || !Number.isFinite(size) || size <= 0) return null;
+  return `Up to ${size} people`;
+};
+
+/** Catalog attribute pills — aligned with place detail stats (optional local subtitle for list posters). */
+export const resolvePlaceCatalogFactLabels = (
+  card: ExploreCardModel,
+  options?: { includeLocationSubtitle?: boolean }
+): string[] => {
   if (card.source === 'shop') return resolveShopPosterFactLabels(card);
   if (card.source !== 'venue') return [];
 
   const labels: string[] = [];
 
-  const location = resolveVenueLocationFact(card);
-  if (location) labels.push(location);
+  if (options?.includeLocationSubtitle) {
+    const location = resolveVenueLocationFact(card);
+    if (location) labels.push(location);
+  }
 
   if (card.childFriendly) labels.push('Child-friendly');
 
@@ -122,18 +144,40 @@ export const resolveListVenuePosterFactLabels = (card: ExploreCardModel): string
     if (difficulty) labels.push(difficulty);
     const distance = resolveDistanceLabel(card);
     if (distance) labels.push(distance);
+    const elevation = resolveElevationLabel(card);
+    if (elevation) labels.push(elevation);
+    const duration = resolveDurationLabel(card);
+    if (duration) labels.push(duration);
   }
 
   if (card.kind === 'camping') {
+    const campingType = resolveCampingTypeLabel(card);
+    if (campingType) labels.push(campingType);
     const surfaces = resolveSurfaceLabels(card);
     if (surfaces.length) labels.push(...surfaces);
+    const group = resolveMaxGroupLabel(card);
+    if (group) labels.push(group);
   }
 
   const reach = resolveReachabilityLabel(card);
   if (reach) labels.push(reach);
 
+  return [...new Set(labels)].slice(0, 8);
+};
+
+const resolveShopPosterFactLabels = (card: ExploreCardModel): string[] => {
+  const labels: string[] = [];
+  const region = card.venueRegion?.trim() || card.subtitle?.trim();
+  if (region && normalize(region) !== normalize(resolveCatalogEntityName(card))) {
+    labels.push(region);
+  }
+  labels.push('Outdoor shop');
   return [...new Set(labels)].slice(0, 6);
 };
+
+/** Fact pills on place / shop posters. */
+export const resolveListVenuePosterFactLabels = (card: ExploreCardModel): string[] =>
+  resolvePlaceCatalogFactLabels(card, { includeLocationSubtitle: true });
 
 export type ListVenuePosterCopy = {
   placeLine: string | null;

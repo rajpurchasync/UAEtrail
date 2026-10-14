@@ -5,7 +5,7 @@ import type { CreateActivityDraft, CreateActivityKind } from './organizeFlow';
 import { emptyCreateActivityDraft } from './organizeFlow';
 import { applyRegistryPlaceToOrganizeDraft } from './organizePlaceRegistryDraft';
 
-/** Map a venue peek card kind to the organize FAB compose kind. */
+/** Map a place peek card kind to the organize FAB compose kind. */
 export const resolveOrganizeComposeKindFromVenueCardKind = (
   kind: ExploreCardKind
 ): OrganizeComposeKind => {

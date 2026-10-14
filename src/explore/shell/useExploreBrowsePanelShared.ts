@@ -25,6 +25,8 @@ export const useExploreBrowsePanelShared = (input: {
   onSearchScopePick: (scope?: ExploreSearchScopeKey | null) => void;
   searchFocusNonce: number;
   buddyUserIds: Set<string> | undefined;
+  onListItemHover?: (itemId: string) => void;
+  onListItemHoverEnd?: () => void;
 }): ExploreBrowsePanelShared =>
   useMemo(
     (): ExploreBrowsePanelShared => ({
@@ -65,6 +67,8 @@ export const useExploreBrowsePanelShared = (input: {
       onSearchScopePick: input.onSearchScopePick,
       searchFocusNonce: input.searchFocusNonce,
       buddyUserIds: input.buddyUserIds,
+      onListItemHover: input.onListItemHover,
+      onListItemHoverEnd: input.onListItemHoverEnd,
     }),
     [
       input.isDesktop,
@@ -79,5 +83,7 @@ export const useExploreBrowsePanelShared = (input: {
       input.onSearchScopePick,
       input.searchFocusNonce,
       input.buddyUserIds,
+      input.onListItemHover,
+      input.onListItemHoverEnd,
     ]
   );

@@ -1,11 +1,16 @@
 import { isRolePlaceholderDisplayName, ORGANIZER_FALLBACK_DISPLAY_NAME } from './host-display.js';
 import {
+  resolveActivityHeadlinePersonName,
+  resolveActivityPublisherRowPrimaryName,
+} from './activity-actor-display.js';
+import {
   explorePersonHeadlineName,
   formatExplorePersonDisplayName,
   resolveExploreFeaturedPerson,
   type ExploreFeaturedPersonInput,
   type ExploreMapPersonDTO,
 } from './explore-person.js';
+import type { PublishingProfileKind } from './publishing-profile-kind.js';
 import { isGenericDemandPlanTitle, type DemandTitleKind } from './demand-titles.js';
 import {
   activityJoinCtaLabel,
@@ -48,7 +53,10 @@ export type ExplorePresentationBuildInput = {
   shopPresence?: 'physical' | 'online' | null;
   activity?: {
     hostName?: string | null;
+    hostUserId?: string | null;
+    createdByName?: string | null;
     tenantName?: string | null;
+    publishingProfileKind?: PublishingProfileKind | null;
     locationName?: string | null;
     meetingPoint?: string | null;
     startPoint?: string | null;
@@ -525,13 +533,26 @@ const exploreHostLabel = (input: ExploreHeadlineInput): string =>
 const resolveHeadlinePerson = (input: ExploreHeadlineInput): ExploreMapPersonDTO | null =>
   input.featuredPerson ?? resolveExploreFeaturedPerson(input);
 
-/** Person label for list rows, peek headlines, and section highlights (full display name). */
+const activityActorNameInput = (input: ExploreHeadlineInput) => ({
+  publishingProfileKind: input.activity?.publishingProfileKind,
+  tenantName: input.activity?.tenantName ?? input.tenantName,
+  hostName: input.activity?.hostName ?? input.hostName,
+  createdByName: input.activity?.createdByName,
+  featuredPerson: resolveHeadlinePerson(input),
+});
+
+/** Person label for headlines — always a member name, never operator brand. */
 const exploreHeadlinePersonLabel = (input: ExploreHeadlineInput): string => {
-  const person = resolveHeadlinePerson(input);
-  if (person) return explorePersonHeadlineName(person);
   if (headlineIsSeeking(input)) {
+    const person = resolveHeadlinePerson(input);
+    if (person) return explorePersonHeadlineName(person);
     return formatRequesterDisplayName(input.hostName);
   }
+  if (input.source === 'activity') {
+    return resolveActivityHeadlinePersonName(activityActorNameInput(input));
+  }
+  const person = resolveHeadlinePerson(input);
+  if (person) return formatExplorePersonDisplayName(person.displayName);
   return exploreHostLabel(input);
 };
 
@@ -912,7 +933,16 @@ export const buildExploreCardPresentation = (
     ),
     headline: exploreHeadline(headlineInput),
     listTitle: sections.listTitle,
-    listHost: featuredPerson?.displayName ?? null,
+    listHost:
+      source === 'activity' && activity
+        ? resolveActivityPublisherRowPrimaryName({
+            publishingProfileKind: activity.publishingProfileKind,
+            tenantName: activity.tenantName ?? null,
+            hostName: activity.hostName ?? item.hostName,
+            createdByName: activity.createdByName,
+            featuredPerson,
+          })
+        : featuredPerson?.displayName ?? null,
     featuredPerson,
     subtitle,
     spotsLabel: exploreSpotsLabel(item),

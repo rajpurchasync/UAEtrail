@@ -1,7 +1,7 @@
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { buildDiscoveryCardViewModelCard } from '../../discovery';
 import { ExploreMapPeekCard, ExploreMapPeekPosition } from './ExploreMapPeekCard';
-import { ExploreVenuePeekActions } from './ExploreVenuePeekActions';
+import { ExplorePlacePeekActions } from './ExplorePlacePeekActions';
 
 interface ExplorePlaceMapPreviewProps {
   item: ExploreMapItemDTO;
@@ -18,7 +18,7 @@ export const ExplorePlaceMapPreview = ({
   const card = buildDiscoveryCardViewModelCard(item);
 
   const actions = (
-    <ExploreVenuePeekActions
+    <ExplorePlacePeekActions
       card={card}
       onClose={onClose}
       onGuestGatedPlanTrip={onGuestGatedAction}
@@ -27,7 +27,13 @@ export const ExplorePlaceMapPreview = ({
 
   return (
     <ExploreMapPeekPosition onClose={onClose}>
-      <ExploreMapPeekCard card={card} onClose={onClose} actions={actions} />
+      <ExploreMapPeekCard
+        card={card}
+        onClose={onClose}
+        actions={actions}
+        placePeekLayout
+        onGuestGatedAction={onGuestGatedAction}
+      />
     </ExploreMapPeekPosition>
   );
 };

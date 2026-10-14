@@ -15,13 +15,23 @@ Update `uae-outdoor-venue-catalog.json`:
 - `latitude` / `longitude` — trailhead or main pin
 - `description` — short blurb (premium seed rows keep longer copy on re-import)
 
+Optional rich fields (same as contribute / place detail): `difficulty`, `distance`, `duration`, `elevation`, `accessibility`, `childFriendly`, `maxGroupSize`, `campingType`, `surfaceType`, `accessibleBy`, `season`, `images`, `areaLabel`, `parkingLat` / `parkingLng`.
+
+When those are omitted, **import** fills type-aware defaults (hike stats, camp surfaces, hero image, parking at the pin, curated `areaId` from id prefix rules).
+
 ## Apply to the database
 
 ```bash
 npm --workspace @uaetrail/api run import-venue-catalog
 ```
 
-This upserts all catalog rows, preserves existing GPX/guides on known seed ids, and **deactivates legacy OSM imports**. Use `--keep-osm` to skip OSM deactivation, or `--dry-run` to print only.
+This upserts all catalog rows, **fills missing** images/facts/area links on old rows, re-runs curated **areaId** backfill, preserves existing GPX/guides on known seed ids, and **deactivates legacy OSM imports**. Use `--keep-osm` to skip OSM deactivation, or `--dry-run` to print only.
+
+Re-run after deploy when peek cards or place detail look sparse:
+
+```bash
+npm --workspace @uaetrail/api run import-venue-catalog
+```
 
 Rows tagged **`catalog-admin-edited`** (set when you save in **Admin → Places**) keep their name, map pin, region, and description — re-import will not overwrite those fixes.
 

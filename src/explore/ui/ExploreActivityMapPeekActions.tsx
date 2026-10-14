@@ -3,7 +3,7 @@ import { EXPLORE_PEEK_CTA } from '../../config/exploreTheme';
 import { LIST_FEED_CTA_MESSAGE_ORGANIZER } from '../../list/listFeedCtaCopy';
 import { activityMapPeekActionLabel } from '../exploreMapPeekActionCopy';
 import { canLinkRideshareToActivity } from '../linkActivityRideshareOffer';
-import type { ExploreCardModel } from '../exploreCardModel';
+import { exploreCardActivityJoinIsFull, type ExploreCardModel } from '../exploreCardModel';
 import { ExplorePeekDetailLink } from './ExplorePeekDetailLink';
 
 type ExploreActivityMapPeekActionsProps = {
@@ -65,6 +65,10 @@ export const ExploreActivityMapPeekActions = ({
 }: ExploreActivityMapPeekActionsProps) => {
   const gate = onGuestGatedAction;
   const activity = card.activity;
+  const joinFull = exploreCardActivityJoinIsFull(card);
+  const joinPrimaryClass = joinFull
+    ? 'w-full rounded-2xl bg-neutral-200 py-3.5 text-base font-bold text-neutral-500 cursor-not-allowed'
+    : 'w-full rounded-2xl bg-emerald-500 py-3.5 text-base font-bold text-white';
 
   const runGated = (id: ActivityMapPeekActionId) => {
     if (gate) {
@@ -107,6 +111,10 @@ export const ExploreActivityMapPeekActions = ({
                 disabled
                 className={`${dualPrimaryClass} bg-amber-100 text-amber-900`}
               >
+                {actionLabel(primaryAction, card)}
+              </button>
+            ) : primaryAction.id === 'request_join' && joinFull ? (
+              <button type="button" disabled className={`${dualPrimaryClass} bg-neutral-200 text-neutral-500`}>
                 {actionLabel(primaryAction, card)}
               </button>
             ) : (
@@ -168,15 +176,16 @@ export const ExploreActivityMapPeekActions = ({
 
         const joinLabel = actionLabel(action, card);
 
+        const isRequestJoin = action.id === 'request_join';
+
         return (
           <button
             key={action.id}
             type="button"
             onClick={() => runGated(action.id)}
+            disabled={isRequestJoin && joinFull}
             className={
-              action.id === 'request_join'
-                ? 'w-full rounded-2xl bg-emerald-500 py-3.5 text-base font-bold text-white'
-                : prominenceClass(action.prominence)
+              isRequestJoin ? joinPrimaryClass : prominenceClass(action.prominence)
             }
           >
             {joinLabel}

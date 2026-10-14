@@ -34,7 +34,7 @@ export const exploreActivityPublisherTypeLabel = (
   }
 };
 
-/** Public name on explore/list for an activity row. */
+/** Public brand on explore/list when posting as agency / shop (not headline copy). */
 export const resolveActivityPublisherDisplayName = (input: {
   publishingProfileKind: PublishingProfileKind;
   tenantName: string;

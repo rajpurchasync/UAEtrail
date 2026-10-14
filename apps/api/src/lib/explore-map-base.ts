@@ -12,7 +12,7 @@ import {
   placeDetailRouteKindFromPlaceKind,
   placeKindFromLocationRow,
   resolveActivityHostAvatar,
-  resolveActivityHostDisplayName,
+  resolveActivityHeadlinePersonName,
   resolveActivityHostUserId,
   resolveEntityPath,
   resolveActivityOutingTopic,
@@ -37,6 +37,7 @@ import { isWithinUaeFocusArea } from './uae-bbox.js';
 import { listPublishedAreas } from './areas-store.js';
 import { resolveAreaIdFromPoint } from './area-resolution.js';
 import { buildExploreAreaLensItems } from './explore-map-area-lens.js';
+import { overlayCatalogDefaultsOnLocation } from './venue-catalog.js';
 
 const resolveShopPresence = (latitude: number | null, longitude: number | null): ShopPresence =>
   latitude != null && longitude != null ? 'physical' : 'online';
@@ -135,10 +136,20 @@ const attachLinkedRideshareMetadata = (items: ExploreMapItemDTO[]): void => {
 const attachExploreItemArea = (
   item: ExploreMapItemDTO,
   areaId: string | null | undefined,
-  areaSlugById: Map<string, string>
+  areaSlugById: Map<string, string>,
+  areaNameById: Map<string, string>,
+  fallbackAreaLabel?: string | null
 ): ExploreMapItemDTO => {
-  if (!areaId) return item;
-  return { ...item, areaId, areaSlug: areaSlugById.get(areaId) ?? null };
+  const label = fallbackAreaLabel?.trim() || null;
+  if (!areaId && !label) return item;
+  const slug = areaId ? areaSlugById.get(areaId) ?? null : null;
+  const hubName = areaId ? areaNameById.get(areaId) ?? null : null;
+  return {
+    ...item,
+    areaId: areaId ?? null,
+    areaSlug: slug,
+    areaName: hubName ?? label,
+  };
 };
 
 /** Shared catalog assembly (cacheable). Viewer access is applied in `explore-map-viewer-access.ts`. */
@@ -151,6 +162,7 @@ export const buildExploreMapBasePayload = async (): Promise<{ items: ExploreMapI
   ]);
 
   const areaSlugById = new Map(publishedAreas.map((area) => [area.id, area.slug]));
+  const areaNameById = new Map(publishedAreas.map((area) => [area.id, area.name]));
   const merchantByTenantId = await findMerchantProfilesByTenantIds(shopTenants.map((shop) => shop.id));
 
   const activityDtos = activityEvents.map((event) => buildActivityDto(event));
@@ -196,7 +208,12 @@ export const buildExploreMapBasePayload = async (): Promise<{ items: ExploreMapI
           path: resolveEntityPath({ kind: 'activity', id: activity.id }),
           featuredPerson: buildExploreFeaturedPerson({
             userId: resolveActivityHostUserId(activity),
-            displayName: resolveActivityHostDisplayName(activity),
+            displayName: resolveActivityHeadlinePersonName({
+              publishingProfileKind: activity.publishingProfileKind,
+              tenantName: activity.tenantName,
+              hostName: activity.hostName,
+              createdByName: activity.createdByName,
+            }),
             avatarUrl: resolveActivityHostAvatar(activity),
             role: activityMode === 'seeking' ? 'requester' : 'host',
           }),
@@ -222,7 +239,8 @@ export const buildExploreMapBasePayload = async (): Promise<{ items: ExploreMapI
           activity,
         },
         event.location?.areaId ?? activity.areaId,
-        areaSlugById
+        areaSlugById,
+        areaNameById
       )
     );
   }
@@ -230,7 +248,9 @@ export const buildExploreMapBasePayload = async (): Promise<{ items: ExploreMapI
   for (const location of locationsResult.items) {
     if (String(location.activityType).toUpperCase() === 'RIDESHARE') continue;
 
-    const dto = toLocationDto(location);
+    const catalogLocation = overlayCatalogDefaultsOnLocation(location);
+    const dto = toLocationDto(catalogLocation);
+    const catalogAreaLabel = catalogLocation.areaLabel ?? dto.areaLabel ?? null;
     if (dto.activityType === 'shop') {
       const latitude = dto.latitude ?? null;
       const longitude = dto.longitude ?? null;
@@ -258,7 +278,9 @@ export const buildExploreMapBasePayload = async (): Promise<{ items: ExploreMapI
             catalogProfileExposure: 'peek',
           },
           dto.areaId,
-          areaSlugById
+          areaSlugById,
+          areaNameById,
+          catalogAreaLabel
         )
       );
       continue;
@@ -266,7 +288,7 @@ export const buildExploreMapBasePayload = async (): Promise<{ items: ExploreMapI
 
     const catalogPlaceKind = placeKindFromLocationRow({
       activityType: dto.activityType,
-      tags: location.tags,
+      tags: catalogLocation.tags,
     });
 
     const latitude = dto.latitude ?? null;
@@ -308,7 +330,9 @@ export const buildExploreMapBasePayload = async (): Promise<{ items: ExploreMapI
             },
           },
           dto.areaId,
-          areaSlugById
+          areaSlugById,
+          areaNameById,
+          catalogAreaLabel
         )
       );
       continue;
@@ -342,7 +366,9 @@ export const buildExploreMapBasePayload = async (): Promise<{ items: ExploreMapI
             },
           },
           dto.areaId,
-          areaSlugById
+          areaSlugById,
+          areaNameById,
+          catalogAreaLabel
         )
       );
       continue;
@@ -353,9 +379,9 @@ export const buildExploreMapBasePayload = async (): Promise<{ items: ExploreMapI
 
     const venueLabels = resolveVenueExploreLabels(
       dto.name,
-      location.tags,
+      catalogLocation.tags,
       dto.region,
-      location.areaLabel ?? dto.areaLabel ?? null
+      catalogAreaLabel
     );
 
     items.push(
@@ -390,11 +416,13 @@ export const buildExploreMapBasePayload = async (): Promise<{ items: ExploreMapI
             featured: dto.featured,
             parkingLat: dto.parkingLat ?? null,
             parkingLng: dto.parkingLng ?? null,
-            parkingPoint: location.parkingLink ?? null,
+            parkingPoint: catalogLocation.parkingLink ?? null,
           },
         },
         dto.areaId,
-        areaSlugById
+        areaSlugById,
+        areaNameById,
+        catalogAreaLabel
       )
     );
   }
@@ -448,7 +476,8 @@ export const buildExploreMapBasePayload = async (): Promise<{ items: ExploreMapI
           requesterUserId: owner?.userId ?? null,
         },
         shopAreaId,
-        areaSlugById
+        areaSlugById,
+        areaNameById
       )
     );
   }

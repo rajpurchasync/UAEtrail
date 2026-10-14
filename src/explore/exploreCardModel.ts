@@ -16,6 +16,8 @@ import {
   buildExploreCardPresentation,
   exploreMapItemIsSeeking,
   isPeekOnlyCatalogProfile,
+  memberProfilePath,
+  resolveActivityPublisherProfilePath,
   resolveExploreFeaturedPerson,
 } from '@uaetrail/shared-types';
 import {
@@ -90,6 +92,10 @@ export interface ExploreCardModel {
   venueAccessibility?: 'car-accessible' | 'remote' | null;
   venueHasParking?: boolean;
   venueDistanceKm?: number | null;
+  venueElevationM?: number | null;
+  venueDurationHours?: number | null;
+  venueCampingType?: 'self-guided' | 'operator-led' | null;
+  venueMaxGroupSize?: number | null;
   requirementBadges?: string[];
   mapLatitude?: number | null;
   mapLongitude?: number | null;
@@ -97,7 +103,9 @@ export interface ExploreCardModel {
   /** From `GET /explore/map` for activity/demand rows (per viewer). */
   viewerAccess?: ActivityViewerAccessDTO | null;
   activityMode?: ExploreActivityMode | null;
+  areaId?: string | null;
   areaSlug?: string | null;
+  areaName?: string | null;
   areaLensStats?: ExploreAreaLensStatsDTO | null;
 }
 
@@ -238,6 +246,10 @@ export const buildExploreCardModel = (item: ExploreMapItemDTO): ExploreCardModel
         (item.locationCard?.parkingLat != null && item.locationCard?.parkingLng != null)
     ),
     venueDistanceKm: item.locationCard?.distance ?? null,
+    venueElevationM: item.locationCard?.elevation ?? null,
+    venueDurationHours: item.locationCard?.duration ?? null,
+    venueCampingType: item.locationCard?.campingType ?? null,
+    venueMaxGroupSize: item.locationCard?.maxGroupSize ?? null,
     requirementBadges: [
       ...(exploreMapItemIsSeeking(item) ? ['Seeking'] : []),
       ...enrichExploreActivityRequirementBadges(activity?.requirements, {
@@ -254,7 +266,9 @@ export const buildExploreCardModel = (item: ExploreMapItemDTO): ExploreCardModel
     ],
     mapLatitude: item.latitude ?? null,
     mapLongitude: item.longitude ?? null,
+    areaId: item.areaId ?? null,
     areaSlug: item.areaSlug ?? null,
+    areaName: item.areaName ?? null,
     areaLensStats: item.areaLensStats ?? null,
     linkedRideshares:
       item.linkedRideshareActivities && item.linkedRideshareActivities.length > 0
@@ -286,8 +300,58 @@ export const exploreCardToneTextClass: Record<ExploreCardTone, string> = {
 export const exploreCardHasMapCoords = (card: ExploreCardModel): boolean =>
   card.mapLatitude != null && card.mapLongitude != null;
 
+const exploreCardHostUserId = (card: ExploreCardModel): string | null =>
+  card.activity?.hostUserId ??
+  card.featuredPerson?.userId ??
+  card.requesterUserId ??
+  card.profileUserId ??
+  null;
+
+/** Profile href for the host / requester row on explore cards and map peek. */
+export const resolveExploreCardHostProfilePath = (card: ExploreCardModel): string | null => {
+  if (card.source === 'activity' && card.activity) {
+    return resolveActivityPublisherProfilePath({
+      publishingProfileKind: card.activity.publishingProfileKind ?? 'community',
+      tenantSlug: card.activity.tenantSlug,
+      hostUserId: exploreCardHostUserId(card),
+    });
+  }
+  return memberProfilePath(card.featuredPerson?.userId ?? card.requesterUserId);
+};
+
+/** Activity peek — signed-in members may open host profile; guests sign up first. */
+export const exploreCardCanOpenHostProfile = (
+  card: ExploreCardModel,
+  options: { isGuest: boolean }
+): boolean => {
+  if (card.source === 'activity') return !options.isGuest;
+  if (!card.viewerAccess?.entitlements) return true;
+  return card.viewerAccess.entitlements.canViewHostProfileBeforeJoin;
+};
+
+/** Scheduled activities — no directions on map peek (venues/shops keep them). */
+export const exploreCardPeekShowsDirections = (card: ExploreCardModel): boolean =>
+  card.source !== 'activity';
+
+/** Activity peek — no place/operator follow (venues and shops keep follow). */
+export const exploreCardPeekShowsFollow = (card: ExploreCardModel): boolean =>
+  card.source !== 'activity';
+
+/** Hosted activity with a capacity cap and no open spots left. */
+export const exploreCardActivityJoinIsFull = (card: ExploreCardModel): boolean => {
+  const total = card.activity?.slotsTotal ?? 0;
+  if (total <= 0) return false;
+  const available = card.activity?.slotsAvailable;
+  if (available == null) return false;
+  return available <= 0;
+};
+
+export const exploreCardActivityShowsPeekSpots = (card: ExploreCardModel): boolean =>
+  (card.activity?.slotsTotal ?? 0) > 0 && Boolean(card.sections.partyLabel);
+
 /** Peek body already shows “Get Directions” on the location row. */
 export const exploreCardShowsInlineDirections = (card: ExploreCardModel): boolean =>
+  exploreCardPeekShowsDirections(card) &&
   exploreCardHasMapCoords(card) &&
   card.sections.details.some((detail) => detail.icon === 'location');
 
@@ -295,13 +359,14 @@ export const exploreCardShowsInlineDirections = (card: ExploreCardModel): boolea
 export const exploreCardPeekActionsHasDirections = (card: ExploreCardModel): boolean => {
   if (!exploreCardHasMapCoords(card) || exploreCardShowsInlineDirections(card)) return false;
   if (card.source === 'venue') return true;
-  if (card.showJoinActions) return true;
+  if (card.showJoinActions && card.source !== 'activity') return true;
   if (card.source === 'shop' && card.reviewPath) return true;
   return false;
 };
 
 /** Extra directions row in peek body — only when not inline and not in peek actions. */
 export const exploreCardShowPeekBodyDirections = (card: ExploreCardModel): boolean =>
+  exploreCardPeekShowsDirections(card) &&
   exploreCardHasMapCoords(card) &&
   !exploreCardShowsInlineDirections(card) &&
   !exploreCardPeekActionsHasDirections(card);

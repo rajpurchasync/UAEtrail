@@ -5,7 +5,7 @@ import {
   EXPLORE_VIEW_LINKED_PLAN_CTA,
 } from '../createFlowCopy';
 import type { ExploreCardModel } from '../exploreCardModel';
-import { linkedParentRidesharePeekCopy } from '../exploreLinkedParentRidesharePeekCopy';
+import { linkedParentRidesharePeekCopy } from '../exploreLinkedParentRideshareCopy';
 
 type ExploreLinkedRidesharePeekIndicationProps = {
   card: ExploreCardModel;

@@ -41,6 +41,7 @@ export const ExploreExperience = () => {
               compose={model.compose}
               selection={model.selection}
               selectedId={model.selectedId}
+              highlightedExploreItemId={model.highlightedExploreItemId}
               viewport={model.viewport}
               mapPins={model.mapPins}
               exploreMapTiles={model.exploreMapTiles}
