@@ -122,6 +122,58 @@ describe('resolveActivityMapPeekActions', () => {
     expect(activityMapPeekNeedsJoinContext(card)).toBe(true);
   });
 
+  it('maps request_join to pending_join when join UI is pending', () => {
+    const card = activityCard({
+      viewerAccess: {
+        exposure: 'redacted',
+        level: 'link_holder',
+        gateReason: 'join_required',
+        canViewFullActivity: false,
+        canOpenDetailPage: true,
+        joinMode: 'open',
+        canAccessCrewSurfaces: false,
+        mapPeekActions: [
+          { id: 'request_join', prominence: 'primary' },
+          { id: 'view_detail', prominence: 'text' },
+        ],
+      },
+    });
+    const actions = resolveActivityMapPeekActions(card, {
+      kind: 'pending',
+      requestId: 'req-1',
+      status: 'pending',
+    });
+    expect(actions[0]).toEqual({
+      id: 'pending_join',
+      prominence: 'primary',
+      joinRequestStatus: 'pending',
+    });
+  });
+
+  it('includes withdraw_join when join UI is pending (client enrich)', () => {
+    const card = activityCard({
+      viewerAccess: {
+        exposure: 'redacted',
+        level: 'join_request',
+        gateReason: null,
+        canViewFullActivity: false,
+        canOpenDetailPage: true,
+        joinMode: 'open',
+        canAccessCrewSurfaces: false,
+        mapPeekActions: [
+          { id: 'pending_join', prominence: 'primary', joinRequestStatus: 'pending' },
+          { id: 'view_detail', prominence: 'text' },
+        ],
+      },
+    });
+    const actions = resolveActivityMapPeekActions(card, {
+      kind: 'pending',
+      requestId: 'req-1',
+      status: 'pending',
+    });
+    expect(actions.map((a) => a.id)).toEqual(['pending_join', 'withdraw_join', 'view_detail']);
+  });
+
   it('does not fetch join context for pending_join wire only', () => {
     const card = activityCard({
       viewerAccess: {

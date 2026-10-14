@@ -10,6 +10,7 @@ import { socialGraphRouter } from './social/index.js';
 import { socialRouter } from './social.js';
 import { reportsRouter } from './reports.js';
 import { userRouter } from './user.js';
+import { agentRouter } from './agent.js';
 
 export const apiRouter = Router();
 
@@ -22,4 +23,5 @@ apiRouter.use('/media', mediaRouter);
 apiRouter.use('/reports', reportsRouter);
 apiRouter.use('/social', socialGraphRouter);
 apiRouter.use('/', socialRouter);
+apiRouter.use('/agent', agentRouter);
 apiRouter.use('/', userRouter);

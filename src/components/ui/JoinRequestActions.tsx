@@ -15,6 +15,8 @@ interface JoinRequestActionsProps {
   joinDisabled?: boolean;
   className?: string;
   joinButtonClassName?: string;
+  /** Post-auth scroll/focus target for join CTA. */
+  joinCtaMarker?: 'activity' | 'explore';
 }
 
 export const JoinRequestActions = ({
@@ -26,7 +28,12 @@ export const JoinRequestActions = ({
   joinDisabled = false,
   className = '',
   joinButtonClassName = '',
+  joinCtaMarker = 'activity',
 }: JoinRequestActionsProps) => {
+  const joinCtaDataProps =
+    joinCtaMarker === 'explore'
+      ? { 'data-explore-join-cta': true }
+      : { 'data-activity-join-cta': true };
   if (uiState.kind === 'pending') {
     return (
       <div className={`space-y-2 ${className}`}>
@@ -74,6 +81,7 @@ export const JoinRequestActions = ({
         className={`w-full rounded-2xl py-3.5 text-base font-bold text-white disabled:opacity-60 ${
           isFull ? 'bg-amber-500' : 'bg-emerald-500'
         } ${joinButtonClassName}`}
+        {...joinCtaDataProps}
       >
         {joinLabel}
       </button>

@@ -30,7 +30,7 @@ export const ExploreMapPeopleBrowseButton = ({
       type="button"
       onClick={onClick}
       aria-label={ariaLabel}
-      className={`${EXPLORE_MAP_TOOLBAR_FLOATING} ${EXPLORE_MAP_TOOLBAR_PILL_PADDING} inline-flex shrink-0 items-center gap-2 pl-2 pr-3.5 text-sm font-semibold text-gray-900 ${className}`}
+      className={`${EXPLORE_MAP_TOOLBAR_FLOATING} ${EXPLORE_MAP_TOOLBAR_PILL_PADDING} shrink-0 items-center gap-2 pl-2 pr-3.5 text-sm font-semibold text-gray-900 ${className}`}
     >
       <span className="flex items-center pl-0.5">
         {hasLivePeople ? (

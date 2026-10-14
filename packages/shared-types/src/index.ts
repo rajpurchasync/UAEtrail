@@ -1,3 +1,4 @@
+import type { GroupRegionLevels } from './group-region.js';
 import type { GroupWallReplyPreviewDTO } from './group-wall.js';
 import type { ExploreCardPresentationDTO } from './explore-presentation.js';
 import type { ExploreMapPersonDTO } from './explore-person.js';
@@ -86,7 +87,8 @@ export interface LocationDTO {
   parkingLink?: string;
   parkingLat?: number | null;
   parkingLng?: number | null;
-  emirate?: string | null;
+  /** Geography levels L1–L4 for map/list filters (see `group-region.ts`). */
+  groupRegionLevels?: GroupRegionLevels | null;
   premiumImages?: string[];
   accessibleBy?: string[];
   viewCount?: number;
@@ -151,6 +153,7 @@ export interface ActivityDTO {
   locationId: string;
   locationName: string;
   region?: string;
+  groupRegionLevels?: GroupRegionLevels | null;
   areaId?: string | null;
   activityType: ScheduledActivityType;
   title: string;
@@ -687,6 +690,8 @@ export interface ExploreLocationCardDTO {
   id: string;
   activityType: 'hiking' | 'camping' | 'event';
   region: string;
+  /** Geography levels L1–L4 for map/list filters (see `group-region.ts`). */
+  groupRegionLevels?: GroupRegionLevels | null;
   description: string;
   difficulty?: 'easy' | 'moderate' | 'hard';
   distance?: number;
@@ -763,6 +768,7 @@ export interface ExploreMapItemDTO {
   /** Curated area membership for explore `?area=` filters. */
   areaId?: string | null;
   areaSlug?: string | null;
+  groupRegionLevels?: GroupRegionLevels | null;
   /** Set when a host converts this request into a published activity. */
   convertedActivityId?: string | null;
   /** Shop/agency about one-liner for map cards. */
@@ -1416,6 +1422,31 @@ export {
 } from './activity-coordinates.js';
 
 export {
+  BROWSE_GROUP_REGION_FILTER_LEVEL_BY_COUNTRY,
+  GROUP_REGION_LEVEL,
+  browseGroupRegionFilterLevel,
+  buildGroupRegionLevels,
+  emptyGroupRegionLevels,
+  groupRegionLevelTexts,
+  readGroupRegionAtLevel,
+  resolveGroupRegionBrowseKey,
+  sameGroupRegionLevels,
+  writeGroupRegionAtLevel,
+  type GroupRegionLevel,
+  type GroupRegionLevels,
+} from './group-region.js';
+
+export {
+  normalizeGroupRegionLabel,
+  resolveGroupRegionFromCoordinates,
+  resolveGroupRegionLabel,
+  stampGroupRegionLevelsFromGeo,
+  type GroupRegionResolutionInput,
+  type StampGroupRegionLevelsGeoInput,
+  type UaeGroupRegionCatalogLabel,
+} from './group-region-geo.js';
+
+export {
   ACTIVITY_PRICING_INDICATION_NOTE,
   allowedActivityPricingModes,
   publishingProfileKindAllowsPaidActivities,
@@ -1553,3 +1584,17 @@ export interface MemberInboxDTO {
   /** When true, direct rows may be incomplete due to a policy evaluation error. */
   directConversationsDegraded?: boolean;
 }
+
+export {
+  activityPublicMetaDescription,
+  buildActivityEventJsonLd,
+  type ActivityPublicSeoFields,
+} from './activity-public-seo.js';
+
+export type {
+  AgentDiscoverEntityKind,
+  AgentDiscoverItemDTO,
+  AgentDiscoverPlaceKind,
+  AgentDiscoverResponseDTO,
+  AgentManifestDTO,
+} from './agent-discover.js';

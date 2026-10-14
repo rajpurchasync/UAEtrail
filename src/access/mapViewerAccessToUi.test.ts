@@ -19,7 +19,7 @@ describe('mapViewerAccessToExplorePeekDetail', () => {
     ).toEqual({ kind: 'link', href: '/activity/1' });
   });
 
-  it('guest_gate for sign_in', () => {
+  it('links sign_in map peeks when detail page is allowed', () => {
     expect(
       mapViewerAccessToExplorePeekDetail(
         {
@@ -29,6 +29,23 @@ describe('mapViewerAccessToExplorePeekDetail', () => {
           canViewFullActivity: false,
           canOpenDetailPage: true,
           joinMode: 'open',
+          canAccessCrewSurfaces: false,
+        },
+        '/activity/1'
+      )
+    ).toEqual({ kind: 'link', href: '/activity/1' });
+  });
+
+  it('guest_gate for sign_in when detail page is blocked', () => {
+    expect(
+      mapViewerAccessToExplorePeekDetail(
+        {
+          exposure: 'redacted',
+          level: 'public',
+          gateReason: 'sign_in',
+          canViewFullActivity: false,
+          canOpenDetailPage: false,
+          joinMode: 'private',
           canAccessCrewSurfaces: false,
         },
         '/activity/1'

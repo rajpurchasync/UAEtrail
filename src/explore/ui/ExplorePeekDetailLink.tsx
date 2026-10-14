@@ -34,10 +34,21 @@ export const ExplorePeekDetailLink = ({
   if (!access || access.kind === 'members_only') return null;
 
   if (access.kind === 'guest_gate') {
+    if (onGuestGatedAction) {
+      return (
+        <button type="button" onClick={onGuestGatedAction} className={className}>
+          {label}
+        </button>
+      );
+    }
     return (
-      <button type="button" onClick={onGuestGatedAction} className={className}>
+      <Link
+        to={fallbackHref}
+        className={className}
+        onClick={() => onBeforeNavigate?.()}
+      >
         {label}
-      </button>
+      </Link>
     );
   }
 

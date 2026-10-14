@@ -4,19 +4,16 @@ import {
   type ExploreMapItemDTO,
 } from '@uaetrail/shared-types';
 import { EXPLORE_REGION_PILL_LABELS } from '../config/regions';
-import { normalizeVenueRegionToken, resolveVenueItemRegion } from '../utils/venueRegionFilter';
+import { EXPLORE_EMIRATE_REGION_ALIASES } from '../config/exploreRegionAliases';
+import {
+  exploreItemRegionTexts,
+  normalizeVenueRegionToken,
+} from '../utils/venueRegionFilter';
 import { OUTING_TOPIC_PILLS } from './exploreOutingTopic';
 import { BUDDY_SUBTYPE_PILLS } from './exploreBuddySubtype';
 import { EXPLORE_SEARCH_SCOPE_COPY } from './exploreBrowseTaxonomy';
 
-const REGION_ALIASES: Record<string, string[]> = {
-  Dubai: ['dubai'],
-  RAK: ['rak', 'ras al khaimah', 'ras al khaima', 'rask al khaimah', 'rask'],
-  Fujairah: ['fujairah'],
-  'Abu Dhabi': ['abu dhabi'],
-  'Al Ain': ['al ain', 'alain'],
-  Sharjah: ['sharjah'],
-};
+const REGION_ALIASES = EXPLORE_EMIRATE_REGION_ALIASES;
 
 const regionTokensForKey = (regionKey: string): string[] => {
   const aliases = REGION_ALIASES[regionKey] ?? [normalizeVenueRegionToken(regionKey)];
@@ -42,8 +39,7 @@ const resolveRegionKey = (raw: string | null | undefined): string | null => {
 
 const collectItemRegionKeys = (item: ExploreMapItemDTO): Set<string> => {
   const keys = new Set<string>();
-  const candidates = [item.activity?.region, item.locationCard?.region, resolveVenueItemRegion(item), item.subtitle];
-  for (const raw of candidates) {
+  for (const raw of exploreItemRegionTexts(item)) {
     const key = resolveRegionKey(raw);
     if (key) keys.add(key);
   }

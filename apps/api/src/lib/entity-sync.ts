@@ -3,6 +3,7 @@ import type { Location } from '../domain/types.js';
 import type { ActivityStatus } from '../domain/enums.js';
 import { ActivityStatus as ActivityStatusEnum } from '../domain/enums.js';
 import { getMongoClient } from './mongo.js';
+import { activityGeoIndexFields } from './geo-index-fields.js';
 import { locationDocForMongo } from './location-query.js';
 import type { MongoActivityDoc } from './entity-builders.js';
 import { invalidateExploreMapCache } from './explore-map-cache.js';
@@ -10,6 +11,7 @@ import { invalidateExploreMapCache } from './explore-map-cache.js';
 type MongoLocationDoc = Omit<Location, 'id'> & {
   _id: string;
   geo?: unknown;
+  groupRegionBrowseKey?: string | null;
 };
 
 const locationsCollection = (): Collection<MongoLocationDoc> =>
@@ -35,17 +37,39 @@ export const deleteLocationFromMongo = async (locationId: string): Promise<boole
   return result.deletedCount > 0;
 };
 
-export const writeActivityDocToMongo = async (doc: MongoActivityDoc): Promise<void> => {
-  await activitiesCollection().updateOne({ _id: doc._id }, { $set: doc }, { upsert: true });
+export const enrichActivityDocForMongo = (
+  doc: MongoActivityDoc,
+  opts?: { countryCode?: string; location?: Pick<Location, 'latitude' | 'longitude'> | null }
+): MongoActivityDoc & { geo?: { type: 'Point'; coordinates: [number, number] }; groupRegionBrowseKey?: string | null } => {
+  const countryCode = opts?.countryCode ?? 'AE';
+  const indexFields = activityGeoIndexFields(doc, countryCode, opts?.location ?? null);
+  return { ...doc, ...indexFields };
+};
+
+export const writeActivityDocToMongo = async (
+  doc: MongoActivityDoc,
+  opts?: { countryCode?: string; location?: Pick<Location, 'latitude' | 'longitude'> | null }
+): Promise<void> => {
+  const payload = enrichActivityDocForMongo(doc, opts);
+  await activitiesCollection().updateOne({ _id: doc._id }, { $set: payload }, { upsert: true });
 };
 
 export const patchActivityInMongo = async (
   activityId: string,
-  patch: Partial<Omit<MongoActivityDoc, '_id'>>
+  patch: Partial<Omit<MongoActivityDoc, '_id'>>,
+  indexOpts?: { countryCode?: string; location?: Pick<Location, 'latitude' | 'longitude'> | null }
 ): Promise<void> => {
+  const existing = await findActivityDocInMongo(activityId);
+  const indexFields = existing
+    ? activityGeoIndexFields(
+        { ...existing, ...patch },
+        indexOpts?.countryCode ?? 'AE',
+        indexOpts?.location ?? null
+      )
+    : {};
   await activitiesCollection().updateOne(
     { _id: activityId },
-    { $set: { ...patch, updatedAt: new Date() } }
+    { $set: { ...patch, ...indexFields, updatedAt: new Date() } }
   );
 };
 
@@ -102,7 +126,7 @@ export const releaseActivityParticipantSlot = async (activityId: string): Promis
 export const findLocationInMongo = async (locationId: string): Promise<Location | null> => {
   const doc = await locationsCollection().findOne({ _id: locationId });
   if (!doc) return null;
-  const { _id, geo: _geo, ...rest } = doc;
+  const { _id, geo: _geo, groupRegionBrowseKey: _browseKey, ...rest } = doc;
   return { id: _id, ...rest };
 };
 

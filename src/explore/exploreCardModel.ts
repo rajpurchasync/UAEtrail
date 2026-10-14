@@ -18,6 +18,7 @@ import {
   isPeekOnlyCatalogProfile,
   resolveExploreFeaturedPerson,
 } from '@uaetrail/shared-types';
+import { groupRegionTextAtBrowseFilterLevel } from '../config/groupRegionFilter';
 import {
   buildExploreRouteLabel,
   buildExploreWhenSegment,
@@ -231,7 +232,13 @@ export const buildExploreCardModel = (item: ExploreMapItemDTO): ExploreCardModel
     childFriendly: item.locationCard?.childFriendly ?? false,
     difficulty: item.locationCard?.difficulty ?? null,
     surfaceTypes: item.locationCard?.surfaceType ?? [],
-    venueRegion: item.locationCard?.region ?? null,
+    venueRegion:
+      groupRegionTextAtBrowseFilterLevel(item.groupRegionLevels) ??
+      groupRegionTextAtBrowseFilterLevel(item.locationCard?.groupRegionLevels) ??
+      groupRegionTextAtBrowseFilterLevel(item.activity?.groupRegionLevels) ??
+      item.locationCard?.region ??
+      item.activity?.region ??
+      null,
     venueAccessibility: item.locationCard?.accessibility ?? null,
     venueHasParking: Boolean(
       item.locationCard?.parkingPoint?.trim() ||
@@ -252,8 +259,8 @@ export const buildExploreCardModel = (item: ExploreMapItemDTO): ExploreCardModel
         venueDifficulty: item.locationCard?.difficulty ?? null,
       }),
     ],
-    mapLatitude: item.latitude ?? null,
-    mapLongitude: item.longitude ?? null,
+    mapLatitude: item.latitude ?? activity?.displayLatitude ?? activity?.locationLatitude ?? null,
+    mapLongitude: item.longitude ?? activity?.displayLongitude ?? activity?.locationLongitude ?? null,
     areaSlug: item.areaSlug ?? null,
     areaLensStats: item.areaLensStats ?? null,
     linkedRideshares:

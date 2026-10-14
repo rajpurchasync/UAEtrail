@@ -141,6 +141,24 @@ export const markAllNotificationsAsRead = async (userId: string): Promise<number
   return result.modifiedCount;
 };
 
+/** Clear stale host inbox rows when a pending join request is cancelled before approval. */
+export const markNotificationsReadForCancelledJoinRequest = async (input: {
+  hostUserId: string;
+  activityId: string;
+  requestId: string;
+}): Promise<number> => {
+  const result = await notificationsCollection().updateMany(
+    {
+      userId: input.hostUserId,
+      isRead: false,
+      'meta.activityId': input.activityId,
+      'meta.requestId': input.requestId,
+    },
+    { $set: { isRead: true } }
+  );
+  return result.modifiedCount;
+};
+
 export const deleteNotificationsByUser = async (userId: string): Promise<void> => {
   await notificationsCollection().deleteMany({ userId });
 };

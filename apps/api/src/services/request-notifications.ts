@@ -4,13 +4,19 @@ import { findActivityForRequestViewById } from '../lib/activities-store.js';
 import { planHostedSchedulePath } from '../lib/member-routes.js';
 import { scheduleNotification } from './notifications.js';
 
+/** Host only needs a withdrawal notice after the joiner was already on the roster. */
 export const notifyHostOfRequestWithdrawal = async (input: {
+  wasConfirmed: boolean;
   activityId: string;
   requestId: string;
   participantUserId: string;
   cancelReason: string;
   cancelMessage: string | null;
 }): Promise<void> => {
+  if (!input.wasConfirmed) {
+    return;
+  }
+
   const [activity, participant] = await Promise.all([
     findActivityForRequestViewById(input.activityId),
     findAuthUserById(input.participantUserId)

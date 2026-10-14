@@ -2,6 +2,7 @@ import type { Collection } from 'mongodb';
 import type { Location } from '../domain/types.js';
 import { LocationStatus } from '../domain/enums.js';
 import { getMongoClient } from './mongo.js';
+import { locationGeoIndexFields } from './geo-index-fields.js';
 import { radiusKmToRadians, withLocationGeoFields } from './location-geo.js';
 import { withQueryTiming } from './query-timing.js';
 
@@ -19,13 +20,14 @@ export interface LocationListFilters {
 type MongoLocationDoc = Omit<Location, 'id'> & {
   _id: string;
   geo?: { type: 'Point'; coordinates: [number, number] };
+  groupRegionBrowseKey?: string | null;
 };
 
 const locationsCollection = (): Collection<MongoLocationDoc> =>
   getMongoClient()!.db().collection<MongoLocationDoc>('locations');
 
 const mapMongoLocation = (item: MongoLocationDoc): Location => {
-  const { _id, geo: _geo, ...rest } = item;
+  const { _id, geo: _geo, groupRegionBrowseKey: _browseKey, ...rest } = item;
   return { id: _id, ...rest, areaLabel: rest.areaLabel ?? null };
 };
 
@@ -36,7 +38,8 @@ export const locationDocForMongo = (location: Location): MongoLocationDoc => {
     doc.externalSource = externalSource;
     doc.externalId = externalId;
   }
-  return withLocationGeoFields(doc) as MongoLocationDoc;
+  const indexed = locationGeoIndexFields(location);
+  return withLocationGeoFields({ ...doc, ...indexed }) as MongoLocationDoc;
 };
 
 const buildMongoFilter = (filters: LocationListFilters): Record<string, unknown> => {
@@ -59,6 +62,14 @@ const buildMongoFilter = (filters: LocationListFilters): Record<string, unknown>
     query.countryCode = filters.countryCode.toUpperCase();
   }
   return query;
+};
+
+export const appendLocationRegionKeysToFilter = (
+  query: Record<string, unknown>,
+  regionBrowseKeys: string[]
+): Record<string, unknown> => {
+  if (regionBrowseKeys.length === 0) return query;
+  return { ...query, groupRegionBrowseKey: { $in: regionBrowseKeys } };
 };
 
 const listActiveLocationsFromMongoGeo = async (

@@ -138,7 +138,7 @@ export const SubmitPlaceForm = ({
         return (
           loc.name.toLowerCase().includes(q) ||
           loc.region.toLowerCase().includes(q) ||
-          (loc.emirate?.toLowerCase().includes(q) ?? false)
+          (loc.groupRegionLevels?.l2?.toLowerCase().includes(q) ?? false)
         );
       });
       setSearchResults(matches.slice(0, 8));

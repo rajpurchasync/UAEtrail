@@ -69,15 +69,7 @@ export const ExploreMapChromeBar = ({
           avatars={peopleBrowsePanelAvatars}
           friendCount={peopleBrowsePanelFriendCount}
           onClick={onOpenPeopleBrowsePanel}
-          className="col-start-2 row-start-1 shrink-0 justify-self-end lg:hidden"
-        />
-      ) : null}
-      {onOpenPeopleBrowsePanel ? (
-        <ExploreMapPeopleBrowseButton
-          avatars={peopleBrowsePanelAvatars}
-          friendCount={peopleBrowsePanelFriendCount}
-          onClick={onOpenPeopleBrowsePanel}
-          className="hidden shrink-0 lg:inline-flex"
+          className="col-start-2 row-start-1 shrink-0 justify-self-end lg:col-auto lg:row-auto"
         />
       ) : null}
     </div>

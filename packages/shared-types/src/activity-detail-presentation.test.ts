@@ -53,7 +53,7 @@ describe('buildActivityPresentationDTO', () => {
 
     expect(presentation.engagement.canAccessCrewSurfaces).toBe(true);
     expect(presentation.engagement.showParticipantFooterShortcuts).toBe(true);
-    expect(presentation.footerByTab.buddies).toBe('buddies_invite');
-    expect(presentation.footerByTab.place).toBe('place_directions');
+    expect(presentation.footerByTab.buddies).toBe('plan_join');
+    expect(presentation.footerByTab.place).toBe('plan_join');
   });
 });

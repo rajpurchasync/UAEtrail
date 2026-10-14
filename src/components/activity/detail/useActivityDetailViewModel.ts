@@ -267,7 +267,8 @@ export const useActivityDetailViewModel = ({
     Boolean(hostUserId)
   );
 
-  const { joinUiState, sharePayload, stickyFooter, sidebarJoin } = useActivityDetailJoinSurfaces({
+  const { joinUiState, sharePayload, stickyFooter, sidebarJoin, planRequestManagePanel } =
+    useActivityDetailJoinSurfaces({
     activity,
     previewMode,
     isEmbedded,
@@ -374,6 +375,7 @@ export const useActivityDetailViewModel = ({
     sharePayload,
     stickyFooter,
     sidebarJoin,
+    planRequestManagePanel,
     message,
     error,
     hostPath,

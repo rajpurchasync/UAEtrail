@@ -1,6 +1,6 @@
 import { getRedisClient } from './redis.js';
 
-export const EXPLORE_MAP_REDIS_KEY = 'explore:map:payload:v2';
+export const EXPLORE_MAP_REDIS_KEY = 'explore:map:payload:v5';
 export const EXPLORE_MAP_CACHE_MS = 60_000;
 export const EXPLORE_MAP_CACHE_TTL_SEC = 60;
 

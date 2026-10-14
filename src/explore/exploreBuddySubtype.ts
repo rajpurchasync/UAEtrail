@@ -38,6 +38,7 @@ const resolveBuddyOthersCategory = (
     return item.outingCategory;
   }
   if (item.kind === 'event') return 'events';
+  if (item.activity?.activityType === 'event') return 'events';
   return null;
 };
 
