@@ -91,19 +91,11 @@ export const resolveAreaIdForActivity = (
   return null;
 };
 
-/** Public publish requires a curated area — from linked place or meeting/start coordinates. */
+/** Public publish area — linked place `areaId` only (legacy activity.areaId read fallback). */
 export const resolveAreaIdForActivityPublish = async (
   activity: MongoActivityDoc,
   location?: Location | null
-): Promise<string | null> => {
-  const fromPlace = resolveAreaIdForActivity(activity, location);
-  if (fromPlace) return fromPlace;
-
-  const coords = resolveActivityAnchorCoordinates(activity, location);
-  if (!coords) return null;
-
-  return resolveAreaIdForCoordinates(coords.latitude, coords.longitude, location?.areaId ?? null);
-};
+): Promise<string | null> => Promise.resolve(resolveAreaIdForActivity(activity, location));
 
 export const ringFromBBox = (
   south: number,
