@@ -31,7 +31,16 @@ import {
   type ActivityCreateInput,
   type LocationCreateInput
 } from '../src/lib/entity-builders.js';
-import { findActivityDocInMongo, findLocationInMongo, writeActivityDocToMongo, writeLocationToMongo } from '../src/lib/entity-sync.js';
+import {
+  findActivityDocInMongo,
+  findLocationInMongo,
+  writeActivityDocToMongo,
+  writeLocationToMongo,
+} from '../src/lib/entity-sync.js';
+import {
+  resolveGroupRegionLevelsForActivityDoc,
+  stampLocationGroupRegionLevels,
+} from '../src/lib/group-region-resolution.js';
 import { getMongoClient, connectMongo, disconnectMongo } from '../src/lib/mongo.js';
 import { createSocialReview } from '../src/lib/social-data.js';
 import {
@@ -41,6 +50,7 @@ import {
 import { upsertTenantMembership } from '../src/lib/tenant-access.js';
 import {
   createTenantRecord,
+  findTenantById,
   findTenantBySlug,
   writeTenantToMongo,
   type TenantRecord
@@ -502,7 +512,7 @@ const upsertTenant = async (input: {
 
 const upsertLocation = async (id: string, data: LocationCreateInput) => {
   const areaId = data.areaId ?? seedLocationAreaId(id) ?? undefined;
-  const location = buildLocationFromCreateInput(
+  let location = buildLocationFromCreateInput(
     { ...data, areaId, status: LocationStatus.ACTIVE },
     id
   );
@@ -510,6 +520,7 @@ const upsertLocation = async (id: string, data: LocationCreateInput) => {
   if (existing) {
     location.createdAt = existing.createdAt;
   }
+  location = await stampLocationGroupRegionLevels(location);
   await writeLocationToMongo(location);
   return location;
 };
@@ -520,8 +531,69 @@ const upsertEvent = async (id: string, data: ActivityCreateInput) => {
   if (existing) {
     doc.createdAt = existing.createdAt;
   }
-  await writeActivityDocToMongo(doc);
+  const linked = doc.locationId ? await findLocationInMongo(doc.locationId) : null;
+  doc.groupRegionLevels = await resolveGroupRegionLevelsForActivityDoc(doc, linked);
+  await writeActivityDocToMongo(doc, {
+    countryCode: linked?.countryCode ?? 'AE',
+    location: linked,
+  });
   return doc;
+};
+
+/** Re-stamp `groupRegionLevels`, `groupRegionBrowseKey`, and `geo` on all catalog rows after seed upserts. */
+const restampCatalogGeoIndexFields = async (): Promise<void> => {
+  const locationIds = await db()
+    .collection('locations')
+    .find({}, { projection: { _id: 1 } })
+    .map((doc) => String(doc._id))
+    .toArray();
+
+  for (const locationId of locationIds) {
+    const row = await findLocationInMongo(locationId);
+    if (!row) continue;
+    const stamped = await stampLocationGroupRegionLevels({
+      ...row,
+      countryCode: row.countryCode?.trim() ? row.countryCode : 'AE',
+    });
+    await writeLocationToMongo(stamped);
+  }
+
+  const activityIds = await db()
+    .collection('activities')
+    .find({}, { projection: { _id: 1 } })
+    .map((doc) => String(doc._id))
+    .toArray();
+
+  for (const activityId of activityIds) {
+    const doc = await findActivityDocInMongo(activityId);
+    if (!doc) continue;
+    const linked = doc.locationId ? await findLocationInMongo(doc.locationId) : null;
+    const groupRegionLevels = await resolveGroupRegionLevelsForActivityDoc(doc, linked);
+    await writeActivityDocToMongo(
+      { ...doc, groupRegionLevels },
+      {
+        countryCode: linked?.countryCode ?? 'AE',
+        location: linked,
+      }
+    );
+  }
+
+  const tenantIds = await db()
+    .collection('tenants')
+    .find({}, { projection: { _id: 1 } })
+    .map((doc) => String(doc._id))
+    .toArray();
+
+  for (const tenantId of tenantIds) {
+    const tenant = await findTenantById(tenantId);
+    if (tenant) {
+      await writeTenantToMongo(tenant);
+    }
+  }
+
+  console.log(
+    `[seed] Geo index fields restamped (${locationIds.length} locations, ${activityIds.length} activities, ${tenantIds.length} tenants)`
+  );
 };
 
 const upsertHostApplication = async (input: {
@@ -970,6 +1042,9 @@ async function main() {
   if (!(await shouldRunSeed())) {
     await seedCuratedAreas();
     await backfillSeedCatalogLocationAreaIds();
+    await restampCatalogGeoIndexFields();
+    const { invalidateExploreMapCache } = await import('../src/lib/explore-map-cache.js');
+    await invalidateExploreMapCache();
     console.log('[seed] Curated areas upserted and catalog place areaIds backfilled');
     if (isMobileInboxSeedEnabled()) {
       await runMobileInboxDemoSeed();
@@ -1920,9 +1995,16 @@ Share your live location and carry extra water in summer months.`
 
   await backfillSeedCatalogLocationAreaIds();
 
-  const start = new Date();
-  start.setDate(start.getDate() + 7);
-  start.setHours(6, 0, 0, 0);
+  /** Demo outings ~2 months out so explore map pins stay visible between reseeds. */
+  const seedEventStartAt = (extraDaysFromAnchor: number, hour: number, minute = 0): Date => {
+    const d = new Date();
+    d.setMonth(d.getMonth() + 2);
+    d.setDate(d.getDate() + extraDaysFromAnchor);
+    d.setHours(hour, minute, 0, 0);
+    return d;
+  };
+
+  const start = seedEventStartAt(0, 6);
 
   const event =   await upsertEvent('seed-event-jais', {
     tenant: { connect: { id: agencyTenant.id } },
@@ -1945,9 +2027,7 @@ Share your live location and carry extra water in summer months.`
     outingCategory: 'hiking',
   });
 
-  const start2 = new Date();
-  start2.setDate(start2.getDate() + 14);
-  start2.setHours(16, 0, 0, 0);
+  const start2 = seedEventStartAt(7, 16);
 
   await upsertEvent('seed-event-fossil-camp', {
     tenant: { connect: { id: individualHostTenant.id } },
@@ -1977,9 +2057,7 @@ Share your live location and carry extra water in summer months.`
     outingCategory: 'camping',
   });
 
-  const freeHikeStart = new Date();
-  freeHikeStart.setDate(freeHikeStart.getDate() + 10);
-  freeHikeStart.setHours(7, 0, 0, 0);
+  const freeHikeStart = seedEventStartAt(3, 7);
 
   await upsertEvent('seed-event-shawka-free', {
     tenant: { connect: { id: agencyTenant.id } },
@@ -2004,13 +2082,9 @@ Share your live location and carry extra water in summer months.`
     outingCategory: 'hiking',
   });
 
-  const freeCampStart = new Date();
-  freeCampStart.setDate(freeCampStart.getDate() + 21);
-  freeCampStart.setHours(15, 0, 0, 0);
+  const freeCampStart = seedEventStartAt(14, 15);
 
-  const omarDraftStart = new Date();
-  omarDraftStart.setDate(omarDraftStart.getDate() + 30);
-  omarDraftStart.setHours(9, 0, 0, 0);
+  const omarDraftStart = seedEventStartAt(23, 9);
 
   await upsertEvent('seed-event-omar-draft', {
     tenant: { connect: { id: individualHostTenant.id } },
@@ -2061,9 +2135,7 @@ Share your live location and carry extra water in summer months.`
     participationMode: 'rsvp',
   });
 
-  const eventRunStart = new Date();
-  eventRunStart.setDate(eventRunStart.getDate() + 5);
-  eventRunStart.setHours(6, 30, 0, 0);
+  const eventRunStart = seedEventStartAt(-2, 6, 30);
 
   await upsertEvent('seed-event-kite-beach-run', {
     tenant: { connect: { id: agencyTenant.id } },
@@ -2088,9 +2160,7 @@ Share your live location and carry extra water in summer months.`
     participationMode: 'rsvp',
   });
 
-  const carpoolStart = new Date();
-  carpoolStart.setDate(carpoolStart.getDate() + 4);
-  carpoolStart.setHours(5, 0, 0, 0);
+  const carpoolStart = seedEventStartAt(-3, 5);
 
   await upsertEvent('seed-event-rideshare-marina-jais', {
     tenant: { connect: { id: individualHostTenant.id } },
@@ -2120,9 +2190,7 @@ Share your live location and carry extra water in summer months.`
     outingCategory: 'rideshare',
   });
 
-  const boulderStart = new Date();
-  boulderStart.setDate(boulderStart.getDate() + 9);
-  boulderStart.setHours(17, 0, 0, 0);
+  const boulderStart = seedEventStartAt(2, 17);
 
   await upsertEvent('seed-event-boulder-session', {
     tenant: { connect: { id: agencyTenant.id } },
@@ -2491,6 +2559,8 @@ Share your live location and carry extra water in summer months.`
   console.log(`Pending application: Hatta Hiking Club (by ${pendingParticipant.email})`);
   console.log(`Seeded by admin id: ${admin._id}`);
   console.log(`Merchant stores: ${nikeMerchantProfile.shopName}, ${adidasMerchantProfile.shopName} (${seedProducts.length} products)`);
+  await restampCatalogGeoIndexFields();
+
   const { invalidateExploreMapCache } = await import('../src/lib/explore-map-cache.js');
   await invalidateExploreMapCache();
 

@@ -7,13 +7,17 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import type { ActivityDTO, ActivityMapPeekActionId, UserRole } from '@uaetrail/shared-types';
 import { buildShareText, buildShareUrl } from '../../utils/share';
 import type { HostActivityManageInitialView } from '../../components/host/hostActivityManageViews';
 import { resolveActivityHostUserId } from '@uaetrail/shared-types';
 import { useAuth } from '../../context/AuthContext';
-import { joinAuthPath } from '../../config/routingCatalog';
+import {
+  ACTIVITY_JOIN_CTA_SELECTOR,
+  navigateToAuthGate,
+  withAuthResumeQuery,
+} from '../../utils/authReturnContext';
 import type { ExploreCardModel } from '../../explore/exploreCardModel';
 import { ExploreJoinOverlays } from '../../explore/ui/ExploreJoinOverlays';
 import { openActivityGroupChat } from '../../utils/openActivityGroupChat';
@@ -66,6 +70,7 @@ export const ListFeedActionsProvider = ({
 }: ListFeedHostActivityActions & { children: ReactNode }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const isGuest = !user;
 
   const [joinActivityId, setJoinActivityId] = useState<string | null>(null);
@@ -261,7 +266,13 @@ export const ListFeedActionsProvider = ({
         }
       }
       if (!user && card.source === 'activity') {
-        navigate(joinAuthPath(card.path));
+        const returnPath = card.activityId
+          ? withAuthResumeQuery(activityDetailPath(card.activityId), { join: true })
+          : withAuthResumeQuery(card.sharePath, { join: true });
+        navigateToAuthGate(navigate, location, {
+          returnPath,
+          focusSelector: ACTIVITY_JOIN_CTA_SELECTOR,
+        });
         return;
       }
       if (secondary.kind === 'link') {
@@ -272,7 +283,7 @@ export const ListFeedActionsProvider = ({
         runPeekAction(card, secondary.actionId);
       }
     },
-    [footerModel, user, navigate, joinActions, runPeekAction]
+    [footerModel, user, navigate, location, joinActions, runPeekAction]
   );
 
   const value = useMemo(

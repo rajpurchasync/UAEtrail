@@ -5,6 +5,7 @@ import {
 } from '../../utils/groupWallReply';
 import { chatMessageTextClassName } from './chatMessageText';
 import { ChatLinkedText } from './ChatLinkedText';
+import { ChatMessageLinkPreviews } from './ChatMessageLinkPreviews';
 
 type QuotedWallMessage = Pick<GroupWallReplyTarget, 'authorName' | 'body'>;
 
@@ -79,16 +80,21 @@ const MessageText = ({
   text,
   tone,
   className = '',
+  showLinkPreviews = true,
 }: {
   text: string;
   tone: 'default' | 'onPrimary';
   className?: string;
+  showLinkPreviews?: boolean;
 }) => (
-  <p
-    className={`${className} ${tone === 'onPrimary' ? 'text-white' : 'text-neutral-800'} ${chatMessageTextClassName}`.trim()}
-  >
-    <ChatLinkedText text={text} tone={tone} />
-  </p>
+  <div className={className}>
+    <p
+      className={`${tone === 'onPrimary' ? 'text-white' : 'text-neutral-800'} ${chatMessageTextClassName}`.trim()}
+    >
+      <ChatLinkedText text={text} tone={tone} />
+    </p>
+    {showLinkPreviews ? <ChatMessageLinkPreviews body={text} tone={tone} /> : null}
+  </div>
 );
 
 export const ChatMessageBody = ({

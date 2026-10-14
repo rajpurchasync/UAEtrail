@@ -1,6 +1,5 @@
-import { joinAuthPath } from '../../config/routingCatalog';
-import { Link, useLocation } from 'react-router-dom';
 import type { ParticipationMode } from '@uaetrail/shared-types';
+import { Link, useLocation } from 'react-router-dom';
 
 import { PRODUCT_JOIN_CTA } from '../../content/productNorthStar';
 import {
@@ -8,7 +7,7 @@ import {
   type GuestBrowseGateIntent,
 } from '../../content/guestBrowseGateCopy';
 import type { GuestJoinSheetIntent } from '../../content/guestJoinCopy';
-import { buildSignInRedirect } from '../../utils/authReturnContext';
+import { buildAuthGateUrls } from '../../utils/authReturnContext';
 import { AppButtonLink } from '../../components/mobile/AppButton';
 
 type ExploreGuestSignInCardProps = {
@@ -19,6 +18,9 @@ type ExploreGuestSignInCardProps = {
   requirements?: string[] | null;
   className?: string;
   compact?: boolean;
+  /** Overrides current URL when returning after auth (e.g. activity detail + join resume). */
+  authReturnPath?: string;
+  authFocusSelector?: string;
 };
 
 /** Standard gate for guests — map peek, browse list, who's going, join flows. */
@@ -30,10 +32,15 @@ export const ExploreGuestSignInCard = ({
   requirements,
   className = '',
   compact = false,
+  authReturnPath,
+  authFocusSelector,
 }: ExploreGuestSignInCardProps) => {
   const location = useLocation();
-  const joinHref = joinAuthPath(`${location.pathname}${location.search}`);
-  const { href: signInHref } = buildSignInRedirect(location);
+  const returnPath = authReturnPath ?? `${location.pathname}${location.search}`;
+  const { signInHref, signUpHref } = buildAuthGateUrls(location, {
+    returnPath,
+    focusSelector: authFocusSelector,
+  });
   const copy = guestBrowseGateCopy(
     intent,
     intent === 'join-activity'
@@ -54,7 +61,7 @@ export const ExploreGuestSignInCard = ({
         {copy.body}
       </p>
       <div className={`space-y-1.5 ${compact ? 'mt-4' : 'mt-5'}`}>
-        <AppButtonLink to={joinHref} fullWidth>
+        <AppButtonLink to={signUpHref} fullWidth>
           {PRODUCT_JOIN_CTA}
         </AppButtonLink>
         <Link

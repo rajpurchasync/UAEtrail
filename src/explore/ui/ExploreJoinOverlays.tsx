@@ -1,7 +1,12 @@
 import type { ActivityDTO } from '@uaetrail/shared-types';
+import { activityDetailPath } from '../../config/routingCatalog';
 import { JoinRequestModal } from '../../components/ui/JoinRequestModal';
 import { WithdrawRequestModal } from '../../components/ui/WithdrawRequestModal';
 import type { ActivityJoinActions } from '../../hooks/useActivityJoinFlow';
+import {
+  ACTIVITY_JOIN_CTA_SELECTOR,
+  withAuthResumeQuery,
+} from '../../utils/authReturnContext';
 import { ExploreGuestJoinSheet } from './ExploreGuestJoinSheet';
 
 interface ExploreJoinOverlaysProps {
@@ -19,7 +24,13 @@ export const ExploreJoinOverlays = ({
   onJoinSuccess,
   exploreMapItemId,
   guestPlaceTitle,
-}: ExploreJoinOverlaysProps) => (
+}: ExploreJoinOverlaysProps) => {
+  const guestAuthReturnPath =
+    activity?.id && joinActions.guestSheetIntent === 'activity'
+      ? withAuthResumeQuery(activityDetailPath(activity.id), { join: true })
+      : undefined;
+
+  return (
   <>
     {joinActions.joinModalOpen && activity && (
       <JoinRequestModal
@@ -55,6 +66,11 @@ export const ExploreJoinOverlays = ({
       }
       participationMode={activity?.participationMode}
       requirements={activity?.requirements}
+      authReturnPath={guestAuthReturnPath}
+      authFocusSelector={
+        guestAuthReturnPath ? ACTIVITY_JOIN_CTA_SELECTOR : undefined
+      }
     />
   </>
-);
+  );
+};

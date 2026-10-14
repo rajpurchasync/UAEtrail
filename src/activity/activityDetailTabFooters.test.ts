@@ -31,7 +31,7 @@ describe('resolveActivityDetailTabFooterKind', () => {
     ).toBe('plan_join');
   });
 
-  it('uses invite on Buddies for confirmed participants', () => {
+  it('uses invite on Buddies for open join before crew membership', () => {
     expect(resolveActivityDetailTabFooterKind({ ...base, tab: 'buddies' })).toBe('buddies_invite');
   });
 
@@ -64,5 +64,29 @@ describe('resolveActivityDetailTabFooterKind', () => {
         rideshareEnabled: false,
       })
     ).toBe('transport_empty');
+  });
+
+  it('keeps plan join on every tab while request is pending', () => {
+    const pending: JoinRequestUiState = {
+      kind: 'pending',
+      requestId: 'r1',
+      status: 'pending',
+    };
+    expect(
+      resolveActivityDetailTabFooterKind({ ...base, tab: 'transport', joinUiState: pending })
+    ).toBe('plan_join');
+    expect(
+      resolveActivityDetailTabFooterKind({ ...base, tab: 'buddies', joinUiState: pending })
+    ).toBe('plan_join');
+  });
+
+  it('keeps plan join on every tab after host approval', () => {
+    const confirmed: JoinRequestUiState = {
+      kind: 'confirmed',
+      requestId: 'r1',
+    };
+    expect(
+      resolveActivityDetailTabFooterKind({ ...base, tab: 'transport', joinUiState: confirmed })
+    ).toBe('plan_join');
   });
 });

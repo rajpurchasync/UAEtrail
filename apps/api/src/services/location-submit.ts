@@ -2,6 +2,7 @@ import {
   deriveVenueAccessibilityFromAccessibleBy,
   encodeShopContributeTags,
   mergeVenueAreaTag,
+  stampGroupRegionLevelsFromGeo,
 } from '@uaetrail/shared-types';
 import { Accessibility } from '../domain/enums.js';
 import { ActivityType, Difficulty, LocationStatus } from '../domain/enums.js';
@@ -22,7 +23,7 @@ const toDifficulty = (difficulty?: 'easy' | 'moderate' | 'hard'): Difficulty | u
 export type LocationCreateData = {
   name: string;
   countryCode: string;
-  emirate?: string;
+  groupRegionLevels?: import('@uaetrail/shared-types').GroupRegionLevels | null;
   region: string;
   areaLabel?: string | null;
   areaId?: string | null;
@@ -89,10 +90,21 @@ export const buildLocationCreateData = (
   const baseTags = shop ? shopTags : body.tags ?? [];
   const tags = shop ? baseTags : mergeVenueAreaTag(baseTags, body.areaLabel);
 
+  const stateHint = body.groupRegion ?? body.emirate ?? null;
+  const groupRegionLevels = stampGroupRegionLevelsFromGeo({
+    countryCode: body.countryCode.toUpperCase(),
+    region: body.region,
+    areaLabel: body.areaLabel,
+    stateHint,
+    latitude: body.latitude,
+    longitude: body.longitude,
+    areaId: body.areaId,
+  });
+
   return {
   name: body.name,
   countryCode: body.countryCode.toUpperCase(),
-  emirate: body.emirate,
+  groupRegionLevels,
   region: body.region,
   areaLabel: body.areaLabel?.trim() || null,
   areaId: body.areaId.trim(),

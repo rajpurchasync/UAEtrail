@@ -194,6 +194,7 @@ export const useActivityDetailJoinSurfaces = ({
           type="button"
           onClick={handleJoinClick}
           disabled={joinActionDisabled}
+          data-activity-join-cta
           className={`hidden md:block w-full mt-4 px-4 py-3 text-white text-sm font-semibold rounded-xl disabled:opacity-60 transition-colors ${
             isFull ? 'bg-amber-600 hover:bg-amber-700' : 'bg-emerald-600 hover:bg-emerald-700'
           }`}
@@ -203,11 +204,29 @@ export const useActivityDetailJoinSurfaces = ({
       ))
     : null;
 
+  const planRequestManagePanel =
+    consumerJoinEnabled &&
+    !previewMode &&
+    (joinUiState.kind === 'pending' || joinUiState.kind === 'confirmed') &&
+    onWithdraw
+      ? (
+          <div className="rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm">
+            <JoinRequestActions
+              uiState={joinUiState}
+              joinLabel={joinLabel}
+              isFull={isFull}
+              onWithdraw={onWithdraw}
+            />
+          </div>
+        )
+      : null;
+
   return {
     joinUiState,
     sharePayload,
     stickyFooter,
     sidebarJoin,
     wrapMobileFooter,
+    planRequestManagePanel,
   };
 };

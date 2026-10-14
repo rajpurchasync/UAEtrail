@@ -43,7 +43,9 @@ export const resolvePeekDetailAccess = (
   }
 
   if (!card.viewerAccess) {
-    if (options.isGuest) return { kind: 'guest_gate' };
+    if (options.isGuest && !exploreCardIsHostedPlanPeek(card)) {
+      return { kind: 'guest_gate' };
+    }
     return { kind: 'link', href };
   }
 

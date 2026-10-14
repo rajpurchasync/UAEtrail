@@ -5,7 +5,7 @@ import { resolveActivityPeekEngagement } from '../../activity/activityPeekEngage
 import type { ExploreCardModel } from '../exploreCardModel';
 import { JoinRequestActions } from '../../components/ui/JoinRequestActions';
 import { ExploreShopPeekActions } from './ExploreShopPeekActions';
-import type { JoinRequestUiState } from '../../utils/joinRequestUi';
+import { pendingApprovalLabel, type JoinRequestUiState } from '../../utils/joinRequestUi';
 import {
   exploreCardHasMapCoords,
   exploreCardIsSeeking,
@@ -98,6 +98,10 @@ export const ExploreItemPeekActions = ({
           onLinkRideshare={onDemandLinkRideshare}
           onGuestGatedAction={gate}
         />
+      ) : activityPeekActions.length > 0 && joinStateLoading ? (
+        <div className="flex justify-center py-3">
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent" />
+        </div>
       ) : activityPeekActions.length > 0 && onActivityMapPeekAction ? (
         <ExploreActivityMapPeekActions
           card={card}
@@ -107,6 +111,7 @@ export const ExploreItemPeekActions = ({
           onGuestGatedAction={gate}
           joinStateLoading={joinStateLoading}
           onBeforeDetailNavigate={onClose}
+          joinUiState={joinUiState}
         />
       ) : showActivityJoinFlow && joinUiState && !joinStateLoading ? (
         <>
@@ -115,6 +120,7 @@ export const ExploreItemPeekActions = ({
             joinLabel={card.primaryCta}
             isFull={(card.activity?.slotsAvailable ?? 1) <= 0}
             onJoin={gate ?? onJoin}
+            joinCtaMarker="explore"
           />
           {card.secondaryCta ? (
             detailLink(
@@ -162,6 +168,7 @@ export const ExploreItemPeekActions = ({
             isFull={(card.activity?.slotsAvailable ?? 1) <= 0}
             onJoin={gate ?? onJoin}
             onWithdraw={peekWithdraw}
+            joinCtaMarker="explore"
           />
           {card.secondaryCta && onMessage ? (
             <button
@@ -177,12 +184,21 @@ export const ExploreItemPeekActions = ({
         <div className="flex justify-center py-3">
           <div className="h-6 w-6 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent" />
         </div>
+      ) : card.showJoinActions && joinUiState?.kind === 'pending' && !joinStateLoading ? (
+        <button
+          type="button"
+          disabled
+          className="w-full rounded-2xl bg-amber-100 py-3.5 text-base font-bold text-amber-900 disabled:opacity-100"
+        >
+          {pendingApprovalLabel(joinUiState.status)}
+        </button>
       ) : card.showJoinActions && onJoin ? (
         <>
           <button
             type="button"
             onClick={gate ?? onJoin}
-            className="w-full rounded-2xl bg-emerald-500 py-3.5 text-base font-bold text-white"
+            disabled={joinUiState?.kind === 'pending' || joinUiState?.kind === 'confirmed'}
+            className="w-full rounded-2xl bg-emerald-500 py-3.5 text-base font-bold text-white disabled:opacity-60"
           >
             {card.primaryCta}
           </button>

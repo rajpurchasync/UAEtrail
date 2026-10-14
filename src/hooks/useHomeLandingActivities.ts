@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { ActivityDTO } from '@uaetrail/shared-types';
+import { groupRegionTextAtBrowseFilterLevel } from '../config/groupRegionFilter';
 import { buildExploreWhenSegment } from '@uaetrail/shared-types';
 import { fetchApiActivities } from './publicCatalogClientApi';
 import { HOME_LANDING_FALLBACK_ACTIVITIES, type HomeLandingActivity } from '../content/homeLanding';
@@ -24,7 +25,10 @@ const toLandingActivity = (activity: ActivityDTO): HomeLandingActivity => ({
   id: activity.id,
   title: activity.title || activity.locationName,
   description: activity.description?.trim() || null,
-  region: activity.region ?? 'UAE',
+  region:
+    groupRegionTextAtBrowseFilterLevel(activity.groupRegionLevels)?.trim() ||
+    activity.region?.trim() ||
+    'UAE',
   date: activity.date,
   time: activity.time,
   whenLabel:

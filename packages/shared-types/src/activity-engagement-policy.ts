@@ -71,12 +71,33 @@ const resolveJoinRequestStatus = (
   return null;
 };
 
+const appendWithdrawAndViewDetail = (
+  intents: ActivityMapPeekAction[],
+  withdrawProminence: ActivityMapPeekAction['prominence']
+): ActivityMapPeekAction[] => {
+  const viewDetail = intents.find((action) => action.id === 'view_detail');
+  const core = intents.filter(
+    (action) => action.id !== 'view_detail' && action.id !== 'withdraw_join'
+  );
+  return [
+    ...core,
+    { id: 'withdraw_join', prominence: withdrawProminence },
+    ...(viewDetail ? [viewDetail] : []),
+  ];
+};
+
 const enrichEngagementIntents = (
   intents: ActivityMapPeekAction[],
   capabilities: ActivityEngagementCapabilities,
   activityPublished: boolean
 ): ActivityMapPeekAction[] => {
-  if (capabilities.isHostUser || capabilities.joinEngagement !== 'confirmed') {
+  if (capabilities.isHostUser) {
+    return intents;
+  }
+  if (capabilities.joinEngagement === 'pending') {
+    return appendWithdrawAndViewDetail(intents, 'text');
+  }
+  if (capabilities.joinEngagement !== 'confirmed') {
     return intents;
   }
   const core = intents.filter((action) => action.id !== 'view_detail');

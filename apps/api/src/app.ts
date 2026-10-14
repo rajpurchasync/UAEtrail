@@ -17,6 +17,7 @@ import { requestTimeout } from './middleware/request-timeout.js';
 import { traceIdMiddleware } from './middleware/trace-id.js';
 import { openApiSpec } from './openapi.js';
 import { apiRouter } from './routes/index.js';
+import { registerOgRoutes } from './routes/og.js';
 import { stripeWebhookHandler } from './routes/stripe-webhook.js';
 
 const clientErrorBodySchema = z
@@ -201,6 +202,7 @@ export const createApp = async (): Promise<Express> => {
     app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(openApiSpec));
     app.get('/api/openapi.json', (_req, res) => res.json(openApiSpec));
   }
+  registerOgRoutes(app);
   app.use('/api/v1', apiRouter);
 
   app.use(notFoundHandler);

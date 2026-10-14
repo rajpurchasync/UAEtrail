@@ -40,6 +40,16 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true,
           secure: false,
         },
+        '/og': {
+          target: apiTarget,
+          changeOrigin: true,
+          secure: false,
+        },
+        '/sitemap-activities.xml': {
+          target: apiTarget,
+          changeOrigin: true,
+          secure: false,
+        },
       },
     },
     preview: {

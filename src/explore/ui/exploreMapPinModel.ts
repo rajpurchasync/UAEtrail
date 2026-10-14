@@ -153,8 +153,10 @@ export const matchesUnifiedExploreMapItem = (
     return false;
   }
 
-  if (isPlacesMapItem(item) && !isShopListItem(item)) {
-    if (!venueItemMatchesRegions(item, venueRegions)) return false;
+  if (venueRegions.length > 0) {
+    if (isBuddyMapItem(item) || isPlacesMapItem(item) || isShopListItem(item)) {
+      if (!venueItemMatchesRegions(item, venueRegions)) return false;
+    }
   }
 
   return true;
@@ -180,7 +182,9 @@ export const matchesMapFilter = (item: ExploreMapItemDTO, mapFilter: MapFilterKe
     return kind === 'rideshare' && isTimeBoundExploreMapItem(item);
   }
   if (mapFilter === 'others') {
-    return kind === 'event' && (isTimeBoundExploreMapItem(item) || item.source === 'venue');
+    const eventKind =
+      kind === 'event' || (item.source === 'activity' && item.activity?.activityType === 'event');
+    return eventKind && (isTimeBoundExploreMapItem(item) || item.source === 'venue');
   }
 
   return false;
@@ -223,7 +227,7 @@ export const matchesMobileExploreMapItem = (
 
   if (isPlacesMapItem(item) || isShopListItem(item)) {
     if (!matchesVenueFilter(item, input.venueFilter)) return false;
-    if (isPlacesMapItem(item) && !isShopListItem(item)) {
+    if (input.venueRegions.length > 0) {
       return venueItemMatchesRegions(item, input.venueRegions);
     }
     return true;

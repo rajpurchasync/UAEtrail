@@ -528,14 +528,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route
-            path="/activity/:id"
-            element={
-              <ProtectedRoute>
-                <ActivityDetail />
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/activity/:id" element={<ActivityDetail />} />
           <Route
             path="/guide/:id"
             element={

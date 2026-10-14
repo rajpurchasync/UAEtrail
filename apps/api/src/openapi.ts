@@ -12,7 +12,8 @@ export const openApiTags = [
   { name: 'Social', description: 'Reviews, buddies, and groups.' },
   { name: 'Engagement', description: 'Wishlist saves, entity follows, goals, badges, and map pins.' },
   { name: 'Media', description: 'Presigned upload and private media resolve.' },
-  { name: 'Admin', description: 'Platform admin moderation and audit.' }
+  { name: 'Admin', description: 'Platform admin moderation and audit.' },
+  { name: 'Agent', description: 'Public discovery for AI assistants and automated agents (no auth).' }
 ] as const;
 
 export const openApiSpec = swaggerJsdoc({
@@ -374,6 +375,38 @@ export const openApiSpec = swaggerJsdoc({
           security: [{ bearerAuth: [] }],
           responses: {
             200: { description: 'Presign payload with key, uploadUrl, publicUrl, and bucket.' }
+          }
+        }
+      },
+      '/agent/manifest.json': {
+        get: {
+          tags: ['Agent'],
+          summary: 'Agent manifest',
+          description:
+            'Machine-readable entry point for AI crawlers: search API, sitemaps, llms.txt, and scrape boundaries.',
+          responses: {
+            200: { description: 'AgentManifestDTO JSON (schema_version 1.0).' }
+          }
+        }
+      },
+      '/agent/discover': {
+        get: {
+          tags: ['Agent'],
+          summary: 'Search public outings and places',
+          description:
+            'Free-text search over published activities and registry-listed places. Prefer result URLs for citations.',
+          parameters: [
+            { name: 'q', in: 'query', required: true, schema: { type: 'string', maxLength: 64 } },
+            {
+              name: 'kind',
+              in: 'query',
+              schema: { type: 'string', enum: ['all', 'activity', 'place'], default: 'all' }
+            },
+            { name: 'region', in: 'query', schema: { type: 'string', maxLength: 80 } },
+            { name: 'limit', in: 'query', schema: { type: 'integer', minimum: 1, maximum: 25, default: 10 } }
+          ],
+          responses: {
+            200: { description: 'AgentDiscoverResponseDTO JSON (schema_version 1.0).' }
           }
         }
       }

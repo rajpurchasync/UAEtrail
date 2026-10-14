@@ -85,6 +85,34 @@ export const filterActivityMapPeekActionsForViewer = (
   );
 };
 
+const applyJoinUiStateToMapPeekActions = (
+  actions: ActivityMapPeekAction[],
+  joinUiState?: JoinRequestUiState
+): ActivityMapPeekAction[] => {
+  if (joinUiState?.kind !== 'pending') return actions;
+  const joinRequestStatus = joinUiState.status;
+  const remapped = actions.map((action) => {
+    if (action.id !== 'request_join') return action;
+    return {
+      id: 'pending_join',
+      prominence: action.prominence,
+      joinRequestStatus,
+    };
+  });
+  if (remapped.some((action) => action.id === 'withdraw_join')) {
+    return remapped;
+  }
+  const viewDetail = remapped.find((action) => action.id === 'view_detail');
+  const core = remapped.filter(
+    (action) => action.id !== 'view_detail' && action.id !== 'withdraw_join'
+  );
+  return [
+    ...core,
+    { id: 'withdraw_join', prominence: 'text' },
+    ...(viewDetail ? [viewDetail] : []),
+  ];
+};
+
 /** Resolved wire actions for an activity map peek (API list or computed fallback). */
 export const resolveActivityMapPeekActions = (
   card: ExploreCardModel,
@@ -93,17 +121,19 @@ export const resolveActivityMapPeekActions = (
   if (card.source !== 'activity') return [];
   const fromApi = card.viewerAccess?.mapPeekActions;
   if (fromApi !== undefined) {
-    return filterActivityMapPeekActionsForViewer(fromApi, card.viewerAccess ?? null);
+    return applyJoinUiStateToMapPeekActions(
+      filterActivityMapPeekActionsForViewer(fromApi, card.viewerAccess ?? null),
+      joinUiState
+    );
   }
 
   const level = levelForPeekActions(card, joinUiState);
   const policy = resolvePeekFallbackEngagementPolicy(card, joinUiState);
   if (!level || !policy) return [];
 
-  return projectActivityMapPeekActions(
-    policy,
-    card.viewerAccess!.entitlements ?? null,
-    level
+  return applyJoinUiStateToMapPeekActions(
+    projectActivityMapPeekActions(policy, card.viewerAccess!.entitlements ?? null, level),
+    joinUiState
   );
 };
 
@@ -156,6 +186,7 @@ export const activityMapPeekNeedsJoinContext = (
   const actions = resolveActivityMapPeekActions(card, joinUiState);
   if (actions.some((action) => action.id === 'request_join')) return true;
   if (actions.some((action) => action.id === 'withdraw_join')) return true;
+  if (joinUiState?.kind === 'pending' || joinUiState?.kind === 'confirmed') return true;
   return activityMapPeekShowsJoinFlow(card, joinUiState);
 };
 

@@ -5,7 +5,7 @@ export type GeoPoint = {
 
 const EARTH_RADIUS_KM = 6378.1;
 
-const toLocationGeoPoint = (
+export const toGeoPoint = (
   latitude: number | null | undefined,
   longitude: number | null | undefined
 ): GeoPoint | null => {
@@ -13,10 +13,18 @@ const toLocationGeoPoint = (
   return { type: 'Point', coordinates: [longitude, latitude] };
 };
 
+export const withGeoPointOnDoc = (
+  latitude: number | null | undefined,
+  longitude: number | null | undefined
+): { geo?: GeoPoint } => {
+  const geo = toGeoPoint(latitude, longitude);
+  return geo ? { geo } : {};
+};
+
 export const withLocationGeoFields = <T extends { latitude: number | null; longitude: number | null }>(
   doc: T
 ): T & { geo?: GeoPoint } => {
-  const geo = toLocationGeoPoint(doc.latitude, doc.longitude);
+  const geo = toGeoPoint(doc.latitude, doc.longitude);
   return geo ? { ...doc, geo } : doc;
 };
 

@@ -77,7 +77,7 @@ export interface Location {
   parkingLink: string | null;
   parkingLat: number | null;
   parkingLng: number | null;
-  emirate: string | null;
+  groupRegionLevels: import('@uaetrail/shared-types').GroupRegionLevels | null;
   premiumImages: string[];
   accessibleBy: string[];
   viewCount: number;
@@ -146,6 +146,7 @@ export interface Activity {
   status: ActivityStatus;
   featured: boolean;
   publishedAt: Date | null;
+  groupRegionLevels?: import('@uaetrail/shared-types').GroupRegionLevels | null;
   outingCategory?: OutingCategory | null;
   outingTopic?: OutingTopic | null;
   /** Curated area slug target — set on publish from place or point-in-polygon. */

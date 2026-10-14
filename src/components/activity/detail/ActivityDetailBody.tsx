@@ -66,6 +66,8 @@ export const ActivityDetailBody = (model: Model) => (
           />
         ) : null}
 
+        {model.planRequestManagePanel}
+
         <ActivityDetailPlanAboutCard
           panelClassName={model.mobilePlanPanel}
           activity={model.activity}

@@ -39,7 +39,7 @@ export type LocationCreateInput = {
   parkingLink?: string | null;
   parkingLat?: number | null;
   parkingLng?: number | null;
-  emirate?: string | null;
+  groupRegionLevels?: import('@uaetrail/shared-types').GroupRegionLevels | null;
   premiumImages?: string[];
   accessibleBy?: string[];
   countryCode?: string;
@@ -103,6 +103,7 @@ export type ActivityCreateInput = {
   participantIntentId?: string | null;
   groupChatPostPolicy?: 'all_participants' | 'host_only' | null;
   areaId?: string | null;
+  groupRegionLevels?: import('@uaetrail/shared-types').GroupRegionLevels | null;
 };
 
 export type ActivityUpdateInput = {
@@ -151,6 +152,7 @@ export type ActivityUpdateInput = {
   participantIntentId?: string | null;
   groupChatPostPolicy?: 'all_participants' | 'host_only' | null;
   areaId?: string | null;
+  groupRegionLevels?: import('@uaetrail/shared-types').GroupRegionLevels | null;
 };
 
 const extractConnectedId = (relation?: RelationConnect): string | null => {
@@ -190,7 +192,7 @@ export const buildLocationFromCreateInput = (data: LocationCreateInput, id: stri
     parkingLink: data.parkingLink ?? null,
     parkingLat: data.parkingLat ?? null,
     parkingLng: data.parkingLng ?? null,
-    emirate: data.emirate ?? null,
+    groupRegionLevels: data.groupRegionLevels ?? null,
     premiumImages: asStringArray(data.premiumImages),
     accessibleBy: asStringArray(data.accessibleBy),
     viewCount: 0,
@@ -256,6 +258,7 @@ export type MongoActivityDoc = {
   outingCategory?: string | null;
   outingTopic?: string | null;
   areaId?: string | null;
+  groupRegionLevels?: import('@uaetrail/shared-types').GroupRegionLevels | null;
   activityMode?: 'hosted' | 'seeking' | null;
   participantIntentId?: string | null;
   /** Hosted activity id when a seeking pin was fulfilled (M2d activity-primary rows). */
@@ -314,6 +317,7 @@ export const buildActivityFromCreateInput = (data: ActivityCreateInput, id: stri
     outingCategory: data.outingCategory ?? null,
     outingTopic: data.outingTopic ?? null,
     areaId: data.areaId?.trim() ? data.areaId.trim() : null,
+    groupRegionLevels: data.groupRegionLevels ?? null,
     activityMode: data.activityMode ?? 'hosted',
     participantIntentId: data.participantIntentId ?? null,
     groupChatPostPolicy: data.groupChatPostPolicy ?? null,

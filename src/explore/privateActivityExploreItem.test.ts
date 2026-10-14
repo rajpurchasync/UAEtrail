@@ -36,4 +36,26 @@ describe('privateActivityExploreItem', () => {
     expect(item.latitude).toBe(23.1);
     expect(item.activity?.joinMode).toBe('private');
   });
+
+  it('copies groupRegionLevels to peek item for emirate filters', () => {
+    const activity = {
+      id: 'a2',
+      tenantId: 't1',
+      tenantSlug: 'host',
+      locationId: 'loc1',
+      title: 'Run',
+      activityType: 'event',
+      locationName: 'Hatta',
+      description: 'Group run',
+      date: '2026-11-01',
+      time: '07:00',
+      price: 0,
+      slotsTotal: 10,
+      slotsAvailable: 5,
+      status: 'published',
+      groupRegionLevels: { l1: 'AE', l2: 'Dubai', l3: 'Hatta', l4: null },
+    } satisfies ActivityDTO;
+    const item = buildExploreMapItemFromActivity(activity);
+    expect(item.groupRegionLevels?.l2).toBe('Dubai');
+  });
 });

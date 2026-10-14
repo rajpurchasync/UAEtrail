@@ -114,7 +114,12 @@ export const filterExploreMapItemsForList = (
 
   if (venueRegions.length > 0) {
     pool = pool.filter((item) => {
-      if (item.source === 'venue' || item.source === 'shop' || item.source === 'agency') {
+      if (
+        item.source === 'venue' ||
+        item.source === 'shop' ||
+        item.source === 'agency' ||
+        item.source === 'activity'
+      ) {
         return venueItemMatchesRegions(item, venueRegions);
       }
       return true;

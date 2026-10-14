@@ -40,7 +40,7 @@ describe('resolvePeekDetailAccess', () => {
     expect(resolvePeekDetailAccess(card, { isGuest: true })).toEqual({ kind: 'guest_gate' });
   });
 
-  it('gates hosted activity peeks for guests from wire', () => {
+  it('links hosted activity detail for guests when wire allows the detail page', () => {
     const card = baseCard({
       viewerAccess: {
         exposure: 'redacted',
@@ -52,7 +52,10 @@ describe('resolvePeekDetailAccess', () => {
         canAccessCrewSurfaces: false,
       },
     });
-    expect(resolvePeekDetailAccess(card, { isGuest: true })).toEqual({ kind: 'guest_gate' });
+    expect(resolvePeekDetailAccess(card, { isGuest: true })).toEqual({
+      kind: 'link',
+      href: '/activity/1',
+    });
   });
 
   it('links when wire grants full detail', () => {

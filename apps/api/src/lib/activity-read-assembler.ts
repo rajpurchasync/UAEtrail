@@ -1,4 +1,9 @@
-import type { OutingCategory, OutingTopic } from '@uaetrail/shared-types';
+import {
+  GROUP_REGION_LEVEL,
+  readGroupRegionAtLevel,
+  type OutingCategory,
+  type OutingTopic,
+} from '@uaetrail/shared-types';
 import type { Collection } from 'mongodb';
 import type { Activity, ActivityParticipant, Location } from '../domain/types.js';
 import { resolveJoinMode, shouldHideActivityFromExploreMap } from '../domain/activity-join-mode.js';
@@ -111,6 +116,7 @@ const mongoEventToEvent = (doc: MongoActivityDoc): Activity => {
   outingCategory: (doc.outingCategory as OutingCategory | null | undefined) ?? null,
   outingTopic: (doc.outingTopic as OutingTopic | null | undefined) ?? null,
   areaId: doc.areaId ?? null,
+  groupRegionLevels: doc.groupRegionLevels ?? null,
   activityMode: doc.activityMode ?? null,
   participantIntentId: doc.participantIntentId ?? null,
   groupChatPostPolicy: doc.groupChatPostPolicy ?? null,
@@ -140,11 +146,20 @@ const toParticipantUser = (user: AuthUserRecord | undefined) => ({
     : null
 });
 
-const fallbackLocationFromActivityDoc = (doc: MongoActivityDoc): Location =>
+const fallbackLocationFromActivityDoc = (
+  doc: MongoActivityDoc,
+  seed?: Pick<
+    Location,
+    'name' | 'region' | 'groupRegionLevels' | 'countryCode' | 'latitude' | 'longitude'
+  >
+): Location =>
   ({
     id: doc.locationId,
-    name: doc.title,
-    region: '',
+    name: seed?.name?.trim() || doc.title,
+    region:
+      seed?.region?.trim() ||
+      readGroupRegionAtLevel(seed?.groupRegionLevels, GROUP_REGION_LEVEL.state)?.trim() ||
+      '',
     areaLabel: null,
     activityType: ActivityType.HIKING,
     description: doc.description,
@@ -160,19 +175,29 @@ const fallbackLocationFromActivityDoc = (doc: MongoActivityDoc): Location =>
     duration: null,
     elevation: null,
     campingType: null,
-    latitude: doc.meetingLat ?? doc.startLat ?? doc.parkingLat ?? null,
-    longitude: doc.meetingLng ?? doc.startLng ?? doc.parkingLng ?? null,
+    latitude:
+      seed?.latitude ??
+      doc.meetingLat ??
+      doc.startLat ??
+      doc.parkingLat ??
+      null,
+    longitude:
+      seed?.longitude ??
+      doc.meetingLng ??
+      doc.startLng ??
+      doc.parkingLng ??
+      null,
+    groupRegionLevels: seed?.groupRegionLevels ?? doc.groupRegionLevels ?? null,
     highlights: [],
     surfaceType: [],
     tags: [],
     parkingLink: null,
     parkingLat: doc.parkingLat ?? null,
     parkingLng: doc.parkingLng ?? null,
-    emirate: null,
     premiumImages: [],
     accessibleBy: [],
     viewCount: 0,
-    countryCode: 'AE',
+    countryCode: seed?.countryCode ?? 'AE',
     gpxKey: null,
     guidePdfKey: null,
     guideMarkdown: null,
@@ -208,13 +233,20 @@ const loadActiveLocations = async (locationIds: string[]): Promise<Map<string, L
   return map;
 };
 
+const activityDocHasMapCoordinates = (doc: MongoActivityDoc): boolean =>
+  (doc.meetingLat != null && doc.meetingLng != null) ||
+  (doc.startLat != null && doc.startLng != null) ||
+  (doc.parkingLat != null && doc.parkingLng != null);
+
 const assembleEventsWithPublicRelations = async (
   docs: MongoActivityDoc[]
 ): Promise<ActivityWithPublicRelations[]> => {
   if (docs.length === 0) return [];
 
-  const locationMap = await loadActiveLocations(docs.map((doc) => doc.locationId));
-  const filteredDocs = docs.filter((doc) => locationMap.has(doc.locationId));
+  const locationMap = await loadLocationsByIds(docs.map((doc) => doc.locationId), false);
+  const filteredDocs = docs.filter(
+    (doc) => locationMap.has(doc.locationId) || activityDocHasMapCoordinates(doc)
+  );
   if (filteredDocs.length === 0) return [];
 
   const tenantIds = [...new Set(filteredDocs.map((doc) => doc.tenantId))];
@@ -246,11 +278,10 @@ const assembleEventsWithPublicRelations = async (
 
   const users = await findAuthUsersByIds([...userIds]);
   const userMap = new Map(users.map((user) => [user._id, user]));
-
   return filteredDocs.flatMap((doc) => {
-    const location = locationMap.get(doc.locationId);
+    const location = locationMap.get(doc.locationId) ?? fallbackLocationFromActivityDoc(doc);
     const tenant = tenantMap.get(doc.tenantId);
-    if (!location || !tenant) return [];
+    if (!tenant) return [];
 
     const participants = (participantsByActivity.get(doc._id) ?? []).map((participant) => ({
       id: participant._id,
@@ -296,11 +327,11 @@ const filterPublishedDocs = async (
   docs: MongoActivityDoc[],
   when: 'upcoming' | 'past' | 'all'
 ): Promise<MongoActivityDoc[]> => {
-  const activeLocations = await loadActiveLocations(docs.map((doc) => doc.locationId));
+  const locations = await loadLocationsByIds(docs.map((doc) => doc.locationId), false);
   const now = new Date();
   return docs.filter((doc) => {
     if (doc.status !== ActivityStatus.PUBLISHED) return false;
-    if (!activeLocations.has(doc.locationId)) return false;
+    if (!locations.has(doc.locationId) && !activityDocHasMapCoordinates(doc)) return false;
     if (shouldHideActivityFromExploreMap(doc.joinMode, doc.requirements)) return false;
     if (when === 'upcoming' && doc.startAt < now) return false;
     if (when === 'past' && doc.startAt >= now) return false;
@@ -356,14 +387,16 @@ export const listPublishedActivitiesForExploreMapFromMongo = async (
       joinMode: { $ne: 'private' },
     })
     .sort({ startAt: 1 })
-    .limit(take * 3)
+    .limit(Math.max(take * 8, 200))
     .toArray();
 
   const visible = docs.filter(
     (doc) => !shouldHideActivityFromExploreMap(doc.joinMode, doc.requirements)
   );
 
-  return assembleEventsForExploreMap(visible.slice(0, take));
+  const filtered = await filterPublishedDocs(visible, 'upcoming');
+  const assembled = await assembleEventsForExploreMap(filtered);
+  return assembled.slice(0, take);
 };
 
 export const findPublishedActivityWithPreviewsFromMongo = async (
@@ -549,7 +582,6 @@ const assembleEventsForExploreMap = async (
 
   const users = await findAuthUsersByIds([...userIds]);
   const userMap = new Map(users.map((user) => [user._id, user]));
-
   return filteredDocs.flatMap((doc) => {
     const linkedLocation = locationMap.get(doc.locationId);
     const location = linkedLocation ?? fallbackLocationFromActivityDoc(doc);

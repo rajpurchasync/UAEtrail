@@ -92,10 +92,6 @@ export const JoinRequestModal = ({
     e.preventDefault();
     if (full) return;
 
-    if (!isRsvp && !hasInstructions) {
-      setError('This activity is missing mandatory instructions — contact the host before joining.');
-      return;
-    }
     if (needsAgreement && !agreed) {
       setError('Please read the mandatory instructions and confirm before joining.');
       return;
@@ -184,9 +180,10 @@ export const JoinRequestModal = ({
                 </ul>
               </div>
             ) : !isRsvp ? (
-              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
-                <p className="text-sm text-amber-900">
-                  This activity does not have mandatory instructions yet. Contact the host before requesting to join.
+              <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                <p className="text-sm text-gray-700">
+                  The host has not added mandatory instructions for this outing. You can still send a request — use the
+                  note below if you want to introduce yourself or ask a question.
                 </p>
               </div>
             ) : null}
@@ -234,7 +231,7 @@ export const JoinRequestModal = ({
 
             <button
               type="submit"
-              disabled={submitting || full || (!isRsvp && !hasInstructions) || (hasInstructions && !agreed)}
+              disabled={submitting || full || (hasInstructions && !agreed)}
               className="w-full bg-emerald-600 text-white py-3 rounded-lg hover:bg-emerald-700 transition-colors font-medium disabled:opacity-60"
             >
               {submitLabel}

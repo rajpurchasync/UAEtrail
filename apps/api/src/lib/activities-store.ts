@@ -13,6 +13,15 @@ import {
 } from './entity-builders.js';
 import { invalidateExploreMapCache } from './explore-map-cache.js';
 import {
+  GROUP_REGION_LEVEL,
+  readGroupRegionAtLevel,
+  sameGroupRegionLevels,
+} from '@uaetrail/shared-types';
+import {
+  resolveGroupRegionLevelsForActivityDoc,
+  stampLocationGroupRegionLevels,
+} from './group-region-resolution.js';
+import {
   findPublishedActivityWithPreviewsFromMongo,
   findPublicTenantProfileBySlugFromMongo,
   findTenantActivityDocFromMongo,
@@ -88,7 +97,13 @@ export const listTenantActivitiesDetailed = async (input: {
 export const createActivityDetailed = async (data: ActivityCreateInput): Promise<ActivityWithTenantRelations> => {
   const activityId = newEntityId();
   const mongoDoc = buildActivityFromCreateInput(data, activityId);
-  await writeActivityDocToMongo(mongoDoc);
+  const linkedLocation = mongoDoc.locationId ? await findLocationInMongo(mongoDoc.locationId) : null;
+  const groupRegionLevels = await resolveGroupRegionLevelsForActivityDoc(mongoDoc, linkedLocation);
+  mongoDoc.groupRegionLevels = groupRegionLevels;
+  await writeActivityDocToMongo(mongoDoc, {
+    countryCode: linkedLocation?.countryCode ?? 'AE',
+    location: linkedLocation,
+  });
 
   const created = await findTenantActivityFromMongo(activityId, mongoDoc.tenantId);
   if (!created) {
@@ -156,6 +171,28 @@ export const updateActivityDetailed = async (
   const existing = await findActivityDocInMongo(activityId);
   if (!existing) {
     throw new Error('Failed to update event record.');
+  }
+
+  const meetingCoordsTouched =
+    data.meetingLat !== undefined ||
+    data.meetingLng !== undefined ||
+    data.startLat !== undefined ||
+    data.startLng !== undefined ||
+    data.parkingLat !== undefined ||
+    data.parkingLng !== undefined;
+  if (meetingCoordsTouched) {
+    const linked = existing.locationId ? await findLocationInMongo(existing.locationId) : null;
+    const groupRegionLevels = await resolveGroupRegionLevelsForActivityDoc(existing, linked);
+    if (!sameGroupRegionLevels(groupRegionLevels, existing.groupRegionLevels)) {
+      await patchActivityInMongo(
+        activityId,
+        { groupRegionLevels },
+        {
+          countryCode: linked?.countryCode ?? 'AE',
+          location: linked,
+        }
+      );
+    }
   }
 
   if (existing.status === ActivityStatus.PUBLISHED) {
@@ -278,13 +315,35 @@ export const publishActivityById = async (activityId: string) => {
     throw new ApiError(
       400,
       'activity_area_required',
-      'Link a catalog place with an area before publishing to the explore map.'
+      'Set a meeting pin inside a curated UAE outdoor area, or link a place that already has an area, before publishing to the explore map.'
     );
   }
-  await patchActivityInMongo(activityId, {
-    status: ActivityStatus.PUBLISHED,
-    publishedAt,
-  });
+  const publishGroupRegionLevels =
+    draftDoc && publishLocation
+      ? await resolveGroupRegionLevelsForActivityDoc(draftDoc, publishLocation)
+      : null;
+  if (
+    publishLocation &&
+    !readGroupRegionAtLevel(publishLocation.groupRegionLevels, GROUP_REGION_LEVEL.state)?.trim()
+  ) {
+    const stampedLocation = await stampLocationGroupRegionLevels(publishLocation);
+    if (readGroupRegionAtLevel(stampedLocation.groupRegionLevels, GROUP_REGION_LEVEL.state)?.trim()) {
+      await writeLocationToMongo(stampedLocation);
+    }
+  }
+  await patchActivityInMongo(
+    activityId,
+    {
+      status: ActivityStatus.PUBLISHED,
+      publishedAt,
+      ...(areaId && !draftDoc?.areaId?.trim() ? { areaId } : {}),
+      ...(publishGroupRegionLevels ? { groupRegionLevels: publishGroupRegionLevels } : {}),
+    },
+    {
+      countryCode: publishLocation?.countryCode ?? 'AE',
+      location: publishLocation,
+    }
+  );
   const mongoDoc = await findActivityDocInMongo(activityId);
   if (!mongoDoc) {
     throw new Error('Failed to publish event.');
@@ -335,7 +394,7 @@ export const listSubmittedLocationsByUser = async (userId: string) => {
 
 export const createLocationRecord = async (data: Parameters<typeof buildLocationFromCreateInput>[0]) => {
   const locationId = newEntityId();
-  const location = buildLocationFromCreateInput(data, locationId);
+  const location = await stampLocationGroupRegionLevels(buildLocationFromCreateInput(data, locationId));
   await writeLocationToMongo(location);
   return location;
 };

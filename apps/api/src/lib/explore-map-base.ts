@@ -172,6 +172,18 @@ export const buildExploreMapBasePayload = async (): Promise<{ items: ExploreMapI
     const fromCoords = hikingDual
       ? { latitude: activity.startLat as number, longitude: activity.startLng as number }
       : resolveFromCoords(activity, event.location);
+    const pinLatitude =
+      fromCoords?.latitude ??
+      activity.displayLatitude ??
+      activity.locationLatitude ??
+      event.location?.latitude ??
+      null;
+    const pinLongitude =
+      fromCoords?.longitude ??
+      activity.displayLongitude ??
+      activity.locationLongitude ??
+      event.location?.longitude ??
+      null;
     const toCoords = rideshare
       ? resolveToCoords(activity)
       : hikingDual
@@ -189,8 +201,8 @@ export const buildExploreMapBasePayload = async (): Promise<{ items: ExploreMapI
           subtitle: rideshare
             ? [display.fromLabel, display.toLabel].filter(Boolean).join(' → ') || activity.locationName
             : activity.locationName,
-          latitude: fromCoords?.latitude ?? null,
-          longitude: fromCoords?.longitude ?? null,
+          latitude: pinLatitude,
+          longitude: pinLongitude,
           toLatitude: toCoords?.latitude ?? null,
           toLongitude: toCoords?.longitude ?? null,
           path: resolveEntityPath({ kind: 'activity', id: activity.id }),
@@ -220,6 +232,7 @@ export const buildExploreMapBasePayload = async (): Promise<{ items: ExploreMapI
           fromLabel: display.fromLabel,
           toLabel: display.toLabel,
           activity,
+          groupRegionLevels: activity.groupRegionLevels ?? null,
         },
         event.location?.areaId ?? activity.areaId,
         areaSlugById
@@ -250,6 +263,7 @@ export const buildExploreMapBasePayload = async (): Promise<{ items: ExploreMapI
             source: 'venue',
             title: dto.name,
             subtitle: dto.region ?? null,
+            groupRegionLevels: dto.groupRegionLevels ?? null,
             latitude,
             longitude,
             path: exploreMapPeekPath(`venue:${dto.id}`, 'shops'),
@@ -300,6 +314,7 @@ export const buildExploreMapBasePayload = async (): Promise<{ items: ExploreMapI
               id: dto.id,
               activityType: 'event',
               region: dto.region,
+              groupRegionLevels: dto.groupRegionLevels ?? null,
               description: dto.description,
               childFriendly: dto.childFriendly,
               season: dto.season ?? [],
@@ -334,6 +349,7 @@ export const buildExploreMapBasePayload = async (): Promise<{ items: ExploreMapI
               id: dto.id,
               activityType: 'event',
               region: dto.region,
+              groupRegionLevels: dto.groupRegionLevels ?? null,
               description: dto.description,
               childFriendly: dto.childFriendly,
               season: dto.season ?? [],
@@ -375,6 +391,7 @@ export const buildExploreMapBasePayload = async (): Promise<{ items: ExploreMapI
             id: dto.id,
             activityType: kind,
             region: dto.region,
+            groupRegionLevels: dto.groupRegionLevels ?? null,
             description: dto.description,
             difficulty: dto.difficulty,
             distance: dto.distance,
@@ -425,6 +442,7 @@ export const buildExploreMapBasePayload = async (): Promise<{ items: ExploreMapI
           source: 'shop',
           title: merchant?.shopName ?? shop.name,
           subtitle: shopPresence === 'online' ? 'Online partner' : shop.region ?? merchant?.region ?? null,
+          groupRegionLevels: shop.groupRegionLevels ?? null,
           about: merchant?.description ?? shop.description ?? null,
           latitude,
           longitude,

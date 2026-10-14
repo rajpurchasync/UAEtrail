@@ -1,0 +1,38 @@
+# UAE Trail — extended machine documentation
+# https://uaetrail.com/llms-full.txt
+
+## Product summary
+UAE Trail is a consumer outdoor social product: find your people, get outside, go together.
+Residents, expats, tourists, and visitors use the explore map to discover real outings and places,
+then RSVP or request to join host-approved plans.
+
+## Agent integration (recommended)
+1. Read https://uaetrail.com/api/v1/agent/manifest.json for live URLs and policy.
+2. Search with GET https://uaetrail.com/api/v1/agent/discover
+   - Required: q (1–64 characters)
+   - Optional: kind=all|activity|place, region (emirate substring), limit (1–25, default 10)
+3. Open canonical entity URLs from `results[].url` in the JSON response.
+4. For rich previews / structured data on activities, crawlers may fetch
+   https://uaetrail.com/og/activity/{id} (HTML with Open Graph + JSON-LD Event).
+
+## Response shape (discover)
+- schema_version: "1.0"
+- query: echoed search string
+- total: number of results returned
+- results[]: { kind, id, title, summary, url, region?, activityType?, date?, time?, placeKind? }
+
+## REST alternatives
+- Map bundle: GET /api/v1/explore/map (activities, venues, shops, participant demand pins)
+- Activity detail: GET /api/v1/activities/{id}
+- Places list: GET /api/v1/locations?page=1&pageSize=20
+
+## Sitemaps
+- https://uaetrail.com/sitemap.xml
+- https://uaetrail.com/sitemap-activities.xml
+
+## Boundaries
+Allowed without login: /explore, entity detail pages, /faq, public /api/v1/agent/*, public read APIs above.
+Do not index or bulk-harvest: /profile, /messages, /host, /admin, /api/v1/me/*, /api/v1/chat/*.
+
+## OpenAPI
+When served from the API host: GET /api/openapi.json (see manifest documentation.openapi_json).
