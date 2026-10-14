@@ -136,6 +136,8 @@ export const useExploreOrganizeFromActivity = ({
     organizeKind,
     setComposeRoute,
     clearOrganizeFromParam,
+    isCommunityHost,
+    hostTiers,
   ]);
 
   const clearOrganizeFromPrefill = useCallback(() => {

@@ -254,6 +254,7 @@ const ADD_KIND_TO_ID: Record<ContributeVenueKind, ComposeFlowId> = {
   camping: 'add.camp',
   shop: 'add.shop',
   event: 'add.spot',
+  rideshare: 'add.spot',
 };
 
 /** Resolve catalog entry from an open compose route (`compose=organize:hiking`, etc.). */

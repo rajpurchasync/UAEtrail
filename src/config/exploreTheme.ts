@@ -236,7 +236,7 @@ export const exploreVenueListFilterActiveClass = (key: VenueListFilterKey): stri
   }
 };
 
-export type MapPinRingKind = 'hiking' | 'camping' | 'event' | 'shop' | 'agency' | 'rideshare';
+export type MapPinRingKind = 'hiking' | 'camping' | 'event' | 'shop' | 'agency' | 'rideshare' | 'area';
 export type MapPinRingSource = 'activity' | 'venue' | 'shop' | 'agency' | 'seeking' | 'demand';
 
 /** Type-colored ring on map pins — matches filter / badge colors. */
@@ -256,6 +256,8 @@ export const exploreMapPinRingColor = (
       return '#e11d48';
     case 'agency':
       return '#4f46e5';
+    case 'area':
+      return '#64748b';
     default:
       return '#059669';
   }
@@ -266,6 +268,7 @@ export const EXPLORE_PEEK_CTA = {
   primary: 'w-full rounded-xl bg-emerald-600 py-3.5 text-sm font-bold text-white shadow-sm hover:bg-emerald-700',
   secondary:
     'block w-full rounded-xl border border-neutral-200 bg-white py-3.5 text-center text-sm font-bold text-neutral-800',
-  secondaryText: 'w-full py-2.5 text-center text-sm font-semibold text-neutral-700',
+  secondaryText:
+    'block w-full py-2.5 text-center text-sm font-semibold text-neutral-700',
   link: 'text-sm font-semibold text-sky-800 underline underline-offset-2 hover:text-sky-950',
 } as const;

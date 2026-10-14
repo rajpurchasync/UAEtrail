@@ -151,7 +151,7 @@ export const WELCOME_PATH = '/welcome' as const;
 export const VERIFY_PATH = '/verify' as const;
 export const FORGOT_PASSWORD_PATH = '/forgot-password' as const;
 
-export const signInPath = (options?: {
+const authFunnelQuery = (options?: {
   redirect?: string;
   focus?: string;
   scrollY?: number;
@@ -166,8 +166,25 @@ export const signInPath = (options?: {
   ) {
     params.set('scrollY', String(Math.round(options.scrollY)));
   }
-  const qs = params.toString();
+  return params.toString();
+};
+
+export const signInPath = (options?: {
+  redirect?: string;
+  focus?: string;
+  scrollY?: number;
+}): string => {
+  const qs = authFunnelQuery(options);
   return qs ? `${SIGNIN_PATH}?${qs}` : SIGNIN_PATH;
+};
+
+export const signUpPath = (options?: {
+  redirect?: string;
+  focus?: string;
+  scrollY?: number;
+}): string => {
+  const qs = authFunnelQuery(options);
+  return qs ? `${SIGNUP_PATH}?${qs}` : SIGNUP_PATH;
 };
 
 /** Publishing console → activity participants roster (`checkin=` still accepted on Plan). */

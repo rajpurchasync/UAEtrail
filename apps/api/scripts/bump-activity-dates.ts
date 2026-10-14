@@ -1,8 +1,9 @@
 /**
- * One-off helper: bump every activity startAt (and endAt when present) into the future.
+ * Bump every activity startAt (and endAt when present) to ~2 months from now, staggered by 2 days.
  * Usage: npm --workspace @uaetrail/api run bump-activity-dates
  */
 import { connectMongo, disconnectMongo, getMongoClient } from '../src/lib/mongo.js';
+import { invalidateExploreMapCache } from '../src/lib/explore-map-cache.js';
 
 const bumpActivityDates = async () => {
   await connectMongo();
@@ -15,7 +16,7 @@ const bumpActivityDates = async () => {
   }
 
   const anchor = new Date();
-  anchor.setDate(anchor.getDate() + 3);
+  anchor.setMonth(anchor.getMonth() + 2);
   anchor.setHours(9, 0, 0, 0);
 
   let updated = 0;
@@ -40,6 +41,7 @@ const bumpActivityDates = async () => {
   }
 
   console.log(`Updated ${updated} activit${updated === 1 ? 'y' : 'ies'} to future dates.`);
+  await invalidateExploreMapCache();
 };
 
 bumpActivityDates()

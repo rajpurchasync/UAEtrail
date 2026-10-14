@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { GoogleLogin, CredentialResponse } from '@react-oauth/google';
+import { getGoogleClientId } from '../../config/googleAuth';
+
+export { getGoogleClientId, isGoogleAuthEnabled } from '../../config/googleAuth';
 
 interface GoogleSignInButtonProps {
   onSuccess: (idToken: string) => Promise<void>;
@@ -13,11 +16,6 @@ const LABELS: Record<NonNullable<GoogleSignInButtonProps['text']>, string> = {
   signup_with: 'Sign up with Google',
   continue_with: 'Continue with Google'
 };
-
-export const getGoogleClientId = (): string =>
-  (import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined)?.trim() ?? '';
-
-export const isGoogleAuthEnabled = (): boolean => Boolean(getGoogleClientId());
 
 const GoogleLogo = () => (
   <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">

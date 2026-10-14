@@ -187,7 +187,10 @@ export const buildMapPeekEngagementPolicyInput = (input: {
     joinMode: input.joinMode,
     joinRequestStatus: input.joinRequestStatus,
     myParticipation: input.onRoster ? { onRoster: true } : null,
-    myRequest: null,
+    myRequest:
+      input.joinRequestStatus != null
+        ? { status: input.joinRequestStatus, canWithdraw: true }
+        : null,
     confirmedParticipantCount: input.confirmedParticipantCount,
     pendingJoinInviteCount: input.pendingJoinInviteCount,
   });

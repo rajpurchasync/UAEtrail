@@ -169,7 +169,7 @@ export const useActivityDetailViewModel = ({
         ? 'https://images.unsplash.com/photo-1452626038306-9fff603b72e5?w=1600'
         : 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=1600');
 
-  const participants = activity.participants ?? [];
+  const participants = useMemo(() => activity.participants ?? [], [activity.participants]);
   const rosterParticipants = useMemo(() => {
     if (!canAccessCrewSurfaces || !PARTICIPANT_PRIVACY.showPreJoin) return [];
     if (!viewerEntitlements || viewerEntitlements.canViewFullBuddyRoster) {
@@ -209,8 +209,9 @@ export const useActivityDetailViewModel = ({
         tenantSlug: activity.tenantSlug,
         hostUserId: activityHostUserId(activity),
       });
-  const canOpenHostProfile =
-    !viewerEntitlements || viewerEntitlements.canViewHostProfileBeforeJoin;
+  const canOpenHostProfile = Boolean(
+    !viewerEntitlements || viewerEntitlements.canViewHostProfileBeforeJoin
+  );
   const hostPath = hostProfilePath && canOpenHostProfile ? hostProfilePath : null;
   const hostProfileHint =
     publishingProfileKind && publishingProfileKind !== 'community'
@@ -234,16 +235,18 @@ export const useActivityDetailViewModel = ({
     [activity.requirements]
   );
   const showTransportEncouragementMobile = showTransportEncouragementOnTab(mobileTab);
-  const showTransportHostProUpsell =
+  const showTransportHostProUpsell = Boolean(
     showTransportEncouragementMobile &&
-    Boolean(hostCrewChatPolicy) &&
-    viewerEntitlements &&
-    !viewerEntitlements.canAddLinkedRide;
-  const showTransportParticipantProUpsell =
+      hostCrewChatPolicy &&
+      viewerEntitlements &&
+      !viewerEntitlements.canAddLinkedRide
+  );
+  const showTransportParticipantProUpsell = Boolean(
     showTransportEncouragementMobile &&
-    participantFooterShortcuts &&
-    viewerEntitlements &&
-    !viewerEntitlements.canOfferTransport;
+      participantFooterShortcuts &&
+      viewerEntitlements &&
+      !viewerEntitlements.canOfferTransport
+  );
 
   const mobilePlanPanel = activityDetailTabPanelClass('plan', mobileTab);
   const mobilePlacePanel = activityDetailTabPanelClass('place', mobileTab);
@@ -255,15 +258,17 @@ export const useActivityDetailViewModel = ({
   const showInviteShare = !previewMode && activity.status === 'published';
   const tabFooterKind = wireFooterByTab?.[mobileTab] ?? 'plan_join';
   const consumerJoinEnabled = !isEmbedded && !previewMode;
-  const hostUserId = activityHostUserId(activity);
-  const showFooterMessageHost =
+  const hostUserId = activityHostUserId(activity) ?? null;
+  const showFooterMessageHost = Boolean(
     consumerJoinEnabled &&
     !canAccessCrewSurfaces &&
     !hostCrewChatPolicy &&
     viewerEntitlements?.canMessageHostBeforeJoin &&
-    Boolean(hostUserId);
+    Boolean(hostUserId)
+  );
 
-  const { joinUiState, sharePayload, stickyFooter, sidebarJoin } = useActivityDetailJoinSurfaces({
+  const { joinUiState, sharePayload, stickyFooter, sidebarJoin, planRequestManagePanel } =
+    useActivityDetailJoinSurfaces({
     activity,
     previewMode,
     isEmbedded,
@@ -370,6 +375,7 @@ export const useActivityDetailViewModel = ({
     sharePayload,
     stickyFooter,
     sidebarJoin,
+    planRequestManagePanel,
     message,
     error,
     hostPath,

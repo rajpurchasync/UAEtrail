@@ -70,7 +70,7 @@ utils/          authRouting, shopPaths — explore URL builders live in `src/exp
 
 **Mobile IA:** Bottom tabs **Explore · My Plans · Chat** (`/explore`, `/plan`, `/chat`); Profile via header avatar. Signed-in default landing is `/explore`. Guest marketing is `/` only — see [`NAVIGATION.md`](./NAVIGATION.md), [`LANDING.md`](./LANDING.md), [`NORTHSTAR.md`](./NORTHSTAR.md). Plan manage surfaces link to Chat for crew threads — not embedded chat on `/plan`.
 
-**SEO:** `PageMeta` updates title/description/canonical per route; static `robots.txt` + `sitemap.xml` in `public/`.
+**SEO & agents:** `PageMeta` updates title/description/canonical per route; static `robots.txt`, `sitemap.xml`, `llms.txt`, and `/.well-known/agent.json` in `public/`. Public agent discovery: `GET /api/v1/agent/manifest.json` and `GET /api/v1/agent/discover` (see [`API_ROUTING.md`](./API_ROUTING.md)).
 
 **Loading:** Route-level `Suspense` + `PageSkeleton` / `CardGridSkeleton` on data-heavy pages.
 

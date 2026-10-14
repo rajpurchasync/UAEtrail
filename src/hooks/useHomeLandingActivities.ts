@@ -1,15 +1,17 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { ActivityDTO } from '@uaetrail/shared-types';
+import { groupRegionTextAtBrowseFilterLevel } from '../config/groupRegionFilter';
 import { buildExploreWhenSegment } from '@uaetrail/shared-types';
 import { fetchApiActivities } from './publicCatalogClientApi';
 import { HOME_LANDING_FALLBACK_ACTIVITIES, type HomeLandingActivity } from '../content/homeLanding';
-import { useSafeAsyncEffect } from './useSafeAsyncEffect';
 
 export interface HomeLandingActivitiesState {
   activities: HomeLandingActivity[];
   totalCount: number;
   loading: boolean;
   fromLiveApi: boolean;
+  error: boolean;
+  refetch: () => void;
 }
 
 const resolveWhenSuffix = (activity: ActivityDTO): 'flexible' | 'fixed' | null => {
@@ -22,7 +24,13 @@ const resolveWhenSuffix = (activity: ActivityDTO): 'flexible' | 'fixed' | null =
 const toLandingActivity = (activity: ActivityDTO): HomeLandingActivity => ({
   id: activity.id,
   title: activity.title || activity.locationName,
-  region: activity.region ?? 'UAE',
+  description: activity.description?.trim() || null,
+  region:
+    groupRegionTextAtBrowseFilterLevel(activity.groupRegionLevels)?.trim() ||
+    activity.region?.trim() ||
+    'UAE',
+  date: activity.date,
+  time: activity.time,
   whenLabel:
     buildExploreWhenSegment(activity.date, activity.time, resolveWhenSuffix(activity)) ??
     activity.date,
@@ -33,43 +41,86 @@ const toLandingActivity = (activity: ActivityDTO): HomeLandingActivity => ({
   path: `/activity/${activity.id}`,
 });
 
-const fallbackState = (): HomeLandingActivitiesState => ({
-  activities: HOME_LANDING_FALLBACK_ACTIVITIES,
-  totalCount: HOME_LANDING_FALLBACK_ACTIVITIES.length,
-  loading: false,
-  fromLiveApi: false,
-});
-
 /** Public upcoming activities for marketing landing — falls back to curated cards. */
 export const useHomeLandingActivities = (): HomeLandingActivitiesState => {
-  const [state, setState] = useState<HomeLandingActivitiesState>({
+  const [state, setState] = useState<Omit<HomeLandingActivitiesState, 'refetch'>>({
     activities: HOME_LANDING_FALLBACK_ACTIVITIES,
     totalCount: HOME_LANDING_FALLBACK_ACTIVITIES.length,
     loading: true,
     fromLiveApi: false,
+    error: false
   });
 
-  useSafeAsyncEffect(async (isActive) => {
-    try {
-      const listings = await fetchApiActivities('upcoming');
-      if (!isActive()) return;
-      const upcoming = listings.slice(0, 6);
-      if (upcoming.length === 0) {
-        setState(fallbackState());
-        return;
-      }
-      setState({
-        activities: upcoming.map(toLandingActivity),
-        totalCount: listings.length,
-        loading: false,
-        fromLiveApi: true,
+  const load = useCallback(() => {
+    let cancelled = false;
+    setState((prev) => ({ ...prev, loading: true, error: false }));
+
+    void fetchApiActivities('upcoming')
+      .then((listings) => {
+        if (cancelled) return;
+        const upcoming = listings.slice(0, 12);
+        if (upcoming.length === 0) {
+          setState({
+            activities: HOME_LANDING_FALLBACK_ACTIVITIES,
+            totalCount: HOME_LANDING_FALLBACK_ACTIVITIES.length,
+            loading: false,
+            fromLiveApi: false,
+            error: false
+          });
+          return;
+        }
+        setState({
+          activities: upcoming.map(toLandingActivity),
+          totalCount: listings.length,
+          loading: false,
+          fromLiveApi: true,
+          error: false
+        });
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setState({
+          activities: HOME_LANDING_FALLBACK_ACTIVITIES,
+          totalCount: HOME_LANDING_FALLBACK_ACTIVITIES.length,
+          loading: false,
+          fromLiveApi: false,
+          error: true
+        });
       });
-    } catch {
-      if (isActive()) {
-        setState(fallbackState());
-      }
-    }
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  return state;
+  useEffect(() => {
+    let cancelled = false;
+    let idleId: number | undefined;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
+    const run = () => {
+      if (cancelled) return;
+      load();
+    };
+
+    if (typeof requestIdleCallback !== 'undefined') {
+      idleId = requestIdleCallback(run, { timeout: 3000 });
+    } else {
+      timeoutId = setTimeout(run, 500);
+    }
+
+    return () => {
+      cancelled = true;
+      if (idleId !== undefined && typeof cancelIdleCallback !== 'undefined') {
+        cancelIdleCallback(idleId);
+      }
+      if (timeoutId !== undefined) clearTimeout(timeoutId);
+    };
+  }, [load]);
+
+  const refetch = useCallback(() => {
+    load();
+  }, [load]);
+
+  return { ...state, refetch };
 };

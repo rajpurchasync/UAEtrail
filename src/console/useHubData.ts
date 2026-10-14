@@ -39,7 +39,7 @@ export const useConsoleHubData = () => {
     enabled: Boolean(tenantId),
   });
 
-  const activities = data?.activities ?? [];
+  const activities = useMemo(() => data?.activities ?? [], [data?.activities]);
 
   const draftCount = useMemo(
     () => activities.filter((item) => item.status === 'draft').length,
@@ -77,7 +77,7 @@ export const useConsoleHubData = () => {
     await refetch();
   }, [queryClient, refetch, tenantId]);
 
-  const requests = data?.requests ?? [];
+  const requests = useMemo(() => data?.requests ?? [], [data?.requests]);
 
   const pendingRequests = useMemo(
     () => requests.filter((request) => request.status === 'pending'),

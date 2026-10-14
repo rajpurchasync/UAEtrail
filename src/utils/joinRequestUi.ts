@@ -1,4 +1,5 @@
 import type { MyActivityRequestDTO, ActivityParticipationDTO } from '@uaetrail/shared-types';
+import { JOIN_REQUEST_PENDING_WITH_HOST_BUTTON } from '../content/joinWithdrawCopy';
 
 export type JoinRequestUiState =
   | { kind: 'open' }
@@ -33,7 +34,7 @@ export const resolveJoinRequestUiState = (input: {
 };
 
 export const pendingApprovalLabel = (status: 'pending' | 'waitlisted'): string =>
-  status === 'waitlisted' ? 'On waitlist' : 'Waiting for host';
+  status === 'waitlisted' ? 'On waitlist' : JOIN_REQUEST_PENDING_WITH_HOST_BUTTON;
 
 /** Human-friendly label for join request status badges. */
 export const requestStatusLabel = (status: string): string => {

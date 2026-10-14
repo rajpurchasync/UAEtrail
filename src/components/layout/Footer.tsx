@@ -1,105 +1,100 @@
-import { EXPLORE_MAP_PATH } from '../../config/routingCatalog';
-import { SOCIAL_EXTERNAL_LINK_PROPS, SOCIAL_LINKS } from '../../config/socialLinks';
-import { Facebook, Instagram } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
+import { LLMS_TXT_PATH } from '../../config/seo';
+import { HOME_FOOTER_FOUNDERS, HOME_FOOTER_FOUNDERS_HEADING } from '../../content/homeMarketing';
+import { SocialChannelLinks } from './SocialChannelLinks';
 
-import { WhatsAppIcon } from '../icons/WhatsAppIcon';
+const HOME_FOOTER_FOUNDERS_SECTION_CLASS =
+  'mb-8 rounded-2xl border border-emerald-700/35 bg-gradient-to-b from-emerald-950/50 to-gray-900/80 px-5 py-6 text-left shadow-[inset_0_1px_0_rgba(52,211,153,0.12)] sm:px-6 md:mb-10 md:px-8 md:py-8';
 
-const footerLinkClass = 'hover:text-emerald-500 transition-colors text-xs sm:text-sm';
+const FOOTER_LINKS = [
+  { label: 'About', to: '/about' },
+  { label: 'Contact Us', to: '/contact' },
+  { label: 'Terms and Conditions', to: '/terms' },
+  { label: 'FAQ', to: '/faq' },
+  { label: 'Privacy', to: '/privacy' },
+  { label: 'Site map', to: '/sitemap' }
+] as const;
 
-export const Footer = () => (
-  <footer className="bg-gray-900 text-gray-300 pb-safe">
-    <div className="md:hidden border-t border-gray-800 px-4 py-4">
-      <div className="flex items-center justify-between gap-3 text-xs">
-        <Link to={EXPLORE_MAP_PATH} className={footerLinkClass}>
-          Map
-        </Link>
-        <Link to="/faq" className={footerLinkClass}>
-          FAQ
-        </Link>
-        <a
-          href={SOCIAL_LINKS.instagram}
-          {...SOCIAL_EXTERNAL_LINK_PROPS}
-          className={footerLinkClass}
-          aria-label="Instagram"
-        >
-          Instagram
-        </a>
-        <a href="mailto:support@uaetrail.com" className={footerLinkClass}>
-          Contact
-        </a>
-      </div>
-      <p className="mt-3 text-center text-[11px] text-gray-500">&copy; 2026 UAE Trail</p>
-    </div>
+const linkClass = 'text-xs text-gray-400 transition-colors hover:text-emerald-400 sm:text-sm';
 
-    <div className="hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:block md:py-10">
-      <div className="grid grid-cols-3 gap-6 md:gap-10">
-        <div>
-          <h3 className="text-white font-semibold mb-3 text-xs sm:text-sm uppercase tracking-wide">Quick Links</h3>
-          <ul className="space-y-2">
-            <li>
-              <Link to="/" className={footerLinkClass}>
-                Home
-              </Link>
-            </li>
-            <li>
-              <Link to={EXPLORE_MAP_PATH} className={footerLinkClass}>
-                Map
-              </Link>
-            </li>
+export const Footer = () => {
+  const { pathname } = useLocation();
+  const isHome = pathname === '/';
+
+  return (
+    <footer className="bg-gray-900 text-gray-300 pb-safe">
+      <div className="mx-auto max-w-7xl px-4 py-6 text-center sm:px-6 lg:px-8 md:py-8">
+        {isHome ? (
+          <section
+            className={`home-v2-font ${HOME_FOOTER_FOUNDERS_SECTION_CLASS}`}
+            aria-labelledby="home-footer-founders-heading"
+          >
+            <div
+              id="home-footer-founders-heading"
+              className="mb-5 flex flex-col items-center gap-1.5 text-center md:mb-6 md:flex-row md:flex-wrap md:justify-center md:gap-x-2"
+            >
+              <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-400 md:text-xs">
+                {HOME_FOOTER_FOUNDERS_HEADING.lead}
+              </span>
+              <span className="hidden shrink-0 text-emerald-200/45 md:inline" aria-hidden>
+                —
+              </span>
+              <span className="max-w-md text-[11px] font-normal normal-case leading-snug tracking-normal text-emerald-200/75 md:max-w-none md:text-xs">
+                {HOME_FOOTER_FOUNDERS_HEADING.support}
+              </span>
+            </div>
+            <div className="grid gap-8 md:grid-cols-2 md:items-stretch md:gap-0">
+              {HOME_FOOTER_FOUNDERS.map((person, index) => (
+                <figure
+                  key={person.name}
+                  className={[
+                    'mx-auto flex max-w-lg flex-col md:max-w-none md:px-6',
+                    index === 1 ? 'md:border-l md:border-emerald-800/40' : ''
+                  ].join(' ')}
+                >
+                  <blockquote className="flex-1 text-[15px] leading-relaxed text-gray-100 md:text-base md:leading-relaxed">
+                    {person.lines.map((line, lineIndex) => (
+                      <p key={lineIndex} className={lineIndex > 0 ? 'mt-3' : undefined}>
+                        &ldquo;{line}&rdquo;
+                      </p>
+                    ))}
+                  </blockquote>
+                  <figcaption className="mt-4 shrink-0 text-sm text-emerald-100/90 md:mt-5 md:text-[15px]">
+                    <span className="font-bold text-white">{person.name}</span>
+                    <span className="text-emerald-200/80"> · {person.role}</span>
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
+          </section>
+        ) : null}
+
+        <SocialChannelLinks className="mb-6 md:mb-7" />
+
+        <nav aria-label="Footer">
+          <ul className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 sm:gap-x-6">
+            {FOOTER_LINKS.map((item) => (
+              <li key={item.to}>
+                <Link to={item.to} className={linkClass}>
+                  {item.label}
+                </Link>
+              </li>
+            ))}
           </ul>
-        </div>
+        </nav>
 
-        <div>
-          <h3 className="text-white font-semibold mb-3 text-xs sm:text-sm uppercase tracking-wide">About</h3>
-          <ul className="space-y-2">
-            <li>
-              <Link to="/faq" className={footerLinkClass}>
-                FAQ
-              </Link>
-            </li>
-            <li>
-              <a href="mailto:support@uaetrail.com" className={footerLinkClass}>
-                Contact
-              </a>
-            </li>
-          </ul>
-        </div>
+        <p className="mt-4 text-[10px] leading-none text-gray-700">
+          <a
+            href={LLMS_TXT_PATH}
+            className="transition-colors hover:text-gray-500"
+            aria-label="Machine-readable site summary for AI assistants"
+          >
+            AI site overview
+          </a>
+        </p>
 
-        <div>
-          <h3 className="text-white font-semibold mb-3 text-xs sm:text-sm uppercase tracking-wide">Socials</h3>
-          <div className="flex flex-wrap gap-3">
-            <a
-              href={SOCIAL_LINKS.facebook}
-              {...SOCIAL_EXTERNAL_LINK_PROPS}
-              className="hover:text-emerald-500 transition-colors"
-              aria-label="UAE Trail on Facebook"
-            >
-              <Facebook className="w-5 h-5" />
-            </a>
-            <a
-              href={SOCIAL_LINKS.instagram}
-              {...SOCIAL_EXTERNAL_LINK_PROPS}
-              className="hover:text-emerald-500 transition-colors"
-              aria-label="UAE Trail on Instagram"
-            >
-              <Instagram className="w-5 h-5" />
-            </a>
-            <a
-              href={SOCIAL_LINKS.whatsapp}
-              {...SOCIAL_EXTERNAL_LINK_PROPS}
-              className="hover:text-emerald-500 transition-colors"
-              aria-label="UAE Trail on WhatsApp"
-            >
-              <WhatsAppIcon className="w-5 h-5" />
-            </a>
-          </div>
-        </div>
+        <p className="mt-2 text-[11px] text-gray-600 sm:text-xs">&copy; 2026 UAE Trail. All rights reserved.</p>
       </div>
-
-      <div className="border-t border-gray-800 mt-8 pt-6 text-xs text-center text-gray-400">
-        <p>&copy; 2026 UAE Trail. All rights reserved.</p>
-      </div>
-    </div>
-  </footer>
-);
+    </footer>
+  );
+};

@@ -1,4 +1,5 @@
 import type { ActivityMapPeekAction, ActivityMapPeekActionId } from '@uaetrail/shared-types';
+import { JOIN_CANCEL_REQUEST_BUTTON } from '../content/joinWithdrawCopy';
 import { pendingApprovalLabel } from '../utils/joinRequestUi';
 import { ORGANIZE_LINK_RIDESHARE_LABEL } from './createFlowCopy';
 
@@ -17,7 +18,7 @@ export const activityMapPeekActionLabel = (
     case 'manage_activity':
       return 'Manage';
     case 'withdraw_join':
-      return 'Withdraw';
+      return JOIN_CANCEL_REQUEST_BUTTON;
     case 'message_host':
       return 'Message organizer';
     case 'invite_crew':

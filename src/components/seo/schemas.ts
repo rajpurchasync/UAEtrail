@@ -9,7 +9,7 @@ import type { Place, PlaceAsCamp, PlaceAsEvent, PlaceAsTrail } from '../../types
 import { placeDetailPath } from '../../utils/placePaths';
 import type { TenantProfile } from '../../api/types';
 import { activityHostName } from '../../utils/hostLabels';
-import { activityPublicMetaDescription } from '../../utils/activityPublicSeo';
+import { buildActivityEventJsonLd } from '@uaetrail/shared-types';
 import { explorePlacesPath } from '../../config/routingCatalog';
 
 const absImage = (url?: string | null) => toAbsoluteUrl(url) ?? undefined;
@@ -113,45 +113,22 @@ export const eventVenueSchema = (event: PlaceAsEvent) => placeSchema({ ...event,
 /** @deprecated Use {@link placeSchema} */
 export const campSchema = (camp: PlaceAsCamp) => placeSchema({ ...camp, activityType: 'camping' });
 
-export const activityEventSchema = (activity: ActivityDetailDTO) => ({
-  '@context': 'https://schema.org',
-  '@type': 'Event',
-  name: activity.title || activity.locationName,
-  description: activityPublicMetaDescription(activity),
-  url: `${SITE_ORIGIN}/activity/${activity.id}`,
-  image: absImage(activity.images?.[0] ?? activity.location?.images?.[0]),
-  startDate: `${activity.date}T${activity.time}:00+04:00`,
-  endDate: activity.endDate ? `${activity.endDate}T${activity.endTime ?? activity.time}:00+04:00` : undefined,
-  eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
-  ActivityStatus: 'https://schema.org/EventScheduled',
-  location: {
-    '@type': 'Place',
-    name: activity.region ?? activity.locationName ?? 'UAE',
-    address: locationAddress(activity.region ?? activity.location?.region),
-  },
-  organizer: {
-    '@type': 'Organization',
-    name: activityHostName(activity),
-    url: (() => {
-      const path = resolveActivityPublisherProfilePath({
-        publishingProfileKind: activity.publishingProfileKind ?? 'pro_guide',
-        tenantSlug: activity.tenantSlug,
-        hostUserId: activity.hostUserId,
-      });
-      return path ? `${SITE_ORIGIN}${path}` : undefined;
-    })()
-  },
-  offers: {
-    '@type': 'Offer',
-    price: activity.price,
-    priceCurrency: 'AED',
-    availability:
-      activity.slotsAvailable > 0
-        ? 'https://schema.org/InStock'
-        : 'https://schema.org/SoldOut',
-    url: `${SITE_ORIGIN}/activity/${activity.id}`
+export const activityEventSchema = (activity: ActivityDetailDTO) => {
+  const schema = buildActivityEventJsonLd(activity, SITE_ORIGIN) as Record<string, unknown>;
+  const organizer = schema.organizer as Record<string, unknown> | undefined;
+  if (organizer) {
+    organizer.name = activityHostName(activity);
+    const path = resolveActivityPublisherProfilePath({
+      publishingProfileKind: activity.publishingProfileKind ?? 'pro_guide',
+      tenantSlug: activity.tenantSlug,
+      hostUserId: activity.hostUserId,
+    });
+    if (path) organizer.url = `${SITE_ORIGIN}${path}`;
   }
-});
+  const image = absImage(activity.images?.[0] ?? activity.location?.images?.[0] ?? activity.bannerUrl);
+  if (image) schema.image = image;
+  return schema;
+};
 
 export const productSchema = (
   product: ProductDTO & { merchant?: { shopName?: string } }

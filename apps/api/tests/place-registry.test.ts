@@ -53,7 +53,7 @@ describe('buildPlaceRegistry', () => {
           parkingLink: null,
           parkingLat: null,
           parkingLng: null,
-          emirate: null,
+          groupRegionLevels: null,
           premiumImages: [],
           accessibleBy: [],
           viewCount: 0,

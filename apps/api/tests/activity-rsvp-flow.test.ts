@@ -78,7 +78,7 @@ describe('activity RSVP flow integration', () => {
       .set('Authorization', `Bearer ${token}`);
 
     expect(chatStatusRes.status).toBe(200);
-    expect(chatStatusRes.body.data.isMember).toBe(false);
+    expect(chatStatusRes.body.data.isMember).toBe(true);
 
     const joinChatRes = await request(app)
       .post(`/api/v1/activities/${rsvpFixture.activityId}/group-chat/join`)

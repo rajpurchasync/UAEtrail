@@ -1,5 +1,5 @@
 import { createPortal } from 'react-dom';
-import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import { MoreVertical } from 'lucide-react';
 import type { ActivityDTO } from '@uaetrail/shared-types';
 
@@ -42,7 +42,7 @@ export const ActivityActionsMenu = ({ items, align = 'right' }: ActivityActionsM
   const buttonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  const updateMenuPosition = () => {
+  const updateMenuPosition = useCallback(() => {
     const button = buttonRef.current;
     if (!button) return;
 
@@ -68,12 +68,12 @@ export const ActivityActionsMenu = ({ items, align = 'right' }: ActivityActionsM
       minWidth: MENU_MIN_WIDTH,
       zIndex: 200,
     });
-  };
+  }, [align, visible.length]);
 
   useLayoutEffect(() => {
     if (!open) return;
     updateMenuPosition();
-  }, [open, align, visible.length]);
+  }, [open, updateMenuPosition]);
 
   useEffect(() => {
     if (!open) return;

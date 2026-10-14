@@ -70,6 +70,7 @@ export const buildExploreMapItemFromActivity = (
     priceDisplay: display.priceDisplay,
     fromLabel: display.fromLabel,
     toLabel: display.toLabel,
+    groupRegionLevels: activity.groupRegionLevels ?? null,
     activity,
     viewerAccess: viewerAccess ?? undefined,
   };

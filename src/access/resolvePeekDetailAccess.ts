@@ -43,7 +43,9 @@ export const resolvePeekDetailAccess = (
   }
 
   if (!card.viewerAccess) {
-    if (options.isGuest) return { kind: 'guest_gate' };
+    if (options.isGuest && !exploreCardIsHostedPlanPeek(card)) {
+      return { kind: 'guest_gate' };
+    }
     return { kind: 'link', href };
   }
 
@@ -71,7 +73,7 @@ export const hostPublishedActivityPeekAccess = (
       joinMode,
       canAccessCrewSurfaces: true,
       mapPeekActions: [],
-      entitlements: null,
+      entitlements: undefined,
     },
     isHostUser: true,
     activityPublished: true,
@@ -89,7 +91,7 @@ export const hostPublishedActivityPeekAccess = (
       joinMode,
       canAccessCrewSurfaces: true,
       mapPeekActions: [],
-      entitlements: null,
+      entitlements: undefined,
     },
     isHostUser: true,
     activityPublished: true,

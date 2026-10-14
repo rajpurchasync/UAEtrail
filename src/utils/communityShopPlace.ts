@@ -1,4 +1,5 @@
 import type { LocationDTO } from '@uaetrail/shared-types';
+import { groupRegionLevelTexts } from '@uaetrail/shared-types';
 import { decodeShopContributeTags } from '@uaetrail/shared-types';
 import type { ShopPublicView } from '../components/shop/ShopPublicPage';
 
@@ -17,7 +18,7 @@ export const communityShopPlaceToView = (place: LocationDTO): ShopPublicView | n
     description: place.description,
     logo: place.images?.[0] ?? null,
     websiteUrl: null,
-    region: place.region ?? place.emirate ?? null,
+    region: place.region ?? groupRegionLevelTexts(place.groupRegionLevels)[0] ?? null,
     latitude: place.latitude ?? null,
     longitude: place.longitude ?? null,
     contactEmail: decoded.contactEmail,

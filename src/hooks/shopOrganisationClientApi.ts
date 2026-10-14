@@ -55,8 +55,10 @@ export const updateShopOrganisationProduct = async (
   await api.updateShopOrganisationProduct(productId, payload);
 };
 
+type ShopOrganisationProductPayload = Parameters<typeof api.addShopOrganisationProduct>[0];
+
 export const addShopOrganisationProduct = async (
-  payload: Record<string, unknown>
+  payload: ShopOrganisationProductPayload
 ): Promise<void> => {
   await api.addShopOrganisationProduct(payload);
 };

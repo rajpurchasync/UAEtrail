@@ -103,7 +103,7 @@ const outingTopicSchema = z.enum([
   'community',
 ]);
 
-const eventCreateSchema = z.object({
+const eventCreateBaseSchema = z.object({
   activityType: sharedActivityTypeSchema,
   locationId: z.string().min(1),
   title: z.string().min(4).max(120),
@@ -150,19 +150,20 @@ const eventCreateSchema = z.object({
   clonedFromActivityId: z.string().uuid().optional(),
   linkedActivityId: z.string().uuid().nullable().optional(),
   linkedRideshareActivityId: z.string().uuid().nullable().optional(),
-})
-  .superRefine((data, ctx) => {
-    if (data.activityType === 'rideshare') return;
-    if (data.description.trim().length < 20) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'Description must be at least 20 characters.',
-        path: ['description'],
-      });
-    }
-  });
+});
 
-const eventPatchSchema = eventCreateSchema.innerType().partial();
+const eventCreateSchema = eventCreateBaseSchema.superRefine((data, ctx) => {
+  if (data.activityType === 'rideshare') return;
+  if (data.description.trim().length < 20) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Description must be at least 20 characters.',
+      path: ['description'],
+    });
+  }
+});
+
+const eventPatchSchema = eventCreateBaseSchema.partial();
 
 const buildHostActivityResponse = async (event: ActivityWithTenantRelations): Promise<ActivityDTO> => {
   const dto = buildActivityDto(event);

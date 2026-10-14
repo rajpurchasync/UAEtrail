@@ -14,7 +14,19 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
-  event.respondWith(fetch(event.request));
+
+  const { hostname } = new URL(event.request.url);
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    // Let the browser handle Vite dev / preview without SW passthrough (avoids failed fetch on HMR).
+    return;
+  }
+
+  event.respondWith(
+    fetch(event.request).catch((error) => {
+      console.warn('[sw] fetch failed', event.request.url, error);
+      return Response.error();
+    })
+  );
 });
 
 self.addEventListener('push', (event) => {

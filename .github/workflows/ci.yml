@@ -25,13 +25,14 @@ jobs:
       JWT_ACCESS_SECRET: ci-test-access-secret-min-24-chars
       JWT_REFRESH_SECRET: ci-test-refresh-secret-min-24-chars
       NODE_ENV: test
+      NPM_CONFIG_DEVDIR: ''
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: 24.18.0
           cache: npm
 
       - name: Install dependencies
@@ -73,7 +74,10 @@ jobs:
       JWT_ACCESS_SECRET: ci-test-access-secret-min-24-chars
       JWT_REFRESH_SECRET: ci-test-refresh-secret-min-24-chars
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Build API Docker image
         run: docker compose build api
+
+      - name: Build frontend Docker image
+        run: docker compose build frontend

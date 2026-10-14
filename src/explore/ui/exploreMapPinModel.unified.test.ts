@@ -53,6 +53,25 @@ describe('matchesUnifiedExploreMapItem', () => {
     expect(matchesUnifiedExploreMapItem(toilet, input)).toBe(true);
   });
 
+  it('filters shops by emirate when venue regions are selected', () => {
+    const shop = item({
+      id: 'shop:1',
+      source: 'shop',
+      kind: 'shop',
+      groupRegionLevels: { l1: 'AE', l2: 'Dubai', l3: null, l4: null },
+    });
+    const input = {
+      mapFilter: 'all' as const,
+      pinKind: 'all' as const,
+      activityDatePreset: 'anyday' as const,
+      venueRegions: ['Dubai'],
+    };
+    expect(matchesUnifiedExploreMapItem(shop, input)).toBe(true);
+    expect(
+      matchesUnifiedExploreMapItem(shop, { ...input, venueRegions: ['Sharjah'] })
+    ).toBe(false);
+  });
+
   it('pin kind shops includes contributed peek shops', () => {
     const contributed = item({
       id: 'venue:shop-1',

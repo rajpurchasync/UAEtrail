@@ -4,6 +4,7 @@ import {
   DEFAULT_OG_IMAGE_ALT,
   SITE_DESCRIPTION,
   SITE_NAME,
+  LLMS_TXT_PATH,
   SITE_ORIGIN,
   pageTitle,
   toAbsoluteUrl
@@ -16,6 +17,8 @@ interface PageMetaProps {
   image?: string | null;
   imageAlt?: string;
   noIndex?: boolean;
+  /** Open Graph type — use `article` for indexable entity pages (activities, places). */
+  ogType?: 'website' | 'article';
 }
 
 const upsertMeta = (name: string, content: string, property = false): void => {
@@ -36,7 +39,8 @@ export function PageMeta({
   path,
   image,
   imageAlt,
-  noIndex
+  noIndex,
+  ogType = 'website',
 }: PageMetaProps) {
   useEffect(() => {
     const fullTitle = pageTitle(title);
@@ -50,7 +54,8 @@ export function PageMeta({
     upsertMeta('og:title', fullTitle, true);
     upsertMeta('twitter:title', fullTitle);
     upsertMeta('og:site_name', SITE_NAME, true);
-    upsertMeta('og:type', 'website', true);
+    upsertMeta('og:type', ogType, true);
+    upsertMeta('og:locale', 'en_AE', true);
 
     const canonicalPath = path ?? window.location.pathname;
     const canonicalUrl = `${SITE_ORIGIN}${canonicalPath}`;
@@ -82,7 +87,23 @@ export function PageMeta({
     } else if (robots) {
       robots.content = 'index, follow';
     }
-  }, [title, description, path, image, imageAlt, noIndex]);
+
+    const llmsHref = toAbsoluteUrl(LLMS_TXT_PATH);
+    let llmsLink = document.querySelector('link[rel="alternate"][data-llms-summary]') as HTMLLinkElement | null;
+    if (!noIndex && llmsHref) {
+      if (!llmsLink) {
+        llmsLink = document.createElement('link');
+        llmsLink.rel = 'alternate';
+        llmsLink.type = 'text/plain';
+        llmsLink.setAttribute('data-llms-summary', 'true');
+        llmsLink.title = 'Machine-readable site summary for AI assistants';
+        document.head.appendChild(llmsLink);
+      }
+      llmsLink.href = llmsHref;
+    } else if (llmsLink) {
+      llmsLink.remove();
+    }
+  }, [title, description, path, image, imageAlt, noIndex, ogType]);
 
   return null;
 }

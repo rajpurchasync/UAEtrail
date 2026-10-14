@@ -8,17 +8,14 @@ import { GoogleAuthSection } from '../components/auth/GoogleAuthSection';
 import { useAuth } from '../context/AuthContext';
 import { accountRouteByRole, defaultRouteByRole } from '../utils/authRouting';
 import {
-  canReturnAfterAuth,
   navigateAuthBack,
   navigateAuthClose,
   resolveAuthRedirect
 } from '../utils/authRedirect';
+import { navigateToPostAuthReturn, resolvePostAuthReturnPath } from '../utils/authPostLoginNavigation';
 import { isPendingEmailVerification } from '../utils/authVerification';
-import {
-  clearAuthReturnContext,
-  parseAuthReturnContextFromSearch,
-  saveAuthReturnContext
-} from '../utils/authReturnContext';
+import { SIGNUP_PATH } from '../config/routingCatalog';
+import { buildAuthGateUrls, clearAuthReturnContext } from '../utils/authReturnContext';
 import { PageMeta } from '../components/seo/PageMeta';
 import { PRODUCT_AUTH_SIGNIN_SUBLINE } from '../content/productNorthStar';
 import { shouldForceSignupWelcome } from '../utils/signupProfileGate';
@@ -54,7 +51,9 @@ export const SignIn = () => {
 
   const handleBack = () => navigateAuthBack(navigate, from);
   const handleClose = () => navigateAuthClose(navigate, from);
-  const signUpHref = from ? `/signup?redirect=${encodeURIComponent(from)}` : '/signup';
+  const signUpHref = from
+    ? buildAuthGateUrls(location, { returnPath: from }).signUpHref
+    : SIGNUP_PATH;
 
   const redirectToVerify = (pending: {
     email: string;
@@ -85,7 +84,7 @@ export const SignIn = () => {
       signedInUser.role === 'participant'
         ? defaultRouteByRole(signedInUser.role)
         : accountRouteByRole(signedInUser.role);
-    const welcomeRedirectTo = from && canReturnAfterAuth(from, signedInUser.role) ? from : postAuthDefault;
+    const welcomeRedirectTo = resolvePostAuthReturnPath(from, signedInUser.role) ?? postAuthDefault;
 
     if (profile && shouldForceSignupWelcome(signedInUser.role, profile)) {
       navigate('/welcome', {
@@ -95,14 +94,7 @@ export const SignIn = () => {
       return;
     }
 
-    if (from && canReturnAfterAuth(from, signedInUser.role)) {
-      const context = parseAuthReturnContextFromSearch(searchParams, from);
-      if (context) {
-        saveAuthReturnContext(context);
-      } else {
-        clearAuthReturnContext();
-      }
-      navigate(from, { replace: true });
+    if (navigateToPostAuthReturn(navigate, from, signedInUser.role, searchParams)) {
       return;
     }
 

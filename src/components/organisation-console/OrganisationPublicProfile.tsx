@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Award,
@@ -110,7 +110,7 @@ export const OrganisationPublicProfile = ({
   const [editBio, setEditBio] = useState('');
   const [editDetails, setEditDetails] = useState<OrganisationDetails>({});
 
-  const loadProfile = () => {
+  const loadProfile = useCallback(() => {
     setLoading(true);
     setError(null);
     fetchOrganisationProfileBySlug(slug)
@@ -124,12 +124,12 @@ export const OrganisationPublicProfile = ({
       })
       .catch(() => setError(`We couldn't find this ${workspaceProfileLabel(null).toLowerCase()}`))
       .finally(() => setLoading(false));
-  };
+  }, [slug]);
 
   useEffect(() => {
     if (!slug) return;
     loadProfile();
-  }, [slug]);
+  }, [slug, loadProfile]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();

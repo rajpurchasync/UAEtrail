@@ -1,4 +1,3 @@
-import type { AreaPublicDTO } from '@uaetrail/shared-types';
 import { useExplorePublishedAreas } from '../useExplorePublishedAreas';
 import { areaLabelForId } from '../organizePublishArea';
 

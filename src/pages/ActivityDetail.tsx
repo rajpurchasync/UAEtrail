@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSafeAsyncEffect, type IsActiveGuard } from '../hooks/useSafeAsyncEffect';
-import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { useParams, Link, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { Lock } from 'lucide-react';
 import { type ActivityDTO, type ReviewDTO } from '@uaetrail/shared-types';
@@ -9,7 +9,13 @@ import { useActivityReviews } from '../hooks/useActivityReviews';
 import type { ActivityRequestView } from '../api/types';
 import { cancelActivity, getActivityJoinRequests } from '../hooks/tenantActivityClientApi';
 import { detailBackPath } from '../config/routingCatalog';
-import { signInPathForReturn } from '../utils/authReturnContext';
+import {
+  ACTIVITY_JOIN_CTA_SELECTOR,
+  AUTH_RESUME_JOIN_QUERY,
+  navigateToAuthGate,
+  signInPathForReturn,
+  withAuthResumeQuery,
+} from '../utils/authReturnContext';
 import { useAuth } from '../context/AuthContext';
 import { useActivityJoinActions } from '../hooks/useActivityJoinFlow';
 import { activityDetailQueryKey } from '../hooks/clientQueryKeys';
@@ -23,6 +29,7 @@ import { PageMeta } from '../components/seo/PageMeta';
 import { JsonLd } from '../components/seo/JsonLd';
 import { activityEventSchema } from '../components/seo/schemas';
 import { activityPublicMetaDescription } from '../utils/activityPublicSeo';
+import { resolveActivityHeroImage } from '../utils/activityHeroImage';
 import { MobileDetailShell } from '../components/mobile/MobileDetailShell';
 import { JoinRequestModal, WithdrawRequestModal } from '../components/ui';
 import { ActivityChatCallout } from '../components/ui/ActivityChatCallout';
@@ -56,9 +63,12 @@ export const ActivityDetail = () => {
   const { user } = useAuth();
   const gate = useMemberStatus({ enabled: Boolean(user) });
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const fromJoinInvite = searchParams.get('invite') === '1';
+  const resumeJoinAfterAuth = searchParams.get(AUTH_RESUME_JOIN_QUERY) === '1';
   const joinInviteAutoOpenRef = useRef(false);
+  const resumeJoinHandledRef = useRef(false);
   const joinedWelcomeHandledRef = useRef(false);
   const {
     activity,
@@ -86,6 +96,7 @@ export const ActivityDetail = () => {
 
   useEffect(() => {
     joinedWelcomeHandledRef.current = false;
+    resumeJoinHandledRef.current = false;
   }, [id]);
 
   const joinUiState = resolveJoinRequestUiState({
@@ -248,7 +259,7 @@ export const ActivityDetail = () => {
   const onHostShareOuting = useCallback(() => {
     if (!activity || activity.status !== 'published') return;
     inviteShare.openInviteFromActivity(activity, { canSendBuddyInvites: true });
-  }, [activity, inviteShare.openInviteFromActivity]);
+  }, [activity, inviteShare]);
 
   const hostDetailCtas =
     isActivityHostUser && publishedActivityCtaHandlers && activity ? (
@@ -279,20 +290,20 @@ export const ActivityDetail = () => {
     }
   }, [hostRemoveConfirm, gate.tenantId, navigate]);
 
-  const openJoinModal = () => {
+  const openJoinModal = useCallback(() => {
     if (!id || !activity) return;
     if (!user) {
-      const returnPath = fromJoinInvite ? `/activity/${id}?invite=1` : `/activity/${id}`;
-      navigate(signInPathForReturn(returnPath));
-      return;
-    }
-    if (!packageSelected) {
-      setError('Please select a package option.');
+      const basePath = fromJoinInvite ? `/activity/${id}?invite=1` : `/activity/${id}`;
+      const returnPath = withAuthResumeQuery(basePath, { join: true });
+      navigateToAuthGate(navigate, location, {
+        returnPath,
+        focusSelector: ACTIVITY_JOIN_CTA_SELECTOR,
+      });
       return;
     }
     setError(null);
     joinActions.openJoinModal();
-  };
+  }, [id, activity, user, fromJoinInvite, navigate, location, joinActions]);
 
   useEffect(() => {
     if (!fromJoinInvite || loading || !activity || joinInviteAutoOpenRef.current) return;
@@ -310,6 +321,25 @@ export const ActivityDetail = () => {
     joinUiState.kind,
     isActivityHostUser,
     openJoinModal,
+  ]);
+
+  useEffect(() => {
+    if (!resumeJoinAfterAuth || loading || !activity || resumeJoinHandledRef.current) return;
+    if (isActivityHostUser) return;
+    if (activity.status !== 'published') return;
+    if (!user) return;
+    if (joinUiState.kind !== 'open') return;
+    resumeJoinHandledRef.current = true;
+    setError(null);
+    joinActions.openJoinModal();
+  }, [
+    resumeJoinAfterAuth,
+    loading,
+    activity,
+    user,
+    joinUiState.kind,
+    isActivityHostUser,
+    joinActions,
   ]);
 
   if (loading) {
@@ -380,14 +410,13 @@ export const ActivityDetail = () => {
 
   const isRedactedPreview = detailExposure === 'redacted';
 
-  const heroImage =
-    activity.images?.[0] ??
-    activity.location?.images?.[0] ??
-    (activity.activityType === 'camping'
-      ? 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=1600'
-      : activity.activityType === 'event'
-        ? 'https://images.unsplash.com/photo-1452626038306-9fff603b72e5?w=1600'
-        : 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=1600');
+  const heroImage = resolveActivityHeroImage({
+    id: activity.id,
+    activityType: activity.activityType,
+    images: activity.images,
+    bannerUrl: activity.bannerUrl,
+    location: activity.location,
+  });
 
   const confirmedSidebarExtras =
     isConfirmedParticipant && id ? (
@@ -409,7 +438,7 @@ export const ActivityDetail = () => {
         path={`/activity/${activity.id}`}
         image={heroImage}
         imageAlt={activity.title || activity.locationName}
-        noIndex={isRedactedPreview}
+        ogType="article"
       />
       <JsonLd data={activityEventSchema(activity)} id={`activity-${activity.id}`} />
       {(fromJoinInvite || activity.myJoinInvite) && !isConfirmedParticipant ? (

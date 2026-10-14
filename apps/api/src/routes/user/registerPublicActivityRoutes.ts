@@ -31,6 +31,8 @@ import {
   notifyParticipantJoinRequestSubmitted,
   notifyParticipantJoinRequestWithdrawn,
 } from '../../services/join-request-notifications.js';
+import { findActivityForRequestViewById } from '../../lib/activities-store.js';
+import { markNotificationsReadForCancelledJoinRequest } from '../../lib/notifications-store.js';
 import { notifyHostOfRequestWithdrawal } from '../../services/request-notifications.js';
 import { buildActivityRedactedDetail } from '../../lib/activity-redacted-detail.js';
 import { PRIVATE_ACTIVITY_MESSAGE } from '../../services/activity-viewer-access.js';
@@ -336,12 +338,25 @@ registerActivityRoute(
         cancelMessage: message?.trim() || null
       });
 
+      if (!wasConfirmed) {
+        const activity = await findActivityForRequestViewById(request.activityId);
+        const hostUserId = activity?.hostId ?? activity?.createdById;
+        if (hostUserId) {
+          void markNotificationsReadForCancelledJoinRequest({
+            hostUserId,
+            activityId: request.activityId,
+            requestId: request.id,
+          });
+        }
+      }
+
       void notifyHostOfRequestWithdrawal({
+        wasConfirmed,
         activityId: request.activityId,
         requestId: request.id,
         participantUserId: req.auth!.userId,
         cancelReason: reason,
-        cancelMessage: message?.trim() || null
+        cancelMessage: message?.trim() || null,
       });
 
       void notifyParticipantJoinRequestWithdrawn({

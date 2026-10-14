@@ -20,6 +20,7 @@ import {
   resolveActivityPublisherProfilePath,
   resolveExploreFeaturedPerson,
 } from '@uaetrail/shared-types';
+import { groupRegionTextAtBrowseFilterLevel } from '../config/groupRegionFilter';
 import {
   buildExploreRouteLabel,
   buildExploreWhenSegment,
@@ -239,7 +240,13 @@ export const buildExploreCardModel = (item: ExploreMapItemDTO): ExploreCardModel
     childFriendly: item.locationCard?.childFriendly ?? false,
     difficulty: item.locationCard?.difficulty ?? null,
     surfaceTypes: item.locationCard?.surfaceType ?? [],
-    venueRegion: item.locationCard?.region ?? null,
+    venueRegion:
+      groupRegionTextAtBrowseFilterLevel(item.groupRegionLevels) ??
+      groupRegionTextAtBrowseFilterLevel(item.locationCard?.groupRegionLevels) ??
+      groupRegionTextAtBrowseFilterLevel(item.activity?.groupRegionLevels) ??
+      item.locationCard?.region ??
+      item.activity?.region ??
+      null,
     venueAccessibility: item.locationCard?.accessibility ?? null,
     venueHasParking: Boolean(
       item.locationCard?.parkingPoint?.trim() ||
@@ -253,7 +260,7 @@ export const buildExploreCardModel = (item: ExploreMapItemDTO): ExploreCardModel
     requirementBadges: [
       ...(exploreMapItemIsSeeking(item) ? ['Seeking'] : []),
       ...enrichExploreActivityRequirementBadges(activity?.requirements, {
-        kind,
+        kind: kind === 'area' ? 'event' : kind,
         rideshareEnabled: Boolean(
           source === 'activity' &&
             kind !== 'rideshare' &&
@@ -264,8 +271,10 @@ export const buildExploreCardModel = (item: ExploreMapItemDTO): ExploreCardModel
         venueDifficulty: item.locationCard?.difficulty ?? null,
       }),
     ],
-    mapLatitude: item.latitude ?? null,
-    mapLongitude: item.longitude ?? null,
+    mapLatitude:
+      item.latitude ?? activity?.displayLatitude ?? activity?.locationLatitude ?? null,
+    mapLongitude:
+      item.longitude ?? activity?.displayLongitude ?? activity?.locationLongitude ?? null,
     areaId: item.areaId ?? null,
     areaSlug: item.areaSlug ?? null,
     areaName: item.areaName ?? null,
@@ -286,6 +295,7 @@ export const exploreCardToneClass: Record<ExploreCardTone, string> = {
   shop: 'bg-rose-50 text-rose-900',
   agency: 'bg-indigo-50 text-indigo-900',
   rideshare: 'bg-sky-50 text-sky-900',
+  area: 'bg-slate-50 text-slate-900',
 };
 
 export const exploreCardToneTextClass: Record<ExploreCardTone, string> = {
@@ -295,6 +305,7 @@ export const exploreCardToneTextClass: Record<ExploreCardTone, string> = {
   shop: 'text-rose-800',
   agency: 'text-indigo-800',
   rideshare: 'text-sky-800',
+  area: 'text-slate-800',
 };
 
 export const exploreCardHasMapCoords = (card: ExploreCardModel): boolean =>

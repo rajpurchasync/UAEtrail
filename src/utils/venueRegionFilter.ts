@@ -1,47 +1,82 @@
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
+import { groupRegionLevelTexts } from '@uaetrail/shared-types';
+import { DEFAULT_BROWSE_COUNTRY_CODE, groupRegionTextAtBrowseFilterLevel } from '../config/groupRegionFilter';
 import { EXPLORE_REGION_PILL_LABELS } from '../config/regions';
-
-const VENUE_REGION_ALIASES: Record<string, string[]> = {
-  Dubai: ['dubai'],
-  RAK: ['rak', 'ras al khaimah', 'ras al khaima', 'rask al khaimah', 'rask'],
-  Fujairah: ['fujairah'],
-  'Abu Dhabi': ['abu dhabi'],
-  'Al Ain': ['al ain', 'alain'],
-  Sharjah: ['sharjah'],
-};
+import { EXPLORE_EMIRATE_REGION_ALIASES } from '../config/exploreRegionAliases';
 
 export const normalizeVenueRegionToken = (value: string): string =>
   value.trim().toLowerCase().replace(/\s+/g, ' ');
 
-export const resolveVenueItemRegion = (item: ExploreMapItemDTO): string | null =>
-  item.locationCard?.region ?? item.subtitle ?? null;
+const pushLevelsForBrowse = (
+  texts: Set<string>,
+  levels: ExploreMapItemDTO['groupRegionLevels'],
+  countryCode: string
+) => {
+  const atLevel = groupRegionTextAtBrowseFilterLevel(levels, countryCode);
+  if (atLevel) texts.add(atLevel);
+  for (const fallback of groupRegionLevelTexts(levels)) {
+    texts.add(fallback);
+  }
+};
+
+/** All region/emirate strings we can match against UAE filter pills. */
+export const exploreItemRegionTexts = (
+  item: ExploreMapItemDTO,
+  countryCode: string = DEFAULT_BROWSE_COUNTRY_CODE
+): string[] => {
+  const texts = new Set<string>();
+  const push = (raw?: string | null) => {
+    const trimmed = raw?.trim();
+    if (trimmed) texts.add(trimmed);
+  };
+
+  pushLevelsForBrowse(texts, item.groupRegionLevels, countryCode);
+  pushLevelsForBrowse(texts, item.activity?.groupRegionLevels, countryCode);
+  pushLevelsForBrowse(texts, item.locationCard?.groupRegionLevels, countryCode);
+  push(item.activity?.region);
+  push(item.locationCard?.region);
+  push(item.subtitle);
+
+  return [...texts];
+};
+
+export const resolveVenueItemRegion = (
+  item: ExploreMapItemDTO,
+  countryCode: string = DEFAULT_BROWSE_COUNTRY_CODE
+): string | null =>
+  groupRegionTextAtBrowseFilterLevel(item.groupRegionLevels, countryCode) ??
+  exploreItemRegionTexts(item, countryCode)[0] ??
+  null;
 
 const regionMatchTokens = (regionKey: string): string[] => {
-  const aliases = VENUE_REGION_ALIASES[regionKey] ?? [normalizeVenueRegionToken(regionKey)];
+  const aliases = EXPLORE_EMIRATE_REGION_ALIASES[regionKey] ?? [normalizeVenueRegionToken(regionKey)];
   const label = EXPLORE_REGION_PILL_LABELS[regionKey];
   const tokens = new Set(aliases.map(normalizeVenueRegionToken));
   if (label) tokens.add(normalizeVenueRegionToken(label));
+  tokens.add(normalizeVenueRegionToken(regionKey));
   return [...tokens];
 };
 
+const textMatchesRegionKey = (normalizedText: string, regionKey: string): boolean =>
+  regionMatchTokens(regionKey).some(
+    (token) =>
+      normalizedText === token ||
+      normalizedText.includes(token) ||
+      token.includes(normalizedText)
+  );
+
 export const venueItemMatchesRegions = (
   item: ExploreMapItemDTO,
-  selectedRegions: string[]
+  selectedRegions: string[],
+  countryCode: string = DEFAULT_BROWSE_COUNTRY_CODE
 ): boolean => {
   if (selectedRegions.length === 0) return true;
 
-  const raw = resolveVenueItemRegion(item);
-  if (!raw) return false;
-
-  const normalizedItem = normalizeVenueRegionToken(raw);
+  const regionTexts = exploreItemRegionTexts(item, countryCode);
+  if (regionTexts.length === 0) return false;
 
   return selectedRegions.some((regionKey) =>
-    regionMatchTokens(regionKey).some(
-      (token) =>
-        normalizedItem === token ||
-        normalizedItem.includes(token) ||
-        token.includes(normalizedItem)
-    )
+    regionTexts.some((raw) => textMatchesRegionKey(normalizeVenueRegionToken(raw), regionKey))
   );
 };
 

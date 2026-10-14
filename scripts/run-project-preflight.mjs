@@ -4,7 +4,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const rootDir = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
-const minNodeVersion = '20.19.0';
+const minNodeVersion = '24.18.0';
+const minNpmVersion = '11.16.0';
 const minDockerVersion = '24.0.0';
 const minComposeVersion = '2.0.0';
 
@@ -305,7 +306,8 @@ const main = () => {
   }
 
   const npmVersion = readVersion('npm', ['--version'], 'npm', /(\d+\.\d+\.\d+)/);
-  console.log(`[preflight] npm ${npmVersion} OK.`);
+  ensureMinimumVersion('npm', npmVersion, minNpmVersion);
+  console.log(`[preflight] npm ${npmVersion} OK (minimum ${minNpmVersion}).`);
 
   ensureDockerToolchain();
 

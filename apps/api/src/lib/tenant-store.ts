@@ -5,6 +5,8 @@ import { inferTenantPublishingPurpose } from '../domain/tenant-publishing.js';
 import { newEntityId } from './entity-builders.js';
 import { getMongoClient } from './mongo.js';
 import { slugify } from './slug.js';
+import { tenantGeoIndexFields } from './geo-index-fields.js';
+import type { GeoPoint } from './location-geo.js';
 
 export type TenantRecord = {
   id: string;
@@ -22,6 +24,7 @@ export type TenantRecord = {
   latitude?: number | null;
   longitude?: number | null;
   region?: string | null;
+  groupRegionLevels?: import('@uaetrail/shared-types').GroupRegionLevels | null;
   publishingPurpose?: TenantPublishingPurpose | null;
   discoverFeatured?: boolean;
   createdAt: Date;
@@ -44,8 +47,11 @@ type MongoTenantDoc = {
   latitude?: number | null;
   longitude?: number | null;
   region?: string | null;
+  groupRegionLevels?: import('@uaetrail/shared-types').GroupRegionLevels | null;
   publishingPurpose?: TenantPublishingPurpose | null;
   discoverFeatured?: boolean;
+  groupRegionBrowseKey?: string | null;
+  geo?: GeoPoint;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -69,44 +75,52 @@ const mapMongoTenant = (doc: MongoTenantDoc): TenantRecord => ({
   latitude: doc.latitude ?? null,
   longitude: doc.longitude ?? null,
   region: doc.region ?? null,
+  groupRegionLevels: doc.groupRegionLevels ?? null,
   publishingPurpose: doc.publishingPurpose ?? null,
   discoverFeatured: doc.discoverFeatured ?? false,
   createdAt: doc.createdAt,
   updatedAt: doc.updatedAt
 });
 
-const tenantRowToMongoDoc = (row: TenantRecord): MongoTenantDoc => ({
-  _id: row.id,
-  name: row.name,
-  slug: row.slug,
-  type: row.type,
-  businessMode: row.businessMode ?? null,
-  status: row.status,
-  ownerId: row.ownerId,
-  countryCode: row.countryCode,
-  description: row.description ?? null,
-  website: row.website ?? null,
-  logoUrl: row.logoUrl ?? null,
-  services: row.services ?? null,
-  latitude: row.latitude ?? null,
-  longitude: row.longitude ?? null,
-  region: row.region ?? null,
-  publishingPurpose: row.publishingPurpose ?? null,
-  discoverFeatured: row.discoverFeatured ?? false,
-  createdAt: row.createdAt,
-  updatedAt: row.updatedAt
-});
+const tenantRowToMongoDoc = (row: TenantRecord): MongoTenantDoc => {
+  const indexFields = tenantGeoIndexFields(row);
+  return {
+    _id: row.id,
+    name: row.name,
+    slug: row.slug,
+    type: row.type,
+    businessMode: row.businessMode ?? null,
+    status: row.status,
+    ownerId: row.ownerId,
+    countryCode: row.countryCode,
+    description: row.description ?? null,
+    website: row.website ?? null,
+    logoUrl: row.logoUrl ?? null,
+    services: row.services ?? null,
+    latitude: row.latitude ?? null,
+    longitude: row.longitude ?? null,
+    region: row.region ?? null,
+    groupRegionLevels: row.groupRegionLevels ?? null,
+    publishingPurpose: row.publishingPurpose ?? null,
+    discoverFeatured: row.discoverFeatured ?? false,
+    ...indexFields,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  };
+};
 
 export const writeTenantToMongo = async (row: TenantRecord): Promise<void> => {
+  const { stampTenantGroupRegion } = await import('./group-region-resolution.js');
+  const stamped = await stampTenantGroupRegion(row);
   await tenantsCollection().updateOne(
-    { _id: row.id },
-    { $set: tenantRowToMongoDoc(row) },
+    { _id: stamped.id },
+    { $set: tenantRowToMongoDoc(stamped) },
     { upsert: true }
   );
 
-  if (row.businessMode === TenantBusinessMode.SHOP) {
+  if (stamped.businessMode === TenantBusinessMode.SHOP) {
     const { syncMerchantProfileFromShopTenant } = await import('./shop-store.js');
-    await syncMerchantProfileFromShopTenant(row);
+    await syncMerchantProfileFromShopTenant(stamped);
     const { invalidateExploreMapCache } = await import('./explore-map-cache.js');
     await invalidateExploreMapCache();
   }

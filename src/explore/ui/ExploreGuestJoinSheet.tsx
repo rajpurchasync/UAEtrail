@@ -11,6 +11,8 @@ interface ExploreGuestJoinSheetProps {
   intent?: GuestJoinSheetIntent;
   participationMode?: ParticipationMode | null;
   requirements?: string[] | null;
+  authReturnPath?: string;
+  authFocusSelector?: string;
 }
 
 /** Centered sign-in modal when a guest taps Join — uses shared sign-in card. */
@@ -21,6 +23,8 @@ export const ExploreGuestJoinSheet = ({
   intent = 'activity',
   participationMode,
   requirements,
+  authReturnPath,
+  authFocusSelector,
 }: ExploreGuestJoinSheetProps) => (
   <ExploreResponsiveSheet
     open={open}
@@ -40,6 +44,8 @@ export const ExploreGuestJoinSheet = ({
         activityTitle={activityTitle}
         participationMode={participationMode}
         requirements={requirements}
+        authReturnPath={authReturnPath}
+        authFocusSelector={authFocusSelector}
         compact
       />
       <button

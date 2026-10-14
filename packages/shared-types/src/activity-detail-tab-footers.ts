@@ -41,6 +41,10 @@ export const resolveActivityDetailTabFooterKind = (
     return 'plan_host_share';
   }
 
+  if (input.joinEngagement === 'pending' || input.joinEngagement === 'confirmed') {
+    return 'plan_join';
+  }
+
   switch (input.tab) {
     case 'place':
       return input.canAccessCrewSurfaces && input.hasMeetingCoordinates

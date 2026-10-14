@@ -213,7 +213,7 @@ export const GroupChatThread = ({
     } finally {
       setLoadingOlder(false);
     }
-  }, [groupId, hasMoreOlder, loadingOlder, prependWallMessages, wall]);
+  }, [chatContainerRef, groupId, hasMoreOlder, loadingOlder, prependWallMessages, wall]);
 
   useEffect(() => {
     void loadThread();
@@ -240,7 +240,7 @@ export const GroupChatThread = ({
 
     container.addEventListener('scroll', onScroll, { passive: true });
     return () => container.removeEventListener('scroll', onScroll);
-  }, [hasMoreOlder, loadOlderMessages, loading, loadingOlder]);
+  }, [chatContainerRef, hasMoreOlder, loadOlderMessages, loading, loadingOlder]);
 
   useEffect(() => {
     const id = window.setInterval(() => {
@@ -292,7 +292,7 @@ export const GroupChatThread = ({
     if (grew && mode === 'bottom') {
       container.scrollTop = container.scrollHeight;
     }
-  }, [wall.length, loading]);
+  }, [chatContainerRef, wall.length, loading]);
 
   const sendMessage = async () => {
     const trimmed = draft.trim();

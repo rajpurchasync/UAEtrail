@@ -1,5 +1,5 @@
 /** Locations lens — one synthetic pin per published Area + rollups. Canon: `docs/DOMAIN_CANONICALS.md` §12.1. */
-import type { AreaDTO, ExploreAreaLensStatsDTO, ExploreMapItemDTO, PlaceKind } from '@uaetrail/shared-types';
+import type { AreaDTO, ExploreAreaLensStatsDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
 import {
   areaDetailPath,
   exploreAreaLensStatsSummary,

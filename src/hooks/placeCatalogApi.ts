@@ -14,7 +14,10 @@ export const fetchPlaceRegistryCatalog = (
 
 export const loadPlaceRegistryForPicker = async (
   activityType?: ActivityType
-): Promise<PlaceDTO[]> => fetchPlaceRegistryCatalog({ placeType: activityType });
+): Promise<PlaceDTO[]> =>
+  fetchPlaceRegistryCatalog({
+    placeType: activityType === 'rideshare' ? undefined : activityType,
+  });
 
 export const listPublicPlacesCatalog = async (): Promise<PlaceDTO[]> => {
   const res = await api.getPublicPlaces();

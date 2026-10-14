@@ -40,5 +40,6 @@ export const useExploreMap = (options?: UseExploreMapOptions) => {
     },
     staleTime: 60_000,
     placeholderData: keepPreviousData,
+    refetchOnMount: 'always',
   });
 };

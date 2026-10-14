@@ -169,7 +169,6 @@ export const loadExploreAvailabilityIndex = async (
     })
     .toArray();
 
-  const today = todayIsoUtc();
   const people: ExploreAvailablePersonDTO[] = [];
   const clusterCounts = new Map<string, ExploreAvailabilityClusterDTO>();
 

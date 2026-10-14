@@ -91,11 +91,11 @@ export const resolveAreaIdForActivity = (
   return null;
 };
 
-/** Public publish requires `place.areaId` — members do not set area on the activity row. */
+/** Public publish area — linked place `areaId` only (legacy activity.areaId read fallback). */
 export const resolveAreaIdForActivityPublish = async (
   activity: MongoActivityDoc,
   location?: Location | null
-): Promise<string | null> => resolveAreaIdForActivity(activity, location);
+): Promise<string | null> => Promise.resolve(resolveAreaIdForActivity(activity, location));
 
 export const ringFromBBox = (
   south: number,

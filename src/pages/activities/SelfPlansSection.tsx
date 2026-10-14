@@ -82,7 +82,7 @@ export const SelfPlansSection = ({
     if (!manageIntent) return;
     const fresh = intents.find((entry) => entry.id === manageIntent.id);
     if (fresh) setManageIntent(fresh);
-  }, [intents, manageIntent?.id]);
+  }, [intents, manageIntent]);
 
   const peekId = searchParams.get('peek');
   const showList = !peekBridgeOnly;

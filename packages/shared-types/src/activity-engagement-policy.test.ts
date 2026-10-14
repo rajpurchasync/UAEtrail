@@ -55,6 +55,31 @@ describe('resolveActivityEngagementPolicy', () => {
     expect(policy.strips.pendingJoinInviteCount).toBe(2);
   });
 
+  it('exposes cancel request on map peek while join is pending', () => {
+    const policy = resolveActivityEngagementPolicy({
+      viewerAccess: {
+        ...guestAccess,
+        level: 'join_request',
+        gateReason: null,
+        canOpenDetailPage: true,
+        canAccessCrewSurfaces: false,
+      },
+      isHostUser: false,
+      activityPublished: true,
+      participationMode: 'approval',
+      joinRequestStatus: 'pending',
+      myParticipation: null,
+      myRequest: { status: 'pending', canWithdraw: true },
+    });
+
+    expect(policy.capabilities.joinEngagement).toBe('pending');
+    expect(policy.intents.map((i) => i.id)).toEqual([
+      'pending_join',
+      'withdraw_join',
+      'view_detail',
+    ]);
+  });
+
   it('exposes crew intents and detail invite footer for confirmed participants', () => {
     const policy = resolveActivityEngagementPolicy({
       viewerAccess: {
@@ -89,7 +114,7 @@ describe('resolveActivityEngagementPolicy', () => {
       'offer_rideshare',
       'view_detail',
     ]);
-    expect(policy.presentation.footerByTab.buddies).toBe('buddies_invite');
+    expect(policy.presentation.footerByTab.buddies).toBe('plan_join');
     expect(policy.strips.showJoinedStatusChipOnPeek).toBe(true);
     expect(policy.strips.maskRosterToFriendsOnly).toBe(false);
   });

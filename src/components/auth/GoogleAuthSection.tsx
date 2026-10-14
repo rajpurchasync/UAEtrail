@@ -1,5 +1,7 @@
-import { GoogleSignInButton } from './GoogleSignInButton';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import { isGoogleSignInOffered } from '../../config/authProviders';
+import { getGoogleClientId } from '../../config/googleAuth';
+import { GoogleSignInButton } from './GoogleSignInButton';
 
 interface GoogleAuthSectionProps {
   onSuccess: (idToken: string) => Promise<void>;
@@ -15,21 +17,24 @@ export const GoogleAuthSection = ({
   text = 'continue_with',
   disabled = false
 }: GoogleAuthSectionProps) => {
-  if (!isGoogleSignInOffered()) {
+  const clientId = getGoogleClientId();
+  if (!isGoogleSignInOffered() || !clientId) {
     return null;
   }
 
   return (
-    <div className="mb-6 space-y-4">
-      <GoogleSignInButton onSuccess={onSuccess} onError={onError} text={text} disabled={disabled} />
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-neutral-200" />
-        </div>
-        <div className="relative flex justify-center text-xs">
-          <span className="bg-white px-3 text-neutral-400">or continue with email</span>
+    <GoogleOAuthProvider clientId={clientId}>
+      <div className="mb-6 space-y-4">
+        <GoogleSignInButton onSuccess={onSuccess} onError={onError} text={text} disabled={disabled} />
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-neutral-200" />
+          </div>
+          <div className="relative flex justify-center text-xs">
+            <span className="bg-white px-3 text-neutral-400">or continue with email</span>
+          </div>
         </div>
       </div>
-    </div>
+    </GoogleOAuthProvider>
   );
 };

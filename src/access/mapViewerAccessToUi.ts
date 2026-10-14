@@ -22,6 +22,7 @@ export const mapViewerAccessToPeekDetail = (
     return { kind: 'link', href };
   }
   if (access.gateReason === 'sign_in') {
+    if (access.canOpenDetailPage) return { kind: 'link', href };
     return { kind: 'guest_gate' };
   }
   if (access.gateReason === 'profile_required') {

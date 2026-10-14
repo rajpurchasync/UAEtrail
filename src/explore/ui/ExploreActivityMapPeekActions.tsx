@@ -3,7 +3,10 @@ import { EXPLORE_PEEK_CTA } from '../../config/exploreTheme';
 import { LIST_FEED_CTA_MESSAGE_ORGANIZER } from '../../list/listFeedCtaCopy';
 import { activityMapPeekActionLabel } from '../exploreMapPeekActionCopy';
 import { canLinkRideshareToActivity } from '../linkActivityRideshareOffer';
+import { activityDetailPath } from '../../config/routingCatalog';
 import { exploreCardActivityJoinIsFull, type ExploreCardModel } from '../exploreCardModel';
+import type { JoinRequestUiState } from '../../utils/joinRequestUi';
+import { pendingApprovalLabel } from '../../utils/joinRequestUi';
 import { ExplorePeekDetailLink } from './ExplorePeekDetailLink';
 
 type ExploreActivityMapPeekActionsProps = {
@@ -14,6 +17,7 @@ type ExploreActivityMapPeekActionsProps = {
   onGuestGatedAction?: () => void;
   joinStateLoading?: boolean;
   onBeforeDetailNavigate?: () => void;
+  joinUiState?: JoinRequestUiState;
 };
 
 const prominenceClass = (prominence: ActivityMapPeekAction['prominence']): string => {
@@ -62,6 +66,7 @@ export const ExploreActivityMapPeekActions = ({
   onGuestGatedAction,
   joinStateLoading = false,
   onBeforeDetailNavigate,
+  joinUiState,
 }: ExploreActivityMapPeekActionsProps) => {
   const gate = onGuestGatedAction;
   const activity = card.activity;
@@ -69,6 +74,11 @@ export const ExploreActivityMapPeekActions = ({
   const joinPrimaryClass = joinFull
     ? 'w-full rounded-2xl bg-neutral-200 py-3.5 text-base font-bold text-neutral-500 cursor-not-allowed'
     : 'w-full rounded-2xl bg-emerald-500 py-3.5 text-base font-bold text-white';
+
+  const pendingJoinLabel =
+    joinUiState?.kind === 'pending'
+      ? pendingApprovalLabel(joinUiState.status)
+      : null;
 
   const runGated = (id: ActivityMapPeekActionId) => {
     if (gate) {
@@ -117,6 +127,14 @@ export const ExploreActivityMapPeekActions = ({
               <button type="button" disabled className={`${dualPrimaryClass} bg-neutral-200 text-neutral-500`}>
                 {actionLabel(primaryAction, card)}
               </button>
+            ) : primaryAction.id === 'request_join' && pendingJoinLabel ? (
+              <button
+                type="button"
+                disabled
+                className={`${dualPrimaryClass} bg-amber-100 text-amber-900`}
+              >
+                {pendingJoinLabel}
+              </button>
             ) : (
               <button type="button" onClick={() => runGated(primaryAction.id)} className={dualPrimaryClass}>
                 {actionLabel(primaryAction, card)}
@@ -130,11 +148,6 @@ export const ExploreActivityMapPeekActions = ({
               {actionLabel(secondaryAction, card)}
             </button>
           </div>
-          {primaryAction.id === 'pending_join' ? (
-            <p className="text-center text-xs text-neutral-500">
-              To withdraw your request, open full details — comment required for the host.
-            </p>
-          ) : null}
         </div>
       ) : null}
 
@@ -144,12 +157,15 @@ export const ExploreActivityMapPeekActions = ({
         if (action.id === 'view_detail') {
           const className = prominenceClass(action.prominence);
           const label = activityMapPeekActionLabel(action.id, action);
+          const activityId = card.activityId ?? card.activity?.id;
+          const hrefOverride = activityId ? activityDetailPath(activityId) : undefined;
           return (
             <ExplorePeekDetailLink
               key={action.id}
               card={card}
               label={label}
               className={className}
+              hrefOverride={hrefOverride}
               joinStateLoading={joinStateLoading}
               onGuestGatedAction={gate}
               onBeforeNavigate={onBeforeDetailNavigate}
@@ -167,10 +183,38 @@ export const ExploreActivityMapPeekActions = ({
               >
                 {activityMapPeekActionLabel(action.id, action)}
               </button>
-              <p className="text-center text-xs text-neutral-500">
-                To withdraw your request, open full details — comment required for the host.
-              </p>
             </div>
+          );
+        }
+
+        if (action.id === 'withdraw_join') {
+          const label = activityMapPeekActionLabel(action.id, action);
+          const className =
+            action.prominence === 'text'
+              ? EXPLORE_PEEK_CTA.secondaryText
+              : prominenceClass(action.prominence);
+          return (
+            <button
+              key={action.id}
+              type="button"
+              onClick={() => runGated(action.id)}
+              className={className}
+            >
+              {label}
+            </button>
+          );
+        }
+
+        if (action.id === 'request_join' && pendingJoinLabel) {
+          return (
+            <button
+              key={action.id}
+              type="button"
+              disabled
+              className="w-full rounded-2xl bg-amber-100 py-3.5 text-base font-bold text-amber-900 disabled:opacity-100"
+            >
+              {pendingJoinLabel}
+            </button>
           );
         }
 

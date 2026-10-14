@@ -56,6 +56,8 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
       { key: { submittedById: 1, createdAt: -1 } },
       { key: { areaId: 1, status: 1 }, sparse: true },
       { key: { geo: '2dsphere' } },
+      { key: { status: 1, groupRegionBrowseKey: 1, featured: -1 }, sparse: true },
+      { key: { countryCode: 1, groupRegionBrowseKey: 1, status: 1 }, sparse: true },
       {
         key: { externalSource: 1, externalId: 1 },
         unique: true,
@@ -129,13 +131,17 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
       { key: { locationId: 1 } },
       { key: { featured: 1, status: 1, startAt: 1 } },
       { key: { areaId: 1, status: 1 }, sparse: true },
+      { key: { geo: '2dsphere' }, sparse: true },
+      { key: { status: 1, groupRegionBrowseKey: 1, startAt: 1 }, sparse: true },
     ]),
     db.collection(COLLECTIONS.PUSH_SUBSCRIPTIONS).createIndexes([{ key: { userId: 1 } }]),
     db.collection(COLLECTIONS.TENANTS).createIndexes([
       { key: { slug: 1 }, unique: true },
       { key: { ownerId: 1 } },
       { key: { status: 1 } },
-      { key: { type: 1, ownerId: 1 } }
+      { key: { type: 1, ownerId: 1 } },
+      { key: { geo: '2dsphere' }, sparse: true },
+      { key: { status: 1, groupRegionBrowseKey: 1 }, sparse: true },
     ]),
     db.collection(COLLECTIONS.HOST_APPLICATIONS).createIndexes([
       { key: { status: 1 } },

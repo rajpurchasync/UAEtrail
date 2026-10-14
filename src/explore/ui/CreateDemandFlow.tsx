@@ -47,7 +47,7 @@ import {
 } from './demandFlow';
 import type { LocationPrecision, TimeMode } from './organizeFlow';
 import type { FindComposeKind } from '../compose';
-import { areaLabelForId, demandPostVisibleOnMap } from '../organizePublishArea';
+import { areaLabelForId } from '../organizePublishArea';
 import { areaIdForExploreAreaSlug } from '../exploreAreaFilter';
 import { useExplorePublishedAreas } from '../useExplorePublishedAreas';
 import { SeekingCuratedAreaStep } from './SeekingCuratedAreaStep';

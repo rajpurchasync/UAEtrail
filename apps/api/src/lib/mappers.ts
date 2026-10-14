@@ -121,6 +121,7 @@ export const buildActivityDto = (event : ActivityWithRelations): ActivityDTO => 
     locationName: event.location.name,
     activityType: resolveActivityDtoType(event, event.location),
     region: event.location.region,
+    groupRegionLevels: event.groupRegionLevels ?? event.location.groupRegionLevels ?? null,
     slotsAvailable: resolveSlotsAvailable(event),
     hostName,
     hostUserId,
@@ -170,7 +171,7 @@ export const toLocationDto = (location: Location, opts?: { admin?: boolean }): L
   parkingLink: location.parkingLink ?? undefined,
   parkingLat: location.parkingLat ?? undefined,
   parkingLng: location.parkingLng ?? undefined,
-  emirate: location.emirate ?? undefined,
+  groupRegionLevels: location.groupRegionLevels ?? undefined,
   premiumImages: location.premiumImages?.length ? location.premiumImages : undefined,
   accessibleBy: location.accessibleBy,
   viewCount: location.viewCount,
@@ -194,6 +195,7 @@ const toEventDto = ({
   locationName,
   activityType,
   region,
+  groupRegionLevels,
   slotsAvailable,
   hostName,
   hostUserId,
@@ -215,6 +217,7 @@ const toEventDto = ({
   locationName: string;
   activityType: ActivityType | string;
   region?: string;
+  groupRegionLevels?: import('@uaetrail/shared-types').GroupRegionLevels | null;
   slotsAvailable: number;
   hostName: string;
   hostUserId: string;
@@ -251,6 +254,7 @@ const toEventDto = ({
   locationId: event.locationId,
   locationName,
   region,
+  groupRegionLevels: groupRegionLevels ?? null,
   areaId: locationAreaId?.trim()
     ? locationAreaId.trim()
     : event.areaId?.trim()

@@ -14,6 +14,7 @@ import {
   PRODUCT_SIGNUP_FINISH_TITLE,
 } from '../content/productNorthStar';
 import { EXPLORE_WELCOME_FINISH_STATE } from '../explore/exploreWelcomeNavigation';
+import { persistAuthReturnContextForPath } from '../utils/authPostLoginNavigation';
 
 type WelcomeLocationState = {
   redirectTo?: string;
@@ -34,6 +35,7 @@ export const WelcomeSignup = () => {
   } | null>(null);
 
   const goToMap = () => {
+    persistAuthReturnContextForPath(redirectTo);
     navigate(redirectTo, { replace: true, state: EXPLORE_WELCOME_FINISH_STATE });
   };
 
@@ -41,6 +43,7 @@ export const WelcomeSignup = () => {
     void fetchMeProfile()
       .then((profile) => {
         if (isSignupProfileComplete(profile)) {
+          persistAuthReturnContextForPath(redirectTo);
           navigate(redirectTo, { replace: true, state: EXPLORE_WELCOME_FINISH_STATE });
           return;
         }

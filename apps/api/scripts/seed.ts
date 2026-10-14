@@ -31,7 +31,16 @@ import {
   type ActivityCreateInput,
   type LocationCreateInput
 } from '../src/lib/entity-builders.js';
-import { findActivityDocInMongo, findLocationInMongo, writeActivityDocToMongo, writeLocationToMongo } from '../src/lib/entity-sync.js';
+import {
+  findActivityDocInMongo,
+  findLocationInMongo,
+  writeActivityDocToMongo,
+  writeLocationToMongo,
+} from '../src/lib/entity-sync.js';
+import {
+  resolveGroupRegionLevelsForActivityDoc,
+  stampLocationGroupRegionLevels,
+} from '../src/lib/group-region-resolution.js';
 import { getMongoClient, connectMongo, disconnectMongo } from '../src/lib/mongo.js';
 import { createSocialReview } from '../src/lib/social-data.js';
 import {
@@ -41,6 +50,7 @@ import {
 import { upsertTenantMembership } from '../src/lib/tenant-access.js';
 import {
   createTenantRecord,
+  findTenantById,
   findTenantBySlug,
   writeTenantToMongo,
   type TenantRecord
@@ -505,7 +515,7 @@ const upsertTenant = async (input: {
 
 const upsertLocation = async (id: string, data: LocationCreateInput) => {
   const areaId = data.areaId ?? seedLocationAreaId(id) ?? undefined;
-  const location = buildLocationFromCreateInput(
+  let location = buildLocationFromCreateInput(
     { ...data, areaId, status: LocationStatus.ACTIVE },
     id
   );
@@ -513,6 +523,7 @@ const upsertLocation = async (id: string, data: LocationCreateInput) => {
   if (existing) {
     location.createdAt = existing.createdAt;
   }
+  location = await stampLocationGroupRegionLevels(location);
   await writeLocationToMongo(location);
   return location;
 };
@@ -523,8 +534,69 @@ const upsertEvent = async (id: string, data: ActivityCreateInput) => {
   if (existing) {
     doc.createdAt = existing.createdAt;
   }
-  await writeActivityDocToMongo(doc);
+  const linked = doc.locationId ? await findLocationInMongo(doc.locationId) : null;
+  doc.groupRegionLevels = await resolveGroupRegionLevelsForActivityDoc(doc, linked);
+  await writeActivityDocToMongo(doc, {
+    countryCode: linked?.countryCode ?? 'AE',
+    location: linked,
+  });
   return doc;
+};
+
+/** Re-stamp `groupRegionLevels`, `groupRegionBrowseKey`, and `geo` on all catalog rows after seed upserts. */
+const restampCatalogGeoIndexFields = async (): Promise<void> => {
+  const locationIds = await db()
+    .collection('locations')
+    .find({}, { projection: { _id: 1 } })
+    .map((doc) => String(doc._id))
+    .toArray();
+
+  for (const locationId of locationIds) {
+    const row = await findLocationInMongo(locationId);
+    if (!row) continue;
+    const stamped = await stampLocationGroupRegionLevels({
+      ...row,
+      countryCode: row.countryCode?.trim() ? row.countryCode : 'AE',
+    });
+    await writeLocationToMongo(stamped);
+  }
+
+  const activityIds = await db()
+    .collection('activities')
+    .find({}, { projection: { _id: 1 } })
+    .map((doc) => String(doc._id))
+    .toArray();
+
+  for (const activityId of activityIds) {
+    const doc = await findActivityDocInMongo(activityId);
+    if (!doc) continue;
+    const linked = doc.locationId ? await findLocationInMongo(doc.locationId) : null;
+    const groupRegionLevels = await resolveGroupRegionLevelsForActivityDoc(doc, linked);
+    await writeActivityDocToMongo(
+      { ...doc, groupRegionLevels },
+      {
+        countryCode: linked?.countryCode ?? 'AE',
+        location: linked,
+      }
+    );
+  }
+
+  const tenantIds = await db()
+    .collection('tenants')
+    .find({}, { projection: { _id: 1 } })
+    .map((doc) => String(doc._id))
+    .toArray();
+
+  for (const tenantId of tenantIds) {
+    const tenant = await findTenantById(tenantId);
+    if (tenant) {
+      await writeTenantToMongo(tenant);
+    }
+  }
+
+  console.log(
+    `[seed] Geo index fields restamped (${locationIds.length} locations, ${activityIds.length} activities, ${tenantIds.length} tenants)`
+  );
 };
 
 const upsertHostApplication = async (input: {
@@ -973,6 +1045,9 @@ async function main() {
   if (!(await shouldRunSeed())) {
     await seedCuratedAreas();
     await backfillSeedCatalogLocationAreaIds();
+    await restampCatalogGeoIndexFields();
+    const { invalidateExploreMapCache } = await import('../src/lib/explore-map-cache.js');
+    await invalidateExploreMapCache();
     console.log('[seed] Curated areas upserted and catalog place areaIds backfilled');
     await ensureDemoExploreActivities();
     if (isMobileInboxSeedEnabled()) {
@@ -2283,6 +2358,11 @@ Share your live location and carry extra water in summer months.`
   console.log(`Pending application: Hatta Hiking Club (by ${pendingParticipant.email})`);
   console.log(`Seeded by admin id: ${admin._id}`);
   console.log(`Merchant stores: ${nikeMerchantProfile.shopName}, ${adidasMerchantProfile.shopName} (${seedProducts.length} products)`);
+  await restampCatalogGeoIndexFields();
+
+  const { invalidateExploreMapCache } = await import('../src/lib/explore-map-cache.js');
+  await invalidateExploreMapCache();
+
   console.log('Explore map demo pins: supply (hiking, camping, event, rideshare) + demand (all four types) + shops + agency');
   console.log(`Chat messages: mobile inbox demo (DMs, friends wall, outing chat) seeded`);
   console.log(

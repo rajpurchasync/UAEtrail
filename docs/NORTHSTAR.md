@@ -131,7 +131,7 @@ Avoid narrowing marketing to “hiking & camping platform” unless SEO metadata
 1. Read this doc  
 2. Ask: does this help someone **find people and get outside together**?  
 3. Update `src/content/productNorthStar.ts` if canonical strings change  
-4. Update surface copy (`homeLanding.ts`, auth, profile empty states, explore coach, FAQs, SEO, store listings) in the same PR  
+4. Update surface copy (`homeMarketing.ts`, `productNorthStar.ts`, auth, profile empty states, explore coach, FAQs, SEO, store listings) in the same PR  
 5. Update `LANDING.md` / `CREATE_FLOW.md` / `explore-ux-spec.md` if section jobs, FAB, or participation tone shift  
 
 ## Surface copy index
@@ -139,7 +139,7 @@ Avoid narrowing marketing to “hiking & camping platform” unless SEO metadata
 | Surface | Primary file(s) |
 |---------|------------------|
 | Canonical strings | `src/content/productNorthStar.ts` |
-| Guest landing | `src/content/homeLanding.ts` |
+| Guest landing | `src/content/homeMarketing.ts` (+ fallback activities in `homeLanding.ts`) |
 | SEO defaults | `src/config/seo.ts` |
 | Auth | `SignUp.tsx`, `SignIn.tsx`, `WelcomeSignup.tsx` |
 | Profile empty | `Profile.tsx` hub sections, `ActivitiesHubView.tsx` |

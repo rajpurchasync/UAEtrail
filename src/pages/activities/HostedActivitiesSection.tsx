@@ -91,6 +91,7 @@ export const HostedActivitiesSection = ({
   useEffect(() => {
     if (!refreshKey) return;
     void host.reload();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- refresh when refreshKey bumps; host.reload is stable
   }, [refreshKey, host.reload]);
 
   const openManage = (activity: ActivityDTO, view: 'overview' | 'checkin' = 'overview') => {
@@ -120,7 +121,7 @@ export const HostedActivitiesSection = ({
     if (!manageActivity) return;
     const fresh = host.activities.find((a) => a.id === manageActivity.id);
     if (fresh) setManageActivity(fresh);
-  }, [host.activities, manageActivity?.id]);
+  }, [host.activities, manageActivity]);
 
   const peekId = searchParams.get('peek') ?? searchParams.get('roster') ?? searchParams.get('checkin');
   const showList = !peekBridgeOnly;

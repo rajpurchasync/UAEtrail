@@ -8,6 +8,7 @@ export const ComposeRail = () => {
   return (
     <aside
       aria-hidden={!isOpen}
+      {...(isOpen ? {} : { inert: true })}
       className={`hidden md:flex shrink-0 flex-col bg-white border-l border-gray-100 overflow-hidden transition-[width] duration-300 ease-out ${
         isOpen ? 'w-[min(28rem,42vw)]' : 'w-0 border-transparent pointer-events-none'
       }`}

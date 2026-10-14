@@ -1,4 +1,5 @@
-import { signInPath } from '../config/routingCatalog';
+import type { NavigateFunction } from 'react-router-dom';
+import { signInPath, signUpPath } from '../config/routingCatalog';
 
 interface LocationLike {
   pathname: string;
@@ -14,11 +15,31 @@ interface AuthReturnContext {
 
 const AUTH_RETURN_CONTEXT_STORAGE_KEY = 'uaetrail.auth.return-context';
 
+/** After auth, reopen join UI when `1` (activity detail or explore deep link). */
+export const AUTH_RESUME_JOIN_QUERY = 'join';
+
+export const ACTIVITY_JOIN_CTA_SELECTOR = '[data-activity-join-cta]';
+export const EXPLORE_JOIN_CTA_SELECTOR = '[data-explore-join-cta]';
+
 const getSafeWindow = (): Window | null => (typeof window === 'undefined' ? null : window);
 
 const buildPathFromLocation = (location: LocationLike, overrideHash?: string): string => {
   const hash = overrideHash ?? location.hash ?? '';
   return `${location.pathname}${location.search}${hash}`;
+};
+
+export const withAuthResumeQuery = (path: string, options?: { join?: boolean }): string => {
+  if (!options?.join) return path;
+  const hashIndex = path.indexOf('#');
+  const withoutHash = hashIndex >= 0 ? path.slice(0, hashIndex) : path;
+  const hash = hashIndex >= 0 ? path.slice(hashIndex) : '';
+  const queryIndex = withoutHash.indexOf('?');
+  const pathname = queryIndex >= 0 ? withoutHash.slice(0, queryIndex) : withoutHash;
+  const search = queryIndex >= 0 ? withoutHash.slice(queryIndex + 1) : '';
+  const params = new URLSearchParams(search);
+  params.set(AUTH_RESUME_JOIN_QUERY, '1');
+  const qs = params.toString();
+  return `${pathname}${qs ? `?${qs}` : ''}${hash}`;
 };
 
 /** Build sign-in URL for a known return path (no scroll capture). */
@@ -30,19 +51,49 @@ export const signInPathForReturn = (
 
 export const buildSignInRedirect = (
   location: LocationLike,
-  options?: { focusSelector?: string; hash?: string }
-): { href: string; from: string } => {
-  const from = buildPathFromLocation(location, options?.hash);
+  options?: { focusSelector?: string; hash?: string; returnPath?: string }
+): { href: string; signUpHref: string; from: string } => {
+  const from = options?.returnPath ?? buildPathFromLocation(location, options?.hash);
   const win = getSafeWindow();
   const scrollY = win ? Math.max(0, Math.round(win.scrollY)) : undefined;
+  const focus = options?.focusSelector;
   return {
+    from,
     href: signInPath({
       redirect: from,
-      focus: options?.focusSelector,
+      focus,
       scrollY,
     }),
-    from,
+    signUpHref: signUpPath({
+      redirect: from,
+      focus,
+      scrollY,
+    }),
   };
+};
+
+export const buildAuthGateUrls = (
+  location: LocationLike,
+  options?: { returnPath?: string; focusSelector?: string }
+): { signInHref: string; signUpHref: string; from: string } => {
+  const built = buildSignInRedirect(location, {
+    returnPath: options?.returnPath,
+    focusSelector: options?.focusSelector,
+  });
+  return {
+    signInHref: built.href,
+    signUpHref: built.signUpHref,
+    from: built.from,
+  };
+};
+
+export const navigateToAuthGate = (
+  navigate: NavigateFunction,
+  location: LocationLike,
+  options?: { returnPath?: string; focusSelector?: string }
+): void => {
+  const { signInHref, from } = buildAuthGateUrls(location, options);
+  navigate(signInHref, { state: { from } });
 };
 
 export const parseAuthReturnContextFromSearch = (

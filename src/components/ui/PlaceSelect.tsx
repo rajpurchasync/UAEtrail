@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronDown, MapPin, Plus, Search } from 'lucide-react';
 import { PlaceDTO } from '@uaetrail/shared-types';
@@ -48,7 +48,7 @@ export const PlaceSelect = ({
   const [query, setQuery] = useState('');
   const rootRef = useRef<HTMLDivElement>(null);
 
-  const loadLocations = async () => {
+  const loadLocations = useCallback(async () => {
     if (injectedPlaces) {
       setActiveLocations(injectedPlaces);
       setPendingLocations([]);
@@ -61,11 +61,11 @@ export const PlaceSelect = ({
     } catch {
       /* non-critical */
     }
-  };
+  }, [activityType, injectedPlaces]);
 
   useEffect(() => {
     void loadLocations();
-  }, [tenantId, injectedPlaces]);
+  }, [loadLocations, tenantId]);
 
   const { active, pending } = useMemo(() => {
     const matchType = (l: PlaceDTO) => !activityType || l.activityType === activityType;

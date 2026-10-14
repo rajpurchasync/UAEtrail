@@ -1,5 +1,9 @@
 /** Participant exit copy — approved roster vs pending join request. */
 
+/** Disabled join CTA when host approval is still outstanding. */
+export const JOIN_REQUEST_PENDING_WITH_HOST_BUTTON =
+  'Joining Request Pending with Host';
+
 /** Approved participant — withdraws a previously approved join request. */
 export const JOIN_WITHDRAW_APPROVED_REQUEST_BUTTON = 'Withdraw request';
 /** Pending / waitlisted — cancels before organizer approval. */

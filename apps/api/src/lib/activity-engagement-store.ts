@@ -1111,16 +1111,18 @@ export const enrollHostApprovedActivityParticipant = async (opts: {
   }
 
   const existing = await findActivityRequestByEventAndUser(opts.activityId, opts.userId);
-  const requestId = opts.requestId ?? existing?.id;
+  let requestId = opts.requestId ?? existing?.id;
   if (!requestId) {
-    if (opts.lenient) return 'skipped';
-    throw new ApiError(404, 'request_not_found', 'Join request not found.');
+    if (!opts.lenient) {
+      throw new ApiError(404, 'request_not_found', 'Join request not found.');
+    }
+    requestId = newEntityId();
   }
   const participantId = newEntityId();
   const reviewedAt = new Date();
 
   try {
-    const requestUpdate = await activityRequestsCollection().updateOne(
+    await activityRequestsCollection().updateOne(
       { activityId: opts.activityId, userId: opts.userId },
       {
         $set: {
@@ -1135,12 +1137,15 @@ export const enrollHostApprovedActivityParticipant = async (opts: {
           reviewedById: opts.reviewerId,
           updatedAt: reviewedAt,
         },
-      }
+        $setOnInsert: {
+          _id: requestId,
+          activityId: opts.activityId,
+          userId: opts.userId,
+          createdAt: reviewedAt,
+        },
+      },
+      { upsert: true }
     );
-    if (requestUpdate.matchedCount === 0) {
-      if (opts.lenient) return 'skipped';
-      throw new ApiError(404, 'request_not_found', 'Join request not found.');
-    }
 
     await activityParticipantsCollection().updateOne(
       { activityId: opts.activityId, userId: opts.userId },

@@ -112,7 +112,7 @@ describe('activity detail program — governance', () => {
   it('AD-HYGIENE-01: People browse panel is not wrapped in ListFeedActionsProvider', () => {
     const browsePanels = read('src/explore/shell/ExploreExperienceBrowsePanels.tsx');
     const peoplePanelBlock = browsePanels.match(
-      /const mobileListPeopleBrowsePanel = \([\s\S]*?\n  \);/
+      /const mobileListPeopleBrowsePanel = \([\s\S]*?\n {2}\);/
     )?.[0];
     expect(peoplePanelBlock).toBeTruthy();
     expect(peoplePanelBlock!).toMatch(/PeopleBrowsePanel/);

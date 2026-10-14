@@ -21,6 +21,7 @@ import {
   OPERATOR_PLACES_PATH,
   HOST_PLACES_PATH,
   HOST_MESSAGES_PATH,
+  signUpPath,
 } from './surfacePaths';
 import { LEGACY_BECOME_HOST_PATH } from './memberRoutes';
 import {
@@ -111,8 +112,10 @@ export const DESKTOP_NAV_LINKS = [
 ] as const;
 
 /** Sign-up URL with post-auth return path (Join free / create account). */
-export const joinAuthPath = (redirect: string = PARTICIPANT_JOIN_REDIRECT): string =>
-  `/signup?redirect=${encodeURIComponent(redirect)}`;
+export const joinAuthPath = (
+  redirect: string = PARTICIPANT_JOIN_REDIRECT,
+  options?: { focus?: string; scrollY?: number }
+): string => signUpPath({ redirect, focus: options?.focus, scrollY: options?.scrollY });
 
 /** Right-side user menu on landing (mobile/PWA) — Explore, Join free, Contact (+ Log in in drawer). */
 export const MOBILE_LANDING_USER_MENU = [

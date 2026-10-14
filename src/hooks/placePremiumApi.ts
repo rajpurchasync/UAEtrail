@@ -10,7 +10,11 @@ export const startPlacePremiumCheckout = async (
   placeId: string
 ): Promise<PlacePremiumCheckoutResult> => {
   const response = await api.checkoutPlacePremium(placeId);
-  return response.data;
+  const data = response.data;
+  return {
+    ...data,
+    url: data.url ?? undefined,
+  };
 };
 
 export const downloadPlaceRouteMapFile = async (
@@ -23,5 +27,5 @@ export const downloadPlaceGuidePdfFile = async (
 
 export const fetchPlaceGuideMarkdown = async (placeId: string): Promise<string> => {
   const response = await api.getPlaceGuide(placeId);
-  return response.data.markdown;
+  return response.data.markdown ?? '';
 };

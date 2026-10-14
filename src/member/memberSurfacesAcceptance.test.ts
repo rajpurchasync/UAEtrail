@@ -370,8 +370,10 @@ describe('member surfaces §11 acceptance (automated)', () => {
 
   it('AD-6: public activity SEO omits meeting from JSON-LD', () => {
     const schemas = read('src/components/seo/schemas.ts');
-    expect(schemas).toContain('activityPublicMetaDescription');
-    expect(schemas).not.toMatch(/meetingPoint/);
+    const sharedSeo = read('packages/shared-types/src/activity-public-seo.ts');
+    expect(schemas).toContain('buildActivityEventJsonLd');
+    expect(sharedSeo).toContain('buildActivityEventJsonLd');
+    expect(sharedSeo).not.toMatch(/meetingPoint/);
   });
 
   it('NA-6: API viewer access uses buildActivityViewerAccess', () => {

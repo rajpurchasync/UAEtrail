@@ -1,4 +1,4 @@
-FROM node:20-alpine AS build
+FROM node:24.18.0-alpine AS build
 
 WORKDIR /app
 
@@ -8,7 +8,7 @@ RUN npm install
 
 RUN npm run build:api
 
-FROM node:20-alpine
+FROM node:24.18.0-alpine
 
 WORKDIR /app
 ENV NODE_ENV=production
@@ -21,7 +21,6 @@ COPY --from=build /app/apps/api/dist apps/api/dist
 COPY --from=build /app/apps/api/src apps/api/src
 COPY --from=build /app/apps/api/scripts apps/api/scripts
 COPY --from=build /app/node_modules node_modules
-COPY --from=build /app/apps/api/node_modules apps/api/node_modules
 
 EXPOSE 4000
 

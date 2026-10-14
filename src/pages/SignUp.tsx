@@ -6,6 +6,10 @@ import { PasswordRequirements } from '../components/auth/PasswordRequirements';
 import { useAuth } from '../context/AuthContext';
 import { defaultRouteByRole } from '../utils/authRouting';
 import { navigateAuthBack, navigateAuthClose, resolveAuthRedirect } from '../utils/authRedirect';
+import {
+  navigateToPostAuthReturn,
+  resolvePostAuthReturnPath,
+} from '../utils/authPostLoginNavigation';
 import { getPasswordValidationError } from '../utils/passwordPolicy';
 import { PageMeta } from '../components/seo/PageMeta';
 import { fetchMeProfile } from '../hooks/memberProfileApi';
@@ -47,11 +51,16 @@ export const SignUp = () => {
     try {
       const user = await signInWithGoogle(idToken, referralCode, groupInviteToken);
       const profile = await fetchMeProfile().catch(() => null);
+      const postAuthDefault = defaultRouteByRole(user.role);
+      const welcomeRedirectTo = resolvePostAuthReturnPath(redirectTo, user.role) ?? postAuthDefault;
       if (profile && shouldForceSignupWelcome(user.role, profile)) {
-        navigate('/welcome', { replace: true, state: { redirectTo } });
+        navigate('/welcome', { replace: true, state: { redirectTo: welcomeRedirectTo } });
         return;
       }
-      navigate(redirectTo ?? defaultRouteByRole(user.role), { replace: true });
+      if (navigateToPostAuthReturn(navigate, redirectTo, user.role, searchParams)) {
+        return;
+      }
+      navigate(postAuthDefault, { replace: true });
     } catch (submissionError) {
       setError(submissionError instanceof Error ? submissionError.message : 'We couldn\'t finish sign-up — try again or use Google.');
     }

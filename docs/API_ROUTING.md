@@ -12,6 +12,7 @@ Companion: [`DOMAIN.md`](./DOMAIN.md), [`CREATE_FLOW.md`](./CREATE_FLOW.md), [`M
 |--------|------|---------|
 | **`/activities`** | Public read; tenant write via `/operator` | Published **Organize** outings (join, RSVP, detail) |
 | **`/explore/map`** | Public | Discovery payload (activities, venues, shops, **demand**) |
+| **`/agent/manifest.json`**, **`/agent/discover`** | Public (rate-limited) | **AI / agent** entry manifest and text search over published outings + registry places |
 | **`/me/*`** | Signed-in member | Own profile, intents, groups, inbox, activity participation |
 | **`/operator/*`** | Verified + **tenant** (`x-organisation-id`) | **Publishing console** (any tier): publish, roster, **activity** join queue |
 | **`/host/*`** | Legacy (rewritten to `/operator/*`) | `Deprecation: true` + `Link` — no separate mount (`legacy-host-api-rewrite.ts`) |

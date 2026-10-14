@@ -13,6 +13,7 @@ import { userRouter } from './user.js';
 import { legacyPublishingPathDeprecation } from '../middleware/legacy-publishing-path-deprecation.js';
 import { legacyHostApiRewrite } from '../middleware/legacy-host-api-rewrite.js';
 import { legacyMemberStatusPathRewrite } from '../middleware/legacy-member-status-path-rewrite.js';
+import { agentRouter } from './agent.js';
 
 export const apiRouter = Router();
 
@@ -29,4 +30,5 @@ apiRouter.use('/media', mediaRouter);
 apiRouter.use('/reports', reportsRouter);
 apiRouter.use('/social', socialGraphRouter);
 apiRouter.use('/', socialRouter);
+apiRouter.use('/agent', agentRouter);
 apiRouter.use('/', userRouter);

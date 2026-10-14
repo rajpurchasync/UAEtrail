@@ -71,6 +71,7 @@ export {
   VERIFY_PATH,
   FORGOT_PASSWORD_PATH,
   signInPath,
+  signUpPath,
   hostActivitiesCheckInPath,
   messagesToUserPath,
   messagesGroupPath,

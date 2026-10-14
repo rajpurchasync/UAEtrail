@@ -200,11 +200,7 @@ export const CreateActivityFlow = ({
   );
   const wizardSessionScope = useMemo(
     () => organizeWizardSessionScope(demandPrefill),
-    [
-      demandPrefill?.participantIntentId,
-      demandPrefill?.sourceActivityId,
-      demandPrefill?.linkToParentActivityId,
-    ]
+    [demandPrefill]
   );
   const wizardInitKey = organizeFlowId
     ? `${organizeFlowId}:${wizardSessionScope ?? ''}`
@@ -330,12 +326,12 @@ export const CreateActivityFlow = ({
     }
   }, [hostTiers, publishingProfileKind, draft.priceMode, patchDraft]);
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     if (submitting) return;
     onClose();
-  };
+  }, [submitting, onClose]);
 
-  const goToFirstStep = () => {
+  const goToFirstStep = useCallback(() => {
     if (!selectedKind) return;
     patchDraft({
       kind: selectedKind,
@@ -347,11 +343,11 @@ export const CreateActivityFlow = ({
         : {}),
     });
     setStep(getCreateFlowSteps(selectedKind)[0]);
-  };
+  }, [patchDraft, selectedKind]);
 
   const currentStepIndex = kind && step !== 'type' ? flowSteps.indexOf(step as CreateFlowStepId) : -1;
 
-  const goBack = () => {
+  const goBack = useCallback(() => {
     if (routeMapTarget) {
       setRouteMapTarget(null);
       setError(null);
@@ -380,9 +376,20 @@ export const CreateActivityFlow = ({
       return;
     }
     setStep(flowSteps[currentStepIndex - 1]);
-  };
+  }, [
+    routeMapTarget,
+    whereMapOpen,
+    meetingPointMapOpen,
+    step,
+    currentStepIndex,
+    demandPrefill,
+    organizeKind,
+    onClose,
+    onBackToIntent,
+    flowSteps,
+  ]);
 
-  const goNext = () => {
+  const goNext = useCallback(() => {
     if (!kind || step === 'type') return;
     const validation = validateDraftStep(step as CreateFlowStepId, draft);
     if (validation) {
@@ -392,9 +399,9 @@ export const CreateActivityFlow = ({
     setError(null);
     if (currentStepIndex >= flowSteps.length - 1) return;
     setStep(flowSteps[currentStepIndex + 1]);
-  };
+  }, [kind, step, draft, currentStepIndex, flowSteps]);
 
-  const handlePublish = async () => {
+  const handlePublish = useCallback(async () => {
     if (!user?.id) return;
 
     if (hostGateLoading) return;
@@ -460,7 +467,27 @@ export const CreateActivityFlow = ({
     } finally {
       setSubmitting(false);
     }
-  };
+  }, [
+    user?.id,
+    hostGateLoading,
+    canPublish,
+    location.pathname,
+    location.search,
+    onOpenHostApplication,
+    navigate,
+    signupProfileComplete,
+    isCommunityHost,
+    hostTiers,
+    onClose,
+    tenantId,
+    draft,
+    registryPlaces,
+    demandPrefill,
+    organizeFlowId,
+    wizardSessionScope,
+    queryClient,
+    selectedKind,
+  ]);
 
   const handleViewOnMap = async () => {
     if (publishedActivity) {
@@ -591,7 +618,6 @@ export const CreateActivityFlow = ({
     hasFromPin,
     hasToPin,
     meetingPointMapOpen,
-    whereMapOpen,
     selectedKind,
     goNext,
     goBack,

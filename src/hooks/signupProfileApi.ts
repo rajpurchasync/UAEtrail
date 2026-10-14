@@ -1,4 +1,4 @@
-import type { UserProfile } from '@uaetrail/shared-types';
+import type { UserProfile } from '../api/types';
 import { api } from '../api/index';
 
 export type CompleteSignupProfilePayload = {

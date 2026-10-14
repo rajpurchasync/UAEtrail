@@ -223,11 +223,11 @@ if (isLocalMediaDevMode()) {
 
 /* ─── Local PUT upload endpoint (dev fallback when no S3) ───────────────── */
 mediaRouter.put(
-  '/upload-local/*',
+  /^\/upload-local\/(.+)$/,
   requireAuth,
   raw({ type: '*/*', limit: '20mb' }),
   async (req, res) => {
-    const key = (req.params as unknown as Record<string, string>)[0] ?? req.path.replace('/upload-local/', '');
+    const key = req.params[0] ?? req.path.replace('/upload-local/', '');
     const filePath = safePathUnder(LOCAL_UPLOADS_DIR, key);
     if (!filePath) {
       res.status(400).json({ error: { code: 'invalid_path', message: 'Invalid upload path.' } });

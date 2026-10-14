@@ -1,5 +1,5 @@
 import { Capacitor } from '@capacitor/core';
-import { isGoogleAuthEnabled } from '../components/auth/GoogleSignInButton';
+import { isGoogleAuthEnabled } from './googleAuth';
 
 /**
  * Google sign-in is offered on web and Android native.

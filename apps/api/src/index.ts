@@ -53,8 +53,12 @@ const start = async () => {
   registerRateLimiters(await createRateLimiters());
   const app = await bootstrapApp();
 
-  const server = app.listen(env.PORT, () => {
-    logger.info({ port: env.PORT }, 'api server listening');
+  const server = await new Promise<ReturnType<typeof app.listen>>((resolve, reject) => {
+    const instance = app.listen(env.PORT, () => {
+      logger.info({ port: env.PORT }, 'api server listening');
+      resolve(instance);
+    });
+    instance.on('error', reject);
   });
 
   const shutdown = async () => {
@@ -82,10 +86,13 @@ const startWithRetry = async () => {
       }
 
       const message = error instanceof Error ? error.message : String(error);
-      const mongoHint =
-        /mongo|27017|server selection|ETIMEDOUT|ENOTFOUND/i.test(message)
-          ? ' — MongoDB unreachable. Allow your IP in Atlas Network Access, or run local Mongo: docker compose --profile local-mongo up -d mongo'
-          : '';
+      const mongoHint = /querySrv/i.test(message)
+        ? ' — Atlas SRV DNS failed. Use public DNS (1.1.1.1), set MONGODB_DNS_SERVERS, or a standard mongodb:// URI from Atlas.'
+        : /EADDRINUSE/i.test(message)
+          ? ` — Port ${env.PORT} is in use. Stop Docker api container or other process on that port, or set PORT/API_BASE_URL in .env.`
+          : /mongo|27017|server selection|ETIMEDOUT|ENOTFOUND/i.test(message)
+            ? ' — MongoDB unreachable. Allow your IP in Atlas Network Access, or run local Mongo: docker compose --profile local-mongo up -d mongo'
+            : '';
 
       logger.error(
         { err: error, retryInMs: STARTUP_RETRY_DELAY_MS },

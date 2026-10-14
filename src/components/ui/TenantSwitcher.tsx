@@ -22,6 +22,7 @@ export const TenantSwitcher = ({ onChange }: { onChange: (tenantId: string) => v
       })
       .catch(() => { /* fallback to manual input */ })
       .finally(() => setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- load memberships once on mount
   }, []);
 
   const handleChange = (tenantId: string) => {

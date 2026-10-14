@@ -30,7 +30,7 @@ export const PLATFORM_FAQ_SECTIONS: FaqSection[] = [
       {
         question: 'Is UAE Trail free to use?',
         answer:
-          'Creating an account and browsing trails, camps, and activities is free. Some location premium guides may require payment. Organized activities may be free or paid depending on the organizer.'
+          'Creating an account and browsing the map, trails, camps, and activities is free. Many group outings are free to join. Some plans share costs or charge a per-person price depending on the host — each activity shows Free, Cost shared, or Paid before you join.'
       }
     ]
   },
@@ -68,7 +68,7 @@ export const PLATFORM_FAQ_SECTIONS: FaqSection[] = [
       {
         question: 'How do I run activities on UAE Trail?',
         answer:
-          'Apply via Pro membership as an individual guide or registered outdoor business. Once approved, you can publish activities, manage join requests, and build a public guide, agency, or shop profile with reviews and certificates.'
+          'Sign up and finish your profile, then use Organize on the map to publish hikes, camps, runs, and group plans. Host applications are reviewed for professional guides and businesses; public profiles show experience and reviews so participants can choose with confidence. Paid or agency hosting uses Pro membership in Profile.'
       },
       {
         question: 'Are activity organizers verified?',

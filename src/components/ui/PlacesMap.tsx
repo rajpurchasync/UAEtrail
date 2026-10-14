@@ -8,7 +8,7 @@ import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import { formatActivityType } from '../../utils/activityIdentity';
 import { MAP_CONFIG } from '../../config/platform';
-import { exploreMapPinRingColor } from '../../config/exploreTheme';
+import { exploreMapPinRingColor, type MapPinRingSource } from '../../config/exploreTheme';
 import { HIKING_VENUE_EMOJI, CAMPING_VENUE_EMOJI, CAMPING_ACTIVITY_EMOJI, MAP_FILTER_EMOJI } from '../../explore/exploreCopy';
 import {
   buildMapPinFaceHtml,
@@ -23,6 +23,26 @@ import { MapTileLayers } from './MapTileLayers';
 import type { MapPinKind, MapPinSource } from './mapPinTypes';
 
 export type { MapPinKind, MapPinSource };
+
+const toMapPinRingSource = (source: MapPinSource, seeking: boolean): MapPinRingSource | undefined => {
+  if (seeking) return 'seeking';
+  switch (source) {
+    case 'activity':
+      return 'activity';
+    case 'venue':
+      return 'venue';
+    case 'shop':
+      return 'shop';
+    case 'agency':
+      return 'agency';
+    case 'demand':
+      return 'demand';
+    case 'area':
+      return 'venue';
+    default:
+      return undefined;
+  }
+};
 
 export interface PlaceMapPin {
   id: string;
@@ -144,7 +164,7 @@ const pinIcon = (
         source,
         ringColor: exploreMapPinRingColor(
           entry.activityType,
-          entry.activityMode === 'seeking' ? 'seeking' : source
+          toMapPinRingSource(source, entry.activityMode === 'seeking')
         ),
         exploreItemId: entry.exploreItemId,
         stackCount: entry.stackCount ?? 1,
@@ -409,7 +429,7 @@ const aggregateClusterPinEntries = (
     buckets.set(key, {
       kind,
       source,
-      ringColor: exploreMapPinRingColor(kind, source),
+      ringColor: exploreMapPinRingColor(kind, toMapPinRingSource(source, false)),
       exploreItemId,
       stackCount: addCount,
       count: addCount,

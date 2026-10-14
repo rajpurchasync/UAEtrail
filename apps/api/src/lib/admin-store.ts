@@ -313,11 +313,13 @@ export const updateAdminLocation = async (id: string, data: LocationUpdateData) 
     throw new Error('Location not found.');
   }
 
-  const updated: Location = {
+  const merged: Location = {
     ...existing,
     ...data,
     updatedAt: new Date()
   };
+  const { stampLocationGroupRegion } = await import('./group-region-resolution.js');
+  const updated = await stampLocationGroupRegion(merged);
   await writeLocationToMongo(updated);
   return updated;
 };

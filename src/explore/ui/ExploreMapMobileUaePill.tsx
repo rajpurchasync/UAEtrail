@@ -91,11 +91,9 @@ export const ExploreMapMobileUaePill = ({
         type="button"
         onClick={(event) => {
           event.stopPropagation();
-          setOpen((value) => {
-            const next = !value;
-            if (next) onOpen?.();
-            return next;
-          });
+          const next = !open;
+          setOpen(next);
+          if (next) onOpen?.();
         }}
         className={pillClassName}
         aria-expanded={open}

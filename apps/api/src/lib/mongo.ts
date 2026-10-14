@@ -8,12 +8,14 @@ let client: MongoClient | null = null;
 let connecting: Promise<MongoClient | null> | null = null;
 
 const defaultSrvFallbackDnsServers = ['1.1.1.1', '8.8.8.8'];
-const mongoConnectWatchdogMs = env.NODE_ENV === 'production' ? 12_000 : 20_000;
+const mongoConnectWatchdogMs = env.NODE_ENV === 'production' ? 12_000 : 60_000;
 const mongoSelectionTimeoutMs = env.NODE_ENV === 'production' ? 5_000 : 12_000;
 
+const isAtlasSrvUri = (uri: string): boolean => uri.startsWith('mongodb+srv://');
+
 const shouldRetryMongoWithDnsFallback = (uri: string, message: string): boolean =>
-  uri.startsWith('mongodb+srv://') &&
-  (/querySrv\s+ETIMEOUT/i.test(message) ||
+  isAtlasSrvUri(uri) &&
+  (/querySrv\s+(ETIMEOUT|ECONNREFUSED|ENOTFOUND|EREFUSED)/i.test(message) ||
     /getaddrinfo\s+ENOTFOUND/i.test(message) ||
     /Server selection timed out/i.test(message) ||
     /MongoDB connection timed out/i.test(message));
@@ -28,6 +30,23 @@ const resolveSrvFallbackDnsServers = (): string[] => {
     .split(',')
     .map((item) => item.trim())
     .filter(Boolean);
+};
+
+/** Windows/corporate DNS often refuses SRV lookups; public resolvers fix Atlas mongodb+srv. */
+const preferAtlasSrvDns = (uri: string): void => {
+  if (!isAtlasSrvUri(uri) || env.NODE_ENV === 'production') {
+    return;
+  }
+
+  const fallbackDnsServers = resolveSrvFallbackDnsServers();
+  if (fallbackDnsServers.length === 0) {
+    return;
+  }
+
+  dns.setServers(fallbackDnsServers);
+  console.warn(
+    `[mongo] Using DNS servers for Atlas SRV lookup: ${fallbackDnsServers.join(', ')} (override with MONGODB_DNS_SERVERS)`
+  );
 };
 
 export const connectMongo = async (): Promise<MongoClient> => {
@@ -57,9 +76,6 @@ export const connectMongo = async (): Promise<MongoClient> => {
             (async () => {
               await mongoClient.connect();
               await mongoClient.db('admin').command({ ping: 1 });
-              const db = mongoClient.db();
-              await runMongoMigrations(db);
-              await ensureMongoIndexes(db);
             })(),
             watchdog
           ]);
@@ -68,10 +84,16 @@ export const connectMongo = async (): Promise<MongoClient> => {
           throw error;
         }
 
+        const db = mongoClient.db();
+        await runMongoMigrations(db);
+        await ensureMongoIndexes(db);
+
         client = mongoClient;
         console.log('[mongo] Connected to MongoDB.');
         return client;
       };
+
+      preferAtlasSrvDns(env.MONGODB_URI);
 
       try {
         return await connectOnce();
@@ -88,9 +110,9 @@ export const connectMongo = async (): Promise<MongoClient> => {
           }
         }
 
-        throw new Error(
-          `Failed to connect to MongoDB at ${env.MONGODB_URI}: ${message}`
-        );
+        throw new Error(`Failed to connect to MongoDB at ${env.MONGODB_URI}: ${message}`, {
+          cause: error,
+        });
       } finally {
         connecting = null;
       }

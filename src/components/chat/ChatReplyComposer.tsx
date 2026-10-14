@@ -37,7 +37,7 @@ export const ChatReplyComposer = ({
     if (!replyTo) return;
     const frame = requestAnimationFrame(() => composeRef.current?.focus());
     return () => cancelAnimationFrame(frame);
-  }, [replyTo?.id]);
+  }, [replyTo]);
 
   return (
     <>
