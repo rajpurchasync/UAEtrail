@@ -362,9 +362,15 @@ export const ExploreActivityPeekMeta = ({ card }: { card: ExploreCardModel }) =>
 export const ExploreCardPeopleRow = ({
   card,
   onGuestGatedAction,
+  hideProMembershipUpsell = false,
+  compactSection = false,
 }: {
   card: ExploreCardModel;
   onGuestGatedAction?: () => void;
+  /** Map peek — hide Pro membership hints (detail page keeps upsell). */
+  hideProMembershipUpsell?: boolean;
+  /** Nested in peek strip — drop outer divider spacing. */
+  compactSection?: boolean;
 }) => {
   const participants = card.participantPreviews ?? [];
   const entitlements = card.viewerAccess?.entitlements;
@@ -374,6 +380,7 @@ export const ExploreCardPeopleRow = ({
       ? participants
       : participants.filter((row) => entitlements.buddyUserIdsOnActivity.includes(row.id));
   const showRosterProUpsell =
+    !hideProMembershipUpsell &&
     card.source === 'activity' &&
     Boolean(entitlements) &&
     !entitlements!.canViewFullBuddyRoster &&
@@ -396,6 +403,7 @@ export const ExploreCardPeopleRow = ({
     card.viewerAccess.entitlements.canViewHostProfileBeforeJoin;
   const hostPath = canOpenHostProfile ? hostProfilePath : null;
   const showHostProfileProUpsell =
+    !hideProMembershipUpsell &&
     card.source === 'activity' &&
     Boolean(hostProfilePath) &&
     card.viewerAccess?.entitlements != null &&
@@ -495,7 +503,11 @@ export const ExploreCardPeopleRow = ({
   ) : null;
 
   return (
-    <div className="mt-5 border-t border-neutral-100 pt-4 space-y-4">
+    <div
+      className={
+        compactSection ? 'space-y-4' : 'mt-5 border-t border-neutral-100 pt-4 space-y-4'
+      }
+    >
       {hostRow}
       {showHostProfileProUpsell ? (
         <p className="text-xs leading-relaxed text-amber-900/90">
@@ -586,8 +598,9 @@ export const ExploreCardCapacityRow = ({ card }: { card: ExploreCardModel }) => 
   if (!label) return null;
 
   return (
-    <p className={`mt-3 text-sm font-medium ${EXPLORE_TYPE.body}`}>
-      <span className="font-medium">{label}</span>
+    <p className={`text-sm font-medium ${EXPLORE_TYPE.body}`}>
+      <span className="font-semibold tabular-nums">{label}</span>
+      <span className={`ml-1.5 text-xs font-medium ${EXPLORE_TYPE.muted}`}>spots</span>
     </p>
   );
 };

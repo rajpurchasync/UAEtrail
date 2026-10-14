@@ -277,10 +277,17 @@ export const ExploreMapStage = ({
       ) : null}
 
       <div
-        className="pointer-events-none absolute bottom-12 right-4 z-[1100] hidden lg:flex lg:flex-col lg:items-end"
-        style={{ gap: 'var(--explore-map-fab-stack-gap)' }}
+        className="pointer-events-none absolute right-4 z-[1100] hidden lg:flex lg:flex-col lg:items-end"
+        style={{
+          bottom: 'var(--explore-map-desktop-fab-bottom)',
+          gap: 'var(--explore-map-fab-stack-gap)',
+        }}
       >
-        <ExploreMapStyleToggle style={exploreMapStyle} onToggle={onToggleMapStyle} />
+        <ExploreMapStyleToggle
+          style={exploreMapStyle}
+          onToggle={onToggleMapStyle}
+          className={`${EXPLORE_FLOATING_CONTROL} h-11 w-11 justify-center !text-neutral-950`}
+        />
         <button
           type="button"
           onClick={onPrimaryFab}

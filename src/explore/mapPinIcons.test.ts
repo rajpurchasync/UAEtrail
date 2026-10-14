@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { HIKING_ACTIVITY_EMOJI, HIKING_VENUE_EMOJI, resolveMapPinEmoji } from '@uaetrail/shared-types';
 import {
+  buildMapClusterIconHtml,
   buildMapColocatedPinIconHtml,
   buildMapPinFaceHtml,
   buildVenueMapPinHtml,
@@ -112,7 +113,7 @@ describe('mapPinIcons', () => {
     ).toBe('ride');
   });
 
-  it('shows stack count badge only when multiple items share one pin', () => {
+  it('omits stack count badge on activity pins (including colocated stacks)', () => {
     const stacked = buildMapPinFaceHtml({
       kind: 'hiking',
       source: 'activity',
@@ -122,8 +123,12 @@ describe('mapPinIcons', () => {
       ringWidth: 2.5,
       stackCount: 3,
     });
-    expect(stacked).toContain('uaetrail-map-cluster-badge');
-    expect(stacked).toContain('>3<');
-    expect(stacked).not.toContain('uaetrail-map-activity-mode-badge');
+    expect(stacked).not.toContain('uaetrail-map-cluster-badge');
+  });
+
+  it('buildMapClusterIconHtml matches lone activity pin (no count)', () => {
+    const html = buildMapClusterIconHtml('hiking', 'activity', '#059669', 4);
+    expect(html).toContain('uaetrail-map-pin-face');
+    expect(html).not.toContain('uaetrail-map-cluster-badge');
   });
 });

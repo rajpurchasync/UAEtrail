@@ -1,6 +1,7 @@
-/** Map/list peek section labels (aligned with detail Buddies · Transport tabs). */
-export const ACTIVITY_PEEK_SECTION_BUDDIES = 'Going';
-export const ACTIVITY_PEEK_SECTION_LOGISTICS = 'Rides & spots';
+/** Map peek — host / requester row (not the participant roster). */
+export const ACTIVITY_PEEK_SECTION_HOST = 'Host';
+/** @deprecated Use ACTIVITY_PEEK_SECTION_HOST */
+export const ACTIVITY_PEEK_SECTION_BUDDIES = ACTIVITY_PEEK_SECTION_HOST;
 
 export const activityPeekPendingInviteChipLabel = (count: number): string =>
   count === 1 ? '1 invited' : `${count} invited`;

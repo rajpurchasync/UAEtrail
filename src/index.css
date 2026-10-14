@@ -14,6 +14,18 @@
     --explore-map-fab-inset: 2.75rem;
     /** Vertical gap between map layer toggle and compose FAB */
     --explore-map-fab-stack-gap: 1.25rem;
+    /** Desktop explore — right rail (Add New + layer toggle) vs Leaflet +/- */
+    --explore-map-desktop-fab-bottom: 3rem;
+    --explore-map-desktop-primary-fab-height: 3.5rem;
+    --explore-map-desktop-layer-toggle-size: 2.75rem;
+    --explore-map-desktop-zoom-clearance: 0.75rem;
+    --explore-map-desktop-zoom-margin-bottom: calc(
+      var(--explore-map-desktop-fab-bottom) +
+        var(--explore-map-desktop-primary-fab-height) +
+        var(--explore-map-fab-stack-gap) +
+        var(--explore-map-desktop-layer-toggle-size) +
+        var(--explore-map-desktop-zoom-clearance)
+    );
     --sticky-top: var(--safe-top);
     /* App design tokens — 8pt grid */
     --space-page: 16px;
@@ -1046,8 +1058,8 @@
 
   @media (min-width: 1024px) {
     .uaetrail-explore-desktop-zoom {
-      margin-bottom: 7rem !important;
-      margin-right: 0.75rem !important;
+      margin-bottom: var(--explore-map-desktop-zoom-margin-bottom) !important;
+      margin-right: 1rem !important;
     }
   }
 

@@ -1,6 +1,7 @@
 import { isRolePlaceholderDisplayName, ORGANIZER_FALLBACK_DISPLAY_NAME } from './host-display.js';
 import {
-  explorePersonFirstName,
+  explorePersonHeadlineName,
+  formatExplorePersonDisplayName,
   resolveExploreFeaturedPerson,
   type ExploreFeaturedPersonInput,
   type ExploreMapPersonDTO,
@@ -63,11 +64,6 @@ export type ExplorePresentationBuildInput = {
 const itemParticipationMode = (item: ExplorePresentationBuildInput): ParticipationMode =>
   resolveParticipationMode(item.activity?.participationMode, item.activity?.requirements);
 
-const getFirstName = (name?: string | null): string => {
-  if (name?.trim()) return name.trim().split(/\s+/)[0];
-  return ORGANIZER_FALLBACK_DISPLAY_NAME;
-};
-
 const PLACEHOLDER_FIRST_NAMES = new Set(['pending', 'user', 'guest', 'account', 'new']);
 
 const formatRequesterDisplayName = (name?: string | null, email?: string | null): string => {
@@ -85,9 +81,9 @@ const resolveExploreHostLabel = (options: {
   tenantName?: string | null;
 }): string => {
   const host = options.hostName?.trim();
-  if (host && !isRolePlaceholderDisplayName(host)) return getFirstName(host);
+  if (host && !isRolePlaceholderDisplayName(host)) return formatExplorePersonDisplayName(host);
   const requester = options.participantName?.trim();
-  if (requester && !isRolePlaceholderDisplayName(requester)) return getFirstName(requester);
+  if (requester && !isRolePlaceholderDisplayName(requester)) return formatExplorePersonDisplayName(requester);
   return ORGANIZER_FALLBACK_DISPLAY_NAME;
 };
 
@@ -467,6 +463,22 @@ export const buildExploreSpotsSegment = (
   return `${count} spots`;
 };
 
+/** Peek / list capacity — filled seats or spots out of total (e.g. `3/5`). */
+export const buildExplorePeekSpotsLabel = (
+  slotsAvailable?: number | null,
+  slotsTotal?: number | null,
+  participantCount?: number | null
+): string | null => {
+  const total = slotsTotal ?? 0;
+  if (total <= 0) return null;
+  const available = slotsAvailable ?? total;
+  let filled = Math.max(0, total - available);
+  if (filled === 0 && (participantCount ?? 0) > 0) {
+    filled = Math.min(participantCount ?? 0, total);
+  }
+  return `${filled}/${total}`;
+};
+
 /** Hide raw map-pin coordinate labels from card copy. */
 export const sanitizeExploreLocation = (label?: string | null): string | null => {
   const trimmed = label?.trim();
@@ -513,12 +525,12 @@ const exploreHostLabel = (input: ExploreHeadlineInput): string =>
 const resolveHeadlinePerson = (input: ExploreHeadlineInput): ExploreMapPersonDTO | null =>
   input.featuredPerson ?? resolveExploreFeaturedPerson(input);
 
-/** First name for card copy — prefers featured person; legacy hostName fallback for old payloads. */
+/** Person label for list rows, peek headlines, and section highlights (full display name). */
 const exploreHeadlinePersonLabel = (input: ExploreHeadlineInput): string => {
   const person = resolveHeadlinePerson(input);
-  if (person) return explorePersonFirstName(person);
+  if (person) return explorePersonHeadlineName(person);
   if (headlineIsSeeking(input)) {
-    return getFirstName(formatRequesterDisplayName(input.hostName));
+    return formatRequesterDisplayName(input.hostName);
   }
   return exploreHostLabel(input);
 };
@@ -656,9 +668,11 @@ export const buildExploreCardSections = (input: ExploreHeadlineInput): ExploreCa
     input.source === 'activity' && !headlineIsSeeking(input) && input.kind !== 'rideshare'
       ? buildExploreSpotsSegment(input.slotsAvailable, input.slotsTotal)
       : null;
-  const partySize = headlineIsSeeking(input) ? input.slotsTotal : null;
-  const partyLabel =
-    partySize && partySize > 0 ? `${partySize} ${partySize === 1 ? 'person' : 'people'}` : null;
+  const partyLabel = buildExplorePeekSpotsLabel(
+    input.slotsAvailable,
+    input.slotsTotal,
+    input.participantCount
+  );
   const location = sanitizeExploreLocation(input.location);
 
   if (headlineIsSeeking(input)) {
@@ -688,6 +702,7 @@ export const buildExploreCardSections = (input: ExploreHeadlineInput): ExploreCa
       activityHighlight: 'Rideshare',
       dateHighlight: formatExploreDayForHeadline(input.date),
       details,
+      partyLabel,
     });
   }
 
@@ -711,6 +726,7 @@ export const buildExploreCardSections = (input: ExploreHeadlineInput): ExploreCa
     dateHighlight: formatExploreDayForHeadline(input.date),
     details,
     participantCount: input.participantCount,
+    partyLabel,
   });
 };
 

@@ -124,7 +124,7 @@ export const buildMapPinFaceHtml = ({
   fontSizePx,
   ringWidth: _ringWidth,
   selected = false,
-  stackCount = 0,
+  stackCount: _stackCount = 0,
   exploreItemId,
   positionStyle = '',
   activityMode: _activityMode = null,
@@ -132,18 +132,13 @@ export const buildMapPinFaceHtml = ({
 }: MapPinFaceOptions): string => {
   const selectedClass = selected ? ' uaetrail-map-pin-marker--selected' : '';
   const iconHtml = resolveMapPinIconHtml(kind, source, fontSizePx, placeKind);
-  const countLabel = stackCount > 99 ? '99+' : String(stackCount);
-  const showStackCount = stackCount > 1;
-  const badge = showStackCount
-    ? `<span class="uaetrail-map-cluster-badge" aria-hidden="true">${countLabel}</span>`
-    : '';
-  const clusterClass = showStackCount ? ' uaetrail-map-cluster-marker' : '';
   const dataAttr = exploreItemId ? ` data-explore-item-id="${exploreItemId}"` : '';
 
   void _ringWidth;
   void _activityMode;
+  void _stackCount;
   const markerDataAttr = exploreItemId ? ` data-explore-item-id="${exploreItemId}"` : '';
-  const markerHtml = `<span class="uaetrail-map-pin-marker${clusterClass}${selectedClass}"${markerDataAttr} style="--pin-ring:${ringColor};width:${size}px;height:${size}px;"><span class="uaetrail-map-pin-face"><span class="uaetrail-map-pin-icon">${iconHtml}</span></span>${badge}</span>`;
+  const markerHtml = `<span class="uaetrail-map-pin-marker${selectedClass}"${markerDataAttr} style="--pin-ring:${ringColor};width:${size}px;height:${size}px;"><span class="uaetrail-map-pin-face"><span class="uaetrail-map-pin-icon">${iconHtml}</span></span></span>`;
 
   if (positionStyle) {
     return `<span class="uaetrail-map-pin-slot" style="${positionStyle}"${dataAttr}>${markerHtml}</span>`;
@@ -305,15 +300,18 @@ export const resolveDominantMapPinSource = (
   return dominant;
 };
 
-/** Cluster / stack marker: type emoji + count badge. */
+/** Clustered activity marker — same emoji face as a lone pin (no count badge). */
 export const buildMapClusterIconHtml = (
   kind: MapPinKind,
   source: MapPinSource,
   ringColor: string,
-  count: number
-): string => {
-  const size = 38;
-  const iconHtml = resolveMapPinIconHtml(kind, source, 18);
-  const countLabel = count > 99 ? '99+' : String(count);
-  return `<span class="uaetrail-map-pin-marker uaetrail-map-cluster-marker" style="--pin-ring:${ringColor};width:${size}px;height:${size}px;"><span class="uaetrail-map-pin-face"><span class="uaetrail-map-pin-icon">${iconHtml}</span></span><span class="uaetrail-map-cluster-badge" aria-hidden="true">${countLabel}</span></span>`;
-};
+  _count: number
+): string =>
+  buildMapPinFaceHtml({
+    kind,
+    source,
+    ringColor,
+    size: 48,
+    fontSizePx: 18,
+    ringWidth: 2.5,
+  });

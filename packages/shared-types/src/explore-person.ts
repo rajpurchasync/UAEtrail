@@ -55,6 +55,17 @@ export const explorePersonFirstName = (person?: ExploreMapPersonDTO | null): str
   return displayName.split(/\s+/)[0];
 };
 
+/** Full display name for explore list rows, peek headlines, and section highlights. */
+export const explorePersonHeadlineName = (person?: ExploreMapPersonDTO | null): string => {
+  const displayName = formatExplorePersonDisplayName(person?.displayName);
+  if (displayName === 'Community member') {
+    return person?.role === 'host' || person?.role === 'organizer'
+      ? ORGANIZER_FALLBACK_DISPLAY_NAME
+      : 'Community member';
+  }
+  return displayName;
+};
+
 export const explorePersonRoleLabel = (
   role: ExploreMapPersonRole,
   publishingProfileKind?: PublishingProfileKind | null

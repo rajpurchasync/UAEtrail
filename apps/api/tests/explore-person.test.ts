@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   buildExploreFeaturedPerson,
   explorePersonFirstName,
+  explorePersonHeadlineName,
   explorePersonRoleLabel,
   resolveExploreFeaturedPerson,
 } from '@uaetrail/shared-types';
@@ -63,6 +64,13 @@ describe('explore featured person', () => {
         role: 'requester',
       })
     ).toBe('Alex');
+    expect(
+      explorePersonHeadlineName({
+        userId: 'u1',
+        displayName: 'Alex Rider',
+        role: 'requester',
+      })
+    ).toBe('Alex Rider');
     expect(explorePersonRoleLabel('requester')).toBe('Posted this request');
     expect(explorePersonRoleLabel('host')).toBe('Organizer');
     expect(explorePersonRoleLabel('organizer')).toBe('Organizer');

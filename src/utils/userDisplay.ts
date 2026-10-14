@@ -1,4 +1,5 @@
 import {
+  formatExplorePersonDisplayName,
   hostPersonFirstName,
   isRolePlaceholderDisplayName,
   resolveHostPersonDisplayName,
@@ -25,7 +26,7 @@ export const initialsFromName = (name?: string | null): string => {
 
 const PLACEHOLDER_FIRST_NAMES = new Set(['pending', 'user', 'guest', 'account', 'new']);
 
-/** Explore list/detail first name — trusts API hostName, with demand requester fallback. */
+/** Explore list/detail host label — full display name from API hostName (legacy FE helper). */
 export const resolveExploreHostLabel = (options: {
   hostName?: string | null;
   participantName?: string | null;
@@ -33,12 +34,12 @@ export const resolveExploreHostLabel = (options: {
 }): string => {
   const host = options.hostName?.trim();
   if (host && !isRolePlaceholderDisplayName(host)) {
-    return getFirstName(host);
+    return formatExplorePersonDisplayName(host);
   }
 
   const requester = options.participantName?.trim();
   if (requester && !isRolePlaceholderDisplayName(requester)) {
-    return getFirstName(requester);
+    return formatExplorePersonDisplayName(requester);
   }
 
   return ORGANIZER_FALLBACK_DISPLAY_NAME;

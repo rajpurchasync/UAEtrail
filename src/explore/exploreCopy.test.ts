@@ -3,6 +3,7 @@ import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { buildDiscoveryCardViewModelCard } from '../discovery';
 import { buildExploreListMeta } from './exploreCardModel';
 import {
+  buildExplorePeekSpotsLabel,
   buildExploreRouteLabel,
   buildExploreSpotsSegment,
   buildExploreListWhen,
@@ -102,7 +103,7 @@ describe('resolveExploreHostLabel', () => {
         hostName: 'Khalid Rahman',
         tenantName: 'UAE Adventure Co',
       })
-    ).toBe('Khalid');
+    ).toBe('Khalid Rahman');
   });
 
   it('falls back to Organizer when only tenant or role labels are available', () => {
@@ -147,7 +148,7 @@ describe('exploreHeadline', () => {
         date: '2026-09-12',
         time: '06:00',
       })
-    ).toBe('Omar is going Hiking on Saturday 12th - Jebel Jais - Sat at 6:00');
+    ).toBe('Omar Al Hosani is going Hiking on Saturday 12th - Jebel Jais - Sat at 6:00');
   });
 
   it('formats hiking activity with host, location, time, and spots', () => {
@@ -235,7 +236,7 @@ describe('exploreHeadline', () => {
         fromLabel: 'Dubai',
         toLabel: 'Fujairah',
       })
-    ).toBe('Alex is looking for Rideshare on Sunday 13th - Dubai to Fujairah - Sun at 2 PM (flexible)');
+    ).toBe('Alex Rider is looking for Rideshare on Sunday 13th - Dubai to Fujairah - Sun at 2 PM (flexible)');
   });
 
   it('formats hiking seeking with location and flexible tag', () => {
@@ -250,7 +251,7 @@ describe('exploreHeadline', () => {
         date: '2026-09-12',
         time: '07:00',
       })
-    ).toBe('Sarah is looking for Morning hike on Saturday 12th - Wadi Shawka - Sat at 7:00 (flexible)');
+    ).toBe('Sarah Host is looking for Morning hike on Saturday 12th - Wadi Shawka - Sat at 7:00 (flexible)');
   });
 
   it('formats event seeking with the requester title instead of a generic category', () => {
@@ -266,7 +267,7 @@ describe('exploreHeadline', () => {
         time: '06:30',
       })
     ).toBe(
-      'Fatima is looking for Sunrise run at Kite Beach on Thursday 15th - Kite Beach running track, Dubai - Thu at 6:30 AM (flexible)'
+      'Fatima Host is looking for Sunrise run at Kite Beach on Thursday 15th - Kite Beach running track, Dubai - Thu at 6:30 AM (flexible)'
     );
   });
 
@@ -280,7 +281,7 @@ describe('exploreHeadline', () => {
         hostName: 'Fatima Host',
         date: '2026-10-15',
       })
-    ).toBe('Fatima is looking for Other Outdoors on Thursday 15th - Thu (flexible)');
+    ).toBe('Fatima Host is looking for Other Outdoors on Thursday 15th - Thu (flexible)');
   });
 });
 
@@ -288,6 +289,14 @@ describe('buildExploreRouteLabel', () => {
   it('returns route for carpool only', () => {
     expect(buildExploreRouteLabel('Dubai', 'Fujairah', 'rideshare')).toBe('Dubai to Fujairah');
     expect(buildExploreRouteLabel('Dubai', 'Fujairah', 'hiking')).toBeNull();
+  });
+});
+
+describe('buildExplorePeekSpotsLabel', () => {
+  it('formats filled and total capacity', () => {
+    expect(buildExplorePeekSpotsLabel(8, 20)).toBe('12/20');
+    expect(buildExplorePeekSpotsLabel(3, 3)).toBe('0/3');
+    expect(buildExplorePeekSpotsLabel(null, 5, 2)).toBe('2/5');
   });
 });
 
@@ -498,15 +507,15 @@ describe('buildDiscoveryCardViewModelCard (explore list copy)', () => {
     });
     const card = buildDiscoveryCardViewModelCard(demand);
     expect(card.featuredPerson?.role).toBe('requester');
-    expect(card.listTitle).toBe('Rideshare · Alex');
+    expect(card.listTitle).toBe('Rideshare · Alex Rider');
     expect(card.headline).toBe(
-      'Alex is looking for Rideshare on Sunday 13th - Dubai to Fujairah - Sun at 2 PM (flexible)'
+      'Alex Rider is looking for Rideshare on Sunday 13th - Dubai to Fujairah - Sun at 2 PM (flexible)'
     );
     expect(card.routeLabel).toBe('Dubai to Fujairah');
     expect(card.secondaryCta).toBe('Message');
     expect(buildExploreListMeta(card)).toContain('Dubai to Fujairah');
-    expect(card.sections.highlightName).toBe('Alex');
-    expect(card.sections.listTitle).toBe('Rideshare · Alex');
+    expect(card.sections.highlightName).toBe('Alex Rider');
+    expect(card.sections.listTitle).toBe('Rideshare · Alex Rider');
     expect(card.sections.listWhen).toContain('Sep 13');
   });
 });

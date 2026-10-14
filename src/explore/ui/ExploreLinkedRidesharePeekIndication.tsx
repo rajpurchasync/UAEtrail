@@ -1,13 +1,11 @@
-import { Car, ChevronRight } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import {
   EXPLORE_LINKED_PARENT_PLAN_PEEK_PREFIX,
-  EXPLORE_LINKED_RIDESHARES_PEEK_TITLE,
   EXPLORE_RIDESHARE_AVAILABLE_LABEL,
   EXPLORE_VIEW_LINKED_PLAN_CTA,
-  EXPLORE_VIEW_LINKED_RIDESHARE_CTA,
 } from '../createFlowCopy';
 import type { ExploreCardModel } from '../exploreCardModel';
-import { linkedParentRidesharePeekCopy } from '../exploreLinkedParentRideshareCopy';
+import { linkedParentRidesharePeekCopy } from '../exploreLinkedParentRidesharePeekCopy';
 
 type ExploreLinkedRidesharePeekIndicationProps = {
   card: ExploreCardModel;
@@ -18,7 +16,13 @@ const panelClass =
   'mt-3 w-full rounded-xl border border-sky-200 bg-sky-50/90 px-3.5 py-3 text-left';
 const buttonPanelClass = `${panelClass} transition active:bg-sky-100/90`;
 
-/** Bidirectional linked rideshare cue on map peek / item sheet (parent outing ↔ rideshare). */
+/** True when peek should show a linked-plan or rideshare-available affordance. */
+export const explorePeekHasLinkedRideshareAffordance = (card: ExploreCardModel): boolean => {
+  if (card.kind === 'rideshare' && card.activity?.linkedParentActivity) return true;
+  return Boolean(card.linkedRideshares?.length);
+};
+
+/** Bidirectional linked rideshare on map peek — parent plans get a single rideshare link; rideshare pins link back to the plan. */
 export const ExploreLinkedRidesharePeekIndication = ({
   card,
   onOpenExploreItem,
@@ -52,47 +56,57 @@ export const ExploreLinkedRidesharePeekIndication = ({
   }
 
   const linked = card.linkedRideshares;
-  if (!linked?.length) return null;
+  if (!linked?.length || card.kind === 'rideshare') return null;
 
-  const showRideshareAvailable =
-    card.requirementBadges?.includes('Rideshare available') && card.source === 'activity';
+  const openLinked = (exploreItemId: string) => {
+    if (open) open(exploreItemId);
+  };
+
+  if (linked.length === 1) {
+    const row = linked[0]!;
+    if (!open) {
+      return (
+        <p className="text-sm font-semibold text-sky-800">{EXPLORE_RIDESHARE_AVAILABLE_LABEL}</p>
+      );
+    }
+    return (
+      <button
+        type="button"
+        onClick={() => openLinked(row.exploreItemId)}
+        className="inline-flex items-center gap-1 text-sm font-semibold text-sky-800 hover:underline"
+      >
+        {EXPLORE_RIDESHARE_AVAILABLE_LABEL}
+        <ChevronRight className="h-4 w-4 shrink-0" aria-hidden />
+      </button>
+    );
+  }
 
   return (
-    <div className={panelClass}>
-      <div className="flex items-start gap-2">
-        <Car className="mt-0.5 h-4 w-4 flex-shrink-0 text-sky-700" aria-hidden />
-        <div className="min-w-0 flex-1">
-          <p className="text-xs font-semibold uppercase tracking-wide text-sky-800">
-            {showRideshareAvailable ? EXPLORE_RIDESHARE_AVAILABLE_LABEL : EXPLORE_LINKED_RIDESHARES_PEEK_TITLE}
-          </p>
-          <ul className="mt-2 space-y-2">
-            {linked.map((row) => (
-              <li key={row.exploreItemId}>
-                {open ? (
-                  <button
-                    type="button"
-                    onClick={() => open(row.exploreItemId)}
-                    className="flex w-full items-center justify-between gap-2 text-left text-sm font-medium text-gray-900"
-                  >
-                    <span className="truncate">{row.title}</span>
-                    <span className="inline-flex shrink-0 items-center gap-0.5 text-xs font-semibold text-sky-800">
-                      {EXPLORE_VIEW_LINKED_RIDESHARE_CTA}
-                      <ChevronRight className="h-3.5 w-3.5" aria-hidden />
-                    </span>
-                  </button>
-                ) : (
-                  <p className="text-sm font-medium text-gray-900">{row.title}</p>
-                )}
-              </li>
-            ))}
-          </ul>
-          {card.activity?.title ? (
-            <p className="mt-2 text-xs text-gray-600">
-              {EXPLORE_LINKED_PARENT_PLAN_PEEK_PREFIX} {card.activity.title}
-            </p>
-          ) : null}
-        </div>
-      </div>
-    </div>
+    <ul className="space-y-2">
+      {linked.map((row) =>
+        open ? (
+          <li key={row.exploreItemId}>
+            <button
+              type="button"
+              onClick={() => openLinked(row.exploreItemId)}
+              className="inline-flex items-center gap-1 text-sm font-semibold text-sky-800 hover:underline"
+            >
+              {EXPLORE_RIDESHARE_AVAILABLE_LABEL}
+              <span className="font-medium text-gray-700">· {row.title}</span>
+              <ChevronRight className="h-4 w-4 shrink-0" aria-hidden />
+            </button>
+          </li>
+        ) : (
+          <li key={row.exploreItemId} className="text-sm font-medium text-gray-900">
+            {row.title}
+          </li>
+        )
+      )}
+      {card.activity?.title ? (
+        <li className="text-xs text-gray-600">
+          {EXPLORE_LINKED_PARENT_PLAN_PEEK_PREFIX} {card.activity.title}
+        </li>
+      ) : null}
+    </ul>
   );
 };
