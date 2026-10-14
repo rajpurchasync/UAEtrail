@@ -208,31 +208,6 @@ const fallbackLocationFromActivityDoc = (
     updatedAt: doc.updatedAt
   }) as Location;
 
-const loadActiveLocations = async (locationIds: string[]): Promise<Map<string, Location>> => {
-  const uniqueIds = [...new Set(locationIds)];
-  const map = new Map<string, Location>();
-
-  if (uniqueIds.length === 0) return map;
-
-  const docs = await locationsCollection()
-    .find({ _id: { $in: uniqueIds }, status: LocationStatus.ACTIVE })
-    .toArray();
-
-  for (const doc of docs) {
-    map.set(doc._id, mapMongoLocation(doc));
-  }
-
-  for (const id of uniqueIds) {
-    if (map.has(id)) continue;
-    const fallback = await findLocationInMongo(id);
-    if (fallback && fallback.status === LocationStatus.ACTIVE) {
-      map.set(id, fallback);
-    }
-  }
-
-  return map;
-};
-
 const activityDocHasMapCoordinates = (doc: MongoActivityDoc): boolean =>
   (doc.meetingLat != null && doc.meetingLng != null) ||
   (doc.startLat != null && doc.startLng != null) ||

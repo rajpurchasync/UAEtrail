@@ -2,7 +2,7 @@ import { resolveGroupRegionBrowseKey, type GroupRegionLevels } from '@uaetrail/s
 import type { Location } from '../domain/types.js';
 import type { MongoActivityDoc } from './entity-builders.js';
 import { resolveActivityAnchorCoordinates } from './area-resolution.js';
-import { type GeoPoint, toGeoPoint, withGeoPointOnDoc } from './location-geo.js';
+import { type GeoPoint, withGeoPointOnDoc } from './location-geo.js';
 
 export type GeoIndexFields = {
   groupRegionBrowseKey: string | null;
