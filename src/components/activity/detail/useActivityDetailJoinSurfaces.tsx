@@ -36,6 +36,12 @@ type Args = {
   hasAccessCoordinates: boolean;
   accessLat: number | null;
   accessLng: number | null;
+  requiresSignIn?: boolean;
+  /** Consumer `/activity/:id` — wire CTAs in mobile footer + desktop banner row. */
+  consumerWireEngagement?: boolean;
+  /** Host on consumer detail — no join sidebar/sticky share duplicates. */
+  isHostViewer?: boolean;
+  consumerWireEngagementCta?: ReactNode;
 };
 
 /** Join CTAs, mobile footer wrap, sticky footer, and desktop sidebar join (R6). */
@@ -63,6 +69,10 @@ export const useActivityDetailJoinSurfaces = ({
   hasAccessCoordinates,
   accessLat,
   accessLng,
+  requiresSignIn = false,
+  consumerWireEngagement = false,
+  isHostViewer = false,
+  consumerWireEngagementCta,
 }: Args) => {
   const joinActionDisabled = joinDisabled;
   const isFull = (activity.slotsAvailable ?? 0) <= 0;
@@ -86,10 +96,10 @@ export const useActivityDetailJoinSurfaces = ({
     </div>
   );
 
-  const wrapMobileFooter = (content: ReactNode, showParticipantShortcuts = false) =>
-    previewMode ? (
-      content
-    ) : (
+  const wrapMobileFooter = (content: ReactNode, showParticipantShortcuts = false) => {
+    if (previewMode) return content;
+    if (consumerWireEngagement) return content;
+    return (
       <ActivityDetailMobileFooter
         activityId={activity.id}
         showParticipantShortcuts={showParticipantShortcuts}
@@ -99,6 +109,7 @@ export const useActivityDetailJoinSurfaces = ({
         {content}
       </ActivityDetailMobileFooter>
     );
+  };
 
   const pendingOrConfirmedFooter =
     (joinUiState.kind === 'pending' || joinUiState.kind === 'confirmed') && onWithdraw
@@ -114,30 +125,75 @@ export const useActivityDetailJoinSurfaces = ({
         )
       : null;
 
+  const guestJoinCta = requiresSignIn && onJoin
+    ? wrapMobileFooter(
+        <button
+          type="button"
+          onClick={handleJoinClick}
+          disabled={joinActionDisabled}
+          data-activity-join-cta
+          className={`w-full px-4 py-3 text-white text-sm font-semibold rounded-xl disabled:opacity-60 transition-colors ${
+            isFull ? 'bg-amber-600 hover:bg-amber-700' : 'bg-emerald-600 hover:bg-emerald-700'
+          }`}
+        >
+          {joinLabel}
+        </button>,
+        false
+      )
+    : null;
+
+  const consumerWireOwnsJoin = consumerWireEngagement && !hostDetailCtas;
+  const consumerWireOwnsEngagement = consumerWireOwnsJoin;
+
   const joinButton = consumerJoinEnabled
-    ? hostDetailCtas ??
-      (previewMode
-        ? previewFooter
-        : pendingOrConfirmedFooter ??
-          wrapMobileFooter(
-            <JoinRequestActions
-              uiState={joinUiState}
-              joinLabel={joinLabel}
-              isFull={isFull}
-              onJoin={handleJoinClick}
-              onWithdraw={onWithdraw}
-              joinDisabled={joinActionDisabled}
-              joinButtonClassName="ios-btn shadow-lg"
-            />,
-            participantFooterShortcuts
-          ))
+    ? requiresSignIn
+      ? guestJoinCta
+      : hostDetailCtas ??
+        (previewMode
+          ? previewFooter
+          : consumerWireOwnsJoin
+            ? consumerWireEngagementCta ??
+              guestJoinCta ??
+              pendingOrConfirmedFooter ??
+              wrapMobileFooter(
+                <JoinRequestActions
+                  uiState={joinUiState}
+                  joinLabel={joinLabel}
+                  isFull={isFull}
+                  onJoin={handleJoinClick}
+                  onWithdraw={onWithdraw}
+                  joinDisabled={joinActionDisabled}
+                  joinButtonClassName="ios-btn shadow-lg"
+                />,
+                participantFooterShortcuts
+              )
+            : pendingOrConfirmedFooter ??
+              wrapMobileFooter(
+                <JoinRequestActions
+                  uiState={joinUiState}
+                  joinLabel={joinLabel}
+                  isFull={isFull}
+                  onJoin={handleJoinClick}
+                  onWithdraw={onWithdraw}
+                  joinDisabled={joinActionDisabled}
+                  joinButtonClassName="ios-btn shadow-lg"
+                />,
+                participantFooterShortcuts
+              ))
     : undefined;
+
+  const flushMarketingStickyBar = (node: ReactNode | undefined) =>
+    node && consumerWireEngagement ? (
+      <div className="w-full border-t border-neutral-200 bg-white">{node}</div>
+    ) : (
+      node
+    );
 
   const stickyFooter = (
     <ActivityDetailStickyFooter
       tabScopedFooterEnabled={showMobileTabs && !previewMode && consumerJoinEnabled}
       tabFooterKind={tabFooterKind}
-      joinButton={joinButton}
+      joinButton={flushMarketingStickyBar(joinButton)}
       wrapMobileFooter={wrapMobileFooter}
       hasAccessCoordinates={hasAccessCoordinates}
       accessLat={accessLat}
@@ -156,12 +212,25 @@ export const useActivityDetailJoinSurfaces = ({
       showParticipantFooterShortcuts={participantFooterShortcuts}
       hostSecondaryActions={hostDetailCtas}
       onHostShareOuting={onHostShareOuting}
+      consumerWireOwnsEngagement={consumerWireOwnsEngagement}
     />
   );
 
-  const sidebarJoin = consumerJoinEnabled
+  const sidebarJoin = consumerJoinEnabled && !isHostViewer
     ? sidebarJoinOverride ??
-      (previewMode ? (
+      (requiresSignIn && onJoin ? (
+        <button
+          type="button"
+          onClick={handleJoinClick}
+          disabled={joinActionDisabled}
+          data-activity-join-cta
+          className={`hidden md:block w-full mt-4 px-4 py-3 text-white text-sm font-semibold rounded-xl disabled:opacity-60 transition-colors ${
+            isFull ? 'bg-amber-600 hover:bg-amber-700' : 'bg-emerald-600 hover:bg-emerald-700'
+          }`}
+        >
+          {joinLabel}
+        </button>
+      ) : previewMode ? (
         <p className="mt-4 text-sm text-amber-800 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
           Preview only — join is disabled until you publish.
         </p>
@@ -205,21 +274,20 @@ export const useActivityDetailJoinSurfaces = ({
     : null;
 
   const planRequestManagePanel =
-    consumerJoinEnabled &&
-    !previewMode &&
-    (joinUiState.kind === 'pending' || joinUiState.kind === 'confirmed') &&
-    onWithdraw
-      ? (
-          <div className="rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm">
-            <JoinRequestActions
-              uiState={joinUiState}
-              joinLabel={joinLabel}
-              isFull={isFull}
-              onWithdraw={onWithdraw}
-            />
-          </div>
-        )
-      : null;
+    consumerWireEngagement || !consumerJoinEnabled || previewMode
+      ? null
+      : (joinUiState.kind === 'pending' || joinUiState.kind === 'confirmed') && onWithdraw
+        ? (
+            <div className="rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm">
+              <JoinRequestActions
+                uiState={joinUiState}
+                joinLabel={joinLabel}
+                isFull={isFull}
+                onWithdraw={onWithdraw}
+              />
+            </div>
+          )
+        : null;
 
   return {
     joinUiState,

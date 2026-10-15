@@ -3,6 +3,8 @@ import type { ActivityDetailTabId } from '../../activityDetailTab';
 
 export type ActivityDetailTemplateAccent = 'emerald' | 'amber' | 'sky' | 'violet';
 
+export type ActivityDetailTemplateTabVisibility = Record<ActivityDetailTabId, boolean>;
+
 export type ActivityDetailTemplateConfig = {
   /** Stable template id for tests and docs. */
   pageComponent: string;
@@ -12,6 +14,22 @@ export type ActivityDetailTemplateConfig = {
   defaultTab: ActivityDetailTabId;
   /** Transport tab is primary story for this kind. */
   transportForward: boolean;
+  /** Per-kind tab chrome — rideshare drops Place (venue hike stats are N/A). */
+  tabVisibility: ActivityDetailTemplateTabVisibility;
+};
+
+const ALL_TABS: ActivityDetailTemplateTabVisibility = {
+  plan: true,
+  place: true,
+  buddies: true,
+  transport: true,
+};
+
+const RIDESHARE_TABS: ActivityDetailTemplateTabVisibility = {
+  plan: true,
+  place: false,
+  buddies: true,
+  transport: true,
 };
 
 /** Per-kind consumer detail page templates (`/activity/:id`). */
@@ -23,6 +41,7 @@ export const ACTIVITY_DETAIL_TEMPLATE_CONFIG: Record<ActivityDetailKind, Activit
       accent: 'emerald',
       defaultTab: 'plan',
       transportForward: false,
+      tabVisibility: ALL_TABS,
     },
     camping: {
       pageComponent: 'CampingActivityDetailPage',
@@ -30,6 +49,7 @@ export const ACTIVITY_DETAIL_TEMPLATE_CONFIG: Record<ActivityDetailKind, Activit
       accent: 'amber',
       defaultTab: 'plan',
       transportForward: false,
+      tabVisibility: ALL_TABS,
     },
     rideshare: {
       pageComponent: 'RideshareActivityDetailPage',
@@ -37,6 +57,7 @@ export const ACTIVITY_DETAIL_TEMPLATE_CONFIG: Record<ActivityDetailKind, Activit
       accent: 'sky',
       defaultTab: 'transport',
       transportForward: true,
+      tabVisibility: RIDESHARE_TABS,
     },
     other: {
       pageComponent: 'OtherActivityDetailPage',
@@ -44,5 +65,10 @@ export const ACTIVITY_DETAIL_TEMPLATE_CONFIG: Record<ActivityDetailKind, Activit
       accent: 'violet',
       defaultTab: 'plan',
       transportForward: false,
+      tabVisibility: ALL_TABS,
     },
   };
+
+export const activityDetailTabVisibilityForKind = (
+  kind: ActivityDetailKind
+): ActivityDetailTemplateTabVisibility => ACTIVITY_DETAIL_TEMPLATE_CONFIG[kind].tabVisibility;

@@ -13,13 +13,36 @@ describe('placeDetailCore (R3)', () => {
     expect(page).not.toMatch(/PlaceDetailTabs/);
   });
 
+  it('PLACE-HERO-01 (S13-W8): camp and event hero composers expose kind facts', () => {
+    const camp = read('src/place/detail/composers/CampPlaceDetailHeroStats.tsx');
+    const event = read('src/place/detail/composers/EventPlaceDetailHeroStats.tsx');
+    expect(camp).not.toMatch(/\)\s*=>\s*null/);
+    expect(camp).toMatch(/campingType/);
+    expect(camp).toMatch(/surfaceType/);
+    expect(event).not.toMatch(/\)\s*=>\s*null/);
+    expect(event).toMatch(/maxGroupSize/);
+    expect(event).toMatch(/hasPositiveNumber\(place\.distance\)/);
+  });
+
+  it('PLACE-PAGE-MODEL-01 (S13-W8): L1 page model + kind hero composers', () => {
+    expect(read('src/place/detail/buildPlaceDetailPageModel.ts')).toMatch(/buildPlaceDetailPageModel/);
+    const core = read('src/components/place/PlaceDetailCore.tsx');
+    expect(core).toMatch(/buildPlaceDetailPageModel/);
+    expect(core).toMatch(/HeroKindSection/);
+    expect(core).not.toMatch(/showTrailStats/);
+    expect(read('src/place/detail/composers/index.ts')).toMatch(/PLACE_DETAIL_HERO_KIND_SECTIONS/);
+  });
+
   it('place kind page templates stay thin (legacy route exports re-export them)', () => {
     const hiking = read('src/pages/place/HikingPlaceDetailPage.tsx');
     const camping = read('src/pages/place/CampingPlaceDetailPage.tsx');
     const eventPlace = read('src/pages/place/EventPlaceDetailPage.tsx');
     expect(hiking).toMatch(/PlaceDetailPage kind="trail"/);
+    expect(hiking).toMatch(/heroKindSection=/);
     expect(camping).toMatch(/PlaceDetailPage kind="camp"/);
+    expect(camping).toMatch(/heroKindSection=/);
     expect(eventPlace).toMatch(/PlaceDetailPage kind="event"/);
+    expect(eventPlace).toMatch(/heroKindSection=/);
 
     const trail = read('src/pages/TrailDetail.tsx');
     const camp = read('src/pages/CampDetail.tsx');

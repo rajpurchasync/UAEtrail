@@ -1,8 +1,7 @@
 import type { MemberDiscoverySeekingRowDTO } from '@uaetrail/shared-types';
 import { EXPLORE_TYPE } from '../../../config/exploreTheme';
 import { EXPLORE_PEOPLE_BROWSE_DISCOVER_LOOKING_TITLE } from '../../../content/explorePeopleBrowseCopy';
-import { memberDiscoverProfilePath } from '@/explore/memberDiscoveryExplore';
-import { exploreMapItemPathFromSeekingRow } from '@/explore/memberDiscoverySeekingRow';
+import { buildMemberBrowseRowFromSeeking } from '../../memberBrowseRowModel';
 import { PEOPLE_BROWSE_LIST_STACK } from './peopleBrowseListTheme';
 import { PeopleBrowseMemberRow } from './PeopleBrowseMemberRow';
 
@@ -23,18 +22,14 @@ export const PeopleBrowseSeekingOnMapSection = ({ rows }: PeopleBrowseSeekingOnM
         {EXPLORE_PEOPLE_BROWSE_DISCOVER_LOOKING_TITLE}
       </h3>
       <ul className={PEOPLE_BROWSE_LIST_STACK}>
-        {rows.map((row) => (
-          <li key={`${row.userId}:${row.exploreItemId}`}>
-            <PeopleBrowseMemberRow
-              profileHref={memberDiscoverProfilePath(row.userId)}
-              actionHref={exploreMapItemPathFromSeekingRow(row)}
-              displayName={row.displayName}
-              avatarUrl={row.avatarUrl}
-              title={`Looking for: ${row.seekingTitle}`}
-              titleClamp="line-clamp-2"
-            />
-          </li>
-        ))}
+        {rows.map((row) => {
+          const { key, userId: _userId, ...props } = buildMemberBrowseRowFromSeeking(row);
+          return (
+            <li key={key}>
+              <PeopleBrowseMemberRow {...props} />
+            </li>
+          );
+        })}
       </ul>
     </section>
   );

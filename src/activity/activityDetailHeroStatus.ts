@@ -1,5 +1,5 @@
 import type { JoinRequestUiState } from '../utils/joinRequestUi';
-import { pendingApprovalLabel } from '../utils/joinRequestUi';
+import { ACTIVITY_STATUS_JOIN_REQUESTED } from '../content/activityParticipationCopy';
 import { activityPeekPendingInviteChipLabel } from '../content/activityPeekCopy';
 
 export type ActivityDetailHeroStatusChip = {
@@ -41,29 +41,41 @@ export const resolveActivityDetailHeroStatusChips = (input: {
     return chips;
   }
 
-  const chips: ActivityDetailHeroStatusChip[] = [];
-
-  if (input.joinUiState.kind === 'confirmed') {
-    chips.push({ label: 'Joined', tone: 'success' });
-  } else if (input.joinUiState.kind === 'pending') {
-    chips.push({
-      label: pendingApprovalLabel(input.joinUiState.status),
-      tone: 'warning',
-    });
-  }
+  const chips: ActivityDetailHeroStatusChip[] = [...joinStateChips(input.joinUiState)];
 
   const left = input.slotsAvailable;
   const total = input.slotsTotal;
-  if (total > 0) {
-    if (left <= 0) {
-      chips.push({ label: 'Full', tone: 'muted' });
-    } else {
-      chips.push({
-        label: `${left} spot${left === 1 ? '' : 's'} left`,
-        tone: 'neutral',
-      });
-    }
+  if (total > 0 && left <= 0) {
+    chips.push({ label: 'Full', tone: 'muted' });
   }
 
   return chips;
 };
+
+const joinStateChips = (joinUiState: JoinRequestUiState): ActivityDetailHeroStatusChip[] => {
+  if (joinUiState.kind === 'confirmed') {
+    return [{ label: 'Joined', tone: 'success' }];
+  }
+  if (joinUiState.kind === 'pending') {
+    return [
+      {
+        label:
+          joinUiState.status === 'waitlisted' ? 'On waitlist' : ACTIVITY_STATUS_JOIN_REQUESTED,
+        tone: 'warning',
+      },
+    ];
+  }
+  return [];
+};
+
+/** Consumer detail — join/host status only; published plan facts use L1 discovery card. */
+export const resolveActivityDetailMarketingStatusChips = (input: {
+  joinUiState: JoinRequestUiState;
+  slotsAvailable: number;
+  slotsTotal: number;
+  previewMode: boolean;
+  isHostUser: boolean;
+  pendingJoinInviteCount?: number;
+  confirmedParticipantCount?: number;
+}): ActivityDetailHeroStatusChip[] =>
+  resolveActivityDetailHeroStatusChips(input);

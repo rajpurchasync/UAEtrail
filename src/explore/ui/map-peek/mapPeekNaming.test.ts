@@ -8,8 +8,8 @@ describe('map peek naming', () => {
   it('PEEK-NAME-02: entity pin modules use object names (not Explore*Peek*)', () => {
     expect(read('src/explore/ui/peek/activity/ActivityPeekStrips.tsx')).toMatch(/ActivityPeekStrips/);
     expect(read('src/explore/ui/peek/place/PlacePeekBody.tsx')).toMatch(/PlacePeekBody/);
-    expect(read('src/components/activity/detail/ActivityDetailEngagementStrips.tsx')).toMatch(
-      /ActivityPeekStrips/
+    expect(read('src/components/activity/detail/ActivityTransportStrip.tsx')).toMatch(
+      /ActivityPeekLinkedTransport/
     );
   });
 
@@ -37,6 +37,16 @@ describe('map peek naming', () => {
     expect(read('src/explore/ui/peek/activity/ActivityPeekEngagementActions.tsx')).toMatch(
       /PeekDetailLink/
     );
+  });
+
+  it('PEEK-CTA-01: wire peek CTAs render immediately (join context does not blank footer)', () => {
+    const actions = read('src/explore/ui/peek/activity/ActivityPeekActions.tsx');
+    expect(actions).not.toMatch(
+      /wireActions\.length > 0[\s\S]*if \(joinStateLoading\) return <PeekLoading/
+    );
+    const joinFlow = read('src/hooks/useActivityJoinFlow.ts');
+    expect(joinFlow).toMatch(/loading: queryEnabled && isLoading/);
+    expect(joinFlow).not.toMatch(/isLoading \|\| isFetching/);
   });
 
   it('PEEK-NAME-03: activity map host is ActivityMapPeekHost; venue wire uses PlaceMapPeekHost', () => {

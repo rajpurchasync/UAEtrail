@@ -1,6 +1,7 @@
 # Consumer detail surfaces — phased implementation plan
 
 **Status:** Eng complete (Phases 1–7 + §18 lineage) · **Product:** §0 + §8 manual QA sign-off pending · **Last updated:** 2026-10-13  
+**Schedule:** Remaining UI work is under **[`SYSTEM_COHERENCE.md`](../SYSTEM_COHERENCE.md) §8.3 (S13-W7–W10)** — this file is historical detail for S9 shells, not the active program index.  
 **Audience:** Product + design + eng — one surface family per PR wave; **no big-bang UI rewrite.**  
 **Handoff:** §14 (conversation record) · §15 (design anti-drift) · §16 (code anchors) — read before any phase PR.
 

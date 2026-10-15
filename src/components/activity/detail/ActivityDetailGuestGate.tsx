@@ -1,0 +1,37 @@
+import type { ActivityDetailDTO } from '@uaetrail/shared-types';
+import { activityDetailPath } from '../../../config/routingCatalog';
+import {
+  ACTIVITY_JOIN_CTA_SELECTOR,
+  withAuthResumeQuery,
+} from '../../../utils/authReturnContext';
+import { ExploreGuestSignInCard } from '../../../explore/ui/ExploreGuestSignInCard';
+
+type ActivityDetailGuestGateProps = {
+  activity: ActivityDetailDTO;
+  compact?: boolean;
+  className?: string;
+};
+
+/** Single sign-up surface for redacted `/activity/:id` guests (no duplicate join sheet copy). */
+export const ActivityDetailGuestGate = ({
+  activity,
+  compact = false,
+  className = '',
+}: ActivityDetailGuestGateProps) => {
+  const title = activity.title || activity.locationName;
+  const authReturnPath = withAuthResumeQuery(activityDetailPath(activity.id), { join: true });
+
+  return (
+    <ExploreGuestSignInCard
+      intent="join-activity"
+      joinIntent="activity"
+      activityTitle={title}
+      participationMode={activity.participationMode}
+      requirements={activity.requirements}
+      authReturnPath={authReturnPath}
+      authFocusSelector={ACTIVITY_JOIN_CTA_SELECTOR}
+      compact={compact}
+      className={className}
+    />
+  );
+};

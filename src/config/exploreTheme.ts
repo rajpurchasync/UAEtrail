@@ -190,6 +190,10 @@ export const EXPLORE_Z = {
   mapFilters: 'z-[3000]',
   /** Pin selection peek card (above filters, below browse sheet) */
   peekCard: 'z-[4000]',
+  /** Public `/activity/:id` consumer shell */
+  activityDetailModal: 'z-[5000]',
+  /** Invite-friends sheet opened from activity detail (above modal shell) */
+  activityDetailInviteSheet: 'z-[5100]',
   /** Browse list sheet */
   browseSheet: 'z-[5500]',
   /** FAB compose menu + organize / find / add wizards (above map filters & browse sheet) */

@@ -13,13 +13,24 @@ const linkedRidesharesFromDetail = (
   activity: ActivityDetailDTO
 ): ExploreLinkedRideshareDTO[] | undefined => {
   const linked = activity.linkedRideshare;
-  if (!linked?.id) return undefined;
+  if (linked?.id) {
+    return [
+      {
+        activityId: linked.id,
+        exploreItemId: `activity:${linked.id}`,
+        title: linked.title || linked.locationName,
+        path: activityDetailPath(linked.id),
+      },
+    ];
+  }
+  const linkedId = activity.linkedRideshareActivityId?.trim();
+  if (!linkedId) return undefined;
   return [
     {
-      activityId: linked.id,
-      exploreItemId: `activity:${linked.id}`,
-      title: linked.title || linked.locationName,
-      path: activityDetailPath(linked.id),
+      activityId: linkedId,
+      exploreItemId: `activity:${linkedId}`,
+      title: 'Linked rideshare',
+      path: activityDetailPath(linkedId),
     },
   ];
 };

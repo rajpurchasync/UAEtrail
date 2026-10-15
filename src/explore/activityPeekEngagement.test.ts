@@ -3,6 +3,7 @@ import {
   activityMapPeekNeedsJoinContext,
   activityMapPeekShowsJoinFlow,
   activityMapPeekSkipsJoinContext,
+  activityPeekHasMapWireActions,
   resolveActivityMapPeekActions,
   resolveActivityMapPeekStrips,
   resolveActivityPeekEngagement,
@@ -76,6 +77,25 @@ describe('resolveActivityMapPeekStrips', () => {
     const engagement = resolveActivityPeekEngagement(activityCard());
     expect(engagement.mapPeekStrips.showParticipantsStrip).toBe(true);
     expect(engagement.mapPeekActions.length).toBeGreaterThan(0);
+  });
+});
+
+describe('activityPeekHasMapWireActions', () => {
+  it('is true when enrich sent non-empty mapPeekActions', () => {
+    expect(activityPeekHasMapWireActions(activityCard())).toBe(true);
+  });
+
+  it('is false for explicit empty wire (legacy join path)', () => {
+    expect(
+      activityPeekHasMapWireActions(
+        activityCard({
+          viewerAccess: {
+            ...activityCard().viewerAccess!,
+            mapPeekActions: [],
+          },
+        })
+      )
+    ).toBe(false);
   });
 });
 

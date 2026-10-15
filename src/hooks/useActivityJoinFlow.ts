@@ -16,6 +16,9 @@ import {
   withdrawModalVariant,
   type JoinRequestUiState,
 } from '../utils/joinRequestUi';
+import type { GuestBrowseGateIntent } from '../content/guestBrowseGateCopy';
+
+export type GuestSheetSurface = 'join' | 'browse';
 
 export type ActivityJoinContext = {
   myRequest: MyActivityRequestDTO | null;
@@ -37,10 +40,13 @@ export const useActivityJoinContext = ({
   userId,
 }: UseActivityJoinContextOptions) => {
   const queryEnabled = enabled && Boolean(activityId && userId);
-  const { data, isLoading, isFetching, refetch } = useQuery({
-    queryKey: activityId ? activityDetailQueryKey(activityId) : ['activity', ''],
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: activityId
+      ? activityDetailQueryKey(activityId, userId ?? 'guest')
+      : ['activity', '', userId ?? 'guest'],
     queryFn: () => fetchPublicActivityDetail(activityId!),
     enabled: queryEnabled,
+    staleTime: 60_000,
   });
 
   const context = useMemo<ActivityJoinContext | null>(() => {
@@ -64,7 +70,8 @@ export const useActivityJoinContext = ({
   return {
     context,
     uiState,
-    loading: queryEnabled && (isLoading || isFetching),
+    /** Initial load only — background refetch must not blank map/list peek CTAs. */
+    loading: queryEnabled && isLoading,
     reload,
   };
 };
@@ -96,6 +103,9 @@ export const useActivityJoinActions = ({
   const [withdrawing, setWithdrawing] = useState(false);
   const [guestSheetOpen, setGuestSheetOpen] = useState(false);
   const [guestSheetIntent, setGuestSheetIntent] = useState<'activity' | 'place'>('activity');
+  const [guestSheetSurface, setGuestSheetSurface] = useState<GuestSheetSurface>('join');
+  const [guestBrowseGateIntent, setGuestBrowseGateIntent] =
+    useState<GuestBrowseGateIntent>('peek-details');
 
   const openJoinModal = useCallback(() => {
     if (joinGuardMessage) {
@@ -111,13 +121,22 @@ export const useActivityJoinActions = ({
   }, []);
 
   const openGuestSheet = useCallback((intent: 'activity' | 'place' = 'activity') => {
+    setGuestSheetSurface('join');
     setGuestSheetIntent(intent);
+    setGuestSheetOpen(true);
+  }, []);
+
+  const openGuestBrowseGate = useCallback((intent: GuestBrowseGateIntent = 'peek-details') => {
+    setGuestSheetSurface('browse');
+    setGuestBrowseGateIntent(intent);
     setGuestSheetOpen(true);
   }, []);
 
   const closeGuestSheet = useCallback(() => {
     setGuestSheetOpen(false);
     setGuestSheetIntent('activity');
+    setGuestSheetSurface('join');
+    setGuestBrowseGateIntent('peek-details');
   }, []);
 
   const handleJoinSuccess = useCallback(
@@ -168,9 +187,12 @@ export const useActivityJoinActions = ({
     withdrawing,
     guestSheetOpen,
     guestSheetIntent,
+    guestSheetSurface,
+    guestBrowseGateIntent,
     openJoinModal,
     closeJoinModal,
     openGuestSheet,
+    openGuestBrowseGate,
     closeGuestSheet,
     handleJoinSuccess,
     handleWithdraw,

@@ -4,7 +4,6 @@ import { EXPLORE_SHEET, EXPLORE_TYPE } from '../../config/exploreTheme';
 import type { PeopleBrowseTab } from '../peopleBrowseTab';
 import { PeopleBrowsePanelTabs } from './PeopleBrowsePanelTabs';
 import type { ExploreAvailablePersonDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
-import type { BuddiesDiscoverySegment } from '../../list/buddiesDiscoverySegment';
 import { EXPLORE_PEOPLE_BROWSE_PANEL_TITLE } from '../../content/explorePeopleBrowseCopy';
 import type {
   EntityFollowDTO,
@@ -28,8 +27,6 @@ export interface PeopleBrowsePanelProps {
   searchFocusNonce?: number;
   peopleBrowseTab: PeopleBrowseTab;
   onPeopleBrowseTabChange: (tab: PeopleBrowseTab) => void;
-  buddiesDiscoverSegment: BuddiesDiscoverySegment;
-  onBuddiesDiscoverSegmentChange: (segment: BuddiesDiscoverySegment) => void;
   memberPeopleAllCount?: number;
   memberPeopleFriendsCount?: number;
   memberPeopleFollowedCount?: number;
@@ -188,7 +185,6 @@ export const PeopleBrowsePanel = ({
           discoveryQuota={discoveryQuota}
           discoveryLoading={discoveryLoading}
           discoveryError={discoveryError}
-          seekingOnMap={discoverySeekingOnMap}
         />
       </div>
     </div>

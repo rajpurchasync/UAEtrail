@@ -36,7 +36,7 @@ export const MobileBackButton = ({
       aria-label={label === 'Back' ? 'Go back' : `Back to ${label}`}
     >
       <ChevronLeft className="w-5 h-5 shrink-0" strokeWidth={2.25} />
-      <span className="truncate">{label}</span>
+      {label ? <span className="truncate">{label}</span> : null}
     </button>
   );
 };

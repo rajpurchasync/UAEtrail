@@ -17,6 +17,7 @@ export const buildActivityPresentationForDetail = (input: {
   previewMode?: boolean;
   isEmbedded?: boolean;
   pendingJoinInviteCount?: number;
+  participantPreviewCount?: number;
 }): ActivityPresentationDTO => {
   const policy = resolveActivityEngagementPolicy(
     buildDetailEngagementPolicyInput(input)

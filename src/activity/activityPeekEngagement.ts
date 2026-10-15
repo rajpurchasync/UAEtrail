@@ -110,6 +110,29 @@ const applyJoinUiStateToMapPeekActions = (
   return [...core, withdrawAction, ...(viewDetail ? [viewDetail] : [])];
 };
 
+/** Peek footer — status row carries Manage; crew actions stay in logistics strip. */
+export const filterActivityMapPeekFooterActions = (
+  actions: ActivityMapPeekAction[],
+  joinUiState?: JoinRequestUiState,
+  level?: ActivityViewerAccessLevel | null
+): ActivityMapPeekAction[] => {
+  const inParticipantLifecycle =
+    joinUiState?.kind === 'pending' ||
+    joinUiState?.kind === 'confirmed' ||
+    level === 'participant' ||
+    level === 'activity_group_member' ||
+    level === 'join_request';
+
+  if (!inParticipantLifecycle) return actions;
+
+  return actions.filter(
+    (action) =>
+      action.id !== 'view_detail' &&
+      action.id !== 'withdraw_join' &&
+      action.id !== 'offer_rideshare'
+  );
+};
+
 /** Resolved wire actions for an activity map peek (API list or computed fallback). */
 export const resolveActivityMapPeekActions = (
   card: ExploreCardModel,
@@ -164,6 +187,10 @@ export const resolveActivityPresentationPeekActions = (
   card: ExploreCardModel,
   joinUiState?: JoinRequestUiState
 ): ActivityMapPeekAction[] => resolveActivityMapPeekActions(card, joinUiState);
+
+/** Map enrich already attached wire CTAs — peek must not wait on `useActivityJoinContext`. */
+export const activityPeekHasMapWireActions = (card: ExploreCardModel): boolean =>
+  Boolean(card.viewerAccess?.mapPeekActions && card.viewerAccess.mapPeekActions.length > 0);
 
 /** Legacy join UI (`JoinRequestActions`) when the server sent no wire peek affordances. */
 export const activityMapPeekShowsJoinFlow = (

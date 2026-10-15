@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
-import type { ExploreMapItemDTO, type UserRole } from '@uaetrail/shared-types';
+import type { ExploreMapItemDTO, UserRole } from '@uaetrail/shared-types';
 import {
   activityMapPeekNeedsJoinContext,
   activityMapPeekSkipsJoinContext,
@@ -89,10 +89,8 @@ export const useExploreSelectionPeekJoin = (input: {
 
   const handleGuestGatedAction = useCallback(() => {
     if (input.user) return;
-    const intent =
-      input.selected?.source === 'venue' || input.selected?.source === 'shop' ? 'place' : 'activity';
-    joinActions.openGuestSheet(intent);
-  }, [input.user, input.selected?.source, joinActions]);
+    joinActions.openGuestBrowseGate('peek-details');
+  }, [input.user, joinActions]);
 
   const handleJoin = useCallback(() => {
     const selected = input.selected;

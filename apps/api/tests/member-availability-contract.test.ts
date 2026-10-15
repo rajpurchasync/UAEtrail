@@ -84,7 +84,7 @@ describe('member availability', () => {
       referralCode: generateReferralCode(),
       profile: { displayName: 'Owner', phone: null, bio: null, avatarUrl: null },
     });
-    await createAuthUser({
+    const stranger = await createAuthUser({
       email: `avail-stranger-${suffix}@test.local`,
       passwordHash: hash,
       googleId: null,

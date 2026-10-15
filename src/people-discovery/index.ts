@@ -17,3 +17,11 @@ export { useExplorePeopleAvailability } from './hooks/usePeopleAvailability';
 export { useMemberPeopleNetworkPreview } from './hooks/useMemberPeopleNetworkPreview';
 
 export { buildExploreMemberPeopleMapChip } from './lib/exploreMemberPeopleMapChip';
+export {
+  buildMemberBrowseRowFromAvailability,
+  buildMemberBrowseRowFromGoing,
+  buildMemberBrowseRowsFromDirectory,
+  buildMemberBrowseRowFromSeeking,
+  filterDirectoryBrowseCards,
+  type MemberBrowseRowVm,
+} from './memberBrowseRowModel';

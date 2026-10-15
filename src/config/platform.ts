@@ -342,6 +342,28 @@ export const isConsumerChromeHidden = (pathname: string): boolean =>
 export const isMobileDetailRoute = (pathname: string): boolean =>
   /^\/(trail|camp|venue|event|product|activity|event-spot|community-activity)\//.test(pathname);
 
+/** Public entity detail — own header + sticky CTA; no global marketing `Footer`. */
+export const isConsumerEntityDetailRoute = (pathname: string): boolean =>
+  isMobileDetailRoute(pathname) ||
+  pathname.startsWith('/area/') ||
+  /^\/shop\/[^/]+/.test(pathname) ||
+  pathname.startsWith('/guide/') ||
+  pathname.startsWith('/agency/') ||
+  pathname.startsWith('/partner/');
+
+/**
+ * Dark site footer (social + legal links). Hidden on map tabs (bottom nav) and entity detail pages.
+ */
+export const shouldShowMarketingSiteFooter = (
+  pathname: string,
+  options: { showConsumerChrome: boolean; showMobileBottomNav: boolean }
+): boolean => {
+  if (!options.showConsumerChrome) return false;
+  if (options.showMobileBottomNav) return false;
+  if (isConsumerEntityDetailRoute(pathname)) return false;
+  return true;
+};
+
 /**
  * Consumer pages that render their own sticky header (ConsumerShell / MobileScreen / MobileDetailShell).
  * Layout must not also show MobileConsumerNavBar on these routes.

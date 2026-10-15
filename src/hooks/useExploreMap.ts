@@ -40,6 +40,7 @@ export const useExploreMap = (options?: UseExploreMapOptions) => {
     },
     staleTime: 60_000,
     placeholderData: keepPreviousData,
-    refetchOnMount: 'always',
+    // Respect staleTime on remount — `always` refetched the full map on every /explore visit.
+    refetchOnMount: true,
   });
 };

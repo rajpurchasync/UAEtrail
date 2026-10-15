@@ -7,6 +7,7 @@ import {
   ACTIVITY_JOIN_CTA_SELECTOR,
   withAuthResumeQuery,
 } from '../../utils/authReturnContext';
+import { useLocation } from 'react-router-dom';
 import { ExploreGuestJoinSheet } from './ExploreGuestJoinSheet';
 
 interface ExploreJoinOverlaysProps {
@@ -25,10 +26,14 @@ export const ExploreJoinOverlays = ({
   exploreMapItemId,
   guestPlaceTitle,
 }: ExploreJoinOverlaysProps) => {
+  const location = useLocation();
+  const browseReturnPath = `${location.pathname}${location.search}`;
   const guestAuthReturnPath =
-    activity?.id && joinActions.guestSheetIntent === 'activity'
-      ? withAuthResumeQuery(activityDetailPath(activity.id), { join: true })
-      : undefined;
+    joinActions.guestSheetSurface === 'browse'
+      ? browseReturnPath
+      : activity?.id && joinActions.guestSheetIntent === 'activity'
+        ? withAuthResumeQuery(activityDetailPath(activity.id), { join: true })
+        : undefined;
 
   return (
   <>
@@ -59,6 +64,9 @@ export const ExploreJoinOverlays = ({
       open={joinActions.guestSheetOpen}
       onClose={joinActions.closeGuestSheet}
       intent={joinActions.guestSheetIntent}
+      browseGateIntent={
+        joinActions.guestSheetSurface === 'browse' ? joinActions.guestBrowseGateIntent : null
+      }
       activityTitle={
         joinActions.guestSheetIntent === 'place'
           ? guestPlaceTitle ?? undefined
@@ -68,7 +76,9 @@ export const ExploreJoinOverlays = ({
       requirements={activity?.requirements}
       authReturnPath={guestAuthReturnPath}
       authFocusSelector={
-        guestAuthReturnPath ? ACTIVITY_JOIN_CTA_SELECTOR : undefined
+        joinActions.guestSheetSurface === 'join' && guestAuthReturnPath
+          ? ACTIVITY_JOIN_CTA_SELECTOR
+          : undefined
       }
     />
   </>

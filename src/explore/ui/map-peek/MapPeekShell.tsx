@@ -5,21 +5,16 @@ import { EXPLORE_PEEK, EXPLORE_SHEET } from '../../../config/exploreTheme';
 import { EnvironmentImage } from '../../../components/ui/EnvironmentImage';
 import { ShareButton } from '../../../components/ui/ShareButton';
 import { ExploreFollowButton } from '../ExploreFollowButton';
+import { exploreCardPeekShowsFollow } from '../../exploreCardModel';
 import {
-  exploreCardPeekShowsDirections,
-  exploreCardPeekShowsFollow,
-  exploreCardShowPeekBodyDirections,
-} from '../../exploreCardModel';
-import { PlaceDirectionLinks } from '../../../components/ui/PlaceDirectionLinks';
-import {
-  ExploreCardDetailList,
   ExploreCardHeadline,
   ExploreCardRatingRow,
   ExploreCardTypeBadge,
-  ExploreActivityPeekMeta,
   ExploreVenueImageBadges,
 } from '../ExploreCardPresentation';
+import { ActivityDiscoveryPublishedBody } from '../../../discovery/ActivityDiscoveryPublishedBody';
 import { PlacePeekBody } from '../peek/place/PlacePeekBody';
+import { activityPeekHasMapWireActions } from '../../../activity/activityPeekEngagement';
 import { resolvePeekDetailAccess } from '../../../access/resolvePeekDetailAccess';
 
 export type MapPeekShellProps = {
@@ -51,7 +46,7 @@ export const MapPeekShell = ({
 }: MapPeekShellProps) => {
   const titleDetailAccess = resolvePeekDetailAccess(card, {
     isGuest: Boolean(onGuestGatedAction),
-    joinStateLoading,
+    joinStateLoading: activityPeekHasMapWireActions(card) ? false : joinStateLoading,
   });
   const shellClass = embedMode
     ? 'overflow-hidden rounded-2xl bg-white shadow-[0_8px_32px_rgba(15,23,42,.16)] ring-1 ring-black/5'
@@ -137,22 +132,8 @@ export const MapPeekShell = ({
               onGuestGatedDetail={onGuestGatedAction}
               onBeforeDetailNavigate={onClose}
             />
-            {card.source === 'activity' ? <ExploreActivityPeekMeta card={card} /> : null}
+            {card.source === 'activity' ? <ActivityDiscoveryPublishedBody card={card} /> : null}
             <ExploreCardRatingRow card={card} />
-            <ExploreCardDetailList
-              details={card.sections.details}
-              compact
-              mapLatitude={card.mapLatitude}
-              mapLongitude={card.mapLongitude}
-              showDirections={exploreCardPeekShowsDirections(card)}
-            />
-            {exploreCardShowPeekBodyDirections(card) ? (
-              <PlaceDirectionLinks
-                lat={card.mapLatitude as number}
-                lng={card.mapLongitude as number}
-                className="mt-3"
-              />
-            ) : null}
           </>
         )}
         {children}

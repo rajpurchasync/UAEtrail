@@ -15,6 +15,7 @@ type ActivityDetailPlanExtrasProps = {
   activityReviews: ReviewDTO[];
   canWriteActivityReview: boolean;
   onActivityReviewSubmitted?: (review: import('@uaetrail/shared-types').ReviewDTO) => void;
+  hidePhotoGallery?: boolean;
 };
 
 export const ActivityDetailPlanExtras = ({
@@ -25,6 +26,7 @@ export const ActivityDetailPlanExtras = ({
   activityReviews,
   canWriteActivityReview,
   onActivityReviewSubmitted,
+  hidePhotoGallery = false,
 }: ActivityDetailPlanExtrasProps) => {
   const mandatoryInstructions = extractJoinInstructionLines(activity.requirements);
   const planDetailLines = extractActivityPlanDetailLines(activity.requirements);
@@ -72,7 +74,7 @@ export const ActivityDetailPlanExtras = ({
         </div>
       ) : null}
 
-      {activity.images && activity.images.length > 1 ? (
+      {!hidePhotoGallery && activity.images && activity.images.length > 1 ? (
         <div className={`bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 ${panelClassName}`}>
           <h2 className="text-lg font-bold text-gray-900 mb-3">Photos</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">

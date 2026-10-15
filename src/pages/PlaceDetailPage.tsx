@@ -5,13 +5,18 @@ import { PlaceDetailCore } from '../components/place/PlaceDetailCore';
 import { usePlaceDetailCore } from '../components/place/usePlaceDetailCore';
 import { detailBackPath } from '../config/routingCatalog';
 import { PLACE_DETAIL_CONFIG, type PlaceDetailKind } from './placeDetailConfig';
+import type { PlaceDetailHeroKindSectionComponent } from '../place/detail/composers';
+import { placeDetailHeroKindSectionForKind } from '../place/detail/composers';
 
 interface PlaceDetailPageProps {
   kind: PlaceDetailKind;
+  /** Kind-owned hero stats slot (place-pattern composer). */
+  heroKindSection?: PlaceDetailHeroKindSectionComponent;
 }
 
 /** Unified place detail — trails, camps, and event venues share one page shell. */
-export const PlaceDetailPage = ({ kind }: PlaceDetailPageProps) => {
+export const PlaceDetailPage = ({ kind, heroKindSection }: PlaceDetailPageProps) => {
+  const HeroKindSection = heroKindSection ?? placeDetailHeroKindSectionForKind(kind);
   const config = PLACE_DETAIL_CONFIG[kind];
   const { user } = useAuth();
   const { id } = useParams();
@@ -59,6 +64,7 @@ export const PlaceDetailPage = ({ kind }: PlaceDetailPageProps) => {
     <PlaceDetailCore
       kind={kind}
       config={config}
+      heroKindSection={HeroKindSection}
       place={core.place}
       placeId={id}
       detailPath={detailPath!}

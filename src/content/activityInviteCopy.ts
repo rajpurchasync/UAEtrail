@@ -1,4 +1,4 @@
-export const ACTIVITY_INVITE_FRIENDS_CTA = 'Invite friends';
+export const ACTIVITY_INVITE_FRIENDS_CTA = 'Invite Friends';
 export const ACTIVITY_INVITE_TAB_FRIENDS = 'Friends';
 export const ACTIVITY_INVITE_TAB_GROUPS = 'Groups';
 export const ACTIVITY_INVITE_SEARCH_PLACEHOLDER = 'Search by name';

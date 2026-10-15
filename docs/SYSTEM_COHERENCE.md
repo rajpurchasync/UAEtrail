@@ -132,7 +132,7 @@ Pick a **context id** when changing code; touch registrar + `src/api/domains/*` 
 | places | `locations` | `/places`, `/me/places` | `placeApi`, `placeRegistry` | `TrailDetail`, `CampDetail`, contribute |
 | commerce | `merchant_profiles`, `products` | `/shop/*` | `shopApi` | `ShopPublic`, shop UI |
 | engagement | `user_badges`, `user_goals`, `user_favorites`, `entity_follows`, … | `/me/badges`, `/me/goals`, `/me/wishlist`, `/me/entity-follows` | `badgesApi`, `goalsApi`, `socialApi` (wishlist + entity follow) | `ProfileBadges`, goals, `useEntityFollows`, wishlist guards |
-| platform_ops | `host_applications`, `audit_logs` | `/admin/*`, `POST/DELETE /admin/platform-admins` (master) | `adminApi` | `AdminOverview`, `AdminMembers` (Users) |
+| platform_ops | `host_applications`, `audit_logs` | `/admin/*`, `POST/DELETE /admin/platform-admins` (master) | `adminApi` | `src/pages/Admin*`, `DashboardLayout`, `ADMIN_LINKS` — **ops tables**, not discovery L1/L2 |
 
 **API mounts:** `/auth`, `/admin`, `/operator` (legacy `/host/*` rewritten), `/chat`, `/shop`, `/media`, `/reports`, `/` (`user.ts` + `social.ts`) — see `apps/api/src/routes/index.ts`.
 
@@ -165,6 +165,10 @@ Canonical navigation: [`NAVIGATION.md`](./NAVIGATION.md). Structural rules:
 | Pro / business | `/profile/pro-membership` | `/become-host` as product entry (redirect only) |
 | Messaging | `/messages` (+ `?group=` / `?to=`) | Chat embedded only on entity/Plan flows → `/chat` |
 | List layout (browse) | `/list?…` (handoff) · mobile **List** pill on `/explore` | A second product home, `/map`, or **List bottom-nav tab** |
+| **Publishing workspace** | `/operator/*` (legacy `/host/*` → rewrite) | Consumer **Organize** on `/explore` (same APIs, different shell) |
+| **Platform admin** | `/admin/*` | Consumer peek/detail, Explore chrome, or `ConsumerShell` |
+| **Public person** | `/member/:userId` | `/profile` (self hub) or tenant storefront (`/guide`, `/agency`, `/shop`) |
+| **Tenant storefront** | `/guide/:slug`, `/agency/:slug`, `/shop/:id`, … | Activity **host row** (person vs brand) — link resolver picks surface |
 
 **Auth shells:** `ProtectedRoute` uses **`UserRole`** for coarse access (admin, host console shell). **Product gates** (Organize, paid host, profile chips) use **`MemberStatusDTO`** from **`GET /me/status`** (`useMemberStatus`). See [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) — mixing these layers is a top source of incoherence.
 
@@ -241,6 +245,107 @@ Detail: [`API_ROUTING.md`](./API_ROUTING.md).
 
 Canon table: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) (Discovery UI file names). Guards: `mapPeekNaming.test.ts`, `discoveryUiMethodologyGuard.test.ts`, `geographyTerminologyGuard.test.ts`.
 
+### 6.2 Frontend surface architecture (system methodology)
+
+**Purpose:** One **object-centric** stack (wire → projection → shell → page composer) across **all** user-facing families — not only map peek and entity detail. Experiment plans (`consumer-detail-surfaces-plan`, `member-surfaces-implementation-plan`) are **workstreams under this section**; they do not replace it.
+
+#### 6.2.1 Surface families (layout chrome)
+
+| Family | Routes (anchor) | Shell / layout | Uses L1–L3 discovery stack? |
+|--------|-----------------|----------------|----------------------------|
+| **Marketing & auth** | `/`, sign-in, `/welcome` | Marketing layout · guest rules on `/` | No — CTAs hand off to `/explore` |
+| **Discovery shell** | `/explore`, `list=1`, `browse=1`, `/list` | `ExploreExperience` + map stage / browse asides | **L1–L2** on pins/rows/posters; not L3 |
+| **Personal hub** | `/profile`, `/profile/settings/*` | `ConsumerShell` + profile stack | Launcher only — not a second browse home |
+| **Plan & commitments** | `/plan` | `ConsumerShell` | Embeds manage sheets; may deep-link L3 |
+| **Communication** | `/chat`, `/messages`, `/groups` | Tab chrome / inbox | No peek; people **names** link to `/member` or storefront |
+| **Entity detail (L3)** | `/activity`, place URLs, `/area`, `/shop`, org slugs | `MobileDetailShell` / `EntityPublicDetailShell` | L3 — parity with L2 via `resolvePeekDetailAccess` |
+| **Member & people browse** | `/member/:id`, Explore `view=people`, `/list?listCat=people`, `/buddies` | `ConsumerShell` (profile) · `PeopleBrowsePanel` (discover) | **People rows** = own card VM (`memberPeople*`); seeking tab = **activity L1** |
+| **Publishing workspace** | `/operator/*` | `ConsoleShell` / `DashboardLayout` (tenant) | Preview may embed consumer L3 — **manage** is separate |
+| **Platform admin** | `/admin/*` | `DashboardLayout` + `ADMIN_LINKS` | **Never** reuse `MapPeekShell` or consumer detail footers |
+
+#### 6.2.2 Profile & publisher identity matrix
+
+One **person account**; **one consumer profile page** (`/member/:userId` — `MemberProfile` / `MemberProfileView`). `/buddies`, people browse, host rows, and chat link here; browse **lens** is query only (`memberProfilePath(…, { lens })`). Full lens × audience table: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §3.2.2. Capabilities (`GET /me/status` → `publish`) gate **organize/workspace** — not profile read ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md)).
+
+| Viewer intent | Canonical route | Primary module | `viewerAccess` / policy |
+|---------------|-----------------|----------------|-------------------------|
+| **Self** | `/profile`, `/profile/edit` | `Profile*` | N/A (authenticated `/me/*`) |
+| **Another member** | `/member/:userId` | `MemberProfile` | `resolveProfileViewerAccess` on `GET …/public-profile` |
+| **Discover directory** | Same + `discover=1` / `lens: discover` | `MemberProfile` | Public visibility + discovery quota (Pro unlimited) |
+| **Friends / Going** | Same + `lens: friends` (optional) | `MemberProfile` | `accepted_buddy` → full exposure |
+| **Available tab** | Same + `lens: available` (optional) | `MemberProfile` | Signed-in → public card at minimum |
+| **Host / Looking for** | Same + `lens: host` (optional) | `MemberProfile` | Participant + host-of-activity levels |
+| **Host on activity** | Activity Plan tab **host row** | `ActivityDetail*` publisher strip | Link **person** (`/member`) vs **tenant** (`/guide`, `/agency`, `/shop`) from wire `publisher` |
+| **Pro guide storefront** | `/guide/:slug` | `OrganisationPublicProfile` | Public tenant profile — not `/member` |
+| **Agency / partner** | `/agency/:slug`, `/partner/:slug` | Same | Workspace team ≠ consumer buddy graph |
+| **Shop brand** | `/shop/:id` | `ShopPublicPage` | Commerce context |
+| **Available / roster** | Explore people tabs `available`, `going`, `connect` | `PeopleBrowseTabContent` | Roster APIs (`member_discovery`); **not** full L3 until tap through |
+| **Owner preview** | Eye from profile / console | Consumer L3 with `preview` / manage affordances | Same wire as public; extra actions only in workspace |
+
+**Target:** One **member browse row** projection (directory / availability / network roster) shared by `PeopleBrowsePanel` and list `listCat=people` — distinct from **`DiscoveryCardModel`** (map catalog entities). Keep **member** for person ids and profile routes; **people** for the browse surface name only.
+
+#### 6.2.3 Discovery projections (one catalog, many lenses)
+
+**Server:** `GET /explore/map` (+ query filters) is the default catalog; people directory and rosters compose from **`member_discovery`** + map read ([§3.2](./SYSTEM_COHERENCE.md#32-browse--member-people-vs-communication-do-not-conflate)).
+
+**Client — same filter vocabulary everywhere:**
+
+| Projection | Entry | Row/card builder | Deep link |
+|------------|-------|------------------|-----------|
+| Map pins | `/explore` | L1 `buildDiscoveryCardViewModel` → L2 peek | `pin=` / selection |
+| Map list panel | `list=1` | Same L1 → compact row + `mapPeekActions` | Peek or L3 |
+| Discover browse | `browse=1` or `/list` | `buildListFeedCards` / posters | Entity routes |
+| Header search | Explore search modal | `exploreItemSearch` taxonomy | Entity or filtered explore |
+| People — looking | `peopleTab=looking` | Activity L1 (seeking) | `/activity` |
+| People — network | `going` / `connect` | Network roster VM | `/member`, message |
+| People — available | `available` | Availability + directory VM | `memberProfilePath(id, { lens: 'available' })` — **not** discover quota |
+
+**URL sync:** `explorePath()` ↔ `listDiscoveryPath()` ↔ `exploreBrowseUrlSync` / hydrate — do not add parallel query dialects per surface ([`NAVIGATION.md`](./NAVIGATION.md) § Explore URLs).
+
+#### 6.2.4 L0–L3 by bounded context (extension of §6.1)
+
+| Context | L1 (card VM) | L2 (peek / row) | L3 (detail composer) |
+|---------|--------------|-----------------|----------------------|
+| Activity (hosted + seeking) | `discoveryCardModel` | `peek/activity/*` | Kind **page composers** (`*ActivityDetailPage` → shell) — **not** one `ActivityDetailBody` with kind `if` chains |
+| Place | L1 place slice | `peek/place/*` | `buildPlaceDetailPageModel` + kind hero composers → `PlaceDetailPage` → `PlaceDetailCore` (**reference**) |
+| Area | L1 area pin | `peek/area/*` | `AreaDetailPage` sections/tabs |
+| Shop | L1 shop pin | `peek/shop/*` | `ShopPublicPage` |
+| Member (browse) | `memberPeople*` row VM | Optional mini-card in people panel | `MemberProfile` |
+| Tenant storefront | Org list cards (browse) | — | `OrganisationPublicProfile` |
+
+#### 6.2.4.1 Shared L3 kind pattern (activity + place)
+
+One methodology for catalog **detail templates** — not one URL for every entity:
+
+| Step | Activity (`/activity/:id`) | Place (`/trail` · `/camp` · `/venue`) |
+|------|----------------------------|----------------------------------------|
+| Route loader | `ActivityDetail.tsx` (wire, modals, SEO) | `PlaceDetailPage.tsx` |
+| Kind key | `ActivityDetailKind` from `activityType` | `PlaceDetailKind` from route wrapper |
+| Kind route file | `*ActivityDetailPage` → `ActivityDetailPageShell` | `*PlaceDetailPage` → `PlaceDetailPage` |
+| L1 | `buildActivityDetailPageModel` | `buildPlaceDetailPageModel` |
+| Public body | `ActivityConsumerDetailBody` (scroll; peek L1 card) | `PlaceDetailCore` tabs/sections |
+| **Presentation wire** | `GET /activities/:id` → `presentation.consumerLayout` (+ `engagement`, `mapPeekActions` via `viewerAccess`) | Place: catalog fields on `GET /places/:id` (no `consumerLayout` yet — tabs local) |
+| Embed-only kind slot | `*ActivityDetailPlanSections` → `ActivityDetailBody` | — |
+| Shared core | `ActivityDetailView` + `MobileDetailShell` | `PlaceDetailCore` |
+
+Host preview / `ActivityManageSheet` embed `ActivityDetailView` with `isEmbedded: true` → `presentation.tabs` + `footerByTab` (no `consumerLayout`). They skip `ActivityDetailByKind`.
+
+#### 6.2.5 Cross-cutting kits (one implementation per concern)
+
+| Concern | Canonical location | Surfaces |
+|---------|-------------------|----------|
+| Guest sign-in / browse gate | `guestBrowseGate*`, `ActivityDetailGuestGate`, `ExploreGuestJoinSheet` | Peek details, L3, people tabs (non-public) |
+| Join / RSVP / request | `useActivityJoinFlow`, wire footers | L2 actions, L3 footers, Plan manage |
+| `viewerAccess` → UI | `mapViewerAccessToUi`, `resolvePeekDetailAccess` | L2–L3 parity guards |
+| Participation modals | Activity manage / invite sheets | Explore host on map, L3, `/operator` queue |
+
+#### 6.2.6 Admin & operator (out of consumer methodology)
+
+- **Admin (`/admin/*`):** CRUD tables, moderation queues, metrics — `adminApi` + `DashboardLayout`. Does **not** adopt discovery card VM or entity tab footers; may link **out** to consumer URLs for inspection only.
+- **Operator (`/operator/*`):** Tenant-scoped publishing — `ConsoleShell`, join request queue, activity forms. **Organize** on the map remains consumer shell; shared **publish payload** (`activityPublishPayload.ts`) is the cross-surface write contract.
+
+**Program:** **S13** (§8) — implementation waves; activity kind page split is **S13d**, not a standalone architecture.
+
 ---
 
 ## 7. Incoherence register (honest debt)
@@ -271,6 +376,9 @@ Track consolidation here; sub-roadmaps link out but **this table is the system-w
 | **C20** | Seeking **read** paths (M2d write fixed) | Legacy `demand:` deep links only in routing + notification rewrite | Activity-primary map pins; `seekingPinHygieneGuard` | **R4 done (read)** — compat parsers remain |
 | **C21** | **Surface/role prefixes in shared components** (`Host*`, `Explore*`, `Plan*` outside owning folders; Host→Organizer synonym renames) | Same mistake as C2; blocks reuse and coherent refactors | Module names = bounded context; props = neutral ids; copy in labels/`workspaceVocabulary` | [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §13 · [`HOST_CLEANUP_ROADMAP.md`](./HOST_CLEANUP_ROADMAP.md) P5 · `moduleNamingGuard.test.ts` |
 | **C22** | **Find vs Organize split in UI** (legacy host-manage peek, `participantIntentId` publish paths, transport vs `link-activity`) | Same map activity, different chrome and wrong transport link | **S12** in [`CREATE_FLOW.md`](./CREATE_FLOW.md) — one host peek; parent `linkToParentActivityId` for transport | **S12 done** |
+| **C23** | ~~**Activity L3 monolith**~~ | — | **Done (S13-W7)** — thin `ActivityDetailBody` + `ActivityDetailPlanColumn` / `ActivityDetailSidebarColumn`; kind `planSections` on plan column | **S13-W7** |
+| **C24** | **People surfaces split** (`PeopleBrowsePanel`, `ListDiscoverPeopleView`, `Buddies`, activity host row) without shared people card VM | Inconsistent roster masks, duplicate buddy CTAs | `memberBrowseRowModel` + one `PeopleBrowseTabContent` — §6.2.2 | **S13-W3 done** |
+| **C25** | ~~Admin / platform_ops FE roots under-documented~~ | — | **Done (S13-W9)** — `NAVIGATION.md` admin table, `adminSurfacesAcceptance`, manifest `feRoots` | **S13-W9** |
 
 **Not debt (intentional):** stable URLs (`/trail`, `/host`, `/guide`, `/venue`; legacy `/operator` redirect); Mongo collection names; `x-organisation-id` header; `getOrganisationProfile` / `organisation-console/` for **storefront** — not for activity roster or `createHostActivity`.
 
@@ -297,6 +405,112 @@ Ordered for **coherence**, not feature count:
 | **S10** | **Production hygiene audit (Oct 2026)** — security, trust, perf, stability (not new audit markdown) | **Eng complete** — **§8.1** waves **core + S10a–d** shipped; **S10e/f** = ops/human gates ([`PRE_DEPLOY_CHECKLIST.md`](./PRE_DEPLOY_CHECKLIST.md)); **S10g** deferred. **Out of scope:** **C18** rewrite; **C19** prod default = staging promote only |
 | **S11** | **Structural module naming (P5 SN-1–SN-8)** — context folders, not synonym renames | **SN-1–SN-8 done** — `useMemberStatus`, `tenantActivityClientApi`, `/operator` mount, `moduleNamingGuard` SN-6 | [`HOST_CLEANUP_ROADMAP.md`](./HOST_CLEANUP_ROADMAP.md) P5 |
 | **S12** | **Hosted + seeking activity coherence** (one host, one map pin, linked transport) | **S12a–d done** | [`CREATE_FLOW.md`](./CREATE_FLOW.md) § Coherence program |
+| **S13** | **Frontend surface methodology** — profiles, discovery projections, admin/operator boundaries, L3 composers (§6.2) | **Eng complete** — W1–W9; **W10** human QA pending | This file §6.2 · §8.3 · manifests · guards |
+
+### 8.3 S13 — unified frontend & UI program (final phase plan)
+
+**Canonical architecture:** §6.1 (discovery L0–L3) + §6.2 (surface families). **This section** is the **only** implementation schedule for remaining UI structure work. Experiment trackers defer here:
+
+| Experiment plan | Role under S13 |
+|-----------------|----------------|
+| [`consumer-detail-surfaces-plan.md`](./experiment/consumer-detail-surfaces-plan.md) | S9 **done** (shells/chrome); remaining = **S13-W4–W5** (activity kind composers, optional area/place polish) |
+| [`member-surfaces-implementation-plan.md`](./experiment/member-surfaces-implementation-plan.md) | People panel **shipped**; remaining = **S13-W1–W2** (lens URLs, row VM, dedupe modules) |
+| [`activity-detail-tabs-implementation-plan.md`](./experiment/activity-detail-tabs-implementation-plan.md) | Tabs/CTA matrix **done**; kind-specific **body** = **S13-W4** only |
+
+#### 8.3.1 Synthesis — one vertical stack per object
+
+**Surfaces** (§6.2.1) provide **route chrome only** — map stage, `ConsumerShell`, `DashboardLayout`, marketing layout. They do **not** own entity UI.
+
+**Per object** (activity, place, area, shop, person), the same five layers apply everywhere the object appears:
+
+| Layer | Responsibility | Policy |
+|-------|----------------|--------|
+| **L0 Wire** | API DTO + `viewerAccess` / entitlements | Server only — [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §15 |
+| **L1 Projection** | Card/row view model | `discoveryCardModel` (catalog pins) · `memberPeople*` (people browse) · future `activityDetailPageModel` (L3) |
+| **L2 Peek / row / poster** | Minimized engagement | `MapPeekShell` + `peek/{entity}/*` · list rows · list posters |
+| **L3 Page composer** | Sections + tabs for one id | `*ActivityDetailPage`, `PlaceDetailCore`, `MemberProfile`, `ShopPublicPage`, … |
+| **L3 Shell** | Shared chrome (hero, tabs, sticky footer) | `MobileDetailShell`, `EntityPublicDetailShell`, `ActivityDetailPageShell` |
+
+```mermaid
+flowchart LR
+  subgraph discovery [Discovery shell only]
+    MAP["/explore map"]
+    LIST["list=1 / browse=1 / /list"]
+    PEOPLE["view=people"]
+  end
+  subgraph L1L2 [L1 VM to L2]
+    CARD[Card / row VM]
+    PEEK[Peek or compact row]
+  end
+  subgraph L3 [Entity L3]
+    ROUTE["/activity · place · /member · /shop …"]
+    COMP[Page composer]
+    SHL[Shared shell]
+  end
+  MAP --> CARD
+  LIST --> CARD
+  PEOPLE --> CARD
+  CARD --> PEEK
+  PEEK -->|"view detail"| ROUTE
+  ROUTE --> COMP --> SHL
+```
+
+**Cross-cutting kits** (§6.2.5): guest gate, join flow, `mapViewerAccessToUi` — imported by L2/L3; never forked per surface.
+
+#### 8.3.2 Baseline — already shipped (do not rebuild)
+
+| Area | Status | Proof |
+|------|--------|--------|
+| Discovery L1 + unified activity peek (hosted + seeking) | Done | S8, §6.1, `discoveryUiMethodologyGuard` |
+| `viewerAccess` on activity detail + peek parity | Done | S7, `mapDetailEngagementParity` |
+| Place L3 (`PlaceDetailCore` + kind routes) | Done | S6, `placeDetailCore.test.ts` |
+| Consumer detail shells (shop/agency/area/activity chrome) | Eng done | S9, `consumerDetailAntiDriftGuard` |
+| Single member route `/member/:userId` + API profile access | Done | `MemberProfile`, `profile-viewer-access` |
+| `/buddies` list → `/member` links | Done | `Buddies.tsx` |
+| Discover directory quota + `discover=1` on API | Done | `member-discovery-quota`, `MemberProfile` |
+| Publishing workspace vs consumer Organize split | Done | S12, `CREATE_FLOW` |
+| Module naming / domain API clients | Done | S11, S4 |
+
+**Known gaps (S13 fixes):** human consumer-detail QA sign-off (**W10** — `npm run consumer-detail:qa-routes`). **Closed (W1–W9 eng):** profile lenses · people browse VM/shim · guest kit · profile section gates · activity L3 columns + kind composers (**C23**) · place L1 + **camp/event hero facts** · area tabbed hub (S9 Ph 4) · shop/agency `EntityPublicDetailShell` (`publicEntityShellAcceptance`) · admin catalog (C25).
+
+#### 8.3.3 Implementation waves (order + PR boundaries)
+
+Work **top to bottom**. Each wave ends with **`npm run verify:system:quick`** (wave touch explore → also `test:explore-alignment`). Update §6.2 / `DOMAIN_CANONICALS` §3.2 when behavior changes.
+
+| Wave | ID | Outcome | Primary deliverables | Exit criteria |
+|------|-----|---------|----------------------|---------------|
+| **0** | **S13a** | Charter frozen in Tier-1 | §6.2 (this file), §3.2.2 member lenses, `DOCS_INDEX` | `verify:docs` |
+| **1** | **S13-W1** | **Profile link lenses** | **`memberProfileLink(userId, lens)`** (`src/member/memberProfileLink.ts`) used by people browse, `/buddies`, roster chips, `memberDiscoverProfilePath`; wire = `memberProfilePath` in shared-types | `memberProfileLink.test.ts`, `memberSurfacesAcceptance` S13; no duplicate `explore/ui/peopleBrowse` implementations |
+| **2** | **S13-W2** | **People browse module unity** | One `PeopleBrowseTabContent` import path; delete or re-export duplicate under `explore/ui/peopleBrowse`; `ListDiscoverPeopleView` uses same module | `memberSurfacesAcceptance`, `listModuleHygiene` |
+| **3** | **S13-W3** | **Member browse row VM** | `src/people-discovery/memberBrowseRowModel.ts` — L1 rows for directory, availability, going, seeking; **not** authorization | `memberBrowseRowModel.test.ts` + panel/list consume VM; C24 closed |
+| **4** | **S13-W4** | **Profile L3 polish** | `MemberProfileView` sections keyed off `viewerAccess` only; activity publisher strip uses `resolveActivityPublisherProfilePath`; owner `?view=public` unchanged | `detailSurfaceWiringAcceptance`, §15 profile tests |
+| **5** | **S13-W5** | **Discovery projection parity** | L1/L2 engagement parity per `listCat` / people tab; member browse L1 in methodology guards | `discoveryUiMethodologyGuard` DISC-METH-07–09 · `listModuleHygiene` peopleBrowse shim |
+| **6** | **S13-W6** | **Guest + participation kit** | `guestBrowseGateCopy` + `ExploreGuestSignInCard` for people browse, member profile, activity L3, peek-details | `guestParticipationKitGuard.test.ts` + `detailSurfaceWiringAcceptance` DS-WIRE-02 |
+| **7** | **S13-W7** | **Activity L3 kind composers** | `buildActivityDetailPageModel(wire)`; per-kind `*ActivityDetailPage` composes sections (place pattern); remove unwired `planFacts` / shrink `ActivityDetailBody` | `activityDetailAcceptance` per kind; C23 closed |
+| **8** | **S13-W8** | **Entity L3 leftovers (S9)** | Optional: area tabbed hub; place Facts/Transport tab labels; shop/agency `EntityPublicDetailShell` parity audit | `consumerDetailQaMatrixGuard` rows green |
+| **9** | **S13-W9** | **Ops surfaces catalog** | `NAVIGATION.md` § Platform admin table; `systemCoherenceGuard` lists all `Admin*` routes; manifest `feRoots` (C25) | No consumer peek imports in `src/pages/Admin*` |
+| **10** | **S13-W10** | **Release gates** | Human QA `npm run consumer-detail:qa-routes`; ops S10e vNext promote if scheduled | `PRE_DEPLOY_CHECKLIST` |
+
+**Parallelism:** W1–W2 can ship as one PR if small. **W7** (activity kinds) should not start until **W6** guest kit is stable (same join surfaces). **W8** can run parallel to **W7** by another owner. **W9** is doc/guard-only anytime after W0.
+
+**Explicitly out of S13:** marketing/`/` rewrite · new Mongo entities · operator console feature expansion · C19 production map default (ops) · C1 admin MFA (S10g).
+
+#### 8.3.4 Mapping legacy phase labels
+
+| Old label | S13 wave |
+|-----------|----------|
+| consumer-detail Phase 2 (activity kind) | **W7** |
+| consumer-detail Phase 3–4 (place/area tabs) | **W8** |
+| consumer-detail Phase 6 (people clarity) | **W1–W4** |
+| member-surfaces people panel | **baseline**; W2–W3 |
+| S13b–g (prior table) | W2–W3 (b), W4 (c), W7 (d), W9 (e), W6 (f), W5 (g) |
+
+#### 8.3.5 Per-PR checklist (all S13 waves)
+
+1. Bounded context from §3.1 — touch `feRoots` in `bounded-context-manifest.json` when adding roots.
+2. No new `Explore*Peek*` entity files; no new `/become-host` links; no product `isHostRole` gates.
+3. Authorization stays on API `viewerAccess` — FE maps with `mapViewerAccessToUi` / `mapProfileViewerAccessToMemberLink`.
+4. Tier-1 doc delta in same PR (at least `NAVIGATION` or `DOMAIN_CANONICALS` §3.2 if routes/links change).
 
 ### 8.2 S12 — hosted + seeking coherence (phase plan)
 

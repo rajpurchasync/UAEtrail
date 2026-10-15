@@ -2,6 +2,7 @@
 
 **Status:** Approved direction · **§19–§22 eng complete** · **§20** ops + post-migration residue remain  
 **Last updated:** 2026-10-13 (D4 → consumer detail surfaces handoff doc)  
+**Schedule:** Open people/profile UI work → **[`SYSTEM_COHERENCE.md`](../SYSTEM_COHERENCE.md) §8.3 S13-W1–W4** (lens URLs, dedupe browse module, member row VM).  
 **Audience:** Eng + product — use this so context is not lost across PRs.
 
 **Consumer detail shell work (D4):** execution checklist and conversation record live in [`consumer-detail-surfaces-plan.md`](./consumer-detail-surfaces-plan.md) — start at **§14** before coding phases 1–7.

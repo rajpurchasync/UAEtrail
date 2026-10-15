@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { PARTICIPANT_PRIVACY } from '../../config/platform';
+import { memberProfileLink } from '../../member/memberProfileLink';
 import { SecureAvatar } from './SecureAvatar';
 
 export interface ParticipantPreviewItem {
@@ -70,7 +71,7 @@ export const ParticipantPreview = ({
           ) : linkToProfile ? (
             <Link
               key={p.id}
-              to={`/member/${p.id}`}
+              to={memberProfileLink(p.id)}
               className="hover:opacity-90"
               aria-label={`View ${p.name}'s profile`}
               title="View profile"
@@ -115,7 +116,7 @@ export const ParticipantPreview = ({
         ) : linkToProfile ? (
           <Link
             key={p.id}
-            to={`/member/${p.id}`}
+            to={memberProfileLink(p.id)}
             className="relative hover:z-10 hover:scale-105 transition-transform"
             aria-label={`View ${p.name}'s profile`}
             title="View profile"

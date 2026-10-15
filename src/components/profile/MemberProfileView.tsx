@@ -48,6 +48,8 @@ const DetailRow = ({
 
 interface MemberProfileViewProps {
   profile: FullMemberProfile;
+  /** From `ProfileViewerAccessDTO` — trusted fields (goal, bio, upcoming), not page routing. */
+  canViewFullProfile: boolean;
   isSelf: boolean;
   userId: string;
   userLoggedIn: boolean;
@@ -65,6 +67,7 @@ interface MemberProfileViewProps {
 
 export const MemberProfileView = ({
   profile,
+  canViewFullProfile,
   isSelf,
   userId,
   userLoggedIn,
@@ -142,9 +145,11 @@ export const MemberProfileView = ({
         </div>
       </GlassCard>
 
-      {profile.yearGoal ? <PublicMemberYearGoal goal={profile.yearGoal} /> : null}
+      {canViewFullProfile && profile.yearGoal ? (
+        <PublicMemberYearGoal goal={profile.yearGoal} />
+      ) : null}
 
-      {hasDetails && (
+      {canViewFullProfile && hasDetails && (
         <GlassCard padding>
           <SectionHeading>Details</SectionHeading>
           <div className="space-y-4">
@@ -171,14 +176,14 @@ export const MemberProfileView = ({
         </GlassCard>
       )}
 
-      {profile.bio && (
+      {canViewFullProfile && profile.bio && (
         <GlassCard padding>
           <SectionHeading>About</SectionHeading>
           <p className="text-[15px] leading-7 text-neutral-700 whitespace-pre-line">{profile.bio}</p>
         </GlassCard>
       )}
 
-      {upcomingActivities.length > 0 && (
+      {canViewFullProfile && upcomingActivities.length > 0 && (
         <GlassCard padding className="space-y-3">
           <AccountSectionHeader title="Upcoming activities" />
           <div className="space-y-2">

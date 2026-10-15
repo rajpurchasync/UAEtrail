@@ -247,14 +247,36 @@ describe('detail surface lineage (member profile write → public read)', () => 
 describe('detail surface lineage (host publish → activity detail)', () => {
   it('published activity is readable on GET /activities/:id with presentation + viewerAccess', async () => {
     expect(hostFixture).toBeTruthy();
-    const res = await request(app).get(`/api/v1/activities/${hostFixture!.activityId}`);
+    const guest = await request(app).get(`/api/v1/activities/${hostFixture!.activityId}`);
+    expect(guest.status).toBe(200);
+    expect(guest.body.data.id).toBe(hostFixture!.activityId);
+    expect(guest.body.viewerAccess).toMatchObject({
+      exposure: 'none',
+      gateReason: 'sign_in',
+    });
+    expect(guest.body.presentation).toBeNull();
+
+    const visitor = await registerVerifiedVisitor(app, `${suffix}-detail-read`);
+    const res = await request(app)
+      .get(`/api/v1/activities/${hostFixture!.activityId}`)
+      .set('Authorization', `Bearer ${visitor.accessToken}`);
     expect(res.status).toBe(200);
     expect(res.body.data.id).toBe(hostFixture!.activityId);
     expect(res.body.data.title).toMatch(/Test Activity/);
     expect(res.body.viewerAccess).toMatchObject({
-      exposure: expect.stringMatching(/^(public|full|redacted)$/),
+      exposure: expect.stringMatching(/^(full|redacted)$/),
     });
     expect(res.body.presentation).toBeTruthy();
+    expect(res.body.presentation.consumerLayout).toMatchObject({
+      showPublishedCatalog: true,
+      showHostProfile: true,
+      participants: expect.stringMatching(/^(hidden|preview|roster)$/),
+      showMeetingPoint: expect.any(Boolean),
+      showTransportSection: expect.any(Boolean),
+      canOpenParticipantRoster: expect.any(Boolean),
+    });
+    expect(res.body.presentation.tabs).toBeTruthy();
+    expect(res.body.presentation.footerByTab).toBeTruthy();
   });
 
   it('operator POST /operator/activities + publish exposes GET /activities/:id', async () => {
@@ -303,7 +325,10 @@ describe('detail surface lineage (host publish → activity detail)', () => {
 
     expect(publish.status).toBe(200);
 
-    const publicDetail = await request(app).get(`/api/v1/activities/${httpPublishedActivityId}`);
+    const visitor = await registerVerifiedVisitor(app, `${suffix}-http-publish-read`);
+    const publicDetail = await request(app)
+      .get(`/api/v1/activities/${httpPublishedActivityId}`)
+      .set('Authorization', `Bearer ${visitor.accessToken}`);
     expect(publicDetail.status).toBe(200);
     expect(publicDetail.body.data.title).toBe('Lineage HTTP publish hike');
     expect(publicDetail.body.presentation).toBeTruthy();

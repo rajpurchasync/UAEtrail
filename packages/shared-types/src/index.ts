@@ -1210,6 +1210,7 @@ export {
   buildExploreCardSections,
   buildExploreListWhen,
   buildExploreRouteLabel,
+  normalizeRideshareRouteLabels,
   buildExploreSpotsSegment,
   buildExplorePeekSpotsLabel,
   buildExploreWhenSegment,
@@ -1294,6 +1295,8 @@ export {
   hasJoinInstructions,
   JOIN_INSTRUCTION_PREFIX,
 } from './join-instructions.js';
+
+export { extractActivityTransportRequirementLines } from './activity-transport-requirements.js';
 
 export {
   inferJoinModeFromRequirements,
@@ -1395,6 +1398,7 @@ export {
 export {
   buildActivityPresentationDTO,
   type ActivityPresentationBuddiesTabDTO,
+  type ActivityPresentationConsumerLayoutDTO,
   type ActivityPresentationDTO,
   type ActivityPresentationEngagementDTO,
   type ActivityPresentationPlaceTabDTO,
@@ -1562,7 +1566,10 @@ export {
   agencyProfilePath,
   guideProfilePath,
   hostBrandProfilePath,
+  memberDiscoverProfilePath,
   memberProfilePath,
+  type MemberProfileBrowseLens,
+  type MemberProfilePathOptions,
   normalizePlaceActivityType,
   organisationProfilePath,
   partnerProfilePath,

@@ -12,7 +12,7 @@ export type GeographyPlaceEntity = 'place';
  * Explore map wire only — `ExploreCardSource: 'venue'`.
  * A **Place** pin on the Spots lens (`id` prefix `venue:`). Not a second product entity.
  */
-export type ExploreMapVenueWireSource = 'venue';
+export type MapVenueWireSource = 'venue';
 
 /** Curated hub (`areas` collection). Map row `source: 'area'`, `id: area:{slug}`. */
 export type GeographyAreaHubWireSource = 'area';

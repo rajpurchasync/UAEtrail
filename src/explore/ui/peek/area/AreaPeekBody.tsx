@@ -1,4 +1,4 @@
-import type { DiscoveryCardModel } from '../../../discovery/discoveryCardModel';
+import type { DiscoveryCardModel } from '../../../../discovery/discoveryCardModel';
 
 export type AreaPeekBodyProps = {
   card: Pick<DiscoveryCardModel, 'subtitle'>;

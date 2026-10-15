@@ -16,12 +16,17 @@ vi.mock('../src/lib/tenant-access.js', () => ({
   findTenantMembershipContext: vi.fn(),
 }));
 
+vi.mock('../src/lib/activity-invites-store.js', () => ({
+  findPendingActivityInviteForInvitee: vi.fn(),
+}));
+
 import {
   findActivityParticipantByEventAndUser,
   findActivityRequestByEventAndUser,
 } from '../src/lib/activity-engagement-store.js';
 import { findGroupByActivityId, getGroupMembership } from '../src/lib/social-groups-store.js';
 import { findTenantMembershipContext } from '../src/lib/tenant-access.js';
+import { findPendingActivityInviteForInvitee } from '../src/lib/activity-invites-store.js';
 import {
   buildActivityViewerAccess,
   resolveActivityViewerAccess,
@@ -47,6 +52,7 @@ describe('buildActivityViewerAccess', () => {
     vi.mocked(findGroupByActivityId).mockResolvedValue(null);
     vi.mocked(getGroupMembership).mockResolvedValue(null);
     vi.mocked(findTenantMembershipContext).mockResolvedValue(null);
+    vi.mocked(findPendingActivityInviteForInvitee).mockResolvedValue(null);
   });
 
   it('redacts open map activities for guests', async () => {
@@ -55,8 +61,9 @@ describe('buildActivityViewerAccess', () => {
       activity: { ...activity, joinMode: 'open', requirements: ['Open: anyone can request to join'] },
     });
 
-    expect(access.exposure).toBe('redacted');
+    expect(access.exposure).toBe('none');
     expect(access.canViewFullActivity).toBe(false);
+    expect(access.canOpenDetailPage).toBe(false);
     expect(access.gateReason).toBe('sign_in');
     expect(access.level).toBe('public');
   });
@@ -69,6 +76,8 @@ describe('buildActivityViewerAccess', () => {
 
     expect(access.exposure).toBe('none');
     expect(access.canViewFullActivity).toBe(false);
+    expect(access.canOpenDetailPage).toBe(false);
+    expect(access.gateReason).toBe('invite_only');
     expect(access.level).toBe('denied');
   });
 
@@ -146,16 +155,39 @@ describe('buildActivityViewerAccess', () => {
     expect(access.level).toBe('activity_group_member');
   });
 
-  it('redacts private link visits for signed-in non-roster members', async () => {
+  it('denies private plans to signed-in members who were not invited', async () => {
     const access = await buildActivityViewerAccess({
       viewerUserId: 'member-with-link-1',
       activity,
     });
 
-    expect(access.exposure).toBe('redacted');
+    expect(access.exposure).toBe('none');
     expect(access.canViewFullActivity).toBe(false);
-    expect(access.gateReason).toBe('join_required');
-    expect(access.level).toBe('link_holder');
+    expect(access.canOpenDetailPage).toBe(false);
+    expect(access.gateReason).toBe('invite_only');
+    expect(access.level).toBe('denied');
+  });
+
+  it('lets privately invited members open the plan before they join', async () => {
+    vi.mocked(findPendingActivityInviteForInvitee).mockResolvedValue({
+      _id: 'inv-1',
+      activityId: activity.id,
+      fromUserId: 'host-1',
+      toUserId: 'friend-1',
+      status: 'pending',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    const access = await buildActivityViewerAccess({
+      viewerUserId: 'friend-1',
+      activity,
+    });
+
+    expect(access.canOpenDetailPage).toBe(true);
+    expect(access.exposure).toBe('redacted');
+    expect(access.canAccessCrewSurfaces).toBe(false);
+    expect(access.level).toBe('join_request');
   });
 
   it('allows tenant staff to view a private activity', async () => {
@@ -181,7 +213,8 @@ describe('computeActivityDetailExposure (shared policy)', () => {
       level: 'public',
       viewerUserId: null,
     });
-    expect(result.exposure).toBe('redacted');
+    expect(result.exposure).toBe('none');
+    expect(result.canOpenDetailPage).toBe(false);
     expect(result.gateReason).toBe('sign_in');
   });
 });

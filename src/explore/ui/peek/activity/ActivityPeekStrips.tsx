@@ -1,9 +1,9 @@
 import { Users } from 'lucide-react';
 import { exploreCardActivityShowsPeekSpots, type ExploreCardModel } from '../../../exploreCardModel';
 import { exploreActivityPublisherSectionNoun } from '@uaetrail/shared-types';
-import { activityPeekPendingInviteChipLabel } from '../../../content/activityPeekCopy';
-import { ORGANIZE_LINK_RIDESHARE_LABEL } from '../../createFlowCopy';
-import { resolveActivityMapPeekStrips } from '../../../activity/activityPeekEngagement';
+import { activityPeekPendingInviteChipLabel } from '../../../../content/activityPeekCopy';
+import { ORGANIZE_LINK_RIDESHARE_LABEL } from '../../../createFlowCopy';
+import { resolveActivityMapPeekStrips } from '../../../../activity/activityPeekEngagement';
 import {
   ActivityPeekLinkedTransport,
   activityPeekHasLinkedTransportAffordance,
@@ -11,8 +11,8 @@ import {
 import {
   ExploreActivityPeekSpotsSection,
   ExploreCardPeopleRow,
-} from '../ExploreCardPresentation';
-import type { JoinRequestUiState } from '../../../utils/joinRequestUi';
+} from '../../ExploreCardPresentation';
+import type { JoinRequestUiState } from '../../../../utils/joinRequestUi';
 
 const stripShell = 'mt-3 rounded-xl border border-neutral-100 bg-neutral-50/80 px-3 py-2.5';
 const stripLabel = 'mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-neutral-500';
@@ -23,6 +23,8 @@ export type ActivityPeekStripsProps = {
   onGuestGatedAction?: () => void;
   onOpenLinkedPin?: (pinItemId: string) => void;
   onOfferTransport?: () => void;
+  /** Detail fold renders dedicated host + participants blocks above requirements. */
+  hideParticipantsStrip?: boolean;
 };
 
 /** Activity pin summary — spots, host, transport / linked rideshare (L1 strip flags). */
@@ -32,6 +34,7 @@ export const ActivityPeekStrips = ({
   onGuestGatedAction,
   onOpenLinkedPin,
   onOfferTransport,
+  hideParticipantsStrip = false,
 }: ActivityPeekStripsProps) => {
   const strips = resolveActivityMapPeekStrips(card, joinUiState);
   const showOfferTransport = Boolean(onOfferTransport) && strips.showOfferRideInLogistics;
@@ -46,7 +49,7 @@ export const ActivityPeekStrips = ({
   return (
     <div className="space-y-2">
       {showSpotsSection ? <ExploreActivityPeekSpotsSection card={card} /> : null}
-      {strips.showParticipantsStrip ? (
+      {strips.showParticipantsStrip && !hideParticipantsStrip ? (
         <section className={stripShell} aria-label={publisherSectionLabel}>
           <div className={stripLabel}>
             <Users className="h-3.5 w-3.5" aria-hidden />

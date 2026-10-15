@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import { MoreHorizontal } from 'lucide-react';
+import { ACTIVITY_INVITE_FRIENDS_CTA } from '../../content/activityInviteCopy';
+import { ACTIVITY_PARTICIPANTS_SECTION_LABEL } from '../../content/activityParticipantsCopy';
 import { EXPLORE_PEEK_CTA, EXPLORE_Z } from '../../config/exploreTheme';
 import { activityManageCapabilities } from '../../activity/activityManageCapabilities';
 import { ExploreResponsiveSheet } from '../../explore/ui/ExploreResponsiveSheet';
@@ -76,7 +78,7 @@ export const HostActivityCtas = ({
           className={manageRowClass}
           onClick={() => runManageAction(handlers.onViewParticipants)}
         >
-          View participants:
+          {ACTIVITY_PARTICIPANTS_SECTION_LABEL}
         </button>
         {published ? (
           <button
@@ -84,7 +86,7 @@ export const HostActivityCtas = ({
             className={manageRowClass}
             onClick={() => runManageAction(handlers.onInvite)}
           >
-            Invite
+            {ACTIVITY_INVITE_FRIENDS_CTA}
           </button>
         ) : null}
         {showCarpool ? (

@@ -1,7 +1,11 @@
 import { type ReactNode } from 'react';
 import { useLocation } from 'react-router-dom';
 import { ComposeRailProvider } from '../../context/ComposeRailContext';
-import { isConsumerChromeHidden, hasConsumerSelfHeader } from '../../config/platform';
+import {
+  hasConsumerSelfHeader,
+  isConsumerChromeHidden,
+  shouldShowMarketingSiteFooter,
+} from '../../config/platform';
 import { isJourneyMapPath } from '../../config/surfacePaths';
 import { useMobileBottomNav } from '../../hooks/useMobileBottomNav';
 import { Footer } from './Footer';
@@ -46,11 +50,14 @@ export const ProductShell = ({ children }: { children: ReactNode }) => {
     <main className="flex-1 scroll-touch min-w-0 max-w-full overflow-x-clip">{children}</main>
   );
 
-  const siteFooter = showConsumerChrome && !showMobileBottomNav && (
+  const siteFooter = shouldShowMarketingSiteFooter(location.pathname, {
+    showConsumerChrome,
+    showMobileBottomNav,
+  }) ? (
     <div className="shrink-0">
       <Footer />
     </div>
-  );
+  ) : null;
 
   return (
     <ComposeRailProvider>

@@ -29,4 +29,19 @@ describe('buildActivityDetailPageShellCard', () => {
     expect(card.activityId).toBe('act-1');
     expect(card.path).toBe('/activity/act-1');
   });
+
+  it('surfaces linked rideshare from activity id when nested detail is omitted', () => {
+    const card = buildActivityDetailPageShellCard({
+      activity: {
+        id: 'act-1',
+        activityType: 'hiking',
+        title: 'Sunrise hike',
+        locationName: 'Hatta',
+        status: 'published',
+        linkedRideshareActivityId: 'ride-9',
+      } as Parameters<typeof buildActivityDetailPageShellCard>[0]['activity'],
+      viewerAccess: null,
+    });
+    expect(card.linkedRideshareActivities?.[0]?.activityId).toBe('ride-9');
+  });
 });

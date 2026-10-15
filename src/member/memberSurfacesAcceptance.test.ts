@@ -149,10 +149,34 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(runbook).toContain('demand:');
   });
 
+  it('S13-W4: MemberProfileView sections gate on canViewFullProfile from viewerAccess', () => {
+    const page = read('src/pages/MemberProfile.tsx');
+    expect(page).toMatch(/canViewFullProfile=\{viewerAccess\?\.canViewFullProfile/);
+    expect(page).toMatch(/!viewerAccess\?\.canViewFullProfile/);
+    const view = read('src/components/profile/MemberProfileView.tsx');
+    expect(view).toMatch(/canViewFullProfile && profile\.yearGoal/);
+    expect(view).toMatch(/canViewFullProfile && profile\.bio/);
+    expect(view).toMatch(/canViewFullProfile && upcomingActivities/);
+  });
+
+  it('S13: member profile links use memberProfileLink (single FE entry)', () => {
+    const tab = read('src/people-discovery/panel/peopleBrowse/PeopleBrowseTabContent.tsx');
+    expect(tab).toContain('memberBrowseRowModel');
+    expect(tab).not.toContain('memberProfileLink(');
+    const buddies = read('src/pages/Buddies.tsx');
+    expect(buddies).toContain('memberProfileLink');
+    expect(buddies).not.toMatch(/to=\{`\/member\/\$\{/);
+    const exploreShim = read('src/explore/ui/peopleBrowse/index.ts');
+    expect(exploreShim).toContain('@/people-discovery/panel/peopleBrowse');
+    expect(exploreShim).not.toContain('./PeopleBrowseTabContent');
+    const listPeople = read('src/list/ui/ListDiscoverPeopleView.tsx');
+    expect(listPeople).toContain('@/people-discovery/panel/peopleBrowse');
+  });
+
   it('G-seek: People browse wires seekingOnMap to explore pin routes (no activity detail hop)', () => {
     const panel = read('src/people-discovery/panel/PeopleBrowsePanel.tsx');
     expect(panel).toContain('discoverySeekingOnMap');
-    expect(panel).toContain('seekingOnMap={discoverySeekingOnMap}');
+    expect(panel).toContain('seekingActivities');
     const routing = read('src/explore/memberDiscoverySeekingRow.ts');
     expect(routing).toContain('exploreSeekingMapItemPath');
     const list = read('src/list/ListDiscoveryExperience.tsx');
@@ -282,13 +306,12 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(() => read('src/explore/activityMapPeekActions.ts')).toThrow();
   });
 
-  it('AD-arch: Tier-1 documents Transport tab always visible', () => {
+  it('AD-arch: Tier-1 documents consumer transport strip (organize capture)', () => {
     const nav = read('docs/NAVIGATION.md');
-    expect(nav).toMatch(/Transport.*[Aa]lways/);
-    expect(nav).not.toMatch(/Transport\*\* hides when/);
+    expect(nav).toMatch(/Transport.*strip/i);
+    expect(nav).toMatch(/consumerDetailLayout|scroll layout/i);
     const create = read('docs/CREATE_FLOW.md');
-    expect(create).toContain('resolveActivityPresentation.ts');
-    expect(create).toMatch(/Transport tab.*always/i);
+    expect(create).toMatch(/resolveActivityEngagementPolicy|buildActivityDetailPageShellCard/);
   });
 
   it('AD-arch: member-surfaces §21 tracks activity detail phases', () => {
@@ -317,15 +340,16 @@ describe('member surfaces §11 acceptance (automated)', () => {
   });
 
   it('AD-3 v3.2: tab footers, host Buddies hub, hero status on activity detail', () => {
-    const body = read('src/components/activity/detail/ActivityDetailBody.tsx');
-    const model = read('src/components/activity/detail/useActivityDetailViewModel.ts');
+    const planColumn = read('src/components/activity/detail/ActivityDetailPlanColumn.tsx');
+    const sidebarColumn = read('src/components/activity/detail/ActivityDetailSidebarColumn.tsx');
+    const model = read('src/components/activity/detail/useActivityDetailViewModel.tsx');
     expect(read('src/components/activity/ActivityDetailView.tsx')).toContain('wireFooterByTab');
     expect(read('src/pages/ActivityDetail.tsx')).toContain('resolveActivityDetailWirePresentation');
     expect(read('src/activity/resolveActivityDetailEngagement.ts')).toContain(
       'resolveActivityDetailEngagementFooterKind'
     );
-    expect(body).toContain('ActivityDetailBuddiesAside');
-    expect(body).toContain('ActivityDetailPlanExtras');
+    expect(sidebarColumn).toContain('ActivityDetailBuddiesAside');
+    expect(planColumn).toContain('ActivityDetailPlanExtras');
     expect(model).toContain('useActivityDetailJoinSurfaces');
     expect(read('src/components/activity/detail/useActivityDetailJoinSurfaces.tsx')).toContain(
       'ActivityDetailStickyFooter'
@@ -345,10 +369,10 @@ describe('member surfaces §11 acceptance (automated)', () => {
   });
 
   it('AD-8: post check-in review prompts on activity detail Plan/Buddies', () => {
-    const body = read('src/components/activity/detail/ActivityDetailBody.tsx');
+    const planColumn = read('src/components/activity/detail/ActivityDetailPlanColumn.tsx');
     const sidebar = read('src/components/activity/detail/ActivityDetailPricingSidebar.tsx');
-    const model = read('src/components/activity/detail/useActivityDetailViewModel.ts');
-    expect(body).toContain('ActivityPostCheckInReviewPrompts');
+    const model = read('src/components/activity/detail/useActivityDetailViewModel.tsx');
+    expect(planColumn).toContain('ActivityPostCheckInReviewPrompts');
     expect(sidebar).toContain('ActivityHostCheckInReviewPrompt');
     expect(model).toContain('buildParticipantPostCheckInReviewPrompts');
     const copy = read('src/content/activityDetailCopy.ts');

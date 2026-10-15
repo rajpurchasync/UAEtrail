@@ -1,15 +1,21 @@
 import type { ActivityMapPeekAction, ActivityMapPeekActionId } from '@uaetrail/shared-types';
-import { EXPLORE_PEEK_CTA } from '../../../config/exploreTheme';
-import { LIST_FEED_CTA_MESSAGE_ORGANIZER } from '../../../list/listFeedCtaCopy';
-import { activityMapPeekActionLabel } from '../../exploreMapPeekActionCopy';
-import { canLinkRideshareToActivity } from '../../linkActivityRideshareOffer';
-import { activityDetailPath } from '../../../config/routingCatalog';
+import { EXPLORE_PEEK_CTA } from '../../../../config/exploreTheme';
+import {
+  activityMapPeekActionLabel,
+  type ActivityMapPeekActionLabelContext,
+} from '../../../exploreMapPeekActionCopy';
+import {
+  activityPeekHasMapWireActions,
+  filterActivityMapPeekFooterActions,
+} from '../../../../activity/activityPeekEngagement';
+import { canLinkRideshareToActivity } from '../../../linkActivityRideshareOffer';
+import { activityDetailPath } from '../../../../config/routingCatalog';
 import {
   exploreCardActivityJoinIsFull,
   type DiscoveryCardModel,
-} from '../../../discovery/discoveryCardModel';
-import type { JoinRequestUiState } from '../../../utils/joinRequestUi';
-import { pendingApprovalLabel } from '../../../utils/joinRequestUi';
+} from '../../../../discovery/discoveryCardModel';
+import type { JoinRequestUiState } from '../../../../utils/joinRequestUi';
+import { pendingApprovalLabel } from '../../../../utils/joinRequestUi';
 import { PeekDetailLink } from '../../map-peek/PeekDetailLink';
 
 export type ActivityPeekEngagementActionsProps = {
@@ -21,6 +27,8 @@ export type ActivityPeekEngagementActionsProps = {
   joinStateLoading?: boolean;
   onBeforeDetailNavigate?: () => void;
   joinUiState?: JoinRequestUiState;
+  surface?: 'peek' | 'detail';
+  onOpenParticipationManage?: () => void;
 };
 
 const prominenceClass = (prominence: ActivityMapPeekAction['prominence']): string => {
@@ -44,10 +52,27 @@ const dualPrimaryClass =
 const dualSecondaryClass =
   'flex min-h-[3.25rem] flex-1 items-center justify-center rounded-xl border border-neutral-200 bg-white px-3 text-center text-sm font-bold text-neutral-800';
 
-const actionLabel = (action: ActivityMapPeekAction, card: DiscoveryCardModel): string => {
+const detailDualPrimaryClass =
+  'flex min-h-[3.25rem] flex-1 items-center justify-center rounded-2xl bg-emerald-600 px-4 text-center text-sm font-bold text-white shadow-sm active:bg-emerald-700';
+
+const detailDualSecondaryClass =
+  'flex min-h-[3.25rem] flex-1 items-center justify-center rounded-2xl border border-neutral-200 bg-white px-4 text-center text-sm font-bold text-neutral-800 shadow-sm active:bg-neutral-50';
+
+const joinPhaseFromUi = (
+  joinUiState?: JoinRequestUiState
+): ActivityMapPeekActionLabelContext['joinPhase'] => {
+  if (joinUiState?.kind === 'pending') return 'pending';
+  if (joinUiState?.kind === 'confirmed') return 'confirmed';
+  return 'open';
+};
+
+const actionLabel = (
+  action: ActivityMapPeekAction,
+  card: DiscoveryCardModel,
+  labelContext: ActivityMapPeekActionLabelContext
+): string => {
   if (action.id === 'request_join') return card.primaryCta;
-  if (action.id === 'message_host') return LIST_FEED_CTA_MESSAGE_ORGANIZER;
-  return activityMapPeekActionLabel(action.id, action);
+  return activityMapPeekActionLabel(action.id, action, labelContext);
 };
 
 const isConsumerDualRow = (
@@ -60,6 +85,12 @@ const isConsumerDualRow = (
       (primary.id === 'request_join' || primary.id === 'pending_join')
   );
 
+const isDetailCrewInviteRow = (
+  primary: ActivityMapPeekAction | undefined,
+  secondary: ActivityMapPeekAction | undefined
+): boolean =>
+  Boolean(primary?.id === 'open_crew_chat' && secondary?.id === 'invite_crew');
+
 /** Renders `viewerAccess.mapPeekActions` on activity pin summary (wire ids). */
 export const ActivityPeekEngagementActions = ({
   card,
@@ -70,9 +101,24 @@ export const ActivityPeekEngagementActions = ({
   joinStateLoading = false,
   onBeforeDetailNavigate,
   joinUiState,
+  surface = 'peek',
+  onOpenParticipationManage,
 }: ActivityPeekEngagementActionsProps) => {
+  const isDetailBar = surface === 'detail';
+  const rowClass = isDetailBar ? 'flex w-full gap-2.5 px-1 pb-0.5' : 'flex w-full gap-2';
+  const primaryBtnClass = isDetailBar ? detailDualPrimaryClass : dualPrimaryClass;
+  const secondaryBtnClass = isDetailBar ? detailDualSecondaryClass : dualSecondaryClass;
+  const fullWidthBtnClass = (base: string) =>
+    isDetailBar ? `${base} w-full rounded-2xl` : base;
+
   const gate = onGuestGatedAction;
   const activity = card.activity;
+  const viewerLevel = card.viewerAccess?.level ?? null;
+  const labelContext: ActivityMapPeekActionLabelContext = {
+    surface,
+    viewerLevel,
+    joinPhase: joinPhaseFromUi(joinUiState),
+  };
   const joinFull = exploreCardActivityJoinIsFull(card);
   const joinPrimaryClass = joinFull
     ? 'w-full rounded-2xl bg-neutral-200 py-3.5 text-base font-bold text-neutral-500 cursor-not-allowed'
@@ -80,6 +126,11 @@ export const ActivityPeekEngagementActions = ({
 
   const pendingJoinLabel =
     joinUiState?.kind === 'pending' ? pendingApprovalLabel(joinUiState.status) : null;
+  const mapSuppliedPeekWire = activityPeekHasMapWireActions(card);
+  const effectiveJoinStateLoading = mapSuppliedPeekWire ? false : joinStateLoading;
+  const joinAffordanceLoading = Boolean(
+    effectiveJoinStateLoading && joinUiState?.kind === 'open'
+  );
 
   const runGated = (id: ActivityMapPeekActionId) => {
     if (gate) {
@@ -89,7 +140,12 @@ export const ActivityPeekEngagementActions = ({
     onAction(id);
   };
 
-  const visible = actions.filter((action) => {
+  const scopedActions =
+    surface === 'peek'
+      ? filterActivityMapPeekFooterActions(actions, joinUiState, viewerLevel)
+      : actions.filter((action) => action.id !== 'view_detail' && action.id !== 'withdraw_join');
+
+  const visible = scopedActions.filter((action) => {
     if (action.id === 'link_rideshare') {
       return (
         Boolean(linkRideshareTenantId && activity && canLinkRideshareToActivity(activity)) &&
@@ -102,11 +158,94 @@ export const ActivityPeekEngagementActions = ({
     return true;
   });
 
+  const detailPending = surface === 'detail' && joinUiState?.kind === 'pending';
+  const detailJoined = surface === 'detail' && joinUiState?.kind === 'confirmed';
+
+  if (detailPending && onOpenParticipationManage) {
+    const messageHost = visible.find((action) => action.id === 'message_host');
+    const pendingDisabled = visible.find((action) => action.id === 'pending_join');
+    return (
+      <div className={isDetailBar ? 'w-full' : 'space-y-2'}>
+        {pendingDisabled ? (
+          <button
+            type="button"
+            disabled
+            className={fullWidthBtnClass(
+              'w-full bg-amber-100 py-3.5 text-base font-bold text-amber-900 disabled:opacity-100'
+            )}
+          >
+            {actionLabel(pendingDisabled, card, labelContext)}
+          </button>
+        ) : null}
+        <div className={rowClass}>
+          {messageHost ? (
+            <button
+              type="button"
+              onClick={() => runGated('message_host')}
+              className={secondaryBtnClass}
+            >
+              {actionLabel(messageHost, card, labelContext)}
+            </button>
+          ) : null}
+          <button
+            type="button"
+            onClick={() => onOpenParticipationManage()}
+            className={primaryBtnClass}
+          >
+            {activityMapPeekActionLabel('manage_activity', undefined, labelContext)}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (detailJoined && onOpenParticipationManage) {
+    const chat = visible.find((action) => action.id === 'open_crew_chat');
+    const inviteCrew = visible.find((action) => action.id === 'invite_crew');
+    if (chat && inviteCrew) {
+      return (
+        <div className={isDetailBar ? 'w-full' : 'space-y-2'}>
+          <div className={rowClass}>
+            <button type="button" onClick={() => runGated('open_crew_chat')} className={primaryBtnClass}>
+              {actionLabel(chat, card, labelContext)}
+            </button>
+            <button type="button" onClick={() => runGated('invite_crew')} className={secondaryBtnClass}>
+              {actionLabel(inviteCrew, card, labelContext)}
+            </button>
+          </div>
+        </div>
+      );
+    }
+    if (chat) {
+      return (
+        <div className={rowClass}>
+          <button type="button" onClick={() => runGated('open_crew_chat')} className={primaryBtnClass}>
+            {actionLabel(chat, card, labelContext)}
+          </button>
+          <button type="button" onClick={() => onOpenParticipationManage()} className={secondaryBtnClass}>
+            {activityMapPeekActionLabel('manage_activity', undefined, labelContext)}
+          </button>
+        </div>
+      );
+    }
+    return (
+      <button
+        type="button"
+        onClick={() => onOpenParticipationManage()}
+        className={fullWidthBtnClass(primaryBtnClass)}
+      >
+        {activityMapPeekActionLabel('manage_activity', undefined, labelContext)}
+      </button>
+    );
+  }
+
   if (visible.length === 0) return null;
 
   const primaryAction = visible.find((action) => action.prominence === 'primary');
   const secondaryAction = visible.find((action) => action.prominence === 'secondary');
-  const dualRow = isConsumerDualRow(primaryAction, secondaryAction);
+  const dualRow =
+    isConsumerDualRow(primaryAction, secondaryAction) ||
+    (surface === 'detail' && isDetailCrewInviteRow(primaryAction, secondaryAction));
   const paired = new Set(
     dualRow && primaryAction && secondaryAction ? [primaryAction, secondaryAction] : []
   );
@@ -114,39 +253,46 @@ export const ActivityPeekEngagementActions = ({
   return (
     <div className="space-y-3">
       {dualRow && primaryAction && secondaryAction ? (
-        <div className="space-y-2">
-          <div className="flex w-full gap-2">
+        <div className={isDetailBar ? 'w-full' : 'space-y-2'}>
+          <div className={rowClass}>
             {primaryAction.id === 'pending_join' ? (
               <button
                 type="button"
                 disabled
-                className={`${dualPrimaryClass} bg-amber-100 text-amber-900`}
+                className={`${primaryBtnClass} bg-amber-100 text-amber-900`}
               >
-                {actionLabel(primaryAction, card)}
+                {actionLabel(primaryAction, card, labelContext)}
               </button>
             ) : primaryAction.id === 'request_join' && joinFull ? (
-              <button type="button" disabled className={`${dualPrimaryClass} bg-neutral-200 text-neutral-500`}>
-                {actionLabel(primaryAction, card)}
+              <button type="button" disabled className={`${primaryBtnClass} bg-neutral-200 text-neutral-500`}>
+                {actionLabel(primaryAction, card, labelContext)}
               </button>
             ) : primaryAction.id === 'request_join' && pendingJoinLabel ? (
               <button
                 type="button"
                 disabled
-                className={`${dualPrimaryClass} bg-amber-100 text-amber-900`}
+                className={`${primaryBtnClass} bg-amber-100 text-amber-900`}
               >
                 {pendingJoinLabel}
               </button>
             ) : (
-              <button type="button" onClick={() => runGated(primaryAction.id)} className={dualPrimaryClass}>
-                {actionLabel(primaryAction, card)}
+              <button
+                type="button"
+                onClick={() => runGated(primaryAction.id)}
+                disabled={primaryAction.id === 'request_join' && joinAffordanceLoading}
+                className={primaryBtnClass}
+              >
+                {primaryAction.id === 'request_join' && joinAffordanceLoading
+                  ? 'Loading…'
+                  : actionLabel(primaryAction, card)}
               </button>
             )}
             <button
               type="button"
               onClick={() => runGated(secondaryAction.id)}
-              className={dualSecondaryClass}
+              className={secondaryBtnClass}
             >
-              {actionLabel(secondaryAction, card)}
+              {actionLabel(secondaryAction, card, labelContext)}
             </button>
           </div>
         </div>
@@ -157,7 +303,7 @@ export const ActivityPeekEngagementActions = ({
 
         if (action.id === 'view_detail') {
           const className = prominenceClass(action.prominence);
-          const label = activityMapPeekActionLabel(action.id, action);
+          const label = activityMapPeekActionLabel(action.id, action, labelContext);
           const activityId = card.activityId ?? card.activity?.id;
           const hrefOverride = activityId ? activityDetailPath(activityId) : undefined;
           return (
@@ -167,7 +313,7 @@ export const ActivityPeekEngagementActions = ({
               label={label}
               className={className}
               hrefOverride={hrefOverride}
-              joinStateLoading={joinStateLoading}
+              joinStateLoading={effectiveJoinStateLoading}
               onGuestGatedAction={gate}
               onBeforeNavigate={onBeforeDetailNavigate}
             />
@@ -189,7 +335,7 @@ export const ActivityPeekEngagementActions = ({
         }
 
         if (action.id === 'withdraw_join') {
-          const label = activityMapPeekActionLabel(action.id, action);
+          const label = activityMapPeekActionLabel(action.id, action, labelContext);
           const className =
             action.prominence === 'text'
               ? EXPLORE_PEEK_CTA.secondaryText
@@ -219,7 +365,7 @@ export const ActivityPeekEngagementActions = ({
           );
         }
 
-        const joinLabel = actionLabel(action, card);
+        const joinLabel = actionLabel(action, card, labelContext);
         const isRequestJoin = action.id === 'request_join';
 
         return (
@@ -227,10 +373,10 @@ export const ActivityPeekEngagementActions = ({
             key={action.id}
             type="button"
             onClick={() => runGated(action.id)}
-            disabled={isRequestJoin && joinFull}
+            disabled={(isRequestJoin && joinFull) || (isRequestJoin && joinAffordanceLoading)}
             className={isRequestJoin ? joinPrimaryClass : prominenceClass(action.prominence)}
           >
-            {joinLabel}
+            {isRequestJoin && joinAffordanceLoading ? 'Loading…' : joinLabel}
           </button>
         );
       })}

@@ -84,11 +84,16 @@ export const resolveExplorePrice = (input: ExplorePriceInput): ExplorePriceInfo 
 const isRideshareActivity = (activity: ActivityPriceSource): boolean =>
   activity.activityType === 'rideshare';
 
+import { normalizeRideshareRouteLabels } from './explore-presentation.js';
+
 /** Server-side explore map price + route labels for an activity pin. */
 export const buildExploreActivityDisplay = (activity: ActivityPriceSource): ExploreActivityDisplayFields => {
-  const fromLabel = activity.meetingPoint ?? null;
-  const toLabel = activity.startPoint ?? activity.locationName ?? null;
   const rideshare = isRideshareActivity(activity);
+  const rawFrom = activity.meetingPoint ?? null;
+  const rawTo = activity.startPoint ?? activity.locationName ?? null;
+  const { fromLabel, toLabel } = rideshare
+    ? normalizeRideshareRouteLabels(rawFrom, rawTo)
+    : { fromLabel: rawFrom, toLabel: rawTo };
 
   if (rideshare) {
     if (activity.rideshareFree === true || (activity.ridesharePriceAed ?? 0) === 0) {

@@ -17,9 +17,14 @@ describe('peek ↔ detail template alignment', () => {
     expect(read('src/explore/ui/peek/place/PlaceMapPeekHost.tsx')).toMatch(/PlacePeekCard/);
   });
 
-  it('PEEK-ARCH-02: detail fold reuses same strip presentation as peek', () => {
-    const strips = read('src/components/activity/detail/ActivityDetailEngagementStrips.tsx');
-    expect(strips).toMatch(/ActivityPeekStrips/);
+  it('PEEK-ARCH-02: consumer detail shares card model + peek transport wire', () => {
+    expect(read('src/activity/detail/templates/ActivityConsumerDetailPage.tsx')).toMatch(
+      /ActivityPeekLinkedTransport/
+    );
+    expect(read('src/activity/detail/templates/ActivityConsumerDetailPage.tsx')).toMatch(
+      /peekParityCard/
+    );
+    expect(read('src/explore/ui/map-peek/MapPeekShell.tsx')).toMatch(/ActivityDiscoveryPublishedBody/);
     expect(read('src/activity/detail/activityDetailPageShellCard.ts')).toMatch(
       /buildDiscoveryCardViewModelCard/
     );

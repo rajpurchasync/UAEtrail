@@ -3,6 +3,7 @@ import { ExploreResponsiveSheet } from '../../explore/ui/ExploreResponsiveSheet'
 import type { ActivityShareInput } from '../../utils/activityShare';
 import { buildActivitySharePayload } from '../../utils/activityShare';
 import { ACTIVITY_INVITE_FRIENDS_CTA } from '../../content/activityInviteCopy';
+import { EXPLORE_Z } from '../../config/exploreTheme';
 import { ActivityInviteModalBody } from './ActivityInviteModalBody';
 import { useAuth } from '../../context/AuthContext';
 
@@ -36,6 +37,7 @@ export const ActivityInviteShareSheet = ({
       onClose={onClose}
       title={ACTIVITY_INVITE_FRIENDS_CTA}
       maxWidthClass="max-w-md"
+      zClass={EXPLORE_Z.activityDetailInviteSheet}
       overlayFixed
       showCloseButton
     >

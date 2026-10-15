@@ -1,5 +1,6 @@
 import type { MemberBrowseCardDTO, SocialPersonRowDTO } from '@uaetrail/shared-types';
 
+/** Map directory DTO to network row shape (legacy social roster consumers). */
 export const memberPersonRowFromBrowseCard = (card: MemberBrowseCardDTO): SocialPersonRowDTO => ({
   userId: card.id,
   displayName: card.displayName,

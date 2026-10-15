@@ -23,7 +23,13 @@ import { MemberProfileView } from '../components/profile/MemberProfileView';
 import { PageMeta } from '../components/seo/PageMeta';
 import { useAuth } from '../context/AuthContext';
 import { messagesRouteForRole } from '../utils/authRouting';
-import { EXPLORE_MAP_PATH, myActivitiesPath, proMembershipPath, SIGNIN_PATH } from '../config/routingCatalog';
+import {
+  EXPLORE_MAP_PATH,
+  memberProfileLink,
+  myActivitiesPath,
+  proMembershipPath,
+  SIGNIN_PATH,
+} from '../config/routingCatalog';
 import {
   MEMBER_DISCOVERY_QUOTA_GATE_BODY,
   MEMBER_DISCOVERY_QUOTA_GATE_CTA,
@@ -96,7 +102,7 @@ export const MemberProfile = () => {
 
   useSafeAsyncEffect(
     async (isActive) => {
-      if (!userId || viewerAccess?.exposure !== 'full') {
+      if (!userId || !viewerAccess?.canViewFullProfile) {
         if (isActive()) {
           setUpcomingActivities([]);
         }
@@ -283,7 +289,7 @@ export const MemberProfile = () => {
           {!user ? (
             <Link
               to={SIGNIN_PATH}
-              state={{ from: `/member/${profile.id}` }}
+              state={{ from: memberProfileLink(profile.id) }}
               className="mt-4 inline-block text-sm font-semibold text-emerald-700"
             >
               Sign in
@@ -293,6 +299,7 @@ export const MemberProfile = () => {
       ) : fullProfile && userId ? (
         <MemberProfileView
           profile={fullProfile}
+          canViewFullProfile={viewerAccess?.canViewFullProfile ?? false}
           isSelf={Boolean(isSelf)}
           userId={userId}
           userLoggedIn={Boolean(user)}

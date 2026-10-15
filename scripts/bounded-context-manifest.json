@@ -137,6 +137,7 @@
       ],
       "feDomains": ["src/api/domains/places.ts", "src/api/domains/placeRegistry.ts"],
       "feRoots": [
+        "src/place/detail",
         "src/places-discovery",
         "src/pages/place",
         "src/pages/TrailDetail.tsx",
@@ -174,6 +175,7 @@
       "feRoots": [
         "src/pages/MemberProfile.tsx",
         "src/people-discovery",
+        "src/member/memberProfileLink.ts",
         "src/list/ui/ListDiscoverPeopleView.tsx"
       ]
     },
@@ -261,7 +263,24 @@
         "apps/api/src/routes/admin/registerAdminPlatformStaffRoutes.ts"
       ],
       "feDomains": ["src/api/domains/admin.ts"],
-      "feRoots": ["src/pages/AdminOverview.tsx", "src/pages/AdminMembers.tsx"]
+      "feRoots": [
+        "src/pages/AdminOverview.tsx",
+        "src/pages/AdminPlaces.tsx",
+        "src/pages/AdminAreas.tsx",
+        "src/pages/AdminOrganisations.tsx",
+        "src/pages/AdminActivities.tsx",
+        "src/pages/AdminMembers.tsx",
+        "src/pages/AdminGroups.tsx",
+        "src/pages/AdminAuditLog.tsx",
+        "src/pages/AdminReports.tsx",
+        "src/pages/AdminSettings.tsx",
+        "src/pages/AdminShop.tsx",
+        "src/pages/AdminNotifications.tsx",
+        "src/components/layout/DashboardLayout.tsx",
+        "src/constants/index.ts",
+        "src/config/adminSurfacePaths.ts",
+        "src/config/adminSurfacesAcceptance.test.ts"
+      ]
     }
   ],
   "apiMounts": [

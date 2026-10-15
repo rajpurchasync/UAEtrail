@@ -27,7 +27,12 @@ import { JsonLd } from '../seo/JsonLd';
 import { organizationSchema } from '../seo/schemas';
 import { MessageMemberButton } from '../chat/MessageMemberButton';
 import { EntityFollowControls } from '../profile/EntityFollowControls';
-import { PRO_MEMBERSHIP_PATH, SIGNIN_PATH, tripsPlansPath } from '../../config/routingCatalog';
+import {
+  memberProfileLink,
+  PRO_MEMBERSHIP_PATH,
+  SIGNIN_PATH,
+  tripsPlansPath,
+} from '../../config/routingCatalog';
 import { GlassCard } from '../mobile/GlassCard';
 import { AppButton } from '../mobile/AppButton';
 import { AppSelect } from '../ui/AppSelect';
@@ -271,7 +276,7 @@ export const OrganisationPublicProfile = ({
           </div>
           {tenant.ownerId && !isOwner ? (
             <Link
-              to={`/member/${tenant.ownerId}`}
+              to={memberProfileLink(tenant.ownerId)}
               className="mt-1 inline-block text-sm font-semibold text-emerald-700 hover:underline"
             >
               {tenant.ownerName} · member profile

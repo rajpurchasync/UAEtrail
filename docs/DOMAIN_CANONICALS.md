@@ -176,8 +176,8 @@ Query param **`tab`** where noted. **UI labels** may differ from wire ids (activ
 
 | Surface | Route prefix | Wire tab ids (canonical → target) | Deep link |
 |---------|--------------|-----------------------------------|-----------|
-| Activity | `/activity/:id` | `plan` · `place` · `buddies` · `transport` | `?tab=` — default `plan` (`rideshare` → `transport` when omitted); **FE:** `ActivityDetailByKind` → `*ActivityDetailPage` → `ActivityDetailPageShell` → `ActivityDetailView` (`src/activity/detail/templates/*`) |
-| Place (trail/camp/venue) | `/trail`, `/camp`, `/venue` | `overview` · `facts` · `transport` · `guide` (alias `location` → `transport`) | `?tab=` · `src/place/placeDetailTab.ts`; **FE kind pages:** `HikingPlaceDetailPage`, `CampingPlaceDetailPage`, `EventPlaceDetailPage` → `PlaceDetailPage` |
+| Activity | `/activity/:id` | **Public scroll:** `presentation.consumerLayout` (no tab bar). **Embed/manage:** `plan` · `place` · `buddies` · `transport` + `footerByTab` | Legacy `?tab=` → scroll anchors (deprecated). **FE:** `ActivityDetailByKind` → `*ActivityDetailPage` → `ActivityDetailPageShell` → `ActivityConsumerDetailBody` |
+| Place (trail/camp/venue) | `/trail`, `/camp`, `/venue` | `overview` · `facts` · `transport` · `guide` (alias `location` → `transport`) | `?tab=` · `src/place/placeDetailTab.ts`; **FE:** `*PlaceDetailPage` → `PlaceDetailPage` → `PlaceDetailCore` — L1 `buildPlaceDetailPageModel`, kind hero composers `src/place/detail/composers/*` |
 | Area hub | `/area/:slug` | `overview` · `places` · `activities` (people on overview) | `?tab=` · `src/area/areaDetailTab.ts` |
 | Shop public | `/shop/:id` | `about` · `products` · `location` | `?tab=` · `src/shop/shopPublicDetailTab.ts` |
 | Organisation public | `/guide`, `/agency`, `/partner` | `about` · `outings` · `contact` | `?tab=` · `src/organisation/organisationPublicDetailTab.ts` |
@@ -204,6 +204,39 @@ Detail UIs must load from the **canonical read API** for that entity; writes use
 **API lineage contracts:** `apps/api/tests/detail-surface-lineage-contract.test.ts` (admin area/place publish → public GET; member profile → public profile).
 
 **Cross-links:** [`CREATE_FLOW.md`](./CREATE_FLOW.md) (member writes) · [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) · geography § in this doc · [`experiment/consumer-detail-surfaces-plan.md`](./experiment/consumer-detail-surfaces-plan.md) §18.
+
+### 3.2.1 Discovery projection → detail page → actions (L1–L3)
+
+Map/list **peek** and entity **detail** share one engagement contract per viewer state. **Policy** lives on the API (`viewerAccess`, `presentation`, `mapPeekActions` / `mapPeekStrips`); React only maps wire → UI (`resolvePeekDetailAccess`, `resolveActivityDetailWirePresentation`, `executeActivityMapPeekAction`). **Guards:** `detailSurfaceWiringAcceptance.test.ts`, `mapDetailEngagementParity.test.ts`, `activityDetailAcceptance.test.ts`.
+
+| Surface | L2 map peek | L3 consumer shell | Detail CTA | Participation / actions on L3 |
+|---------|-------------|-------------------|------------|-------------------------------|
+| **Activity** | `ActivityMapPeekHost` → `ActivityPeekCard` → `peek/activity/*` | `ActivityDetailByKind` → `*ActivityDetailPage` → scroll body + wire CTAs | `PeekDetailLink` + `view_detail` in `mapPeekActions` | Join/RSVP: `POST /activities/:id/requests`; **public** slots from `presentation.consumerLayout` + `mapPeekActions`; embed: `footerByTab`; guest: `ActivityDetailGuestGate` |
+| **Place** | `PlaceMapPeekHost` → `PlacePeekCard` | `*PlaceDetailPage` → `PlaceDetailPage` → `PlaceDetailCore` | `PeekDetailLink` → `card.path` (`/trail` · `/camp` · `/venue`) | Activities rail: `GET /places/:id/activities`; reviews; premium guide checkout on `guide` tab |
+| **Area** | `mapPeekSlots` → `AreaPeekBody` / `AreaPeekActions` | `AreaDetailPage` → `AreaDetailView` (`MobileDetailShell`) | Links to `/area/:slug`, explore `?area=` | Browse-only hub — join on child **activity** rows |
+| **Shop** | `ShopPeekActions` + `PeekDetailLink` | `ShopPublic` → `ShopPublicPage` (`EntityPublicDetailShell`) | `/shop/:id`; guest catalog rows may gate in peek | Reviews/follow on tenant id; outbound product URLs |
+| **Agency/guide** | Catalog / activity publisher row (not `source: agency` map rows) | `OrganisationProfile` → `OrganisationPublicProfile` (`EntityPublicDetailShell`) | `resolveActivityPublisherProfilePath` from activity | Message/follow; listed outings → `/activity/:id` |
+| **Member** | People browse / roster links | `MemberProfile` (`viewerAccess` on `GET …/public-profile`) | `/member/:userId` | Buddy add, follow, `MessageMemberButton` |
+
+### 3.2.2 Member profile — one page, browse lenses
+
+**Route:** `/member/:userId` only (`MemberProfile` → `MemberProfileView`). **`/buddies`**, Explore people panel, activity host rows, chat avatars, and notifications all **link here** — no parallel “friends profile” or “public profile” routes. Self hub stays `/profile`; owner **public preview** uses `/member/:id?view=public` on the same layout.
+
+**Path helpers:** Wire URLs — `memberProfilePath(…)` (`packages/shared-types/src/entity-path.ts`). Consumer surfaces — **`memberProfileLink(userId, lens)`** (`src/member/memberProfileLink.ts`) so people browse, friends list, roster chips, and notifications share one builder. `discover=1` + `from=discover` = directory quota on `GET …/public-profile`; other lenses set `source=` only.
+
+| Browse lens (`source`) | Where user starts | Who may **see roster / card** | Who may **open** `/member/:id` (API `viewerAccess`) |
+|------------------------|-------------------|-------------------------------|-----------------------------------------------------|
+| **`discover`** (public directory) | People **Connect** / `GET /users/browse` | Members with `profileVisibility: public` in directory | **Signed-in**; discover opens count toward quota (**Pro** = unlimited per `memberHasUnlimitedDiscovery`) |
+| **`host`** | Activity host row, **Looking for**, approved outing context | Participants + hosts on shared / hosted activities | **Signed-in** with `host_of_activity`, `activity_participant`, or public card when visibility allows |
+| **`friends`** | `/buddies`, **Going** / network roster | Accepted buddies (+ followed where shown) | **Accepted buddy** → `exposure: full`; others follow visibility rules |
+| **`available`** | People **Available** tab | Members signaling availability | **Any signed-in member** (public card minimum; trusted fields per §15) |
+| **`organic`** (default) | Deep links, search, notifications | N/A | `resolveProfileViewerAccess` + `profileVisibility` |
+
+**Exposure on the page:** one layout; **field depth** is `viewerAccess.exposure` (`public` vs `full`) — not a different React tree per lens. Frontend must not branch authorization on `source=`; lens only affects API discover flag and analytics.
+
+**People browse L1 rows:** `memberBrowseRowModel.ts` (`MemberBrowseRowVm`) — directory, availability, going, seeking → `PeopleBrowseMemberRow`; parallel to `discoveryCardModel` for map catalog pins.
+
+**Creation (writes) → read:** Organize/Find FAB → `POST` host activities / seeking (`CREATE_FLOW`); places → admin or **Add** contribute → `locations`; shops/agencies → tenant onboarding; areas → admin publish. After publish, the same ids appear on `GET /explore/map` (L1 `discoveryCardModel`) and on the entity `GET` above.
 
 ---
 
@@ -674,13 +707,16 @@ Computed server-side via **`resolveActivityEngagementPolicy`** → `intents` (+ 
 
 | Discovery (`joinMode`) | Viewer | Surface | Exposure (TARGET) | `gateReason` | Notes |
 |------------------------|--------|---------|-------------------|--------------|--------|
-| `open` | anonymous | map + `/activity/:id` | `redacted` | `sign_in` | **TARGET** — today **LIVE** API returns **full** for guests |
-| `open` | member, not on roster | map + `/activity/:id` | `redacted` | `join_required` | **TARGET** |
+| `open` | anonymous | map peek | listed pin; detail CTA = `guest_gate` | `sign_in` | **LIVE** — guests do not open `/activity/:id` |
+| `open` | anonymous | `/activity/:id` | `none` | `sign_in` | **LIVE** — sign-in card only; no tabs / crew |
+| `open` | member, not on roster | map + `/activity/:id` | `redacted` | `join_required` | **LIVE** — marketing detail; no crew surfaces |
 | `open` | confirmed participant / host / staff | any | `full` | `null` | Roster on crew |
 | `open` | pending / waitlisted request | detail | `redacted` | `null` | May open page; no meeting/roster/chat (`canAccessCrewSurfaces: false`) |
 | `open` | host / tenant staff | any | `full` | `null` | **LIVE** |
-| `private` | anonymous | `/activity/:id` | `none` | `sign_in` | **LIVE** (`visibilityState: private` stub) |
-| `private` | signed-in, not roster | `/activity/:id` | `redacted` | `join_required` | **LIVE** — `link_holder` → redacted preview + join CTA |
+| `private` | anyone | map / Browse / lists | hidden | — | **LIVE** — never public-discoverable |
+| `private` | anonymous | `/activity/:id` | `none` | `invite_only` | **LIVE** — lock stub, no outing title |
+| `private` | signed-in, not invited | `/activity/:id` | `none` | `invite_only` | **LIVE** — host/invitee/group/roster only |
+| `private` | invited friend / group member / pending request | `/activity/:id` | `redacted` | `null` | **LIVE** — may open; no crew until on roster |
 | `private` | participant / host | any | `full` | `null` | **LIVE** |
 | **Demand** | anonymous | map peek | `redacted` | `sign_in` | **TARGET** — align with activity peek rules |
 | **Demand** | approved joiner | map / future detail | `full` | `null` | Intent request queue |

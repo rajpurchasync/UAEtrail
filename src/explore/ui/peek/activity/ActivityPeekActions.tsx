@@ -7,7 +7,10 @@ import {
   exploreCardPeekShowsDirections,
   exploreCardShowsInlineDirections,
 } from '../../../../discovery/discoveryCardModel';
-import { resolveActivityPeekEngagement } from '../../../../activity/activityPeekEngagement';
+import {
+  activityPeekHasMapWireActions,
+  resolveActivityPeekEngagement,
+} from '../../../../activity/activityPeekEngagement';
 import { JoinRequestActions } from '../../../../components/ui/JoinRequestActions';
 import type { JoinRequestUiState } from '../../../../utils/joinRequestUi';
 import { ActivityPeekEngagementActions } from './ActivityPeekEngagementActions';
@@ -46,12 +49,14 @@ export const ActivityPeekActions = ({
 }: ActivityPeekActionsProps) => {
   const gate = onGuestGatedAction;
 
+  const effectiveJoinStateLoading = activityPeekHasMapWireActions(card) ? false : joinStateLoading;
+
   const detailLink = (label: string, className: string) => (
     <PeekDetailLink
       card={card}
       label={label}
       className={className}
-      joinStateLoading={joinStateLoading}
+      joinStateLoading={effectiveJoinStateLoading}
       onGuestGatedAction={gate}
       onBeforeNavigate={onClose}
     />
@@ -68,7 +73,6 @@ export const ActivityPeekActions = ({
   const wireActions = engagement.mapPeekActions;
 
   if (wireActions.length > 0 && onActivityMapPeekAction) {
-    if (joinStateLoading) return <PeekLoading />;
     return (
       <ActivityPeekEngagementActions
         card={card}
@@ -76,14 +80,14 @@ export const ActivityPeekActions = ({
         linkRideshareTenantId={linkRideshareTenantId}
         onAction={onActivityMapPeekAction}
         onGuestGatedAction={gate}
-        joinStateLoading={joinStateLoading}
+        joinStateLoading={effectiveJoinStateLoading}
         onBeforeDetailNavigate={onClose}
         joinUiState={joinUiState}
       />
     );
   }
 
-  if (engagement.showsLegacyJoinFlow && joinStateLoading) {
+  if (engagement.showsLegacyJoinFlow && joinStateLoading && !activityPeekHasMapWireActions(card)) {
     return <PeekLoading />;
   }
 

@@ -40,22 +40,19 @@ describe('resolvePeekDetailAccess', () => {
     expect(resolvePeekDetailAccess(card, { isGuest: true })).toEqual({ kind: 'guest_gate' });
   });
 
-  it('links hosted activity detail for guests when wire allows the detail page', () => {
+  it('gates hosted activity detail for guests (sign in on peek, not L3)', () => {
     const card = baseCard({
       viewerAccess: {
-        exposure: 'redacted',
+        exposure: 'none',
         level: 'public',
         gateReason: 'sign_in',
         canViewFullActivity: false,
-        canOpenDetailPage: true,
+        canOpenDetailPage: false,
         joinMode: 'open',
         canAccessCrewSurfaces: false,
       },
     });
-    expect(resolvePeekDetailAccess(card, { isGuest: true })).toEqual({
-      kind: 'link',
-      href: '/activity/1',
-    });
+    expect(resolvePeekDetailAccess(card, { isGuest: true })).toEqual({ kind: 'guest_gate' });
   });
 
   it('links when wire grants full detail', () => {
@@ -79,6 +76,28 @@ describe('resolvePeekDetailAccess', () => {
   it('links hosted peeks for signed-in members when viewerAccess wire is absent', () => {
     const card = baseCard({});
     expect(resolvePeekDetailAccess(card, { isGuest: false })).toEqual({
+      kind: 'link',
+      href: '/activity/1',
+    });
+  });
+
+  it('keeps secondary/detail access while join context loads when map wire actions are present', () => {
+    const card = baseCard({
+      viewerAccess: {
+        exposure: 'none',
+        level: 'public',
+        gateReason: 'sign_in',
+        canViewFullActivity: false,
+        canOpenDetailPage: true,
+        joinMode: 'open',
+        canAccessCrewSurfaces: false,
+        mapPeekActions: [
+          { id: 'request_join', prominence: 'primary' },
+          { id: 'view_detail', prominence: 'text' },
+        ],
+      },
+    });
+    expect(resolvePeekDetailAccess(card, { isGuest: true, joinStateLoading: true })).toEqual({
       kind: 'link',
       href: '/activity/1',
     });

@@ -178,3 +178,5 @@ export {
   tripsLegacyJoinedTabPath,
   tripsLegacyUpcomingSegmentPath,
 } from '../member-plan/tripsRouting';
+
+export { memberProfileLink } from '../member/memberProfileLink';

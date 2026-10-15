@@ -10,8 +10,8 @@ export { buildDiscoveryEnrichedCard } from './buildDiscoveryEnrichedCard';
 export { enrichDiscoveryPeekSelection } from './enrichDiscoveryPeekSelection';
 export { buildDiscoveryMapListRowCard } from './buildDiscoveryMapListRowCard';
 export {
-  buildDiscoveryCardModel,
   buildDiscoveryListMeta,
   discoveryCardIsSeeking,
   type DiscoveryCardModel,
 } from './discoveryCardModel';
+export { ActivityDiscoveryPublishedBody } from './ActivityDiscoveryPublishedBody';

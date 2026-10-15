@@ -1,5 +1,6 @@
 import type { ParticipationMode } from '@uaetrail/shared-types';
 import type { GuestJoinSheetIntent } from '../../content/guestJoinCopy';
+import type { GuestBrowseGateIntent } from '../../content/guestBrowseGateCopy';
 import { EXPLORE_Z } from '../../config/exploreTheme';
 import { ExploreGuestSignInCard } from './ExploreGuestSignInCard';
 import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
@@ -13,6 +14,8 @@ interface ExploreGuestJoinSheetProps {
   requirements?: string[] | null;
   authReturnPath?: string;
   authFocusSelector?: string;
+  /** Browse / detail gates (map peek strips, shop view) — not join copy. */
+  browseGateIntent?: GuestBrowseGateIntent | null;
 }
 
 /** Centered sign-in modal when a guest taps Join — uses shared sign-in card. */
@@ -25,6 +28,7 @@ export const ExploreGuestJoinSheet = ({
   requirements,
   authReturnPath,
   authFocusSelector,
+  browseGateIntent = null,
 }: ExploreGuestJoinSheetProps) => (
   <ExploreResponsiveSheet
     open={open}
@@ -35,15 +39,15 @@ export const ExploreGuestJoinSheet = ({
     layout="centered"
     showCloseButton
     showHandle={false}
-    ariaLabel="Sign in to join"
+    ariaLabel={browseGateIntent ? 'Sign in to continue' : 'Sign in to join'}
   >
     <div className="px-4 pb-5 pt-8 sm:px-6 sm:pb-6">
       <ExploreGuestSignInCard
-        intent="join-activity"
-        joinIntent={intent}
+        intent={browseGateIntent ?? 'join-activity'}
+        joinIntent={browseGateIntent ? undefined : intent}
         activityTitle={activityTitle}
-        participationMode={participationMode}
-        requirements={requirements}
+        participationMode={browseGateIntent ? undefined : participationMode}
+        requirements={browseGateIntent ? undefined : requirements}
         authReturnPath={authReturnPath}
         authFocusSelector={authFocusSelector}
         compact

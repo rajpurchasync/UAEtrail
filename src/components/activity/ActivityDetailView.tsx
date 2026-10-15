@@ -1,8 +1,14 @@
 import type { ReactNode } from 'react';
+import { useMemo, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { resolveJoinRequestUiState } from '../../utils/joinRequestUi';
+import { useAuth } from '../../context/AuthContext';
+import { useActivityDetailMapPeekHandlers } from '../../activity/useActivityDetailMapPeekHandlers';
 import type {
   ActivityDetailDTO,
   ActivityEngagementStripsDTO,
   ActivityGroupChatPostPolicy,
+  ActivityPresentationConsumerLayoutDTO,
   ActivityPresentationTabsDTO,
   MyActivityRequestDTO,
   ActivityParticipationDTO,
@@ -14,10 +20,16 @@ import type { ActivityViewerAccessDTO, ActivityViewerEntitlementsDTO } from '@ua
 import { MobileDetailShell } from '../mobile/MobileDetailShell';
 import { ShareButton } from '../ui';
 import type { ActivityDetailTabId } from '../../activity/activityDetailTab';
+import type { ActivityDTO } from '@uaetrail/shared-types';
+import type { ActivityManageInitialView } from './activityManageViews';
 import type { ActivityDetailKind } from '../../activity/detail/activityDetailKind';
+import type { ActivityDetailPlanSectionsComponent } from '../../activity/detail/composers';
+import { activityDetailPlanSectionsForKind } from '../../activity/detail/composers';
 import type { ActivityDetailTabFooterKind } from '../../activity/activityDetailTabFooters';
 import { ActivityDetailBody } from './detail/ActivityDetailBody';
-import { ActivityDetailMarketingFold } from './detail/ActivityDetailMarketingFold';
+import { ActivityConsumerDetailPage } from '../../activity/detail/templates/ActivityConsumerDetailPage';
+import { ActivityConsumerDetailModalShell } from '../../activity/detail/templates/ActivityConsumerDetailModalShell';
+import { resolveActivityConsumerDetailHeaderChrome } from '../../activity/activityConsumerDetailHeader';
 import { useActivityDetailViewModel } from './detail/useActivityDetailViewModel';
 import type { ActivityRequestView } from '../../api/types';
 
@@ -78,13 +90,22 @@ export interface ActivityDetailViewProps {
   wireTabs?: ActivityPresentationTabsDTO | null;
   /** Wire `presentation.strips` — host invited chip on hero, etc. */
   wireStrips?: ActivityEngagementStripsDTO | null;
+  /** Wire `presentation.consumerLayout` — public scroll template slots. */
+  consumerLayout?: ActivityPresentationConsumerLayoutDTO | null;
   onHostShareOuting?: () => void;
   /** Consumer page template (`HikingActivityDetailPage`, …) — set by `ActivityDetailByKind`. */
   detailKind?: ActivityDetailKind;
-  /** Consumer route — §6.0 marketing fold above tabs (`ActivityDetailPageShell` only). */
-  showConsumerMarketingFold?: boolean;
+  /** Consumer kind composer — defaults from `detailKind` when host embed omits template. */
+  planSections?: ActivityDetailPlanSectionsComponent;
+  /** Public route scroll layout (`ActivityDetailPageShell` only). */
+  consumerDetailLayout?: boolean;
   viewerAccess?: ActivityViewerAccessDTO | null;
   onOfferLinkedRideshare?: () => void;
+  linkRideshareTenantId?: string | null;
+  onMapPeekChatError?: (message: string) => void;
+  onParticipantInviteFriends?: () => void;
+  /** Host on `/activity/:id` — same Manage sheet as map peek (`manage_activity` wire). */
+  onOpenHostManage?: (activity: ActivityDTO, initialView?: ActivityManageInitialView) => void;
 }
 
 export const ActivityDetailView = ({
@@ -93,7 +114,7 @@ export const ActivityDetailView = ({
   requiresSignIn = false,
   showJoinRequiredHint = false,
   backTo = detailBackPath('activity'),
-  backLabel = 'Explore',
+  backLabel = '',
   participation = null,
   myRequest = null,
   message = null,
@@ -120,12 +141,51 @@ export const ActivityDetailView = ({
   wireFooterByTab = null,
   wireTabs = null,
   wireStrips = null,
+  consumerLayout = null,
   onHostShareOuting,
   detailKind,
-  showConsumerMarketingFold = false,
+  planSections,
+  consumerDetailLayout = false,
   viewerAccess = null,
   onOfferLinkedRideshare,
+  linkRideshareTenantId = null,
+  onMapPeekChatError,
+  onParticipantInviteFriends,
+  onOpenHostManage,
 }: ActivityDetailViewProps) => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const isHostUser = Boolean(hostCrewChatPolicy);
+
+  const joinUiState = useMemo(
+    () =>
+      resolveJoinRequestUiState({
+        myRequest: myRequest ?? null,
+        participation: participation ?? null,
+      }),
+    [myRequest, participation]
+  );
+
+  const openParticipationManageRef = useRef<() => void>(() => {});
+
+  const mapPeekActionHandlers = useActivityDetailMapPeekHandlers({
+    activity,
+    user,
+    joinUiState,
+    navigate,
+    onJoin,
+    onWithdraw,
+    onHostShareOuting,
+    onParticipantInviteFriends,
+    onOfferLinkedRideshare,
+    onMobileTabChange,
+    onChatError: onMapPeekChatError,
+    isHostUser,
+    onOpenHostManage,
+    consumerDetailLayout,
+    onOpenParticipationManage: () => openParticipationManageRef.current(),
+  });
+
   const model = useActivityDetailViewModel({
     activity,
     previewMode,
@@ -157,14 +217,70 @@ export const ActivityDetailView = ({
     wireFooterByTab,
     wireTabs,
     wireStrips,
+    consumerLayout,
     onHostShareOuting,
-    showConsumerMarketingFold,
+    consumerDetailLayout,
     viewerAccess,
     onOfferLinkedRideshare,
+    detailKind,
+    mapPeekActionHandlers,
+    linkRideshareTenantId,
+    onParticipantInviteFriends,
+    participationManageOpenerRef: openParticipationManageRef,
   });
 
+  const PlanSections =
+    planSections ?? (detailKind ? activityDetailPlanSectionsForKind(detailKind) : null);
+
+  const shareControl =
+    model.showInviteShare ? (
+      <ShareButton
+        title={model.sharePayload.title}
+        text={model.sharePayload.text}
+        path={model.sharePayload.path}
+        iconOnly
+        light
+      />
+    ) : null;
+
   if (model.isEmbedded) {
-    return <ActivityDetailBody {...model} />;
+    return <ActivityDetailBody {...model} planSections={PlanSections} />;
+  }
+
+  const openParticipantInviteFriends = () => {
+    if (onParticipantInviteFriends) {
+      onParticipantInviteFriends();
+      return;
+    }
+    mapPeekActionHandlers.inviteCrew?.();
+  };
+
+  if (consumerDetailLayout) {
+    const headerChrome = resolveActivityConsumerDetailHeaderChrome(
+      model.activity,
+      model.peekParityCard
+    );
+    return (
+      <div data-activity-detail-template={detailKind ?? undefined}>
+        <ActivityConsumerDetailModalShell
+          backTo={backTo}
+          backLabel={backLabel}
+          headerChrome={headerChrome}
+          headerAction={shareControl}
+          footer={model.stickyFooter}
+        >
+          <ActivityConsumerDetailPage
+            model={model}
+            canInviteFriends={
+              canSendJoinInvites ||
+              model.joinUiState.kind === 'pending' ||
+              model.joinUiState.kind === 'confirmed'
+            }
+            onInviteFriends={openParticipantInviteFriends}
+          />
+        </ActivityConsumerDetailModalShell>
+      </div>
+    );
   }
 
   return (
@@ -173,30 +289,23 @@ export const ActivityDetailView = ({
         backTo={backTo}
         backLabel={backLabel}
         footer={model.stickyFooter}
-        headerAction={
-          model.showInviteShare ? (
-            <ShareButton
-              title={model.sharePayload.title}
-              text={model.sharePayload.text}
-              path={model.sharePayload.path}
-              iconOnly
-              light
-            />
-          ) : undefined
-        }
+        headerAction={shareControl}
         banner={{
           src: model.heroImage,
           alt: model.activityTitle,
           title: previewMode ? model.activityTitle : model.titleChromeLine,
-          eyebrow: activityDetailEyebrowForActivity(model.activity.activityType, model.activity.activityMode),
+          eyebrow: activityDetailEyebrowForActivity(
+            model.activity.activityType,
+            model.activity.activityMode
+          ),
           showMobileChrome: !previewMode,
           showJourney: !previewMode,
           journeyFallbackTo: backTo,
           journeyLabel: backLabel,
+          topRightOverlay: shareControl,
         }}
       >
-        {showConsumerMarketingFold ? <ActivityDetailMarketingFold model={model} /> : null}
-        <ActivityDetailBody {...model} />
+        <ActivityDetailBody {...model} planSections={PlanSections} />
       </MobileDetailShell>
     </div>
   );

@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import {
   LIST_DISCOVERY_PATH,
   MOBILE_BOTTOM_NAV_TAB_PATHS,
+  shouldShowMarketingSiteFooter,
   shouldShowMobileBottomNav,
 } from '../config/platform';
 
@@ -47,5 +48,37 @@ describe('shouldShowMobileBottomNav', () => {
 
   it('hides in message threads', () => {
     expect(shouldShowMobileBottomNav('/chat', '?to=user-1', true)).toBe(false);
+  });
+});
+
+describe('shouldShowMarketingSiteFooter', () => {
+  it('hides on entity detail routes that use MobileDetailShell sticky CTAs', () => {
+    expect(
+      shouldShowMarketingSiteFooter('/activity/seed-event-desert-meetup', {
+        showConsumerChrome: true,
+        showMobileBottomNav: false,
+      })
+    ).toBe(false);
+    expect(
+      shouldShowMarketingSiteFooter('/trail/fossil-rock', {
+        showConsumerChrome: true,
+        showMobileBottomNav: false,
+      })
+    ).toBe(false);
+    expect(
+      shouldShowMarketingSiteFooter('/area/hatta', {
+        showConsumerChrome: true,
+        showMobileBottomNav: false,
+      })
+    ).toBe(false);
+  });
+
+  it('hides when mobile bottom nav is visible', () => {
+    expect(
+      shouldShowMarketingSiteFooter('/profile', {
+        showConsumerChrome: true,
+        showMobileBottomNav: true,
+      })
+    ).toBe(false);
   });
 });

@@ -9,6 +9,8 @@ import {
 import type { ActivityManageCapabilities } from '../../activity/activityManageCapabilities';
 import { ExploreResponsiveSheet } from '../../explore/ui/ExploreResponsiveSheet';
 import type { ActivityManageSubview } from './activityManageViews';
+import { ACTIVITY_INVITE_FRIENDS_CTA } from '../../content/activityInviteCopy';
+import { ACTIVITY_PARTICIPANTS_SECTION_LABEL } from '../../content/activityParticipantsCopy';
 
 type HostActivityManageOptionsSheetProps = {
   open: boolean;
@@ -49,15 +51,15 @@ export const HostActivityManageOptionsSheet = ({
   const options: OptionRow[] = [
     {
       id: 'participants',
-      label: 'View participants',
+      label: ACTIVITY_PARTICIPANTS_SECTION_LABEL,
       description: 'Roster, attendance, chat, revoke',
       icon: Users,
       onClick: () => onSelectSubview('participants'),
     },
     {
       id: 'invite',
-      label: 'Invite',
-      description: 'Invite crew to join',
+      label: ACTIVITY_INVITE_FRIENDS_CTA,
+      description: 'Invite friends to join',
       icon: UserPlus,
       hidden: !published,
       onClick: () => onSelectSubview('invite'),

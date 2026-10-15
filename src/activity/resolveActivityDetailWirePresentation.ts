@@ -23,6 +23,7 @@ export type ResolveActivityDetailWirePresentationInput = {
     | 'linkedRideshare'
     | 'linkedParentActivity'
     | 'participants'
+    | 'participantPreviews'
     | 'joinMode'
   >;
   viewerAccess: ActivityViewerAccessDTO | null;
@@ -39,6 +40,27 @@ const joinRequestStatusFromUi = (
 ): MapPeekJoinRequestStatus | null => {
   if (joinUiState.kind !== 'pending') return null;
   return joinUiState.status === 'waitlisted' ? 'waitlisted' : 'pending';
+};
+
+/**
+ * Prefer API `presentation`, but backfill fields the client resolver always knows
+ * (e.g. `consumerLayout` when an older API build omitted it).
+ */
+export const mergeActivityDetailWirePresentation = (
+  fromApi: ActivityPresentationDTO | null | undefined,
+  resolved: ActivityPresentationDTO | null
+): ActivityPresentationDTO | null => {
+  if (!fromApi && !resolved) return null;
+  if (!fromApi) return resolved;
+  if (!resolved) return fromApi;
+  return {
+    ...fromApi,
+    engagement: fromApi.engagement ?? resolved.engagement,
+    tabs: fromApi.tabs ?? resolved.tabs,
+    footerByTab: fromApi.footerByTab ?? resolved.footerByTab,
+    consumerLayout: fromApi.consumerLayout ?? resolved.consumerLayout,
+    strips: fromApi.strips ?? resolved.strips,
+  };
 };
 
 /** L1 `presentation` envelope when GET detail omits wire (preview, optimistic paths). */
@@ -71,6 +93,7 @@ export const resolveActivityDetailWirePresentation = (
     myParticipation: input.myParticipation ?? null,
     myRequest: input.myRequest ?? null,
     confirmedParticipantCount: input.activity.participants?.length ?? 0,
+    participantPreviewCount: input.activity.participantPreviews?.length ?? 0,
   });
 
   return {

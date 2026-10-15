@@ -19,7 +19,7 @@ type ActivityDetailHostProfileCardProps = {
   showHostProfileProUpsell: boolean;
   proSocialMembershipPath: string;
   /** Nested inside pricing sidebar — no second card chrome. */
-  variant?: 'card' | 'section';
+  variant?: 'card' | 'section' | 'marketing';
 };
 
 /** Host identity on Plan (consumer marketing layout — not duplicated in price sidebar). */
@@ -39,7 +39,9 @@ export const ActivityDetailHostProfileCard = ({
     className={
       variant === 'section'
         ? panelClassName
-        : `bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 ${panelClassName}`
+        : variant === 'marketing'
+          ? `rounded-xl border border-neutral-100 bg-neutral-50/80 px-3 py-2.5 ${panelClassName}`
+          : `bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 ${panelClassName}`
     }
   >
     <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Host</p>
@@ -58,7 +60,9 @@ export const ActivityDetailHostProfileCard = ({
             {showTenantBrand(activity) && activity.tenantName ? (
               <p className="text-xs text-gray-500 truncate">{activity.tenantName}</p>
             ) : null}
-            <p className="text-xs text-gray-500">{hostProfileHint}</p>
+            {variant !== 'marketing' ? (
+              <p className="text-xs text-gray-500">{hostProfileHint}</p>
+            ) : null}
           </div>
           <ChevronRight className="w-4 h-4 text-gray-400 shrink-0" />
         </Link>
@@ -80,7 +84,7 @@ export const ActivityDetailHostProfileCard = ({
           </div>
         </div>
       )}
-      {!previewMode && canOpenHostProfile && hostUserId ? (
+      {variant !== 'marketing' && !previewMode && canOpenHostProfile && hostUserId ? (
         <MessageMemberButton
           memberUserId={hostUserId}
           activityId={activity.id}
@@ -97,7 +101,7 @@ export const ActivityDetailHostProfileCard = ({
         </Link>
       </p>
     ) : null}
-    {activity.hostBio ? (
+    {variant !== 'marketing' && activity.hostBio ? (
       <p className="mt-3 text-sm text-gray-600 leading-relaxed">{activity.hostBio}</p>
     ) : null}
   </div>

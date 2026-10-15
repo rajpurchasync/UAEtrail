@@ -1,12 +1,12 @@
 import { ExternalLink } from 'lucide-react';
 import { isPeekOnlyCatalogProfile } from '@uaetrail/shared-types';
-import type { DiscoveryCardModel } from '../../../discovery/discoveryCardModel';
+import type { DiscoveryCardModel } from '../../../../discovery/discoveryCardModel';
 import {
   exploreCardHasMapCoords,
   exploreCardShowsInlineDirections,
-} from '../../../discovery/discoveryCardModel';
-import { PRO_MEMBERSHIP_PATH } from '../../../config/memberRoutes';
-import { ExploreCardDirectionsButton } from '../ExploreCardPresentation';
+} from '../../../../discovery/discoveryCardModel';
+import { PRO_MEMBERSHIP_PATH } from '../../../../config/memberRoutes';
+import { ExploreCardDirectionsButton } from '../../ExploreCardPresentation';
 import { PeekDetailLink } from '../../map-peek/PeekDetailLink';
 
 export type ShopPeekActionsProps = {

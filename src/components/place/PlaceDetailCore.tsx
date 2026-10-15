@@ -1,5 +1,6 @@
+import { useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { MapPin, TrendingUp, Clock, Mountain, Baby, Car, ChevronRight } from 'lucide-react';
+import { MapPin, Car, ChevronRight } from 'lucide-react';
 import type { ActivityDTO, LocationPremiumSummaryDTO, ReviewDTO } from '@uaetrail/shared-types';
 import {
   ShareButton,
@@ -16,7 +17,6 @@ import { getDifficultyColor, capitalize } from '../../utils';
 import type { Place } from '../../types/place';
 import { activitiesBrowsePath } from '../../config/activityTypes';
 import { detailBackPath, myActivitiesPath } from '../../config/routingCatalog';
-import { hasPositiveNumber, isDefaultVenueSeason } from '../../utils/venueDetailDisplay';
 import type { PlaceDetailKind, PlaceDetailKindConfig } from '../../pages/placeDetailConfig';
 import { readPlaceArabicName, resolvePlaceDisplayTitle } from '../../utils/venueDetailDisplay';
 import {
@@ -29,12 +29,15 @@ import {
   parsePlaceDetailTabParam,
   type PlaceDetailTabId,
 } from '../../place/placeDetailTab';
+import { buildPlaceDetailPageModel } from '../../place/detail/buildPlaceDetailPageModel';
+import type { PlaceDetailHeroKindSectionComponent } from '../../place/detail/composers';
 
 const jsonLdForPlace = (_kind: PlaceDetailKind, place: Place) => placeSchema(place);
 
 export type PlaceDetailCoreProps = {
   kind: PlaceDetailKind;
   config: PlaceDetailKindConfig;
+  heroKindSection: PlaceDetailHeroKindSectionComponent;
   place: Place;
   placeId: string;
   detailPath: string;
@@ -54,6 +57,7 @@ export type PlaceDetailCoreProps = {
 export const PlaceDetailCore = ({
   kind,
   config,
+  heroKindSection: HeroKindSection,
   place,
   placeId,
   detailPath,
@@ -76,18 +80,10 @@ export const PlaceDetailCore = ({
     setSearchParams(next, { replace: true });
   };
 
-  const backKind = kind === 'trail' ? 'trail' : kind === 'camp' ? 'camp' : 'event';
-  const shareText =
-    kind === 'trail' && hasPositiveNumber(place.distance)
-      ? `${place.region} · ${place.distance} km trail on UAE Trails`
-      : `${place.region} · ${config.shareSuffix}`;
-  const showSeason = place.season && !isDefaultVenueSeason(place.season);
-  const showTrailStats =
-    kind === 'trail' &&
-    (hasPositiveNumber(place.distance) ||
-      hasPositiveNumber(place.duration) ||
-      hasPositiveNumber(place.elevation) ||
-      place.childFriendly);
+  const pageModel = useMemo(
+    () => buildPlaceDetailPageModel({ kind, place, config }),
+    [kind, place, config]
+  );
   const browsePath = activitiesBrowsePath(config.activityType);
   const accentLink = linkClassForAccent(config.accent);
   const placeDisplayName = resolvePlaceDisplayTitle(place.name, place.tags);
@@ -99,7 +95,7 @@ export const PlaceDetailCore = ({
 
   return (
     <MobileDetailShell
-      backTo={detailBackPath(backKind)}
+      backTo={detailBackPath(pageModel.backKind)}
       backLabel={config.backLabel}
       banner={
         heroImage ? { src: heroImage, alt: place.name, title: place.name } : undefined
@@ -131,7 +127,7 @@ export const PlaceDetailCore = ({
               </div>
             ) : null}
             <div className="flex items-center justify-end mb-4 hidden md:flex">
-              <ShareButton title={place.name} text={shareText} path={detailPath} />
+              <ShareButton title={place.name} text={pageModel.shareText} path={detailPath} />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -155,7 +151,7 @@ export const PlaceDetailCore = ({
                     </div>
                   )}
                   <div className="absolute top-3 right-3 z-10">
-                    <ShareButton title={place.name} text={shareText} path={detailPath} compact />
+                    <ShareButton title={place.name} text={pageModel.shareText} path={detailPath} compact />
                   </div>
                 </div>
                 {place.images.length > 0 && (
@@ -209,48 +205,9 @@ export const PlaceDetailCore = ({
                   </div>
                 ) : null}
 
-                {showTrailStats ? (
-                  <div className="grid grid-cols-2 gap-4 mb-6">
-                    {hasPositiveNumber(place.distance) ? (
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <div className="flex items-center text-gray-600 mb-1">
-                          <TrendingUp className="w-5 h-5 mr-2" />
-                          <span className="text-sm">Distance</span>
-                        </div>
-                        <div className="text-2xl font-bold text-gray-900">{place.distance} km</div>
-                      </div>
-                    ) : null}
-                    {hasPositiveNumber(place.duration) ? (
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <div className="flex items-center text-gray-600 mb-1">
-                          <Clock className="w-5 h-5 mr-2" />
-                          <span className="text-sm">Duration</span>
-                        </div>
-                        <div className="text-2xl font-bold text-gray-900">{place.duration} hrs</div>
-                      </div>
-                    ) : null}
-                    {hasPositiveNumber(place.elevation) ? (
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <div className="flex items-center text-gray-600 mb-1">
-                          <Mountain className="w-5 h-5 mr-2" />
-                          <span className="text-sm">Elevation</span>
-                        </div>
-                        <div className="text-2xl font-bold text-gray-900">{place.elevation} m</div>
-                      </div>
-                    ) : null}
-                    {place.childFriendly ? (
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <div className="flex items-center text-gray-600 mb-1">
-                          <Baby className="w-5 h-5 mr-2" />
-                          <span className="text-sm">Family</span>
-                        </div>
-                        <div className="text-2xl font-bold text-gray-900">Kid-friendly</div>
-                      </div>
-                    ) : null}
-                  </div>
-                ) : null}
+                <HeroKindSection place={place} config={config} />
 
-                {showSeason ? (
+                {pageModel.showSeason ? (
                   <div className="mb-6">
                     <h3 className="font-medium text-gray-900 mb-2">Best Season</h3>
                     <div className="flex gap-2">

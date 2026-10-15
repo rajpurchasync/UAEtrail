@@ -63,6 +63,15 @@ describe('consumerDetailSurfacesAcceptance', () => {
     expect(violations).toEqual([]);
   });
 
+  it('S9-GUEST-01: activity detail guest sign-in is centralized (no duplicate peek strips)', () => {
+    expect(read('src/components/activity/detail/ActivityDetailGuestGate.tsx')).toMatch(
+      /join-activity/
+    );
+    expect(read('src/activity/detail/templates/ActivityConsumerDetailPage.tsx')).toMatch(
+      /ActivityDetailGuestGate/
+    );
+  });
+
   it('S9-ACT-01: consumer activity route uses kind templates (not direct ActivityDetailView)', () => {
     const page = read('src/pages/ActivityDetail.tsx');
     expect(page).toMatch(/ActivityDetailByKind/);

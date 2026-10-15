@@ -8,6 +8,7 @@ describe('usePublicActivityDetail (R8.2)', () => {
   it('activity detail page loads via shared react-query key', () => {
     const hook = read('src/hooks/usePublicActivityDetail.ts');
     expect(hook).toMatch(/activityDetailQueryKey/);
+    expect(hook).toMatch(/viewerScope/);
     const page = read('src/pages/ActivityDetail.tsx');
     expect(page).toMatch(/usePublicActivityDetail/);
     const joinFlow = read('src/hooks/useActivityJoinFlow.ts');

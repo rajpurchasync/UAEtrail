@@ -60,6 +60,8 @@ Routes / deep links?       → NAVIGATION + DOMAIN_CANONICALS §3 + routingCatal
 HTTP / handlers?           → API_ROUTING
 Who can Organize / host?   → MEMBER_MODEL
 Who sees full detail/peek? → DOMAIN_CANONICALS §15 (+ SYSTEM_COHERENCE C16 / S7)
+Frontend surface families?  → SYSTEM_COHERENCE §6.2
+UI implementation schedule? → SYSTEM_COHERENCE §8.3 (S13 waves W0–W10)
 Map / FAB / publish?       → CREATE_FLOW + NORTHSTAR
 Names / api.* / meta?      → DOMAIN_CANONICALS §6–12
 Copy on map or home?       → exploreCopy / homeLanding + NORTHSTAR

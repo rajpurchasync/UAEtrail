@@ -7,7 +7,7 @@ import { type ActivityDTO, type ReviewDTO } from '@uaetrail/shared-types';
 import { activityReviewsQueryKey } from '../hooks/clientQueryKeys';
 import { useActivityReviews } from '../hooks/useActivityReviews';
 import type { ActivityRequestView } from '../api/types';
-import { cancelActivity, getActivityJoinRequests } from '../hooks/tenantActivityClientApi';
+import { getActivityJoinRequests } from '../hooks/tenantActivityClientApi';
 import { detailBackPath } from '../config/routingCatalog';
 import {
   ACTIVITY_JOIN_CTA_SELECTOR,
@@ -35,29 +35,37 @@ import { JoinRequestModal, WithdrawRequestModal } from '../components/ui';
 import { ActivityChatCallout } from '../components/ui/ActivityChatCallout';
 import { PushEnableBanner } from '../components/ui/PushEnableBanner';
 import { ActivityDetailByKind } from '../activity/detail/templates/ActivityDetailByKind';
-import { resolveActivityDetailKind } from '../activity/detail/activityDetailKind';
-import { ACTIVITY_DETAIL_TEMPLATE_CONFIG } from '../activity/detail/templates/activityDetailTemplateConfig';
+import { resolveActivityDetailMobileTab } from '../activity/detail/buildActivityDetailPageModel';
+import {
+  scrollActivityDetailConsumerSection,
+  scrollActivityDetailMeetingPoint,
+} from '../activity/detail/activityDetailConsumerAnchors';
 import { resolveJoinRequestUiState } from '../utils/joinRequestUi';
 import { useMemberStatus } from '../hooks/useMemberStatus';
 import { viewerIsActivityHostUser } from '../utils/viewerHostsActivity';
 import { activityJoinInviteBanner } from '../content/exploreGoingPanelCopy';
-import { HostActivityCancelDialog } from '../components/activity/HostActivityCancelDialog';
-import { HostActivityCtas } from '../components/activity/HostActivityCtas';
-import { activityCancelParticipantNotice } from '../activity/activityCancelParticipantNotice';
-import { publishedActivityCtaHandlers as buildPublishedActivityCtaHandlers } from '../activity/publishedActivityCtaHandlers';
+import { useHostActivitySheetBundle } from '../hooks/useHostActivitySheetBundle';
 import { navigateToCreateLinkedRideshare } from '../explore/navigateCreateLinkedRideshare';
 import { useActivityInviteShareSheet } from '../hooks/useActivityInviteShareSheet';
-import { EXPLORE_MAP_PATH } from '../config/routingCatalog';
 import {
   ACTIVITY_DETAIL_JOINED_QUERY,
   ACTIVITY_DETAIL_TAB_QUERY,
-  parseActivityDetailTabParam,
   type ActivityDetailTabId,
 } from '../activity/activityDetailTab';
-import { resolveActivityDetailWirePresentation } from '../activity/resolveActivityDetailWirePresentation';
+import {
+  mergeActivityDetailWirePresentation,
+  resolveActivityDetailWirePresentation,
+} from '../activity/resolveActivityDetailWirePresentation';
 import { ActivityDetailJoinWelcomeSheet } from '../components/activity/detail/ActivityDetailJoinWelcomeSheet';
+import { ActivityDetailGuestGate } from '../components/activity/detail/ActivityDetailGuestGate';
 import { activityDetailPath } from '../config/routingCatalog';
+import type { ActivityDetailDTO } from '@uaetrail/shared-types';
 
+/**
+ * Activity detail **route loader** (`/activity/:id`): fetch, join modals, SEO, host sheets.
+ * **L3 kind layout:** `ActivityDetailByKind` → `*ActivityDetailPage` → `ActivityDetailPageShell`
+ * (mirrors `HikingPlaceDetailPage` → `PlaceDetailPage` → `PlaceDetailCore`).
+ */
 export const ActivityDetail = () => {
   const { id } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
@@ -84,8 +92,6 @@ export const ActivityDetail = () => {
   const [message, setMessage] = useState<string | null>(null);
   const reviewsEnabled = Boolean(id && activity?.status === 'published');
   const { reviews: activityReviews } = useActivityReviews(id, reviewsEnabled);
-  const [hostRemoveConfirm, setHostRemoveConfirm] = useState<ActivityDTO | null>(null);
-  const [hostRemoveBusy, setHostRemoveBusy] = useState(false);
   const [joinWelcomeOpen, setJoinWelcomeOpen] = useState(false);
   const [hostJoinRequests, setHostJoinRequests] = useState<ActivityRequestView[]>([]);
   const [hostJoinRequestsLoading, setHostJoinRequestsLoading] = useState(false);
@@ -94,6 +100,11 @@ export const ActivityDetail = () => {
   const loadActivity = useCallback(() => {
     void refetchActivityDetail();
   }, [refetchActivityDetail]);
+
+  const hostSheets = useHostActivitySheetBundle({
+    tenantId: gate.tenantId,
+    onMapDataChanged: loadActivity,
+  });
 
   useEffect(() => {
     joinedWelcomeHandledRef.current = false;
@@ -123,23 +134,21 @@ export const ActivityDetail = () => {
 
   const isConfirmedParticipant = Boolean(participation) || joinUiState.kind === 'confirmed';
 
-  const mobileTab = useMemo(() => {
-    const raw = searchParams.get(ACTIVITY_DETAIL_TAB_QUERY);
-    if (raw) return parseActivityDetailTabParam(raw);
-    if (activity) {
-      return ACTIVITY_DETAIL_TEMPLATE_CONFIG[resolveActivityDetailKind(activity)].defaultTab;
-    }
-    return 'plan';
-  }, [searchParams, activity]);
-  const setMobileTab = useCallback(
-    (tab: ActivityDetailTabId) => {
-      const next = new URLSearchParams(searchParams);
-      if (tab === 'plan') next.delete(ACTIVITY_DETAIL_TAB_QUERY);
-      else next.set(ACTIVITY_DETAIL_TAB_QUERY, tab);
-      setSearchParams(next, { replace: true });
-    },
-    [searchParams, setSearchParams]
-  );
+  /** Public scroll layout — legacy `?tab=` deep links scroll to anchors (embed/manage still use tab state). */
+  const onConsumerSectionNav = useCallback((tab: ActivityDetailTabId) => {
+    scrollActivityDetailConsumerSection(tab);
+  }, []);
+
+  useEffect(() => {
+    if (!activity) return;
+    const tabParam = searchParams.get(ACTIVITY_DETAIL_TAB_QUERY);
+    if (!tabParam) return;
+    const tab = resolveActivityDetailMobileTab(activity, { tabParam });
+    scrollActivityDetailConsumerSection(tab);
+    const next = new URLSearchParams(searchParams);
+    next.delete(ACTIVITY_DETAIL_TAB_QUERY);
+    setSearchParams(next, { replace: true });
+  }, [activity, searchParams, setSearchParams]);
 
   const canWriteActivityReview = Boolean(participation?.checkedInAt);
 
@@ -191,9 +200,8 @@ export const ActivityDetail = () => {
     [loadHostJoinRequests]
   );
 
-  const effectiveWirePresentation = useMemo(() => {
-    if (wirePresentation) return wirePresentation;
-    if (!activity) return null;
+  const resolvedWirePresentation = useMemo(() => {
+    if (!activity || !viewerAccess) return null;
     return resolveActivityDetailWirePresentation({
       activity,
       viewerAccess,
@@ -203,7 +211,6 @@ export const ActivityDetail = () => {
       myRequest: myRequest ?? null,
     });
   }, [
-    wirePresentation,
     activity,
     viewerAccess,
     isActivityHostUser,
@@ -212,17 +219,24 @@ export const ActivityDetail = () => {
     myRequest,
   ]);
 
+  const effectiveWirePresentation = useMemo(
+    () => mergeActivityDetailWirePresentation(wirePresentation, resolvedWirePresentation),
+    [wirePresentation, resolvedWirePresentation]
+  );
+
+  const wireEngagement = effectiveWirePresentation?.engagement ?? null;
+
   const presentation = useMemo(() => {
-    if (!activity || !effectiveWirePresentation?.engagement) return null;
-    const { joinEngagement: _joinEngagement, ...engagement } = effectiveWirePresentation.engagement;
+    if (!wireEngagement) return null;
+    const { joinEngagement: _joinEngagement, ...engagement } = wireEngagement;
     return engagement;
-  }, [activity, effectiveWirePresentation]);
+  }, [wireEngagement]);
 
   const requiresSignIn = viewerAccess?.gateReason === 'sign_in' && !user;
   const showJoinRequiredHint =
     Boolean(user) &&
     viewerAccess?.gateReason === 'join_required' &&
-    !(presentation?.canAccessCrewSurfaces ?? viewerAccess?.canAccessCrewSurfaces);
+    !(wireEngagement?.canAccessCrewSurfaces ?? viewerAccess?.canAccessCrewSurfaces);
 
   const joinedWelcomeQuery = searchParams.get(ACTIVITY_DETAIL_JOINED_QUERY) === '1';
 
@@ -256,53 +270,21 @@ export const ActivityDetail = () => {
   );
 
   const canAddLinkedRide = viewerAccess?.entitlements?.canAddLinkedRide ?? false;
-
-  const publishedActivityCtaHandlers = useMemo(() => {
-    if (!isActivityHostUser || !activity) return null;
-    return buildPublishedActivityCtaHandlers({
-      activity,
-      navigate,
-      onInviteActivity: inviteShare.openInviteFromActivity,
-      onCreateLinkedRideshare: (parent) => navigateToCreateLinkedRideshare(navigate, parent),
-      onRequestDelete: setHostRemoveConfirm,
-      onChatError: setError,
-      onViewParticipants: () => setMobileTab('buddies'),
-    });
-  }, [isActivityHostUser, activity, navigate, inviteShare.openInviteFromActivity, setMobileTab]);
+  const canOfferTransport = viewerAccess?.entitlements?.canOfferTransport ?? false;
+  const canOpenLinkedRideshareFlow = canAddLinkedRide || canOfferTransport;
 
   const onHostShareOuting = useCallback(() => {
     if (!activity || activity.status !== 'published') return;
     inviteShare.openInviteFromActivity(activity, { canSendBuddyInvites: true });
   }, [activity, inviteShare]);
 
-  const hostDetailCtas =
-    isActivityHostUser && publishedActivityCtaHandlers && activity ? (
-      <HostActivityCtas
-        activity={activity}
-        linkRideshareTenantId={gate.tenantId}
-        canAddLinkedRide={canAddLinkedRide}
-        handlers={publishedActivityCtaHandlers}
-      />
-    ) : null;
+  const onParticipantInviteFriends = useCallback(() => {
+    if (!activity || activity.status !== 'published') return;
+    inviteShare.openInviteFromActivity(activity, { canSendBuddyInvites: true });
+  }, [activity, inviteShare]);
 
-  const hostRemoveParticipantNotice = useMemo(() => {
-    if (!hostRemoveConfirm) return null;
-    return activityCancelParticipantNotice(hostRemoveConfirm, activity?.participants);
-  }, [hostRemoveConfirm, activity?.participants]);
-
-  const confirmHostRemove = useCallback(async () => {
-    if (!hostRemoveConfirm || !gate.tenantId) return;
-    setHostRemoveBusy(true);
-    try {
-      await cancelActivity(gate.tenantId, hostRemoveConfirm.id);
-      setHostRemoveConfirm(null);
-      navigate(EXPLORE_MAP_PATH);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not update activity.');
-    } finally {
-      setHostRemoveBusy(false);
-    }
-  }, [hostRemoveConfirm, gate.tenantId, navigate]);
+  const canInviteFriendsToActivity =
+    isConfirmedParticipant || joinUiState.kind === 'pending';
 
   const openJoinModal = useCallback(() => {
     if (!id || !activity) return;
@@ -383,12 +365,15 @@ export const ActivityDetail = () => {
     );
   }
 
-  if (detailExposure === 'none') {
-    const guestPrivate = viewerAccess?.gateReason === 'sign_in' && !user;
+  const inviteOnlyLock =
+    detailExposure === 'none' &&
+    (viewerAccess?.gateReason === 'invite_only' || viewerAccess?.level === 'denied');
+
+  if (inviteOnlyLock) {
     return (
       <>
         <PageMeta title="Private activity" noIndex path={id ? `/activity/${id}` : undefined} />
-        <MobileDetailShell backTo={detailBackPath('activity')} backLabel="Explore">
+        <MobileDetailShell backTo={detailBackPath('activity')} backLabel="">
           <div className="max-w-lg mx-auto px-4 py-16 text-center">
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-neutral-100">
               <Lock className="h-7 w-7 text-neutral-500" />
@@ -397,25 +382,31 @@ export const ActivityDetail = () => {
             <p className="mt-2 text-sm text-neutral-600 leading-relaxed">
               {activity.message ?? 'This activity is private — only invited members can view it.'}
             </p>
-            {guestPrivate ? (
-              <p className="mt-6 text-sm text-neutral-600 leading-relaxed">
-                Sign up or log in to request access to this outing.
-              </p>
-            ) : (
-              <>
-                <p className="mt-3 text-xs text-neutral-500 leading-relaxed">
-                  If someone shared this link with you, sign in — or create a free account to request access.
-                </p>
-                {!user && (
-                  <Link
-                    to={signInPathForReturn(`/activity/${activity.id}`)}
-                    className="mt-4 inline-block text-sm font-semibold text-emerald-700"
-                  >
-                    Sign up or log in
-                  </Link>
-                )}
-              </>
-            )}
+            <p className="mt-3 text-xs text-neutral-500 leading-relaxed">
+              This plan is not listed on Explore. Only the host and people they invited can open it.
+            </p>
+            {!user ? (
+              <Link
+                to={signInPathForReturn(`/activity/${activity.id}`)}
+                className="mt-4 inline-block text-sm font-semibold text-emerald-700"
+              >
+                Sign in if you were invited
+              </Link>
+            ) : null}
+          </div>
+        </MobileDetailShell>
+      </>
+    );
+  }
+
+  if (!user) {
+    const pageTitle = activity.title || activity.locationName || 'Activity';
+    return (
+      <>
+        <PageMeta title={pageTitle} noIndex path={id ? `/activity/${id}` : undefined} />
+        <MobileDetailShell backTo={detailBackPath('activity')} backLabel="">
+          <div className="max-w-lg mx-auto px-4 pt-4 pb-10">
+            <ActivityDetailGuestGate activity={activity as ActivityDetailDTO} />
           </div>
         </MobileDetailShell>
       </>
@@ -473,12 +464,9 @@ export const ActivityDetail = () => {
         error={error}
         onJoin={isActivityHostUser ? undefined : openJoinModal}
         onWithdraw={isActivityHostUser ? undefined : () => joinActions.setShowWithdraw(true)}
-        hostDetailCtas={hostDetailCtas}
-        sidebarJoinOverride={
-          hostDetailCtas ? <div className="hidden md:block">{hostDetailCtas}</div> : undefined
-        }
         confirmedSidebarExtras={isActivityHostUser ? null : confirmedSidebarExtras}
-        canSendJoinInvites={isConfirmedParticipant}
+        canSendJoinInvites={canInviteFriendsToActivity}
+        onParticipantInviteFriends={onParticipantInviteFriends}
         activityReviews={activityReviews}
         onActivityReviewSubmitted={(review) => {
           if (!id) return;
@@ -488,11 +476,14 @@ export const ActivityDetail = () => {
           ]);
         }}
         canWriteActivityReview={canWriteActivityReview}
-        mobileTab={mobileTab}
-        onMobileTabChange={setMobileTab}
-        canAccessCrewSurfaces={presentation?.canAccessCrewSurfaces ?? false}
-        showParticipantFooterShortcuts={presentation?.showParticipantFooterShortcuts ?? false}
-        showCrewLockedHint={presentation?.showCrewLockedHint ?? false}
+        onMobileTabChange={onConsumerSectionNav}
+        canAccessCrewSurfaces={
+          wireEngagement?.canAccessCrewSurfaces ?? viewerAccess?.canAccessCrewSurfaces ?? false
+        }
+        showParticipantFooterShortcuts={wireEngagement?.showParticipantFooterShortcuts ?? false}
+        showCrewLockedHint={wireEngagement?.showCrewLockedHint ?? false}
+        linkRideshareTenantId={gate.tenantId}
+        onMapPeekChatError={setError}
         viewerEntitlements={viewerAccess?.entitlements ?? null}
         hostCrewChatPolicy={
           isActivityHostUser && gate.tenantId
@@ -501,7 +492,7 @@ export const ActivityDetail = () => {
                 onSaved: (policy) => {
                   if (!id) return;
                   queryClient.setQueryData<PublicActivityDetailPayload>(
-                    activityDetailQueryKey(id),
+                    activityDetailQueryKey(id, user.id),
                     (prev) =>
                       prev
                         ? {
@@ -524,13 +515,13 @@ export const ActivityDetail = () => {
               }
             : undefined
         }
-        wireFooterByTab={effectiveWirePresentation?.footerByTab ?? null}
-        wireTabs={effectiveWirePresentation?.tabs ?? null}
+        consumerLayout={effectiveWirePresentation?.consumerLayout ?? null}
         wireStrips={effectiveWirePresentation?.strips ?? null}
         onHostShareOuting={isActivityHostUser ? onHostShareOuting : undefined}
+        onOpenHostManage={isActivityHostUser ? hostSheets.openHostManage : undefined}
         viewerAccess={viewerAccess}
         onOfferLinkedRideshare={
-          canAddLinkedRide && activity
+          canOpenLinkedRideshareFlow && activity
             ? () => navigateToCreateLinkedRideshare(navigate, activity)
             : undefined
         }
@@ -541,7 +532,7 @@ export const ActivityDetail = () => {
           activityId={activity.id}
           detailPath={activityDetailPath(activity.id)}
           onClose={() => setJoinWelcomeOpen(false)}
-          onOpenPlaceTab={() => setMobileTab('place')}
+          onScrollToMeetingPoint={scrollActivityDetailMeetingPoint}
         />
       ) : null}
       <WithdrawRequestModal
@@ -561,13 +552,7 @@ export const ActivityDetail = () => {
         onSuccess={handleJoinSuccess}
       />
       {inviteShare.sheet}
-      <HostActivityCancelDialog
-        activity={hostRemoveConfirm}
-        participantNotice={hostRemoveParticipantNotice}
-        busy={hostRemoveBusy}
-        onClose={() => setHostRemoveConfirm(null)}
-        onConfirm={() => void confirmHostRemove()}
-      />
+      {hostSheets.hostManageSheet}
     </>
   );
 };

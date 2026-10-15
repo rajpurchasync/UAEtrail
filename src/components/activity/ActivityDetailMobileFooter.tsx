@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react';
-import { Bell, MessageCircle } from 'lucide-react';
+import { MessageCircle } from 'lucide-react';
 import { useActivityCrewChatAction } from '../../hooks/useActivityCrewChatAction';
-import { usePushEnablePrompt } from '../../hooks/usePushEnablePrompt';
 import { MessageMemberButton } from '../chat/MessageMemberButton';
 
 const quickActionClass =
@@ -26,11 +25,9 @@ export const ActivityDetailMobileFooter = ({
   children,
 }: ActivityDetailMobileFooterProps) => {
   const chat = useActivityCrewChatAction(activityId);
-  const push = usePushEnablePrompt();
 
   const showChat =
     showParticipantShortcuts && chat.user && !chat.loading && chat.chatAvailable;
-  const showPush = showParticipantShortcuts && push.visible;
   const showHostMessage = showMessageHost && Boolean(hostUserId);
 
   return (
@@ -55,18 +52,6 @@ export const ActivityDetailMobileFooter = ({
         >
           <MessageCircle className="h-5 w-5 text-emerald-600" aria-hidden />
           Chat
-        </button>
-      ) : null}
-      {showPush ? (
-        <button
-          type="button"
-          disabled={push.loading}
-          onClick={() => void push.enable()}
-          className={quickActionClass}
-          aria-label="Enable notifications"
-        >
-          <Bell className="h-5 w-5 text-sky-600" aria-hidden />
-          Alerts
         </button>
       ) : null}
       <div className="min-w-0 flex-1">{children}</div>

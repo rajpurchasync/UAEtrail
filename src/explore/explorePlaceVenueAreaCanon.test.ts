@@ -34,7 +34,7 @@ describe('explore Place / venue / Area canon', () => {
   });
 
   it('GEO: place peek uses venue wire vocabulary module', () => {
-    expect(read('src/place/geographyVocabulary.ts')).toMatch(/ExploreMapVenueWireSource/);
+    expect(read('src/place/geographyVocabulary.ts')).toMatch(/MapVenueWireSource/);
     expect(read('src/place/placePeekPresentation.ts')).toMatch(/`venue`/);
   });
 

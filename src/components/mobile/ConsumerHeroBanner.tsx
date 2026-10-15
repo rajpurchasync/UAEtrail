@@ -28,6 +28,8 @@ interface ConsumerHeroBannerProps {
   journeyFallbackTo?: string;
   journeyLabel?: string;
   showJourney?: boolean;
+  /** Share / actions on the hero image (top-right). */
+  topRightOverlay?: ReactNode;
 }
 
 /** Compact image banner with centered title and bottom breadcrumb. */
@@ -50,6 +52,7 @@ export const ConsumerHeroBanner = ({
   journeyFallbackTo,
   journeyLabel,
   showJourney = false,
+  topRightOverlay,
 }: ConsumerHeroBannerProps) => (
   <div
     className={`consumer-hero-banner ${size === 'editorial' ? 'consumer-hero-banner--editorial' : ''} ${
@@ -73,6 +76,10 @@ export const ConsumerHeroBanner = ({
         />
       </>
     )}
+
+    {topRightOverlay ? (
+      <div className="absolute right-4 top-4 z-[4] pointer-events-auto">{topRightOverlay}</div>
+    ) : null}
 
     {showMobileChrome && (
       <div

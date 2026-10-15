@@ -44,7 +44,7 @@
 Map, chat, create-activity flow, payments, and any pages other than the homepage.
 
 ### 1.4 Personas (for design decisions)
-1. **Newcomer / solo:** needs reassurance (verified host, clear plan) and an obvious first step.
+1. **Newcomer / solo:** needs reassurance (verified organizer, clear plan) and an obvious first step.
 2. **Regular hiker:** wants to scan what's on this week and filter by emirate fast.
 3. **Host (secondary on this page):** needs to see that hosting exists; details come later.
 

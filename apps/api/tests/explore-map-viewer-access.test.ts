@@ -34,7 +34,8 @@ describe('resolveDemandMapViewerAccess', () => {
       joinRequestStatus: null,
     });
     expect(access.gateReason).toBe('sign_in');
-    expect(access.exposure).toBe('redacted');
+    expect(access.exposure).toBe('none');
+    expect(access.canOpenDetailPage).toBe(false);
   });
 
   it('grants full detail to requester', () => {
@@ -96,7 +97,8 @@ describe('attachExploreMapViewerAccess', () => {
     });
 
     expect(enriched[0].viewerAccess?.gateReason).toBe('sign_in');
-    expect(enriched[0].viewerAccess?.canOpenDetailPage).toBe(true);
+    expect(enriched[0].viewerAccess?.canOpenDetailPage).toBe(false);
+    expect(enriched[0].viewerAccess?.exposure).toBe('none');
     expect(enriched[0].viewerAccess?.mapPeekActions?.map((a) => a.id)).toEqual([
       'request_join',
       'view_detail',
@@ -288,6 +290,7 @@ describe('attachExploreMapViewerAccess', () => {
       { id: 'pending_join', prominence: 'primary', joinRequestStatus: 'pending' },
       { id: 'withdraw_join', prominence: 'text' },
       { id: 'view_detail', prominence: 'text' },
+      { id: 'message_host', prominence: 'secondary' },
     ]);
   });
 

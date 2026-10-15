@@ -1,10 +1,10 @@
-import type { DiscoveryCardModel } from '../../../discovery/discoveryCardModel';
-import { exploreCardIsSeeking } from '../../../discovery/discoveryCardModel';
+import type { DiscoveryCardModel } from '../../../../discovery/discoveryCardModel';
+import { exploreCardIsSeeking } from '../../../../discovery/discoveryCardModel';
 import {
   ExploreCardCapacityRow,
   ExploreCardPeopleRow,
   ExploreCardRequirementBadges,
-} from '../ExploreCardPresentation';
+} from '../../ExploreCardPresentation';
 
 export type CatalogPeekBodyProps = {
   card: DiscoveryCardModel;

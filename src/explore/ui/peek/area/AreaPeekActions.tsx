@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import type { ExploreAreaLensStatsDTO } from '@uaetrail/shared-types';
-import { explorePath } from '../../routing';
-import type { ExplorePinKindFilter } from '../../explorePinKindFilter';
+import { explorePath } from '../../../routing';
+import type { ExplorePinKindFilter } from '../../../explorePinKindFilter';
 
 export type AreaPeekActionsProps = {
   areaSlug: string;

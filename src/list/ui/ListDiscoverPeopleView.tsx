@@ -1,5 +1,5 @@
 import { useAuth } from '../../context/AuthContext';
-import { PeopleBrowseTabContent } from '../../explore/ui/peopleBrowse';
+import { PeopleBrowseTabContent } from '@/people-discovery/panel/peopleBrowse';
 import type { useMemberDiscoveryRoster } from '@/people-discovery/hooks/useMemberDiscoveryRoster';
 import type { useExplorePeopleAvailability } from '@/people-discovery/hooks/usePeopleAvailability';
 import type { BuddiesDiscoverySegment } from '../buddiesDiscoverySegment';

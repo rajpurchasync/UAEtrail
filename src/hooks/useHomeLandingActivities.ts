@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import { groupRegionTextAtBrowseFilterLevel } from '../config/groupRegionFilter';
 import { buildExploreWhenSegment } from '@uaetrail/shared-types';
 import { fetchApiActivities } from './publicCatalogClientApi';
 import { HOME_LANDING_FALLBACK_ACTIVITIES, type HomeLandingActivity } from '../content/homeLanding';
+import { useSafeAsyncEffect } from './useSafeAsyncEffect';
 
 export interface HomeLandingActivitiesState {
   activities: HomeLandingActivity[];
@@ -48,79 +49,49 @@ export const useHomeLandingActivities = (): HomeLandingActivitiesState => {
     totalCount: HOME_LANDING_FALLBACK_ACTIVITIES.length,
     loading: true,
     fromLiveApi: false,
-    error: false
+    error: false,
   });
+  const [loadGeneration, setLoadGeneration] = useState(0);
 
-  const load = useCallback(() => {
-    let cancelled = false;
+  useSafeAsyncEffect(async (isActive) => {
     setState((prev) => ({ ...prev, loading: true, error: false }));
 
-    void fetchApiActivities('upcoming')
-      .then((listings) => {
-        if (cancelled) return;
-        const upcoming = listings.slice(0, 12);
-        if (upcoming.length === 0) {
-          setState({
-            activities: HOME_LANDING_FALLBACK_ACTIVITIES,
-            totalCount: HOME_LANDING_FALLBACK_ACTIVITIES.length,
-            loading: false,
-            fromLiveApi: false,
-            error: false
-          });
-          return;
-        }
-        setState({
-          activities: upcoming.map(toLandingActivity),
-          totalCount: listings.length,
-          loading: false,
-          fromLiveApi: true,
-          error: false
-        });
-      })
-      .catch(() => {
-        if (cancelled) return;
+    try {
+      const listings = await fetchApiActivities('upcoming');
+      if (!isActive()) return;
+      const upcoming = listings.slice(0, 12);
+      if (upcoming.length === 0) {
         setState({
           activities: HOME_LANDING_FALLBACK_ACTIVITIES,
           totalCount: HOME_LANDING_FALLBACK_ACTIVITIES.length,
           loading: false,
           fromLiveApi: false,
-          error: true
+          error: false,
         });
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-    let idleId: number | undefined;
-    let timeoutId: ReturnType<typeof setTimeout> | undefined;
-
-    const run = () => {
-      if (cancelled) return;
-      load();
-    };
-
-    if (typeof requestIdleCallback !== 'undefined') {
-      idleId = requestIdleCallback(run, { timeout: 3000 });
-    } else {
-      timeoutId = setTimeout(run, 500);
-    }
-
-    return () => {
-      cancelled = true;
-      if (idleId !== undefined && typeof cancelIdleCallback !== 'undefined') {
-        cancelIdleCallback(idleId);
+        return;
       }
-      if (timeoutId !== undefined) clearTimeout(timeoutId);
-    };
-  }, [load]);
+      setState({
+        activities: upcoming.map(toLandingActivity),
+        totalCount: listings.length,
+        loading: false,
+        fromLiveApi: true,
+        error: false,
+      });
+    } catch {
+      if (!isActive()) return;
+      setState({
+        activities: HOME_LANDING_FALLBACK_ACTIVITIES,
+        totalCount: HOME_LANDING_FALLBACK_ACTIVITIES.length,
+        loading: false,
+        fromLiveApi: false,
+        error: true,
+      });
+    }
+  }, [loadGeneration]);
 
   const refetch = useCallback(() => {
-    load();
-  }, [load]);
+    setLoadGeneration((n) => n + 1);
+  }, []);
 
   return { ...state, refetch };
 };

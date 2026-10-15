@@ -311,6 +311,11 @@ describe('buildExploreRouteLabel', () => {
     expect(buildExploreRouteLabel('Dubai', 'Fujairah', 'rideshare')).toBe('Dubai to Fujairah');
     expect(buildExploreRouteLabel('Dubai', 'Fujairah', 'hiking')).toBeNull();
   });
+
+  it('dedupes legacy seeking rows with combined route in both endpoints', () => {
+    const combined = 'Dubai Marina → Jebel Jais';
+    expect(buildExploreRouteLabel(combined, combined, 'rideshare')).toBe('Dubai Marina to Jebel Jais');
+  });
 });
 
 describe('buildExplorePeekSpotsLabel', () => {

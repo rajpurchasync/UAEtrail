@@ -11,6 +11,7 @@ import { ProfileBadgeListCard } from '../components/profile/ProfileBadgeListCard
 import { resolveProfileSharePath } from '../utils/profileShare';
 import { useMemberStatus } from '../hooks/useMemberStatus';
 import { sortBadgesByCatalogOrder } from '../constants/memberBadges';
+import { memberProfileLink } from '../config/routingCatalog';
 
 const BadgeSection = ({
   title,
@@ -52,7 +53,7 @@ export const ProfileBadges = () => {
 
   const displayName = user?.displayName ?? 'Explorer';
   const sharePath = resolveProfileSharePath(ownedProfiles, {
-    fallbackPath: user?.id ? `/member/${user.id}` : '/explore',
+    fallbackPath: user?.id ? memberProfileLink(user.id) : '/explore',
   });
 
   useSafeAsyncEffect(async (isActive) => {

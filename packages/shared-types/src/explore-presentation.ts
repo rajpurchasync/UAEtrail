@@ -456,13 +456,71 @@ export const buildExploreWhenSegment = (
   return segment;
 };
 
+const splitCombinedRideshareRoute = (
+  value: string
+): { fromLabel: string; toLabel: string } | null => {
+  const parts = value
+    .split(/\s*(?:→|->)\s*/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+  if (parts.length < 2) return null;
+  return { fromLabel: parts[0], toLabel: parts[parts.length - 1] };
+};
+
+/** Undo legacy rows that stored `A → B` in both meetingPoint and startPoint. */
+export const normalizeRideshareRouteLabels = (
+  fromLabel?: string | null,
+  toLabel?: string | null
+): { fromLabel: string | null; toLabel: string | null } => {
+  const from = fromLabel?.trim() || null;
+  const to = toLabel?.trim() || null;
+
+  if (!from && !to) return { fromLabel: null, toLabel: null };
+
+  if (from && !to) {
+    const split = splitCombinedRideshareRoute(from);
+    if (split) return split;
+    return { fromLabel: from, toLabel: null };
+  }
+
+  if (!from && to) {
+    const split = splitCombinedRideshareRoute(to);
+    if (split) return split;
+    return { fromLabel: null, toLabel: to };
+  }
+
+  if (from && to && from === to) {
+    const split = splitCombinedRideshareRoute(from);
+    if (split) return split;
+    return { fromLabel: from, toLabel: to };
+  }
+
+  if (from) {
+    const splitFrom = splitCombinedRideshareRoute(from);
+    if (splitFrom && (to === from || to === splitFrom.fromLabel || to === splitFrom.toLabel)) {
+      return splitFrom;
+    }
+  }
+
+  if (to) {
+    const splitTo = splitCombinedRideshareRoute(to);
+    if (splitTo && (from === to || from === splitTo.fromLabel || from === splitTo.toLabel)) {
+      return splitTo;
+    }
+  }
+
+  return { fromLabel: from, toLabel: to };
+};
+
 export const buildExploreRouteLabel = (
   fromLabel?: string | null,
   toLabel?: string | null,
   kind?: ExploreCardKind
 ): string | null => {
-  if (kind !== 'rideshare' || !fromLabel || !toLabel) return null;
-  return `${fromLabel} to ${toLabel}`;
+  if (kind !== 'rideshare') return null;
+  const { fromLabel: from, toLabel: to } = normalizeRideshareRouteLabels(fromLabel, toLabel);
+  if (!from || !to || from === to) return null;
+  return `${from} to ${to}`;
 };
 
 export const buildExploreSpotsSegment = (

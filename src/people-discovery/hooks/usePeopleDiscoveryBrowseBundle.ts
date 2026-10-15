@@ -107,8 +107,6 @@ export const useExplorePeopleBrowseBundle = ({
     searchFocusNonce,
     peopleBrowseTab: browse.peopleBrowseTab,
     onPeopleBrowseTabChange: browse.applyPeopleBrowseTab,
-    buddiesDiscoverSegment: browse.buddiesDiscoverSegment,
-    onBuddiesDiscoverSegmentChange: browse.applyBuddiesDiscoverSegment,
     memberPeopleAllCount: memberPeoplePreview.preview?.allCount,
     memberPeopleFriendsCount: memberPeoplePreview.preview?.friendCount,
     memberPeopleFollowedCount: memberPeoplePreview.preview?.followedCount,

@@ -1,7 +1,12 @@
+import { RideshareActivityDetailPlanSections } from '../composers/RideshareActivityDetailPlanSections';
 import { ActivityDetailPageShell } from './ActivityDetailPageShell';
-import type { ActivityDetailTemplateProps } from './activityDetailTemplateProps';
+import type { ActivityDetailViewProps } from '../../../components/activity/ActivityDetailView';
 
 /** Consumer detail template for `activityType: rideshare` (`/activity/:id`). */
-export const RideshareActivityDetailPage = (props: ActivityDetailTemplateProps) => (
-  <ActivityDetailPageShell {...props} detailKind="rideshare" />
+export const RideshareActivityDetailPage = (props: ActivityDetailViewProps) => (
+  <ActivityDetailPageShell
+    {...props}
+    detailKind="rideshare"
+    planSections={RideshareActivityDetailPlanSections}
+  />
 );

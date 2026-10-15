@@ -4,6 +4,7 @@ export {
 } from './PlaceCatalogCardFrame';
 export { PlaceCardActions, type PlaceCardAccent } from './PlaceCardActions';
 export { PlaceCard, TrailCard, CampingCard } from './PlaceCard';
+export { Dialog } from './Dialog';
 export { JoinRequestModal } from './JoinRequestModal';
 export { ShareButton } from './ShareButton';
 export { ParticipantPreview } from './ParticipantPreview';

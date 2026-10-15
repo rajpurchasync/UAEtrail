@@ -77,6 +77,18 @@ export const computeActivityDetailExposure = (input: {
   const { joinMode, level, viewerUserId } = input;
   const canAccessCrewSurfaces = activityViewerLevelCanAccessCrewSurfaces(level);
 
+  if (level === 'denied' || (joinMode === 'private' && !viewerUserId)) {
+    return {
+      exposure: 'none',
+      level: level === 'denied' ? 'denied' : level,
+      gateReason: 'invite_only',
+      canViewFullActivity: false,
+      canOpenDetailPage: false,
+      joinMode,
+      canAccessCrewSurfaces: false,
+    };
+  }
+
   if (level === 'join_request' || level === 'activity_group_member') {
     return {
       exposure: 'redacted',
@@ -101,37 +113,25 @@ export const computeActivityDetailExposure = (input: {
     };
   }
 
-  if (joinMode === 'private') {
-    if (!viewerUserId) {
-      return {
-        exposure: 'none',
-        level,
-        gateReason: 'sign_in',
-        canViewFullActivity: false,
-        canOpenDetailPage: false,
-        joinMode,
-        canAccessCrewSurfaces: false,
-      };
-    }
+  if (!viewerUserId) {
     return {
-      exposure: 'redacted',
+      exposure: 'none',
       level,
-      gateReason: 'join_required',
+      gateReason: 'sign_in',
       canViewFullActivity: false,
-      canOpenDetailPage: true,
+      canOpenDetailPage: false,
       joinMode,
       canAccessCrewSurfaces: false,
     };
   }
 
-  // Listed on map (`joinMode: open`) — peek always; full detail after roster / sign-in flow.
-  if (!viewerUserId) {
+  if (joinMode === 'private') {
     return {
-      exposure: 'redacted',
-      level,
-      gateReason: 'sign_in',
+      exposure: 'none',
+      level: 'denied',
+      gateReason: 'invite_only',
       canViewFullActivity: false,
-      canOpenDetailPage: true,
+      canOpenDetailPage: false,
       joinMode,
       canAccessCrewSurfaces: false,
     };

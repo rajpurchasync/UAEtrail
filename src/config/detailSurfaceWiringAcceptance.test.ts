@@ -1,0 +1,86 @@
+import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+const read = (relativePath: string) => readFileSync(join(process.cwd(), relativePath), 'utf8');
+
+/**
+ * End-to-end consumer detail wiring (DOMAIN_CANONICALS §3.1–§3.2.1).
+ */
+describe('detailSurfaceWiringAcceptance', () => {
+  it('DS-WIRE-01: route loaders → fetch facades → L3 shells', () => {
+    const activityPage = read('src/pages/ActivityDetail.tsx');
+    expect(activityPage).toMatch(/usePublicActivityDetail/);
+    expect(activityPage).toMatch(/ActivityDetailByKind/);
+
+    const placePage = read('src/pages/PlaceDetailPage.tsx');
+    expect(placePage).toMatch(/usePlaceDetailCore/);
+    expect(placePage).toMatch(/PlaceDetailCore/);
+    for (const kindPage of [
+      'src/pages/place/HikingPlaceDetailPage.tsx',
+      'src/pages/place/CampingPlaceDetailPage.tsx',
+      'src/pages/place/EventPlaceDetailPage.tsx',
+    ]) {
+      expect(read(kindPage)).toMatch(/PlaceDetailPage/);
+    }
+
+    const areaPage = read('src/pages/AreaDetailPage.tsx');
+    expect(areaPage).toMatch(/areaHubClientApi/);
+    expect(areaPage).toMatch(/AreaDetailView/);
+
+    const shopPage = read('src/pages/ShopPublic.tsx');
+    expect(shopPage).toMatch(/shopPublicClientApi/);
+    expect(shopPage).toMatch(/ShopPublicPage/);
+
+    const orgPage = read('src/pages/OrganisationProfile.tsx');
+    expect(orgPage).toMatch(/organisationConsoleApi/);
+    expect(orgPage).toMatch(/EntityPublicDetailShell/);
+
+    const memberPage = read('src/pages/MemberProfile.tsx');
+    expect(memberPage).toMatch(/memberPublicProfileApi/);
+  });
+
+  it('DS-WIRE-02: map peek → detail link + activity guest gate on L3', () => {
+    expect(read('src/explore/ui/map-peek/PeekDetailLink.tsx')).toMatch(/resolvePeekDetailAccess/);
+    expect(read('src/components/activity/detail/ActivityDetailGuestGate.tsx')).toMatch(
+      /ExploreGuestSignInCard/
+    );
+    expect(read('src/explore/ui/useExploreSelectionPeekJoin.ts')).toMatch(/openGuestBrowseGate/);
+    expect(read('packages/shared-types/src/activity-engagement-policy.ts')).toMatch(
+      /resolveActivityEngagementPolicy/
+    );
+  });
+
+  it('DS-WIRE-03: activity kind templates share one consumer shell', () => {
+    for (const file of [
+      'src/activity/detail/templates/HikingActivityDetailPage.tsx',
+      'src/activity/detail/templates/CampingActivityDetailPage.tsx',
+      'src/activity/detail/templates/RideshareActivityDetailPage.tsx',
+      'src/activity/detail/templates/OtherActivityDetailPage.tsx',
+    ]) {
+      expect(read(file)).toMatch(/ActivityDetailPageShell/);
+    }
+    expect(read('src/activity/detail/templates/ActivityDetailByKind.tsx')).toMatch(
+      /resolveActivityDetailKind/
+    );
+  });
+
+  it('DS-WIRE-05: activity public detail uses API consumerLayout (embed uses tab wire)', () => {
+    const presentation = read('packages/shared-types/src/activity-detail-presentation.ts');
+    expect(presentation).toMatch(/ActivityPresentationConsumerLayoutDTO/);
+    expect(presentation).toMatch(/consumerLayout/);
+    expect(read('src/pages/ActivityDetail.tsx')).toMatch(/consumerLayout=/);
+    expect(read('src/activity/detail/templates/ActivityConsumerDetailPage.tsx')).toMatch(
+      /model\.consumerLayout/
+    );
+    const manage = read('src/components/activity/ActivityManageSheet.tsx');
+    expect(manage).toMatch(/isEmbedded:\s*true/);
+    expect(manage).toMatch(/wireTabs=/);
+  });
+
+  it('DS-WIRE-04: place/shop/area peek mounts route to detail paths', () => {
+    expect(read('src/explore/ui/peek/place/PlacePeekActions.tsx')).toMatch(/PeekDetailLink/);
+    expect(read('src/explore/ui/peek/shop/ShopPeekActions.tsx')).toMatch(/PeekDetailLink/);
+    expect(read('src/explore/ui/ActivityMapPeekHost.tsx')).toMatch(/ActivityPeekCard/);
+  });
+});

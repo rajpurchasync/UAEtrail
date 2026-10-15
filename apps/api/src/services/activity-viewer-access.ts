@@ -11,6 +11,7 @@ import {
 } from '../lib/activity-engagement-store.js';
 import { findGroupByActivityId, getGroupMembership } from '../lib/social-groups-store.js';
 import { findTenantMembershipContext } from '../lib/tenant-access.js';
+import { findPendingActivityInviteForInvitee } from '../lib/activity-invites-store.js';
 
 export type { ActivityViewerAccessLevel, ActivityViewerAccessDTO };
 
@@ -83,6 +84,18 @@ const resolveActivityViewerLevel = async (
     if (groupMember?.isActive) {
       return 'activity_group_member';
     }
+  }
+
+  const pendingInvite = await findPendingActivityInviteForInvitee({
+    activityId: input.activity.id,
+    toUserId: viewerUserId,
+  });
+  if (pendingInvite) {
+    return 'join_request';
+  }
+
+  if (joinMode === 'private') {
+    return 'denied';
   }
 
   return 'link_holder';

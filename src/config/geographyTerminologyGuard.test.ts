@@ -23,7 +23,7 @@ const collectTsxUnder = (dir: string): string[] => {
 describe('geographyTerminologyGuard (Place · venue wire · Area · facility)', () => {
   it('GEO-01: vocabulary module documents Place vs venue vs Area', () => {
     const vocab = read('src/place/geographyVocabulary.ts');
-    expect(vocab).toMatch(/ExploreMapVenueWireSource/);
+    expect(vocab).toMatch(/MapVenueWireSource/);
     expect(vocab).toMatch(/GeographyAreaHubWireSource/);
     expect(vocab).toMatch(/facilities/);
     const canon = read('docs/DOMAIN_CANONICALS.md');

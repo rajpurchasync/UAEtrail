@@ -19,6 +19,8 @@ type ActivityDetailTransportTabPanelsProps = {
   showTransportEncouragementMobile: boolean;
   showTransportHostProUpsell: boolean;
   showTransportParticipantProUpsell: boolean;
+  /** Guest — public reach-by only (no rideshare offers). */
+  publicReachOnly?: boolean;
 };
 
 export const ActivityDetailTransportTabPanels = ({
@@ -28,6 +30,7 @@ export const ActivityDetailTransportTabPanels = ({
   showTransportEncouragementMobile,
   showTransportHostProUpsell,
   showTransportParticipantProUpsell,
+  publicReachOnly = false,
 }: ActivityDetailTransportTabPanelsProps) => (
   <>
     <div className={`bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 ${panelClassName}`}>
@@ -48,7 +51,7 @@ export const ActivityDetailTransportTabPanels = ({
       <p className="mt-3 text-xs text-gray-500 leading-relaxed">{ACTIVITY_DETAIL_PLAN_SUSTAINABILITY_LINE}</p>
     </div>
 
-    {showTransportEncouragementMobile ? (
+    {!publicReachOnly && showTransportEncouragementMobile ? (
       <div
         className={`md:hidden rounded-2xl border border-neutral-100 bg-white p-6 text-center ${panelClassName}`}
       >
@@ -73,7 +76,7 @@ export const ActivityDetailTransportTabPanels = ({
       </div>
     ) : null}
 
-    {activity.rideshareEnabled ? (
+    {!publicReachOnly && activity.rideshareEnabled ? (
       <div className={`rounded-2xl border border-sky-100 bg-sky-50/70 p-4 ${panelClassName}`}>
         <div className="flex items-start gap-2 text-sm text-gray-700">
           <Car className="w-4 h-4 text-sky-600 mt-0.5 flex-shrink-0" />
@@ -116,7 +119,7 @@ export const ActivityDetailTransportTabPanels = ({
       </div>
     ) : null}
 
-    {activity.linkedParentActivity ? (() => {
+    {!publicReachOnly && activity.linkedParentActivity ? (() => {
       const parent = activity.linkedParentActivity;
       const linkedCopy = linkedParentRidesharePeekCopy(parent.activityType, parent.title);
       return (

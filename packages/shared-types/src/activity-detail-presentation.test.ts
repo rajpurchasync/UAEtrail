@@ -31,6 +31,58 @@ describe('buildActivityPresentationDTO', () => {
     expect(presentation.tabs.place.showLockedPlaceholder).toBe(true);
     expect(presentation.footerByTab.place).toBe('plan_join');
     expect(presentation.tabs.plan.useTabChrome).toBe(true);
+    expect(presentation.consumerLayout?.showMeetingPoint).toBe(false);
+  });
+
+  it('exposes consumerLayout on public scroll page (not embed/tabs IA)', () => {
+    const presentation = buildActivityPresentationDTO({
+      viewerAccess: {
+        ...guestAccess,
+        level: 'participant',
+        gateReason: null,
+        canAccessCrewSurfaces: true,
+      },
+      isHostUser: false,
+      activityPublished: true,
+      meetingLat: 25.1,
+      meetingLng: 55.2,
+      myParticipation: { participantId: 'p1' },
+      myRequest: null,
+      confirmedParticipantCount: 2,
+      participantPreviewCount: 1,
+    });
+
+    expect(presentation.consumerLayout).toEqual({
+      showPublishedCatalog: true,
+      showHostProfile: true,
+      participants: 'roster',
+      showMeetingPoint: true,
+      showTransportSection: true,
+      showHostManageHub: false,
+      canOpenParticipantRoster: true,
+    });
+  });
+
+  it('omits consumerLayout for embedded manage/preview (tabs + footerByTab only)', () => {
+    const presentation = buildActivityPresentationDTO({
+      viewerAccess: {
+        ...guestAccess,
+        level: 'host',
+        gateReason: null,
+        canAccessCrewSurfaces: true,
+      },
+      isHostUser: true,
+      isEmbedded: true,
+      activityPublished: true,
+      meetingLat: 25.1,
+      meetingLng: 55.2,
+      myParticipation: null,
+      myRequest: null,
+    });
+
+    expect(presentation.consumerLayout).toBeUndefined();
+    expect(presentation.tabs.plan.useTabChrome).toBe(false);
+    expect(presentation.footerByTab.plan).toBeDefined();
   });
 
   it('exposes crew surfaces and invite footer for confirmed participants', () => {

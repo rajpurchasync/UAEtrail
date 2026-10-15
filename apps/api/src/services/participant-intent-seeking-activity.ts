@@ -6,7 +6,10 @@ import { ensureBuddyHostTenant } from '../lib/buddy-host-tenant.js';
 import { parseLocalDateTime } from '../lib/datetime.js';
 import { patchActivityInMongo } from '../lib/entity-sync.js';
 import { invalidateExploreMapCache } from '../lib/explore-map-cache.js';
-import { participantIntentKindToOutingCategory } from '@uaetrail/shared-types';
+import {
+  normalizeRideshareRouteLabels,
+  participantIntentKindToOutingCategory,
+} from '@uaetrail/shared-types';
 
 const intentKindToSharedType = (kind: ParticipantIntentKind): SharedActivityType => {
   if (kind === 'hiking') return 'hiking';
@@ -28,6 +31,18 @@ const resolveSeekingStartAt = (input: CreateParticipantIntentInput, countryCode:
 
 const resolveLocationLabel = (input: CreateParticipantIntentInput): string =>
   input.preferredArea?.trim() || input.title.trim().slice(0, 80);
+
+const resolveSeekingRideshareEndpoints = (
+  input: CreateParticipantIntentInput
+): { meetingPoint: string | null; startPoint: string | null } => {
+  const preferred = input.preferredArea?.trim() || null;
+  const { fromLabel, toLabel } = normalizeRideshareRouteLabels(preferred, preferred);
+  if (fromLabel && toLabel) {
+    return { meetingPoint: fromLabel, startPoint: toLabel };
+  }
+  const fallback = preferred || input.title.trim().slice(0, 80) || null;
+  return { meetingPoint: fallback, startPoint: null };
+};
 
 /** M1 dual-write — mirror Find posts as published `activityMode: seeking` rows. */
 type SeekingActivityWriteOptions = {
@@ -68,6 +83,7 @@ export const createSeekingActivityForIntent = async (
   });
 
   const isRideshare = sharedType === 'rideshare';
+  const rideshareEndpoints = isRideshare ? resolveSeekingRideshareEndpoints(input) : null;
   const startAt = resolveSeekingStartAt(input, countryCode);
   const publishedAt = new Date();
 
@@ -80,10 +96,12 @@ export const createSeekingActivityForIntent = async (
     title: input.title.trim(),
     description: input.comment.trim(),
     startAt,
-    meetingPoint: isRideshare ? resolveLocationLabel(input) : input.preferredArea?.trim() || null,
+    meetingPoint: isRideshare
+      ? rideshareEndpoints?.meetingPoint ?? null
+      : input.preferredArea?.trim() || null,
     meetingLat: lat,
     meetingLng: lng,
-    startPoint: isRideshare ? input.preferredArea?.trim() || 'Destination' : null,
+    startPoint: isRideshare ? rideshareEndpoints?.startPoint || 'Destination' : null,
     startLat: isRideshare ? input.toLatitude ?? null : null,
     startLng: isRideshare ? input.toLongitude ?? null : null,
     capacity: input.partySize,

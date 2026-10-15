@@ -46,13 +46,17 @@ export const registerOgRoutes = (app: Express): void => {
 
       const siteOrigin = env.APP_BASE_URL.replace(/\/$/, '');
 
-      if (access.exposure === 'none') {
+      if (
+        access.joinMode === 'private' ||
+        access.level === 'denied' ||
+        access.gateReason === 'invite_only'
+      ) {
         res.status(200).type('text/html; charset=utf-8').send(buildPrivateActivityOgHtml(siteOrigin));
         return;
       }
 
       const activity =
-        access.exposure === 'redacted' ? buildActivityRedactedDetail(event) : buildActivityDto(event);
+        access.exposure === 'full' ? buildActivityDto(event) : buildActivityRedactedDetail(event);
 
       res
         .status(200)

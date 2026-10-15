@@ -37,6 +37,8 @@ export type ActivityDetailStickyFooterProps = {
   hostSecondaryActions?: ReactNode;
   /** Host Plan/Buddies — open invite + share sheet (friends / link) instead of web Share API only. */
   onHostShareOuting?: () => void;
+  /** Consumer wire CTAs already on page — skip tab share duplicate. */
+  consumerWireOwnsEngagement?: boolean;
 };
 
 /** v3.2 §9 — tab-scoped sticky footer (Plan join falls through to `joinButton`). */
@@ -56,6 +58,7 @@ export const ActivityDetailStickyFooter = ({
   showParticipantFooterShortcuts,
   hostSecondaryActions,
   onHostShareOuting,
+  consumerWireOwnsEngagement = false,
 }: ActivityDetailStickyFooterProps) => {
   if (!tabScopedFooterEnabled) return joinButton;
 
@@ -105,7 +108,7 @@ export const ActivityDetailStickyFooter = ({
     );
   }
 
-  if (tabFooterKind === 'plan_host_share' && showInviteShare) {
+  if (tabFooterKind === 'plan_host_share' && showInviteShare && !consumerWireOwnsEngagement) {
     return wrapMobileFooter(
       <div className="flex w-full flex-col gap-2">
         {onHostShareOuting ? (

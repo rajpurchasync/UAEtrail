@@ -4,9 +4,11 @@ import type {
   MemberDiscoveryOnTripRowDTO,
 } from '@uaetrail/shared-types';
 
-/** Profile open from Explore Discover segment (`from=discover` on API). */
+import { memberProfileLink } from '@/member/memberProfileLink';
+
+/** Directory / Connect opens — discover quota on `GET …/public-profile`. */
 export const memberDiscoverProfilePath = (userId: string): string =>
-  `/member/${userId}?discover=1&source=discover`;
+  memberProfileLink(userId, 'discover');
 
 /** Client-side fallback when map items are already loaded (tests). */
 export const buildMemberDiscoveryOnTripRowsFromMapItems = (

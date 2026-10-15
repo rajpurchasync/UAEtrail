@@ -230,7 +230,7 @@ export const useExploreExperienceModel = () => {
   }, [selection.hostRemoveConfirm, selection.selectedCard?.participantPreviews]);
 
   useExplorePinDeepLink({
-    loading: mapQueryLoading,
+    loading: mapLoading,
     searchParams,
     setSearchParams,
     selectionItems,

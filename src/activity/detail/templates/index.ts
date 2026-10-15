@@ -1,4 +1,6 @@
 export { ActivityDetailByKind } from './ActivityDetailByKind';
+export { ActivityConsumerDetailPage } from './ActivityConsumerDetailPage';
+export { ActivityConsumerDetailModalShell } from './ActivityConsumerDetailModalShell';
 export { ActivityDetailPageShell } from './ActivityDetailPageShell';
 export { HikingActivityDetailPage } from './HikingActivityDetailPage';
 export { CampingActivityDetailPage } from './CampingActivityDetailPage';

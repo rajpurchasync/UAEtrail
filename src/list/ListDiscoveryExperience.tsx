@@ -383,8 +383,6 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
           onClose={() => {}}
           peopleBrowseTab={filters.buddiesSegment}
           onPeopleBrowseTabChange={(tab) => syncUrl({ buddiesSegment: tab })}
-          buddiesDiscoverSegment={filters.buddiesSegment}
-          onBuddiesDiscoverSegmentChange={(segment) => syncUrl({ buddiesSegment: segment })}
           memberPeopleNetwork={[]}
           memberPeopleLoading={false}
           memberPeopleError={null}

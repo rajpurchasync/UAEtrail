@@ -14,7 +14,7 @@ type ActivityDetailJoinWelcomeSheetProps = {
   activityId: string;
   detailPath: string;
   onClose: () => void;
-  onOpenPlaceTab: () => void;
+  onScrollToMeetingPoint: () => void;
 };
 
 /** After instant RSVP — group chat + meeting spot (icon-led, minimal copy). */
@@ -23,7 +23,7 @@ export const ActivityDetailJoinWelcomeSheet = ({
   activityId,
   detailPath,
   onClose,
-  onOpenPlaceTab,
+  onScrollToMeetingPoint,
 }: ActivityDetailJoinWelcomeSheetProps) => {
   const navigate = useNavigate();
   const [chatBusy, setChatBusy] = useState(false);
@@ -38,8 +38,8 @@ export const ActivityDetailJoinWelcomeSheet = ({
     }
   };
 
-  const openPlace = () => {
-    onOpenPlaceTab();
+  const openMeetingPoint = () => {
+    onScrollToMeetingPoint();
     onClose();
   };
 
@@ -64,7 +64,7 @@ export const ActivityDetailJoinWelcomeSheet = ({
         </button>
         <button
           type="button"
-          onClick={openPlace}
+          onClick={openMeetingPoint}
           className="flex flex-col items-center gap-2 rounded-2xl border border-neutral-200 bg-white px-3 py-5 active:bg-neutral-50"
         >
           <MapPin className="h-7 w-7 text-sky-600" aria-hidden />

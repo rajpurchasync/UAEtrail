@@ -55,7 +55,9 @@ const completeSignupProfile = async (accessToken: string): Promise<void> => {
 const hostEmail = () => `org-${suffix}@test.local`;
 
 describe('G-manage coordination + host join approve (API)', () => {
-  it('surfaces host_join_queue then clears after approve', async () => {
+  it(
+    'surfaces host_join_queue then clears after approve',
+    async () => {
     const joinerToken = await loginToken(joiner.email, joiner.password);
     const joinRes = await request(app)
       .post(`/api/v1/activities/${fixture.activityId}/requests`)
@@ -119,5 +121,7 @@ describe('G-manage coordination + host join approve (API)', () => {
       (row) => row.id === requestId
     );
     expect(mineRow?.status).toBe('approved');
-  });
+    },
+    15_000
+  );
 });

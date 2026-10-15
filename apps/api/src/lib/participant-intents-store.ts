@@ -6,6 +6,7 @@ import {
   exploreDemandMapItemPath,
   exploreMapKindToPlanMapKind,
   demandFallbackTitle,
+  normalizeRideshareRouteLabels,
   participantIntentKindToOutingCategory,
   type OutingCategory,
 } from '@uaetrail/shared-types';
@@ -87,7 +88,7 @@ const buildDemandRouteLabels = (
       ? `${doc.toLatitude.toFixed(4)}, ${doc.toLongitude.toFixed(4)}`
       : null;
 
-  return { fromLabel, toLabel };
+  return normalizeRideshareRouteLabels(fromLabel, toLabel);
 };
 
 const mapDto = (

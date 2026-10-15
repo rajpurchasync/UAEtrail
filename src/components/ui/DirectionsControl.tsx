@@ -152,7 +152,9 @@ export const DirectionsControl = ({
 
       <Dialog open={pickerOpen} onClose={() => setPickerOpen(false)} title="Open directions with">
         <p className="mb-4 text-sm text-neutral-600">
-          We&apos;ll remember your choice for next time. Tap the arrow beside the button to change apps anytime.
+          {showAppPickerAffordance
+            ? "We'll remember your choice for next time. Tap the arrow beside the button to change apps anytime."
+            : "We'll remember your choice for next time."}
         </p>
         <ul className="space-y-2">
           {listNavigationAppOptions().map((option) => (

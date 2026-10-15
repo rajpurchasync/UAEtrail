@@ -46,6 +46,8 @@ type Props = {
   showRosterProUpsell: boolean;
   /** Consumer marketing layout — host lives on Plan tab + peek strips. */
   hideHostProfile?: boolean;
+  /** Consumer marketing fold — roster shown above requirements in fold. */
+  hideParticipantsRoster?: boolean;
 };
 
 /** Desktop sticky price, host, roster, and host-manage cards (R6). */
@@ -76,6 +78,7 @@ export const ActivityDetailPricingSidebar = ({
   rosterParticipants,
   showRosterProUpsell,
   hideHostProfile = false,
+  hideParticipantsRoster = false,
 }: Props) => (
   <div className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 lg:sticky lg:top-20">
     <div className="flex items-start justify-between gap-3">
@@ -139,10 +142,10 @@ export const ActivityDetailPricingSidebar = ({
       </div>
     ) : null}
 
-    {PARTICIPANT_PRIVACY.showPreJoin && !previewMode && canAccessCrewSurfaces && (
+    {PARTICIPANT_PRIVACY.showPreJoin && !previewMode && canAccessCrewSurfaces && !hideParticipantsRoster && (
       <div className={`mt-5 pt-5 border-t border-gray-100 ${showMobileTabs ? mobileBuddiesPanel : ''}`}>
         <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
-          Who&apos;s going ({participants?.length ?? 0})
+          Participants ({participants?.length ?? 0})
         </p>
         <ParticipantPreview
           participants={rosterParticipants}

@@ -158,6 +158,19 @@ Billing / `PaidMembershipSku` enforcement: layer **7** in `member-entitlements.t
 
 Trusted fields (year goal, upcoming list, etc.) appear only on **trusted** exposure, not on the public card.
 
+**One profile page:** Every link to another member uses **`/member/:userId`** (`MemberProfile`) — friends list (`/buddies`), people browse panel, activity roster, chat. Browse entry may add `source=` / `discover=1` for quota and analytics; **layout is the same**. Lens × who may open: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §3.2.2.
+
+**Naming (code vs UI — pick one term per layer, do not synonym-swap in types):**
+
+| Layer | Use in code / API | UI copy may say |
+|-------|-------------------|-----------------|
+| Account | **member**, `userId`, `/users/:id` | Member, host name on card |
+| Public card page | **profile**, `MemberProfile`, `memberProfilePath`, `GET …/public-profile` | Profile, “View profile” |
+| Map/list people panel | **people browse**, `PeopleBrowsePanel`, `peopleTab` | “Find your crew”, tab labels |
+| List category handoff | `listCat=people`, URL `buddies=` (legacy param name) | **Buddies** (category circle only) |
+| Relationship | **buddy** / `social_graph`, `accepted_buddy` | Friends |
+| Directory quota | **member discovery**, `discover=1`, `memberDiscoverProfilePath` | Connect / discover |
+
 **Browse — member people (not chat):** Map People panel (`view=people`; legacy `view=social`) and list **Buddies** share `PeopleBrowseTabContent` (`PeopleBrowsePanel` on map). **Network roster:** `GET /social/people` — friends + followed with trip hints; pill via `GET /social/people/preview`. **Discovery roster:** `GET /me/member-discovery/roster` — going / looking / directory; **quota:** `GET /me/member-discovery-quota`, `GET /users/browse`; profile opens `GET /users/:id/public-profile?from=discover` (**3 unique profiles / 30d**; Pro unlimited). **Chat** is [`COMMUNICATION.md`](./COMMUNICATION.md) (`/messages`, `/chat/*`). **Join me (participation):** `GET/POST /activities/:id/invites` — in-app nudge only; invitee still RSVPs or requests to join; host approval when required. See [`NAVIGATION.md`](./NAVIGATION.md) § Browse — people & crew and [`API_ROUTING.md`](./API_ROUTING.md).
 
 **Profile view analytics (shipped):** views recorded on `GET /users/:id/public-profile`; owners with host Pro/business see `GET /me/profile-view-stats`.

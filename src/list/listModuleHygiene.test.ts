@@ -136,6 +136,14 @@ describe('list module hygiene', () => {
     });
   });
 
+  it('explore peopleBrowse folder is a re-export shim only', () => {
+    const shimDir = join(process.cwd(), 'src/explore/ui/peopleBrowse');
+    const names = readdirSync(shimDir).filter((name) => name.endsWith('.ts') || name.endsWith('.tsx'));
+    expect(names).toEqual(['index.ts']);
+    const shim = readFileSync(join(shimDir, 'index.ts'), 'utf8');
+    expect(shim).toContain('@/people-discovery/panel/peopleBrowse');
+  });
+
   it('keeps explore People panel separate from map list and discover browse', () => {
     const browsePanels = readFileSync(
       join(process.cwd(), 'src/explore/shell/ExploreExperienceBrowsePanels.tsx'),

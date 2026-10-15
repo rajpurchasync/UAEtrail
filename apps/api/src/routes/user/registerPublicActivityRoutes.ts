@@ -1,4 +1,4 @@
-﻿import type { Router } from 'express';
+﻿import type { Request, Router } from 'express';
 import { z } from 'zod';
 import { ActivityStatus, RequestStatus } from '../../domain/enums.js';
 import { ApiError } from '../../lib/api-error.js';
@@ -46,6 +46,40 @@ import { createRequestSchema, eventIdParamSchema, requestIdParamSchema, rsvpSche
 const updateRequestNoteSchema = z.object({
   note: z.string().max(500),
 });
+
+const assertPrivateActivityJoinAllowed = async (req: Request, activityId: string): Promise<void> => {
+  const event = await findPublishedActivityWithPreviewsById(activityId);
+  if (!event) {
+    throw new ApiError(404, 'activity_not_found', 'Activity not found.');
+  }
+  const viewerUserId = req.auth?.userId ?? null;
+  if (!viewerUserId) {
+    throw new ApiError(401, 'unauthenticated', 'Sign in to continue.');
+  }
+  const hostStatus = await resolveMemberStatus(viewerUserId);
+  const access = await composeActivityViewerAccess(
+    {
+      viewerUserId,
+      activity: {
+        id: event.id,
+        tenantId: event.tenantId,
+        hostId: event.hostId,
+        createdById: event.createdById,
+        joinMode: event.joinMode,
+        requirements: event.requirements,
+      },
+      isPlatformAdmin: req.auth?.role === 'PLATFORM_ADMIN',
+    },
+    { viewerUserId, hostStatus },
+    {
+      hostUserId: event.createdById ?? event.hostId ?? null,
+      participantUserIds: event.participants.map((row) => row.userId),
+    }
+  );
+  if (access.joinMode === 'private' && !access.canOpenDetailPage) {
+    throw new ApiError(403, 'activity_invite_only', PRIVATE_ACTIVITY_MESSAGE);
+  }
+};
 
 /** Public activity browse, detail, join request, and RSVP. */
 export const registerPublicActivityRoutes = (router: Router): void => {
@@ -155,14 +189,26 @@ registerActivityRoute(router, 'get', '/:id', optionalAuth, validate({ params: ev
     });
 
     if (access.exposure === 'none') {
+      const guestListedSignIn =
+        !viewerUserId && access.gateReason === 'sign_in' && access.joinMode !== 'private';
       res.json({
-        data: {
-          id: event.id,
-          joinMode: 'private',
-          message: PRIVATE_ACTIVITY_MESSAGE,
-        },
+        data: guestListedSignIn
+          ? {
+              id: event.id,
+              joinMode: event.joinMode,
+              title: event.title,
+              locationName: event.location.name,
+              activityType: event.activityType,
+              participationMode: event.participationMode,
+              requirements: event.requirements,
+            }
+          : {
+              id: event.id,
+              joinMode: 'private',
+              message: PRIVATE_ACTIVITY_MESSAGE,
+            },
         viewerAccess: access,
-        presentation,
+        presentation: guestListedSignIn ? null : presentation,
       });
       return;
     }
@@ -232,6 +278,7 @@ registerActivityRoute(
     try {
       const { id } = req.params as z.infer<typeof eventIdParamSchema>;
       const { note } = req.body as z.infer<typeof createRequestSchema>;
+      await assertPrivateActivityJoinAllowed(req, id);
 
       const { request, waitlisted } = await createJoinOrWaitlistRequest({
         activityId: id,
@@ -275,6 +322,7 @@ registerActivityRoute(
   async (req, res, next) => {
     try {
       const { id } = req.params as z.infer<typeof eventIdParamSchema>;
+      await assertPrivateActivityJoinAllowed(req, id);
       const { request, participation } = await createRsvpParticipation({
         activityId: id,
         userId: req.auth!.userId,

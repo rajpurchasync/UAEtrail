@@ -23,6 +23,7 @@ import { SecureAvatar } from '../components/ui/SecureAvatar';
 import { useAuth } from '../context/AuthContext';
 
 import { PRODUCT_EXPLORE_CTA } from '../content/productNorthStar';
+import { memberProfileLink } from '../member/memberProfileLink';
 type FriendsTab = 'friends' | 'requests' | 'following';
 
 const parseFriendsTab = (raw: string | null): FriendsTab => {
@@ -282,7 +283,7 @@ export const Buddies = () => {
                                   <p className="truncate font-semibold text-neutral-900">{name}</p>
                                 </div>
                                 <Link
-                                  to={`/member/${row.id}`}
+                                  to={memberProfileLink(row.id, 'friends')}
                                   className="shrink-0 rounded-xl bg-emerald-600 px-3 py-2 text-xs font-semibold text-white"
                                 >
                                   View
@@ -336,7 +337,7 @@ export const Buddies = () => {
                           </div>
                           <div className="mt-3 grid grid-cols-3 gap-2">
                             <Link
-                              to={`/member/${buddy.userId}`}
+                              to={memberProfileLink(buddy.userId, 'friends')}
                               className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-neutral-200 px-2 py-2 text-xs font-semibold text-neutral-700"
                             >
                               <UserRound className="h-3.5 w-3.5" />
@@ -448,7 +449,7 @@ export const Buddies = () => {
                                 </div>
                                 <div className="mt-3 flex gap-2">
                                   <Link
-                                    to={`/member/${request.toUserId}`}
+                                    to={memberProfileLink(request.toUserId, 'friends')}
                                     className="flex-1 rounded-xl border border-neutral-200 px-3 py-2 text-center text-sm font-semibold text-neutral-700"
                                   >
                                     View profile
@@ -514,7 +515,7 @@ export const Buddies = () => {
                           </div>
                           <div className="mt-3 flex gap-2">
                             <Link
-                              to={`/member/${member.userId}`}
+                              to={memberProfileLink(member.userId, 'friends')}
                               className="flex-1 rounded-xl border border-neutral-200 px-3 py-2 text-center text-sm font-semibold text-neutral-700"
                             >
                               View profile

@@ -42,6 +42,7 @@ export type BuildActivityEngagementPolicyInputArgs = {
   myParticipation?: unknown | null;
   myRequest?: { status: string; canWithdraw: boolean } | null;
   confirmedParticipantCount?: number;
+  participantPreviewCount?: number;
   pendingJoinInviteCount?: number;
   previewMode?: boolean;
   isEmbedded?: boolean;
@@ -71,6 +72,7 @@ export const buildActivityEngagementPolicyInput = (
   myParticipation: args.myParticipation,
   myRequest: args.myRequest,
   confirmedParticipantCount: args.confirmedParticipantCount ?? 0,
+  participantPreviewCount: args.participantPreviewCount ?? 0,
   pendingJoinInviteCount: args.pendingJoinInviteCount ?? 0,
   joinMode: args.joinMode,
   joinRequestStatus: args.joinRequestStatus,
@@ -144,6 +146,7 @@ const applyActivitySlice = (
     linkedRideshareActivityId: slice.linkedRideshareActivityId ?? null,
     confirmedParticipantCount:
       base.confirmedParticipantCount ?? slice.participants?.length ?? 0,
+    participantPreviewCount: base.participantPreviewCount ?? 0,
   });
 
 /** `GET /activities/:id` presentation pipeline. */
@@ -156,6 +159,7 @@ export const buildDetailEngagementPolicyInput = (input: {
   previewMode?: boolean;
   isEmbedded?: boolean;
   pendingJoinInviteCount?: number;
+  participantPreviewCount?: number;
 }): ResolveActivityEngagementPolicyInput => {
   const hostUserId = input.event.createdById ?? input.event.hostId ?? null;
   const isHostUser = Boolean(input.viewerUserId && hostUserId && input.viewerUserId === hostUserId);
@@ -167,6 +171,8 @@ export const buildDetailEngagementPolicyInput = (input: {
     myParticipation: input.myParticipation,
     myRequest: input.myRequest,
     pendingJoinInviteCount: input.pendingJoinInviteCount,
+    participantPreviewCount:
+      input.participantPreviewCount ?? input.event.participants?.length ?? 0,
   });
 };
 

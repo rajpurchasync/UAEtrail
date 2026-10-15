@@ -9,6 +9,7 @@ import { EXPLORE_LIST_ROW, EXPLORE_TYPE } from '../../config/exploreTheme';
 import { ExploreCardDetailList, ExploreCardLocationLink, ExploreCardRatingRow } from './ExploreCardPresentation';
 import { ExploreCardTypeIcon } from './ExploreCardTypeIcon';
 import { ExploreListRowWireFooter } from './ExploreListRowWireFooter';
+import { memberProfileLink } from '@/member/memberProfileLink';
 
 interface ExploreListRowProps {
   card: ExploreCardModel;
@@ -47,7 +48,7 @@ const JoiningIndicator = ({
             return (
               <Link
                 key={p.id}
-                to={`/member/${p.id}`}
+                to={memberProfileLink(p.id)}
                 onClick={(event) => event.stopPropagation()}
                 title={isBuddy ? p.name : `${p.name} — connect to message`}
                 className={`inline-block rounded-full ${isBuddy ? 'ring-2 ring-emerald-500' : 'ring-2 ring-white opacity-90'}`}

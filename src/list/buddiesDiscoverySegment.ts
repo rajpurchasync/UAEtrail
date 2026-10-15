@@ -5,7 +5,7 @@ import {
   serializePeopleBrowseTab,
 } from '@/people-discovery/peopleBrowseTab';
 
-/** @deprecated Name kept for list URL `buddies=` — same values as explore `peopleTab`. */
+/** Same tab ids as explore `peopleTab` — list handoff uses URL param `buddies=` (list category label may say Buddies). */
 export type BuddiesDiscoverySegment = PeopleBrowseTab;
 
 export const BUDDIES_DISCOVERY_SEGMENTS: ReadonlyArray<{

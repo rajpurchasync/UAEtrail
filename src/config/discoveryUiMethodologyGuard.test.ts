@@ -60,6 +60,29 @@ describe('discoveryUiMethodologyGuard', () => {
     expect(read('src/explore/ui/peek/place/PlaceMapPeekHost.tsx')).toMatch(/PlacePeekCard/);
   });
 
+  it('DISC-METH-07: member people browse uses L1 row model (parallel to discoveryCardModel)', () => {
+    expect(read('src/people-discovery/memberBrowseRowModel.ts')).toMatch(/MemberBrowseRowVm/);
+    const tab = read('src/people-discovery/panel/peopleBrowse/PeopleBrowseTabContent.tsx');
+    expect(tab).toMatch(/memberBrowseRowModel/);
+    expect(tab).not.toMatch(/memberDiscoverProfilePath/);
+  });
+
+  it('DISC-METH-08: member profile links centralized in memberProfileLink', () => {
+    expect(read('src/member/memberProfileLink.ts')).toMatch(/memberProfilePath/);
+    const model = read('src/people-discovery/memberBrowseRowModel.ts');
+    expect(model).toMatch(/memberProfileLink/);
+    expect(model).not.toMatch(/`\/member\/\$\{/);
+  });
+
+  it('DISC-METH-09: list/map people browse shares people-discovery panel module', () => {
+    expect(read('src/list/ui/ListDiscoverPeopleView.tsx')).toMatch(
+      '@/people-discovery/panel/peopleBrowse'
+    );
+    expect(read('src/people-discovery/panel/PeopleBrowsePanel.tsx')).toMatch(
+      /from '\.\/peopleBrowse'/
+    );
+  });
+
   it('DISC-METH-04: no Explore*Peek* modules under explore/ui (use map-peek + peek/{entity}/)', () => {
     const violations: string[] = [];
     for (const file of collectTsxUnder('src/explore/ui')) {

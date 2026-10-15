@@ -3,9 +3,9 @@ import {
   EXPLORE_LINKED_PARENT_PLAN_PEEK_PREFIX,
   EXPLORE_RIDESHARE_AVAILABLE_LABEL,
   EXPLORE_VIEW_LINKED_PLAN_CTA,
-} from '../../createFlowCopy';
-import type { DiscoveryCardModel } from '../../../discovery/discoveryCardModel';
-import { linkedParentRidesharePeekCopy } from '../../exploreLinkedParentRideshareCopy';
+} from '../../../createFlowCopy';
+import type { DiscoveryCardModel } from '../../../../discovery/discoveryCardModel';
+import { linkedParentRidesharePeekCopy } from '../../../exploreLinkedParentRideshareCopy';
 
 export type ActivityPeekLinkedTransportProps = {
   card: DiscoveryCardModel;

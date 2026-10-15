@@ -432,7 +432,10 @@ export const listPublishedUpcomingActivitiesByLocationFromMongo = async (
     .limit(take)
     .toArray();
 
-  return assembleEventsWithPublicRelations(docs);
+  const visible = docs.filter(
+    (doc) => !shouldHideActivityFromExploreMap(doc.joinMode, doc.requirements)
+  );
+  return assembleEventsWithPublicRelations(visible);
 };
 
 /** Published upcoming outings hosted or created by a member (public profile). */
@@ -451,7 +454,10 @@ export const listPublishedUpcomingActivitiesByMemberFromMongo = async (
     .toArray();
 
   const filtered = await filterPublishedDocs(docs, 'upcoming');
-  return assembleEventsWithPublicRelations(filtered.slice(0, take));
+  const visible = filtered.filter(
+    (doc) => !shouldHideActivityFromExploreMap(doc.joinMode, doc.requirements)
+  );
+  return assembleEventsWithPublicRelations(visible.slice(0, take));
 };
 
 /** Upcoming public map activities tagged with a curated area. */

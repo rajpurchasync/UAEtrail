@@ -20,6 +20,12 @@ const DETAIL_BACK_VIA_CATALOG: Array<{ path: string; pattern: RegExp }> = [
 const MEMBER_HUB_SHELL = [{ path: 'src/pages/MemberProfile.tsx', pattern: /ConsumerShell/ }];
 
 describe('consumerDetailAntiDriftGuard (plan §15.3)', () => {
+  it('entity detail routes do not render global marketing Footer under sticky CTAs', () => {
+    const shell = read('src/components/layout/ProductShell.tsx');
+    expect(shell).toMatch(/shouldShowMarketingSiteFooter/);
+    expect(read('src/config/platform.ts')).toMatch(/isConsumerEntityDetailRoute/);
+  });
+
   it('entity detail surfaces use detailBackPath from routing catalog for shell back', () => {
     const violations: string[] = [];
     for (const { path, pattern } of DETAIL_BACK_VIA_CATALOG) {

@@ -2,15 +2,14 @@ import { ActivityDetailView } from '../../../components/activity/ActivityDetailV
 import type { ActivityDetailTemplateProps } from './activityDetailTemplateProps';
 
 /**
- * Consumer **route** shell for `/activity/:id` (hiking / camping / rideshare / other templates).
+ * Consumer **kind template** shell for `/activity/:id` (see `ActivityDetailByKind`).
  *
- * **Not a second implementation:** delegates to `ActivityDetailView`, which owns
- * `MobileDetailShell`, the view model, and tab bodies. Host **preview** and
- * **manage sheet** embed `ActivityDetailView` directly — they skip kind templates.
+ * Route loader: `src/pages/ActivityDetail.tsx` (data, modals, SEO) — same role as
+ * `PlaceDetailPage` + thin `*PlaceDetailPage` kind wrappers.
  *
- * Put kind-specific chrome here later (e.g. marketing fold above tabs, §6.0 peek parity)
- * without forking embedded surfaces.
+ * Sets `consumerDetailLayout` on `ActivityDetailView` → `ActivityConsumerDetailPage`.
+ * Host **preview** / **manage sheet** embed `ActivityDetailView` (`layout=embedded`) — no kind route, tabbed `ActivityDetailBody`.
  */
 export const ActivityDetailPageShell = (props: ActivityDetailTemplateProps) => (
-  <ActivityDetailView {...props} showConsumerMarketingFold />
+  <ActivityDetailView {...props} consumerDetailLayout />
 );

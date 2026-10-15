@@ -1,12 +1,15 @@
 import { useQuery } from '@tanstack/react-query';
 import { fetchPublicActivityDetail } from './publicActivityClientApi';
 import { activityDetailQueryKey } from './clientQueryKeys';
+import { useAuth } from '../context/AuthContext';
 
 export { fetchPublicActivityDetail, type PublicActivityDetailPayload } from './publicActivityClientApi';
 
 export const usePublicActivityDetail = (activityId: string | undefined) => {
+  const { user } = useAuth();
+  const viewerScope = user?.id ?? 'guest';
   const query = useQuery({
-    queryKey: activityId ? activityDetailQueryKey(activityId) : ['activity', ''],
+    queryKey: activityId ? activityDetailQueryKey(activityId, viewerScope) : ['activity', '', viewerScope],
     queryFn: () => fetchPublicActivityDetail(activityId!),
     enabled: Boolean(activityId),
   });

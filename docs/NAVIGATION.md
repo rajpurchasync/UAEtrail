@@ -61,10 +61,26 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 
 - **Audience:** `platform_admin` only (`ProtectedRoute`); signed-in members use `/explore`, not `/`.
 - **Shell nav:** `ADMIN_LINKS` in `src/constants/index.ts` — desktop sidebar + mobile admin drawer (`DashboardLayout`, `MobileMenu`).
-- **`/admin/overview`:** Metrics and recent activity shortcuts.
-- **`/admin/users`:** **Users** — search, suspend/activate, detail panel; master admin may grant/revoke platform staff (`MEMBER_MODEL.md`).
-- Other entries: Places, Hosts (applications), Activities moderation, Groups, Shop, Reports, Audit log, Broadcast (`/admin/settings`).
 - **Staff provisioning API:** `POST /admin/platform-admins`, `DELETE /admin/platform-admins/:userId` — not self-serve signup.
+- **Out of consumer methodology:** admin tables use `adminApi` + `DashboardLayout` — not discovery card VM, map peek, or entity tab footers (`SYSTEM_COHERENCE` §6.2.6). Guard: `adminSurfacesAcceptance.test.ts`.
+
+#### Platform admin route catalog (S13-W9)
+
+| Route | Page module | Sidebar (`ADMIN_LINKS`) | Job |
+|-------|-------------|-------------------------|-----|
+| `/admin/overview` | `AdminOverview` | Overview | Metrics + shortcuts |
+| `/admin/places` | `AdminPlaces` | Places | Catalog place CRUD (`/admin/locations` → redirect) |
+| `/admin/areas` | `AdminAreas` | Areas | Curated area registry |
+| `/admin/users` | `AdminMembers` | Users | Member search, suspend, staff grant (`MEMBER_MODEL.md`) |
+| `/admin/hosts` | `AdminOrganisations` | Hosts | Host / tenant applications (`/admin/organizers` → redirect) |
+| `/admin/activities` | `AdminActivities` | Activities | Outing moderation |
+| `/admin/groups` | `AdminGroups` | Groups | Platform groups |
+| `/admin/shop` | `AdminShop` | Shop | Shop catalog ops |
+| `/admin/reports` | `AdminReports` | Reports | Content reports queue |
+| `/admin/audit-log` | `AdminAuditLog` | Audit Log | Audit trail |
+| `/admin/settings` | `AdminSettings` | Broadcast | Platform broadcast / settings |
+| `/admin/notifications` | `AdminNotifications` | — (deep link / ops only) | Notification ops |
+| `/admin/login` | `SignIn` | — | Staff sign-in entry |
 
 ### Friends (`/buddies`)
 
@@ -204,22 +220,24 @@ Signed-in members tap **+** on `/explore` to compose. **Guests** → sign-in, th
 
 ## Activity detail (`/activity/:id`)
 
-**Mobile-first shell:** **Back** · chrome **emoji + activity title** (truncated in sticky header) · **Share**. **Hero** (all tabs): linked venue · smart date (Today / Tomorrow / weekday, no year) · **large title** · fact chips (activity kind, time, free/paid, who can join, type extras — no Start/End labels on mobile tabs). **Icon tabs (UI labels only):** **Plan** · **Place** · **Buddies** · **Transport** (`?tab=place|buddies|transport`; default Plan, except **rideshare** outings default **Transport** when `?tab` is omitted). Wire/API names stay `activity`, `viewerAccess`, `rideshare`, `participant` — see [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §15. **Program checklist (exit criteria):** [`experiment/activity-detail-tabs-implementation-plan.md`](./experiment/activity-detail-tabs-implementation-plan.md).
+**Public consumer page (scroll layout):** **Back** · **Share** (hero on mobile, banner on desktop) · cover when present. **Published outing** = same L1 discovery projection as map peek (`buildActivityDetailPageShellCard` → `ActivityDiscoveryPublishedBody` — when/where lines, requirement chips, price). **Hero block:** date · title · venue link. **Host** row · **participants** (policy) · **meeting point** (crew only) · **Transport** strip (accessible by from organize capture · rideshare available · host **Offer rideshare** when entitled). **CTAs:** wire `mapPeekActions` — **mobile** floating footer · **desktop** row under banner (top-right). No Plan/Place/Buddies/Transport tabs on the public route. Wire/API: `activity`, `viewerAccess`, `presentation` — [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §15.
 
-**Kind page templates (one route):** `ActivityDetail.tsx` → `ActivityDetailByKind` → `HikingActivityDetailPage` · `CampingActivityDetailPage` · `RideshareActivityDetailPage` · `OtherActivityDetailPage` (events / generic buddy outings) — each through shared `ActivityDetailPageShell` → `ActivityDetailView`. Consumer shell shows a **marketing fold** above tabs (mobile cover when present · venue/date/title hero · Going + Rides/spots strips — same presentation as map peek §6.0). Host preview and manage sheet embed **`ActivityDetailView`** only (no fold, no kind router). Catalog places: `HikingPlaceDetailPage` (`/trail`), `CampingPlaceDetailPage` (`/camp`), `EventPlaceDetailPage` (`/venue`); areas: `AreaDetailPage`.
+**Layering (same pattern as place):** one URL, thin kind files — not one mega `ActivityDetailView` per route.
 
-| Tab (UI) | Purpose |
-|----------|---------|
-| **Plan** | Merged requirements + about + itinerary; host row; transport teaser → Transport tab |
-| **Place** | Meeting / map — body only when `viewerAccess.canAccessCrewSurfaces` |
-| **Buddies** | Roster + host queue; primary **host manage** surface (no fifth Manage tab) |
-| **Transport** | **Always shown** — how to get there (reach-by / vehicle access from organize) + linked rideshare when present + sustainability nudge |
+| Layer | Activity | Place (reference) |
+|-------|----------|-------------------|
+| Loader | `ActivityDetail.tsx` | `PlaceDetailPage.tsx` |
+| Kind pick | `ActivityDetailByKind` | `HikingPlaceDetailPage`, … |
+| L3 shell | `*ActivityDetailPage` → `ActivityDetailPageShell` | `PlaceDetailPage` + `heroKindSection` |
+| Scroll/tabs body | `ActivityConsumerDetailBody` | `PlaceDetailCore` |
+
+Public scroll slots come from **`GET /activities/:id` → `presentation.consumerLayout`** (same policy pass as embed `tabs`). Legacy `?tab=` scrolls via `activityDetailConsumerAnchors` — no public tab bar. **Embed only:** `ActivityManageSheet` / host preview use tabbed `ActivityDetailView` (`layout=embedded`). Catalog places: `/trail`, `/camp`, `/venue`; areas: `AreaDetailPage`.
 
 **Pin summaries (map projection):** `ActivityPeekCard` · `PlacePeekCard` compose shared **`MapPeekShell`** chrome (`MapPeekOverlay` on map); **View details** → consumer detail templates above. “Explore” is the `/explore` surface name only — not this module naming.
 
 **Map peek (activity pins):** Same outing as detail — **hero facts** · **Going** + **Rides & spots** strips (`mapPeekStrips` from L1 `resolveActivityEngagementPolicy` on `GET /explore/map`) · **footer actions** (`mapPeekActions` wire ids — join, crew chat, share/manage for host, withdraw/offer rideshare when entitled). Host **Manage** opens `ActivityManageSheet` on the map (participants view) without leaving `/explore`. Host **Share** opens `ActivityInviteShareSheet` (buddies + link) on peek, map list (`list=1` compact rows — `ExploreListRowWireFooter` + `ListFeedActionsProvider`), discover browse (`/list` / `browse=1`), and detail `plan_host_share` footer. Chips: **Joined** (participant), **N invited** (host/crew pending Join me invites via `pendingJoinInviteCount`), host row **My host profile** when `showHostSelfProfileLink`. Pro gates: roster mask + host profile upsell on people row (`entitlements`). **Authoritative matrix:** [`experiment/activity-detail-tabs-implementation-plan.md`](./experiment/activity-detail-tabs-implementation-plan.md) **§6**.
 
-**Crew gating:** roster, precise meeting, group chat entry gated on API `viewerAccess.canAccessCrewSurfaces` (confirmed participant or host; **pending / waitlisted** may open detail but see redacted crew — Buddies lock hint, Place tab lock card, no meeting body). Do not show locked meeting/chat rows for unconfirmed viewers; after RSVP or approval use welcome sheet (**Join group chat** · **See meeting location** → Place tab). Deep link: `?joined=1` (notification after host approve). **Host:** primary roster + pending queue on **Buddies** tab (`ActivityDetailHostBuddiesHub`); `ActivityManageSheet` still embeds the same detail for console deep links (`?tab=buddies`). **Mobile footers:** tab-primary actions via `activityDetailTabFooters.ts` (join on Plan, directions on Place, invite on Buddies, view ride on Transport when linked). Copy: `src/content/activityDetailCopy.ts` · tabs: `src/activity/activityDetailTab.ts` · engagement flags: `src/activity/activityDetailPresentation.ts` (peek: `activityPeekEngagement.ts`). Summary + §11 guards: [`experiment/member-surfaces-implementation-plan.md`](./experiment/member-surfaces-implementation-plan.md) §21 (ticks live in activity-detail program doc).
+**Crew gating:** roster, meeting point, crew chat gated on `viewerAccess.canAccessCrewSurfaces`. Pending viewers see published facts + join CTAs; crew blocks unlock after approval/RSVP. Welcome sheet: **Join group chat** · meeting on page when entitled. Deep link: `?joined=1`. **Host:** manage via wire **Manage** / `ActivityManageSheet` (not a public tab). Copy: `src/content/activityDetailCopy.ts` · engagement: `activityPeekEngagement.ts` · consumer layout guard: `src/config/activityDetailConsumerLayoutGuard.test.ts`.
 
 ## Back navigation
 
@@ -279,7 +297,7 @@ Canonical paths only in **new UI**. Legacy URLs redirect in `src/App.tsx` — do
 
 | Surface | Route | Tabs / layout (today → target) | Not a standalone page |
 |---------|-------|--------------------------------|-------------------------|
-| **Activity** | `/activity/:id` | **Plan · Place · Buddies · Transport** (`?tab=`) — shipped | — |
+| **Activity** | `/activity/:id` | **Scroll layout** — discovery facts + transport strip + wire CTAs (embed/manage: legacy tabs) | — |
 | **Place (trail)** | `/trail/:id` | **Overview · Facts · Transport · Guide** (`?tab=`; legacy `location` → transport) | — |
 | **Place (camp)** | `/camp/:id` | same as trail | — |
 | **Place (venue)** | `/venue/:id` | same as trail | — |

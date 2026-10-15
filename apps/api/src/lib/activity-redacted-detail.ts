@@ -1,4 +1,5 @@
 import type { ActivityDetailDTO } from '@uaetrail/shared-types';
+import { extractActivityTransportRequirementLines } from '@uaetrail/shared-types';
 import { buildActivityDto } from './mappers.js';
 
 type ActivityDetailSource = Parameters<typeof buildActivityDto>[0];
@@ -20,7 +21,9 @@ export const buildActivityRedactedDetail = (event: ActivityDetailSource): Activi
     description: '',
     joinMode: dto.joinMode,
     participationMode: dto.participationMode,
-    requirements: [],
+    requirements: extractActivityTransportRequirementLines(dto.requirements),
+    rideshareEnabled: dto.rideshareEnabled,
+    linkedRideshareActivityId: dto.linkedRideshareActivityId ?? null,
     slotsTotal: dto.slotsTotal,
     slotsAvailable: dto.slotsAvailable,
     price: dto.price,

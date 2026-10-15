@@ -1,6 +1,6 @@
 import { CalendarDays, Car, MapPin, Users } from 'lucide-react';
 import type { ActivityDetailTabId } from '../../../activity/activityDetailTab';
-import { ACTIVITY_DETAIL_TABS, ACTIVITY_DETAIL_TAB_LABELS } from '../../../activity/activityDetailTab';
+import { ACTIVITY_DETAIL_TAB_LABELS } from '../../../activity/activityDetailTab';
 import { ConsumerEntityTabBar } from '../../mobile/ConsumerEntityTabBar';
 
 const TAB_ICONS: Record<ActivityDetailTabId, typeof CalendarDays> = {
@@ -13,21 +13,17 @@ const TAB_ICONS: Record<ActivityDetailTabId, typeof CalendarDays> = {
 type ActivityDetailTabBarProps = {
   active: ActivityDetailTabId;
   onChange: (tab: ActivityDetailTabId) => void;
-  /** Omit Transport when the outing has no rideshare / linked transport content. */
-  showTransportTab?: boolean;
+  /** Kind template + wire — authoritative tab list for mobile chrome. */
+  visibleTabs: ActivityDetailTabId[];
 };
 
 /** Mobile-first icon tabs for activity detail. */
 export const ActivityDetailTabBar = ({
   active,
   onChange,
-  showTransportTab = true,
+  visibleTabs,
 }: ActivityDetailTabBarProps) => {
-  const tabIds = showTransportTab
-    ? ACTIVITY_DETAIL_TABS
-    : ACTIVITY_DETAIL_TABS.filter((tab) => tab !== 'transport');
-
-  const tabs = tabIds.map((id) => ({
+  const tabs = visibleTabs.map((id) => ({
     id,
     label: ACTIVITY_DETAIL_TAB_LABELS[id],
     icon: TAB_ICONS[id],

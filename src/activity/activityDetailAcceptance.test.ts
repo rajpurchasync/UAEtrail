@@ -91,7 +91,8 @@ describe('activity detail program — governance', () => {
     const hostHandlers = read('src/activity/publishedActivityCtaHandlers.ts');
     expect(hostHandlers).toMatch(/onViewParticipants\?:/);
     const detail = read('src/pages/ActivityDetail.tsx');
-    expect(detail).toMatch(/onViewParticipants: \(\) => setMobileTab\('buddies'\)/);
+    expect(detail).toMatch(/onOpenHostManage/);
+    expect(read('src/components/activity/ActivityDetailView.tsx')).toMatch(/onOpenHostManage/);
     expect(actions).toMatch(/onShareHostedActivity/);
     expect(model).toMatch(/onShareHostedActivity: shareHostedActivity/);
     const listFeed = read('src/list/ui/ListFeedActionsProvider.tsx');
@@ -146,12 +147,14 @@ describe('activity detail program — governance', () => {
     expect(peekActions).not.toMatch(/<HostActivityCtas/);
   });
 
-  it('AD-PRES-03: host detail uses wire plan_host_share footer + hostDetailCtas', () => {
+  it('AD-PRES-03: host detail uses wire CTAs + ActivityManageSheet (no legacy host footer override)', () => {
     const sticky = read('src/components/activity/detail/ActivityDetailStickyFooter.tsx');
     expect(sticky).toMatch(/hostSecondaryActions/);
     expect(sticky).toMatch(/plan_host_share/);
     const page = read('src/pages/ActivityDetail.tsx');
-    expect(page).toMatch(/hostDetailCtas/);
+    expect(page).toMatch(/onOpenHostManage/);
+    expect(page).toMatch(/hostSheets\.hostManageSheet/);
+    expect(page).not.toMatch(/hostDetailCtas/);
     expect(page).not.toMatch(/footerOverride/);
     const view = read('src/components/activity/ActivityDetailView.tsx');
     expect(view).not.toMatch(/hostMobilePlanAccessory/);
@@ -166,11 +169,64 @@ describe('activity detail program — governance', () => {
     expect(hero).toMatch(/pendingJoinInviteCount/);
   });
 
-  it('AD-LAYOUT-01: redacted viewers use full tab shell (not host previewMode)', () => {
+  it('AD-PRES-04: consumer detail wire CTAs — modal sheet footer (peek parity)', () => {
+    const consumerBody = read('src/activity/detail/templates/ActivityConsumerDetailPage.tsx');
+    const view = read('src/components/activity/ActivityDetailView.tsx');
+    expect(view).toMatch(/ActivityConsumerDetailModalShell/);
+    expect(view).toMatch(/footer=\{model\.stickyFooter\}/);
+    expect(consumerBody).toMatch(/ConsumerDetailHostRow/);
+    const joinSurfaces = read('src/components/activity/detail/useActivityDetailJoinSurfaces.tsx');
+    expect(joinSurfaces).toMatch(/consumerWireEngagementCta/);
+    expect(consumerBody).toMatch(/ConsumerDetailGettingThere/);
+    expect(consumerBody).toMatch(/ConsumerDetailLead/);
+    expect(consumerBody).toMatch(/ConsumerDetailSocialRow/);
+    expect(consumerBody).toMatch(/activity-detail-meeting-point/);
+    const actions = read('src/components/activity/detail/ActivityDetailEngagementActions.tsx');
+    expect(actions).toMatch(/resolveActivityMapPeekActions/);
+    expect(actions).toMatch(/view_detail/);
+  });
+
+  it('AD-GUEST-01: guests get page-level sign-in gate only (map peek uses browse gate)', () => {
+    const page = read('src/pages/ActivityDetail.tsx');
+    expect(page).toMatch(/ActivityDetailGuestGate/);
+    expect(page).toMatch(/if \(!user\)/);
+    const peekJoin = read('src/explore/ui/useExploreSelectionPeekJoin.ts');
+    expect(peekJoin).toMatch(/openGuestBrowseGate/);
+    const access = read('src/access/mapViewerAccessToUi.ts');
+    expect(access).toMatch(/guest_gate/);
+  });
+
+  it('AD-LAYOUT-01: public route uses consumer scroll layout (embed keeps tab wire)', () => {
     const page = read('src/pages/ActivityDetail.tsx');
     expect(page).not.toMatch(/previewMode=\{isRedactedPreview\}/);
     expect(page).toMatch(/requiresSignIn/);
-    expect(page).toMatch(/onMobileTabChange=\{setMobileTab\}/);
+    const shell = read('src/activity/detail/templates/ActivityDetailPageShell.tsx');
+    expect(shell).toMatch(/consumerDetailLayout/);
+    const handlers = read('src/activity/useActivityDetailMapPeekHandlers.ts');
+    expect(handlers).toMatch(/consumerDetailLayout/);
+    expect(handlers).toMatch(/onOpenParticipationManage/);
+  });
+
+  it('AD-LAYOUT-02: guests never render consumer detail shell (sign-in gate only)', () => {
+    const page = read('src/pages/ActivityDetail.tsx');
+    expect(page).toMatch(/inviteOnlyLock/);
+    expect(page).toMatch(/if \(!user\) \{[\s\S]*ActivityDetailGuestGate/);
+    expect(page).toMatch(/backLabel=""/);
+    const view = read('src/components/activity/ActivityDetailView.tsx');
+    expect(view).toMatch(/backLabel = ''/);
+  });
+
+  it('AD-PRIVATE-01: private hosted plans stay off Explore/Browse and invite-only on detail', () => {
+    const mapBase = read('apps/api/src/lib/explore-map-base.ts');
+    expect(mapBase).toMatch(/resolveJoinMode\(event\.joinMode, event\.requirements\) === 'private'/);
+    const assembler = read('apps/api/src/lib/activity-read-assembler.ts');
+    expect(assembler).toMatch(/shouldHideActivityFromExploreMap/);
+    const access = read('packages/shared-types/src/activity-viewer-access.ts');
+    expect(access).toMatch(/gateReason: 'invite_only'/);
+    const page = read('src/pages/ActivityDetail.tsx');
+    expect(page).toMatch(/not listed on Explore/);
+    const routes = read('apps/api/src/routes/user/registerPublicActivityRoutes.ts');
+    expect(routes).toMatch(/assertPrivateActivityJoinAllowed/);
   });
 
   it('AD-TEMPLATE-01: `/activity/:id` routes through per-kind consumer page templates', () => {
@@ -198,40 +254,101 @@ describe('activity detail program — governance', () => {
     expect(read('src/pages/AreaDetailPage.tsx')).toMatch(/AreaDetailView/);
   });
 
-  it('AD-FOLD-01: consumer shell enables marketing fold above tab body', () => {
+  it('AD-PAGE-MODEL-01 (S13-W7): L1 page model drives tab bar + plan facts', () => {
+    expect(read('src/activity/detail/buildActivityDetailPageModel.ts')).toMatch(
+      /buildActivityDetailPageModel/
+    );
+    const vm = read('src/components/activity/detail/useActivityDetailViewModel.tsx');
+    expect(vm).toMatch(/buildActivityDetailPageModel/);
+    expect(vm).toMatch(/visibleMobileTabs/);
+    const tabBar = read('src/components/activity/detail/ActivityDetailTabBar.tsx');
+    expect(tabBar).toMatch(/visibleTabs/);
+    const planColumn = read('src/components/activity/detail/ActivityDetailPlanColumn.tsx');
+    expect(planColumn).toMatch(/KindPlanSections/);
+    expect(planColumn).not.toMatch(/ActivityDetailPlanFactsSection/);
+    expect(planColumn).toMatch(/showPlaceTab/);
+    expect(planColumn).toMatch(/showTransportTab/);
+    const body = read('src/components/activity/detail/ActivityDetailBody.tsx');
+    expect(body).toMatch(/ActivityDetailPlanColumn/);
+    expect(body).toMatch(/ActivityDetailSidebarColumn/);
+    expect(body).not.toMatch(/ActivityDetailPlaceTabPanels/);
+    expect(read('src/pages/ActivityDetail.tsx')).toMatch(/resolveActivityDetailMobileTab/);
+    expect(read('src/pages/ActivityDetail.tsx')).toMatch(/ActivityDetailByKind/);
+    expect(read('src/pages/ActivityDetail.tsx')).not.toMatch(/<ActivityDetailView/);
+  });
+
+  it('AD-ROUTE-LAYER-01: route loader vs kind templates (place parity)', () => {
+    const page = read('src/pages/ActivityDetail.tsx');
+    expect(page).toMatch(/usePublicActivityDetail/);
+    expect(page).toMatch(/ActivityDetailByKind/);
+    expect(read('src/activity/detail/templates/ActivityDetailByKind.tsx')).toMatch(
+      /PAGE_BY_KIND/
+    );
+    expect(read('src/pages/place/HikingPlaceDetailPage.tsx')).toMatch(/PlaceDetailPage/);
+    expect(read('src/activity/detail/templates/HikingActivityDetailPage.tsx')).toMatch(
+      /ActivityDetailPageShell/
+    );
+  });
+
+  it('AD-KIND-COMPOSER-01 (S13-W7): kind pages wire plan section composers', () => {
+    for (const file of [
+      'src/activity/detail/templates/HikingActivityDetailPage.tsx',
+      'src/activity/detail/templates/CampingActivityDetailPage.tsx',
+      'src/activity/detail/templates/RideshareActivityDetailPage.tsx',
+      'src/activity/detail/templates/OtherActivityDetailPage.tsx',
+    ]) {
+      const source = read(file);
+      expect(source).toMatch(/planSections=/);
+      expect(source).toMatch(/ActivityDetailPlanSections/);
+    }
+    expect(read('src/activity/detail/composers/index.ts')).toMatch(
+      /ACTIVITY_DETAIL_KIND_PLAN_SECTIONS/
+    );
+  });
+
+  it('AD-FOLD-01: consumer shell uses scroll layout (no tab body on public route)', () => {
     const shell = read('src/activity/detail/templates/ActivityDetailPageShell.tsx');
-    expect(shell).toMatch(/showConsumerMarketingFold/);
-    const fold = read('src/components/activity/detail/ActivityDetailMarketingFold.tsx');
-    expect(fold).toMatch(/ActivityDetailEngagementStrips/);
-    expect(fold).toMatch(/ActivityDetailMobileHero/);
+    expect(shell).toMatch(/consumerDetailLayout/);
+    const consumerBody = read('src/activity/detail/templates/ActivityConsumerDetailPage.tsx');
+    expect(consumerBody).toMatch(/ConsumerDetailGettingThere/);
+    expect(consumerBody).toMatch(/ConsumerDetailLead/);
     const view = read('src/components/activity/ActivityDetailView.tsx');
-    expect(view).toMatch(/ActivityDetailMarketingFold/);
+    expect(view).toMatch(/ActivityConsumerDetailPage/);
     expect(read('src/activity/detail/activityDetailPageShellCard.ts')).toMatch(
       /buildActivityDetailPageShellCard/
     );
   });
 
-  it('AD-BODY-01: merged Plan block + host on Plan (not price sidebar) for consumer fold', () => {
-    const body = read('src/components/activity/detail/ActivityDetailBody.tsx');
+  it('AD-BODY-01: consumer body hosts profile + published facts; embed keeps Plan column', () => {
+    const body = read('src/components/activity/detail/ActivityDetailPlanColumn.tsx');
     const aboutIdx = body.indexOf('<ActivityDetailPlanAboutCard');
-    const hostIdx = body.indexOf('<ActivityDetailHostProfileCard');
     const extrasIdx = body.indexOf('<ActivityDetailPlanExtras');
     const placeIdx = body.indexOf('<ActivityDetailPlaceTabPanels');
+    const consumerBody = read('src/activity/detail/templates/ActivityConsumerDetailPage.tsx');
+    const hostIdx = consumerBody.indexOf('<ConsumerDetailHostRow');
+    const publishedFactsIdx = consumerBody.indexOf('<ConsumerDetailLead');
+    const sidebarColumn = read('src/components/activity/detail/ActivityDetailSidebarColumn.tsx');
     const sidebar = read('src/components/activity/detail/ActivityDetailPricingSidebar.tsx');
-    const model = read('src/components/activity/detail/useActivityDetailViewModel.ts');
+    const model = read('src/components/activity/detail/useActivityDetailViewModel.tsx');
+    const view = read('src/components/activity/ActivityDetailView.tsx');
     expect(aboutIdx).toBeGreaterThan(-1);
-    expect(hostIdx).toBeGreaterThan(aboutIdx);
-    expect(extrasIdx).toBeGreaterThan(hostIdx);
+    expect(body).not.toMatch(/<ActivityDetailHostProfileCard/);
+    expect(hostIdx).toBeGreaterThan(-1);
+    expect(publishedFactsIdx).toBeGreaterThan(-1);
+    expect(model).toMatch(/buildActivityDetailPageShellCard/);
+    expect(extrasIdx).toBeGreaterThan(aboutIdx);
     expect(placeIdx).toBeGreaterThan(extrasIdx);
-    expect(body).toMatch(/hideHostProfile=\{model\.showConsumerMarketingFold\}/);
+    expect(sidebarColumn).toMatch(
+      /hideHostProfile=\{model\.consumerDetailLayout \|\| model\.requiresSignIn\}/
+    );
     expect(sidebar).toMatch(/hideHostProfile/);
     expect(sidebar).toMatch(/ActivityDetailHostProfileCard/);
-    expect(model).toMatch(/showConsumerMarketingFold[\s\S]*hidden md:block/);
+    expect(view).toMatch(/ActivityConsumerDetailModalShell/);
   });
 
   it('AD-CHROME-01: mobile chrome uses emoji + activity title (AD-2b, not kind-only chrome)', () => {
     const view = read('src/components/activity/ActivityDetailView.tsx');
-    const model = read('src/components/activity/detail/useActivityDetailViewModel.ts');
+    const model = read('src/components/activity/detail/useActivityDetailViewModel.tsx');
     const chrome = read('src/activity/activityKindChrome.ts');
     expect(model).not.toMatch(/kindChromeTitle/);
     expect(model).toMatch(/activityTitleChromeLine/);
@@ -247,19 +364,23 @@ describe('activity detail program — engagement wire (AD-PRO-01, AD-PRES-02)', 
     expect(peopleRow).toMatch(/buddyUserIdsOnActivity/);
   });
 
-  it('AD-PRES-02: detail shell consumes presentation.footerByTab + tabs from wire', () => {
+  it('AD-PRES-02: public route uses presentation.consumerLayout; embed keeps tab wire', () => {
     const page = read('src/pages/ActivityDetail.tsx');
-    expect(page).toMatch(/footerByTab/);
-    expect(page).toMatch(/wireTabs/);
-    const view = read('src/components/activity/ActivityDetailView.tsx');
-    const model = read('src/components/activity/detail/useActivityDetailViewModel.ts');
-    expect(view).toMatch(/wireFooterByTab/);
-    expect(view).toMatch(/wireTabs/);
+    expect(page).toMatch(/consumerLayout/);
+    expect(page).not.toMatch(/wireFooterByTab/);
+    expect(page).not.toMatch(/wireTabs=/);
+    const consumerBody = read('src/activity/detail/templates/ActivityConsumerDetailPage.tsx');
+    expect(consumerBody).toMatch(/consumerLayout/);
+    expect(read('packages/shared-types/src/activity-detail-presentation.ts')).toMatch(
+      /consumerLayout/
+    );
+    const manage = read('src/components/activity/ActivityManageSheet.tsx');
+    expect(manage).toMatch(/wireTabs/);
+    const model = read('src/components/activity/detail/useActivityDetailViewModel.tsx');
     expect(model).toMatch(/resolveActivityDetailTabUi/);
-    expect(model).not.toMatch(/resolveActivityDetailEngagementFooterKind/);
-    const pageWire = read('src/pages/ActivityDetail.tsx');
-    expect(pageWire).toMatch(/resolveActivityDetailWirePresentation/);
-    expect(pageWire).toMatch(/effectiveWirePresentation/);
+    expect(page).toMatch(/resolveActivityDetailWirePresentation/);
+    expect(page).toMatch(/effectiveWirePresentation/);
+    expect(page).toMatch(/mergeActivityDetailWirePresentation/);
   });
 });
 

@@ -3,6 +3,7 @@ import {
   resolveActivityEngagementMapPeekStrips,
   type ActivityViewerAccessDTO,
 } from '@uaetrail/shared-types';
+import { activityPeekHasMapWireActions } from '../activity/activityPeekEngagement';
 import { mapViewerAccessToExplorePeekDetail, type ExplorePeekDetailAccess } from './mapViewerAccessToUi';
 import { exploreCardIsSeeking, type ExploreCardModel } from '../explore/exploreCardModel';
 
@@ -25,9 +26,13 @@ export const resolvePeekDetailAccess = (
   const href = card.path?.trim();
   if (!href) return null;
 
-  if (options.joinStateLoading) {
-    if (card.viewerAccess?.exposure === 'none' || card.viewerAccess?.canOpenDetailPage === false) {
+  // Map enrich already resolved gates — do not hide detail / secondary links while join context loads.
+  if (options.joinStateLoading && !activityPeekHasMapWireActions(card)) {
+    if (card.viewerAccess?.canOpenDetailPage === false) {
       return { kind: 'members_only' };
+    }
+    if (card.viewerAccess && exploreCardIsHostedPlanPeek(card)) {
+      return mapViewerAccessToExplorePeekDetail(card.viewerAccess, href);
     }
     return { kind: 'link', href };
   }

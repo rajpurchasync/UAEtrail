@@ -28,7 +28,7 @@ export const computeActivityViewerEntitlements = (input: {
     input.canAccessCrewSurfaces && (input.level === 'participant' || input.level === 'activity_group_member');
 
   const canViewHostProfileBeforeJoin = preJoin
-    ? input.isProMember || input.isFriendOfHost
+    ? input.isProMember || input.isFriendOfHost || input.level === 'join_request'
     : true;
 
   return {

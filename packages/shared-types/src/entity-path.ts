@@ -108,9 +108,51 @@ export const organisationProfilePath = (
 /** @deprecated Use {@link hostBrandProfilePath} */
 export const hostStorefrontProfilePath = hostBrandProfilePath;
 
-/** Member profile for community hosts and demand requesters. */
-export const memberProfilePath = (userId?: string | null): string | null =>
-  userId ? `/member/${userId}` : null;
+/**
+ * Where the viewer tapped through from — same {@link memberProfilePath} page layout;
+ * drives API discover quota (`discover=1`) and analytics only, not a separate route.
+ */
+export type MemberProfileBrowseLens =
+  | 'organic'
+  | 'discover'
+  | 'friends'
+  | 'available'
+  | 'host';
+
+export type MemberProfilePathOptions = {
+  /**
+   * Directory / quota path — sets `discover=1` (API also accepts `from=discover`).
+   * Use for Explore **Connect** directory and `GET /users/browse` row opens.
+   */
+  discover?: boolean;
+  /** Browse entry lens — serialized as `source=` when not `organic`. */
+  lens?: MemberProfileBrowseLens;
+};
+
+/** Member profile for community hosts, buddies, and people browse — one public page. */
+export const memberProfilePath = (
+  userId?: string | null,
+  opts?: MemberProfilePathOptions
+): string | null => {
+  if (!userId) return null;
+  const base = `/member/${userId}`;
+  const lens = opts?.lens ?? (opts?.discover ? 'discover' : 'organic');
+  const useDiscover = opts?.discover === true || lens === 'discover';
+  const params = new URLSearchParams();
+  if (useDiscover) {
+    params.set('discover', '1');
+    params.set('from', 'discover');
+  }
+  if (lens !== 'organic') {
+    params.set('source', lens);
+  }
+  const qs = params.toString();
+  return qs ? `${base}?${qs}` : base;
+};
+
+/** @deprecated Prefer `memberProfilePath(userId, { discover: true, lens: 'discover' })`. */
+export const memberDiscoverProfilePath = (userId: string): string =>
+  memberProfilePath(userId, { discover: true, lens: 'discover' })!;
 
 /**
  * @deprecated Prefer {@link resolveActivityPublisherProfilePath} for activities.
