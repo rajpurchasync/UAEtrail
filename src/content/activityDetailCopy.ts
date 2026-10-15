@@ -7,6 +7,9 @@ export const ACTIVITY_DETAIL_TAB_TRANSPORT = 'Transport';
 export const ACTIVITY_DETAIL_CREW_LOCKED_HINT =
   'Join this outing to see who’s going and open the group chat.';
 
+export const ACTIVITY_DETAIL_JOIN_REQUIRED_PLAN_HINT =
+  'RSVP or request a spot to unlock meeting details and the group chat.';
+
 export const ACTIVITY_DETAIL_TRANSPORT_EMPTY_HINT =
   'No shared ride or transport listing for this outing yet.';
 

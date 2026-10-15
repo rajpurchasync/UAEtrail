@@ -5,13 +5,13 @@ import { join, relative } from 'node:path';
 const SRC_ROOT = join(process.cwd(), 'src');
 
 /** R1.5 — production code builds cards via `buildDiscoveryCardViewModel*` only. */
-const BUILD_EXPLORE_CARD_MODEL_ALLOWLIST = new Set([
+const BUILD_DISCOVERY_CARD_MODEL_ALLOWLIST = new Set([
   'src/discovery/discoveryCardViewModel.ts',
-  'src/explore/exploreCardModel.ts',
+  'src/discovery/discoveryCardModel.ts',
 ]);
 
-const usesBuildExploreCardModel = (source: string): boolean =>
-  /\bbuildExploreCardModel\b/.test(source);
+const usesDirectCardModelBuild = (source: string): boolean =>
+  /\bbuildExploreCardModel\b/.test(source) || /\bbuildDiscoveryCardModel\b/.test(source);
 
 const collectSourceFiles = (dir: string): string[] => {
   const entries = readdirSync(dir);
@@ -33,14 +33,14 @@ const collectSourceFiles = (dir: string): string[] => {
 };
 
 describe('discoveryCardBuilderGuard (R1.5)', () => {
-  it('only discovery VM / exploreCardModel call buildExploreCardModel in app code', () => {
+  it('only discovery VM / discoveryCardModel call buildDiscoveryCardModel in app code', () => {
     const files = collectSourceFiles(SRC_ROOT);
     const offenders: string[] = [];
 
     for (const file of files) {
-      if (BUILD_EXPLORE_CARD_MODEL_ALLOWLIST.has(file)) continue;
+      if (BUILD_DISCOVERY_CARD_MODEL_ALLOWLIST.has(file)) continue;
       const source = readFileSync(join(process.cwd(), file), 'utf8');
-      if (usesBuildExploreCardModel(source)) {
+      if (usesDirectCardModelBuild(source)) {
         offenders.push(file);
       }
     }

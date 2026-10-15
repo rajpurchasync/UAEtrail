@@ -8,6 +8,7 @@ const SCAN_ROOT = join(process.cwd(), 'src');
 const EXPLORE_QUERY_ALLOWLIST = new Set([
   'src/explore/routing.ts',
   'src/explore/compose.ts',
+  'src/discovery/discoveryCardModel.ts',
   'src/explore/exploreCardModel.ts',
   'src/config/platform.ts',
   'src/config/routingCatalog.ts',

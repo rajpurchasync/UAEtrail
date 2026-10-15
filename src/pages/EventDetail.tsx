@@ -1,4 +1,4 @@
-import { PlaceDetailPage } from './PlaceDetailPage';
+import { EventPlaceDetailPage } from './place/EventPlaceDetailPage';
 
-/** Event venue detail — trail runs, races, and other outdoor event locations. */
-export const EventDetail = () => <PlaceDetailPage kind="event" />;
+/** @deprecated Use `EventPlaceDetailPage` — kept for `/venue` route name. */
+export const EventDetail = EventPlaceDetailPage;

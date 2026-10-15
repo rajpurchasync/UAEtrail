@@ -3,7 +3,9 @@ import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { buildDiscoveryCardViewModelCard } from '../discovery';
 import { legacyDemandExploreMapItem } from './exploreMapItemFixtures';
 
-const seekingWithActivity = (): ExploreMapItemDTO =>
+const seekingWithActivity = (
+  partial: Partial<ExploreMapItemDTO> = {}
+): ExploreMapItemDTO =>
   ({
     id: 'activity:act-1',
     kind: 'hiking',
@@ -20,6 +22,10 @@ const seekingWithActivity = (): ExploreMapItemDTO =>
       activityType: 'hiking',
       joinMode: 'open',
     },
+    ...partial,
+    ...(partial.activity
+      ? { activity: { id: 'act-1', title: 'Find crew', activityType: 'hiking', joinMode: 'open', ...partial.activity } }
+      : {}),
   }) as ExploreMapItemDTO;
 
 describe('exploreCardModel seeking (R4.3)', () => {
@@ -28,6 +34,31 @@ describe('exploreCardModel seeking (R4.3)', () => {
     expect(card.activityId).toBe('act-1');
     expect(card.participantIntentId).toBeNull();
     expect(card.sharePath).toMatch(/pin=activity(%3A|:)act-1/);
+  });
+
+  it('peek headline uses requester first name, not Organizer fallback', () => {
+    const card = buildDiscoveryCardViewModelCard(
+      seekingWithActivity({
+        hostName: 'Organizer',
+        featuredPerson: {
+          userId: 'u1',
+          displayName: 'Organizer',
+          role: 'requester',
+        },
+        activity: {
+          id: 'act-1',
+          title: 'Find crew',
+          activityType: 'hiking',
+          joinMode: 'open',
+          createdByName: 'Fatima Al Mazrouei',
+          tenantName: 'Fatima Al Mazrouei',
+          hostName: 'Organizer',
+        },
+      })
+    );
+    expect(card.sections.highlightName).toBe('Fatima');
+    expect(card.headline).toContain('Fatima');
+    expect(card.headline).not.toMatch(/^Organizer is looking for/i);
   });
 
   it('keeps participantIntentId for legacy demand-only wire rows', () => {

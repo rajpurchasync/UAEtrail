@@ -12,7 +12,7 @@
 | **Groups admin** | `/groups` | Create/manage groups, members, **who can message** — **no inline chat** |
 | **Activity detail** | `/activity/:id` | Plan/Buddies footers + welcome sheet → **group chat**; invite via `ActivityInviteSharePanel`; crew only when `viewerAccess.canAccessCrewSurfaces` |
 | **Plan (My Plans)** | `/plan` | Hosted manage sheet (`ActivityManageSheet`) → same detail shell + **Message crew**; joined peek sheet → full plan / group chat |
-| **Explore** | `/explore` | Map peek **`viewerAccess.mapPeekActions`** (join, pending, participant, …); activity **host user** sees **Chat · Manage** + **View details** on own pins; shops use **`ExplorePeekDetailLink`** (View / Rate); cancel/delete via **`HostActivityCancelDialog`**; withdraw on activity detail only |
+| **Explore** | `/explore` | Map peek **`viewerAccess.mapPeekActions`** (join, pending, participant, …); activity **host user** sees **Chat · Manage** + **View details** on own pins; shops use **`PeekDetailLink`** (View / Rate); cancel/delete via **`HostActivityCancelDialog`**; withdraw on activity detail only |
 
 Legacy redirects only: `/host/messages`, `/operator/messages`, `/dashboard/messages` → `/messages` ([`NAVIGATION.md`](./NAVIGATION.md)). **Do not** add a second inbox route or host-only messages shell.
 

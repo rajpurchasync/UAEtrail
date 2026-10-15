@@ -8,7 +8,8 @@ const read = (relativePath: string) => readFileSync(join(process.cwd(), relative
  * consumer-detail-surfaces plan §15.3 — back nav + tab chrome on entity detail surfaces.
  */
 const DETAIL_BACK_VIA_CATALOG: Array<{ path: string; pattern: RegExp }> = [
-  { path: 'src/pages/ActivityDetail.tsx', pattern: /detailBackPath/ },
+  { path: 'src/pages/ActivityDetail.tsx', pattern: /ActivityDetailByKind/ },
+  { path: 'src/activity/detail/templates/ActivityDetailPageShell.tsx', pattern: /ActivityDetailView/ },
   { path: 'src/components/activity/ActivityDetailView.tsx', pattern: /detailBackPath/ },
   { path: 'src/components/place/PlaceDetailCore.tsx', pattern: /detailBackPath/ },
   { path: 'src/pages/AreaDetailPage.tsx', pattern: /detailBackPath/ },

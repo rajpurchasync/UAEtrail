@@ -1,6 +1,6 @@
 # Activity detail & map peek — implementation program
 
-**Status:** `complete` (Oct 2026) · **Phases 0–8 shipped**; §6.2 narrative rows may still show ◐ for polish — wire + AD-CTA-01 are source of truth  
+**Status:** `complete` (Oct 2026) · **Phases 0–9 shipped** (kind templates, marketing fold, Plan IA); §6.2 narrative rows may still show ◐ for polish — wire + AD-CTA-01 remain source of truth for CTAs  
 **Tier-1 (surgical only):** [`NAVIGATION.md`](../NAVIGATION.md) § Activity detail · [`CREATE_FLOW.md`](../CREATE_FLOW.md) · [`DOMAIN_CANONICALS.md`](../DOMAIN_CANONICALS.md) §15 · [`MEMBER_MODEL.md`](../MEMBER_MODEL.md) · [`COMMUNICATION.md`](../COMMUNICATION.md)  
 **Related track (do not merge backlogs):** [`member-surfaces-implementation-plan.md`](./member-surfaces-implementation-plan.md) §19 Plan hub / seeking — **complete** for eng.
 
@@ -42,6 +42,19 @@ This document is the **only checkbox board** for activity peek + detail tabs. §
 | Chrome: emoji + **activity title** (AD-2b) | `activityType`, `title`, `activityIdentity` formatters |
 | Kind label | Fact chips (not chrome) — pending Tier-1 sync |
 | Copy | `src/content/activityDetailCopy.ts` |
+
+### 2.1 Consumer page architecture (not Explore map UI)
+
+| Piece | Module | Role |
+|-------|--------|------|
+| **Route loader** | `src/pages/ActivityDetail.tsx` | Data, `viewerAccess`, modals; renders **`ActivityDetailByKind`** |
+| **Kind router** | `src/activity/detail/templates/ActivityDetailByKind.tsx` | `activityType` → `HikingActivityDetailPage` · `Camping…` · `Rideshare…` · `Other…` |
+| **Consumer shell seam** | `ActivityDetailPageShell.tsx` | `/activity/:id` only — extension point for marketing fold (§6.0) above tabs; **delegates** to view |
+| **Implementation** | `ActivityDetailView.tsx` | `MobileDetailShell` + `useActivityDetailViewModel` + `ActivityDetailBody`; also **embedded** in host preview + `ActivityManageSheet` (no kind router) |
+
+**No duplicate logic today:** `ActivityDetailPageShell` is a named boundary for S9 Phase 2 kind templates; host/console surfaces import **`ActivityDetailView`** directly so they are not tied to hiking/camping page wrappers.
+
+**Place catalog (parallel pattern):** `HikingPlaceDetailPage` (`/trail`), `CampingPlaceDetailPage` (`/camp`), `EventPlaceDetailPage` (`/venue`) → shared `PlaceDetailPage`. **Area:** `AreaDetailPage` → `AreaDetailView`.
 
 ---
 
@@ -313,6 +326,15 @@ Reuse **same engagement policy**; add **presentation slices** per `activityType`
 
 - [x] Post check-in prompts on Plan/Buddies
 
+### Phase 9 — Kind templates + detail marketing fold ◐
+
+- [x] AD-TEMPLATE-01: `ActivityDetailByKind` + per-`activityType` page components + `ACTIVITY_DETAIL_TEMPLATE_CONFIG` (default tab: rideshare → Transport)
+- [x] AD-LAYOUT-01: Guest/redacted viewers keep full tab shell (`requiresSignIn` on Plan; not `previewMode` for exposure)
+- [x] AD-FOLD-01: Detail **marketing fold** above tabs — hero + Participants + Logistics strips (§6.0 parity with map peek presentation, not a second policy brain)
+- [x] AD-BODY-01: Merged Plan body order (D5); host on Plan tab + strips; price sidebar desktop-only on consumer route
+
+Aligns with [`consumer-detail-surfaces-plan.md`](./consumer-detail-surfaces-plan.md) **Phase 2** (kind parity) and §2.3 kind table.
+
 ---
 
 ## 8. Trace matrix (requirement → test)
@@ -339,18 +361,26 @@ Reuse **same engagement policy**; add **presentation slices** per `activityType`
 | AD-LIST-08 | One peek action executor (map peek + list feed) | `executeActivityMapPeekAction.test.ts` + `activityDetailAcceptance` AD-LIST-08 | done |
 | AD-HYGIENE-01 | No list-feed provider on People browse | `activityDetailAcceptance` AD-HYGIENE-01 | done |
 | AD-HYGIENE-02 | Poster + map list wire footers share one button row | `activityDetailAcceptance` AD-HYGIENE-02 + `ListFeedWireFooterButtons` | done |
+| AD-TEMPLATE-01 | `/activity/:id` routes through kind page templates | `activityDetailAcceptance` AD-TEMPLATE-01 | done |
+| AD-LAYOUT-01 | Redacted/guest use tab shell (not host `previewMode`) | `activityDetailAcceptance` AD-LAYOUT-01 | done |
+| AD-FOLD-01 | §6.0 strips on detail above tabs | `activityDetailAcceptance` AD-FOLD-01 + `activityDetailPageShellCard.test` | done |
+| AD-BODY-01 | D5 merged Plan + marketing IA | `activityDetailAcceptance` AD-BODY-01 | done |
 
 ---
 
-## 9. Remove targets (when closing Phase 4–5)
+## 9. Remove targets (when closing Phase 4–5 + Phase 9)
 
-| Target | Replaced by |
-|--------|-------------|
-| `showHostActivityCtas` on activity map/list peek | Wire `mapPeekActions` + handlers ✅ |
-| Duplicate peek CTA logic in `ExploreItemPeekParts` | `resolveActivityPeekEngagement` only ✅ |
-| FE-only `computeActivityMapPeekActions` outside fallback module | API wire + `activityPeekEngagement` fallback ✅ |
-| Duplicate peek **action handlers** (map vs list) | `executeActivityMapPeekAction` (AD-LIST-08) ✅ |
-| Multiple engagement **resolvers** (flags vs wire vs peek) | L1 policy; optional FE barrel merge later |
+| Target | Replaced by | When |
+|--------|-------------|------|
+| `showHostActivityCtas` on activity map/list peek | Wire `mapPeekActions` + handlers ✅ | done |
+| Duplicate peek CTA logic in `ExploreItemPeekParts` | `resolveActivityPeekEngagement` only ✅ | done |
+| FE-only `computeActivityMapPeekActions` outside fallback module | API wire + `activityPeekEngagement` fallback ✅ | done |
+| Duplicate peek **action handlers** (map vs list) | `executeActivityMapPeekAction` (AD-LIST-08) ✅ | done |
+| Multiple engagement **resolvers** (flags vs wire vs peek) | L1 policy; optional FE barrel merge later | optional |
+| `activityDetailExploreCard.ts`, `ActivityDetailMarketingFold.tsx` (explore-named detail adapters) | `ActivityDetailPageShell` + peek strip reuse under `detail/` | ✅ removed |
+| `TrailDetail` / `CampDetail` / `EventDetail` page modules | Lazy `App.tsx` imports of `*PlaceDetailPage` directly | 2026-Q4 (keep shims until route grep clean) |
+| Host row duplicated in `ActivityDetailPricingSidebar` | Marketing fold host strip + Buddies tab (D5 / AD-BODY-01) | AD-BODY-01 close |
+| Direct `ActivityDetailView` on consumer route | `ActivityDetailByKind` only on `ActivityDetail.tsx` | ✅ enforced (guards) |
 
 ---
 

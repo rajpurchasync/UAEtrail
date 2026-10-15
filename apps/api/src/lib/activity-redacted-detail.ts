@@ -20,7 +20,7 @@ export const buildActivityRedactedDetail = (event: ActivityDetailSource): Activi
     description: '',
     joinMode: dto.joinMode,
     participationMode: dto.participationMode,
-    requirements: dto.requirements,
+    requirements: [],
     slotsTotal: dto.slotsTotal,
     slotsAvailable: dto.slotsAvailable,
     price: dto.price,

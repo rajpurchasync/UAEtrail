@@ -1,41 +1,41 @@
 import { Users } from 'lucide-react';
-import { exploreCardActivityShowsPeekSpots, type ExploreCardModel } from '../exploreCardModel';
+import { exploreCardActivityShowsPeekSpots, type ExploreCardModel } from '../../../exploreCardModel';
 import { exploreActivityPublisherSectionNoun } from '@uaetrail/shared-types';
-import { activityPeekPendingInviteChipLabel } from '../../content/activityPeekCopy';
-import { ORGANIZE_LINK_RIDESHARE_LABEL } from '../createFlowCopy';
-import { resolveActivityMapPeekStrips } from '../../activity/activityPeekEngagement';
+import { activityPeekPendingInviteChipLabel } from '../../../content/activityPeekCopy';
+import { ORGANIZE_LINK_RIDESHARE_LABEL } from '../../createFlowCopy';
+import { resolveActivityMapPeekStrips } from '../../../activity/activityPeekEngagement';
 import {
-  ExploreLinkedRidesharePeekIndication,
-  explorePeekHasLinkedRideshareAffordance,
-} from './ExploreLinkedRidesharePeekIndication';
+  ActivityPeekLinkedTransport,
+  activityPeekHasLinkedTransportAffordance,
+} from './ActivityPeekLinkedTransport';
 import {
   ExploreActivityPeekSpotsSection,
   ExploreCardPeopleRow,
-} from './ExploreCardPresentation';
-import type { JoinRequestUiState } from '../../utils/joinRequestUi';
+} from '../ExploreCardPresentation';
+import type { JoinRequestUiState } from '../../../utils/joinRequestUi';
 
 const stripShell = 'mt-3 rounded-xl border border-neutral-100 bg-neutral-50/80 px-3 py-2.5';
 const stripLabel = 'mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-neutral-500';
 
-type ExploreActivityPeekStripsProps = {
+export type ActivityPeekStripsProps = {
   card: ExploreCardModel;
   joinUiState?: JoinRequestUiState;
   onGuestGatedAction?: () => void;
-  onOpenExploreItem?: (exploreItemId: string) => void;
+  onOpenLinkedPin?: (pinItemId: string) => void;
   onOfferTransport?: () => void;
 };
 
-/** Activity map peek — spots, host, then transport / linked rideshare (no Pro upsell copy). */
-export const ExploreActivityPeekStrips = ({
+/** Activity pin summary — spots, host, transport / linked rideshare (L1 strip flags). */
+export const ActivityPeekStrips = ({
   card,
   joinUiState,
   onGuestGatedAction,
-  onOpenExploreItem,
+  onOpenLinkedPin,
   onOfferTransport,
-}: ExploreActivityPeekStripsProps) => {
+}: ActivityPeekStripsProps) => {
   const strips = resolveActivityMapPeekStrips(card, joinUiState);
   const showOfferTransport = Boolean(onOfferTransport) && strips.showOfferRideInLogistics;
-  const hasRideshareAffordance = explorePeekHasLinkedRideshareAffordance(card);
+  const hasRideshareAffordance = activityPeekHasLinkedTransportAffordance(card);
   const showTransportSection =
     strips.showLogisticsStrip && (hasRideshareAffordance || showOfferTransport);
   const publisherSectionLabel = exploreActivityPublisherSectionNoun(
@@ -69,7 +69,7 @@ export const ExploreActivityPeekStrips = ({
       ) : null}
       {showTransportSection ? (
         <section className={stripShell} aria-label="Transport">
-          <ExploreLinkedRidesharePeekIndication card={card} onOpenExploreItem={onOpenExploreItem} />
+          <ActivityPeekLinkedTransport card={card} onOpenLinkedPin={onOpenLinkedPin} />
           {showOfferTransport ? (
             <button
               type="button"

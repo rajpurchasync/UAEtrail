@@ -2,7 +2,7 @@ import type { ActivityMapPeekAction, ActivityMapPeekActionId } from '@uaetrail/s
 import type { ExploreCardModel } from '../explore/exploreCardModel';
 import { resolveActivityPeekEngagement } from '../activity/activityPeekEngagement';
 import { activityMapPeekActionLabel } from '../explore/exploreMapPeekActionCopy';
-import { exploreCardHasMapCoords, exploreCardIsSeeking } from '../explore/exploreCardModel';
+import { exploreCardHasMapCoords } from '../discovery/discoveryCardModel';
 import type { JoinRequestUiState } from '../utils/joinRequestUi';
 import {
   LIST_FEED_CTA_GET_DIRECTIONS,
@@ -131,33 +131,9 @@ export const resolveListFeedFooterModel = (
     };
   }
 
-  if (card.showDemandOwnerActions) {
-    return {
-      primary: { kind: 'link', label: card.primaryCta, href: card.path },
-      secondary: null,
-      usesJoinFlow: false,
-    };
-  }
-
   if (card.source === 'activity') {
     const fromPeek = resolveActivityJoinFooter(card, options);
     if (fromPeek) return fromPeek;
-  }
-
-  if (card.showJoinActions && exploreCardIsSeeking(card) && !isGuest) {
-    return {
-      primary: { kind: 'link', label: card.primaryCta, href: card.path },
-      secondary: card.secondaryCta ? { kind: 'link', label: card.secondaryCta, href: card.path } : null,
-      usesJoinFlow: false,
-    };
-  }
-
-  if (card.showJoinActions && exploreCardIsSeeking(card)) {
-    return {
-      primary: { kind: 'guest_gate', label: card.primaryCta },
-      secondary: card.secondaryCta ? { kind: 'link', label: card.secondaryCta, href: card.path } : null,
-      usesJoinFlow: false,
-    };
   }
 
   return {

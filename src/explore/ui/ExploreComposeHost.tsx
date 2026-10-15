@@ -29,6 +29,7 @@ interface ExploreComposeHostProps {
   onContributeSubmitted: (result: ContributeSubmitResult) => void;
   onDemandSubmitted: (result: DemandSubmitResult) => void;
   onCreateLinkedRideshare?: (parentActivity: ActivityDTO) => void;
+  tenantId?: string | null;
   planWithBuddyUserId?: string | null;
   /** When explore is scoped with `?area=`, prefill Find/Add curated area steps. */
   composeAreaSlug?: string | null;
@@ -57,6 +58,7 @@ export const ExploreComposeHost = ({
   onContributeSubmitted,
   onDemandSubmitted,
   onCreateLinkedRideshare,
+  tenantId = null,
   planWithBuddyUserId = null,
   composeAreaSlug = null,
 }: ExploreComposeHostProps) => (
@@ -105,6 +107,8 @@ export const ExploreComposeHost = ({
         onBackToIntent={onFindBackToIntent}
         onSubmitted={onDemandSubmitted}
         signInHref={signInHref}
+        tenantId={tenantId}
+        onCreateLinkedRideshare={onCreateLinkedRideshare}
       />
     )}
   </>

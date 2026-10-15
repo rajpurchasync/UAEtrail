@@ -3,31 +3,32 @@ import {
   EXPLORE_LINKED_PARENT_PLAN_PEEK_PREFIX,
   EXPLORE_RIDESHARE_AVAILABLE_LABEL,
   EXPLORE_VIEW_LINKED_PLAN_CTA,
-} from '../createFlowCopy';
-import type { ExploreCardModel } from '../exploreCardModel';
-import { linkedParentRidesharePeekCopy } from '../exploreLinkedParentRideshareCopy';
+} from '../../createFlowCopy';
+import type { DiscoveryCardModel } from '../../../discovery/discoveryCardModel';
+import { linkedParentRidesharePeekCopy } from '../../exploreLinkedParentRideshareCopy';
 
-type ExploreLinkedRidesharePeekIndicationProps = {
-  card: ExploreCardModel;
-  onOpenExploreItem?: (exploreItemId: string) => void;
+export type ActivityPeekLinkedTransportProps = {
+  card: DiscoveryCardModel;
+  onOpenLinkedPin?: (pinItemId: string) => void;
 };
 
 const panelClass =
   'mt-3 w-full rounded-xl border border-sky-200 bg-sky-50/90 px-3.5 py-3 text-left';
 const buttonPanelClass = `${panelClass} transition active:bg-sky-100/90`;
 
-/** True when peek should show a linked-plan or rideshare-available affordance. */
-export const explorePeekHasLinkedRideshareAffordance = (card: ExploreCardModel): boolean => {
+export const activityPeekHasLinkedTransportAffordance = (
+  card: DiscoveryCardModel
+): boolean => {
   if (card.kind === 'rideshare' && card.activity?.linkedParentActivity) return true;
   return Boolean(card.linkedRideshares?.length);
 };
 
-/** Bidirectional linked rideshare on map peek — parent plans get a single rideshare link; rideshare pins link back to the plan. */
-export const ExploreLinkedRidesharePeekIndication = ({
+/** Linked parent plan / rideshare rows on activity pin summary. */
+export const ActivityPeekLinkedTransport = ({
   card,
-  onOpenExploreItem,
-}: ExploreLinkedRidesharePeekIndicationProps) => {
-  const open = onOpenExploreItem;
+  onOpenLinkedPin,
+}: ActivityPeekLinkedTransportProps) => {
+  const open = onOpenLinkedPin;
 
   if (card.kind === 'rideshare' && card.activity?.linkedParentActivity) {
     const parent = card.activity.linkedParentActivity;
@@ -63,7 +64,6 @@ export const ExploreLinkedRidesharePeekIndication = ({
   };
 
   if (linked.length === 1) {
-    const row = linked[0]!;
     if (!open) {
       return (
         <p className="text-sm font-semibold text-sky-800">{EXPLORE_RIDESHARE_AVAILABLE_LABEL}</p>
@@ -72,7 +72,7 @@ export const ExploreLinkedRidesharePeekIndication = ({
     return (
       <button
         type="button"
-        onClick={() => openLinked(row.exploreItemId)}
+        onClick={() => openLinked(linked[0]!.exploreItemId)}
         className="inline-flex items-center gap-1 text-sm font-semibold text-sky-800 hover:underline"
       >
         {EXPLORE_RIDESHARE_AVAILABLE_LABEL}

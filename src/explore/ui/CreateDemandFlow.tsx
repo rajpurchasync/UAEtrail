@@ -9,7 +9,9 @@ import {
   Tent,
   Users,
 } from 'lucide-react';
+import type { ActivityDTO } from '@uaetrail/shared-types';
 import { useAuth } from '../../context/AuthContext';
+import { fetchPublicActivityDetail } from '../../hooks/publicActivityClientApi';
 import { MobileMonthCalendar } from '../../components/mobile/MobileMonthCalendar';
 import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
 import { FlowSheetChrome } from './ExploreFlowSheetChrome';
@@ -81,6 +83,8 @@ interface CreateDemandFlowProps {
   signInHref: string;
   findKind?: FindComposeKind | null;
   exploreAreaSlug?: string | null;
+  tenantId?: string | null;
+  onCreateLinkedRideshare?: (parent: ActivityDTO) => void;
 }
 
 const NextButton = ({
@@ -131,6 +135,8 @@ export const CreateDemandFlow = ({
   signInHref,
   findKind = null,
   exploreAreaSlug = null,
+  tenantId = null,
+  onCreateLinkedRideshare,
 }: CreateDemandFlowProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -140,11 +146,30 @@ export const CreateDemandFlow = ({
   const [selectedKind, setSelectedKind] = useState<DemandKind | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitResult, setSubmitResult] = useState<DemandSubmitResult | null>(null);
+  const [publishedActivity, setPublishedActivity] = useState<ActivityDTO | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showMonthView, setShowMonthView] = useState(false);
   const [areaMapOpen, setAreaMapOpen] = useState(false);
   const publishedAreas = useExplorePublishedAreas();
   const [routeMapTarget, setRouteMapTarget] = useState<'from' | 'to' | null>(null);
+
+  useEffect(() => {
+    if (!submitResult?.activityId) {
+      setPublishedActivity(null);
+      return;
+    }
+    let cancelled = false;
+    void fetchPublicActivityDetail(submitResult.activityId)
+      .then((detail) => {
+        if (!cancelled) setPublishedActivity(detail.activity);
+      })
+      .catch(() => {
+        if (!cancelled) setPublishedActivity(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [submitResult?.activityId]);
 
   const kind = draft.kind ?? selectedKind;
   const flowSteps = useMemo(() => (kind ? getDemandFlowSteps(kind) : []), [kind]);
@@ -391,7 +416,17 @@ export const CreateDemandFlow = ({
         kind={submittedKind}
         draft={{ ...draft, kind: submittedKind }}
         visibleOnMap={submitResult.visibleOnMap}
+        tenantId={tenantId}
+        publishedActivity={publishedActivity}
         onPrimaryAction={handleSuccessPrimary}
+        onCreateLinkedRideshare={onCreateLinkedRideshare}
+        onRideshareLinked={() => {
+          if (submitResult.activityId) {
+            void fetchPublicActivityDetail(submitResult.activityId).then((detail) => {
+              setPublishedActivity(detail.activity);
+            });
+          }
+        }}
       />
     );
   }

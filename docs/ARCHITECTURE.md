@@ -123,6 +123,6 @@ Checks: `npm run verify:docs` · `npm run verify:host-member`
 ## Future (not in scope)
 
 - OpenAPI-generated client
-- Merge location detail pages (`TrailDetail` / `CampDetail` / `EventDetail`) internally
+- Drop legacy `TrailDetail` / `CampDetail` / `EventDetail` shims after `App.tsx` lazy-loads `*PlaceDetailPage` directly (kind templates live under `src/pages/place/`)
 - SSR/SSG for SEO-critical pages
 - FCM native apps (web push covers PWA today)

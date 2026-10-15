@@ -1,9 +1,9 @@
 import { Link } from 'react-router-dom';
 import type { ExploreAreaLensStatsDTO } from '@uaetrail/shared-types';
-import { explorePath } from '../routing';
-import type { ExplorePinKindFilter } from '../explorePinKindFilter';
+import { explorePath } from '../../routing';
+import type { ExplorePinKindFilter } from '../../explorePinKindFilter';
 
-type ExploreAreaPeekActionsProps = {
+export type AreaPeekActionsProps = {
   areaSlug: string;
   stats?: ExploreAreaLensStatsDTO | null;
   areaPagePath: string;
@@ -22,12 +22,16 @@ const scopedExplore = (
     filter,
   });
 
-export const ExploreAreaPeekActions = ({
+/**
+ * **Area** hub map pin (`source: 'area'`) — not a Place.
+ * `facilities` = amenity **Places** in this hub (`areaLensStats.facilities`), linked via `#places`.
+ */
+export const AreaPeekActions = ({
   areaSlug,
   stats,
   areaPagePath,
   onClose,
-}: ExploreAreaPeekActionsProps) => {
+}: AreaPeekActionsProps) => {
   const hosted = stats?.hostedActivities ?? 0;
   const seeking = stats?.seekingPosts ?? 0;
   const trails = stats?.trailSpots ?? 0;

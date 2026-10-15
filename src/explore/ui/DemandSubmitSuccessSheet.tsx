@@ -1,4 +1,8 @@
+import { useState } from 'react';
 import { CheckCircle2 } from 'lucide-react';
+import type { ActivityDTO } from '@uaetrail/shared-types';
+import { fetchPublicActivityDetail } from '../../hooks/publicActivityClientApi';
+import { useSafeAsyncEffect } from '../../hooks/useSafeAsyncEffect';
 import { EXPLORE_Z } from '../../config/exploreTheme';
 import { EXPLORE_REGION_PILL_LABELS } from '../../config/regions';
 import {
@@ -6,6 +10,9 @@ import {
   DEMAND_SUBMIT_SUCCESS_BODY_ON_MAP,
   DEMAND_SUBMIT_SUCCESS_TITLE,
   DEMAND_SUBMIT_VIEW_CTA,
+  ORGANIZE_LINK_RIDESHARE_LABEL,
+  ORGANIZE_LINK_RIDESHARE_PASTE_CTA,
+  ORGANIZE_RIDESHARE_LINKED_NOTICE,
 } from '../createFlowCopy';
 import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
 import {
@@ -16,6 +23,8 @@ import {
   type DemandDraft,
   type DemandKind,
 } from './demandFlow';
+import { LinkRidesharePanel } from './LinkRidesharePanel';
+import { canLinkRideshareToActivity, parentMapKindMayOfferLinkedRideshare } from '../linkActivityRideshareOffer';
 
 type DemandSubmitSuccessSheetProps = {
   open: boolean;
@@ -23,7 +32,12 @@ type DemandSubmitSuccessSheetProps = {
   kind: DemandKind;
   draft: DemandDraft;
   visibleOnMap: boolean;
+  tenantId: string | null;
+  publishedActivity: ActivityDTO | null;
   onPrimaryAction: () => void | Promise<void>;
+  onCreateLinkedRideshare?: (parent: ActivityDTO) => void;
+  onRideshareLinked?: () => void;
+  onRideshareLinkError?: (message: string) => void;
 };
 
 const SuccessDetailRow = ({ label, value }: { label: string; value: string }) => (
@@ -44,19 +58,74 @@ const formatWhenLine = (draft: DemandDraft, kind: DemandKind): string => {
   return `${draft.date}${timePart}`;
 };
 
+const linkButtonClass =
+  'text-sm font-semibold text-sky-800 underline underline-offset-2 hover:text-sky-950';
+
 export const DemandSubmitSuccessSheet = ({
   open,
   onClose,
   kind,
   draft,
   visibleOnMap,
+  tenantId,
+  publishedActivity,
   onPrimaryAction,
+  onCreateLinkedRideshare,
+  onRideshareLinked,
+  onRideshareLinkError,
 }: DemandSubmitSuccessSheetProps) => {
+  const [pasteOpen, setPasteOpen] = useState(false);
+  const [canAddLinkedRide, setCanAddLinkedRide] = useState(false);
+  const [rideshareNotice, setRideshareNotice] = useState<string | null>(null);
+
+  useSafeAsyncEffect(
+    async (isActive) => {
+      if (!open || !publishedActivity?.id) {
+        if (isActive()) setCanAddLinkedRide(false);
+        return;
+      }
+      try {
+        const detail = await fetchPublicActivityDetail(publishedActivity.id);
+        if (isActive()) {
+          setCanAddLinkedRide(detail.viewerAccess?.entitlements?.canAddLinkedRide ?? false);
+        }
+      } catch {
+        if (isActive()) setCanAddLinkedRide(false);
+      }
+    },
+    [open, publishedActivity?.id]
+  );
+
   const typeLabel = DEMAND_TYPE_OPTIONS.find((option) => option.key === kind)?.title ?? kind;
   const destination =
     (usesHikingDemandFlow(kind) || usesCampingDemandFlow(kind)) && draft.preferredArea
       ? EXPLORE_REGION_PILL_LABELS[draft.preferredArea] ?? draft.preferredArea
       : null;
+
+  const showLinkRideshare =
+    visibleOnMap &&
+    Boolean(tenantId && publishedActivity) &&
+    parentMapKindMayOfferLinkedRideshare(kind) &&
+    canLinkRideshareToActivity(publishedActivity) &&
+    canAddLinkedRide;
+
+  const handleCreateLinked = () => {
+    if (!publishedActivity || !onCreateLinkedRideshare) {
+      setRideshareNotice('Open this plan from Explore to create a linked rideshare.');
+      return;
+    }
+    onCreateLinkedRideshare(publishedActivity);
+  };
+
+  const handleLinked = () => {
+    setRideshareNotice(ORGANIZE_RIDESHARE_LINKED_NOTICE);
+    onRideshareLinked?.();
+  };
+
+  const handleLinkError = (message: string) => {
+    setRideshareNotice(message);
+    onRideshareLinkError?.(message);
+  };
 
   return (
     <ExploreResponsiveSheet
@@ -102,7 +171,35 @@ export const DemandSubmitSuccessSheet = ({
           </dl>
         </div>
 
-        <div className="mt-6">
+        {rideshareNotice ? (
+          <p
+            className={`mt-3 rounded-lg px-3 py-2 text-sm leading-snug ${
+              rideshareNotice === ORGANIZE_RIDESHARE_LINKED_NOTICE
+                ? 'border border-emerald-200 bg-emerald-50 text-emerald-900'
+                : 'bg-red-50 text-red-700'
+            }`}
+          >
+            {rideshareNotice}
+          </p>
+        ) : null}
+
+        {showLinkRideshare && pasteOpen && tenantId && publishedActivity ? (
+          <div className="mt-4 min-w-0">
+            <LinkRidesharePanel
+              tenantId={tenantId}
+              parentActivityId={publishedActivity.id}
+              variant="pasteOnly"
+              onCreateRideshare={handleCreateLinked}
+              onLinked={() => {
+                handleLinked();
+                setPasteOpen(false);
+              }}
+              onError={handleLinkError}
+            />
+          </div>
+        ) : null}
+
+        <div className="mt-6 space-y-3">
           <button
             type="button"
             onClick={() => void onPrimaryAction()}
@@ -110,6 +207,21 @@ export const DemandSubmitSuccessSheet = ({
           >
             {visibleOnMap ? DEMAND_SUBMIT_VIEW_CTA : 'Done'}
           </button>
+          {showLinkRideshare ? (
+            <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1">
+              <button type="button" onClick={handleCreateLinked} className={linkButtonClass}>
+                {ORGANIZE_LINK_RIDESHARE_LABEL}
+              </button>
+              <button
+                type="button"
+                aria-expanded={pasteOpen}
+                onClick={() => setPasteOpen((value) => !value)}
+                className={linkButtonClass}
+              >
+                {ORGANIZE_LINK_RIDESHARE_PASTE_CTA}
+              </button>
+            </div>
+          ) : null}
         </div>
       </div>
     </ExploreResponsiveSheet>

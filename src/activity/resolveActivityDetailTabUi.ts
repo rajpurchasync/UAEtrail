@@ -32,7 +32,7 @@ export const resolveActivityDetailTabUi = (
 
   if (!input.wireTabs) {
     const showMobileTabs = tabNavEligible && !input.isEmbedded;
-    const showPlaceCrewBody = input.canAccessCrewSurfaces && !input.previewMode;
+    const showPlaceCrewBody = input.canAccessCrewSurfaces;
     return {
       showMobileTabs,
       showPlanTransportTeaser: showMobileTabs,

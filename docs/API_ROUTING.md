@@ -67,7 +67,7 @@ Clients may keep intent URLs until M2b; host queue for buddy seeking rows uses t
 
 ## Participant intents (`/me/participant-intents`)
 
-**Deprecation (M2d):** New clients should treat **`activityId`** on seeking rows as canonical (map pin, join, manage). These routes remain **compatibility aliases** over `activities` + `activity_requests` after `PARTICIPANT_INTENT_STUB_WRITE=false`. Do not add new product flows that depend on `participant_intents` persistence.
+**Deprecation (M2d):** New clients should treat **`activityId`** on seeking rows as canonical (map pin, join, manage). These routes remain **compatibility aliases** over `activities` + `activity_requests` after `PARTICIPANT_INTENT_STUB_WRITE=false`. Do not add new product flows that depend on `participant_intents` persistence. **UI (S12):** map/list owner chrome uses host **`mapPeekActions`** on the seeking **activity** (same `ActivityMapPeekHost` stack as hosted pins; `seekingPinHygieneGuard` / `seekingPeekUnificationGuard`).
 
 | Method | Path | Who |
 |--------|------|-----|
@@ -77,13 +77,13 @@ Clients may keep intent URLs until M2b; host queue for buddy seeking rows uses t
 | — | `npm run seeking:storage-status` | Ops readiness report before flipping `PARTICIPANT_INTENT_STUB_WRITE=false` (`--strict` fails if backfill incomplete or stub write on) |
 | PATCH | `/me/participant-intents/:intentId` | Update own active intent |
 | POST | `/me/participant-intents/:intentId/cancel` | Remove from map |
-| POST | `/me/participant-intents/:intentId/link-activity` | **Poster** links published activity (`convertedActivityId`) |
+| POST | `/me/participant-intents/:intentId/link-activity` | **Poster** graduates find crew onto a **hosted** outing (`convertedActivityId`, intent fulfilled). **Not** for linking a transport child — use `linkedActivityId` on the rideshare row instead (`CREATE_FLOW.md` § Linked transport) |
 | POST | `/me/participant-intents/:intentId/requests` | Member asks to join |
 | GET | `/me/participant-intents/:intentId/requests` | **Poster** lists requests |
 | GET | `/me/participant-intents/:intentId/requests/mine` | Caller’s request on this intent |
 | POST | `…/requests/:requestId/approve` \| `…/reject` | **Poster** decides |
 
-**Legacy:** `POST /host/participant-intents/:intentId/fulfill` — deprecated (returns `Deprecation` header). Demand **posters** must use **`POST /me/participant-intents/:intentId/link-activity`**. Explore publish already calls `exploreApi.linkParticipantIntentToActivity`.
+**Legacy:** `POST /host/participant-intents/:intentId/fulfill` — deprecated (returns `Deprecation` header). Demand **posters** use **`POST /me/participant-intents/:intentId/link-activity`** only when publishing a **non-rideshare** outing to replace/graduate the find post — not when publishing a linked transport rideshare (`organizeActivityPublish.ts`).
 
 **Publish gate:** `POST /operator/activities` and `POST /operator/activities/:id/publish` (legacy `/host/*` rewritten) require `profileComplete` + `canPublish` (see `member-publish-gate.ts`), except platform admin acting on a tenant. **Join/participate** does not require profile completion.
 

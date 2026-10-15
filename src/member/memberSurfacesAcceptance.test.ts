@@ -270,15 +270,14 @@ describe('member surfaces §11 acceptance (automated)', () => {
   });
 
   it('AD-arch: activity detail uses single shell (no HostActivityDetailView shim)', () => {
-    const files = [
-      'src/components/activity/ActivityManageSheet.tsx',
-      'src/pages/ActivityDetail.tsx',
-    ];
-    for (const file of files) {
-      const content = read(file);
-      expect(content).toContain('ActivityDetailView');
-      expect(content).not.toContain('HostActivityDetailView');
-    }
+    const route = read('src/pages/ActivityDetail.tsx');
+    expect(route).toContain('ActivityDetailByKind');
+    expect(route).not.toContain('HostActivityDetailView');
+    expect(route).not.toMatch(/<ActivityDetailView/);
+
+    const manage = read('src/components/activity/ActivityManageSheet.tsx');
+    expect(manage).toContain('ActivityDetailView');
+    expect(manage).not.toContain('HostActivityDetailView');
     expect(() => read('src/components/activity/HostActivityDetailView.tsx')).toThrow();
     expect(() => read('src/explore/activityMapPeekActions.ts')).toThrow();
   });
@@ -417,9 +416,10 @@ describe('member surfaces §11 acceptance (automated)', () => {
   });
 
   it('AD-4: activity peek uses strip component and presentation resolver', () => {
-    const body = read('src/explore/ui/ExploreItemPeekParts.tsx');
-    expect(body).toContain('ExploreActivityPeekStrips');
-    expect(body).toContain('resolveActivityPeekEngagement');
+    const body = read('src/explore/ui/peek/activity/ActivityPeekBody.tsx');
+    expect(body).toContain('ActivityPeekStrips');
+    const strips = read('src/explore/ui/peek/activity/ActivityPeekStrips.tsx');
+    expect(strips).toContain('resolveActivityMapPeekStrips');
     expect(() => read('src/explore/activityMapPeekActions.ts')).toThrow();
     const shared = read('packages/shared-types/src/activity-map-peek-actions.ts');
     expect(shared).toContain("id: 'open_crew_chat'");

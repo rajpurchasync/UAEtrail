@@ -524,6 +524,8 @@ export type DemandSubmitResult = {
   visibleOnMap: boolean;
   participantIntentId: string;
   mapItemId: string;
+  /** Published seeking activity id when M0 map row exists. */
+  activityId: string | null;
 };
 
 export const publishDemandRequest = async (draft: DemandDraft): Promise<DemandSubmitResult> => {
@@ -562,6 +564,7 @@ export const publishDemandRequest = async (draft: DemandDraft): Promise<DemandSu
     mapItemId: publishedActivityId
       ? `activity:${publishedActivityId}`
       : `demand:${created.id}`,
+    activityId: publishedActivityId,
   };
 };
 

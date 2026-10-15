@@ -176,8 +176,8 @@ Query param **`tab`** where noted. **UI labels** may differ from wire ids (activ
 
 | Surface | Route prefix | Wire tab ids (canonical → target) | Deep link |
 |---------|--------------|-----------------------------------|-----------|
-| Activity | `/activity/:id` | `plan` · `place` · `buddies` · `transport` | `?tab=` — default `plan` |
-| Place (trail/camp/venue) | `/trail`, `/camp`, `/venue` | `overview` · `facts` · `transport` · `guide` (alias `location` → `transport`) | `?tab=` · `src/place/placeDetailTab.ts` |
+| Activity | `/activity/:id` | `plan` · `place` · `buddies` · `transport` | `?tab=` — default `plan` (`rideshare` → `transport` when omitted); **FE:** `ActivityDetailByKind` → `*ActivityDetailPage` → `ActivityDetailPageShell` → `ActivityDetailView` (`src/activity/detail/templates/*`) |
+| Place (trail/camp/venue) | `/trail`, `/camp`, `/venue` | `overview` · `facts` · `transport` · `guide` (alias `location` → `transport`) | `?tab=` · `src/place/placeDetailTab.ts`; **FE kind pages:** `HikingPlaceDetailPage`, `CampingPlaceDetailPage`, `EventPlaceDetailPage` → `PlaceDetailPage` |
 | Area hub | `/area/:slug` | `overview` · `places` · `activities` (people on overview) | `?tab=` · `src/area/areaDetailTab.ts` |
 | Shop public | `/shop/:id` | `about` · `products` · `location` | `?tab=` · `src/shop/shopPublicDetailTab.ts` |
 | Organisation public | `/guide`, `/agency`, `/partner` | `about` · `outings` · `contact` | `?tab=` · `src/organisation/organisationPublicDetailTab.ts` |
@@ -283,7 +283,26 @@ IA detail (pills, topics): [`experiment/explore-browse-ia.md`](./experiment/expl
 
 **Demand vs activity join:** always qualify — “activity join request” vs “demand join request” ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md) § Naming vocabulary).
 
-**Explore map pins:** `MapPinKind` / `ExploreCardKind` (`components/ui/mapPinTypes.ts`, `explore/exploreCardModel.ts`) — keep in sync; prefer shared-types for new pin metadata.
+**Explore map pins:** `MapPinKind` / `ExploreCardKind` (`components/ui/mapPinTypes.ts`, `discovery/discoveryCardModel.ts`) — keep in sync; prefer shared-types for new pin metadata.
+
+**Discovery UI methodology:** [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) **§6.1** (L0 wire → L1 card VM → L2 map peek → L3 detail). **Source routing** for the activity peek mount: `map-peek/mapPeekSlots.tsx` only. **Looking-for / seeking** uses the same activity peek stack (`ActivityMapPeekHost` → `ActivityPeekCard`); no intent-only peek fork in FE (`seekingPeekUnificationGuard`).
+
+**Discovery UI file names (entity-first — Oct 2026):**
+
+| Prefer (new) | Legacy alias | Notes |
+|--------------|--------------|-------|
+| `MapPeekShell`, `MapPeekOverlay` | `ExploreMapPeekCard`, `ExploreMapPeekPosition` | Pin **summary** chrome — not “explore” architecture |
+| `ActivityPeekCard`, `ActivityMapPeekHost`, `ActivityPeekEngagementActions`, `ActivityPeekStrips` | `ExploreItemSheet`, `ExploreActivityMapPeekActions`, `ExploreActivityPeekStrips` | Hosted + **seeking** activity pins (one stack) |
+| `PlacePeekCard`, `PlacePeekBody`, `PlacePeekActions` | `ExplorePlacePeek*` | Catalog place pin |
+| `ShopPeekActions` | `ExploreShopPeekActions` | Shop pin on activity host |
+| `PlaceMapPeekHost` | `ExplorePlaceMapPreview` | Map **mount** for venue (`Place`) pins — not activity organizer |
+| `PeekDetailLink`, `mapPeekSlots` | `ExplorePeekDetailLink`, `ExploreItemPeekParts` | Peek → detail + source router |
+| `AreaPeekActions`, `AreaPeekBody` | `ExploreAreaPeekActions` | **Area** hub pin (`source: 'area'`) |
+| `PlacePeekActions`, `PlacePeekBody` | `PlacePeekActions`, `ExplorePlacePeek*` | **Place** on Spots (`source: 'venue'`) |
+| `ActivityPeekLinkedTransport` | `ExploreLinkedRidesharePeekIndication` | Activity peek transport strip |
+| `DiscoveryCardModel`, `buildDiscoveryCardModel`, `buildDiscoveryCardViewModelCard` | `ExploreCardModel`, `buildExploreCardModel` (re-export stub) | Read model for pins + list |
+
+**`/explore` route** and folder `src/explore/` = **discovery map surface** (historical package path). **Do not** prefix new **entity** components with `Explore` — use activity / place / pin / map projection vocabulary. Map-only chrome (`ExploreMapStage`, filter pills) may keep surface prefix until renamed in a dedicated pass.
 
 ---
 
@@ -366,7 +385,7 @@ Use this when naming files, hooks, and utils — **one product word per concept*
 | Product (UI copy) | API / wire | Preferred FE symbol / folder | Do not use for new code |
 |-------------------|------------|------------------------------|-------------------------|
 | **Find** (FAB) | `participant_intents` | `participantIntent*`, `demandFlow.ts` | “wishlist”, “lookingFor” in filenames |
-| **Seeking pin** (public map) | `activities` (`activityMode: seeking`) + intent stub | Map item id **`activity:{activityId}`**; DTO `activityMode: 'seeking'`; helpers `exploreMapItemIsSeeking`, `resolveExploreMapActivityMode`. Map/list wire **`source: 'activity'`** + **`activityMode: 'seeking'`**; UI copy uses **`composeIntent: 'demand'`** (not a separate map species). Legacy **`demand:{intentId}`** ids and **`source: 'demand'`** parse compat only until cache/backfill ages out. | `item.source === 'demand'` for filters; parallel `participant_intent_requests` writes (M2c: reads alias `activity_requests`) |
+| **Seeking pin** (public map) | `activities` (`activityMode: seeking`) + intent stub | Map item id **`activity:{activityId}`**; DTO `activityMode: 'seeking'`; helpers `exploreMapItemIsSeeking`, `resolveExploreMapActivityMode`. Map/list wire **`source: 'activity'`** + **`activityMode: 'seeking'`**; UI copy uses **`composeIntent: 'demand'`** (not a separate map species). **Publisher = activity host** — map peek uses same host actions as Organize (`mapPeekActions`), not a parallel demand-owner chrome. **Linked transport:** child rideshare via `linkedActivityId` on publish + `linkedRideshareActivityId` on parent — not `POST …/link-activity` (`CREATE_FLOW.md` § Linked transport). Legacy **`demand:{intentId}`** ids and **`source: 'demand'`** parse compat only until cache/backfill ages out. | `item.source === 'demand'` for filters; parallel `participant_intent_requests` writes (M2c: reads alias `activity_requests`) |
 | **Follow** (venue / host brand / shop alerts) | `entity_follows` | `EntityFollowDTO`, `GET/POST /me/entity-follows` | Wishlist UI, “favorites”, `user_favorites` |
 | **Follow** (people) | `user_follows` | `MemberFollowControls`, `/me/following/:userId` | Buddies are **friends**; accepting a buddy **auto-follows** both ways |
 | **Wishlist** (private saves) | `user_favorites` (wire) | `WishlistItemDTO`, `GET/POST /me/wishlist` | “Favorite”, demand bookmarks, saving people/shops to wishlist |
@@ -427,12 +446,13 @@ Use this when naming files, hooks, and utils — **one product word per concept*
 
 | Concept | Product meaning | Wire / storage | Map peek UI |
 |---------|-----------------|----------------|-------------|
-| **Place** | One catalog row (`locations`) — trail, camp, amenity, shop pin | `GET /places/:id`, `EntityKind: place` | **`ExplorePlaceMapPreview`** + `placePeekLayout` |
-| **`venue`** | **Explore card source only** — a Place pin on the **Spots** layer (`id` prefix `venue:`) | `ExploreCardSource: 'venue'`, `ExploreMapItemDTO.source` | Same peek as Place (not a second object) |
-| **Area** | Curated hub polygon + `/area/:slug` | `areas` collection; map row `source: 'area'`, `id: area:{slug}` | **`ExploreItemSheet`** + **`ExploreAreaPeekActions`** |
-| **`place.areaId`** | Links a **Place** to its **Area** hub | `locations.areaId` → explore `areaId` / `areaSlug` / `areaName` on **venue** rows | **Area · {hub name}** on place peek — **not** the area lens pin |
+| **Place** | One catalog row (`locations`) — trail, camp, amenity/**facility**, shop pin | `GET /places/:id`, `EntityKind: place` | **`PlacePeekCard`** + `PlacePeekBody` (`catalogPlaceSummary`) |
+| **`venue`** | **Explore wire only** — a **Place** pin on the **Spots** lens (`id` prefix `venue:`) | `ExploreCardSource: 'venue'` | Same UI as Place — **not** a second entity or component family |
+| **Facility** | Amenity **Place** (toilet, parking, gas, …) | `PlaceKind` / tags on `locations` | Spots lens + area hub `#places`; area **pin** rollup `areaLensStats.facilities` |
+| **Area** | Curated hub polygon + `/area/:slug` | `areas`; map row `source: 'area'`, `id: area:{slug}` | **`AreaPeekActions`** / **`AreaPeekBody`** via `mapPeekSlots` |
+| **`place.areaId`** | Links a **Place** to its **Area** hub | `locations.areaId` → `areaSlug` / `areaName` on **venue** wire rows | **Area · {hub name}** on **Place** peek — **not** the area lens pin |
 
-**Naming rules (FE):** New place peek modules use **`ExplorePlace*`** / **`placePeek*`** / **`PLACE_PEEK_*`**. Reserve **`venue`** for `card.source === 'venue'`, list `listCat=venues`, and `venueRegion` (emirate on card model). Do **not** add `ExploreVenuePeek*` UI. Do **not** render `ExplorePlacePeekBody` when `card.source === 'area'`.
+**Naming rules (FE):** One shared **`MapPeekShell`**; entity parts **`{Entity}Peek*`** under `peek/{activity|place|area|shop}/` (`PlacePeekCard`, `placePeek*`, `AreaPeekBody`, …). Reserve **`venue`** for `card.source === 'venue'` (wire label for a **Place** pin). Do **not** add `Explore*Peek*` modules or `PinSummary*` sprawl. **Facilities** are Places — never `source: 'facility'`. Route `source: 'area'` only in `mapPeekSlots`, never in `peek/place/`.
 
 **Pro account storefronts (one user, optional tenant per subtype)** — each has a **public profile URL**; map and People discovery differ by subtype:
 
@@ -545,7 +565,7 @@ Any **place, venue, activity meeting point, shop, parking pin**, or other consum
 | **View pin** (read-only, Google search) | `ViewOnMapLink` | `src/components/ui/ViewOnMapLink.tsx` → `buildGoogleMapsSearchUrl` |
 | **In-app map tile** (Leaflet preview, no drive links on canvas) | `MeetingPointMap`, `MapPlacePicker`, explore map | No raw `google.com/maps` / `waze.com` literals in feature code |
 
-**Explore peek:** use `exploreCardShowPeekBodyDirections` so footer + inline directions are not duplicated (`src/explore/exploreCardModel.ts`).
+**Explore peek:** use `exploreCardShowPeekBodyDirections` so footer + inline directions are not duplicated (`src/discovery/discoveryCardModel.ts`).
 
 **Guard:** `src/config/mapNavigationGuard.test.ts` (included in `npm run verify:domain`).
 

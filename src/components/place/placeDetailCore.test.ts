@@ -13,13 +13,20 @@ describe('placeDetailCore (R3)', () => {
     expect(page).not.toMatch(/PlaceDetailTabs/);
   });
 
-  it('trail, camp, and event wrappers stay thin', () => {
+  it('place kind page templates stay thin (legacy route exports re-export them)', () => {
+    const hiking = read('src/pages/place/HikingPlaceDetailPage.tsx');
+    const camping = read('src/pages/place/CampingPlaceDetailPage.tsx');
+    const eventPlace = read('src/pages/place/EventPlaceDetailPage.tsx');
+    expect(hiking).toMatch(/PlaceDetailPage kind="trail"/);
+    expect(camping).toMatch(/PlaceDetailPage kind="camp"/);
+    expect(eventPlace).toMatch(/PlaceDetailPage kind="event"/);
+
     const trail = read('src/pages/TrailDetail.tsx');
     const camp = read('src/pages/CampDetail.tsx');
     const event = read('src/pages/EventDetail.tsx');
-    expect(trail).toMatch(/PlaceDetailPage kind="trail"/);
-    expect(camp).toMatch(/PlaceDetailPage kind="camp"/);
-    expect(event).toMatch(/PlaceDetailPage kind="event"/);
+    expect(trail).toMatch(/HikingPlaceDetailPage/);
+    expect(camp).toMatch(/CampingPlaceDetailPage/);
+    expect(event).toMatch(/EventPlaceDetailPage/);
   });
 
   it('usePlaceDetailCore centralizes fetch in hooks layer', () => {
@@ -44,6 +51,7 @@ describe('placeDetailCore (R3)', () => {
     ) as { contexts: Array<{ id: string; feRoots: string[] }> };
     const places = manifest.contexts.find((c) => c.id === 'places');
     expect(places?.feRoots).toContain('src/pages/PlaceDetailPage.tsx');
+    expect(places?.feRoots).toContain('src/pages/place');
     expect(places?.feRoots).toContain('src/hooks/placeDetailClientApi.ts');
   });
 });

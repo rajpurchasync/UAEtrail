@@ -282,7 +282,8 @@ export const publishOrganizeActivity = async (input: {
   const created = await createActivity(tenantId, publishBody);
   await publishActivity(tenantId, created.id);
 
-  if (participantIntentId) {
+  // Graduate find crew onto a new hosted outing only — never when publishing a transport child.
+  if (participantIntentId && draft.kind !== 'rideshare') {
     await linkParticipantIntentToActivity(participantIntentId, created.id);
   }
 

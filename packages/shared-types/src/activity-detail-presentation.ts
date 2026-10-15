@@ -166,7 +166,7 @@ export const buildActivityPresentationDTO = (
       },
       place: {
         showLockedPlaceholder: useTabChrome && !canAccessCrewSurfaces,
-        showCrewMapAndMeeting: canAccessCrewSurfaces && !previewMode,
+        showCrewMapAndMeeting: canAccessCrewSurfaces,
         hasDirections: coordinates,
       },
       buddies: {

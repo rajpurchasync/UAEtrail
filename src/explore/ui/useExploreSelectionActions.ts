@@ -96,13 +96,11 @@ export const useExploreSelectionActions = ({
   });
 
   const removals = useExploreSelectionRemovals({
-    selected,
     tenantId,
     queryClient,
-    navigate,
     setSelectedId,
-    setDemandNotice,
     setVenueNotice,
+    onOpenHostManage,
   });
 
   const openItem = useCallback(
@@ -334,7 +332,7 @@ export const useExploreSelectionActions = ({
     openItem,
     handleGuestGatedAction: peekJoin.handleGuestGatedAction,
     handleJoin: peekJoin.handleJoin,
-    handleDemandMessage: peekJoin.handleDemandMessage,
+    handlePeekOrganizerMessage: peekJoin.handlePeekOrganizerMessage,
     handleHostMessage,
     handleInviteCrew,
     requestHostRemove: removals.requestHostRemove,
@@ -342,12 +340,6 @@ export const useExploreSelectionActions = ({
     setHostRemoveConfirm: removals.setHostRemoveConfirm,
     confirmHostRemove: removals.confirmHostRemove,
     hostRemoveBusy: removals.hostRemoveBusy,
-    demandRemoveIntentId: removals.demandRemoveIntentId,
-    setDemandRemoveIntentId: removals.setDemandRemoveIntentId,
-    handleDemandManage: removals.handleDemandManage,
-    requestDemandRemove: removals.requestDemandRemove,
-    confirmDemandRemove: removals.confirmDemandRemove,
-    demandRemoveBusy: removals.demandRemoveBusy,
     handleActivityPublished,
     tryOpenActivityPinDeepLink,
     handleCloseSelection,

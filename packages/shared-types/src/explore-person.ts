@@ -117,10 +117,18 @@ export const resolveExploreFeaturedPerson = (
   const activity = item.activity;
 
   if (exploreMapItemIsSeeking(item) || source === 'demand') {
+    const displayName =
+      resolveHostPersonDisplayName({
+        guideName: activity?.hostName ?? item.hostName,
+        createdByName: activity?.createdByName,
+        tenantName: activity?.tenantName,
+      }) ??
+      activity?.createdByName ??
+      item.hostName;
     return buildExploreFeaturedPerson({
-      userId: item.requesterUserId,
-      displayName: item.hostName,
-      avatarUrl: item.hostAvatar,
+      userId: item.requesterUserId ?? activity?.hostUserId,
+      displayName,
+      avatarUrl: item.hostAvatar ?? activity?.hostAvatar,
       role: 'requester',
     });
   }

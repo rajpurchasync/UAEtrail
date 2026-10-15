@@ -11,25 +11,31 @@ describe('explore Place / venue / Area canon', () => {
   it('routes catalog place pins to Place peek — not activity sheet or area peek', () => {
     const stage = read('src/explore/ui/ExploreMapStage.tsx');
     expect(stage).toMatch(/selected\?\.source === 'venue'/);
-    expect(stage).toMatch(/source === 'venue'[\s\S]*?ExplorePlaceMapPreview/);
+    expect(stage).toMatch(/source === 'venue'[\s\S]*?PlaceMapPeekHost/);
   });
 
-  it('uses placePeekLayout only on Place map preview (venue wire)', () => {
-    const preview = read('src/explore/ui/ExplorePlaceMapPreview.tsx');
-    const peekCard = read('src/explore/ui/ExploreMapPeekCard.tsx');
-    expect(preview).toMatch(/placePeekLayout/);
-    expect(peekCard).toMatch(/placePeekLayout/);
-    expect(peekCard).toMatch(/ExplorePlacePeekBody/);
-    expect(peekCard).not.toMatch(/ExploreVenuePeek/);
+  it('uses catalog place summary only on Place map preview (venue wire)', () => {
+    const preview = read('src/explore/ui/peek/place/PlaceMapPeekHost.tsx');
+    const placePeek = read('src/explore/ui/peek/PlacePeekCard.tsx');
+    expect(preview).toMatch(/PlacePeekCard/);
+    expect(placePeek).toMatch(/catalogPlaceSummary/);
+    const shell = read('src/explore/ui/map-peek/MapPeekShell.tsx');
+    expect(shell).toMatch(/PlacePeekBody/);
+    expect(shell).not.toMatch(/ExploreVenuePeek/);
   });
 
-  it('Area lens peeks stay on ExploreItemSheet + area actions — not Place peek body', () => {
-    const itemPeek = read('src/explore/ui/ExploreItemPeekParts.tsx');
-    expect(itemPeek).toMatch(/card\.source === 'area'/);
-    expect(itemPeek).toMatch(/ExploreAreaPeekActions/);
-    const placeBody = read('src/explore/ui/ExplorePlacePeekBody.tsx');
+  it('Area lens peeks use area pin modules — not Place peek body', () => {
+    const slots = read('src/explore/ui/map-peek/mapPeekSlots.tsx');
+    expect(slots).toMatch(/card\.source === 'area'/);
+    expect(slots).toMatch(/AreaPeekActions/);
+    const placeBody = read('src/explore/ui/peek/place/PlacePeekBody.tsx');
     expect(placeBody).not.toMatch(/source === 'area'/);
     expect(placeBody).toMatch(/resolvePlacePeekCuratedArea/);
+  });
+
+  it('GEO: place peek uses venue wire vocabulary module', () => {
+    expect(read('src/place/geographyVocabulary.ts')).toMatch(/ExploreMapVenueWireSource/);
+    expect(read('src/place/placePeekPresentation.ts')).toMatch(/`venue`/);
   });
 
   it('documents hierarchy in Tier-1 domain canon', () => {
@@ -40,3 +46,4 @@ describe('explore Place / venue / Area canon', () => {
     expect(canon).toMatch(/place\.areaId/);
   });
 });
+

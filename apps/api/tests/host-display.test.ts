@@ -38,6 +38,16 @@ describe('resolveHostPersonDisplayName', () => {
     ).toBeNull();
   });
 
+  it('keeps member name when buddy tenant matches creator display name', () => {
+    expect(
+      resolveHostPersonDisplayName({
+        guideName: 'Fatima Al Mazrouei',
+        createdByName: 'Fatima Al Mazrouei',
+        tenantName: 'Fatima Al Mazrouei',
+      })
+    ).toBe('Fatima Al Mazrouei');
+  });
+
   it('returns first name for UI labels', () => {
     expect(
       hostPersonFirstName({

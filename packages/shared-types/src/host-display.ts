@@ -8,6 +8,7 @@ export const ROLE_PLACEHOLDER_DISPLAY_NAME =
 export const isRolePlaceholderDisplayName = (name?: string | null): boolean => {
   const trimmed = name?.trim();
   if (!trimmed) return true;
+  if (trimmed.toLowerCase() === ORGANIZER_FALLBACK_DISPLAY_NAME.toLowerCase()) return true;
   return ROLE_PLACEHOLDER_DISPLAY_NAME.test(trimmed);
 };
 
@@ -25,11 +26,16 @@ export interface HostPersonNameInput {
 /** Resolve the person hosting an activity. Never returns org/tenant labels or role placeholders. */
 export const resolveHostPersonDisplayName = (input: HostPersonNameInput): string | null => {
   const tenant = input.tenantName?.trim() || null;
+  const createdBy = input.createdByName?.trim() || null;
 
   for (const candidate of [input.guideName, input.createdByName, input.tenantOwnerName]) {
     const trimmed = candidate?.trim();
     if (!trimmed || isRolePlaceholderDisplayName(trimmed)) continue;
-    if (tenant && trimmed.toLowerCase() === tenant.toLowerCase()) continue;
+    if (tenant && trimmed.toLowerCase() === tenant.toLowerCase()) {
+      // Buddy / Find tenants are often named after the member — still show their name on peek cards.
+      if (createdBy && trimmed.toLowerCase() === createdBy.toLowerCase()) return trimmed;
+      continue;
+    }
     return trimmed;
   }
 

@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "seed": "tsx scripts/seed.ts",
     "bump-activity-dates": "tsx scripts/bump-activity-dates.ts",
+    "refresh-seeking-schedules": "tsx scripts/refresh-seeking-schedules.ts",
     "backfill-seeking-activities": "tsx scripts/backfill-seeking-activities.ts",
     "seeking-storage-status": "tsx scripts/seeking-storage-status.ts",
     "cancel-coordless-participant-intents": "tsx scripts/cancel-coordless-participant-intents.ts",

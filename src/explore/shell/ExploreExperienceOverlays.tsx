@@ -50,6 +50,7 @@ type Props = {
   onPickExploreArea: (slug: string) => void;
   inviteShareSheet: ReactNode;
   hostManageSheet: ReactNode;
+  tenantId: string | null;
 };
 
 /** Compose wizards, join overlays, host dialogs, search modal (R2). */
@@ -82,6 +83,7 @@ export const ExploreExperienceOverlays = ({
   onPickExploreArea,
   inviteShareSheet,
   hostManageSheet,
+  tenantId,
 }: Props) => (
   <>
     {inviteShareSheet}
@@ -119,6 +121,7 @@ export const ExploreExperienceOverlays = ({
         void onRefreshHostGate();
       }}
       onCreateLinkedRideshare={onCreateLinkedRideshare}
+      tenantId={tenantId}
       planWithBuddyUserId={planWithBuddyUserId}
       composeAreaSlug={composeAreaSlug}
       onOpenHostApplication={onOpenHostApplication}
@@ -132,33 +135,6 @@ export const ExploreExperienceOverlays = ({
       onClose={() => selection.setHostRemoveConfirm(null)}
       onConfirm={() => void selection.confirmHostRemove()}
     />
-
-    <Dialog
-      open={Boolean(selection.demandRemoveIntentId)}
-      onClose={() => selection.setDemandRemoveIntentId(null)}
-      title="Delete request?"
-    >
-      <p className="mb-4 text-sm text-neutral-600">
-        This deletes your looking-for post from the map. Hosts who saved it will stop seeing it on Explore.
-      </p>
-      <div className="flex justify-end gap-2">
-        <AppButton
-          type="button"
-          variant="secondary"
-          onClick={() => selection.setDemandRemoveIntentId(null)}
-        >
-          Keep
-        </AppButton>
-        <AppButton
-          type="button"
-          variant="destructive"
-          disabled={selection.demandRemoveBusy}
-          onClick={() => void selection.confirmDemandRemove()}
-        >
-          Delete
-        </AppButton>
-      </div>
-    </Dialog>
 
     <ExploreJoinOverlays
       activity={selection.selected?.activity}

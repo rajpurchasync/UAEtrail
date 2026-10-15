@@ -26,7 +26,7 @@ Confirm and align **main consumer surfaces** where users **understand an object*
 | 2 | My Plans | `/plan` | `Activities.tsx`, `Plan*View` | `ConsumerShell` | **Keep** — tighten labels vs spec |
 | 3 | Chat | `/chat` | `Messages.tsx` | Tab chrome | **Keep** |
 | 4 | Area detail | `/area/:slug` | `AreaDetailPage` | Hero + **scroll sections** | **Tabbed** hub (Phase 4) |
-| 5–6 | Activity detail | `/activity/:id` | `ActivityDetailView` | `MobileDetailShell` + Plan/Place/Buddies/Transport | **Keep** — audit kinds (Phase 2) |
+| 5–6 | Activity detail | `/activity/:id` | `ActivityDetailByKind` → kind `*ActivityDetailPage` → `ActivityDetailPageShell` → `ActivityDetailView` | `MobileDetailShell` + Plan/Place/Buddies/Transport | **Keep** — Phase 2 kind templates wired; fold/body IA ◐ |
 | 7 | Place (trail/camp/venue) | `/trail`, `/camp`, `/venue` | `PlaceDetailCore` | Overview / Location / Guide tabs | **Overview / Facts / Transport** (+ guide) (Phase 3) |
 | 8 | Member (public) | `/member/:userId` | `MemberProfile` | `ConsumerShell` | **Keep** — optional polish |
 | 9 | Shop | `/shop/:id` | `ShopPublicPage` | Custom | **Entity public shell** (Phase 5) |
@@ -147,8 +147,9 @@ flowchart LR
 
 | Step | Work | Detail |
 |------|------|--------|
+| 2.0 | **Kind page templates** on one route (`resolveActivityDetailKind` + `src/activity/detail/templates/*`) | AD-TEMPLATE-01; shell seam `ActivityDetailPageShell` (consumer only) |
 | 2.1 | **Matrix QA** — fixture activities per `ActivityType` + `activityMode` + `outingTopic` | Manual script in §2.3 below |
-| 2.2 | Gap fixes only: missing hero chips, empty Transport for rideshare, Place lock copy | `ActivityDetailView`, `detail/tabs/*`, `activityDetailHeroStatus` |
+| 2.2 | Gap fixes only: missing hero chips, empty Transport for rideshare, Place lock copy; §6.0 marketing fold on detail | `ActivityDetailPageShell`, `ActivityDetailView`, `detail/tabs/*`, `activityDetailHeroStatus` |
 | 2.3 | Extend automated matrix if gaps found | `activity-detail-cta-matrix.test.ts`, `mapDetailEngagementParity.test.ts` |
 | 2.4 | Confirm peek ↔ detail footer parity for each kind | `activityPeekEngagement`, list feed footers |
 
@@ -542,6 +543,8 @@ Full table: [`member-surfaces-implementation-plan.md`](./member-surfaces-impleme
 | Agency vs shop shell | — | **Fixed** Phase 5 |
 | NAVIGATION `/trips` | — | **Fixed** Phase 1 |
 | Detail page bypasses hook facades | — | Guard §18 + `detailSurfaceDataLineageGuard` |
+| Activity route bypasses kind templates | — | **Fixed** — `entityDetailShellGuard` + `consumerDetailSurfacesAcceptance` S9-ACT-01 |
+| Legacy `TrailDetail` / `CampDetail` / `EventDetail` filenames | `*PlaceDetailPage` | Remove shims when `App.tsx` lazy-loads kind pages (§9 remove list in activity-detail program) |
 
 ---
 
@@ -551,7 +554,11 @@ Full table: [`member-surfaces-implementation-plan.md`](./member-surfaces-impleme
 |---------|------|
 | Entity detail shell | `src/components/mobile/MobileDetailShell.tsx` |
 | Hub shell | `src/components/mobile/ConsumerShell.tsx` |
-| Activity detail (reference) | `src/components/activity/ActivityDetailView.tsx`, `detail/ActivityDetailTabBar.tsx` |
+| Activity detail (reference) | `src/pages/ActivityDetail.tsx`, `src/activity/detail/templates/*`, `src/components/activity/ActivityDetailView.tsx`, `detail/ActivityDetailTabBar.tsx` |
+| Discovery UI stack | [`SYSTEM_COHERENCE.md`](../SYSTEM_COHERENCE.md) §6.1 — L1 `src/discovery/`, L2 `map-peek/` + `peek/{entity}/` |
+| Activity pin summary | `ActivityMapPeekHost` → `ActivityPeekCard` → `MapPeekShell` → `card.path` → `*ActivityDetailPage` |
+| Place detail (kind templates) | `src/pages/place/HikingPlaceDetailPage.tsx`, `CampingPlaceDetailPage.tsx`, `EventPlaceDetailPage.tsx` → `PlaceDetailPage` |
+| Place pin summary | `src/explore/ui/peek/PlacePeekCard.tsx` → `MapPeekShell` → `/trail` · `/camp` · `/venue` |
 | Activity tab ids | `src/activity/activityDetailTab.ts` |
 | Place detail body | `src/components/place/PlaceDetailCore.tsx`, `src/components/ui/PlaceDetailTabs.tsx` |
 | Area hub | `src/pages/AreaDetailPage.tsx`, `src/components/area/AreaDetailView.tsx`, `areaHubClientApi` |

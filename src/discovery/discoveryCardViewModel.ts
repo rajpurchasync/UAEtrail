@@ -5,9 +5,9 @@ import type {
 } from '@uaetrail/shared-types';
 import { buildDiscoveryCardProjectionFromMapItem } from '@uaetrail/shared-types';
 import {
-  buildExploreCardModel,
-  type ExploreCardModel,
-} from '../explore/exploreCardModel';
+  buildDiscoveryCardModel,
+  type DiscoveryCardModel,
+} from './discoveryCardModel';
 import { finalizeExploreCardLinkedRideshare } from '../explore/linkedRideshareExplore';
 
 /**
@@ -15,7 +15,7 @@ import { finalizeExploreCardLinkedRideshare } from '../explore/linkedRideshareEx
  * During R1 migration this extends {@link ExploreCardModel}; new UI should prefer
  * {@link DiscoveryCardProjection} for read-only chrome and `.card` for legacy hooks.
  */
-export type DiscoveryCardViewModel = ExploreCardModel;
+export type DiscoveryCardViewModel = DiscoveryCardModel;
 
 export type DiscoveryCardBuildResult = {
   projection: DiscoveryCardProjection;
@@ -36,7 +36,7 @@ export const buildDiscoveryCardViewModel = (
   item: ExploreMapItemDTO,
   options: BuildDiscoveryCardViewModelOptions = {}
 ): DiscoveryCardBuildResult => {
-  let card = buildExploreCardModel(item);
+  let card = buildDiscoveryCardModel(item);
   if (options.mapItems) {
     card = finalizeExploreCardLinkedRideshare(card, item, options.mapItems);
   }

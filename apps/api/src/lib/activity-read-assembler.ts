@@ -332,7 +332,13 @@ const filterPublishedDocs = async (
     if (doc.status !== ActivityStatus.PUBLISHED) return false;
     if (!locations.has(doc.locationId) && !activityDocHasMapCoordinates(doc)) return false;
     if (shouldHideActivityFromExploreMap(doc.joinMode, doc.requirements)) return false;
-    if (when === 'upcoming' && doc.startAt < now) return false;
+    if (
+      when === 'upcoming' &&
+      doc.activityMode !== 'seeking' &&
+      doc.startAt < now
+    ) {
+      return false;
+    }
     if (when === 'past' && doc.startAt >= now) return false;
     return true;
   });

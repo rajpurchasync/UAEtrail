@@ -3,31 +3,31 @@ import type { ActivityDTO } from '@uaetrail/shared-types';
 import { areaDetailPath } from '@uaetrail/shared-types';
 import { MapPin } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import type { ExploreCardModel } from '../exploreCardModel';
+import type { ExploreCardModel } from '../../../exploreCardModel';
 import {
   ExploreCardHeadline,
   ExploreCardRatingRow,
   ExploreCardRequirementBadges,
-} from './ExploreCardPresentation';
+} from '../../ExploreCardPresentation';
 import {
   resolveCatalogEntityName,
   resolvePlaceCatalogFactLabels,
-} from '../../list/listVenuePosterPresentation';
+} from '../../../../list/listVenuePosterPresentation';
 import {
   resolvePlacePeekCuratedArea,
   resolvePlacePeekLocalLabel,
   resolvePlacePeekRegionLabel,
-} from '../../place/placePeekPresentation';
+} from '../../../../place/placePeekPresentation';
 import {
   PLACE_PEEK_AREA_LABEL,
   PLACE_PEEK_SECTION_FACTS,
   PLACE_PEEK_SECTION_OUTINGS,
   PLACE_PEEK_SECTION_REVIEWS,
-} from '../../content/placePeekCopy';
-import { EXPLORE_TYPE } from '../../config/exploreTheme';
-import { fetchPlaceActivities } from '../../hooks/placeDetailClientApi';
-import { useSafeAsyncEffect } from '../../hooks/useSafeAsyncEffect';
-import type { ExplorePeekDetailAccess } from '../../access/mapViewerAccessToUi';
+} from '../../../../content/placePeekCopy';
+import { EXPLORE_TYPE } from '../../../../config/exploreTheme';
+import { fetchPlaceActivities } from '../../../../hooks/placeDetailClientApi';
+import { useSafeAsyncEffect } from '../../../../hooks/useSafeAsyncEffect';
+import type { ExplorePeekDetailAccess } from '../../../../access/mapViewerAccessToUi';
 const peekSectionShell = 'mt-3 rounded-xl border border-neutral-100 bg-neutral-50/80 px-3 py-2.5';
 const peekSectionLabel =
   'mb-2 text-[11px] font-semibold uppercase tracking-wide text-neutral-500';
@@ -43,7 +43,7 @@ const formatHostedActivityMeta = (activity: ActivityDTO): string => {
   return parts.join(' · ');
 };
 
-const ExplorePlacePeekHostedActivities = ({
+const PlacePeekHostedActivities = ({
   locationId,
   onNavigate,
 }: {
@@ -95,7 +95,7 @@ const ExplorePlacePeekHostedActivities = ({
   );
 };
 
-const ExplorePlacePeekLocationBlock = ({
+const PlacePeekLocationBlock = ({
   card,
   onBeforeDetailNavigate,
 }: {
@@ -142,7 +142,7 @@ const ExplorePlacePeekLocationBlock = ({
 };
 
 /** Catalog place map peek — title, region/area, facts, reviews, hosted plans. */
-export const ExplorePlacePeekBody = ({
+export const PlacePeekBody = ({
   card,
   detailAccess,
   onGuestGatedDetail,
@@ -169,7 +169,7 @@ export const ExplorePlacePeekBody = ({
         onGuestGatedDetail={onGuestGatedDetail}
         onBeforeDetailNavigate={onBeforeDetailNavigate}
       />
-      <ExplorePlacePeekLocationBlock card={card} onBeforeDetailNavigate={onBeforeDetailNavigate} />
+      <PlacePeekLocationBlock card={card} onBeforeDetailNavigate={onBeforeDetailNavigate} />
 
       {factLabels.length > 0 ? (
         <section className={peekSectionShell} aria-label={PLACE_PEEK_SECTION_FACTS}>
@@ -183,7 +183,7 @@ export const ExplorePlacePeekBody = ({
         <ExploreCardRatingRow card={card} compact />
       </section>
 
-      <ExplorePlacePeekHostedActivities
+      <PlacePeekHostedActivities
         locationId={card.locationId}
         onNavigate={onBeforeDetailNavigate}
       />

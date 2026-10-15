@@ -10,18 +10,25 @@ import type {
 } from '@uaetrail/shared-types';
 import { activityDetailEyebrowForActivity } from '../../config/activityTypes';
 import { detailBackPath } from '../../config/routingCatalog';
-import type { ActivityViewerEntitlementsDTO } from '@uaetrail/shared-types';
+import type { ActivityViewerAccessDTO, ActivityViewerEntitlementsDTO } from '@uaetrail/shared-types';
 import { MobileDetailShell } from '../mobile/MobileDetailShell';
 import { ShareButton } from '../ui';
 import type { ActivityDetailTabId } from '../../activity/activityDetailTab';
+import type { ActivityDetailKind } from '../../activity/detail/activityDetailKind';
 import type { ActivityDetailTabFooterKind } from '../../activity/activityDetailTabFooters';
 import { ActivityDetailBody } from './detail/ActivityDetailBody';
+import { ActivityDetailMarketingFold } from './detail/ActivityDetailMarketingFold';
 import { useActivityDetailViewModel } from './detail/useActivityDetailViewModel';
 import type { ActivityRequestView } from '../../api/types';
 
 export interface ActivityDetailViewProps {
   activity: ActivityDetailDTO;
+  /** Host publish preview overlay only — not guest/redacted viewers. */
   previewMode?: boolean;
+  /** Guest — same shell; Plan tab shows sign-in gate instead of sensitive plan body. */
+  requiresSignIn?: boolean;
+  /** Signed-in, not on roster — inline hint on Plan tab. */
+  showJoinRequiredHint?: boolean;
   backTo?: string;
   backLabel?: string;
   participation?: ActivityParticipationDTO | null;
@@ -72,11 +79,19 @@ export interface ActivityDetailViewProps {
   /** Wire `presentation.strips` — host invited chip on hero, etc. */
   wireStrips?: ActivityEngagementStripsDTO | null;
   onHostShareOuting?: () => void;
+  /** Consumer page template (`HikingActivityDetailPage`, …) — set by `ActivityDetailByKind`. */
+  detailKind?: ActivityDetailKind;
+  /** Consumer route — §6.0 marketing fold above tabs (`ActivityDetailPageShell` only). */
+  showConsumerMarketingFold?: boolean;
+  viewerAccess?: ActivityViewerAccessDTO | null;
+  onOfferLinkedRideshare?: () => void;
 }
 
 export const ActivityDetailView = ({
   activity,
   previewMode = false,
+  requiresSignIn = false,
+  showJoinRequiredHint = false,
   backTo = detailBackPath('activity'),
   backLabel = 'Explore',
   participation = null,
@@ -106,10 +121,16 @@ export const ActivityDetailView = ({
   wireTabs = null,
   wireStrips = null,
   onHostShareOuting,
+  detailKind,
+  showConsumerMarketingFold = false,
+  viewerAccess = null,
+  onOfferLinkedRideshare,
 }: ActivityDetailViewProps) => {
   const model = useActivityDetailViewModel({
     activity,
     previewMode,
+    requiresSignIn,
+    showJoinRequiredHint,
     participation,
     myRequest,
     message,
@@ -137,6 +158,9 @@ export const ActivityDetailView = ({
     wireTabs,
     wireStrips,
     onHostShareOuting,
+    showConsumerMarketingFold,
+    viewerAccess,
+    onOfferLinkedRideshare,
   });
 
   if (model.isEmbedded) {
@@ -144,33 +168,36 @@ export const ActivityDetailView = ({
   }
 
   return (
-    <MobileDetailShell
-      backTo={backTo}
-      backLabel={backLabel}
-      footer={model.stickyFooter}
-      headerAction={
-        model.showInviteShare ? (
-          <ShareButton
-            title={model.sharePayload.title}
-            text={model.sharePayload.text}
-            path={model.sharePayload.path}
-            iconOnly
-            light
-          />
-        ) : undefined
-      }
-      banner={{
-        src: model.heroImage,
-        alt: model.activityTitle,
-        title: previewMode ? model.activityTitle : model.titleChromeLine,
-        eyebrow: activityDetailEyebrowForActivity(model.activity.activityType, model.activity.activityMode),
-        showMobileChrome: !previewMode,
-        showJourney: !previewMode,
-        journeyFallbackTo: backTo,
-        journeyLabel: backLabel,
-      }}
-    >
-      <ActivityDetailBody {...model} />
-    </MobileDetailShell>
+    <div data-activity-detail-template={detailKind ?? undefined}>
+      <MobileDetailShell
+        backTo={backTo}
+        backLabel={backLabel}
+        footer={model.stickyFooter}
+        headerAction={
+          model.showInviteShare ? (
+            <ShareButton
+              title={model.sharePayload.title}
+              text={model.sharePayload.text}
+              path={model.sharePayload.path}
+              iconOnly
+              light
+            />
+          ) : undefined
+        }
+        banner={{
+          src: model.heroImage,
+          alt: model.activityTitle,
+          title: previewMode ? model.activityTitle : model.titleChromeLine,
+          eyebrow: activityDetailEyebrowForActivity(model.activity.activityType, model.activity.activityMode),
+          showMobileChrome: !previewMode,
+          showJourney: !previewMode,
+          journeyFallbackTo: backTo,
+          journeyLabel: backLabel,
+        }}
+      >
+        {showConsumerMarketingFold ? <ActivityDetailMarketingFold model={model} /> : null}
+        <ActivityDetailBody {...model} />
+      </MobileDetailShell>
+    </div>
   );
 };

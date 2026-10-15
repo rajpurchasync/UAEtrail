@@ -34,11 +34,12 @@ import { MobileDetailShell } from '../components/mobile/MobileDetailShell';
 import { JoinRequestModal, WithdrawRequestModal } from '../components/ui';
 import { ActivityChatCallout } from '../components/ui/ActivityChatCallout';
 import { PushEnableBanner } from '../components/ui/PushEnableBanner';
-import { ActivityDetailView } from '../components/activity/ActivityDetailView';
+import { ActivityDetailByKind } from '../activity/detail/templates/ActivityDetailByKind';
+import { resolveActivityDetailKind } from '../activity/detail/activityDetailKind';
+import { ACTIVITY_DETAIL_TEMPLATE_CONFIG } from '../activity/detail/templates/activityDetailTemplateConfig';
 import { resolveJoinRequestUiState } from '../utils/joinRequestUi';
 import { useMemberStatus } from '../hooks/useMemberStatus';
 import { viewerIsActivityHostUser } from '../utils/viewerHostsActivity';
-import { ExploreGuestSignInCard } from '../explore/ui/ExploreGuestSignInCard';
 import { activityJoinInviteBanner } from '../content/exploreGoingPanelCopy';
 import { HostActivityCancelDialog } from '../components/activity/HostActivityCancelDialog';
 import { HostActivityCtas } from '../components/activity/HostActivityCtas';
@@ -122,7 +123,14 @@ export const ActivityDetail = () => {
 
   const isConfirmedParticipant = Boolean(participation) || joinUiState.kind === 'confirmed';
 
-  const mobileTab = parseActivityDetailTabParam(searchParams.get(ACTIVITY_DETAIL_TAB_QUERY));
+  const mobileTab = useMemo(() => {
+    const raw = searchParams.get(ACTIVITY_DETAIL_TAB_QUERY);
+    if (raw) return parseActivityDetailTabParam(raw);
+    if (activity) {
+      return ACTIVITY_DETAIL_TEMPLATE_CONFIG[resolveActivityDetailKind(activity)].defaultTab;
+    }
+    return 'plan';
+  }, [searchParams, activity]);
   const setMobileTab = useCallback(
     (tab: ActivityDetailTabId) => {
       const next = new URLSearchParams(searchParams);
@@ -137,7 +145,7 @@ export const ActivityDetail = () => {
 
   const detailExposure = useMemo(() => {
     if (!activity) return 'full' as const;
-    return viewerAccess?.exposure ?? 'full';
+    return viewerAccess?.exposure ?? 'redacted';
   }, [activity, viewerAccess]);
 
   const isActivityHostUser = Boolean(
@@ -209,6 +217,12 @@ export const ActivityDetail = () => {
     const { joinEngagement: _joinEngagement, ...engagement } = effectiveWirePresentation.engagement;
     return engagement;
   }, [activity, effectiveWirePresentation]);
+
+  const requiresSignIn = viewerAccess?.gateReason === 'sign_in' && !user;
+  const showJoinRequiredHint =
+    Boolean(user) &&
+    viewerAccess?.gateReason === 'join_required' &&
+    !(presentation?.canAccessCrewSurfaces ?? viewerAccess?.canAccessCrewSurfaces);
 
   const joinedWelcomeQuery = searchParams.get(ACTIVITY_DETAIL_JOINED_QUERY) === '1';
 
@@ -384,9 +398,9 @@ export const ActivityDetail = () => {
               {activity.message ?? 'This activity is private — only invited members can view it.'}
             </p>
             {guestPrivate ? (
-              <div className="mt-6 text-left">
-                <ExploreGuestSignInCard intent="peek-details" compact />
-              </div>
+              <p className="mt-6 text-sm text-neutral-600 leading-relaxed">
+                Sign up or log in to request access to this outing.
+              </p>
             ) : (
               <>
                 <p className="mt-3 text-xs text-neutral-500 leading-relaxed">
@@ -449,24 +463,10 @@ export const ActivityDetail = () => {
           {activityJoinInviteBanner(activity.myJoinInvite?.inviterDisplayName)}
         </p>
       ) : null}
-      {isRedactedPreview && viewerAccess?.gateReason === 'sign_in' && !user ? (
-        <div className="mx-auto max-w-3xl px-4 pt-4">
-          <ExploreGuestSignInCard intent="peek-details" compact />
-        </div>
-      ) : null}
-      {isRedactedPreview && viewerAccess?.gateReason === 'join_required' && user ? (
-        <p className="mx-auto max-w-3xl px-4 pt-4 text-sm font-medium text-neutral-700">
-          RSVP or request a spot to unlock meeting details and the group chat.
-        </p>
-      ) : null}
-      {isRedactedPreview && activity.message ? (
-        <p className="mx-auto max-w-3xl px-4 pt-4 text-sm leading-relaxed text-neutral-600">
-          {activity.message}
-        </p>
-      ) : null}
-      <ActivityDetailView
+      <ActivityDetailByKind
         activity={activity}
-        previewMode={isRedactedPreview}
+        requiresSignIn={requiresSignIn}
+        showJoinRequiredHint={showJoinRequiredHint}
         participation={isActivityHostUser ? null : participation ?? null}
         myRequest={isActivityHostUser ? null : myRequest ?? null}
         message={message}
@@ -489,7 +489,7 @@ export const ActivityDetail = () => {
         }}
         canWriteActivityReview={canWriteActivityReview}
         mobileTab={mobileTab}
-        onMobileTabChange={isRedactedPreview ? undefined : setMobileTab}
+        onMobileTabChange={setMobileTab}
         canAccessCrewSurfaces={presentation?.canAccessCrewSurfaces ?? false}
         showParticipantFooterShortcuts={presentation?.showParticipantFooterShortcuts ?? false}
         showCrewLockedHint={presentation?.showCrewLockedHint ?? false}
@@ -516,7 +516,7 @@ export const ActivityDetail = () => {
             : undefined
         }
         hostBuddiesHub={
-          isActivityHostUser && gate.tenantId && !isRedactedPreview
+          isActivityHostUser && gate.tenantId
             ? {
                 joinRequests: hostJoinRequests,
                 requestsLoading: hostJoinRequestsLoading,
@@ -528,6 +528,12 @@ export const ActivityDetail = () => {
         wireTabs={effectiveWirePresentation?.tabs ?? null}
         wireStrips={effectiveWirePresentation?.strips ?? null}
         onHostShareOuting={isActivityHostUser ? onHostShareOuting : undefined}
+        viewerAccess={viewerAccess}
+        onOfferLinkedRideshare={
+          canAddLinkedRide && activity
+            ? () => navigateToCreateLinkedRideshare(navigate, activity)
+            : undefined
+        }
       />
       {activity && id ? (
         <ActivityDetailJoinWelcomeSheet

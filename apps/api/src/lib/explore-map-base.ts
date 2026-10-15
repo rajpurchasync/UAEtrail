@@ -220,12 +220,20 @@ export const buildExploreMapBasePayload = async (): Promise<{ items: ExploreMapI
           path: resolveEntityPath({ kind: 'activity', id: activity.id }),
           featuredPerson: buildExploreFeaturedPerson({
             userId: resolveActivityHostUserId(activity),
-            displayName: resolveActivityHeadlinePersonName({
-              publishingProfileKind: activity.publishingProfileKind,
-              tenantName: activity.tenantName,
-              hostName: activity.hostName,
-              createdByName: activity.createdByName,
-            }),
+            displayName:
+              activityMode === 'seeking'
+                ? resolveActivityHeadlinePersonName({
+                    publishingProfileKind: activity.publishingProfileKind,
+                    tenantName: activity.tenantName,
+                    hostName: activity.createdByName ?? activity.hostName,
+                    createdByName: activity.createdByName,
+                  })
+                : resolveActivityHeadlinePersonName({
+                    publishingProfileKind: activity.publishingProfileKind,
+                    tenantName: activity.tenantName,
+                    hostName: activity.hostName,
+                    createdByName: activity.createdByName,
+                  }),
             avatarUrl: resolveActivityHostAvatar(activity),
             role: activityMode === 'seeking' ? 'requester' : 'host',
           }),

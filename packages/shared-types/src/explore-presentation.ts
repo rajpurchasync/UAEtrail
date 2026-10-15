@@ -4,6 +4,7 @@ import {
   resolveActivityPublisherRowPrimaryName,
 } from './activity-actor-display.js';
 import {
+  explorePersonFirstName,
   explorePersonHeadlineName,
   formatExplorePersonDisplayName,
   resolveExploreFeaturedPerson,
@@ -232,7 +233,9 @@ interface ExploreHeadlineInput extends ExploreFeaturedPersonInput {
 }
 
 const headlineIsSeeking = (input: ExploreHeadlineInput): boolean =>
-  input.isSeekingPin === true || input.source === 'demand';
+  input.isSeekingPin === true ||
+  input.source === 'demand' ||
+  exploreMapItemIsSeeking(input);
 
 const joinExploreParts = (...parts: (string | null | undefined)[]): string =>
   parts.filter((part): part is string => Boolean(part?.trim())).join(' - ');
@@ -541,12 +544,24 @@ const activityActorNameInput = (input: ExploreHeadlineInput) => ({
   featuredPerson: resolveHeadlinePerson(input),
 });
 
+const seekingPersonLabel = (input: ExploreHeadlineInput, form: 'peek' | 'headline'): string => {
+  const person = resolveHeadlinePerson(input);
+  if (person && !isRolePlaceholderDisplayName(person.displayName)) {
+    return form === 'peek' ? explorePersonFirstName(person) : explorePersonHeadlineName(person);
+  }
+  const raw = input.activity?.createdByName ?? input.hostName;
+  const formatted = formatRequesterDisplayName(raw);
+  if (form === 'peek') {
+    const first = formatted.split(/\s+/).filter(Boolean)[0];
+    return first && !isRolePlaceholderDisplayName(first) ? first : formatted;
+  }
+  return formatted;
+};
+
 /** Person label for headlines — always a member name, never operator brand. */
 const exploreHeadlinePersonLabel = (input: ExploreHeadlineInput): string => {
   if (headlineIsSeeking(input)) {
-    const person = resolveHeadlinePerson(input);
-    if (person) return explorePersonHeadlineName(person);
-    return formatRequesterDisplayName(input.hostName);
+    return seekingPersonLabel(input, 'headline');
   }
   if (input.source === 'activity') {
     return resolveActivityHeadlinePersonName(activityActorNameInput(input));
@@ -697,7 +712,7 @@ export const buildExploreCardSections = (input: ExploreHeadlineInput): ExploreCa
   const location = sanitizeExploreLocation(input.location);
 
   if (headlineIsSeeking(input)) {
-    const user = exploreHeadlinePersonLabel(input);
+    const user = seekingPersonLabel(input, 'peek');
     push('route', route);
     push('location', input.kind !== 'rideshare' ? location : null);
     push('time', when);

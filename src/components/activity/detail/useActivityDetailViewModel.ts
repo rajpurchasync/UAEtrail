@@ -4,6 +4,7 @@ import type {
   ActivityEngagementStripsDTO,
   ActivityGroupChatPostPolicy,
   ActivityPresentationTabsDTO,
+  ActivityViewerAccessDTO,
   MyActivityRequestDTO,
   ActivityParticipationDTO,
   ReviewDTO,
@@ -46,6 +47,8 @@ import type { ActivityRequestView } from '../../../api/types';
 export type ActivityDetailViewModelInput = {
   activity: ActivityDetailDTO;
   previewMode?: boolean;
+  requiresSignIn?: boolean;
+  showJoinRequiredHint?: boolean;
   participation?: ActivityParticipationDTO | null;
   myRequest?: MyActivityRequestDTO | null;
   message?: string | null;
@@ -81,12 +84,17 @@ export type ActivityDetailViewModelInput = {
   wireTabs?: ActivityPresentationTabsDTO | null;
   wireStrips?: ActivityEngagementStripsDTO | null;
   onHostShareOuting?: () => void;
+  showConsumerMarketingFold?: boolean;
+  viewerAccess?: ActivityViewerAccessDTO | null;
+  onOfferLinkedRideshare?: () => void;
 };
 
 /** Tab layout, join surfaces, hero, and sidebar inputs for activity detail (R6). */
 export const useActivityDetailViewModel = ({
   activity,
   previewMode = false,
+  requiresSignIn = false,
+  showJoinRequiredHint = false,
   participation = null,
   myRequest = null,
   message = null,
@@ -114,6 +122,9 @@ export const useActivityDetailViewModel = ({
   wireTabs = null,
   wireStrips = null,
   onHostShareOuting,
+  showConsumerMarketingFold = false,
+  viewerAccess = null,
+  onOfferLinkedRideshare,
 }: ActivityDetailViewModelInput) => {
   const { user } = useAuth();
   const isEmbedded = layout === 'embedded';
@@ -252,8 +263,11 @@ export const useActivityDetailViewModel = ({
   const mobilePlacePanel = activityDetailTabPanelClass('place', mobileTab);
   const mobileBuddiesPanel = activityDetailTabPanelClass('buddies', mobileTab);
   const mobileTransportPanel = activityDetailTabPanelClass('transport', mobileTab);
-  const mobileSidebarPanel =
-    mobileTab === 'plan' || mobileTab === 'buddies' ? 'block' : 'hidden md:block';
+  const mobileSidebarPanel = showConsumerMarketingFold
+    ? 'hidden md:block'
+    : mobileTab === 'plan' || mobileTab === 'buddies'
+      ? 'block'
+      : 'hidden md:block';
 
   const showInviteShare = !previewMode && activity.status === 'published';
   const tabFooterKind = wireFooterByTab?.[mobileTab] ?? 'plan_join';
@@ -304,16 +318,17 @@ export const useActivityDetailViewModel = ({
     pendingJoinInviteCount: wireStrips?.pendingJoinInviteCount,
     confirmedParticipantCount: activity.participants?.length ?? 0,
   });
-  const heroFactChips =
-    showMobileTabs && !previewMode
-      ? [
-          {
-            label: `${activityKindChromeEmoji(activity.activityType)} ${activityKindChromeLabel(activity.activityType)}`,
-            tone: 'neutral' as const,
-          },
-          ...heroStatusChips,
-        ]
-      : heroStatusChips;
+  const heroFactChips = showMobileTabs
+    ? [
+        {
+          label: `${activityKindChromeEmoji(activity.activityType)} ${activityKindChromeLabel(activity.activityType)}`,
+          tone: 'neutral' as const,
+        },
+        ...heroStatusChips,
+      ]
+    : heroStatusChips;
+
+  const canViewSensitivePlanContent = !requiresSignIn && !previewMode;
 
   const showHostProfileProUpsell = activityDetailShowHostProfileProUpsell(
     viewerEntitlements,
@@ -336,6 +351,9 @@ export const useActivityDetailViewModel = ({
     isEmbedded,
     activity,
     previewMode,
+    requiresSignIn,
+    showJoinRequiredHint,
+    canViewSensitivePlanContent,
     mobileTab,
     onMobileTabChange,
     onActivityReviewSubmitted,
@@ -390,5 +408,10 @@ export const useActivityDetailViewModel = ({
     participants,
     rosterParticipants,
     showRosterProUpsell,
+    showConsumerMarketingFold,
+    viewerAccess,
+    wireStrips,
+    joinUiState,
+    onOfferLinkedRideshare,
   };
 };

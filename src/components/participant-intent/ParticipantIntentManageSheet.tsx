@@ -1,15 +1,28 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { ParticipantIntentDTO } from '@uaetrail/shared-types';
+import type { ActivityDTO, ParticipantIntentDTO } from '@uaetrail/shared-types';
 import { ExploreResponsiveSheet } from '../../explore/ui/ExploreResponsiveSheet';
+import { LinkRidesharePanel } from '../../explore/ui/LinkRidesharePanel';
 import {
   exploreOfferRideshareForDemandPath,
   participantIntentExplorePinPath,
 } from '../../explore/routing';
 import { ShareButton } from '../ui/ShareButton';
-import { canOfferRideshareForParticipantIntent } from '../../explore/linkActivityRideshareOffer';
-import { ORGANIZE_LINK_RIDESHARE_LABEL } from '../../explore/createFlowCopy';
+import {
+  canLinkRideshareToActivity,
+  canOfferRideshareForParticipantIntent,
+} from '../../explore/linkActivityRideshareOffer';
+import { navigateToCreateLinkedRideshare } from '../../explore/navigateCreateLinkedRideshare';
+import {
+  ORGANIZE_LINK_RIDESHARE_LABEL,
+  ORGANIZE_LINK_RIDESHARE_PASTE_CTA,
+  ORGANIZE_RIDESHARE_LINKED_NOTICE,
+} from '../../explore/createFlowCopy';
+import { fetchPublicActivityDetail } from '../../hooks/publicActivityClientApi';
+import { useSafeAsyncEffect } from '../../hooks/useSafeAsyncEffect';
+import { resolveParticipantIntentActivityId } from '../../member-plan/resolveParticipantIntentActivityId';
+import { tripsHostedActivityPath } from '../../member-plan/tripsRouting';
 import { formatParticipantIntentMeta } from '../../member-plan/participantIntentTrips';
 import { AppButton, AppButtonLink } from '../mobile/AppButton';
 import { Dialog } from '../ui/Dialog';
@@ -56,12 +69,46 @@ export const ParticipantIntentManageSheet = ({
   const [editing, setEditing] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pasteOpen, setPasteOpen] = useState(false);
+  const [rideshareNotice, setRideshareNotice] = useState<string | null>(null);
+  const [linkedParentActivity, setLinkedParentActivity] = useState<ActivityDTO | null>(null);
+  const [canAddLinkedRide, setCanAddLinkedRide] = useState(false);
+
+  const tenantId = gate.tenantId;
+  const seekingActivityId = resolveParticipantIntentActivityId(intent);
+
+  useSafeAsyncEffect(
+    async (isActive) => {
+      if (!open || !seekingActivityId) {
+        if (isActive()) {
+          setLinkedParentActivity(null);
+          setCanAddLinkedRide(false);
+        }
+        return;
+      }
+      try {
+        const detail = await fetchPublicActivityDetail(seekingActivityId);
+        if (isActive()) {
+          setLinkedParentActivity(detail.activity);
+          setCanAddLinkedRide(detail.viewerAccess?.entitlements?.canAddLinkedRide ?? false);
+        }
+      } catch {
+        if (isActive()) {
+          setLinkedParentActivity(null);
+          setCanAddLinkedRide(false);
+        }
+      }
+    },
+    [open, seekingActivityId]
+  );
 
   useEffect(() => {
     if (!open) {
       setConfirmRemove(false);
       setEditing(false);
       setError(null);
+      setPasteOpen(false);
+      setRideshareNotice(null);
     }
   }, [open, intent?.id]);
 
@@ -70,8 +117,13 @@ export const ParticipantIntentManageSheet = ({
   const mapPinPath = participantIntentExplorePinPath(intent);
   const meta = formatParticipantIntentMeta(intent);
   const showRideshareOffer = canOfferRideshareForParticipantIntent(intent);
+  const showLinkRideshare =
+    showRideshareOffer &&
+    Boolean(tenantId && linkedParentActivity) &&
+    canLinkRideshareToActivity(linkedParentActivity) &&
+    canAddLinkedRide;
 
-  const handleOfferRideshare = () => {
+  const handleOfferRideshareLegacy = () => {
     const returnPath = exploreOfferRideshareForDemandPath(intent);
     if (!user) {
       navigate(signInPathForReturn(returnPath));
@@ -95,6 +147,15 @@ export const ParticipantIntentManageSheet = ({
     }
     onClose();
     navigate(returnPath);
+  };
+
+  const handleCreateLinkedRideshare = () => {
+    if (linkedParentActivity) {
+      onClose();
+      navigateToCreateLinkedRideshare(navigate, linkedParentActivity);
+      return;
+    }
+    handleOfferRideshareLegacy();
   };
 
   const confirmRemoveIntent = async () => {
@@ -174,8 +235,55 @@ export const ParticipantIntentManageSheet = ({
               >
                 View on map
               </AppButtonLink>
-              {showRideshareOffer ? (
-                <AppButton type="button" className="w-full" onClick={handleOfferRideshare}>
+              {seekingActivityId ? (
+                <AppButtonLink
+                  to={tripsHostedActivityPath(seekingActivityId)}
+                  fullWidth
+                  onClick={onClose}
+                >
+                  Manage join requests
+                </AppButtonLink>
+              ) : null}
+              {rideshareNotice ? (
+                <p
+                  className={`rounded-lg px-3 py-2 text-sm leading-snug ${
+                    rideshareNotice === ORGANIZE_RIDESHARE_LINKED_NOTICE
+                      ? 'border border-emerald-200 bg-emerald-50 text-emerald-900'
+                      : 'bg-red-50 text-red-700'
+                  }`}
+                >
+                  {rideshareNotice}
+                </p>
+              ) : null}
+              {showLinkRideshare && pasteOpen && tenantId && linkedParentActivity ? (
+                <LinkRidesharePanel
+                  tenantId={tenantId}
+                  parentActivityId={linkedParentActivity.id}
+                  variant="pasteOnly"
+                  onCreateRideshare={handleCreateLinkedRideshare}
+                  onLinked={() => {
+                    setRideshareNotice(ORGANIZE_RIDESHARE_LINKED_NOTICE);
+                    setPasteOpen(false);
+                  }}
+                  onError={(message) => setRideshareNotice(message)}
+                />
+              ) : null}
+              {showLinkRideshare ? (
+                <div className="space-y-2">
+                  <AppButton type="button" className="w-full" onClick={handleCreateLinkedRideshare}>
+                    {ORGANIZE_LINK_RIDESHARE_LABEL}
+                  </AppButton>
+                  <AppButton
+                    type="button"
+                    variant="secondary"
+                    className="w-full"
+                    onClick={() => setPasteOpen((value) => !value)}
+                  >
+                    {ORGANIZE_LINK_RIDESHARE_PASTE_CTA}
+                  </AppButton>
+                </div>
+              ) : showRideshareOffer ? (
+                <AppButton type="button" className="w-full" onClick={handleOfferRideshareLegacy}>
                   {ORGANIZE_LINK_RIDESHARE_LABEL}
                 </AppButton>
               ) : null}

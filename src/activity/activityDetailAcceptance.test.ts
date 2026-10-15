@@ -49,13 +49,13 @@ describe('activity detail program — governance', () => {
   });
 
   it('AD-DEDUPE-01: explore peek has no showHostActivityCtas / host CTA handler plumbing', () => {
-    const model = read('src/explore/exploreCardModel.ts');
+    const model = read('src/discovery/discoveryCardModel.ts');
     expect(model).not.toMatch(/showHostActivityCtas/);
     const experience = read('src/explore/ui/ExploreExperience.tsx');
     expect(experience).not.toMatch(/showHostActivityCtas/);
     expect(experience).not.toMatch(/publishedActivityCtaHandlers/);
-    const peekParts = read('src/explore/ui/ExploreItemPeekParts.tsx');
-    expect(peekParts).not.toMatch(/HostActivityCtas/);
+    const peekSlots = read('src/explore/ui/map-peek/mapPeekSlots.tsx');
+    expect(peekSlots).not.toMatch(/HostActivityCtas/);
     const presentation = read('src/activity/activityDetailPresentation.ts');
     expect(presentation).toMatch(/resolveActivityEngagementPolicy/);
   });
@@ -73,7 +73,7 @@ describe('activity detail program — governance', () => {
     expect(policy).toMatch(/pendingJoinInviteCount/);
     const api = read('apps/api/src/lib/explore-map-viewer-access.ts');
     expect(api).toMatch(/pendingJoinInviteCountByActivityId/);
-    const strips = read('src/explore/ui/ExploreActivityPeekStrips.tsx');
+    const strips = read('src/explore/ui/peek/activity/ActivityPeekStrips.tsx');
     expect(strips).toMatch(/pendingJoinInviteCount/);
     expect(strips).toMatch(/activityPeekPendingInviteChipLabel/);
   });
@@ -141,9 +141,9 @@ describe('activity detail program — governance', () => {
   });
 
   it('AD-PEEK-03: activity map peek must not branch to HostActivityCtas', () => {
-    const peek = read('src/explore/ui/ExploreItemPeekParts.tsx');
-    expect(peek).not.toMatch(/showHostActivityCtas[\s\S]*HostActivityCtas/);
-    expect(peek).not.toMatch(/<HostActivityCtas/);
+    const peekActions = read('src/explore/ui/peek/activity/ActivityPeekActions.tsx');
+    expect(peekActions).not.toMatch(/showHostActivityCtas[\s\S]*HostActivityCtas/);
+    expect(peekActions).not.toMatch(/<HostActivityCtas/);
   });
 
   it('AD-PRES-03: host detail uses wire plan_host_share footer + hostDetailCtas', () => {
@@ -164,6 +164,69 @@ describe('activity detail program — governance', () => {
     expect(routes).toMatch(/pendingJoinInviteCount/);
     const hero = read('src/activity/activityDetailHeroStatus.ts');
     expect(hero).toMatch(/pendingJoinInviteCount/);
+  });
+
+  it('AD-LAYOUT-01: redacted viewers use full tab shell (not host previewMode)', () => {
+    const page = read('src/pages/ActivityDetail.tsx');
+    expect(page).not.toMatch(/previewMode=\{isRedactedPreview\}/);
+    expect(page).toMatch(/requiresSignIn/);
+    expect(page).toMatch(/onMobileTabChange=\{setMobileTab\}/);
+  });
+
+  it('AD-TEMPLATE-01: `/activity/:id` routes through per-kind consumer page templates', () => {
+    const page = read('src/pages/ActivityDetail.tsx');
+    expect(page).toMatch(/ActivityDetailByKind/);
+    expect(page).not.toMatch(/<ActivityDetailView/);
+    const byKind = read('src/activity/detail/templates/ActivityDetailByKind.tsx');
+    expect(byKind).toMatch(/resolveActivityDetailKind/);
+    for (const file of [
+      'src/activity/detail/templates/HikingActivityDetailPage.tsx',
+      'src/activity/detail/templates/CampingActivityDetailPage.tsx',
+      'src/activity/detail/templates/RideshareActivityDetailPage.tsx',
+      'src/activity/detail/templates/OtherActivityDetailPage.tsx',
+      'src/activity/detail/templates/ActivityDetailPageShell.tsx',
+    ]) {
+      expect(read(file)).toMatch(/ActivityDetailPageShell|ActivityDetailView/);
+    }
+    for (const file of [
+      'src/pages/place/HikingPlaceDetailPage.tsx',
+      'src/pages/place/CampingPlaceDetailPage.tsx',
+      'src/pages/place/EventPlaceDetailPage.tsx',
+    ]) {
+      expect(read(file)).toMatch(/PlaceDetailPage/);
+    }
+    expect(read('src/pages/AreaDetailPage.tsx')).toMatch(/AreaDetailView/);
+  });
+
+  it('AD-FOLD-01: consumer shell enables marketing fold above tab body', () => {
+    const shell = read('src/activity/detail/templates/ActivityDetailPageShell.tsx');
+    expect(shell).toMatch(/showConsumerMarketingFold/);
+    const fold = read('src/components/activity/detail/ActivityDetailMarketingFold.tsx');
+    expect(fold).toMatch(/ActivityDetailEngagementStrips/);
+    expect(fold).toMatch(/ActivityDetailMobileHero/);
+    const view = read('src/components/activity/ActivityDetailView.tsx');
+    expect(view).toMatch(/ActivityDetailMarketingFold/);
+    expect(read('src/activity/detail/activityDetailPageShellCard.ts')).toMatch(
+      /buildActivityDetailPageShellCard/
+    );
+  });
+
+  it('AD-BODY-01: merged Plan block + host on Plan (not price sidebar) for consumer fold', () => {
+    const body = read('src/components/activity/detail/ActivityDetailBody.tsx');
+    const aboutIdx = body.indexOf('<ActivityDetailPlanAboutCard');
+    const hostIdx = body.indexOf('<ActivityDetailHostProfileCard');
+    const extrasIdx = body.indexOf('<ActivityDetailPlanExtras');
+    const placeIdx = body.indexOf('<ActivityDetailPlaceTabPanels');
+    const sidebar = read('src/components/activity/detail/ActivityDetailPricingSidebar.tsx');
+    const model = read('src/components/activity/detail/useActivityDetailViewModel.ts');
+    expect(aboutIdx).toBeGreaterThan(-1);
+    expect(hostIdx).toBeGreaterThan(aboutIdx);
+    expect(extrasIdx).toBeGreaterThan(hostIdx);
+    expect(placeIdx).toBeGreaterThan(extrasIdx);
+    expect(body).toMatch(/hideHostProfile=\{model\.showConsumerMarketingFold\}/);
+    expect(sidebar).toMatch(/hideHostProfile/);
+    expect(sidebar).toMatch(/ActivityDetailHostProfileCard/);
+    expect(model).toMatch(/showConsumerMarketingFold[\s\S]*hidden md:block/);
   });
 
   it('AD-CHROME-01: mobile chrome uses emoji + activity title (AD-2b, not kind-only chrome)', () => {

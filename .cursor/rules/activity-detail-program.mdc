@@ -2,10 +2,12 @@
 description: Activity detail tabs + map peek — program checklist, one policy brain, matrix tests
 globs:
   - src/activity/**
+  - src/activity/detail/**
   - src/components/activity/**
   - src/pages/ActivityDetail.tsx
-  - src/explore/ui/ExploreItemPeekParts.tsx
-  - src/explore/ui/ExploreActivityPeekStrips.tsx
+  - src/pages/place/**
+  - src/explore/ui/map-peek/**
+  - src/explore/ui/peek/activity/**
   - src/explore/ui/useExploreSelectionActions.ts
   - apps/api/src/routes/user/registerPublicActivityRoutes.ts
   - apps/api/src/lib/build-activity-presentation.ts
@@ -32,6 +34,12 @@ Also read: `.cursor/rules/viewer-access.mdc` for wire-first exposure rules.
 4. **Horizontal pass:** API registrar + `src/api/domains/*` + UI + **one** Tier-1 section if product changed.
 5. Flip checkboxes **only** in `activity-detail-tabs-implementation-plan.md` when `src/activity/activityDetailAcceptance.test.ts` rows are green (not `it.fails`).
 6. `npm run verify:system:quick` minimum; full `verify:system` before closing a **phase**.
+
+## Consumer page architecture (Phase 9)
+
+- **Route:** `ActivityDetail.tsx` → `ActivityDetailByKind` → kind `*ActivityDetailPage` → `ActivityDetailPageShell` → `ActivityDetailView`.
+- **Embedded host surfaces** (`ActivityManageSheet`, `ActivityPreviewOverlay`) use **`ActivityDetailView` only** — no kind router.
+- **Phase 9** (templates + fold + Plan IA) — see program §8 **AD-TEMPLATE-01**, **AD-FOLD-01**, **AD-BODY-01**.
 
 ## Policy architecture
 

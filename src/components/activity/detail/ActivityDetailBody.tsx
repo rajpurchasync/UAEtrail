@@ -1,4 +1,6 @@
 import { Link } from 'react-router-dom';
+import { ExploreGuestSignInCard } from '../../../explore/ui/ExploreGuestSignInCard';
+import { ACTIVITY_DETAIL_JOIN_REQUIRED_PLAN_HINT } from '../../../content/activityDetailCopy';
 import { ActivityInviteLauncher } from '../ActivityInviteLauncher';
 import { ActivityPostCheckInReviewPrompts } from '../ActivityPostCheckInReviewPrompts';
 import { ActivityDetailTabBar } from './ActivityDetailTabBar';
@@ -9,6 +11,7 @@ import { ActivityDetailTransportTabPanels } from './tabs/ActivityDetailTransport
 import { ActivityDetailBuddiesAside } from './tabs/ActivityDetailBuddiesAside';
 import { ActivityDetailPlanExtras } from './tabs/ActivityDetailPlanExtras';
 import { ActivityDetailPricingSidebar } from './ActivityDetailPricingSidebar';
+import { ActivityDetailHostProfileCard } from './ActivityDetailHostProfileCard';
 import type { useActivityDetailViewModel } from './useActivityDetailViewModel';
 
 type Model = ReturnType<typeof useActivityDetailViewModel>;
@@ -23,7 +26,7 @@ export const ActivityDetailBody = (model: Model) => (
         showTransportTab
       />
     ) : null}
-    {model.showMobileTabs && !model.isEmbedded ? (
+    {model.showMobileTabs && !model.isEmbedded && !model.showConsumerMarketingFold ? (
       <ActivityDetailMobileHero
         date={model.activity.date}
         title={model.activityTitle}
@@ -68,12 +71,57 @@ export const ActivityDetailBody = (model: Model) => (
 
         {model.planRequestManagePanel}
 
+        {model.requiresSignIn ? (
+          <div className={model.mobilePlanPanel}>
+            <ExploreGuestSignInCard
+              intent="peek-details"
+              activityTitle={model.activityTitle}
+              compact
+              authReturnPath={`/activity/${model.activity.id}`}
+            />
+          </div>
+        ) : null}
+
+        {model.showJoinRequiredHint ? (
+          <p
+            className={`text-sm font-medium text-neutral-700 leading-relaxed ${model.mobilePlanPanel}`}
+            role="status"
+          >
+            {ACTIVITY_DETAIL_JOIN_REQUIRED_PLAN_HINT}
+          </p>
+        ) : null}
+
         <ActivityDetailPlanAboutCard
           panelClassName={model.mobilePlanPanel}
           activity={model.activity}
           showMobileTabs={model.showMobileTabs}
           showPlanTransportTeaser={model.showPlanTransportTeaser}
           onMobileTabChange={model.onMobileTabChange}
+          hideAboutBody={model.requiresSignIn}
+        />
+
+        {model.showConsumerMarketingFold && !model.requiresSignIn ? (
+          <ActivityDetailHostProfileCard
+            activity={model.activity}
+            previewMode={model.previewMode}
+            panelClassName={model.mobilePlanPanel}
+            hostPath={model.hostPath}
+            hostProfileHint={model.hostProfileHint}
+            canOpenHostProfile={model.canOpenHostProfile}
+            hostUserId={model.hostUserId}
+            showHostProfileProUpsell={model.showHostProfileProUpsell}
+            proSocialMembershipPath={model.proSocialMembershipPath}
+          />
+        ) : null}
+
+        <ActivityDetailPlanExtras
+          panelClassName={model.mobilePlanPanel}
+          activity={model.activity}
+          canViewSensitivePlanContent={model.canViewSensitivePlanContent}
+          previewMode={model.previewMode}
+          activityReviews={model.activityReviews}
+          canWriteActivityReview={model.canWriteActivityReview}
+          onActivityReviewSubmitted={model.onActivityReviewSubmitted}
         />
 
         <ActivityDetailPlaceTabPanels
@@ -99,15 +147,6 @@ export const ActivityDetailBody = (model: Model) => (
           showTransportEncouragementMobile={model.showTransportEncouragementMobile}
           showTransportHostProUpsell={model.showTransportHostProUpsell}
           showTransportParticipantProUpsell={model.showTransportParticipantProUpsell}
-        />
-
-        <ActivityDetailPlanExtras
-          panelClassName={model.mobilePlanPanel}
-          activity={model.activity}
-          previewMode={model.previewMode}
-          activityReviews={model.activityReviews}
-          canWriteActivityReview={model.canWriteActivityReview}
-          onActivityReviewSubmitted={model.onActivityReviewSubmitted}
         />
       </div>
 
@@ -148,6 +187,7 @@ export const ActivityDetailBody = (model: Model) => (
           participants={model.participants}
           rosterParticipants={model.rosterParticipants}
           showRosterProUpsell={model.showRosterProUpsell}
+          hideHostProfile={model.showConsumerMarketingFold}
         />
       </div>
     </div>

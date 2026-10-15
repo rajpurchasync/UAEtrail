@@ -10,6 +10,7 @@ import { ReviewSection } from '../../../ui/ReviewSection';
 type ActivityDetailPlanExtrasProps = {
   panelClassName: string;
   activity: ActivityDetailDTO;
+  canViewSensitivePlanContent: boolean;
   previewMode: boolean;
   activityReviews: ReviewDTO[];
   canWriteActivityReview: boolean;
@@ -19,6 +20,7 @@ type ActivityDetailPlanExtrasProps = {
 export const ActivityDetailPlanExtras = ({
   panelClassName,
   activity,
+  canViewSensitivePlanContent,
   previewMode,
   activityReviews,
   canWriteActivityReview,
@@ -26,6 +28,10 @@ export const ActivityDetailPlanExtras = ({
 }: ActivityDetailPlanExtrasProps) => {
   const mandatoryInstructions = extractJoinInstructionLines(activity.requirements);
   const planDetailLines = extractActivityPlanDetailLines(activity.requirements);
+
+  if (!canViewSensitivePlanContent) {
+    return null;
+  }
 
   return (
     <>

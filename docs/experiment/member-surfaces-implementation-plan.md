@@ -757,7 +757,8 @@ Use one PR per subsection where possible; check boxes when merged.
 | 2026-10-11 | §20 tooling | Root `seeking:deploy-gate` alias; plan §2/M3 reconciled with Phases 4–5 |
 | 2026-10-12 | §4.3–4.6 | Locations lens, area-match notifications, 12-area catalog + seed sync, admin areas UI, Phase E test fixtures |
 | 2026-10-12 | §21 AD-8 | Dynamic peek/detail CTA matrix locked in activity-detail program **§6.2–§6.7**; Tier-1 pointers (NAVIGATION, CREATE_FLOW, DOMAIN §15.4) |
-| | | **Next:** Implement program **§6.7** (Phase 4–5) → §23 P0 ops per env |
+| 2026-10-15 | §21 AD-9 | Activity-detail **Phase 9** — kind page templates (`ActivityDetailByKind`, `*PlaceDetailPage`); fold/body IA ◐ — see activity-detail program §2.1 + §9 remove list |
+| | | **Next:** AD-FOLD-01 / AD-BODY-01 close in activity-detail program; §23 P0 ops per env |
 
 ---
 

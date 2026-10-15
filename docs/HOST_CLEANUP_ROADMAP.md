@@ -26,7 +26,8 @@ Tracks the **no big-bang** plan from the host-flow audit (Oct 2026). Member tier
 |------|--------|--------|
 | `POST /host/.../fulfill` deprecated + `Deprecation` header | ✅ | `registerHostDemandFulfillLegacy.ts` |
 | Explore `?fulfillIntent=` clears param; no third-party fulfill wizard | ✅ | `useExploreFulfillIntent.ts` |
-| Publish links demand via `POST /me/.../link-activity` | ✅ | `organizeActivityPublish.ts`, `exploreApi` |
+| Publish graduates find crew via `POST /me/.../link-activity` (non-rideshare only) | ✅ | `organizeActivityPublish.ts`, `exploreApi` |
+| **S12** hosted + seeking coherence (transport parent id, unified host peek) | ✅ | [`CREATE_FLOW.md`](./CREATE_FLOW.md), [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.2 — **S12a–d done** |
 | FE guard: no `api.fulfillParticipantIntent` | ✅ | `apiLegacyGuard.test.ts` |
 | Remove legacy fulfill prefill wiring from explore selection/compose | ✅ | `organizeWizardPrefill` only; `useExploreFulfillIntent` clears deep links |
 

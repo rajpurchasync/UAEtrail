@@ -1,21 +1,17 @@
 import { useCallback, useMemo } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
-import { exploreMapItemIsSeeking, type ExploreMapItemDTO, type UserRole } from '@uaetrail/shared-types';
+import type { ExploreMapItemDTO, type UserRole } from '@uaetrail/shared-types';
 import {
   activityMapPeekNeedsJoinContext,
   activityMapPeekSkipsJoinContext,
 } from '../../activity/activityPeekEngagement';
 import type { DiscoveryCardViewModel } from '../../discovery';
-import {
-  createParticipantIntentJoinRequest,
-} from '../../hooks/participantIntentClientApi';
 import { useActivityJoinActions, useActivityJoinContext } from '../../hooks/useActivityJoinFlow';
-import { useParticipantIntentJoinContext } from '../../hooks/useParticipantIntentJoinContext';
 import { useViewerProfileGender } from '../../hooks/useViewerProfileGender';
 import { womenOnlyJoinMessageForActivity } from '../../utils/activityWomenOnlyJoin';
 import { messagesRouteForRole } from '../../utils/authRouting';
 
-/** Join / demand-join context for map peek selection (C18). */
+/** Join context for map peek — activity wire only (hosted + seeking). */
 export const useExploreSelectionPeekJoin = (input: {
   selected: ExploreMapItemDTO | null;
   selectedCard: DiscoveryCardViewModel | null;
@@ -47,25 +43,6 @@ export const useExploreSelectionPeekJoin = (input: {
     userId: input.user?.id,
   });
 
-  const seekingUsesLegacyIntentJoin = Boolean(
-    input.selected &&
-      exploreMapItemIsSeeking(input.selected) &&
-      input.selected.participantIntentId &&
-      !input.selected.activity?.id
-  );
-  const demandJoinContextEnabled = Boolean(
-    seekingUsesLegacyIntentJoin && !input.selectedCard?.showDemandOwnerActions && input.user
-  );
-  const {
-    uiState: demandJoinUiState,
-    loading: demandJoinStateLoading,
-    reload: reloadDemandJoinContext,
-  } = useParticipantIntentJoinContext({
-    intentId: input.selected?.participantIntentId,
-    enabled: demandJoinContextEnabled,
-    userId: input.user?.id,
-  });
-
   const activityPeekSkipsJoinContext = useMemo(
     () =>
       Boolean(
@@ -74,12 +51,8 @@ export const useExploreSelectionPeekJoin = (input: {
     [input.selectedCard, joinUiState]
   );
 
-  const peekJoinUiState = demandJoinContextEnabled
-    ? demandJoinUiState
-    : activityPeekSkipsJoinContext
-      ? undefined
-      : joinUiState;
-  const peekJoinStateLoading = demandJoinContextEnabled ? demandJoinStateLoading : joinStateLoading;
+  const peekJoinUiState = activityPeekSkipsJoinContext ? undefined : joinUiState;
+  const peekJoinStateLoading = joinStateLoading;
 
   const joinActions = useActivityJoinActions({
     activity: input.selected?.activity ?? null,
@@ -98,9 +71,9 @@ export const useExploreSelectionPeekJoin = (input: {
     [joinActions]
   );
 
-  const respondToDemand = useCallback(
+  const messageOrganizer = useCallback(
     (item: ExploreMapItemDTO) => {
-      const requesterId = item.requesterUserId;
+      const requesterId = item.requesterUserId ?? item.activity?.hostUserId;
       if (!requesterId) return;
       if (!input.user) {
         joinActions.openGuestSheet('activity');
@@ -123,50 +96,18 @@ export const useExploreSelectionPeekJoin = (input: {
 
   const handleJoin = useCallback(() => {
     const selected = input.selected;
-    if (selected && exploreMapItemIsSeeking(selected)) {
-      if (!input.user) {
-        joinActions.openGuestSheet('activity');
-        return;
-      }
-      if (selected.activity?.id) {
-        if (joinUiState.kind !== 'open') return;
-        joinActions.openJoinModal();
-        return;
-      }
-      const intentId = selected.participantIntentId;
-      if (!intentId) return;
-      if (demandJoinUiState.kind !== 'open') return;
-      void (async () => {
-        try {
-          await createParticipantIntentJoinRequest(intentId);
-          await reloadDemandJoinContext();
-          input.setDemandNotice('Request sent — they’ll review your request.');
-        } catch (err) {
-          input.setDemandNotice(err instanceof Error ? err.message : 'Could not send your request.');
-        }
-      })();
-      return;
-    }
-    if (!selected?.activity) return;
+    if (!selected?.activity?.id) return;
     if (!input.user) {
       joinActions.openGuestSheet('activity');
       return;
     }
     if (joinUiState.kind !== 'open') return;
     joinActions.openJoinModal();
-  }, [
-    input.selected,
-    input.user,
-    joinUiState.kind,
-    demandJoinUiState.kind,
-    joinActions,
-    reloadDemandJoinContext,
-    input.setDemandNotice,
-  ]);
+  }, [input.selected, input.user, joinUiState.kind, joinActions]);
 
-  const handleDemandMessage = useCallback(() => {
-    if (input.selected) respondToDemand(input.selected);
-  }, [input.selected, respondToDemand]);
+  const handlePeekOrganizerMessage = useCallback(() => {
+    if (input.selected) messageOrganizer(input.selected);
+  }, [input.selected, messageOrganizer]);
 
   return {
     joinUiState,
@@ -178,7 +119,7 @@ export const useExploreSelectionPeekJoin = (input: {
     activityPeekSkipsJoinContext,
     handleGuestGatedAction,
     handleJoin,
-    handleDemandMessage,
-    respondToDemand,
+    handlePeekOrganizerMessage,
+    messageOrganizer,
   };
 };

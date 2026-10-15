@@ -96,6 +96,7 @@ export const ExploreExperience = () => {
         onPickExploreArea={model.handlePickExploreArea}
         inviteShareSheet={model.inviteShareSheet}
         hostManageSheet={model.hostManageSheet}
+        tenantId={model.tenantId}
       />
     </div>
   );

@@ -6,6 +6,9 @@ import {
   type ActivityDTO,
   type ExploreMapItemDTO,
 } from '@uaetrail/shared-types';
+import {
+  resolveSeekingParentActivityId,
+} from '../linkActivityRideshareOffer';
 import { buildRideshareDraftFromDemandMapItem, buildRideshareDraftFromParentActivity } from '../linkRidesharePrefill';
 import type { OrganizeWizardPrefill } from '../ui/organizeWizardPrefill';
 import type { useExploreComposeRoute } from '../ui/useExploreComposeRoute';
@@ -85,9 +88,10 @@ export const useExploreRideshareOrganizeLinks = (input: {
       };
     }
     if (rideshareLinkDemand) {
+      const parentActivityId = resolveSeekingParentActivityId(rideshareLinkDemand);
       return {
         draft: buildRideshareDraftFromDemandMapItem(rideshareLinkDemand),
-        participantIntentId: rideshareLinkDemand.participantIntentId ?? undefined,
+        linkToParentActivityId: parentActivityId ?? undefined,
       };
     }
     if (input.organizeFrom.organizeFromPrefill) {

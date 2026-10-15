@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { explorePersonRoleLabel } from '@uaetrail/shared-types';
-import { ChevronRight, Clock, MapPin, Route, Star, Tag, Ticket, Users } from 'lucide-react';
+import { ChevronRight, Clock, MapPin, Route, Star, Tag, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { ExploreCardModel, ExploreCardTone } from '../exploreCardModel';
 import {
@@ -630,10 +630,7 @@ export const ExploreActivityPeekSpotsSection = ({ card }: { card: ExploreCardMod
 
   return (
     <section className={peekStripShell} aria-label={ACTIVITY_PEEK_SECTION_SPOTS}>
-      <div className={peekStripLabel}>
-        <Ticket className="h-3.5 w-3.5" aria-hidden />
-        {ACTIVITY_PEEK_SECTION_SPOTS}
-      </div>
+      <div className={peekStripLabel}>{ACTIVITY_PEEK_SECTION_SPOTS}</div>
       {isFull ? (
         <p className={`text-sm font-semibold ${EXPLORE_TYPE.body}`}>{ACTIVITY_PEEK_FULL_CAPACITY_LABEL}</p>
       ) : (

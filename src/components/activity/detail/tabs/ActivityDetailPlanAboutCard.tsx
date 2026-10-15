@@ -22,6 +22,8 @@ type ActivityDetailPlanAboutCardProps = {
   showMobileTabs: boolean;
   showPlanTransportTeaser?: boolean;
   onMobileTabChange?: (tab: ActivityDetailTabId) => void;
+  /** Guest sign-in gate — facts live on hero; omit description and desktop fact grid. */
+  hideAboutBody?: boolean;
 };
 
 export const ActivityDetailPlanAboutCard = ({
@@ -30,16 +32,45 @@ export const ActivityDetailPlanAboutCard = ({
   showMobileTabs,
   showPlanTransportTeaser = false,
   onMobileTabChange,
+  hideAboutBody = false,
 }: ActivityDetailPlanAboutCardProps) => {
   const pricingMode = inferActivityPricingMode(activity);
   const pricingBadge = activityPricingBadge(activity);
+
+  const transportTeaser =
+    showPlanTransportTeaser && onMobileTabChange ? (
+      <div className="rounded-xl border border-sky-100 bg-sky-50/80 p-4">
+        <p className="text-sm font-semibold text-gray-900">{ACTIVITY_DETAIL_PLAN_TRANSPORT_TEASER_TITLE}</p>
+        <p className="mt-1 text-sm text-gray-600 leading-relaxed">{ACTIVITY_DETAIL_PLAN_TRANSPORT_TEASER_BODY}</p>
+        <button
+          type="button"
+          onClick={() => onMobileTabChange('transport')}
+          className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-sky-700 hover:text-sky-800"
+        >
+          {ACTIVITY_DETAIL_PLAN_TRANSPORT_TEASER_CTA}
+          <ChevronRight className="h-4 w-4" aria-hidden />
+        </button>
+        <p className="mt-3 text-xs text-gray-500 leading-relaxed">{ACTIVITY_DETAIL_PLAN_SUSTAINABILITY_LINE}</p>
+      </div>
+    ) : null;
+
+  if (hideAboutBody) {
+    if (!transportTeaser) return null;
+    return (
+      <div className={`bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 ${panelClassName}`}>
+        {transportTeaser}
+      </div>
+    );
+  }
 
   return (
     <div className={`bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 ${panelClassName}`}>
       <h2 className="text-lg font-bold text-gray-900 mb-3 hidden md:block">
         About this {activity.activityType === 'event' ? 'event' : 'activity'}
       </h2>
-      <p className="text-gray-600 leading-relaxed whitespace-pre-line">{activity.description}</p>
+      {activity.description ? (
+        <p className="text-gray-600 leading-relaxed whitespace-pre-line">{activity.description}</p>
+      ) : null}
 
       <div
         className={`grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6 ${
@@ -90,21 +121,7 @@ export const ActivityDetailPlanAboutCard = ({
         <p className="mt-4 text-xs text-gray-500 leading-relaxed">{ACTIVITY_PRICING_INDICATION_NOTE}</p>
       ) : null}
 
-      {showPlanTransportTeaser && onMobileTabChange ? (
-        <div className="mt-6 rounded-xl border border-sky-100 bg-sky-50/80 p-4">
-          <p className="text-sm font-semibold text-gray-900">{ACTIVITY_DETAIL_PLAN_TRANSPORT_TEASER_TITLE}</p>
-          <p className="mt-1 text-sm text-gray-600 leading-relaxed">{ACTIVITY_DETAIL_PLAN_TRANSPORT_TEASER_BODY}</p>
-          <button
-            type="button"
-            onClick={() => onMobileTabChange('transport')}
-            className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-sky-700 hover:text-sky-800"
-          >
-            {ACTIVITY_DETAIL_PLAN_TRANSPORT_TEASER_CTA}
-            <ChevronRight className="h-4 w-4" aria-hidden />
-          </button>
-          <p className="mt-3 text-xs text-gray-500 leading-relaxed">{ACTIVITY_DETAIL_PLAN_SUSTAINABILITY_LINE}</p>
-        </div>
-      ) : null}
+      {transportTeaser ? <div className="mt-6">{transportTeaser}</div> : null}
     </div>
   );
 };

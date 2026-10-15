@@ -1,21 +1,19 @@
 import { Link } from 'react-router-dom';
-import type { ExploreCardModel } from '../exploreCardModel';
-import { resolvePeekDetailAccess } from '../../access/resolvePeekDetailAccess';
+import type { DiscoveryCardModel } from '../../../discovery/discoveryCardModel';
+import { resolvePeekDetailAccess } from '../../../access/resolvePeekDetailAccess';
 
-type ExplorePeekDetailLinkProps = {
-  card: ExploreCardModel;
+export type PeekDetailLinkProps = {
+  card: DiscoveryCardModel;
   label: string;
   className: string;
-  /** Same gate as detail (e.g. shop review path) — defaults to `card.path`. */
   hrefOverride?: string;
   joinStateLoading?: boolean;
   onGuestGatedAction?: () => void;
-  /** Close map peek before client navigation (keeps map state in sync). */
   onBeforeNavigate?: () => void;
 };
 
-/** Peek title and detail links — one CTA contract for activities, rideshare, shops, venues. */
-export const ExplorePeekDetailLink = ({
+/** Pin summary → entity detail — one access contract for activities, places, shops. */
+export const PeekDetailLink = ({
   card,
   label,
   className,
@@ -23,7 +21,7 @@ export const ExplorePeekDetailLink = ({
   joinStateLoading = false,
   onGuestGatedAction,
   onBeforeNavigate,
-}: ExplorePeekDetailLinkProps) => {
+}: PeekDetailLinkProps) => {
   const fallbackHref = (hrefOverride ?? card.path)?.trim();
   if (!fallbackHref) return null;
 
@@ -42,11 +40,7 @@ export const ExplorePeekDetailLink = ({
       );
     }
     return (
-      <Link
-        to={fallbackHref}
-        className={className}
-        onClick={() => onBeforeNavigate?.()}
-      >
+      <Link to={fallbackHref} className={className} onClick={() => onBeforeNavigate?.()}>
         {label}
       </Link>
     );
@@ -54,11 +48,7 @@ export const ExplorePeekDetailLink = ({
 
   if (access.kind === 'profile_gate' || access.kind === 'upgrade_gate') {
     return (
-      <Link
-        to={access.href}
-        className={className}
-        onClick={() => onBeforeNavigate?.()}
-      >
+      <Link to={access.href} className={className} onClick={() => onBeforeNavigate?.()}>
         {label}
       </Link>
     );

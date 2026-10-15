@@ -535,7 +535,7 @@ describe('buildDiscoveryCardViewModelCard (explore list copy)', () => {
     expect(card.routeLabel).toBe('Dubai to Fujairah');
     expect(card.secondaryCta).toBe('Message');
     expect(buildExploreListMeta(card)).toContain('Dubai to Fujairah');
-    expect(card.sections.highlightName).toBe('Alex Rider');
+    expect(card.sections.highlightName).toBe('Alex');
     expect(card.sections.listTitle).toBe('Rideshare · Alex Rider');
     expect(card.sections.listWhen).toContain('Sep 13');
   });

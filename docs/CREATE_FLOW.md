@@ -205,6 +205,41 @@ When the poster is ready to run a dated outing on the map, they **Organize → p
 
 **Catalog:** `src/explore/composeFlowCatalog.ts` (one entry per FAB path). **Tests:** `npm run test:explore-alignment`, `demandFlow.test.ts`.
 
+### One activity model (Find + Organize on the map)
+
+| Concept | Wire | Join (others) | Host (publisher) |
+|---------|------|---------------|------------------|
+| **Find** (looking for crew) | `activities` + `activityMode: seeking`, map id `activity:{activityId}` | Request to join only (`POST /activities/:id/requests`) | Same **host** as Organize — manages plan, join queue, optional **linked transport** |
+| **Organize** (dated outing) | `activities` + `activityMode: hosted` | RSVP or request per `participationMode` | Host — share, manage, optional **linked transport** |
+
+`participant_intents` is a **manage/join alias** during storage migration; the **map pin and join target** are always the **activity row**. UI must not treat Find as a non-activity “demand-only” product surface.
+
+### Linked transport (child rideshare activity)
+
+Optional **published rideshare** linked to a **parent** plan (hiking, camping, or Activities/event). **Not** available when the parent plan itself is a **rideshare** Find post.
+
+| Mechanism | Use |
+|-----------|-----|
+| **Publish child rideshare** with `linkedActivityId` → parent + `linkedRideshareActivityId` on parent | Add seats / transport while the parent stays open (Find or Organize) |
+| **`POST /me/participant-intents/:id/link-activity`** | **Graduate** find crew onto a **new hosted** outing (`convertedActivityId`, intent fulfilled) — **not** for publishing a transport child |
+
+**Find → Link transport** prefill must set `linkToParentActivityId` to the **seeking activity id** (`resolveSeekingParentActivityId` in `linkActivityRideshareOffer.ts`). **Never** call `link-activity` when publishing `activityType: rideshare` (`organizeActivityPublish.ts`).
+
+**Gates:** profile `canPublish` to create transport; Pro `canOfferTransport` / `canAddLinkedRide` for peek/manage CTAs (see `activity-viewer-entitlements.ts`).
+
+**Distinction:** Find wizard **Transport** step (“Rideshare needed”) = joiner metadata on the post. **Link rideshare** on peek = host publishes a **child** rideshare activity on the map.
+
+### Coherence program (hosted + seeking)
+
+Tracked in [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) **§8.2 S12**. Phases:
+
+| Phase | Outcome | Status |
+|-------|---------|--------|
+| **S12a** | Correct transport publish (parent `linkToParentActivityId`; no `link-activity` on rideshare publish) | **Done** |
+| **S12b** | Unified **host** map peek for any activity you own (`activityMode` only changes join/copy) | **Done** |
+| **S12c** | Find post-publish + manage parity with Organize (`LinkRidesharePanel`, `ActivityManageSheet`) | **Done** |
+| **S12d** | Intent-only map peek removed; seeking pins use activity wire + unified peek stack; guards in `seekingPinHygieneGuard` / `seekingPeekUnificationGuard` | **Done** |
+
 ---
 
 ## Reorganize a past outing (host)

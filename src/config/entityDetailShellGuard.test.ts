@@ -8,7 +8,10 @@ const read = (relativePath: string) => readFileSync(join(process.cwd(), relative
 const ENTITY_DETAIL_PAGES: Array<{ path: string; mustMatch: RegExp }> = [
   { path: 'src/pages/AreaDetailPage.tsx', mustMatch: /MobileDetailShell|AreaDetailView/ },
   { path: 'src/pages/PlaceDetailPage.tsx', mustMatch: /PlaceDetailCore/ },
-  { path: 'src/pages/ActivityDetail.tsx', mustMatch: /ActivityDetailView|MobileDetailShell/ },
+  {
+    path: 'src/pages/ActivityDetail.tsx',
+    mustMatch: /ActivityDetailByKind|ActivityDetailPageShell/,
+  },
   { path: 'src/pages/ShopPublic.tsx', mustMatch: /ShopPublicPage/ },
   { path: 'src/components/place/PlaceDetailCore.tsx', mustMatch: /MobileDetailShell/ },
   { path: 'src/components/area/AreaDetailView.tsx', mustMatch: /MobileDetailShell/ },
@@ -39,7 +42,7 @@ describe('entityDetailShellGuard', () => {
         violations.push(`${path}: missing delegated shell/view`);
       }
       const hasShellDelegate =
-        /MobileDetailShell|EntityPublicDetailShell|ActivityDetailView|PlaceDetailCore|AreaDetailView|ShopPublicPage/.test(
+        /MobileDetailShell|EntityPublicDetailShell|ActivityDetailByKind|ActivityDetailPageShell|ActivityDetailView|PlaceDetailCore|AreaDetailView|ShopPublicPage/.test(
           source
         );
       if (!hasShellDelegate) {

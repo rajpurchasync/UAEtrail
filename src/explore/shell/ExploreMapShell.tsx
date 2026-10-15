@@ -113,20 +113,11 @@ export const ExploreMapShell = ({
     onCloseSelection={handleCloseMapSelection}
     joinInvitePeekBanner={joinInvitePeekBanner}
     onJoin={selection.handleJoin}
-    onMessage={selection.handleDemandMessage}
+    onMessage={selection.handlePeekOrganizerMessage}
     onActivityMapPeekAction={selection.handleActivityMapPeekAction}
     onOfferTransport={selection.handleOfferTransport}
     activityPeekSkipsJoinContext={selection.activityPeekSkipsJoinContext}
     linkRideshareTenantId={tenantId}
-    onDemandRemove={
-      selection.selectedCard?.showDemandOwnerActions ? selection.requestDemandRemove : undefined
-    }
-    onDemandFullManage={
-      selection.selectedCard?.showDemandOwnerActions ? selection.handleDemandManage : undefined
-    }
-    onDemandLinkRideshare={
-      selection.selectedCard?.showDemandLinkRideshare ? handleOfferRideshareForDemand : undefined
-    }
     onOpenExploreItem={handleOpenExploreItem}
     onWithdraw={() => selection.joinActions.setShowWithdraw(true)}
     onGuestGatedAction={selection.handleGuestGatedAction}

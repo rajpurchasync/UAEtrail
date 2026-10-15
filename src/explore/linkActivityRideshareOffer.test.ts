@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import type { ActivityDTO } from '@uaetrail/shared-types';
-import { canLinkRideshareToActivity } from './linkActivityRideshareOffer';
+import {
+  canLinkRideshareToActivity,
+  resolveSeekingParentActivityId,
+} from './linkActivityRideshareOffer';
+import { seekingExploreMapItem } from './exploreMapItemFixtures';
 
 const baseActivity = (overrides: Partial<ActivityDTO> = {}): ActivityDTO =>
   ({
@@ -32,5 +36,23 @@ describe('canLinkRideshareToActivity', () => {
       canLinkRideshareToActivity(baseActivity({ linkedRideshareActivityId: 'ride-1' }))
     ).toBe(true);
     expect(canLinkRideshareToActivity(null)).toBe(false);
+  });
+});
+
+describe('resolveSeekingParentActivityId', () => {
+  it('reads parent id from nested activity or activity: wire id', () => {
+    const item = seekingExploreMapItem({
+      intentId: 'int-1',
+      activityId: 'act-seek-1',
+      activity: { id: 'act-seek-1', title: 'Crew', activityType: 'hiking' },
+    });
+    expect(resolveSeekingParentActivityId(item)).toBe('act-seek-1');
+    expect(
+      resolveSeekingParentActivityId({
+        ...item,
+        activity: undefined,
+        id: 'activity:act-wire-only',
+      } as typeof item)
+    ).toBe('act-wire-only');
   });
 });

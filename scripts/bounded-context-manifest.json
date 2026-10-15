@@ -97,6 +97,7 @@
       "feDomains": ["src/api/domains/organisation.ts", "src/api/domains/activities.ts"],
       "feRoots": [
         "src/pages/operator",
+        "src/pages/ActivityDetail.tsx",
         "src/console",
         "src/components/activity",
         "src/activity",
@@ -137,6 +138,7 @@
       "feDomains": ["src/api/domains/places.ts", "src/api/domains/placeRegistry.ts"],
       "feRoots": [
         "src/places-discovery",
+        "src/pages/place",
         "src/pages/TrailDetail.tsx",
         "src/pages/CampDetail.tsx",
         "src/pages/EventDetail.tsx",

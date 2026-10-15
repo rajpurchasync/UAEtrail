@@ -1,16 +1,19 @@
 import type { ActivityMapPeekAction, ActivityMapPeekActionId } from '@uaetrail/shared-types';
-import { EXPLORE_PEEK_CTA } from '../../config/exploreTheme';
-import { LIST_FEED_CTA_MESSAGE_ORGANIZER } from '../../list/listFeedCtaCopy';
-import { activityMapPeekActionLabel } from '../exploreMapPeekActionCopy';
-import { canLinkRideshareToActivity } from '../linkActivityRideshareOffer';
-import { activityDetailPath } from '../../config/routingCatalog';
-import { exploreCardActivityJoinIsFull, type ExploreCardModel } from '../exploreCardModel';
-import type { JoinRequestUiState } from '../../utils/joinRequestUi';
-import { pendingApprovalLabel } from '../../utils/joinRequestUi';
-import { ExplorePeekDetailLink } from './ExplorePeekDetailLink';
+import { EXPLORE_PEEK_CTA } from '../../../config/exploreTheme';
+import { LIST_FEED_CTA_MESSAGE_ORGANIZER } from '../../../list/listFeedCtaCopy';
+import { activityMapPeekActionLabel } from '../../exploreMapPeekActionCopy';
+import { canLinkRideshareToActivity } from '../../linkActivityRideshareOffer';
+import { activityDetailPath } from '../../../config/routingCatalog';
+import {
+  exploreCardActivityJoinIsFull,
+  type DiscoveryCardModel,
+} from '../../../discovery/discoveryCardModel';
+import type { JoinRequestUiState } from '../../../utils/joinRequestUi';
+import { pendingApprovalLabel } from '../../../utils/joinRequestUi';
+import { PeekDetailLink } from '../../map-peek/PeekDetailLink';
 
-type ExploreActivityMapPeekActionsProps = {
-  card: ExploreCardModel;
+export type ActivityPeekEngagementActionsProps = {
+  card: DiscoveryCardModel;
   actions: ActivityMapPeekAction[];
   linkRideshareTenantId: string | null;
   onAction: (id: ActivityMapPeekActionId) => void;
@@ -41,7 +44,7 @@ const dualPrimaryClass =
 const dualSecondaryClass =
   'flex min-h-[3.25rem] flex-1 items-center justify-center rounded-xl border border-neutral-200 bg-white px-3 text-center text-sm font-bold text-neutral-800';
 
-const actionLabel = (action: ActivityMapPeekAction, card: ExploreCardModel): string => {
+const actionLabel = (action: ActivityMapPeekAction, card: DiscoveryCardModel): string => {
   if (action.id === 'request_join') return card.primaryCta;
   if (action.id === 'message_host') return LIST_FEED_CTA_MESSAGE_ORGANIZER;
   return activityMapPeekActionLabel(action.id, action);
@@ -57,8 +60,8 @@ const isConsumerDualRow = (
       (primary.id === 'request_join' || primary.id === 'pending_join')
   );
 
-/** Activity map peek — render `viewerAccess.mapPeekActions` (wire ids, not roles). */
-export const ExploreActivityMapPeekActions = ({
+/** Renders `viewerAccess.mapPeekActions` on activity pin summary (wire ids). */
+export const ActivityPeekEngagementActions = ({
   card,
   actions,
   linkRideshareTenantId,
@@ -67,7 +70,7 @@ export const ExploreActivityMapPeekActions = ({
   joinStateLoading = false,
   onBeforeDetailNavigate,
   joinUiState,
-}: ExploreActivityMapPeekActionsProps) => {
+}: ActivityPeekEngagementActionsProps) => {
   const gate = onGuestGatedAction;
   const activity = card.activity;
   const joinFull = exploreCardActivityJoinIsFull(card);
@@ -76,9 +79,7 @@ export const ExploreActivityMapPeekActions = ({
     : 'w-full rounded-2xl bg-emerald-500 py-3.5 text-base font-bold text-white';
 
   const pendingJoinLabel =
-    joinUiState?.kind === 'pending'
-      ? pendingApprovalLabel(joinUiState.status)
-      : null;
+    joinUiState?.kind === 'pending' ? pendingApprovalLabel(joinUiState.status) : null;
 
   const runGated = (id: ActivityMapPeekActionId) => {
     if (gate) {
@@ -160,7 +161,7 @@ export const ExploreActivityMapPeekActions = ({
           const activityId = card.activityId ?? card.activity?.id;
           const hrefOverride = activityId ? activityDetailPath(activityId) : undefined;
           return (
-            <ExplorePeekDetailLink
+            <PeekDetailLink
               key={action.id}
               card={card}
               label={label}
@@ -219,7 +220,6 @@ export const ExploreActivityMapPeekActions = ({
         }
 
         const joinLabel = actionLabel(action, card);
-
         const isRequestJoin = action.id === 'request_join';
 
         return (
@@ -228,9 +228,7 @@ export const ExploreActivityMapPeekActions = ({
             type="button"
             onClick={() => runGated(action.id)}
             disabled={isRequestJoin && joinFull}
-            className={
-              isRequestJoin ? joinPrimaryClass : prominenceClass(action.prominence)
-            }
+            className={isRequestJoin ? joinPrimaryClass : prominenceClass(action.prominence)}
           >
             {joinLabel}
           </button>

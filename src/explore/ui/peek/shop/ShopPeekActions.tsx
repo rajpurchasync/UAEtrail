@@ -1,13 +1,16 @@
 import { ExternalLink } from 'lucide-react';
-import type { ExploreCardModel } from '../exploreCardModel';
-import { exploreCardHasMapCoords, exploreCardShowsInlineDirections } from '../exploreCardModel';
 import { isPeekOnlyCatalogProfile } from '@uaetrail/shared-types';
-import { PRO_MEMBERSHIP_PATH } from '../../config/memberRoutes';
-import { ExploreCardDirectionsButton } from './ExploreCardPresentation';
-import { ExplorePeekDetailLink } from './ExplorePeekDetailLink';
+import type { DiscoveryCardModel } from '../../../discovery/discoveryCardModel';
+import {
+  exploreCardHasMapCoords,
+  exploreCardShowsInlineDirections,
+} from '../../../discovery/discoveryCardModel';
+import { PRO_MEMBERSHIP_PATH } from '../../../config/memberRoutes';
+import { ExploreCardDirectionsButton } from '../ExploreCardPresentation';
+import { PeekDetailLink } from '../../map-peek/PeekDetailLink';
 
-type ExploreShopPeekActionsProps = {
-  card: ExploreCardModel;
+export type ShopPeekActionsProps = {
+  card: DiscoveryCardModel;
   onClose: () => void;
   onGuestGatedAction?: () => void;
   externalUrl?: string | null;
@@ -19,13 +22,13 @@ const viewButtonClass =
 const rateButtonClass =
   'flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-neutral-200/80 bg-white/70 py-2.5 text-sm font-semibold text-gray-800 transition-colors hover:bg-white';
 
-/** Shop map peek — detail/review use `ExplorePeekDetailLink` (same gates as activities/venues). */
-export const ExploreShopPeekActions = ({
+/** Shop / merchant pin on the activity pin host (`source: shop`). */
+export const ShopPeekActions = ({
   card,
   onClose,
   onGuestGatedAction,
   externalUrl = null,
-}: ExploreShopPeekActionsProps) => {
+}: ShopPeekActionsProps) => {
   const gate = onGuestGatedAction;
   const peekOnly = isPeekOnlyCatalogProfile(card.catalogProfileExposure);
 
@@ -58,9 +61,7 @@ export const ExploreShopPeekActions = ({
   }
 
   const showGuestDirections =
-    Boolean(gate) &&
-    exploreCardHasMapCoords(card) &&
-    !exploreCardShowsInlineDirections(card);
+    Boolean(gate) && exploreCardHasMapCoords(card) && !exploreCardShowsInlineDirections(card);
 
   if (card.reviewPath) {
     return (
@@ -73,14 +74,14 @@ export const ExploreShopPeekActions = ({
           />
         ) : null}
         <div className="flex gap-2">
-          <ExplorePeekDetailLink
+          <PeekDetailLink
             card={card}
             label="View"
             className={viewButtonClass}
             onGuestGatedAction={gate}
             onBeforeNavigate={onClose}
           />
-          <ExplorePeekDetailLink
+          <PeekDetailLink
             card={card}
             hrefOverride={card.reviewPath}
             label="Rate"
@@ -98,7 +99,7 @@ export const ExploreShopPeekActions = ({
 
   return (
     <>
-      <ExplorePeekDetailLink
+      <PeekDetailLink
         card={card}
         label={card.primaryCta}
         className={primaryClass}

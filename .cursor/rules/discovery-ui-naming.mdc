@@ -1,0 +1,53 @@
+---
+description: Discovery map UI — stack + geography (Explore = route only)
+globs:
+  - src/explore/ui/map-peek/**
+  - src/explore/ui/peek/**
+  - src/discovery/**
+  - src/place/geographyVocabulary.ts
+  - src/place/placePeekPresentation.ts
+  - src/components/activity/detail/ActivityDetailEngagementStrips.tsx
+  - src/activity/detail/**
+alwaysApply: false
+---
+
+# Discovery UI methodology
+
+Read **`docs/SYSTEM_COHERENCE.md` §6.1** before adding map peek UI.
+
+## When to use “explore”
+
+Only for the **surface**: `/explore`, `ExploreMapStage`, explore API/routing helpers. **Never** prefix entity peek components with `Explore` or `Explore*Peek*`.
+
+## Three layers (do not invent a fourth prefix)
+
+| Layer | Name pattern | Example |
+|-------|----------------|---------|
+| L1 Card VM | `DiscoveryCard*` | `buildDiscoveryCardViewModel` |
+| L2 Map peek | `MapPeekShell` (shared chrome once) + `{Entity}Peek*` | `ActivityPeekCard`, `PlacePeekBody` |
+| L3 Detail | `*DetailPage`, entity modules | `HikingActivityDetailPage` |
+
+**Not** `PinSummary*` on every file — that was a mistake. One shell: **`MapPeekShell`**. Everything else: **`{Entity}Peek*`** under `peek/{activity|place|area|shop}/`.
+
+## Geography (Place · venue · Area · facility)
+
+| Term | Meaning |
+|------|---------|
+| **Place** | Catalog entity (`locations`) — UI: `PlacePeek*` |
+| **`venue`** | Wire only: `card.source === 'venue'` (Place on Spots lens) |
+| **Area** | Hub pin `source: 'area'` — UI: `AreaPeek*` |
+| **Facility** | Amenity **Place**; area rollup `facilities` — not an Area type |
+
+Looking-for / seeking = **activity** (`activityMode: seeking`); publisher = **organizer** on wire — same `ActivityPeekCard` / `resolveActivityPeekEngagement` as hosted outings. **Legacy intent-only** rows: `ActivityPeekHostManageActions` + `showLegacySeekingOwnerPeek` (not `DemandOwner*` UI).
+
+`*MapPeekHost` = **map mount** (overlay/sheet), not organizer vocabulary.
+
+## Routing
+
+`map-peek/mapPeekSlots.tsx` — **only** place that branches on `card.source` for the activity map peek host.
+
+## Legacy
+
+No `Explore*Peek*` files under `src/explore/ui/` — CI fails if any appear. No `ExploreVenuePeek*`, `ExploreDemandOwner*`, or `PinSummary*` sprawl.
+
+Guards: `mapPeekNaming.test.ts`, `discoveryUiMethodologyGuard.test.ts`, `geographyTerminologyGuard.test.ts`.

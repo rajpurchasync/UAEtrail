@@ -1,3 +1,4 @@
-import { PlaceDetailPage } from './PlaceDetailPage';
+import { CampingPlaceDetailPage } from './place/CampingPlaceDetailPage';
 
-export const CampDetail = () => <PlaceDetailPage kind="camp" />;
+/** @deprecated Use `CampingPlaceDetailPage` — kept for `/camp` route name. */
+export const CampDetail = CampingPlaceDetailPage;

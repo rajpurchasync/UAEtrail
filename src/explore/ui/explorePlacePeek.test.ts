@@ -6,14 +6,15 @@ const read = (relativePath: string) => readFileSync(join(process.cwd(), relative
 
 describe('place map peek', () => {
   it('uses structured body and stacked CTAs without maps-app chevron', () => {
-    const preview = read('src/explore/ui/ExplorePlaceMapPreview.tsx');
-    const actions = read('src/explore/ui/ExplorePlacePeekActions.tsx');
-    const body = read('src/explore/ui/ExplorePlacePeekBody.tsx');
+    const preview = read('src/explore/ui/peek/place/PlaceMapPeekHost.tsx');
+    const actions = read('src/explore/ui/peek/place/PlacePeekActions.tsx');
+    const body = read('src/explore/ui/peek/place/PlacePeekBody.tsx');
 
-    expect(preview).toMatch(/placePeekLayout/);
-    const peekCard = read('src/explore/ui/ExploreMapPeekCard.tsx');
-    expect(peekCard).toMatch(/showCoverHero/);
-    expect(peekCard).toMatch(/!placePeekLayout/);
+    expect(preview).toMatch(/PlacePeekCard/);
+    expect(read('src/explore/ui/peek/PlacePeekCard.tsx')).toMatch(/catalogPlaceSummary/);
+    const shell = read('src/explore/ui/map-peek/MapPeekShell.tsx');
+    expect(shell).toMatch(/showCoverHero/);
+    expect(shell).toMatch(/!catalogPlaceSummary/);
     expect(body).toMatch(/resolvePlaceCatalogFactLabels/);
     expect(body).toMatch(/resolvePlacePeekCuratedArea/);
     expect(body).toMatch(/fetchPlaceActivities/);
@@ -23,3 +24,4 @@ describe('place map peek', () => {
     expect(actions).not.toMatch(/flex w-full gap-2/);
   });
 });
+

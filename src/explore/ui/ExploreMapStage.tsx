@@ -8,13 +8,13 @@ import type { ExploreCardModel } from '../exploreCardModel';
 import type { JoinRequestUiState } from '../../utils/joinRequestUi';
 import { ExploreCoachMarks } from './ExploreCoachMarks';
 import { ExploreDismissibleNotice } from './ExploreDismissibleNotice';
-import { ExploreItemSheet } from './ExploreItemSheet';
+import { ActivityMapPeekHost } from './ActivityMapPeekHost';
 import { ExploreMapChromeBar } from './ExploreMapChromeBar';
 import { ExploreMapLoadErrorBoundary } from './ExploreMapLoadErrorBoundary';
 import { ExploreMapLoadingSkeleton } from './ExploreMapLoadingSkeleton';
 import { ExploreMapLocationPrompt } from './ExploreMapLocationPrompt';
 import { ExploreMapStyleToggle } from './ExploreMapStyleToggle';
-import { ExplorePlaceMapPreview } from './ExplorePlaceMapPreview';
+import { PlaceMapPeekHost } from './peek/place/PlaceMapPeekHost';
 import type { ExploreSearchScopeCounts, ExploreSearchScopeKey } from '../exploreBrowseTaxonomy';
 import type { ExplorePanel, MapFilterKey } from '../routing';
 import type { ExploreActivityDatePreset } from '../exploreActivityDateFilter';
@@ -78,9 +78,6 @@ export type ExploreMapStageProps = {
   onActivityMapPeekAction?: (actionId: import('@uaetrail/shared-types').ActivityMapPeekActionId) => void;
   onOfferTransport?: () => void;
   linkRideshareTenantId?: string | null;
-  onDemandRemove?: () => void;
-  onDemandFullManage?: () => void;
-  onDemandLinkRideshare?: () => void;
   onOpenExploreItem?: (exploreItemId: string) => void;
   onGuestGatedAction?: () => void;
   joinInvitePeekBanner?: string | null;
@@ -144,9 +141,6 @@ export const ExploreMapStage = ({
   onActivityMapPeekAction,
   onOfferTransport,
   linkRideshareTenantId = null,
-  onDemandRemove,
-  onDemandFullManage,
-  onDemandLinkRideshare,
   onOpenExploreItem,
   onGuestGatedAction,
   joinInvitePeekBanner = null,
@@ -300,22 +294,19 @@ export const ExploreMapStage = ({
       </div>
 
       {selectedCard && selected?.source === 'venue' && selected ? (
-        <ExplorePlaceMapPreview
+        <PlaceMapPeekHost
           item={selected}
           onClose={onCloseSelection}
           onGuestGatedAction={guestGatedAction}
         />
       ) : selectedCard ? (
-        <ExploreItemSheet
+        <ActivityMapPeekHost
           card={selectedCard}
           onClose={onCloseSelection}
           onGuestGatedAction={guestGatedAction}
           onJoin={onJoin}
           onMessage={onMessage}
           linkRideshareTenantId={linkRideshareTenantId}
-          onDemandRemove={onDemandRemove}
-          onDemandFullManage={onDemandFullManage}
-          onDemandLinkRideshare={onDemandLinkRideshare}
           onOpenExploreItem={onOpenExploreItem}
           joinUiState={activityPeekSkipsJoinContext ? undefined : joinUiState}
           onWithdraw={onWithdraw}

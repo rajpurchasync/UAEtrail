@@ -50,4 +50,42 @@ describe('seekingPinHygieneGuard (R4 exit)', () => {
       `Legacy pin=demand: URLs belong in notificationRouting (rewrite) or tests only:\n${violations.join('\n')}`
     ).toEqual([]);
   });
+
+  it('S12d: removed legacy seeking peek flags from app code', () => {
+    const files = collectSourceFiles(SCAN_ROOT);
+    const violations: string[] = [];
+    const legacyPeekFlag = /showLegacySeeking(?:OwnerPeek|LinkRideshare)/;
+
+    for (const file of files) {
+      if (file === 'src/config/seekingPinHygieneGuard.test.ts') continue;
+      const content = readFileSync(join(process.cwd(), file), 'utf8');
+      if (legacyPeekFlag.test(content)) {
+        violations.push(file);
+      }
+    }
+
+    expect(
+      violations,
+      `Map peek uses activity wire only — no showLegacySeeking* flags:\n${violations.join('\n')}`
+    ).toEqual([]);
+  });
+
+  it('S12d: no removed intent-only peek modules under explore/ui', () => {
+    const files = collectSourceFiles(join(SCAN_ROOT, 'explore', 'ui'));
+    const violations: string[] = [];
+
+    for (const file of files) {
+      const content = readFileSync(join(process.cwd(), file), 'utf8');
+      if (
+        content.includes('ActivityPeekHostManageActions') ||
+        content.includes('ActivityPeekLegacyIntentJoinActions')
+      ) {
+        violations.push(file);
+      }
+    }
+
+    expect(violations, `Intent-only map peek removed from explore/ui:\n${violations.join('\n')}`).toEqual(
+      []
+    );
+  });
 });

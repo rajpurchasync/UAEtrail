@@ -1,16 +1,16 @@
 import type { ReactNode } from 'react';
 import { X } from 'lucide-react';
-import type { ExploreCardModel } from '../exploreCardModel';
-import { EXPLORE_PEEK, EXPLORE_SHEET } from '../../config/exploreTheme';
-import { EnvironmentImage } from '../../components/ui/EnvironmentImage';
-import { ShareButton } from '../../components/ui/ShareButton';
-import { ExploreFollowButton } from './ExploreFollowButton';
+import type { ExploreCardModel } from '../../exploreCardModel';
+import { EXPLORE_PEEK, EXPLORE_SHEET } from '../../../config/exploreTheme';
+import { EnvironmentImage } from '../../../components/ui/EnvironmentImage';
+import { ShareButton } from '../../../components/ui/ShareButton';
+import { ExploreFollowButton } from '../ExploreFollowButton';
 import {
   exploreCardPeekShowsDirections,
   exploreCardPeekShowsFollow,
   exploreCardShowPeekBodyDirections,
-} from '../exploreCardModel';
-import { PlaceDirectionLinks } from '../../components/ui/PlaceDirectionLinks';
+} from '../../exploreCardModel';
+import { PlaceDirectionLinks } from '../../../components/ui/PlaceDirectionLinks';
 import {
   ExploreCardDetailList,
   ExploreCardHeadline,
@@ -18,28 +18,27 @@ import {
   ExploreCardTypeBadge,
   ExploreActivityPeekMeta,
   ExploreVenueImageBadges,
-} from './ExploreCardPresentation';
-import { ExplorePlacePeekBody } from './ExplorePlacePeekBody';
-import { resolvePeekDetailAccess } from '../../access/resolvePeekDetailAccess';
+} from '../ExploreCardPresentation';
+import { PlacePeekBody } from '../peek/place/PlacePeekBody';
+import { resolvePeekDetailAccess } from '../../../access/resolvePeekDetailAccess';
 
-interface ExploreMapPeekCardProps {
+export type MapPeekShellProps = {
   card: ExploreCardModel;
   onClose: () => void;
-  /** Peek card CTA block (not a page footer — actions from API or join flow). */
+  /** Summary card CTA block (wire actions or join flow — not a full-page footer). */
   actions: ReactNode;
   children?: ReactNode;
   joinStateLoading?: boolean;
   onGuestGatedAction?: () => void;
   /** Inline rail / list — hide dismiss controls on the card chrome. */
   embedMode?: boolean;
-  /** Join-me invite nudge above peek actions. */
   statusBanner?: string | null;
-  /** Catalog place pins (`source: venue`) — structured body (facts, reviews, hosted activities). */
-  placePeekLayout?: boolean;
-}
+  /** Catalog place pins (`source: venue`) — structured facts body via `PlacePeekCard`. */
+  catalogPlaceSummary?: boolean;
+};
 
-/** Unified floating peek card above map chrome — venues, activities, shops. */
-export const ExploreMapPeekCard = ({
+/** Shared chrome for map/list pin summaries (activities, places, shops). */
+export const MapPeekShell = ({
   card,
   onClose,
   actions,
@@ -48,8 +47,8 @@ export const ExploreMapPeekCard = ({
   onGuestGatedAction,
   embedMode = false,
   statusBanner = null,
-  placePeekLayout = false,
-}: ExploreMapPeekCardProps) => {
+  catalogPlaceSummary = false,
+}: MapPeekShellProps) => {
   const titleDetailAccess = resolvePeekDetailAccess(card, {
     isGuest: Boolean(onGuestGatedAction),
     joinStateLoading,
@@ -57,10 +56,10 @@ export const ExploreMapPeekCard = ({
   const shellClass = embedMode
     ? 'overflow-hidden rounded-2xl bg-white shadow-[0_8px_32px_rgba(15,23,42,.16)] ring-1 ring-black/5'
     : EXPLORE_PEEK.shell;
-  const showCoverHero = Boolean(card.coverImage) && !placePeekLayout;
+  const showCoverHero = Boolean(card.coverImage) && !catalogPlaceSummary;
 
   return (
-    <div className={shellClass}>
+    <div className={shellClass} data-pin-summary="card">
       {showCoverHero ? (
         <div
           className={`relative w-full shrink-0 overflow-hidden bg-neutral-100${
@@ -101,7 +100,7 @@ export const ExploreMapPeekCard = ({
             iconOnly
             light={!showCoverHero}
           />
-          {!showCoverHero && !embedMode && (
+          {!showCoverHero && !embedMode ? (
             <button
               type="button"
               onClick={onClose}
@@ -110,7 +109,7 @@ export const ExploreMapPeekCard = ({
             >
               <X className="h-4 w-4" />
             </button>
-          )}
+          ) : null}
         </div>
       </div>
 
@@ -121,8 +120,8 @@ export const ExploreMapPeekCard = ({
             : 'min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pt-3'
         }
       >
-        {placePeekLayout ? (
-          <ExplorePlacePeekBody
+        {catalogPlaceSummary ? (
+          <PlacePeekBody
             card={card}
             detailAccess={titleDetailAccess}
             onGuestGatedDetail={onGuestGatedAction}
@@ -180,7 +179,8 @@ export const ExploreMapPeekCard = ({
   );
 };
 
-export const ExploreMapPeekPosition = ({
+/** Floating pin summary above the map projection (scrim + centered slot). */
+export const MapPeekOverlay = ({
   children,
   onClose,
 }: {
@@ -196,11 +196,6 @@ export const ExploreMapPeekPosition = ({
         onClick={onClose}
       />
     ) : null}
-    <div
-      className={`${EXPLORE_PEEK.inner} pointer-events-auto relative z-10`}
-      data-explore-peek="card"
-    >
-      {children}
-    </div>
+    <div className={`${EXPLORE_PEEK.inner} pointer-events-auto relative z-10`}>{children}</div>
   </div>
 );

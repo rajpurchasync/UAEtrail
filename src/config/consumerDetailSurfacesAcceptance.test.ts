@@ -62,4 +62,11 @@ describe('consumerDetailSurfacesAcceptance', () => {
     }
     expect(violations).toEqual([]);
   });
+
+  it('S9-ACT-01: consumer activity route uses kind templates (not direct ActivityDetailView)', () => {
+    const page = read('src/pages/ActivityDetail.tsx');
+    expect(page).toMatch(/ActivityDetailByKind/);
+    expect(page).not.toMatch(/<ActivityDetailView/);
+    expect(read('src/activity/detail/activityDetailKind.ts')).toMatch(/resolveActivityDetailKind/);
+  });
 });

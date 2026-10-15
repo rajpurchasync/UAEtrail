@@ -13,6 +13,7 @@ const DEPRECATED_MESSAGE_BUTTON_SHIMS = new Set([
 const SKIP_FILES = new Set(['src/config/moduleNamingGuard.test.ts']);
 
 const EXPLORE_PREFIX_ALLOW_PREFIXES = [
+  'src/discovery/',
   'src/explore/',
   'src/activity-discovery/',
   'src/people-discovery/',
