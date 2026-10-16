@@ -94,7 +94,7 @@ export type ComposeFlowSpec = {
 
   id: CanonicalComposeFlowId;
 
-  /** Legacy FAB intent — catalog metadata until all callers use Plan · Contribute. */
+  /** Legacy compose flow ids (`plan.*` / `contribute.*`) — v3 wire uses `host.*` / `seek.*` / `add.*`. */
 
   intent: ComposeIntent;
 

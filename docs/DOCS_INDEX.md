@@ -13,7 +13,7 @@
 | [`NORTHSTAR.md`](./NORTHSTAR.md) | Product why, voice, outcomes |
 | [`NAVIGATION.md`](./NAVIGATION.md) | Routes, redirects, surfaces |
 | [`LANDING.md`](./LANDING.md) | Guest-only `/` |
-| [`CREATE_FLOW.md`](./CREATE_FLOW.md) | FAB **Plan·Contribute**, compose wire, join modes |
+| [`CREATE_FLOW.md`](./CREATE_FLOW.md) | FAB **Host · Find crew · Add on map**, compose wire, join modes |
 | [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) | Person account, host tiers, capabilities, host/join/buddy **naming** |
 | [`DOMAIN.md`](./DOMAIN.md) | Entity glossary (Place, Activity, Demand, …) |
 | [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) | TS symbols, URLs, API client, notifications, routing hygiene, **§15 viewer access** |

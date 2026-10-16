@@ -51,7 +51,7 @@ Code (today): `src/explore/compose.ts`, `CreateIntentSheet.tsx`, `SeekFlexibleCo
 | **Find crew** | Looking for people to go with | **Post on map** (kind → `seekingFlowEngine`) or **Share availability** (`member_availability` sheet) |
 | **Add on map** | Trail, camp, outdoor spot, or **facility** | Place vs facility → contribute submit |
 
-**Disambiguation:** Bottom nav **Plan** (`/plan`) = your trips + availability — not this FAB.
+**Disambiguation:** Bottom nav **My Plans** (`/plan`) = upcoming commitments + availability — not this FAB.
 
 **Layout:** Sheet height fits content; warm tone; 2-col chips or tight rows on level 2. See [`NAVIGATION.md`](./NAVIGATION.md) § Explore FAB.
 

@@ -25,7 +25,7 @@ import {
   parsePlanHistoryRole,
   type PlanHistoryRole,
 } from '../config/routingCatalog';
-import { resolvePlanHubView } from '../member-plan/resolvePlanHubView';
+import { resolveProfileHistoryContentKey } from '../member-plan/resolvePlanHubView';
 
 /** Profile outing history list — `/profile/history`. */
 export const ProfileHistoryPage = () => {
@@ -69,10 +69,8 @@ export const ProfileHistoryPage = () => {
     legacyTab: searchParams.get('tab'),
   });
 
-  const contentKey = resolvePlanHubView({
+  const contentKey = resolveProfileHistoryContentKey({
     signedIn: Boolean(user),
-    mainView: 'completed',
-    plansRole: 'all',
     role: historyRole,
     canHost,
   });
@@ -96,7 +94,6 @@ export const ProfileHistoryPage = () => {
 
   const historyToolbar = user ? (
     <ProfileHistoryPageToolbar
-      surface="history"
       mainView={mainView === 'map' ? 'completed' : mainView}
       searchQuery={activitySearchQuery}
       onSearchChange={setActivitySearchQuery}

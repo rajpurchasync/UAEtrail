@@ -376,7 +376,7 @@ Scheduled outings and **demand** posts on the **Activities** map layer carry pla
 
 **Browse filters:** map pills (`filter=hiking`, …) use category; under **Others**, `subtype=events|activities` then optional `outingTopic` for general activities. See [`NAVIGATION.md`](./NAVIGATION.md) § Browse defaults.
 
-**Compose intents (separate lifecycles):** **Plan → hosting** → hosted `activities`; **Plan → seeking** → seeking `activities` + `participant_intents`; **Contribute** → place + **facility** catalog submits. Product detail: [`CREATE_FLOW.md`](./CREATE_FLOW.md) · Program CPC §8.4.
+**Compose intents (separate lifecycles):** **Host** (`host:*` / legacy `plan:*:hosting`) → hosted `activities`; **Find crew** fixed (`seek:fixed:*` / legacy `plan:*:seeking`) → seeking `activities` + `participant_intents`; **Add on map** (`add:*` / legacy `contribute:*`) → place + **facility** catalog submits. Product detail: [`CREATE_FLOW.md`](./CREATE_FLOW.md) · Program CPC §8.4.
 
 ## Identity, routing, and audit
 

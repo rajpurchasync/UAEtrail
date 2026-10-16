@@ -9,7 +9,6 @@ import {
 } from '../../config/routingCatalog';
 
 type ProfileHistoryPageToolbarProps = {
-  surface: 'plan' | 'history';
   mainView: PlanHistoryMainView;
   searchQuery: string;
   onSearchChange: (value: string) => void;
@@ -22,7 +21,6 @@ type ProfileHistoryPageToolbarProps = {
 };
 
 export const ProfileHistoryPageToolbar = ({
-  surface,
   mainView,
   searchQuery,
   onSearchChange,
@@ -34,7 +32,7 @@ export const ProfileHistoryPageToolbar = ({
   canHost,
 }: ProfileHistoryPageToolbarProps) => (
   <div className="flex flex-col gap-3">
-    {surface === 'history' ? <ProfileHistoryMainTabs active={mainView} /> : null}
+    <ProfileHistoryMainTabs active={mainView} />
 
     {mainView === 'completed' ? (
       <TabPageSearchRow

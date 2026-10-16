@@ -396,7 +396,7 @@ Track consolidation here; sub-roadmaps link out but **this table is the system-w
 | **C23** | ~~**Activity L3 monolith**~~ | — | **Done (S13-W7)** — thin `ActivityDetailBody` + `ActivityDetailPlanColumn` / `ActivityDetailSidebarColumn`; kind `planSections` on plan column | **S13-W7** |
 | **C24** | **People surfaces split** (`PeopleBrowsePanel`, `ListDiscoverPeopleView`, `Buddies`, activity host row) without shared people card VM | Inconsistent roster masks, duplicate buddy CTAs | `memberBrowseRowModel` + one `PeopleBrowseTabContent` — §6.2.2 | **S13-W3 done** |
 | **C25** | ~~Admin / platform_ops FE roots under-documented~~ | — | **Done (S13-W9)** — `NAVIGATION.md` admin table, `adminSurfacesAcceptance`, manifest `feRoots` | **S13-W9** |
-| **C26** | Catalog POI model flat (`locations` + `place-kind` amenities); area-wide “nearby facilities”; FAB **Organize·Find·Add** vs product **Plan·Contribute**; contribute/submit/registry jargon split | Wrong trail amenities; organize picker pollution; duplicate shop semantics (member pin vs operator storefront) | **Program CPC** (§8.4): **Place** + **Facility** entities; catalog queries; `viewerAccess` on places; FAB **Plan·Contribute**; compose v2 wire | §8.4 below |
+| **C26** | Catalog POI model flat (`locations` + `place-kind` amenities); area-wide “nearby facilities”; FAB **Host·Find crew·Add on map** (legacy **Plan·Contribute** wire only); contribute/submit/registry jargon split | Wrong trail amenities; organize picker pollution; duplicate shop semantics (member pin vs operator storefront) | **Program CPC** (§8.4): **Place** + **Facility** entities; catalog queries; `viewerAccess` on places; v3 `?compose=` + legacy aliases | §8.4 below |
 
 **Not debt (intentional):** legacy `/host/*` → `/operator/*` rewrite; Mongo `locations` collection name (wire **Place**); `x-organisation-id` header; `getOrganisationProfile` for **storefront** — not activity roster. **During CPC:** `/trail`·`/camp`·`/venue` and `/contributions` remain until **CPC-6** redirects ship (target `/place/:id`, `/profile/submissions`).
 
@@ -628,7 +628,7 @@ Region → Area (areaId)
 | D5 | Operator = **workspace**; all tenant kinds → `/operator/*` |
 | D6 | Pending catalog UX: **submissions list**, no public draft URL for unlisted rows |
 | D7 | Cutover: optional `CATALOG_V2` read flag → single deploy → redirects **CPC-6** |
-| F1–F6 | FAB **Plan·Contribute**; compose v2 + legacy parse ([`CREATE_FLOW.md`](./CREATE_FLOW.md)) |
+| F1–F6 | FAB **Host · Find crew · Add on map**; v3 compose + legacy `plan` / `contribute` parse ([`CREATE_FLOW.md`](./CREATE_FLOW.md)) |
 
 #### 8.4.6 Phase plan & checklists
 
@@ -640,7 +640,7 @@ Mark `[x]` in the PR that completes the item. **Gate:** `npm run verify:system:q
 *Context for implementers: §8.4.1–8.4.5; no code required.*
 
 - [x] `SYSTEM_COHERENCE.md` §8.4 + **C26** (this section)
-- [x] `CREATE_FLOW.md` — FAB **Plan·Contribute**, compose v2, legacy map
+- [x] `CREATE_FLOW.md` — FAB **Host · Find crew · Add on map**, v3 compose, legacy map
 - [x] `DOMAIN.md` — Place vs Facility vs Shop layers; geography §8.4.2
 - [x] `DOMAIN_CANONICALS.md` §1.7 — ontology + compose wire
 - [x] `NAVIGATION.md` — FAB, `/profile/submissions` target, contributions redirect note
@@ -760,7 +760,7 @@ Mark `[x]` in the PR that completes the item. **Gate:** `npm run verify:system:q
 
 ---
 
-**CPC-9 — FAB Plan · Contribute + compose v2**  
+**CPC-9 — FAB Host · Find crew · Add on map + compose v3**  
 *Can start after CPC-1; must finish before CPC-7. Context: `CreateIntentSheet`, `composeFlowCatalog`.*
 
 - [x] `COMPOSE_MENU_OPTIONS` → **Host** · **Find crew** · **Add on map** (bottom nav **Plan** = schedule, not FAB)

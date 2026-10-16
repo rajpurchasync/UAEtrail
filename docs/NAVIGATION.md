@@ -164,7 +164,7 @@ Legacy browse URLs (`/map`, `/discovery`, `/calendar`, bare `/activities` as bro
 | Discover browse on explore | `exploreDiscoverBrowsePath()` | `src/explore/routing.ts` |
 | Sign-in with return | `buildSignInRedirect(location)`, `signInPathForReturn(path)` | `src/utils/authReturnContext.ts` |
 | Post-auth fallback | `resolveAuthExitFallback()` → explore | `src/utils/authRedirect.ts` |
-| Plan hub URLs | `planRouting.ts`, `planHubRouting.ts` (`planUpcomingPath`, `normalizePlanHubSearchParams`, …) | `src/plan/planRouting.ts`, `src/member-plan/planHubRouting.ts` |
+| Plan + history URL helpers | `planUpcomingPath`, `normalizePlanHubSearchParams`, `profileHistoryCompletedPath`, … | Import **`config/routingCatalog`** in app code; implement in `src/plan/planRouting.ts` + `src/member-plan/planHubRouting.ts` |
 | List discovery URLs | `listDiscoveryPath()`, `listDiscoveryPathFromExploreSearch()` | `src/list/routing.ts` |
 | Crew chat deep link | `activityGroupChatPath()`, `navigateToActivityGroupChat()` | `src/utils/activityGroupChatNav.ts` |
 | Open crew chat from activity id | `openActivityGroupChat()` | `src/utils/openActivityGroupChat.ts` |
@@ -216,7 +216,7 @@ Signed-in members tap **+** on `/explore` (or list FAB) to compose. **Guests** �
 
 Legacy compose URLs (`plan:*:hosting|seeking`, `organize:*`, `find:*`, `contribute:*`, `add:*`) still parse as aliases.
 
-**Going from:** required map pin on **Plan** (activity) flows; **Contribute** uses place/facility pin only.
+**Going from:** required map pin on **Host** / **Find crew (fixed)** activity flows; **Add on map** uses place/facility pin only.
 
 **Components:** `CreateIntentSheet.tsx`, `ExploreExperience.tsx` (compose URL via `parseExploreCompose`).
 

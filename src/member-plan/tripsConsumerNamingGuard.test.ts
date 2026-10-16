@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 const SCAN_ROOT = join(process.cwd(), 'src');
@@ -103,6 +103,10 @@ describe('tripsConsumerNamingGuard', () => {
     }
 
     expect(violations).toEqual([]);
+  });
+
+  it('deprecated components/trips shim folder is removed', () => {
+    expect(existsSync(join(process.cwd(), 'src/components/trips'))).toBe(false);
   });
 
   it('app code imports profile-history chrome (not deprecated components/trips)', () => {

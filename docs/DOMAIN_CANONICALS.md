@@ -36,11 +36,15 @@ There are **five public entity kinds** on the wire (`EntityKind` / `EntityRef`):
 
 | Term | Layer | Meaning | Do not use for |
 |------|--------|---------|----------------|
-| **Plan** | Product verb (FAB) | Create a map **Activity** — **hosting** or **seeking** (unifies legacy Organize + Find) | Bottom nav **Plan** tab (`/plan`) — that tab is *your inventory* |
-| **Contribute** | Product verb (FAB) | Submit a **Place** or **Facility** to the catalog (member); not operator shop onboarding | Backend API name; use **place submit** / **facility submit** in code |
-| **Organize** | Product verb (legacy FAB + console) | **Hosting** path; still valid for **host** copy and `/operator` publish | Top-level FAB label after CPC-9 |
-| **Find** | Legacy FAB | **Seeking** path — use **Plan → looking for…** in new copy | Top-level FAB after CPC-9 |
-| **Add** | Legacy FAB | **Contribute** in new copy | Top-level FAB after CPC-9 |
+| **My Plans** | Consumer tab (`/plan`) | Forward commitments — upcoming, wishlist, goals, availability | FAB create menu; past outings (**profile history**) |
+| **Host** | FAB (UI) | Publish a **hosted** map **Activity** | Bottom nav **My Plans** tab |
+| **Find crew** | FAB (UI) | **Seeking** activity (fixed) or **Share availability** (flexible) | Generic “Find” menu; **Plan** as FAB label |
+| **Add on map** | FAB (UI) | Member **place** or **facility** catalog submit | Backend `*Contribute*` module names |
+| **Plan** | Legacy compose wire | Alias `plan:*:hosting\|seeking` → **Host** / **Find crew** | New FAB UI; **My Plans** tab name |
+| **Contribute** | Legacy compose wire | Alias `contribute:*` → **Add on map** | Backend API name; use **place submit** / **facility submit** in code |
+| **Organize** | Legacy compose + console | **Hosting** path; **host** copy and `/operator` publish | Top-level FAB label |
+| **Find** | Legacy compose | Alias `find:*` → **Find crew** (fixed seek) | Top-level FAB label |
+| **Add** | Legacy compose | Alias `add:*` → **Add on map** | Top-level FAB label |
 | **Create** | Product verb (OK) | Casual copy (“create a plan”) | — |
 | **Compose** | **Wire / code only** | Query `?compose=…` — v3 `host:*` \| `seek:fixed:*` \| `seek:flexible` \| `add:*` ([§1.7](#17-program-cpc--catalog-ontology-fab-compose-wire)); aliases `plan:*`, `contribute:*`, `organize` \| `find` \| `add` | User-facing FAB buttons — reserved word for **message compose** later |
 | **Host** | Product role | Anyone who **publishes** (buddy → pro guide → agency → shop owner → partner) | The Mongo `tenants` row name in UI |

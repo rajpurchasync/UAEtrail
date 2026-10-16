@@ -1,57 +1,54 @@
 import { describe, expect, it } from 'vitest';
-import {
-  planHubContentShowsComposeFab,
-  planHubContentShowsJoinedHub,
-  resolvePlanHubView,
-} from './resolvePlanHubView';
+import { resolveProfileHistoryContentKey } from './resolvePlanHubView';
 
-describe('resolvePlanHubView', () => {
-  it('maps plans all as default upcoming hub', () => {
-    const key = resolvePlanHubView({
-      signedIn: true,
-      mainView: 'plans',
-      plansRole: 'all',
-      role: 'joined',
-      canHost: true,
-    });
-    expect(key).toBe('plans-all');
-    expect(planHubContentShowsJoinedHub(key)).toBe(true);
+describe('resolveProfileHistoryContentKey', () => {
+  it('maps joined role to joined history section', () => {
+    expect(
+      resolveProfileHistoryContentKey({
+        signedIn: true,
+        role: 'joined',
+        canHost: true,
+      })
+    ).toBe('joined-completed');
   });
 
-  it('maps plans joined to upcoming joined hub', () => {
-    const key = resolvePlanHubView({
-      signedIn: true,
-      mainView: 'plans',
-      plansRole: 'joined',
-      role: 'joined',
-      canHost: true,
-    });
-    expect(key).toBe('plans-joined');
-    expect(planHubContentShowsJoinedHub(key)).toBe(true);
+  it('maps hosted role when member can host', () => {
+    expect(
+      resolveProfileHistoryContentKey({
+        signedIn: true,
+        role: 'hosted',
+        canHost: true,
+      })
+    ).toBe('hosted-completed');
   });
 
-  it('maps plans hosted to upcoming hosted list', () => {
-    const key = resolvePlanHubView({
-      signedIn: true,
-      mainView: 'plans',
-      plansRole: 'hosted',
-      role: 'joined',
-      canHost: true,
-    });
-    expect(key).toBe('plans-hosted');
-    expect(planHubContentShowsJoinedHub(key)).toBe(false);
-    expect(planHubContentShowsComposeFab(key)).toBe(true);
+  it('maps hosted role to pro upsell when member cannot host', () => {
+    expect(
+      resolveProfileHistoryContentKey({
+        signedIn: true,
+        role: 'hosted',
+        canHost: false,
+      })
+    ).toBe('hosted-needs-approval');
   });
 
-  it('maps completed hosted without joined hub', () => {
-    const key = resolvePlanHubView({
-      signedIn: true,
-      mainView: 'completed',
-      plansRole: 'joined',
-      role: 'hosted',
-      canHost: true,
-    });
-    expect(key).toBe('hosted-completed');
-    expect(planHubContentShowsJoinedHub(key)).toBe(false);
+  it('maps self role to seeking history section', () => {
+    expect(
+      resolveProfileHistoryContentKey({
+        signedIn: true,
+        role: 'self',
+        canHost: true,
+      })
+    ).toBe('self-completed');
+  });
+
+  it('returns signed-out when guest', () => {
+    expect(
+      resolveProfileHistoryContentKey({
+        signedIn: false,
+        role: 'joined',
+        canHost: false,
+      })
+    ).toBe('signed-out');
   });
 });

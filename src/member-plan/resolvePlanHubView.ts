@@ -1,32 +1,19 @@
-import type { PlanHistoryMainView, PlanHistoryRole, PlanUpcomingRole } from './planHubRouting';
+import type { PlanHistoryRole } from './planHubRouting';
 
-/** Which main panel to render on `/plan` or profile history — not a domain entity. */
-export type PlanHubContentKey =
-  | 'plans-all'
-  | 'plans-joined'
-  | 'plans-hosted'
+/** Profile history list panel — `/profile/history` only (not My Plans `/plan`). */
+export type ProfileHistoryContentKey =
   | 'joined-completed'
   | 'hosted-completed'
   | 'self-completed'
   | 'hosted-needs-approval'
   | 'signed-out';
 
-export const resolvePlanHubView = (input: {
+export const resolveProfileHistoryContentKey = (input: {
   signedIn: boolean;
-  mainView: PlanHistoryMainView;
-  plansRole: PlanUpcomingRole;
   role: PlanHistoryRole;
   canHost: boolean;
-}): PlanHubContentKey => {
+}): ProfileHistoryContentKey => {
   if (!input.signedIn) return 'signed-out';
-  if (input.mainView === 'plans') {
-    if (input.plansRole === 'hosted') {
-      if (!input.canHost) return 'hosted-needs-approval';
-      return 'plans-hosted';
-    }
-    if (input.plansRole === 'joined') return 'plans-joined';
-    return 'plans-all';
-  }
   if (input.role === 'hosted') {
     if (!input.canHost) return 'hosted-needs-approval';
     return 'hosted-completed';
@@ -35,11 +22,8 @@ export const resolvePlanHubView = (input: {
   return 'joined-completed';
 };
 
-export const planHubContentShowsJoinedHub = (key: PlanHubContentKey) =>
-  key === 'plans-joined' || key === 'plans-all';
+/** @deprecated Use `resolveProfileHistoryContentKey` — My Plans no longer shares this resolver. */
+export type PlanHubContentKey = ProfileHistoryContentKey;
 
-export const planHubContentShowsComposeFab = (key: PlanHubContentKey) =>
-  key === 'plans-all' || key === 'plans-joined' || key === 'plans-hosted';
-
-export const planHubContentShowsHostedSection = (key: PlanHubContentKey) =>
-  key === 'plans-hosted' || key === 'hosted-completed';
+/** @deprecated Use `resolveProfileHistoryContentKey`. */
+export const resolvePlanHubView = resolveProfileHistoryContentKey;

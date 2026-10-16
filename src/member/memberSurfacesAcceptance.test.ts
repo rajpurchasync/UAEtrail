@@ -273,6 +273,14 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(rail).not.toMatch(/\bapi\./);
   });
 
+  it('G-plan: profile history does not reuse My Plans upcoming resolver branches', () => {
+    const history = read('src/pages/ProfileHistory.tsx');
+    expect(history).toContain('resolveProfileHistoryContentKey');
+    expect(history).not.toMatch(/mainView:\s*['"]plans['"]/);
+    const resolver = read('src/member-plan/resolvePlanHubView.ts');
+    expect(resolver).not.toMatch(/plans-all|plans-joined|plans-hosted/);
+  });
+
   it('G-plan: Plan page is forward-looking (past outings on profile history)', () => {
     const plan = read('src/pages/Activities.tsx');
     expect(plan).not.toMatch(/timeScope=["']past["']/);
@@ -453,6 +461,16 @@ describe('member surfaces §11 acceptance (automated)', () => {
     const shared = read('packages/shared-types/src/activity-map-peek-actions.ts');
     expect(shared).toContain("id: 'open_crew_chat'");
     expect(shared).not.toMatch(/level === 'public'[\s\S]*message_host/);
+  });
+
+  it('G-plan: Tier-1 FAB vocabulary is Host · Find crew · Add on map', () => {
+    const create = read('docs/CREATE_FLOW.md');
+    expect(create).toMatch(/Host · Find crew · Add on map/);
+    const index = read('docs/DOCS_INDEX.md');
+    expect(index).toMatch(/Host · Find crew · Add on map/);
+    const coherence = read('docs/SYSTEM_COHERENCE.md');
+    expect(coherence).toMatch(/\*\*FAB \(UI\)\*\* \| \*\*Host\*\*/);
+    expect(coherence).not.toMatch(/\| F1–F6 \| FAB \*\*Plan·Contribute\*\*/);
   });
 
   it('G-plan: My Plans routing module and /profile/plans alias', () => {
