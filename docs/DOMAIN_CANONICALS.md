@@ -26,7 +26,7 @@ There are **five public entity kinds** on the wire (`EntityKind` / `EntityRef`):
 
 **Demand (Find)** is not a sixth entity kind on URLs — it is a **`participant_intent`** row surfaced on the map; deep links use **`exploreSeekingMapItemPath`** (`pin=activity:{id}` when M1 activity exists, else legacy `pin=demand:{intentId}`), not `/demand/:id`.
 
-**Plan** (`/plan`) is the active member tab (schedule, saved, goals lenses). **Outing history** (`/profile/history`) is profile inventory (past outings, journey map). Saved/wishlist primary UI: Plan `?lens=saved`. Legacy `/trips` and `/trips/map` redirect via `LEGACY_TRIPS_MAP_PATH` / `resolveLegacyTripsHubRedirect` — not a domain type. Consumer path helpers: import `config/routingCatalog` (not `member-plan/planHubRouting` directly).
+**Plan** (`/plan`) is the active member tab — **My Plans**: upcoming list or **calendar** (`layout=calendar` — joined, hosting, seeking, your available days), wishlist + goals; **share availability** editor is `?lens=availability` (`planAvailabilityPath()`), not the calendar layout. **Outing history** (`/profile/history`) is profile inventory (past outings, journey map). Wishlist deep links: `planWishlistTabPath()` / `planSavedPath()` (`tab=wishlist`; legacy `lens=saved|goals` normalizes on load). Page module: `src/plan/PlanPage.tsx`. Legacy `/trips` and `/trips/map` redirect via `LEGACY_TRIPS_MAP_PATH` / `resolveLegacyTripsHubRedirect` — not a domain type. Consumer path helpers: import `config/routingCatalog` (not `member-plan/planHubRouting` directly).
 
 **Campaigns** (future) are not a seventh entity kind — they are **surfaces** that promote Activities and/or link to host storefronts (agencies, partners, shops) in “What’s happening” feeds. See §1.2.
 
@@ -493,7 +493,7 @@ Use this when naming files, hooks, and utils — **one product word per concept*
 | **Wishlist** (private saves) | `user_favorites` (wire) | `WishlistItemDTO`, `GET/POST /me/wishlist` | “Favorite”, demand bookmarks, saving people/shops to wishlist |
 | **Goal** (time + count) | `user_goals` | `MemberGoalDTO`, `GET/POST /me/goals` | Wishlist rows, visited map pins as goal progress |
 | **Organize** (FAB) | `activities` publish | `organizeFlow*`, `organizeActivityPublish` | `hostActivity` in consumer explore |
-| **Plan** (tab) | joined/hosted/self plans | `src/plan/planRouting.ts`, `src/member-plan/planHubRouting.ts`, `components/plan/*`, `components/profile-history/*` (history list chrome), `components/journey/*` (map) | `/activities` hub naming, wishlist segment |
+| **Plan** (tab) | joined/hosted/self plans | `src/plan/PlanPage.tsx`, `src/plan/planRouting.ts`, `src/member-plan/planHubRouting.ts`, `components/plan/*`; history chrome: `components/profile-history/*`, `components/journey/*` (journey map only on profile) | `/activities` hub naming, trips-era tabs on `/plan` |
 | **Member discovery roster** | map + directory compose | `seekingOnMap[]` (`seekingTitle`, `participantIntentId`) on `GET /me/member-discovery/roster` | Wire field `lookingFor`, `demandTitle` |
 | **Journey map** (`/profile/history/map`) | `GET /me/journey-map`, `POST/PATCH/DELETE /me/map-pins`, `JourneyMapEntryDTO` | `memberJourneyMapApi`, `src/member-plan/journeyMap*` | `GET /me/trips/map`, `outdoorMap*` |
 | **Explore map** | `GET /explore/map` | `src/explore/*`, `exploreMapPinModel` | `journeyMap*` (wrong surface) |

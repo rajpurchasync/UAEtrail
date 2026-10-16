@@ -78,7 +78,7 @@ Notifications (deep link to **activity**, **Plan row context**, **chat thread**,
 | `/trips`, `/activities` | `/plan` or Profile history per query (`legacyTripsRedirect.ts`) |
 | `/profile/my-trips` | Profile **history** + **journey map** (rename paths when ready) |
 | `/host/*` (consumer) | Plan, activity manage, or business manage — **no new links** |
-| `/profile/wishlist` | Plan `?lens=saved` or equivalent |
+| `/profile/wishlist` | `/plan?tab=wishlist` (`planWishlistTabPath()`; legacy `lens=saved` normalizes) |
 | `ExploreMapSource: demand` (wire) | Project as `activity` + `activityMode: seeking` until M2; then remove enum value |
 
 ### 1.6 Already on branch (do not redo)
@@ -281,7 +281,7 @@ Notifications (deep link to **activity**, **Plan row context**, **chat thread**,
 ### 6.4 Code moves
 
 - [x] Rename `src/trips` → `src/member-plan` — **`src/trips` shims removed** (Oct 2026)
-- [x] Remove `TripsMainTabs` from Plan; no “trips” UI strings (`verify` + grep) — Plan page uses `PlanLensTabs` only; `TripsMainTabs` remains on profile history / journey map
+- [x] Remove `TripsMainTabs` from Plan; no “trips” UI strings (`verify` + grep) — Plan page uses `PlanPageTabs` (`src/plan/PlanPage.tsx`); profile history uses its own chrome
 
 ---
 

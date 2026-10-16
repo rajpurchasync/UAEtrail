@@ -45,6 +45,18 @@ describe('contributeFlow steps', () => {
     ]);
   });
 
+  it('add facility matches facility wizard', () => {
+    expect(getContributeFlowSteps('facility')).toEqual([
+      'title',
+      'facilityType',
+      'curatedArea',
+      'location',
+      'image',
+      'description',
+      'review',
+    ]);
+  });
+
   it('add spot (others) matches event venue kind', () => {
     expect(getContributeFlowSteps('event')).toEqual([
       'title',

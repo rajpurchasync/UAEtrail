@@ -4,6 +4,7 @@ import { DEFAULT_PHONE_DIAL } from '../../constants/phoneCountries';
 import { ACTIVITY_DIFFICULTY_OPTIONS, type ActivityDifficulty } from './createFlowShared';
 import type { ContributeVenueKind } from '../contributeTypes';
 import { formatE164Phone, isValidNationalPhone } from '../../utils/phone';
+import { FACILITY_CONTRIBUTE_STEPS } from './contributeFacilityFlow';
 import { getOutdoorContributeFlowSteps, getShopContributeFlowSteps } from './contributeFlows/registry';
 
 export type ContributeFlowStepId =
@@ -82,6 +83,8 @@ export const getContributeFlowSteps = (kind: ContributeVenueKind): ContributeFlo
       return getShopContributeFlowSteps();
     case 'event':
       return EVENT_CONTRIBUTE_STEPS;
+    case 'facility':
+      return FACILITY_CONTRIBUTE_STEPS;
     default:
       return getOutdoorContributeFlowSteps('camping');
   }

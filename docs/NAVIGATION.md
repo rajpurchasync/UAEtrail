@@ -42,15 +42,16 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 
 - **Bottom nav middle tab** — UI label **My Plans**; route **`/plan`** (`PLAN_PATH`) — not `/me/plans` (API) or `/profile/plans` (alias redirect only).
 - **Forward commitments** only — past outings → **`/profile/history`** · journey map → **`/profile/history/map`**.
-- **Canonical query** (new links; legacy still parses): `view=plans` · `tab=upcoming|wishlist` · `filter=hosting|joined` · `layout=list|calendar` · `lens=availability` (availability editor stays on Plan — `planAvailabilityPath()` — not Profile settings). Page: **`src/plan/PlanPage.tsx`** · URL helpers: **`src/plan/planRouting.ts`**.
-- **Mobile chrome** (`src/plan/planTab.ts`): **Upcoming** · **Wishlist**; goals on Wishlist. Legacy `?lens=saved|goals|calendar` normalizes on load.
+- **Canonical query** (new links; legacy still parses): `view=plans` · `tab=upcoming|wishlist` · `filter=hosting|joined` · `layout=list|calendar` · `lens=availability` (Find crew **share availability** editor only — `planAvailabilityPath()`). Page: **`src/plan/PlanPage.tsx`** · URL helpers: **`src/plan/planRouting.ts`**.
+- **Upcoming · Calendar** (`layout=calendar`): month view of **your** schedule — joined / pending requests, hosting, looking-for-company, and days you marked **available** (`planCalendarMarkers` + `PlanCalendarSection`). Not the same as `lens=availability` (that screen edits availability slots).
+- **Mobile chrome** (`src/plan/planTab.ts`): **Upcoming** · **Wishlist**; goals on Wishlist. Legacy `?lens=saved|goals|calendar` normalizes on load (`calendar` → `layout=calendar`).
 - **`/profile/plans`** → **`/plan`**. **`/trips`**, **`/activities`** → `/plan` or history (`legacyTripsRedirect.ts`).
 
 #### “Plan” disambiguation
 
 | Term | Meaning |
 |------|---------|
-| **My Plans** (tab) | **`/plan`** — upcoming, wishlist, goals, availability |
+| **My Plans** (tab) | **`/plan`** — upcoming (list + **calendar**), wishlist + goals; availability **editor** via `planAvailabilityPath()` |
 | **Host · Find crew · Add** (FAB) | Explore **`?compose=`** — not the Plan tab |
 | **Activity detail Plan** | Outing facts on L3 — not **`/plan`** |
 | **`GET /me/*`** | API prefix — not the My Plans page URL |

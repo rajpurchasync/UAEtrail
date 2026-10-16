@@ -116,13 +116,15 @@ Time-bound map pins are **Activities** with `activityMode` (target wire name; mi
 
 Discovery: **`/area/:slug`**, area peek, and explore **`?area=`** filter by **`place.areaId`** (and seeking **`participant_intents.areaId`** + synthetic place on the intent). Private link-only activities skip public map listing.
 
-**Plan tab** (`/plan`) groups **your** forward layer — schedule, saved, goals — plus relationships to activities:
+**My Plans** (`/plan`, UI tab **Plan**) groups **your** forward layer — upcoming schedule (list or **calendar**), wishlist, goals — plus relationships to activities. Past outings and journey map live on **profile history**, not `/plan`.
 
-| Trips UI | Domain data |
-|----------|-------------|
-| Upcoming rail / Joined list | `GET /me/activities`, `GET /me/requests` |
-| Hosted list + manage sheet | Host user: `listHostActivities`, `getHostActivityJoinRequests` |
-| Saved lens (`?lens=saved`) | Private venue + activity saves (`/me/wishlist`) — not demand, not Follow |
+| My Plans UI | Domain data |
+|-------------|-------------|
+| Upcoming list (joined / hosting filters) | `GET /me/activities`, `GET /me/requests`; host: `listHostActivities`, join queue |
+| Upcoming **calendar** (`layout=calendar`) | Same commitments aggregated per day — joined, pending, hosting, seeking, **your** availability days (`planCalendarMarkers`) |
+| Wishlist tab (`tab=wishlist`; legacy `lens=saved`) | Private venue + activity saves (`/me/wishlist`) — not demand, not Follow |
+| Goals (on Wishlist tab) | `GET/POST /me/goals` |
+| Share availability editor (`?lens=availability`) | `GET/POST /me/availability` — Find crew; deep link only, not the calendar toggle |
 | Journey map (`/profile/history/map`) | `memberJourneyMapApi` → `GET /me/journey-map`; pin CRUD → `/me/map-pins` |
 
 Do **not** add `trips*` API clients or `Trip*` domain types for hosted/joined lists — reuse **activity** and **member engagement** APIs.

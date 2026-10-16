@@ -468,7 +468,7 @@ export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpe
 
     wizard: 'contributeFlow',
 
-    contributeSteps: ['title', 'facilityType', 'curatedArea', 'location', 'image', 'description', 'review'],
+    contributeSteps: getContributeFlowSteps('facility'),
 
   },
 
