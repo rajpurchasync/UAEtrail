@@ -6,7 +6,7 @@ import type { AreaPublicDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { findPublishedAreaByQuery, isStrongPublishedAreaSearchMatch } from '../exploreAreaFilter';
 import type { ExploreActivityModeFilter } from '../exploreActivityModeFilter';
 import { PRODUCT_EXPLORE_EMPTY_FILTERS } from '../../content/productNorthStar';
-import { tripsLegacyJoinedTabPath } from '../../config/routingCatalog';
+import { planJoinedSchedulePath } from '../../config/routingCatalog';
 import { EXPLORE_SHEET, EXPLORE_TYPE } from '../../config/exploreTheme';
 import type { ExploreActivityDatePreset, ExplorePanel, MapFilterKey } from '../routing';
 import { buildDiscoveryMapListRowCard } from '../../discovery';
@@ -482,7 +482,7 @@ export const ExploreBrowsePanel = ({
                 <p className="font-medium text-neutral-700">Nothing on your map yet</p>
                 <p className="mt-1">Join an outing or follow a place on explore.</p>
                 <Link
-                  to={tripsLegacyJoinedTabPath()}
+                  to={planJoinedSchedulePath()}
                   className="mt-3 inline-block font-semibold text-emerald-700"
                 >
                   Open trip list

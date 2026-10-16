@@ -14,7 +14,7 @@ import { useMemberStatus } from '../hooks/useMemberStatus';
 import { memberCanManageHostedActivities } from '../utils/hostedActivitiesGate';
 import { JoinedSection } from './activities/JoinedSection';
 import { HostedActivitiesSection } from './activities/HostedActivitiesSection';
-import { SelfPlansSection } from './activities/SelfPlansSection';
+import { PlanSeekingSection } from '../components/plan/PlanSeekingSection';
 import { ProfileHistoryPageToolbar } from '../components/profile-history/ProfileHistoryPageToolbar';
 import { ProfileHistoryFiltersSheet } from '../components/profile-history/ProfileHistoryFiltersSheet';
 import { useMemberGoals } from '../hooks/useMemberGoals';
@@ -137,7 +137,7 @@ export const ProfileHistoryPage = () => {
         );
       case 'self-completed':
         return (
-          <SelfPlansSection
+          <PlanSeekingSection
             segment="completed"
             refreshKey={refreshKey}
             searchQuery={activitySearchQuery}

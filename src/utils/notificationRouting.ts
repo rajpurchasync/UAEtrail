@@ -22,7 +22,7 @@ import {
   messagesGroupPath,
   messagesToUserPath,
   myRequestDetailPath,
-  tripsLegacyJoinedTabPath,
+  planJoinedSchedulePath,
   planHostedSchedulePath,
 } from '../config/routingCatalog';
 import { planWishlistTabPath } from '../plan/planTab';
@@ -94,7 +94,7 @@ const normalizeDirectNotificationPath = (
       legacyUrl.searchParams.get('tab') === 'joined' &&
       legacyUrl.searchParams.get('segment') === 'upcoming'
     ) {
-      return tripsLegacyJoinedTabPath();
+      return planJoinedSchedulePath();
     }
   } catch {
     // ignore malformed paths
@@ -176,7 +176,7 @@ export const inferNotificationPath = (
     if (activityId) {
       return `${activityDetailPath(activityId)}?joined=1`;
     }
-    return tripsLegacyJoinedTabPath();
+    return planJoinedSchedulePath();
   }
 
   if (activityId) {
@@ -196,7 +196,7 @@ export const inferNotificationPath = (
     kind === 'join_request_rejected' ||
     kind === 'join_request_withdrawn'
   ) {
-    return tripsLegacyJoinedTabPath();
+    return planJoinedSchedulePath();
   }
   if (kind === 'group_message') {
     const groupId = toStringValue(meta?.groupId);

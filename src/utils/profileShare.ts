@@ -3,7 +3,7 @@ import {
   agencyProfilePath,
   guideProfilePath,
   shopPublicPath,
-  tripsLegacyJoinedTabPath,
+  planJoinedSchedulePath,
 } from '../config/routingCatalog';
 
 export interface ProfileShareOptions {
@@ -32,7 +32,7 @@ export const resolveProfileSharePath = (
   const referralCode = options.referralCode?.trim();
   if (referralCode) return `/signup?ref=${encodeURIComponent(referralCode)}`;
 
-  return options.fallbackPath ?? tripsLegacyJoinedTabPath();
+  return options.fallbackPath ?? planJoinedSchedulePath();
 };
 
 export const resolveProfileShareText = (

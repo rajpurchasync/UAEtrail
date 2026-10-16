@@ -26,8 +26,8 @@ describe('componentsClientApi (R8.1)', () => {
       expect(read(file)).not.toMatch(/fetchJoinedUpcomingPlanData/);
       expectNoDirectApi(file);
     }
-    expect(read('src/pages/activities/SelfPlansSection.tsx')).toMatch(/useMyParticipantIntents/);
-    expectNoDirectApi('src/pages/activities/SelfPlansSection.tsx');
+    expect(read('src/components/plan/PlanSeekingSection.tsx')).toMatch(/useMyParticipantIntents/);
+    expectNoDirectApi('src/components/plan/PlanSeekingSection.tsx');
     expect(read('src/components/plan/PlanJoinedUpcoming.tsx')).toMatch(/useMyJoinedActivities/);
     expect(read('src/components/plan/PlanJoinedUpcoming.tsx')).toMatch(/useMyActivityJoinRequests/);
     expectNoDirectApi('src/components/plan/PlanJoinedUpcoming.tsx');

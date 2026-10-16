@@ -27,7 +27,7 @@ import {
   OPERATOR_SECURITY_PRIVACY_PATH,
   MEMBERSHIP_MARKETING_PATH,
   NOTIFICATIONS_PATH,
-  tripsLegacyJoinedTabPath,
+  planJoinedSchedulePath,
 } from '../../config/routingCatalog';
 import { NotificationListItem } from '../../components/notifications/NotificationListItem';
 import { invalidateNotificationUnreadBadge } from '../../utils/notificationBadge';
@@ -218,7 +218,7 @@ export const Overview = () => {
             <AccountLinkList
               items={[
                 {
-                  to: tripsLegacyJoinedTabPath(),
+                  to: planJoinedSchedulePath(),
                   icon: <Calendar className="w-4 h-4" />,
                   label: 'Joined outings (My Plans)',
                   badge: participant.upcomingActivitiesCount || undefined,

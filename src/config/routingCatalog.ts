@@ -195,13 +195,7 @@ export {
   journeyMapPath,
   planWishlistRedirectPath,
   planJoinedUpcomingPath,
-  tripsPath,
-  tripsPlansPath,
-  tripsCompletedPath,
-  tripsMapPath,
-  myTripsWishlistPath,
-  tripsLegacyJoinedTabPath,
-  tripsLegacyUpcomingSegmentPath,
+  planUpcomingDefaultPath,
 } from '../member-plan/planHubRouting';
 
 export { memberProfileLink } from '../member/memberProfileLink';

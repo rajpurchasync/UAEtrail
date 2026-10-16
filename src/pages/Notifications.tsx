@@ -8,7 +8,7 @@ import {
   activityDetailInvitePath,
   GROUPS_PATH,
   PROFILE_BADGES_PATH,
-  tripsPath,
+  planHubPath,
 } from '../config/routingCatalog';
 import {
   acceptMeGroupInviteByToken,
@@ -235,7 +235,7 @@ export const Notifications = () => {
                               View on map
                               <ChevronRight className="w-3.5 h-3.5" />
                             </Link>
-                            <Link to={tripsPath({ layer: 'places' })} className="text-xs font-medium text-neutral-600">
+                            <Link to={planHubPath({ layer: 'places' })} className="text-xs font-medium text-neutral-600">
                               Saved map
                             </Link>
                           </div>

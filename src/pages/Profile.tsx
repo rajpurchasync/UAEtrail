@@ -29,7 +29,7 @@ import { PageMeta } from '../components/seo/PageMeta';
 import {
   EXPLORE_MAP_PATH,
   memberProfilePath,
-  tripsCompletedPath,
+  profileHistoryCompletedPath,
   planHostedSchedulePath,
 } from '../config/routingCatalog';
 
@@ -169,7 +169,7 @@ export const Profile = () => {
         key: 'joined',
         label: 'Joined',
         value: joinedCount,
-        to: tripsCompletedPath(),
+        to: profileHistoryCompletedPath(),
       },
     ];
 
