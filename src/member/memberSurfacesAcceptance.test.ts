@@ -281,6 +281,12 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(resolver).not.toMatch(/plans-all|plans-joined|plans-hosted/);
   });
 
+  it('G-plan: My Plans mobile FAB opens explore compose (no second create stack)', () => {
+    const plan = read('src/pages/Activities.tsx');
+    expect(plan).toContain("explorePath({ compose: 'menu' })");
+    expect(plan).not.toMatch(/CreateHostingActivityFlow|HostingFlowHost/);
+  });
+
   it('G-plan: Plan page is forward-looking (past outings on profile history)', () => {
     const plan = read('src/pages/Activities.tsx');
     expect(plan).not.toMatch(/timeScope=["']past["']/);

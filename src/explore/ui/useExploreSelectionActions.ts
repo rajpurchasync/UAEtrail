@@ -29,7 +29,7 @@ import { buildExploreSelectionSelectedCard } from '../exploreSelectionSelectedCa
 import { useExploreSelectionPeekJoin } from './useExploreSelectionPeekJoin';
 import { useExploreActivityPinDeepLink } from './useExploreActivityPinDeepLink';
 import { useExploreSelectionRemovals } from './useExploreSelectionRemovals';
-import { buildHostPublishAvailabilityNotice } from '../../plan/hostPublishAvailabilityNotice';
+import { hostPublishAvailabilityNoticeMessage } from '../../plan/hostPublishAvailabilityNotice';
 
 type BrowseState = ReturnType<typeof useExploreBrowseUrlState>;
 
@@ -270,10 +270,8 @@ export const useExploreSelectionActions = ({
       }
 
       const hostUserId = user?.id ?? resolveActivityHostUserId(activity);
-      if (hostUserId) {
-        const notice = await buildHostPublishAvailabilityNotice(activity, hostUserId);
-        if (notice) setVenueNotice(notice);
-      }
+      const notice = await hostPublishAvailabilityNoticeMessage(activity, hostUserId);
+      if (notice) setVenueNotice(notice);
     },
     [
       queryClient,
