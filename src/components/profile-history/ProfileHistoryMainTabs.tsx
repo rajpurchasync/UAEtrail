@@ -1,14 +1,17 @@
 import { Link } from 'react-router-dom';
 import { History, Map, type LucideIcon } from 'lucide-react';
-import { PROFILE_HISTORY_MAIN_TABS, type TripsMainView } from '../../member-plan/tripsRouting';
+import {
+  PROFILE_HISTORY_MAIN_TABS,
+  type PlanHistoryMainView,
+} from '../../member-plan/planHubRouting';
 
-const tabIcons: Partial<Record<TripsMainView, LucideIcon>> = {
+const tabIcons: Partial<Record<PlanHistoryMainView, LucideIcon>> = {
   completed: History,
   map: Map,
 };
 
 type ProfileHistoryMainTabsProps = {
-  active: TripsMainView;
+  active: PlanHistoryMainView;
 };
 
 /** Profile history — History · My Map. */

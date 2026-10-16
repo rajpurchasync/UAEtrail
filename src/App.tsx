@@ -220,7 +220,9 @@ const Activities = lazy(() => import('./pages/Activities').then((m) => ({ defaul
 const ProfileHistoryPage = lazy(() =>
   import('./pages/ProfileHistory').then((m) => ({ default: m.ProfileHistoryPage }))
 );
-const TripsMap = lazy(() => import('./pages/TripsMap').then((m) => ({ default: m.TripsMap })));
+const JourneyMapPage = lazy(() =>
+  import('./pages/JourneyMapPage').then((m) => ({ default: m.JourneyMapPage }))
+);
 const Profile = lazy(() => import('./pages/Profile').then((m) => ({ default: m.Profile })));
 const ProfileSettings = lazy(() => import('./pages/ProfileSettings').then((m) => ({ default: m.ProfileSettings })));
 const ProfileSettingsAccount = lazy(() =>
@@ -386,7 +388,7 @@ function App() {
             element={
               <ProtectedRoute>
                 <Suspense fallback={<PageLoader />}>
-                  <TripsMap />
+                  <JourneyMapPage />
                 </Suspense>
               </ProtectedRoute>
             }

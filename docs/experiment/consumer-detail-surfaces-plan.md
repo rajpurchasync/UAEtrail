@@ -34,7 +34,7 @@ Confirm and align **main consumer surfaces** where users **understand an object*
 | 10 | Agency / guide | `/guide`, `/agency`, `/partner` | `OrganisationPublicProfile` | `ConsumerShell` | **Entity public shell** (Phase 5) |
 | 11 | Notifications | `/notifications` | `Notifications.tsx` | List page | **Keep** |
 | 12 | Badges | `/profile/badges` | `ProfileBadges` | Profile stack | **Keep** |
-| 13 | My Map | `/profile/history/map` | `TripsMap` | History sub-route | **Keep** (not a root tab) |
+| 13 | My Map | `/profile/history/map` | `JourneyMapPage` | History sub-route | **Keep** (not a root tab) |
 | 14 | Goals | Plan **Wishlist** tab | `PlanWishlistView` + goals section | Embedded in Plan | **No separate page** unless product reverses D10 |
 | 15 | People | Explore `view=people`, `/buddies` | People panel + `Buddies.tsx` | Split surfaces | **Document** or single redirect (Phase 6) |
 | 16 | Settings | `/profile/settings/*` | Settings stack | Profile stack | **Keep** |

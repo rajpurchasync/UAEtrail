@@ -20,11 +20,11 @@ import { ProfileHistoryFiltersSheet } from '../components/profile-history/Profil
 import { useMemberGoals } from '../hooks/useMemberGoals';
 import { PRO_MEMBERSHIP_PATH } from '../config/routingCatalog';
 import {
-  normalizeTripsSearchParams,
-  parseTripsMainView,
-  parseTripsRole,
-  type TripsRole,
-} from '../member-plan/tripsRouting';
+  normalizePlanHubSearchParams,
+  parsePlanHistoryMainView,
+  parsePlanHistoryRole,
+  type PlanHistoryRole,
+} from '../member-plan/planHubRouting';
 import { resolvePlanHubView } from '../member-plan/resolvePlanHubView';
 
 /** Profile outing history list — `/profile/history`. */
@@ -54,7 +54,7 @@ export const ProfileHistoryPage = () => {
     }
     if (!user) return;
     const next = new URLSearchParams(searchParams);
-    const { changed } = normalizeTripsSearchParams(next, canHost);
+    const { changed } = normalizePlanHubSearchParams(next, canHost);
     let shouldReplace = changed;
     if (!next.get('view') && isProfileHistoryListPath(location.pathname)) {
       next.set('view', 'completed');
@@ -63,8 +63,8 @@ export const ProfileHistoryPage = () => {
     if (shouldReplace) setSearchParams(next, { replace: true });
   }, [canHost, location.pathname, navigate, searchParams, setSearchParams, user]);
 
-  const mainView = parseTripsMainView(location.pathname, searchParams.get('view'));
-  const historyRole: TripsRole = parseTripsRole(searchParams.get('role'), 'completed', {
+  const mainView = parsePlanHistoryMainView(location.pathname, searchParams.get('view'));
+  const historyRole: PlanHistoryRole = parsePlanHistoryRole(searchParams.get('role'), 'completed', {
     canHost,
     legacyTab: searchParams.get('tab'),
   });
@@ -83,7 +83,7 @@ export const ProfileHistoryPage = () => {
   }, [reloadGoals]);
 
   const setHistoryRole = useCallback(
-    (role: TripsRole) => {
+    (role: PlanHistoryRole) => {
       const next = new URLSearchParams(searchParams);
       next.set('view', 'completed');
       next.set('role', role);

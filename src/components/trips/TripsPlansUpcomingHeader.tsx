@@ -1,9 +1,9 @@
 import { ProfileHistorySubviewPills } from '../profile-history/ProfileHistorySubviewPills';
-import { tripsPlansRoleChips, type TripsPlansRole } from '../../member-plan/tripsRouting';
+import { planUpcomingRoleChips, type PlanUpcomingRole } from '../../member-plan/planHubRouting';
 
 type TripsPlansUpcomingHeaderProps = {
-  activeRole: TripsPlansRole;
-  onRoleChange: (role: TripsPlansRole) => void;
+  activeRole: PlanUpcomingRole;
+  onRoleChange: (role: PlanUpcomingRole) => void;
   canHost: boolean;
 };
 
@@ -16,7 +16,7 @@ export const TripsPlansUpcomingHeader = ({
   <div className="space-y-3">
     <h2 className="text-lg font-bold tracking-tight text-neutral-900">Upcoming</h2>
     <ProfileHistorySubviewPills
-      pills={tripsPlansRoleChips(canHost)}
+      pills={planUpcomingRoleChips(canHost)}
       activeId={activeRole}
       onChange={onRoleChange}
     />

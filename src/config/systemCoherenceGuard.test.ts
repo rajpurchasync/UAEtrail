@@ -172,7 +172,7 @@ describe('systemCoherenceGuard', () => {
       'src/pages/MemberProfile.tsx',
       'src/pages/ProductDetail.tsx',
       'src/pages/ActivityDetail.tsx',
-      'src/pages/TripsMap.tsx',
+      'src/pages/JourneyMapPage.tsx',
       'src/pages/ProfileEdit.tsx',
       'src/pages/ProfileBadges.tsx',
       'src/pages/ShopPublic.tsx',

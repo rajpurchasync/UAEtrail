@@ -25,6 +25,3 @@ export const ExploreMyPlanMapNotice = () => (
     </div>
   </div>
 );
-
-/** @deprecated Use {@link ExploreMyPlanMapNotice}. */
-export const ExploreMyTripsModeNotice = ExploreMyPlanMapNotice;

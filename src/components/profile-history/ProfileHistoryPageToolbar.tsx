@@ -2,18 +2,22 @@ import { TabPageSearchRow } from '../mobile/TabPageSearchRow';
 import { ProfileHistoryMainTabs } from './ProfileHistoryMainTabs';
 import { ProfileHistorySubviewPills } from './ProfileHistorySubviewPills';
 import { ProfileHistoryFilterTrigger } from './ProfileHistoryFiltersSheet';
-import { tripsHistoryRoleChips, type TripsMainView, type TripsRole } from '../../member-plan/tripsRouting';
+import {
+  profileHistoryRoleChips,
+  type PlanHistoryMainView,
+  type PlanHistoryRole,
+} from '../../member-plan/planHubRouting';
 
 type ProfileHistoryPageToolbarProps = {
   surface: 'plan' | 'history';
-  mainView: TripsMainView;
+  mainView: PlanHistoryMainView;
   searchQuery: string;
   onSearchChange: (value: string) => void;
   searchPlaceholder: string;
   filtersActive: boolean;
   onOpenFilters: () => void;
-  historyRole: TripsRole;
-  onHistoryRoleChange: (role: TripsRole) => void;
+  historyRole: PlanHistoryRole;
+  onHistoryRoleChange: (role: PlanHistoryRole) => void;
   canHost: boolean;
 };
 
@@ -51,7 +55,7 @@ export const ProfileHistoryPageToolbar = ({
 
     {mainView === 'completed' ? (
       <ProfileHistorySubviewPills
-        pills={tripsHistoryRoleChips(canHost)}
+        pills={profileHistoryRoleChips(canHost)}
         activeId={historyRole}
         onChange={onHistoryRoleChange}
       />

@@ -12,6 +12,7 @@ const ALLOWLIST = new Set([
   'src/member-plan/resolvePlanHubView.ts',
   'src/member-plan/participantIntentPlan.ts',
   'src/pages/MyTrips.tsx',
+  'src/pages/TripsMap.tsx',
   'src/components/trips/TripsPlansUpcomingHeader.tsx',
   'src/config/surfacePaths.ts',
   'src/App.tsx',
