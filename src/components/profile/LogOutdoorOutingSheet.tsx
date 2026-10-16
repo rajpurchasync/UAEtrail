@@ -5,7 +5,7 @@ import { ConsumerBottomSheet } from '../mobile/ConsumerBottomSheet';
 import { JourneyMapActivityTypePicker } from '../journey/JourneyMapActivityTypePicker';
 import { createMemberMapPin } from '../../hooks/memberJourneyMapApi';
 import { PERSONAL_MAP_LOG_DEFAULT } from '../../config/personalMapDefaults';
-import { tripsMapPath } from '../../member-plan/tripsRouting';
+import { journeyMapPath } from '../../config/routingCatalog';
 import { defaultPinTypeForGoalFilter } from '../../utils/goalActivityAlignment';
 import { todayIsoDateLocal } from './goalCopy';
 
@@ -109,7 +109,7 @@ export const LogOutdoorOutingSheet = ({
 
         <p className="text-center text-xs text-neutral-500 leading-relaxed">
           Same list as wishlist vs visited on{' '}
-          <Link to={tripsMapPath()} className="font-semibold text-emerald-700" onClick={onClose}>
+          <Link to={journeyMapPath()} className="font-semibold text-emerald-700" onClick={onClose}>
             My Map
           </Link>
           . Drop the pin on the map later to set an exact location.

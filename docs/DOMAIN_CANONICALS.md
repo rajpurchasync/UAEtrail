@@ -489,7 +489,7 @@ Use this when naming files, hooks, and utils — **one product word per concept*
 | **Wishlist** (private saves) | `user_favorites` (wire) | `WishlistItemDTO`, `GET/POST /me/wishlist` | “Favorite”, demand bookmarks, saving people/shops to wishlist |
 | **Goal** (time + count) | `user_goals` | `MemberGoalDTO`, `GET/POST /me/goals` | Wishlist rows, visited map pins as goal progress |
 | **Organize** (FAB) | `activities` publish | `organizeFlow*`, `organizeActivityPublish` | `hostActivity` in consumer explore |
-| **Plan** (tab) | joined/hosted/self plans | `src/member-plan/tripsRouting.ts`, `components/journey/*` (history map), `components/trips/*` (plan chrome) | `/activities` hub naming, wishlist segment |
+| **Plan** (tab) | joined/hosted/self plans | `src/plan/planRouting.ts`, `src/member-plan/planHubRouting.ts`, `components/plan/*`, `components/profile-history/*` (history list chrome), `components/journey/*` (map) | `/activities` hub naming, wishlist segment |
 | **Member discovery roster** | map + directory compose | `seekingOnMap[]` (`seekingTitle`, `participantIntentId`) on `GET /me/member-discovery/roster` | Wire field `lookingFor`, `demandTitle` |
 | **Journey map** (`/profile/history/map`) | `GET /me/journey-map`, `POST/PATCH/DELETE /me/map-pins`, `JourneyMapEntryDTO` | `memberJourneyMapApi`, `src/member-plan/journeyMap*` | `GET /me/trips/map`, `outdoorMap*` |
 | **Explore map** | `GET /explore/map` | `src/explore/*`, `exploreMapPinModel` | `journeyMap*` (wrong surface) |

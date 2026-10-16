@@ -84,7 +84,7 @@ export interface ExploreBrowsePanelProps {
   searchFocusNonce?: number;
   /** Highlight buddy-hosted outings in map-aligned list rows. */
   buddyUserIds?: Set<string>;
-  /** Filtered explore: only member trips + wishlist pins (`myTrips=1`). */
+  /** Filtered explore: only member activities + wishlist pins (`myPlan=1`). */
   myPlanMapMode?: boolean;
   /** Full-screen mobile browse — poster cards instead of compact rows. */
   usePosterFeed?: boolean;

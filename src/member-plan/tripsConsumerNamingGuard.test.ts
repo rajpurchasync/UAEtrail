@@ -7,6 +7,7 @@ const SCAN_ROOT = join(process.cwd(), 'src');
 const ALLOWLIST = new Set([
   'src/member-plan/tripsConsumerNamingGuard.test.ts',
   'src/member-plan/planHubRouting.ts',
+  'src/member-plan/tripsRouting.ts',
   'src/member-plan/legacyTripsRedirect.ts',
   'src/member-plan/resolveTripsContent.ts',
   'src/member-plan/resolvePlanHubView.ts',
@@ -71,6 +72,22 @@ describe('tripsConsumerNamingGuard', () => {
       const content = readFileSync(join(process.cwd(), file), 'utf8');
       if (legacyTripsLink.test(content)) {
         violations.push(`${file}: use PLAN_PATH / planRouting helpers — not /trips`);
+      }
+    }
+
+    expect(violations).toEqual([]);
+  });
+
+  it('app code imports planHubRouting (not deprecated member-plan/tripsRouting shim)', () => {
+    const violations: string[] = [];
+    const deprecatedImport = /from ['"](\.\.\/)+member-plan\/tripsRouting['"]/;
+
+    for (const file of collectSourceFiles(SCAN_ROOT)) {
+      if (file === 'src/member-plan/tripsRouting.ts') continue;
+      if (ALLOWLIST.has(file)) continue;
+      const content = readFileSync(join(process.cwd(), file), 'utf8');
+      if (deprecatedImport.test(content)) {
+        violations.push(`${file}: use planHubRouting or routingCatalog — tripsRouting is a shim`);
       }
     }
 

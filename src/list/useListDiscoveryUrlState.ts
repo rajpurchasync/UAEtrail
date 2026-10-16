@@ -39,6 +39,7 @@ const EXPLORE_PRESERVE_PARAM_KEYS = [
   'subtype',
   'outingTopic',
   'pin',
+  'myPlan',
   'myTrips',
 ] as const;
 
