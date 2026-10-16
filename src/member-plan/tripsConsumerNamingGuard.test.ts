@@ -9,12 +9,8 @@ const ALLOWLIST = new Set([
   'src/member-plan/planHubRouting.ts',
   'src/member-plan/tripsRouting.ts',
   'src/member-plan/legacyTripsRedirect.ts',
-  'src/member-plan/resolveTripsContent.ts',
   'src/member-plan/resolvePlanHubView.ts',
   'src/member-plan/participantIntentPlan.ts',
-  'src/pages/MyTrips.tsx',
-  'src/pages/TripsMap.tsx',
-  'src/pages/activities/SelfPlansSection.tsx',
   'src/config/surfacePaths.ts',
   'src/App.tsx',
   'src/utils/notificationRouting.test.ts',
@@ -123,6 +119,30 @@ describe('tripsConsumerNamingGuard', () => {
     }
 
     expect(violations).toEqual([]);
+  });
+
+  it('consumer UI imports plan hub helpers via routingCatalog (not planHubRouting)', () => {
+    const violations: string[] = [];
+    const directImport = /from ['"](\.\.\/)+member-plan\/planHubRouting['"]/;
+    const CONSUMER_PREFIXES = ['src/pages/', 'src/components/', 'src/utils/', 'src/hooks/', 'src/content/'];
+
+    for (const file of collectSourceFiles(SCAN_ROOT)) {
+      if (!CONSUMER_PREFIXES.some((prefix) => file.startsWith(prefix))) continue;
+      if (ALLOWLIST.has(file)) continue;
+      const content = readFileSync(join(process.cwd(), file), 'utf8');
+      if (directImport.test(content)) {
+        violations.push(`${file}: use config/routingCatalog for plan/history URL helpers`);
+      }
+    }
+
+    expect(violations).toEqual([]);
+  });
+
+  it('planHubRouting has no legacy trips* symbol exports (use tripsRouting shim)', () => {
+    const hub = readFileSync(join(process.cwd(), 'src/member-plan/planHubRouting.ts'), 'utf8');
+    expect(hub).not.toMatch(/\bexport const trips/);
+    expect(hub).not.toMatch(/\bexport type Trips/);
+    expect(hub).not.toMatch(/\bnormalizeTripsSearchParams\b/);
   });
 
   it('profile history map UI lives under components/journey (not components/trips)', () => {

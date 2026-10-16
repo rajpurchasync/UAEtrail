@@ -19,6 +19,10 @@ import { formatActivityType, resolveActivityTitle } from '../../utils/activityId
 import { PlanCommitmentCard } from './PlanCommitmentCard';
 import { PlanJoinedPeekSheet } from './PlanJoinedPeekSheet';
 
+/**
+ * My Plans → Upcoming → joined filter: confirmed outings + pending/waitlisted requests.
+ * `Plan` = `/plan` surface namespace only — not a domain entity; data is activities + join requests.
+ */
 type PlanJoinedUpcomingProps = {
   refreshKey?: number;
 };

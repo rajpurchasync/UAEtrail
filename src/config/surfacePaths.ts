@@ -38,6 +38,8 @@ export const ACTIVITIES_LEGACY_PATH = '/activities' as const;
 
 /** @deprecated Legacy URL — `App.tsx` redirects to {@link PLAN_PATH} or {@link PROFILE_HISTORY_PATH}. */
 export const TRIPS_PATH = '/trips' as const;
+/** @deprecated Legacy map URL — redirects to {@link JOURNEY_MAP_PATH}. */
+export const LEGACY_TRIPS_MAP_PATH = '/trips/map' as const;
 
 /** Admin / host place registry consoles */
 export const ADMIN_PLACES_PATH = '/admin/places' as const;

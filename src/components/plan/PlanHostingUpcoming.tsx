@@ -39,6 +39,10 @@ type PlanHostingUpcomingProps = {
   canHost: boolean;
 };
 
+/**
+ * My Plans → Upcoming → hosting filter: published activities you organize + open seeking intents.
+ * `Plan` = `/plan` surface namespace only — not a domain entity.
+ */
 export const PlanHostingUpcoming = ({ refreshKey = 0, canHost }: PlanHostingUpcomingProps) => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();

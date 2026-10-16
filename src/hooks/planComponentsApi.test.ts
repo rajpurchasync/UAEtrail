@@ -18,16 +18,18 @@ describe('componentsClientApi (R8.1)', () => {
     expectNoDirectApi('src/components/plan/PlanSavedSection.tsx');
     expect(read('src/hooks/usePlanWishlistSuggestions.ts')).toMatch(/useMyJoinedActivities/);
     for (const file of [
-      'src/pages/activities/JoinedSection.tsx',
-      'src/pages/activities/ActivitiesHubView.tsx',
+      'src/components/activity/JoinedSection.tsx',
+      'src/components/plan/PlanJoinedUpcoming.tsx',
       'src/hooks/useMemberJourneyMapPinIds.ts',
     ]) {
-      expect(read(file)).toMatch(/useJoinedUpcomingPlanData/);
+      expect(read(file)).toMatch(/useJoinedUpcomingPlanData|useMyJoinedActivities/);
       expect(read(file)).not.toMatch(/fetchJoinedUpcomingPlanData/);
       expectNoDirectApi(file);
     }
-    expect(read('src/components/plan/PlanSeekingSection.tsx')).toMatch(/useMyParticipantIntents/);
-    expectNoDirectApi('src/components/plan/PlanSeekingSection.tsx');
+    expect(read('src/components/participant-intent/SeekingIntentsSection.tsx')).toMatch(
+      /useMyParticipantIntents/
+    );
+    expectNoDirectApi('src/components/participant-intent/SeekingIntentsSection.tsx');
     expect(read('src/components/plan/PlanJoinedUpcoming.tsx')).toMatch(/useMyJoinedActivities/);
     expect(read('src/components/plan/PlanJoinedUpcoming.tsx')).toMatch(/useMyActivityJoinRequests/);
     expectNoDirectApi('src/components/plan/PlanJoinedUpcoming.tsx');
@@ -37,10 +39,6 @@ describe('componentsClientApi (R8.1)', () => {
     expect(read('src/components/plan/PlanHostingUpcoming.tsx')).not.toMatch(/\bapi\./);
     expect(read('src/components/ui/TenantSwitcher.tsx')).toMatch(/tenantMembershipApi/);
     expect(read('src/components/ui/TenantSwitcher.tsx')).not.toMatch(/\bapi\./);
-    expect(read('src/pages/activities/ActivitiesSuggestedList.tsx')).toMatch(
-      /buildDiscoveryMapListRowCard/
-    );
-    expectNoDirectApi('src/pages/activities/ActivitiesSuggestedList.tsx');
   });
 
   it('notifications, signup, and participant-intent sheets use hooks layer', () => {

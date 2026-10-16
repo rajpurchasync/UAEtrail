@@ -278,6 +278,11 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(plan).not.toMatch(/timeScope=["']past["']/);
     expect(plan).not.toMatch(/segment=["']completed["']/);
     expect(plan).toContain('PROFILE_HISTORY_PATH');
+    expect(plan).toContain('JOURNEY_MAP_PATH');
+    expect(plan).not.toContain('ProfileHistoryMainTabs');
+    expect(plan).not.toContain('JoinedSection');
+    expect(plan).not.toContain('HostedActivitiesSection');
+    expect(plan).not.toContain('SeekingIntentsSection');
   });
 
   it('G-plan: Plan routing helpers live under src/member-plan', () => {

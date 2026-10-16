@@ -22,8 +22,8 @@ const intentStatusClass: Record<ParticipantIntentDTO['status'], string> = {
   cancelled: 'bg-neutral-500/10 text-neutral-600',
 };
 
-/** Participant seeking intents — Plan upcoming peek bridge and history “Self-logged”. */
-export const PlanSeekingSection = ({
+/** Lists `participant_intents` for the member (seeking) — `/plan` peek bridge and history self-logged. */
+export const SeekingIntentsSection = ({
   segment,
   refreshKey = 0,
   searchQuery = '',

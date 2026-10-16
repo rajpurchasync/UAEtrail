@@ -3,7 +3,7 @@ import { History, Map, type LucideIcon } from 'lucide-react';
 import {
   PROFILE_HISTORY_MAIN_TABS,
   type PlanHistoryMainView,
-} from '../../member-plan/planHubRouting';
+} from '../../config/routingCatalog';
 
 const tabIcons: Partial<Record<PlanHistoryMainView, LucideIcon>> = {
   completed: History,

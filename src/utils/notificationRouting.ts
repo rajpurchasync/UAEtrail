@@ -19,6 +19,7 @@ import {
   PRO_MEMBERSHIP_PATH,
   rewriteLegacyPublishingConsolePath,
   TRIPS_PATH,
+  LEGACY_TRIPS_MAP_PATH,
   messagesGroupPath,
   messagesToUserPath,
   myRequestDetailPath,
@@ -107,7 +108,7 @@ const normalizeDirectNotificationPath = (
   if (
     pathname === TRIPS_PATH ||
     pathname === ACTIVITIES_PATH ||
-    pathname === '/trips/map'
+    pathname === LEGACY_TRIPS_MAP_PATH
   ) {
     const resolved = resolveLegacyTripsHubRedirect(pathname, search);
     if (resolved) return resolved;

@@ -1,5 +1,6 @@
 import {
   JOURNEY_MAP_PATH,
+  LEGACY_TRIPS_MAP_PATH,
   PLAN_PATH,
   PROFILE_HISTORY_PATH,
   isJourneyMapPath,
@@ -64,7 +65,7 @@ export const parsePlanHistoryMainView = (
   pathname: string,
   rawView: string | null
 ): PlanHistoryMainView => {
-  if (pathname === '/trips/map' || pathname.endsWith('/trips/map')) return 'map';
+  if (pathname === LEGACY_TRIPS_MAP_PATH || pathname.endsWith(LEGACY_TRIPS_MAP_PATH)) return 'map';
   if (isJourneyMapPath(pathname)) return 'map';
   if (isProfileHistoryListPath(pathname)) {
     if (rawView === 'map') return 'map';
@@ -107,9 +108,6 @@ export const planPlansRolePath = (
   }
   return `${PLAN_PATH}?${params.toString()}`;
 };
-
-/** @deprecated Use {@link planPlansRolePath} or `planHostedSchedulePath` / `planWishlistTabPath`. */
-export const tripsPlansPath = planPlansRolePath;
 
 export const profileHistoryCompletedPath = (role?: PlanHistoryRole): string => {
   const params = new URLSearchParams();
@@ -337,62 +335,3 @@ export const profileHistoryRoleChips = (
   chips.push({ id: 'self', label: 'Self-logged' });
   return chips;
 };
-
-/** @deprecated Use {@link planHubRouting} exports — legacy `/trips` names. */
-export type TripsHubLayer = PlanHubWishlistLayer;
-export type TripsSavedLayer = PlanSavedLayer;
-export type TripsMainView = PlanHistoryMainView;
-export type TripsSegment = PlanHubSegment;
-export type TripsPlansSub = PlanUpcomingSub;
-export type TripsPlansRole = PlanUpcomingRole;
-export type TripsRole = PlanHistoryRole;
-export type TripsSubviewPillId = PlanHistorySubviewPillId;
-
-export const parseTripsSavedLayer = parsePlanSavedLayer;
-export const TRIPS_HUB_LAYER_PILLS = PLAN_WISHLIST_LAYER_PILLS;
-export const TRIPS_PLANS_SUB_TABS = PLAN_UPCOMING_SUB_TABS;
-export const parseTripsPlansRole = parsePlanUpcomingRole;
-export const tripsPlansRoleChips = planUpcomingRoleChips;
-export const parseTripsMainView = parsePlanHistoryMainView;
-export const parseTripsPlansSub = parsePlanUpcomingSub;
-export const tripsCompletedPath = profileHistoryCompletedPath;
-export const parseTripsHubLayer = parsePlanHubWishlistLayer;
-export const parseTripsSegment = parsePlanHubSegment;
-export const parseTripsRole = parsePlanHistoryRole;
-export const normalizeTripsSearchParams = normalizePlanHubSearchParams;
-export const tripsSelfDemandPath = planSelfDemandManagePath;
-export const tripsHostedActivityPath = planHostedActivityManagePath;
-export const tripsPath = planHubPath;
-export const tripsMapPath = journeyMapPath;
-export const myTripsWishlistPath = planWishlistRedirectPath;
-export const tripsLegacyJoinedTabPath = planJoinedUpcomingPath;
-export const tripsLegacyUpcomingSegmentPath = planUpcomingDefaultPath;
-export const MY_TRIPS_MAIN_TABS = PROFILE_HISTORY_MAIN_TABS;
-export const TRIPS_MAIN_TABS = PROFILE_HISTORY_MAIN_TABS;
-export const TRIPS_UNDERLINE_TABS = PROFILE_HISTORY_UNDERLINE_TABS;
-export const TRIPS_SEGMENT_TABS: { id: PlanHubSegment; label: string }[] = [
-  ...PROFILE_HISTORY_UNDERLINE_TABS,
-  { id: 'wishlist', label: 'Wishlist' },
-];
-export const tripsHistoryRoleChips = profileHistoryRoleChips;
-
-export const tripsSubviewPills = (
-  timeline: 'upcoming' | 'completed' | 'wishlist',
-  canHost: boolean
-): { id: PlanHistorySubviewPillId; label: string }[] => {
-  if (timeline === 'completed') {
-    return profileHistoryRoleChips(canHost);
-  }
-  return PLAN_UPCOMING_SUB_TABS.map((t) => ({
-    id: t.id === 'wishlist' ? 'wishlist' : 'joined',
-    label: t.label,
-  }));
-};
-
-export const tripsRoleChips = (
-  segment: PlanHubSegment,
-  canHost: boolean
-): { id: PlanHistoryRole; label: string }[] =>
-  tripsSubviewPills(segment === 'completed' ? 'completed' : 'upcoming', canHost).filter(
-    (chip): chip is { id: PlanHistoryRole; label: string } => chip.id !== 'wishlist'
-  );

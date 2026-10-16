@@ -23,7 +23,7 @@ import {
   fetchMemberJourneyMap,
   updateMemberMapPin,
 } from '../hooks/memberJourneyMapApi';
-import { profileHistoryCompletedPath } from '../member-plan/planHubRouting';
+import { profileHistoryCompletedPath } from '../config/routingCatalog';
 import { JOURNEY_MAP_PATH } from '../config/surfacePaths';
 import { ProfileHistoryMainTabs } from '../components/profile-history/ProfileHistoryMainTabs';
 import {

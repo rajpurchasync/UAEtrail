@@ -12,19 +12,19 @@ import {
 } from '../config/surfacePaths';
 import { useMemberStatus } from '../hooks/useMemberStatus';
 import { memberCanManageHostedActivities } from '../utils/hostedActivitiesGate';
-import { JoinedSection } from './activities/JoinedSection';
-import { HostedActivitiesSection } from './activities/HostedActivitiesSection';
-import { PlanSeekingSection } from '../components/plan/PlanSeekingSection';
+import { JoinedSection } from '../components/activity/JoinedSection';
+import { HostedActivitiesSection } from '../components/activity/HostedActivitiesSection';
+import { SeekingIntentsSection } from '../components/participant-intent/SeekingIntentsSection';
 import { ProfileHistoryPageToolbar } from '../components/profile-history/ProfileHistoryPageToolbar';
 import { ProfileHistoryFiltersSheet } from '../components/profile-history/ProfileHistoryFiltersSheet';
 import { useMemberGoals } from '../hooks/useMemberGoals';
-import { PRO_MEMBERSHIP_PATH } from '../config/routingCatalog';
 import {
+  PRO_MEMBERSHIP_PATH,
   normalizePlanHubSearchParams,
   parsePlanHistoryMainView,
   parsePlanHistoryRole,
   type PlanHistoryRole,
-} from '../member-plan/planHubRouting';
+} from '../config/routingCatalog';
 import { resolvePlanHubView } from '../member-plan/resolvePlanHubView';
 
 /** Profile outing history list — `/profile/history`. */
@@ -137,7 +137,7 @@ export const ProfileHistoryPage = () => {
         );
       case 'self-completed':
         return (
-          <PlanSeekingSection
+          <SeekingIntentsSection
             segment="completed"
             refreshKey={refreshKey}
             searchQuery={activitySearchQuery}

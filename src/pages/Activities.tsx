@@ -17,7 +17,7 @@ import { PlanGoalsProgressSummary } from '../components/plan/PlanGoalsProgressSu
 import { PlanPageTabs } from '../components/plan/PlanPageTabs';
 import { PlanUpcomingView } from '../components/plan/PlanUpcomingView';
 import { PlanWishlistView } from '../components/plan/PlanWishlistView';
-import { PROFILE_HISTORY_PATH } from '../config/surfacePaths';
+import { JOURNEY_MAP_PATH, PROFILE_HISTORY_PATH } from '../config/surfacePaths';
 import {
   parsePlanCommitmentFilter,
   parsePlanMainTab,
@@ -49,6 +49,12 @@ export const Activities = () => {
 
   useEffect(() => {
     const view = searchParams.get('view');
+    // History + journey map live on profile — not the My Plans hub.
+    if (view === 'map') {
+      const qs = searchParams.toString();
+      navigate(qs ? `${JOURNEY_MAP_PATH}?${qs}` : JOURNEY_MAP_PATH, { replace: true });
+      return;
+    }
     if (view && view !== 'plans') {
       const qs = searchParams.toString();
       navigate(

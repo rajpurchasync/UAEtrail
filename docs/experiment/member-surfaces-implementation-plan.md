@@ -258,19 +258,19 @@ Notifications (deep link to **activity**, **Plan row context**, **chat thread**,
 
 ### 6.1 Lenses (URL `?lens=`)
 
-- [x] `schedule` — joining, organizing, **seeking** (`SelfPlansSection`), **needs-you** (`PlanNeedsYouStrip`)
+- [x] `schedule` — joining, organizing, **seeking** (`PlanHostingUpcoming` + intents), **needs-you** (`PlanNeedsYouStrip`)
 - [x] `saved` — wishlist list shell (`PlanSavedSection`); heart on Explore → same API
 - [x] `goals` — full CRUD on Goals lens (moved off schedule default)
 - [x] `availability` — **dedicated lens** (`?lens=availability`, `PlanAvailabilitySection`) — **OD-3 locked** (see §19)
 - [x] `calendar` — month grid + day sheet (`PlanCalendarSection`, `planCalendarMarkers.ts`)
-- [x] **Needs-you** strip atop `schedule` — actionable coordination only (`PlanNeedsYouStrip`, `buildPlanNeedsYouRows`). **Not** “looking for” / seeking — see **Seeking** (`SelfPlansSection`) + Explore Find.
+- [x] **Needs-you** strip atop `schedule` — actionable coordination only (`PlanNeedsYouStrip`, `buildPlanNeedsYouRows`). **Not** “looking for” / seeking — see **Seeking** (`PlanHostingUpcoming` intents) + Explore Find.
 
 **API:** `GET /me/coordination-attention` → `{ items: MemberCoordinationAttentionItemDTO[] }` (`kind`, `count`, optional `activityId` / `inviterDisplayName`). Kinds: `host_join_queue`, `joiner_pending_host`, `buddy_request_incoming`, `activity_join_invite`, `join_request_withdrawn`, `participant_revoked`, `join_request_rejected`. Copy + routes: `src/member/coordinationAttentionPresentation.ts` (not API `label`/`path`).
 - [x] **Suggested** rail (wishlist ↔ explore map match; links out, no embedded map) — `PlanSuggestedRail` + `planWishlistExploreMatches` (§19 #3)
 
 ### 6.2 Manage outing (no /host)
 
-- [x] Row tap → manage sheet on Plan (`HostedActivitiesSection` / `SelfPlansSection` + `ActivityManageSheet` / `ParticipantIntentManageSheet`)
+- [x] Row tap → manage sheet on Plan (`PlanHostingUpcoming` / history `HostedActivitiesSection` + `SeekingIntentsSection` + `ActivityManageSheet` / `ParticipantIntentManageSheet`)
 - [x] Host join queue links → Plan hosted (`tripsPlansPath('hosted')`), not consumer `/host/requests`
 
 ### 6.3 Profile memory (not Plan)

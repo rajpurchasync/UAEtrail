@@ -43,18 +43,3 @@ export const planHubContentShowsComposeFab = (key: PlanHubContentKey) =>
 
 export const planHubContentShowsHostedSection = (key: PlanHubContentKey) =>
   key === 'plans-hosted' || key === 'hosted-completed';
-
-/** @deprecated Use {@link PlanHubContentKey}. */
-export type TripsContentKey = PlanHubContentKey;
-
-/** @deprecated Use {@link resolvePlanHubView}. */
-export const resolveTripsContent = resolvePlanHubView;
-
-/** @deprecated Use {@link planHubContentShowsJoinedHub}. */
-export const tripsContentShowsJoinedHub = planHubContentShowsJoinedHub;
-
-/** @deprecated Use {@link planHubContentShowsComposeFab}. */
-export const tripsContentShowsComposeFab = planHubContentShowsComposeFab;
-
-/** @deprecated Use {@link planHubContentShowsHostedSection}. */
-export const tripsContentShowsHostedSection = planHubContentShowsHostedSection;

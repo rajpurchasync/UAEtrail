@@ -29,7 +29,7 @@ const pendingCountForActivity = (activityId: string, requests: ActivityRequestVi
     return resolveJoinRequestActivity(request)?.id === activityId;
   }).length;
 
-/** Host-user activities list (Trips tab “Hosted”) — same Activity entity, tenant manage projection. */
+/** Member’s hosted activities list — Activity entity with tenant manage projection (Plan / history). */
 export const HostedActivitiesSection = ({
   refreshKey = 0,
   searchQuery = '',
@@ -55,26 +55,26 @@ export const HostedActivitiesSection = ({
 
   const today = useMemo(() => new Date(new Date().toDateString()), []);
 
-  /** Trips shows live outings only — drafts are managed on Explore / host console. */
-  const tripsHostedActivities = useMemo(
+  /** Live outings only — drafts stay on Explore / operator console. */
+  const hostedActivities = useMemo(
     () => host.activities.filter((event) => event.status !== 'draft'),
     [host.activities]
   );
 
   const upcomingActivities = useMemo(
     () =>
-      tripsHostedActivities
+      hostedActivities
         .filter((event) => new Date(event.date) >= today)
         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()),
-    [tripsHostedActivities, today]
+    [hostedActivities, today]
   );
 
   const pastActivities = useMemo(
     () =>
-      tripsHostedActivities
+      hostedActivities
         .filter((event) => new Date(event.date) < today)
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()),
-    [tripsHostedActivities, today]
+    [hostedActivities, today]
   );
 
   const lockedTab = timeScope ?? activityTab;
@@ -106,7 +106,7 @@ export const HostedActivitiesSection = ({
     const openId = searchParams.get('peek') ?? rosterId;
     if (!openId || host.loading || !host.tenantId) return;
     if (openedDeepLinkRef.current === openId) return;
-    const activity = tripsHostedActivities.find((event) => event.id === openId);
+    const activity = hostedActivities.find((event) => event.id === openId);
     if (!activity) return;
     openedDeepLinkRef.current = openId;
     openManage(activity, rosterId ? 'checkin' : 'overview');
@@ -115,7 +115,7 @@ export const HostedActivitiesSection = ({
     next.delete('checkin');
     next.delete('roster');
     setSearchParams(next, { replace: true });
-  }, [tripsHostedActivities, host.loading, host.tenantId, searchParams, setSearchParams]);
+  }, [hostedActivities, host.loading, host.tenantId, searchParams, setSearchParams]);
 
   useEffect(() => {
     if (!manageActivity) return;

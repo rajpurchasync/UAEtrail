@@ -6,7 +6,7 @@ import {
   profileHistoryRoleChips,
   type PlanHistoryMainView,
   type PlanHistoryRole,
-} from '../../member-plan/planHubRouting';
+} from '../../config/routingCatalog';
 
 type ProfileHistoryPageToolbarProps = {
   surface: 'plan' | 'history';

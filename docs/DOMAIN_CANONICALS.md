@@ -26,7 +26,7 @@ There are **five public entity kinds** on the wire (`EntityKind` / `EntityRef`):
 
 **Demand (Find)** is not a sixth entity kind on URLs — it is a **`participant_intent`** row surfaced on the map; deep links use **`exploreSeekingMapItemPath`** (`pin=activity:{id}` when M1 activity exists, else legacy `pin=demand:{intentId}`), not `/demand/:id`.
 
-**Plan** (`/plan`) is the active member tab (schedule, saved, goals lenses). **Outing history** (`/profile/history`) is profile inventory (past outings, journey map). Saved/wishlist primary UI: Plan `?lens=saved`. Legacy `/trips` redirects — not a domain type.
+**Plan** (`/plan`) is the active member tab (schedule, saved, goals lenses). **Outing history** (`/profile/history`) is profile inventory (past outings, journey map). Saved/wishlist primary UI: Plan `?lens=saved`. Legacy `/trips` and `/trips/map` redirect via `LEGACY_TRIPS_MAP_PATH` / `resolveLegacyTripsHubRedirect` — not a domain type. Consumer path helpers: import `config/routingCatalog` (not `member-plan/planHubRouting` directly).
 
 **Campaigns** (future) are not a seventh entity kind — they are **surfaces** that promote Activities and/or link to host storefronts (agencies, partners, shops) in “What’s happening” feeds. See §1.2.
 

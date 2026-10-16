@@ -86,6 +86,7 @@ export {
   JOURNEY_MAP_PATH,
   MY_TRIPS_PATH,
   MY_TRIPS_MAP_PATH,
+  LEGACY_TRIPS_MAP_PATH,
   isProfileHistoryListPath,
   isJourneyMapPath,
 } from './surfacePaths';
@@ -196,6 +197,13 @@ export {
   planWishlistRedirectPath,
   planJoinedUpcomingPath,
   planUpcomingDefaultPath,
+  normalizePlanHubSearchParams,
+  parsePlanHistoryMainView,
+  parsePlanHistoryRole,
+  profileHistoryRoleChips,
+  PROFILE_HISTORY_MAIN_TABS,
+  type PlanHistoryMainView,
+  type PlanHistoryRole,
 } from '../member-plan/planHubRouting';
 
 export { memberProfileLink } from '../member/memberProfileLink';

@@ -3,6 +3,7 @@ import {
   JOURNEY_MAP_PATH,
   PLAN_PATH,
   PROFILE_HISTORY_PATH,
+  LEGACY_TRIPS_MAP_PATH,
   TRIPS_PATH,
 } from '../config/surfacePaths';
 import { planSavedPath } from '../plan/planLens';
@@ -18,7 +19,7 @@ export const resolveLegacyTripsHubRedirect = (
   search: string,
   options?: { canHost?: boolean }
 ): string | null => {
-  if (pathname === '/trips/map' || pathname.endsWith('/trips/map')) {
+  if (pathname === LEGACY_TRIPS_MAP_PATH || pathname.endsWith(LEGACY_TRIPS_MAP_PATH)) {
     const qs = search.replace(/^\?/, '');
     return qs ? `${JOURNEY_MAP_PATH}?${qs}` : JOURNEY_MAP_PATH;
   }
