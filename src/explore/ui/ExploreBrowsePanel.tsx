@@ -35,7 +35,7 @@ import { ExploreSearchAreaHints } from './ExploreSearchAreaHints';
 import { ExploreSearchScopeHints } from './ExploreSearchScopeHints';
 import type { ExploreBuddySubtypeKey } from '../exploreBuddySubtype';
 import type { ExploreOutingTopicKey } from '../exploreOutingTopic';
-import { ExploreMyTripsModeNotice } from './ExploreMyTripsModeNotice';
+import { ExploreMyPlanMapNotice } from './ExploreMyPlanMapNotice';
 import { ListFeedPosterCard } from '../../list/ui/feed/ListFeedPosterCard';
 import { LIST_FEED } from '../../list/listFeedTheme';
 import { buildListFeedCards } from '../../list/buildListFeedCards';
@@ -263,7 +263,7 @@ export const ExploreBrowsePanel = ({
         <div className="mx-auto mb-2 h-1.5 w-10 shrink-0 rounded-full bg-neutral-200 lg:hidden" />
       ) : null}
 
-      {myTripsMode ? <ExploreMyTripsModeNotice /> : null}
+      {myTripsMode ? <ExploreMyPlanMapNotice /> : null}
 
       {fullscreenBrowse && !isDesktop ? (
         <div className="shrink-0 border-b border-neutral-200/70 px-2 pb-2 pt-1">

@@ -11,6 +11,8 @@ const ALLOWLIST = new Set([
   'src/member-plan/resolveTripsContent.ts',
   'src/member-plan/resolvePlanHubView.ts',
   'src/member-plan/participantIntentPlan.ts',
+  'src/pages/MyTrips.tsx',
+  'src/components/trips/TripsPlansUpcomingHeader.tsx',
   'src/config/surfacePaths.ts',
   'src/App.tsx',
   'src/utils/notificationRouting.test.ts',
@@ -83,6 +85,22 @@ describe('tripsConsumerNamingGuard', () => {
       const content = readFileSync(join(process.cwd(), file), 'utf8');
       if (deprecatedImport.test(content)) {
         violations.push(`${file}: use src/member-plan/* — src/trips is a one-release shim`);
+      }
+    }
+
+    expect(violations).toEqual([]);
+  });
+
+  it('app code imports profile-history chrome (not deprecated components/trips)', () => {
+    const violations: string[] = [];
+    const legacyTripsChromeImport = /from ['"](\.\.\/)+components\/trips\//;
+
+    for (const file of collectSourceFiles(SCAN_ROOT)) {
+      if (file.startsWith('src/components/trips/')) continue;
+      if (ALLOWLIST.has(file)) continue;
+      const content = readFileSync(join(process.cwd(), file), 'utf8');
+      if (legacyTripsChromeImport.test(content)) {
+        violations.push(`${file}: use src/components/profile-history/* — components/trips is a shim`);
       }
     }
 

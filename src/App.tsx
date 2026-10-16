@@ -217,7 +217,9 @@ const OperatorManage = lazy(() => import('./pages/operator/Manage').then((m) => 
 const ShopManage = lazy(() => import('./pages/ShopManage').then((m) => ({ default: m.ShopManage })));
 const AgencyManage = lazy(() => import('./pages/AgencyManage').then((m) => ({ default: m.AgencyManage })));
 const Activities = lazy(() => import('./pages/Activities').then((m) => ({ default: m.Activities })));
-const MyTrips = lazy(() => import('./pages/MyTrips').then((m) => ({ default: m.MyTrips })));
+const ProfileHistoryPage = lazy(() =>
+  import('./pages/ProfileHistory').then((m) => ({ default: m.ProfileHistoryPage }))
+);
 const TripsMap = lazy(() => import('./pages/TripsMap').then((m) => ({ default: m.TripsMap })));
 const Profile = lazy(() => import('./pages/Profile').then((m) => ({ default: m.Profile })));
 const ProfileSettings = lazy(() => import('./pages/ProfileSettings').then((m) => ({ default: m.ProfileSettings })));
@@ -374,7 +376,7 @@ function App() {
             element={
               <ProtectedRoute>
                 <Suspense fallback={<PageLoader />}>
-                  <MyTrips />
+                  <ProfileHistoryPage />
                 </Suspense>
               </ProtectedRoute>
             }

@@ -24,7 +24,7 @@ import {
   updateMemberMapPin,
 } from '../hooks/memberJourneyMapApi';
 import { tripsCompletedPath } from '../member-plan/tripsRouting';
-import { TripsMainTabs } from '../components/trips/TripsMainTabs';
+import { ProfileHistoryMainTabs } from '../components/profile-history/ProfileHistoryMainTabs';
 import {
   filterJourneyMapEntries,
   mappableJourneyMapEntries,
@@ -256,7 +256,7 @@ export const TripsMap = () => {
           <Share2 className="h-5 w-5" aria-hidden />
         </button>
         </div>
-        <TripsMainTabs active="map" />
+        <ProfileHistoryMainTabs active="map" />
       </header>
 
       {shareHint ? (

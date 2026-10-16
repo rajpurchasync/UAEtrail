@@ -23,7 +23,7 @@ import { fetchPublicActivityDetail } from '../../hooks/publicActivityClientApi';
 import { useSafeAsyncEffect } from '../../hooks/useSafeAsyncEffect';
 import { resolveParticipantIntentActivityId } from '../../member-plan/resolveParticipantIntentActivityId';
 import { planHostedActivityManagePath } from '../../plan/planRouting';
-import { formatParticipantIntentMeta } from '../../member-plan/participantIntentTrips';
+import { formatParticipantIntentMeta } from '../../member-plan/participantIntentPlan';
 import { AppButton, AppButtonLink } from '../mobile/AppButton';
 import { Dialog } from '../ui/Dialog';
 import {
