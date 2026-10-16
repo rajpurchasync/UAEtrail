@@ -1,4 +1,9 @@
-import { CampingPlaceDetailPage } from './place/CampingPlaceDetailPage';
+import { Navigate, useParams } from 'react-router-dom';
+import { canonicalPlaceDetailPath } from '@uaetrail/shared-types';
 
-/** @deprecated Use `CampingPlaceDetailPage` — kept for `/camp` route name. */
-export const CampDetail = CampingPlaceDetailPage;
+/** Legacy `/camp/:id` → canonical `/place/:id`. */
+export const CampDetail = () => {
+  const { id } = useParams<{ id: string }>();
+  if (!id) return <Navigate to="/explore" replace />;
+  return <Navigate to={canonicalPlaceDetailPath(id)} replace />;
+};

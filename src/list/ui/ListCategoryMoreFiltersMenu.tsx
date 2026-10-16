@@ -99,9 +99,9 @@ export const ListCategoryMoreFiltersMenu = ({
     };
   }, [open]);
 
-  const showPrice = category === 'trips';
-  const showWhen = category === 'trips';
-  const showDate = category === 'trips' && Boolean(onActivityDatePresetChange);
+  const showPrice = category === 'activities';
+  const showWhen = category === 'activities';
+  const showDate = category === 'activities' && Boolean(onActivityDatePresetChange);
   const showArea =
     category === 'venues' || category === 'guides' || category === 'agencies';
 

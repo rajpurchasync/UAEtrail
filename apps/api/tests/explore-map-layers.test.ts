@@ -3,6 +3,7 @@ import request from 'supertest';
 import type { Express } from 'express';
 import { ActivityType, LocationStatus } from '../src/domain/enums.js';
 import { createLocationRecord } from '../src/lib/activities-store.js';
+import { createFacilityRecord } from '../src/lib/facilities-store.js';
 import { createPublishedEventFixture } from './helpers/fixtures.js';
 import { bootstrapTestApp, configureTestEnv } from './helpers/bootstrap.js';
 import { getMongoClient } from '../src/lib/mongo.js';
@@ -52,7 +53,7 @@ describe('GET /api/v1/explore/map layer separation', () => {
       latitude: 25.13,
       longitude: 55.22,
       countryCode: 'AE',
-      images: [],
+      images: ['https://example.com/smoke-trail-cover.jpg'],
       tags: ['catalog-import', 'hiking'],
       registryListed: true,
       externalSource: 'catalog',
@@ -81,20 +82,17 @@ describe('GET /api/v1/explore/map layer separation', () => {
 
   it('includes facility catalog rows on the map with placeKind', async () => {
     const suffix = `facility-${Date.now()}`;
-    const venue = await createLocationRecord({
+    const facility = await createFacilityRecord({
       name: `Trail toilet ${suffix}`,
       region: 'Dubai',
-      activityType: ActivityType.EVENT,
-      status: LocationStatus.ACTIVE,
-      featured: false,
+      areaId: 'area-test-dubai',
+      facilityKind: 'toilet',
+      description: 'Trailhead toilet amenity for explore map layer contract test.',
       latitude: 25.135,
       longitude: 55.225,
-      countryCode: 'AE',
-      images: [],
-      tags: ['place-kind:toilet'],
-      registryListed: true,
-      externalSource: 'catalog',
-      externalId: `facility-${suffix}`,
+      images: ['https://example.com/facility-toilet-map.jpg'],
+      registeredByUserId: 'explore-map-test',
+      status: LocationStatus.ACTIVE,
     });
 
     await invalidateExploreMapCache();
@@ -106,11 +104,13 @@ describe('GET /api/v1/explore/map layer separation', () => {
       kind: string;
       source: string;
       placeKind?: string;
+      path?: string;
     }>;
-    const facilityItem = items.find((item) => item.id === `venue:${venue.id}`);
+    const facilityItem = items.find((item) => item.id === `facility:${facility.id}`);
     expect(facilityItem?.source).toBe('venue');
     expect(facilityItem?.kind).toBe('event');
     expect(facilityItem?.placeKind).toBe('toilet');
+    expect(facilityItem?.path).toBe(`/facility/${facility.id}`);
   });
 
   it('includes outdoor_other spots and contributed shops with peek exposure', async () => {
@@ -124,7 +124,7 @@ describe('GET /api/v1/explore/map layer separation', () => {
       latitude: 25.136,
       longitude: 55.226,
       countryCode: 'AE',
-      images: [],
+      images: ['https://example.com/beach-spot-cover.jpg'],
       tags: ['outdoor-other'],
       registryListed: true,
       externalSource: 'catalog',
@@ -139,7 +139,7 @@ describe('GET /api/v1/explore/map layer separation', () => {
       latitude: 25.137,
       longitude: 55.227,
       countryCode: 'AE',
-      images: [],
+      images: ['https://example.com/community-gear-cover.jpg'],
       tags: ['community-shop'],
       registryListed: true,
       externalSource: 'catalog',
@@ -178,7 +178,7 @@ describe('GET /api/v1/explore/map layer separation', () => {
       latitude: 25.14,
       longitude: 55.23,
       countryCode: 'AE',
-      images: [],
+      images: ['https://example.com/cache-trail-cover.jpg'],
       tags: ['catalog-import', 'hiking'],
       registryListed: true,
       externalSource: 'catalog',

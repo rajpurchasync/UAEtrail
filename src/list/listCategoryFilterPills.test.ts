@@ -4,7 +4,7 @@ import type { BrowseListFilterState } from './browseListFilters';
 
 const baseFilters: BrowseListFilterState = {
   query: '',
-  categories: ['trips'],
+  categories: ['activities'],
   tripTopics: [],
   placeTopics: [],
   tripLookingOnly: false,
@@ -17,7 +17,7 @@ const baseFilters: BrowseListFilterState = {
 describe('buildListCategoryPrimaryPills', () => {
   it('exposes hiking, camping, rideshare, and looking for on trips', () => {
     const labels: string[] = [];
-    const pills = buildListCategoryPrimaryPills('trips', baseFilters, (patch) => {
+    const pills = buildListCategoryPrimaryPills('activities', baseFilters, (patch) => {
       Object.assign(baseFilters, patch);
     });
     pills.forEach((pill) => labels.push(pill.label));

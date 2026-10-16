@@ -1,12 +1,12 @@
 import type { NotificationDTO } from '@uaetrail/shared-types';
 import { isMessagingNotification, notificationKind } from './notificationCategories';
 
-/** Inbox topic buckets (product copy: Trips · Social · Account). */
-export type NotificationTopic = 'all' | 'trips' | 'social' | 'account';
+/** Inbox topic buckets (product copy: Plans · Social · Account). */
+export type NotificationTopic = 'all' | 'plans' | 'social' | 'account';
 
 export const NOTIFICATION_TOPIC_OPTIONS: { id: NotificationTopic; label: string }[] = [
   { id: 'all', label: 'All' },
-  { id: 'trips', label: 'Trips' },
+  { id: 'plans', label: 'Plans' },
   { id: 'social', label: 'Social' },
   { id: 'account', label: 'Account' },
 ];
@@ -67,18 +67,18 @@ export const inferNotificationTopic = (notif: NotificationDTO): Exclude<Notifica
     notif.type === 'request_update' ||
     notif.type === 'review_prompt'
   ) {
-    return 'trips';
+    return 'plans';
   }
 
   if (kind.includes('reminder') || text.includes('reminder') || text.includes('request update')) {
-    return 'trips';
+    return 'plans';
   }
 
   if (text.includes('pro membership') || text.includes('host application') || text.includes('profile')) {
     return 'account';
   }
 
-  return notif.type === 'system' ? 'account' : 'trips';
+  return notif.type === 'system' ? 'account' : 'plans';
 };
 
 export const matchesNotificationTopic = (notif: NotificationDTO, topic: NotificationTopic): boolean =>

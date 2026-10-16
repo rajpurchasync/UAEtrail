@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   AVAILABILITY_KINDS,
   type AvailabilityKind,
@@ -7,8 +7,10 @@ import {
   memberAvailabilitySlotsAsDayPicks,
   normalizeMemberAvailabilitySlotsForStorage,
 } from '@uaetrail/shared-types';
-import type { AreaPublicDTO } from '@uaetrail/shared-types';
+import type { AreaPublicDTO, MemberAvailabilityMatchPreviewDTO } from '@uaetrail/shared-types';
 import { fetchPublishedAreas } from '../../hooks/areaHubClientApi';
+import { fetchMyAvailabilityMatchPreview } from '../../hooks/memberAvailabilityApi';
+import { AvailabilityMatchPreview } from '../../explore/ui/AvailabilityMatchPreview';
 import { getRegionsForCountry } from '../../config/regions';
 import { AppButton } from '../mobile/AppButton';
 import { useMemberAvailability } from '../../hooks/useMemberAvailability';
@@ -43,9 +45,22 @@ const locationModeFromData = (
   return 'open';
 };
 
+export type PlanAvailabilitySectionProps = {
+  /** `fab` = explore compose sheet (no duplicate intro). */
+  variant?: 'plan' | 'fab';
+  /** Suggested trail area id (e.g. from map `?area=`); does not override saved `areaId`. */
+  prefillAreaId?: string | null;
+  onSaved?: () => void | Promise<void>;
+};
+
 /** Plan lens — available days, activities, and where (open / region / area). */
-export const PlanAvailabilitySection = () => {
+export const PlanAvailabilitySection = ({
+  variant = 'plan',
+  prefillAreaId = null,
+  onSaved,
+}: PlanAvailabilitySectionProps = {}) => {
   const { data, loading, saving, error, save } = useMemberAvailability(true);
+  const fabAreaPrefillKey = useRef<string | null>(null);
   const [kinds, setKinds] = useState<AvailabilityKind[]>(['hiking']);
   const [visibility, setVisibility] = useState<AvailabilityVisibility>('buddies');
   const [note, setNote] = useState('');
@@ -56,6 +71,7 @@ export const PlanAvailabilitySection = () => {
   const [publishedAreas, setPublishedAreas] = useState<AreaPublicDTO[]>([]);
   const [areasError, setAreasError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
+  const [matchPreview, setMatchPreview] = useState<MemberAvailabilityMatchPreviewDTO | null>(null);
 
   const regionOptions = useMemo(() => getRegionsForCountry(), []);
 
@@ -84,6 +100,19 @@ export const PlanAvailabilitySection = () => {
     setRegion(data.region ?? '');
     setAreaId(data.areaId ?? '');
   }, [data]);
+
+  useEffect(() => {
+    if (variant !== 'fab' || !prefillAreaId?.trim()) return;
+    const prefillKey = prefillAreaId.trim();
+    if (fabAreaPrefillKey.current === prefillKey) return;
+    if (data?.areaId) {
+      fabAreaPrefillKey.current = prefillKey;
+      return;
+    }
+    fabAreaPrefillKey.current = prefillKey;
+    setLocationMode('area');
+    setAreaId(prefillKey);
+  }, [variant, prefillAreaId, data?.areaId]);
 
   const toggleKind = (kind: AvailabilityKind) => {
     setKinds((prev) =>
@@ -129,29 +158,49 @@ export const PlanAvailabilitySection = () => {
       }
     }
 
-    await save({
-      kinds,
-      visibility,
-      note: note.trim() || null,
-      region: locationMode === 'region' ? region.trim() : null,
-      areaId: locationMode === 'area' ? areaId.trim() : null,
-      slots: normalizedDays,
-    });
+    try {
+      await save({
+        kinds,
+        visibility,
+        note: note.trim() || null,
+        region: locationMode === 'region' ? region.trim() : null,
+        areaId: locationMode === 'area' ? areaId.trim() : null,
+        slots: normalizedDays,
+      });
+      if (variant === 'plan') {
+        try {
+          const preview = await fetchMyAvailabilityMatchPreview();
+          setMatchPreview(preview.hostedOutings.length > 0 ? preview : null);
+        } catch {
+          setMatchPreview(null);
+        }
+      }
+      await onSaved?.();
+    } catch {
+      // save() sets error state
+    }
   };
 
   if (loading && !data) {
     return <p className="text-sm text-slate-500">Loading availability…</p>;
   }
 
+  const shellClass =
+    variant === 'fab'
+      ? 'space-y-6'
+      : 'space-y-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm';
+
   return (
-    <div className="space-y-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-      <div>
-        <h2 className="text-lg font-semibold text-slate-900">People availability</h2>
-        <p className="mt-1 text-sm text-slate-600">
-          Show up under <span className="font-medium">Find your crew → Available</span> when your
-          days and filters match.
-        </p>
-      </div>
+    <div className={shellClass}>
+      {variant === 'plan' ? (
+        <div>
+          <h2 className="text-lg font-semibold text-slate-900">People availability</h2>
+          <p className="mt-1 text-sm text-slate-600">
+            Show up under <span className="font-medium">Find your crew → Available</span> when your
+            days and filters match.
+          </p>
+        </div>
+      ) : null}
 
       <fieldset className="space-y-3">
         <legend className="text-sm font-semibold text-slate-900">Select available days</legend>
@@ -279,8 +328,12 @@ export const PlanAvailabilitySection = () => {
       {error ? <p className="text-sm text-red-700">{error}</p> : null}
 
       <AppButton type="button" onClick={() => void onSubmit()} disabled={saving}>
-        {saving ? 'Saving…' : 'Save availability'}
+        {saving ? 'Saving…' : variant === 'fab' ? 'Save and close' : 'Save availability'}
       </AppButton>
+
+      {variant === 'plan' && matchPreview ? (
+        <AvailabilityMatchPreview preview={matchPreview} onDone={() => setMatchPreview(null)} />
+      ) : null}
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import type { ComposeFlowId } from '../../composeFlowCatalog';
+import type { CanonicalComposeFlowId } from '../../composeFlowIds';
 import type { OrganizeWizardContext } from './organizeWizardContext';
 import { renderActivitiesOrganizeWizardStep } from './flows/activitiesOrganizeWizardSteps';
 import { renderCampingOrganizeWizardStep } from './flows/campingOrganizeWizardSteps';
@@ -7,23 +7,14 @@ import { renderEventsOrganizeWizardStep } from './flows/eventsOrganizeWizardStep
 import { renderHikingOrganizeWizardStep } from './flows/hikingOrganizeWizardSteps';
 import { renderRideshareOrganizeWizardStep } from './flows/rideshareOrganizeWizardSteps';
 
-const CATALOG_STEP_RENDERERS: Record<
-  ComposeFlowId,
-  (ctx: OrganizeWizardContext) => ReactNode | null
+const CATALOG_STEP_RENDERERS: Partial<
+  Record<CanonicalComposeFlowId, (ctx: OrganizeWizardContext) => ReactNode | null>
 > = {
-  'organize.hiking': renderHikingOrganizeWizardStep,
-  'organize.camping': renderCampingOrganizeWizardStep,
-  'organize.events': renderEventsOrganizeWizardStep,
-  'organize.activities': renderActivitiesOrganizeWizardStep,
-  'organize.rideshare': renderRideshareOrganizeWizardStep,
-  'find.hiking': () => null,
-  'find.camping': () => null,
-  'find.event': () => null,
-  'find.rideshare': () => null,
-  'add.trail': () => null,
-  'add.camp': () => null,
-  'add.shop': () => null,
-  'add.spot': () => null,
+  'plan.hiking.hosting': renderHikingOrganizeWizardStep,
+  'plan.camping.hosting': renderCampingOrganizeWizardStep,
+  'plan.event.hosting': renderEventsOrganizeWizardStep,
+  'plan.activity.hosting': renderActivitiesOrganizeWizardStep,
+  'plan.rideshare.hosting': renderRideshareOrganizeWizardStep,
 };
 
 /**
@@ -33,8 +24,8 @@ const CATALOG_STEP_RENDERERS: Record<
 export const renderCatalogOrganizeWizardStep = (
   ctx: OrganizeWizardContext
 ): ReactNode | undefined => {
-  if (!ctx.catalogFlow) return undefined;
-  const render = CATALOG_STEP_RENDERERS[ctx.catalogFlow.id];
+  if (!ctx.hostingKindFlow) return undefined;
+  const render = CATALOG_STEP_RENDERERS[ctx.hostingKindFlow.id];
   if (!render) return undefined;
   return render(ctx);
 };

@@ -35,7 +35,7 @@ describe('geographyTerminologyGuard (Place · venue wire · Area · facility)', 
     expect(read('src/explore/ui/peek/place/PlacePeekBody.tsx')).not.toMatch(
       /source === 'area'/
     );
-    expect(read('src/explore/ui/peek/place/PlacePeekBody.tsx')).toMatch(
+    expect(read('src/explore/ui/peek/place/PlacePeekHero.tsx')).toMatch(
       /resolvePlacePeekCuratedArea/
     );
     expect(read('src/explore/ui/map-peek/mapPeekSlots.tsx')).toMatch(

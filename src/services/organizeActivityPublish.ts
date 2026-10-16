@@ -2,7 +2,7 @@ import { activityOrganizeTopicToOutingTopic, type ActivityDTO } from '@uaetrail/
 import { fetchPublishedAreas } from '../hooks/areaHubClientApi';
 import { createActivity, publishActivity } from '../hooks/tenantActivityClientApi';
 import { linkParticipantIntentToActivity } from '../hooks/participantIntentClientApi';
-import { submitPlaceContribution } from '../hooks/placeCatalogApi';
+import { submitMemberPlace } from '../hooks/memberCatalogSubmitClientApi';
 import { HOME_HERO_OG_PATH } from '../config/seo';
 import { resolvePublishedAreaIdForPoint } from '../explore/organizePublishArea';
 import {
@@ -89,7 +89,7 @@ export const resolveOrganizeActivityLocationId = async (
   const anchorDescription =
     (activityHost ? draft.joinKit.trim() : draft.description.trim()) || defaultDescription(draft.kind);
 
-  const place = await submitPlaceContribution(
+  const place = await submitMemberPlace(
     {
       name: anchorName,
       countryCode: 'AE',

@@ -66,7 +66,7 @@ describe('member surfaces §11 acceptance (automated)', () => {
   });
 
   it('G-arch: participant /host bookmarks redirect off host console', () => {
-    expect(participantHostBookmarkRedirect('/host/overview')).toBe('/explore?compose=organize');
+    expect(participantHostBookmarkRedirect('/host/overview')).toBe('/explore?compose=host');
     expect(participantHostBookmarkRedirect('/host/activities')).toContain('/plan');
   });
 
@@ -216,7 +216,7 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(hosted).not.toMatch(/\/host\/requests|HOST_REQUESTS_PATH/);
     const sheet = read('src/components/activity/ActivityManageSheet.tsx');
     expect(sheet).toContain('decideActivityJoinRequest');
-    expect(sheet).toContain('tripsHostedActivityPath');
+    expect(sheet).toContain('planHostedActivityManagePath');
   });
 
   it('G-profile: badges and contributions live on Profile launcher (not Plan)', () => {
@@ -234,7 +234,7 @@ describe('member surfaces §11 acceptance (automated)', () => {
     const launcher = read('src/components/profile/ProfileQuickLauncher.tsx');
     expect(launcher).toContain('BUDDIES_PATH');
     expect(launcher).toContain('PROFILE_HISTORY_PATH');
-    expect(launcher).toContain("tripsPlansPath('hosted')");
+    expect(launcher).toContain('planHostedSchedulePath()');
     expect(launcher).not.toMatch(/HOST_OVERVIEW_PATH/);
     const settings = read('src/components/profile/ProfileSettingsIndex.tsx');
     expect(settings).toMatch(/visibility/i);
@@ -253,13 +253,13 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(hub).toContain('PRO_MEMBERSHIP_PATH');
     expect(hub).not.toMatch(/\/host\/overview/);
     const launcher = read('src/components/profile/ProfileQuickLauncher.tsx');
-    expect(launcher).toContain("tripsPlansPath('hosted')");
+    expect(launcher).toContain('planHostedSchedulePath()');
     expect(launcher).not.toMatch(/\/host\//);
   });
 
   it('G-arch: org public profile owner CTAs avoid consumer /host/* routes', () => {
     const orgProfile = read('src/components/organisation-console/OrganisationPublicProfile.tsx');
-    expect(orgProfile).toContain("tripsPlansPath('hosted')");
+    expect(orgProfile).toContain('planHostedSchedulePath()');
     expect(orgProfile).toContain('PRO_MEMBERSHIP_PATH');
     expect(orgProfile).not.toMatch(/HOST_(ACTIVITIES|TEAM|REQUESTS)_PATH/);
   });
@@ -282,7 +282,7 @@ describe('member surfaces §11 acceptance (automated)', () => {
 
   it('G-plan: Plan routing helpers live under src/member-plan', () => {
     const catalog = read('src/config/routingCatalog.ts');
-    expect(catalog).toContain("from '../member-plan/tripsRouting'");
+    expect(catalog).toContain("from '../member-plan/planHubRouting'");
     expect(catalog).not.toMatch(/from '\.\.\/trips\//);
   });
 
@@ -448,6 +448,19 @@ describe('member surfaces §11 acceptance (automated)', () => {
     const shared = read('packages/shared-types/src/activity-map-peek-actions.ts');
     expect(shared).toContain("id: 'open_crew_chat'");
     expect(shared).not.toMatch(/level === 'public'[\s\S]*message_host/);
+  });
+
+  it('G-plan: My Plans routing module and /profile/plans alias', () => {
+    const routing = read('src/plan/planRouting.ts');
+    expect(routing).toContain('normalizePlanSearchParams');
+    expect(routing).toContain('planHostedSchedulePath');
+    const app = read('src/App.tsx');
+    expect(app).toContain('path="/profile/plans"');
+    const activities = read('src/pages/Activities.tsx');
+    expect(activities).toContain('normalizePlanSearchParams');
+    const nav = read('docs/NAVIGATION.md');
+    expect(nav).toMatch(/Host.*Find crew.*Add on map/);
+    expect(nav).toContain('disambiguation');
   });
 
   it('G-chat: /groups is manage-only; threads use /chat?group=', () => {

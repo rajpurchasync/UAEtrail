@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Accessibility } from '../src/domain/enums.js';
+import { Accessibility, ActivityType } from '../src/domain/enums.js';
 import { buildLocationCreateData } from '../src/services/location-submit.js';
 import { buildTestLocationSubmitBody, testAreas } from './helpers/test-seed.js';
 
@@ -39,5 +39,22 @@ describe('buildLocationCreateData', () => {
     );
 
     expect(data.accessibility).toBe(Accessibility.REMOTE);
+  });
+
+  it('persists facility kind tags on member facility submit', () => {
+    const data = buildLocationCreateData(
+      buildTestLocationSubmitBody({
+        name: 'Dam toilets',
+        region: 'Dubai',
+        activityType: 'event',
+        facilityKind: 'toilet',
+        areaId: testAreas.hatta.id,
+      }),
+      'user-facility'
+    );
+
+    expect(data.activityType).toBe(ActivityType.EVENT);
+    expect(data.tags).toContain('place-kind:toilet');
+    expect(data.status).toBe('DRAFT');
   });
 });

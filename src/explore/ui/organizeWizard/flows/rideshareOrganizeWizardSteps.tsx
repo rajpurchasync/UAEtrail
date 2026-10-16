@@ -1,4 +1,4 @@
-import { organizeRideshareFlow } from '../../organizeFlows';
+import { organizeRideshareFlow } from '../../hostingFlows';
 import type { OrganizeWizardContext } from '../organizeWizardContext';
 import { runCatalogOrganizeWizard } from './runCatalogOrganizeWizard';
 

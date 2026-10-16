@@ -85,7 +85,7 @@ export const filterExploreMapItemsForList = (
   }
 
   const tripsCategoryInScope =
-    state.categories.length === 0 || state.categories.includes('trips');
+    state.categories.length === 0 || state.categories.includes('activities');
   const placesCategoryInScope =
     state.categories.length === 0 || state.categories.includes('venues');
 

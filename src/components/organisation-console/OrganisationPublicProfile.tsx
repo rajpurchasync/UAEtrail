@@ -31,7 +31,7 @@ import {
   memberProfileLink,
   PRO_MEMBERSHIP_PATH,
   SIGNIN_PATH,
-  tripsPlansPath,
+  planHostedSchedulePath,
 } from '../../config/routingCatalog';
 import { GlassCard } from '../mobile/GlassCard';
 import { AppButton } from '../mobile/AppButton';
@@ -543,7 +543,7 @@ export const OrganisationPublicProfile = ({
           </div>
         )}
         {isOwner && (
-          <Link to={tripsPlansPath('hosted')} className="inline-block text-sm font-semibold text-emerald-700">
+          <Link to={planHostedSchedulePath()} className="inline-block text-sm font-semibold text-emerald-700">
             Manage events →
           </Link>
         )}

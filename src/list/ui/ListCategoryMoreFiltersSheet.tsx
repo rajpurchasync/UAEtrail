@@ -64,8 +64,8 @@ export const ListCategoryMoreFiltersSheet = ({
     }
   }, [open, applied.price, applied.when, regions]);
 
-  const showPrice = category === 'trips';
-  const showWhen = category === 'trips';
+  const showPrice = category === 'activities';
+  const showWhen = category === 'activities';
   const showArea = category === 'venues';
 
   const reset = () => {

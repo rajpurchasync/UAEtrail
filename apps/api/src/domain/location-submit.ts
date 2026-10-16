@@ -1,4 +1,13 @@
+import {
+  CONTRIBUTABLE_FACILITY_PLACE_KINDS,
+  isContributableFacilityPlaceKind,
+  type PlaceKind,
+} from '@uaetrail/shared-types';
 import { z } from 'zod';
+
+const contributableFacilityKindSchema = z.enum(
+  CONTRIBUTABLE_FACILITY_PLACE_KINDS as unknown as [string, ...string[]]
+);
 
 /** Accept absolute URLs or same-origin relative media paths from local dev uploads. */
 const mediaUrlSchema = z.string().min(1).refine(
@@ -57,7 +66,33 @@ export const locationSubmitBodySchema = z.object({
   shopDeliveryRadiusKm: z.number().positive().max(1000).optional(),
   shopContactEmail: z.string().email().max(120).optional(),
   shopContactPhoneE164: z.string().min(8).max(24).optional(),
+  /** Member/admin facility row — persisted via `place-kind:*` tags + `activityType: event`. */
+  facilityKind: contributableFacilityKindSchema.optional(),
 }).superRefine((body, ctx) => {
+  if (body.facilityKind) {
+    if (!isContributableFacilityPlaceKind(body.facilityKind as PlaceKind)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Invalid facility type.',
+        path: ['facilityKind'],
+      });
+    }
+    if (body.latitude == null || body.longitude == null) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Pin the facility on the map.',
+        path: ['latitude'],
+      });
+    }
+    if (body.activityType.toLowerCase() === 'shop') {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Facilities cannot use shop activity type.',
+        path: ['activityType'],
+      });
+    }
+    return;
+  }
   if (body.activityType.toLowerCase() !== 'shop') return;
   if (body.latitude == null || body.longitude == null) {
     ctx.addIssue({

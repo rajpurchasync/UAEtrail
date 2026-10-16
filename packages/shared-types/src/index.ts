@@ -14,6 +14,7 @@ import type {
 import type { HostParticipantRosterStatus, ParticipantHostRatingDTO } from './participant-roster.js';
 import type { ExploreActivityMode } from './explore-activity-mode.js';
 import type { ActivityGroupChatPostPolicy } from './activity-group-chat-post-policy.js';
+import type { PlaceNearbyFacilityDTO } from './place-kind.js';
 
 export type UserRole =
   | 'platform_admin'
@@ -64,6 +65,9 @@ export interface LocationDTO {
   areaLabel?: string | null;
   /** Curated geographic area (`GET /areas/:slug`). */
   areaId?: string | null;
+  /** Populated on place detail reads when `areaId` resolves to a published area. */
+  areaSlug?: string | null;
+  areaName?: string | null;
   /** @deprecated Prefer {@link PlaceKind} in new code — persisted as `activityType` on Mongo today. */
   activityType: PlaceActivityType;
   description: string;
@@ -94,6 +98,10 @@ export interface LocationDTO {
   viewCount?: number;
   countryCode?: string;
   submittedById?: string | null;
+  /** Who registered this catalog row (CPC). Dual-read with {@link submittedById}. */
+  registeredByUserId?: string | null;
+  moderationStatus?: import('./catalog-lifecycle.js').CatalogModerationStatus;
+  publicationStatus?: import('./catalog-lifecycle.js').CatalogPublicationStatus;
   /** Public-safe premium hints (no private file keys on consumer APIs). */
   hasRouteMap?: boolean;
   hasGuide?: boolean;
@@ -133,6 +141,8 @@ export interface LocationGuideDTO {
 export interface LocationDetailResponse {
   data: LocationDTO;
   premium: LocationPremiumSummaryDTO | null;
+  /** Facility POIs in the same curated area as `data` (when `data.areaId` is set). */
+  nearbyFacilities?: PlaceNearbyFacilityDTO[];
 }
 
 /** Domain aliases — place detail payloads (wire remains `Location*`). */
@@ -1450,6 +1460,8 @@ export {
   memberAvailabilitySlotsAsDayPicks,
   normalizeMemberAvailabilitySlotsForStorage,
   prunePastAvailabilitySlots,
+  availabilityKindMatchesActivityType,
+  availabilityKindsForActivityType,
 } from './member-availability.js';
 export type { MemberAvailabilityDayBlock } from './member-availability.js';
 export type {
@@ -1460,6 +1472,7 @@ export type {
   ExploreAvailablePersonDTO,
   MemberAvailabilityDTO,
   MemberAvailabilityPublicDTO,
+  MemberAvailabilityMatchPreviewDTO,
   MemberAvailabilitySlotDTO,
   UpsertMemberAvailabilityInput,
 } from './member-availability.js';
@@ -1575,6 +1588,10 @@ export {
   partnerProfilePath,
   parseEntityRefFromPathname,
   placeDetailPath,
+  canonicalPlaceDetailPath,
+  legacyPlaceDetailPath,
+  PLACE_CANONICAL_PATH_PREFIX,
+  facilityDetailPath,
   resolveEntityPath,
   resolveOrganisationProfilePath,
   shopPublicPath,
@@ -1585,7 +1602,13 @@ export {
 } from './entity-path.js';
 
 export {
+  CONTRIBUTABLE_FACILITY_PLACE_KINDS,
+  PLACE_CATALOG_KINDS,
+  DESTINATION_PLACE_KINDS,
   FACILITY_PLACE_KINDS,
+  isContributableFacilityPlaceKind,
+  isPlaceCatalogKind,
+  isDestinationPlaceKind,
   PLACE_KINDS,
   PLACE_KIND_LABELS,
   PLACE_STORAGE_COLLECTION,
@@ -1599,10 +1622,64 @@ export {
   placeKindFromContributeVenueKind,
   placeKindFromLocationRow,
   tagsForPlaceKind,
+  type PlaceCatalogKind,
+  type DestinationPlaceKind,
   type LocationActivityTypeWire,
   type PlaceDetailRouteKind,
   type PlaceKind,
+  type PlaceNearbyFacilityDTO,
 } from './place-kind.js';
+
+export {
+  CATALOG_ACTION_IDS,
+  type CatalogActionId,
+} from './catalog-actions.js';
+
+export {
+  CATALOG_MODERATION_STATUSES,
+  CATALOG_PUBLICATION_STATUSES,
+  type CatalogModerationStatus,
+  type CatalogPublicationStatus,
+} from './catalog-lifecycle.js';
+
+export type {
+  FacilityCatalogQuery,
+  PlaceCatalogPurpose,
+  PlaceCatalogQuery,
+  PlaceCatalogSegment,
+} from './catalog-query.js';
+
+export { FACILITY_KINDS, isFacilityKind, type FacilityKind } from './facility-kind.js';
+
+export type { FacilityDTO } from './facility.js';
+
+export type { FacilityViewerAccessDTO, FacilityViewerAccessLevel } from './facility-viewer-access.js';
+
+export type { PlaceViewerAccessDTO, PlaceViewerAccessLevel } from './place-viewer-access.js';
+
+export {
+  computeFacilityViewerAccess,
+  computePlaceViewerAccess,
+  resolveCatalogViewerLevel,
+} from './catalog-detail-exposure.js';
+
+export {
+  canonicalizeComposeWire,
+  composeWireToLegacyWizard,
+  formatComposeWire,
+  parseComposeWire,
+  PLAN_COMPOSE_KINDS,
+  SEEKING_PLAN_KINDS,
+  CONTRIBUTE_PLACE_KINDS,
+  type ComposeMenuIntent,
+  type ContributePlaceKind,
+  type ContributeTarget,
+  type ExploreComposeWire,
+  type LegacyAddKind,
+  type PlanComposeKind,
+  type PlanMode,
+  type SeekingPlanKind,
+} from './compose-route.js';
 
 export {
   COMMUNITY_SHOP_TAG,

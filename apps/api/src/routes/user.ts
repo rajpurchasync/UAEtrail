@@ -22,12 +22,14 @@ import { registerMeWishlistRoutes } from './user/registerMeWishlistRoutes.js';
 import { registerMeCoordinationAttentionRoutes } from './user/registerMeCoordinationAttentionRoutes.js';
 import { registerMemberStatusRoutes } from './user/registerMemberStatusRoutes.js';
 import { registerMeSubmittedPlaceRoutes } from './user/registerMeSubmittedPlaceRoutes.js';
+import { registerMeFacilityRoutes } from './user/registerMeFacilityRoutes.js';
 import { registerNotificationRoutes } from './user/registerNotificationRoutes.js';
 import { registerProfileRoutes } from './user/registerProfileRoutes.js';
 import { registerPublicActivityRoutes } from './user/registerPublicActivityRoutes.js';
 import { registerMemberDiscoveryRoutes } from './user/registerMemberDiscoveryRoutes.js';
 import { registerPublicMemberRoutes } from './user/registerPublicMemberRoutes.js';
 import { registerPublicPlaceRoutes } from './user/registerPublicPlaceRoutes.js';
+import { registerPublicFacilityRoutes } from './user/registerPublicFacilityRoutes.js';
 import { registerPublicAreaRoutes } from './user/registerPublicAreaRoutes.js';
 import { registerPublicTenantRoutes } from './user/registerPublicTenantRoutes.js';
 
@@ -39,6 +41,7 @@ userRouter.get('/push/vapid-public-key', (_req, res) => {
 });
 
 registerPublicPlaceRoutes(userRouter);
+registerPublicFacilityRoutes(userRouter);
 registerPublicAreaRoutes(userRouter);
 registerExploreAvailabilityRoutes(userRouter);
 registerPublicTenantRoutes(userRouter);
@@ -63,6 +66,7 @@ registerHostApplicationRoutes(userRouter);
 registerMemberStatusRoutes(userRouter);
 registerMeAccountSessionRoutes(userRouter);
 registerMeSubmittedPlaceRoutes(userRouter);
+registerMeFacilityRoutes(userRouter);
 registerMeParticipantIntentRoutes(userRouter);
 registerMeBadgesRoutes(userRouter);
 registerMeGoalsRoutes(userRouter);

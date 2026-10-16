@@ -5,8 +5,8 @@ import {
 } from './buddiesDiscoverySegment';
 
 describe('buddiesDiscoverySegment', () => {
-  it('parses URL segment with available default', () => {
-    expect(parseBuddiesDiscoverySegment(null)).toBe('available');
+  it('parses URL segment with looking default (explore peopleTab)', () => {
+    expect(parseBuddiesDiscoverySegment(null)).toBe('looking');
     expect(parseBuddiesDiscoverySegment('available')).toBe('available');
     expect(parseBuddiesDiscoverySegment('going')).toBe('going');
     expect(parseBuddiesDiscoverySegment('connect')).toBe('connect');
@@ -20,8 +20,8 @@ describe('buddiesDiscoverySegment', () => {
   });
 
   it('serializes non-default segments only', () => {
-    expect(serializeBuddiesDiscoverySegment('available')).toBeNull();
-    expect(serializeBuddiesDiscoverySegment('looking')).toBe('looking');
+    expect(serializeBuddiesDiscoverySegment('looking')).toBeNull();
+    expect(serializeBuddiesDiscoverySegment('available')).toBe('available');
     expect(serializeBuddiesDiscoverySegment('going')).toBe('going');
     expect(serializeBuddiesDiscoverySegment('connect')).toBe('connect');
   });

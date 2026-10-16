@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { PlanJoinedPeekSheet } from './PlanJoinedPeekSheet';
 import { todayIso } from '../../explore';
 import { usePlanCalendarData } from '../../hooks/usePlanCalendarData';
-import { planLensPath } from '../../plan/planLens';
+import { planAvailabilityPath } from '../../plan/planRouting';
 import type { PlanCalendarDayDetail } from '../../plan/planCalendarMarkers';
 import type { PlanCommitmentFilter } from '../../plan/planTab';
 import {
@@ -50,7 +50,7 @@ const isJoinedPeekRow = (
   row.kind === 'joined' || row.kind === 'requested';
 
 const detailHref = (row: PlanCalendarDayDetail): string | null => {
-  if (row.kind === 'available') return planLensPath('availability');
+  if (row.kind === 'available') return planAvailabilityPath();
   if (isJoinedPeekRow(row)) return null;
   if (row.kind === 'hosting' || row.kind === 'seeking') return row.href;
   return null;

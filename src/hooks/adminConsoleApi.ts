@@ -1,12 +1,18 @@
 import type {
   ActivityDTO,
   AreaDTO,
+  FacilityDTO,
   LocationDTO,
   PlaceDTO,
   ProductDTO,
   TenantListDTO,
   UserListDTO,
 } from '@uaetrail/shared-types';
+import {
+  adminPlaceFormToFacilityPayload,
+  facilityDtoToAdminPlaceRow,
+  facilityKindFromAdminPlaceForm,
+} from '../place/adminFacilityPlaceAdapter';
 import { api } from '../api/index';
 import type {
   AdminContentReportEntry,
@@ -61,6 +67,11 @@ export const fetchAdminModerationActivities = async (): Promise<ActivityDTO[]> =
 export const fetchAdminPlacesCatalog = async (): Promise<LocationDTO[]> => {
   const res = await api.getAdminPlaces();
   return res.data;
+};
+
+export const fetchAdminFacilitiesCatalog = async (): Promise<PlaceDTO[]> => {
+  const res = await api.getAdminFacilities();
+  return res.data.map(facilityDtoToAdminPlaceRow);
 };
 
 export const fetchAdminActivityEngagement = async (
@@ -257,6 +268,45 @@ export const updateAdminPlace = async (
 
 export const deleteAdminPlace = async (id: string): Promise<void> => {
   await api.deleteAdminPlace(id);
+};
+
+export const createAdminFacility = async (payload: Partial<PlaceDTO>): Promise<PlaceDTO> => {
+  const facilityKind = facilityKindFromAdminPlaceForm(payload);
+  if (!facilityKind) {
+    throw new Error('Choose a facility type before saving.');
+  }
+  const res = await api.createAdminFacility(adminPlaceFormToFacilityPayload(payload, facilityKind));
+  return facilityDtoToAdminPlaceRow(res.data);
+};
+
+export const updateAdminFacility = async (
+  id: string,
+  payload: Partial<PlaceDTO>
+): Promise<PlaceDTO> => {
+  const facilityKind = facilityKindFromAdminPlaceForm(payload);
+  const body: Partial<FacilityDTO> & { facilityKind?: FacilityDTO['facilityKind'] } = facilityKind
+    ? adminPlaceFormToFacilityPayload(payload, facilityKind)
+    : {
+        ...(payload.name !== undefined ? { name: payload.name.trim() } : {}),
+        ...(payload.region !== undefined ? { region: payload.region.trim() } : {}),
+        ...(payload.areaLabel !== undefined ? { areaLabel: payload.areaLabel } : {}),
+        ...(payload.areaId !== undefined ? { areaId: payload.areaId.trim() } : {}),
+        ...(payload.description !== undefined ? { description: payload.description.trim() } : {}),
+        ...(payload.latitude !== undefined ? { latitude: payload.latitude } : {}),
+        ...(payload.longitude !== undefined ? { longitude: payload.longitude } : {}),
+        ...(payload.images !== undefined ? { images: payload.images } : {}),
+        ...(payload.status !== undefined ? { status: payload.status } : {}),
+        ...(payload.countryCode !== undefined ? { countryCode: payload.countryCode } : {}),
+      };
+  if (facilityKind) {
+    body.facilityKind = facilityKind as FacilityDTO['facilityKind'];
+  }
+  const res = await api.updateAdminFacility(id, body);
+  return facilityDtoToAdminPlaceRow(res.data);
+};
+
+export const deleteAdminFacility = async (id: string): Promise<void> => {
+  await api.deleteAdminFacility(id);
 };
 
 export const fetchAdminProducts = async (filters?: {

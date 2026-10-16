@@ -1,43 +1,29 @@
 import { describe, expect, it } from 'vitest';
 import type { ParticipantIntentDTO } from '@uaetrail/shared-types';
-import { partitionParticipantIntentsForTrips } from './participantIntentTrips';
+import { partitionParticipantIntentsForPlanHub } from './participantIntentPlan';
 
-const baseIntent = (overrides: Partial<ParticipantIntentDTO>): ParticipantIntentDTO => ({
-  id: 'int-1',
-  userId: 'user-1',
-  kind: 'hiking',
-  title: 'Hike Friday',
-  date: '2026-12-01',
-  time: null,
-  preferredArea: null,
-  latitude: null,
-  longitude: null,
-  locationPrecision: null,
-  toLatitude: null,
-  toLongitude: null,
-  partySize: 2,
-  comment: 'Looking for company',
-  status: 'active',
-  convertedActivityId: null,
-  createdAt: '2026-01-01T00:00:00.000Z',
-  ...overrides,
-});
+const intent = (overrides: Partial<ParticipantIntentDTO>): ParticipantIntentDTO =>
+  ({
+    id: 'i1',
+    status: 'active',
+    kind: 'hiking',
+    ...overrides,
+  }) as ParticipantIntentDTO;
 
-describe('partitionParticipantIntentsForTrips', () => {
-  it('keeps active intents in upcoming', () => {
-    const { upcoming, completed } = partitionParticipantIntentsForTrips([
-      baseIntent({ status: 'active' }),
+describe('partitionParticipantIntentsForPlanHub', () => {
+  it('splits active vs terminal intents', () => {
+    const { upcoming, completed } = partitionParticipantIntentsForPlanHub([
+      intent({ id: 'a', status: 'active' }),
+      intent({ id: 'b', status: 'fulfilled' }),
+      intent({ id: 'c', status: 'cancelled' }),
     ]);
-    expect(upcoming).toHaveLength(1);
-    expect(completed).toHaveLength(0);
+    expect(upcoming.map((i) => i.id)).toEqual(['a']);
+    expect(completed.map((i) => i.id)).toEqual(['b', 'c']);
   });
 
-  it('moves fulfilled and cancelled to completed', () => {
-    const { upcoming, completed } = partitionParticipantIntentsForTrips([
-      baseIntent({ id: 'a', status: 'fulfilled' }),
-      baseIntent({ id: 'b', status: 'cancelled' }),
-    ]);
-    expect(upcoming).toHaveLength(0);
-    expect(completed).toHaveLength(2);
+  it('returns empty buckets for no intents', () => {
+    const { upcoming, completed } = partitionParticipantIntentsForPlanHub([]);
+    expect(upcoming).toEqual([]);
+    expect(completed).toEqual([]);
   });
 });

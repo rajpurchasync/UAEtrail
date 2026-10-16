@@ -6,7 +6,25 @@ This glossary maps **product concepts** to **code and routes**. Use it when nami
 
 **Product north star:** [`NORTHSTAR.md`](./NORTHSTAR.md) — people finding company outdoors; code entities below are *how* the product delivers that.
 
-See also [`NAVIGATION.md`](./NAVIGATION.md) for browse vs personal-hub routing rules and [`CREATE_FLOW.md`](./CREATE_FLOW.md) for FAB / organize / find / add.
+See also [`NAVIGATION.md`](./NAVIGATION.md) for browse vs personal-hub routing rules and [`CREATE_FLOW.md`](./CREATE_FLOW.md) for FAB **Host · Find crew · Add on map**.
+
+## What · Where · Who · How (simple map)
+
+Use this lens in docs and APIs — **not** extra product nouns like “destination place.”
+
+| Lens | Question | Primary entities | Examples |
+|------|----------|------------------|----------|
+| **What** | What is happening? | **Activity** (+ **activity kind**) | Saturday hike, camping weekend, rideshare, “looking for crew” |
+| **Where** | Where on the ground? | **Area** → **Place** → **Facility** | Hatta · Wadi Shawka trail · rest area on that trail · toilet at trailhead |
+| **Who** | Who is involved? | **Person**, **Host**, **Operator** (tenant workspace) | Member, buddy, guide/agency/shop brand — one **user** account |
+| **How** | How do I take part? *(context only)* | **Participation** (join, RSVP, crew) | Request to join, I’m going, host approves, operator console |
+
+- **Place** = the spot (trail, camp, venue) — where an **Activity** is anchored (`locationId`). Hiking and camping **are** places, not a special “destination” subtype.
+- **Facility** = amenity **at or near** a place (or in an area) — rest stop, parking, water; not a substitute for Place.
+- **Activity** = the plan in time; **not** stored as Place.
+- **How** is context for gates (sign-in, profile, host approval, Pro depth) — implement via `viewerAccess` + `GET /me/status`, not new entity types.
+
+Program CPC ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.4) splits **Place** rows and **Facility** rows in storage; product language stays **Place** and **Facility** only.
 
 ## Core objects
 
@@ -84,7 +102,7 @@ Time-bound map pins are **Activities** with `activityMode` (target wire name; mi
 
 ### Geography (Area + Place catalog)
 
-**Region** (emirate) → **Area** (admin registry, e.g. Hatta) → **Place** (trail, camp, shop, facility in `locations`) → **Activity** (scheduled outing).
+**Region** (emirate) → **Area** (admin registry, e.g. Hatta) → **Place** (trail, camp, venue) + **Facility** (amenities; CPC: own collection) → **Activity** (scheduled outing).
 
 | Layer | Who maintains | Assignment rule |
 |-------|----------------|-----------------|
@@ -122,31 +140,60 @@ Do **not** add `trips*` API clients or `Trip*` domain types for hosted/joined li
 
 Wall post policy (`all_members` | `admins_only`) applies to group/crew threads. Unread for group threads uses membership `wallLastReadAt` + `chatPreview` on `GET /me/groups`.
 
-## Place — one entity, `PlaceKind`
+## Place — catalog (`PlaceKind`)
 
-Use **Place** in product copy and new code. **Do not** introduce parallel “venue” or “location” entities — those words are legacy wire names or explore UI labels (`?panel=venues` = place list).
+**Place** = a real spot on the map (trail, camp, venue, outdoor_other). **Do not** use “venue” or “location” as product nouns — legacy wire only (`LocationDTO`, `?panel=venues`). **Do not** say “destination place” — a trail **is** a Place.
 
 | Say | Meaning |
 |-----|---------|
-| **Place** | Any durable map/catalog POI with a stable id |
-| **Place kind** | What type of POI it is (`PlaceKind`) |
-| **Place registry** | Approved places hosts can pick when organizing |
-| **Activity anchor** | Minimal `locations` row used only as `activity.locationId` (often not on map) |
+| **Place** | Where outings happen — organize picker, trail/camp detail, `activity.locationId` |
+| **Place kind** | `hiking` \| `camping` \| `event` \| `outdoor_other` (`PLACE_CATALOG_KINDS` in code) |
+| **Place catalog / registry** | Approved **place** rows — `GET /places/catalog` (organize picker) |
+| **Activity anchor** | Minimal place row for `activity.locationId` only (`publication: anchor_only`) |
 
-**All kinds** live in one enum: `PlaceKind` / `PLACE_KINDS` (`packages/shared-types/src/place-kind.ts`). Add new map POIs by extending that list — never a second “planned” type.
+**Activities** are not places — they reference a place via `locationId`.
 
-| `PlaceKind` | Product | Wire today (typical) | Public URL |
-|-------------|---------|----------------------|------------|
-| `hiking` | Hiking trail | `activityType: hiking` | `/trail/:id` |
-| `camping` | Camping spot | `activityType: camping` | `/camp/:id` |
-| `event` | Event / meetup venue | `activityType: event` | `/venue/:id` |
-| `outdoor_other` | Parks, beaches (FAB Add “Others”) | `activityType: event` + `outdoor-other` tag | `/venue/:id` |
-| `shop` | Gear shop | `place-kind:shop` tag (+ tenant link); migrating from `merchant_profiles` | `/shop/:id` |
-| `toilet`, `gas_station`, `water_refill`, `parking`, `viewpoint`, `picnic`, … | Trail amenities | `activityType: event` + `place-kind:<kind>` tag | `/event/:id` until dedicated routes |
+| Place kind | Product | Public URL (today → CPC target) |
+|------------|---------|----------------------------------|
+| `hiking` | Hiking trail | `/trail/:id` → **`/place/:id`** |
+| `camping` | Camping spot | `/camp/:id` → **`/place/:id`** |
+| `event` | Event / meetup venue | `/venue/:id` → **`/place/:id`** |
+| `outdoor_other` | Parks, beaches | `/venue/:id` → **`/place/:id`** |
 
-**Activities** are not places — a scheduled outing references a place via `locationId` (registry place or activity anchor).
+**Storage (today):** Mongo `locations` (place rows). **Program CPC:** amenity rows move to **`facilities`** — trails/camps stay **places** ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.4).
 
-**Migration note:** Mongo collection stays `locations`; API paths stay `/places` (alias `/locations`). Field `activityType` on place rows remains for outdoor kinds until a optional `placeKind` column is added — use helpers `placeKindFromLocationRow` / `locationActivityTypeForPlaceKind` when branching.
+---
+
+## Facility — amenity catalog (`FacilityKind`)
+
+**Facilities** are **not** places. They are amenities (toilet, rest area, parking, water, viewpoint, …) and **member outdoor shop pins** — separate from **operator shop** storefronts.
+
+| Field | Meaning |
+|-------|---------|
+| `areaId` | Required — curated area (Hatta, …) |
+| `parentPlaceId` | Optional — amenity **on** a trail/camp (rest stop along route); `null` = area-scoped only |
+| `facilityKind` | `toilet`, `rest_area`, `parking`, `outdoor_shop`, … |
+| `registeredByUserId` | Member or admin provenance (no “contribute API”) |
+
+**Place detail** lists facilities with **`parentPlaceId = this place`** first — not “every facility in the same `areaId`” (`apps/api/src/lib/place-nearby-facilities.ts` is legacy area-sibling behavior until **CPC-3**).
+
+**Public URL (target):** `/facility/:id`. **FAB:** **Contribute → Facility** ([`CREATE_FLOW.md`](./CREATE_FLOW.md)).
+
+---
+
+## Shop — three layers (operator vs map pin)
+
+| Layer | Who | Product | Surface |
+|-------|-----|---------|---------|
+| **A — Community pin** | Member **Contribute** | Gear shop **on the map** (informational) | Facility `outdoor_shop`, map **peek** only |
+| **B — Catalog place** | Admin / import | Listed shop place; claim toward Pro | Admin places; optional pin |
+| **C — Operator shop** | Pro **tenant** (shop owner) | Full storefront + workspace depth later | `/shop/:id`, **`/operator/*`**, `EntityKind.shop` |
+
+**Operator** umbrella: same person may run **guide**, **agency**, or **shop** tenant — all publish via **`/operator/*`** ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md)). **Do not** create a shop tenant from FAB Contribute.
+
+**Shop listing lifecycle (layer B → C):** catalog → claimed (Pro) → managed — see [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §1.4.
+
+**Wire today:** community pins may still use `locations` + `community-shop` tag until **CPC-2** backfill.
 
 ## Accounts, members, and hosts (canonical)
 
@@ -306,15 +353,15 @@ Shop identity: **tenant** (Pro Membership onboarding) + **merchant profile** (Sh
 
 **Code folder:** `src/components/organisation-console/` (implementation name). **UI:** organizer / guide / agency / shop per `workspaceVocabulary.ts`.
 
-## Place registry vs activity anchors
+## Place catalog vs activity anchors
 
 | Concept | Meaning | API | On venue map? | In organize picker? |
 |---------|---------|-----|---------------|---------------------|
-| **Registry place** | Admin-published or member-contributed venue (approved) | `GET /places`, `GET /places/registry` | Yes (`source: venue`) | Yes |
+| **Catalog place** | Admin-published or member-submitted place (approved) | `GET /places/catalog` (alias `/places/registry`), `GET /places/:id` | Yes (`source: venue`) | Yes |
 | **Pending contribution** | Member/host submitted, awaiting admin | `status: draft` | No | Yes (caller’s drafts in registry) |
 | **Activity anchor** | `locationId` for custom outing label only | Created with `activityAnchor: true` | **No** (`registryListed: false`) | No |
 
-**Organize hiking/camping** picks a **registry place** (`registryPlaceId`) or uses a **custom label** + **activity anchor** row. **Shops** use `PlaceKind.shop` on the map; host identity remains a **tenant** at `/shop/:id` until shop rows fully live in `locations`.
+**Organize hiking/camping** picks a **catalog place** (`registryPlaceId` wire field) or uses a **custom label** + **activity anchor** row. **Shops** use `PlaceKind.shop` on the map; host identity remains a **tenant** at `/shop/:id` until shop rows fully live in `locations`.
 
 **Publish pipeline (frontend):** `src/services/organizeActivityPublish.ts` → `POST /host/activities` via `buildHostActivityPublishPayload`.
 
@@ -329,7 +376,7 @@ Scheduled outings and **demand** posts on the **Activities** map layer carry pla
 
 **Browse filters:** map pills (`filter=hiking`, …) use category; under **Others**, `subtype=events|activities` then optional `outingTopic` for general activities. See [`NAVIGATION.md`](./NAVIGATION.md) § Browse defaults.
 
-**Compose intents (separate lifecycles):** **Organize** → `activities` collection; **Demand** → `participant_intents`; **Add** → place catalog. Product detail: [`CREATE_FLOW.md`](./CREATE_FLOW.md) · `src/explore/composeFlowCatalog.ts`.
+**Compose intents (separate lifecycles):** **Plan → hosting** → hosted `activities`; **Plan → seeking** → seeking `activities` + `participant_intents`; **Contribute** → place + **facility** catalog submits. Product detail: [`CREATE_FLOW.md`](./CREATE_FLOW.md) · Program CPC §8.4.
 
 ## Identity, routing, and audit
 
@@ -343,7 +390,7 @@ Every durable entity has a **stable UUID** in Mongo and a **canonical public rou
 | **Activity** (scheduled outing) | `activities` | `activity.id` | `/activity/:id` |
 | **Demand** (find a crew) | `participant_intents` | intent id | Map item `demand:…` |
 
-**Registration:** members via `/signup` + OTP; hosts via `host_applications` → tenant provision; places via contribute flow + admin approval.
+**Registration:** members via `/signup` + OTP; hosts via `host_applications` → tenant provision; catalog places/facilities via **member submit** (`POST /me/places`, `POST /me/facilities`) + admin approval — FAB label **Contribute**, not an API noun.
 
 **Audit:** `audit_logs` records actor, action, `entityType`, `entityId`, optional `tenantId`, and `metadata`. Host activity lifecycle actions include `activity.create`, `activity.publish`, `activity.duplicate` (server draft copy, new id), `activity.cancel`, etc. Admin UI: `/admin/audit-log`.
 

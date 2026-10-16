@@ -51,6 +51,14 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
       { key: { slug: 1 }, unique: true },
       { key: { status: 1, priority: 1 } },
     ]),
+    db.collection(COLLECTIONS.FACILITIES).createIndexes([
+      { key: { areaId: 1, facilityKind: 1, status: 1 }, sparse: true },
+      { key: { parentPlaceId: 1, facilityKind: 1 }, sparse: true },
+      { key: { moderationStatus: 1, publicationStatus: 1 } },
+      { key: { registeredByUserId: 1, createdAt: -1 }, sparse: true },
+      { key: { submittedById: 1, createdAt: -1 }, sparse: true },
+      { key: { geo: '2dsphere' }, sparse: true },
+    ]),
     db.collection(COLLECTIONS.LOCATIONS).createIndexes([
       { key: { status: 1, featured: -1, createdAt: -1 } },
       { key: { submittedById: 1, createdAt: -1 } },

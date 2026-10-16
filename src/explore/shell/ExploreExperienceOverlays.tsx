@@ -3,27 +3,28 @@ import { HostActivityCancelDialog } from '../../components/activity/HostActivity
 import { AppButton } from '../../components/mobile/AppButton';
 import { Dialog } from '../../components/ui/Dialog';
 import { EXPLORE_Z } from '../../config/exploreTheme';
+import { contributeVenueKindFromRoute } from '../compose';
 import { ExploreBrowseSearchModal } from '../ui/ExploreBrowseSearchModal';
-import { ExploreComposeHost } from '../ui/ExploreComposeHost';
+import { ComposeHost } from '../create/ComposeHost';
 import { ExploreGuestSignInCard } from '../ui/ExploreGuestSignInCard';
 import { ExploreJoinOverlays } from '../ui/ExploreJoinOverlays';
 import { ExploreResponsiveSheet } from '../ui/ExploreResponsiveSheet';
 import type { OrganizeWizardPrefill } from '../ui/organizeWizardPrefill';
-import type { useExploreComposeRoute } from '../ui/useExploreComposeRoute';
+import type { useComposeRoute } from '../create/hooks/useComposeRoute';
 import type { ExploreSearchScopeCounts, ExploreSearchScopeKey } from '../exploreBrowseTaxonomy';
 import type { ReactNode } from 'react';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import type { AreaPublicDTO } from '@uaetrail/shared-types';
 import type { useExploreSelectionActions } from '../ui/useExploreSelectionActions';
 
-type ComposeState = ReturnType<typeof useExploreComposeRoute>;
+type ComposeState = ReturnType<typeof useComposeRoute>;
 type SelectionState = ReturnType<typeof useExploreSelectionActions>;
 
 type Props = {
   compose: ComposeState;
   selection: SelectionState;
-  organizeWizardOpen: boolean;
-  organizeWizardPrefill: OrganizeWizardPrefill | null;
+  hostWizardOpen: boolean;
+  hostingWizardPrefill: OrganizeWizardPrefill | null;
   pathname: string;
   search: string;
   signInHref: string;
@@ -33,7 +34,7 @@ type Props = {
   rideshareLinkParent: ActivityDTO | null;
   rideshareLinkDemand: ExploreMapItemDTO | null;
   onCloseCreateFlow: () => void;
-  onOrganizeBackToIntent: () => void;
+  onPlanHostingBackToIntent: () => void;
   onActivityPublished: (activity: ActivityDTO) => Promise<void>;
   onCreateLinkedRideshare: (parent: ActivityDTO) => void;
   onOpenHostApplication: () => void;
@@ -57,8 +58,8 @@ type Props = {
 export const ExploreExperienceOverlays = ({
   compose,
   selection,
-  organizeWizardOpen,
-  organizeWizardPrefill,
+  hostWizardOpen,
+  hostingWizardPrefill,
   signInHref,
   planWithBuddyUserId,
   composeAreaSlug,
@@ -66,7 +67,7 @@ export const ExploreExperienceOverlays = ({
   rideshareLinkParent,
   rideshareLinkDemand,
   onCloseCreateFlow,
-  onOrganizeBackToIntent,
+  onPlanHostingBackToIntent,
   onActivityPublished,
   onCreateLinkedRideshare,
   onOpenHostApplication,
@@ -89,23 +90,24 @@ export const ExploreExperienceOverlays = ({
     {inviteShareSheet}
     {hostManageSheet}
 
-    <ExploreComposeHost
-      exploreCompose={compose.exploreCompose}
+    <ComposeHost
+      composeRoute={compose.composeRoute}
       composeMenuOpen={compose.composeMenuOpen}
-      organizeWizardOpen={organizeWizardOpen}
-      findWizardOpen={Boolean(compose.findRoute)}
-      addWizardOpen={Boolean(compose.addRoute)}
-      organizeKind={compose.organizeRoute?.kind ?? null}
-      findKind={compose.findRoute?.kind}
-      addKind={compose.addRoute?.kind ?? null}
-      organizeWizardPrefill={organizeWizardPrefill}
+      hostWizardOpen={hostWizardOpen}
+      planSeekingWizardOpen={Boolean(compose.planSeekingRoute)}
+      contributeWizardOpen={Boolean(compose.contributeRoute)}
+      seekFlexibleOpen={compose.seekFlexibleOpen}
+      planHostingKind={compose.planHostingRoute?.kind ?? null}
+      planSeekingKind={compose.planSeekingRoute?.kind}
+      contributeVenueKind={contributeVenueKindFromRoute(compose.contributeRoute)}
+      hostingWizardPrefill={hostingWizardPrefill}
       signInHref={signInHref}
       onComposeRouteChange={compose.handleComposeRouteChange}
       onCloseCompose={compose.closeCompose}
       onCloseCreateFlow={onCloseCreateFlow}
-      onOrganizeBackToIntent={onOrganizeBackToIntent}
-      onFindBackToIntent={() => compose.setComposeRoute({ surface: 'menu', intent: 'find' })}
-      onAddBackToIntent={() => compose.setComposeRoute({ surface: 'menu', intent: 'add' })}
+      onPlanHostingBackToIntent={onPlanHostingBackToIntent}
+      onPlanSeekingBackToIntent={() => compose.setComposeRoute({ surface: 'menu', intent: 'seek' })}
+      onContributeBackToIntent={() => compose.setComposeRoute({ surface: 'menu', intent: 'add' })}
       onActivityPublished={async (activity) => {
         await onActivityPublished(activity);
         if (rideshareLinkParent && activity.activityType === 'rideshare') {

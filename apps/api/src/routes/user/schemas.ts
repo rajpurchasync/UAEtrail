@@ -1,3 +1,4 @@
+import { FACILITY_KINDS } from '@uaetrail/shared-types';
 import { z } from 'zod';
 import { UserRole } from '../../domain/enums.js';
 import { personNameSchema } from '../../domain/person-name.js';
@@ -166,6 +167,26 @@ export const listFilterSchema = z.object({
 export const placeRegistryQuerySchema = listFilterSchema.pick({
   activityType: true,
   countryCode: true,
+});
+
+export const placeCatalogQuerySchema = placeRegistryQuerySchema.extend({
+  segment: z.enum(['place', 'all']).optional(),
+  areaId: z.string().min(1).max(80).optional(),
+  purpose: z.enum(['organize_picker', 'map', 'admin_queue', 'detail']).optional(),
+});
+
+export const facilityCatalogQuerySchema = z.object({
+  areaId: z.string().min(1).max(80).optional(),
+  parentPlaceId: z.string().min(1).max(80).optional(),
+  facilityKind: z.enum(FACILITY_KINDS as unknown as [string, ...string[]]).optional(),
+  countryCode: z.string().length(2).optional(),
+  purpose: z.enum(['organize_picker', 'map', 'admin_queue', 'detail']).optional(),
+});
+
+export const facilitiesListQuerySchema = z.object({
+  countryCode: z.string().length(2).optional(),
+  page: z.coerce.number().int().min(1).default(1).optional(),
+  pageSize: z.coerce.number().int().min(1).max(100).default(20).optional(),
 });
 
 export const userBriefParamSchema = z.object({ userId: z.string().min(1) });

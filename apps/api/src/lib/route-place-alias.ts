@@ -1,9 +1,9 @@
 import type { RequestHandler, Router } from 'express';
 
-/** Map legacy `/locations` wire paths to domain `/places` aliases. */
+/** Legacy alias for a canonical member/catalog path (CPC-4: `/me/places` is canonical). */
 export const placePathAlias = (path: string): string | null => {
-  if (path.startsWith('/me/locations')) {
-    return path.replace(/^\/me\/locations/, '/me/places');
+  if (path.startsWith('/me/places')) {
+    return path.replace(/^\/me\/places/, '/me/locations');
   }
   if (path.startsWith('/locations')) {
     return path.replace(/^\/locations/, '/places');

@@ -87,7 +87,7 @@ describe('routingHygiene', () => {
     expect(violations).toEqual([]);
   });
 
-  it('app code does not link to legacy /activities hub (use TRIPS_PATH)', () => {
+  it('app code does not link to legacy /activities hub (use PLAN_PATH)', () => {
     const files = collectSourceFiles(SCAN_ROOT);
     const violations: string[] = [];
     const linkPattern =
@@ -98,7 +98,7 @@ describe('routingHygiene', () => {
       if (file.includes('/api/')) continue;
       const content = readFileSync(join(process.cwd(), file), 'utf8');
       if (linkPattern.test(content)) {
-        violations.push(`${file}: use TRIPS_PATH (/trips) from routingCatalog`);
+        violations.push(`${file}: use PLAN_PATH (/plan) from routingCatalog`);
       }
     }
 

@@ -13,8 +13,8 @@ import { explorePath } from '../../explore/routing';
 import { matchesActivitySearch } from '../../utils/activitySearch';
 import {
   formatParticipantIntentMeta,
-  partitionParticipantIntentsForTrips,
-} from '../../member-plan/participantIntentTrips';
+  partitionParticipantIntentsForPlanHub,
+} from '../../member-plan/participantIntentPlan';
 
 const intentStatusClass: Record<ParticipantIntentDTO['status'], string> = {
   active: 'bg-emerald-500/15 text-emerald-700',
@@ -47,7 +47,7 @@ export const SelfPlansSection = ({
   const error = loadError ? new Error(loadError) : null;
 
   const { upcoming, completed } = useMemo(
-    () => partitionParticipantIntentsForTrips(intents),
+    () => partitionParticipantIntentsForPlanHub(intents),
     [intents]
   );
 

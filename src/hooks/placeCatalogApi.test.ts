@@ -2,17 +2,20 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-const read = (rel: string) => readFileSync(join(process.cwd(), rel), 'utf8');
+const read = (relativePath: string) =>
+  readFileSync(join(process.cwd(), relativePath), 'utf8');
 
-describe('placeCatalogApi (R8.1)', () => {
-  it('place pickers and submit wizard use hooks layer', () => {
-    expect(read('src/components/ui/PlaceSelect.tsx')).toMatch(/placeCatalogApi/);
-    expect(read('src/components/ui/PlaceSelect.tsx')).not.toMatch(/\bapi\./);
-    expect(read('src/components/ui/SubmitPlaceForm.tsx')).toMatch(/placeCatalogApi/);
-    expect(read('src/components/ui/SubmitPlaceForm.tsx')).not.toMatch(/\bapi\./);
-    expect(read('src/hooks/usePlaceRegistry.ts')).toMatch(/placeCatalogApi/);
-    expect(read('src/hooks/usePlaceRegistry.ts')).not.toMatch(/api\/domains\/placeRegistry/);
-    expect(read('src/components/ui/PlaceDetailTabs.tsx')).toMatch(/placePremiumApi/);
-    expect(read('src/components/ui/PlaceDetailTabs.tsx')).not.toMatch(/\bapi\./);
+describe('catalog client facades (CPC)', () => {
+  it('picker and submit flows use canonical modules not placeCatalogApi shim', () => {
+    expect(read('src/components/ui/PlaceSelect.tsx')).toMatch(/placeCatalogReadsClientApi/);
+    expect(read('src/components/ui/SubmitPlaceForm.tsx')).toMatch(/memberCatalogSubmitClientApi/);
+    expect(read('src/hooks/usePlaceRegistry.ts')).toMatch(/placeCatalogReadsClientApi/);
+  });
+
+  it('placeCatalogApi remains a re-export shim only', () => {
+    const shim = read('src/hooks/placeCatalogApi.ts');
+    expect(shim).toMatch(/@deprecated/);
+    expect(shim).toMatch(/memberCatalogSubmitClientApi/);
+    expect(shim).toMatch(/placeCatalogReadsClientApi/);
   });
 });

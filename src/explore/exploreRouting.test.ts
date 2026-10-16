@@ -50,7 +50,7 @@ describe('exploreRouting navigation contract', () => {
     const href = exploreOfferRideshareForDemandPath({ id: 'int-1', activityId: 'act-1' });
     const params = new URLSearchParams(href.split('?')[1] ?? '');
     expect(params.get('pin')).toBe('activity:act-1');
-    expect(params.get('compose')).toBe('organize:rideshare');
+    expect(params.get('compose')).toBe('host:rideshare');
   });
 
   it('resolves participant intent pins to activity when activityId is set', () => {
@@ -91,26 +91,27 @@ describe('exploreRouting navigation contract', () => {
   });
 
   it('explorePath supports my trips map filter', () => {
-    expect(explorePath({ myTrips: true, list: true })).toBe('/explore?list=1&myTrips=1');
+    expect(explorePath({ myPlan: true, list: true })).toBe('/explore?list=1&myPlan=1');
+    expect(explorePath({ myTrips: true, list: true })).toBe('/explore?list=1&myPlan=1');
   });
 
-  it('exploreOrganizePath opens compose organize menu or kind wizard', () => {
-    expect(exploreOrganizePath()).toBe('/explore?compose=organize');
-    expect(exploreOrganizePath('hiking')).toBe('/explore?compose=organize%3Ahiking');
-    expect(exploreOrganizePath('activity')).toBe('/explore?compose=organize%3Aactivity');
-    expect(exploreOrganizePath('rideshare')).toBe('/explore?compose=organize%3Arideshare');
+  it('exploreOrganizePath opens compose host menu or hosting wizard', () => {
+    expect(exploreOrganizePath()).toBe('/explore?compose=host');
+    expect(exploreOrganizePath('hiking')).toBe('/explore?compose=host%3Ahiking');
+    expect(exploreOrganizePath('activity')).toBe('/explore?compose=host%3Aactivity');
+    expect(exploreOrganizePath('rideshare')).toBe('/explore?compose=host%3Arideshare');
   });
 
-  it('exploreReorganizeActivityPath deep-links organize wizard prefill', () => {
+  it('exploreReorganizeActivityPath deep-links host wizard prefill', () => {
     expect(exploreReorganizeActivityPath('act-uuid', 'event')).toBe(
-      '/explore?compose=organize%3Aevent&organizeFrom=act-uuid'
+      '/explore?compose=host%3Aevent&organizeFrom=act-uuid'
     );
   });
 
   it('legacyCreateParamToOrganizePath redirects old activity create URLs', () => {
-    expect(legacyCreateParamToOrganizePath('hiking')).toBe('/explore?compose=organize%3Ahiking');
-    expect(legacyCreateParamToOrganizePath('EVENT')).toBe('/explore?compose=organize%3Aevent');
-    expect(legacyCreateParamToOrganizePath('rideshare')).toBe('/explore?compose=organize%3Arideshare');
+    expect(legacyCreateParamToOrganizePath('hiking')).toBe('/explore?compose=host%3Ahiking');
+    expect(legacyCreateParamToOrganizePath('EVENT')).toBe('/explore?compose=host%3Aevent');
+    expect(legacyCreateParamToOrganizePath('rideshare')).toBe('/explore?compose=host%3Arideshare');
     expect(legacyCreateParamToOrganizePath(null)).toBeNull();
   });
 });

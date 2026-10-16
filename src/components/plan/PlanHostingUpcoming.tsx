@@ -20,8 +20,8 @@ import { formatDate } from '../../utils';
 import { formatActivityType, resolveActivityTitle } from '../../utils/activityIdentity';
 import {
   formatParticipantIntentMeta,
-  partitionParticipantIntentsForTrips,
-} from '../../member-plan/participantIntentTrips';
+  partitionParticipantIntentsForPlanHub,
+} from '../../member-plan/participantIntentPlan';
 import { PlanCommitmentCard } from './PlanCommitmentCard';
 
 const pendingCountForActivity = (activityId: string, requests: ActivityRequestView[]) =>
@@ -81,7 +81,7 @@ export const PlanHostingUpcoming = ({ refreshKey = 0, canHost }: PlanHostingUpco
         pending: pendingCountForActivity(event.id, host.pendingRequests),
       });
     }
-    const { upcoming } = partitionParticipantIntentsForTrips(intents);
+    const { upcoming } = partitionParticipantIntentsForPlanHub(intents);
     for (const intent of upcoming) {
       const activityId = intent.activityId ?? intent.seekingActivityId;
       if (activityId && hostedActivityIds.has(activityId)) continue;

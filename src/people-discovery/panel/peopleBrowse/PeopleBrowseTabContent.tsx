@@ -13,7 +13,7 @@ import {
   EXPLORE_PEOPLE_BROWSE_FRIENDS_GOING_EMPTY,
   EXPLORE_PEOPLE_BROWSE_LOADING,
 } from '../../../content/explorePeopleBrowseCopy';
-import { planLensPath } from '../../../plan/planLens';
+import { planAvailabilityPath } from '../../../plan/planRouting';
 import {
   buildMemberBrowseRowFromAvailability,
   buildMemberBrowseRowFromGoing,
@@ -106,7 +106,7 @@ export const PeopleBrowseTabContent = ({
       return (
         <PeopleBrowseListEmpty>
           <p>{EXPLORE_PEOPLE_BROWSE_AVAILABILITY_EMPTY}</p>
-          <Link to={planLensPath('availability')} className="mt-3 inline-block font-semibold text-emerald-700">
+          <Link to={planAvailabilityPath()} className="mt-3 inline-block font-semibold text-emerald-700">
             Add yours on Plan
           </Link>
         </PeopleBrowseListEmpty>

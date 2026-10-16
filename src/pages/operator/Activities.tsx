@@ -21,6 +21,8 @@ import { ActivityHubInviteIconButton } from '../../components/activity/ActivityH
 import { useActivityInviteShareSheet } from '../../hooks/useActivityInviteShareSheet';
 import { ActivityManageSheet } from '../../components/activity/ActivityManageSheet';
 import { useOperatorActivityManageActions } from '../../hooks/useOperatorActivityManageActions';
+import { useAuth } from '../../context/AuthContext';
+import { hostPublishAvailabilityNoticeMessage } from '../../plan/hostPublishAvailabilityNotice';
 import {
   activityTypeBadgeClass,
   formatActivityCapacity,
@@ -44,6 +46,8 @@ export const Activities = () => {
   const [previewPublishing, setPreviewPublishing] = useState(false);
   const [manageActivity, setManageActivity] = useState<ActivityDTO | null>(null);
   const [manageInitialView, setManageInitialView] = useState<'overview' | 'checkin'>('overview');
+  const [publishNotice, setPublishNotice] = useState<string | null>(null);
+  const { user } = useAuth();
 
   const loadEvents = useCallback(async (tid: string, isActive: IsActiveGuard = () => true) => {
     if (!tid) return;
@@ -96,11 +100,25 @@ export const Activities = () => {
     setPreviewActivity(event);
   };
 
+  const applyPublishAvailabilityNotice = async (event: ActivityDTO) => {
+    const notice = await hostPublishAvailabilityNoticeMessage(event, user?.id);
+    if (notice) setPublishNotice(notice);
+  };
+
+  const publishActivityWithNotice = async (event: ActivityDTO) => {
+    setPublishNotice(null);
+    const published = await hostActions.publishActivity(event.id);
+    if (published) {
+      await applyPublishAvailabilityNotice(event);
+    }
+    return published;
+  };
+
   const publishFromPreview = async (event: ActivityDTO) => {
     setPreviewPublishing(true);
     try {
-      await hostActions.publishActivity(event.id);
-      setPreviewActivity(null);
+      const published = await publishActivityWithNotice(event);
+      if (published) setPreviewActivity(null);
     } finally {
       setPreviewPublishing(false);
     }
@@ -149,6 +167,7 @@ export const Activities = () => {
       <div className="space-y-4">
         <TenantSwitcher onChange={setTenantId} />
         {displayError && <p className="text-sm text-red-600">{displayError}</p>}
+        {publishNotice && <p className="text-sm text-emerald-700">{publishNotice}</p>}
 
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-gray-900">Activities</h2>
@@ -209,7 +228,7 @@ export const Activities = () => {
                         items={buildHostActivityMenuItems(event, {
                           onPreview: openPreview,
                           onManage: (e) => openManage(e, 'overview'),
-                          onPublish: (e) => void hostActions.publishActivity(e.id),
+                          onPublish: (e) => void publishActivityWithNotice(e),
                           onDuplicate: (e) => void hostActions.duplicateActivity(e),
                           onReorganize: hostActions.reorganizeActivity,
                           onDelete: hostActions.setConfirmDelete,

@@ -1,26 +1,7 @@
-import {
-  ADMIN_ACTIVITIES_PATH,
-  ADMIN_PLACES_PATH,
-  ADMIN_USERS_PATH,
-} from '../lib/member-routes.js';
+import { ADMIN_ACTIVITIES_PATH, ADMIN_USERS_PATH } from '../lib/member-routes.js';
 import { notifyPlatformAdmins } from './admin-notifications.js';
 
-export const notifyAdminsLocationSubmitted = (input: {
-  locationId: string;
-  name: string;
-  activityType: string;
-  submitterLabel: string;
-}): void => {
-  void notifyPlatformAdmins({
-    title: 'Place submitted for review',
-    body: `${input.submitterLabel} submitted "${input.name}" (${input.activityType}) — review in Places.`,
-    meta: {
-      kind: 'location_submitted',
-      locationId: input.locationId,
-      path: ADMIN_PLACES_PATH,
-    },
-  });
-};
+export { notifyAdminsCatalogSubmitted, notifyAdminsLocationSubmitted } from './catalog-submit-notifications.js';
 
 export const notifyAdminsMemberRegistered = (input: {
   userId: string;

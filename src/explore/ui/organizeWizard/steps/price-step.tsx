@@ -4,7 +4,7 @@ import {
   OrganizeWizardStepNext
 } from '../OrganizeWizardChrome';
 import { OFFLINE_PRICE_NOTE, priceModeLabel, priceModeOptions } from '../../organizeFlow';
-import { validateOrganizePrice } from '../../organizeFlows/validateShared';
+import { validateOrganizePrice } from '../../hostingFlows/validateShared';
 import type { ReactNode } from 'react';
 import type { OrganizeWizardContext } from '../organizeWizardContext';
 

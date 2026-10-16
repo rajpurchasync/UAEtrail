@@ -51,15 +51,22 @@ describe('buildExploreAreaLensItems', () => {
     expect(rows[0]?.subtitle).toContain('outing');
   });
 
-  it('counts facility place kinds from location rows', () => {
+  it('counts facility pins from explore map items (facilities collection)', () => {
     const areas = [area(testAreas.hatta.slug, testAreas.hatta.id)];
-    const rows = buildExploreAreaLensItems(areas, [], [
+    const catalog: ExploreMapItemDTO[] = [
       {
+        id: 'facility:1',
+        kind: 'event',
+        source: 'venue',
+        title: 'Toilet',
+        latitude: 1,
+        longitude: 2,
+        path: '/facility/1',
         areaId: testAreas.hatta.id,
-        activityType: 'event',
-        tags: ['place-kind:toilet'],
+        placeKind: 'toilet',
       },
-    ]);
+    ];
+    const rows = buildExploreAreaLensItems(areas, catalog);
     expect(rows[0]?.areaLensStats?.facilities).toBe(1);
   });
 });

@@ -1,13 +1,12 @@
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import type { ExploreCompose, FindComposeKind, OrganizeComposeKind } from '../compose';
 import type { ContributeVenueKind } from '../contributeTypes';
-import { CreateOrganizeFlowHost } from './createOrganize/CreateOrganizeFlowHost';
-import { CreateContributeFlow } from './CreateContributeFlow';
+import { ComposeHost } from '../create/ComposeHost';
 import type { ContributeSubmitResult } from './contributeFlow';
-import { CreateDemandFlow } from './CreateDemandFlow';
 import type { DemandSubmitResult } from './demandFlow';
-import { CreateIntentSheet } from './CreateIntentSheet';
-interface ExploreComposeHostProps {
+
+/** @deprecated Use {@link ComposeHostProps} from `src/explore/create/ComposeHost.tsx`. */
+export interface ExploreComposeHostProps {
   exploreCompose: ExploreCompose | null;
   composeMenuOpen: boolean;
   organizeWizardOpen: boolean;
@@ -31,85 +30,36 @@ interface ExploreComposeHostProps {
   onCreateLinkedRideshare?: (parentActivity: ActivityDTO) => void;
   tenantId?: string | null;
   planWithBuddyUserId?: string | null;
-  /** When explore is scoped with `?area=`, prefill Find/Add curated area steps. */
   composeAreaSlug?: string | null;
 }
 
-/** FAB compose menu and create wizards — mounted once at explore shell level. */
-export const ExploreComposeHost = ({
-  exploreCompose,
-  composeMenuOpen,
-  organizeWizardOpen,
-  findWizardOpen,
-  addWizardOpen,
-  organizeKind,
-  findKind,
-  addKind,
-  organizeWizardPrefill,
-  signInHref,
-  onComposeRouteChange,
-  onCloseCompose,
-  onCloseCreateFlow,
-  onOrganizeBackToIntent,
-  onFindBackToIntent,
-  onAddBackToIntent,
-  onActivityPublished,
-  onOpenHostApplication,
-  onContributeSubmitted,
-  onDemandSubmitted,
-  onCreateLinkedRideshare,
-  tenantId = null,
-  planWithBuddyUserId = null,
-  composeAreaSlug = null,
-}: ExploreComposeHostProps) => (
-  <>
-    {composeMenuOpen && exploreCompose && (
-      <CreateIntentSheet
-        route={exploreCompose}
-        onRouteChange={onComposeRouteChange}
-        onClose={onCloseCompose}
-      />
-    )}
-
-    {addWizardOpen && addKind && (
-      <CreateContributeFlow
-        open={addWizardOpen}
-        kind={addKind}
-        exploreAreaSlug={composeAreaSlug}
-        onClose={onCloseCompose}
-        onBackToIntent={onAddBackToIntent}
-        onSubmitted={onContributeSubmitted}
-        signInHref={signInHref}
-      />
-    )}
-
-    {organizeWizardOpen && (
-      <CreateOrganizeFlowHost
-        open={organizeWizardOpen}
-        onClose={onCloseCreateFlow}
-        organizeKind={organizeKind}
-        demandPrefill={organizeWizardPrefill}
-        onCreateLinkedRideshare={onCreateLinkedRideshare}
-        onBackToIntent={onOrganizeBackToIntent}
-        onPublished={onActivityPublished}
-        onOpenHostApplication={onOpenHostApplication}
-        signInHref={signInHref}
-        planWithBuddyUserId={planWithBuddyUserId}
-      />
-    )}
-
-    {findWizardOpen && (
-      <CreateDemandFlow
-        open={findWizardOpen}
-        onClose={onCloseCompose}
-        findKind={findKind ?? null}
-        exploreAreaSlug={composeAreaSlug}
-        onBackToIntent={onFindBackToIntent}
-        onSubmitted={onDemandSubmitted}
-        signInHref={signInHref}
-        tenantId={tenantId}
-        onCreateLinkedRideshare={onCreateLinkedRideshare}
-      />
-    )}
-  </>
+/** @deprecated Use {@link ComposeHost}. */
+export const ExploreComposeHost = (props: ExploreComposeHostProps) => (
+  <ComposeHost
+    composeRoute={props.exploreCompose}
+    composeMenuOpen={props.composeMenuOpen}
+    hostWizardOpen={props.organizeWizardOpen}
+    planSeekingWizardOpen={props.findWizardOpen}
+    contributeWizardOpen={props.addWizardOpen}
+    seekFlexibleOpen={false}
+    planHostingKind={props.organizeKind}
+    planSeekingKind={props.findKind}
+    contributeVenueKind={props.addKind}
+    hostingWizardPrefill={props.organizeWizardPrefill}
+    signInHref={props.signInHref}
+    onComposeRouteChange={props.onComposeRouteChange}
+    onCloseCompose={props.onCloseCompose}
+    onCloseCreateFlow={props.onCloseCreateFlow}
+    onPlanHostingBackToIntent={props.onOrganizeBackToIntent}
+    onPlanSeekingBackToIntent={props.onFindBackToIntent}
+    onContributeBackToIntent={props.onAddBackToIntent}
+    onActivityPublished={props.onActivityPublished}
+    onOpenHostApplication={props.onOpenHostApplication}
+    onContributeSubmitted={props.onContributeSubmitted}
+    onDemandSubmitted={props.onDemandSubmitted}
+    onCreateLinkedRideshare={props.onCreateLinkedRideshare}
+    tenantId={props.tenantId}
+    planWithBuddyUserId={props.planWithBuddyUserId}
+    composeAreaSlug={props.composeAreaSlug}
+  />
 );

@@ -13,9 +13,12 @@ import {
   type PlanCalendarDayMarkers,
 } from '../plan/planCalendarMarkers';
 import type { PlanCommitmentFilter } from '../plan/planTab';
-import { tripsHostedActivityPath, tripsSelfDemandPath } from '../member-plan/tripsRouting';
+import {
+  planHostedActivityManagePath,
+  planSelfDemandManagePath,
+} from '../plan/planRouting';
 import { activityDetailPath } from '../config/routingCatalog';
-import { partitionParticipantIntentsForTrips } from '../member-plan/participantIntentTrips';
+import { partitionParticipantIntentsForPlanHub } from '../member-plan/participantIntentPlan';
 
 type PlanCalendarData = {
   loading: boolean;
@@ -45,7 +48,7 @@ export const usePlanCalendarData = (
     [canHost, host.activities]
   );
   const activeSeeking = useMemo(
-    () => partitionParticipantIntentsForTrips(intentsQuery.intents).upcoming,
+    () => partitionParticipantIntentsForPlanHub(intentsQuery.intents).upcoming,
     [intentsQuery.intents]
   );
 
@@ -58,8 +61,8 @@ export const usePlanCalendarData = (
       seekingIntents: activeSeeking,
       viewerUserId: user?.id ?? null,
       activityHref: activityDetailPath,
-      seekingIntentHref: tripsSelfDemandPath,
-      hostingManageHref: (activityId) => tripsHostedActivityPath(activityId),
+      seekingIntentHref: planSelfDemandManagePath,
+      hostingManageHref: (activityId) => planHostedActivityManagePath(activityId),
     });
     return filterPlanCalendarByCommitment(built.markers, built.details, filter);
   }, [

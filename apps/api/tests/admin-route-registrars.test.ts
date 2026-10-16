@@ -31,6 +31,14 @@ describe('admin route registrars', () => {
     expect(registrar).toMatch(/\/places/);
   });
 
+  it('facility CRUD lives in dedicated registrar (facilities collection)', () => {
+    const admin = read('src/routes/admin.ts');
+    const registrar = read('src/routes/admin/registerAdminFacilityRoutes.ts');
+    expect(admin).toMatch(/registerAdminFacilityRoutes/);
+    expect(registrar).toMatch(/listAdminFacilitiesPaged/);
+    expect(registrar).toMatch(/\/facilities/);
+  });
+
   it('dashboard metrics live in dedicated registrar', () => {
     const admin = read('src/routes/admin.ts');
     const registrar = read('src/routes/admin/registerAdminMetricsRoutes.ts');

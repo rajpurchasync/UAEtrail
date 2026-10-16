@@ -17,11 +17,13 @@ Monorepo with three layers:
 ## Backend (`apps/api`)
 
 ```
-HTTP → routes/ (thin controllers)
+HTTP → routes/ (thin controllers — surface split: registerPublic* / registerMe* / registerAdmin*)
      → services/ (domain logic: join-request, notifications, review-prompt)
      → lib/ (infra: mongo, jwt, s3, push, stripe, datetime)
      → domain/ (pure rules: capacity)
 ```
+
+Catalog HTTP is **surface-first** (path + mount middleware), not **profile-first** (one route branching on `GET /me/status`). Detail: [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §5.1.
 
 **Route map** — detail in [`API_ROUTING.md`](./API_ROUTING.md)
 

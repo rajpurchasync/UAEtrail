@@ -29,8 +29,9 @@ describe('explore Place / venue / Area canon', () => {
     expect(slots).toMatch(/card\.source === 'area'/);
     expect(slots).toMatch(/AreaPeekActions/);
     const placeBody = read('src/explore/ui/peek/place/PlacePeekBody.tsx');
+    const placeHero = read('src/explore/ui/peek/place/PlacePeekHero.tsx');
     expect(placeBody).not.toMatch(/source === 'area'/);
-    expect(placeBody).toMatch(/resolvePlacePeekCuratedArea/);
+    expect(placeHero).toMatch(/resolvePlacePeekCuratedArea/);
   });
 
   it('GEO: place peek uses venue wire vocabulary module', () => {

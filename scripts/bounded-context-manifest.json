@@ -36,7 +36,7 @@
         "apps/api/src/routes/operator.ts"
       ],
       "feDomains": ["src/api/domains/explore.ts"],
-      "feRoots": ["src/explore/ui"]
+      "feRoots": ["src/explore/ui", "src/explore/create"]
     },
     {
       "id": "participation",
@@ -129,13 +129,24 @@
     },
     {
       "id": "places",
-      "label": "Places",
-      "apiFiles": [],
+      "label": "Places (catalog)",
+      "apiFiles": [
+        "apps/api/src/services/place-catalog.ts",
+        "apps/api/src/services/place-registry.ts",
+        "apps/api/src/services/place-submit.ts",
+        "apps/api/src/services/catalog-submit-notifications.ts"
+      ],
       "routeRegistrars": [
         "apps/api/src/routes/user/registerPublicPlaceRoutes.ts",
-        "apps/api/src/routes/user/registerMeSubmittedPlaceRoutes.ts"
+        "apps/api/src/routes/user/registerMeSubmittedPlaceRoutes.ts",
+        "apps/api/src/routes/admin/registerAdminPlaceRoutes.ts"
       ],
-      "feDomains": ["src/api/domains/places.ts", "src/api/domains/placeRegistry.ts"],
+      "feDomains": [
+        "src/api/domains/places.ts",
+        "src/api/domains/placeCatalogClient.ts",
+        "src/hooks/memberCatalogSubmitClientApi.ts",
+        "src/hooks/placeCatalogReadsClientApi.ts"
+      ],
       "feRoots": [
         "src/place/detail",
         "src/places-discovery",
@@ -148,6 +159,26 @@
         "src/hooks/usePlaceDetailPage.ts",
         "src/hooks/placeDetailClientApi.ts"
       ]
+    },
+    {
+      "id": "facilities",
+      "label": "Facilities (amenities)",
+      "apiFiles": [
+        "apps/api/src/lib/facilities-store.ts",
+        "apps/api/src/lib/catalog-cpc-migrations.ts",
+        "apps/api/src/lib/facility-mappers.ts",
+        "apps/api/src/domain/facility.ts",
+        "apps/api/src/services/facility-submit.ts",
+        "apps/api/src/services/facility-viewer-access.ts",
+        "apps/api/src/services/place-catalog.ts"
+      ],
+      "routeRegistrars": [
+        "apps/api/src/routes/user/registerPublicFacilityRoutes.ts",
+        "apps/api/src/routes/user/registerMeFacilityRoutes.ts",
+        "apps/api/src/routes/admin/registerAdminFacilityRoutes.ts"
+      ],
+      "feDomains": ["src/api/domains/facilities.ts", "src/hooks/memberCatalogSubmitClientApi.ts"],
+      "feRoots": ["src/place/adminFacilityPlaceAdapter.ts", "src/pages/AdminPlaces.tsx"]
     },
     {
       "id": "commerce",

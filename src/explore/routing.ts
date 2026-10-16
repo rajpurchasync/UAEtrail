@@ -6,9 +6,14 @@ import {
 import type { OrganizeComposeKind } from './compose';
 import { EXPLORE_MAP_PATH } from '../config/platform';
 import { PLAN_PATH } from '../constants';
-import { tripsPlansPath } from '../member-plan/tripsRouting';
+import { planHostedSchedulePath } from '../plan/planRouting';
 import type { ContributeVenueKind } from './contributeTypes';
-import { formatComposeQuery, type ExploreCompose } from './compose';
+import {
+  formatComposeQuery,
+  planHostingCompose,
+  planSeekingCompose,
+  type ExploreCompose,
+} from './compose';
 import {
   parseExploreActivityDatePreset,
   serializeExploreActivityDatePreset,
@@ -79,8 +84,13 @@ export const EXPLORE_PIN_QUERY_KEY = 'pin';
 export const EXPLORE_JOIN_INVITE_QUERY_KEY = 'invite';
 /** Buddy user id — prefill post-publish invite after Plan a trip from Social. */
 export const PLAN_WITH_QUERY_KEY = 'planWith';
-/** When `1`, map/list show only the signed-in member's trips + wishlist pins. */
+/** When `1`, map/list show only the signed-in member's activities + wishlist pins. */
+export const MY_PLAN_MAP_QUERY_KEY = 'myPlan';
+/** @deprecated Bookmarks — parsed alongside {@link MY_PLAN_MAP_QUERY_KEY}. */
 export const MY_TRIPS_QUERY_KEY = 'myTrips';
+
+export const parseExploreMyPlanMapMode = (searchParams: Pick<URLSearchParams, 'get'>): boolean =>
+  searchParams.get(MY_PLAN_MAP_QUERY_KEY) === '1' || searchParams.get(MY_TRIPS_QUERY_KEY) === '1';
 
 export const parsePlanWithUserId = (searchParams: Pick<URLSearchParams, 'get'>): string | null =>
   searchParams.get(PLAN_WITH_QUERY_KEY)?.trim() || null;
@@ -158,7 +168,7 @@ export const exploreReorganizeActivityPath = (
   kind: OrganizeComposeKind
 ): string =>
   explorePath({
-    compose: { intent: 'organize', kind },
+    compose: planHostingCompose(kind),
     organizeFrom: activityId,
   });
 
@@ -299,7 +309,9 @@ export const explorePath = (options?: {
   pin?: string;
   /** Prefill organize wizard from an existing activity id (creates a new activity on publish). */
   organizeFrom?: string;
-  /** Limit pins to signed-in member trips + wishlist (requires auth). */
+  /** Limit pins to signed-in member activities + wishlist (requires auth). */
+  myPlan?: boolean;
+  /** @deprecated Use {@link ExplorePathOptions.myPlan}. */
   myTrips?: boolean;
   /** Open browse member people panel (`view=people`). */
   peopleBrowse?: boolean;
@@ -339,11 +351,11 @@ export const explorePath = (options?: {
       options.compose === 'menu' ? { surface: 'menu' } : options.compose;
     params.set('compose', formatComposeQuery(route));
   } else if (options?.addLocation) {
-    params.set('compose', 'add');
+    params.set('compose', formatComposeQuery({ surface: 'menu', intent: 'add' }));
   } else if (options?.request) {
-    params.set('compose', 'find');
+    params.set('compose', formatComposeQuery({ surface: 'menu', intent: 'seek' }));
   } else if (options?.contribute === true) {
-    params.set('compose', 'add');
+    params.set('compose', formatComposeQuery({ surface: 'menu', intent: 'add' }));
   } else if (options?.contribute) {
     params.set('compose', formatComposeQuery({ intent: 'add', kind: options.contribute }));
   }
@@ -378,8 +390,8 @@ export const explorePath = (options?: {
   if (options?.organizeFrom?.trim()) {
     params.set(ORGANIZE_FROM_ACTIVITY_QUERY_KEY, options.organizeFrom.trim());
   }
-  if (options?.myTrips) {
-    params.set(MY_TRIPS_QUERY_KEY, '1');
+  if (options?.myPlan || options?.myTrips) {
+    params.set(MY_PLAN_MAP_QUERY_KEY, '1');
   }
   if (options?.peopleBrowse || options?.social) {
     params.set('view', 'people');
@@ -421,7 +433,10 @@ export const explorePlanWithBuddyPath = (
   explorePath({
     list: true,
     planWith: buddyUserId,
-    compose: mode === 'organize' ? { intent: 'organize', kind: 'activity' } : { intent: 'find' },
+    compose:
+      mode === 'organize'
+        ? planHostingCompose('activity')
+        : { surface: 'menu', intent: 'plan' },
   });
 
 /** Join me notification target — map peek with invite banner. */
@@ -563,13 +578,13 @@ export const detailBackPath = (kind: DetailBackKind): string => {
 
 /** Personal activities hub — joined/hosted tabs only (not public browse). */
 export const myActivitiesPath = (tab: 'joined' | 'hosted' = 'joined'): string =>
-  tab === 'hosted' ? tripsPlansPath('hosted') : PLAN_PATH;
+  tab === 'hosted' ? planHostedSchedulePath() : PLAN_PATH;
 
 /** Consumer create flow — explore compose organize menu or a specific kind. */
 export const exploreOrganizePath = (kind?: OrganizeComposeKind): string =>
   kind
-    ? explorePath({ compose: { intent: 'organize', kind } })
-    : explorePath({ compose: { surface: 'menu', intent: 'organize' } });
+    ? explorePath({ compose: planHostingCompose(kind) })
+    : explorePath({ compose: { surface: 'menu', intent: 'host' } });
 
 /** Host with publish access — prefill rideshare organize from an own seeking post. */
 export const exploreOfferRideshareForDemandPath = (intent: {
@@ -579,7 +594,7 @@ export const exploreOfferRideshareForDemandPath = (intent: {
 }): string =>
   explorePath({
     pin: resolveParticipantIntentMapItemId(intent),
-    compose: { intent: 'organize', kind: 'rideshare' },
+    compose: planHostingCompose('rideshare'),
   });
 
 /** Map legacy `/activities?create=` values onto explore compose organize routes. */

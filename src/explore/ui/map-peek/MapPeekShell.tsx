@@ -14,6 +14,7 @@ import {
 } from '../ExploreCardPresentation';
 import { ActivityDiscoveryPublishedBody } from '../../../discovery/ActivityDiscoveryPublishedBody';
 import { PlacePeekBody } from '../peek/place/PlacePeekBody';
+import { PlacePeekHero } from '../peek/place/PlacePeekHero';
 import { activityPeekHasMapWireActions } from '../../../activity/activityPeekEngagement';
 import { resolvePeekDetailAccess } from '../../../access/resolvePeekDetailAccess';
 
@@ -28,7 +29,7 @@ export type MapPeekShellProps = {
   /** Inline rail / list — hide dismiss controls on the card chrome. */
   embedMode?: boolean;
   statusBanner?: string | null;
-  /** Catalog place pins (`source: venue`) — structured facts body via `PlacePeekCard`. */
+  /** Catalog place pins (`source: venue`) — hero + kind facts via `PlacePeekCard`. */
   catalogPlaceSummary?: boolean;
 };
 
@@ -52,9 +53,18 @@ export const MapPeekShell = ({
     ? 'overflow-hidden rounded-2xl bg-white shadow-[0_8px_32px_rgba(15,23,42,.16)] ring-1 ring-black/5'
     : EXPLORE_PEEK.shell;
   const showCoverHero = Boolean(card.coverImage) && !catalogPlaceSummary;
+  const showPlaceCatalogHero = catalogPlaceSummary && card.source === 'venue';
 
   return (
     <div className={shellClass} data-pin-summary="card">
+      {showPlaceCatalogHero ? (
+        <PlacePeekHero
+          card={card}
+          embedMode={embedMode}
+          onClose={onClose}
+          onBeforeDetailNavigate={onClose}
+        />
+      ) : null}
       {showCoverHero ? (
         <div
           className={`relative w-full shrink-0 overflow-hidden bg-neutral-100${
@@ -82,31 +92,33 @@ export const MapPeekShell = ({
         </div>
       ) : null}
 
-      <div className={`flex shrink-0 items-start justify-between gap-3 px-4 ${showCoverHero ? 'pt-3' : 'pt-4'}`}>
-        <ExploreCardTypeBadge card={card} size="sm" />
-        <div className="flex items-center gap-1.5">
-          {exploreCardPeekShowsFollow(card) ? (
-            <ExploreFollowButton card={card} light={!showCoverHero} />
-          ) : null}
-          <ShareButton
-            title={card.shareTitle}
-            text={card.shareText ?? undefined}
-            path={card.sharePath}
-            iconOnly
-            light={!showCoverHero}
-          />
-          {!showCoverHero && !embedMode ? (
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-neutral-100 text-gray-700"
-              aria-label="Close"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          ) : null}
+      {!showPlaceCatalogHero ? (
+        <div className={`flex shrink-0 items-start justify-between gap-3 px-4 ${showCoverHero ? 'pt-3' : 'pt-4'}`}>
+          <ExploreCardTypeBadge card={card} size="sm" />
+          <div className="flex items-center gap-1.5">
+            {exploreCardPeekShowsFollow(card) ? (
+              <ExploreFollowButton card={card} light={!showCoverHero} />
+            ) : null}
+            <ShareButton
+              title={card.shareTitle}
+              text={card.shareText ?? undefined}
+              path={card.sharePath}
+              iconOnly
+              light={!showCoverHero}
+            />
+            {!showCoverHero && !embedMode ? (
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-neutral-100 text-gray-700"
+                aria-label="Close"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            ) : null}
+          </div>
         </div>
-      </div>
+      ) : null}
 
       <div
         className={

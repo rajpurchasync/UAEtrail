@@ -4,7 +4,7 @@ import { capitalize, getDifficultyColor } from '../../utils';
 import { PlaceDetailTabs, toPlaceDetailData } from '../../components/ui';
 import type { ContributeDraft } from './contributeFlow';
 import { ACTIVITY_DIFFICULTY_OPTIONS, buildVenueAccessibleBy } from './contributeFlow';
-import type { ActivityDifficulty } from './organizeFlow';
+import type { ActivityDifficulty } from './createFlowShared';
 
 const toApiDifficulty = (value: ActivityDifficulty): 'easy' | 'moderate' | 'hard' =>
   value === 'medium' ? 'moderate' : value;

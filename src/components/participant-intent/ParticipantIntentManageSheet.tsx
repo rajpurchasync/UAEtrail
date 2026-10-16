@@ -22,7 +22,7 @@ import {
 import { fetchPublicActivityDetail } from '../../hooks/publicActivityClientApi';
 import { useSafeAsyncEffect } from '../../hooks/useSafeAsyncEffect';
 import { resolveParticipantIntentActivityId } from '../../member-plan/resolveParticipantIntentActivityId';
-import { tripsHostedActivityPath } from '../../member-plan/tripsRouting';
+import { planHostedActivityManagePath } from '../../plan/planRouting';
 import { formatParticipantIntentMeta } from '../../member-plan/participantIntentTrips';
 import { AppButton, AppButtonLink } from '../mobile/AppButton';
 import { Dialog } from '../ui/Dialog';
@@ -237,7 +237,7 @@ export const ParticipantIntentManageSheet = ({
               </AppButtonLink>
               {seekingActivityId ? (
                 <AppButtonLink
-                  to={tripsHostedActivityPath(seekingActivityId)}
+                  to={planHostedActivityManagePath(seekingActivityId)}
                   fullWidth
                   onClick={onClose}
                 >

@@ -19,7 +19,6 @@ import { PlanUpcomingView } from '../components/plan/PlanUpcomingView';
 import { PlanWishlistView } from '../components/plan/PlanWishlistView';
 import { PROFILE_HISTORY_PATH } from '../config/surfacePaths';
 import {
-  normalizePlanMobileParams,
   parsePlanCommitmentFilter,
   parsePlanMainTab,
   parsePlanUpcomingLayout,
@@ -27,8 +26,9 @@ import {
   type PlanMainTab,
   type PlanUpcomingLayout,
 } from '../plan/planTab';
-import { normalizeTripsSearchParams } from '../member-plan/tripsRouting';
+import { normalizePlanSearchParams } from '../plan/planRouting';
 
+/** My Plans tab — `/plan` (`PLAN_PATH`). */
 export const Activities = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -59,9 +59,7 @@ export const Activities = () => {
     }
     if (!user) return;
     const next = new URLSearchParams(searchParams);
-    let { changed } = normalizeTripsSearchParams(next, canHost);
-    const planNorm = normalizePlanMobileParams(next, canHost);
-    changed = changed || planNorm.changed;
+    const { changed } = normalizePlanSearchParams(next, canHost);
     if (changed) setSearchParams(next, { replace: true });
   }, [canHost, navigate, searchParams, setSearchParams, user]);
 

@@ -79,6 +79,43 @@ export interface ExploreAvailabilityClusterDTO {
   label: string;
 }
 
+/** Post-save FAB hint — hosted outings on same calendar days + activity types (not Find crew browse). */
+export interface MemberAvailabilityMatchPreviewDTO {
+  hostedOutings: Array<{ id: string; title: string; startAt: string }>;
+}
+
+/** Whether a hosted activity type matches any of the member's availability kinds (no location gate). */
+export const availabilityKindMatchesActivityType = (
+  kinds: AvailabilityKind[],
+  activityType: string | null | undefined
+): boolean => {
+  if (!kinds.length || !activityType?.trim()) return false;
+  const t = activityType.trim().toUpperCase();
+  const set = new Set(kinds);
+  if (set.has('hiking') && t === 'HIKING') return true;
+  if (set.has('camping') && t === 'CAMPING') return true;
+  if (set.has('rideshare') && (t === 'RIDESHARE' || t === 'CARPOOL')) return true;
+  if (set.has('event') && t === 'EVENT') return true;
+  if (set.has('guide') && (t === 'HIKING' || t === 'EVENT')) return true;
+  if (set.has('other') && (t === 'HIKING' || t === 'CAMPING' || t === 'EVENT' || t === 'RIDESHARE')) {
+    return true;
+  }
+  return false;
+};
+
+/** Availability kinds that may match a hosted activity type (for indexed queries). */
+export const availabilityKindsForActivityType = (
+  activityType: string | null | undefined
+): AvailabilityKind[] => {
+  if (!activityType?.trim()) return [];
+  const t = activityType.trim().toUpperCase();
+  if (t === 'HIKING') return ['hiking', 'guide', 'other'];
+  if (t === 'CAMPING') return ['camping', 'other'];
+  if (t === 'RIDESHARE' || t === 'CARPOOL') return ['rideshare', 'other'];
+  if (t === 'EVENT') return ['event', 'guide', 'other'];
+  return ['other'];
+};
+
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 export const isValidAvailabilitySlot = (slot: MemberAvailabilitySlotDTO): boolean => {

@@ -4,7 +4,7 @@ import {
   CONTRIBUTIONS_PATH,
   explorePeopleBrowsePath,
   MESSAGES_PATH,
-  tripsPlansPath,
+  planHostedSchedulePath,
   PROFILE_HISTORY_PATH,
   PROFILE_BADGES_PATH,
   PROFILE_SETTINGS_PATH,
@@ -123,7 +123,7 @@ export const buildProfileQuickLauncherItems = (input: {
     items.push({
       key: 'hosting',
       label: 'Organizing',
-      to: tripsPlansPath('hosted'),
+      to: planHostedSchedulePath(),
       icon: Mountain,
       iconWrapClassName: 'bg-violet-50 text-violet-700',
     });

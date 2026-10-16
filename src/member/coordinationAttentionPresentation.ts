@@ -1,6 +1,6 @@
 import type { MemberCoordinationAttentionItemDTO } from '@uaetrail/shared-types';
 import { exploreActivityInvitePathFromRouting } from '../explore/routing';
-import { planHostingFilterPath } from '../plan/planTab';
+import { planHostedSchedulePath } from '../plan/planRouting';
 import { BUDDIES_PATH, MY_REQUESTS_PATH, NOTIFICATIONS_PATH } from '../config/surfacePaths';
 
 const plural = (count: number, singular: string, pluralLabel: string): string =>
@@ -10,7 +10,7 @@ export const coordinationAttentionPath = (item: MemberCoordinationAttentionItemD
   switch (item.kind) {
     case 'host_join_queue':
     case 'join_request_withdrawn':
-      return planHostingFilterPath();
+      return planHostedSchedulePath();
     case 'joiner_pending_host':
     case 'join_request_rejected':
     case 'participant_revoked':

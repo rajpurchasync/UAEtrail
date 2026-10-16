@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { resolveComposeRouteChange } from './exploreComposeRouteGuard';
+import { resolveComposeRouteChange } from './create/composeRouteGuard';
 
 describe('resolveComposeRouteChange', () => {
   const signedIn = {
@@ -15,19 +15,19 @@ describe('resolveComposeRouteChange', () => {
     profileComplete: false,
   };
 
-  it('requires sign-in for organize wizard when logged out', () => {
-    const route = { intent: 'organize' as const, kind: 'hiking' as const };
+  it('requires sign-in for plan hosting wizard when logged out', () => {
+    const route = { intent: 'plan' as const, kind: 'hiking' as const, mode: 'hosting' as const };
     const decision = resolveComposeRouteChange(route, signedOut);
     expect(decision.type).toBe('sign-in');
     if (decision.type === 'sign-in') {
       expect(decision.href).toContain('/signin');
       expect(decision.href).toContain('compose');
-      expect(decision.href).toContain('organize');
+      expect(decision.href).toContain('plan');
     }
   });
 
-  it('sends non-publishers to complete profile for organize', () => {
-    const route = { intent: 'organize' as const, kind: 'event' as const };
+  it('sends non-publishers to complete profile for plan hosting', () => {
+    const route = { intent: 'plan' as const, kind: 'event' as const, mode: 'hosting' as const };
     const decision = resolveComposeRouteChange(route, {
       user: { id: 'u1' },
       hostGateLoading: false,
@@ -41,8 +41,8 @@ describe('resolveComposeRouteChange', () => {
     }
   });
 
-  it('blocks organize while host gate is loading', () => {
-    const route = { intent: 'organize' as const, kind: 'camping' as const };
+  it('blocks plan hosting while host gate is loading', () => {
+    const route = { intent: 'plan' as const, kind: 'camping' as const, mode: 'hosting' as const };
     expect(
       resolveComposeRouteChange(route, {
         user: { id: 'u1' },
@@ -53,10 +53,15 @@ describe('resolveComposeRouteChange', () => {
     ).toEqual({ type: 'blocked' });
   });
 
-  it('allows find/add for signed-in users and closing compose', () => {
-    expect(resolveComposeRouteChange({ intent: 'find' }, signedIn)).toEqual({
+  it('allows seeking/contribute for signed-in users and closing compose', () => {
+    expect(
+      resolveComposeRouteChange(
+        { intent: 'plan', kind: 'hiking', mode: 'seeking' },
+        signedIn
+      )
+    ).toEqual({
       type: 'set',
-      route: { intent: 'find' },
+      route: { intent: 'plan', kind: 'hiking', mode: 'seeking' },
     });
     expect(resolveComposeRouteChange(null, signedIn)).toEqual({ type: 'set', route: null });
   });

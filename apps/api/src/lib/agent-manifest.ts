@@ -46,6 +46,8 @@ export const buildAgentManifest = (siteOrigin: string): AgentManifestDTO => {
     allowed_scrape_paths: [
       '/explore',
       '/activity/',
+      '/place/',
+      '/facility/',
       '/trail/',
       '/camp/',
       '/venue/',
@@ -55,6 +57,8 @@ export const buildAgentManifest = (siteOrigin: string): AgentManifestDTO => {
       '/llms-full.txt',
       '/api/v1/agent/',
       '/api/v1/activities',
+      '/api/v1/places',
+      '/api/v1/facilities',
       '/api/v1/explore/map',
       '/api/v1/locations',
     ],

@@ -9,7 +9,7 @@ describe('activityRegistryPlacePath', () => {
         activityType: 'hiking',
         location: { activityType: 'hiking' } as never,
       })
-    ).toBe('/trail/loc-1');
+    ).toBe('/place/loc-1');
   });
 
   it('uses linked place type for carpool', () => {
@@ -19,7 +19,7 @@ describe('activityRegistryPlacePath', () => {
         activityType: 'rideshare',
         location: { activityType: 'hiking' } as never,
       })
-    ).toBe('/trail/loc-2');
+    ).toBe('/place/loc-2');
   });
 
   it('returns null without locationId', () => {

@@ -21,9 +21,15 @@ const ENTITY_DETAIL_QA_MATRIX: Array<{
     automatedGuard: 'activityDetailAcceptance.test.ts',
   },
   {
-    surface: 'Place trail/camp/venue',
-    routePattern: /path="\/trail\/:id"|path="\/camp\/:id"|path="\/venue\/:id"/,
+    surface: 'Place (canonical)',
+    routePattern: /path="\/place\/:id"/,
     pageOrView: 'src/pages/PlaceDetailPage.tsx',
+    automatedGuard: 'placeDetailCore.test.ts',
+  },
+  {
+    surface: 'Facility',
+    routePattern: /path="\/facility\/:id"/,
+    pageOrView: 'src/pages/FacilityDetailPage.tsx',
     automatedGuard: 'placeDetailCore.test.ts',
   },
   {

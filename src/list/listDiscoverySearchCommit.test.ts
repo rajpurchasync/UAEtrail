@@ -6,7 +6,7 @@ import {
 
 describe('listDiscoverySearchCommit', () => {
   it('maps explore scopes to list categories', () => {
-    expect(browseCategoriesForSearchScope('activities')).toEqual(['trips']);
+    expect(browseCategoriesForSearchScope('activities')).toEqual(['activities']);
     expect(browseCategoriesForSearchScope('places')).toEqual(['venues']);
     expect(browseCategoriesForSearchScope('people')).toEqual(['people']);
     expect(browseCategoriesForSearchScope('shops')).toEqual(['venues']);

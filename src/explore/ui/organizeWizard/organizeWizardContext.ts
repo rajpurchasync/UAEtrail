@@ -1,7 +1,7 @@
 import type { HostTierFlags, OwnedHostProfileDTO, PlaceDTO, PublishingProfileKind } from '@uaetrail/shared-types';
 import type { ReactNode } from 'react';
 import type { OrganizeComposeKind } from '../../compose';
-import type { OrganizeCatalogFlow } from '../organizeFlows';
+import type { HostingKindFlow } from '../hostingFlows';
 import type {
   CreateActivityDraft,
   CreateActivityKind,
@@ -22,7 +22,7 @@ export type OrganizeWizardContext = {
   kind: CreateActivityKind | null;
   draft: CreateActivityDraft;
   patchDraft: (patch: Partial<CreateActivityDraft>) => void;
-  catalogFlow: OrganizeCatalogFlow | null;
+  hostingKindFlow: HostingKindFlow | null;
   organizeKind: OrganizeComposeKind | null;
   demandPrefill: OrganizeWizardDemandPrefill;
   error: string | null;

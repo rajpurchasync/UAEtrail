@@ -64,7 +64,7 @@ import type { ActivityDetailDTO } from '@uaetrail/shared-types';
 /**
  * Activity detail **route loader** (`/activity/:id`): fetch, join modals, SEO, host sheets.
  * **L3 kind layout:** `ActivityDetailByKind` → `*ActivityDetailPage` → `ActivityDetailPageShell`
- * (mirrors `HikingPlaceDetailPage` → `PlaceDetailPage` → `PlaceDetailCore`).
+ * (mirrors `HikingPlaceDetailPage` → `PlaceDetailPage` → `PlaceDetailPageShell`).
  */
 export const ActivityDetail = () => {
   const { id } = useParams<{ id: string }>();

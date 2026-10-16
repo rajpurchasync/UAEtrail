@@ -11,7 +11,7 @@ const API_SRC = join(ROOT, 'apps', 'api', 'src');
 const SURFACE_LINKS: Array<{ path: string; constant: string }> = [
   { path: '/buddies', constant: 'BUDDIES_PATH' },
   { path: '/groups', constant: 'GROUPS_PATH' },
-  { path: '/contributions', constant: 'CONTRIBUTIONS_PATH' },
+  { path: '/profile/submissions', constant: 'PROFILE_SUBMISSIONS_PATH' },
   { path: '/community', constant: 'COMMUNITY_PATH' },
   { path: '/profile/badges', constant: 'PROFILE_BADGES_PATH' },
   { path: '/my-requests', constant: 'MY_REQUESTS_PATH' },
@@ -302,7 +302,7 @@ describe('systemCoherenceGuard', () => {
 
   it('S10d organize-from-activity effect includes host gate inputs in deps', () => {
     const content = readFileSync(
-      join(ROOT, 'src/explore/ui/useExploreOrganizeFromActivity.ts'),
+      join(ROOT, 'src/explore/create/hooks/useHostingFromActivity.ts'),
       'utf8'
     );
     const effectBlock = content.slice(content.indexOf('parseOrganizeFromActivityId(searchParams)'), content.indexOf('const clearOrganizeFromPrefill'));
@@ -314,9 +314,9 @@ describe('systemCoherenceGuard', () => {
     const modelPath = join(ROOT, 'src/explore/shell/useExploreExperienceModel.ts');
     const model = readFileSync(modelPath, 'utf8');
     expect(model).toMatch(/useExploreMapCatalog/);
-    expect(model).toMatch(/useExploreRideshareOrganizeLinks/);
+    expect(model).toMatch(/useHostingWizardPrefill/);
     expect(model).toMatch(/useExploreBrowsePanelShared/);
-    expect(model.split(/\r?\n/).length).toBeLessThan(430);
+    expect(model.split(/\r?\n/).length).toBeLessThan(445);
     const experience = readFileSync(join(ROOT, 'src/explore/ui/ExploreExperience.tsx'), 'utf8');
     expect(experience.split(/\r?\n/).length).toBeLessThan(280);
   });

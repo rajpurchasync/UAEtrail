@@ -5,9 +5,9 @@ import { useAuth } from '../context/AuthContext';
 import { LIST_DISCOVERY_PATH } from '../config/platform';
 import { EXPLORE_MAP_PATH } from '../config/routingCatalog';
 import { EXPLORE_BRAND_ACTIVE } from '../config/exploreTheme';
-import { ExploreComposeHost } from '../explore/ui/ExploreComposeHost';
-import { useExploreComposeRoute } from '../explore/ui/useExploreComposeRoute';
-import { isAddWizard, isFindWizard } from '../explore/compose';
+import { ComposeHost } from '../explore/create/ComposeHost';
+import { useComposeRoute } from '../explore/create/hooks/useComposeRoute';
+import { contributeVenueKindFromRoute, isPlanHostingWizard, isPlanSeekingWizard } from '../explore/compose';
 import { useMemberStatus } from '../hooks/useMemberStatus';
 import { reloadExploreMap } from '../hooks/useExploreMap';
 import { buildSignInRedirect } from '../utils/authReturnContext';
@@ -124,7 +124,7 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
     [navigate, user?.id, profileComplete, canPublish, isCommunityHost, hostTiers]
   );
 
-  const compose = useExploreComposeRoute({
+  const compose = useComposeRoute({
     user,
     navigate,
     searchParams,
@@ -222,7 +222,7 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
   );
 
   const searchTripPills = useMemo(
-    () => buildListCategoryPrimaryPills('trips', filters, syncUrl),
+    () => buildListCategoryPrimaryPills('activities', filters, syncUrl),
     [filters, syncUrl]
   );
 
@@ -288,7 +288,7 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
       if (patch) {
         const listCatForScope =
           scope === 'activities'
-            ? 'trips'
+            ? 'activities'
             : scope === 'places' || scope === 'shops'
               ? 'venues'
               : scope === 'agencies'
@@ -469,7 +469,7 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
     );
   };
 
-  const organizeWizardOpen = Boolean(compose.organizeRoute);
+  const hostWizardOpen = Boolean(compose.planHostingRoute);
 
   return (
     <>
@@ -570,23 +570,26 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
       {inviteShare.sheet}
       {hostManageSheet}
 
-      <ExploreComposeHost
-        exploreCompose={compose.exploreCompose}
+      <ComposeHost
+        composeRoute={compose.composeRoute}
         composeMenuOpen={compose.composeMenuOpen}
-        organizeWizardOpen={organizeWizardOpen}
-        findWizardOpen={Boolean(compose.findRoute && isFindWizard(compose.exploreCompose))}
-        addWizardOpen={Boolean(compose.addRoute && isAddWizard(compose.exploreCompose))}
-        organizeKind={compose.organizeRoute?.kind ?? null}
-        findKind={compose.findRoute?.kind}
-        addKind={compose.addRoute?.kind ?? null}
-        organizeWizardPrefill={null}
+        hostWizardOpen={hostWizardOpen}
+        planSeekingWizardOpen={Boolean(
+          compose.planSeekingRoute && isPlanSeekingWizard(compose.composeRoute)
+        )}
+        contributeWizardOpen={Boolean(compose.contributeRoute)}
+        seekFlexibleOpen={compose.seekFlexibleOpen}
+        planHostingKind={compose.planHostingRoute?.kind ?? null}
+        planSeekingKind={compose.planSeekingRoute?.kind}
+        contributeVenueKind={contributeVenueKindFromRoute(compose.contributeRoute)}
+        hostingWizardPrefill={null}
         signInHref={buildSignInRedirect({ pathname, search }).href}
         onComposeRouteChange={compose.handleComposeRouteChange}
         onCloseCompose={compose.closeCompose}
         onCloseCreateFlow={compose.closeCompose}
-        onOrganizeBackToIntent={() => compose.setComposeRoute({ surface: 'menu', intent: 'organize' })}
-        onFindBackToIntent={() => compose.setComposeRoute({ surface: 'menu', intent: 'find' })}
-        onAddBackToIntent={() => compose.setComposeRoute({ surface: 'menu', intent: 'add' })}
+        onPlanHostingBackToIntent={() => compose.setComposeRoute({ surface: 'menu', intent: 'host' })}
+        onPlanSeekingBackToIntent={() => compose.setComposeRoute({ surface: 'menu', intent: 'seek' })}
+        onContributeBackToIntent={() => compose.setComposeRoute({ surface: 'menu', intent: 'add' })}
         onActivityPublished={() => void reloadFeed()}
         onDemandSubmitted={() => void reloadFeed()}
         onContributeSubmitted={() => void reloadFeed()}

@@ -1,5 +1,10 @@
 import type { Collection } from 'mongodb';
 import type { AgentDiscoverItemDTO, AgentDiscoverResponseDTO } from '@uaetrail/shared-types';
+import {
+  isFacilityPlaceKind,
+  placeDetailPath,
+  placeKindFromLocationRow,
+} from '@uaetrail/shared-types';
 import { activityPublicMetaDescription } from '@uaetrail/shared-types';
 import type { Location } from '../domain/types.js';
 import { shouldHideActivityFromExploreMap } from '../domain/activity-join-mode.js';
@@ -27,13 +32,8 @@ export type AgentDiscoverSearchInput = {
 
 const absUrl = (origin: string, path: string) => `${origin.replace(/\/$/, '')}${path}`;
 
-const placePath = (place: { id: string; activityType: string }): string => {
-  const kind = String(place.activityType).toLowerCase();
-  if (kind === 'shop') return `/shop/${place.id}`;
-  if (kind === 'camping') return `/camp/${place.id}`;
-  if (kind === 'event' || kind === 'community_activity') return `/venue/${place.id}`;
-  return `/trail/${place.id}`;
-};
+const placePath = (place: { id: string; activityType: string }): string =>
+  placeDetailPath(String(place.activityType), place.id);
 
 const placeKindWire = (activityType: string): AgentDiscoverItemDTO['placeKind'] => {
   const kind = activityType.toLowerCase();
@@ -166,10 +166,18 @@ export const searchPublishedPlacesForAgents = async (
   const docs = await locationsCollection()
     .find(filter)
     .sort({ featured: -1, viewCount: -1, name: 1 })
-    .limit(input.limit)
+    .limit(input.limit * 2)
     .toArray();
 
-  return docs.map((doc) => ({
+  const placeRows = docs.filter((doc) => {
+    const kind = placeKindFromLocationRow({
+      activityType: String(doc.activityType ?? ''),
+      tags: doc.tags ?? [],
+    });
+    return !isFacilityPlaceKind(kind);
+  });
+
+  return placeRows.slice(0, input.limit).map((doc) => ({
     kind: 'place',
     id: doc._id,
     title: doc.name,

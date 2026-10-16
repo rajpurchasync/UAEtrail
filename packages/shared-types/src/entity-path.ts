@@ -29,6 +29,12 @@ export const EXPLORE_SHOPS_PATH = '/explore?filter=shops&panel=shops';
 /** Explore map with shop list panel open (API explore-map fallback). */
 export const EXPLORE_SHOPS_LIST_PATH = '/explore?filter=shops&panel=shops&list=1';
 
+/** Canonical public place detail (trail, camp, event venue — not shop). */
+export const PLACE_CANONICAL_PATH_PREFIX = '/place' as const;
+
+export const canonicalPlaceDetailPath = (placeId: string): string =>
+  `${PLACE_CANONICAL_PATH_PREFIX}/${encodeURIComponent(placeId)}`;
+
 /** Public URL segment for event-type **places** (venues), not scheduled activities. */
 export const VENUE_PLACE_PATH_PREFIX = '/venue' as const;
 
@@ -44,14 +50,24 @@ export const normalizePlaceActivityType = (activityType: string): PlaceVenueKind
   return 'hiking';
 };
 
+/** Legacy place URL segments (redirect to {@link canonicalPlaceDetailPath}). */
+export const legacyPlaceDetailPath = (activityType: string, placeId: string): string => {
+  const kind = normalizePlaceActivityType(activityType);
+  if (kind === 'shop') return `/shop/${encodeURIComponent(placeId)}`;
+  if (kind === 'camping') return `/camp/${encodeURIComponent(placeId)}`;
+  if (kind === 'event') return `${VENUE_PLACE_PATH_PREFIX}/${encodeURIComponent(placeId)}`;
+  return `/trail/${encodeURIComponent(placeId)}`;
+};
+
 /** Public URL for a place (trail, camp, or event venue). */
 export const placeDetailPath = (activityType: string, placeId: string): string => {
   const kind = normalizePlaceActivityType(activityType);
-  if (kind === 'shop') return `/shop/${placeId}`;
-  if (kind === 'camping') return `/camp/${placeId}`;
-  if (kind === 'event') return `${VENUE_PLACE_PATH_PREFIX}/${placeId}`;
-  return `/trail/${placeId}`;
+  if (kind === 'shop') return `/shop/${encodeURIComponent(placeId)}`;
+  return canonicalPlaceDetailPath(placeId);
 };
+
+/** Public URL for a facility amenity row (Program CPC). */
+export const facilityDetailPath = (facilityId: string): string => `/facility/${facilityId}`;
 
 export const activityDetailPath = (activityId: string): string => `/activity/${activityId}`;
 
@@ -202,7 +218,9 @@ export const resolveEntityPath = (ref: EntityRef, options?: ResolveEntityPathOpt
   }
 };
 
+const CANONICAL_PLACE_PATH_RE = /^\/place\/([^/?#]+)/;
 const PLACE_PATH_RE = /^\/(trail|camp|venue)\/([^/?#]+)/;
+const FACILITY_PATH_RE = /^\/facility\/([^/?#]+)/;
 const LEGACY_EVENT_PLACE_PATH_RE = /^\/event\/([^/?#]+)/;
 const ACTIVITY_PATH_RE = /^\/activity\/([^/?#]+)/;
 const GUIDE_PROFILE_PATH_RE = /^\/guide\/([^/?#]+)/;
@@ -220,6 +238,15 @@ const parseOrganisationRef = (
 /** Parse a browser pathname into an entity ref when it matches a public detail route. */
 export const parseEntityRefFromPathname = (pathname: string): EntityRef | null => {
   const path = pathname.split('?')[0]?.split('#')[0] ?? pathname;
+
+  const canonicalPlaceMatch = path.match(CANONICAL_PLACE_PATH_RE);
+  if (canonicalPlaceMatch) {
+    return {
+      kind: 'place',
+      id: decodeURIComponent(canonicalPlaceMatch[1]),
+      activityType: 'hiking',
+    };
+  }
 
   const placeMatch = path.match(PLACE_PATH_RE);
   if (placeMatch) {

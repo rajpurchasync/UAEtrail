@@ -74,7 +74,13 @@ export const MEMBERSHIP_MARKETING_PATH = '/membership' as const;
 /** Social subgraph */
 export const GROUPS_PATH = '/groups' as const;
 export const BUDDIES_PATH = '/buddies' as const;
-export const CONTRIBUTIONS_PATH = '/contributions' as const;
+export const PROFILE_SUBMISSIONS_PATH = '/profile/submissions' as const;
+
+/** Member catalog submissions hub (places + facilities). */
+export const CONTRIBUTIONS_PATH = PROFILE_SUBMISSIONS_PATH;
+
+/** Legacy URL — redirects to {@link PROFILE_SUBMISSIONS_PATH}. */
+export const LEGACY_CONTRIBUTIONS_PATH = '/contributions' as const;
 
 export const groupsPath = (options?: {
   create?: boolean;

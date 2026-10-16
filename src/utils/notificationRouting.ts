@@ -23,7 +23,7 @@ import {
   messagesToUserPath,
   myRequestDetailPath,
   tripsLegacyJoinedTabPath,
-  tripsPlansPath,
+  planHostedSchedulePath,
 } from '../config/routingCatalog';
 import { planWishlistTabPath } from '../plan/planTab';
 import {
@@ -215,7 +215,7 @@ export const inferNotificationPath = (
     return GROUPS_PATH;
   }
   if (kind === 'request_withdrawal') {
-    return tripsPlansPath('hosted');
+    return planHostedSchedulePath();
   }
   if (kind === 'badge') {
     return PROFILE_BADGES_PATH;

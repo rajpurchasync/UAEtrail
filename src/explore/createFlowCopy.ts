@@ -115,6 +115,9 @@ export const CONTRIBUTE_SUBMIT_SUCCESS_BODY_TRAIL =
 export const CONTRIBUTE_SUBMIT_SUCCESS_BODY_CAMP =
   'Thanks for sharing this camp spot. We will review it and let you know when it is live on Explore for everyone.';
 
+export const CONTRIBUTE_SUBMIT_SUCCESS_BODY_FACILITY =
+  'Thanks — we’ll review your facility pin and add it to the map once it’s approved.';
+
 export const CONTRIBUTE_SUBMIT_SUCCESS_BODY_SHOP =
   'Thanks for sharing this shop. We will review it so others can find gear nearby on Explore.';
 

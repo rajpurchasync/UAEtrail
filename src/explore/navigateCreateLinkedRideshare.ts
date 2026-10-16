@@ -1,5 +1,6 @@
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import type { NavigateFunction } from 'react-router-dom';
+import { planHostingCompose } from './compose';
 import { composeFlowIdFromRoute } from './composeFlowCatalog';
 import { buildRideshareDraftFromParentActivity } from './linkRidesharePrefill';
 import { explorePath } from './routing';
@@ -10,7 +11,8 @@ export const navigateToCreateLinkedRideshare = (
   navigate: NavigateFunction,
   parent: ActivityDTO
 ): void => {
-  const flowId = composeFlowIdFromRoute({ intent: 'organize', kind: 'rideshare' });
+  const composeRoute = planHostingCompose('rideshare');
+  const flowId = composeFlowIdFromRoute(composeRoute);
   if (flowId) {
     const scope = `link:${parent.id}`;
     writeOrganizeWizardSession(
@@ -23,9 +25,5 @@ export const navigateToCreateLinkedRideshare = (
       scope
     );
   }
-  navigate(
-    explorePath({
-      compose: { intent: 'organize', kind: 'rideshare' },
-    })
-  );
+  navigate(explorePath({ compose: composeRoute }));
 };

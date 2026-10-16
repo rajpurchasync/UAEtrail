@@ -15,7 +15,7 @@ describe('detailSurfaceWiringAcceptance', () => {
 
     const placePage = read('src/pages/PlaceDetailPage.tsx');
     expect(placePage).toMatch(/usePlaceDetailCore/);
-    expect(placePage).toMatch(/PlaceDetailCore/);
+    expect(placePage).toMatch(/PlaceDetailPageShell/);
     for (const kindPage of [
       'src/pages/place/HikingPlaceDetailPage.tsx',
       'src/pages/place/CampingPlaceDetailPage.tsx',

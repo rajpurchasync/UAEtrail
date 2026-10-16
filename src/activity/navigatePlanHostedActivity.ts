@@ -1,5 +1,5 @@
 import type { NavigateFunction } from 'react-router-dom';
-import { tripsHostedActivityPath } from '../member-plan/tripsRouting';
+import { planHostedActivityManagePath } from '../plan/planRouting';
 
 /** Open Plan hosted-activity manage sheet (or participants view) for a published activity. */
 export const navigateToPlanHostedActivity = (
@@ -7,7 +7,7 @@ export const navigateToPlanHostedActivity = (
   activityId: string,
   view: 'overview' | 'checkin' = 'overview'
 ): void => {
-  navigate(tripsHostedActivityPath(activityId, view));
+  navigate(planHostedActivityManagePath(activityId, view));
 };
 
 /** @deprecated Use {@link navigateToPlanHostedActivity}. */

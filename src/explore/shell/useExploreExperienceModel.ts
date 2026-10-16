@@ -10,9 +10,10 @@ import { useMinWidthLg } from '../../hooks/useMinWidthLg';
 import { getExploreMapTiles } from '../../config/platform';
 import { useExploreBrowseList } from '../ui/useExploreBrowseList';
 import { useExploreBrowseUrlState } from '../ui/useExploreBrowseUrlState';
-import { useExploreComposeRoute } from '../ui/useExploreComposeRoute';
+import { useComposeRoute } from '../create/hooks/useComposeRoute';
+import { useHostingFromActivity } from '../create/hooks/useHostingFromActivity';
+import { useHostingWizardPrefill } from '../create/hooks/useHostingWizardPrefill';
 import { useExploreFulfillIntent } from '../ui/useExploreFulfillIntent';
-import { useExploreOrganizeFromActivity } from '../ui/useExploreOrganizeFromActivity';
 import {
   organizePublishGateHref,
   organizePublishGateInputFromMemberStatus,
@@ -32,7 +33,6 @@ import { useExplorePinDeepLink } from './useExplorePinDeepLink';
 import type { ComponentProps } from 'react';
 import { PeopleBrowsePanel } from '@/people-discovery/panel/PeopleBrowsePanel';
 import { useExploreMapCatalog } from './useExploreMapCatalog';
-import { useExploreRideshareOrganizeLinks } from './useExploreRideshareOrganizeLinks';
 import { resolveExploreItemIdFromMapPin } from '../ui/exploreMapPinModel';
 import { useExploreBrowsePanelShared } from './useExploreBrowsePanelShared';
 
@@ -115,7 +115,7 @@ export const useExploreExperienceModel = () => {
     navigate,
   });
 
-  const compose = useExploreComposeRoute({
+  const compose = useComposeRoute({
     user,
     navigate,
     searchParams,
@@ -144,7 +144,7 @@ export const useExploreExperienceModel = () => {
     setSelectedId,
   });
 
-  const organizeFrom = useExploreOrganizeFromActivity({
+  const hostingFrom = useHostingFromActivity({
     user,
     tenantId,
     hostGateLoading,
@@ -157,12 +157,12 @@ export const useExploreExperienceModel = () => {
     searchParams,
     setSearchParams,
     setComposeRoute: compose.setComposeRoute,
-    organizeKind: compose.organizeRoute?.kind ?? null,
+    planHostingKind: compose.planHostingRoute?.kind ?? null,
   });
 
   const selected = selectionItems.find((item) => item.id === selectedId) ?? null;
 
-  const rideshareOrganize = useExploreRideshareOrganizeLinks({
+  const hostingLauncher = useHostingWizardPrefill({
     pathname,
     search,
     searchParams,
@@ -173,7 +173,7 @@ export const useExploreExperienceModel = () => {
     navigate,
     navigateOrganizePublishGate,
     compose,
-    organizeFrom,
+    hostingFrom,
     selected,
     setSelectedId,
   });
@@ -202,7 +202,7 @@ export const useExploreExperienceModel = () => {
     handleFocusMapLocation: viewport.handleFocusMapLocation,
     setLinkOnlyPeekItems,
     onInviteActivity: inviteShare.openInviteFromActivity,
-    onCreateLinkedRideshare: rideshareOrganize.handleCreateLinkedRideshare,
+    onCreateLinkedRideshare: hostingLauncher.handleCreateLinkedRideshare,
     onOpenHostManage: tenantId ? openHostManage : undefined,
     onShareHostedActivity: shareHostedActivity,
   });
@@ -238,9 +238,9 @@ export const useExploreExperienceModel = () => {
     navigate,
     pathname,
     search,
-    composeOrganizeKind: compose.organizeRoute?.kind,
-    rideshareLinkDemand: rideshareOrganize.rideshareLinkDemand,
-    setRideshareLinkDemand: rideshareOrganize.setRideshareLinkDemand,
+    composeOrganizeKind: compose.planHostingRoute?.kind,
+    rideshareLinkDemand: hostingLauncher.rideshareLinkDemand,
+    setRideshareLinkDemand: hostingLauncher.setRideshareLinkDemand,
     setJoinInvitePeekActivityId,
   });
 
@@ -351,7 +351,7 @@ export const useExploreExperienceModel = () => {
     [pathname, search]
   );
 
-  const closeCreateFlow = rideshareOrganize.closeCreateFlow;
+  const closeCreateFlow = hostingLauncher.closeCreateFlow;
 
   const onOpenHostApplication = useCallback(() => {
     closeCreateFlow();
@@ -396,19 +396,23 @@ export const useExploreExperienceModel = () => {
     peopleBrowseMapChip,
     joinInvitePeekBanner,
     handleCloseMapSelection,
-    handleOfferRideshareForDemand: rideshareOrganize.handleOfferRideshareForDemand,
-    handleCreateLinkedRideshare: rideshareOrganize.handleCreateLinkedRideshare,
+    handleOfferRideshareForDemand: hostingLauncher.handleOfferRideshareForDemand,
+    handleCreateLinkedRideshare: hostingLauncher.handleCreateLinkedRideshare,
     primaryFabLabel: 'Add New' as const,
-    organizeWizardOpen: rideshareOrganize.organizeWizardOpen,
-    organizeWizardPrefill: rideshareOrganize.organizeWizardPrefill,
+    hostWizardOpen: hostingLauncher.hostWizardOpen,
+    planHostingWizardOpen: hostingLauncher.planHostingWizardOpen,
+    hostingWizardPrefill: hostingLauncher.hostingWizardPrefill,
+    onPlanHostingBackToIntent: hostingLauncher.onPlanHostingBackToIntent,
     planWithBuddyUserId,
     hostRemoveParticipantNotice,
-    rideshareLinkParent: rideshareOrganize.rideshareLinkParent,
-    rideshareLinkDemand: rideshareOrganize.rideshareLinkDemand,
-    setRideshareLinkParent: rideshareOrganize.setRideshareLinkParent,
-    setRideshareLinkDemand: rideshareOrganize.setRideshareLinkDemand,
-    closeCreateFlow: rideshareOrganize.closeCreateFlow,
-    onOrganizeBackToIntent: rideshareOrganize.onOrganizeBackToIntent,
+    rideshareLinkParent: hostingLauncher.rideshareLinkParent,
+    rideshareLinkDemand: hostingLauncher.rideshareLinkDemand,
+    setRideshareLinkParent: hostingLauncher.setRideshareLinkParent,
+    setRideshareLinkDemand: hostingLauncher.setRideshareLinkDemand,
+    closeCreateFlow: hostingLauncher.closeCreateFlow,
+    organizeWizardOpen: hostingLauncher.planHostingWizardOpen,
+    organizeWizardPrefill: hostingLauncher.hostingWizardPrefill,
+    onOrganizeBackToIntent: hostingLauncher.onPlanHostingBackToIntent,
     refreshHostGate,
     exploreSearchModalOpen,
     setExploreSearchModalOpen,

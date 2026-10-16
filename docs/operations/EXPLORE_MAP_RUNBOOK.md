@@ -14,7 +14,8 @@ Per-request **`viewerAccess`** on activity/demand rows is applied **after** the 
 
 | Data | Trigger |
 |------|---------|
-| **Places** (`locations`) | `writeLocationToMongo`, `deleteLocationFromMongo` (admin, host submit, member contribute, catalog import). Map payload includes **hiking + camping** venues only (not event-type location rows). |
+| **Places** (`locations`) | `writeLocationToMongo`, `deleteLocationFromMongo` (admin, member place submit, catalog import). Map: trails, camps, outdoor spots, community shops (peek). |
+| **Facilities** (`facilities`) | `createFacilityRecord`, admin facility CRUD, `seed:catalog-facilities`. Map amenity pins (`facility:*`); member `POST /me/facilities` does **not** insert `locations`. |
 | **Activities** | Publish / cancel / update while `PUBLISHED` (`activities-store`) |
 | **Seeking activities** | Activity create/update (`activityMode: seeking`) + intent alias writes (`participant-intents-store` when stub write enabled) |
 | **Shops** | Shop tenant `writeTenantToMongo`, shop profile sync routes, admin shop tenant status |
@@ -39,6 +40,14 @@ npm --workspace @uaetrail/api run import-venue-catalog
 - Invalidates explore map cache when not `--dry-run`
 
 **When to run:** new environment, after editing the JSON, or after restoring a DB from backup without catalog rows.
+
+### Demo facility pins (CPC map amenities)
+
+```bash
+npm --workspace @uaetrail/api run seed:catalog-facilities
+```
+
+Upserts linked amenities (Hatta dam, wadi hub, hill camp, Shawka, Jais, Al Qudra) into `facilities`, ensures curated **areas**, creates missing parent **place** stubs, and invalidates explore map cache. Safe to re-run.
 
 ### Fix pins without editing JSON
 

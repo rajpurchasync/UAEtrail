@@ -1,6 +1,11 @@
 import { useState } from 'react';
 import type { SetURLSearchParams } from 'react-router-dom';
-import type { ActivityDTO, LocationPremiumSummaryDTO, ReviewDTO } from '@uaetrail/shared-types';
+import type {
+  ActivityDTO,
+  LocationPremiumSummaryDTO,
+  PlaceNearbyFacilityDTO,
+  ReviewDTO,
+} from '@uaetrail/shared-types';
 import {
   fetchPlaceActivities,
   fetchPlaceReviews,
@@ -8,11 +13,17 @@ import {
 } from './placeDetailClientApi';
 import { fetchPlaceDetail } from './entityClientApi';
 import type { Place } from '../types/place';
-import type { PlaceDetailKind, PlaceDetailKindConfig } from '../pages/placeDetailConfig';
+import {
+  PLACE_DETAIL_CONFIG,
+  resolvePlaceDetailKind,
+  type PlaceDetailKind,
+  type PlaceDetailKindConfig,
+} from '../pages/placeDetailConfig';
 import { useSafeAsyncEffect } from './useSafeAsyncEffect';
 
 type Args = {
-  kind: PlaceDetailKind;
+  /** When omitted, kind is resolved from loaded place `activityType` (canonical `/place/:id`). */
+  kind?: PlaceDetailKind;
   placeId: string | undefined;
   config: PlaceDetailKindConfig;
   searchParams: URLSearchParams;
@@ -21,12 +32,14 @@ type Args = {
 
 /** Load place, activities, reviews, and premium unlock return handling (R3). */
 export const usePlaceDetailCore = ({
-  kind,
+  kind: kindProp,
   placeId,
   config,
   searchParams,
   setSearchParams,
 }: Args) => {
+  const [resolvedKind, setResolvedKind] = useState<PlaceDetailKind | null>(null);
+  const effectiveKind = kindProp ?? resolvedKind;
   const [place, setPlace] = useState<Place | null>(null);
   const [loading, setLoading] = useState(true);
   const [activities, setActivities] = useState<ActivityDTO[]>([]);
@@ -34,6 +47,7 @@ export const usePlaceDetailCore = ({
   const [premium, setPremium] = useState<LocationPremiumSummaryDTO | null>(null);
   const [selectedImage, setSelectedImage] = useState(0);
   const [unlockNotice, setUnlockNotice] = useState<string | null>(null);
+  const [nearbyFacilities, setNearbyFacilities] = useState<PlaceNearbyFacilityDTO[]>([]);
 
   useSafeAsyncEffect(
     async (isActive) => {
@@ -49,10 +63,26 @@ export const usePlaceDetailCore = ({
           fetchPlaceReviews(placeId).catch(() => []),
         ]);
         if (!isActive()) return;
-        const loaded =
-          placeResult.place?.activityType === config.activityType ? placeResult.place : null;
+        let loaded: Place | null = null;
+        if (placeResult.place) {
+          if (kindProp) {
+            loaded =
+              placeResult.place.activityType === config.activityType ? placeResult.place : null;
+          } else {
+            const inferred = resolvePlaceDetailKind(placeResult.place.activityType);
+            if (inferred) {
+              setResolvedKind(inferred);
+              const inferredConfig = PLACE_DETAIL_CONFIG[inferred];
+              loaded =
+                placeResult.place.activityType === inferredConfig.activityType
+                  ? placeResult.place
+                  : null;
+            }
+          }
+        }
         setPlace(loaded);
         setPremium(placeResult.premium ?? null);
+        setNearbyFacilities(placeResult.nearbyFacilities ?? []);
         setActivities(placeActivities);
         setReviews(placeReviews);
       } catch {
@@ -65,7 +95,7 @@ export const usePlaceDetailCore = ({
         }
       }
     },
-    [placeId, kind, config.activityType]
+    [placeId, kindProp, config.activityType]
   );
 
   useSafeAsyncEffect(
@@ -101,6 +131,7 @@ export const usePlaceDetailCore = ({
   );
 
   return {
+    resolvedKind: effectiveKind,
     place,
     loading,
     activities,
@@ -112,5 +143,6 @@ export const usePlaceDetailCore = ({
     unlockNotice,
     setUnlockNotice,
     setReviews,
+    nearbyFacilities,
   };
 };

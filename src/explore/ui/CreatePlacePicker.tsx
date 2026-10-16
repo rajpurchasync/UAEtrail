@@ -4,7 +4,7 @@ import 'leaflet/dist/leaflet.css';
 import { ChevronLeft, MapPin, Navigation, X } from 'lucide-react';
 import { MAP_CONFIG } from '../../config/platform';
 import { MapTileLayers } from '../../components/ui/MapTileLayers';
-import type { LocationPrecision } from './organizeFlow';
+import type { LocationPrecision } from './createFlowShared';
 
 const MapFlyTo = ({ center, zoom }: { center: [number, number] | null; zoom: number }) => {
   const map = useMap();

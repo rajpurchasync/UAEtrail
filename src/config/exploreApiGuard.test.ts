@@ -41,7 +41,7 @@ describe('exploreApiGuard (R8.1)', () => {
 
   it('organize publish refreshes client caches via hooks layer (R8.3)', () => {
     const source = readFileSync(
-      join(process.cwd(), 'src/explore/ui/CreateActivityFlow.tsx'),
+      join(process.cwd(), 'src/explore/ui/CreateHostingActivityFlow.tsx'),
       'utf8'
     );
     expect(source).toMatch(/afterOrganizeActivityPublishClientRefresh/);

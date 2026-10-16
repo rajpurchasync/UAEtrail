@@ -1,12 +1,12 @@
 import { PlaceDTO } from '@uaetrail/shared-types';
 import {
   placeApi,
+  facilityApi,
   areasApi,
   fetchPlaceRegistry,
   exploreApi,
   badgesApi,
-  goalsApi,
-  availabilityApi,
+  memberCommitmentHubApi,
   memberJourneyMapApi,
   activitiesApi,
   accountApi,
@@ -23,12 +23,12 @@ export * from './types';
 
 export const api = {
   ...placeApi,
+  ...facilityApi,
   ...areasApi,
   fetchPlaceRegistry,
   ...exploreApi,
   ...badgesApi,
-  ...goalsApi,
-  ...availabilityApi,
+  ...memberCommitmentHubApi,
   ...memberJourneyMapApi,
   ...activitiesApi,
   ...accountApi,

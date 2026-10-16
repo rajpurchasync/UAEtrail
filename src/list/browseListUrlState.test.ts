@@ -16,7 +16,7 @@ describe('browseListUrlState trip topics', () => {
     expect(state.tripTopics).toEqual(['hiking', 'rideshare']);
 
     const serialized = serializeBrowseListSearchParams(
-      { ...state, categories: ['trips'], query: 'test' },
+      { ...state, categories: ['activities'], query: 'test' },
       []
     );
     expect(serialized.get('filter')).toBe('hiking,rideshare');

@@ -21,7 +21,7 @@ import {
   PRO_MEMBERSHIP_PATH,
   exploreOrganizePath,
   messagesToUserPath,
-  tripsPlansPath,
+  planHostedSchedulePath,
 } from '../config/routingCatalog';
 import { UserRole } from '@uaetrail/shared-types';
 
@@ -60,7 +60,7 @@ export const participantHostBookmarkRedirect = (pathname: string): string => {
     return MESSAGES_PATH;
   }
   if (normalized.startsWith('/operator/requests')) return MY_REQUESTS_PATH;
-  if (normalized.startsWith('/operator/activities')) return tripsPlansPath('hosted');
+  if (normalized.startsWith('/operator/activities')) return planHostedSchedulePath();
   if (normalized.startsWith('/operator/places') || normalized.startsWith('/operator/locations')) {
     return organisationManagePath();
   }

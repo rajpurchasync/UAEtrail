@@ -1,9 +1,11 @@
 import type { ComposeFlowId } from '../composeFlowCatalog';
 import type { ExploreCompose } from '../compose';
 import { composeFlowIdFromRoute } from '../composeFlowCatalog';
+import { legacyComposeFlowIdsFor, normalizeComposeFlowId } from '../composeFlowIds';
 import type { CreateActivityDraft, CreateActivityKind } from './organizeFlow';
 import type { DemandDraft, DemandKind } from './demandFlow';
 import type { ContributeDraft } from './contributeFlow';
+import type { FacilityContributeDraft } from './contributeFacilityFlow';
 import type { ContributeVenueKind } from '../contributeTypes';
 
 const STORAGE_PREFIX = 'uaetrail:compose-wizard';
@@ -22,11 +24,13 @@ export type DemandWizardSession = {
 
 export type ContributeWizardSession = {
   step: string;
-  draft: ContributeDraft;
+  draft: ContributeDraft | FacilityContributeDraft;
 };
 
-const sessionKey = (flowId: ComposeFlowId, scope?: string) =>
-  `${STORAGE_PREFIX}:${flowId}${scope ? `:${scope}` : ''}`;
+const sessionKey = (flowId: ComposeFlowId, scope?: string) => {
+  const canonical = normalizeComposeFlowId(flowId);
+  return `${STORAGE_PREFIX}:${canonical}${scope ? `:${scope}` : ''}`;
+};
 
 /** Older builds used a suffixed storage namespace — read once, then write under canonical keys. */
 const legacySessionKey = (flowId: ComposeFlowId, scope?: string) =>
@@ -108,13 +112,28 @@ export const clearContributeWizardSession = (kind: ContributeVenueKind): void =>
 /** Drop saved draft when the user fully dismisses compose (not back-to-menu). */
 export const clearComposeWizardSessionForRoute = (route: ExploreCompose | null): void => {
   const flowId = composeFlowIdFromRoute(route);
-  if (!flowId) return;
-  if (route && 'intent' in route) {
-    if (route.intent === 'organize') clearOrganizeWizardSession(flowId);
-    else if (route.intent === 'find') clearDemandWizardSession(flowId);
-    else if (route.intent === 'add' && 'kind' in route && route.kind) {
-      clearContributeWizardSession(route.kind);
+  if (!flowId || !route || 'surface' in route) return;
+  if (route.intent === 'plan' && 'mode' in route) {
+    if (route.mode === 'hosting') clearOrganizeWizardSession(flowId);
+    else clearDemandWizardSession(flowId);
+    return;
+  }
+  if (route.intent === 'contribute' && 'target' in route) {
+    if (route.target === 'facility') {
+      clearContributeWizardSession('facility');
+      return;
     }
+    const kind =
+      route.kind === 'outdoor_other' || route.kind === 'event'
+        ? 'event'
+        : (route.kind as ContributeVenueKind);
+    clearContributeWizardSession(kind);
+    return;
+  }
+  if (route.intent === 'organize') clearOrganizeWizardSession(flowId);
+  else if (route.intent === 'find') clearDemandWizardSession(flowId);
+  else if (route.intent === 'add' && 'kind' in route && route.kind) {
+    clearContributeWizardSession(route.kind);
   }
 };
 
@@ -139,8 +158,26 @@ function readJson<T>(key: string, legacyKey?: string): T | null {
   }
 }
 
-const readSessionJson = <T>(flowId: ComposeFlowId, scope?: string): T | null =>
-  readJson<T>(sessionKey(flowId, scope), legacySessionKey(flowId, scope));
+const readSessionJson = <T>(flowId: ComposeFlowId, scope?: string): T | null => {
+  const canonical = normalizeComposeFlowId(flowId);
+  const primary = sessionKey(canonical, scope);
+  const fromPrimary = readJson<T>(primary, legacySessionKey(canonical, scope));
+  if (fromPrimary) return fromPrimary;
+  for (const legacyId of legacyComposeFlowIdsFor(canonical)) {
+    const legacyFlowKey = `${STORAGE_PREFIX}:${legacyId}${scope ? `:${scope}` : ''}`;
+    const migrated = readJson<T>(legacyFlowKey);
+    if (migrated) {
+      writeJson(primary, migrated);
+      try {
+        sessionStorage.removeItem(legacyFlowKey);
+      } catch {
+        /* ignore */
+      }
+      return migrated;
+    }
+  }
+  return null;
+};
 
 function writeJson(key: string, value: unknown): void {
   try {

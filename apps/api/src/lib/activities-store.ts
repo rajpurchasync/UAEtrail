@@ -371,6 +371,18 @@ export const publishActivityById = async (activityId: string) => {
     locationName: location?.name ?? null,
     tenantName: tenant?.name ?? null,
   });
+  if (mongoDoc.activityMode !== 'seeking') {
+    const { notifyAvailabilityHoldersOfHostedActivity } = await import(
+      '../services/availability-hosted-match-notifications.js'
+    );
+    void notifyAvailabilityHoldersOfHostedActivity({
+      activityId,
+      hostUserId: actorUserId,
+      activityTitle: mongoDoc.title,
+      activityStartAt: mongoDoc.startAt ?? publishedAt,
+      activityType: mongoDoc.activityType,
+    });
+  }
   if (areaId && mongoDoc.activityMode !== 'seeking') {
     const { notifySeekersOfHostedActivityInArea } = await import('../services/seeking-area-match-notifications.js');
     void notifySeekersOfHostedActivityInArea({

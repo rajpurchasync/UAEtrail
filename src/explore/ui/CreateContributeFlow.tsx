@@ -27,7 +27,7 @@ import {
   type ContributeSubmitResult,
   type ContributeDraft,
 } from './contributeFlow';
-import type { LocationPrecision, ActivityDifficulty } from './organizeFlow';
+import type { ActivityDifficulty, LocationPrecision } from './createFlowShared';
 import { getVenueStateFilterOptions } from '../../config/regions';
 import { ContributeHikingTrailPreview } from './ContributeHikingTrailPreview';
 import { ContributeCampingSpotPreview } from './ContributeCampingSpotPreview';

@@ -18,7 +18,12 @@ const isVenueActivityType = (activityType: string): boolean =>
   activityType === 'hiking' || activityType === 'camping' || activityType === 'event';
 
 export type EntityFetchResult =
-  | { kind: 'place'; place: Place | null; premium: LocationDetailResponse['premium'] }
+  | {
+      kind: 'place';
+      place: Place | null;
+      premium: LocationDetailResponse['premium'];
+      nearbyFacilities: LocationDetailResponse['nearbyFacilities'];
+    }
   | { kind: 'activity'; activity: ActivityDetailDTO }
   | { kind: 'organisation'; tenant: TenantPublicDTO }
   | { kind: 'shop'; shop: ShopPublicDTO }
@@ -31,12 +36,18 @@ export const fetchEntity = async (ref: EntityRef): Promise<EntityFetchResult> =>
       const response = await fetchPublicPlaceDetailPayload(ref.id);
       const activityType = response.data.activityType;
       if (!isVenueActivityType(activityType)) {
-        return { kind: 'place', place: null, premium: response.premium ?? null };
+        return {
+          kind: 'place',
+          place: null,
+          premium: response.premium ?? null,
+          nearbyFacilities: response.nearbyFacilities ?? [],
+        };
       }
       return {
         kind: 'place',
         place: mapLocationToPlace(response.data),
         premium: response.premium ?? null,
+        nearbyFacilities: response.nearbyFacilities ?? [],
       };
     }
     case 'activity': {
@@ -68,12 +79,20 @@ export const fetchEntity = async (ref: EntityRef): Promise<EntityFetchResult> =>
 
 export const fetchPlaceEntity = async (
   id: string
-): Promise<{ place: Place | null; premium: LocationDetailResponse['premium'] }> => {
+): Promise<{
+  place: Place | null;
+  premium: LocationDetailResponse['premium'];
+  nearbyFacilities: LocationDetailResponse['nearbyFacilities'];
+}> => {
   const result = await fetchEntity({ kind: 'place', id, activityType: 'hiking' });
   if (result.kind !== 'place') {
     throw new Error('Expected place entity result.');
   }
-  return { place: result.place, premium: result.premium };
+  return {
+    place: result.place,
+    premium: result.premium,
+    nearbyFacilities: result.nearbyFacilities ?? [],
+  };
 };
 
 /** Alias for place detail pages — same as {@link fetchPlaceEntity}. */

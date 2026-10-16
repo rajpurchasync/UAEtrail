@@ -30,7 +30,7 @@ import {
   EXPLORE_MAP_PATH,
   memberProfilePath,
   tripsCompletedPath,
-  tripsPlansPath,
+  planHostedSchedulePath,
 } from '../config/routingCatalog';
 
 export const Profile = () => {
@@ -178,7 +178,7 @@ export const Profile = () => {
         key: 'hosted',
         label: 'Organized',
         value: hostedCount,
-        to: tripsPlansPath('hosted'),
+        to: planHostedSchedulePath(),
       });
     }
 

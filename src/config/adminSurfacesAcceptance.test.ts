@@ -16,11 +16,12 @@ export const ADMIN_PLATFORM_ROUTE_CATALOG: Array<{
   inSidebar: boolean;
 }> = [
   { path: '/admin/overview', page: 'AdminOverview.tsx', inSidebar: true },
-  { path: '/admin/places', page: 'AdminPlaces.tsx', inSidebar: true },
   { path: '/admin/areas', page: 'AdminAreas.tsx', inSidebar: true },
+  { path: '/admin/places', page: 'AdminPlaces.tsx', inSidebar: true },
+  { path: '/admin/activities', page: 'AdminActivities.tsx', inSidebar: true },
+  { path: '/admin/facilities', page: 'AdminPlaces.tsx', inSidebar: true },
   { path: '/admin/users', page: 'AdminMembers.tsx', inSidebar: true },
   { path: '/admin/hosts', page: 'AdminOrganisations.tsx', inSidebar: true },
-  { path: '/admin/activities', page: 'AdminActivities.tsx', inSidebar: true },
   { path: '/admin/groups', page: 'AdminGroups.tsx', inSidebar: true },
   { path: '/admin/shop', page: 'AdminShop.tsx', inSidebar: true },
   { path: '/admin/reports', page: 'AdminReports.tsx', inSidebar: true },

@@ -4,6 +4,7 @@ import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
 import {
   CONTRIBUTE_PENDING_NOTE_LOCATION,
   CONTRIBUTE_SUBMIT_SUCCESS_BODY_CAMP,
+  CONTRIBUTE_SUBMIT_SUCCESS_BODY_FACILITY,
   CONTRIBUTE_SUBMIT_SUCCESS_BODY_SHOP,
   CONTRIBUTE_SUBMIT_SUCCESS_BODY_TRAIL,
   CONTRIBUTE_SUBMIT_SUCCESS_TITLE,
@@ -17,6 +18,7 @@ type ContributeSubmitSuccessSheetProps = {
   result: ContributeSubmitResult;
   title: string;
   onViewPending: () => void | Promise<void>;
+  variant?: 'default' | 'facility';
 };
 
 export const ContributeSubmitSuccessSheet = ({
@@ -25,15 +27,18 @@ export const ContributeSubmitSuccessSheet = ({
   result,
   title,
   onViewPending,
+  variant = 'default',
 }: ContributeSubmitSuccessSheetProps) => {
   const location = result.location;
   const isShopPin = location.activityType === 'shop';
   const successBody =
-    isShopPin
-      ? CONTRIBUTE_SUBMIT_SUCCESS_BODY_SHOP
-      : location.activityType === 'camping'
-        ? CONTRIBUTE_SUBMIT_SUCCESS_BODY_CAMP
-        : CONTRIBUTE_SUBMIT_SUCCESS_BODY_TRAIL;
+    variant === 'facility'
+      ? CONTRIBUTE_SUBMIT_SUCCESS_BODY_FACILITY
+      : isShopPin
+        ? CONTRIBUTE_SUBMIT_SUCCESS_BODY_SHOP
+        : location.activityType === 'camping'
+          ? CONTRIBUTE_SUBMIT_SUCCESS_BODY_CAMP
+          : CONTRIBUTE_SUBMIT_SUCCESS_BODY_TRAIL;
   const pendingNote = CONTRIBUTE_PENDING_NOTE_LOCATION;
 
   return (

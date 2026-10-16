@@ -28,7 +28,7 @@ Confirm and align **main consumer surfaces** where users **understand an object*
 | 3 | Chat | `/chat` | `Messages.tsx` | Tab chrome | **Keep** |
 | 4 | Area detail | `/area/:slug` | `AreaDetailPage` | Hero + **scroll sections** | **Tabbed** hub (Phase 4) |
 | 5–6 | Activity detail | `/activity/:id` | `ActivityDetailByKind` → kind `*ActivityDetailPage` → `ActivityDetailPageShell` → `ActivityDetailView` | `MobileDetailShell` + Plan/Place/Buddies/Transport | **Keep** — Phase 2 kind templates wired; fold/body IA ◐ |
-| 7 | Place (trail/camp/venue) | `/trail`, `/camp`, `/venue` | `PlaceDetailCore` | Overview / Location / Guide tabs | **Overview / Facts / Transport** (+ guide) (Phase 3) |
+| 7 | Place (trail/camp/venue) | `/trail`, `/camp`, `/venue` | `PlaceDetailPageShell` → `PlaceConsumerDetailPage` | Scroll sections (activity parity) | **Shipped (Oct 2026)** — peek `PlacePeekHero`; legacy `PlaceDetailCore` for premium guide only |
 | 8 | Member (public) | `/member/:userId` | `MemberProfile` | `ConsumerShell` | **Keep** — optional polish |
 | 9 | Shop | `/shop/:id` | `ShopPublicPage` | Custom | **Entity public shell** (Phase 5) |
 | 10 | Agency / guide | `/guide`, `/agency`, `/partner` | `OrganisationPublicProfile` | `ConsumerShell` | **Entity public shell** (Phase 5) |
@@ -559,9 +559,9 @@ Full table: [`member-surfaces-implementation-plan.md`](./member-surfaces-impleme
 | Discovery UI stack | [`SYSTEM_COHERENCE.md`](../SYSTEM_COHERENCE.md) §6.1 — L1 `src/discovery/`, L2 `map-peek/` + `peek/{entity}/` |
 | Activity pin summary | `ActivityMapPeekHost` → `ActivityPeekCard` → `MapPeekShell` → `card.path` → `*ActivityDetailPage` |
 | Place detail (kind templates) | `src/pages/place/HikingPlaceDetailPage.tsx`, `CampingPlaceDetailPage.tsx`, `EventPlaceDetailPage.tsx` → `PlaceDetailPage` |
-| Place pin summary | `src/explore/ui/peek/PlacePeekCard.tsx` → `MapPeekShell` → `/trail` · `/camp` · `/venue` |
+| Place pin summary | `PlacePeekCard` → `PlacePeekHero` / `PlacePeekBody` / `PlacePeekActions` → `MapPeekShell` (`showPlaceCatalogHero`) |
 | Activity tab ids | `src/activity/activityDetailTab.ts` |
-| Place detail body | `src/components/place/PlaceDetailCore.tsx`, `src/components/ui/PlaceDetailTabs.tsx` |
+| Place detail body | `src/place/detail/templates/PlaceConsumerDetailPage.tsx` (`PlaceDetailPageShell`); legacy tabs: `PlaceDetailCore.tsx`, `PlaceDetailTabs.tsx` |
 | Area hub | `src/pages/AreaDetailPage.tsx`, `src/components/area/AreaDetailView.tsx`, `areaHubClientApi` |
 | Public entity shell | `src/components/entity-public/EntityPublicDetailShell.tsx` |
 | Data lineage guard | `src/config/detailSurfaceDataLineageGuard.test.ts` |

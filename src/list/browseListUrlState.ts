@@ -33,8 +33,8 @@ export const parseBrowseDiscoverOpen = (value: string | null): boolean => value 
 
 export const parseListCatParam = (value: string | null): BrowseMainCategoryKey | null => {
   if (value === 'shops') return 'venues';
+  if (value === 'activities' || value === 'trips') return 'activities';
   if (
-    value === 'trips' ||
     value === 'venues' ||
     value === 'people' ||
     value === 'guides' ||
@@ -90,7 +90,7 @@ const parseTripAndPlaceTopics = (
   const tripTopics: BrowseTripTopicKey[] = [];
   const placeTopics: ListVenuePlaceTopicKey[] = [];
   const venuesContext = listCat === 'venues';
-  const tripsContext = listCat === 'trips';
+  const tripsContext = listCat === 'activities';
 
   for (const part of filterParam.split(',')) {
     const trimmed = part.trim();

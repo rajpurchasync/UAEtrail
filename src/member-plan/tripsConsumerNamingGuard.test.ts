@@ -6,10 +6,18 @@ const SCAN_ROOT = join(process.cwd(), 'src');
 
 const ALLOWLIST = new Set([
   'src/member-plan/tripsConsumerNamingGuard.test.ts',
+  'src/member-plan/planHubRouting.ts',
+  'src/member-plan/legacyTripsRedirect.ts',
+  'src/member-plan/resolveTripsContent.ts',
+  'src/member-plan/resolvePlanHubView.ts',
+  'src/member-plan/participantIntentPlan.ts',
   'src/config/surfacePaths.ts',
   'src/App.tsx',
   'src/utils/notificationRouting.test.ts',
   'src/pages/operator/Overview.tsx',
+  'src/explore/exploreItemSearch.ts',
+  'src/explore/explorePinKindFilter.ts',
+  'src/list/browseListTaxonomy.ts',
 ]);
 
 const DEPRECATED_TRIPS_SHIM_PREFIX = 'src/trips/';
@@ -30,7 +38,7 @@ const collectSourceFiles = (dir: string): string[] => {
 };
 
 describe('tripsConsumerNamingGuard', () => {
-  it('consumer UI does not use “My trips” hub copy or link to /profile/my-trips', () => {
+  it('consumer UI does not use trips hub product copy or link to /profile/my-trips', () => {
     const violations: string[] = [];
     const myTripsCopy = /My trips/;
     const legacyHistoryLink =
@@ -44,6 +52,22 @@ describe('tripsConsumerNamingGuard', () => {
       }
       if (legacyHistoryLink.test(content)) {
         violations.push(`${file}: use PROFILE_HISTORY_PATH from routingCatalog`);
+      }
+    }
+
+    expect(violations).toEqual([]);
+  });
+
+  it('consumer UI does not link to legacy /trips hub (use /plan)', () => {
+    const violations: string[] = [];
+    const legacyTripsLink =
+      /(?:to|href)=\{?[`"']\/trips(?:[?'"])|(?:to|href)=["']\/trips|navigate\(\s*[`"']\/trips/;
+
+    for (const file of collectSourceFiles(SCAN_ROOT)) {
+      if (ALLOWLIST.has(file)) continue;
+      const content = readFileSync(join(process.cwd(), file), 'utf8');
+      if (legacyTripsLink.test(content)) {
+        violations.push(`${file}: use PLAN_PATH / planRouting helpers — not /trips`);
       }
     }
 

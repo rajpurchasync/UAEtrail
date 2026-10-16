@@ -1,12 +1,27 @@
 import { useState, useCallback, useMemo } from 'react';
 import { useSafeAsyncEffect } from '../hooks/useSafeAsyncEffect';
-import { type AreaDTO, PlaceDTO, placeDetailPath } from '@uaetrail/shared-types';
+import {
+  type AreaDTO,
+  FACILITY_PLACE_KINDS,
+  PLACE_KIND_LABELS,
+  PlaceDTO,
+  facilityPlaceKindPinEmoji,
+  placeDetailPath,
+  placeKindFromLocationRow,
+  tagsForPlaceKind,
+  type PlaceKind,
+} from '@uaetrail/shared-types';
+import { adminCatalogSegmentForRow, type AdminCatalogSegment } from '../place/adminCatalogSegment';
 import { Link, useSearchParams } from 'react-router-dom';
 import {
+  createAdminFacility,
   createAdminPlace,
+  deleteAdminFacility,
   deleteAdminPlace,
   fetchAdminAreas,
+  fetchAdminFacilitiesCatalog,
   fetchAdminPlacesCatalog,
+  updateAdminFacility,
   updateAdminPlace,
 } from '../hooks/adminConsoleApi';
 import { DashboardLayout } from '../components/layout';
@@ -70,8 +85,12 @@ const emptyForm: Partial<PlaceDTO> = {
 const isCatalogMapPlace = (loc: Pick<PlaceDTO, 'tags'>): boolean =>
   loc.tags?.includes('catalog-import') ?? false;
 
+type AdminPlacesProps = {
+  catalogSegment?: AdminCatalogSegment;
+};
+
 /** Admin console for places (trails, camps, event venues). Canonical route: `/admin/places`. */
-export const AdminPlaces = () => {
+export const AdminPlaces = ({ catalogSegment = 'outdoor' }: AdminPlacesProps) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const filterAreaId = searchParams.get('areaId')?.trim() || null;
   const [places, setPlaces] = useState<PlaceDTO[]>([]);
@@ -92,7 +111,10 @@ export const AdminPlaces = () => {
   const loadPlaces = async (isActive: () => boolean = () => true) => {
     setLoading(true);
     try {
-      const catalog = await fetchAdminPlacesCatalog();
+      const catalog =
+        catalogSegment === 'facility'
+          ? await fetchAdminFacilitiesCatalog()
+          : await fetchAdminPlacesCatalog();
       if (!isActive()) return;
       setPlaces(catalog);
     } catch (err) {
@@ -103,7 +125,7 @@ export const AdminPlaces = () => {
     }
   };
 
-  useSafeAsyncEffect((isActive) => loadPlaces(isActive), []);
+  useSafeAsyncEffect((isActive) => loadPlaces(isActive), [catalogSegment]);
 
   useSafeAsyncEffect(async (isActive) => {
     try {
@@ -142,6 +164,15 @@ export const AdminPlaces = () => {
     setFormStep(1);
   };
 
+  const selectFacilityType = (kind: PlaceKind) => {
+    setForm({
+      ...emptyForm,
+      activityType: 'event',
+      tags: tagsForPlaceKind(kind),
+    });
+    setFormStep(1);
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.images || form.images.length === 0) { setError('At least 1 photo is required'); return; }
@@ -155,7 +186,13 @@ export const AdminPlaces = () => {
         ...(form.activityType === 'camping' ? { distance: undefined, duration: undefined, elevation: undefined } : {}),
         ...(form.activityType === 'hiking' || form.activityType === 'event' ? { campingType: undefined } : {})
       };
-      if (editingId) {
+      if (catalogSegment === 'facility') {
+        if (editingId) {
+          await updateAdminFacility(editingId, payload);
+        } else {
+          await createAdminFacility(payload);
+        }
+      } else if (editingId) {
         await updateAdminPlace(editingId, payload);
       } else {
         await createAdminPlace(payload);
@@ -185,11 +222,23 @@ export const AdminPlaces = () => {
           openEdit(confirmAction.loc);
           return;
         }
-        await updateAdminPlace(confirmAction.loc.id, { status: 'active' });
+        if (catalogSegment === 'facility') {
+          await updateAdminFacility(confirmAction.loc.id, { status: 'active' });
+        } else {
+          await updateAdminPlace(confirmAction.loc.id, { status: 'active' });
+        }
       } else if (confirmAction.type === 'status') {
         const newStatus = confirmAction.loc.status === 'active' ? 'inactive' : 'active';
-        await updateAdminPlace(confirmAction.loc.id, { status: newStatus });
-      } else await deleteAdminPlace(confirmAction.loc.id);
+        if (catalogSegment === 'facility') {
+          await updateAdminFacility(confirmAction.loc.id, { status: newStatus });
+        } else {
+          await updateAdminPlace(confirmAction.loc.id, { status: newStatus });
+        }
+      } else if (catalogSegment === 'facility') {
+        await deleteAdminFacility(confirmAction.loc.id);
+      } else {
+        await deleteAdminPlace(confirmAction.loc.id);
+      }
       setConfirmAction(null); await loadPlaces();
     } catch (err) { setError(err instanceof Error ? err.message : 'Action failed'); setConfirmAction(null); }
   };
@@ -210,10 +259,12 @@ export const AdminPlaces = () => {
     : null;
 
   const filtered = places
+    .filter((l) => adminCatalogSegmentForRow(l) === catalogSegment)
     .filter((l) => {
       if (filterAreaId && l.areaId !== filterAreaId) return false;
       if (activeTab === 'pending') return l.status === 'draft';
       if (activeTab === 'all') return true;
+      if (catalogSegment === 'facility') return true;
       return l.activityType === activeTab;
     })
     .filter((l) => !search || l.name.toLowerCase().includes(search.toLowerCase()) || l.region.toLowerCase().includes(search.toLowerCase()));
@@ -223,10 +274,15 @@ export const AdminPlaces = () => {
     [adminAreas]
   );
 
-  const hikingCount = places.filter((l) => l.activityType === 'hiking').length;
-  const campingCount = places.filter((l) => l.activityType === 'camping').length;
-  const communityActivityCount = places.filter((l) => l.activityType === 'event').length;
-  const pendingCount = places.filter((l) => l.status === 'draft').length;
+  const segmentPlaces = useMemo(
+    () => places.filter((l) => adminCatalogSegmentForRow(l) === catalogSegment),
+    [places, catalogSegment]
+  );
+
+  const hikingCount = segmentPlaces.filter((l) => l.activityType === 'hiking').length;
+  const campingCount = segmentPlaces.filter((l) => l.activityType === 'camping').length;
+  const communityActivityCount = segmentPlaces.filter((l) => l.activityType === 'event').length;
+  const pendingCount = segmentPlaces.filter((l) => l.status === 'draft').length;
   const regionOptions = getRegionsForCountry((form.countryCode as CountryCode) ?? DEFAULT_COUNTRY);
 
   const statusBadge = (status: string) => {
@@ -252,7 +308,10 @@ export const AdminPlaces = () => {
   );
 
   return (
-    <DashboardLayout title="Admin Dashboard" links={ADMIN_LINKS}>
+    <DashboardLayout
+      title={catalogSegment === 'facility' ? 'Admin · Facilities' : 'Admin Dashboard'}
+      links={ADMIN_LINKS}
+    >
       <div className="space-y-4">
         <p className="text-sm text-gray-600 max-w-3xl">
           Curated explore pins can be corrected here — open <strong>Edit</strong>, move the map pin, and update name,
@@ -282,30 +341,34 @@ export const AdminPlaces = () => {
           <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
             <button onClick={() => setActiveTab('all')}
               className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${activeTab === 'all' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}>
-              All ({places.length})
+              All ({segmentPlaces.length})
             </button>
             <button onClick={() => setActiveTab('pending')}
               className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${activeTab === 'pending' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}>
               Pending ({pendingCount})
             </button>
-            <button onClick={() => setActiveTab('hiking')}
-              className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${activeTab === 'hiking' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}>
-              🥾 Hiking ({hikingCount})
-            </button>
-            <button onClick={() => setActiveTab('camping')}
-              className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${activeTab === 'camping' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}>
-              ⛺ Camping ({campingCount})
-            </button>
-            <button onClick={() => setActiveTab('event')}
-              className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${activeTab === 'event' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}>
-              🏃 Events ({communityActivityCount})
-            </button>
+            {catalogSegment === 'outdoor' ? (
+              <>
+                <button onClick={() => setActiveTab('hiking')}
+                  className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${activeTab === 'hiking' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}>
+                  🥾 Hiking ({hikingCount})
+                </button>
+                <button onClick={() => setActiveTab('camping')}
+                  className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${activeTab === 'camping' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}>
+                  ⛺ Camping ({campingCount})
+                </button>
+                <button onClick={() => setActiveTab('event')}
+                  className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${activeTab === 'event' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}>
+                  🏃 Events ({communityActivityCount})
+                </button>
+              </>
+            ) : null}
           </div>
           <div className="flex items-center gap-3">
             <input type="text" placeholder="Search name or region..." value={search} onChange={(e) => setSearch(e.target.value)}
               className="border rounded-lg px-3 py-1.5 text-sm w-52" />
             <button onClick={openCreate} className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 text-sm font-medium">
-              + Add Place
+              {catalogSegment === 'facility' ? '+ Add facility' : '+ Add Place'}
             </button>
           </div>
         </div>
@@ -357,9 +420,16 @@ export const AdminPlaces = () => {
                     {loc.areaId ? areaNameById.get(loc.areaId) ?? '—' : '—'}
                   </td>
                   <td className="px-4 py-3">
-                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${activityTypeBadgeClass(loc.activityType)}`}>
-                      {activityTypeLabel(loc.activityType)}
-                    </span>
+                    {catalogSegment === 'facility' ? (
+                      <span className="px-2 py-0.5 rounded text-xs font-medium bg-sky-50 text-sky-900">
+                        {facilityPlaceKindPinEmoji(placeKindFromLocationRow(loc))}{' '}
+                        {PLACE_KIND_LABELS[placeKindFromLocationRow(loc)]}
+                      </span>
+                    ) : (
+                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${activityTypeBadgeClass(loc.activityType)}`}>
+                        {activityTypeLabel(loc.activityType)}
+                      </span>
+                    )}
                   </td>
                   <td className="px-4 py-3">{statusBadge(loc.status)}</td>
                   <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
@@ -382,7 +452,10 @@ export const AdminPlaces = () => {
             </tbody>
           </table>
         </div>
-        <p className="text-xs text-gray-500">Showing {filtered.length} of {places.length} places. Click a row to preview.</p>
+        <p className="text-xs text-gray-500">
+          Showing {filtered.length} of {segmentPlaces.length}{' '}
+          {catalogSegment === 'facility' ? 'facilities' : 'places'}. Click a row to preview.
+        </p>
       </div>
 
       {/* ─── Preview Modal ─────────────────────────────────────────────────── */}
@@ -510,7 +583,26 @@ export const AdminPlaces = () => {
             </div>
 
             {/* ── Step 0: Type Selection ── */}
-            {formStep === 0 && !editingId && (
+            {formStep === 0 && !editingId && catalogSegment === 'facility' && (
+              <div className="p-6">
+                <p className="text-sm text-gray-600 mb-4 text-center">Choose facility type</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-w-3xl mx-auto">
+                  {FACILITY_PLACE_KINDS.map((kind) => (
+                    <button
+                      key={kind}
+                      type="button"
+                      onClick={() => selectFacilityType(kind)}
+                      className="border-2 border-gray-200 hover:border-emerald-400 rounded-xl p-4 text-center transition-all hover:shadow-md"
+                    >
+                      <div className="text-3xl mb-1">{facilityPlaceKindPinEmoji(kind)}</div>
+                      <p className="text-sm font-semibold text-gray-900">{PLACE_KIND_LABELS[kind]}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {formStep === 0 && !editingId && catalogSegment === 'outdoor' && (
               <div className="p-8">
                 <p className="text-sm text-gray-600 mb-6 text-center">Choose what type of place you want to add</p>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-3xl mx-auto">

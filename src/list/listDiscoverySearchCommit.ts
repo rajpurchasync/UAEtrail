@@ -8,7 +8,7 @@ export const browseCategoriesForSearchScope = (
 ): BrowseMainCategoryKey[] | null => {
   switch (scope) {
     case 'activities':
-      return ['trips'];
+      return ['activities'];
     case 'places':
       return ['venues'];
     case 'people':

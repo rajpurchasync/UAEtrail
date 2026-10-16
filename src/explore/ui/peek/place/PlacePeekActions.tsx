@@ -1,36 +1,45 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { DiscoveryCardModel } from '../../../../discovery/discoveryCardModel';
-import { exploreCardHasMapCoords } from '../../../../discovery/discoveryCardModel';
 import { LIST_FEED_CTA_VIEW_DETAILS } from '../../../../list/listFeedCtaCopy';
+import { PLACE_PEEK_ARRANGE_TRIP } from '../../../../content/placePeekCopy';
 import { EXPLORE_PEEK_CTA } from '../../../../config/exploreTheme';
-import { ExploreCardDirectionsButton } from '../../ExploreCardPresentation';
 import { PeekDetailLink } from '../../map-peek/PeekDetailLink';
+import { navigateOrganizeFromPlaceCard } from '../../../../place/peek/navigateOrganizeFromPlaceCard';
 
-/** Catalog **Place** pin (`card.source === 'venue'` on explore wire). */
 export type PlacePeekActionsProps = {
   card: DiscoveryCardModel;
   onClose: () => void;
   onGuestGatedPlanTrip?: () => void;
 };
 
-/** Catalog place pin summary — directions + view details. */
 export const PlacePeekActions = ({
   card,
   onClose,
   onGuestGatedPlanTrip,
 }: PlacePeekActionsProps) => {
-  const hasCoords = exploreCardHasMapCoords(card);
+  const navigate = useNavigate();
+  const [arranging, setArranging] = useState(false);
+
+  const onArrangeTrip = () => {
+    if (onGuestGatedPlanTrip) {
+      onGuestGatedPlanTrip();
+      return;
+    }
+    setArranging(true);
+    void navigateOrganizeFromPlaceCard(navigate, card).finally(() => setArranging(false));
+  };
 
   return (
     <div className="space-y-2">
-      {hasCoords ? (
-        <ExploreCardDirectionsButton
-          latitude={card.mapLatitude}
-          longitude={card.mapLongitude}
-          showAppPickerAffordance={false}
-          showLeadingIcon={false}
-          className={EXPLORE_PEEK_CTA.primary}
-        />
-      ) : null}
+      <button
+        type="button"
+        disabled={arranging}
+        onClick={onArrangeTrip}
+        className={EXPLORE_PEEK_CTA.primary}
+      >
+        {arranging ? 'Opening…' : PLACE_PEEK_ARRANGE_TRIP}
+      </button>
       <PeekDetailLink
         card={card}
         label={LIST_FEED_CTA_VIEW_DETAILS}

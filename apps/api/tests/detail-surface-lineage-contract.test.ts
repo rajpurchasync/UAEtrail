@@ -7,6 +7,7 @@ import request from 'supertest';
 import type { Express } from 'express';
 import {
   ActivityStatus,
+  LocationStatus,
   MembershipRole,
   ProductStatus,
   TenantBusinessMode,
@@ -28,6 +29,7 @@ import {
   type PublishedEventFixture,
 } from './helpers/fixtures.js';
 import { defaultTestAreaId, ensureCuratedAreasSeeded } from './helpers/test-seed.js';
+import { createFacilityRecord } from '../src/lib/facilities-store.js';
 
 let app: Express;
 const suffix = `detail-lineage-${Date.now()}`;
@@ -192,6 +194,24 @@ describe('detail surface lineage (admin catalog → public read)', () => {
     expect(areaDetail.status).toBe(200);
     const previewIds = (areaDetail.body.data.preview.places as Array<{ id: string }>).map((p) => p.id);
     expect(previewIds).toContain(createdPlaceId);
+
+    const facility = await createFacilityRecord({
+      name: `Lineage toilet ${suffix}`,
+      region: 'Dubai',
+      areaId: createdAreaId!,
+      facilityKind: 'toilet',
+      parentPlaceId: createdPlaceId!,
+      description: 'Facility amenity for detail surface lineage public GET contract.',
+      latitude: 25.2,
+      longitude: 55.27,
+      images: ['https://example.com/lineage-facility.jpg'],
+      registeredByUserId: 'lineage-admin',
+      status: LocationStatus.ACTIVE,
+    });
+
+    const facilityRead = await request(app).get(`/api/v1/facilities/${facility.id}`);
+    expect(facilityRead.status).toBe(200);
+    expect(facilityRead.body.viewerAccess?.canOpenDetailPage).toBe(true);
   });
 });
 

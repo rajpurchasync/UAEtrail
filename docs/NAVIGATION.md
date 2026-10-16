@@ -19,14 +19,15 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 
 ### Profile hub (`/profile`)
 
-- **Priority order:** Consumer hub (identity card + **stats row**, About you bio/speaks, **Goals teaser** → Plan `?lens=goals`, launcher **tiles**) — not stacked settings menus. **Settings** via More sheet or `/profile/settings`.
+- **Priority order:** Consumer hub (identity card + **stats row**, About you bio/speaks, **Goals teaser** → Plan **Wishlist** (`planWishlistTabPath()` / `tab=wishlist`), launcher **tiles**) — not stacked settings menus. **Settings** via More sheet or `/profile/settings`.
 - **Badges:** `/profile/badges` — earned badges + share (`ProfileBadges.tsx`); launcher tile + badge-earn notifications → `PROFILE_BADGES_PATH`. Legacy `/rewards`, `/trail-points` redirect here. **Not** on Plan.
-- **Contributions:** `/contributions` — places you submitted (`getMySubmittedPlaces`) + link to **Reviews** (`/profile/reviews`). Launcher tile; back stack → Profile. **Add** on Explore map (`compose=add`) is the create path; inventory lives here, not Plan.
+- **Submissions (target CPC-6):** `/profile/submissions` — places and facilities you submitted + link to **Reviews** (`/profile/reviews`). **`/contributions`** redirects here. Launcher tile; back stack → Profile. **Contribute** on Explore FAB is the create path; inventory lives here, not the Plan tab.
+- **Contributions (today):** `/contributions` — same as above until CPC-6 redirect.
 - **Edit profile:** `/profile/edit` — name, gender, bio, speaks, location (no DOB edit on this screen).
 - **Pull-to-refresh** reloads hub data at scroll top.
 - **Sign out:** Profile hub (bottom) and Settings → Account.
 - **Outing history + map:** `/profile/history` — joined / hosted / self **past** outings; **History · My Map** tabs (`PROFILE_HISTORY_MAIN_TABS`). Journey map at `/profile/history/map`. Legacy `/profile/my-trips` redirects; `/trips`, `/trips/map`, `/activities` → `/plan` or history via `resolveLegacyTripsHubRedirect`.
-- **Saved (wishlist):** `/plan?view=plans&lens=saved` (`planSavedPath()`). Legacy `/profile/wishlist` and `segment=wishlist` URLs normalize to the same lens. Profile shows a teaser only — not a second full list ([`experiment/member-surfaces-implementation-plan.md`](./experiment/member-surfaces-implementation-plan.md) D13).
+- **Saved (wishlist):** `/plan?view=plans&tab=wishlist` (`planWishlistTabPath()` / `planSavedPath()`). Legacy `lens=saved|goals` and `/profile/wishlist` normalize on load. Profile shows a teaser only — not a second full list ([`experiment/member-surfaces-implementation-plan.md`](./experiment/member-surfaces-implementation-plan.md) D13).
 - **Settings stack:** `/profile/settings` index → Account, Privacy, Notifications sub-routes; **iPhone & iPad** (`#ios-install`, Safari steps) and **Android** (`#android-install`, Samsung Internet / Chrome manual steps — no in-app install prompt).
 - **Hamburger (header):** next to the notifications bell on tab chrome and desktop `Header` — Explore, **My Plans**, Messages, Profile/Signup, Download → Android / iOS (deep-link to the matching settings hash). Notifications are the bell only, not in the drawer.
 - **View public card (eye):** opens `/member/:userId` — preview should match what **other signed-in members** see (`public` visibility), not the owner’s full hub (API P3).
@@ -39,10 +40,20 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 
 ### Plan (`/plan`)
 
-- **Bottom nav middle tab** — forward commitments, not past history (past outings → **`/profile/history`** · journey map → **`/profile/history/map`**).
-- **Mobile tabs** (`?view=plans&tab=` — `src/plan/planTab.ts`): collapsible **goal progress** bar above **Upcoming** · **Wishlist** tabs. Upcoming: **Organizing | Joined** filters; **list ↔ calendar** toggle (`layout=calendar`); **Needs you** (participation only). Legacy `?lens=saved|goals|calendar` normalizes to tab/layout. **Available** editor: `?lens=availability` until moved to Profile.
-- **Query helpers:** `tripsPlansPath()`, `planSavedPath()`, `planLensPath()`. Legacy `segment` / `tab` / `segment=wishlist` normalize on load.
-- **`/trips`**, **`/activities`** redirect to `/plan` or `/profile/history` preserving query (`legacyTripsRedirect.ts`).
+- **Bottom nav middle tab** — UI label **My Plans**; route **`/plan`** (`PLAN_PATH`) — not `/me/plans` (API) or `/profile/plans` (alias redirect only).
+- **Forward commitments** only — past outings → **`/profile/history`** · journey map → **`/profile/history/map`**.
+- **Canonical query** (new links; legacy still parses): `view=plans` · `tab=upcoming|wishlist` · `filter=hosting|joined` · `layout=list|calendar` · `lens=availability` (availability editor stays on Plan — `planAvailabilityPath()` — not Profile settings). Helpers: **`src/plan/planRouting.ts`**.
+- **Mobile chrome** (`src/plan/planTab.ts`): **Upcoming** · **Wishlist**; goals on Wishlist. Legacy `?lens=saved|goals|calendar` normalizes on load.
+- **`/profile/plans`** → **`/plan`**. **`/trips`**, **`/activities`** → `/plan` or history (`legacyTripsRedirect.ts`).
+
+#### “Plan” disambiguation
+
+| Term | Meaning |
+|------|---------|
+| **My Plans** (tab) | **`/plan`** — upcoming, wishlist, goals, availability |
+| **Host · Find crew · Add** (FAB) | Explore **`?compose=`** — not the Plan tab |
+| **Activity detail Plan** | Outing facts on L3 — not **`/plan`** |
+| **`GET /me/*`** | API prefix — not the My Plans page URL |
 
 ### Outing history (`/profile/history`)
 
@@ -69,11 +80,12 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 | Route | Page module | Sidebar (`ADMIN_LINKS`) | Job |
 |-------|-------------|-------------------------|-----|
 | `/admin/overview` | `AdminOverview` | Overview | Metrics + shortcuts |
-| `/admin/places` | `AdminPlaces` | Places | Catalog place CRUD (`/admin/locations` → redirect) |
 | `/admin/areas` | `AdminAreas` | Areas | Curated area registry |
-| `/admin/users` | `AdminMembers` | Users | Member search, suspend, staff grant (`MEMBER_MODEL.md`) |
-| `/admin/hosts` | `AdminOrganisations` | Hosts | Host / tenant applications (`/admin/organizers` → redirect) |
+| `/admin/places` | `AdminPlaces` | Places | Trails, camps, event venues (`/admin/locations` → redirect) |
 | `/admin/activities` | `AdminActivities` | Activities | Outing moderation |
+| `/admin/facilities` | `AdminPlaces` (`catalogSegment=facility`) | Facilities | Amenity POIs (parking, toilet, …) — same `locations` rows |
+| `/admin/users` | `AdminMembers` | Users & Members | Member search, suspend, staff grant (`MEMBER_MODEL.md`) |
+| `/admin/hosts` | `AdminOrganisations` | Operators | Host / tenant applications (`/admin/organizers` → redirect) |
 | `/admin/groups` | `AdminGroups` | Groups | Platform groups |
 | `/admin/shop` | `AdminShop` | Shop | Shop catalog ops |
 | `/admin/reports` | `AdminReports` | Reports | Content reports queue |
@@ -171,7 +183,7 @@ Legacy browse URLs (`/map`, `/discovery`, `/calendar`, bare `/activities` as bro
 - **Guest join:** tapping Join on an activity opens a signup sheet (returns to map after auth).
 - First map visit shows a 3-step coach (localStorage `uaetrail:explore-coach-seen`); guest join banner appears after coach is dismissed.
 - Pass `list: true` to `explorePath()` only when opening the browse sheet intentionally.
-- **My trips map:** `explorePath({ myTrips: true, list: true })` sets `myTrips=1` and filters pins to the signed-in member’s wishlist + joined/pending activities.
+- **My plan on map:** `explorePath({ myPlan: true, list: true })` sets `myPlan=1` (legacy `myTrips=1` still parses) and filters pins to the signed-in member’s wishlist + joined/pending **activities**.
 - Filter/panel query params select map context; they do not imply list mode.
 - **Others drill-down (Activities tab):** `filter=others` → optional `subtype=events|activities`; when `subtype=activities`, optional `outingTopic` (`climbing`, `trail_run`, `workshop`, `community`, …). Helpers: `explorePath({ filter: 'others', subtype: 'activities', outingTopic: 'climbing' })`.
 
@@ -184,7 +196,7 @@ Map pill label **Find your crew** (see `explorePeopleBrowseCopy.ts`); opens `vie
 | Segment (`peopleTab`) | Label | Data / actions |
 |-----------------------|-------|----------------|
 | `looking` | Looking for | Published **`activities`** (`activityMode: seeking`) from **`GET /explore/map`** — same `ExploreListRow` as Activities list; not member availability. |
-| `available` | Free | `GET /explore/people/availability` — members who marked days + kinds; edit yours on Plan → **Available** (`planLensPath('availability')`). |
+| `available` | Free | `GET /explore/people/availability` — members who marked days + kinds; edit yours on Plan → **Available** (`planAvailabilityPath()`). |
 | `going` | Friends | `GET /me/member-discovery/roster` + social trip hints — buddies with upcoming outings. |
 | `connect` | Everyone | Directory from `GET /users/browse` / roster; **3** directory rows preview free, then Pro lock; profile opens count toward **3 unique profiles / 30d** (`MEMBER_DISCOVERY_QUOTA_LIMIT`). |
 
@@ -192,29 +204,19 @@ Cards show city, outings attended, and a subtle upcoming trip hint (link opens a
 
 ## Explore FAB (+)
 
-Full spec: **[`CREATE_FLOW.md`](./CREATE_FLOW.md)**.
+**Shipped (CPC v3):** **Host** · **Find crew** · **Add on map** — see [`CREATE_FLOW.md`](./CREATE_FLOW.md). **Not** the bottom nav **My Plans** tab (`/plan`). Domain lens: **What** (Host / fixed seek → activity) · **Where** (Add → place/facility) · **Who** / **How** on detail only — [`DOMAIN.md`](./DOMAIN.md) § What · Where · Who · How.
 
-Signed-in members tap **+** on `/explore` to compose. **Guests** → sign-in, then return to explore.
+Signed-in members tap **+** on `/explore` (or list FAB) to compose. **Guests** → sign-in, then return to explore.
 
-### Level 1 — `I would like to…`
-
-| Choice | Wizard |
+| Choice | Opens |
 |--------|--------|
-| **Organize** | Host publish (`CreateActivityFlow`) — requires approved host |
-| **Find** | Demand post (`CreateDemandFlow`) — any signed-in member |
-| **Add** | Place catalog (`CreateContributeFlow`) |
+| **Host** | `hostingFlowEngine` / per-kind hosting wizards |
+| **Find crew** | Fixed map seek (`seekingFlowEngine`) or **Share availability** (`member_availability`) |
+| **Add on map** | Place or facility submit |
 
-### Level 2 sub-options (same sheet, back navigation)
+Legacy compose URLs (`plan:*:hosting|seeking`, `organize:*`, `find:*`, `contribute:*`, `add:*`) still parse as aliases.
 
-| Branch | Options |
-|--------|---------|
-| Organize | Hiking · Camping · Event · Activity |
-| Find | Rideshare · Hiking · Camping · Activities |
-| Add | Camping Spots · Hiking Trails · Shops · Others |
-
-**Organize → Activity:** generic buddy flow — free-text “what” (run, jog, …); **no** hike/camp sub-picker. See CREATE_FLOW § Organize → Activity.
-
-**Going from:** required map pin on all Organize and Find **activity** flows; Add uses place location pin only.
+**Going from:** required map pin on **Plan** (activity) flows; **Contribute** uses place/facility pin only.
 
 **Components:** `CreateIntentSheet.tsx`, `ExploreExperience.tsx` (compose URL via `parseExploreCompose`).
 
@@ -228,10 +230,12 @@ Signed-in members tap **+** on `/explore` to compose. **Guests** → sign-in, th
 |-------|----------|-------------------|
 | Loader | `ActivityDetail.tsx` | `PlaceDetailPage.tsx` |
 | Kind pick | `ActivityDetailByKind` | `HikingPlaceDetailPage`, … |
-| L3 shell | `*ActivityDetailPage` → `ActivityDetailPageShell` | `PlaceDetailPage` + `heroKindSection` |
-| Scroll/tabs body | `ActivityConsumerDetailBody` | `PlaceDetailCore` |
+| L3 shell | `*ActivityDetailPage` → `ActivityDetailPageShell` | `*PlaceDetailPage` → `PlaceDetailPageShell` |
+| Scroll body | `ActivityConsumerDetailBody` | `PlaceConsumerDetailPage` (scroll; no public tab bar) |
 
 Public scroll slots come from **`GET /activities/:id` → `presentation.consumerLayout`** (same policy pass as embed `tabs`). Legacy `?tab=` scrolls via `activityDetailConsumerAnchors` — no public tab bar. **Embed only:** `ActivityManageSheet` / host preview use tabbed `ActivityDetailView` (`layout=embedded`). Catalog places: `/trail`, `/camp`, `/venue`; areas: `AreaDetailPage`.
+
+**Place detail (`/trail` · `/camp` · `/venue`):** Same modal chrome as activity (`ActivityConsumerDetailModalShell`) — **Back** · kind label · **Share** (header). Registry rows without `images[0]` are excluded from map/registry queries and return **404** on `GET /places/:id` when active (draft preview by submitter still allowed). **Hero image:** region · area · title. **Sections:** kind facts · ratings · about · **Transport** · scheduled activities · **Nearby facilities** (`nearbyFacilities` from `GET /places/:id` + `facility:` / `nearby:` tags) · reviews. **Footer:** **Arrange trip** only. Premium guide on consumer scroll via **`PlacePremiumGuidePanel`** (shared with legacy **`PlaceDetailTabs`** guide tab). **Map peek:** `PlacePeekHero` · kind facts · ratings · scheduled · **Arrange trip** + **View details**.
 
 **Pin summaries (map projection):** `ActivityPeekCard` · `PlacePeekCard` compose shared **`MapPeekShell`** chrome (`MapPeekOverlay` on map); **View details** → consumer detail templates above. “Explore” is the `/explore` surface name only — not this module naming.
 
@@ -262,6 +266,7 @@ Canonical paths only in **new UI**. Legacy URLs redirect in `src/App.tsx` — do
 | `/calendar` | `/explore` | 2026-Q4 |
 | `/shop` (bare) | `/explore?panel=shops` | 2026-Q4 |
 | `/trips`, `/trips/map`, `/activities` (any) | `/plan`, `/profile/history`, or `/profile/history/map` (preserves query; `create=*` → explore compose) | 2026-Q4 |
+| `/profile/plans` | `/plan` | 2026-Q4 |
 | `/rewards`, `/my-rewards`, `/trail-points` | `/profile/badges` | 2026-Q4 (Trail Points wallet removed; badges kept) |
 | `/community` | `/explore` (`COMMUNITY_PATH` — legacy Q&A feed removed) | 2026-Q4 |
 | `/membership` | `/explore` (`Membership.tsx`; not product home) | 2026-Q4 or fold |
@@ -305,7 +310,7 @@ Canonical paths only in **new UI**. Legacy URLs redirect in `src/App.tsx` — do
 | **Shop** | `/shop/:id` | `EntityPublicDetailShell` — **About · Products · Location** (`?tab=`) | — |
 | **Agency / guide** | `/guide`, `/agency`, `/partner` | `EntityPublicDetailShell` — **About · Outings · Contact** (`?tab=`) | — |
 | **Member (person)** | `/member/:userId` | Profile card — not a tenant storefront | — |
-| **Goals** | — | Embedded on **Plan → Wishlist** (`planLensPath('goals')`) | No `/goals` route |
+| **Goals** | — | Embedded on **Plan → Wishlist** (`planWishlistTabPath()`) | No `/goals` route |
 | **People (discovery)** | Explore `view=people` | Map panel **Find your crew** — **Available · Friends going · Everyone** | Legacy `/people` → explore people browse |
 | **People (friends)** | `/buddies` | **Friends** — requests · following (not the same as map People panel) | — |
 | **My Map** | `/profile/history/map` | Journey map under **history** stack | Not a root tab |

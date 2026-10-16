@@ -53,7 +53,7 @@ export const listCategorySecondaryFiltersActive = (
   filters: BrowseListFilterState,
   venueRegions: string[]
 ): boolean => {
-  if (category === 'trips') {
+  if (category === 'activities') {
     return (
       filters.price !== 'all' ||
       filters.when !== 'any' ||
@@ -78,7 +78,7 @@ export const buildListCategoryPrimaryPills = (
   filters: BrowseListFilterState,
   sync: (patch: Partial<BrowseListFilterState> & { regions?: string[] }) => void
 ): ListCategoryPill[] => {
-  if (category === 'trips') {
+  if (category === 'activities') {
     const topicPills = BROWSE_TRIP_TOPIC_FILTERS.map(({ key, label }) => ({
       id: `topic-${key}`,
       label,
@@ -141,7 +141,7 @@ export const buildListCategoryPillGroups = (
 ): ListCategoryPillGroup[] => {
   const groups: ListCategoryPillGroup[] = [];
 
-  if (category === 'trips') {
+  if (category === 'activities') {
     groups.push({
       id: 'type',
       label: 'Activity',
@@ -174,7 +174,7 @@ export const buildListCategoryPillGroups = (
     });
   }
 
-  if (category === 'trips') {
+  if (category === 'activities') {
     groups.push({
       id: 'price',
       label: 'Price',

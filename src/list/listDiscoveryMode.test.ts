@@ -4,7 +4,7 @@ import { resolveListCategoryHeaderFocus, resolveListDiscoveryView } from './list
 
 const homeFilters: BrowseListFilterState = {
   query: '',
-  categories: ['trips'],
+  categories: ['activities'],
   tripTopics: [],
   placeTopics: [],
   tripLookingOnly: false,
@@ -23,9 +23,9 @@ describe('resolveListDiscoveryView', () => {
   });
 
   it('shows category page when listCat is set', () => {
-    expect(resolveListDiscoveryView(homeFilters, [], 'trips')).toEqual({
+    expect(resolveListDiscoveryView(homeFilters, [], 'activities')).toEqual({
       view: 'category',
-      category: 'trips',
+      category: 'activities',
     });
   });
 

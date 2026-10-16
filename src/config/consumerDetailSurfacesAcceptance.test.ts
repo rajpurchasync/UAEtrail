@@ -15,9 +15,9 @@ describe('consumerDetailSurfacesAcceptance', () => {
   it('entity detail views use tab wire modules and shared tab chrome', () => {
     const surfaces: Array<{ file: string; wire: string; tabChrome: RegExp }> = [
       {
-        file: 'src/components/place/PlaceDetailCore.tsx',
+        file: 'src/place/detail/templates/PlaceConsumerDetailPage.tsx',
         wire: 'placeDetailTab',
-        tabChrome: /PlaceDetailTabs/,
+        tabChrome: /ActivityConsumerDetailModalShell/,
       },
       {
         file: 'src/components/ui/PlaceDetailTabs.tsx',

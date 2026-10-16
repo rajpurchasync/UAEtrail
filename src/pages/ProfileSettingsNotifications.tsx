@@ -1,6 +1,6 @@
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { SettingsMenuGroup, SettingsMenuRow } from '../components/settings/SettingsMenuRow';
-import { NOTIFICATIONS_PATH, tripsPath } from '../config/routingCatalog';
+import { NOTIFICATIONS_PATH, planHubPath } from '../config/routingCatalog';
 
 export const ProfileSettingsNotifications = () => (
   <ConsumerShell
@@ -21,7 +21,7 @@ export const ProfileSettingsNotifications = () => (
         />
         <SettingsMenuRow
           label="Saved map & alerts"
-          to={tripsPath({ layer: 'places' })}
+          to={planHubPath({ layer: 'places' })}
           subtitle="Places, shops, and plans you starred"
         />
       </SettingsMenuGroup>

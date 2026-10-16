@@ -32,6 +32,7 @@ export const HOST_OVERVIEW_PATH = '/host/overview';
 export const ADMIN_USERS_PATH = '/admin/users';
 export const ADMIN_ACTIVITIES_PATH = '/admin/activities';
 export const ADMIN_PLACES_PATH = '/admin/places';
+export const ADMIN_FACILITIES_PATH = '/admin/facilities';
 export const ADMIN_HOSTS_PATH = '/admin/hosts';
 
 /** Explore list panels — keep in sync with `explorePath()` query contract. */

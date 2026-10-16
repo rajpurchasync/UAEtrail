@@ -17,7 +17,7 @@ export type BrowseCategoryTileDef = {
 /** Main list buckets — photo in soft circle, label below (discover home). */
 export const BROWSE_CATEGORY_TILES: readonly BrowseCategoryTileDef[] = [
   {
-    key: 'trips',
+    key: 'activities',
     label: 'Activities',
     imageSrc: categoryTilePhoto('photo-1551632811-561732d1e306'),
     gradient: 'from-emerald-100 via-emerald-50 to-teal-100',

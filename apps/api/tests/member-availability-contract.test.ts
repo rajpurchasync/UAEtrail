@@ -66,6 +66,14 @@ describe('member availability', () => {
       explore.body.data.people.some((p: { userId: string }) => p.userId === user._id)
     ).toBe(true);
     expect(explore.body.data.clusters.length).toBeGreaterThan(0);
+
+    const matchPreview = await request(app)
+      .get('/api/v1/me/availability/match-preview')
+      .set('Authorization', `Bearer ${token}`);
+    expect(matchPreview.status).toBe(200);
+    expect(matchPreview.body.data).toMatchObject({
+      hostedOutings: expect.any(Array),
+    });
   });
 
   it('buddies-only visibility hides rows from strangers', async () => {

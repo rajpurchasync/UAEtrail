@@ -36,9 +36,13 @@ There are **five public entity kinds** on the wire (`EntityKind` / `EntityRef`):
 
 | Term | Layer | Meaning | Do not use for |
 |------|--------|---------|----------------|
-| **Organize** | Product verb | FAB path: publish an **Activity**, run **Find** (demand), or **Add** a **Place** | Writing a message |
-| **Create** | Product verb (OK) | Same intent as Organize in casual copy (“create a plan”) | Replacing **Organize** in FAB labels without reason |
-| **Compose** | **Wire / code only** | Explore query `?compose=organize:*` \| `find:*` \| `add:*` (`compose.ts`, `composeFlowCatalog.ts`) | User-facing buttons, push copy, help text — reserved for **message compose**, email compose, post draft (future) |
+| **Plan** | Product verb (FAB) | Create a map **Activity** — **hosting** or **seeking** (unifies legacy Organize + Find) | Bottom nav **Plan** tab (`/plan`) — that tab is *your inventory* |
+| **Contribute** | Product verb (FAB) | Submit a **Place** or **Facility** to the catalog (member); not operator shop onboarding | Backend API name; use **place submit** / **facility submit** in code |
+| **Organize** | Product verb (legacy FAB + console) | **Hosting** path; still valid for **host** copy and `/operator` publish | Top-level FAB label after CPC-9 |
+| **Find** | Legacy FAB | **Seeking** path — use **Plan → looking for…** in new copy | Top-level FAB after CPC-9 |
+| **Add** | Legacy FAB | **Contribute** in new copy | Top-level FAB after CPC-9 |
+| **Create** | Product verb (OK) | Casual copy (“create a plan”) | — |
+| **Compose** | **Wire / code only** | Query `?compose=…` — v3 `host:*` \| `seek:fixed:*` \| `seek:flexible` \| `add:*` ([§1.7](#17-program-cpc--catalog-ontology-fab-compose-wire)); aliases `plan:*`, `contribute:*`, `organize` \| `find` \| `add` | User-facing FAB buttons — reserved word for **message compose** later |
 | **Host** | Product role | Anyone who **publishes** (buddy → pro guide → agency → shop owner → partner) | The Mongo `tenants` row name in UI |
 | **Organisation** | Code + wire | **One tenant row** for all storefronts (guide, agency, shop, e-commerce, …): `Organisation*`, `x-organisation-id`, `EntityKind: organisation` | Solo guide or shop in **consumer** copy — say **guide**, **agency**, **shop**, **partner**; Pro path = [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) § One stack |
 | **Organizer** | Legacy wire | `organizerId`, `organizerDetails` on old payloads | New product nouns — prefer **host** (activity) or **tenant** (storage) |
@@ -109,6 +113,66 @@ One **person** account; zero or more **storefronts** (tenant-backed public brand
 
 ---
 
+### 1.7 Program CPC — catalog ontology, FAB, compose wire
+
+**Tracker:** [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.4 (debt **C26**). Implementation checklists live there — not a separate doc.
+
+**Simple lens (product):** **What** = Activity · **Where** = Area / Place / Facility · **Who** = Person / Host / Operator · **How** = participate (**context only** — not a fourth catalog entity) — see [`DOMAIN.md`](./DOMAIN.md) § What · Where · Who · How. Do **not** use “destination place” in copy or new code names.
+
+#### Catalog entities (persistence targets)
+
+| Wire / storage | Product | FAB | Notes |
+|----------------|---------|-----|--------|
+| `locations` (places) | **Place** | **Add on map** → Place | `PLACE_CATALOG_KINDS` after CPC amenity split |
+| `facilities` (**CPC-2**) | **Facility** | **Add on map** → Facility | `parentPlaceId?`, `areaId`, `facilityKind` |
+| `activities` | **Activity** | **Host** \| **Find crew** (fixed map post) | Not catalog |
+| `member_availability` | **Availability** | **Find crew** → flexible | No map pin; **Find crew → Available** lists members with future slots (`GET /explore/people/availability`); day+type **notify** + FAB hosted preview only |
+| `areas` | **Area** | — | Hub |
+| `tenants` + merchant | **Shop storefront** (`EntityKind.shop`) | — | **Operator** `/operator/*` — not FAB |
+| — | **Operator workspace** | — | Person + tenant header; guide/agency/shop |
+
+**Register** = provenance + moderation/publication — field `registeredByUserId` (alias `submittedById` during migration). **No** `Contribute` API resource.
+
+#### Lifecycle (catalog rows)
+
+| Axis | Values |
+|------|--------|
+| `moderationStatus` | `pending` \| `approved` \| `rejected` \| `suspended` |
+| `publicationStatus` | `listed` \| `unlisted` \| `anchor_only` |
+
+Member **Contribute** → typically `pending` + `unlisted`; public `/place` or `/facility` when policy allows ([`CREATE_FLOW.md`](./CREATE_FLOW.md)).
+
+#### FAB product verbs vs wire
+
+| UI (FAB) | Meaning | Wire `compose` (v3) | Legacy wire |
+|----------|---------|---------------------|-------------|
+| **Host** | Publish outing you lead | `host:<kind>` | `plan:<kind>:hosting`, `organize:*` |
+| **Find crew** → fixed | Map seeking post | `seek:fixed:<kind>` | `plan:<kind>:seeking`, `find:*` |
+| **Find crew** → flexible | Member availability | `seek:flexible` | — |
+| **Add on map** | Submit **place** or **facility** | `add:place:<kind>` \| `add:facility:<kind>` | `contribute:*`, `add:*` |
+
+**Compose** remains the **query param name** only — not FAB copy ([§1.1](#11-words-that-must-not-be-confused)).
+
+#### URLs (target, CPC-6)
+
+| Entity | Canonical path |
+|--------|----------------|
+| Place | `/place/:id` |
+| Facility | `/facility/:id` |
+| Activity | `/activity/:id` |
+| Submissions inventory | `/profile/submissions` |
+
+Redirects: `/trail`, `/camp`, `/venue`, `/event`, `/contributions` → canonical paths.
+
+#### Catalog reads (target)
+
+- `GET /places/catalog` — **places** only (`segment=place`); `purpose=organize_picker` \| `map` \| …
+- `GET /facilities/catalog` — amenities; filters `areaId`, `parentPlaceId`, `facilityKind`
+
+Evolve from today’s `GET /places/registry` → **`GET /places/catalog`** (places only). Implementation map: `SYSTEM_COHERENCE.md` §8.4.9.
+
+---
+
 ### 1.6 Member engagement: Follow · Wishlist · Goal (not “favorites”)
 
 | Product | What | Storage / API | Notes |
@@ -154,7 +218,7 @@ Built only via **`routingCatalog`** or `@uaetrail/shared-types` `entity-path` he
 | Person (community host) | `/member/:userId` | `memberProfilePath(userId)` |
 | Shop | `/shop/:id` | `shopPublicPath({ id })` |
 | Browse | `/explore` (+ query) | `explorePath()` in `src/explore/routing.ts` |
-| Plan tab | `/plan` | `PLAN_PATH` · UI label **My Plans** (`PRODUCT_PLAN_SURFACE_TITLE`) |
+| Plan tab | `/plan` | `PLAN_PATH` · UI label **My Plans** (`PRODUCT_PLAN_SURFACE_TITLE`) · path helpers `src/plan/planRouting.ts` + legacy query normalization `src/member-plan/planHubRouting.ts` (not “trips” product term) |
 | Outing history (profile) | `/profile/history` | `PROFILE_HISTORY_PATH` |
 | Journey map | `/profile/history/map` | `JOURNEY_MAP_PATH` |
 | Legacy my-trips URL | `/profile/my-trips` | Redirect → `PROFILE_HISTORY_PATH` (`MY_TRIPS_PATH` deprecated) |
@@ -177,7 +241,7 @@ Query param **`tab`** where noted. **UI labels** may differ from wire ids (activ
 | Surface | Route prefix | Wire tab ids (canonical → target) | Deep link |
 |---------|--------------|-----------------------------------|-----------|
 | Activity | `/activity/:id` | **Public scroll:** `presentation.consumerLayout` (no tab bar). **Embed/manage:** `plan` · `place` · `buddies` · `transport` + `footerByTab` | Legacy `?tab=` → scroll anchors (deprecated). **FE:** `ActivityDetailByKind` → `*ActivityDetailPage` → `ActivityDetailPageShell` → `ActivityConsumerDetailBody` |
-| Place (trail/camp/venue) | `/trail`, `/camp`, `/venue` | `overview` · `facts` · `transport` · `guide` (alias `location` → `transport`) | `?tab=` · `src/place/placeDetailTab.ts`; **FE:** `*PlaceDetailPage` → `PlaceDetailPage` → `PlaceDetailCore` — L1 `buildPlaceDetailPageModel`, kind hero composers `src/place/detail/composers/*` |
+| Place (trail/camp/venue) | `/trail`, `/camp`, `/venue` | **Public scroll** (no tab bar). Legacy wire: `overview` · `facts` · `transport` · `guide` (alias `location` → `transport`) | `?tab=` deprecated · `src/place/placeDetailTab.ts`; **FE:** `*PlaceDetailPage` → `PlaceDetailPage` → `PlaceDetailPageShell` → `PlaceConsumerDetailPage` — L1 `buildPlaceDetailPageModel`; kind facts `PlaceConsumerKindFacts` (trail / camp / event) |
 | Area hub | `/area/:slug` | `overview` · `places` · `activities` (people on overview) | `?tab=` · `src/area/areaDetailTab.ts` |
 | Shop public | `/shop/:id` | `about` · `products` · `location` | `?tab=` · `src/shop/shopPublicDetailTab.ts` |
 | Organisation public | `/guide`, `/agency`, `/partner` | `about` · `outings` · `contact` | `?tab=` · `src/organisation/organisationPublicDetailTab.ts` |
@@ -195,8 +259,9 @@ Detail UIs must load from the **canonical read API** for that entity; writes use
 | **Activity** | `/activity/:id` | `activities` + participation | Member **Organize/Find** FAB, host publish (`member-publish-gate`) | `GET /activities/:id` (`viewerAccess`, presentation) | `usePublicActivityDetail` | Not trail inventory — scheduled outing |
 | **Member (person)** | `/member/:userId` | `users` profile | Member `PATCH /me/profile` | `GET /users/:id/public-profile` | `memberPublicProfileApi` | ≠ tenant storefront |
 | **Organisation (pro)** | `/guide`, `/agency`, `/partner` | `tenants` storefront | Host onboarding / `organisationConsoleApi` | `GET /tenants/:slug` (public profile bundle) | `organisationConsoleApi` | Shop tenants → `/shop/:id` |
-| **Shop** | `/shop/:id` | `tenants` / merchant + optional community `locations` | Admin/host shop setup; map **Add** shop contribute | `GET /shop/shops/:id` (`getShopPublic`; + place fallback in `ShopPublic.tsx`) | `shopPublicClientApi`, `placeDetailClientApi` | Reviews on tenant id |
-| **Place** | `/trail`, `/camp`, `/venue` | `locations` (catalog) | **Admin** `/admin/places`; member **Add** contribute; host `/locations` with `areaId` | `GET /places/:id` | `placeDetailClientApi` | `place.areaId` required on new catalog rows |
+| **Shop** | `/shop/:id` | `tenants` / merchant (+ optional place pin) | **Operator** Pro onboarding — **not** FAB Contribute; community gear pin = **facility `outdoor_shop`** ([§1.7](#17-program-cpc--catalog-ontology-fab-compose-wire)) | `GET /shop/shops/:id` | `shopPublicClientApi` | `EntityKind.shop` = storefront only |
+| **Place** | `/place/:id` (CPC-6; legacy `/trail`·`/camp`·`/venue`) | `locations` (place rows) | Admin `/admin/places`; member **Contribute → Place**; operator place submit with `areaId` | `GET /places/:id`; `GET /places/catalog`; linked **facilities** via **`parentPlaceId`** (**CPC-3**) | `placeDetailClientApi` | Place catalog excludes facilities after CPC |
+| **Facility** | `/facility/:id` | **`facilities`** (**CPC-2**) | Admin `/admin/facilities`; member **Contribute → Facility** | `GET /facilities/:id`; `GET /facilities/catalog` | TBD `facilityDetailClientApi` | `areaId` + optional `parentPlaceId` |
 | **Area** | `/area/:slug` | `areas` curated hubs | **Admin** `/admin/areas` (publish `status`) | `GET /areas/:slug` (preview slices) | `areaHubClientApi` | Previews filter published activities + active places by `areaId` |
 
 **Registry:** place catalog browse uses `GET /places/registry` (explore map) — detail pages use **per-id** `GET /places/:id`, not the registry blob.
@@ -212,7 +277,7 @@ Map/list **peek** and entity **detail** share one engagement contract per viewer
 | Surface | L2 map peek | L3 consumer shell | Detail CTA | Participation / actions on L3 |
 |---------|-------------|-------------------|------------|-------------------------------|
 | **Activity** | `ActivityMapPeekHost` → `ActivityPeekCard` → `peek/activity/*` | `ActivityDetailByKind` → `*ActivityDetailPage` → scroll body + wire CTAs | `PeekDetailLink` + `view_detail` in `mapPeekActions` | Join/RSVP: `POST /activities/:id/requests`; **public** slots from `presentation.consumerLayout` + `mapPeekActions`; embed: `footerByTab`; guest: `ActivityDetailGuestGate` |
-| **Place** | `PlaceMapPeekHost` → `PlacePeekCard` | `*PlaceDetailPage` → `PlaceDetailPage` → `PlaceDetailCore` | `PeekDetailLink` → `card.path` (`/trail` · `/camp` · `/venue`) | Activities rail: `GET /places/:id/activities`; reviews; premium guide checkout on `guide` tab |
+| **Place** | `PlaceMapPeekHost` → `PlacePeekCard` (`PlacePeekHero` · `PlacePeekBody` · `PlacePeekActions`) | `*PlaceDetailPage` → `PlaceDetailPageShell` → `PlaceConsumerDetailPage` | **Arrange trip** (Organize) · `PeekDetailLink` **View details** | `GET /places/:id/activities`; reviews; transport; `nearbyFacilities`; premium guide `PlacePremiumGuidePanel` |
 | **Area** | `mapPeekSlots` → `AreaPeekBody` / `AreaPeekActions` | `AreaDetailPage` → `AreaDetailView` (`MobileDetailShell`) | Links to `/area/:slug`, explore `?area=` | Browse-only hub — join on child **activity** rows |
 | **Shop** | `ShopPeekActions` + `PeekDetailLink` | `ShopPublic` → `ShopPublicPage` (`EntityPublicDetailShell`) | `/shop/:id`; guest catalog rows may gate in peek | Reviews/follow on tenant id; outbound product URLs |
 | **Agency/guide** | Catalog / activity publisher row (not `source: agency` map rows) | `OrganisationProfile` → `OrganisationPublicProfile` (`EntityPublicDetailShell`) | `resolveActivityPublisherProfilePath` from activity | Message/follow; listed outings → `/activity/:id` |
@@ -245,7 +310,7 @@ Map/list **peek** and entity **detail** share one engagement contract per viewer
 | Concern | Canonical | Avoid |
 |---------|-----------|--------|
 | Map home | `EXPLORE_MAP_PATH` (`/explore`) | `/map`, bare `/shop` |
-| FAB deep link (wire) | `compose=organize:*` \| `find:*` \| `add:*` — param name **legacy**; product = **Organize · Find · Add** | User-facing “Compose”; `/host/activities/new` for consumers |
+| FAB deep link (wire) | `compose=host:*` \| `seek:fixed:*` \| `seek:flexible` \| `add:*` — param name **compose** is wire-only; product = **Host · Find crew · Add on map** | User-facing “Compose”; `/host/activities/new` for consumers |
 | Panel/filter query | `explorePath({ panel, filter, … })` | Raw `` `/explore?${...}` `` outside `explore/routing.ts` |
 | Seeking / demand pin | `exploreSeekingMapItemPath` (shared-types); `exploreDemandMapItemPath` intent-only legacy | `/demand/:id` |
 | Full-screen list browse | `LIST_DISCOVERY_PATH` (`/list`) + `listDiscoveryPath()` | `/list/hiking`, `/shops` as category site roots |

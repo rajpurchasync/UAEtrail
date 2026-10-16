@@ -41,6 +41,10 @@ const accumulateAreaLensStats = (items: ExploreMapItemDTO[]): Map<string, Explor
       continue;
     }
     if (item.source === 'venue') {
+      if (item.placeKind && isFacilityPlaceKind(item.placeKind)) {
+        stats.facilities += 1;
+        continue;
+      }
       if (item.kind === 'hiking') stats.trailSpots += 1;
       else if (item.kind === 'camping') stats.campSpots += 1;
       else if (item.kind === 'shop') stats.shops += 1;
@@ -54,16 +58,10 @@ const accumulateAreaLensStats = (items: ExploreMapItemDTO[]): Map<string, Explor
   return byArea;
 };
 
-type LocationAreaRow = {
-  areaId?: string | null;
-  activityType: string;
-  tags?: string[] | null;
-};
-
-/** Roll amenity / facility rows into area stats (Spots lens uses `placeKind` on explore items). */
+/** @deprecated CPC-5 — facility rollups come from explore items (`placeKind` on map pins). */
 export const mergeFacilityStatsFromLocations = (
   statsByArea: Map<string, ExploreAreaLensStatsDTO>,
-  locations: LocationAreaRow[]
+  locations: Array<{ areaId?: string | null; activityType: string; tags?: string[] | null }>
 ): void => {
   for (const location of locations) {
     const areaId = location.areaId?.trim();
@@ -82,11 +80,9 @@ export const mergeFacilityStatsFromLocations = (
 /** Synthetic map rows for the Locations lens — area anchor + rollup stats. */
 export const buildExploreAreaLensItems = (
   publishedAreas: AreaDTO[],
-  catalogItems: ExploreMapItemDTO[],
-  locations: LocationAreaRow[] = []
+  catalogItems: ExploreMapItemDTO[]
 ): ExploreMapItemDTO[] => {
   const statsByArea = accumulateAreaLensStats(catalogItems);
-  mergeFacilityStatsFromLocations(statsByArea, locations);
   const rows: ExploreMapItemDTO[] = [];
 
   for (const area of publishedAreas) {

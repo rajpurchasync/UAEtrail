@@ -4,7 +4,7 @@ import { renderCatalogOrganizeWizardStep } from './renderCatalogOrganizeWizardSt
 import { renderOrganizeWizardStepSlice } from './steps';
 
 export function renderOrganizeWizardSteps(ctx: OrganizeWizardContext): ReactNode {
-  if (ctx.catalogFlow) {
+  if (ctx.hostingKindFlow) {
   const catalogStep = renderCatalogOrganizeWizardStep(ctx);
     return catalogStep ?? null;
   }

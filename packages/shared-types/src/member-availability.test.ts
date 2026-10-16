@@ -1,10 +1,21 @@
 import { describe, expect, it } from 'vitest';
 import {
+  availabilityKindMatchesActivityType,
+  availabilityKindsForActivityType,
   memberAvailabilityCalendarDays,
   memberAvailabilitySlotsAsDayPicks,
   groupConsecutiveMemberAvailabilityDays,
   normalizeMemberAvailabilitySlotsForStorage,
 } from './member-availability.js';
+
+describe('availabilityKindMatchesActivityType', () => {
+  it('matches hosted activity types to availability kinds without location', () => {
+    expect(availabilityKindMatchesActivityType(['hiking'], 'HIKING')).toBe(true);
+    expect(availabilityKindMatchesActivityType(['camping'], 'HIKING')).toBe(false);
+    expect(availabilityKindMatchesActivityType(['rideshare'], 'RIDESHARE')).toBe(true);
+    expect(availabilityKindsForActivityType('HIKING')).toContain('hiking');
+  });
+});
 
 describe('memberAvailabilityCalendarDays', () => {
   it('projects single-day and multi-day picks onto calendar days', () => {

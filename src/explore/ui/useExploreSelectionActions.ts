@@ -29,6 +29,7 @@ import { buildExploreSelectionSelectedCard } from '../exploreSelectionSelectedCa
 import { useExploreSelectionPeekJoin } from './useExploreSelectionPeekJoin';
 import { useExploreActivityPinDeepLink } from './useExploreActivityPinDeepLink';
 import { useExploreSelectionRemovals } from './useExploreSelectionRemovals';
+import { buildHostPublishAvailabilityNotice } from '../../plan/hostPublishAvailabilityNotice';
 
 type BrowseState = ReturnType<typeof useExploreBrowseUrlState>;
 
@@ -267,6 +268,12 @@ export const useExploreSelectionActions = ({
         handleFocusMapLocation({ lat: latitude, lng: longitude });
         setSelectedId(`activity:${activity.id}`);
       }
+
+      const hostUserId = user?.id ?? resolveActivityHostUserId(activity);
+      if (hostUserId) {
+        const notice = await buildHostPublishAvailabilityNotice(activity, hostUserId);
+        if (notice) setVenueNotice(notice);
+      }
     },
     [
       queryClient,
@@ -276,6 +283,8 @@ export const useExploreSelectionActions = ({
       handleFocusMapLocation,
       setSelectedId,
       setLinkOnlyPeekItems,
+      setVenueNotice,
+      user?.id,
     ]
   );
 

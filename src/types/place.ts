@@ -37,6 +37,10 @@ export interface Place {
   tags?: string[];
   accessibleBy?: string[];
   status?: 'draft' | 'active' | 'inactive';
+  areaId?: string | null;
+  areaLabel?: string | null;
+  areaSlug?: string | null;
+  areaName?: string | null;
 }
 
 /** @deprecated Use Place — hiking venue view slice. */

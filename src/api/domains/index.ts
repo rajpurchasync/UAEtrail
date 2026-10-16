@@ -1,10 +1,15 @@
 export { placeApi } from './places';
+export { facilityApi } from './facilities';
 export { areasApi } from './areas';
+export { fetchPlaceCatalog, type PlaceCatalogQuery } from './placeCatalogClient';
+/** @deprecated Use `placeCatalogClient`. */
 export { fetchPlaceRegistry, type PlaceRegistryQuery } from './placeRegistry';
 export { exploreApi } from './explore';
 export { badgesApi } from './badges';
 export { goalsApi } from './goals';
 export { availabilityApi } from './availability';
+export { memberCommitmentHubApi } from './memberCommitmentHub';
+export { memberPlanApi } from './memberPlan';
 export { memberJourneyMapApi } from './memberJourneyMap';
 export { activitiesApi } from './activities';
 export { accountApi } from './account';

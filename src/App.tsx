@@ -42,7 +42,14 @@ import {
 } from './config/routingCatalog';
 import { organisationManagePath, SIGNIN_PATH, SIGNUP_PATH } from './config/routingCatalog';
 import { PRODUCT_PLAN_SURFACE_TITLE } from './content/productNorthStar';
-import { JOURNEY_MAP_PATH, PLAN_PATH, PROFILE_HISTORY_PATH } from './config/surfacePaths';
+import {
+  JOURNEY_MAP_PATH,
+  LEGACY_CONTRIBUTIONS_PATH,
+  PLAN_PATH,
+  PROFILE_HISTORY_PATH,
+  PROFILE_SUBMISSIONS_PATH,
+} from './config/surfacePaths';
+import { canonicalPlaceDetailPath } from '@uaetrail/shared-types';
 import { resolveLegacyTripsHubRedirect } from './member-plan/legacyTripsRedirect';
 import { useMemberStatus } from './hooks/useMemberStatus';
 import { memberCanManageHostedActivities } from './utils/hostedActivitiesGate';
@@ -66,18 +73,21 @@ const LegacyMessagesRedirect = () => {
 
 const EventSpotRedirect = () => {
   const { id } = useParams<{ id: string }>();
-  return <Navigate to={`/venue/${id ?? ''}`} replace />;
+  if (!id) return <Navigate to="/explore" replace />;
+  return <Navigate to={canonicalPlaceDetailPath(id)} replace />;
 };
 
 const CommunityActivityRedirect = () => {
   const { id } = useParams<{ id: string }>();
-  return <Navigate to={`/venue/${id ?? ''}`} replace />;
+  if (!id) return <Navigate to="/explore" replace />;
+  return <Navigate to={canonicalPlaceDetailPath(id)} replace />;
 };
 
-/** Legacy place URLs — event venues moved to `/venue`; `/event` is reserved for activity semantics. */
+/** Legacy `/event/:id` place URLs → canonical `/place/:id`. */
 const LegacyEventPlaceRedirect = () => {
   const { id } = useParams<{ id: string }>();
-  return <Navigate to={`/venue/${id ?? ''}`} replace />;
+  if (!id) return <Navigate to="/explore" replace />;
+  return <Navigate to={canonicalPlaceDetailPath(id)} replace />;
 };
 
 const DiscoveryRedirect = () => {
@@ -137,6 +147,12 @@ const ShopBrowseRoute = () => (
 const TrailDetail = lazy(() => import('./pages/TrailDetail').then((m) => ({ default: m.TrailDetail })));
 const CampDetail = lazy(() => import('./pages/CampDetail').then((m) => ({ default: m.CampDetail })));
 const EventDetail = lazy(() => import('./pages/EventDetail').then((m) => ({ default: m.EventDetail })));
+const CanonicalPlaceDetailPage = lazy(() =>
+  import('./pages/PlaceDetailPage').then((m) => ({ default: m.CanonicalPlaceDetailPage }))
+);
+const FacilityDetailPage = lazy(() =>
+  import('./pages/FacilityDetailPage').then((m) => ({ default: m.FacilityDetailPage }))
+);
 
 const ProductDetail = lazy(() => import('./pages/ProductDetail').then((m) => ({ default: m.ProductDetail })));
 const BecomeHost = lazy(() =>
@@ -331,30 +347,11 @@ function App() {
           />
           <Route path={LIST_DISCOVERY_PATH} element={<BrowseListPage />} />
           <Route path="/discovery" element={<DiscoveryRedirect />} />
-          <Route
-            path="/trail/:id"
-            element={
-              <ProtectedRoute>
-                <TrailDetail />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/camp/:id"
-            element={
-              <ProtectedRoute>
-                <CampDetail />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/venue/:id"
-            element={
-              <ProtectedRoute>
-                <EventDetail />
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/place/:id" element={<CanonicalPlaceDetailPage />} />
+          <Route path="/facility/:id" element={<FacilityDetailPage />} />
+          <Route path="/trail/:id" element={<TrailDetail />} />
+          <Route path="/camp/:id" element={<CampDetail />} />
+          <Route path="/venue/:id" element={<EventDetail />} />
           <Route path="/event/:id" element={<LegacyEventPlaceRedirect />} />
           <Route path="/event-spot/:id" element={<EventSpotRedirect />} />
           <Route path="/community-activity/:id" element={<CommunityActivityRedirect />} />
@@ -402,6 +399,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route path="/profile/plans" element={<Navigate to={PLAN_PATH} replace />} />
           <Route
             path="/profile/wishlist"
             element={
@@ -467,12 +465,16 @@ function App() {
             }
           />
           <Route
-            path="/contributions"
+            path={PROFILE_SUBMISSIONS_PATH}
             element={
               <ProtectedRoute>
                 <Contributions />
               </ProtectedRoute>
             }
+          />
+          <Route
+            path={LEGACY_CONTRIBUTIONS_PATH}
+            element={<Navigate to={PROFILE_SUBMISSIONS_PATH} replace />}
           />
           <Route
             path="/profile"
@@ -638,6 +640,14 @@ function App() {
             }
           />
           <Route path="/admin/locations" element={<Navigate to="/admin/places" replace />} />
+          <Route
+            path="/admin/facilities"
+            element={
+              <ProtectedRoute roles={['platform_admin']}>
+                <AdminPlaces catalogSegment="facility" />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/admin/areas"
             element={

@@ -1,5 +1,5 @@
 import type { NavigateFunction } from 'react-router-dom';
-import { tripsHostedActivityPath, tripsSelfDemandPath } from './tripsRouting';
+import { planHostedActivityManagePath, planSelfDemandManagePath } from '../plan/planRouting';
 
 /** Open Trips manage — hosted activity sheet when M0 activity exists, else intent sheet. */
 export const navigateToParticipantIntentManage = (
@@ -8,8 +8,8 @@ export const navigateToParticipantIntentManage = (
   activityId?: string | null
 ): void => {
   if (activityId?.trim()) {
-    navigate(tripsHostedActivityPath(activityId.trim()));
+    navigate(planHostedActivityManagePath(activityId.trim()));
     return;
   }
-  navigate(tripsSelfDemandPath(intentId));
+  navigate(planSelfDemandManagePath(intentId));
 };

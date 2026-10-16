@@ -1,3 +1,4 @@
+import { canonicalPlaceDetailPath } from '@uaetrail/shared-types';
 import { NotificationType, ReviewTargetType } from '../domain/enums.js';
 import { getMongoClient } from '../lib/mongo.js';
 import { dispatchNotification } from './notifications.js';
@@ -20,12 +21,7 @@ export async function promptPostActivityReview(opts: {
     if (existing) return;
   }
 
-  const reviewPath =
-    opts.activityType === 'hiking'
-      ? `/trail/${opts.locationId}`
-      : opts.activityType === 'camping'
-        ? `/camp/${opts.locationId}`
-        : `/venue/${opts.locationId}`;
+  const reviewPath = canonicalPlaceDetailPath(opts.locationId);
 
   await dispatchNotification({
     userId: opts.userId,

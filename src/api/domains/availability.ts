@@ -2,6 +2,7 @@ import type {
   ExploreAvailabilityClusterDTO,
   ExploreAvailablePersonDTO,
   MemberAvailabilityDTO,
+  MemberAvailabilityMatchPreviewDTO,
   UpsertMemberAvailabilityInput,
 } from '@uaetrail/shared-types';
 import { apiRequest } from '../client';
@@ -18,6 +19,10 @@ export const availabilityApi = {
     apiRequest<{ data: MemberAvailabilityDTO }>('/me/availability', {
       method: 'PUT',
       body: JSON.stringify(body),
+      auth: true,
+    }),
+  getMyAvailabilityMatchPreview: () =>
+    apiRequest<{ data: MemberAvailabilityMatchPreviewDTO }>('/me/availability/match-preview', {
       auth: true,
     }),
   explorePeopleAvailability: (params: {

@@ -53,15 +53,17 @@ export function useHostActivityManageActions(
   );
 
   const publishActivity = useCallback(
-    async (activityId: string) => {
-      if (!tenantId) return;
+    async (activityId: string): Promise<boolean> => {
+      if (!tenantId) return false;
       setBusy(true);
       setError(null);
       try {
         await publishTenantActivity(tenantId, activityId);
         await afterChange();
+        return true;
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Could not publish.');
+        return false;
       } finally {
         setBusy(false);
       }

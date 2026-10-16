@@ -16,6 +16,8 @@ export const COLLECTIONS = {
 
   // Places & premium unlocks
   LOCATIONS: 'locations',
+  /** Amenity POIs (toilet, parking, outdoor_shop, …) — Program CPC. */
+  FACILITIES: 'facilities',
   LOCATION_UNLOCKS: 'location_unlocks',
   AREAS: 'areas',
 

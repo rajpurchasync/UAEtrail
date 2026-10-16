@@ -9,6 +9,7 @@
     "start": "node dist/src/index.js",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "seed": "tsx scripts/seed.ts",
+    "seed:catalog-facilities": "tsx scripts/run-seed-catalog-facilities.ts",
     "bump-activity-dates": "tsx scripts/bump-activity-dates.ts",
     "refresh-seeking-schedules": "tsx scripts/refresh-seeking-schedules.ts",
     "backfill-seeking-activities": "tsx scripts/backfill-seeking-activities.ts",

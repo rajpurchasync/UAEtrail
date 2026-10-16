@@ -13,7 +13,7 @@ import { ActivityManageSheet } from '../../components/activity/ActivityManageShe
 import { HostedActivityListRow } from '../../components/activity/HostedActivityListRow';
 import {
   exploreOrganizePath,
-  tripsPlansPath,
+  planHostedSchedulePath,
 } from '../../config/routingCatalog';
 import { matchesActivitySearch } from '../../utils/activitySearch';
 import { resolveJoinRequestActivity } from '../../utils/joinRequestActivity';
@@ -161,7 +161,7 @@ export const HostedActivitiesSection = ({
       <ConsumerInlineEmpty
         message="Organizer profile is still loading — try again in a moment, or open your organizing plans."
         actionLabel="Hosted on Plan"
-        actionTo={tripsPlansPath('hosted')}
+        actionTo={planHostedSchedulePath()}
       />
     );
   }
@@ -178,7 +178,7 @@ export const HostedActivitiesSection = ({
             <h3 className="text-sm font-bold text-neutral-800">
               Incoming requests ({host.pendingRequests.length})
             </h3>
-            <Link to={tripsPlansPath('hosted')} className="text-xs font-semibold text-emerald-600">
+            <Link to={planHostedSchedulePath()} className="text-xs font-semibold text-emerald-600">
               View all
             </Link>
           </div>

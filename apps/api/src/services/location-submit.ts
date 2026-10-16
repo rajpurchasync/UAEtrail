@@ -1,8 +1,11 @@
 import {
   deriveVenueAccessibilityFromAccessibleBy,
   encodeShopContributeTags,
+  isContributableFacilityPlaceKind,
   mergeVenueAreaTag,
   stampGroupRegionLevelsFromGeo,
+  tagsForPlaceKind,
+  type PlaceKind,
 } from '@uaetrail/shared-types';
 import { Accessibility } from '../domain/enums.js';
 import { ActivityType, Difficulty, LocationStatus } from '../domain/enums.js';
@@ -73,6 +76,10 @@ export const buildLocationCreateData = (
   submittedById: string
 ): LocationCreateData => {
   const shop = isShopSubmit(body);
+  const facilityKind =
+    body.facilityKind && isContributableFacilityPlaceKind(body.facilityKind as PlaceKind)
+      ? (body.facilityKind as PlaceKind)
+      : null;
   const shopTags = shop
     ? encodeShopContributeTags({
         searchKeywords: body.shopSearchKeywords ?? '',
@@ -88,7 +95,11 @@ export const buildLocationCreateData = (
       : body.highlights ?? [];
 
   const baseTags = shop ? shopTags : body.tags ?? [];
-  const tags = shop ? baseTags : mergeVenueAreaTag(baseTags, body.areaLabel);
+  let tags = shop ? baseTags : mergeVenueAreaTag(baseTags, body.areaLabel);
+  if (facilityKind) {
+    const kindTags = tagsForPlaceKind(facilityKind);
+    tags = [...new Set([...tags, ...kindTags])];
+  }
 
   const stateHint = body.groupRegion ?? body.emirate ?? null;
   const groupRegionLevels = stampGroupRegionLevelsFromGeo({
@@ -108,7 +119,7 @@ export const buildLocationCreateData = (
   region: body.region,
   areaLabel: body.areaLabel?.trim() || null,
   areaId: body.areaId.trim(),
-  activityType: toActivityType(body.activityType),
+  activityType: facilityKind ? ActivityType.EVENT : toActivityType(body.activityType),
   description: body.description,
   difficulty: shop ? undefined : toDifficulty(body.difficulty),
   distance: body.distance,

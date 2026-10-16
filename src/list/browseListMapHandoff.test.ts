@@ -44,9 +44,9 @@ describe('browseListMapHandoff', () => {
   });
 
   it('resolves trips pinKind for activities category', () => {
-    expect(resolveListBrowseExplorePinKind({ ...baseState, categories: ['trips'] }, 'trips')).toBe('activities');
+    expect(resolveListBrowseExplorePinKind({ ...baseState, categories: ['activities'] }, 'activities')).toBe('activities');
     expect(
-      resolveListBrowseExplorePinKind({ ...baseState, categories: ['trips'], tripLookingOnly: true }, 'trips')
+      resolveListBrowseExplorePinKind({ ...baseState, categories: ['activities'], tripLookingOnly: true }, 'activities')
     ).toBe('looking');
   });
 

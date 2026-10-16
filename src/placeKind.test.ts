@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  isPlaceCatalogKind,
   isPlaceKind,
   locationActivityTypeForPlaceKind,
   placeKindFromContributeVenueKind,
@@ -25,6 +26,11 @@ describe('PlaceKind', () => {
     expect(placeKindFromContributeVenueKind('shop')).toBe('shop');
     expect(placeKindFromContributeVenueKind('event')).toBe('outdoor_other');
     expect(placeKindFromContributeVenueKind('hiking')).toBe('hiking');
+  });
+
+  it('separates place catalog kinds from facility kinds', () => {
+    expect(isPlaceCatalogKind('hiking')).toBe(true);
+    expect(isPlaceCatalogKind('toilet')).toBe(false);
   });
 
   it('treats amenities as first-class PlaceKind values', () => {

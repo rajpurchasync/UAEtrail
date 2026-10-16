@@ -6,7 +6,7 @@ import {
   TRIPS_PATH,
 } from '../config/surfacePaths';
 import { planSavedPath } from '../plan/planLens';
-import { normalizeTripsSearchParams } from './tripsRouting';
+import { normalizePlanHubSearchParams } from './planHubRouting';
 
 const LEGACY_HUB_PATHS = new Set<string>([TRIPS_PATH, ACTIVITIES_LEGACY_PATH]);
 
@@ -47,7 +47,7 @@ export const resolveLegacyTripsHubRedirect = (
   if (wantsHistory) {
     const next = new URLSearchParams(params);
     if (options?.canHost !== undefined) {
-      normalizeTripsSearchParams(next, options.canHost);
+      normalizePlanHubSearchParams(next, options.canHost);
     }
     next.set('view', 'completed');
     const qs = next.toString();
@@ -60,7 +60,7 @@ export const resolveLegacyTripsHubRedirect = (
 
   const next = new URLSearchParams(params);
   if (options?.canHost !== undefined) {
-    normalizeTripsSearchParams(next, options.canHost);
+    normalizePlanHubSearchParams(next, options.canHost);
   }
   next.set('view', 'plans');
   if (segment === 'completed' || segment === 'past') {

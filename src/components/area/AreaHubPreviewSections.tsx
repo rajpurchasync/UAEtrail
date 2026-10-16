@@ -66,19 +66,28 @@ export const AreaHubPreviewSections = ({
       {showActivities ? (
       <section className="flex flex-wrap gap-2">
         <Link
-          to={explorePath({ area: areaSlug, compose: { intent: 'find', kind: 'hiking' } })}
+          to={explorePath({
+            area: areaSlug,
+            compose: { intent: 'plan', kind: 'hiking', mode: 'seeking' },
+          })}
           className="rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-900"
         >
           Find crew
         </Link>
         <Link
-          to={explorePath({ area: areaSlug, compose: { intent: 'organize', kind: 'hiking' } })}
+          to={explorePath({
+            area: areaSlug,
+            compose: { intent: 'plan', kind: 'hiking', mode: 'hosting' },
+          })}
           className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-900"
         >
           Organize outing
         </Link>
         <Link
-          to={explorePath({ area: areaSlug, compose: { intent: 'add', kind: 'hiking' } })}
+          to={explorePath({
+            area: areaSlug,
+            compose: { intent: 'contribute', target: 'place', kind: 'hiking' },
+          })}
           className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-900"
         >
           Add a place
@@ -151,7 +160,10 @@ export const AreaHubPreviewSections = ({
           <p className="rounded-2xl border border-dashed border-slate-200 px-4 py-6 text-sm text-slate-600">
             No published outings in this area yet.{' '}
             <Link
-              to={explorePath({ area: areaSlug, compose: { intent: 'organize', kind: 'hiking' } })}
+              to={explorePath({
+            area: areaSlug,
+            compose: { intent: 'plan', kind: 'hiking', mode: 'hosting' },
+          })}
               className="font-semibold text-emerald-800"
             >
               Organize one
@@ -193,7 +205,10 @@ export const AreaHubPreviewSections = ({
           <p className="rounded-2xl border border-dashed border-slate-200 px-4 py-6 text-sm text-slate-600">
             Catalog places in this area will show here once they are linked with an area tag.{' '}
             <Link
-              to={explorePath({ area: areaSlug, compose: { intent: 'add', kind: 'hiking' } })}
+              to={explorePath({
+            area: areaSlug,
+            compose: { intent: 'contribute', target: 'place', kind: 'hiking' },
+          })}
               className="font-semibold text-emerald-800"
             >
               Add one

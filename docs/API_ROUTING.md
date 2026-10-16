@@ -286,6 +286,30 @@ Capability map: [`MEMBER_MODEL.md`](./MEMBER_MODEL.md).
 
 ---
 
+## Program CPC — catalog HTTP (target)
+
+**Tracker:** [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.4. Shipped paths below marked **(today)** until phase lands.
+
+| Method | Path | Who | Status |
+|--------|------|-----|--------|
+| GET | `/places/:id` | Public + `viewerAccess` | **(today)** |
+| GET | `/places/registry` | Organize picker (legacy) | **(today)** |
+| GET | `/places/catalog` | Places-only catalog (`segment=place`) | **(today)** |
+| POST | `/me/places` | Member place submit | **(today)** canonical; `/me/locations` legacy alias |
+| GET | `/me/places` | My submitted places | **(today)** |
+| GET | `/facilities` | Listed amenities (paginated) | **(today)** |
+| GET | `/facilities/:id` | Public facility detail + `viewerAccess` | **(today)** |
+| GET | `/facilities/catalog` | Map / admin filters (`areaId`, `parentPlaceId`, `facilityKind`) | **(today)** |
+| POST | `/me/facilities` | Member facility submit → `facilities` only | **(today)** |
+| GET/PATCH/DELETE | `/admin/facilities` | Platform admin facility CRUD → `facilities` only | **(today)** |
+
+**Surface model:** Public read, member submit (`/me/*`), and platform admin (`/admin/*`) are **separate registrars** — not one `/facilities` POST gated by profile. See [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §5.1 · §8.4.9.
+| GET | `/shop/shops/:id` | **Operator** shop storefront (`EntityKind.shop`) | **(today)** — not FAB Contribute |
+
+**Provenance:** `registeredByUserId` on place/facility rows — not a `/contribute` route.
+
+---
+
 ## Client facades (`src/api/domains`)
 
 | Domain module | Routes |
@@ -296,6 +320,7 @@ Capability map: [`MEMBER_MODEL.md`](./MEMBER_MODEL.md).
 | `explore.ts` | `/explore/map`, **`/me/participant-intents`** (+ requests, link-activity) |
 | `social.ts`, `chat.ts` | Groups, DMs, inbox |
 | `places.ts` | `/me/places` (canonical), `/me/locations` (legacy alias) |
+| `facilities.ts` | `/me/facilities`, `/admin/facilities` |
 
 Prefer **`exploreApi`** for demand; avoid `fulfillParticipantIntent` on host for poster-owned intents.
 

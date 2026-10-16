@@ -19,7 +19,7 @@ describe('organizePublishGateHref', () => {
   it('sends guests to sign-in with return path', () => {
     expect(
       organizePublishGateHref(
-        '/explore?compose=organize:hiking',
+        '/explore?compose=plan:hiking:hosting',
         organizePublishGateInputFromMemberStatus({
           viewerUserId: null,
           profileComplete: false,
@@ -29,7 +29,7 @@ describe('organizePublishGateHref', () => {
     ).toContain('/signin');
     expect(
       organizePublishGateHref(
-        '/explore?compose=organize:hiking',
+        '/explore?compose=plan:hiking:hosting',
         organizePublishGateInputFromMemberStatus({
           viewerUserId: null,
           profileComplete: false,
@@ -42,10 +42,10 @@ describe('organizePublishGateHref', () => {
   it('sends incomplete profiles to welcome with return path', () => {
     expect(
       organizePublishGateHref(
-        '/explore?compose=organize:hiking',
+        '/explore?compose=plan:hiking:hosting',
         signedInInput({ profileComplete: false, canPublish: false })
       )
-    ).toBe('/welcome?redirect=%2Fexplore%3Fcompose%3Dorganize%3Ahiking');
+    ).toBe('/welcome?redirect=%2Fexplore%3Fcompose%3Dplan%3Ahiking%3Ahosting');
   });
 
   it('sends complete but blocked users to profile hub', () => {

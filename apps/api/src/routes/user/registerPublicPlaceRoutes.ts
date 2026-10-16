@@ -18,6 +18,8 @@ import { buildActivityDto, toLocationDto } from '../../lib/mappers.js';
 import { paginatedResponse } from '../../lib/pagination.js';
 import { registerPlaceAlias } from '../../lib/route-place-alias.js';
 import { buildPlaceRegistry } from '../../services/place-registry.js';
+import { buildPlaceCatalog } from '../../services/place-catalog.js';
+import { buildPlaceViewerAccess, type PlaceViewerAccessSource } from '../../services/place-viewer-access.js';
 import { UserRole } from '../../domain/enums.js';
 import { getStripe, isStripeConfigured } from '../../lib/stripe.js';
 import {
@@ -32,7 +34,17 @@ import { requireAuth, requireVerifiedEmail } from '../../middleware/auth.js';
 import { optionalAuth } from '../../middleware/optional-auth.js';
 import { viewLimiter } from '../../middleware/rate-limit-instances.js';
 import { validate } from '../../middleware/validate.js';
-import { eventIdParamSchema, listFilterSchema, placeRegistryQuerySchema } from './schemas.js';
+import {
+  eventIdParamSchema,
+  listFilterSchema,
+  placeCatalogQuerySchema,
+  placeRegistryQuerySchema,
+} from './schemas.js';
+import { listNearbyFacilitiesForPlace } from '../../lib/place-nearby-facilities.js';
+import {
+  assertRegistryCoverForPublicPlaceDetail,
+  enrichLocationDtoWithAreaHub,
+} from '../../lib/place-detail-enrichment.js';
 
 const locationDetailPath = (location: { id: string; activityType: ActivityType }) => {
   if (location.activityType === ActivityType.SHOP) return `/shop/${location.id}`;
@@ -129,6 +141,28 @@ export const registerPublicPlaceRoutes = (router: Router): void => {
     }
   );
 
+  registerPlaceAlias(
+    router,
+    'get',
+    '/places/catalog',
+    optionalAuth,
+    validate({ query: placeCatalogQuerySchema }),
+    async (req, res, next) => {
+      try {
+        const filters = req.query as z.infer<typeof placeCatalogQuerySchema>;
+        const platformAdmin = req.auth?.role === UserRole.PLATFORM_ADMIN;
+        const data = await buildPlaceCatalog({
+          ...filters,
+          userId: req.auth?.userId ?? null,
+          platformAdmin,
+        });
+        res.json({ data });
+      } catch (error) {
+        next(error);
+      }
+    }
+  );
+
   registerPlaceAlias(router, 'get', '/locations/popular', async (req, res, next) => {
     try {
       const limit = Math.min(Number(req.query.limit) || 6, 20);
@@ -155,10 +189,19 @@ export const registerPublicPlaceRoutes = (router: Router): void => {
         throw new ApiError(404, 'location_not_found', 'Location not found.');
       }
 
+      assertRegistryCoverForPublicPlaceDetail(location);
+
       const access = await checkPremiumAccess(req.auth?.userId ?? null, id, req.auth?.role);
       const premium = locationHasPremiumContent(location) ? buildPremiumSummary(location, access) : null;
+      const nearbyFacilities = await listNearbyFacilitiesForPlace(location);
+      const data = await enrichLocationDtoWithAreaHub(location, toLocationDto(location));
+      const viewerAccess = buildPlaceViewerAccess({
+        viewerUserId: req.auth?.userId ?? null,
+        viewerRole: req.auth?.role ?? null,
+        place: location as PlaceViewerAccessSource,
+      });
 
-      res.json({ data: toLocationDto(location), premium });
+      res.json({ data, premium, nearbyFacilities, viewerAccess });
     } catch (error) {
       next(error);
     }

@@ -5,7 +5,7 @@ import { filterExploreMapItemsForList, type BrowseListFilterState } from './brow
 
 const baseState: BrowseListFilterState = {
   query: '',
-  categories: ['trips'],
+  categories: ['activities'],
   tripTopics: [],
   placeTopics: [],
   tripLookingOnly: false,
@@ -44,7 +44,7 @@ describe('filterExploreMapItemsForList', () => {
     const items = [hikingActivity('a1'), hikingVenue('v1')];
     const state: BrowseListFilterState = {
       ...baseState,
-      categories: ['trips'],
+      categories: ['activities'],
       tripTopics: ['hiking'],
       placeTopics: ['hiking'],
     };

@@ -68,8 +68,8 @@ export const ExploreExperience = () => {
       <ExploreExperienceOverlays
         compose={model.compose}
         selection={model.selection}
-        organizeWizardOpen={model.organizeWizardOpen}
-        organizeWizardPrefill={model.organizeWizardPrefill}
+        hostWizardOpen={model.hostWizardOpen}
+        hostingWizardPrefill={model.hostingWizardPrefill}
         pathname={model.pathname}
         search={model.search}
         signInHref={model.signInHref}
@@ -79,7 +79,7 @@ export const ExploreExperience = () => {
         rideshareLinkParent={model.rideshareLinkParent}
         rideshareLinkDemand={model.rideshareLinkDemand}
         onCloseCreateFlow={model.closeCreateFlow}
-        onOrganizeBackToIntent={model.onOrganizeBackToIntent}
+        onPlanHostingBackToIntent={model.onPlanHostingBackToIntent}
         onActivityPublished={model.selection.handleActivityPublished}
         onCreateLinkedRideshare={model.handleCreateLinkedRideshare}
         onOpenHostApplication={model.onOpenHostApplication}

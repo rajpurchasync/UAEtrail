@@ -34,7 +34,7 @@ import { scheduleSideEffect } from '../../lib/schedule-side-effect.js';
 import { dispatchNotification } from '../../services/notifications.js';
 import { notifyUserAdminAction } from '../../services/admin-notifications.js';
 
-const locationCreateSchema = z.object({
+const locationFieldsSchema = z.object({
   name: z.string().min(2),
   region: z.string().min(2),
   areaLabel: z.string().min(2).max(120).optional().nullable(),
@@ -70,7 +70,31 @@ const locationCreateSchema = z.object({
   unlockPriceAed: z.number().int().min(0).max(9999).optional(),
 });
 
-const locationPatchSchema = locationCreateSchema.partial();
+const requireActiveCatalogImagesOnCreate = (
+  data: { status?: 'draft' | 'active' | 'inactive'; images: string[] },
+  ctx: z.RefinementCtx
+) => {
+  const status = data.status ?? 'active';
+  if (status === 'active' && data.images.length < 1) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Active catalog places must include at least one image URL',
+      path: ['images'],
+    });
+  }
+};
+
+const locationCreateSchema = locationFieldsSchema.superRefine(requireActiveCatalogImagesOnCreate);
+
+const locationPatchSchema = locationFieldsSchema.partial().superRefine((data, ctx) => {
+  if (data.status === 'active' && data.images !== undefined && data.images.length < 1) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Active catalog places must include at least one image URL',
+      path: ['images'],
+    });
+  }
+});
 
 const idParamSchema = z.object({ id: z.string().min(1) });
 
@@ -191,6 +215,15 @@ export const registerAdminPlaceRoutes = (adminRouter: Router): void => {
           nextStatus === LocationStatus.INACTIVE && existing.status === LocationStatus.ACTIVE;
 
         if (activating) {
+          const mergedImages = body.images ?? existing.images ?? [];
+          if (mergedImages.length < 1 || !mergedImages[0]?.trim()) {
+            throw new ApiError(
+              400,
+              'cover_image_required',
+              'Active catalog places must include at least one cover image URL before approval.'
+            );
+          }
+
           const activityType = body.activityType
             ? toPrismaActivityType(body.activityType)
             : existing.activityType;

@@ -6,13 +6,10 @@ import {
 } from '../explore/exploreBrowseTaxonomy';
 
 /**
- * List main categories — same mental model as explore **activities** list:
- * hosted trips + participant demand = **Trips** (`useExploreBrowseList` plans pool).
- *
- * Map URL still uses `topics=trips,looking` when Trips is selected so `/explore` matches.
- * @see docs/experiment/explore-browse-ia.md (Plans = Organize + Demand)
+ * List main categories — **activities** (scheduled outings + demand), places, people, brands.
+ * Map `topics` still uses explore wire `trips,looking` when activities category is selected.
  */
-export type BrowseMainCategoryKey = 'trips' | 'venues' | 'people' | 'guides' | 'agencies';
+export type BrowseMainCategoryKey = 'activities' | 'venues' | 'people' | 'guides' | 'agencies';
 
 /** Location-bounded catalog pins — trails, camps, outdoor venues, and gear shops. */
 export const mapItemMatchesBrowsePlacesCategory = (item: ExploreMapItemDTO): boolean =>
@@ -25,17 +22,20 @@ const isAgencyBrandItem = (item: ExploreMapItemDTO): boolean =>
   item.source === 'agency' &&
   (item.path.includes('/agency/') || item.path.includes('/partner/'));
 
-/** Plans layer — activity + demand (not a separate list bucket). */
-export const mapItemMatchesBrowseTripsCategory = (item: ExploreMapItemDTO): boolean =>
+/** Time-bound map rows — hosted activities + seeking demand. */
+export const mapItemMatchesBrowseActivitiesCategory = (item: ExploreMapItemDTO): boolean =>
   isTimeBoundExploreMapItem(item);
+
+/** @deprecated Use {@link mapItemMatchesBrowseActivitiesCategory}. */
+export const mapItemMatchesBrowseTripsCategory = mapItemMatchesBrowseActivitiesCategory;
 
 export const mapItemMatchesBrowseMainCategory = (
   item: ExploreMapItemDTO,
   key: BrowseMainCategoryKey
 ): boolean => {
   switch (key) {
-    case 'trips':
-      return mapItemMatchesBrowseTripsCategory(item);
+    case 'activities':
+      return mapItemMatchesBrowseActivitiesCategory(item);
     case 'venues':
       return mapItemMatchesBrowsePlacesCategory(item);
     case 'people':
@@ -63,7 +63,7 @@ export const parseBrowseMainCategoriesFromTopics = (
   const pills = parseExploreMapFilterPillsParam(topicsParam);
   const keys = new Set<BrowseMainCategoryKey>();
   for (const pill of pills) {
-    if (pill === 'trips' || pill === 'looking') keys.add('trips');
+    if (pill === 'trips' || pill === 'looking') keys.add('activities');
     if (pill === 'spots' || pill === 'shops') keys.add('venues');
   }
   return [...keys];
@@ -73,7 +73,7 @@ export const serializeBrowseMainCategoriesToTopics = (
   categories: readonly BrowseMainCategoryKey[]
 ): string | null => {
   const pills: ExploreMapFilterPillKey[] = [];
-  if (categories.includes('trips')) {
+  if (categories.includes('activities')) {
     pills.push('trips', 'looking');
   }
   if (categories.includes('venues')) {
@@ -87,7 +87,7 @@ export const browseMainCategoriesToTopicPills = (
   categories: readonly BrowseMainCategoryKey[]
 ): ExploreMapFilterPillKey[] => {
   const pills: ExploreMapFilterPillKey[] = [];
-  if (categories.includes('trips')) pills.push('trips', 'looking');
+  if (categories.includes('activities')) pills.push('trips', 'looking');
   if (categories.includes('venues')) {
     pills.push('spots', 'shops');
   }
@@ -95,7 +95,7 @@ export const browseMainCategoriesToTopicPills = (
 };
 
 export const BROWSE_MAIN_CATEGORY_LABELS: ReadonlyArray<{ key: BrowseMainCategoryKey; label: string }> = [
-  { key: 'trips', label: 'Activities' },
+  { key: 'activities', label: 'Activities' },
   { key: 'venues', label: 'Places' },
   { key: 'people', label: 'Buddies' },
   { key: 'guides', label: 'Guides' },

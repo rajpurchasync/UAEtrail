@@ -35,7 +35,7 @@ import {
   type ActivityManageInitialView,
   type ActivityManageSubview,
 } from './activityManageViews';
-import { tripsHostedActivityPath } from '../../member-plan/tripsRouting';
+import { planHostedActivityManagePath } from '../../plan/planRouting';
 import { useModalA11y } from '../../hooks/useModalA11y';
 import { useAuth } from '../../context/AuthContext';
 
@@ -206,7 +206,7 @@ export const ActivityManageSheet = ({
 
   const title = resolveActivityTitle(activity);
   const headerTitle = activityManageSubviewTitle(view, title);
-  const chatReturnTo = tripsHostedActivityPath(
+  const chatReturnTo = planHostedActivityManagePath(
     activity.id,
     view === 'participants' ? 'checkin' : 'overview'
   );

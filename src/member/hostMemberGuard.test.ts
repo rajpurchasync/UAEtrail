@@ -100,7 +100,7 @@ describe('hostMemberGuard', () => {
         /to:\s*HOST_OVERVIEW_PATH/.test(content) ||
         /to:\s*OPERATOR_OVERVIEW_PATH/.test(content)
       ) {
-        violations.push(`${file}: use exploreOrganizePath(), tripsPlansPath('hosted'), or PRO_MEMBERSHIP_PATH`);
+        violations.push(`${file}: use exploreOrganizePath(), planHostedSchedulePath(), or PRO_MEMBERSHIP_PATH`);
       }
     }
 
@@ -125,7 +125,7 @@ describe('hostMemberGuard', () => {
       const content = readFileSync(join(process.cwd(), file), 'utf8');
       if (literalHostConsole.test(content) || hostConsoleConstants.test(content)) {
         violations.push(
-          `${file}: use tripsPlansPath('hosted'), MY_REQUESTS_PATH, or PRO_MEMBERSHIP_PATH — not consumer /operator/*`
+          `${file}: use planHostedSchedulePath(), MY_REQUESTS_PATH, or PRO_MEMBERSHIP_PATH — not consumer /operator/*`
         );
       }
     }

@@ -220,7 +220,7 @@ export const Overview = () => {
                 {
                   to: tripsLegacyJoinedTabPath(),
                   icon: <Calendar className="w-4 h-4" />,
-                  label: 'My trips as participant',
+                  label: 'Joined outings (My Plans)',
                   badge: participant.upcomingActivitiesCount || undefined,
                   accent: 'neutral',
                 },

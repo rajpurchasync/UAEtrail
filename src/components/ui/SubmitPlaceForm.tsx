@@ -5,10 +5,8 @@ import { MapPinFields, parseCoord } from './MeetingPointMap';
 import { ImageUpload } from './ImageUpload';
 import { AssetKeyUpload } from './AssetKeyUpload';
 import { AppSelect } from './AppSelect';
-import {
-  listPublicPlacesCatalog,
-  submitPlaceContribution,
-} from '../../hooks/placeCatalogApi';
+import { listPublicPlacesCatalog } from '../../hooks/placeCatalogReadsClientApi';
+import { submitMemberPlace } from '../../hooks/memberCatalogSubmitClientApi';
 import { DEFAULT_COUNTRY } from '../../config/regions';
 import { UAE_EMIRATES, getStatesForEmirate } from '../../config/uaeRegions';
 import {
@@ -236,7 +234,7 @@ export const SubmitPlaceForm = ({
     setError(null);
     try {
       const payload = buildPayload();
-      const place = await submitPlaceContribution(payload as Partial<PlaceDTO>, tenantId);
+      const place = await submitMemberPlace(payload as Partial<PlaceDTO>, tenantId);
       onSubmitted?.(place);
       setForm({ ...emptyForm, activityType: defaultActivityType });
       setStep('search');

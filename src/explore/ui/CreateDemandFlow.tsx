@@ -47,7 +47,7 @@ import {
   type DemandDraft,
   type DemandKind,
 } from './demandFlow';
-import type { LocationPrecision, TimeMode } from './organizeFlow';
+import type { LocationPrecision, TimeMode } from './createFlowShared';
 import type { FindComposeKind } from '../compose';
 import { areaLabelForId } from '../organizePublishArea';
 import { areaIdForExploreAreaSlug } from '../exploreAreaFilter';
@@ -182,7 +182,14 @@ export const CreateDemandFlow = ({
       : demandFlowStepTitle(step as DemandFlowStepId, kind);
 
   const demandFlowId = useMemo(
-    () => (findKind ? composeFlowIdFromRoute({ intent: 'find', kind: findKind }) : null),
+    () =>
+      findKind
+        ? composeFlowIdFromRoute({
+            intent: 'plan',
+            kind: findKind === 'event' ? 'activity' : findKind,
+            mode: 'seeking',
+          })
+        : null,
     [findKind]
   );
   const demandInitKey = demandFlowId ?? null;

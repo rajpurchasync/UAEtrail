@@ -178,8 +178,8 @@ describe('list poster presentation', () => {
 
 describe('listCategoryResultsLabel', () => {
   it('uses activity count copy for trips', () => {
-    expect(listCategoryResultsLabel(7, 'trips')).toBe('Found 7 activities');
-    expect(listCategoryResultsLabel(1, 'trips')).toBe('Found 1 activity');
+    expect(listCategoryResultsLabel(7, 'activities')).toBe('Found 7 activities');
+    expect(listCategoryResultsLabel(1, 'activities')).toBe('Found 1 activity');
   });
 
   it('uses place count copy for venues', () => {

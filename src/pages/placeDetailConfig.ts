@@ -1,4 +1,5 @@
 import type { ActivityType } from '@uaetrail/shared-types';
+import { normalizePlaceActivityType } from '@uaetrail/shared-types';
 import { VENUE_TYPE_LABELS } from '../config/activityTypes';
 
 /** URL segment kind for place detail pages (`/trail`, `/camp`, `/venue`). */
@@ -26,6 +27,14 @@ export interface PlaceDetailKindConfig {
   notFoundLinkClass: string;
   typeBadge?: string;
 }
+
+export const resolvePlaceDetailKind = (activityType: string): PlaceDetailKind | null => {
+  const normalized = normalizePlaceActivityType(activityType);
+  if (normalized === 'shop') return null;
+  if (normalized === 'camping') return 'camp';
+  if (normalized === 'event') return 'event';
+  return 'trail';
+};
 
 export const PLACE_DETAIL_CONFIG: Record<PlaceDetailKind, PlaceDetailKindConfig> = {
   trail: {

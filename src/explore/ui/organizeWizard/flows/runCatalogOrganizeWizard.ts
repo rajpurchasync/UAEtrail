@@ -1,12 +1,12 @@
 import type { CreateFlowStepId } from '../../organizeFlow';
-import type { OrganizeCatalogFlow } from '../../organizeFlows';
+import type { HostingKindFlow } from '../../hostingFlows';
 import { renderOrganizeWizardStepsForIds } from '../steps/index';
 import type { OrganizeWizardContext } from '../organizeWizardContext';
 import type { ReactNode } from 'react';
 
 export const runCatalogOrganizeWizard = (
   ctx: OrganizeWizardContext,
-  flow: OrganizeCatalogFlow
+  flow: HostingKindFlow
 ): ReactNode | null => {
   if (ctx.step === 'type') return null;
   const steps = flow.getSteps(ctx.draft) as CreateFlowStepId[];

@@ -10,6 +10,7 @@ export * from './ExploreFilterIcon';
 export * from './ActivityMapPeekHost';
 export * from './peek';
 export * from './peek/place/PlaceMapPeekHost';
+export * from './CreateHostingActivityFlow';
 export * from './CreateActivityFlow';
 export * from './CreateContributeFlow';
 export * from './contributeFlow';

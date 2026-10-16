@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ChevronRight, Target } from 'lucide-react';
-import { planGoalsWishlistPath } from '../../plan/planLens';
+import { planGoalsWishlistPath } from '../../plan/planRouting';
 
 type ProfilePlanGoalsTeaserProps = {
   goalsCount: number;

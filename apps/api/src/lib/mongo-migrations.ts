@@ -3,6 +3,7 @@ import { randomUUID } from 'crypto';
 import { COLLECTIONS, LEGACY_COLLECTIONS } from './collections.js';
 import { slugify } from './slug.js';
 import { isLegacyEmbeddedDemandTitle, normalizeLegacyDemandTitle, type DemandTitleKind } from '@uaetrail/shared-types';
+import { runCatalogCpcMigrations } from './catalog-cpc-migrations.js';
 
 const migrateCollectionNameIfNeeded = async (db: Db, from: string, to: string): Promise<void> => {
   const collections = await db.listCollections().toArray();
@@ -701,6 +702,7 @@ export const runMongoMigrations = async (db: Db): Promise<void> => {
   await purgeDemandBookmarkWishlistRows(db);
   await backfillTenantOwnerMemberships(db);
   await backfillTenantPublishingPurpose(db);
+  await runCatalogCpcMigrations(db);
 };
 
 /** Align tenant rows with community / professional / business publishing tiers. */

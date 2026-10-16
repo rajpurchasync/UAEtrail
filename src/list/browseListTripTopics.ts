@@ -59,4 +59,4 @@ export const toggleBrowseTripTopicInList = (
 };
 
 export const browseListShowsTripTopicRow = (categories: readonly BrowseMainCategoryKey[]): boolean =>
-  categories.length === 0 || categories.includes('trips');
+  categories.length === 0 || categories.includes('activities');

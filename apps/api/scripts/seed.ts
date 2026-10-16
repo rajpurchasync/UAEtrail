@@ -71,6 +71,7 @@ import { ensureActivityGroupChat } from '../src/services/activity-group-chat.js'
 import { logConnectionsDemoPlaybook, seedConnectionsDemo } from './seedConnectionsDemo.js';
 import { ensureDemoExploreActivities, seedDemoScheduledActivities } from './seed-demo-scheduled-activities.js';
 import { refreshSeedParticipantSeekingSchedules } from './seed-demo-seeking-schedules.js';
+import { seedCatalogFacilities } from './seed-catalog-facilities.js';
 
 const seedChatThread = async (
   messages: Array<{
@@ -1587,6 +1588,7 @@ Wind shelter notes, BBQ etiquette, and nearby shop stops.`
         name: 'Hatta Dam Loop',
         region: 'Dubai',
         areaLabel: 'Hatta Dam visitor park',
+        areaId: curatedAreaSeedId('hatta'),
         activityType: ActivityType.HIKING,
         difficulty: Difficulty.EASY,
         accessibility: Accessibility.CAR_ACCESSIBLE,
@@ -1735,37 +1737,6 @@ Drive via Dubai–Hatta Road (E44). Main car park is signed at the dam visitor a
         unlockPriceAed: 0,
         guidePreview: '24h fuel on E44 approach.',
         guideMarkdown: 'Plan fuel before returning to Dubai.'
-      }
-    },
-    {
-      id: 'hatta-dam-restroom',
-      data: {
-        name: 'Hatta Dam Restrooms',
-        region: 'Dubai',
-        areaLabel: 'Hatta Dam visitor park',
-        areaId: curatedAreaSeedId('hatta'),
-        activityType: ActivityType.HIKING,
-        difficulty: Difficulty.EASY,
-        accessibility: Accessibility.CAR_ACCESSIBLE,
-        description:
-          'Visitor park facilities at Hatta Dam — toilets, picnic lawns, and kayak hire (not a hike; map pin for amenities).',
-        season: ['year-round'],
-        childFriendly: true,
-        images: ['https://images.unsplash.com/photo-1646641678252-52aee3025261?w=800'],
-        distance: 0.3,
-        duration: 0.25,
-        latitude: 24.7858,
-        longitude: 56.1145,
-        highlights: ['Toilets', 'Picnic lawns', 'Kayak hire'],
-        surfaceType: ['gravel'],
-        tags: ['facility:toilet', 'facility:water', 'hatta', 'area:Hatta Dam visitor park'],
-        accessibleBy: ['car'],
-        parkingLink: 'https://www.google.com/maps/search/?api=1&query=Hatta+Dam',
-        parkingLat: 24.7855,
-        parkingLng: 56.1142,
-        unlockPriceAed: 0,
-        guidePreview: 'Public toilets and shaded picnic spots.',
-        guideMarkdown: '## Facilities\nOpen during visitor park hours.'
       }
     },
     {
@@ -1998,6 +1969,11 @@ Share your live location and carry extra water in summer months.`
   }
 
   await backfillSeedCatalogLocationAreaIds();
+
+  const facilitySeed = await seedCatalogFacilities();
+  console.log(
+    `[seed] Catalog facilities: upserted=${facilitySeed.upserted} skipped=${facilitySeed.skipped}`
+  );
 
   const { jaisActivityId } = await seedDemoScheduledActivities({
     agencyTenantId: agencyTenant.id,
@@ -2364,6 +2340,9 @@ Share your live location and carry extra water in summer months.`
   await invalidateExploreMapCache();
 
   console.log('Explore map demo pins: supply (hiking, camping, event, rideshare) + demand (all four types) + shops + agency');
+  console.log(
+    'Catalog facilities: Hatta / Shawka / Jais / Al Qudra — map pins `facility:*` + nearby on /place/hatta-dam-loop, /place/hatta-hill-park-camp, …'
+  );
   console.log(`Chat messages: mobile inbox demo (DMs, friends wall, outing chat) seeded`);
   console.log(
     'Inbox demo (visitor@): DMs with Fatima, Omar, Khalid; friends group + reactions; Jebel Jais outing chat + reactions'

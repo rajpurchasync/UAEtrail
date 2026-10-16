@@ -19,8 +19,8 @@ describe('wishlistFilters', () => {
 
   it('maps hub layers for venue and activity saves', () => {
     expect(wishlistItemMatchesTripsHubLayer(item({ locationId: 'loc-1' }), 'places')).toBe(true);
-    expect(wishlistItemMatchesTripsHubLayer(item({ locationId: 'loc-1' }), 'trips')).toBe(false);
-    expect(wishlistItemMatchesTripsHubLayer(item({ activityId: 'a1' }), 'trips')).toBe(true);
+    expect(wishlistItemMatchesTripsHubLayer(item({ locationId: 'loc-1' }), 'activities')).toBe(false);
+    expect(wishlistItemMatchesTripsHubLayer(item({ activityId: 'a1' }), 'activities')).toBe(true);
     expect(wishlistItemMatchesTripsHubLayer(item({ activityId: 'a1' }), 'shops')).toBe(false);
   });
 });

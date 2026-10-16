@@ -7,13 +7,12 @@ const read = (relativePath: string) => readFileSync(join(process.cwd(), relative
 /** Entity detail routes must compose through allowlisted shells (S9 Phase 7). */
 const ENTITY_DETAIL_PAGES: Array<{ path: string; mustMatch: RegExp }> = [
   { path: 'src/pages/AreaDetailPage.tsx', mustMatch: /MobileDetailShell|AreaDetailView/ },
-  { path: 'src/pages/PlaceDetailPage.tsx', mustMatch: /PlaceDetailCore/ },
+  { path: 'src/pages/PlaceDetailPage.tsx', mustMatch: /PlaceDetailPageShell/ },
   {
     path: 'src/pages/ActivityDetail.tsx',
     mustMatch: /ActivityDetailByKind|ActivityDetailPageShell/,
   },
   { path: 'src/pages/ShopPublic.tsx', mustMatch: /ShopPublicPage/ },
-  { path: 'src/components/place/PlaceDetailCore.tsx', mustMatch: /MobileDetailShell/ },
   { path: 'src/components/area/AreaDetailView.tsx', mustMatch: /MobileDetailShell/ },
   { path: 'src/components/shop/ShopPublicPage.tsx', mustMatch: /EntityPublicDetailShell/ },
   { path: 'src/pages/OrganisationProfile.tsx', mustMatch: /EntityPublicDetailShell/ },
@@ -42,7 +41,7 @@ describe('entityDetailShellGuard', () => {
         violations.push(`${path}: missing delegated shell/view`);
       }
       const hasShellDelegate =
-        /MobileDetailShell|EntityPublicDetailShell|ActivityDetailByKind|ActivityDetailPageShell|ActivityDetailView|PlaceDetailCore|AreaDetailView|ShopPublicPage/.test(
+        /MobileDetailShell|EntityPublicDetailShell|ActivityDetailByKind|ActivityDetailPageShell|ActivityDetailView|ActivityConsumerDetailModalShell|PlaceDetailPageShell|AreaDetailView|ShopPublicPage/.test(
           source
         );
       if (!hasShellDelegate) {

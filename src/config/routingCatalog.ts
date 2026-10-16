@@ -41,6 +41,8 @@ export {
   NOTIFICATIONS_PATH,
   BUDDIES_PATH,
   CONTRIBUTIONS_PATH,
+  PROFILE_SUBMISSIONS_PATH,
+  LEGACY_CONTRIBUTIONS_PATH,
   CHAT_PATH,
   MESSAGES_PATH,
   LEGACY_MESSAGES_PATH,
@@ -118,6 +120,10 @@ export {
 
 export {
   placeDetailPath,
+  canonicalPlaceDetailPath,
+  legacyPlaceDetailPath,
+  PLACE_CANONICAL_PATH_PREFIX,
+  facilityDetailPath,
   activityDetailPath,
   activityDetailInvitePath,
   exploreActivityInvitePath,
@@ -170,6 +176,24 @@ export {
 } from '../list/routing';
 
 export {
+  planUpcomingPath,
+  planHostedSchedulePath,
+  planJoinedSchedulePath,
+  planAvailabilityPath,
+  planWishlistTabPath,
+  planHostedActivityManagePath,
+  planSelfDemandManagePath,
+  normalizePlanSearchParams,
+  planSavedPath,
+  planLensPath,
+} from '../plan/planRouting';
+
+export {
+  planHubPath,
+  profileHistoryCompletedPath,
+  journeyMapPath,
+  planWishlistRedirectPath,
+  planJoinedUpcomingPath,
   tripsPath,
   tripsPlansPath,
   tripsCompletedPath,
@@ -177,6 +201,6 @@ export {
   myTripsWishlistPath,
   tripsLegacyJoinedTabPath,
   tripsLegacyUpcomingSegmentPath,
-} from '../member-plan/tripsRouting';
+} from '../member-plan/planHubRouting';
 
 export { memberProfileLink } from '../member/memberProfileLink';

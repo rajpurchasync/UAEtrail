@@ -4,6 +4,7 @@ import { listAdminPlacesPaged } from '../lib/admin-store.js';
 import { listSubmittedLocationsByUser } from '../lib/activities-store.js';
 import { listActiveLocations } from '../lib/location-query.js';
 import { toLocationDto } from '../lib/mappers.js';
+import { locationHasRegistryCoverImage } from '../lib/catalog-registry-cover.js';
 import type { LocationDTO } from '@uaetrail/shared-types';
 
 export type PlaceRegistryQuery = {
@@ -68,6 +69,8 @@ export const buildPlaceRegistry = async (
     lists.push(adminPlaces.filter((place) => matchesActivityType(place, activityType)));
   }
 
-  const merged = mergeById(lists).sort((a, b) => a.name.localeCompare(b.name));
+  const merged = mergeById(lists)
+    .filter((place) => locationHasRegistryCoverImage(place) || place.status === LocationStatus.DRAFT)
+    .sort((a, b) => a.name.localeCompare(b.name));
   return merged.map((place) => toLocationDto(place));
 };

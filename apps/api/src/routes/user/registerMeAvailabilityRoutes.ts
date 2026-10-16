@@ -11,6 +11,8 @@ import {
   getMemberAvailability,
   upsertMemberAvailability,
 } from '../../lib/member-availability-store.js';
+import { notifyMemberOfHostedActivitiesForAvailability } from '../../services/availability-hosted-match-notifications.js';
+import { buildMemberAvailabilityMatchPreview } from '../../services/member-availability-match-preview.js';
 
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 
@@ -40,6 +42,15 @@ export const registerMeAvailabilityRoutes = (router: Router): void => {
     }
   });
 
+  router.get('/me/availability/match-preview', requireAuth, async (req, res, next) => {
+    try {
+      const data = await buildMemberAvailabilityMatchPreview(req.auth!.userId);
+      res.json({ data });
+    } catch (error) {
+      next(error);
+    }
+  });
+
   router.put(
     '/me/availability',
     requireAuth,
@@ -47,6 +58,10 @@ export const registerMeAvailabilityRoutes = (router: Router): void => {
     async (req, res, next) => {
       try {
         const data = await upsertMemberAvailability(req.auth!.userId, req.body);
+        void notifyMemberOfHostedActivitiesForAvailability({
+          userId: req.auth!.userId,
+          availability: data,
+        });
         res.json({ data });
       } catch (error) {
         next(error);

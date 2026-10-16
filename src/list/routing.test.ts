@@ -10,7 +10,7 @@ describe('list discovery routing', () => {
     expect(
       listDiscoveryPath({
         query: 'hatta',
-        categories: ['trips', 'venues'],
+        categories: ['activities', 'venues'],
         tripTopics: ['hiking'],
         price: 'free',
         activityDatePreset: 'week',
@@ -47,7 +47,7 @@ describe('list discovery routing', () => {
   it('listDiscoveryPathFromExploreSearch mirrors explore browse query on /list', () => {
     expect(
       listDiscoveryPathFromExploreSearch('?q=hatta&topics=trips&filter=hiking&date=week&regions=Dubai')
-    ).toBe('/list?q=hatta&topics=trips%2Clooking&filter=hiking&date=week&regions=Dubai&listCat=trips');
+    ).toBe('/list?q=hatta&topics=trips%2Clooking&filter=hiking&date=week&regions=Dubai&listCat=activities');
   });
 
   it('listDiscoveryPathFromExploreSearch keeps explicit listCat from explore', () => {

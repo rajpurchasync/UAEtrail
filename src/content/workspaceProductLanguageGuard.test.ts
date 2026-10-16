@@ -112,6 +112,7 @@ const LINE_ALLOW_SUBSTRINGS = [
   'host_join_queue',
   'host console`',
   'admin hosts',
+  "label: 'Host',", // FAB v3 branch — CREATE_FLOW.md (host = lead an outing; not publishing workspace)
 ];
 
 const BANNED_LINE_PATTERNS: Array<{ pattern: RegExp; hint: string }> = [

@@ -48,6 +48,7 @@ Complete these **on the VPS** when you connect. Use this list to track progress.
 ## Release gates (before traffic)
 
 - [ ] `npm run verify:system` (or `verify:system:quick` on CI) on the release commit
+- [ ] **Catalog CPC (places + facilities):** after deploy, if amenity pins are missing on explore map, run `npm --workspace @uaetrail/api run seed:catalog-facilities` (see [`operations/EXPLORE_MAP_RUNBOOK.md`](./operations/EXPLORE_MAP_RUNBOOK.md)); smoke `GET /api/v1/facilities/catalog` and `/place/:id` + `/facility/:id` on staging
 - [ ] `npm run test:explore-alignment` when explore/FAB changed (S10e automated gate before C19 promote)
 - [ ] **Explore map vNext promote (S10e / C19):** `npm run s10e:staging-checklist` (add `--verify` for quick system gate); then set `EXPLORE_MAP_VNEXT=1` (API) and `VITE_EXPLORE_MAP_VNEXT=1` (FE build) on **staging only**; smoke per [`operations/EXPLORE_MAP_RUNBOOK.md`](./operations/EXPLORE_MAP_RUNBOOK.md) § vNext bbox fetch; do **not** enable in production until p95 metrics pass
 - [ ] Staging smoke aligned with [`NAVIGATION.md`](./NAVIGATION.md) (explore-first IA — not legacy organizer/community nav)

@@ -9,17 +9,19 @@ describe('place map peek', () => {
     const preview = read('src/explore/ui/peek/place/PlaceMapPeekHost.tsx');
     const actions = read('src/explore/ui/peek/place/PlacePeekActions.tsx');
     const body = read('src/explore/ui/peek/place/PlacePeekBody.tsx');
+    const hero = read('src/explore/ui/peek/place/PlacePeekHero.tsx');
+    const kindFacts = read('src/explore/ui/peek/place/PlacePeekKindFacts.tsx');
 
     expect(preview).toMatch(/PlacePeekCard/);
     expect(read('src/explore/ui/peek/PlacePeekCard.tsx')).toMatch(/catalogPlaceSummary/);
     const shell = read('src/explore/ui/map-peek/MapPeekShell.tsx');
-    expect(shell).toMatch(/showCoverHero/);
-    expect(shell).toMatch(/!catalogPlaceSummary/);
-    expect(body).toMatch(/resolvePlaceCatalogFactLabels/);
-    expect(body).toMatch(/resolvePlacePeekCuratedArea/);
+    expect(shell).toMatch(/showPlaceCatalogHero/);
+    expect(shell).toMatch(/catalogPlaceSummary/);
+    expect(kindFacts).toMatch(/resolvePlacePeekTrailFactsFromCard/);
+    expect(hero).toMatch(/resolvePlacePeekCuratedArea/);
     expect(body).toMatch(/fetchPlaceActivities/);
-    expect(actions).toMatch(/showAppPickerAffordance=\{false\}/);
-    expect(actions).toMatch(/showLeadingIcon=\{false\}/);
+    expect(actions).toMatch(/PLACE_PEEK_ARRANGE_TRIP/);
+    expect(actions).toMatch(/navigateOrganizeFromPlaceCard/);
     expect(actions).toMatch(/space-y-2/);
     expect(actions).not.toMatch(/flex w-full gap-2/);
   });

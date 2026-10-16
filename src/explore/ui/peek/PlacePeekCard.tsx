@@ -9,7 +9,7 @@ export type PlacePeekCardProps = {
   onGuestGatedAction?: () => void;
   joinStateLoading?: boolean;
   embedMode?: boolean;
-  /** Override actions (tests / rails); default = directions + view details. */
+  /** Override actions (tests / rails); default = arrange trip + view details. */
   actions?: ReactNode;
 };
 

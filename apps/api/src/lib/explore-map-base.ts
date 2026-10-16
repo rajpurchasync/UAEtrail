@@ -8,8 +8,8 @@ import {
   exploreMapPeekPath,
   isFacilityPlaceKind,
   PLACE_KIND_LABELS,
+  facilityDetailPath,
   placeDetailPath,
-  placeDetailRouteKindFromPlaceKind,
   placeKindFromLocationRow,
   resolveActivityHostAvatar,
   resolveActivityHeadlinePersonName,
@@ -35,6 +35,7 @@ import { ReviewTargetType } from '../domain/enums.js';
 import { resolveVenueExploreLabels } from './venue-display-names.js';
 import { isWithinUaeFocusArea } from './uae-bbox.js';
 import { listPublishedAreas } from './areas-store.js';
+import { listFacilitiesForExploreMap } from './facilities-store.js';
 import { resolveAreaIdFromPoint } from './area-resolution.js';
 import { buildExploreAreaLensItems } from './explore-map-area-lens.js';
 import { overlayCatalogDefaultsOnLocation } from './venue-catalog.js';
@@ -154,12 +155,14 @@ const attachExploreItemArea = (
 
 /** Shared catalog assembly (cacheable). Viewer access is applied in `explore-map-viewer-access.ts`. */
 export const buildExploreMapBasePayload = async (): Promise<{ items: ExploreMapItemDTO[] }> => {
-  const [activityEvents, locationsResult, shopTenants, publishedAreas] = await Promise.all([
-    listPublishedActivitiesForExploreMap(250),
-    listActiveLocations({ page: 1, pageSize: 1200 }),
-    listPublicShopTenantsForExplore(250),
-    listPublishedAreas(),
-  ]);
+  const [activityEvents, locationsResult, facilityRows, shopTenants, publishedAreas] =
+    await Promise.all([
+      listPublishedActivitiesForExploreMap(250),
+      listActiveLocations({ page: 1, pageSize: 1200 }),
+      listFacilitiesForExploreMap(1200),
+      listPublicShopTenantsForExplore(250),
+      listPublishedAreas(),
+    ]);
 
   const areaSlugById = new Map(publishedAreas.map((area) => [area.id, area.slug]));
   const areaNameById = new Map(publishedAreas.map((area) => [area.id, area.name]));
@@ -271,6 +274,7 @@ export const buildExploreMapBasePayload = async (): Promise<{ items: ExploreMapI
 
     const catalogLocation = overlayCatalogDefaultsOnLocation(location);
     const dto = toLocationDto(catalogLocation);
+    if (!dto.images?.[0]?.trim()) continue;
     const catalogAreaLabel = catalogLocation.areaLabel ?? dto.areaLabel ?? null;
     if (dto.activityType === 'shop') {
       const latitude = dto.latitude ?? null;
@@ -324,40 +328,7 @@ export const buildExploreMapBasePayload = async (): Promise<{ items: ExploreMapI
     }
 
     if (isFacilityPlaceKind(catalogPlaceKind)) {
-      if (latitude == null || longitude == null) continue;
-      const routeKind = placeDetailRouteKindFromPlaceKind(catalogPlaceKind);
-      items.push(
-        attachExploreItemArea(
-          {
-            id: `venue:${dto.id}`,
-            kind: 'event',
-            source: 'venue',
-            title: dto.name,
-            subtitle: PLACE_KIND_LABELS[catalogPlaceKind],
-            latitude,
-            longitude,
-            path: placeDetailPath(routeKind, dto.id),
-            image: dto.images?.[0] ?? null,
-            about: dto.description,
-            placeKind: catalogPlaceKind,
-            locationCard: {
-              id: dto.id,
-              activityType: 'event',
-              region: dto.region,
-              groupRegionLevels: dto.groupRegionLevels ?? null,
-              description: dto.description,
-              childFriendly: dto.childFriendly,
-              season: dto.season ?? [],
-              images: dto.images ?? [],
-              featured: dto.featured,
-            },
-          },
-          dto.areaId,
-          areaSlugById,
-          areaNameById,
-          catalogAreaLabel
-        )
-      );
+      // CPC-5: amenity pins come from `facilities` collection (legacy `locations` rows skipped).
       continue;
     }
 
@@ -452,6 +423,49 @@ export const buildExploreMapBasePayload = async (): Promise<{ items: ExploreMapI
     );
   }
 
+  for (const facility of facilityRows) {
+    if (!facility.images?.[0]?.trim()) continue;
+    const latitude = facility.latitude;
+    const longitude = facility.longitude;
+    if (latitude == null || longitude == null) continue;
+    if (!isWithinUaeFocusArea(latitude, longitude)) continue;
+
+    const placeKind = facility.facilityKind;
+    const catalogAreaLabel = facility.areaLabel?.trim() || null;
+    items.push(
+      attachExploreItemArea(
+        {
+          id: `facility:${facility.id}`,
+          kind: 'event',
+          source: 'venue',
+          title: facility.name,
+          subtitle: PLACE_KIND_LABELS[placeKind],
+          latitude,
+          longitude,
+          path: facilityDetailPath(facility.id),
+          image: facility.images[0] ?? null,
+          about: facility.description,
+          placeKind,
+          locationCard: {
+            id: facility.id,
+            activityType: 'event',
+            region: facility.region,
+            groupRegionLevels: null,
+            description: facility.description,
+            childFriendly: false,
+            season: [],
+            images: facility.images ?? [],
+            featured: facility.featured,
+          },
+        },
+        facility.areaId,
+        areaSlugById,
+        areaNameById,
+        catalogAreaLabel
+      )
+    );
+  }
+
   const ownerDisplays = await loadMerchantOwnerDisplaysByAdminIds(
     shopTenants.filter((shop) => shop.ownerId).map((shop) => [shop.ownerId])
   );
@@ -510,17 +524,7 @@ export const buildExploreMapBasePayload = async (): Promise<{ items: ExploreMapI
 
   attachLinkedRideshareMetadata(items);
 
-  items.push(
-    ...buildExploreAreaLensItems(
-      publishedAreas,
-      items,
-      locationsResult.items.map((row) => ({
-        areaId: row.areaId,
-        activityType: String(row.activityType),
-        tags: row.tags,
-      }))
-    )
-  );
+  items.push(...buildExploreAreaLensItems(publishedAreas, items));
 
   for (const item of items) {
     if (item.source === 'activity' && item.activity) {

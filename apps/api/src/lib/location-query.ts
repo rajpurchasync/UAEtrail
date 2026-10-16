@@ -5,6 +5,7 @@ import { getMongoClient } from './mongo.js';
 import { locationGeoIndexFields } from './geo-index-fields.js';
 import { radiusKmToRadians, withLocationGeoFields } from './location-geo.js';
 import { withQueryTiming } from './query-timing.js';
+import { registryCoverImageMongoFilter } from './catalog-registry-cover.js';
 
 export interface LocationListFilters {
   activityType?: 'hiking' | 'camping' | 'event';
@@ -46,6 +47,7 @@ const buildMongoFilter = (filters: LocationListFilters): Record<string, unknown>
   const query: Record<string, unknown> = {
     status: LocationStatus.ACTIVE,
     registryListed: { $ne: false },
+    ...registryCoverImageMongoFilter(),
   };
   if (filters.activityType) {
     query.activityType =

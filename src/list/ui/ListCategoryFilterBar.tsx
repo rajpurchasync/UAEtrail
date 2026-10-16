@@ -59,7 +59,7 @@ export const ListCategoryFilterBar = ({
 
   showMoreButton = true,
 
-  category = 'trips',
+  category = 'activities',
 
   embedded = false,
 
@@ -80,7 +80,7 @@ export const ListCategoryFilterBar = ({
   const showMore = showMoreButton && category && appliedFilters && onMoreFiltersApply;
 
   const useTopicCircles =
-    (category === 'trips' || category === 'venues') && pills.length > 0;
+    (category === 'activities' || category === 'venues') && pills.length > 0;
 
   const showRegionPills =
     category === 'venues' && Boolean(onVenueRegionsChange);

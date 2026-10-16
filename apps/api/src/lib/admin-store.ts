@@ -316,11 +316,28 @@ export const updateAdminLocation = async (id: string, data: LocationUpdateData) 
   const merged: Location = {
     ...existing,
     ...data,
-    updatedAt: new Date()
+    updatedAt: new Date(),
   };
+  const { withCatalogLifecycleFields } = await import('./catalog-lifecycle-map.js');
+  const withLifecycle = withCatalogLifecycleFields(merged);
   const { stampLocationGroupRegion } = await import('./group-region-resolution.js');
-  const updated = await stampLocationGroupRegion(merged);
+  const updated = await stampLocationGroupRegion(withLifecycle);
   await writeLocationToMongo(updated);
+  const { getMongoClient } = await import('./mongo.js');
+  const { locationRowRepresentsFacility, upsertFacilityFromLocationRow } = await import(
+    './catalog-cpc-migrations.js'
+  );
+  const locationRow = {
+    _id: updated.id,
+    ...updated,
+    submittedById: updated.submittedById,
+    registeredByUserId: withLifecycle.registeredByUserId,
+    moderationStatus: withLifecycle.moderationStatus,
+    publicationStatus: withLifecycle.publicationStatus,
+  };
+  if (locationRowRepresentsFacility(locationRow)) {
+    await upsertFacilityFromLocationRow(getMongoClient()!.db(), locationRow);
+  }
   return updated;
 };
 

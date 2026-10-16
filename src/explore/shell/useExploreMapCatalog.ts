@@ -4,35 +4,37 @@ import { useExploreMap } from '../../hooks/useExploreMap';
 import { useExploreMapFetchScope } from '../useExploreMapFetchScope';
 import { useMemberJourneyMapPinIds } from '../../hooks/useMemberJourneyMapPinIds';
 import { filterExploreMapItemsByAreaSlug, parseExploreAreaSlug } from '../exploreAreaFilter';
-import { MY_TRIPS_QUERY_KEY } from '../routing';
+import { parseExploreMyPlanMapMode } from '../routing';
 
-/** Map fetch + area / my-trips scoping (R2 shell). */
+/** Map fetch + area / my-plan map scoping (R2 shell). */
 export const useExploreMapCatalog = (input: {
   userId: string | undefined;
   searchParams: URLSearchParams;
 }) => {
-  const myTripsMode = input.searchParams.get(MY_TRIPS_QUERY_KEY) === '1';
+  const myPlanMapMode = parseExploreMyPlanMapMode(input.searchParams);
   const areaSlug = parseExploreAreaSlug(input.searchParams);
   const mapFetch = useExploreMapFetchScope(areaSlug);
   const { data: items = [], isLoading: loading, error: mapError } = useExploreMap({
     scope: mapFetch.scope,
   });
-  const { ids: myTripsPinIds, loading: myTripsPinsLoading } = useMemberJourneyMapPinIds(
-    myTripsMode ? input.userId : undefined
+  const { ids: myPlanPinIds, loading: myPlanPinsLoading } = useMemberJourneyMapPinIds(
+    myPlanMapMode ? input.userId : undefined
   );
 
   const mapItems = useMemo(() => {
     const areaScoped = filterExploreMapItemsByAreaSlug(items, areaSlug);
-    if (!myTripsMode) return areaScoped;
-    if (!myTripsPinIds) return [];
-    return areaScoped.filter((item) => myTripsPinIds.has(item.id));
-  }, [items, myTripsMode, myTripsPinIds, areaSlug]);
+    if (!myPlanMapMode) return areaScoped;
+    if (!myPlanPinIds) return [];
+    return areaScoped.filter((item) => myPlanPinIds.has(item.id));
+  }, [items, myPlanMapMode, myPlanPinIds, areaSlug]);
 
-  const mapLoading = (loading && items.length === 0) || (myTripsMode && myTripsPinsLoading);
+  const mapLoading = (loading && items.length === 0) || (myPlanMapMode && myPlanPinsLoading);
   const loadError = mapError ? describeExploreMapLoadError(mapError) : null;
 
   return {
-    myTripsMode,
+    myPlanMapMode,
+    /** @deprecated Use {@link myPlanMapMode}. */
+    myTripsMode: myPlanMapMode,
     areaSlug,
     mapItems,
     mapLoading,

@@ -25,7 +25,7 @@ import {
   parseTripsRole,
   type TripsRole,
 } from '../member-plan/tripsRouting';
-import { resolveTripsContent } from '../member-plan/resolveTripsContent';
+import { resolvePlanHubView } from '../member-plan/resolvePlanHubView';
 
 export const MyTrips = () => {
   const { user } = useAuth();
@@ -68,7 +68,7 @@ export const MyTrips = () => {
     legacyTab: searchParams.get('tab'),
   });
 
-  const contentKey = resolveTripsContent({
+  const contentKey = resolvePlanHubView({
     signedIn: Boolean(user),
     mainView: 'completed',
     plansRole: 'all',

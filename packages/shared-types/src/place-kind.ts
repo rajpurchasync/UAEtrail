@@ -27,9 +27,37 @@ export const PLACE_KINDS = [
   'parking',
   'viewpoint',
   'picnic',
+  'rest_area',
+  'grocery',
+  'food',
+  'outdoor_shop',
 ] as const;
 
 export type PlaceKind = (typeof PLACE_KINDS)[number];
+
+/** Place catalog kinds (trails, camps, venues) — not facilities. See `DOMAIN.md` § What · Where · Who · How. */
+export const PLACE_CATALOG_KINDS = [
+  'hiking',
+  'camping',
+  'event',
+  'outdoor_other',
+] as const;
+
+export type PlaceCatalogKind = (typeof PLACE_CATALOG_KINDS)[number];
+
+/** @deprecated Use {@link PLACE_CATALOG_KINDS} */
+export const DESTINATION_PLACE_KINDS = PLACE_CATALOG_KINDS;
+
+/** @deprecated Use {@link PlaceCatalogKind} */
+export type DestinationPlaceKind = PlaceCatalogKind;
+
+const PLACE_CATALOG_KIND_SET = new Set<string>(PLACE_CATALOG_KINDS);
+
+export const isPlaceCatalogKind = (kind: PlaceKind): kind is PlaceCatalogKind =>
+  PLACE_CATALOG_KIND_SET.has(kind);
+
+/** @deprecated Use {@link isPlaceCatalogKind} */
+export const isDestinationPlaceKind = isPlaceCatalogKind;
 
 const PLACE_KIND_SET = new Set<string>(PLACE_KINDS);
 
@@ -60,6 +88,10 @@ export const PLACE_KIND_LABELS: Record<PlaceKind, string> = {
   parking: 'Parking',
   viewpoint: 'Viewpoint',
   picnic: 'Picnic area',
+  rest_area: 'Rest area',
+  grocery: 'Grocery',
+  food: 'Food & café',
+  outdoor_shop: 'Outdoor shop',
 };
 
 const KINDS_USING_PLACE_KIND_TAG: PlaceKind[] = [
@@ -70,6 +102,10 @@ const KINDS_USING_PLACE_KIND_TAG: PlaceKind[] = [
   'parking',
   'viewpoint',
   'picnic',
+  'rest_area',
+  'grocery',
+  'food',
+  'outdoor_shop',
 ];
 
 /** Amenity rows on the catalog — Spots lens + area rollups (`facilities`). */
@@ -80,11 +116,42 @@ export const FACILITY_PLACE_KINDS: readonly PlaceKind[] = [
   'parking',
   'viewpoint',
   'picnic',
+  'rest_area',
+  'grocery',
+  'food',
+  'outdoor_shop',
 ];
 
 const FACILITY_PLACE_KIND_SET = new Set<PlaceKind>(FACILITY_PLACE_KINDS);
 
 export const isFacilityPlaceKind = (kind: PlaceKind): boolean => FACILITY_PLACE_KIND_SET.has(kind);
+
+/** Member FAB Add → Facilities — subset of {@link FACILITY_PLACE_KINDS}. */
+export const CONTRIBUTABLE_FACILITY_PLACE_KINDS: readonly PlaceKind[] = [
+  'parking',
+  'toilet',
+  'rest_area',
+  'water_refill',
+  'gas_station',
+  'viewpoint',
+  'grocery',
+  'food',
+  'outdoor_shop',
+];
+
+const CONTRIBUTABLE_FACILITY_KIND_SET = new Set<PlaceKind>(CONTRIBUTABLE_FACILITY_PLACE_KINDS);
+
+export const isContributableFacilityPlaceKind = (kind: PlaceKind): boolean =>
+  CONTRIBUTABLE_FACILITY_KIND_SET.has(kind);
+
+/** Linked facility POI beside a trail/camp detail page (same `areaId` catalogue). */
+export interface PlaceNearbyFacilityDTO {
+  id: string;
+  name: string;
+  placeKind: PlaceKind;
+  label: string;
+  path: string;
+}
 
 /** Trail, camp, or amenity catalog pin — Spots lens (not shops layer). */
 export const exploreVenueIsPlacesSpot = (
@@ -113,6 +180,14 @@ export const facilityPlaceKindPinEmoji = (kind: PlaceKind): string => {
       return '👀';
     case 'picnic':
       return '🧺';
+    case 'rest_area':
+      return '🛖';
+    case 'grocery':
+      return '🛒';
+    case 'food':
+      return '🍽️';
+    case 'outdoor_shop':
+      return '🎒';
     default:
       return '📍';
   }
