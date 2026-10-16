@@ -75,7 +75,7 @@ export const useExploreExperienceModel = () => {
   const { pathname, search, state: locationState } = useLocation();
   const isDesktop = useMinWidthLg();
 
-  const { myTripsMode, areaSlug, mapItems, mapLoading, loadError, mapFetch, mapQueryLoading } =
+  const { myPlanMapMode, areaSlug, mapItems, mapLoading, loadError, mapFetch, mapQueryLoading } =
     useExploreMapCatalog({ userId: user?.id, searchParams });
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -133,10 +133,10 @@ export const useExploreExperienceModel = () => {
   }, [mapItems, linkOnlyPeekItems]);
 
   useEffect(() => {
-    if (!myTripsMode || user) return;
+    if (!myPlanMapMode || user) return;
     const { href } = buildSignInRedirect({ pathname, search });
     navigate(href, { replace: true });
-  }, [myTripsMode, user, navigate, pathname, search]);
+  }, [myPlanMapMode, user, navigate, pathname, search]);
 
   useExploreFulfillIntent({
     searchParams,
@@ -332,7 +332,7 @@ export const useExploreExperienceModel = () => {
   const browsePanelShared = useExploreBrowsePanelShared({
     isDesktop,
     mapLoading,
-    myTripsMode,
+    myPlanMapMode,
     shopListSections,
     browse,
     publishedAreas,
@@ -372,7 +372,7 @@ export const useExploreExperienceModel = () => {
     pathname,
     search,
     isDesktop,
-    myTripsMode,
+    myPlanMapMode,
     areaSlug,
     mapItems,
     listItems,

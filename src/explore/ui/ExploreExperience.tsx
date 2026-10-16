@@ -12,12 +12,12 @@ export const ExploreExperience = () => {
     <div className="flex h-full min-h-0 w-full flex-col overflow-hidden">
       <PageMeta
         title={
-          model.myTripsMode
+          model.myPlanMapMode
             ? 'Your plan on the map'
             : 'Explore hiking, camping, events & shops'
         }
         description={
-          model.myTripsMode
+          model.myPlanMapMode
             ? 'See your upcoming outings on the UAE Trail map.'
             : 'Find live hiking, camping, events, and shops on the map across the UAE.'
         }

@@ -33,8 +33,6 @@ export const useExploreMapCatalog = (input: {
 
   return {
     myPlanMapMode,
-    /** @deprecated Use {@link myPlanMapMode}. */
-    myTripsMode: myPlanMapMode,
     areaSlug,
     mapItems,
     mapLoading,

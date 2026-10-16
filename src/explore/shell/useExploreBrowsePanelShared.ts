@@ -15,7 +15,7 @@ export type ExploreBrowsePanelShared = Omit<
 export const useExploreBrowsePanelShared = (input: {
   isDesktop: boolean;
   mapLoading: boolean;
-  myTripsMode: boolean;
+  myPlanMapMode: boolean;
   shopListSections: ExploreBrowsePanelShared['shopListSections'];
   browse: Browse;
   publishedAreas: ReturnType<typeof useExplorePublishedAreas>;
@@ -32,7 +32,7 @@ export const useExploreBrowsePanelShared = (input: {
     (): ExploreBrowsePanelShared => ({
       isDesktop: input.isDesktop,
       loading: input.mapLoading,
-      myTripsMode: input.myTripsMode,
+      myPlanMapMode: input.myPlanMapMode,
       shopListSections: input.shopListSections,
       desktopBrowseTab: input.browse.desktopBrowseTab,
       mapFilter: input.browse.mapFilter,
@@ -73,7 +73,7 @@ export const useExploreBrowsePanelShared = (input: {
     [
       input.isDesktop,
       input.mapLoading,
-      input.myTripsMode,
+      input.myPlanMapMode,
       input.shopListSections,
       input.browse,
       input.publishedAreas,

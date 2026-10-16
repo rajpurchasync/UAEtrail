@@ -85,7 +85,7 @@ export interface ExploreBrowsePanelProps {
   /** Highlight buddy-hosted outings in map-aligned list rows. */
   buddyUserIds?: Set<string>;
   /** Filtered explore: only member trips + wishlist pins (`myTrips=1`). */
-  myTripsMode?: boolean;
+  myPlanMapMode?: boolean;
   /** Full-screen mobile browse — poster cards instead of compact rows. */
   usePosterFeed?: boolean;
   posterFeedCards?: ExploreCardModel[];
@@ -153,7 +153,7 @@ export const ExploreBrowsePanel = ({
   onSearchScopePick,
   searchFocusNonce = 0,
   buddyUserIds,
-  myTripsMode = false,
+  myPlanMapMode = false,
   usePosterFeed = false,
   posterFeedCards = [],
   fullscreenBrowse = false,
@@ -175,7 +175,7 @@ export const ExploreBrowsePanel = ({
   );
   const posterCardsToRender =
     posterFeedCards.length > 0 ? posterFeedCards : posterFeedBuiltCards;
-  const heading = myTripsMode
+  const heading = myPlanMapMode
     ? `Your plan (${listItems.length})`
     : listHeading(isDesktop, desktopBrowseTab, sidebarPanel, listItems.length, mapFilter);
   const filterEmojiContext = placesMode ? 'venue' : 'activity';
@@ -263,7 +263,7 @@ export const ExploreBrowsePanel = ({
         <div className="mx-auto mb-2 h-1.5 w-10 shrink-0 rounded-full bg-neutral-200 lg:hidden" />
       ) : null}
 
-      {myTripsMode ? <ExploreMyPlanMapNotice /> : null}
+      {myPlanMapMode ? <ExploreMyPlanMapNotice /> : null}
 
       {fullscreenBrowse && !isDesktop ? (
         <div className="shrink-0 border-b border-neutral-200/70 px-2 pb-2 pt-1">
@@ -280,7 +280,7 @@ export const ExploreBrowsePanel = ({
             isDesktop ? 'border-b border-neutral-200 pb-0' : 'pb-0'
           }`}
         >
-          {!isDesktop && !myTripsMode ? (
+          {!isDesktop && !myPlanMapMode ? (
             <div className="flex items-start justify-between gap-2">
               <h2 className={`min-w-0 flex-1 text-base font-bold tracking-tight ${EXPLORE_TYPE.title}`}>
                 {EXPLORE_SEARCH_PROMPT}
@@ -334,7 +334,7 @@ export const ExploreBrowsePanel = ({
                       );
                     })}
                   </div>
-                  {myTripsMode ? (
+                  {myPlanMapMode ? (
                     <div className="flex shrink-0 items-center gap-1 pb-1">{closeButton}</div>
                   ) : null}
                 </div>
@@ -477,7 +477,7 @@ export const ExploreBrowsePanel = ({
             <ExploreListSkeleton rows={isDesktop ? 8 : 5} />
           ) : null}
           {!loading && listItems.length === 0 ? (
-            myTripsMode ? (
+            myPlanMapMode ? (
               <div className={`py-10 text-center text-sm ${EXPLORE_TYPE.muted}`}>
                 <p className="font-medium text-neutral-700">Nothing on your map yet</p>
                 <p className="mt-1">Join an outing or follow a place on explore.</p>
