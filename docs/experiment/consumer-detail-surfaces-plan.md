@@ -24,7 +24,7 @@ Confirm and align **main consumer surfaces** where users **understand an object*
 | # | Surface | Canonical route | Primary module | Shell today | Target shell |
 |---|---------|-----------------|----------------|-------------|--------------|
 | 1 | Explore | `/explore`, `/list`, `browse=1` | `ExploreExperience` + `explore/shell/*` | Map orchestrator (not entity detail) | **Keep** — reference for CTAs only |
-| 2 | My Plans | `/plan` | `Activities.tsx`, `Plan*View` | `ConsumerShell` | **Keep** — tighten labels vs spec |
+| 2 | My Plans | `/plan` | `PlanPage.tsx`, `Plan*View` | `ConsumerShell` | **Keep** — tighten labels vs spec |
 | 3 | Chat | `/chat` | `Messages.tsx` | Tab chrome | **Keep** |
 | 4 | Area detail | `/area/:slug` | `AreaDetailPage` | Hero + **scroll sections** | **Tabbed** hub (Phase 4) |
 | 5–6 | Activity detail | `/activity/:id` | `ActivityDetailByKind` → kind `*ActivityDetailPage` → `ActivityDetailPageShell` → `ActivityDetailView` | `MobileDetailShell` + Plan/Place/Buddies/Transport | **Keep** — Phase 2 kind templates wired; fold/body IA ◐ |
@@ -574,7 +574,7 @@ Full table: [`member-surfaces-implementation-plan.md`](./member-surfaces-impleme
 | Consumer mesh / glass tokens | `src/index.css` — `.consumer-bg`, `.glass-header` |
 | Back paths | `src/explore/routing.ts` — `detailBackPath` |
 | Engagement parity tests | `src/activity/mapDetailEngagementParity.test.ts`, `activityDetailAcceptance.test.ts` |
-| Plan surface | `src/pages/Activities.tsx`, `src/components/plan/*` |
+| Plan surface | `src/plan/PlanPage.tsx`, `src/components/plan/*` |
 
 ---
 

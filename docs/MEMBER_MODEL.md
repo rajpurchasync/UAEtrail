@@ -16,10 +16,10 @@ Do **not** re-implement tier logic in React hooks — consume **`GET /me/status`
 
 | Where | Folder | Names | Meaning |
 |--------|--------|--------|---------|
-| **`/plan` tab** | `src/components/plan/*` | `PlanUpcomingView`, `PlanJoinedUpcoming`, `PlanHostingUpcoming`, … | **Feature module** for the My Plans hub. `Plan*` here is a **namespace** (“this panel belongs to the Plan surface”), not a domain entity. Compound names like `PlanJoinedUpcoming` = joined participation **within** Plan’s upcoming schedule — awkward but intentional; do not read as “Plan entity + joined.” |
+| **`/plan` tab** | `src/plan/PlanPage.tsx` + `src/components/plan/*` | `PlanPage` (route shell), `PlanUpcomingView`, `PlanJoinedUpcoming`, … | **Feature module** for the My Plans hub. `Plan*` is a **namespace** for the surface, not a domain entity. Data: activities/join hooks + `memberGoalsApi` / `memberAvailabilityApi` / `memberCoordinationApi` — aggregate catalog `memberCommitmentHubApi` (`goals` + `availability` only). |
 | **Profile history / activity domain** | `components/activity/*`, `participant-intent/*`, `profile-history/*` | `JoinedSection`, `HostedActivitiesSection`, `SeekingIntentsSection` | **Relationship or entity** (joined, hosted, seeking) without `Plan` prefix. |
 
-`src/plan/planRouting.ts` = URL/helpers for `/plan` only. Avoid new `Plan*` files outside `components/plan/` unless SN-6 guard allowlists apply. **Do not** split the same upcoming list across `plan/` and `activity/` — that duplicates ownership.
+`src/plan/planRouting.ts` + `planTab.ts` = URL/helpers for `/plan`. SN-6 allows `Plan*` under `src/plan/`, `src/components/plan/`, `src/member-plan/` only. **Do not** split the same upcoming list across `plan/` and `activity/` — that duplicates ownership.
 
 **Activity detail — Pro vs organizer vs crew:** **Community organizer** = profile-complete member who may Organize (`canPublish`). **Pro membership** = paid tier for **social depth** on outings (e.g. view organizer profile before join, full **Buddies** roster after join, offer/add transport when enforced) — applied in **`applyActivityViewEntitlements`** after social `viewerAccess`. **`canAccessCrewSurfaces`** on activity detail is **not** Pro and **not** publishing tier: it means confirmed **participant** or **organizer** on **this** outing (meeting precision, roster, group chat). Pending joiners stay on **Plan** + join CTAs only. Do not use `UserRole` or `canPublish` for consumer Buddies/Place gates.
 

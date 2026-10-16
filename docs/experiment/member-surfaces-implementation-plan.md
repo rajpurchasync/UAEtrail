@@ -87,7 +87,7 @@ Notifications (deep link to **activity**, **Plan row context**, **chat thread**,
 - [x] `MY_TRIPS_PATH` history/map split from Plan (rename to `PROFILE_HISTORY_*` still open)
 - [x] Explore pin label **Activities** (wire key `trips` rename still open — Phase 2.3)
 - [x] Bottom nav **Plan** label; middle tab routes to `/plan`
-- [x] Plan **lenses** shell — Schedule · Calendar (placeholder) · Available · Saved · Goals (`src/plan/planLens.ts`, `Activities.tsx`)
+- [x] Plan **Upcoming · Wishlist** tabs + calendar layout; availability via `?lens=availability` (`src/plan/PlanPage.tsx`, `planTab.ts`)
 
 ---
 
@@ -464,7 +464,7 @@ Use one PR per subsection where possible; check boxes when merged.
 
 | Area | Paths |
 |------|--------|
-| Plan page | `src/pages/Activities.tsx`, `src/member-plan/*` |
+| Plan page | `src/plan/PlanPage.tsx`, `src/components/plan/*`, `src/member-plan/*` (history URL helpers) |
 | Explore map | `apps/api/src/lib/explore-map.ts`, `src/explore/ui/exploreMapPinModel.ts` |
 | Pin pills | `src/explore/explorePinKindFilter.ts`, `exploreBrowseTaxonomy.ts` |
 | Find/demand | `src/explore/ui/demandFlow.ts`, `apps/api/src/lib/participant-intents-store.ts` |
@@ -491,7 +491,7 @@ Use one PR per subsection where possible; check boxes when merged.
 | 6 | ~~**Phase 6.1** M1 dual-write~~ **done** — backfill + deprecate `demand` source still open | §8, Phase 6 | `participant-intent-seeking-activity.ts` |
 | 7 | ~~**Phase 7**~~ **done** — consumer `/host` audit, bookmark redirects, notification meta | §7 | `notificationRouting.ts`, `authRouting.ts`, `ProtectedRoute` |
 | 8 | ~~**Phase 8**~~ **done** — §11 automated gates + full `verify:system` green | Phase 8 | `memberSurfacesAcceptance.test.ts` |
-| 9 | ~~**§6.4 / §7.1 / §7.3 / §6.3**~~ **done** — `member-plan` rename, chat/groups, host guards, Plan forward-only | §6–7 | `hostMemberGuard`, `MessagesInboxList`, `Activities.tsx` |
+| 9 | ~~**§6.4 / §7.1 / §7.3 / §6.3**~~ **done** — `member-plan` rename, chat/groups, host guards, Plan forward-only | §6–7 | `hostMemberGuard`, `MessagesInboxList`, `PlanPage.tsx` |
 | 10 | ~~**M2d**~~ **done** — `PARTICIPANT_INTENT_STUB_WRITE=false` after backfill | §8 M2 | `participant-intent-activity-readthrough.ts` |
 | 11 | ~~**Ops tooling**~~ **done** — run `seeking:storage-status` + backfill + `PARTICIPANT_INTENT_STUB_WRITE=false` **per env** (staging/prod) | §8 seeking storage | `PRE_DEPLOY_CHECKLIST.md` |
 | 12 | ~~**G-manage QA**~~ **done (eng)** — API `g-manage-coordination-join-approve.test.ts` + §11 guards; **staging UI** smoke in [`SEEKING_STORAGE_RUNBOOK.md`](../operations/SEEKING_STORAGE_RUNBOOK.md) | §6.1 | PRE_DEPLOY G-manage step |

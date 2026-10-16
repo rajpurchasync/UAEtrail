@@ -37,6 +37,12 @@ describe('componentsClientApi (R8.1)', () => {
     expect(read('src/components/plan/PlanHostingUpcoming.tsx')).toMatch(/useMyParticipantIntents/);
     expectNoDirectApi('src/components/plan/PlanHostingUpcoming.tsx');
     expect(read('src/components/plan/PlanHostingUpcoming.tsx')).not.toMatch(/\bapi\./);
+    expect(read('src/plan/PlanPage.tsx')).toMatch(/useMemberGoals/);
+    expectNoDirectApi('src/plan/PlanPage.tsx');
+    expect(read('src/components/plan/PlanNeedsYouStrip.tsx')).toMatch(/useMemberCoordinationAttention/);
+    expectNoDirectApi('src/components/plan/PlanNeedsYouStrip.tsx');
+    expect(read('src/components/plan/PlanAvailabilitySection.tsx')).toMatch(/useMemberAvailability/);
+    expectNoDirectApi('src/components/plan/PlanAvailabilitySection.tsx');
     expect(read('src/components/ui/TenantSwitcher.tsx')).toMatch(/tenantMembershipApi/);
     expect(read('src/components/ui/TenantSwitcher.tsx')).not.toMatch(/\bapi\./);
   });
