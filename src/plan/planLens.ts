@@ -1,16 +1,11 @@
 import { PLAN_PATH } from '../config/surfacePaths';
 import { planWishlistTabPath } from './planTab';
 
-/** Plan tab sections — URL `?lens=` (with `view=plans`). */
+/**
+ * Legacy `?lens=` values on `/plan` — normalize via `normalizePlanMobileParams`.
+ * New links: `tab=upcoming|wishlist`, `layout=calendar`, `lens=availability` only.
+ */
 export type PlanLens = 'schedule' | 'calendar' | 'saved' | 'goals' | 'availability';
-
-export const PLAN_LENS_SEGMENTS: { key: PlanLens; label: string }[] = [
-  { key: 'schedule', label: 'Schedule' },
-  { key: 'calendar', label: 'Calendar' },
-  { key: 'availability', label: 'Available' },
-  { key: 'saved', label: 'Saved' },
-  { key: 'goals', label: 'Goals' },
-];
 
 export const parsePlanLens = (raw: string | null): PlanLens => {
   if (

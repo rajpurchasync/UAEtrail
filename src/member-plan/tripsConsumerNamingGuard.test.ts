@@ -109,6 +109,10 @@ describe('tripsConsumerNamingGuard', () => {
     expect(existsSync(join(process.cwd(), 'src/components/trips'))).toBe(false);
   });
 
+  it('legacy Plan lens tab chrome is removed (Upcoming · Wishlist only)', () => {
+    expect(existsSync(join(process.cwd(), 'src/components/plan/PlanLensTabs.tsx'))).toBe(false);
+  });
+
   it('app code imports profile-history chrome (not deprecated components/trips)', () => {
     const violations: string[] = [];
     const legacyTripsChromeImport = /from ['"](\.\.\/)+components\/trips\//;

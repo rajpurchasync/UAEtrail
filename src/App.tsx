@@ -115,7 +115,7 @@ const PlanBrowseRoute = () => {
   if (user) {
     return (
       <Suspense fallback={<PageLoader />}>
-        <Activities />
+        <PlanPage />
       </Suspense>
     );
   }
@@ -216,7 +216,7 @@ const ShopManageRedirect = () => <Navigate to={organisationManagePath('shop')} r
 const OperatorManage = lazy(() => import('./pages/operator/Manage').then((m) => ({ default: m.Manage })));
 const ShopManage = lazy(() => import('./pages/ShopManage').then((m) => ({ default: m.ShopManage })));
 const AgencyManage = lazy(() => import('./pages/AgencyManage').then((m) => ({ default: m.AgencyManage })));
-const Activities = lazy(() => import('./pages/Activities').then((m) => ({ default: m.Activities })));
+const PlanPage = lazy(() => import('./plan/PlanPage').then((m) => ({ default: m.PlanPage })));
 const ProfileHistoryPage = lazy(() =>
   import('./pages/ProfileHistory').then((m) => ({ default: m.ProfileHistoryPage }))
 );

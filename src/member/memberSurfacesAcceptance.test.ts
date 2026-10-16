@@ -88,13 +88,13 @@ describe('member surfaces §11 acceptance (automated)', () => {
   it('G-plan: Plan mobile tabs are Upcoming and Wishlist (goals + saved)', () => {
     const keys = PLAN_MAIN_TABS.map((row) => row.key);
     expect(keys).toEqual(['upcoming', 'wishlist']);
-    const activities = read('src/pages/Activities.tsx');
+    const activities = read('src/plan/PlanPage.tsx');
     expect(activities).toContain('PlanGoalsProgressSummary');
     expect(activities.indexOf('PlanGoalsProgressSummary')).toBeLessThan(
       activities.indexOf('PlanPageTabs')
     );
     expect(activities).toContain('PlanPageTabs');
-    expect(activities).not.toContain('PlanLensTabs');
+    expect(() => read('src/components/plan/PlanLensTabs.tsx')).toThrow();
     const goalBar = read('src/components/plan/PlanGoalsProgressSummary.tsx');
     expect(goalBar).not.toMatch(/goalCount === 0.*return null/);
   });
@@ -207,7 +207,7 @@ describe('member surfaces §11 acceptance (automated)', () => {
   });
 
   it('G-manage: hosted Plan opens ActivityManageSheet (approve via host API, not /host shell)', () => {
-    const plan = read('src/pages/Activities.tsx');
+    const plan = read('src/plan/PlanPage.tsx');
     expect(plan).toContain('PlanUpcomingView');
     const upcoming = read('src/components/plan/PlanUpcomingView.tsx');
     expect(upcoming).toContain('PlanHostingUpcoming');
@@ -225,7 +225,7 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(launcher).toContain('CONTRIBUTIONS_PATH');
     const contributions = read('src/pages/Contributions.tsx');
     expect(contributions).toContain('PROFILE_REVIEWS_PATH');
-    const plan = read('src/pages/Activities.tsx');
+    const plan = read('src/plan/PlanPage.tsx');
     expect(plan).not.toContain('PROFILE_BADGES_PATH');
     expect(plan).not.toContain('CONTRIBUTIONS_PATH');
   });
@@ -282,13 +282,13 @@ describe('member surfaces §11 acceptance (automated)', () => {
   });
 
   it('G-plan: My Plans mobile FAB opens explore compose (no second create stack)', () => {
-    const plan = read('src/pages/Activities.tsx');
+    const plan = read('src/plan/PlanPage.tsx');
     expect(plan).toContain("explorePath({ compose: 'menu' })");
     expect(plan).not.toMatch(/CreateHostingActivityFlow|HostingFlowHost/);
   });
 
   it('G-plan: Plan page is forward-looking (past outings on profile history)', () => {
-    const plan = read('src/pages/Activities.tsx');
+    const plan = read('src/plan/PlanPage.tsx');
     expect(plan).not.toMatch(/timeScope=["']past["']/);
     expect(plan).not.toMatch(/segment=["']completed["']/);
     expect(plan).toContain('PROFILE_HISTORY_PATH');
@@ -485,8 +485,9 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(routing).toContain('planHostedSchedulePath');
     const app = read('src/App.tsx');
     expect(app).toContain('path="/profile/plans"');
-    const activities = read('src/pages/Activities.tsx');
-    expect(activities).toContain('normalizePlanSearchParams');
+    expect(app).toContain("import('./plan/PlanPage')");
+    const planPage = read('src/plan/PlanPage.tsx');
+    expect(planPage).toContain('normalizePlanSearchParams');
     const nav = read('docs/NAVIGATION.md');
     expect(nav).toMatch(/Host.*Find crew.*Add on map/);
     expect(nav).toContain('disambiguation');

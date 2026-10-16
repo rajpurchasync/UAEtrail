@@ -1,7 +1,7 @@
 import { Bookmark } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { ExploreCardModel } from '../exploreCardModel';
-import { planSavedPath, planLensPath } from '../../plan/planLens';
+import { planSavedPath } from '../../plan/planLens';
 import { useExploreWishlistSave } from './useExploreWishlistSave';
 
 interface ExploreSaveButtonProps {
@@ -14,12 +14,7 @@ export const ExploreSaveButton = ({ card, light = false }: ExploreSaveButtonProp
 
   if (card.viewerAccess?.level === 'host' || !canSave) return null;
 
-  const afterSavePath =
-    card.source === 'shop' || card.source === 'agency'
-      ? planLensPath('saved')
-      : card.source === 'venue'
-        ? planLensPath('saved')
-        : planSavedPath();
+  const afterSavePath = planSavedPath();
 
   const shell = light
     ? 'bg-neutral-100 text-gray-700 hover:bg-neutral-200'
