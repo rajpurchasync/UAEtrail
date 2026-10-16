@@ -82,7 +82,7 @@ There is **no** `Trip` table, `TripDTO`, or trips API. Everything on the map tha
 | **Outing / plan** | Product copy | Same as activity — emotional, member-facing | UI strings, north star |
 | **Organize** | Action (FAB) | Host flow that **creates or edits** an activity | `compose=organize`, organize wizards — not an entity |
 | **Event** | Overloaded — read context | (1) **Place kind** → venue page `/venue/:id` (2) **Organize chip** → scheduled outing `activityType: event` → `/activity/:id` (3) Legacy JSON `event` on some payloads → use **`activity`** | Never a fourth entity; prefer **place** vs **activity** in code |
-| **Trip / Trips** | **UI only** | Bottom nav + `/trips` = **your** calendar (joined, hosting, wishlist) | `tripsRouting.ts`, `components/trips/*`, tab title “Trips” — **not** API module names |
+| **Trip / Trips** | **Legacy UI label** | Redirects to **`/plan`** (My Plans) and **`/profile/history`** — not a domain type | `planHubRouting.ts`, `components/plan/*`, `components/profile-history/*` — **not** API module names |
 | **Hosted** | Relationship | You publish/manage an activity as a host tenant | `HostedActivitiesSection`, org hub — not a type of outing |
 | **Joined** | Relationship | You RSVP’d or have a pending join request | `getMeActivities`, `getMeRequests` |
 | **Self / My plans** | Relationship | Demand or self-started compose (not host publish) | Trips tab slice; still activities or demand when persisted |

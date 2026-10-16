@@ -357,7 +357,7 @@ IA detail (pills, topics): [`experiment/explore-browse-ia.md`](./experiment/expl
 |-------|--------|----------------|
 | **HTTP `/me/*`** | Entity or **capability** (`coordination-attention`, `profile-stats`, `host-status`) | Facts: ids, counts, enums — **not** tab copy (`Needs you`, `Plan`) |
 | **shared-types** | `MemberCoordinationAttention*`, `MemberProfileStatsDTO` | No English `label` or consumer `path` on list rows |
-| **SPA** | `PlanNeedsYouStrip`, `coordinationAttentionPresentation.ts` | Labels + `surfacePaths` / `tripsPlansPath` |
+| **SPA** | `PlanNeedsYouStrip`, `coordinationAttentionPresentation.ts` | Labels + `surfacePaths` / `planHostedSchedulePath` |
 
 **Aggregates:** One bounded read-model per hot screen is allowed (e.g. coordination attention for Plan). Kinds must map to existing entities (`activity_requests`, `buddy_requests`, `activity_invites`, `notifications`). Enforced: `api-surface-route-naming.test.ts`, `coordination-attention-contract.test.ts`.
 

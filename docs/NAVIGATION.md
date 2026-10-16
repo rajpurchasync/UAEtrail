@@ -66,7 +66,7 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 - **Canonical URL `/operator/*`** — product UI uses **Organizer workspace** (community / guide) or **Operator workspace** (agency / shop); capabilities from **`GET /me/status`** (`useMemberStatus`, `publish.*`). Legacy `/host/*` and `/organizer/*` redirect to `/operator/*`. Tenant HTTP API: **`/operator/*` only** (legacy `/host/*` rewritten server-side).
 - **Shell nav:** `OPERATOR_CONSOLE_LINKS` + `ConsoleShell` (`src/console/*`); route pages in `src/pages/operator/*`. Copy: `src/content/workspaceVocabulary.ts`.
 - **`/operator/overview`:** `ConsoleHubSections` — stats, **Up next** preview, header **Add activity** — not a second copy of the shell link list. Below that: **personal** shortcuts (trips as participant, **Chat** → `/chat`, explore map).
-- **Member profile (`/profile`):** consumer hub only; buddies open **Organizing** → Plan `?view=plans&role=hosted` (`tripsPlansPath('hosted')`), not `/operator/overview`. Pro/agency/shop management remains `/operator/*`.
+- **Member profile (`/profile`):** consumer hub only; buddies open **Organizing** → `planHostedSchedulePath()` (hosted filter on `/plan`), not `/operator/overview`. Pro/agency/shop management remains `/operator/*`.
 
 ### Admin console (`/admin/*`)
 

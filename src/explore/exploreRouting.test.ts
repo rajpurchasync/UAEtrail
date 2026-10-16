@@ -5,6 +5,7 @@ import {
   exploreOrganizePath,
   exploreReorganizeActivityPath,
   explorePath,
+  parseExploreMyPlanMapMode,
   explorePlacesPath,
   exploreShopsPath,
   legacyCreateParamToOrganizePath,
@@ -90,9 +91,12 @@ describe('exploreRouting navigation contract', () => {
     );
   });
 
-  it('explorePath supports my trips map filter', () => {
+  it('explorePath supports my plan map filter', () => {
     expect(explorePath({ myPlan: true, list: true })).toBe('/explore?list=1&myPlan=1');
-    expect(explorePath({ myTrips: true, list: true })).toBe('/explore?list=1&myPlan=1');
+  });
+
+  it('parseExploreMyPlanMapMode accepts legacy myTrips=1', () => {
+    expect(parseExploreMyPlanMapMode(new URLSearchParams('myTrips=1'))).toBe(true);
   });
 
   it('exploreOrganizePath opens compose host menu or hosting wizard', () => {

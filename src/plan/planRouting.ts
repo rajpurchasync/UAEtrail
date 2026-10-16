@@ -7,7 +7,7 @@ import {
   normalizePlanHubSearchParams,
   planHostedActivityManagePath,
   planSelfDemandManagePath,
-  tripsPlansPath,
+  planPlansRolePath,
 } from '../member-plan/planHubRouting';
 import {
   normalizePlanMobileParams,
@@ -62,7 +62,7 @@ export const planJoinedSchedulePath = (): string => planJoinedFilterPath();
 
 export const planAvailabilityPath = (): string => planLensPath('availability');
 
-export { planHostedActivityManagePath, planSelfDemandManagePath, tripsPlansPath };
+export { planHostedActivityManagePath, planSelfDemandManagePath, planPlansRolePath };
 
 /** Legacy + mobile param normalization — run once on `/plan` load. */
 export const normalizePlanSearchParams = (

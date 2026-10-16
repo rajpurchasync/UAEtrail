@@ -89,7 +89,8 @@ export const planUpcomingPath = (
   return planMainTabPath('upcoming');
 };
 
-export const tripsPlansPath = (
+/** Deep links that still use legacy `view=plans` + role/sub query (prefer `planRouting` helpers in new code). */
+export const planPlansRolePath = (
   role: PlanUpcomingRole | PlanUpcomingSub = 'all'
 ): string => {
   const params = new URLSearchParams();
@@ -106,6 +107,9 @@ export const tripsPlansPath = (
   }
   return `${PLAN_PATH}?${params.toString()}`;
 };
+
+/** @deprecated Use {@link planPlansRolePath} or `planHostedSchedulePath` / `planWishlistTabPath`. */
+export const tripsPlansPath = planPlansRolePath;
 
 export const profileHistoryCompletedPath = (role?: PlanHistoryRole): string => {
   const params = new URLSearchParams();

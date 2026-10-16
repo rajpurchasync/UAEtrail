@@ -183,6 +183,7 @@ export {
   planWishlistTabPath,
   planHostedActivityManagePath,
   planSelfDemandManagePath,
+  planPlansRolePath,
   normalizePlanSearchParams,
   planSavedPath,
   planLensPath,

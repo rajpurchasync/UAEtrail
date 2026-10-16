@@ -6,7 +6,7 @@ import {
   planJoinedSchedulePath,
   planUpcomingPath,
   planWishlistTabPath,
-  tripsPlansPath,
+  planPlansRolePath,
 } from './planRouting';
 
 describe('planRouting', () => {
@@ -17,8 +17,8 @@ describe('planRouting', () => {
     expect(planAvailabilityPath()).toBe('/plan?view=plans&lens=availability');
     expect(planHostedSchedulePath()).toBe(planUpcomingPath('hosting'));
     expect(planJoinedSchedulePath()).toBe(planUpcomingPath('joined'));
-    expect(tripsPlansPath('hosted')).toBe(planHostedSchedulePath());
-    expect(tripsPlansPath('wishlist')).toBe(planWishlistTabPath());
+    expect(planPlansRolePath('hosted')).toBe(planHostedSchedulePath());
+    expect(planPlansRolePath('wishlist')).toBe(planWishlistTabPath());
   });
 
   it('normalizes legacy role= into filter=', () => {

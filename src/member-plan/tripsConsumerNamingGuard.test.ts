@@ -14,7 +14,6 @@ const ALLOWLIST = new Set([
   'src/member-plan/participantIntentPlan.ts',
   'src/pages/MyTrips.tsx',
   'src/pages/TripsMap.tsx',
-  'src/components/trips/TripsPlansUpcomingHeader.tsx',
   'src/config/surfacePaths.ts',
   'src/App.tsx',
   'src/utils/notificationRouting.test.ts',

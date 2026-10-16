@@ -311,8 +311,6 @@ export const explorePath = (options?: {
   organizeFrom?: string;
   /** Limit pins to signed-in member activities + wishlist (requires auth). */
   myPlan?: boolean;
-  /** @deprecated Use {@link ExplorePathOptions.myPlan}. */
-  myTrips?: boolean;
   /** Open browse member people panel (`view=people`). */
   peopleBrowse?: boolean;
   /** @deprecated Use `peopleBrowse` — writes `view=people`. */
@@ -390,7 +388,7 @@ export const explorePath = (options?: {
   if (options?.organizeFrom?.trim()) {
     params.set(ORGANIZE_FROM_ACTIVITY_QUERY_KEY, options.organizeFrom.trim());
   }
-  if (options?.myPlan || options?.myTrips) {
+  if (options?.myPlan) {
     params.set(MY_PLAN_MAP_QUERY_KEY, '1');
   }
   if (options?.peopleBrowse || options?.social) {
