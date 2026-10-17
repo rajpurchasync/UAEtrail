@@ -442,7 +442,10 @@
       "status": "in_progress",
       "owner": "platform",
       "contextIds": ["discovery", "participation"],
-      "apiRoots": ["scripts/p5-slo-smoke.mjs"],
+      "apiRoots": [
+        "scripts/p5-slo-smoke.mjs",
+        "apps/api/tests/p5-slo-smoke-probes-contract.test.ts"
+      ],
       "feRoots": [],
       "successMetric": "p5:slo-smoke (map/areas/facilities + optional bbox + join probe); staging baselines signed in PRE_DEPLOY"
     }

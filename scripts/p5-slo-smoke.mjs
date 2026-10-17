@@ -134,8 +134,28 @@ const probeJoinPath = async () => {
   return { skipped: false, ok: true, mechanism: 'requests', status: requestRes.status };
 };
 
+const assertApiReachable = async () => {
+  try {
+    const res = await fetch(`${baseUrl}/health`, {
+      headers: { accept: 'application/json' },
+    });
+    if (!res.ok) {
+      console.error(`[p5:slo-smoke] FAILED — ${baseUrl}/health returned HTTP ${res.status}`);
+      process.exit(1);
+    }
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : String(error);
+    console.error(`[p5:slo-smoke] FAILED — cannot reach ${baseUrl}/health (${detail})`);
+    console.error(
+      '[p5:slo-smoke] Start the API (e.g. npm run dev:api or docker compose up api) and set BASE_URL if not http://localhost:4000'
+    );
+    process.exit(1);
+  }
+};
+
 const main = async () => {
   console.log(`[p5:slo-smoke] BASE_URL=${baseUrl} samples=${samples}`);
+  await assertApiReachable();
 
   const latencyTargets = [
     runSeries({ label: 'health', path: '/health' }),
