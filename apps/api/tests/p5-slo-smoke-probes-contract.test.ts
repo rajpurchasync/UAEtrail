@@ -65,8 +65,14 @@ describe('P5 SLO smoke probes contract (MIG-P5-SLO-SMOKE)', () => {
     expect(publicActivityRoutes).toMatch(/\/:id\/requests/);
   });
 
-  it('login probe targets auth router', () => {
+  it('login probe targets auth router and audit inventory', () => {
     expect(smoke).toMatch(/\/api\/auth\/login/);
     expect(authRoutes).toMatch(/authRouter\.post\(['"]\/login['"]/);
+    const auditPostPaths = new Set(
+      audit.endpoints.filter((e) => e.method === 'POST').map((e) => e.path)
+    );
+    expect(auditPostPaths.has('/auth/login')).toBe(true);
+    expect(auditPostPaths.has('/activities/:id/rsvp')).toBe(true);
+    expect(auditPostPaths.has('/activities/:id/requests')).toBe(true);
   });
 });

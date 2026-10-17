@@ -1,10 +1,10 @@
 {
-  "generated": "2026-10-16",
+  "generated": "2026-10-17",
   "description": "CTO system audit baseline. Regenerate: npm run system:audit",
   "summary": {
     "apiRegistrarFiles": 49,
-    "apiRouteEndpointsParsed": 113,
-    "mongoCollectionsDefined": 53,
+    "apiRouteEndpointsParsed": 170,
+    "mongoCollectionsDefined": 54,
     "mongoCollectionsOrphanInApi": 1,
     "mongoCollectionsMultiWriterOver4": 0,
     "routeRegistrarsWithDirectWrites": 0,
@@ -217,7 +217,7 @@
         "apps/api/src/lib/catalog-cpc-migrations.ts",
         "apps/api/src/lib/member-goals-store.ts",
         "apps/api/src/lib/mongo-indexes.ts",
-        "apps/api/src/routes/user/registerPublicAreaRoutes.ts",
+        "apps/api/src/services/area-public-read.ts",
         "apps/api/src/services/seeking-area-match-notifications.ts"
       ]
     },
@@ -257,7 +257,7 @@
         "apps/api/src/lib/mongo-indexes.ts",
         "apps/api/src/lib/mongo-migrations.ts",
         "apps/api/src/lib/participant-intent-requests-store.ts",
-        "apps/api/src/routes/user/registerPublicAreaRoutes.ts",
+        "apps/api/src/services/area-public-read.ts",
         "apps/api/src/services/participant-intent-activity-readthrough.ts"
       ]
     },
@@ -290,7 +290,7 @@
         "apps/api/src/lib/participant-intent-requests-store.ts",
         "apps/api/src/lib/participant-intents-store.ts",
         "apps/api/src/lib/seeking-storage-ops.ts",
-        "apps/api/src/routes/user/registerPublicAreaRoutes.ts"
+        "apps/api/src/services/area-public-read.ts"
       ]
     },
     "PARTICIPANT_INTENT_REQUESTS": {
@@ -481,6 +481,15 @@
         "apps/api/src/lib/mongo-indexes.ts"
       ]
     },
+    "SIDE_EFFECT_OUTBOX": {
+      "mongoName": "side_effect_outbox",
+      "referencingFiles": 2,
+      "writerFiles": 1,
+      "sampleFiles": [
+        "apps/api/src/lib/mongo-indexes.ts",
+        "apps/api/src/lib/side-effect-outbox-store.ts"
+      ]
+    },
     "REWARD_LEDGERS": {
       "mongoName": "reward_ledgers",
       "referencingFiles": 1,
@@ -642,6 +651,7 @@
     "ENTITY_FOLLOWS": 1,
     "USER_WISHLIST": 3,
     "NOTIFICATIONS": 0,
+    "SIDE_EFFECT_OUTBOX": 1,
     "REWARD_LEDGERS": 0,
     "USER_BADGES": 0,
     "USER_GOALS": 2,
@@ -659,19 +669,34 @@
   },
   "registrarServicesSample": {
     "apps/api/src/routes/admin/registerAdminActivityModerationRoutes.ts": [
-      "admin-notifications"
+      "admin-activity-moderation-commands",
+      "admin-activity-moderation-read"
     ],
-    "apps/api/src/routes/admin/registerAdminAreaRoutes.ts": [],
-    "apps/api/src/routes/admin/registerAdminAuditRoutes.ts": [],
-    "apps/api/src/routes/admin/registerAdminContentReportRoutes.ts": [],
-    "apps/api/src/routes/admin/registerAdminFacilityRoutes.ts": [],
+    "apps/api/src/routes/admin/registerAdminAreaRoutes.ts": [
+      "admin-area-commands",
+      "admin-area-read"
+    ],
+    "apps/api/src/routes/admin/registerAdminAuditRoutes.ts": [
+      "admin-audit-read"
+    ],
+    "apps/api/src/routes/admin/registerAdminContentReportRoutes.ts": [
+      "admin-content-reports-read"
+    ],
+    "apps/api/src/routes/admin/registerAdminFacilityRoutes.ts": [
+      "admin-facility-commands",
+      "admin-facility-read"
+    ],
     "apps/api/src/routes/admin/registerAdminGroupRoutes.ts": [
-      "admin-notifications"
+      "admin-group-commands",
+      "admin-group-read"
     ],
     "apps/api/src/routes/admin/registerAdminHostApplicationRoutes.ts": [
-      "admin-notifications"
+      "admin-host-application-commands",
+      "admin-host-application-read"
     ],
-    "apps/api/src/routes/admin/registerAdminMetricsRoutes.ts": []
+    "apps/api/src/routes/admin/registerAdminMetricsRoutes.ts": [
+      "admin-metrics-read"
+    ]
   },
   "auditPillars": [
     {

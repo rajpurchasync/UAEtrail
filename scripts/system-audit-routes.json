@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-16",
+  "generated": "2026-10-17",
   "endpoints": [
     {
       "method": "GET",
@@ -565,66 +565,373 @@
       "method": "GET",
       "path": "/tenants/:slug",
       "registrar": "apps/api/src/routes/user/registerPublicTenantRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/activities/:id/invites",
+      "registrar": "apps/api/src/routes/user/registerActivityJoinInviteRoutes.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/activities/:id/invites",
+      "registrar": "apps/api/src/routes/user/registerActivityJoinInviteRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/activities/:id/group-chat",
+      "registrar": "apps/api/src/routes/user/registerMeEngagementRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/activities/:id/group-chat/status",
+      "registrar": "apps/api/src/routes/user/registerMeEngagementRoutes.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/activities/:id/group-chat/join",
+      "registrar": "apps/api/src/routes/user/registerMeEngagementRoutes.ts"
+    },
+    {
+      "method": "DELETE",
+      "path": "/activities/:id/group-chat",
+      "registrar": "apps/api/src/routes/user/registerMeEngagementRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/activities/featured",
+      "registrar": "apps/api/src/routes/user/registerPublicActivityRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/activities",
+      "registrar": "apps/api/src/routes/user/registerPublicActivityRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/activities/:id",
+      "registrar": "apps/api/src/routes/user/registerPublicActivityRoutes.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/activities/:id/requests",
+      "registrar": "apps/api/src/routes/user/registerPublicActivityRoutes.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/activities/:id/rsvp",
+      "registrar": "apps/api/src/routes/user/registerPublicActivityRoutes.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/activities/:id/requests/:requestId/cancel",
+      "registrar": "apps/api/src/routes/user/registerPublicActivityRoutes.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/activities/:id/requests/:requestId",
+      "registrar": "apps/api/src/routes/user/registerPublicActivityRoutes.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/register",
+      "registrar": "apps/api/src/routes/auth.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/login",
+      "registrar": "apps/api/src/routes/auth.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/demo-login",
+      "registrar": "apps/api/src/routes/auth.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/refresh",
+      "registrar": "apps/api/src/routes/auth.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/logout",
+      "registrar": "apps/api/src/routes/auth.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/verify-email",
+      "registrar": "apps/api/src/routes/auth.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/forgot-password",
+      "registrar": "apps/api/src/routes/auth.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/reset-password",
+      "registrar": "apps/api/src/routes/auth.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/resend-verification",
+      "registrar": "apps/api/src/routes/auth.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/google",
+      "registrar": "apps/api/src/routes/auth.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/auth/change-password",
+      "registrar": "apps/api/src/routes/auth.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/change-password/request-otp",
+      "registrar": "apps/api/src/routes/auth.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/chat/stream",
+      "registrar": "apps/api/src/routes/chat.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/chat/stream-ticket",
+      "registrar": "apps/api/src/routes/chat.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/chat/inbox",
+      "registrar": "apps/api/src/routes/chat.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/chat/conversations",
+      "registrar": "apps/api/src/routes/chat.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/chat/messages/:userId",
+      "registrar": "apps/api/src/routes/chat.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/chat/messages",
+      "registrar": "apps/api/src/routes/chat.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/chat/messages/:messageId/reactions",
+      "registrar": "apps/api/src/routes/chat.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/shop/products",
+      "registrar": "apps/api/src/routes/shop.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/shop/products/:id",
+      "registrar": "apps/api/src/routes/shop.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/shop/merchants/:id",
+      "registrar": "apps/api/src/routes/shop.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/shop/shops/:id",
+      "registrar": "apps/api/src/routes/shop.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/shop/checkout/config",
+      "registrar": "apps/api/src/routes/shop.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/shop/checkout",
+      "registrar": "apps/api/src/routes/shop.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/shop/${prefix}/stores",
+      "registrar": "apps/api/src/routes/shop.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/shop/${prefix}/profile",
+      "registrar": "apps/api/src/routes/shop.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/shop/${prefix}/profile",
+      "registrar": "apps/api/src/routes/shop.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/shop/${prefix}/profile",
+      "registrar": "apps/api/src/routes/shop.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/shop/merchant/products",
+      "registrar": "apps/api/src/routes/shop.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/shop/merchant/products",
+      "registrar": "apps/api/src/routes/shop.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/shop/merchant/products/:id",
+      "registrar": "apps/api/src/routes/shop.ts"
+    },
+    {
+      "method": "DELETE",
+      "path": "/shop/merchant/products/:id",
+      "registrar": "apps/api/src/routes/shop.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/shop/merchant/orders",
+      "registrar": "apps/api/src/routes/shop.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/shop/merchant/orders/:orderId/status",
+      "registrar": "apps/api/src/routes/shop.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/shop/merchant/analytics/sales",
+      "registrar": "apps/api/src/routes/shop.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/shop/merchant/analytics/export",
+      "registrar": "apps/api/src/routes/shop.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/media/resolve",
+      "registrar": "apps/api/src/routes/media.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/media/presign-upload",
+      "registrar": "apps/api/src/routes/media.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/media/commit",
+      "registrar": "apps/api/src/routes/media.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/reports/",
+      "registrar": "apps/api/src/routes/reports.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/agent/manifest.json",
+      "registrar": "apps/api/src/routes/agent.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/agent/discover",
+      "registrar": "apps/api/src/routes/agent.ts"
+    },
+    {
+      "method": "GET",
+      "path": "//push/vapid-public-key",
+      "registrar": "apps/api/src/routes/user.ts"
     }
   ],
   "registrarServices": {
     "apps/api/src/routes/admin/registerAdminActivityModerationRoutes.ts": [
-      "admin-notifications"
+      "admin-activity-moderation-commands",
+      "admin-activity-moderation-read"
     ],
-    "apps/api/src/routes/admin/registerAdminAreaRoutes.ts": [],
-    "apps/api/src/routes/admin/registerAdminAuditRoutes.ts": [],
-    "apps/api/src/routes/admin/registerAdminContentReportRoutes.ts": [],
-    "apps/api/src/routes/admin/registerAdminFacilityRoutes.ts": [],
+    "apps/api/src/routes/admin/registerAdminAreaRoutes.ts": [
+      "admin-area-commands",
+      "admin-area-read"
+    ],
+    "apps/api/src/routes/admin/registerAdminAuditRoutes.ts": [
+      "admin-audit-read"
+    ],
+    "apps/api/src/routes/admin/registerAdminContentReportRoutes.ts": [
+      "admin-content-reports-read"
+    ],
+    "apps/api/src/routes/admin/registerAdminFacilityRoutes.ts": [
+      "admin-facility-commands",
+      "admin-facility-read"
+    ],
     "apps/api/src/routes/admin/registerAdminGroupRoutes.ts": [
-      "admin-notifications"
+      "admin-group-commands",
+      "admin-group-read"
     ],
     "apps/api/src/routes/admin/registerAdminHostApplicationRoutes.ts": [
-      "admin-notifications"
+      "admin-host-application-commands",
+      "admin-host-application-read"
     ],
-    "apps/api/src/routes/admin/registerAdminMetricsRoutes.ts": [],
-    "apps/api/src/routes/admin/registerAdminNotificationRoutes.ts": [],
+    "apps/api/src/routes/admin/registerAdminMetricsRoutes.ts": [
+      "admin-metrics-read"
+    ],
+    "apps/api/src/routes/admin/registerAdminNotificationRoutes.ts": [
+      "admin-notification-commands",
+      "admin-notification-read"
+    ],
     "apps/api/src/routes/admin/registerAdminPlaceRoutes.ts": [
-      "admin-notifications",
-      "notifications",
-      "rewards"
+      "admin-place-commands",
+      "admin-place-read"
     ],
     "apps/api/src/routes/admin/registerAdminPlatformStaffRoutes.ts": [],
-    "apps/api/src/routes/admin/registerAdminProductRoutes.ts": [],
+    "apps/api/src/routes/admin/registerAdminProductRoutes.ts": [
+      "admin-product-commands",
+      "admin-product-read"
+    ],
     "apps/api/src/routes/admin/registerAdminTenantRoutes.ts": [
-      "admin-notifications"
+      "admin-tenant-commands",
+      "admin-tenant-read"
     ],
     "apps/api/src/routes/admin/registerAdminUserRoutes.ts": [
-      "admin-notifications"
+      "admin-user-commands",
+      "admin-user-read"
     ],
     "apps/api/src/routes/operator/registerOperatorActivityParticipantRoutes.ts": [
       "checkin",
+      "operator-activity-participant-commands",
+      "operator-activity-participant-read",
       "participant-roster-host"
     ],
     "apps/api/src/routes/operator/registerOperatorActivityRequestRoutes.ts": [
-      "activity-group-chat",
-      "notifications"
+      "operator-activity-request-commands",
+      "operator-activity-request-read"
     ],
     "apps/api/src/routes/operator/registerOperatorActivityRoutes.ts": [
-      "activity-group-chat",
-      "activity-schedule",
-      "host-activity",
-      "member-publish-gate",
-      "member-status",
-      "platform-admin-events",
-      "rewards"
+      "operator-tenant-activity-commands",
+      "operator-tenant-activity-read"
     ],
     "apps/api/src/routes/operator/registerOperatorSubmittedLocationRoutes.ts": [
-      "location-submit",
-      "rewards"
+      "operator-submitted-location-commands",
+      "operator-submitted-location-read"
     ],
-    "apps/api/src/routes/operator/registerOperatorTeamRoutes.ts": [],
+    "apps/api/src/routes/operator/registerOperatorTeamRoutes.ts": [
+      "operator-team-commands",
+      "operator-team-read"
+    ],
     "apps/api/src/routes/social/registerSocialPeopleRoutes.ts": [
       "member-people-engagement"
     ],
     "apps/api/src/routes/social/registerSocialReviewRoutes.ts": [
-      "activity-review-gate",
       "my-reviews",
-      "rewards"
+      "social-review-commands",
+      "social-review-read"
     ],
     "apps/api/src/routes/user/registerAccountLifecycleRoutes.ts": [
       "account-deletion",
@@ -634,25 +941,31 @@
       "activity-invite"
     ],
     "apps/api/src/routes/user/registerBuddyRoutes.ts": [
-      "buddy-activity-presence",
-      "buddy-notifications"
+      "buddy-me-commands",
+      "buddy-me-read"
     ],
-    "apps/api/src/routes/user/registerEntityFollowRoutes.ts": [],
-    "apps/api/src/routes/user/registerExploreAvailabilityRoutes.ts": [],
+    "apps/api/src/routes/user/registerEntityFollowRoutes.ts": [
+      "entity-follow-commands",
+      "entity-follow-read"
+    ],
+    "apps/api/src/routes/user/registerExploreAvailabilityRoutes.ts": [
+      "explore-availability-read"
+    ],
     "apps/api/src/routes/user/registerFollowRoutes.ts": [
-      "social-notifications"
+      "member-follow-commands",
+      "member-follow-read"
     ],
     "apps/api/src/routes/user/registerGroupRoutes.ts": [
-      "activity-group-chat",
-      "group-wall-stream",
-      "social-notifications"
+      "social-groups-me-commands",
+      "social-groups-me-read"
     ],
     "apps/api/src/routes/user/registerHostApplicationRoutes.ts": [
-      "admin-notifications"
+      "host-application-me-commands",
+      "host-application-me-read"
     ],
     "apps/api/src/routes/user/registerMeAvailabilityRoutes.ts": [
-      "availability-hosted-match-notifications",
-      "member-availability-match-preview"
+      "me-availability-commands",
+      "me-availability-read"
     ],
     "apps/api/src/routes/user/registerMeBadgesRoutes.ts": [
       "member-badges"
@@ -661,70 +974,72 @@
       "member-coordination-attention"
     ],
     "apps/api/src/routes/user/registerMeEngagementRoutes.ts": [
-      "activity-group-chat",
-      "checkin",
-      "member-inbox"
+      "activity-group-chat-me-commands",
+      "me-account-session-commands",
+      "me-account-session-read",
+      "me-activity-participation-read"
     ],
     "apps/api/src/routes/user/registerMeFacilityRoutes.ts": [
-      "catalog-submit-notifications",
-      "facility-submit",
-      "rewards"
+      "me-facility-submit-commands"
     ],
-    "apps/api/src/routes/user/registerMeGoalsRoutes.ts": [],
+    "apps/api/src/routes/user/registerMeGoalsRoutes.ts": [
+      "me-goals-commands",
+      "me-goals-read"
+    ],
     "apps/api/src/routes/user/registerMeMapPinsRoutes.ts": [
-      "member-journey-map"
+      "me-map-pins-commands",
+      "me-map-pins-read"
     ],
     "apps/api/src/routes/user/registerMemberDiscoveryRoutes.ts": [
-      "member-discovery",
+      "member-discovery-me-read",
       "member-discovery-quota",
       "member-discovery-roster",
-      "member-entitlements",
       "member-status"
     ],
     "apps/api/src/routes/user/registerMemberStatusRoutes.ts": [
       "member-status"
     ],
     "apps/api/src/routes/user/registerMeParticipantIntentRoutes.ts": [
-      "participant-intent-join-notifications"
+      "participant-intent-me-commands",
+      "participant-intent-me-read"
     ],
     "apps/api/src/routes/user/registerMeSubmittedPlaceRoutes.ts": [
-      "catalog-submit-notifications",
-      "place-submit",
-      "rewards"
+      "me-place-submit-commands",
+      "me-place-submit-read"
     ],
-    "apps/api/src/routes/user/registerMeWishlistRoutes.ts": [],
-    "apps/api/src/routes/user/registerNotificationRoutes.ts": [],
+    "apps/api/src/routes/user/registerMeWishlistRoutes.ts": [
+      "me-wishlist-commands",
+      "me-wishlist-read"
+    ],
+    "apps/api/src/routes/user/registerNotificationRoutes.ts": [
+      "me-notifications-commands",
+      "me-notifications-read"
+    ],
     "apps/api/src/routes/user/registerProfileRoutes.ts": [
+      "me-profile-commands",
+      "me-profile-read",
       "public-member-profile"
     ],
     "apps/api/src/routes/user/registerPublicActivityRoutes.ts": [
-      "activity-invite",
-      "activity-viewer-access",
-      "checkin",
-      "compose-activity-viewer-access",
-      "join-request",
-      "join-request-notifications",
-      "member-status",
-      "request-notifications"
+      "activity-participation-commands",
+      "activity-public-read"
     ],
-    "apps/api/src/routes/user/registerPublicAreaRoutes.ts": [],
+    "apps/api/src/routes/user/registerPublicAreaRoutes.ts": [
+      "area-public-read"
+    ],
     "apps/api/src/routes/user/registerPublicFacilityRoutes.ts": [
-      "facility-viewer-access",
+      "facility-public-read",
       "place-catalog"
     ],
     "apps/api/src/routes/user/registerPublicMemberRoutes.ts": [
-      "member-discovery-quota",
-      "member-status",
-      "profile-viewer-access",
-      "public-member-profile"
+      "member-public-read"
     ],
     "apps/api/src/routes/user/registerPublicPlaceRoutes.ts": [
-      "explore-seeking-activities-read",
-      "location-premium",
-      "place-catalog",
-      "place-registry",
-      "place-viewer-access"
+      "place-premium-commands",
+      "place-public-read"
     ],
-    "apps/api/src/routes/user/registerPublicTenantRoutes.ts": []
+    "apps/api/src/routes/user/registerPublicTenantRoutes.ts": [
+      "tenant-public-read"
+    ]
   }
 }
