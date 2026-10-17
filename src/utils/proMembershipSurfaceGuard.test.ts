@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { execSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 
 const FORBIDDEN_PATTERNS: Array<{ pattern: RegExp; label: string }> = [
   { pattern: /from ['"][^'"]*pages\/BecomeOrganisation['"]/, label: 'BecomeOrganisation page import' },
@@ -29,6 +29,7 @@ describe('proMembershipSurfaceGuard', () => {
     const violations: string[] = [];
 
     for (const file of listTrackedSourceFiles()) {
+      if (!existsSync(file)) continue;
       const content = readFileSync(file, 'utf8');
       for (const { pattern, label } of FORBIDDEN_PATTERNS) {
         if (pattern.test(content)) {
@@ -40,9 +41,10 @@ describe('proMembershipSurfaceGuard', () => {
     expect(violations).toEqual([]);
   });
 
-  it('App lazy-loads the BecomeHost page for /become-host routes', () => {
+  it('App mounts LegacyProMembershipRedirect for /become-host routes', () => {
     const app = readFileSync('src/App.tsx', 'utf8');
-    expect(app).toMatch(/import\('\.\/pages\/BecomeHost'\)/);
+    expect(app).toMatch(/import\('\.\/pages\/LegacyProMembershipRedirect'\)/);
+    expect(app).not.toMatch(/pages\/BecomeHost/);
     expect(app).not.toMatch(/pages\/BecomeOrganisation/);
   });
 });

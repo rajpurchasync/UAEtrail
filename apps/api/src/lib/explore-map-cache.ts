@@ -39,7 +39,11 @@ export const exploreMapRedisPayloadExists = async (): Promise<boolean | null> =>
   }
 };
 
-/** Drop in-process and Redis explore map payloads after data writes. */
+/**
+ * Drop in-process and Redis explore map payloads.
+ * Production writes must call `scheduleExploreMapCacheInvalidation` (outbox when enabled).
+ * Direct callers: this module, schedule fallback, outbox processor, tests, and seed scripts.
+ */
 export const invalidateExploreMapCache = async (): Promise<void> => {
   exploreMapMemoryCache = null;
   const { invalidateExploreMapMemberEngagementCache } = await import('./explore-map-member-engagement.js');

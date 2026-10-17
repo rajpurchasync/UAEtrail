@@ -3,33 +3,93 @@
   "endpoints": [
     {
       "method": "GET",
-      "path": "/people/preview",
-      "registrar": "apps/api/src/routes/social/registerSocialPeopleRoutes.ts"
-    },
-    {
-      "method": "GET",
-      "path": "/people",
-      "registrar": "apps/api/src/routes/social/registerSocialPeopleRoutes.ts"
-    },
-    {
-      "method": "GET",
-      "path": "/me/reviews",
-      "registrar": "apps/api/src/routes/social/registerSocialReviewRoutes.ts"
-    },
-    {
-      "method": "PATCH",
-      "path": "/me/reviews/:id",
-      "registrar": "apps/api/src/routes/social/registerSocialReviewRoutes.ts"
-    },
-    {
-      "method": "GET",
-      "path": "/reviews",
-      "registrar": "apps/api/src/routes/social/registerSocialReviewRoutes.ts"
+      "path": "/shop/checkout/config",
+      "registrar": "apps/api/src/routes/shop/registerShopCheckoutRoutes.ts"
     },
     {
       "method": "POST",
-      "path": "/reviews",
-      "registrar": "apps/api/src/routes/social/registerSocialReviewRoutes.ts"
+      "path": "/shop/checkout",
+      "registrar": "apps/api/src/routes/shop/registerShopCheckoutRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/shop/${prefix}/stores",
+      "registrar": "apps/api/src/routes/shop/registerShopMerchantManageRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/shop/${prefix}/profile",
+      "registrar": "apps/api/src/routes/shop/registerShopMerchantManageRoutes.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/shop/${prefix}/profile",
+      "registrar": "apps/api/src/routes/shop/registerShopMerchantManageRoutes.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/shop/${prefix}/profile",
+      "registrar": "apps/api/src/routes/shop/registerShopMerchantManageRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/shop/merchant/products",
+      "registrar": "apps/api/src/routes/shop/registerShopMerchantManageRoutes.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/shop/merchant/products",
+      "registrar": "apps/api/src/routes/shop/registerShopMerchantManageRoutes.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/shop/merchant/products/:id",
+      "registrar": "apps/api/src/routes/shop/registerShopMerchantManageRoutes.ts"
+    },
+    {
+      "method": "DELETE",
+      "path": "/shop/merchant/products/:id",
+      "registrar": "apps/api/src/routes/shop/registerShopMerchantManageRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/shop/merchant/orders",
+      "registrar": "apps/api/src/routes/shop/registerShopMerchantManageRoutes.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/shop/merchant/orders/:orderId/status",
+      "registrar": "apps/api/src/routes/shop/registerShopMerchantManageRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/shop/merchant/analytics/sales",
+      "registrar": "apps/api/src/routes/shop/registerShopMerchantManageRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/shop/merchant/analytics/export",
+      "registrar": "apps/api/src/routes/shop/registerShopMerchantManageRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/shop/products",
+      "registrar": "apps/api/src/routes/shop/registerShopPublicRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/shop/products/:id",
+      "registrar": "apps/api/src/routes/shop/registerShopPublicRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/shop/merchants/:id",
+      "registrar": "apps/api/src/routes/shop/registerShopPublicRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/shop/shops/:id",
+      "registrar": "apps/api/src/routes/shop/registerShopPublicRoutes.ts"
     },
     {
       "method": "GET",
@@ -240,6 +300,11 @@
       "method": "GET",
       "path": "/me/coordination-attention",
       "registrar": "apps/api/src/routes/user/registerMeCoordinationAttentionRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/me/discover/overlay",
+      "registrar": "apps/api/src/routes/user/registerMeDiscoverOverlayRoutes.ts"
     },
     {
       "method": "GET",
@@ -548,6 +613,26 @@
     },
     {
       "method": "GET",
+      "path": "/me/reviews",
+      "registrar": "apps/api/src/routes/user/registerReviewRoutes.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/me/reviews/:id",
+      "registrar": "apps/api/src/routes/user/registerReviewRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/reviews",
+      "registrar": "apps/api/src/routes/user/registerReviewRoutes.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/reviews",
+      "registrar": "apps/api/src/routes/user/registerReviewRoutes.ts"
+    },
+    {
+      "method": "GET",
       "path": "/pro-applications",
       "registrar": "apps/api/src/routes/admin/registerAdminHostApplicationRoutes.ts"
     },
@@ -728,96 +813,6 @@
     },
     {
       "method": "GET",
-      "path": "/shop/products",
-      "registrar": "apps/api/src/routes/shop.ts"
-    },
-    {
-      "method": "GET",
-      "path": "/shop/products/:id",
-      "registrar": "apps/api/src/routes/shop.ts"
-    },
-    {
-      "method": "GET",
-      "path": "/shop/merchants/:id",
-      "registrar": "apps/api/src/routes/shop.ts"
-    },
-    {
-      "method": "GET",
-      "path": "/shop/shops/:id",
-      "registrar": "apps/api/src/routes/shop.ts"
-    },
-    {
-      "method": "GET",
-      "path": "/shop/checkout/config",
-      "registrar": "apps/api/src/routes/shop.ts"
-    },
-    {
-      "method": "POST",
-      "path": "/shop/checkout",
-      "registrar": "apps/api/src/routes/shop.ts"
-    },
-    {
-      "method": "GET",
-      "path": "/shop/${prefix}/stores",
-      "registrar": "apps/api/src/routes/shop.ts"
-    },
-    {
-      "method": "GET",
-      "path": "/shop/${prefix}/profile",
-      "registrar": "apps/api/src/routes/shop.ts"
-    },
-    {
-      "method": "POST",
-      "path": "/shop/${prefix}/profile",
-      "registrar": "apps/api/src/routes/shop.ts"
-    },
-    {
-      "method": "PATCH",
-      "path": "/shop/${prefix}/profile",
-      "registrar": "apps/api/src/routes/shop.ts"
-    },
-    {
-      "method": "GET",
-      "path": "/shop/merchant/products",
-      "registrar": "apps/api/src/routes/shop.ts"
-    },
-    {
-      "method": "POST",
-      "path": "/shop/merchant/products",
-      "registrar": "apps/api/src/routes/shop.ts"
-    },
-    {
-      "method": "PATCH",
-      "path": "/shop/merchant/products/:id",
-      "registrar": "apps/api/src/routes/shop.ts"
-    },
-    {
-      "method": "DELETE",
-      "path": "/shop/merchant/products/:id",
-      "registrar": "apps/api/src/routes/shop.ts"
-    },
-    {
-      "method": "GET",
-      "path": "/shop/merchant/orders",
-      "registrar": "apps/api/src/routes/shop.ts"
-    },
-    {
-      "method": "PATCH",
-      "path": "/shop/merchant/orders/:orderId/status",
-      "registrar": "apps/api/src/routes/shop.ts"
-    },
-    {
-      "method": "GET",
-      "path": "/shop/merchant/analytics/sales",
-      "registrar": "apps/api/src/routes/shop.ts"
-    },
-    {
-      "method": "GET",
-      "path": "/shop/merchant/analytics/export",
-      "registrar": "apps/api/src/routes/shop.ts"
-    },
-    {
-      "method": "GET",
       "path": "/media/resolve",
       "registrar": "apps/api/src/routes/media.ts"
     },
@@ -925,13 +920,16 @@
       "operator-team-commands",
       "operator-team-read"
     ],
-    "apps/api/src/routes/social/registerSocialPeopleRoutes.ts": [
-      "member-people-engagement"
+    "apps/api/src/routes/shop/registerShopCheckoutRoutes.ts": [
+      "shop-checkout-commands",
+      "shop-public-read"
     ],
-    "apps/api/src/routes/social/registerSocialReviewRoutes.ts": [
-      "my-reviews",
-      "social-review-commands",
-      "social-review-read"
+    "apps/api/src/routes/shop/registerShopMerchantManageRoutes.ts": [
+      "shop-merchant-commands",
+      "shop-merchant-read"
+    ],
+    "apps/api/src/routes/shop/registerShopPublicRoutes.ts": [
+      "shop-public-read"
     ],
     "apps/api/src/routes/user/registerAccountLifecycleRoutes.ts": [
       "account-deletion",
@@ -972,6 +970,9 @@
     ],
     "apps/api/src/routes/user/registerMeCoordinationAttentionRoutes.ts": [
       "member-coordination-attention"
+    ],
+    "apps/api/src/routes/user/registerMeDiscoverOverlayRoutes.ts": [
+      "explore-map-overlay-read"
     ],
     "apps/api/src/routes/user/registerMeEngagementRoutes.ts": [
       "activity-group-chat-me-commands",
@@ -1042,6 +1043,11 @@
     ],
     "apps/api/src/routes/user/registerPublicTenantRoutes.ts": [
       "tenant-public-read"
+    ],
+    "apps/api/src/routes/user/registerReviewRoutes.ts": [
+      "my-reviews",
+      "review-commands",
+      "review-read"
     ]
   }
 }

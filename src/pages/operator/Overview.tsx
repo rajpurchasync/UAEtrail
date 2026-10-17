@@ -25,7 +25,7 @@ import {
   MESSAGES_PATH,
   OPERATOR_ACTIVITIES_NEW_PATH,
   OPERATOR_SECURITY_PRIVACY_PATH,
-  MEMBERSHIP_MARKETING_PATH,
+  PRO_MEMBERSHIP_PATH,
   NOTIFICATIONS_PATH,
   planJoinedSchedulePath,
 } from '../../config/routingCatalog';
@@ -246,7 +246,7 @@ export const Overview = () => {
                 ...(FEATURE_FLAGS.membershipEnabled
                   ? [
                       {
-                        to: MEMBERSHIP_MARKETING_PATH,
+                        to: PRO_MEMBERSHIP_PATH,
                         icon: <Crown className="w-4 h-4" />,
                         label: 'Membership',
                         accent: 'amber' as const,

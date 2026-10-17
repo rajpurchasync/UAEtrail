@@ -47,9 +47,10 @@ Complete these **on the VPS** when you connect. Use this list to track progress.
 
 ## SLO baseline (P5 — staging before prod promote)
 
-Record results from `BASE_URL=https://staging-host npm run p5:slo-smoke` (optional `P5_SLO_SAMPLES=10`). Local API dev: `BASE_URL=http://localhost:4000 npm run p5:slo-smoke` (API must be running; default port matches `apps/api` `PORT`). With **S10e** bbox on staging API, add `P5_EXPLORE_MAP_BBOX=1` (optional `P5_EXPLORE_MAP_BBOX_QUERY=55,25,56,26`). For join probe: `P5_SMOKE_EMAIL`, `P5_SMOKE_PASSWORD`, `P5_JOIN_ACTIVITY_ID` (open RSVP or approval outing). Targets from `scripts/refactor-program.json` P5 `slos[]`:
+Record results from `BASE_URL=https://staging-host npm run p5:slo-smoke` (optional `P5_SLO_SAMPLES=10`). Local API dev: `BASE_URL=http://localhost:4000 npm run p5:slo-smoke` (API must be running; default port matches `apps/api` `PORT`). With **S10e** bbox on staging API, add `P5_EXPLORE_MAP_BBOX=1` (optional `P5_EXPLORE_MAP_BBOX_QUERY=55,25,56,26`). Overlay + join probes: `P5_SMOKE_EMAIL`, `P5_SMOKE_PASSWORD`; join also needs `P5_JOIN_ACTIVITY_ID` (open RSVP or approval outing). Targets from `scripts/refactor-program.json` P5 `slos[]`:
 
 - [ ] **SLO-EXPLORE-MAP** — `GET /api/explore/map` p95 latency noted (compare full map vs bbox when **S10e** flags on)
+- [ ] **SLO-EXPLORE-OVERLAY** — `GET /api/me/discover/overlay` p95 when smoke email/password set (COH-08)
 - [ ] **SLO-JOIN** — join probe exits 0 (RSVP or request path; 4xx validation excluded)
 - [ ] **SLO-API-ERR** — smoke run reports 5xx rate &lt;0.1%; confirm rolling 24h in staging (or first prod week)
 

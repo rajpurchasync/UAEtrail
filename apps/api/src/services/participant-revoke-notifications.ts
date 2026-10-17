@@ -9,11 +9,11 @@ export const notifyParticipantRevokedByHost = async (input: {
   activityId: string;
   requestId: string;
   actorUserId: string;
-  organizerNote: string;
+  hostNote: string;
 }): Promise<void> => {
   const activity = await findActivityForRequestViewById(input.activityId);
   const title = 'Removed from activity';
-  const body = buildParticipantRevokedBody(activity?.title ?? 'this activity', input.organizerNote);
+  const body = buildParticipantRevokedBody(activity?.title ?? 'this activity', input.hostNote);
 
   scheduleNotification(
     {
@@ -26,7 +26,7 @@ export const notifyParticipantRevokedByHost = async (input: {
         activityId: input.activityId,
         requestId: input.requestId,
         actorUserId: input.actorUserId,
-        organizerNote: input.organizerNote.trim(),
+        hostNote: input.hostNote.trim(),
         path: TRIPS_JOINED_TAB_PATH,
       },
     },

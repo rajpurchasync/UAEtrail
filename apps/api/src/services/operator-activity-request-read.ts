@@ -11,7 +11,7 @@ const mapTenantRequestRow = (request: Awaited<ReturnType<typeof listTenantActivi
     id: request.id,
     status: request.status.toLowerCase(),
     note: request.note,
-    organizerNote: request.organizerNote,
+    hostNote: request.hostNote,
     cancelReason: request.cancelReason,
     cancelMessage: request.cancelMessage,
     cancelledAt: request.cancelledAt,

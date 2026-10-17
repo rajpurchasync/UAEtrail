@@ -2,15 +2,15 @@
   "generated": "2026-10-17",
   "description": "CTO system audit baseline. Regenerate: npm run system:audit",
   "summary": {
-    "apiRegistrarFiles": 49,
-    "apiRouteEndpointsParsed": 170,
-    "mongoCollectionsDefined": 54,
+    "apiRegistrarFiles": 52,
+    "apiRouteEndpointsParsed": 169,
+    "mongoCollectionsDefined": 55,
     "mongoCollectionsOrphanInApi": 1,
     "mongoCollectionsMultiWriterOver4": 0,
     "routeRegistrarsWithDirectWrites": 0,
     "apiMounts": 8,
-    "spaRouteElements": 112,
-    "feDomainModules": 24,
+    "spaRouteElements": 115,
+    "feDomainModules": 28,
     "boundedContexts": 17
   },
   "risks": {
@@ -33,9 +33,9 @@
       "file": "apps/api/src/routes/admin.ts"
     },
     {
-      "prefix": "/operator",
+      "prefix": "/publishing",
       "file": "apps/api/src/routes/operator.ts",
-      "note": "legacy /host/* rewritten in middleware"
+      "note": "/operator HTTP alias; SPA /publishing/*"
     },
     {
       "prefix": "/chat",
@@ -54,9 +54,9 @@
       "file": "apps/api/src/routes/safety.ts"
     },
     {
-      "prefix": "/user+social",
+      "prefix": "/",
       "file": "apps/api/src/routes/user.ts",
-      "note": "user router + social router on /"
+      "note": "member + public catalog + reviews on /"
     }
   ],
   "integrations": [
@@ -463,7 +463,7 @@
       ]
     },
     "USER_WISHLIST": {
-      "mongoName": "user_favorites",
+      "mongoName": "user_wishlist",
       "referencingFiles": 4,
       "writerFiles": 3,
       "sampleFiles": [
@@ -609,6 +609,14 @@
       "sampleFiles": [
         "apps/api/src/lib/mongo-migrations.ts"
       ]
+    },
+    "USER_FAVORITES": {
+      "mongoName": "user_favorites",
+      "referencingFiles": 1,
+      "writerFiles": 1,
+      "sampleFiles": [
+        "apps/api/src/lib/mongo-migrations.ts"
+      ]
     }
   },
   "collectionWritersSummary": {
@@ -665,7 +673,8 @@
     "EVENTS": 1,
     "EVENT_REQUESTS": 1,
     "EVENT_PARTICIPANTS": 1,
-    "ORGANIZER_APPLICATIONS": 1
+    "ORGANIZER_APPLICATIONS": 1,
+    "USER_FAVORITES": 1
   },
   "registrarServicesSample": {
     "apps/api/src/routes/admin/registerAdminActivityModerationRoutes.ts": [

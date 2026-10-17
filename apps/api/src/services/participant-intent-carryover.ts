@@ -21,7 +21,7 @@ export const carryApprovedDemandJoinersToActivity = async (input: {
       activityId: input.activityId,
       userId,
       reviewerId: input.hostUserId,
-      organizerNote: 'Joined from your demand plan',
+      hostNote: 'Joined from your demand plan',
       lenient: true,
     });
     if (result === 'enrolled') enrolledUserIds.push(userId);

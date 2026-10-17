@@ -9,7 +9,7 @@ import {
   buildHostActivityPublishPayload,
   type ActivityPublishInput,
 } from '../utils/activityPublishPayload';
-import type { CreateActivityDraft } from '../explore/ui/organizeFlow';
+import type { CreateActivityDraft } from '../explore/ui/hostingFlowEngine';
 import { composeFlowSpecForOrganizeKind } from '../explore/composeFlowCatalog';
 import { linkParentToRideshareActivity } from '../explore/linkActivityRideshareOffer';
 import {
@@ -22,7 +22,7 @@ import {
   resolveActivityTitle,
   resolveActivityType,
   usesGoingFromOrganizeStep,
-} from '../explore/ui/organizeFlow';
+} from '../explore/ui/hostingFlowEngine';
 
 const formatCoord = (value: number): string => Number(value.toFixed(6)).toString();
 

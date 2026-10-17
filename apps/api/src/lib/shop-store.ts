@@ -648,7 +648,7 @@ export const updateManagedMerchantProfileById = async (
   return mapMongoMerchantProfile(result);
 };
 
-/** Keep shop tenant row aligned with the merchant profile the owner edits in ShopManage. */
+/** Keep shop tenant row aligned with the merchant profile the owner edits in organisation manage. */
 export const syncShopTenantFromMerchantProfile = async (
   ownerId: string,
   profile: Pick<

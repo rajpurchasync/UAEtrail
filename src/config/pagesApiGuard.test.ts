@@ -50,15 +50,16 @@ describe('pagesApiGuard (R8.1)', () => {
   });
 
   it('admin pages load data via hooks facades (R8.1)', () => {
-    const adminPages = collectSourceFiles(PAGES_ROOT).filter((file) =>
-      /\/Admin[A-Z][^/]*\.tsx$/.test(file)
+    const adminPages = collectSourceFiles(join(PAGES_ROOT, 'admin')).filter((file) =>
+      file.endsWith('.tsx')
     );
     expect(adminPages.length).toBeGreaterThanOrEqual(10);
 
     for (const file of adminPages) {
       const source = readFileSync(join(process.cwd(), file), 'utf8');
-      const facadePattern =
-        file.endsWith('AdminNotifications.tsx') ? /notificationInboxApi/ : /adminConsoleApi/;
+      const facadePattern = file.endsWith('admin/Notifications.tsx')
+        ? /notificationInboxApi/
+        : /adminConsoleApi/;
       expect(source, `${file} must import hooks facade`).toMatch(facadePattern);
       expect(source, `${file} must not call api.*`).not.toMatch(/\bapi\./);
     }

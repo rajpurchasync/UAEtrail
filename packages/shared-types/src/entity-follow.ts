@@ -13,6 +13,7 @@ export interface EntityFollowDTO {
     id: string;
     name: string;
     slug: string;
+    ownerUserId?: string | null;
     logoUrl?: string | null;
     brandProfileKind?: PublishingProfileKind;
   } | null;

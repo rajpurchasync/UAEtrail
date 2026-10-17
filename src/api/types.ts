@@ -82,6 +82,8 @@ export interface ActivityRequestView {
   id: string;
   status: string;
   note?: string;
+  hostNote?: string;
+  /** @deprecated COH-06 — use {@link hostNote}. */
   organizerNote?: string;
   cancelReason?: string | null;
   cancelMessage?: string | null;

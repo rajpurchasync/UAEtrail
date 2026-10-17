@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { resolveHostNote } from '@uaetrail/shared-types';
 import type { ActivityRequestView } from '../api/types';
 import { fetchMyJoinRequests } from '../hooks/activityJoinClientApi';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
@@ -81,42 +82,45 @@ export const UserRequests = () => {
         <ConsumerLoadingSpinner />
       ) : (
         <div className="space-y-3">
-          {filtered.map((request) => (
-            <Link
-              key={request.id}
-              to={`/my-requests/${request.id}`}
-              className="glass-card-interactive block p-4"
-            >
-              <div className="flex items-start justify-between gap-2 mb-2">
-                <div className="min-w-0">
-                  <p className="font-semibold text-neutral-900 truncate">
-                    {request.activity.title || request.activity.locationName}
-                  </p>
-                  <p className="text-sm text-neutral-500">{request.activity.locationName}</p>
+          {filtered.map((request) => {
+            const hostNote = resolveHostNote(request);
+            return (
+              <Link
+                key={request.id}
+                to={`/my-requests/${request.id}`}
+                className="glass-card-interactive block p-4"
+              >
+                <div className="flex items-start justify-between gap-2 mb-2">
+                  <div className="min-w-0">
+                    <p className="font-semibold text-neutral-900 truncate">
+                      {request.activity.title || request.activity.locationName}
+                    </p>
+                    <p className="text-sm text-neutral-500">{request.activity.locationName}</p>
+                  </div>
+                  <span
+                    className={`text-xs font-semibold px-2.5 py-1 rounded-full shrink-0 ${statusBadge(request.status)}`}
+                  >
+                    {requestStatusLabel(request.status)}
+                  </span>
                 </div>
-                <span
-                  className={`text-xs font-semibold px-2.5 py-1 rounded-full shrink-0 ${statusBadge(request.status)}`}
-                >
-                  {requestStatusLabel(request.status)}
-                </span>
-              </div>
-              <div className="text-sm text-neutral-600 space-y-1">
-                <p>
-                  {request.activity.date} · {request.activity.time}
-                </p>
-                {activityHostName(request.activity) !== 'Organizer' && (
-                  <p>Host: {activityHostName(request.activity)}</p>
-                )}
-                {request.note && <p className="text-neutral-500 line-clamp-2">{request.note}</p>}
-                {request.status === 'rejected' && request.organizerNote && (
-                  <p className="text-neutral-600 line-clamp-2">
-                    <span className="font-medium text-neutral-700">Host: </span>
-                    {request.organizerNote}
+                <div className="text-sm text-neutral-600 space-y-1">
+                  <p>
+                    {request.activity.date} · {request.activity.time}
                   </p>
-                )}
-              </div>
-            </Link>
-          ))}
+                  {activityHostName(request.activity) !== 'Organizer' && (
+                    <p>Host: {activityHostName(request.activity)}</p>
+                  )}
+                  {request.note && <p className="text-neutral-500 line-clamp-2">{request.note}</p>}
+                  {request.status === 'rejected' && hostNote && (
+                    <p className="text-neutral-600 line-clamp-2">
+                      <span className="font-medium text-neutral-700">Host: </span>
+                      {hostNote}
+                    </p>
+                  )}
+                </div>
+              </Link>
+            );
+          })}
           {filtered.length === 0 && (
             <p className="text-center text-sm text-neutral-500 py-12">No activity requests yet — explore the map to find your next adventure.</p>
           )}

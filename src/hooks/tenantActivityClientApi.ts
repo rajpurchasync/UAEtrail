@@ -48,9 +48,9 @@ export const revokeActivityParticipant = async (
   tenantId: string,
   activityId: string,
   participantId: string,
-  organizerNote: string
+  hostNote: string
 ): Promise<void> => {
-  await api.revokeActivityParticipant(tenantId, activityId, participantId, organizerNote);
+  await api.revokeActivityParticipant(tenantId, activityId, participantId, hostNote);
 };
 
 export const rateActivityParticipant = async (
@@ -74,9 +74,9 @@ export const decideActivityJoinRequest = async (
   tenantId: string,
   requestId: string,
   status: 'approved' | 'rejected',
-  organizerNote?: string
+  hostNote?: string
 ): Promise<void> => {
-  await api.decideActivityJoinRequest(tenantId, requestId, status, organizerNote);
+  await api.decideActivityJoinRequest(tenantId, requestId, status, hostNote);
 };
 
 export const getActivityJoinRequests = async (

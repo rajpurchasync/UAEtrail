@@ -13,21 +13,22 @@ const read = (rel: string) => readFileSync(join(ROOT, rel), 'utf8');
 export const ADMIN_PLATFORM_ROUTE_CATALOG: Array<{
   path: string;
   page: string;
+  element: string;
   inSidebar: boolean;
 }> = [
-  { path: '/admin/overview', page: 'AdminOverview.tsx', inSidebar: true },
-  { path: '/admin/areas', page: 'AdminAreas.tsx', inSidebar: true },
-  { path: '/admin/places', page: 'AdminPlaces.tsx', inSidebar: true },
-  { path: '/admin/activities', page: 'AdminActivities.tsx', inSidebar: true },
-  { path: '/admin/facilities', page: 'AdminPlaces.tsx', inSidebar: true },
-  { path: '/admin/users', page: 'AdminMembers.tsx', inSidebar: true },
-  { path: '/admin/hosts', page: 'AdminOrganisations.tsx', inSidebar: true },
-  { path: '/admin/groups', page: 'AdminGroups.tsx', inSidebar: true },
-  { path: '/admin/shop', page: 'AdminShop.tsx', inSidebar: true },
-  { path: '/admin/reports', page: 'AdminReports.tsx', inSidebar: true },
-  { path: '/admin/audit-log', page: 'AdminAuditLog.tsx', inSidebar: true },
-  { path: '/admin/settings', page: 'AdminSettings.tsx', inSidebar: true },
-  { path: '/admin/notifications', page: 'AdminNotifications.tsx', inSidebar: false },
+  { path: '/admin/overview', page: 'admin/Overview.tsx', element: 'AdminOverview', inSidebar: true },
+  { path: '/admin/areas', page: 'admin/Areas.tsx', element: 'AdminAreas', inSidebar: true },
+  { path: '/admin/places', page: 'admin/Places.tsx', element: 'AdminPlaces', inSidebar: true },
+  { path: '/admin/activities', page: 'admin/Activities.tsx', element: 'AdminActivities', inSidebar: true },
+  { path: '/admin/facilities', page: 'admin/Places.tsx', element: 'AdminPlaces', inSidebar: true },
+  { path: '/admin/users', page: 'admin/Members.tsx', element: 'AdminMembers', inSidebar: true },
+  { path: '/admin/hosts', page: 'admin/Organisations.tsx', element: 'AdminOrganisations', inSidebar: true },
+  { path: '/admin/groups', page: 'admin/Groups.tsx', element: 'AdminGroups', inSidebar: true },
+  { path: '/admin/shop', page: 'admin/Shop.tsx', element: 'AdminShop', inSidebar: true },
+  { path: '/admin/reports', page: 'admin/Reports.tsx', element: 'AdminReports', inSidebar: true },
+  { path: '/admin/audit-log', page: 'admin/AuditLog.tsx', element: 'AdminAuditLog', inSidebar: true },
+  { path: '/admin/settings', page: 'admin/Settings.tsx', element: 'AdminSettings', inSidebar: true },
+  { path: '/admin/notifications', page: 'admin/Notifications.tsx', element: 'AdminNotifications', inSidebar: false },
 ];
 
 const CONSUMER_PEEK_NEEDLES = [
@@ -49,14 +50,16 @@ describe('adminSurfacesAcceptance (S13-W9)', () => {
   it('W9-02: App.tsx registers each admin route to its page module', () => {
     const app = read('src/App.tsx');
     const violations: string[] = [];
-    for (const { path, page } of ADMIN_PLATFORM_ROUTE_CATALOG) {
+    for (const { path, page, element } of ADMIN_PLATFORM_ROUTE_CATALOG) {
       if (!app.includes(`path="${path}"`)) {
         violations.push(`missing route ${path}`);
         continue;
       }
-      const component = page.replace('.tsx', '');
-      if (!app.includes(`<${component}`) && !app.includes(`${component} />`)) {
-        violations.push(`${path}: expected ${component} in route element`);
+      if (!app.includes(`./pages/${page.replace(/\.tsx$/, '')}`)) {
+        violations.push(`${path}: expected import ./pages/${page}`);
+      }
+      if (!app.includes(`<${element}`) && !app.includes(`${element} />`)) {
+        violations.push(`${path}: expected ${element} in route element`);
       }
     }
     expect(violations).toEqual([]);
@@ -86,18 +89,23 @@ describe('adminSurfacesAcceptance (S13-W9)', () => {
     expect(ADMIN_LINKS.map((link) => link.to)).toEqual(sidebarPaths);
   });
 
-  it('W9-05: bounded-context manifest lists all Admin* pages (C25)', () => {
+  it('W9-05: bounded-context manifest lists all admin pages (C25)', () => {
     const manifest = JSON.parse(read('scripts/bounded-context-manifest.json'));
     const ops = manifest.contexts.find((c: { id: string }) => c.id === 'platform_ops');
     expect(ops).toBeTruthy();
     const feRoots: string[] = ops.feRoots;
-    const adminPages = readdirSync(join(ROOT, 'src/pages')).filter(
+    const adminPages = readdirSync(join(ROOT, 'src/pages/admin')).filter((name) => name.endsWith('.tsx'));
+    const missing = adminPages.filter((name) => !feRoots.includes(`src/pages/admin/${name}`));
+    expect(missing).toEqual([]);
+  });
+
+  it('W9-07: admin pages live under src/pages/admin/ without Admin filename prefix', () => {
+    const rootAdmin = readdirSync(join(ROOT, 'src/pages')).filter(
       (name) => name.startsWith('Admin') && name.endsWith('.tsx')
     );
-    const missing = adminPages.filter(
-      (name) => !feRoots.includes(`src/pages/${name}`)
-    );
-    expect(missing).toEqual([]);
+    expect(rootAdmin).toEqual([]);
+    const prefixed = readdirSync(join(ROOT, 'src/pages/admin')).filter((name) => name.startsWith('Admin'));
+    expect(prefixed).toEqual([]);
   });
 
   it('W9-06: admin pages do not import consumer map peek / discovery card stack', () => {

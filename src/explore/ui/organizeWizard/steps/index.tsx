@@ -22,7 +22,7 @@ export { renderJoinKitStep } from './join-kit-step';
 export { renderInformationStep } from './information-step';
 export { renderPublishStep } from './publish-step';
 
-import type { CreateFlowStepId } from '../../organizeFlow';
+import type { CreateFlowStepId } from '../../hostingFlowEngine';
 import type { OrganizeWizardContext } from '../organizeWizardContext';
 import type { ReactNode } from 'react';
 import { renderTypeStep } from './type-step';

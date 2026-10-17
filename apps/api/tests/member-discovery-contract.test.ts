@@ -14,6 +14,7 @@ describe('member-discovery API contract', () => {
     expect(source).toMatch(/\/me\/member-discovery\/search/);
     expect(source).not.toMatch(/\/users\/browse/);
     expect(source).not.toMatch(/\/social\/people/);
+    expect(source).not.toMatch(/registerSocialPeopleRoutes/);
     expect(source).not.toMatch(/whos-going/i);
     expect(source).not.toMatch(/\/:id\/invites/);
   });

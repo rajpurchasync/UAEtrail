@@ -1,12 +1,14 @@
-import type {
-  BuddySummaryDTO,
-  MemberFollowSummaryDTO,
-  SocialPeopleDTO,
-  SocialPeoplePreviewDTO,
-  SocialPeopleSegment,
-  SocialPersonBuddyRequestState,
-  SocialPersonRowDTO,
-  SocialPersonTripHintDTO,
+import {
+  isBuddyPeopleSegment,
+  normalizePeopleSegment,
+  type BuddySummaryDTO,
+  type MemberFollowSummaryDTO,
+  type SocialPeopleDTO,
+  type SocialPeoplePreviewDTO,
+  type SocialPeopleSegmentWire,
+  type SocialPersonBuddyRequestState,
+  type SocialPersonRowDTO,
+  type SocialPersonTripHintDTO,
 } from '@uaetrail/shared-types';
 import { USER_CITY_LABELS, type UserCity } from '../domain/user-profile.js';
 import { countCheckedInParticipationsForUserIds } from '../lib/activity-engagement-store.js';
@@ -104,7 +106,7 @@ type PersonSeed = {
 const mergeNetworkPeople = (
   buddies: BuddySummaryDTO[],
   following: MemberFollowSummaryDTO[],
-  segment: SocialPeopleSegment
+  segment: SocialPeopleSegmentWire
 ): PersonSeed[] => {
   const buddyIds = new Set(buddies.map((b) => b.userId));
   const byId = new Map<string, PersonSeed>();
@@ -120,7 +122,7 @@ const mergeNetworkPeople = (
 
   for (const row of following) {
     if (segment === 'followed' && buddyIds.has(row.userId)) continue;
-    if (segment === 'friends') continue;
+    if (isBuddyPeopleSegment(segment)) continue;
     if (!byId.has(row.userId)) {
       byId.set(row.userId, {
         userId: row.userId,
@@ -131,7 +133,7 @@ const mergeNetworkPeople = (
     }
   }
 
-  if (segment === 'friends') {
+  if (isBuddyPeopleSegment(segment)) {
     return buddies.map((buddy) => byId.get(buddy.userId)!);
   }
 
@@ -169,9 +171,9 @@ const sortPeople = (rows: SocialPersonRowDTO[]): SocialPersonRowDTO[] =>
 export const loadMemberPeopleNetworkRoster = async (input: {
   viewerUserId: string;
   userRole?: string | null;
-  segment: SocialPeopleSegment;
+  segment: SocialPeopleSegmentWire;
 }): Promise<SocialPeopleDTO> => {
-  const segment = input.segment;
+  const segment = normalizePeopleSegment(input.segment);
   const [buddies, following, mapItems] = await Promise.all([
     listBuddiesForUser(input.viewerUserId),
     listFollowingForUser(input.viewerUserId),

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildOrganizeActivityPublishInput } from './organizeActivityPublish';
-import { emptyCreateActivityDraft } from '../explore/ui/organizeFlow';
+import { emptyCreateActivityDraft } from '../explore/ui/hostingFlowEngine';
 
 describe('buildOrganizeActivityPublishInput', () => {
   it('sends shared cost amount in pricing.price for shared mode', () => {

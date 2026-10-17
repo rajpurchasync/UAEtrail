@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
-import { createDraftFromSeekingMapItem } from './organizeFlow';
+import { createDraftFromSeekingMapItem } from './hostingFlowEngine';
 import { seekingExploreMapItem } from '../exploreMapItemFixtures';
 
 const seekingItem = (overrides: Partial<ExploreMapItemDTO> = {}): ExploreMapItemDTO =>

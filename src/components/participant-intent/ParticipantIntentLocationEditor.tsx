@@ -3,7 +3,7 @@ import { MapPin } from 'lucide-react';
 import type { ParticipantIntentKind } from '@uaetrail/shared-types';
 import { MAP_CONFIG } from '../../config/platform';
 import { EXPLORE_Z } from '../../config/exploreTheme';
-import type { LocationPrecision } from '../../explore/ui/organizeFlow';
+import type { LocationPrecision } from '../../explore/ui/hostingFlowEngine';
 import { GOING_FROM_LABEL, TO_LOCATION_LABEL, fromLocationLabel } from '../../explore/createFlowCopy';
 
 const CreatePlacePicker = lazy(() =>

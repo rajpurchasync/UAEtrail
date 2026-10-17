@@ -102,7 +102,7 @@
     {
       "id": "PCOH",
       "name": "Coherence 2026 — UPL/BWL separation, domain dedup, API flow unification",
-      "status": "in_progress",
+      "status": "complete",
       "owner": "product-eng",
       "targetWindowWeeks": "pre-launch",
       "authorization": "authorized",
@@ -431,16 +431,16 @@
         "apps/api/src/services/chat-direct-messages-read.ts",
         "apps/api/src/services/chat-direct-messages-commands.ts",
         "apps/api/src/services/chat-message-reaction-commands.ts",
-        "apps/api/src/services/social-review-read.ts",
-        "apps/api/src/services/social-review-commands.ts",
+        "apps/api/src/services/review-read.ts",
+        "apps/api/src/services/review-commands.ts",
         "apps/api/src/services/me-profile-read.ts",
         "apps/api/src/services/me-profile-commands.ts",
         "apps/api/src/routes/chat.ts",
         "apps/api/src/routes/auth.ts",
         "apps/api/src/routes/user/registerProfileRoutes.ts",
-        "apps/api/src/routes/social/registerSocialReviewRoutes.ts"
+        "apps/api/src/routes/user/registerReviewRoutes.ts"
       ],
-      "feRoots": ["src/api/domains/member.ts", "src/api/domains/social.ts"],
+      "feRoots": ["src/api/domains/member.ts", "src/api/domains/reviews.ts"],
       "successMetric": "route-handler-cqrs-guard; no auth-users/chat-data/social-data imports in routes"
     },
     {
@@ -525,11 +525,11 @@
     {
       "id": "MIG-SURFACE-ADMIN-OPS",
       "phase": "P4b",
-      "status": "planned",
+      "status": "complete",
       "owner": "platform",
       "contextIds": ["platform_ops"],
       "apiRoots": ["apps/api/src/routes/admin.ts"],
-      "feRoots": ["src/pages/AdminOverview.tsx", "src/pages/AdminMembers.tsx"],
+      "feRoots": ["src/pages/admin/Overview.tsx", "src/pages/admin/Members.tsx"],
       "successMetric": "Admin routes in NAVIGATION + adminSurfacesAcceptance; no consumer peek imports in Admin*"
     },
     {
@@ -610,17 +610,17 @@
     {
       "id": "MIG-ROUTING-CANON-P5",
       "phase": "P4b",
-      "status": "planned",
+      "status": "complete",
       "owner": "product-eng",
       "contextIds": ["engagement"],
       "apiRoots": ["apps/api/src/routes/user/registerMeWishlistRoutes.ts"],
-      "feRoots": ["src/api/domains/goals.ts", "src/api/domains/social.ts"],
-      "successMetric": "One feDomain module per /me resource; apiLegacyGuard boundaries"
+      "feRoots": ["src/api/domains/goals.ts", "src/api/domains/wishlist.ts"],
+      "successMetric": "One feDomain module per /me resource; wishlistApi; apiLegacyGuard boundaries"
     },
     {
       "id": "MIG-ROUTING-CANON-P11",
       "phase": "P4b",
-      "status": "planned",
+      "status": "complete",
       "owner": "platform",
       "contextIds": [],
       "apiRoots": [],
@@ -692,7 +692,7 @@
     {
       "id": "MIG-COH-05",
       "phase": "PCOH",
-      "status": "planned",
+      "status": "complete",
       "owner": "discovery",
       "contextIds": ["member_discovery", "social_graph"],
       "apiRoots": ["apps/api/src/routes/user/registerMemberDiscoveryRoutes.ts"],
@@ -702,7 +702,7 @@
     {
       "id": "MIG-COH-06",
       "phase": "PCOH",
-      "status": "planned",
+      "status": "complete",
       "owner": "product-eng",
       "contextIds": ["participation"],
       "apiRoots": ["apps/api/src/lib/activity-engagement-store.ts"],
@@ -712,7 +712,7 @@
     {
       "id": "MIG-COH-07",
       "phase": "PCOH",
-      "status": "planned",
+      "status": "complete",
       "owner": "product-eng",
       "contextIds": ["participation", "member_identity", "discovery"],
       "apiRoots": ["packages/shared-types/src/activity-publisher-display.ts"],
@@ -722,7 +722,7 @@
     {
       "id": "MIG-COH-08",
       "phase": "PCOH",
-      "status": "planned",
+      "status": "complete",
       "owner": "platform",
       "contextIds": ["discovery"],
       "apiRoots": ["apps/api/src/lib/explore-map.ts", "scripts/p5-slo-smoke.mjs"],
@@ -732,42 +732,63 @@
     {
       "id": "MIG-COH-09",
       "phase": "PCOH",
-      "status": "planned",
+      "status": "complete",
       "owner": "platform",
       "contextIds": ["engagement", "social_graph"],
-      "apiRoots": ["apps/api/src/routes/user/registerMeWishlistRoutes.ts"],
-      "feRoots": ["src/api/domains/social.ts", "src/api/domains/goals.ts"],
-      "successMetric": "socialApi split; user_wishlist collection; MIG-SERVICE-IDENTITY-BOUNDARY"
+      "apiRoots": [
+        "apps/api/src/routes/user/registerMeWishlistRoutes.ts",
+        "apps/api/src/routes/user/registerReviewRoutes.ts",
+        "apps/api/src/lib/collections.ts"
+      ],
+      "feRoots": [
+        "src/api/domains/buddies.ts",
+        "src/api/domains/groups.ts",
+        "src/api/domains/wishlist.ts",
+        "src/api/domains/entityFollow.ts",
+        "src/api/domains/reviews.ts"
+      ],
+      "successMetric": "socialApi removed; buddies/groups/wishlist/entityFollow/reviews domains; user_wishlist collection"
     },
     {
       "id": "MIG-COH-10",
       "phase": "PCOH",
-      "status": "planned",
+      "status": "complete",
       "owner": "product-eng",
       "contextIds": ["compose"],
       "apiRoots": ["apps/api/src/services/member-publish-gate.ts"],
-      "feRoots": ["src/explore/ui/createOrganize", "src/explore/ui/hostingFlow.ts"],
-      "successMetric": "Single Organize compose tree; hostingFlow duplicate removed"
+      "feRoots": ["src/explore/create/hosting", "src/explore/ui/hostingFlow.ts", "src/explore/ui/hostingFlowEngine.ts"],
+      "successMetric": "Single Host compose tree (create/hosting + hostingFlowEngine); organizeFlow/createOrganize/hostingCatalog shims removed"
     },
     {
       "id": "MIG-COH-11",
       "phase": "PCOH",
-      "status": "planned",
+      "status": "complete",
       "owner": "platform",
       "contextIds": ["platform_ops", "commerce"],
-      "apiRoots": ["apps/api/src/routes/admin.ts", "apps/api/src/routes/shop.ts"],
-      "feRoots": ["src/pages/AdminOverview.tsx"],
-      "successMetric": "Admin acceptance; shop registrar split started"
+      "apiRoots": [
+        "apps/api/src/routes/admin.ts",
+        "apps/api/src/routes/shop.ts",
+        "apps/api/src/routes/shop/registerShopPublicRoutes.ts",
+        "apps/api/src/routes/shop/registerShopCheckoutRoutes.ts",
+        "apps/api/src/routes/shop/registerShopMerchantManageRoutes.ts"
+      ],
+      "feRoots": ["src/pages/admin/Overview.tsx", "src/config/adminSurfacesAcceptance.test.ts"],
+      "successMetric": "adminSurfacesAcceptance; shop registerShop* split; socialGraphRouter and demandFlow.ts shims deleted"
     },
     {
       "id": "MIG-COH-12",
       "phase": "PCOH",
-      "status": "planned",
+      "status": "complete",
       "owner": "platform",
       "contextIds": [],
-      "apiRoots": ["scripts/verify-domain-canonicals.mjs"],
+      "apiRoots": [
+        "scripts/verify-domain-canonicals.mjs",
+        "scripts/verify-domain-fe.mjs",
+        "scripts/verify-domain-api.mjs",
+        "scripts/verify-domain-journey.mjs"
+      ],
       "feRoots": ["src/App.tsx", "src/config/routingHygiene.test.ts"],
-      "successMetric": "Legacy purge; journey tests; verify:domain shard; routing hygiene"
+      "successMetric": "Navigate-only page shims deleted; verify:domain fe/api/journey shards; routingHygiene bans ShopManage/BecomeHost/Membership modules"
     }
   ],
   "stranglerRules": [

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { MyActivityDTO } from '@uaetrail/shared-types';
 import type { ActivityRequestView } from '../api/types';
-import { buildUpcomingPlanRows } from './activityHubSections';
+import { buildUpcomingPlanRows, requestRecordMeta } from './activityHubSections';
 
 const futureDate = () => {
   const date = new Date();
@@ -41,7 +41,7 @@ const baseRequest = (
   id,
   status,
   note: undefined,
-  organizerNote: undefined,
+  hostNote: undefined,
   cancelReason: null,
   cancelMessage: null,
   cancelledAt: null,
@@ -83,5 +83,17 @@ describe('buildUpcomingPlanRows', () => {
 
     expect(rows).toHaveLength(1);
     expect(rows[0]?.kind).toBe('confirmed');
+  });
+});
+
+describe('requestRecordMeta', () => {
+  it('prefers hostNote and dual-reads organizerNote', () => {
+    const date = futureDate();
+    const rejected = baseRequest('r1', 'a1', date, 'rejected');
+    expect(requestRecordMeta({ ...rejected, hostNote: '  too full  ' })).toBe('Host note: too full');
+    expect(requestRecordMeta({ ...rejected, organizerNote: 'legacy' })).toBe('Host note: legacy');
+    expect(
+      requestRecordMeta({ ...rejected, hostNote: 'canonical', organizerNote: 'legacy' })
+    ).toBe('Host note: canonical');
   });
 });

@@ -14,7 +14,7 @@ export interface ActivityJoinRequestDeclineDialogProps {
   request: ActivityRequestView | null;
   submitting?: boolean;
   onClose: () => void;
-  onConfirm: (organizerNote: string) => void | Promise<void>;
+  onConfirm: (hostNote: string) => void | Promise<void>;
 }
 
 export const ActivityJoinRequestDeclineDialog = ({
@@ -53,8 +53,8 @@ export const ActivityJoinRequestDeclineDialog = ({
       return;
     }
     setError(null);
-    const organizerNote = formatHostJoinDeclineNote(reason, message.trim() || undefined);
-    await onConfirm(organizerNote);
+    const hostNote = formatHostJoinDeclineNote(reason, message.trim() || undefined);
+    await onConfirm(hostNote);
   };
 
   const guestName = request?.user?.displayName ?? 'Guest';

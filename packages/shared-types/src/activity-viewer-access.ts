@@ -39,9 +39,9 @@ export type ActivityViewerAccessDTO = {
   joinMode: ActivityJoinMode;
   /** Meeting point, crew chat, full itinerary — host or confirmed participant only. */
   canAccessCrewSurfaces: boolean;
-  /** Explore map peek footer — set on `GET /explore/map` activity rows only. */
+  /** Explore map peek footer — guest on `GET /explore/map`; member overlay on `GET /me/discover/overlay`. */
   mapPeekActions?: ActivityMapPeekAction[];
-  /** Explore map peek Participants + Logistics strips — `GET /explore/map` activity rows only. */
+  /** Explore map peek Participants + Logistics strips — guest map + member overlay. */
   mapPeekStrips?: ActivityEngagementStripsDTO;
   /** Layer 7 — Pro / friend social depth (not crew surfaces). */
   entitlements?: ActivityViewerEntitlementsDTO;

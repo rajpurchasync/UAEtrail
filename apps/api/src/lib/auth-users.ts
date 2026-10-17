@@ -2,7 +2,7 @@ import { ObjectId, type Collection } from 'mongodb';
 import { MembershipTier } from '../domain/enums.js';
 import type { UserCity, UserCountryCode, UserGender } from '../domain/user-profile.js';
 import { getMongoClient } from './mongo.js';
-import { invalidateExploreMapCache } from './explore-map-cache.js';
+import { scheduleExploreMapCacheInvalidation } from './explore-map-cache-schedule.js';
 import { normalizeSearchRegexInput } from './regex-search.js';
 
 export type AuthUserRecord = {
@@ -236,7 +236,7 @@ export const updateAuthUserProfile = async (
   }
   await usersCollection().updateOne({ _id: userId }, { $set: setFields });
   if (patch.displayName !== undefined || patch.givenName !== undefined || patch.surname !== undefined) {
-    await invalidateExploreMapCache();
+    scheduleExploreMapCacheInvalidation('auth-users.profile_map_cache');
   }
 };
 

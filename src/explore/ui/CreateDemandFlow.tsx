@@ -46,7 +46,7 @@ import {
   type DemandSubmitResult,
   type DemandDraft,
   type DemandKind,
-} from './demandFlow';
+} from './seekingFlowEngine';
 import type { LocationPrecision, TimeMode } from './createFlowShared';
 import type { FindComposeKind } from '../compose';
 import { areaLabelForId } from '../organizePublishArea';

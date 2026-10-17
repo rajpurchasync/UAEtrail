@@ -34,12 +34,8 @@ export const parseBrowseDiscoverOpen = (value: string | null): boolean => value 
 export const parseListCatParam = (value: string | null): BrowseMainCategoryKey | null => {
   if (value === 'shops') return 'venues';
   if (value === 'activities' || value === 'trips') return 'activities';
-  if (
-    value === 'venues' ||
-    value === 'people' ||
-    value === 'guides' ||
-    value === 'agencies'
-  ) {
+  if (value === 'guides') return 'people';
+  if (value === 'venues' || value === 'people' || value === 'agencies') {
     return value;
   }
   return null;

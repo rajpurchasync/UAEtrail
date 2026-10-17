@@ -71,7 +71,7 @@ export const PROFILE_BADGES_PATH = '/profile/badges' as const;
 /** Legacy community feed — redirects to explore (`App.tsx`). */
 export const COMMUNITY_PATH = '/community' as const;
 
-/** Legacy membership marketing — redirects to explore (`Membership.tsx`) */
+/** Legacy membership marketing URL — App.tsx redirects to explore. */
 export const MEMBERSHIP_MARKETING_PATH = '/membership' as const;
 
 /** Social subgraph */
@@ -118,7 +118,7 @@ export const CHAT_PATH = MESSAGES_PATH;
 export const LEGACY_MESSAGES_PATH = '/messages' as const;
 export const MY_REQUESTS_PATH = '/my-requests' as const;
 
-/** Slugs reserved for the publishing console — must not use `/operator/:id` legacy storefront redirect. */
+/** Console segments that `/operator/{segment}` aliases onto `/publishing/{segment}`. Other slugs are not storefronts. */
 export const OPERATOR_CONSOLE_RESERVED_SEGMENTS = new Set([
   'overview',
   'activities',
@@ -132,7 +132,7 @@ export const OPERATOR_CONSOLE_RESERVED_SEGMENTS = new Set([
   'messages',
 ]);
 
-/** Map legacy `/operator/{console}` bookmarks onto `/publishing/{console}`. Storefront `/operator/:id` stays. Chat is `/chat`. */
+/** Map `/operator/{console}` onto `/publishing/{console}` (same alias as HTTP). Chat is `/chat`. Non-console slugs are not rewritten. */
 export const rewriteOperatorConsoleToPublishingPath = (pathname: string): string | null => {
   const match = pathname.match(/^\/operator\/([^/]+)(.*)$/);
   if (!match) return null;

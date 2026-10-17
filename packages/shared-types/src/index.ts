@@ -287,6 +287,8 @@ export interface JoinRequestDTO {
   status: RequestStatus;
   waitlisted?: boolean;
   note?: string | null;
+  hostNote?: string | null;
+  /** @deprecated COH-06 — use {@link hostNote}. */
   organizerNote?: string | null;
   cancelReason?: string | null;
   cancelMessage?: string | null;
@@ -333,6 +335,8 @@ export type {
   SocialPeoplePreviewDTO,
   SocialPeoplePreviewPersonDTO,
   SocialPeopleSegment,
+  SocialPeopleSegmentCanonical,
+  SocialPeopleSegmentWire,
   SocialPeopleRelationship,
   SocialPersonBuddyRequestState,
   SocialPersonRowDTO,
@@ -878,8 +882,8 @@ export interface ExploreMapItemDTO {
   /** Area hub rollups (place/facility counts). Not a map pin — Area is an admin-curated name. */
   areaLensStats?: import('./explore-area-lens.js').ExploreAreaLensStatsDTO | null;
   /**
-   * Per-viewer peek/detail hints for hosted plans (activity + demand).
-   * Set on `GET /explore/map` after cache read — not stored in Redis payload.
+   * Peek/detail hints. Public `GET /explore/map` is guest-level; signed-in members
+   * replace this from `GET /me/discover/overlay`. Not stored in Redis payload.
    */
   viewerAccess?: ActivityViewerAccessDTO;
   /**
@@ -887,6 +891,16 @@ export interface ExploreMapItemDTO {
    * Attached on `GET /explore/map` after cache read — not stored in Redis.
    */
   discoveryCard?: import('./discovery-card-projection.js').DiscoveryCardProjection | null;
+}
+
+/** Signed-in peek overlay keyed by public map item id (`GET /me/discover/overlay`). */
+export interface ExploreMapOverlayItemDTO {
+  id: string;
+  viewerAccess: ActivityViewerAccessDTO;
+}
+
+export interface ExploreMapOverlayDTO {
+  items: ExploreMapOverlayItemDTO[];
 }
 
 export interface ProductClick {
@@ -1587,13 +1601,11 @@ export {
   activityDetailInvitePath,
   exploreActivityInvitePath,
   AGENCY_PROFILE_PATH_PREFIX,
-  GUIDE_PROFILE_PATH_PREFIX,
   LEGACY_EVENT_PLACE_PATH_PREFIX,
   LEGACY_OPERATOR_PROFILE_PATH_PREFIX,
   PARTNER_PROFILE_PATH_PREFIX,
   VENUE_PLACE_PATH_PREFIX,
   agencyProfilePath,
-  guideProfilePath,
   hostBrandProfilePath,
   memberDiscoverProfilePath,
   memberProfilePath,
@@ -1780,9 +1792,12 @@ export {
   BWL_COLLECTIONS,
   BWL_ACTIVITY_PERSON_FIELDS,
   BWL_JOIN_REQUEST_FIELDS,
+  resolveHostNote,
   BWL_API_MOUNTS,
   BWL_EXPLORE_MAP_SOURCE,
   BWL_PEOPLE_SEGMENT,
   BWL_USER_ROLES,
+  isBuddyPeopleSegment,
+  normalizePeopleSegment,
 } from './wire-lexicon.js';
 export type { ActivityModeWire } from './wire-lexicon.js';

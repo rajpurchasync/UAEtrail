@@ -1,5 +1,5 @@
 import type { NotificationDTO } from '@uaetrail/shared-types';
-import { withdrawReasonLabel } from '@uaetrail/shared-types';
+import { resolveHostNote, withdrawReasonLabel } from '@uaetrail/shared-types';
 
 const metaRecord = (meta: NotificationDTO['meta']): Record<string, unknown> | null =>
   meta && typeof meta === 'object' ? (meta as Record<string, unknown>) : null;
@@ -9,9 +9,12 @@ export const notificationReasonLine = (notif: NotificationDTO): string | null =>
   const meta = metaRecord(notif.meta);
   if (!meta) return null;
 
-  const organizerNote = typeof meta.organizerNote === 'string' ? meta.organizerNote.trim() : '';
-  if (organizerNote) {
-    return `From the host: ${organizerNote}`;
+  const hostNote = resolveHostNote({
+    hostNote: typeof meta.hostNote === 'string' ? meta.hostNote : null,
+    organizerNote: typeof meta.organizerNote === 'string' ? meta.organizerNote : null,
+  });
+  if (hostNote) {
+    return `From the host: ${hostNote}`;
   }
 
   const cancelReason = typeof meta.cancelReason === 'string' ? meta.cancelReason : null;

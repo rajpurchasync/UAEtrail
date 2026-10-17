@@ -28,6 +28,21 @@ describe('resolveExploreCardHostProfilePath', () => {
   it('defaults community publisher to member profile', () => {
     expect(resolveExploreCardHostProfilePath(activityCard())).toBe('/member/host-1');
   });
+
+  it('routes individual Pro to member profile, not /guide', () => {
+    expect(
+      resolveExploreCardHostProfilePath(
+        activityCard({
+          activity: {
+            id: '1',
+            hostUserId: 'host-1',
+            publishingProfileKind: 'pro_guide',
+            tenantSlug: 'omar-guides',
+          },
+        })
+      )
+    ).toBe('/member/host-1');
+  });
 });
 
 describe('exploreCardCanOpenHostProfile', () => {

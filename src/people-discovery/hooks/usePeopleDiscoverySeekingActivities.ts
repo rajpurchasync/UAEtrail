@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
+import { useAuth } from '@/context/AuthContext';
 import { fetchExploreSeekingActivities } from '@/hooks/exploreSeekingClientApi';
 import {
   selectSeekingActivitiesFromExploreCatalog,
@@ -25,8 +26,11 @@ export const usePeopleDiscoverySeekingActivities = ({
   filters,
   exploreCatalogFallback,
 }: Args) => {
+  const { user } = useAuth();
   const query = useQuery({
-    queryKey: peopleDiscoverySeekingActivitiesQueryKey(),
+    queryKey: user?.id
+      ? [...peopleDiscoverySeekingActivitiesQueryKey(), user.id]
+      : peopleDiscoverySeekingActivitiesQueryKey(),
     enabled,
     staleTime: SEEKING_ACTIVITIES_STALE_MS,
     queryFn: async () => {

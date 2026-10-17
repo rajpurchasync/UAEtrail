@@ -32,7 +32,7 @@ import {
 
 /** Public explore map + place catalog (`/places`; `/locations` legacy alias). */
 export const registerPublicPlaceRoutes = (router: Router): void => {
-  router.get('/explore/map', optionalAuth, async (req, res, next) => {
+  router.get('/explore/map', async (req, res, next) => {
     try {
       const query = req.query as Record<string, string | undefined>;
       const data = await loadExploreMapForViewer({
@@ -42,8 +42,8 @@ export const registerPublicPlaceRoutes = (router: Router): void => {
           limit: query.limit,
           area: query.area,
         },
-        viewerUserId: req.auth?.userId ?? null,
-        userRole: req.auth?.role ?? null,
+        viewerUserId: null,
+        userRole: null,
       });
       res.json({ data });
     } catch (error) {
@@ -51,12 +51,9 @@ export const registerPublicPlaceRoutes = (router: Router): void => {
     }
   });
 
-  router.get('/explore/seeking-activities', optionalAuth, async (req, res, next) => {
+  router.get('/explore/seeking-activities', async (req, res, next) => {
     try {
-      const data = await loadExploreSeekingActivitiesForMapViewer({
-        viewerUserId: req.auth?.userId ?? null,
-        userRole: req.auth?.role ?? null,
-      });
+      const data = await loadExploreSeekingActivitiesForMapViewer();
       res.json({ data });
     } catch (error) {
       next(error);

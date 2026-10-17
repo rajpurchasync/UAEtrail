@@ -6,7 +6,7 @@ import {
   deleteAdminArea,
   updateAdminArea,
 } from '../lib/areas-store.js';
-import { invalidateExploreMapCache } from '../lib/explore-map-cache.js';
+import { scheduleExploreMapCacheInvalidation } from '../lib/explore-map-cache-schedule.js';
 
 type AreaCenter = { latitude: number; longitude: number };
 type AreaBoundsPoint = AreaCenter;
@@ -24,15 +24,15 @@ export type AdminAreaWriteInput = {
   imageUrl?: string | null;
 };
 
-const invalidateAreaDiscoveryCaches = async () => {
+const invalidateAreaDiscoveryCaches = () => {
   invalidatePublishedAreasCache();
-  await invalidateExploreMapCache();
+  scheduleExploreMapCacheInvalidation('admin.area_map_cache');
 };
 
 export const createAdminAreaRecord = async (body: AdminAreaWriteInput) => {
   const bounds = body.bounds ?? boundsRingFromCenter(body.center);
   const created = await createAdminArea({ ...body, bounds });
-  await invalidateAreaDiscoveryCaches();
+  invalidateAreaDiscoveryCaches();
   return created;
 };
 
@@ -43,7 +43,7 @@ export const updateAdminAreaRecord = async (id: string, body: Partial<AdminAreaW
   if (!updated) {
     throw new ApiError(404, 'area_not_found', 'Area not found.');
   }
-  await invalidateAreaDiscoveryCaches();
+  invalidateAreaDiscoveryCaches();
   return updated;
 };
 
@@ -52,5 +52,5 @@ export const deleteAdminAreaRecord = async (id: string) => {
   if (!deleted) {
     throw new ApiError(404, 'area_not_found', 'Area not found.');
   }
-  await invalidateAreaDiscoveryCaches();
+  invalidateAreaDiscoveryCaches();
 };

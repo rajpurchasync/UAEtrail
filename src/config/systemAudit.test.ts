@@ -44,5 +44,6 @@ describe('CTO system audit (W0)', () => {
     expect(keys.has('POST /auth/login')).toBe(true);
     expect(keys.has('POST /activities/:id/rsvp')).toBe(true);
     expect(keys.has('GET /explore/map')).toBe(true);
+    expect(keys.has('GET /me/discover/overlay')).toBe(true);
   });
 });

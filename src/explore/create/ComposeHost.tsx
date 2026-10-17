@@ -6,7 +6,7 @@ import { CreateContributeFlow } from '../ui/CreateContributeFlow';
 import { CreateContributeFacilityFlow } from '../ui/CreateContributeFacilityFlow';
 import type { ContributeSubmitResult } from '../ui/contributeFlow';
 import { CreateDemandFlow } from '../ui/CreateDemandFlow';
-import type { DemandSubmitResult } from '../ui/demandFlow';
+import type { DemandSubmitResult } from '../ui/seekingFlowEngine';
 import { CreateIntentSheet } from '../ui/CreateIntentSheet';
 import { SeekFlexibleComposeSheet } from '../ui/SeekFlexibleComposeSheet';
 

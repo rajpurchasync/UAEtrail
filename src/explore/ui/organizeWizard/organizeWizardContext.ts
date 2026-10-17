@@ -8,7 +8,7 @@ import type {
   CreateFlowStepId,
   CreateFlowStepTitleOptions,
   buildDateOptions,
-} from '../organizeFlow';
+} from '../hostingFlowEngine';
 
 export type OrganizeWizardFlowStep = 'type' | CreateFlowStepId;
 

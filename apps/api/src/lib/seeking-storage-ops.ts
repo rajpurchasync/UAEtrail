@@ -103,8 +103,8 @@ export const cancelActiveParticipantIntentsMissingCoords = async (options?: {
     { $set: { status: 'cancelled', updatedAt: now } }
   );
 
-  const { invalidateExploreMapCache } = await import('./explore-map-cache.js');
-  await invalidateExploreMapCache();
+  const { scheduleExploreMapCacheInvalidation } = await import('./explore-map-cache-schedule.js');
+  scheduleExploreMapCacheInvalidation('seeking-storage-ops.map_cache');
 
   return { dryRun, matched: intentIds.length, cancelled: modifiedCount, intentIds };
 };

@@ -18,9 +18,9 @@ export const revokeActivityParticipantAsHost = async (input: {
   activityId: string;
   participantId: string;
   hostUserId: string;
-  organizerNote: string;
+  hostNote: string;
 }): Promise<void> => {
-  const note = input.organizerNote.trim();
+  const note = input.hostNote.trim();
   if (note.length < 3) {
     throw new ApiError(400, 'note_required', 'A short note is required when revoking a participant.');
   }
@@ -31,7 +31,7 @@ export const revokeActivityParticipantAsHost = async (input: {
     activityId: input.activityId,
     participantId: input.participantId,
     hostUserId: input.hostUserId,
-    organizerNote: note
+    hostNote: note
   });
 
   await notifyParticipantRevokedByHost({
@@ -39,7 +39,7 @@ export const revokeActivityParticipantAsHost = async (input: {
     activityId: input.activityId,
     requestId: result.requestId,
     actorUserId: input.hostUserId,
-    organizerNote: note
+    hostNote: note
   });
 };
 

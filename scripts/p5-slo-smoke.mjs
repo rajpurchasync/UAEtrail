@@ -8,6 +8,7 @@
  *   P5_SLO_SAMPLES (default 5)
  *   P5_EXPLORE_MAP_BBOX=1 — also sample GET /api/explore/map?bbox=… (requires API EXPLORE_MAP_BBOX=1)
  *   P5_EXPLORE_MAP_BBOX_QUERY (default 55,25,56,26)
+ *   P5_SMOKE_EMAIL + P5_SMOKE_PASSWORD — optional overlay probe (SLO-EXPLORE-OVERLAY)
  *   P5_SMOKE_EMAIL + P5_SMOKE_PASSWORD + P5_JOIN_ACTIVITY_ID — optional join/RSVP probe (SLO-JOIN)
  */
 const baseUrl = (process.env.BASE_URL ?? 'http://localhost:4000').replace(/\/$/, '');
@@ -200,6 +201,29 @@ const main = async () => {
   if (serverErrorRate > 0.001) {
     console.error('[p5:slo-smoke] FAILED — server 5xx rate above 0.1% for this run');
     process.exit(1);
+  }
+
+  const overlayEmail = process.env.P5_SMOKE_EMAIL?.trim();
+  const overlayPassword = process.env.P5_SMOKE_PASSWORD;
+  if (!overlayEmail || !overlayPassword) {
+    console.log('[p5:slo-smoke] overlay probe skipped — set P5_SMOKE_EMAIL, P5_SMOKE_PASSWORD');
+  } else {
+    const accessToken = await loginMember(overlayEmail, overlayPassword);
+    const overlayRow = await runSeries({
+      label: 'explore_map_overlay',
+      path: '/api/me/discover/overlay',
+      headers: {
+        accept: 'application/json',
+        authorization: `Bearer ${accessToken}`,
+      },
+    });
+    console.log(
+      `[p5:slo-smoke] ${overlayRow.label} ${overlayRow.path} status=${overlayRow.lastStatus} errors=${overlayRow.errors}/${overlayRow.samples} server5xx=${overlayRow.serverErrors} p50=${overlayRow.p50Ms}ms p95=${overlayRow.p95Ms}ms`
+    );
+    if (overlayRow.errors === overlayRow.samples || overlayRow.serverErrors > 0) {
+      console.error('[p5:slo-smoke] FAILED — overlay probe did not succeed');
+      process.exit(1);
+    }
   }
 
   const join = await probeJoinPath();

@@ -8,7 +8,7 @@ import {
   validateContributeDraft,
   type ContributeSubmitResult,
 } from '../explore/ui/contributeFlow';
-import type { ActivityDifficulty } from '../explore/ui/organizeFlow';
+import type { ActivityDifficulty } from '../explore/ui/hostingFlowEngine';
 
 const toApiDifficulty = (value: ActivityDifficulty): 'easy' | 'moderate' | 'hard' =>
   value === 'medium' ? 'moderate' : value;

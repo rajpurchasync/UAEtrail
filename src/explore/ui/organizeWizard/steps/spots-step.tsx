@@ -3,7 +3,7 @@ import {
   OrganizeWizardStepError,
   OrganizeWizardStepNext
 } from '../OrganizeWizardChrome';
-import { CAPACITY_PRESETS, formatCapacityLabel } from '../../organizeFlow';
+import { CAPACITY_PRESETS, formatCapacityLabel } from '../../hostingFlowEngine';
 import { HikingSpotsStepBody } from '../../organizeHikingWizardSteps';
 import { CampingParticipantsStepBody } from '../../organizeCampingWizardSteps';
 import { EventChildrenAllowedField } from '../../organizeEventWizardSteps';

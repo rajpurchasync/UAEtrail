@@ -25,7 +25,7 @@ registerAdminHostApplicationRoutes(adminRouter);
 registerAdminPlaceRoutes(adminRouter);
 registerAdminFacilityRoutes(adminRouter);
 registerAdminAreaRoutes(adminRouter);
-// Activity creation for platform admins uses POST/PATCH /host/activities with x-tenant-id.
+// Outing publish for tenants is POST/PATCH /publishing/activities — admin only moderates.
 registerAdminActivityModerationRoutes(adminRouter);
 registerAdminMetricsRoutes(adminRouter);
 registerAdminUserRoutes(adminRouter);

@@ -11,16 +11,18 @@ Companion: [`DOMAIN.md`](./DOMAIN.md), [`CREATE_FLOW.md`](./CREATE_FLOW.md), [`M
 | Prefix | Auth | Purpose |
 |--------|------|---------|
 | **`/activities`** | Public read; tenant write via `/publishing` | Published **Organize** outings (join, RSVP, detail) |
-| **`/explore/map`** | Public | Discovery payload (`source`: activity · place · facility · shop · agency). Area is a filter (`areaId`), not a pin. |
+| **`/explore/map`** | Public | Guest discovery catalog (`source`: activity · place · facility · shop · agency). Area is a filter (`areaId`), not a pin. Signed-in peek is **`GET /me/discover/overlay`**. |
 | **`/agent/manifest.json`**, **`/agent/discover`** | Public (rate-limited) | **AI / agent** entry manifest and text search over published outings + registry places |
 | **`/me/*`** | Signed-in member | Own profile, intents, groups, inbox, activity participation |
 | **`/publishing/*`** | Verified + **tenant** (`x-organisation-id`) | **Publishing workspace** (any tier): publish, roster, **activity** join queue. Alias `/operator/*`. |
 | **`/member/:userId/*`** | Optional auth | Public member card (`profile`, `brief`, `upcoming-activities`) — `registerPublicMemberRoutes.ts` |
+| **`/me/discover/overlay`** | Auth | Per-viewer `viewerAccess` for public map item ids (not a second catalog) |
 | **`/me/member-discovery/*`** | Auth | People roster, network, directory browse, quota, user search |
 | **`/safety/reports`** | Auth | Member **content reports** (trust/safety) — `safety.ts` |
 | **`/chat/*`** | Auth | DMs |
 | **`/reviews`** | Public read; auth write | Social reviews (not content reports) |
 | **`/admin/*`** | `PLATFORM_ADMIN` | Moderation, **Users** (`GET/PATCH /admin/users*`), tenants, metrics — `admin.ts` mounts `registerAdmin*` only |
+| **`/shop/*`** | Public catalog; auth checkout + merchant manage | Storefront, Stripe checkout, merchant/organisation profile — `shop.ts` mounts `registerShopPublicRoutes` · `registerShopCheckoutRoutes` · `registerShopMerchantManageRoutes` |
 | **`POST /admin/platform-admins`** | Master admin only | Grant `PLATFORM_ADMIN` to an existing member by email |
 | **`DELETE /admin/platform-admins/:userId`** | Master admin only | Revoke platform staff (not master accounts) |
 
@@ -49,6 +51,8 @@ Same product verb (**request to join**), two entities:
 | **Member list (outgoing)** | `GET /me/requests` | *(future: aggregate or trips)* |
 
 Deprecated alias (do not use in new clients): `…/join-requests` mirrors `…/requests`.
+
+**Messages (COH-06):** JSON **`note`** (joiner → host) and **`hostNote`** (host decision / revoke). PATCH/POST bodies still accept **`organizerNote`** as a read alias; new writes and responses use **`hostNote`**. Mongo dual-reads `hostNote ?? organizerNote`.
 
 Storage: `activity_requests` vs `participant_intent_requests`.
 
@@ -117,9 +121,9 @@ Registration: `registerMeBadgesRoutes.ts` · service: `member-badges.ts`.
 | * | `/operator/activities/*` | CRUD, publish, history — FE: `listHostActivities`, … (`activities.ts` → `/operator/…`) |
 | GET | `/operator/activities/:id/participants` | Approved roster + flags (`registerHostActivityParticipantRoutes`) |
 | POST/DELETE | `/operator/activities/:id/participants/:participantId/checkin` | Confirm / undo attendance |
-| POST | `/operator/activities/:id/participants/:participantId/revoke` | Remove joiner (note → notification) |
+| POST | `/publishing/activities/:id/participants/:participantId/revoke` | Remove joiner (`hostNote` → notification; alias `/operator/…`) |
 | POST | `/operator/activities/:id/participants/:participantId/rating` | Host rates attended participant (after outing ends) |
-| GET/PATCH | `/operator/requests` | Activity join queue |
+| GET/PATCH | `/publishing/requests` | Activity join queue (`hostNote` on decide; alias `/operator/requests`) |
 | GET | `/me/status` | Member capabilities (`MemberStatusDTO`; **`publish`** nested); legacy `/me/host-status`, `/me/operator-status` |
 
 Storage: `activity_invites` (`COLLECTIONS.ACTIVITY_INVITES`) · indexes in `mongo-indexes.ts`.
@@ -147,7 +151,7 @@ Explore **people browse panel** (map; URL `view=people`; legacy `view=social` / 
 | Method | Path | Who |
 |--------|------|-----|
 | GET | `/me/member-discovery/network/preview` | Network avatars + counts for explore map people pill |
-| GET | `/me/member-discovery/network` | **Network roster** — friends / following. Query: `segment=all\|friends\|followed` |
+| GET | `/me/member-discovery/network` | **Network roster** — Friends (BWL `buddies`) / following. Query: `segment=all\|buddies\|followed` (`friends` alias of `buddies`) |
 | GET | `/me/member-discovery/roster` | **Discovery roster** — who’s going, hosts, looking-for **person rows**, followed, directory (`q`, `date`, `omitDirectory`, pagination); `meta.quota` |
 | GET | `/me/member-discovery/browse` | Directory only (paginated public members) |
 | GET | `/me/member-discovery/search` | User search (e.g. new chat) |
@@ -167,13 +171,13 @@ Registration: `registerMemberDiscoveryRoutes.ts` · `registerPublicPlaceRoutes.t
 | GET | `/me/reviews` | Signed-in member's reviews |
 | PATCH | `/me/reviews/:id` | Edit own review |
 
-Registration: `registerSocialReviewRoutes.ts` (mounted on root `socialRouter` in `routes/social.ts`).
+Registration: `registerReviewRoutes.ts` on `userRouter` **before** `requireAuth` so `GET /reviews` stays public; writes keep per-route auth.
 
 ---
 
 ## Wishlist (`/me/wishlist`)
 
-Private saves — **venue** (`locationId`) or **activity** (`activityId`) only. Mongo: `user_favorites` (`COLLECTIONS.USER_WISHLIST`). Not demand, not member follows.
+Private saves — **venue** (`locationId`) or **activity** (`activityId`) only. Mongo: `user_wishlist` (`COLLECTIONS.USER_WISHLIST`; migrated from `user_favorites`). Not demand, not member follows.
 
 | Method | Path | Who |
 |--------|------|-----|
@@ -327,10 +331,13 @@ Legacy aliases (do not use in new clients): `/me/host-application`, `/admin/host
 |---------------|--------|
 | `member.ts` | **`/me/status`** |
 | `badges.ts` | **`/me/badges`** |
-| `activities.ts` | `/activities`, `/me/requests`, `/host/activities`, `/host/requests` |
+| `activities.ts` | `/activities`, `/me/requests`, `/publishing/activities`, `/publishing/requests` |
+| `shop.ts` | `/shop/products`, `/shop/shops/:id`, `/shop/checkout`, `/shop/merchant/*` (alias `/shop/organisation/*` profile) |
 | `explore.ts` | `/explore/map`, `/explore/seeking-activities` |
 | `seeking.ts` | **`/me/seeking-posts`** (+ requests, link-activity) |
-| `social.ts`, `chat.ts` | Groups, DMs, inbox |
+| `groups.ts`, `chat.ts` | Groups, DMs, inbox |
+| `buddies.ts` | `/me/buddies`, `/me/following` |
+| `wishlist.ts`, `entityFollow.ts`, `reviews.ts` | `/me/wishlist`, `/me/entity-follows`, `/reviews` |
 | `places.ts` | `/me/places` (canonical), `/me/locations` (legacy alias) |
 | `facilities.ts` | `/me/facilities`, `/admin/facilities` |
 | `organisation.ts` | `/me/pro-application` (alias `/me/host-application`) |

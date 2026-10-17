@@ -6,6 +6,7 @@ import {
   LEGACY_TRAIL_POINTS_PATH,
   MEMBERSHIP_MARKETING_PATH,
   PROFILE_BADGES_PATH,
+  exploreShopsPath,
 } from './config/routingCatalog';
 import { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useParams, useSearchParams } from 'react-router-dom';
@@ -15,7 +16,6 @@ import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { clearAuthReturnContext, loadAuthReturnContext } from './utils/authReturnContext';
 import { useAuth } from './context/AuthContext';
 const Home = lazy(() => import('./pages/Home').then((m) => ({ default: m.Home })));
-const Membership = lazy(() => import('./pages/Membership').then((m) => ({ default: m.Membership })));
 const ExploreExperience = lazy(() =>
   import('./explore/ui/ExploreExperience').then((m) => ({ default: m.ExploreExperience }))
 );
@@ -57,11 +57,13 @@ import {
   PLAN_PATH,
   PROFILE_HISTORY_PATH,
   PROFILE_SUBMISSIONS_PATH,
+  rewriteOperatorConsoleToPublishingPath,
 } from './config/surfacePaths';
 import { canonicalPlaceDetailPath } from '@uaetrail/shared-types';
 import { resolveLegacyTripsHubRedirect } from './member-plan/legacyTripsRedirect';
 import { useMemberStatus } from './hooks/useMemberStatus';
 import { memberCanManageHostedActivities } from './utils/hostedActivitiesGate';
+import { shopPublicPath } from './utils/shopPaths';
 
 const LegacyMessagesRedirect = () => {
   const { search, hash } = useLocation();
@@ -140,6 +142,13 @@ const ShopBrowseRoute = () => (
   <Navigate to={explorePath({ panel: 'shops', filter: 'shops' })} replace />
 );
 
+/** Bookmark alias — canonical public shop URL is `/shop/:id`. */
+const LegacyMerchantPublicRedirect = () => {
+  const { id } = useParams<{ id: string }>();
+  if (!id) return <Navigate to={exploreShopsPath()} replace />;
+  return <Navigate to={shopPublicPath({ id })} replace />;
+};
+
 // ─── Lazy-loaded pages ───────────────────────────────────────────────────────
 const TrailDetail = lazy(() => import('./pages/TrailDetail').then((m) => ({ default: m.TrailDetail })));
 const CampDetail = lazy(() => import('./pages/CampDetail').then((m) => ({ default: m.CampDetail })));
@@ -152,44 +161,37 @@ const FacilityDetailPage = lazy(() =>
 );
 
 const ProductDetail = lazy(() => import('./pages/ProductDetail').then((m) => ({ default: m.ProductDetail })));
-const BecomeHost = lazy(() =>
-  import('./pages/BecomeHost').then((m) => ({ default: m.BecomeHost }))
+const LegacyProMembershipRedirect = lazy(() =>
+  import('./pages/LegacyProMembershipRedirect').then((m) => ({ default: m.LegacyProMembershipRedirect }))
 );
 const ProfileProMembership = lazy(() =>
   import('./pages/ProfileProMembership').then((m) => ({ default: m.ProfileProMembership }))
 );
-/** Legacy redirect — canonical public shop URL is `/shop/:id`. */
-const LegacyMerchantPublicRedirect = lazy(() =>
-  import('./pages/MerchantPublic').then((m) => ({ default: m.MerchantPublic }))
-);
 const ShopPublic = lazy(() => import('./pages/ShopPublic').then((m) => ({ default: m.ShopPublic })));
 const ActivityDetail = lazy(() => import('./pages/ActivityDetail').then((m) => ({ default: m.ActivityDetail })));
 const OrganisationProfile = lazy(() => import('./pages/OrganisationProfile').then((m) => ({ default: m.OrganisationProfile })));
-const LegacyOperatorPath = lazy(() =>
-  import('./pages/LegacyOperatorProfileRedirect').then((m) => ({ default: m.LegacyOperatorPath }))
-);
 const MemberProfile = lazy(() => import('./pages/MemberProfile').then((m) => ({ default: m.MemberProfile })));
 const SignUp = lazy(() => import('./pages/SignUp').then((m) => ({ default: m.SignUp })));
 const SignIn = lazy(() => import('./pages/SignIn').then((m) => ({ default: m.SignIn })));
 const VerifyOTP = lazy(() => import('./pages/VerifyOTP').then((m) => ({ default: m.VerifyOTP })));
 const WelcomeSignup = lazy(() => import('./pages/WelcomeSignup').then((m) => ({ default: m.WelcomeSignup })));
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword').then((m) => ({ default: m.ForgotPassword })));
-const AdminOverview = lazy(() => import('./pages/AdminOverview').then((m) => ({ default: m.AdminOverview })));
-const AdminPlaces = lazy(() => import('./pages/AdminPlaces').then((m) => ({ default: m.AdminPlaces })));
-const AdminAreas = lazy(() => import('./pages/AdminAreas').then((m) => ({ default: m.AdminAreas })));
+const AdminOverview = lazy(() => import('./pages/admin/Overview').then((m) => ({ default: m.Overview })));
+const AdminPlaces = lazy(() => import('./pages/admin/Places').then((m) => ({ default: m.Places })));
+const AdminAreas = lazy(() => import('./pages/admin/Areas').then((m) => ({ default: m.Areas })));
 const AreaDetailPage = lazy(() => import('./pages/AreaDetailPage').then((m) => ({ default: m.AreaDetailPage })));
 const AdminOrganisations = lazy(() =>
-  import('./pages/AdminOrganisations').then((m) => ({ default: m.AdminOrganisations }))
+  import('./pages/admin/Organisations').then((m) => ({ default: m.Organisations }))
 );
-const AdminActivities = lazy(() => import('./pages/AdminActivities').then((m) => ({ default: m.AdminActivities })));
-const AdminMembers = lazy(() => import('./pages/AdminMembers').then((m) => ({ default: m.AdminMembers })));
-const AdminGroups = lazy(() => import('./pages/AdminGroups').then((m) => ({ default: m.AdminGroups })));
-const AdminAuditLog = lazy(() => import('./pages/AdminAuditLog').then((m) => ({ default: m.AdminAuditLog })));
-const AdminReports = lazy(() => import('./pages/AdminReports').then((m) => ({ default: m.AdminReports })));
-const AdminSettings = lazy(() => import('./pages/AdminSettings').then((m) => ({ default: m.AdminSettings })));
-const AdminShop = lazy(() => import('./pages/AdminShop').then((m) => ({ default: m.AdminShop })));
+const AdminActivities = lazy(() => import('./pages/admin/Activities').then((m) => ({ default: m.Activities })));
+const AdminMembers = lazy(() => import('./pages/admin/Members').then((m) => ({ default: m.Members })));
+const AdminGroups = lazy(() => import('./pages/admin/Groups').then((m) => ({ default: m.Groups })));
+const AdminAuditLog = lazy(() => import('./pages/admin/AuditLog').then((m) => ({ default: m.AuditLog })));
+const AdminReports = lazy(() => import('./pages/admin/Reports').then((m) => ({ default: m.Reports })));
+const AdminSettings = lazy(() => import('./pages/admin/Settings').then((m) => ({ default: m.Settings })));
+const AdminShop = lazy(() => import('./pages/admin/Shop').then((m) => ({ default: m.Shop })));
 const AdminNotifications = lazy(() =>
-  import('./pages/AdminNotifications').then((m) => ({ default: m.AdminNotifications }))
+  import('./pages/admin/Notifications').then((m) => ({ default: m.Notifications }))
 );
 const OperatorOverview = lazy(() =>
   import('./pages/operator/Overview').then((m) => ({ default: m.Overview }))
@@ -210,9 +212,8 @@ const UserRequests = lazy(() => import('./pages/UserRequests').then((m) => ({ de
 const Messages = lazy(() => import('./pages/Messages').then((m) => ({ default: m.Messages })));
 const MessagesGate = lazy(() => import('./pages/Messages').then((m) => ({ default: m.MessagesGate })));
 const ShopManageRedirect = () => <Navigate to={organisationManagePath('shop')} replace />;
+const AgencyManageRedirect = () => <Navigate to={organisationManagePath('agency')} replace />;
 const OperatorManage = lazy(() => import('./pages/operator/Manage').then((m) => ({ default: m.Manage })));
-const ShopManage = lazy(() => import('./pages/ShopManage').then((m) => ({ default: m.ShopManage })));
-const AgencyManage = lazy(() => import('./pages/AgencyManage').then((m) => ({ default: m.AgencyManage })));
 const PlanPage = lazy(() => import('./plan/PlanPage').then((m) => ({ default: m.PlanPage })));
 const ProfileHistoryPage = lazy(() =>
   import('./pages/ProfileHistory').then((m) => ({ default: m.ProfileHistoryPage }))
@@ -254,6 +255,14 @@ const About = lazy(() => import('./pages/About').then((m) => ({ default: m.About
 const Contact = lazy(() => import('./pages/Contact').then((m) => ({ default: m.Contact })));
 const SiteMap = lazy(() => import('./pages/SiteMap').then((m) => ({ default: m.SiteMap })));
 const NotFound = lazy(() => import('./pages/NotFound').then((m) => ({ default: m.NotFound })));
+
+/** `/operator/{console}` aliases `/publishing/{console}`. Unknown slugs are not storefronts. */
+const OperatorPublishingAlias = () => {
+  const location = useLocation();
+  const rewritten = rewriteOperatorConsoleToPublishingPath(location.pathname);
+  if (!rewritten) return <NotFound />;
+  return <Navigate to={`${rewritten}${location.search}${location.hash}`} replace />;
+};
 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center">
@@ -539,14 +548,6 @@ function App() {
           />
           <Route path="/activity/:id" element={<ActivityDetail />} />
           <Route
-            path="/guide/:id"
-            element={
-              <ProtectedRoute>
-                <OrganisationProfile />
-              </ProtectedRoute>
-            }
-          />
-          <Route
             path="/agency/:id"
             element={
               <ProtectedRoute>
@@ -563,8 +564,8 @@ function App() {
             }
           />
           <Route path="/operator" element={<Navigate to={OPERATOR_OVERVIEW_PATH} replace />} />
-          <Route path="/operator/:id/*" element={<LegacyOperatorPath />} />
-          <Route path="/operator/:id" element={<LegacyOperatorPath />} />
+          <Route path="/operator/:id/*" element={<OperatorPublishingAlias />} />
+          <Route path="/operator/:id" element={<OperatorPublishingAlias />} />
           <Route
             path="/member/:userId"
             element={
@@ -573,9 +574,9 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path="/become-organizer" element={<BecomeHost />} />
-          <Route path="/become-host" element={<BecomeHost />} />
-          <Route path={MEMBERSHIP_MARKETING_PATH} element={<Membership />} />
+          <Route path="/become-organizer" element={<LegacyProMembershipRedirect />} />
+          <Route path="/become-host" element={<LegacyProMembershipRedirect />} />
+          <Route path={MEMBERSHIP_MARKETING_PATH} element={<Navigate to={EXPLORE_MAP_PATH} replace />} />
           <Route path="/shop" element={<ShopBrowseRoute />} />
           <Route
             path="/shop/:id"
@@ -852,7 +853,7 @@ function App() {
             path="/shop/manage"
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'merchant_admin']}>
-                <ShopManage />
+                <ShopManageRedirect />
               </ProtectedRoute>
             }
           />
@@ -860,7 +861,7 @@ function App() {
             path="/agency/manage"
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin']}>
-                <AgencyManage />
+                <AgencyManageRedirect />
               </ProtectedRoute>
             }
           />

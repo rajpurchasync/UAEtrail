@@ -10,14 +10,11 @@ import {
  * List main categories — **activities** (scheduled outings + demand), places, people, brands.
  * Map `topics` still uses explore wire `trips,looking` when activities category is selected.
  */
-export type BrowseMainCategoryKey = 'activities' | 'venues' | 'people' | 'guides' | 'agencies';
+export type BrowseMainCategoryKey = 'activities' | 'venues' | 'people' | 'agencies';
 
 /** Location-bounded catalog pins — trails, camps, outdoor venues, and gear shops. */
 export const mapItemMatchesBrowsePlacesCategory = (item: ExploreMapItemDTO): boolean =>
   isGeographyMapSource(item.source) || item.source === 'shop';
-
-const isGuideBrandItem = (item: ExploreMapItemDTO): boolean =>
-  item.source === 'agency' && item.path.includes('/guide/');
 
 const isAgencyBrandItem = (item: ExploreMapItemDTO): boolean =>
   item.source === 'agency' &&
@@ -41,10 +38,8 @@ export const mapItemMatchesBrowseMainCategory = (
       return mapItemMatchesBrowsePlacesCategory(item);
     case 'people':
       return false;
-    case 'guides':
-      return isGuideBrandItem(item);
     case 'agencies':
-      return isAgencyBrandItem(item) || (item.source === 'agency' && !isGuideBrandItem(item));
+      return isAgencyBrandItem(item);
     default:
       return false;
   }
@@ -99,6 +94,5 @@ export const BROWSE_MAIN_CATEGORY_LABELS: ReadonlyArray<{ key: BrowseMainCategor
   { key: 'activities', label: 'Activities' },
   { key: 'venues', label: 'Places' },
   { key: 'people', label: 'Buddies' },
-  { key: 'guides', label: 'Guides' },
   { key: 'agencies', label: 'Agencies' },
 ];

@@ -99,7 +99,7 @@ describe('buildActivityViewerAccess', () => {
       status: RequestStatus.WAITLISTED,
       note: null,
       selectedPackageIndex: null,
-      organizerNote: null,
+      hostNote: null,
       cancelReason: null,
       cancelMessage: null,
       cancelledAt: null,

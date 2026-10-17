@@ -103,7 +103,7 @@ export const ListCategoryMoreFiltersMenu = ({
   const showWhen = category === 'activities';
   const showDate = category === 'activities' && Boolean(onActivityDatePresetChange);
   const showArea =
-    category === 'venues' || category === 'guides' || category === 'agencies';
+    category === 'venues' || category === 'agencies';
 
   const reset = () => {
     setPrice('all');

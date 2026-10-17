@@ -46,9 +46,9 @@ import type { ContributeFlowStepId } from './ui/contributeFlow';
 
 import { getContributeFlowSteps } from './ui/contributeFlow';
 
-import type { DemandFlowStepId, DemandKind } from './ui/demandFlow';
+import type { DemandFlowStepId, DemandKind } from './ui/seekingFlowEngine';
 
-import { getDemandFlowSteps } from './ui/demandFlow';
+import { getDemandFlowSteps } from './ui/seekingFlowEngine';
 
 import type { CreateFlowStepId } from './ui/hostingFlowEngine';
 
@@ -78,15 +78,7 @@ export type ComposeWizardModule =
 
   | 'seekingFlow'
 
-  | 'contributeFlow'
-
-  /** @deprecated Use `hostingFlow`. */
-
-  | 'organizeFlow'
-
-  /** @deprecated Use `seekingFlow`. */
-
-  | 'demandFlow';
+  | 'contributeFlow';
 
 
 

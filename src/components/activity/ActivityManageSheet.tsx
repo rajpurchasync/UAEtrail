@@ -186,12 +186,12 @@ export const ActivityManageSheet = ({
   const decideRequest = async (
     requestId: string,
     status: 'approved' | 'rejected',
-    organizerNote?: string
+    hostNote?: string
   ) => {
     if (!tenantId || !activity) return;
     setBusyRequestId(requestId);
     try {
-      await decideActivityJoinRequest(tenantId, requestId, status, organizerNote);
+      await decideActivityJoinRequest(tenantId, requestId, status, hostNote);
       await afterHostJoinDecisionClientRefresh(queryClient, { activityId: activity.id, status });
       if (status === 'rejected') setDeclineRequest(null);
       await onRequestsChanged();
@@ -369,9 +369,9 @@ export const ActivityManageSheet = ({
         request={declineRequest}
         submitting={Boolean(declineRequest && busyRequestId === declineRequest.id)}
         onClose={() => setDeclineRequest(null)}
-        onConfirm={(organizerNote) => {
+        onConfirm={(hostNote) => {
           if (!declineRequest) return;
-          return decideRequest(declineRequest.id, 'rejected', organizerNote);
+          return decideRequest(declineRequest.id, 'rejected', hostNote);
         }}
       />
 

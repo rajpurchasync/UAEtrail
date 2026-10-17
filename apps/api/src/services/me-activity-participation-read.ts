@@ -19,7 +19,7 @@ const mapMeActivityJoinRequest = (
     id: string;
     status: RequestStatus;
     note: string | null;
-    organizerNote: string | null;
+    hostNote: string | null;
     cancelReason: string | null;
     cancelMessage: string | null;
     cancelledAt: Date | null;
@@ -32,7 +32,7 @@ const mapMeActivityJoinRequest = (
     id: request.id,
     status: request.status.toLowerCase(),
     note: request.note,
-    organizerNote: request.organizerNote,
+    hostNote: request.hostNote,
     cancelReason: request.cancelReason,
     cancelMessage: request.cancelMessage,
     cancelledAt: request.cancelledAt?.toISOString() ?? null,

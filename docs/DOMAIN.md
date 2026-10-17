@@ -257,7 +257,7 @@ Entry UI: Profile → **Pro Membership** (`/profile/pro-membership`; legacy `/be
 | Surface | Who it represents | Route |
 |---------|-------------------|-------|
 | **Member profile** | The **person** (participant or host human) | `/member/:userId` |
-| **Host public profile** | The **business or guide brand** (tenant) | `/guide/:slug`, `/agency/:slug`, `/partner/:slug` |
+| **Host public profile** | The **business** brand (tenant) | `/agency/:slug`, `/partner/:slug`, `/shop/:id` |
 | **Self hub** | Signed-in account settings | `/profile` |
 
 **Follow** and **map publish notifications** attach to the **user id** of whoever published (owner or guide user on the activity), not to the tenant slug. See [`COMMUNICATION.md`](./COMMUNICATION.md) and `profile-viewer-access` for peek visibility rules.
@@ -323,14 +323,14 @@ The route `/member/:userId` uses a user id in the URL (storage key). In UI, pref
 
 | Subtype | Role | Map pin? | Manage |
 |---------|------|----------|--------|
-| **Guide** | Individual host; public intro at `/guide/:slug` | No | `/host/*` console; buddy Organize via `canPublish` |
+| **Individual Pro** | Member with Pro membership; public intro at `/member/:userId` | No | `/publishing` console; buddy Organize via `canPublish` |
 | **Agency** | Business host; paid trips | No | `/host/*`, `/organisation/manage?kind=agency` |
 | **Shop** | Outdoor retail (pin + `/shop/:id`) | Physical pin typical | `/shop/:id` |
 | **E-commerce** (Business Pro) | Online-first retail | Optional pin | TBD |
 | **Hospitality** (Business Pro) | Hotels / venues | Often pin + campaigns | TBD |
 | **Partner** (Partner Pro) | Campaign host | Pin + feeds (future) | TBD |
 
-Shop identity: **tenant** (Pro Membership onboarding) + **merchant profile** (ShopManage), linked via `merchant_profiles.tenantId`.
+Shop identity: **tenant** (Pro Membership onboarding) + **merchant profile** (`/organisation/manage?kind=shop`), linked via `merchant_profiles.tenantId`.
 
 ## Legacy → domain naming
 
@@ -338,7 +338,7 @@ Shop identity: **tenant** (Pro Membership onboarding) + **merchant profile** (Sh
 |-------------|-------------------|--------------|
 | Location | **Place** (entity) | HTTP **`/places`** (legacy `/locations` alias); collection `locations`; `LocationDTO` — storage name only |
 | Venue | **Place** (word) | Explore panel `?panel=venues` — not a second entity; map `source: venue` normalizes to `place` |
-| Legacy operator URL | Retired host profile | `/operator/:id` → `/guide` / `/agency` / `/partner` / `/shop` (redirect) |
+| `/operator/{console}` | Publishing workspace alias | Reserved segments → `/publishing/{console}`; not a storefront |
 | Merchant | Shop | `merchant_profiles`, `/merchant/:id` redirect |
 | Organizer | Host or agency | — |
 | Tenant | Host (copy) / Organisation (code) | `tenants`, `x-tenant-id` |
@@ -347,14 +347,14 @@ Shop identity: **tenant** (Pro Membership onboarding) + **merchant profile** (Sh
 
 | File / export | Route | Notes |
 |---------------|-------|-------|
-| `OrganisationProfile` | `/guide/:id`, `/agency/:id`, `/partner/:id` | Public brand profile |
-| `pages/operator/Overview` (`Overview`) | `/operator/overview` | **Publishing console** hub |
-| `pages/operator/Activities` (`Activities`) | `/operator/activities` | Tenant activity list + manage sheet |
-| `pages/operator/JoinRequests` (`JoinRequests`) | `/operator/requests` | Activity join queue |
+| `OrganisationProfile` | `/agency/:id`, `/partner/:id` | Public business brand profile |
+| `pages/operator/Overview` (`Overview`) | `/publishing/overview` | **Publishing console** hub (`/operator/overview` aliases) |
+| `pages/operator/Activities` (`Activities`) | `/publishing/activities` | Tenant activity list + manage sheet |
+| `pages/operator/JoinRequests` (`JoinRequests`) | `/publishing/requests` | Activity join queue |
 | `pages/operator/Manage` (`Manage`) | `/organisation/manage` | Agency / shop tenant panels |
 | `ProfileProMembership` (`BecomeHost` legacy export) | `/profile/pro-membership` · redirects from `/become-host`, `/become-organizer` | Pro / agency / shop applications — **not** buddy Organize (`canPublish` via profile complete) |
 | `ShopPublic` | `/shop/:id` | Public shop host |
-| `AdminOrganisations` | `/admin/hosts` | Admin copy: **Hosts** |
+| `pages/admin/Organisations` (`Organisations`) | `/admin/hosts` | Admin copy: **Hosts** — folder is the namespace, not `AdminOrganisations.tsx` |
 
 **Code folder:** `src/components/organisation-console/` (implementation name). **UI:** organizer / guide / agency / shop per `workspaceVocabulary.ts`.
 
@@ -390,7 +390,7 @@ Every durable entity has a **stable UUID** in Mongo and a **canonical public rou
 | Entity | Collection / store | Primary id | Public route |
 |--------|-------------------|------------|--------------|
 | **User** (auth + profile) | `users` | `user.id` | `/member/:userId`, `/profile` (self) |
-| **Host** (publishing tenant) | `tenants` | `tenant.id` | `/guide/:slug`, `/agency/:slug`, `/partner/:slug` |
+| **Host** (publishing tenant) | `tenants` | `tenant.id` | `/agency/:slug`, `/partner/:slug`, `/shop/:id`; individuals `/member/:userId` |
 | **Place** (catalog) | `locations` | `location.id` | `/trail/:id`, `/camp/:id`, `/venue/:id` — map `source: place` |
 | **Facility** (amenity) | `facilities` | `facility.id` | `/facility/:id` — map `source: facility` |
 | **Area** (curated name) | `areas` | `area.id` | `/area/:slug` — **no map pin** |

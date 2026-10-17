@@ -4,7 +4,6 @@ export const LIST_CATEGORY_PAGE_TITLE: Record<BrowseMainCategoryKey, string> = {
   activities: 'Activities',
   venues: 'Places',
   people: 'Buddies',
-  guides: 'Guides',
   agencies: 'Agencies',
 };
 
@@ -19,9 +18,6 @@ export const listCategoryResultsLabel = (
   if (category === 'people') {
     const n = count.toLocaleString();
     return count === 1 ? 'Found 1 person' : `Found ${n} people`;
-  }
-  if (category === 'guides') {
-    return count === 1 ? 'Found 1 guide' : `Found ${count.toLocaleString()} guides`;
   }
   if (category === 'agencies') {
     return count === 1 ? '1 agency' : `${count.toLocaleString()} agencies`;

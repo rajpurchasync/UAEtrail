@@ -89,7 +89,7 @@ export const submitPublicActivityJoinRequest = async (input: {
     status: request.status.toLowerCase(),
     waitlisted,
     note: request.note,
-    organizerNote: request.organizerNote,
+    hostNote: request.hostNote,
     createdAt: request.createdAt,
     updatedAt: request.updatedAt,
   };
@@ -126,7 +126,7 @@ export const submitPublicActivityRsvp = async (input: {
       userId: request.userId,
       status: request.status.toLowerCase(),
       note: request.note,
-      organizerNote: request.organizerNote,
+      hostNote: request.hostNote,
       createdAt: request.createdAt,
       updatedAt: request.updatedAt,
     },

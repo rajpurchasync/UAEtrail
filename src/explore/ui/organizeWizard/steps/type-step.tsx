@@ -1,5 +1,5 @@
 import { OrganizeWizardChrome, OrganizeWizardStepNext } from '../OrganizeWizardChrome';
-import type { CreateActivityKind } from '../../organizeFlow';
+import type { CreateActivityKind } from '../../hostingFlowEngine';
 import { exploreFlowKindTileClass } from '../../exploreFlowUi';
 import { EXPLORE_FLOW } from '../../../../config/exploreTheme';
 import { ORGANIZE_TYPE_SHEET_TITLE } from '../../../createFlowCopy';

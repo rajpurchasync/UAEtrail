@@ -2,7 +2,6 @@ import { useCallback, useMemo } from 'react';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { memberHasUnlimitedDiscovery } from '@uaetrail/shared-types';
 import { usePeopleDiscoverySeekingActivities } from './usePeopleDiscoverySeekingActivities';
-import { useEntityFollows } from '@/hooks/useEntityFollows';
 import { useMemberPeopleNetworkPreview } from './useMemberPeopleNetworkPreview';
 import { useMemberDiscoveryRoster } from './useMemberDiscoveryRoster';
 import { useExplorePeopleAvailability } from './usePeopleAvailability';
@@ -45,7 +44,6 @@ export const useExplorePeopleBrowseBundle = ({
   );
   const peopleBrowsePanelOpen =
     browse.listMode === 'people' || (isDesktop && browse.peopleBrowseOpen);
-  const entityFollows = useEntityFollows(false);
   const memberAvailabilityEnabled =
     peopleBrowsePanelOpen && browse.peopleBrowseTab === 'available' && Boolean(user);
   const memberDiscoveryEnabled =
@@ -129,11 +127,6 @@ export const useExplorePeopleBrowseBundle = ({
     availabilityError: peopleAvailability.error,
     availabilityRange: peopleAvailability.range,
     onRefreshAvailability: () => void peopleAvailability.refresh(),
-    followedSegment: browse.followedSegment,
-    onFollowedSegmentChange: browse.applyFollowedSegment,
-    entityFollows: entityFollows.follows,
-    entityFollowsLoading: entityFollows.loading,
-    entityFollowsError: entityFollows.error,
     isSignedIn: Boolean(user),
     userRole: user?.role,
     canBrowseAllMembers,

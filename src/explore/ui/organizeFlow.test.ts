@@ -15,9 +15,9 @@ import {
   isHikingOrganizeFlow,
   isStructuredOrganizeFlow,
   validateDraftStep,
-} from '../ui/organizeFlow';
+} from '../ui/hostingFlowEngine';
 
-describe('organizeFlow', () => {
+describe('hostingFlowEngine', () => {
   it('skips difficulty and about_trail when a registry venue is selected', () => {
     const options = {
       placeLabelSource: 'registry' as const,

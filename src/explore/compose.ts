@@ -8,7 +8,7 @@ import {
   type PlanMode,
   type SeekingPlanKind,
 } from '@uaetrail/shared-types';
-import type { CreateActivityKind } from './ui/organizeFlow';
+import type { CreateActivityKind } from './ui/hostingFlowEngine';
 import type { ContributeVenueKind } from './contributeTypes';
 
 /** FAB create-route — Host · Seek · Add (`?compose=` wire). */

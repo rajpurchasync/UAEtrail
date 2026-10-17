@@ -258,13 +258,13 @@ export const activitiesApi = {
       tenantId: string,
       activityId: string,
       participantId: string,
-      organizerNote: string
+      hostNote: string
     ) =>
       apiRequest(`/publishing/activities/${activityId}/participants/${participantId}/revoke`, {
         method: 'POST',
         auth: true,
         headers: organisationRequestHeaders(tenantId),
-        body: JSON.stringify({ organizerNote }),
+        body: JSON.stringify({ hostNote }),
       }),
 
     rateActivityParticipant: (

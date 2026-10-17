@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { emptyDemandDraft } from './ui/demandFlow';
-import { emptyCreateActivityDraft } from './ui/organizeFlow';
+import { emptyDemandDraft } from './ui/seekingFlowEngine';
+import { emptyCreateActivityDraft } from './ui/hostingFlowEngine';
 import { curatedAreaSeedId, type PlaceDTO } from '@uaetrail/shared-types';
 import {
   demandPostVisibleOnMap,

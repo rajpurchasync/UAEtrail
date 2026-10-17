@@ -8,7 +8,7 @@ const read = (rel: string) => readFileSync(join(process.cwd(), rel), 'utf8');
 const NOTIFICATION_NAV_SURFACES = [
   'src/components/layout/NotificationBellPopover.tsx',
   'src/pages/Notifications.tsx',
-  'src/pages/AdminNotifications.tsx',
+  'src/pages/admin/Notifications.tsx',
   'src/pages/operator/Overview.tsx',
 ];
 

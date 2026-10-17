@@ -29,13 +29,13 @@ export const organisationApi = {
     tenantId: string,
     requestId: string,
     status: 'approved' | 'rejected',
-    organizerNote?: string
+    hostNote?: string
   ) =>
     apiRequest(`/publishing/requests/${requestId}`, {
       method: 'PATCH',
       auth: true,
       headers: organisationRequestHeaders(tenantId),
-      body: JSON.stringify({ status, organizerNote }),
+      body: JSON.stringify({ status, hostNote }),
     }),
 
   getOrganisationTeam: (tenantId: string) =>

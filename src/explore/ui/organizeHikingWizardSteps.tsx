@@ -16,7 +16,7 @@ import {
   resolveLimitedAudienceAccess,
   type ActivityDifficulty,
   type CreateActivityDraft,
-} from './organizeFlow';
+} from './hostingFlowEngine';
 import {
   formatParticipantMinAgeFieldValue,
   parseParticipantMinAgeFieldValue,
@@ -45,7 +45,7 @@ import {
 } from '../createFlowCopy';
 import { EXPLORE_FLOW } from '../../config/exploreTheme';
 import { exploreFlowChoiceCardClass } from './exploreFlowUi';
-import type { JoinMode, ParticipationMode } from './organizeFlow';
+import type { JoinMode, ParticipationMode } from './hostingFlowEngine';
 
 type PatchDraft = (patch: Partial<CreateActivityDraft>) => void;
 

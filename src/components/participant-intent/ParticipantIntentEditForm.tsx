@@ -7,7 +7,7 @@ import {
   updateSeekingPost,
 } from '../../hooks/seekingClientApi';
 import { useReloadExploreMap } from '../../hooks/useReloadExploreMap';
-import type { LocationPrecision } from '../../explore/ui/organizeFlow';
+import type { LocationPrecision } from '../../explore/ui/hostingFlowEngine';
 import {
   ParticipantIntentLocationEditor,
   validateParticipantIntentLocations,

@@ -22,7 +22,7 @@ import {
   usesHikingDemandFlow,
   type DemandDraft,
   type DemandKind,
-} from './demandFlow';
+} from './seekingFlowEngine';
 import { LinkRidesharePanel } from './LinkRidesharePanel';
 import { canLinkRideshareToActivity, parentMapKindMayOfferLinkedRideshare } from '../linkActivityRideshareOffer';
 

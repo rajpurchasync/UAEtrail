@@ -93,7 +93,7 @@ export const ActivityParticipantsPanel = ({
     navigate(`${MESSAGES_PATH}?to=${participant.userId}`);
   };
 
-  const handleRevokeConfirm = async (organizerNote: string) => {
+  const handleRevokeConfirm = async (hostNote: string) => {
     if (!tenantId || !revokeTarget) return;
     setRevokeSubmitting(true);
     try {
@@ -101,7 +101,7 @@ export const ActivityParticipantsPanel = ({
         tenantId,
         activityId,
         revokeTarget.id,
-        organizerNote
+        hostNote
       );
       setRevokeTarget(null);
       await loadParticipants();

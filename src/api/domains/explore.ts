@@ -1,4 +1,4 @@
-import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
+import type { ExploreMapItemDTO, ExploreMapOverlayDTO } from '@uaetrail/shared-types';
 import { apiRequest } from '../client';
 
 export type ExploreMapQueryParams = {
@@ -8,20 +8,34 @@ export type ExploreMapQueryParams = {
   area?: string | null;
 };
 
+const exploreMapSearch = (params?: ExploreMapQueryParams): string => {
+  const search = new URLSearchParams();
+  if (params?.bbox) search.set('bbox', params.bbox);
+  if (params?.cursor) search.set('cursor', params.cursor);
+  if (params?.limit != null) search.set('limit', String(params.limit));
+  if (params?.area) search.set('area', params.area);
+  return search.toString();
+};
+
 export const exploreApi = {
+  /** Public catalog — guest viewerAccess. Signed-in peek is `getExploreMapOverlay`. */
   getExploreMap: (params?: ExploreMapQueryParams) => {
-    const search = new URLSearchParams();
-    if (params?.bbox) search.set('bbox', params.bbox);
-    if (params?.cursor) search.set('cursor', params.cursor);
-    if (params?.limit != null) search.set('limit', String(params.limit));
-    if (params?.area) search.set('area', params.area);
-    const qs = search.toString();
+    const qs = exploreMapSearch(params);
     return apiRequest<{ data: { items: ExploreMapItemDTO[] } }>(
       qs ? `/explore/map?${qs}` : '/explore/map'
     );
   },
 
-  /** Published seeking outings — activity-discovery read for people **Looking for** (optional auth). */
+  /** Per-viewer peek/engagement for the public map catalog. */
+  getExploreMapOverlay: (params?: ExploreMapQueryParams) => {
+    const qs = exploreMapSearch(params);
+    return apiRequest<{ data: ExploreMapOverlayDTO }>(
+      qs ? `/me/discover/overlay?${qs}` : '/me/discover/overlay',
+      { auth: true }
+    );
+  },
+
+  /** Published seeking outings — public catalog for people **Looking for**. */
   getExploreSeekingActivities: () =>
     apiRequest<{ data: ExploreMapItemDTO[] }>('/explore/seeking-activities'),
 } as const;

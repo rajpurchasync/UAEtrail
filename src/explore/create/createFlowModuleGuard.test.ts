@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
@@ -31,16 +31,16 @@ describe('create flow module boundaries (CPC-9b)', () => {
     expect(engine).not.toMatch(/from ['"]\.\/demandFlow['"]/);
   });
 
-  it('organizeFlow.ts is a deprecated re-export of hostingFlowEngine', () => {
-    const stub = read('src/explore/ui/organizeFlow.ts');
-    expect(stub).toMatch(/hostingFlowEngine/);
-    expect(stub.length).toBeLessThan(400);
+  it('organizeFlow.ts duplicate shim is gone (COH-10)', () => {
+    expect(existsSync(join(ROOT, 'src/explore/ui/organizeFlow.ts'))).toBe(false);
+    expect(existsSync(join(ROOT, 'src/explore/ui/createOrganize'))).toBe(false);
+    expect(existsSync(join(ROOT, 'src/explore/ui/organizeFlows'))).toBe(false);
+    expect(existsSync(join(ROOT, 'src/explore/ui/hostingCatalog'))).toBe(false);
+    expect(existsSync(join(ROOT, 'src/explore/ui/CreateActivityFlow.tsx'))).toBe(false);
   });
 
-  it('demandFlow.ts is a deprecated re-export of seekingFlowEngine', () => {
-    const stub = read('src/explore/ui/demandFlow.ts');
-    expect(stub).toMatch(/seekingFlowEngine/);
-    expect(stub.length).toBeLessThan(400);
+  it('demandFlow.ts re-export shim is gone (COH-11)', () => {
+    expect(existsSync(join(ROOT, 'src/explore/ui/demandFlow.ts'))).toBe(false);
   });
 
   it('hostingFlows does not import seeking wizard', () => {
@@ -48,11 +48,6 @@ describe('create flow module boundaries (CPC-9b)', () => {
     expect(flows).not.toMatch(/demandFlow|seekingFlowEngine/);
   });
 
-  it('hostingCatalog path is a deprecated re-export stub only', () => {
-    const stub = read('src/explore/ui/hostingCatalog/index.ts');
-    expect(stub).toMatch(/hostingFlows/);
-    expect(stub.length).toBeLessThan(500);
-  });
 
   it('compose catalog maps hosting and seeking wizard modules', () => {
     const catalog = read('src/explore/composeFlowCatalog.ts');

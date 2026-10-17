@@ -15,7 +15,7 @@ export type ActivityParticipantRevokeDialogProps = {
   activityTitle: string;
   submitting?: boolean;
   onClose: () => void;
-  onConfirm: (organizerNote: string) => void | Promise<void>;
+  onConfirm: (hostNote: string) => void | Promise<void>;
 };
 
 export const ActivityParticipantRevokeDialog = ({
@@ -55,8 +55,8 @@ export const ActivityParticipantRevokeDialog = ({
       return;
     }
     setError(null);
-    const organizerNote = formatHostParticipantRevokeNote(reason, message.trim() || undefined);
-    await onConfirm(organizerNote);
+    const hostNote = formatHostParticipantRevokeNote(reason, message.trim() || undefined);
+    await onConfirm(hostNote);
   };
 
   const guestName = participant?.displayName ?? 'Guest';

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 const SCAN_ROOT = join(process.cwd(), 'src');
@@ -21,7 +21,6 @@ const EXPLORE_QUERY_ALLOWLIST = new Set([
 const LEGACY_OPERATOR_PATH_ALLOWLIST = new Set([
   'src/App.tsx',
   'src/config/platform.ts',
-  'src/pages/LegacyOperatorProfileRedirect.tsx',
   'src/config/routingHygiene.test.ts',
 ]);
 
@@ -105,7 +104,7 @@ describe('routingHygiene', () => {
     expect(violations).toEqual([]);
   });
 
-  it('app code does not link to retired /operator host profiles (use guide/agency/partner helpers)', () => {
+  it('app code does not link to retired /operator storefront URLs (use publisher / agency / shop helpers)', () => {
     const files = collectSourceFiles(SCAN_ROOT);
     const violations: string[] = [];
     const linkPattern =
@@ -116,7 +115,7 @@ describe('routingHygiene', () => {
       if (file.includes('/api/')) continue;
       const content = readFileSync(join(process.cwd(), file), 'utf8');
       if (linkPattern.test(content)) {
-        violations.push(`${file}: use hostBrandProfilePath / tenantBrandPublicPath / routingCatalog`);
+        violations.push(`${file}: use resolveActivityPublisherProfilePath / tenantBrandPublicPath / routingCatalog`);
       }
     }
 
@@ -180,6 +179,51 @@ describe('routingHygiene', () => {
       const content = readFileSync(join(process.cwd(), file), 'utf8');
       if (/(?:to|href)=["']\/demand\/|navigate\(\s*["']\/demand\//.test(content)) {
         violations.push(`${file}: demand uses explore pin paths, not /demand/:id`);
+      }
+    }
+
+    expect(violations).toEqual([]);
+  });
+
+  it('Navigate-only page shims are gone (COH-12)', () => {
+    const gone = [
+      'src/pages/ShopManage.tsx',
+      'src/pages/AgencyManage.tsx',
+      'src/pages/BecomeHost.tsx',
+      'src/pages/Membership.tsx',
+      'src/pages/MerchantPublic.tsx',
+      'src/explore/ui/ExploreComposeHost.tsx',
+    ];
+    expect(gone.filter((rel) => existsSync(join(process.cwd(), rel)))).toEqual([]);
+  });
+
+  it('App does not lazy-load Navigate-only page modules', () => {
+    const app = readFileSync(join(process.cwd(), 'src/App.tsx'), 'utf8');
+    expect(app).not.toMatch(/pages\/ShopManage/);
+    expect(app).not.toMatch(/pages\/AgencyManage/);
+    expect(app).not.toMatch(/pages\/BecomeHost/);
+    expect(app).not.toMatch(/pages\/Membership/);
+    expect(app).not.toMatch(/pages\/MerchantPublic/);
+  });
+
+  it('app code does not link to /shop/manage or /agency/manage (use organisationManagePath)', () => {
+    const allow = new Set([
+      'src/App.tsx',
+      'src/utils/authRedirect.ts',
+      'src/config/platform.ts',
+      'src/member/organisationPaths.ts',
+      'src/config/routingHygiene.test.ts',
+    ]);
+    const files = collectSourceFiles(SCAN_ROOT);
+    const violations: string[] = [];
+    const linkPattern =
+      /(?:to|href)=["']\/(?:shop|agency)\/manage|navigate\(\s*["']\/(?:shop|agency)\/manage/;
+
+    for (const file of files) {
+      if (allow.has(file) || file.includes('/api/')) continue;
+      const content = readFileSync(join(process.cwd(), file), 'utf8');
+      if (linkPattern.test(content)) {
+        violations.push(`${file}: use organisationManagePath()`);
       }
     }
 

@@ -40,6 +40,7 @@ describe('activity actor display', () => {
 
   it('section noun is Host vs Operator', () => {
     expect(exploreActivityPublisherSectionNoun('community')).toBe('Host');
+    expect(exploreActivityPublisherSectionNoun('pro_guide')).toBe('Host');
     expect(exploreActivityPublisherSectionNoun('agency')).toBe('Operator');
     expect(exploreActivityPublisherSectionNoun('shop')).toBe('Operator');
   });

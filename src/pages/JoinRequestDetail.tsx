@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Calendar, MapPin, MessageCircle } from 'lucide-react';
 import { activityHostName, activityHostUserId } from '../utils/hostLabels';
-import { WithdrawReason, withdrawReasonLabel } from '@uaetrail/shared-types';
+import { resolveHostNote, WithdrawReason, withdrawReasonLabel } from '@uaetrail/shared-types';
 import type { ActivityRequestView } from '../api/types';
 import {
   cancelJoinRequest,
@@ -113,6 +113,7 @@ export const JoinRequestDetail = () => {
   const canEdit = request.status === 'pending';
   const canWithdraw = ['pending', 'approved', 'waitlisted'].includes(request.status);
   const withdrawVariant = request.status === 'approved' ? 'activity' : 'request';
+  const hostNote = resolveHostNote(request);
 
   return (
     <MobileScreen title="Join request" backTo={MY_REQUESTS_PATH} backLabel="Requests">
@@ -167,12 +168,12 @@ export const JoinRequestDetail = () => {
         </GlassCard>
       )}
 
-      {request.organizerNote && (
+      {hostNote && (
         <GlassCard padding className="mb-4">
           <p className="text-xs font-bold uppercase tracking-wide text-neutral-400 mb-1">
             {request.status === 'rejected' ? 'Why you weren’t added' : 'From the host'}
           </p>
-          <p className="text-sm text-neutral-700 leading-relaxed">{request.organizerNote}</p>
+          <p className="text-sm text-neutral-700 leading-relaxed">{hostNote}</p>
         </GlassCard>
       )}
 

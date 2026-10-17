@@ -59,7 +59,7 @@ export const JoinRequests = () => {
     return requests;
   }, [filter, requests]);
 
-  const submitDecline = async (organizerNote: string) => {
+  const submitDecline = async (hostNote: string) => {
     if (!tenantId || !declineRequest) return;
     setBusyRequestId(declineRequest.id);
     try {
@@ -67,7 +67,7 @@ export const JoinRequests = () => {
         tenantId,
         declineRequest.id,
         'rejected',
-        organizerNote
+        hostNote
       );
       const activityId = declineRequest.activity?.id;
       if (activityId) {

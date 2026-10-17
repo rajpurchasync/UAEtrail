@@ -28,6 +28,27 @@ describe('activity publisher display', () => {
     ).toBe('/member/u-omar');
   });
 
+  it('pro individual posts use person name and member profile', () => {
+    expect(publishesActivityAsIndividual('pro_guide')).toBe(true);
+    expect(
+      resolveActivityPublisherDisplayName({
+        publishingProfileKind: 'pro_guide',
+        tenantName: 'Omar Guides',
+        person: {
+          guideName: 'Omar Al Hosani',
+          tenantName: 'Omar Guides',
+        },
+      })
+    ).toBe('Omar Al Hosani');
+    expect(
+      resolveActivityPublisherProfilePath({
+        publishingProfileKind: 'pro_guide',
+        tenantSlug: 'omar-guides',
+        hostUserId: 'u-omar',
+      })
+    ).toBe('/member/u-omar');
+  });
+
   it('agency posts use business name and host storefront URL', () => {
     expect(
       resolveActivityPublisherDisplayName({

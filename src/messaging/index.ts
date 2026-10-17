@@ -6,13 +6,13 @@
  * | Routes (stable URL) | `CHAT_PATH` / `MESSAGES_PATH`, `messagesToUserPath`, `messagesGroupPath` |
  * | UI label | "Chat" (not "Messages") |
  * | Inbox, DM, stream ticket, crew wall | `messagingApi` |
- * | Group metadata / members (non-thread CRUD) | `socialApi` |
+ * | Group metadata / members (non-thread CRUD) | `groupsApi` |
  * | Thread UI | `@/chat` (`src/components/chat`) |
  *
  * See `docs/COMMUNICATION.md` § Frontend architecture.
  */
 export { messagingApi } from '../api/domains/messaging';
-export { socialApi } from '../api/domains/social';
+export { groupsApi } from '../api/domains/groups';
 export {
   CHAT_PATH,
   MESSAGES_PATH,

@@ -659,7 +659,7 @@ const purgeDemandBookmarkWishlistRows = async (db: Db): Promise<void> => {
   });
   if (result.deletedCount > 0) {
     console.log(
-      `[mongo] Removed ${result.deletedCount} legacy demand bookmark row(s) from user_favorites (wishlist ≠ demand)`
+      `[mongo] Removed ${result.deletedCount} legacy demand bookmark row(s) from user_wishlist (wishlist ≠ demand)`
     );
   }
 };
@@ -670,6 +670,7 @@ export const runMongoMigrations = async (db: Db): Promise<void> => {
   await migrateCollectionNameIfNeeded(db, LEGACY_COLLECTIONS.EVENT_REQUESTS, COLLECTIONS.ACTIVITY_REQUESTS);
   await migrateCollectionNameIfNeeded(db, LEGACY_COLLECTIONS.EVENT_PARTICIPANTS, COLLECTIONS.ACTIVITY_PARTICIPANTS);
   await migrateCollectionNameIfNeeded(db, LEGACY_COLLECTIONS.ORGANIZER_APPLICATIONS, COLLECTIONS.HOST_APPLICATIONS);
+  await migrateCollectionNameIfNeeded(db, LEGACY_COLLECTIONS.USER_FAVORITES, COLLECTIONS.USER_WISHLIST);
 
   for (const name of [
     COLLECTIONS.ACTIVITY_REQUESTS,

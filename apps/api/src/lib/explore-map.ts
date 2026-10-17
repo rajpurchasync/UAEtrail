@@ -4,7 +4,6 @@ import { getRedisClient } from './redis.js';
 import {
   EXPLORE_MAP_CACHE_TTL_SEC,
   EXPLORE_MAP_REDIS_KEY,
-  invalidateExploreMapCache,
   clearExploreMapMemoryCache,
   exploreMapRedisPayloadExists,
   readExploreMapMemoryCache,
@@ -12,7 +11,6 @@ import {
 } from './explore-map-cache.js';
 import { buildExploreMapBasePayload } from './explore-map-base.js';
 
-export { invalidateExploreMapCache };
 export { scheduleExploreMapCacheInvalidation } from './explore-map-cache-schedule.js';
 export { buildExploreMapBasePayload } from './explore-map-base.js';
 

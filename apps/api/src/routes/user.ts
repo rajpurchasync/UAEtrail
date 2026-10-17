@@ -18,6 +18,7 @@ import { registerMeGoalsRoutes } from './user/registerMeGoalsRoutes.js';
 import { registerMeAvailabilityRoutes } from './user/registerMeAvailabilityRoutes.js';
 import { registerExploreAvailabilityRoutes } from './user/registerExploreAvailabilityRoutes.js';
 import { registerMeMapPinsRoutes } from './user/registerMeMapPinsRoutes.js';
+import { registerMeDiscoverOverlayRoutes } from './user/registerMeDiscoverOverlayRoutes.js';
 import { registerMeWishlistRoutes } from './user/registerMeWishlistRoutes.js';
 import { registerMeCoordinationAttentionRoutes } from './user/registerMeCoordinationAttentionRoutes.js';
 import { registerMemberStatusRoutes } from './user/registerMemberStatusRoutes.js';
@@ -32,6 +33,7 @@ import { registerPublicPlaceRoutes } from './user/registerPublicPlaceRoutes.js';
 import { registerPublicFacilityRoutes } from './user/registerPublicFacilityRoutes.js';
 import { registerPublicAreaRoutes } from './user/registerPublicAreaRoutes.js';
 import { registerPublicTenantRoutes } from './user/registerPublicTenantRoutes.js';
+import { registerReviewRoutes } from './user/registerReviewRoutes.js';
 
 export const userRouter = Router();
 
@@ -48,6 +50,7 @@ registerPublicTenantRoutes(userRouter);
 registerPublicActivityRoutes(userRouter);
 registerAccountLifecycleRoutes(userRouter);
 registerPublicMemberRoutes(userRouter);
+registerReviewRoutes(userRouter);
 
 userRouter.use(requireAuth, requireVerifiedEmail);
 
@@ -72,5 +75,6 @@ registerMeBadgesRoutes(userRouter);
 registerMeGoalsRoutes(userRouter);
 registerMeAvailabilityRoutes(userRouter);
 registerMeMapPinsRoutes(userRouter);
+registerMeDiscoverOverlayRoutes(userRouter);
 registerMeWishlistRoutes(userRouter);
 registerMeCoordinationAttentionRoutes(userRouter);

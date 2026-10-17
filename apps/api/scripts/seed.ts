@@ -178,7 +178,7 @@ const seedMobileInboxDemo = async (input: {
       },
       $setOnInsert: {
         _id: crypto.randomUUID(),
-        organizerNote: null,
+        hostNote: null,
         cancelReason: null,
         cancelMessage: null,
         cancelledAt: null,
@@ -879,7 +879,7 @@ const seedParticipant = async (activityId: string, userId: string, reviewerId: s
       $setOnInsert: {
         _id: requestId,
         note: null,
-        organizerNote: null,
+        hostNote: null,
         cancelReason: null,
         cancelMessage: null,
         cancelledAt: null,
@@ -1994,7 +1994,7 @@ Share your live location and carry extra water in summer months.`
       { _id: approvedRequest._id },
       {
         $set: {
-          organizerNote: 'Approved, see you on the trail.',
+          hostNote: 'Approved, see you on the trail.',
           updatedAt: new Date()
         }
       }
@@ -2015,7 +2015,7 @@ Share your live location and carry extra water in summer months.`
       },
       $setOnInsert: {
         _id: crypto.randomUUID(),
-        organizerNote: null,
+        hostNote: null,
         cancelReason: null,
         cancelMessage: null,
         cancelledAt: null,

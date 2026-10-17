@@ -11,7 +11,7 @@ import {
   type ActivityUpdateInput,
   type MongoActivityDoc
 } from './entity-builders.js';
-import { invalidateExploreMapCache } from './explore-map-cache.js';
+import { scheduleExploreMapCacheInvalidation } from './explore-map-cache-schedule.js';
 import {
   GROUP_REGION_LEVEL,
   readGroupRegionAtLevel,
@@ -196,7 +196,7 @@ export const updateActivityDetailed = async (
   }
 
   if (existing.status === ActivityStatus.PUBLISHED) {
-    await invalidateExploreMapCache();
+    scheduleExploreMapCacheInvalidation('activities-store.map_cache');
   }
 
   const updated = await findTenantActivityFromMongo(activityId, existing.tenantId);
@@ -226,7 +226,7 @@ export const cancelActivityById = async (activityId: string) => {
     throw new Error('Failed to cancel event.');
   }
   if (existing?.status === ActivityStatus.PUBLISHED) {
-    await invalidateExploreMapCache();
+    scheduleExploreMapCacheInvalidation('activities-store.map_cache');
   }
   return mapMongoActivityToPublishResult({ ...mongoDoc, status: ActivityStatus.CANCELLED });
 };
@@ -348,7 +348,7 @@ export const publishActivityById = async (activityId: string) => {
   if (!mongoDoc) {
     throw new Error('Failed to publish event.');
   }
-  await invalidateExploreMapCache();
+  scheduleExploreMapCacheInvalidation('activities-store.map_cache');
   const actorUserId = mongoDoc.hostId ?? mongoDoc.createdById;
   const { notifyMemberPublishSubscribers } = await import('../services/member-publish-notifications.js');
   void notifyMemberPublishSubscribers(actorUserId, {

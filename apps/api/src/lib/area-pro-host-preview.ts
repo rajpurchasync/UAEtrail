@@ -1,5 +1,5 @@
 /** Pro guide/agency storefronts tied to an area via **hosted outings** — not map pins. */
-import { hostBrandProfilePath } from '@uaetrail/shared-types';
+import { resolveActivityPublisherProfilePath } from '@uaetrail/shared-types';
 import { TenantBusinessMode } from '../domain/enums.js';
 import { listPublishedUpcomingActivitiesByArea } from './activities-store.js';
 import { findTenantsByIds } from './tenant-store.js';
@@ -43,8 +43,11 @@ export const listProHostStorefrontsForAreaPreview = async (
       slug: tenant.slug,
       profileKind,
       path:
-        hostBrandProfilePath(tenant.slug, profileKind) ??
-        `/guide/${encodeURIComponent(tenant.slug)}`,
+        resolveActivityPublisherProfilePath({
+          publishingProfileKind: profileKind,
+          tenantSlug: tenant.slug,
+          hostUserId: tenant.ownerId,
+        }) ?? `/member/${tenant.ownerId}`,
     });
     if (rows.length >= limit) break;
   }

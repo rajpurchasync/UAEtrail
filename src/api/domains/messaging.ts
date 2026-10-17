@@ -2,12 +2,12 @@
  * Product-facing messaging API — one inbox, two wire transports.
  *
  * - **Inbox + direct:** `/chat/*` (via `chatApi`)
- * - **Crew / group thread:** group wall under `/me/groups/.../wall` (via `socialApi`)
+ * - **Crew / group thread:** group wall under `/me/groups/.../wall` (via `groupsApi`)
  *
  * App code outside `src/api/` should import from `src/messaging` (not `api.getMessages`).
  */
 import { chatApi } from './chat.js';
-import { socialApi } from './social.js';
+import { groupsApi } from './groups.js';
 
 export const messagingApi = {
   getInbox: chatApi.getInbox,
@@ -25,9 +25,9 @@ export const messagingApi = {
   },
 
   crew: {
-    getWall: socialApi.getMeGroupWall,
-    markWallRead: socialApi.markMeGroupWallRead,
-    post: socialApi.createMeGroupWallPost,
-    toggleReaction: socialApi.toggleMeGroupWallReaction,
+    getWall: groupsApi.getMeGroupWall,
+    markWallRead: groupsApi.markMeGroupWallRead,
+    post: groupsApi.createMeGroupWallPost,
+    toggleReaction: groupsApi.toggleMeGroupWallReaction,
   },
 } as const;

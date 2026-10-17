@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Loader2, MessageSquare, Settings2, Users } from 'lucide-react';
-import { messagingApi, socialApi } from '../../messaging';
+import { groupsApi, messagingApi } from '../../messaging';
 import type {
   SocialGroupMemberView,
   SocialGroupView,
@@ -154,7 +154,7 @@ export const GroupChatThread = ({
     setError(null);
     try {
       const [detailRes, wallRes] = await Promise.all([
-        socialApi.getMeGroupDetail(groupId),
+        groupsApi.getMeGroupDetail(groupId),
         messagingApi.crew.getWall(groupId, { limit: WALL_INITIAL_LIMIT }),
       ]);
       setGroup(detailRes.data.group);

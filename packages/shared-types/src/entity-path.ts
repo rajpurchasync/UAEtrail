@@ -11,16 +11,15 @@ export type EntityRef =
   | {
       kind: 'organisation';
       slug: string;
-      /** Guide · agency · partner — required for canonical URLs when known. */
+      /** Agency · partner — required for canonical URLs when known. */
       brandProfileKind?: PublishingProfileKind;
     }
   | { kind: 'shop'; id?: string | null; merchantId?: string | null; slug?: string | null }
   | { kind: 'person'; userId: string };
 
-export const GUIDE_PROFILE_PATH_PREFIX = '/guide' as const;
 export const AGENCY_PROFILE_PATH_PREFIX = '/agency' as const;
 export const PARTNER_PROFILE_PATH_PREFIX = '/partner' as const;
-/** Legacy — redirect only; do not link in new UI. */
+/** Console prefix `/operator` — aliases `/publishing`. Not a public storefront. */
 export const LEGACY_OPERATOR_PROFILE_PATH_PREFIX = '/operator' as const;
 
 /** Default explore map target when a shop has no public id yet. */
@@ -89,7 +88,11 @@ export const shopPublicPath = (
   return `/shop/${encodeURIComponent(key)}`;
 };
 
-/** Public brand profile URL (guide · agency · partner · shop kinds). */
+/**
+ * Public **business** storefront URL (agency · shop · partner).
+ * Community and individual Pro (`pro_guide`) have no brand page — use
+ * {@link memberProfilePath} / {@link resolveActivityPublisherProfilePath}.
+ */
 export const hostBrandProfilePath = (
   tenantSlug?: string | null,
   kind: PublishingProfileKind = 'pro_guide'
@@ -99,12 +102,8 @@ export const hostBrandProfilePath = (
   if (kind === 'shop' || kind === 'ecommerce') return shopPublicPath({ slug });
   if (kind === 'agency' || kind === 'hospitality') return `${AGENCY_PROFILE_PATH_PREFIX}/${encodeURIComponent(slug)}`;
   if (kind === 'partner') return `${PARTNER_PROFILE_PATH_PREFIX}/${encodeURIComponent(slug)}`;
-  if (kind === 'community') return null;
-  return `${GUIDE_PROFILE_PATH_PREFIX}/${encodeURIComponent(slug)}`;
+  return null;
 };
-
-export const guideProfilePath = (tenantSlug?: string | null): string | null =>
-  hostBrandProfilePath(tenantSlug, 'pro_guide');
 
 export const agencyProfilePath = (tenantSlug?: string | null): string | null =>
   hostBrandProfilePath(tenantSlug, 'agency');
@@ -114,7 +113,7 @@ export const partnerProfilePath = (tenantSlug?: string | null): string | null =>
 
 /**
  * @deprecated Use {@link hostBrandProfilePath} with {@link PublishingProfileKind}.
- * Defaults to guide profile (not `/operator`).
+ * Individual kinds return null — use {@link memberProfilePath}.
  */
 export const organisationProfilePath = (
   tenantSlug?: string | null,
@@ -172,16 +171,21 @@ export const memberDiscoverProfilePath = (userId: string): string =>
 
 /**
  * @deprecated Prefer {@link resolveActivityPublisherProfilePath} for activities.
- * Without `brandProfileKind`, falls back to guide profile then member.
+ * Individuals resolve to `/member/:userId`; businesses use storefront helpers.
  */
 export const resolveOrganisationProfilePath = (opts: {
   tenantSlug?: string | null;
   hostUserId?: string | null;
   brandProfileKind?: PublishingProfileKind;
-}): string | null =>
-  (opts.brandProfileKind
-    ? hostBrandProfilePath(opts.tenantSlug, opts.brandProfileKind)
-    : hostBrandProfilePath(opts.tenantSlug, 'pro_guide')) ?? memberProfilePath(opts.hostUserId);
+}): string | null => {
+  if (opts.brandProfileKind === 'community' || opts.brandProfileKind === 'pro_guide') {
+    return memberProfilePath(opts.hostUserId);
+  }
+  if (opts.brandProfileKind) {
+    return hostBrandProfilePath(opts.tenantSlug, opts.brandProfileKind);
+  }
+  return memberProfilePath(opts.hostUserId) ?? hostBrandProfilePath(opts.tenantSlug, 'agency');
+};
 
 export type ResolveEntityPathOptions = {
   shopFallback?: string;
@@ -223,10 +227,8 @@ const PLACE_PATH_RE = /^\/(trail|camp|venue)\/([^/?#]+)/;
 const FACILITY_PATH_RE = /^\/facility\/([^/?#]+)/;
 const LEGACY_EVENT_PLACE_PATH_RE = /^\/event\/([^/?#]+)/;
 const ACTIVITY_PATH_RE = /^\/activity\/([^/?#]+)/;
-const GUIDE_PROFILE_PATH_RE = /^\/guide\/([^/?#]+)/;
 const AGENCY_PROFILE_PATH_RE = /^\/agency\/([^/?#]+)/;
 const PARTNER_PROFILE_PATH_RE = /^\/partner\/([^/?#]+)/;
-const LEGACY_OPERATOR_PATH_RE = /^\/operator\/([^/?#]+)/;
 const SHOP_PATH_RE = /^\/shop\/([^/?#]+)/;
 const MEMBER_PATH_RE = /^\/member\/([^/?#]+)/;
 
@@ -270,11 +272,6 @@ export const parseEntityRefFromPathname = (pathname: string): EntityRef | null =
     return { kind: 'activity', id: decodeURIComponent(activityMatch[1]) };
   }
 
-  const guideMatch = path.match(GUIDE_PROFILE_PATH_RE);
-  if (guideMatch) {
-    return parseOrganisationRef(decodeURIComponent(guideMatch[1]), 'pro_guide');
-  }
-
   const agencyMatch = path.match(AGENCY_PROFILE_PATH_RE);
   if (agencyMatch) {
     return parseOrganisationRef(decodeURIComponent(agencyMatch[1]), 'agency');
@@ -283,11 +280,6 @@ export const parseEntityRefFromPathname = (pathname: string): EntityRef | null =
   const partnerMatch = path.match(PARTNER_PROFILE_PATH_RE);
   if (partnerMatch) {
     return parseOrganisationRef(decodeURIComponent(partnerMatch[1]), 'partner');
-  }
-
-  const legacyOperatorMatch = path.match(LEGACY_OPERATOR_PATH_RE);
-  if (legacyOperatorMatch) {
-    return { kind: 'organisation', slug: decodeURIComponent(legacyOperatorMatch[1]) };
   }
 
   const shopMatch = path.match(SHOP_PATH_RE);

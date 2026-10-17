@@ -1,6 +1,6 @@
 /**
  * Plan → **seeking** wizard (`participant_intents`).
- * Engine: `seekingFlowEngine.ts` (`demandFlow.ts` re-exports for legacy imports).
+ * Engine: `seekingFlowEngine.ts`.
  */
 
 export type {

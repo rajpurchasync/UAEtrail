@@ -1,8 +1,8 @@
 import {
   activityDetailPath,
-  hostBrandProfilePath,
   inferHostStorefrontKindFromTenantWire,
   placeDetailPath,
+  resolveActivityPublisherProfilePath,
   shopPublicPath,
 } from '@uaetrail/shared-types';
 import { ReviewTargetType, TenantBusinessMode } from '../domain/enums.js';
@@ -90,14 +90,15 @@ const resolveTargetMetaFromContext = (
     };
   }
 
-  const brandPath = hostBrandProfilePath(
-    tenant.slug,
-    inferHostStorefrontKindFromTenantWire({
+  const brandPath = resolveActivityPublisherProfilePath({
+    publishingProfileKind: inferHostStorefrontKindFromTenantWire({
       type: tenant.type,
       businessMode: tenant.businessMode,
       publishingPurpose: tenant.publishingPurpose ?? null,
-    })
-  );
+    }),
+    tenantSlug: tenant.slug,
+    hostUserId: tenant.ownerId,
+  });
   return {
     targetLabel: tenant.name,
     targetPath: brandPath ? `${brandPath}${reviewsHash}` : EXPLORE_FALLBACK_PATH,

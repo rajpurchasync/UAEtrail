@@ -19,7 +19,7 @@ import {
 } from '../domain/participant-intent.js';
 import { findAuthUserById, findAuthUsersByIds } from './auth-users.js';
 import { ApiError } from './api-error.js';
-import { invalidateExploreMapCache } from './explore-map-cache.js';
+import { scheduleExploreMapCacheInvalidation } from './explore-map-cache-schedule.js';
 import { COLLECTIONS } from './collections.js';
 import { getMongoClient } from './mongo.js';
 import type { MongoActivityDoc } from './entity-builders.js';
@@ -169,7 +169,7 @@ export const createParticipantIntent = async (
     '../services/participant-intent-activity-readthrough.js'
   );
 
-  await invalidateExploreMapCache();
+  scheduleExploreMapCacheInvalidation('participant-intents.map_cache');
   const { notifyMemberPublishSubscribers } = await import('../services/member-publish-notifications.js');
   void notifyMemberPublishSubscribers(userId, {
     publishType: 'demand',
@@ -266,7 +266,7 @@ const patchSeekingActivityForOwner = async (
     areaId,
   });
 
-  await invalidateExploreMapCache();
+  scheduleExploreMapCacheInvalidation('participant-intents.map_cache');
   const refreshed = await findActivityDocInMongo(activity._id);
   if (!refreshed) return null;
   const user = await findAuthUserById(userId);
@@ -349,7 +349,7 @@ export const updateParticipantIntent = async (
 
   if (!updated) return null;
 
-  await invalidateExploreMapCache();
+  scheduleExploreMapCacheInvalidation('participant-intents.map_cache');
   const user = await findAuthUserById(userId);
   return mapDto(updated, user);
 };
@@ -375,7 +375,7 @@ export const cancelParticipantIntent = async (
     );
     await cancelSeekingActivityForIntent(seekingActivity._id);
 
-    await invalidateExploreMapCache();
+    scheduleExploreMapCacheInvalidation('participant-intents.map_cache');
     const { findActivityDocInMongo } = await import('./entity-sync.js');
     const refreshed = await findActivityDocInMongo(seekingActivity._id);
     if (!refreshed) return null;
@@ -401,7 +401,7 @@ export const cancelParticipantIntent = async (
   );
   await cancelSeekingActivityForIntent(resolveIntentPublishedActivityId(updated));
 
-  await invalidateExploreMapCache();
+  scheduleExploreMapCacheInvalidation('participant-intents.map_cache');
   const user = await findAuthUserById(updated.userId);
   return mapDto(updated, user);
 };
@@ -519,7 +519,7 @@ export const fulfillParticipantIntent = async (
     hostUserId,
   });
 
-  await invalidateExploreMapCache();
+  scheduleExploreMapCacheInvalidation('participant-intents.map_cache');
   const { findActivityDocInMongo } = await import('./entity-sync.js');
   const refreshed = await findActivityDocInMongo(seeking._id);
   if (!refreshed) return null;
@@ -732,7 +732,7 @@ export const backfillSeekingActivitiesForActiveIntents = async (options?: {
   }
 
   if (!options?.dryRun && created > 0) {
-    await invalidateExploreMapCache();
+    scheduleExploreMapCacheInvalidation('participant-intents.map_cache');
   }
 
   return { scanned: docs.length, created, skipped, errors };

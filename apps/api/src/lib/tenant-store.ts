@@ -121,8 +121,8 @@ export const writeTenantToMongo = async (row: TenantRecord): Promise<void> => {
   if (stamped.businessMode === TenantBusinessMode.SHOP) {
     const { syncMerchantProfileFromShopTenant } = await import('./shop-store.js');
     await syncMerchantProfileFromShopTenant(stamped);
-    const { invalidateExploreMapCache } = await import('./explore-map-cache.js');
-    await invalidateExploreMapCache();
+    const { scheduleExploreMapCacheInvalidation } = await import('./explore-map-cache-schedule.js');
+    scheduleExploreMapCacheInvalidation('tenant-store.shop_map_cache');
   }
 };
 

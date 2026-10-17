@@ -7,15 +7,15 @@ import {
 import { hostBrandProfilePath, memberProfilePath, shopPublicPath } from './entity-path.js';
 import type { PublishingProfileKind } from './publishing-profile-kind.js';
 
-/** Map Organize “publish as yourself” — person name + member profile; no storefront page. */
+/** Community and Pro individuals — person name + `/member/:userId`; no `/guide` storefront. */
 export const publishesActivityAsIndividual = (kind: PublishingProfileKind): boolean =>
-  kind === 'community';
+  kind === 'community' || kind === 'pro_guide';
 
 /** Consumer subtitle under publisher name on cards and list feed. */
 export const exploreActivityPublisherTypeLabel = (
   kind: PublishingProfileKind | null | undefined
 ): string => {
-  if (!kind || publishesActivityAsIndividual(kind)) return ORGANIZER_FALLBACK_DISPLAY_NAME;
+  if (!kind || kind === 'community') return ORGANIZER_FALLBACK_DISPLAY_NAME;
   switch (kind) {
     case 'pro_guide':
       return 'Professional';

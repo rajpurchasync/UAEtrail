@@ -53,8 +53,7 @@ export const COLLECTIONS = {
   ENTITY_FOLLOWS: 'entity_follows',
 
   // User data
-  /** Mongo collection name is legacy `user_favorites`; product term is wishlist. */
-  USER_WISHLIST: 'user_favorites',
+  USER_WISHLIST: 'user_wishlist',
   NOTIFICATIONS: 'notifications',
   /** Durable async work queue (MIG-OUTBOX); default path remains fire-and-forget until flag on. */
   SIDE_EFFECT_OUTBOX: 'side_effect_outbox',
@@ -78,6 +77,7 @@ export const LEGACY_COLLECTIONS = {
   EVENT_REQUESTS: 'event_requests',
   EVENT_PARTICIPANTS: 'event_participants',
   ORGANIZER_APPLICATIONS: 'organizer_applications',
+  USER_FAVORITES: 'user_favorites',
 } as const;
 
 export type CollectionName = (typeof COLLECTIONS)[keyof typeof COLLECTIONS];

@@ -1,7 +1,6 @@
 import type { ActivityDetailDTO, ReviewDTO } from '@uaetrail/shared-types';
 import {
-  hostBrandProfilePath,
-  publishesActivityAsIndividual,
+  resolveActivityPublisherProfilePath,
   type PublishingProfileKind,
 } from '@uaetrail/shared-types';
 import { placeReviewPath } from '../utils/placePaths';
@@ -46,19 +45,18 @@ export const buildParticipantPostCheckInReviewPrompts = (input: {
   }
 
   const kind: PublishingProfileKind = activity.publishingProfileKind ?? 'community';
-  if (
-    !publishesActivityAsIndividual(kind) &&
-    activity.tenantSlug?.trim()
-  ) {
-    const hostPath = hostBrandProfilePath(activity.tenantSlug, kind);
-    if (hostPath) {
-      prompts.push({
-        id: 'host',
-        label: 'Rate the host',
-        done: false,
-        href: `${hostPath}#reviews`,
-      });
-    }
+  const hostPath = resolveActivityPublisherProfilePath({
+    publishingProfileKind: kind,
+    tenantSlug: activity.tenantSlug,
+    hostUserId: activity.hostUserId,
+  });
+  if (hostPath) {
+    prompts.push({
+      id: 'host',
+      label: 'Rate the host',
+      done: false,
+      href: `${hostPath}#reviews`,
+    });
   }
 
   return prompts;

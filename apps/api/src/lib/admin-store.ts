@@ -756,8 +756,8 @@ export const updateAdminTenantStatus = async (id: string, status: TenantStatus) 
   await syncTenantMembershipStatusForTenant(id, status);
   const mapped = mapMongoTenant(result);
   if (mapped.businessMode === TenantBusinessMode.SHOP) {
-    const { invalidateExploreMapCache } = await import('./explore-map-cache.js');
-    await invalidateExploreMapCache();
+    const { scheduleExploreMapCacheInvalidation } = await import('./explore-map-cache-schedule.js');
+    scheduleExploreMapCacheInvalidation('admin-store.shop_tenant_status_map_cache');
   }
   return mapped;
 };

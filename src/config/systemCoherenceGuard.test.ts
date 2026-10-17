@@ -358,11 +358,11 @@ describe('systemCoherenceGuard', () => {
   });
 
   it('admin console pages guard mount fetches with useSafeAsyncEffect', () => {
-    const pagesDir = join(SRC, 'pages');
-    const adminPages = readdirSync(pagesDir).filter((name) => name.startsWith('Admin') && name.endsWith('.tsx'));
+    const pagesDir = join(SRC, 'pages', 'admin');
+    const adminPages = readdirSync(pagesDir).filter((name) => name.endsWith('.tsx'));
     const missing: string[] = [];
     for (const name of adminPages) {
-      const rel = `src/pages/${name}`;
+      const rel = `src/pages/admin/${name}`;
       const content = readFileSync(join(ROOT, rel), 'utf8');
       if (!content.includes('useSafeAsyncEffect')) {
         missing.push(rel);

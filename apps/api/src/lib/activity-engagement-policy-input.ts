@@ -176,7 +176,7 @@ export const buildDetailEngagementPolicyInput = (input: {
   });
 };
 
-/** `GET /explore/map` per-viewer enrich for activity pins. */
+/** Map peek policy input — guest enrich on `GET /explore/map`; member overlay on `GET /me/discover/overlay`. */
 export const buildMapPeekEngagementPolicyInput = (input: {
   viewerAccess: ActivityViewerAccessDTO;
   activity: NonNullable<import('@uaetrail/shared-types').ActivityDTO>;

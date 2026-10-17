@@ -1,11 +1,11 @@
 /**
  * **Hosting** activity wizard (publish scheduled `activities` row).
  *
- * - **Engine:** `hostingFlowEngine.ts` (`organizeFlow.ts` re-exports for legacy imports).
+ * - **Engine:** `hostingFlowEngine.ts`.
  * - **Per-kind flows:** `hostingFlows/*` (`HostingKindFlow` — not place/facility catalog).
  * - **UI:** `CreateHostingActivityFlow.tsx` via `create/hosting/HostingFlowHost.tsx`.
  *
- * **Plan** is FAB UI (hosting + seeking). **Seeking** → `seekingFlow.ts` / `seekingFlowEngine.ts`.
+ * FAB **Host** uses this tree. **Find crew** → `seekingFlow.ts` / `seekingFlowEngine.ts`.
  * Shared primitives → `createFlowShared.ts`.
  */
 

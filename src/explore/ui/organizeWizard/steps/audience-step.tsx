@@ -6,7 +6,7 @@ import {
 } from '../OrganizeWizardChrome';
 import { exploreFlowChoiceCardClass } from '../../exploreFlowUi';
 import { EXPLORE_FLOW } from '../../../../config/exploreTheme';
-import { type AudienceAccess, type JoinMode } from '../../organizeFlow';
+import { type AudienceAccess, type JoinMode } from '../../hostingFlowEngine';
 import { HIKE_APPROVAL_NO_SUBTITLE, HIKE_PRIVATE_EVENT_INFO } from '../../../createFlowCopy';
 import { PARTICIPATION_TOGGLE_QUESTION } from '../../../compose';
 import { HikingAudienceStepBody } from '../../organizeHikingWizardSteps';

@@ -83,7 +83,7 @@ interface OrganisationPublicProfileProps {
   backLabel?: string;
   /** When true (default), parent shell provides back/title — use GlassCard layout. */
   compact?: boolean;
-  /** Public storefront tab layout (S9) — only for `mode="public"` on `/guide` etc. */
+  /** Public storefront tab layout (S9) — only for `mode="public"` on `/agency` · `/partner`. */
   entityTabLayout?: boolean;
   publicDetailTab?: OrganisationPublicDetailTabId;
   onPublicDetailTabChange?: (tab: OrganisationPublicDetailTabId) => void;
@@ -187,11 +187,12 @@ export const OrganisationPublicProfile = ({
     tenantBrandPublicPath(
       {
         slug: tenant.slug ?? slug,
+        ownerId: tenant.ownerId,
         type: tenant.type,
         businessMode: tenant.businessMode,
       },
       slug
-    ) ?? `/guide/${slug}`;
+    ) ?? `/agency/${slug}`;
 
   const details = tenant.hostDetails ?? tenant.organizerDetails ?? {};
   const avgRating =

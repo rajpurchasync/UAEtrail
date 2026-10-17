@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getDemandFlowSteps } from './demandFlow';
+import { getDemandFlowSteps } from './seekingFlowEngine';
 
 describe('demandFlow steps', () => {
   it('find hiking matches FLOW-06', () => {

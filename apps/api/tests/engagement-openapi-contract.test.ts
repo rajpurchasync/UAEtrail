@@ -20,6 +20,8 @@ describe('engagement OpenAPI contract', () => {
       "'/me/goals/{id}'",
       "'/me/goals/active'",
       "'/me/export'",
+      "'/me/discover/overlay'",
+      "'/explore/map'",
     ];
     for (const path of required) {
       expect(source, `missing OpenAPI path ${path}`).toContain(path);

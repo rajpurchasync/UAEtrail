@@ -11,11 +11,17 @@
         "apps/api/src/lib/explore-map-bbox.ts",
         "apps/api/src/lib/explore-map-route.ts",
         "apps/api/src/lib/explore-map-viewer-access.ts",
+        "apps/api/src/lib/explore-map-cache-schedule.ts",
+        "apps/api/src/services/explore-map-overlay-read.ts",
         "apps/api/src/lib/discovery-card-projection.ts",
         "apps/api/src/lib/activity-engagement-policy-input.ts",
         "apps/api/src/services/explore-seeking-activities-read.ts"
       ],
-      "routeRegistrars": ["apps/api/src/routes/user/registerPublicActivityRoutes.ts"],
+      "routeRegistrars": [
+        "apps/api/src/routes/user/registerPublicActivityRoutes.ts",
+        "apps/api/src/routes/user/registerPublicPlaceRoutes.ts",
+        "apps/api/src/routes/user/registerMeDiscoverOverlayRoutes.ts"
+      ],
       "feDomains": ["src/api/domains/explore.ts"],
       "feRoots": [
         "src/explore",
@@ -133,7 +139,7 @@
         "apps/api/src/routes/user/registerFollowRoutes.ts",
         "apps/api/src/routes/user/registerGroupRoutes.ts"
       ],
-      "feDomains": ["src/api/domains/social.ts"],
+      "feDomains": ["src/api/domains/buddies.ts", "src/api/domains/groups.ts"],
       "feRoots": ["src/pages/Buddies.tsx", "src/pages/Groups.tsx"]
     },
     {
@@ -188,13 +194,18 @@
         "apps/api/src/routes/admin/registerAdminFacilityRoutes.ts"
       ],
       "feDomains": ["src/api/domains/facilities.ts", "src/hooks/memberCatalogSubmitClientApi.ts"],
-      "feRoots": ["src/place/adminFacilityPlaceAdapter.ts", "src/pages/AdminPlaces.tsx"]
+      "feRoots": ["src/place/adminFacilityPlaceAdapter.ts", "src/pages/admin/Places.tsx"]
     },
     {
       "id": "commerce",
       "label": "Commerce",
       "apiFiles": ["apps/api/src/routes/shop.ts"],
-      "routeRegistrars": ["apps/api/src/routes/shop.ts"],
+      "routeRegistrars": [
+        "apps/api/src/routes/shop.ts",
+        "apps/api/src/routes/shop/registerShopPublicRoutes.ts",
+        "apps/api/src/routes/shop/registerShopCheckoutRoutes.ts",
+        "apps/api/src/routes/shop/registerShopMerchantManageRoutes.ts"
+      ],
       "feDomains": ["src/api/domains/shop.ts"],
       "feRoots": ["src/pages/ShopPublic.tsx", "src/components/shop"]
     },
@@ -209,10 +220,9 @@
         "apps/api/src/lib/member-profile-views-store.ts"
       ],
       "routeRegistrars": [
-        "apps/api/src/routes/user/registerMemberDiscoveryRoutes.ts",
-        "apps/api/src/routes/social/registerSocialPeopleRoutes.ts"
+        "apps/api/src/routes/user/registerMemberDiscoveryRoutes.ts"
       ],
-      "feDomains": ["src/api/domains/account.ts", "src/api/domains/social.ts"],
+      "feDomains": ["src/api/domains/account.ts"],
       "feRoots": [
         "src/pages/MemberProfile.tsx",
         "src/people-discovery",
@@ -238,6 +248,7 @@
         "apps/api/src/routes/user/registerMeMapPinsRoutes.ts",
         "apps/api/src/routes/user/registerMeWishlistRoutes.ts",
         "apps/api/src/routes/user/registerEntityFollowRoutes.ts",
+        "apps/api/src/routes/user/registerReviewRoutes.ts",
         "apps/api/src/routes/user/registerMeCoordinationAttentionRoutes.ts"
       ],
       "feDomains": [
@@ -245,7 +256,9 @@
         "src/api/domains/goals.ts",
         "src/api/domains/member.ts",
         "src/api/domains/memberJourneyMap.ts",
-        "src/api/domains/social.ts"
+        "src/api/domains/wishlist.ts",
+        "src/api/domains/entityFollow.ts",
+        "src/api/domains/reviews.ts"
       ],
       "feRoots": [
         "src/pages/ProfileBadges.tsx",
@@ -305,6 +318,8 @@
         "apps/api/src/routes/admin/registerAdminHostApplicationRoutes.ts",
         "apps/api/src/routes/admin/registerAdminActivityModerationRoutes.ts",
         "apps/api/src/routes/admin/registerAdminPlaceRoutes.ts",
+        "apps/api/src/routes/admin/registerAdminFacilityRoutes.ts",
+        "apps/api/src/routes/admin/registerAdminAreaRoutes.ts",
         "apps/api/src/routes/admin/registerAdminMetricsRoutes.ts",
         "apps/api/src/routes/admin/registerAdminUserRoutes.ts",
         "apps/api/src/routes/admin/registerAdminTenantRoutes.ts",
@@ -319,18 +334,18 @@
       "feDomains": ["src/api/domains/admin.ts", "src/api/domains/safety.ts"],
       "feRoots": [
         "src/hooks/contentReportClientApi.ts",
-        "src/pages/AdminOverview.tsx",
-        "src/pages/AdminPlaces.tsx",
-        "src/pages/AdminAreas.tsx",
-        "src/pages/AdminOrganisations.tsx",
-        "src/pages/AdminActivities.tsx",
-        "src/pages/AdminMembers.tsx",
-        "src/pages/AdminGroups.tsx",
-        "src/pages/AdminAuditLog.tsx",
-        "src/pages/AdminReports.tsx",
-        "src/pages/AdminSettings.tsx",
-        "src/pages/AdminShop.tsx",
-        "src/pages/AdminNotifications.tsx",
+        "src/pages/admin/Overview.tsx",
+        "src/pages/admin/Places.tsx",
+        "src/pages/admin/Areas.tsx",
+        "src/pages/admin/Organisations.tsx",
+        "src/pages/admin/Activities.tsx",
+        "src/pages/admin/Members.tsx",
+        "src/pages/admin/Groups.tsx",
+        "src/pages/admin/AuditLog.tsx",
+        "src/pages/admin/Reports.tsx",
+        "src/pages/admin/Settings.tsx",
+        "src/pages/admin/Shop.tsx",
+        "src/pages/admin/Notifications.tsx",
         "src/components/layout/DashboardLayout.tsx",
         "src/constants/index.ts",
         "src/config/adminSurfacePaths.ts",
@@ -346,7 +361,7 @@
     { "prefix": "/shop", "file": "apps/api/src/routes/shop.ts" },
     { "prefix": "/media", "file": "apps/api/src/routes/media.ts" },
     { "prefix": "/safety", "file": "apps/api/src/routes/safety.ts" },
-    { "prefix": "/user+social", "file": "apps/api/src/routes/user.ts", "note": "user router + social router on /" }
+    { "prefix": "/", "file": "apps/api/src/routes/user.ts", "note": "member + public catalog + reviews on /" }
   ],
   "feDomainModules": [
     "account",
@@ -355,10 +370,13 @@
     "areas",
     "availability",
     "badges",
+    "buddies",
     "chat",
+    "entityFollow",
     "explore",
     "facilities",
     "goals",
+    "groups",
     "media",
     "member",
     "memberCommitmentHub",
@@ -369,9 +387,10 @@
     "placeCatalogClient",
     "placeRegistry",
     "places",
+    "reviews",
     "shop",
-    "social",
-    "safety"
+    "safety",
+    "wishlist"
   ],
   "removedProducts": {
     "trailPointsWallet": {
@@ -380,6 +399,15 @@
         "apps/api/src/routes/user/registerPublicRewardsRoutes.ts"
       ],
       "bannedFeDomains": ["src/api/domains/rewards.ts"]
+    },
+    "socialFacade": {
+      "bannedRouteFiles": [
+        "apps/api/src/routes/social.ts",
+        "apps/api/src/routes/social/index.ts",
+        "apps/api/src/routes/social/registerSocialReviewRoutes.ts",
+        "apps/api/src/routes/social/registerSocialPeopleRoutes.ts"
+      ],
+      "bannedFeDomains": ["src/api/domains/social.ts"]
     }
   }
 }

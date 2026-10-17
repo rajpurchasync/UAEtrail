@@ -166,7 +166,7 @@ export interface ActivityRequest {
   status: RequestStatus;
   note: string | null;
   selectedPackageIndex: number | null;
-  organizerNote: string | null;
+  hostNote: string | null;
   cancelReason: string | null;
   cancelMessage: string | null;
   cancelledAt: Date | null;

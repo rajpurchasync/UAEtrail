@@ -99,7 +99,7 @@ flowchart TB
 |---------|---------|-----|
 | **Follow (people)** | Host/crew updates in Social | `POST /me/following/:userId` — **buddies auto-follow** on accept |
 | **Follow (venue / brand)** | Alerts when something is published at a place or storefront | `POST /me/entity-follows` |
-| **Wishlist** | Private save — **venues + activities** to join later | `GET/POST /me/wishlist` (Mongo `user_favorites`) |
+| **Wishlist** | Private save — **venues + activities** to join later | `GET/POST /me/wishlist` (Mongo `user_wishlist`) |
 | **Goal** | Time-bounded count (e.g. N hikes by date) | `GET/POST /me/goals` — progress from outings + visited map pins |
 
 Detail: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §1.6.
@@ -153,7 +153,7 @@ All paths require a **signed-in user**. Upgrade entry: **`/profile/pro-membershi
 
 | Pro path | Who | Required choice | Storefront / capabilities (high level) |
 |----------|-----|-----------------|----------------------------------------|
-| **Individual** | Solo pro guide | — | `/guide/:slug` — manage **guide profile**; Organize **free + shared-cost** outings (not paid) |
+| **Individual** | Member with Pro membership | — | Public face **`/member/:userId`**; manage in **`/publishing`**. Organize **free + shared-cost** outings (not paid) |
 | **Business** | Company / brand | **Subtype required:** Shop · Tour agency · … | **Shop** → `/shop/:id` + shop details in console; **Agency** → `/agency/:slug` + agency profile; paid commercial trips where product allows |
 | **Partner** | Hotel / campaign partner | Detail later | Partner storefront + “What’s happening” campaigns (future) |
 
@@ -186,7 +186,7 @@ Trusted fields (year goal, upcoming list, etc.) appear only on **trusted** expos
 | Relationship | **buddy** / `social_graph`, `accepted_buddy` | Friends |
 | Directory quota | **member discovery**, `discover=1`, `memberDiscoverProfilePath` | Connect / discover |
 
-**Browse — member people (not chat):** Map People panel (`view=people`; legacy `view=social`) and list **Buddies** share `PeopleBrowseTabContent` (`PeopleBrowsePanel` on map). **Network roster:** `GET /me/member-discovery/network` — friends + followed; pill via `GET /me/member-discovery/network/preview`. **Discovery roster:** `GET /me/member-discovery/roster`; **directory:** `GET /me/member-discovery/browse`; **quota:** `GET /me/member-discovery/quota`; **search:** `GET /me/member-discovery/search`. Profile opens `GET /member/:userId/profile?from=discover` (**3 unique profiles / 30d**; Pro unlimited). **Chat** is [`COMMUNICATION.md`](./COMMUNICATION.md) (`/messages`, `/chat/*`). **Join me (participation):** `GET/POST /activities/:id/invites` — in-app nudge only; invitee still RSVPs or requests to join; host approval when required. See [`NAVIGATION.md`](./NAVIGATION.md) § Browse — people & crew and [`API_ROUTING.md`](./API_ROUTING.md).
+**Browse — member people (not chat):** Map People panel (`view=people`; legacy `view=social`) and list **Buddies** share `PeopleBrowseTabContent` (`PeopleBrowsePanel` on map). **Network roster:** `GET /me/member-discovery/network` — `segment=buddies` (UPL Friends; alias `friends`) + followed; pill via `GET /me/member-discovery/network/preview`. **Discovery roster:** `GET /me/member-discovery/roster`; **directory:** `GET /me/member-discovery/browse`; **quota:** `GET /me/member-discovery/quota`; **search:** `GET /me/member-discovery/search`. Profile opens `GET /member/:userId/profile?from=discover` (**3 unique profiles / 30d**; Pro unlimited). **Chat** is [`COMMUNICATION.md`](./COMMUNICATION.md) (`/messages`, `/chat/*`). **Join me (participation):** `GET/POST /activities/:id/invites` — in-app nudge only; invitee still RSVPs or requests to join; host approval when required. See [`NAVIGATION.md`](./NAVIGATION.md) § Browse — people & crew and [`API_ROUTING.md`](./API_ROUTING.md).
 
 **Profile view analytics (shipped):** views recorded on `GET /member/:userId/profile`; owners with host Pro/business see `GET /me/profile-view-stats`.
 
@@ -238,7 +238,7 @@ Product-facing **who is viewing** for **capabilities** (Organize, console, futur
 
 | Intent | Auth | Route family |
 |--------|------|----------------|
-| Browse map | Guest optional | `GET /explore/map`, `GET /activities/:id` |
+| Browse map | Guest catalog; member overlay | `GET /explore/map`, `GET /me/discover/overlay`, `GET /activities/:id` |
 | Profile, demand, inbox | Member | `GET/PATCH /me/*` |
 | Publish / manage outing | Member + tenant | `POST /host/activities`, `x-organisation-id` |
 | Public person | Optional | `GET /users/:id` (or member public profile) |
@@ -313,7 +313,7 @@ UI labels vs capabilities vs wire (do not duplicate in other docs — **update t
 | **Community tenant (buddy)** | Free individual publish path | `publishingPurpose: community`, auto tenant after profile complete |
 | **Publishing workspace** | Tenant-scoped publish/manage UI | Wire `/publishing/*` (alias `/operator/*`), `x-organisation-id`, `src/console/*` — shell title from `workspaceConsoleLabel(kind)` |
 | **Pro / business publishing** | Agency, shop, professional guide onboarding | `/profile/pro-membership`, HTTP `/me/pro-application` (collection `host_applications` until rename) |
-| **Activity join request** | Join a **published activity** (approval) | `activity_requests`, `/operator/requests` |
+| **Activity join request** | Join a **published activity** (approval) | `activity_requests` (`note` joiner → host, `hostNote` host decision); `/publishing/requests` (alias `/operator/requests`) |
 | **Demand join request** | Join a **Find** post (seeking **activity**) | **`activity_requests`** (canonical); `/me/seeking-posts/.../requests` for manage UI |
 | **Pro membership (apply)** | Pro/agency/shop onboarding | HTTP `/me/pro-application`; collection `host_applications` (target `pro_applications`) |
 | **Buddy connection (friends)** | Mutual link between **member accounts**; accept also creates **mutual follow** (`user_follows`, no separate follow notification) | `BuddySummaryDTO.userId` = other person’s user id (no “buddy id”) |
@@ -323,6 +323,7 @@ UI labels vs capabilities vs wire (do not duplicate in other docs — **update t
 |--------|-------------|
 | `registerHostJoinRequestRoutes` | `registerHostActivityRequestRoutes` |
 | “Join request” without **activity** or **demand** | Qualified phrase |
+| New writes of `organizerNote` | `hostNote` (`organizerNote` HTTP/Mongo read alias) |
 | `isHostRole` for Organize / publish gates | `publish.canPublish`, `canAccessPublishingWorkspace` from **`useMemberStatus`** |
 | `/become-host` in new UI | `PRO_MEMBERSHIP_PATH` or `/welcome` |
 | `OrganisationHubSections` / `useHostGate` | `ConsoleHubSections` (`src/console`), **`useMemberStatus`** |
@@ -340,7 +341,7 @@ Operator route registrars (legacy `registerHost*` filenames): under `routes/oper
 | Keep `Organisation*` | Why |
 |----------------------|-----|
 | `src/api/domains/organisation.ts`, `orgHeaders.ts`, `getOrganisation*` | Wire: tenant scope, `x-organisation-id` |
-| `pages/OrganisationProfile.tsx` | Public storefront `/guide` · `/agency` · `/partner` |
+| `pages/OrganisationProfile.tsx` | Public storefront `/agency` · `/partner` |
 | `components/organisation/*`, `ShopOrganisation*` | Agency / shop tenant UI |
 | `organisation-console/` (Pro flow, `OrganisationPublicProfile`) | Tenant onboarding + public profile editor — **not** `/host/*` shell |
 | Deprecated shims in `organisation-console/` (`OrganisationConsoleShell` → `src/console`) | Import compatibility only |
@@ -349,7 +350,7 @@ Operator route registrars (legacy `registerHost*` filenames): under `routes/oper
 |----------------------------------------------------|-------------|
 | `pages/OrganisationActivities`, `OrganisationConsoleOverview`, … | `src/pages/operator/*` |
 | `OrganisationActivityCheckInPanel`, `HostedSection` | `ActivityParticipantsPanel` in `src/components/activity/` |
-| Activity form modals + `ActivityFormSessionContext` | Explore **Organize** (`CreateActivityFlow`) |
+| Activity form modals + `ActivityFormSessionContext` | Explore **Host** wizard (`CreateHostingActivityFlow`) |
 | `useOrganisationGate` / `useOrganisationHubData` | **`useMemberStatus`** / `useConsoleHubData` |
 | `api.*OrganisationActivity*` / `legacyApi.ts` | Tenant-scoped activity methods on `activitiesApi` + tenant activity client (SN-3) |
 | `FavoriteDTO`, `getMeFavorites`, `/me/favorites`, `favorites-store` (guard: `wishlistNamingGuard.test.ts`) | `WishlistItemDTO`, `getMeWishlist`, `/me/wishlist`, `wishlist-store` |

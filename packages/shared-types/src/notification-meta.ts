@@ -65,4 +65,8 @@ export interface NotificationMeta {
   userId?: string;
   /** Wishlist row that triggered a geographic/category match alert. */
   wishlistItemId?: string;
+  /** Host decision / revoke message (COH-06). */
+  hostNote?: string;
+  /** @deprecated COH-06 — use {@link hostNote}. */
+  organizerNote?: string;
 }

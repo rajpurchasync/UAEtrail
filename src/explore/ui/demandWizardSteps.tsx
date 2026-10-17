@@ -8,7 +8,7 @@ import {
   type DemandFitnessLevel,
   type DemandKind,
   type DemandVehicleType,
-} from './demandFlow';
+} from './seekingFlowEngine';
 
 type PatchDraft = (patch: Partial<DemandDraft>) => void;
 

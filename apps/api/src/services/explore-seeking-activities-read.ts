@@ -3,7 +3,8 @@ import { loadExploreMapItemsForMemberEngagement } from '../lib/explore-map-membe
 
 /**
  * Published `activityMode: seeking` rows for people-discovery **Looking for** (and list Buddies).
- * Same assembler as `GET /explore/map`, filtered server-side — not a separate storage read.
+ * Same assembler as `GET /explore/map` (guest catalog), filtered server-side — not a separate storage read.
+ * Signed-in peek is `GET /me/discover/overlay`.
  */
 export const loadExploreSeekingActivitiesForViewer = async (input: {
   viewerUserId: string | null;

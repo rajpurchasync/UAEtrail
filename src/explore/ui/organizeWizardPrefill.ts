@@ -1,4 +1,4 @@
-import type { CreateActivityDraft } from './organizeFlow';
+import type { CreateActivityDraft } from './hostingFlowEngine';
 
 /** Prefill for explore organize wizards (demand fulfill or reorganize from a past activity). */
 export type OrganizeWizardPrefill = {

@@ -3,7 +3,7 @@ import {
   OrganizeWizardStepError,
   OrganizeWizardStepNext
 } from '../OrganizeWizardChrome';
-import { OFFLINE_PRICE_NOTE, priceModeLabel, priceModeOptions } from '../../organizeFlow';
+import { OFFLINE_PRICE_NOTE, priceModeLabel, priceModeOptions } from '../../hostingFlowEngine';
 import { validateOrganizePrice } from '../../hostingFlows/validateShared';
 import type { ReactNode } from 'react';
 import type { OrganizeWizardContext } from '../organizeWizardContext';

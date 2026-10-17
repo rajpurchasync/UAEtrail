@@ -15,7 +15,7 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 | **Plan tab** | `/plan` | Active layer — goals, upcoming outings (bottom nav middle tab; UI label **My Plans** — `PRODUCT_PLAN_SURFACE_TITLE`) |
 | **Mobile tabs (signed-in)** | `/explore`, `/plan`, `/chat` | **Three tabs only** — **Explore** · **My Plans** · **Chat** (`md:hidden`). **No List tab.** Map-aligned list from the **List** pill (`list=1`); discover browse from hamburger **Browse** (`browse=1`) or optional full-screen `/list` (`listDiscoveryPathFromExploreSearch()`), not bottom nav. **Facebook / Instagram / WhatsApp** icon row above tabs (`src/config/socialLinks.ts`); same bar on **`/profile`**, settings stack, **Friends**, **Contributions**, and related profile stack routes |
 | **Mobile tabs (guests)** | `/explore`, `/plan`, `/chat` | Same three tabs; **Explore** is the live map. **My Plans** and **Chat** show `GuestTabPlaceholder` + sign-in (`App.tsx` `PlanBrowseRoute`, `MessagesGate`) — not a second marketing home. **Profile** is not a tab; guests reach account flows via sign-in CTAs. |
-| **Entity detail** | `/trail`, `/camp`, `/venue`, `/activity`, `/shop`, `/guide`, `/agency`, `/partner`, `/area/:slug` | Place, scheduled outing, shop, brand profile, or curated **area** hub |
+| **Entity detail** | `/trail`, `/camp`, `/venue`, `/activity`, `/shop`, `/agency`, `/partner`, `/member/:userId`, `/area/:slug` | Place, scheduled outing, shop, brand profile, person card, or curated **area** hub |
 
 ### Profile hub (`/profile`)
 
@@ -35,7 +35,7 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 
 ### Member profile (`/member/:userId`)
 
-- **Person** surface (member card or trusted view) — not the business **storefront** (`/guide/:slug`, `/agency/:slug`, `/shop/:id`). Link from Who’s going, buddies, activity rosters.
+- **Person** surface (member card or trusted view) — not the business **storefront** (`/agency/:slug`, `/shop/:id`). Link from Who’s going, buddies, activity rosters. Individual Pro is the same `/member/:userId` page.
 - **Guests:** sign-in prompt; no public member card (policy P3). **Signed-in** viewers follow `profileVisibility` ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md) § Profile visibility).
 
 ### Plan (`/plan`)
@@ -62,12 +62,12 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 - **Main tabs (list surface):** History · My Map (`PROFILE_HISTORY_MAIN_TABS`).
 - **Manage & crew chat:** Hosted/joined **Manage outing** sheets and explore map peek **`open_crew_chat`** → **`/chat?group=<id>`**. See [`experiment/member-surfaces-implementation-plan.md`](./experiment/member-surfaces-implementation-plan.md) and [`COMMUNICATION.md`](./COMMUNICATION.md).
 
-### Publishing console (`/operator/*` routes)
+### Publishing console (`/publishing/*` routes)
 
-- **Canonical URL `/operator/*`** — product UI uses **Organizer workspace** (community / guide) or **Operator workspace** (agency / shop); capabilities from **`GET /me/status`** (`useMemberStatus`, `publish.*`). No `/host` or `/organizer` SPA trees. Tenant HTTP API: **`/operator/*` only**.
+- **Canonical SPA `/publishing/*`** — `/operator/{console}` aliases reserved console segments only (`rewriteOperatorConsoleToPublishingPath`). Product UI uses **Organizer workspace** (community / Pro) or **Operator workspace** (agency / shop); capabilities from **`GET /me/status`** (`useMemberStatus`, `publish.*`). No `/host` or `/organizer` SPA trees. Tenant HTTP API: **`/operator/*`** (alias `/publishing/*`). `/operator/:slug` is **not** a public storefront.
 - **Shell nav:** `OPERATOR_CONSOLE_LINKS` + `ConsoleShell` (`src/console/*`); route pages in `src/pages/operator/*`. Copy: `src/content/workspaceVocabulary.ts`.
-- **`/operator/overview`:** `ConsoleHubSections` — stats, **Up next** preview, header **Add activity** — not a second copy of the shell link list. Below that: **personal** shortcuts (trips as participant, **Chat** → `/chat`, explore map).
-- **Member profile (`/profile`):** consumer hub only; buddies open **Organizing** → `planHostedSchedulePath()` (hosted filter on `/plan`), not `/operator/overview`. Pro/agency/shop management remains `/operator/*`.
+- **`/publishing/overview`:** `ConsoleHubSections` — stats, **Up next** preview, header **Add activity** — not a second copy of the shell link list. Below that: **personal** shortcuts (trips as participant, **Chat** → `/chat`, explore map).
+- **Member profile (`/profile`):** consumer hub only; buddies open **Organizing** → `planHostedSchedulePath()` (hosted filter on `/plan`), not `/publishing/overview`. Pro/agency/shop management remains `/publishing/*`.
 
 ### Admin console (`/admin/*`)
 
@@ -80,19 +80,19 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 
 | Route | Page module | Sidebar (`ADMIN_LINKS`) | Job |
 |-------|-------------|-------------------------|-----|
-| `/admin/overview` | `AdminOverview` | Overview | Metrics + shortcuts |
-| `/admin/areas` | `AdminAreas` | Areas | Curated **names** (not map pins); country/state/region from geography |
-| `/admin/places` | `AdminPlaces` | Places | Trails, camps, event venues (`/admin/locations` → redirect) |
-| `/admin/activities` | `AdminActivities` | Activities | Outing moderation |
-| `/admin/facilities` | `AdminPlaces` (`catalogSegment=facility`) | Facilities | Amenity POIs (parking, toilet, …) — `facilities` collection, map `source: facility` |
-| `/admin/users` | `AdminMembers` | Users & Members | Member search, suspend, staff grant (`MEMBER_MODEL.md`) |
-| `/admin/hosts` | `AdminOrganisations` | Operators | Host / tenant applications (`/admin/organizers` → redirect) |
-| `/admin/groups` | `AdminGroups` | Groups | Platform groups |
-| `/admin/shop` | `AdminShop` | Shop | Shop catalog ops |
-| `/admin/reports` | `AdminReports` | Reports | Content reports queue |
-| `/admin/audit-log` | `AdminAuditLog` | Audit Log | Audit trail |
-| `/admin/settings` | `AdminSettings` | Broadcast | Platform broadcast / settings |
-| `/admin/notifications` | `AdminNotifications` | — (deep link / ops only) | Notification ops |
+| `/admin/overview` | `pages/admin/Overview` | Overview | Metrics + shortcuts |
+| `/admin/areas` | `pages/admin/Areas` | Areas | Curated **names** (not map pins); country/state/region from geography |
+| `/admin/places` | `pages/admin/Places` | Places | Trails, camps, event venues (`/admin/locations` → redirect) |
+| `/admin/activities` | `pages/admin/Activities` | Activities | Outing moderation |
+| `/admin/facilities` | `pages/admin/Places` (`catalogSegment=facility`) | Facilities | Amenity POIs (parking, toilet, …) — `facilities` collection, map `source: facility` |
+| `/admin/users` | `pages/admin/Members` | Users & Members | Member search, suspend, staff grant (`MEMBER_MODEL.md`) |
+| `/admin/hosts` | `pages/admin/Organisations` | Operators | Host / tenant applications (`/admin/organizers` → redirect) |
+| `/admin/groups` | `pages/admin/Groups` | Groups | Platform groups |
+| `/admin/shop` | `pages/admin/Shop` | Shop | Shop catalog ops |
+| `/admin/reports` | `pages/admin/Reports` | Reports | Content reports queue |
+| `/admin/audit-log` | `pages/admin/AuditLog` | Audit Log | Audit trail |
+| `/admin/settings` | `pages/admin/Settings` | Broadcast | Platform broadcast / settings |
+| `/admin/notifications` | `pages/admin/Notifications` | — (deep link / ops only) | Notification ops |
 | `/admin/login` | `SignIn` | — | Staff sign-in entry |
 
 ### Friends (`/buddies`)
@@ -240,7 +240,7 @@ Public scroll slots come from **`GET /activities/:id` → `presentation.consumer
 
 **Pin summaries (map projection):** `ActivityPeekCard` · `PlacePeekCard` compose shared **`MapPeekShell`** chrome (`MapPeekOverlay` on map); **View details** → consumer detail templates above. “Explore” is the `/explore` surface name only — not this module naming.
 
-**Map peek (activity pins):** Same outing as detail — **hero facts** · **Going** + **Rides & spots** strips (`mapPeekStrips` from L1 `resolveActivityEngagementPolicy` on `GET /explore/map`) · **footer actions** (`mapPeekActions` wire ids — join, crew chat, share/manage for host, withdraw/offer rideshare when entitled). Host **Manage** opens `ActivityManageSheet` on the map (participants view) without leaving `/explore`. Host **Share** opens `ActivityInviteShareSheet` (buddies + link) on peek, map list (`list=1` compact rows — `ExploreListRowWireFooter` + `ListFeedActionsProvider`), discover browse (`/list` / `browse=1`), and detail `plan_host_share` footer. Chips: **Joined** (participant), **N invited** (host/crew pending Join me invites via `pendingJoinInviteCount`), host row **My host profile** when `showHostSelfProfileLink`. Pro gates: roster mask + host profile upsell on people row (`entitlements`). **Authoritative matrix:** [`experiment/activity-detail-tabs-implementation-plan.md`](./experiment/activity-detail-tabs-implementation-plan.md) **§6**.
+**Map peek (activity pins):** Same outing as detail — **hero facts** · **Going** + **Rides & spots** strips (`mapPeekStrips` from L1 `resolveActivityEngagementPolicy` — guest on `GET /explore/map`, signed-in overlay `GET /me/discover/overlay`) · **footer actions** (`mapPeekActions` wire ids — join, crew chat, share/manage for host, withdraw/offer rideshare when entitled). Host **Manage** opens `ActivityManageSheet` on the map (participants view) without leaving `/explore`. Host **Share** opens `ActivityInviteShareSheet` (buddies + link) on peek, map list (`list=1` compact rows — `ExploreListRowWireFooter` + `ListFeedActionsProvider`), discover browse (`/list` / `browse=1`), and detail `plan_host_share` footer. Chips: **Joined** (participant), **N invited** (host/crew pending Join me invites via `pendingJoinInviteCount`), host row **My host profile** when `showHostSelfProfileLink`. Pro gates: roster mask + host profile upsell on people row (`entitlements`). **Authoritative matrix:** [`experiment/activity-detail-tabs-implementation-plan.md`](./experiment/activity-detail-tabs-implementation-plan.md) **§6**.
 
 **Crew gating:** roster, meeting point, crew chat gated on `viewerAccess.canAccessCrewSurfaces`. Pending viewers see published facts + join CTAs; crew blocks unlock after approval/RSVP. Welcome sheet: **Join group chat** · meeting on page when entitled. Deep link: `?joined=1`. **Host:** manage via wire **Manage** / `ActivityManageSheet` (not a public tab). Copy: `src/content/activityDetailCopy.ts` · engagement: `activityPeekEngagement.ts` · consumer layout guard: `src/config/activityDetailConsumerLayoutGuard.test.ts`.
 
@@ -270,7 +270,7 @@ Canonical paths only in **new UI**. Legacy URLs redirect in `src/App.tsx` — do
 | `/profile/plans` | `/plan` | 2026-Q4 |
 | `/rewards`, `/my-rewards`, `/trail-points` | `/profile/badges` | 2026-Q4 (Trail Points wallet removed; badges kept) |
 | `/community` | `/explore` (`COMMUNITY_PATH` — legacy Q&A feed removed) | 2026-Q4 |
-| `/membership` | `/explore` (`Membership.tsx`; not product home) | 2026-Q4 or fold |
+| `/membership` | `/explore` (`App.tsx` bookmark redirect; not product home) | 2026-Q4 |
 | `/organizer/*` | `/host/*` | 2026-Q4 |
 | `/become-organizer` | `/become-host` | 2026-Q4 |
 | `/become-host` | `/profile/pro-membership` | 2026-Q4 (Pro / agency / shop; buddy Organize uses `/welcome` + `canPublish`) |
@@ -280,7 +280,8 @@ Canonical paths only in **new UI**. Legacy URLs redirect in `src/App.tsx` — do
 | `/host/locations` | `/host/places` | 2026-Q4 |
 | `/event-spot/:id`, `/community-activity/:id`, `/event/:id` (place) | `/venue/:id` | 2026-Q4 |
 | `/people` | `/explore?…` people browse (`explorePeopleBrowsePath`) | 2026-Q4 |
-| `/merchant/:id` | legacy merchant page | TBD |
+| `/merchant/:id` | `/shop/:id` | 2026-Q4 |
+| `/shop/manage`, `/agency/manage`, `/merchant/dashboard` | `/organisation/manage?kind=shop` or `?kind=agency` | 2026-Q4 |
 | `/sign-up`, `/sign-in` | auth aliases | keep |
 
 **Personal commitments (active):** canonical **`/plan`** (`PLAN_PATH`). **Outing history:** **`/profile/history`**. Legacy **`TRIPS_PATH`** (`/trips`) redirects only — do not link in new UI.
@@ -309,7 +310,7 @@ Canonical paths only in **new UI**. Legacy URLs redirect in `src/App.tsx` — do
 | **Place (venue)** | `/venue/:id` | same as trail | — |
 | **Area** | `/area/:slug` | **Overview · Places · Activities** (`?tab=`); people preview on Overview | — |
 | **Shop** | `/shop/:id` | `EntityPublicDetailShell` — **About · Products · Location** (`?tab=`) | — |
-| **Agency / guide** | `/guide`, `/agency`, `/partner` | `EntityPublicDetailShell` — **About · Outings · Contact** (`?tab=`) | — |
+| **Agency / partner** | `/agency`, `/partner` | `EntityPublicDetailShell` — **About · Outings · Contact** (`?tab=`) | Individual Pro → `/member/:userId` |
 | **Member (person)** | `/member/:userId` | Profile card — not a tenant storefront | — |
 | **Goals** | — | Embedded on **Plan → Wishlist** (`planWishlistTabPath()`) | No `/goals` route |
 | **People (discovery)** | Explore `view=people` | Map panel **Find your crew** — **Available · Friends going · Everyone** | Legacy `/people` → explore people browse |

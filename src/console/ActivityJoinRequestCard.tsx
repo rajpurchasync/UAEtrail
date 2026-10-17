@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronDown, ChevronUp } from 'lucide-react';
+import { resolveHostNote } from '@uaetrail/shared-types';
 import type { ActivityRequestView } from '../api/types';
 import { resolveJoinRequestActivity } from '../utils/joinRequestActivity';
 import { GlassCard } from '../components/mobile/GlassCard';
@@ -42,6 +43,7 @@ export const ActivityJoinRequestCard = ({
   const activity = resolveJoinRequestActivity(request);
   const activityTitle = activity?.title || activity?.locationName || 'Activity';
   const activityDate = formatDate(activity?.date || activity?.startAt);
+  const hostNote = resolveHostNote(request);
 
   return (
     <GlassCard padding className="!p-3.5">
@@ -59,10 +61,10 @@ export const ActivityJoinRequestCard = ({
               {request.note}
             </p>
           )}
-          {request.organizerNote && !isPending && (
+          {hostNote && !isPending && (
             <p className="text-xs text-neutral-500 mt-1 italic">
               {request.status === 'rejected' ? 'Sent to guest: ' : 'Note to guest: '}
-              {request.organizerNote}
+              {hostNote}
             </p>
           )}
         </div>
@@ -75,7 +77,7 @@ export const ActivityJoinRequestCard = ({
         </span>
       </div>
 
-      {(request.note || request.organizerNote) && (
+      {(request.note || hostNote) && (
         <button
           type="button"
           onClick={() => setExpanded((open) => !open)}

@@ -45,13 +45,10 @@ export const loadExploreMapForViewer = (input: {
     userRole: input.userRole ?? null,
   });
 
-export const loadExploreSeekingActivitiesForMapViewer = (input: {
-  viewerUserId: string | null;
-  userRole?: string | null;
-}) =>
+export const loadExploreSeekingActivitiesForMapViewer = () =>
   loadExploreSeekingActivitiesForViewer({
-    viewerUserId: input.viewerUserId,
-    userRole: input.userRole ?? null,
+    viewerUserId: null,
+    userRole: null,
   });
 
 export const listPublicPlacesPaged = async (filters: LocationListFilters) => {

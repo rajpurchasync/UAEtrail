@@ -1,5 +1,5 @@
 import type { PlaceDTO } from '@uaetrail/shared-types';
-import type { ActivityDifficulty, CreateActivityDraft } from './organizeFlow';
+import type { ActivityDifficulty, CreateActivityDraft } from './hostingFlowEngine';
 import type { HostingKindFlow } from './hostingFlows';
 
 export const mapRegistryPlaceDifficulty = (

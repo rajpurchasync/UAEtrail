@@ -173,12 +173,31 @@ export const openApiSpec = swaggerJsdoc({
           }
         }
       },
+      '/explore/map': {
+        get: {
+          tags: ['Explore'],
+          summary: 'Public explore map catalog',
+          description:
+            'Guest discovery payload. Signed-in peek/engagement is `GET /me/discover/overlay`.',
+          responses: { 200: { description: 'Map items with guest viewerAccess.' } }
+        }
+      },
+      '/me/discover/overlay': {
+        get: {
+          tags: ['Explore', 'Members'],
+          summary: 'Signed-in explore map overlay',
+          description:
+            'Per-viewer `viewerAccess` keyed by public map item id. Not a second catalog.',
+          security: [{ bearerAuth: [] }],
+          responses: { 200: { description: 'Overlay items (`id` + `viewerAccess`).' } }
+        }
+      },
       '/me/wishlist': {
         get: {
           tags: ['Engagement', 'Members'],
           summary: 'List wishlist items',
           description:
-            'Private venue and activity saves (`user_favorites` collection). Not demand bookmarks or entity follows.',
+            'Private venue and activity saves (`user_wishlist` collection). Not demand bookmarks or entity follows.',
           security: [{ bearerAuth: [] }],
           responses: { 200: { description: 'Hydrated wishlist rows.' } }
         },

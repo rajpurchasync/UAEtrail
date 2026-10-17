@@ -10,7 +10,7 @@ import {
   formatOrganizePricePreview,
   resolveRideshareVehicleLabel,
   resolveActivityTopicLabel,
-} from '../../organizeFlow';
+} from '../../hostingFlowEngine';
 import { GOING_FROM_NOTES_PREVIEW_LABEL, JOIN_RULES_PREVIEW_LABEL, ORGANIZE_INTRO_PROMPT } from '../../../createFlowCopy';
 import { OrganizePinReviewLine, OrganizePublishPreviewBlock } from '../../organizeLocationReview';
 import type { ReactNode } from 'react';

@@ -55,7 +55,7 @@ const seedBuddyOnShawkaHike = async (guideId: string, reviewerId: string): Promi
       $setOnInsert: {
         _id: crypto.randomUUID(),
         note: 'Leading this one — listed as going for crew browse QA',
-        organizerNote: null,
+        hostNote: null,
         cancelReason: null,
         cancelMessage: null,
         cancelledAt: null,

@@ -71,5 +71,5 @@ export const UPL_JOIN_REQUEST = 'Join request';
 export const UPL_REQUEST_TO_JOIN = 'Request to join';
 export const UPL_IM_GOING = "I'm going";
 
-/** Withdraw copy — host is UPL; wire field remains organizer_note until MIG-COH-06 */
+/** Withdraw copy — host is UPL; BWL field is `hostNote`. */
 export const UPL_COMMENT_FOR_HOST = 'Comment for the host';

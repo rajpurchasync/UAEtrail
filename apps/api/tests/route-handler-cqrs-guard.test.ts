@@ -133,6 +133,7 @@ describe('route handler CQRS guard (MIG-CQRS-ROUTES)', () => {
       'apps/api/src/routes/user/registerPublicMemberRoutes.ts',
       'apps/api/src/routes/user/registerBuddyRoutes.ts',
       'apps/api/src/routes/user/registerMeWishlistRoutes.ts',
+      'apps/api/src/routes/user/registerReviewRoutes.ts',
       'apps/api/src/routes/user/registerEntityFollowRoutes.ts',
       'apps/api/src/routes/user/registerFollowRoutes.ts',
       'apps/api/src/routes/user/registerPublicPlaceRoutes.ts',
@@ -147,6 +148,7 @@ describe('route handler CQRS guard (MIG-CQRS-ROUTES)', () => {
       'apps/api/src/routes/user/registerMeSubmittedPlaceRoutes.ts',
       'apps/api/src/routes/user/registerMeFacilityRoutes.ts',
       'apps/api/src/routes/user/registerMeMapPinsRoutes.ts',
+      'apps/api/src/routes/user/registerMeDiscoverOverlayRoutes.ts',
       'apps/api/src/routes/user/registerGroupRoutes.ts',
       'apps/api/src/routes/operator/registerOperatorActivityRequestRoutes.ts',
       'apps/api/src/routes/operator/registerOperatorActivityParticipantRoutes.ts',
@@ -188,6 +190,12 @@ describe('route handler CQRS guard (MIG-CQRS-ROUTES)', () => {
     expect(registrar).toMatch(/activity-public-read/);
     expect(registrar).toMatch(/activity-participation-commands/);
     expect(listStoreImports('apps/api/src/routes/user/registerPublicActivityRoutes.ts')).toEqual([]);
+  });
+
+  it('discover overlay registrar wires explore-map-overlay-read', () => {
+    const registrar = readRegistrar('apps/api/src/routes/user/registerMeDiscoverOverlayRoutes.ts');
+    expect(registrar).toMatch(/explore-map-overlay-read/);
+    expect(listStoreImports('apps/api/src/routes/user/registerMeDiscoverOverlayRoutes.ts')).toEqual([]);
   });
 
   it('public member registrar wires member-public-read', () => {

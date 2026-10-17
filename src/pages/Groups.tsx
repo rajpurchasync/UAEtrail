@@ -23,14 +23,14 @@ import {
   acceptMeGroupInviteToken,
   createMeGroupInviteLink,
   createMeGroupKidMember,
-  createMeSocialGroup,
-  deleteMeSocialGroup,
+  createMeGroup,
+  deleteMeGroup,
   fetchMeGroupDetail,
-  fetchMeSocialGroups,
+  fetchMeGroups,
   removeMeGroupMember,
   updateMeGroupMemberActive,
   updateMeGroupMemberRole,
-} from '../hooks/socialGroupClientApi';
+} from '../hooks/groupClientApi';
 import { groupWallPostPolicyLabel, resolveGroupWallPostPolicy } from '../utils/groupWallPostPolicy';
 import {
   activityGroupChatPath,
@@ -125,7 +125,7 @@ export const Groups = () => {
     setLoading(true);
     setError(null);
     try {
-      const list = await fetchMeSocialGroups();
+      const list = await fetchMeGroups();
       setGroups(list);
       setSelectedGroupId((current) => {
         const fromUrl = searchParams.get('group');
@@ -268,7 +268,7 @@ export const Groups = () => {
     setSaving(true);
     setError(null);
     try {
-      const created = await createMeSocialGroup({
+      const created = await createMeGroup({
         type: groupForm.type,
         name: groupForm.name,
         slogan: groupForm.slogan || undefined,
@@ -291,7 +291,7 @@ export const Groups = () => {
     setSaving(true);
     setError(null);
     try {
-      await deleteMeSocialGroup(detail.group.id);
+      await deleteMeGroup(detail.group.id);
       setShowDeleteModal(false);
       setDeleteConfirmed(false);
       setDetail(null);

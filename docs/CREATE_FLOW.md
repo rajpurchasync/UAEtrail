@@ -14,7 +14,7 @@
 
 Companion docs: [`DOCS_INDEX.md`](./DOCS_INDEX.md), [`NORTHSTAR.md`](./NORTHSTAR.md), [`MEMBER_MODEL.md`](./MEMBER_MODEL.md), [`DOMAIN.md`](./DOMAIN.md), [`NAVIGATION.md`](./NAVIGATION.md), [`COMMUNICATION.md`](./COMMUNICATION.md), [`TRIPS_HOST_MANAGE.md`](./TRIPS_HOST_MANAGE.md), [`experiment/explore-ux-spec.md`](./experiment/explore-ux-spec.md).
 
-Code (today): `src/explore/compose.ts`, `CreateIntentSheet.tsx`, `SeekFlexibleComposeSheet.tsx`, `hostingFlow.ts`, `seekingFlow.ts`, `contributeFlow.ts` (legacy: `organizeFlow.ts`, `demandFlow.ts`).
+Code (today): `src/explore/compose.ts`, `CreateIntentSheet.tsx`, `SeekFlexibleComposeSheet.tsx`, `hostingFlow.ts` / `hostingFlowEngine.ts`, `seekingFlow.ts` / `seekingFlowEngine.ts`, `contributeFlow.ts`.
 
 **Status:** Spec **approved (CPC)** · **Host · Find crew · Add on map** FAB + compose wire wire **shipped** (legacy compose aliases retained; see [Implementation status](#implementation-status))
 
@@ -127,7 +127,7 @@ Any signed-in member — no host approval to post seeking.
 
 **Intent:** runs, climbs, workshops, social outings â€” fifth **outing category** (`activities`), not hiking/camp/event/rideshare.
 
-**Wizard:** `organize:activity` â†’ **FLOW-05** (step order in `organizeFlows/activities.ts`, UI in `organizeWizard/steps/`):
+**Wizard:** `host:activity` → **FLOW-05** (step order in `hostingFlows/activities.ts`, UI in `organizeWizard/steps/`):
 
 1. **Activity type** â€” chip (run, climb, yoga, social, â€¦) â†’ `outingTopic` on publish
 2. **Title** â†’ **When** â†’ **Where (meeting)** pin early
@@ -350,7 +350,7 @@ Track what is **spec** vs **shipped**. Update this table in the same PR that lan
 | Availability ↔ hosted (date + activity type; notify + FAB hosted preview) | ✅ | ✅ (`availability-hosted-match-notifications.ts`, `GET /me/availability/match-preview` → `hostedOutings` only) |
 | **Find crew → Available** tab (all members with future slots in range) | ✅ | ✅ (`GET /explore/people/availability` — not match-preview) |
 
-**Current code:** `/explore?compose=…` canonicalizes to **v3** (`host:hiking`, `seek:fixed:hiking`, `seek:flexible`, `add:place:hiking`, `add:facility:*`). **Aliases** on parse: `plan:*:hosting|seeking`, `contribute:*`, `organize:*`, `find:*`, `add:*`, plus legacy `request`, `contribute`, and `addLocation` query keys. Wizard modules remain `hostingFlow` / `seekingFlow` / `contributeFlow` (legacy filenames: `organizeFlow.ts`, `demandFlow.ts`).
+**Current code:** `/explore?compose=…` canonicalizes to **v3** (`host:hiking`, `seek:fixed:hiking`, `seek:flexible`, `add:place:hiking`, `add:facility:*`). **Aliases** on parse: `plan:*:hosting|seeking`, `contribute:*`, `organize:*`, `find:*`, `add:*`, plus legacy `request`, `contribute`, and `addLocation` query keys. One Host tree: `create/hosting` + `hostingFlowEngine` + `hostingFlows`. Seeking: `seekingFlowEngine` (no `demandFlow.ts` shim).
 
 ### Module naming (CPC-9a)
 
@@ -361,7 +361,7 @@ Track what is **spec** vs **shipped**. Update this table in the same PR that lan
 | **`Explore*` on hooks/components** | Map/browse shell only (`useExploreMapViewport`, pin peek). **Not** FAB compose — compose mounts on `/explore` **and** `/list`. |
 | **`src/explore/create/`** | Cross-surface compose: URL state, guards, `ComposeHost`, hosting prefill/reorganize. |
 | **Product verbs in shell props** | `hostWizardOpen` on `ComposeHost` (+ `planSeekingWizardOpen`, `contributeWizardOpen`); hook/model may still expose `planHostingWizardOpen` alias. Product = Host / Find crew / Add on map. |
-| **Wizard modules (catalog `wizard` field)** | `hostingFlow` → `hostingFlowEngine.ts` + `hostingFlows/*`; `seekingFlow` → `seekingFlowEngine.ts`. Facades: `hostingFlow.ts`, `seekingFlow.ts`. Legacy: `organizeFlow.ts`, `organizeFlows/`, `hostingCatalog/`, `demandFlow.ts`, `CreateActivityFlow.tsx`. |
+| **Wizard modules (catalog `wizard` field)** | `hostingFlow` → `hostingFlowEngine.ts` + `hostingFlows/*`; `seekingFlow` → `seekingFlowEngine.ts`. Facades: `hostingFlow.ts`, `seekingFlow.ts`. Removed (COH-10): `organizeFlow.ts`, `organizeFlows/`, `createOrganize/`, `hostingCatalog/`, `CreateActivityFlow.tsx`. |
 | **“Catalog” in code** | **Place/facility inventory only** (`GET */catalog`, Add-on-map submit). Per-kind **hosting** wizards = `hostingFlows` (`HostingKindFlow`) — not catalog. |
 | **“Plan” in code** | Bottom nav `/plan` (schedule + availability) — **not** the FAB. FAB wire: `host:*` \| `seek:*` \| `add:*` (aliases `plan:*:hosting|seeking`, `contribute:*`). |
 | **Compose flow ids** | Canonical v3 ids + legacy `plan.*` / `contribute.*` / `organize.*` / `find.*` / `add.*` via `composeFlowIds.ts`. |
@@ -383,7 +383,7 @@ One responsive stack — not separate mobile/desktop implementations.
 
 Hosting prefill (linked rideshare, reorganize from activity) → `create/hooks/useHostingWizardPrefill.ts` + `useHostingFromActivity.ts` — not `useExploreRideshareOrganizeLinks`.
 
-Host console **lists** outings on `/plan` hosted tab; **create on map** uses the same **plan hosting** wizard (`CreateActivityFlow.tsx`, `navigateToReorganizeActivity`). Admin catalog stays on `/admin/places`.
+Host console **lists** outings on `/plan` hosted tab; **create on map** uses the same Host wizard (`CreateHostingActivityFlow.tsx`, `navigateToReorganizeActivity`). Admin catalog stays on `/admin/places`.
 
 ---
 

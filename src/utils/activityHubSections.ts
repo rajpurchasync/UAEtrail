@@ -1,4 +1,4 @@
-import type { MyActivityDTO } from '@uaetrail/shared-types';
+import { resolveHostNote, type MyActivityDTO } from '@uaetrail/shared-types';
 import type { ActivityRequestView } from '../api/types';
 import { getRequestEventDate, isUpcomingActivity } from './activityDates';
 
@@ -67,7 +67,8 @@ export const rejectedRequests = (requests: ActivityRequestView[]) =>
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
 export const requestRecordMeta = (request: ActivityRequestView): string | null => {
-  if (request.organizerNote?.trim()) return `Host note: ${request.organizerNote.trim()}`;
+  const hostNote = resolveHostNote(request);
+  if (hostNote) return `Host note: ${hostNote}`;
   if (request.cancelReason === 'other' && request.cancelMessage?.trim()) {
     return request.cancelMessage.trim();
   }

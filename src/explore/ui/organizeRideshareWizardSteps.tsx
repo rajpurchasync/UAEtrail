@@ -16,7 +16,7 @@ import {
   resolveLimitedAudienceAccess,
   type CreateActivityDraft,
   type VehicleAccess,
-} from './organizeFlow';
+} from './hostingFlowEngine';
 import {
   formatParticipantMinAgeFieldValue,
   parseParticipantMinAgeFieldValue,

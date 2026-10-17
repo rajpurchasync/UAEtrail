@@ -32,11 +32,11 @@ export const ActivityDetailHostBuddiesHub = ({
   const [declineRequest, setDeclineRequest] = useState<ActivityRequestView | null>(null);
 
   const decideRequest = useCallback(
-    async (requestId: string, status: 'approved' | 'rejected', organizerNote?: string) => {
+    async (requestId: string, status: 'approved' | 'rejected', hostNote?: string) => {
       if (!tenantId) return;
       setBusyRequestId(requestId);
       try {
-        await decideActivityJoinRequest(tenantId, requestId, status, organizerNote);
+        await decideActivityJoinRequest(tenantId, requestId, status, hostNote);
         await afterHostJoinDecisionClientRefresh(queryClient, { activityId, status });
         if (status === 'rejected') setDeclineRequest(null);
         await onRequestsChanged();
@@ -83,9 +83,9 @@ export const ActivityDetailHostBuddiesHub = ({
         request={declineRequest}
         submitting={busyRequestId === declineRequest?.id}
         onClose={() => setDeclineRequest(null)}
-        onConfirm={(organizerNote) => {
+        onConfirm={(hostNote) => {
           if (!declineRequest) return;
-          void decideRequest(declineRequest.id, 'rejected', organizerNote);
+          void decideRequest(declineRequest.id, 'rejected', hostNote);
         }}
       />
     </div>

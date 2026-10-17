@@ -28,11 +28,11 @@ Catalog HTTP is **surface-first** (path + mount middleware), not **profile-first
 **Route map** — detail in [`API_ROUTING.md`](./API_ROUTING.md)
 
 - `/auth` — JWT + refresh
-- `/` (userRouter) — public `/activities`, `/explore/map`, `/me/*` (profile, **seeking-posts**, groups, inbox)
-- `/host` — tenant-scoped **activities**, check-in, activity join approvals (legacy alias `/organizer`)
+- `/` (userRouter) — public catalog (`/places`, `/activities`, `/explore/map`, **`/reviews`**), `/me/*` (profile, seeking-posts, groups, buddies, wishlist)
+- `/publishing` — tenant-scoped activities, check-in, join queue (`/operator` HTTP alias; no `/host` API)
 - `/admin` — platform ops (thin `admin.ts` → `routes/admin/registerAdmin*`; user management at `/admin/users`, staff grant at `/admin/platform-admins` for master admin)
 - `/shop` — shop profiles, featured picks, merchant CRUD (Stripe checkout retained but disabled in product)
-- `/social` — posts, reviews
+- `/safety` — member content reports (`POST /safety/reports`)
 - `/chat`, `/media`
 
 **Key flows**
@@ -41,7 +41,7 @@ Catalog HTTP is **surface-first** (path + mount middleware), not **profile-first
 2. **Post-event review** — host check-in triggers `REVIEW_PROMPT` notification if user has not reviewed the location.
 3. **Explore map** — unified `/explore/map` payload (`source`: **activity** · **place** · **facility** · **shop**; `agency` wire-compat). **Area** is an admin-curated name (`areaId` on rows) — not a pin. Country / state / region come from map geography. Seeking outings are **activities**, not a separate demand source.
 4. **Shop** — affiliate-style public pages at `/shop/:id` with outbound links; physical shops get map pins, online partners are list-only.
-5. **Publishing profiles** — guides and agencies publish trips (`/guide/:slug`, `/agency/:slug`); they do **not** appear as explore map pins.
+5. **Publishing profiles** — individuals publish as members (`/member/:userId`); agencies use `/agency/:slug`. They do **not** appear as explore map pins.
 6. **Push** — Web Push (VAPID) via `PushSubscription` model; optional when keys configured.
 7. **Communication** — Direct chat (`/chat`, SSE to client) and group/crew walls (`/me/groups/:id/wall` on `social_groups`). Activity crew: one group per activity, roster sync on join approve. Inbox previews on `GET /me/groups`. See [`COMMUNICATION.md`](./COMMUNICATION.md) and [`TRIPS_HOST_MANAGE.md`](./TRIPS_HOST_MANAGE.md).
 
@@ -56,9 +56,10 @@ See [`DOMAIN.md`](./DOMAIN.md) for the full glossary. Summary:
 | Area (admin-curated name) | `areas` | `/area/:slug` | **No** — filter `?area=` and hub page; country/state/region from geography |
 | Activity (hosted + seeking) | `activities` | `/activity/:id` | Yes (`source: activity`) |
 | Shop (organisation) | `tenants` (SHOP) + `merchant_profiles` | `/shop/:id` | Physical only (`source: shop`) |
-| Guide / agency (organisation) | `tenants` (guide/agency) | `/guide/:slug`, `/agency/:slug` | No |
+| Individual Pro | `tenants` (professional) + member | `/member/:userId` | No |
+| Agency (organisation) | `tenants` (agency) | `/agency/:slug` | No |
 
-Shop identity is split between **tenant** (Pro Membership / shop application: website, optional pin) and **merchant profile** (ShopManage: contact, featured picks). Saving in ShopManage syncs both and invalidates the explore map cache.
+Shop identity is split between **tenant** (Pro Membership / shop application: website, optional pin) and **merchant profile** (`/organisation/manage?kind=shop`: contact, featured picks). Saving there syncs both and invalidates the explore map cache.
 
 ## Frontend (`src`)
 

@@ -9,7 +9,6 @@ import {
   PROFILE_SUBMISSIONS_PATH,
   LEGACY_CONTRIBUTIONS_PATH,
   GROUPS_PATH,
-  MEMBERSHIP_MARKETING_PATH,
   MESSAGES_PATH,
   MY_REQUESTS_PATH,
   NOTIFICATIONS_PATH,
@@ -23,9 +22,9 @@ import {
   OPERATOR_PLACES_PATH,
   signUpPath,
 } from './surfacePaths';
-import { LEGACY_BECOME_HOST_PATH } from './memberRoutes';
+import { LEGACY_BECOME_HOST_PATH, PRO_MEMBERSHIP_PATH } from './memberRoutes';
 import {
-  GUIDE_PROFILE_PATH_PREFIX,
+  AGENCY_PROFILE_PATH_PREFIX,
   LEGACY_OPERATOR_PROFILE_PATH_PREFIX,
 } from '@uaetrail/shared-types';
 
@@ -74,7 +73,7 @@ export const DOMAIN_GLOSSARY = {
     storage: 'Tenant',
     api: '/publishing (alias /operator), /tenants/:slug',
     consoleRoute: '/publishing/*',
-    publicRoute: '/guide/:slug · /agency/:slug · /partner/:slug',
+    publicRoute: '/agency/:slug · /partner/:slug · /member/:userId (individuals)',
     manageRoute: '/organisation/manage',
   },
   Shop: {
@@ -95,10 +94,10 @@ export const DOMAIN_GLOSSARY = {
 /** Post-auth destination for landing “Join” CTA. */
 export const PARTICIPANT_JOIN_REDIRECT = EXPLORE_MAP_PATH;
 
-/** Default brand profile segment when kind is unknown (guide storefront). */
-export const ORGANISATION_PUBLIC_PATH_PREFIX = GUIDE_PROFILE_PATH_PREFIX;
+/** Default business storefront segment (agency). Individuals use `/member/:userId`. */
+export const ORGANISATION_PUBLIC_PATH_PREFIX = AGENCY_PROFILE_PATH_PREFIX;
 
-/** Retired `/operator` — redirect only; do not link in new UI. */
+/** `/operator` console prefix — aliases `/publishing`. Not a public storefront. */
 export const LEGACY_OPERATOR_PUBLIC_PATH_PREFIX = LEGACY_OPERATOR_PROFILE_PATH_PREFIX;
 
 /** @deprecated Use {@link LEGACY_OPERATOR_PUBLIC_PATH_PREFIX} */
@@ -213,7 +212,7 @@ export const FEATURE_FLAGS = {
 } as const;
 
 export const MEMBERSHIP_NAV_LINK = FEATURE_FLAGS.membershipEnabled
-  ? ({ to: MEMBERSHIP_MARKETING_PATH, label: 'Membership' })
+  ? ({ to: PRO_MEMBERSHIP_PATH, label: 'Pro membership' })
   : null;
 
 /** Shop: catalog, cart, and Stripe checkout (when configured). */
@@ -347,7 +346,6 @@ export const isConsumerEntityDetailRoute = (pathname: string): boolean =>
   isMobileDetailRoute(pathname) ||
   pathname.startsWith('/area/') ||
   /^\/shop\/[^/]+/.test(pathname) ||
-  pathname.startsWith('/guide/') ||
   pathname.startsWith('/agency/') ||
   pathname.startsWith('/partner/');
 
@@ -402,7 +400,6 @@ export const CONSUMER_SELF_HEADER_PREFIXES = [
   '/profile/',
   '/my-requests/',
   '/member/',
-  '/guide/',
   '/agency/',
   '/partner/',
   '/venue/',

@@ -6,13 +6,11 @@ import { PeopleBrowsePanelTabs } from './PeopleBrowsePanelTabs';
 import type { ExploreAvailablePersonDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { EXPLORE_PEOPLE_BROWSE_PANEL_TITLE } from '../../content/explorePeopleBrowseCopy';
 import type {
-  EntityFollowDTO,
   MemberBrowseCardDTO,
   MemberDiscoveryQuotaDTO,
   SocialPersonRowDTO,
 } from '@uaetrail/shared-types';
 import type { UserRole } from '@uaetrail/shared-types';
-import type { ExploreFollowedSegment } from '@/explore/ui/useExploreBrowseUrlState';
 import { PeopleBrowseSearchField, PeopleBrowseTabContent } from './peopleBrowse';
 
 export interface PeopleBrowsePanelProps {
@@ -49,11 +47,6 @@ export interface PeopleBrowsePanelProps {
   availabilityError?: string | null;
   availabilityRange?: { from: string; to: string };
   onRefreshAvailability?: () => void;
-  followedSegment: ExploreFollowedSegment;
-  onFollowedSegmentChange: (segment: ExploreFollowedSegment) => void;
-  entityFollows: EntityFollowDTO[];
-  entityFollowsLoading: boolean;
-  entityFollowsError: string | null;
   isSignedIn: boolean;
   userRole?: UserRole;
   canBrowseAllMembers?: boolean;

@@ -10,6 +10,8 @@ describe('user route mount shell', () => {
     expect(user).toMatch(/registerMemberDiscoveryRoutes/);
     expect(user).toMatch(/registerProfileRoutes/);
     expect(user).toMatch(/registerMeWishlistRoutes/);
+    expect(user).toMatch(/registerReviewRoutes/);
+    expect(user).toMatch(/registerMeDiscoverOverlayRoutes/);
     expect(user).not.toMatch(/userRouter\.(post|patch|delete)\(['"]\/me\//);
   });
 

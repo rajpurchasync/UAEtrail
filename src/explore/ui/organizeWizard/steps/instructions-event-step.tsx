@@ -3,7 +3,7 @@ import {
   OrganizeWizardStepError,
   OrganizeWizardStepNext
 } from '../OrganizeWizardChrome';
-import { CAPACITY_PRESETS, formatCapacityLabel } from '../../organizeFlow';
+import { CAPACITY_PRESETS, formatCapacityLabel } from '../../hostingFlowEngine';
 import { JOIN_RULES_LABEL } from '../../../createFlowCopy';
 import type { ReactNode } from 'react';
 import type { OrganizeWizardContext } from '../organizeWizardContext';

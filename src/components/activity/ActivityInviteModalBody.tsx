@@ -13,7 +13,7 @@ import {
 import {
   fetchActivityJoinInvitesSentInviteeIds,
   fetchMeBuddies,
-  fetchMeSocialGroups,
+  fetchMeGroups,
   sendActivityJoinInvitesToBuddies,
 } from '../../hooks/activityInviteClientApi';
 import { messagingApi } from '../../messaging';
@@ -91,7 +91,7 @@ export const ActivityInviteModalBody = ({
 
   const { data: groups = [], isLoading: groupsLoading } = useQuery({
     queryKey: meGroupsActivityInviteQueryKey,
-    queryFn: async () => userCreatedSocialGroups(await fetchMeSocialGroups()),
+    queryFn: async () => userCreatedSocialGroups(await fetchMeGroups()),
     enabled: Boolean(user) && active,
   });
 

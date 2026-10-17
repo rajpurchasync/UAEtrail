@@ -70,7 +70,11 @@ for (const file of registrarFiles) {
   const text = readFileSync(file, 'utf8');
   let m;
   while ((m = routePattern.exec(text)) !== null) {
-    pushEndpoint({ method: m[1].toUpperCase(), path: m[2], registrar: rel });
+    let path = m[2];
+    if (rel.includes('/routes/shop/')) {
+      path = joinMountPath('/shop', path);
+    }
+    pushEndpoint({ method: m[1].toUpperCase(), path, registrar: rel });
   }
   const services = [
     ...text.matchAll(/from\s+['"](\.\.\/)+services\/([^'"]+)['"]/g),
@@ -105,8 +109,6 @@ const routerToFile = {
   agentRouter: 'apps/api/src/routes/agent.ts',
   adminRouter: 'apps/api/src/routes/admin.ts',
   operatorRouter: 'apps/api/src/routes/operator.ts',
-  socialGraphRouter: 'apps/api/src/routes/social/index.ts',
-  socialRouter: 'apps/api/src/routes/social.ts',
   userRouter: 'apps/api/src/routes/user.ts',
 };
 

@@ -1,4 +1,4 @@
-import type { SocialPeopleSegment } from '@uaetrail/shared-types';
+import { normalizePeopleSegment, type SocialPeopleSegmentWire } from '@uaetrail/shared-types';
 import type { Router } from 'express';
 import { z } from 'zod';
 import { requireVerifiedEmail } from '../../middleware/auth.js';
@@ -29,7 +29,7 @@ const memberDiscoveryRosterQuerySchema = paginationSchema.extend({
 });
 
 const peopleNetworkSegmentSchema = z.object({
-  segment: z.enum(['all', 'friends', 'followed']).default('all'),
+  segment: z.enum(['all', 'buddies', 'followed', 'friends']).default('all'),
 });
 
 /** Member discovery — roster, directory, network, quota, search (MIG-ROUTING-CANON-P3). */
@@ -130,11 +130,11 @@ export const registerMemberDiscoveryRoutes = (router: Router): void => {
     validate({ query: peopleNetworkSegmentSchema }),
     async (req, res, next) => {
       try {
-        const { segment } = req.query as unknown as { segment: SocialPeopleSegment };
+        const { segment } = req.query as unknown as { segment: SocialPeopleSegmentWire };
         const data = await loadMemberPeopleNetworkRoster({
           viewerUserId: req.auth!.userId,
           userRole: req.auth!.role,
-          segment,
+          segment: normalizePeopleSegment(segment),
         });
         res.json({ data });
       } catch (error) {

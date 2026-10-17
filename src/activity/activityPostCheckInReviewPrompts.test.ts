@@ -11,6 +11,7 @@ const baseActivity = (): ActivityDetailDTO =>
     activityType: 'hiking',
     locationId: 'trail-1',
     tenantSlug: 'guide-co',
+    hostUserId: 'u-host',
     publishingProfileKind: 'pro_guide',
     status: 'published',
     date: '2026-12-01',
@@ -40,8 +41,8 @@ describe('buildParticipantPostCheckInReviewPrompts', () => {
       checkedIn: true,
     });
     expect(prompts.map((p) => p.id)).toEqual(['activity', 'place', 'host']);
-    expect(prompts[1]?.href).toContain('/trail/trail-1#reviews');
-    expect(prompts[2]?.href).toContain('#reviews');
+    expect(prompts[1]?.href).toBe('/place/trail-1#reviews');
+    expect(prompts[2]?.href).toBe('/member/u-host#reviews');
   });
 
   it('marks activity prompt done when viewer already reviewed', () => {

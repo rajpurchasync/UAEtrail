@@ -18,7 +18,7 @@ export const PEOPLE_BROWSE_TAB_LABELS: Record<PeopleBrowseTab, string> = {
 export const parsePeopleBrowseTab = (raw: string | null): PeopleBrowseTab => {
   if (raw === 'looking' || raw === 'available' || raw === 'going' || raw === 'connect') return raw;
   if (raw === 'all') return 'connect';
-  if (raw === 'friends' || raw === 'followed') return 'going';
+  if (raw === 'friends' || raw === 'buddies' || raw === 'followed') return 'going';
   if (raw === 'discover') return 'available';
   return 'looking';
 };

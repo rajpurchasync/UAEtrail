@@ -60,7 +60,7 @@ export const resolveActivityHeadlinePersonName = (input: ActivityActorNameInput)
 /** Peek / list publisher row — person for community & pro guide; operator brand for agency / shop. */
 export const resolveActivityPublisherRowPrimaryName = (input: ActivityActorNameInput): string => {
   const kind = input.publishingProfileKind ?? 'community';
-  if (publishesActivityAsIndividual(kind) || kind === 'pro_guide') {
+  if (publishesActivityAsIndividual(kind)) {
     return resolveActivityHeadlinePersonName(input);
   }
   return resolveActivityPublisherDisplayName({
@@ -74,6 +74,6 @@ export const resolveActivityPublisherRowPrimaryName = (input: ActivityActorNameI
 export const exploreActivityPublisherSectionNoun = (
   kind?: PublishingProfileKind | null
 ): 'Host' | 'Operator' => {
-  if (!kind || publishesActivityAsIndividual(kind) || kind === 'pro_guide') return 'Host';
+  if (!kind || publishesActivityAsIndividual(kind)) return 'Host';
   return 'Operator';
 };

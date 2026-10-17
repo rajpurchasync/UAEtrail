@@ -1,7 +1,7 @@
 import type { ActivityDTO, OutingTopic } from '@uaetrail/shared-types';
 import type { OrganizeComposeKind } from '../compose';
-import type { ActivityOrganizeTopic, CreateActivityDraft, CreateActivityKind } from './organizeFlow';
-import { emptyCreateActivityDraft, todayIso } from './organizeFlow';
+import type { ActivityOrganizeTopic, CreateActivityDraft, CreateActivityKind } from './hostingFlowEngine';
+import { emptyCreateActivityDraft, todayIso } from './hostingFlowEngine';
 
 const OUTING_TOPIC_TO_ACTIVITY_CHIP: Partial<Record<OutingTopic, ActivityOrganizeTopic>> = {
   climbing: 'climb',

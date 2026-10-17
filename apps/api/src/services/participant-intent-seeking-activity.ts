@@ -5,7 +5,7 @@ import { createActivityDetailed, createLocationRecord } from '../lib/activities-
 import { ensureBuddyHostTenant } from '../lib/buddy-host-tenant.js';
 import { parseLocalDateTime } from '../lib/datetime.js';
 import { patchActivityInMongo } from '../lib/entity-sync.js';
-import { invalidateExploreMapCache } from '../lib/explore-map-cache.js';
+import { scheduleExploreMapCacheInvalidation } from '../lib/explore-map-cache-schedule.js';
 import {
   normalizeRideshareRouteLabels,
   participantIntentKindToOutingCategory,
@@ -116,7 +116,7 @@ export const createSeekingActivityForIntent = async (
     ...(areaId ? { areaId } : {}),
   });
   if (!options?.deferCacheInvalidate) {
-    await invalidateExploreMapCache();
+    scheduleExploreMapCacheInvalidation('seeking-activity.create_map_cache');
   }
 
   return created.id;
@@ -127,5 +127,5 @@ export const cancelSeekingActivityForIntent = async (activityId: string | null |
   await patchActivityInMongo(activityId, {
     status: ActivityStatus.CANCELLED,
   });
-  await invalidateExploreMapCache();
+  scheduleExploreMapCacheInvalidation('seeking-activity.cancel_map_cache');
 };

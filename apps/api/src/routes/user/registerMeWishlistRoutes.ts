@@ -29,7 +29,7 @@ const wishlistPatchSchema = z.object({
   alertOnMatch: z.boolean(),
 });
 
-/** Personal wishlist — venues and activities only (`user_favorites` Mongo collection). */
+/** Personal wishlist — venues and activities only (`user_wishlist` Mongo collection). */
 export const registerMeWishlistRoutes = (router: Router): void => {
   router.get('/me/wishlist', async (req, res, next) => {
     try {

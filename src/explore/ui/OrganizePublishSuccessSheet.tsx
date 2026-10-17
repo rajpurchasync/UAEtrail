@@ -14,8 +14,8 @@ import {
   ORGANIZE_PUBLISH_SUCCESS_TITLE,
   ORGANIZE_PUBLISH_VIEW_CTA,
 } from '../createFlowCopy';
-import type { CreateActivityDraft, CreateActivityKind } from './organizeFlow';
-import { formatOrganizePricePreview, resolveOrganizeDifficultyLabel } from './organizeFlow';
+import type { CreateActivityDraft, CreateActivityKind } from './hostingFlowEngine';
+import { formatOrganizePricePreview, resolveOrganizeDifficultyLabel } from './hostingFlowEngine';
 import { canLinkRideshareToActivity } from '../linkActivityRideshareOffer';
 import { ActivityInviteLauncher } from '../../components/activity/ActivityInviteLauncher';
 import { activityShareInputFromActivity } from '../../utils/activityShare';

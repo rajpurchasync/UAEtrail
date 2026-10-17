@@ -66,7 +66,7 @@ export const listCategorySecondaryFiltersActive = (
   if (category === 'people') {
     return false;
   }
-  if (category === 'guides' || category === 'agencies') {
+  if (category === 'agencies') {
     return venueRegions.length > 0;
   }
   return false;
@@ -105,7 +105,7 @@ export const buildListCategoryPrimaryPills = (
     ];
   }
 
-  if (category === 'people' || category === 'guides' || category === 'agencies') {
+  if (category === 'people' || category === 'agencies') {
     return [];
   }
 

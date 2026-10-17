@@ -22,7 +22,7 @@ import { readExploreMapItemsFromCache, reloadExploreMap } from '../../hooks/useE
 import { isExploreMapBboxEnabled } from '../exploreMapBbox';
 import { invalidateMySeekingPostsQueries } from '../../hooks/seekingClientApi';
 import type { ContributeSubmitResult } from './contributeFlow';
-import type { DemandSubmitResult } from './demandFlow';
+import type { DemandSubmitResult } from './seekingFlowEngine';
 import type { useExploreBrowseUrlState } from './useExploreBrowseUrlState';
 import type { ActivityManageInitialView } from '../../components/activity/activityManageViews';
 import { buildExploreSelectionSelectedCard } from '../exploreSelectionSelectedCard';

@@ -1,8 +1,8 @@
 import type { PlaceDTO } from '@uaetrail/shared-types';
 import type { ExploreCardKind } from '../exploreCardModel';
 import type { OrganizeComposeKind } from '../compose';
-import type { CreateActivityDraft, CreateActivityKind } from './organizeFlow';
-import { emptyCreateActivityDraft } from './organizeFlow';
+import type { CreateActivityDraft, CreateActivityKind } from './hostingFlowEngine';
+import { emptyCreateActivityDraft } from './hostingFlowEngine';
 import { applyRegistryPlaceToOrganizeDraft } from './organizePlaceRegistryDraft';
 
 /** Map a place peek card kind to the organize FAB compose kind. */

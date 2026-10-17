@@ -6,6 +6,7 @@ import { requireOrgRole } from '../../middleware/tenant.js';
 import { validate } from '../../middleware/validate.js';
 import { decideTenantActivityJoinRequest } from '../../services/operator-activity-request-commands.js';
 import { listTenantActivityJoinRequests } from '../../services/operator-activity-request-read.js';
+import { resolveHostNote } from '@uaetrail/shared-types';
 import { activityRequestDecisionSchema, idParamSchema } from './operator-route-schemas.js';
 
 const hostRequestsQuerySchema = paginationSchema.extend({
@@ -43,13 +44,13 @@ export const registerOperatorActivityRequestRoutes = (operatorRouter: Router): v
       try {
         const tenantId = req.tenantContext!.tenantId;
         const { id } = req.params as z.infer<typeof idParamSchema>;
-        const { status, organizerNote } = req.body as z.infer<typeof activityRequestDecisionSchema>;
+        const body = req.body as z.infer<typeof activityRequestDecisionSchema>;
         const { status: decided } = await decideTenantActivityJoinRequest({
           tenantId,
           requestId: id,
           reviewerUserId: req.auth!.userId,
-          status,
-          organizerNote,
+          status: body.status,
+          hostNote: resolveHostNote(body) ?? undefined,
         });
         res.json({ message: `Request ${decided}.` });
       } catch (error) {

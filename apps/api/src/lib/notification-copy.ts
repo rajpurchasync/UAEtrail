@@ -13,16 +13,16 @@ export const formatWithdrawReasonText = (reason: string, message?: string | null
   return label;
 };
 
-export const buildJoinApprovedBody = (organizerNote?: string | null): string => {
-  const note = organizerNote?.trim();
+export const buildJoinApprovedBody = (hostNote?: string | null): string => {
+  const note = hostNote?.trim();
   if (note) {
     return `You're in — join activity chat. From the host: ${note}`;
   }
   return "You're in — join activity chat.";
 };
 
-export const buildJoinRejectedBody = (organizerNote?: string | null): string => {
-  const note = organizerNote?.trim();
+export const buildJoinRejectedBody = (hostNote?: string | null): string => {
+  const note = hostNote?.trim();
   if (note) {
     return `The host couldn't add you to this activity. From the host: ${note}`;
   }
@@ -31,9 +31,9 @@ export const buildJoinRejectedBody = (organizerNote?: string | null): string => 
 
 export const buildParticipantRevokedBody = (
   activityTitle: string,
-  organizerNote?: string | null
+  hostNote?: string | null
 ): string => {
-  const note = organizerNote?.trim();
+  const note = hostNote?.trim();
   if (note) {
     return `The host removed you from "${activityTitle}". From the host: ${note}`;
   }

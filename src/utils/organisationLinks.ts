@@ -1,6 +1,6 @@
 import {
-  hostBrandProfilePath,
   inferHostStorefrontKindFromTenantWire,
+  resolveActivityPublisherProfilePath,
 } from '@uaetrail/shared-types';
 
 export {
@@ -8,7 +8,6 @@ export {
   organisationProfilePath,
   resolveOrganisationProfilePath,
   hostBrandProfilePath,
-  guideProfilePath,
   inferHostStorefrontKindFromTenantWire,
 } from '@uaetrail/shared-types';
 
@@ -23,18 +22,22 @@ export { resolveOrganisationProfilePath as resolveHostProfilePath } from '@uaetr
 
 export type TenantWireForPublicPath = {
   slug?: string | null;
+  ownerId?: string | null;
   type?: string | null;
   businessMode?: string | null;
   publishingPurpose?: string | null;
 };
 
-/** Canonical public URL for a host tenant (guide · agency · partner · shop). */
+/** Canonical public URL — `/member/:userId` for individuals; agency/shop/partner storefronts for businesses. */
 export const tenantBrandPublicPath = (
   tenant: TenantWireForPublicPath,
   slugFallback?: string | null
 ): string | null => {
   const slug = tenant.slug?.trim() || slugFallback?.trim();
-  if (!slug) return null;
   const kind = inferHostStorefrontKindFromTenantWire(tenant);
-  return hostBrandProfilePath(slug, kind);
+  return resolveActivityPublisherProfilePath({
+    publishingProfileKind: kind,
+    tenantSlug: slug,
+    hostUserId: tenant.ownerId,
+  });
 };

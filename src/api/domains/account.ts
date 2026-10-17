@@ -1,4 +1,4 @@
-import { NotificationDTO } from '@uaetrail/shared-types';
+import { MemberProfileStatsDTO, NotificationDTO } from '@uaetrail/shared-types';
 import { apiRequest, downloadAuthenticatedFile, getStoredSession } from '../client';
 import type {
   ActivityDTO,
@@ -30,7 +30,7 @@ export const accountApi = {
     getMeMemberDiscoveryQuota: () =>
       apiRequest<{ data: MemberDiscoveryQuotaDTO }>('/me/member-discovery/quota', { auth: true }),
 
-    /** Browse people network roster (map panel — friends / following). */
+    /** Browse people network roster (map panel — Friends / following). Segment BWL: `all` · `buddies` · `followed`. */
     getMemberPeopleNetwork: (segment: SocialPeopleSegment = 'all') =>
       apiRequest<{ data: SocialPeopleDTO }>(
         `/me/member-discovery/network?segment=${segment}`,
@@ -170,6 +170,9 @@ export const accountApi = {
       `/member/${userId}/brief`,
       { auth: true }
     ),
+
+    getMeProfileStats: () =>
+      apiRequest<{ data: MemberProfileStatsDTO }>('/me/profile-stats', { auth: true }),
 
     getMeProfileViewStats: () =>
       apiRequest<{ data: import('@uaetrail/shared-types').MemberProfileViewStatsDTO }>(

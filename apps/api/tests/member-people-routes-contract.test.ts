@@ -18,5 +18,6 @@ describe('member people browse API contract', () => {
     expect(registrar).toMatch(/member-people-engagement/);
     expect(registrar).toMatch(/loadMemberPeopleNetworkRoster/);
     expect(registrar).toMatch(/loadMemberPeopleNetworkPreview/);
+    expect(registrar).toMatch(/'buddies'/);
   });
 });

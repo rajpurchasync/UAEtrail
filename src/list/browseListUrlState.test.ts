@@ -1,7 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { parseBrowseListFilterState, serializeBrowseListSearchParams } from './browseListUrlState';
+import {
+  parseBrowseListFilterState,
+  parseListCatParam,
+  serializeBrowseListSearchParams,
+} from './browseListUrlState';
 
 describe('browseListUrlState trip topics', () => {
+  it('maps retired listCat=guides bookmarks onto people', () => {
+    expect(parseListCatParam('guides')).toBe('people');
+  });
+
   it('parses buddies segment for people list', () => {
     const params = new URLSearchParams('listCat=people&buddies=looking');
     const state = parseBrowseListFilterState(params);

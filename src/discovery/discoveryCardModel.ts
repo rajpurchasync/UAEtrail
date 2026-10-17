@@ -98,7 +98,7 @@ export interface DiscoveryCardModel {
   mapLatitude?: number | null;
   mapLongitude?: number | null;
   linkedRideshares?: ExploreLinkedRideshareDTO[];
-  /** From `GET /explore/map` for activity/demand rows (per viewer). */
+  /** Guest from `GET /explore/map`; signed-in from `GET /me/discover/overlay`. */
   viewerAccess?: ActivityViewerAccessDTO | null;
   activityMode?: ExploreActivityMode | null;
   areaId?: string | null;

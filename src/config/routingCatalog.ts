@@ -122,7 +122,6 @@ export {
   exploreActivityInvitePath,
   organisationProfilePath,
   hostBrandProfilePath,
-  guideProfilePath,
   agencyProfilePath,
   partnerProfilePath,
   VENUE_PLACE_PATH_PREFIX,

@@ -14,7 +14,7 @@ import {
 import { createAuditLog } from '../lib/audit.js';
 import { ApiError } from '../lib/api-error.js';
 import { toLocationDto } from '../lib/mappers.js';
-import { invalidateExploreMapCache } from '../lib/explore-map-cache.js';
+import { scheduleExploreMapCacheInvalidation } from '../lib/explore-map-cache-schedule.js';
 import { awardPoints } from './rewards.js';
 import {
   locationHasCatalogImportTag,
@@ -137,7 +137,7 @@ export const createAdminPlaceRecord = async (input: { actorId: string; body: Adm
     entityType: 'location',
     entityId: created.id,
   });
-  await invalidateExploreMapCache();
+  scheduleExploreMapCacheInvalidation('admin.place_create_map_cache');
   return toLocationDto(created, { admin: true });
 };
 
@@ -253,7 +253,7 @@ export const updateAdminPlaceRecord = async (input: {
     unlockPriceAed: body.unlockPriceAed,
   });
 
-  await invalidateExploreMapCache();
+  scheduleExploreMapCacheInvalidation('admin.place_update_map_cache');
 
   await createAuditLog({
     actorId: input.actorId,
@@ -349,5 +349,5 @@ export const deleteAdminPlaceRecord = async (input: { actorId: string; placeId: 
     entityId: input.placeId,
   });
 
-  await invalidateExploreMapCache();
+  scheduleExploreMapCacheInvalidation('admin.place_delete_map_cache');
 };

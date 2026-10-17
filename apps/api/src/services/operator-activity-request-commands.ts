@@ -17,7 +17,7 @@ export const decideTenantActivityJoinRequest = async (input: {
   requestId: string;
   reviewerUserId: string;
   status: 'approved' | 'rejected';
-  organizerNote?: string;
+  hostNote?: string;
 }) => {
   const request = await findTenantActivityRequestForDecision(input.requestId, input.tenantId);
 
@@ -35,7 +35,7 @@ export const decideTenantActivityJoinRequest = async (input: {
       userId: request.userId,
       reviewerId: input.reviewerUserId,
       decision: 'approved',
-      organizerNote: input.organizerNote,
+      hostNote: input.hostNote,
     });
 
     const groupId = await ensureActivityGroupChat(request.activityId);
@@ -43,7 +43,7 @@ export const decideTenantActivityJoinRequest = async (input: {
     await dispatchNotification({
       userId: request.userId,
       title: "You're in!",
-      body: buildJoinApprovedBody(input.organizerNote),
+      body: buildJoinApprovedBody(input.hostNote),
       type: NotificationType.REQUEST_UPDATE,
       meta: {
         kind: 'join_request_approved',
@@ -51,7 +51,7 @@ export const decideTenantActivityJoinRequest = async (input: {
         requestId: request.id,
         groupId: groupId ?? null,
         actorUserId: input.reviewerUserId,
-        organizerNote: input.organizerNote?.trim() || null,
+        hostNote: input.hostNote?.trim() || null,
         path: activityDetailJoinedWelcomePath(request.activityId),
       },
     });
@@ -62,20 +62,20 @@ export const decideTenantActivityJoinRequest = async (input: {
       userId: request.userId,
       reviewerId: input.reviewerUserId,
       decision: 'rejected',
-      organizerNote: input.organizerNote,
+      hostNote: input.hostNote,
     });
 
     await dispatchNotification({
       userId: request.userId,
       title: 'Update on your activity request',
-      body: buildJoinRejectedBody(input.organizerNote),
+      body: buildJoinRejectedBody(input.hostNote),
       type: NotificationType.REQUEST_UPDATE,
       meta: {
         kind: 'join_request_rejected',
         activityId: request.activityId,
         requestId: request.id,
         actorUserId: input.reviewerUserId,
-        organizerNote: input.organizerNote?.trim() || null,
+        hostNote: input.hostNote?.trim() || null,
         path: TRIPS_JOINED_TAB_PATH,
       },
     });
@@ -98,7 +98,7 @@ export const decideTenantActivityJoinRequest = async (input: {
       activityTitle: request.activity.title,
       activityDate,
       approved: input.status === 'approved',
-      note: input.organizerNote,
+      note: input.hostNote,
     }),
     'host.request_decision_email'
   );

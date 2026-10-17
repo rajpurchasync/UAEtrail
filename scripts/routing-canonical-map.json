@@ -41,8 +41,18 @@
     },
     "discovery": {
       "spa": ["/explore", "/list"],
-      "api": ["/explore/map", "/explore/seeking-activities"],
+      "api": ["/explore/map", "/explore/seeking-activities", "/me/discover/overlay"],
       "feDomain": "explore.ts"
+    },
+    "social_graph": {
+      "spa": ["/buddies", "/groups"],
+      "api": ["/me/buddies", "/me/buddy-requests", "/me/groups", "/me/following"],
+      "feDomain": "buddies.ts"
+    },
+    "engagement": {
+      "spa": [],
+      "api": ["/me/wishlist", "/me/entity-follows", "/reviews", "/me/reviews"],
+      "feDomain": "wishlist.ts"
     }
   },
   "forbidden": {

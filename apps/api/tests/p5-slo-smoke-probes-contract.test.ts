@@ -58,6 +58,12 @@ describe('P5 SLO smoke probes contract (MIG-P5-SLO-SMOKE)', () => {
     expect(smoke).toMatch(/explore_map_bbox/);
   });
 
+  it('optional overlay probe targets GET /me/discover/overlay', () => {
+    expect(smoke).toMatch(/\/api\/me\/discover\/overlay/);
+    expect(smoke).toMatch(/explore_map_overlay/);
+    expect(auditGetPaths.has('/me/discover/overlay')).toBe(true);
+  });
+
   it('join probe targets public activity RSVP and request routes', () => {
     expect(smoke).toMatch(/\/api\/activities\/\$\{activityId\}\/rsvp/);
     expect(smoke).toMatch(/\/api\/activities\/\$\{activityId\}\/requests/);

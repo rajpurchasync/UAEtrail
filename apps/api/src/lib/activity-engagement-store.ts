@@ -1,4 +1,5 @@
 import type { Collection } from 'mongodb';
+import { resolveHostNote } from '@uaetrail/shared-types';
 import {
   ActivityStatus,
   NotificationType,
@@ -39,7 +40,8 @@ type MongoActivityRequest = {
   userId: string;
   status: RequestStatus;
   note: string | null;
-  organizerNote: string | null;
+  hostNote?: string | null;
+  organizerNote?: string | null;
   cancelReason: string | null;
   cancelMessage: string | null;
   cancelledAt: Date | null;
@@ -86,7 +88,7 @@ const toActivityRequestRecord = (doc: MongoActivityRequest): ActivityRequest => 
   userId: doc.userId,
   status: doc.status,
   note: doc.note,
-  organizerNote: doc.organizerNote,
+  hostNote: resolveHostNote(doc),
   cancelReason: doc.cancelReason,
   cancelMessage: doc.cancelMessage,
   cancelledAt: doc.cancelledAt,
@@ -203,7 +205,7 @@ export async function createJoinOrWaitlistRequest(opts: {
         userId: opts.userId,
         status,
         note: opts.note ?? existing?.note ?? null,
-        organizerNote: null,
+        hostNote: null,
         cancelReason: null,
         cancelMessage: null,
         cancelledAt: null,
@@ -281,7 +283,7 @@ export async function createRsvpParticipation(opts: {
           userId: opts.userId,
           status: RequestStatus.APPROVED,
           note: existing?.note ?? null,
-          organizerNote: null,
+          hostNote: null,
           cancelReason: null,
           cancelMessage: null,
           cancelledAt: null,
@@ -362,7 +364,7 @@ async function promoteNextWaitlisted(activityId: string): Promise<boolean> {
   await dispatchNotification({
     userId: next.userId,
     title: 'A spot opened up!',
-    body: 'Your waitlisted activity now has availability. Your request is pending organizer approval.',
+    body: 'Your waitlisted activity now has availability. Your request is pending host approval.',
     type: NotificationType.REQUEST_UPDATE,
     meta: {
       kind: 'join_request_pending',
@@ -1075,7 +1077,7 @@ export const enrollHostApprovedActivityParticipant = async (opts: {
   reviewerId: string;
   /** Host queue row id — avoids request upsert races on activityId+userId unique index. */
   requestId?: string;
-  organizerNote?: string | null;
+  hostNote?: string | null;
   /** When true, skip users who fail audience rules or capacity instead of throwing. */
   lenient?: boolean;
 }): Promise<EnrollHostApprovedActivityParticipantResult> => {
@@ -1128,7 +1130,7 @@ export const enrollHostApprovedActivityParticipant = async (opts: {
         $set: {
           status: RequestStatus.APPROVED,
           note: existing?.note ?? null,
-          organizerNote: opts.organizerNote ?? null,
+          hostNote: opts.hostNote ?? null,
           cancelReason: null,
           cancelMessage: null,
           cancelledAt: null,
@@ -1186,7 +1188,7 @@ export const applyTenantActivityRequestDecision = async (input: {
   userId: string;
   reviewerId: string;
   decision: 'approved' | 'rejected';
-  organizerNote?: string;
+  hostNote?: string;
 }) => {
   const reviewedAt = new Date();
 
@@ -1196,7 +1198,7 @@ export const applyTenantActivityRequestDecision = async (input: {
       userId: input.userId,
       reviewerId: input.reviewerId,
       requestId: input.requestId,
-      organizerNote: input.organizerNote ?? null,
+      hostNote: input.hostNote ?? null,
     });
 
     if (enrolled === 'skipped') {
@@ -1212,7 +1214,7 @@ export const applyTenantActivityRequestDecision = async (input: {
 
   await patchActivityRequestInMongo(input.requestId, {
     status: RequestStatus.REJECTED,
-    organizerNote: input.organizerNote ?? null,
+    hostNote: input.hostNote ?? null,
     reviewedById: input.reviewerId,
     reviewedAt
   });
@@ -1256,7 +1258,7 @@ export const revokeHostActivityParticipant = async (input: {
   activityId: string;
   participantId: string;
   hostUserId: string;
-  organizerNote: string;
+  hostNote: string;
 }): Promise<{ requestId: string; userId: string }> => {
   const participant = await findActivityParticipantByIdAndActivity(input.participantId, input.activityId);
   if (!participant) {
@@ -1269,9 +1271,9 @@ export const revokeHostActivityParticipant = async (input: {
   const cancelledAt = new Date();
   await patchActivityRequestInMongo(participant.requestId, {
     status: RequestStatus.CANCELLED,
-    organizerNote: input.organizerNote,
+    hostNote: input.hostNote,
     cancelReason: 'host_revoked',
-    cancelMessage: input.organizerNote,
+    cancelMessage: input.hostNote,
     cancelledAt
   });
 

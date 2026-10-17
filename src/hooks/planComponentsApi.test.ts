@@ -87,7 +87,7 @@ describe('componentsClientApi (R8.1)', () => {
       { file: 'src/components/chat/GroupWallChatSettingsSheet.tsx', hook: /socialGroupSettingsApi/ },
       { file: 'src/components/layout/MobileMenu.tsx', hook: /accountSessionApi/ },
       { file: 'src/components/auth/ProtectedRoute.tsx', hook: /memberProfileApi/ },
-      { file: 'src/components/admin/AdminUserDetailPanel.tsx', hook: /adminDrilldownApi/ },
+      { file: 'src/components/admin/UserDetailPanel.tsx', hook: /adminDrilldownApi/ },
       { file: 'src/components/ui/AssetKeyUpload.tsx', hook: /mediaUploadApi/ },
     ];
     for (const { file, hook } of cases) {

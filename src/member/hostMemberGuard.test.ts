@@ -35,7 +35,6 @@ const SKIP_HOST_CONSOLE_PREFIXES = [
 const ALLOW_BECOME_HOST_PATH = new Set([
   'src/config/memberRoutes.ts',
   'src/config/platform.ts',
-  'src/pages/BecomeHost.tsx',
   'src/pages/LegacyProMembershipRedirect.tsx',
   'src/utils/proMembershipSurfaceGuard.test.ts',
   'src/components/organisation-console/hostWizardFlow.ts',

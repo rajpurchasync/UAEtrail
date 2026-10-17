@@ -131,7 +131,14 @@ export const listEntityFollowsWithDetails = async (
 
   const tenantMap = new Map<
     string,
-    { id: string; name: string; slug: string; logoUrl: string | null; brandProfileKind: PublishingProfileKind }
+    {
+      id: string;
+      name: string;
+      slug: string;
+      ownerUserId: string;
+      logoUrl: string | null;
+      brandProfileKind: PublishingProfileKind;
+    }
   >();
   const tenantsById = await findTenantsByIds(tenantIds);
   for (const [tenantId, tenant] of tenantsById) {
@@ -139,6 +146,7 @@ export const listEntityFollowsWithDetails = async (
       id: tenant.id,
       name: tenant.name,
       slug: tenant.slug,
+      ownerUserId: tenant.ownerId,
       logoUrl: tenant.logoUrl ?? null,
       brandProfileKind: inferHostStorefrontKindFromTenantWire({
         type: tenant.type,

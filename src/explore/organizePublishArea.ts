@@ -4,8 +4,8 @@ import {
   type AreaPublicDTO,
   type PlaceDTO,
 } from '@uaetrail/shared-types';
-import type { DemandDraft, DemandKind } from './ui/demandFlow';
-import type { CreateActivityDraft } from './ui/organizeFlow';
+import type { DemandDraft, DemandKind } from './ui/seekingFlowEngine';
+import type { CreateActivityDraft } from './ui/hostingFlowEngine';
 
 const PLACE_AREA_REQUIRED =
   'Choose a catalog place linked to an area (admin links places in the registry), or add the spot via Add first.';

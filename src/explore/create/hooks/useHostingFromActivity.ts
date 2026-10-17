@@ -16,7 +16,7 @@ import {
   organizePublishGateHref,
   organizePublishGateInputFromMemberStatus,
 } from '../../../utils/organizePublishGate';
-import type { CreateActivityDraft } from '../../ui/organizeFlow';
+import type { CreateActivityDraft } from '../../ui/hostingFlowEngine';
 
 export type HostingFromActivityPrefill = {
   draft: CreateActivityDraft;

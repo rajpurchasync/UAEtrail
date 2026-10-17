@@ -1,5 +1,6 @@
 import type { Router } from 'express';
 import { z } from 'zod';
+import { resolveHostNote } from '@uaetrail/shared-types';
 import { createAuditLog } from '../../lib/audit.js';
 import { ORG_ACTIVITY_EDIT_ROLES } from '../../lib/org-permissions.js';
 import { requireOrgRole } from '../../middleware/tenant.js';
@@ -95,14 +96,14 @@ export const registerOperatorActivityParticipantRoutes = (hostActivitiesRouter: 
       try {
         const tenantId = req.tenantContext!.tenantId;
         const { id, participantId } = req.params as z.infer<typeof participantIdSchema>;
-        const { organizerNote } = req.body as z.infer<typeof hostParticipantRevokeSchema>;
+        const body = req.body as z.infer<typeof hostParticipantRevokeSchema>;
 
         await revokeActivityParticipantAsHost({
           tenantId,
           activityId: id,
           participantId,
           hostUserId: req.auth!.userId,
-          organizerNote,
+          hostNote: resolveHostNote(body) ?? '',
         });
 
         await createAuditLog({

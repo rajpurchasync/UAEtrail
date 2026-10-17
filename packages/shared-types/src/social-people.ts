@@ -1,4 +1,8 @@
-export type SocialPeopleSegment = 'all' | 'friends' | 'followed';
+export type {
+  SocialPeopleSegmentCanonical,
+  SocialPeopleSegmentCanonical as SocialPeopleSegment,
+  SocialPeopleSegmentWire,
+} from './wire-lexicon.js';
 
 export type SocialPeopleRelationship = 'friend' | 'following';
 

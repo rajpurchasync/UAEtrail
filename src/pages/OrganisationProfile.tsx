@@ -15,7 +15,7 @@ import {
 const isShopTenant = (tenant: TenantProfile): boolean =>
   tenant.businessMode === 'SHOP' || tenant.type === 'shop' || tenant.type === 'SHOP';
 
-/** Public brand profile — `/guide`, `/agency`, or `/partner`. Shop tenants redirect to `/shop/:id`. */
+/** Public brand profile — `/agency` or `/partner`. Shop tenants redirect to `/shop/:id`. Individual Pro is `/member/:userId`. */
 export const OrganisationProfile = () => {
   const { id } = useParams<{ id: string }>();
   const [searchParams, setSearchParams] = useSearchParams();

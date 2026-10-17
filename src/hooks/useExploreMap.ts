@@ -1,5 +1,6 @@
 import { keepPreviousData, useQuery, type QueryClient } from '@tanstack/react-query';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
+import { useAuth } from '../context/AuthContext';
 import { fetchExploreMapItems } from './exploreMapClientApi';
 import type { ExploreMapFetchScope } from '../explore/exploreMapBbox';
 import { isExploreMapBboxEnabled } from '../explore/exploreMapBbox';
@@ -23,11 +24,13 @@ type UseExploreMapOptions = {
 };
 
 export const useExploreMap = (options?: UseExploreMapOptions) => {
+  const { user } = useAuth();
   const scope = options?.scope ?? null;
   const useVnextFetch = isExploreMapBboxEnabled() && scope != null;
+  const catalogKey = exploreMapQueryKey(useVnextFetch ? scope : null);
 
   return useQuery({
-    queryKey: exploreMapQueryKey(useVnextFetch ? scope : null),
+    queryKey: user?.id ? [...catalogKey, user.id] : catalogKey,
     enabled: options?.enabled ?? true,
     queryFn: async (): Promise<ExploreMapItemDTO[]> => {
       if (useVnextFetch && scope) {

@@ -14,7 +14,7 @@ import {
   resolveOrganizeDifficultyLabel,
   type ActivityDifficulty,
   type CreateActivityDraft,
-} from './organizeFlow';
+} from './hostingFlowEngine';
 import { applyRegistryPlaceToOrganizeDraft } from './organizePlaceRegistryDraft';
 import { exploreFlowChoiceCardClass } from './exploreFlowUi';
 

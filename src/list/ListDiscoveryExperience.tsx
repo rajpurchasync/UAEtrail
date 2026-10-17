@@ -400,11 +400,6 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
           availabilityLoading={memberAvailability.loading}
           availabilityError={memberAvailability.error}
           onRefreshAvailability={() => void memberAvailability.refresh()}
-          followedSegment="people"
-          onFollowedSegmentChange={() => {}}
-          entityFollows={[]}
-          entityFollowsLoading={false}
-          entityFollowsError={null}
           isSignedIn={Boolean(user)}
           userRole={user?.role}
           seekingActivities={seekingActivities}

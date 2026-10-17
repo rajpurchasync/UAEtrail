@@ -33,8 +33,7 @@ export const BWL_COLLECTIONS = {
   ENTITY_FOLLOWS: 'entity_follows',
   MEMBER_AVAILABILITY: 'member_availability',
   USER_GOALS: 'user_goals',
-  /** Target: user_wishlist (MIG-COH-09) */
-  USER_WISHLIST: 'user_favorites',
+  USER_WISHLIST: 'user_wishlist',
   SOCIAL_REVIEWS: 'social_reviews',
   CHAT_MESSAGES: 'chat_messages',
   CONTENT_REPORTS: 'content_reports',
@@ -50,15 +49,26 @@ export const BWL_ACTIVITY_PERSON_FIELDS = {
 } as const;
 
 /**
- * Join request messages (BWL).
+ * Join request messages (BWL). JSON camelCase — not snake `host_note`.
  * - `note` — joiner → host
- * - `organizer_note` — host decision message (target rename: `host_note`, MIG-COH-06)
+ * - `hostNote` — host decision / revoke message (new writes)
+ * - `organizerNote` — HTTP/Mongo read alias only
  */
 export const BWL_JOIN_REQUEST_FIELDS = {
   NOTE: 'note',
-  ORGANIZER_NOTE: 'organizer_note',
-  TARGET_HOST_NOTE: 'host_note',
+  HOST_NOTE: 'hostNote',
+  ORGANIZER_NOTE_LEGACY: 'organizerNote',
 } as const;
+
+export const resolveHostNote = (input: {
+  hostNote?: string | null;
+  organizerNote?: string | null;
+} | null | undefined): string | null => {
+  const raw = input?.hostNote ?? input?.organizerNote ?? null;
+  if (raw == null) return null;
+  const trimmed = raw.trim();
+  return trimmed.length > 0 ? trimmed : null;
+};
 
 /** HTTP mount prefixes (current → target). */
 export const BWL_API_MOUNTS = {
@@ -145,6 +155,28 @@ export const BWL_PEOPLE_SEGMENT = {
   FRIENDS_LEGACY: 'friends',
   FOLLOWED: 'followed',
 } as const;
+
+export type SocialPeopleSegmentCanonical =
+  | typeof BWL_PEOPLE_SEGMENT.ALL
+  | typeof BWL_PEOPLE_SEGMENT.BUDDIES_TARGET
+  | typeof BWL_PEOPLE_SEGMENT.FOLLOWED;
+
+/** HTTP query `segment` — `friends` is a read alias of `buddies`. */
+export type SocialPeopleSegmentWire =
+  | SocialPeopleSegmentCanonical
+  | typeof BWL_PEOPLE_SEGMENT.FRIENDS_LEGACY;
+
+export const isBuddyPeopleSegment = (segment: string | null | undefined): boolean =>
+  segment === BWL_PEOPLE_SEGMENT.BUDDIES_TARGET ||
+  segment === BWL_PEOPLE_SEGMENT.FRIENDS_LEGACY;
+
+export const normalizePeopleSegment = (
+  segment: SocialPeopleSegmentWire | string | null | undefined
+): SocialPeopleSegmentCanonical => {
+  if (isBuddyPeopleSegment(segment)) return BWL_PEOPLE_SEGMENT.BUDDIES_TARGET;
+  if (segment === BWL_PEOPLE_SEGMENT.FOLLOWED) return BWL_PEOPLE_SEGMENT.FOLLOWED;
+  return BWL_PEOPLE_SEGMENT.ALL;
+};
 
 /** RBAC — orthogonal to publish tier and UPL. */
 export const BWL_USER_ROLES = [

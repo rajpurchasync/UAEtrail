@@ -1,5 +1,5 @@
 import type { ActivityDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
-import { emptyCreateActivityDraft, todayIso, type CreateActivityDraft } from './ui/organizeFlow';
+import { emptyCreateActivityDraft, todayIso, type CreateActivityDraft } from './ui/hostingFlowEngine';
 import { defaultRideshareRiderRulesText } from './ui/rideshareRiderRules';
 
 /** Seed a rideshare organize draft from a parent hike/camp/event/activity. */

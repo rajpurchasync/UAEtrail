@@ -20,6 +20,7 @@ describe('parsePeopleBrowseTab', () => {
   it('maps legacy tab aliases', () => {
     expect(parsePeopleBrowseTab('all')).toBe('connect');
     expect(parsePeopleBrowseTab('friends')).toBe('going');
+    expect(parsePeopleBrowseTab('buddies')).toBe('going');
     expect(parsePeopleBrowseTab('followed')).toBe('going');
     expect(parsePeopleBrowseTab('discover')).toBe('available');
   });

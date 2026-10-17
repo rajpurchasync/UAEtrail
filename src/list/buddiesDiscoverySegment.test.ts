@@ -14,6 +14,7 @@ describe('buddiesDiscoverySegment', () => {
 
   it('maps legacy buddies values', () => {
     expect(parseBuddiesDiscoverySegment('friends')).toBe('going');
+    expect(parseBuddiesDiscoverySegment('buddies')).toBe('going');
     expect(parseBuddiesDiscoverySegment('all')).toBe('connect');
     expect(parseBuddiesDiscoverySegment('looking')).toBe('looking');
     expect(parseBuddiesDiscoverySegment('followed')).toBe('going');

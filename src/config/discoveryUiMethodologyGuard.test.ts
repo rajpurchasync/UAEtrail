@@ -94,4 +94,9 @@ describe('discoveryUiMethodologyGuard', () => {
       `Use MapPeekShell + peek/{entity}/ — remove Explore*Peek*:\n${violations.join('\n')}`
     ).toEqual([]);
   });
+
+  it('DISC-METH-10: no ExploreFollowed* modules (folder is namespace; people-discovery owns people rows)', () => {
+    const hits = collectTsxUnder('src/explore/ui').filter((file) => /ExploreFollowed/.test(file));
+    expect(hits).toEqual([]);
+  });
 });

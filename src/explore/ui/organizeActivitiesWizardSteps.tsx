@@ -5,7 +5,7 @@ import {
   ACTIVITY_ORGANIZE_TOPIC_OPTIONS,
   type ActivityOrganizeTopic,
   type CreateActivityDraft,
-} from './organizeFlow';
+} from './hostingFlowEngine';
 
 type PatchDraft = (patch: Partial<CreateActivityDraft>) => void;
 

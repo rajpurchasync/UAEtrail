@@ -1,4 +1,4 @@
-import type { CreateFlowStepId } from '../../organizeFlow';
+import type { CreateFlowStepId } from '../../hostingFlowEngine';
 import type { HostingKindFlow } from '../../hostingFlows';
 import { renderOrganizeWizardStepsForIds } from '../steps/index';
 import type { OrganizeWizardContext } from '../organizeWizardContext';

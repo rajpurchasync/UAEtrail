@@ -38,5 +38,6 @@ describe('surfacePaths', () => {
     expect(rewriteOperatorConsoleToPublishingPath('/operator/messages')).toBe(MESSAGES_PATH);
     expect(rewriteOperatorConsoleToPublishingPath('/guide/acme')).toBeNull();
     expect(rewriteOperatorConsoleToPublishingPath('/operator/acme-guides')).toBeNull();
+    expect(rewriteOperatorConsoleToPublishingPath('/operator/acme-tours')).toBeNull();
   });
 });

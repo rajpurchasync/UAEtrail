@@ -6,7 +6,7 @@ import { getMongoClient } from './mongo.js';
 import { activityGeoIndexFields } from './geo-index-fields.js';
 import { locationDocForMongo } from './location-query.js';
 import type { MongoActivityDoc } from './entity-builders.js';
-import { invalidateExploreMapCache } from './explore-map-cache.js';
+import { scheduleExploreMapCacheInvalidation } from './explore-map-cache-schedule.js';
 
 type MongoLocationDoc = Omit<Location, 'id'> & {
   _id: string;
@@ -26,13 +26,13 @@ export const writeLocationToMongo = async (location: Location): Promise<void> =>
     { $set: locationDocForMongo(location) },
     { upsert: true }
   );
-  await invalidateExploreMapCache();
+  scheduleExploreMapCacheInvalidation('entity-sync.location_write_map_cache');
 };
 
 export const deleteLocationFromMongo = async (locationId: string): Promise<boolean> => {
   const result = await locationsCollection().deleteOne({ _id: locationId });
   if (result.deletedCount > 0) {
-    await invalidateExploreMapCache();
+    scheduleExploreMapCacheInvalidation('entity-sync.location_delete_map_cache');
   }
   return result.deletedCount > 0;
 };

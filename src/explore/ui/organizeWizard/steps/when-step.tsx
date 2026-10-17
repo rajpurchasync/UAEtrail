@@ -7,7 +7,7 @@ import {
 } from '../OrganizeWizardChrome';
 import { exploreFlowChoiceCardClass } from '../../exploreFlowUi';
 import { EXPLORE_FLOW } from '../../../../config/exploreTheme';
-import { type TimeMode } from '../../organizeFlow';
+import { type TimeMode } from '../../hostingFlowEngine';
 import type { ReactNode } from 'react';
 import type { OrganizeWizardContext } from '../organizeWizardContext';
 

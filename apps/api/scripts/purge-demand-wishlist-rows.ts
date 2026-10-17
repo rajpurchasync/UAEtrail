@@ -1,5 +1,5 @@
 /**
- * Remove legacy user_favorites rows that bookmarked demand (participant_intents).
+ * Remove legacy wishlist rows that bookmarked demand (participant_intents).
  * Wishlist is private venue/activity saves — demand is public participation on Explore.
  *
  * Usage:
@@ -18,12 +18,12 @@ const purgeDemandBookmarkWishlistRows = async () => {
   const count = await wishlist.countDocuments(filter);
 
   if (count === 0) {
-    console.log('No legacy demand bookmark rows in user_favorites.');
+    console.log('No legacy demand bookmark rows in user_wishlist.');
     return;
   }
 
   if (dryRun) {
-    console.log(`DRY_RUN: would delete ${count} user_favorites row(s) with participantIntentId.`);
+    console.log(`DRY_RUN: would delete ${count} user_wishlist row(s) with participantIntentId.`);
     const sample = await wishlist
       .find(filter, { projection: { _id: 1, userId: 1, participantIntentId: 1 } })
       .limit(10)

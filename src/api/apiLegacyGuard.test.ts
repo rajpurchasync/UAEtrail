@@ -43,7 +43,7 @@ const BANNED_CALLS: Array<{ pattern: RegExp; hint: string }> = [
     hint: 'Use seekingApi / seekingClientApi (MIG-COH-01)',
   },
   { pattern: /\bapi\.reportContent\b/, hint: 'Use safetyApi.submitContentReport or api.submitContentReport' },
-  { pattern: /\bsocialApi\.reportContent\b/, hint: 'Use safetyApi.submitContentReport' },
+  { pattern: /\bsocialApi\b/, hint: 'Use buddiesApi, groupsApi, wishlistApi, entityFollowApi, or reviewsApi' },
   { pattern: /\bapi\.updateHostDetails\b/, hint: 'Use api.updateOrganisationDetails' },
   { pattern: /\bapi\.getAdminApplications\b/, hint: 'Use api.getAdminOrganisationApplications' },
   { pattern: /\bapi\.getAdminUsers\b/, hint: 'Use api.getAdminMembers' },

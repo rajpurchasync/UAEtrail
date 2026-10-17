@@ -45,8 +45,8 @@ const ENTITY_DETAIL_QA_MATRIX: Array<{
     automatedGuard: 'publicEntityShellAcceptance.test.ts',
   },
   {
-    surface: 'Agency/guide',
-    routePattern: /path="\/guide\/:id"|path="\/agency\/:id"|path="\/partner\/:id"/,
+    surface: 'Agency/partner',
+    routePattern: /path="\/agency\/:id"|path="\/partner\/:id"/,
     pageOrView: 'src/pages/OrganisationProfile.tsx',
     automatedGuard: 'publicEntityShellAcceptance.test.ts',
   },
@@ -83,7 +83,11 @@ describe('consumerDetailQaMatrixGuard (plan §8 entity detail)', () => {
   });
 
   it('automated guard tests referenced in §8.1 are in verify:domain bundle', () => {
-    const verifyScript = read('scripts/verify-domain-canonicals.mjs');
+    const verifyScript = [
+      read('scripts/verify-domain-canonicals.mjs'),
+      read('scripts/verify-domain-fe.mjs'),
+      read('scripts/verify-domain-api.mjs'),
+    ].join('\n');
     const missing: string[] = [];
     for (const { surface, automatedGuard } of ENTITY_DETAIL_QA_MATRIX) {
       if (!verifyScript.includes(automatedGuard)) {

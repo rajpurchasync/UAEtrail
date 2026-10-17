@@ -1,6 +1,6 @@
 /**
  * Primitives shared across Plan hosting, Plan seeking, and Contribute wizards.
- * Import here — not from `organizeFlow.ts` (hosting-only engine).
+ * Import here — not from `hostingFlowEngine.ts` (hosting-only engine).
  */
 
 export type LocationPrecision = 'general' | 'specific';

@@ -30,7 +30,7 @@ import { normalizeComposeFlowId } from './composeFlowIds';
 
 import { getContributeFlowSteps } from './ui/contributeFlow';
 
-import { DEMAND_TYPE_OPTIONS, getDemandFlowSteps } from './ui/demandFlow';
+import { DEMAND_TYPE_OPTIONS, getDemandFlowSteps } from './ui/seekingFlowEngine';
 
 import { getHostingFlowSteps } from './ui/hostingFlow';
 

@@ -4,7 +4,7 @@ import {
   OrganizeWizardStepNext
 } from '../OrganizeWizardChrome';
 import { FlowStepTextInput } from '../../useFlowSheetPrimaryFieldFocus';
-import { createTitlePlaceholder } from '../../organizeFlow';
+import { createTitlePlaceholder } from '../../hostingFlowEngine';
 import type { ReactNode } from 'react';
 import type { OrganizeWizardContext } from '../organizeWizardContext';
 
