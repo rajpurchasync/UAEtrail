@@ -138,7 +138,7 @@ export type MemberProfileBrowseLens =
 export type MemberProfilePathOptions = {
   /**
    * Directory / quota path — sets `discover=1` (API also accepts `from=discover`).
-   * Use for Explore **Connect** directory and `GET /users/browse` row opens.
+   * Use for Explore **Connect** directory and `GET /me/member-discovery/browse` row opens.
    */
   discover?: boolean;
   /** Browse entry lens — serialized as `source=` when not `organic`. */

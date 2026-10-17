@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { paginatedResponse, paginationSchema } from '../../lib/pagination.js';
+import { registerProApplicationAlias } from '../../lib/route-pro-application-alias.js';
 import { validate } from '../../middleware/validate.js';
 import { reviewAdminHostApplication } from '../../services/admin-host-application-commands.js';
 import { listAdminHostApplicationsPage } from '../../services/admin-host-application-read.js';
@@ -12,9 +13,9 @@ const applicationPatchSchema = z.object({
   reviewerNote: z.string().max(300).optional(),
 });
 
-/** Platform admin review of Pro / host / shop applications. */
+/** Platform admin review of Pro membership applications (`/admin/pro-applications`). */
 export const registerAdminHostApplicationRoutes = (router: Router): void => {
-  router.get('/host-applications', async (req, res, next) => {
+  registerProApplicationAlias(router, 'get', '/pro-applications', async (req, res, next) => {
     try {
       const pg = paginationSchema.parse(req.query);
       const { items, total } = await listAdminHostApplicationsPage({
@@ -27,8 +28,10 @@ export const registerAdminHostApplicationRoutes = (router: Router): void => {
     }
   });
 
-  router.patch(
-    '/host-applications/:id',
+  registerProApplicationAlias(
+    router,
+    'patch',
+    '/pro-applications/:id',
     validate({ params: idParamSchema, body: applicationPatchSchema }),
     async (req, res, next) => {
       try {

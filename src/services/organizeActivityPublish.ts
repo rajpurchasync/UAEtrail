@@ -1,7 +1,7 @@
 import { activityOrganizeTopicToOutingTopic, type ActivityDTO } from '@uaetrail/shared-types';
 import { fetchPublishedAreas } from '../hooks/areaHubClientApi';
 import { createActivity, publishActivity } from '../hooks/tenantActivityClientApi';
-import { linkParticipantIntentToActivity } from '../hooks/participantIntentClientApi';
+import { linkSeekingPostToActivity } from '../hooks/seekingClientApi';
 import { submitMemberPlace } from '../hooks/memberCatalogSubmitClientApi';
 import { HOME_HERO_OG_PATH } from '../config/seo';
 import { resolvePublishedAreaIdForPoint } from '../explore/organizePublishArea';
@@ -284,7 +284,7 @@ export const publishOrganizeActivity = async (input: {
 
   // Graduate find crew onto a new hosted outing only — never when publishing a transport child.
   if (participantIntentId && draft.kind !== 'rideshare') {
-    await linkParticipantIntentToActivity(participantIntentId, created.id);
+    await linkSeekingPostToActivity(participantIntentId, created.id);
   }
 
   if (parentLinkId && draft.kind === 'rideshare') {

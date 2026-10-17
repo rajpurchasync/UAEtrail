@@ -1,0 +1,57 @@
+{
+  "version": 1,
+  "enforcement": "phase4",
+  "description": "Canonical HTTP + SPA routing planes per bounded context. Until MIG-COH-04 lands, publishing_workspace uses /operator; target /publishing per SYSTEM_COHERENCE §8.8.",
+  "pcohTarget": {
+    "publishing_workspace_api": "/publishing",
+    "publishing_workspace_spa_prefix": "/publishing"
+  },
+  "planes": {
+    "publishing_workspace": {
+      "spa": ["/operator/overview", "/operator/activities", "/operator/requests", "/operator/team", "/operator/profile", "/operator/places", "/operator/history", "/operator/security-privacy"],
+      "api": ["/operator"],
+      "feDomain": "organisation.ts"
+    },
+    "member_identity": {
+      "spa": ["/member/:userId"],
+      "api": ["/member/:userId/brief", "/member/:userId/profile", "/member/:userId/upcoming-activities", "/me/profile"],
+      "feDomain": "account.ts"
+    },
+    "member_discovery": {
+      "spa": ["/explore", "/list"],
+      "api": [
+        "/me/member-discovery/roster",
+        "/me/member-discovery/quota",
+        "/me/member-discovery/browse",
+        "/me/member-discovery/network",
+        "/me/member-discovery/network/preview",
+        "/me/member-discovery/search"
+      ],
+      "feDomain": "account.ts"
+    },
+    "participation": {
+      "spa": ["/activity/:id", "/my-requests"],
+      "api": ["/activities", "/me/requests", "/me/activities"],
+      "feDomain": "activities.ts"
+    },
+    "trust_safety": {
+      "spa": [],
+      "api": ["/safety/reports"],
+      "feDomain": "safety.ts"
+    },
+    "discovery": {
+      "spa": ["/explore", "/list"],
+      "api": ["/explore/map", "/explore/seeking-activities"],
+      "feDomain": "explore.ts"
+    }
+  },
+  "forbidden": {
+    "apiPathPrefixes": ["/host/", "/social/", "/users/"],
+    "spaPathPrefixes": ["/host/", "/organizer/"],
+    "middlewareModules": [
+      "legacy-host-api-rewrite.ts",
+      "legacy-publishing-path-deprecation.ts",
+      "legacy-member-status-path-rewrite.ts"
+    ]
+  }
+}

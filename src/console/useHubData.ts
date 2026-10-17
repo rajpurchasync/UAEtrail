@@ -19,7 +19,7 @@ async function fetchConsoleHub(tenantId: string) {
   };
 }
 
-/** `/host/*` console: activities + join queue for active tenant. */
+/** Publishing workspace hub: activities + join queue for active tenant. */
 export const useConsoleHubData = () => {
   const { user } = useAuth();
   const hostStatus = useMemberStatus({ enabled: Boolean(user) });

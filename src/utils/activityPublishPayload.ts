@@ -128,7 +128,7 @@ export const mergeParticipationRequirements = (
   ...stripParticipationRequirementLines(requirements),
 ];
 
-/** Build the POST/PATCH body for `/host/activities`. */
+/** Build the POST/PATCH body for operator activities API. */
 export const buildHostActivityPublishPayload = (input: ActivityPublishInput): Record<string, unknown> => {
   const isRideshare = input.activityType === 'rideshare';
   const rideshare = input.rideshare ?? {};

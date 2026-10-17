@@ -232,7 +232,7 @@ Demand is **not** a lightweight RSVP activity. Do not add **I'm going**, private
 | **Everyone else** | **Request to join** (same language as approval-mode activities) · **Message** |
 | **Guest** | Sign-in gate on join / message |
 
-When the poster is ready to run a dated outing on the map, they **Organize → publish** an activity — they remain the host. That published row has its **own** `participationMode` / `joinMode` for **new** discoverers. Approved demand joiners are **enrolled on the linked activity** when the poster calls `POST /me/participant-intents/:id/link-activity` (host-approved `activity_requests` + participants — even if the activity is RSVP for strangers). Join requests on the intent: `POST /me/participant-intents/:id/requests`.
+When the poster is ready to run a dated outing on the map, they **Organize → publish** an activity — they remain the host. That published row has its **own** `participationMode` / `joinMode` for **new** discoverers. Approved demand joiners are **enrolled on the linked activity** when the poster calls `POST /me/seeking-posts/:id/link-activity` (host-approved `activity_requests` + participants — even if the activity is RSVP for strangers). Join requests on the intent: `POST /me/seeking-posts/:id/requests`.
 
 **Not used:** third-party “fulfill / convert” (another member publishing on behalf of the poster). Legacy `?fulfillIntent=` links only reopen the pin.
 
@@ -254,7 +254,7 @@ Optional **published rideshare** linked to a **parent** plan (hiking, camping, o
 | Mechanism | Use |
 |-----------|-----|
 | **Publish child rideshare** with `linkedActivityId` → parent + `linkedRideshareActivityId` on parent | Add seats / transport while the parent stays open (Find or Organize) |
-| **`POST /me/participant-intents/:id/link-activity`** | **Graduate** find crew onto a **new hosted** outing (`convertedActivityId`, intent fulfilled) — **not** for publishing a transport child |
+| **`POST /me/seeking-posts/:id/link-activity`** | **Graduate** find crew onto a **new hosted** outing (`convertedActivityId`, intent fulfilled) — **not** for publishing a transport child |
 
 **Find → Link transport** prefill must set `linkToParentActivityId` to the **seeking activity id** (`resolveSeekingParentActivityId` in `linkActivityRideshareOffer.ts`). **Never** call `link-activity` when publishing `activityType: rideshare` (`organizeActivityPublish.ts`).
 
@@ -313,7 +313,7 @@ Publish gate (API): `place_area_required` / `activity_area_required` when linked
 
 ### Find (looking for)
 
-Dedicated step **Area & map pin**: choose registered **Area**, drop a pin → `POST /me/participant-intents` **`areaId`** + coordinates. Seeking activity dual-write sets **`place.areaId`** on the synthetic location (not `activity.areaId`).
+Dedicated step **Area & map pin**: choose registered **Area**, drop a pin → `POST /me/seeking-posts` **`areaId`** + coordinates. Seeking activity dual-write sets **`place.areaId`** on the synthetic location (not `activity.areaId`).
 
 **`preferredArea`** (emirate chip on hiking/camp) is region copy only — not the **Area** registry id. Area + pin enables matching hosted outings in the same area (notifications phased).
 
@@ -345,7 +345,7 @@ Track what is **spec** vs **shipped**. Update this table in the same PR that lan
 | Plan **Available** lens — hosted outing hint after save | ✅ | ✅ (`PlanAvailabilitySection` + `match-preview` when outings align) |
 | Host publish — Find crew availability count notice (explore map banner; operator activities list) | ✅ | ✅ (`hostPublishAvailabilityNoticeMessage` + `GET /explore/people/availability`) |
 | Compose shell `hostWizardOpen` prop | ✅ | ✅ (`ComposeHost`; `planHostingWizardOpen` removed) |
-| Explore **Locations** lens = area pins (not every place pin) | ✅ | ✅ (`pinKind=locations`) |
+| Explore **Locations** lens (legacy URL) | Alias of **Spots** — Area is **not** a pin | ✅ (`pinKind=locations` → places) |
 | Area match notifications (seeking ↔ hosted in area) | ✅ | ✅ (`seeking-area-match-notifications.ts`) |
 | Availability ↔ hosted (date + activity type; notify + FAB hosted preview) | ✅ | ✅ (`availability-hosted-match-notifications.ts`, `GET /me/availability/match-preview` → `hostedOutings` only) |
 | **Find crew → Available** tab (all members with future slots in range) | ✅ | ✅ (`GET /explore/people/availability` — not match-preview) |
@@ -418,7 +418,7 @@ Do **not** ship Event organize with RSVP marketing until Phase C exists.
 | Contribute wizard | `CreateContributeFlow.tsx`, `contributeFlow.ts` → **CPC-9b:** `placeSubmitFlow.ts` / `facilitySubmitFlow.ts`; `catalogPlaceSubmit.ts` / `catalogFacilitySubmit.ts` |
 | Map pin UI | `CreatePlacePicker.tsx` |
 | Join / RSVP UI | `JoinRequestModal.tsx`, `ActivityDetail.tsx`, `joinRequestUi.ts` |
-| API | activities publish, `POST /me/participant-intents`, `POST /me/places` / `POST /me/facilities` |
+| API | activities publish, `POST /me/seeking-posts`, `POST /me/places` / `POST /me/facilities` |
 | Shared types | `packages/shared-types` — compose wire, `participationMode` on `ActivityDTO` |
 
 ---

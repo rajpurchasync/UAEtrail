@@ -52,7 +52,7 @@ export type ActivityManageSheetProps = {
   onShare?: (activity: ActivityDTO) => void;
 };
 
-/** Full-screen manage surface for a hosted activity (Trips hosted + `/host/*`). */
+/** Full-screen manage surface for a hosted activity (Trips hosted + operator console). */
 export const ActivityManageSheet = ({
   open,
   activity,

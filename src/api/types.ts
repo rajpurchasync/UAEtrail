@@ -52,7 +52,7 @@ export interface HostApplication {
   createdAt: string;
 }
 
-/** Domain alias — organisation signup/application (wire: host_applications). */
+/** Domain alias — Pro membership application (HTTP `/me/pro-application`; collection `host_applications`). */
 export type OrganisationApplication = HostApplication;
 
 export interface AdminMetrics {
@@ -156,6 +156,7 @@ export type PublicMemberProfileDTO =
       isGuideStaff?: boolean;
       hostProfileKind: 'shop' | 'agency' | 'guide' | null;
       hostProfilePath: string | null;
+      linkedOperatorName?: string | null;
       badges: Array<{
         key: string;
         name: string;

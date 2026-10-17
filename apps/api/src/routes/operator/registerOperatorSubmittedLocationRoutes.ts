@@ -10,7 +10,7 @@ import { listOperatorSubmittedLocations } from '../../services/operator-submitte
 
 /** Tenant host: list and submit venue/place drafts (organisation console). */
 export const registerOperatorSubmittedLocationRoutes = (operatorRouter: Router): void => {
-  registerPlaceAlias(operatorRouter, 'get', '/locations', async (req, res, next) => {
+  registerPlaceAlias(operatorRouter, 'get', '/places', async (req, res, next) => {
     try {
       const data = await listOperatorSubmittedLocations(req.auth!.userId);
       res.json({ data });
@@ -22,7 +22,7 @@ export const registerOperatorSubmittedLocationRoutes = (operatorRouter: Router):
   registerPlaceAlias(
     operatorRouter,
     'post',
-    '/locations',
+    '/places',
     requireOrgRole(ORG_ACTIVITY_EDIT_ROLES),
     validate({ body: locationSubmitBodySchema }),
     async (req, res, next) => {

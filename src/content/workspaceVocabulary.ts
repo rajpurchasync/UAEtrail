@@ -1,15 +1,16 @@
 /**
  * Canonical product vocabulary — three axes (do not conflate):
  *
- * 1. **UI actor labels** — **Host** = individual leading an outing; **Operator** = agency/shop
- *    brand or management workspace (not a member “role” on `/me/*`).
+ * 1. **UI actor labels** — **Host** = individual on an outing; **Guide / Pro host** = individual Pro on
+ *    `/member/:userId`; **Operator** = shop or agency **business** (tenant profile), not the buddy host.
  * 2. **Capabilities** — **Organize** / **publish** (`GET /me/status` → `publish.*`, `canPublish`);
  *    not HTTP personas or duplicate `/me/publishing-*` routes.
  * 3. **Gates** — **`profileComplete`** to organize/publish; **signed in** suffices to participate
  *    (RSVP, request to join, demand) without full profile.
  *
- * Architecture/API: phasing out `host` paths and `Host*` wire names (`/operator/*`, `/me/status`).
- * @see docs/MEMBER_MODEL.md § Naming vocabulary
+ * **BWL (backend wire)** is separate: `packages/shared-types/src/wire-lexicon.ts` — HTTP paths, JSON keys,
+ * Mongo collections. Do not rename wire because UPL says Host; map in presentation layer only.
+ * @see docs/SYSTEM_COHERENCE.md §8.8 · docs/MEMBER_MODEL.md § Naming vocabulary
  */
 
 /** Individual leading this outing (consumer UI). */
@@ -63,10 +64,10 @@ export const workspaceProfileLabel = (kind?: WorkspaceBrandKind | null): string 
 };
 
 export const workspacePublicProfileLabel = (kind?: WorkspaceBrandKind | null): string => {
-  if (kind === 'guide') return 'public guide profile';
-  if (kind === 'agency') return 'public agency profile';
-  if (kind === 'shop') return 'public shop profile';
-  return 'public organizer profile';
+  if (kind === 'guide') return 'member profile (Pro guide)';
+  if (kind === 'agency') return 'agency profile';
+  if (kind === 'shop') return 'shop profile';
+  return 'member profile';
 };
 
 export const workspaceNotFoundLabel = (kind?: WorkspaceBrandKind | null): string => {

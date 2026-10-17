@@ -61,11 +61,11 @@ describe('host-member API contracts', () => {
     expect(violations).toEqual([]);
   });
 
-  it('API mounts publishing console on /operator only (legacy /host rewritten)', () => {
+  it('API mounts publishing console on /operator only', () => {
     const index = readFileSync(join(API_SRC, 'routes', 'index.ts'), 'utf8');
     expect(index).toMatch(/apiRouter\.use\(['"]\/operator['"]/);
     expect(index).not.toMatch(/apiRouter\.use\(['"]\/host['"]/);
-    expect(index).toMatch(/legacyHostApiRewrite/);
+    expect(index).not.toMatch(/legacyHostApiRewrite/);
   });
 
   it('does not register parallel legacy member status routes', () => {

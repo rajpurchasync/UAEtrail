@@ -1,5 +1,5 @@
 import type { ParticipantIntentKind } from '@uaetrail/shared-types';
-import { createParticipantIntent } from '../../hooks/participantIntentClientApi';
+import { createSeekingPost } from '../../hooks/seekingClientApi';
 import {
   validateDemandCuratedAreaStep,
   validateDemandPublishArea,
@@ -554,16 +554,17 @@ export const publishDemandRequest = async (draft: DemandDraft): Promise<DemandSu
     ...(draft.areaId?.trim() ? { areaId: draft.areaId.trim() } : {}),
   };
 
-  const created = await createParticipantIntent(payload);
+  const created = await createSeekingPost(payload);
 
   const publishedActivityId =
     created.activityId ?? created.seekingActivityId ?? null;
+  if (!publishedActivityId) {
+    throw new Error('Seeking publish did not return a published activity id.');
+  }
   return {
     visibleOnMap: payload.latitude != null && payload.longitude != null,
     participantIntentId: created.id,
-    mapItemId: publishedActivityId
-      ? `activity:${publishedActivityId}`
-      : `demand:${created.id}`,
+    mapItemId: `activity:${publishedActivityId}`,
     activityId: publishedActivityId,
   };
 };

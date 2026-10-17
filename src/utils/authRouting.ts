@@ -44,34 +44,25 @@ export const accountRouteByRole = (role: UserRole): string => {
 };
 
 /**
- * Legacy `/host/*` bookmarks for members without tenant console roles (D2 — no consumer host shell).
- * Tenant guides still use real `/host/*` routes via {@link ProtectedRoute} role allowlist.
+ * `/operator/*` bookmarks for members without tenant console roles — send to consumer surfaces.
  */
 export const participantHostBookmarkRedirect = (pathname: string): string => {
-  const normalized = pathname.startsWith('/host/')
-    ? pathname.replace(/^\/host/, '/operator')
-    : pathname.startsWith('/organizer/')
-      ? pathname.replace(/^\/organizer/, '/operator')
-      : pathname;
-  if (
-    normalized.startsWith('/operator/messages') ||
-    normalized.startsWith('/host/messages')
-  ) {
+  if (pathname.startsWith('/operator/messages')) {
     return MESSAGES_PATH;
   }
-  if (normalized.startsWith('/operator/requests')) return MY_REQUESTS_PATH;
-  if (normalized.startsWith('/operator/activities')) return planHostedSchedulePath();
-  if (normalized.startsWith('/operator/places') || normalized.startsWith('/operator/locations')) {
+  if (pathname.startsWith('/operator/requests')) return MY_REQUESTS_PATH;
+  if (pathname.startsWith('/operator/activities')) return planHostedSchedulePath();
+  if (pathname.startsWith('/operator/places') || pathname.startsWith('/operator/locations')) {
     return organisationManagePath();
   }
-  if (normalized.startsWith('/operator/team') || normalized.startsWith('/operator/profile')) {
+  if (pathname.startsWith('/operator/team') || pathname.startsWith('/operator/profile')) {
     return PRO_MEMBERSHIP_PATH;
   }
-  if (normalized === '/operator/overview' || normalized.startsWith('/operator/overview')) {
+  if (pathname === '/operator/overview' || pathname.startsWith('/operator/overview')) {
     return exploreOrganizePath();
   }
-  if (normalized.startsWith('/operator/history')) return PLAN_PATH;
-  if (normalized.startsWith('/operator/security-privacy')) return PROFILE_PATH;
+  if (pathname.startsWith('/operator/history')) return PLAN_PATH;
+  if (pathname.startsWith('/operator/security-privacy')) return PROFILE_PATH;
   return PLAN_PATH;
 };
 

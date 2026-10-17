@@ -2,7 +2,7 @@ import type { QueryClient } from '@tanstack/react-query';
 import { isExploreMapBboxEnabled } from '../explore/exploreMapBbox';
 import { invalidateActivityEngagementQueries } from '../explore/exploreMapEngagementFreshness';
 import { coordinationAttentionQueryKey, myJoinedActivitiesQueryKey } from './clientQueryKeys';
-import { invalidateMyParticipantIntentsQueries } from './participantIntentClientApi';
+import { invalidateMySeekingPostsQueries } from './seekingClientApi';
 import { reloadExploreMap } from './useExploreMap';
 
 /** After explore organize publish — plan strips, coordination, map pool (R8.3). */
@@ -14,7 +14,7 @@ export const afterOrganizeActivityPublishClientRefresh = async (
   void queryClient.invalidateQueries({ queryKey: myJoinedActivitiesQueryKey });
   void queryClient.invalidateQueries({ queryKey: coordinationAttentionQueryKey });
   if (input.linkedParticipantIntentId) {
-    invalidateMyParticipantIntentsQueries(queryClient);
+    invalidateMySeekingPostsQueries(queryClient);
   }
   if (!isExploreMapBboxEnabled()) {
     await reloadExploreMap(queryClient);

@@ -57,13 +57,8 @@ export const loadSeekingStorageStatus = async (): Promise<SeekingStorageStatusRe
       `${missingCoords} active intent(s) lack coordinates — backfill skips them; fix coords or run: npm --workspace @uaetrail/api run cancel-coordless-participant-intents -- --dry-run`
     );
   }
-  if (readyToDisableStubWrite && participantIntentStubWriteEnabled) {
-    recommendedSteps.push(
-      'Set PARTICIPANT_INTENT_STUB_WRITE=false on API after deploy (Find writes activities only).'
-    );
-  }
-  if (readyToDisableStubWrite && !participantIntentStubWriteEnabled) {
-    recommendedSteps.push('Seeking storage ready — stub write is already disabled for this database.');
+  if (readyToDisableStubWrite) {
+    recommendedSteps.push('Seeking storage ready — Find writes activities only (COH-01).');
   }
   if (recommendedSteps.length === 0) {
     recommendedSteps.push('No action required.');
@@ -78,9 +73,9 @@ export const loadSeekingStorageStatus = async (): Promise<SeekingStorageStatusRe
   };
 };
 
-/** Deploy gate — backfill complete and stub write off. */
+/** Deploy gate — legacy intent rows backfilled to seeking activities. */
 export const seekingStorageStrictGateFails = (report: SeekingStorageStatusReport): boolean =>
-  !report.readyToDisableStubWrite || report.participantIntentStubWriteEnabled;
+  !report.readyToDisableStubWrite;
 
 export type CancelCoordlessParticipantIntentsResult = {
   dryRun: boolean;

@@ -27,7 +27,7 @@ Do **not** re-implement tier logic in React hooks — consume **`GET /me/status`
 
 **Storefront kinds (`PublishingProfileKind`):** See [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §1.3 — `community`, `pro_guide`, `agency`, `shop`, `ecommerce`, `hospitality`, `partner`. Wire `EntityKind.organisation` is the storefront slug URL, not product copy.
 
-**Product vocabulary (UI):** **`src/content/workspaceVocabulary.ts`** — **Host** = individual leading an outing; **Operator** = agency / shop **workspace** (not a `/me/*` persona); **Guide** = pro individual storefront. **Organize** / **publish** = **capabilities** under **`GET /me/status`** → **`publish`**, not role names. **Architecture/API:** publishing HTTP **`/operator/*`**; legacy **`/host/*`** rewritten; wire `Host*` fields sunset — see [`HOST_CLEANUP_ROADMAP.md`](./HOST_CLEANUP_ROADMAP.md). **Member capabilities:** **`GET /me/status`** · **`useMemberStatus`** · legacy `/me/host-status`, `/me/operator-status` (`Link` → `/me/status`).
+**Product vocabulary (UI):** **`src/content/workspaceVocabulary.ts`** — **Host** = individual leading **this outing**; **Guide / Pro host** = profile-complete member with **individual Pro** — public face is **`/member/:userId`** (no separate guide storefront); **Operator** = **shop or agency business** (tenant) with a **company / shop profile**; **Organize** / **publish** = capabilities under **`GET /me/status`** → **`publish`**. **Architecture/API:** tenant publishing HTTP **`/operator/*`** (wire name — UI uses *Organizer* / *Guide* / *Operator* workspace labels, not “operator” for every community host). **Member capabilities:** **`GET /me/status`** · **`useMemberStatus`**.
 
 ### One stack (person · community · Pro · tenant)
 
@@ -116,7 +116,8 @@ Detail: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §1.6.
 | **Host publishing tier** | How they publish on the map | `community`, `professional`, `business` |
 | **Tenant** | Publishing organisation row | `tenants.publishingPurpose`, `x-organisation-id` |
 | **MembershipRole** | Person ↔ tenant (team) | `TENANT_OWNER`, `TENANT_GUIDE` |
-| **Public brand profile** | Guide / agency / partner storefront | `/guide/:slug`, `/agency/:slug`, `/partner/:slug`, `/shop/:id` |
+| **Public person profile** | Every member (incl. Pro guide) | `/member/:userId` |
+| **Public operator profile** | Agency or shop **business** | `/agency/:slug`, `/shop/:id` (+ shop map pin) |
 
 **UserRole ≠ host tier.** A `PARTICIPANT` can be a **community** host (`canPublish` + community tenant). A **business** guide is often `TENANT_GUIDE` with no owned tenant.
 
@@ -185,9 +186,9 @@ Trusted fields (year goal, upcoming list, etc.) appear only on **trusted** expos
 | Relationship | **buddy** / `social_graph`, `accepted_buddy` | Friends |
 | Directory quota | **member discovery**, `discover=1`, `memberDiscoverProfilePath` | Connect / discover |
 
-**Browse — member people (not chat):** Map People panel (`view=people`; legacy `view=social`) and list **Buddies** share `PeopleBrowseTabContent` (`PeopleBrowsePanel` on map). **Network roster:** `GET /social/people` — friends + followed with trip hints; pill via `GET /social/people/preview`. **Discovery roster:** `GET /me/member-discovery/roster` — going / looking / directory; **quota:** `GET /me/member-discovery-quota`, `GET /users/browse`; profile opens `GET /users/:id/public-profile?from=discover` (**3 unique profiles / 30d**; Pro unlimited). **Chat** is [`COMMUNICATION.md`](./COMMUNICATION.md) (`/messages`, `/chat/*`). **Join me (participation):** `GET/POST /activities/:id/invites` — in-app nudge only; invitee still RSVPs or requests to join; host approval when required. See [`NAVIGATION.md`](./NAVIGATION.md) § Browse — people & crew and [`API_ROUTING.md`](./API_ROUTING.md).
+**Browse — member people (not chat):** Map People panel (`view=people`; legacy `view=social`) and list **Buddies** share `PeopleBrowseTabContent` (`PeopleBrowsePanel` on map). **Network roster:** `GET /me/member-discovery/network` — friends + followed; pill via `GET /me/member-discovery/network/preview`. **Discovery roster:** `GET /me/member-discovery/roster`; **directory:** `GET /me/member-discovery/browse`; **quota:** `GET /me/member-discovery/quota`; **search:** `GET /me/member-discovery/search`. Profile opens `GET /member/:userId/profile?from=discover` (**3 unique profiles / 30d**; Pro unlimited). **Chat** is [`COMMUNICATION.md`](./COMMUNICATION.md) (`/messages`, `/chat/*`). **Join me (participation):** `GET/POST /activities/:id/invites` — in-app nudge only; invitee still RSVPs or requests to join; host approval when required. See [`NAVIGATION.md`](./NAVIGATION.md) § Browse — people & crew and [`API_ROUTING.md`](./API_ROUTING.md).
 
-**Profile view analytics (shipped):** views recorded on `GET /users/:id/public-profile`; owners with host Pro/business see `GET /me/profile-view-stats`.
+**Profile view analytics (shipped):** views recorded on `GET /member/:userId/profile`; owners with host Pro/business see `GET /me/profile-view-stats`.
 
 ---
 
@@ -241,7 +242,7 @@ Product-facing **who is viewing** for **capabilities** (Organize, console, futur
 | Profile, demand, inbox | Member | `GET/PATCH /me/*` |
 | Publish / manage outing | Member + tenant | `POST /host/activities`, `x-organisation-id` |
 | Public person | Optional | `GET /users/:id` (or member public profile) |
-| Pro application | Member | `POST /me/host-application` |
+| Pro application | Member | `POST /me/pro-application` (alias `/me/host-application`) |
 
 ---
 
@@ -279,20 +280,42 @@ Product-facing **who is viewing** for **capabilities** (Organize, console, futur
 
 UI labels vs capabilities vs wire (do not duplicate in other docs — **update this section** when semantics change). UI strings: **`src/content/workspaceVocabulary.ts`**.
 
+### Account ladder
+
+| Stage | Product | Gates / signals |
+|-------|---------|-------------------|
+| **Guest** | Browse within guest rules | No session |
+| **Auth user** | Signed in; buddies, join, settings | Session; **`profileComplete: false`** → **hosting not enabled** |
+| **Profile-complete member** | **Hosting enabled** — community Organize / publish | `profileComplete` + `publish.canPublish` (community tenant) |
+| **Pro host / Guide** | Individual Pro — richer **member profile** | Pro membership + `pro_guide` tenant; still **`/member/:userId`** |
+| **User + operator** | Person linked to **shop or agency** business | `tenant_memberships` / ownership; ≥1 user per operator tenant |
+
+### Map vs discovery
+
+| | On explore map as its own pin? | Found via |
+|--|-------------------------------|-----------|
+| **Member / Pro guide** | **No** | People search, buddies, **`/member/:userId`** |
+| **Agency (operator)** | **No** | Search, activity peek/detail host row, **link from member profile** |
+| **Shop (operator)** | **Yes** (shop pin) | Shops lens, search, member profile link, activities |
+| **Activities** | **Yes** | Map — host row links to member and/or operator profile as published |
+
+### Terms
+
 | Term | Means | Storage / route |
 |------|--------|-----------------|
-| **Host (UI)** | **Individual** leading **this outing** on the map | Copy; wire `hostUserId` until renamed; not a `/me/*` resource |
-| **Operator (UI)** | **Agency / shop** brand or **operator workspace** shell | Copy + `/operator/*` routes; not a member persona |
-| **Guide (UI)** | Pro **individual** storefront (`pro_guide`) | `/guide/:slug`, **Guide workspace** |
+| **Host (UI)** | **Individual** leading **this outing** on the map | Copy; wire `hostUserId`; not a `/me/*` resource |
+| **Guide / Pro host (UI)** | Pro **individual** — same person card, not a second storefront product | `/member/:userId`; Pro fields on profile |
+| **Operator (UI)** | **Shop or agency business** (tenant), always tied to ≥1 **user** | Public **agency / shop profile**; publishing workspace (wire `/operator/*`) |
+| **Operator on member profile** | When a user is linked to a shop/agency, their **`/member/:userId`** shows the **operator display name** as a link → operator profile | API: `linkedOperatorName` + `hostProfilePath` on `GET /member/:userId/profile` |
 | **Organize / publish (capability)** | Member may create/publish outings | `GET /me/status` → `profileComplete` + `publish.canPublish` |
 | **Profile complete** | DOB, gender, based-in on `/welcome` | `profileComplete` on `/me/status` (legacy `signupProfileComplete`) |
 | **Participate** | Join outings as attendee | Auth only; `activity_requests`, `/activities/:id/requests` |
 | **Community tenant (buddy)** | Free individual publish path | `publishingPurpose: community`, auto tenant after profile complete |
-| **Publishing workspace** | Tenant-scoped publish/manage UI | `/operator/*`, `x-organisation-id`, `src/console/*` |
-| **Pro / business publishing** | Agency, shop, professional guide onboarding | `/profile/pro-membership`, `host_applications` |
+| **Publishing workspace** | Tenant-scoped publish/manage UI | Wire `/operator/*`, `x-organisation-id`, `src/console/*` — shell title from `workspaceConsoleLabel(kind)` |
+| **Pro / business publishing** | Agency, shop, professional guide onboarding | `/profile/pro-membership`, HTTP `/me/pro-application` (collection `host_applications` until rename) |
 | **Activity join request** | Join a **published activity** (approval) | `activity_requests`, `/operator/requests` |
-| **Demand join request** | Join a **Find** post (seeking **activity** after M1) | **`activity_requests`** (canonical); `/me/participant-intents/.../requests` aliases for manage UI |
-| **Publishing application** | Pro/agency/shop onboarding | `host_applications` |
+| **Demand join request** | Join a **Find** post (seeking **activity**) | **`activity_requests`** (canonical); `/me/seeking-posts/.../requests` for manage UI |
+| **Pro membership (apply)** | Pro/agency/shop onboarding | HTTP `/me/pro-application`; collection `host_applications` (target `pro_applications`) |
 | **Buddy connection (friends)** | Mutual link between **member accounts**; accept also creates **mutual follow** (`user_follows`, no separate follow notification) | `BuddySummaryDTO.userId` = other person’s user id (no “buddy id”) |
 | **`actorUserId` (notifications)** | Who triggered the action | Always a **user** id — see `DOMAIN_CANONICALS.md` §11 |
 

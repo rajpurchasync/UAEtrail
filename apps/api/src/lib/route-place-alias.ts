@@ -1,19 +1,22 @@
 import type { RequestHandler, Router } from 'express';
 
-/** Legacy alias for a canonical member/catalog path (CPC-4: `/me/places` is canonical). */
+/**
+ * Legacy read alias when handlers are registered on canonical `/places` paths (MIG-COH-02).
+ * New clients must use `/places` and `/me/places` only.
+ */
 export const placePathAlias = (path: string): string | null => {
   if (path.startsWith('/me/places')) {
     return path.replace(/^\/me\/places/, '/me/locations');
   }
-  if (path.startsWith('/locations')) {
-    return path.replace(/^\/locations/, '/places');
+  if (path.startsWith('/places')) {
+    return path.replace(/^\/places/, '/locations');
   }
   return null;
 };
 
 type HttpMethod = 'get' | 'post' | 'patch' | 'delete';
 
-/** Register a handler on both legacy and `/places` paths when applicable. */
+/** Register a handler on canonical `/places` paths and legacy `/locations` alias when applicable. */
 export const registerPlaceAlias = (
   router: Router,
   method: HttpMethod,

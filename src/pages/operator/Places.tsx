@@ -13,7 +13,7 @@ const statusLabel = (status: PlaceDTO['status']) => {
   return 'Inactive';
 };
 
-/** Organisation console for submitting places. Canonical route: `/host/places`. */
+/** Organisation console for submitting places. Canonical route: `/operator/places`. */
 export const Places = () => {
   const [tenantId, setTenantId] = useState(getActiveTenantId());
   const [submitted, setSubmitted] = useState<PlaceDTO[]>([]);

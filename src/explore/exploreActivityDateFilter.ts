@@ -1,4 +1,5 @@
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
+import { isGeographyMapSource } from '@uaetrail/shared-types';
 import { resolveExploreItemScheduleDate } from './ui/exploreMapPinModel';
 
 export type ExploreActivityDatePreset = 'anyday' | 'today' | 'tomorrow' | 'week' | 'month';
@@ -109,7 +110,7 @@ export const matchesActivityDateFilter = (
   preset: ExploreActivityDatePreset
 ): boolean => {
   if (preset === 'anyday') return true;
-  if (item.source === 'venue' || item.source === 'shop' || item.source === 'agency') return true;
+  if (isGeographyMapSource(item.source) || item.source === 'shop' || item.source === 'agency') return true;
 
   const schedule = resolveExploreItemScheduleDate(item);
   if (!schedule) return false;

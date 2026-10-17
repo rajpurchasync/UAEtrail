@@ -14,13 +14,13 @@ afterAll(async () => {
   await cleanupTestUsers();
 });
 
-describe('GET /users/browse', () => {
+describe('GET /me/member-discovery/browse', () => {
   it('allows any signed-in member (not host-Pro gated)', async () => {
     const suffix = `browse-free-${Date.now()}`;
     const visitor = await registerVerifiedVisitor(app, suffix);
 
     const res = await request(app)
-      .get('/api/users/browse?page=1&pageSize=10')
+      .get('/api/me/member-discovery/browse?page=1&pageSize=10')
       .set('Authorization', `Bearer ${visitor.accessToken}`);
 
     expect(res.status).toBe(200);

@@ -60,7 +60,7 @@ Record results from `BASE_URL=https://staging-host npm run p5:slo-smoke` (option
 - [ ] `npm run test:explore-alignment` when explore/FAB changed (S10e automated gate before C19 promote)
 - [ ] **Explore map bbox promote (S10e / C19):** `npm run s10e:staging-checklist` (add `--verify` for quick system gate); then set `EXPLORE_MAP_BBOX=1` (API) and `VITE_EXPLORE_MAP_BBOX=1` (FE build) on **staging only**; smoke per [`operations/EXPLORE_MAP_RUNBOOK.md`](./operations/EXPLORE_MAP_RUNBOOK.md) § bbox bbox fetch; do **not** enable in production until p95 metrics pass
 - [ ] Staging smoke aligned with [`NAVIGATION.md`](./NAVIGATION.md) (explore-first IA — not legacy organizer/community nav)
-- [ ] **Consumer detail + notifications (S9 / S10f):** `BASE_URL=https://staging-host npm run consumer-detail:qa-routes` (prints §8 routes + S10f notification edge checklist) then run §8 matrix in [`experiment/consumer-detail-surfaces-plan.md`](./experiment/consumer-detail-surfaces-plan.md) (substitute seed ids)
+- [ ] **Consumer detail + notifications (S9 / S10f):** `BASE_URL=https://staging-host npm run consumer-detail:qa-routes` (prints QA routes + S10f notification edge checklist; matrix in script output / `consumerDetailQaMatrixGuard`)
 - [ ] **Staging ops (ordered, per env)** — detail: [`operations/SEEKING_STORAGE_RUNBOOK.md`](./operations/SEEKING_STORAGE_RUNBOOK.md). On the server with production `.env` / compose API container:
   1. `npm run seeking:storage-status` — read JSON; fix any `activeIntentsMissingSeekingActivity` before step 2
   2. `npm --workspace @uaetrail/api run backfill-seeking-activities -- --dry-run`, then without `--dry-run` until step 1 reports zero missing

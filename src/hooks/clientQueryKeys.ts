@@ -22,11 +22,14 @@ export const activityReviewsQueryKey = (activityId: string): QueryKey => [
   'reviews',
 ];
 
-/** Member demand / self plans (`GET /me/participant-intents`). */
-export const myParticipantIntentsQueryKey = (refreshKey?: number): QueryKey =>
+/** Member seeking posts (`GET /me/seeking-posts`). */
+export const mySeekingPostsQueryKey = (refreshKey?: number): QueryKey =>
   refreshKey != null && refreshKey !== 0
-    ? ['my-participant-intents', refreshKey]
-    : ['my-participant-intents'];
+    ? ['my-seeking-posts', refreshKey]
+    : ['my-seeking-posts'];
+
+/** @deprecated Use {@link mySeekingPostsQueryKey}. */
+export const myParticipantIntentsQueryKey = mySeekingPostsQueryKey;
 
 export const entityFollowsQueryKey = ['me', 'entity-follows'] as const;
 

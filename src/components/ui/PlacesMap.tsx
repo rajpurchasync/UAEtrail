@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { isGeographyMapSource } from '@uaetrail/shared-types';
 import { Link } from 'react-router-dom';
 import L from 'leaflet';
 import { MapContainer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet';
@@ -126,7 +127,7 @@ const resolvePinSource = (pin: Pick<PlaceMapPin, 'id' | 'source'>): MapPinSource
   if (pin.id.startsWith('agency:')) return 'agency';
   if (
     pin.source === 'activity' ||
-    pin.source === 'venue' ||
+    isGeographyMapSource(pin.source) ||
     pin.source === 'shop' ||
     pin.source === 'agency' ||
     pin.source === 'demand' ||
@@ -220,7 +221,7 @@ const pinIcon = (
     kind,
     pin.activityMode === 'seeking' ? 'seeking' : source
   );
-  const isVenue = source === 'venue';
+  const isVenue = isGeographyMapSource(source);
   const size = isVenue ? (selected ? 36 : 32) : selected ? 36 : 32;
   const iconSize = isVenue ? 15 : 18;
   const ringWidth = selected ? 3 : 2.5;
@@ -948,7 +949,7 @@ export const PlacesMap = ({
           <div className="min-w-[140px]">
             <p className="text-sm font-semibold text-neutral-900">{pin.name}</p>
             <p className="mt-0.5 text-xs text-neutral-500">
-              {pin.source === 'venue'
+              {isGeographyMapSource(pin.source)
                 ? `${formatActivityType(pin.activityType)} spot`
                 : pin.activityType === 'shop'
                   ? 'Shop'

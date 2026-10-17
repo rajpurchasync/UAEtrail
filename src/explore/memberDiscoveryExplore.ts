@@ -6,7 +6,7 @@ import type {
 
 import { memberProfileLink } from '@/member/memberProfileLink';
 
-/** Directory / Connect opens — discover quota on `GET …/public-profile`. */
+/** Directory / Connect opens — discover quota on `GET /member/:id/profile?from=discover`. */
 export const memberDiscoverProfilePath = (userId: string): string =>
   memberProfileLink(userId, 'discover');
 

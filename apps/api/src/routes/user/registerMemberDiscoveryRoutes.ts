@@ -1,7 +1,14 @@
+import type { SocialPeopleSegment } from '@uaetrail/shared-types';
 import type { Router } from 'express';
 import { z } from 'zod';
+import { requireVerifiedEmail } from '../../middleware/auth.js';
 import { paginationSchema } from '../../lib/pagination.js';
 import { validate } from '../../middleware/validate.js';
+import {
+  loadMemberPeopleNetworkPreview,
+  loadMemberPeopleNetworkRoster,
+} from '../../services/member-people-engagement.js';
+import { searchUsersForNewConversation } from '../../services/me-account-session-read.js';
 import {
   listBrowsableMembersForViewer,
   loadMyProfileViewStats,
@@ -9,6 +16,7 @@ import {
 import { resolveMemberDiscoveryQuota } from '../../services/member-discovery-quota.js';
 import { loadMemberDiscoveryRoster } from '../../services/member-discovery-roster.js';
 import { resolveMemberStatus } from '../../services/member-status.js';
+import { userSearchSchema } from './schemas.js';
 
 const memberBrowseQuerySchema = paginationSchema.extend({
   q: z.string().trim().max(80).optional(),
@@ -20,7 +28,11 @@ const memberDiscoveryRosterQuerySchema = paginationSchema.extend({
   omitDirectory: z.literal('1').optional(),
 });
 
-/** Member discovery roster, browse directory, quotas (not activity invites — see registerActivityJoinInviteRoutes). */
+const peopleNetworkSegmentSchema = z.object({
+  segment: z.enum(['all', 'friends', 'followed']).default('all'),
+});
+
+/** Member discovery — roster, directory, network, quota, search (MIG-ROUTING-CANON-P3). */
 export const registerMemberDiscoveryRoutes = (router: Router): void => {
   router.get(
     '/me/member-discovery/roster',
@@ -47,7 +59,7 @@ export const registerMemberDiscoveryRoutes = (router: Router): void => {
     }
   );
 
-  router.get('/me/member-discovery-quota', async (req, res, next) => {
+  router.get('/me/member-discovery/quota', async (req, res, next) => {
     try {
       const viewerUserId = req.auth!.userId;
       const hostStatus = await resolveMemberStatus(viewerUserId);
@@ -59,7 +71,7 @@ export const registerMemberDiscoveryRoutes = (router: Router): void => {
   });
 
   router.get(
-    '/users/browse',
+    '/me/member-discovery/browse',
     validate({ query: memberBrowseQuerySchema }),
     async (req, res, next) => {
       try {
@@ -73,6 +85,58 @@ export const registerMemberDiscoveryRoutes = (router: Router): void => {
         });
 
         res.json({ data, meta: { page: pg.page, pageSize: pg.pageSize } });
+      } catch (error) {
+        next(error);
+      }
+    }
+  );
+
+  router.get(
+    '/me/member-discovery/search',
+    validate({ query: userSearchSchema }),
+    async (req, res, next) => {
+      try {
+        const { q } = req.query as z.infer<typeof userSearchSchema>;
+        const data = await searchUsersForNewConversation({
+          viewerUserId: req.auth!.userId,
+          query: q,
+        });
+        res.json({ data });
+      } catch (error) {
+        next(error);
+      }
+    }
+  );
+
+  router.get(
+    '/me/member-discovery/network/preview',
+    requireVerifiedEmail,
+    async (req, res, next) => {
+      try {
+        const data = await loadMemberPeopleNetworkPreview({
+          viewerUserId: req.auth!.userId,
+          userRole: req.auth!.role,
+        });
+        res.json({ data });
+      } catch (error) {
+        next(error);
+      }
+    }
+  );
+
+  router.get(
+    '/me/member-discovery/network',
+    requireVerifiedEmail,
+    validate({ query: peopleNetworkSegmentSchema }),
+    async (req, res, next) => {
+      try {
+        const { segment } = req.query as unknown as { segment: SocialPeopleSegment };
+        const data = await loadMemberPeopleNetworkRoster({
+          viewerUserId: req.auth!.userId,
+          userRole: req.auth!.role,
+          segment,
+        });
+        res.json({ data });
       } catch (error) {
         next(error);
       }

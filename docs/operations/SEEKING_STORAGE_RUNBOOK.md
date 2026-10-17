@@ -78,7 +78,7 @@ Record in the deploy ticket: date, commit SHA, and the JSON summary (`readyToDis
 ## Local dev
 
 - `.env.example` defaults `PARTICIPANT_INTENT_STUB_WRITE=false` — mirror in root `.env` after backfill.
-- Find flow still works via `/me/participant-intents` routes (read-through over seeking activities).
+- Find flow uses `/me/seeking-posts` (activity-canonical; legacy `participant_intents` read-only).
 
 ## G-manage smoke (staging UI)
 

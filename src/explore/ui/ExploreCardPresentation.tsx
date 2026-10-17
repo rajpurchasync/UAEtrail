@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { isGeographyMapSource } from '@uaetrail/shared-types';
 import { explorePersonRoleLabel } from '@uaetrail/shared-types';
 import { ChevronRight, Clock, MapPin, Route, Star, Tag, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -173,7 +174,7 @@ export const ExploreCardRatingRow = ({
   card: ExploreCardModel;
   compact?: boolean;
 }) => {
-  if (card.source !== 'venue' && card.source !== 'shop' && card.source !== 'agency') return null;
+  if (!isGeographyMapSource(card.source) && card.source !== 'shop' && card.source !== 'agency') return null;
 
   const spacing = compact ? 'mt-1' : 'mt-2';
 
@@ -580,7 +581,7 @@ export const ExploreCardTypeBadge = ({
 
 /** Venue image overlays — kids friendly (left), difficulty or surface type (right). */
 export const ExploreVenueImageBadges = ({ card }: { card: ExploreCardModel }) => {
-  if (card.source !== 'venue') return null;
+  if (!isGeographyMapSource(card.source)) return null;
 
   const rightBadge =
     card.kind === 'hiking' && card.difficulty

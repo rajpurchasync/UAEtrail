@@ -1,5 +1,5 @@
 /**
- * Automated gates from `docs/experiment/member-surfaces-implementation-plan.md` §11.
+ * Member / people surfaces — code gates (archived plan: docs/archive/experiment/member-surfaces-implementation-plan.md).
  * G-manage approve from Plan sheet: manual staging QA; API slice in `g-manage-coordination-join-approve.test.ts`.
  */
 import { readFileSync, readdirSync, statSync } from 'node:fs';
@@ -66,14 +66,14 @@ describe('member surfaces §11 acceptance (automated)', () => {
   });
 
   it('G-arch: participant /host bookmarks redirect off host console', () => {
-    expect(participantHostBookmarkRedirect('/host/overview')).toBe('/explore?compose=host');
-    expect(participantHostBookmarkRedirect('/host/activities')).toContain('/plan');
+    expect(participantHostBookmarkRedirect('/operator/overview')).toBe('/explore?compose=host');
+    expect(participantHostBookmarkRedirect('/operator/activities')).toContain('/plan');
   });
 
   it('G-arch: publishing console path helper includes canonical /operator routes', () => {
     expect(isPublishingConsolePath('/operator/overview')).toBe(true);
-    expect(isPublishingConsolePath('/host/activities')).toBe(true);
-    expect(isPublishingConsolePath('/organizer/requests')).toBe(true);
+    expect(isPublishingConsolePath('/host/activities')).toBe(false);
+    expect(isPublishingConsolePath('/organizer/requests')).toBe(false);
     expect(isPublishingConsolePath('/explore')).toBe(false);
   });
 
@@ -337,10 +337,9 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(create).toMatch(/resolveActivityEngagementPolicy|buildActivityDetailPageShellCard/);
   });
 
-  it('AD-arch: member-surfaces §21 tracks activity detail phases', () => {
-    const plan = read('docs/experiment/member-surfaces-implementation-plan.md');
-    expect(plan).toContain('## 21. Activity detail tabs');
-    expect(plan).toContain('AD-4');
+  it('AD-arch: activity detail phases tracked in code guards (not experiment docs)', () => {
+    expect(read('src/activity/activityDetailAcceptance.test.ts')).toMatch(/AD-PEEK-03/);
+    expect(read('docs/SYSTEM_COHERENCE.md')).toMatch(/§6\.2/);
   });
 
   it('NA-3: crew surfaces come from wire only (no client fallback)', () => {
@@ -452,10 +451,7 @@ describe('member surfaces §11 acceptance (automated)', () => {
     );
   });
 
-  it('NA-arch: §22 viewer-access naming track + no sentence-long entitlement helpers', () => {
-    const plan = read('docs/experiment/member-surfaces-implementation-plan.md');
-    expect(plan).toContain('## 22. Viewer access naming');
-    expect(plan).toContain('NA-1');
+  it('NA-arch: viewer-access naming in Tier-1 + no sentence-long entitlement helpers', () => {
     const canon = read('docs/DOMAIN_CANONICALS.md');
     expect(canon).toContain('### 15.11 Naming vocabulary');
 

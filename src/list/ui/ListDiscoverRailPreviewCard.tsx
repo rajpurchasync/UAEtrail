@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { isGeographyMapSource } from '@uaetrail/shared-types';
 import { Link } from 'react-router-dom';
 import type { ExploreCardModel } from '../../explore/exploreCardModel';
 import { EnvironmentImage } from '../../components/ui/EnvironmentImage';
@@ -24,7 +25,7 @@ export const ListDiscoverRailPreviewCard = ({ card }: ListDiscoverRailPreviewCar
   const showPhoto = Boolean(coverUrl) && !imageFailed;
   const copy = resolveListPosterCopy(card);
   const catalogCopy =
-    card.source === 'venue' || card.source === 'shop' ? resolveListVenuePosterCopy(card) : null;
+    isGeographyMapSource(card.source) || card.source === 'shop' ? resolveListVenuePosterCopy(card) : null;
 
   return (
     <article className={LIST_DISCOVER_HOME.railArticle}>

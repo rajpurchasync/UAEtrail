@@ -9,6 +9,7 @@ import {
   type ActivityViewerAccessLevel,
   type ExploreMapItemDTO,
   exploreMapItemIsSeeking,
+  isGeographyMapSource,
 } from '@uaetrail/shared-types';
 import { MembershipRole, RequestStatus, UserRole } from '../domain/enums.js';
 import { resolveJoinMode } from '../domain/activity-join-mode.js';
@@ -310,7 +311,7 @@ export const attachExploreMapViewerAccess = (
       };
     }
 
-    if (item.source === 'venue') {
+    if (isGeographyMapSource(item.source)) {
       return {
         ...item,
         viewerAccess: withEntitlements(ctx, resolvePublicPlaceMapViewerAccess()),

@@ -21,8 +21,6 @@ import {
   TRIPS_PATH,
   ADMIN_PLACES_PATH,
   OPERATOR_PLACES_PATH,
-  HOST_PLACES_PATH,
-  HOST_MESSAGES_PATH,
   signUpPath,
 } from './surfacePaths';
 import { LEGACY_BECOME_HOST_PATH } from './memberRoutes';
@@ -31,7 +29,7 @@ import {
   LEGACY_OPERATOR_PROFILE_PATH_PREFIX,
 } from '@uaetrail/shared-types';
 
-export { ADMIN_PLACES_PATH, OPERATOR_PLACES_PATH, HOST_PLACES_PATH };
+export { ADMIN_PLACES_PATH, OPERATOR_PLACES_PATH };
 
 /** Full-screen explore map (mobile-first). */
 export const EXPLORE_MAP_PATH = '/explore' as const;
@@ -44,8 +42,8 @@ export const LIST_DISCOVERY_PATH = '/list' as const;
 
 /** @deprecated Use {@link ADMIN_PLACES_PATH} */
 export const ADMIN_LOCATIONS_PATH = ADMIN_PLACES_PATH;
-/** @deprecated Use {@link HOST_PLACES_PATH} */
-export const HOST_LOCATIONS_PATH = HOST_PLACES_PATH;
+/** @deprecated Use {@link OPERATOR_PLACES_PATH} */
+export const HOST_LOCATIONS_PATH = OPERATOR_PLACES_PATH;
 
 /**
  * Domain glossary — product language vs wire/storage names (Phase 1).
@@ -459,7 +457,7 @@ export const shouldShowMobileBottomNav = (
     const params = new URLSearchParams(search);
     if (params.get('list') === '1') return false;
   }
-  if (pathname === MESSAGES_PATH || pathname === HOST_MESSAGES_PATH) {
+  if (pathname === MESSAGES_PATH || pathname === '/operator/messages') {
     const params = new URLSearchParams(search);
     if (params.get('to') || params.get('group')) return false;
   }

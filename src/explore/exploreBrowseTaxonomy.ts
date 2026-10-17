@@ -1,5 +1,6 @@
 import {
   exploreMapItemIsSeeking,
+  isGeographyMapSource,
   isTimeBoundExploreMapItem,
   type ExploreMapItemDTO,
 } from '@uaetrail/shared-types';
@@ -13,7 +14,7 @@ import type { DesktopBrowseTab } from './ui/exploreBrowsePanelCopy';
 
 /**
  * Canonical explore browse taxonomy — map pills + search scopes.
- * @see docs/experiment/explore-browse-taxonomy.md
+ * @see docs/CREATE_FLOW.md · docs/SYSTEM_COHERENCE.md §6
  */
 
 export const EXPLORE_SEARCH_PROMPT = 'What are you looking for?';
@@ -108,7 +109,7 @@ export const mapItemMatchesLookingPill = (item: ExploreMapItemDTO): boolean => e
 
 /** Catalog venues (trails, camps, places) — not shops. */
 export const mapItemMatchesSpotsPill = (item: ExploreMapItemDTO): boolean =>
-  item.source === 'venue' && !isShopPin(item);
+  isGeographyMapSource(item.source) && !isShopPin(item);
 
 export const mapItemMatchesShopsPill = (item: ExploreMapItemDTO): boolean =>
   isShopPin(item) || item.kind === 'shop';

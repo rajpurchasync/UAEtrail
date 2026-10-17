@@ -63,19 +63,43 @@ describe('doc coherence (Tier 1)', () => {
     expect(system).toMatch(/src\/explore/);
   });
 
-  it('platform program spine is in Tier-1 and machine JSON', () => {
+  it('routing alignment schedule is in Tier-1 (§8.7)', () => {
     const system = readFileSync(join(DOCS, 'SYSTEM_COHERENCE.md'), 'utf8');
-    expect(system).toMatch(/### 8\.6 Platform program/);
-    expect(system).toMatch(/refactor-program\.json/);
-    expect(system).toMatch(
-      /Program confirmed; P0–P1 complete; P2\+ gated on S10e\/f \+ migration WIP limit/
+    expect(system).toMatch(/#### 8\.7 Routing alignment/);
+    expect(system).toMatch(/MIG-ROUTING-CANON-P1/);
+    expect(existsSync(join(process.cwd(), 'scripts/routing-canonical-map.json'))).toBe(true);
+  });
+
+  it('experiment folder is stubs-only (schedule §8.8 only)', () => {
+    const readme = readFileSync(join(DOCS, 'experiment/README.md'), 'utf8');
+    expect(readme).toMatch(/§8\.8|8\.8/);
+    const plan = readFileSync(
+      join(DOCS, 'experiment/activity-detail-tabs-implementation-plan.md'),
+      'utf8'
     );
-    const program = JSON.parse(
-      readFileSync(join(process.cwd(), 'scripts/refactor-program.json'), 'utf8')
-    );
-    expect(program.authorization?.authorizedPhases).toEqual(['P0', 'P1']);
+    expect(plan.startsWith('> Superseded by')).toBe(true);
+    expect(
+      existsSync(join(DOCS, 'archive/experiment/activity-detail-tabs-implementation-plan.md'))
+    ).toBe(false);
+  });
+
+  it('PCOH program spine is machine JSON (narrative sync: npm run verify:refactor-program)', () => {
+    const programPath = join(process.cwd(), 'scripts/refactor-program.json');
+    expect(existsSync(programPath)).toBe(true);
+    const program = JSON.parse(readFileSync(programPath, 'utf8'));
+    expect(program.authorization?.statement).toMatch(/PCOH|coherence program/i);
+    expect(program.authorization?.authorizedPhases).toContain('PCOH');
     expect(program.capacity?.maxInProgressMigrations).toBe(2);
-    expect(existsSync(join(process.cwd(), 'scripts/refactor-program.json'))).toBe(true);
+    expect((program.migrations ?? []).some((m: { id: string }) => m.id === 'MIG-COH-00')).toBe(true);
+    expect((program.phases ?? []).some((p: { id: string }) => p.id === 'PCOH')).toBe(true);
+  });
+
+  it('SYSTEM_COHERENCE §8.8 defines sole implementation schedule', () => {
+    const system = readFileSync(join(DOCS, 'SYSTEM_COHERENCE.md'), 'utf8');
+    expect(system).toMatch(/### 8\.8 Coherence program 2026/);
+    expect(system).toMatch(/MIG-COH-01/);
+    expect(existsSync(join(process.cwd(), 'packages/shared-types/src/wire-lexicon.ts'))).toBe(true);
+    expect(existsSync(join(process.cwd(), 'src/content/upl-glossary.ts'))).toBe(true);
   });
 
   it('browse vs entity routing canon is documented in Tier-1', () => {
@@ -85,28 +109,6 @@ describe('doc coherence (Tier 1)', () => {
     expect(canon).toMatch(/GET \/explore\/map/);
     expect(system).toMatch(/### 4\.1 Browse routing strategy/);
     expect(system).toMatch(/\/list/);
-  });
-
-  it('activity detail program doc is indexed with status', () => {
-    const plan = readFileSync(
-      join(DOCS, 'experiment/activity-detail-tabs-implementation-plan.md'),
-      'utf8'
-    );
-    expect(plan).toMatch(/\*\*Status:\*\* `(in_progress|complete)`/);
-    expect(plan).toMatch(/activityDetailAcceptance\.test\.ts/);
-    expect(plan).toMatch(/## 6\. Dynamic CTAs/);
-    expect(plan).toMatch(/#### E — Host, published, \*\*with joiners\*\*/);
-    const index = readFileSync(join(DOCS, 'DOCS_INDEX.md'), 'utf8');
-    expect(index).toMatch(/activity-detail-tabs-implementation-plan/);
-  });
-
-  it('member plan P0 ops defers to SEEKING_STORAGE_RUNBOOK (no re-implement)', () => {
-    const plan = readFileSync(
-      join(DOCS, 'experiment/member-surfaces-implementation-plan.md'),
-      'utf8'
-    );
-    expect(plan).toMatch(/Do not re-implement/);
-    expect(plan).toMatch(/SEEKING_STORAGE_RUNBOOK/);
   });
 
   it('Pro storefront discovery: shop pin, guide/agency via profile surfaces', () => {
@@ -141,29 +143,10 @@ describe('doc coherence (Tier 1)', () => {
     expect(north).toMatch(/find your people|go together|get outside/i);
   });
 
-  it('consumer mobile IA keeps badges on PROFILE_BADGES_PATH (not profile-only redirect)', () => {
-    const ia = readFileSync(join(DOCS, 'experiment/consumer-mobile-ia.md'), 'utf8');
-    expect(ia).toMatch(/\/profile\/badges/);
-    expect(ia).not.toMatch(/\/profile\/badges` redirect to \*\*`\/profile`\*\*/);
-  });
-
-  it('consumer detail surfaces plan records eng-complete S9 status', () => {
-    const plan = readFileSync(
-      join(DOCS, 'experiment/consumer-detail-surfaces-plan.md'),
-      'utf8'
+  it('consumer detail QA gate is scripted (not experiment plan markdown)', () => {
+    expect(existsSync(join(process.cwd(), 'scripts/consumer-detail-manual-qa-routes.mjs'))).toBe(true);
+    expect(existsSync(join(process.cwd(), 'src/config/consumerDetailQaMatrixGuard.test.ts'))).toBe(
+      true
     );
-    expect(plan).toMatch(/\*\*Status:\*\* Eng complete/);
-    expect(plan).toMatch(/detail-surface-lineage-contract/);
-    expect(plan).toMatch(/consumerDetailQaMatrixGuard/);
-    expect(plan).toMatch(/consumerDetailAntiDriftGuard/);
-    expect(plan).toMatch(/0\.2 \/ 0\.7 waived.*no Figma/i);
-    expect(plan).not.toMatch(/Figma entity template.*Pending/i);
-  });
-
-  it('DOCS_INDEX Tier 3 reflects S9 eng complete (not not-started)', () => {
-    const index = readFileSync(join(DOCS, 'DOCS_INDEX.md'), 'utf8');
-    expect(index).toMatch(/consumer detail shells \(S9 eng complete/i);
-    expect(index).not.toMatch(/consumer detail shells \(phased, not started\)/i);
-    expect(index).toMatch(/consumer-detail:qa-routes/);
   });
 });

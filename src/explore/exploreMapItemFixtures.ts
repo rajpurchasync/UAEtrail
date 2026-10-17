@@ -64,7 +64,7 @@ export const venueExploreMapItem = (
   base({
     id: partial.id ?? 'venue:trail-1',
     kind: 'hiking',
-    source: 'venue',
+    source: 'place',
     path: '/trail/trail-1',
     ...partial,
   });

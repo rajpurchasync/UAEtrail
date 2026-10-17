@@ -3,7 +3,12 @@ import {
   buildExploreCardPresentation,
   buildExploreFeaturedPerson,
   buildExploreMapPlanProjection,
+  FACILITY_MAP_SOURCE,
+  PLACE_MAP_SOURCE,
   exploreMapKindToPlanMapKind,
+  isGeographyMapSource,
+  isPlaceMapSource,
+  type ExploreMapPlanSource,
   EXPLORE_SHOPS_LIST_PATH,
   exploreMapPeekPath,
   isFacilityPlaceKind,
@@ -37,7 +42,6 @@ import { isWithinUaeFocusArea } from './uae-bbox.js';
 import { listPublishedAreas } from './areas-store.js';
 import { listFacilitiesForExploreMap } from './facilities-store.js';
 import { resolveAreaIdFromPoint } from './area-resolution.js';
-import { buildExploreAreaLensItems } from './explore-map-area-lens.js';
 import { overlayCatalogDefaultsOnLocation } from './venue-catalog.js';
 
 const resolveShopPresence = (latitude: number | null, longitude: number | null): ShopPresence =>
@@ -292,7 +296,7 @@ export const buildExploreMapBasePayload = async (): Promise<{ items: ExploreMapI
           {
             id: `venue:${dto.id}`,
             kind: 'shop',
-            source: 'venue',
+            source: PLACE_MAP_SOURCE,
             title: dto.name,
             subtitle: dto.region ?? null,
             groupRegionLevels: dto.groupRegionLevels ?? null,
@@ -339,7 +343,7 @@ export const buildExploreMapBasePayload = async (): Promise<{ items: ExploreMapI
           {
             id: `venue:${dto.id}`,
             kind: 'event',
-            source: 'venue',
+            source: PLACE_MAP_SOURCE,
             title: dto.name,
             subtitle: PLACE_KIND_LABELS.outdoor_other,
             latitude,
@@ -384,7 +388,7 @@ export const buildExploreMapBasePayload = async (): Promise<{ items: ExploreMapI
         {
           id: `venue:${dto.id}`,
           kind,
-          source: 'venue',
+          source: PLACE_MAP_SOURCE,
           title: venueLabels.title,
           subtitle: venueLabels.subtitle,
           latitude,
@@ -437,7 +441,7 @@ export const buildExploreMapBasePayload = async (): Promise<{ items: ExploreMapI
         {
           id: `facility:${facility.id}`,
           kind: 'event',
-          source: 'venue',
+          source: FACILITY_MAP_SOURCE,
           title: facility.name,
           subtitle: PLACE_KIND_LABELS[placeKind],
           latitude,
@@ -524,8 +528,6 @@ export const buildExploreMapBasePayload = async (): Promise<{ items: ExploreMapI
 
   attachLinkedRideshareMetadata(items);
 
-  items.push(...buildExploreAreaLensItems(publishedAreas, items));
-
   for (const item of items) {
     if (item.source === 'activity' && item.activity) {
       const activityMode = item.activityMode ?? 'hosted';
@@ -562,11 +564,11 @@ export const buildExploreMapBasePayload = async (): Promise<{ items: ExploreMapI
       );
       continue;
     }
-    if (item.source === 'venue' || item.source === 'shop') {
+    if (isGeographyMapSource(item.source) || item.source === 'shop') {
       Object.assign(
         item,
         buildExploreMapPlanProjection({
-          source: item.source,
+          source: item.source as ExploreMapPlanSource,
           mapKind: exploreMapKindToPlanMapKind(item.kind),
         })
       );
@@ -574,8 +576,8 @@ export const buildExploreMapBasePayload = async (): Promise<{ items: ExploreMapI
   }
 
   const locationIds = items
-    .filter((item) => item.source === 'venue')
-    .map((item) => item.locationCard?.id ?? item.id.replace(/^venue:/, ''));
+    .filter((item) => isPlaceMapSource(item.source))
+    .map((item) => item.locationCard?.id ?? item.id.replace(/^(venue|place):/, ''));
   const tenantIds = items
     .filter((item) => item.source === 'shop')
     .map((item) => item.tenantId ?? item.id.replace(/^shop:/, ''));
@@ -588,8 +590,8 @@ export const buildExploreMapBasePayload = async (): Promise<{ items: ExploreMapI
   for (const item of items) {
     item.presentation = buildExploreCardPresentation(item);
     if (item.source === 'area') continue;
-    if (item.source === 'venue') {
-      const id = item.locationCard?.id ?? item.id.replace(/^venue:/, '');
+    if (isPlaceMapSource(item.source)) {
+      const id = item.locationCard?.id ?? item.id.replace(/^(venue|place):/, '');
       const stat = locationStats.get(id);
       if (stat) {
         item.averageRating = stat.averageRating;

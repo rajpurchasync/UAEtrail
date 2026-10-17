@@ -3,18 +3,17 @@ import { isParticipantIntentStubWriteEnabled } from '../src/services/participant
 
 const ENV_KEY = 'PARTICIPANT_INTENT_STUB_WRITE';
 
-describe('PARTICIPANT_INTENT_STUB_WRITE default (M2d)', () => {
+describe('PARTICIPANT_INTENT_STUB_WRITE (COH-01 retired)', () => {
   afterEach(() => {
     delete process.env[ENV_KEY];
   });
 
-  it('defaults to stub write off when env is unset', () => {
-    delete process.env[ENV_KEY];
+  it('stub write is permanently disabled', () => {
     expect(isParticipantIntentStubWriteEnabled()).toBe(false);
   });
 
-  it('enables dual-write only when explicitly true', () => {
+  it('ignores legacy env rollback flag', () => {
     process.env[ENV_KEY] = 'true';
-    expect(isParticipantIntentStubWriteEnabled()).toBe(true);
+    expect(isParticipantIntentStubWriteEnabled()).toBe(false);
   });
 });

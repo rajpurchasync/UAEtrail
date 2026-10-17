@@ -15,7 +15,6 @@ export { messagingApi } from '../api/domains/messaging';
 export { socialApi } from '../api/domains/social';
 export {
   CHAT_PATH,
-  HOST_MESSAGES_PATH,
   MESSAGES_PATH,
   messagesGroupPath,
   messagesToUserPath,

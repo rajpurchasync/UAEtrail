@@ -8,7 +8,7 @@ export const openApiTags = [
   {
     name: 'Operator',
     description:
-      'Publishing console — tenant activities, team, places (`/operator/*`). Legacy `/host/*` returns `Deprecation: true` with `Link` to `/operator/*`.',
+      'Publishing console — tenant activities, team, places (`/operator/*` only).',
   },
   { name: 'Host', description: 'Deprecated alias for Operator tag — prefer `/operator/*` paths in new clients.' },
   { name: 'Shop', description: 'Shop organisations, products, and checkout (`/shop/*`).' },

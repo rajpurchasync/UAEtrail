@@ -1,11 +1,11 @@
 {
   "version": 1,
-  "description": "Platform program spine. Work unit = bounded context (manifest id), not a single UI surface. Narrative: docs/SYSTEM_COHERENCE.md §3 + §8.6.",
+  "description": "Platform program spine. Work unit = bounded context (manifest id). Sole implementation schedule: docs/SYSTEM_COHERENCE.md §8.8 PCOH + MIG-COH-*.",
   "updated": "2026-10-17",
   "authorization": {
     "approvedOn": "2026-10-17",
-    "statement": "Program confirmed; P0–P1 complete; P2+ gated on S10e/f + migration WIP limit.",
-    "authorizedPhases": ["P0", "P1"],
+    "statement": "CTO coherence program (PCOH): pre-launch domain dedup and strict UPL/BWL separation. P0–P4 API complete. Sole implementation schedule: §8.8 and MIG-COH-* in refactor-program.json. S10e/S10f gate release.",
+    "authorizedPhases": ["PCOH"],
     "p2PlusRequires": [
       "P0.status is complete",
       "P1.status is complete",
@@ -13,7 +13,7 @@
       "S10f human QA checklist run on staging",
       "in_progress migrations ≤ maxInProgressMigrations"
     ],
-    "p2UnlockStatus": "P2–P4 eng complete (routes tree → services); S10e/S10f release gates pending"
+    "p2UnlockStatus": "P2–P4 API eng complete; PCOH §8.8 owns all pre-launch coherence work; S10e/S10f pending"
   },
   "capacity": {
     "platformEngineeringPercentTarget": "30-40",
@@ -84,8 +84,38 @@
       "exitCriteria": ["P2 complete", "No new business rules in route handlers (guard)"]
     },
     {
+      "id": "P4b",
+      "name": "Surface unification — UI, flows, routing, hooks (S13 + §6.2 closure)",
+      "status": "complete",
+      "owner": "product-eng",
+      "targetWindowWeeks": "8-16",
+      "authorization": "authorized",
+      "exitCriteria": [
+        "P4 complete",
+        "MIG-SURFACE-* complete per bounded context (horizontal: feRoots + api/domains + registrar + Tier-1)",
+        "S10f consumer-detail QA matrix signed on staging (npm run consumer-detail:qa-routes)",
+        "MIG-SERVICE-IDENTITY-BOUNDARY: services off lib/auth-users|auth-tokens|chat-data|social-data",
+        "MIG-DOCS-EXPERIMENT-STUB: experiment plans stubbed; §8.3/§8.6 sole schedule",
+        "npm run verify:system"
+      ]
+    },
+    {
+      "id": "PCOH",
+      "name": "Coherence 2026 — UPL/BWL separation, domain dedup, API flow unification",
+      "status": "in_progress",
+      "owner": "product-eng",
+      "targetWindowWeeks": "pre-launch",
+      "authorization": "authorized",
+      "exitCriteria": [
+        "docs/SYSTEM_COHERENCE.md §8.8 definition of done",
+        "MIG-COH-00 through MIG-COH-12 complete",
+        "wire-lexicon.ts + upl-glossary.ts",
+        "npm run verify:system"
+      ]
+    },
+    {
       "id": "P5",
-      "name": "Observability + load — SLOs, tracing, k6 smoke",
+      "name": "Observability + load — SLO smoke (staging baselines)",
       "status": "gated",
       "owner": "platform",
       "targetWindowWeeks": "4-6",
@@ -371,7 +401,7 @@
         "apps/api/src/routes/chat.ts",
         "apps/api/src/routes/media.ts",
         "apps/api/src/routes/shop.ts",
-        "apps/api/src/routes/reports.ts",
+        "apps/api/src/routes/safety.ts",
         "apps/api/src/routes/og.ts",
         "apps/api/src/routes/stripe-webhook.ts",
         "apps/api/src/services/auth-registration-commands.ts",
@@ -439,7 +469,7 @@
     {
       "id": "MIG-P5-SLO-SMOKE",
       "phase": "P5",
-      "status": "in_progress",
+      "status": "planned",
       "owner": "platform",
       "contextIds": ["discovery", "participation"],
       "apiRoots": [
@@ -448,6 +478,296 @@
       ],
       "feRoots": [],
       "successMetric": "Eng: p5:slo-smoke preflight + probe contracts in verify:domain. Ops: staging run + PRE_DEPLOY SLO checkboxes before close."
+    },
+    {
+      "id": "MIG-SURFACE-ACTIVITY-DETAIL",
+      "phase": "P4b",
+      "status": "planned",
+      "owner": "product-eng",
+      "contextIds": ["participation", "discovery"],
+      "apiRoots": [
+        "apps/api/src/services/activity-public-read.ts",
+        "apps/api/src/services/activity-viewer-access.ts",
+        "apps/api/src/services/compose-activity-viewer-access.ts"
+      ],
+      "feRoots": [
+        "src/pages/ActivityDetail.tsx",
+        "src/activity/detail",
+        "src/components/activity/detail",
+        "src/hooks/usePublicActivityDetail.ts",
+        "src/hooks/useActivityJoinFlow.ts"
+      ],
+      "successMetric": "One L3 shell + kind composers; peek→detail parity; guest/join kit; activityDetailAcceptance + S10f activity rows"
+    },
+    {
+      "id": "MIG-SURFACE-EXPLORE-IA",
+      "phase": "P4b",
+      "status": "planned",
+      "owner": "discovery",
+      "contextIds": ["discovery"],
+      "apiRoots": ["apps/api/src/lib/explore-map-route.ts"],
+      "feRoots": ["src/explore", "src/list", "src/discovery"],
+      "successMetric": "Single map/browse/list/discover IA in code + exploreRouting; DISC-METH guards; no duplicate browse chrome"
+    },
+    {
+      "id": "MIG-SURFACE-MEMBER-PEOPLE",
+      "phase": "P4b",
+      "status": "planned",
+      "owner": "product-eng",
+      "contextIds": ["member_identity", "social_graph"],
+      "apiRoots": [
+        "apps/api/src/services/profile-viewer-access.ts",
+        "apps/api/src/services/member-discovery-me-read.ts"
+      ],
+      "feRoots": ["src/member", "src/people-discovery", "src/pages/MemberProfile.tsx", "src/pages/Buddies.tsx"],
+      "successMetric": "memberProfileLink lenses; one people browse module; memberBrowseRowModel everywhere; memberSurfacesAcceptance"
+    },
+    {
+      "id": "MIG-SURFACE-ADMIN-OPS",
+      "phase": "P4b",
+      "status": "planned",
+      "owner": "platform",
+      "contextIds": ["platform_ops"],
+      "apiRoots": ["apps/api/src/routes/admin.ts"],
+      "feRoots": ["src/pages/AdminOverview.tsx", "src/pages/AdminMembers.tsx"],
+      "successMetric": "Admin routes in NAVIGATION + adminSurfacesAcceptance; no consumer peek imports in Admin*"
+    },
+    {
+      "id": "MIG-SERVICE-IDENTITY-BOUNDARY",
+      "phase": "P4b",
+      "status": "planned",
+      "owner": "platform",
+      "contextIds": ["member_identity", "communication"],
+      "apiRoots": [
+        "apps/api/src/services/member-identity-read.ts",
+        "apps/api/src/services/member-identity-commands.ts",
+        "apps/api/src/services/auth-session-read.ts",
+        "apps/api/src/services/auth-session-commands.ts"
+      ],
+      "feRoots": ["src/api/domains/member.ts", "src/api/domains/account.ts"],
+      "successMetric": "New service-layer guard: no lib/auth-users|auth-tokens|chat-data|social-data outside allowlist (middleware + *-store libs)"
+    },
+    {
+      "id": "MIG-DOCS-EXPERIMENT-STUB",
+      "phase": "P4b",
+      "status": "complete",
+      "owner": "platform",
+      "contextIds": [],
+      "apiRoots": ["scripts/verify-docs-tier1.mjs"],
+      "feRoots": ["docs/experiment", "docs/archive/experiment"],
+      "successMetric": "experiment/*.md stubs only; bodies in archive/experiment; verify:docs enforces stub shape"
+    },
+    {
+      "id": "MIG-ROUTING-CANON-P0",
+      "phase": "P4b",
+      "status": "complete",
+      "owner": "platform",
+      "contextIds": [],
+      "apiRoots": ["scripts/routing-canonical-map.json", "scripts/verify-routing-canon.mjs"],
+      "feRoots": ["docs/SYSTEM_COHERENCE.md"],
+      "successMetric": "§8.7 schedule + map JSON; verify:routing-canon phase0; no breaking API until P1+"
+    },
+    {
+      "id": "MIG-ROUTING-CANON-P1",
+      "phase": "P4b",
+      "status": "complete",
+      "owner": "platform",
+      "contextIds": ["publishing_workspace"],
+      "apiRoots": ["apps/api/src/routes/operator.ts"],
+      "feRoots": ["src/pages/operator", "src/config/surfacePaths.ts"],
+      "successMetric": "No /host API rewrite or SPA tree; enforcement phase1 in routing-canonical-map"
+    },
+    {
+      "id": "MIG-ROUTING-CANON-P2",
+      "phase": "P4b",
+      "status": "complete",
+      "owner": "product-eng",
+      "contextIds": ["member_identity"],
+      "apiRoots": ["apps/api/src/routes/user/registerPublicMemberRoutes.ts"],
+      "feRoots": ["src/api/domains/account.ts", "src/pages/MemberProfile.tsx"],
+      "successMetric": "SPA /member/:id ↔ API /member/:userId/* only"
+    },
+    {
+      "id": "MIG-ROUTING-CANON-P3",
+      "phase": "P4b",
+      "status": "complete",
+      "owner": "discovery",
+      "contextIds": ["member_discovery"],
+      "apiRoots": ["apps/api/src/routes/user/registerMemberDiscoveryRoutes.ts"],
+      "feRoots": ["src/api/domains/account.ts", "src/people-discovery"],
+      "successMetric": "No /social mount; member-discovery network + browse + search paths"
+    },
+    {
+      "id": "MIG-ROUTING-CANON-P4",
+      "phase": "P4b",
+      "status": "complete",
+      "owner": "platform",
+      "contextIds": ["platform_ops"],
+      "apiRoots": ["apps/api/src/routes/safety.ts"],
+      "feRoots": ["src/api/domains/safety.ts", "src/hooks/contentReportClientApi.ts"],
+      "successMetric": "POST /safety/reports; safety domain module; no reportContent on socialApi"
+    },
+    {
+      "id": "MIG-ROUTING-CANON-P5",
+      "phase": "P4b",
+      "status": "planned",
+      "owner": "product-eng",
+      "contextIds": ["engagement"],
+      "apiRoots": ["apps/api/src/routes/user/registerMeWishlistRoutes.ts"],
+      "feRoots": ["src/api/domains/goals.ts", "src/api/domains/social.ts"],
+      "successMetric": "One feDomain module per /me resource; apiLegacyGuard boundaries"
+    },
+    {
+      "id": "MIG-ROUTING-CANON-P11",
+      "phase": "P4b",
+      "status": "planned",
+      "owner": "platform",
+      "contextIds": [],
+      "apiRoots": [],
+      "feRoots": ["src/App.tsx", "src/config/routingHygiene.test.ts"],
+      "successMetric": "No legacy Navigate-only routes; routingHygiene bans"
+    },
+    {
+      "id": "MIG-COH-00",
+      "phase": "PCOH",
+      "status": "complete",
+      "owner": "platform",
+      "contextIds": [],
+      "apiRoots": ["packages/shared-types/src/wire-lexicon.ts", "apps/api/tests/terminology-leak-guard.test.ts"],
+      "feRoots": ["src/content/upl-glossary.ts", "src/config/terminologyLeakGuard.test.ts"],
+      "successMetric": "§8.8.7 governance; UPL/BWL modules; leak guards in verify:domain"
+    },
+    {
+      "id": "MIG-COH-01",
+      "phase": "PCOH",
+      "status": "complete",
+      "owner": "product-eng",
+      "contextIds": ["participation", "compose", "discovery"],
+      "apiRoots": [
+        "apps/api/src/routes/user/registerMeParticipantIntentRoutes.ts",
+        "apps/api/src/services/participant-intent-me-commands.ts",
+        "apps/api/src/lib/participant-intents-store.ts"
+      ],
+      "feRoots": [
+        "src/api/domains/seeking.ts",
+        "src/hooks/seekingClientApi.ts",
+        "src/explore/ui/seekingFlowEngine.ts"
+      ],
+      "successMetric": "No participant_intents writes; seeking activities only; no demand: ids"
+    },
+    {
+      "id": "MIG-COH-02",
+      "phase": "PCOH",
+      "status": "complete",
+      "owner": "product-eng",
+      "contextIds": ["places", "facilities", "discovery"],
+      "apiRoots": ["apps/api/src/lib/route-place-alias.ts", "apps/api/src/routes/user/registerPublicPlaceRoutes.ts"],
+      "feRoots": ["src/place/geographyVocabulary.ts", "src/api/domains/places.ts"],
+      "successMetric": "HTTP /places (+ /locations alias); map source place + facility; Area is a name not a pin; venue/catalog_place read-compat only"
+    },
+    {
+      "id": "MIG-COH-03",
+      "phase": "PCOH",
+      "status": "complete",
+      "owner": "product-eng",
+      "contextIds": ["member_publish_capabilities", "platform_ops"],
+      "apiRoots": [
+        "apps/api/src/lib/route-pro-application-alias.ts",
+        "apps/api/src/routes/user/registerHostApplicationRoutes.ts",
+        "apps/api/src/routes/admin/registerAdminHostApplicationRoutes.ts"
+      ],
+      "feRoots": ["src/config/memberRoutes.ts", "src/pages/ProfileProMembership.tsx", "src/api/domains/organisation.ts"],
+      "successMetric": "HTTP /me/pro-application + /admin/pro-applications; UPL Pro membership; collection rename optional"
+    },
+    {
+      "id": "MIG-COH-04",
+      "phase": "PCOH",
+      "status": "planned",
+      "owner": "platform",
+      "contextIds": ["publishing_workspace"],
+      "apiRoots": ["apps/api/src/routes/operator.ts"],
+      "feRoots": ["src/config/surfacePaths.ts", "src/App.tsx"],
+      "successMetric": "HTTP /publishing/* API + SPA; delete legacy host middleware"
+    },
+    {
+      "id": "MIG-COH-05",
+      "phase": "PCOH",
+      "status": "planned",
+      "owner": "discovery",
+      "contextIds": ["member_discovery", "social_graph"],
+      "apiRoots": ["apps/api/src/routes/user/registerMemberDiscoveryRoutes.ts"],
+      "feRoots": ["src/people-discovery", "src/content/explorePeopleBrowseCopy.ts"],
+      "successMetric": "No orphan /people registrar; buddies segment BWL; UPL People/Friends"
+    },
+    {
+      "id": "MIG-COH-06",
+      "phase": "PCOH",
+      "status": "planned",
+      "owner": "product-eng",
+      "contextIds": ["participation"],
+      "apiRoots": ["apps/api/src/lib/activity-engagement-store.ts"],
+      "feRoots": ["src/content/joinWithdrawCopy.ts", "src/api/domains/activities.ts"],
+      "successMetric": "organizer_note renamed host_note BWL; UPL host copy"
+    },
+    {
+      "id": "MIG-COH-07",
+      "phase": "PCOH",
+      "status": "planned",
+      "owner": "product-eng",
+      "contextIds": ["participation", "member_identity", "discovery"],
+      "apiRoots": ["packages/shared-types/src/activity-publisher-display.ts"],
+      "feRoots": ["src/activity/detail", "src/pages/ActivityDetail.tsx"],
+      "successMetric": "Publisher resolver; activity detail parity; /guide retired for individuals"
+    },
+    {
+      "id": "MIG-COH-08",
+      "phase": "PCOH",
+      "status": "planned",
+      "owner": "platform",
+      "contextIds": ["discovery"],
+      "apiRoots": ["apps/api/src/lib/explore-map.ts", "scripts/p5-slo-smoke.mjs"],
+      "feRoots": ["src/explore/shell"],
+      "successMetric": "Map public vs overlay; outbox-only cache bust; SLO baseline"
+    },
+    {
+      "id": "MIG-COH-09",
+      "phase": "PCOH",
+      "status": "planned",
+      "owner": "platform",
+      "contextIds": ["engagement", "social_graph"],
+      "apiRoots": ["apps/api/src/routes/user/registerMeWishlistRoutes.ts"],
+      "feRoots": ["src/api/domains/social.ts", "src/api/domains/goals.ts"],
+      "successMetric": "socialApi split; user_wishlist collection; MIG-SERVICE-IDENTITY-BOUNDARY"
+    },
+    {
+      "id": "MIG-COH-10",
+      "phase": "PCOH",
+      "status": "planned",
+      "owner": "product-eng",
+      "contextIds": ["compose"],
+      "apiRoots": ["apps/api/src/services/member-publish-gate.ts"],
+      "feRoots": ["src/explore/ui/createOrganize", "src/explore/ui/hostingFlow.ts"],
+      "successMetric": "Single Organize compose tree; hostingFlow duplicate removed"
+    },
+    {
+      "id": "MIG-COH-11",
+      "phase": "PCOH",
+      "status": "planned",
+      "owner": "platform",
+      "contextIds": ["platform_ops", "commerce"],
+      "apiRoots": ["apps/api/src/routes/admin.ts", "apps/api/src/routes/shop.ts"],
+      "feRoots": ["src/pages/AdminOverview.tsx"],
+      "successMetric": "Admin acceptance; shop registrar split started"
+    },
+    {
+      "id": "MIG-COH-12",
+      "phase": "PCOH",
+      "status": "planned",
+      "owner": "platform",
+      "contextIds": [],
+      "apiRoots": ["scripts/verify-domain-canonicals.mjs"],
+      "feRoots": ["src/App.tsx", "src/config/routingHygiene.test.ts"],
+      "successMetric": "Legacy purge; journey tests; verify:domain shard; routing hygiene"
     }
   ],
   "stranglerRules": [

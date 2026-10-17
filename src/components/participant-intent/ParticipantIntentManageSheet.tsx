@@ -27,9 +27,9 @@ import { formatParticipantIntentMeta } from '../../member-plan/participantIntent
 import { AppButton, AppButtonLink } from '../mobile/AppButton';
 import { Dialog } from '../ui/Dialog';
 import {
-  cancelParticipantIntent,
-  invalidateMyParticipantIntentsQueries,
-} from '../../hooks/participantIntentClientApi';
+  cancelSeekingPost,
+  invalidateMySeekingPostsQueries,
+} from '../../hooks/seekingClientApi';
 import { useReloadExploreMap } from '../../hooks/useReloadExploreMap';
 import { useMemberStatus } from '../../hooks/useMemberStatus';
 import { useAuth } from '../../context/AuthContext';
@@ -162,8 +162,8 @@ export const ParticipantIntentManageSheet = ({
     setBusy(true);
     setError(null);
     try {
-      await cancelParticipantIntent(intent.id);
-      invalidateMyParticipantIntentsQueries(queryClient);
+      await cancelSeekingPost(intent.id);
+      invalidateMySeekingPostsQueries(queryClient);
       setConfirmRemove(false);
       await reloadExploreMap();
       await onChanged();

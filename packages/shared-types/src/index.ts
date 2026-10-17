@@ -15,6 +15,7 @@ import type { HostParticipantRosterStatus, ParticipantHostRatingDTO } from './pa
 import type { ExploreActivityMode } from './explore-activity-mode.js';
 import type { ActivityGroupChatPostPolicy } from './activity-group-chat-post-policy.js';
 import type { PlaceNearbyFacilityDTO } from './place-kind.js';
+import type { ExploreMapSourceWire } from './wire-lexicon.js';
 
 export type UserRole =
   | 'platform_admin'
@@ -690,7 +691,8 @@ export interface MerchantPublicDTO extends MerchantProfileDTO {
 export type ShopPublicDTO = MerchantPublicDTO;
 
 export type ExploreMapKind = ActivityType | 'shop' | 'agency' | 'area';
-export type ExploreMapSource = 'activity' | 'venue' | 'shop' | 'agency' | 'demand' | 'area';
+export type { ExploreMapSourceCanonical, ExploreMapSourceWire } from './wire-lexicon.js';
+export type ExploreMapSource = ExploreMapSourceWire;
 
 export type { ExploreAreaLensStatsDTO } from './explore-area-lens.js';
 export { exploreAreaLensStatsSummary } from './explore-area-lens.js';
@@ -873,7 +875,7 @@ export interface ExploreMapItemDTO {
   participationMode?: ParticipationMode | null;
   /** Rideshare activities linked to this parent plan (parent rows only). */
   linkedRideshareActivities?: ExploreLinkedRideshareDTO[];
-  /** Locations lens — counts for area map pin + peek (not stored in Redis). */
+  /** Area hub rollups (place/facility counts). Not a map pin — Area is an admin-curated name. */
   areaLensStats?: import('./explore-area-lens.js').ExploreAreaLensStatsDTO | null;
   /**
    * Per-viewer peek/detail hints for hosted plans (activity + demand).
@@ -1243,6 +1245,15 @@ export {
   resolveExploreItemSource,
   resolveMapPinItemSource,
   resolveMapPinEmoji,
+  CATALOG_PLACE_MAP_SOURCE,
+  FACILITY_MAP_SOURCE,
+  PLACE_MAP_SOURCE,
+  LEGACY_VENUE_MAP_SOURCE,
+  isCatalogPlaceMapSource,
+  isFacilityMapSource,
+  isGeographyMapSource,
+  isPlaceMapSource,
+  normalizeExploreMapSource,
   sanitizeExploreLocation,
   type ExploreCardDetail,
   type ExploreCardDetailIcon,
@@ -1764,3 +1775,14 @@ export type {
   AgentDiscoverResponseDTO,
   AgentManifestDTO,
 } from './agent-discover.js';
+
+export {
+  BWL_COLLECTIONS,
+  BWL_ACTIVITY_PERSON_FIELDS,
+  BWL_JOIN_REQUEST_FIELDS,
+  BWL_API_MOUNTS,
+  BWL_EXPLORE_MAP_SOURCE,
+  BWL_PEOPLE_SEGMENT,
+  BWL_USER_ROLES,
+} from './wire-lexicon.js';
+export type { ActivityModeWire } from './wire-lexicon.js';

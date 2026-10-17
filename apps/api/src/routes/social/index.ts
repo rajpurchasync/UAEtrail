@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { registerSocialPeopleRoutes } from './registerSocialPeopleRoutes.js';
 
-/** Social graph reads — people roster on Explore (`/social/*`). */
+/**
+ * @deprecated People network reads moved to `registerMemberDiscoveryRoutes` (`/me/member-discovery/network*`).
+ * Kept so importers do not break; no longer mounted on `apiRouter`.
+ */
 export const socialGraphRouter = Router();
-
-registerSocialPeopleRoutes(socialGraphRouter);

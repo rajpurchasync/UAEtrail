@@ -16,14 +16,13 @@ import {
 import {
   listMyTenantMemberships,
   loadMyInbox,
-  searchUsersForNewConversation,
 } from '../../services/me-account-session-read.js';
 import {
   listMyActivityJoinRequests,
   listMyParticipatingActivities,
   loadMyActivityJoinRequest,
 } from '../../services/me-activity-participation-read.js';
-import { eventIdParamSchema, pushSubscriptionSchema, userSearchSchema } from './schemas.js';
+import { eventIdParamSchema, pushSubscriptionSchema } from './schemas.js';
 
 const meRequestIdParamSchema = z.object({ requestId: z.string().min(1) });
 
@@ -181,16 +180,4 @@ export const registerMeAccountSessionRoutes = (router: Router): void => {
     }
   });
 
-  router.get('/users/search', validate({ query: userSearchSchema }), async (req, res, next) => {
-    try {
-      const { q } = req.query as z.infer<typeof userSearchSchema>;
-      const data = await searchUsersForNewConversation({
-        viewerUserId: req.auth!.userId,
-        query: q,
-      });
-      res.json({ data });
-    } catch (error) {
-      next(error);
-    }
-  });
 };

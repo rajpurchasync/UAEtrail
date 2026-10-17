@@ -1,4 +1,5 @@
 import type { ExploreCardModel } from '../explore/exploreCardModel';
+import { isGeographyMapSource } from '@uaetrail/shared-types';
 import { buildExploreListMeta, exploreCardIsSeeking } from '../explore/exploreCardModel';
 import { ACTIVITY_TYPE_LABELS, type ActivityType } from '../config/activityTypes';
 import { resolveListFeedPosterRequirementLabels } from './listFeedPosterStandard';
@@ -59,7 +60,7 @@ export const resolveBrowsePosterHeroTitle = (card: ExploreCardModel): string => 
   const activityTitle = card.activity?.title?.trim();
   if (activityTitle) return activityTitle;
 
-  if (card.source === 'venue' || card.source === 'shop' || card.source === 'agency') {
+  if (isGeographyMapSource(card.source) || card.source === 'shop' || card.source === 'agency') {
     const headline = card.headline?.trim();
     if (headline) return headline.split(' - ')[0]?.trim() || headline;
   }
@@ -274,7 +275,7 @@ export const resolveBrowsePosterLabels = (card: ExploreCardModel): string[] => {
   const labels: string[] = [];
   if (card.source === 'activity') labels.push('Trip');
   if (exploreCardIsSeeking(card)) labels.push('Looking for');
-  if (card.source === 'venue') labels.push('Spot');
+  if (isGeographyMapSource(card.source)) labels.push('Spot');
   if (card.source === 'shop') labels.push('Shop');
   const typeLabel = resolveBrowsePosterActivityTypeLabel(card);
   if (typeLabel) labels.push(typeLabel);

@@ -3,9 +3,9 @@ import { useEffect, useState } from 'react';
 import type { ParticipantIntentDTO } from '@uaetrail/shared-types';
 import { AppButton } from '../mobile/AppButton';
 import {
-  invalidateMyParticipantIntentsQueries,
-  updateParticipantIntent,
-} from '../../hooks/participantIntentClientApi';
+  invalidateMySeekingPostsQueries,
+  updateSeekingPost,
+} from '../../hooks/seekingClientApi';
 import { useReloadExploreMap } from '../../hooks/useReloadExploreMap';
 import type { LocationPrecision } from '../../explore/ui/organizeFlow';
 import {
@@ -87,7 +87,7 @@ export const ParticipantIntentEditForm = ({ intent, onSaved, onCancel }: Partici
         return;
       }
 
-      await updateParticipantIntent(intent.id, {
+      await updateSeekingPost(intent.id, {
         kind: intent.kind,
         title: title.trim(),
         date: intent.kind === 'other' ? null : date || null,
@@ -101,7 +101,7 @@ export const ParticipantIntentEditForm = ({ intent, onSaved, onCancel }: Partici
         partySize: size,
         comment: comment.trim(),
       });
-      invalidateMyParticipantIntentsQueries(queryClient);
+      invalidateMySeekingPostsQueries(queryClient);
       await reloadExploreMap();
       await onSaved();
     } catch (err) {

@@ -24,22 +24,13 @@ describe('seeking storage ops', () => {
     expect(rootPkg).toMatch(/"seeking:deploy-gate":\s*"npm run seeking:storage-status -- --strict"/);
   });
 
-  it('strict gate fails when backfill incomplete or stub write enabled', () => {
+  it('strict gate fails when backfill incomplete', () => {
     expect(
       seekingStorageStrictGateFails({
         participantIntentStubWriteEnabled: false,
         activeIntentsMissingSeekingActivity: 1,
         activeIntentsMissingCoordsSkippedByBackfill: 0,
         readyToDisableStubWrite: false,
-        recommendedSteps: [],
-      })
-    ).toBe(true);
-    expect(
-      seekingStorageStrictGateFails({
-        participantIntentStubWriteEnabled: true,
-        activeIntentsMissingSeekingActivity: 0,
-        activeIntentsMissingCoordsSkippedByBackfill: 0,
-        readyToDisableStubWrite: true,
         recommendedSteps: [],
       })
     ).toBe(true);

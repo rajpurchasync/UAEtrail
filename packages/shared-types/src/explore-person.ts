@@ -3,6 +3,7 @@ import { ORGANIZER_FALLBACK_DISPLAY_NAME, resolveHostPersonDisplayName } from '.
 import type { PublishingProfileKind } from './publishing-profile-kind.js';
 import { isRolePlaceholderDisplayName } from './host-display.js';
 import { exploreMapItemIsSeeking, type ExploreMapItemActivityModeFields } from './explore-activity-mode.js';
+import type { ExploreMapSourceWire } from './wire-lexicon.js';
 
 /** How a featured user relates to an explore map/list item. */
 export type ExploreMapPersonRole = 'organizer' | 'host' | 'requester' | 'contact';
@@ -19,7 +20,7 @@ export interface ExploreMapPersonDTO {
   role: ExploreMapPersonRole;
 }
 
-type ExploreMapSourceLike = 'activity' | 'venue' | 'shop' | 'agency' | 'demand' | 'area';
+type ExploreMapSourceLike = ExploreMapSourceWire;
 
 export type ExploreFeaturedPersonInput = ExploreMapItemActivityModeFields & {
   source?: ExploreMapSourceLike;

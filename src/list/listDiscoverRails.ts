@@ -1,4 +1,5 @@
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
+import { isGeographyMapSource } from '@uaetrail/shared-types';
 import type { ExploreCardModel } from '../explore/exploreCardModel';
 import {
   LIST_DISCOVER_RAIL_PLACES,
@@ -71,7 +72,7 @@ export const pickDiscoverVenueRailCards = (
   mapItems: ExploreMapItemDTO[],
   limit = DISCOVER_RAIL_LIMIT
 ): ExploreCardModel[] => {
-  const venues = cards.filter((c) => c.source === 'venue');
+  const venues = cards.filter((c) => isGeographyMapSource(c.source));
   const featured = venues
     .filter((c) => isVenueFeatured(c, mapItems))
     .sort((a, b) => hostedCountAtVenue(b.locationId, mapItems) - hostedCountAtVenue(a.locationId, mapItems));

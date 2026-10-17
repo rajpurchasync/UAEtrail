@@ -4,6 +4,7 @@ import {
   type ExploreMapItemDTO,
 } from '@uaetrail/shared-types';
 import { EXPLORE_REGION_PILL_LABELS } from '../config/regions';
+import { isGeographyMapSource } from '@uaetrail/shared-types';
 import { EXPLORE_EMIRATE_REGION_ALIASES } from '../config/exploreRegionAliases';
 import {
   exploreItemRegionTexts,
@@ -76,7 +77,7 @@ const exploreItemCategorySearchTerms = (item: ExploreMapItemDTO): string[] => {
     terms.push('seeking', 'looking for', 'looking', 'demand', 'buddy', 'people', 'person');
     push(terms, EXPLORE_SEARCH_SCOPE_COPY.people.label);
   }
-  if (item.source === 'venue') {
+  if (isGeographyMapSource(item.source)) {
     terms.push('spot', 'spots', 'place', 'places', 'trail', 'trails', 'venue');
     push(terms, EXPLORE_SEARCH_SCOPE_COPY.places.label);
   }

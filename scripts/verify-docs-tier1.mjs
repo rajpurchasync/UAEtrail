@@ -74,9 +74,15 @@ if (existsSync(experimentDir)) {
   }
   for (const name of plans) {
     const text = readFileSync(join(experimentDir, name), 'utf8');
-    if (text.startsWith('> Superseded by') && text.split('\n').length > 25) {
+    if (!text.startsWith('> Superseded by')) {
       console.error(
-        `[verify:docs] ${name}: superseded stub must stay short — move body to docs/archive/`
+        `[verify:docs] docs/experiment/${name} must be a stub starting with "> Superseded by" — body belongs in docs/archive/experiment/`
+      );
+      failed = true;
+    }
+    if (text.split('\n').length > 8) {
+      console.error(
+        `[verify:docs] ${name}: stub must stay ≤8 lines — move narrative to docs/archive/experiment/`
       );
       failed = true;
     }

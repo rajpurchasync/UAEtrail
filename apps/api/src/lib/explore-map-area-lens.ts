@@ -1,9 +1,11 @@
-/** Locations lens — one synthetic pin per published Area + rollups. Canon: `docs/DOMAIN_CANONICALS.md` §12.1. */
+/** Area hub rollups for `/area/:slug` — Area is a label, not an explore map pin. */
 import type { AreaDTO, ExploreAreaLensStatsDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
 import {
   areaDetailPath,
   exploreAreaLensStatsSummary,
   exploreMapItemIsSeeking,
+  isFacilityMapSource,
+  isPlaceMapSource,
   isTimeBoundExploreMapItem,
   isFacilityPlaceKind,
   placeKindFromLocationRow,
@@ -40,7 +42,11 @@ const accumulateAreaLensStats = (items: ExploreMapItemDTO[]): Map<string, Explor
       else stats.hostedActivities += 1;
       continue;
     }
-    if (item.source === 'venue') {
+    if (isFacilityMapSource(item.source)) {
+      stats.facilities += 1;
+      continue;
+    }
+    if (isPlaceMapSource(item.source)) {
       if (item.placeKind && isFacilityPlaceKind(item.placeKind)) {
         stats.facilities += 1;
         continue;
@@ -77,7 +83,10 @@ export const mergeFacilityStatsFromLocations = (
   }
 };
 
-/** Synthetic map rows for the Locations lens — area anchor + rollup stats. */
+/**
+ * @deprecated Do not emit onto `GET /explore/map`. Area has no pin.
+ * Kept for hub-page stats tests until Area hub reads stats without a synthetic map row.
+ */
 export const buildExploreAreaLensItems = (
   publishedAreas: AreaDTO[],
   catalogItems: ExploreMapItemDTO[]

@@ -23,8 +23,8 @@ const scopedExplore = (
   });
 
 /**
- * **Area** hub map pin (`source: 'area'`) — not a Place.
- * `facilities` = amenity **Places** in this hub (`areaLensStats.facilities`), linked via `#places`.
+ * **Area** hub page actions — Area is a curated name, not an explore map pin.
+ * `facilities` = amenity pins in this hub (`areaLensStats.facilities`), linked via `#places`.
  */
 export const AreaPeekActions = ({
   areaSlug,

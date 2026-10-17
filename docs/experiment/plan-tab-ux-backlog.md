@@ -1,3 +1,3 @@
-> Superseded by [`NAVIGATION.md`](../NAVIGATION.md) (**My Plans** `/plan`) and [`SYSTEM_COHERENCE.md`](../SYSTEM_COHERENCE.md) **§8.6** migration **MIG-PLAN-HUB**.
+> Superseded by Tier-1 docs/SYSTEM_COHERENCE.md §8.8 (PCOH). Do not implement from this file.
 
-**Status:** **Paused** — upcoming carousel / goals polish deferred; plan hub ships list + calendar projection first. Do not reopen without product sign-off.
+Schedule: scripts/refactor-program.json MIG-COH-*.

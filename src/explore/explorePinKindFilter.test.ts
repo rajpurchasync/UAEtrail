@@ -15,4 +15,8 @@ describe('explorePinKindFilter', () => {
     expect(serializeExplorePinKindFilter('activities')).toBe('activities');
     expect(serializeExplorePinKindFilter('all')).toBeNull();
   });
+
+  it('parses legacy locations (area hub pins) as Spots', () => {
+    expect(parseExplorePinKindFilter('locations')).toBe('places');
+  });
 });

@@ -2,13 +2,12 @@
 export type ExplorePinKindFilter = 'all' | 'activities' | 'looking' | 'locations' | 'places' | 'shops';
 
 /** @deprecated Legacy URL value — parsed to {@link ExplorePinKindFilter}. */
-export type ExplorePinKindFilterLegacyWire = 'trips';
+export type ExplorePinKindFilterLegacyWire = 'trips' | 'locations';
 
-/** Visible map pills — seeking pins roll into **Activities** (M0); `looking` stays in the type for deep links / list handoff. */
+/** Visible map pills — Area is not a pin; legacy `locations` URL maps to Spots. */
 export const EXPLORE_PIN_KIND_PILLS: ReadonlyArray<{ key: ExplorePinKindFilter; label: string }> = [
   { key: 'all', label: 'All' },
   { key: 'activities', label: 'Activities' },
-  { key: 'locations', label: 'Locations' },
   { key: 'places', label: 'Spots' },
   { key: 'shops', label: 'Shops' },
 ];
@@ -27,6 +26,7 @@ export const parseExplorePinKindFilter = (value: string | null): ExplorePinKindF
   const key = value?.trim().toLowerCase();
   if (!key || !PIN_KIND_QUERY.has(key)) return 'all';
   if (key === 'trips') return 'activities';
+  if (key === 'locations') return 'places';
   return key as ExplorePinKindFilter;
 };
 

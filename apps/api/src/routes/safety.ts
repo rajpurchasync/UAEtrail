@@ -25,9 +25,10 @@ const reportSchema = z
     }
   });
 
-export const reportsRouter = Router();
+/** Trust & safety — member content reports (`POST /safety/reports`). */
+export const safetyRouter = Router();
 
-reportsRouter.post('/', requireAuth, validate({ body: reportSchema }), async (req, res, next) => {
+safetyRouter.post('/reports', requireAuth, validate({ body: reportSchema }), async (req, res, next) => {
   try {
     const body = req.body as z.infer<typeof reportSchema>;
 

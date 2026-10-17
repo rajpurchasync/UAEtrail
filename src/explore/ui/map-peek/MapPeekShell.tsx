@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { isGeographyMapSource } from '@uaetrail/shared-types';
 import { X } from 'lucide-react';
 import type { ExploreCardModel } from '../../exploreCardModel';
 import { EXPLORE_PEEK, EXPLORE_SHEET } from '../../../config/exploreTheme';
@@ -53,7 +54,7 @@ export const MapPeekShell = ({
     ? 'overflow-hidden rounded-2xl bg-white shadow-[0_8px_32px_rgba(15,23,42,.16)] ring-1 ring-black/5'
     : EXPLORE_PEEK.shell;
   const showCoverHero = Boolean(card.coverImage) && !catalogPlaceSummary;
-  const showPlaceCatalogHero = catalogPlaceSummary && card.source === 'venue';
+  const showPlaceCatalogHero = catalogPlaceSummary && isGeographyMapSource(card.source);
 
   return (
     <div className={shellClass} data-pin-summary="card">

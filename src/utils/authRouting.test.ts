@@ -78,14 +78,12 @@ describe('auth routing by role', () => {
     expect(merchantDashboardRedirect('unknown')).toBe('/organisation/manage?kind=shop');
   });
 
-  it('maps legacy /host bookmarks to Plan, explore organize, or pro membership (not host console)', () => {
-    expect(participantHostBookmarkRedirect('/host/overview')).toBe('/explore?compose=host');
-    expect(participantHostBookmarkRedirect('/host/activities')).toBe('/plan?view=plans&filter=hosting');
-    expect(participantHostBookmarkRedirect('/host/requests')).toBe('/my-requests');
-    expect(participantHostBookmarkRedirect('/host/messages')).toBe('/chat');
-    expect(participantHostBookmarkRedirect('/host/team')).toBe('/profile/pro-membership');
-    expect(participantHostBookmarkRedirect('/host/places')).toBe('/organisation/manage');
+  it('maps /operator bookmarks to Plan, explore organize, or pro membership (not tenant console)', () => {
     expect(participantHostBookmarkRedirect('/operator/overview')).toBe('/explore?compose=host');
-    expect(participantHostBookmarkRedirect('/organizer/activities')).toBe('/plan?view=plans&filter=hosting');
+    expect(participantHostBookmarkRedirect('/operator/activities')).toBe('/plan?view=plans&filter=hosting');
+    expect(participantHostBookmarkRedirect('/operator/requests')).toBe('/my-requests');
+    expect(participantHostBookmarkRedirect('/operator/messages')).toBe('/chat');
+    expect(participantHostBookmarkRedirect('/operator/team')).toBe('/profile/pro-membership');
+    expect(participantHostBookmarkRedirect('/operator/places')).toBe('/organisation/manage');
   });
 });

@@ -20,7 +20,7 @@ import { messagesRouteForRole } from '../../utils/authRouting';
 import { executeActivityMapPeekAction } from '../../activity/executeActivityMapPeekAction';
 import { readExploreMapItemsFromCache, reloadExploreMap } from '../../hooks/useExploreMap';
 import { isExploreMapBboxEnabled } from '../exploreMapBbox';
-import { invalidateMyParticipantIntentsQueries } from '../../hooks/participantIntentClientApi';
+import { invalidateMySeekingPostsQueries } from '../../hooks/seekingClientApi';
 import type { ContributeSubmitResult } from './contributeFlow';
 import type { DemandSubmitResult } from './demandFlow';
 import type { useExploreBrowseUrlState } from './useExploreBrowseUrlState';
@@ -292,7 +292,7 @@ export const useExploreSelectionActions = ({
 
   const handleDemandSubmitted = useCallback(
     async (result: DemandSubmitResult) => {
-      invalidateMyParticipantIntentsQueries(queryClient);
+      invalidateMySeekingPostsQueries(queryClient);
       await reloadExploreMap(queryClient);
       if (!result.visibleOnMap) {
         return;

@@ -22,12 +22,6 @@ export const OPERATOR_REQUESTS_PATH = '/operator/requests';
 export const OPERATOR_ACTIVITIES_PATH = '/operator/activities';
 export const OPERATOR_OVERVIEW_PATH = '/operator/overview';
 
-/** @deprecated Legacy meta paths — clients rewrite to {@link OPERATOR_*_PATH}. */
-export const HOST_MESSAGES_PATH = '/host/messages';
-export const HOST_REQUESTS_PATH = '/host/requests';
-export const HOST_ACTIVITIES_PATH = '/host/activities';
-export const HOST_OVERVIEW_PATH = '/host/overview';
-
 /** Admin console deep links (notification meta for platform admins). */
 export const ADMIN_USERS_PATH = '/admin/users';
 export const ADMIN_ACTIVITIES_PATH = '/admin/activities';

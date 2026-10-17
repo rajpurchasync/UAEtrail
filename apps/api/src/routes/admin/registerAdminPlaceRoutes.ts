@@ -73,10 +73,10 @@ const locationPatchSchema = locationFieldsSchema.partial().superRefine((data, ct
 
 const idParamSchema = z.object({ id: z.string().min(1) });
 
-const adminPlaceCollectionPaths = ['/locations', '/places'] as const;
-const adminPlaceItemPaths = ['/locations/:id', '/places/:id'] as const;
+const adminPlaceCollectionPaths = ['/places'] as const;
+const adminPlaceItemPaths = ['/places/:id'] as const;
 
-/** Platform admin venue / place CRUD (`/admin/locations` and `/admin/places` aliases). */
+/** Platform admin place CRUD (`/admin/places`; SPA redirects legacy `/admin/locations`). */
 export const registerAdminPlaceRoutes = (adminRouter: Router): void => {
   adminPlaceCollectionPaths.forEach((path) => {
     adminRouter.get(path, async (req, res, next) => {

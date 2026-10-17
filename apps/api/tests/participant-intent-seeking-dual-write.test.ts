@@ -17,16 +17,16 @@ import { COLLECTIONS } from '../src/lib/collections.js';
 
 const ENV_KEY = 'PARTICIPANT_INTENT_STUB_WRITE';
 
-describe('participant intent seeking dual-write (legacy stub)', () => {
+describe('participant intent create (COH-01 — activities only)', () => {
   afterEach(() => {
     delete process.env[ENV_KEY];
   });
 
-  it('creates a published seeking activity linked to the intent stub row', async () => {
+  it('creates seeking activity only (no participant_intents row, even if stub env set)', async () => {
     process.env[ENV_KEY] = 'true';
-    const suffix = `dual-${Date.now()}`;
+    const suffix = `coh01-${Date.now()}`;
     const user = await createAuthUser({
-      email: `dual-${suffix}@test.local`,
+      email: `coh01-${suffix}@test.local`,
       passwordHash: await bcrypt.hash('TestPass1', 10),
       googleId: null,
       authProvider: 'EMAIL',
@@ -40,7 +40,7 @@ describe('participant intent seeking dual-write (legacy stub)', () => {
     const intent = await createParticipantIntent(
       user._id,
       buildTestParticipantIntentInput({
-        title: `Dual write ${suffix}`,
+        title: `Activity only ${suffix}`,
         date: '2026-12-21',
         time: '08:00',
         preferredArea: 'Wadi Shawka',
@@ -55,12 +55,13 @@ describe('participant intent seeking dual-write (legacy stub)', () => {
       .db()
       .collection(COLLECTIONS.PARTICIPANT_INTENTS)
       .findOne({ _id: intent.id });
-    const publishedActivityId = intentDoc?.activityId ?? intentDoc?.seekingActivityId;
+    expect(intentDoc).toBeNull();
+
+    const publishedActivityId = intent.activityId ?? intent.seekingActivityId;
     expect(publishedActivityId).toBeTruthy();
 
-    const activity = await findActivityDocInMongo(publishedActivityId as string);
+    const activity = await findActivityDocInMongo(publishedActivityId!);
     expect(activity?.activityMode).toBe('seeking');
     expect(activity?.participantIntentId).toBe(intent.id);
-    expect(activity?.status).toBe('PUBLISHED');
   });
 });

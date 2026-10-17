@@ -14,10 +14,10 @@ export const adminApi = {
     getAdminMetrics: () => apiRequest<{ data: AdminMetrics }>('/admin/metrics', { auth: true }),
 
     getAdminOrganisationApplications: () =>
-    apiRequest<{ data: HostApplication[] }>('/admin/host-applications', { auth: true }),
+    apiRequest<{ data: HostApplication[] }>('/admin/pro-applications', { auth: true }),
 
     reviewAdminApplication: (id: string, status: 'approved' | 'rejected', reviewerNote?: string) =>
-    apiRequest(`/admin/host-applications/${id}`, {
+    apiRequest(`/admin/pro-applications/${id}`, {
       method: 'PATCH',
       auth: true,
       body: JSON.stringify({ status, reviewerNote })

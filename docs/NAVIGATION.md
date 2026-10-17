@@ -64,7 +64,7 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 
 ### Publishing console (`/operator/*` routes)
 
-- **Canonical URL `/operator/*`** — product UI uses **Organizer workspace** (community / guide) or **Operator workspace** (agency / shop); capabilities from **`GET /me/status`** (`useMemberStatus`, `publish.*`). Legacy `/host/*` and `/organizer/*` redirect to `/operator/*`. Tenant HTTP API: **`/operator/*` only** (legacy `/host/*` rewritten server-side).
+- **Canonical URL `/operator/*`** — product UI uses **Organizer workspace** (community / guide) or **Operator workspace** (agency / shop); capabilities from **`GET /me/status`** (`useMemberStatus`, `publish.*`). No `/host` or `/organizer` SPA trees. Tenant HTTP API: **`/operator/*` only**.
 - **Shell nav:** `OPERATOR_CONSOLE_LINKS` + `ConsoleShell` (`src/console/*`); route pages in `src/pages/operator/*`. Copy: `src/content/workspaceVocabulary.ts`.
 - **`/operator/overview`:** `ConsoleHubSections` — stats, **Up next** preview, header **Add activity** — not a second copy of the shell link list. Below that: **personal** shortcuts (trips as participant, **Chat** → `/chat`, explore map).
 - **Member profile (`/profile`):** consumer hub only; buddies open **Organizing** → `planHostedSchedulePath()` (hosted filter on `/plan`), not `/operator/overview`. Pro/agency/shop management remains `/operator/*`.
@@ -81,10 +81,10 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 | Route | Page module | Sidebar (`ADMIN_LINKS`) | Job |
 |-------|-------------|-------------------------|-----|
 | `/admin/overview` | `AdminOverview` | Overview | Metrics + shortcuts |
-| `/admin/areas` | `AdminAreas` | Areas | Curated area registry |
+| `/admin/areas` | `AdminAreas` | Areas | Curated **names** (not map pins); country/state/region from geography |
 | `/admin/places` | `AdminPlaces` | Places | Trails, camps, event venues (`/admin/locations` → redirect) |
 | `/admin/activities` | `AdminActivities` | Activities | Outing moderation |
-| `/admin/facilities` | `AdminPlaces` (`catalogSegment=facility`) | Facilities | Amenity POIs (parking, toilet, …) — same `locations` rows |
+| `/admin/facilities` | `AdminPlaces` (`catalogSegment=facility`) | Facilities | Amenity POIs (parking, toilet, …) — `facilities` collection, map `source: facility` |
 | `/admin/users` | `AdminMembers` | Users & Members | Member search, suspend, staff grant (`MEMBER_MODEL.md`) |
 | `/admin/hosts` | `AdminOrganisations` | Operators | Host / tenant applications (`/admin/organizers` → redirect) |
 | `/admin/groups` | `AdminGroups` | Groups | Platform groups |

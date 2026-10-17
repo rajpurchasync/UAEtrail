@@ -22,20 +22,25 @@ export const accountApi = {
     getPersonPublicProfile: (userId: string, options?: { discover?: boolean }) => {
       const qs = options?.discover ? '?from=discover' : '';
       return apiRequest<{ data: PublicMemberProfileDTO; viewerAccess: ProfileViewerAccessDTO }>(
-        `/users/${userId}/public-profile${qs}`,
+        `/member/${userId}/profile${qs}`,
         { auth: Boolean(getStoredSession()) }
       );
     },
 
     getMeMemberDiscoveryQuota: () =>
-      apiRequest<{ data: MemberDiscoveryQuotaDTO }>('/me/member-discovery-quota', { auth: true }),
+      apiRequest<{ data: MemberDiscoveryQuotaDTO }>('/me/member-discovery/quota', { auth: true }),
 
-    /** Browse people network roster (map panel — friends / following). HTTP: `/social/people`. */
+    /** Browse people network roster (map panel — friends / following). */
     getMemberPeopleNetwork: (segment: SocialPeopleSegment = 'all') =>
-      apiRequest<{ data: SocialPeopleDTO }>(`/social/people?segment=${segment}`, { auth: true }),
+      apiRequest<{ data: SocialPeopleDTO }>(
+        `/me/member-discovery/network?segment=${segment}`,
+        { auth: true }
+      ),
 
     getMemberPeopleNetworkPreview: () =>
-      apiRequest<{ data: SocialPeoplePreviewDTO }>('/social/people/preview', { auth: true }),
+      apiRequest<{ data: SocialPeoplePreviewDTO }>('/me/member-discovery/network/preview', {
+        auth: true,
+      }),
 
     getMeProfilePublicPreview: () =>
     apiRequest<{ data: PublicMemberProfileDTO; viewerAccess: ProfileViewerAccessDTO }>(
@@ -45,7 +50,7 @@ export const accountApi = {
 
     getPersonUpcomingActivities: (userId: string, limit = 8) =>
     apiRequest<{ data: ActivityDTO[] }>(
-      `/users/${userId}/upcoming-activities?limit=${encodeURIComponent(String(limit))}`
+      `/member/${userId}/upcoming-activities?limit=${encodeURIComponent(String(limit))}`
     ),
 
     updateMeProfile: (payload: UserProfile) =>
@@ -156,13 +161,13 @@ export const accountApi = {
 
     searchUsers: (q: string) =>
     apiRequest<{ data: { id: string; displayName: string | null; avatarUrl: string | null }[] }>(
-      `/users/search?q=${encodeURIComponent(q)}`,
+      `/me/member-discovery/search?q=${encodeURIComponent(q)}`,
       { auth: true }
     ),
 
     getUserBrief: (userId: string) =>
     apiRequest<{ data: { id: string; displayName: string; avatarUrl: string | null } }>(
-      `/users/${userId}/brief`,
+      `/member/${userId}/brief`,
       { auth: true }
     ),
 
@@ -176,7 +181,7 @@ export const accountApi = {
       const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize) });
       if (q?.trim()) params.set('q', q.trim());
       return apiRequest<{ data: import('@uaetrail/shared-types').MemberBrowseCardDTO[] }>(
-        `/users/browse?${params.toString()}`,
+        `/me/member-discovery/browse?${params.toString()}`,
         { auth: true }
       );
     },

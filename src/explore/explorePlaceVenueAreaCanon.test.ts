@@ -5,13 +5,13 @@ import { join } from 'node:path';
 const read = (relativePath: string) => readFileSync(join(process.cwd(), relativePath), 'utf8');
 
 /**
- * Place (entity) vs venue (explore wire) vs Area (curated hub) — see DOMAIN_CANONICALS §12.1.1.
+ * Place · Facility · Area — see DOMAIN_CANONICALS §12.1.1.
  */
-describe('explore Place / venue / Area canon', () => {
+describe('explore Place / Facility / Area canon', () => {
   it('routes catalog place pins to Place peek — not activity sheet or area peek', () => {
     const stage = read('src/explore/ui/ExploreMapStage.tsx');
-    expect(stage).toMatch(/selected\?\.source === 'venue'/);
-    expect(stage).toMatch(/source === 'venue'[\s\S]*?PlaceMapPeekHost/);
+    expect(stage).toMatch(/isGeographyMapSource\(selected\.source\)/);
+    expect(stage).toMatch(/PlaceMapPeekHost/);
   });
 
   it('uses catalog place summary only on Place map preview (venue wire)', () => {
@@ -24,7 +24,7 @@ describe('explore Place / venue / Area canon', () => {
     expect(shell).not.toMatch(/ExploreVenuePeek/);
   });
 
-  it('Area lens peeks use area pin modules — not Place peek body', () => {
+  it('Area hub peek modules stay off Place peek body', () => {
     const slots = read('src/explore/ui/map-peek/mapPeekSlots.tsx');
     expect(slots).toMatch(/card\.source === 'area'/);
     expect(slots).toMatch(/AreaPeekActions/);
@@ -34,16 +34,17 @@ describe('explore Place / venue / Area canon', () => {
     expect(placeHero).toMatch(/resolvePlacePeekCuratedArea/);
   });
 
-  it('GEO: place peek uses venue wire vocabulary module', () => {
-    expect(read('src/place/geographyVocabulary.ts')).toMatch(/MapVenueWireSource/);
-    expect(read('src/place/placePeekPresentation.ts')).toMatch(/`venue`/);
+  it('GEO: vocabulary module names Place and Facility wire sources', () => {
+    expect(read('src/place/geographyVocabulary.ts')).toMatch(/MapPlaceWireSource/);
+    expect(read('src/place/geographyVocabulary.ts')).toMatch(/MapFacilityWireSource/);
   });
 
   it('documents hierarchy in Tier-1 domain canon', () => {
     const canon = read('docs/DOMAIN_CANONICALS.md');
-    expect(canon).toMatch(/12\.1\.1 Explore UI — Place vs `venue`/);
-    expect(canon).toMatch(/ExploreCardSource: 'venue'/);
-    expect(canon).toMatch(/source: 'area'/);
+    expect(canon).toMatch(/12\.1\.1 Explore UI — Place · Facility · Area \(Area is a name, not a pin\)/);
+    expect(canon).toMatch(/source: place/);
+    expect(canon).toMatch(/source: facility/);
+    expect(canon).toMatch(/source: area/);
     expect(canon).toMatch(/place\.areaId/);
   });
 });

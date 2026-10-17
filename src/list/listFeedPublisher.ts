@@ -1,6 +1,7 @@
 import {
   exploreActivityPublisherTypeLabel,
   explorePersonRoleLabel,
+  isGeographyMapSource,
   memberProfilePath,
   resolveActivityPublisherProfilePath,
 } from '@uaetrail/shared-types';
@@ -25,7 +26,8 @@ const resolveListFeedPublisherTypeLabel = (card: ExploreCardModel): string => {
   if (exploreCardIsSeeking(card)) return 'Looking for crew';
   if (card.source === 'shop' || card.source === 'agency') return 'Shop contact';
   if (card.source === 'activity') return ORGANIZER_NOUN_TITLE;
-  if (card.source === 'venue') return 'Place';
+  if (card.source === 'facility') return 'Facility';
+  if (isGeographyMapSource(card.source)) return 'Place';
   return 'Member';
 };
 

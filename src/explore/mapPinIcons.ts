@@ -5,10 +5,11 @@ import {
   type PlaceKind,
 } from '@uaetrail/shared-types';
 import type { MapPinKind, MapPinSource } from '../components/ui/mapPinTypes';
+import { isGeographyMapSource } from '@uaetrail/shared-types';
 import { buildVenueMapBadgeHtml } from './venueMapGlyphs';
 
 export const isCatalogVenueMapPin = (kind: MapPinKind, source: MapPinSource): boolean =>
-  source === 'venue' && (kind === 'hiking' || kind === 'camping');
+  isGeographyMapSource(source) && (kind === 'hiking' || kind === 'camping');
 
 const venueStackCountBadgeHtml = (stackCount: number): string => {
   if (stackCount <= 1) return '';

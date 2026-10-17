@@ -1,4 +1,3 @@
-import { randomUUID } from 'crypto';
 import type {
   ParticipantIntentJoinRequestDTO,
   ParticipantIntentJoinRequestViewDTO,
@@ -219,43 +218,25 @@ export const createParticipantIntentJoinRequest = async (input: {
 
   const publishedActivityId = resolveIntentPublishedActivityId(intent);
 
-  if (publishedActivityId) {
-    const existing = await findActivityRequestByEventAndUser(publishedActivityId, input.userId);
-    if (existing && ACTIVE_ACTIVITY_REQUEST_STATUSES.includes(existing.status)) {
-      throw new ApiError(409, 'request_exists', 'You already requested to join this plan.');
-    }
-
-    const { request } = await createJoinOrWaitlistRequest({
-      activityId: publishedActivityId,
-      userId: input.userId,
-      note: input.note ?? undefined,
-    });
-    return activityRequestToDto(intent._id, request);
+  if (!publishedActivityId) {
+    throw new ApiError(
+      410,
+      'seeking_activity_required',
+      'This plan is no longer joinable — use the activity on the map.'
+    );
   }
 
-  const existing = await requestsCollection().findOne({
-    intentId: intent._id,
-    userId: input.userId,
-    status: { $in: ['pending', 'approved'] },
-  });
-
-  if (existing) {
+  const existing = await findActivityRequestByEventAndUser(publishedActivityId, input.userId);
+  if (existing && ACTIVE_ACTIVITY_REQUEST_STATUSES.includes(existing.status)) {
     throw new ApiError(409, 'request_exists', 'You already requested to join this plan.');
   }
 
-  const now = new Date();
-  const doc: MongoParticipantIntentJoinRequest = {
-    _id: randomUUID(),
-    intentId: intent._id,
+  const { request } = await createJoinOrWaitlistRequest({
+    activityId: publishedActivityId,
     userId: input.userId,
-    status: 'pending',
-    note: input.note?.trim() || null,
-    createdAt: now,
-    updatedAt: now,
-  };
-
-  await requestsCollection().insertOne(doc);
-  return mapDto(doc);
+    note: input.note ?? undefined,
+  });
+  return activityRequestToDto(intent._id, request);
 };
 
 const findActiveIntentForOwner = async (

@@ -9,8 +9,8 @@
     "mongoCollectionsMultiWriterOver4": 0,
     "routeRegistrarsWithDirectWrites": 0,
     "apiMounts": 8,
-    "spaRouteElements": 116,
-    "feDomainModules": 22,
+    "spaRouteElements": 112,
+    "feDomainModules": 24,
     "boundedContexts": 17
   },
   "risks": {
@@ -50,8 +50,8 @@
       "file": "apps/api/src/routes/media.ts"
     },
     {
-      "prefix": "/reports",
-      "file": "apps/api/src/routes/reports.ts"
+      "prefix": "/safety",
+      "file": "apps/api/src/routes/safety.ts"
     },
     {
       "prefix": "/user+social",

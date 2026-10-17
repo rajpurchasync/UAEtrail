@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ParticipantIntentJoinRequestDTO } from '@uaetrail/shared-types';
-import { fetchMyParticipantIntentJoinRequest } from './participantIntentClientApi';
+import { fetchMySeekingPostJoinRequest } from './seekingClientApi';
 import type { JoinRequestUiState } from '../utils/joinRequestUi';
 import { participantIntentJoinRequestQueryKey } from './clientQueryKeys';
 
@@ -37,7 +37,7 @@ export const useParticipantIntentJoinContext = ({
       intentId && userId
         ? participantIntentJoinRequestQueryKey(intentId, userId)
         : ['participant-intent-join-request', '', ''],
-    queryFn: () => fetchMyParticipantIntentJoinRequest(intentId!),
+    queryFn: () => fetchMySeekingPostJoinRequest(intentId!),
     enabled: active,
     staleTime: 15_000,
   });

@@ -19,13 +19,30 @@ describe('participant intent M2 guards', () => {
     expect(exploreMapBase).not.toMatch(/source:\s*'demand'/);
   });
 
-  it('Find create writes seeking activity before intent stub row', () => {
+  it('Find create writes seeking activity only (no participant_intents insert)', () => {
     const store = read('src/lib/participant-intents-store.ts');
     const createIdx = store.indexOf('createSeekingActivityForIntent');
-    const insertIdx = store.indexOf('insertOne(doc)');
     expect(createIdx).toBeGreaterThan(-1);
-    expect(insertIdx).toBeGreaterThan(createIdx);
-    expect(store).toMatch(/activityId: publishedActivityId/);
+    expect(store).not.toMatch(/insertOne\(doc\)/);
+    expect(store).toMatch(/activityDocToParticipantIntentDto/);
+  });
+
+  it('update/cancel prefer seeking activity before participant_intents writes', () => {
+    const store = read('src/lib/participant-intents-store.ts');
+    const updateIdx = store.indexOf('export const updateParticipantIntent');
+    const cancelIdx = store.indexOf('export const cancelParticipantIntent');
+    expect(updateIdx).toBeGreaterThan(-1);
+    expect(cancelIdx).toBeGreaterThan(-1);
+    const updateBody = store.slice(updateIdx, cancelIdx);
+    expect(updateBody.indexOf('findSeekingActivityByParticipantIntentId')).toBeLessThan(
+      updateBody.indexOf('collection().findOne')
+    );
+    const cancelBody = store.slice(cancelIdx, cancelIdx + 2000);
+    const cancelActivityIdx = cancelBody.indexOf('findSeekingActivityByParticipantIntentId');
+    const cancelIntentIdx = cancelBody.indexOf('findOneAndUpdate');
+    expect(cancelActivityIdx).toBeGreaterThan(-1);
+    expect(cancelIntentIdx).toBeGreaterThan(cancelActivityIdx);
+    expect(store).toMatch(/patchSeekingActivityForOwner/);
   });
 
   it('seeking join alias routes through activity_requests when activityId exists', () => {
@@ -34,20 +51,17 @@ describe('participant intent M2 guards', () => {
     expect(joinStore).not.toMatch(/participant-intent-join-activity-sync/);
   });
 
-  it('M2d activity read-through module gates stub writes', () => {
+  it('activity read-through module documents COH-01 activities-only writes', () => {
     const readthrough = read('src/services/participant-intent-activity-readthrough.ts');
     expect(readthrough).toMatch(/isParticipantIntentStubWriteEnabled/);
-    expect(readthrough).toMatch(/PARTICIPANT_INTENT_STUB_WRITE/);
-    expect(readthrough).toMatch(/Opt-in dual-write/);
+    expect(readthrough).toMatch(/COH-01/);
     expect(readthrough).toMatch(/activityDocToParticipantIntentDto/);
   });
 
-  it('create respects PARTICIPANT_INTENT_STUB_WRITE before insertOne', () => {
-    const store = read('src/lib/participant-intents-store.ts');
-    expect(store).toMatch(/isParticipantIntentStubWriteEnabled\(\)/);
-    const gateIdx = store.indexOf('isParticipantIntentStubWriteEnabled()');
-    const insertIdx = store.indexOf('insertOne(doc)');
-    expect(gateIdx).toBeGreaterThan(-1);
-    expect(insertIdx).toBeGreaterThan(gateIdx);
+  it('HTTP registrar exposes /me/seeking-posts only (no participant-intents alias)', () => {
+    const registrar = read('src/routes/user/registerMeParticipantIntentRoutes.ts');
+    expect(registrar).toMatch(/\/me\/seeking-posts/);
+    expect(registrar).not.toMatch(/\/me\/participant-intents/);
+    expect(registrar).toMatch(/registerMeSeekingPostRoutes/);
   });
 });

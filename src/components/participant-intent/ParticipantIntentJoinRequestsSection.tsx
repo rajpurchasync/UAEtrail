@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { ParticipantIntentJoinRequestViewDTO } from '@uaetrail/shared-types';
 import {
-  approveParticipantIntentJoinRequest,
-  fetchParticipantIntentJoinRequests,
-  rejectParticipantIntentJoinRequest,
-} from '../../hooks/participantIntentClientApi';
+  approveSeekingPostJoinRequest,
+  fetchSeekingPostJoinRequests,
+  rejectSeekingPostJoinRequest,
+} from '../../hooks/seekingClientApi';
 import { AppButton } from '../mobile/AppButton';
 
 type ParticipantIntentJoinRequestsSectionProps = {
@@ -23,7 +23,7 @@ export const ParticipantIntentJoinRequestsSection = ({
     setLoading(true);
     setError(null);
     try {
-      const data = await fetchParticipantIntentJoinRequests(intentId);
+      const data = await fetchSeekingPostJoinRequests(intentId);
       setRequests(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not load join requests.');
@@ -44,9 +44,9 @@ export const ParticipantIntentJoinRequestsSection = ({
     setError(null);
     try {
       if (decision === 'approve') {
-        await approveParticipantIntentJoinRequest(intentId, requestId);
+        await approveSeekingPostJoinRequest(intentId, requestId);
       } else {
-        await rejectParticipantIntentJoinRequest(intentId, requestId);
+        await rejectSeekingPostJoinRequest(intentId, requestId);
       }
       await reload();
     } catch (err) {

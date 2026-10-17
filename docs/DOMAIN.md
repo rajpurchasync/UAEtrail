@@ -45,21 +45,22 @@ Program CPC ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.4) splits **Plac
 Everything starts with **sign-in** as a **user**. Guests may browse parts of the map; member profiles, buddies, and Pro flows require authentication.
 
 ```text
-Sign in → User (member profile, Organize as self)
-  → Optional Pro membership (/profile/pro-membership)
-        ├─ Individual Pro   → pro guide storefront
-        ├─ Business Pro     → required subtype: Shop | Tour agency | E-commerce | Hospitality | …
-        └─ Partner Pro      → campaigns / partner storefront (detail later)
+Guest → Sign in → Auth user (participate; hosting disabled until profile complete)
+  → Profile complete → hosting enabled (community Organize)
+  → Optional Pro (/profile/pro-membership)
+        ├─ Individual Pro   → Guide / Pro host — public face on /member/:userId
+        ├─ Business Pro     → Shop | Tour agency | … → User + operator (tenant); operator profile + map pin (shops only)
+        └─ Partner Pro      → campaigns (detail later)
 ```
 
-Business capabilities (campaigns, paid trips, team) attach to **business tenants**, not to the person card alone. Canonical vocabulary: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §1.1–1.5.
+Business capabilities attach to **operator tenants** (shop/agency), each with **≥ one linked user**. Those users’ **member profiles** show the **operator name** (clickable) → agency or shop profile. Canonical vocabulary: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §1.1–1.5 · [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) § Naming vocabulary.
 
 ### Host storefronts (Where vs Who)
 
 | Lens | Examples | Not the same as |
 |------|----------|-----------------|
 | **Where** | Trail, camp, **shop pin**, future partner/hotel pin | Tour **agency** (join trips without visiting a pin) |
-| **Who** | Activity, demand, member card, guide/agency **storefront** | Calling a gear **shop** a “partner” |
+| **Who** | Activity, demand, **`/member/:userId`**, **agency / shop operator profiles** (not person map pins) | Calling a gear **shop** a “partner” |
 
 **Publish as:** when a user is linked to a business (`tenant_memberships`), Organize / host console should offer **self** vs **{business}** (dropdown). The **host on the activity is still the user**; `x-organisation-id` scopes the brand. See [`MEMBER_MODEL.md`](./MEMBER_MODEL.md).
 
@@ -102,19 +103,21 @@ Time-bound map pins are **Activities** with `activityMode` (target wire name; mi
 
 ### Geography (Area + Place catalog)
 
-**Region** (emirate) → **Area** (admin registry, e.g. Hatta) → **Place** (trail, camp, venue) + **Facility** (amenities; CPC: own collection) → **Activity** (scheduled outing).
+**Country / state / region** (from map geography) → **Area** (admin-curated **name**, e.g. Hatta — **not a map pin**) → **Place** (trail, camp, outdoor spot) + **Facility** (amenity with coords) → **Activity** (scheduled outing; geography only through a place).
 
 | Layer | Who maintains | Assignment rule |
 |-------|----------------|-----------------|
-| **Area** | Platform admin (`/admin/areas`) | System **`areaId`** on create; name, slug, region, map anchor (`center`); bounds are a **display hint only** — not used to auto-tag pins |
-| **Place** | Admin `/admin/places` + member **Add** (`curatedArea` then pin) | Every place row has **`place.areaId`**; `POST /me/locations` requires **`areaId`** |
+| **Country / state / region** | Map geography | Labels on pins from the map — not from the Area row |
+| **Area** | Platform admin (`/admin/areas`) | Curated **name** + slug; optional `center` / bounds are a **camera hint for the hub page only**. **No** `source: area` pin on Explore |
+| **Place** | Admin `/admin/places` + member **Add** (`curatedArea` then pin) | Every place row has **`place.areaId`**; `POST /me/places` requires **`areaId`** |
+| **Facility** | Admin `/admin/facilities` + member **Add** | Own `facilities` collection; coords so people can navigate; **`areaId`** + optional `parentPlaceId` |
 | **Activity** | Member **Organize** or Find → seeking | **No stored `activity.areaId` on write** (legacy rows may still have one). Geography = **`activity.locationId` → `place.areaId`**. Public publish requires a catalog **place** with **`areaId`**. Meeting / going-from pin does not define area |
 
-**Explore map lenses:** **Activities** — emoji pin per outing (host row links to the right profile: member, `/guide`, or `/agency`). **Locations** — area hub pins + rollups. **Spots** — trails, camps, outdoor spots, facilities. **Shops** — **only** subtype with a dedicated **map pin** (+ `/shop/…` full profile). **Professionals** — People browse and/or activity host → `/guide/:slug`. **Tour agencies** — activity peek/detail host row only → `/agency/:slug` (no map pin, not a People-directory substitute). Detail: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §12.1 Pro storefronts table.
+**Explore map lenses:** **Activities** — emoji pin per outing (`source: activity`; host row → **member profile** and/or **operator profile** when published as a business). **Spots** — Place pins (`source: place`). **Facilities** share the map (`source: facility`, coords for navigation; peek still Place chrome until a dedicated facility peek ships). **Shops** — **operator** map pin + `/shop/…` profile. **Area** is a **filter** (`?area=`) and a **hub page** (`/area/:slug`) — never its own pin. Legacy `pinKind=locations` URLs alias to Spots. **Members / Pro guides / agencies** — **no** standalone person or agency pins; find via **search**, **people browse**, **activity peek/detail**, and **operator name** on linked users’ member profiles. Detail: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §12.1.
 
 **Curated area catalog (seed + tests):** 12 published areas in `CURATED_AREA_CATALOG` (`@uaetrail/shared-types`) — Hatta, Jebel Jais, Wadi Shawka, Jebel Hafeet, Al Qudra, Love Lake, Khorfakkan, Jumeirah Coast, Fossil Rock, Dibba, Remah Dunes, Kalba. Each has stable `area-seed-*` id, map bounds, and `summary` (editable in admin; re-seed restores defaults).
 
-Discovery: **`/area/:slug`**, area peek, and explore **`?area=`** filter by **`place.areaId`** (and seeking **`participant_intents.areaId`** + synthetic place on the intent). Private link-only activities skip public map listing.
+Discovery: **`/area/:slug`** (hub), and explore **`?area=`** filter by **`areaSlug` / `areaId`** on Place, Facility, and activity rows (seeking posts carry `areaId` on the activity). Private link-only activities skip public map listing.
 
 **My Plans** (`/plan`, UI tab **Plan**) groups **your** forward layer — upcoming schedule (list or **calendar**), wishlist, goals — plus relationships to activities. Past outings and journey map live on **profile history**, not `/plan`.
 
@@ -333,8 +336,8 @@ Shop identity: **tenant** (Pro Membership onboarding) + **merchant profile** (Sh
 
 | Legacy term | Prefer in new code | Keep unchanged |
 |-------------|-------------------|--------------|
-| Location | **Place** (entity) | API `/locations`, `LocationDTO` — storage name only |
-| Venue | **Place** (word) | Explore panel `?panel=venues` — not a second entity |
+| Location | **Place** (entity) | HTTP **`/places`** (legacy `/locations` alias); collection `locations`; `LocationDTO` — storage name only |
+| Venue | **Place** (word) | Explore panel `?panel=venues` — not a second entity; map `source: venue` normalizes to `place` |
 | Legacy operator URL | Retired host profile | `/operator/:id` → `/guide` / `/agency` / `/partner` / `/shop` (redirect) |
 | Merchant | Shop | `merchant_profiles`, `/merchant/:id` redirect |
 | Organizer | Host or agency | — |
@@ -357,9 +360,9 @@ Shop identity: **tenant** (Pro Membership onboarding) + **merchant profile** (Sh
 
 ## Place catalog vs activity anchors
 
-| Concept | Meaning | API | On venue map? | In organize picker? |
+| Concept | Meaning | API | On explore map? | In organize picker? |
 |---------|---------|-----|---------------|---------------------|
-| **Catalog place** | Admin-published or member-submitted place (approved) | `GET /places/catalog` (alias `/places/registry`), `GET /places/:id` | Yes (`source: venue`) | Yes |
+| **Catalog place** | Admin-published or member-submitted place (approved) | `GET /places/catalog` (alias `/places/registry`), `GET /places/:id` | Yes (`source: place`; legacy `venue` / `catalog_place` read-compat) | Yes |
 | **Pending contribution** | Member/host submitted, awaiting admin | `status: draft` | No | Yes (caller’s drafts in registry) |
 | **Activity anchor** | `locationId` for custom outing label only | Created with `activityAnchor: true` | **No** (`registryListed: false`) | No |
 
@@ -388,11 +391,13 @@ Every durable entity has a **stable UUID** in Mongo and a **canonical public rou
 |--------|-------------------|------------|--------------|
 | **User** (auth + profile) | `users` | `user.id` | `/member/:userId`, `/profile` (self) |
 | **Host** (publishing tenant) | `tenants` | `tenant.id` | `/guide/:slug`, `/agency/:slug`, `/partner/:slug` |
-| **Place** (venue / registry) | `locations` | `location.id` | `/trail/:id`, `/camp/:id`, `/venue/:id` |
-| **Activity** (scheduled outing) | `activities` | `activity.id` | `/activity/:id` |
-| **Demand** (find a crew) | `participant_intents` | intent id | Map item `demand:…` |
+| **Place** (catalog) | `locations` | `location.id` | `/trail/:id`, `/camp/:id`, `/venue/:id` — map `source: place` |
+| **Facility** (amenity) | `facilities` | `facility.id` | `/facility/:id` — map `source: facility` |
+| **Area** (curated name) | `areas` | `area.id` | `/area/:slug` — **no map pin** |
+| **Activity** (hosted or seeking outing) | `activities` | `activity.id` | `/activity/:id` — map `source: activity` (`activity:{id}`) |
+| **Seeking (legacy)** | `participant_intents` (read-only) | — | Old `demand:` map ids rewrite to the seeking **activity** |
 
-**Registration:** members via `/signup` + OTP; hosts via `host_applications` → tenant provision; catalog places/facilities via **member submit** (`POST /me/places`, `POST /me/facilities`) + admin approval — FAB label **Contribute**, not an API noun.
+**Registration:** members via `/signup` + OTP; Pro / agency / shop via `POST /me/pro-application` (collection `host_applications`) → tenant provision; catalog places/facilities via **member submit** (`POST /me/places`, `POST /me/facilities`) + admin approval — FAB label **Contribute**, not an API noun.
 
 **Audit:** `audit_logs` records actor, action, `entityType`, `entityId`, optional `tenantId`, and `metadata`. Host activity lifecycle actions include `activity.create`, `activity.publish`, `activity.duplicate` (server draft copy, new id), `activity.cancel`, etc. Admin UI: `/admin/audit-log`.
 

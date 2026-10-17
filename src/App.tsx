@@ -54,18 +54,6 @@ import { resolveLegacyTripsHubRedirect } from './member-plan/legacyTripsRedirect
 import { useMemberStatus } from './hooks/useMemberStatus';
 import { memberCanManageHostedActivities } from './utils/hostedActivitiesGate';
 
-const LegacyPublishingConsoleRedirect = ({ legacyPrefix }: { legacyPrefix: '/host' | '/organizer' }) => {
-  const { pathname, search, hash } = useLocation();
-  const next = pathname.replace(new RegExp(`^${legacyPrefix}`), '/operator');
-  return <Navigate to={`${next}${search}${hash}`} replace />;
-};
-
-/** Chat has one canonical route (`/chat`) — legacy console URLs preserved query only. */
-const LegacyConsoleMessagesRedirect = () => {
-  const { search, hash } = useLocation();
-  return <Navigate to={`/chat${search}${hash}`} replace />;
-};
-
 const LegacyMessagesRedirect = () => {
   const { search, hash } = useLocation();
   return <Navigate to={`/chat${search}${hash}`} replace />;
@@ -811,16 +799,6 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route
-            path="/host/messages"
-            element={<LegacyConsoleMessagesRedirect />}
-          />
-          <Route
-            path="/operator/messages"
-            element={<LegacyConsoleMessagesRedirect />}
-          />
-          <Route path="/host/*" element={<LegacyPublishingConsoleRedirect legacyPrefix="/host" />} />
-          <Route path="/organizer/*" element={<LegacyPublishingConsoleRedirect legacyPrefix="/organizer" />} />
           <Route
             path="/dashboard/overview"
             element={

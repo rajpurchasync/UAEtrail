@@ -1,9 +1,7 @@
 /**
- * Locks the dynamic CTA product spec in docs before implementation (AD-ARCH-04, AD-CTA-01).
- * @see docs/experiment/activity-detail-tabs-implementation-plan.md §6
+ * Dynamic CTA matrix — runtime fixtures (AD-CTA-01). Source of truth: shared-types policy + these tests.
+ * @see docs/SYSTEM_COHERENCE.md §6.2 (narrative); not experiment plan markdown.
  */
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   computeActivityViewerEntitlements,
@@ -12,43 +10,6 @@ import {
   RSVP_PARTICIPATION_REQUIREMENT,
   type ActivityViewerAccessDTO,
 } from '@uaetrail/shared-types';
-
-const read = (rel: string) => readFileSync(join(process.cwd(), rel), 'utf8');
-
-const PROGRAM_DOC = 'docs/experiment/activity-detail-tabs-implementation-plan.md';
-
-describe('activity detail CTA matrix — doc governance (AD-ARCH-04)', () => {
-  const plan = () => read(PROGRAM_DOC);
-
-  it('program doc contains full §6 dynamic CTA spec', () => {
-    const doc = plan();
-    expect(doc).toMatch(/## 6\. Dynamic CTAs/);
-    expect(doc).toMatch(/### 6\.0 Activity peek layout/);
-    expect(doc).toMatch(/### 6\.2 State matrix/);
-    expect(doc).toMatch(/#### A — General participant/);
-    expect(doc).toMatch(/#### B — \*\*Pro\*\* participant/);
-    expect(doc).toMatch(/#### C — General participant, \*\*after\*\*/);
-    expect(doc).toMatch(/#### D — Host, published, \*\*no joiners\*\*/);
-    expect(doc).toMatch(/#### E — Host, published, \*\*with joiners\*\*/);
-    expect(doc).toMatch(/### 6\.2\.1 Cross-cutting rules/);
-    expect(doc).toMatch(/### 6\.2\.2 Member profile CTAs/);
-    expect(doc).toMatch(/### 6\.2\.3 Host manage surface/);
-    expect(doc).toMatch(/### 6\.2\.4 Peek ↔ detail parity checklist/);
-    expect(doc).toMatch(/### 6\.3 Wire action vocabulary/);
-    expect(doc).toMatch(/### 6\.7 Implementation sequence/);
-    expect(doc).toMatch(/share_activity/);
-    expect(doc).toMatch(/manage_activity/);
-    expect(doc).toMatch(/withdraw_join/);
-    expect(doc).toMatch(/offer_rideshare/);
-  });
-
-  it('decisions D16–D18 reference dynamic CTA matrix', () => {
-    const doc = plan();
-    expect(doc).toMatch(/\| D16 \|/);
-    expect(doc).toMatch(/\| D17 \|/);
-    expect(doc).toMatch(/\| D18 \|/);
-  });
-});
 
 describe('activity detail CTA matrix — runtime (AD-CTA-01)', () => {
   const meeting = { meetingLat: 25.1, meetingLng: 55.2 };

@@ -20,15 +20,16 @@ const collectTsxUnder = (dir: string): string[] => {
   return files;
 };
 
-describe('geographyTerminologyGuard (Place · venue wire · Area · facility)', () => {
-  it('GEO-01: vocabulary module documents Place vs venue vs Area', () => {
+describe('geographyTerminologyGuard (Place · Facility · Area)', () => {
+  it('GEO-01: vocabulary module documents Place vs Facility vs Area', () => {
     const vocab = read('src/place/geographyVocabulary.ts');
-    expect(vocab).toMatch(/MapVenueWireSource/);
+    expect(vocab).toMatch(/MapPlaceWireSource/);
+    expect(vocab).toMatch(/MapFacilityWireSource/);
     expect(vocab).toMatch(/GeographyAreaHubWireSource/);
     expect(vocab).toMatch(/facilities/);
     const canon = read('docs/DOMAIN_CANONICALS.md');
-    expect(canon).toMatch(/12\.1\.1 Explore UI — Place vs `venue`/);
-    expect(canon).toMatch(/Facility/);
+    expect(canon).toMatch(/12\.1\.1 Explore UI — Place · Facility · Area \(Area is a name, not a pin\)/);
+    expect(canon).toMatch(/source: facility/);
   });
 
   it('GEO-02: Place pin summary never handles Area lens source', () => {
@@ -44,11 +45,14 @@ describe('geographyTerminologyGuard (Place · venue wire · Area · facility)', 
     expect(read('src/explore/ui/map-peek/mapPeekSlots.tsx')).not.toMatch(
       /card\.source === 'venue'/
     );
+    expect(read('src/explore/ui/map-peek/mapPeekSlots.tsx')).not.toMatch(
+      /source === 'venue'/
+    );
   });
 
-  it('GEO-03: venue map selection uses Place peek host (wire `venue`, entity Place)', () => {
+  it('GEO-03: Place and Facility map selection uses Place peek host until facility peek ships', () => {
     const stage = read('src/explore/ui/ExploreMapStage.tsx');
-    expect(stage).toMatch(/source === 'venue'/);
+    expect(stage).toMatch(/isGeographyMapSource/);
     const placeHost = read('src/explore/ui/peek/place/PlaceMapPeekHost.tsx');
     expect(placeHost).toMatch(/PlacePeekCard/);
     expect(stage).toMatch(/PlaceMapPeekHost/);
@@ -60,6 +64,21 @@ describe('geographyTerminologyGuard (Place · venue wire · Area · facility)', 
       if (/ExploreVenuePeek/i.test(read(file))) violations.push(file);
     }
     expect(violations).toEqual([]);
+  });
+
+  it('GEO-06: BWL map source is one lexicon — place + facility, not catalog_place', () => {
+    const lexicon = read('packages/shared-types/src/wire-lexicon.ts');
+    expect(lexicon).toMatch(/PLACE: 'place'/);
+    expect(lexicon).toMatch(/FACILITY: 'facility'/);
+    expect(lexicon).toMatch(/AREA_LEGACY: 'area'/);
+    expect(lexicon).toMatch(/isGeographyMapSource/);
+    expect(lexicon).not.toMatch(/CATALOG_PLACE_TARGET/);
+    const person = read('packages/shared-types/src/explore-person.ts');
+    const plan = read('packages/shared-types/src/explore-plan-projection.ts');
+    expect(person).toMatch(/ExploreMapSourceWire/);
+    expect(plan).toMatch(/ExploreMapSourceWire/);
+    expect(person).not.toMatch(/catalog_place/);
+    expect(plan).not.toMatch(/catalog_place/);
   });
 
   it('GEO-05: Area hub actions label facility Places distinctly from Spots rollups', () => {

@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import type { AreaCenter, AreaBoundsRing } from '@uaetrail/shared-types';
-import { areaDetailPath, placeDetailPath } from '@uaetrail/shared-types';
+import { placeDetailPath } from '@uaetrail/shared-types';
 import type { LocationDTO } from '@uaetrail/shared-types';
 import { PlacesMap, type MapBounds, type PlaceMapPin } from '../ui/PlacesMap';
 import { explorePath } from '../../explore/routing';
@@ -42,7 +42,7 @@ const placeToPin = (place: LocationDTO): PlaceMapPin | null => {
     longitude: place.longitude,
     activityType: place.activityType === 'shop' ? 'shop' : routeKind,
     path: placeDetailPath(routeKind, place.id),
-    source: 'venue',
+    source: 'place',
   };
 };
 
@@ -59,23 +59,13 @@ export const AreaHubMapStrip = ({
   const fallbackBounds = useMemo(() => boundsFromRing(boundsRing), [boundsRing]);
 
   const pins = useMemo(() => {
-    const rows: PlaceMapPin[] = [
-      {
-        id: `area:${areaSlug}`,
-        name: areaName,
-        latitude: center.latitude,
-        longitude: center.longitude,
-        activityType: 'area',
-        path: areaDetailPath(areaSlug),
-        source: 'area',
-      },
-    ];
+    const rows: PlaceMapPin[] = [];
     for (const place of places) {
       const pin = placeToPin(place);
       if (pin) rows.push(pin);
     }
     return rows;
-  }, [areaSlug, areaName, center.latitude, center.longitude, places]);
+  }, [places]);
 
   return (
     <section className="relative mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
@@ -89,10 +79,6 @@ export const AreaHubMapStrip = ({
         exploreMapCenter={{ lat: center.latitude, lng: center.longitude }}
         className="rounded-2xl"
         onPinClick={(pin) => {
-          if (pin.id.startsWith('area:')) {
-            navigate(exploreInArea);
-            return;
-          }
           navigate(pin.path);
         }}
       />

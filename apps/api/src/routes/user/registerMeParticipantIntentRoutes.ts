@@ -18,15 +18,24 @@ import {
   listMyParticipantIntents,
 } from '../../services/participant-intent-me-read.js';
 
-const intentIdParamSchema = z.object({ intentId: z.string().min(1) });
-const intentRequestParamsSchema = z.object({
-  intentId: z.string().min(1),
-  requestId: z.string().min(1),
-});
+type SeekingPostRouteMount = {
+  basePath: string;
+  /** Route param — correlation id stored as `participantIntentId` on the seeking activity. */
+  idParam: 'postId';
+};
 
-/** Demand (participant intent) CRUD + join requests under `/me/participant-intents/*`. */
-export const registerMeParticipantIntentRoutes = (router: Router): void => {
-  router.get('/me/participant-intents', requireAuth, async (req, res, next) => {
+const resolvePostId = (params: Record<string, string>, idParam: SeekingPostRouteMount['idParam']): string =>
+  params[idParam];
+
+const mountSeekingPostRoutes = (router: Router, mount: SeekingPostRouteMount): void => {
+  const { basePath, idParam } = mount;
+  const idParamSchema = z.object({ [idParam]: z.string().min(1) });
+  const requestParamsSchema = z.object({
+    [idParam]: z.string().min(1),
+    requestId: z.string().min(1),
+  });
+
+  router.get(basePath, requireAuth, async (req, res, next) => {
     try {
       const data = await listMyParticipantIntents(req.auth!.userId);
       res.json({ data });
@@ -36,7 +45,7 @@ export const registerMeParticipantIntentRoutes = (router: Router): void => {
   });
 
   router.post(
-    '/me/participant-intents',
+    basePath,
     requireAuth,
     validate({ body: createParticipantIntentSchema }),
     async (req, res, next) => {
@@ -50,13 +59,13 @@ export const registerMeParticipantIntentRoutes = (router: Router): void => {
   );
 
   router.patch(
-    '/me/participant-intents/:intentId',
+    `${basePath}/:${idParam}`,
     requireAuth,
-    validate({ params: intentIdParamSchema, body: updateParticipantIntentSchema }),
+    validate({ params: idParamSchema, body: updateParticipantIntentSchema }),
     async (req, res, next) => {
       try {
-        const { intentId } = req.params as z.infer<typeof intentIdParamSchema>;
-        const data = await updateMyParticipantIntent(req.auth!.userId, intentId, req.body);
+        const postId = resolvePostId(req.params as Record<string, string>, idParam);
+        const data = await updateMyParticipantIntent(req.auth!.userId, postId, req.body);
         res.json({ data });
       } catch (error) {
         next(error);
@@ -65,13 +74,13 @@ export const registerMeParticipantIntentRoutes = (router: Router): void => {
   );
 
   router.post(
-    '/me/participant-intents/:intentId/cancel',
+    `${basePath}/:${idParam}/cancel`,
     requireAuth,
-    validate({ params: intentIdParamSchema }),
+    validate({ params: idParamSchema }),
     async (req, res, next) => {
       try {
-        const { intentId } = req.params as z.infer<typeof intentIdParamSchema>;
-        const data = await cancelMyParticipantIntent(req.auth!.userId, intentId);
+        const postId = resolvePostId(req.params as Record<string, string>, idParam);
+        const data = await cancelMyParticipantIntent(req.auth!.userId, postId);
         res.json({ data });
       } catch (error) {
         next(error);
@@ -80,17 +89,17 @@ export const registerMeParticipantIntentRoutes = (router: Router): void => {
   );
 
   router.post(
-    '/me/participant-intents/:intentId/link-activity',
+    `${basePath}/:${idParam}/link-activity`,
     requireAuth,
     validate({
-      params: intentIdParamSchema,
+      params: idParamSchema,
       body: z.object({ activityId: z.string().min(1) }),
     }),
     async (req, res, next) => {
       try {
-        const { intentId } = req.params as z.infer<typeof intentIdParamSchema>;
+        const postId = resolvePostId(req.params as Record<string, string>, idParam);
         const { activityId } = req.body as { activityId: string };
-        const data = await linkMyParticipantIntentToActivity(req.auth!.userId, intentId, activityId);
+        const data = await linkMyParticipantIntentToActivity(req.auth!.userId, postId, activityId);
         res.json({ data });
       } catch (error) {
         next(error);
@@ -100,10 +109,10 @@ export const registerMeParticipantIntentRoutes = (router: Router): void => {
 
   const createJoinRequest: RequestHandler = async (req, res, next) => {
     try {
-      const { intentId } = req.params as { intentId: string };
+      const postId = resolvePostId(req.params as Record<string, string>, idParam);
       const { note } = (req.body ?? {}) as { note?: string };
       const data = await submitMyParticipantIntentJoinRequest({
-        intentId,
+        intentId: postId,
         userId: req.auth!.userId,
         note,
       });
@@ -115,8 +124,8 @@ export const registerMeParticipantIntentRoutes = (router: Router): void => {
 
   const listJoinRequestsForOwner: RequestHandler = async (req, res, next) => {
     try {
-      const { intentId } = req.params as { intentId: string };
-      const data = await listMyParticipantIntentJoinRequestsForOwner(intentId, req.auth!.userId);
+      const postId = resolvePostId(req.params as Record<string, string>, idParam);
+      const data = await listMyParticipantIntentJoinRequestsForOwner(postId, req.auth!.userId);
       res.json({ data });
     } catch (error) {
       next(error);
@@ -125,8 +134,8 @@ export const registerMeParticipantIntentRoutes = (router: Router): void => {
 
   const getMyJoinRequest: RequestHandler = async (req, res, next) => {
     try {
-      const { intentId } = req.params as { intentId: string };
-      const data = await findMyParticipantIntentJoinRequest(intentId, req.auth!.userId);
+      const postId = resolvePostId(req.params as Record<string, string>, idParam);
+      const data = await findMyParticipantIntentJoinRequest(postId, req.auth!.userId);
       res.json({ data });
     } catch (error) {
       next(error);
@@ -135,8 +144,10 @@ export const registerMeParticipantIntentRoutes = (router: Router): void => {
 
   const approveJoinRequest: RequestHandler = async (req, res, next) => {
     try {
-      const { intentId, requestId } = req.params as z.infer<typeof intentRequestParamsSchema>;
-      const data = await approveMyParticipantIntentJoinRequest(intentId, requestId, req.auth!.userId);
+      const params = req.params as z.infer<typeof requestParamsSchema>;
+      const postId = params[idParam];
+      const { requestId } = params;
+      const data = await approveMyParticipantIntentJoinRequest(postId, requestId, req.auth!.userId);
       res.json({ data });
     } catch (error) {
       next(error);
@@ -145,8 +156,10 @@ export const registerMeParticipantIntentRoutes = (router: Router): void => {
 
   const rejectJoinRequest: RequestHandler = async (req, res, next) => {
     try {
-      const { intentId, requestId } = req.params as z.infer<typeof intentRequestParamsSchema>;
-      const data = await rejectMyParticipantIntentJoinRequest(intentId, requestId, req.auth!.userId);
+      const params = req.params as z.infer<typeof requestParamsSchema>;
+      const postId = params[idParam];
+      const { requestId } = params;
+      const data = await rejectMyParticipantIntentJoinRequest(postId, requestId, req.auth!.userId);
       res.json({ data });
     } catch (error) {
       next(error);
@@ -155,41 +168,47 @@ export const registerMeParticipantIntentRoutes = (router: Router): void => {
 
   const mountJoinRequestRoutes = (requestSegment: 'requests' | 'join-requests') => {
     router.post(
-      `/me/participant-intents/:intentId/${requestSegment}`,
+      `${basePath}/:${idParam}/${requestSegment}`,
       requireAuth,
       validate({
-        params: intentIdParamSchema,
+        params: idParamSchema,
         body: z.object({ note: z.string().max(500).optional() }),
       }),
       createJoinRequest
     );
     router.get(
-      `/me/participant-intents/:intentId/${requestSegment}`,
+      `${basePath}/:${idParam}/${requestSegment}`,
       requireAuth,
-      validate({ params: intentIdParamSchema }),
+      validate({ params: idParamSchema }),
       listJoinRequestsForOwner
     );
     router.get(
-      `/me/participant-intents/:intentId/${requestSegment}/mine`,
+      `${basePath}/:${idParam}/${requestSegment}/mine`,
       requireAuth,
-      validate({ params: intentIdParamSchema }),
+      validate({ params: idParamSchema }),
       getMyJoinRequest
     );
     router.post(
-      `/me/participant-intents/:intentId/${requestSegment}/:requestId/approve`,
+      `${basePath}/:${idParam}/${requestSegment}/:requestId/approve`,
       requireAuth,
-      validate({ params: intentRequestParamsSchema }),
+      validate({ params: requestParamsSchema }),
       approveJoinRequest
     );
     router.post(
-      `/me/participant-intents/:intentId/${requestSegment}/:requestId/reject`,
+      `${basePath}/:${idParam}/${requestSegment}/:requestId/reject`,
       requireAuth,
-      validate({ params: intentRequestParamsSchema }),
+      validate({ params: requestParamsSchema }),
       rejectJoinRequest
     );
   };
 
   mountJoinRequestRoutes('requests');
-  /** @deprecated Prefer `…/requests` — mirrors `/activities/:id/requests`. */
-  mountJoinRequestRoutes('join-requests');
 };
+
+/** Activity-backed seeking posts (`activityMode: seeking`) — BWL `/me/seeking-posts/*`. */
+export const registerMeSeekingPostRoutes = (router: Router): void => {
+  mountSeekingPostRoutes(router, { basePath: '/me/seeking-posts', idParam: 'postId' });
+};
+
+/** @deprecated Use {@link registerMeSeekingPostRoutes} (MIG-COH-01). */
+export const registerMeParticipantIntentRoutes = registerMeSeekingPostRoutes;

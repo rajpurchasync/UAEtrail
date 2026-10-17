@@ -1,4 +1,5 @@
 import { isTimeBoundExploreMapItem, type ExploreMapItemDTO } from '@uaetrail/shared-types';
+import { isGeographyMapSource } from '@uaetrail/shared-types';
 import type { ExploreMapFilterPillKey } from '../explore/exploreBrowseTaxonomy';
 import {
   parseExploreMapFilterPillsParam,
@@ -13,7 +14,7 @@ export type BrowseMainCategoryKey = 'activities' | 'venues' | 'people' | 'guides
 
 /** Location-bounded catalog pins — trails, camps, outdoor venues, and gear shops. */
 export const mapItemMatchesBrowsePlacesCategory = (item: ExploreMapItemDTO): boolean =>
-  item.source === 'venue' || item.source === 'shop';
+  isGeographyMapSource(item.source) || item.source === 'shop';
 
 const isGuideBrandItem = (item: ExploreMapItemDTO): boolean =>
   item.source === 'agency' && item.path.includes('/guide/');

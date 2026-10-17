@@ -1,4 +1,5 @@
 import type { NavigateFunction } from 'react-router-dom';
+import { isPlaceMapSource } from '@uaetrail/shared-types';
 import type { ExploreCardModel } from '../../explore/exploreCardModel';
 import { composeFlowIdFromRoute } from '../../explore/composeFlowCatalog';
 import { planHostingCompose } from '../../explore/compose';
@@ -24,7 +25,7 @@ export const navigateOrganizeFromPlaceCard = async (
   card: ExploreCardModel
 ): Promise<void> => {
   const locationId = card.locationId?.trim();
-  if (!locationId || card.source !== 'venue') return;
+  if (!locationId || !isPlaceMapSource(card.source)) return;
 
   const kind = resolveCreateActivityKindFromVenueCardKind(card.kind);
   const place = await fetchPublicPlaceDetail(locationId);

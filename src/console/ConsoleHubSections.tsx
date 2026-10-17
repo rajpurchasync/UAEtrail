@@ -47,7 +47,7 @@ const buildConsoleStats = ({
   { label: 'History', value: pastActivitiesCount, to: OPERATOR_HISTORY_PATH },
 ];
 
-/** `/host/*` overview stats + optional shortcut links (host user kind + tenant scope). */
+/** Publishing workspace overview stats + shortcuts (tenant scope; copy varies by brand kind). */
 export const ConsoleHubSections = ({
   activitiesCount,
   pendingJoinRequests,

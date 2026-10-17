@@ -1,4 +1,5 @@
 import type { ExploreCardModel } from '../explore/exploreCardModel';
+import { isGeographyMapSource } from '@uaetrail/shared-types';
 import {
   formatListFeedPosterTitleLines,
   type BrowsePosterScheduleGrid,
@@ -125,7 +126,7 @@ export const resolvePlaceCatalogFactLabels = (
   options?: { includeLocationSubtitle?: boolean }
 ): string[] => {
   if (card.source === 'shop') return resolveShopPosterFactLabels(card);
-  if (card.source !== 'venue') return [];
+  if (!isGeographyMapSource(card.source)) return [];
 
   const labels: string[] = [];
 

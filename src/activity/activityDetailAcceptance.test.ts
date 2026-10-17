@@ -1,6 +1,6 @@
 /**
- * Activity detail + map peek program gates.
- * @see docs/experiment/activity-detail-tabs-implementation-plan.md
+ * Activity detail + map peek wiring gates (code is source of truth).
+ * @see docs/SYSTEM_COHERENCE.md §6.2 · mapDetailEngagementParity.test.ts · activity-detail-cta-matrix.test.ts
  */
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -8,37 +8,7 @@ import { describe, expect, it } from 'vitest';
 
 const read = (rel: string) => readFileSync(join(process.cwd(), rel), 'utf8');
 
-const PROGRAM_DOC = 'docs/experiment/activity-detail-tabs-implementation-plan.md';
-const MEMBER_SURFACES = 'docs/experiment/member-surfaces-implementation-plan.md';
-
-describe('activity detail program — governance', () => {
-  it('AD-ARCH-01: canonical program doc exists with phase status', () => {
-    const plan = read(PROGRAM_DOC);
-    expect(plan).toMatch(/\*\*Status:\*\* `(in_progress|complete)`/);
-    expect(plan).toMatch(/## 8\. Trace matrix/);
-    expect(plan).toMatch(/AD-PEEK-03/);
-  });
-
-  it('AD-ARCH-02: member-surfaces §21 points at program doc (not a second truth)', () => {
-    const member = read(MEMBER_SURFACES);
-    expect(member).toMatch(/activity-detail-tabs-implementation-plan\.md/);
-    expect(member).toMatch(/exit criteria live here|canonical program|program doc/i);
-  });
-
-  it('AD-ARCH-03: cursor rule for activity detail program', () => {
-    const rule = read('.cursor/rules/activity-detail-program.mdc');
-    expect(rule).toMatch(/activity-detail-tabs-implementation-plan/);
-    expect(rule).toMatch(/Definition of done/i);
-    expect(rule).toMatch(/§6\.2/);
-  });
-
-  it('AD-ARCH-04: dynamic CTA matrix spec present (§6.2 A–E + §6.7)', () => {
-    const plan = read(PROGRAM_DOC);
-    expect(plan).toMatch(/### 6\.7 Implementation sequence/);
-    expect(plan).toMatch(/AD-CTA-01/);
-    expect(read('src/activity/activity-detail-cta-matrix.test.ts')).toMatch(/AD-ARCH-04/);
-  });
-
+describe('activity detail program — wiring', () => {
   it('AD-PEEK-02 (partial): L1 resolveActivityEngagementPolicy owns map peek base actions', () => {
     const policy = read('packages/shared-types/src/activity-engagement-policy.ts');
     expect(policy).toMatch(/resolveActivityEngagementPolicy/);

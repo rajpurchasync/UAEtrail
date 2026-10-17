@@ -74,7 +74,7 @@ describe('GET /api/explore/map layer separation', () => {
     expect(activity?.kind).toBe('hiking');
     expect(activity?.composeIntent).toBe('organize');
     expect(activity?.outingCategory).toBe('hiking');
-    expect(venueItem?.source).toBe('venue');
+    expect(venueItem?.source).toBe('place');
     expect(venueItem?.kind).toBe('hiking');
     expect(venueItem?.composeIntent).toBeNull();
     expect(venueItem?.outingCategory).toBeNull();
@@ -107,7 +107,7 @@ describe('GET /api/explore/map layer separation', () => {
       path?: string;
     }>;
     const facilityItem = items.find((item) => item.id === `facility:${facility.id}`);
-    expect(facilityItem?.source).toBe('venue');
+    expect(facilityItem?.source).toBe('facility');
     expect(facilityItem?.kind).toBe('event');
     expect(facilityItem?.placeKind).toBe('toilet');
     expect(facilityItem?.path).toBe(`/facility/${facility.id}`);

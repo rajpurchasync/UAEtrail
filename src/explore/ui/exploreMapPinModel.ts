@@ -7,6 +7,7 @@ import {
   type ExploreMapItemDTO,
 } from '@uaetrail/shared-types';
 import type { MapPinKind } from '../../components/ui/mapPinTypes';
+import { isGeographyMapSource } from '@uaetrail/shared-types';
 import type { ColocatedMapPinEntry, PlaceMapPin } from '../../components/ui/PlacesMap';
 import { resolveMapPinItemSource, resolveMapPinEmoji, type ExploreCardKind } from '../exploreCopy';
 import type { ExploreBuddySubtypeKey } from '../exploreBuddySubtype';
@@ -24,7 +25,7 @@ export const matchesVenueFilter = (item: ExploreMapItemDTO, venueFilter: VenueLi
   if (venueFilter === 'shop') return item.kind === 'shop';
   if (venueFilter === 'hiking') return item.kind === 'hiking';
   if (venueFilter === 'camping') return item.kind === 'camping';
-  if (venueFilter === 'event') return item.kind === 'event' && item.source === 'venue';
+  if (venueFilter === 'event') return item.kind === 'event' && isGeographyMapSource(item.source);
   return true;
 };
 
@@ -41,7 +42,7 @@ export const isShopListItem = (item: ExploreMapItemDTO): boolean =>
 /** Permanent catalog: trails, camp spots, shops — not outings or event venues. */
 export const isPlacesMapItem = (item: ExploreMapItemDTO): boolean => {
   if (isShopListItem(item)) return true;
-  if (item.source !== 'venue') return false;
+  if (!isGeographyMapSource(item.source)) return false;
   return exploreVenueIsPlacesSpot(item.kind, item.placeKind);
 };
 
@@ -104,7 +105,7 @@ export const matchesExplorePinKindFilter = (item: ExploreMapItemDTO, pinKind: Ex
   if (pinKind === 'all') return true;
   if (pinKind === 'activities') return isTimeBoundExploreMapItem(item);
   if (pinKind === 'looking') return exploreMapItemIsSeeking(item);
-  if (pinKind === 'locations') return isAreaLensMapItem(item);
+  if (pinKind === 'locations') return isPlacesMapItem(item) && !isShopListItem(item);
   if (pinKind === 'places') return isPlacesMapItem(item) && !isShopListItem(item);
   if (pinKind === 'shops') return isShopListItem(item);
   return true;
@@ -173,10 +174,10 @@ export const matchesMapFilter = (item: ExploreMapItemDTO, mapFilter: MapFilterKe
   const kind = item.kind;
 
   if (mapFilter === 'hiking') {
-    return kind === 'hiking' && (isTimeBoundExploreMapItem(item) || item.source === 'venue');
+    return kind === 'hiking' && (isTimeBoundExploreMapItem(item) || isGeographyMapSource(item.source));
   }
   if (mapFilter === 'camping') {
-    return kind === 'camping' && (isTimeBoundExploreMapItem(item) || item.source === 'venue');
+    return kind === 'camping' && (isTimeBoundExploreMapItem(item) || isGeographyMapSource(item.source));
   }
   if (mapFilter === 'rideshare') {
     return kind === 'rideshare' && isTimeBoundExploreMapItem(item);
@@ -184,7 +185,7 @@ export const matchesMapFilter = (item: ExploreMapItemDTO, mapFilter: MapFilterKe
   if (mapFilter === 'others') {
     const eventKind =
       kind === 'event' || (item.source === 'activity' && item.activity?.activityType === 'event');
-    return eventKind && (isTimeBoundExploreMapItem(item) || item.source === 'venue');
+    return eventKind && (isTimeBoundExploreMapItem(item) || isGeographyMapSource(item.source));
   }
 
   return false;
@@ -251,7 +252,7 @@ const mapPinKind = (item: ExploreMapItemDTO): MapPinKind => {
 };
 
 const pinLayerOrder = (source?: ExploreMapItemDTO['source']): number => {
-  if (source === 'venue') return 0;
+  if (isGeographyMapSource(source)) return 0;
   if (source === 'shop') return 1;
   return 2;
 };
@@ -315,7 +316,7 @@ export const mapPinLocationKey = (pin: PlaceMapPin): string => {
 /** Group pins at one coordinate — catalog venues by kind; activities by map emoji. */
 export const mapPinEmojiGroupKey = (pin: PlaceMapPin): string => {
   const source = pin.source ?? 'activity';
-  if (source === 'venue' && (pin.activityType === 'hiking' || pin.activityType === 'camping')) {
+  if (isGeographyMapSource(source) && (pin.activityType === 'hiking' || pin.activityType === 'camping')) {
     return `venue:${pin.activityType}`;
   }
   if (pin.placeKind) {

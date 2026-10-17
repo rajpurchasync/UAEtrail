@@ -47,7 +47,7 @@ describe('componentsClientApi (R8.1)', () => {
     expect(read('src/components/ui/TenantSwitcher.tsx')).not.toMatch(/\bapi\./);
   });
 
-  it('notifications, signup, and participant-intent sheets use hooks layer', () => {
+  it('notifications, signup, and seeking manage sheets use hooks layer', () => {
     const bell = read('src/components/layout/NotificationBellPopover.tsx');
     expect(bell).toMatch(/notificationInboxApi/);
     expect(bell).toMatch(/inferNotificationPath/);
@@ -59,7 +59,7 @@ describe('componentsClientApi (R8.1)', () => {
       'src/components/participant-intent/ParticipantIntentEditForm.tsx',
       'src/components/participant-intent/ParticipantIntentManageSheet.tsx',
     ]) {
-      expect(read(file)).toMatch(/participantIntentClientApi/);
+      expect(read(file)).toMatch(/seekingClientApi/);
       expectNoDirectApi(file);
     }
   });

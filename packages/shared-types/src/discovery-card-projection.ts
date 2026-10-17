@@ -1,5 +1,5 @@
 import { exploreMapItemIsSeeking } from './explore-activity-mode.js';
-import { buildExploreCardPresentation } from './explore-presentation.js';
+import { buildExploreCardPresentation, isGeographyMapSource } from './explore-presentation.js';
 import type { ExploreCardKind, ExploreCardSource } from './explore-presentation.js';
 import type { ExploreCardPresentationDTO } from './explore-presentation.js';
 import type { ExplorePresentationBuildInput } from './explore-presentation.js';
@@ -66,7 +66,7 @@ export const resolveDiscoveryCardEntityRef = (item: DiscoveryMapItemWire): Disco
       tenantId: item.tenantId ?? item.activity?.tenantId ?? null,
     };
   }
-  if (item.source === 'venue') {
+  if (isGeographyMapSource(item.source)) {
     const locationId = item.locationCard?.id ?? item.activity?.locationId;
     if (locationId) return { kind: 'place', locationId };
   }

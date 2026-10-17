@@ -8,8 +8,12 @@ describe('member-discovery API contract', () => {
   it('registrar exposes object-centric member discovery paths only', () => {
     const source = read('src/routes/user/registerMemberDiscoveryRoutes.ts');
     expect(source).toMatch(/\/me\/member-discovery\/roster/);
-    expect(source).toMatch(/\/me\/member-discovery-quota/);
-    expect(source).toMatch(/\/users\/browse/);
+    expect(source).toMatch(/\/me\/member-discovery\/quota/);
+    expect(source).toMatch(/\/me\/member-discovery\/browse/);
+    expect(source).toMatch(/\/me\/member-discovery\/network/);
+    expect(source).toMatch(/\/me\/member-discovery\/search/);
+    expect(source).not.toMatch(/\/users\/browse/);
+    expect(source).not.toMatch(/\/social\/people/);
     expect(source).not.toMatch(/whos-going/i);
     expect(source).not.toMatch(/\/:id\/invites/);
   });

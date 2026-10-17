@@ -11,22 +11,24 @@ Companion: [`DOMAIN.md`](./DOMAIN.md), [`CREATE_FLOW.md`](./CREATE_FLOW.md), [`M
 | Prefix | Auth | Purpose |
 |--------|------|---------|
 | **`/activities`** | Public read; tenant write via `/operator` | Published **Organize** outings (join, RSVP, detail) |
-| **`/explore/map`** | Public | Discovery payload (activities, venues, shops, **demand**) |
+| **`/explore/map`** | Public | Discovery payload (`source`: activity · place · facility · shop · agency). Area is a filter (`areaId`), not a pin. |
 | **`/agent/manifest.json`**, **`/agent/discover`** | Public (rate-limited) | **AI / agent** entry manifest and text search over published outings + registry places |
 | **`/me/*`** | Signed-in member | Own profile, intents, groups, inbox, activity participation |
 | **`/operator/*`** | Verified + **tenant** (`x-organisation-id`) | **Publishing console** (any tier): publish, roster, **activity** join queue |
-| **`/host/*`** | Legacy (rewritten to `/operator/*`) | `Deprecation: true` + `Link` — no separate mount (`legacy-host-api-rewrite.ts`) |
-| **`/users/*`** | Optional auth | Public member profiles |
-| **`/chat/*`**, **`/social/*`** | Auth | DMs, reviews, people discovery |
+| **`/member/:userId/*`** | Optional auth | Public member card (`profile`, `brief`, `upcoming-activities`) — `registerPublicMemberRoutes.ts` |
+| **`/me/member-discovery/*`** | Auth | People roster, network, directory browse, quota, user search |
+| **`/safety/reports`** | Auth | Member **content reports** (trust/safety) — `safety.ts` |
+| **`/chat/*`** | Auth | DMs |
+| **`/reviews`** | Public read; auth write | Social reviews (not content reports) |
 | **`/admin/*`** | `PLATFORM_ADMIN` | Moderation, **Users** (`GET/PATCH /admin/users*`), tenants, metrics — `admin.ts` mounts `registerAdmin*` only |
 | **`POST /admin/platform-admins`** | Master admin only | Grant `PLATFORM_ADMIN` to an existing member by email |
 | **`DELETE /admin/platform-admins/:userId`** | Master admin only | Revoke platform staff (not master accounts) |
 
 **Naming**
 
-- **Resource paths** use kebab-case plural nouns (`participant-intents`, not `intents` or `demand`).
+- **Resource paths** use kebab-case plural nouns (`seeking-posts`, not `intents` or `demand`).
 - **No tab or marketing names** on `/me/*` (`plan-needs-you`, `member-hub-stats` are forbidden — use capability names like `coordination-attention`, `profile-stats`). Presentation (`label`, consumer `path`) belongs in the SPA, not JSON.
-- **DB collection** `participant_intents` → URL **`/me/participant-intents`** (product copy: *demand* / *Find*).
+- **Seeking posts** → URL **`/me/seeking-posts`** (legacy collection `participant_intents` read-only in DB; product copy: *Find* / looking for company).
 - **Type field** on intents: `kind` (`ParticipantIntentKind`) — parallels activity `activityType` / shared `outingCategory`.
 - Do **not** add catch-all `/plans` or `/me/intents` (legacy plan doc paths are obsolete).
 
@@ -40,10 +42,10 @@ Same product verb (**request to join**), two entities:
 
 | Step | Published activity | Demand (`participant_intents`) |
 |------|-------------------|----------------------------------|
-| **Create request** | `POST /activities/:activityId/requests` | `POST /me/participant-intents/:intentId/requests` |
+| **Create request** | `POST /activities/:activityId/requests` | `POST /me/seeking-posts/:postId/requests` (same `activity_requests` row) |
 | **My status** | In activity detail `myRequest` | `GET …/requests/mine` |
-| **Poster / host lists** | `GET /host/requests` (tenant) | `GET /me/participant-intents/:intentId/requests` (owner) |
-| **Approve / reject** | `PATCH /host/requests/:id` | `POST …/requests/:requestId/approve` · `…/reject` |
+| **Poster / host lists** | `GET /operator/requests` (tenant) | `GET /me/seeking-posts/:postId/requests` (owner) |
+| **Approve / reject** | `PATCH /operator/requests/:id` | `POST …/requests/:requestId/approve` · `…/reject` |
 | **Member list (outgoing)** | `GET /me/requests` | *(future: aggregate or trips)* |
 
 Deprecated alias (do not use in new clients): `…/join-requests` mirrors `…/requests`.
@@ -57,37 +59,34 @@ Storage: `activity_requests` vs `participant_intent_requests`.
 | **M1** | Shipped | Find post → `activities` row (`activityMode: seeking`, `participantIntentId`). |
 | **M2a** | Superseded by M2c | Transitional dual-write (Oct 2026); replaced by single **`activity_requests`** store. |
 | **M2b** | Shipped | `POST /activities/:id/requests` is canonical for seeking pins (mirrors `participant_intent_requests`); intent `POST` delegates to activity when **`activityId`** is set; `GET …/requests/mine` reads `activity_requests` when needed. |
-| **M2c** | Shipped | Seeking joins read/write **`activity_requests`** only; `/me/participant-intents/…/requests` is an alias (no new `participant_intent_requests` when **`activityId`** is set). Legacy intents without **`activityId`** still use the intent collection. |
-
-Clients may keep intent URLs until M2b; host queue for buddy seeking rows uses the mirrored `activity_requests` row.
-
-| **M2d** | Shipped | After `backfill-seeking-activities`, Find writes only `activities` (`activityMode: seeking`). `/me/participant-intents/*` read-through via `activityId` / `participantIntentId`. **Default:** stub write **off**; set `PARTICIPANT_INTENT_STUB_WRITE=true` only for legacy dual-write rollback. |
+| **M2c** | Shipped | Seeking joins on **`activity_requests`** only; `/me/seeking-posts/…/requests` for manage UI. |
+| **M2d / COH-01** | Shipped | Find writes only `activities`; HTTP **`/me/seeking-posts/*`**; no `participant_intents` inserts. |
 
 ---
 
-## Participant intents (`/me/participant-intents`)
+## Seeking posts (`/me/seeking-posts`)
 
-**Deprecation (M2d):** New clients should treat **`activityId`** on seeking rows as canonical (map pin, join, manage). These routes remain **compatibility aliases** over `activities` + `activity_requests` after `PARTICIPANT_INTENT_STUB_WRITE=false`. Do not add new product flows that depend on `participant_intents` persistence. **UI (S12):** map/list owner chrome uses host **`mapPeekActions`** on the seeking **activity** (same `ActivityMapPeekHost` stack as hosted pins; `seekingPinHygieneGuard` / `seekingPeekUnificationGuard`).
+**COH-01:** Find posts are published **`activities`** (`activityMode: seeking`). HTTP **`/me/participant-intents`** removed. Map pin **`activity:{id}`**. **UI (S12):** `ActivityMapPeekHost` + `seekingPeekUnificationGuard`.
 
 | Method | Path | Who |
 |--------|------|-----|
-| GET | `/me/participant-intents` | List my intents |
-| POST | `/me/participant-intents` | Create (Find flow); **M1** also writes `activities` row (`activityMode: seeking`, `participantIntentId`). Response includes **`activityId`** (published map activity; `seekingActivityId` is a deprecated alias). |
-| — | `npm run backfill-seeking-activities` | One-off **M1** backfill for active intents missing `seekingActivityId` (`--dry-run`, `--limit=N`) |
-| — | `npm run seeking:storage-status` | Ops readiness report before flipping `PARTICIPANT_INTENT_STUB_WRITE=false` (`--strict` fails if backfill incomplete or stub write on) |
-| PATCH | `/me/participant-intents/:intentId` | Update own active intent |
-| POST | `/me/participant-intents/:intentId/cancel` | Remove from map |
-| POST | `/me/participant-intents/:intentId/link-activity` | **Poster** graduates find crew onto a **hosted** outing (`convertedActivityId`, intent fulfilled). **Not** for linking a transport child — use `linkedActivityId` on the rideshare row instead (`CREATE_FLOW.md` § Linked transport) |
-| POST | `/me/participant-intents/:intentId/requests` | Member asks to join |
-| GET | `/me/participant-intents/:intentId/requests` | **Poster** lists requests |
-| GET | `/me/participant-intents/:intentId/requests/mine` | Caller’s request on this intent |
+| GET | `/me/seeking-posts` | List my seeking posts |
+| POST | `/me/seeking-posts` | Create (Find flow) → seeking activity; response **`activityId`** + post **`id`** (`participantIntentId`) |
+| — | `npm run backfill-seeking-activities` | Legacy `participant_intents` → seeking activities (`--dry-run`, `--limit=N`) |
+| — | `npm run seeking:storage-status` | Ops readiness (`--strict` if backfill incomplete) |
+| PATCH | `/me/seeking-posts/:postId` | Update own active post |
+| POST | `/me/seeking-posts/:postId/cancel` | Remove from map |
+| POST | `/me/seeking-posts/:postId/link-activity` | Graduate find crew onto a **hosted** outing (`CREATE_FLOW.md`) |
+| POST | `/me/seeking-posts/:postId/requests` | Member asks to join |
+| GET | `/me/seeking-posts/:postId/requests` | **Poster** lists requests |
+| GET | `/me/seeking-posts/:postId/requests/mine` | Caller’s request |
 | POST | `…/requests/:requestId/approve` \| `…/reject` | **Poster** decides |
 
-**Publish gate:** `POST /operator/activities` and `POST /operator/activities/:id/publish` (legacy `/host/*` rewritten) require `profileComplete` + `canPublish` (see `member-publish-gate.ts`), except platform admin acting on a tenant. **Join/participate** does not require profile completion.
+**Publish gate:** `POST /operator/activities` + publish require `profileComplete` + `canPublish`. **Join** does not require profile completion.
 
-**Consumer vs console:** Buddy **organize / manage joins** use **Plan** + `/activity/:id` + `/me/participant-intents/*` — not consumer bookmarks to legacy `/host/overview` (redirects to `/operator/overview`). **Tenant publishing HTTP** is **`/operator/*` only**; legacy `/host/*` is rewritten + deprecation headers (`legacy-host-api-rewrite.ts`).
+**Consumer vs console:** Plan + `/activity/:id` + `/me/seeking-posts/*`. Tenant publishing: **`/operator/*` only**.
 
-Registration: `registerMeParticipantIntentRoutes.ts`.
+Registration: `registerMeSeekingPostRoutes` (`registerMeParticipantIntentRoutes.ts`).
 
 ---
 
@@ -115,12 +114,12 @@ Registration: `registerMeBadgesRoutes.ts` · service: `member-badges.ts`.
 | GET | `/me/profile-stats` | Profile counters (`followerCount`, `joinedCount`, `hostedCount`, `activeParticipantIntentCount`, `isCommunityHost`) |
 | GET | `/activities/:id/invites` | Pending **Join me** invitee ids the caller sent for this activity |
 | POST | `/activities/:id/invites` | **Join me** — host or confirmed participant invites another member (notification only; invitee still RSVPs / requests; host approval when required). Rate limit: **20 sends / activity / sender / 24h** (`ACTIVITY_JOIN_INVITE_DAILY_LIMIT_PER_ACTIVITY`) |
-| * | `/operator/activities/*` | CRUD, publish, history — canonical; `/host/activities/*` alias (`registerHostActivityRoutes`) — FE: `listHostActivities`, … (`activities.ts` → `/operator/…`) |
-| GET | `/host/activities/:id/participants` | Approved roster + flags (`registerHostActivityParticipantRoutes`) |
-| POST/DELETE | `/host/activities/:id/participants/:participantId/checkin` | Confirm / undo attendance |
-| POST | `/host/activities/:id/participants/:participantId/revoke` | Remove joiner (note → notification) |
-| POST | `/host/activities/:id/participants/:participantId/rating` | Host rates attended participant (after outing ends) |
-| GET/PATCH | `/operator/requests` | Activity join queue (canonical); `/host/requests` alias |
+| * | `/operator/activities/*` | CRUD, publish, history — FE: `listHostActivities`, … (`activities.ts` → `/operator/…`) |
+| GET | `/operator/activities/:id/participants` | Approved roster + flags (`registerHostActivityParticipantRoutes`) |
+| POST/DELETE | `/operator/activities/:id/participants/:participantId/checkin` | Confirm / undo attendance |
+| POST | `/operator/activities/:id/participants/:participantId/revoke` | Remove joiner (note → notification) |
+| POST | `/operator/activities/:id/participants/:participantId/rating` | Host rates attended participant (after outing ends) |
+| GET/PATCH | `/operator/requests` | Activity join queue |
 | GET | `/me/status` | Member capabilities (`MemberStatusDTO`; **`publish`** nested); legacy `/me/host-status`, `/me/operator-status` |
 
 Storage: `activity_invites` (`COLLECTIONS.ACTIVITY_INVITES`) · indexes in `mongo-indexes.ts`.
@@ -137,22 +136,25 @@ Storage: `activity_invites` (`COLLECTIONS.ACTIVITY_INVITES`) · indexes in `mong
 
 Registration: `registerBuddyRoutes.ts` · service: `buddy-activity-presence.ts`.
 
-Explore **people browse panel** (map; URL `view=people`; legacy `view=social` / `view=going`) uses **`GET /social/people`** (see below) — `activity-presence` remains for map-adjacent tooling. **Chat** is `/chat/*` and `/messages` — not these routes.
+Explore **people browse panel** (map; URL `view=people`; legacy `view=social` / `view=going`) uses **`GET /me/member-discovery/network`** (see below) — `activity-presence` remains for map-adjacent tooling. **Chat** is `/chat/*` and `/messages` — not these routes.
 
 ---
 
 ## Member people reads (browse)
 
-**Bounded context:** `member_discovery` ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §3.2). **Mount:** `/social` is historical; paths below are **browse** (relationship + outing status), not messaging.
+**Bounded context:** `member_discovery` ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §3.2). Paths are **browse** (relationship + outing status), not messaging.
 
 | Method | Path | Who |
 |--------|------|-----|
-| GET | `/social/people/preview` | Network avatars + counts for explore map people pill (map-going faces merged on client from `GET /explore/map`) |
-| GET | `/social/people` | **Network roster** — friends / following for map people panel. Query: `segment=all\|friends\|followed` |
-| GET | `/me/member-discovery/roster` | **Discovery roster** — who’s going, hosts, looking-for **person rows**, followed, directory (`q`, `date`, `omitDirectory`, pagination); `meta.quota`. Same list component as `/list?listCat=people` (**Buddies**) |
-| GET | `/explore/seeking-activities` | **Looking for outings** — published `activityMode: seeking` as `ExploreMapItemDTO[]` (same assembler as map; optional auth). People **Looking for** tab + list Buddies segment use this read, then client `activity-discovery` filters |
+| GET | `/me/member-discovery/network/preview` | Network avatars + counts for explore map people pill |
+| GET | `/me/member-discovery/network` | **Network roster** — friends / following. Query: `segment=all\|friends\|followed` |
+| GET | `/me/member-discovery/roster` | **Discovery roster** — who’s going, hosts, looking-for **person rows**, followed, directory (`q`, `date`, `omitDirectory`, pagination); `meta.quota` |
+| GET | `/me/member-discovery/browse` | Directory only (paginated public members) |
+| GET | `/me/member-discovery/search` | User search (e.g. new chat) |
+| GET | `/me/member-discovery/quota` | Free vs Pro profile-open quota |
+| GET | `/explore/seeking-activities` | **Looking for outings** — published `activityMode: seeking` as `ExploreMapItemDTO[]` |
 
-Registration: `registerSocialPeopleRoutes.ts` · `registerMemberDiscoveryRoutes.ts` · `registerPublicPlaceRoutes.ts` (`/explore/seeking-activities`) · services: `member-people-engagement.ts`, `member-discovery-roster.ts`, `explore-seeking-activities-read.ts`.
+Registration: `registerMemberDiscoveryRoutes.ts` · `registerPublicPlaceRoutes.ts` (`/explore/seeking-activities`) · services: `member-people-engagement.ts`, `member-discovery-roster.ts`, `explore-seeking-activities-read.ts`.
 
 ---
 
@@ -256,13 +258,7 @@ JSON download of profile, join requests, participations, **wishlist**, **entity 
 
 ## Member discovery (directory / quota)
 
-| Method | Path | Who |
-|--------|------|-----|
-| GET | `/me/member-discovery-quota` | Free vs Pro profile-open quota |
-| GET | `/me/member-discovery/roster` | `friendsGoing`, `hostsGoing`, `seekingOnMap`, `followed`, paginated `directory`, `meta.quota`. Query: `date`, `q` |
-| GET | `/users/browse` | Directory only (paginated public members; excludes self + buddies) |
-
-Profile opens from Discover: `GET /users/:id/public-profile?from=discover` (quota). Registration: `registerMemberDiscoveryRoutes.ts` · roster: `member-discovery-roster.ts` · views: `member_profile_views` collection.
+See **Member people reads** above for the full `/me/member-discovery/*` table. Profile opens from Discover: `GET /member/:userId/profile?from=discover` (quota). Views: `member_profile_views` collection.
 
 ---
 
@@ -284,6 +280,21 @@ Capability map: [`MEMBER_MODEL.md`](./MEMBER_MODEL.md).
 
 ---
 
+## Pro membership apply (`/me/pro-application`)
+
+**COH-03:** Canonical HTTP for Pro / agency / shop onboarding. UPL = **Pro membership**. Collection remains `host_applications` until optional rename.
+
+| Method | Path | Who |
+|--------|------|-----|
+| GET | `/me/pro-application` | Signed-in member — latest application |
+| POST | `/me/pro-application` | Submit Pro membership application |
+| GET | `/admin/pro-applications` | Platform admin queue |
+| PATCH | `/admin/pro-applications/:id` | Approve / reject |
+
+Legacy aliases (do not use in new clients): `/me/host-application`, `/admin/host-applications`. SPA: `/profile/pro-membership`.
+
+---
+
 ## Program CPC — catalog HTTP (target)
 
 **Tracker:** [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.4. Shipped paths below marked **(today)** until phase lands.
@@ -296,13 +307,15 @@ Capability map: [`MEMBER_MODEL.md`](./MEMBER_MODEL.md).
 | POST | `/me/places` | Member place submit | **(today)** canonical; `/me/locations` legacy alias |
 | GET | `/me/places` | My submitted places | **(today)** |
 | GET | `/facilities` | Listed amenities (paginated) | **(today)** |
-| GET | `/facilities/:id` | Public facility detail + `viewerAccess` | **(today)** |
+| GET | `/facilities/:id` | Public facility detail + `viewerAccess` | **(today)** — map `source: facility` |
 | GET | `/facilities/catalog` | Map / admin filters (`areaId`, `parentPlaceId`, `facilityKind`) | **(today)** |
 | POST | `/me/facilities` | Member facility submit → `facilities` only | **(today)** |
 | GET/PATCH/DELETE | `/admin/facilities` | Platform admin facility CRUD → `facilities` only | **(today)** |
+| GET | `/areas` | Public curated **names** | **(today)** — Area is **not** a map pin |
+| GET | `/areas/:slug` | Area hub page payload | **(today)** — camera hint only; pins on the hub are Places |
+| GET | `/shop/shops/:id` | **Operator** shop storefront (`EntityKind.shop`) | **(today)** — not FAB Contribute |
 
 **Surface model:** Public read, member submit (`/me/*`), and platform admin (`/admin/*`) are **separate registrars** — not one `/facilities` POST gated by profile. See [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §5.1 · §8.4.9.
-| GET | `/shop/shops/:id` | **Operator** shop storefront (`EntityKind.shop`) | **(today)** — not FAB Contribute |
 
 **Provenance:** `registeredByUserId` on place/facility rows — not a `/contribute` route.
 
@@ -315,12 +328,15 @@ Capability map: [`MEMBER_MODEL.md`](./MEMBER_MODEL.md).
 | `member.ts` | **`/me/status`** |
 | `badges.ts` | **`/me/badges`** |
 | `activities.ts` | `/activities`, `/me/requests`, `/host/activities`, `/host/requests` |
-| `explore.ts` | `/explore/map`, **`/me/participant-intents`** (+ requests, link-activity) |
+| `explore.ts` | `/explore/map`, `/explore/seeking-activities` |
+| `seeking.ts` | **`/me/seeking-posts`** (+ requests, link-activity) |
 | `social.ts`, `chat.ts` | Groups, DMs, inbox |
 | `places.ts` | `/me/places` (canonical), `/me/locations` (legacy alias) |
 | `facilities.ts` | `/me/facilities`, `/admin/facilities` |
+| `organisation.ts` | `/me/pro-application` (alias `/me/host-application`) |
+| `admin.ts` | `/admin/pro-applications` (alias `/admin/host-applications`) |
 
-Prefer **`exploreApi.linkParticipantIntentToActivity`** when a demand poster graduates crew onto a hosted outing.
+Prefer **`seekingApi.linkSeekingPostToActivity`** when a Find poster graduates crew onto a hosted outing.
 
 ---
 

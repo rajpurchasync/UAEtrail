@@ -11,7 +11,7 @@ import { userBriefParamSchema } from './schemas.js';
 
 /** Public member brief + profile (`/member/:id`). */
 export const registerPublicMemberRoutes = (router: Router): void => {
-  router.get('/users/:userId/brief', optionalAuth, validate({ params: userBriefParamSchema }), async (req, res, next) => {
+  router.get('/member/:userId/brief', optionalAuth, validate({ params: userBriefParamSchema }), async (req, res, next) => {
     try {
       const { userId } = req.params as z.infer<typeof userBriefParamSchema>;
       const data = await loadPublicMemberBrief({
@@ -25,7 +25,7 @@ export const registerPublicMemberRoutes = (router: Router): void => {
     }
   });
 
-  router.get('/users/:userId/public-profile', optionalAuth, validate({ params: userBriefParamSchema }), async (req, res, next) => {
+  router.get('/member/:userId/profile', optionalAuth, validate({ params: userBriefParamSchema }), async (req, res, next) => {
     try {
       const { userId } = req.params as z.infer<typeof userBriefParamSchema>;
       const fromDiscover =
@@ -43,7 +43,7 @@ export const registerPublicMemberRoutes = (router: Router): void => {
   });
 
   router.get(
-    '/users/:userId/upcoming-activities',
+    '/member/:userId/upcoming-activities',
     optionalAuth,
     validate({ params: userBriefParamSchema }),
     async (req, res, next) => {

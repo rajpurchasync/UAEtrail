@@ -105,8 +105,7 @@ export const ExploreBrowseFilterChrome = ({
     showBuddySubtype && buddySubtype === 'activities' && onOutingTopicChange != null;
   const showPinKindRow = unifiedMap && onPinKindChange != null;
   const mapShowsPlans = pinKind === 'all' || pinKind === 'activities' || pinKind === 'looking';
-  const mapShowsPlaces = pinKind === 'all' || pinKind === 'places';
-  const mapShowsLocations = pinKind === 'all' || pinKind === 'locations';
+  const mapShowsPlaces = pinKind === 'all' || pinKind === 'places' || pinKind === 'locations';
   const showActivityModeRow =
     layout === 'map' &&
     onActivityModeFilterChange != null &&
@@ -122,7 +121,7 @@ export const ExploreBrowseFilterChrome = ({
   const effectiveShowDate =
     unifiedMap ? mapShowsPlans && showDateFilter : showDateFilter;
   const effectiveShowState =
-    unifiedMap ? mapShowsPlaces && !mapShowsLocations && showStateFilter : showStateFilter;
+    unifiedMap ? mapShowsPlaces && showStateFilter : showStateFilter;
   const pinKindRow = showPinKindRow ? (
     <ExplorePinKindPillsRow pinKind={pinKind} onPinKindChange={onPinKindChange!} layout={layout} />
   ) : null;

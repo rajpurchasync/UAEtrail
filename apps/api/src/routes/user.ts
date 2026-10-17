@@ -12,7 +12,7 @@ import {
   registerMeActivityParticipationRoutes,
 } from './user/registerMeEngagementRoutes.js';
 import { registerActivityJoinInviteRoutes } from './user/registerActivityJoinInviteRoutes.js';
-import { registerMeParticipantIntentRoutes } from './user/registerMeParticipantIntentRoutes.js';
+import { registerMeSeekingPostRoutes } from './user/registerMeParticipantIntentRoutes.js';
 import { registerMeBadgesRoutes } from './user/registerMeBadgesRoutes.js';
 import { registerMeGoalsRoutes } from './user/registerMeGoalsRoutes.js';
 import { registerMeAvailabilityRoutes } from './user/registerMeAvailabilityRoutes.js';
@@ -67,7 +67,7 @@ registerMemberStatusRoutes(userRouter);
 registerMeAccountSessionRoutes(userRouter);
 registerMeSubmittedPlaceRoutes(userRouter);
 registerMeFacilityRoutes(userRouter);
-registerMeParticipantIntentRoutes(userRouter);
+registerMeSeekingPostRoutes(userRouter);
 registerMeBadgesRoutes(userRouter);
 registerMeGoalsRoutes(userRouter);
 registerMeAvailabilityRoutes(userRouter);

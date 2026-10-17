@@ -1,4 +1,5 @@
 import type { ActivityMapPeekAction, ActivityMapPeekActionId } from '@uaetrail/shared-types';
+import { isGeographyMapSource } from '@uaetrail/shared-types';
 import type { ExploreCardModel } from '../explore/exploreCardModel';
 import { resolveActivityPeekEngagement } from '../activity/activityPeekEngagement';
 import { activityMapPeekActionLabel } from '../explore/exploreMapPeekActionCopy';
@@ -118,7 +119,7 @@ export const resolveListFeedFooterModel = (
 ): ListFeedFooterModel => {
   const { isGuest } = options;
 
-  if (card.source === 'venue' && exploreCardHasMapCoords(card)) {
+  if (isGeographyMapSource(card.source) && exploreCardHasMapCoords(card)) {
     return {
       primary: {
         kind: 'directions',

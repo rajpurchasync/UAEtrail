@@ -79,14 +79,14 @@ export const organisationApi = {
     }),
 
   submitOrganisationApplication: (data: Record<string, unknown>) =>
-    apiRequest<{ data: HostApplication }>('/me/host-application', {
+    apiRequest<{ data: HostApplication }>('/me/pro-application', {
       method: 'POST',
       auth: true,
       body: JSON.stringify(data),
     }),
 
   getMyOrganisationApplication: () =>
-    apiRequest<{ data: HostApplication | null }>('/me/host-application', { auth: true }),
+    apiRequest<{ data: HostApplication | null }>('/me/pro-application', { auth: true }),
 
   /** @deprecated Prefer `memberApi.getMemberStatus` */
   getMyOrganisationStatus: memberApi.getMemberStatus,

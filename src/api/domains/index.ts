@@ -5,6 +5,7 @@ export { fetchPlaceCatalog, type PlaceCatalogQuery } from './placeCatalogClient'
 /** @deprecated Use `placeCatalogClient`. */
 export { fetchPlaceRegistry, type PlaceRegistryQuery } from './placeRegistry';
 export { exploreApi } from './explore';
+export { seekingApi } from './seeking';
 export { badgesApi } from './badges';
 export { goalsApi } from './goals';
 export { availabilityApi } from './availability';
@@ -14,6 +15,7 @@ export { memberJourneyMapApi } from './memberJourneyMap';
 export { activitiesApi } from './activities';
 export { accountApi } from './account';
 export { socialApi } from './social';
+export { safetyApi } from './safety';
 export { memberApi } from './member';
 export { organisationApi } from './organisation';
 export { shopApi } from './shop';

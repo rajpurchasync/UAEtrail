@@ -129,7 +129,7 @@ const BANNED_LINE_PATTERNS: Array<{ pattern: RegExp; hint: string }> = [
   { pattern: /\bHosts & shops\b/, hint: 'Use Organizers & shops' },
   { pattern: /\bHosts & hosting\b/, hint: 'Use Organizers & operators' },
   { pattern: /\bBecome a host\b/i, hint: 'Use Pro membership / guide or agency setup' },
-  { pattern: /\bHost application\b/, hint: 'Use Publishing application' },
+  { pattern: /\bHost application\b/, hint: 'Use Pro membership' },
   { pattern: /\bAll hosts\b/, hint: 'Use All publishers or publishing accounts' },
   { pattern: /\bSuspend host\b/i, hint: 'Use Suspend publishing account' },
   { pattern: /\bNo hosts found\b/i, hint: 'Use No publishing accounts found' },
@@ -187,6 +187,7 @@ describe('workspaceProductLanguageGuard', () => {
       if (SKIP_FILE_PREFIXES.some((prefix) => file.startsWith(prefix))) continue;
       if (file.startsWith('src/explore/') && file.includes('.test.')) continue;
       if (file.startsWith('docs/experiment/')) continue;
+      if (file.startsWith('docs/archive/')) continue;
 
       const content = readFileSync(join(process.cwd(), file), 'utf8');
       const lines = content.split(/\r?\n/);

@@ -108,6 +108,14 @@ export const MemberProfileView = ({
 
           <h1 className="mt-4 text-2xl font-bold tracking-tight text-neutral-900">{profile.displayName}</h1>
           <p className="mt-1 text-sm font-medium text-neutral-500">{roleLabel}</p>
+          {profile.linkedOperatorName && profile.hostProfilePath ? (
+            <Link
+              to={profile.hostProfilePath}
+              className="mt-2 inline-block text-sm font-semibold text-emerald-700 hover:text-emerald-800"
+            >
+              {profile.linkedOperatorName}
+            </Link>
+          ) : null}
           {joinedLabel ? (
             <p className="mt-1.5 text-xs font-semibold text-neutral-500">{joinedLabel}</p>
           ) : null}
@@ -194,24 +202,12 @@ export const MemberProfileView = ({
         </GlassCard>
       )}
 
-      {(showConnectActions || profile.hostProfilePath) && (
+      {showConnectActions ? (
         <GlassCard padding className="space-y-3">
           <SectionHeading>More</SectionHeading>
-
-          {profile.hostProfilePath && (
-            <Link
-              to={profile.hostProfilePath}
-              className="ios-btn glass w-full text-neutral-900 active:bg-white/80"
-            >
-              View organizer profile
-            </Link>
-          )}
-
-          {showConnectActions && (
-            <MemberFollowControls targetUserId={userId} onStatusMessage={onBuddyMessage} />
-          )}
+          <MemberFollowControls targetUserId={userId} onStatusMessage={onBuddyMessage} />
         </GlassCard>
-      )}
+      ) : null}
     </div>
   );
 };

@@ -8,7 +8,7 @@ Users can report from:
 
 | Surface | Target type | API |
 |---------|-------------|-----|
-| Messages | `user` | `POST /api/reports` |
+| Messages | `user` | `POST /api/safety/reports` |
 | Reviews | `review` | same |
 
 Reports are stored as **audit logs** with `action: content_report`.

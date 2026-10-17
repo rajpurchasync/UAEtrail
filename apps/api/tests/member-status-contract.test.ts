@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { buildMemberStatusDto } from '@uaetrail/shared-types';
 
 describe('member status contract', () => {
-  it('registers only GET /me/status (legacy paths rewritten — no parallel routes)', () => {
+  it('registers only GET /me/status (no parallel legacy status routes)', () => {
     const routes = readFileSync(
       join(process.cwd(), 'src/routes/user/registerMemberStatusRoutes.ts'),
       'utf8'
@@ -15,7 +15,7 @@ describe('member status contract', () => {
     expect(routes).not.toMatch(/['"]\/me\/host-status['"]/);
     expect(routes).toMatch(/resolveMemberStatus/);
     expect(routes).toMatch(/buildMemberStatusDto/);
-    expect(index).toMatch(/legacyMemberStatusPathRewrite/);
+    expect(index).not.toMatch(/legacyMemberStatusPathRewrite/);
   });
 
   it('nests publish capabilities under publish on /me/status wire', () => {

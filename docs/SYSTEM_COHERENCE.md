@@ -94,8 +94,8 @@ Each context has **one write path** and **one public read model** where possible
 
 | Context | Responsibility | Frontend home | API home | Storage (see `collections.ts`) |
 |---------|----------------|---------------|----------|--------------------------------|
-| **Discovery (Explore umbrella)** | **Explore** = discovery shell (URL, layout, chrome). **Projections:** map, list (`list=1`), browse catalogue (`browse=1`, `/list`), search — not separate data stores. **Activity discovery** = hosted + seeking outings from `GET /explore/map`. **Places discovery** = venue/shop pins from same read (filters in explore/list). **People discovery** = roster, availability, directory (`member_discovery` APIs); *Looking for* tab composes **activity-discovery** seeking rows. | Shell: `src/explore/shell/*`. Activity: `src/activity-discovery/*`, activities list in `src/explore/ui`, `src/list/*`. Places: entity detail + list filters. People: `src/people-discovery/*` | `lib/explore-map.ts`, `GET /explore/map` | `activities`, `locations`, `participant_intents`, `tenants` (shops) |
-| **Compose** | FAB intents, wizards, draft → publish payload | `src/explore/create/`, `compose.ts`, `hostingFlowEngine.ts`, `hostingFlows/`, `seekingFlowEngine.ts` | `POST /operator/activities`, `POST /me/participant-intents` | `activities`, `participant_intents` |
+| **Discovery (Explore umbrella)** | **Explore** = discovery shell (URL, layout, chrome). **Projections:** map, list (`list=1`), browse catalogue (`browse=1`, `/list`), search — not separate data stores. **Activity discovery** = hosted + seeking outings from `GET /explore/map`. **Places discovery** = place / facility / shop pins from the same read (filters in explore/list). **Area** is an admin-curated **name** (`?area=` / `/area/:slug`) — **not a pin**. **People discovery** = roster, availability, directory (`member_discovery` APIs); *Looking for* tab composes **activity-discovery** seeking rows. | Shell: `src/explore/shell/*`. Activity: `src/activity-discovery/*`, activities list in `src/explore/ui`, `src/list/*`. Places: entity detail + list filters. People: `src/people-discovery/*` | `lib/explore-map.ts`, `GET /explore/map` | `activities`, `locations`, `facilities`, `areas`, `tenants` (shops) |
+| **Compose** | FAB intents, wizards, draft → publish payload | `src/explore/create/`, `compose.ts`, `hostingFlowEngine.ts`, `hostingFlows/`, `seekingFlowEngine.ts` | `POST /operator/activities`, `POST /me/seeking-posts` | `activities` (seeking rows; legacy `participant_intents` read-only) |
 | **Participation** | Join, waitlist, RSVP, seeking joins, **Join me** invites | `useActivityJoin*`, detail + explore selection | `join-request.ts`, `activity-invite.ts`, intent join **aliases** (`participant-intent-requests-store`) | **`activity_requests`** (canonical); `participant_intent_requests` legacy-only; `activity_participants`, `activity_invites` |
 | **Browse — member people** | Who can I go with? Network roster + availability + discover directory (quota). **Looking for** tab: `GET /explore/seeking-activities` + `selectSeekingActivitiesFromExploreCatalog` (`src/activity-discovery`). | `src/people-discovery/*` (`PeopleBrowsePanel`, tabs), `ListDiscoverPeopleView` | `explore-seeking-activities-read.ts`, `member-people-engagement.ts`, `member-discovery-roster.ts`, `registerMemberDiscoveryRoutes`, `registerSocialPeopleRoutes` | Composes `buddy_*`, `user_follows`, explore catalog (read), `member_profile_views` |
 | **Member identity** | Profile, welcome gate, visibility, public card | `src/pages/Profile*`, `src/member/*` | `registerProfileRoutes`, `public-member-profile`, `profile-viewer-access` | `auth_users` profile fields |
@@ -105,7 +105,7 @@ Each context has **one write path** and **one public read model** where possible
 | **Social graph** | Relationship **writes** & group metadata (not browse roster UI) | `Buddies.tsx`, `Groups.tsx`, `/buddies` | `registerBuddyRoutes`, `buddy-activity-presence.ts`, `registerGroupRoutes`, `registerFollowRoutes` | `buddy_*`, `user_follows`, `social_groups*` |
 | **Places** | Place catalog read, place detail, **member place submit** | `src/places-discovery/*`, `PlaceDetail*`, FAB Contribute→place wizard (`compose` UI) | `place-catalog`, `place-submit`, `GET /places/catalog`, `POST /me/places` | `locations` (place rows) |
 | **Facilities** | Facility catalog read, facility detail, **member facility submit** | FAB Contribute→facility wizard; `adminFacilityPlaceAdapter` | `place-catalog` (facility half), `GET /facilities/catalog`, `POST /me/facilities`, `GET/PATCH /admin/facilities` | **`facilities`** |
-| **Areas** | Curated **hub** (`areaId`); many trails/camps/facilities/shops per area via **`place.areaId`**; Locations lens = hub pins + rollups; Activities lens = outings | `/area/:slug`, Find **Area & map pin**, admin place **area** link | `areas-store`, `explore-map-area-lens.ts`, `organizePublishArea.ts`, `place-kind.ts` | `areas`; **`locations.areaId`** (all catalog kinds); **`participant_intents.areaId`** (seeking); hosted geography = **`activity.locationId` → place.areaId** (no activity-area write) |
+| **Areas** | Admin-curated **name** (`areas`, stable `areaId`) grouping Places/Facilities. **Not a map pin** — country / state / region come from map geography. Hub page `/area/:slug` + filter `?area=`. Children via **`place.areaId`** / **`facility.areaId`**. | `/area/:slug`, Find **Area then pin** (the pin is the seeking/place/facility, not the Area), admin **area** link | `areas-store`, `explore-map-area-lens.ts` (hub rollups, not map emit), `organizePublishArea.ts` | `areas`; **`locations.areaId`**; **`facilities.areaId`**; seeking `areaId` on the activity/post; hosted geography = **`activity.locationId` → `place.areaId`** |
 | **Commerce** | Shop public + merchant manage (affiliate) | `ShopPublic`, `ShopManage` | `routes/shop.ts` | `merchant_profiles`, `tenants` (SHOP) |
 | **Engagement** | Goals, map pins, wishlist, follow | explore wishlist save, entity/member follow | `registerMeGoalsRoutes`, `registerMeWishlistRoutes`, `registerEntityFollowRoutes`, … | `user_goals`, `user_favorites`, `entity_follows`, `user_follows` |
 | **Platform ops** | Admin console, audit, applications, master-granted staff | `src/pages/Admin*` (`/admin/users` **Users** nav) | `routes/admin.ts` + `routes/admin/registerAdmin*` | `host_applications`, `audit_logs`, `auth_users` (staff role) |
@@ -121,10 +121,10 @@ Pick a **context id** when changing code; touch registrar + `src/api/domains/*` 
 | Context | Collections (wire) | Key HTTP | FE domain module | UI roots |
 |---------|-------------------|----------|------------------|----------|
 | discovery | `activities`, `locations`, `participant_intents`, shop tenants | `GET /explore/map` · browse also `/list` | `exploreApi` | `src/discovery` (card VM), `src/explore/shell`, `src/activity-discovery`, `src/places-discovery`, `src/explore/*`, `src/list/*` — pin UI §6.1 |
-| compose | `activities`, `participant_intents` | `POST /operator/activities`, `POST /me/participant-intents` | `exploreApi`, `organisationApi` | `src/explore/ui/*` |
-| participation | `activity_requests`, `activity_participants`, `activity_invites` (+ intent join alias) | **`POST /activities/:id/requests`** (canonical seeking + hosted); `/me/participant-intents/.../requests` alias; tenant **`GET /host/requests`** (console API, also Plan manage) | `activitiesApi`, `exploreApi` | Activity detail, Plan manage sheet, `JoinRequestDetail` |
+| compose | `activities` (seeking) | `POST /operator/activities`, `POST /me/seeking-posts` | `exploreApi`, `seekingApi`, `organisationApi` | `src/explore/ui/*` |
+| participation | `activity_requests`, `activity_participants`, `activity_invites` | **`POST /activities/:id/requests`** (canonical seeking + hosted); `/me/seeking-posts/.../requests` for Find manage; tenant **`GET /host/requests`** (console API, also Plan manage) | `activitiesApi`, `seekingApi` | Activity detail, Plan manage sheet, `JoinRequestDetail` |
 | *(cross-cut)* | — | `GET /activities/:id` (`viewerAccess`, `myJoinInvite`) | — | **`activity-viewer-access.ts`**, **`activity-invite.ts`** |
-| member_discovery | `member_profile_views` (+ read-only compose from map/users) | `/me/member-discovery/*`, `/social/people` (browse network roster), `/users/browse`, `public-profile?from=discover` | `accountApi` (`getMemberPeopleNetwork*`, discovery roster) | `src/people-discovery` — Explore **Find crew** panel, list **Buddies** (`listCat=people`), `MemberProfile` discover |
+| member_discovery | `member_profile_views` (+ read-only compose from map) | `/me/member-discovery/*` (roster, network, browse, quota, search); profile `?from=discover` | `accountApi` (`getMemberPeopleNetwork*`, discovery roster) | `src/people-discovery` — Explore **Find crew** panel, list **Buddies** (`listCat=people`), `MemberProfile` discover |
 | member_identity | `auth_users` profile | `/me/profile`, `/users/:id` | `accountApi`, `memberApi` | `Profile*`, `src/member/*` |
 | member_publish_capabilities | `tenants`, `tenant_memberships` | **`GET /me/status`** (legacy `/me/host-status`, `/me/operator-status`) | `memberApi` | **`useMemberStatus`** |
 | publishing_workspace | + `activities` | `/operator/*` + tenant header | `organisationApi`, `activitiesApi` | `src/pages/operator/*`, `src/console/*`, `components/activity/*`, `activity/*` |
@@ -147,7 +147,7 @@ Pick a **context id** when changing code; touch registrar + `src/api/domains/*` 
 
 **One member model, two jobs:** browse reads show **relationship + outing status** (friend/following, trip hint, looking-for row, directory card). Chat surfaces use the **social graph** for eligibility but are a separate transport ([`COMMUNICATION.md`](./COMMUNICATION.md)).
 
-**Naming for new code:** prefer `memberDiscovery`, `memberPeople`, `browsePeople` — reserve **social** for `social_graph` mutations, `/social/groups`, reviews, and legacy HTTP paths (`/social/people`) until a routed rename ships. Guest gate intent `explore-social` means **browse people panel**, not inbox.
+**Naming for new code:** prefer `memberDiscovery`, `memberPeople`, `browsePeople` — reserve **social** for `social_graph` mutations and **reviews** (`/reviews` on root router). Guest gate intent `explore-social` means **browse people panel**, not inbox.
 
 **Target consolidation (implementation):** one map-enriched **member people read** with views (`networkRoster`, `discoveryRoster`) behind stable routes; UI labels “Buddies” / map panel can diverge from code names.
 
@@ -258,7 +258,7 @@ Detail: [`API_ROUTING.md`](./API_ROUTING.md).
 
 **Folder rule:** `src/explore/ui/Explore*.tsx` legacy map chrome may keep the surface prefix until a dedicated pass; **entity** logic does not.
 
-**Geography vocabulary (do not mix):** **Place** = catalog entity (`locations`). **`venue`** = explore wire for a Place on Spots. **Area** = curated hub (`source: 'area'` pin). **Facility** = amenity Place counted in `areaLensStats.facilities` — not an Area. FE anchor: `src/place/geographyVocabulary.ts` · guards: `geographyTerminologyGuard.test.ts`.
+**Geography vocabulary (do not mix):** **Place** = catalog entity (`locations`, HTTP `/places`, map `source: place`). **Facility** = amenity with coords (`facilities`, HTTP `/facilities`, map `source: facility`). **Area** = admin-curated **name** (`areas`, `areaId` on Place/Facility) — **not a map pin**. Country / state / region come from map geography. Legacy map aliases: `venue` / `catalog_place` → `place`; `source: area` retired. FE anchor: `src/place/geographyVocabulary.ts` · BWL: `BWL_EXPLORE_MAP_SOURCE` · guards: `geographyTerminologyGuard.test.ts`.
 
 Canon table: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) (Discovery UI file names). Guards: `mapPeekNaming.test.ts`, `discoveryUiMethodologyGuard.test.ts`, `geographyTerminologyGuard.test.ts`.
 
@@ -287,7 +287,7 @@ One **person account**; **one consumer profile page** (`/member/:userId` — `Me
 | Viewer intent | Canonical route | Primary module | `viewerAccess` / policy |
 |---------------|-----------------|----------------|-------------------------|
 | **Self** | `/profile`, `/profile/edit` | `Profile*` | N/A (authenticated `/me/*`) |
-| **Another member** | `/member/:userId` | `MemberProfile` | `resolveProfileViewerAccess` on `GET …/public-profile` |
+| **Another member** | `/member/:userId` | `MemberProfile` | `resolveProfileViewerAccess` on `GET /member/:userId/profile` |
 | **Discover directory** | Same + `discover=1` / `lens: discover` | `MemberProfile` | Public visibility + discovery quota (Pro unlimited) |
 | **Friends / Going** | Same + `lens: friends` (optional) | `MemberProfile` | `accepted_buddy` → full exposure |
 | **Available tab** | Same + `lens: available` (optional) | `MemberProfile` | Signed-in → public card at minimum |
@@ -325,7 +325,7 @@ One **person account**; **one consumer profile page** (`/member/:userId` — `Me
 |---------|--------------|-----------------|----------------------|
 | Activity (hosted + seeking) | `discoveryCardModel` | `peek/activity/*` | Kind **page composers** (`*ActivityDetailPage` → shell) — **not** one `ActivityDetailBody` with kind `if` chains |
 | Place | L1 place slice | `peek/place/*` (`PlacePeekHero`, `PlacePeekBody`, …) | `buildPlaceDetailPageModel` → `PlaceDetailPage` → `PlaceDetailPageShell` → `PlaceConsumerDetailPage` |
-| Area | L1 area pin | `peek/area/*` | `AreaDetailPage` sections/tabs |
+| Area | **Not a pin** — `areaId` / `areaSlug` on Place/Facility (and activity via place) | Hub chrome / `peek/area/*` (hub page only — do not emit `source: area` on the map) | `AreaDetailPage` sections/tabs |
 | Shop | L1 shop pin | `peek/shop/*` | `ShopPublicPage` |
 | Member (browse) | `memberPeople*` row VM | Optional mini-card in people panel | `MemberProfile` |
 | Tenant storefront | Org list cards (browse) | — | `OrganisationPublicProfile` |
@@ -397,7 +397,7 @@ Track consolidation here; sub-roadmaps link out but **this table is the system-w
 | **C24** | **People surfaces split** (`PeopleBrowsePanel`, `ListDiscoverPeopleView`, `Buddies`, activity host row) without shared people card VM | Inconsistent roster masks, duplicate buddy CTAs | `memberBrowseRowModel` + one `PeopleBrowseTabContent` — §6.2.2 | **S13-W3 done** |
 | **C25** | ~~Admin / platform_ops FE roots under-documented~~ | — | **Done (S13-W9)** — `NAVIGATION.md` admin table, `adminSurfacesAcceptance`, manifest `feRoots` | **S13-W9** |
 | **C26** | Catalog POI model flat (`locations` + `place-kind` amenities); area-wide “nearby facilities”; FAB **Host·Find crew·Add on map** (legacy **Plan·Contribute** wire only); contribute/submit/registry jargon split | Wrong trail amenities; organize picker pollution; duplicate shop semantics (member pin vs operator storefront) | **Program CPC** (§8.4): **Place** + **Facility** entities; catalog queries; `viewerAccess` on places; compose wire + legacy aliases | **Mitigated (CPC-0–6)** — CPC-7 dual-read tail + `verify:system` before close |
-| **C27** | **Doc corpus sprawl** — experiment plans, duplicate audits, agent context drift | Wrong doc read during refactor; contradictory phase labels | **Tier-1 only** for truth; living `experiment/*` ≤ cap (`verify:docs`); superseded → stub + `docs/archive/`; **§8.6** P0 | [`DOCS_GOVERNANCE.md`](./DOCS_GOVERNANCE.md) · `npm run repo:census` |
+| **C27** | ~~**Doc corpus sprawl**~~ | — | **Mitigated (Oct 2026)** — `experiment/*` stubs only; bodies `archive/experiment/`; schedules §8.3/§8.6/§8.7 | [`DOCS_GOVERNANCE.md`](./DOCS_GOVERNANCE.md) · `verify:docs` |
 | **C28** | **Multi-quarter refactor without program spine** | Half-migrations, lost context mid-flight | **`scripts/refactor-program.json`** + §8.6 phase gates; manifest + migration IDs; strangler rules | §8.6 below |
 
 **Not debt (intentional):** legacy `/host/*` → `/operator/*` rewrite; Mongo `locations` collection name (wire **Place**); `x-organisation-id` header; `getOrganisationProfile` for **storefront** — not activity roster. **During CPC:** `/trail`·`/camp`·`/venue` and `/contributions` remain until **CPC-6** redirects ship (target `/place/:id`, `/profile/submissions`).
@@ -425,7 +425,7 @@ Ordered for **coherence**, not feature count:
 | **S10** | **Production hygiene audit (Oct 2026)** — security, trust, perf, stability (not new audit markdown) | **Eng complete** — **§8.1** waves **core + S10a–d** shipped; **S10e/f** = ops/human gates ([`PRE_DEPLOY_CHECKLIST.md`](./PRE_DEPLOY_CHECKLIST.md)); **S10g** deferred. **Out of scope:** **C18** rewrite; **C19** prod default = staging promote only |
 | **S11** | **Structural module naming (P5 SN-1–SN-8)** — context folders, not synonym renames | **SN-1–SN-8 done** — `useMemberStatus`, `tenantActivityClientApi`, `/operator` mount, `moduleNamingGuard` SN-6 | [`HOST_CLEANUP_ROADMAP.md`](./HOST_CLEANUP_ROADMAP.md) P5 |
 | **S12** | **Hosted + seeking activity coherence** (one host, one map pin, linked transport) | **S12a–d done** | [`CREATE_FLOW.md`](./CREATE_FLOW.md) § Coherence program |
-| **S13** | **Frontend surface methodology** — profiles, discovery projections, admin/operator boundaries, L3 composers (§6.2) | **Eng complete** — W1–W9; **W10** human QA pending | This file §6.2 · §8.3 · manifests · guards |
+| **S13** | **Frontend surface methodology** — profiles, discovery projections, admin/operator boundaries, L3 composers (§6.2) | **Guards + W1–W9 shipped** — **product closure = P4b** (`MIG-SURFACE-*`); **W10** = S10f gate | §8.3 · **§8.6 P4b** |
 
 ### 8.3 S13 — unified frontend & UI program (final phase plan)
 
@@ -830,7 +830,7 @@ Legacy shims (one release, no new imports): `placeCatalogApi.ts`, `placeRegistry
 | FAB branch | Entity | Member “register” (create row) | Member “publish” (go public on map) | Admin / platform |
 |------------|--------|----------------------------------|-------------------------------------|------------------|
 | **Plan → hosting** | `activities` (hosted) | `POST /operator/activities` → **DRAFT** | `POST /operator/activities/:id/publish` → **PUBLISHED** | Moderation suspend |
-| **Plan → seeking** | `activities` (seeking) + `participant_intents` | `POST /me/participant-intents` (server also creates **published** seeking activity — **no** member draft step) | N/A (single shot) | Cancel / moderate |
+| **Plan → seeking** | `activities` (`activityMode: seeking`) | `POST /me/seeking-posts` (published seeking activity — **no** member draft step) | N/A (single shot) | Cancel / moderate |
 | **Contribute → place** | `locations` (place row) | `POST /me/places` → **DRAFT** + moderation **pending** | **No member publish** — inventory = `/profile/submissions` | Approve → `status: active` + `moderationStatus: approved` + `publicationStatus: listed` (`/admin/places`) |
 | **Contribute → facility** | `facilities` | `POST /me/facilities` → same pending pattern | **No member publish** | `/admin/facilities` (`facilities` only — §5.1) |
 | **Organize side-effect** | Place **anchor** (not catalog) | `submitMemberPlace` with `activityAnchor` (ACTIVE, **not** registry-listed) | Tied to activity publish, not catalog | — |
@@ -879,20 +879,23 @@ Legacy shims (one release, no new imports): `placeCatalogApi.ts`, `placeRegistry
 
 #### 8.6.0 Authorization (CTO charter — 2026-10-17)
 
-> **Program confirmed; P0–P1 complete; P2+ gated on S10e/f + migration WIP limit.**
+> **CTO coherence program (PCOH): pre-launch domain dedup and strict UPL/BWL separation. P0–P4 API complete. Sole implementation schedule: §8.8 and MIG-COH-* in refactor-program.json. S10e/S10f gate release.**
 
 | Rule | Detail |
 |------|--------|
 | **Capacity** | ~**30–40%** engineering on platform waves; product continues on strangler slices |
 | **WIP limit** | At most **2** migrations `in_progress` at once (`refactor-program.json` → `capacity.maxInProgressMigrations`; enforced by `verify:refactor-program`) |
 | **P0–P1** | **Complete** (Oct 2026) — census, W0 audit, CPC catalog wire, seeking storage gate |
-| **P2–P6** | **Gated** until **S10e** (bbox promote) + **S10f** (human QA) addressed, and WIP limit respected |
+| **P4** | **API routes only** — CQRS-light complete (eng); not whole-product UI/storage unification |
+| **P4b** | **Complete** (Oct 2026) — pre-PCOH surface tranche; further work only via **§8.8 PCOH** |
+| **PCOH** | **In progress** — §8.8 UPL/BWL separation, domain dedup, `MIG-COH-*` |
+| **P5–P6** | P5 SLO with COH-08 ops; P6 gated on §7 / S10g |
 
-Board one-liner: *P0–P1 data-truth wave closed; next platform capacity unlocks after S10e/S10f release gates, then P2 outbox + explore read model.*
+Board one-liner: *P4 thinned the API; **PCOH** (§8.8) finishes coherent product system before launch; release gated on S10e/S10f.*
 
 | Artifact | Role |
 |----------|------|
-| [`scripts/refactor-program.json`](../scripts/refactor-program.json) | Phases **P0–P6**, migrations **MIG-***, `authorization`, `capacity`, P5 `slos` |
+| [`scripts/refactor-program.json`](../scripts/refactor-program.json) | Phases **P0–P6** + **P4b**, migrations **MIG-***, `authorization`, `capacity`, P5 `slos` |
 | [`scripts/repo-census-baseline.json`](../scripts/repo-census-baseline.json) | P0 inventory (`npm run repo:census`; knip issue count optional) |
 | [`scripts/bounded-context-manifest.json`](../scripts/bounded-context-manifest.json) | Context → API/FE roots (update per migration PR) |
 | §7 register | **C27** (docs) · **C28** (program spine) · close rows when migrations complete |
@@ -907,11 +910,13 @@ Board one-liner: *P0–P1 data-truth wave closed; next platform capacity unlocks
 | **P1** | product-eng | 4–8 wk | CPC catalog wire + seeking storage gate | **Complete** (repeat `seeking:deploy-gate` per env at release) |
 | **P2** | platform | 6–10 wk | **MIG-OUTBOX**, **MIG-EXPLORE-READ** (flags); **S10e** promote ops | **Complete** (eng) |
 | **P3** | platform | 6–10 wk | **MIG-CLIENT-QUERY** (TanStack Query on consumer reads) | **Complete** (eng) |
-| **P4** | platform | 8–12 wk | CQRS-light — all **`apps/api/src/routes/**`** handlers delegate to `services/*` (no `*-store` in routes; guard enforces) | **Complete** (eng) |
-| **P5** | platform | 4–6 wk | SLOs (explore map p95, join success, API 5xx) + `p5:slo-smoke` | **In progress** (eng done; staging baselines pending) |
+| **P4** | platform | 8–12 wk | **API only** — CQRS-light; all **`apps/api/src/routes/**`** → `services/*` (no `*-store` in routes) | **Complete** (eng) |
+| **P4b** | product-eng | 8–16 wk | Pre-PCOH surface tranche | **Complete** |
+| **PCOH** | product-eng + platform | pre-launch | §8.8 coherence program (`MIG-COH-*`) | **In progress** |
+| **P5** | platform | 4–6 wk | SLO smoke + staging baselines (`p5:slo-smoke`) | **Planned** |
 | **P6** | platform | ongoing | **C1**/S10g, §7 burn-down | **Gated** |
 
-**Relationship to S0–S13:** Shipped waves (**S8** discovery, **S9** shells, **S13** FE methodology, **CPC** catalog) stay closed. **P*** phases are **platform capacity** (~30–40%) on top — not a reopen of S8 R1–R8.
+**Relationship to S0–S13:** **S8–S11** eng closed. **S13** methodology + guards shipped; **product parity** (W10, peek→detail, explore IA) is **P4b**, not “done” because P4 API passed. **P*** = platform capacity (~30–40%) on top of product slices.
 
 #### 8.6.2 Migration register (machine + human)
 
@@ -931,6 +936,36 @@ Board one-liner: *P0–P1 data-truth wave closed; next platform capacity unlocks
 | **MIG-CQRS-ROUTE-DATA** | P4 | Route layer → services for `auth-users`, `chat-data`, `social-data` (guard enforced) | **Complete** |
 | **MIG-CQRS-ROUTE-AUTH** | P4 | `auth.ts` → `auth-*-commands` + `auth-session-flow`; HTTP cookies in `auth-route-http` | **Complete** |
 | **MIG-P5-SLO-SMOKE** | P5 | `npm run p5:slo-smoke` + PRE_DEPLOY SLO baseline checklist | **In progress** |
+| **MIG-SURFACE-ACTIVITY-DETAIL** | P4b | Activity L3 + guest/join + peek parity (S13-W6–W7, S10f) | **In progress** |
+| **MIG-SURFACE-EXPLORE-IA** | P4b | Map / browse / list / discover one IA | **Planned** |
+| **MIG-SURFACE-MEMBER-PEOPLE** | P4b | Profile lenses + people browse unity | **Planned** |
+| **MIG-SURFACE-ADMIN-OPS** | P4b | Admin surface catalog + boundaries | **Planned** |
+| **MIG-SERVICE-IDENTITY-BOUNDARY** | P4b | Services off raw `auth-users` / chat-data libs | **Planned** |
+| **MIG-DOCS-EXPERIMENT-STUB** | P4b | Experiment plans → stubs; bodies in `docs/archive/experiment/` | **Complete** |
+| **MIG-ROUTING-CANON-P0** | P4b | `routing-canonical-map.json` + `verify:routing-canon` + §8.7 schedule | **Complete** |
+| **MIG-ROUTING-CANON-P1** | P4b | Publishing plane: `/operator` only — delete `/host` SPA + API shims | **Complete** |
+| **MIG-ROUTING-CANON-P2** | P4b | Member identity: `/member/:id` SPA ↔ API `/member/:userId/*` | **Complete** |
+| **MIG-ROUTING-CANON-P3** | P4b | People/discovery API family under `/me/member-discovery/*`; drop `/social` mount | **Complete** |
+| **MIG-ROUTING-CANON-P4** | P4b | Trust: `POST /safety/reports` + `safetyApi` domain module | **Complete** |
+| **MIG-ROUTING-CANON-P5** | P4b | Engagement `/me/*` domain module boundaries (goals, wishlist, follows) | **Planned** |
+| **MIG-ROUTING-CANON-P11** | P4b | SPA legacy route purge (no `Navigate` aliases) after API/client aligned | **Planned** |
+
+#### 8.7 Routing alignment (end-to-end — no redirect shims)
+
+**Machine map:** [`scripts/routing-canonical-map.json`](../scripts/routing-canonical-map.json) · **Gate:** `npm run verify:routing-canon` (strict enforcement after Phase 0).
+
+| Phase | Migration | Delete (same PR as new canon) | Horizontal touch |
+|-------|-----------|-------------------------------|------------------|
+| **0** | MIG-ROUTING-CANON-P0 | — | Map + §8.7 + program JSON |
+| **1** | MIG-ROUTING-CANON-P1 | `legacyHostApiRewrite`, `legacyPublishingPathDeprecation`, `/host/*` SPA, `LegacyPublishingConsoleRedirect` | `operator/*`, `organisationApi`, guards |
+| **2** | MIG-ROUTING-CANON-P2 | `/users/:id/public-profile` (+ brief, upcoming) | `accountApi`, `useMemberProfilePage`, API registrar |
+| **3** | MIG-ROUTING-CANON-P3 | `/social/people*`, `/users/browse`, `/users/search`, `/me/member-discovery-quota` | `registerMemberDiscoveryRoutes`, explore people panel |
+| **4** | MIG-ROUTING-CANON-P4 | `POST /reports`, `socialApi.reportContent` | `safety.ts`, content report hook |
+| **5** | MIG-ROUTING-CANON-P5 | Cross-leaks in `socialApi` (goals/wishlist) | split domain modules + `apiLegacyGuard` |
+| **6–10** | MIG-SURFACE-* + MIG-SERVICE-IDENTITY-BOUNDARY | Per context | discovery, places, admin, services |
+| **11** | MIG-ROUTING-CANON-P11 | `App.tsx` legacy `Navigate` routes | `routingHygiene` bans |
+
+**Doc corpus:** **MIG-DOCS-EXPERIMENT-STUB** complete — `docs/experiment/*.md` are ≤8-line stubs; archaeology in `docs/archive/experiment/`. Schedules **only** in §8.3 / §8.6 / §8.7.
 
 #### 8.6.3 Context continuity (do not skip)
 
@@ -949,6 +984,121 @@ Board one-liner: *P0–P1 data-truth wave closed; next platform capacity unlocks
 - [x] Living experiment plans ≤ **12** files (excl. `README.md`; enforced by `verify:docs`)
 - [x] **MIG-PLAN-HUB** + **MIG-W0-SYSTEM-AUDIT** → P0 `complete` in `refactor-program.json`
 - [ ] **S10f** human QA + **S10e** ops promote (release gates for P2+; track in §8.1)
+
+### 8.8 Coherence program 2026 (PCOH) — sole implementation schedule
+
+**Authority:** Pre-launch aggressive deduplication, strict **UPL / BWL separation**, one write path per entity. **Do not implement from** `docs/archive/**`, stubbed `docs/experiment/*.md`, or superseded migration narratives in §8.7 alone — **PCOH + `MIG-COH-*`** in [`refactor-program.json`](../scripts/refactor-program.json) drive work.
+
+**Code contracts (not prose docs):**
+
+| Layer | Module | Role |
+|-------|--------|------|
+| **UPL** | [`src/content/upl-glossary.ts`](../src/content/upl-glossary.ts), [`workspaceVocabulary.ts`](../src/content/workspaceVocabulary.ts), [`geographyVocabulary.ts`](../src/place/geographyVocabulary.ts), [`productNorthStar.ts`](../src/content/productNorthStar.ts) | Member-visible labels only |
+| **BWL** | [`packages/shared-types/src/wire-lexicon.ts`](../packages/shared-types/src/wire-lexicon.ts), [`collections.ts`](../apps/api/src/lib/collections.ts) | HTTP, JSON, Mongo, internal modules |
+| **Presentation** | `packages/shared-types` `*-display`, `*-presentation`, `viewer-access` | Maps BWL → UI labels/paths |
+
+**Rules:** R1 UPL only in `src/content/*` + vocabulary modules. R2 BWL stable until a `MIG-COH-*` PR migrates it. R3 No UPL words in new route path segments. R4 Presentation builders are the only place that combines BWL + UPL. R5 Work by manifest **context id**.
+
+#### 8.8.1 UI Product Language (UPL) — complete glossary
+
+| UPL term | Meaning |
+|----------|---------|
+| Find your crew | North-star people discovery (`productNorthStar`, explore people panel) |
+| Explore | Map-first home `/explore` |
+| Activity | Scheduled outing |
+| Host | Person leading **this** activity |
+| Hosted by | Card/detail attribution |
+| Organize | Create/publish on map (capability) |
+| Looking for company | Seeking mode on map (not availability calendar) |
+| Area | Admin-curated name grouping Places/Facilities (hub `/area/:slug`); **not a map pin**. Country / state / region come from map geography |
+| Place | Trail, camp, or event venue in catalog |
+| Facility | Amenity POI |
+| Spots | Map lens for Place pins |
+| People | Browse/discover members (not map pins) |
+| Buddies | Page title for mutual connections |
+| Friends | List label for accepted buddies (UPL only) |
+| Following | One-way member follow |
+| Plan | Personal hub `/plan` |
+| Goals | Personal outdoor targets |
+| Availability | When I'm free to go (Plan) — **not** seeking |
+| Pro membership | Upgrade for **individual guides** and **shops/agencies** |
+| Operator | Shop or agency **business** (UI) — not HTTP console prefix |
+| Publishing workspace | Console shell (manage outings, team, requests) |
+| Wishlist, Groups, Messages, Reviews, Shop | Engagement surfaces |
+
+**Join copy:** Host / join request / comment **for the host** (`upl-glossary`, `joinWithdrawCopy` target state). **Not** a new field name — existing BWL `organizer_note` may rename to `host_note` in MIG-COH-06 only.
+
+#### 8.8.2 Backend Wire Lexicon (BWL) — complete glossary
+
+| BWL | Meaning |
+|-----|---------|
+| `activities` + `activity_mode: hosted \| seeking` | All outings; **delete** parallel `participant_intents` (MIG-COH-01) |
+| `activity_requests` / `note` / `organizer_note` | Join queue; host decision message (rename to `host_note` in COH-06) |
+| `host_id`, `created_by_id` | Activity person ids (keep; UPL “Host”) |
+| `locations` (+ HTTP `/places` only after COH-02) | Place catalog |
+| `facilities`, `areas` | CPC |
+| `tenants`, `tenant_memberships` | Business orgs |
+| `pro_applications` | Target collection rename; HTTP is `/me/pro-application` now (COH-03). Collection still `host_applications` |
+| `auth_users` | Members |
+| `buddy_*` | Mutual graph — **never** `friend` in BWL |
+| `user_follows`, `entity_follows` | Follow edges |
+| `member_availability`, `user_goals` | Plan commitment (distinct from seeking) |
+| `user_favorites` → `user_wishlist` | COH-09 |
+| `/operator` → `/publishing` | Publishing workspace HTTP (COH-04) |
+| `/me/member-discovery/*` | People discovery API (optional `/me/people/*`) |
+| `explore_map` sources | `activity` · `place` · `facility` · `shop` · `agency`. Area is not a pin. Retire `demand`; `venue` / `catalog_place` → `place` (COH-02) |
+| `UserRole`, `HostPublishingTier`, `GET /me/status` | RBAC / capabilities — not UPL |
+
+#### 8.8.3 Bounded contexts — topics covered (manifest §3)
+
+All **17** contexts: `discovery`, `compose`, `participation`, `member_identity`, `member_publish_capabilities`, `publishing_workspace`, `communication`, `social_graph`, `places`, `facilities`, `commerce`, `member_discovery`, `engagement`, `areas`, `availability`, `media`, `platform_ops`.
+
+**Cross-cutting (in PCOH scope):** auth & account lifecycle; notifications & push; check-in; viewer access; side-effect outbox; explore Redis cache; agent/OG; premium place PDF; member discovery quota; coordination attention; journey map pins; legacy SPA redirects; `verify:system` / journey tests.
+
+**Removed products (do not restore):** trail-points wallet, `/host` API/SPA, `/social` graph mount, bare rewards domains (`manifest.removedProducts`).
+
+#### 8.8.4 Canonical API flows (one BWL path each)
+
+Discover map `GET /explore/map` (+ optional `GET /me/discover/overlay` COH-08) · People `GET /me/member-discovery/*` · Buddies `/me/buddies` · Follow `/me/following` · Goals `/me/goals` · Availability `/me/availability` · Wishlist `/me/wishlist` · Join/RSVP `/activities/:id/requests` · Host queue `/operator/activities/.../requests` (→ `/publishing/...`) · Pro apply `/me/pro-application` (alias `/me/host-application`) · Capability `GET /me/status` · Places `/places/*` · Facilities `/facilities/:id` · Areas `/areas` (names, not pins) · Safety `POST /safety/reports` · Chat `/chat` · Reviews `/reviews`.
+
+**Delete flows:** participant-intent CRUD/join, `/people` orphan registrar, `demand:` map ids, dual `/locations` HTTP.
+
+#### 8.8.5 PCOH phases (execution order)
+
+| Phase | MIG-COH | BWL focus | UPL focus |
+|-------|---------|-----------|-----------|
+| **0** | MIG-COH-00 | `wire-lexicon`, leak guards | `upl-glossary`, program JSON |
+| **1** | MIG-COH-01 | Seeking = activities only; drop intents | “Looking for company” copy |
+| **2** | MIG-COH-02 | HTTP `/places`; map `place` + `facility`; Area is a name | Place, Facility, Area, Spots |
+| **3** | MIG-COH-03 | `pro_applications`, `/me/pro-application` | Pro membership only |
+| **4** | MIG-COH-04 | `/publishing` mount | Guide/Operator workspace titles |
+| **5** | MIG-COH-05 | People API cleanup; `buddies` segment | People, Friends, crew |
+| **6** | MIG-COH-06 | `organizer_note` → `host_note` | Comment for the host |
+| **7** | MIG-COH-07 | Publisher resolver; `/member` links | Host / business attribution |
+| **8** | MIG-COH-08 | Map public vs overlay; outbox invalidation | — |
+| **9** | MIG-COH-09 | Split `socialApi`; `user_wishlist` | Page titles unchanged |
+| **10** | MIG-COH-10 | Organize-only compose tree | Organize (delete hosting duplicate UI) |
+| **11** | MIG-COH-11 | Admin/safety/shop contracts | Admin copy |
+| **12** | MIG-COH-12 | Legacy purge; journey tests; CI shard | Redirects only |
+
+**Waves:** W1 = COH-00+01+03 · W2 = COH-02+04+06 · W3 = COH-05+07+08 · W4 = COH-09+10 · W5 = COH-11+12. **WIP:** max 2 `in_progress` migrations (`refactor-program.json`).
+
+**Supersedes:** P4b surface/routing tranches as *schedule* (work folds into COH rows). `MIG-ROUTING-CANON-P5/P11` → COH-09/12. SLO (`MIG-P5-SLO-SMOKE`) runs with COH-08 ops.
+
+#### 8.8.6 Locked defaults (CTO)
+
+| Decision | Default |
+|----------|---------|
+| People HTTP prefix | Keep `/me/member-discovery/*` unless COH-05 chooses `/me/people/*` |
+| BWL roster segment | `buddies`; UPL label “Friends” |
+| `organizer_note` rename | Yes in COH-06 (existing field, not new semantics) |
+| `locations` collection | HTTP first in COH-02; collection rename optional same phase |
+| Publishing HTTP | `/publishing` |
+| Activity `host_id` | Keep in BWL |
+
+#### 8.8.7 Definition of done
+
+One seeking model · one join pipeline · one place HTTP prefix · one publishing HTTP prefix · one pro onboarding BWL · UPL only in content modules · BWL in wire-lexicon · publisher resolver on map/detail/notifications · `socialApi` split · `npm run verify:system` + journey suite per §8.8.3.
 
 ---
 
@@ -974,4 +1124,5 @@ Board one-liner: *P0–P1 data-truth wave closed; next platform capacity unlocks
 | HTTP paths | `API_ROUTING.md` |
 | Deploy & monorepo layers | `ARCHITECTURE.md` |
 | System-wide debt register | §7–8 (this file) |
-| Host/tenant cleanup tasks | `HOST_CLEANUP_ROADMAP.md` |
+| Coherence implementation schedule | **§8.8** + `refactor-program.json` `MIG-COH-*` |
+| UPL vs BWL | `src/content/upl-glossary.ts` · `packages/shared-types/src/wire-lexicon.ts` |

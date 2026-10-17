@@ -22,6 +22,7 @@ import { ApiError } from './api-error.js';
 import { invalidateExploreMapCache } from './explore-map-cache.js';
 import { COLLECTIONS } from './collections.js';
 import { getMongoClient } from './mongo.js';
+import type { MongoActivityDoc } from './entity-builders.js';
 import { ActivityStatus } from '../domain/enums.js';
 import { batchShouldHideFromMapMemberDiscovery } from '../services/profile-viewer-access.js';
 
@@ -145,7 +146,6 @@ export const createParticipantIntent = async (
   userId: string,
   input: CreateParticipantIntentInput
 ): Promise<ParticipantIntentDTO> => {
-  const now = new Date();
   const areaId = input.areaId?.trim() ? input.areaId.trim() : null;
   if (input.latitude != null && input.longitude != null) {
     if (!areaId) {
@@ -165,77 +165,17 @@ export const createParticipantIntent = async (
   );
   const publishedActivityId = await createSeekingActivityForIntent(userId, intentId, input, areaId);
 
-  const { isParticipantIntentStubWriteEnabled, activityDocToParticipantIntentDto } = await import(
+  const { activityDocToParticipantIntentDto } = await import(
     '../services/participant-intent-activity-readthrough.js'
   );
-  if (!isParticipantIntentStubWriteEnabled()) {
-    await invalidateExploreMapCache();
-    const { notifyMemberPublishSubscribers } = await import('../services/member-publish-notifications.js');
-    void notifyMemberPublishSubscribers(userId, {
-      publishType: 'demand',
-      intentId,
-      title: input.title.trim(),
-      activityId: publishedActivityId,
-    });
-    if (areaId) {
-      const { notifySeekerOfHostedActivitiesInArea } = await import(
-        '../services/seeking-area-match-notifications.js'
-      );
-      void notifySeekerOfHostedActivitiesInArea({
-        seekerUserId: userId,
-        areaId,
-        intentId,
-        seekingActivityId: publishedActivityId,
-        intentDate: input.date ?? null,
-      });
-    }
-    const { findActivityDocInMongo } = await import('./entity-sync.js');
-    const activity = await findActivityDocInMongo(publishedActivityId);
-    if (!activity) {
-      throw new Error('Seeking activity missing after create.');
-    }
-    const user = await findAuthUserById(userId);
-    return activityDocToParticipantIntentDto(activity, user);
-  }
-
-  const doc: MongoParticipantIntent = {
-    _id: intentId,
-    userId,
-    kind: input.kind,
-    outingCategory: participantIntentKindToOutingCategory(input.kind),
-    title: input.title.trim(),
-    date: input.date ?? null,
-    time: input.time ?? null,
-    preferredArea: input.preferredArea?.trim() || null,
-    latitude: input.latitude ?? null,
-    longitude: input.longitude ?? null,
-    locationPrecision: input.locationPrecision ?? null,
-    toLatitude: input.toLatitude ?? null,
-    toLongitude: input.toLongitude ?? null,
-    partySize: input.partySize,
-    comment: input.comment.trim(),
-    status: 'active',
-    areaId,
-    activityId: publishedActivityId,
-    seekingActivityId: publishedActivityId,
-    createdAt: now,
-    updatedAt: now,
-  };
-
-  try {
-    await collection().insertOne(doc);
-  } catch (error) {
-    await cancelSeekingActivityForIntent(publishedActivityId);
-    throw error;
-  }
 
   await invalidateExploreMapCache();
   const { notifyMemberPublishSubscribers } = await import('../services/member-publish-notifications.js');
   void notifyMemberPublishSubscribers(userId, {
     publishType: 'demand',
-    intentId: doc._id,
+    intentId,
     title: input.title.trim(),
-    activityId: resolveIntentPublishedActivityId(doc),
+    activityId: publishedActivityId,
   });
   if (areaId) {
     const { notifySeekerOfHostedActivitiesInArea } = await import(
@@ -244,13 +184,19 @@ export const createParticipantIntent = async (
     void notifySeekerOfHostedActivitiesInArea({
       seekerUserId: userId,
       areaId,
-      intentId: doc._id,
-      seekingActivityId: resolveIntentPublishedActivityId(doc),
+      intentId,
+      seekingActivityId: publishedActivityId,
       intentDate: input.date ?? null,
     });
   }
+  const { findActivityDocInMongo } = await import('./entity-sync.js');
+  const activity = await findActivityDocInMongo(publishedActivityId);
+  if (!activity) {
+    await cancelSeekingActivityForIntent(publishedActivityId);
+    throw new Error('Seeking activity missing after create.');
+  }
   const user = await findAuthUserById(userId);
-  return mapDto(doc, user);
+  return activityDocToParticipantIntentDto(activity, user);
 };
 
 export const participantIntentDocToCreateInput = (
@@ -271,11 +217,76 @@ export const participantIntentDocToCreateInput = (
   areaId: doc.areaId ?? null,
 });
 
+const patchSeekingActivityForOwner = async (
+  userId: string,
+  activity: MongoActivityDoc,
+  patch: UpdateParticipantIntentInput
+): Promise<ParticipantIntentDTO | null> => {
+  const {
+    isSeekingActivityEditable,
+    resolveSeekingActivityOwnerId,
+    seekingActivityToCreateInput,
+    activityDocToParticipantIntentDto,
+  } = await import('../services/participant-intent-activity-readthrough.js');
+  if (resolveSeekingActivityOwnerId(activity) !== userId) return null;
+  if (!isSeekingActivityEditable(activity)) return null;
+
+  const baseInput = seekingActivityToCreateInput(activity);
+  const merged = parseMergedParticipantIntent({
+    ...baseInput,
+    ...patch,
+    title: patch.title?.trim() ?? baseInput.title,
+    areaId:
+      patch.areaId ??
+      baseInput.areaId ??
+      activity.areaId ??
+      (baseInput.latitude != null && baseInput.longitude != null ? activity.areaId ?? null : null),
+  });
+
+  const areaId =
+    merged.areaId?.trim() ||
+    (merged.latitude != null && merged.longitude != null ? activity.areaId ?? null : null);
+
+  const { patchActivityInMongo, findActivityDocInMongo } = await import('./entity-sync.js');
+  const { parseLocalDateTime } = await import('./datetime.js');
+  const startAt =
+    merged.date != null
+      ? parseLocalDateTime(merged.date, merged.time?.trim() || '09:00', 'AE')
+      : undefined;
+  await patchActivityInMongo(activity._id, {
+    title: merged.title.trim(),
+    description: merged.comment.trim(),
+    capacity: merged.partySize,
+    ...(startAt ? { startAt } : {}),
+    meetingLat: merged.latitude ?? null,
+    meetingLng: merged.longitude ?? null,
+    meetingPoint: merged.preferredArea?.trim() || null,
+    startLat: merged.toLatitude ?? null,
+    startLng: merged.toLongitude ?? null,
+    areaId,
+  });
+
+  await invalidateExploreMapCache();
+  const refreshed = await findActivityDocInMongo(activity._id);
+  if (!refreshed) return null;
+  const user = await findAuthUserById(userId);
+  return activityDocToParticipantIntentDto(refreshed, user);
+};
+
 export const updateParticipantIntent = async (
   userId: string,
   intentId: string,
   patch: UpdateParticipantIntentInput
 ): Promise<ParticipantIntentDTO | null> => {
+  const {
+    findSeekingActivityByParticipantIntentId,
+  } = await import('../services/participant-intent-activity-readthrough.js');
+  const seekingActivity = await findSeekingActivityByParticipantIntentId(intentId);
+  if (seekingActivity) {
+    const fromActivity = await patchSeekingActivityForOwner(userId, seekingActivity, patch);
+    if (fromActivity) return fromActivity;
+  }
+
   const lookupFilter: Record<string, unknown> =
     /^[a-f0-9]{24}$/i.test(intentId) && ObjectId.isValid(intentId)
       ? { $or: [{ _id: intentId }, { _id: new ObjectId(intentId) }] }
@@ -287,53 +298,16 @@ export const updateParticipantIntent = async (
     status: 'active',
   } as Filter<MongoParticipantIntent>);
 
-  if (!existing) {
-    const {
-      findSeekingActivityByParticipantIntentId,
-      isSeekingActivityEditable,
-      resolveSeekingActivityOwnerId,
-      seekingActivityToCreateInput,
-      activityDocToParticipantIntentDto,
-    } = await import('../services/participant-intent-activity-readthrough.js');
-    const activity = await findSeekingActivityByParticipantIntentId(intentId);
-    if (!activity || resolveSeekingActivityOwnerId(activity) !== userId) return null;
-    if (!isSeekingActivityEditable(activity)) return null;
+  if (!existing) return null;
 
-    const merged = parseMergedParticipantIntent({
-      ...seekingActivityToCreateInput(activity),
-      ...patch,
-      title: patch.title?.trim() ?? seekingActivityToCreateInput(activity).title,
-    });
-
-    const areaId =
-      merged.areaId?.trim() ||
-      (merged.latitude != null && merged.longitude != null ? activity.areaId ?? null : null);
-
-    const { patchActivityInMongo } = await import('./entity-sync.js');
-    const { parseLocalDateTime } = await import('./datetime.js');
-    const startAt =
-      merged.date != null
-        ? parseLocalDateTime(merged.date, merged.time?.trim() || '09:00', 'AE')
-        : undefined;
-    await patchActivityInMongo(activity._id, {
-      title: merged.title.trim(),
-      description: merged.comment.trim(),
-      capacity: merged.partySize,
-      ...(startAt ? { startAt } : {}),
-      meetingLat: merged.latitude ?? null,
-      meetingLng: merged.longitude ?? null,
-      meetingPoint: merged.preferredArea?.trim() || null,
-      startLat: merged.toLatitude ?? null,
-      startLng: merged.toLongitude ?? null,
-      areaId,
-    });
-
-    await invalidateExploreMapCache();
+  const publishedActivityId = resolveIntentPublishedActivityId(existing);
+  if (publishedActivityId) {
     const { findActivityDocInMongo } = await import('./entity-sync.js');
-    const refreshed = await findActivityDocInMongo(activity._id);
-    if (!refreshed) return null;
-    const user = await findAuthUserById(userId);
-    return activityDocToParticipantIntentDto(refreshed, user);
+    const linked = await findActivityDocInMongo(publishedActivityId);
+    if (linked) {
+      const fromLinked = await patchSeekingActivityForOwner(userId, linked, patch);
+      if (fromLinked) return fromLinked;
+    }
   }
 
   const merged = parseMergedParticipantIntent({
@@ -375,27 +349,6 @@ export const updateParticipantIntent = async (
 
   if (!updated) return null;
 
-  const publishedActivityId = resolveIntentPublishedActivityId(updated);
-  if (publishedActivityId) {
-    const { patchActivityInMongo } = await import('./entity-sync.js');
-    const { parseLocalDateTime } = await import('./datetime.js');
-    const startAt =
-      merged.date != null
-        ? parseLocalDateTime(merged.date, merged.time?.trim() || '09:00', 'AE')
-        : undefined;
-    await patchActivityInMongo(publishedActivityId, {
-      title: merged.title.trim(),
-      description: merged.comment.trim(),
-      capacity: merged.partySize,
-      ...(startAt ? { startAt } : {}),
-      meetingLat: merged.latitude ?? null,
-      meetingLng: merged.longitude ?? null,
-      startLat: merged.toLatitude ?? null,
-      startLng: merged.toLongitude ?? null,
-      areaId: update.areaId ?? null,
-    });
-  }
-
   await invalidateExploreMapCache();
   const user = await findAuthUserById(userId);
   return mapDto(updated, user);
@@ -405,6 +358,31 @@ export const cancelParticipantIntent = async (
   userId: string,
   intentId: string
 ): Promise<ParticipantIntentDTO | null> => {
+  const {
+    findSeekingActivityByParticipantIntentId,
+    isSeekingActivityEditable,
+    resolveSeekingActivityOwnerId,
+    activityDocToParticipantIntentDto,
+  } = await import('../services/participant-intent-activity-readthrough.js');
+  const seekingActivity = await findSeekingActivityByParticipantIntentId(intentId);
+  if (
+    seekingActivity &&
+    resolveSeekingActivityOwnerId(seekingActivity) === userId &&
+    isSeekingActivityEditable(seekingActivity)
+  ) {
+    const { cancelSeekingActivityForIntent } = await import(
+      '../services/participant-intent-seeking-activity.js'
+    );
+    await cancelSeekingActivityForIntent(seekingActivity._id);
+
+    await invalidateExploreMapCache();
+    const { findActivityDocInMongo } = await import('./entity-sync.js');
+    const refreshed = await findActivityDocInMongo(seekingActivity._id);
+    if (!refreshed) return null;
+    const user = await findAuthUserById(userId);
+    return activityDocToParticipantIntentDto(refreshed, user);
+  }
+
   const lookupFilter: Record<string, unknown> =
     /^[a-f0-9]{24}$/i.test(intentId) && ObjectId.isValid(intentId)
       ? { $or: [{ _id: intentId }, { _id: new ObjectId(intentId) }] }
@@ -416,29 +394,7 @@ export const cancelParticipantIntent = async (
     { returnDocument: 'after' }
   );
 
-  if (!updated) {
-    const {
-      findSeekingActivityByParticipantIntentId,
-      isSeekingActivityEditable,
-      resolveSeekingActivityOwnerId,
-      activityDocToParticipantIntentDto,
-    } = await import('../services/participant-intent-activity-readthrough.js');
-    const activity = await findSeekingActivityByParticipantIntentId(intentId);
-    if (!activity || resolveSeekingActivityOwnerId(activity) !== userId) return null;
-    if (!isSeekingActivityEditable(activity)) return null;
-
-    const { cancelSeekingActivityForIntent } = await import(
-      '../services/participant-intent-seeking-activity.js'
-    );
-    await cancelSeekingActivityForIntent(activity._id);
-
-    await invalidateExploreMapCache();
-    const { findActivityDocInMongo } = await import('./entity-sync.js');
-    const refreshed = await findActivityDocInMongo(activity._id);
-    if (!refreshed) return null;
-    const user = await findAuthUserById(userId);
-    return activityDocToParticipantIntentDto(refreshed, user);
-  }
+  if (!updated) return null;
 
   const { cancelSeekingActivityForIntent } = await import(
     '../services/participant-intent-seeking-activity.js'
@@ -581,22 +537,17 @@ export const listParticipantIntentsForUser = async (
     .limit(limit)
     .toArray();
 
-  const {
-    listSeekingActivitiesForOwner,
-    activityDocToParticipantIntentDto,
-    isParticipantIntentStubWriteEnabled,
-  } = await import('../services/participant-intent-activity-readthrough.js');
+  const { listSeekingActivitiesForOwner, activityDocToParticipantIntentDto } = await import(
+    '../services/participant-intent-activity-readthrough.js'
+  );
 
   const user = await findAuthUserById(userId);
   const fromIntents = docs.map((doc) => mapDto(doc, user));
   const intentIds = new Set(fromIntents.map((row) => row.id));
 
-  const activityOnly =
-    isParticipantIntentStubWriteEnabled()
-      ? []
-      : (await listSeekingActivitiesForOwner(userId, limit))
-          .filter((activity) => activity.participantIntentId && !intentIds.has(activity.participantIntentId))
-          .map((activity) => activityDocToParticipantIntentDto(activity, user));
+  const activityOnly = (await listSeekingActivitiesForOwner(userId, limit))
+    .filter((activity) => activity.participantIntentId && !intentIds.has(activity.participantIntentId))
+    .map((activity) => activityDocToParticipantIntentDto(activity, user));
 
   const merged = [...fromIntents, ...activityOnly].sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
@@ -696,10 +647,9 @@ export const countNonCancelledParticipantIntentsByUserIds = async (
 /** Non-cancelled demand posts — counts toward community Host label. */
 export const countParticipantIntentsByUser = async (userId: string): Promise<number> => {
   const intentCount = await collection().countDocuments({ userId, status: { $ne: 'cancelled' } });
-  const { isParticipantIntentStubWriteEnabled, listSeekingActivitiesForOwner } = await import(
+  const { listSeekingActivitiesForOwner } = await import(
     '../services/participant-intent-activity-readthrough.js'
   );
-  if (isParticipantIntentStubWriteEnabled()) return intentCount;
 
   const activities = await listSeekingActivitiesForOwner(userId, 500);
   const intentIds = new Set(

@@ -11,7 +11,8 @@ describe('admin route registrars', () => {
     const commands = read('src/services/admin-host-application-commands.ts');
     expect(admin).toMatch(/registerAdminHostApplicationRoutes/);
     expect(admin).not.toMatch(/\/host-applications/);
-    expect(registrar).toMatch(/\/host-applications/);
+    expect(registrar).toMatch(/\/pro-applications/);
+    expect(registrar).toMatch(/registerProApplicationAlias/);
     expect(registrar).toMatch(/admin-host-application-commands/);
     expect(registrar).not.toMatch(/approveHostApplicationAndProvisionTenant/);
     expect(commands).toMatch(/approveHostApplicationAndProvisionTenant/);

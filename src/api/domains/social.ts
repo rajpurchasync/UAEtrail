@@ -13,8 +13,6 @@ import {
 } from '@uaetrail/shared-types';
 import { apiRequest } from '../client';
 import type {
-  ContentReportReason,
-  ContentReportTargetType,
   SocialGroupInviteView,
   SocialGroupMemberView,
   SocialGroupView,
@@ -23,18 +21,6 @@ import type {
 } from '../types';
 
 export const socialApi = {
-    reportContent: (payload: {
-    targetType: ContentReportTargetType;
-    targetId: string;
-    reason: ContentReportReason;
-    details?: string;
-  }) =>
-    apiRequest<{ message: string }>('/reports', {
-      method: 'POST',
-      auth: true,
-      body: JSON.stringify(payload)
-    }),
-
     getMeBuddies: () => apiRequest<{ data: BuddySummaryDTO[] }>('/me/buddies', { auth: true }),
 
     getMeBuddyRequests: (direction: 'incoming' | 'outgoing' | 'all' = 'all') =>

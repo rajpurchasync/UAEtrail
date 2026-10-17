@@ -11,7 +11,7 @@ type PlaceMapPeekHostProps = {
 
 /**
  * **Mount** for {@link PlacePeekCard} on the map — not an activity organizer (“host”).
- * Wire `source: 'venue'` = catalog **Place** on the Spots lens.
+ * Wire `source: place` (and `facility` until a dedicated peek) on the map.
  */
 export const PlaceMapPeekHost = ({
   item,

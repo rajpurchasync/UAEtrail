@@ -15,6 +15,7 @@ import type {
 import {
   buildExploreCardPresentation,
   exploreMapItemIsSeeking,
+  isGeographyMapSource,
   isPeekOnlyCatalogProfile,
   memberProfilePath,
   resolveActivityPublisherProfilePath,
@@ -136,7 +137,7 @@ export const discoveryCardUsesActivityPeekEngagement = (
 
 /** Compact second line for list rows (where · when · spots — not duplicate activity title). */
 export const buildDiscoveryListMeta = (card: DiscoveryCardModel): string | null => {
-  if (card.source === 'shop' || card.source === 'agency' || card.source === 'venue') {
+  if (card.source === 'shop' || card.source === 'agency' || isGeographyMapSource(card.source)) {
     return null;
   }
   const allowRoute = discoveryCardIsSeeking(card) || card.kind === 'rideshare';
@@ -188,7 +189,7 @@ export const buildDiscoveryCardModel = (item: ExploreMapItemDTO): DiscoveryCardM
         })
       : null;
 
-  const catalogSource = source === 'venue' || source === 'shop' || source === 'agency';
+  const catalogSource = isGeographyMapSource(source) || source === 'shop' || source === 'agency';
 
   return {
     id: item.id,
@@ -391,7 +392,7 @@ export const exploreCardShowsInlineDirections = (card: ExploreCardModel): boolea
 /** Peek action row already includes directions (join activities, shops with review CTAs). */
 export const exploreCardPeekActionsHasDirections = (card: ExploreCardModel): boolean => {
   if (!exploreCardHasMapCoords(card) || exploreCardShowsInlineDirections(card)) return false;
-  if (card.source === 'venue') return true;
+  if (isGeographyMapSource(card.source)) return true;
   if (card.showJoinActions && card.source !== 'activity') return true;
   if (card.source === 'shop' && card.reviewPath) return true;
   return false;
@@ -415,7 +416,7 @@ export const resolveExploreEntityFollowTarget = (
   card: ExploreCardModel
 ): ExploreEntityFollowPayload | null => {
   if (exploreCardIsSeeking(card)) return null;
-  if (card.source === 'venue' && card.locationId) return { locationId: card.locationId };
+  if (isGeographyMapSource(card.source) && card.locationId) return { locationId: card.locationId };
   if (card.source === 'activity') {
     if (card.locationId) return { locationId: card.locationId };
     if (card.tenantId) return { tenantId: card.tenantId };
@@ -457,6 +458,6 @@ export const resolveExploreWishlistTarget = (card: ExploreCardModel): ExploreWis
   const watch = watchMetaFromCard(card);
   if (exploreCardIsSeeking(card)) return null;
   if (card.source === 'activity' && card.activityId) return { activityId: card.activityId, ...watch };
-  if (card.source === 'venue' && card.locationId) return { locationId: card.locationId, ...watch };
+  if (isGeographyMapSource(card.source) && card.locationId) return { locationId: card.locationId, ...watch };
   return null;
 };

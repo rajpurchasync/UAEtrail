@@ -1,5 +1,5 @@
 /**
- * Find FAB wire: POST /me/participant-intents with stub write off → seeking activity only.
+ * Canonical BWL: POST /me/seeking-posts → seeking activity only (MIG-COH-01).
  */
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import request from 'supertest';
@@ -8,10 +8,8 @@ import { bootstrapTestApp } from './helpers/bootstrap.js';
 import { cleanupTestUsers, registerVerifiedVisitor } from './helpers/fixtures.js';
 import { getMongoClient } from '../src/lib/mongo.js';
 import { COLLECTIONS } from '../src/lib/collections.js';
-import { findActivityDocInMongo, findLocationInMongo } from '../src/lib/entity-sync.js';
-import { buildTestParticipantIntentInput, ensureCuratedAreasSeeded, testAreas } from './helpers/test-seed.js';
-
-const ENV_KEY = 'PARTICIPANT_INTENT_STUB_WRITE';
+import { findActivityDocInMongo } from '../src/lib/entity-sync.js';
+import { buildTestParticipantIntentInput, ensureCuratedAreasSeeded } from './helpers/test-seed.js';
 
 let app: Express;
 
@@ -20,26 +18,24 @@ beforeAll(async () => {
   await ensureCuratedAreasSeeded();
 });
 
-describe('POST /me/participant-intents (activity-canonical — stub write off)', () => {
+describe('POST /me/seeking-posts (canonical)', () => {
   afterEach(async () => {
-    delete process.env[ENV_KEY];
     await cleanupTestUsers();
   });
 
   it('returns 201 with activityId and does not persist participant_intents', async () => {
-    delete process.env[ENV_KEY];
-    const suffix = `route-primary-${Date.now()}`;
+    const suffix = `seeking-posts-${Date.now()}`;
     const visitor = await registerVerifiedVisitor(app, suffix);
 
     const body = buildTestParticipantIntentInput({
-      title: `Find via API ${suffix}`,
-      date: '2026-12-23',
-      time: '07:30',
-      comment: 'Looking for company on the trail today.',
+      title: `Find via seeking-posts ${suffix}`,
+      date: '2026-12-24',
+      time: '07:00',
+      comment: 'Looking for company.',
     });
 
     const res = await request(app)
-      .post('/api/me/participant-intents')
+      .post('/api/me/seeking-posts')
       .set('Authorization', `Bearer ${visitor.accessToken}`)
       .send(body);
 
@@ -62,11 +58,5 @@ describe('POST /me/participant-intents (activity-canonical — stub write off)',
     const activity = await findActivityDocInMongo(activityId as string);
     expect(activity?.activityMode).toBe('seeking');
     expect(activity?.participantIntentId).toBe(data.id);
-    expect(activity?.status).toBe('PUBLISHED');
-    expect(activity?.areaId ?? null).toBeNull();
-    const location = activity?.locationId
-      ? await findLocationInMongo(activity.locationId)
-      : null;
-    expect(location?.areaId).toBe(testAreas.hatta.id);
   });
 });

@@ -216,7 +216,7 @@ describe('detail surface lineage (admin catalog → public read)', () => {
 });
 
 describe('detail surface lineage (member profile write → public read)', () => {
-  it('PATCH /me/profile is visible on GET /users/:id/public-profile', async () => {
+  it('PATCH /me/profile is visible on GET /member/:id/profile', async () => {
     const member = await registerVerifiedVisitor(app, `${suffix}-member`);
 
     const patch = await request(app)
@@ -241,7 +241,7 @@ describe('detail surface lineage (member profile write → public read)', () => 
 
     const viewer = await registerVerifiedVisitor(app, `${suffix}-viewer`);
     const publicProfile = await request(app)
-      .get(`/api/users/${userId}/public-profile`)
+      .get(`/api/member/${userId}/profile`)
       .set('Authorization', `Bearer ${viewer.accessToken}`);
     expect(publicProfile.status).toBe(200);
     expect(publicProfile.body.data.visibilityState).toBe('full');

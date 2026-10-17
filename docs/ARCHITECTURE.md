@@ -28,7 +28,7 @@ Catalog HTTP is **surface-first** (path + mount middleware), not **profile-first
 **Route map** — detail in [`API_ROUTING.md`](./API_ROUTING.md)
 
 - `/auth` — JWT + refresh
-- `/` (userRouter) — public `/activities`, `/explore/map`, `/me/*` (profile, **participant-intents**, groups, inbox)
+- `/` (userRouter) — public `/activities`, `/explore/map`, `/me/*` (profile, **seeking-posts**, groups, inbox)
 - `/host` — tenant-scoped **activities**, check-in, activity join approvals (legacy alias `/organizer`)
 - `/admin` — platform ops (thin `admin.ts` → `routes/admin/registerAdmin*`; user management at `/admin/users`, staff grant at `/admin/platform-admins` for master admin)
 - `/shop` — shop profiles, featured picks, merchant CRUD (Stripe checkout retained but disabled in product)
@@ -37,9 +37,9 @@ Catalog HTTP is **surface-first** (path + mount middleware), not **profile-first
 
 **Key flows**
 
-1. **Join / waitlist** — `POST /activities/:id/requests` creates `PENDING` or `WAITLISTED`. Demand uses `POST /me/participant-intents/:id/requests`. Slot opens → waitlist promotion + notification.
+1. **Join / waitlist** — `POST /activities/:id/requests` creates `PENDING` or `WAITLISTED`. Find uses `POST /me/seeking-posts/:id/requests` (same `activity_requests` row when `activityId` is set). Slot opens → waitlist promotion + notification.
 2. **Post-event review** — host check-in triggers `REVIEW_PROMPT` notification if user has not reviewed the location.
-3. **Explore map** — unified `/explore/map` payload: activities, location venues, shop partners (physical + online), participant demand.
+3. **Explore map** — unified `/explore/map` payload (`source`: **activity** · **place** · **facility** · **shop**; `agency` wire-compat). **Area** is an admin-curated name (`areaId` on rows) — not a pin. Country / state / region come from map geography. Seeking outings are **activities**, not a separate demand source.
 4. **Shop** — affiliate-style public pages at `/shop/:id` with outbound links; physical shops get map pins, online partners are list-only.
 5. **Publishing profiles** — guides and agencies publish trips (`/guide/:slug`, `/agency/:slug`); they do **not** appear as explore map pins.
 6. **Push** — Web Push (VAPID) via `PushSubscription` model; optional when keys configured.
@@ -51,10 +51,11 @@ See [`DOMAIN.md`](./DOMAIN.md) for the full glossary. Summary:
 
 | Concept | Storage | Public URL | On explore map? |
 |---------|---------|------------|-----------------|
-| Place (trail/camp/event venue) | `locations` | `/trail`, `/camp`, `/event` | Yes (venue pins) |
-| Activity (scheduled trip) | `activities` | `/activity/:id` | Yes |
-| Demand (participant intent) | `participant_intents` | via explore card | Yes |
-| Shop (organisation) | `tenants` (SHOP) + `merchant_profiles` | `/shop/:id` | Physical only |
+| Place (trail/camp/spot) | `locations` (HTTP `/places`) | `/trail`, `/camp`, `/venue` | Yes (`source: place`) |
+| Facility (amenity) | `facilities` | `/facility/:id` | Yes (`source: facility` — coords for navigation) |
+| Area (admin-curated name) | `areas` | `/area/:slug` | **No** — filter `?area=` and hub page; country/state/region from geography |
+| Activity (hosted + seeking) | `activities` | `/activity/:id` | Yes (`source: activity`) |
+| Shop (organisation) | `tenants` (SHOP) + `merchant_profiles` | `/shop/:id` | Physical only (`source: shop`) |
 | Guide / agency (organisation) | `tenants` (guide/agency) | `/guide/:slug`, `/agency/:slug` | No |
 
 Shop identity is split between **tenant** (Pro Membership / shop application: website, optional pin) and **merchant profile** (ShopManage: contact, featured picks). Saving in ShopManage syncs both and invalidates the explore map cache.

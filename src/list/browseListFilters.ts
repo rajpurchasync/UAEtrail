@@ -1,4 +1,5 @@
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
+import { isGeographyMapSource } from '@uaetrail/shared-types';
 import { selectSeekingActivitiesForListCatalog } from '@/activity-discovery/catalog/listSeeking';
 import {
   filterListCatalogByVenueRegions,
@@ -65,7 +66,7 @@ const cardMatchesPrice = (card: ExploreCardModel, price: BrowsePriceFilter): boo
 export const cardMatchesBrowsePrice = cardMatchesPrice;
 
 const matchesWeekendBrowseFilter = (item: ExploreMapItemDTO): boolean => {
-  if (item.source === 'venue' || item.source === 'shop' || item.source === 'agency') return true;
+  if (isGeographyMapSource(item.source) || item.source === 'shop' || item.source === 'agency') return true;
   const schedule = resolveExploreItemScheduleDate(item);
   if (!schedule) return false;
   const day = new Date(`${schedule}T12:00:00`).getDay();
@@ -99,7 +100,7 @@ export const filterExploreMapItemsForList = (
 
   if (placesCategoryInScope && state.placeTopics.length > 0) {
     pool = pool.filter((item) => {
-      if (item.source !== 'venue' && item.source !== 'shop') return false;
+      if (!isGeographyMapSource(item.source) && item.source !== 'shop') return false;
       return state.placeTopics.some((topic) => matchesListVenuePlaceTopic(item, topic));
     });
   }

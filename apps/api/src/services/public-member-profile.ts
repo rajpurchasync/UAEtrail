@@ -11,14 +11,14 @@ import {
   shopPublicPath,
 } from '@uaetrail/shared-types';
 import type { ProfileViewerAccessDTO } from '@uaetrail/shared-types';
-import type { TenantRecord } from '../lib/tenant-store.js';
 import { findAuthUserById } from '../lib/auth-users.js';
 import {
   countPublishedActivitiesHostedByUser,
   countUserCheckedInParticipations,
 } from '../lib/activity-engagement-store.js';
 import { normalizeProfileVisibility } from '../lib/media-access.js';
-import { listTenantsByOwnerId } from '../lib/tenant-store.js';
+import { listActiveTenantMembershipsByUser } from '../lib/tenant-access.js';
+import { listTenantsByOwnerId, type TenantRecord } from '../lib/tenant-store.js';
 import { findLatestHostApplicationByApplicant } from '../lib/host-applications-store.js';
 import {
   USER_CITY_LABELS,
@@ -80,6 +80,33 @@ const resolveHostProfileKind = (
   return null;
 };
 
+const pickBusinessOperatorTenant = (tenants: TenantRecord[]): TenantRecord | null => {
+  for (const tenant of tenants) {
+    const ownedType = resolveOwnedProfileType(tenant);
+    if (ownedType === 'agency' || ownedType === 'shop') return tenant;
+  }
+  return null;
+};
+
+const mergeLinkedTenants = (
+  ownedTenants: TenantRecord[],
+  memberships: Array<{ tenant: TenantRecord }>
+): TenantRecord[] => {
+  const seen = new Set<string>();
+  const merged: TenantRecord[] = [];
+  for (const tenant of ownedTenants) {
+    if (seen.has(tenant.id)) continue;
+    seen.add(tenant.id);
+    merged.push(tenant);
+  }
+  for (const membership of memberships) {
+    if (seen.has(membership.tenant.id)) continue;
+    seen.add(membership.tenant.id);
+    merged.push(membership.tenant);
+  }
+  return merged;
+};
+
 const resolveHostProfilePath = (tenant: TenantRecord | null): string | null => {
   if (!tenant) return null;
   if (resolveOwnedProfileType(tenant) === 'shop') {
@@ -125,7 +152,10 @@ export type PublicMemberProfileData =
       profileRoleLabel: MemberProfileRoleLabel;
       isGuideStaff?: boolean;
       hostProfileKind: 'shop' | 'agency' | 'guide' | null;
+      /** Public shop or agency profile URL when member is linked to a business operator. */
       hostProfilePath: string | null;
+      /** Business operator display name — pairs with `hostProfilePath` (agency / shop only). */
+      linkedOperatorName: string | null;
       badges: Array<{
         key: string;
         name: string;
@@ -206,6 +236,7 @@ export async function buildPublicMemberProfile(
     activitiesHosted,
     demandPosts,
     ownedTenants,
+    tenantMemberships,
     hostApplication,
     yearGoal,
     badges,
@@ -215,18 +246,22 @@ export async function buildPublicMemberProfile(
     countPublishedActivitiesHostedByUser(userId),
     countParticipantIntentsByUser(userId),
     listTenantsByOwnerId(userId),
+    listActiveTenantMembershipsByUser(userId),
     findLatestHostApplicationByApplicant(userId),
     getMemberGoalPublicSnapshot(userId),
     listPublicMemberBadges(userId),
     getMemberAvailabilityPublicSnapshot(userId, viewerUserId ?? null),
   ]);
 
-  const primaryTenant = ownedTenants[0] ?? null;
-  const hostProfileKind = resolveHostProfileKind(primaryTenant);
+  const linkedTenants = mergeLinkedTenants(ownedTenants, tenantMemberships);
+  const businessOperatorTenant = pickBusinessOperatorTenant(linkedTenants);
+  const hostProfileKind = businessOperatorTenant
+    ? resolveHostProfileKind(businessOperatorTenant)
+    : null;
   const profileComplete = isSignupProfileComplete(user.profile);
-  const hostTiers = resolveHostTiersFromTenants(ownedTenants, profileComplete);
-  const hasAgencyProfile = ownedTenants.some((t) => resolveOwnedProfileType(t) === 'agency');
-  const hasShopProfile = ownedTenants.some((t) => resolveOwnedProfileType(t) === 'shop');
+  const hostTiers = resolveHostTiersFromTenants(linkedTenants, profileComplete);
+  const hasAgencyProfile = linkedTenants.some((t) => resolveOwnedProfileType(t) === 'agency');
+  const hasShopProfile = linkedTenants.some((t) => resolveOwnedProfileType(t) === 'shop');
   const isCommunityHost = activitiesHosted > 0 || demandPosts > 0;
   const profileRoleLabel = resolveMemberProfileRoleLabel({
     role: user.role,
@@ -261,7 +296,8 @@ export async function buildPublicMemberProfile(
     profileRoleLabel,
     isGuideStaff,
     hostProfileKind,
-    hostProfilePath: resolveHostProfilePath(primaryTenant),
+    hostProfilePath: businessOperatorTenant ? resolveHostProfilePath(businessOperatorTenant) : null,
+    linkedOperatorName: businessOperatorTenant?.name?.trim() ? businessOperatorTenant.name.trim() : null,
     badges: showTrustedFields ? badges : earnedBadges,
     stats: {
       activitiesAttended,

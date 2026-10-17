@@ -1,5 +1,6 @@
 import type { ParticipationMode } from './activity-participation-mode.js';
 import type { ExploreActivityMode } from './explore-activity-mode.js';
+import { isGeographyMapSource, type ExploreMapSourceWire } from './wire-lexicon.js';
 
 /**
  * Map/list plan projection — Organize vs Demand only.
@@ -45,7 +46,7 @@ export const mapItemMatchesOutingTopic = (
 ): boolean => {
   if (!item.outingTopic || item.outingTopic !== topic) return false;
   if (item.outingCategory === 'activities') return true;
-  if (item.source === 'venue') return true;
+  if (isGeographyMapSource(item.source)) return true;
   return false;
 };
 
@@ -63,7 +64,8 @@ export const exploreMapKindToPlanMapKind = (
   return kind;
 };
 
-export type ExploreMapPlanSource = 'activity' | 'demand' | 'venue' | 'shop';
+/** Same BWL as {@link ExploreMapSourceWire} — plan projection only uses activity / shop compose. */
+export type ExploreMapPlanSource = ExploreMapSourceWire;
 
 export type ParticipantIntentKindForPlan =
   | 'hiking'

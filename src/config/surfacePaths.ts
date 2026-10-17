@@ -55,8 +55,6 @@ export const OPERATOR_HISTORY_PATH = '/operator/history' as const;
 export const OPERATOR_PLACES_PATH = '/operator/places' as const;
 export const OPERATOR_SECURITY_PRIVACY_PATH = '/operator/security-privacy' as const;
 
-/** @deprecated Legacy bookmark — `App.tsx` redirects to {@link OPERATOR_OVERVIEW_PATH}. */
-export const HOST_PLACES_PATH = '/host/places' as const;
 export const PROFILE_EDIT_PATH = '/profile/edit' as const;
 export const PROFILE_REVIEWS_PATH = '/profile/reviews' as const;
 export const PROFILE_SETTINGS_PATH = '/profile/settings' as const;
@@ -117,17 +115,6 @@ export const CHAT_PATH = MESSAGES_PATH;
 export const LEGACY_MESSAGES_PATH = '/messages' as const;
 export const MY_REQUESTS_PATH = '/my-requests' as const;
 
-/** @deprecated Legacy bookmark — `App.tsx` redirects to {@link MESSAGES_PATH} (`/chat`). */
-export const HOST_MESSAGES_PATH = '/host/messages' as const;
-/** @deprecated Legacy bookmarks — redirect to matching {@link OPERATOR_*_PATH}. */
-export const HOST_OVERVIEW_PATH = '/host/overview' as const;
-export const HOST_ACTIVITIES_PATH = '/host/activities' as const;
-export const HOST_ACTIVITIES_NEW_PATH = '/host/activities/new' as const;
-export const HOST_REQUESTS_PATH = '/host/requests' as const;
-export const HOST_TEAM_PATH = '/host/team' as const;
-export const HOST_PROFILE_PATH = '/host/profile' as const;
-export const HOST_HISTORY_PATH = '/host/history' as const;
-
 /** Slugs reserved for the publishing console — must not use `/operator/:id` legacy storefront redirect. */
 export const OPERATOR_CONSOLE_RESERVED_SEGMENTS = new Set([
   'overview',
@@ -141,16 +128,8 @@ export const OPERATOR_CONSOLE_RESERVED_SEGMENTS = new Set([
   'security-privacy',
 ]);
 
-export const rewriteLegacyPublishingConsolePath = (pathname: string): string => {
-  if (pathname.startsWith('/host/')) return pathname.replace(/^\/host/, '/operator');
-  if (pathname.startsWith('/organizer/')) return pathname.replace(/^\/organizer/, '/operator');
-  return pathname;
-};
-
 export const isPublishingConsolePath = (pathname: string): boolean =>
-  pathname.startsWith('/operator/') ||
-  pathname.startsWith('/host/') ||
-  pathname.startsWith('/organizer/');
+  pathname.startsWith('/operator/');
 
 /** Auth funnel */
 export const SIGNIN_PATH = '/signin' as const;

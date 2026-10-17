@@ -11,15 +11,11 @@ import { formatActivityLocal } from '../lib/datetime.js';
 import { getMongoClient } from '../lib/mongo.js';
 
 /**
- * M2d — when `false`, Find posts only write `activities` (`activityMode: seeking`);
- * intent routes read/manage via activity read-through.
+ * COH-01 — Find posts only write `activities` (`activityMode: seeking`);
+ * `/me/seeking-posts/*` read/manage via activity read-through (no `participant_intents` inserts).
  */
-/** Opt-in dual-write — unset/false = M2d (activities only). Set `true` only for legacy rollback. */
-export const isParticipantIntentStubWriteEnabled = (): boolean => {
-  const raw = process.env.PARTICIPANT_INTENT_STUB_WRITE?.trim().toLowerCase();
-  if (raw === '1' || raw === 'true' || raw === 'yes') return true;
-  return false;
-};
+/** @deprecated Always false after MIG-COH-01 — env ignored. */
+export const isParticipantIntentStubWriteEnabled = (): boolean => false;
 
 const activitiesCollection = () =>
   getMongoClient()!.db().collection<MongoActivityDoc>(COLLECTIONS.ACTIVITIES);
@@ -124,5 +120,6 @@ export const seekingActivityToCreateInput = (
     comment: dto.comment,
     toLatitude: dto.toLatitude,
     toLongitude: dto.toLongitude,
+    areaId: activity.areaId ?? null,
   };
 };

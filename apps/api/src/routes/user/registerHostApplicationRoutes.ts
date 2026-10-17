@@ -1,6 +1,7 @@
 import type { Router } from 'express';
 import { z } from 'zod';
 import { hostApplicationBodySchema } from '../../domain/host-application.js';
+import { registerProApplicationAlias } from '../../lib/route-pro-application-alias.js';
 import { requireAuth, requireVerifiedEmail } from '../../middleware/auth.js';
 import { validate } from '../../middleware/validate.js';
 import {
@@ -10,6 +11,7 @@ import {
 import { loadMyHostApplication } from '../../services/host-application-me-read.js';
 import { hostDetailsSchema } from './schemas.js';
 
+/** Pro membership apply (`/me/pro-application`; `/me/host-application` legacy alias). */
 export const registerHostApplicationRoutes = (router: Router): void => {
   router.patch(
     '/me/host-details',
@@ -26,7 +28,7 @@ export const registerHostApplicationRoutes = (router: Router): void => {
     }
   );
 
-  router.get('/me/host-application', requireAuth, async (req, res, next) => {
+  registerProApplicationAlias(router, 'get', '/me/pro-application', requireAuth, async (req, res, next) => {
     try {
       const data = await loadMyHostApplication(req.auth!.userId);
       res.json({ data });
@@ -35,8 +37,10 @@ export const registerHostApplicationRoutes = (router: Router): void => {
     }
   });
 
-  router.post(
-    '/me/host-application',
+  registerProApplicationAlias(
+    router,
+    'post',
+    '/me/pro-application',
     requireAuth,
     validate({ body: hostApplicationBodySchema }),
     async (req, res, next) => {

@@ -96,32 +96,32 @@ export const placeApi = {
       body: JSON.stringify(payload),
     }),
   getMySubmittedPlaces: () => apiRequest<{ data: LocationDTO[] }>('/me/places', { auth: true }),
-  /** Legacy `/me/locations` list — prefer {@link placeApi.getMySubmittedPlaces}. */
-  getMySubmittedLocations: () => apiRequest<{ data: LocationDTO[] }>('/me/locations', { auth: true }),
+  /** @deprecated Alias of {@link placeApi.getMySubmittedPlaces}. */
+  getMySubmittedLocations: () => apiRequest<{ data: LocationDTO[] }>('/me/places', { auth: true }),
   getOrganisationSubmittedPlaces: (tenantId: string) =>
     apiRequest<{ data: LocationDTO[] }>('/operator/places', {
       auth: true,
       headers: organisationRequestHeaders(tenantId),
     }),
 
-  /** Legacy HTTP path `/host/locations` — prefer {@link placeApi.submitOrganisationPlace}. */
+  /** @deprecated Prefer {@link placeApi.submitOrganisationPlace}. */
   submitLocation: (tenantId: string, payload: Partial<LocationDTO>) =>
-    apiRequest<{ data: LocationDTO }>('/operator/locations', {
+    apiRequest<{ data: LocationDTO }>('/operator/places', {
       method: 'POST',
       auth: true,
       headers: organisationRequestHeaders(tenantId),
       body: JSON.stringify(payload),
     }),
-  /** Legacy HTTP path `/me/locations` — prefer {@link placeApi.submitUserPlace}. */
+  /** @deprecated Prefer {@link placeApi.submitUserPlace}. */
   submitUserLocation: (payload: Partial<LocationDTO>) =>
-    apiRequest<{ data: LocationDTO }>('/me/locations', {
+    apiRequest<{ data: LocationDTO }>('/me/places', {
       method: 'POST',
       auth: true,
       body: JSON.stringify(payload),
     }),
-  /** Legacy HTTP path `/host/locations` — prefer {@link placeApi.getOrganisationSubmittedPlaces}. */
+  /** @deprecated Prefer {@link placeApi.getOrganisationSubmittedPlaces}. */
   getHostSubmittedLocations: (tenantId: string) =>
-    apiRequest<{ data: LocationDTO[] }>('/operator/locations', {
+    apiRequest<{ data: LocationDTO[] }>('/operator/places', {
       auth: true,
       headers: organisationRequestHeaders(tenantId),
     }),

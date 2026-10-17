@@ -54,7 +54,7 @@ export const SecurityPrivacy = () => {
   const requiresOtp = import.meta.env.PROD;
 
   const isConsolePath =
-    location.pathname.startsWith('/operator/') || location.pathname.startsWith('/host/');
+    location.pathname.startsWith('/operator/');
   const backPath = isConsolePath ? '/operator/overview' : '/profile';
   const backLabel = isHostPath ? 'Workspace' : 'Profile';
 

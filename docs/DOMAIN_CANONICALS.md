@@ -67,7 +67,7 @@ Explore and campaigns answer two questions. Do not merge them in copy or DTOs.
 | Lens | Question | Map / feed examples | Entity kinds |
 |------|----------|---------------------|--------------|
 | **Where** | What **place** or **pin** is here? | Trails, camps, venues, **shop pin**, future **partner pin** (hotel) | `place`, shop as **Place** + `shop` storefront |
-| **Who** | Who can I go with — friends, followed, hosts, demand (“looking”) | Activities, demand, explore **people browse panel** (`view=people`, list **Buddies**), member cards | `activity`, `person`, **buddy**, member-discovery roster — not `whosGoing` in API/code. **`/social/people`** is a legacy HTTP mount for browse network reads, not chat. |
+| **Who** | Who can I go with — friends, followed, hosts, demand (“looking”) | Activities, demand, explore **people browse panel** (`view=people`, list **Buddies**), member cards | `activity`, `person`, **buddy**, **`/me/member-discovery/*`** — not `whosGoing` in API/code; not chat. |
 
 An **Activity** is **Who + When** (often anchored to **Where** via `locationId`). A **tour agency** is **Who** (brand + trips) without requiring a visit pin to participate. A **shop** is primarily **Where** (get directions) plus optional e-commerce on `/shop/:id`.
 
@@ -80,9 +80,9 @@ One **person** account; zero or more **storefronts** (tenant-backed public brand
 | Kind | Product | Map pin? | Join / book model | Public URL (today) |
 |------|---------|----------|-------------------|-------------------|
 | `community` | Buddy host (no brand page) | Via activities/demand only | Organize on map | `/member/:userId` only |
-| `pro_guide` | Pro individual guide | Optional | Activity join / request | `/guide/:slug` |
-| `agency` | Tour agency | **No** — not “go to this pin to join” | Activities + paid trips | `/agency/:slug` |
-| `shop` | Outdoor shop | **Yes** (Place pin) + online catalog | Directions, featured picks; not trip inventory | `/shop/:id` |
+| `pro_guide` | Pro individual **guide / Pro host** | **No** person pin | Activity join / request | **`/member/:userId`** (legacy `/guide/:slug` wire may remain) |
+| `agency` | Tour **operator** (company profile) | **No** agency pin | Activities + paid trips | `/agency/:slug`; linked users show **operator name** on member profile |
+| `shop` | Shop **operator** | **Yes** (shop pin) + catalog | Directions, featured picks | `/shop/:id`; linked users show **operator name** on member profile |
 | `ecommerce` | Business Pro — online retail | Optional pin | Catalog / campaigns; not a tour agency | `/shop/:id` or brand URL (TBD) |
 | `hospitality` | Business Pro — hotels, venues | Often **yes** | Stays + linked campaigns (future) | TBD |
 | `partner` | **Partner** Pro path (top-level) | Often **yes** (campaign pin) | Campaigns + linked Activities (future) | `/partner/:slug` |
@@ -99,7 +99,7 @@ One **person** account; zero or more **storefronts** (tenant-backed public brand
 | **Claimed** | Business via **Pro Membership** | Ownership verified; moves toward managed tenant |
 | **Managed** | Pro shop tenant | Owner console, team, featured picks, profile edit |
 
-**Agencies** and **pro guides** skip the “map pin catalog” path — they are **Who**-led storefronts. **Partners** may combine pin + campaign surfaces (§1.2).
+**Agencies** and **Pro guides** are **Who**-led (no agency/guide map pins). **Shops** are **Where + Who** (pin + profile). **Partners** may combine pin + campaign surfaces (§1.2). **Pro guides** use the **member profile** as the public individual surface; **shop/agency** use **operator profiles**, discoverable from member cards when the user is linked.
 
 ---
 
@@ -261,7 +261,7 @@ Detail UIs must load from the **canonical read API** for that entity; writes use
 | Surface | Route | Data owner (Mongo / service) | Who writes | Read HTTP | FE facade (consumer) | Notes |
 |---------|-------|------------------------------|------------|-----------|----------------------|--------|
 | **Activity** | `/activity/:id` | `activities` + participation | Member **Organize/Find** FAB, host publish (`member-publish-gate`) | `GET /activities/:id` (`viewerAccess`, presentation) | `usePublicActivityDetail` | Not trail inventory — scheduled outing |
-| **Member (person)** | `/member/:userId` | `users` profile | Member `PATCH /me/profile` | `GET /users/:id/public-profile` | `memberPublicProfileApi` | ≠ tenant storefront |
+| **Member (person)** | `/member/:userId` | `users` profile | Member `PATCH /me/profile` | `GET /member/:userId/profile` | `memberPublicProfileApi` | ≠ tenant storefront |
 | **Organisation (pro)** | `/guide`, `/agency`, `/partner` | `tenants` storefront | Host onboarding / `organisationConsoleApi` | `GET /tenants/:slug` (public profile bundle) | `organisationConsoleApi` | Shop tenants → `/shop/:id` |
 | **Shop** | `/shop/:id` | `tenants` / merchant (+ optional place pin) | **Operator** Pro onboarding — **not** FAB Contribute; community gear pin = **facility `outdoor_shop`** ([§1.7](#17-program-cpc--catalog-ontology-fab-compose-wire)) | `GET /shop/shops/:id` | `shopPublicClientApi` | `EntityKind.shop` = storefront only |
 | **Place** | `/place/:id` (CPC-6; legacy `/trail`·`/camp`·`/venue`) | `locations` (place rows) | Admin `/admin/places`; member **Contribute → Place**; operator place submit with `areaId` | `GET /places/:id`; `GET /places/catalog`; linked **facilities** via **`parentPlaceId`** (**CPC-3**) | `placeDetailClientApi` | Place catalog excludes facilities after CPC |
@@ -285,13 +285,13 @@ Map/list **peek** and entity **detail** share one engagement contract per viewer
 | **Area** | `mapPeekSlots` → `AreaPeekBody` / `AreaPeekActions` | `AreaDetailPage` → `AreaDetailView` (`MobileDetailShell`) | Links to `/area/:slug`, explore `?area=` | Browse-only hub — join on child **activity** rows |
 | **Shop** | `ShopPeekActions` + `PeekDetailLink` | `ShopPublic` → `ShopPublicPage` (`EntityPublicDetailShell`) | `/shop/:id`; guest catalog rows may gate in peek | Reviews/follow on tenant id; outbound product URLs |
 | **Agency/guide** | Catalog / activity publisher row (not `source: agency` map rows) | `OrganisationProfile` → `OrganisationPublicProfile` (`EntityPublicDetailShell`) | `resolveActivityPublisherProfilePath` from activity | Message/follow; listed outings → `/activity/:id` |
-| **Member** | People browse / roster links | `MemberProfile` (`viewerAccess` on `GET …/public-profile`) | `/member/:userId` | Buddy add, follow, `MessageMemberButton` |
+| **Member** | People browse / roster links | `MemberProfile` (`viewerAccess` on `GET /member/:userId/profile`) | `/member/:userId` | Buddy add, follow, `MessageMemberButton` |
 
 ### 3.2.2 Member profile — one page, browse lenses
 
-**Route:** `/member/:userId` only (`MemberProfile` → `MemberProfileView`). **`/buddies`**, Explore people panel, activity host rows, chat avatars, and notifications all **link here** — no parallel “friends profile” or “public profile” routes. Self hub stays `/profile`; owner **public preview** uses `/member/:id?view=public` on the same layout.
+**Route:** `/member/:userId` only (`MemberProfile` → `MemberProfileView`). **`/buddies`**, Explore people panel, activity host rows, chat avatars, and notifications all **link here** — no parallel “friends profile” or “public profile” routes. Self hub stays `/profile`; owner **public preview** uses `/member/:id?view=public` on the same layout. Users linked to a **shop or agency operator** show the **operator display name** on the card (link → `/shop/…` or `/agency/…`); Pro **guides** do not get a separate storefront link — the member card is the individual public surface.
 
-**Path helpers:** Wire URLs — `memberProfilePath(…)` (`packages/shared-types/src/entity-path.ts`). Consumer surfaces — **`memberProfileLink(userId, lens)`** (`src/member/memberProfileLink.ts`) so people browse, friends list, roster chips, and notifications share one builder. `discover=1` + `from=discover` = directory quota on `GET …/public-profile`; other lenses set `source=` only.
+**Path helpers:** Wire URLs — `memberProfilePath(…)` (`packages/shared-types/src/entity-path.ts`). Consumer surfaces — **`memberProfileLink(userId, lens)`** (`src/member/memberProfileLink.ts`) so people browse, friends list, roster chips, and notifications share one builder. `discover=1` + `from=discover` = directory quota on `GET /member/:userId/profile`; other lenses set `source=` only.
 
 | Browse lens (`source`) | Where user starts | Who may **see roster / card** | Who may **open** `/member/:id` (API `viewerAccess`) |
 |------------------------|-------------------|-------------------------------|-----------------------------------------------------|
@@ -347,11 +347,11 @@ IA detail (pills, topics): [`experiment/explore-browse-ia.md`](./experiment/expl
 | Scope | Prefix | Header | Examples |
 |-------|--------|--------|----------|
 | Public read | `/activities`, `/explore/map`, `/explore/seeking-activities`, `/places` | — | Browse; seeking slice = published `activityMode: seeking` (`explore-seeking-activities-read.ts`) |
-| Member | `/me/*` | Bearer | `participant-intents`, `host-status`, profile |
+| Member | `/me/*` | Bearer | `seeking-posts`, `host-status`, profile |
 | Host console (tenant scope) | `/host/*` | Bearer + `x-organisation-id` | `activities`, **`/host/requests`** (activity join queue) |
 | Person public | `/users/:id` | optional | Public profile |
 
-**Kebab-case plurals** on URLs: `participant-intents`, not `intents` or `demand`.
+**Kebab-case plurals** on URLs: `seeking-posts`, not `intents` or `demand`.
 
 **Client modules:** `src/api/domains/*.ts` — canonical method names (`getOrganisationProfile`, `getMemberHostStatus`, `getPublicPlaces`). No legacy alias layer on `api` (see `apiLegacyGuard.test.ts`).
 
@@ -399,7 +399,7 @@ IA detail (pills, topics): [`experiment/explore-browse-ia.md`](./experiment/expl
 | `ShopPeekActions` | `ExploreShopPeekActions` | Shop pin on activity host |
 | `PlaceMapPeekHost` | `ExplorePlaceMapPreview` | Map **mount** for venue (`Place`) pins — not activity organizer |
 | `PeekDetailLink`, `mapPeekSlots` | `ExplorePeekDetailLink`, `ExploreItemPeekParts` | Peek → detail + source router |
-| `AreaPeekActions`, `AreaPeekBody` | `ExploreAreaPeekActions` | **Area** hub pin (`source: 'area'`) |
+| `AreaPeekActions`, `AreaPeekBody` | `ExploreAreaPeekActions` | **Area** hub **page** chrome — Area is not a map pin |
 | `PlacePeekActions`, `PlacePeekBody` | `PlacePeekActions`, `ExplorePlacePeek*` | **Place** on Spots (`source: 'venue'`) |
 | `ActivityPeekLinkedTransport` | `ExploreLinkedRidesharePeekIndication` | Activity peek transport strip |
 | `DiscoveryCardModel`, `buildDiscoveryCardModel`, `buildDiscoveryCardViewModelCard` | `ExploreCardModel`, `buildExploreCardModel` (re-export stub) | Read model for pins + list |
@@ -456,7 +456,7 @@ When renaming or adding routes:
 | Context | FE module | Canonical calls |
 |---------|-----------|-----------------|
 | Host tier / publish gate | `memberApi` | `getMemberHostStatus()` |
-| Map / demand | `exploreApi` | explore map, participant-intents |
+| Map / Find | `exploreApi`, `seekingApi` | explore map; `/me/seeking-posts` |
 | Buddies / groups / follow | `socialApi` | `/me/buddies`, … |
 | Tenant console | `organisationApi` | organisation profile, team, join queue |
 | Badges | `badgesApi` | `getMemberBadges()` |
@@ -497,37 +497,37 @@ Use this when naming files, hooks, and utils — **one product word per concept*
 | **Member discovery roster** | map + directory compose | `seekingOnMap[]` (`seekingTitle`, `participantIntentId`) on `GET /me/member-discovery/roster` | Wire field `lookingFor`, `demandTitle` |
 | **Journey map** (`/profile/history/map`) | `GET /me/journey-map`, `POST/PATCH/DELETE /me/map-pins`, `JourneyMapEntryDTO` | `memberJourneyMapApi`, `src/member-plan/journeyMap*` | `GET /me/trips/map`, `outdoorMap*` |
 | **Explore map** | `GET /explore/map` | `src/explore/*`, `exploreMapPinModel` | `journeyMap*` (wrong surface) |
-| **Area** (curated zone) | `GET /areas`, `GET /areas/:slug` | `areas-store`, `organizePublishArea.ts`, `/area/:slug`, explore `?area=` | `areaLabel` string as third concept; **do not** assign area from meeting pin polygons for hosted publish |
+| **Area** (curated **name**, not a pin) | `GET /areas`, `GET /areas/:slug` | `areas-store`, `organizePublishArea.ts`, `/area/:slug`, explore `?area=` | `source: area` map pin; `areaLabel` as a third geo concept; assigning area from meeting-pin polygons |
 | **Place / venue** | `locations` | `place*`, `venue` panel, `Place` in UI | `location` in new routes/components |
 | **Friends** | buddies API | `BUDDIES_PATH`, `buddy*` stores only on API | `buddyUserId`, “buddy entity” |
 | **Publishing console** | `/operator/*`, tenant | `src/pages/operator/*`, `src/console/*`, `useOperatorStatus`, `useConsoleHubData`, `listHostActivities` | `tenant` in consumer UI strings (wire: `x-organisation-id`) |
 
-**Three maps (do not conflate):** (1) **Explore** — public discovery; (2) **Journey map** — `/profile/history/map` + `GET /me/journey-map`; (3) **Place catalog** — venues/shops layers on Explore.
+**Three maps (do not conflate):** (1) **Explore** — public discovery (`source`: activity · place · facility · shop); (2) **Journey map** — `/profile/history/map` + `GET /me/journey-map`; (3) **Place catalog** — Place / Facility / shop layers on Explore. **Area** is a name (`?area=` / `/area/:slug`), not a map.
 
 **`src/utils/` policy:** cross-surface helpers only (`authRedirect`, `notificationRouting`, `authReturnContext`, `routingCatalog` consumers). Domain logic belongs in `src/explore/`, `src/member-plan/`, `src/member/` (`organisationPaths.ts`), `src/content/workspaceVocabulary.ts`, `src/components/<domain>/` — not new `utils/<domain>*.ts`.
 
 ### 12.1 Geography — Area hub, Place catalog, Activity (authoritative)
 
-**Hierarchy:** **Region** (emirate label) → **Area** (curated hub, `areas` collection, stable `areaId`) → **Place** (single Mongo `locations` row; many **kinds** via `PlaceKind` / `place-kind.ts`) → **Activity** (scheduled outing; geography only through a place).
+**Hierarchy:** **Country / state / region** (from map geography) → **Area** (admin-curated name, `areas` collection, stable `areaId` — **not a map pin**) → **Place** / **Facility** (coords) → **Activity** (geography only through a place).
 
 **One Area, many children (all via `place.areaId` on catalog rows):**
 
 | Child on the hub | `PlaceKind` / wire | Explore **Spots** map pins today | Area lens rollup / hub |
 |------------------|-------------------|----------------------------------|-------------------------|
-| Trails | `hiking` (`activityType: hiking`) | Yes (`source: venue`, hiking) | `trailSpots` |
+| Trails | `hiking` (`activityType: hiking`) | Yes (`source: place`, hiking) | `trailSpots` |
 | Camps / camp spots | `camping` | Yes | `campSpots` |
 | Outdoor spots (“Others” Add) | `outdoor_other` (`event` + `outdoor-other` tag) | Yes (`placeKind: outdoor_other`) | Grouped on `/area/:slug` preview |
 | Shops (member Add) | `shop` + `community-shop` tag | Yes — **Shops** lens, `catalogProfileExposure: peek` (map peek only) | Area hub + rollups |
 | Shops (merchant / Pro tenant) | `shop:` tenant rows | Yes — **Shops** lens, `catalogProfileExposure: full` → `/shop/…` | Merchant profile + reviews |
 | Guides / tour agencies (Pro tenant) | `tenants` + `/guide` · `/agency` | **No map pin** — discover via **hosted activities** + storefront URL (`catalogProfileExposure: full`) | Area hub `#operators` rail = Pro hosts with outings in this area (not tenant lat/lng) |
-| Facilities (toilet, parking, gas, water, viewpoint, picnic, …) | amenity kinds + `place-kind:*` tags | Yes (Spots lens, `placeKind` on payload) | `facilities` in `areaLensStats`; list on area hub `#places` |
+| Facilities (toilet, parking, gas, water, viewpoint, picnic, …) | `facilities` collection · `facilityKind` | Yes (`source: facility`, `id: facility:{id}`, coords for navigation) | `facilities` in `areaLensStats`; list on area hub `#places`. Peek still shares Place chrome until a facility peek ships. |
 | Hosted / seeking outings | **Activity** (not a Place) | **Activities** lens (emoji pins) | `hostedActivities` / `seekingPosts` via `item.areaId` on map projection |
 
 **Assignment rules (write path — do not invert):**
 
 | Entity | Who sets `areaId` | Rule |
 |--------|-------------------|------|
-| **Area** | Admin `/admin/areas` | Slug, center, bounds (display hint only — **no** polygon auto-tag for hosted publish) |
+| **Area** | Admin `/admin/areas` | Curated **name** + optional center/bounds as camera hint for the hub page — **no explore map pin**. Geography labels (country, state, region) come from the map, not from Area. |
 | **Place** | Admin `/admin/places` or member **Add** (`curatedArea` then pin) | **`locations.areaId` required** on submit (`POST /me/locations`, host `/locations`) |
 | **Hosted activity** | Organize publish | **No `activity.areaId` on write.** `activity.locationId` → catalog **place** with **`place.areaId`**. `validateOrganizePlaceArea` / publish gate. Meeting / going-from pin does **not** define area. |
 | **Seeking activity** | Find FAB | **`participant_intents.areaId`** + map pin; synthetic seeking **place** carries same **`areaId`** (not a separate activity-area field on write). |
@@ -537,24 +537,24 @@ Use this when naming files, hooks, and utils — **one product word per concept*
 
 | Lens (`pinKind`) | What you see | Not this |
 |------------------|--------------|----------|
-| **activities** | One pin per hosted/seeking outing | Area hub pins |
-| **locations** | One pin per **published Area** + subtitle rollups (`source: area`, `id: area:{slug}`) | Per-trail pins |
-| **places** (“Spots”) | Catalog trail/camp (and shop-as-venue) pins with coords | Area polygons |
+| **activities** | One pin per hosted/seeking outing | Area labels |
+| **places** (“Spots”) | Catalog trail/camp Place pins with coords | Area is a filter (`?area=`), not a pin. Facility pins are also on the map (`source: facility`); lens grouping vs Spots is still open. |
+| **locations** (legacy URL) | Alias of **places** | Former synthetic Area hub pins — do not restore |
 | **shops** | Shop layer (catalog + tenant-backed pins) | — |
 
-**Discovery filters:** `?area={slug}` keeps rows whose projected **`areaSlug`** / **`areaId`** match (from place or intent). **Locations** lens pins are the registry hubs; they are **not** a substitute for **`place.areaId`** on every catalog row.
+**Discovery filters:** `?area={slug}` keeps rows whose projected **`areaSlug`** / **`areaId`** match. Area is a name on those rows — not a pin.
 
-#### 12.1.1 Explore UI — Place vs `venue` (wire) vs Area (no extra entities)
+#### 12.1.1 Explore UI — Place · Facility · Area (Area is a name, not a pin)
 
 | Concept | Product meaning | Wire / storage | Map peek UI |
 |---------|-----------------|----------------|-------------|
-| **Place** | One catalog row (`locations`) — trail, camp, amenity/**facility**, shop pin | `GET /places/:id`, `EntityKind: place` | **`PlacePeekCard`** + `PlacePeekBody` (`catalogPlaceSummary`) |
-| **`venue`** | **Explore wire only** — a **Place** pin on the **Spots** lens (`id` prefix `venue:`) | `ExploreCardSource: 'venue'` | Same UI as Place — **not** a second entity or component family |
-| **Facility** | Amenity **Place** (toilet, parking, gas, …) | `PlaceKind` / tags on `locations` | Spots lens + area hub `#places`; area **pin** rollup `areaLensStats.facilities` |
-| **Area** | Curated hub polygon + `/area/:slug` | `areas`; map row `source: 'area'`, `id: area:{slug}` | **`AreaPeekActions`** / **`AreaPeekBody`** via `mapPeekSlots` |
-| **`place.areaId`** | Links a **Place** to its **Area** hub | `locations.areaId` → `areaSlug` / `areaName` on **venue** wire rows | **Area · {hub name}** on **Place** peek — **not** the area lens pin |
+| **Place** | Catalog trail, camp, outdoor spot | `GET /places/:id`; map `source: place` (`id` still `venue:{id}` until id prefix migrates) | **`PlacePeekCard`** + `PlacePeekBody` |
+| **Facility** | Registered amenity with coords (toilet, parking, gas, …) so people can navigate on the map | `GET /facilities/:id`; map `source: facility`, `id: facility:{id}` | Shares Place peek chrome until a dedicated facility peek ships |
+| **Area** | Admin-curated name grouping Places/Facilities; hub page `/area/:slug` | `areas`; **`areaId` / `areaSlug` on pin rows** — **no** `source: area` pin | Hub page + “Area · {name}” on Place peek. Peek modules under `peek/area/` are for the hub page, not explore pins. |
+| **`venue` / `catalog_place`** | Legacy map `source` aliases | Normalize to `place` (`isPlaceMapSource`) | Same as Place |
+| **`place.areaId`** | Links a **Place** to its **Area** name | `locations.areaId` → `areaSlug` / `areaName` on Place rows | **Area · {name}** on **Place** peek |
 
-**Naming rules (FE):** One shared **`MapPeekShell`**; entity parts **`{Entity}Peek*`** under `peek/{activity|place|area|shop}/` (`PlacePeekCard`, `placePeek*`, `AreaPeekBody`, …). Reserve **`venue`** for `card.source === 'venue'` (wire label for a **Place** pin). Do **not** add `Explore*Peek*` modules or `PinSummary*` sprawl. **Facilities** are Places — never `source: 'facility'`. Route `source: 'area'` only in `mapPeekSlots`, never in `peek/place/`.
+**Naming rules (FE):** One shared **`MapPeekShell`**; entity parts **`{Entity}Peek*`** under `peek/{activity|place|area|shop}/`. Do **not** add `Explore*Peek*` modules. Do **not** emit `source: 'area'` on `GET /explore/map`. Helpers: `isPlaceMapSource`, `isFacilityMapSource`, `isGeographyMapSource`.
 
 **Pro account storefronts (one user, optional tenant per subtype)** — each has a **public profile URL**; map and People discovery differ by subtype:
 
@@ -707,7 +707,7 @@ Any **place, venue, activity meeting point, shop, parking pin**, or other consum
 | Entity | Resolver | Tests | HTTP surfaces |
 |--------|----------|-------|----------------|
 | **Activity** | `apps/api/src/services/activity-viewer-access.ts` → `buildActivityViewerAccess` (`resolveActivityViewerAccess` alias) | `apps/api/tests/activity-viewer-access.test.ts` | `GET /activities/:id`, future redaction on `GET /explore/map` items |
-| **Member profile** | `resolveProfileViewerAccess` + `computeProfileDetailExposure` (`profile-viewer-access.ts`) | `profile-viewer-access.test.ts`, shared-types | `GET /users/:id/public-profile` → `{ data, viewerAccess }`; guests `sign_in` only |
+| **Member profile** | `resolveProfileViewerAccess` + `computeProfileDetailExposure` (`profile-viewer-access.ts`) | `profile-viewer-access.test.ts`, shared-types | `GET /member/:userId/profile` → `{ data, viewerAccess }`; guests `sign_in` only |
 | **Place (catalog)** | Public read today — no roster | — | `GET /places/:id` |
 | **Shop / operator** | **TBD** — policy in §15.4 row “commerce” | — | Shop public pages |
 | **Seeking activity** (`activityMode: seeking`) | Same as **Activity** — `buildActivityViewerAccess` on `GET /activities/:id`; map peek via explore enrich | `activity-viewer-access.test.ts`, `explore-map-viewer-access.test.ts` | `/activity/:id` secondary; primary discovery = explore pin |

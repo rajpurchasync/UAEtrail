@@ -80,6 +80,8 @@ for (const file of registrarFiles) {
 
 const activityRoutePattern =
   /registerActivityRoute\(\s*\w+,\s*['"](get|post|patch|delete|put)['"],\s*['"`]([^'"`]*)['"`]/g;
+const aliasHelperRoutePattern =
+  /registerProApplicationAlias\(\s*\w+,\s*['"](get|post|patch|delete|put)['"],\s*['"`]([^'"`]+)['"`]/g;
 for (const file of walkTs(join(root, 'apps/api/src/routes'))) {
   const rel = relative(root, file).replace(/\\/g, '/');
   const text = readFileSync(file, 'utf8');
@@ -89,6 +91,9 @@ for (const file of walkTs(join(root, 'apps/api/src/routes'))) {
     const path = suffix ? `/activities${suffix.startsWith('/') ? suffix : `/${suffix}`}` : '/activities';
     pushEndpoint({ method: m[1].toUpperCase(), path, registrar: rel });
   }
+  while ((m = aliasHelperRoutePattern.exec(text)) !== null) {
+    pushEndpoint({ method: m[1].toUpperCase(), path: m[2], registrar: rel });
+  }
 }
 
 const routerToFile = {
@@ -96,7 +101,7 @@ const routerToFile = {
   chatRouter: 'apps/api/src/routes/chat.ts',
   mediaRouter: 'apps/api/src/routes/media.ts',
   shopRouter: 'apps/api/src/routes/shop.ts',
-  reportsRouter: 'apps/api/src/routes/reports.ts',
+  safetyRouter: 'apps/api/src/routes/safety.ts',
   agentRouter: 'apps/api/src/routes/agent.ts',
   adminRouter: 'apps/api/src/routes/admin.ts',
   operatorRouter: 'apps/api/src/routes/operator.ts',

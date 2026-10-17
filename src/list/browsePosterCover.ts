@@ -1,4 +1,5 @@
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
+import { isGeographyMapSource } from '@uaetrail/shared-types';
 import type { ExploreCardModel, ExploreCardTone } from '../explore/exploreCardModel';
 import { resolveExploreCoverImage } from '../explore/exploreCoverImage';
 
@@ -6,7 +7,7 @@ import { resolveExploreCoverImage } from '../explore/exploreCoverImage';
 export const buildVenueCoverByLocationId = (items: ExploreMapItemDTO[]): Map<string, string> => {
   const map = new Map<string, string>();
   for (const item of items) {
-    if (item.source !== 'venue') continue;
+    if (!isGeographyMapSource(item.source)) continue;
     const locationId = item.locationCard?.id ?? item.id.replace(/^venue:/, '');
     if (!locationId || map.has(locationId)) continue;
 

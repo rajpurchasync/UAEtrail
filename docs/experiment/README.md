@@ -1,23 +1,17 @@
-# Explore supplement (defers to Tier 1)
-
-Shipped on **`main`**. **Product truth:** [`../DOCS_INDEX.md`](../DOCS_INDEX.md) Tier 1 — especially [`../CREATE_FLOW.md`](../CREATE_FLOW.md), [`../NAVIGATION.md`](../NAVIGATION.md), [`../MEMBER_MODEL.md`](../MEMBER_MODEL.md). When these notes disagree with Tier 1, **update this folder or delete it**.
-
-| Doc | Purpose |
-|-----|---------|
-| [**activity-detail-tabs-implementation-plan.md**](./activity-detail-tabs-implementation-plan.md) | **Activity peek + detail program** — **§6 dynamic CTAs** (peek/detail/profile), phases, trace tests (`activityDetailAcceptance.test.ts`, `activity-detail-cta-matrix.test.ts`) |
-| [**system-refactor-plan.md**](./system-refactor-plan.md) | **Stub** → Tier-1 §8 + §8.6; full R0–R8 archive |
-| [**explore-map-bbox-spec.md**](./explore-map-bbox-spec.md) | **R5.1** — bbox/cursor map read model, base/enrich cache, slim card DTO (design only) |
-| [**programme-aggregate-spec.md**](./programme-aggregate-spec.md) | **R7** — programme/series aggregate (spec only; no code until PM gate) |
-| [**system-structure-deep-audit.md**](./system-structure-deep-audit.md) | **Stub** → §7 + P0 `repo:census`; full audit in `docs/archive/` |
-| [**member-surfaces-implementation-plan.md**](./member-surfaces-implementation-plan.md) | Plan hub / seeking / §11 guards; §21 **points** at activity-detail program for exit criteria |
-| [**consumer-detail-surfaces-plan.md**](./consumer-detail-surfaces-plan.md) | **S9 eng complete** — shells, guards (`consumerDetailQaMatrixGuard`, `detail-surface-lineage-contract`), **§3.2** lineage; §8 + **S10f** manual QA via `npm run s10f:qa-checklist` (alias: `consumer-detail:qa-routes`) |
-| [explore-ux-spec.md](./explore-ux-spec.md) | Map card copy, emojis, CTAs |
-| [explore-browse-ia.md](./explore-browse-ia.md) · [explore-browse-taxonomy.md](./explore-browse-taxonomy.md) | Browse pills, search scopes, pin kinds (`src/explore/exploreBrowseTaxonomy.ts`) |
-| [consumer-mobile-ia.md](./consumer-mobile-ia.md) | Profile / Plan / Messages tabs (**superseded in part by member-surfaces-implementation-plan**) |
-**Who's going / Join me:** [`NAVIGATION.md`](../NAVIGATION.md) § Browse — people & crew · [`COMMUNICATION.md`](../COMMUNICATION.md).
-
-**Code catalog:** `src/explore/composeFlowCatalog.ts` mirrors FAB Organize · Find · Add paths documented in `CREATE_FLOW.md`.
-
-**QA:** `npm run verify:system` before release · `npm run test:explore-alignment` when explore changes · **S10e** `npm run s10e:staging-checklist` · **S10f** `npm run s10f:qa-checklist` on staging · map seed/smoke: [`../operations/EXPLORE_MAP_RUNBOOK.md`](../operations/EXPLORE_MAP_RUNBOOK.md).
-
-Removed phase trackers and per-flow markdown — see [`../archive/README.md`](../archive/README.md).
+# Experiment folder (stubs only)
+
+**Do not implement from files here.** The **sole implementation schedule** is [`SYSTEM_COHERENCE.md`](../SYSTEM_COHERENCE.md) **§8.8 (PCOH)** + [`scripts/refactor-program.json`](../../scripts/refactor-program.json) migrations **`MIG-COH-*`**.
+
+| Need | Read |
+|------|------|
+| UPL (member-visible terms) | `src/content/upl-glossary.ts`, `workspaceVocabulary.ts`, `productNorthStar.ts` |
+| BWL (HTTP, JSON, Mongo) | `packages/shared-types/src/wire-lexicon.ts` |
+| Routes, surfaces | `NAVIGATION.md`, `DOMAIN_CANONICALS.md` |
+| HTTP paths | `API_ROUTING.md` |
+| FAB, join, compose | `CREATE_FLOW.md` |
+| Pro membership, publish | `MEMBER_MODEL.md`, `/profile/pro-membership` |
+| Bounded contexts | `SYSTEM_COHERENCE.md` §3 + `scripts/bounded-context-manifest.json` |
+| Gates | `npm run verify:system` |
+
+Each `*.md` in this folder is a **≤8-line stub**. Historical narratives were **removed** (Oct 2026) so they cannot compete with §8.8.
+

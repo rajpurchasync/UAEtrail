@@ -3,16 +3,6 @@
   "endpoints": [
     {
       "method": "GET",
-      "path": "/host-applications",
-      "registrar": "apps/api/src/routes/admin/registerAdminHostApplicationRoutes.ts"
-    },
-    {
-      "method": "PATCH",
-      "path": "/host-applications/:id",
-      "registrar": "apps/api/src/routes/admin/registerAdminHostApplicationRoutes.ts"
-    },
-    {
-      "method": "GET",
       "path": "/people/preview",
       "registrar": "apps/api/src/routes/social/registerSocialPeopleRoutes.ts"
     },
@@ -228,16 +218,6 @@
     },
     {
       "method": "GET",
-      "path": "/me/host-application",
-      "registrar": "apps/api/src/routes/user/registerHostApplicationRoutes.ts"
-    },
-    {
-      "method": "POST",
-      "path": "/me/host-application",
-      "registrar": "apps/api/src/routes/user/registerHostApplicationRoutes.ts"
-    },
-    {
-      "method": "GET",
       "path": "/me/availability",
       "registrar": "apps/api/src/routes/user/registerMeAvailabilityRoutes.ts"
     },
@@ -294,11 +274,6 @@
     {
       "method": "GET",
       "path": "/me/inbox",
-      "registrar": "apps/api/src/routes/user/registerMeEngagementRoutes.ts"
-    },
-    {
-      "method": "GET",
-      "path": "/users/search",
       "registrar": "apps/api/src/routes/user/registerMeEngagementRoutes.ts"
     },
     {
@@ -368,12 +343,27 @@
     },
     {
       "method": "GET",
-      "path": "/me/member-discovery-quota",
+      "path": "/me/member-discovery/quota",
       "registrar": "apps/api/src/routes/user/registerMemberDiscoveryRoutes.ts"
     },
     {
       "method": "GET",
-      "path": "/users/browse",
+      "path": "/me/member-discovery/browse",
+      "registrar": "apps/api/src/routes/user/registerMemberDiscoveryRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/me/member-discovery/search",
+      "registrar": "apps/api/src/routes/user/registerMemberDiscoveryRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/me/member-discovery/network/preview",
+      "registrar": "apps/api/src/routes/user/registerMemberDiscoveryRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/me/member-discovery/network",
       "registrar": "apps/api/src/routes/user/registerMemberDiscoveryRoutes.ts"
     },
     {
@@ -387,53 +377,43 @@
       "registrar": "apps/api/src/routes/user/registerMemberStatusRoutes.ts"
     },
     {
-      "method": "GET",
-      "path": "/me/participant-intents",
-      "registrar": "apps/api/src/routes/user/registerMeParticipantIntentRoutes.ts"
-    },
-    {
-      "method": "POST",
-      "path": "/me/participant-intents",
-      "registrar": "apps/api/src/routes/user/registerMeParticipantIntentRoutes.ts"
-    },
-    {
       "method": "PATCH",
-      "path": "/me/participant-intents/:intentId",
+      "path": "${basePath}/:${idParam}",
       "registrar": "apps/api/src/routes/user/registerMeParticipantIntentRoutes.ts"
     },
     {
       "method": "POST",
-      "path": "/me/participant-intents/:intentId/cancel",
+      "path": "${basePath}/:${idParam}/cancel",
       "registrar": "apps/api/src/routes/user/registerMeParticipantIntentRoutes.ts"
     },
     {
       "method": "POST",
-      "path": "/me/participant-intents/:intentId/link-activity",
+      "path": "${basePath}/:${idParam}/link-activity",
       "registrar": "apps/api/src/routes/user/registerMeParticipantIntentRoutes.ts"
     },
     {
       "method": "POST",
-      "path": "/me/participant-intents/:intentId/${requestSegment}",
+      "path": "${basePath}/:${idParam}/${requestSegment}",
       "registrar": "apps/api/src/routes/user/registerMeParticipantIntentRoutes.ts"
     },
     {
       "method": "GET",
-      "path": "/me/participant-intents/:intentId/${requestSegment}",
+      "path": "${basePath}/:${idParam}/${requestSegment}",
       "registrar": "apps/api/src/routes/user/registerMeParticipantIntentRoutes.ts"
     },
     {
       "method": "GET",
-      "path": "/me/participant-intents/:intentId/${requestSegment}/mine",
+      "path": "${basePath}/:${idParam}/${requestSegment}/mine",
       "registrar": "apps/api/src/routes/user/registerMeParticipantIntentRoutes.ts"
     },
     {
       "method": "POST",
-      "path": "/me/participant-intents/:intentId/${requestSegment}/:requestId/approve",
+      "path": "${basePath}/:${idParam}/${requestSegment}/:requestId/approve",
       "registrar": "apps/api/src/routes/user/registerMeParticipantIntentRoutes.ts"
     },
     {
       "method": "POST",
-      "path": "/me/participant-intents/:intentId/${requestSegment}/:requestId/reject",
+      "path": "${basePath}/:${idParam}/${requestSegment}/:requestId/reject",
       "registrar": "apps/api/src/routes/user/registerMeParticipantIntentRoutes.ts"
     },
     {
@@ -538,17 +518,17 @@
     },
     {
       "method": "GET",
-      "path": "/users/:userId/brief",
+      "path": "/member/:userId/brief",
       "registrar": "apps/api/src/routes/user/registerPublicMemberRoutes.ts"
     },
     {
       "method": "GET",
-      "path": "/users/:userId/public-profile",
+      "path": "/member/:userId/profile",
       "registrar": "apps/api/src/routes/user/registerPublicMemberRoutes.ts"
     },
     {
       "method": "GET",
-      "path": "/users/:userId/upcoming-activities",
+      "path": "/member/:userId/upcoming-activities",
       "registrar": "apps/api/src/routes/user/registerPublicMemberRoutes.ts"
     },
     {
@@ -568,6 +548,16 @@
     },
     {
       "method": "GET",
+      "path": "/pro-applications",
+      "registrar": "apps/api/src/routes/admin/registerAdminHostApplicationRoutes.ts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/pro-applications/:id",
+      "registrar": "apps/api/src/routes/admin/registerAdminHostApplicationRoutes.ts"
+    },
+    {
+      "method": "GET",
       "path": "/activities/:id/invites",
       "registrar": "apps/api/src/routes/user/registerActivityJoinInviteRoutes.ts"
     },
@@ -575,6 +565,16 @@
       "method": "POST",
       "path": "/activities/:id/invites",
       "registrar": "apps/api/src/routes/user/registerActivityJoinInviteRoutes.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/me/pro-application",
+      "registrar": "apps/api/src/routes/user/registerHostApplicationRoutes.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/me/pro-application",
+      "registrar": "apps/api/src/routes/user/registerHostApplicationRoutes.ts"
     },
     {
       "method": "GET",
@@ -833,8 +833,8 @@
     },
     {
       "method": "POST",
-      "path": "/reports/",
-      "registrar": "apps/api/src/routes/reports.ts"
+      "path": "/safety/reports",
+      "registrar": "apps/api/src/routes/safety.ts"
     },
     {
       "method": "GET",
@@ -991,9 +991,11 @@
       "me-map-pins-read"
     ],
     "apps/api/src/routes/user/registerMemberDiscoveryRoutes.ts": [
+      "me-account-session-read",
       "member-discovery-me-read",
       "member-discovery-quota",
       "member-discovery-roster",
+      "member-people-engagement",
       "member-status"
     ],
     "apps/api/src/routes/user/registerMemberStatusRoutes.ts": [

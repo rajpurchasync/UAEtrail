@@ -11,6 +11,13 @@ describe('create flow module boundaries (CPC-9b)', () => {
     expect(seeking).not.toMatch(/from ['"]\.\/hostingFlowEngine['"]/);
     expect(seeking).not.toMatch(/from ['"]\.\/organizeFlow['"]/);
     expect(seeking).toMatch(/createFlowShared/);
+    expect(seeking).toMatch(/seekingClientApi/);
+  });
+
+  it('seeking publish returns activity map pins only (COH-01)', () => {
+    const seeking = read('src/explore/ui/seekingFlowEngine.ts');
+    expect(seeking).toMatch(/mapItemId: `activity:\$\{publishedActivityId\}`/);
+    expect(seeking).not.toMatch(/`demand:\$\{/);
   });
 
   it('hostingFlow facade documents engine and does not import demandFlow', () => {

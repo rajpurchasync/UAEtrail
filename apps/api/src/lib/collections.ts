@@ -12,6 +12,7 @@ export const COLLECTIONS = {
   // Organisations
   TENANTS: 'tenants',
   TENANT_MEMBERSHIPS: 'tenant_memberships',
+  /** Target: `pro_applications` (MIG-COH-03). Collection name optional same-phase rename. */
   HOST_APPLICATIONS: 'host_applications',
 
   // Places & premium unlocks

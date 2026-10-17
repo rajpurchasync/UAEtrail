@@ -26,8 +26,34 @@ import {
   outdoorPlaceKindPinEmoji,
   type PlaceKind,
 } from './place-kind.js';
+import {
+  BWL_EXPLORE_MAP_SOURCE,
+  FACILITY_MAP_SOURCE,
+  PLACE_MAP_SOURCE,
+  isFacilityMapSource,
+  isGeographyMapSource,
+  isPlaceMapSource,
+  normalizeExploreMapSource,
+  type ExploreMapSourceWire,
+} from './wire-lexicon.js';
 
-export type ExploreCardSource = 'activity' | 'venue' | 'shop' | 'agency' | 'demand' | 'area';
+export type ExploreCardSource = ExploreMapSourceWire;
+
+export {
+  FACILITY_MAP_SOURCE,
+  PLACE_MAP_SOURCE,
+  isFacilityMapSource,
+  isGeographyMapSource,
+  isPlaceMapSource,
+  normalizeExploreMapSource,
+};
+
+/** @deprecated Use {@link PLACE_MAP_SOURCE}. */
+export const CATALOG_PLACE_MAP_SOURCE = PLACE_MAP_SOURCE;
+/** @deprecated Use {@link BWL_EXPLORE_MAP_SOURCE.VENUE_LEGACY}. */
+export const LEGACY_VENUE_MAP_SOURCE = BWL_EXPLORE_MAP_SOURCE.VENUE_LEGACY;
+/** @deprecated Use {@link isGeographyMapSource} (place + facility) or {@link isPlaceMapSource}. */
+export const isCatalogPlaceMapSource = isGeographyMapSource;
 export type ExploreCardKind = 'hiking' | 'camping' | 'event' | 'rideshare' | 'shop' | 'agency' | 'area';
 
 export type ExplorePresentationBuildInput = {
@@ -145,16 +171,17 @@ export const resolveExploreItemSource = (
   if (exploreMapItemIsSeeking(item)) return 'activity';
   if (
     source === 'activity' ||
-    source === 'venue' ||
+    isGeographyMapSource(source) ||
     source === 'shop' ||
     source === 'agency' ||
     source === 'demand' ||
     source === 'area'
   ) {
-    return source;
+    return normalizeExploreMapSource(source);
   }
   if (id.startsWith('area:')) return 'area';
-  if (id.startsWith('venue:')) return 'venue';
+  if (id.startsWith('facility:')) return FACILITY_MAP_SOURCE;
+  if (id.startsWith('place:') || id.startsWith('venue:')) return PLACE_MAP_SOURCE;
   if (id.startsWith('demand:')) return 'activity';
   if (id.startsWith('shop:')) return 'shop';
   if (id.startsWith('agency:')) return 'agency';
@@ -167,7 +194,8 @@ export const resolveMapPinItemSource = (
 ): ExploreCardSource => {
   const { id } = item;
   if (id.startsWith('area:')) return 'area';
-  if (id.startsWith('venue:')) return 'venue';
+  if (id.startsWith('facility:')) return FACILITY_MAP_SOURCE;
+  if (id.startsWith('place:') || id.startsWith('venue:')) return PLACE_MAP_SOURCE;
   if (id.startsWith('demand:')) return 'activity';
   if (id.startsWith('shop:')) return 'shop';
   if (id.startsWith('agency:')) return 'agency';
@@ -187,7 +215,7 @@ export const resolveMapPinEmoji = (
     return outdoorPlaceKindPinEmoji();
   }
 
-  if (source === 'venue') {
+  if (isFacilityMapSource(source) || isPlaceMapSource(source)) {
     if (kind === 'hiking') return HIKING_VENUE_EMOJI;
     if (kind === 'camping') return CAMPING_VENUE_EMOJI;
     if (kind === 'event') return '🏃';
@@ -630,7 +658,7 @@ const exploreHeadlinePersonLabel = (input: ExploreHeadlineInput): string => {
 };
 
 const buildExploreListTitle = (input: ExploreHeadlineInput): string => {
-  if (input.source === 'venue' || input.source === 'shop' || input.source === 'agency') {
+  if (isGeographyMapSource(input.source) || input.source === 'shop' || input.source === 'agency') {
     return input.title.trim() || 'Listing';
   }
 
@@ -656,7 +684,7 @@ const buildExploreListTitle = (input: ExploreHeadlineInput): string => {
 };
 
 export const exploreHeadline = (input: ExploreHeadlineInput): string => {
-  if (input.source === 'venue' || input.source === 'shop' || input.source === 'agency') {
+  if (isGeographyMapSource(input.source) || input.source === 'shop' || input.source === 'agency') {
     return input.title.trim() || 'Listing';
   }
 
@@ -745,7 +773,7 @@ export const buildExploreCardSections = (input: ExploreHeadlineInput): ExploreCa
     if (label?.trim()) details.push({ icon, label: label.trim() });
   };
 
-  if (input.source === 'venue' || input.source === 'shop' || input.source === 'agency') {
+  if (isGeographyMapSource(input.source) || input.source === 'shop' || input.source === 'agency') {
     push('location', input.subtitle);
     return finishExploreCardSections(input, {
       plainTitle: exploreHeadline(input),
@@ -829,7 +857,7 @@ export const exploreSubtitle = (
   kind: ExploreCardKind,
   source: ExploreCardSource
 ): string | null => {
-  if (source === 'venue') return item.subtitle?.trim() || null;
+  if (isGeographyMapSource(source)) return item.subtitle?.trim() || null;
   if (exploreMapItemIsSeeking(item) || source === 'demand') {
     if (kind === 'rideshare') return null;
     return item.subtitle?.trim() || null;
@@ -887,7 +915,7 @@ export const exploreVenueHint = (
     return shopPresence === 'online' ? 'Online gear partner' : 'Gear shop on the map';
   }
   if (source === 'agency') return exploreAgencyHint();
-  if (source !== 'venue') return null;
+  if (!isGeographyMapSource(source)) return null;
   if (kind === 'hiking') return 'Hiking trail location';
   if (kind === 'camping') return 'Camping location';
   return 'Event location';

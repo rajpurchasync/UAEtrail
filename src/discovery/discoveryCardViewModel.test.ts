@@ -58,7 +58,7 @@ describe('buildDiscoveryCardViewModel (RF-02)', () => {
     const card = buildDiscoveryCardViewModelCard(item);
     const built = buildDiscoveryCardViewModel(item);
     expect(card.id).toBe(built.card.id);
-    expect(card.source).toBe('venue');
+    expect(card.source).toBe('place');
   });
 
   it('buildListFeedCards matches legacy enrich path (RF-02 poster)', () => {

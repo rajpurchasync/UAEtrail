@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { isGeographyMapSource } from '@uaetrail/shared-types';
 import { ChevronRight, Users } from 'lucide-react';
 import { SecureAvatar } from '../../components/ui';
 import { formatExploreRelativeScheduleLabel } from '@uaetrail/shared-types';
@@ -82,7 +83,7 @@ export const ExploreListRow = ({
   const { listTitle, details, highlightName, suffix, activityHighlight, dateHighlight } = card.sections;
   const meta = buildExploreListMeta(card);
   const toneTextClass = exploreCardToneTextClass[card.tone];
-  const isCatalogRow = card.source === 'shop' || card.source === 'agency' || card.source === 'venue';
+  const isCatalogRow = card.source === 'shop' || card.source === 'agency' || isGeographyMapSource(card.source);
   const scheduleChipLabel =
     !isCatalogRow && card.activity?.date
       ? formatExploreRelativeScheduleLabel(card.activity.date)

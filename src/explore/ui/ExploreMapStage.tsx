@@ -1,5 +1,5 @@
 import { List, Plus } from 'lucide-react';
-import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
+import { isGeographyMapSource, type ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { PlacesMap, type MapBounds, type PlaceMapPin } from '../../components/ui/PlacesMap';
 import { getMapBounds } from '../../config/regions';
 import { MAP_CONFIG, getExploreMapTiles, type ExploreMapStyle } from '../../config/platform';
@@ -293,7 +293,7 @@ export const ExploreMapStage = ({
         </button>
       </div>
 
-      {selectedCard && selected?.source === 'venue' && selected ? (
+      {selectedCard && selected && isGeographyMapSource(selected.source) ? (
         <PlaceMapPeekHost
           item={selected}
           onClose={onCloseSelection}

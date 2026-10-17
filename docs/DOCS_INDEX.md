@@ -2,7 +2,7 @@
 
 **Start here.** Tier-1 is a **closed set** — see [`DOCS_GOVERNANCE.md`](./DOCS_GOVERNANCE.md) (do not add new canonical docs; update the file for your topic).
 
-**Checks:** `npm run verify:system` · **Manifest:** `scripts/bounded-context-manifest.json` · **Platform program:** [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.6 + `scripts/refactor-program.json` — *P0–P4 **complete** (eng); **P5** **MIG-P5-SLO-SMOKE** in progress; release gates **S10e** + **S10f**.*
+**Checks:** `npm run verify:system` · **Manifest:** `scripts/bounded-context-manifest.json` · **Implementation schedule (sole authority):** [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) **§8.8 PCOH** + `scripts/refactor-program.json` (`MIG-COH-*`). UPL: `src/content/upl-glossary.ts` · BWL: `packages/shared-types/src/wire-lexicon.ts`. Do not implement from `docs/archive/**` or experiment plan bodies.
 
 ---
 
@@ -21,7 +21,7 @@
 | [`ARCHITECTURE.md`](./ARCHITECTURE.md) | Monorepo, deploy, layers |
 | [`API_ROUTING.md`](./API_ROUTING.md) | `/me/*`, `/host/*`, explore, deprecations |
 | [`COMMUNICATION.md`](./COMMUNICATION.md) | Chat, inbox, crew wall |
-| [`TRIPS_HOST_MANAGE.md`](./TRIPS_HOST_MANAGE.md) | Trips manage, message crew |
+| Plan hosting / crew manage | [`NAVIGATION.md`](./NAVIGATION.md) `/plan`, [`COMMUNICATION.md`](./COMMUNICATION.md) |
 
 ---
 
@@ -32,7 +32,7 @@
 | [`DEV_RUN.md`](./DEV_RUN.md) | VS Code hot reload, seed, auth/session dev checks |
 | [`DEPLOYMENT.md`](./DEPLOYMENT.md) | Docker VPS, env, HTTPS |
 | [`PRE_DEPLOY_CHECKLIST.md`](./PRE_DEPLOY_CHECKLIST.md) | Go-live + release gates (**S10e** bbox promote, **S10f** manual QA) |
-| [`HOST_CLEANUP_ROADMAP.md`](./HOST_CLEANUP_ROADMAP.md) | Host/tenant technical debt |
+| Coherence program (PCOH) | [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.8 |
 | [`operations/EXPLORE_MAP_RUNBOOK.md`](./operations/EXPLORE_MAP_RUNBOOK.md) | Map seed, venue import, browse smoke |
 | [`operations/SEEKING_STORAGE_RUNBOOK.md`](./operations/SEEKING_STORAGE_RUNBOOK.md) | Seeking backfill, `PARTICIPANT_INTENT_STUB_WRITE`, G-manage staging smoke |
 | [`ANDROID_RELEASE.md`](./ANDROID_RELEASE.md) · [`IOS_RELEASE.md`](./IOS_RELEASE.md) · [`PLAY_STORE_LISTING.md`](./PLAY_STORE_LISTING.md) | Native store ship |
@@ -40,9 +40,9 @@
 
 ---
 
-## Tier 3 — explore supplement (defers to Tier 1)
+## Tier 3 — stubs only (no schedules)
 
-[`experiment/README.md`](./experiment/README.md) — UX/browse/mobile IA; **activity peek/detail program:** [`experiment/activity-detail-tabs-implementation-plan.md`](./experiment/activity-detail-tabs-implementation-plan.md); **consumer detail shells (S9 eng complete, §8 manual QA pending):** [`experiment/consumer-detail-surfaces-plan.md`](./experiment/consumer-detail-surfaces-plan.md) §14 handoff · `npm run consumer-detail:qa-routes`; FAB truth stays in `CREATE_FLOW.md`.
+[`experiment/README.md`](./experiment/README.md) — stubs only; schedule **§8.8** only. **QA:** `npm run consumer-detail:qa-routes` · **FAB:** `CREATE_FLOW.md`.
 
 ---
 

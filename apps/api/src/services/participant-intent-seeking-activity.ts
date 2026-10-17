@@ -113,6 +113,7 @@ export const createSeekingActivityForIntent = async (
     outingCategory: participantIntentKindToOutingCategory(input.kind),
     activityMode: 'seeking',
     participantIntentId: intentId,
+    ...(areaId ? { areaId } : {}),
   });
   if (!options?.deferCacheInvalidate) {
     await invalidateExploreMapCache();

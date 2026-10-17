@@ -55,7 +55,7 @@ describe('resolveMapPinEmoji', () => {
     expect(resolveExploreItemSource({ id: 'venue:abc', source: 'activity' })).toBe('activity');
     expect(
       resolveExploreItemSource({ id: 'venue:abc', source: undefined as unknown as 'activity' })
-    ).toBe('venue');
+    ).toBe('place');
     expect(
       resolveExploreItemSource({ id: 'activity:abc', source: undefined as unknown as 'activity' })
     ).toBe('activity');

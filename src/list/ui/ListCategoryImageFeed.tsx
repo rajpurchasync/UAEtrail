@@ -1,4 +1,5 @@
 import type { ExploreCardModel } from '../../explore/exploreCardModel';
+import { isGeographyMapSource } from '@uaetrail/shared-types';
 import type { BrowseMainCategoryKey } from '../browseListTaxonomy';
 import { LIST_FEED } from '../listFeedTheme';
 import { ListFeedPosterCard } from './feed/ListFeedPosterCard';
@@ -15,7 +16,7 @@ export const ListCategoryImageFeed = ({ cards, category, edgeToEdge = false }: L
   <ul className={edgeToEdge ? LIST_FEED.categoryList : LIST_FEED.list}>
     {cards.map((card) => (
       <li key={card.id}>
-        {category === 'venues' || card.source === 'venue' || card.source === 'shop' ? (
+        {category === 'venues' || isGeographyMapSource(card.source) || card.source === 'shop' ? (
           <ListFeedVenuePosterCard card={card} edgeToEdge={edgeToEdge} />
         ) : (
           <ListFeedPosterCard card={card} edgeToEdge={edgeToEdge} />

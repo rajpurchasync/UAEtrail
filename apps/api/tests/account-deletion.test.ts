@@ -129,7 +129,7 @@ describe('content reports', () => {
     accessToken = verifyRes.body.tokens.accessToken;
 
     const response = await request(app)
-      .post('/api/reports')
+      .post('/api/safety/reports')
       .set('Authorization', `Bearer ${accessToken}`)
       .send({
         targetType: 'user',

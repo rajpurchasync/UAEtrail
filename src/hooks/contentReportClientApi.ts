@@ -1,4 +1,5 @@
-import { api, type ContentReportReason, type ContentReportTargetType } from '../api/index';
+import { safetyApi } from '../api/domains/safety';
+import type { ContentReportReason, ContentReportTargetType } from '../api/index';
 
 export type { ContentReportReason, ContentReportTargetType };
 
@@ -8,7 +9,7 @@ export const submitContentReport = async (input: {
   reason: ContentReportReason;
   details?: string;
 }): Promise<void> => {
-  await api.reportContent({
+  await safetyApi.submitContentReport({
     targetType: input.targetType,
     targetId: input.targetId,
     reason: input.reason,
