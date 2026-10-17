@@ -4,13 +4,13 @@
  * @see scripts/refactor-program.json P5 slos · docs/PRE_DEPLOY_CHECKLIST.md § SLO baseline
  *
  * Env:
- *   BASE_URL (default http://localhost:3001)
+ *   BASE_URL (default http://localhost:4000 — matches API PORT / docker-compose)
  *   P5_SLO_SAMPLES (default 5)
  *   P5_EXPLORE_MAP_BBOX=1 — also sample GET /api/explore/map?bbox=… (requires API EXPLORE_MAP_BBOX=1)
  *   P5_EXPLORE_MAP_BBOX_QUERY (default 55,25,56,26)
  *   P5_SMOKE_EMAIL + P5_SMOKE_PASSWORD + P5_JOIN_ACTIVITY_ID — optional join/RSVP probe (SLO-JOIN)
  */
-const baseUrl = (process.env.BASE_URL ?? 'http://localhost:3001').replace(/\/$/, '');
+const baseUrl = (process.env.BASE_URL ?? 'http://localhost:4000').replace(/\/$/, '');
 const samples = Number(process.env.P5_SLO_SAMPLES ?? 5);
 const bboxQuery = process.env.P5_EXPLORE_MAP_BBOX_QUERY ?? '55,25,56,26';
 

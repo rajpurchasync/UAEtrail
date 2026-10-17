@@ -261,6 +261,7 @@ describe('systemCoherenceGuard', () => {
     const script = readFileSync(join(ROOT, 'scripts/p5-slo-smoke.mjs'), 'utf8');
     expect(script).toMatch(/P5_JOIN_ACTIVITY_ID/);
     expect(script).toMatch(/P5_EXPLORE_MAP_BBOX/);
+    expect(script).toMatch(/localhost:4000/);
     const preDeploy = readFileSync(join(ROOT, 'docs/PRE_DEPLOY_CHECKLIST.md'), 'utf8');
     expect(preDeploy).toMatch(/SLO baseline \(P5/);
     expect(preDeploy).toMatch(/p5:slo-smoke/);
