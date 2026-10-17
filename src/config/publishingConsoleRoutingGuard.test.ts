@@ -31,14 +31,18 @@ describe('publishing console routing (MIG-ROUTING-CANON-P1)', () => {
     expect(app).not.toMatch(/LegacyPublishingConsoleRedirect/);
     expect(app).not.toMatch(/path="\/host\//);
     expect(app).not.toMatch(/path="\/organizer\//);
+    expect(app).toMatch(/path="\/publishing"/);
+    expect(app).toMatch(/path="\/operator"/);
+    expect(app).toMatch(/path="\/publishing\/messages"/);
   });
 
-  it('surfacePaths exposes publishing workspace (/operator) paths only', () => {
+  it('surfacePaths exposes publishing workspace (/publishing) paths', () => {
     const surface = readFileSync(join(ROOT, 'src/config/surfacePaths.ts'), 'utf8');
     expect(surface).not.toMatch(/HOST_OVERVIEW_PATH/);
     expect(surface).not.toMatch(/rewriteLegacyPublishingConsolePath/);
     expect(surface).toMatch(/OPERATOR_OVERVIEW_PATH/);
-    expect(surface).toMatch(/pathname\.startsWith\('\/operator\/'\)/);
+    expect(surface).toMatch(/PUBLISHING_CONSOLE_PREFIX/);
+    expect(surface).toMatch(/rewriteOperatorConsoleToPublishingPath/);
   });
 
   it('app src does not link to /host/ or /organizer/ publishing paths', () => {

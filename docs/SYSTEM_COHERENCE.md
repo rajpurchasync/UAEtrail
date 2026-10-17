@@ -1044,7 +1044,7 @@ Board one-liner: *P4 thinned the API; **PCOH** (§8.8) finishes coherent product
 | `user_follows`, `entity_follows` | Follow edges |
 | `member_availability`, `user_goals` | Plan commitment (distinct from seeking) |
 | `user_favorites` → `user_wishlist` | COH-09 |
-| `/operator` → `/publishing` | Publishing workspace HTTP (COH-04) |
+| `/publishing` | Publishing workspace HTTP (COH-04); `/operator` alias |
 | `/me/member-discovery/*` | People discovery API (optional `/me/people/*`) |
 | `explore_map` sources | `activity` · `place` · `facility` · `shop` · `agency`. Area is not a pin. Retire `demand`; `venue` / `catalog_place` → `place` (COH-02) |
 | `UserRole`, `HostPublishingTier`, `GET /me/status` | RBAC / capabilities — not UPL |
@@ -1059,7 +1059,7 @@ All **17** contexts: `discovery`, `compose`, `participation`, `member_identity`,
 
 #### 8.8.4 Canonical API flows (one BWL path each)
 
-Discover map `GET /explore/map` (+ optional `GET /me/discover/overlay` COH-08) · People `GET /me/member-discovery/*` · Buddies `/me/buddies` · Follow `/me/following` · Goals `/me/goals` · Availability `/me/availability` · Wishlist `/me/wishlist` · Join/RSVP `/activities/:id/requests` · Host queue `/operator/activities/.../requests` (→ `/publishing/...`) · Pro apply `/me/pro-application` (alias `/me/host-application`) · Capability `GET /me/status` · Places `/places/*` · Facilities `/facilities/:id` · Areas `/areas` (names, not pins) · Safety `POST /safety/reports` · Chat `/chat` · Reviews `/reviews`.
+Discover map `GET /explore/map` (+ optional `GET /me/discover/overlay` COH-08) · People `GET /me/member-discovery/*` · Buddies `/me/buddies` · Follow `/me/following` · Goals `/me/goals` · Availability `/me/availability` · Wishlist `/me/wishlist` · Join/RSVP `/activities/:id/requests` · Host queue `/publishing/requests` (alias `/operator/...`) · Pro apply `/me/pro-application` (alias `/me/host-application`) · Capability `GET /me/status` · Places `/places/*` · Facilities `/facilities/:id` · Areas `/areas` (names, not pins) · Safety `POST /safety/reports` · Chat `/chat` · Reviews `/reviews`.
 
 **Delete flows:** participant-intent CRUD/join, `/people` orphan registrar, `demand:` map ids, dual `/locations` HTTP.
 

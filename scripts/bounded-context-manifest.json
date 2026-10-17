@@ -341,7 +341,7 @@
   "apiMounts": [
     { "prefix": "/auth", "file": "apps/api/src/routes/auth.ts" },
     { "prefix": "/admin", "file": "apps/api/src/routes/admin.ts" },
-    { "prefix": "/operator", "file": "apps/api/src/routes/operator.ts", "note": "legacy /host/* rewritten in middleware" },
+    { "prefix": "/publishing", "file": "apps/api/src/routes/operator.ts", "note": "/operator HTTP alias; SPA /publishing/*" },
     { "prefix": "/chat", "file": "apps/api/src/routes/chat.ts" },
     { "prefix": "/shop", "file": "apps/api/src/routes/shop.ts" },
     { "prefix": "/media", "file": "apps/api/src/routes/media.ts" },

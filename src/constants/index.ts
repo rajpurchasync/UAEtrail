@@ -38,7 +38,7 @@ export { PLAN_PATH, PROFILE_HISTORY_PATH, JOURNEY_MAP_PATH, MY_TRIPS_PATH, TRIPS
 /** @deprecated Personal hub bookmark — redirects to {@link PLAN_PATH} or {@link PROFILE_HISTORY_PATH}. */
 export const ACTIVITIES_PATH = '/activities' as const;
 
-/** Publishing console nav — canonical `/operator/*` routes. */
+/** Publishing console nav — canonical `/publishing/*` routes. */
 export const OPERATOR_CONSOLE_LINKS = [
   { to: OPERATOR_OVERVIEW_PATH, label: 'Overview' },
   { to: OPERATOR_PROFILE_PATH, label: 'Public profile' },

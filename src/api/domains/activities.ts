@@ -15,7 +15,7 @@ import type { ActivityDetail, ActivityRequestView } from '../types';
  * Activity HTTP client — one entity (`activities`), different **routes** by surface:
  * - Browse catalog: `getPublicActivities` / `getFeaturedActivities` → `GET /activities`
  * - Member trips: `getMeActivities` → `GET /me/activities`
- * - Publishing console (tenant + `x-organisation-id`): `listActivities(tenantId)` → `GET /operator/activities`
+ * - Publishing console (tenant + `x-organisation-id`): `listActivities(tenantId)` → `GET /publishing/activities`
  *
  * UI should call `tenantActivityClientApi` — not `api.listActivities` directly (`apiLegacyGuard`).
  */
@@ -182,15 +182,15 @@ export const activitiesApi = {
       auth: true
     }),
 
-    /** Tenant activity list (`GET /operator/activities`). */
+    /** Tenant activity list (`GET /publishing/activities`). */
     listActivities: (tenantId: string) =>
-      apiRequest<{ data: ActivityDTO[] }>('/operator/activities?pageSize=100', {
+      apiRequest<{ data: ActivityDTO[] }>('/publishing/activities?pageSize=100', {
         auth: true,
         headers: organisationRequestHeaders(tenantId),
       }),
 
     createActivity: (tenantId: string, payload: Record<string, unknown>) =>
-      apiRequest<{ data: ActivityDTO }>('/operator/activities', {
+      apiRequest<{ data: ActivityDTO }>('/publishing/activities', {
         method: 'POST',
         auth: true,
         headers: organisationRequestHeaders(tenantId),
@@ -198,7 +198,7 @@ export const activitiesApi = {
       }),
 
     updateActivity: (tenantId: string, activityId: string, payload: Record<string, unknown>) =>
-      apiRequest<{ data: ActivityDTO }>(`/operator/activities/${activityId}`, {
+      apiRequest<{ data: ActivityDTO }>(`/publishing/activities/${activityId}`, {
         method: 'PATCH',
         auth: true,
         headers: organisationRequestHeaders(tenantId),
@@ -206,21 +206,21 @@ export const activitiesApi = {
       }),
 
     publishActivity: (tenantId: string, activityId: string) =>
-      apiRequest(`/operator/activities/${activityId}/publish`, {
+      apiRequest(`/publishing/activities/${activityId}/publish`, {
         method: 'POST',
         auth: true,
         headers: organisationRequestHeaders(tenantId),
       }),
 
     duplicateActivity: (tenantId: string, activityId: string) =>
-      apiRequest<{ data: ActivityDTO }>(`/operator/activities/${activityId}/duplicate`, {
+      apiRequest<{ data: ActivityDTO }>(`/publishing/activities/${activityId}/duplicate`, {
         method: 'POST',
         auth: true,
         headers: organisationRequestHeaders(tenantId),
       }),
 
     cancelActivity: (tenantId: string, activityId: string) =>
-      apiRequest(`/operator/activities/${activityId}`, {
+      apiRequest(`/publishing/activities/${activityId}`, {
         method: 'DELETE',
         auth: true,
         headers: organisationRequestHeaders(tenantId),
@@ -235,20 +235,20 @@ export const activitiesApi = {
         activityEnded: boolean;
         participants: ParticipantDTO[];
       };
-    }>(`/operator/activities/${activityId}/participants`, {
+    }>(`/publishing/activities/${activityId}/participants`, {
       auth: true,
       headers: organisationRequestHeaders(tenantId),
     }),
 
     checkinParticipant: (tenantId: string, activityId: string, participantId: string) =>
-    apiRequest(`/operator/activities/${activityId}/participants/${participantId}/checkin`, {
+    apiRequest(`/publishing/activities/${activityId}/participants/${participantId}/checkin`, {
       method: 'POST',
       auth: true,
       headers: organisationRequestHeaders(tenantId)
     }),
 
     undoCheckin: (tenantId: string, activityId: string, participantId: string) =>
-    apiRequest(`/operator/activities/${activityId}/participants/${participantId}/checkin`, {
+    apiRequest(`/publishing/activities/${activityId}/participants/${participantId}/checkin`, {
       method: 'DELETE',
       auth: true,
       headers: organisationRequestHeaders(tenantId)
@@ -260,7 +260,7 @@ export const activitiesApi = {
       participantId: string,
       organizerNote: string
     ) =>
-      apiRequest(`/operator/activities/${activityId}/participants/${participantId}/revoke`, {
+      apiRequest(`/publishing/activities/${activityId}/participants/${participantId}/revoke`, {
         method: 'POST',
         auth: true,
         headers: organisationRequestHeaders(tenantId),
@@ -274,7 +274,7 @@ export const activitiesApi = {
       payload: { score: number; comment?: string }
     ) =>
       apiRequest<{ data: { score: number; comment: string | null; ratedAt: string | null } }>(
-        `/operator/activities/${activityId}/participants/${participantId}/rating`,
+        `/publishing/activities/${activityId}/participants/${participantId}/rating`,
         {
           method: 'POST',
           auth: true,
@@ -285,7 +285,7 @@ export const activitiesApi = {
 
     getActivityHistory: (tenantId: string) =>
     apiRequest<{ data: Array<{ id: string; title: string; locationName: string; activityType: string; startAt: string; status: string; capacity: number; participantCount: number; checkedInCount: number }> }>(
-      '/operator/activities/history',
+      '/publishing/activities/history',
       { auth: true, headers: organisationRequestHeaders(tenantId) }
     )
 } as const;

@@ -72,6 +72,7 @@ describe('member surfaces §11 acceptance (automated)', () => {
 
   it('G-arch: publishing console path helper includes canonical /operator routes', () => {
     expect(isPublishingConsolePath('/operator/overview')).toBe(true);
+    expect(isPublishingConsolePath('/publishing/overview')).toBe(true);
     expect(isPublishingConsolePath('/host/activities')).toBe(false);
     expect(isPublishingConsolePath('/organizer/requests')).toBe(false);
     expect(isPublishingConsolePath('/explore')).toBe(false);

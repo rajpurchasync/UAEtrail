@@ -1,15 +1,15 @@
 {
   "version": 1,
   "enforcement": "phase4",
-  "description": "Canonical HTTP + SPA routing planes per bounded context. Until MIG-COH-04 lands, publishing_workspace uses /operator; target /publishing per SYSTEM_COHERENCE §8.8.",
+  "description": "Canonical HTTP + SPA routing planes per bounded context. Publishing workspace is /publishing (MIG-COH-04); /operator is HTTP/SPA alias.",
   "pcohTarget": {
     "publishing_workspace_api": "/publishing",
     "publishing_workspace_spa_prefix": "/publishing"
   },
   "planes": {
     "publishing_workspace": {
-      "spa": ["/operator/overview", "/operator/activities", "/operator/requests", "/operator/team", "/operator/profile", "/operator/places", "/operator/history", "/operator/security-privacy"],
-      "api": ["/operator"],
+      "spa": ["/publishing/overview", "/publishing/activities", "/publishing/requests", "/publishing/team", "/publishing/profile", "/publishing/places", "/publishing/history", "/publishing/security-privacy"],
+      "api": ["/publishing"],
       "feDomain": "organisation.ts"
     },
     "member_identity": {

@@ -10,6 +10,7 @@ import { fetchMeProfile, updateMeProfile } from '../hooks/memberProfileApi';
 import { useAuth } from '../context/AuthContext';
 import { AccountDataExportSection, AccountDeleteSection } from '../components/account';
 import { PageMeta } from '../components/seo/PageMeta';
+import { isPublishingConsolePath, OPERATOR_OVERVIEW_PATH, PROFILE_PATH } from '../config/routingCatalog';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { GlassCard } from '../components/mobile/GlassCard';
 
@@ -53,10 +54,9 @@ export const SecurityPrivacy = () => {
   const [visibilityMessage, setVisibilityMessage] = useState<string | null>(null);
   const requiresOtp = import.meta.env.PROD;
 
-  const isConsolePath =
-    location.pathname.startsWith('/operator/');
-  const backPath = isConsolePath ? '/operator/overview' : '/profile';
-  const backLabel = isHostPath ? 'Workspace' : 'Profile';
+  const isConsolePath = isPublishingConsolePath(location.pathname);
+  const backPath = isConsolePath ? OPERATOR_OVERVIEW_PATH : PROFILE_PATH;
+  const backLabel = isConsolePath ? 'Workspace' : 'Profile';
 
   useEffect(() => {
     void fetchMeProfile()

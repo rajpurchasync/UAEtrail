@@ -49,6 +49,7 @@ const normalizeConsumerChatDeepLinkPath = (
   if (
     pathname === LEGACY_MESSAGES_PATH ||
     pathname === '/operator/messages' ||
+    pathname === '/publishing/messages' ||
     pathname === '/host/messages'
   ) {
     return `${MESSAGES_PATH}${search}`;

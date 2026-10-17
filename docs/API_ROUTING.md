@@ -10,11 +10,11 @@ Companion: [`DOMAIN.md`](./DOMAIN.md), [`CREATE_FLOW.md`](./CREATE_FLOW.md), [`M
 
 | Prefix | Auth | Purpose |
 |--------|------|---------|
-| **`/activities`** | Public read; tenant write via `/operator` | Published **Organize** outings (join, RSVP, detail) |
+| **`/activities`** | Public read; tenant write via `/publishing` | Published **Organize** outings (join, RSVP, detail) |
 | **`/explore/map`** | Public | Discovery payload (`source`: activity · place · facility · shop · agency). Area is a filter (`areaId`), not a pin. |
 | **`/agent/manifest.json`**, **`/agent/discover`** | Public (rate-limited) | **AI / agent** entry manifest and text search over published outings + registry places |
 | **`/me/*`** | Signed-in member | Own profile, intents, groups, inbox, activity participation |
-| **`/operator/*`** | Verified + **tenant** (`x-organisation-id`) | **Publishing console** (any tier): publish, roster, **activity** join queue |
+| **`/publishing/*`** | Verified + **tenant** (`x-organisation-id`) | **Publishing workspace** (any tier): publish, roster, **activity** join queue. Alias `/operator/*`. |
 | **`/member/:userId/*`** | Optional auth | Public member card (`profile`, `brief`, `upcoming-activities`) — `registerPublicMemberRoutes.ts` |
 | **`/me/member-discovery/*`** | Auth | People roster, network, directory browse, quota, user search |
 | **`/safety/reports`** | Auth | Member **content reports** (trust/safety) — `safety.ts` |
@@ -44,8 +44,8 @@ Same product verb (**request to join**), two entities:
 |------|-------------------|----------------------------------|
 | **Create request** | `POST /activities/:activityId/requests` | `POST /me/seeking-posts/:postId/requests` (same `activity_requests` row) |
 | **My status** | In activity detail `myRequest` | `GET …/requests/mine` |
-| **Poster / host lists** | `GET /operator/requests` (tenant) | `GET /me/seeking-posts/:postId/requests` (owner) |
-| **Approve / reject** | `PATCH /operator/requests/:id` | `POST …/requests/:requestId/approve` · `…/reject` |
+| **Poster / host lists** | `GET /publishing/requests` (tenant) | `GET /me/seeking-posts/:postId/requests` (owner) |
+| **Approve / reject** | `PATCH /publishing/requests/:id` | `POST …/requests/:requestId/approve` · `…/reject` |
 | **Member list (outgoing)** | `GET /me/requests` | *(future: aggregate or trips)* |
 
 Deprecated alias (do not use in new clients): `…/join-requests` mirrors `…/requests`.
@@ -84,7 +84,7 @@ Storage: `activity_requests` vs `participant_intent_requests`.
 
 **Publish gate:** `POST /operator/activities` + publish require `profileComplete` + `canPublish`. **Join** does not require profile completion.
 
-**Consumer vs console:** Plan + `/activity/:id` + `/me/seeking-posts/*`. Tenant publishing: **`/operator/*` only**.
+**Consumer vs console:** Plan + `/activity/:id` + `/me/seeking-posts/*`. Tenant publishing: **`/publishing/*`** (alias `/operator/*`).
 
 Registration: `registerMeSeekingPostRoutes` (`registerMeParticipantIntentRoutes.ts`).
 

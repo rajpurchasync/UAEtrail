@@ -8,9 +8,9 @@ export const openApiTags = [
   {
     name: 'Operator',
     description:
-      'Publishing console — tenant activities, team, places (`/operator/*` only).',
+      'Publishing console — tenant activities, team, places (`/publishing/*`; `/operator/*` alias).',
   },
-  { name: 'Host', description: 'Deprecated alias for Operator tag — prefer `/operator/*` paths in new clients.' },
+  { name: 'Host', description: 'Deprecated alias for Operator tag — prefer `/publishing/*` paths in new clients.' },
   { name: 'Shop', description: 'Shop organisations, products, and checkout (`/shop/*`).' },
   { name: 'Members', description: 'Auth accounts, profiles, and admin member tools.' },
   { name: 'Explore', description: 'Map discovery and public browse endpoints.' },

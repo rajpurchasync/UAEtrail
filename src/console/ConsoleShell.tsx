@@ -16,7 +16,7 @@ interface ConsoleShellProps {
   headerExtra?: ReactNode;
 }
 
-/** Layout for `/operator/*` publishing workspace (tenant scope header). */
+/** Layout for `/publishing/*` publishing workspace (tenant scope header). */
 export const ConsoleShell = ({ title, children, cta, headerExtra }: ConsoleShellProps) => {
   const location = useLocation();
   const navigate = useNavigate();

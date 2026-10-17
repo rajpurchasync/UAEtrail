@@ -1,11 +1,22 @@
 import { useEffect, useState } from 'react';
-import { Navigate, useParams } from 'react-router-dom';
+import { Navigate, useLocation, useParams } from 'react-router-dom';
+import { rewriteOperatorConsoleToPublishingPath } from '../config/routingCatalog';
 import {
   hostBrandProfilePath,
   inferHostStorefrontKindFromTenantWire,
   shopPublicPath,
 } from '@uaetrail/shared-types';
 import { fetchOrganisationProfileBySlug } from '../hooks/organisationConsoleApi';
+
+/** `/operator/{console}` → `/publishing/{console}`; other `/operator/:id` stay storefront redirects. */
+export const LegacyOperatorPath = () => {
+  const location = useLocation();
+  const rewritten = rewriteOperatorConsoleToPublishingPath(location.pathname);
+  if (rewritten) {
+    return <Navigate to={`${rewritten}${location.search}${location.hash}`} replace />;
+  }
+  return <LegacyOperatorProfileRedirect />;
+};
 
 /** Permanent redirect from retired `/operator/:slug` to `/guide`, `/agency`, `/partner`, or `/shop`. */
 export const LegacyOperatorProfileRedirect = () => {

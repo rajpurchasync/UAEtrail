@@ -83,7 +83,7 @@ export const placeApi = {
     }),
 
   submitOrganisationPlace: (tenantId: string, payload: Partial<PlaceDTO>) =>
-    apiRequest<{ data: PlaceDTO }>('/operator/places', {
+    apiRequest<{ data: PlaceDTO }>('/publishing/places', {
       method: 'POST',
       auth: true,
       headers: organisationRequestHeaders(tenantId),
@@ -99,14 +99,14 @@ export const placeApi = {
   /** @deprecated Alias of {@link placeApi.getMySubmittedPlaces}. */
   getMySubmittedLocations: () => apiRequest<{ data: LocationDTO[] }>('/me/places', { auth: true }),
   getOrganisationSubmittedPlaces: (tenantId: string) =>
-    apiRequest<{ data: LocationDTO[] }>('/operator/places', {
+    apiRequest<{ data: LocationDTO[] }>('/publishing/places', {
       auth: true,
       headers: organisationRequestHeaders(tenantId),
     }),
 
   /** @deprecated Prefer {@link placeApi.submitOrganisationPlace}. */
   submitLocation: (tenantId: string, payload: Partial<LocationDTO>) =>
-    apiRequest<{ data: LocationDTO }>('/operator/places', {
+    apiRequest<{ data: LocationDTO }>('/publishing/places', {
       method: 'POST',
       auth: true,
       headers: organisationRequestHeaders(tenantId),
@@ -121,7 +121,7 @@ export const placeApi = {
     }),
   /** @deprecated Prefer {@link placeApi.getOrganisationSubmittedPlaces}. */
   getHostSubmittedLocations: (tenantId: string) =>
-    apiRequest<{ data: LocationDTO[] }>('/operator/places', {
+    apiRequest<{ data: LocationDTO[] }>('/publishing/places', {
       auth: true,
       headers: organisationRequestHeaders(tenantId),
     }),

@@ -20,7 +20,7 @@ export interface ConsoleHubSectionsProps {
   upcomingActivitiesCount: number;
   pastActivitiesCount: number;
   upcomingActivities: ActivityDTO[];
-  /** Workspace shortcuts — omitted when the shell already shows nav (e.g. `/operator/overview`). */
+  /** Workspace shortcuts — omitted when the shell already shows nav (e.g. `/publishing/overview`). */
   showConsoleLinks?: boolean;
 }
 

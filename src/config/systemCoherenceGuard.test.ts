@@ -19,8 +19,8 @@ const SURFACE_LINKS: Array<{ path: string; constant: string }> = [
   { path: '/notifications', constant: 'NOTIFICATIONS_PATH' },
   { path: '/profile', constant: 'PROFILE_PATH' },
   { path: '/profile/settings', constant: 'PROFILE_SETTINGS_PATH' },
-  { path: '/operator/activities', constant: 'OPERATOR_ACTIVITIES_PATH' },
-  { path: '/operator/requests', constant: 'OPERATOR_REQUESTS_PATH' },
+  { path: '/publishing/activities', constant: 'OPERATOR_ACTIVITIES_PATH' },
+  { path: '/publishing/requests', constant: 'OPERATOR_REQUESTS_PATH' },
 ];
 
 const SURFACE_LITERAL_ALLOWLIST = new Set([

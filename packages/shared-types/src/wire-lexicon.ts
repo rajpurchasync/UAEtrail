@@ -62,6 +62,8 @@ export const BWL_JOIN_REQUEST_FIELDS = {
 
 /** HTTP mount prefixes (current → target). */
 export const BWL_API_MOUNTS = {
+  PUBLISHING_WORKSPACE: '/publishing',
+  /** @deprecated Alias of PUBLISHING_WORKSPACE */
   PUBLISHING_WORKSPACE_CURRENT: '/operator',
   PUBLISHING_WORKSPACE_TARGET: '/publishing',
   MEMBER_DISCOVERY_CURRENT: '/me/member-discovery',

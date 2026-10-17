@@ -7,6 +7,7 @@ const SCAN_ROOT = join(process.cwd(), 'src');
 const ALLOW_HOST_CONSOLE_PATHS = new Set([
   'src/App.tsx',
   'src/config/surfacePaths.ts',
+  'src/config/surfacePaths.test.ts',
   'src/config/routingCatalog.ts',
   'src/constants/index.ts',
   'src/console/ConsoleHubSections.tsx',

@@ -23,6 +23,7 @@ import { ActivityManageSheet } from '../../components/activity/ActivityManageShe
 import { useOperatorActivityManageActions } from '../../hooks/useOperatorActivityManageActions';
 import { useAuth } from '../../context/AuthContext';
 import { hostPublishAvailabilityNoticeMessage } from '../../plan/hostPublishAvailabilityNotice';
+import { OPERATOR_ACTIVITIES_NEW_PATH } from '../../config/routingCatalog';
 import {
   activityTypeBadgeClass,
   formatActivityCapacity,
@@ -33,7 +34,7 @@ import {
   resolveActivityTitle,
 } from '../../utils/activityIdentity';
 
-/** Publishing workspace: tenant-scoped activities (`GET /operator/activities`). */
+/** Publishing workspace: tenant-scoped activities (`GET /publishing/activities`). */
 export const Activities = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -82,7 +83,7 @@ export const Activities = () => {
   };
 
   useEffect(() => {
-    if (location.pathname !== '/operator/activities/new') return;
+    if (location.pathname !== OPERATOR_ACTIVITIES_NEW_PATH) return;
     const type = parseActivityTypeParam(searchParams.get('type'));
     navigateToExploreOrganize(navigate, type ? activityTypeToOrganizeKind(type) : null);
   }, [location.pathname, navigate, searchParams]);

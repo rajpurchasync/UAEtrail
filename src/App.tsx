@@ -45,6 +45,15 @@ import { PRODUCT_PLAN_SURFACE_TITLE } from './content/productNorthStar';
 import {
   JOURNEY_MAP_PATH,
   LEGACY_CONTRIBUTIONS_PATH,
+  OPERATOR_ACTIVITIES_NEW_PATH,
+  OPERATOR_ACTIVITIES_PATH,
+  OPERATOR_HISTORY_PATH,
+  OPERATOR_OVERVIEW_PATH,
+  OPERATOR_PLACES_PATH,
+  OPERATOR_PROFILE_PATH,
+  OPERATOR_REQUESTS_PATH,
+  OPERATOR_SECURITY_PRIVACY_PATH,
+  OPERATOR_TEAM_PATH,
   PLAN_PATH,
   PROFILE_HISTORY_PATH,
   PROFILE_SUBMISSIONS_PATH,
@@ -156,8 +165,8 @@ const LegacyMerchantPublicRedirect = lazy(() =>
 const ShopPublic = lazy(() => import('./pages/ShopPublic').then((m) => ({ default: m.ShopPublic })));
 const ActivityDetail = lazy(() => import('./pages/ActivityDetail').then((m) => ({ default: m.ActivityDetail })));
 const OrganisationProfile = lazy(() => import('./pages/OrganisationProfile').then((m) => ({ default: m.OrganisationProfile })));
-const LegacyOperatorProfileRedirect = lazy(() =>
-  import('./pages/LegacyOperatorProfileRedirect').then((m) => ({ default: m.LegacyOperatorProfileRedirect }))
+const LegacyOperatorPath = lazy(() =>
+  import('./pages/LegacyOperatorProfileRedirect').then((m) => ({ default: m.LegacyOperatorPath }))
 );
 const MemberProfile = lazy(() => import('./pages/MemberProfile').then((m) => ({ default: m.MemberProfile })));
 const SignUp = lazy(() => import('./pages/SignUp').then((m) => ({ default: m.SignUp })));
@@ -553,7 +562,9 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path="/operator/:id" element={<LegacyOperatorProfileRedirect />} />
+          <Route path="/operator" element={<Navigate to={OPERATOR_OVERVIEW_PATH} replace />} />
+          <Route path="/operator/:id/*" element={<LegacyOperatorPath />} />
+          <Route path="/operator/:id" element={<LegacyOperatorPath />} />
           <Route
             path="/member/:userId"
             element={
@@ -726,8 +737,10 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route path="/publishing" element={<Navigate to={OPERATOR_OVERVIEW_PATH} replace />} />
+          <Route path="/publishing/messages" element={<LegacyMessagesRedirect />} />
           <Route
-            path="/operator/overview"
+            path={OPERATOR_OVERVIEW_PATH}
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
                 <OperatorOverview />
@@ -735,7 +748,7 @@ function App() {
             }
           />
           <Route
-            path="/operator/activities"
+            path={OPERATOR_ACTIVITIES_PATH}
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
                 <OperatorActivities />
@@ -743,7 +756,7 @@ function App() {
             }
           />
           <Route
-            path="/operator/activities/new"
+            path={OPERATOR_ACTIVITIES_NEW_PATH}
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
                 <OperatorActivities />
@@ -751,7 +764,7 @@ function App() {
             }
           />
           <Route
-            path="/operator/requests"
+            path={OPERATOR_REQUESTS_PATH}
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
                 <OperatorJoinRequests />
@@ -759,7 +772,7 @@ function App() {
             }
           />
           <Route
-            path="/operator/team"
+            path={OPERATOR_TEAM_PATH}
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
                 <OperatorTeam />
@@ -767,7 +780,7 @@ function App() {
             }
           />
           <Route
-            path="/operator/profile"
+            path={OPERATOR_PROFILE_PATH}
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
                 <OperatorPublicProfileEdit />
@@ -775,7 +788,7 @@ function App() {
             }
           />
           <Route
-            path="/operator/security-privacy"
+            path={OPERATOR_SECURITY_PRIVACY_PATH}
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
                 <SecurityPrivacy />
@@ -783,16 +796,16 @@ function App() {
             }
           />
           <Route
-            path="/operator/places"
+            path={OPERATOR_PLACES_PATH}
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
                 <OperatorPlaces />
               </ProtectedRoute>
             }
           />
-          <Route path="/operator/locations" element={<Navigate to="/operator/places" replace />} />
+          <Route path="/publishing/locations" element={<Navigate to={OPERATOR_PLACES_PATH} replace />} />
           <Route
-            path="/operator/history"
+            path={OPERATOR_HISTORY_PATH}
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
                 <OperatorHistory />

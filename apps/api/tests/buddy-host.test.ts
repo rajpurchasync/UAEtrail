@@ -29,7 +29,7 @@ const completeSignupProfile = async (accessToken: string) => {
 };
 
 describe('buddy host access', () => {
-  it('allows tenant owner without membership row on /host routes and backfills membership', async () => {
+  it('allows tenant owner without membership row on /publishing (and /operator alias) and backfills membership', async () => {
     const visitor = await registerVerifiedVisitor(app, `owner-no-mem-${Date.now()}`);
     const user = await findAuthUserByEmail(visitor.email);
     if (!user) throw new Error('expected user');
@@ -45,12 +45,17 @@ describe('buddy host access', () => {
     const db = getMongoClient()!.db();
     await db.collection('tenant_memberships').deleteMany({ tenantId: tenant.id, userId: user._id });
 
-    const res = await request(app)
+    const alias = await request(app)
       .get('/api/operator/activities')
       .set('Authorization', `Bearer ${visitor.accessToken}`)
       .set('x-organisation-id', tenant.id);
+    expect(alias.status).toBe(200);
 
-    expect(res.status).toBe(200);
+    const canonical = await request(app)
+      .get('/api/publishing/activities')
+      .set('Authorization', `Bearer ${visitor.accessToken}`)
+      .set('x-organisation-id', tenant.id);
+    expect(canonical.status).toBe(200);
 
     const membership = await db.collection('tenant_memberships').findOne({
       tenantId: tenant.id,

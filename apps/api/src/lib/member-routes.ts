@@ -18,9 +18,9 @@ export const exploreActivityInvitePath = (activityId: string): string =>
   `/activity/${encodeURIComponent(activityId)}?join=1`;
 
 /** Publishing console — canonical notification + email deep links. */
-export const OPERATOR_REQUESTS_PATH = '/operator/requests';
-export const OPERATOR_ACTIVITIES_PATH = '/operator/activities';
-export const OPERATOR_OVERVIEW_PATH = '/operator/overview';
+export const OPERATOR_REQUESTS_PATH = '/publishing/requests';
+export const OPERATOR_ACTIVITIES_PATH = '/publishing/activities';
+export const OPERATOR_OVERVIEW_PATH = '/publishing/overview';
 
 /** Admin console deep links (notification meta for platform admins). */
 export const ADMIN_USERS_PATH = '/admin/users';
@@ -35,7 +35,7 @@ export const EXPLORE_VENUES_LIST_PATH = '/explore?panel=venues&list=1';
 /** Plan schedule → joined outings — FE `tripsLegacyJoinedTabPath()`. */
 export const planJoinedSchedulePath = (): string => `${PLAN_PATH}?view=plans&filter=joined`;
 
-/** Buddy organizer join queue on Plan (not tenant `/operator/requests`) — FE `planHostingFilterPath()`. */
+/** Buddy organizer join queue on Plan (not tenant `/publishing/requests`) — FE `planHostingFilterPath()`. */
 export const planHostedSchedulePath = (): string => `${PLAN_PATH}?view=plans&filter=hosting`;
 
 /** @deprecated Name kept for imports — value is canonical {@link PLAN_PATH}. */

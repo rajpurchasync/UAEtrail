@@ -44,16 +44,19 @@ export const LEGACY_TRIPS_MAP_PATH = '/trips/map' as const;
 /** Admin / host place registry consoles */
 export const ADMIN_PLACES_PATH = '/admin/places' as const;
 
+/** Publishing workspace SPA prefix (MIG-COH-04). `/operator/*` console URLs redirect here. */
+export const PUBLISHING_CONSOLE_PREFIX = '/publishing' as const;
+
 /** Publishing console (organizer + operator tenants) — canonical URLs. Sync `apps/api/src/lib/member-routes.ts`. */
-export const OPERATOR_OVERVIEW_PATH = '/operator/overview' as const;
-export const OPERATOR_ACTIVITIES_PATH = '/operator/activities' as const;
-export const OPERATOR_ACTIVITIES_NEW_PATH = '/operator/activities/new' as const;
-export const OPERATOR_REQUESTS_PATH = '/operator/requests' as const;
-export const OPERATOR_TEAM_PATH = '/operator/team' as const;
-export const OPERATOR_PROFILE_PATH = '/operator/profile' as const;
-export const OPERATOR_HISTORY_PATH = '/operator/history' as const;
-export const OPERATOR_PLACES_PATH = '/operator/places' as const;
-export const OPERATOR_SECURITY_PRIVACY_PATH = '/operator/security-privacy' as const;
+export const OPERATOR_OVERVIEW_PATH = '/publishing/overview' as const;
+export const OPERATOR_ACTIVITIES_PATH = '/publishing/activities' as const;
+export const OPERATOR_ACTIVITIES_NEW_PATH = '/publishing/activities/new' as const;
+export const OPERATOR_REQUESTS_PATH = '/publishing/requests' as const;
+export const OPERATOR_TEAM_PATH = '/publishing/team' as const;
+export const OPERATOR_PROFILE_PATH = '/publishing/profile' as const;
+export const OPERATOR_HISTORY_PATH = '/publishing/history' as const;
+export const OPERATOR_PLACES_PATH = '/publishing/places' as const;
+export const OPERATOR_SECURITY_PRIVACY_PATH = '/publishing/security-privacy' as const;
 
 export const PROFILE_EDIT_PATH = '/profile/edit' as const;
 export const PROFILE_REVIEWS_PATH = '/profile/reviews' as const;
@@ -126,10 +129,23 @@ export const OPERATOR_CONSOLE_RESERVED_SEGMENTS = new Set([
   'locations',
   'history',
   'security-privacy',
+  'messages',
 ]);
 
+/** Map legacy `/operator/{console}` bookmarks onto `/publishing/{console}`. Storefront `/operator/:id` stays. Chat is `/chat`. */
+export const rewriteOperatorConsoleToPublishingPath = (pathname: string): string | null => {
+  const match = pathname.match(/^\/operator\/([^/]+)(.*)$/);
+  if (!match) return null;
+  const [, segment, rest] = match;
+  if (!OPERATOR_CONSOLE_RESERVED_SEGMENTS.has(segment)) return null;
+  if (segment === 'messages') return `${MESSAGES_PATH}${rest}`;
+  const destSegment = segment === 'locations' ? 'places' : segment;
+  return `${PUBLISHING_CONSOLE_PREFIX}/${destSegment}${rest}`;
+};
+
 export const isPublishingConsolePath = (pathname: string): boolean =>
-  pathname.startsWith('/operator/');
+  pathname.startsWith(`${PUBLISHING_CONSOLE_PREFIX}/`) ||
+  rewriteOperatorConsoleToPublishingPath(pathname) != null;
 
 /** Auth funnel */
 export const SIGNIN_PATH = '/signin' as const;

@@ -13,13 +13,13 @@ export const organisationApi = {
   getOrganisationProfile: (slug: string) =>
     apiRequest<{ data: TenantPublicDTO }>(`/tenants/${slug}`),
 
-  /** Activity join queue (`GET /operator/requests`). */
+  /** Activity join queue (`GET /publishing/requests`). */
   getOperatorActivityJoinRequests: (tenantId: string, options?: { activityId?: string }) => {
     const params = new URLSearchParams({ pageSize: '100' });
     if (options?.activityId) {
       params.set('activityId', options.activityId);
     }
-    return apiRequest<{ data: ActivityRequestView[] }>(`/operator/requests?${params.toString()}`, {
+    return apiRequest<{ data: ActivityRequestView[] }>(`/publishing/requests?${params.toString()}`, {
       auth: true,
       headers: organisationRequestHeaders(tenantId),
     });
@@ -31,7 +31,7 @@ export const organisationApi = {
     status: 'approved' | 'rejected',
     organizerNote?: string
   ) =>
-    apiRequest(`/operator/requests/${requestId}`, {
+    apiRequest(`/publishing/requests/${requestId}`, {
       method: 'PATCH',
       auth: true,
       headers: organisationRequestHeaders(tenantId),
@@ -39,7 +39,7 @@ export const organisationApi = {
     }),
 
   getOrganisationTeam: (tenantId: string) =>
-    apiRequest<{ data: TeamMember[] }>('/operator/team', {
+    apiRequest<{ data: TeamMember[] }>('/publishing/team', {
       auth: true,
       headers: organisationRequestHeaders(tenantId),
     }),
@@ -48,7 +48,7 @@ export const organisationApi = {
     tenantId: string,
     payload: { email: string; displayName?: string; role: 'tenant_admin' | 'tenant_guide' }
   ) =>
-    apiRequest<{ data: TeamMember }>('/operator/team', {
+    apiRequest<{ data: TeamMember }>('/publishing/team', {
       method: 'POST',
       auth: true,
       headers: organisationRequestHeaders(tenantId),
@@ -56,7 +56,7 @@ export const organisationApi = {
     }),
 
   updateOrganisationTeamMemberRole: (tenantId: string, membershipId: string, role: 'tenant_admin' | 'tenant_guide') =>
-    apiRequest<{ data: { id: string; role: string } }>(`/operator/team/${membershipId}`, {
+    apiRequest<{ data: { id: string; role: string } }>(`/publishing/team/${membershipId}`, {
       method: 'PATCH',
       auth: true,
       headers: organisationRequestHeaders(tenantId),
@@ -64,7 +64,7 @@ export const organisationApi = {
     }),
 
   toggleOrganisationTeamMemberStatus: (tenantId: string, membershipId: string, isActive: boolean) =>
-    apiRequest<{ data: { id: string; role: string; isActive: boolean } }>(`/operator/team/${membershipId}`, {
+    apiRequest<{ data: { id: string; role: string; isActive: boolean } }>(`/publishing/team/${membershipId}`, {
       method: 'PATCH',
       auth: true,
       headers: organisationRequestHeaders(tenantId),
@@ -72,7 +72,7 @@ export const organisationApi = {
     }),
 
   removeOrganisationTeamMember: (tenantId: string, membershipId: string) =>
-    apiRequest(`/operator/team/${membershipId}`, {
+    apiRequest(`/publishing/team/${membershipId}`, {
       method: 'DELETE',
       auth: true,
       headers: organisationRequestHeaders(tenantId),

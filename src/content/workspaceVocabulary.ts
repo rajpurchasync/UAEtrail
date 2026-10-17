@@ -48,7 +48,7 @@ export const normalizeWorkspaceBrandKind = (
   return null;
 };
 
-/** Management shell title (`/operator/*` routes). */
+/** Management shell title (`/publishing/*` routes). */
 export const workspaceConsoleLabel = (kind?: WorkspaceBrandKind | null): string => {
   if (kind === 'guide') return 'Guide workspace';
   if (kind === 'agency') return 'Operator workspace';

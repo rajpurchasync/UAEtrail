@@ -72,8 +72,8 @@ export const DOMAIN_GLOSSARY = {
     product: 'Organisation',
     description: 'Host tenant — guide, agency, partner, or shop brand profiles.',
     storage: 'Tenant',
-    api: '/operator, /host (legacy), /tenants/:slug',
-    consoleRoute: '/operator/*',
+    api: '/publishing (alias /operator), /tenants/:slug',
+    consoleRoute: '/publishing/*',
     publicRoute: '/guide/:slug · /agency/:slug · /partner/:slug',
     manageRoute: '/organisation/manage',
   },
@@ -407,10 +407,12 @@ export const CONSUMER_SELF_HEADER_PREFIXES = [
   '/partner/',
   '/venue/',
   '/operator/',
+  '/publishing/',
   '/organisation/manage',
   '/shop/manage',
   '/agency/manage',
   '/operator/security-privacy',
+  '/publishing/security-privacy',
 ] as const;
 
 export const hasConsumerSelfHeader = (pathname: string): boolean =>
@@ -457,7 +459,7 @@ export const shouldShowMobileBottomNav = (
     const params = new URLSearchParams(search);
     if (params.get('list') === '1') return false;
   }
-  if (pathname === MESSAGES_PATH || pathname === '/operator/messages') {
+  if (pathname === MESSAGES_PATH || pathname === '/operator/messages' || pathname === '/publishing/messages') {
     const params = new URLSearchParams(search);
     if (params.get('to') || params.get('group')) return false;
   }

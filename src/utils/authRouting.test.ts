@@ -30,9 +30,9 @@ describe('auth routing by role', () => {
     const cases: Array<[UserRole, string]> = [
       ['participant', '/explore'],
       ['merchant_admin', '/explore'],
-      ['tenant_owner', '/operator/overview'],
-      ['tenant_admin', '/operator/overview'],
-      ['tenant_guide', '/operator/overview'],
+      ['tenant_owner', '/publishing/overview'],
+      ['tenant_admin', '/publishing/overview'],
+      ['tenant_guide', '/publishing/overview'],
       ['platform_admin', '/admin/overview'],
     ];
 
@@ -52,10 +52,10 @@ describe('auth routing by role', () => {
 
   it('maps host dashboard aliases', () => {
     expect(hostDashboardRedirect('messages')).toBe('/chat');
-    expect(hostDashboardRedirect('requests')).toBe('/operator/requests');
-    expect(hostDashboardRedirect('activities')).toBe('/operator/activities');
-    expect(hostDashboardRedirect('profile')).toBe('/operator/profile');
-    expect(hostDashboardRedirect('unknown')).toBe('/operator/overview');
+    expect(hostDashboardRedirect('requests')).toBe('/publishing/requests');
+    expect(hostDashboardRedirect('activities')).toBe('/publishing/activities');
+    expect(hostDashboardRedirect('profile')).toBe('/publishing/profile');
+    expect(hostDashboardRedirect('unknown')).toBe('/publishing/overview');
   });
 
   it('maps admin dashboard aliases', () => {

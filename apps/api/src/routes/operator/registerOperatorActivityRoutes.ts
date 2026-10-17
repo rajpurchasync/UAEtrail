@@ -26,7 +26,7 @@ import { registerOperatorTeamRoutes } from './registerOperatorTeamRoutes.js';
 import { registerOperatorActivityParticipantRoutes } from './registerOperatorActivityParticipantRoutes.js';
 import { idParamSchema } from './operator-route-schemas.js';
 
-/** Publishing workspace **activity** CRUD, publish, and history (`/operator/activities/*`). */
+/** Publishing workspace **activity** CRUD, publish, and history (`/publishing/activities/*`). */
 export const registerOperatorActivityRoutes = (operatorRouter: Router): void => {
   const hostActivitiesRouter = createRouter();
 

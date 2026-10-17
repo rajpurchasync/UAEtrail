@@ -44,25 +44,27 @@ export const accountRouteByRole = (role: UserRole): string => {
 };
 
 /**
- * `/operator/*` bookmarks for members without tenant console roles — send to consumer surfaces.
+ * `/publishing/*` (and legacy `/operator/*` console) bookmarks for members without tenant
+ * console roles — send to consumer surfaces.
  */
 export const participantHostBookmarkRedirect = (pathname: string): string => {
-  if (pathname.startsWith('/operator/messages')) {
+  const rest = pathname.replace(/^\/(publishing|operator)(?=\/|$)/, '') || '/';
+  if (rest.startsWith('/messages')) {
     return MESSAGES_PATH;
   }
-  if (pathname.startsWith('/operator/requests')) return MY_REQUESTS_PATH;
-  if (pathname.startsWith('/operator/activities')) return planHostedSchedulePath();
-  if (pathname.startsWith('/operator/places') || pathname.startsWith('/operator/locations')) {
+  if (rest.startsWith('/requests')) return MY_REQUESTS_PATH;
+  if (rest.startsWith('/activities')) return planHostedSchedulePath();
+  if (rest.startsWith('/places') || rest.startsWith('/locations')) {
     return organisationManagePath();
   }
-  if (pathname.startsWith('/operator/team') || pathname.startsWith('/operator/profile')) {
+  if (rest.startsWith('/team') || rest.startsWith('/profile')) {
     return PRO_MEMBERSHIP_PATH;
   }
-  if (pathname === '/operator/overview' || pathname.startsWith('/operator/overview')) {
+  if (rest === '/overview' || rest.startsWith('/overview')) {
     return exploreOrganizePath();
   }
-  if (pathname.startsWith('/operator/history')) return PLAN_PATH;
-  if (pathname.startsWith('/operator/security-privacy')) return PROFILE_PATH;
+  if (rest.startsWith('/history')) return PLAN_PATH;
+  if (rest.startsWith('/security-privacy')) return PROFILE_PATH;
   return PLAN_PATH;
 };
 
