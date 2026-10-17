@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, type ReactNode } from 'react';
 import { useLocation } from 'react-router-dom';
-import { HomeDeferredMount } from '../home/v2/HomeDeferredMount';
+import { HomeDeferredMount } from '../home/marketing/HomeDeferredMount';
 
 const ProductShell = lazy(() => import('./ProductShell').then((m) => ({ default: m.ProductShell })));
 const Footer = lazy(() => import('./Footer').then((m) => ({ default: m.Footer })));

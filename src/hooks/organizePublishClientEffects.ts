@@ -1,5 +1,5 @@
 import type { QueryClient } from '@tanstack/react-query';
-import { isExploreMapVnextEnabled } from '../explore/exploreMapVnext';
+import { isExploreMapBboxEnabled } from '../explore/exploreMapBbox';
 import { invalidateActivityEngagementQueries } from '../explore/exploreMapEngagementFreshness';
 import { coordinationAttentionQueryKey, myJoinedActivitiesQueryKey } from './clientQueryKeys';
 import { invalidateMyParticipantIntentsQueries } from './participantIntentClientApi';
@@ -16,7 +16,7 @@ export const afterOrganizeActivityPublishClientRefresh = async (
   if (input.linkedParticipantIntentId) {
     invalidateMyParticipantIntentsQueries(queryClient);
   }
-  if (!isExploreMapVnextEnabled()) {
+  if (!isExploreMapBboxEnabled()) {
     await reloadExploreMap(queryClient);
   }
 };

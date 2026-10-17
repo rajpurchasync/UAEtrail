@@ -33,14 +33,14 @@ describe('member catalog submit (CPC-4)', () => {
     const member = await registerVerifiedVisitor(app, suffix);
 
     const canonical = await request(app)
-      .post('/api/v1/me/places')
+      .post('/api/me/places')
       .set('Authorization', `Bearer ${member.accessToken}`)
       .send(placeSubmitBody(`${suffix}-canonical`));
     expect(canonical.status).toBe(201);
     expect(canonical.body.data.id).toBeTruthy();
 
     const legacy = await request(app)
-      .post('/api/v1/me/locations')
+      .post('/api/me/locations')
       .set('Authorization', `Bearer ${member.accessToken}`)
       .send(placeSubmitBody(`${suffix}-legacy`));
     expect(legacy.status).toBe(201);
@@ -52,7 +52,7 @@ describe('member catalog submit (CPC-4)', () => {
     const member = await registerVerifiedVisitor(app, suffix);
 
     const res = await request(app)
-      .post('/api/v1/me/places')
+      .post('/api/me/places')
       .set('Authorization', `Bearer ${member.accessToken}`)
       .send({
         ...placeSubmitBody(suffix),
@@ -67,7 +67,7 @@ describe('member catalog submit (CPC-4)', () => {
     const member = await registerVerifiedVisitor(app, suffix);
 
     const res = await request(app)
-      .post('/api/v1/me/facilities')
+      .post('/api/me/facilities')
       .set('Authorization', `Bearer ${member.accessToken}`)
       .send({
         name: `Trail toilet ${suffix}`,
@@ -86,7 +86,7 @@ describe('member catalog submit (CPC-4)', () => {
     expect(res.body.data.facilityKind).toBe('toilet');
 
     const detail = await request(app)
-      .get(`/api/v1/facilities/${res.body.data.id}`)
+      .get(`/api/facilities/${res.body.data.id}`)
       .set('Authorization', `Bearer ${member.accessToken}`);
     expect(detail.status).toBe(200);
 

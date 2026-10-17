@@ -3,8 +3,8 @@ set -eu
 
 cd "$(dirname "$0")"
 
-NODE_MIN_VERSION="24.18.0"
-NODE_BOOTSTRAP_VERSION="24.18.0"
+NODE_MIN_VERSION="24.22.0"
+NODE_BOOTSTRAP_VERSION="24.22.0"
 NODE_PLATFORM="$(uname -s | tr '[:upper:]' '[:lower:]')"
 NODE_ARCH="$(uname -m)"
 
@@ -121,7 +121,7 @@ export S3_SECRET_ACCESS_KEY="${S3_SECRET_ACCESS_KEY:-minioadmin}"
 export APP_BASE_URL="${APP_BASE_URL:-http://localhost}"
 export APP_BASE_URLS="${APP_BASE_URLS:-http://localhost,http://localhost:5175}"
 export API_BASE_URL="${API_BASE_URL:-http://localhost:4000}"
-export VITE_API_BASE_URL="${VITE_API_BASE_URL:-/api/v1}"
+export VITE_API_BASE_URL="${VITE_API_BASE_URL:-/api}"
 export FRONTEND_PORT="${FRONTEND_PORT:-5175}"
 # -----------------------------------------
 

@@ -2,7 +2,7 @@
 
 **Start here.** Tier-1 is a **closed set** — see [`DOCS_GOVERNANCE.md`](./DOCS_GOVERNANCE.md) (do not add new canonical docs; update the file for your topic).
 
-**Checks:** `npm run verify:system` · **Machine manifest:** `scripts/bounded-context-manifest.json`
+**Checks:** `npm run verify:system` · **Manifest:** `scripts/bounded-context-manifest.json` · **Platform program:** [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.6 + `scripts/refactor-program.json` — *P0–P4 **complete** (eng); **P5** **MIG-P5-SLO-SMOKE** in progress; release gates **S10e** + **S10f**.*
 
 ---
 
@@ -17,7 +17,7 @@
 | [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) | Person account, host tiers, capabilities, host/join/buddy **naming** |
 | [`DOMAIN.md`](./DOMAIN.md) | Entity glossary (Place, Activity, Demand, …) |
 | [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) | TS symbols, URLs, API client, notifications, routing hygiene, **§15 viewer access** |
-| [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) | Bounded contexts, debt register, **Program CPC** §8.4 checklists |
+| [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) | Bounded contexts, debt register, **Program CPC** §8.4, **platform program** §8.6 |
 | [`ARCHITECTURE.md`](./ARCHITECTURE.md) | Monorepo, deploy, layers |
 | [`API_ROUTING.md`](./API_ROUTING.md) | `/me/*`, `/host/*`, explore, deprecations |
 | [`COMMUNICATION.md`](./COMMUNICATION.md) | Chat, inbox, crew wall |
@@ -31,7 +31,7 @@
 |-----|----------------------|
 | [`DEV_RUN.md`](./DEV_RUN.md) | VS Code hot reload, seed, auth/session dev checks |
 | [`DEPLOYMENT.md`](./DEPLOYMENT.md) | Docker VPS, env, HTTPS |
-| [`PRE_DEPLOY_CHECKLIST.md`](./PRE_DEPLOY_CHECKLIST.md) | Go-live + release gates (**S10e** vNext promote, **S10f** manual QA) |
+| [`PRE_DEPLOY_CHECKLIST.md`](./PRE_DEPLOY_CHECKLIST.md) | Go-live + release gates (**S10e** bbox promote, **S10f** manual QA) |
 | [`HOST_CLEANUP_ROADMAP.md`](./HOST_CLEANUP_ROADMAP.md) | Host/tenant technical debt |
 | [`operations/EXPLORE_MAP_RUNBOOK.md`](./operations/EXPLORE_MAP_RUNBOOK.md) | Map seed, venue import, browse smoke |
 | [`operations/SEEKING_STORAGE_RUNBOOK.md`](./operations/SEEKING_STORAGE_RUNBOOK.md) | Seeking backfill, `PARTICIPANT_INTENT_STUB_WRITE`, G-manage staging smoke |

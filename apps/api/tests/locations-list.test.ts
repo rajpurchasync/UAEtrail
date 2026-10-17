@@ -9,10 +9,10 @@ beforeAll(async () => {
   app = await bootstrapTestApp();
 });
 
-describe('GET /api/v1/locations', () => {
+describe('GET /api/locations', () => {
   it('returns active locations with hiking/camping activity types', async () => {
     const response = await request(app)
-      .get('/api/v1/locations')
+      .get('/api/locations')
       .query({ pageSize: 100, activityType: 'hiking' });
 
     expect(response.status).toBe(200);

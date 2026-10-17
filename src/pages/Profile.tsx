@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useSafeAsyncEffect } from '../hooks/useSafeAsyncEffect';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
+import { updateMeProfile } from '../hooks/memberProfileApi';
+import { useMemberBadges } from '../hooks/useMemberBadges';
+import { useMeProfileStats, useMeProfileViewStats } from '../hooks/useMeProfileStats';
 import {
-  fetchMemberBadges,
-  fetchMeProfile,
-  fetchMeProfileStats,
-  fetchMeProfileViewStats,
-  updateMeProfile,
-} from '../hooks/memberProfileApi';
+  memberBadgesQueryKey,
+  meProfileStatsQueryKey,
+  meProfileViewStatsQueryKey,
+} from '../hooks/clientQueryKeys';
 import { useAuth } from '../context/AuthContext';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { PullToRefresh } from '../components/mobile/PullToRefresh';
@@ -15,7 +16,6 @@ import { ConsumerErrorCard } from '../components/mobile/ConsumerFeedback';
 import { AccountAvatarModal } from '../components/account';
 import { useParticipantHubData } from '../hooks/useParticipantHubData';
 import { useMemberStatus } from '../hooks/useMemberStatus';
-import type { MemberProfileStatsDTO, MemberProfileViewStatsDTO } from '@uaetrail/shared-types';
 import { useMemberGoals } from '../hooks/useMemberGoals';
 import { ProfileConsumerHub } from '../components/profile/ProfileConsumerHub';
 import { buildProfileCompletion } from '../utils/profileCompletion';
@@ -37,6 +37,7 @@ export const Profile = () => {
   const { user, refreshUser, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const queryClient = useQueryClient();
   const { profile, setProfile, incomingBuddyRequests, loading, error, reload } = useParticipantHubData();
 
   const {
@@ -49,54 +50,17 @@ export const Profile = () => {
     refresh: refreshHostGate,
   } = useMemberStatus({ enabled: Boolean(user) });
 
-  const [profileViewStats, setProfileViewStats] = useState<MemberProfileViewStatsDTO | null>(null);
-
   const [avatarSaving, setAvatarSaving] = useState(false);
   const [avatarMessage, setAvatarMessage] = useState<string | null>(null);
   const [showAvatarEdit, setShowAvatarEdit] = useState(false);
-  const [memberSince, setMemberSince] = useState<string | null>(null);
-  const [visibility, setVisibility] = useState<'public' | 'group_members' | 'private'>('public');
   const { goals, reload: reloadGoals } = useMemberGoals(Boolean(user));
-  const [hubStats, setHubStats] = useState<MemberProfileStatsDTO | null>(null);
-  const [badgesEarnedCount, setBadgesEarnedCount] = useState(0);
-
-  useSafeAsyncEffect(async (isActive) => {
-    if (!user) return;
-    try {
-      const me = await fetchMeProfile();
-      if (isActive()) {
-        setMemberSince(me.memberSince ?? null);
-        setVisibility(me.profileVisibility ?? 'public');
-      }
-    } catch {
-      // keep prior member-since / visibility
-    }
-  }, [user]);
-
-  useSafeAsyncEffect(
-    async (isActive) => {
-      if (!user) return;
-      reloadGoals();
-      try {
-        const [stats, badges] = await Promise.all([fetchMeProfileStats(), fetchMemberBadges()]);
-        if (isActive()) {
-          setHubStats(stats);
-          setBadgesEarnedCount(badges.filter((badge) => badge.earned).length);
-        }
-        if (hostTiers.professional || hostTiers.business) {
-          const viewStats = await fetchMeProfileViewStats();
-          if (isActive()) {
-            setProfileViewStats(viewStats);
-          }
-        } else if (isActive()) {
-          setProfileViewStats(null);
-        }
-      } catch {
-        // keep prior hub stats / badges
-      }
-    },
-    [user, hostTiers.professional, hostTiers.business, reloadGoals]
-  );
+  const { badges } = useMemberBadges(user?.id);
+  const badgesEarnedCount = useMemo(() => badges.filter((badge) => badge.earned).length, [badges]);
+  const { data: hubStats } = useMeProfileStats(Boolean(user));
+  const showProfileViewStats = hostTiers.professional || hostTiers.business;
+  const { data: profileViewStats } = useMeProfileViewStats(Boolean(user) && showProfileViewStats);
+  const memberSince = profile.memberSince ?? null;
+  const visibility = profile.profileVisibility ?? 'public';
 
   useEffect(() => {
     const state = location.state as { openEdit?: boolean } | null;
@@ -222,28 +186,18 @@ export const Profile = () => {
 
   const handleRefresh = useCallback(async () => {
     await reload();
-    if (!user) return;
-    try {
-      const [me, stats, badges] = await Promise.all([
-        fetchMeProfile(),
-        fetchMeProfileStats(),
-        fetchMemberBadges(),
+    if (user?.id) {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: meProfileStatsQueryKey(user.id) }),
+        queryClient.invalidateQueries({ queryKey: memberBadgesQueryKey(user.id) }),
+        ...(showProfileViewStats
+          ? [queryClient.invalidateQueries({ queryKey: meProfileViewStatsQueryKey(user.id) })]
+          : []),
       ]);
-      setMemberSince(me.memberSince ?? null);
-      setVisibility(me.profileVisibility ?? 'public');
-      setHubStats(stats);
-      setBadgesEarnedCount(badges.filter((badge) => badge.earned).length);
-      if (hostTiers.professional || hostTiers.business) {
-        setProfileViewStats(await fetchMeProfileViewStats());
-      } else {
-        setProfileViewStats(null);
-      }
-    } catch {
-      // partial refresh failure — hub query reload still applied
     }
     reloadGoals();
     await refreshHostGate();
-  }, [reload, user, refreshHostGate, reloadGoals, hostTiers.professional, hostTiers.business]);
+  }, [reload, user?.id, queryClient, refreshHostGate, reloadGoals, showProfileViewStats]);
 
   const saveAvatar = async (nextAvatarUrl: string) => {
     setAvatarMessage(null);

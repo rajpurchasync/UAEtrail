@@ -3,7 +3,7 @@
 import type {
   HeroCarouselSlide,
   HeroCarouselSlideLayoutSources
-} from '../components/home/v2/heroCarouselTypes';
+} from '../components/home/marketing/heroCarouselTypes';
 
 /** Matches Tailwind `md` and guest hero overlay (`home-tokens.css` --bp-md). */
 export const MARKETING_HERO_LAYOUT_MIN_WIDTH_PX = 768;

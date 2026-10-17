@@ -1,8 +1,9 @@
-import { FormEvent, useState } from 'react';
-import { useSafeAsyncEffect } from '../hooks/useSafeAsyncEffect';
+import { FormEvent, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
-import { fetchMeProfile, updateMeProfile } from '../hooks/memberProfileApi';
+import { updateMeProfile } from '../hooks/memberProfileApi';
+import { useMeProfile } from '../hooks/useMeProfile';
+import { meProfileQueryKey, participantHubQueryKey } from '../hooks/clientQueryKeys';
 import { useAuth } from '../context/AuthContext';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { AppButton } from '../components/mobile/AppButton';
@@ -29,7 +30,8 @@ export const ProfileEdit = () => {
   const navigate = useNavigate();
   const { user, refreshUser } = useAuth();
   const queryClient = useQueryClient();
-  const [loading, setLoading] = useState(true);
+  const { profile, loading } = useMeProfile();
+  const hydratedRef = useRef(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [givenName, setGivenName] = useState('');
@@ -40,29 +42,21 @@ export const ProfileEdit = () => {
   const [city, setCity] = useState<UserCity | ''>('');
   const [languages, setLanguages] = useState<string[]>([]);
 
-  useSafeAsyncEffect(async (isActive) => {
-    try {
-      const p = await fetchMeProfile();
-      if (!isActive()) return;
-      const names =
-        p.givenName && p.surname
-          ? { givenName: p.givenName, surname: p.surname }
-          : splitLegacyDisplayName(p.displayName ?? '');
-      setGivenName(names.givenName);
-      setSurname(names.surname);
-      setBio(p.bio ?? '');
-      setGender(p.gender ?? '');
-      setCountryCode(p.countryCode ?? (p.city ? 'AE' : ''));
-      setCity(p.city ?? '');
-      setLanguages(parseLanguagesList(p.languages));
-    } catch {
-      // keep empty form; user can still navigate away
-    } finally {
-      if (isActive()) {
-        setLoading(false);
-      }
-    }
-  }, []);
+  useEffect(() => {
+    if (!profile || hydratedRef.current) return;
+    const names =
+      profile.givenName && profile.surname
+        ? { givenName: profile.givenName, surname: profile.surname }
+        : splitLegacyDisplayName(profile.displayName ?? '');
+    setGivenName(names.givenName);
+    setSurname(names.surname);
+    setBio(profile.bio ?? '');
+    setGender(profile.gender ?? '');
+    setCountryCode(profile.countryCode ?? (profile.city ? 'AE' : ''));
+    setCity(profile.city ?? '');
+    setLanguages(parseLanguagesList(profile.languages));
+    hydratedRef.current = true;
+  }, [profile]);
 
   const onSubmit = async (event: FormEvent) => {
     event.preventDefault();
@@ -106,7 +100,11 @@ export const ProfileEdit = () => {
       });
       await refreshUser();
       if (user?.id) {
-        await queryClient.invalidateQueries({ queryKey: meProfileSignupGateKey(user.id) });
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: meProfileQueryKey(user.id) }),
+          queryClient.invalidateQueries({ queryKey: participantHubQueryKey(user.id) }),
+          queryClient.invalidateQueries({ queryKey: meProfileSignupGateKey(user.id) }),
+        ]);
       }
       navigate('/profile', { replace: true });
     } catch (err) {

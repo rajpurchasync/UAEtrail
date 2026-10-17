@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
-import { useSafeAsyncEffect } from './useSafeAsyncEffect';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { MemberGoalDTO } from '@uaetrail/shared-types';
 import type { SaveMemberGoalInput } from '../components/profile/ProfileGoalCard';
 import {
@@ -8,25 +8,36 @@ import {
   fetchMemberGoals,
   updateMemberGoal,
 } from './memberGoalsApi';
+import { memberGoalsQueryKey } from './clientQueryKeys';
+import { useAuth } from '../context/AuthContext';
 
 export const useMemberGoals = (enabled: boolean) => {
-  const [goals, setGoals] = useState<MemberGoalDTO[]>([]);
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [saving, setSaving] = useState(false);
 
-  const reload = useCallback(() => {
-    if (!enabled) return;
-    void fetchMemberGoals().then(setGoals).catch(() => undefined);
-  }, [enabled]);
+  const query = useQuery({
+    queryKey: user ? memberGoalsQueryKey(user.id) : ['me', 'goals', ''],
+    queryFn: fetchMemberGoals,
+    enabled: enabled && Boolean(user),
+    staleTime: 60_000,
+  });
 
-  useSafeAsyncEffect(async (isActive) => {
-    if (!enabled) return;
-    try {
-      const next = await fetchMemberGoals();
-      if (isActive()) setGoals(next);
-    } catch {
-      // keep prior goals on load failure
-    }
-  }, [enabled]);
+  const goals = query.data ?? [];
+
+  const reload = useCallback(() => {
+    void query.refetch();
+  }, [query]);
+
+  const setGoalsCache = useCallback(
+    (updater: (prev: MemberGoalDTO[]) => MemberGoalDTO[]) => {
+      if (!user) return;
+      queryClient.setQueryData<MemberGoalDTO[]>(memberGoalsQueryKey(user.id), (prev) =>
+        updater(prev ?? [])
+      );
+    },
+    [queryClient, user]
+  );
 
   const primaryGoal = useMemo(() => {
     if (goals.length === 0) return null;
@@ -38,31 +49,31 @@ export const useMemberGoals = (enabled: boolean) => {
     setSaving(true);
     try {
       const goal = await createMemberGoal(input);
-      setGoals((prev) => [goal, ...prev]);
+      setGoalsCache((prev) => [goal, ...prev]);
     } finally {
       setSaving(false);
     }
-  }, []);
+  }, [setGoalsCache]);
 
   const updateGoal = useCallback(async (goalId: string, input: SaveMemberGoalInput): Promise<void> => {
     setSaving(true);
     try {
       const goal = await updateMemberGoal(goalId, input);
-      setGoals((prev) => prev.map((g) => (g.id === goalId ? goal : g)));
+      setGoalsCache((prev) => prev.map((g) => (g.id === goalId ? goal : g)));
     } finally {
       setSaving(false);
     }
-  }, []);
+  }, [setGoalsCache]);
 
   const deleteGoal = useCallback(async (goalId: string) => {
     setSaving(true);
     try {
       await deleteMemberGoal(goalId);
-      setGoals((prev) => prev.filter((g) => g.id !== goalId));
+      setGoalsCache((prev) => prev.filter((g) => g.id !== goalId));
     } finally {
       setSaving(false);
     }
-  }, []);
+  }, [setGoalsCache]);
 
   return {
     goals,

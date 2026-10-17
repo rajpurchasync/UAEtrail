@@ -148,7 +148,7 @@ Member **Contribute** → typically `pending` + `unlisted`; public `/place` or `
 
 #### FAB product verbs vs wire
 
-| UI (FAB) | Meaning | Wire `compose` (v3) | Legacy wire |
+| UI (FAB) | Meaning | Wire `compose` (compose wire) | Legacy wire |
 |----------|---------|---------------------|-------------|
 | **Host** | Publish outing you lead | `host:<kind>` | `plan:<kind>:hosting`, `organize:*` |
 | **Find crew** → fixed | Map seeking post | `seek:fixed:<kind>` | `plan:<kind>:seeking`, `find:*` |
@@ -424,7 +424,7 @@ When renaming or adding routes:
 
 1. Add or use a builder in `routingCatalog` / `entity-path` / `explore/routing.ts`.
 2. Update [`NAVIGATION.md`](./NAVIGATION.md) legacy table if adding a redirect.
-3. Grep: `become-host`, `/activities`, `isHostRole`, `getMyOrganisationStatus`, `fulfillParticipantIntent`.
+3. Grep: `become-host`, `/activities`, `isHostRole`, `getMyOrganisationStatus`, `participant-intents/.*/fulfill` (removed — use `link-activity`).
 4. Run `npm run verify:domain`.
 
 ---

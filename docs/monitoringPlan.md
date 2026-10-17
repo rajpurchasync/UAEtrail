@@ -32,7 +32,7 @@ Since this is a zero-cost, single-server deployment, all agents will be installe
 
 
 * [x] **Global Error Capturing:** Implemented in `apps/api/src/index.ts` with `pino.fatal()` and process termination.
-* [x] **Frontend Error Boundary:** Implemented in `src/components/ErrorBoundary.tsx`, posting stack traces to `/api/v1/logs/client-error`.
+* [x] **Frontend Error Boundary:** Implemented in `src/components/ErrorBoundary.tsx`, posting stack traces to `/api/logs/client-error`.
 * [x] **API Metrics Middleware:** Implemented in `apps/api/src/lib/metrics.ts` and exposed via `/metrics` route in `apps/api/src/app.ts`.
 
 ## Phase 2 — Log Storage, Compression & Retention

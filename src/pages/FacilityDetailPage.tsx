@@ -1,38 +1,12 @@
 import { Link, useParams } from 'react-router-dom';
 import { FacilityConsumerDetailPage } from '../facility/detail/templates/FacilityConsumerDetailPage';
-import { fetchPublicFacilityDetail } from '../hooks/facilityDetailClientApi';
 import { PageMeta } from '../components/seo/PageMeta';
 import { facilityDetailPath, detailBackPath } from '../config/routingCatalog';
-import { useSafeAsyncEffect } from '../hooks/useSafeAsyncEffect';
-import { useState } from 'react';
-import type { FacilityDTO } from '@uaetrail/shared-types';
+import { usePublicFacilityDetail } from '../hooks/usePublicFacilityDetail';
 
 export const FacilityDetailPage = () => {
   const { id } = useParams();
-  const [facility, setFacility] = useState<FacilityDTO | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useSafeAsyncEffect(
-    async (isActive) => {
-      if (!id) return;
-      setLoading(true);
-      try {
-        const result = await fetchPublicFacilityDetail(id);
-        if (isActive()) {
-          setFacility(result.data);
-        }
-      } catch {
-        if (isActive()) {
-          setFacility(null);
-        }
-      } finally {
-        if (isActive()) {
-          setLoading(false);
-        }
-      }
-    },
-    [id]
-  );
+  const { facility, loading } = usePublicFacilityDetail(id);
 
   const detailPath = id ? facilityDetailPath(id) : undefined;
 

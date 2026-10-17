@@ -63,6 +63,21 @@ describe('doc coherence (Tier 1)', () => {
     expect(system).toMatch(/src\/explore/);
   });
 
+  it('platform program spine is in Tier-1 and machine JSON', () => {
+    const system = readFileSync(join(DOCS, 'SYSTEM_COHERENCE.md'), 'utf8');
+    expect(system).toMatch(/### 8\.6 Platform program/);
+    expect(system).toMatch(/refactor-program\.json/);
+    expect(system).toMatch(
+      /Program confirmed; P0–P1 complete; P2\+ gated on S10e\/f \+ migration WIP limit/
+    );
+    const program = JSON.parse(
+      readFileSync(join(process.cwd(), 'scripts/refactor-program.json'), 'utf8')
+    );
+    expect(program.authorization?.authorizedPhases).toEqual(['P0', 'P1']);
+    expect(program.capacity?.maxInProgressMigrations).toBe(2);
+    expect(existsSync(join(process.cwd(), 'scripts/refactor-program.json'))).toBe(true);
+  });
+
   it('browse vs entity routing canon is documented in Tier-1', () => {
     const canon = readFileSync(join(DOCS, 'DOMAIN_CANONICALS.md'), 'utf8');
     const system = readFileSync(join(DOCS, 'SYSTEM_COHERENCE.md'), 'utf8');

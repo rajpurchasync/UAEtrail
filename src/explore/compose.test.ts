@@ -8,7 +8,7 @@ import {
 } from './compose';
 
 describe('explore compose routing', () => {
-  it('formats and parses menu + wizard routes (v3)', () => {
+  it('formats and parses menu + wizard routes (compose wire)', () => {
     expect(formatComposeQuery({ surface: 'menu' })).toBe('1');
     expect(formatComposeQuery({ surface: 'menu', intent: 'host' })).toBe('host');
     expect(formatComposeQuery({ intent: 'host', kind: 'hiking' })).toBe('host:hiking');

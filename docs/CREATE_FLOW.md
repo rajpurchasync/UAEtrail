@@ -16,7 +16,7 @@ Companion docs: [`DOCS_INDEX.md`](./DOCS_INDEX.md), [`NORTHSTAR.md`](./NORTHSTAR
 
 Code (today): `src/explore/compose.ts`, `CreateIntentSheet.tsx`, `SeekFlexibleComposeSheet.tsx`, `hostingFlow.ts`, `seekingFlow.ts`, `contributeFlow.ts` (legacy: `organizeFlow.ts`, `demandFlow.ts`).
 
-**Status:** Spec **approved (CPC)** · **Host · Find crew · Add on map** FAB + v3 compose wire **shipped** (legacy compose aliases retained; see [Implementation status](#implementation-status))
+**Status:** Spec **approved (CPC)** · **Host · Find crew · Add on map** FAB + compose wire wire **shipped** (legacy compose aliases retained; see [Implementation status](#implementation-status))
 
 **Last updated:** 2026-10-16
 

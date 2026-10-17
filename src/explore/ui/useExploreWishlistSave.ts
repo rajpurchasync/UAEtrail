@@ -1,7 +1,6 @@
 import { joinAuthPath } from '../../config/routingCatalog';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo, useState } from 'react';
-import { useSafeAsyncEffect } from '../../hooks/useSafeAsyncEffect';
 import { useNavigate } from 'react-router-dom';
 import type { ExploreCardModel } from '../exploreCardModel';
 import { resolveExploreWishlistTarget } from '../exploreCardModel';
@@ -11,6 +10,7 @@ import {
   invalidateMeWishlistQueries,
   removeWishlistItemById,
 } from '../../hooks/wishlistClientApi';
+import { wishlistTargetStateQueryKey } from '../../hooks/clientQueryKeys';
 import { useAuth } from '../../context/AuthContext';
 
 export type ExploreWishlistSaveState = {
@@ -27,35 +27,23 @@ export const useExploreWishlistSave = (card: ExploreCardModel): ExploreWishlistS
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const target = useMemo(() => resolveExploreWishlistTarget(card), [card]);
-  const [saved, setSaved] = useState(false);
-  const [wishlistItemId, setWishlistItemId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
 
-  useSafeAsyncEffect(
-    async (isActive) => {
-      if (!user || !target) {
-        if (isActive()) {
-          setSaved(false);
-          setWishlistItemId(null);
-        }
-        return;
-      }
-      try {
-        const state = await checkWishlistTarget(target);
-        if (isActive()) {
-          setSaved(state.saved);
-          setWishlistItemId(state.wishlistItemId);
-        }
-      } catch {
-        if (isActive()) {
-          setSaved(false);
-          setWishlistItemId(null);
-        }
-      }
-    },
-    [user, card.id, target?.activityId, target?.locationId]
-  );
+  const wishlistQueryKey =
+    user && target
+      ? wishlistTargetStateQueryKey(user.id, target)
+      : ['wishlist-target-state', 'anonymous'];
+
+  const { data: wishlistState } = useQuery({
+    queryKey: wishlistQueryKey,
+    queryFn: () => checkWishlistTarget(target!),
+    enabled: Boolean(user && target),
+    staleTime: 30_000,
+  });
+
+  const saved = wishlistState?.saved ?? false;
+  const wishlistItemId = wishlistState?.wishlistItemId ?? null;
 
   const toggle = useCallback(async () => {
     if (!target) return;
@@ -68,13 +56,11 @@ export const useExploreWishlistSave = (card: ExploreCardModel): ExploreWishlistS
     try {
       if (saved && wishlistItemId) {
         await removeWishlistItemById(wishlistItemId);
-        setSaved(false);
-        setWishlistItemId(null);
+        queryClient.setQueryData(wishlistQueryKey, { saved: false, wishlistItemId: null });
         setNotice('Removed from your wishlist.');
       } else {
         const item = await addWishlistTarget(target);
-        setSaved(true);
-        setWishlistItemId(item.id);
+        queryClient.setQueryData(wishlistQueryKey, { saved: true, wishlistItemId: item.id });
         setNotice('Saved to your wishlist — we can alert you when similar plans show up.');
       }
       invalidateMeWishlistQueries(queryClient);
@@ -83,7 +69,7 @@ export const useExploreWishlistSave = (card: ExploreCardModel): ExploreWishlistS
     } finally {
       setBusy(false);
     }
-  }, [card.sharePath, navigate, queryClient, saved, target, user, wishlistItemId]);
+  }, [card.sharePath, navigate, queryClient, saved, target, user, wishlistItemId, wishlistQueryKey]);
 
   return {
     canSave: Boolean(target),

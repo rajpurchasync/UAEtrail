@@ -1,11 +1,9 @@
-import { useCallback, useMemo, useState } from 'react';
-import { useSafeAsyncEffect, type IsActiveGuard } from '../hooks/useSafeAsyncEffect';
+import { useMemo, useState } from 'react';
+import { useMemberJourneyMap } from '../hooks/useMemberJourneyMap';
 import { useSearchParams } from 'react-router-dom';
 import { List, Plus, Share2 } from 'lucide-react';
 import type {
-  MemberJourneyMapStatsDTO,
   MemberMapPinActivityType,
-  MemberMapPinDTO,
   JourneyMapEntryDTO,
   JourneyMapFilterCategory,
 } from '@uaetrail/shared-types';
@@ -20,7 +18,6 @@ import { shareJourneyMapSummary } from '../components/journey/journeyMapShare';
 import {
   createMemberMapPin,
   deleteMemberMapPin,
-  fetchMemberJourneyMap,
   updateMemberMapPin,
 } from '../hooks/memberJourneyMapApi';
 import { profileHistoryCompletedPath } from '../config/routingCatalog';
@@ -32,14 +29,6 @@ import {
   parseJourneyMapFilter,
 } from '../member-plan/journeyMapFilters';
 import { resolveJourneyPinStyle } from '../member-plan/journeyMapPinStyle';
-
-const emptyStats = (): MemberJourneyMapStatsDTO => ({
-  totalPins: 0,
-  wishlistCount: 0,
-  visitedCount: 0,
-  activityCheckInCount: 0,
-  byActivityType: {},
-});
 
 const entryToMarker = (entry: JourneyMapEntryDTO): JourneyMapMarker | null => {
   if (entry.latitude == null || entry.longitude == null) return null;
@@ -56,10 +45,7 @@ export const JourneyMapPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const filter = parseJourneyMapFilter(searchParams.get('filter'));
 
-  const [pins, setPins] = useState<MemberMapPinDTO[]>([]);
-  const [entries, setEntries] = useState<JourneyMapEntryDTO[]>([]);
-  const [stats, setStats] = useState<MemberJourneyMapStatsDTO>(emptyStats);
-  const [loading, setLoading] = useState(true);
+  const { pins, entries, stats, loading, error: mapError, reload } = useMemberJourneyMap();
   const [pickMode, setPickMode] = useState(false);
   const [listOpen, setListOpen] = useState(false);
   const [sheet, setSheet] = useState<JourneyMapSheetState | { type: 'idle' }>({ type: 'idle' });
@@ -74,34 +60,7 @@ export const JourneyMapPage = () => {
     setSearchParams(params, { replace: true });
   };
 
-  const reload = useCallback(async (isActive: IsActiveGuard = () => true) => {
-    if (isActive()) {
-      setError(null);
-    }
-    try {
-      const data = await fetchMemberJourneyMap();
-      if (isActive()) {
-        setPins(data.pins);
-        setEntries(data.entries ?? []);
-        setStats(data.stats);
-      }
-    } catch {
-      if (isActive()) {
-        setError('Could not load your map. Try again.');
-      }
-    } finally {
-      if (isActive()) {
-        setLoading(false);
-      }
-    }
-  }, []);
-
-  useSafeAsyncEffect(
-    async (isActive) => {
-      await reload(isActive);
-    },
-    [reload]
-  );
+  const displayError = error ?? mapError;
 
   const filteredEntries = useMemo(() => filterJourneyMapEntries(entries, filter), [entries, filter]);
   const mapMarkers = useMemo(
@@ -267,9 +226,9 @@ export const JourneyMapPage = () => {
         </p>
       ) : null}
 
-      {error ? (
+      {displayError ? (
         <p className="z-[100] shrink-0 bg-red-50 px-4 py-2 text-center text-sm text-red-700" role="alert">
-          {error}
+          {displayError}
         </p>
       ) : null}
 

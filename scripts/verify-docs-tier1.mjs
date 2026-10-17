@@ -3,9 +3,12 @@
  * Tier-1 documentation coherence — banned obsolete product phrases.
  * See docs/DOCS_GOVERNANCE.md
  */
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+
+/** Living experiment plans (excl. README). See SYSTEM_COHERENCE §8.6.4 */
+const MAX_EXPERIMENT_PLANS = 12;
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -55,6 +58,26 @@ for (const rel of TIER1) {
     }
     if (pattern.test(text)) {
       console.error(`[verify:docs] ${rel}: ${label}`);
+      failed = true;
+    }
+  }
+}
+
+const experimentDir = join(root, 'docs/experiment');
+if (existsSync(experimentDir)) {
+  const plans = readdirSync(experimentDir).filter((f) => f.endsWith('.md') && f !== 'README.md');
+  if (plans.length > MAX_EXPERIMENT_PLANS) {
+    console.error(
+      `[verify:docs] docs/experiment has ${plans.length} plan files (max ${MAX_EXPERIMENT_PLANS}) — stub or archive per DOCS_GOVERNANCE`
+    );
+    failed = true;
+  }
+  for (const name of plans) {
+    const text = readFileSync(join(experimentDir, name), 'utf8');
+    if (text.startsWith('> Superseded by') && text.split('\n').length > 25) {
+      console.error(
+        `[verify:docs] ${name}: superseded stub must stay short — move body to docs/archive/`
+      );
       failed = true;
     }
   }

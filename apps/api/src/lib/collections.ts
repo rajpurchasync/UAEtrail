@@ -55,6 +55,8 @@ export const COLLECTIONS = {
   /** Mongo collection name is legacy `user_favorites`; product term is wishlist. */
   USER_WISHLIST: 'user_favorites',
   NOTIFICATIONS: 'notifications',
+  /** Durable async work queue (MIG-OUTBOX); default path remains fire-and-forget until flag on. */
+  SIDE_EFFECT_OUTBOX: 'side_effect_outbox',
   REWARD_LEDGERS: 'reward_ledgers',
   USER_BADGES: 'user_badges',
   USER_GOALS: 'user_goals',

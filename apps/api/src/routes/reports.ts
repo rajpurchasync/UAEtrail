@@ -1,11 +1,10 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { createAuditLog } from '../lib/audit.js';
 import {
   CONTENT_REPORT_REASONS,
   CONTENT_REPORT_TARGET_TYPES,
-  createContentReport,
-} from '../lib/content-reports-store.js';
+  submitMemberContentReport,
+} from '../services/content-report-commands.js';
 import { requireAuth } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
 
@@ -32,24 +31,12 @@ reportsRouter.post('/', requireAuth, validate({ body: reportSchema }), async (re
   try {
     const body = req.body as z.infer<typeof reportSchema>;
 
-    const { id } = await createContentReport({
+    await submitMemberContentReport({
       reporterUserId: req.auth!.userId,
       targetType: body.targetType,
       targetId: body.targetId,
       reason: body.reason,
       details: body.details,
-    });
-
-    await createAuditLog({
-      actorId: req.auth!.userId,
-      action: 'content_report',
-      entityType: body.targetType,
-      entityId: body.targetId,
-      metadata: {
-        reportId: id,
-        reason: body.reason,
-        details: body.details?.trim() ?? null,
-      },
     });
 
     res.status(201).json({

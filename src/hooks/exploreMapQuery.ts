@@ -1,8 +1,8 @@
 import type { QueryClient, QueryKey } from '@tanstack/react-query';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
-import type { ExploreMapFetchScope } from '../explore/exploreMapVnext';
+import type { ExploreMapFetchScope } from '../explore/exploreMapBbox';
 
-/** Prefix for all explore map item queries (legacy + vNext scopes). */
+/** Prefix for all explore map item queries (legacy + bbox scopes). */
 export const exploreMapQueryKeyPrefix = ['explore', 'map'] as const;
 
 export const exploreMapQueryKey = (scope?: ExploreMapFetchScope | null): QueryKey =>

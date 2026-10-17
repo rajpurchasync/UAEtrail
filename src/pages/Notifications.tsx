@@ -1,7 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useSafeAsyncEffect } from '../hooks/useSafeAsyncEffect';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
-import { useQueryClient } from '@tanstack/react-query';
 import { NotificationDTO } from '@uaetrail/shared-types';
 import { Bell, ChevronRight } from 'lucide-react';
 import {
@@ -10,12 +8,8 @@ import {
   PROFILE_BADGES_PATH,
   planHubPath,
 } from '../config/routingCatalog';
-import {
-  acceptMeGroupInviteByToken,
-  fetchMeNotificationsPage,
-  markAllMeNotificationsRead,
-  markNotificationReadById,
-} from '../hooks/notificationInboxApi';
+import { acceptMeGroupInviteByToken } from '../hooks/notificationInboxApi';
+import { useMeNotificationsInbox } from '../hooks/useMeNotificationsInbox';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { GlassCard } from '../components/mobile/GlassCard';
 import { ConsumerErrorCard, ConsumerLoadingSpinner } from '../components/mobile/ConsumerFeedback';
@@ -24,8 +18,7 @@ import { NotificationInboxFilters } from '../components/notifications/Notificati
 import { NotificationListItem } from '../components/notifications/NotificationListItem';
 import { inferNotificationPath } from '../utils/notificationRouting';
 import { useAuth } from '../context/AuthContext';
-import { invalidateNotificationUnreadBadge } from '../utils/notificationBadge';
-import { notificationKind, sortNotificationsNewestFirst } from '../utils/notificationCategories';
+import { notificationKind } from '../utils/notificationCategories';
 import { matchesNotificationSearch } from '../utils/notificationSearch';
 import {
   inferNotificationTopic,
@@ -65,42 +58,21 @@ const isBuddyInviteNotification = (notif: NotificationDTO): boolean => {
 export const Notifications = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const [notifications, setNotifications] = useState<NotificationDTO[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [topicFilter, setTopicFilter] = useState<NotificationTopic>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const isSearchActive = searchQuery.trim().length > 0;
 
-  const syncUnreadBadge = () => {
-    if (!user?.id) return;
-    void invalidateNotificationUnreadBadge(queryClient, user.id);
-  };
+  const {
+    notifications,
+    unreadCount,
+    loading,
+    error,
+    markRead,
+    markAllRead,
+    reload,
+  } = useMeNotificationsInbox(user?.id, user?.role !== 'platform_admin');
 
-  const load = async (isActive: () => boolean = () => true) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const page = await fetchMeNotificationsPage(1);
-      if (!isActive()) return;
-      setNotifications(sortNotificationsNewestFirst(page.data));
-      setUnreadCount(page.unreadCount);
-    } catch (err) {
-      if (!isActive()) return;
-      setError(err instanceof Error ? err.message : 'Couldn\'t load notifications — tap to retry.');
-    } finally {
-      if (isActive()) setLoading(false);
-    }
-  };
-
-  useSafeAsyncEffect(async (isActive) => {
-    if (user?.role === 'platform_admin') return;
-    await load(isActive);
-  }, [user?.role]);
-
-  const sorted = useMemo(() => sortNotificationsNewestFirst(notifications), [notifications]);
+  const sorted = notifications;
 
   const topicCounts = useMemo(() => {
     const counts: Partial<Record<NotificationTopic, number>> = { all: sorted.length };
@@ -129,20 +101,6 @@ export const Notifications = () => {
     return <Navigate to="/admin/notifications" replace />;
   }
 
-  const markRead = async (id: string) => {
-    await markNotificationReadById(id).catch(() => undefined);
-    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, isRead: true } : n)));
-    setUnreadCount((c) => Math.max(0, c - 1));
-    syncUnreadBadge();
-  };
-
-  const markAllRead = async () => {
-    await markAllMeNotificationsRead().catch(() => undefined);
-    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
-    setUnreadCount(0);
-    syncUnreadBadge();
-  };
-
   const openNotification = async (notif: NotificationDTO) => {
     if (!notif.isRead) await markRead(notif.id);
     navigate(inferNotificationPath(notif));
@@ -164,7 +122,7 @@ export const Notifications = () => {
       <PageMeta title="Notifications" noIndex />
 
       <div className="space-y-4 pb-nav-safe animate-fade-up">
-        {error ? <ConsumerErrorCard message={error} onRetry={() => void load()} /> : null}
+        {error ? <ConsumerErrorCard message={error} onRetry={() => void reload()} /> : null}
 
         {loading ? (
           <ConsumerLoadingSpinner />
@@ -276,7 +234,7 @@ export const Notifications = () => {
                                 if (!token) return;
                                 await acceptMeGroupInviteByToken(token).catch(() => undefined);
                                 await markRead(notif.id);
-                                await load();
+                                await reload();
                               }}
                               className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700"
                             >

@@ -1,7 +1,7 @@
 import type { MemberCoordinationAttentionDTO } from '@uaetrail/shared-types';
-import { api } from '../api/index';
+import { memberApi } from '../api/domains/member';
 
 export const fetchMeCoordinationAttention = async (): Promise<MemberCoordinationAttentionDTO> => {
-  const res = await api.getMeCoordinationAttention();
+  const res = await memberApi.getMeCoordinationAttention();
   return res.data;
 };

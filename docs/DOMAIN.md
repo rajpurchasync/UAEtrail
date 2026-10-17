@@ -121,7 +121,7 @@ Discovery: **`/area/:slug`**, area peek, and explore **`?area=`** filter by **`p
 | My Plans UI | Domain data |
 |-------------|-------------|
 | Upcoming list (joined / hosting filters) | `GET /me/activities`, `GET /me/requests`; host: `listHostActivities`, join queue |
-| Upcoming **calendar** (`layout=calendar`) | Same commitments aggregated per day — joined, pending, hosting, seeking, **your** availability days (`planCalendarMarkers`) |
+| Upcoming **calendar** (`layout=calendar`) | **Projection** of the same joined/hosting data — day sheet rows drill to outing peek or Plan manage URLs; **available** = indicator strip only (`planCalendarOpen`) |
 | Wishlist tab (`tab=wishlist`; legacy `lens=saved`) | Private venue + activity saves (`/me/wishlist`) — not demand, not Follow |
 | Goals (on Wishlist tab) | `GET/POST /me/goals` |
 | Share availability editor (`?lens=availability`) | `GET/POST /me/availability` — Find crew; deep link only, not the calendar toggle |

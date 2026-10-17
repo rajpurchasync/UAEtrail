@@ -235,7 +235,7 @@ export const addFacilityCompose = (kind: string): ExploreCompose => ({
   kind,
 });
 
-/** Deep links and map CTAs — canonical v3 host wire. */
+/** Deep links and map CTAs — canonical host compose wire. */
 export const planHostingCompose = hostCompose;
 
 export const planSeekingCompose = (

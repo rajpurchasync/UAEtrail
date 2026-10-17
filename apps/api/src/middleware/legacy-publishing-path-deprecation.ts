@@ -1,6 +1,7 @@
 import type { RequestHandler } from 'express';
+import { API_HTTP_PREFIX } from '../lib/api-http-prefix.js';
 
-const API_PREFIX = '/api/v1';
+const API_PREFIX = API_HTTP_PREFIX;
 
 const canonicalPathForDeprecatedRequest = (pathname: string): string | null => {
   if (pathname.startsWith(`${API_PREFIX}/host`)) {

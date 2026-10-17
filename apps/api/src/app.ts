@@ -19,6 +19,7 @@ import { openApiSpec } from './openapi.js';
 import { apiRouter } from './routes/index.js';
 import { registerOgRoutes } from './routes/og.js';
 import { stripeWebhookHandler } from './routes/stripe-webhook.js';
+import { API_HTTP_PREFIX, apiHttpPath } from './lib/api-http-prefix.js';
 
 const clientErrorBodySchema = z
   .object({
@@ -159,7 +160,11 @@ export const createApp = async (): Promise<Express> => {
   });
   app.use(morgan(env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 
-  app.post('/api/v1/shop/webhook/stripe', express.raw({ type: 'application/json' }), stripeWebhookHandler);
+  app.post(
+    apiHttpPath('/shop/webhook/stripe'),
+    express.raw({ type: 'application/json' }),
+    stripeWebhookHandler
+  );
 
   app.use(express.json({ limit: '1mb' }));
   app.use(cookieParser());
@@ -185,7 +190,7 @@ export const createApp = async (): Promise<Express> => {
     res.end(await metricsText());
   });
 
-  app.post('/api/v1/logs/client-error', clientErrorLimiter, (req, res) => {
+  app.post(apiHttpPath('/logs/client-error'), clientErrorLimiter, (req, res) => {
     const parsed = clientErrorBodySchema.safeParse(req.body);
     if (!parsed.success) {
       res.status(400).json({
@@ -194,7 +199,9 @@ export const createApp = async (): Promise<Express> => {
       return;
     }
 
-    logError('client-side error reported', parsed.data, { route: '/api/v1/logs/client-error' });
+    logError('client-side error reported', parsed.data, {
+      route: apiHttpPath('/logs/client-error'),
+    });
     apiErrorsTotal.labels('client_error').inc();
     res.status(202).json({ status: 'accepted' });
   });
@@ -203,7 +210,7 @@ export const createApp = async (): Promise<Express> => {
     app.get('/api/openapi.json', (_req, res) => res.json(openApiSpec));
   }
   registerOgRoutes(app);
-  app.use('/api/v1', apiRouter);
+  app.use(API_HTTP_PREFIX, apiRouter);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

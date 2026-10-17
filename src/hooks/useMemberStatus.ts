@@ -1,9 +1,10 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import type { MemberStatusDTO } from '@uaetrail/shared-types';
 import { fetchMemberStatus } from './memberStatusApi';
 import { setActiveTenantId } from '../api/tenant';
 import { useAuth } from '../context/AuthContext';
-import { useSafeAsyncEffect, type IsActiveGuard } from './useSafeAsyncEffect';
+import { memberStatusQueryKey } from './clientQueryKeys';
 
 export interface UseMemberStatusOptions {
   enabled?: boolean;
@@ -12,61 +13,30 @@ export interface UseMemberStatusOptions {
 /** Member capabilities (`GET /me/status`) — publish gates live under `status.publish`. */
 export const useMemberStatus = ({ enabled = true }: UseMemberStatusOptions = {}) => {
   const { user } = useAuth();
-  const [status, setStatus] = useState<MemberStatusDTO | null>(null);
-  const [loading, setLoading] = useState(Boolean(enabled && user));
-  const [error, setError] = useState<string | null>(null);
+  const active = enabled && Boolean(user);
 
-  const loadMemberStatus = useCallback(
-    async (isActive: IsActiveGuard = () => true) => {
-      if (!user) {
-        if (isActive()) {
-          setStatus(null);
-          setLoading(false);
-        }
-        return null;
-      }
+  const query = useQuery({
+    queryKey: user ? memberStatusQueryKey(user.id) : ['me', 'status', ''],
+    queryFn: fetchMemberStatus,
+    enabled: active,
+    staleTime: 30_000,
+  });
 
-      if (isActive()) {
-        setLoading(true);
-        setError(null);
-      }
-      try {
-        const memberStatus = await fetchMemberStatus();
-        if (isActive()) {
-          setStatus(memberStatus);
-          const tenantId = memberStatus.publish.tenantId ?? memberStatus.tenantId;
-          if (tenantId) {
-            setActiveTenantId(tenantId);
-          }
-        }
-        return memberStatus;
-      } catch (err) {
-        if (isActive()) {
-          setError(err instanceof Error ? err.message : 'Could not load member status');
-          setStatus(null);
-        }
-        return null;
-      } finally {
-        if (isActive()) {
-          setLoading(false);
-        }
-      }
-    },
-    [user]
-  );
+  const status = query.data ?? null;
 
-  const refresh = useCallback(() => loadMemberStatus(), [loadMemberStatus]);
+  useEffect(() => {
+    if (!status) return;
+    const tenantId = status.publish.tenantId ?? status.tenantId;
+    if (tenantId) {
+      setActiveTenantId(tenantId);
+    }
+  }, [status]);
 
-  useSafeAsyncEffect(
-    async (isActive) => {
-      if (!enabled || !user) {
-        setLoading(false);
-        return;
-      }
-      await loadMemberStatus(isActive);
-    },
-    [enabled, user, loadMemberStatus]
-  );
+  const refresh = useCallback(async (): Promise<MemberStatusDTO | null> => {
+    if (!user) return null;
+    const result = await query.refetch();
+    return result.data ?? null;
+  }, [query, user]);
 
   const publish = status?.publish;
   const canAccessPublishingWorkspace =
@@ -75,8 +45,13 @@ export const useMemberStatus = ({ enabled = true }: UseMemberStatusOptions = {})
   return {
     status,
     publish,
-    loading,
-    error,
+    loading: active && query.isLoading,
+    error:
+      query.error instanceof Error
+        ? query.error.message
+        : query.isError
+          ? 'Could not load member status'
+          : null,
     profileComplete: status?.profileComplete ?? status?.signupProfileComplete ?? false,
     isCommunityHost: publish?.isCommunityHost ?? status?.isCommunityHost ?? false,
     hostTiers: publish?.hostTiers ?? status?.hostTiers ?? { community: false, professional: false, business: false },

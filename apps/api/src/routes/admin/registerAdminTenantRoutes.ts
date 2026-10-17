@@ -1,20 +1,12 @@
-import { TenantStatus } from '../../domain/enums.js';
 import { Router } from 'express';
 import { z } from 'zod';
-import { createAuditLog } from '../../lib/audit.js';
-import { ApiError } from '../../lib/api-error.js';
 import { paginatedResponse, paginationSchema } from '../../lib/pagination.js';
-import {
-  findAdminTenantById,
-  findAdminTenantDetailedById,
-  listAdminTenantsPaged,
-  updateAdminTenantStatus,
-} from '../../lib/admin-store.js';
-import { findTenantById, setTenantDiscoverFeatured } from '../../lib/tenant-store.js';
-import { TenantBusinessMode } from '../../domain/enums.js';
 import { validate } from '../../middleware/validate.js';
-import { OPERATOR_OVERVIEW_PATH, PRO_MEMBERSHIP_PATH } from '../../lib/member-routes.js';
-import { notifyUserAdminAction } from '../../services/admin-notifications.js';
+import {
+  setAdminTenantDiscoverFeatured,
+  setAdminTenantStatus,
+} from '../../services/admin-tenant-commands.js';
+import { listAdminTenantsPage, loadAdminTenantDetail } from '../../services/admin-tenant-read.js';
 
 const idParamSchema = z.object({ id: z.string().min(1) });
 
@@ -51,29 +43,11 @@ export const registerAdminTenantRoutes = (adminRouter: Router): void => {
   adminRouter.get('/tenants', async (req, res, next) => {
     try {
       const pg = paginationSchema.parse(req.query);
-      const { items: tenants, total } = await listAdminTenantsPaged({
-        skip: (pg.page - 1) * pg.pageSize,
-        take: pg.pageSize,
+      const { items, total } = await listAdminTenantsPage({
+        page: pg.page,
+        pageSize: pg.pageSize,
       });
-
-      res.json(
-        paginatedResponse(
-          tenants.map((t) => ({
-            id: t.id,
-            name: t.name,
-            slug: t.slug,
-            type: t.type.toLowerCase(),
-            status: t.status.toLowerCase(),
-            ownerName: t.owner.profile?.displayName ?? t.owner.email,
-            ownerEmail: t.owner.email,
-            memberCount: t._count.memberships,
-            activityCount: t._count.activities,
-            createdAt: t.createdAt,
-          })),
-          total,
-          pg
-        )
-      );
+      res.json(paginatedResponse(items, total, pg));
     } catch (error) {
       next(error);
     }
@@ -82,48 +56,8 @@ export const registerAdminTenantRoutes = (adminRouter: Router): void => {
   adminRouter.get('/tenants/:id', validate({ params: idParamSchema }), async (req, res, next) => {
     try {
       const { id } = req.params as z.infer<typeof idParamSchema>;
-
-      const tenant = await findAdminTenantDetailedById(id);
-
-      if (!tenant) throw new ApiError(404, 'tenant_not_found', 'Tenant not found.');
-
-      const mongoTenant = await findTenantById(id);
-
-      res.json({
-        data: {
-          id: tenant.id,
-          name: tenant.name,
-          slug: tenant.slug,
-          type: tenant.type.toLowerCase(),
-          status: tenant.status.toLowerCase(),
-          businessMode: mongoTenant?.businessMode?.toLowerCase() ?? null,
-          discoverFeatured: mongoTenant?.discoverFeatured ?? false,
-          owner: {
-            id: tenant.owner.id,
-            email: tenant.owner.email,
-            displayName: tenant.owner.profile?.displayName ?? null,
-          },
-          createdAt: tenant.createdAt,
-          members: tenant.memberships.map((m) => ({
-            userId: m.userId,
-            email: m.user.email,
-            displayName: m.user.profile?.displayName ?? null,
-            role: m.role.toLowerCase(),
-            joinedAt: m.createdAt,
-          })),
-          activities: tenant.activities.map((e) => ({
-            id: e.id,
-            title: e.title,
-            locationName: e.location.name,
-            startAt: e.startAt,
-            status: e.status.toLowerCase(),
-            capacity: e.capacity,
-            participantCount: e.participants.length,
-            checkedInCount: e.participants.filter((p) => p.checkedInAt !== null).length,
-            guideName: e.guide?.profile?.displayName ?? null,
-          })),
-        },
-      });
+      const data = await loadAdminTenantDetail(id);
+      res.json({ data });
     } catch (error) {
       next(error);
     }
@@ -136,39 +70,13 @@ export const registerAdminTenantRoutes = (adminRouter: Router): void => {
       try {
         const { id } = req.params as z.infer<typeof idParamSchema>;
         const { status, comment } = req.body as z.infer<typeof tenantStatusSchema>;
-
-        const tenant = await findAdminTenantById(id);
-        if (!tenant) throw new ApiError(404, 'tenant_not_found', 'Tenant not found.');
-
-        const prismaStatus = status === 'active' ? TenantStatus.ACTIVE : TenantStatus.SUSPENDED;
-        await updateAdminTenantStatus(id, prismaStatus);
-
-        await createAuditLog({
+        const result = await setAdminTenantStatus({
           actorId: req.auth!.userId,
-          action: `tenant.${status === 'active' ? 'activate' : 'suspend'}`,
-          entityType: 'tenant',
-          entityId: id,
-          metadata: comment ? { comment } : undefined,
+          tenantId: id,
+          status,
+          comment,
         });
-
-        await notifyUserAdminAction({
-          userId: tenant.ownerId,
-          title: status === 'active' ? 'Host account reopened' : 'Host account suspended',
-          body:
-            status === 'active'
-              ? `Your host profile "${tenant.name}" is active again. You can create and manage events.`
-              : comment
-                ? `Your host profile "${tenant.name}" has been suspended. Reason: ${comment}`
-                : `Your host profile "${tenant.name}" has been suspended. Contact support for details.`,
-          reason: comment,
-          meta: {
-            kind: status === 'active' ? 'host_reopened' : 'host_suspended',
-            tenantId: id,
-            path: status === 'active' ? OPERATOR_OVERVIEW_PATH : PRO_MEMBERSHIP_PATH,
-          },
-        });
-
-        res.json({ message: `Tenant ${status === 'active' ? 'activated' : 'suspended'}.` });
+        res.json(result);
       } catch (error) {
         next(error);
       }
@@ -182,26 +90,12 @@ export const registerAdminTenantRoutes = (adminRouter: Router): void => {
       try {
         const { id } = req.params as z.infer<typeof idParamSchema>;
         const { featured } = req.body as z.infer<typeof discoverFeaturedSchema>;
-
-        const mongoTenant = await findTenantById(id);
-        if (!mongoTenant || mongoTenant.businessMode !== TenantBusinessMode.SHOP) {
-          throw new ApiError(400, 'shop_tenant_required', 'Discover featuring applies to gear shop tenants only.');
-        }
-
-        const updated = await setTenantDiscoverFeatured(id, featured);
-        if (!updated) throw new ApiError(404, 'tenant_not_found', 'Tenant not found.');
-
-        await createAuditLog({
+        const result = await setAdminTenantDiscoverFeatured({
           actorId: req.auth!.userId,
-          action: featured ? 'tenant.discover_feature' : 'tenant.discover_unfeature',
-          entityType: 'tenant',
-          entityId: id,
+          tenantId: id,
+          featured,
         });
-
-        res.json({
-          message: featured ? 'Shop featured on discover home.' : 'Shop removed from discover home.',
-          discoverFeatured: updated.discoverFeatured ?? false,
-        });
+        res.json(result);
       } catch (error) {
         next(error);
       }

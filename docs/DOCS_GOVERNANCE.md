@@ -48,6 +48,8 @@ Tier-2: ops (`DEV_RUN.md`, `DEPLOYMENT.md`, `PRE_DEPLOY_CHECKLIST.md`, …). Tie
 
 Do **not** put new product semantics only in `experiment/*` phase trackers or deleted Tier-4 snapshots (see [`archive/README.md`](./archive/README.md)).
 
+**Tier-1 dedupe (platform program P0):** Implementation schedules live in **`SYSTEM_COHERENCE.md` §8** only (S-phases, CPC, **§8.6 P0–P6**). `experiment/*` may hold UX supplements and **stub** pointers — do not copy §8 phase tables into experiment plans; link to §8.6 instead. Historical bodies belong in `docs/archive/`.
+
 ---
 
 ## Automated checks
@@ -56,7 +58,7 @@ Do **not** put new product semantics only in `experiment/*` phase trackers or de
 |---------|--------|
 | `npm run verify:system` | Full alignment (docs, domain, bounded-context manifest, explore) |
 | `npm run verify:system:quick` | CI subset |
-| `npm run verify:docs` | Tier-1 exists; banned phrases; merged-doc stubs |
+| `npm run verify:docs` | Tier-1 exists; banned phrases; merged-doc stubs; `experiment/*` plan file cap (§8.6.4) |
 | `npm run verify:domain` | Routing + bounded-context tests |
 | `npm run verify:host-member` | Host/member slice only |
 

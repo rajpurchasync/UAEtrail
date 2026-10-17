@@ -168,7 +168,7 @@ const startDockerStack = async (env) => {
   console.log('');
   console.log('Project stack is up.');
   console.log(`App:        ${frontendUrl}`);
-  console.log(`API:        ${frontendUrl}/api/v1`);
+  console.log(`API:        ${frontendUrl}/api`);
   console.log(`API Docs:   ${frontendUrl}/api/docs`);
   console.log('Grafana:    http://localhost:3000  (set GRAFANA_ADMIN_PASSWORD in .env)');
   console.log('Prometheus: http://localhost:9090');
@@ -185,7 +185,7 @@ const main = async () => {
     S3_SECRET_ACCESS_KEY: process.env.S3_SECRET_ACCESS_KEY || 'minioadmin',
     APP_BASE_URL: process.env.APP_BASE_URL || 'http://localhost',
     APP_BASE_URLS: process.env.APP_BASE_URLS || 'http://localhost,http://localhost:5175',
-    VITE_API_BASE_URL: process.env.VITE_API_BASE_URL || '/api/v1',
+    VITE_API_BASE_URL: process.env.VITE_API_BASE_URL || '/api',
     FRONTEND_PORT: process.env.FRONTEND_PORT || '5175'
   };
 

@@ -1,19 +1,12 @@
 import type { Router } from 'express';
 import { z } from 'zod';
 import { createAuditLog } from '../../lib/audit.js';
-import { ApiError } from '../../lib/api-error.js';
-import { findTenantActivityBasic, findTenantActivityById } from '../../lib/activities-store.js';
-import {
-  clearActivityParticipantCheckIn,
-  findActivityParticipantByIdAndActivity,
-  listActivityParticipantsWithUsers,
-} from '../../lib/activity-engagement-store.js';
-import { findActivityDocInMongo } from '../../lib/entity-sync.js';
-import { activityTimingHasEnded, mapHostParticipantToDto } from '../../lib/participant-roster-dto.js';
 import { ORG_ACTIVITY_EDIT_ROLES } from '../../lib/org-permissions.js';
 import { requireOrgRole } from '../../middleware/tenant.js';
 import { validate } from '../../middleware/validate.js';
 import { performParticipantCheckIn } from '../../services/checkin.js';
+import { undoTenantActivityParticipantCheckIn } from '../../services/operator-activity-participant-commands.js';
+import { loadTenantActivityParticipantRoster } from '../../services/operator-activity-participant-read.js';
 import {
   rateActivityParticipantAsHost,
   revokeActivityParticipantAsHost,
@@ -38,37 +31,8 @@ export const registerOperatorActivityParticipantRoutes = (hostActivitiesRouter: 
     try {
       const tenantId = req.tenantContext!.tenantId;
       const { id } = req.params as z.infer<typeof idParamSchema>;
-
-      const activity = await findTenantActivityBasic(id, tenantId);
-      if (!activity) throw new ApiError(404, 'activity_not_found', 'Activity not found.');
-
-      const eventDoc = await findActivityDocInMongo(id);
-      const activityEnded = eventDoc
-        ? activityTimingHasEnded(eventDoc.startAt, eventDoc.endAt ?? null)
-        : false;
-
-      const participants = await listActivityParticipantsWithUsers(id);
-
-      res.json({
-        data: {
-          activityId: id,
-          activityTitle: activity.title,
-          capacity: activity.capacity,
-          activityEnded,
-          participants: participants.map((p) =>
-            mapHostParticipantToDto(
-              p,
-              {
-                displayName: p.user.profile?.displayName ?? p.user.email,
-                email: p.user.email,
-                phone: p.user.profile?.phone ?? null,
-                avatarUrl: p.user.profile?.avatarUrl ?? null,
-              },
-              activityEnded
-            )
-          ),
-        },
-      });
+      const data = await loadTenantActivityParticipantRoster(tenantId, id);
+      res.json({ data });
     } catch (error) {
       next(error);
     }
@@ -109,20 +73,11 @@ export const registerOperatorActivityParticipantRoutes = (hostActivitiesRouter: 
         const tenantId = req.tenantContext!.tenantId;
         const { id, participantId } = req.params as z.infer<typeof participantIdSchema>;
 
-        const activity = await findTenantActivityById(id, tenantId);
-        if (!activity) throw new ApiError(404, 'activity_not_found', 'Activity not found.');
-
-        const participant = await findActivityParticipantByIdAndActivity(participantId, id);
-        if (!participant) throw new ApiError(404, 'participant_not_found', 'Participant not found.');
-
-        await clearActivityParticipantCheckIn(participantId);
-
-        await createAuditLog({
-          actorId: req.auth!.userId,
-          action: 'participant.undo_checkin',
-          entityType: 'activity_participant',
-          entityId: participantId,
+        await undoTenantActivityParticipantCheckIn({
           tenantId,
+          activityId: id,
+          participantId,
+          actorUserId: req.auth!.userId,
         });
 
         res.json({ message: 'Check-in undone.' });

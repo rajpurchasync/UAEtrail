@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { validate } from '../../middleware/validate.js';
+import { listAdminContentReports } from '../../services/admin-content-reports-read.js';
 
 const contentReportsQuerySchema = z.object({
   page: z.coerce.number().int().positive().default(1),
@@ -12,12 +13,7 @@ export const registerAdminContentReportRoutes = (adminRouter: Router): void => {
   adminRouter.get('/reports', validate({ query: contentReportsQuerySchema }), async (req, res, next) => {
     try {
       const { page, pageSize } = req.query as unknown as z.infer<typeof contentReportsQuerySchema>;
-      const { listContentReportsAdmin } = await import('../../lib/content-reports-store.js');
-      const { items, total } = await listContentReportsAdmin({
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-      });
-
+      const { items, total } = await listAdminContentReports({ page, pageSize });
       res.json({
         data: items,
         pagination: {

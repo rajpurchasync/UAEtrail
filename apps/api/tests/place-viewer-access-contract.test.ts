@@ -31,7 +31,7 @@ describe('place viewerAccess (CPC-3)', () => {
       description: 'Contract trail for place viewerAccess on public place detail reads.',
     });
 
-    const response = await request(app).get(`/api/v1/places/${place.id}`);
+    const response = await request(app).get(`/api/places/${place.id}`);
     expect(response.status).toBe(200);
     expect(response.body.viewerAccess?.level).toBe('public');
     expect(response.body.viewerAccess?.canOpenDetailPage).toBe(true);

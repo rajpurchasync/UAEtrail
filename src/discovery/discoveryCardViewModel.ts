@@ -9,6 +9,7 @@ import {
   type DiscoveryCardModel,
 } from './discoveryCardModel';
 import { finalizeExploreCardLinkedRideshare } from '../explore/linkedRideshareExplore';
+import { isExploreMapDiscoveryProjectionEnabled } from '../explore/exploreMapDiscoveryProjection';
 
 /**
  * Full discovery card state for peek / list / poster surfaces.
@@ -28,6 +29,21 @@ export type BuildDiscoveryCardViewModelOptions = {
   projection?: BuildDiscoveryCardProjectionOptions;
 };
 
+/** Keep legacy `card` display fields in sync with server L1 projection. */
+const mergeServerDiscoveryProjectionOntoCard = (
+  card: DiscoveryCardModel,
+  projection: DiscoveryCardProjection
+): DiscoveryCardModel => ({
+  ...card,
+  path: projection.path,
+  headline: projection.headline,
+  listTitle: projection.listTitle,
+  subtitle: projection.subtitle,
+  primaryCta: projection.primaryCta,
+  sharePath: projection.sharePath,
+  coverImage: projection.imageUrl ?? card.coverImage
+});
+
 /**
  * Single entry point for map/list discovery cards (R1).
  * Peek and map list selection should use this instead of `buildExploreCardModel` directly.
@@ -39,6 +55,13 @@ export const buildDiscoveryCardViewModel = (
   let card = buildDiscoveryCardModel(item);
   if (options.mapItems) {
     card = finalizeExploreCardLinkedRideshare(card, item, options.mapItems);
+  }
+  if (isExploreMapDiscoveryProjectionEnabled() && item.discoveryCard) {
+    const projection = item.discoveryCard;
+    return {
+      projection,
+      card: mergeServerDiscoveryProjectionOntoCard(card, projection)
+    };
   }
   const projection = buildDiscoveryCardProjectionFromMapItem(item, {
     sharePath: options.projection?.sharePath ?? card.sharePath,

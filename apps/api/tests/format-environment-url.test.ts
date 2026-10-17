@@ -10,8 +10,8 @@ describe('formatEnvironmentUrl', () => {
   });
 
   it('leaves relative and production URLs unchanged', () => {
-    expect(formatEnvironmentUrl('/api/v1/media/local/key', 'http://localhost:9000')).toBe(
-      '/api/v1/media/local/key'
+    expect(formatEnvironmentUrl('/api/media/local/key', 'http://localhost:9000')).toBe(
+      '/api/media/local/key'
     );
     expect(
       formatEnvironmentUrl('https://uaetrail-public.s3.amazonaws.com/photo.jpg', 'http://localhost:9000')

@@ -1,16 +1,9 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { createAuditLog } from '../../lib/audit.js';
-import { ApiError } from '../../lib/api-error.js';
 import { paginatedResponse, paginationSchema } from '../../lib/pagination.js';
 import { validate } from '../../middleware/validate.js';
-import { GROUPS_PATH } from '../../lib/member-routes.js';
-import { notifyUserAdminAction } from '../../services/admin-notifications.js';
-import {
-  getSocialGroupAdminDetail,
-  listAllSocialGroupsAdmin,
-  updateGroupStatus,
-} from '../../lib/social-groups-store.js';
+import { setAdminSocialGroupStatus } from '../../services/admin-group-commands.js';
+import { listAdminSocialGroupsPage, loadAdminSocialGroupDetail } from '../../services/admin-group-read.js';
 
 const idParamSchema = z.object({ id: z.string().min(1) });
 
@@ -49,25 +42,13 @@ export const registerAdminGroupRoutes = (adminRouter: Router): void => {
     try {
       const query = req.query as unknown as z.infer<typeof groupListQuerySchema>;
       const pg = paginationSchema.parse({ page: query.page, pageSize: query.pageSize });
-      const { skip, take } = { skip: (pg.page - 1) * pg.pageSize, take: pg.pageSize };
-      const { data, total } = await listAllSocialGroupsAdmin({
-        skip,
-        take,
+      const { items, total } = await listAdminSocialGroupsPage({
+        page: pg.page,
+        pageSize: pg.pageSize,
         search: query.search,
         type: query.type,
       });
-
-      res.json(
-        paginatedResponse(
-          data.map((group) => ({
-            ...group,
-            createdAt: group.createdAt.toISOString(),
-            updatedAt: group.updatedAt.toISOString(),
-          })),
-          total,
-          pg
-        )
-      );
+      res.json(paginatedResponse(items, total, pg));
     } catch (error) {
       next(error);
     }
@@ -76,33 +57,8 @@ export const registerAdminGroupRoutes = (adminRouter: Router): void => {
   adminRouter.get('/groups/:id', validate({ params: idParamSchema }), async (req, res, next) => {
     try {
       const { id } = req.params as z.infer<typeof idParamSchema>;
-      const detail = await getSocialGroupAdminDetail(id);
-      if (!detail) {
-        throw new ApiError(404, 'group_not_found', 'Group not found.');
-      }
-
-      res.json({
-        data: {
-          group: {
-            ...detail.group,
-            createdAt: detail.group.createdAt.toISOString(),
-            updatedAt: detail.group.updatedAt.toISOString(),
-          },
-          admin: detail.admin,
-          members: detail.members.map((member) => ({
-            ...member,
-            createdAt: member.createdAt.toISOString(),
-          })),
-          invites: detail.invites.map((invite) => ({
-            ...invite,
-            acceptedAt: invite.acceptedAt?.toISOString() ?? null,
-            expiresAt: invite.expiresAt.toISOString(),
-            createdAt: invite.createdAt.toISOString(),
-            updatedAt: invite.updatedAt.toISOString(),
-          })),
-          stats: detail.stats,
-        },
-      });
+      const data = await loadAdminSocialGroupDetail(id);
+      res.json({ data });
     } catch (error) {
       next(error);
     }
@@ -115,45 +71,13 @@ export const registerAdminGroupRoutes = (adminRouter: Router): void => {
       try {
         const { id } = req.params as z.infer<typeof idParamSchema>;
         const { status, comment } = req.body as z.infer<typeof groupStatusSchema>;
-
-        const detail = await getSocialGroupAdminDetail(id);
-        if (!detail) {
-          throw new ApiError(404, 'group_not_found', 'Group not found.');
-        }
-
-        const updated = await updateGroupStatus(id, status);
-        if (!updated) {
-          throw new ApiError(404, 'group_not_found', 'Group not found.');
-        }
-
-        await createAuditLog({
+        const result = await setAdminSocialGroupStatus({
           actorId: req.auth!.userId,
-          action: `group.${status === 'active' ? 'activate' : 'suspend'}`,
-          entityType: 'group',
-          entityId: id,
-          metadata: comment ? { comment } : undefined,
+          groupId: id,
+          status,
+          comment,
         });
-
-        if (detail.admin) {
-          await notifyUserAdminAction({
-            userId: detail.admin.id,
-            title: status === 'active' ? 'Group reactivated' : 'Group suspended',
-            body:
-              status === 'active'
-                ? `Your group "${detail.group.name}" is active again.`
-                : comment
-                  ? `Your group "${detail.group.name}" has been suspended. Reason: ${comment}`
-                  : `Your group "${detail.group.name}" has been suspended by an administrator.`,
-            reason: comment,
-            meta: {
-              kind: status === 'active' ? 'group_reactivated' : 'group_suspended',
-              groupId: id,
-              path: GROUPS_PATH,
-            },
-          });
-        }
-
-        res.json({ message: `Group ${status === 'active' ? 'activated' : 'suspended'}.` });
+        res.json(result);
       } catch (error) {
         next(error);
       }

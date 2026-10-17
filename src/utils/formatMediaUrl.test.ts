@@ -4,8 +4,8 @@ import { extractMediaStorageKey, formatMediaUrl } from './formatMediaUrl';
 describe('formatMediaUrl', () => {
   it('extracts keys from API local/public URLs', () => {
     const key = 'tenants/t1/activities/123-photo.jpg';
-    expect(extractMediaStorageKey(`/api/v1/media/public/${key}`)).toBe(key);
-    expect(extractMediaStorageKey(`/api/v1/media/local/${key}`)).toBe(key);
+    expect(extractMediaStorageKey(`/api/media/public/${key}`)).toBe(key);
+    expect(extractMediaStorageKey(`/api/media/local/${key}`)).toBe(key);
   });
 
   it('extracts keys from direct bucket URLs', () => {
@@ -16,12 +16,12 @@ describe('formatMediaUrl', () => {
   it('rewrites public media to API proxy URLs', () => {
     const key = 'tenants/t1/activities/123-photo.jpg';
     expect(formatMediaUrl(`http://localhost:9000/uaetrail-public/${key}`)).toBe(
-      `/api/v1/media/public/${key}`
+      `/api/media/public/${key}`
     );
   });
 
   it('keeps resolve URLs for private media', () => {
-    const url = '/api/v1/media/resolve?key=users%2Fu1%2Favatars%2Fphoto.jpg';
+    const url = '/api/media/resolve?key=users%2Fu1%2Favatars%2Fphoto.jpg';
     expect(formatMediaUrl(url)).toBe(url);
   });
 });

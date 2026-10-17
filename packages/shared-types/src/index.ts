@@ -880,6 +880,11 @@ export interface ExploreMapItemDTO {
    * Set on `GET /explore/map` after cache read — not stored in Redis payload.
    */
   viewerAccess?: ActivityViewerAccessDTO;
+  /**
+   * Slim L1 discovery read model (`EXPLORE_MAP_DISCOVERY_PROJECTION=1`).
+   * Attached on `GET /explore/map` after cache read — not stored in Redis.
+   */
+  discoveryCard?: import('./discovery-card-projection.js').DiscoveryCardProjection | null;
 }
 
 export interface ProductClick {
@@ -1660,6 +1665,7 @@ export type { PlaceViewerAccessDTO, PlaceViewerAccessLevel } from './place-viewe
 export {
   computeFacilityViewerAccess,
   computePlaceViewerAccess,
+  resolveCatalogSubmitterUserId,
   resolveCatalogViewerLevel,
 } from './catalog-detail-exposure.js';
 

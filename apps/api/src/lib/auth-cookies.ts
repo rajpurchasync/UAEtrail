@@ -1,9 +1,10 @@
 import type { Response } from 'express';
 import { env } from '../config/env.js';
+import { apiHttpPath } from './api-http-prefix.js';
 
 export const REFRESH_COOKIE_NAME = 'uaetrail_refresh';
 
-const cookiePath = '/api/v1/auth';
+const cookiePath = apiHttpPath('/auth');
 
 export const setRefreshCookie = (res: Response, refreshToken: string): void => {
   res.cookie(REFRESH_COOKIE_NAME, refreshToken, {

@@ -3,14 +3,13 @@ import { z } from 'zod';
 import { requireAuth } from '../../middleware/auth.js';
 import { validate } from '../../middleware/validate.js';
 import {
-  clearMemberGoal,
-  createMemberGoal,
-  deleteMemberGoal,
-  getActiveMemberGoal,
-  listMemberGoals,
-  updateMemberGoal,
-  upsertMemberGoal,
-} from '../../lib/member-goals-store.js';
+  clearMyActiveMemberGoal,
+  createMyMemberGoal,
+  deleteMyMemberGoal,
+  updateMyMemberGoal,
+  upsertMyActiveMemberGoal,
+} from '../../services/me-goals-commands.js';
+import { listMyMemberGoals, loadMyActiveMemberGoal } from '../../services/me-goals-read.js';
 
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 
@@ -27,7 +26,7 @@ const idParamSchema = z.object({ id: z.string().min(1) });
 export const registerMeGoalsRoutes = (router: Router): void => {
   router.get('/me/goals', requireAuth, async (req, res, next) => {
     try {
-      const data = await listMemberGoals(req.auth!.userId);
+      const data = await listMyMemberGoals(req.auth!.userId);
       res.json({ data });
     } catch (error) {
       next(error);
@@ -40,7 +39,7 @@ export const registerMeGoalsRoutes = (router: Router): void => {
     validate({ body: upsertGoalSchema }),
     async (req, res, next) => {
       try {
-        const data = await createMemberGoal(req.auth!.userId, req.body);
+        const data = await createMyMemberGoal(req.auth!.userId, req.body);
         res.status(201).json({ data });
       } catch (error) {
         next(error);
@@ -55,7 +54,7 @@ export const registerMeGoalsRoutes = (router: Router): void => {
     async (req, res, next) => {
       try {
         const { id } = req.params as z.infer<typeof idParamSchema>;
-        const data = await updateMemberGoal(req.auth!.userId, id, req.body);
+        const data = await updateMyMemberGoal(req.auth!.userId, id, req.body);
         res.json({ data });
       } catch (error) {
         next(error);
@@ -70,7 +69,7 @@ export const registerMeGoalsRoutes = (router: Router): void => {
     async (req, res, next) => {
       try {
         const { id } = req.params as z.infer<typeof idParamSchema>;
-        await deleteMemberGoal(req.auth!.userId, id);
+        await deleteMyMemberGoal(req.auth!.userId, id);
         res.json({ data: null });
       } catch (error) {
         next(error);
@@ -80,7 +79,7 @@ export const registerMeGoalsRoutes = (router: Router): void => {
 
   router.get('/me/goals/active', requireAuth, async (req, res, next) => {
     try {
-      const data = await getActiveMemberGoal(req.auth!.userId);
+      const data = await loadMyActiveMemberGoal(req.auth!.userId);
       res.json({ data });
     } catch (error) {
       next(error);
@@ -93,7 +92,7 @@ export const registerMeGoalsRoutes = (router: Router): void => {
     validate({ body: upsertGoalSchema }),
     async (req, res, next) => {
       try {
-        const data = await upsertMemberGoal(req.auth!.userId, req.body);
+        const data = await upsertMyActiveMemberGoal(req.auth!.userId, req.body);
         res.json({ data });
       } catch (error) {
         next(error);
@@ -103,7 +102,7 @@ export const registerMeGoalsRoutes = (router: Router): void => {
 
   router.delete('/me/goals/active', requireAuth, async (req, res, next) => {
     try {
-      await clearMemberGoal(req.auth!.userId);
+      await clearMyActiveMemberGoal(req.auth!.userId);
       res.json({ data: null });
     } catch (error) {
       next(error);

@@ -13,7 +13,7 @@ describe('legacyPublishingPathDeprecation', () => {
     expect(index).toMatch(/legacyHostApiRewrite/);
   });
 
-  it('sets Deprecation and Link for /api/v1/host/* and /me/host-status', () => {
+  it('sets Deprecation and Link for /api/host/* and /me/host-status', () => {
     const headers: Record<string, string> = {};
     const res = {
       setHeader: (key: string, value: string) => {
@@ -23,27 +23,27 @@ describe('legacyPublishingPathDeprecation', () => {
     const next = () => undefined;
 
     legacyPublishingPathDeprecation(
-      { originalUrl: '/api/v1/host/activities', url: '/api/v1/host/activities' } as never,
+      { originalUrl: '/api/host/activities', url: '/api/host/activities' } as never,
       res as never,
       next
     );
     expect(headers.Deprecation).toBe('true');
-    expect(headers.Link).toContain('/api/v1/operator/activities');
+    expect(headers.Link).toContain('/api/operator/activities');
     expect(headers.Link).toContain('rel="alternate"');
     expect(headers.Link).not.toContain('successor-version');
 
     legacyPublishingPathDeprecation(
-      { originalUrl: '/api/v1/me/host-status', url: '/api/v1/me/host-status' } as never,
+      { originalUrl: '/api/me/host-status', url: '/api/me/host-status' } as never,
       res as never,
       next
     );
-    expect(headers.Link).toContain('/api/v1/me/status');
+    expect(headers.Link).toContain('/api/me/status');
 
     legacyPublishingPathDeprecation(
-      { originalUrl: '/api/v1/me/operator-status', url: '/api/v1/me/operator-status' } as never,
+      { originalUrl: '/api/me/operator-status', url: '/api/me/operator-status' } as never,
       res as never,
       next
     );
-    expect(headers.Link).toContain('/api/v1/me/status');
+    expect(headers.Link).toContain('/api/me/status');
   });
 });

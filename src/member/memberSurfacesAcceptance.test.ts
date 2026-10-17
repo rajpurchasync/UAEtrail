@@ -151,8 +151,9 @@ describe('member surfaces §11 acceptance (automated)', () => {
 
   it('S13-W4: MemberProfileView sections gate on canViewFullProfile from viewerAccess', () => {
     const page = read('src/pages/MemberProfile.tsx');
+    const profilePageData = read('src/hooks/useMemberProfilePage.ts');
     expect(page).toMatch(/canViewFullProfile=\{viewerAccess\?\.canViewFullProfile/);
-    expect(page).toMatch(/!viewerAccess\?\.canViewFullProfile/);
+    expect(profilePageData).toMatch(/viewerAccess\?\.canViewFullProfile/);
     const view = read('src/components/profile/MemberProfileView.tsx');
     expect(view).toMatch(/canViewFullProfile && profile\.yearGoal/);
     expect(view).toMatch(/canViewFullProfile && profile\.bio/);
@@ -211,8 +212,11 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(plan).toContain('PlanUpcomingView');
     const upcoming = read('src/components/plan/PlanUpcomingView.tsx');
     expect(upcoming).toContain('PlanHostingUpcoming');
+    expect(upcoming).toContain('PlanHostingManageProvider');
+    const sheets = read('src/components/plan/PlanHostingManageSheets.tsx');
+    expect(sheets).toContain('ActivityManageSheet');
     const hosted = read('src/components/plan/PlanHostingUpcoming.tsx');
-    expect(hosted).toContain('ActivityManageSheet');
+    expect(hosted).toContain('usePlanHostingManage');
     expect(hosted).not.toMatch(/\/host\/requests|HOST_REQUESTS_PATH/);
     const sheet = read('src/components/activity/ActivityManageSheet.tsx');
     expect(sheet).toContain('decideActivityJoinRequest');
@@ -358,7 +362,7 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(audience).toContain('groupChatPostPolicy');
   });
 
-  it('AD-3 v3.2: tab footers, host Buddies hub, hero status on activity detail', () => {
+  it('AD-3 detail shell: tab footers, host Buddies hub, hero status on activity detail', () => {
     const planColumn = read('src/components/activity/detail/ActivityDetailPlanColumn.tsx');
     const sidebarColumn = read('src/components/activity/detail/ActivityDetailSidebarColumn.tsx');
     const model = read('src/components/activity/detail/useActivityDetailViewModel.tsx');
@@ -384,7 +388,7 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(read('packages/shared-types/src/activity-detail-presentation.ts')).toContain(
       'buildActivityPresentationDTO'
     );
-    expect(read('apps/api/src/routes/user/registerPublicActivityRoutes.ts')).toContain('presentation');
+    expect(read('apps/api/src/services/activity-public-read.ts')).toContain('presentation');
   });
 
   it('AD-8: post check-in review prompts on activity detail Plan/Buddies', () => {
@@ -442,7 +446,10 @@ describe('member surfaces §11 acceptance (automated)', () => {
     const routes = read('apps/api/src/routes/user/registerPublicActivityRoutes.ts');
     expect(routes).not.toMatch(/resolveActivityViewEntitlementContext/);
     expect(routes).not.toMatch(/activity-view-entitlement-context/);
-    expect(routes).toContain('composeActivityViewerAccess');
+    expect(routes).not.toMatch(/composeActivityViewerAccess/);
+    expect(read('apps/api/src/services/activity-participation-commands.ts')).toContain(
+      'composeActivityViewerAccess'
+    );
   });
 
   it('NA-arch: §22 viewer-access naming track + no sentence-long entitlement helpers', () => {

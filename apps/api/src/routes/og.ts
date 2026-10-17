@@ -1,7 +1,7 @@
 import type { Express } from 'express';
 import { z } from 'zod';
 import { env } from '../config/env.js';
-import { findPublishedActivityWithPreviewsById } from '../lib/activities-store.js';
+import { getPublishedActivityWithPreviewsForOg } from '../services/og-activity-read.js';
 import { buildActivityDto } from '../lib/mappers.js';
 import { buildActivityRedactedDetail } from '../lib/activity-redacted-detail.js';
 import {
@@ -26,7 +26,7 @@ export const registerOgRoutes = (app: Express): void => {
       }
 
       const { id } = parsed.data;
-      const event = await findPublishedActivityWithPreviewsById(id);
+      const event = await getPublishedActivityWithPreviewsForOg(id);
       if (!event) {
         res.status(404).type('text/html').send('Not found');
         return;

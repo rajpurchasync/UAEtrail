@@ -65,7 +65,7 @@ describe('chat messaging policy', () => {
     expect(receiver).toBeTruthy();
 
     const response = await request(app)
-      .post('/api/v1/chat/messages')
+      .post('/api/chat/messages')
       .set('Authorization', `Bearer ${visitorA.accessToken}`)
       .send({ receiverId: receiver!._id, content: 'Hello stranger' });
 
@@ -75,14 +75,14 @@ describe('chat messaging policy', () => {
 
   it('allows messaging an organizer after a join request is submitted', async () => {
     const joinRes = await request(app)
-      .post(`/api/v1/activities/${activityId}/requests`)
+      .post(`/api/activities/${activityId}/requests`)
       .set('Authorization', `Bearer ${visitorB.accessToken}`)
       .send({ note: 'Would love to join' });
 
     expect(joinRes.status).toBe(201);
 
     const response = await request(app)
-      .post('/api/v1/chat/messages')
+      .post('/api/chat/messages')
       .set('Authorization', `Bearer ${visitorB.accessToken}`)
       .send({ receiverId: organizerId, content: 'Hi organizer', activityId });
 
@@ -92,7 +92,7 @@ describe('chat messaging policy', () => {
 
   it('allows activity inquiry messages when activityId matches a published activity host', async () => {
     const response = await request(app)
-      .post('/api/v1/chat/messages')
+      .post('/api/chat/messages')
       .set('Authorization', `Bearer ${visitorA.accessToken}`)
       .send({
         receiverId: organizerId,
@@ -106,7 +106,7 @@ describe('chat messaging policy', () => {
 
   it('persists replyToMessageId and enriches reply preview in the thread', async () => {
     const parentRes = await request(app)
-      .post('/api/v1/chat/messages')
+      .post('/api/chat/messages')
       .set('Authorization', `Bearer ${visitorB.accessToken}`)
       .send({
         receiverId: organizerId,
@@ -118,7 +118,7 @@ describe('chat messaging policy', () => {
     const parentId = parentRes.body.data?.id as string;
 
     const replyRes = await request(app)
-      .post('/api/v1/chat/messages')
+      .post('/api/chat/messages')
       .set('Authorization', `Bearer ${visitorB.accessToken}`)
       .send({
         receiverId: organizerId,
@@ -133,7 +133,7 @@ describe('chat messaging policy', () => {
     expect(replyRes.body.data?.replyToPreview?.bodySnippet).toContain('meetup');
 
     const threadRes = await request(app)
-      .get(`/api/v1/chat/messages/${organizerId}`)
+      .get(`/api/chat/messages/${organizerId}`)
       .set('Authorization', `Bearer ${visitorB.accessToken}`);
 
     expect(threadRes.status).toBe(200);
@@ -150,33 +150,33 @@ describe('chat messaging policy', () => {
     expect(userB).toBeTruthy();
 
     const requestRes = await request(app)
-      .post('/api/v1/me/buddy-requests')
+      .post('/api/me/buddy-requests')
       .set('Authorization', `Bearer ${visitorA.accessToken}`)
       .send({ targetUserId: userB!._id });
 
     expect(requestRes.status).toBe(201);
 
     const acceptRes = await request(app)
-      .post(`/api/v1/me/buddy-requests/${requestRes.body.data.id}/accept`)
+      .post(`/api/me/buddy-requests/${requestRes.body.data.id}/accept`)
       .set('Authorization', `Bearer ${visitorB.accessToken}`);
 
     expect(acceptRes.status).toBe(200);
 
     const messageRes = await request(app)
-      .post('/api/v1/chat/messages')
+      .post('/api/chat/messages')
       .set('Authorization', `Bearer ${visitorA.accessToken}`)
       .send({ receiverId: userB!._id, content: 'Hey buddy' });
 
     expect(messageRes.status).toBe(201);
 
     const unfriendRes = await request(app)
-      .post(`/api/v1/me/buddies/${userB!._id}/unfriend`)
+      .post(`/api/me/buddies/${userB!._id}/unfriend`)
       .set('Authorization', `Bearer ${visitorA.accessToken}`);
 
     expect(unfriendRes.status).toBe(200);
 
     const blockedSend = await request(app)
-      .post('/api/v1/chat/messages')
+      .post('/api/chat/messages')
       .set('Authorization', `Bearer ${visitorB.accessToken}`)
       .send({ receiverId: userA!._id, content: 'Can we still chat?' });
 
@@ -184,7 +184,7 @@ describe('chat messaging policy', () => {
     expect(blockedSend.body.error?.code).toBe('message_not_allowed');
 
     const blockedRead = await request(app)
-      .get(`/api/v1/chat/messages/${userA!._id}`)
+      .get(`/api/chat/messages/${userA!._id}`)
       .set('Authorization', `Bearer ${visitorB.accessToken}`);
 
     expect(blockedRead.status).toBe(403);
@@ -205,7 +205,7 @@ describe('chat messaging policy', () => {
     }
 
     const inboxRes = await request(app)
-      .get('/api/v1/chat/inbox')
+      .get('/api/chat/inbox')
       .set('Authorization', `Bearer ${visitorB.accessToken}`);
     expect(inboxRes.status).toBe(200);
     const directIds = (inboxRes.body.data?.direct ?? []).map((row: { userId: string }) => row.userId);

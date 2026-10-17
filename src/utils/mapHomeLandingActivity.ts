@@ -1,7 +1,7 @@
 import type { HomeLandingActivity } from '../content/homeLanding';
 import { HOME_ACTIVITIES } from '../content/homeMarketing';
-import type { ActivityCardProps } from '../components/home/v2/ActivityCard';
-import type { PriceTagVariant } from '../components/home/v2/PriceTag';
+import type { ActivityCardProps } from '../components/home/marketing/ActivityCard';
+import type { PriceTagVariant } from '../components/home/marketing/PriceTag';
 import { resolveActivityTypeCoverImage } from '../config/activityCoverImages';
 import { activityPriceLabel, inferActivityPricingMode } from './activityPricing';
 import { emirateIdFromRegion } from './homeLandingEmirate';

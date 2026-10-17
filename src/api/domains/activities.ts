@@ -212,18 +212,6 @@ export const activitiesApi = {
         headers: organisationRequestHeaders(tenantId),
       }),
 
-    /** @deprecated Prefer `exploreApi.linkParticipantIntentToActivity` (poster-owned demand). */
-    fulfillParticipantIntent: (tenantId: string, intentId: string, activityId: string) =>
-    apiRequest<import('@uaetrail/shared-types').ParticipantIntentDTO>(
-      `/operator/participant-intents/${intentId}/fulfill`,
-      {
-        method: 'POST',
-        auth: true,
-        headers: organisationRequestHeaders(tenantId),
-        body: JSON.stringify({ activityId })
-      }
-    ),
-
     duplicateActivity: (tenantId: string, activityId: string) =>
       apiRequest<{ data: ActivityDTO }>(`/operator/activities/${activityId}/duplicate`, {
         method: 'POST',

@@ -27,7 +27,7 @@ describe('formatEnvironmentUrl', () => {
   });
 
   it('leaves relative, blob, and data URLs unchanged', () => {
-    expect(formatEnvironmentUrl('/api/v1/media/local/key')).toBe('/api/v1/media/local/key');
+    expect(formatEnvironmentUrl('/api/media/local/key')).toBe('/api/media/local/key');
     expect(formatEnvironmentUrl('blob:http://localhost:5175/abc')).toBe('blob:http://localhost:5175/abc');
     expect(formatEnvironmentUrl('data:image/png;base64,abc')).toBe('data:image/png;base64,abc');
   });

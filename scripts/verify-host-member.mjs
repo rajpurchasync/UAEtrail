@@ -6,12 +6,16 @@
 import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
+import { stripNpmDevdirEnv, stripNpmDevdirFromProcess } from './strip-npm-devdir-env.mjs';
+
+stripNpmDevdirFromProcess();
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
+const childEnv = () => stripNpmDevdirEnv();
 
 const run = (label, command) => {
   console.log(`\n[verify:host-member] ${label}`);
-  execSync(command, { cwd: root, stdio: 'inherit' });
+  execSync(command, { cwd: root, stdio: 'inherit', env: childEnv() });
 };
 
 try {

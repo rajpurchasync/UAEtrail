@@ -88,6 +88,8 @@ export interface Location {
   guidePreview: string | null;
   unlockPriceAed: number;
   submittedById: string | null;
+  /** Canonical member submitter (CPC); dual-read with {@link submittedById} on legacy rows. */
+  registeredByUserId?: string | null;
   /** When false, place exists for activity linkage only — not in public venue catalog. */
   registryListed?: boolean;
   /** Provenance for imported venue catalogs (`catalog`) or legacy OSM rows. */

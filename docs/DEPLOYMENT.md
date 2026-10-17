@@ -39,7 +39,7 @@ All defined in `docker-compose.yml`.
 ## Prerequisites
 
 - Docker Engine ≥ 24 and Docker Compose v2
-- Node.js 24.18+ and npm 11.16+ on the host (used by `run-project.sh` / `run-project-mac.sh` / `run-project.bat`; see `.nvmrc`)
+- Node.js 24.22+ and npm 11.16+ on the host (used by `run-project.sh` / `run-project-mac.sh` / `run-project.bat`; see `.nvmrc`)
 - A domain name (for HTTPS)
 - SSH access to the VPS
 - MongoDB Atlas URIs for test, staging, and production
@@ -202,7 +202,7 @@ curl -s http://localhost | head -5
 # → <!doctype html>...
 
 # API responds through the frontend proxy
-curl http://localhost/api/v1/locations
+curl http://localhost/api/locations
 ```
 
 ---

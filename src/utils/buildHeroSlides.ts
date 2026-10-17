@@ -1,6 +1,6 @@
 import { HOME_HERO_IMAGE_JPEG, HOME_HERO_IMAGE_WEBP } from '../config/seo';
 import { marketingHeroLayoutSlide } from '../config/marketingHeroImages';
-import type { HeroCarouselSlide } from '../components/home/v2/heroCarouselTypes';
+import type { HeroCarouselSlide } from '../components/home/marketing/heroCarouselTypes';
 
 /** Curated marketing backgrounds only — live outings appear in `HomeActivitiesSection`. */
 export const MARKETING_HERO_CAROUSEL_SLIDES: readonly HeroCarouselSlide[] = [

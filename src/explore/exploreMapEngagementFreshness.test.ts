@@ -16,8 +16,8 @@ import {
   refreshExploreMapAfterActivityEngagement,
 } from './exploreMapEngagementFreshness';
 
-vi.mock('./exploreMapVnext', () => ({
-  isExploreMapVnextEnabled: vi.fn(() => false),
+vi.mock('./exploreMapBbox', () => ({
+  isExploreMapBboxEnabled: vi.fn(() => false),
 }));
 
 describe('exploreMapEngagementFreshness', () => {
@@ -48,9 +48,9 @@ describe('exploreMapEngagementFreshness', () => {
     expect(cached?.[0]?.activity?.slotsAvailable).toBe(2);
   });
 
-  it('refreshExploreMapAfterActivityEngagement invalidates explore map on approval when vNext is on', async () => {
-    const { isExploreMapVnextEnabled } = await import('./exploreMapVnext');
-    vi.mocked(isExploreMapVnextEnabled).mockReturnValueOnce(true);
+  it('refreshExploreMapAfterActivityEngagement invalidates explore map on approval when bbox is on', async () => {
+    const { isExploreMapBboxEnabled } = await import('./exploreMapBbox');
+    vi.mocked(isExploreMapBboxEnabled).mockReturnValueOnce(true);
 
     const queryClient = new QueryClient();
     const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries').mockResolvedValue(undefined);
@@ -94,9 +94,9 @@ describe('exploreMapEngagementFreshness', () => {
     invalidateSpy.mockRestore();
   });
 
-  it('afterHostJoinDecisionClientRefresh invalidates explore map on approve when vNext is on', async () => {
-    const { isExploreMapVnextEnabled } = await import('./exploreMapVnext');
-    vi.mocked(isExploreMapVnextEnabled).mockReturnValueOnce(true);
+  it('afterHostJoinDecisionClientRefresh invalidates explore map on approve when bbox is on', async () => {
+    const { isExploreMapBboxEnabled } = await import('./exploreMapBbox');
+    vi.mocked(isExploreMapBboxEnabled).mockReturnValueOnce(true);
 
     const queryClient = new QueryClient();
     const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries').mockResolvedValue(undefined);
@@ -110,9 +110,9 @@ describe('exploreMapEngagementFreshness', () => {
     invalidateSpy.mockRestore();
   });
 
-  it('afterActivityWithdrawClientRefresh invalidates explore map when vNext is on', async () => {
-    const { isExploreMapVnextEnabled } = await import('./exploreMapVnext');
-    vi.mocked(isExploreMapVnextEnabled).mockReturnValueOnce(true);
+  it('afterActivityWithdrawClientRefresh invalidates explore map when bbox is on', async () => {
+    const { isExploreMapBboxEnabled } = await import('./exploreMapBbox');
+    vi.mocked(isExploreMapBboxEnabled).mockReturnValueOnce(true);
 
     const queryClient = new QueryClient();
     const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries').mockResolvedValue(undefined);

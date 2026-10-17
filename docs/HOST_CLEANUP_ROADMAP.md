@@ -24,11 +24,11 @@ Tracks the **no big-bang** plan from the host-flow audit (Oct 2026). Member tier
 
 | Item | Status | Where |
 |------|--------|--------|
-| `POST /host/.../fulfill` deprecated + `Deprecation` header | ✅ | `registerHostDemandFulfillLegacy.ts` |
+| Third-party tenant `…/participant-intents/…/fulfill` removed (poster uses `link-activity`) | ✅ | Oct 2026 — route + `api.fulfillParticipantIntent` removed |
 | Explore `?fulfillIntent=` clears param; no third-party fulfill wizard | ✅ | `useExploreFulfillIntent.ts` |
 | Publish graduates find crew via `POST /me/.../link-activity` (non-rideshare only) | ✅ | `organizeActivityPublish.ts`, `exploreApi` |
 | **S12** hosted + seeking coherence (transport parent id, unified host peek) | ✅ | [`CREATE_FLOW.md`](./CREATE_FLOW.md), [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.2 — **S12a–d done** |
-| FE guard: no `api.fulfillParticipantIntent` | ✅ | `apiLegacyGuard.test.ts` |
+| FE guard: no reintroduced `api.fulfillParticipantIntent` | ✅ | `apiLegacyGuard.test.ts` (method removed from client) |
 | Remove legacy fulfill prefill wiring from explore selection/compose | ✅ | `organizeWizardPrefill` only; `useExploreFulfillIntent` clears deep links |
 
 ---
@@ -47,7 +47,7 @@ Tracks the **no big-bang** plan from the host-flow audit (Oct 2026). Member tier
 
 | Item | Status | Where |
 |------|--------|--------|
-| Extract legacy fulfill route from `host.ts` | ✅ | `routes/host/registerHostDemandFulfillLegacy.ts` |
+| Extract then **remove** legacy tenant fulfill route | ✅ | Removed Oct 2026; canonical `POST /me/participant-intents/:id/link-activity` |
 | `GET /me/status` in dedicated registrar | ✅ | `registerMemberStatusRoutes.ts` |
 | Split `host.ts` — team + activity request queue | ✅ | `registerHostTeamRoutes`, `registerHostActivityRequestRoutes` (`/host/requests`) |
 | Split remainder of `host.ts` (activities CRUD, roster) | ✅ | `registerHostActivityRoutes.ts`, `registerHostActivityParticipantRoutes.ts` |
@@ -104,6 +104,7 @@ Tracks the **no big-bang** plan from the host-flow audit (Oct 2026). Member tier
 | `apiLegacyGuard` bans `api.listHostActivities` / `createHostActivity` / `getHostActivityJoinRequests` outside `src/api` | ✅ | Use tenant-scoped **activity** methods (see SN-3; interim `*Operator*` on `api`) |
 | `operatorActivityClientApi` import facade (ban `hostActivityClientApi` outside shim files) | ✅ | `hostMemberGuard`, `publishingConsoleHookGuard` — **rename** to tenant activity client in SN-3 |
 | `HostStatusDTO` field rename + drop legacy `/host` API mount | ⬜ | After clients consume `/operator` only |
+| Drop tenant `…/participant-intents/…/fulfill` + `api.fulfillParticipantIntent` | ✅ | Removed Oct 2026 |
 
 ---
 

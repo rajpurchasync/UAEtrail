@@ -8,7 +8,8 @@ describe('explore seeking activities read contract', () => {
   it('exposes GET /explore/seeking-activities for people-discovery Looking for', () => {
     const registrar = read('src/routes/user/registerPublicPlaceRoutes.ts');
     expect(registrar).toMatch(/\/explore\/seeking-activities/);
-    expect(registrar).toMatch(/loadExploreSeekingActivitiesForViewer/);
+    expect(registrar).toMatch(/loadExploreSeekingActivitiesForMapViewer/);
+    expect(read('src/services/place-public-read.ts')).toMatch(/loadExploreSeekingActivitiesForViewer/);
   });
 
   it('filters published seeking activities from explore map assembler', () => {

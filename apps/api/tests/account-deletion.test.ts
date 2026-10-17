@@ -18,7 +18,7 @@ describe('account deletion', () => {
 
   it('registers and verifies a user', async () => {
     const response = await request(app)
-      .post('/api/v1/auth/register')
+      .post('/api/auth/register')
       .send({
         email,
         password,
@@ -30,7 +30,7 @@ describe('account deletion', () => {
     expect(response.status).toBe(201);
 
     const verifyRes = await request(app)
-      .post('/api/v1/auth/verify-email')
+      .post('/api/auth/verify-email')
       .send({ email, otp: getVerificationOtp(email) });
 
     expect(verifyRes.status).toBe(200);
@@ -42,7 +42,7 @@ describe('account deletion', () => {
 
   it('returns deletion info for the authenticated user', async () => {
     const response = await request(app)
-      .get('/api/v1/me/account/deletion-info')
+      .get('/api/me/account/deletion-info')
       .set('Authorization', `Bearer ${accessToken}`);
 
     expect(response.status).toBe(200);
@@ -52,20 +52,20 @@ describe('account deletion', () => {
 
   it('deletes the account and blocks subsequent login', async () => {
     const deleteRes = await request(app)
-      .delete('/api/v1/me/account')
+      .delete('/api/me/account')
       .set('Authorization', `Bearer ${accessToken}`)
       .send({ password });
 
     expect(deleteRes.status).toBe(200);
 
     const loginRes = await request(app)
-      .post('/api/v1/auth/login')
+      .post('/api/auth/login')
       .send({ email, password });
 
     expect(loginRes.status).toBe(401);
 
     const refreshRes = await request(app)
-      .post('/api/v1/auth/refresh')
+      .post('/api/auth/refresh')
       .set('Cookie', refreshCookie);
 
     expect(refreshRes.status).toBe(401);
@@ -78,7 +78,7 @@ describe('data export', () => {
     const password = 'TestPass1';
 
     await request(app)
-      .post('/api/v1/auth/register')
+      .post('/api/auth/register')
       .send({
         email,
         password,
@@ -88,13 +88,13 @@ describe('data export', () => {
       });
 
     const verifyRes = await request(app)
-      .post('/api/v1/auth/verify-email')
+      .post('/api/auth/verify-email')
       .send({ email, otp: getVerificationOtp(email) });
 
     const token = verifyRes.body.tokens.accessToken;
 
     const response = await request(app)
-      .get('/api/v1/me/export')
+      .get('/api/me/export')
       .set('Authorization', `Bearer ${token}`);
 
     expect(response.status).toBe(200);
@@ -113,7 +113,7 @@ describe('content reports', () => {
 
   it('accepts a content report from an authenticated user', async () => {
     await request(app)
-      .post('/api/v1/auth/register')
+      .post('/api/auth/register')
       .send({
         email,
         password,
@@ -123,13 +123,13 @@ describe('content reports', () => {
       });
 
     const verifyRes = await request(app)
-      .post('/api/v1/auth/verify-email')
+      .post('/api/auth/verify-email')
       .send({ email, otp: getVerificationOtp(email) });
 
     accessToken = verifyRes.body.tokens.accessToken;
 
     const response = await request(app)
-      .post('/api/v1/reports')
+      .post('/api/reports')
       .set('Authorization', `Bearer ${accessToken}`)
       .send({
         targetType: 'user',

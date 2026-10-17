@@ -7,7 +7,7 @@ const availabilityKindEnum = z.enum(
 );
 import { requireAuth } from '../../middleware/auth.js';
 import { validate } from '../../middleware/validate.js';
-import { loadExploreAvailabilityIndex } from '../../lib/member-availability-store.js';
+import { loadExplorePeopleAvailability } from '../../services/explore-availability-read.js';
 
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 
@@ -28,7 +28,7 @@ export const registerExploreAvailabilityRoutes = (router: Router): void => {
     async (req, res, next) => {
       try {
         const q = req.query as z.infer<typeof exploreAvailabilityQuerySchema>;
-        const data = await loadExploreAvailabilityIndex({
+        const data = await loadExplorePeopleAvailability({
           viewerUserId: req.auth?.userId ?? null,
           rangeStart: q.from,
           rangeEnd: q.to,

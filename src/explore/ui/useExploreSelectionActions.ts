@@ -19,7 +19,7 @@ import { openActivityGroupChat } from '../../utils/openActivityGroupChat';
 import { messagesRouteForRole } from '../../utils/authRouting';
 import { executeActivityMapPeekAction } from '../../activity/executeActivityMapPeekAction';
 import { readExploreMapItemsFromCache, reloadExploreMap } from '../../hooks/useExploreMap';
-import { isExploreMapVnextEnabled } from '../exploreMapVnext';
+import { isExploreMapBboxEnabled } from '../exploreMapBbox';
 import { invalidateMyParticipantIntentsQueries } from '../../hooks/participantIntentClientApi';
 import type { ContributeSubmitResult } from './contributeFlow';
 import type { DemandSubmitResult } from './demandFlow';
@@ -233,7 +233,7 @@ export const useExploreSelectionActions = ({
   const handleActivityPublished = useCallback(
     async (activity: ActivityDTO) => {
       if (activity.joinMode === 'private') {
-        if (isExploreMapVnextEnabled()) {
+        if (isExploreMapBboxEnabled()) {
           await reloadExploreMap(queryClient);
         }
         const peekItem = buildExploreMapItemFromActivity(
@@ -259,7 +259,7 @@ export const useExploreSelectionActions = ({
       setActivityFilter('all');
       syncExploreUrl({ filter: 'all', activityFilter: 'all', panel: 'activities' });
 
-      if (isExploreMapVnextEnabled()) {
+      if (isExploreMapBboxEnabled()) {
         await reloadExploreMap(queryClient);
       }
 

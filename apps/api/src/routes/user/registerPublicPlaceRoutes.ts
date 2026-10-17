@@ -1,76 +1,41 @@
 import type { Router } from 'express';
-import type { RequestHandler } from 'express';
 import { z } from 'zod';
-import { ActivityType, LocationUnlockSource } from '../../domain/enums.js';
-import { env } from '../../config/env.js';
 import { ApiError } from '../../lib/api-error.js';
-import {
-  findActiveLocationById,
-  findLocationForDetailView,
-  incrementActiveLocationViewCount,
-  listPopularActiveLocations,
-  listPublishedUpcomingActivitiesByLocation,
-} from '../../lib/activities-store.js';
-import { loadExploreMapForRequest } from '../../lib/explore-map-route.js';
-import { loadExploreSeekingActivitiesForViewer } from '../../services/explore-seeking-activities-read.js';
-import { listActiveLocations } from '../../lib/location-query.js';
-import { buildActivityDto, toLocationDto } from '../../lib/mappers.js';
-import { paginatedResponse } from '../../lib/pagination.js';
 import { registerPlaceAlias } from '../../lib/route-place-alias.js';
-import { buildPlaceRegistry } from '../../services/place-registry.js';
-import { buildPlaceCatalog } from '../../services/place-catalog.js';
-import { buildPlaceViewerAccess, type PlaceViewerAccessSource } from '../../services/place-viewer-access.js';
-import { UserRole } from '../../domain/enums.js';
-import { getStripe, isStripeConfigured } from '../../lib/stripe.js';
-import {
-  assertPremiumAccess,
-  buildPremiumSummary,
-  checkPremiumAccess,
-  locationHasPremiumContent,
-  readStoredFile,
-  unlockLocationForUser,
-} from '../../services/location-premium.js';
+import { paginatedResponse } from '../../lib/pagination.js';
 import { requireAuth, requireVerifiedEmail } from '../../middleware/auth.js';
 import { optionalAuth } from '../../middleware/optional-auth.js';
 import { viewLimiter } from '../../middleware/rate-limit-instances.js';
 import { validate } from '../../middleware/validate.js';
+import { UserRole } from '../../domain/enums.js';
+import { createPublicPlacePremiumCheckout } from '../../services/place-premium-commands.js';
+import {
+  loadExploreMapForViewer,
+  loadExploreSeekingActivitiesForMapViewer,
+  loadPublicPlaceCatalog,
+  loadPublicPlaceDetailPayload,
+  loadPublicPlacePremiumGuideContent,
+  loadPublicPlaceRegistry,
+  listPopularPublicPlaces,
+  listPublicPlaceUpcomingActivities,
+  listPublicPlacesPaged,
+  readPublicPlacePremiumGuidePdfFile,
+  readPublicPlacePremiumMapFile,
+  recordPublicPlaceView,
+} from '../../services/place-public-read.js';
 import {
   eventIdParamSchema,
   listFilterSchema,
   placeCatalogQuerySchema,
   placeRegistryQuerySchema,
 } from './schemas.js';
-import { listNearbyFacilitiesForPlace } from '../../lib/place-nearby-facilities.js';
-import {
-  assertRegistryCoverForPublicPlaceDetail,
-  enrichLocationDtoWithAreaHub,
-} from '../../lib/place-detail-enrichment.js';
-
-const locationDetailPath = (location: { id: string; activityType: ActivityType }) => {
-  if (location.activityType === ActivityType.SHOP) return `/shop/${location.id}`;
-  if (location.activityType === ActivityType.CAMPING) return `/camp/${location.id}`;
-  if (location.activityType === ActivityType.EVENT || location.activityType === ActivityType.COMMUNITY_ACTIVITY) {
-    return `/venue/${location.id}`;
-  }
-  return `/trail/${location.id}`;
-};
-
-const listLocationActivitiesHandler: RequestHandler = async (req, res, next) => {
-  try {
-    const { id } = req.params as z.infer<typeof eventIdParamSchema>;
-    const events = await listPublishedUpcomingActivitiesByLocation(id, 20);
-    res.json({ data: events.map((event) => buildActivityDto(event)) });
-  } catch (error) {
-    next(error);
-  }
-};
 
 /** Public explore map + place (`/locations`) discovery and premium access. */
 export const registerPublicPlaceRoutes = (router: Router): void => {
   router.get('/explore/map', optionalAuth, async (req, res, next) => {
     try {
       const query = req.query as Record<string, string | undefined>;
-      const data = await loadExploreMapForRequest({
+      const data = await loadExploreMapForViewer({
         query: {
           bbox: query.bbox,
           cursor: query.cursor,
@@ -88,7 +53,7 @@ export const registerPublicPlaceRoutes = (router: Router): void => {
 
   router.get('/explore/seeking-activities', optionalAuth, async (req, res, next) => {
     try {
-      const data = await loadExploreSeekingActivitiesForViewer({
+      const data = await loadExploreSeekingActivitiesForMapViewer({
         viewerUserId: req.auth?.userId ?? null,
         userRole: req.auth?.role ?? null,
       });
@@ -102,7 +67,7 @@ export const registerPublicPlaceRoutes = (router: Router): void => {
     try {
       const filters = req.query as unknown as z.infer<typeof listFilterSchema>;
       const pg = { page: filters.page ?? 1, pageSize: filters.pageSize ?? 20 };
-      const { items, total } = await listActiveLocations({
+      const { items, total } = await listPublicPlacesPaged({
         activityType: filters.activityType,
         featured: filters.featured,
         countryCode: filters.countryCode,
@@ -112,7 +77,7 @@ export const registerPublicPlaceRoutes = (router: Router): void => {
         page: pg.page,
         pageSize: pg.pageSize,
       });
-      res.json(paginatedResponse(items.map((l) => toLocationDto(l)), total, pg));
+      res.json(paginatedResponse(items, total, pg));
     } catch (error) {
       next(error);
     }
@@ -127,12 +92,11 @@ export const registerPublicPlaceRoutes = (router: Router): void => {
     async (req, res, next) => {
       try {
         const filters = req.query as z.infer<typeof placeRegistryQuerySchema>;
-        const platformAdmin = req.auth?.role === UserRole.PLATFORM_ADMIN;
-        const data = await buildPlaceRegistry({
+        const data = await loadPublicPlaceRegistry({
           activityType: filters.activityType,
           countryCode: filters.countryCode,
           userId: req.auth?.userId ?? null,
-          platformAdmin,
+          platformAdmin: req.auth?.role === UserRole.PLATFORM_ADMIN,
         });
         res.json({ data });
       } catch (error) {
@@ -150,11 +114,10 @@ export const registerPublicPlaceRoutes = (router: Router): void => {
     async (req, res, next) => {
       try {
         const filters = req.query as z.infer<typeof placeCatalogQuerySchema>;
-        const platformAdmin = req.auth?.role === UserRole.PLATFORM_ADMIN;
-        const data = await buildPlaceCatalog({
+        const data = await loadPublicPlaceCatalog({
           ...filters,
           userId: req.auth?.userId ?? null,
-          platformAdmin,
+          platformAdmin: req.auth?.role === UserRole.PLATFORM_ADMIN,
         });
         res.json({ data });
       } catch (error) {
@@ -166,8 +129,8 @@ export const registerPublicPlaceRoutes = (router: Router): void => {
   registerPlaceAlias(router, 'get', '/locations/popular', async (req, res, next) => {
     try {
       const limit = Math.min(Number(req.query.limit) || 6, 20);
-      const locations = await listPopularActiveLocations(limit);
-      res.json({ data: locations.map((l) => toLocationDto(l)) });
+      const data = await listPopularPublicPlaces(limit);
+      res.json({ data });
     } catch (error) {
       next(error);
     }
@@ -178,34 +141,37 @@ export const registerPublicPlaceRoutes = (router: Router): void => {
     'get',
     '/locations/:id/activities',
     validate({ params: eventIdParamSchema }),
-    listLocationActivitiesHandler
+    async (req, res, next) => {
+      try {
+        const { id } = req.params as z.infer<typeof eventIdParamSchema>;
+        const data = await listPublicPlaceUpcomingActivities(id);
+        res.json({ data });
+      } catch (error) {
+        next(error);
+      }
+    }
   );
 
-  registerPlaceAlias(router, 'get', '/locations/:id', optionalAuth, validate({ params: eventIdParamSchema }), async (req, res, next) => {
-    try {
-      const { id } = req.params as z.infer<typeof eventIdParamSchema>;
-      const location = await findLocationForDetailView(id, req.auth?.userId ?? null, req.auth?.role ?? null);
-      if (!location) {
-        throw new ApiError(404, 'location_not_found', 'Location not found.');
+  registerPlaceAlias(
+    router,
+    'get',
+    '/locations/:id',
+    optionalAuth,
+    validate({ params: eventIdParamSchema }),
+    async (req, res, next) => {
+      try {
+        const { id } = req.params as z.infer<typeof eventIdParamSchema>;
+        const payload = await loadPublicPlaceDetailPayload({
+          placeId: id,
+          viewerUserId: req.auth?.userId ?? null,
+          viewerRole: req.auth?.role ?? null,
+        });
+        res.json(payload);
+      } catch (error) {
+        next(error);
       }
-
-      assertRegistryCoverForPublicPlaceDetail(location);
-
-      const access = await checkPremiumAccess(req.auth?.userId ?? null, id, req.auth?.role);
-      const premium = locationHasPremiumContent(location) ? buildPremiumSummary(location, access) : null;
-      const nearbyFacilities = await listNearbyFacilitiesForPlace(location);
-      const data = await enrichLocationDtoWithAreaHub(location, toLocationDto(location));
-      const viewerAccess = buildPlaceViewerAccess({
-        viewerUserId: req.auth?.userId ?? null,
-        viewerRole: req.auth?.role ?? null,
-        place: location as PlaceViewerAccessSource,
-      });
-
-      res.json({ data, premium, nearbyFacilities, viewerAccess });
-    } catch (error) {
-      next(error);
     }
-  });
+  );
 
   registerPlaceAlias(
     router,
@@ -216,24 +182,12 @@ export const registerPublicPlaceRoutes = (router: Router): void => {
     async (req, res, next) => {
       try {
         const { id } = req.params as z.infer<typeof eventIdParamSchema>;
-        const location = await findActiveLocationById(id);
-        if (!location) {
-          throw new ApiError(404, 'location_not_found', 'Location not found.');
-        }
-        if (!location.guideMarkdown && !location.guidePdfKey) {
-          throw new ApiError(404, 'guide_not_available', 'No guide content for this location.');
-        }
-
-        await assertPremiumAccess(req.auth!.userId, id, req.auth!.role);
-
-        res.json({
-          data: {
-            locationId: id,
-            locationName: location.name,
-            markdown: location.guideMarkdown ?? null,
-            hasPdf: Boolean(location.guidePdfKey),
-          },
+        const data = await loadPublicPlacePremiumGuideContent({
+          placeId: id,
+          userId: req.auth!.userId,
+          userRole: req.auth!.role as UserRole,
         });
+        res.json({ data });
       } catch (error) {
         next(error);
       }
@@ -249,17 +203,11 @@ export const registerPublicPlaceRoutes = (router: Router): void => {
     async (req, res, next) => {
       try {
         const { id } = req.params as z.infer<typeof eventIdParamSchema>;
-        const location = await findActiveLocationById(id);
-        if (!location) {
-          throw new ApiError(404, 'location_not_found', 'Location not found.');
-        }
-        if (!location.gpxKey) {
-          throw new ApiError(404, 'map_not_available', 'No route map file for this location.');
-        }
-
-        await assertPremiumAccess(req.auth!.userId, id, req.auth!.role);
-
-        const file = await readStoredFile(location.gpxKey);
+        const file = await readPublicPlacePremiumMapFile({
+          placeId: id,
+          userId: req.auth!.userId,
+          userRole: req.auth!.role as UserRole,
+        });
         res.setHeader('Content-Type', file.mimeType);
         res.setHeader('Content-Disposition', `attachment; filename="${file.filename}"`);
         res.send(file.buffer);
@@ -278,14 +226,11 @@ export const registerPublicPlaceRoutes = (router: Router): void => {
     async (req, res, next) => {
       try {
         const { id } = req.params as z.infer<typeof eventIdParamSchema>;
-        const location = await findActiveLocationById(id);
-        if (!location?.guidePdfKey) {
-          throw new ApiError(404, 'guide_pdf_not_available', 'No PDF guide for this location.');
-        }
-
-        await assertPremiumAccess(req.auth!.userId, id, req.auth!.role);
-
-        const file = await readStoredFile(location.guidePdfKey);
+        const file = await readPublicPlacePremiumGuidePdfFile({
+          placeId: id,
+          userId: req.auth!.userId,
+          userRole: req.auth!.role as UserRole,
+        });
         res.setHeader('Content-Type', file.mimeType);
         res.setHeader('Content-Disposition', `attachment; filename="${file.filename}"`);
         res.send(file.buffer);
@@ -305,76 +250,34 @@ export const registerPublicPlaceRoutes = (router: Router): void => {
     async (req, res, next) => {
       try {
         const { id } = req.params as z.infer<typeof eventIdParamSchema>;
-        const location = await findActiveLocationById(id);
-        if (!location) {
-          throw new ApiError(404, 'location_not_found', 'Location not found.');
-        }
-        if (!locationHasPremiumContent(location)) {
-          throw new ApiError(400, 'no_premium_content', 'This location has no premium map or guide content.');
-        }
-
-        const access = await checkPremiumAccess(req.auth!.userId, id, req.auth!.role);
-        if (access.hasAccess) {
+        const result = await createPublicPlacePremiumCheckout({
+          placeId: id,
+          userId: req.auth!.userId,
+          userRole: req.auth!.role as UserRole,
+        });
+        if (result.kind === 'already_unlocked') {
           res.json({
             data: {
               alreadyUnlocked: true,
-              premium: buildPremiumSummary(location, access),
+              premium: result.premium,
             },
           });
           return;
         }
-
-        if (location.unlockPriceAed === 0) {
-          const unlocked = await unlockLocationForUser(req.auth!.userId, id, LocationUnlockSource.PURCHASE);
+        if (result.kind === 'free_unlock') {
           res.json({
             data: {
               alreadyUnlocked: false,
-              premium: buildPremiumSummary(location, unlocked),
+              premium: result.premium,
             },
-            message: 'Location unlocked. Map and guide access is now available.',
+            message: result.message,
           });
           return;
         }
-
-        if (!isStripeConfigured()) {
-          throw new ApiError(
-            503,
-            'checkout_unavailable',
-            'Online payment is not available yet. Try again later or upgrade to Pro/GOAT membership.'
-          );
-        }
-
-        const stripe = await getStripe();
-        const returnPath = locationDetailPath(location);
-        const session = await stripe.checkout.sessions.create({
-          mode: 'payment',
-          success_url: `${env.APP_BASE_URL}${returnPath}?unlock=success`,
-          cancel_url: `${env.APP_BASE_URL}${returnPath}?unlock=cancelled`,
-          client_reference_id: `${req.auth!.userId}:${id}`,
-          metadata: {
-            type: 'location_unlock',
-            userId: req.auth!.userId,
-            locationId: id,
-          },
-          line_items: [
-            {
-              quantity: 1,
-              price_data: {
-                currency: 'aed',
-                unit_amount: location.unlockPriceAed * 100,
-                product_data: {
-                  name: `${location.name} — premium access`,
-                  description: 'One-time unlock: route map and guide for this location.',
-                },
-              },
-            },
-          ],
-        });
-
         res.json({
           data: {
-            sessionId: session.id,
-            url: session.url,
+            sessionId: result.sessionId,
+            url: result.url,
           },
         });
       } catch (error) {
@@ -411,7 +314,7 @@ export const registerPublicPlaceRoutes = (router: Router): void => {
     async (req, res, next) => {
       try {
         const { id } = req.params as z.infer<typeof eventIdParamSchema>;
-        await incrementActiveLocationViewCount(id);
+        await recordPublicPlaceView(id);
         res.json({ ok: true });
       } catch (error) {
         next(error);

@@ -35,7 +35,7 @@ Do **not** use Home to onboard signed-in users or document the full app.
 
 ## What belongs here (guest signup funnel)
 
-Homepage v2 (`src/components/home/v2/sections/*`, plan: [`UAE_Trail_Homepage.md`](./UAE_Trail_Homepage.md)):
+Homepage v2 (`src/components/home/marketing/sections/*`, plan: [`UAE_Trail_Homepage.md`](./UAE_Trail_Homepage.md)):
 
 | Section | Component | Job |
 |---------|-----------|-----|
@@ -75,7 +75,7 @@ Home may **mention** host-approved joins and the map — that is the acquisition
 | Page shell | `src/pages/Home.tsx` |
 | Guest layout chrome | `src/components/layout/Layout.tsx` (minimal shell on `/`; no bottom nav / compose rail) |
 | Product chrome (other routes) | `src/components/layout/ProductShell.tsx` (lazy) |
-| Section UI | `src/components/home/v2/**` |
+| Section UI | `src/components/home/marketing/**` |
 | Hero image paths | `src/config/marketingHeroImages.ts`, `public/landing/hero/*` |
 | Hero slides | `src/utils/buildHeroSlides.ts` |
 
@@ -100,7 +100,7 @@ Home may **mention** host-approved joins and the map — that is the acquisition
 | Secondary CTA | Join free → auth, return `/explore` |
 | Header | Log in · Join free (`HOME_HEADER_NAV`) |
 
-Guest `/` UI lives under `src/components/home/v2/**` only (v1 launch components removed).
+Guest `/` UI lives under `src/components/home/marketing/**` only (v1 launch components removed).
 
 ## Responsive notes (v2)
 

@@ -9,6 +9,10 @@ import { registerRateLimiters } from './middleware/rate-limit-instances.js';
 import { createRateLimiters } from './middleware/rate-limit.js';
 import { probeS3 } from './lib/s3.js';
 import { resolveEmailConfig } from './lib/email-config.js';
+import {
+  startSideEffectOutboxDrain,
+  stopSideEffectOutboxDrain
+} from './services/side-effect-outbox-processor.js';
 
 const STARTUP_RETRY_DELAY_MS = 5000;
 
@@ -41,6 +45,7 @@ const start = async () => {
     await getRedisClient();
   }
   await connectMongo();
+  startSideEffectOutboxDrain();
   if (env.NODE_ENV !== 'production') {
     try {
       const { ensureDemoExploreActivities } = await import('../scripts/seed-demo-scheduled-activities.js');
@@ -65,6 +70,7 @@ const start = async () => {
     logger.info('shutdown signal received');
     server.close();
     await closeChatStreamPubSub();
+    stopSideEffectOutboxDrain();
     await disconnectMongo();
     await disconnectRedis();
     process.exit(0);

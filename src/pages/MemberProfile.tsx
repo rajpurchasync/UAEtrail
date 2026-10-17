@@ -1,22 +1,16 @@
-import { useCallback, useState } from 'react';
-import { useSafeAsyncEffect, type IsActiveGuard } from '../hooks/useSafeAsyncEffect';
+import { useState } from 'react';
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import type { ProfileViewerAccessDTO } from '@uaetrail/shared-types';
 import { Loader2, Lock } from 'lucide-react';
-import type { ActivityDTO, BuddyRelationshipDTO } from '@uaetrail/shared-types';
+import type { BuddyRelationshipDTO } from '@uaetrail/shared-types';
 import type { PersonPublicProfileDTO } from '../api/types';
 import {
   acceptMemberBuddyRequest,
   cancelMemberBuddyRequest,
   declineMemberBuddyRequest,
-  fetchBuddyRelationship,
   sendMemberBuddyRequest,
 } from '../hooks/memberPeopleClientApi';
-import {
-  fetchMeProfilePublicPreview,
-  fetchPersonPublicProfile,
-  fetchPersonUpcomingActivities,
-} from '../hooks/memberPublicProfileApi';
+import type { PersonPublicProfilePayload } from '../hooks/memberPublicProfileApi';
+import { useMemberProfilePage } from '../hooks/useMemberProfilePage';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { GlassCard } from '../components/mobile/GlassCard';
 import { MemberProfileView } from '../components/profile/MemberProfileView';
@@ -52,99 +46,26 @@ export const MemberProfile = () => {
   const previewAsPublic = searchParams.get('view') === 'public';
   const fromDiscover = searchParams.get('discover') === '1';
   const profileReturn = parseProfileReturnNavState(location.state);
-  const [profile, setProfile] = useState<PersonPublicProfileDTO | null>(null);
-  const [buddyRel, setBuddyRel] = useState<BuddyRelationshipDTO | null>(null);
   const [buddyBusy, setBuddyBusy] = useState(false);
   const [buddyMessage, setBuddyMessage] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [upcomingActivities, setUpcomingActivities] = useState<ActivityDTO[]>([]);
-  const [viewerAccess, setViewerAccess] = useState<ProfileViewerAccessDTO | null>(null);
-  const [discoveryUpgradeRequired, setDiscoveryUpgradeRequired] = useState(false);
 
-  useSafeAsyncEffect(
-    async (isActive) => {
-      if (!userId) return;
-      if (isActive()) {
-        setLoading(true);
-        setError(null);
-        setDiscoveryUpgradeRequired(false);
-      }
-      const load =
-        previewAsPublic && user?.id === userId
-          ? fetchMeProfilePublicPreview()
-          : fetchPersonPublicProfile(userId, { discover: fromDiscover });
-      try {
-        const { profile: loaded, viewerAccess: access } = await load;
-        if (isActive()) {
-          setProfile(loaded);
-          setViewerAccess(access);
-        }
-      } catch (err) {
-        if (!isActive()) return;
-        const apiErr = err as Error & { code?: string };
-        if (apiErr.code === 'upgrade_required' && fromDiscover) {
-          setDiscoveryUpgradeRequired(true);
-          setError(null);
-          setProfile(null);
-          return;
-        }
-        const message = err instanceof Error ? err.message : 'We couldn\'t find this profile';
-        setError(message);
-      } finally {
-        if (isActive()) {
-          setLoading(false);
-        }
-      }
-    },
-    [userId, previewAsPublic, fromDiscover, user?.id]
-  );
-
-  useSafeAsyncEffect(
-    async (isActive) => {
-      if (!userId || !viewerAccess?.canViewFullProfile) {
-        if (isActive()) {
-          setUpcomingActivities([]);
-        }
-        return;
-      }
-      try {
-        const activities = await fetchPersonUpcomingActivities(userId);
-        if (isActive()) {
-          setUpcomingActivities(activities);
-        }
-      } catch {
-        if (isActive()) {
-          setUpcomingActivities([]);
-        }
-      }
-    },
-    [userId, viewerAccess?.exposure]
-  );
-
-  const loadBuddyRelationship = useCallback(
-    async (isActive: IsActiveGuard = () => true) => {
-      if (!userId || !user || user.id === userId) return;
-      try {
-        const rel = await fetchBuddyRelationship(userId);
-        if (isActive()) {
-          setBuddyRel(rel);
-        }
-      } catch {
-        if (isActive()) {
-          setBuddyRel(null);
-        }
-      }
-    },
-    [userId, user]
-  );
-
-  useSafeAsyncEffect(
-    async (isActive) => {
-      await loadBuddyRelationship(isActive);
-    },
-    [loadBuddyRelationship]
-  );
+  const {
+    profile,
+    viewerAccess,
+    loading,
+    error,
+    discoveryUpgradeRequired,
+    upcomingActivities,
+    buddyRel,
+    setBuddyRel,
+    reloadBuddy,
+    refreshProfile,
+  } = useMemberProfilePage({
+    userId,
+    viewerId: user?.id,
+    previewAsPublic,
+    fromDiscover,
+  });
 
   const handleSendBuddyRequest = async () => {
     if (!userId || buddyBusy) return;
@@ -165,10 +86,7 @@ export const MemberProfile = () => {
       );
       setBuddyMessage(request.status === 'accepted' ? 'You are now friends.' : 'Friend request sent.');
       if (request.status === 'accepted') {
-        void fetchPersonPublicProfile(userId).then(({ profile: loaded, viewerAccess: access }) => {
-          setProfile(loaded);
-          setViewerAccess(access);
-        });
+        await refreshProfile();
       }
     } catch (err) {
       setBuddyMessage(err instanceof Error ? err.message : 'Could not send buddy request.');
@@ -184,13 +102,8 @@ export const MemberProfile = () => {
     try {
       await acceptMemberBuddyRequest(buddyRel.incomingRequest.id);
       setBuddyMessage('Friend request accepted.');
-      loadBuddyRelationship();
-      if (userId) {
-        void fetchPersonPublicProfile(userId).then(({ profile: loaded, viewerAccess: access }) => {
-          setProfile(loaded);
-          setViewerAccess(access);
-        });
-      }
+      await reloadBuddy();
+      await refreshProfile();
     } catch (err) {
       setBuddyMessage(err instanceof Error ? err.message : 'Could not accept request.');
     } finally {
@@ -205,7 +118,7 @@ export const MemberProfile = () => {
     try {
       await declineMemberBuddyRequest(buddyRel.incomingRequest.id);
       setBuddyMessage('Buddy request declined.');
-      loadBuddyRelationship();
+      await reloadBuddy();
     } catch (err) {
       setBuddyMessage(err instanceof Error ? err.message : 'Could not decline request.');
     } finally {
@@ -220,7 +133,7 @@ export const MemberProfile = () => {
     try {
       await cancelMemberBuddyRequest(buddyRel.outgoingRequest.id);
       setBuddyMessage('Buddy request cancelled.');
-      loadBuddyRelationship();
+      await reloadBuddy();
     } catch (err) {
       setBuddyMessage(err instanceof Error ? err.message : 'Could not cancel request.');
     } finally {
@@ -318,3 +231,6 @@ export const MemberProfile = () => {
     </ConsumerShell>
   );
 };
+
+// Detail-surface lineage: public member reads via memberPublicProfileApi (see useMemberProfilePage).
+type _MemberProfileFacade = PersonPublicProfilePayload;

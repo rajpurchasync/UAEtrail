@@ -1,44 +1,19 @@
 import type { Router } from 'express';
 import { z } from 'zod';
 import { validate } from '../../middleware/validate.js';
+import { followMemberForUser, unfollowMemberForUser } from '../../services/member-follow-commands.js';
 import {
-  countFollowersForUser,
-  followUser,
-  getFollowState,
-  isFollowingUser,
-  listFollowingForUser,
-  unfollowUser,
-} from '../../lib/follow-store.js';
-import {
-  countPublishedActivitiesHostedByUser,
-  countUserCheckedInParticipations,
-} from '../../lib/activity-engagement-store.js';
-import { isCommunityHostByUserId } from '../../lib/community-host.js';
-import { countParticipantIntentsByUser } from '../../lib/participant-intents-store.js';
-import { notifyMemberFollowed } from '../../services/social-notifications.js';
+  listMeFollowingMembers,
+  loadMeMemberFollowState,
+  loadMeProfileEngagementStats,
+} from '../../services/member-follow-read.js';
 import { buddyRelationshipParamSchema } from './schemas.js';
 
 export const registerFollowRoutes = (router: Router): void => {
   router.get('/me/profile-stats', async (req, res, next) => {
     try {
-      const userId = req.auth!.userId;
-      const [followerCount, joinedCount, hostedCount, activeParticipantIntentCount, isCommunityHost] =
-        await Promise.all([
-        countFollowersForUser(userId),
-        countUserCheckedInParticipations(userId),
-        countPublishedActivitiesHostedByUser(userId),
-        countParticipantIntentsByUser(userId),
-        isCommunityHostByUserId(userId),
-      ]);
-      res.json({
-        data: {
-          followerCount,
-          joinedCount,
-          hostedCount,
-          activeParticipantIntentCount,
-          isCommunityHost,
-        },
-      });
+      const data = await loadMeProfileEngagementStats(req.auth!.userId);
+      res.json({ data });
     } catch (error) {
       next(error);
     }
@@ -46,7 +21,7 @@ export const registerFollowRoutes = (router: Router): void => {
 
   router.get('/me/following', async (req, res, next) => {
     try {
-      const data = await listFollowingForUser(req.auth!.userId);
+      const data = await listMeFollowingMembers(req.auth!.userId);
       res.json({ data });
     } catch (error) {
       next(error);
@@ -59,7 +34,7 @@ export const registerFollowRoutes = (router: Router): void => {
     async (req, res, next) => {
       try {
         const { userId } = req.params as z.infer<typeof buddyRelationshipParamSchema>;
-        const data = await getFollowState(req.auth!.userId, userId);
+        const data = await loadMeMemberFollowState(req.auth!.userId, userId);
         res.json({ data });
       } catch (error) {
         next(error);
@@ -73,12 +48,7 @@ export const registerFollowRoutes = (router: Router): void => {
     async (req, res, next) => {
       try {
         const { userId } = req.params as z.infer<typeof buddyRelationshipParamSchema>;
-        const followerId = req.auth!.userId;
-        const wasFollowing = await isFollowingUser(followerId, userId);
-        const data = await followUser(followerId, userId);
-        if (!wasFollowing) {
-          await notifyMemberFollowed({ followerUserId: followerId, followingUserId: userId });
-        }
+        const data = await followMemberForUser(req.auth!.userId, userId);
         res.status(201).json({ data });
       } catch (error) {
         next(error);
@@ -92,7 +62,7 @@ export const registerFollowRoutes = (router: Router): void => {
     async (req, res, next) => {
       try {
         const { userId } = req.params as z.infer<typeof buddyRelationshipParamSchema>;
-        const data = await unfollowUser(req.auth!.userId, userId);
+        const data = await unfollowMemberForUser(req.auth!.userId, userId);
         res.json({ data });
       } catch (error) {
         next(error);

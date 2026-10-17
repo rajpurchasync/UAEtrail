@@ -127,10 +127,10 @@ afterAll(async () => {
     await cleanupEventFixture(hostFixture);
   }
   if (createdPlaceId) {
-    await request(app).delete(`/api/v1/admin/places/${createdPlaceId}`).set(adminAuth());
+    await request(app).delete(`/api/admin/places/${createdPlaceId}`).set(adminAuth());
   }
   if (createdAreaId) {
-    await request(app).delete(`/api/v1/admin/areas/${createdAreaId}`).set(adminAuth());
+    await request(app).delete(`/api/admin/areas/${createdAreaId}`).set(adminAuth());
   }
   await cleanupTestUsers();
 });
@@ -138,7 +138,7 @@ afterAll(async () => {
 describe('detail surface lineage (admin catalog → public read)', () => {
   it('draft area is hidden from public detail; publish exposes GET /areas/:slug', async () => {
     const create = await request(app)
-      .post('/api/v1/admin/areas')
+      .post('/api/admin/areas')
       .set(adminAuth())
       .send({
         slug: areaSlug,
@@ -152,18 +152,18 @@ describe('detail surface lineage (admin catalog → public read)', () => {
     expect(create.status).toBe(201);
     createdAreaId = create.body.data.id as string;
 
-    const draftPublic = await request(app).get(`/api/v1/areas/${areaSlug}`);
+    const draftPublic = await request(app).get(`/api/areas/${areaSlug}`);
     expect(draftPublic.status).toBe(404);
 
     const publish = await request(app)
-      .patch(`/api/v1/admin/areas/${createdAreaId}`)
+      .patch(`/api/admin/areas/${createdAreaId}`)
       .set(adminAuth())
       .send({ status: 'published' });
 
     expect(publish.status).toBe(200);
     expect(publish.body.data.status).toBe('published');
 
-    const publicDetail = await request(app).get(`/api/v1/areas/${areaSlug}`);
+    const publicDetail = await request(app).get(`/api/areas/${areaSlug}`);
     expect(publicDetail.status).toBe(200);
     expect(publicDetail.body.data.area.slug).toBe(areaSlug);
     expect(publicDetail.body.data.preview).toMatchObject({
@@ -176,7 +176,7 @@ describe('detail surface lineage (admin catalog → public read)', () => {
     expect(createdAreaId).toBeTruthy();
     const placeName = `Lineage Trail ${suffix}`;
     const create = await request(app)
-      .post('/api/v1/admin/places')
+      .post('/api/admin/places')
       .set(adminAuth())
       .send(placeCreateBody(createdAreaId!, placeName));
 
@@ -184,13 +184,13 @@ describe('detail surface lineage (admin catalog → public read)', () => {
     createdPlaceId = create.body.data.id as string;
     expect(create.body.data.areaId).toBe(createdAreaId);
 
-    const publicPlace = await request(app).get(`/api/v1/places/${createdPlaceId}`);
+    const publicPlace = await request(app).get(`/api/places/${createdPlaceId}`);
     expect(publicPlace.status).toBe(200);
     expect(publicPlace.body.data.id).toBe(createdPlaceId);
     expect(publicPlace.body.data.name).toBe(placeName);
     expect(publicPlace.body.data.areaId).toBe(createdAreaId);
 
-    const areaDetail = await request(app).get(`/api/v1/areas/${areaSlug}`);
+    const areaDetail = await request(app).get(`/api/areas/${areaSlug}`);
     expect(areaDetail.status).toBe(200);
     const previewIds = (areaDetail.body.data.preview.places as Array<{ id: string }>).map((p) => p.id);
     expect(previewIds).toContain(createdPlaceId);
@@ -209,7 +209,7 @@ describe('detail surface lineage (admin catalog → public read)', () => {
       status: LocationStatus.ACTIVE,
     });
 
-    const facilityRead = await request(app).get(`/api/v1/facilities/${facility.id}`);
+    const facilityRead = await request(app).get(`/api/facilities/${facility.id}`);
     expect(facilityRead.status).toBe(200);
     expect(facilityRead.body.viewerAccess?.canOpenDetailPage).toBe(true);
   });
@@ -220,7 +220,7 @@ describe('detail surface lineage (member profile write → public read)', () => 
     const member = await registerVerifiedVisitor(app, `${suffix}-member`);
 
     const patch = await request(app)
-      .patch('/api/v1/me/profile')
+      .patch('/api/me/profile')
       .set('Authorization', `Bearer ${member.accessToken}`)
       .send({
         givenName: 'Lineage',
@@ -234,14 +234,14 @@ describe('detail surface lineage (member profile write → public read)', () => 
     expect(displayName).toBe('Lineage Member');
 
     const me = await request(app)
-      .get('/api/v1/me/profile')
+      .get('/api/me/profile')
       .set('Authorization', `Bearer ${member.accessToken}`);
     expect(me.status).toBe(200);
     const userId = me.body.data.id as string;
 
     const viewer = await registerVerifiedVisitor(app, `${suffix}-viewer`);
     const publicProfile = await request(app)
-      .get(`/api/v1/users/${userId}/public-profile`)
+      .get(`/api/users/${userId}/public-profile`)
       .set('Authorization', `Bearer ${viewer.accessToken}`);
     expect(publicProfile.status).toBe(200);
     expect(publicProfile.body.data.visibilityState).toBe('full');
@@ -250,24 +250,24 @@ describe('detail surface lineage (member profile write → public read)', () => 
 
   it('seeded catalog place remains readable (baseline for place detail facade)', async () => {
     const location = await request(app)
-      .post('/api/v1/admin/places')
+      .post('/api/admin/places')
       .set(adminAuth())
       .send(placeCreateBody(defaultTestAreaId(), `Baseline Trail ${suffix}`));
 
     expect(location.status).toBe(201);
     const id = location.body.data.id as string;
 
-    const read = await request(app).get(`/api/v1/places/${id}`);
+    const read = await request(app).get(`/api/places/${id}`);
     expect(read.status).toBe(200);
 
-    await request(app).delete(`/api/v1/admin/places/${id}`).set(adminAuth());
+    await request(app).delete(`/api/admin/places/${id}`).set(adminAuth());
   });
 });
 
 describe('detail surface lineage (host publish → activity detail)', () => {
   it('published activity is readable on GET /activities/:id with presentation + viewerAccess', async () => {
     expect(hostFixture).toBeTruthy();
-    const guest = await request(app).get(`/api/v1/activities/${hostFixture!.activityId}`);
+    const guest = await request(app).get(`/api/activities/${hostFixture!.activityId}`);
     expect(guest.status).toBe(200);
     expect(guest.body.data.id).toBe(hostFixture!.activityId);
     expect(guest.body.viewerAccess).toMatchObject({
@@ -278,7 +278,7 @@ describe('detail surface lineage (host publish → activity detail)', () => {
 
     const visitor = await registerVerifiedVisitor(app, `${suffix}-detail-read`);
     const res = await request(app)
-      .get(`/api/v1/activities/${hostFixture!.activityId}`)
+      .get(`/api/activities/${hostFixture!.activityId}`)
       .set('Authorization', `Bearer ${visitor.accessToken}`);
     expect(res.status).toBe(200);
     expect(res.body.data.id).toBe(hostFixture!.activityId);
@@ -303,13 +303,13 @@ describe('detail surface lineage (host publish → activity detail)', () => {
     expect(hostFixture).toBeTruthy();
     const hostEmail = `org-${hostFixtureSuffix}@test.local`;
     const login = await request(app)
-      .post('/api/v1/auth/login')
+      .post('/api/auth/login')
       .send({ email: hostEmail, password: 'TestPass1' });
     expect(login.status).toBe(200);
     const hostToken = login.body.tokens.accessToken as string;
 
     const signup = await request(app)
-      .patch('/api/v1/me/profile/signup-details')
+      .patch('/api/me/profile/signup-details')
       .set('Authorization', `Bearer ${hostToken}`)
       .send({
         dateOfBirth: '1990-01-15',
@@ -320,7 +320,7 @@ describe('detail surface lineage (host publish → activity detail)', () => {
     expect(signup.status).toBe(200);
 
     const create = await request(app)
-      .post('/api/v1/operator/activities')
+      .post('/api/operator/activities')
       .set('Authorization', `Bearer ${hostToken}`)
       .set('x-tenant-id', hostFixture!.tenantId)
       .send({
@@ -339,7 +339,7 @@ describe('detail surface lineage (host publish → activity detail)', () => {
     httpPublishedActivityId = create.body.data.id as string;
 
     const publish = await request(app)
-      .post(`/api/v1/operator/activities/${httpPublishedActivityId}/publish`)
+      .post(`/api/operator/activities/${httpPublishedActivityId}/publish`)
       .set('Authorization', `Bearer ${hostToken}`)
       .set('x-tenant-id', hostFixture!.tenantId);
 
@@ -347,7 +347,7 @@ describe('detail surface lineage (host publish → activity detail)', () => {
 
     const visitor = await registerVerifiedVisitor(app, `${suffix}-http-publish-read`);
     const publicDetail = await request(app)
-      .get(`/api/v1/activities/${httpPublishedActivityId}`)
+      .get(`/api/activities/${httpPublishedActivityId}`)
       .set('Authorization', `Bearer ${visitor.accessToken}`);
     expect(publicDetail.status).toBe(200);
     expect(publicDetail.body.data.title).toBe('Lineage HTTP publish hike');
@@ -361,7 +361,7 @@ describe('detail surface lineage (host publish → activity detail)', () => {
       .collection('activities')
       .updateOne({ _id: hostFixture!.activityId }, { $set: { status: ActivityStatus.DRAFT } });
 
-    const hidden = await request(app).get(`/api/v1/activities/${hostFixture!.activityId}`);
+    const hidden = await request(app).get(`/api/activities/${hostFixture!.activityId}`);
     expect(hidden.status).toBe(404);
 
     await getMongoClient()!
@@ -380,7 +380,7 @@ describe('detail surface lineage (pro tenant → organisation public)', () => {
     const tenant = await findTenantById(hostFixture!.tenantId);
     expect(tenant?.slug).toBeTruthy();
 
-    const res = await request(app).get(`/api/v1/tenants/${tenant!.slug}`);
+    const res = await request(app).get(`/api/tenants/${tenant!.slug}`);
     expect(res.status).toBe(200);
     expect(res.body.data.slug).toBe(tenant!.slug);
     expect(res.body.data.activities).toEqual(
@@ -392,7 +392,7 @@ describe('detail surface lineage (pro tenant → organisation public)', () => {
 describe('detail surface lineage (shop merchant → public shop)', () => {
   it('merchant profile is readable on GET /shops/:id with products', async () => {
     expect(shopMerchantId).toBeTruthy();
-    const res = await request(app).get(`/api/v1/shop/shops/${shopMerchantId}`);
+    const res = await request(app).get(`/api/shop/shops/${shopMerchantId}`);
     expect(res.status).toBe(200);
     expect(res.body.data.shopName).toMatch(/Lineage Gear/);
     expect(res.body.data.products).toEqual(

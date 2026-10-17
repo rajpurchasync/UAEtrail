@@ -1,28 +1,22 @@
 import type { RequestHandler, Router } from 'express';
 import { z } from 'zod';
 import { createParticipantIntentSchema, updateParticipantIntentSchema } from '../../domain/participant-intent.js';
-import {
-  cancelParticipantIntent,
-  createParticipantIntent,
-  findParticipantIntentById,
-  linkParticipantIntentToActivityForOwner,
-  listParticipantIntentsForUser,
-  updateParticipantIntent,
-} from '../../lib/participant-intents-store.js';
-import {
-  approveParticipantIntentJoinRequest,
-  createParticipantIntentJoinRequest,
-  findParticipantIntentJoinRequestForUser,
-  listParticipantIntentJoinRequestsForOwner,
-  rejectParticipantIntentJoinRequest,
-} from '../../lib/participant-intent-requests-store.js';
-import {
-  notifyDemandJoinRequestDecided,
-  notifyDemandJoinRequestSubmitted,
-} from '../../services/participant-intent-join-notifications.js';
-import { ApiError } from '../../lib/api-error.js';
 import { requireAuth } from '../../middleware/auth.js';
 import { validate } from '../../middleware/validate.js';
+import {
+  approveMyParticipantIntentJoinRequest,
+  cancelMyParticipantIntent,
+  createMyParticipantIntent,
+  linkMyParticipantIntentToActivity,
+  rejectMyParticipantIntentJoinRequest,
+  submitMyParticipantIntentJoinRequest,
+  updateMyParticipantIntent,
+} from '../../services/participant-intent-me-commands.js';
+import {
+  findMyParticipantIntentJoinRequest,
+  listMyParticipantIntentJoinRequestsForOwner,
+  listMyParticipantIntents,
+} from '../../services/participant-intent-me-read.js';
 
 const intentIdParamSchema = z.object({ intentId: z.string().min(1) });
 const intentRequestParamsSchema = z.object({
@@ -34,7 +28,7 @@ const intentRequestParamsSchema = z.object({
 export const registerMeParticipantIntentRoutes = (router: Router): void => {
   router.get('/me/participant-intents', requireAuth, async (req, res, next) => {
     try {
-      const data = await listParticipantIntentsForUser(req.auth!.userId);
+      const data = await listMyParticipantIntents(req.auth!.userId);
       res.json({ data });
     } catch (error) {
       next(error);
@@ -47,7 +41,7 @@ export const registerMeParticipantIntentRoutes = (router: Router): void => {
     validate({ body: createParticipantIntentSchema }),
     async (req, res, next) => {
       try {
-        const data = await createParticipantIntent(req.auth!.userId, req.body);
+        const data = await createMyParticipantIntent(req.auth!.userId, req.body);
         res.status(201).json({ data });
       } catch (error) {
         next(error);
@@ -62,10 +56,7 @@ export const registerMeParticipantIntentRoutes = (router: Router): void => {
     async (req, res, next) => {
       try {
         const { intentId } = req.params as z.infer<typeof intentIdParamSchema>;
-        const data = await updateParticipantIntent(req.auth!.userId, intentId, req.body);
-        if (!data) {
-          throw new ApiError(404, 'intent_not_found', 'Demand not found or already closed.');
-        }
+        const data = await updateMyParticipantIntent(req.auth!.userId, intentId, req.body);
         res.json({ data });
       } catch (error) {
         next(error);
@@ -80,10 +71,7 @@ export const registerMeParticipantIntentRoutes = (router: Router): void => {
     async (req, res, next) => {
       try {
         const { intentId } = req.params as z.infer<typeof intentIdParamSchema>;
-        const data = await cancelParticipantIntent(req.auth!.userId, intentId);
-        if (!data) {
-          throw new ApiError(404, 'intent_not_found', 'Demand not found or already closed.');
-        }
+        const data = await cancelMyParticipantIntent(req.auth!.userId, intentId);
         res.json({ data });
       } catch (error) {
         next(error);
@@ -102,14 +90,7 @@ export const registerMeParticipantIntentRoutes = (router: Router): void => {
       try {
         const { intentId } = req.params as z.infer<typeof intentIdParamSchema>;
         const { activityId } = req.body as { activityId: string };
-        const data = await linkParticipantIntentToActivityForOwner(
-          intentId,
-          req.auth!.userId,
-          activityId
-        );
-        if (!data) {
-          throw new ApiError(404, 'intent_not_found', 'Demand not found or already closed.');
-        }
+        const data = await linkMyParticipantIntentToActivity(req.auth!.userId, intentId, activityId);
         res.json({ data });
       } catch (error) {
         next(error);
@@ -121,22 +102,11 @@ export const registerMeParticipantIntentRoutes = (router: Router): void => {
     try {
       const { intentId } = req.params as { intentId: string };
       const { note } = (req.body ?? {}) as { note?: string };
-      const data = await createParticipantIntentJoinRequest({
+      const data = await submitMyParticipantIntentJoinRequest({
         intentId,
         userId: req.auth!.userId,
         note,
       });
-      const intent = await findParticipantIntentById(intentId);
-      if (intent) {
-        void notifyDemandJoinRequestSubmitted({
-          requesterUserId: req.auth!.userId,
-          hostUserId: intent.userId,
-          intentId: intent.id,
-          intentTitle: intent.title,
-          requestId: data.id,
-          activityId: intent.activityId ?? intent.seekingActivityId,
-        });
-      }
       res.status(201).json({ data });
     } catch (error) {
       next(error);
@@ -146,7 +116,7 @@ export const registerMeParticipantIntentRoutes = (router: Router): void => {
   const listJoinRequestsForOwner: RequestHandler = async (req, res, next) => {
     try {
       const { intentId } = req.params as { intentId: string };
-      const data = await listParticipantIntentJoinRequestsForOwner(intentId, req.auth!.userId);
+      const data = await listMyParticipantIntentJoinRequestsForOwner(intentId, req.auth!.userId);
       res.json({ data });
     } catch (error) {
       next(error);
@@ -156,7 +126,7 @@ export const registerMeParticipantIntentRoutes = (router: Router): void => {
   const getMyJoinRequest: RequestHandler = async (req, res, next) => {
     try {
       const { intentId } = req.params as { intentId: string };
-      const data = await findParticipantIntentJoinRequestForUser(intentId, req.auth!.userId);
+      const data = await findMyParticipantIntentJoinRequest(intentId, req.auth!.userId);
       res.json({ data });
     } catch (error) {
       next(error);
@@ -166,18 +136,7 @@ export const registerMeParticipantIntentRoutes = (router: Router): void => {
   const approveJoinRequest: RequestHandler = async (req, res, next) => {
     try {
       const { intentId, requestId } = req.params as z.infer<typeof intentRequestParamsSchema>;
-      const data = await approveParticipantIntentJoinRequest(intentId, requestId, req.auth!.userId);
-      const intent = await findParticipantIntentById(intentId);
-      if (intent) {
-        void notifyDemandJoinRequestDecided({
-          requesterUserId: data.userId,
-          intentTitle: intent.title,
-          intentId: intent.id,
-          requestId: data.id,
-          approved: true,
-          activityId: intent.activityId ?? intent.seekingActivityId,
-        });
-      }
+      const data = await approveMyParticipantIntentJoinRequest(intentId, requestId, req.auth!.userId);
       res.json({ data });
     } catch (error) {
       next(error);
@@ -187,18 +146,7 @@ export const registerMeParticipantIntentRoutes = (router: Router): void => {
   const rejectJoinRequest: RequestHandler = async (req, res, next) => {
     try {
       const { intentId, requestId } = req.params as z.infer<typeof intentRequestParamsSchema>;
-      const data = await rejectParticipantIntentJoinRequest(intentId, requestId, req.auth!.userId);
-      const intent = await findParticipantIntentById(intentId);
-      if (intent) {
-        void notifyDemandJoinRequestDecided({
-          requesterUserId: data.userId,
-          intentTitle: intent.title,
-          intentId: intent.id,
-          requestId: data.id,
-          approved: false,
-          activityId: intent.activityId ?? intent.seekingActivityId,
-        });
-      }
+      const data = await rejectMyParticipantIntentJoinRequest(intentId, requestId, req.auth!.userId);
       res.json({ data });
     } catch (error) {
       next(error);

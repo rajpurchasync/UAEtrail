@@ -13,6 +13,7 @@ import {
 import { buildExploreMapBasePayload } from './explore-map-base.js';
 
 export { invalidateExploreMapCache };
+export { scheduleExploreMapCacheInvalidation } from './explore-map-cache-schedule.js';
 export { buildExploreMapBasePayload } from './explore-map-base.js';
 
 export const buildExploreMapPayload = async (): Promise<{ items: ExploreMapItemDTO[] }> => {

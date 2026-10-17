@@ -1,14 +1,8 @@
-import { ProductStatus } from '../../domain/enums.js';
 import { Router } from 'express';
 import { z } from 'zod';
-import { createAuditLog } from '../../lib/audit.js';
-import { ApiError } from '../../lib/api-error.js';
-import {
-  findAdminProductById,
-  listAdminProductsPaged,
-  updateAdminProductStatus,
-} from '../../lib/admin-store.js';
 import { validate } from '../../middleware/validate.js';
+import { setAdminProductStatus } from '../../services/admin-product-commands.js';
+import { listAdminProductsPage } from '../../services/admin-product-read.js';
 
 const idParamSchema = z.object({ id: z.string().min(1) });
 
@@ -31,39 +25,15 @@ export const registerAdminProductRoutes = (adminRouter: Router): void => {
       const { status, category, featured, page, pageSize } = req.query as unknown as z.infer<
         typeof productListQuerySchema
       >;
-
-      const where: {
-        status?: ProductStatus;
-        category?: string;
-        discountPercent?: { gt: number };
-      } = {};
-      if (status) where.status = status.toLowerCase() === 'active' ? ProductStatus.ACTIVE : ProductStatus.INACTIVE;
-      if (category) where.category = category;
-      if (featured === 'true') where.discountPercent = { gt: 0 };
-
-      const { items: products, total } = await listAdminProductsPaged({
-        where,
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-      });
-
+      const result = await listAdminProductsPage({ status, category, featured, page, pageSize });
       res.json({
-        data: products.map((p) => ({
-          id: p.id,
-          name: p.name,
-          description: p.description,
-          images: p.images as string[],
-          priceAed: p.priceAed,
-          discountPercent: p.discountPercent,
-          packagingInfo: p.packagingInfo,
-          category: p.category,
-          status: p.status.toLowerCase(),
-          merchantId: p.merchantId,
-          merchantName: p.merchant.shopName,
-          createdAt: p.createdAt.toISOString(),
-          featured: Boolean(p.discountPercent && p.discountPercent > 0),
-        })),
-        pagination: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
+        data: result.items,
+        pagination: {
+          total: result.total,
+          page: result.page,
+          pageSize: result.pageSize,
+          totalPages: Math.ceil(result.total / result.pageSize),
+        },
       });
     } catch (error) {
       next(error);
@@ -77,21 +47,12 @@ export const registerAdminProductRoutes = (adminRouter: Router): void => {
       try {
         const { id } = req.params as z.infer<typeof idParamSchema>;
         const { status } = req.body as z.infer<typeof productStatusSchema>;
-
-        const product = await findAdminProductById(id);
-        if (!product) throw new ApiError(404, 'product_not_found', 'Product not found.');
-
-        const prismaStatus = status === 'active' ? ProductStatus.ACTIVE : ProductStatus.INACTIVE;
-        await updateAdminProductStatus(id, prismaStatus);
-
-        await createAuditLog({
+        const result = await setAdminProductStatus({
           actorId: req.auth!.userId,
-          action: `product.${status === 'active' ? 'approve' : 'suspend'}`,
-          entityType: 'product',
-          entityId: id,
+          productId: id,
+          status,
         });
-
-        res.json({ message: `Product ${status === 'active' ? 'approved' : 'suspended'}.` });
+        res.json(result);
       } catch (error) {
         next(error);
       }

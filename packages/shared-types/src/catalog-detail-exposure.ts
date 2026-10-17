@@ -4,6 +4,12 @@ import type { DetailExposure, ViewerGateReason } from './activity-viewer-access.
 import type { FacilityViewerAccessDTO, FacilityViewerAccessLevel } from './facility-viewer-access.js';
 import type { PlaceViewerAccessDTO, PlaceViewerAccessLevel } from './place-viewer-access.js';
 
+/** Canonical submitter id on catalog rows (CPC — prefer over deprecated `submittedById`). */
+export const resolveCatalogSubmitterUserId = (input: {
+  registeredByUserId?: string | null;
+  submittedById?: string | null;
+}): string | null => input.registeredByUserId ?? input.submittedById ?? null;
+
 export const resolveCatalogViewerLevel = (input: {
   viewerUserId: string | null;
   isPlatformAdmin?: boolean;
@@ -15,7 +21,7 @@ export const resolveCatalogViewerLevel = (input: {
 }): PlaceViewerAccessLevel => {
   if (input.isPlatformAdmin) return 'platform_admin';
 
-  const submitterId = input.registeredByUserId ?? input.submittedById ?? null;
+  const submitterId = resolveCatalogSubmitterUserId(input);
   if (input.viewerUserId && submitterId && input.viewerUserId === submitterId) {
     return 'submitter';
   }

@@ -3,12 +3,13 @@ import { buildExploreMapPayload } from './explore-map.js';
 import { readExploreMapMemoryCacheGeneration } from './explore-map-cache.js';
 import { enrichExploreMapPayloadViewerAccess } from './explore-map-viewer-access.js';
 import {
-  assertExploreMapVnextQueryAllowed,
-  buildExploreMapVnextPage,
-  isExploreMapVnextEnabled,
+  assertExploreMapBboxQueryAllowed,
+  buildExploreMapBboxPage,
+  isExploreMapBboxEnabled,
   parseExploreMapBboxParam,
   parseExploreMapLimitParam,
-} from './explore-map-vnext.js';
+} from './explore-map-bbox.js';
+import { enrichExploreMapItemsDiscoveryProjection } from './explore-map-discovery-projection.js';
 
 export type ExploreMapRouteQuery = {
   bbox?: string;
@@ -29,16 +30,16 @@ export const loadExploreMapForRequest = async (input: {
   viewerUserId: string | null;
   userRole: string | null | undefined;
 }): Promise<ExploreMapRouteResult> => {
-  assertExploreMapVnextQueryAllowed(input.query);
+  assertExploreMapBboxQueryAllowed(input.query);
 
   const cached = await buildExploreMapPayload();
   const bboxRaw = input.query.bbox?.trim();
 
-  if (bboxRaw && isExploreMapVnextEnabled()) {
+  if (bboxRaw && isExploreMapBboxEnabled()) {
     const bbox = parseExploreMapBboxParam(bboxRaw);
     const limit = parseExploreMapLimitParam(input.query.limit);
     const areaSlug = input.query.area?.trim() || null;
-    const page = buildExploreMapVnextPage({
+    const page = buildExploreMapBboxPage({
       items: cached.items,
       bbox,
       areaSlug,
@@ -49,8 +50,9 @@ export const loadExploreMapForRequest = async (input: {
       { items: page.items },
       { viewerUserId: input.viewerUserId, userRole: input.userRole }
     );
+    const items = enrichExploreMapItemsDiscoveryProjection(enriched.items);
     return {
-      items: enriched.items,
+      items,
       nextCursor: page.nextCursor,
       region: page.region,
       cacheGeneration: readExploreMapMemoryCacheGeneration(),
@@ -61,5 +63,6 @@ export const loadExploreMapForRequest = async (input: {
     viewerUserId: input.viewerUserId,
     userRole: input.userRole,
   });
-  return { items: enriched.items };
+  const items = enrichExploreMapItemsDiscoveryProjection(enriched.items);
+  return { items };
 };

@@ -1,0 +1,731 @@
+{
+  "generated": "2026-10-16",
+  "description": "CTO system audit baseline. Regenerate: npm run system:audit",
+  "summary": {
+    "apiRegistrarFiles": 49,
+    "apiRouteEndpointsParsed": 113,
+    "mongoCollectionsDefined": 53,
+    "mongoCollectionsOrphanInApi": 1,
+    "mongoCollectionsMultiWriterOver4": 0,
+    "routeRegistrarsWithDirectWrites": 0,
+    "apiMounts": 8,
+    "spaRouteElements": 116,
+    "feDomainModules": 22,
+    "boundedContexts": 17
+  },
+  "risks": {
+    "orphanCollections": [
+      {
+        "key": "STRIPE_WEBHOOK_EVENTS",
+        "mongoName": "stripe_webhook_events"
+      }
+    ],
+    "multiWriterCollectionsTop": [],
+    "routeLayerViolations": []
+  },
+  "apiMounts": [
+    {
+      "prefix": "/auth",
+      "file": "apps/api/src/routes/auth.ts"
+    },
+    {
+      "prefix": "/admin",
+      "file": "apps/api/src/routes/admin.ts"
+    },
+    {
+      "prefix": "/operator",
+      "file": "apps/api/src/routes/operator.ts",
+      "note": "legacy /host/* rewritten in middleware"
+    },
+    {
+      "prefix": "/chat",
+      "file": "apps/api/src/routes/chat.ts"
+    },
+    {
+      "prefix": "/shop",
+      "file": "apps/api/src/routes/shop.ts"
+    },
+    {
+      "prefix": "/media",
+      "file": "apps/api/src/routes/media.ts"
+    },
+    {
+      "prefix": "/reports",
+      "file": "apps/api/src/routes/reports.ts"
+    },
+    {
+      "prefix": "/user+social",
+      "file": "apps/api/src/routes/user.ts",
+      "note": "user router + social router on /"
+    }
+  ],
+  "integrations": [
+    {
+      "id": "mongodb",
+      "type": "database",
+      "env": [
+        "MONGODB_URI",
+        "MONGODB_URI_TEST",
+        "MONGODB_URI_STAGING",
+        "MONGODB_URI_PROD"
+      ]
+    },
+    {
+      "id": "redis",
+      "type": "cache_rate_sse",
+      "env": [
+        "REDIS_URL"
+      ],
+      "prodRequired": true
+    },
+    {
+      "id": "s3_minio",
+      "type": "object_storage",
+      "env": [
+        "S3_ENDPOINT",
+        "S3_BUCKET",
+        "S3_ACCESS_KEY_ID"
+      ]
+    },
+    {
+      "id": "stripe",
+      "type": "webhook",
+      "path": "/api/shop/webhook/stripe",
+      "env": [
+        "STRIPE_SECRET_KEY",
+        "STRIPE_WEBHOOK_SECRET"
+      ],
+      "store": "stripe_webhook_events"
+    },
+    {
+      "id": "email",
+      "type": "smtp",
+      "env": [
+        "SMTP_URL_PROD",
+        "SENDGRID_API_KEY",
+        "SMTP_HOST"
+      ],
+      "prodRequired": true
+    },
+    {
+      "id": "google_oauth",
+      "type": "oauth",
+      "env": [
+        "GOOGLE_CLIENT_ID"
+      ]
+    },
+    {
+      "id": "web_push",
+      "type": "push",
+      "env": [
+        "VAPID_PUBLIC_KEY",
+        "VAPID_PRIVATE_KEY"
+      ]
+    },
+    {
+      "id": "jwt",
+      "type": "auth",
+      "env": [
+        "JWT_ACCESS_SECRET",
+        "JWT_REFRESH_SECRET"
+      ]
+    }
+  ],
+  "collectionUsage": {
+    "AUTH_USERS": {
+      "mongoName": "auth_users",
+      "referencingFiles": 1,
+      "writerFiles": 0,
+      "sampleFiles": [
+        "apps/api/src/lib/mongo-indexes.ts"
+      ]
+    },
+    "AUTH_REFRESH_TOKENS": {
+      "mongoName": "auth_refresh_tokens",
+      "referencingFiles": 1,
+      "writerFiles": 0,
+      "sampleFiles": [
+        "apps/api/src/lib/mongo-indexes.ts"
+      ]
+    },
+    "AUTH_EMAIL_VERIFICATION_TOKENS": {
+      "mongoName": "auth_email_verification_tokens",
+      "referencingFiles": 1,
+      "writerFiles": 0,
+      "sampleFiles": [
+        "apps/api/src/lib/mongo-indexes.ts"
+      ]
+    },
+    "AUTH_EMAIL_CHANGE_TOKENS": {
+      "mongoName": "auth_email_change_tokens",
+      "referencingFiles": 1,
+      "writerFiles": 0,
+      "sampleFiles": [
+        "apps/api/src/lib/mongo-indexes.ts"
+      ]
+    },
+    "AUTH_PASSWORD_RESET_TOKENS": {
+      "mongoName": "auth_password_reset_tokens",
+      "referencingFiles": 1,
+      "writerFiles": 0,
+      "sampleFiles": [
+        "apps/api/src/lib/mongo-indexes.ts"
+      ]
+    },
+    "USERS": {
+      "mongoName": "users",
+      "referencingFiles": 1,
+      "writerFiles": 1,
+      "sampleFiles": [
+        "apps/api/src/lib/mongo-migrations.ts"
+      ]
+    },
+    "TENANTS": {
+      "mongoName": "tenants",
+      "referencingFiles": 2,
+      "writerFiles": 1,
+      "sampleFiles": [
+        "apps/api/src/lib/mongo-indexes.ts",
+        "apps/api/src/lib/mongo-migrations.ts"
+      ]
+    },
+    "TENANT_MEMBERSHIPS": {
+      "mongoName": "tenant_memberships",
+      "referencingFiles": 2,
+      "writerFiles": 1,
+      "sampleFiles": [
+        "apps/api/src/lib/mongo-indexes.ts",
+        "apps/api/src/lib/mongo-migrations.ts"
+      ]
+    },
+    "HOST_APPLICATIONS": {
+      "mongoName": "host_applications",
+      "referencingFiles": 4,
+      "writerFiles": 3,
+      "sampleFiles": [
+        "apps/api/src/lib/admin-store.ts",
+        "apps/api/src/lib/host-applications-store.ts",
+        "apps/api/src/lib/mongo-indexes.ts",
+        "apps/api/src/lib/mongo-migrations.ts"
+      ]
+    },
+    "LOCATIONS": {
+      "mongoName": "locations",
+      "referencingFiles": 5,
+      "writerFiles": 2,
+      "sampleFiles": [
+        "apps/api/src/lib/catalog-cpc-migrations.ts",
+        "apps/api/src/lib/member-goals-store.ts",
+        "apps/api/src/lib/mongo-indexes.ts",
+        "apps/api/src/routes/user/registerPublicAreaRoutes.ts",
+        "apps/api/src/services/seeking-area-match-notifications.ts"
+      ]
+    },
+    "FACILITIES": {
+      "mongoName": "facilities",
+      "referencingFiles": 3,
+      "writerFiles": 2,
+      "sampleFiles": [
+        "apps/api/src/lib/catalog-cpc-migrations.ts",
+        "apps/api/src/lib/facilities-store.ts",
+        "apps/api/src/lib/mongo-indexes.ts"
+      ]
+    },
+    "LOCATION_UNLOCKS": {
+      "mongoName": "location_unlocks",
+      "referencingFiles": 1,
+      "writerFiles": 0,
+      "sampleFiles": [
+        "apps/api/src/lib/mongo-indexes.ts"
+      ]
+    },
+    "AREAS": {
+      "mongoName": "areas",
+      "referencingFiles": 2,
+      "writerFiles": 1,
+      "sampleFiles": [
+        "apps/api/src/lib/areas-store.ts",
+        "apps/api/src/lib/mongo-indexes.ts"
+      ]
+    },
+    "ACTIVITIES": {
+      "mongoName": "activities",
+      "referencingFiles": 7,
+      "writerFiles": 3,
+      "sampleFiles": [
+        "apps/api/src/lib/member-goals-store.ts",
+        "apps/api/src/lib/mongo-indexes.ts",
+        "apps/api/src/lib/mongo-migrations.ts",
+        "apps/api/src/lib/participant-intent-requests-store.ts",
+        "apps/api/src/routes/user/registerPublicAreaRoutes.ts",
+        "apps/api/src/services/participant-intent-activity-readthrough.ts"
+      ]
+    },
+    "ACTIVITY_REQUESTS": {
+      "mongoName": "activity_requests",
+      "referencingFiles": 2,
+      "writerFiles": 1,
+      "sampleFiles": [
+        "apps/api/src/lib/mongo-indexes.ts",
+        "apps/api/src/lib/mongo-migrations.ts"
+      ]
+    },
+    "ACTIVITY_PARTICIPANTS": {
+      "mongoName": "activity_participants",
+      "referencingFiles": 3,
+      "writerFiles": 2,
+      "sampleFiles": [
+        "apps/api/src/lib/member-map-pins-store.ts",
+        "apps/api/src/lib/mongo-indexes.ts",
+        "apps/api/src/lib/mongo-migrations.ts"
+      ]
+    },
+    "PARTICIPANT_INTENTS": {
+      "mongoName": "participant_intents",
+      "referencingFiles": 8,
+      "writerFiles": 4,
+      "sampleFiles": [
+        "apps/api/src/lib/mongo-indexes.ts",
+        "apps/api/src/lib/mongo-migrations.ts",
+        "apps/api/src/lib/participant-intent-requests-store.ts",
+        "apps/api/src/lib/participant-intents-store.ts",
+        "apps/api/src/lib/seeking-storage-ops.ts",
+        "apps/api/src/routes/user/registerPublicAreaRoutes.ts"
+      ]
+    },
+    "PARTICIPANT_INTENT_REQUESTS": {
+      "mongoName": "participant_intent_requests",
+      "referencingFiles": 1,
+      "writerFiles": 1,
+      "sampleFiles": [
+        "apps/api/src/lib/participant-intent-requests-store.ts"
+      ]
+    },
+    "MERCHANT_PROFILES": {
+      "mongoName": "merchant_profiles",
+      "referencingFiles": 4,
+      "writerFiles": 3,
+      "sampleFiles": [
+        "apps/api/src/lib/entity-follow-store.ts",
+        "apps/api/src/lib/mongo-indexes.ts",
+        "apps/api/src/lib/mongo-migrations.ts",
+        "apps/api/src/lib/shop-store.ts"
+      ]
+    },
+    "PRODUCTS": {
+      "mongoName": "products",
+      "referencingFiles": 2,
+      "writerFiles": 1,
+      "sampleFiles": [
+        "apps/api/src/lib/mongo-indexes.ts",
+        "apps/api/src/lib/shop-store.ts"
+      ]
+    },
+    "SHOP_ORDERS": {
+      "mongoName": "shop_orders",
+      "referencingFiles": 3,
+      "writerFiles": 2,
+      "sampleFiles": [
+        "apps/api/src/lib/mongo-indexes.ts",
+        "apps/api/src/lib/mongo-migrations.ts",
+        "apps/api/src/lib/shop-store.ts"
+      ]
+    },
+    "ORDER_LINE_ITEMS": {
+      "mongoName": "order_line_items",
+      "referencingFiles": 3,
+      "writerFiles": 2,
+      "sampleFiles": [
+        "apps/api/src/lib/mongo-indexes.ts",
+        "apps/api/src/lib/mongo-migrations.ts",
+        "apps/api/src/lib/shop-store.ts"
+      ]
+    },
+    "PRODUCT_CLICKS": {
+      "mongoName": "product_clicks",
+      "referencingFiles": 2,
+      "writerFiles": 1,
+      "sampleFiles": [
+        "apps/api/src/lib/mongo-indexes.ts",
+        "apps/api/src/lib/shop-store.ts"
+      ]
+    },
+    "STRIPE_WEBHOOK_EVENTS": {
+      "mongoName": "stripe_webhook_events",
+      "referencingFiles": 0,
+      "writerFiles": 0,
+      "sampleFiles": []
+    },
+    "CHAT_MESSAGES": {
+      "mongoName": "chat_messages",
+      "referencingFiles": 1,
+      "writerFiles": 0,
+      "sampleFiles": [
+        "apps/api/src/lib/mongo-indexes.ts"
+      ]
+    },
+    "CHAT_MESSAGE_REACTIONS": {
+      "mongoName": "chat_message_reactions",
+      "referencingFiles": 1,
+      "writerFiles": 1,
+      "sampleFiles": [
+        "apps/api/src/lib/chat-message-reactions.ts"
+      ]
+    },
+    "CONTENT_REPORTS": {
+      "mongoName": "content_reports",
+      "referencingFiles": 1,
+      "writerFiles": 1,
+      "sampleFiles": [
+        "apps/api/src/lib/content-reports-store.ts"
+      ]
+    },
+    "SOCIAL_REVIEWS": {
+      "mongoName": "social_reviews",
+      "referencingFiles": 1,
+      "writerFiles": 0,
+      "sampleFiles": [
+        "apps/api/src/lib/mongo-indexes.ts"
+      ]
+    },
+    "SOCIAL_GROUPS": {
+      "mongoName": "social_groups",
+      "referencingFiles": 1,
+      "writerFiles": 0,
+      "sampleFiles": [
+        "apps/api/src/lib/mongo-indexes.ts"
+      ]
+    },
+    "SOCIAL_GROUP_MEMBERS": {
+      "mongoName": "social_group_members",
+      "referencingFiles": 1,
+      "writerFiles": 0,
+      "sampleFiles": [
+        "apps/api/src/lib/mongo-indexes.ts"
+      ]
+    },
+    "SOCIAL_GROUP_INVITES": {
+      "mongoName": "social_group_invites",
+      "referencingFiles": 1,
+      "writerFiles": 0,
+      "sampleFiles": [
+        "apps/api/src/lib/mongo-indexes.ts"
+      ]
+    },
+    "SOCIAL_GROUP_WALL": {
+      "mongoName": "social_group_wall",
+      "referencingFiles": 1,
+      "writerFiles": 0,
+      "sampleFiles": [
+        "apps/api/src/lib/mongo-indexes.ts"
+      ]
+    },
+    "SOCIAL_GROUP_WALL_REACTIONS": {
+      "mongoName": "social_group_wall_reactions",
+      "referencingFiles": 1,
+      "writerFiles": 0,
+      "sampleFiles": [
+        "apps/api/src/lib/mongo-indexes.ts"
+      ]
+    },
+    "BUDDY_REQUESTS": {
+      "mongoName": "buddy_requests",
+      "referencingFiles": 1,
+      "writerFiles": 0,
+      "sampleFiles": [
+        "apps/api/src/lib/mongo-indexes.ts"
+      ]
+    },
+    "BUDDY_PAIRS": {
+      "mongoName": "buddy_pairs",
+      "referencingFiles": 1,
+      "writerFiles": 0,
+      "sampleFiles": [
+        "apps/api/src/lib/mongo-indexes.ts"
+      ]
+    },
+    "USER_FOLLOWS": {
+      "mongoName": "user_follows",
+      "referencingFiles": 2,
+      "writerFiles": 1,
+      "sampleFiles": [
+        "apps/api/src/lib/follow-store.ts",
+        "apps/api/src/lib/mongo-indexes.ts"
+      ]
+    },
+    "ENTITY_FOLLOWS": {
+      "mongoName": "entity_follows",
+      "referencingFiles": 2,
+      "writerFiles": 1,
+      "sampleFiles": [
+        "apps/api/src/lib/entity-follow-store.ts",
+        "apps/api/src/lib/mongo-indexes.ts"
+      ]
+    },
+    "USER_WISHLIST": {
+      "mongoName": "user_favorites",
+      "referencingFiles": 4,
+      "writerFiles": 3,
+      "sampleFiles": [
+        "apps/api/src/lib/mongo-indexes.ts",
+        "apps/api/src/lib/mongo-migrations.ts",
+        "apps/api/src/lib/wishlist-store.ts",
+        "apps/api/src/services/account-deletion.ts"
+      ]
+    },
+    "NOTIFICATIONS": {
+      "mongoName": "notifications",
+      "referencingFiles": 1,
+      "writerFiles": 0,
+      "sampleFiles": [
+        "apps/api/src/lib/mongo-indexes.ts"
+      ]
+    },
+    "REWARD_LEDGERS": {
+      "mongoName": "reward_ledgers",
+      "referencingFiles": 1,
+      "writerFiles": 0,
+      "sampleFiles": [
+        "apps/api/src/lib/mongo-indexes.ts"
+      ]
+    },
+    "USER_BADGES": {
+      "mongoName": "user_badges",
+      "referencingFiles": 1,
+      "writerFiles": 0,
+      "sampleFiles": [
+        "apps/api/src/lib/mongo-indexes.ts"
+      ]
+    },
+    "USER_GOALS": {
+      "mongoName": "user_goals",
+      "referencingFiles": 3,
+      "writerFiles": 2,
+      "sampleFiles": [
+        "apps/api/src/lib/member-goals-store.ts",
+        "apps/api/src/lib/mongo-indexes.ts",
+        "apps/api/src/services/member-goal-notifications.ts"
+      ]
+    },
+    "MEMBER_AVAILABILITY": {
+      "mongoName": "member_availability",
+      "referencingFiles": 3,
+      "writerFiles": 1,
+      "sampleFiles": [
+        "apps/api/src/lib/member-availability-store.ts",
+        "apps/api/src/lib/mongo-indexes.ts",
+        "apps/api/src/services/availability-hosted-match-notifications.ts"
+      ]
+    },
+    "MEMBER_MAP_PINS": {
+      "mongoName": "member_map_pins",
+      "referencingFiles": 3,
+      "writerFiles": 2,
+      "sampleFiles": [
+        "apps/api/src/lib/member-goals-store.ts",
+        "apps/api/src/lib/member-map-pins-store.ts",
+        "apps/api/src/lib/mongo-indexes.ts"
+      ]
+    },
+    "MEMBER_PROFILE_VIEWS": {
+      "mongoName": "member_profile_views",
+      "referencingFiles": 2,
+      "writerFiles": 1,
+      "sampleFiles": [
+        "apps/api/src/lib/member-profile-views-store.ts",
+        "apps/api/src/lib/mongo-indexes.ts"
+      ]
+    },
+    "ACTIVITY_INVITES": {
+      "mongoName": "activity_invites",
+      "referencingFiles": 2,
+      "writerFiles": 1,
+      "sampleFiles": [
+        "apps/api/src/lib/activity-invites-store.ts",
+        "apps/api/src/lib/mongo-indexes.ts"
+      ]
+    },
+    "PUSH_SUBSCRIPTIONS": {
+      "mongoName": "push_subscriptions",
+      "referencingFiles": 1,
+      "writerFiles": 0,
+      "sampleFiles": [
+        "apps/api/src/lib/mongo-indexes.ts"
+      ]
+    },
+    "MEDIA_ASSETS": {
+      "mongoName": "media_assets",
+      "referencingFiles": 1,
+      "writerFiles": 0,
+      "sampleFiles": [
+        "apps/api/src/lib/mongo-indexes.ts"
+      ]
+    },
+    "AUDIT_LOGS": {
+      "mongoName": "audit_logs",
+      "referencingFiles": 1,
+      "writerFiles": 0,
+      "sampleFiles": [
+        "apps/api/src/lib/mongo-indexes.ts"
+      ]
+    },
+    "EVENTS": {
+      "mongoName": "events",
+      "referencingFiles": 1,
+      "writerFiles": 1,
+      "sampleFiles": [
+        "apps/api/src/lib/mongo-migrations.ts"
+      ]
+    },
+    "EVENT_REQUESTS": {
+      "mongoName": "event_requests",
+      "referencingFiles": 1,
+      "writerFiles": 1,
+      "sampleFiles": [
+        "apps/api/src/lib/mongo-migrations.ts"
+      ]
+    },
+    "EVENT_PARTICIPANTS": {
+      "mongoName": "event_participants",
+      "referencingFiles": 1,
+      "writerFiles": 1,
+      "sampleFiles": [
+        "apps/api/src/lib/mongo-migrations.ts"
+      ]
+    },
+    "ORGANIZER_APPLICATIONS": {
+      "mongoName": "organizer_applications",
+      "referencingFiles": 1,
+      "writerFiles": 1,
+      "sampleFiles": [
+        "apps/api/src/lib/mongo-migrations.ts"
+      ]
+    }
+  },
+  "collectionWritersSummary": {
+    "AUTH_USERS": 0,
+    "AUTH_REFRESH_TOKENS": 0,
+    "AUTH_EMAIL_VERIFICATION_TOKENS": 0,
+    "AUTH_EMAIL_CHANGE_TOKENS": 0,
+    "AUTH_PASSWORD_RESET_TOKENS": 0,
+    "USERS": 1,
+    "TENANTS": 1,
+    "TENANT_MEMBERSHIPS": 1,
+    "HOST_APPLICATIONS": 3,
+    "LOCATIONS": 2,
+    "FACILITIES": 2,
+    "LOCATION_UNLOCKS": 0,
+    "AREAS": 1,
+    "ACTIVITIES": 3,
+    "ACTIVITY_REQUESTS": 1,
+    "ACTIVITY_PARTICIPANTS": 2,
+    "PARTICIPANT_INTENTS": 4,
+    "PARTICIPANT_INTENT_REQUESTS": 1,
+    "MERCHANT_PROFILES": 3,
+    "PRODUCTS": 1,
+    "SHOP_ORDERS": 2,
+    "ORDER_LINE_ITEMS": 2,
+    "PRODUCT_CLICKS": 1,
+    "STRIPE_WEBHOOK_EVENTS": 0,
+    "CHAT_MESSAGES": 0,
+    "CHAT_MESSAGE_REACTIONS": 1,
+    "CONTENT_REPORTS": 1,
+    "SOCIAL_REVIEWS": 0,
+    "SOCIAL_GROUPS": 0,
+    "SOCIAL_GROUP_MEMBERS": 0,
+    "SOCIAL_GROUP_INVITES": 0,
+    "SOCIAL_GROUP_WALL": 0,
+    "SOCIAL_GROUP_WALL_REACTIONS": 0,
+    "BUDDY_REQUESTS": 0,
+    "BUDDY_PAIRS": 0,
+    "USER_FOLLOWS": 1,
+    "ENTITY_FOLLOWS": 1,
+    "USER_WISHLIST": 3,
+    "NOTIFICATIONS": 0,
+    "REWARD_LEDGERS": 0,
+    "USER_BADGES": 0,
+    "USER_GOALS": 2,
+    "MEMBER_AVAILABILITY": 1,
+    "MEMBER_MAP_PINS": 2,
+    "MEMBER_PROFILE_VIEWS": 1,
+    "ACTIVITY_INVITES": 1,
+    "PUSH_SUBSCRIPTIONS": 0,
+    "MEDIA_ASSETS": 0,
+    "AUDIT_LOGS": 0,
+    "EVENTS": 1,
+    "EVENT_REQUESTS": 1,
+    "EVENT_PARTICIPANTS": 1,
+    "ORGANIZER_APPLICATIONS": 1
+  },
+  "registrarServicesSample": {
+    "apps/api/src/routes/admin/registerAdminActivityModerationRoutes.ts": [
+      "admin-notifications"
+    ],
+    "apps/api/src/routes/admin/registerAdminAreaRoutes.ts": [],
+    "apps/api/src/routes/admin/registerAdminAuditRoutes.ts": [],
+    "apps/api/src/routes/admin/registerAdminContentReportRoutes.ts": [],
+    "apps/api/src/routes/admin/registerAdminFacilityRoutes.ts": [],
+    "apps/api/src/routes/admin/registerAdminGroupRoutes.ts": [
+      "admin-notifications"
+    ],
+    "apps/api/src/routes/admin/registerAdminHostApplicationRoutes.ts": [
+      "admin-notifications"
+    ],
+    "apps/api/src/routes/admin/registerAdminMetricsRoutes.ts": []
+  },
+  "auditPillars": [
+    {
+      "id": "A1",
+      "name": "Product capabilities & surfaces"
+    },
+    {
+      "id": "A2",
+      "name": "Domain model & aggregates"
+    },
+    {
+      "id": "A3",
+      "name": "API surface & routing"
+    },
+    {
+      "id": "A4",
+      "name": "Application & service boundaries"
+    },
+    {
+      "id": "A5",
+      "name": "Data layer & migrations"
+    },
+    {
+      "id": "A6",
+      "name": "Read models & caching"
+    },
+    {
+      "id": "A7",
+      "name": "Async, notifications & workflows"
+    },
+    {
+      "id": "A8",
+      "name": "Inbound integrations & webhooks"
+    },
+    {
+      "id": "A9",
+      "name": "Client architecture"
+    },
+    {
+      "id": "A10",
+      "name": "Security, auth & tenancy"
+    },
+    {
+      "id": "A11",
+      "name": "Infrastructure & operations"
+    },
+    {
+      "id": "A12",
+      "name": "Quality, contracts & CI"
+    }
+  ],
+  "waves": {
+    "W0": "system-audit baseline + verify:system-audit",
+    "W1": "CPC-7 close + seeking:deploy-gate",
+    "W2": "explore read model + outbox"
+  }
+}

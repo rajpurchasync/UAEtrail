@@ -65,6 +65,16 @@ npm run seeking:storage-status -- --strict
 
 Exit **0** required before sending traffic on that env. Fails when any active intent still lacks a seeking activity **or** stub write is still enabled.
 
+### Staging sign-off (P1 — `MIG-SEEKING-READ`)
+
+Run against **staging** Mongo (`MONGODB_URI` / compose env for staging — not local dev DB):
+
+```bash
+npm run seeking:deploy-gate
+```
+
+Record in the deploy ticket: date, commit SHA, and the JSON summary (`readyToDisableStubWrite`, `activeIntentsMissingSeekingActivity`). **Local gate green ≠ staging done** — both are required before marking P1 seeking migration complete.
+
 ## Local dev
 
 - `.env.example` defaults `PARTICIPANT_INTENT_STUB_WRITE=false` — mirror in root `.env` after backfill.

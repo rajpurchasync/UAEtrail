@@ -33,7 +33,7 @@ export const openApiSpec = swaggerJsdoc({
     },
     servers: [
       {
-        url: `${env.API_BASE_URL}/api/v1`
+        url: `${env.API_BASE_URL}/api`
       }
     ],
     tags: [...openApiTags],

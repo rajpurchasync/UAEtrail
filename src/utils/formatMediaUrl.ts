@@ -43,13 +43,13 @@ export const extractMediaStorageKey = (raw: string): string | null => {
 export const formatMediaUrl = (url: string): string => {
   if (!url || typeof url !== 'string') return url;
   if (url.startsWith('blob:') || url.startsWith('data:')) return url;
-  if (url.includes('/api/v1/media/resolve?')) {
+  if (url.includes('/api/media/resolve?')) {
     return formatEnvironmentUrl(url);
   }
 
   const key = extractMediaStorageKey(url);
   if (key) {
-    return `/api/v1/media/public/${key}`;
+    return `/api/media/public/${key}`;
   }
 
   return formatEnvironmentUrl(url);

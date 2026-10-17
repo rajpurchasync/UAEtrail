@@ -33,7 +33,7 @@ afterAll(async () => {
 describe('join request flow integration', () => {
   it('logs in verified visitor account', async () => {
     const response = await request(app)
-      .post('/api/v1/auth/login')
+      .post('/api/auth/login')
       .send({ email: visitor.email, password: visitor.password });
 
     expect(response.status).toBe(200);
@@ -43,14 +43,14 @@ describe('join request flow integration', () => {
 
   it('submits pending join request when slots are available', async () => {
     const login = await request(app)
-      .post('/api/v1/auth/login')
+      .post('/api/auth/login')
       .send({ email: visitor.email, password: visitor.password });
 
     expect(login.status).toBe(200);
     const token = login.body.tokens.accessToken as string;
 
     const joinRes = await request(app)
-      .post(`/api/v1/activities/${openFixture.activityId}/requests`)
+      .post(`/api/activities/${openFixture.activityId}/requests`)
       .set('Authorization', `Bearer ${token}`)
       .send({ note: 'Integration test request' });
 
@@ -64,14 +64,14 @@ describe('join request flow integration', () => {
     const waitlistVisitor = await registerVerifiedVisitor(app, `${suffix}-waitlist`);
 
     const login = await request(app)
-      .post('/api/v1/auth/login')
+      .post('/api/auth/login')
       .send({ email: waitlistVisitor.email, password: waitlistVisitor.password });
 
     expect(login.status).toBe(200);
     const token = login.body.tokens.accessToken as string;
 
     const joinRes = await request(app)
-      .post(`/api/v1/activities/${fullFixture.activityId}/requests`)
+      .post(`/api/activities/${fullFixture.activityId}/requests`)
       .set('Authorization', `Bearer ${token}`)
       .send({ note: 'Waitlist integration test' });
 
@@ -82,7 +82,7 @@ describe('join request flow integration', () => {
   });
 
   it('lists published events including the test fixture', async () => {
-    const response = await request(app).get('/api/v1/activities');
+    const response = await request(app).get('/api/activities');
     expect(response.status).toBe(200);
     expect(response.body.data.some((event: { id: string }) => event.id === openFixture.activityId)).toBe(true);
   });

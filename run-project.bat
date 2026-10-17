@@ -3,8 +3,8 @@ setlocal EnableExtensions EnableDelayedExpansion
 
 cd /d "%~dp0"
 
-set "NODE_MIN_VERSION=24.18.0"
-set "NODE_BOOTSTRAP_VERSION=24.18.0"
+set "NODE_MIN_VERSION=24.22.0"
+set "NODE_BOOTSTRAP_VERSION=24.22.0"
 if /i "%PROCESSOR_ARCHITECTURE%"=="ARM64" (
   set "NODE_ARCH=arm64"
 ) else (
@@ -37,7 +37,7 @@ if "%S3_SECRET_ACCESS_KEY%"=="" set "S3_SECRET_ACCESS_KEY=minioadmin"
 if "%APP_BASE_URL%"=="" set "APP_BASE_URL=http://localhost"
 if "%APP_BASE_URLS%"=="" set "APP_BASE_URLS=http://localhost,http://localhost:5175"
 if "%API_BASE_URL%"=="" set "API_BASE_URL=http://localhost:4000"
-if "%VITE_API_BASE_URL%"=="" set "VITE_API_BASE_URL=/api/v1"
+if "%VITE_API_BASE_URL%"=="" set "VITE_API_BASE_URL=/api"
 if "%FRONTEND_PORT%"=="" set "FRONTEND_PORT=5175"
 
 set "RUNTIME_ENV_FILE=%TEMP%\uaetrail-runtime-env.txt"

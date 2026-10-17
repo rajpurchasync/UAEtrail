@@ -1,14 +1,45 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { buildDiscoveryCardViewModel, buildDiscoveryCardViewModelCard } from './discoveryCardViewModel';
+import { buildListFeedCards } from '../list/buildListFeedCards';
 import { buildExploreCardModel } from '../explore/exploreCardModel';
 import { hostedExploreMapItem, venueExploreMapItem } from '../explore/exploreMapItemFixtures';
 import { resolveListVenuePosterCopy } from '../list/listVenuePosterPresentation';
-import { buildListFeedCards } from '../list/buildListFeedCards';
 import { buildDiscoveryEnrichedCard } from './buildDiscoveryEnrichedCard';
 import { buildDiscoveryMapListRowCard } from './buildDiscoveryMapListRowCard';
 
 /** RF-02 — discovery VM must match legacy card builder for the same wire item. */
 describe('buildDiscoveryCardViewModel (RF-02)', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it('uses API discoveryCard when VITE_EXPLORE_MAP_DISCOVERY_PROJECTION=1', () => {
+    vi.stubEnv('VITE_EXPLORE_MAP_DISCOVERY_PROJECTION', '1');
+    const item = hostedExploreMapItem();
+    const serverProjection = {
+      entityRef: { kind: 'activity' as const, activityId: item.id },
+      path: item.path,
+      sharePath: item.path,
+      source: item.source,
+      kind: item.kind,
+      headline: 'Server headline',
+      listTitle: 'Server list',
+      subtitle: null,
+      primaryCta: 'View plan',
+      imageUrl: null,
+      requirementChips: []
+    };
+    const wired = { ...item, discoveryCard: serverProjection };
+    const { projection, card } = buildDiscoveryCardViewModel(wired);
+    expect(projection.headline).toBe('Server headline');
+    expect(projection).toEqual(serverProjection);
+    expect(card.headline).toBe('Server headline');
+    expect(card.listTitle).toBe('Server list');
+
+    const [listCard] = buildListFeedCards([wired], null);
+    expect(listCard.headline).toBe('Server headline');
+  });
+
   it('matches buildExploreCardModel for hosted activity (peek path)', () => {
     const item = hostedExploreMapItem();
     const legacy = buildExploreCardModel(item);

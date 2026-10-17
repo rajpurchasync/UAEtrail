@@ -1,59 +1,58 @@
 import { useCallback, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { MemberAvailabilityDTO, UpsertMemberAvailabilityInput } from '@uaetrail/shared-types';
 import { fetchMyMemberAvailability, saveMyMemberAvailability } from './memberAvailabilityApi';
-import { useSafeAsyncEffect, type IsActiveGuard } from './useSafeAsyncEffect';
+import { memberAvailabilityQueryKey } from './clientQueryKeys';
+import { useAuth } from '../context/AuthContext';
 
 export const useMemberAvailability = (enabled: boolean) => {
-  const [data, setData] = useState<MemberAvailabilityDTO | null>(null);
-  const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
-  const reload = useCallback(
-    async (isActive: IsActiveGuard = () => true) => {
-      if (!enabled) return;
-      if (isActive()) {
-        setLoading(true);
-        setError(null);
-      }
-      try {
-        const availability = await fetchMyMemberAvailability();
-        if (isActive()) {
-          setData(availability);
-        }
-      } catch {
-        if (isActive()) {
-          setError('Could not load availability.');
-        }
-      } finally {
-        if (isActive()) {
-          setLoading(false);
-        }
-      }
-    },
-    [enabled]
-  );
+  const query = useQuery({
+    queryKey: user ? memberAvailabilityQueryKey(user.id) : ['me', 'availability', ''],
+    queryFn: fetchMyMemberAvailability,
+    enabled: enabled && Boolean(user),
+    staleTime: 60_000,
+  });
 
-  useSafeAsyncEffect(async (isActive) => {
-    await reload(isActive);
-  }, [reload]);
+  const reload = useCallback(async () => {
+    await query.refetch();
+  }, [query]);
 
   const save = useCallback(
     async (input: UpsertMemberAvailabilityInput) => {
+      if (!user) return;
       setSaving(true);
-      setError(null);
+      setSaveError(null);
       try {
         const availability = await saveMyMemberAvailability(input);
-        setData(availability);
+        queryClient.setQueryData(memberAvailabilityQueryKey(user.id), availability);
       } catch {
-        setError('Could not save availability.');
+        setSaveError('Could not save availability.');
         throw new Error('save_failed');
       } finally {
         setSaving(false);
       }
     },
-    []
+    [queryClient, user]
   );
 
-  return { data, loading, saving, error, reload, save };
+  const loadError =
+    query.error instanceof Error
+      ? query.error.message
+      : query.isError
+        ? 'Could not load availability.'
+        : null;
+
+  return {
+    data: query.data ?? null,
+    loading: query.isLoading,
+    saving,
+    error: saveError ?? loadError,
+    reload,
+    save,
+  };
 };

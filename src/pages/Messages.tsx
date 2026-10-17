@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
-import { useSafeAsyncEffect } from '../hooks/useSafeAsyncEffect';
+import { useMessagesInbox } from '../hooks/useMessagesInbox';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { X } from 'lucide-react';
 import type { ChatConversationDTO, GroupWallStreamEventDTO } from '@uaetrail/shared-types';
 import { searchMembersByQuery } from '../hooks/memberPeopleClientApi';
-import { messagingApi } from '../messaging';
 import type { SocialGroupView, SocialGroupWallMessageView } from '../api/types';
 import { useAuth } from '../context/AuthContext';
 import { GuestTabPlaceholder } from '../components/auth/GuestTabPlaceholder';
@@ -29,7 +28,6 @@ import { useChatStream } from '../hooks/useChatStream';
 import { ReportContentDialog } from '../components/ui/ReportContentDialog';
 import {
   filterInboxThreads,
-  loadGroupThreadPreviews,
   patchGroupInboxThread,
   sortInboxThreads,
   toDirectThread,
@@ -84,12 +82,18 @@ export const Messages = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [conversations, setConversations] = useState<ChatConversationDTO[]>([]);
-  const [groupThreads, setGroupThreads] = useState<InboxThread[]>([]);
   const selectedUserId = searchParams.get('to');
   const selectedGroupId = searchParams.get('group');
   const contextActivityId = searchParams.get('activity');
-  const [loading, setLoading] = useState(true);
+  const {
+    conversations,
+    groupThreads,
+    directConversationsDegraded,
+    loading,
+    loadInbox,
+    setConversations,
+    setGroupThreads,
+  } = useMessagesInbox(user?.id);
   const [error, setError] = useState<string | null>(null);
   const [showNewChat, setShowNewChat] = useState(false);
   const [composeQuery, setComposeQuery] = useState('');
@@ -115,21 +119,11 @@ export const Messages = () => {
     selectedGroupIdRef.current = selectedGroupId;
   }, [selectedGroupId]);
 
-  const loadInbox = useCallback(async (isActive: () => boolean = () => true) => {
-    try {
-      const inboxRes = await messagingApi.getInbox();
-      if (!isActive()) return;
-      setConversations(inboxRes.data.direct);
-      setGroupThreads(loadGroupThreadPreviews(inboxRes.data.groups as SocialGroupView[]));
-      if (inboxRes.data.directConversationsDegraded) {
-        setError('Some direct chats could not be loaded. Refresh to try again.');
-      }
-    } catch {
-      /* stream / retry fallback */
-    } finally {
-      if (isActive()) setLoading(false);
+  useEffect(() => {
+    if (directConversationsDegraded) {
+      setError('Some direct chats could not be loaded. Refresh to try again.');
     }
-  }, []);
+  }, [directConversationsDegraded]);
 
   const directChat = useDirectChatThread({
     currentUserId: user?.id,
@@ -169,8 +163,6 @@ export const Messages = () => {
       )
     );
   }, [selectedGroupId]);
-
-  useSafeAsyncEffect((isActive) => loadInbox(isActive), [loadInbox]);
 
   useEffect(() => {
     setMobileShowThread(Boolean(searchParams.get('to') || searchParams.get('group')));

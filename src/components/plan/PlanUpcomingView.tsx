@@ -7,6 +7,7 @@ import { PlanHostingUpcoming } from './PlanHostingUpcoming';
 import { PlanJoinedUpcoming } from './PlanJoinedUpcoming';
 import { PlanNeedsYouStrip } from './PlanNeedsYouStrip';
 import { parsePlanLens } from '../../plan/planLens';
+import { PlanHostingManageProvider } from '../../plan/PlanHostingManageContext';
 
 type PlanUpcomingViewProps = {
   refreshKey: number;
@@ -28,6 +29,18 @@ export const PlanUpcomingView = ({
   onLayoutChange,
 }: PlanUpcomingViewProps) => {
   const legacyLens = parsePlanLens(lensRaw);
+  const hostingActive = canHost && filter === 'hosting';
+
+  const upcomingBody =
+    legacyLens === 'availability' ? (
+      <PlanAvailabilitySection />
+    ) : layout === 'calendar' ? (
+      <PlanCalendarSection refreshKey={refreshKey} canHost={canHost} filter={filter} />
+    ) : filter === 'hosting' ? (
+      <PlanHostingUpcoming refreshKey={refreshKey} canHost={canHost} />
+    ) : (
+      <PlanJoinedUpcoming refreshKey={refreshKey} />
+    );
 
   return (
     <div className="space-y-4">
@@ -61,15 +74,13 @@ export const PlanUpcomingView = ({
 
       <PlanNeedsYouStrip refreshKey={refreshKey} />
 
-      {legacyLens === 'availability' ? (
-        <PlanAvailabilitySection />
-      ) : layout === 'calendar' ? (
-        <PlanCalendarSection refreshKey={refreshKey} canHost={canHost} filter={filter} />
-      ) : filter === 'hosting' ? (
-        <PlanHostingUpcoming refreshKey={refreshKey} canHost={canHost} />
-      ) : (
-        <PlanJoinedUpcoming refreshKey={refreshKey} />
-      )}
+      <PlanHostingManageProvider
+        refreshKey={refreshKey}
+        canHost={canHost}
+        active={hostingActive}
+      >
+        {upcomingBody}
+      </PlanHostingManageProvider>
     </div>
   );
 };

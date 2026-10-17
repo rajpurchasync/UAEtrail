@@ -8,7 +8,7 @@
       "apiFiles": [
         "apps/api/src/lib/explore-map.ts",
         "apps/api/src/lib/explore-map-base.ts",
-        "apps/api/src/lib/explore-map-vnext.ts",
+        "apps/api/src/lib/explore-map-bbox.ts",
         "apps/api/src/lib/explore-map-route.ts",
         "apps/api/src/lib/explore-map-viewer-access.ts",
         "apps/api/src/lib/discovery-card-projection.ts",
@@ -57,7 +57,13 @@
         "apps/api/src/routes/user/registerActivityJoinInviteRoutes.ts"
       ],
       "feDomains": ["src/api/domains/activities.ts", "src/api/domains/explore.ts"],
-      "feRoots": ["src/pages/JoinRequestDetail.tsx"]
+      "feRoots": [
+        "src/pages/JoinRequestDetail.tsx",
+        "src/pages/ActivityDetail.tsx",
+        "src/hooks/useActivityJoinFlow.ts",
+        "src/hooks/usePublicActivityDetail.ts",
+        "src/components/activity/detail"
+      ]
     },
     {
       "id": "member_identity",
@@ -91,8 +97,7 @@
         "apps/api/src/routes/operator/registerOperatorActivityParticipantRoutes.ts",
         "apps/api/src/routes/operator/registerOperatorTeamRoutes.ts",
         "apps/api/src/routes/operator/registerOperatorActivityRequestRoutes.ts",
-        "apps/api/src/routes/operator/registerOperatorSubmittedLocationRoutes.ts",
-        "apps/api/src/routes/operator/registerOperatorDemandFulfillLegacy.ts"
+        "apps/api/src/routes/operator/registerOperatorSubmittedLocationRoutes.ts"
       ],
       "feDomains": ["src/api/domains/organisation.ts", "src/api/domains/activities.ts"],
       "feRoots": [
@@ -144,6 +149,7 @@
       "feDomains": [
         "src/api/domains/places.ts",
         "src/api/domains/placeCatalogClient.ts",
+        "src/api/domains/placeRegistry.ts",
         "src/hooks/memberCatalogSubmitClientApi.ts",
         "src/hooks/placeCatalogReadsClientApi.ts"
       ],
@@ -218,7 +224,8 @@
         "apps/api/src/lib/wishlist-store.ts",
         "apps/api/src/lib/entity-follow-store.ts",
         "apps/api/src/services/wishlist-alerts.ts",
-        "apps/api/src/services/entity-publish-notifications.ts"
+        "apps/api/src/services/entity-publish-notifications.ts",
+        "apps/api/src/services/member-coordination-attention.ts"
       ],
       "routeRegistrars": [
         "apps/api/src/routes/user/registerMeBadgesRoutes.ts",
@@ -226,11 +233,13 @@
         "apps/api/src/routes/user/registerMeEngagementRoutes.ts",
         "apps/api/src/routes/user/registerMeMapPinsRoutes.ts",
         "apps/api/src/routes/user/registerMeWishlistRoutes.ts",
-        "apps/api/src/routes/user/registerEntityFollowRoutes.ts"
+        "apps/api/src/routes/user/registerEntityFollowRoutes.ts",
+        "apps/api/src/routes/user/registerMeCoordinationAttentionRoutes.ts"
       ],
       "feDomains": [
         "src/api/domains/badges.ts",
         "src/api/domains/goals.ts",
+        "src/api/domains/member.ts",
         "src/api/domains/memberJourneyMap.ts",
         "src/api/domains/social.ts"
       ],
@@ -268,8 +277,16 @@
         "apps/api/src/routes/user/registerMeAvailabilityRoutes.ts",
         "apps/api/src/routes/user/registerExploreAvailabilityRoutes.ts"
       ],
-      "feDomains": ["src/api/domains/availability.ts"],
+      "feDomains": ["src/api/domains/availability.ts", "src/api/domains/memberCommitmentHub.ts"],
       "feRoots": ["src/plan", "src/components/plan/PlanAvailabilitySection.tsx"]
+    },
+    {
+      "id": "media",
+      "label": "Media (presign upload)",
+      "apiFiles": ["apps/api/src/routes/media.ts"],
+      "routeRegistrars": ["apps/api/src/routes/media.ts"],
+      "feDomains": ["src/api/domains/media.ts"],
+      "feRoots": ["src/lib/mediaUpload.ts", "src/components/ui/ImageUpload.tsx"]
     },
     {
       "id": "platform_ops",
@@ -328,15 +345,21 @@
     "account",
     "activities",
     "admin",
+    "areas",
+    "availability",
     "badges",
     "chat",
     "explore",
+    "facilities",
     "goals",
     "media",
     "member",
+    "memberCommitmentHub",
     "memberJourneyMap",
+    "memberPlan",
     "messaging",
     "organisation",
+    "placeCatalogClient",
     "placeRegistry",
     "places",
     "shop",

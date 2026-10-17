@@ -21,9 +21,10 @@ import { requireAuth, requireVerifiedEmail } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
 import { env } from '../config/env.js';
 import { assertPresignedUploadOwner, registerPresignedUpload } from '../lib/media-presign.js';
-import { createMediaAssetRecord, findMediaAssetByKey } from '../lib/media-store.js';
+import { persistMediaAssetRecord } from '../services/media-asset-commands.js';
+import { getMediaAssetByKey } from '../services/media-asset-read.js';
 import { hasTenantMembership } from '../lib/tenant-access.js';
-import { findAuthUserById } from '../lib/auth-users.js';
+import { findAuthUserById } from '../services/member-identity-read.js';
 import { resolveProfileViewerAccess } from '../services/profile-viewer-access.js';
 import {
   canAccessMedia,
@@ -265,7 +266,7 @@ mediaRouter.get('/resolve', optionalAuth, validate({ query: resolveQuerySchema }
       throw new ApiError(400, 'invalid_key', 'Media key is invalid.');
     }
 
-    const asset = await findMediaAssetByKey(key);
+    const asset = await getMediaAssetByKey(key);
     const parsed = parseMediaKey(key);
     const kind = asset?.kind ?? parsed?.kind ?? 'general';
     const ownerUserId = asset?.uploadedById ?? parsed?.userId ?? null;
@@ -322,7 +323,7 @@ mediaRouter.get('/resolve', optionalAuth, validate({ query: resolveQuerySchema }
 
     res.json({
       data: {
-        url: `/api/v1/media/public/${key}`,
+        url: `/api/media/public/${key}`,
         expiresAt: expiresAt.toISOString(),
         key
       }
@@ -357,7 +358,7 @@ mediaRouter.post('/presign-upload', validate({ body: presignSchema }), async (re
       uploadUrl = await createPresignedUpload({ key, contentType: body.mimeType, bucket });
     } else {
       // Relative path — works through Vite dev proxy and same-origin production
-      uploadUrl = `/api/v1/media/upload-local/${key}`;
+      uploadUrl = `/api/media/upload-local/${key}`;
     }
 
     res.json({
@@ -414,7 +415,7 @@ mediaRouter.post('/commit', validate({ body: commitSchema }), async (req, res, n
       }
     }
 
-    const saved = await createMediaAssetRecord({
+    const saved = await persistMediaAssetRecord({
       key: body.key,
       url: publicAssetUrl(body.key, kind, bucket),
       bucket,

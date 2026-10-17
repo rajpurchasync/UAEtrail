@@ -865,7 +865,7 @@ interface PlacesMapProps {
   /** Overrides explore default center — device fix or regional UAE framing. */
   exploreMapCenter?: { lat: number; lng: number } | null;
   onZoomChange?: (zoom: number) => void;
-  /** Debounced viewport bounds (explore map vNext fetch). */
+  /** Debounced viewport bounds (explore map bbox fetch). */
   onVisibleBoundsChange?: (bounds: MapBounds) => void;
   tileAttribution?: string;
   minZoom?: number;

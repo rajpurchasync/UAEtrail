@@ -11,9 +11,9 @@ beforeAll(async () => {
   await ensureCuratedAreasSeeded();
 });
 
-describe('GET /api/v1/areas', () => {
+describe('GET /api/areas', () => {
   it('lists published curated areas', async () => {
-    const res = await request(app).get('/api/v1/areas');
+    const res = await request(app).get('/api/areas');
     expect(res.status).toBe(200);
     const slugs = (res.body.data as Array<{ slug: string }>).map((row) => row.slug);
     expect(slugs).toContain(testAreas.hatta.slug);
@@ -22,7 +22,7 @@ describe('GET /api/v1/areas', () => {
   });
 
   it('returns area detail card by slug', async () => {
-    const res = await request(app).get(`/api/v1/areas/${testAreas.hatta.slug}`);
+    const res = await request(app).get(`/api/areas/${testAreas.hatta.slug}`);
     expect(res.status).toBe(200);
     expect(res.body.data.area.slug).toBe(testAreas.hatta.slug);
     expect(res.body.data.counts).toMatchObject({

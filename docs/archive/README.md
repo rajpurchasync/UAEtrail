@@ -19,6 +19,8 @@ Historical specs and phase plans were **removed from the tree** (Oct 2026) after
 | `experiment/WISHLIST_MAP_ALERTS.md`, `WHOS_GOING_UX.md`, `trips-personal-map-spec.md` | [`CREATE_FLOW.md`](../CREATE_FLOW.md), [`NAVIGATION.md`](../NAVIGATION.md), [`COMMUNICATION.md`](../COMMUNICATION.md) |
 
 | One-off `scripts/*` wizard/API splitters (2026) | Shipped code in `src/`; repeatable routing: `scripts/align-routing-imports.mjs` |
+| `experiment/system-refactor-plan.md` (full body) | [`system-refactor-plan-2026-10.md`](./system-refactor-plan-2026-10.md) · live tracker: [`SYSTEM_COHERENCE.md`](../SYSTEM_COHERENCE.md) §8 + §8.6 |
+| `experiment/system-structure-deep-audit.md` (full body) | [`system-structure-deep-audit-2026-10.md`](./system-structure-deep-audit-2026-10.md) · census: `npm run repo:census` |
 
 **Member / host model (2026):** [`MEMBER_MODEL.md`](../MEMBER_MODEL.md) · audit [`HOST_CLEANUP_ROADMAP.md`](../HOST_CLEANUP_ROADMAP.md).
 

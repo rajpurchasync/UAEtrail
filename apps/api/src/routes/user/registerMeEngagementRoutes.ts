@@ -1,366 +1,196 @@
-import type { NextFunction, Request, Response, Router } from 'express';
+import type { Router } from 'express';
 import { z } from 'zod';
-import { RequestStatus } from '../../domain/enums.js';
-import { ApiError } from '../../lib/api-error.js';
-import {
-  findActivityForRequestViewById,
-  listActivitiesForRequestViews,
-  listActiveTenantMembershipsByUser,
-} from '../../lib/activities-store.js';
-import {
-  countUserActivityParticipants,
-  countUserActivityRequests,
-  findActivityRequestByIdForUser,
-  listUserActivityParticipantsPaginated,
-  listUserActivityRequestsPaginated,
-} from '../../lib/activity-engagement-store.js';
 import { registerActivityRoute } from '../../lib/activity-routes.js';
-import { listAuthUsers } from '../../lib/auth-users.js';
-import { buildActivityDto } from '../../lib/mappers.js';
 import { paginatedResponse, paginationSchema } from '../../lib/pagination.js';
-import { removePushSubscription, upsertPushSubscription } from '../../lib/push-subscriptions.js';
 import { validate } from '../../middleware/validate.js';
-import { buildParticipationDto } from '../../services/checkin.js';
 import {
-  getActivityGroupChatStatusForUser,
-  joinActivityGroupChatForUser,
-  leaveActivityGroupChatForUser,
-  openActivityGroupChat,
-  userCanAccessActivityGroupChat,
-} from '../../services/activity-group-chat.js';
-import { loadMemberInbox } from '../../services/member-inbox.js';
+  joinMyActivityGroupChat,
+  leaveMyActivityGroupChat,
+  loadMyActivityGroupChatEntry,
+  loadMyActivityGroupChatStatus,
+} from '../../services/activity-group-chat-me-commands.js';
+import {
+  removeMyPushSubscription,
+  upsertMyPushSubscription,
+} from '../../services/me-account-session-commands.js';
+import {
+  listMyTenantMemberships,
+  loadMyInbox,
+  searchUsersForNewConversation,
+} from '../../services/me-account-session-read.js';
+import {
+  listMyActivityJoinRequests,
+  listMyParticipatingActivities,
+  loadMyActivityJoinRequest,
+} from '../../services/me-activity-participation-read.js';
 import { eventIdParamSchema, pushSubscriptionSchema, userSearchSchema } from './schemas.js';
 
 const meRequestIdParamSchema = z.object({ requestId: z.string().min(1) });
 
-const mapMeRequest = (
-  request: {
-    id: string;
-    status: RequestStatus;
-    note: string | null;
-    organizerNote: string | null;
-    cancelReason: string | null;
-    cancelMessage: string | null;
-    cancelledAt: Date | null;
-    createdAt: Date;
-  },
-  event: Parameters<typeof buildActivityDto>[0]
-) => {
-  const activity = buildActivityDto(event);
-  return {
-    id: request.id,
-    status: request.status.toLowerCase(),
-    note: request.note,
-    organizerNote: request.organizerNote,
-    cancelReason: request.cancelReason,
-    cancelMessage: request.cancelMessage,
-    cancelledAt: request.cancelledAt?.toISOString() ?? null,
-    createdAt: request.createdAt,
-    activity: {
-      id: activity.id,
-      title: activity.title,
-      locationName: activity.locationName,
-      date: activity.date,
-      time: activity.time,
-      hostName: activity.hostName,
-      hostUserId: activity.hostUserId,
-      tenantName: activity.tenantName,
-      tenantSlug: activity.tenantSlug,
-    },
-  };
-};
-
-const listMyActivitiesHandler = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const pg = paginationSchema.parse(req.query);
-    const [participantEntries, total] = await Promise.all([
-      listUserActivityParticipantsPaginated({
-        userId: req.auth!.userId,
-        skip: (pg.page - 1) * pg.pageSize,
-        take: pg.pageSize
-      }),
-      countUserActivityParticipants(req.auth!.userId)
-    ]);
-
-    const eventIds = [...new Set(participantEntries.map((entry) => entry.activityId))];
-    const events = eventIds.length > 0 ? await listActivitiesForRequestViews(eventIds) : [];
-    const eventMap = new Map(events.map((event) => [event.id, event]));
-
-    const activityViews = participantEntries.reduce<Array<ReturnType<typeof buildActivityDto> & { participation: ReturnType<typeof buildParticipationDto> }>>((acc, entry) => {
-      const event = eventMap.get(entry.activityId);
-      if (!event) return acc;
-      acc.push({
-        ...buildActivityDto(event),
-        participation: buildParticipationDto(event, entry)
-      });
-      return acc;
-    }, []);
-
-    res.json(paginatedResponse(
-      activityViews,
-      total,
-      pg
-    ));
-  } catch (error) {
-    next(error);
-  }
-};
-
 /** Authenticated activity participation hub (requires prior auth middleware). */
 export const registerMeActivityParticipationRoutes = (router: Router): void => {
-registerActivityRoute(
-  router,
-  'get',
-  '/:id/group-chat',
-  validate({ params: eventIdParamSchema }),
-  async (req, res, next) => {
-    try {
-      const { id } = req.params as z.infer<typeof eventIdParamSchema>;
-      const allowed = await userCanAccessActivityGroupChat({
-        activityId: id,
-        userId: req.auth!.userId
-      });
-      if (!allowed) {
-        throw new ApiError(403, 'forbidden', 'You cannot access this activity chat.');
-      }
-
-      const groupId = await openActivityGroupChat(id);
-      if (!groupId) {
-        throw new ApiError(
-          404,
-          'group_chat_unavailable',
-          'Activity chat is not set up for this outing yet.'
-        );
-      }
-
-      const status = await getActivityGroupChatStatusForUser({
-        activityId: id,
-        userId: req.auth!.userId,
-      });
-
-      res.json({
-        data: {
-          groupId,
-          membershipId: status?.membershipId ?? null,
-          isMember: status?.isMember ?? false,
-          canLeave: status?.canLeave ?? false,
-        },
-      });
-    } catch (error) {
-      next(error);
-    }
-  }
-);
-
-registerActivityRoute(
-  router,
-  'get',
-  '/:id/group-chat/status',
-  validate({ params: eventIdParamSchema }),
-  async (req, res, next) => {
-    try {
-      const { id } = req.params as z.infer<typeof eventIdParamSchema>;
-      const status = await getActivityGroupChatStatusForUser({
-        activityId: id,
-        userId: req.auth!.userId,
-      });
-      if (!status) {
-        throw new ApiError(403, 'forbidden', 'You cannot access this activity chat.');
-      }
-      res.json({ data: status });
-    } catch (error) {
-      next(error);
-    }
-  }
-);
-
-registerActivityRoute(
-  router,
-  'post',
-  '/:id/group-chat/join',
-  validate({ params: eventIdParamSchema }),
-  async (req, res, next) => {
-    try {
-      const { id } = req.params as z.infer<typeof eventIdParamSchema>;
+  registerActivityRoute(
+    router,
+    'get',
+    '/:id/group-chat',
+    validate({ params: eventIdParamSchema }),
+    async (req, res, next) => {
       try {
-        const status = await joinActivityGroupChatForUser({
-          activityId: id,
-          userId: req.auth!.userId,
-        });
-        res.json({ data: status });
-      } catch (err) {
-        const message = err instanceof Error ? err.message : '';
-        if (message === 'forbidden') {
-          throw new ApiError(403, 'forbidden', 'You cannot join this activity chat.');
-        }
-        throw new ApiError(404, 'group_chat_unavailable', 'Activity chat is not set up for this outing yet.');
+        const { id } = req.params as z.infer<typeof eventIdParamSchema>;
+        const data = await loadMyActivityGroupChatEntry({ activityId: id, userId: req.auth!.userId });
+        res.json({ data });
+      } catch (error) {
+        next(error);
       }
-    } catch (error) {
-      next(error);
     }
-  }
-);
+  );
 
-registerActivityRoute(
-  router,
-  'delete',
-  '/:id/group-chat',
-  validate({ params: eventIdParamSchema }),
-  async (req, res, next) => {
-    try {
-      const { id } = req.params as z.infer<typeof eventIdParamSchema>;
+  registerActivityRoute(
+    router,
+    'get',
+    '/:id/group-chat/status',
+    validate({ params: eventIdParamSchema }),
+    async (req, res, next) => {
       try {
-        await leaveActivityGroupChatForUser({
-          activityId: id,
-          userId: req.auth!.userId,
-        });
-      } catch (err) {
-        if (err instanceof Error && err.message === 'group_owner_cannot_leave') {
-          throw new ApiError(
-            403,
-            'group_owner_cannot_leave',
-            'Hosts stay in the crew chat to coordinate the outing.'
-          );
-        }
-        throw err;
+        const { id } = req.params as z.infer<typeof eventIdParamSchema>;
+        const data = await loadMyActivityGroupChatStatus({ activityId: id, userId: req.auth!.userId });
+        res.json({ data });
+      } catch (error) {
+        next(error);
       }
-      res.json({ data: { left: true } });
+    }
+  );
+
+  registerActivityRoute(
+    router,
+    'post',
+    '/:id/group-chat/join',
+    validate({ params: eventIdParamSchema }),
+    async (req, res, next) => {
+      try {
+        const { id } = req.params as z.infer<typeof eventIdParamSchema>;
+        const data = await joinMyActivityGroupChat({ activityId: id, userId: req.auth!.userId });
+        res.json({ data });
+      } catch (error) {
+        next(error);
+      }
+    }
+  );
+
+  registerActivityRoute(
+    router,
+    'delete',
+    '/:id/group-chat',
+    validate({ params: eventIdParamSchema }),
+    async (req, res, next) => {
+      try {
+        const { id } = req.params as z.infer<typeof eventIdParamSchema>;
+        await leaveMyActivityGroupChat({ activityId: id, userId: req.auth!.userId });
+        res.json({ data: { left: true } });
+      } catch (error) {
+        next(error);
+      }
+    }
+  );
+
+  router.get('/me/requests/:requestId', validate({ params: meRequestIdParamSchema }), async (req, res, next) => {
+    try {
+      const { requestId } = req.params as z.infer<typeof meRequestIdParamSchema>;
+      const data = await loadMyActivityJoinRequest(req.auth!.userId, requestId);
+      res.json({ data });
     } catch (error) {
       next(error);
     }
-  }
-);
+  });
 
-router.get('/me/requests/:requestId', validate({ params: meRequestIdParamSchema }), async (req, res, next) => {
-  try {
-    const { requestId } = req.params as z.infer<typeof meRequestIdParamSchema>;
-    const request = await findActivityRequestByIdForUser(requestId, req.auth!.userId);
-    if (!request) {
-      throw new ApiError(404, 'request_not_found', 'Request not found.');
-    }
-
-    const activity = await findActivityForRequestViewById(request.activityId);
-    if (!activity) {
-      throw new ApiError(404, 'activity_not_found', 'Activity not found.');
-    }
-
-    res.json({
-      data: mapMeRequest(request, activity)
-    });
-  } catch (error) {
-    next(error);
-  }
-});
-
-router.get('/me/requests', async (req, res, next) => {
-  try {
-    const pg = paginationSchema.parse(req.query);
-    const [requests, total] = await Promise.all([
-      listUserActivityRequestsPaginated({
+  router.get('/me/requests', async (req, res, next) => {
+    try {
+      const pg = paginationSchema.parse(req.query);
+      const { items, total } = await listMyActivityJoinRequests({
         userId: req.auth!.userId,
         skip: (pg.page - 1) * pg.pageSize,
-        take: pg.pageSize
-      }),
-      countUserActivityRequests(req.auth!.userId)
-    ]);
+        take: pg.pageSize,
+      });
+      res.json(paginatedResponse(items, total, pg));
+    } catch (error) {
+      next(error);
+    }
+  });
 
-    const activityIds = [...new Set(requests.map((request) => request.activityId))];
-    const activities = activityIds.length > 0 ? await listActivitiesForRequestViews(activityIds) : [];
-    const activityMap = new Map(activities.map((activity) => [activity.id, activity]));
-
-    const requestViews = requests.reduce<Array<ReturnType<typeof mapMeRequest>>>((acc, request) => {
-      const activity = activityMap.get(request.activityId);
-      if (!activity) return acc;
-      acc.push(mapMeRequest(request, activity));
-      return acc;
-    }, []);
-
-    res.json(paginatedResponse(
-      requestViews,
-      total,
-      pg
-    ));
-  } catch (error) {
-    next(error);
-  }
-});
-
-router.get('/me/activities', listMyActivitiesHandler);
+  router.get('/me/activities', async (req, res, next) => {
+    try {
+      const pg = paginationSchema.parse(req.query);
+      const { items, total } = await listMyParticipatingActivities({
+        userId: req.auth!.userId,
+        skip: (pg.page - 1) * pg.pageSize,
+        take: pg.pageSize,
+      });
+      res.json(paginatedResponse(items, total, pg));
+    } catch (error) {
+      next(error);
+    }
+  });
 };
 
 /** Push, host gate, tenant memberships, user search (requires prior auth middleware). */
 export const registerMeAccountSessionRoutes = (router: Router): void => {
-router.post('/me/push-subscriptions', validate({ body: pushSubscriptionSchema }), async (req, res, next) => {
-  try {
-    const body = req.body as z.infer<typeof pushSubscriptionSchema>;
-    const sub = await upsertPushSubscription({
-      userId: req.auth!.userId,
-      endpoint: body.endpoint,
-      p256dh: body.keys.p256dh,
-      auth: body.keys.auth
-    });
-    res.status(201).json({ data: { id: sub.id } });
-  } catch (error) {
-    next(error);
-  }
-});
+  router.post('/me/push-subscriptions', validate({ body: pushSubscriptionSchema }), async (req, res, next) => {
+    try {
+      const body = req.body as z.infer<typeof pushSubscriptionSchema>;
+      const sub = await upsertMyPushSubscription({
+        userId: req.auth!.userId,
+        endpoint: body.endpoint,
+        p256dh: body.keys.p256dh,
+        auth: body.keys.auth,
+      });
+      res.status(201).json({ data: { id: sub.id } });
+    } catch (error) {
+      next(error);
+    }
+  });
 
-router.delete('/me/push-subscriptions', validate({ body: z.object({ endpoint: z.string().url() }) }), async (req, res, next) => {
-  try {
-    const { endpoint } = req.body as { endpoint: string };
-    await removePushSubscription({ userId: req.auth!.userId, endpoint });
-    res.json({ message: 'Push subscription removed.' });
-  } catch (error) {
-    next(error);
-  }
-});
+  router.delete(
+    '/me/push-subscriptions',
+    validate({ body: z.object({ endpoint: z.string().url() }) }),
+    async (req, res, next) => {
+      try {
+        const { endpoint } = req.body as { endpoint: string };
+        await removeMyPushSubscription({ userId: req.auth!.userId, endpoint });
+        res.json({ message: 'Push subscription removed.' });
+      } catch (error) {
+        next(error);
+      }
+    }
+  );
 
-router.get('/me/tenants', async (req, res, next) => {
-  try {
-    const memberships = await listActiveTenantMembershipsByUser(req.auth!.userId);
+  router.get('/me/tenants', async (req, res, next) => {
+    try {
+      const data = await listMyTenantMemberships(req.auth!.userId);
+      res.json({ data });
+    } catch (error) {
+      next(error);
+    }
+  });
 
-    res.json({
-      data: memberships.map((membership) => ({
-        tenantId: membership.tenantId,
-        tenantName: membership.tenant.name,
-        tenantSlug: membership.tenant.slug,
-        tenantType: membership.tenant.type.toLowerCase(),
-        membershipRole: membership.role.toLowerCase()
-      }))
-    });
-  } catch (error) {
-    next(error);
-  }
-});
+  router.get('/me/inbox', async (req, res, next) => {
+    try {
+      const data = await loadMyInbox(req.auth!.userId);
+      res.json({ data });
+    } catch (error) {
+      next(error);
+    }
+  });
 
-/** Alias of `GET /chat/inbox` for member-scoped API discovery. */
-router.get('/me/inbox', async (req, res, next) => {
-  try {
-    const data = await loadMemberInbox(req.auth!.userId);
-    res.json({ data });
-  } catch (error) {
-    next(error);
-  }
-});
-
-// â”€â”€â”€ User Search (for starting new conversations) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
-router.get('/users/search', validate({ query: userSearchSchema }), async (req, res, next) => {
-  try {
-    const { q } = req.query as z.infer<typeof userSearchSchema>;
-    const currentUserId = req.auth!.userId;
-
-    const users = (await listAuthUsers({ status: 'ACTIVE', search: q, take: 20 })).filter((u) => u._id !== currentUserId).slice(0, 10);
-
-    res.json({
-      data: users.map((u) => ({
-        id: u._id,
-        displayName: u.profile.displayName ?? null,
-        avatarUrl: u.profile.avatarUrl ?? null
-      }))
-    });
-  } catch (error) {
-    next(error);
-  }
-});
+  router.get('/users/search', validate({ query: userSearchSchema }), async (req, res, next) => {
+    try {
+      const { q } = req.query as z.infer<typeof userSearchSchema>;
+      const data = await searchUsersForNewConversation({
+        viewerUserId: req.auth!.userId,
+        query: q,
+      });
+      res.json({ data });
+    } catch (error) {
+      next(error);
+    }
+  });
 };

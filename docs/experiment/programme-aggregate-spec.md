@@ -1,7 +1,7 @@
 # Programme aggregate (R7 — spec only)
 
 **Status:** Product gate — **no implementation** until PM approves scope and naming.  
-**Maps to:** `system-refactor-plan.md` **R7** · audit **F-D8** · `SYSTEM_COHERENCE` gap (no programme collection).
+**Maps to:** archive **R7** ([`system-refactor-plan-2026-10.md`](../archive/system-refactor-plan-2026-10.md)) · audit **F-D8** · `SYSTEM_COHERENCE` gap (no programme collection).
 
 ---
 
@@ -50,11 +50,11 @@ Today, multi-session initiatives (festival weekends, charity series, agency “s
 ## 4. API sketch (not built)
 
 ```
-GET  /api/v1/programmes/:slug
-GET  /api/v1/programmes/:slug/activities?upcoming=1
-POST /api/v1/host/programmes          (tenant)
-PATCH /api/v1/host/programmes/:id
-POST /api/v1/host/programmes/:id/activities  (link activityId, sortOrder)
+GET  /api/programmes/:slug
+GET  /api/programmes/:slug/activities?upcoming=1
+POST /api/host/programmes          (tenant)
+PATCH /api/host/programmes/:id
+POST /api/host/programmes/:id/activities  (link activityId, sortOrder)
 ```
 
 Explore map vNext: programme rows are **catalog** items (like `area:`), not bbox-heavy activity blobs.
@@ -91,6 +91,6 @@ Explore map vNext: programme rows are **catalog** items (like `area:`), not bbox
 
 ## 8. Related docs
 
-- [`system-structure-deep-audit.md`](./system-structure-deep-audit.md) §13.1  
-- [`explore-map-vnext-spec.md`](./explore-map-vnext-spec.md) — catalog pins  
+- [`system-structure-deep-audit-2026-10.md`](../archive/system-structure-deep-audit-2026-10.md) §13.1  
+- [`explore-map-bbox-spec.md`](./explore-map-bbox-spec.md) — catalog pins  
 - [`CREATE_FLOW.md`](../CREATE_FLOW.md) — activity remains the join root

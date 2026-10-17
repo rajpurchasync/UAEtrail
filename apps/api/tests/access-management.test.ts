@@ -41,13 +41,13 @@ describe('access management', () => {
 
     await updateAuthUserCore({ userId: ownerUser._id, role: UserRole.TENANT_OWNER });
     const ownerLogin = await request(app)
-      .post('/api/v1/auth/login')
+      .post('/api/auth/login')
       .send({ email: owner.email, password: owner.password });
     expect(ownerLogin.status).toBe(200);
     const ownerToken = ownerLogin.body.tokens.accessToken as string;
 
     const addRes = await request(app)
-      .post('/api/v1/operator/team')
+      .post('/api/operator/team')
       .set('Authorization', `Bearer ${ownerToken}`)
       .set('x-tenant-id', tenant.id)
       .send({ email: teammate.email, role: 'tenant_guide' });
@@ -56,7 +56,7 @@ describe('access management', () => {
     const membershipId = String(addRes.body.data.id);
 
     const disableRes = await request(app)
-      .patch(`/api/v1/operator/team/${membershipId}`)
+      .patch(`/api/operator/team/${membershipId}`)
       .set('Authorization', `Bearer ${ownerToken}`)
       .set('x-tenant-id', tenant.id)
       .send({ isActive: false });
@@ -65,7 +65,7 @@ describe('access management', () => {
     expect(disableRes.body.data.isActive).toBe(false);
 
     const listRes = await request(app)
-      .get('/api/v1/operator/team')
+      .get('/api/operator/team')
       .set('Authorization', `Bearer ${ownerToken}`)
       .set('x-tenant-id', tenant.id);
 
@@ -74,14 +74,14 @@ describe('access management', () => {
     expect(disabledMember.isActive).toBe(false);
 
     const blockedEventsRes = await request(app)
-      .get('/api/v1/operator/activities')
+      .get('/api/operator/activities')
       .set('Authorization', `Bearer ${teammate.accessToken}`)
       .set('x-tenant-id', tenant.id);
 
     expect(blockedEventsRes.status).toBe(403);
 
     const tenantsRes = await request(app)
-      .get('/api/v1/me/tenants')
+      .get('/api/me/tenants')
       .set('Authorization', `Bearer ${teammate.accessToken}`);
 
     expect(tenantsRes.status).toBe(200);
@@ -99,7 +99,7 @@ describe('access management', () => {
     }
 
     const createGroupRes = await request(app)
-      .post('/api/v1/me/groups')
+      .post('/api/me/groups')
       .set('Authorization', `Bearer ${admin.accessToken}`)
       .send({ type: 'family', name: `Test Group ${Date.now()}` });
 
@@ -107,19 +107,19 @@ describe('access management', () => {
     const groupId = createGroupRes.body.data.id;
 
     const inviteRes = await request(app)
-      .post(`/api/v1/me/groups/${groupId}/invites`)
+      .post(`/api/me/groups/${groupId}/invites`)
       .set('Authorization', `Bearer ${admin.accessToken}`)
       .send({ email: member.email, role: 'buddy' });
     expect(inviteRes.status).toBe(201);
 
     const acceptRes = await request(app)
-      .post('/api/v1/me/group-invites/accept')
+      .post('/api/me/group-invites/accept')
       .set('Authorization', `Bearer ${member.accessToken}`)
       .send({ token: inviteRes.body.data.token });
     expect(acceptRes.status).toBe(200);
 
     const detailRes = await request(app)
-      .get(`/api/v1/me/groups/${groupId}`)
+      .get(`/api/me/groups/${groupId}`)
       .set('Authorization', `Bearer ${admin.accessToken}`);
 
     expect(detailRes.status).toBe(200);
@@ -130,7 +130,7 @@ describe('access management', () => {
     const membershipId = String(memberMembership.id);
 
     const disableRes = await request(app)
-      .patch(`/api/v1/me/groups/${groupId}/members/${membershipId}`)
+      .patch(`/api/me/groups/${groupId}/members/${membershipId}`)
       .set('Authorization', `Bearer ${admin.accessToken}`)
       .send({ isActive: false });
 
@@ -138,7 +138,7 @@ describe('access management', () => {
     expect(disableRes.body.data.isActive).toBe(false);
 
     const refreshedDetailRes = await request(app)
-      .get(`/api/v1/me/groups/${groupId}`)
+      .get(`/api/me/groups/${groupId}`)
       .set('Authorization', `Bearer ${admin.accessToken}`);
 
     expect(refreshedDetailRes.status).toBe(200);
@@ -146,7 +146,7 @@ describe('access management', () => {
     expect(disabledMember.isActive).toBe(false);
 
     const removeRes = await request(app)
-      .delete(`/api/v1/me/groups/${groupId}/members/${membershipId}`)
+      .delete(`/api/me/groups/${groupId}/members/${membershipId}`)
       .set('Authorization', `Bearer ${admin.accessToken}`);
 
     expect(removeRes.status).toBe(200);

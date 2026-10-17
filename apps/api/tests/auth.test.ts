@@ -21,7 +21,7 @@ describe('auth integration', () => {
 
   it('registers a new user and requires email verification before session', async () => {
     const response = await request(app)
-      .post('/api/v1/auth/register')
+      .post('/api/auth/register')
       .send({
         email,
         password,
@@ -44,7 +44,7 @@ describe('auth integration', () => {
     expect(hasActiveRefreshCookie).toBe(false);
 
     const verifyRes = await request(app)
-      .post('/api/v1/auth/verify-email')
+      .post('/api/auth/verify-email')
       .send({ email, otp: getVerificationOtp(email) });
     expect(verifyRes.status).toBe(200);
     expect(verifyRes.body.tokens.accessToken).toBeTruthy();
@@ -62,7 +62,7 @@ describe('auth integration', () => {
     const pendingPassword = 'TestPass1';
 
     const registerRes = await request(app)
-      .post('/api/v1/auth/register')
+      .post('/api/auth/register')
       .send({
         email: pendingEmail,
         password: pendingPassword,
@@ -75,7 +75,7 @@ describe('auth integration', () => {
     expect(registerRes.body.tokens).toBeUndefined();
 
     const loginRes = await request(app)
-      .post('/api/v1/auth/login')
+      .post('/api/auth/login')
       .send({ email: pendingEmail, password: pendingPassword });
 
     expect(loginRes.status).toBe(200);
@@ -87,7 +87,7 @@ describe('auth integration', () => {
 
   it('logs in and returns access token with refresh cookie', async () => {
     const response = await request(app)
-      .post('/api/v1/auth/login')
+      .post('/api/auth/login')
       .send({ email, password });
 
     expect(response.status).toBe(200);
@@ -104,7 +104,7 @@ describe('auth integration', () => {
 
   it('refreshes access token using httpOnly cookie', async () => {
     const response = await request(app)
-      .post('/api/v1/auth/refresh')
+      .post('/api/auth/refresh')
       .set('Cookie', refreshCookie);
 
     expect(response.status).toBe(200);
@@ -121,7 +121,7 @@ describe('auth integration', () => {
 
   it('accesses protected profile with bearer token', async () => {
     const response = await request(app)
-      .get('/api/v1/me/profile')
+      .get('/api/me/profile')
       .set('Authorization', `Bearer ${accessToken}`);
 
     expect(response.status).toBe(200);
@@ -133,7 +133,7 @@ describe('auth integration', () => {
     const switchPassword = 'RoleSwitch1';
 
     const registerRes = await request(app)
-      .post('/api/v1/auth/register')
+      .post('/api/auth/register')
       .send({
         email: switchEmail,
         password: switchPassword,
@@ -145,7 +145,7 @@ describe('auth integration', () => {
     expect(registerRes.status).toBe(201);
 
     const verifyRes = await request(app)
-      .post('/api/v1/auth/verify-email')
+      .post('/api/auth/verify-email')
       .send({ email: switchEmail, otp: getVerificationOtp(switchEmail) });
     expect(verifyRes.status).toBe(200);
 
@@ -155,13 +155,13 @@ describe('auth integration', () => {
     await updateAuthUserCore({ userId: createdUser!._id, role: UserRole.PLATFORM_ADMIN });
 
     const loginRes = await request(app)
-      .post('/api/v1/auth/login')
+      .post('/api/auth/login')
       .send({ email: switchEmail, password: switchPassword });
 
     expect(loginRes.status).toBe(200);
 
     const switchVisitorRes = await request(app)
-      .post('/api/v1/me/role/switch')
+      .post('/api/me/role/switch')
       .set('Authorization', `Bearer ${loginRes.body.tokens.accessToken}`)
       .send({ target: 'participant' });
 
@@ -170,7 +170,7 @@ describe('auth integration', () => {
     expect(switchVisitorRes.body.data.switchedFromRole).toBe('platform_admin');
 
     const visitorProfileRes = await request(app)
-      .get('/api/v1/me/profile')
+      .get('/api/me/profile')
       .set('Authorization', `Bearer ${switchVisitorRes.body.tokens.accessToken}`);
 
     expect(visitorProfileRes.status).toBe(200);
@@ -179,7 +179,7 @@ describe('auth integration', () => {
     expect(visitorProfileRes.body.data.switchedFromRole).toBe('platform_admin');
 
     const restoreRes = await request(app)
-      .post('/api/v1/me/role/switch')
+      .post('/api/me/role/switch')
       .set('Authorization', `Bearer ${switchVisitorRes.body.tokens.accessToken}`)
       .send({ target: 'original' });
 
@@ -188,7 +188,7 @@ describe('auth integration', () => {
     expect(restoreRes.body.data.switchedFromRole).toBeNull();
 
     const restoredProfileRes = await request(app)
-      .get('/api/v1/me/profile')
+      .get('/api/me/profile')
       .set('Authorization', `Bearer ${restoreRes.body.tokens.accessToken}`);
 
     expect(restoredProfileRes.status).toBe(200);
@@ -199,7 +199,7 @@ describe('auth integration', () => {
 
   it('logs out and clears refresh cookie', async () => {
     const response = await request(app)
-      .post('/api/v1/auth/logout')
+      .post('/api/auth/logout')
       .set('Cookie', refreshCookie);
 
     expect(response.status).toBe(204);

@@ -3,7 +3,7 @@
  * Run: node apps/api/scripts/smoke-organizer-trip.mjs
  * Requires API at API_BASE (default http://localhost:4000)
  */
-const API = process.env.API_BASE ?? 'http://localhost:4000/api/v1';
+const API = process.env.API_BASE ?? 'http://localhost:4000/api';
 
 const ORG_EMAIL = process.env.SMOKE_ORG_EMAIL ?? 'organizer@uaetrails.app';
 const VIS_EMAIL = process.env.SMOKE_VIS_EMAIL ?? 'visitor@uaetrails.app';

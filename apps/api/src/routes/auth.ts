@@ -7,7 +7,6 @@ import { randomToken, generateEmailOtp } from '../lib/hash.js';
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../lib/jwt.js';
 import { toSharedRole } from '../lib/mappers.js';
 import { hashPassword, verifyPassword } from '../lib/password.js';
-import { slugify } from '../lib/slug.js';
 import { validate } from '../middleware/validate.js';
 import { requireAuth } from '../middleware/auth.js';
 import { env } from '../config/env.js';
@@ -24,30 +23,36 @@ import {
   createEmailVerificationToken,
   createPasswordResetToken,
   createRefreshToken,
-  findActiveRefreshToken,
-  findEmailVerificationTokenForUser,
-  findPasswordResetToken,
   revokeRefreshToken,
   revokeRefreshTokensByUser,
   useEmailVerificationToken,
-  usePasswordResetToken
-} from '../lib/auth-tokens.js';
+  usePasswordResetToken,
+} from '../services/auth-session-commands.js';
+import {
+  findActiveRefreshToken,
+  findEmailVerificationTokenForUser,
+  findPasswordResetToken,
+} from '../services/auth-session-read.js';
 import {
   createAuthUser,
-  findAuthUserByEmail,
-  findAuthUserById,
-  findAuthUserByGoogleId,
+  updateAuthUserCore,
   updateAuthUserEmailVerifiedAt,
   updateAuthUserGoogleLink,
+  updateAuthUserLastActive,
   updateAuthUserPassword,
   updateAuthUserProfile,
-  updateAuthUserLastActive,
-  updateAuthUserCore
-} from '../lib/auth-users.js';
-import { createHostApplicationRecord } from '../lib/host-applications-store.js';
+} from '../services/member-identity-commands.js';
+import {
+  findAuthUserByEmail,
+  findAuthUserByGoogleId,
+  findAuthUserById,
+} from '../services/member-identity-read.js';
 import { notifyAdminsMemberRegistered } from '../services/platform-admin-events.js';
 import { processSignupRewards } from '../services/rewards.js';
-import { acceptGroupInviteByToken, acceptPendingGroupInvitesForEmail } from '../lib/social-groups-store.js';
+import {
+  acceptGroupInvitesForNewUser,
+  createHostApplicationOnSignup,
+} from '../services/auth-registration-commands.js';
 import { DEMO_LOGIN_EMAILS, getDemoAccount, resolveDemoAccountPassword } from '../lib/demo-accounts.js';
 import { formatDisplayNameFromParts, personNameFieldsSchema } from '../domain/person-name.js';
 
@@ -105,9 +110,6 @@ const googleAuthSchema = z.object({
   referralCode: z.string().min(4).max(12).optional(),
   groupInviteToken: z.string().min(20).optional()
 });
-
-const mapAccountTypeToTenantType = (accountType: 'company' | 'guide'): 'COMPANY' | 'GUIDE_OWNED' =>
-  accountType === 'company' ? 'COMPANY' : 'GUIDE_OWNED';
 
 const issueEmailVerificationOtp = async (input: {
   userId: string;
@@ -294,11 +296,11 @@ authRouter.post('/register', validate({ body: registerSchema }), async (req, res
     });
 
     if (accountType !== 'participant') {
-      await createHostApplicationRecord({
+      await createHostApplicationOnSignup({
         applicantId: created._id,
-        requestedName: organizationName ?? `${displayName} Adventures`,
-        requestedSlug: slugify(organizationName ?? `${displayName}-adventures`),
-        requestedType: mapAccountTypeToTenantType(accountType)
+        accountType,
+        displayName,
+        organizationName,
       });
     }
 
@@ -314,17 +316,14 @@ authRouter.post('/register', validate({ body: registerSchema }), async (req, res
       displayName: displayName,
     });
     scheduleSideEffect(processSignupRewards(created._id, referralCode), 'auth.signup_rewards');
-    if (groupInviteToken) {
-      scheduleSideEffect(
-        acceptGroupInviteByToken({ token: groupInviteToken, userId: created._id, email: created.email }),
-        'auth.signup_group_invite_token'
-      );
-    } else {
-      scheduleSideEffect(
-        acceptPendingGroupInvitesForEmail({ userId: created._id, email: created.email }),
-        'auth.signup_pending_group_invites'
-      );
-    }
+    scheduleSideEffect(
+      acceptGroupInvitesForNewUser({
+        userId: created._id,
+        email: created.email,
+        groupInviteToken,
+      }),
+      groupInviteToken ? 'auth.signup_group_invite_token' : 'auth.signup_pending_group_invites'
+    );
 
     respondWithPendingVerification(res, 201, {
       email: created.email,
@@ -708,17 +707,16 @@ authRouter.post('/google', validate({ body: googleAuthSchema }), async (req, res
         displayName: profile.displayName,
       });
       scheduleSideEffect(processSignupRewards(created._id, referralCode), 'auth.google_signup_rewards');
-      if (groupInviteToken) {
-        scheduleSideEffect(
-          acceptGroupInviteByToken({ token: groupInviteToken, userId: created._id, email: created.email }),
-          'auth.google_signup_group_invite_token'
-        );
-      } else {
-        scheduleSideEffect(
-          acceptPendingGroupInvitesForEmail({ userId: created._id, email: created.email }),
-          'auth.google_signup_pending_group_invites'
-        );
-      }
+      scheduleSideEffect(
+        acceptGroupInvitesForNewUser({
+          userId: created._id,
+          email: created.email,
+          groupInviteToken,
+        }),
+        groupInviteToken
+          ? 'auth.google_signup_group_invite_token'
+          : 'auth.google_signup_pending_group_invites'
+      );
     }
 
     const tokens = await createSession({

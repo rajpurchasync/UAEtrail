@@ -1,18 +1,15 @@
 import type { Router } from 'express';
 import { z } from 'zod';
-import { ApiError } from '../../lib/api-error.js';
 import { paginationSchema } from '../../lib/pagination.js';
 import { validate } from '../../middleware/validate.js';
-import { listBuddiesForUser } from '../../lib/buddy-store.js';
-import { listBrowsablePublicMembers } from '../../services/member-discovery.js';
+import {
+  listBrowsableMembersForViewer,
+  loadMyProfileViewStats,
+} from '../../services/member-discovery-me-read.js';
 import { resolveMemberDiscoveryQuota } from '../../services/member-discovery-quota.js';
 import { loadMemberDiscoveryRoster } from '../../services/member-discovery-roster.js';
-import { maySeeProfileViewStats } from '../../services/member-entitlements.js';
 import { resolveMemberStatus } from '../../services/member-status.js';
-import {
-  countMemberProfileViewsSince,
-  countUniqueMemberProfileViewersSince,
-} from '../../lib/member-profile-views-store.js';
+
 const memberBrowseQuerySchema = paginationSchema.extend({
   q: z.string().trim().max(80).optional(),
 });
@@ -22,8 +19,6 @@ const memberDiscoveryRosterQuerySchema = paginationSchema.extend({
   date: z.string().trim().max(32).optional(),
   omitDirectory: z.literal('1').optional(),
 });
-
-const PROFILE_VIEW_STATS_WINDOW_DAYS = 30;
 
 /** Member discovery roster, browse directory, quotas (not activity invites — see registerActivityJoinInviteRoutes). */
 export const registerMemberDiscoveryRoutes = (router: Router): void => {
@@ -70,14 +65,8 @@ export const registerMemberDiscoveryRoutes = (router: Router): void => {
       try {
         const pg = memberBrowseQuerySchema.parse(req.query);
         const viewerUserId = req.auth!.userId;
-        const buddies = await listBuddiesForUser(viewerUserId);
-        const excludeUserIds = new Set<string>([viewerUserId]);
-        for (const buddy of buddies) {
-          if (buddy.userId) excludeUserIds.add(buddy.userId);
-        }
-        const data = await listBrowsablePublicMembers({
-          excludeUserId: viewerUserId,
-          excludeUserIds,
+        const data = await listBrowsableMembersForViewer({
+          viewerUserId,
           search: pg.q,
           skip: (pg.page - 1) * pg.pageSize,
           take: pg.pageSize,
@@ -94,27 +83,8 @@ export const registerMemberDiscoveryRoutes = (router: Router): void => {
     try {
       const viewerUserId = req.auth!.userId;
       const hostStatus = await resolveMemberStatus(viewerUserId);
-      if (!maySeeProfileViewStats({ viewerUserId, hostStatus })) {
-        throw new ApiError(
-          403,
-          'upgrade_required',
-          'Profile view stats are available on Pro and business memberships.'
-        );
-      }
-
-      const since = new Date(Date.now() - PROFILE_VIEW_STATS_WINDOW_DAYS * 86_400_000);
-      const [totalViews, uniqueViewers] = await Promise.all([
-        countMemberProfileViewsSince(viewerUserId, since),
-        countUniqueMemberProfileViewersSince(viewerUserId, since),
-      ]);
-
-      res.json({
-        data: {
-          windowDays: PROFILE_VIEW_STATS_WINDOW_DAYS,
-          totalViews,
-          uniqueViewers,
-        },
-      });
+      const data = await loadMyProfileViewStats({ viewerUserId, hostStatus });
+      res.json({ data });
     } catch (error) {
       next(error);
     }

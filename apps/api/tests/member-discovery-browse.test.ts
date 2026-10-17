@@ -20,7 +20,7 @@ describe('GET /users/browse', () => {
     const visitor = await registerVerifiedVisitor(app, suffix);
 
     const res = await request(app)
-      .get('/api/v1/users/browse?page=1&pageSize=10')
+      .get('/api/users/browse?page=1&pageSize=10')
       .set('Authorization', `Bearer ${visitor.accessToken}`);
 
     expect(res.status).toBe(200);

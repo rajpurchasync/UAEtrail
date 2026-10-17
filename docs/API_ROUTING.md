@@ -1,6 +1,6 @@
 # HTTP API routing conventions
 
-**Branch:** `main` · **Base path:** `/api/v1` (see `apps/api/src/routes/index.ts`).
+**Branch:** `main` · **Base path:** `/api` (see `apps/api/src/routes/index.ts`).
 
 Companion: [`DOMAIN.md`](./DOMAIN.md), [`CREATE_FLOW.md`](./CREATE_FLOW.md), [`MEMBER_MODEL.md`](./MEMBER_MODEL.md).
 
@@ -82,8 +82,6 @@ Clients may keep intent URLs until M2b; host queue for buddy seeking rows uses t
 | GET | `/me/participant-intents/:intentId/requests` | **Poster** lists requests |
 | GET | `/me/participant-intents/:intentId/requests/mine` | Caller’s request on this intent |
 | POST | `…/requests/:requestId/approve` \| `…/reject` | **Poster** decides |
-
-**Legacy:** `POST /host/participant-intents/:intentId/fulfill` — deprecated (returns `Deprecation` header). Demand **posters** use **`POST /me/participant-intents/:intentId/link-activity`** only when publishing a **non-rideshare** outing to replace/graduate the find post — not when publishing a linked transport rideshare (`organizeActivityPublish.ts`).
 
 **Publish gate:** `POST /operator/activities` and `POST /operator/activities/:id/publish` (legacy `/host/*` rewritten) require `profileComplete` + `canPublish` (see `member-publish-gate.ts`), except platform admin acting on a tenant. **Join/participate** does not require profile completion.
 
@@ -322,7 +320,7 @@ Capability map: [`MEMBER_MODEL.md`](./MEMBER_MODEL.md).
 | `places.ts` | `/me/places` (canonical), `/me/locations` (legacy alias) |
 | `facilities.ts` | `/me/facilities`, `/admin/facilities` |
 
-Prefer **`exploreApi`** for demand; avoid `fulfillParticipantIntent` on host for poster-owned intents.
+Prefer **`exploreApi.linkParticipantIntentToActivity`** when a demand poster graduates crew onto a hosted outing.
 
 ---
 

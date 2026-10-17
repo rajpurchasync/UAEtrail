@@ -14,7 +14,7 @@ beforeAll(async () => {
 });
 
 const signInToken = async (email: string, password: string): Promise<string> => {
-  const res = await request(app).post('/api/v1/auth/login').send({ email, password });
+  const res = await request(app).post('/api/auth/login').send({ email, password });
   expect(res.status).toBe(200);
   return res.body.tokens.accessToken as string;
 };
@@ -43,7 +43,7 @@ describe('member availability', () => {
     const end = start;
 
     const put = await request(app)
-      .put('/api/v1/me/availability')
+      .put('/api/me/availability')
       .set('Authorization', `Bearer ${token}`)
       .send({
         kinds: ['hiking'],
@@ -54,12 +54,12 @@ describe('member availability', () => {
     expect(put.body.data.slots).toHaveLength(1);
 
     const exploreGuest = await request(app).get(
-      `/api/v1/explore/people/availability?from=${start}&to=${end}&kind=hiking`
+      `/api/explore/people/availability?from=${start}&to=${end}&kind=hiking`
     );
     expect(exploreGuest.status).toBe(401);
 
     const explore = await request(app)
-      .get(`/api/v1/explore/people/availability?from=${start}&to=${end}&kind=hiking`)
+      .get(`/api/explore/people/availability?from=${start}&to=${end}&kind=hiking`)
       .set('Authorization', `Bearer ${token}`);
     expect(explore.status).toBe(200);
     expect(
@@ -68,7 +68,7 @@ describe('member availability', () => {
     expect(explore.body.data.clusters.length).toBeGreaterThan(0);
 
     const matchPreview = await request(app)
-      .get('/api/v1/me/availability/match-preview')
+      .get('/api/me/availability/match-preview')
       .set('Authorization', `Bearer ${token}`);
     expect(matchPreview.status).toBe(200);
     expect(matchPreview.body.data).toMatchObject({
@@ -110,7 +110,7 @@ describe('member availability', () => {
     const iso = start.toISOString().slice(0, 10);
 
     await request(app)
-      .put('/api/v1/me/availability')
+      .put('/api/me/availability')
       .set('Authorization', `Bearer ${ownerToken}`)
       .send({
         kinds: ['camping'],
@@ -120,7 +120,7 @@ describe('member availability', () => {
 
     const strangerToken = await signInToken(stranger.email, password);
     const strangerRes = await request(app)
-      .get(`/api/v1/explore/people/availability?from=${iso}&to=${iso}`)
+      .get(`/api/explore/people/availability?from=${iso}&to=${iso}`)
       .set('Authorization', `Bearer ${strangerToken}`);
     expect(strangerRes.status).toBe(200);
     expect(

@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { UserRole } from '../../domain/enums.js';
 import { personNameSchema } from '../../domain/person-name.js';
 import { completeSignupProfileSchema, profileLanguagesSchema, USER_CITIES } from '../../domain/user-profile.js';
-import { GROUP_WALL_REACTION_KINDS } from '../../lib/social-groups-store.js';
+import { GROUP_WALL_REACTION_KINDS } from '../../domain/group-wall-reactions.js';
 export const eventIdParamSchema = z.object({ id: z.string().min(1) });
 export const requestIdParamSchema = z.object({ id: z.string().min(1), requestId: z.string().min(1) });
 

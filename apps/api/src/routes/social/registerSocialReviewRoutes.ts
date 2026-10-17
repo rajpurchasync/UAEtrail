@@ -1,28 +1,13 @@
 import type { Router } from 'express';
 import { z } from 'zod';
-import { ReviewTargetType, RewardAction } from '../../domain/enums.js';
-import {
-  reviewTargetEnumToWire,
-  reviewTargetWireToEnum,
-  type ReviewTargetWire,
-} from '../../domain/review-target-wire.js';
-import { ApiError } from '../../lib/api-error.js';
 import { paginatedResponse, paginationSchema } from '../../lib/pagination.js';
 import { requireAuth, requireVerifiedEmail } from '../../middleware/auth.js';
 import { validate } from '../../middleware/validate.js';
-import { tierEnumToDisplay } from '../../lib/membership-tier-display.js';
-import { scheduleSideEffect } from '../../lib/schedule-side-effect.js';
-import { awardPoints } from '../../services/rewards.js';
-import {
-  findAuthUserById,
-  findAuthUsersByIds,
-  getAuthUserMembershipTier,
-  getAuthUserMembershipTiers,
-} from '../../lib/auth-users.js';
-import { createSocialReview, listSocialReviews, type SocialReview } from '../../lib/social-data.js';
 import { sanitizeUserGeneratedText } from '../../lib/content-moderation.js';
+import { ApiError } from '../../lib/api-error.js';
 import { listMyReviews, updateMyReview } from '../../services/my-reviews.js';
-import { assertViewerCanReviewActivity } from '../../services/activity-review-gate.js';
+import { createMemberSocialReview } from '../../services/social-review-commands.js';
+import { listPublicSocialReviews } from '../../services/social-review-read.js';
 
 const idParamSchema = z.object({ id: z.string().min(1) });
 
@@ -44,26 +29,6 @@ const reviewUpdateSchema = z.object({
   rating: z.number().int().min(1).max(5),
   comment: z.string().min(10).max(1000),
 });
-
-const mapReviewRow = async (
-  review: SocialReview,
-  reviewerMap: Map<string, Awaited<ReturnType<typeof findAuthUsersByIds>>[number]>,
-  tierMap: Map<string, string | null>
-) => {
-  const reviewer = reviewerMap.get(review.userId);
-  return {
-    id: review.id,
-    targetType: reviewTargetEnumToWire(review.targetType),
-    targetId: review.targetId,
-    userId: review.userId,
-    userName: reviewer?.profile.displayName ?? reviewer?.email.split('@')[0],
-    userAvatar: reviewer?.profile.avatarUrl ?? null,
-    userMembershipTier: tierEnumToDisplay(tierMap.get(review.userId) ?? null),
-    rating: review.rating,
-    comment: review.comment,
-    createdAt: review.createdAt.toISOString(),
-  };
-};
 
 /** Place, host/shop, and activity reviews (`social_reviews`). */
 export const registerSocialReviewRoutes = (router: Router): void => {
@@ -119,20 +84,13 @@ export const registerSocialReviewRoutes = (router: Router): void => {
       const { targetType, targetId, page, pageSize } = req.query as unknown as z.infer<
         typeof reviewListSchema
       >;
-      const pg = { page, pageSize };
-      const domainType = reviewTargetWireToEnum(targetType as ReviewTargetWire);
-      const { items: reviews, total } = await listSocialReviews({
-        targetType: domainType,
+      const { items, total } = await listPublicSocialReviews({
+        targetType,
         targetId,
-        skip: (pg.page - 1) * pg.pageSize,
-        take: pg.pageSize,
+        skip: (page - 1) * pageSize,
+        take: pageSize,
       });
-      const reviewerIds = [...new Set(reviews.map((review) => review.userId))];
-      const reviewers = await findAuthUsersByIds(reviewerIds);
-      const reviewerMap = new Map(reviewers.map((reviewer) => [reviewer._id, reviewer]));
-      const tierMap = await getAuthUserMembershipTiers(reviewerIds);
-      const rows = await Promise.all(reviews.map((r) => mapReviewRow(r, reviewerMap, tierMap)));
-      res.json(paginatedResponse(rows, total, pg));
+      res.json(paginatedResponse(items, total, { page, pageSize }));
     } catch (error) {
       next(error);
     }
@@ -146,45 +104,14 @@ export const registerSocialReviewRoutes = (router: Router): void => {
     async (req, res, next) => {
       try {
         const body = req.body as z.infer<typeof reviewCreateSchema>;
-        const sanitizedComment = sanitizeUserGeneratedText(body.comment).trim();
-        if (sanitizedComment.length < 10) {
-          throw new ApiError(400, 'invalid_comment_content', 'Comment cannot contain only links or phone numbers.');
-        }
-        const domainType = reviewTargetWireToEnum(body.targetType);
-        if (domainType === ReviewTargetType.ACTIVITY) {
-          await assertViewerCanReviewActivity(req.auth!.userId, body.targetId);
-        }
-        const review = await createSocialReview({
-          targetType: domainType,
-          targetId: body.targetId,
+        const data = await createMemberSocialReview({
           userId: req.auth!.userId,
+          targetType: body.targetType,
+          targetId: body.targetId,
           rating: body.rating,
-          comment: sanitizedComment,
+          comment: body.comment,
         });
-        scheduleSideEffect(
-          awardPoints({
-            userId: req.auth!.userId,
-            action: RewardAction.REVIEW_WRITTEN,
-            referenceId: review.id,
-          }),
-          'social.review_written_rewards'
-        );
-        const author = await findAuthUserById(req.auth!.userId);
-        const authorMembershipTier = await getAuthUserMembershipTier(req.auth!.userId);
-        res.status(201).json({
-          data: {
-            id: review.id,
-            targetType: body.targetType,
-            targetId: review.targetId,
-            userId: review.userId,
-            userName: author?.profile.displayName ?? author?.email.split('@')[0],
-            userAvatar: author?.profile.avatarUrl ?? null,
-            userMembershipTier: tierEnumToDisplay(authorMembershipTier),
-            rating: review.rating,
-            comment: review.comment,
-            createdAt: review.createdAt.toISOString(),
-          },
-        });
+        res.status(201).json({ data });
       } catch (error) {
         next(error);
       }

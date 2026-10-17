@@ -164,8 +164,8 @@ export const headS3Object = async (key: string, bucket: string): Promise<S3Objec
 
 export const publicAssetUrl = (key: string, kind: string, _bucket = storageBucketForKind(kind)): string => {
   if (isPrivateMediaKind(kind)) {
-    return `/api/v1/media/resolve?key=${encodeURIComponent(key)}`;
+    return `/api/media/resolve?key=${encodeURIComponent(key)}`;
   }
   // Serve through the API so browsers work without public bucket ACLs (e.g. local MinIO).
-  return `/api/v1/media/public/${key}`;
+  return `/api/media/public/${key}`;
 };

@@ -1,5 +1,5 @@
 import type { QueryClient } from '@tanstack/react-query';
-import { isExploreMapVnextEnabled } from './exploreMapVnext';
+import { isExploreMapBboxEnabled } from './exploreMapBbox';
 import {
   activityDetailQueryKey,
   coordinationAttentionQueryKey,
@@ -74,7 +74,7 @@ export const refreshExploreMapAfterActivityEngagement = async (
   }
 
   if (!input.exploreItemId || input.participationMode !== 'rsvp') {
-    if (isExploreMapVnextEnabled() && input.participationMode === 'approval') {
+    if (isExploreMapBboxEnabled() && input.participationMode === 'approval') {
       invalidateExploreMapQueries(queryClient);
     }
     return;
@@ -82,7 +82,7 @@ export const refreshExploreMapAfterActivityEngagement = async (
 
   patchExploreMapSlotsAfterRsvp(queryClient, input.exploreItemId);
 
-  if (!isExploreMapVnextEnabled()) {
+  if (!isExploreMapBboxEnabled()) {
     await reloadExploreMap(queryClient);
   }
 };

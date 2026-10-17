@@ -161,10 +161,13 @@ describe('activity detail program — governance', () => {
   });
 
   it('AD-PRES-01: public activity detail returns presentation envelope', () => {
-    const routes = read('apps/api/src/routes/user/registerPublicActivityRoutes.ts');
-    expect(routes).toMatch(/presentation/);
-    expect(routes).toMatch(/buildActivityPresentationForDetail/);
-    expect(routes).toMatch(/pendingJoinInviteCount/);
+    const readModel = read('apps/api/src/services/activity-public-read.ts');
+    expect(readModel).toMatch(/presentation/);
+    expect(readModel).toMatch(/buildActivityPresentationForDetail/);
+    expect(readModel).toMatch(/pendingJoinInviteCount/);
+    expect(read('apps/api/src/routes/user/registerPublicActivityRoutes.ts')).toMatch(
+      /loadPublicActivityDetail/
+    );
     const hero = read('src/activity/activityDetailHeroStatus.ts');
     expect(hero).toMatch(/pendingJoinInviteCount/);
   });
@@ -225,8 +228,11 @@ describe('activity detail program — governance', () => {
     expect(access).toMatch(/gateReason: 'invite_only'/);
     const page = read('src/pages/ActivityDetail.tsx');
     expect(page).toMatch(/not listed on Explore/);
-    const routes = read('apps/api/src/routes/user/registerPublicActivityRoutes.ts');
-    expect(routes).toMatch(/assertPrivateActivityJoinAllowed/);
+    const commands = read('apps/api/src/services/activity-participation-commands.ts');
+    expect(commands).toMatch(/assertPrivateActivityJoinAllowed/);
+    expect(read('apps/api/src/routes/user/registerPublicActivityRoutes.ts')).toMatch(
+      /submitPublicActivityJoinRequest/
+    );
   });
 
   it('AD-TEMPLATE-01: `/activity/:id` routes through per-kind consumer page templates', () => {

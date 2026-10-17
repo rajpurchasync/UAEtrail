@@ -10,6 +10,8 @@ describe('Member journey map HTTP contract', () => {
     expect(routes).toContain("'/me/journey-map'");
     expect(routes).not.toContain("'/me/trips/map'");
     expect(routes).toContain("'/me/map-pins'");
-    expect(routes).toContain('buildMemberJourneyMap');
+    expect(routes).toContain('me-map-pins-read');
+    const readService = read('src/services/me-map-pins-read.ts');
+    expect(readService).toContain('buildMemberJourneyMap');
   });
 });

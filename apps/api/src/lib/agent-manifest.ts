@@ -2,7 +2,7 @@ import type { AgentManifestDTO } from '@uaetrail/shared-types';
 
 export const buildAgentManifest = (siteOrigin: string): AgentManifestDTO => {
   const origin = siteOrigin.replace(/\/$/, '');
-  const apiBase = `${origin}/api/v1`;
+  const apiBase = `${origin}/api`;
 
   return {
     schema_version: '1.0',
@@ -55,12 +55,12 @@ export const buildAgentManifest = (siteOrigin: string): AgentManifestDTO => {
       '/faq',
       '/llms.txt',
       '/llms-full.txt',
-      '/api/v1/agent/',
-      '/api/v1/activities',
-      '/api/v1/places',
-      '/api/v1/facilities',
-      '/api/v1/explore/map',
-      '/api/v1/locations',
+      '/api/agent/',
+      '/api/activities',
+      '/api/places',
+      '/api/facilities',
+      '/api/explore/map',
+      '/api/locations',
     ],
     disallowed_paths: [
       '/admin/',
@@ -69,8 +69,8 @@ export const buildAgentManifest = (siteOrigin: string): AgentManifestDTO => {
       '/profile',
       '/signin',
       '/signup',
-      '/api/v1/me/',
-      '/api/v1/chat/',
+      '/api/me/',
+      '/api/chat/',
     ],
   };
 };

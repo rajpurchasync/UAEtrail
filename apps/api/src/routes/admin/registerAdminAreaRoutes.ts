@@ -1,16 +1,12 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { validate } from '../../middleware/validate.js';
-import { ApiError } from '../../lib/api-error.js';
 import {
-  createAdminArea,
-  deleteAdminArea,
-  listAdminAreas,
-  updateAdminArea,
-} from '../../lib/areas-store.js';
-import { invalidatePublishedAreasCache } from '../../lib/area-resolution.js';
-import { boundsRingFromCenter } from '../../lib/area-bounds.js';
-import { invalidateExploreMapCache } from '../../lib/explore-map-cache.js';
+  createAdminAreaRecord,
+  deleteAdminAreaRecord,
+  updateAdminAreaRecord,
+} from '../../services/admin-area-commands.js';
+import { listAdminAreasForConsole } from '../../services/admin-area-read.js';
 
 const centerSchema = z.object({
   latitude: z.number().min(-90).max(90),
@@ -47,7 +43,7 @@ const idParamSchema = z.object({ id: z.string().min(1) });
 export const registerAdminAreaRoutes = (adminRouter: Router): void => {
   adminRouter.get('/areas', async (_req, res, next) => {
     try {
-      const areas = await listAdminAreas();
+      const areas = await listAdminAreasForConsole();
       res.json({ data: areas });
     } catch (error) {
       next(error);
@@ -57,10 +53,7 @@ export const registerAdminAreaRoutes = (adminRouter: Router): void => {
   adminRouter.post('/areas', validate({ body: areaBodySchema }), async (req, res, next) => {
     try {
       const body = req.body as z.infer<typeof areaBodySchema>;
-      const bounds = body.bounds ?? boundsRingFromCenter(body.center);
-      const created = await createAdminArea({ ...body, bounds });
-      invalidatePublishedAreasCache();
-      await invalidateExploreMapCache();
+      const created = await createAdminAreaRecord(body);
       res.status(201).json({ data: created });
     } catch (error) {
       next(error);
@@ -74,16 +67,7 @@ export const registerAdminAreaRoutes = (adminRouter: Router): void => {
       try {
         const { id } = req.params as z.infer<typeof idParamSchema>;
         const body = req.body as z.infer<typeof areaPatchSchema>;
-        const patch =
-          body.center && !body.bounds
-            ? { ...body, bounds: boundsRingFromCenter(body.center) }
-            : body;
-        const updated = await updateAdminArea(id, patch);
-        if (!updated) {
-          throw new ApiError(404, 'area_not_found', 'Area not found.');
-        }
-        invalidatePublishedAreasCache();
-        await invalidateExploreMapCache();
+        const updated = await updateAdminAreaRecord(id, body);
         res.json({ data: updated });
       } catch (error) {
         next(error);
@@ -97,12 +81,7 @@ export const registerAdminAreaRoutes = (adminRouter: Router): void => {
     async (req, res, next) => {
       try {
         const { id } = req.params as z.infer<typeof idParamSchema>;
-        const deleted = await deleteAdminArea(id);
-        if (!deleted) {
-          throw new ApiError(404, 'area_not_found', 'Area not found.');
-        }
-        invalidatePublishedAreasCache();
-        await invalidateExploreMapCache();
+        await deleteAdminAreaRecord(id);
         res.status(204).send();
       } catch (error) {
         next(error);

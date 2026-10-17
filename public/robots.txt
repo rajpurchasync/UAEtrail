@@ -19,4 +19,4 @@ Sitemap: https://uaetrail.com/sitemap-activities.xml
 # Machine-readable overview for AI assistants
 # https://uaetrail.com/llms.txt
 # https://uaetrail.com/.well-known/agent.json
-# https://uaetrail.com/api/v1/agent/manifest.json
+# https://uaetrail.com/api/agent/manifest.json

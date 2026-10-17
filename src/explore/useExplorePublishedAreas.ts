@@ -1,24 +1,17 @@
-import { useState } from 'react';
 import type { AreaPublicDTO } from '@uaetrail/shared-types';
+import { useQuery } from '@tanstack/react-query';
 import { fetchPublishedAreas } from '../hooks/areaHubClientApi';
-import { useSafeAsyncEffect } from '../hooks/useSafeAsyncEffect';
+import { publishedAreasQueryKey } from '../hooks/clientQueryKeys';
 
-/** Cached published areas for explore search + area pickers. */
+export const useExplorePublishedAreasQuery = () =>
+  useQuery({
+    queryKey: publishedAreasQueryKey,
+    queryFn: fetchPublishedAreas,
+    staleTime: 5 * 60_000
+  });
+
+/** Cached published areas for explore search + area pickers (MIG-CLIENT-QUERY). */
 export const useExplorePublishedAreas = (): AreaPublicDTO[] => {
-  const [areas, setAreas] = useState<AreaPublicDTO[]>([]);
-
-  useSafeAsyncEffect(async (isActive) => {
-    try {
-      const next = await fetchPublishedAreas();
-      if (isActive()) {
-        setAreas(next);
-      }
-    } catch {
-      if (isActive()) {
-        setAreas([]);
-      }
-    }
-  }, []);
-
-  return areas;
+  const { data } = useExplorePublishedAreasQuery();
+  return data ?? [];
 };

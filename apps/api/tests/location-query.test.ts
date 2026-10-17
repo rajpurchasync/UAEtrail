@@ -59,7 +59,7 @@ afterAll(async () => {
 
 describe('location geo filter', () => {
   it('returns only locations within the requested radius', async () => {
-    const response = await request(app).get('/api/v1/locations').query({
+    const response = await request(app).get('/api/locations').query({
       lat: 25.08,
       lng: 55.14,
       radius: 15,

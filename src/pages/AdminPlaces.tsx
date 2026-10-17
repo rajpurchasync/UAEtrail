@@ -10,6 +10,7 @@ import {
   placeKindFromLocationRow,
   tagsForPlaceKind,
   type PlaceKind,
+  resolveCatalogSubmitterUserId,
 } from '@uaetrail/shared-types';
 import { adminCatalogSegmentForRow, type AdminCatalogSegment } from '../place/adminCatalogSegment';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -495,8 +496,10 @@ export const AdminPlaces = ({ catalogSegment = 'outdoor' }: AdminPlacesProps) =>
                   Map pin: {previewLoc.latitude.toFixed(5)}, {previewLoc.longitude.toFixed(5)}
                 </p>
               )}
-              {previewLoc.submittedById && (
-                <p className="text-xs text-gray-500">Submitted by member: {previewLoc.submittedById}</p>
+              {resolveCatalogSubmitterUserId(previewLoc) && (
+                <p className="text-xs text-gray-500">
+                  Submitted by member: {resolveCatalogSubmitterUserId(previewLoc)}
+                </p>
               )}
               <p className="text-sm text-gray-700 whitespace-pre-line">{previewLoc.description}</p>
               {isTrailLike(previewLoc.activityType) && (
@@ -631,7 +634,7 @@ export const AdminPlaces = ({ catalogSegment = 'outdoor' }: AdminPlacesProps) =>
             {/* ── Step 1: Dynamic Form ── */}
             {(formStep === 1 || editingId) && (
               <form onSubmit={handleSave} className="p-6 space-y-6">
-                {form.status === 'draft' && form.submittedById && (
+                {form.status === 'draft' && resolveCatalogSubmitterUserId(form) && (
                   <div className="rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-900">
                     Host submission — add child-friendly / pet-friendly tags, parking link or map pin, and difficulty (hikes) before approving.
                   </div>

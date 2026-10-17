@@ -169,7 +169,7 @@ describe('canAccessMedia', () => {
 describe('extractStorageKey', () => {
   it('accepts raw keys and resolve URLs', () => {
     expect(extractStorageKey('users/abc/avatars/file.jpg')).toBe('users/abc/avatars/file.jpg');
-    expect(extractStorageKey('/api/v1/media/resolve?key=users/abc/avatars/file.jpg')).toBe(
+    expect(extractStorageKey('/api/media/resolve?key=users/abc/avatars/file.jpg')).toBe(
       'users/abc/avatars/file.jpg'
     );
   });

@@ -25,8 +25,8 @@ const BANNED_LITERALS: Array<{ pattern: RegExp; hint: string }> = [
 
 const ALLOWLIST = new Set([
   'src/pages/Home.tsx',
-  'src/components/home/v2/sections/HomeHeroSection.tsx',
-  'src/components/home/v2/sections/HomeHowItWorksSection.tsx',
+  'src/components/home/marketing/sections/HomeHeroSection.tsx',
+  'src/components/home/marketing/sections/HomeHowItWorksSection.tsx',
   'src/content/productNorthStar.ts',
 ]);
 

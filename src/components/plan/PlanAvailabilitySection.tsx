@@ -7,9 +7,9 @@ import {
   memberAvailabilitySlotsAsDayPicks,
   normalizeMemberAvailabilitySlotsForStorage,
 } from '@uaetrail/shared-types';
-import type { AreaPublicDTO, MemberAvailabilityMatchPreviewDTO } from '@uaetrail/shared-types';
-import { fetchPublishedAreas } from '../../hooks/areaHubClientApi';
+import type { MemberAvailabilityMatchPreviewDTO } from '@uaetrail/shared-types';
 import { fetchMyAvailabilityMatchPreview } from '../../hooks/memberAvailabilityApi';
+import { useExplorePublishedAreasQuery } from '../../explore/useExplorePublishedAreas';
 import { AvailabilityMatchPreview } from '../../explore/ui/AvailabilityMatchPreview';
 import { getRegionsForCountry } from '../../config/regions';
 import { AppButton } from '../mobile/AppButton';
@@ -68,26 +68,12 @@ export const PlanAvailabilitySection = ({
   const [locationMode, setLocationMode] = useState<AvailabilityLocationMode>('open');
   const [region, setRegion] = useState<string>('');
   const [areaId, setAreaId] = useState<string>('');
-  const [publishedAreas, setPublishedAreas] = useState<AreaPublicDTO[]>([]);
-  const [areasError, setAreasError] = useState<string | null>(null);
+  const { data: publishedAreas = [], isError: publishedAreasError } = useExplorePublishedAreasQuery();
+  const areasError = publishedAreasError ? 'Could not load trail areas.' : null;
   const [formError, setFormError] = useState<string | null>(null);
   const [matchPreview, setMatchPreview] = useState<MemberAvailabilityMatchPreviewDTO | null>(null);
 
   const regionOptions = useMemo(() => getRegionsForCountry(), []);
-
-  useEffect(() => {
-    let cancelled = false;
-    void fetchPublishedAreas()
-      .then((areas) => {
-        if (!cancelled) setPublishedAreas(areas);
-      })
-      .catch(() => {
-        if (!cancelled) setAreasError('Could not load trail areas.');
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   useEffect(() => {
     if (!data) return;

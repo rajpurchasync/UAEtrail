@@ -43,7 +43,7 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 - **Bottom nav middle tab** — UI label **My Plans**; route **`/plan`** (`PLAN_PATH`) — not `/me/plans` (API) or `/profile/plans` (alias redirect only).
 - **Forward commitments** only — past outings → **`/profile/history`** · journey map → **`/profile/history/map`**.
 - **Canonical query** (new links; legacy still parses): `view=plans` · `tab=upcoming|wishlist` · `filter=hosting|joined` · `layout=list|calendar` · `lens=availability` (Find crew **share availability** editor only — `planAvailabilityPath()`). Page: **`src/plan/PlanPage.tsx`** · URL helpers: **`src/plan/planRouting.ts`**.
-- **Upcoming · Calendar** (`layout=calendar`): month view of **your** schedule — joined / pending requests, hosting, looking-for-company, and days you marked **available** (`planCalendarMarkers` + `PlanCalendarSection`). Not the same as `lens=availability` (that screen edits availability slots).
+- **Upcoming · Calendar** (`layout=calendar`): **projection** of your month (dots per day) — not a separate data source. Tap a day → tap an outing: **going / pending** open the outing peek; **organizing / looking for company** open the same manage paths as the hosting list (`planHostedActivityManagePath` / intent manage). **Available** is an indicator strip only; **edit availability** via the calendar link or `planAvailabilityPath()` (`lens=availability`).
 - **Mobile chrome** (`src/plan/planTab.ts`): **Upcoming** · **Wishlist**; goals on Wishlist. Legacy `?lens=saved|goals|calendar` normalizes on load (`calendar` → `layout=calendar`).
 - **`/profile/plans`** → **`/plan`**. **`/trips`**, **`/activities`** → `/plan` or history (`legacyTripsRedirect.ts`).
 
@@ -142,13 +142,13 @@ Full spec: **[`LANDING.md`](./LANDING.md)** · Voice: **[`NORTHSTAR.md`](./NORTH
 - **Not the product home** — members always land on and live on `/explore`.
 - **Goal:** convert visitors via **Open Map** (primary button) and **Join free** (underlined text link); post-auth → `/explore`.
 - **Guest hero:** headline + subline + **Open Map** + **Join free** link. Desktop header: Log in pill.
-- **Scroll order** (matches `Home.tsx`, v2 sections in `src/components/home/v2/sections/`):
+- **Scroll order** (matches `Home.tsx`, v2 sections in `src/components/home/marketing/sections/`):
   1. Hero carousel (`HomeHeroSection` — includes trust chips)
   2. Upcoming outings (`HomeActivitiesSection` — public API + curated fallback)
   3. How it works (`HomeHowItWorksSection`)
   4. Reviews + FAQ (`HomeReviewsFaqSection`)
 - **Do not add** demand posting, become-host, buddies, shops, or full map UX to Home — those belong on `/explore` or in-app.
-- **Copy:** `src/content/homeMarketing.ts` · fallback cards: `homeLanding.ts` · **Components:** `src/components/home/v2/**`
+- **Copy:** `src/content/homeMarketing.ts` · fallback cards: `homeLanding.ts` · **Components:** `src/components/home/marketing/**`
 - **Layout:** Guest `/` uses a minimal wrapper in `Layout.tsx` (main + deferred site footer only). Signed-in product chrome (`ProductShell`: header, bottom nav, compose rail) loads only on non-marketing routes.
 
 Legacy browse URLs (`/map`, `/discovery`, `/calendar`, bare `/activities` as browse) redirect via `App.tsx` — do not link to them from new UI. Legacy **`/trips`**, **`/activities`**, **`/trips/map`** redirect to **`/plan`**, **`/profile/history`**, or **`/profile/history/map`** (`legacyTripsRedirect.ts`) — canonical active hub is **`/plan`**.

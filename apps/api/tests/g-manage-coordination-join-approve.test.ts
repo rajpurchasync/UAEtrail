@@ -33,14 +33,14 @@ afterAll(async () => {
 });
 
 const loginToken = async (email: string, password: string): Promise<string> => {
-  const login = await request(app).post('/api/v1/auth/login').send({ email, password });
+  const login = await request(app).post('/api/auth/login').send({ email, password });
   expect(login.status).toBe(200);
   return login.body.tokens.accessToken as string;
 };
 
 const completeSignupProfile = async (accessToken: string): Promise<void> => {
   const res = await request(app)
-    .patch('/api/v1/me/profile/signup-details')
+    .patch('/api/me/profile/signup-details')
     .set('Authorization', `Bearer ${accessToken}`)
     .send({
       dateOfBirth: '1990-01-15',
@@ -60,7 +60,7 @@ describe('G-manage coordination + host join approve (API)', () => {
     async () => {
     const joinerToken = await loginToken(joiner.email, joiner.password);
     const joinRes = await request(app)
-      .post(`/api/v1/activities/${fixture.activityId}/requests`)
+      .post(`/api/activities/${fixture.activityId}/requests`)
       .set('Authorization', `Bearer ${joinerToken}`)
       .send({ note: 'G-manage integration' });
 
@@ -72,7 +72,7 @@ describe('G-manage coordination + host join approve (API)', () => {
     await completeSignupProfile(hostToken);
 
     const attentionBefore = await request(app)
-      .get('/api/v1/me/coordination-attention')
+      .get('/api/me/coordination-attention')
       .set('Authorization', `Bearer ${hostToken}`);
 
     expect(attentionBefore.status).toBe(200);
@@ -82,7 +82,7 @@ describe('G-manage coordination + host join approve (API)', () => {
     expect(hostQueue?.count).toBeGreaterThanOrEqual(1);
 
     const queueRes = await request(app)
-      .get('/api/v1/operator/requests')
+      .get('/api/operator/requests')
       .set('Authorization', `Bearer ${hostToken}`)
       .set('x-organisation-id', fixture.tenantId)
       .query({ page: 1, pageSize: 20 });
@@ -94,7 +94,7 @@ describe('G-manage coordination + host join approve (API)', () => {
     expect(pending?.status).toBe('pending');
 
     const approveRes = await request(app)
-      .patch(`/api/v1/operator/requests/${requestId}`)
+      .patch(`/api/operator/requests/${requestId}`)
       .set('Authorization', `Bearer ${hostToken}`)
       .set('x-organisation-id', fixture.tenantId)
       .send({ status: 'approved' });
@@ -103,7 +103,7 @@ describe('G-manage coordination + host join approve (API)', () => {
     expect(approveRes.body.message).toMatch(/approved/i);
 
     const attentionAfter = await request(app)
-      .get('/api/v1/me/coordination-attention')
+      .get('/api/me/coordination-attention')
       .set('Authorization', `Bearer ${hostToken}`);
 
     expect(attentionAfter.status).toBe(200);
@@ -113,7 +113,7 @@ describe('G-manage coordination + host join approve (API)', () => {
     expect(hostQueueAfter).toBe(false);
 
     const joinerMine = await request(app)
-      .get('/api/v1/me/requests')
+      .get('/api/me/requests')
       .set('Authorization', `Bearer ${joinerToken}`);
 
     expect(joinerMine.status).toBe(200);

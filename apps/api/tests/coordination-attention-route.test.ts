@@ -15,7 +15,7 @@ beforeAll(async () => {
 });
 
 const signInToken = async (email: string, password: string): Promise<string> => {
-  const res = await request(app).post('/api/v1/auth/login').send({ email, password });
+  const res = await request(app).post('/api/auth/login').send({ email, password });
   expect(res.status).toBe(200);
   return res.body.tokens.accessToken as string;
 };
@@ -39,7 +39,7 @@ describe('GET /me/coordination-attention (G-manage API)', () => {
 
     const token = await signInToken(user.email, password);
     const res = await request(app)
-      .get('/api/v1/me/coordination-attention')
+      .get('/api/me/coordination-attention')
       .set('Authorization', `Bearer ${token}`);
 
     expect(res.status).toBe(200);
@@ -64,7 +64,7 @@ describe('GET /me/coordination-attention (G-manage API)', () => {
 
     const token = await signInToken(user.email, password);
     const res = await request(app)
-      .get('/api/v1/me/coordination-attention')
+      .get('/api/me/coordination-attention')
       .set('Authorization', `Bearer ${token}`);
 
     expect(res.status).toBe(200);

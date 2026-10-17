@@ -26,7 +26,7 @@ type NotificationRow = {
 
 const listNotifications = async (accessToken: string): Promise<NotificationRow[]> => {
   const res = await request(app)
-    .get('/api/v1/me/notifications')
+    .get('/api/me/notifications')
     .set('Authorization', `Bearer ${accessToken}`);
   expect(res.status).toBe(200);
   return res.body.data as NotificationRow[];
@@ -59,7 +59,7 @@ const seedApprovedParticipant = async (
 
 const loginOrganizer = async (suffix: string): Promise<string> => {
   const login = await request(app)
-    .post('/api/v1/auth/login')
+    .post('/api/auth/login')
     .send({ email: `org-${suffix}@test.local`, password: 'TestPass1' });
   expect(login.status).toBe(200);
   return login.body.tokens.accessToken as string;
@@ -84,7 +84,7 @@ describe('activity join invite', () => {
     const hostToken = await loginOrganizer(suffix);
 
     const inviteRes = await request(app)
-      .post(`/api/v1/activities/${fixture.activityId}/invites`)
+      .post(`/api/activities/${fixture.activityId}/invites`)
       .set('Authorization', `Bearer ${hostToken}`)
       .send({ inviteeUserId: inviteeUser!._id });
 
@@ -102,7 +102,7 @@ describe('activity join invite', () => {
     expect(inviteNotif!.body).toMatch(/Tap to view and join/);
 
     const detailRes = await request(app)
-      .get(`/api/v1/activities/${fixture.activityId}`)
+      .get(`/api/activities/${fixture.activityId}`)
       .set('Authorization', `Bearer ${invitee.accessToken}`);
     expect(detailRes.status).toBe(200);
     expect(detailRes.body.data.myJoinInvite?.fromUserId).toBeTruthy();
@@ -125,13 +125,13 @@ describe('activity join invite', () => {
     const hostToken = await loginOrganizer(suffix);
 
     const inviteRes = await request(app)
-      .post(`/api/v1/activities/${fixture.activityId}/invites`)
+      .post(`/api/activities/${fixture.activityId}/invites`)
       .set('Authorization', `Bearer ${hostToken}`)
       .send({ inviteeUserId: inviteeUser!._id });
     expect(inviteRes.status).toBe(201);
 
     const listRes = await request(app)
-      .get(`/api/v1/activities/${fixture.activityId}/invites`)
+      .get(`/api/activities/${fixture.activityId}/invites`)
       .set('Authorization', `Bearer ${hostToken}`);
     expect(listRes.status).toBe(200);
     expect(listRes.body.data.inviteeUserIds).toContain(inviteeUser!._id);
@@ -156,7 +156,7 @@ describe('activity join invite', () => {
     expect(inviteeUser).toBeTruthy();
 
     const inviteRes = await request(app)
-      .post(`/api/v1/activities/${fixture.activityId}/invites`)
+      .post(`/api/activities/${fixture.activityId}/invites`)
       .set('Authorization', `Bearer ${going.accessToken}`)
       .send({ inviteeUserId: inviteeUser!._id });
 
@@ -193,7 +193,7 @@ describe('activity join invite', () => {
     }
 
     const denyRes = await request(app)
-      .post(`/api/v1/activities/${fixture.activityId}/invites`)
+      .post(`/api/activities/${fixture.activityId}/invites`)
       .set('Authorization', `Bearer ${hostToken}`)
       .send({ inviteeUserId: targetUser!._id });
     expect(denyRes.status).toBe(429);
@@ -212,7 +212,7 @@ describe('activity join invite', () => {
     expect(targetUser).toBeTruthy();
 
     const denyRes = await request(app)
-      .post(`/api/v1/activities/${fixture.activityId}/invites`)
+      .post(`/api/activities/${fixture.activityId}/invites`)
       .set('Authorization', `Bearer ${stranger.accessToken}`)
       .send({ inviteeUserId: targetUser!._id });
 

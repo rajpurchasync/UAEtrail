@@ -1,10 +1,10 @@
-import { useCallback, useState } from 'react';
 import type { ActivityDTO } from '@uaetrail/shared-types';
+import { useQuery } from '@tanstack/react-query';
 import { groupRegionTextAtBrowseFilterLevel } from '../config/groupRegionFilter';
 import { buildExploreWhenSegment } from '@uaetrail/shared-types';
 import { fetchApiActivities } from './publicCatalogClientApi';
 import { HOME_LANDING_FALLBACK_ACTIVITIES, type HomeLandingActivity } from '../content/homeLanding';
-import { useSafeAsyncEffect } from './useSafeAsyncEffect';
+import { homeLandingActivitiesQueryKey } from './clientQueryKeys';
 
 export interface HomeLandingActivitiesState {
   activities: HomeLandingActivity[];
@@ -42,56 +42,55 @@ const toLandingActivity = (activity: ActivityDTO): HomeLandingActivity => ({
   path: `/activity/${activity.id}`,
 });
 
+type HomeLandingActivitiesPayload = {
+  activities: HomeLandingActivity[];
+  totalCount: number;
+  fromLiveApi: boolean;
+};
+
+const fetchHomeLandingActivities = async (): Promise<HomeLandingActivitiesPayload> => {
+  const listings = await fetchApiActivities('upcoming');
+  const upcoming = listings.slice(0, 12);
+  if (upcoming.length === 0) {
+    return {
+      activities: HOME_LANDING_FALLBACK_ACTIVITIES,
+      totalCount: HOME_LANDING_FALLBACK_ACTIVITIES.length,
+      fromLiveApi: false,
+    };
+  }
+  return {
+    activities: upcoming.map(toLandingActivity),
+    totalCount: listings.length,
+    fromLiveApi: true,
+  };
+};
+
+const fallbackPayload = (): HomeLandingActivitiesPayload => ({
+  activities: HOME_LANDING_FALLBACK_ACTIVITIES,
+  totalCount: HOME_LANDING_FALLBACK_ACTIVITIES.length,
+  fromLiveApi: false,
+});
+
 /** Public upcoming activities for marketing landing — falls back to curated cards. */
 export const useHomeLandingActivities = (): HomeLandingActivitiesState => {
-  const [state, setState] = useState<Omit<HomeLandingActivitiesState, 'refetch'>>({
-    activities: HOME_LANDING_FALLBACK_ACTIVITIES,
-    totalCount: HOME_LANDING_FALLBACK_ACTIVITIES.length,
-    loading: true,
-    fromLiveApi: false,
-    error: false,
+  const { data, isLoading, isError, refetch } = useQuery({
+    queryKey: homeLandingActivitiesQueryKey,
+    queryFn: fetchHomeLandingActivities,
+    staleTime: 60_000,
+    placeholderData: fallbackPayload,
+    retry: 1,
   });
-  const [loadGeneration, setLoadGeneration] = useState(0);
 
-  useSafeAsyncEffect(async (isActive) => {
-    setState((prev) => ({ ...prev, loading: true, error: false }));
+  const payload = isError ? fallbackPayload() : (data ?? fallbackPayload());
 
-    try {
-      const listings = await fetchApiActivities('upcoming');
-      if (!isActive()) return;
-      const upcoming = listings.slice(0, 12);
-      if (upcoming.length === 0) {
-        setState({
-          activities: HOME_LANDING_FALLBACK_ACTIVITIES,
-          totalCount: HOME_LANDING_FALLBACK_ACTIVITIES.length,
-          loading: false,
-          fromLiveApi: false,
-          error: false,
-        });
-        return;
-      }
-      setState({
-        activities: upcoming.map(toLandingActivity),
-        totalCount: listings.length,
-        loading: false,
-        fromLiveApi: true,
-        error: false,
-      });
-    } catch {
-      if (!isActive()) return;
-      setState({
-        activities: HOME_LANDING_FALLBACK_ACTIVITIES,
-        totalCount: HOME_LANDING_FALLBACK_ACTIVITIES.length,
-        loading: false,
-        fromLiveApi: false,
-        error: true,
-      });
-    }
-  }, [loadGeneration]);
-
-  const refetch = useCallback(() => {
-    setLoadGeneration((n) => n + 1);
-  }, []);
-
-  return { ...state, refetch };
+  return {
+    activities: payload.activities,
+    totalCount: payload.totalCount,
+    loading: isLoading,
+    fromLiveApi: !isError && payload.fromLiveApi,
+    error: isError,
+    refetch: () => {
+      void refetch();
+    },
+  };
 };

@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "name": "UAE Trail",
-  "manifest_url": "https://uaetrail.com/api/v1/agent/manifest.json",
+  "manifest_url": "https://uaetrail.com/api/agent/manifest.json",
   "llms_txt": "https://uaetrail.com/llms.txt",
-  "search_url": "https://uaetrail.com/api/v1/agent/discover"
+  "search_url": "https://uaetrail.com/api/agent/discover"
 }

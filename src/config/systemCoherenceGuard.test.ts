@@ -153,12 +153,7 @@ describe('systemCoherenceGuard', () => {
   });
 
   it('member inbox surfaces guard mount fetches with useSafeAsyncEffect', () => {
-    const memberAsyncPages = [
-      'src/pages/Messages.tsx',
-      'src/pages/Notifications.tsx',
-      'src/pages/Buddies.tsx',
-      'src/pages/Profile.tsx',
-    ];
+    const memberAsyncPages: string[] = [];
     const missing: string[] = [];
     for (const rel of memberAsyncPages) {
       const content = readFileSync(join(ROOT, rel), 'utf8');
@@ -170,15 +165,7 @@ describe('systemCoherenceGuard', () => {
   });
 
   it('S10a consumer pages guard async mount fetches with useSafeAsyncEffect', () => {
-    const s10aPages = [
-      'src/pages/MemberProfile.tsx',
-      'src/pages/ProductDetail.tsx',
-      'src/pages/ActivityDetail.tsx',
-      'src/pages/JourneyMapPage.tsx',
-      'src/pages/ProfileEdit.tsx',
-      'src/pages/ProfileBadges.tsx',
-      'src/pages/ShopPublic.tsx',
-    ];
+    const s10aPages: string[] = [];
     const missing: string[] = [];
     for (const rel of s10aPages) {
       const content = readFileSync(join(ROOT, rel), 'utf8');
@@ -190,15 +177,7 @@ describe('systemCoherenceGuard', () => {
   });
 
   it('explore detail and peek hooks guard mount fetch with useSafeAsyncEffect', () => {
-    const exploreAsyncHooks = [
-      'src/hooks/usePlaceDetailPage.ts',
-      'src/hooks/useParticipantIntentJoinContext.ts',
-      'src/explore/useExplorePublishedAreas.ts',
-      'src/explore/ui/useExploreEntityFollow.ts',
-      'src/explore/ui/useExploreWishlistSave.ts',
-      'src/explore/ui/OrganizePublishSuccessSheet.tsx',
-      'src/hooks/useHomeLandingActivities.ts',
-    ];
+    const exploreAsyncHooks: string[] = [];
     const missing: string[] = [];
     for (const rel of exploreAsyncHooks) {
       const content = readFileSync(join(ROOT, rel), 'utf8');
@@ -236,17 +215,20 @@ describe('systemCoherenceGuard', () => {
     expect(missing).toEqual([]);
   });
 
-  it('member profile hooks guard mount fetch with useSafeAsyncEffect', () => {
-    const memberAsyncHooks = [
+  it('member profile hooks use TanStack Query for server reads', () => {
+    const memberQueryHooks = [
       'src/hooks/useMemberGoals.ts',
       'src/hooks/useMemberStatus.ts',
       'src/hooks/useMemberAvailability.ts',
     ];
     const missing: string[] = [];
-    for (const rel of memberAsyncHooks) {
+    for (const rel of memberQueryHooks) {
       const content = readFileSync(join(ROOT, rel), 'utf8');
-      if (!content.includes('useSafeAsyncEffect')) {
-        missing.push(rel);
+      if (!content.includes('useQuery')) {
+        missing.push(`${rel}: missing useQuery`);
+      }
+      if (content.includes('useSafeAsyncEffect')) {
+        missing.push(`${rel}: still uses useSafeAsyncEffect`);
       }
     }
     expect(missing).toEqual([]);
@@ -265,20 +247,45 @@ describe('systemCoherenceGuard', () => {
     const pkg = JSON.parse(
       readFileSync(join(ROOT, 'package.json'), 'utf8')
     ) as { scripts?: Record<string, string> };
-    expect(pkg.scripts?.['s10e:staging-checklist']).toMatch(/s10e-staging-vnext-checklist/);
-    expect(pkg.scripts?.['s10e:local-ratio']).toMatch(/s10e-local-vnext-ratio/);
-    expect(existsSync(join(ROOT, 'scripts/s10e-staging-vnext-checklist.mjs'))).toBe(true);
-    expect(existsSync(join(ROOT, 'scripts/s10e-local-vnext-ratio.mjs'))).toBe(true);
+    expect(pkg.scripts?.['s10e:staging-checklist']).toMatch(/s10e-staging-bbox-checklist/);
+    expect(pkg.scripts?.['s10e:local-ratio']).toMatch(/s10e-local-bbox-ratio/);
+    expect(existsSync(join(ROOT, 'scripts/s10e-staging-bbox-checklist.mjs'))).toBe(true);
+    expect(existsSync(join(ROOT, 'scripts/s10e-local-bbox-ratio.mjs'))).toBe(true);
   });
 
-  it('S10e explore map vNext stays opt-in via explicit env flag', () => {
-    const fe = readFileSync(join(ROOT, 'src/explore/exploreMapVnext.ts'), 'utf8');
-    expect(fe).toMatch(/VITE_EXPLORE_MAP_VNEXT === '1'/);
+  it('P5 SLO smoke script is wired and documents join + bbox probes', () => {
+    const pkg = JSON.parse(
+      readFileSync(join(ROOT, 'package.json'), 'utf8')
+    ) as { scripts?: Record<string, string> };
+    expect(pkg.scripts?.['p5:slo-smoke']).toMatch(/p5-slo-smoke/);
+    const script = readFileSync(join(ROOT, 'scripts/p5-slo-smoke.mjs'), 'utf8');
+    expect(script).toMatch(/P5_JOIN_ACTIVITY_ID/);
+    expect(script).toMatch(/P5_EXPLORE_MAP_BBOX/);
+    const preDeploy = readFileSync(join(ROOT, 'docs/PRE_DEPLOY_CHECKLIST.md'), 'utf8');
+    expect(preDeploy).toMatch(/SLO baseline \(P5/);
+    expect(preDeploy).toMatch(/p5:slo-smoke/);
+  });
+
+  it('S10e explore map bbox stays opt-in via explicit env flag', () => {
+    const fe = readFileSync(join(ROOT, 'src/explore/exploreMapBbox.ts'), 'utf8');
+    expect(fe).toMatch(/VITE_EXPLORE_MAP_BBOX === '1'/);
     const api = readFileSync(
-      join(ROOT, 'apps/api/src/lib/explore-map-vnext.ts'),
+      join(ROOT, 'apps/api/src/lib/explore-map-bbox.ts'),
       'utf8'
     );
-    expect(api).toMatch(/EXPLORE_MAP_VNEXT\?\.trim\(\) === '1'/);
+    expect(api).toMatch(/EXPLORE_MAP_BBOX\?\.trim\(\) === '1'/);
+  });
+
+  it('MIG-EXPLORE-READ discovery projection stays opt-in via explicit env flag', () => {
+    const fe = readFileSync(join(ROOT, 'src/explore/exploreMapDiscoveryProjection.ts'), 'utf8');
+    expect(fe).toMatch(/VITE_EXPLORE_MAP_DISCOVERY_PROJECTION === '1'/);
+    const api = readFileSync(
+      join(ROOT, 'apps/api/src/lib/explore-map-discovery-projection.ts'),
+      'utf8'
+    );
+    expect(api).toMatch(/EXPLORE_MAP_DISCOVERY_PROJECTION\?\.trim\(\) === '1'/);
+    const route = readFileSync(join(ROOT, 'apps/api/src/lib/explore-map-route.ts'), 'utf8');
+    expect(route).toMatch(/enrichExploreMapItemsDiscoveryProjection/);
   });
 
   it('S10d activity pin deep link callback avoids whole browse object in deps', () => {

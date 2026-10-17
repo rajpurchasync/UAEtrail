@@ -45,7 +45,7 @@ Launchers and `npm run seed` share the same rules:
 Without one of those flags, restarts skip seeding so existing records are not overwritten.
 
 Frontend runs on `http://localhost:5175`.
-API is available through the frontend proxy at `http://localhost:5175/api/v1`.
+API is available through the frontend proxy at `http://localhost:5175/api`.
 
 Explore map ops (venue catalog import, cache, smoke checks): [`docs/operations/EXPLORE_MAP_RUNBOOK.md`](docs/operations/EXPLORE_MAP_RUNBOOK.md).
 
@@ -67,9 +67,9 @@ The launch scripts are the source of truth for local runtime prerequisites. They
 
 | Platform | Auto-checked | Auto-installed or repaired | Version source |
 |----------|--------------|----------------------------|----------------|
-| Windows | Node.js >= 24.18.0, npm >= 11.16.0, Docker Desktop >= 24, Docker Compose >= 2 | Node.js via official ZIP download if below minimum; Docker Desktop via `winget`; Docker service start attempt | `run-project.bat` + `scripts/run-project-preflight.mjs` (see `.nvmrc`) |
-| Linux / RHEL | Node.js >= 24.18.0, npm >= 11.16.0, Docker Engine >= 24, Docker Compose >= 2 | Node.js via official tarball if below minimum; Docker via `apt-get`, `dnf`, or `yum`; Docker service start attempt | `run-project.sh` + `scripts/run-project-preflight.mjs` |
-| macOS | Node.js >= 24.18.0, npm >= 11.16.0, Docker Desktop >= 24, Docker Compose >= 2 | Node.js via official tarball if below minimum; Docker Desktop via `brew install --cask docker`; Docker app launch attempt | `run-project-mac.sh` + `scripts/run-project-preflight.mjs` |
+| Windows | Node.js >= 24.22.0 (see `.nvmrc`), npm >= 11.16.0, Docker Desktop >= 24, Docker Compose >= 2 | Node.js via official ZIP download if below minimum; Docker Desktop via `winget`; Docker service start attempt | `run-project.bat` + `scripts/run-project-preflight.mjs` (see `.nvmrc`) |
+| Linux / RHEL | Node.js >= 24.22.0 (see `.nvmrc`), npm >= 11.16.0, Docker Engine >= 24, Docker Compose >= 2 | Node.js via official tarball if below minimum; Docker via `apt-get`, `dnf`, or `yum`; Docker service start attempt | `run-project.sh` + `scripts/run-project-preflight.mjs` |
+| macOS | Node.js >= 24.22.0 (see `.nvmrc`), npm >= 11.16.0, Docker Desktop >= 24, Docker Compose >= 2 | Node.js via official tarball if below minimum; Docker Desktop via `brew install --cask docker`; Docker app launch attempt | `run-project-mac.sh` + `scripts/run-project-preflight.mjs` |
 
 The workspace dependencies are also handled automatically: if `node_modules` is missing, the preflight runs `npm install`.
 
@@ -126,7 +126,7 @@ Additional demo accounts: `guide@uaetrails.app`, `visitor2@uaetrails.app` (same 
 ## Feature Flags (Frontend)
 Add in root `.env`:
 ```bash
-VITE_API_BASE_URL=http://localhost:4000/api/v1
+VITE_API_BASE_URL=http://localhost:4000/api
 VITE_USE_API_HOME=true
 VITE_USE_API_DISCOVERY=true
 VITE_USE_API_CALENDAR=true

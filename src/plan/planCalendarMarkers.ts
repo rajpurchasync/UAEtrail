@@ -24,8 +24,8 @@ export type PlanCalendarJoinedDetail = {
 
 export type PlanCalendarDayDetail =
   | { kind: 'available' }
-  | { kind: 'hosting'; title: string; href: string }
-  | { kind: 'seeking'; title: string; href: string }
+  | { kind: 'hosting'; title: string; href: string; activityId: string }
+  | { kind: 'seeking'; title: string; href: string; activityId?: string; intentId?: string }
   | PlanCalendarJoinedDetail;
 
 export const emptyPlanCalendarDayMarkers = (): PlanCalendarDayMarkers => ({
@@ -106,6 +106,7 @@ export const buildPlanCalendarMaps = (input: BuildPlanCalendarInput) => {
         kind: 'seeking',
         title: activity.title,
         href: input.hostingManageHref(activity.id),
+        activityId: activity.id,
       });
     } else {
       m.hosting = true;
@@ -113,6 +114,7 @@ export const buildPlanCalendarMaps = (input: BuildPlanCalendarInput) => {
         kind: 'hosting',
         title: activity.title,
         href: input.hostingManageHref(activity.id),
+        activityId: activity.id,
       });
     }
   }
@@ -130,6 +132,8 @@ export const buildPlanCalendarMaps = (input: BuildPlanCalendarInput) => {
       kind: 'seeking',
       title: intent.title,
       href: input.seekingIntentHref(intent.id),
+      intentId: intent.id,
+      activityId: linkedId ?? undefined,
     });
   }
 

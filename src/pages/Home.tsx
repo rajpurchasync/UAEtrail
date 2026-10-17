@@ -6,23 +6,23 @@ import { PageMeta } from '../components/seo/PageMeta';
 import { JsonLd } from '../components/seo/JsonLd';
 import { websiteSchema } from '../components/seo/schemas';
 import { useAuth } from '../context/AuthContext';
-import { HomeDeferredMount } from '../components/home/v2/HomeDeferredMount';
-import { HomeMarketingHeader } from '../components/home/v2/HomeMarketingHeader';
-import { HomeHeroSection } from '../components/home/v2/sections/HomeHeroSection';
-import { HomeMarketingCarouselSyncProvider } from '../components/home/v2/HomeMarketingCarouselSync';
+import { HomeDeferredMount } from '../components/home/marketing/HomeDeferredMount';
+import { HomeMarketingHeader } from '../components/home/marketing/HomeMarketingHeader';
+import { HomeHeroSection } from '../components/home/marketing/sections/HomeHeroSection';
+import { HomeMarketingCarouselSyncProvider } from '../components/home/marketing/HomeMarketingCarouselSync';
 
 const HomeActivitiesBlock = lazy(() =>
-  import('../components/home/v2/sections/HomeActivitiesBlock').then((m) => ({
+  import('../components/home/marketing/sections/HomeActivitiesBlock').then((m) => ({
     default: m.HomeActivitiesBlock
   }))
 );
 const HomeHowItWorksSection = lazy(() =>
-  import('../components/home/v2/sections/HomeHowItWorksSection').then((m) => ({
+  import('../components/home/marketing/sections/HomeHowItWorksSection').then((m) => ({
     default: m.HomeHowItWorksSection
   }))
 );
 const HomeReviewsFaqSection = lazy(() =>
-  import('../components/home/v2/sections/HomeReviewsFaqSection').then((m) => ({
+  import('../components/home/marketing/sections/HomeReviewsFaqSection').then((m) => ({
     default: m.HomeReviewsFaqSection
   }))
 );

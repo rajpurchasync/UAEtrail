@@ -40,12 +40,14 @@ describe('CPC terminology guard (API)', () => {
   });
 
   it('member place submit uses /me/places as primary registrar path', () => {
-    const content = readFileSync(
+    const registrar = readFileSync(
       join(API_SRC, 'routes/user/registerMeSubmittedPlaceRoutes.ts'),
       'utf8'
     );
-    expect(content).toMatch(/registerPlaceAlias\([\s\S]*'\/me\/places'/);
-    expect(content).toMatch(/place\.submit/);
+    const commands = readFileSync(join(API_SRC, 'services/me-place-submit-commands.ts'), 'utf8');
+    expect(registrar).toMatch(/registerPlaceAlias\([\s\S]*'\/me\/places'/);
+    expect(registrar).toMatch(/me-place-submit-commands/);
+    expect(commands).toMatch(/place\.submit/);
   });
 
   it('catalog submit notifications module avoids Contribute API framing', () => {
@@ -55,13 +57,23 @@ describe('CPC terminology guard (API)', () => {
   });
 
   it('member facility submit does not dual-write locations (CPC-7)', () => {
-    const content = readFileSync(
+    const registrar = readFileSync(
       join(API_SRC, 'routes/user/registerMeFacilityRoutes.ts'),
       'utf8'
     );
-    expect(content).not.toMatch(/createLocationRecord/);
-    expect(content).not.toMatch(/upsertFacilityFromLocationRow/);
-    expect(content).toMatch(/createFacilityRecord/);
+    const commands = readFileSync(join(API_SRC, 'services/me-facility-submit-commands.ts'), 'utf8');
+    expect(registrar).not.toMatch(/createLocationRecord/);
+    expect(registrar).not.toMatch(/upsertFacilityFromLocationRow/);
+    expect(registrar).not.toMatch(/createFacilityRecord/);
+    expect(registrar).toMatch(/me-facility-submit-commands/);
+    expect(commands).not.toMatch(/createLocationRecord/);
+    expect(commands).toMatch(/createFacilityRecord/);
+  });
+
+  it('place location mapper exposes registeredByUserId (CPC-7 dual-read)', () => {
+    const content = readFileSync(join(API_SRC, 'lib/mappers.ts'), 'utf8');
+    expect(content).toMatch(/registeredByUserId:\s*location\.registeredByUserId/);
+    expect(content).toMatch(/opts\?\.admin[\s\S]*submittedById:\s*location\.submittedById/);
   });
 
   it('admin facility CRUD does not dual-write locations (CPC-7)', () => {

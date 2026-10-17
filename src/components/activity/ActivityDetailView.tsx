@@ -78,7 +78,7 @@ export interface ActivityDetailViewProps {
     onSaved?: (policy: ActivityGroupChatPostPolicy) => void;
     onError?: (message: string) => void;
   };
-  /** Host Buddies tab — roster, pending queue, check-in (v3.2). */
+  /** Host Buddies tab — roster, pending queue, check-in (detail shell). */
   hostBuddiesHub?: {
     joinRequests: ActivityRequestView[];
     requestsLoading: boolean;

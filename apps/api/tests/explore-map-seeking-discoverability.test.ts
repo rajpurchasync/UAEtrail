@@ -18,7 +18,7 @@ beforeAll(async () => {
   await ensureCuratedAreasSeeded();
 });
 
-describe('GET /api/v1/explore/map seeking discoverability', () => {
+describe('GET /api/explore/map seeking discoverability', () => {
   it('includes published seeking activities even when startAt is before today', async () => {
     const suffix = `seek-past-${Date.now()}`;
     const user = await createAuthUser({
@@ -47,7 +47,7 @@ describe('GET /api/v1/explore/map seeking discoverability', () => {
     await patchActivityInMongo(intent.seekingActivityId!, { startAt: past });
     await invalidateExploreMapCache();
 
-    const response = await request(app).get('/api/v1/explore/map');
+    const response = await request(app).get('/api/explore/map');
     expect(response.status).toBe(200);
     const items = response.body.data.items as Array<{
       id: string;

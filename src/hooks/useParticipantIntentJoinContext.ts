@@ -1,8 +1,9 @@
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ParticipantIntentJoinRequestDTO } from '@uaetrail/shared-types';
 import { fetchMyParticipantIntentJoinRequest } from './participantIntentClientApi';
 import type { JoinRequestUiState } from '../utils/joinRequestUi';
-import { useSafeAsyncEffect, type IsActiveGuard } from './useSafeAsyncEffect';
+import { participantIntentJoinRequestQueryKey } from './clientQueryKeys';
 
 export const resolveParticipantIntentJoinUiState = (
   request: ParticipantIntentJoinRequestDTO | null | undefined
@@ -28,51 +29,29 @@ export const useParticipantIntentJoinContext = ({
   enabled = true,
   userId,
 }: UseParticipantIntentJoinContextOptions) => {
-  const [request, setRequest] = useState<ParticipantIntentJoinRequestDTO | null>(null);
-  const [loading, setLoading] = useState(false);
+  const queryClient = useQueryClient();
+  const active = enabled && Boolean(intentId) && Boolean(userId);
 
-  const reload = useCallback(
-    async (isActive: IsActiveGuard = () => true) => {
-      if (!intentId || !userId) {
-        if (isActive()) {
-          setRequest(null);
-        }
-        return;
-      }
-      if (isActive()) {
-        setLoading(true);
-      }
-      try {
-        const row = await fetchMyParticipantIntentJoinRequest(intentId);
-        if (isActive()) {
-          setRequest(row);
-        }
-      } catch {
-        if (isActive()) {
-          setRequest(null);
-        }
-      } finally {
-        if (isActive()) {
-          setLoading(false);
-        }
-      }
-    },
-    [intentId, userId]
-  );
+  const query = useQuery({
+    queryKey:
+      intentId && userId
+        ? participantIntentJoinRequestQueryKey(intentId, userId)
+        : ['participant-intent-join-request', '', ''],
+    queryFn: () => fetchMyParticipantIntentJoinRequest(intentId!),
+    enabled: active,
+    staleTime: 15_000,
+  });
 
-  useSafeAsyncEffect(
-    async (isActive) => {
-      if (!enabled || !intentId || !userId) {
-        setRequest(null);
-        setLoading(false);
-        return;
-      }
-      await reload(isActive);
-    },
-    [enabled, intentId, userId, reload]
-  );
+  const reload = useCallback(async () => {
+    if (!intentId || !userId) return;
+    await queryClient.invalidateQueries({
+      queryKey: participantIntentJoinRequestQueryKey(intentId, userId),
+    });
+    await query.refetch();
+  }, [intentId, userId, query, queryClient]);
 
+  const request = active ? (query.data ?? null) : null;
   const uiState = resolveParticipantIntentJoinUiState(request);
 
-  return { request, uiState, loading, reload };
+  return { request, uiState, loading: active && query.isLoading, reload };
 };

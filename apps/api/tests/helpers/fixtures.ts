@@ -202,7 +202,7 @@ export const getVerificationOtp = (email: string): string => {
   return otp;
 };
 
-/** Verified email + `PLATFORM_ADMIN` for `/api/v1/admin/*` integration tests. */
+/** Verified email + `PLATFORM_ADMIN` for `/api/admin/*` integration tests. */
 export const registerVerifiedPlatformAdmin = async (
   app: import('express').Express,
   suffix: string
@@ -216,7 +216,7 @@ export const registerVerifiedPlatformAdmin = async (
 
   const request = (await import('supertest')).default;
   const login = await request(app)
-    .post('/api/v1/auth/login')
+    .post('/api/auth/login')
     .send({ email: visitor.email, password: visitor.password });
   if (login.status !== 200) {
     throw new Error(`Platform admin login failed: ${login.status}`);
@@ -238,7 +238,7 @@ export const registerVerifiedVisitor = async (
   const password = 'TestPass1';
 
   const registerRes = await request(app)
-    .post('/api/v1/auth/register')
+    .post('/api/auth/register')
     .send({
       email,
       password,
@@ -252,7 +252,7 @@ export const registerVerifiedVisitor = async (
   }
 
   const verifyRes = await request(app)
-    .post('/api/v1/auth/verify-email')
+    .post('/api/auth/verify-email')
     .send({ email, otp: getVerificationOtp(email) });
 
   if (verifyRes.status !== 200) {

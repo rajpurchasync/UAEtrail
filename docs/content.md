@@ -266,7 +266,7 @@ Map, Contact, FAQ: use existing routes when available.
 
 ## Diff vs legacy v1 (informational)
 
-Guest `/` uses **`src/content/homeMarketing.ts`** + **`src/components/home/v2/**`**. Legacy strings in `homeLanding.ts` remain for fallback activities and older components not on `/`.
+Guest `/` uses **`src/content/homeMarketing.ts`** + **`src/components/home/marketing/**`**. Legacy strings in `homeLanding.ts` remain for fallback activities and older components not on `/`.
 
 | Area | Legacy v1 | Shipped v2 |
 |------|-----------|--------------|

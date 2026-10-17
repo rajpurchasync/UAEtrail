@@ -7,29 +7,32 @@ import { getStripe, isStripeConfigured } from '../lib/stripe.js';
 import { env } from '../config/env.js';
 import { requireAuth, requireVerifiedEmail } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
+import { createShopOrderWithItems, setShopOrderStripeSession } from '../services/shop-checkout-commands.js';
 import {
   createMerchantProduct,
   createMerchantProfileForUser,
-  createShopOrderWithItems,
   deactivateMerchantProductById,
-  findActiveProductById,
-  findMerchantProductById,
-  findMerchantPublicById,
-  findManagedMerchantProfileById,
-  findMerchantProfileByTenantId,
-  getMerchantAnalytics,
-  listMerchantOrderLineItems,
-  listActiveProductsByIds,
-  listManagedMerchantProfiles,
-  listMerchantProducts,
-  listPublicProducts,
-  setShopOrderStripeSession,
+  syncShopTenantFromMerchantProfile,
+  updateManagedMerchantProfileById,
   updateMerchantOrderLineItemStatus,
   updateMerchantProductById,
-  updateManagedMerchantProfileById,
-  syncShopTenantFromMerchantProfile,
+} from '../services/shop-merchant-commands.js';
+import {
+  findManagedMerchantProfileById,
+  findMerchantProductById,
+  findMerchantProfileByTenantId,
+  getMerchantAnalytics,
+  listManagedMerchantProfiles,
+  listMerchantOrderLineItems,
+  listMerchantProducts,
   userCanCreateShopProfile,
-} from '../lib/shop-store.js';
+} from '../services/shop-merchant-read.js';
+import {
+  findActiveProductById,
+  findMerchantPublicById,
+  listActiveProductsByIds,
+  listPublicProducts,
+} from '../services/shop-public-read.js';
 import { invalidateExploreMapCache } from '../lib/explore-map-cache.js';
 
 export const shopRouter = Router();

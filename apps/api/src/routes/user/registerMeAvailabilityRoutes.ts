@@ -1,18 +1,17 @@
 import type { Router } from 'express';
 import { z } from 'zod';
 import { AVAILABILITY_KINDS, type AvailabilityKind } from '@uaetrail/shared-types';
+import { requireAuth } from '../../middleware/auth.js';
+import { validate } from '../../middleware/validate.js';
+import { upsertMyMemberAvailability } from '../../services/me-availability-commands.js';
+import {
+  loadMyMemberAvailability,
+  loadMyMemberAvailabilityMatchPreview,
+} from '../../services/me-availability-read.js';
 
 const availabilityKindEnum = z.enum(
   AVAILABILITY_KINDS as unknown as [AvailabilityKind, ...AvailabilityKind[]]
 );
-import { requireAuth } from '../../middleware/auth.js';
-import { validate } from '../../middleware/validate.js';
-import {
-  getMemberAvailability,
-  upsertMemberAvailability,
-} from '../../lib/member-availability-store.js';
-import { notifyMemberOfHostedActivitiesForAvailability } from '../../services/availability-hosted-match-notifications.js';
-import { buildMemberAvailabilityMatchPreview } from '../../services/member-availability-match-preview.js';
 
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 
@@ -35,7 +34,7 @@ const upsertSchema = z.object({
 export const registerMeAvailabilityRoutes = (router: Router): void => {
   router.get('/me/availability', requireAuth, async (req, res, next) => {
     try {
-      const data = await getMemberAvailability(req.auth!.userId);
+      const data = await loadMyMemberAvailability(req.auth!.userId);
       res.json({ data });
     } catch (error) {
       next(error);
@@ -44,7 +43,7 @@ export const registerMeAvailabilityRoutes = (router: Router): void => {
 
   router.get('/me/availability/match-preview', requireAuth, async (req, res, next) => {
     try {
-      const data = await buildMemberAvailabilityMatchPreview(req.auth!.userId);
+      const data = await loadMyMemberAvailabilityMatchPreview(req.auth!.userId);
       res.json({ data });
     } catch (error) {
       next(error);
@@ -57,11 +56,7 @@ export const registerMeAvailabilityRoutes = (router: Router): void => {
     validate({ body: upsertSchema }),
     async (req, res, next) => {
       try {
-        const data = await upsertMemberAvailability(req.auth!.userId, req.body);
-        void notifyMemberOfHostedActivitiesForAvailability({
-          userId: req.auth!.userId,
-          availability: data,
-        });
+        const data = await upsertMyMemberAvailability(req.auth!.userId, req.body);
         res.json({ data });
       } catch (error) {
         next(error);

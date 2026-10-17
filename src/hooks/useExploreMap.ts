@@ -1,8 +1,8 @@
 import { keepPreviousData, useQuery, type QueryClient } from '@tanstack/react-query';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { fetchExploreMapItems } from './exploreMapClientApi';
-import type { ExploreMapFetchScope } from '../explore/exploreMapVnext';
-import { isExploreMapVnextEnabled } from '../explore/exploreMapVnext';
+import type { ExploreMapFetchScope } from '../explore/exploreMapBbox';
+import { isExploreMapBboxEnabled } from '../explore/exploreMapBbox';
 import { exploreMapQueryKey, exploreMapQueryKeyPrefix } from './exploreMapQuery';
 
 export { exploreMapQueryKey, exploreMapQueryKeyPrefix } from './exploreMapQuery';
@@ -18,13 +18,13 @@ export const reloadExploreMap = async (queryClient: QueryClient): Promise<void> 
 
 type UseExploreMapOptions = {
   enabled?: boolean;
-  /** When `VITE_EXPLORE_MAP_VNEXT=1`, fetches a bbox subset from the API. Omit on `/list` for full catalog. */
+  /** When `VITE_EXPLORE_MAP_BBOX=1`, fetches a bbox subset from the API. Omit on `/list` for full catalog. */
   scope?: ExploreMapFetchScope | null;
 };
 
 export const useExploreMap = (options?: UseExploreMapOptions) => {
   const scope = options?.scope ?? null;
-  const useVnextFetch = isExploreMapVnextEnabled() && scope != null;
+  const useVnextFetch = isExploreMapBboxEnabled() && scope != null;
 
   return useQuery({
     queryKey: exploreMapQueryKey(useVnextFetch ? scope : null),

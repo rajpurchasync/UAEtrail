@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
-import type { AreaPublicDTO, MemberAvailabilityMatchPreviewDTO } from '@uaetrail/shared-types';
+import type { MemberAvailabilityMatchPreviewDTO } from '@uaetrail/shared-types';
 import { X } from 'lucide-react';
 import { PlanAvailabilitySection } from '../../components/plan/PlanAvailabilitySection';
 import { EXPLORE_FLOW, EXPLORE_Z } from '../../config/exploreTheme';
-import { fetchPublishedAreas } from '../../hooks/areaHubClientApi';
 import { fetchMyAvailabilityMatchPreview } from '../../hooks/memberAvailabilityApi';
+import { useExplorePublishedAreas } from '../useExplorePublishedAreas';
 import { areaIdForExploreAreaSlug } from '../exploreAreaFilter';
 import { AvailabilityMatchPreview } from './AvailabilityMatchPreview';
 import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
@@ -22,7 +22,7 @@ export const SeekFlexibleComposeSheet = ({
   onClose,
   exploreAreaSlug = null,
 }: SeekFlexibleComposeSheetProps) => {
-  const [publishedAreas, setPublishedAreas] = useState<AreaPublicDTO[]>([]);
+  const publishedAreas = useExplorePublishedAreas();
   const [step, setStep] = useState<'form' | 'preview'>('form');
   const [preview, setPreview] = useState<MemberAvailabilityMatchPreviewDTO | null>(null);
 
@@ -30,21 +30,6 @@ export const SeekFlexibleComposeSheet = ({
     if (!open) return;
     setStep('form');
     setPreview(null);
-  }, [open]);
-
-  useEffect(() => {
-    if (!open) return;
-    let cancelled = false;
-    void fetchPublishedAreas()
-      .then((areas) => {
-        if (!cancelled) setPublishedAreas(areas);
-      })
-      .catch(() => {
-        if (!cancelled) setPublishedAreas([]);
-      });
-    return () => {
-      cancelled = true;
-    };
   }, [open]);
 
   const prefillAreaId = useMemo(

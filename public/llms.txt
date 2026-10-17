@@ -7,8 +7,8 @@
 ## Canonical
 - Website: https://uaetrail.com
 - Product home (map): https://uaetrail.com/explore
-- Agent manifest: https://uaetrail.com/api/v1/agent/manifest.json
-- Agent search API: https://uaetrail.com/api/v1/agent/discover?q={query}
+- Agent manifest: https://uaetrail.com/api/agent/manifest.json
+- Agent search API: https://uaetrail.com/api/agent/discover?q={query}
 - Extended machine docs: https://uaetrail.com/llms-full.txt
 - FAQ: https://uaetrail.com/faq
 
@@ -22,11 +22,11 @@
 - Operator: https://uaetrail.com/operator/{slug}
 
 ## Public HTTP APIs (no auth)
-- GET /api/v1/agent/discover — search outings and places (preferred for agents)
-- GET /api/v1/agent/manifest.json — capabilities, sitemaps, scrape policy
-- GET /api/v1/explore/map — map discovery payload
-- GET /api/v1/activities — published outings list
-- GET /api/v1/locations — published places list
+- GET /api/agent/discover — search outings and places (preferred for agents)
+- GET /api/agent/manifest.json — capabilities, sitemaps, scrape policy
+- GET /api/explore/map — map discovery payload
+- GET /api/activities — published outings list
+- GET /api/locations — published places list
 - GET /sitemap.xml · GET /sitemap-activities.xml
 
 ## Geographic coverage

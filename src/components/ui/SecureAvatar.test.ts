@@ -30,7 +30,7 @@ describe('initialsFromName', () => {
 
 describe('extractMediaKey', () => {
   it('reads keys from resolve URLs and private bucket paths', () => {
-    expect(extractMediaKey('/api/v1/media/resolve?key=users/a/avatars/x.jpg')).toBe('users/a/avatars/x.jpg');
+    expect(extractMediaKey('/api/media/resolve?key=users/a/avatars/x.jpg')).toBe('users/a/avatars/x.jpg');
     expect(extractMediaKey('http://minio:9000/uaetrail-private/users/a/avatars/x.jpg')).toBe(
       'users/a/avatars/x.jpg'
     );

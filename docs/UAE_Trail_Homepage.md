@@ -5,7 +5,7 @@
 
 ## Shipped state (Oct 2026)
 
-**Live on `/`:** `src/pages/Home.tsx` + `src/components/home/v2/**` · Copy: `src/content/homeMarketing.ts` · Activity fallback data: `src/content/homeLanding.ts`.
+**Live on `/`:** `src/pages/Home.tsx` + `src/components/home/marketing/**` · Copy: `src/content/homeMarketing.ts` · Activity fallback data: `src/content/homeLanding.ts`.
 
 | # | Section | Component |
 |---|---------|-----------|

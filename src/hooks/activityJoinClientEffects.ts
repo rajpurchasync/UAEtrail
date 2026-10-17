@@ -1,5 +1,5 @@
 import type { QueryClient } from '@tanstack/react-query';
-import { isExploreMapVnextEnabled } from '../explore/exploreMapVnext';
+import { isExploreMapBboxEnabled } from '../explore/exploreMapBbox';
 import {
   invalidateActivityEngagementQueries,
   invalidateExploreMapQueries,
@@ -39,7 +39,7 @@ export const afterActivityWithdrawClientRefresh = async (
   invalidateActivityEngagementQueries(queryClient, input.activityId);
   invalidateMyJoinedActivitiesQueries(queryClient);
   invalidateMyActivityJoinRequestsQueries(queryClient);
-  if (isExploreMapVnextEnabled()) {
+  if (isExploreMapBboxEnabled()) {
     invalidateExploreMapQueries(queryClient);
   } else {
     await reloadExploreMap(queryClient);
@@ -55,7 +55,7 @@ export const afterHostJoinDecisionClientRefresh = async (
   invalidateMyActivityJoinRequestsQueries(queryClient);
   if (input.status === 'approved') {
     invalidateMyJoinedActivitiesQueries(queryClient);
-    if (isExploreMapVnextEnabled()) {
+    if (isExploreMapBboxEnabled()) {
       invalidateExploreMapQueries(queryClient);
     } else {
       await reloadExploreMap(queryClient);

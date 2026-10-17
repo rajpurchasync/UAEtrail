@@ -1,7 +1,7 @@
 import { ApiError } from '@uaetrail/shared-types';
 import { formatEnvironmentUrl, rewriteEnvironmentUrls } from '../utils/formatEnvironmentUrl';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api/v1';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api';
 
 export { API_BASE_URL };
 
@@ -160,7 +160,7 @@ export const apiRequest = async <T>(path: string, init?: RequestInit & { auth?: 
   return rewriteEnvironmentUrls(await response.json()) as T;
 };
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL ?? '/api/v1';
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? '/api';
 
 /** Download a file with auth (GPX, PDF, etc.). Retries once after token refresh on 401. */
 export const downloadAuthenticatedFile = async (path: string): Promise<{ blob: Blob; filename: string }> => {

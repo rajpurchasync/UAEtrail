@@ -1,26 +1,17 @@
-import { ActivityStatus } from '../../domain/enums.js';
 import { Router } from 'express';
 import { z } from 'zod';
 import { mountActivityRoutes } from '../../lib/activity-routes.js';
-import { createAuditLog } from '../../lib/audit.js';
-import { ApiError } from '../../lib/api-error.js';
-import { buildActivityDto } from '../../lib/mappers.js';
 import { paginatedResponse, paginationSchema } from '../../lib/pagination.js';
 import { validate } from '../../middleware/validate.js';
 import {
-  findAdminEventById,
-  findAdminActivityDetailedById,
-  listAdminModerationEventsPaged,
-  toggleAdminEventFeatured,
-  updateAdminActivityStatus,
-} from '../../lib/admin-store.js';
+  moderateAdminActivity,
+  toggleAdminActivityFeatured,
+} from '../../services/admin-activity-moderation-commands.js';
 import {
-  listActivityParticipantsWithUsers,
-  listActivityRequestsForActivity,
-} from '../../lib/activity-engagement-store.js';
-import { findAuthUsersByIds } from '../../lib/auth-users.js';
-import { HOST_ACTIVITIES_PATH } from '../../lib/member-routes.js';
-import { notifyUserAdminAction } from '../../services/admin-notifications.js';
+  listAdminActivityModerationPage,
+  loadAdminActivityEngagement,
+  loadAdminActivityModerationDetail,
+} from '../../services/admin-activity-moderation-read.js';
 
 const idParamSchema = z.object({ id: z.string().min(1) });
 
@@ -52,17 +43,11 @@ export const registerAdminActivityModerationRoutes = (adminRouter: Router): void
   adminActivitiesRouter.get('/moderation', async (req, res, next) => {
     try {
       const pg = paginationSchema.parse(req.query);
-      const { items: events, total } = await listAdminModerationEventsPaged({
-        skip: (pg.page - 1) * pg.pageSize,
-        take: pg.pageSize,
+      const { items, total } = await listAdminActivityModerationPage({
+        page: pg.page,
+        pageSize: pg.pageSize,
       });
-      res.json(
-        paginatedResponse(
-          events.map((event) => buildActivityDto(event)),
-          total,
-          pg
-        )
-      );
+      res.json(paginatedResponse(items, total, pg));
     } catch (error) {
       next(error);
     }
@@ -74,45 +59,8 @@ export const registerAdminActivityModerationRoutes = (adminRouter: Router): void
     async (req, res, next) => {
       try {
         const { id } = req.params as z.infer<typeof idParamSchema>;
-        const event = await findAdminEventById(id);
-        if (!event) {
-          throw new ApiError(404, 'activity_not_found', 'Activity not found.');
-        }
-
-        const [participants, requests] = await Promise.all([
-          listActivityParticipantsWithUsers(id),
-          listActivityRequestsForActivity(id),
-        ]);
-
-        const requestUserIds = [...new Set(requests.map((r) => r.userId))];
-        const requestUsers =
-          requestUserIds.length > 0 ? await findAuthUsersByIds(requestUserIds) : [];
-        const requestUserMap = new Map(requestUsers.map((u) => [u._id, u]));
-
-        res.json({
-          data: {
-            participants: participants.map((p) => ({
-              id: p.id,
-              userId: p.userId,
-              checkedInAt: p.checkedInAt?.toISOString() ?? null,
-              createdAt: p.createdAt.toISOString(),
-              displayName: p.user.profile?.displayName ?? null,
-              email: p.user.email,
-            })),
-            joinRequests: requests.map((r) => {
-              const user = requestUserMap.get(r.userId);
-              return {
-                id: r.id,
-                userId: r.userId,
-                status: r.status.toLowerCase(),
-                note: r.note ?? null,
-                createdAt: r.createdAt.toISOString(),
-                displayName: user?.profile.displayName ?? null,
-                email: user?.email ?? '',
-              };
-            }),
-          },
-        });
+        const data = await loadAdminActivityEngagement(id);
+        res.json({ data });
       } catch (error) {
         next(error);
       }
@@ -122,11 +70,8 @@ export const registerAdminActivityModerationRoutes = (adminRouter: Router): void
   adminActivitiesRouter.get('/:id', validate({ params: idParamSchema }), async (req, res, next) => {
     try {
       const { id } = req.params as z.infer<typeof idParamSchema>;
-      const event = await findAdminActivityDetailedById(id);
-      if (!event) {
-        throw new ApiError(404, 'activity_not_found', 'Activity not found.');
-      }
-      res.json({ data: buildActivityDto(event) });
+      const data = await loadAdminActivityModerationDetail(id);
+      res.json({ data });
     } catch (error) {
       next(error);
     }
@@ -139,36 +84,13 @@ export const registerAdminActivityModerationRoutes = (adminRouter: Router): void
       try {
         const { id } = req.params as z.infer<typeof idParamSchema>;
         const { action, comment } = req.body as z.infer<typeof eventModerationSchema>;
-        const event = await findAdminEventById(id);
-        if (!event) {
-          throw new ApiError(404, 'activity_not_found', 'Activity not found.');
-        }
-
-        const status = action === 'suspend' ? ActivityStatus.SUSPENDED : ActivityStatus.PUBLISHED;
-        await updateAdminActivityStatus(event.id, status);
-
-        await createAuditLog({
+        const result = await moderateAdminActivity({
           actorId: req.auth!.userId,
-          action: `event.${action}`,
-          entityType: 'activity',
-          entityId: event.id,
-          tenantId: event.tenantId,
-          metadata: comment ? { comment } : undefined,
+          activityId: id,
+          action,
+          comment,
         });
-
-        if (action === 'suspend' && event.createdById) {
-          await notifyUserAdminAction({
-            userId: event.createdById,
-            title: 'Activity suspended',
-            body: comment
-              ? `Your activity "${event.title}" has been suspended. Reason: ${comment}`
-              : `Your activity "${event.title}" has been suspended by an administrator.`,
-            reason: comment,
-            meta: { kind: 'activity_suspended', activityId: event.id, path: HOST_ACTIVITIES_PATH },
-          });
-        }
-
-        res.json({ message: `Activity ${action}ed successfully.` });
+        res.json(result);
       } catch (error) {
         next(error);
       }
@@ -181,25 +103,11 @@ export const registerAdminActivityModerationRoutes = (adminRouter: Router): void
     async (req, res, next) => {
       try {
         const { id } = req.params as z.infer<typeof idParamSchema>;
-        const event = await findAdminEventById(id);
-        if (!event) {
-          throw new ApiError(404, 'activity_not_found', 'Activity not found.');
-        }
-
-        const updated = await toggleAdminEventFeatured(event.id, !event.featured);
-
-        await createAuditLog({
+        const result = await toggleAdminActivityFeatured({
           actorId: req.auth!.userId,
-          action: updated.featured ? 'activity.feature' : 'activity.unfeature',
-          entityType: 'activity',
-          entityId: event.id,
-          tenantId: event.tenantId,
+          activityId: id,
         });
-
-        res.json({
-          message: `Activity ${updated.featured ? 'featured' : 'unfeatured'} successfully.`,
-          featured: updated.featured,
-        });
+        res.json(result);
       } catch (error) {
         next(error);
       }

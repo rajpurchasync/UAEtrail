@@ -32,7 +32,7 @@ beforeAll(async () => {
 
   const email = `premium-test-${Date.now()}@example.com`;
   await request(app)
-    .post('/api/v1/auth/register')
+    .post('/api/auth/register')
     .send({
       email,
       password: 'TestPass1',
@@ -42,7 +42,7 @@ beforeAll(async () => {
     });
 
   const verifyRes = await request(app)
-    .post('/api/v1/auth/verify-email')
+    .post('/api/auth/verify-email')
     .send({ email, otp: getVerificationOtp(email) });
 
   accessToken = verifyRes.body.tokens.accessToken;
@@ -51,7 +51,7 @@ beforeAll(async () => {
 describe('premium unlock security', () => {
   it('rejects direct unlock without checkout', async () => {
     const response = await request(app)
-      .post(`/api/v1/locations/${locationId}/premium/unlock`)
+      .post(`/api/locations/${locationId}/premium/unlock`)
       .set('Authorization', `Bearer ${accessToken}`);
 
     expect(response.status).toBe(402);

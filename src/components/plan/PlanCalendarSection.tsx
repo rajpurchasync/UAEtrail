@@ -1,10 +1,12 @@
 import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { ChevronRight } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import { PlanJoinedPeekSheet } from './PlanJoinedPeekSheet';
 import { todayIso } from '../../explore';
 import { usePlanCalendarData } from '../../hooks/usePlanCalendarData';
 import { planAvailabilityPath } from '../../plan/planRouting';
 import type { PlanCalendarDayDetail } from '../../plan/planCalendarMarkers';
+import { resolvePlanCalendarRowOpenAction } from '../../plan/planCalendarOpen';
 import type { PlanCommitmentFilter } from '../../plan/planTab';
 import {
   ConsumerErrorCard,
@@ -30,7 +32,7 @@ const legendForFilter = (filter: PlanCommitmentFilter) => {
 const detailLabel = (row: PlanCalendarDayDetail): string => {
   switch (row.kind) {
     case 'available':
-      return 'Available for buddies';
+      return 'Available';
     case 'hosting':
       return `Organizing · ${row.title}`;
     case 'seeking':
@@ -44,17 +46,8 @@ const detailLabel = (row: PlanCalendarDayDetail): string => {
   }
 };
 
-const isJoinedPeekRow = (
-  row: PlanCalendarDayDetail
-): row is Extract<PlanCalendarDayDetail, { kind: 'joined' | 'requested' }> =>
-  row.kind === 'joined' || row.kind === 'requested';
-
-const detailHref = (row: PlanCalendarDayDetail): string | null => {
-  if (row.kind === 'available') return planAvailabilityPath();
-  if (isJoinedPeekRow(row)) return null;
-  if (row.kind === 'hosting' || row.kind === 'seeking') return row.href;
-  return null;
-};
+const rowButtonClass =
+  'flex w-full items-center justify-between gap-2 rounded-xl bg-neutral-50 px-3 py-2.5 text-left text-sm font-medium text-neutral-900 active:bg-neutral-100';
 
 type PlanCalendarSectionProps = {
   refreshKey?: number;
@@ -67,6 +60,7 @@ export const PlanCalendarSection = ({
   canHost,
   filter,
 }: PlanCalendarSectionProps) => {
+  const navigate = useNavigate();
   const { loading, error, markers, details } = usePlanCalendarData(
     true,
     canHost,
@@ -96,6 +90,22 @@ export const PlanCalendarSection = ({
 
   const legend = legendForFilter(filter);
 
+  const openRow = (row: PlanCalendarDayDetail) => {
+    const action = resolvePlanCalendarRowOpenAction(row);
+    if (action.type === 'joined_peek' && (row.kind === 'joined' || row.kind === 'requested')) {
+      setPeek({
+        activityId: row.activityId,
+        title: row.title,
+        whenLine: row.whenLine,
+        locationLine: row.locationLine,
+      });
+      return;
+    }
+    if (action.type === 'navigate') {
+      navigate(action.href);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center py-12">
@@ -111,9 +121,8 @@ export const PlanCalendarSection = ({
   return (
     <div className="space-y-4">
       <p className="text-sm text-neutral-600">
-        {filter === 'hosting'
-          ? 'Your month — when you’re hosting or looking for company.'
-          : 'Your month — outings you’re joining or waiting on.'}
+        Month at a glance — tap a day, then an outing to open it. Hosting rows open your manage
+        list; going / pending open the outing.
       </p>
 
       <PlanIndicatorMonthCalendar
@@ -131,6 +140,13 @@ export const PlanCalendarSection = ({
         ))}
       </ul>
 
+      <Link
+        to={planAvailabilityPath()}
+        className="inline-flex text-sm font-semibold text-emerald-800 underline-offset-2 hover:underline"
+      >
+        Edit when you&apos;re available
+      </Link>
+
       {selectedDate ? (
         <section className="rounded-2xl border border-neutral-200 bg-white p-4">
           <h2 className="mb-3 text-sm font-bold text-neutral-900">{selectedLabel}</h2>
@@ -140,43 +156,49 @@ export const PlanCalendarSection = ({
           ) : (
             <ul className="space-y-2">
               {dayRows.map((row, index) => {
-                const href = detailHref(row);
                 const label = detailLabel(row);
-                if (isJoinedPeekRow(row)) {
+                const action = resolvePlanCalendarRowOpenAction(row);
+
+                if (action.type === 'indicator') {
                   return (
-                    <li key={`${row.kind}-${row.activityId}`}>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setPeek({
-                            activityId: row.activityId,
-                            title: row.title,
-                            whenLine: row.whenLine,
-                            locationLine: row.locationLine,
-                          })
-                        }
-                        className="block w-full rounded-xl bg-neutral-50 px-3 py-2.5 text-left text-sm font-medium text-neutral-900 active:bg-neutral-100"
+                    <li key={`${row.kind}-${index}`}>
+                      <div
+                        className="flex items-center gap-2 rounded-xl border border-emerald-200/80 bg-emerald-50 px-3 py-2.5 text-sm font-medium text-emerald-900"
+                        role="status"
                       >
+                        <span className="h-2 w-2 shrink-0 rounded-full bg-emerald-500" aria-hidden />
                         {label}
-                      </button>
+                        <span className="text-xs font-normal text-emerald-800/80">Find crew</span>
+                      </div>
                     </li>
                   );
                 }
-                if (!href) {
+
+                if (action.type === 'none') {
                   return (
                     <li key={`${row.kind}-${index}`} className="text-sm text-neutral-800">
                       {label}
                     </li>
                   );
                 }
+
+                const rowKey =
+                  row.kind === 'joined' || row.kind === 'requested'
+                    ? `${row.kind}-${row.activityId}`
+                    : row.kind === 'hosting'
+                      ? `hosting-${row.activityId}`
+                      : `${row.kind}-${row.intentId ?? row.activityId ?? index}`;
+
                 return (
-                  <li key={`${row.kind}-${index}`}>
-                    <Link
-                      to={href}
-                      className="block rounded-xl bg-neutral-50 px-3 py-2.5 text-sm font-medium text-neutral-900 active:bg-neutral-100"
+                  <li key={rowKey}>
+                    <button
+                      type="button"
+                      onClick={() => openRow(row)}
+                      className={rowButtonClass}
                     >
-                      {label}
-                    </Link>
+                      <span>{label}</span>
+                      <ChevronRight className="h-4 w-4 shrink-0 text-neutral-400" aria-hidden />
+                    </button>
                   </li>
                 );
               })}

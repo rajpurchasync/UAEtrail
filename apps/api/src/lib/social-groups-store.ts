@@ -5,6 +5,12 @@ import { newEntityId } from './entity-builders.js';
 import { findAuthUsersByIds } from './auth-users.js';
 import { getMongoClient } from './mongo.js';
 import { normalizeSearchRegexInput } from './regex-search.js';
+import {
+  GROUP_WALL_REACTION_KINDS,
+  type GroupWallReactionKind,
+} from '../domain/group-wall-reactions.js';
+
+export { GROUP_WALL_REACTION_KINDS, type GroupWallReactionKind };
 
 export type GroupType = 'family' | 'friends' | 'activity';
 export type GroupRole = 'admin' | 'buddy';
@@ -57,19 +63,6 @@ export type GroupInviteRecord = {
   createdAt: Date;
   updatedAt: Date;
 };
-
-export const GROUP_WALL_REACTION_KINDS = [
-  'like',
-  'dislike',
-  'happy',
-  'heart',
-  'laugh',
-  'mountain',
-  'camping',
-  'car'
-] as const;
-
-export type GroupWallReactionKind = (typeof GROUP_WALL_REACTION_KINDS)[number];
 
 export type GroupWallReactionSummary = {
   kind: GroupWallReactionKind;

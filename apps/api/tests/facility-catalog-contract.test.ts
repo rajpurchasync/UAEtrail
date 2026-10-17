@@ -46,18 +46,19 @@ describe('facility catalog API (CPC-3)', () => {
     });
 
     const catalog = await request(app).get(
-      `/api/v1/facilities/catalog?parentPlaceId=${anchor.id}`
+      `/api/facilities/catalog?parentPlaceId=${anchor.id}`
     );
     expect(catalog.status).toBe(200);
     expect(catalog.body.data.some((row: { id: string }) => row.id === facility.id)).toBe(true);
 
-    const detail = await request(app).get(`/api/v1/facilities/${facility.id}`);
+    const detail = await request(app).get(`/api/facilities/${facility.id}`);
     expect(detail.status).toBe(200);
     expect(detail.body.data.facilityKind).toBe('toilet');
     expect(detail.body.viewerAccess?.level).toBe('public');
 
-    const placeDetail = await request(app).get(`/api/v1/places/${anchor.id}`);
+    const placeDetail = await request(app).get(`/api/places/${anchor.id}`);
     expect(placeDetail.status).toBe(200);
+    expect(placeDetail.body.data.submittedById).toBeUndefined();
     const nearby = placeDetail.body.nearbyFacilities as Array<{ id: string; path: string }>;
     expect(nearby.some((row) => row.id === facility.id)).toBe(true);
     expect(nearby.find((row) => row.id === facility.id)?.path).toContain('/facility/');

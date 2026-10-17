@@ -1,11 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useEffect, useMemo } from 'react';
 import type { ActivityDTO, ParticipantIntentDTO } from '@uaetrail/shared-types';
 import { useMyParticipantIntents } from '../../hooks/useMyParticipantIntents';
 import { useConsoleHubData } from '../../console/useHubData';
-import { useOperatorActivityManageActions } from '../../hooks/useOperatorActivityManageActions';
-import { ActivityManageSheet } from '../activity/ActivityManageSheet';
-import { ParticipantIntentManageSheet } from '../participant-intent/ParticipantIntentManageSheet';
 import {
   ConsumerErrorCard,
   ConsumerInlineEmpty,
@@ -13,7 +9,6 @@ import {
 } from '../mobile/ConsumerFeedback';
 import { explorePath } from '../../explore/routing';
 import { PRO_MEMBERSHIP_PATH } from '../../config/routingCatalog';
-import { useActivityInviteShareSheet } from '../../hooks/useActivityInviteShareSheet';
 import { resolveJoinRequestActivity } from '../../utils/joinRequestActivity';
 import type { ActivityRequestView } from '../../api/types';
 import { formatDate } from '../../utils';
@@ -22,6 +17,7 @@ import {
   formatParticipantIntentMeta,
   partitionParticipantIntentsForPlanHub,
 } from '../../member-plan/participantIntentPlan';
+import { usePlanHostingManage } from '../../plan/PlanHostingManageContext';
 import { PlanCommitmentCard } from './PlanCommitmentCard';
 
 const pendingCountForActivity = (activityId: string, requests: ActivityRequestView[]) =>
@@ -41,16 +37,10 @@ type PlanHostingUpcomingProps = {
 
 /**
  * My Plans → Upcoming → hosting filter: published activities you organize + open seeking intents.
- * `Plan` = `/plan` surface namespace only — not a domain entity.
  */
 export const PlanHostingUpcoming = ({ refreshKey = 0, canHost }: PlanHostingUpcomingProps) => {
-  const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
   const host = useConsoleHubData();
-  const hostActions = useOperatorActivityManageActions(host.tenantId, host.reload);
-  const inviteShare = useActivityInviteShareSheet();
-  const [manageActivity, setManageActivity] = useState<ActivityDTO | null>(null);
-  const [manageIntent, setManageIntent] = useState<ParticipantIntentDTO | null>(null);
+  const { openManageActivity, openManageIntent } = usePlanHostingManage();
 
   const {
     intents,
@@ -97,31 +87,6 @@ export const PlanHostingUpcoming = ({ refreshKey = 0, canHost }: PlanHostingUpco
     );
   }, [host.activities, host.pendingRequests, intents, hostedActivityIds, today]);
 
-  const openManage = (activity: ActivityDTO) => setManageActivity(activity);
-
-  const openedDeepLinkRef = useRef<string | null>(null);
-  useEffect(() => {
-    const openId = searchParams.get('peek') ?? searchParams.get('roster') ?? searchParams.get('checkin');
-    if (!openId || host.loading) return;
-    if (openedDeepLinkRef.current === openId) return;
-    const activity = host.activities.find((event) => event.id === openId);
-    if (activity) {
-      openedDeepLinkRef.current = openId;
-      openManage(activity);
-    } else {
-      const intent = intents.find((entry) => entry.id === openId);
-      if (intent) {
-        openedDeepLinkRef.current = openId;
-        setManageIntent(intent);
-      }
-    }
-    const next = new URLSearchParams(searchParams);
-    next.delete('peek');
-    next.delete('checkin');
-    next.delete('roster');
-    setSearchParams(next, { replace: true });
-  }, [host.activities, host.loading, intents, searchParams, setSearchParams]);
-
   if (!canHost) {
     return (
       <ConsumerInlineEmpty
@@ -136,8 +101,8 @@ export const PlanHostingUpcoming = ({ refreshKey = 0, canHost }: PlanHostingUpco
     return <ConsumerLoadingSpinner className="py-12" />;
   }
 
-  if (hostActions.error || host.error) {
-    return <ConsumerErrorCard message={hostActions.error ?? host.error ?? ''} />;
+  if (host.error) {
+    return <ConsumerErrorCard message={host.error ?? ''} />;
   }
 
   if (!host.tenantId) {
@@ -181,7 +146,7 @@ export const PlanHostingUpcoming = ({ refreshKey = 0, canHost }: PlanHostingUpco
               badge={isSeeking ? 'Looking for company' : 'Organizing'}
               participants={activity.participantPreviews}
               actionHint={pendingHint}
-              onClick={() => openManage(activity)}
+              onClick={() => openManageActivity(activity)}
             />
           );
         }
@@ -195,32 +160,10 @@ export const PlanHostingUpcoming = ({ refreshKey = 0, canHost }: PlanHostingUpco
             timeLabel={intent.time}
             locationLabel={intent.preferredArea?.trim() || meta}
             badge="Looking for company"
-            onClick={() => setManageIntent(intent)}
+            onClick={() => openManageIntent(intent)}
           />
         );
       })}
-
-      {inviteShare.sheet}
-
-      <ActivityManageSheet
-        open={Boolean(manageActivity)}
-        activity={manageActivity}
-        tenantId={host.tenantId}
-        pendingRequests={host.pendingRequests}
-        actions={hostActions}
-        initialView="overview"
-        onOpenPublicPage={(a) => navigate(`/activity/${a.id}`)}
-        onShare={(a) => inviteShare.openInviteFromActivity(a)}
-        onClose={() => setManageActivity(null)}
-        onRequestsChanged={host.reload}
-      />
-
-      <ParticipantIntentManageSheet
-        open={Boolean(manageIntent)}
-        intent={manageIntent}
-        onClose={() => setManageIntent(null)}
-        onChanged={() => void refetchIntents()}
-      />
     </div>
   );
 };

@@ -855,7 +855,7 @@ Use this table to confirm nothing was lost. **Status:** C = captured in checklis
 | 2 | **One availability model:** `member_availability` slots only. | “Available” boolean on profile without slots; duplicating as Activity. |
 | 3 | **One wishlist store:** engagement API; Plan `saved` lens = primary editor. | Full wishlist UI on Profile **and** Plan. |
 | 4 | **One join path per seeking post:** migrate intent requests → activity-scoped requests (Phase 6). | Permanent parallel `participant_intent_requests` + `activity_requests` for same UX. |
-| 5 | **Join me / map buddy discovery** ([`WHOS_GOING_UX.md`](./WHOS_GOING_UX.md)) = roster/quota **on activity** & explore people browse. | Re-implementing as availability slots. |
+| 5 | **Join me / map buddy discovery** ([`NAVIGATION.md`](../NAVIGATION.md) § Browse — people) = roster/quota **on activity** & explore people browse. | Re-implementing as availability slots. |
 | 6 | **Area** = curated `areas` + `areaId`; `areaLabel` string is display fallback only. | Third “area” concept in filters. |
 | 7 | **Topic filter** = one `OutingTopic` matcher for activities, places, people query. | Separate hiking filters per layer that drift. |
 | 8 | **Business ops** = shop/agency/guide **manage** URLs. | New consumer `/host` links; renaming `/host` to `/organize` as a **shell**. |

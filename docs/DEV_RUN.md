@@ -1,5 +1,10 @@
 # Dev Run
 
+### Node.js (required)
+
+- **Pin:** `.nvmrc` → **24.22.0** (Node 24 LTS “Krypton”; CI uses the same).
+- **Check:** `npm run verify:engines` (also runs at the start of `verify:system:quick`).
+- **Upgrade:** `nvm install` && `nvm use` (or install from [nodejs.org](https://nodejs.org/) LTS). Repo minimum is `package.json` → `engines.node` (currently `>=24.22.0`). Bump npm if needed: `npm install -g npm@11.16.0`.
 "dev run" means:
 
 - Run from VS Code (tasks/workspace run) with hot reload for both frontend and API.
@@ -15,7 +20,7 @@ Use full run-project scripts only when explicitly requested.
 - **Demo login** (`POST /auth/demo-login`) is off in `NODE_ENV=production`. In development it only accepts loopback TCP peers unless you set `ALLOW_DEMO_LOGIN=true` (e.g. API in Docker, browser on host).
 - **Demo / seed passwords:** set `DEMO_ACCOUNT_PASSWORD` in root `.env` before `SEED_DATA=true npm run seed` or demo-login user creation (no plaintext passwords in source). API tests use a fixed in-memory password automatically.
 - **Prometheus `/metrics`:** requires `METRICS_TOKEN` bearer auth except in `NODE_ENV=test` or local dev loopback peers (same trust model as demo login).
-- **Async side effects** (rewards, emails, group-chat roster, notifications): failures log with `logContext` via `scheduleSideEffect` / `scheduleNotification` — check API warn logs if something did not fire.
+- **Async side effects** (rewards, emails, group-chat roster, notifications): failures log with `logContext` via `scheduleSideEffect` / `scheduleNotification` — check API warn logs if something did not fire. Optional durable side effects: `SIDE_EFFECT_OUTBOX=1` (notifications + async map cache bust; drain every 30s via `SIDE_EFFECT_OUTBOX_DRAIN_INTERVAL_MS`). Staging experiments until MIG-OUTBOX completes.
 - **`npm run seed` without `SEED_DATA`:** still **upserts curated areas** and **backfills `place.areaId`** on catalog rows (safe on existing DBs).
 - After pulling member/host changes, restart the API once so Mongo migrations run (`tenant_memberships` owner backfill, `publishingPurpose` on tenants).
 - Buddy **Organize** requires **signup profile complete** (`PATCH /me/profile/signup-details`); `GET /me/status` exposes `profileComplete` and `publish.canPublish`. Publish/create on `POST /operator/activities` enforces the same server-side.
@@ -39,7 +44,7 @@ During dev run, quickly verify:
 
 Explore FAB changes: [`CREATE_FLOW.md`](./CREATE_FLOW.md) + `src/explore/composeFlowCatalog.ts`. Automated guards: `npm run verify:system:quick` and `npm run test:explore-alignment`.
 
-**Release verification (S10 hygiene, Oct 2026):** On the release commit run **`npm run verify:system`** (includes `test:explore-alignment`). Day-to-day: **`npm run verify:system:quick`**. Staging manual pass: **`BASE_URL=https://staging-host npm run s10f:qa-checklist`** (detail §8 routes + notification edge cases). Map vNext promote (**S10e**): `npm run s10e:staging-checklist` → [`PRE_DEPLOY_CHECKLIST.md`](./PRE_DEPLOY_CHECKLIST.md) + [`operations/EXPLORE_MAP_RUNBOOK.md`](./operations/EXPLORE_MAP_RUNBOOK.md) — flags only after staging p95 gate. **Local ratio spot-check** (API must be up): `EXPLORE_MAP_VNEXT=1 npm run dev:api` then **`npm run s10e:local-ratio`**. Tracker: [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.1.
+**Release verification (S10 hygiene, Oct 2026):** On the release commit run **`npm run verify:system`** (includes `test:explore-alignment`). Day-to-day: **`npm run verify:system:quick`**. Staging manual pass: **`BASE_URL=https://staging-host npm run s10f:qa-checklist`** (detail §8 routes + notification edge cases). Map bbox promote (**S10e**): `npm run s10e:staging-checklist` → [`PRE_DEPLOY_CHECKLIST.md`](./PRE_DEPLOY_CHECKLIST.md) + [`operations/EXPLORE_MAP_RUNBOOK.md`](./operations/EXPLORE_MAP_RUNBOOK.md) — flags only after staging p95 gate. **Local ratio spot-check** (API must be up): `EXPLORE_MAP_BBOX=1 npm run dev:api` then **`npm run s10e:local-ratio`**. Tracker: [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.1.
 
 **Unpushed release stack (local `main`, Oct 2026):** `git log origin/main..HEAD --oneline` — themes in order (newest first): **C18** explore shell (`useExploreMapCatalog`, browse URL sync/hydrate/apply-handlers, selection sub-hooks; `exploreBrowseUrlHydrate.test.ts`); **S10** hygiene (S10a–b mount-fetch, S10c API batching, S10d explore runtime); **S10e/f** ops scripts (`s10e:staging-checklist`, `s10e:local-ratio`, consumer-detail QA routes). Engineering closed — remaining gates are **staging S10e** (flags + p95) and **S10f** manual matrix. Do not push until you explicitly want `origin/main` updated.
 

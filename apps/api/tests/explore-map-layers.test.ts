@@ -24,7 +24,7 @@ type ExploreMapItem = {
   outingCategory?: string | null;
 };
 
-describe('GET /api/v1/explore/map layer separation', () => {
+describe('GET /api/explore/map layer separation', () => {
   it('includes venue hiking and activity hiking as distinct sources', async () => {
     const suffix = `layers-${Date.now()}`;
     const fixture = await createPublishedEventFixture(suffix);
@@ -62,7 +62,7 @@ describe('GET /api/v1/explore/map layer separation', () => {
 
     await invalidateExploreMapCache();
 
-    const response = await request(app).get('/api/v1/explore/map');
+    const response = await request(app).get('/api/explore/map');
     expect(response.status).toBe(200);
 
     const items = response.body.data.items as ExploreMapItem[];
@@ -97,7 +97,7 @@ describe('GET /api/v1/explore/map layer separation', () => {
 
     await invalidateExploreMapCache();
 
-    const response = await request(app).get('/api/v1/explore/map');
+    const response = await request(app).get('/api/explore/map');
     expect(response.status).toBe(200);
     const items = response.body.data.items as Array<{
       id: string;
@@ -148,7 +148,7 @@ describe('GET /api/v1/explore/map layer separation', () => {
 
     await invalidateExploreMapCache();
 
-    const response = await request(app).get('/api/v1/explore/map');
+    const response = await request(app).get('/api/explore/map');
     expect(response.status).toBe(200);
     const items = response.body.data.items as Array<{
       id: string;
@@ -166,7 +166,7 @@ describe('GET /api/v1/explore/map layer separation', () => {
     const suffix = `cache-${Date.now()}`;
     await invalidateExploreMapCache();
 
-    const warm = await request(app).get('/api/v1/explore/map');
+    const warm = await request(app).get('/api/explore/map');
     expect(warm.status).toBe(200);
 
     const venue = await createLocationRecord({
@@ -185,7 +185,7 @@ describe('GET /api/v1/explore/map layer separation', () => {
       externalId: `cache-venue-${suffix}`,
     });
 
-    const after = await request(app).get('/api/v1/explore/map');
+    const after = await request(app).get('/api/explore/map');
     expect(after.status).toBe(200);
     const items = after.body.data.items as ExploreMapItem[];
     expect(items.some((item) => item.id === `venue:${venue.id}`)).toBe(true);

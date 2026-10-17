@@ -176,13 +176,14 @@ export const toLocationDto = (location: Location, opts?: { admin?: boolean }): L
   accessibleBy: location.accessibleBy,
   viewCount: location.viewCount,
   countryCode: location.countryCode,
-  submittedById: location.submittedById,
+  registeredByUserId: location.registeredByUserId ?? location.submittedById ?? null,
   hasRouteMap: Boolean(location.gpxKey),
   hasGuide: Boolean(location.guideMarkdown || location.guidePdfKey),
   guidePreview: location.guidePreview ?? undefined,
   unlockPriceAed: location.unlockPriceAed,
   ...(opts?.admin
     ? {
+        submittedById: location.submittedById,
         gpxKey: location.gpxKey,
         guidePdfKey: location.guidePdfKey,
         guideMarkdown: location.guideMarkdown

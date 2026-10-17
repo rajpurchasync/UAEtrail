@@ -20,7 +20,7 @@ beforeAll(async () => {
   await ensureCuratedAreasSeeded();
 });
 
-describe('GET /api/v1/explore/map seeking projection (M0)', () => {
+describe('GET /api/explore/map seeking projection (M0)', () => {
   it('emits participant intents as activity + activityMode seeking', async () => {
     const suffix = `seek-proj-${Date.now()}`;
     const user = await createAuthUser({
@@ -47,7 +47,7 @@ describe('GET /api/v1/explore/map seeking projection (M0)', () => {
 
     await invalidateExploreMapCache();
 
-    const response = await request(app).get('/api/v1/explore/map');
+    const response = await request(app).get('/api/explore/map');
     expect(response.status).toBe(200);
 
     const items = response.body.data.items as Array<{

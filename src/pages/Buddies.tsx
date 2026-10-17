@@ -1,16 +1,14 @@
 import { EXPLORE_MAP_PATH, MESSAGES_PATH } from '../config/routingCatalog';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useSafeAsyncEffect } from '../hooks/useSafeAsyncEffect';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { MessageCircle, UserMinus, UserRound } from 'lucide-react';
 import type { BuddyRequestDTO, BuddySummaryDTO, MemberFollowSummaryDTO } from '@uaetrail/shared-types';
-import { fetchMeBuddies, fetchMeBuddyRequests } from '../hooks/activityInviteClientApi';
 import { setMemberFollow } from '../hooks/memberFollowApi';
+import { useMeBuddiesNetwork, useMeFollowingMembers } from '../hooks/useMeBuddiesNetwork';
 import {
   acceptMemberBuddyRequest,
   cancelMemberBuddyRequest,
   declineMemberBuddyRequest,
-  fetchMeFollowingMembers,
   searchMembersByQuery,
   unfriendMemberBuddy,
 } from '../hooks/memberPeopleClientApi';
@@ -40,13 +38,20 @@ export const Buddies = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = parseFriendsTab(searchParams.get('tab'));
 
-  const [loading, setLoading] = useState(true);
+  const {
+    buddies,
+    incomingRequests,
+    outgoingRequests,
+    loading,
+    error: networkError,
+    refetch: refetchBuddiesNetwork,
+  } = useMeBuddiesNetwork(Boolean(user));
+  const {
+    following,
+    error: followingError,
+    refetch: refetchFollowing,
+  } = useMeFollowingMembers(Boolean(user) && activeTab === 'following');
   const [error, setError] = useState<string | null>(null);
-  const [buddies, setBuddies] = useState<BuddySummaryDTO[]>([]);
-  const [incomingRequests, setIncomingRequests] = useState<BuddyRequestDTO[]>([]);
-  const [outgoingRequests, setOutgoingRequests] = useState<BuddyRequestDTO[]>([]);
-  const [following, setFollowing] = useState<MemberFollowSummaryDTO[]>([]);
-  const [followingLoaded, setFollowingLoaded] = useState(false);
   const [busyRequestId, setBusyRequestId] = useState<string | null>(null);
   const [unfriendingBuddy, setUnfriendingBuddy] = useState<BuddySummaryDTO | null>(null);
   const [unfriendBusy, setUnfriendBusy] = useState(false);
@@ -59,45 +64,12 @@ export const Buddies = () => {
 
   const messagesPath = MESSAGES_PATH;
 
-  const loadCore = useCallback(async (isActive: () => boolean = () => true) => {
-    setLoading(true);
+  const displayError = error ?? networkError ?? (activeTab === 'following' ? followingError : null);
+
+  const loadCore = useCallback(async () => {
     setError(null);
-    try {
-      const [buddyList, incoming, outgoing] = await Promise.all([
-        fetchMeBuddies(),
-        fetchMeBuddyRequests('incoming'),
-        fetchMeBuddyRequests('outgoing'),
-      ]);
-      if (!isActive()) return;
-      setBuddies(buddyList);
-      setIncomingRequests(incoming.filter((request) => request.status === 'pending'));
-      setOutgoingRequests(outgoing.filter((request) => request.status === 'pending'));
-    } catch (err) {
-      if (!isActive()) return;
-      setError(err instanceof Error ? err.message : 'Failed to load friends');
-    } finally {
-      if (isActive()) setLoading(false);
-    }
-  }, []);
-
-  const loadFollowing = useCallback(async (isActive: () => boolean = () => true) => {
-    try {
-      const rows = await fetchMeFollowingMembers();
-      if (!isActive()) return;
-      setFollowing(rows);
-      setFollowingLoaded(true);
-    } catch (err) {
-      if (!isActive()) return;
-      setError(err instanceof Error ? err.message : 'Failed to load following');
-    }
-  }, []);
-
-  useSafeAsyncEffect((isActive) => loadCore(isActive), [loadCore]);
-
-  useSafeAsyncEffect((isActive) => {
-    if (activeTab !== 'following' || followingLoaded) return Promise.resolve();
-    return loadFollowing(isActive);
-  }, [activeTab, followingLoaded, loadFollowing]);
+    await refetchBuddiesNetwork();
+  }, [refetchBuddiesNetwork]);
 
   useEffect(() => {
     const q = findQuery.trim();
@@ -161,7 +133,7 @@ export const Buddies = () => {
     setError(null);
     try {
       await declineMemberBuddyRequest(request.id);
-      setIncomingRequests((prev) => prev.filter((item) => item.id !== request.id));
+      await refetchBuddiesNetwork();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not decline request');
     } finally {
@@ -174,7 +146,7 @@ export const Buddies = () => {
     setError(null);
     try {
       await cancelMemberBuddyRequest(request.id);
-      setOutgoingRequests((prev) => prev.filter((item) => item.id !== request.id));
+      await refetchBuddiesNetwork();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not cancel request');
     } finally {
@@ -188,7 +160,7 @@ export const Buddies = () => {
     setError(null);
     try {
       await unfriendMemberBuddy(unfriendingBuddy.userId);
-      setBuddies((prev) => prev.filter((buddy) => buddy.userId !== unfriendingBuddy.userId));
+      await refetchBuddiesNetwork();
       setUnfriendingBuddy(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not unfriend this member');
@@ -202,7 +174,7 @@ export const Buddies = () => {
     setError(null);
     try {
       await setMemberFollow(member.userId, false);
-      setFollowing((prev) => prev.filter((row) => row.userId !== member.userId));
+      await refetchFollowing();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not unfollow');
     } finally {
@@ -237,9 +209,9 @@ export const Buddies = () => {
           />
         )}
 
-        {error && (
+        {displayError && (
           <GlassCard padding className="border-red-200/50 bg-red-50/50">
-            <p className="text-sm text-red-600">{error}</p>
+            <p className="text-sm text-red-600">{displayError}</p>
             <button
               type="button"
               onClick={() => void loadCore()}

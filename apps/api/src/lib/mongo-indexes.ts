@@ -78,6 +78,10 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
       { key: { locationId: 1 } }
     ]),
     db.collection(COLLECTIONS.NOTIFICATIONS).createIndexes([{ key: { userId: 1, createdAt: -1 } }]),
+    db.collection(COLLECTIONS.SIDE_EFFECT_OUTBOX).createIndexes([
+      { key: { status: 1, createdAt: 1 } },
+      { key: { kind: 1, status: 1, createdAt: 1 } }
+    ]),
     userWishlist.createIndexes([
       { key: { userId: 1, createdAt: -1 } },
       {

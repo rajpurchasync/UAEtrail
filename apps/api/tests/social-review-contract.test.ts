@@ -15,7 +15,8 @@ describe('social review API contract', () => {
     expect(registrar).toMatch(/\/reviews'/);
     expect(registrar).toMatch(/\/me\/reviews'/);
     expect(registrar).toMatch(/activity/);
-    expect(registrar).toMatch(/assertViewerCanReviewActivity/);
+    const reviewCommands = read('src/services/social-review-commands.ts');
+    expect(reviewCommands).toMatch(/assertViewerCanReviewActivity/);
   });
 
   it('defines ACTIVITY review target in domain enums', () => {

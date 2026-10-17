@@ -30,7 +30,7 @@ export default defineConfig(({ mode }) => {
         clientFiles: ['./src/main.tsx', './src/pages/Home.tsx', './src/App.tsx'],
       },
       proxy: {
-        '/api/v1': {
+        '/api': {
           target: apiTarget,
           changeOrigin: true,
           secure: false,

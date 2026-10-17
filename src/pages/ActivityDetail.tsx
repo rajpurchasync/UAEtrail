@@ -1,13 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useSafeAsyncEffect, type IsActiveGuard } from '../hooks/useSafeAsyncEffect';
 import { useParams, Link, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { Lock } from 'lucide-react';
 import { type ActivityDTO, type ReviewDTO } from '@uaetrail/shared-types';
 import { activityReviewsQueryKey } from '../hooks/clientQueryKeys';
 import { useActivityReviews } from '../hooks/useActivityReviews';
-import type { ActivityRequestView } from '../api/types';
-import { getActivityJoinRequests } from '../hooks/tenantActivityClientApi';
+import { useActivityHostJoinRequests } from '../hooks/useActivityHostJoinRequests';
 import { detailBackPath } from '../config/routingCatalog';
 import {
   ACTIVITY_JOIN_CTA_SELECTOR,
@@ -93,8 +91,6 @@ export const ActivityDetail = () => {
   const reviewsEnabled = Boolean(id && activity?.status === 'published');
   const { reviews: activityReviews } = useActivityReviews(id, reviewsEnabled);
   const [joinWelcomeOpen, setJoinWelcomeOpen] = useState(false);
-  const [hostJoinRequests, setHostJoinRequests] = useState<ActivityRequestView[]>([]);
-  const [hostJoinRequestsLoading, setHostJoinRequestsLoading] = useState(false);
   const inviteShare = useActivityInviteShareSheet();
 
   const loadActivity = useCallback(() => {
@@ -164,41 +160,19 @@ export const ActivityDetail = () => {
       viewerIsActivityHostUser(activity, user.id)
   );
 
-  const loadHostJoinRequests = useCallback(
-    async (isActive: IsActiveGuard = () => true) => {
-      if (!id || !gate.tenantId || !isActivityHostUser) {
-        if (isActive()) {
-          setHostJoinRequests([]);
-        }
-        return;
-      }
-      if (isActive()) {
-        setHostJoinRequestsLoading(true);
-      }
-      try {
-        const requests = await getActivityJoinRequests(gate.tenantId, { activityId: id });
-        if (isActive()) {
-          setHostJoinRequests(requests.filter((request) => request.status === 'pending'));
-        }
-      } catch {
-        if (isActive()) {
-          setHostJoinRequests([]);
-        }
-      } finally {
-        if (isActive()) {
-          setHostJoinRequestsLoading(false);
-        }
-      }
-    },
-    [id, gate.tenantId, isActivityHostUser]
-  );
+  const {
+    joinRequests: hostJoinRequests,
+    loading: hostJoinRequestsLoading,
+    refetch: refetchHostJoinRequests,
+  } = useActivityHostJoinRequests({
+    tenantId: gate.tenantId,
+    activityId: id,
+    enabled: isActivityHostUser,
+  });
 
-  useSafeAsyncEffect(
-    async (isActive) => {
-      await loadHostJoinRequests(isActive);
-    },
-    [loadHostJoinRequests]
-  );
+  const loadHostJoinRequests = useCallback(() => {
+    void refetchHostJoinRequests();
+  }, [refetchHostJoinRequests]);
 
   const resolvedWirePresentation = useMemo(() => {
     if (!activity || !viewerAccess) return null;

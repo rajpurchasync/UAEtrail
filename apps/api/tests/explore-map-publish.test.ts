@@ -13,7 +13,7 @@ beforeAll(async () => {
   app = await bootstrapTestApp();
 });
 
-describe('GET /api/v1/explore/map golden path', () => {
+describe('GET /api/explore/map golden path', () => {
   it('includes a published open activity with map coordinates', async () => {
     const suffix = `explore-map-${Date.now()}`;
     const fixture = await createPublishedEventFixture(suffix);
@@ -28,7 +28,7 @@ describe('GET /api/v1/explore/map golden path', () => {
 
     await invalidateExploreMapCache();
 
-    const response = await request(app).get('/api/v1/explore/map');
+    const response = await request(app).get('/api/explore/map');
     expect(response.status).toBe(200);
 
     const items = response.body.data.items as Array<{
@@ -70,7 +70,7 @@ describe('GET /api/v1/explore/map golden path', () => {
 
     await invalidateExploreMapCache();
 
-    const response = await request(app).get('/api/v1/explore/map');
+    const response = await request(app).get('/api/explore/map');
     expect(response.status).toBe(200);
 
     const items = response.body.data.items as Array<{ id: string }>;

@@ -1,0 +1,197 @@
+#!/usr/bin/env node
+/**
+ * P5 staging baseline — latency + error-budget smoke (not load test).
+ * @see scripts/refactor-program.json P5 slos · docs/PRE_DEPLOY_CHECKLIST.md § SLO baseline
+ *
+ * Env:
+ *   BASE_URL (default http://localhost:3001)
+ *   P5_SLO_SAMPLES (default 5)
+ *   P5_EXPLORE_MAP_BBOX=1 — also sample GET /api/explore/map?bbox=… (requires API EXPLORE_MAP_BBOX=1)
+ *   P5_EXPLORE_MAP_BBOX_QUERY (default 55,25,56,26)
+ *   P5_SMOKE_EMAIL + P5_SMOKE_PASSWORD + P5_JOIN_ACTIVITY_ID — optional join/RSVP probe (SLO-JOIN)
+ */
+const baseUrl = (process.env.BASE_URL ?? 'http://localhost:3001').replace(/\/$/, '');
+const samples = Number(process.env.P5_SLO_SAMPLES ?? 5);
+const bboxQuery = process.env.P5_EXPLORE_MAP_BBOX_QUERY ?? '55,25,56,26';
+
+const percentile = (sorted, p) => {
+  if (sorted.length === 0) return 0;
+  const idx = Math.min(sorted.length - 1, Math.ceil((p / 100) * sorted.length) - 1);
+  return sorted[Math.max(0, idx)];
+};
+
+const timedRequest = async (input) => {
+  const url = `${baseUrl}${input.path}`;
+  const start = performance.now();
+  const res = await fetch(url, {
+    method: input.method ?? 'GET',
+    headers: input.headers ?? { accept: 'application/json' },
+    body: input.body,
+  });
+  const ms = performance.now() - start;
+  const body = await res.text();
+  const serverError = res.status >= 500;
+  const clientOk = res.ok || (input.count4xxAsNonError && res.status >= 400 && res.status < 500);
+  return {
+    label: input.label,
+    path: input.path,
+    status: res.status,
+    ms,
+    ok: clientOk && !serverError,
+    serverError,
+    bytes: body.length,
+  };
+};
+
+const runSeries = async (input) => {
+  const runs = [];
+  for (let i = 0; i < samples; i += 1) {
+    runs.push(await timedRequest(input));
+  }
+  const durations = runs.map((r) => r.ms).sort((a, b) => a - b);
+  const errors = runs.filter((r) => !r.ok).length;
+  const serverErrors = runs.filter((r) => r.serverError).length;
+  return {
+    label: input.label,
+    path: input.path,
+    samples: runs.length,
+    errors,
+    serverErrors,
+    p50Ms: Math.round(percentile(durations, 50)),
+    p95Ms: Math.round(percentile(durations, 95)),
+    lastStatus: runs[runs.length - 1]?.status,
+  };
+};
+
+const loginMember = async (email, password) => {
+  const res = await fetch(`${baseUrl}/api/auth/login`, {
+    method: 'POST',
+    headers: { accept: 'application/json', 'content-type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  });
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(`login failed (${res.status}): ${json.error?.code ?? 'unknown'}`);
+  }
+  const token = json.tokens?.accessToken;
+  if (!token) {
+    throw new Error('login response missing accessToken');
+  }
+  return token;
+};
+
+const probeJoinPath = async () => {
+  const email = process.env.P5_SMOKE_EMAIL?.trim();
+  const password = process.env.P5_SMOKE_PASSWORD;
+  const activityId = process.env.P5_JOIN_ACTIVITY_ID?.trim();
+  if (!email || !password || !activityId) {
+    console.log(
+      '[p5:slo-smoke] join probe skipped — set P5_SMOKE_EMAIL, P5_SMOKE_PASSWORD, P5_JOIN_ACTIVITY_ID'
+    );
+    return { skipped: true };
+  }
+
+  const accessToken = await loginMember(email, password);
+  const headers = {
+    accept: 'application/json',
+    'content-type': 'application/json',
+    authorization: `Bearer ${accessToken}`,
+  };
+
+  const rsvpRes = await timedRequest({
+    label: 'join_rsvp',
+    path: `/api/activities/${activityId}/rsvp`,
+    method: 'POST',
+    headers,
+    body: '{}',
+    count4xxAsNonError: true,
+  });
+
+  if (rsvpRes.status === 201) {
+    console.log(`[p5:slo-smoke] join probe rsvp status=201 ${rsvpRes.ms}ms`);
+    return { skipped: false, ok: true, mechanism: 'rsvp' };
+  }
+
+  const requestRes = await timedRequest({
+    label: 'join_request',
+    path: `/api/activities/${activityId}/requests`,
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ message: 'P5 staging join smoke probe' }),
+    count4xxAsNonError: true,
+  });
+
+  const ok =
+    requestRes.status === 201 ||
+    requestRes.status === 409 ||
+    requestRes.status === 400;
+  console.log(
+    `[p5:slo-smoke] join probe requests status=${requestRes.status} ${requestRes.ms}ms ok=${ok}`
+  );
+  if (!ok || requestRes.serverError) {
+    return { skipped: false, ok: false, mechanism: 'requests', status: requestRes.status };
+  }
+  return { skipped: false, ok: true, mechanism: 'requests', status: requestRes.status };
+};
+
+const main = async () => {
+  console.log(`[p5:slo-smoke] BASE_URL=${baseUrl} samples=${samples}`);
+
+  const latencyTargets = [
+    runSeries({ label: 'health', path: '/health' }),
+    runSeries({ label: 'explore_map', path: '/api/explore/map' }),
+    runSeries({ label: 'areas_list', path: '/api/areas?page=1&pageSize=10' }),
+    runSeries({ label: 'facilities_list', path: '/api/facilities?page=1&pageSize=10' }),
+  ];
+
+  if (process.env.P5_EXPLORE_MAP_BBOX === '1') {
+    latencyTargets.push(
+      runSeries({
+        label: 'explore_map_bbox',
+        path: `/api/explore/map?bbox=${encodeURIComponent(bboxQuery)}`,
+        count4xxAsNonError: true,
+      })
+    );
+  }
+
+  const rows = await Promise.all(latencyTargets);
+
+  let totalSamples = 0;
+  let totalServerErrors = 0;
+  for (const row of rows) {
+    totalSamples += row.samples;
+    totalServerErrors += row.serverErrors;
+    console.log(
+      `[p5:slo-smoke] ${row.label} ${row.path} status=${row.lastStatus} errors=${row.errors}/${row.samples} server5xx=${row.serverErrors} p50=${row.p50Ms}ms p95=${row.p95Ms}ms`
+    );
+  }
+
+  const serverErrorRate = totalSamples > 0 ? totalServerErrors / totalSamples : 0;
+  console.log(
+    `[p5:slo-smoke] consumer read server-error rate ${totalServerErrors}/${totalSamples} (${(serverErrorRate * 100).toFixed(2)}%)`
+  );
+
+  const hardFail = rows.some((r) => r.errors === r.samples);
+  if (hardFail) {
+    console.error('[p5:slo-smoke] FAILED — all samples errored for at least one path');
+    process.exit(1);
+  }
+
+  if (serverErrorRate > 0.001) {
+    console.error('[p5:slo-smoke] FAILED — server 5xx rate above 0.1% for this run');
+    process.exit(1);
+  }
+
+  const join = await probeJoinPath();
+  if (join.skipped === false && join.ok === false) {
+    console.error('[p5:slo-smoke] FAILED — join probe did not succeed');
+    process.exit(1);
+  }
+
+  console.log('[p5:slo-smoke] OK — record p95 + join result in staging notes before prod promote');
+};
+
+main().catch((err) => {
+  console.error('[p5:slo-smoke] FAILED', err);
+  process.exit(1);
+});

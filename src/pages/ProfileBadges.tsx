@@ -1,8 +1,7 @@
 import { useMemo, useState } from 'react';
-import { useSafeAsyncEffect } from '../hooks/useSafeAsyncEffect';
 import type { RewardBadgeDTO } from '@uaetrail/shared-types';
-import { fetchMemberBadges } from '../hooks/memberProfileApi';
 import { useAuth } from '../context/AuthContext';
+import { useMemberBadges } from '../hooks/useMemberBadges';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { ConsumerLoadingSpinner, ConsumerErrorCard } from '../components/mobile/ConsumerFeedback';
 import { PageMeta } from '../components/seo/PageMeta';
@@ -46,36 +45,13 @@ const BadgeSection = ({
 export const ProfileBadges = () => {
   const { user } = useAuth();
   const { ownedProfiles } = useMemberStatus({ enabled: Boolean(user) });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [badges, setBadges] = useState<RewardBadgeDTO[]>([]);
+  const { badges, loading, error } = useMemberBadges(user?.id);
   const [selected, setSelected] = useState<RewardBadgeDTO | null>(null);
 
   const displayName = user?.displayName ?? 'Explorer';
   const sharePath = resolveProfileSharePath(ownedProfiles, {
     fallbackPath: user?.id ? memberProfileLink(user.id) : '/explore',
   });
-
-  useSafeAsyncEffect(async (isActive) => {
-    if (isActive()) {
-      setLoading(true);
-    }
-    try {
-      const list = await fetchMemberBadges();
-      if (isActive()) {
-        setBadges(list);
-        setError(null);
-      }
-    } catch (err) {
-      if (isActive()) {
-        setError(err instanceof Error ? err.message : 'Could not load badges');
-      }
-    } finally {
-      if (isActive()) {
-        setLoading(false);
-      }
-    }
-  }, []);
 
   const earned = useMemo(
     () => sortBadgesByCatalogOrder(badges.filter((b) => b.earned)),

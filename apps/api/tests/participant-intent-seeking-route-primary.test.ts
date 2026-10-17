@@ -39,7 +39,7 @@ describe('POST /me/participant-intents (activity-canonical — stub write off)',
     });
 
     const res = await request(app)
-      .post('/api/v1/me/participant-intents')
+      .post('/api/me/participant-intents')
       .set('Authorization', `Bearer ${visitor.accessToken}`)
       .send(body);
 
