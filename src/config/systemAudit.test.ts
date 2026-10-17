@@ -27,4 +27,22 @@ describe('CTO system audit (W0)', () => {
     );
     expect(baseline.summary.mongoCollectionsDefined).toBe(defined);
   });
+
+  it('route graph includes mounted top-level routers and matches baseline count', () => {
+    const baseline = JSON.parse(
+      readFileSync(join(ROOT, 'scripts/system-audit-baseline.json'), 'utf8')
+    );
+    const routes = JSON.parse(
+      readFileSync(join(ROOT, 'scripts/system-audit-routes.json'), 'utf8')
+    ) as { endpoints: { method: string; path: string }[] };
+
+    expect(routes.endpoints.length).toBe(baseline.summary.apiRouteEndpointsParsed);
+    expect(baseline.summary.apiRouteEndpointsParsed).toBeGreaterThanOrEqual(150);
+    expect(baseline.summary.routeRegistrarsWithDirectWrites).toBe(0);
+
+    const keys = new Set(routes.endpoints.map((e) => `${e.method} ${e.path}`));
+    expect(keys.has('POST /auth/login')).toBe(true);
+    expect(keys.has('POST /activities/:id/rsvp')).toBe(true);
+    expect(keys.has('GET /explore/map')).toBe(true);
+  });
 });

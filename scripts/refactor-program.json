@@ -153,7 +153,7 @@
       "contextIds": [],
       "feRoots": ["scripts/system-audit.mjs"],
       "apiRoots": ["apps/api/src/routes"],
-      "successMetric": "system-audit-baseline.json; 0 route-layer write violations"
+      "successMetric": "system-audit-baseline.json; mounted *Router + registerActivityRoute in route graph; 0 route-layer write violations"
     },
     {
       "id": "MIG-CPC-P1",
@@ -447,7 +447,7 @@
         "apps/api/tests/p5-slo-smoke-probes-contract.test.ts"
       ],
       "feRoots": [],
-      "successMetric": "p5:slo-smoke (map/areas/facilities + optional bbox + join probe); staging baselines signed in PRE_DEPLOY"
+      "successMetric": "Eng: p5:slo-smoke preflight + probe contracts in verify:domain. Ops: staging run + PRE_DEPLOY SLO checkboxes before close."
     }
   ],
   "stranglerRules": [

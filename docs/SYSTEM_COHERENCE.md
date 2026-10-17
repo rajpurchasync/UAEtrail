@@ -919,7 +919,7 @@ Board one-liner: *P0–P1 data-truth wave closed; next platform capacity unlocks
 |----|-------|-------|--------|
 | **MIG-P0-CENSUS** | P0 | `repo:census` baseline; SPA routes, API registrars, knip count | **Complete** |
 | **MIG-P0-DOCS** | P0 | Stub superseded experiment plans; archive copies | **Complete** |
-| **MIG-W0-SYSTEM-AUDIT** | P0 | CTO baseline: collections, route map, registrar→service imports | **Complete** |
+| **MIG-W0-SYSTEM-AUDIT** | P0 | CTO baseline: collections, route map (`register*` + mounted routers + `registerActivityRoute`) | **Complete** |
 | **MIG-MANIFEST-DOMAINS** | P0 | All `src/api/domains/*` assigned in manifest | **Complete** |
 | **MIG-PLAN-HUB** | P0 | Plan manage deep links (one surface, not program center) | **Complete** |
 | **MIG-CPC-P1** | P1 | CPC-7+ catalog vocabulary (**C26**) | **Complete** |
