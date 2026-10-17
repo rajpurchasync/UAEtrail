@@ -420,13 +420,21 @@
       "owner": "platform",
       "contextIds": ["member_identity", "communication"],
       "apiRoots": [
+        "apps/api/src/services/auth-session-flow.ts",
         "apps/api/src/services/auth-session-read.ts",
         "apps/api/src/services/auth-session-commands.ts",
+        "apps/api/src/services/auth-login-commands.ts",
+        "apps/api/src/services/auth-password-commands.ts",
+        "apps/api/src/services/auth-registration-commands.ts",
+        "apps/api/src/services/auth-google-commands.ts",
+        "apps/api/src/services/auth-demo-commands.ts",
+        "apps/api/src/lib/auth-route-http.ts",
         "apps/api/src/routes/auth.ts",
-        "apps/api/src/services/me-profile-commands.ts"
+        "apps/api/src/services/me-profile-commands.ts",
+        "apps/api/tests/auth-command-layer-guard.test.ts"
       ],
       "feRoots": ["src/api/domains/member.ts"],
-      "successMetric": "route-handler-cqrs-guard; no auth-tokens imports in routes; chat send in command service"
+      "successMetric": "route-handler-cqrs-guard + auth-command-layer-guard; auth.ts delegates to auth-*-commands + auth-session-flow; no auth-tokens in routes"
     },
     {
       "id": "MIG-P5-SLO-SMOKE",

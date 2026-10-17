@@ -929,7 +929,7 @@ Board one-liner: *P0–P1 data-truth wave closed; next platform capacity unlocks
 | **MIG-CLIENT-QUERY** | P3 | `clientQueryKeys` + hooks across discovery, social, member, messaging, place detail | **Complete** |
 | **MIG-CQRS-ROUTES** | P4 | Route CQRS guard; entire `apps/api/src/routes/**` tree → read/command services (no `*-store`) | **Complete** |
 | **MIG-CQRS-ROUTE-DATA** | P4 | Route layer → services for `auth-users`, `chat-data`, `social-data` (guard enforced) | **Complete** |
-| **MIG-CQRS-ROUTE-AUTH** | P4 | `auth-tokens` + direct chat send orchestration behind services | **Complete** |
+| **MIG-CQRS-ROUTE-AUTH** | P4 | `auth.ts` → `auth-*-commands` + `auth-session-flow`; HTTP cookies in `auth-route-http` | **Complete** |
 | **MIG-P5-SLO-SMOKE** | P5 | `npm run p5:slo-smoke` + PRE_DEPLOY SLO baseline checklist | **In progress** |
 
 #### 8.6.3 Context continuity (do not skip)

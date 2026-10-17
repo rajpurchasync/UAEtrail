@@ -1,59 +1,33 @@
-import { AuthProvider, UserRole, UserStatus } from '../domain/enums.js';
 import { Request, Router } from 'express';
 import { z } from 'zod';
 import { ApiError } from '../lib/api-error.js';
-import { clearRefreshCookie, REFRESH_COOKIE_NAME, setRefreshCookie } from '../lib/auth-cookies.js';
-import { randomToken, generateEmailOtp } from '../lib/hash.js';
-import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../lib/jwt.js';
-import { toSharedRole } from '../lib/mappers.js';
-import { hashPassword, verifyPassword } from '../lib/password.js';
+import { clearRefreshCookie } from '../lib/auth-cookies.js';
+import {
+  readRefreshToken,
+  respondWithAuth,
+  respondWithPendingVerification,
+} from '../lib/auth-route-http.js';
 import { validate } from '../middleware/validate.js';
 import { requireAuth } from '../middleware/auth.js';
 import { env } from '../config/env.js';
 import { isDemoLoginAllowedForRequest } from '../lib/demo-login-policy.js';
-import { scheduleSideEffect } from '../lib/schedule-side-effect.js';
-import { sendPasswordResetEmail, sendVerificationEmail } from '../lib/email.js';
-import { verifyGoogleIdToken } from '../lib/google-auth.js';
-import { createUniqueReferralCode } from '../lib/referral-code.js';
+import { loginWithDemoAccount } from '../services/auth-demo-commands.js';
+import { authenticateWithGoogleIdToken } from '../services/auth-google-commands.js';
 import {
-  EMAIL_VERIFICATION_OTP_TTL_MS,
-  EMAIL_VERIFICATION_OTP_TTL_SECONDS
-} from '../lib/auth-constants.js';
+  loginWithEmailPassword,
+  refreshMemberSession,
+  resendEmailVerificationOtp,
+  verifyEmailOtpAndAuthenticate,
+} from '../services/auth-login-commands.js';
 import {
-  createEmailVerificationToken,
-  createPasswordResetToken,
-  createRefreshToken,
-  revokeRefreshToken,
-  revokeRefreshTokensByUser,
-  useEmailVerificationToken,
-  usePasswordResetToken,
-} from '../services/auth-session-commands.js';
-import {
-  findActiveRefreshToken,
-  findEmailVerificationTokenForUser,
-  findPasswordResetToken,
-} from '../services/auth-session-read.js';
-import {
-  createAuthUser,
-  updateAuthUserCore,
-  updateAuthUserEmailVerifiedAt,
-  updateAuthUserGoogleLink,
-  updateAuthUserLastActive,
-  updateAuthUserPassword,
-  updateAuthUserProfile,
-} from '../services/member-identity-commands.js';
-import {
-  findAuthUserByEmail,
-  findAuthUserByGoogleId,
-  findAuthUserById,
-} from '../services/member-identity-read.js';
-import { notifyAdminsMemberRegistered } from '../services/platform-admin-events.js';
-import { processSignupRewards } from '../services/rewards.js';
-import {
-  acceptGroupInvitesForNewUser,
-  createHostApplicationOnSignup,
-} from '../services/auth-registration-commands.js';
-import { DEMO_LOGIN_EMAILS, getDemoAccount, resolveDemoAccountPassword } from '../lib/demo-accounts.js';
+  changeAuthenticatedPassword,
+  requestAuthenticatedPasswordChangeOtp,
+  requestForgotPasswordReset,
+  resetPasswordWithToken,
+} from '../services/auth-password-commands.js';
+import { registerWithEmailPassword } from '../services/auth-registration-commands.js';
+import { createMemberSession } from '../services/auth-session-flow.js';
+import { revokeRefreshToken } from '../services/auth-session-commands.js';
 import { formatDisplayNameFromParts, personNameFieldsSchema } from '../domain/person-name.js';
 
 const registerSchema = z
@@ -75,16 +49,16 @@ const registerSchema = z
 
 const loginSchema = z.object({
   email: z.string().email(),
-  password: z.string().min(1)
+  password: z.string().min(1),
 });
 
 const demoLoginSchema = z.object({
-  email: z.string().email()
+  email: z.string().email(),
 });
 
 const verifyEmailSchema = z.object({
   email: z.string().email(),
-  otp: z.string().regex(/^\d{6}$/, 'Enter the 6-digit verification code.')
+  otp: z.string().regex(/^\d{6}$/, 'Enter the 6-digit verification code.'),
 });
 const refreshBodySchema = z.object({ refreshToken: z.string().min(20).optional() });
 const forgotSchema = z.object({ email: z.string().email() });
@@ -95,59 +69,21 @@ const resetSchema = z.object({
     .min(8)
     .regex(/[A-Z]/, 'Must include at least one uppercase letter')
     .regex(/[a-z]/, 'Must include at least one lowercase letter')
-    .regex(/[0-9]/, 'Must include at least one number')
+    .regex(/[0-9]/, 'Must include at least one number'),
 });
 
 const changePasswordSchema = z.object({
   currentPassword: z.string().min(1),
   newPassword: resetSchema.shape.password,
-  otpToken: z.string().min(20).optional()
+  otpToken: z.string().min(20).optional(),
 });
 
 const resendVerificationSchema = z.object({ email: z.string().email() });
 const googleAuthSchema = z.object({
   idToken: z.string().min(20),
   referralCode: z.string().min(4).max(12).optional(),
-  groupInviteToken: z.string().min(20).optional()
+  groupInviteToken: z.string().min(20).optional(),
 });
-
-const issueEmailVerificationOtp = async (input: {
-  userId: string;
-  email: string;
-  displayName: string;
-}) => {
-  const otp = generateEmailOtp();
-  const expiresAt = new Date(Date.now() + EMAIL_VERIFICATION_OTP_TTL_MS);
-
-  await createEmailVerificationToken({
-    userId: input.userId,
-    token: otp,
-    expiresAt
-  });
-
-  try {
-    const sent = await sendVerificationEmail({
-      to: input.email,
-      name: input.displayName,
-      otp
-    });
-    if (!sent) {
-      throw new Error('Email transport is not configured.');
-    }
-  } catch (error) {
-    console.error('[auth] Failed to send verification email', {
-      email: input.email,
-      error: error instanceof Error ? error.message : String(error)
-    });
-    throw new ApiError(503, 'email_delivery_failed', 'Could not send verification email. Please try again.');
-  }
-
-  return {
-    otp,
-    expiresAt,
-    expiresInSeconds: EMAIL_VERIFICATION_OTP_TTL_SECONDS
-  };
-};
 
 const isDemoLoginAllowed = (req: Request): boolean =>
   isDemoLoginAllowedForRequest(
@@ -156,180 +92,29 @@ const isDemoLoginAllowed = (req: Request): boolean =>
     process.env.ALLOW_DEMO_LOGIN
   );
 
-const buildAuthResponse = (user: { id: string; email: string; role: UserRole }, tokens: { accessToken: string }) => ({
-  user: {
-    id: user.id,
-    email: user.email,
-    role: toSharedRole(user.role)
-  },
-  tokens: { accessToken: tokens.accessToken }
-});
-
-const readRefreshToken = (req: { cookies?: Record<string, string>; body?: { refreshToken?: string } }): string | null => {
-  const fromCookie = req.cookies?.[REFRESH_COOKIE_NAME];
-  if (typeof fromCookie === 'string' && fromCookie.length >= 20) {
-    return fromCookie;
-  }
-  if (env.NODE_ENV !== 'test') {
-    return null;
-  }
-  const fromBody = req.body?.refreshToken;
-  if (typeof fromBody === 'string' && fromBody.length >= 20) {
-    return fromBody;
-  }
-  return null;
-};
-
-const respondWithAuth = (
-  res: import('express').Response,
-  status: number,
-  user: { id: string; email: string; role: UserRole },
-  tokens: { accessToken: string; refreshToken: string },
-  extra: Record<string, unknown> = {}
-): void => {
-  setRefreshCookie(res, tokens.refreshToken);
-  res.status(status).json({ ...buildAuthResponse(user, tokens), ...extra });
-};
-
-const respondWithPendingVerification = (
-  res: import('express').Response,
-  status: number,
-  input: {
-    email: string;
-    expiresAt: Date;
-    expiresInSeconds: number;
-    message?: string;
-  }
-): void => {
-  clearRefreshCookie(res);
-  res.status(status).json({
-    message: input.message ?? 'Check your email for a verification code.',
-    email: input.email,
-    requiresEmailVerification: true,
-    expiresAt: input.expiresAt.toISOString(),
-    expiresInSeconds: input.expiresInSeconds
-  });
-};
-
-// Role switch is session-only: restore the original role at every new login/refresh.
-const restoreRoleIfSwitched = async (user: { _id: string; role: UserRole; profile?: { switchedFromRole?: UserRole | null } }): Promise<UserRole> => {
-  const original = user.profile?.switchedFromRole;
-  if (!original) return user.role;
-  await updateAuthUserCore({ userId: user._id, role: original, profile: { switchedFromRole: null } });
-  return original;
-};
-
-const createSession = async ({
-  userId,
-  email,
-  role,
-  ipAddress,
-  userAgent
-}: {
-  userId: string;
-  email: string;
-  role: UserRole;
-  ipAddress?: string;
-  userAgent?: string;
-}) => {
-  const accessToken = signAccessToken({ sub: userId, email, role: toSharedRole(role) });
-  const refreshToken = signRefreshToken({ sub: userId, email });
-  const expiresAt = new Date(Date.now() + env.JWT_REFRESH_TTL_DAYS * 24 * 60 * 60 * 1000);
-
-  await createRefreshToken({ userId, token: refreshToken, expiresAt, ipAddress, userAgent });
-
-  return { accessToken, refreshToken };
-};
-
 export const authRouter = Router();
 
 authRouter.post('/register', validate({ body: registerSchema }), async (req, res, next) => {
   try {
-    const { email, password, givenName, surname, accountType, organizationName, referralCode, groupInviteToken } =
-      req.body as z.infer<typeof registerSchema>;
-    const displayName = formatDisplayNameFromParts(givenName, surname);
-    const existing = await findAuthUserByEmail(email);
-
-    if (existing?.emailVerifiedAt) {
-      throw new ApiError(409, 'email_taken', 'Email is already registered.');
-    }
-
-    if (existing && !existing.emailVerifiedAt) {
-      if (!existing.passwordHash || !(await verifyPassword(password, existing.passwordHash))) {
-        throw new ApiError(
-          409,
-          'email_pending_verification',
-          'This email has a pending account. Sign in with your password to finish verification.'
-        );
-      }
-
-      await updateAuthUserProfile(existing._id, { displayName, givenName, surname });
-      const verification = await issueEmailVerificationOtp({
-        userId: existing._id,
-        email: existing.email,
-        displayName
-      });
-
-      respondWithPendingVerification(res, 200, {
-        email: existing.email,
-        expiresAt: verification.expiresAt,
-        expiresInSeconds: verification.expiresInSeconds,
-        message: 'Verification code resent. Enter the code to finish creating your account.'
-      });
-      return;
-    }
-
-    const passwordHash = await hashPassword(password);
-    const userReferralCode = await createUniqueReferralCode();
-
-    const created = await createAuthUser({
-      email,
-      passwordHash,
-      googleId: null,
-      authProvider: 'EMAIL',
-      role: 'PARTICIPANT',
-      status: 'ACTIVE',
-      emailVerifiedAt: null,
-      lastActiveAt: null,
-      referralCode: userReferralCode,
-      profile: { displayName, givenName, surname, phone: null, bio: null, avatarUrl: null }
+    const body = req.body as z.infer<typeof registerSchema>;
+    const displayName = formatDisplayNameFromParts(body.givenName, body.surname);
+    const result = await registerWithEmailPassword({
+      email: body.email,
+      password: body.password,
+      displayName,
+      givenName: body.givenName,
+      surname: body.surname,
+      accountType: body.accountType,
+      organizationName: body.organizationName,
+      referralCode: body.referralCode,
+      groupInviteToken: body.groupInviteToken,
     });
 
-    if (accountType !== 'participant') {
-      await createHostApplicationOnSignup({
-        applicantId: created._id,
-        accountType,
-        displayName,
-        organizationName,
-      });
-    }
-
-    const verification = await issueEmailVerificationOtp({
-      userId: created._id,
-      email: created.email,
-      displayName
-    });
-
-    notifyAdminsMemberRegistered({
-      userId: created._id,
-      email: created.email,
-      displayName: displayName,
-    });
-    scheduleSideEffect(processSignupRewards(created._id, referralCode), 'auth.signup_rewards');
-    scheduleSideEffect(
-      acceptGroupInvitesForNewUser({
-        userId: created._id,
-        email: created.email,
-        groupInviteToken,
-      }),
-      groupInviteToken ? 'auth.signup_group_invite_token' : 'auth.signup_pending_group_invites'
-    );
-
-    respondWithPendingVerification(res, 201, {
-      email: created.email,
-      expiresAt: verification.expiresAt,
-      expiresInSeconds: verification.expiresInSeconds,
-      message: 'Account created. Verify your email to finish registration.'
+    respondWithPendingVerification(res, result.httpStatus, {
+      email: result.email,
+      expiresAt: result.expiresAt,
+      expiresInSeconds: result.expiresInSeconds,
+      message: result.message,
     });
   } catch (error) {
     next(error);
@@ -339,53 +124,33 @@ authRouter.post('/register', validate({ body: registerSchema }), async (req, res
 authRouter.post('/login', validate({ body: loginSchema }), async (req, res, next) => {
   try {
     const { email, password } = req.body as z.infer<typeof loginSchema>;
-    const normalizedEmail = email.trim().toLowerCase();
+    const outcome = await loginWithEmailPassword({
+      email,
+      password,
+      demoLoginAllowed: isDemoLoginAllowed(req),
+    });
 
-    if (DEMO_LOGIN_EMAILS.has(normalizedEmail) && !isDemoLoginAllowed(req)) {
-      throw new ApiError(403, 'demo_account_restricted', 'Demo accounts are available only on localhost or test environments.');
-    }
-
-    const user = await findAuthUserByEmail(email);
-    if (!user?.passwordHash) {
-      throw new ApiError(401, 'oauth_account', 'This account uses Google sign-in.');
-    }
-    if (!(await verifyPassword(password, user.passwordHash))) {
-      throw new ApiError(401, 'invalid_credentials', 'Invalid email or password.');
-    }
-    if (user.status !== UserStatus.ACTIVE) {
-      throw new ApiError(403, 'account_suspended', 'Account is suspended.');
-    }
-
-    if (!user.emailVerifiedAt) {
-      const verification = await issueEmailVerificationOtp({
-        userId: user._id,
-        email: user.email,
-        displayName: user.profile.displayName ?? user.email
-      });
-
+    if (outcome.kind === 'pending_verification') {
       respondWithPendingVerification(res, 200, {
-        email: user.email,
-        expiresAt: verification.expiresAt,
-        expiresInSeconds: verification.expiresInSeconds,
-        message: 'Verify your email to finish registration.'
+        email: outcome.email,
+        expiresAt: outcome.expiresAt,
+        expiresInSeconds: outcome.expiresInSeconds,
+        message: outcome.message,
       });
       return;
     }
 
-    const sessionRole = await restoreRoleIfSwitched(user);
-    const tokens = await createSession({
-      userId: user._id,
-      email: user.email,
-      role: sessionRole,
+    const tokens = await createMemberSession({
+      userId: outcome.userId,
+      email: outcome.email,
+      role: outcome.role,
       ipAddress: req.ip,
-      userAgent: req.headers['user-agent']
+      userAgent: req.headers['user-agent'],
     });
 
-    respondWithAuth(res, 200, { id: user._id, email: user.email, role: sessionRole }, tokens, {
-      emailVerified: true
+    respondWithAuth(res, 200, { id: outcome.userId, email: outcome.email, role: outcome.role }, tokens, {
+      emailVerified: true,
     });
-
-    await updateAuthUserLastActive(user._id);
   } catch (error) {
     next(error);
   }
@@ -394,73 +159,18 @@ authRouter.post('/login', validate({ body: loginSchema }), async (req, res, next
 authRouter.post('/demo-login', validate({ body: demoLoginSchema }), async (req, res, next) => {
   try {
     const { email } = req.body as z.infer<typeof demoLoginSchema>;
-    const normalizedEmail = email.trim().toLowerCase();
-
-    if (!DEMO_LOGIN_EMAILS.has(normalizedEmail)) {
-      throw new ApiError(404, 'demo_account_not_found', 'Demo account is not available.');
-    }
-
-    if (!isDemoLoginAllowed(req)) {
-      throw new ApiError(403, 'demo_account_restricted', 'Demo accounts are available only on localhost or test environments.');
-    }
-
-    let user = await findAuthUserByEmail(normalizedEmail);
-    if (!user) {
-      const defaults = getDemoAccount(normalizedEmail);
-      if (!defaults) {
-        throw new ApiError(404, 'demo_account_not_found', 'Demo account is not available.');
-      }
-
-      const passwordHash = await hashPassword(resolveDemoAccountPassword(normalizedEmail));
-      const referralCode = await createUniqueReferralCode();
-      user = await createAuthUser({
-        email: normalizedEmail,
-        passwordHash,
-        googleId: null,
-        authProvider: 'EMAIL',
-        role: defaults.role,
-        status: UserStatus.ACTIVE,
-        emailVerifiedAt: new Date(),
-        lastActiveAt: new Date(),
-        referralCode,
-        profile: {
-          displayName: defaults.displayName,
-          phone: null,
-          bio: null,
-          avatarUrl: null
-        }
-      });
-    }
-
-    if (user.status !== UserStatus.ACTIVE) {
-      throw new ApiError(403, 'account_suspended', 'Account is suspended.');
-    }
-
-    // Demo accounts always use their canonical role — ignore any stale visitor-switch state
-    const defaults = getDemoAccount(normalizedEmail);
-    const canonicalRole = defaults?.role ?? user.role;
-    if (user.role !== canonicalRole || user.profile?.switchedFromRole) {
-      await updateAuthUserCore({ userId: user._id, role: canonicalRole, profile: { switchedFromRole: null } });
-    }
-    if (defaults?.displayName && user.profile?.displayName !== defaults.displayName) {
-      await updateAuthUserProfile(user._id, { displayName: defaults.displayName });
-    }
-
-    const tokens = await createSession({
-      userId: user._id,
-      email: user.email,
-      role: canonicalRole,
+    const result = await loginWithDemoAccount({
+      email,
+      demoLoginAllowed: isDemoLoginAllowed(req),
       ipAddress: req.ip,
-      userAgent: req.headers['user-agent']
+      userAgent: req.headers['user-agent'],
     });
 
-    respondWithAuth(res, 200, { id: user._id, email: user.email, role: canonicalRole }, tokens, {
-      emailVerified: Boolean(user.emailVerifiedAt),
-      authProvider: user.authProvider.toLowerCase(),
-      demoLogin: true
+    respondWithAuth(res, 200, result.user, result.tokens, {
+      emailVerified: result.emailVerified,
+      authProvider: result.authProvider,
+      demoLogin: true,
     });
-
-    await updateAuthUserLastActive(user._id);
   } catch (error) {
     next(error);
   }
@@ -472,32 +182,20 @@ authRouter.post('/refresh', validate({ body: refreshBodySchema }), async (req, r
     if (!refreshToken) {
       throw new ApiError(401, 'invalid_refresh_token', 'Refresh token is missing.');
     }
-    const payload = verifyRefreshToken(refreshToken);
 
-    const stored = await findActiveRefreshToken({ userId: payload.sub, token: refreshToken });
-    const user = stored ? await findAuthUserById(payload.sub) : null;
-
-    if (!stored || !user || user.status !== UserStatus.ACTIVE) {
-      throw new ApiError(401, 'invalid_refresh_token', 'Refresh token is invalid.');
+    try {
+      const { user, tokens } = await refreshMemberSession({
+        refreshToken,
+        ipAddress: req.ip,
+        userAgent: req.headers['user-agent'],
+      });
+      respondWithAuth(res, 200, user, tokens);
+    } catch (error) {
+      if (error instanceof ApiError && error.code === 'email_verification_required') {
+        clearRefreshCookie(res);
+      }
+      throw error;
     }
-
-    if (!user.emailVerifiedAt) {
-      clearRefreshCookie(res);
-      throw new ApiError(403, 'email_verification_required', 'Email verification is required.');
-    }
-
-    await revokeRefreshToken(refreshToken);
-
-    const sessionRole = await restoreRoleIfSwitched(user);
-    const tokens = await createSession({
-      userId: user._id,
-      email: user.email,
-      role: sessionRole,
-      ipAddress: req.ip,
-      userAgent: req.headers['user-agent']
-    });
-
-    respondWithAuth(res, 200, { id: user._id, email: user.email, role: sessionRole }, tokens);
   } catch (error) {
     next(error);
   }
@@ -519,36 +217,16 @@ authRouter.post('/logout', validate({ body: refreshBodySchema }), async (req, re
 authRouter.post('/verify-email', validate({ body: verifyEmailSchema }), async (req, res, next) => {
   try {
     const { email, otp } = req.body as z.infer<typeof verifyEmailSchema>;
-    const user = await findAuthUserByEmail(email);
-    if (!user || user.status !== UserStatus.ACTIVE) {
-      throw new ApiError(400, 'invalid_token', 'Verification code is invalid or expired.');
-    }
-
-    const record = await findEmailVerificationTokenForUser(user._id, otp);
-    if (!record) {
-      throw new ApiError(400, 'invalid_token', 'Verification code is invalid or expired.');
-    }
-
-    await useEmailVerificationToken(record.id);
-    await updateAuthUserEmailVerifiedAt(user._id, new Date());
-
-    const verifiedUser = await findAuthUserById(user._id);
-    if (!verifiedUser || verifiedUser.status !== UserStatus.ACTIVE) {
-      throw new ApiError(400, 'invalid_token', 'Verification code is invalid or expired.');
-    }
-
-    const sessionRole = await restoreRoleIfSwitched(verifiedUser);
-    const tokens = await createSession({
-      userId: verifiedUser._id,
-      email: verifiedUser.email,
-      role: sessionRole,
+    const result = await verifyEmailOtpAndAuthenticate({
+      email,
+      otp,
       ipAddress: req.ip,
-      userAgent: req.headers['user-agent']
+      userAgent: req.headers['user-agent'],
     });
 
-    respondWithAuth(res, 200, { id: verifiedUser._id, email: verifiedUser.email, role: sessionRole }, tokens, {
-      message: 'Email verified successfully.',
-      emailVerified: true
+    respondWithAuth(res, 200, result.user, result.tokens, {
+      message: result.message,
+      emailVerified: true,
     });
   } catch (error) {
     next(error);
@@ -558,32 +236,8 @@ authRouter.post('/verify-email', validate({ body: verifyEmailSchema }), async (r
 authRouter.post('/forgot-password', validate({ body: forgotSchema }), async (req, res, next) => {
   try {
     const { email } = req.body as z.infer<typeof forgotSchema>;
-    const user = await findAuthUserByEmail(email);
-    if (!user) {
-      res.json({ message: 'If the account exists, a reset token was generated.' });
-      return;
-    }
-
-    const token = randomToken(24);
-    await createPasswordResetToken({
-      userId: user._id,
-      token,
-      expiresAt: new Date(Date.now() + 60 * 60 * 1000)
-    });
-
-    scheduleSideEffect(
-      sendPasswordResetEmail({
-        to: user.email,
-        name: user.profile.displayName ?? user.email,
-        token,
-      }),
-      'auth.forgot_password_email'
-    );
-
-    res.json({
-      message: 'If the account exists, a reset link was sent.',
-      resetToken: env.NODE_ENV === 'production' ? undefined : token
-    });
+    const result = await requestForgotPasswordReset(email);
+    res.json(result);
   } catch (error) {
     next(error);
   }
@@ -592,17 +246,8 @@ authRouter.post('/forgot-password', validate({ body: forgotSchema }), async (req
 authRouter.post('/reset-password', validate({ body: resetSchema }), async (req, res, next) => {
   try {
     const { token, password } = req.body as z.infer<typeof resetSchema>;
-    const record = await findPasswordResetToken(token);
-    if (!record || record.usedAt || record.expiresAt < new Date()) {
-      throw new ApiError(400, 'invalid_token', 'Reset token is invalid or expired.');
-    }
-
-    const newHash = await hashPassword(password);
-    await updateAuthUserPassword(record.userId, newHash);
-    await usePasswordResetToken(record.id);
-    await revokeRefreshTokensByUser(record.userId);
-
-    res.json({ message: 'Password updated successfully.' });
+    const result = await resetPasswordWithToken(token, password);
+    res.json(result);
   } catch (error) {
     next(error);
   }
@@ -611,24 +256,8 @@ authRouter.post('/reset-password', validate({ body: resetSchema }), async (req, 
 authRouter.post('/resend-verification', validate({ body: resendVerificationSchema }), async (req, res, next) => {
   try {
     const { email } = req.body as z.infer<typeof resendVerificationSchema>;
-    const user = await findAuthUserByEmail(email);
-
-    if (!user || user.emailVerifiedAt) {
-      res.json({ message: 'If the account exists and is unverified, a verification email was sent.' });
-      return;
-    }
-
-    const verification = await issueEmailVerificationOtp({
-      userId: user._id,
-      email: user.email,
-      displayName: user.profile.displayName ?? user.email
-    });
-
-    res.json({
-      message: 'Verification email sent.',
-      expiresAt: verification.expiresAt.toISOString(),
-      expiresInSeconds: verification.expiresInSeconds
-    });
+    const result = await resendEmailVerificationOtp(email);
+    res.json(result);
   } catch (error) {
     next(error);
   }
@@ -636,101 +265,19 @@ authRouter.post('/resend-verification', validate({ body: resendVerificationSchem
 
 authRouter.post('/google', validate({ body: googleAuthSchema }), async (req, res, next) => {
   try {
-    const { idToken, referralCode, groupInviteToken } = req.body as z.infer<typeof googleAuthSchema>;
-    const profile = await verifyGoogleIdToken(idToken);
-
-    const existingByGoogle = await findAuthUserByGoogleId(profile.googleId);
-    const existingByEmail = existingByGoogle ? existingByGoogle : await findAuthUserByEmail(profile.email);
-    const existing = existingByEmail;
-
-    let user: { id: string; email: string; role: UserRole; status: UserStatus };
-    let isNewUser = false;
-
-    if (existing) {
-      if (existing.status !== UserStatus.ACTIVE) {
-        throw new ApiError(403, 'account_suspended', 'Account is suspended.');
-      }
-
-      if (
-        !existing.googleId &&
-        existing.authProvider === AuthProvider.EMAIL &&
-        existing.passwordHash
-      ) {
-        throw new ApiError(
-          409,
-          'account_exists_use_password',
-          'An account with this email already exists. Sign in with your password first.'
-        );
-      }
-
-      const restoredRole = await restoreRoleIfSwitched(existing);
-      user = { id: existing._id, email: existing.email, role: restoredRole, status: existing.status };
-
-      await updateAuthUserGoogleLink({
-        userId: existing._id,
-        googleId: profile.googleId,
-        emailVerifiedAt: existing.emailVerifiedAt ?? new Date(),
-        lastActiveAt: new Date(),
-        profile: {
-          displayName: profile.displayName,
-          avatarUrl: profile.avatarUrl ?? undefined,
-          phone: null,
-          bio: null
-        }
-      });
-    } else {
-      isNewUser = true;
-      const userReferralCode = await createUniqueReferralCode();
-      const created = await createAuthUser({
-        email: profile.email,
-        passwordHash: null,
-        googleId: profile.googleId,
-        authProvider: 'GOOGLE',
-        role: 'PARTICIPANT',
-        status: 'ACTIVE',
-        emailVerifiedAt: new Date(),
-        lastActiveAt: new Date(),
-        referralCode: userReferralCode,
-        profile: {
-          displayName: profile.displayName,
-          phone: null,
-          bio: null,
-          avatarUrl: profile.avatarUrl ?? null
-        }
-      });
-
-      user = { id: created._id, email: created.email, role: created.role, status: created.status };
-
-      notifyAdminsMemberRegistered({
-        userId: created._id,
-        email: created.email,
-        displayName: profile.displayName,
-      });
-      scheduleSideEffect(processSignupRewards(created._id, referralCode), 'auth.google_signup_rewards');
-      scheduleSideEffect(
-        acceptGroupInvitesForNewUser({
-          userId: created._id,
-          email: created.email,
-          groupInviteToken,
-        }),
-        groupInviteToken
-          ? 'auth.google_signup_group_invite_token'
-          : 'auth.google_signup_pending_group_invites'
-      );
-    }
-
-    const tokens = await createSession({
-      userId: user.id,
-      email: user.email,
-      role: user.role,
+    const body = req.body as z.infer<typeof googleAuthSchema>;
+    const result = await authenticateWithGoogleIdToken({
+      idToken: body.idToken,
+      referralCode: body.referralCode,
+      groupInviteToken: body.groupInviteToken,
       ipAddress: req.ip,
-      userAgent: req.headers['user-agent']
+      userAgent: req.headers['user-agent'],
     });
 
-    respondWithAuth(res, isNewUser ? 201 : 200, user, tokens, {
-      isNewUser,
+    respondWithAuth(res, result.httpStatus, result.user, result.tokens, {
+      isNewUser: result.isNewUser,
       emailVerified: true,
-      authProvider: 'google'
+      authProvider: 'google',
     });
   } catch (error) {
     next(error);
@@ -740,35 +287,13 @@ authRouter.post('/google', validate({ body: googleAuthSchema }), async (req, res
 authRouter.patch('/change-password', requireAuth, validate({ body: changePasswordSchema }), async (req, res, next) => {
   try {
     const { currentPassword, newPassword, otpToken } = req.body as z.infer<typeof changePasswordSchema>;
-    const user = await findAuthUserById(req.auth!.userId);
-    if (!user?.passwordHash) {
-      throw new ApiError(400, 'oauth_account', 'Google accounts cannot change password here.');
-    }
-
-    let otpRecordId: string | null = null;
-    if (env.NODE_ENV === 'production') {
-      if (!otpToken) {
-        throw new ApiError(400, 'otp_required', 'OTP verification is required to change password.');
-      }
-      const otpRecord = await findPasswordResetToken(otpToken);
-      if (!otpRecord || otpRecord.userId !== user._id || otpRecord.usedAt || otpRecord.expiresAt < new Date()) {
-        throw new ApiError(400, 'invalid_token', 'OTP is invalid or expired.');
-      }
-      otpRecordId = otpRecord.id;
-    }
-
-    if (!(await verifyPassword(currentPassword, user.passwordHash))) {
-      throw new ApiError(401, 'invalid_password', 'Current password is incorrect.');
-    }
-
-    const passwordHash = await hashPassword(newPassword);
-    await updateAuthUserPassword(user._id, passwordHash);
-    if (otpRecordId) {
-      await usePasswordResetToken(otpRecordId);
-    }
-    await revokeRefreshTokensByUser(user._id);
-
-    res.json({ message: 'Password changed successfully.' });
+    const result = await changeAuthenticatedPassword({
+      userId: req.auth!.userId,
+      currentPassword,
+      newPassword,
+      otpToken,
+    });
+    res.json(result);
   } catch (error) {
     next(error);
   }
@@ -776,34 +301,8 @@ authRouter.patch('/change-password', requireAuth, validate({ body: changePasswor
 
 authRouter.post('/change-password/request-otp', requireAuth, async (req, res, next) => {
   try {
-    const user = await findAuthUserById(req.auth!.userId);
-    if (!user) {
-      throw new ApiError(404, 'user_not_found', 'User not found.');
-    }
-    if (!user.passwordHash) {
-      throw new ApiError(400, 'oauth_account', 'Google accounts cannot change password here.');
-    }
-
-    const token = randomToken(24);
-    await createPasswordResetToken({
-      userId: user._id,
-      token,
-      expiresAt: new Date(Date.now() + 15 * 60 * 1000)
-    });
-
-    scheduleSideEffect(
-      sendPasswordResetEmail({
-        to: user.email,
-        name: user.profile.displayName ?? user.email,
-        token,
-      }),
-      'auth.forgot_password_email'
-    );
-
-    res.json({
-      message: 'OTP sent to your email address.',
-      otpToken: env.NODE_ENV === 'production' ? undefined : token
-    });
+    const result = await requestAuthenticatedPasswordChangeOtp(req.auth!.userId);
+    res.json(result);
   } catch (error) {
     next(error);
   }

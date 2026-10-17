@@ -98,6 +98,21 @@ describe('route handler CQRS guard (MIG-CQRS-ROUTES)', () => {
     expect(violations).toEqual([]);
   });
 
+  it('auth router delegates to auth command services', () => {
+    const registrar = readRegistrar('apps/api/src/routes/auth.ts');
+    expect(registrar).toMatch(/auth-route-http/);
+    expect(registrar).toMatch(/auth-session-flow/);
+    expect(registrar).toMatch(/auth-login-commands/);
+    expect(registrar).toMatch(/auth-password-commands/);
+    expect(registrar).toMatch(/auth-registration-commands/);
+    expect(registrar).toMatch(/auth-google-commands/);
+    expect(registrar).toMatch(/auth-demo-commands/);
+    expect(registrar).not.toMatch(/member-identity-read/);
+    expect(registrar).not.toMatch(/auth-users/);
+    expect(registrar).not.toMatch(/verifyPassword/);
+    expect(registrar).not.toMatch(/hashPassword/);
+  });
+
   it('route handlers avoid direct auth-users / auth-tokens / chat-data / social-data imports', () => {
     const violations: { file: string; imports: string[] }[] = [];
     for (const file of walkRouteHandlerFiles(ROUTES_ROOT)) {
