@@ -29,6 +29,12 @@ const RETIRED_PATHS = [
   'src/components/activities/activityFormState.ts',
   'src/utils/activityFormSessionStorage.ts',
   'src/components/organisation-console/OrganisationActivityCheckInPanel.tsx',
+  'src/components/organisation-console/BecomeHostFlow.tsx',
+  'src/components/organisation-console/becomeHostForm.ts',
+  'src/components/organisation-console/OrganisationConsoleShell.tsx',
+  'src/components/organisation-console/OrganisationJoinRequestCard.tsx',
+  'src/components/organisation-console/OrganisationJoinRequestDeclineDialog.tsx',
+  'src/components/organisation-console/OrganisationRatingChip.tsx',
 ];
 
 const DEPRECATED_HOST_PAGE_IMPORTS = RETIRED_PATHS.filter((p) => p.startsWith('src/pages/Organisation'));

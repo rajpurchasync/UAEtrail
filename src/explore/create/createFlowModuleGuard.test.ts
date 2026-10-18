@@ -44,6 +44,14 @@ describe('create flow module boundaries (CPC-9b)', () => {
     expect(existsSync(join(ROOT, 'src/explore/ui/demandFlow.ts'))).toBe(false);
   });
 
+  it('leftover seekingFlow.ts and exploreSeekingCatalog shims are gone', () => {
+    expect(existsSync(join(ROOT, 'src/explore/ui/seekingFlow.ts'))).toBe(false);
+    expect(existsSync(join(ROOT, 'src/explore/exploreSeekingCatalog.ts'))).toBe(false);
+    expect(existsSync(join(ROOT, 'src/explore/ui/useExploreComposeRoute.ts'))).toBe(false);
+    expect(existsSync(join(ROOT, 'src/explore/ui/useExploreOrganizeFromActivity.ts'))).toBe(false);
+    expect(existsSync(join(ROOT, 'src/explore/hostPublishAvailabilityNotice.ts'))).toBe(false);
+  });
+
   it('leftover Demand compose files are gone (EXPLORE-IA)', () => {
     expect(existsSync(join(ROOT, 'src/explore/ui/CreateDemandFlow.tsx'))).toBe(false);
     expect(existsSync(join(ROOT, 'src/explore/ui/demandWizardSteps.tsx'))).toBe(false);

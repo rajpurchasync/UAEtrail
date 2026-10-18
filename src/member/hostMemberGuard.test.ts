@@ -40,7 +40,6 @@ const ALLOW_BECOME_HOST_PATH = new Set([
   'src/components/organisation-console/hostWizardFlow.ts',
   'src/components/organisation-console/hostWizardFlow.test.ts',
   'src/components/organisation-console/ProProfileApplicationFlow.tsx',
-  'src/components/organisation-console/BecomeHostFlow.tsx',
   'src/pages/ProfileProMembership.tsx',
   'src/App.tsx',
 ]);

@@ -342,7 +342,6 @@ Operator route registrars (legacy `registerHost*` filenames): under `routes/oper
 | `pages/OrganisationProfile.tsx` | Public storefront `/agency` · `/partner` |
 | `components/organisation/*`, `ShopOrganisation*` | Agency / shop tenant UI |
 | `organisation-console/` (Pro flow, `OrganisationPublicProfile`) | Tenant onboarding + public profile editor — **not** `/host/*` shell |
-| Deprecated shims in `organisation-console/` (`OrganisationConsoleShell` → `src/console`) | Import compatibility only |
 
 | Retired (guard: `organisationNamingGuard.test.ts`) | Use instead |
 |----------------------------------------------------|-------------|

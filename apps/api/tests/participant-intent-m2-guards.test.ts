@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const read = (rel: string) => readFileSync(join(process.cwd(), rel), 'utf8');
@@ -12,10 +12,10 @@ describe('participant intent M2 guards', () => {
     expect(exploreMapBase).not.toMatch(/listActiveParticipantIntentsForMap\(/);
   });
 
-  it('demand map pins stay disabled unless deprecated EXPLORE_MAP_DEMAND_PINS=1', () => {
-    const flags = read('src/lib/explore-map-demand-pins.ts');
+  it('legacy demand map-pin flag module is gone (seeking uses activity: rows)', () => {
+    expect(existsSync(join(process.cwd(), 'src/lib/explore-map-demand-pins.ts'))).toBe(false);
     const exploreMapBase = read('src/lib/explore-map-base.ts');
-    expect(flags).toMatch(/EXPLORE_MAP_DEMAND_PINS/);
+    expect(exploreMapBase).not.toMatch(/EXPLORE_MAP_DEMAND_PINS/);
     expect(exploreMapBase).not.toMatch(/source:\s*'demand'/);
   });
 

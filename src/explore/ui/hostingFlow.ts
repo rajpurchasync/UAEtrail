@@ -5,7 +5,7 @@
  * - **Per-kind flows:** `hostingFlows/*` (`HostingKindFlow` — not place/facility catalog).
  * - **UI:** `CreateHostingActivityFlow.tsx` via `create/hosting/HostingFlowHost.tsx`.
  *
- * FAB **Host** uses this tree. **Find crew** → `seekingFlow.ts` / `seekingFlowEngine.ts`.
+ * FAB **Host** uses this tree. **Find crew** → `seekingFlowEngine.ts`.
  * Shared primitives → `createFlowShared.ts`.
  */
 

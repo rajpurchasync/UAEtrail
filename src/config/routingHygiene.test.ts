@@ -193,6 +193,13 @@ describe('routingHygiene', () => {
       'src/pages/Membership.tsx',
       'src/pages/MerchantPublic.tsx',
       'src/explore/ui/ExploreComposeHost.tsx',
+      'src/pages/Activities.tsx',
+      'src/hooks/participantIntentClientApi.ts',
+      'src/member-plan/participantIntentTrips.ts',
+      'src/member-plan/navigateParticipantIntentManage.ts',
+      'src/components/organisation-console/BecomeHostFlow.tsx',
+      'src/components/organisation-console/becomeHostForm.ts',
+      'src/components/organisation-console/OrganisationConsoleShell.tsx',
     ];
     expect(gone.filter((rel) => existsSync(join(process.cwd(), rel)))).toEqual([]);
   });

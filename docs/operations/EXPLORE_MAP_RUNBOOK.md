@@ -60,7 +60,7 @@ Upserts linked amenities (Hatta dam, wadi hub, hill camp, Shawka, Jais, Al Qudra
 | Variable | Purpose |
 |----------|---------|
 | `EXPLORE_MAP_BBOX=1` | Enables `GET /explore/map?bbox=west,south,east,north` subset + `cursor` / `limit` / `area` (default off; full-region response unchanged) |
-| `EXPLORE_MAP_DEMAND_PINS` | **Deprecated** — must stay unset/off; map never emits `demand:` pins (seeking = `activity:`). Reserved for migration archaeology only. |
+| ~~`EXPLORE_MAP_DEMAND_PINS`~~ | **Removed** — map never emits `demand:` pins (seeking = `activity:`). |
 | `VITE_EXPLORE_MAP_BBOX=1` | Explore map uses viewport bbox fetch (requires API flag); `/list` still loads full map |
 | `EXPLORE_MAP_DISCOVERY_PROJECTION=1` | Each map item includes `discoveryCard` (L1 read model; not cached in Redis) |
 | `VITE_EXPLORE_MAP_DISCOVERY_PROJECTION=1` | Peek/list use server `discoveryCard` when present (requires API flag) |

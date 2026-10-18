@@ -537,7 +537,7 @@ Work **top to bottom**. Each wave ends with **`npm run verify:system:quick`** (w
 |-------|---------|--------------|--------|
 | **S12a** | Transport child links via `linkedActivityId` / `linkParentToRideshareActivity`; **no** `link-activity` on rideshare publish | `useExploreRideshareOrganizeLinks.ts`, `organizeActivityPublish.ts`, `linkActivityRideshareOffer.ts` | **Done** |
 | **S12b** | Owner peek = `ExploreActivityMapPeekActions` for seeking + hosted (legacy demand-owner fork only without activity host wire) | `exploreSelectionSelectedCard.ts`, `enrichListFeedCard.ts` | **Done** |
-| **S12c** | Find success + intent manage → same transport surfaces as Organize (`LinkRidesharePanel`, paste link) | `SeekingSubmitSuccessSheet.tsx`, `ParticipantIntentManageSheet.tsx`, `navigateParticipantIntentManage.ts` | **Done** |
+| **S12c** | Find success + intent manage → same transport surfaces as Organize (`LinkRidesharePanel`, paste link) | `SeekingSubmitSuccessSheet.tsx`, `ParticipantIntentManageSheet.tsx` | **Done** |
 | **S12d** | Docs/guards: no new `demand`-only product gates; intent APIs read-through only | `seekingPinHygieneGuard` (S12d tests), `exploreCardModel` legacy flags | **Done** |
 
 ### 8.1 S10 remediation waves (phase plan)

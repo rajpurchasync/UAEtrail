@@ -14,7 +14,7 @@
 
 Companion docs: [`DOCS_INDEX.md`](./DOCS_INDEX.md), [`NORTHSTAR.md`](./NORTHSTAR.md), [`MEMBER_MODEL.md`](./MEMBER_MODEL.md), [`DOMAIN.md`](./DOMAIN.md), [`NAVIGATION.md`](./NAVIGATION.md), [`COMMUNICATION.md`](./COMMUNICATION.md), [`TRIPS_HOST_MANAGE.md`](./TRIPS_HOST_MANAGE.md), [`experiment/explore-ux-spec.md`](./experiment/explore-ux-spec.md).
 
-Code (today): `src/explore/compose.ts`, `CreateIntentSheet.tsx`, `SeekFlexibleComposeSheet.tsx`, `hostingFlow.ts` / `hostingFlowEngine.ts`, `seekingFlow.ts` / `seekingFlowEngine.ts`, `contributeFlow.ts`.
+Code (today): `src/explore/compose.ts`, `CreateIntentSheet.tsx`, `SeekFlexibleComposeSheet.tsx`, `hostingFlow.ts` / `hostingFlowEngine.ts`, `seekingFlowEngine.ts`, `contributeFlow.ts`.
 
 **Status:** Spec **approved (CPC)** · **Host · Find crew · Add on map** FAB + compose wire wire **shipped** (legacy compose aliases retained; see [Implementation status](#implementation-status))
 
@@ -361,7 +361,7 @@ Track what is **spec** vs **shipped**. Update this table in the same PR that lan
 | **`Explore*` on hooks/components** | Map/browse shell only (`useExploreMapViewport`, pin peek). **Not** FAB compose — compose mounts on `/explore` **and** `/list`. |
 | **`src/explore/create/`** | Cross-surface compose: URL state, guards, `ComposeHost`, hosting prefill/reorganize. |
 | **Product verbs in shell props** | `hostWizardOpen` on `ComposeHost` (+ `planSeekingWizardOpen`, `contributeWizardOpen`); hook/model may still expose `planHostingWizardOpen` alias. Product = Host / Find crew / Add on map. |
-| **Wizard modules (catalog `wizard` field)** | `hostingFlow` → `hostingFlowEngine.ts` + `hostingFlows/*`; `seekingFlow` → `seekingFlowEngine.ts`. Facades: `hostingFlow.ts`, `seekingFlow.ts`. Removed (COH-10): `organizeFlow.ts`, `organizeFlows/`, `createOrganize/`, `hostingCatalog/`, `CreateActivityFlow.tsx`. |
+| **Wizard modules (catalog `wizard` field)** | `hostingFlow` → `hostingFlowEngine.ts` + `hostingFlows/*`; `seekingFlow` → `seekingFlowEngine.ts`. Facade: `hostingFlow.ts`. Removed: `seekingFlow.ts`, `organizeFlow.ts`, `organizeFlows/`, `createOrganize/`, `hostingCatalog/`, `CreateActivityFlow.tsx`. |
 | **“Catalog” in code** | **Place/facility inventory only** (`GET */catalog`, Add-on-map submit). Per-kind **hosting** wizards = `hostingFlows` (`HostingKindFlow`) — not catalog. |
 | **“Plan” in code** | Bottom nav `/plan` (schedule + availability) — **not** the FAB. FAB wire: `host:*` \| `seek:*` \| `add:*` (aliases `plan:*:hosting|seeking`, `contribute:*`). |
 | **Compose flow ids** | Canonical v3 ids + legacy `plan.*` / `contribute.*` / `organize.*` / `find.*` / `add.*` via `composeFlowIds.ts`. |
@@ -375,7 +375,7 @@ One responsive stack — not separate mobile/desktop implementations.
 |----------------------------|------------------|----------------------------------|
 | Compose shell | `create/ComposeHost.tsx`, `CreateIntentSheet.tsx` | `compose.ts`, `create/composeRouteGuard.ts`, `create/hooks/useComposeRoute.ts` |
 | **Host** | `create/hosting/HostingFlowHost` → `CreateHostingActivityFlow.tsx` | `hostingFlow.ts` → `hostingFlowEngine.ts`, `hostingFlows/*` |
-| **Find crew** (fixed) | `CreateSeekingFlow.tsx` | `seekingFlow.ts` → `seekingFlowEngine.ts` |
+| **Find crew** (fixed) | `CreateSeekingFlow.tsx` | `seekingFlowEngine.ts` |
 | **Find crew** (flexible) | `SeekFlexibleComposeSheet.tsx` | `PlanAvailabilitySection` (`variant=fab`) |
 | **Add on map** | `CreateContributeFlow.tsx`, `CreateContributeFacilityFlow.tsx` | `contributeFlow.ts`, `contributeFacilityFlow.ts` |
 | Map browse shell | `ExploreExperience.tsx` | `useExploreExperienceModel`, map hooks |

@@ -72,10 +72,6 @@ const LEGACY_SYMBOL_ALLOW = new Set([
   'src/console/ConsoleHubSections.tsx',
   'src/components/account/OrganisationHubSections.tsx',
   'src/components/account/index.ts',
-  'src/components/organisation-console/OrganisationConsoleShell.tsx',
-  'src/components/organisation-console/OrganisationJoinRequestCard.tsx',
-  'src/components/organisation-console/OrganisationJoinRequestDeclineDialog.tsx',
-  'src/components/organisation-console/OrganisationRatingChip.tsx',
   'src/member/organisationNamingGuard.test.ts',
   'src/hooks/tenantActivityClientApi.ts',
 ]);
