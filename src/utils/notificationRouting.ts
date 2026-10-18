@@ -8,7 +8,7 @@ import {
   explorePath,
   isLegacyRewardsWalletPath,
   LEGACY_MESSAGES_PATH,
-  memberProfilePath,
+  memberProfileLink,
   BUDDIES_PATH,
   GROUPS_PATH,
   groupsPath,
@@ -235,12 +235,12 @@ export const inferNotificationPath = (
       toStringValue(meta?.actorUserId) ??
       toStringValue(meta?.fromUserId) ??
       toStringValue(meta?.buddyUserId);
-    if (actorUserId) return memberProfilePath(actorUserId) ?? BUDDIES_PATH;
+    if (actorUserId) return memberProfileLink(actorUserId);
     return BUDDIES_PATH;
   }
   if (kind === 'connection_member_followed') {
     const followerUserId = toStringValue(meta?.followerUserId);
-    if (followerUserId) return memberProfilePath(followerUserId) ?? PROFILE_PATH;
+    if (followerUserId) return memberProfileLink(followerUserId);
     return PROFILE_PATH;
   }
   if (kind === 'member_published' || kind === 'friend_published' || kind === 'friend_activity_published') {
@@ -249,14 +249,16 @@ export const inferNotificationPath = (
     if (intentId) {
       const publishedActivityId =
         toStringValue(meta?.activityId) ?? toStringValue(meta?.seekingActivityId);
-      return exploreSeekingMapItemPath({
-        intentId,
-        activityId: publishedActivityId,
-      });
+      if (publishedActivityId) {
+        return exploreSeekingMapItemPath({
+          intentId,
+          activityId: publishedActivityId,
+        });
+      }
     }
     const actorUserId = toStringValue(meta?.actorUserId) ?? toStringValue(meta?.hostUserId);
     if (actorUserId) {
-      return memberProfilePath(actorUserId) ?? explorePath({ list: true }) ?? EXPLORE_MAP_PATH;
+      return memberProfileLink(actorUserId);
     }
     return explorePath({ list: true });
   }

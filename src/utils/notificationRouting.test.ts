@@ -160,7 +160,7 @@ describe('inferNotificationPath', () => {
           seekingActivityId: 'act-seek-2',
         })
       )
-    ).toBe('/explore?pin=activity%3Aact-seek-2&list=1&panel=activities');
+    ).toBe('/explore?list=1&panel=activities&pin=activity%3Aact-seek-2');
     expect(
       inferNotificationPath(
         notif({
@@ -168,7 +168,7 @@ describe('inferNotificationPath', () => {
           intentId: 'int-legacy',
         })
       )
-    ).toBe('/explore?pin=demand%3Aint-legacy&list=1&panel=activities');
+    ).toBe('/explore?list=1');
   });
 
   it('rewrites stale host overview notification paths to pro membership', () => {

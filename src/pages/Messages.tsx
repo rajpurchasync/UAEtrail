@@ -68,7 +68,7 @@ export const MessagesGate = () => {
     return (
       <GuestTabPlaceholder
         title="Chat"
-        description="Sign in to chat with organizers and your crew."
+        description="Sign in to chat with hosts and your crew."
         intent="peek-details"
       />
     );

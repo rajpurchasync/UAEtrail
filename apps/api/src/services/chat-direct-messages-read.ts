@@ -3,7 +3,7 @@ import {
   findChatMessageInThread,
   listThreadMessages,
   markThreadAsRead,
-} from '../lib/chat-data.js';
+} from '../lib/chat-messages-store.js';
 
 export { countThreadMessages, findChatMessageInThread, listThreadMessages };
 

@@ -22,7 +22,7 @@ const intentStatusClass: Record<ParticipantIntentDTO['status'], string> = {
   cancelled: 'bg-neutral-500/10 text-neutral-600',
 };
 
-/** Lists `participant_intents` for the member (seeking) — `/plan` peek bridge and history self-logged. */
+/** Lists the member’s seeking posts (`/me/seeking-posts`) — `/plan` peek bridge and history self-logged. */
 export const SeekingIntentsSection = ({
   segment,
   refreshKey = 0,

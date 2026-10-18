@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import {
   EXPLORE_SEARCH_SCOPES_SHIPPED,
@@ -136,12 +136,9 @@ describe('list module hygiene', () => {
     });
   });
 
-  it('explore peopleBrowse folder is a re-export shim only', () => {
-    const shimDir = join(process.cwd(), 'src/explore/ui/peopleBrowse');
-    const names = readdirSync(shimDir).filter((name) => name.endsWith('.ts') || name.endsWith('.tsx'));
-    expect(names).toEqual(['index.ts']);
-    const shim = readFileSync(join(shimDir, 'index.ts'), 'utf8');
-    expect(shim).toContain('@/people-discovery/panel/peopleBrowse');
+  it('explore peopleBrowse re-export shim is gone (EXPLORE-IA)', () => {
+    expect(existsSync(join(process.cwd(), 'src/explore/ui/peopleBrowse'))).toBe(false);
+    expect(existsSync(join(process.cwd(), 'src/explore/peopleBrowseTab.ts'))).toBe(false);
   });
 
   it('keeps explore People panel separate from map list and discover browse', () => {

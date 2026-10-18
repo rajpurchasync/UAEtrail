@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { memberProfilePath } from '@uaetrail/shared-types';
+import { memberProfileLink } from '../../member/memberProfileLink';
 import { CornerDownLeft, Smile } from 'lucide-react';
 import { chatParticipantNameColorClass } from '../../utils/chatParticipantColor';
 import { profileReturnNavState } from '../../utils/profileReturnNav';
@@ -97,7 +97,7 @@ export const ChatMessageBubble = ({
     : 'bg-white text-gray-900 rounded-2xl rounded-bl-md shadow-sm border border-neutral-100';
 
   const showDmSenderAbove = !isMe && Boolean(senderLabel?.trim()) && !groupSender;
-  const profilePath = groupSender ? memberProfilePath(groupSender.userId) : null;
+  const profilePath = groupSender ? memberProfileLink(groupSender.userId) : null;
 
   return (
     <div className={`flex min-w-0 flex-col gap-0 ${CHAT_BUBBLE_SHELL_CLASS}`}>

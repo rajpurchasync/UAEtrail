@@ -5,4 +5,4 @@ export {
   findAuthUsersByIds,
   getAuthUserMembershipTier,
   getAuthUserMembershipTiers,
-} from '../lib/auth-users.js';
+} from '../lib/auth-users-store.js';

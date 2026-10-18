@@ -25,7 +25,7 @@ type Props = Pick<
   | 'peopleBrowseMapChip'
   | 'joinInvitePeekBanner'
   | 'handleCloseMapSelection'
-  | 'handleOfferRideshareForDemand'
+  | 'handleOfferRideshareForSeeking'
   | 'primaryFabLabel'
   | 'handleOpenExploreItem'
   | 'searchScopeCounts'
@@ -55,7 +55,7 @@ export const ExploreMapShell = ({
   peopleBrowseMapChip,
   joinInvitePeekBanner,
   handleCloseMapSelection,
-  handleOfferRideshareForDemand,
+  handleOfferRideshareForSeeking,
   primaryFabLabel,
   handleOpenExploreItem,
   searchScopeCounts,
@@ -96,8 +96,8 @@ export const ExploreMapShell = ({
     onReloadMap={reloadMap}
     venueNotice={selection.venueNotice}
     onDismissVenueNotice={() => selection.setVenueNotice(null)}
-    demandNotice={selection.demandNotice}
-    onDismissDemandNotice={() => selection.setDemandNotice(null)}
+    exploreNotice={selection.exploreNotice}
+    onDismissExploreNotice={() => selection.setExploreNotice(null)}
     user={user}
     locationPromptOpen={viewport.locationPromptOpen}
     locatingDevice={viewport.locatingDevice}

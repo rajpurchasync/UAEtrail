@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { findAuthUserByReferralCode } from './auth-users.js';
+import { findAuthUserByReferralCode } from './auth-users-store.js';
 
 export const generateReferralCode = (): string =>
   crypto.randomBytes(4).toString('hex').toUpperCase();

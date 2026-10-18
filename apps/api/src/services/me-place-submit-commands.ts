@@ -8,7 +8,7 @@ import { findPublishedAreaById } from '../lib/areas-store.js';
 import { createAuditLog } from '../lib/audit.js';
 import { toLocationDto } from '../lib/mappers.js';
 import { scheduleSideEffect } from '../lib/schedule-side-effect.js';
-import { findAuthUserById } from '../lib/auth-users.js';
+import { findAuthUserById } from '../lib/auth-users-store.js';
 import { notifyAdminsCatalogSubmitted } from './catalog-submit-notifications.js';
 import { buildPlaceSubmitPayload } from './place-submit.js';
 import { awardPoints } from './rewards.js';

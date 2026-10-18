@@ -9,7 +9,7 @@ import {
 } from '../domain/host-application.js';
 import { assertMinimumAge } from '../domain/user-profile.js';
 import { ApiError } from '../lib/api-error.js';
-import { findAuthUserById, updateAuthUserProfile } from '../lib/auth-users.js';
+import { findAuthUserById, updateAuthUserProfile } from '../lib/auth-users-store.js';
 import { findTenantByOwnerId } from '../lib/activities-store.js';
 import { parseHostDetailsFromMetadata } from '../lib/host-display-details.js';
 import {

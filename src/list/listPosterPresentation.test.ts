@@ -232,7 +232,7 @@ describe('resolveListFeedFooterModel', () => {
 
     const model = resolveListFeedFooterModel(card, { isGuest: true });
     expect(model.primary.kind).toBe('guest_gate');
-    // Pre-join Message organizer is entitlement-gated; guests without wire entitlements only see join.
+    // Pre-join Message host is entitlement-gated; guests without wire entitlements only see join.
     expect(model.secondary).toBeNull();
   });
 });

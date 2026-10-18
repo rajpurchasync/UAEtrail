@@ -39,9 +39,10 @@ export const countPublishedAreaPreviewByAreaId = async (
       areaId,
       status: LocationStatus.ACTIVE,
     }),
-    db.collection(COLLECTIONS.PARTICIPANT_INTENTS).countDocuments({
+    db.collection(COLLECTIONS.ACTIVITIES).countDocuments({
       areaId,
-      status: 'active',
+      activityMode: 'seeking',
+      status: ActivityStatus.PUBLISHED,
     }),
   ]);
   return { activities, places, seeking };

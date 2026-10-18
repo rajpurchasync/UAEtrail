@@ -8,7 +8,7 @@ import {
   TenantStatus,
   TenantType,
 } from '../domain/enums.js';
-import { findAuthUserById, findAuthUsersByIds } from './auth-users.js';
+import { findAuthUserById, findAuthUsersByIds } from './auth-users-store.js';
 import { createLocationRecord } from './activities-store.js';
 import { newEntityId, type MongoActivityDoc } from './entity-builders.js';
 import {

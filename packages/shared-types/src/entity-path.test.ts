@@ -21,4 +21,8 @@ describe('memberProfilePath', () => {
     expect(memberProfilePath('u1', { lens: 'friends' })).toBe('/member/u1?source=friends');
     expect(memberProfilePath('u1', { lens: 'host' })).toBe('/member/u1?source=host');
   });
+
+  it('serializes owner public preview without treating it as a browse lens', () => {
+    expect(memberProfilePath('u1', { publicPreview: true })).toBe('/member/u1?view=public');
+  });
 });

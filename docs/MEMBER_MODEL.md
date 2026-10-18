@@ -10,7 +10,7 @@ Do **not** re-implement tier logic in React hooks — consume **`GET /me/status`
 
 **My Plans surface vs `/me/*`:** Consumer **My Plans** lives at **`/plan`** (`PLAN_PATH`, `src/plan/planRouting.ts`) — **forward-looking only**: upcoming joined/hosting (list or calendar), coordination strip, availability lens, wishlist/saved, goals teaser — **not** outing history or journey map. **`/profile`** is identity and settings; **`/profile/history`** (+ map at `/profile/history/map`) is **past** inventory (joined / hosted / self-logged). HTTP **`GET/PUT /me/goals`**, **`/me/availability`**, **`/me/coordination-attention`** back the Plan page; they are **not** browser routes like `/me/plans`. Explore FAB **Host · Find crew · Add** is separate from the Plan tab ([`NAVIGATION.md`](./NAVIGATION.md) § Plan disambiguation).
 
-**Plan is a UI hub, not a domain entity:** There is no `Plan` collection, `PlanDTO`, or `GET /plans/:id`. The middle tab is a **read-model shell** over real objects — primarily **`activities`** (joined upcoming, **hosted** / organizing filter, seeking via `participant_intents`), plus **`member_goals`**, **`member_availability`**, wishlist saves, and **`coordination-attention`** (join queues, invites). **Organizing an outing** = create/publish an **`Activity`** (tenant-scoped publish, map discovery) — not “creating a Plan.” In code, prefer **activity / hosted / joined / goals / availability** in API and store names; FE hub helpers: `memberCommitmentHubApi` (`goals` + `availability` only). Reserve **Plan** for routes (`/plan`), tab chrome, and inbox grouping copy where noted in [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) (activity detail tab label **Plan** = outing facts on L3 — still not a Plan entity).
+**Plan is a UI hub, not a domain entity:** There is no `Plan` collection, `PlanDTO`, or `GET /plans/:id`. The middle tab is a **read-model shell** over real objects — primarily **`activities`** (joined upcoming, **hosted** / organizing filter, seeking via `activityMode: seeking`), plus **`member_goals`**, **`member_availability`**, wishlist saves, and **`coordination-attention`** (join queues, invites). **Organizing an outing** = create/publish an **`Activity`** (tenant-scoped publish, map discovery) — not “creating a Plan.” In code, prefer **activity / hosted / joined / goals / availability** in API and store names; FE hub helpers: `memberCommitmentHubApi` (`goals` + `availability` only). Reserve **Plan** for routes (`/plan`), tab chrome, and inbox grouping copy where noted in [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) (activity detail tab label **Plan** = outing facts on L3 — still not a Plan entity).
 
 **FE file naming:** Two patterns — pick by **surface**, not by parsing every word in a component name.
 
@@ -21,7 +21,7 @@ Do **not** re-implement tier logic in React hooks — consume **`GET /me/status`
 
 `src/plan/planRouting.ts` + `planTab.ts` = URL/helpers for `/plan`. SN-6 allows `Plan*` under `src/plan/`, `src/components/plan/`, `src/member-plan/` only. **Do not** split the same upcoming list across `plan/` and `activity/` — that duplicates ownership.
 
-**Activity detail — Pro vs organizer vs crew:** **Community organizer** = profile-complete member who may Organize (`canPublish`). **Pro membership** = paid tier for **social depth** on outings (e.g. view organizer profile before join, full **Buddies** roster after join, offer/add transport when enforced) — applied in **`applyActivityViewEntitlements`** after social `viewerAccess`. **`canAccessCrewSurfaces`** on activity detail is **not** Pro and **not** publishing tier: it means confirmed **participant** or **organizer** on **this** outing (meeting precision, roster, group chat). Pending joiners stay on **Plan** + join CTAs only. Do not use `UserRole` or `canPublish` for consumer Buddies/Place gates.
+**Activity detail — Pro vs host vs crew:** **Community host** = profile-complete member who may Organize (`canPublish`). **Pro membership** = paid tier for **social depth** on outings (e.g. view host profile before join, full **Buddies** roster after join, offer/add transport when enforced) — applied in **`applyActivityViewEntitlements`** after social `viewerAccess`. **`canAccessCrewSurfaces`** on activity detail is **not** Pro and **not** publishing tier: it means confirmed **participant** or **host** on **this** outing (meeting precision, roster, group chat). Pending joiners stay on **Plan** + join CTAs only. Do not use `UserRole` or `canPublish` for consumer Buddies/Place gates.
 
 **Publishing actor = always a user:** Every publish action has a `userId` actor. A **business** is a **tenant** the user may represent; use **publish as self / {business}** when the member has multiple activity-capable tenants (`GET /me/status` → `publish.ownedProfiles[].publishingProfileKind`; Organize publish step `OrganizePublishAsField`). Workspace publish-as: TBD.
 
@@ -34,7 +34,7 @@ Do **not** re-implement tier logic in React hooks — consume **`GET /me/status`
 | Concept | What it is | Product entry |
 |---------|------------|---------------|
 | **Member (user)** | One human account | Sign up · `/profile` |
-| **Community organizer** | Same user, profile complete — free **Organize** on the map | No Pro; auto **community** tenant |
+| **Community host** | Same user, profile complete — free **Organize** on the map | No Pro; auto **community** tenant |
 | **Pro membership** | Upgrade path for **individual** (pro guide) or **business** (shop, tour agency, e-commerce, hospitality, …) | `/profile/pro-membership` |
 | **Tenant** | Single persistence row for every storefront (`tenants`); wire name **organisation** in headers/API | `x-organisation-id`, `GET /publishing/*` when managing (alias `/operator/*`) |
 | **Business subtype** | Which Pro business flavor (location-bound shop vs remote agency vs online e-commerce, etc.) | Chosen in Pro application — maps to `PublishingProfileKind` |
@@ -64,8 +64,7 @@ flowchart TB
   subgraph storage [Persistence]
     T[tenants — publishingPurpose]
     TM[tenant_memberships — team link]
-    A[activities — Organize]
-    PI[participant_intents — Demand]
+    A[activities — hosted + seeking]
   end
 
   subgraph api [API surfaces]
@@ -83,7 +82,6 @@ flowchart TB
   T -->|business| B
   TM --> B
   C --> A
-  C --> PI
   P --> A
   B --> A
   ME --> HOST

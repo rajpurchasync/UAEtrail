@@ -11,7 +11,7 @@ import {
   UserStatus
 } from '../../src/domain/enums.js';
 import bcrypt from 'bcryptjs';
-import { createAuthUser, findAuthUserByEmail, updateAuthUserCore } from '../../src/lib/auth-users.js';
+import { createAuthUser, findAuthUserByEmail, updateAuthUserCore } from '../../src/lib/auth-users-store.js';
 import { newEntityId } from '../../src/lib/entity-builders.js';
 import { createActivityDetailed, createLocationRecord } from '../../src/lib/activities-store.js';
 import { getMongoClient } from '../../src/lib/mongo.js';

@@ -1,4 +1,4 @@
-import { updateAuthUserLastActive } from './auth-users.js';
+import { updateAuthUserLastActive } from './auth-users-store.js';
 import { logger } from './logger.js';
 import { getRedisClient } from './redis.js';
 

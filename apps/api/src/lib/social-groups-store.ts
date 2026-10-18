@@ -2,7 +2,7 @@ import type { Collection } from 'mongodb';
 import type { GroupWallReplyPreviewDTO } from '@uaetrail/shared-types';
 import { buildGroupWallReplyPreview } from './reply-preview.js';
 import { newEntityId } from './entity-builders.js';
-import { findAuthUsersByIds } from './auth-users.js';
+import { findAuthUsersByIds } from './auth-users-store.js';
 import { getMongoClient } from './mongo.js';
 import { normalizeSearchRegexInput } from './regex-search.js';
 import {

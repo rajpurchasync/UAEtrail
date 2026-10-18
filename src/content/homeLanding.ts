@@ -49,7 +49,7 @@ export const HOME_LANDING_FALLBACK_ACTIVITIES: HomeLandingActivity[] = [
   {
     id: 'fallback-dam',
     title: 'Hatta dam loop',
-    description: 'Morning loop around Hatta Dam with a verified organizer — read the plan and request your spot.',
+    description: 'Morning loop around Hatta Dam with a verified host — read the plan and request your spot.',
     region: 'Dubai',
     date: '2026-10-12',
     time: '07:00',

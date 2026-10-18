@@ -1,7 +1,7 @@
 /**
  * Demand vs wishlist — do not mix.
  *
- * **Demand (Looking for):** Public participation on Explore (`participant_intents`).
+ * **Demand (Looking for):** Public participation on Explore (`activities` with `activityMode: seeking`).
  * Create, discover, message, host-fulfill — not stored as wishlist rows.
  *
  * **Wishlist:** Private venue + activity saves (`GET/POST /me/wishlist`) with optional

@@ -1,7 +1,7 @@
 import { randomUUID } from 'crypto';
 import { OrderStatus, ProductStatus, TenantBusinessMode, UserRole } from '../domain/enums.js';
 import type { MerchantProfile, Product, ProductClick, ShopOrder } from '../domain/types.js';
-import { findAuthUserById, findAuthUsersByIds } from './auth-users.js';
+import { findAuthUserById, findAuthUsersByIds } from './auth-users-store.js';
 import { findTenantMembershipContext, listActiveTenantMembershipsByUser } from './tenant-access.js';
 import { ORG_SHOP_MANAGE_ROLES } from './org-permissions.js';
 import { COLLECTIONS } from './collections.js';

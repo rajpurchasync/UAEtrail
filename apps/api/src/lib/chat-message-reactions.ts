@@ -7,7 +7,7 @@ import {
   type GroupWallReactionKind,
   type GroupWallReactionSummary,
 } from './social-groups-store.js';
-import { findChatMessageInThread } from './chat-data.js';
+import { findChatMessageInThread } from './chat-messages-store.js';
 
 type MongoChatMessageReaction = {
   _id: string;

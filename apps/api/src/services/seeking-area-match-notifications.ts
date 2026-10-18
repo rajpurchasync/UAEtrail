@@ -46,26 +46,6 @@ const listActiveSeekingInArea = async (
   const db = getMongoClient()!.db();
   const rows: ActiveSeekingRow[] = [];
 
-  const intentDocs = await db
-    .collection(COLLECTIONS.PARTICIPANT_INTENTS)
-    .find({
-      status: 'active',
-      areaId,
-      ...(excludeUserId ? { userId: { $ne: excludeUserId } } : {}),
-    })
-    .limit(MAX_SEEKER_NOTIFICATIONS)
-    .toArray();
-
-  for (const doc of intentDocs) {
-    rows.push({
-      userId: String(doc.userId),
-      intentId: String(doc._id),
-      title: String(doc.title ?? 'Looking for crew'),
-      date: doc.date ? String(doc.date) : null,
-      activityId: doc.activityId ? String(doc.activityId) : doc.seekingActivityId ? String(doc.seekingActivityId) : null,
-    });
-  }
-
   const locationIds = await db
     .collection(COLLECTIONS.LOCATIONS)
     .find({ areaId, status: LocationStatus.ACTIVE })
@@ -85,7 +65,7 @@ const listActiveSeekingInArea = async (
     .limit(MAX_SEEKER_NOTIFICATIONS)
     .toArray();
 
-  const seenUsers = new Set(rows.map((row) => row.userId));
+  const seenUsers = new Set<string>();
   for (const doc of activityDocs) {
     const userId = String(doc.hostId ?? doc.createdById);
     if (excludeUserId && userId === excludeUserId) continue;

@@ -108,7 +108,7 @@ export const PlanHostingUpcoming = ({ refreshKey = 0, canHost }: PlanHostingUpco
   if (!host.tenantId) {
     return (
       <ConsumerInlineEmpty
-        message="Organizer profile is still loading — try again in a moment."
+        message="Host profile is still loading — try again in a moment."
         actionLabel="Refresh"
         actionTo="/plan"
       />

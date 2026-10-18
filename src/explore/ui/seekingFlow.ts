@@ -1,17 +1,17 @@
 /**
- * Plan → **seeking** wizard (`participant_intents`).
+ * Plan → **seeking** wizard (seeking activities, `activityMode: seeking`).
  * Engine: `seekingFlowEngine.ts`.
  */
 
 export type {
-  DemandKind as SeekingPlanKind,
-  DemandFlowStepId as SeekingFlowStepId,
-  DemandDraft as SeekingActivityDraft,
+  SeekingKind,
+  SeekingFlowStepId,
+  SeekingDraft,
 } from './seekingFlowEngine';
 
 export {
-  emptyDemandDraft as emptySeekingDraft,
-  getDemandFlowSteps as getSeekingFlowSteps,
-  validateDemandStep as validateSeekingStep,
-  DEMAND_TYPE_OPTIONS as SEEKING_TYPE_OPTIONS,
+  emptySeekingDraft,
+  getSeekingFlowSteps,
+  validateSeekingStep,
+  SEEKING_TYPE_OPTIONS,
 } from './seekingFlowEngine';

@@ -1,10 +1,10 @@
 import type { ChatConversationDTO, MemberInboxDTO, MemberInboxGroupDTO } from '@uaetrail/shared-types';
-import { findAuthUsersByIds } from '../lib/auth-users.js';
+import { findAuthUsersByIds } from '../lib/auth-users-store.js';
 import {
   getLastMessageByPartner,
   getUnreadCountByPartner,
   listConversationPartnerIds,
-} from '../lib/chat-data.js';
+} from '../lib/chat-messages-store.js';
 import { listGroupsForUserWithChatPreview, type GroupRecordWithChatPreview } from '../lib/social-groups-store.js';
 import { filterInboxMessageablePartnerIds } from './chat-policy.js';
 import { logger } from '../lib/logger.js';

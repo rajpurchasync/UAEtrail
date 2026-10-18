@@ -2,7 +2,7 @@ import type { z } from 'zod';
 import { MembershipRole, TenantType, UserRole } from '../domain/enums.js';
 import { ApiError } from '../lib/api-error.js';
 import { findTenantById } from '../lib/activities-store.js';
-import { findAuthUserByEmail, updateAuthUserCore } from '../lib/auth-users.js';
+import { findAuthUserByEmail, updateAuthUserCore } from '../lib/auth-users-store.js';
 import { createAuditLog } from '../lib/audit.js';
 import {
   deleteTenantMembership,

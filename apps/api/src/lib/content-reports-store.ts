@@ -2,7 +2,7 @@ import type { Collection } from 'mongodb';
 import { getMongoClient } from './mongo.js';
 import { COLLECTIONS } from './collections.js';
 import { newEntityId } from './entity-builders.js';
-import { findAuthUsersByIds } from './auth-users.js';
+import { findAuthUsersByIds } from './auth-users-store.js';
 
 export const CONTENT_REPORT_REASONS = ['spam', 'harassment', 'other'] as const;
 export type ContentReportReason = (typeof CONTENT_REPORT_REASONS)[number];

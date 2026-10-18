@@ -8,7 +8,7 @@ import {
   listActivityParticipantsWithUsers,
   listActivityRequestsForActivity,
 } from '../lib/activity-engagement-store.js';
-import { findAuthUsersByIds } from '../lib/auth-users.js';
+import { findAuthUsersByIds } from '../lib/auth-users-store.js';
 import { buildActivityDto } from '../lib/mappers.js';
 
 export const listAdminActivityModerationPage = async (input: { page: number; pageSize: number }) => {

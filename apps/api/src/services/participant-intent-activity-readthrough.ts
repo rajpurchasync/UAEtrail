@@ -42,6 +42,23 @@ export const listSeekingActivitiesForOwner = async (
     .limit(limit)
     .toArray();
 
+export const countActiveSeekingActivitiesForOwner = async (userId: string): Promise<number> =>
+  activitiesCollection().countDocuments({
+    activityMode: 'seeking',
+    participantIntentId: { $exists: true, $nin: [null, ''] },
+    status: { $ne: ActivityStatus.CANCELLED },
+    $and: [
+      { $or: [{ hostId: userId }, { createdById: userId }] },
+      {
+        $or: [
+          { seekingConvertedActivityId: { $exists: false } },
+          { seekingConvertedActivityId: null },
+          { seekingConvertedActivityId: '' },
+        ],
+      },
+    ],
+  });
+
 const resolveKindFromActivity = (activity: MongoActivityDoc): ParticipantIntentKind => {
   const shared = fromPrismaActivityType(activity.activityType ?? 'EVENT');
   if (shared === 'hiking') return 'hiking';

@@ -1,7 +1,7 @@
 import { ActivityStatus, RewardAction } from '../domain/enums.js';
 import { ApiError } from '../lib/api-error.js';
 import { findLocationInMongo, findActivityDocInMongo } from '../lib/entity-sync.js';
-import { findAuthUserById } from '../lib/auth-users.js';
+import { findAuthUserById } from '../lib/auth-users-store.js';
 import { getMongoClient } from '../lib/mongo.js';
 import { promptPostActivityReview } from './review-prompt.js';
 import { createAuditLog } from '../lib/audit.js';

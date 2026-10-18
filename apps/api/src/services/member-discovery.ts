@@ -1,6 +1,6 @@
 import type { MemberBrowseCardDTO } from '@uaetrail/shared-types';
 import { USER_CITY_LABELS, type UserCity } from '../domain/user-profile.js';
-import { listAuthUsers } from '../lib/auth-users.js';
+import { listAuthUsers } from '../lib/auth-users-store.js';
 import { normalizeProfileVisibility } from '../lib/media-access.js';
 
 const isPublicMemberProfile = (profileVisibility: unknown): boolean => {

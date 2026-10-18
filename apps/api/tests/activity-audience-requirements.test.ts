@@ -9,7 +9,7 @@ const mocks = vi.hoisted(() => ({
   findAuthUserById: vi.fn(),
 }));
 
-vi.mock('../src/lib/auth-users.js', () => ({
+vi.mock('../src/services/member-identity-read.js', () => ({
   findAuthUserById: mocks.findAuthUserById,
 }));
 

@@ -16,7 +16,7 @@ import {
   resolveParticipantIntentMapItemId,
   exploreDiscoverBrowsePath,
   parseExplorePinMapItemId,
-  exploreOfferRideshareForDemandPath,
+  exploreOfferRideshareForSeekingPath,
 } from './routing';
 import { EXPLORE_MAP_PATH } from '../config/platform';
 
@@ -48,7 +48,7 @@ describe('exploreRouting navigation contract', () => {
   });
 
   it('rideshare offer deep link prefers activity pin when seeking activity exists', () => {
-    const href = exploreOfferRideshareForDemandPath({ id: 'int-1', activityId: 'act-1' });
+    const href = exploreOfferRideshareForSeekingPath({ id: 'int-1', activityId: 'act-1' });
     const params = new URLSearchParams(href.split('?')[1] ?? '');
     expect(params.get('pin')).toBe('activity:act-1');
     expect(params.get('compose')).toBe('host:rideshare');
@@ -61,7 +61,8 @@ describe('exploreRouting navigation contract', () => {
     expect(participantIntentExplorePinPath({ id: 'int-1', activityId: 'act-1' })).toBe(
       '/explore?list=1&pin=activity%3Aact-1'
     );
-    expect(resolveParticipantIntentMapItemId({ id: 'int-1' })).toBe('demand:int-1');
+    expect(resolveParticipantIntentMapItemId({ id: 'int-1' })).toBeNull();
+    expect(resolveParticipantIntentMapItemId({ id: 'demand:int-1' })).toBe('demand:int-1');
   });
 
   it('encodes pin deep link for saved map items', () => {

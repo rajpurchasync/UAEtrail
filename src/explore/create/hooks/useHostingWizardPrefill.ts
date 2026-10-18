@@ -9,7 +9,7 @@ import {
 import { planHostingCompose } from '../../compose';
 import { resolveSeekingParentActivityId } from '../../linkActivityRideshareOffer';
 import {
-  buildRideshareDraftFromDemandMapItem,
+  buildRideshareDraftFromSeekingMapItem,
   buildRideshareDraftFromParentActivity,
 } from '../../linkRidesharePrefill';
 import { PLAN_WITH_QUERY_KEY, parseOrganizeFromActivityId } from '../../routing';
@@ -43,11 +43,11 @@ export const useHostingWizardPrefill = (input: {
     throw new Error('useHostingWizardPrefill requires hostingFrom');
   }
   const [rideshareLinkParent, setRideshareLinkParent] = useState<ActivityDTO | null>(null);
-  const [rideshareLinkDemand, setRideshareLinkDemand] = useState<ExploreMapItemDTO | null>(null);
+  const [rideshareLinkSeeking, setRideshareLinkSeeking] = useState<ExploreMapItemDTO | null>(null);
 
   const handleCreateLinkedRideshare = useCallback(
     (parent: ActivityDTO) => {
-      setRideshareLinkDemand(null);
+      setRideshareLinkSeeking(null);
       setRideshareLinkParent(parent);
       input.setSelectedId(null);
       input.compose.setComposeRoute(planHostingCompose('rideshare'));
@@ -55,7 +55,7 @@ export const useHostingWizardPrefill = (input: {
     [input.compose.setComposeRoute, input.setSelectedId]
   );
 
-  const handleOfferRideshareForDemand = useCallback(() => {
+  const handleOfferRideshareForSeeking = useCallback(() => {
     const selected = input.selected;
     if (!selected || !exploreMapItemIsSeeking(selected)) return;
 
@@ -72,7 +72,7 @@ export const useHostingWizardPrefill = (input: {
     }
 
     setRideshareLinkParent(null);
-    setRideshareLinkDemand(selected);
+    setRideshareLinkSeeking(selected);
     input.setSelectedId(null);
     input.compose.setComposeRoute(planHostingCompose('rideshare'));
   }, [
@@ -95,10 +95,10 @@ export const useHostingWizardPrefill = (input: {
         linkToParentActivityId: rideshareLinkParent.id,
       };
     }
-    if (rideshareLinkDemand) {
-      const parentActivityId = resolveSeekingParentActivityId(rideshareLinkDemand);
+    if (rideshareLinkSeeking) {
+      const parentActivityId = resolveSeekingParentActivityId(rideshareLinkSeeking);
       return {
-        draft: buildRideshareDraftFromDemandMapItem(rideshareLinkDemand),
+        draft: buildRideshareDraftFromSeekingMapItem(rideshareLinkSeeking),
         linkToParentActivityId: parentActivityId ?? undefined,
       };
     }
@@ -109,7 +109,7 @@ export const useHostingWizardPrefill = (input: {
       };
     }
     return null;
-  }, [rideshareLinkParent, rideshareLinkDemand, hostingFrom.hostingFromActivityPrefill]);
+  }, [rideshareLinkParent, rideshareLinkSeeking, hostingFrom.hostingFromActivityPrefill]);
 
   const organizeFromPending = Boolean(parseOrganizeFromActivityId(input.searchParams));
   const hostWizardOpen =
@@ -134,17 +134,17 @@ export const useHostingWizardPrefill = (input: {
   const onPlanHostingBackToIntent = useCallback(() => {
     hostingFrom.clearHostingFromActivityPrefill();
     setRideshareLinkParent(null);
-    setRideshareLinkDemand(null);
+    setRideshareLinkSeeking(null);
     input.compose.setComposeRoute({ surface: 'menu', intent: 'host' });
   }, [hostingFrom, input.compose.setComposeRoute]);
 
   return {
     rideshareLinkParent,
-    rideshareLinkDemand,
+    rideshareLinkSeeking,
     setRideshareLinkParent,
-    setRideshareLinkDemand,
+    setRideshareLinkSeeking,
     handleCreateLinkedRideshare,
-    handleOfferRideshareForDemand,
+    handleOfferRideshareForSeeking,
     hostingWizardPrefill,
     hostWizardOpen,
     planHostingWizardOpen,

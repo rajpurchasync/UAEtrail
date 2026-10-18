@@ -5,6 +5,7 @@ import { join } from 'node:path';
 const ROOT = join(process.cwd(), '..', '..');
 const SMOKE_PATH = join(ROOT, 'scripts/p5-slo-smoke.mjs');
 const ROUTES_PATH = join(ROOT, 'scripts/system-audit-routes.json');
+const PROGRAM_PATH = join(ROOT, 'scripts/refactor-program.json');
 const APP_PATH = join(ROOT, 'apps/api/src/app.ts');
 const AUTH_ROUTES_PATH = join(ROOT, 'apps/api/src/routes/auth.ts');
 const PUBLIC_ACTIVITY_PATH = join(
@@ -23,6 +24,9 @@ const stripApiQuery = (rawPath: string): string => {
  */
 describe('P5 SLO smoke probes contract (MIG-P5-SLO-SMOKE)', () => {
   const smoke = readFileSync(SMOKE_PATH, 'utf8');
+  const program = JSON.parse(readFileSync(PROGRAM_PATH, 'utf8')) as {
+    phases?: { id: string; slos?: { id: string }[] }[];
+  };
   const audit = JSON.parse(readFileSync(ROUTES_PATH, 'utf8')) as {
     endpoints: { method: string; path: string }[];
   };
@@ -65,10 +69,34 @@ describe('P5 SLO smoke probes contract (MIG-P5-SLO-SMOKE)', () => {
   });
 
   it('join probe targets public activity RSVP and request routes', () => {
+    expect(smoke).toMatch(/\/api\/activities\/\$\{activityId\}/);
     expect(smoke).toMatch(/\/api\/activities\/\$\{activityId\}\/rsvp/);
     expect(smoke).toMatch(/\/api\/activities\/\$\{activityId\}\/requests/);
+    expect(auditGetPaths.has('/activities/:id')).toBe(true);
+    expect(smoke).toMatch(/JSON\.stringify\(\{ note: 'P5 staging join smoke probe' \}\)/);
+    expect(smoke).not.toMatch(/body:\s*JSON\.stringify\(\{\s*message:/);
+    expect(smoke).toMatch(/status === 201 \|\| status === 409/);
     expect(publicActivityRoutes).toMatch(/\/:id\/rsvp/);
     expect(publicActivityRoutes).toMatch(/\/:id\/requests/);
+  });
+
+  it('preflight mode is wired without a live API', () => {
+    expect(smoke).toMatch(/--preflight/);
+    expect(smoke).toMatch(/P5_SLO_PREFLIGHT/);
+    expect(smoke).toMatch(/SLO-EXPLORE-OVERLAY/);
+  });
+
+  it('P5 slos[] covers map, overlay, join, and 5xx budget', () => {
+    const p5 = program.phases?.find((phase) => phase.id === 'P5');
+    const sloIds = (p5?.slos ?? []).map((slo) => slo.id);
+    expect(sloIds).toEqual(
+      expect.arrayContaining([
+        'SLO-EXPLORE-MAP',
+        'SLO-EXPLORE-OVERLAY',
+        'SLO-JOIN',
+        'SLO-API-ERR',
+      ])
+    );
   });
 
   it('login probe targets auth router and audit inventory', () => {

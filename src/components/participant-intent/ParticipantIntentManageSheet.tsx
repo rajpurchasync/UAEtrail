@@ -5,7 +5,7 @@ import type { ActivityDTO, ParticipantIntentDTO } from '@uaetrail/shared-types';
 import { ExploreResponsiveSheet } from '../../explore/ui/ExploreResponsiveSheet';
 import { LinkRidesharePanel } from '../../explore/ui/LinkRidesharePanel';
 import {
-  exploreOfferRideshareForDemandPath,
+  exploreOfferRideshareForSeekingPath,
   participantIntentExplorePinPath,
 } from '../../explore/routing';
 import { ShareButton } from '../ui/ShareButton';
@@ -124,7 +124,7 @@ export const ParticipantIntentManageSheet = ({
     canAddLinkedRide;
 
   const handleOfferRideshareLegacy = () => {
-    const returnPath = exploreOfferRideshareForDemandPath(intent);
+    const returnPath = exploreOfferRideshareForSeekingPath(intent);
     if (!user) {
       navigate(signInPathForReturn(returnPath));
       return;

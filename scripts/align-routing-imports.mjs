@@ -32,7 +32,6 @@ const CATALOG_SYMBOLS = new Set([
   'resolveEntityPath',
   'resolveOrganisationProfilePath',
   'parseEntityRefFromPathname',
-  'exploreDemandMapItemPath',
   'EXPLORE_SHOPS_PATH',
   'EXPLORE_SHOPS_LIST_PATH',
   'explorePath',

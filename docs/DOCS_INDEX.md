@@ -2,7 +2,7 @@
 
 **Start here.** Tier-1 is a **closed set** — see [`DOCS_GOVERNANCE.md`](./DOCS_GOVERNANCE.md) (do not add new canonical docs; update the file for your topic).
 
-**Checks:** `npm run verify:system` · **Manifest:** `scripts/bounded-context-manifest.json` · **Implementation schedule (sole authority):** [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) **§8.8 PCOH** + `scripts/refactor-program.json` (`MIG-COH-*`). UPL: `src/content/upl-glossary.ts` · BWL: `packages/shared-types/src/wire-lexicon.ts`. Do not implement from `docs/archive/**` or experiment plan bodies.
+**Checks:** `npm run verify:system` · **Manifest:** `scripts/bounded-context-manifest.json` · **Implementation schedule:** [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) **§8.6** remaining `MIG-SURFACE-*` / `MIG-P5-SLO-SMOKE` (PCOH `MIG-COH-00`…`12` complete). UPL: `src/content/upl-glossary.ts` · BWL: `packages/shared-types/src/wire-lexicon.ts`. Do not implement from `docs/archive/**` or experiment plan bodies.
 
 ---
 

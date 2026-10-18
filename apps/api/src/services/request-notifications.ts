@@ -1,5 +1,5 @@
 import { NotificationType } from '../domain/enums.js';
-import { findAuthUserById } from '../lib/auth-users.js';
+import { findAuthUserById } from '../lib/auth-users-store.js';
 import { findActivityForRequestViewById } from '../lib/activities-store.js';
 import { planHostedSchedulePath } from '../lib/member-routes.js';
 import { scheduleNotification } from './notifications.js';

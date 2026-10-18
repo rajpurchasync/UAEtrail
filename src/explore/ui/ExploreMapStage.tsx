@@ -56,8 +56,8 @@ export type ExploreMapStageProps = {
   onReloadMap: () => void;
   venueNotice: string | null;
   onDismissVenueNotice: () => void;
-  demandNotice: string | null;
-  onDismissDemandNotice: () => void;
+  exploreNotice: string | null;
+  onDismissExploreNotice: () => void;
   user: { id: string } | null;
   locationPromptOpen: boolean;
   locatingDevice: boolean;
@@ -119,8 +119,8 @@ export const ExploreMapStage = ({
   onReloadMap,
   venueNotice,
   onDismissVenueNotice,
-  demandNotice,
-  onDismissDemandNotice,
+  exploreNotice,
+  onDismissExploreNotice,
   user,
   locationPromptOpen,
   locatingDevice,
@@ -211,8 +211,8 @@ export const ExploreMapStage = ({
         <ExploreDismissibleNotice message={venueNotice} onDismiss={onDismissVenueNotice} />
       ) : null}
 
-      {demandNotice ? (
-        <ExploreDismissibleNotice message={demandNotice} onDismiss={onDismissDemandNotice} />
+      {exploreNotice ? (
+        <ExploreDismissibleNotice message={exploreNotice} onDismiss={onDismissExploreNotice} />
       ) : null}
 
       {loadError ? (

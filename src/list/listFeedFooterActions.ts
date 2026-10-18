@@ -5,9 +5,9 @@ import { resolveActivityPeekEngagement } from '../activity/activityPeekEngagemen
 import { activityMapPeekActionLabel } from '../explore/exploreMapPeekActionCopy';
 import { exploreCardHasMapCoords } from '../discovery/discoveryCardModel';
 import type { JoinRequestUiState } from '../utils/joinRequestUi';
+import { ACTIVITY_CTA_MESSAGE_HOST } from '../content/activityParticipationCopy';
 import {
   LIST_FEED_CTA_GET_DIRECTIONS,
-  LIST_FEED_CTA_MESSAGE_ORGANIZER,
   LIST_FEED_CTA_VIEW_DETAILS,
 } from './listFeedCtaCopy';
 
@@ -44,7 +44,7 @@ const detailButton = (card: ExploreCardModel): ListFeedFooterButton => ({
 
 const peekActionLabel = (action: ActivityMapPeekAction, card: ExploreCardModel): string => {
   if (action.id === 'request_join') return card.primaryCta;
-  if (action.id === 'message_host') return LIST_FEED_CTA_MESSAGE_ORGANIZER;
+  if (action.id === 'message_host') return ACTIVITY_CTA_MESSAGE_HOST;
   return activityMapPeekActionLabel(action.id, action);
 };
 

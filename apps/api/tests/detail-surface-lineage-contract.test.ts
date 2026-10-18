@@ -17,7 +17,7 @@ import {
 import { getMongoClient } from '../src/lib/mongo.js';
 import { createMerchantProduct, createMerchantProfileForUser } from '../src/lib/shop-store.js';
 import { createTenantRecord, findTenantById } from '../src/lib/tenant-store.js';
-import { findAuthUserByEmail } from '../src/lib/auth-users.js';
+import { findAuthUserByEmail } from '../src/lib/auth-users-store.js';
 import { upsertTenantMembership } from '../src/lib/tenant-access.js';
 import { bootstrapTestApp } from './helpers/bootstrap.js';
 import {

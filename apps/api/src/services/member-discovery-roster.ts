@@ -7,7 +7,7 @@ import type {
   MemberDiscoveryRosterDTO,
 } from '@uaetrail/shared-types';
 import { USER_CITY_LABELS, type UserCity } from '../domain/user-profile.js';
-import { findAuthUsersByIds } from '../lib/auth-users.js';
+import { findAuthUsersByIds } from '../lib/auth-users-store.js';
 import { listBuddiesForUser } from '../lib/buddy-store.js';
 import { listFollowingForUser } from '../lib/follow-store.js';
 import {

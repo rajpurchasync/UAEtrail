@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom';
 import { ACTIVITY_DETAIL_JOIN_REQUIRED_PLAN_HINT } from '../../../content/activityDetailCopy';
 import { ActivityDetailGuestGate } from './ActivityDetailGuestGate';
 import { ActivityInviteLauncher } from '../ActivityInviteLauncher';

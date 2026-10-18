@@ -3,7 +3,8 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 /**
- * Product copy must not use retired "host" vocabulary (organizer / operator / publishing workspace).
+ * UPL Host = person leading this outing. Organizer / Operator / Publishing workspace
+ * are workspace titles — not outing CTAs. Do not use Host for console/Pro application.
  * Wire identifiers, `/host/*` routes, and API field names are allowed — see allowlists below.
  */
 const SCAN_ROOTS = [
@@ -25,7 +26,6 @@ const SKIP_DIR_NAMES = new Set(['host', 'node_modules']);
 
 const SKIP_FILE_PREFIXES = [
   'src/pages/operator/',
-  'src/components/activity/',
   'src/console/',
   'src/api/',
   'apps/',
@@ -116,42 +116,28 @@ const LINE_ALLOW_SUBSTRINGS = [
 ];
 
 const BANNED_LINE_PATTERNS: Array<{ pattern: RegExp; hint: string }> = [
-  { pattern: /\bHost profile\b/, hint: 'Use publishing profile or organizer profile (workspaceVocabulary)' },
-  { pattern: /\bhost profiles\b/i, hint: 'Use publishing profiles' },
   { pattern: /\bHost console\b/, hint: 'Use Workspace or organizer/operator workspace' },
   { pattern: /\bHost an activity\b/i, hint: 'Use Organize an outing' },
   { pattern: /\bHost outings\b/, hint: 'Use Organize outings' },
-  { pattern: /\bHost tools\b/, hint: 'Use Organizer tools or workspace tools' },
-  { pattern: /\bverified host\b/i, hint: 'Use verified organizer' },
-  { pattern: /\bmessage the host\b/i, hint: 'Use message the organizer' },
-  { pattern: /\bwith hosts\b/i, hint: 'Use with organizers' },
-  { pattern: /\bmeet hosts\b/i, hint: 'Use meet organizers' },
-  { pattern: /\bHosts & shops\b/, hint: 'Use Organizers & shops' },
-  { pattern: /\bHosts & hosting\b/, hint: 'Use Organizers & operators' },
+  { pattern: /\bHosts & shops\b/, hint: 'Use Hosts & operators' },
+  { pattern: /\bHosts & hosting\b/, hint: 'Use Hosts & operators' },
   { pattern: /\bBecome a host\b/i, hint: 'Use Pro membership / guide or agency setup' },
   { pattern: /\bHost application\b/, hint: 'Use Pro membership' },
   { pattern: /\bAll hosts\b/, hint: 'Use All publishers or publishing accounts' },
   { pattern: /\bSuspend host\b/i, hint: 'Use Suspend publishing account' },
   { pattern: /\bNo hosts found\b/i, hint: 'Use No publishing accounts found' },
-  { pattern: /\bView host\b/, hint: 'Use View publisher / organizer' },
   { pattern: /\bHost name\b/, hint: 'Use Display name or brand name' },
   { pattern: /\bhost your own\b/i, hint: 'Use organize your own' },
-  { pattern: /\bconnect with hosts\b/i, hint: 'Use connect with organizers' },
-  { pattern: /\bfollow hosts\b/i, hint: 'Use follow organizers' },
-  { pattern: /\bActivity hosts\b/, hint: 'Use Activity organizers' },
-  { pattern: /\bfollow host instructions\b/i, hint: 'Use follow organizer instructions' },
-  { pattern: /\bHost approved\b/, hint: 'Use Organizer approved' },
-  { pattern: /label:\s*['"]Host['"]/, hint: 'Use Organizer' },
-  { pattern: /label:\s*['"]Hosted['"]/, hint: 'Use Organized' },
-  { pattern: /label:\s*['"]Hosting['"]/, hint: 'Use Organizing' },
-  { pattern: /\bMy host profile\b/i, hint: 'Use My organizer profile' },
-  { pattern: /\bMessage Host\b/, hint: 'Use Message organizer' },
-  { pattern: /\bHost outings\b/, hint: 'Use Organize outings' },
-  { pattern: /Community host\b/, hint: 'Use Community organizer' },
-  { pattern: /\bbuddy hosts\b/i, hint: 'Use buddy organizers' },
   { pattern: /\bHost publishing console\b/i, hint: 'Use Publishing workspace' },
   { pattern: /\bHost = user\b/, hint: 'Use Publishing actor = user (wire doc)' },
   { pattern: /\bHost console \(`\/host/, hint: 'Use Publishing workspace (`/host' },
+  { pattern: /\bMessage organizer\b/i, hint: 'Use Message host (UPL)' },
+  { pattern: /\bMy organizer profile\b/i, hint: 'Use My host profile (UPL)' },
+  { pattern: /\bmessage the organizer\b/i, hint: 'Use message the host (UPL)' },
+  { pattern: /\bverified organizer\b/i, hint: 'Use verified host (UPL)' },
+  { pattern: /\bWaiting for organizer\b/, hint: 'Use Waiting for host (UPL)' },
+  { pattern: /\bOrganizer tools on Buddies\b/, hint: 'Use Host tools on Buddies (UPL)' },
+  { pattern: /\bchat with organizers\b/i, hint: 'Use chat with hosts (UPL)' },
 ];
 
 const collectFiles = (dir: string): string[] => {
@@ -178,7 +164,7 @@ const lineAllowed = (line: string): boolean =>
   LINE_ALLOW_SUBSTRINGS.some((sub) => line.includes(sub));
 
 describe('workspaceProductLanguageGuard', () => {
-  it('consumer copy and Tier-1 docs avoid retired host product vocabulary', () => {
+  it('consumer copy and Tier-1 docs keep Host as outing UPL; Host is not workspace/console', () => {
     const violations: string[] = [];
     const files = SCAN_ROOTS.flatMap((root) => collectFiles(root));
 

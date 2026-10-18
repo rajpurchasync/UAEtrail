@@ -22,7 +22,7 @@ import {
 
   defaultParticipationForOrganizeRoute,
 
-  findComposeKindToDemandKind,
+  findComposeKindToSeekingKind,
 
 } from './composeFlowCatalog';
 
@@ -30,7 +30,7 @@ import { normalizeComposeFlowId } from './composeFlowIds';
 
 import { getContributeFlowSteps } from './ui/contributeFlow';
 
-import { DEMAND_TYPE_OPTIONS, getDemandFlowSteps } from './ui/seekingFlowEngine';
+import { SEEKING_TYPE_OPTIONS, getSeekingFlowSteps } from './ui/seekingFlowEngine';
 
 import { getHostingFlowSteps } from './ui/hostingFlow';
 
@@ -210,7 +210,7 @@ describe('compose flow catalog', () => {
 
 
 
-  it('catalog demandSteps stay aligned with demandFlow step lists', () => {
+  it('catalog seekingSteps stay aligned with seekingFlowEngine step lists', () => {
 
     for (const option of FIND_COMPOSE_OPTIONS) {
 
@@ -218,9 +218,9 @@ describe('compose flow catalog', () => {
 
       expect(id).toBeTruthy();
 
-      const demandKind = findComposeKindToDemandKind(option.kind);
+      const seekingKind = findComposeKindToSeekingKind(option.kind);
 
-      expect(composeFlowSpec(id!).demandSteps).toEqual(getDemandFlowSteps(demandKind));
+      expect(composeFlowSpec(id!).seekingSteps).toEqual(getSeekingFlowSteps(seekingKind));
 
     }
 
@@ -246,13 +246,13 @@ describe('compose flow catalog', () => {
 
   it('demand type picker matches find FAB options', () => {
 
-    expect(DEMAND_TYPE_OPTIONS.map((row) => row.key)).toEqual(
+    expect(SEEKING_TYPE_OPTIONS.map((row) => row.key)).toEqual(
 
-      FIND_COMPOSE_OPTIONS.map((row) => findComposeKindToDemandKind(row.kind))
+      FIND_COMPOSE_OPTIONS.map((row) => findComposeKindToSeekingKind(row.kind))
 
     );
 
-    expect(DEMAND_TYPE_OPTIONS.map((row) => row.title)).toEqual(
+    expect(SEEKING_TYPE_OPTIONS.map((row) => row.title)).toEqual(
 
       FIND_COMPOSE_OPTIONS.map((row) => row.label)
 

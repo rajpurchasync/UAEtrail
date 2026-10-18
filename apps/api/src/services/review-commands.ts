@@ -2,7 +2,7 @@ import { ReviewTargetType, RewardAction } from '../domain/enums.js';
 import { reviewTargetWireToEnum, type ReviewTargetWire } from '../domain/review-target-wire.js';
 import { ApiError } from '../lib/api-error.js';
 import { sanitizeUserGeneratedText } from '../lib/content-moderation.js';
-import { createSocialReview } from '../lib/social-data.js';
+import { createSocialReview } from '../lib/social-reviews-store.js';
 import { tierEnumToDisplay } from '../lib/membership-tier-display.js';
 import { scheduleSideEffect } from '../lib/schedule-side-effect.js';
 import { assertViewerCanReviewActivity } from './activity-review-gate.js';

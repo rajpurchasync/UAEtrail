@@ -17,7 +17,7 @@ import {
 import { ApiError } from './api-error.js';
 import { COLLECTIONS } from './collections.js';
 import { getMongoClient } from './mongo.js';
-import { findAuthUsersByIds } from './auth-users.js';
+import { findAuthUsersByIds } from './auth-users-store.js';
 import { findAreaBySlug, findPublishedAreaById } from './areas-store.js';
 import { areAcceptedBuddies } from './buddy-store.js';
 

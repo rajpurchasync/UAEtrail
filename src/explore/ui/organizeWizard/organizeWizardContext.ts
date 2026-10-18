@@ -14,7 +14,7 @@ export type OrganizeWizardFlowStep = 'type' | CreateFlowStepId;
 
 import type { OrganizeWizardPrefill } from '../organizeWizardPrefill';
 
-export type OrganizeWizardDemandPrefill = OrganizeWizardPrefill | null;
+export type OrganizeWizardSeekingPrefill = OrganizeWizardPrefill | null;
 
 export type OrganizeWizardContext = {
   step: OrganizeWizardFlowStep;
@@ -24,7 +24,7 @@ export type OrganizeWizardContext = {
   patchDraft: (patch: Partial<CreateActivityDraft>) => void;
   hostingKindFlow: HostingKindFlow | null;
   organizeKind: OrganizeComposeKind | null;
-  demandPrefill: OrganizeWizardDemandPrefill;
+  seekingPrefill: OrganizeWizardSeekingPrefill;
   error: string | null;
   tenantId: string | null;
   publishTenantOptions: OwnedHostProfileDTO[];

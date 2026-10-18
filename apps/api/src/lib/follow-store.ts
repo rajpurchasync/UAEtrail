@@ -1,5 +1,5 @@
 import type { MemberFollowStateDTO, MemberFollowSummaryDTO } from '@uaetrail/shared-types';
-import { findAuthUserById, findAuthUsersByIds } from './auth-users.js';
+import { findAuthUserById, findAuthUsersByIds } from './auth-users-store.js';
 import { COLLECTIONS } from './collections.js';
 import { ApiError } from './api-error.js';
 import { newEntityId } from './entity-builders.js';

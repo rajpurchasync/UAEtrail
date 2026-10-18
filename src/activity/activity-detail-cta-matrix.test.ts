@@ -7,6 +7,7 @@ import {
   computeActivityViewerEntitlements,
   projectActivityMapPeekActions,
   resolveActivityEngagementPolicy,
+  APPROVAL_PARTICIPATION_REQUIREMENT,
   RSVP_PARTICIPATION_REQUIREMENT,
   type ActivityViewerAccessDTO,
 } from '@uaetrail/shared-types';
@@ -48,7 +49,7 @@ describe('activity detail CTA matrix — runtime (AD-CTA-01)', () => {
       isHostUser: false,
       activityPublished: true,
       participationMode: 'approval',
-      requirements: ['Organizer approval required to join'],
+      requirements: [APPROVAL_PARTICIPATION_REQUIREMENT],
       myParticipation: null,
       myRequest: null,
     });
@@ -73,7 +74,7 @@ describe('activity detail CTA matrix — runtime (AD-CTA-01)', () => {
       isHostUser: false,
       activityPublished: true,
       participationMode: 'approval',
-      requirements: ['Organizer approval required to join'],
+      requirements: [APPROVAL_PARTICIPATION_REQUIREMENT],
       myParticipation: null,
       myRequest: null,
     });

@@ -15,7 +15,7 @@ export * from './CreateContributeFlow';
 export * from './contributeFlow';
 export * from './hostingFlowEngine';
 export * from './seekingFlowEngine';
-export * from './CreateDemandFlow';
+export * from './CreateSeekingFlow';
 export * from './VenueStateFilterMenu';
 export * from './CreatePlacePicker';
 export * from './map-peek';

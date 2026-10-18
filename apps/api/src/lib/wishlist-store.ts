@@ -276,9 +276,6 @@ export const listWishlistItemsWithDetails = async (userId: string): Promise<Wish
   const tenantIds = [...new Set(wishlistRows.map((f) => f.tenantId).filter((id): id is string => Boolean(id)))];
   const profileUserIds = [...new Set(wishlistRows.map((f) => f.profileUserId).filter((id): id is string => Boolean(id)))];
 
-  const participantIntentsCollection = () =>
-    getMongoClient()!.db().collection<{ _id: string; title: string }>('participant_intents');
-
   const [locationDocs, activityDocs, intentDocs, productDocs, merchantDocs, tenantDocs, profileDocs] =
     await Promise.all([
     locationIds.length > 0
@@ -288,8 +285,14 @@ export const listWishlistItemsWithDetails = async (userId: string): Promise<Wish
       ? activitiesCollection().find({ _id: { $in: activityIds } }, { projection: { title: 1, locationId: 1 } }).toArray()
       : Promise.resolve([]),
     participantIntentIds.length > 0
-      ? participantIntentsCollection()
-          .find({ _id: { $in: participantIntentIds } }, { projection: { title: 1 } })
+      ? activitiesCollection()
+          .find(
+            {
+              participantIntentId: { $in: participantIntentIds },
+              activityMode: 'seeking',
+            },
+            { projection: { participantIntentId: 1, title: 1 } }
+          )
           .toArray()
       : Promise.resolve([]),
     productIds.length > 0
@@ -322,7 +325,14 @@ export const listWishlistItemsWithDetails = async (userId: string): Promise<Wish
       : [];
   const activityLocationMap = new Map(activityLocationDocs.map((location) => [location._id, location.name]));
   const activityMap = new Map(activityDocs.map((activity) => [activity._id, activity]));
-  const intentMap = new Map(intentDocs.map((intent) => [intent._id, intent]));
+  const intentMap = new Map(
+    intentDocs
+      .filter((activity) => activity.participantIntentId)
+      .map((activity) => [
+        activity.participantIntentId!,
+        { _id: activity.participantIntentId!, title: activity.title },
+      ])
+  );
   const productMap = new Map(productDocs.map((product) => [product._id, product]));
   const savedMerchantMap = new Map(merchantDocs.map((merchant) => [merchant._id, merchant]));
   const tenantMap = new Map(tenantDocs.map((tenant) => [tenant._id, tenant]));

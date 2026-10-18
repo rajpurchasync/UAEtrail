@@ -29,19 +29,12 @@ import {
   type BuddiesDiscoverySegment,
 } from '../list/buddiesDiscoverySegment';
 import { parseExplorePinKindFilter, type ExplorePinKindFilter } from './explorePinKindFilter';
-import { parsePeopleBrowseTabFromUrl, type PeopleBrowseTab } from './peopleBrowseTab.js';
+import { parsePeopleBrowseTabFromUrl, type PeopleBrowseTab } from '@/people-discovery/peopleBrowseTab';
 import {
   EXPLORE_ACTIVITY_MODE_FILTER_PARAM,
   parseExploreActivityModeFilter,
   type ExploreActivityModeFilter,
 } from './exploreActivityModeFilter';
-
-export type ExploreFollowedSegment = 'people' | 'places' | 'events';
-
-export const parseExploreFollowedSegment = (raw: string | null): ExploreFollowedSegment => {
-  if (raw === 'places' || raw === 'events') return raw;
-  return 'people';
-};
 
 const readPeopleBrowseTabParam = (params: URLSearchParams): string | null =>
   params.get('peopleTab') ?? params.get('socialTab');
@@ -68,7 +61,6 @@ export type ExploreBrowseUrlHydratedState = {
   peopleBrowseOpen: boolean;
   searchScope: ExploreSearchScopeKey | null;
   peopleBrowseTab: PeopleBrowseTab;
-  followedSegment: ExploreFollowedSegment;
   buddiesDiscoverSegment: BuddiesDiscoverySegment;
   desktopBrowseTab: DesktopBrowseTab;
   expandSearch: boolean;
@@ -125,7 +117,6 @@ export const parseExploreBrowseStateFromSearchParams = (
       readPeopleBrowseTabParam(searchParams),
       searchParams.get('goingTab')
     ),
-    followedSegment: parseExploreFollowedSegment(searchParams.get('followedKind')),
     buddiesDiscoverSegment: parseBuddiesDiscoverySegment(searchParams.get(BUDDIES_SEGMENT_URL_PARAM)),
     desktopBrowseTab: parseDesktopBrowseTab(nextPanel),
     expandSearch: Boolean(isDesktop && searchParams.get('q')?.trim()),

@@ -7,7 +7,7 @@ import {
 } from '../explore/exploreBrowseTaxonomy';
 
 /**
- * List main categories — **activities** (scheduled outings + demand), places, people, brands.
+ * List main categories — **activities** (hosted + seeking), places, people, brands.
  * Map `topics` still uses explore wire `trips,looking` when activities category is selected.
  */
 export type BrowseMainCategoryKey = 'activities' | 'venues' | 'people' | 'agencies';
@@ -20,7 +20,7 @@ const isAgencyBrandItem = (item: ExploreMapItemDTO): boolean =>
   item.source === 'agency' &&
   (item.path.includes('/agency/') || item.path.includes('/partner/'));
 
-/** Time-bound map rows — hosted activities + seeking demand. */
+/** Time-bound map rows — hosted + seeking activities. */
 export const mapItemMatchesBrowseActivitiesCategory = (item: ExploreMapItemDTO): boolean =>
   isTimeBoundExploreMapItem(item);
 

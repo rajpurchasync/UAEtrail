@@ -44,7 +44,7 @@ export const HostingFlowHost = ({
     onOpenHostApplication,
     onBackToIntent,
     signInHref,
-    demandPrefill: hostingWizardPrefill,
+    seekingPrefill: hostingWizardPrefill,
     onCreateLinkedRideshare,
     planWithBuddyUserId,
   };

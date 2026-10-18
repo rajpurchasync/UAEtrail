@@ -5,8 +5,8 @@ import {
   deriveOutingTopicFromRequirements,
   mapItemMatchesOutingTopic,
   parseOutingTopic,
-  exploreDemandMapItemPath,
   exploreSeekingMapItemPath,
+  resolveSeekingExploreMapItemId,
   participantIntentKindToOutingCategory,
   resolveActivityOutingTopic,
   resolveOrganizeCreateKindFromDemandMapItem,
@@ -40,14 +40,19 @@ describe('explore plan projection mappers', () => {
     ).toBe('event');
   });
 
-  it('builds explore path for demand map items', () => {
-    expect(exploreDemandMapItemPath('abc')).toBe('/explore?pin=demand%3Aabc&list=1&panel=activities');
+  it('does not mint demand: pins from a bare intent id', () => {
+    expect(resolveSeekingExploreMapItemId({ intentId: 'abc' })).toBeNull();
+    expect(exploreSeekingMapItemPath({ intentId: 'abc' })).toBe('/explore?list=1&panel=activities');
+    expect(resolveSeekingExploreMapItemId({ intentId: 'demand:abc' })).toBe('demand:abc');
+    expect(exploreSeekingMapItemPath({ intentId: 'demand:abc' })).toBe(
+      '/explore?list=1&panel=activities&pin=demand%3Aabc'
+    );
   });
 
   it('exploreSeekingMapItemPath prefers activity pin when activityId is set', () => {
     expect(
       exploreSeekingMapItemPath({ intentId: 'int-1', activityId: 'act-9' })
-    ).toBe('/explore?pin=activity%3Aact-9&list=1&panel=activities');
+    ).toBe('/explore?list=1&panel=activities&pin=activity%3Aact-9');
   });
 
   it('prefers stored outing category over mapKind for activities', () => {

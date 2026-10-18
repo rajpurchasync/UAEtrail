@@ -1,16 +1,11 @@
-import {
-  activityTypeToOutingCategory,
-  participantIntentKindToOutingCategory,
-  type OutingCategory,
-} from '@uaetrail/shared-types';
+import { activityTypeToOutingCategory, type OutingCategory } from '@uaetrail/shared-types';
 import { NotificationType } from '../domain/enums.js';
 import { findActivityDocInMongo } from '../lib/entity-sync.js';
 import { createNotificationsMany } from '../lib/notifications-store.js';
 import { listWishlistWatchCandidates } from '../lib/wishlist-store.js';
-import { getMongoClient } from '../lib/mongo.js';
-import { COLLECTIONS } from '../lib/collections.js';
 import { wishlistWatchMatchesPin, type WishlistPinEvent } from '../lib/wishlist-match.js';
 import { activityDetailPath, explorePublishedActivityPinPath } from '../lib/member-routes.js';
+import { findSeekingActivityByParticipantIntentId } from './participant-intent-activity-readthrough.js';
 import { logger } from '../lib/logger.js';
 
 const resolveActivityPinCoords = (doc: {
@@ -112,39 +107,27 @@ export const notifyWishlistForPublishedActivity = async (activityId: string): Pr
 /** Notify wishlist *watchers* when a new public demand pin matches their saved intent — not a wishlist row for the demand itself. */
 export const notifyWishlistForNewDemand = async (intentId: string, requesterUserId: string): Promise<void> => {
   try {
-    const doc = await getMongoClient()!
-      .db()
-      .collection<{
-        _id: string;
-        kind: string;
-        title: string;
-        latitude: number | null;
-        longitude: number | null;
-        activityId?: string | null;
-        seekingActivityId?: string | null;
-      }>(COLLECTIONS.PARTICIPANT_INTENTS)
-      .findOne({ _id: intentId });
+    const activity = await findSeekingActivityByParticipantIntentId(intentId);
+    if (!activity) return;
 
-    if (!doc) return;
-
-    const kind = doc.kind as 'hiking' | 'camping' | 'event' | 'guide' | 'rideshare' | 'other';
+    const { latitude, longitude } = resolveActivityPinCoords(activity);
     const event: WishlistPinEvent = {
       composeIntent: 'demand',
-      outingCategory: participantIntentKindToOutingCategory(kind),
-      latitude: doc.latitude,
-      longitude: doc.longitude,
+      outingCategory: resolveActivityOutingCategory(activity),
+      latitude,
+      longitude,
       actorUserId: requesterUserId,
     };
 
     await fanOutWishlistNotifications(
       event,
       'Someone is looking for a crew near you',
-      doc.title,
+      activity.title,
       explorePublishedActivityPinPath({
         intentId,
-        activityId: doc.activityId ?? doc.seekingActivityId ?? null,
+        activityId: activity._id,
       }),
-      { intentId }
+      { intentId, activityId: activity._id }
     );
   } catch (error) {
     logger.warn({ err: error, intentId }, 'wishlist notify for demand failed');

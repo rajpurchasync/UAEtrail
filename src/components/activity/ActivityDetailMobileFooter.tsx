@@ -38,7 +38,7 @@ export const ActivityDetailMobileFooter = ({
             memberUserId={hostUserId}
             activityId={activityId}
             size="md"
-            messageLabel="Message organizer"
+            messageLabel="Message host"
           />
         </div>
       ) : null}

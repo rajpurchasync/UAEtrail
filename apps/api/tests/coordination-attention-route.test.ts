@@ -3,7 +3,7 @@ import request from 'supertest';
 import type { Express } from 'express';
 import bcrypt from 'bcryptjs';
 import { bootstrapTestApp } from './helpers/bootstrap.js';
-import { createAuthUser } from '../src/lib/auth-users.js';
+import { createAuthUser } from '../src/lib/auth-users-store.js';
 import { UserRole, UserStatus } from '../src/domain/enums.js';
 import { generateReferralCode } from '../src/lib/referral-code.js';
 import { MEMBER_COORDINATION_ATTENTION_KINDS } from '@uaetrail/shared-types';

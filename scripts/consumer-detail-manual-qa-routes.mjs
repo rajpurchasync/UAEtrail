@@ -22,6 +22,11 @@ const ROUTES = [
     note: 'join-required hint vs full crew (chat, meeting map)',
   },
   { surface: 'Activity (hike)', path: '/activity/:id', note: 'kind facts grid + marketing fold' },
+  {
+    surface: 'Activity (seeking)',
+    path: '/activity/:id',
+    note: 'activityMode seeking — same L3 shell; request to join; no demand: hop',
+  },
   { surface: 'Activity (rideshare)', path: '/activity/:id', note: 'Transport tab emphasis' },
   { surface: 'Place trail', path: '/trail/:id' },
   { surface: 'Place camp', path: '/camp/:id' },

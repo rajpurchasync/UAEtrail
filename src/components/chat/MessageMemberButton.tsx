@@ -12,7 +12,7 @@ export interface MessageMemberButtonProps {
   activityId?: string | null;
   size?: 'sm' | 'md';
   className?: string;
-  /** Accessible name — parent supplies context (“Message organizer”, “Contact shop”, …). */
+  /** Accessible name — parent supplies context (“Message host”, “Contact shop”, …). */
   messageLabel?: string;
 }
 

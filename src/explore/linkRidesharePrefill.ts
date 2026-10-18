@@ -24,7 +24,7 @@ export const buildRideshareDraftFromParentActivity = (parent: ActivityDTO): Crea
 });
 
 /** Seed FLOW-04 from a requester's own demand pin (standalone rideshare on the map). */
-export const buildRideshareDraftFromDemandMapItem = (item: ExploreMapItemDTO): CreateActivityDraft => {
+export const buildRideshareDraftFromSeekingMapItem = (item: ExploreMapItemDTO): CreateActivityDraft => {
   const label = item.title?.trim() || 'your plan';
   const timeStr = item.time?.trim() || '09:00';
   return {

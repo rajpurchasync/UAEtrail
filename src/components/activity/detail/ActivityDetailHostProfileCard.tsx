@@ -4,7 +4,7 @@ import type { ActivityDetailDTO } from '@uaetrail/shared-types';
 import { MessageMemberButton, SecureAvatar } from '../../ui';
 import { showTenantBrand, activityHostAvatar, activityHostName } from '../../../utils/hostLabels';
 import {
-  ACTIVITY_DETAIL_PRO_ORGANIZER_PROFILE_HINT,
+  ACTIVITY_DETAIL_PRO_HOST_PROFILE_HINT,
   ACTIVITY_DETAIL_PRO_SOCIAL_CTA,
 } from '../../../content/activityDetailCopy';
 
@@ -89,13 +89,13 @@ export const ActivityDetailHostProfileCard = ({
           memberUserId={hostUserId}
           activityId={activity.id}
           size="md"
-          messageLabel="Message organizer"
+          messageLabel="Message host"
         />
       ) : null}
     </div>
     {showHostProfileProUpsell ? (
       <p className="mt-3 text-xs leading-relaxed text-amber-900/90">
-        {ACTIVITY_DETAIL_PRO_ORGANIZER_PROFILE_HINT}{' '}
+        {ACTIVITY_DETAIL_PRO_HOST_PROFILE_HINT}{' '}
         <Link to={proSocialMembershipPath} className="font-semibold text-emerald-700 hover:underline">
           {ACTIVITY_DETAIL_PRO_SOCIAL_CTA}
         </Link>

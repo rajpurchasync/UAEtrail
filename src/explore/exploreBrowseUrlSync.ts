@@ -36,7 +36,7 @@ import {
 import {
   serializePeopleBrowseTab,
   type PeopleBrowseTab,
-} from './peopleBrowseTab.js';
+} from '@/people-discovery/peopleBrowseTab';
 import {
   EXPLORE_ACTIVITY_MODE_FILTER_PARAM,
   serializeExploreActivityModeFilter,
@@ -184,7 +184,6 @@ export const buildExploreBrowseSearchParams = (input: {
     params.delete('peopleTab');
     params.delete('socialTab');
     params.delete('goingTab');
-    params.delete('followedKind');
   }
 
   params.delete('followedKind');

@@ -3,4 +3,4 @@ export {
   findEmailChangeTokenForUser,
   findEmailVerificationTokenForUser,
   findPasswordResetToken,
-} from '../lib/auth-tokens.js';
+} from '../lib/auth-tokens-store.js';

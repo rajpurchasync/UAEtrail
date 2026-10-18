@@ -24,7 +24,7 @@ import {
   updateAuthUserCore,
   updateAuthUserProfile,
   type AuthUserRecord
-} from '../src/lib/auth-users.js';
+} from '../src/lib/auth-users-store.js';
 import {
   buildActivityFromCreateInput,
   buildLocationFromCreateInput,
@@ -34,6 +34,7 @@ import {
 import {
   findActivityDocInMongo,
   findLocationInMongo,
+  patchActivityInMongo,
   writeActivityDocToMongo,
   writeLocationToMongo,
 } from '../src/lib/entity-sync.js';
@@ -42,7 +43,7 @@ import {
   stampLocationGroupRegionLevels,
 } from '../src/lib/group-region-resolution.js';
 import { getMongoClient, connectMongo, disconnectMongo } from '../src/lib/mongo.js';
-import { createSocialReview } from '../src/lib/social-data.js';
+import { createSocialReview } from '../src/lib/social-reviews-store.js';
 import {
   createMerchantProfileForUser,
   findManagedMerchantProfileById
@@ -59,6 +60,10 @@ import { DEMO_ACCOUNTS, resolveDemoAccountPassword } from '../src/lib/demo-accou
 import { logOmarHostQaPlaybook } from './logOmarHostQaPlaybook.js';
 import { seedCuratedAreas } from '../src/lib/seed-areas.js';
 import { backfillSeekingActivitiesForActiveIntents } from '../src/lib/participant-intents-store.js';
+import { parseLocalDateTime } from '../src/lib/datetime.js';
+import { createSeekingActivityForIntent } from '../src/services/participant-intent-seeking-activity.js';
+import { findSeekingActivityByParticipantIntentId } from '../src/services/participant-intent-activity-readthrough.js';
+import type { CreateParticipantIntentInput } from '../src/domain/participant-intent.js';
 import { curatedAreaSeedId } from '@uaetrail/shared-types';
 import { backfillSeedCatalogLocationAreaIds, seedLocationAreaId } from './seed-location-area-map.js';
 import {
@@ -725,6 +730,37 @@ const upsertProduct = async (
 };
 
 const seedDemandId = (label: string): string => `seed-${label}`;
+
+const upsertSeedSeekingActivity = async (input: {
+  intentId: string;
+  userId: string;
+  areaId: string;
+  payload: CreateParticipantIntentInput;
+}): Promise<void> => {
+  const existing = await findSeekingActivityByParticipantIntentId(input.intentId);
+  if (existing) {
+    const time = input.payload.time?.trim() || '09:00';
+    const startAt = input.payload.date
+      ? parseLocalDateTime(input.payload.date, time, 'AE')
+      : existing.startAt;
+    await patchActivityInMongo(existing._id, {
+      title: input.payload.title.trim(),
+      description: input.payload.comment.trim(),
+      capacity: input.payload.partySize,
+      ...(startAt ? { startAt } : {}),
+      meetingLat: input.payload.latitude ?? null,
+      meetingLng: input.payload.longitude ?? null,
+      meetingPoint: input.payload.preferredArea?.trim() || null,
+      startLat: input.payload.toLatitude ?? null,
+      startLng: input.payload.toLongitude ?? null,
+      areaId: input.areaId,
+      status: ActivityStatus.PUBLISHED,
+    });
+    return;
+  }
+
+  await createSeekingActivityForIntent(input.userId, input.intentId, input.payload, input.areaId);
+};
 
 const seedMerchantAnalytics = async (input: {
   products: Array<{ id: string; priceAed: number }>;
@@ -2200,7 +2236,6 @@ Share your live location and carry extra water in summer months.`
   await suspendLegacyDemoUser('vendor@uaetrails.app', shopOwner._id);
   await suspendLegacyDemoUser('guide2@uaetrails.app', individualHost._id);
 
-  const demandNow = new Date();
   const demandSeedIds = [
     seedDemandId('demand-hike-hatta'),
     seedDemandId('demand-camp-fossil-rock'),
@@ -2211,105 +2246,92 @@ Share your live location and carry extra water in summer months.`
     _id: { $in: demandSeedIds },
   });
 
-  await db().collection('participant_intents').updateOne(
-    { _id: seedDemandId('demand-hike-hatta') },
-    {
-      $set: {
-        userId: participant._id,
-        title: 'Hiking buddies near Hatta',
-        kind: 'hiking',
-        date: new Date(Date.now() + 5 * 86400000).toISOString().slice(0, 10),
-        time: null,
-        preferredArea: 'Hatta Dam loop, Wadi Hub area',
-        latitude: 24.7847,
-        longitude: 56.1136,
-        locationPrecision: 'general',
-        toLatitude: null,
-        toLongitude: null,
-        partySize: 2,
-        comment: 'Looking for hiking buddies around Hatta this weekend.',
-        status: 'active',
-        updatedAt: demandNow
-      },
-      $setOnInsert: { createdAt: demandNow }
-    },
-    { upsert: true }
-  );
+  const seedSeekingDate = (daysAhead: number): string =>
+    new Date(Date.now() + daysAhead * 86400000).toISOString().slice(0, 10);
 
-  await db().collection('participant_intents').updateOne(
-    { _id: seedDemandId('demand-camp-fossil-rock') },
-    {
-      $set: {
-        userId: individualHost._id,
-        title: 'Weekend desert camp at Fossil Rock',
-        kind: 'camping',
-        date: new Date(Date.now() + 8 * 86400000).toISOString().slice(0, 10),
-        time: '16:00',
-        preferredArea: 'Fossil Rock, Sharjah desert',
-        latitude: 25.22,
-        longitude: 55.85,
-        locationPrecision: 'general',
-        toLatitude: null,
-        toLongitude: null,
-        partySize: 4,
-        comment: 'Looking for people to join a weekend desert camp — tents and 4x4 preferred.',
-        status: 'active',
-        updatedAt: demandNow
-      },
-      $setOnInsert: { createdAt: demandNow }
+  await upsertSeedSeekingActivity({
+    intentId: seedDemandId('demand-hike-hatta'),
+    userId: participant._id,
+    areaId: curatedAreaSeedId('hatta'),
+    payload: {
+      kind: 'hiking',
+      title: 'Hiking buddies near Hatta',
+      date: seedSeekingDate(5),
+      time: null,
+      preferredArea: 'Hatta Dam loop, Wadi Hub area',
+      latitude: 24.7847,
+      longitude: 56.1136,
+      locationPrecision: 'general',
+      toLatitude: null,
+      toLongitude: null,
+      partySize: 2,
+      comment: 'Looking for hiking buddies around Hatta this weekend.',
+      areaId: curatedAreaSeedId('hatta'),
     },
-    { upsert: true }
-  );
+  });
 
-  await db().collection('participant_intents').updateOne(
-    { _id: seedDemandId('demand-event-kite-beach') },
-    {
-      $set: {
-        userId: agencyGuide._id,
-        title: 'Sunrise yoga at Kite Beach',
-        kind: 'event',
-        date: new Date(Date.now() + 6 * 86400000).toISOString().slice(0, 10),
-        time: '06:00',
-        preferredArea: 'Kite Beach running track, Dubai',
-        latitude: 25.1654,
-        longitude: 55.2553,
-        locationPrecision: 'specific',
-        toLatitude: null,
-        toLongitude: null,
-        partySize: 6,
-        comment: 'Casual sunrise yoga meetup — bring your mat and water.',
-        status: 'active',
-        updatedAt: demandNow
-      },
-      $setOnInsert: { createdAt: demandNow }
+  await upsertSeedSeekingActivity({
+    intentId: seedDemandId('demand-camp-fossil-rock'),
+    userId: individualHost._id,
+    areaId: curatedAreaSeedId('fossilRock'),
+    payload: {
+      kind: 'camping',
+      title: 'Weekend desert camp at Fossil Rock',
+      date: seedSeekingDate(8),
+      time: '16:00',
+      preferredArea: 'Fossil Rock, Sharjah desert',
+      latitude: 25.22,
+      longitude: 55.85,
+      locationPrecision: 'general',
+      toLatitude: null,
+      toLongitude: null,
+      partySize: 4,
+      comment: 'Looking for people to join a weekend desert camp — tents and 4x4 preferred.',
+      areaId: curatedAreaSeedId('fossilRock'),
     },
-    { upsert: true }
-  );
+  });
 
-  await db().collection('participant_intents').updateOne(
-    { _id: seedDemandId('demand-rideshare-dxb-rak') },
-    {
-      $set: {
-        userId: pendingParticipant._id,
-        title: 'Ride to Jebel Jais hike',
-        kind: 'rideshare',
-        date: new Date(Date.now() + 3 * 86400000).toISOString().slice(0, 10),
-        time: '07:30',
-        preferredArea: 'Dubai Marina → Jebel Jais',
-        latitude: 25.0782,
-        longitude: 55.1394,
-        locationPrecision: 'specific',
-        toLatitude: 25.9433,
-        toLongitude: 56.1422,
-        partySize: 3,
-        comment: 'Need a ride to Jebel Jais hike — happy to share fuel.',
-        status: 'active',
-        updatedAt: demandNow
-      },
-      $setOnInsert: { createdAt: demandNow }
+  await upsertSeedSeekingActivity({
+    intentId: seedDemandId('demand-event-kite-beach'),
+    userId: agencyGuide._id,
+    areaId: curatedAreaSeedId('jumeirah'),
+    payload: {
+      kind: 'event',
+      title: 'Sunrise yoga at Kite Beach',
+      date: seedSeekingDate(6),
+      time: '06:00',
+      preferredArea: 'Kite Beach running track, Dubai',
+      latitude: 25.1654,
+      longitude: 55.2553,
+      locationPrecision: 'specific',
+      toLatitude: null,
+      toLongitude: null,
+      partySize: 6,
+      comment: 'Casual sunrise yoga meetup — bring your mat and water.',
+      areaId: curatedAreaSeedId('jumeirah'),
     },
-    { upsert: true }
-  );
+  });
+
+  await upsertSeedSeekingActivity({
+    intentId: seedDemandId('demand-rideshare-dxb-rak'),
+    userId: pendingParticipant._id,
+    areaId: curatedAreaSeedId('jebelJais'),
+    payload: {
+      kind: 'rideshare',
+      title: 'Ride to Jebel Jais hike',
+      date: seedSeekingDate(3),
+      time: '07:30',
+      preferredArea: 'Dubai Marina → Jebel Jais',
+      latitude: 25.0782,
+      longitude: 55.1394,
+      locationPrecision: 'specific',
+      toLatitude: 25.9433,
+      toLongitude: 56.1422,
+      partySize: 3,
+      comment: 'Need a ride to Jebel Jais hike — happy to share fuel.',
+      areaId: curatedAreaSeedId('jebelJais'),
+    },
+  });
 
   const seekingBackfill = await backfillSeekingActivitiesForActiveIntents({ limit: 50 });
   console.log(

@@ -8,7 +8,7 @@ import { createAuditLog } from '../lib/audit.js';
 import { createFacilityRecord } from '../lib/facilities-store.js';
 import { toFacilityDto } from '../lib/facility-mappers.js';
 import { scheduleSideEffect } from '../lib/schedule-side-effect.js';
-import { findAuthUserById } from '../lib/auth-users.js';
+import { findAuthUserById } from '../lib/auth-users-store.js';
 import { notifyAdminsCatalogSubmitted } from './catalog-submit-notifications.js';
 import { buildFacilitySubmitInput } from './facility-submit.js';
 import { awardPoints } from './rewards.js';

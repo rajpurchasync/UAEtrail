@@ -20,7 +20,7 @@ export const PLATFORM_FAQ_SECTIONS: FaqSection[] = [
       {
         question: 'What is UAE Trail?',
         answer:
-          'UAE Trail helps you find people to get outside with in the UAE and GCC — hikes, camps, trail runs, jogs, and group outings. Browse what’s on, post what you’re looking for, connect and chat, then go together. Residents, expats, and visitors are all welcome. Free to browse; some activities may be paid depending on the organizer.'
+          'UAE Trail helps you find people to get outside with in the UAE and GCC — hikes, camps, trail runs, jogs, and group outings. Browse what’s on, post what you’re looking for, connect and chat, then go together. Residents, expats, and visitors are all welcome. Free to browse; some activities may be paid depending on the host.'
       },
       {
         question: 'Which regions does UAE Trail cover?',
@@ -63,7 +63,7 @@ export const PLATFORM_FAQ_SECTIONS: FaqSection[] = [
   },
   {
     id: 'hosts',
-    title: 'Organizers & operators',
+    title: 'Hosts & operators',
     items: [
       {
         question: 'How do I run activities on UAE Trail?',
@@ -71,7 +71,7 @@ export const PLATFORM_FAQ_SECTIONS: FaqSection[] = [
           'Sign up and finish your profile, then use Organize on the map to publish hikes, camps, runs, and group plans. Pro membership is reviewed for professional guides and businesses; public profiles show experience and reviews so participants can choose with confidence. Apply from Profile → Pro membership.'
       },
       {
-        question: 'Are activity organizers verified?',
+        question: 'Are activity hosts verified?',
         answer:
           'Pro and operator applications are reviewed by our team. Public profiles show experience, team members, and community reviews so participants can make informed choices before joining.'
       }
@@ -84,7 +84,7 @@ export const PLATFORM_FAQ_SECTIONS: FaqSection[] = [
       {
         question: 'What should I bring on a UAE hike?',
         answer:
-          'At minimum: 2–3 litres of water per person, sun protection (hat, sunscreen, sunglasses), sturdy closed shoes, a fully charged phone, and a basic first-aid kit. Activity pages list organizer-specific requirements — read them before you go.'
+          'At minimum: 2–3 litres of water per person, sun protection (hat, sunscreen, sunglasses), sturdy closed shoes, a fully charged phone, and a basic first-aid kit. Activity pages list host-specific requirements — read them before you go.'
       },
       {
         question: 'Is it safe to hike alone in the UAE?',

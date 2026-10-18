@@ -8,4 +8,4 @@ export {
   useEmailChangeToken,
   useEmailVerificationToken,
   usePasswordResetToken,
-} from '../lib/auth-tokens.js';
+} from '../lib/auth-tokens-store.js';

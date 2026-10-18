@@ -136,14 +136,19 @@ export const resolveOrganizeCreateKindFromDemandMapItem = (item: {
   return 'event';
 };
 
-/** Map item id for a find post — `activity:` when published row exists, else legacy `demand:`. */
+/**
+ * Map item id for a find post — `activity:` only.
+ * Inbound `demand:` bookmarks are preserved when already prefixed; never minted from a bare intent id.
+ */
 export const resolveSeekingExploreMapItemId = (input: {
   intentId: string;
   activityId?: string | null;
-}): string => {
-  const bareIntent = input.intentId.replace(/^demand:/, '').trim();
+}): string | null => {
   const activityId = input.activityId?.trim();
-  return activityId ? `activity:${activityId}` : `demand:${bareIntent}`;
+  if (activityId) return `activity:${activityId}`;
+  const inbound = input.intentId.trim();
+  if (inbound.startsWith('demand:')) return inbound;
+  return null;
 };
 
 /** Canonical explore deep link for seeking (notifications, share, map `path`). */
@@ -151,17 +156,14 @@ export const exploreSeekingMapItemPath = (input: {
   intentId: string;
   activityId?: string | null;
 }): string => {
+  const pin = resolveSeekingExploreMapItemId(input);
   const params = new URLSearchParams({
-    pin: resolveSeekingExploreMapItemId(input),
     list: '1',
     panel: 'activities',
   });
+  if (pin) params.set('pin', pin);
   return `/explore?${params.toString()}`;
 };
-
-/** @deprecated Prefer {@link exploreSeekingMapItemPath} when `activityId` may exist. Legacy intent-only pins. */
-export const exploreDemandMapItemPath = (intentId: string): string =>
-  exploreSeekingMapItemPath({ intentId });
 
 /** FLOW-05 organize activity wizard chip → persisted `outingTopic`. */
 export const activityOrganizeTopicToOutingTopic = (topic: string): OutingTopic | null => {

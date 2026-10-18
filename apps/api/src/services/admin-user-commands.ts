@@ -1,8 +1,8 @@
 import { UserRole, UserStatus } from '../domain/enums.js';
 import { createAuditLog } from '../lib/audit.js';
 import { ApiError } from '../lib/api-error.js';
-import { revokeRefreshTokensByUser } from '../lib/auth-tokens.js';
-import { findAuthUserById, updateAuthUserStatus } from '../lib/auth-users.js';
+import { revokeRefreshTokensByUser } from '../lib/auth-tokens-store.js';
+import { findAuthUserById, updateAuthUserStatus } from '../lib/auth-users-store.js';
 import { PROFILE_PATH } from '../lib/member-routes.js';
 import { notifyUserAdminAction } from './admin-notifications.js';
 

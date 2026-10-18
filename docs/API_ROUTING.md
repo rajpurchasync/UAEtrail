@@ -30,7 +30,7 @@ Companion: [`DOMAIN.md`](./DOMAIN.md), [`CREATE_FLOW.md`](./CREATE_FLOW.md), [`M
 
 - **Resource paths** use kebab-case plural nouns (`seeking-posts`, not `intents` or `demand`).
 - **No tab or marketing names** on `/me/*` (`plan-needs-you`, `member-hub-stats` are forbidden — use capability names like `coordination-attention`, `profile-stats`). Presentation (`label`, consumer `path`) belongs in the SPA, not JSON.
-- **Seeking posts** → URL **`/me/seeking-posts`** (legacy collection `participant_intents` read-only in DB; product copy: *Find* / looking for company).
+- **Seeking posts** → URL **`/me/seeking-posts`** (product storage: `activities` with `activityMode: seeking`; leftover `participant_intents` is ops/backfill only; product copy: *Find* / looking for company).
 - **Type field** on intents: `kind` (`ParticipantIntentKind`) — parallels activity `activityType` / shared `outingCategory`.
 - Do **not** add catch-all `/plans` or `/me/intents` (legacy plan doc paths are obsolete).
 
@@ -38,11 +38,11 @@ Companion: [`DOMAIN.md`](./DOMAIN.md), [`CREATE_FLOW.md`](./CREATE_FLOW.md), [`M
 
 ## Join requests: activities vs demand
 
-**Demand** pins are always **public** on the map and use **approval-style join only** — no RSVP, no **I'm going**, no `participationMode` or `joinMode` on intents. Organize activities keep both modes.
+**Demand** pins are always **public** on the map and use **approval-style join only** — no RSVP, no **I'm going**, no `participationMode` or `joinMode` on seeking rows. Hosted activities keep both modes.
 
-Same product verb (**request to join**), two entities:
+Same product verb (**request to join**), two surfaces of **`activity_requests`**:
 
-| Step | Published activity | Demand (`participant_intents`) |
+| Step | Published activity | Demand (seeking `activities`) |
 |------|-------------------|----------------------------------|
 | **Create request** | `POST /activities/:activityId/requests` | `POST /me/seeking-posts/:postId/requests` (same `activity_requests` row) |
 | **My status** | In activity detail `myRequest` | `GET …/requests/mine` |

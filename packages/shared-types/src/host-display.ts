@@ -1,4 +1,6 @@
-/** When no person or brand name is available on consumer surfaces. */
+/** When no person or brand name is available on consumer surfaces (UPL Host). */
+export const HOST_FALLBACK_DISPLAY_NAME = 'Host';
+/** @deprecated Old payloads / placeholders — treat as {@link HOST_FALLBACK_DISPLAY_NAME}. */
 export const ORGANIZER_FALLBACK_DISPLAY_NAME = 'Organizer';
 
 /** Demo / onboarding role labels — never shown as a person's name. */
@@ -8,6 +10,7 @@ export const ROLE_PLACEHOLDER_DISPLAY_NAME =
 export const isRolePlaceholderDisplayName = (name?: string | null): boolean => {
   const trimmed = name?.trim();
   if (!trimmed) return true;
+  if (trimmed.toLowerCase() === HOST_FALLBACK_DISPLAY_NAME.toLowerCase()) return true;
   if (trimmed.toLowerCase() === ORGANIZER_FALLBACK_DISPLAY_NAME.toLowerCase()) return true;
   return ROLE_PLACEHOLDER_DISPLAY_NAME.test(trimmed);
 };
@@ -45,7 +48,7 @@ export const resolveHostPersonDisplayName = (input: HostPersonNameInput): string
 export const hostPersonFirstName = (input: HostPersonNameInput): string => {
   const person = resolveHostPersonDisplayName(input);
   if (person) return person.split(/\s+/)[0];
-  return ORGANIZER_FALLBACK_DISPLAY_NAME;
+  return HOST_FALLBACK_DISPLAY_NAME;
 };
 
 type HostIdentityFields = {
@@ -67,7 +70,7 @@ type HostAvatarIdentityFields = {
 export const resolveActivityHostDisplayName = (activity: HostIdentityFields): string => {
   const name = activity.hostName ?? activity.organizerName;
   if (name?.trim() && !isRolePlaceholderDisplayName(name)) return name.trim();
-  return ORGANIZER_FALLBACK_DISPLAY_NAME;
+  return HOST_FALLBACK_DISPLAY_NAME;
 };
 
 export const resolveActivityHostUserId = (

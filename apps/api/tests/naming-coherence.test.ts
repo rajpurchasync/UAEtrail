@@ -55,11 +55,11 @@ describe('naming coherence (API)', () => {
     expect(content).not.toMatch(/await findTenantById\(/);
   });
 
-  it('participant intent map list batches users and discovery hide', () => {
+  it('participant intent product paths are seeking-activity only', () => {
     const content = readFileSync(join(API_SRC, 'lib', 'participant-intents-store.ts'), 'utf8');
-    expect(content).toMatch(/findAuthUsersByIds/);
-    expect(content).toMatch(/batchShouldHideFromMapMemberDiscovery/);
-    expect(content).not.toMatch(/shouldHideFromMapMemberDiscovery\(/);
+    expect(content).toMatch(/findSeekingActivityByParticipantIntentId/);
+    expect(content).not.toMatch(/listActiveParticipantIntentsForMap/);
+    expect(content).not.toMatch(/demand:\$\{/);
     const engagement = readFileSync(join(API_SRC, 'lib', 'activity-engagement-store.ts'), 'utf8');
     expect(engagement).toMatch(/countPublishedActivitiesHostedByUserIds/);
   });
@@ -136,7 +136,7 @@ describe('naming coherence (API)', () => {
 
   it('user search endpoints escape regex via regex-search helper', () => {
     const searchStores = [
-      'lib/auth-users.ts',
+      'lib/auth-users-store.ts',
       'lib/shop-store.ts',
       'lib/social-groups-store.ts',
       'lib/admin-store.ts',

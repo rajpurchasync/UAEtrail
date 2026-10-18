@@ -8,7 +8,7 @@ import type { Collection } from 'mongodb';
 import type { Activity, ActivityParticipant, Location } from '../domain/types.js';
 import { resolveJoinMode, shouldHideActivityFromExploreMap } from '../domain/activity-join-mode.js';
 import { ActivityStatus, ActivityType, LocationStatus } from '../domain/enums.js';
-import { findAuthUsersByIds, type AuthUserRecord } from './auth-users.js';
+import { findAuthUsersByIds, type AuthUserRecord } from './auth-users-store.js';
 import type { MongoActivityDoc } from './entity-builders.js';
 import { getMongoClient } from './mongo.js';
 import { findTenantById, findTenantBySlug, findTenantsByIds, type TenantRecord } from './tenant-store.js';

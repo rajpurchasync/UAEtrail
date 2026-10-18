@@ -100,10 +100,10 @@ export const ORGANIZE_PUBLISH_SUCCESS_TITLE = 'You\u2019re live';
 export const DEMAND_SUBMIT_SUCCESS_TITLE = 'Request posted';
 
 export const DEMAND_SUBMIT_SUCCESS_BODY_ON_MAP =
-  'You\u2019re on the map. Organizers and explorers nearby can message you or propose a matching plan.';
+  'You\u2019re on the map. Hosts and explorers nearby can message you or propose a matching plan.';
 
 export const DEMAND_SUBMIT_SUCCESS_BODY_OFF_MAP =
-  'We saved your request. Add a map pin next time to show on Explore \u2014 organizers can still reach you when you message or get matched.';
+  'We saved your request. Add a map pin next time to show on Explore \u2014 hosts can still reach you when you message or get matched.';
 
 export const DEMAND_SUBMIT_VIEW_CTA = 'View';
 

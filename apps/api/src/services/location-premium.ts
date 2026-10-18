@@ -8,7 +8,7 @@ import { LocationUnlockSource, MembershipTier, UserRole } from '../domain/enums.
 import { ApiError } from '../lib/api-error.js';
 import { findLocationInMongo } from '../lib/entity-sync.js';
 import { getMongoClient } from '../lib/mongo.js';
-import { getAuthUserMembershipTier } from '../lib/auth-users.js';
+import { getAuthUserMembershipTier } from '../lib/auth-users-store.js';
 import { isS3Available, s3Client } from '../lib/s3.js';
 import { safePathUnder } from '../lib/safe-path.js';
 import { env } from '../config/env.js';

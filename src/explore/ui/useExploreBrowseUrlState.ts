@@ -20,20 +20,17 @@ import {
 import {
   parseExploreBrowseStateFromSearchParams,
   type ExploreBrowseUrlHydratedState,
-  type ExploreFollowedSegment,
 } from '../exploreBrowseUrlHydrate';
 import { useExploreBrowseUrlLegacyMigrations } from './useExploreBrowseUrlLegacyMigrations';
 import { useExploreBrowseUrlApplyHandlers } from './useExploreBrowseUrlApplyHandlers';
 import type { BuddiesDiscoverySegment } from '../../list/buddiesDiscoverySegment';
 import type { ExplorePinKindFilter } from '../explorePinKindFilter';
-import type { PeopleBrowseTab } from '../peopleBrowseTab.js';
+import type { PeopleBrowseTab } from '@/people-discovery/peopleBrowseTab';
 import type { ExploreActivityModeFilter } from '../exploreActivityModeFilter';
 import type { ExploreBuddySubtypeKey } from '../exploreBuddySubtype';
 import type { ExploreOutingTopicKey } from '../exploreOutingTopic';
 
 export type { ExploreBrowseListMode } from '../exploreBrowseUrlSync';
-export type { ExploreFollowedSegment } from '../exploreBrowseUrlHydrate';
-export { parseExploreFollowedSegment } from '../exploreBrowseUrlHydrate';
 
 export const UNIFIED_MAP_FILTER_KEYS: MapFilterKey[] = MAP_FILTER_PILLS.map((pill) => pill.key);
 
@@ -82,7 +79,6 @@ export const useExploreBrowseUrlState = ({
   const [peopleBrowseOpen, setPeopleBrowseOpen] = useState(initial.peopleBrowseOpen);
   const [searchScope, setSearchScope] = useState<ExploreSearchScopeKey | null>(initial.searchScope);
   const [peopleBrowseTab, setPeopleBrowseTab] = useState<PeopleBrowseTab>(initial.peopleBrowseTab);
-  const [followedSegment, setFollowedSegment] = useState<ExploreFollowedSegment>(initial.followedSegment);
   const [buddiesDiscoverSegment, setBuddiesDiscoverSegment] = useState<BuddiesDiscoverySegment>(
     initial.buddiesDiscoverSegment
   );
@@ -160,7 +156,6 @@ export const useExploreBrowseUrlState = ({
     setPeopleBrowseOpen(state.peopleBrowseOpen);
     setSearchScope(state.searchScope);
     setPeopleBrowseTab(state.peopleBrowseTab);
-    setFollowedSegment(state.followedSegment);
     setBuddiesDiscoverSegment(state.buddiesDiscoverSegment);
     if (isDesktop) {
       setDesktopBrowseTab(state.desktopBrowseTab);
@@ -190,7 +185,6 @@ export const useExploreBrowseUrlState = ({
       setPeopleBrowseOpen,
       setPeopleBrowseTab,
       setBuddiesDiscoverSegment,
-      setFollowedSegment,
       setDesktopBrowseTab,
       setActivityDatePreset,
       setActivityModeFilter,
@@ -303,8 +297,6 @@ export const useExploreBrowseUrlState = ({
     applyPeopleBrowseTab: handlers.applyPeopleBrowseTab,
     buddiesDiscoverSegment,
     applyBuddiesDiscoverSegment: handlers.applyBuddiesDiscoverSegment,
-    followedSegment,
-    applyFollowedSegment: handlers.applyFollowedSegment,
     listMode,
     peopleBrowseOpen,
   };

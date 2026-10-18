@@ -55,7 +55,7 @@ export const buildExploreMapItemFromActivity = (
       userId: resolveActivityHostUserId(activity),
       displayName: resolveActivityHostDisplayName(activity),
       avatarUrl: resolveActivityHostAvatar(activity),
-      role: 'organizer',
+      role: 'host',
     }),
     hostName: activity.hostName ?? null,
     hostAvatar: resolveActivityHostAvatar(activity),

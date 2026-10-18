@@ -244,7 +244,7 @@ export interface ActivityDTO {
   groupChatPostPolicy?: ActivityGroupChatPostPolicy | null;
   /** Map/Plan mode — `seeking` = Find post (M1 activity row); default hosted outings omit or `hosted`. */
   activityMode?: ExploreActivityMode | null;
-  /** Back-link to `participant_intents` when `activityMode: seeking`. */
+  /** Correlation id for `/me/seeking-posts/:postId` when `activityMode: seeking`. */
   participantIntentId?: string | null;
 }
 
@@ -1200,6 +1200,7 @@ export {
 
 export {
   ROLE_PLACEHOLDER_DISPLAY_NAME,
+  HOST_FALLBACK_DISPLAY_NAME,
   ORGANIZER_FALLBACK_DISPLAY_NAME,
   hostPersonFirstName,
   isRolePlaceholderDisplayName,
@@ -1291,7 +1292,6 @@ export {
   activityTypeToOutingCategory,
   buildExploreMapPlanProjection,
   deriveOutingTopicFromRequirements,
-  exploreDemandMapItemPath,
   exploreSeekingMapItemPath,
   resolveSeekingExploreMapItemId,
   exploreMapKindToPlanMapKind,

@@ -7,6 +7,7 @@ import {
   computeActivityViewerEntitlements,
   projectActivityMapPeekActions,
   resolveActivityEngagementPolicy,
+  APPROVAL_PARTICIPATION_REQUIREMENT,
   RSVP_PARTICIPATION_REQUIREMENT,
 } from '@uaetrail/shared-types';
 import { hostedExploreMapItem } from '../explore/exploreMapItemFixtures';
@@ -104,7 +105,7 @@ const approvalHikeItem = () =>
       status: 'published',
       participationMode: 'approval',
       ...meeting,
-      requirements: ['Organizer approval required to join'],
+      requirements: [APPROVAL_PARTICIPATION_REQUIREMENT],
       joinMode: 'open',
     },
   } as Parameters<typeof hostedExploreMapItem>[0]);
@@ -185,7 +186,7 @@ describe('mapDetailEngagementParity (RF-02 / R1.4)', () => {
         status: 'published',
         participationMode: 'approval',
         ...meeting,
-        requirements: ['Organizer approval required to join'],
+        requirements: [APPROVAL_PARTICIPATION_REQUIREMENT],
         joinMode: 'open',
       },
     } as Parameters<typeof hostedExploreMapItem>[0]);

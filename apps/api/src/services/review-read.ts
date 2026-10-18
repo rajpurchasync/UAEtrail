@@ -1,5 +1,5 @@
 import { reviewTargetEnumToWire, reviewTargetWireToEnum, type ReviewTargetWire } from '../domain/review-target-wire.js';
-import { listSocialReviews, type SocialReview } from '../lib/social-data.js';
+import { listSocialReviews, type SocialReview } from '../lib/social-reviews-store.js';
 import { tierEnumToDisplay } from '../lib/membership-tier-display.js';
 import {
   findAuthUsersByIds,

@@ -25,10 +25,9 @@ import type { BrowseMainCategoryKey } from '../../list/browseListTaxonomy';
 import type { ExploreBrowseUrlSyncPatch } from '../exploreBrowseUrlSync';
 import type { BuddiesDiscoverySegment } from '../../list/buddiesDiscoverySegment';
 import type { ExplorePinKindFilter } from '../explorePinKindFilter';
-import type { PeopleBrowseTab } from '../peopleBrowseTab.js';
+import type { PeopleBrowseTab } from '@/people-discovery/peopleBrowseTab';
 import type { ExploreActivityModeFilter } from '../exploreActivityModeFilter';
 import type { ExploreBrowseListMode } from '../exploreBrowseUrlSync';
-import type { ExploreFollowedSegment } from '../exploreBrowseUrlHydrate';
 
 type SyncExploreUrl = (patch: ExploreBrowseUrlSyncPatch) => void;
 
@@ -47,7 +46,6 @@ type Setters = {
   setPeopleBrowseOpen: (v: boolean) => void;
   setPeopleBrowseTab: (v: PeopleBrowseTab) => void;
   setBuddiesDiscoverSegment: (v: BuddiesDiscoverySegment) => void;
-  setFollowedSegment: (v: ExploreFollowedSegment) => void;
   setDesktopBrowseTab: (v: DesktopBrowseTab) => void;
   setActivityDatePreset: (v: ExploreActivityDatePreset) => void;
   setActivityModeFilter: (v: ExploreActivityModeFilter) => void;
@@ -245,7 +243,6 @@ export const useExploreBrowseUrlApplyHandlers = (args: UseExploreBrowseUrlApplyH
     (tab: PeopleBrowseTab) => {
       setters.setPeopleBrowseTab(tab);
       setters.setBuddiesDiscoverSegment(tab);
-      setters.setFollowedSegment('people');
       if (isDesktop) {
         syncExploreUrl({
           peopleBrowseOpen: true,
@@ -264,13 +261,6 @@ export const useExploreBrowseUrlApplyHandlers = (args: UseExploreBrowseUrlApplyH
       });
     },
     [isDesktop, listOpen, setters, syncExploreUrl]
-  );
-
-  const applyFollowedSegment = useCallback(
-    (segment: ExploreFollowedSegment) => {
-      setters.setFollowedSegment(segment);
-    },
-    [setters]
   );
 
   const applyBuddiesDiscoverSegment = useCallback(
@@ -515,7 +505,6 @@ export const useExploreBrowseUrlApplyHandlers = (args: UseExploreBrowseUrlApplyH
     openPeopleBrowsePanel,
     closePeopleBrowsePanel,
     applyPeopleBrowseTab,
-    applyFollowedSegment,
     applyBuddiesDiscoverSegment,
     closeListPanel,
     applyBuddySubtype,

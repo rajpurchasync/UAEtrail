@@ -35,7 +35,7 @@ import {
   loadMerchantOwnerDisplaysByAdminIds,
 } from './shop-store.js';
 import { listPublicShopTenantsForExplore } from './tenant-store.js';
-import { getReviewStatsByTargets } from './social-data.js';
+import { getReviewStatsByTargets } from './social-reviews-store.js';
 import { ReviewTargetType } from '../domain/enums.js';
 import { resolveVenueExploreLabels } from './venue-display-names.js';
 import { isWithinUaeFocusArea } from './uae-bbox.js';

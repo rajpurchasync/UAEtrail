@@ -1,4 +1,4 @@
-import { findAuthUserById } from '../lib/auth-users.js';
+import { findAuthUserById } from '../lib/auth-users-store.js';
 import { normalizeProfileVisibility } from '../lib/media-access.js';
 import { canViewProfileField, resolveProfileViewerAccess } from './profile-viewer-access.js';
 

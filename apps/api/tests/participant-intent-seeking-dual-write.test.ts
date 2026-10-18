@@ -8,7 +8,7 @@ beforeAll(async () => {
 });
 import { createParticipantIntent } from '../src/lib/participant-intents-store.js';
 import { findActivityDocInMongo } from '../src/lib/entity-sync.js';
-import { createAuthUser } from '../src/lib/auth-users.js';
+import { createAuthUser } from '../src/lib/auth-users-store.js';
 import { generateReferralCode } from '../src/lib/referral-code.js';
 import bcrypt from 'bcryptjs';
 import { UserRole, UserStatus } from '../src/domain/enums.js';

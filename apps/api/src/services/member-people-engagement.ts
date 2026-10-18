@@ -12,7 +12,7 @@ import {
 } from '@uaetrail/shared-types';
 import { USER_CITY_LABELS, type UserCity } from '../domain/user-profile.js';
 import { countCheckedInParticipationsForUserIds } from '../lib/activity-engagement-store.js';
-import { findAuthUsersByIds } from '../lib/auth-users.js';
+import { findAuthUsersByIds } from '../lib/auth-users-store.js';
 import { listBuddiesForUser, listBuddyRequestsForUser } from '../lib/buddy-store.js';
 import { listFollowingForUser } from '../lib/follow-store.js';
 import { loadExploreMapItemsForMemberEngagement } from '../lib/explore-map-member-engagement.js';

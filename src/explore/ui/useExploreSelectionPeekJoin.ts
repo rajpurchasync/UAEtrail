@@ -16,7 +16,7 @@ export const useExploreSelectionPeekJoin = (input: {
   selected: ExploreMapItemDTO | null;
   selectedCard: DiscoveryCardViewModel | null;
   user: { id: string; role?: string } | null | undefined;
-  setDemandNotice: (message: string | null) => void;
+  setExploreNotice: (message: string | null) => void;
   setSelectedId: (id: string | null) => void;
   navigate: NavigateFunction;
 }) => {
@@ -60,8 +60,8 @@ export const useExploreSelectionPeekJoin = (input: {
     requestIdFallback: joinContext?.myRequest?.id ?? null,
     joinGuardMessage,
     onReload: reloadJoinContext,
-    onMessage: input.setDemandNotice,
-    onError: input.setDemandNotice,
+    onMessage: input.setExploreNotice,
+    onError: input.setExploreNotice,
   });
 
   const handlePeekJoinSuccess = useCallback(

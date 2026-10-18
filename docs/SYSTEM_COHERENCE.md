@@ -15,7 +15,7 @@ From [`NORTHSTAR.md`](./NORTHSTAR.md), the product delivers five **capabilities*
 | Capability | Member outcome | Primary surfaces |
 |------------|----------------|------------------|
 | **Discover** | See real outdoor plans near me | `/explore`, entity detail (`/activity`, `/trail`, …) |
-| **Express demand** | Say what I want when nothing fits | Explore FAB → Find → **`activities`** (`activityMode: seeking`); intent stub for manage |
+| **Express demand** | Say what I want when nothing fits | Explore FAB → Find → **`activities`** (`activityMode: seeking`); manage via `/me/seeking-posts` |
 | **Connect** | Align with people before the day | **Browse — member people** (who’s going / looking / your crew on map & list) → **Chat** (`/messages`, group & outing threads) |
 | **Participate** | Join or host a specific outing | Activity detail join/RSVP; host join queue |
 | **Return** | Same crew, next time | `/profile`, **`/plan`**, notifications, goals |
@@ -39,13 +39,12 @@ flowchart TB
   subgraph compose [Compose subsystem]
     FAB["compose= URL contract"]
     ORG["Organize wizards"]
-    FIND["Demand wizards"]
+    FIND["Find wizards"]
     ADD["Contribute wizards"]
   end
 
   subgraph participation [Participation subsystem]
     JOIN["activity_requests + RSVP"]
-    INTENT["participant_intents stub"]
     CREW["activity crew groups"]
   end
 
@@ -73,7 +72,7 @@ flowchart TB
   FAB --> ADD
   ORG --> TEN
   ORG --> JOIN
-  FIND --> INTENT
+  FIND --> JOIN
   D --> JOIN
   JOIN --> CREW
   CREW --> MSG
@@ -95,7 +94,7 @@ Each context has **one write path** and **one public read model** where possible
 | Context | Responsibility | Frontend home | API home | Storage (see `collections.ts`) |
 |---------|----------------|---------------|----------|--------------------------------|
 | **Discovery (Explore umbrella)** | **Explore** = discovery shell (URL, layout, chrome). **Projections:** map, list (`list=1`), browse catalogue (`browse=1`, `/list`), search — not separate data stores. **Activity discovery** = hosted + seeking outings from `GET /explore/map`. **Places discovery** = place / facility / shop pins from the same read (filters in explore/list). **Area** is an admin-curated **name** (`?area=` / `/area/:slug`) — **not a pin**. **People discovery** = roster, availability, directory (`member_discovery` APIs); *Looking for* tab composes **activity-discovery** seeking rows. Signed-in peek is `GET /me/discover/overlay`, not a second catalog. | Shell: `src/explore/shell/*`. Activity: `src/activity-discovery/*`, activities list in `src/explore/ui`, `src/list/*`. Places: entity detail + list filters. People: `src/people-discovery/*` | `lib/explore-map.ts`, `GET /explore/map`, `GET /me/discover/overlay` | `activities`, `locations`, `facilities`, `areas`, `tenants` (shops) |
-| **Compose** | FAB intents, wizards, draft → publish payload | `src/explore/create/` (`hosting/`), `compose.ts`, `hostingFlowEngine.ts`, `hostingFlows/`, `seekingFlowEngine.ts` | `POST /publishing/activities`, `POST /me/seeking-posts` | `activities` (seeking rows; legacy `participant_intents` read-only) |
+| **Compose** | FAB intents, wizards, draft → publish payload | `src/explore/create/` (`hosting/`), `compose.ts`, `hostingFlowEngine.ts`, `hostingFlows/`, `seekingFlowEngine.ts` | `POST /publishing/activities`, `POST /me/seeking-posts` | `activities` (seeking rows; `participant_intents` leftover ops/backfill only) |
 | **Participation** | Join, waitlist, RSVP, seeking joins, **Join me** invites | `useActivityJoin*`, detail + explore selection | `join-request.ts`, `activity-invite.ts`, intent join **aliases** (`participant-intent-requests-store`) | **`activity_requests`** (canonical); `participant_intent_requests` legacy-only; `activity_participants`, `activity_invites` |
 | **Browse — member people** | Who can I go with? Network roster + availability + discover directory (quota). **Looking for** tab: `GET /explore/seeking-activities` + `selectSeekingActivitiesFromExploreCatalog` (`src/activity-discovery`). | `src/people-discovery/*` (`PeopleBrowsePanel`, tabs), `ListDiscoverPeopleView` | `explore-seeking-activities-read.ts`, `member-people-engagement.ts`, `member-discovery-roster.ts`, `registerMemberDiscoveryRoutes` | Composes `buddy_*`, `user_follows`, explore catalog (read), `member_profile_views` |
 | **Member identity** | Profile, welcome gate, visibility, public card | `src/pages/Profile*`, `src/member/*` | `registerProfileRoutes`, `public-member-profile`, `profile-viewer-access` | `auth_users` profile fields |
@@ -120,7 +119,7 @@ Pick a **context id** when changing code; touch registrar + `src/api/domains/*` 
 
 | Context | Collections (wire) | Key HTTP | FE domain module | UI roots |
 |---------|-------------------|----------|------------------|----------|
-| discovery | `activities`, `locations`, `participant_intents`, shop tenants | `GET /explore/map` · `GET /me/discover/overlay` · browse also `/list` | `exploreApi` | `src/discovery` (card VM), `src/explore/shell`, `src/activity-discovery`, `src/places-discovery`, `src/explore/*`, `src/list/*` — pin UI §6.1 |
+| discovery | `activities`, `locations`, shop tenants | `GET /explore/map` · `GET /me/discover/overlay` · browse also `/list` | `exploreApi` | `src/discovery` (card VM), `src/explore/shell`, `src/activity-discovery`, `src/places-discovery`, `src/explore/*`, `src/list/*` — pin UI §6.1 |
 | compose | `activities` (seeking) | `POST /publishing/activities`, `POST /me/seeking-posts` | `exploreApi`, `seekingApi`, `organisationApi` | `src/explore/ui/*` |
 | participation | `activity_requests` (`note`, `hostNote`), `activity_participants`, `activity_invites` | **`POST /activities/:id/requests`** (canonical seeking + hosted); `/me/seeking-posts/.../requests` for Find manage; tenant **`GET /publishing/requests`** (console API, also Plan manage) | `activitiesApi`, `seekingApi` | Activity detail, Plan manage sheet, `JoinRequestDetail` |
 | *(cross-cut)* | — | `GET /activities/:id` (`viewerAccess`, `myJoinInvite`) | — | **`activity-viewer-access.ts`**, **`activity-invite.ts`** |
@@ -163,7 +162,7 @@ Canonical navigation: [`NAVIGATION.md`](./NAVIGATION.md). Structural rules:
 | Browse + create | `/explore?compose=…` | `/operator/activities/new` as consumer default |
 | Personal hub | `/profile`, **`/plan`** | Legacy `/trips` redirects; not `/activities` browse |
 | Entity | `/activity/:id`, place URLs | “Trip” entity (does not exist) |
-| Host console | `/operator/*` (tenant workspace; HTTP `/publishing`) | Buddy **Host** (map FAB) + **Plan hosted** manage (same APIs, consumer surface) |
+| Publishing workspace | `/operator/*` (tenant workspace; HTTP `/publishing`) | Buddy **Host** (map FAB) + **Plan hosted** manage (same APIs, consumer surface) |
 | Pro / business | `/profile/pro-membership` | `/become-host` as product entry (redirect only) |
 | Messaging | `/messages` (+ `?group=` / `?to=`) | Chat embedded only on entity/Plan flows → `/chat` |
 | List layout (browse) | `/list?…` (handoff) · mobile **List** pill on `/explore` | A second product home, `/map`, or **List bottom-nav tab** |
@@ -252,7 +251,7 @@ Detail: [`API_ROUTING.md`](./API_ROUTING.md).
 
 **Routing rule:** `mapPeekSlots` is the **only** module that branches on `card.source` for the activity map peek **mount** (`ActivityMapPeekHost` — React surface, not activity organizer). New logic goes under `peek/{activity|place|area|shop}/`, not new `Explore*Peek*` files.
 
-**Looking-for / seeking (unified with activity):** Product = **activity** (`activityMode: seeking`); publisher = **organizer** on wire. Map/list peek = same stack as hosted outings: `ActivityMapPeekHost` → `ActivityPeekCard` → `peek/activity/*` + `resolveActivityPeekEngagement` (`viewerAccess.mapPeekActions`). **No** intent-only peek UI in app code — map wire is activity-backed (M0/M1). L1 cards force `source: 'activity'` for seeking. Ops: backfill old DB rows (`seeking:storage-status`); keep `pin=demand:` URL rewrite only (`seekingPinHygieneGuard`).
+**Looking-for / seeking (unified with activity):** Product = **activity** (`activityMode: seeking`); publisher = **host** on wire. Map/list peek = same stack as hosted outings: `ActivityMapPeekHost` → `ActivityPeekCard` → `peek/activity/*` + `resolveActivityPeekEngagement` (`viewerAccess.mapPeekActions`). **No** intent-only peek UI in app code — map wire is activity-backed. L1 cards force `source: 'activity'` for seeking. Ops: backfill leftover `participant_intents` rows (`seeking:storage-status`); keep inbound `pin=demand:` URL rewrite only (`seekingPinHygieneGuard`) — never mint `demand:` from a bare intent id.
 
 **Parity rule:** Engagement affordances on L2 must match L3 for the same viewer state (`resolvePeekDetailAccess`, activity engagement policy) — see `consumer-detail-surfaces-plan.md`.
 
@@ -500,10 +499,10 @@ Work **top to bottom**. Each wave ends with **`npm run verify:system:quick`** (w
 | Wave | ID | Outcome | Primary deliverables | Exit criteria |
 |------|-----|---------|----------------------|---------------|
 | **0** | **S13a** | Charter frozen in Tier-1 | §6.2 (this file), §3.2.2 member lenses, `DOCS_INDEX` | `verify:docs` |
-| **1** | **S13-W1** | **Profile link lenses** | **`memberProfileLink(userId, lens)`** (`src/member/memberProfileLink.ts`) used by people browse, `/buddies`, roster chips, `memberDiscoverProfilePath`; wire = `memberProfilePath` in shared-types | `memberProfileLink.test.ts`, `memberSurfacesAcceptance` S13; no duplicate `explore/ui/peopleBrowse` implementations |
-| **2** | **S13-W2** | **People browse module unity** | One `PeopleBrowseTabContent` import path; delete or re-export duplicate under `explore/ui/peopleBrowse`; `ListDiscoverPeopleView` uses same module | `memberSurfacesAcceptance`, `listModuleHygiene` |
+| **1** | **S13-W1** | **Profile link lenses** | **`memberProfileLink(userId, lens)`** (`src/member/memberProfileLink.ts`) used by people browse, `/buddies`, roster chips, notifications, chat; owner preview **`memberPublicPreviewLink`** (`view=public`, not a lens); wire = `memberProfilePath` in shared-types | `memberProfileLink.test.ts`, `memberSurfacesAcceptance` S13; no duplicate `explore/ui/peopleBrowse` implementations |
+| **2** | **S13-W2** | **People browse module unity** | One `PeopleBrowseTabContent` import path under `people-discovery`; `explore/ui/peopleBrowse` re-export **deleted** (EXPLORE-IA); `ListDiscoverPeopleView` uses same module | `memberSurfacesAcceptance`, `listModuleHygiene` · DISC-METH-11 |
 | **3** | **S13-W3** | **Member browse row VM** | `src/people-discovery/memberBrowseRowModel.ts` — L1 rows for directory, availability, going, seeking; **not** authorization | `memberBrowseRowModel.test.ts` + panel/list consume VM; C24 closed |
-| **4** | **S13-W4** | **Profile L3 polish** | `MemberProfileView` sections keyed off `viewerAccess` only; activity publisher strip uses `resolveActivityPublisherProfilePath`; owner `?view=public` unchanged | `detailSurfaceWiringAcceptance`, §15 profile tests |
+| **4** | **S13-W4** | **Profile L3 polish** | `MemberProfileView` sections keyed off `viewerAccess` only; activity publisher strip uses `resolveActivityPublisherProfilePath`; owner `?view=public` via `memberPublicPreviewLink` | `detailSurfaceWiringAcceptance`, §15 profile tests |
 | **5** | **S13-W5** | **Discovery projection parity** | L1/L2 engagement parity per `listCat` / people tab; member browse L1 in methodology guards | `discoveryUiMethodologyGuard` DISC-METH-07–09 · `listModuleHygiene` peopleBrowse shim |
 | **6** | **S13-W6** | **Guest + participation kit** | `guestBrowseGateCopy` + `ExploreGuestSignInCard` for people browse, member profile, activity L3, peek-details | `guestParticipationKitGuard.test.ts` + `detailSurfaceWiringAcceptance` DS-WIRE-02 |
 | **7** | **S13-W7** | **Activity L3 kind composers** | `buildActivityDetailPageModel(wire)`; per-kind `*ActivityDetailPage` composes sections (place pattern); remove unwired `planFacts` / shrink `ActivityDetailBody` | `activityDetailAcceptance` per kind; C23 closed |
@@ -538,7 +537,7 @@ Work **top to bottom**. Each wave ends with **`npm run verify:system:quick`** (w
 |-------|---------|--------------|--------|
 | **S12a** | Transport child links via `linkedActivityId` / `linkParentToRideshareActivity`; **no** `link-activity` on rideshare publish | `useExploreRideshareOrganizeLinks.ts`, `organizeActivityPublish.ts`, `linkActivityRideshareOffer.ts` | **Done** |
 | **S12b** | Owner peek = `ExploreActivityMapPeekActions` for seeking + hosted (legacy demand-owner fork only without activity host wire) | `exploreSelectionSelectedCard.ts`, `enrichListFeedCard.ts` | **Done** |
-| **S12c** | Find success + intent manage → same transport surfaces as Organize (`LinkRidesharePanel`, paste link) | `DemandSubmitSuccessSheet.tsx`, `ParticipantIntentManageSheet.tsx`, `navigateParticipantIntentManage.ts` | **Done** |
+| **S12c** | Find success + intent manage → same transport surfaces as Organize (`LinkRidesharePanel`, paste link) | `SeekingSubmitSuccessSheet.tsx`, `ParticipantIntentManageSheet.tsx`, `navigateParticipantIntentManage.ts` | **Done** |
 | **S12d** | Docs/guards: no new `demand`-only product gates; intent APIs read-through only | `seekingPinHygieneGuard` (S12d tests), `exploreCardModel` legacy flags | **Done** |
 
 ### 8.1 S10 remediation waves (phase plan)
@@ -879,7 +878,7 @@ Legacy shims (one release, no new imports): `placeCatalogApi.ts`, `placeRegistry
 
 #### 8.6.0 Authorization (CTO charter — 2026-10-17)
 
-> **CTO coherence program (PCOH): complete (`MIG-COH-00`…`12`). Remaining schedule: `MIG-SURFACE-*`, `MIG-SERVICE-IDENTITY-BOUNDARY`, `MIG-P5-SLO-SMOKE`. S10e/S10f gate release.**
+> **CTO coherence program (PCOH): complete (`MIG-COH-00`…`12`). Remaining schedule: `MIG-SURFACE-ACTIVITY-DETAIL` (S10f), `MIG-P5-SLO-SMOKE`. S10e/S10f gate release.**
 
 | Rule | Detail |
 |------|--------|
@@ -887,11 +886,11 @@ Legacy shims (one release, no new imports): `placeCatalogApi.ts`, `placeRegistry
 | **WIP limit** | At most **2** migrations `in_progress` at once (`refactor-program.json` → `capacity.maxInProgressMigrations`; enforced by `verify:refactor-program`) |
 | **P0–P1** | **Complete** (Oct 2026) — census, W0 audit, CPC catalog wire, seeking storage gate |
 | **P4** | **API routes only** — CQRS-light complete (eng); not whole-product UI/storage unification |
-| **P4b** | **Complete** (Oct 2026) — pre-PCOH surface tranche; further work only via **§8.8 PCOH** |
+| **P4b** | **In progress** — remaining `MIG-SURFACE-*` + identity boundary after PCOH |
 | **PCOH** | **Complete** — §8.8 UPL/BWL separation, domain dedup, `MIG-COH-00`…`12` |
 | **P5–P6** | P5 SLO with COH-08 ops; P6 gated on §7 / S10g |
 
-Board one-liner: *P4 thinned the API; **PCOH** (§8.8) finished UPL/BWL coherence; remaining P4b surfaces + P5 SLO; release gated on S10e/S10f.*
+Board one-liner: *P4 thinned the API; **PCOH** (§8.8) finished UPL/BWL coherence; remaining ACTIVITY-DETAIL S10f + P5 SLO; release gated on S10e/S10f.*
 
 | Artifact | Role |
 |----------|------|
@@ -911,9 +910,9 @@ Board one-liner: *P4 thinned the API; **PCOH** (§8.8) finished UPL/BWL coherenc
 | **P2** | platform | 6–10 wk | **MIG-OUTBOX**, **MIG-EXPLORE-READ** (flags); **S10e** promote ops | **Complete** (eng) |
 | **P3** | platform | 6–10 wk | **MIG-CLIENT-QUERY** (TanStack Query on consumer reads) | **Complete** (eng) |
 | **P4** | platform | 8–12 wk | **API only** — CQRS-light; all **`apps/api/src/routes/**`** → `services/*` (no `*-store` in routes) | **Complete** (eng) |
-| **P4b** | product-eng | 8–16 wk | Pre-PCOH surface tranche | **Complete** |
+| **P4b** | product-eng | 8–16 wk | Remaining surface unification after PCOH | **In progress** |
 | **PCOH** | product-eng + platform | pre-launch | §8.8 coherence program (`MIG-COH-*`) | **Complete** |
-| **P5** | platform | 4–6 wk | SLO smoke + staging baselines (`p5:slo-smoke`) | **Planned** |
+| **P5** | platform | 4–6 wk | SLO smoke + staging baselines (`p5:slo-smoke`) | **In progress** (eng preflight; ops/staging before close) |
 | **P6** | platform | ongoing | **C1**/S10g, §7 burn-down | **Gated** |
 
 **Relationship to S0–S13:** **S8–S11** eng closed. **S13** methodology + guards shipped; **product parity** (W10, peek→detail, explore IA) is **P4b**, not “done” because P4 API passed. **P*** = platform capacity (~30–40%) on top of product slices.
@@ -935,12 +934,12 @@ Board one-liner: *P4 thinned the API; **PCOH** (§8.8) finished UPL/BWL coherenc
 | **MIG-CQRS-ROUTES** | P4 | Route CQRS guard; entire `apps/api/src/routes/**` tree → read/command services (no `*-store`) | **Complete** |
 | **MIG-CQRS-ROUTE-DATA** | P4 | Route layer → services for `auth-users`, `chat-data`, `social-data` (guard enforced) | **Complete** |
 | **MIG-CQRS-ROUTE-AUTH** | P4 | `auth.ts` → `auth-*-commands` + `auth-session-flow`; HTTP cookies in `auth-route-http` | **Complete** |
-| **MIG-P5-SLO-SMOKE** | P5 | `npm run p5:slo-smoke` + PRE_DEPLOY SLO baseline checklist | **In progress** |
+| **MIG-P5-SLO-SMOKE** | P5 | `npm run p5:slo-preflight` in `verify:domain` + staging `p5:slo-smoke` + PRE_DEPLOY SLO checklist | **In progress** (eng probes in `verify:domain`; ops/staging before close) |
 | **MIG-SURFACE-ACTIVITY-DETAIL** | P4b | Activity L3 + guest/join + peek parity (S13-W6–W7, S10f) | **In progress** |
-| **MIG-SURFACE-EXPLORE-IA** | P4b | Map / browse / list / discover one IA | **Planned** |
-| **MIG-SURFACE-MEMBER-PEOPLE** | P4b | Profile lenses + people browse unity | **Planned** |
+| **MIG-SURFACE-EXPLORE-IA** | P4b | Map / browse / list / discover one IA | **Complete** |
+| **MIG-SURFACE-MEMBER-PEOPLE** | P4b | Profile lenses + people browse unity | **Complete** |
 | **MIG-SURFACE-ADMIN-OPS** | P4b | Admin surface catalog + boundaries | **Complete** (folded into COH-11) |
-| **MIG-SERVICE-IDENTITY-BOUNDARY** | P4b | Services off raw `auth-users` / chat-data libs | **Planned** |
+| **MIG-SERVICE-IDENTITY-BOUNDARY** | P4b | Services off raw `auth-users` / chat-data libs | **Complete** |
 | **MIG-DOCS-EXPERIMENT-STUB** | P4b | Experiment plans → stubs; bodies in `docs/archive/experiment/` | **Complete** |
 | **MIG-ROUTING-CANON-P0** | P4b | `routing-canonical-map.json` + `verify:routing-canon` + §8.7 schedule | **Complete** |
 | **MIG-ROUTING-CANON-P1** | P4b | Publishing plane: `/operator` only — delete `/host` SPA + API shims | **Complete** |
@@ -1102,14 +1101,16 @@ Discover map `GET /explore/map` (guest catalog) · overlay `GET /me/discover/ove
 | Wishlist collection | `user_wishlist` (startup migrate from `user_favorites`) |
 | Reviews HTTP | `GET /reviews` public on `userRouter` before `requireAuth`; writes keep per-route auth |
 | Host compose tree | `create/hosting` + `hostingFlowEngine` + `hostingFlows` (COH-10). No `organizeFlow.ts` / `createOrganize` / `CreateActivityFlow` |
-| Seeking compose engine | `seekingFlowEngine.ts` (COH-11). No `demandFlow.ts` re-export |
+| Seeking compose engine | `seekingFlowEngine.ts` + `CreateSeekingFlow.tsx` (no `CreateDemandFlow` / `demandFlow.ts` / `demandWizardSteps`) |
+| People browse module | `src/people-discovery/*` only. No `explore/ui/peopleBrowse` re-export; no `explore/peopleBrowseTab.ts` |
 | Shop HTTP | `shop.ts` mounts `registerShopPublicRoutes` · `registerShopCheckoutRoutes` · `registerShopMerchantManageRoutes`. Live aliases `/shop/merchants/:id` and `/shop/organisation/*` stay in those registrars |
 | Admin HTTP | `admin.ts` mounts `registerAdmin*` only. Pages: `src/pages/admin/*` (folder-as-namespace; no root `Admin*.tsx`) |
 | SPA legacy pages | No Navigate-only page modules (`ShopManage`, `AgencyManage`, `BecomeHost`, `Membership`, `MerchantPublic`). Bookmark aliases stay inline in `App.tsx`; `routingHygiene` bans new links |
+| Identity / chat / review data libs | `auth-users-store`, `auth-tokens-store`, `chat-messages-store`, `social-reviews-store`. No `auth-users.ts` / `auth-tokens.ts` / `chat-data.ts` / `social-data.ts` (no re-export shim) |
 
 #### 8.8.7 Definition of done
 
-One seeking model · one join pipeline · one place HTTP prefix · one publishing HTTP prefix · one pro onboarding BWL · UPL only in content modules · BWL in wire-lexicon · publisher resolver on map/detail/notifications · no `socialApi` / `socialRouter` / empty `socialGraphRouter` · one Host compose tree · shop `registerShop*` · admin `registerAdmin*` + `adminSurfacesAcceptance` · no Navigate-only page modules · `verify:domain` fe/api/journey shards · `npm run verify:system` + journey suite per §8.8.3.
+One seeking model · one join pipeline · one place HTTP prefix · one publishing HTTP prefix · one pro onboarding BWL · UPL only in content modules · BWL in wire-lexicon · publisher resolver on map/detail/notifications · no `socialApi` / `socialRouter` / empty `socialGraphRouter` · one Host compose tree · shop `registerShop*` · admin `registerAdmin*` + `adminSurfacesAcceptance` · no Navigate-only page modules · identity/chat/review data in `*-store` (no `auth-users.ts` / `chat-data.ts` / `social-data.ts`) · `verify:domain` fe/api/journey shards · `npm run verify:system` + journey suite per §8.8.3.
 
 ---
 

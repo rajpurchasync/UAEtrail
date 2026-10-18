@@ -1,5 +1,5 @@
 import { listActiveTenantMembershipsByUser } from '../lib/activities-store.js';
-import { listAuthUsers } from '../lib/auth-users.js';
+import { listAuthUsers } from '../lib/auth-users-store.js';
 import { loadMemberInbox } from './member-inbox.js';
 
 export const listMyTenantMemberships = async (userId: string) => {

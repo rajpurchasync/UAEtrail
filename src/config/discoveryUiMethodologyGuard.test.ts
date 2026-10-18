@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 const read = (rel: string) => readFileSync(join(process.cwd(), rel), 'utf8');
@@ -98,5 +98,15 @@ describe('discoveryUiMethodologyGuard', () => {
   it('DISC-METH-10: no ExploreFollowed* modules (folder is namespace; people-discovery owns people rows)', () => {
     const hits = collectTsxUnder('src/explore/ui').filter((file) => /ExploreFollowed/.test(file));
     expect(hits).toEqual([]);
+    expect(read('src/explore/exploreBrowseUrlHydrate.ts')).not.toMatch(/ExploreFollowedSegment/);
+    expect(read('src/explore/exploreBrowseUrlHydrate.ts')).not.toMatch(/followedKind/);
+  });
+
+  it('DISC-METH-11: explore does not re-export people browse (people-discovery owns the module)', () => {
+    expect(existsSync(join(process.cwd(), 'src/explore/ui/peopleBrowse'))).toBe(false);
+    expect(existsSync(join(process.cwd(), 'src/explore/peopleBrowseTab.ts'))).toBe(false);
+    expect(read('src/explore/exploreBrowseUrlHydrate.ts')).toMatch(
+      '@/people-discovery/peopleBrowseTab'
+    );
   });
 });

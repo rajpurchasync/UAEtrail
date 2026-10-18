@@ -2,7 +2,7 @@
  * Member / people surfaces — code gates (archived plan: docs/archive/experiment/member-surfaces-implementation-plan.md).
  * G-manage approve from Plan sheet: manual staging QA; API slice in `g-manage-coordination-join-approve.test.ts`.
  */
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { parsePeopleBrowseTabFromUrl } from '../people-discovery/peopleBrowseTab';
@@ -168,11 +168,17 @@ describe('member surfaces §11 acceptance (automated)', () => {
     const buddies = read('src/pages/Buddies.tsx');
     expect(buddies).toContain('memberProfileLink');
     expect(buddies).not.toMatch(/to=\{`\/member\/\$\{/);
-    const exploreShim = read('src/explore/ui/peopleBrowse/index.ts');
-    expect(exploreShim).toContain('@/people-discovery/panel/peopleBrowse');
-    expect(exploreShim).not.toContain('./PeopleBrowseTabContent');
+    expect(existsSync(join(process.cwd(), 'src/explore/ui/peopleBrowse'))).toBe(false);
     const listPeople = read('src/list/ui/ListDiscoverPeopleView.tsx');
     expect(listPeople).toContain('@/people-discovery/panel/peopleBrowse');
+    const profile = read('src/pages/Profile.tsx');
+    expect(profile).toContain('memberPublicPreviewLink');
+    expect(profile).not.toMatch(/`\/member\/\$\{/);
+    const view = read('src/components/profile/MemberProfileView.tsx');
+    expect(view).toContain('memberProfileLink');
+    expect(view).not.toMatch(/`\/member\/\$\{/);
+    expect(read('src/utils/notificationRouting.ts')).toContain('memberProfileLink');
+    expect(read('src/components/chat/ChatMessageBubble.tsx')).toContain('memberProfileLink');
   });
 
   it('G-seek: People browse wires seekingOnMap to explore pin routes (no activity detail hop)', () => {
@@ -340,6 +346,7 @@ describe('member surfaces §11 acceptance (automated)', () => {
 
   it('AD-arch: activity detail phases tracked in code guards (not experiment docs)', () => {
     expect(read('src/activity/activityDetailAcceptance.test.ts')).toMatch(/AD-PEEK-03/);
+    expect(read('src/activity/activityDetailAcceptance.test.ts')).toMatch(/AD-SEEK-01/);
     expect(read('docs/SYSTEM_COHERENCE.md')).toMatch(/§6\.2/);
   });
 
@@ -408,7 +415,7 @@ describe('member surfaces §11 acceptance (automated)', () => {
     const caps = read('src/activity/activityManageCapabilities.ts');
     expect(caps).toContain('canAddLinkedRide');
     const offer = read('src/explore/linkActivityRideshareOffer.ts');
-    expect(offer).toContain('canShowDemandLinkRideshareOffer');
+    expect(offer).toContain('canShowSeekingLinkRideshareOffer');
     expect(offer).toMatch(/canOfferTransport/);
     const entitlements = read('packages/shared-types/src/activity-viewer-entitlements.ts');
     expect(entitlements).toMatch(/link_rideshare.*canAddLinkedRide/);

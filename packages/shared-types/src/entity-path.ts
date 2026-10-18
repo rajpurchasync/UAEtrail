@@ -142,6 +142,11 @@ export type MemberProfilePathOptions = {
   discover?: boolean;
   /** Browse entry lens — serialized as `source=` when not `organic`. */
   lens?: MemberProfileBrowseLens;
+  /**
+   * Owner preview of the public member page (`view=public`).
+   * Not a browse lens — same `/member/:id` layout.
+   */
+  publicPreview?: boolean;
 };
 
 /** Member profile for community hosts, buddies, and people browse — one public page. */
@@ -160,6 +165,9 @@ export const memberProfilePath = (
   }
   if (lens !== 'organic') {
     params.set('source', lens);
+  }
+  if (opts?.publicPreview) {
+    params.set('view', 'public');
   }
   const qs = params.toString();
   return qs ? `${base}?${qs}` : base;

@@ -61,7 +61,7 @@ describe('resolveHostPersonDisplayName', () => {
 describe('resolveActivityHostDisplayName', () => {
   it('trusts API hostName and skips placeholders', () => {
     expect(resolveActivityHostDisplayName({ hostName: 'Omar Al Hosani' })).toBe('Omar Al Hosani');
-    expect(resolveActivityHostDisplayName({ hostName: 'Individual Host' })).toBe('Organizer');
+    expect(resolveActivityHostDisplayName({ hostName: 'Individual Host' })).toBe('Host');
   });
 
   it('reads legacy organizerName from stale client payloads only', () => {

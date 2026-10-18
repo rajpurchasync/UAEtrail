@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { SIGNIN_PATH } from '../../config/routingCatalog';
+import { SIGNIN_PATH, memberProfileLink } from '../../config/routingCatalog';
 import type { ActivityDTO, BuddyRelationshipDTO } from '@uaetrail/shared-types';
 import { MemberFollowControls } from './MemberFollowControls';
 import { MemberProfileBuddyActions } from './MemberProfileBuddyActions';
@@ -87,6 +87,7 @@ export const MemberProfileView = ({
   const hasDetails = Boolean(profile.city || languages.length > 0);
   const showConnectActions = !isSelf && userLoggedIn;
   const joinedLabel = formatMemberJoinedLabel(profile.memberSince);
+  const profileLink = memberProfileLink(userId);
   return (
     <div className="space-y-3 pb-nav-safe animate-fade-up">
       <GlassCard padding className="!p-0 overflow-hidden">
@@ -95,7 +96,7 @@ export const MemberProfileView = ({
             <ShareButton
               title={`${profile.displayName} on UAE Trail`}
               text={`${profile.displayName} on UAE Trail — find hikes, camps, and outdoor activities across the UAE.`}
-              path={`/member/${userId}`}
+              path={profileLink}
               iconOnly
               light
             />
@@ -135,7 +136,7 @@ export const MemberProfileView = ({
           {!isSelf && !userLoggedIn ? (
             <Link
               to={SIGNIN_PATH}
-              state={{ from: `/member/${profile.id}` }}
+              state={{ from: profileLink }}
               className="mt-4 inline-block text-sm font-semibold text-emerald-700"
             >
               Log in to add as friend or message

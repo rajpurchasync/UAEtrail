@@ -1,6 +1,6 @@
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import { ApiError } from '../lib/api-error.js';
-import { findAuthUserById } from '../lib/auth-users.js';
+import { findAuthUserById } from '../lib/auth-users-store.js';
 import { listPublishedUpcomingActivitiesByMember } from '../lib/activities-store.js';
 import { normalizeProfileVisibility } from '../lib/media-access.js';
 import { buildActivityDto } from '../lib/mappers.js';

@@ -106,13 +106,13 @@ describe('resolveExploreHostLabel', () => {
     ).toBe('Khalid Rahman');
   });
 
-  it('falls back to Organizer when only tenant or role labels are available', () => {
+  it('falls back to Host when only tenant or role labels are available', () => {
     expect(
       resolveExploreHostLabel({
         hostName: 'Agency Guide',
         tenantName: 'UAE Adventure Co',
       })
-    ).toBe('Organizer');
+    ).toBe('Host');
   });
 
   it('rejects org labels passed as hostName', () => {

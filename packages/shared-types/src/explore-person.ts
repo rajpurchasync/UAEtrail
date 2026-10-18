@@ -1,5 +1,8 @@
 import { exploreActivityPublisherTypeLabel } from './activity-publisher-display.js';
-import { ORGANIZER_FALLBACK_DISPLAY_NAME, resolveHostPersonDisplayName } from './host-display.js';
+import {
+  HOST_FALLBACK_DISPLAY_NAME,
+  resolveHostPersonDisplayName,
+} from './host-display.js';
 import type { PublishingProfileKind } from './publishing-profile-kind.js';
 import { isRolePlaceholderDisplayName } from './host-display.js';
 import { exploreMapItemIsSeeking, type ExploreMapItemActivityModeFields } from './explore-activity-mode.js';
@@ -8,10 +11,10 @@ import type { ExploreMapSourceWire } from './wire-lexicon.js';
 /** How a featured user relates to an explore map/list item. */
 export type ExploreMapPersonRole = 'organizer' | 'host' | 'requester' | 'contact';
 
-/** Wire `host` is legacy — normalize for new payloads and UI. */
+/** Wire `organizer` is a read alias — canonical role is `host` (UPL Host / BWL `host_id`). */
 export const canonicalExploreMapPersonRole = (
   role: ExploreMapPersonRole
-): 'organizer' | 'requester' | 'contact' => (role === 'host' ? 'organizer' : role);
+): 'host' | 'requester' | 'contact' => (role === 'organizer' ? 'host' : role);
 
 export interface ExploreMapPersonDTO {
   userId: string;
@@ -53,7 +56,7 @@ export const explorePersonFirstName = (person?: ExploreMapPersonDTO | null): str
   const displayName = formatExplorePersonDisplayName(person?.displayName);
   if (displayName === 'Community member') {
     return person?.role === 'host' || person?.role === 'organizer'
-      ? ORGANIZER_FALLBACK_DISPLAY_NAME
+      ? HOST_FALLBACK_DISPLAY_NAME
       : 'Community member';
   }
   return displayName.split(/\s+/)[0];
@@ -64,7 +67,7 @@ export const explorePersonHeadlineName = (person?: ExploreMapPersonDTO | null): 
   const displayName = formatExplorePersonDisplayName(person?.displayName);
   if (displayName === 'Community member') {
     return person?.role === 'host' || person?.role === 'organizer'
-      ? ORGANIZER_FALLBACK_DISPLAY_NAME
+      ? HOST_FALLBACK_DISPLAY_NAME
       : 'Community member';
   }
   return displayName;
@@ -156,7 +159,7 @@ export const resolveExploreFeaturedPerson = (
       userId: activity?.hostUserId,
       displayName,
       avatarUrl: activity?.hostAvatar ?? item.hostAvatar,
-      role: 'organizer',
+      role: 'host',
     });
   }
 

@@ -76,7 +76,7 @@ export interface CreateHostingActivityFlowProps {
   organizeKind?: OrganizeComposeKind | null;
   /** Locked per-kind hosting flow from `composeFlowCatalog` (FAB → hosting sub-kind). */
   hostingKindFlow?: HostingKindFlow | null;
-  demandPrefill?: OrganizeWizardPrefill | null;
+  seekingPrefill?: OrganizeWizardPrefill | null;
   onCreateLinkedRideshare?: (parentActivity: ActivityDTO) => void;
   planWithBuddyUserId?: string | null;
 }
@@ -90,7 +90,7 @@ export const CreateHostingActivityFlow = ({
   signInHref,
   organizeKind = null,
   hostingKindFlow = null,
-  demandPrefill = null,
+  seekingPrefill = null,
   onCreateLinkedRideshare,
   planWithBuddyUserId = null,
 }: CreateHostingActivityFlowProps) => {
@@ -201,12 +201,12 @@ export const CreateHostingActivityFlow = ({
     [organizeKind]
   );
   const wizardSessionScope = useMemo(
-    () => organizeWizardSessionScope(demandPrefill),
-    [demandPrefill]
+    () => organizeWizardSessionScope(seekingPrefill),
+    [seekingPrefill]
   );
   const wizardInitKey = organizeFlowId
     ? `${organizeFlowId}:${wizardSessionScope ?? ''}`
-    : demandPrefill
+    : seekingPrefill
       ? 'prefill'
       : null;
   const wizardInitializedRef = useRef<string | null>(null);
@@ -224,17 +224,17 @@ export const CreateHostingActivityFlow = ({
 
     if (wizardInitKey && wizardInitializedRef.current === wizardInitKey) return;
 
-    if (demandPrefill?.draft.kind) {
-      const prefillKind = demandPrefill.draft.kind;
-      setDraft(demandPrefill.draft);
+    if (seekingPrefill?.draft.kind) {
+      const prefillKind = seekingPrefill.draft.kind;
+      setDraft(seekingPrefill.draft);
       setSelectedKind(prefillKind);
       const steps = hostingKindFlow
         ? hostingKindFlow.getSteps({
-            placeLabelSource: demandPrefill.draft.placeLabelSource,
-            registryPlaceId: demandPrefill.draft.registryPlaceId,
-            genericBuddy: demandPrefill.draft.genericBuddy,
+            placeLabelSource: seekingPrefill.draft.placeLabelSource,
+            registryPlaceId: seekingPrefill.draft.registryPlaceId,
+            genericBuddy: seekingPrefill.draft.genericBuddy,
           })
-        : getCreateFlowSteps(prefillKind, demandPrefill.draft.genericBuddy);
+        : getCreateFlowSteps(prefillKind, seekingPrefill.draft.genericBuddy);
       setStep(steps[0] ?? 'title');
       setError(null);
       setSubmitting(false);
@@ -300,7 +300,7 @@ export const CreateHostingActivityFlow = ({
     navigate,
     signInHref,
     onClose,
-    demandPrefill,
+    seekingPrefill,
     organizeKind,
     hostingKindFlow,
     organizeFlowId,
@@ -366,7 +366,7 @@ export const CreateHostingActivityFlow = ({
       return;
     }
     if (step === 'type' || currentStepIndex <= 0) {
-      if (demandPrefill) {
+      if (seekingPrefill) {
         onClose();
         return;
       }
@@ -384,7 +384,7 @@ export const CreateHostingActivityFlow = ({
     meetingPointMapOpen,
     step,
     currentStepIndex,
-    demandPrefill,
+    seekingPrefill,
     organizeKind,
     onClose,
     onBackToIntent,
@@ -449,14 +449,14 @@ export const CreateHostingActivityFlow = ({
     setSubmitting(true);
     setError(null);
     try {
-      const linkedIntentId = demandPrefill?.participantIntentId ?? null;
+      const linkedIntentId = seekingPrefill?.participantIntentId ?? null;
       const activity = await publishCreateActivity({
         draft: { ...draft, kind: draft.kind ?? selectedKind, rideshareEnabled: false },
         tenantId,
         userId: user.id,
         participantIntentId: linkedIntentId,
-        sourceActivityId: demandPrefill?.sourceActivityId ?? null,
-        linkToParentActivityId: demandPrefill?.linkToParentActivityId ?? null,
+        sourceActivityId: seekingPrefill?.sourceActivityId ?? null,
+        linkToParentActivityId: seekingPrefill?.linkToParentActivityId ?? null,
       });
       await afterOrganizeActivityPublishClientRefresh(queryClient, {
         activityId: activity.id,
@@ -484,7 +484,7 @@ export const CreateHostingActivityFlow = ({
     tenantId,
     draft,
     registryPlaces,
-    demandPrefill,
+    seekingPrefill,
     organizeFlowId,
     wizardSessionScope,
     queryClient,
@@ -511,7 +511,7 @@ export const CreateHostingActivityFlow = ({
 
   const stepTitle =
     step === 'type' || !kind
-      ? demandPrefill
+      ? seekingPrefill
         ? ORGANIZE_DEMAND_PREFILL_TITLE
         : 'Organize'
       : createFlowStepTitle(step as CreateFlowStepId, kind, stepTitleOptions);
@@ -554,7 +554,7 @@ export const CreateHostingActivityFlow = ({
     patchDraft,
     hostingKindFlow: hostingKindFlow ?? null,
     organizeKind: organizeKind ?? null,
-    demandPrefill: demandPrefill ?? null,
+    seekingPrefill: seekingPrefill ?? null,
     error,
     tenantId,
     publishTenantOptions,
@@ -601,7 +601,7 @@ export const CreateHostingActivityFlow = ({
     patchDraft,
     hostingKindFlow,
     organizeKind,
-    demandPrefill,
+    seekingPrefill,
     error,
     tenantId,
     publishTenantOptions,

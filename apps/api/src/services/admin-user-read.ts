@@ -13,7 +13,7 @@ import {
   listUserActivityParticipantsBasic,
   listUserActivityRequestsBasic,
 } from '../lib/activity-engagement-store.js';
-import { countAuthUsers, findAuthUserById, listAuthUsers } from '../lib/auth-users.js';
+import { countAuthUsers, findAuthUserById, listAuthUsers } from '../lib/auth-users-store.js';
 import { listUserGroupsWithMembership } from '../lib/social-groups-store.js';
 import { resolveAdminUserListFilters, resolveAdminUserType } from '../lib/user-type.js';
 

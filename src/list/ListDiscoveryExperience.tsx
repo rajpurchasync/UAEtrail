@@ -586,7 +586,7 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
         onPlanSeekingBackToIntent={() => compose.setComposeRoute({ surface: 'menu', intent: 'seek' })}
         onContributeBackToIntent={() => compose.setComposeRoute({ surface: 'menu', intent: 'add' })}
         onActivityPublished={() => void reloadFeed()}
-        onDemandSubmitted={() => void reloadFeed()}
+        onSeekingSubmitted={() => void reloadFeed()}
         onContributeSubmitted={() => void reloadFeed()}
         onOpenHostApplication={() => {
           compose.closeCompose();

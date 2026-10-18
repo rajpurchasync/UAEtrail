@@ -6,7 +6,7 @@ import { registerVerifiedVisitor } from './helpers/fixtures.js';
 import { createTenantRecord } from '../src/lib/tenant-store.js';
 import { upsertTenantMembership } from '../src/lib/tenant-access.js';
 import { MembershipRole, TenantStatus, TenantType, UserRole } from '../src/domain/enums.js';
-import { findAuthUserByEmail, updateAuthUserCore } from '../src/lib/auth-users.js';
+import { findAuthUserByEmail, updateAuthUserCore } from '../src/lib/auth-users-store.js';
 
 let app: Express;
 

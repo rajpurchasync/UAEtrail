@@ -3,7 +3,7 @@ import {
   resolveWomenOnlyJoinEligibility,
   womenOnlyJoinBlockMessage,
 } from '@uaetrail/shared-types';
-import { findAuthUserById } from '../lib/auth-users.js';
+import { findAuthUserById } from '../services/member-identity-read.js';
 import { ApiError } from '../lib/api-error.js';
 
 export { isWomenOnlyActivityRequirements };

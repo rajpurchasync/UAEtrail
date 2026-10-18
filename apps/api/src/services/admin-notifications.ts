@@ -1,5 +1,5 @@
 import { NotificationType } from '../domain/enums.js';
-import { listAuthUsers } from '../lib/auth-users.js';
+import { listAuthUsers } from '../lib/auth-users-store.js';
 import { scheduleNotification } from './notifications.js';
 
 export const notifyPlatformAdmins = async (input: {

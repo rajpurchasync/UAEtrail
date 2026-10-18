@@ -78,7 +78,7 @@ const LEGACY_ACTIVITY_FROM_FILTER: Record<string, ActivityListFilterKey> = {
 
 const EXPLORE_PANELS = new Set<ExplorePanel>(['activities', 'venues', 'shops']);
 
-/** Open a specific explore map item (peek card), e.g. `demand:uuid` or `venue:uuid`. */
+/** Open a specific explore map item (peek card), e.g. `activity:uuid` or inbound `demand:uuid`. */
 export const EXPLORE_PIN_QUERY_KEY = 'pin';
 /** When `1`, activity peek shows join-invite banner (with `pin=activity:…`). */
 export const EXPLORE_JOIN_INVITE_QUERY_KEY = 'invite';
@@ -105,12 +105,12 @@ export const parseExplorePinMapItemId = (searchParams: Pick<URLSearchParams, 'ge
 export const exploreSavedPinPath = (mapItemId: string): string =>
   explorePath({ pin: mapItemId, panel: 'activities', list: true });
 
-/** Map item id for a find post — `activity:` when M1 row exists, else legacy `demand:`. */
+/** Map item id for a find post — `activity:` when published; inbound `demand:` bookmarks only. */
 export const resolveParticipantIntentMapItemId = (intent: {
   id: string;
   activityId?: string | null;
   seekingActivityId?: string | null;
-}): string =>
+}): string | null =>
   resolveSeekingExploreMapItemId({
     intentId: intent.id,
     activityId: intent.activityId ?? intent.seekingActivityId ?? null,
@@ -122,7 +122,10 @@ export const participantIntentExplorePinPath = (
     activityId?: string | null;
     seekingActivityId?: string | null;
   }
-): string => exploreSavedPinPath(resolveParticipantIntentMapItemId(intent));
+): string => {
+  const pin = resolveParticipantIntentMapItemId(intent);
+  return pin ? exploreSavedPinPath(pin) : explorePath({ list: true, panel: 'activities' });
+};
 
 /** Share link for map items — opens explore peek (guests and members). */
 export const exploreMapItemSharePath = (
@@ -131,10 +134,13 @@ export const exploreMapItemSharePath = (
 ): string => {
   const id = mapItemId.trim();
   if (id.startsWith('demand:')) {
-    return exploreSeekingMapItemPath({
-      intentId: id.slice('demand:'.length),
-      activityId: options?.activityId,
-    });
+    if (options?.activityId) {
+      return exploreSeekingMapItemPath({
+        intentId: id.slice('demand:'.length),
+        activityId: options.activityId,
+      });
+    }
+    return explorePath({ pin: id, list: true, panel: 'activities' });
   }
   if (options?.activityId && options.intentId) {
     return exploreSeekingMapItemPath({
@@ -585,7 +591,7 @@ export const exploreOrganizePath = (kind?: OrganizeComposeKind): string =>
     : explorePath({ compose: { surface: 'menu', intent: 'host' } });
 
 /** Host with publish access — prefill rideshare organize from an own seeking post. */
-export const exploreOfferRideshareForDemandPath = (intent: {
+export const exploreOfferRideshareForSeekingPath = (intent: {
   id: string;
   activityId?: string | null;
   seekingActivityId?: string | null;

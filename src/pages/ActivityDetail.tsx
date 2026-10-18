@@ -2,11 +2,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, Link, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { Lock } from 'lucide-react';
-import { type ActivityDTO, type ReviewDTO } from '@uaetrail/shared-types';
+import { type ActivityDetailDTO, type ReviewDTO } from '@uaetrail/shared-types';
 import { activityReviewsQueryKey } from '../hooks/clientQueryKeys';
 import { useActivityReviews } from '../hooks/useActivityReviews';
 import { useActivityHostJoinRequests } from '../hooks/useActivityHostJoinRequests';
-import { detailBackPath } from '../config/routingCatalog';
+import { activityDetailPath, detailBackPath } from '../config/routingCatalog';
 import {
   ACTIVITY_JOIN_CTA_SELECTOR,
   AUTH_RESUME_JOIN_QUERY,
@@ -56,8 +56,6 @@ import {
 } from '../activity/resolveActivityDetailWirePresentation';
 import { ActivityDetailJoinWelcomeSheet } from '../components/activity/detail/ActivityDetailJoinWelcomeSheet';
 import { ActivityDetailGuestGate } from '../components/activity/detail/ActivityDetailGuestGate';
-import { activityDetailPath } from '../config/routingCatalog';
-import type { ActivityDetailDTO } from '@uaetrail/shared-types';
 
 /**
  * Activity detail **route loader** (`/activity/:id`): fetch, join modals, SEO, host sheets.

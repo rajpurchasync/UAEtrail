@@ -6,4 +6,4 @@ export {
   updateAuthUserLastActive,
   updateAuthUserPassword,
   updateAuthUserProfile,
-} from '../lib/auth-users.js';
+} from '../lib/auth-users-store.js';

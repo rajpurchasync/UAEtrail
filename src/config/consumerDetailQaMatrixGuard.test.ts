@@ -21,6 +21,12 @@ const ENTITY_DETAIL_QA_MATRIX: Array<{
     automatedGuard: 'activityDetailAcceptance.test.ts',
   },
   {
+    surface: 'Activity (seeking)',
+    routePattern: /path="\/activity\/:id"/,
+    pageOrView: 'src/pages/ActivityDetail.tsx',
+    automatedGuard: 'activityDetailAcceptance.test.ts',
+  },
+  {
     surface: 'Place (canonical)',
     routePattern: /path="\/place\/:id"/,
     pageOrView: 'src/pages/PlaceDetailPage.tsx',

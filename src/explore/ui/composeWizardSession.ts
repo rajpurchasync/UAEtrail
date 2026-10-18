@@ -3,7 +3,7 @@ import type { ExploreCompose } from '../compose';
 import { composeFlowIdFromRoute } from '../composeFlowCatalog';
 import { legacyComposeFlowIdsFor, normalizeComposeFlowId } from '../composeFlowIds';
 import type { CreateActivityDraft, CreateActivityKind } from './hostingFlowEngine';
-import type { DemandDraft, DemandKind } from './seekingFlowEngine';
+import type { SeekingDraft, SeekingKind } from './seekingFlowEngine';
 import type { ContributeDraft } from './contributeFlow';
 import type { FacilityContributeDraft } from './contributeFacilityFlow';
 import type { ContributeVenueKind } from '../contributeTypes';
@@ -16,10 +16,10 @@ export type OrganizeWizardSession = {
   selectedKind: CreateActivityKind | null;
 };
 
-export type DemandWizardSession = {
+export type SeekingWizardSession = {
   step: string;
-  draft: DemandDraft;
-  selectedKind: DemandKind | null;
+  draft: SeekingDraft;
+  selectedKind: SeekingKind | null;
 };
 
 export type ContributeWizardSession = {
@@ -67,13 +67,13 @@ export const clearOrganizeWizardSession = (flowId: ComposeFlowId, scope?: string
   }
 };
 
-export const readDemandWizardSession = (flowId: ComposeFlowId): DemandWizardSession | null =>
-  readSessionJson<DemandWizardSession>(flowId);
+export const readSeekingWizardSession = (flowId: ComposeFlowId): SeekingWizardSession | null =>
+  readSessionJson<SeekingWizardSession>(flowId);
 
-export const writeDemandWizardSession = (flowId: ComposeFlowId, data: DemandWizardSession): void =>
+export const writeSeekingWizardSession = (flowId: ComposeFlowId, data: SeekingWizardSession): void =>
   writeJson(sessionKey(flowId), data);
 
-export const clearDemandWizardSession = (flowId: ComposeFlowId): void => {
+export const clearSeekingWizardSession = (flowId: ComposeFlowId): void => {
   try {
     sessionStorage.removeItem(sessionKey(flowId));
   } catch {
@@ -115,7 +115,7 @@ export const clearComposeWizardSessionForRoute = (route: ExploreCompose | null):
   if (!flowId || !route || 'surface' in route) return;
   if (route.intent === 'plan' && 'mode' in route) {
     if (route.mode === 'hosting') clearOrganizeWizardSession(flowId);
-    else clearDemandWizardSession(flowId);
+    else clearSeekingWizardSession(flowId);
     return;
   }
   if (route.intent === 'contribute' && 'target' in route) {
@@ -131,7 +131,7 @@ export const clearComposeWizardSessionForRoute = (route: ExploreCompose | null):
     return;
   }
   if (route.intent === 'organize') clearOrganizeWizardSession(flowId);
-  else if (route.intent === 'find') clearDemandWizardSession(flowId);
+  else if (route.intent === 'find') clearSeekingWizardSession(flowId);
   else if (route.intent === 'add' && 'kind' in route && route.kind) {
     clearContributeWizardSession(route.kind);
   }

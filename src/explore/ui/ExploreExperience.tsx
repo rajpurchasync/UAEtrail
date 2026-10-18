@@ -53,7 +53,7 @@ export const ExploreExperience = () => {
               peopleBrowseMapChip={model.peopleBrowseMapChip}
               joinInvitePeekBanner={model.joinInvitePeekBanner}
               handleCloseMapSelection={model.handleCloseMapSelection}
-              handleOfferRideshareForDemand={model.handleOfferRideshareForDemand}
+              handleOfferRideshareForSeeking={model.handleOfferRideshareForSeeking}
               primaryFabLabel={model.primaryFabLabel}
               handleOpenExploreItem={model.handleOpenExploreItem}
               searchScopeCounts={model.searchScopeCounts}
@@ -77,7 +77,7 @@ export const ExploreExperience = () => {
         composeAreaSlug={model.areaSlug}
         hostRemoveParticipantNotice={model.hostRemoveParticipantNotice}
         rideshareLinkParent={model.rideshareLinkParent}
-        rideshareLinkDemand={model.rideshareLinkDemand}
+        rideshareLinkSeeking={model.rideshareLinkSeeking}
         onCloseCreateFlow={model.closeCreateFlow}
         onPlanHostingBackToIntent={model.onPlanHostingBackToIntent}
         onActivityPublished={model.selection.handleActivityPublished}
@@ -85,7 +85,7 @@ export const ExploreExperience = () => {
         onOpenHostApplication={model.onOpenHostApplication}
         onRefreshHostGate={model.refreshHostGate}
         setRideshareLinkParent={model.setRideshareLinkParent}
-        setRideshareLinkDemand={model.setRideshareLinkDemand}
+        setRideshareLinkSeeking={model.setRideshareLinkSeeking}
         exploreSearchModalOpen={model.exploreSearchModalOpen}
         onCloseExploreSearchModal={() => model.setExploreSearchModalOpen(false)}
         browseQuery={model.browse.query}

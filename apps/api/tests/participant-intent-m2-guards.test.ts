@@ -27,22 +27,21 @@ describe('participant intent M2 guards', () => {
     expect(store).toMatch(/activityDocToParticipantIntentDto/);
   });
 
-  it('update/cancel prefer seeking activity before participant_intents writes', () => {
+  it('update/cancel are seeking-activity only (no participant_intents writes)', () => {
     const store = read('src/lib/participant-intents-store.ts');
     const updateIdx = store.indexOf('export const updateParticipantIntent');
     const cancelIdx = store.indexOf('export const cancelParticipantIntent');
+    const linkIdx = store.indexOf('export const linkParticipantIntentToActivityForOwner');
     expect(updateIdx).toBeGreaterThan(-1);
     expect(cancelIdx).toBeGreaterThan(-1);
     const updateBody = store.slice(updateIdx, cancelIdx);
-    expect(updateBody.indexOf('findSeekingActivityByParticipantIntentId')).toBeLessThan(
-      updateBody.indexOf('collection().findOne')
-    );
-    const cancelBody = store.slice(cancelIdx, cancelIdx + 2000);
-    const cancelActivityIdx = cancelBody.indexOf('findSeekingActivityByParticipantIntentId');
-    const cancelIntentIdx = cancelBody.indexOf('findOneAndUpdate');
-    expect(cancelActivityIdx).toBeGreaterThan(-1);
-    expect(cancelIntentIdx).toBeGreaterThan(cancelActivityIdx);
+    const cancelBody = store.slice(cancelIdx, linkIdx);
+    expect(updateBody).toMatch(/findSeekingActivityByParticipantIntentId/);
+    expect(cancelBody).toMatch(/findSeekingActivityByParticipantIntentId/);
+    expect(updateBody).not.toMatch(/collection\(\)/);
+    expect(cancelBody).not.toMatch(/collection\(\)/);
     expect(store).toMatch(/patchSeekingActivityForOwner/);
+    expect(store).not.toMatch(/listActiveParticipantIntentsForMap/);
   });
 
   it('seeking join alias routes through activity_requests when activityId exists', () => {

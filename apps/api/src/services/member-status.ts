@@ -7,7 +7,7 @@ import { isSignupProfileComplete } from '../domain/user-profile.js';
 import { resolveHostTiersFromTenants } from '../domain/member-host-tiers.js';
 import { resolveMemberProfileRoleLabel } from '../domain/member-profile-label.js';
 import { listActiveTenantMembershipsByUser } from '../lib/activities-store.js';
-import { findAuthUserById, type AuthUserRecord } from '../lib/auth-users.js';
+import { findAuthUserById, type AuthUserRecord } from '../lib/auth-users-store.js';
 import { isCommunityHostByUserId } from '../lib/community-host.js';
 import { ensureBuddyHostTenant, ensureOwnerMembershipForTenant } from '../lib/buddy-host-tenant.js';
 import { findLatestHostApplicationByApplicant } from '../lib/host-applications-store.js';

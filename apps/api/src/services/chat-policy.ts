@@ -1,6 +1,6 @@
 import { MembershipRole, RequestStatus } from '../domain/enums.js';
 import { ApiError } from '../lib/api-error.js';
-import { countRecentMessagesBySender } from '../lib/chat-data.js';
+import { countRecentMessagesBySender } from '../lib/chat-messages-store.js';
 import {
   batchCanMessagePartnersFromViewer,
   hasActiveJoinRequestLink,

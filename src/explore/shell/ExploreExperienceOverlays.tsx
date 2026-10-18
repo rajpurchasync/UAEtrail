@@ -32,7 +32,7 @@ type Props = {
   composeAreaSlug: string | null;
   hostRemoveParticipantNotice: string | null;
   rideshareLinkParent: ActivityDTO | null;
-  rideshareLinkDemand: ExploreMapItemDTO | null;
+  rideshareLinkSeeking: ExploreMapItemDTO | null;
   onCloseCreateFlow: () => void;
   onPlanHostingBackToIntent: () => void;
   onActivityPublished: (activity: ActivityDTO) => Promise<void>;
@@ -40,7 +40,7 @@ type Props = {
   onOpenHostApplication: () => void;
   onRefreshHostGate: () => void;
   setRideshareLinkParent: (value: ActivityDTO | null) => void;
-  setRideshareLinkDemand: (value: ExploreMapItemDTO | null) => void;
+  setRideshareLinkSeeking: (value: ExploreMapItemDTO | null) => void;
   exploreSearchModalOpen: boolean;
   onCloseExploreSearchModal: () => void;
   browseQuery: string;
@@ -65,7 +65,7 @@ export const ExploreExperienceOverlays = ({
   composeAreaSlug,
   hostRemoveParticipantNotice,
   rideshareLinkParent,
-  rideshareLinkDemand,
+  rideshareLinkSeeking,
   onCloseCreateFlow,
   onPlanHostingBackToIntent,
   onActivityPublished,
@@ -73,7 +73,7 @@ export const ExploreExperienceOverlays = ({
   onOpenHostApplication,
   onRefreshHostGate,
   setRideshareLinkParent,
-  setRideshareLinkDemand,
+  setRideshareLinkSeeking,
   exploreSearchModalOpen,
   onCloseExploreSearchModal,
   browseQuery,
@@ -113,13 +113,13 @@ export const ExploreExperienceOverlays = ({
         if (rideshareLinkParent && activity.activityType === 'rideshare') {
           setRideshareLinkParent(null);
         }
-        if (rideshareLinkDemand && activity.activityType === 'rideshare') {
-          setRideshareLinkDemand(null);
+        if (rideshareLinkSeeking && activity.activityType === 'rideshare') {
+          setRideshareLinkSeeking(null);
         }
         void onRefreshHostGate();
       }}
-      onDemandSubmitted={(result) => {
-        selection.handleDemandSubmitted(result);
+      onSeekingSubmitted={(result) => {
+        selection.handleSeekingSubmitted(result);
         void onRefreshHostGate();
       }}
       onCreateLinkedRideshare={onCreateLinkedRideshare}

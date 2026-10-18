@@ -1,7 +1,7 @@
 import { UserRole } from '../domain/enums.js';
 import { countAdminMetrics } from '../lib/admin-store.js';
 import { countActivityParticipants, countPendingActivityRequests } from '../lib/activity-engagement-store.js';
-import { countAuthUsers } from '../lib/auth-users.js';
+import { countAuthUsers } from '../lib/auth-users-store.js';
 import { countSocialGroups } from '../lib/social-groups-store.js';
 
 export const loadAdminDashboardMetrics = async () => {

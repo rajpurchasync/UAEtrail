@@ -4,7 +4,7 @@ import type {
   SocialPersonBuddyRequestState,
 } from '@uaetrail/shared-types';
 import { countCheckedInParticipationsForUserIds } from '../lib/activity-engagement-store.js';
-import { findAuthUsersByIds } from '../lib/auth-users.js';
+import { findAuthUsersByIds } from '../lib/auth-users-store.js';
 import { listBuddyRequestsForUser } from '../lib/buddy-store.js';
 import { filterInboxMessageablePartnerIds } from './chat-policy.js';
 import { batchResolveMemberProfileRoleLabelsForDirectory } from './member-status.js';

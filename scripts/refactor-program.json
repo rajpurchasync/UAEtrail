@@ -1,11 +1,11 @@
 {
   "version": 1,
-  "description": "Platform program spine. Work unit = bounded context (manifest id). Sole implementation schedule: docs/SYSTEM_COHERENCE.md §8.8 PCOH + MIG-COH-*.",
-  "updated": "2026-10-17",
+  "description": "Platform program spine. Work unit = bounded context (manifest id). Remaining schedule: MIG-SURFACE-ACTIVITY-DETAIL (S10f), MIG-P5-SLO-SMOKE.",
+  "updated": "2026-10-18",
   "authorization": {
     "approvedOn": "2026-10-17",
-    "statement": "CTO coherence program (PCOH): pre-launch domain dedup and strict UPL/BWL separation. P0–P4 API complete. Sole implementation schedule: §8.8 and MIG-COH-* in refactor-program.json. S10e/S10f gate release.",
-    "authorizedPhases": ["PCOH"],
+    "statement": "CTO coherence program (PCOH): complete (`MIG-COH-00`…`12`). Remaining schedule: `MIG-SURFACE-ACTIVITY-DETAIL` (S10f), `MIG-P5-SLO-SMOKE`. S10e/S10f gate release.",
+    "authorizedPhases": ["PCOH", "P4b", "P5"],
     "p2PlusRequires": [
       "P0.status is complete",
       "P1.status is complete",
@@ -13,7 +13,7 @@
       "S10f human QA checklist run on staging",
       "in_progress migrations ≤ maxInProgressMigrations"
     ],
-    "p2UnlockStatus": "P2–P4 API eng complete; PCOH §8.8 owns all pre-launch coherence work; S10e/S10f pending"
+    "p2UnlockStatus": "P2–P4 API and PCOH complete; remaining ACTIVITY-DETAIL S10f + P5 SLO; S10e/S10f pending"
   },
   "capacity": {
     "platformEngineeringPercentTarget": "30-40",
@@ -86,7 +86,7 @@
     {
       "id": "P4b",
       "name": "Surface unification — UI, flows, routing, hooks (S13 + §6.2 closure)",
-      "status": "complete",
+      "status": "in_progress",
       "owner": "product-eng",
       "targetWindowWeeks": "8-16",
       "authorization": "authorized",
@@ -116,7 +116,7 @@
     {
       "id": "P5",
       "name": "Observability + load — SLO smoke (staging baselines)",
-      "status": "gated",
+      "status": "in_progress",
       "owner": "platform",
       "targetWindowWeeks": "4-6",
       "authorization": "gated",
@@ -126,6 +126,11 @@
           "id": "SLO-EXPLORE-MAP",
           "metric": "GET /explore/map p95 latency (full map + bbox bbox)",
           "target": "Baseline in staging before prod promote; regressions block release"
+        },
+        {
+          "id": "SLO-EXPLORE-OVERLAY",
+          "metric": "GET /me/discover/overlay p95 latency (signed-in peek)",
+          "target": "Baseline in staging when P5_SMOKE_EMAIL/PASSWORD set; regressions block release"
         },
         {
           "id": "SLO-JOIN",
@@ -469,7 +474,7 @@
     {
       "id": "MIG-P5-SLO-SMOKE",
       "phase": "P5",
-      "status": "planned",
+      "status": "in_progress",
       "owner": "platform",
       "contextIds": ["discovery", "participation"],
       "apiRoots": [
@@ -482,7 +487,7 @@
     {
       "id": "MIG-SURFACE-ACTIVITY-DETAIL",
       "phase": "P4b",
-      "status": "planned",
+      "status": "in_progress",
       "owner": "product-eng",
       "contextIds": ["participation", "discovery"],
       "apiRoots": [
@@ -502,7 +507,7 @@
     {
       "id": "MIG-SURFACE-EXPLORE-IA",
       "phase": "P4b",
-      "status": "planned",
+      "status": "complete",
       "owner": "discovery",
       "contextIds": ["discovery"],
       "apiRoots": ["apps/api/src/lib/explore-map-route.ts"],
@@ -512,7 +517,7 @@
     {
       "id": "MIG-SURFACE-MEMBER-PEOPLE",
       "phase": "P4b",
-      "status": "planned",
+      "status": "complete",
       "owner": "product-eng",
       "contextIds": ["member_identity", "social_graph"],
       "apiRoots": [
@@ -535,7 +540,7 @@
     {
       "id": "MIG-SERVICE-IDENTITY-BOUNDARY",
       "phase": "P4b",
-      "status": "planned",
+      "status": "complete",
       "owner": "platform",
       "contextIds": ["member_identity", "communication"],
       "apiRoots": [

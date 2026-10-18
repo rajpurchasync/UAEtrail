@@ -1,4 +1,4 @@
-import { findAuthUserById } from '../lib/auth-users.js';
+import { findAuthUserById } from '../lib/auth-users-store.js';
 import { listUserActivityParticipantsBasic, listUserActivityRequestsBasic } from '../lib/activity-engagement-store.js';
 import { listEntityFollowsWithDetails } from '../lib/entity-follow-store.js';
 import { listFollowingForUser } from '../lib/follow-store.js';

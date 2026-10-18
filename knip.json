@@ -34,7 +34,6 @@
     "src/components/ui/PlacesMap.tsx": ["exports"],
     "src/explore/ui/ExplorePlaceMapPreview.tsx": ["exports"],
     "src/pages/OrganisationPlaces.tsx": ["exports"],
-    "src/pages/BecomeHost.tsx": ["exports"],
     "src/pages/OrganisationPlaces.tsx": ["exports"],
     "src/components/organisation-console/OrganisationConsoleShell.tsx": ["exports"],
     "src/components/organisation-console/BecomeHostFlow.tsx": ["exports"],

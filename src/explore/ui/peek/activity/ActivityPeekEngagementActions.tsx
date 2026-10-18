@@ -284,7 +284,7 @@ export const ActivityPeekEngagementActions = ({
               >
                 {primaryAction.id === 'request_join' && joinAffordanceLoading
                   ? 'Loading…'
-                  : actionLabel(primaryAction, card)}
+                  : actionLabel(primaryAction, card, labelContext)}
               </button>
             )}
             <button

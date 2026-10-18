@@ -15,10 +15,10 @@ describe('memberDiscoverySeekingRow routing', () => {
         seekingTitle: 'Hike',
         exploreItemId: 'activity:act-9',
       })
-    ).toBe('/explore?pin=activity%3Aact-9&list=1&panel=activities');
+    ).toBe('/explore?list=1&panel=activities&pin=activity%3Aact-9');
   });
 
-  it('falls back to demand pin when only intent id is on the wire', () => {
+  it('preserves inbound demand: bookmarks and does not mint them', () => {
     expect(
       exploreMapItemPathFromSeekingRow({
         userId: 'u1',
@@ -28,7 +28,20 @@ describe('memberDiscoverySeekingRow routing', () => {
         seekingTitle: 'Camp',
         exploreItemId: 'demand:int-legacy',
       })
-    ).toBe('/explore?pin=demand%3Aint-legacy&list=1&panel=activities');
+    ).toBe('/explore?list=1&pin=demand%3Aint-legacy');
+  });
+
+  it('omits pin when exploreItemId is neither activity nor inbound demand', () => {
+    expect(
+      exploreMapItemPathFromSeekingRow({
+        userId: 'u1',
+        displayName: 'Alex',
+        avatarUrl: null,
+        participantIntentId: 'int-bare',
+        seekingTitle: 'Hike',
+        exploreItemId: 'int-bare',
+      })
+    ).toBe('/explore?list=1');
   });
 
   it('parses activity id from explore item id', () => {

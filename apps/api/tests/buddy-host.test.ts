@@ -5,7 +5,7 @@ import { bootstrapTestApp } from './helpers/bootstrap.js';
 import { registerVerifiedVisitor } from './helpers/fixtures.js';
 import { createTenantRecord } from '../src/lib/tenant-store.js';
 import { TenantStatus, TenantType } from '../src/domain/enums.js';
-import { findAuthUserByEmail } from '../src/lib/auth-users.js';
+import { findAuthUserByEmail } from '../src/lib/auth-users-store.js';
 import { getMongoClient } from '../src/lib/mongo.js';
 
 let app: Express;

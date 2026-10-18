@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { getDemandFlowSteps } from './seekingFlowEngine';
+import { getSeekingFlowSteps } from './seekingFlowEngine';
 
-describe('demandFlow steps', () => {
+describe('seekingFlowEngine steps', () => {
   it('find hiking matches FLOW-06', () => {
-    expect(getDemandFlowSteps('hiking')).toEqual([
+    expect(getSeekingFlowSteps('hiking')).toEqual([
       'title',
       'when',
       'curatedArea',
@@ -18,7 +18,7 @@ describe('demandFlow steps', () => {
   });
 
   it('find camping matches FLOW-07', () => {
-    expect(getDemandFlowSteps('camping')).toEqual([
+    expect(getSeekingFlowSteps('camping')).toEqual([
       'title',
       'when',
       'curatedArea',
@@ -33,7 +33,7 @@ describe('demandFlow steps', () => {
   });
 
   it('find rideshare matches FLOW-08', () => {
-    expect(getDemandFlowSteps('rideshare')).toEqual([
+    expect(getSeekingFlowSteps('rideshare')).toEqual([
       'title',
       'when',
       'curatedArea',
@@ -47,7 +47,7 @@ describe('demandFlow steps', () => {
   });
 
   it('find activity matches FLOW-09', () => {
-    expect(getDemandFlowSteps('event')).toEqual([
+    expect(getSeekingFlowSteps('event')).toEqual([
       'title',
       'when',
       'curatedArea',

@@ -78,7 +78,7 @@ Kind grid (hiking, camping, rideshare, event, other activity) → hosting wizard
 
 **Find crew browse (Available tab):** directory of everyone who saved availability with slots in the selected date range (`GET /explore/people/availability`) — optional map area / activity filter only; **not** personalized match to the viewer. Day + activity-type **notifications** and optional post-save **hosted outing** preview are separate.
 
-**Map read path (seeking):** `activity:{id}` on explore map; manage via participant intents; join **`POST /activities/:id/requests`**. Legacy `pin=demand:{intentId}` still resolves where needed.
+**Map read path (seeking):** `activity:{id}` on explore map; manage via **`/me/seeking-posts`**; join **`POST /activities/:id/requests`**. Inbound `pin=demand:{intentId}` is rewrite-only.
 
 ### Hosting (was Organize)
 
@@ -218,13 +218,13 @@ The member who posts a **demand** pin is the **host** for that plan (they are lo
 | Rule | Demand | Organize (activity) |
 |------|--------|---------------------|
 | **Map visibility** | Always **public** when pinned — no `joinMode`, no private demand | `joinMode` open or private |
-| **How others join** | **Request to join** only — poster approves on the intent | **I'm going** (`rsvp`) or **Request to join** (`approval`) |
-| **RSVP / instant join** | **Never** — no `participationMode` on intents | Host chooses `participationMode` |
-| **Storage** | Intent stub + **`activity_requests`** (M2c canonical) | RSVPs + `activity_requests` |
+| **How others join** | **Request to join** only — poster approves on the seeking activity | **I'm going** (`rsvp`) or **Request to join** (`approval`) |
+| **RSVP / instant join** | **Never** — no `participationMode` on seeking rows | Host chooses `participationMode` |
+| **Storage** | Seeking **`activities`** + **`activity_requests`** | RSVPs + `activity_requests` |
 
-Demand is **not** a lightweight RSVP activity. Do not add **I'm going**, private pins, or `participationMode` to `participant_intents`.
+Demand is **not** a lightweight RSVP activity. Do not add **I'm going**, private pins, or `participationMode` to seeking rows.
 
-**Explore map wire:** seeking pins use `source: 'activity'`, `activityMode: 'seeking'`, id **`activity:{activityId}`** (legacy `demand:{intentId}` pre-M1 backfill only). Join: **`POST /activities/:id/requests`**. Card presentation may still use `source: 'demand'` for copy only.
+**Explore map wire:** seeking pins use `source: 'activity'`, `activityMode: 'seeking'`, id **`activity:{activityId}`**. Inbound `demand:{intentId}` is rewrite-only — never minted. Join: **`POST /activities/:id/requests`**. Card presentation may still use `source: 'demand'` for copy only.
 
 | Who | Peek actions |
 |-----|----------------|
@@ -236,7 +236,7 @@ When the poster is ready to run a dated outing on the map, they **Organize → p
 
 **Not used:** third-party “fulfill / convert” (another member publishing on behalf of the poster). Legacy `?fulfillIntent=` links only reopen the pin.
 
-**Catalog:** `src/explore/composeFlowCatalog.ts` (one entry per FAB path). **Tests:** `npm run test:explore-alignment`, `demandFlow.test.ts`.
+**Catalog:** `src/explore/composeFlowCatalog.ts` (one entry per FAB path). **Tests:** `npm run test:explore-alignment`, `seekingFlowEngine.test.ts`.
 
 ### One activity model (Find + Organize on the map)
 
@@ -245,7 +245,7 @@ When the poster is ready to run a dated outing on the map, they **Organize → p
 | **Find** (looking for crew) | `activities` + `activityMode: seeking`, map id `activity:{activityId}` | Request to join only (`POST /activities/:id/requests`) | Same **host** as Organize — manages plan, join queue, optional **linked transport** |
 | **Organize** (dated outing) | `activities` + `activityMode: hosted` | RSVP or request per `participationMode` | Host — share, manage, optional **linked transport** |
 
-`participant_intents` is a **manage/join alias** during storage migration; the **map pin and join target** are always the **activity row**. UI must not treat Find as a non-activity “demand-only” product surface.
+`participant_intents` is leftover ops/backfill storage only; the **map pin and join target** are always the **activity row**. UI must not treat Find as a non-activity “demand-only” product surface.
 
 ### Linked transport (child rideshare activity)
 
@@ -338,7 +338,7 @@ Track what is **spec** vs **shipped**. Update this table in the same PR that lan
 | Warm copy pass in wizards | ✅ | ✅ |
 | `outingCategory` / `outingTopic` on host publish | ✅ | ✅ (host create; map projection + Others browse filters) |
 | Host **area via place** (registry `place.areaId` only) | ✅ | ✅ (`validateOrganizePlaceArea`, publish gate) |
-| Find crew (fixed) **area + pin** step | ✅ | ✅ (`curatedArea`, `participant_intents.areaId`) |
+| Find crew (fixed) **area + pin** step | ✅ | ✅ (`curatedArea`, seeking `activities.areaId`) |
 | Add on map place **area-first** | ✅ | ✅ (`curatedArea`, `areaId` on submit) |
 | Host **no custom trail anchor** (catalog or Add) | ✅ | ✅ (structured); rideshare anchor uses bounds match + `areaId` on place |
 | Find crew (flexible) **Share availability** FAB sheet | ✅ | ✅ (`SeekFlexibleComposeSheet`, `PlanAvailabilitySection` variant `fab`) |
@@ -375,7 +375,7 @@ One responsive stack — not separate mobile/desktop implementations.
 |----------------------------|------------------|----------------------------------|
 | Compose shell | `create/ComposeHost.tsx`, `CreateIntentSheet.tsx` | `compose.ts`, `create/composeRouteGuard.ts`, `create/hooks/useComposeRoute.ts` |
 | **Host** | `create/hosting/HostingFlowHost` → `CreateHostingActivityFlow.tsx` | `hostingFlow.ts` → `hostingFlowEngine.ts`, `hostingFlows/*` |
-| **Find crew** (fixed) | `CreateDemandFlow.tsx` | `seekingFlow.ts` → `seekingFlowEngine.ts` |
+| **Find crew** (fixed) | `CreateSeekingFlow.tsx` | `seekingFlow.ts` → `seekingFlowEngine.ts` |
 | **Find crew** (flexible) | `SeekFlexibleComposeSheet.tsx` | `PlanAvailabilitySection` (`variant=fab`) |
 | **Add on map** | `CreateContributeFlow.tsx`, `CreateContributeFacilityFlow.tsx` | `contributeFlow.ts`, `contributeFacilityFlow.ts` |
 | Map browse shell | `ExploreExperience.tsx` | `useExploreExperienceModel`, map hooks |
@@ -383,7 +383,7 @@ One responsive stack — not separate mobile/desktop implementations.
 
 Hosting prefill (linked rideshare, reorganize from activity) → `create/hooks/useHostingWizardPrefill.ts` + `useHostingFromActivity.ts` — not `useExploreRideshareOrganizeLinks`.
 
-Host console **lists** outings on `/plan` hosted tab; **create on map** uses the same Host wizard (`CreateHostingActivityFlow.tsx`, `navigateToReorganizeActivity`). Admin catalog stays on `/admin/places`.
+Plan **hosted** tab lists outings; **create on map** uses the Host wizard (`CreateHostingActivityFlow.tsx`, `navigateToReorganizeActivity`). Admin catalog stays on `/admin/places`.
 
 ---
 
@@ -414,7 +414,7 @@ Do **not** ship Event organize with RSVP marketing until Phase C exists.
 | FAB entry | `CreateIntentSheet.tsx` |
 | Map shell | `ExploreExperience.tsx`, `useExploreExperienceModel` (map/browse hooks only) |
 | Plan → hosting wizard | `CreateHostingActivityFlow.tsx`, `hostingFlowEngine.ts`, `hostingFlows/*` |
-| Plan → seeking wizard | `CreateDemandFlow.tsx`, `seekingFlowEngine.ts` |
+| Plan → seeking wizard | `CreateSeekingFlow.tsx`, `seekingFlowEngine.ts` |
 | Contribute wizard | `CreateContributeFlow.tsx`, `contributeFlow.ts` → **CPC-9b:** `placeSubmitFlow.ts` / `facilitySubmitFlow.ts`; `catalogPlaceSubmit.ts` / `catalogFacilitySubmit.ts` |
 | Map pin UI | `CreatePlacePicker.tsx` |
 | Join / RSVP UI | `JoinRequestModal.tsx`, `ActivityDetail.tsx`, `joinRequestUi.ts` |

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { resolveHostNote } from '@uaetrail/shared-types';
+import { isRolePlaceholderDisplayName, resolveHostNote } from '@uaetrail/shared-types';
 import type { ActivityRequestView } from '../api/types';
 import { fetchMyJoinRequests } from '../hooks/activityJoinClientApi';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
@@ -107,7 +107,7 @@ export const UserRequests = () => {
                   <p>
                     {request.activity.date} · {request.activity.time}
                   </p>
-                  {activityHostName(request.activity) !== 'Organizer' && (
+                  {!isRolePlaceholderDisplayName(activityHostName(request.activity)) && (
                     <p>Host: {activityHostName(request.activity)}</p>
                   )}
                   {request.note && <p className="text-neutral-500 line-clamp-2">{request.note}</p>}

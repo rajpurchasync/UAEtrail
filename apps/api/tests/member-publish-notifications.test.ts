@@ -19,7 +19,7 @@ vi.mock('../src/lib/notifications-store.js', () => ({
   createNotificationsMany: mocks.createNotificationsMany,
 }));
 
-vi.mock('../src/lib/auth-users.js', () => ({
+vi.mock('../src/lib/auth-users-store.js', () => ({
   findAuthUserById: mocks.findAuthUserById,
 }));
 

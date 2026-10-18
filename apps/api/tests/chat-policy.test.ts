@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import request from 'supertest';
 import type { Express } from 'express';
-import { findAuthUserByEmail } from '../src/lib/auth-users.js';
+import { findAuthUserByEmail } from '../src/lib/auth-users-store.js';
 import { canMessageUser, filterInboxMessageablePartnerIds } from '../src/services/chat-policy.js';
 import { getMongoClient } from '../src/lib/mongo.js';
 import { bootstrapTestApp } from './helpers/bootstrap.js';

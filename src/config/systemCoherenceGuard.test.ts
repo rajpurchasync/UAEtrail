@@ -258,13 +258,16 @@ describe('systemCoherenceGuard', () => {
       readFileSync(join(ROOT, 'package.json'), 'utf8')
     ) as { scripts?: Record<string, string> };
     expect(pkg.scripts?.['p5:slo-smoke']).toMatch(/p5-slo-smoke/);
+    expect(pkg.scripts?.['p5:slo-preflight']).toMatch(/--preflight/);
     const script = readFileSync(join(ROOT, 'scripts/p5-slo-smoke.mjs'), 'utf8');
     expect(script).toMatch(/P5_JOIN_ACTIVITY_ID/);
     expect(script).toMatch(/P5_EXPLORE_MAP_BBOX/);
     expect(script).toMatch(/localhost:4000/);
+    expect(script).toMatch(/JSON\.stringify\(\{ note:/);
     const preDeploy = readFileSync(join(ROOT, 'docs/PRE_DEPLOY_CHECKLIST.md'), 'utf8');
     expect(preDeploy).toMatch(/SLO baseline \(P5/);
     expect(preDeploy).toMatch(/p5:slo-smoke/);
+    expect(preDeploy).toMatch(/p5:slo-preflight/);
   });
 
   it('S10e explore map bbox stays opt-in via explicit env flag', () => {

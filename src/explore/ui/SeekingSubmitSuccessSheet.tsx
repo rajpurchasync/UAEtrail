@@ -16,21 +16,21 @@ import {
 } from '../createFlowCopy';
 import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
 import {
-  DEMAND_TYPE_OPTIONS,
-  demandWhenShowsTime,
-  usesCampingDemandFlow,
-  usesHikingDemandFlow,
-  type DemandDraft,
-  type DemandKind,
+  SEEKING_TYPE_OPTIONS,
+  seekingWhenShowsTime,
+  usesCampingSeekingFlow,
+  usesHikingSeekingFlow,
+  type SeekingDraft,
+  type SeekingKind,
 } from './seekingFlowEngine';
 import { LinkRidesharePanel } from './LinkRidesharePanel';
 import { canLinkRideshareToActivity, parentMapKindMayOfferLinkedRideshare } from '../linkActivityRideshareOffer';
 
-type DemandSubmitSuccessSheetProps = {
+type SeekingSubmitSuccessSheetProps = {
   open: boolean;
   onClose: () => void;
-  kind: DemandKind;
-  draft: DemandDraft;
+  kind: SeekingKind;
+  draft: SeekingDraft;
   visibleOnMap: boolean;
   tenantId: string | null;
   publishedActivity: ActivityDTO | null;
@@ -47,12 +47,12 @@ const SuccessDetailRow = ({ label, value }: { label: string; value: string }) =>
   </div>
 );
 
-const formatWhenLine = (draft: DemandDraft, kind: DemandKind): string => {
+const formatWhenLine = (draft: SeekingDraft, kind: SeekingKind): string => {
   if (!draft.date) return 'Flexible';
   const timePart =
-    demandWhenShowsTime(kind) && draft.timeMode === 'specific' && draft.time
+    seekingWhenShowsTime(kind) && draft.timeMode === 'specific' && draft.time
       ? ` · ${draft.time}`
-      : demandWhenShowsTime(kind)
+      : seekingWhenShowsTime(kind)
         ? ' · flexible time'
         : '';
   return `${draft.date}${timePart}`;
@@ -61,7 +61,7 @@ const formatWhenLine = (draft: DemandDraft, kind: DemandKind): string => {
 const linkButtonClass =
   'text-sm font-semibold text-sky-800 underline underline-offset-2 hover:text-sky-950';
 
-export const DemandSubmitSuccessSheet = ({
+export const SeekingSubmitSuccessSheet = ({
   open,
   onClose,
   kind,
@@ -73,7 +73,7 @@ export const DemandSubmitSuccessSheet = ({
   onCreateLinkedRideshare,
   onRideshareLinked,
   onRideshareLinkError,
-}: DemandSubmitSuccessSheetProps) => {
+}: SeekingSubmitSuccessSheetProps) => {
   const [pasteOpen, setPasteOpen] = useState(false);
   const [canAddLinkedRide, setCanAddLinkedRide] = useState(false);
   const [rideshareNotice, setRideshareNotice] = useState<string | null>(null);
@@ -96,9 +96,9 @@ export const DemandSubmitSuccessSheet = ({
     [open, publishedActivity?.id]
   );
 
-  const typeLabel = DEMAND_TYPE_OPTIONS.find((option) => option.key === kind)?.title ?? kind;
+  const typeLabel = SEEKING_TYPE_OPTIONS.find((option) => option.key === kind)?.title ?? kind;
   const destination =
-    (usesHikingDemandFlow(kind) || usesCampingDemandFlow(kind)) && draft.preferredArea
+    (usesHikingSeekingFlow(kind) || usesCampingSeekingFlow(kind)) && draft.preferredArea
       ? EXPLORE_REGION_PILL_LABELS[draft.preferredArea] ?? draft.preferredArea
       : null;
 

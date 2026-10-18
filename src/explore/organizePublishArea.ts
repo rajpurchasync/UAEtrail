@@ -4,7 +4,7 @@ import {
   type AreaPublicDTO,
   type PlaceDTO,
 } from '@uaetrail/shared-types';
-import type { DemandDraft, DemandKind } from './ui/seekingFlowEngine';
+import type { SeekingDraft, SeekingKind } from './ui/seekingFlowEngine';
 import type { CreateActivityDraft } from './ui/hostingFlowEngine';
 
 const PLACE_AREA_REQUIRED =
@@ -35,7 +35,7 @@ export const validateOrganizePublishArea = (draft: CreateActivityDraft): string 
   return null;
 };
 
-export const validateDemandCuratedAreaStep = (draft: DemandDraft): string | null => {
+export const validateSeekingCuratedAreaStep = (draft: SeekingDraft): string | null => {
   if (!draft.areaId?.trim()) return SEEKING_AREA_REQUIRED;
   if (!draft.areaPinPlaced || draft.latitude == null || draft.longitude == null) {
     return SEEKING_AREA_PIN_REQUIRED;
@@ -44,16 +44,16 @@ export const validateDemandCuratedAreaStep = (draft: DemandDraft): string | null
 };
 
 /** Find posts with a map pin need area + pin on the curated-area step. */
-export const demandPostVisibleOnMap = (draft: DemandDraft): boolean =>
+export const seekingPostVisibleOnMap = (draft: SeekingDraft): boolean =>
   Boolean(draft.areaPinPlaced && draft.areaId?.trim());
 
-export const validateDemandPublishArea = (draft: DemandDraft, kind: DemandKind | null): string | null => {
+export const validateSeekingPublishArea = (draft: SeekingDraft, kind: SeekingKind | null): string | null => {
   if (!kind) return null;
-  if (!usesDemandCuratedAreaStep(kind)) return null;
-  return validateDemandCuratedAreaStep(draft);
+  if (!usesSeekingCuratedAreaStep(kind)) return null;
+  return validateSeekingCuratedAreaStep(draft);
 };
 
-export const usesDemandCuratedAreaStep = (kind: DemandKind): boolean =>
+export const usesSeekingCuratedAreaStep = (kind: SeekingKind): boolean =>
   kind === 'hiking' ||
   kind === 'camping' ||
   kind === 'rideshare' ||

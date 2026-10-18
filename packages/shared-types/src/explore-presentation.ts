@@ -1,4 +1,4 @@
-import { isRolePlaceholderDisplayName, ORGANIZER_FALLBACK_DISPLAY_NAME } from './host-display.js';
+import { isRolePlaceholderDisplayName, HOST_FALLBACK_DISPLAY_NAME } from './host-display.js';
 import {
   resolveActivityHeadlinePersonName,
   resolveActivityPublisherRowPrimaryName,
@@ -119,7 +119,7 @@ const resolveExploreHostLabel = (options: {
   if (host && !isRolePlaceholderDisplayName(host)) return formatExplorePersonDisplayName(host);
   const requester = options.participantName?.trim();
   if (requester && !isRolePlaceholderDisplayName(requester)) return formatExplorePersonDisplayName(requester);
-  return ORGANIZER_FALLBACK_DISPLAY_NAME;
+  return HOST_FALLBACK_DISPLAY_NAME;
 };
 
 /** Hosted / scheduled hikes and hiking map filter. */

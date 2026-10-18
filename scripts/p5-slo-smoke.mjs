@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
  * P5 staging baseline — latency + error-budget smoke (not load test).
+ * `--preflight` / `P5_SLO_PREFLIGHT=1` asserts slos[] ↔ probes ↔ PRE_DEPLOY (no live API).
  * @see scripts/refactor-program.json P5 slos · docs/PRE_DEPLOY_CHECKLIST.md § SLO baseline
  *
  * Env:
@@ -11,14 +12,37 @@
  *   P5_SMOKE_EMAIL + P5_SMOKE_PASSWORD — optional overlay probe (SLO-EXPLORE-OVERLAY)
  *   P5_SMOKE_EMAIL + P5_SMOKE_PASSWORD + P5_JOIN_ACTIVITY_ID — optional join/RSVP probe (SLO-JOIN)
  */
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const baseUrl = (process.env.BASE_URL ?? 'http://localhost:4000').replace(/\/$/, '');
 const samples = Number(process.env.P5_SLO_SAMPLES ?? 5);
 const bboxQuery = process.env.P5_EXPLORE_MAP_BBOX_QUERY ?? '55,25,56,26';
+const isPreflight =
+  process.argv.includes('--preflight') || process.env.P5_SLO_PREFLIGHT === '1';
+
+const REQUIRED_SLO_IDS = [
+  'SLO-EXPLORE-MAP',
+  'SLO-EXPLORE-OVERLAY',
+  'SLO-JOIN',
+  'SLO-API-ERR',
+];
 
 const percentile = (sorted, p) => {
   if (sorted.length === 0) return 0;
   const idx = Math.min(sorted.length - 1, Math.ceil((p / 100) * sorted.length) - 1);
   return sorted[Math.max(0, idx)];
+};
+
+const parseErrorCode = (body) => {
+  try {
+    const json = JSON.parse(body);
+    return json.error?.code ?? null;
+  } catch {
+    return null;
+  }
 };
 
 const timedRequest = async (input) => {
@@ -41,6 +65,7 @@ const timedRequest = async (input) => {
     ok: clientOk && !serverError,
     serverError,
     bytes: body.length,
+    errorCode: parseErrorCode(body),
   };
 };
 
@@ -81,6 +106,8 @@ const loginMember = async (email, password) => {
   return token;
 };
 
+const joinPathSucceeded = (status) => status === 201 || status === 409;
+
 const probeJoinPath = async () => {
   const email = process.env.P5_SMOKE_EMAIL?.trim();
   const password = process.env.P5_SMOKE_PASSWORD;
@@ -99,6 +126,18 @@ const probeJoinPath = async () => {
     authorization: `Bearer ${accessToken}`,
   };
 
+  const detailRes = await timedRequest({
+    label: 'activity_detail',
+    path: `/api/activities/${activityId}`,
+    headers: { accept: 'application/json', authorization: `Bearer ${accessToken}` },
+  });
+  if (detailRes.status === 404 || detailRes.serverError) {
+    console.log(
+      `[p5:slo-smoke] join probe activity GET status=${detailRes.status} ${detailRes.ms}ms`
+    );
+    return { skipped: false, ok: false, mechanism: 'detail', status: detailRes.status };
+  }
+
   const rsvpRes = await timedRequest({
     label: 'join_rsvp',
     path: `/api/activities/${activityId}/rsvp`,
@@ -108,9 +147,16 @@ const probeJoinPath = async () => {
     count4xxAsNonError: true,
   });
 
-  if (rsvpRes.status === 201) {
-    console.log(`[p5:slo-smoke] join probe rsvp status=201 ${rsvpRes.ms}ms`);
-    return { skipped: false, ok: true, mechanism: 'rsvp' };
+  if (joinPathSucceeded(rsvpRes.status)) {
+    console.log(
+      `[p5:slo-smoke] join probe rsvp status=${rsvpRes.status} ${rsvpRes.ms}ms code=${rsvpRes.errorCode ?? '-'}`
+    );
+    return { skipped: false, ok: true, mechanism: 'rsvp', status: rsvpRes.status };
+  }
+
+  if (rsvpRes.serverError) {
+    console.log(`[p5:slo-smoke] join probe rsvp status=${rsvpRes.status} ${rsvpRes.ms}ms`);
+    return { skipped: false, ok: false, mechanism: 'rsvp', status: rsvpRes.status };
   }
 
   const requestRes = await timedRequest({
@@ -118,16 +164,13 @@ const probeJoinPath = async () => {
     path: `/api/activities/${activityId}/requests`,
     method: 'POST',
     headers,
-    body: JSON.stringify({ message: 'P5 staging join smoke probe' }),
+    body: JSON.stringify({ note: 'P5 staging join smoke probe' }),
     count4xxAsNonError: true,
   });
 
-  const ok =
-    requestRes.status === 201 ||
-    requestRes.status === 409 ||
-    requestRes.status === 400;
+  const ok = joinPathSucceeded(requestRes.status);
   console.log(
-    `[p5:slo-smoke] join probe requests status=${requestRes.status} ${requestRes.ms}ms ok=${ok}`
+    `[p5:slo-smoke] join probe requests status=${requestRes.status} ${requestRes.ms}ms code=${requestRes.errorCode ?? '-'} ok=${ok}`
   );
   if (!ok || requestRes.serverError) {
     return { skipped: false, ok: false, mechanism: 'requests', status: requestRes.status };
@@ -154,7 +197,68 @@ const assertApiReachable = async () => {
   }
 };
 
+const runPreflight = () => {
+  const program = JSON.parse(readFileSync(join(ROOT, 'scripts/refactor-program.json'), 'utf8'));
+  const preDeploy = readFileSync(join(ROOT, 'docs/PRE_DEPLOY_CHECKLIST.md'), 'utf8');
+  const smoke = readFileSync(join(ROOT, 'scripts/p5-slo-smoke.mjs'), 'utf8');
+  const pkg = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8'));
+  const p5 = (program.phases ?? []).find((phase) => phase.id === 'P5');
+  const sloIds = (p5?.slos ?? []).map((slo) => slo.id);
+  const missingSlos = REQUIRED_SLO_IDS.filter((id) => !sloIds.includes(id));
+  if (missingSlos.length > 0) {
+    console.error(`[p5:slo-smoke] FAILED preflight — slos[] missing ${missingSlos.join(', ')}`);
+    process.exit(1);
+  }
+
+  const missingChecklist = REQUIRED_SLO_IDS.filter((id) => !preDeploy.includes(id));
+  if (missingChecklist.length > 0) {
+    console.error(
+      `[p5:slo-smoke] FAILED preflight — PRE_DEPLOY missing ${missingChecklist.join(', ')}`
+    );
+    process.exit(1);
+  }
+
+  if (!pkg.scripts?.['p5:slo-smoke']?.includes('p5-slo-smoke')) {
+    console.error('[p5:slo-smoke] FAILED preflight — package.json missing p5:slo-smoke');
+    process.exit(1);
+  }
+  if (!pkg.scripts?.['p5:slo-preflight']?.includes('--preflight')) {
+    console.error('[p5:slo-smoke] FAILED preflight — package.json missing p5:slo-preflight');
+    process.exit(1);
+  }
+
+  const coverage = [
+    ['SLO-EXPLORE-MAP', '/api/explore/map'],
+    ['SLO-EXPLORE-OVERLAY', '/api/me/discover/overlay'],
+    ['SLO-JOIN', '/api/activities/${activityId}/rsvp'],
+    ['SLO-JOIN', '/api/activities/${activityId}/requests'],
+    ['SLO-JOIN', "note: 'P5 staging join smoke probe'"],
+    ['SLO-API-ERR', 'serverErrorRate > 0.001'],
+  ];
+  const missingCoverage = coverage.filter(([, needle]) => !smoke.includes(needle));
+  if (missingCoverage.length > 0) {
+    console.error(
+      `[p5:slo-smoke] FAILED preflight — smoke missing ${missingCoverage.map((row) => row.join(':')).join(', ')}`
+    );
+    process.exit(1);
+  }
+
+  if (/body:\s*JSON\.stringify\(\{\s*message:/.test(smoke)) {
+    console.error('[p5:slo-smoke] FAILED preflight — join body must POST JSON `note`, not `message`');
+    process.exit(1);
+  }
+
+  console.log(
+    `[p5:slo-smoke] preflight OK — ${REQUIRED_SLO_IDS.join(', ')} aligned with slos[] + PRE_DEPLOY (no live API)`
+  );
+};
+
 const main = async () => {
+  if (isPreflight) {
+    runPreflight();
+    return;
+  }
+
   console.log(`[p5:slo-smoke] BASE_URL=${baseUrl} samples=${samples}`);
   await assertApiReachable();
 

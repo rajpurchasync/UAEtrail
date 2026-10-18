@@ -2,7 +2,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import request from 'supertest';
 import type { Express } from 'express';
 import { bootstrapTestApp } from './helpers/bootstrap.js';
-import { createAuthUser } from '../src/lib/auth-users.js';
+import { createAuthUser } from '../src/lib/auth-users-store.js';
 import { UserRole, UserStatus } from '../src/domain/enums.js';
 import { generateReferralCode } from '../src/lib/referral-code.js';
 import bcrypt from 'bcryptjs';

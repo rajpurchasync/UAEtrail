@@ -14,10 +14,10 @@ import {
   listSocialReviewsByUserId,
   updateSocialReviewForUser,
   type SocialReview,
-} from '../lib/social-data.js';
+} from '../lib/social-reviews-store.js';
 import { findTenantsByIds, type TenantRecord } from '../lib/tenant-store.js';
 import { tierEnumToDisplay } from '../lib/membership-tier-display.js';
-import { findAuthUserById, getAuthUserMembershipTier } from '../lib/auth-users.js';
+import { findAuthUserById, getAuthUserMembershipTier } from '../lib/auth-users-store.js';
 import { ApiError } from '../lib/api-error.js';
 import type { Location } from '../domain/types.js';
 

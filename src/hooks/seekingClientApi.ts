@@ -12,9 +12,6 @@ export const invalidateMySeekingPostsQueries = (queryClient: QueryClient): void 
   void queryClient.invalidateQueries({ queryKey: mySeekingPostsQueryKey() });
 };
 
-/** @deprecated Use {@link invalidateMySeekingPostsQueries}. */
-export const invalidateMyParticipantIntentsQueries = invalidateMySeekingPostsQueries;
-
 export const fetchSeekingPostJoinRequests = async (
   postId: string
 ): Promise<ParticipantIntentJoinRequestViewDTO[]> => {
@@ -106,36 +103,3 @@ export const linkSeekingPostToActivity = async (
 ): Promise<void> => {
   await api.linkSeekingPostToActivity(postId, activityId);
 };
-
-/** @deprecated Use {@link createSeekingPost}. */
-export const createParticipantIntent = createSeekingPost;
-
-/** @deprecated Use {@link updateSeekingPost}. */
-export const updateParticipantIntent = updateSeekingPost;
-
-/** @deprecated Use {@link cancelSeekingPost}. */
-export const cancelParticipantIntent = cancelSeekingPost;
-
-/** @deprecated Use {@link fetchSeekingPostJoinRequests}. */
-export const fetchParticipantIntentJoinRequests = fetchSeekingPostJoinRequests;
-
-/** @deprecated Use {@link approveSeekingPostJoinRequest}. */
-export const approveParticipantIntentJoinRequest = approveSeekingPostJoinRequest;
-
-/** @deprecated Use {@link rejectSeekingPostJoinRequest}. */
-export const rejectParticipantIntentJoinRequest = rejectSeekingPostJoinRequest;
-
-/** @deprecated Use {@link createSeekingPostJoinRequest}. */
-export const createParticipantIntentJoinRequest = createSeekingPostJoinRequest;
-
-/** @deprecated Use {@link fetchMySeekingPostJoinRequest}. */
-export const fetchMyParticipantIntentJoinRequest = fetchMySeekingPostJoinRequest;
-
-/** @deprecated Use {@link linkSeekingPostToActivity}. */
-export const linkParticipantIntentToActivity = linkSeekingPostToActivity;
-
-/** @deprecated Use {@link UpdateSeekingPostPayload}. */
-export type UpdateParticipantIntentPayload = UpdateSeekingPostPayload;
-
-/** @deprecated Use {@link CreateSeekingPostPayload}. */
-export type CreateParticipantIntentPayload = CreateSeekingPostPayload;

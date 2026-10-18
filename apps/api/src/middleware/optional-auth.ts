@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { verifyAccessToken } from '../lib/jwt.js';
-import { findAuthUserById } from '../lib/auth-users.js';
+import { findAuthUserById } from '../lib/auth-users-store.js';
 
 /** Attach auth when a valid bearer token is present; otherwise continue anonymously. */
 export const optionalAuth = async (req: Request, _res: Response, next: NextFunction): Promise<void> => {

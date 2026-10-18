@@ -73,3 +73,5 @@ export const UPL_IM_GOING = "I'm going";
 
 /** Withdraw copy — host is UPL; BWL field is `hostNote`. */
 export const UPL_COMMENT_FOR_HOST = 'Comment for the host';
+export const UPL_MESSAGE_HOST = 'Message host';
+export const UPL_MY_HOST_PROFILE = 'My host profile';

@@ -3,7 +3,7 @@ import request from 'supertest';
 import type { Express } from 'express';
 import { ACTIVITY_JOIN_INVITE_DAILY_LIMIT_PER_ACTIVITY } from '@uaetrail/shared-types';
 import { RequestStatus } from '../src/domain/enums.js';
-import { findAuthUserByEmail } from '../src/lib/auth-users.js';
+import { findAuthUserByEmail } from '../src/lib/auth-users-store.js';
 import { COLLECTIONS } from '../src/lib/collections.js';
 import { newEntityId } from '../src/lib/entity-builders.js';
 import { getMongoClient } from '../src/lib/mongo.js';

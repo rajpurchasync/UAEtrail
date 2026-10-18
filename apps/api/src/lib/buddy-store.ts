@@ -1,6 +1,6 @@
 import type { BuddyRequestDTO, BuddySummaryDTO } from '@uaetrail/shared-types';
 import { buddyPairKey, sortedBuddyUserIds, type BuddyRequestStatus } from '../domain/buddy-connection.js';
-import { findAuthUserById, findAuthUsersByIds } from './auth-users.js';
+import { findAuthUserById, findAuthUsersByIds } from './auth-users-store.js';
 import { newEntityId } from './entity-builders.js';
 import { ApiError } from './api-error.js';
 import { getMongoClient } from './mongo.js';

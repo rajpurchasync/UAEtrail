@@ -10,7 +10,7 @@ import {
 import type { HostPersonNameInput } from './host-display.js';
 import {
   isRolePlaceholderDisplayName,
-  ORGANIZER_FALLBACK_DISPLAY_NAME,
+  HOST_FALLBACK_DISPLAY_NAME,
   resolveHostPersonDisplayName,
 } from './host-display.js';
 import type { PublishingProfileKind } from './publishing-profile-kind.js';
@@ -41,7 +41,7 @@ export const resolveActivityHeadlinePersonName = (input: ActivityActorNameInput)
     const headline = explorePersonHeadlineName(input.featuredPerson);
     const tenant = input.tenantName?.trim();
     if (tenant && headline.toLowerCase() === tenant.toLowerCase()) {
-      return ORGANIZER_FALLBACK_DISPLAY_NAME;
+      return HOST_FALLBACK_DISPLAY_NAME;
     }
     if (headline !== 'Community member') return headline;
   }
@@ -54,7 +54,7 @@ export const resolveActivityHeadlinePersonName = (input: ActivityActorNameInput)
     }
   }
 
-  return ORGANIZER_FALLBACK_DISPLAY_NAME;
+  return HOST_FALLBACK_DISPLAY_NAME;
 };
 
 /** Peek / list publisher row — person for community & pro guide; operator brand for agency / shop. */

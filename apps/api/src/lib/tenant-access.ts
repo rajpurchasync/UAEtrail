@@ -1,7 +1,7 @@
 import type { Collection } from 'mongodb';
 import { MembershipRole, TenantStatus, type TenantStatus as TenantStatusType } from '../domain/enums.js';
 import type { TenantMembership } from '../domain/types.js';
-import { findAuthUsersByIds } from './auth-users.js';
+import { findAuthUsersByIds } from './auth-users-store.js';
 import { newEntityId } from './entity-builders.js';
 import {
   findTenantById as findTenantRecordById,

@@ -159,7 +159,7 @@ export const HostedActivitiesSection = ({
     if (peekBridgeOnly) return null;
     return (
       <ConsumerInlineEmpty
-        message="Organizer profile is still loading — try again in a moment, or open your organizing plans."
+        message="Host profile is still loading — try again in a moment, or open your hosted plans."
         actionLabel="Hosted on Plan"
         actionTo={planHostedSchedulePath()}
       />

@@ -1,5 +1,5 @@
 import { TenantType, UserRole } from '../domain/enums.js';
-import { findAuthUserById } from './auth-users.js';
+import { findAuthUserById } from './auth-users-store.js';
 import { findTenantByOwnerId } from './tenant-store.js';
 
 export type AdminUserType =

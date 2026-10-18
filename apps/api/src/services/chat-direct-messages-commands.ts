@@ -1,6 +1,6 @@
 import { NotificationType } from '../domain/enums.js';
 import { ApiError } from '../lib/api-error.js';
-import { createChatMessageRecord, markThreadAsRead } from '../lib/chat-data.js';
+import { createChatMessageRecord, markThreadAsRead } from '../lib/chat-messages-store.js';
 import { presentChatMessageAsDto } from '../lib/chat-message-presenter.js';
 import { messagesToUserPath } from '../lib/member-routes.js';
 import { scheduleSideEffect } from '../lib/schedule-side-effect.js';

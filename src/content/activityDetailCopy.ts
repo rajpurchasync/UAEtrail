@@ -19,8 +19,8 @@ export const ACTIVITY_DETAIL_TRANSPORT_PRO_HOST_HINT =
 export const ACTIVITY_DETAIL_TRANSPORT_PRO_PARTICIPANT_HINT =
   'Pro members can offer a shared ride for this outing.';
 
-export const ACTIVITY_DETAIL_PRO_ORGANIZER_PROFILE_HINT =
-  'Pro members can view organizer profiles and message before joining.';
+export const ACTIVITY_DETAIL_PRO_HOST_PROFILE_HINT =
+  'Pro members can view host profiles and message before joining.';
 
 export const ACTIVITY_DETAIL_PRO_ROSTER_HINT =
   'Pro members see everyone going — you’re viewing buddies on this outing.';
@@ -52,7 +52,7 @@ export const ACTIVITY_DETAIL_PLACE_LOCKED_BODY =
 export const ACTIVITY_DETAIL_PLACE_LOCKED_CTA = 'Back to Plan';
 
 export const ACTIVITY_DETAIL_TRANSPORT_REACH_TITLE = 'How to get there';
-export const ACTIVITY_DETAIL_ORGANIZER_BUDDIES_TOOLS_HINT = 'Organizer tools on Buddies';
+export const ACTIVITY_DETAIL_HOST_BUDDIES_TOOLS_HINT = 'Host tools on Buddies';
 
 export const ACTIVITY_DETAIL_TAB_FOOTER_VIEW_RIDE = 'View shared ride';
 export const ACTIVITY_DETAIL_TAB_FOOTER_DIRECTIONS = 'Directions';

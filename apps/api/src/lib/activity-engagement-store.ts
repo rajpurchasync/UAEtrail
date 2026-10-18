@@ -8,7 +8,7 @@ import {
 } from '../domain/enums.js';
 import type { ActivityParticipant, ActivityRequest } from '../domain/types.js';
 import { ApiError } from './api-error.js';
-import { findAuthUsersByIds } from './auth-users.js';
+import { findAuthUsersByIds } from './auth-users-store.js';
 import { newEntityId } from './entity-builders.js';
 import {
   findActivityDocInMongo,

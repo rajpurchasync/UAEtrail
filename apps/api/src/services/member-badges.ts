@@ -1,5 +1,5 @@
 import { RewardAction } from '../domain/enums.js';
-import { findAuthUserById, findAuthUserByReferralCode } from '../lib/auth-users.js';
+import { findAuthUserById, findAuthUserByReferralCode } from '../lib/auth-users-store.js';
 import { MEMBER_BADGE_DEFINITIONS } from '../lib/member-badges-config.js';
 import {
   countMemberActions,

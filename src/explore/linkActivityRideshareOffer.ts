@@ -85,7 +85,7 @@ export const canLinkRideshareToActivity = (activity: ActivityDTO | null | undefi
 };
 
 /** Own seeking peek — offer a rideshare alongside the parent plan (not rideshare find posts). */
-export const canOfferRideshareForDemandItem = (item: ExploreMapItemDTO | null | undefined): boolean => {
+export const canOfferRideshareForSeekingItem = (item: ExploreMapItemDTO | null | undefined): boolean => {
   if (!item || !exploreMapItemIsSeeking(item)) return false;
   if (item.convertedActivityId) return false;
   return parentMapKindMayOfferLinkedRideshare(item.kind);
@@ -95,8 +95,8 @@ export const canOfferRideshareForDemandItem = (item: ExploreMapItemDTO | null | 
  * Legacy intent-only host-manage peek — prefer host `link_rideshare` on `mapPeekActions` for M0 seeking pins.
  * @deprecated Use `canAddLinkedRide` + `canLinkRideshareToActivity` on activity-backed peek only.
  */
-export const canShowDemandLinkRideshareOffer = (item: ExploreMapItemDTO | null | undefined): boolean =>
-  canOfferRideshareForDemandItem(item) && Boolean(item?.viewerAccess?.entitlements?.canOfferTransport);
+export const canShowSeekingLinkRideshareOffer = (item: ExploreMapItemDTO | null | undefined): boolean =>
+  canOfferRideshareForSeekingItem(item) && Boolean(item?.viewerAccess?.entitlements?.canOfferTransport);
 
 /** Trips → My plans manage sheet — same rules as map host-manage peek. */
 export const canOfferRideshareForParticipantIntent = (

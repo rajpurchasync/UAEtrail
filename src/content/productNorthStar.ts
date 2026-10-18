@@ -79,7 +79,7 @@ export const PRODUCT_INVITE_SHARE_TEXT =
 
 /** Explore consumer blurbs */
 export const PRODUCT_ACTIVITIES_EXPLORE_BLURB =
-  'Outings you can join — hikes, camps, runs, and group plans posted by members and organizers.';
+  'Outings you can join — hikes, camps, runs, and group plans posted by members and hosts.';
 
 export const PRODUCT_EXPLORE_EMPTY_FILTERS =
   "Nothing here with these filters — try another type or area, or post what you're looking for.";

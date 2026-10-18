@@ -7,7 +7,7 @@ import {
 } from '@uaetrail/shared-types';
 import type { ExploreCardModel } from '../explore/exploreCardModel';
 import { exploreCardIsSeeking } from '../explore/exploreCardModel';
-import { ORGANIZER_NOUN_TITLE } from '../content/workspaceVocabulary';
+import { ACTIVITY_HOST_NOUN_TITLE } from '../content/workspaceVocabulary';
 
 export type ListFeedPublisher = {
   name: string;
@@ -25,7 +25,7 @@ const resolveListFeedPublisherTypeLabel = (card: ExploreCardModel): string => {
   if (role) return explorePersonRoleLabel(role, kind);
   if (exploreCardIsSeeking(card)) return 'Looking for crew';
   if (card.source === 'shop' || card.source === 'agency') return 'Shop contact';
-  if (card.source === 'activity') return ORGANIZER_NOUN_TITLE;
+  if (card.source === 'activity') return ACTIVITY_HOST_NOUN_TITLE;
   if (card.source === 'facility') return 'Facility';
   if (isGeographyMapSource(card.source)) return 'Place';
   return 'Member';

@@ -2,7 +2,7 @@ import type { z } from 'zod';
 import { NotificationType } from '../domain/enums.js';
 import { env } from '../config/env.js';
 import { ApiError } from '../lib/api-error.js';
-import { findAuthUserByEmail, findAuthUserById } from '../lib/auth-users.js';
+import { findAuthUserByEmail, findAuthUserById } from '../lib/auth-users-store.js';
 import { findActivityDocInMongo } from '../lib/entity-sync.js';
 import { canMemberPostToGroupWall } from '../lib/group-wall-policy.js';
 import { messagesGroupPath } from '../lib/member-routes.js';

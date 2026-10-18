@@ -1,15 +1,15 @@
 import type { ParticipantIntentKind } from '@uaetrail/shared-types';
 import { createSeekingPost } from '../../hooks/seekingClientApi';
 import {
-  validateDemandCuratedAreaStep,
-  validateDemandPublishArea,
+  validateSeekingCuratedAreaStep,
+  validateSeekingPublishArea,
 } from '../organizePublishArea';
 import { MAP_CONFIG } from '../../config/platform';
 import { buildDateOptions, todayIso, type LocationPrecision, type TimeMode } from './createFlowShared';
 
-export type DemandKind = ParticipantIntentKind;
+export type SeekingKind = ParticipantIntentKind;
 
-export type DemandFlowStepId =
+export type SeekingFlowStepId =
   | 'title'
   | 'when'
   | 'destination'
@@ -28,14 +28,14 @@ export type DemandFlowStepId =
   | 'comment'
   | 'review';
 
-export type DemandFitnessLevel = 'beginner' | 'medium' | 'goat';
+export type SeekingFitnessLevel = 'beginner' | 'medium' | 'goat';
 
-export type DemandTransportMode = 'self' | 'rideshare';
+export type SeekingTransportMode = 'self' | 'rideshare';
 
-export type DemandVehicleType = 'sedan' | 'suv' | '4x4' | 'van';
+export type SeekingVehicleType = 'sedan' | 'suv' | '4x4' | 'van';
 
-export type DemandDraft = {
-  kind: DemandKind | null;
+export type SeekingDraft = {
+  kind: SeekingKind | null;
   title: string;
   date: string;
   time: string;
@@ -48,15 +48,15 @@ export type DemandDraft = {
   toLatitude: number | null;
   toLongitude: number | null;
   partySize: number;
-  fitnessLevel: DemandFitnessLevel | null;
+  fitnessLevel: SeekingFitnessLevel | null;
   additionalInfo: string;
   rideshareNeeded: boolean;
   womenOnly: boolean;
   familyOnly: boolean;
   childrenAllowed: boolean;
   petsAllowed: boolean;
-  transportMode: DemandTransportMode | null;
-  selfVehicleType: DemandVehicleType | null;
+  transportMode: SeekingTransportMode | null;
+  selfVehicleType: SeekingVehicleType | null;
   rideshareSeatsNeeded: number;
   destinationTimeMode: TimeMode;
   destinationTime: string;
@@ -71,8 +71,8 @@ export type DemandDraft = {
 };
 
 /** Same order and labels as FAB `FIND_COMPOSE_OPTIONS` / compose catalog `find.*`. */
-export const DEMAND_TYPE_OPTIONS: Array<{
-  key: DemandKind;
+export const SEEKING_TYPE_OPTIONS: Array<{
+  key: SeekingKind;
   title: string;
   subtitle: string;
   emoji: string;
@@ -83,10 +83,10 @@ export const DEMAND_TYPE_OPTIONS: Array<{
   { key: 'event', title: 'Activities', subtitle: 'Runs, jogs, meetups & more', emoji: '✨' },
 ];
 
-export const DEMAND_PARTY_PRESETS = [1, 2, 3, 4, 6, 8] as const;
+export const SEEKING_PARTY_PRESETS = [1, 2, 3, 4, 6, 8] as const;
 
-export const DEMAND_FITNESS_OPTIONS: Array<{
-  value: DemandFitnessLevel;
+export const SEEKING_FITNESS_OPTIONS: Array<{
+  value: SeekingFitnessLevel;
   title: string;
   subtitle: string;
 }> = [
@@ -95,14 +95,14 @@ export const DEMAND_FITNESS_OPTIONS: Array<{
   { value: 'goat', title: 'GOAT', subtitle: 'Hard trails, fast pace' },
 ];
 
-export const DEMAND_SELF_VEHICLE_OPTIONS: Array<{ value: DemandVehicleType; title: string }> = [
+export const SEEKING_SELF_VEHICLE_OPTIONS: Array<{ value: SeekingVehicleType; title: string }> = [
   { value: 'sedan', title: 'Sedan' },
   { value: 'suv', title: 'SUV' },
   { value: '4x4', title: '4x4' },
   { value: 'van', title: 'Van' },
 ];
 
-const HIKING_DEMAND_STEPS: DemandFlowStepId[] = [
+const HIKING_DEMAND_STEPS: SeekingFlowStepId[] = [
   'title',
   'when',
   'curatedArea',
@@ -115,7 +115,7 @@ const HIKING_DEMAND_STEPS: DemandFlowStepId[] = [
   'review',
 ];
 
-const CAMPING_DEMAND_STEPS: DemandFlowStepId[] = [
+const CAMPING_DEMAND_STEPS: SeekingFlowStepId[] = [
   'title',
   'when',
   'curatedArea',
@@ -128,7 +128,7 @@ const CAMPING_DEMAND_STEPS: DemandFlowStepId[] = [
   'review',
 ];
 
-const RIDESHARE_DEMAND_STEPS: DemandFlowStepId[] = [
+const RIDESHARE_DEMAND_STEPS: SeekingFlowStepId[] = [
   'title',
   'when',
   'curatedArea',
@@ -140,7 +140,7 @@ const RIDESHARE_DEMAND_STEPS: DemandFlowStepId[] = [
   'review',
 ];
 
-const EVENT_DEMAND_STEPS: DemandFlowStepId[] = [
+const EVENT_DEMAND_STEPS: SeekingFlowStepId[] = [
   'title',
   'when',
   'curatedArea',
@@ -150,27 +150,27 @@ const EVENT_DEMAND_STEPS: DemandFlowStepId[] = [
   'review',
 ];
 
-export const usesHikingDemandFlow = (kind: DemandKind | null): boolean => kind === 'hiking';
+export const usesHikingSeekingFlow = (kind: SeekingKind | null): boolean => kind === 'hiking';
 
-export const usesCampingDemandFlow = (kind: DemandKind | null): boolean => kind === 'camping';
+export const usesCampingSeekingFlow = (kind: SeekingKind | null): boolean => kind === 'camping';
 
-export const demandWhenShowsTime = (kind: DemandKind | null): boolean =>
+export const seekingWhenShowsTime = (kind: SeekingKind | null): boolean =>
   kind === 'rideshare' || kind === 'event';
 
-export const usesStructuredDemandFlow = (kind: DemandKind | null): boolean =>
+export const usesStructuredSeekingFlow = (kind: SeekingKind | null): boolean =>
   kind === 'hiking' || kind === 'camping';
 
-export const usesEventDemandFlow = (kind: DemandKind | null): boolean => kind === 'event';
+export const usesEventSeekingFlow = (kind: SeekingKind | null): boolean => kind === 'event';
 
-export const usesOutdoorActivityDemandFlow = (kind: DemandKind | null): boolean =>
-  usesStructuredDemandFlow(kind) || usesEventDemandFlow(kind);
+export const usesOutdoorActivitySeekingFlow = (kind: SeekingKind | null): boolean =>
+  usesStructuredSeekingFlow(kind) || usesEventSeekingFlow(kind);
 
-export const usesRideshareDemandFlow = (kind: DemandKind | null): boolean => kind === 'rideshare';
+export const usesRideshareSeekingFlow = (kind: SeekingKind | null): boolean => kind === 'rideshare';
 
-export const usesGuidedDemandFlow = (kind: DemandKind | null): boolean =>
-  usesOutdoorActivityDemandFlow(kind) || usesRideshareDemandFlow(kind);
+export const usesGuidedSeekingFlow = (kind: SeekingKind | null): boolean =>
+  usesOutdoorActivitySeekingFlow(kind) || usesRideshareSeekingFlow(kind);
 
-export const emptyDemandDraft = (): DemandDraft => ({
+export const emptySeekingDraft = (): SeekingDraft => ({
   kind: null,
   title: '',
   date: todayIso(),
@@ -204,7 +204,7 @@ export const emptyDemandDraft = (): DemandDraft => ({
   areaId: null,
 });
 
-export const getDemandFlowSteps = (kind: DemandKind): DemandFlowStepId[] => {
+export const getSeekingFlowSteps = (kind: SeekingKind): SeekingFlowStepId[] => {
   switch (kind) {
     case 'hiking':
       return HIKING_DEMAND_STEPS;
@@ -224,13 +224,13 @@ export const getDemandFlowSteps = (kind: DemandKind): DemandFlowStepId[] => {
 };
 
 /** Sheet heading for each step (shown under the header). */
-export const demandFlowStepTitle = (step: DemandFlowStepId, kind: DemandKind): string => {
+export const seekingFlowStepTitle = (step: SeekingFlowStepId, kind: SeekingKind): string => {
   if (step === 'curatedArea') return 'Area & map pin';
   if (step === 'destination') return 'Preferred destination';
   if (step === 'audience') return 'Looking for';
   if (step === 'transport') return 'Transport';
 
-  if (usesRideshareDemandFlow(kind)) {
+  if (usesRideshareSeekingFlow(kind)) {
     switch (step) {
       case 'title':
         return 'Title';
@@ -251,7 +251,7 @@ export const demandFlowStepTitle = (step: DemandFlowStepId, kind: DemandKind): s
     }
   }
 
-  if (usesEventDemandFlow(kind)) {
+  if (usesEventSeekingFlow(kind)) {
     switch (step) {
       case 'title':
         return 'Title';
@@ -270,7 +270,7 @@ export const demandFlowStepTitle = (step: DemandFlowStepId, kind: DemandKind): s
     }
   }
 
-  if (usesHikingDemandFlow(kind) || usesCampingDemandFlow(kind)) {
+  if (usesHikingSeekingFlow(kind) || usesCampingSeekingFlow(kind)) {
     switch (step) {
       case 'title':
         return 'Title';
@@ -311,7 +311,7 @@ export const demandFlowStepTitle = (step: DemandFlowStepId, kind: DemandKind): s
   }
 };
 
-export const demandTitlePlaceholder = (kind: DemandKind): string => {
+export const seekingTitlePlaceholder = (kind: SeekingKind): string => {
   switch (kind) {
     case 'hiking':
       return 'e.g. Easy-moderate hike near Hatta this weekend, open to rideshare';
@@ -328,13 +328,13 @@ export const demandTitlePlaceholder = (kind: DemandKind): string => {
   }
 };
 
-export const demandAreaFieldLabel = (kind: DemandKind): string => {
+export const seekingAreaFieldLabel = (kind: SeekingKind): string => {
   if (kind === 'event') return 'What would you like to do?';
   if (kind === 'guide') return 'What are you looking for?';
   return 'Where would you like to go?';
 };
 
-export const demandAreaPlaceholder = (kind: DemandKind): string => {
+export const seekingAreaPlaceholder = (kind: SeekingKind): string => {
   switch (kind) {
     case 'hiking':
       return 'e.g. Hatta, Jebel Jais, Wadi Shawka';
@@ -351,18 +351,18 @@ export const demandAreaPlaceholder = (kind: DemandKind): string => {
   }
 };
 
-export const demandAreaUsesMap = (kind: DemandKind): boolean =>
+export const seekingAreaUsesMap = (kind: SeekingKind): boolean =>
   kind === 'camping' || kind === 'guide' || kind === 'other';
 
-export const demandAreaTextRequired = (kind: DemandKind): boolean =>
+export const seekingAreaTextRequired = (kind: SeekingKind): boolean =>
   kind === 'hiking' || kind === 'guide';
 
-export const demandGoingFromPlaceholder = (kind: DemandKind): string => {
+export const seekingGoingFromPlaceholder = (kind: SeekingKind): string => {
   if (kind === 'camping') return 'e.g. Dubai, Sharjah, Abu Dhabi';
   return 'e.g. Dubai Marina, Business Bay, JLT';
 };
 
-export const demandAdditionalInfoPlaceholder = (kind: DemandKind): string => {
+export const seekingAdditionalInfoPlaceholder = (kind: SeekingKind): string => {
   if (kind === 'rideshare') {
     return 'Luggage, pickup flexibility, preferred departure window…';
   }
@@ -375,13 +375,13 @@ export const demandAdditionalInfoPlaceholder = (kind: DemandKind): string => {
   return 'Preferred area, trail type, pace, anything else hosts should know…';
 };
 
-const fitnessLevelLabel = (level: DemandFitnessLevel): string =>
-  DEMAND_FITNESS_OPTIONS.find((option) => option.value === level)?.title ?? level;
+const fitnessLevelLabel = (level: SeekingFitnessLevel): string =>
+  SEEKING_FITNESS_OPTIONS.find((option) => option.value === level)?.title ?? level;
 
-const vehicleLabel = (value: DemandVehicleType | null): string =>
-  DEMAND_SELF_VEHICLE_OPTIONS.find((option) => option.value === value)?.title ?? value ?? '';
+const vehicleLabel = (value: SeekingVehicleType | null): string =>
+  SEEKING_SELF_VEHICLE_OPTIONS.find((option) => option.value === value)?.title ?? value ?? '';
 
-export const buildDemandComment = (draft: DemandDraft): string => {
+export const buildSeekingComment = (draft: SeekingDraft): string => {
   const parts: string[] = [];
 
   if (draft.womenOnly) parts.push('Women only');
@@ -417,14 +417,14 @@ export const buildDemandComment = (draft: DemandDraft): string => {
   return combined.length >= 3 ? combined : 'Open to matching plans nearby.';
 };
 
-export const validateDemandStep = (step: DemandFlowStepId, draft: DemandDraft): string | null => {
+export const validateSeekingStep = (step: SeekingFlowStepId, draft: SeekingDraft): string | null => {
   const kind = draft.kind;
   if (!kind) return 'Choose what you are looking for.';
 
   switch (step) {
     case 'title':
       if (!draft.title.trim()) {
-        return usesGuidedDemandFlow(kind) ? 'Enter a title.' : 'Tell us a bit about what you are looking for.';
+        return usesGuidedSeekingFlow(kind) ? 'Enter a title.' : 'Tell us a bit about what you are looking for.';
       }
       if (draft.title.trim().length < 3) return 'Please add a few more details (at least 3 characters).';
       return null;
@@ -432,7 +432,7 @@ export const validateDemandStep = (step: DemandFlowStepId, draft: DemandDraft): 
       if (!draft.preferredArea.trim()) return 'Choose a preferred destination.';
       return null;
     case 'from':
-      if (kind === 'rideshare' || usesHikingDemandFlow(kind) || usesCampingDemandFlow(kind)) {
+      if (kind === 'rideshare' || usesHikingSeekingFlow(kind) || usesCampingSeekingFlow(kind)) {
         if (!draft.fromPinPlaced || draft.latitude == null || draft.longitude == null) {
           return 'Drop a going-from pin on the map.';
         }
@@ -471,9 +471,9 @@ export const validateDemandStep = (step: DemandFlowStepId, draft: DemandDraft): 
     case 'rideshare':
       return null;
     case 'curatedArea':
-      return validateDemandCuratedAreaStep(draft);
+      return validateSeekingCuratedAreaStep(draft);
     case 'area': {
-      if (demandAreaTextRequired(kind) && !draft.preferredArea.trim()) {
+      if (seekingAreaTextRequired(kind) && !draft.preferredArea.trim()) {
         return kind === 'guide'
           ? 'Describe what you are looking for.'
           : 'Enter where you would like to go.';
@@ -482,7 +482,7 @@ export const validateDemandStep = (step: DemandFlowStepId, draft: DemandDraft): 
     }
     case 'when':
       if (!draft.date) return 'Pick a date.';
-      if (demandWhenShowsTime(kind) && draft.timeMode === 'specific' && !draft.time) {
+      if (seekingWhenShowsTime(kind) && draft.timeMode === 'specific' && !draft.time) {
         return 'Pick a time.';
       }
       return null;
@@ -498,29 +498,29 @@ export const validateDemandStep = (step: DemandFlowStepId, draft: DemandDraft): 
       if (!draft.partySize || draft.partySize < 1) return 'Enter how many people.';
       return null;
     case 'comment':
-      if (usesGuidedDemandFlow(kind)) return null;
+      if (usesGuidedSeekingFlow(kind)) return null;
       if (draft.comment.trim().length < 3) return 'Add a short comment (at least 3 characters).';
       return null;
     case 'review':
-      return validateDemandPublishArea(draft, kind);
+      return validateSeekingPublishArea(draft, kind);
     default:
       return null;
   }
 };
 
-export const validateDemandDraft = (draft: DemandDraft): string | null => {
+export const validateSeekingDraft = (draft: SeekingDraft): string | null => {
   const kind = draft.kind;
   if (!kind) return 'Choose what you are looking for.';
 
-  for (const step of getDemandFlowSteps(kind)) {
+  for (const step of getSeekingFlowSteps(kind)) {
     if (step === 'review') continue;
-    const message = validateDemandStep(step, draft);
+    const message = validateSeekingStep(step, draft);
     if (message) return message;
   }
-  return validateDemandPublishArea(draft, kind);
+  return validateSeekingPublishArea(draft, kind);
 };
 
-export type DemandSubmitResult = {
+export type SeekingSubmitResult = {
   visibleOnMap: boolean;
   participantIntentId: string;
   mapItemId: string;
@@ -528,17 +528,17 @@ export type DemandSubmitResult = {
   activityId: string | null;
 };
 
-export const publishDemandRequest = async (draft: DemandDraft): Promise<DemandSubmitResult> => {
+export const publishSeekingRequest = async (draft: SeekingDraft): Promise<SeekingSubmitResult> => {
   if (!draft.kind) throw new Error('Choose what you are looking for.');
 
-  const comment = buildDemandComment(draft);
+  const comment = buildSeekingComment(draft);
 
   const payload = {
     kind: draft.kind,
     title: draft.title.trim(),
     date: draft.kind === 'other' ? null : draft.date,
     time:
-      draft.kind === 'other' || !demandWhenShowsTime(draft.kind) || draft.timeMode === 'flexible'
+      draft.kind === 'other' || !seekingWhenShowsTime(draft.kind) || draft.timeMode === 'flexible'
         ? null
         : draft.time,
     preferredArea: draft.preferredArea.trim() || null,

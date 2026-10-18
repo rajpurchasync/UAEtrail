@@ -11,7 +11,7 @@ import {
   shopPublicPath,
 } from '@uaetrail/shared-types';
 import type { ProfileViewerAccessDTO } from '@uaetrail/shared-types';
-import { findAuthUserById } from '../lib/auth-users.js';
+import { findAuthUserById } from '../lib/auth-users-store.js';
 import {
   countPublishedActivitiesHostedByUser,
   countUserCheckedInParticipations,

@@ -5,7 +5,7 @@ import {
   findActivityParticipantByEventAndUser,
   findActivityRequestByEventAndUser,
 } from '../src/lib/activity-engagement-store.js';
-import { createAuthUser } from '../src/lib/auth-users.js';
+import { createAuthUser } from '../src/lib/auth-users-store.js';
 import { getMongoClient } from '../src/lib/mongo.js';
 import { generateReferralCode } from '../src/lib/referral-code.js';
 import {

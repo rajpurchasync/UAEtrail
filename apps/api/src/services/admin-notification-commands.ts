@@ -1,7 +1,7 @@
 import { UserRole } from '../domain/enums.js';
 import { createAuditLog } from '../lib/audit.js';
 import { ApiError } from '../lib/api-error.js';
-import { listAuthUsers } from '../lib/auth-users.js';
+import { listAuthUsers } from '../lib/auth-users-store.js';
 import { createNotificationsMany } from '../lib/notifications-store.js';
 
 export const broadcastAdminNotification = async (input: {

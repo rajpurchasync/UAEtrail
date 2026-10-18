@@ -33,9 +33,9 @@ describe('activity detail program — wiring', () => {
   it('AD-PEEK-05: host peek uses My host profile subtitle from mapPeekStrips wire', () => {
     const peopleRow = read('src/explore/ui/ExploreCardPresentation.tsx');
     expect(peopleRow).toMatch(/showHostSelfProfileLink/);
-    expect(peopleRow).toMatch(/ACTIVITY_PEEK_MY_ORGANIZER_PROFILE_SUBTITLE/);
+    expect(peopleRow).toMatch(/ACTIVITY_PEEK_MY_HOST_PROFILE_SUBTITLE/);
     const copy = read('src/content/activityPeekCopy.ts');
-    expect(copy).toMatch(/ACTIVITY_PEEK_MY_ORGANIZER_PROFILE_SUBTITLE/);
+    expect(copy).toMatch(/ACTIVITY_PEEK_MY_HOST_PROFILE_SUBTITLE/);
   });
 
   it('AD-DEDUPE-01 (finish): mapPeekStrips carries pendingJoinInviteCount + peek UI chip', () => {
@@ -203,6 +203,21 @@ describe('activity detail program — wiring', () => {
     expect(read('apps/api/src/routes/user/registerPublicActivityRoutes.ts')).toMatch(
       /submitPublicActivityJoinRequest/
     );
+  });
+
+  it('AD-SEEK-01: seeking outings use the same L3 shell (no demand detail hop)', () => {
+    const page = read('src/pages/ActivityDetail.tsx');
+    expect(page).toMatch(/ActivityDetailByKind/);
+    expect(page).not.toMatch(/demand:/);
+    expect(page).not.toMatch(/ParticipantIntentManageSheet/);
+    const header = read('src/activity/activityConsumerDetailHeader.ts');
+    expect(header).toMatch(/activityMode === 'seeking'/);
+    expect(header).toMatch(/Looking for company/);
+    const app = read('src/App.tsx');
+    expect(app).toMatch(/path="\/activity\/:id"/);
+    expect(app).not.toMatch(/path="\/demand/);
+    const qaRoutes = read('scripts/consumer-detail-manual-qa-routes.mjs');
+    expect(qaRoutes).toMatch(/Activity \(seeking\)/);
   });
 
   it('AD-TEMPLATE-01: `/activity/:id` routes through per-kind consumer page templates', () => {

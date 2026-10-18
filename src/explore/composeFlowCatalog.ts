@@ -46,9 +46,9 @@ import type { ContributeFlowStepId } from './ui/contributeFlow';
 
 import { getContributeFlowSteps } from './ui/contributeFlow';
 
-import type { DemandFlowStepId, DemandKind } from './ui/seekingFlowEngine';
+import type { SeekingFlowStepId, SeekingKind } from './ui/seekingFlowEngine';
 
-import { getDemandFlowSteps } from './ui/seekingFlowEngine';
+import { getSeekingFlowSteps } from './ui/seekingFlowEngine';
 
 import type { CreateFlowStepId } from './ui/hostingFlowEngine';
 
@@ -68,7 +68,7 @@ import {
 
 
 
-export const findComposeKindToDemandKind = (kind: FindComposeKind): DemandKind => kind;
+export const findComposeKindToSeekingKind = (kind: FindComposeKind): SeekingKind => kind;
 
 
 
@@ -106,7 +106,7 @@ export type ComposeFlowSpec = {
 
   organizeSteps?: readonly CreateFlowStepId[];
 
-  demandSteps?: readonly DemandFlowStepId[];
+  seekingSteps?: readonly SeekingFlowStepId[];
 
   contributeSteps?: readonly ContributeFlowStepId[];
 
@@ -270,7 +270,7 @@ export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpe
 
     wizard: 'seekingFlow',
 
-    demandSteps: getDemandFlowSteps('hiking'),
+    seekingSteps: getSeekingFlowSteps('hiking'),
 
     confirmationDoc: COMPOSE_FLOW_SPEC_DOC,
 
@@ -294,7 +294,7 @@ export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpe
 
     wizard: 'seekingFlow',
 
-    demandSteps: getDemandFlowSteps('camping'),
+    seekingSteps: getSeekingFlowSteps('camping'),
 
     confirmationDoc: COMPOSE_FLOW_SPEC_DOC,
 
@@ -318,7 +318,7 @@ export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpe
 
     wizard: 'seekingFlow',
 
-    demandSteps: getDemandFlowSteps('event'),
+    seekingSteps: getSeekingFlowSteps('event'),
 
     confirmationDoc: COMPOSE_FLOW_SPEC_DOC,
 
@@ -342,7 +342,7 @@ export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpe
 
     wizard: 'seekingFlow',
 
-    demandSteps: getDemandFlowSteps('rideshare'),
+    seekingSteps: getSeekingFlowSteps('rideshare'),
 
     confirmationDoc: COMPOSE_FLOW_SPEC_DOC,
 

@@ -3,8 +3,7 @@ import type {
   ParticipantIntentJoinRequestViewDTO,
 } from '@uaetrail/shared-types';
 import type { ActivityRequest } from '../domain/types.js';
-import { ObjectId, type Filter } from 'mongodb';
-import { findAuthUsersByIds } from './auth-users.js';
+import { findAuthUsersByIds } from './auth-users-store.js';
 import { ApiError } from './api-error.js';
 import { COLLECTIONS } from './collections.js';
 import { getMongoClient } from './mongo.js';
@@ -51,14 +50,6 @@ const requestsCollection = () =>
     COLLECTIONS.PARTICIPANT_INTENT_REQUESTS
   );
 
-const intentsCollection = () =>
-  getMongoClient()!.db().collection<MongoParticipantIntent>(COLLECTIONS.PARTICIPANT_INTENTS);
-
-const intentLookupFilter = (intentId: string): Record<string, unknown> =>
-  /^[a-f0-9]{24}$/i.test(intentId) && ObjectId.isValid(intentId)
-    ? { $or: [{ _id: intentId }, { _id: new ObjectId(intentId) }] }
-    : { _id: intentId };
-
 const seekingActivityToIntentRecord = (activity: MongoActivityDoc): MongoParticipantIntent | null => {
   const intentId = activity.participantIntentId?.trim();
   if (!intentId) return null;
@@ -78,28 +69,17 @@ const seekingActivityToIntentRecord = (activity: MongoActivityDoc): MongoPartici
   };
 };
 
-/** Demand post for join/carryover — includes fulfilled/cancelled seeking rows (M2d read-through). */
+/** Seeking activity for join/carryover — includes fulfilled/cancelled rows. */
 const findIntentRecordForEngagement = async (
   intentId: string
 ): Promise<MongoParticipantIntent | null> => {
-  const fromCollection = await intentsCollection().findOne(
-    intentLookupFilter(intentId) as Filter<MongoParticipantIntent>
-  );
-  if (fromCollection) return fromCollection;
-
   const activity = await findSeekingActivityByParticipantIntentId(intentId);
   if (!activity) return null;
   return seekingActivityToIntentRecord(activity);
 };
 
-/** Active demand post — `participant_intents` row or M2d seeking activity read-through. */
+/** Active looking-for post — seeking activity only. */
 const findActiveIntentRecord = async (intentId: string): Promise<MongoParticipantIntent | null> => {
-  const fromCollection = await intentsCollection().findOne({
-    ...intentLookupFilter(intentId),
-    status: 'active',
-  } as Filter<MongoParticipantIntent>);
-  if (fromCollection) return fromCollection;
-
   const activity = await findSeekingActivityByParticipantIntentId(intentId);
   if (!activity) return null;
   const mapped = seekingActivityToIntentRecord(activity);
@@ -433,7 +413,7 @@ export const listApprovedParticipantIntentJoinerUserIds = async (
   return docs.map((doc) => doc.userId).filter((userId) => userId !== intent.userId);
 };
 
-/** Batch map for explore map demand `viewerAccess` (per viewer). */
+/** Batch map for explore map seeking `viewerAccess` (per viewer). */
 export const mapIntentJoinRequestStatusByIntentIdsForUser = async (
   userId: string,
   intentIds: string[]
@@ -441,39 +421,22 @@ export const mapIntentJoinRequestStatusByIntentIdsForUser = async (
   const uniqueIds = [...new Set(intentIds.filter(Boolean))];
   if (uniqueIds.length === 0) return new Map();
 
-  const intents = await intentsCollection()
-    .find({ _id: { $in: uniqueIds } } as Filter<MongoParticipantIntent>)
+  const activities = await getMongoClient()!
+    .db()
+    .collection<MongoActivityDoc>(COLLECTIONS.ACTIVITIES)
+    .find({
+      participantIntentId: { $in: uniqueIds },
+      activityMode: 'seeking',
+    })
     .toArray();
 
   const activityIdByIntentId = new Map<string, string>();
-  const legacyIntentIds: string[] = [];
-  const resolvedFromCollection = new Set(intents.map((intent) => intent._id));
-  for (const intent of intents) {
-    const activityId = resolveIntentPublishedActivityId(intent);
+  for (const activity of activities) {
+    const mapped = seekingActivityToIntentRecord(activity);
+    if (!mapped || mapped.status !== 'active') continue;
+    const activityId = resolveIntentPublishedActivityId(mapped);
     if (activityId) {
-      activityIdByIntentId.set(intent._id, activityId);
-    } else {
-      legacyIntentIds.push(intent._id);
-    }
-  }
-
-  const activityOnlyIntentIds = uniqueIds.filter((id) => !resolvedFromCollection.has(id));
-  if (activityOnlyIntentIds.length > 0) {
-    const activities = await getMongoClient()!
-      .db()
-      .collection<MongoActivityDoc>(COLLECTIONS.ACTIVITIES)
-      .find({
-        participantIntentId: { $in: activityOnlyIntentIds },
-        activityMode: 'seeking',
-      })
-      .toArray();
-    for (const activity of activities) {
-      const mapped = seekingActivityToIntentRecord(activity);
-      if (!mapped || mapped.status !== 'active') continue;
-      const activityId = resolveIntentPublishedActivityId(mapped);
-      if (activityId) {
-        activityIdByIntentId.set(mapped._id, activityId);
-      }
+      activityIdByIntentId.set(mapped._id, activityId);
     }
   }
 
@@ -495,11 +458,12 @@ export const mapIntentJoinRequestStatusByIntentIdsForUser = async (
     }
   }
 
-  if (legacyIntentIds.length > 0) {
+  const leftoverIntentIds = uniqueIds.filter((id) => !activityIdByIntentId.has(id));
+  if (leftoverIntentIds.length > 0) {
     const docs = await requestsCollection()
       .find({
         userId,
-        intentId: { $in: legacyIntentIds },
+        intentId: { $in: leftoverIntentIds },
         status: { $in: ['pending', 'approved'] },
       })
       .project({ intentId: 1, status: 1 })

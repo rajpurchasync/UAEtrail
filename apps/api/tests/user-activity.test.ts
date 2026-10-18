@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import * as authUsers from '../src/lib/auth-users.js';
+import * as authUsers from '../src/lib/auth-users-store.js';
 
 vi.mock('../src/lib/redis.js', () => ({
   getRedisClient: vi.fn(async () => null)

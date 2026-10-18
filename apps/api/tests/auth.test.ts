@@ -3,7 +3,7 @@ import request from 'supertest';
 import type { Express } from 'express';
 import { UserRole } from '../src/domain/enums.js';
 import { REFRESH_COOKIE_NAME } from '../src/lib/auth-cookies.js';
-import { findAuthUserByEmail, updateAuthUserCore } from '../src/lib/auth-users.js';
+import { findAuthUserByEmail, updateAuthUserCore } from '../src/lib/auth-users-store.js';
 import { bootstrapTestApp } from './helpers/bootstrap.js';
 import { getVerificationOtp } from './helpers/fixtures.js';
 

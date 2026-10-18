@@ -24,13 +24,13 @@ export function renderTypeStep(ctx: OrganizeWizardContext): ReactNode | null {
     goBack,
     goToFirstStep,
     handleClose,
-    demandPrefill,
+    seekingPrefill,
     organizeKind,
     selectedKind,
     setSelectedKind,
   } = ctx;
 
-  if (!(step === 'type' && !demandPrefill && !organizeKind)) {
+  if (!(step === 'type' && !seekingPrefill && !organizeKind)) {
     return null;
   }
 

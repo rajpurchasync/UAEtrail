@@ -23,12 +23,13 @@ describe('create flow module boundaries (CPC-9b)', () => {
   it('hostingFlow facade documents engine and does not import demandFlow', () => {
     const hosting = read('src/explore/ui/hostingFlow.ts');
     expect(hosting).toMatch(/hostingFlowEngine\.ts/);
-    expect(hosting).not.toMatch(/demandFlow/);
+    expect(hosting).not.toMatch(/from ['"].*demandFlow['"]/);
   });
 
   it('hostingFlowEngine does not import seeking wizard', () => {
     const engine = read('src/explore/ui/hostingFlowEngine.ts');
     expect(engine).not.toMatch(/from ['"]\.\/demandFlow['"]/);
+    expect(engine).not.toMatch(/from ['"]\.\/seekingFlowEngine['"]/);
   });
 
   it('organizeFlow.ts duplicate shim is gone (COH-10)', () => {
@@ -41,6 +42,16 @@ describe('create flow module boundaries (CPC-9b)', () => {
 
   it('demandFlow.ts re-export shim is gone (COH-11)', () => {
     expect(existsSync(join(ROOT, 'src/explore/ui/demandFlow.ts'))).toBe(false);
+  });
+
+  it('leftover Demand compose files are gone (EXPLORE-IA)', () => {
+    expect(existsSync(join(ROOT, 'src/explore/ui/CreateDemandFlow.tsx'))).toBe(false);
+    expect(existsSync(join(ROOT, 'src/explore/ui/demandWizardSteps.tsx'))).toBe(false);
+    expect(existsSync(join(ROOT, 'src/explore/ui/DemandSubmitSuccessSheet.tsx'))).toBe(false);
+    expect(existsSync(join(ROOT, 'src/explore/ui/demandFlow.test.ts'))).toBe(false);
+    expect(existsSync(join(ROOT, 'src/explore/ui/CreateSeekingFlow.tsx'))).toBe(true);
+    expect(existsSync(join(ROOT, 'src/explore/ui/seekingWizardSteps.tsx'))).toBe(true);
+    expect(existsSync(join(ROOT, 'src/explore/ui/SeekingSubmitSuccessSheet.tsx'))).toBe(true);
   });
 
   it('hostingFlows does not import seeking wizard', () => {

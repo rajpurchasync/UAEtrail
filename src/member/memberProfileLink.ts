@@ -16,3 +16,7 @@ export const memberProfileLink = (
   }
   return memberProfilePath(userId, { lens })!;
 };
+
+/** Owner preview of the public member page — not a browse lens. */
+export const memberPublicPreviewLink = (userId: string): string =>
+  memberProfilePath(userId, { publicPreview: true })!;

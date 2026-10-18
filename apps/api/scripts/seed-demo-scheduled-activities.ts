@@ -1,5 +1,5 @@
 import { ActivityStatus, ActivityType } from '../src/domain/enums.js';
-import { findAuthUserByEmail } from '../src/lib/auth-users.js';
+import { findAuthUserByEmail } from '../src/lib/auth-users-store.js';
 import {
   buildActivityFromCreateInput,
   type ActivityCreateInput,

@@ -17,7 +17,7 @@ type Args = {
   setListOpen: (open: boolean) => void;
   setLinkOnlyPeekItems: Dispatch<SetStateAction<ExploreMapItemDTO[]>>;
   setSelectedId: (id: string | null) => void;
-  setDemandNotice: (message: string | null) => void;
+  setExploreNotice: (message: string | null) => void;
   handleFocusMapLocation: (coords: { lat: number; lng: number }) => void;
   openItem: (item: ExploreMapItemDTO) => void;
 };
@@ -30,7 +30,7 @@ export const useExploreActivityPinDeepLink = ({
   setListOpen,
   setLinkOnlyPeekItems,
   setSelectedId,
-  setDemandNotice,
+  setExploreNotice,
   handleFocusMapLocation,
   openItem,
 }: Args) => {
@@ -49,7 +49,7 @@ export const useExploreActivityPinDeepLink = ({
       try {
         const detail = await fetchPublicActivityDetail(activityId);
         if (detail.viewerAccess?.exposure === 'none') {
-          setDemandNotice(
+          setExploreNotice(
             detail.activity.message ??
               'This private plan is only available to signed-in members with the link.'
           );
@@ -70,7 +70,7 @@ export const useExploreActivityPinDeepLink = ({
         }
         return 'opened';
       } catch {
-        setDemandNotice('Could not open this plan — check the link or try again.');
+        setExploreNotice('Could not open this plan — check the link or try again.');
         return 'error';
       }
     },
@@ -83,7 +83,7 @@ export const useExploreActivityPinDeepLink = ({
       setSelectedId,
       isDesktop,
       setListOpen,
-      setDemandNotice,
+      setExploreNotice,
     ]
   );
 

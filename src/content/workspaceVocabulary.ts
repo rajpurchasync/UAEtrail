@@ -30,10 +30,13 @@ export const ORGANIZING_LABEL = 'Organizing';
 /** @deprecated Prefer {@link HOSTED_BY_LABEL}. */
 export const ORGANIZED_BY_LABEL = 'Organized by';
 
-export const ORGANIZER_APPROVAL_REQUIRED =
-  'Organizer approval required to join';
+export const HOST_APPROVAL_REQUIRED = 'Host approval required to join';
+/** @deprecated Prefer {@link HOST_APPROVAL_REQUIRED}. */
+export const ORGANIZER_APPROVAL_REQUIRED = HOST_APPROVAL_REQUIRED;
 
-export const ORGANIZER_FALLBACK_DISPLAY_NAME = ORGANIZER_NOUN_TITLE;
+export const HOST_FALLBACK_DISPLAY_NAME = ACTIVITY_HOST_NOUN_TITLE;
+/** @deprecated Prefer {@link HOST_FALLBACK_DISPLAY_NAME}. */
+export const ORGANIZER_FALLBACK_DISPLAY_NAME = HOST_FALLBACK_DISPLAY_NAME;
 
 export type WorkspaceBrandKind = 'guide' | 'agency' | 'shop';
 

@@ -28,7 +28,8 @@ import { resolveProfileHostKind } from '../utils/profileRoleLabel';
 import { PageMeta } from '../components/seo/PageMeta';
 import {
   EXPLORE_MAP_PATH,
-  memberProfilePath,
+  memberProfileLink,
+  memberPublicPreviewLink,
   profileHistoryCompletedPath,
   planHostedSchedulePath,
 } from '../config/routingCatalog';
@@ -108,7 +109,7 @@ export const Profile = () => {
   const sharePath = useMemo(
     () =>
       resolveProfileSharePath(ownedProfiles, {
-        fallbackPath: user?.id ? (memberProfilePath(user.id) ?? EXPLORE_MAP_PATH) : EXPLORE_MAP_PATH,
+        fallbackPath: user?.id ? memberProfileLink(user.id) : EXPLORE_MAP_PATH,
       }),
     [ownedProfiles, user?.id]
   );
@@ -159,7 +160,7 @@ export const Profile = () => {
 
   const openPublicProfile = useCallback(() => {
     if (!user?.id) return;
-    navigate(`/member/${user.id}?view=public`);
+    navigate(memberPublicPreviewLink(user.id));
   }, [navigate, user?.id]);
 
   const openEdit = useCallback(() => {

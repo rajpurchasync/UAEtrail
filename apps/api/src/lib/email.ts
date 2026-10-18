@@ -112,7 +112,7 @@ function getTemplateBody(template: EmailTemplate): string {
     case 'request_rejected':
       return 'Hi {{name}}, your request to join {{activityTitle}} was not approved. {{note}}';
     case 'activity_cancelled':
-      return 'Hi {{name}}, {{activityTitle}} on {{activityDate}} has been cancelled by the organizer.';
+      return 'Hi {{name}}, {{activityTitle}} on {{activityDate}} has been cancelled by the host.';
     case 'email_verification':
       return 'Hi {{name}}, your UAE Trail verification code is:\n\n{{otp}}\n\nThis code expires in 60 seconds. If it expires, request a new code from the app.';
     case 'password_reset':

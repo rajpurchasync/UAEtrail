@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { buildActivityPresentationDTO } from '@uaetrail/shared-types';
+import {
+  APPROVAL_PARTICIPATION_REQUIREMENT,
+  buildActivityPresentationDTO,
+} from '@uaetrail/shared-types';
 import { resolveActivityDetailTabUi } from './resolveActivityDetailTabUi';
 
 const guestAccess = {
@@ -19,7 +22,7 @@ describe('resolveActivityDetailTabUi', () => {
       isHostUser: false,
       activityPublished: true,
       participationMode: 'approval',
-      requirements: ['Organizer approval required to join'],
+      requirements: [APPROVAL_PARTICIPATION_REQUIREMENT],
       meetingLat: 25.1,
       meetingLng: 55.2,
       myParticipation: null,

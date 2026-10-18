@@ -28,7 +28,7 @@ import {
   publishActivityById,
   updateActivityDetailed,
 } from '../lib/activities-store.js';
-import { findAuthUserById } from '../lib/auth-users.js';
+import { findAuthUserById } from '../lib/auth-users-store.js';
 import { parseLocalDateTime } from '../lib/datetime.js';
 import { buildActivityDto } from '../lib/mappers.js';
 import { activityDetailPath } from '../lib/member-routes.js';

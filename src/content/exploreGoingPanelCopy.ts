@@ -14,15 +14,15 @@ export const MEMBER_DISCOVERY_QUOTA_GATE_BODY =
 export const MEMBER_DISCOVERY_QUOTA_GATE_CTA = 'See Pro options';
 
 export const ACTIVITY_JOIN_INVITE_BANNER =
-  'A friend invited you to join this outing — RSVP or request to join. Organizer approval still applies when the outing requires it.';
+  'A friend invited you to join this outing — RSVP or request to join. Host approval still applies when the outing requires it.';
 
 export const activityJoinInviteBanner = (inviterDisplayName?: string | null): string =>
   inviterDisplayName?.trim()
-    ? `${inviterDisplayName.trim()} invited you to join this outing — RSVP or request to join. Organizer approval still applies when the outing requires it.`
+    ? `${inviterDisplayName.trim()} invited you to join this outing — RSVP or request to join. Host approval still applies when the outing requires it.`
     : ACTIVITY_JOIN_INVITE_BANNER;
 
 export const JOIN_ME_INVITE_FINE_PRINT =
-  'Your friend still joins or requests a spot on their own; organizer approval applies where the outing requires it.';
+  'Your friend still joins or requests a spot on their own; host approval applies where the outing requires it.';
 
 export const EXPLORE_BUDDY_JOIN_ME_INVITE = 'Join me';
 export const EXPLORE_BUDDY_JOIN_ME_INVITE_SENT_LABEL = 'Invited';

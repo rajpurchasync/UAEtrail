@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { APPROVAL_PARTICIPATION_REQUIREMENT } from '@uaetrail/shared-types';
 import {
   mergeActivityDetailWirePresentation,
   resolveActivityDetailWirePresentation,
@@ -22,7 +23,7 @@ describe('resolveActivityDetailWirePresentation', () => {
       activity: {
         status: 'published',
         participationMode: 'approval',
-        requirements: ['Organizer approval required to join'],
+        requirements: [APPROVAL_PARTICIPATION_REQUIREMENT],
         joinMode: 'open',
         participants: [],
       },

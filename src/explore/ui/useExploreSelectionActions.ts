@@ -22,7 +22,7 @@ import { readExploreMapItemsFromCache, reloadExploreMap } from '../../hooks/useE
 import { isExploreMapBboxEnabled } from '../exploreMapBbox';
 import { invalidateMySeekingPostsQueries } from '../../hooks/seekingClientApi';
 import type { ContributeSubmitResult } from './contributeFlow';
-import type { DemandSubmitResult } from './seekingFlowEngine';
+import type { SeekingSubmitResult } from './seekingFlowEngine';
 import type { useExploreBrowseUrlState } from './useExploreBrowseUrlState';
 import type { ActivityManageInitialView } from '../../components/activity/activityManageViews';
 import { buildExploreSelectionSelectedCard } from '../exploreSelectionSelectedCard';
@@ -78,7 +78,7 @@ export const useExploreSelectionActions = ({
 }: UseExploreSelectionActionsArgs) => {
   const { setListOpen, setMapFilter, setActivityFilter, syncExploreUrl } = browse;
 
-  const [demandNotice, setDemandNotice] = useState<string | null>(null);
+  const [exploreNotice, setExploreNotice] = useState<string | null>(null);
   const [venueNotice, setVenueNotice] = useState<string | null>(null);
 
   const selected = items.find((item) => item.id === selectedId) ?? null;
@@ -91,7 +91,7 @@ export const useExploreSelectionActions = ({
     selected,
     selectedCard,
     user,
-    setDemandNotice,
+    setExploreNotice,
     setSelectedId,
     navigate,
   });
@@ -122,7 +122,7 @@ export const useExploreSelectionActions = ({
     setListOpen,
     setLinkOnlyPeekItems,
     setSelectedId,
-    setDemandNotice,
+    setExploreNotice,
     handleFocusMapLocation,
     openItem,
   });
@@ -134,7 +134,7 @@ export const useExploreSelectionActions = ({
       setSelectedId(null);
       await openActivityGroupChat(navigate, activity.id, activity.groupChatId);
     } catch (err) {
-      setDemandNotice(err instanceof Error ? err.message : 'Could not open activity chat.');
+      setExploreNotice(err instanceof Error ? err.message : 'Could not open activity chat.');
     }
   }, [selected, navigate, setSelectedId]);
 
@@ -290,8 +290,8 @@ export const useExploreSelectionActions = ({
     setSelectedId(null);
   }, [setSelectedId]);
 
-  const handleDemandSubmitted = useCallback(
-    async (result: DemandSubmitResult) => {
+  const handleSeekingSubmitted = useCallback(
+    async (result: SeekingSubmitResult) => {
       invalidateMySeekingPostsQueries(queryClient);
       await reloadExploreMap(queryClient);
       if (!result.visibleOnMap) {
@@ -332,9 +332,9 @@ export const useExploreSelectionActions = ({
     peekJoinStateLoading: peekJoin.peekJoinStateLoading,
     joinActions: peekJoin.joinActions,
     handlePeekJoinSuccess: peekJoin.handlePeekJoinSuccess,
-    demandNotice,
+    exploreNotice,
     venueNotice,
-    setDemandNotice,
+    setExploreNotice,
     setVenueNotice,
     openItem,
     handleGuestGatedAction: peekJoin.handleGuestGatedAction,
@@ -350,7 +350,7 @@ export const useExploreSelectionActions = ({
     handleActivityPublished,
     tryOpenActivityPinDeepLink,
     handleCloseSelection,
-    handleDemandSubmitted,
+    handleSeekingSubmitted,
     handleContributeSubmitted,
   };
 };

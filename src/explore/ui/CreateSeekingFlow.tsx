@@ -21,31 +21,31 @@ import { MAP_CONFIG } from '../../config/platform';
 import { EXPLORE_Z } from '../../config/exploreTheme';
 import {
   buildDateOptions,
-  buildDemandComment,
-  DEMAND_PARTY_PRESETS,
-  DEMAND_TYPE_OPTIONS,
-  demandAdditionalInfoPlaceholder,
-  demandAreaFieldLabel,
-  demandAreaPlaceholder,
-  demandAreaTextRequired,
-  demandAreaUsesMap,
-  demandFlowStepTitle,
-  demandTitlePlaceholder,
-  demandWhenShowsTime,
-  emptyDemandDraft,
-  getDemandFlowSteps,
-  publishDemandRequest,
-  usesCampingDemandFlow,
-  usesHikingDemandFlow,
-  usesEventDemandFlow,
-  usesRideshareDemandFlow,
-  usesGuidedDemandFlow,
-  validateDemandDraft,
-  validateDemandStep,
-  type DemandFlowStepId,
-  type DemandSubmitResult,
-  type DemandDraft,
-  type DemandKind,
+  buildSeekingComment,
+  SEEKING_PARTY_PRESETS,
+  SEEKING_TYPE_OPTIONS,
+  seekingAdditionalInfoPlaceholder,
+  seekingAreaFieldLabel,
+  seekingAreaPlaceholder,
+  seekingAreaTextRequired,
+  seekingAreaUsesMap,
+  seekingFlowStepTitle,
+  seekingTitlePlaceholder,
+  seekingWhenShowsTime,
+  emptySeekingDraft,
+  getSeekingFlowSteps,
+  publishSeekingRequest,
+  usesCampingSeekingFlow,
+  usesHikingSeekingFlow,
+  usesEventSeekingFlow,
+  usesRideshareSeekingFlow,
+  usesGuidedSeekingFlow,
+  validateSeekingDraft,
+  validateSeekingStep,
+  type SeekingFlowStepId,
+  type SeekingSubmitResult,
+  type SeekingDraft,
+  type SeekingKind,
 } from './seekingFlowEngine';
 import type { LocationPrecision, TimeMode } from './createFlowShared';
 import type { FindComposeKind } from '../compose';
@@ -55,31 +55,31 @@ import { useExplorePublishedAreas } from '../useExplorePublishedAreas';
 import { SeekingCuratedAreaStep } from './SeekingCuratedAreaStep';
 import { composeFlowIdFromRoute } from '../composeFlowCatalog';
 import {
-  clearDemandWizardSession,
-  readDemandWizardSession,
-  writeDemandWizardSession,
+  clearSeekingWizardSession,
+  readSeekingWizardSession,
+  writeSeekingWizardSession,
 } from './composeWizardSession';
 import { fromLocationLabel, GOING_FROM_LABEL, TO_LOCATION_LABEL } from '../createFlowCopy';
 import {
-  DemandRideshareDestinationStepBody,
-  DemandDestinationStepBody,
-  DemandTransportStepBody,
-  DemandAudienceStepBody,
-} from './demandWizardSteps';
-import { DemandSubmitSuccessSheet } from './DemandSubmitSuccessSheet';
+  SeekingRideshareDestinationStepBody,
+  SeekingDestinationStepBody,
+  SeekingTransportStepBody,
+  SeekingAudienceStepBody,
+} from './seekingWizardSteps';
+import { SeekingSubmitSuccessSheet } from './SeekingSubmitSuccessSheet';
 import { EXPLORE_REGION_PILL_LABELS } from '../../config/regions';
 
 const CreatePlacePicker = lazy(() =>
   import('./CreatePlacePicker').then((m) => ({ default: m.CreatePlacePicker }))
 );
 
-type FlowStep = 'type' | DemandFlowStepId;
+type FlowStep = 'type' | SeekingFlowStepId;
 
-interface CreateDemandFlowProps {
+interface CreateSeekingFlowProps {
   open: boolean;
   onClose: () => void;
   onBackToIntent?: () => void;
-  onSubmitted?: (result: DemandSubmitResult) => void;
+  onSubmitted?: (result: SeekingSubmitResult) => void;
   signInHref: string;
   findKind?: FindComposeKind | null;
   exploreAreaSlug?: string | null;
@@ -108,7 +108,7 @@ const NextButton = ({
   </button>
 );
 
-const REVIEW_EDIT_LABELS: Partial<Record<DemandFlowStepId, string>> = {
+const REVIEW_EDIT_LABELS: Partial<Record<SeekingFlowStepId, string>> = {
   title: 'Title',
   destination: 'Destination',
   area: 'Where',
@@ -127,7 +127,7 @@ const REVIEW_EDIT_LABELS: Partial<Record<DemandFlowStepId, string>> = {
   comment: 'Comment',
 };
 
-export const CreateDemandFlow = ({
+export const CreateSeekingFlow = ({
   open,
   onClose,
   onBackToIntent,
@@ -137,15 +137,15 @@ export const CreateDemandFlow = ({
   exploreAreaSlug = null,
   tenantId = null,
   onCreateLinkedRideshare,
-}: CreateDemandFlowProps) => {
+}: CreateSeekingFlowProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
   const [step, setStep] = useState<FlowStep>('type');
-  const [draft, setDraft] = useState<DemandDraft>(emptyDemandDraft);
-  const [selectedKind, setSelectedKind] = useState<DemandKind | null>(null);
+  const [draft, setDraft] = useState<SeekingDraft>(emptySeekingDraft);
+  const [selectedKind, setSelectedKind] = useState<SeekingKind | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [submitResult, setSubmitResult] = useState<DemandSubmitResult | null>(null);
+  const [submitResult, setSubmitResult] = useState<SeekingSubmitResult | null>(null);
   const [publishedActivity, setPublishedActivity] = useState<ActivityDTO | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showMonthView, setShowMonthView] = useState(false);
@@ -172,16 +172,16 @@ export const CreateDemandFlow = ({
   }, [submitResult?.activityId]);
 
   const kind = draft.kind ?? selectedKind;
-  const flowSteps = useMemo(() => (kind ? getDemandFlowSteps(kind) : []), [kind]);
+  const flowSteps = useMemo(() => (kind ? getSeekingFlowSteps(kind) : []), [kind]);
   const dateOptions = useMemo(() => buildDateOptions(), []);
-  const currentStepIndex = kind && step !== 'type' ? flowSteps.indexOf(step as DemandFlowStepId) : -1;
+  const currentStepIndex = kind && step !== 'type' ? flowSteps.indexOf(step as SeekingFlowStepId) : -1;
 
   const headerTitle =
     step === 'type' || !kind
       ? 'Find'
-      : demandFlowStepTitle(step as DemandFlowStepId, kind);
+      : seekingFlowStepTitle(step as SeekingFlowStepId, kind);
 
-  const demandFlowId = useMemo(
+  const seekingFlowId = useMemo(
     () =>
       findKind
         ? composeFlowIdFromRoute({
@@ -192,8 +192,8 @@ export const CreateDemandFlow = ({
         : null,
     [findKind]
   );
-  const demandInitKey = demandFlowId ?? null;
-  const demandInitializedRef = useRef<string | null>(null);
+  const seekingInitKey = seekingFlowId ?? null;
+  const seekingInitializedRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!open) {
@@ -204,10 +204,10 @@ export const CreateDemandFlow = ({
       setRouteMapTarget(null);
       return;
     }
-    if (findKind && demandFlowId) {
-      if (demandInitializedRef.current === demandInitKey) return;
+    if (findKind && seekingFlowId) {
+      if (seekingInitializedRef.current === seekingInitKey) return;
 
-      const saved = readDemandWizardSession(demandFlowId);
+      const saved = readSeekingWizardSession(seekingFlowId);
       if (saved?.draft?.kind) {
         setDraft(saved.draft);
         setSelectedKind(saved.selectedKind);
@@ -218,25 +218,25 @@ export const CreateDemandFlow = ({
         setShowMonthView(false);
         setAreaMapOpen(false);
         setRouteMapTarget(null);
-        demandInitializedRef.current = demandInitKey;
+        seekingInitializedRef.current = seekingInitKey;
         return;
       }
 
       const areaId = areaIdForExploreAreaSlug(publishedAreas, exploreAreaSlug);
       setDraft({
-        ...emptyDemandDraft(),
+        ...emptySeekingDraft(),
         kind: findKind,
         ...(areaId ? { areaId } : {}),
       });
       setSelectedKind(findKind);
-      setStep(getDemandFlowSteps(findKind)[0]);
+      setStep(getSeekingFlowSteps(findKind)[0]);
       setError(null);
       setSubmitting(false);
       setSubmitResult(null);
       setShowMonthView(false);
       setAreaMapOpen(false);
       setRouteMapTarget(null);
-      demandInitializedRef.current = demandInitKey;
+      seekingInitializedRef.current = seekingInitKey;
       return;
     }
     if (!user) {
@@ -250,18 +250,18 @@ export const CreateDemandFlow = ({
     signInHref,
     onClose,
     findKind,
-    demandFlowId,
-    demandInitKey,
+    seekingFlowId,
+    seekingInitKey,
     exploreAreaSlug,
     publishedAreas,
   ]);
 
   useEffect(() => {
-    if (!open || !demandFlowId || submitResult) return;
-    writeDemandWizardSession(demandFlowId, { step, draft, selectedKind });
-  }, [open, demandFlowId, step, draft, selectedKind, submitResult]);
+    if (!open || !seekingFlowId || submitResult) return;
+    writeSeekingWizardSession(seekingFlowId, { step, draft, selectedKind });
+  }, [open, seekingFlowId, step, draft, selectedKind, submitResult]);
 
-  const patchDraft = useCallback((patch: Partial<DemandDraft>) => {
+  const patchDraft = useCallback((patch: Partial<SeekingDraft>) => {
     setDraft((prev) => ({ ...prev, ...patch }));
   }, []);
 
@@ -273,11 +273,11 @@ export const CreateDemandFlow = ({
   const goToFirstStep = () => {
     if (!selectedKind) return;
     patchDraft({ kind: selectedKind });
-    setStep(getDemandFlowSteps(selectedKind)[0]);
+    setStep(getSeekingFlowSteps(selectedKind)[0]);
     setError(null);
   };
 
-  const goToStep = (target: DemandFlowStepId) => {
+  const goToStep = (target: SeekingFlowStepId) => {
     setAreaMapOpen(false);
     setRouteMapTarget(null);
     setStep(target);
@@ -310,7 +310,7 @@ export const CreateDemandFlow = ({
 
   const goNext = () => {
     if (!kind || step === 'type') return;
-    const validation = validateDemandStep(step as DemandFlowStepId, draft);
+    const validation = validateSeekingStep(step as SeekingFlowStepId, draft);
     if (validation) {
       setError(validation);
       return;
@@ -322,7 +322,7 @@ export const CreateDemandFlow = ({
 
   const handleSubmit = async () => {
     if (!user) return;
-    const validation = validateDemandDraft({ ...draft, kind: draft.kind ?? selectedKind });
+    const validation = validateSeekingDraft({ ...draft, kind: draft.kind ?? selectedKind });
     if (validation) {
       setError(validation);
       return;
@@ -330,8 +330,8 @@ export const CreateDemandFlow = ({
     setSubmitting(true);
     setError(null);
     try {
-      const result = await publishDemandRequest({ ...draft, kind: draft.kind ?? selectedKind });
-      if (demandFlowId) clearDemandWizardSession(demandFlowId);
+      const result = await publishSeekingRequest({ ...draft, kind: draft.kind ?? selectedKind });
+      if (seekingFlowId) clearSeekingWizardSession(seekingFlowId);
       setSubmitResult(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not post your request.');
@@ -417,7 +417,7 @@ export const CreateDemandFlow = ({
 
   if (submitResult && submittedKind) {
     return (
-      <DemandSubmitSuccessSheet
+      <SeekingSubmitSuccessSheet
         open={open}
         onClose={onClose}
         kind={submittedKind}
@@ -515,7 +515,7 @@ export const CreateDemandFlow = ({
         {step === 'type' && !findKind && (
           <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
             <div className="grid grid-cols-2 gap-3">
-              {DEMAND_TYPE_OPTIONS.map((option) => {
+              {SEEKING_TYPE_OPTIONS.map((option) => {
                 const active = selectedKind === option.key;
                 return (
                   <button
@@ -546,17 +546,17 @@ export const CreateDemandFlow = ({
         {step === 'title' && kind && (
           <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
             <label className="block">
-              {!usesGuidedDemandFlow(kind) ? (
+              {!usesGuidedSeekingFlow(kind) ? (
                 <span className="mb-2 block text-sm font-medium text-gray-700">
                   Share a few details so others know what you need
                 </span>
               ) : null}
-              {usesGuidedDemandFlow(kind) ? (
+              {usesGuidedSeekingFlow(kind) ? (
                 <FlowStepTextInput
                   value={draft.title}
                   onChange={(event) => patchDraft({ title: event.target.value })}
-                  placeholder={demandTitlePlaceholder(kind)}
-                  aria-label={demandTitlePlaceholder(kind)}
+                  placeholder={seekingTitlePlaceholder(kind)}
+                  aria-label={seekingTitlePlaceholder(kind)}
                   className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-base text-gray-900 outline-none focus:border-emerald-400"
                   maxLength={120}
                 />
@@ -564,7 +564,7 @@ export const CreateDemandFlow = ({
                 <FlowStepTextArea
                   value={draft.title}
                   onChange={(event) => patchDraft({ title: event.target.value })}
-                  placeholder={demandTitlePlaceholder(kind)}
+                  placeholder={seekingTitlePlaceholder(kind)}
                   rows={4}
                   className="w-full resize-none rounded-2xl border border-neutral-200 px-4 py-3 text-base text-gray-900 outline-none focus:border-emerald-400"
                   maxLength={120}
@@ -607,9 +607,9 @@ export const CreateDemandFlow = ({
           </FlowSheetChrome>
         )}
 
-        {step === 'destination' && kind && (usesHikingDemandFlow(kind) || usesCampingDemandFlow(kind)) && (
+        {step === 'destination' && kind && (usesHikingSeekingFlow(kind) || usesCampingSeekingFlow(kind)) && (
           <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
-            <DemandDestinationStepBody draft={draft} patchDraft={patchDraft} />
+            <SeekingDestinationStepBody draft={draft} patchDraft={patchDraft} />
             {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
             <div className="mt-5 pb-2">
               <NextButton disabled={!draft.preferredArea.trim()} onClick={goNext} />
@@ -619,7 +619,7 @@ export const CreateDemandFlow = ({
 
         {step === 'to' && kind === 'rideshare' && (
           <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
-            <DemandRideshareDestinationStepBody
+            <SeekingRideshareDestinationStepBody
               draft={draft}
               patchDraft={patchDraft}
               onOpenMap={() => setRouteMapTarget('to')}
@@ -648,7 +648,7 @@ export const CreateDemandFlow = ({
           </FlowSheetChrome>
         )}
 
-        {step === 'from' && kind && (usesHikingDemandFlow(kind) || usesCampingDemandFlow(kind)) && (
+        {step === 'from' && kind && (usesHikingSeekingFlow(kind) || usesCampingSeekingFlow(kind)) && (
           <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
             <p className="mb-4 text-sm text-gray-600">Pin where you are leaving from.</p>
             {renderMapPinPicker('from', { title: 'Going from', accent: 'emerald' })}
@@ -661,12 +661,12 @@ export const CreateDemandFlow = ({
 
         {step === 'audience' &&
           kind &&
-          (usesHikingDemandFlow(kind) ||
-            usesCampingDemandFlow(kind) ||
-            usesEventDemandFlow(kind) ||
+          (usesHikingSeekingFlow(kind) ||
+            usesCampingSeekingFlow(kind) ||
+            usesEventSeekingFlow(kind) ||
             kind === 'rideshare') && (
           <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
-            <DemandAudienceStepBody draft={draft} patchDraft={patchDraft} kind={kind} />
+            <SeekingAudienceStepBody draft={draft} patchDraft={patchDraft} kind={kind} />
             {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
             <div className="mt-5 pb-2">
               <NextButton disabled={kind === 'hiking' && !draft.fitnessLevel} onClick={goNext} />
@@ -674,9 +674,9 @@ export const CreateDemandFlow = ({
           </FlowSheetChrome>
         )}
 
-        {step === 'transport' && kind && (usesHikingDemandFlow(kind) || usesCampingDemandFlow(kind)) && (
+        {step === 'transport' && kind && (usesHikingSeekingFlow(kind) || usesCampingSeekingFlow(kind)) && (
           <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
-            <DemandTransportStepBody draft={draft} patchDraft={patchDraft} />
+            <SeekingTransportStepBody draft={draft} patchDraft={patchDraft} />
             {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
             <div className="mt-5 pb-2">
               <NextButton
@@ -691,7 +691,7 @@ export const CreateDemandFlow = ({
           </FlowSheetChrome>
         )}
 
-        {step === 'area' && kind && usesEventDemandFlow(kind) && (
+        {step === 'area' && kind && usesEventSeekingFlow(kind) && (
           <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
             <p className="mb-4 text-sm text-gray-600">Pin where you want this event to happen.</p>
             <button
@@ -719,20 +719,20 @@ export const CreateDemandFlow = ({
           </FlowSheetChrome>
         )}
 
-        {step === 'area' && kind && !usesEventDemandFlow(kind) && (
+        {step === 'area' && kind && !usesEventSeekingFlow(kind) && (
           <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
             <label className="block">
               <input
                 value={draft.preferredArea}
                 onChange={(event) => patchDraft({ preferredArea: event.target.value })}
-                placeholder={demandAreaPlaceholder(kind)}
-                aria-label={demandAreaFieldLabel(kind)}
+                placeholder={seekingAreaPlaceholder(kind)}
+                aria-label={seekingAreaFieldLabel(kind)}
                 className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-base text-gray-900 outline-none focus:border-emerald-400"
                 maxLength={200}
                 autoFocus
               />
             </label>
-            {demandAreaUsesMap(kind) && (
+            {seekingAreaUsesMap(kind) && (
               <button
                 type="button"
                 onClick={() => setAreaMapOpen(true)}
@@ -757,7 +757,7 @@ export const CreateDemandFlow = ({
             {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
             <div className="mt-5 pb-2">
               <NextButton
-                disabled={demandAreaTextRequired(kind) && !draft.preferredArea.trim()}
+                disabled={seekingAreaTextRequired(kind) && !draft.preferredArea.trim()}
                 onClick={goNext}
               />
             </div>
@@ -797,7 +797,7 @@ export const CreateDemandFlow = ({
               </div>
             )}
             <div className="mt-4 grid grid-cols-2 gap-3">
-              {demandWhenShowsTime(kind)
+              {seekingWhenShowsTime(kind)
                 ? ([
                     { key: 'flexible' as TimeMode, title: 'Flexible', subtitle: 'Rough window', icon: CalendarDays },
                     { key: 'specific' as TimeMode, title: 'Set time', subtitle: 'Exact time', icon: Clock3 },
@@ -821,7 +821,7 @@ export const CreateDemandFlow = ({
                   })
                 : null}
             </div>
-            {demandWhenShowsTime(kind) && draft.timeMode === 'specific' && (
+            {seekingWhenShowsTime(kind) && draft.timeMode === 'specific' && (
               <label className="mt-4 block">
                 <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">Time</span>
                 <input
@@ -835,9 +835,9 @@ export const CreateDemandFlow = ({
             {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
             <div className="mt-4 pb-2">
               <NextButton
-                disabled={demandWhenShowsTime(kind) && draft.timeMode === 'specific' && !draft.time}
+                disabled={seekingWhenShowsTime(kind) && draft.timeMode === 'specific' && !draft.time}
                 onClick={() => {
-                  if (!demandWhenShowsTime(kind)) {
+                  if (!seekingWhenShowsTime(kind)) {
                     patchDraft({ timeMode: 'flexible', time: '' });
                   }
                   goNext();
@@ -868,7 +868,7 @@ export const CreateDemandFlow = ({
           <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
             <p className="mb-3 text-sm text-gray-600">Including yourself</p>
             <div className="flex flex-wrap gap-2">
-              {DEMAND_PARTY_PRESETS.map((value) => {
+              {SEEKING_PARTY_PRESETS.map((value) => {
                 const active = draft.partySize === value;
                 return (
                   <button
@@ -891,14 +891,14 @@ export const CreateDemandFlow = ({
           </FlowSheetChrome>
         )}
 
-        {step === 'info' && kind && usesGuidedDemandFlow(kind) && (
+        {step === 'info' && kind && usesGuidedSeekingFlow(kind) && (
           <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
             <textarea
               value={draft.additionalInfo}
               onChange={(event) => patchDraft({ additionalInfo: event.target.value })}
               rows={4}
-              placeholder={demandAdditionalInfoPlaceholder(kind)}
-              aria-label={demandAdditionalInfoPlaceholder(kind)}
+              placeholder={seekingAdditionalInfoPlaceholder(kind)}
+              aria-label={seekingAdditionalInfoPlaceholder(kind)}
               className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-base text-gray-900 outline-none focus:border-emerald-400"
               maxLength={1000}
             />
@@ -909,7 +909,7 @@ export const CreateDemandFlow = ({
           </FlowSheetChrome>
         )}
 
-        {step === 'comment' && kind && !usesGuidedDemandFlow(kind) && (
+        {step === 'comment' && kind && !usesGuidedSeekingFlow(kind) && (
           <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
             <label className="block">
               <textarea
@@ -941,7 +941,7 @@ export const CreateDemandFlow = ({
                 ) : (
                   <Users className="h-4 w-4 text-emerald-600" />
                 )}
-                {DEMAND_TYPE_OPTIONS.find((option) => option.key === kind)?.title ?? kind}
+                {SEEKING_TYPE_OPTIONS.find((option) => option.key === kind)?.title ?? kind}
               </p>
               {draft.title && (
                 <p className="mt-2 text-xs text-gray-600">
@@ -949,19 +949,19 @@ export const CreateDemandFlow = ({
                   {draft.title}
                 </p>
               )}
-              {(usesHikingDemandFlow(kind) || usesCampingDemandFlow(kind)) && draft.preferredArea && (
+              {(usesHikingSeekingFlow(kind) || usesCampingSeekingFlow(kind)) && draft.preferredArea && (
                 <p className="mt-2 text-xs text-gray-600">
                   <span className="font-semibold text-gray-700">Destination: </span>
                   {EXPLORE_REGION_PILL_LABELS[draft.preferredArea] ?? draft.preferredArea}
                 </p>
               )}
-              {(usesHikingDemandFlow(kind) || usesCampingDemandFlow(kind)) && draft.fromPinPlaced && (
+              {(usesHikingSeekingFlow(kind) || usesCampingSeekingFlow(kind)) && draft.fromPinPlaced && (
                 <p className="mt-1 flex items-center gap-1.5 text-xs text-gray-600">
                   <MapPin className="h-3.5 w-3.5 text-emerald-500" />
                   Going from: {draft.latitude?.toFixed(4)}, {draft.longitude?.toFixed(4)}
                 </p>
               )}
-              {usesRideshareDemandFlow(kind) && draft.toPinPlaced && (
+              {usesRideshareSeekingFlow(kind) && draft.toPinPlaced && (
                 <p className="mt-2 flex items-center gap-1.5 text-xs text-gray-600">
                   <MapPin className="h-3.5 w-3.5 text-sky-500" />
                   Destination: {draft.toLatitude?.toFixed(4)}, {draft.toLongitude?.toFixed(4)}
@@ -970,7 +970,7 @@ export const CreateDemandFlow = ({
                     : ' · flexible arrival'}
                 </p>
               )}
-              {usesRideshareDemandFlow(kind) && draft.fromPinPlaced && (
+              {usesRideshareSeekingFlow(kind) && draft.fromPinPlaced && (
                 <p className="mt-1 flex items-center gap-1.5 text-xs text-gray-600">
                   <MapPin className="h-3.5 w-3.5 text-emerald-500" />
                   {GOING_FROM_LABEL}: {draft.latitude?.toFixed(4)}, {draft.longitude?.toFixed(4)}
@@ -979,24 +979,24 @@ export const CreateDemandFlow = ({
               {draft.date && (
                 <p className="mt-1 text-xs text-gray-500">
                   {draft.date}
-                  {demandWhenShowsTime(kind) && draft.timeMode === 'specific' && draft.time
+                  {seekingWhenShowsTime(kind) && draft.timeMode === 'specific' && draft.time
                     ? ` · ${draft.time}`
-                    : demandWhenShowsTime(kind)
+                    : seekingWhenShowsTime(kind)
                       ? ' · flexible time'
                       : ''}
                 </p>
               )}
-              {usesEventDemandFlow(kind) && draft.areaPinPlaced && (
+              {usesEventSeekingFlow(kind) && draft.areaPinPlaced && (
                 <p className="mt-2 flex items-center gap-1.5 text-xs text-gray-600">
                   <MapPin className="h-3.5 w-3.5 text-emerald-500" />
                   Where: {draft.latitude?.toFixed(4)}, {draft.longitude?.toFixed(4)}
                 </p>
               )}
-              {(usesHikingDemandFlow(kind) || usesCampingDemandFlow(kind) || usesRideshareDemandFlow(kind) || usesEventDemandFlow(kind)) && (
+              {(usesHikingSeekingFlow(kind) || usesCampingSeekingFlow(kind) || usesRideshareSeekingFlow(kind) || usesEventSeekingFlow(kind)) && (
                 <p className="mt-1 text-xs text-gray-500">{draft.partySize} people</p>
               )}
               <p className="mt-2 line-clamp-6 whitespace-pre-line text-xs text-gray-600">
-                {buildDemandComment(draft)}
+                {buildSeekingComment(draft)}
               </p>
             </div>
 

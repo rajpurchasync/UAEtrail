@@ -130,7 +130,6 @@ export {
   resolveEntityPath,
   resolveOrganisationProfilePath,
   parseEntityRefFromPathname,
-  exploreDemandMapItemPath,
   exploreSeekingMapItemPath,
   EXPLORE_SHOPS_PATH,
   EXPLORE_SHOPS_LIST_PATH,
@@ -197,4 +196,4 @@ export {
   type PlanHistoryRole,
 } from '../member-plan/planHubRouting';
 
-export { memberProfileLink } from '../member/memberProfileLink';
+export { memberProfileLink, memberPublicPreviewLink } from '../member/memberProfileLink';

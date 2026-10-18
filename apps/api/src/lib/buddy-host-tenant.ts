@@ -1,6 +1,6 @@
 import { MembershipRole, TenantStatus, TenantType } from '../domain/enums.js';
 import { TenantPublishingPurpose } from '../domain/tenant-publishing.js';
-import { findAuthUserById } from './auth-users.js';
+import { findAuthUserById } from './auth-users-store.js';
 import { newEntityId } from './entity-builders.js';
 import { upsertTenantMembership } from './tenant-access.js';
 import {

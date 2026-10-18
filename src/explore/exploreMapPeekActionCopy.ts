@@ -70,7 +70,7 @@ export const activityMapPeekActionLabel = (
     case 'pending_join':
       return action?.joinRequestStatus
         ? pendingApprovalLabel(action.joinRequestStatus)
-        : 'Waiting for organizer';
+        : 'Waiting for host';
     default:
       return id;
   }

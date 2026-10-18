@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { emptyDemandDraft } from './ui/seekingFlowEngine';
+import { emptySeekingDraft } from './ui/seekingFlowEngine';
 import { emptyCreateActivityDraft } from './ui/hostingFlowEngine';
 import { curatedAreaSeedId, type PlaceDTO } from '@uaetrail/shared-types';
 import {
-  demandPostVisibleOnMap,
-  validateDemandPublishArea,
+  seekingPostVisibleOnMap,
+  validateSeekingPublishArea,
   validateOrganizePlaceArea,
   validateOrganizePublishArea,
 } from './organizePublishArea';
@@ -58,27 +58,27 @@ describe('validateOrganizePublishArea (legacy shim)', () => {
   });
 });
 
-describe('validateDemandPublishArea', () => {
+describe('validateSeekingPublishArea', () => {
   it('requires area and pin on curated step', () => {
     const draft = {
-      ...emptyDemandDraft(),
+      ...emptySeekingDraft(),
       kind: 'hiking' as const,
       areaId: HATTA_AREA_ID,
       areaPinPlaced: false,
     };
-    expect(validateDemandPublishArea(draft, 'hiking')).toMatch(/pin on the map/);
+    expect(validateSeekingPublishArea(draft, 'hiking')).toMatch(/pin on the map/);
   });
 
   it('passes when area and pin are set', () => {
     const draft = {
-      ...emptyDemandDraft(),
+      ...emptySeekingDraft(),
       kind: 'hiking' as const,
       areaId: HATTA_AREA_ID,
       areaPinPlaced: true,
       latitude: 25,
       longitude: 55,
     };
-    expect(demandPostVisibleOnMap(draft)).toBe(true);
-    expect(validateDemandPublishArea(draft, 'hiking')).toBeNull();
+    expect(seekingPostVisibleOnMap(draft)).toBe(true);
+    expect(validateSeekingPublishArea(draft, 'hiking')).toBeNull();
   });
 });

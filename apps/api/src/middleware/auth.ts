@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { verifyAccessToken } from '../lib/jwt.js';
-import { findAuthUserById } from '../lib/auth-users.js';
+import { findAuthUserById } from '../lib/auth-users-store.js';
 import { touchLastActive } from '../lib/user-activity.js';
 import { validateSseTicket } from '../lib/sse-ticket.js';
 import { ApiError } from '../lib/api-error.js';

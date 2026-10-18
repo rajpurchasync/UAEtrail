@@ -1,6 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 
-vi.mock('../src/lib/auth-users.js', () => ({
+vi.mock('../src/lib/auth-users-store.js', () => ({
   findAuthUserById: vi.fn(),
 }));
 
@@ -9,7 +9,7 @@ vi.mock('../src/services/profile-viewer-access.js', () => ({
   canViewProfileField: vi.fn(),
 }));
 
-import { findAuthUserById } from '../src/lib/auth-users.js';
+import { findAuthUserById } from '../src/lib/auth-users-store.js';
 import {
   canViewProfileField,
   resolveProfileViewerAccess,

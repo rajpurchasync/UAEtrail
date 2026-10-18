@@ -7,7 +7,7 @@ import {
   UserRole,
   type TenantType
 } from '../domain/enums.js';
-import { findAuthUserById, findAuthUsersByIds, updateAuthUserCore } from './auth-users.js';
+import { findAuthUserById, findAuthUsersByIds, updateAuthUserCore } from './auth-users-store.js';
 import { COLLECTIONS } from './collections.js';
 import { newEntityId } from './entity-builders.js';
 import { getMongoClient } from './mongo.js';

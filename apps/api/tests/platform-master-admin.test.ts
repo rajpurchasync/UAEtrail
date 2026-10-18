@@ -1,8 +1,8 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { UserRole } from '../src/domain/enums.js';
-import type { AuthUserRecord } from '../src/lib/auth-users.js';
+import type { AuthUserRecord } from '../src/lib/auth-users-store.js';
 
-vi.mock('../src/lib/auth-users.js', () => ({
+vi.mock('../src/lib/auth-users-store.js', () => ({
   findAuthUserById: vi.fn(),
   findAuthUserByEmail: vi.fn(),
   updateAuthUserCore: vi.fn(),
@@ -12,7 +12,7 @@ vi.mock('../src/lib/audit.js', () => ({
   createAuditLog: vi.fn(),
 }));
 
-import { findAuthUserByEmail, findAuthUserById, updateAuthUserCore } from '../src/lib/auth-users.js';
+import { findAuthUserByEmail, findAuthUserById, updateAuthUserCore } from '../src/lib/auth-users-store.js';
 import { grantPlatformAdminRole, isPlatformMasterAdmin, revokePlatformAdminRole } from '../src/lib/platform-master-admin.js';
 
 const masterUser = (): AuthUserRecord =>

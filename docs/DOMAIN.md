@@ -97,7 +97,7 @@ Time-bound map pins are **Activities** with `activityMode` (target wire name; mi
 | Mode | Meaning | Today (wire) | UX |
 |------|---------|--------------|-----|
 | **`hosted`** | Host-published outing | `activities` + organize compose | Join / RSVP / request on detail |
-| **`seeking`** | Member “looking for company” | **`activities`** row (`activityMode: seeking`) + optional `participant_intents` stub (compose/manage) | Find FAB; map pin `activity:{id}`; join via **`activity_requests`** (M2c); intent routes alias |
+| **`seeking`** | Member “looking for company” | **`activities`** row (`activityMode: seeking`); `participantIntentId` is the `/me/seeking-posts/:postId` correlation id | Find FAB; map pin `activity:{id}`; join via **`activity_requests`**; HTTP `/me/seeking-posts` |
 
 **Not an activity mode:** **Availability** — person + calendar slots (`member_availability` planned). Discover on Explore **People**; edit on Plan. Seeking ≠ availability.
 
@@ -141,7 +141,7 @@ Do **not** add `trips*` API clients or `Trip*` domain types for hosted/joined li
 | **Direct message** | Chat messages collection | `/messages?to=` |
 | **Family / friends group** | `social_groups` + `social_group_wall` | `/groups` manage · `/messages?group=` chat |
 | **Activity crew chat** | Same wall; `social_groups.type === 'activity'`, `activityId` set | `/messages?group=`; roster from `activity-group-chat` service |
-| **Demand intent** | `participant_intents` | No crew chat until organized to **Activity** |
+| **Demand intent** | Seeking **`activities`** (`activityMode: seeking`) | No crew chat until organized to a hosted **Activity** |
 
 Wall post policy (`all_members` | `admins_only`) applies to group/crew threads. Unread for group threads uses membership `wallLastReadAt` + `chatPreview` on `GET /me/groups`.
 
@@ -381,7 +381,7 @@ Scheduled outings and **demand** posts on the **Activities** map layer carry pla
 
 **Browse filters:** map pills (`filter=hiking`, …) use category; under **Others**, `subtype=events|activities` then optional `outingTopic` for general activities. See [`NAVIGATION.md`](./NAVIGATION.md) § Browse defaults.
 
-**Compose intents (separate lifecycles):** **Host** (`host:*` / legacy `plan:*:hosting`) → hosted `activities`; **Find crew** fixed (`seek:fixed:*` / legacy `plan:*:seeking`) → seeking `activities` + `participant_intents`; **Add on map** (`add:*` / legacy `contribute:*`) → place + **facility** catalog submits. Product detail: [`CREATE_FLOW.md`](./CREATE_FLOW.md) · Program CPC §8.4.
+**Compose intents (separate lifecycles):** **Host** (`host:*` / legacy `plan:*:hosting`) → hosted `activities`; **Find crew** fixed (`seek:fixed:*` / legacy `plan:*:seeking`) → seeking `activities`; **Add on map** (`add:*` / legacy `contribute:*`) → place + **facility** catalog submits. Product detail: [`CREATE_FLOW.md`](./CREATE_FLOW.md) · Program CPC §8.4.
 
 ## Identity, routing, and audit
 
@@ -395,7 +395,7 @@ Every durable entity has a **stable UUID** in Mongo and a **canonical public rou
 | **Facility** (amenity) | `facilities` | `facility.id` | `/facility/:id` — map `source: facility` |
 | **Area** (curated name) | `areas` | `area.id` | `/area/:slug` — **no map pin** |
 | **Activity** (hosted or seeking outing) | `activities` | `activity.id` | `/activity/:id` — map `source: activity` (`activity:{id}`) |
-| **Seeking (legacy)** | `participant_intents` (read-only) | — | Old `demand:` map ids rewrite to the seeking **activity** |
+| **Seeking (inbound rewrite)** | leftover `participant_intents` (ops/backfill only) | — | Old `demand:` map ids rewrite to the seeking **activity**; never minted |
 
 **Registration:** members via `/signup` + OTP; Pro / agency / shop via `POST /me/pro-application` (collection `host_applications`) → tenant provision; catalog places/facilities via **member submit** (`POST /me/places`, `POST /me/facilities`) + admin approval — FAB label **Contribute**, not an API noun.
 
@@ -405,7 +405,7 @@ Every durable entity has a **stable UUID** in Mongo and a **canonical public rou
 
 | Flow | What happens | New activity id? |
 |------|----------------|------------------|
-| **Host console · Duplicate** | `POST /host/activities/:id/duplicate` → draft in console | Yes — audit `activity.duplicate` + `metadata.sourceActivityId` |
+| **Publishing workspace · Duplicate** | `POST /publishing/activities/:id/duplicate` → draft in workspace | Yes — audit `activity.duplicate` + `metadata.sourceActivityId` |
 | **Explore · Reorganize on map** | `?compose=organize:…&organizeFrom=:activityId` → FAB wizard prefill → publish | Yes — `activity.create` with optional `metadata.sourceActivityId` (`clonedFromActivityId` on create body) |
 
 Reorganize never updates the source row; venue registry ids are **reused** when the draft still points at the same registry place.

@@ -1,3 +1,4 @@
+import type { ReactElement } from 'react';
 import type { ActivityDetailKind } from '../activityDetailKind';
 import { resolveActivityDetailKind } from '../activityDetailKind';
 import type { ActivityDetailViewProps } from '../../../components/activity/ActivityDetailView';
@@ -10,7 +11,7 @@ export type ActivityDetailRouteProps = ActivityDetailViewProps;
 
 const PAGE_BY_KIND: Record<
   ActivityDetailKind,
-  (props: ActivityDetailViewProps & { detailKind: ActivityDetailKind }) => JSX.Element
+  (props: ActivityDetailViewProps & { detailKind: ActivityDetailKind }) => ReactElement
 > = {
   hiking: HikingActivityDetailPage,
   camping: CampingActivityDetailPage,

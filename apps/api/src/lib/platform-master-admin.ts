@@ -1,6 +1,6 @@
 import { UserRole } from '../domain/enums.js';
-import type { AuthUserRecord } from './auth-users.js';
-import { findAuthUserByEmail, findAuthUserById, updateAuthUserCore } from './auth-users.js';
+import type { AuthUserRecord } from './auth-users-store.js';
+import { findAuthUserByEmail, findAuthUserById, updateAuthUserCore } from './auth-users-store.js';
 import { ApiError } from './api-error.js';
 import { createAuditLog } from './audit.js';
 

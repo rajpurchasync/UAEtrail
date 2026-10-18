@@ -15,18 +15,18 @@ describe('workspaceVocabulary', () => {
     expect(workspaceConsoleLabel(null)).toBe('Organizer workspace');
   });
 
-  it('approval requirement accepts legacy host line and new organizer line', () => {
+  it('approval requirement accepts Host canonical and Organizer legacy line', () => {
     expect(inferParticipationModeFromRequirements([APPROVAL_PARTICIPATION_REQUIREMENT])).toBe(
       'approval'
     );
     expect(
-      inferParticipationModeFromRequirements(['Host approval required to join'])
+      inferParticipationModeFromRequirements(['Organizer approval required to join'])
     ).toBe('approval');
   });
 
-  it('landing copy avoids retired "verified host" phrasing', () => {
+  it('landing copy uses verified host (UPL) not verified organizer', () => {
     const landing = readFileSync(join(process.cwd(), 'src/content/homeLanding.ts'), 'utf8');
-    expect(landing).not.toMatch(/verified host/i);
-    expect(landing).toMatch(/verified organizer/i);
+    expect(landing).toMatch(/verified host/i);
+    expect(landing).not.toMatch(/verified organizer/i);
   });
 });

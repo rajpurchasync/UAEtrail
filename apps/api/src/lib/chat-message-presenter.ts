@@ -1,7 +1,7 @@
 import type { ChatMessageDTO, GroupWallReplyPreviewDTO } from '@uaetrail/shared-types';
 import type { ChatMessage } from '../domain/types.js';
-import { findAuthUsersByIds } from './auth-users.js';
-import { findChatMessagesByIds } from './chat-data.js';
+import { findAuthUsersByIds } from './auth-users-store.js';
+import { findChatMessagesByIds } from './chat-messages-store.js';
 import { loadChatMessageReactionsForMessages } from './chat-message-reactions.js';
 import { buildGroupWallReplyPreview } from './reply-preview.js';
 
