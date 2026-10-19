@@ -89,6 +89,22 @@ flowchart TB
 
 ## 3. Bounded contexts (where code must live)
 
+### 3.0 Cross-context foundations (one platform, not per-context forks)
+
+Contexts **share** the same rules — they differ by **data and routes**, not by inventing parallel client or policy stacks.
+
+| Foundation | Every context uses | Guards (representative) |
+|------------|-------------------|------------------------|
+| **HTTP surfaces** | Public read · signed-in `/me/*` · `/admin/*` · tenant `/publishing/*` + `x-organisation-id` — §5.1 | `catalog-http-surface-guard`, `publishing-http-canonical-guard` |
+| **FE HTTP client** | UI → `src/hooks/*ClientApi` → `src/api/domains/*` → `apiRequest` | `domainImportGuard`, `hooksApiFacadeGuard`, `apiLegacyGuard` |
+| **SPA paths** | `routingCatalog` / `surfacePaths` — no ad-hoc path strings in product UI | `routingCatalogAdoption`, `routingHygiene` |
+| **Member capabilities** | **`GET /me/status`** only (`memberApi` / `useMemberStatus`) | `host-member-contract`, `hostMemberGuard` |
+| **Activity engagement** | `resolveActivityEngagementPolicy` + wire `viewerAccess` (map peek, list, L3) | `mapDetailEngagementParity`, `activityDetailAcceptance` |
+| **Discovery catalog** | `GET /explore/map` + `GET /me/discover/overlay` — projections, not N catalogs | `explore-map-*` contracts, `seekingPinHygieneGuard` |
+| **Context map** | `scripts/bounded-context-manifest.json` ↔ §3.1 matrix | `boundedContextAlignment`, `crossContextFoundationsGuard` |
+
+**Integration rule:** Cross-context features compose **entities** (`Activity`, `Place`, `Facility`) and **shared-types** DTOs — e.g. participation joins on `POST /activities/:id/requests` while publishing mutates the same row via `/publishing/*`; discovery reads those rows through `explore-map`, not a second activity list API.
+
 Each context has **one write path** and **one public read model** where possible. Crossing boundaries happens through **services** and **shared-types**, not duplicate business rules in React.
 
 | Context | Responsibility | Frontend home | API home | Storage (see `collections.ts`) |

@@ -1,5 +1,4 @@
 import type { TenantPublicDTO } from '@uaetrail/shared-types';
-import { memberApi } from './member';
 import { apiRequest } from '../client';
 import { organisationRequestHeaders } from '../orgHeaders';
 import type {
@@ -88,8 +87,6 @@ export const organisationApi = {
   getMyOrganisationApplication: () =>
     apiRequest<{ data: HostApplication | null }>('/me/pro-application', { auth: true }),
 
-  /** @deprecated Prefer `memberApi.getMemberStatus` */
-  getMyOrganisationStatus: memberApi.getMemberStatus,
 
   updateOrganisationDetails: (data: HostDetails) =>
     apiRequest<{ data: HostDetails }>('/me/host-details', {

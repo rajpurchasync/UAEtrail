@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 const ROOT = join(process.cwd(), '..', '..');
@@ -57,5 +57,18 @@ describe('boundedContextAlignment (API + manifest)', () => {
     expect(collections).toMatch(/ACTIVITIES/);
     expect(collections).toMatch(/PARTICIPANT_INTENTS/);
     expect(collections).toMatch(/USER_BADGES/);
+  });
+
+  it('user route registrars follow register* surface-first modules (no orphan handlers)', () => {
+    const userDir = join(ROOT, 'apps/api/src/routes/user');
+    const violations: string[] = [];
+    for (const entry of readdirSync(userDir)) {
+      if (!entry.endsWith('.ts') || entry.endsWith('.test.ts')) continue;
+      if (entry === 'schemas.ts') continue;
+      if (!entry.startsWith('register')) {
+        violations.push(`routes/user/${entry}`);
+      }
+    }
+    expect(violations).toEqual([]);
   });
 });
