@@ -31,13 +31,13 @@ describe('publishing console routing (MIG-ROUTING-CANON-P1)', () => {
     expect(existsSync(join(ROOT, 'src/hooks/useOperatorActivityManageActions.ts'))).toBe(false);
   });
 
-  it('App does not register /host or /organizer console trees', () => {
+  it('App uses publishing workspace and retired-console bookmark redirects only', () => {
     const app = readFileSync(join(ROOT, 'src/App.tsx'), 'utf8');
     expect(app).not.toMatch(/LegacyPublishingConsoleRedirect/);
-    expect(app).not.toMatch(/path="\/host\//);
-    expect(app).not.toMatch(/path="\/organizer\//);
+    expect(app).toMatch(/InboundRetiredPublishingConsoleRedirect/);
+    expect(app).toMatch(/path="\/host\/\*"/);
+    expect(app).toMatch(/path="\/organizer\/\*"/);
     expect(app).toMatch(/path="\/publishing"/);
-    expect(app).not.toMatch(/path="\/operator"/);
     expect(app).not.toMatch(/OperatorPublishingAlias/);
     expect(app).toMatch(/path="\/publishing\/messages"/);
   });
@@ -53,6 +53,8 @@ describe('publishing console routing (MIG-ROUTING-CANON-P1)', () => {
 
   it('app src does not link to /host/ or /organizer/ publishing paths', () => {
     const allow = new Set([
+      'src/App.tsx',
+      'src/routing/inboundBookmarkRedirects.tsx',
       'src/config/publishingConsoleRoutingGuard.test.ts',
       'src/content/workspaceProductLanguageGuard.test.ts',
       'src/member/hostMemberGuard.test.ts',

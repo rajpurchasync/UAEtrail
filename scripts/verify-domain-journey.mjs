@@ -10,7 +10,7 @@ const childEnv = () => stripNpmDevdirEnv();
 
 console.log('[verify:domain:journey]');
 execSync(
-  'npx vitest run src/member-plan/tripsConsumerNamingGuard.test.ts',
+  'npx vitest run src/member-plan/planHubInboundGuard.test.ts',
   { cwd: root, stdio: 'inherit', env: childEnv() }
 );
 execSync(

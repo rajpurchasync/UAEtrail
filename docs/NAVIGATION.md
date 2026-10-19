@@ -188,7 +188,7 @@ Legacy browse URLs (`/map`, `/discovery`, `/calendar`, bare `/activities` as bro
 
 ## Browse — people & crew (Explore map panel)
 
-**Job:** who can I go with, who’s going, who’s looking — **not** chat. Chat is [`/messages`](#chat-messages) ([`COMMUNICATION.md`](./COMMUNICATION.md)).
+**Job:** who can I go with, who’s going, who’s looking — **not** chat. Chat is [`/chat`](#chat-chat) ([`COMMUNICATION.md`](./COMMUNICATION.md)).
 
 Map pill label **Find your crew** (see `explorePeopleBrowseCopy.ts`); opens `view=people` on desktop (`peopleBrowseOpen`; mobile `listMode=people`; legacy `view=social` / `view=going` still parse). Query `peopleTab=looking|available|going|connect` (default **looking** omitted in URL; legacy `socialTab`, `all`→`connect`, `friends`→`going`, `discover`→`available`). Panel title **Find your crew** — list **Buddies** (`listCat=people`, URL `buddies=` mirrors `peopleTab`). **Looking for** tab is public (published seeking activities); other tabs → sign-in when needed.
 
@@ -256,7 +256,7 @@ Public scroll slots come from **`GET /activities/:id` → `presentation.consumer
 
 ## Legacy redirects (`App.tsx`)
 
-Canonical paths only in **new UI**. Legacy URLs redirect in `src/App.tsx` — do not add new links to these.
+Canonical paths only in **new UI**. Bookmark aliases mount in `src/App.tsx` and delegate to `src/routing/inboundBookmarkRedirects.tsx` — do not add new links to legacy paths.
 
 | Legacy path | Redirect target | Removal target |
 |-------------|-----------------|----------------|
@@ -264,12 +264,13 @@ Canonical paths only in **new UI**. Legacy URLs redirect in `src/App.tsx` — do
 | `/discovery` | `/explore` (+ param transform) | 2026-Q4 |
 | `/calendar` | `/explore` | 2026-Q4 |
 | `/shop` (bare) | `/explore?panel=shops` | 2026-Q4 |
-| `/trips`, `/trips/map`, `/activities` (any) | `/plan`, `/profile/history`, or `/profile/history/map` (preserves query; `create=*` → explore compose) | 2026-Q4 |
+| `/trips`, `/trips/map`, `/activities` (any) | **No SPA route** — normalize via notification deep links only (`resolveInboundPlanHubPath`) | — |
 | `/profile/plans` | `/plan` | 2026-Q4 |
+| `/profile/wishlist` | Plan wishlist tab (`planWishlistRedirectPath()` / `InboundProfileWishlistRedirect`) | 2026-Q4 |
 | `/rewards`, `/my-rewards`, `/trail-points` | `/profile/badges` | 2026-Q4 (Trail Points wallet removed; badges kept) |
-| `/community` | `/explore` (`COMMUNITY_PATH` — legacy Q&A feed removed) | 2026-Q4 |
+| `/community` | **No SPA route** (Q&A feed removed) | — |
 | `/membership` | `/explore` (`App.tsx` bookmark redirect; not product home) | 2026-Q4 |
-| `/organizer/*`, `/host/*` (console) | `/publishing/*` | 2026-Q4 |
+| `/organizer/*`, `/host/*`, `/operator/*` (console) | `/publishing/*` (`InboundRetiredPublishingConsoleRedirect`) | 2026-Q4 |
 | `/become-organizer` | `/become-host` | 2026-Q4 |
 | `/become-host` | `/profile/pro-membership` | 2026-Q4 (Pro / agency / shop; buddy Host / publish uses `/welcome` + `canPublish`) |
 | `/dashboard/*` | role-based redirect | 2026-Q4 |

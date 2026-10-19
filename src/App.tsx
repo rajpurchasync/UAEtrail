@@ -1,5 +1,4 @@
 import {
-  COMMUNITY_PATH,
   EXPLORE_MAP_PATH,
   INBOUND_MY_REWARDS_PATH,
   INBOUND_REWARDS_PATH,
@@ -66,8 +65,14 @@ import {
   InboundMessagesRedirect,
   InboundProMembershipRedirect,
   InboundProfileWishlistRedirect,
-  InboundTripsHubRedirect,
+  InboundRetiredPublishingConsoleRedirect,
+  InboundProfileHistoryAliasRedirect,
+  InboundJourneyMapAliasRedirect,
 } from './routing/inboundBookmarkRedirects';
+import {
+  INBOUND_JOURNEY_MAP_ALIAS_PATH,
+  INBOUND_PROFILE_HISTORY_ALIAS_PATH,
+} from './config/inboundBookmarkPaths';
 
 const PlanBrowseRoute = () => {
   const { user } = useAuth();
@@ -318,9 +323,6 @@ function App() {
             }
           />
           <Route path="/plan" element={<PlanBrowseRoute />} />
-          <Route path="/trips" element={<InboundTripsHubRedirect />} />
-          <Route path="/trips/map" element={<InboundTripsHubRedirect />} />
-          <Route path="/activities" element={<InboundTripsHubRedirect />} />
           <Route
             path="/profile/history"
             element={
@@ -341,8 +343,8 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path="/profile/my-trips" element={<AuthAliasRedirect to={PROFILE_HISTORY_PATH} />} />
-          <Route path="/profile/my-trips/map" element={<AuthAliasRedirect to={JOURNEY_MAP_PATH} />} />
+          <Route path={INBOUND_PROFILE_HISTORY_ALIAS_PATH} element={<InboundProfileHistoryAliasRedirect />} />
+          <Route path={INBOUND_JOURNEY_MAP_ALIAS_PATH} element={<InboundJourneyMapAliasRedirect />} />
           <Route
             path="/profile/reviews"
             element={
@@ -527,7 +529,6 @@ function App() {
           />
           <Route path="/product/:id" element={<InboundProductPathRedirect />} />
           <Route path="/merchant/:id" element={<InboundMerchantPublicRedirect />} />
-          <Route path={COMMUNITY_PATH} element={<Navigate to={EXPLORE_MAP_PATH} replace />} />
           <Route path={SIGNUP_PATH} element={<SignUp />} />
           <Route path={SIGNIN_PATH} element={<SignIn />} />
           <Route path="/signed-out" element={<Navigate to="/" replace />} />
@@ -666,6 +667,9 @@ function App() {
             path="/admin/shop"
             element={<Navigate to="/admin/hosts" replace />}
           />
+          <Route path="/host/*" element={<InboundRetiredPublishingConsoleRedirect />} />
+          <Route path="/operator/*" element={<InboundRetiredPublishingConsoleRedirect />} />
+          <Route path="/organizer/*" element={<InboundRetiredPublishingConsoleRedirect />} />
           <Route path="/publishing" element={<Navigate to={PUBLISHING_OVERVIEW_PATH} replace />} />
           <Route path="/publishing/messages" element={<InboundMessagesRedirect />} />
           <Route

@@ -68,7 +68,7 @@ Use **one row** per concern. Do not copy these tables into `experiment/*` or new
 | **Bounded context placement** | [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §3 + §3.0 | Where code and clients live |
 | **Implementation schedule** | [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.6–8.8 + `scripts/refactor-program.json` | Migrations only — not parallel plan docs |
 
-**Retired product paths (docs + code):** `/operator/*` and `/host/*` as **consumer or API** trees → **`/publishing/*`**; `/me/host-status` → **`GET /me/status`**; Find storage → **`/me/seeking-posts`** + `activityMode: seeking`. Legacy names may appear only in **redirect tables** (`NAVIGATION.md`, `DOMAIN.md`) or **Prefer \| Deprecated** columns (`DOMAIN_CANONICALS.md` §6).
+**Retired product paths (docs + code):** `/operator/*` and `/host/*` as **consumer or API** trees → **`/publishing/*`**; `/me/host-status` → **`GET /me/status`**; Find storage → **`/me/seeking-posts`** + `activityMode: seeking`; shop **product catalog** (`/product/:id`, `/shop/products`, `/shop/checkout`, `/admin/shop`) → explore shops browse or `/admin/hosts`. Legacy names may appear only in **redirect tables** (`NAVIGATION.md`, `DOMAIN.md`) or **Prefer \| Deprecated** columns (`DOMAIN_CANONICALS.md` §6).
 
 ---
 

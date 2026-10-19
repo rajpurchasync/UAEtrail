@@ -16,30 +16,17 @@ export const PROFILE_HISTORY_PATH = '/profile/history' as const;
 /** Member journey map (pins + wishlist visited). */
 export const JOURNEY_MAP_PATH = '/profile/history/map' as const;
 
-/** @deprecated Bookmark — `App.tsx` redirects to {@link PROFILE_HISTORY_PATH}. */
-export const MY_TRIPS_PATH = '/profile/my-trips' as const;
-/** @deprecated Bookmark — `App.tsx` redirects to {@link JOURNEY_MAP_PATH}. */
-export const MY_TRIPS_MAP_PATH = '/profile/my-trips/map' as const;
-
 export const isProfileHistoryListPath = (pathname: string): boolean =>
   pathname === PROFILE_HISTORY_PATH ||
-  pathname === MY_TRIPS_PATH ||
+  pathname === '/profile/my-trips' ||
   pathname.endsWith('/profile/history') ||
   pathname.endsWith('/my-trips');
 
 export const isJourneyMapPath = (pathname: string): boolean =>
   pathname === JOURNEY_MAP_PATH ||
-  pathname === MY_TRIPS_MAP_PATH ||
+  pathname === '/profile/my-trips/map' ||
   pathname.endsWith('/profile/history/map') ||
   pathname.endsWith('/my-trips/map');
-
-/** Inbound bookmark — `App.tsx` redirects to {@link PLAN_PATH}. */
-export const INBOUND_ACTIVITIES_HUB_PATH = '/activities' as const;
-
-/** Inbound bookmark — `App.tsx` redirects to {@link PLAN_PATH} or {@link PROFILE_HISTORY_PATH}. */
-export const TRIPS_PATH = '/trips' as const;
-/** Inbound bookmark — redirects to {@link JOURNEY_MAP_PATH}. */
-export const INBOUND_TRIPS_MAP_PATH = '/trips/map' as const;
 
 /** Admin / host place registry consoles */
 export const ADMIN_PLACES_PATH = '/admin/places' as const;
@@ -67,9 +54,6 @@ export const PROFILE_SETTINGS_NOTIFICATIONS_PATH = '/profile/settings/notificati
 
 /** Member achievement badges (no Trail Points wallet) */
 export const PROFILE_BADGES_PATH = '/profile/badges' as const;
-
-/** Inbound bookmark — redirects to explore (`App.tsx`). */
-export const COMMUNITY_PATH = '/community' as const;
 
 /** Inbound bookmark — App.tsx redirects to explore. */
 export const MEMBERSHIP_MARKETING_PATH = '/membership' as const;

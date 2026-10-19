@@ -12,7 +12,7 @@ import { planMainTabPath, planWishlistTabPath } from '../plan/planTab';
 /**
  * Plan (`/plan`) + profile history URL helpers and inbound query normalization.
  * Scheduled outings use **activities** APIs — not a separate “trips” domain.
- * Inbound `/trips` paths redirect in `inboundTripsRedirect.ts`.
+ * Stale plan-hub URLs normalize via `resolveInboundPlanHubPath.ts` (notifications only).
  */
 export type PlanHubWishlistLayer = 'activities' | 'places' | 'shops';
 

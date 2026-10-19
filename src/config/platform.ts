@@ -15,9 +15,7 @@ import {
   PROFILE_PATH,
   JOURNEY_MAP_PATH,
   PROFILE_HISTORY_PATH,
-  MY_TRIPS_PATH,
   PLAN_PATH,
-  TRIPS_PATH,
   ADMIN_PLACES_PATH,
   PUBLISHING_PLACES_PATH,
   signUpPath,
@@ -27,6 +25,7 @@ import {
   INBOUND_BECOME_ORGANIZER_PATH,
   INBOUND_RETIRED_CONSOLE_PREFIXES,
 } from './inboundRoutePaths';
+import { INBOUND_PROFILE_HISTORY_ALIAS_PATH } from './inboundBookmarkPaths';
 import { AGENCY_PROFILE_PATH_PREFIX } from '@uaetrail/shared-types';
 
 export {
@@ -152,7 +151,7 @@ export const CONSUMER_HAMBURGER_MENU: readonly ConsumerHamburgerMenuItem[] = [
     label: 'History',
     emoji: '🧳',
     to: PROFILE_HISTORY_PATH,
-    match: [PROFILE_HISTORY_PATH, JOURNEY_MAP_PATH, MY_TRIPS_PATH, '/trips', '/activities', '/activity'],
+    match: [PROFILE_HISTORY_PATH, JOURNEY_MAP_PATH, INBOUND_PROFILE_HISTORY_ALIAS_PATH, '/activity'],
   },
   {
     kind: 'link',
@@ -356,12 +355,8 @@ export const CONSUMER_SELF_HEADER_EXACT = [
   '/explore',
   LIST_DISCOVERY_PATH,
   PLAN_PATH,
-  '/trips',
-  '/trips/map',
-  '/activities',
   PROFILE_HISTORY_PATH,
   JOURNEY_MAP_PATH,
-  MY_TRIPS_PATH,
   '/shop',
   PROFILE_PATH,
   GROUPS_PATH,
@@ -407,8 +402,6 @@ export type MobileBottomNavTabPath = (typeof MOBILE_BOTTOM_NAV_TAB_PATHS)[number
 
 export const isMobileBottomNavTabPath = (pathname: string): pathname is MobileBottomNavTabPath =>
   (MOBILE_BOTTOM_NAV_TAB_PATHS as readonly string[]).includes(pathname) ||
-  pathname === '/activities' ||
-  pathname === TRIPS_PATH ||
   pathname === LIST_DISCOVERY_PATH;
 
 /** Personal hub routes that keep the mobile tab bar visible (profile is not a tab). */

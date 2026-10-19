@@ -31,7 +31,7 @@ Catalog HTTP is **surface-first** (path + mount middleware), not **profile-first
 - `/` (userRouter) — public catalog (`/places`, `/activities`, `/explore/map`, **`/reviews`**), `/me/*` (profile, seeking-posts, groups, buddies, wishlist)
 - `/publishing` — tenant-scoped activities, check-in, join queue (`x-organisation-id`; no `/host` or `/operator` API)
 - `/admin` — platform ops (thin `admin.ts` → `routes/admin/registerAdmin*`; user management at `/admin/users`, staff grant at `/admin/platform-admins` for master admin)
-- `/shop` — shop profiles, featured picks, merchant CRUD (Stripe checkout retained but disabled in product)
+- `/shop` — operator shop **profiles** (public read + merchant manage); no product catalog or shop checkout routes
 - `/safety` — member content reports (`POST /safety/reports`)
 - `/chat`, `/media`
 
@@ -40,7 +40,7 @@ Catalog HTTP is **surface-first** (path + mount middleware), not **profile-first
 1. **Join / waitlist** — `POST /activities/:id/requests` creates `PENDING` or `WAITLISTED`. Find crew uses `POST /me/seeking-posts/:id/requests` (same `activity_requests` row when `activityId` is set). Slot opens → waitlist promotion + notification.
 2. **Post-event review** — host check-in triggers `REVIEW_PROMPT` notification if user has not reviewed the location.
 3. **Explore map** — unified `/explore/map` payload (`source`: **activity** · **place** · **facility** · **shop**; `agency` wire-compat). **Area** is an admin-curated name (`areaId` on rows) — not a pin. Country / state / region come from map geography. Seeking outings are **activities**, not a separate demand source.
-4. **Shop** — affiliate-style public pages at `/shop/:id` with outbound links; physical shops get map pins, online partners are list-only.
+4. **Shop** — public profile at `/shop/:id` (about, contact, reviews, outbound website); operator tenants may have map pins; community gear shops from FAB Add resolve to the same public page model without a product grid.
 5. **Publishing profiles** — individuals publish as members (`/member/:userId`); agencies use `/agency/:slug`. They do **not** appear as explore map pins.
 6. **Push** — Web Push (VAPID) via `PushSubscription` model; optional when keys configured.
 7. **Communication** — Direct chat (`/chat`, SSE to client) and group/crew walls (`/me/groups/:id/wall` on `social_groups`). Activity crew: one group per activity, roster sync on join approve. Inbox previews on `GET /me/groups`. See [`COMMUNICATION.md`](./COMMUNICATION.md) and [`COMMUNICATION.md`](./COMMUNICATION.md).
@@ -59,7 +59,7 @@ See [`DOMAIN.md`](./DOMAIN.md) for the full glossary. Summary:
 | Individual Pro | `tenants` (professional) + member | `/member/:userId` | No |
 | Agency (organisation) | `tenants` (agency) | `/agency/:slug` | No |
 
-Shop identity is split between **tenant** (Pro Membership / shop application: website, optional pin) and **merchant profile** (`/organisation/manage?kind=shop`: contact, featured picks). Saving there syncs both and invalidates the explore map cache.
+Shop identity is split between **tenant** (Pro Membership / shop application: website, optional pin) and **merchant profile** (`/organisation/manage?kind=shop`: contact, branding). Saving there syncs both and invalidates the explore map cache.
 
 ## Frontend (`src`)
 

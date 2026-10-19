@@ -52,7 +52,7 @@ describe('routingCatalog adoption', () => {
 
   it('pages and components do not import path constants from config/platform', () => {
     const violations: string[] = [];
-    const pathSymbols = /EXPLORE_MAP_PATH|joinAuthPath|PRO_MEMBERSHIP_PATH|TRIPS_PATH/;
+    const pathSymbols = /EXPLORE_MAP_PATH|joinAuthPath|PRO_MEMBERSHIP_PATH|PLAN_PATH/;
     for (const sub of ['pages', 'components'] as const) {
       for (const file of collectFiles(join(ROOT, sub))) {
         if (file.includes('routingCatalog')) continue;

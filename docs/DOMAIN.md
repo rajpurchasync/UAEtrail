@@ -190,7 +190,7 @@ Wall post policy (`all_members` | `admins_only`) applies to group/crew threads. 
 
 | Layer | Who | Product | Surface |
 |-------|-----|---------|---------|
-| **A — Community pin** | Member **Add** | Gear shop **on the map** (informational) | Facility `outdoor_shop`, map **peek** only |
+| **A — Community pin** | Member **Add → Shops** (`add.place.shop`) | Gear shop **on the map** (informational) | `POST /me/places` (`PlaceKind.shop`) — keywords, delivery, contact; public `/shop/:id` when approved; **no** product catalog |
 | **B — Catalog place** | Admin / import | Listed shop place; claim toward Pro | Admin places; optional pin |
 | **C — Operator shop** | Pro **tenant** (shop owner) | Full storefront + workspace depth later | `/shop/:id`, **`/publishing/*`**, `EntityKind.shop` |
 
@@ -308,7 +308,7 @@ Helpers: `src/content/workspaceVocabulary.ts` — `workspaceConsoleLabel()`, `wo
 |------|------------|---------------|
 | **Guide** (individual) | No | Free / shared-cost community trips |
 | **Agency** | Yes | Licensed guided adventures |
-| **Shop** | N/A (featured picks) | Gear / affiliate links |
+| **Shop** | N/A (no in-app checkout) | Outbound website + map/contact profile |
 
 ## Person vs User
 
@@ -415,7 +415,7 @@ Reorganize never updates the source row; venue registry ids are **reused** when 
 1. Typed place URLs — `/trail`, `/camp`, `/event`.
 2. Activities stay at `/activity/:id`.
 3. No agency/guide map pins.
-4. Shop public path `/shop/:id`; affiliate featured picks, not in-app checkout.
+4. Shop public path `/shop/:id` — profile, contact, outbound website only; no product catalog or in-app checkout.
 5. API paths may say `locations` / `merchant`; product copy says place / shop.
 6. FAB compose taxonomy and participation — [`CREATE_FLOW.md`](./CREATE_FLOW.md).
 

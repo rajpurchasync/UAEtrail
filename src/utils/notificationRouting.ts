@@ -3,11 +3,13 @@ import {
   activityDetailPath,
   ADMIN_HOSTS_PATH,
   ADMIN_PLACES_PATH,
-  ACTIVITIES_PATH,
   EXPLORE_MAP_PATH,
   explorePath,
   isInboundRewardsWalletPath,
   INBOUND_MESSAGES_PATH,
+  INBOUND_PLAN_HUB_ACTIVITIES_PATH,
+  INBOUND_PLAN_HUB_TRIPS_MAP_PATH,
+  INBOUND_PLAN_HUB_TRIPS_PATH,
   memberProfileLink,
   BUDDIES_PATH,
   GROUPS_PATH,
@@ -16,21 +18,21 @@ import {
   PROFILE_BADGES_PATH,
   PROFILE_PATH,
   PRO_MEMBERSHIP_PATH,
-  TRIPS_PATH,
-  INBOUND_TRIPS_MAP_PATH,
   messagesGroupPath,
   messagesToUserPath,
   myRequestDetailPath,
   planJoinedSchedulePath,
   planHostedSchedulePath,
 } from '../config/routingCatalog';
+import { INBOUND_RETIRED_CONSOLE_PREFIXES } from '../config/inboundRoutePaths';
+import { PUBLISHING_CONSOLE_PREFIX } from '../config/surfacePaths';
 import { planWishlistTabPath } from '../plan/planTab';
 import {
   NotificationDTO,
   exploreSeekingMapItemPath,
   placeDetailPath,
 } from '@uaetrail/shared-types';
-import { resolveInboundTripsHubRedirect } from '../member-plan/inboundTripsRedirect';
+import { resolveInboundPlanHubPath } from '../member-plan/resolveInboundPlanHubPath';
 
 const toMetaObject = (meta: NotificationDTO['meta']): Record<string, unknown> | null =>
   meta && typeof meta === 'object' ? (meta as Record<string, unknown>) : null;
@@ -91,7 +93,8 @@ const normalizeDirectNotificationPath = (
     const inboundUrl = new URL(path, 'http://local');
     const inboundPathname = inboundUrl.pathname;
     if (
-      (inboundPathname === TRIPS_PATH || inboundPathname === ACTIVITIES_PATH) &&
+      (inboundPathname === INBOUND_PLAN_HUB_TRIPS_PATH ||
+        inboundPathname === INBOUND_PLAN_HUB_ACTIVITIES_PATH) &&
       inboundUrl.searchParams.get('tab') === 'joined' &&
       inboundUrl.searchParams.get('segment') === 'upcoming'
     ) {
@@ -106,13 +109,23 @@ const normalizeDirectNotificationPath = (
   const search = queryIndex === -1 ? '' : path.slice(queryIndex);
 
   if (
-    pathname === TRIPS_PATH ||
-    pathname === ACTIVITIES_PATH ||
-    pathname === INBOUND_TRIPS_MAP_PATH
+    pathname === INBOUND_MESSAGES_PATH ||
+    pathname === '/publishing/messages' ||
+    pathname === '/host/messages'
   ) {
-    const resolved = resolveInboundTripsHubRedirect(pathname, search);
-    if (resolved) return resolved;
+    return normalizeConsumerChatDeepLinkPath(path, meta);
   }
+
+  const retiredPrefix = INBOUND_RETIRED_CONSOLE_PREFIXES.find(
+    (candidate) => pathname === candidate || pathname.startsWith(`${candidate}/`)
+  );
+  if (retiredPrefix && !pathname.endsWith('/messages')) {
+    const suffix = pathname.slice(retiredPrefix.length) || '/overview';
+    return `${PUBLISHING_CONSOLE_PREFIX}${suffix}${search}`;
+  }
+
+  const resolvedPlanHub = resolveInboundPlanHubPath(pathname, search);
+  if (resolvedPlanHub) return resolvedPlanHub;
 
   return normalizeConsumerChatDeepLinkPath(path, meta);
 };

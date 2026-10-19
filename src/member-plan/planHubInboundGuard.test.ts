@@ -5,17 +5,19 @@ import { join, relative } from 'node:path';
 const SCAN_ROOT = join(process.cwd(), 'src');
 
 const ALLOWLIST = new Set([
-  'src/member-plan/tripsConsumerNamingGuard.test.ts',
+  'src/member-plan/planHubInboundGuard.test.ts',
   'src/member-plan/planHubRouting.ts',
-  'src/member-plan/inboundTripsRedirect.ts',
+  'src/member-plan/resolveInboundPlanHubPath.ts',
   'src/member-plan/resolvePlanHubView.ts',
   'src/member-plan/participantIntentPlan.ts',
+  'src/config/inboundBookmarkPaths.ts',
   'src/config/surfacePaths.ts',
   'src/App.tsx',
   'src/utils/notificationRouting.test.ts',
   'src/pages/publishing/Overview.tsx',
   'src/explore/exploreItemSearch.ts',
   'src/explore/explorePinKindFilter.ts',
+  'src/explore/routing.ts',
   'src/list/browseListTaxonomy.ts',
 ]);
 
@@ -36,7 +38,7 @@ const collectSourceFiles = (dir: string): string[] => {
   return files;
 };
 
-describe('tripsConsumerNamingGuard', { timeout: 30_000 }, () => {
+describe('planHubInboundGuard', { timeout: 30_000 }, () => {
   it('consumer UI does not use trips hub product copy or link to /profile/my-trips', () => {
     const violations: string[] = [];
     const myTripsCopy = /My trips/;

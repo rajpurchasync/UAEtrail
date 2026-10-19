@@ -125,7 +125,7 @@ Each context has **one write path** and **one public read model** where possible
 | **Places** | Place catalog read, place detail, **member place submit** | `src/places-discovery/*`, `PlaceDetail*`, FAB Add→place wizard (`compose` UI) | `place-catalog`, `place-submit`, `GET /places/catalog`, `POST /me/places` | `locations` (place rows) |
 | **Facilities** | Facility catalog read, facility detail, **member facility submit** | FAB Add→facility wizard; `adminFacilityPlaceAdapter` | `place-catalog` (facility half), `GET /facilities/catalog`, `POST /me/facilities`, `GET/PATCH /admin/facilities` | **`facilities`** |
 | **Areas** | Admin-curated **name** (`areas`, stable `areaId`) grouping Places/Facilities. **Not a map pin** — country / state / region come from map geography. Hub page `/area/:slug` + filter `?area=`. Children via **`place.areaId`** / **`facility.areaId`**. | `/area/:slug`, Find **Area then pin** (the pin is the seeking/place/facility, not the Area), admin **area** link | `areas-store`, `explore-map-area-lens.ts` (hub rollups, not map emit), `hostingPublishArea.ts` | `areas`; **`locations.areaId`**; **`facilities.areaId`**; seeking `areaId` on the activity/post; hosted geography = **`activity.locationId` → `place.areaId`** |
-| **Commerce** | Shop public + merchant manage (affiliate) | `ShopPublic`, `/organisation/manage?kind=shop` | `registerShopPublicRoutes` · `registerShopCheckoutRoutes` · `registerShopMerchantManageRoutes` | `merchant_profiles`, `tenants` (SHOP) |
+| **Shop profiles** | Operator shop public page + merchant manage (no product catalog) | `ShopPublic`, `/organisation/manage?kind=shop` | `registerShopPublicRoutes` · `registerShopMerchantManageRoutes` | `merchant_profiles`, `tenants` (SHOP) |
 | **Engagement** | Goals, map pins, wishlist, follow | explore wishlist save, entity/member follow | `registerMeGoalsRoutes`, `registerMeWishlistRoutes`, `registerEntityFollowRoutes`, … | `user_goals`, `user_wishlist`, `entity_follows`, `user_follows` |
 | **Platform ops** | Admin console, audit, applications, master-granted staff | `src/pages/admin/*` (`/admin/users` **Users** nav) | `routes/admin.ts` + `routes/admin/registerAdmin*` | `host_applications`, `audit_logs`, `auth_users` (staff role) |
 
@@ -162,7 +162,7 @@ Pick a **context id** when changing code; touch registrar + `src/api/domains/*` 
 | User question | Bounded context | Surfaces | Not this |
 |---------------|-----------------|----------|----------|
 | Who can I go with? Who’s on an outing? Who’s looking for a crew? | **member_discovery** + **discovery** map | `/explore` People panel (`view=people`), `/list?listCat=people` (**Buddies**), shared `PeopleBrowseTabContent` | `/messages`, group walls |
-| Who do I talk to? What did the crew say? | **communication** | `/messages` (**Chat** tab), `/groups` → Message → thread | Explore people panel, roster APIs |
+| Who do I talk to? What did the crew say? | **communication** | `/chat` (**Chat** tab; legacy `/messages` → `/chat`), `/groups` → Message → thread | Explore people panel, roster APIs |
 
 **One member model, two jobs:** browse reads show **relationship + outing status** (friend/following, trip hint, looking-for row, directory card). Chat surfaces use the **social graph** for eligibility but are a separate transport ([`COMMUNICATION.md`](./COMMUNICATION.md)).
 
@@ -184,7 +184,7 @@ Canonical navigation: [`NAVIGATION.md`](./NAVIGATION.md). Structural rules:
 | Entity | `/activity/:id`, place URLs | “Trip” entity (does not exist) |
 | Publishing workspace | `/publishing/*` (SPA + HTTP) | Buddy **Host** (map FAB) + **Plan hosted** manage (same APIs, consumer surface) |
 | Pro / business | `/profile/pro-membership` | `/become-host` as product entry (redirect only) |
-| Messaging | `/messages` (+ `?group=` / `?to=`) | Chat embedded only on entity/Plan flows → `/chat` |
+| Messaging | `/chat` (+ `?group=` / `?to=`; legacy `/messages` redirects) | A second inbox route or host-only messages shell |
 | List layout (browse) | `/list?…` (handoff) · mobile **List** pill on `/explore` | A second product home, `/map`, or **List bottom-nav tab** |
 | **Publishing workspace** | `/publishing/*` (legacy `/host/*` → `/publishing/*`) | Consumer **Host** on `/explore` (same APIs, different shell) |
 | **Platform admin** | `/admin/*` | Consumer peek/detail, Explore chrome, or `ConsumerShell` |
@@ -314,7 +314,7 @@ One **person account**; **one consumer profile page** (`/member/:userId` — `Me
 | **Host on activity** | Activity Plan tab **host row** | `ActivityDetail*` publisher strip | Link **person** (`/member`) vs **business** (`/agency`, `/shop`) via `resolveActivityPublisherProfilePath` |
 | **Individual Pro** | `/member/:userId` | `MemberProfile` | Same person card + Pro membership — no `/guide` storefront |
 | **Agency / partner** | `/agency/:slug`, `/partner/:slug` | Same | Workspace team ≠ consumer buddy graph |
-| **Shop brand** | `/shop/:id` | `ShopPublicPage` | Commerce context |
+| **Shop brand** | `/shop/:id` | `ShopPublicPage` | `shop_profiles` context |
 | **Available / roster** | Explore people tabs `available`, `going`, `connect` | `PeopleBrowseTabContent` | Roster APIs (`member_discovery`); **not** full L3 until tap through |
 | **Owner preview** | Eye from profile / console | Consumer L3 with `preview` / manage affordances | Same wire as public; extra actions only in workspace |
 
@@ -561,7 +561,7 @@ Work **in order**; extend `systemCoherenceGuard.test.ts` / `naming-coherence.tes
 | Wave | Goal | Scope (representative) | Guard / proof | Status |
 |------|------|------------------------|---------------|--------|
 | **S10-core** | P0–P1 audit items shipped | Demo login, regex search, demo passwords, metrics auth, side effects, inbox batch + degrade, media ACL, shop rails, batched reads (assembler, reviews, entity-follows) | `verify:domain` + §5 | **Done** |
-| **S10a** | Consumer **mount-fetch races** (`useSafeAsyncEffect`) | Inbox, Profile hub/edit/badges, place detail, explore peek hooks, `MemberProfile`, `ProductDetail`, `ActivityDetail`, `JourneyMapPage`, `ShopPublic`; **AreaDetail** uses React Query (OK); plan sections = deep-link sync only | `systemCoherenceGuard` S10a lists | **Done** (Oct 2026) |
+| **S10a** | Consumer **mount-fetch races** (`useSafeAsyncEffect`) | Inbox, Profile hub/edit/badges, place detail, explore peek hooks, `MemberProfile`, `ActivityDetail`, `JourneyMapPage`, `ShopPublic`; **AreaDetail** uses React Query (OK); plan sections = deep-link sync only | `systemCoherenceGuard` S10a lists | **Done** (Oct 2026) |
 | **S10b** | Publishing workspace (`/host/*`) mount-fetch races | `Activities`, `JoinRequests`, `Places`, `History`, `Team`, `PublicProfileEdit`, `ConsoleShell` reviews chip; hub via `useConsoleHubData` (React Query) | `systemCoherenceGuard` S10b | **Done** (Oct 2026) |
 | **S10c** | API **read batching** (N+1) | Read/list paths batched (incl. member browse, wishlist, group unread, publish notify actor labels); private-profile notify fan-out may still resolve per recipient | `naming-coherence.test.ts` | **Done** (Oct 2026) |
 | **S10d** | Explore **runtime hygiene** (not C18 rewrite) | Browse URL migrations, organize/pin-deep-link callback deps, rideshare gate deps | `systemCoherenceGuard` S10d | **Done** (Oct 2026) |
@@ -589,7 +589,7 @@ Phases **S0–S4** (guards), **S6–S8** (core), and **S7/S7b/S7c** are in place
 | **Facility** | **Amenity** POI (toilet, rest_area, parking, …; member **outdoor_shop** pin ≠ operator shop). Storage: **`facilities` collection** (target). Optional **`parentPlaceId`** (rest stop on a trail); required **`areaId`**. |
 | **Activity** | Scheduled outing; `activityMode: hosted` \| `seeking`. **Find crew** (fixed) + **Host** on explore FAB (no separate legacy **Find** menu). |
 | **Area** | Curated hub; places and facilities link via `areaId`; activity geography via `activity.locationId → place.areaId`. |
-| **Shop profiles** | **Operator tenant** + `/shop/:id` + `/publishing/*` — **not** FAB Add. Member gear pin → **facility `outdoor_shop`** (peek exposure). No product catalog. |
+| **Shop profiles** | **Operator tenant** + `/shop/:id` + `/publishing/*` — **not** the same as FAB **Add → Shops** (`add.place.shop` community place submit). No product catalog or shop checkout HTTP. |
 | **Add / submit** | **Not** an API or table — **provenance** `registeredByUserId` (alias `submittedById` during migration) on place/facility rows. |
 | **Registry** | **Named catalog queries** — `GET /places/catalog` (places), `GET /facilities/catalog` — not separate Mongo “registry” collections. |
 | **Lifecycle (catalog)** | **Moderation** (`pending` \| `approved` \| `rejected` \| `suspended`) + **publication** (`listed` \| `unlisted` \| `anchor_only`) — migrate from `LocationStatus` + `registryListed`. **No member-facing draft editor** — profile **submissions** + pending copy. |
@@ -1068,7 +1068,7 @@ All **17** contexts: `discovery`, `compose`, `participation`, `member_identity`,
 
 **Cross-cutting (in PCOH scope):** auth & account lifecycle; notifications & push; check-in; viewer access; side-effect outbox; explore Redis cache; agent/OG; premium place PDF; member discovery quota; coordination attention; journey map pins; legacy SPA redirects; `verify:system` / journey tests.
 
-**Removed products (do not restore):** trail-points wallet, `/host` API/SPA, `/social` graph mount, bare rewards domains (`manifest.removedProducts`).
+**Removed products (do not restore):** trail-points wallet, `/host` API/SPA, `/social` graph mount, bare rewards domains (`manifest.removedProducts`), **shop product catalog** (`/shop/products`, `/shop/checkout`, `/admin/shop`, `ProductDetail`, Mongo `products` / `shop_orders` / `order_line_items`).
 
 #### 8.8.4 Canonical API flows (one BWL path each)
 
@@ -1117,7 +1117,7 @@ Discover map `GET /explore/map` (guest catalog) · overlay `GET /me/discover/ove
 | Host compose tree | `create/hosting` + `hostingFlowEngine` + `hostingFlows` (COH-10). No `organizeFlow.ts` / `createOrganize` / `CreateActivityFlow` |
 | Seeking compose engine | `seekingFlowEngine.ts` + `CreateSeekingFlow.tsx` (no `CreateDemandFlow` / `demandFlow.ts` / `demandWizardSteps`) |
 | People browse module | `src/people-discovery/*` only. No `explore/ui/peopleBrowse` re-export; no `explore/peopleBrowseTab.ts` |
-| Shop HTTP | `shop.ts` mounts `registerShopPublicRoutes` · `registerShopCheckoutRoutes` · `registerShopMerchantManageRoutes`. Live aliases `/shop/merchants/:id` and `/shop/organisation/*` stay in those registrars |
+| Shop HTTP | `shop.ts` mounts `registerShopPublicRoutes` · `registerShopMerchantManageRoutes` only. Live aliases `/shop/merchants/:id` and `/shop/organisation/*` stay in those registrars |
 | Admin HTTP | `admin.ts` mounts `registerAdmin*` only. Pages: `src/pages/admin/*` (folder-as-namespace; no root `Admin*.tsx`) |
 | SPA legacy pages | No Navigate-only page modules (`ShopManage`, `AgencyManage`, `BecomeHost`, `Membership`, `MerchantPublic`). Bookmark aliases stay inline in `App.tsx`; `routingHygiene` bans new links |
 | Identity / chat / review data libs | `auth-users-store`, `auth-tokens-store`, `chat-messages-store`, `social-reviews-store`. No `auth-users.ts` / `auth-tokens.ts` / `chat-data.ts` / `social-data.ts` (no re-export shim) |

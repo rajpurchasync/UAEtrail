@@ -84,11 +84,12 @@ export const EXPLORE_JOIN_INVITE_QUERY_KEY = 'invite';
 export const PLAN_WITH_QUERY_KEY = 'planWith';
 /** When `1`, map/list show only the signed-in member's activities + wishlist pins. */
 export const MY_PLAN_MAP_QUERY_KEY = 'myPlan';
-/** @deprecated Bookmarks — parsed alongside {@link MY_PLAN_MAP_QUERY_KEY}. */
-export const MY_TRIPS_QUERY_KEY = 'myTrips';
+/** Legacy explore query — parse only; do not write in new URLs. */
+const LEGACY_MY_PLAN_MAP_QUERY_KEY = 'myTrips';
 
 export const parseExploreMyPlanMapMode = (searchParams: Pick<URLSearchParams, 'get'>): boolean =>
-  searchParams.get(MY_PLAN_MAP_QUERY_KEY) === '1' || searchParams.get(MY_TRIPS_QUERY_KEY) === '1';
+  searchParams.get(MY_PLAN_MAP_QUERY_KEY) === '1' ||
+  searchParams.get(LEGACY_MY_PLAN_MAP_QUERY_KEY) === '1';
 
 export const parsePlanWithUserId = (searchParams: Pick<URLSearchParams, 'get'>): string | null =>
   searchParams.get(PLAN_WITH_QUERY_KEY)?.trim() || null;

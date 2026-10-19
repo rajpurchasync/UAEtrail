@@ -1,9 +1,7 @@
 import {
-  ACTIVITIES_PATH,
   EXPLORE_DISCOVER_BROWSE_PATH,
   EXPLORE_MAP_PATH,
   PLAN_PATH,
-  TRIPS_PATH,
 } from '../../config/routingCatalog';
 import { isDiscoverBrowseRoute } from '../../explore/exploreDiscoverBrowse';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
@@ -34,7 +32,7 @@ export const Header = () => {
       if (pathname === EXPLORE_MAP_PATH || pathname === '/discovery') {
         return !isDiscoverBrowseRoute(pathname, search);
       }
-      if (pathname === PLAN_PATH || pathname === TRIPS_PATH || pathname === ACTIVITIES_PATH) {
+      if (pathname === PLAN_PATH) {
         const tab = searchParams.get('tab');
         return tab !== 'joined' && tab !== 'hosted';
       }

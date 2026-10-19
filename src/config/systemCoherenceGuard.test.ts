@@ -12,7 +12,6 @@ const SURFACE_LINKS: Array<{ path: string; constant: string }> = [
   { path: '/buddies', constant: 'BUDDIES_PATH' },
   { path: '/groups', constant: 'GROUPS_PATH' },
   { path: '/profile/submissions', constant: 'PROFILE_SUBMISSIONS_PATH' },
-  { path: '/community', constant: 'COMMUNITY_PATH' },
   { path: '/profile/badges', constant: 'PROFILE_BADGES_PATH' },
   { path: '/my-requests', constant: 'MY_REQUESTS_PATH' },
   { path: '/chat', constant: 'MESSAGES_PATH' },
@@ -101,7 +100,7 @@ describe('systemCoherenceGuard', () => {
     expect(content).toMatch(/BUDDIES_PATH/);
     expect(content).toMatch(/GROUPS_PATH/);
     expect(content).toMatch(/messagesGroupPath/);
-    expect(content).toMatch(/INBOUND_TRIPS_MAP_PATH/);
+    expect(content).toMatch(/INBOUND_PLAN_HUB_TRIPS_MAP_PATH/);
     expect(content).not.toMatch(/return '\/buddies'/);
     expect(content).not.toMatch(/return '\/groups'/);
     expect(content).not.toMatch(/return `\/messages\?group=/);

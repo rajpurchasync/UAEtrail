@@ -21,7 +21,7 @@ There are **five public entity kinds** on the wire (`EntityKind` / `EntityRef`):
 | `place` | **Place** | `locations`, `LocationDTO` | Second “Venue” entity |
 | `activity` | **Activity** (outing / plan) | `activities`, `ActivityDTO` | `Trip`, `TripDTO`, `Event` row |
 | `organisation` | **Business storefront** (agency / partner tenant) — wire name `organisation`; see §1.5 | `tenants`, `/agency` · `/partner` | A second “organizer” entity table |
-| `shop` | **Shop** (outdoor retail brand + catalog) | `merchant_profiles` + SHOP `tenants` | “Merchant”, “Partner” for shops |
+| `shop` | **Shop** (outdoor retail brand — profile only, no SKU catalog) | `merchant_profiles` + SHOP `tenants` | “Merchant”, “Partner” for shops |
 | `person` | **Person** / member | `users` (profile fields) | “User” in consumer copy |
 
 **Find crew** is not a sixth entity kind on URLs — it is a **seeking activity** (`activityMode: seeking`) on the map; deep links use **`exploreSeekingMapItemPath`** (`pin=activity:{id}`). Leftover **`pin=demand:`** is not a product path. Not `/demand/:id`.
@@ -234,7 +234,7 @@ Built only via **`routingCatalog`** or `@uaetrail/shared-types` `entity-path` he
 
 **Parse inbound links:** `parseEntityRefFromPathname(pathname)` → `EntityRef`.
 
-**Legacy redirects only** (do not link in new UI): `/map`, `/discovery`, `/trips`, `/activities` → `/plan` or `/profile/history` (or journey map), `/become-host` → Pro Membership, `/merchant/:id`, `/host/*` and `/organizer/*` → `/publishing/*` where applicable (except `/host/messages` → `/chat`). Table: [`NAVIGATION.md`](./NAVIGATION.md) § Legacy redirects.
+**Legacy redirects only** (do not link in new UI): `/map`, `/discovery`, `/trips`, `/activities` → `/plan` or `/profile/history` (or journey map), `/become-host` → Pro Membership, `/merchant/:id` → `/shop/:id`, `/product/:id` → explore shops browse, `/profile/wishlist` → Plan wishlist tab, `/contributions` → `/profile/submissions`, `/messages` → `/chat`, `/host/*` and `/organizer/*` → `/publishing/*` where applicable. Implementations: `src/routing/inboundBookmarkRedirects.tsx` + `App.tsx` routes. Table: [`NAVIGATION.md`](./NAVIGATION.md) § Legacy redirects.
 
 ### 3.1 Consumer detail tab wire ids
 
@@ -261,7 +261,7 @@ Detail UIs must load from the **canonical read API** for that entity; writes use
 | **Activity** | `/activity/:id` | `activities` + participation | Member **Organize/Find** FAB, host publish (`member-publish-gate`) | `GET /activities/:id` (`viewerAccess`, presentation) | `usePublicActivityDetail` | Not trail inventory — scheduled outing |
 | **Member (person)** | `/member/:userId` | `users` profile | Member `PATCH /me/profile` | `GET /member/:userId/profile` | `memberPublicProfileApi` | ≠ tenant storefront |
 | **Organisation (pro)** | `/agency`, `/partner` | `tenants` storefront | Host onboarding / `organisationConsoleApi` | `GET /tenants/:slug` (public profile bundle) | `organisationConsoleApi` | Shop tenants → `/shop/:id`; individual Pro → `/member/:userId` |
-| **Shop** | `/shop/:id` | `tenants` / merchant (+ optional place pin) | **Operator** Pro onboarding — **not** FAB Add; community gear pin = **facility `outdoor_shop`** ([§1.7](#17-program-cpc--catalog-ontology-fab-compose-wire)) | `GET /shop/shops/:id` | `shopPublicClientApi` | `EntityKind.shop` = storefront only |
+| **Shop** | `/shop/:id` | `tenants` / merchant (+ optional place pin) | **Operator** Pro onboarding — **not** FAB **Add → Shops** (`add.place.shop` is community **place** submit); see [§1.7](#17-program-cpc--catalog-ontology-fab-compose-wire) | `GET /shop/shops/:id` | `shopPublicClientApi` | `EntityKind.shop` = storefront tenant; no product catalog HTTP |
 | **Place** | `/place/:id` (CPC-6; legacy `/trail`·`/camp`·`/venue`) | `locations` (place rows) | Admin `/admin/places`; member **Add → Place**; operator place submit with `areaId` | `GET /places/:id`; `GET /places/catalog`; linked **facilities** via **`parentPlaceId`** (**CPC-3**) | `placeDetailClientApi` | Place catalog excludes facilities after CPC |
 | **Facility** | `/facility/:id` | **`facilities`** (**CPC-2**) | Admin `/admin/facilities`; member **Add → Facility** | `GET /facilities/:id`; `GET /facilities/catalog` | TBD `facilityDetailClientApi` | `areaId` + optional `parentPlaceId` |
 | **Area** | `/area/:slug` | `areas` curated hubs | **Admin** `/admin/areas` (publish `status`) | `GET /areas/:slug` (preview slices) | `areaHubClientApi` | Previews filter published activities + active places by `areaId` |
@@ -281,7 +281,7 @@ Map/list **peek** and entity **detail** share one engagement contract per viewer
 | **Activity** | `ActivityMapPeekHost` → `ActivityPeekCard` → `peek/activity/*` | `ActivityDetailByKind` → `*ActivityDetailPage` → scroll body + wire CTAs | `PeekDetailLink` + `view_detail` in `mapPeekActions` | Join/RSVP: `POST /activities/:id/requests`; **public** slots from `presentation.consumerLayout` + `mapPeekActions`; embed: `footerByTab`; guest: `ActivityDetailGuestGate` |
 | **Place** | `PlaceMapPeekHost` → `PlacePeekCard` (`PlacePeekHero` · `PlacePeekBody` · `PlacePeekActions`) | `*PlaceDetailPage` → `PlaceDetailPageShell` → `PlaceConsumerDetailPage` | **Arrange trip** (Organize) · `PeekDetailLink` **View details** | `GET /places/:id/activities`; reviews; transport; `nearbyFacilities`; premium guide `PlacePremiumGuidePanel` |
 | **Area** | `mapPeekSlots` → `AreaPeekBody` / `AreaPeekActions` | `AreaDetailPage` → `AreaDetailView` (`MobileDetailShell`) | Links to `/area/:slug`, explore `?area=` | Browse-only hub — join on child **activity** rows |
-| **Shop** | `ShopPeekActions` + `PeekDetailLink` | `ShopPublic` → `ShopPublicPage` (`EntityPublicDetailShell`) | `/shop/:id`; guest catalog rows may gate in peek | Reviews/follow on tenant id; outbound product URLs |
+| **Shop** | `ShopPeekActions` + `PeekDetailLink` | `ShopPublic` → `ShopPublicPage` (`EntityPublicDetailShell`) | `/shop/:id`; guest map rows may gate in peek | Reviews on tenant id; outbound **website** link only (no product grid) |
 | **Agency** | Catalog / activity publisher row (not `source: agency` map rows) | `OrganisationProfile` → `OrganisationPublicProfile` (`EntityPublicDetailShell`) | `resolveActivityPublisherProfilePath` from activity | Message/follow; listed outings → `/activity/:id` |
 | **Member** | People browse / roster links | `MemberProfile` (`viewerAccess` on `GET /member/:userId/profile`) | `/member/:userId` | Buddy add, follow, `MessageMemberButton` |
 
@@ -434,7 +434,7 @@ When renaming or adding routes:
 | `LocationDTO` vs Place | Mongo `locations` + historical API |
 | `tenant` vs Organisation | `x-organisation-id` header (`tenantId` in storage) |
 | `UserRole` vs `HostStatusDTO` | Auth shell vs product capabilities |
-| `InboundProMembershipRedirect` (`src/routing/inboundBookmarkRedirects.tsx`) | Bookmark `/become-host` → `PRO_MEMBERSHIP_PATH` |
+| `src/routing/inboundBookmarkRedirects.tsx` | Central bookmark redirects (`/become-host`, `/messages`, `/product/:id`, `/profile/wishlist`, place kind paths, trips hub, …) — mounted from `App.tsx` |
 | `ProProfileApplicationFlow` | Pro guide/agency/shop application wizard (not community Host / publish) |
 | `/activities` route | Bookmark redirect to `/plan` (or history) in `App.tsx` |
 
@@ -447,6 +447,7 @@ When renaming or adding routes:
 | Need | Import |
 |------|--------|
 | Path constants, entity URLs | `src/config/routingCatalog.ts` (`messagesToUserPath`, `messagesGroupPath`, `myRequestDetailPath`) |
+| Inbound bookmark segments (redirect targets only) | `src/config/inboundRoutePaths.ts` — paired with `src/routing/inboundBookmarkRedirects.tsx` |
 | Explore query (`compose=`, panels) | `explorePath()` — `src/explore/routing.ts` |
 | Notification deep link | `inferNotificationPath()` — `src/utils/notificationRouting.ts` only |
 | Post-auth / legacy dashboard | `authRouting.ts` (shrink over time) |
@@ -460,7 +461,7 @@ When renaming or adding routes:
 | Tenant console | `organisationApi` | organisation profile, team, join queue |
 | Badges | `badgesApi` | `getMemberBadges()` |
 
-**API client:** `api` merges `src/api/domains/*` only (legacy alias layer removed Oct 2026). **Notification deep links:** `apps/api/src/lib/member-routes.ts` ↔ `src/config/surfacePaths.ts` (`member-routes-alignment.test.ts`). **Resolvers** (`resolve*`) belong in `apps/api/src/services/*` only.
+**API client:** `api` merges `src/api/domains/*` only (legacy alias layer removed Oct 2026). **Base URL:** `VITE_API_BASE_URL` → `/api` (unversioned). **Notification deep links:** `apps/api/src/lib/member-routes.ts` ↔ `src/config/surfacePaths.ts` (`member-routes-alignment.test.ts`). **Resolvers** (`resolve*`) belong in `apps/api/src/services/*` only.
 
 ---
 
@@ -639,7 +640,7 @@ One facade (e.g. `src/hooks/tenantActivityClientApi.ts` — name TBD at implemen
 
 Tracked in [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.8 **P5** and [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) **C21** / **S11**. Order: **policy + guards** → **folder moves with shims** → **client API normalize** → **wire dual-read** → **drop legacy mounts**.
 
-**Guards:** `src/config/moduleNamingGuard.test.ts`, `hostMemberGuard`, `publishingConsoleHookGuard`, `tripsConsumerNamingGuard`, `workspaceProductLanguageGuard`.
+**Guards:** `src/config/moduleNamingGuard.test.ts`, `hostMemberGuard`, `publishingConsoleHookGuard`, `planHubInboundGuard`, `workspaceProductLanguageGuard`.
 
 ### 13.5 Naming backlog (NC-*)
 
@@ -790,7 +791,7 @@ Computed server-side via **`resolveActivityEngagementPolicy`** → `intents` (+ 
 | **Demand** | anonymous | map peek | `redacted` | `sign_in` | **TARGET** — align with activity peek rules |
 | **Demand** | approved joiner | map / future detail | `full` | `null` | Intent request queue |
 | **Place** | anyone | detail pages | `full` | `null` | Public catalog |
-| **Shop** | guest | map peek + detail | `redacted` | `sign_in` | **LIVE** — `resolveCommerceMapViewerAccess`; FE uses `viewerAccess` |
+| **Shop** | guest | map peek + detail | `redacted` | `sign_in` | **LIVE** — shop map viewer access resolver; FE uses `viewerAccess` |
 | **Shop** | signed-in member | detail | `full` | `null` | **LIVE** |
 
 **Participation axis (unchanged):** `participationMode` only affects **how** you join (`I'm going` vs `Request to join`) and `joinRequestUi` — not map discovery. Demand never has `participationMode` ([`CREATE_FLOW.md`](./CREATE_FLOW.md)).

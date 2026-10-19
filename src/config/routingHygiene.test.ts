@@ -67,7 +67,7 @@ describe('routingHygiene', () => {
     expect(catalog).toMatch(/activityDetailPath/);
     expect(catalog).toMatch(/explorePath/);
     expect(catalog).toMatch(/PRO_MEMBERSHIP_PATH/);
-    expect(catalog).toMatch(/COMMUNITY_PATH/);
+    expect(catalog).toMatch(/INBOUND_COMMUNITY_FEED_PATH/);
     expect(catalog).toMatch(/PROFILE_BADGES_PATH/);
   });
 

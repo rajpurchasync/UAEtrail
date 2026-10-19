@@ -2,6 +2,8 @@
 
 **Branch:** `main` · **Base path:** `/api` (see `apps/api/src/routes/index.ts`).
 
+**SPA client:** `VITE_API_BASE_URL` defaults to **`/api`** (unversioned — no `/api/v1` prefix). Set in `.env` / Docker build when the API is on another origin.
+
 Companion: [`DOMAIN.md`](./DOMAIN.md), [`CREATE_FLOW.md`](./CREATE_FLOW.md), [`MEMBER_MODEL.md`](./MEMBER_MODEL.md).
 
 ---
@@ -22,7 +24,7 @@ Companion: [`DOMAIN.md`](./DOMAIN.md), [`CREATE_FLOW.md`](./CREATE_FLOW.md), [`M
 | **`/chat/*`** | Auth | DMs |
 | **`/reviews`** | Public read; auth write | Social reviews (not content reports) |
 | **`/admin/*`** | `PLATFORM_ADMIN` | Moderation, **Users** (`GET/PATCH /admin/users*`), tenants, metrics — `admin.ts` mounts `registerAdmin*` only |
-| **`/shop/*`** | Public catalog; auth checkout + merchant manage | Storefront, Stripe checkout, merchant/organisation profile — `shop.ts` mounts `registerShopPublicRoutes` · `registerShopCheckoutRoutes` · `registerShopMerchantManageRoutes` |
+| **`/shop/*`** | Public read; auth merchant manage | **Operator shop profile** (contact, website, map coords) — `shop.ts` mounts `registerShopPublicRoutes` · `registerShopMerchantManageRoutes` only. **Retired (Oct 2026):** `/shop/products`, `/shop/checkout`, admin product catalog — no in-app product sales |
 | **`POST /admin/platform-admins`** | Master admin only | Grant `PLATFORM_ADMIN` to an existing member by email |
 | **`DELETE /admin/platform-admins/:userId`** | Master admin only | Revoke platform staff (not master accounts) |
 
@@ -256,7 +258,7 @@ Registration: `registerMeMapPinsRoutes.ts` · service: `member-journey-map.ts`.
 
 ## Account data export (`GET /me/export`)
 
-JSON download of profile, join requests, participations, **wishlist**, **entity follows**, **member following**, **goals**, **badges**, **journey map pins**, shop orders, and push subscription count. Registration: `registerAccountLifecycleRoutes.ts` · `buildUserDataExport` in `data-export.ts`. Rate-limited (`sensitiveDataLimiter`).
+JSON download of profile, join requests, participations, **wishlist** (venues + activities only), **entity follows**, **member following**, **goals**, **badges**, **journey map pins**, and push subscription count. Registration: `registerAccountLifecycleRoutes.ts` · `buildUserDataExport` in `data-export.ts`. Rate-limited (`sensitiveDataLimiter`).
 
 ---
 
@@ -332,7 +334,7 @@ Legacy aliases (do not use in new clients): `/me/host-application`, `/admin/host
 | `member.ts` | **`/me/status`** |
 | `badges.ts` | **`/me/badges`** |
 | `activities.ts` | `/activities`, `/me/requests`, `/publishing/activities`, `/publishing/requests` |
-| `shop.ts` | `/shop/products`, `/shop/shops/:id`, `/shop/checkout`, `/shop/merchant/*` (alias `/shop/organisation/*` profile) |
+| `shop.ts` | `GET /shop/shops/:id` (alias `/shop/merchants/:id`); auth `PATCH /shop/merchant/*` (alias `/shop/organisation/*` profile) |
 | `explore.ts` | `/explore/map`, `/explore/seeking-activities` |
 | `seeking.ts` | **`/me/seeking-posts`** (+ requests, link-activity) |
 | `groups.ts`, `chat.ts` | Groups, DMs, inbox |

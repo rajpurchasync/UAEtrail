@@ -7,11 +7,13 @@ import {
   exploreShopsPath,
   planWishlistRedirectPath,
 } from '../config/routingCatalog';
-import { PLAN_PATH } from '../config/surfacePaths';
-import { resolveInboundTripsHubRedirect } from '../member-plan/inboundTripsRedirect';
-import { useAuth } from '../context/AuthContext';
-import { useMemberStatus } from '../hooks/useMemberStatus';
-import { memberCanManageHostedActivities } from '../utils/hostedActivitiesGate';
+import { INBOUND_RETIRED_CONSOLE_PREFIXES } from '../config/inboundRoutePaths';
+import { EXPLORE_MAP_PATH } from '../config/routingCatalog';
+import {
+  JOURNEY_MAP_PATH,
+  PROFILE_HISTORY_PATH,
+  PUBLISHING_CONSOLE_PREFIX,
+} from '../config/surfacePaths';
 import { shopPublicPath } from '../utils/shopPaths';
 
 /** Inbound `/messages` and `/publishing/messages` → `/chat`. */
@@ -23,7 +25,7 @@ export const InboundMessagesRedirect = () => {
 /** Inbound place URLs (`/trail`, `/camp`, `/venue`, `/event`, …) → `/place/:id`. */
 export const InboundCanonicalPlaceRedirect = () => {
   const { id } = useParams<{ id: string }>();
-  if (!id) return <Navigate to="/explore" replace />;
+  if (!id) return <Navigate to={EXPLORE_MAP_PATH} replace />;
   return <Navigate to={canonicalPlaceDetailPath(id)} replace />;
 };
 
@@ -32,14 +34,17 @@ export const DiscoveryRedirect = () => {
   return <Navigate to={`${explorePath()}?${discoveryToExploreSearch(search)}`} replace />;
 };
 
-/** Inbound `/trips`, `/activities`, `/trips/map` → `/plan` or profile history. */
-export const InboundTripsHubRedirect = () => {
-  const { pathname, search } = useLocation();
-  const { user } = useAuth();
-  const gate = useMemberStatus({ enabled: Boolean(user) });
-  const canHost = memberCanManageHostedActivities(user, gate.canAccessPublishingWorkspace);
-  const target = resolveInboundTripsHubRedirect(pathname, search, { canHost });
-  return <Navigate to={target ?? PLAN_PATH} replace />;
+/** `/host/*`, `/operator/*`, `/organizer/*` → `/publishing/*` (retired console prefixes). */
+export const InboundRetiredPublishingConsoleRedirect = () => {
+  const { pathname, search, hash } = useLocation();
+  const prefix = INBOUND_RETIRED_CONSOLE_PREFIXES.find(
+    (candidate) => pathname === candidate || pathname.startsWith(`${candidate}/`)
+  );
+  if (!prefix) {
+    return <Navigate to={EXPLORE_MAP_PATH} replace />;
+  }
+  const suffix = pathname.slice(prefix.length) || '/overview';
+  return <Navigate to={`${PUBLISHING_CONSOLE_PREFIX}${suffix}${search}${hash}`} replace />;
 };
 
 /** Inbound `/product/:id` — product catalog removed; send guests to shop browse. */
@@ -63,3 +68,11 @@ export const InboundProMembershipRedirect = () => {
   const qs = searchParams.toString();
   return <Navigate to={`${PRO_MEMBERSHIP_PATH}${qs ? `?${qs}` : ''}`} replace />;
 };
+
+/** `/profile/my-trips` bookmarks → outing history. */
+export const InboundProfileHistoryAliasRedirect = () => (
+  <Navigate to={PROFILE_HISTORY_PATH} replace />
+);
+
+/** `/profile/my-trips/map` bookmarks → journey map. */
+export const InboundJourneyMapAliasRedirect = () => <Navigate to={JOURNEY_MAP_PATH} replace />;

@@ -6,11 +6,9 @@ import {
   type MobileTabHeaderCenter,
 } from '../../config/mobileTabHeader';
 import {
-  ACTIVITIES_PATH,
   EXPLORE_MAP_PATH,
   MESSAGES_PATH,
   PLAN_PATH,
-  TRIPS_PATH,
   isJourneyMapPath,
   isProfileHistoryListPath,
 } from '../../config/routingCatalog';
@@ -28,7 +26,7 @@ const resolveCenter = (
 ): MobileTabHeaderCenter | null => {
   if (pathname === EXPLORE_MAP_PATH) return { kind: 'brand' };
   if (pathname === '/profile') return { kind: 'title', text: 'Profile' };
-  if (pathname === PLAN_PATH || pathname === TRIPS_PATH || pathname === ACTIVITIES_PATH) {
+  if (pathname === PLAN_PATH) {
     const params = new URLSearchParams(search);
     const subTitle = joinedSubViewTitle(params.get('sub'));
     if (subTitle) return { kind: 'title', text: subTitle };
@@ -57,9 +55,7 @@ export const MobileTabHeader = () => {
   const showHeaderActions =
     pathname === EXPLORE_MAP_PATH ||
     pathname === '/profile' ||
-    pathname === ACTIVITIES_PATH ||
     pathname === PLAN_PATH ||
-    pathname === TRIPS_PATH ||
     isProfileHistoryListPath(pathname) ||
     isJourneyMapPath(pathname) ||
     pathname === MESSAGES_PATH;

@@ -109,11 +109,10 @@ Any signed-in member — no host approval to post seeking.
 | Branch | Examples | API (target) |
 |--------|----------|--------------|
 | **Place** | Trail, camp, outdoor other | `POST /me/places` |
-| **Facility** | Toilet, rest area, parking, water, viewpoint, **outdoor shop pin** | `POST /me/facilities` with `facilityKind`, `areaId`, optional `parentPlaceId` |
+| **Place (gear shop)** | FAB **Shops** (`add.place.shop`) — name, pin, about, keywords, delivery, phone, email | `POST /me/places` with shop metadata (`catalogPlaceSubmit.ts`); wizard steps in `addFlows/shop.ts` — **no** product-catalog step |
+| **Facility** | Toilet, rest area, parking, water, viewpoint, amenity-only pins (incl. legacy `outdoor_shop`) | `POST /me/facilities` with `facilityKind`, `areaId`, optional `parentPlaceId` |
 
-**Not Add on map:** **Shop** storefront (Pro tenant, `/shop/:id`, `/publishing/*` console) — separate onboarding ([`DOMAIN.md`](./DOMAIN.md) § Shop layers).
-
-**Retire:** standalone FAB **Shops** chip — member gear pin = **facility `outdoor_shop`** (peek on map), not `EntityKind.shop`.
+**Not Add on map:** **Operator shop storefront** (Pro tenant, `/publishing/*` console, `EntityKind.shop` tenant) — separate **Pro membership** onboarding ([`DOMAIN.md`](./DOMAIN.md) § Shop layers C).
 
 **Add on map uses place/facility pin** — not **Going from** (catalog rows are not trips).
 

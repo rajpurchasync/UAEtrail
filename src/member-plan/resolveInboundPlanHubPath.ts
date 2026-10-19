@@ -1,28 +1,27 @@
 import {
-  INBOUND_ACTIVITIES_HUB_PATH,
+  INBOUND_PLAN_HUB_TRIPS_MAP_PATH,
+  INBOUND_PLAN_HUB_PATHNAMES,
+} from '../config/inboundBookmarkPaths';
+import {
   JOURNEY_MAP_PATH,
   PLAN_PATH,
   PROFILE_HISTORY_PATH,
-  INBOUND_TRIPS_MAP_PATH,
-  TRIPS_PATH,
 } from '../config/surfacePaths';
 import { planSavedPath } from '../plan/planLens';
 import { normalizePlanHubSearchParams } from './planHubRouting';
 
-const INBOUND_HUB_PATHS = new Set<string>([TRIPS_PATH, INBOUND_ACTIVITIES_HUB_PATH]);
-
-/** Map inbound `/trips`, `/activities`, and `/trips/map` to {@link PLAN_PATH} or {@link PROFILE_HISTORY_PATH}. */
-export const resolveInboundTripsHubRedirect = (
+/** Map stale plan-hub URLs in notification meta to {@link PLAN_PATH} or history. */
+export const resolveInboundPlanHubPath = (
   pathname: string,
   search: string,
   options?: { canHost?: boolean }
 ): string | null => {
-  if (pathname === INBOUND_TRIPS_MAP_PATH || pathname.endsWith(INBOUND_TRIPS_MAP_PATH)) {
+  if (pathname === INBOUND_PLAN_HUB_TRIPS_MAP_PATH || pathname.endsWith(INBOUND_PLAN_HUB_TRIPS_MAP_PATH)) {
     const qs = search.replace(/^\?/, '');
     return qs ? `${JOURNEY_MAP_PATH}?${qs}` : JOURNEY_MAP_PATH;
   }
 
-  if (!INBOUND_HUB_PATHS.has(pathname)) return null;
+  if (!INBOUND_PLAN_HUB_PATHNAMES.has(pathname)) return null;
 
   const params = new URLSearchParams(search.replace(/^\?/, ''));
   const view = params.get('view');
