@@ -270,13 +270,13 @@ Canonical paths only in **new UI**. Legacy URLs redirect in `src/App.tsx` — do
 | `/rewards`, `/my-rewards`, `/trail-points` | `/profile/badges` | 2026-Q4 (Trail Points wallet removed; badges kept) |
 | `/community` | `/explore` (`COMMUNITY_PATH` — legacy Q&A feed removed) | 2026-Q4 |
 | `/membership` | `/explore` (`App.tsx` bookmark redirect; not product home) | 2026-Q4 |
-| `/organizer/*` | `/host/*` | 2026-Q4 |
+| `/organizer/*`, `/host/*` (console) | `/publishing/*` | 2026-Q4 |
 | `/become-organizer` | `/become-host` | 2026-Q4 |
 | `/become-host` | `/profile/pro-membership` | 2026-Q4 (Pro / agency / shop; buddy Host / publish uses `/welcome` + `canPublish`) |
 | `/dashboard/*` | role-based redirect | 2026-Q4 |
 | `/admin/organizers` | `/admin/hosts` | 2026-Q4 |
 | `/admin/locations` | `/admin/places` | 2026-Q4 |
-| `/host/locations` | `/host/places` | 2026-Q4 |
+| `/host/locations`, `/host/places` | `/publishing/places` | 2026-Q4 |
 | `/event-spot/:id`, `/community-activity/:id`, `/event/:id` (place) | `/venue/:id` | 2026-Q4 |
 | `/people` | `/explore?…` people browse (`explorePeopleBrowsePath`) | 2026-Q4 |
 | `/merchant/:id` | `/shop/:id` | 2026-Q4 |

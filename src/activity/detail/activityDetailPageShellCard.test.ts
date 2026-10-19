@@ -42,6 +42,6 @@ describe('buildActivityDetailPageShellCard', () => {
       } as Parameters<typeof buildActivityDetailPageShellCard>[0]['activity'],
       viewerAccess: null,
     });
-    expect(card.linkedRideshareActivities?.[0]?.activityId).toBe('ride-9');
+    expect(card.linkedRideshares?.[0]?.activityId).toBe('ride-9');
   });
 });

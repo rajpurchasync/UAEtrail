@@ -83,4 +83,23 @@ describe('detailSurfaceWiringAcceptance', () => {
     expect(read('src/explore/ui/peek/shop/ShopPeekActions.tsx')).toMatch(/PeekDetailLink/);
     expect(read('src/explore/ui/ActivityMapPeekHost.tsx')).toMatch(/ActivityPeekCard/);
   });
+
+  it('DS-WIRE-06: L3 shell card projects linked rideshare onto discovery card model', () => {
+    const shellCard = read('src/activity/detail/activityDetailPageShellCard.ts');
+    expect(shellCard).toMatch(/linkedRideshareActivityId/);
+    expect(shellCard).toMatch(/linkedRidesharesFromDetail/);
+    expect(read('src/activity/detail/activityDetailPageShellCard.test.ts')).toMatch(
+      /linkedRideshares/
+    );
+  });
+
+  it('DS-WIRE-07: map list and L3 share one join flow module', () => {
+    for (const file of [
+      'src/pages/ActivityDetail.tsx',
+      'src/explore/ui/useExploreSelectionPeekJoin.ts',
+      'src/list/ui/ListFeedActionsProvider.tsx',
+    ]) {
+      expect(read(file)).toMatch(/useActivityJoin/);
+    }
+  });
 });
