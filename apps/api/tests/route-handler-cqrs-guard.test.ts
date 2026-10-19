@@ -22,7 +22,7 @@ const WRITE_OPS = [
 const ROUTE_HANDLER_SKIP = new Set([
   'index.ts',
   'schemas.ts',
-  'operator-route-schemas.ts',
+  'publishing-route-schemas.ts',
 ]);
 
 const walkRouteHandlerFiles = (dir: string, acc: string[] = []): string[] => {
@@ -150,11 +150,11 @@ describe('route handler CQRS guard (MIG-CQRS-ROUTES)', () => {
       'apps/api/src/routes/user/registerMeMapPinsRoutes.ts',
       'apps/api/src/routes/user/registerMeDiscoverOverlayRoutes.ts',
       'apps/api/src/routes/user/registerGroupRoutes.ts',
-      'apps/api/src/routes/operator/registerOperatorActivityRequestRoutes.ts',
-      'apps/api/src/routes/operator/registerOperatorActivityParticipantRoutes.ts',
-      'apps/api/src/routes/operator/registerOperatorTeamRoutes.ts',
-      'apps/api/src/routes/operator/registerOperatorSubmittedLocationRoutes.ts',
-      'apps/api/src/routes/operator/registerOperatorActivityRoutes.ts',
+      'apps/api/src/routes/publishing/registerPublishingActivityRequestRoutes.ts',
+      'apps/api/src/routes/publishing/registerPublishingActivityParticipantRoutes.ts',
+      'apps/api/src/routes/publishing/registerPublishingTeamRoutes.ts',
+      'apps/api/src/routes/publishing/registerPublishingSubmittedLocationRoutes.ts',
+      'apps/api/src/routes/publishing/registerPublishingActivityRoutes.ts',
       'apps/api/src/routes/admin/registerAdminAuditRoutes.ts',
       'apps/api/src/routes/admin/registerAdminMetricsRoutes.ts',
       'apps/api/src/routes/admin/registerAdminContentReportRoutes.ts',
@@ -286,45 +286,45 @@ describe('route handler CQRS guard (MIG-CQRS-ROUTES)', () => {
     expect(listStoreImports('apps/api/src/routes/user/registerGroupRoutes.ts')).toEqual([]);
   });
 
-  it('operator activity request registrar wires operator-activity-request read + commands', () => {
-    const registrar = readRegistrar('apps/api/src/routes/operator/registerOperatorActivityRequestRoutes.ts');
-    expect(registrar).toMatch(/operator-activity-request-read/);
-    expect(registrar).toMatch(/operator-activity-request-commands/);
-    expect(listStoreImports('apps/api/src/routes/operator/registerOperatorActivityRequestRoutes.ts')).toEqual([]);
+  it('operator activity request registrar wires publishing-activity-request read + commands', () => {
+    const registrar = readRegistrar('apps/api/src/routes/publishing/registerPublishingActivityRequestRoutes.ts');
+    expect(registrar).toMatch(/publishing-activity-request-read/);
+    expect(registrar).toMatch(/publishing-activity-request-commands/);
+    expect(listStoreImports('apps/api/src/routes/publishing/registerPublishingActivityRequestRoutes.ts')).toEqual([]);
   });
 
   it('operator activity participant registrar wires operator participant services', () => {
     const registrar = readRegistrar(
-      'apps/api/src/routes/operator/registerOperatorActivityParticipantRoutes.ts'
+      'apps/api/src/routes/publishing/registerPublishingActivityParticipantRoutes.ts'
     );
-    expect(registrar).toMatch(/operator-activity-participant-read/);
-    expect(registrar).toMatch(/operator-activity-participant-commands/);
-    expect(listStoreImports('apps/api/src/routes/operator/registerOperatorActivityParticipantRoutes.ts')).toEqual(
+    expect(registrar).toMatch(/publishing-activity-participant-read/);
+    expect(registrar).toMatch(/publishing-activity-participant-commands/);
+    expect(listStoreImports('apps/api/src/routes/publishing/registerPublishingActivityParticipantRoutes.ts')).toEqual(
       []
     );
   });
 
-  it('operator team registrar wires operator-team read + commands', () => {
-    const registrar = readRegistrar('apps/api/src/routes/operator/registerOperatorTeamRoutes.ts');
-    expect(registrar).toMatch(/operator-team-read/);
-    expect(registrar).toMatch(/operator-team-commands/);
-    expect(listStoreImports('apps/api/src/routes/operator/registerOperatorTeamRoutes.ts')).toEqual([]);
+  it('operator team registrar wires publishing-team read + commands', () => {
+    const registrar = readRegistrar('apps/api/src/routes/publishing/registerPublishingTeamRoutes.ts');
+    expect(registrar).toMatch(/publishing-team-read/);
+    expect(registrar).toMatch(/publishing-team-commands/);
+    expect(listStoreImports('apps/api/src/routes/publishing/registerPublishingTeamRoutes.ts')).toEqual([]);
   });
 
-  it('operator activity registrar wires operator-tenant-activity read and commands', () => {
-    const registrar = readRegistrar('apps/api/src/routes/operator/registerOperatorActivityRoutes.ts');
-    expect(registrar).toMatch(/operator-tenant-activity-read/);
-    expect(registrar).toMatch(/operator-tenant-activity-commands/);
-    expect(listStoreImports('apps/api/src/routes/operator/registerOperatorActivityRoutes.ts')).toEqual([]);
+  it('operator activity registrar wires publishing-tenant-activity read and commands', () => {
+    const registrar = readRegistrar('apps/api/src/routes/publishing/registerPublishingActivityRoutes.ts');
+    expect(registrar).toMatch(/publishing-tenant-activity-read/);
+    expect(registrar).toMatch(/publishing-tenant-activity-commands/);
+    expect(listStoreImports('apps/api/src/routes/publishing/registerPublishingActivityRoutes.ts')).toEqual([]);
   });
 
   it('operator submitted location registrar wires operator location read + commands', () => {
     const registrar = readRegistrar(
-      'apps/api/src/routes/operator/registerOperatorSubmittedLocationRoutes.ts'
+      'apps/api/src/routes/publishing/registerPublishingSubmittedLocationRoutes.ts'
     );
-    expect(registrar).toMatch(/operator-submitted-location-read/);
-    expect(registrar).toMatch(/operator-submitted-location-commands/);
-    expect(listStoreImports('apps/api/src/routes/operator/registerOperatorSubmittedLocationRoutes.ts')).toEqual(
+    expect(registrar).toMatch(/publishing-submitted-location-read/);
+    expect(registrar).toMatch(/publishing-submitted-location-commands/);
+    expect(listStoreImports('apps/api/src/routes/publishing/registerPublishingSubmittedLocationRoutes.ts')).toEqual(
       []
     );
   });

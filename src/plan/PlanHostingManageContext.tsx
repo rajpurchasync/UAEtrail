@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, type ReactNode } from 'react';
 import type { ActivityDTO, ParticipantIntentDTO } from '@uaetrail/shared-types';
 import { useMySeekingPosts } from '../hooks/useMySeekingPosts';
 import { useConsoleHubData } from '../console/useHubData';
-import { useOperatorActivityManageActions } from '../hooks/useOperatorActivityManageActions';
+import { useHostActivityManageActions } from '../hooks/useHostActivityManageActions';
 import { PlanHostingManageSheets } from '../components/plan/PlanHostingManageSheets';
 import { usePlanHostingManageDeepLink } from './usePlanHostingManageDeepLink';
 
@@ -36,7 +36,7 @@ export const PlanHostingManageProvider = ({
   active,
 }: PlanHostingManageProviderProps) => {
   const host = useConsoleHubData();
-  const hostActions = useOperatorActivityManageActions(host.tenantId, host.reload);
+  const hostActions = useHostActivityManageActions(host.tenantId, host.reload);
   const { intents, refetch: refetchIntents } = useMySeekingPosts(canHost && active, refreshKey);
 
   useEffect(() => {

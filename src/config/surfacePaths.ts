@@ -48,15 +48,15 @@ export const ADMIN_PLACES_PATH = '/admin/places' as const;
 export const PUBLISHING_CONSOLE_PREFIX = '/publishing' as const;
 
 /** Publishing console (organizer + operator tenants) — canonical URLs. Sync `apps/api/src/lib/member-routes.ts`. */
-export const OPERATOR_OVERVIEW_PATH = '/publishing/overview' as const;
-export const OPERATOR_ACTIVITIES_PATH = '/publishing/activities' as const;
-export const OPERATOR_ACTIVITIES_NEW_PATH = '/publishing/activities/new' as const;
-export const OPERATOR_REQUESTS_PATH = '/publishing/requests' as const;
-export const OPERATOR_TEAM_PATH = '/publishing/team' as const;
-export const OPERATOR_PROFILE_PATH = '/publishing/profile' as const;
-export const OPERATOR_HISTORY_PATH = '/publishing/history' as const;
-export const OPERATOR_PLACES_PATH = '/publishing/places' as const;
-export const OPERATOR_SECURITY_PRIVACY_PATH = '/publishing/security-privacy' as const;
+export const PUBLISHING_OVERVIEW_PATH = '/publishing/overview' as const;
+export const PUBLISHING_ACTIVITIES_PATH = '/publishing/activities' as const;
+export const PUBLISHING_ACTIVITIES_NEW_PATH = '/publishing/activities/new' as const;
+export const PUBLISHING_REQUESTS_PATH = '/publishing/requests' as const;
+export const PUBLISHING_TEAM_PATH = '/publishing/team' as const;
+export const PUBLISHING_PROFILE_PATH = '/publishing/profile' as const;
+export const PUBLISHING_HISTORY_PATH = '/publishing/history' as const;
+export const PUBLISHING_PLACES_PATH = '/publishing/places' as const;
+export const PUBLISHING_SECURITY_PRIVACY_PATH = '/publishing/security-privacy' as const;
 
 export const PROFILE_EDIT_PATH = '/profile/edit' as const;
 export const PROFILE_REVIEWS_PATH = '/profile/reviews' as const;
@@ -161,11 +161,8 @@ export const signUpPath = (options?: {
 };
 
 /** Publishing console → activity participants roster (`checkin=` still accepted on Plan). */
-export const operatorActivitiesCheckInPath = (activityId: string): string =>
-  `${OPERATOR_ACTIVITIES_PATH}?roster=${encodeURIComponent(activityId)}`;
-
-/** @deprecated Use {@link operatorActivitiesCheckInPath}. */
-export const hostActivitiesCheckInPath = operatorActivitiesCheckInPath;
+export const publishingActivitiesCheckInPath = (activityId: string): string =>
+  `${PUBLISHING_ACTIVITIES_PATH}?roster=${encodeURIComponent(activityId)}`;
 
 export const messagesToUserPath = (userId: string): string =>
   `${MESSAGES_PATH}?to=${encodeURIComponent(userId)}`;

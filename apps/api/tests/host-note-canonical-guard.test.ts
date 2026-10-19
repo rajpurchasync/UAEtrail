@@ -29,11 +29,11 @@ describe('host-note canonical guard (COH-06)', () => {
   });
 
   it('HTTP decide/revoke schemas accept hostNote only', () => {
-    const schemas = read('apps/api/src/routes/operator/operator-route-schemas.ts');
+    const schemas = read('apps/api/src/routes/publishing/publishing-route-schemas.ts');
     expect(schemas).toMatch(/hostNote:/);
     expect(schemas).not.toMatch(/organizerNote/);
     expect(schemas).toMatch(/resolveHostNote/);
-    const requests = read('apps/api/src/routes/operator/registerOperatorActivityRequestRoutes.ts');
+    const requests = read('apps/api/src/routes/publishing/registerPublishingActivityRequestRoutes.ts');
     expect(requests).toMatch(/hostNote: resolveHostNote\(body\)/);
     expect(requests).not.toMatch(/organizerNote/);
   });

@@ -5,8 +5,8 @@ import { join } from 'node:path';
 describe('publishing API route mount', () => {
   it('mounts publishing workspace on /publishing only (no /operator HTTP alias)', () => {
     const index = readFileSync(join(process.cwd(), 'src/routes/index.ts'), 'utf8');
-    expect(index).toMatch(/apiRouter\.use\('\/publishing', operatorRouter\)/);
-    expect(index).not.toMatch(/apiRouter\.use\('\/operator', operatorRouter\)/);
+    expect(index).toMatch(/apiRouter\.use\('\/publishing', publishingRouter\)/);
+    expect(index).not.toMatch(/apiRouter\.use\('\/operator', publishingRouter\)/);
     expect(index).not.toMatch(/apiRouter\.use\('\/host'/);
     expect(index).not.toMatch(/legacyHostApiRewrite/);
   });

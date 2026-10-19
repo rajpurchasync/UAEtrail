@@ -276,10 +276,10 @@ export const linkParticipantIntentToActivityForOwner = async (
     throw new ApiError(404, 'intent_not_found', 'Looking-for post not found or already closed.');
   }
 
-  return fulfillParticipantIntent(intentId, activityId);
+  return linkParticipantIntentToActivity(intentId, activityId);
 };
 
-export const fulfillParticipantIntent = async (
+const linkParticipantIntentToActivity = async (
   intentId: string,
   activityId: string
 ): Promise<ParticipantIntentDTO | null> => {

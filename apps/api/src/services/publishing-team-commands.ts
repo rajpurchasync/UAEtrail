@@ -16,9 +16,9 @@ import {
   membershipRoleToPrisma,
   type teamCreateSchema,
   type teamPatchSchema,
-} from '../routes/operator/operator-route-schemas.js';
+} from '../routes/publishing/publishing-route-schemas.js';
 
-export const addOperatorTeamMember = async (
+export const addPublishingTeamMember = async (
   tenantId: string,
   actorUserId: string,
   body: z.infer<typeof teamCreateSchema>
@@ -73,7 +73,7 @@ export const addOperatorTeamMember = async (
   };
 };
 
-export const patchOperatorTeamMember = async (
+export const patchPublishingTeamMember = async (
   tenantId: string,
   actorUserId: string,
   membershipId: string,
@@ -120,7 +120,7 @@ export const patchOperatorTeamMember = async (
   };
 };
 
-export const removeOperatorTeamMember = async (
+export const removePublishingTeamMember = async (
   tenantId: string,
   actorUserId: string,
   membershipId: string

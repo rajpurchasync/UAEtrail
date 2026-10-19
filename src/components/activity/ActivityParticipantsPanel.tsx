@@ -10,7 +10,7 @@ import {
   undoActivityParticipantCheckIn,
 } from '../../hooks/tenantActivityClientApi';
 import { MESSAGES_PATH } from '../../config/surfacePaths';
-import { hostActivitiesCheckInPath } from '../../config/routingCatalog';
+import { publishingActivitiesCheckInPath } from '../../config/routingCatalog';
 import { SecureAvatar } from '../ui';
 import { ActivityParticipantRevokeDialog } from './ActivityParticipantRevokeDialog';
 import { ActivityParticipantRateDialog } from './ActivityParticipantRateDialog';
@@ -325,4 +325,4 @@ export const ActivityParticipantsPanel = ({
 };
 
 export const activityCheckInPath = (activityId: string): string =>
-  hostActivitiesCheckInPath(activityId);
+  publishingActivitiesCheckInPath(activityId);

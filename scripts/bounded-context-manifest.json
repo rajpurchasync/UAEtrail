@@ -39,7 +39,7 @@
       "apiFiles": ["apps/api/src/services/member-publish-gate.ts"],
       "routeRegistrars": [
         "apps/api/src/routes/user/registerMeParticipantIntentRoutes.ts",
-        "apps/api/src/routes/operator.ts"
+        "apps/api/src/routes/publishing.ts"
       ],
       "feDomains": ["src/api/domains/explore.ts", "src/api/domains/seeking.ts"],
       "feRoots": ["src/explore/ui", "src/explore/create"]
@@ -58,7 +58,7 @@
       ],
       "routeRegistrars": [
         "apps/api/src/routes/user/registerPublicActivityRoutes.ts",
-        "apps/api/src/routes/operator/registerOperatorActivityRequestRoutes.ts",
+        "apps/api/src/routes/publishing/registerPublishingActivityRequestRoutes.ts",
         "apps/api/src/routes/user/registerMeParticipantIntentRoutes.ts",
         "apps/api/src/routes/user/registerActivityJoinInviteRoutes.ts"
       ],
@@ -100,18 +100,18 @@
     {
       "id": "publishing_workspace",
       "label": "Publishing workspace",
-      "apiFiles": ["apps/api/src/routes/operator.ts"],
+      "apiFiles": ["apps/api/src/routes/publishing.ts"],
       "routeRegistrars": [
-        "apps/api/src/routes/operator.ts",
-        "apps/api/src/routes/operator/registerOperatorActivityRoutes.ts",
-        "apps/api/src/routes/operator/registerOperatorActivityParticipantRoutes.ts",
-        "apps/api/src/routes/operator/registerOperatorTeamRoutes.ts",
-        "apps/api/src/routes/operator/registerOperatorActivityRequestRoutes.ts",
-        "apps/api/src/routes/operator/registerOperatorSubmittedLocationRoutes.ts"
+        "apps/api/src/routes/publishing.ts",
+        "apps/api/src/routes/publishing/registerPublishingActivityRoutes.ts",
+        "apps/api/src/routes/publishing/registerPublishingActivityParticipantRoutes.ts",
+        "apps/api/src/routes/publishing/registerPublishingTeamRoutes.ts",
+        "apps/api/src/routes/publishing/registerPublishingActivityRequestRoutes.ts",
+        "apps/api/src/routes/publishing/registerPublishingSubmittedLocationRoutes.ts"
       ],
       "feDomains": ["src/api/domains/organisation.ts", "src/api/domains/activities.ts"],
       "feRoots": [
-        "src/pages/operator",
+        "src/pages/publishing",
         "src/pages/ActivityDetail.tsx",
         "src/console",
         "src/components/activity",
@@ -355,7 +355,7 @@
   "apiMounts": [
     { "prefix": "/auth", "file": "apps/api/src/routes/auth.ts" },
     { "prefix": "/admin", "file": "apps/api/src/routes/admin.ts" },
-    { "prefix": "/publishing", "file": "apps/api/src/routes/operator.ts", "note": "HTTP + SPA /publishing/* (operatorRouter module)" },
+    { "prefix": "/publishing", "file": "apps/api/src/routes/publishing.ts", "note": "HTTP + SPA /publishing/* (publishingRouter module)" },
     { "prefix": "/chat", "file": "apps/api/src/routes/chat.ts" },
     { "prefix": "/shop", "file": "apps/api/src/routes/shop.ts" },
     { "prefix": "/media", "file": "apps/api/src/routes/media.ts" },

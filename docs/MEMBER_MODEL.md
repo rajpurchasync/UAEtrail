@@ -329,10 +329,10 @@ UI labels vs capabilities vs wire — **host/join/buddy slice only**; entity + r
 | “Host” as architecture (routes, hooks, `/me/*`) | **`/publishing/*`**, **`useMemberStatus`**, UI label **Host** for individuals only |
 | `api.listActivities` / `listOrganisationActivities` | Tenant-scoped **`listActivities(tenantId)`** (SN-3); consumer browse: `getPublicActivities` / `getMeActivities` |
 | `createOrganisationActivity` / `*OrganisationActivity*` / `*HostActivity*` / `*OperatorActivity*` (client) | Tenant-scoped **`createActivity`**, `publishActivity`, … — see §13.2.1 in `DOMAIN_CANONICALS.md` |
-| `OrganisationActivityCheckInPanel`, `OrganisationActivities` page | `ActivityParticipantsPanel`, `ActivityManageSheet`, `src/pages/operator/Activities.tsx` |
+| `OrganisationActivityCheckInPanel`, `OrganisationActivities` page | `ActivityParticipantsPanel`, `ActivityManageSheet`, `src/pages/publishing/Activities.tsx` |
 | `buddyUserId` in meta/API | `actorUserId` or `otherMemberUserId` |
 
-Operator route registrars (legacy `registerHost*` filenames): under `routes/operator/`. Member status: `registerMemberStatusRoutes` (`routes/user/`).
+Operator route registrars (legacy `registerHost*` filenames): under `routes/publishing/`. Member status: `registerMemberStatusRoutes` (`routes/user/`).
 
 ### Organisation in filenames (keep vs retire)
 
@@ -345,14 +345,14 @@ Operator route registrars (legacy `registerHost*` filenames): under `routes/oper
 
 | Retired (guard: `organisationNamingGuard.test.ts`) | Use instead |
 |----------------------------------------------------|-------------|
-| `pages/OrganisationActivities`, `OrganisationConsoleOverview`, … | `src/pages/operator/*` |
+| `pages/OrganisationActivities`, `OrganisationConsoleOverview`, … | `src/pages/publishing/*` |
 | `OrganisationActivityCheckInPanel`, `HostedSection` | `ActivityParticipantsPanel` in `src/components/activity/` |
 | Activity form modals + `ActivityFormSessionContext` | Explore **Host** wizard (`CreateHostingActivityFlow`) |
 | `useOrganisationGate` / `useOrganisationHubData` | **`useMemberStatus`** / `useConsoleHubData` |
 | `api.*OrganisationActivity*` / `legacyApi.ts` | Tenant-scoped activity methods on `activitiesApi` + tenant activity client (SN-3) |
 | `FavoriteDTO`, `getMeFavorites`, `/me/favorites`, `favorites-store` (guard: `wishlistNamingGuard.test.ts`) | `WishlistItemDTO`, `getMeWishlist`, `/me/wishlist`, `wishlist-store` |
 
-**Publishing console** UI roots: `src/pages/operator/*`, `src/console/*`, `src/components/activity/*`, `src/activity/*`. Do not add new `pages/Organisation*` routes for console tools.
+**Publishing console** UI roots: `src/pages/publishing/*`, `src/console/*`, `src/components/activity/*`, `src/activity/*`. Do not add new `pages/Organisation*` routes for console tools.
 
 ---
 

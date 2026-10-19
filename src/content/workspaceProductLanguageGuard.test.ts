@@ -25,7 +25,7 @@ const SCAN_ROOTS = [
 const SKIP_DIR_NAMES = new Set(['host', 'node_modules']);
 
 const SKIP_FILE_PREFIXES = [
-  'src/pages/operator/',
+  'src/pages/publishing/',
   'src/console/',
   'src/api/',
   'apps/',

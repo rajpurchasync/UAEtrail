@@ -41,7 +41,7 @@ describe('publishing console routing (MIG-ROUTING-CANON-P1)', () => {
     const surface = readFileSync(join(ROOT, 'src/config/surfacePaths.ts'), 'utf8');
     expect(surface).not.toMatch(/HOST_OVERVIEW_PATH/);
     expect(surface).not.toMatch(/rewriteLegacyPublishingConsolePath/);
-    expect(surface).toMatch(/OPERATOR_OVERVIEW_PATH/);
+    expect(surface).toMatch(/PUBLISHING_OVERVIEW_PATH/);
     expect(surface).toMatch(/PUBLISHING_CONSOLE_PREFIX/);
     expect(surface).not.toMatch(/rewriteOperatorConsoleToPublishingPath/);
   });

@@ -18,16 +18,16 @@ import {
   PLAN_PATH,
   TRIPS_PATH,
   ADMIN_PLACES_PATH,
-  OPERATOR_PLACES_PATH,
+  PUBLISHING_PLACES_PATH,
   signUpPath,
 } from './surfacePaths';
 import { LEGACY_BECOME_HOST_PATH, PRO_MEMBERSHIP_PATH } from './memberRoutes';
 import {
   AGENCY_PROFILE_PATH_PREFIX,
-  LEGACY_OPERATOR_PROFILE_PATH_PREFIX,
+  LEGACY_PUBLISHING_PROFILE_PATH_PREFIX,
 } from '@uaetrail/shared-types';
 
-export { ADMIN_PLACES_PATH, OPERATOR_PLACES_PATH, AGENCY_PROFILE_PATH_PREFIX };
+export { ADMIN_PLACES_PATH, PUBLISHING_PLACES_PATH, AGENCY_PROFILE_PATH_PREFIX };
 
 /** Full-screen explore map (mobile-first). */
 export const EXPLORE_MAP_PATH = '/explore' as const;
@@ -53,7 +53,7 @@ export const DOMAIN_GLOSSARY = {
     legacyApi: '/locations',
     publicRoutes: ['/trail/:id', '/camp/:id', '/venue/:id', '/shop/:id'],
     adminRoute: ADMIN_PLACES_PATH,
-    hostRoute: OPERATOR_PLACES_PATH,
+    hostRoute: PUBLISHING_PLACES_PATH,
   },
   Activity: {
     product: 'Activity',
@@ -85,9 +85,6 @@ export const DOMAIN_GLOSSARY = {
     note: 'Admin UI may say "Member"; social graph uses "Buddy".',
   },
 } as const;
-
-/** Legacy `/operator/:slug` storefront URLs — not registered in SPA (see `entity-path.ts`). */
-export const LEGACY_OPERATOR_PUBLIC_PATH_PREFIX = LEGACY_OPERATOR_PROFILE_PATH_PREFIX;
 
 /** Desktop top nav — map-first; discover browse is hamburger-only. */
 export const DESKTOP_NAV_LINKS = [

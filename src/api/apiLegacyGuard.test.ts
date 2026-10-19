@@ -16,7 +16,7 @@ const BANNED_CALLS: Array<{ pattern: RegExp; hint: string }> = [
   },
   {
     pattern: /\bapi\.(getOrganisationJoinRequests|decideOrganisationJoinRequest)\b/,
-    hint: 'Use getOperatorActivityJoinRequests / decideActivityJoinRequest',
+    hint: 'Use getPublishingActivityJoinRequests / decideActivityJoinRequest',
   },
   { pattern: /\bapi\.listHostActivities\s*\(/, hint: 'Use api.listActivities' },
   { pattern: /\bapi\.listOperatorActivities\s*\(/, hint: 'Use api.listActivities' },
@@ -24,7 +24,7 @@ const BANNED_CALLS: Array<{ pattern: RegExp; hint: string }> = [
   { pattern: /\bapi\.createOperatorActivity\s*\(/, hint: 'Use api.createActivity' },
   {
     pattern: /\bapi\.getHostActivityJoinRequests\s*\(/,
-    hint: 'Use api.getOperatorActivityJoinRequests',
+    hint: 'Use api.getPublishingActivityJoinRequests',
   },
   { pattern: /\buseOrganisationGate\b/, hint: 'Use useMemberStatus' },
   { pattern: /\bapi\.getMemberOperatorStatus\s*\(/, hint: 'Use api.getMemberStatus' },
@@ -35,7 +35,7 @@ const BANNED_CALLS: Array<{ pattern: RegExp; hint: string }> = [
     pattern: /\bapi\.listActivities\s*\(/,
     hint: 'Use tenantActivityClientApi.listActivities (not raw api in UI)',
   },
-  { pattern: /\bapi\.(getHostRequests|decideHostRequest|getHostTeam)\b/, hint: 'Use getOperatorActivityJoinRequests / getOrganisationTeam' },
+  { pattern: /\bapi\.(getHostRequests|decideHostRequest|getHostTeam)\b/, hint: 'Use getPublishingActivityJoinRequests / getOrganisationTeam' },
   { pattern: /\bapi\.(getMyHostStatus|getMyHostApplication|submitHostApplication)\b/, hint: 'Use getMyOrganisation* / submitOrganisationApplication' },
   { pattern: /\bapi\.fulfillParticipantIntent\b/, hint: 'Use api.linkSeekingPostToActivity (demand poster)' },
   {

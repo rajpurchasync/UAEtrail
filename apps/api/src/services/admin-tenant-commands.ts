@@ -2,7 +2,7 @@ import { TenantBusinessMode, TenantStatus } from '../domain/enums.js';
 import { createAuditLog } from '../lib/audit.js';
 import { ApiError } from '../lib/api-error.js';
 import { findAdminTenantById, updateAdminTenantStatus } from '../lib/admin-store.js';
-import { OPERATOR_OVERVIEW_PATH, PRO_MEMBERSHIP_PATH } from '../lib/member-routes.js';
+import { PUBLISHING_OVERVIEW_PATH, PRO_MEMBERSHIP_PATH } from '../lib/member-routes.js';
 import { findTenantById, setTenantDiscoverFeatured } from '../lib/tenant-store.js';
 import { notifyUserAdminAction } from './admin-notifications.js';
 
@@ -41,7 +41,7 @@ export const setAdminTenantStatus = async (input: {
     meta: {
       kind: input.status === 'active' ? 'host_reopened' : 'host_suspended',
       tenantId: input.tenantId,
-      path: input.status === 'active' ? OPERATOR_OVERVIEW_PATH : PRO_MEMBERSHIP_PATH,
+      path: input.status === 'active' ? PUBLISHING_OVERVIEW_PATH : PRO_MEMBERSHIP_PATH,
     },
   });
 

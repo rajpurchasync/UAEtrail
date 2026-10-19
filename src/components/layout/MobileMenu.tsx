@@ -16,7 +16,7 @@ import {
 } from '../../config/phoneAppInstall';
 import { PROFILE_SETTINGS_PATH } from '../../config/routingCatalog';
 import { isPublishingConsolePath } from '../../config/surfacePaths';
-import { ADMIN_LINKS, OPERATOR_CONSOLE_LINKS } from '../../constants';
+import { ADMIN_LINKS, PUBLISHING_CONSOLE_LINKS } from '../../constants';
 import { useAuth } from '../../context/AuthContext';
 import { persistAuthSessionTokens, switchMeRoleSession } from '../../hooks/accountSessionApi';
 import { accountRouteByRole } from '../../utils/authRouting';
@@ -465,7 +465,7 @@ const MobileMenuPanel = () => {
         title={user?.displayName || 'Account'}
         ariaLabel="Workspace navigation"
       >
-        <DashboardDrawerLinks links={OPERATOR_CONSOLE_LINKS} pathname={pathname} closeMenu={closeMenu} />
+        <DashboardDrawerLinks links={PUBLISHING_CONSOLE_LINKS} pathname={pathname} closeMenu={closeMenu} />
         <DashboardDrawerSiteLink closeMenu={closeMenu} />
         <button type="button" onClick={() => void switchRole('participant')} className={dashboardActionClass}>
           Switch to Visitor

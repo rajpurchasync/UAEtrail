@@ -1,10 +1,10 @@
 import { HostActivityCancelDialog } from './HostActivityCancelDialog';
 import { activityCancelParticipantNotice } from '../../activity/activityCancelParticipantNotice';
-import type { OperatorActivityManageActions } from '../../hooks/useOperatorActivityManageActions';
+import type { HostActivityManageActions } from '../../hooks/useHostActivityManageActions';
 
 type HostActivityManageCancelDialogsProps = {
   actions: Pick<
-    OperatorActivityManageActions,
+    HostActivityManageActions,
     | 'confirmDelete'
     | 'confirmCancel'
     | 'busy'
@@ -18,7 +18,7 @@ type HostActivityManageCancelDialogsProps = {
   overlayClassName?: string;
 };
 
-/** Wired to `useOperatorActivityManageActions` — same cancel UI as explore peek and `/activity/:id`. */
+/** Wired to `useHostActivityManageActions` — same cancel UI as explore peek and `/activity/:id`. */
 export const HostActivityManageCancelDialogs = ({
   actions,
   onAfterConfirm,

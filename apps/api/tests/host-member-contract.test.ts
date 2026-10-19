@@ -4,7 +4,7 @@ import { join, relative } from 'node:path';
 import { allowedActivityPricingModes } from '@uaetrail/shared-types';
 
 const API_SRC = join(process.cwd(), 'src');
-const OPERATOR_ROUTES_DIR = join(API_SRC, 'routes', 'operator');
+const PUBLISHING_ROUTES_DIR = join(API_SRC, 'routes', 'publishing');
 
 const collectTsFiles = (dir: string): string[] => {
   if (!existsSync(dir)) return [];
@@ -22,26 +22,26 @@ const collectTsFiles = (dir: string): string[] => {
 
 describe('host-member API contracts', () => {
   it('does not reintroduce ambiguous host join-request registrar names', () => {
-    expect(existsSync(join(OPERATOR_ROUTES_DIR, 'registerHostJoinRequestRoutes.ts'))).toBe(false);
+    expect(existsSync(join(PUBLISHING_ROUTES_DIR, 'registerHostJoinRequestRoutes.ts'))).toBe(false);
 
-    const hostFiles = collectTsFiles(OPERATOR_ROUTES_DIR);
+    const hostFiles = collectTsFiles(PUBLISHING_ROUTES_DIR);
     const violations: string[] = [];
     for (const file of hostFiles) {
       const content = readFileSync(join(process.cwd(), file), 'utf8');
       if (/registerHostJoinRequestRoutes/.test(content)) {
-        violations.push(`${file}: use registerOperatorActivityRequestRoutes`);
+        violations.push(`${file}: use registerPublishingActivityRequestRoutes`);
       }
     }
     expect(violations).toEqual([]);
   });
 
-  it('operator activity routes use Activity-named registrars (not TenantActivity)', () => {
-    expect(existsSync(join(OPERATOR_ROUTES_DIR, 'registerOperatorActivityRoutes.ts'))).toBe(true);
-    expect(existsSync(join(OPERATOR_ROUTES_DIR, 'registerOperatorActivityParticipantRoutes.ts'))).toBe(true);
-    const operatorMount = readFileSync(join(API_SRC, 'routes', 'operator.ts'), 'utf8');
-    expect(operatorMount).toMatch(/registerOperatorActivityRoutes/);
-    expect(operatorMount).not.toMatch(/registerHostTenantActivityRoutes/);
-    expect(operatorMount).not.toMatch(/registerHostActivityRoutes/);
+  it('publishing activity routes use Activity-named registrars (not TenantActivity)', () => {
+    expect(existsSync(join(PUBLISHING_ROUTES_DIR, 'registerPublishingActivityRoutes.ts'))).toBe(true);
+    expect(existsSync(join(PUBLISHING_ROUTES_DIR, 'registerPublishingActivityParticipantRoutes.ts'))).toBe(true);
+    const publishingMount = readFileSync(join(API_SRC, 'routes', 'publishing.ts'), 'utf8');
+    expect(publishingMount).toMatch(/registerPublishingActivityRoutes/);
+    expect(publishingMount).not.toMatch(/registerHostTenantActivityRoutes/);
+    expect(publishingMount).not.toMatch(/registerHostActivityRoutes/);
   });
 
   it('notification meta uses PRO_MEMBERSHIP_PATH constant instead of raw /become-host', () => {
@@ -64,7 +64,7 @@ describe('host-member API contracts', () => {
   it('API mounts publishing console on /publishing only', () => {
     const index = readFileSync(join(API_SRC, 'routes', 'index.ts'), 'utf8');
     expect(index).toMatch(/apiRouter\.use\(['"]\/publishing['"]/);
-    expect(index).not.toMatch(/apiRouter\.use\(['"]\/operator['"], operatorRouter\)/);
+    expect(index).not.toMatch(/apiRouter\.use\(['"]\/operator['"], publishingRouter\)/);
     expect(index).not.toMatch(/apiRouter\.use\(['"]\/host['"]/);
     expect(index).not.toMatch(/legacyHostApiRewrite/);
   });

@@ -119,7 +119,7 @@ Registration: `registerMeBadgesRoutes.ts` · service: `member-badges.ts`.
 | GET | `/activities/:id/invites` | Pending **Join me** invitee ids the caller sent for this activity |
 | POST | `/activities/:id/invites` | **Join me** — host or confirmed participant invites another member (notification only; invitee still RSVPs / requests; host approval when required). Rate limit: **20 sends / activity / sender / 24h** (`ACTIVITY_JOIN_INVITE_DAILY_LIMIT_PER_ACTIVITY`) |
 | * | `/publishing/activities/*` | CRUD, publish, history — FE: `tenantActivityClientApi` (`activities.ts` → `/publishing/…`) |
-| GET | `/publishing/activities/:id/participants` | Approved roster + flags (`registerOperatorActivityParticipantRoutes`) |
+| GET | `/publishing/activities/:id/participants` | Approved roster + flags (`registerPublishingActivityParticipantRoutes`) |
 | POST/DELETE | `/publishing/activities/:id/participants/:participantId/checkin` | Confirm / undo attendance |
 | POST | `/publishing/activities/:id/participants/:participantId/revoke` | Remove joiner (`hostNote` → notification) |
 | POST | `/publishing/activities/:id/participants/:participantId/rating` | Host rates attended participant (after outing ends) |

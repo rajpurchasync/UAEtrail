@@ -17,7 +17,7 @@ import { fetchPublicActivityDetail } from '../../hooks/usePublicActivityDetail';
 import { resolveActivityTitle } from '../../utils/activityIdentity';
 import { buildActivitySharePayload } from '../../utils/activityShare';
 import { ActivityInviteModalBody } from './ActivityInviteModalBody';
-import type { OperatorActivityManageActions } from '../../hooks/useOperatorActivityManageActions';
+import type { HostActivityManageActions } from '../../hooks/useHostActivityManageActions';
 import type {
   ActivityDetailDTO,
   ActivityPresentationDTO,
@@ -44,7 +44,7 @@ export type ActivityManageSheetProps = {
   activity: ActivityDTO | null;
   tenantId: string | null;
   pendingRequests: ActivityRequestView[];
-  actions: OperatorActivityManageActions;
+  actions: HostActivityManageActions;
   initialView?: ActivityManageInitialView;
   onClose: () => void;
   onRequestsChanged: () => void | Promise<void>;

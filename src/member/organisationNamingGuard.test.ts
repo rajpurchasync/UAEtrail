@@ -6,7 +6,7 @@ import { join, relative } from 'node:path';
 const ROOT = process.cwd();
 const SCAN_ROOT = join(ROOT, 'src');
 
-/** Retired host-console / form-modal stack — must not exist on disk (use `pages/operator/*`, Explore Host). */
+/** Retired host-console / form-modal stack — must not exist on disk (use `pages/publishing/*`, Explore Host). */
 const RETIRED_PATHS = [
   'src/pages/OrganisationActivities.tsx',
   'src/pages/OrganisationConsoleOverview.tsx',
@@ -43,14 +43,14 @@ const DEPRECATED_HOST_PAGE_IMPORTS = RETIRED_PATHS.filter((p) => p.startsWith('s
 const ALLOWED_ORGANISATION_PAGE_FILES = new Set(['OrganisationProfile.tsx']);
 
 const REQUIRED_HOST_CONSOLE_PAGES = [
-  'src/pages/operator/Overview.tsx',
-  'src/pages/operator/Activities.tsx',
-  'src/pages/operator/JoinRequests.tsx',
-  'src/pages/operator/Team.tsx',
-  'src/pages/operator/Places.tsx',
-  'src/pages/operator/History.tsx',
-  'src/pages/operator/PublicProfileEdit.tsx',
-  'src/pages/operator/Manage.tsx',
+  'src/pages/publishing/Overview.tsx',
+  'src/pages/publishing/Activities.tsx',
+  'src/pages/publishing/JoinRequests.tsx',
+  'src/pages/publishing/Team.tsx',
+  'src/pages/publishing/Places.tsx',
+  'src/pages/publishing/History.tsx',
+  'src/pages/publishing/PublicProfileEdit.tsx',
+  'src/pages/publishing/Manage.tsx',
 ];
 
 const collectSourceFiles = (dir: string): string[] => {
@@ -74,7 +74,7 @@ describe('organisationNamingGuard', () => {
     expect(present).toEqual([]);
   });
 
-  it('publishing console route pages live under src/pages/operator/', () => {
+  it('publishing console route pages live under src/pages/publishing/', () => {
     const missing = REQUIRED_HOST_CONSOLE_PAGES.filter((rel) => !existsSync(join(ROOT, rel)));
     expect(missing).toEqual([]);
   });
@@ -101,7 +101,7 @@ describe('organisationNamingGuard', () => {
       for (const legacy of DEPRECATED_HOST_PAGE_IMPORTS) {
         const short = legacy.replace('src/pages/', '');
         if (content.includes(`/${legacy}`) || content.includes(`'./${short}`) || content.includes(`"./${short}`)) {
-          violations.push(`${file}: use src/pages/operator/* instead of ${legacy}`);
+          violations.push(`${file}: use src/pages/publishing/* instead of ${legacy}`);
         }
       }
     }

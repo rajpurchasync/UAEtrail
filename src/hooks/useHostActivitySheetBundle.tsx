@@ -7,7 +7,7 @@ import type { ActivityManageInitialView } from '../components/activity/activityM
 import type { ListFeedHostActivityActions } from '../list/ui/ListFeedActionsProvider';
 import { navigateToCreateLinkedRideshare } from '../explore/navigateCreateLinkedRideshare';
 import { useActivityInviteShareSheet } from './useActivityInviteShareSheet';
-import { useOperatorActivityManageActions } from './useOperatorActivityManageActions';
+import { useHostActivityManageActions } from './useHostActivityManageActions';
 
 /** Invite share + host manage sheet — explore map peek, list feed, and browse. */
 export const useHostActivitySheetBundle = (input: {
@@ -19,7 +19,7 @@ export const useHostActivitySheetBundle = (input: {
   const [manageActivity, setManageActivity] = useState<ActivityDTO | null>(null);
   const [manageInitialView, setManageInitialView] =
     useState<ActivityManageInitialView>('overview');
-  const hostManageActions = useOperatorActivityManageActions(
+  const hostManageActions = useHostActivityManageActions(
     input.tenantId ?? null,
     input.onMapDataChanged
   );

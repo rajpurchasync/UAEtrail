@@ -3,38 +3,38 @@ import { Router as createRouter } from 'express';
 import type { z } from 'zod';
 import { mountActivityRoutes } from '../../lib/activity-routes.js';
 import {
-  operatorTenantActivityCreateSchema,
-  operatorTenantActivityPatchSchema,
-} from '../../lib/operator-tenant-activity-schemas.js';
+  publishingTenantActivityCreateSchema,
+  publishingTenantActivityPatchSchema,
+} from '../../lib/publishing-tenant-activity-schemas.js';
 import { paginatedResponse, paginationSchema } from '../../lib/pagination.js';
 import { requireOrgRole } from '../../middleware/tenant.js';
 import { ORG_ACTIVITY_EDIT_ROLES, ORG_ACTIVITY_PUBLISH_ROLES } from '../../lib/org-permissions.js';
 import { validate } from '../../middleware/validate.js';
 import {
-  createOperatorTenantActivity,
-  deleteOrCancelOperatorTenantActivity,
-  duplicateOperatorTenantActivity,
-  publishOperatorTenantActivity,
-  updateOperatorTenantActivity,
-} from '../../services/operator-tenant-activity-commands.js';
+  createPublishingTenantActivity,
+  deleteOrCancelPublishingTenantActivity,
+  duplicatePublishingTenantActivity,
+  publishPublishingTenantActivity,
+  updatePublishingTenantActivity,
+} from '../../services/publishing-tenant-activity-commands.js';
 import {
-  listOperatorTenantActivitiesPage,
-  listOperatorTenantActivityHistoryPage,
-} from '../../services/operator-tenant-activity-read.js';
-import { registerOperatorActivityRequestRoutes } from './registerOperatorActivityRequestRoutes.js';
-import { registerOperatorTeamRoutes } from './registerOperatorTeamRoutes.js';
-import { registerOperatorActivityParticipantRoutes } from './registerOperatorActivityParticipantRoutes.js';
-import { idParamSchema } from './operator-route-schemas.js';
+  listPublishingTenantActivitiesPage,
+  listPublishingTenantActivityHistoryPage,
+} from '../../services/publishing-tenant-activity-read.js';
+import { registerPublishingActivityRequestRoutes } from './registerPublishingActivityRequestRoutes.js';
+import { registerPublishingTeamRoutes } from './registerPublishingTeamRoutes.js';
+import { registerPublishingActivityParticipantRoutes } from './registerPublishingActivityParticipantRoutes.js';
+import { idParamSchema } from './publishing-route-schemas.js';
 
 /** Publishing workspace **activity** CRUD, publish, and history (`/publishing/activities/*`). */
-export const registerOperatorActivityRoutes = (operatorRouter: Router): void => {
+export const registerPublishingActivityRoutes = (publishingRouter: Router): void => {
   const hostActivitiesRouter = createRouter();
 
   hostActivitiesRouter.get('/', async (req, res, next) => {
     try {
       const tenantId = req.tenantContext!.tenantId;
       const pg = paginationSchema.parse(req.query);
-      const { items, total } = await listOperatorTenantActivitiesPage({
+      const { items, total } = await listPublishingTenantActivitiesPage({
         tenantId,
         page: pg.page,
         pageSize: pg.pageSize,
@@ -48,10 +48,10 @@ export const registerOperatorActivityRoutes = (operatorRouter: Router): void => 
   hostActivitiesRouter.post(
     '/',
     requireOrgRole(ORG_ACTIVITY_EDIT_ROLES),
-    validate({ body: operatorTenantActivityCreateSchema }),
+    validate({ body: publishingTenantActivityCreateSchema }),
     async (req, res, next) => {
       try {
-        const result = await createOperatorTenantActivity({
+        const result = await createPublishingTenantActivity({
           tenantId: req.tenantContext!.tenantId,
           actorId: req.auth!.userId,
           platformAdmin: Boolean(req.tenantContext!.actingAsPlatformAdmin),
@@ -67,11 +67,11 @@ export const registerOperatorActivityRoutes = (operatorRouter: Router): void => 
   hostActivitiesRouter.patch(
     '/:id',
     requireOrgRole(ORG_ACTIVITY_EDIT_ROLES),
-    validate({ params: idParamSchema, body: operatorTenantActivityPatchSchema }),
+    validate({ params: idParamSchema, body: publishingTenantActivityPatchSchema }),
     async (req, res, next) => {
       try {
         const { id } = req.params as z.infer<typeof idParamSchema>;
-        const result = await updateOperatorTenantActivity({
+        const result = await updatePublishingTenantActivity({
           tenantId: req.tenantContext!.tenantId,
           actorId: req.auth!.userId,
           platformAdmin: Boolean(req.tenantContext!.actingAsPlatformAdmin),
@@ -92,7 +92,7 @@ export const registerOperatorActivityRoutes = (operatorRouter: Router): void => 
     async (req, res, next) => {
       try {
         const { id } = req.params as z.infer<typeof idParamSchema>;
-        await deleteOrCancelOperatorTenantActivity({
+        await deleteOrCancelPublishingTenantActivity({
           tenantId: req.tenantContext!.tenantId,
           actorId: req.auth!.userId,
           activityId: id,
@@ -111,7 +111,7 @@ export const registerOperatorActivityRoutes = (operatorRouter: Router): void => 
     async (req, res, next) => {
       try {
         const { id } = req.params as z.infer<typeof idParamSchema>;
-        const result = await duplicateOperatorTenantActivity({
+        const result = await duplicatePublishingTenantActivity({
           tenantId: req.tenantContext!.tenantId,
           actorId: req.auth!.userId,
           activityId: id,
@@ -130,7 +130,7 @@ export const registerOperatorActivityRoutes = (operatorRouter: Router): void => 
     async (req, res, next) => {
       try {
         const { id } = req.params as z.infer<typeof idParamSchema>;
-        const result = await publishOperatorTenantActivity({
+        const result = await publishPublishingTenantActivity({
           tenantId: req.tenantContext!.tenantId,
           actorId: req.auth!.userId,
           platformAdmin: Boolean(req.tenantContext!.actingAsPlatformAdmin),
@@ -143,15 +143,15 @@ export const registerOperatorActivityRoutes = (operatorRouter: Router): void => 
     }
   );
 
-  registerOperatorActivityRequestRoutes(operatorRouter);
-  registerOperatorTeamRoutes(operatorRouter);
-  registerOperatorActivityParticipantRoutes(hostActivitiesRouter);
+  registerPublishingActivityRequestRoutes(publishingRouter);
+  registerPublishingTeamRoutes(publishingRouter);
+  registerPublishingActivityParticipantRoutes(hostActivitiesRouter);
 
   hostActivitiesRouter.get('/history', async (req, res, next) => {
     try {
       const tenantId = req.tenantContext!.tenantId;
       const pg = paginationSchema.parse(req.query);
-      const { items, total } = await listOperatorTenantActivityHistoryPage({
+      const { items, total } = await listPublishingTenantActivityHistoryPage({
         tenantId,
         page: pg.page,
         pageSize: pg.pageSize,
@@ -162,5 +162,5 @@ export const registerOperatorActivityRoutes = (operatorRouter: Router): void => 
     }
   });
 
-  mountActivityRoutes(operatorRouter, hostActivitiesRouter);
+  mountActivityRoutes(publishingRouter, hostActivitiesRouter);
 };

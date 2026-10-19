@@ -18,9 +18,9 @@ export const exploreActivityInvitePath = (activityId: string): string =>
   `/activity/${encodeURIComponent(activityId)}?join=1`;
 
 /** Publishing console — canonical notification + email deep links. */
-export const OPERATOR_REQUESTS_PATH = '/publishing/requests';
-export const OPERATOR_ACTIVITIES_PATH = '/publishing/activities';
-export const OPERATOR_OVERVIEW_PATH = '/publishing/overview';
+export const PUBLISHING_REQUESTS_PATH = '/publishing/requests';
+export const PUBLISHING_ACTIVITIES_PATH = '/publishing/activities';
+export const PUBLISHING_OVERVIEW_PATH = '/publishing/overview';
 
 /** Admin console deep links (notification meta for platform admins). */
 export const ADMIN_USERS_PATH = '/admin/users';

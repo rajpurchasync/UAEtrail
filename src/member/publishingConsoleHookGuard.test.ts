@@ -3,17 +3,14 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 const ROOTS = [
-  'src/pages/operator',
+  'src/pages/publishing',
   'src/console',
   'src/components/activity',
   'src/components/plan',
   'src/pages/activities',
 ];
 
-const MANAGE_ACTION_SHIM_FILES = new Set([
-  'src/hooks/useHostActivityManageActions.ts',
-  'src/hooks/useOperatorActivityManageActions.ts',
-]);
+const MANAGE_ACTIONS_CANONICAL = 'src/hooks/useHostActivityManageActions.ts';
 
 const collectTs = (dir: string): string[] => {
   const files: string[] = [];
@@ -48,23 +45,26 @@ describe('publishingConsoleHookGuard', () => {
           violations.push(`${file}: use api.listActivities`);
         }
         if (/\bapi\.getHostActivityJoinRequests\s*\(/.test(content)) {
-          violations.push(`${file}: use api.getOperatorActivityJoinRequests`);
+          violations.push(`${file}: use api.getPublishingActivityJoinRequests`);
         }
       }
     }
     expect(violations).toEqual([]);
   });
 
-  it('publishing UI uses useOperatorActivityManageActions (not legacy useHostActivityManageActions)', () => {
+  it('publishing UI imports useHostActivityManageActions directly (no operator rename shim)', () => {
     const violations: string[] = [];
-    const scanRoots = [...ROOTS, 'src/hooks'];
+    const scanRoots = [...ROOTS, 'src/hooks', 'src/plan'];
     for (const root of scanRoots) {
       const abs = join(process.cwd(), root);
       for (const file of collectTs(abs)) {
-        if (MANAGE_ACTION_SHIM_FILES.has(file)) continue;
+        if (file === MANAGE_ACTIONS_CANONICAL) continue;
         const content = readFileSync(join(process.cwd(), file), 'utf8');
-        if (/from\s+['"].*useHostActivityManageActions['"]/.test(content)) {
-          violations.push(`${file}: import useOperatorActivityManageActions`);
+        if (/from\s+['"].*useOperatorActivityManageActions['"]/.test(content)) {
+          violations.push(`${file}: import useHostActivityManageActions`);
+        }
+        if (/useOperatorActivityManageActions\.ts/.test(content)) {
+          violations.push(`${file}: remove useOperatorActivityManageActions shim`);
         }
       }
     }

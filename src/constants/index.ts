@@ -13,13 +13,13 @@ import {
 } from '../config/adminSurfacePaths';
 import {
   ADMIN_PLACES_PATH,
-  OPERATOR_ACTIVITIES_PATH,
-  OPERATOR_HISTORY_PATH,
-  OPERATOR_OVERVIEW_PATH,
-  OPERATOR_PLACES_PATH,
-  OPERATOR_PROFILE_PATH,
-  OPERATOR_REQUESTS_PATH,
-  OPERATOR_TEAM_PATH,
+  PUBLISHING_ACTIVITIES_PATH,
+  PUBLISHING_HISTORY_PATH,
+  PUBLISHING_OVERVIEW_PATH,
+  PUBLISHING_PLACES_PATH,
+  PUBLISHING_PROFILE_PATH,
+  PUBLISHING_REQUESTS_PATH,
+  PUBLISHING_TEAM_PATH,
   JOURNEY_MAP_PATH,
   MY_TRIPS_PATH,
   PLAN_PATH,
@@ -39,14 +39,14 @@ export { PLAN_PATH, PROFILE_HISTORY_PATH, JOURNEY_MAP_PATH, MY_TRIPS_PATH, TRIPS
 export const ACTIVITIES_PATH = '/activities' as const;
 
 /** Publishing console nav — canonical `/publishing/*` routes. */
-export const OPERATOR_CONSOLE_LINKS = [
-  { to: OPERATOR_OVERVIEW_PATH, label: 'Overview' },
-  { to: OPERATOR_PROFILE_PATH, label: 'Public profile' },
-  { to: OPERATOR_ACTIVITIES_PATH, label: 'Activities' },
-  { to: OPERATOR_REQUESTS_PATH, label: 'Join requests' },
-  { to: OPERATOR_TEAM_PATH, label: 'Team' },
-  { to: OPERATOR_PLACES_PATH, label: 'Places' },
-  { to: OPERATOR_HISTORY_PATH, label: 'History' },
+export const PUBLISHING_CONSOLE_LINKS = [
+  { to: PUBLISHING_OVERVIEW_PATH, label: 'Overview' },
+  { to: PUBLISHING_PROFILE_PATH, label: 'Public profile' },
+  { to: PUBLISHING_ACTIVITIES_PATH, label: 'Activities' },
+  { to: PUBLISHING_REQUESTS_PATH, label: 'Join requests' },
+  { to: PUBLISHING_TEAM_PATH, label: 'Team' },
+  { to: PUBLISHING_PLACES_PATH, label: 'Places' },
+  { to: PUBLISHING_HISTORY_PATH, label: 'History' },
 ];
 
 

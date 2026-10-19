@@ -4,13 +4,13 @@ import { join } from 'node:path';
 
 const read = (rel: string) => readFileSync(join(process.cwd(), rel), 'utf8');
 
-describe('operator route mount shell', () => {
-  it('delegates to registerOperator* modules only', () => {
-    const operator = read('src/routes/operator.ts');
-    expect(operator).toMatch(/registerOperatorSubmittedLocationRoutes/);
-    expect(operator).toMatch(/registerOperatorActivityRoutes/);
+describe('publishing route mount shell', () => {
+  it('delegates to registerPublishing* modules only', () => {
+    const operator = read('src/routes/publishing.ts');
+    expect(operator).toMatch(/registerPublishingSubmittedLocationRoutes/);
+    expect(operator).toMatch(/registerPublishingActivityRoutes/);
     expect(operator).not.toMatch(/registerHost/);
-    expect(operator).not.toMatch(/operatorRouter\.(get|post|patch|delete)\(/);
+    expect(operator).not.toMatch(/publishingRouter\.(get|post|patch|delete)\(/);
   });
 
   it('does not ship a parallel routes/host mount shell', () => {

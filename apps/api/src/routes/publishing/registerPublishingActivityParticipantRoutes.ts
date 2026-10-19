@@ -6,8 +6,8 @@ import { ORG_ACTIVITY_EDIT_ROLES } from '../../lib/org-permissions.js';
 import { requireOrgRole } from '../../middleware/tenant.js';
 import { validate } from '../../middleware/validate.js';
 import { performParticipantCheckIn } from '../../services/checkin.js';
-import { undoTenantActivityParticipantCheckIn } from '../../services/operator-activity-participant-commands.js';
-import { loadTenantActivityParticipantRoster } from '../../services/operator-activity-participant-read.js';
+import { undoTenantActivityParticipantCheckIn } from '../../services/publishing-activity-participant-commands.js';
+import { loadTenantActivityParticipantRoster } from '../../services/publishing-activity-participant-read.js';
 import {
   rateActivityParticipantAsHost,
   revokeActivityParticipantAsHost,
@@ -16,7 +16,7 @@ import {
   hostParticipantRatingSchema,
   hostParticipantRevokeSchema,
   idParamSchema,
-} from './operator-route-schemas.js';
+} from './publishing-route-schemas.js';
 
 const participantIdSchema = z.object({
   id: z.string().min(1),
@@ -27,7 +27,7 @@ const participantIdSchema = z.object({
  * Host console roster for **activity** participants (`activity_participants`).
  * Mounted under `/host/activities/:id/participants/*` — same Activity entity as public browse.
  */
-export const registerOperatorActivityParticipantRoutes = (hostActivitiesRouter: Router): void => {
+export const registerPublishingActivityParticipantRoutes = (hostActivitiesRouter: Router): void => {
   hostActivitiesRouter.get('/:id/participants', validate({ params: idParamSchema }), async (req, res, next) => {
     try {
       const tenantId = req.tenantContext!.tenantId;

@@ -13,7 +13,7 @@ describe('api canonical surface', () => {
 
   it('exposes tenant activity console and member status', () => {
     expect(typeof api.getOrganisationProfile).toBe('function');
-    expect(typeof api.getOperatorActivityJoinRequests).toBe('function');
+    expect(typeof api.getPublishingActivityJoinRequests).toBe('function');
     expect(typeof api.decideActivityJoinRequest).toBe('function');
     expect(typeof api.getMemberStatus).toBe('function');
     expect(typeof api.listActivities).toBe('function');

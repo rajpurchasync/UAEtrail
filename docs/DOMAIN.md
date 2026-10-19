@@ -348,10 +348,10 @@ Shop identity: **tenant** (Pro Membership onboarding) + **merchant profile** (`/
 | File / export | Route | Notes |
 |---------------|-------|-------|
 | `OrganisationProfile` | `/agency/:id`, `/partner/:id` | Public business brand profile |
-| `pages/operator/Overview` (`Overview`) | `/publishing/overview` | **Publishing console** hub (folder name `operator/`; route `/publishing/*`) |
-| `pages/operator/Activities` (`Activities`) | `/publishing/activities` | Tenant activity list + manage sheet |
-| `pages/operator/JoinRequests` (`JoinRequests`) | `/publishing/requests` | Activity join queue |
-| `pages/operator/Manage` (`Manage`) | `/organisation/manage` | Agency / shop tenant panels |
+| `pages/publishing/Overview` (`Overview`) | `/publishing/overview` | **Publishing console** hub (folder name `operator/`; route `/publishing/*`) |
+| `pages/publishing/Activities` (`Activities`) | `/publishing/activities` | Tenant activity list + manage sheet |
+| `pages/publishing/JoinRequests` (`JoinRequests`) | `/publishing/requests` | Activity join queue |
+| `pages/publishing/Manage` (`Manage`) | `/organisation/manage` | Agency / shop tenant panels |
 | `ProfileProMembership` (`BecomeHost` leftover inbound export) | `/profile/pro-membership` · redirects from `/become-host`, `/become-organizer` | Pro / agency / shop applications — **not** buddy Host / publish (`canPublish` via profile complete) |
 | `ShopPublic` | `/shop/:id` | Public shop host |
 | `pages/admin/Organisations` (`Organisations`) | `/admin/hosts` | Admin copy: **Hosts** — folder is the namespace, not `AdminOrganisations.tsx` |

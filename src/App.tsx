@@ -45,15 +45,15 @@ import { PRODUCT_PLAN_SURFACE_TITLE } from './content/productNorthStar';
 import {
   JOURNEY_MAP_PATH,
   LEGACY_CONTRIBUTIONS_PATH,
-  OPERATOR_ACTIVITIES_NEW_PATH,
-  OPERATOR_ACTIVITIES_PATH,
-  OPERATOR_HISTORY_PATH,
-  OPERATOR_OVERVIEW_PATH,
-  OPERATOR_PLACES_PATH,
-  OPERATOR_PROFILE_PATH,
-  OPERATOR_REQUESTS_PATH,
-  OPERATOR_SECURITY_PRIVACY_PATH,
-  OPERATOR_TEAM_PATH,
+  PUBLISHING_ACTIVITIES_NEW_PATH,
+  PUBLISHING_ACTIVITIES_PATH,
+  PUBLISHING_HISTORY_PATH,
+  PUBLISHING_OVERVIEW_PATH,
+  PUBLISHING_PLACES_PATH,
+  PUBLISHING_PROFILE_PATH,
+  PUBLISHING_REQUESTS_PATH,
+  PUBLISHING_SECURITY_PRIVACY_PATH,
+  PUBLISHING_TEAM_PATH,
   PLAN_PATH,
   PROFILE_HISTORY_PATH,
   PROFILE_SUBMISSIONS_PATH,
@@ -192,27 +192,27 @@ const AdminShop = lazy(() => import('./pages/admin/Shop').then((m) => ({ default
 const AdminNotifications = lazy(() =>
   import('./pages/admin/Notifications').then((m) => ({ default: m.Notifications }))
 );
-const OperatorOverview = lazy(() =>
-  import('./pages/operator/Overview').then((m) => ({ default: m.Overview }))
+const PublishingOverview = lazy(() =>
+  import('./pages/publishing/Overview').then((m) => ({ default: m.Overview }))
 );
-const OperatorActivities = lazy(() =>
-  import('./pages/operator/Activities').then((m) => ({ default: m.Activities }))
+const PublishingActivities = lazy(() =>
+  import('./pages/publishing/Activities').then((m) => ({ default: m.Activities }))
 );
-const OperatorJoinRequests = lazy(() =>
-  import('./pages/operator/JoinRequests').then((m) => ({ default: m.JoinRequests }))
+const PublishingJoinRequests = lazy(() =>
+  import('./pages/publishing/JoinRequests').then((m) => ({ default: m.JoinRequests }))
 );
-const OperatorTeam = lazy(() => import('./pages/operator/Team').then((m) => ({ default: m.Team })));
-const OperatorPublicProfileEdit = lazy(() =>
-  import('./pages/operator/PublicProfileEdit').then((m) => ({ default: m.PublicProfileEdit }))
+const PublishingTeam = lazy(() => import('./pages/publishing/Team').then((m) => ({ default: m.Team })));
+const PublishingPublicProfileEdit = lazy(() =>
+  import('./pages/publishing/PublicProfileEdit').then((m) => ({ default: m.PublicProfileEdit }))
 );
-const OperatorPlaces = lazy(() => import('./pages/operator/Places').then((m) => ({ default: m.Places })));
-const OperatorHistory = lazy(() => import('./pages/operator/History').then((m) => ({ default: m.History })));
+const PublishingPlaces = lazy(() => import('./pages/publishing/Places').then((m) => ({ default: m.Places })));
+const PublishingHistory = lazy(() => import('./pages/publishing/History').then((m) => ({ default: m.History })));
 const UserRequests = lazy(() => import('./pages/UserRequests').then((m) => ({ default: m.UserRequests })));
 const Messages = lazy(() => import('./pages/Messages').then((m) => ({ default: m.Messages })));
 const MessagesGate = lazy(() => import('./pages/Messages').then((m) => ({ default: m.MessagesGate })));
 const ShopManageRedirect = () => <Navigate to={organisationManagePath('shop')} replace />;
 const AgencyManageRedirect = () => <Navigate to={organisationManagePath('agency')} replace />;
-const OperatorManage = lazy(() => import('./pages/operator/Manage').then((m) => ({ default: m.Manage })));
+const PublishingManage = lazy(() => import('./pages/publishing/Manage').then((m) => ({ default: m.Manage })));
 const PlanPage = lazy(() => import('./plan/PlanPage').then((m) => ({ default: m.PlanPage })));
 const ProfileHistoryPage = lazy(() =>
   import('./pages/ProfileHistory').then((m) => ({ default: m.ProfileHistoryPage }))
@@ -726,10 +726,10 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path="/publishing" element={<Navigate to={OPERATOR_OVERVIEW_PATH} replace />} />
+          <Route path="/publishing" element={<Navigate to={PUBLISHING_OVERVIEW_PATH} replace />} />
           <Route path="/publishing/messages" element={<LegacyMessagesRedirect />} />
           <Route
-            path={OPERATOR_OVERVIEW_PATH}
+            path={PUBLISHING_OVERVIEW_PATH}
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
                 <OperatorOverview />
@@ -737,7 +737,7 @@ function App() {
             }
           />
           <Route
-            path={OPERATOR_ACTIVITIES_PATH}
+            path={PUBLISHING_ACTIVITIES_PATH}
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
                 <OperatorActivities />
@@ -745,7 +745,7 @@ function App() {
             }
           />
           <Route
-            path={OPERATOR_ACTIVITIES_NEW_PATH}
+            path={PUBLISHING_ACTIVITIES_NEW_PATH}
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
                 <OperatorActivities />
@@ -753,7 +753,7 @@ function App() {
             }
           />
           <Route
-            path={OPERATOR_REQUESTS_PATH}
+            path={PUBLISHING_REQUESTS_PATH}
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
                 <OperatorJoinRequests />
@@ -761,7 +761,7 @@ function App() {
             }
           />
           <Route
-            path={OPERATOR_TEAM_PATH}
+            path={PUBLISHING_TEAM_PATH}
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
                 <OperatorTeam />
@@ -769,7 +769,7 @@ function App() {
             }
           />
           <Route
-            path={OPERATOR_PROFILE_PATH}
+            path={PUBLISHING_PROFILE_PATH}
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
                 <OperatorPublicProfileEdit />
@@ -777,7 +777,7 @@ function App() {
             }
           />
           <Route
-            path={OPERATOR_SECURITY_PRIVACY_PATH}
+            path={PUBLISHING_SECURITY_PRIVACY_PATH}
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
                 <SecurityPrivacy />
@@ -785,16 +785,16 @@ function App() {
             }
           />
           <Route
-            path={OPERATOR_PLACES_PATH}
+            path={PUBLISHING_PLACES_PATH}
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
                 <OperatorPlaces />
               </ProtectedRoute>
             }
           />
-          <Route path="/publishing/locations" element={<Navigate to={OPERATOR_PLACES_PATH} replace />} />
+          <Route path="/publishing/locations" element={<Navigate to={PUBLISHING_PLACES_PATH} replace />} />
           <Route
-            path={OPERATOR_HISTORY_PATH}
+            path={PUBLISHING_HISTORY_PATH}
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
                 <OperatorHistory />

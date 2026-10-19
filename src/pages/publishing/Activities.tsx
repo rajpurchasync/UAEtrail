@@ -20,10 +20,10 @@ import { TenantSwitcher } from '../../components/ui';
 import { ActivityHubInviteIconButton } from '../../components/activity/ActivityHubInviteIconButton';
 import { useActivityInviteShareSheet } from '../../hooks/useActivityInviteShareSheet';
 import { ActivityManageSheet } from '../../components/activity/ActivityManageSheet';
-import { useOperatorActivityManageActions } from '../../hooks/useOperatorActivityManageActions';
+import { useHostActivityManageActions } from '../../hooks/useHostActivityManageActions';
 import { useAuth } from '../../context/AuthContext';
 import { hostPublishAvailabilityNoticeMessage } from '../../plan/hostPublishAvailabilityNotice';
-import { OPERATOR_ACTIVITIES_NEW_PATH } from '../../config/routingCatalog';
+import { PUBLISHING_ACTIVITIES_NEW_PATH } from '../../config/routingCatalog';
 import {
   activityTypeBadgeClass,
   formatActivityCapacity,
@@ -68,7 +68,7 @@ export const Activities = () => {
     }
   }, []);
 
-  const hostActions = useOperatorActivityManageActions(tenantId, () => loadEvents(tenantId));
+  const hostActions = useHostActivityManageActions(tenantId, () => loadEvents(tenantId));
   const inviteShare = useActivityInviteShareSheet();
 
   useSafeAsyncEffect(
@@ -83,7 +83,7 @@ export const Activities = () => {
   };
 
   useEffect(() => {
-    if (location.pathname !== OPERATOR_ACTIVITIES_NEW_PATH) return;
+    if (location.pathname !== PUBLISHING_ACTIVITIES_NEW_PATH) return;
     const type = parseActivityTypeParam(searchParams.get('type'));
     navigateToExploreHost(navigate, type ? activityTypeToHostComposeKind(type) : null);
   }, [location.pathname, navigate, searchParams]);

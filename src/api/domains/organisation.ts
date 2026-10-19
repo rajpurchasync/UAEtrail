@@ -13,7 +13,7 @@ export const organisationApi = {
     apiRequest<{ data: TenantPublicDTO }>(`/tenants/${slug}`),
 
   /** Activity join queue (`GET /publishing/requests`). */
-  getOperatorActivityJoinRequests: (tenantId: string, options?: { activityId?: string }) => {
+  getPublishingActivityJoinRequests: (tenantId: string, options?: { activityId?: string }) => {
     const params = new URLSearchParams({ pageSize: '100' });
     if (options?.activityId) {
       params.set('activityId', options.activityId);

@@ -83,7 +83,7 @@ export const getActivityJoinRequests = async (
   tenantId: string,
   options?: { activityId?: string }
 ): Promise<ActivityRequestView[]> => {
-  const res = await api.getOperatorActivityJoinRequests(tenantId, options);
+  const res = await api.getPublishingActivityJoinRequests(tenantId, options);
   return res.data;
 };
 

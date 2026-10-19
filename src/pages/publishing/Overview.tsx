@@ -23,8 +23,8 @@ import { FEATURE_FLAGS } from '../../config/platform';
 import {
   EXPLORE_MAP_PATH,
   MESSAGES_PATH,
-  OPERATOR_ACTIVITIES_NEW_PATH,
-  OPERATOR_SECURITY_PRIVACY_PATH,
+  PUBLISHING_ACTIVITIES_NEW_PATH,
+  PUBLISHING_SECURITY_PRIVACY_PATH,
   PRO_MEMBERSHIP_PATH,
   NOTIFICATIONS_PATH,
   planJoinedSchedulePath,
@@ -87,7 +87,7 @@ export const Overview = () => {
     <ConsoleShell
       title={workspaceConsoleLabel()}
       cta={
-        <Link to={OPERATOR_ACTIVITIES_NEW_PATH} className="app-cta-sm">
+        <Link to={PUBLISHING_ACTIVITIES_NEW_PATH} className="app-cta-sm">
           <Plus className="w-4 h-4" />
           Add activity
         </Link>
@@ -238,7 +238,7 @@ export const Overview = () => {
                   accent: 'neutral',
                 },
                 {
-                  to: OPERATOR_SECURITY_PRIVACY_PATH,
+                  to: PUBLISHING_SECURITY_PRIVACY_PATH,
                   icon: <ShieldCheck className="w-4 h-4" />,
                   label: 'Security & privacy',
                   accent: 'blue' as const,

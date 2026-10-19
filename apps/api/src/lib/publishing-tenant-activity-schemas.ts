@@ -33,7 +33,7 @@ const outingTopicSchema = z.enum([
   'community',
 ]);
 
-const operatorTenantActivityFieldsSchema = z.object({
+const publishingTenantActivityFieldsSchema = z.object({
   activityType: sharedActivityTypeSchema,
   locationId: z.string().min(1),
   title: z.string().min(4).max(120),
@@ -82,7 +82,7 @@ const operatorTenantActivityFieldsSchema = z.object({
   linkedRideshareActivityId: z.string().uuid().nullable().optional(),
 });
 
-export const operatorTenantActivityCreateSchema = operatorTenantActivityFieldsSchema.superRefine((data, ctx) => {
+export const publishingTenantActivityCreateSchema = publishingTenantActivityFieldsSchema.superRefine((data, ctx) => {
   if (data.activityType === 'rideshare') return;
   if (data.description.trim().length < 20) {
     ctx.addIssue({
@@ -93,7 +93,7 @@ export const operatorTenantActivityCreateSchema = operatorTenantActivityFieldsSc
   }
 });
 
-export const operatorTenantActivityPatchSchema = operatorTenantActivityFieldsSchema.partial();
+export const publishingTenantActivityPatchSchema = publishingTenantActivityFieldsSchema.partial();
 
-export type OperatorTenantActivityCreateInput = z.infer<typeof operatorTenantActivityCreateSchema>;
-export type OperatorTenantActivityPatchInput = z.infer<typeof operatorTenantActivityPatchSchema>;
+export type OperatorTenantActivityCreateInput = z.infer<typeof publishingTenantActivityCreateSchema>;
+export type OperatorTenantActivityPatchInput = z.infer<typeof publishingTenantActivityPatchSchema>;

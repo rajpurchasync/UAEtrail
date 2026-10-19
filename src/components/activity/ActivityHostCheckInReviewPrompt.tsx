@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Users } from 'lucide-react';
-import { hostActivitiesCheckInPath } from '../../config/routingCatalog';
+import { publishingActivitiesCheckInPath } from '../../config/routingCatalog';
 import {
   ACTIVITY_DETAIL_HOST_CHECK_IN_CTA,
   ACTIVITY_DETAIL_HOST_RATE_PARTICIPANTS_CTA,
@@ -19,7 +19,7 @@ export const ActivityHostCheckInReviewPrompt = ({
   activityEnded,
   panelClassName = '',
 }: ActivityHostCheckInReviewPromptProps) => {
-  const rosterPath = hostActivitiesCheckInPath(activityId);
+  const rosterPath = publishingActivitiesCheckInPath(activityId);
   const showRate = activityEnded && rateableCount > 0;
 
   return (

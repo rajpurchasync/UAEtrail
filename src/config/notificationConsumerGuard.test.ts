@@ -9,7 +9,7 @@ const NOTIFICATION_NAV_SURFACES = [
   'src/components/layout/NotificationBellPopover.tsx',
   'src/pages/Notifications.tsx',
   'src/pages/admin/Notifications.tsx',
-  'src/pages/operator/Overview.tsx',
+  'src/pages/publishing/Overview.tsx',
 ];
 
 describe('notificationConsumerGuard (S5)', () => {

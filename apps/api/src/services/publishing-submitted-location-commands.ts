@@ -10,7 +10,7 @@ import { scheduleSideEffect } from '../lib/schedule-side-effect.js';
 import { buildLocationCreateData } from './location-submit.js';
 import { awardPoints } from './rewards.js';
 
-export const submitOperatorLocation = async (input: {
+export const submitPublishingLocation = async (input: {
   userId: string;
   tenantId: string;
   body: z.infer<typeof locationSubmitBodySchema>;

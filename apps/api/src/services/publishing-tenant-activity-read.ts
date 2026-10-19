@@ -9,7 +9,7 @@ import type { ActivityWithTenantRelations } from '../lib/activity-read-assembler
 import { buildActivityDto } from '../lib/mappers.js';
 import { mapActivityIdsToGroupChatIds } from '../lib/social-groups-store.js';
 
-export const buildOperatorTenantActivityDto = async (
+export const buildPublishingTenantActivityDto = async (
   event: ActivityWithTenantRelations
 ): Promise<ActivityDTO> => {
   const dto = buildActivityDto(event);
@@ -24,7 +24,7 @@ export const buildOperatorTenantActivityDto = async (
   };
 };
 
-export const listOperatorTenantActivitiesPage = async (input: {
+export const listPublishingTenantActivitiesPage = async (input: {
   tenantId: string;
   page: number;
   pageSize: number;
@@ -47,7 +47,7 @@ export const listOperatorTenantActivitiesPage = async (input: {
   };
 };
 
-export const listOperatorTenantActivityHistoryPage = async (input: {
+export const listPublishingTenantActivityHistoryPage = async (input: {
   tenantId: string;
   page: number;
   pageSize: number;

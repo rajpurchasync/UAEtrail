@@ -898,27 +898,27 @@
       "admin-user-commands",
       "admin-user-read"
     ],
-    "apps/api/src/routes/operator/registerOperatorActivityParticipantRoutes.ts": [
+    "apps/api/src/routes/publishing/registerPublishingActivityParticipantRoutes.ts": [
       "checkin",
-      "operator-activity-participant-commands",
-      "operator-activity-participant-read",
+      "publishing-activity-participant-commands",
+      "publishing-activity-participant-read",
       "participant-roster-host"
     ],
-    "apps/api/src/routes/operator/registerOperatorActivityRequestRoutes.ts": [
-      "operator-activity-request-commands",
-      "operator-activity-request-read"
+    "apps/api/src/routes/publishing/registerPublishingActivityRequestRoutes.ts": [
+      "publishing-activity-request-commands",
+      "publishing-activity-request-read"
     ],
-    "apps/api/src/routes/operator/registerOperatorActivityRoutes.ts": [
-      "operator-tenant-activity-commands",
-      "operator-tenant-activity-read"
+    "apps/api/src/routes/publishing/registerPublishingActivityRoutes.ts": [
+      "publishing-tenant-activity-commands",
+      "publishing-tenant-activity-read"
     ],
-    "apps/api/src/routes/operator/registerOperatorSubmittedLocationRoutes.ts": [
-      "operator-submitted-location-commands",
-      "operator-submitted-location-read"
+    "apps/api/src/routes/publishing/registerPublishingSubmittedLocationRoutes.ts": [
+      "publishing-submitted-location-commands",
+      "publishing-submitted-location-read"
     ],
-    "apps/api/src/routes/operator/registerOperatorTeamRoutes.ts": [
-      "operator-team-commands",
-      "operator-team-read"
+    "apps/api/src/routes/publishing/registerPublishingTeamRoutes.ts": [
+      "publishing-team-commands",
+      "publishing-team-read"
     ],
     "apps/api/src/routes/shop/registerShopCheckoutRoutes.ts": [
       "shop-checkout-commands",

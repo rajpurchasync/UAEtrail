@@ -1,6 +1,6 @@
 import { listTenantMembershipsWithUsers } from '../lib/tenant-access.js';
 
-export const listOperatorTeamMembers = async (tenantId: string) => {
+export const listPublishingTeamMembers = async (tenantId: string) => {
   const members = await listTenantMembershipsWithUsers(tenantId);
   return members.map((member) => ({
     id: member.id,

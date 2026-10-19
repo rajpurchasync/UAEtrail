@@ -27,7 +27,7 @@ const ALLOW_HOST_CONSOLE_PATHS = new Set([
 
 /** Legacy host workspace (`/host/*` pages) — not consumer Plan/Profile surfaces. */
 const SKIP_HOST_CONSOLE_PREFIXES = [
-  'src/pages/operator/',
+  'src/pages/publishing/',
   'src/components/activity/',
   'src/console/',
 ];
@@ -95,9 +95,9 @@ describe('hostMemberGuard', () => {
         /['"]\/host\/overview['"]/.test(content) ||
         /['"]\/operator\/overview['"]/.test(content) ||
         /to=\{HOST_OVERVIEW_PATH\}/.test(content) ||
-        /to=\{OPERATOR_OVERVIEW_PATH\}/.test(content) ||
+        /to=\{PUBLISHING_OVERVIEW_PATH\}/.test(content) ||
         /to:\s*HOST_OVERVIEW_PATH/.test(content) ||
-        /to:\s*OPERATOR_OVERVIEW_PATH/.test(content)
+        /to:\s*PUBLISHING_OVERVIEW_PATH/.test(content)
       ) {
         violations.push(`${file}: use exploreHostPath(), planHostedSchedulePath(), or PRO_MEMBERSHIP_PATH`);
       }

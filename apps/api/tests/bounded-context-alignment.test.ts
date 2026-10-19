@@ -85,7 +85,7 @@ describe('boundedContextAlignment (API + manifest)', () => {
     };
     expect(
       [
-        ...assertRegisterOnly('apps/api/src/routes/operator', ['operator-route-schemas.ts']),
+        ...assertRegisterOnly('apps/api/src/routes/publishing', ['publishing-route-schemas.ts']),
         ...assertRegisterOnly('apps/api/src/routes/shop', ['shop-route-schemas.ts']),
         ...assertRegisterOnly('apps/api/src/routes/admin', []),
       ]

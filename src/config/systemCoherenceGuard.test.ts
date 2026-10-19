@@ -19,8 +19,8 @@ const SURFACE_LINKS: Array<{ path: string; constant: string }> = [
   { path: '/notifications', constant: 'NOTIFICATIONS_PATH' },
   { path: '/profile', constant: 'PROFILE_PATH' },
   { path: '/profile/settings', constant: 'PROFILE_SETTINGS_PATH' },
-  { path: '/publishing/activities', constant: 'OPERATOR_ACTIVITIES_PATH' },
-  { path: '/publishing/requests', constant: 'OPERATOR_REQUESTS_PATH' },
+  { path: '/publishing/activities', constant: 'PUBLISHING_ACTIVITIES_PATH' },
+  { path: '/publishing/requests', constant: 'PUBLISHING_REQUESTS_PATH' },
 ];
 
 const SURFACE_LITERAL_ALLOWLIST = new Set([
@@ -197,12 +197,12 @@ describe('systemCoherenceGuard', () => {
 
   it('S10b host console guards mount fetches with useSafeAsyncEffect', () => {
     const hostPages = [
-      'src/pages/operator/Activities.tsx',
-      'src/pages/operator/JoinRequests.tsx',
-      'src/pages/operator/Places.tsx',
-      'src/pages/operator/History.tsx',
-      'src/pages/operator/Team.tsx',
-      'src/pages/operator/PublicProfileEdit.tsx',
+      'src/pages/publishing/Activities.tsx',
+      'src/pages/publishing/JoinRequests.tsx',
+      'src/pages/publishing/Places.tsx',
+      'src/pages/publishing/History.tsx',
+      'src/pages/publishing/Team.tsx',
+      'src/pages/publishing/PublicProfileEdit.tsx',
     ];
     const hostShell = ['src/console/ConsoleShell.tsx'];
     const missing: string[] = [];

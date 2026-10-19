@@ -4,10 +4,10 @@ import { paginatedResponse, paginationSchema } from '../../lib/pagination.js';
 import { ORG_ACTIVITY_EDIT_ROLES } from '../../lib/org-permissions.js';
 import { requireOrgRole } from '../../middleware/tenant.js';
 import { validate } from '../../middleware/validate.js';
-import { decideTenantActivityJoinRequest } from '../../services/operator-activity-request-commands.js';
-import { listTenantActivityJoinRequests } from '../../services/operator-activity-request-read.js';
+import { decideTenantActivityJoinRequest } from '../../services/publishing-activity-request-commands.js';
+import { listTenantActivityJoinRequests } from '../../services/publishing-activity-request-read.js';
 import { resolveHostNote } from '@uaetrail/shared-types';
-import { activityRequestDecisionSchema, idParamSchema } from './operator-route-schemas.js';
+import { activityRequestDecisionSchema, idParamSchema } from './publishing-route-schemas.js';
 
 const hostRequestsQuerySchema = paginationSchema.extend({
   activityId: z.string().min(1).optional(),
@@ -18,8 +18,8 @@ const hostRequestsQuerySchema = paginationSchema.extend({
  * Members ask to join a published outing; host approves/rejects — not host onboarding.
  * Publish capability: `GET /me/status` (`profileComplete` + `publish.canPublish`).
  */
-export const registerOperatorActivityRequestRoutes = (operatorRouter: Router): void => {
-  operatorRouter.get('/requests', async (req, res, next) => {
+export const registerPublishingActivityRequestRoutes = (publishingRouter: Router): void => {
+  publishingRouter.get('/requests', async (req, res, next) => {
     try {
       const tenantId = req.tenantContext!.tenantId;
       const query = hostRequestsQuerySchema.parse(req.query);
@@ -36,7 +36,7 @@ export const registerOperatorActivityRequestRoutes = (operatorRouter: Router): v
     }
   });
 
-  operatorRouter.patch(
+  publishingRouter.patch(
     '/requests/:id',
     requireOrgRole(ORG_ACTIVITY_EDIT_ROLES),
     validate({ params: idParamSchema, body: activityRequestDecisionSchema }),

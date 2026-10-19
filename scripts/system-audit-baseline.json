@@ -34,7 +34,7 @@
     },
     {
       "prefix": "/publishing",
-      "file": "apps/api/src/routes/operator.ts",
+      "file": "apps/api/src/routes/publishing.ts",
       "note": "HTTP mount /publishing; SPA /publishing/*"
     },
     {

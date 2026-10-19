@@ -10,10 +10,10 @@ import {
   ADMIN_SETTINGS_PATH,
   ADMIN_SHOP_PATH,
   ADMIN_USERS_PATH,
-  OPERATOR_ACTIVITIES_PATH,
-  OPERATOR_OVERVIEW_PATH,
-  OPERATOR_PROFILE_PATH,
-  OPERATOR_REQUESTS_PATH,
+  PUBLISHING_ACTIVITIES_PATH,
+  PUBLISHING_OVERVIEW_PATH,
+  PUBLISHING_PROFILE_PATH,
+  PUBLISHING_REQUESTS_PATH,
   MESSAGES_PATH,
   MY_REQUESTS_PATH,
   PLAN_PATH,
@@ -32,7 +32,7 @@ import { isPlatformAdmin } from './roles';
 export const defaultRouteByRole = (role: UserRole): string => {
   if (isPlatformAdmin(role)) return ADMIN_OVERVIEW_PATH;
   if (role === 'tenant_owner' || role === 'tenant_admin' || role === 'tenant_guide') {
-    return OPERATOR_OVERVIEW_PATH;
+    return PUBLISHING_OVERVIEW_PATH;
   }
   return EXPLORE_MAP_PATH;
 };
@@ -87,13 +87,13 @@ export const hostDashboardRedirect = (subpath: string): string => {
     case 'messages':
       return MESSAGES_PATH;
     case 'requests':
-      return OPERATOR_REQUESTS_PATH;
+      return PUBLISHING_REQUESTS_PATH;
     case 'activities':
-      return OPERATOR_ACTIVITIES_PATH;
+      return PUBLISHING_ACTIVITIES_PATH;
     case 'profile':
-      return OPERATOR_PROFILE_PATH;
+      return PUBLISHING_PROFILE_PATH;
     default:
-      return OPERATOR_OVERVIEW_PATH;
+      return PUBLISHING_OVERVIEW_PATH;
   }
 };
 

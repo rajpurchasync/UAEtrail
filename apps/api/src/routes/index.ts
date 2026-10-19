@@ -4,7 +4,7 @@ import { adminRouter } from './admin.js';
 import { authRouter } from './auth.js';
 import { chatRouter } from './chat.js';
 import { mediaRouter } from './media.js';
-import { operatorRouter } from './operator.js';
+import { publishingRouter } from './publishing.js';
 import { shopRouter } from './shop.js';
 import { safetyRouter } from './safety.js';
 import { userRouter } from './user.js';
@@ -14,7 +14,7 @@ export const apiRouter = Router();
 
 apiRouter.use('/auth', authLimiter, authRouter);
 apiRouter.use('/admin', adminRouter);
-apiRouter.use('/publishing', operatorRouter);
+apiRouter.use('/publishing', publishingRouter);
 apiRouter.use('/chat', chatRouter);
 apiRouter.use('/shop', shopRouter);
 apiRouter.use('/media', mediaRouter);

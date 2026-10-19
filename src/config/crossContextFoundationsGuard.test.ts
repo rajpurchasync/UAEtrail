@@ -120,8 +120,8 @@ describe('crossContextFoundationsGuard', () => {
 
   it('CTX-FOUND-07: SPA paths use routing catalog — publishing console constants are /publishing/*', () => {
     const surface = read('src/config/surfacePaths.ts');
-    expect(surface).toMatch(/OPERATOR_OVERVIEW_PATH = '\/publishing\/overview'/);
-    expect(surface).toMatch(/OPERATOR_REQUESTS_PATH = '\/publishing\/requests'/);
+    expect(surface).toMatch(/PUBLISHING_OVERVIEW_PATH = '\/publishing\/overview'/);
+    expect(surface).toMatch(/PUBLISHING_REQUESTS_PATH = '\/publishing\/requests'/);
     expect(read('src/config/routingCatalog.ts')).toMatch(/surfacePaths/);
   });
 

@@ -13,7 +13,7 @@ const ALLOWLIST = new Set([
   'src/config/surfacePaths.ts',
   'src/App.tsx',
   'src/utils/notificationRouting.test.ts',
-  'src/pages/operator/Overview.tsx',
+  'src/pages/publishing/Overview.tsx',
   'src/explore/exploreItemSearch.ts',
   'src/explore/explorePinKindFilter.ts',
   'src/list/browseListTaxonomy.ts',

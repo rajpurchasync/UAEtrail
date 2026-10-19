@@ -38,7 +38,7 @@ import { resolveOwnedProfileType } from '../lib/tenant-store.js';
 import type {
   OperatorTenantActivityCreateInput,
   OperatorTenantActivityPatchInput,
-} from '../lib/operator-tenant-activity-schemas.js';
+} from '../lib/publishing-tenant-activity-schemas.js';
 import {
   ensureActivityGroupChat,
   syncActivityGroupChatWallPolicyFromActivity,
@@ -56,9 +56,9 @@ import {
   assertActivityHostPatch,
   resolveActivityLocation,
 } from './host-activity.js';
-import { buildOperatorTenantActivityDto } from './operator-tenant-activity-read.js';
+import { buildPublishingTenantActivityDto } from './publishing-tenant-activity-read.js';
 
-export const createOperatorTenantActivity = async (input: {
+export const createPublishingTenantActivity = async (input: {
   tenantId: string;
   actorId: string;
   platformAdmin: boolean;
@@ -186,12 +186,12 @@ export const createOperatorTenantActivity = async (input: {
 
   const groupChatId = await ensureActivityGroupChat(created.id);
   const refreshed = await findTenantActivityForEdit(created.id, input.tenantId);
-  const dto = await buildOperatorTenantActivityDto(refreshed ?? created);
+  const dto = await buildPublishingTenantActivityDto(refreshed ?? created);
 
   return { data: { ...dto, groupChatId: groupChatId ?? null } };
 };
 
-export const updateOperatorTenantActivity = async (input: {
+export const updatePublishingTenantActivity = async (input: {
   tenantId: string;
   actorId: string;
   platformAdmin: boolean;
@@ -402,10 +402,10 @@ export const updateOperatorTenantActivity = async (input: {
   }
 
   const refreshed = await findTenantActivityForEdit(activityId, tenantId);
-  return { data: await buildOperatorTenantActivityDto(refreshed ?? updated) };
+  return { data: await buildPublishingTenantActivityDto(refreshed ?? updated) };
 };
 
-export const deleteOrCancelOperatorTenantActivity = async (input: {
+export const deleteOrCancelPublishingTenantActivity = async (input: {
   tenantId: string;
   actorId: string;
   activityId: string;
@@ -458,7 +458,7 @@ export const deleteOrCancelOperatorTenantActivity = async (input: {
   return { mode: 'cancelled' as const };
 };
 
-export const duplicateOperatorTenantActivity = async (input: {
+export const duplicatePublishingTenantActivity = async (input: {
   tenantId: string;
   actorId: string;
   activityId: string;
@@ -480,7 +480,7 @@ export const duplicateOperatorTenantActivity = async (input: {
   return { data: { ...buildActivityDto(duplicated), groupChatId: groupChatId ?? null } };
 };
 
-export const publishOperatorTenantActivity = async (input: {
+export const publishPublishingTenantActivity = async (input: {
   tenantId: string;
   actorId: string;
   platformAdmin: boolean;

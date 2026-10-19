@@ -9,8 +9,8 @@ const read = (rel: string) => readFileSync(join(ROOT, rel), 'utf8');
 describe('publishing HTTP canonical guard (COH-04)', () => {
   it('API index mounts /publishing only', () => {
     const index = read('apps/api/src/routes/index.ts');
-    expect(index).toMatch(/apiRouter\.use\('\/publishing', operatorRouter\)/);
-    expect(index).not.toMatch(/apiRouter\.use\('\/operator', operatorRouter\)/);
+    expect(index).toMatch(/apiRouter\.use\('\/publishing', publishingRouter\)/);
+    expect(index).not.toMatch(/apiRouter\.use\('\/operator', publishingRouter\)/);
     expect(index).not.toMatch(/apiRouter\.use\('\/host'/);
   });
 
@@ -38,7 +38,7 @@ describe('publishing HTTP canonical guard (COH-04)', () => {
 
   it('SPA surface paths are /publishing/*', () => {
     const surface = read('src/config/surfacePaths.ts');
-    expect(surface).toMatch(/OPERATOR_OVERVIEW_PATH = '\/publishing\/overview'/);
+    expect(surface).toMatch(/PUBLISHING_OVERVIEW_PATH = '\/publishing\/overview'/);
     expect(surface).not.toMatch(/rewriteOperatorConsoleToPublishingPath/);
   });
 

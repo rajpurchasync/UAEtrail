@@ -197,7 +197,7 @@ Evolve from today’s `GET /places/registry` → **`GET /places/catalog`** (plac
 | Layer | Use for | Examples |
 |-------|---------|----------|
 | **Product / UI** | Copy, nav labels | Place, Activity, **Host** (FAB + individual on this outing), **Operator workspace** (agency/shop), Friends, Pro Membership — not **Compose** for FAB |
-| **Code (modules)** | Files, hooks, components — **bounded context** from [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §3 | `src/explore/*`, `src/member-plan/*`, `useMemberStatus`, `tenantActivityClientApi`, `routes/operator/*` — see **§13** |
+| **Code (modules)** | Files, hooks, components — **bounded context** from [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §3 | `src/explore/*`, `src/member-plan/*`, `useMemberStatus`, `tenantActivityClientApi`, `routes/publishing/*` — see **§13** |
 | **Wire / storage** | HTTP paths, Mongo until versioned migration | `/locations`, `LocationDTO`, `activity_requests`, `hostUserId`, `x-organisation-id` |
 
 **Rule:** Product says **Place**; API may still say `/locations` and `LocationDTO` until a deliberate migration. Do **not** introduce new `Location*` **product** names in UI.
@@ -373,7 +373,7 @@ IA detail (pills, topics): [`NAVIGATION.md`](./NAVIGATION.md) · `src/list/`.
 | `Place`, `getPublicPlaces` | Location (in UI) | `LocationDTO` = wire DTO |
 | `getOrganisationProfile`, `ShopOrganisation*`, `organisation-console/` (Pro storefront onboarding) | Merchant* (client), HostOrganization* | **Not** activity CRUD/roster — see `MEMBER_MODEL` § Organisation in filenames |
 | `listHostActivities`, `createHostActivity`, `publishHostActivity`, `ActivityParticipantsPanel`, `ActivityManageSheet` | `*OrganisationActivity*`, `OrganisationActivityCheckInPanel`, `listOrganisationActivities` | Guards: `apiLegacyGuard`, `organisationNamingGuard` |
-| `OPERATOR_CONSOLE_LINKS`, `src/pages/operator/*`, `src/console/*` | `HOST_CONSOLE_LINKS` (alias), `pages/OrganisationActivities` | Publishing console at `/publishing/*` |
+| `OPERATOR_CONSOLE_LINKS`, `src/pages/publishing/*`, `src/console/*` | `HOST_CONSOLE_LINKS` (alias), `pages/OrganisationActivities` | Publishing console at `/publishing/*` |
 | `getMemberStatus` | `getMemberHostStatus`, `getMyOrganisationStatus` | Tier + nested `publish` |
 | `PersonPublicProfile` | `UserPublicProfile` | Public card |
 | `buildHostActivityPublishPayload`, `buildHostActivityMenuItems` | `buildOrganisationActivity*` | Single publish contract (`activityPublishPayload.ts`) |
@@ -500,7 +500,7 @@ Use this when naming files, hooks, and utils — **one product word per concept*
 | **Area** (curated **name**, not a pin) | `GET /areas`, `GET /areas/:slug` | `areas-store`, `hostingPublishArea.ts`, `/area/:slug`, explore `?area=` | `source: area` map pin; `areaLabel` as a third geo concept; assigning area from meeting-pin polygons |
 | **Place / venue** | `locations` | `place*`, `venue` panel, `Place` in UI | `location` in new routes/components |
 | **Friends** | buddies API | `BUDDIES_PATH`, `buddy*` stores only on API | `buddyUserId`, “buddy entity” |
-| **Publishing console** | `/publishing/*`, tenant | `src/pages/operator/*`, `src/console/*`, `useMemberStatus`, `useConsoleHubData`, `tenantActivityClientApi` | `tenant` in consumer UI strings (wire: `x-organisation-id`) |
+| **Publishing console** | `/publishing/*`, tenant | `src/pages/publishing/*`, `src/console/*`, `useMemberStatus`, `useConsoleHubData`, `tenantActivityClientApi` | `tenant` in consumer UI strings (wire: `x-organisation-id`) |
 
 **Three maps (do not conflate):** (1) **Explore** — public discovery (`source`: activity · place · facility · shop); (2) **Journey map** — `/profile/history/map` + `GET /me/journey-map`; (3) **Place catalog** — Place / Facility / shop layers on Explore. **Area** is a name (`?area=` / `/area/:slug`), not a map.
 
@@ -588,7 +588,7 @@ Wire: `publishingProfileKind` on `ActivityDTO`; paths via `resolveActivityPublis
 | Tenant-scoped HTTP | List/publish/manage for **this tenant** | **`GET /publishing/activities`** (mount prefix only until SN-4); client **`listActivities(tenantId)`**, **`getActivityJoinRequests(tenantId)`** — not `*OperatorActivity*` / `*HostActivity*` on every symbol |
 | This activity, this viewer | May they see Buddies / approve joiners? | **`viewerAccess`**, entitlements on activity detail wire |
 
-**Freeze (Oct 2026):** Do **not** add new `Operator*` identifiers (hooks, client functions, component names) except **route/page shells** already named (`src/pages/operator/*`, lazy `Operator*` pages). Migrate **toward** activity + publishing-access vocabulary per [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.8 **SN-3**.
+**Freeze (Oct 2026):** Do **not** add new `Operator*` identifiers (hooks, client functions, component names) except **route/page shells** already named (`src/pages/publishing/*`, lazy `Operator*` pages). Migrate **toward** activity + publishing-access vocabulary per [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.8 **SN-3**.
 
 ### 13.1 Anti-patterns (do not repeat)
 
@@ -606,7 +606,7 @@ Wire: `publishingProfileKind` on `ActivityDTO`; paths via `resolveActivityPublis
 | Prefix / name | OK because |
 |---------------|------------|
 | **`/publishing/*` HTTP mount** (canonical) | Stable tenant publishing routes; **not** a license to prefix every TS symbol with `Operator` ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.8 SN-4 drops `/host` mount). |
-| **`src/pages/operator/*`** | Console **surface** route folder; pages inside still operate on **activities**. Object names (`Overview.tsx`), not `OperatorOverview.tsx`. |
+| **`src/pages/publishing/*`** | Console **surface** route folder; pages inside still operate on **activities**. Object names (`Overview.tsx`), not `OperatorOverview.tsx`. |
 | **`src/pages/admin/*`** | Ops **surface** route folder (`/admin`). Object names (`Organisations.tsx`, `Members.tsx`); do **not** prefix every file `Admin*`. |
 | **Legacy shims** | `useOperatorStatus`, `usePublishingAccess`, `/me/host-status`, `/me/operator-status`, flat-only `HostStatusDTO` — **deprecated**; no new call sites. |
 | Remaining `Explore*` map chrome under `src/explore/ui` | Shell files until a dedicated pass. **Do not add** new `Explore*` files — folder is the namespace. Entity lists/follows/people live in `people-discovery` / `discovery`. |
