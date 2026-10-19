@@ -1,6 +1,12 @@
 import { Navigate, useLocation, useParams, useSearchParams } from 'react-router-dom';
 import { canonicalPlaceDetailPath } from '@uaetrail/shared-types';
-import { PRO_MEMBERSHIP_PATH, discoveryToExploreSearch, explorePath, exploreShopsPath } from '../config/routingCatalog';
+import {
+  PRO_MEMBERSHIP_PATH,
+  discoveryToExploreSearch,
+  explorePath,
+  exploreShopsPath,
+  planWishlistRedirectPath,
+} from '../config/routingCatalog';
 import { PLAN_PATH } from '../config/surfacePaths';
 import { resolveInboundTripsHubRedirect } from '../member-plan/inboundTripsRedirect';
 import { useAuth } from '../context/AuthContext';
@@ -42,6 +48,11 @@ export const InboundMerchantPublicRedirect = () => {
   if (!id) return <Navigate to={exploreShopsPath()} replace />;
   return <Navigate to={shopPublicPath({ id })} replace />;
 };
+
+/** Inbound `/profile/wishlist` → plan wishlist lens. */
+export const InboundProfileWishlistRedirect = () => (
+  <Navigate to={planWishlistRedirectPath()} replace />
+);
 
 /** Inbound `/become-host` and `/become-organizer` → Pro membership. */
 export const InboundProMembershipRedirect = () => {

@@ -47,7 +47,7 @@ export const LIST_DISCOVERY_PATH = '/list' as const;
 
 /**
  * Domain glossary — product language vs wire/storage names (Phase 1).
- * Use product names in UI, routes, and new code; legacy aliases remain for API compat.
+ * Use product names in UI, routes, and new code; inbound HTTP aliases remain for bookmarks.
  */
 export const DOMAIN_GLOSSARY = {
   Place: {
@@ -56,7 +56,7 @@ export const DOMAIN_GLOSSARY = {
       'One map/catalog POI (trail, camp, shop, outdoor spot; future toilet, gas, …) — typed by PlaceKind; stored in locations.',
     storage: 'Location',
     api: '/places',
-    legacyApi: '/locations',
+    inboundApiPath: '/locations',
     publicRoutes: ['/trail/:id', '/camp/:id', '/venue/:id', '/shop/:id'],
     adminRoute: ADMIN_PLACES_PATH,
     hostRoute: PUBLISHING_PLACES_PATH,

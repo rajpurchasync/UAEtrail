@@ -6,7 +6,7 @@ export const COLLECTIONS = {
   AUTH_EMAIL_VERIFICATION_TOKENS: 'auth_email_verification_tokens',
   AUTH_EMAIL_CHANGE_TOKENS: 'auth_email_change_tokens',
   AUTH_PASSWORD_RESET_TOKENS: 'auth_password_reset_tokens',
-  /** Legacy — migrated to AUTH_USERS on startup if present. */
+  /** Retired — migrated to AUTH_USERS on startup if present. */
   USERS: 'users',
 
   // Organisations

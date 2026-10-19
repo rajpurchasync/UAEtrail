@@ -28,11 +28,11 @@ export const PlanUpcomingView = ({
   onFilterChange,
   onLayoutChange,
 }: PlanUpcomingViewProps) => {
-  const legacyLens = parsePlanLens(lensRaw);
+  const planLens = parsePlanLens(lensRaw);
   const hostingActive = canHost && filter === 'hosting';
 
   const upcomingBody =
-    legacyLens === 'availability' ? (
+    planLens === 'availability' ? (
       <PlanAvailabilitySection />
     ) : layout === 'calendar' ? (
       <PlanCalendarSection refreshKey={refreshKey} canHost={canHost} filter={filter} />

@@ -36,7 +36,7 @@ export default tseslint.config(
     ignores: ['src/api/**', 'src/messaging/clientGuard.test.ts', 'src/components/messages/index.ts'],
     plugins: { uaetrail },
     rules: {
-      'uaetrail/no-legacy-messaging-api': 'error',
+      'uaetrail/no-retired-messaging-api': 'error',
       'no-restricted-imports': [
         'error',
         {

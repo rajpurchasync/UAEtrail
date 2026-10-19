@@ -178,16 +178,6 @@ export const parseMapFilter = (value: string | null): MapFilterKey => {
   return 'all';
 };
 
-const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
-
-/** @deprecated Prefer parseExploreActivityDatePreset — kept for legacy `YYYY-MM-DD` links. */
-export const parseExploreActivityDate = (value: string | null): string | null => {
-  if (!value || !ISO_DATE.test(value)) return null;
-  const parsed = new Date(`${value}T12:00:00`);
-  if (Number.isNaN(parsed.getTime())) return null;
-  return value;
-};
-
 export {
   parseExploreActivityDatePreset,
   exploreActivityDatePresetLabel,
@@ -204,13 +194,13 @@ export const formatExploreActivityDateLabel = (iso: string): string =>
 
 export const parseActivityListFilter = (
   activityParam: string | null,
-  legacyFilterParam: string | null = null
+  inboundFilterParam: string | null = null
 ): ActivityListFilterKey => {
   if (activityParam && ACTIVITY_LIST_FILTER_SET.has(activityParam as ActivityListFilterKey)) {
     return activityParam as ActivityListFilterKey;
   }
-  if (legacyFilterParam && INBOUND_ACTIVITY_FROM_FILTER[legacyFilterParam]) {
-    return INBOUND_ACTIVITY_FROM_FILTER[legacyFilterParam];
+  if (inboundFilterParam && INBOUND_ACTIVITY_FROM_FILTER[inboundFilterParam]) {
+    return INBOUND_ACTIVITY_FROM_FILTER[inboundFilterParam];
   }
   return 'all';
 };
@@ -225,7 +215,7 @@ export const parseExplorePanel = (value: string | null): ExplorePanel => {
   return 'activities';
 };
 
-/** Parse venue state/emirate filters from URL (`regions=Dubai,RAK` or legacy `region=RAK`). */
+/** Parse venue state/emirate filters from URL (`regions=Dubai,RAK` or inbound `region=RAK`). */
 export const parseVenueRegionsParam = (searchParams: Pick<URLSearchParams, 'get'>): string[] => {
   const multi = searchParams.get('regions');
   if (multi) {
@@ -434,16 +424,16 @@ export const venueFilterToMapFilter = (filter: VenueListFilterKey): MapFilterKey
 /** Parse `?places=` venue catalog filter (trails, spots, shops, …). */
 export const parseVenueListFilter = (
   placesParam: string | null,
-  legacyFilterParam: string | null = null,
-  /** When set, activity uses `?activity=` — do not infer places from legacy `?filter=`. */
+  inboundFilterParam: string | null = null,
+  /** When set, activity uses `?activity=` — do not infer places from inbound `?filter=`. */
   activityParam: string | null = null
 ): VenueListFilterKey => {
   if (placesParam === 'shops') return 'shop';
   if (placesParam && VENUE_LIST_FILTER_SET.has(placesParam as VenueListFilterKey)) {
     return placesParam as VenueListFilterKey;
   }
-  if (!activityParam && legacyFilterParam) {
-    const parsed = parseMapFilter(legacyFilterParam);
+  if (!activityParam && inboundFilterParam) {
+    const parsed = parseMapFilter(inboundFilterParam);
     if (parsed === 'others' || parsed === 'rideshare' || parsed === 'all') {
       return 'all';
     }
@@ -458,7 +448,7 @@ export const serializeVenueListFilter = (filter: VenueListFilterKey): string | n
   return filter;
 };
 
-/** Gear shops on the explore map (replaces legacy `/shop` catalogue browse). */
+/** Gear shops on the explore map (inbound `/shop` browse → explore shops panel). */
 export const exploreShopsPath = (): string =>
   explorePath({ panel: 'shops', filter: 'shops' });
 
@@ -532,7 +522,7 @@ export const exploreOfferRideshareForSeekingPath = (intent: {
     compose: hostCompose('rideshare'),
   });
 
-/** Map legacy `/activities?create=` values onto explore compose organize routes. */
+/** Map inbound `/activities?create=` values onto explore compose organize routes. */
 export const inboundCreateParamToHostPath = (createParam: string | null): string | null => {
   if (!createParam) return null;
   if (createParam === 'hiking' || createParam === 'camping' || createParam === 'event') {
@@ -559,7 +549,7 @@ export const inboundCreateParamToHostPath = (createParam: string | null): string
   return null;
 };
 
-/** Map legacy discovery query params onto explore search params. */
+/** Map inbound discovery query params onto explore search params. */
 export const discoveryToExploreSearch = (search: string): string => {
   const incoming = new URLSearchParams(search);
   const next = new URLSearchParams();

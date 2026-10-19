@@ -110,7 +110,7 @@ const migrateRetiredRideshareActivities = async (db: Db): Promise<void> => {
     { $set: { activityType: 'RIDESHARE' } }
   );
   if (result.modifiedCount > 0) {
-    console.log(`[mongo] Migrated legacy rideshareEnabled → RIDESHARE (${result.modifiedCount} docs)`);
+    console.log(`[mongo] Migrated retired rideshareEnabled → RIDESHARE (${result.modifiedCount} docs)`);
   }
 };
 
@@ -196,7 +196,7 @@ const migrateEmbeddedPersonaParticipantIntentTitles = async (db: Db): Promise<vo
   }
 
   if (updated > 0) {
-    console.log(`[mongo] Migrated legacy participant intent titles (${updated} docs)`);
+    console.log(`[mongo] Migrated embedded persona seeking titles (${updated} docs)`);
   }
 };
 
@@ -288,7 +288,7 @@ const migrateActivityTerminologyValues = async (db: Db): Promise<void> => {
     console.log(`[mongo] Migrated badge key trip_leader → activity_leader (${badgeResult.modifiedCount} docs)`);
   }
 
-  const legacyBadgeRenames: Array<[string, string]> = [
+  const retiredBadgeRenames: Array<[string, string]> = [
     ['trail_mapper', 'contributor'],
     ['activity_leader', 'host'],
     ['reviewer', 'helpful_critic'],
@@ -296,7 +296,7 @@ const migrateActivityTerminologyValues = async (db: Db): Promise<void> => {
     ['tier_active', 'active'],
     ['tier_goat', 'goat'],
   ];
-  for (const [from, to] of legacyBadgeRenames) {
+  for (const [from, to] of retiredBadgeRenames) {
     const renamed = await badges.updateMany({ badgeKey: from }, { $set: { badgeKey: to } });
     if (renamed.modifiedCount > 0) {
       console.log(`[mongo] Migrated badge key ${from} → ${to} (${renamed.modifiedCount} docs)`);
@@ -586,7 +586,7 @@ const backfillParticipantSlotsUsed = async (db: Db): Promise<void> => {
   }
 };
 
-/** Mark legacy map-pin rows as activity anchors; default missing field to catalog-listed. */
+/** Mark retired map-pin rows as activity anchors; default missing field to catalog-listed. */
 const backfillLocationRegistryListed = async (db: Db): Promise<void> => {
   const locations = db.collection('locations');
 
@@ -614,7 +614,7 @@ const backfillLocationRegistryListed = async (db: Db): Promise<void> => {
   }
 };
 
-/** Owners need membership rows for /host scope; legacy data often only set ownerId on tenants. */
+/** Owners need membership rows for /host scope; older tenants often only set ownerId. */
 const backfillTenantOwnerMemberships = async (db: Db): Promise<void> => {
   const tenants = db.collection('tenants');
   const memberships = db.collection('tenant_memberships');
@@ -663,7 +663,7 @@ const purgeDemandBookmarkWishlistRows = async (db: Db): Promise<void> => {
   });
   if (result.deletedCount > 0) {
     console.log(
-      `[mongo] Removed ${result.deletedCount} legacy demand bookmark row(s) from user_wishlist (wishlist ≠ demand)`
+      `[mongo] Removed ${result.deletedCount} retired demand bookmark row(s) from user_wishlist (wishlist ≠ demand)`
     );
   }
 };

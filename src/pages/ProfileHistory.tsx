@@ -66,7 +66,7 @@ export const ProfileHistoryPage = () => {
   const mainView = parsePlanHistoryMainView(location.pathname, searchParams.get('view'));
   const historyRole: PlanHistoryRole = parsePlanHistoryRole(searchParams.get('role'), 'completed', {
     canHost,
-    legacyTab: searchParams.get('tab'),
+    inboundTab: searchParams.get('tab'),
   });
 
   const contentKey = resolveProfileHistoryContentKey({

@@ -64,7 +64,7 @@ export const planAvailabilityPath = (): string => planLensPath('availability');
 
 export { planHostedActivityManagePath, planSelfDemandManagePath, planPlansRolePath };
 
-/** Legacy + mobile param normalization — run once on `/plan` load. */
+/** Inbound + mobile param normalization — run once on `/plan` load. */
 export const normalizePlanSearchParams = (
   params: URLSearchParams,
   canHost: boolean

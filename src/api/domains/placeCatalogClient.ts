@@ -10,7 +10,7 @@ export type PlaceCatalogQuery = {
 
 /**
  * Place catalog read — canonical `GET /places/catalog` (places only; no facilities).
- * Legacy `/places/registry` remains a server alias during CPC.
+ * Inbound `/places/registry` remains a server alias during CPC.
  */
 export const fetchPlaceCatalog = async (
   query: PlaceCatalogQuery = {}

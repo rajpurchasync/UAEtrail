@@ -2226,15 +2226,15 @@ Share your live location and carry extra water in summer months.`
     );
   }
 
-  const suspendLegacyDemoUser = async (email: string, keepUserId: string) => {
-    const legacy = await findAuthUserByEmail(email);
-    if (legacy && legacy._id !== keepUserId) {
-      await updateAuthUserCore({ userId: legacy._id, status: UserStatus.SUSPENDED });
+  const suspendRetiredDemoLogin = async (email: string, keepUserId: string) => {
+    const duplicate = await findAuthUserByEmail(email);
+    if (duplicate && duplicate._id !== keepUserId) {
+      await updateAuthUserCore({ userId: duplicate._id, status: UserStatus.SUSPENDED });
     }
   };
 
-  await suspendLegacyDemoUser('vendor@uaetrails.app', shopOwner._id);
-  await suspendLegacyDemoUser('guide2@uaetrails.app', individualHost._id);
+  await suspendRetiredDemoLogin('vendor@uaetrails.app', shopOwner._id);
+  await suspendRetiredDemoLogin('guide2@uaetrails.app', individualHost._id);
 
   const demandSeedIds = [
     seedDemandId('demand-hike-hatta'),

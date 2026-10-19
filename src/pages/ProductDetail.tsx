@@ -7,7 +7,7 @@ import { exploreShopsPath } from '../config/routingCatalog';
 import { shopPublicPath } from '../utils/shopPaths';
 import { PageMeta } from '../components/seo/PageMeta';
 
-/** Legacy product URLs — redirect to outbound link or the shop page. */
+/** Inbound `/product/:id` — redirect to outbound link or the shop page. */
 export const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
 

@@ -12,7 +12,7 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
       throw error;
     }
   }
-  const legacyWishlistIndexNames = new Set([
+  const retiredWishlistIndexNames = new Set([
     'userId_1_locationId_1',
     'userId_1_eventId_1',
     'userId_1_activityId_1',
@@ -23,7 +23,7 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
     existingWishlistIndexes
       .map((index) => index.name)
       .filter((indexName): indexName is string => typeof indexName === 'string')
-      .filter((indexName) => legacyWishlistIndexNames.has(indexName))
+      .filter((indexName) => retiredWishlistIndexNames.has(indexName))
       .map((indexName) => userWishlist.dropIndex(indexName))
   );
 

@@ -39,7 +39,7 @@ Do **not** merge transports in storage without a product decision — inbox alre
 | **Page** | `Messages.tsx` | Inbox + fullscreen `ChatThreadRouter` |
 | **Thread UI** | `@/chat` (`src/components/chat`) | `ChatThreadRouter`, `ChatMessageBubble`, `useDirectChatThread` |
 
-**Guards:** `src/messaging/clientGuard.test.ts` (CI) and ESLint `uaetrail/no-legacy-messaging-api` — no `api.getInbox` / `api.sendMessage` / wall methods or deep `components/messages/*` imports in app code.
+**Guards:** `src/messaging/clientGuard.test.ts` (CI) and ESLint `uaetrail/no-retired-messaging-api` — no `api.getInbox` / `api.sendMessage` / wall methods or deep `components/messages/*` imports in app code.
 
 **Shared FE (DM + group wall):** `ChatThreadRouter` → `DirectChatThread` | `GroupChatThread`; `useDirectChatThread` (DM data); `ChatThreadShell`, `ChatThreadHeaderBar`, `useThreadReply`, `ChatReplyComposer`, `ChatMessageBody`, `MessageSwipeReplyShell` under `@/chat`. **Shared API:** `apps/api/src/lib/reply-preview.ts` for `replyToPreview` enrichment.
 

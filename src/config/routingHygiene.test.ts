@@ -192,6 +192,7 @@ describe('routingHygiene', () => {
       'src/pages/BecomeHost.tsx',
       'src/pages/Membership.tsx',
       'src/pages/MerchantPublic.tsx',
+      'src/pages/ProfileWishlist.tsx',
       'src/explore/ui/ExploreComposeHost.tsx',
       'src/pages/Activities.tsx',
       'src/hooks/participantIntentClientApi.ts',

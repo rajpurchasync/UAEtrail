@@ -60,8 +60,8 @@ const parseMemberDetails = (
     };
   }
   const meta = metadata as Record<string, unknown>;
-  const legacyDateOfBirth = typeof meta.dateOfBirth === 'string' ? meta.dateOfBirth : null;
-  const dateOfBirth = profileDateOfBirth ?? legacyDateOfBirth;
+  const metadataDateOfBirth = typeof meta.dateOfBirth === 'string' ? meta.dateOfBirth : null;
+  const dateOfBirth = profileDateOfBirth ?? metadataDateOfBirth;
   const metaLanguages = typeof meta.languages === 'string' && meta.languages.trim() ? meta.languages.trim() : null;
   const languages = profileLanguages?.trim() ? profileLanguages.trim() : metaLanguages;
   return {

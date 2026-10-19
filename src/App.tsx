@@ -64,6 +64,7 @@ import {
   InboundMerchantPublicRedirect,
   InboundMessagesRedirect,
   InboundProMembershipRedirect,
+  InboundProfileWishlistRedirect,
   InboundTripsHubRedirect,
 } from './routing/inboundBookmarkRedirects';
 
@@ -187,7 +188,6 @@ const ProfileEdit = lazy(() => import('./pages/ProfileEdit').then((m) => ({ defa
 const ProfileBadges = lazy(() => import('./pages/ProfileBadges').then((m) => ({ default: m.ProfileBadges })));
 const Submissions = lazy(() => import('./pages/Submissions').then((m) => ({ default: m.Submissions })));
 const ProfileReviews = lazy(() => import('./pages/ProfileReviews').then((m) => ({ default: m.ProfileReviews })));
-const ProfileWishlist = lazy(() => import('./pages/ProfileWishlist').then((m) => ({ default: m.ProfileWishlist })));
 const JoinRequestDetail = lazy(() =>
   import('./pages/JoinRequestDetail').then((m) => ({ default: m.JoinRequestDetail }))
 );
@@ -357,7 +357,7 @@ function App() {
             path="/profile/wishlist"
             element={
               <ProtectedRoute>
-                <ProfileWishlist />
+                <InboundProfileWishlistRedirect />
               </ProtectedRoute>
             }
           />

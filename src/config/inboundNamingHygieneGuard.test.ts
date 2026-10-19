@@ -41,4 +41,28 @@ describe('inboundNamingHygieneGuard', () => {
     }
     expect(offenders).toEqual([]);
   });
+
+  it('product trees do not export Legacy-prefixed symbols', () => {
+    const offenders: string[] = [];
+    for (const file of allSourceFiles()) {
+      if (file.endsWith('.test.ts') || file.endsWith('.test.tsx')) continue;
+      const content = readFileSync(join(process.cwd(), file), 'utf8');
+      if (/export\s+(?:const|function|class|type|interface)\s+Legacy\w+/m.test(content)) {
+        offenders.push(file);
+      }
+    }
+    expect(offenders).toEqual([]);
+  });
+
+  it('non-test product code avoids legacy* local identifiers', () => {
+    const offenders: string[] = [];
+    for (const file of allSourceFiles()) {
+      if (file.endsWith('.test.ts') || file.endsWith('.test.tsx')) continue;
+      const content = readFileSync(join(process.cwd(), file), 'utf8');
+      if (/\b(?:const|let)\s+legacy[A-Z]\w*/.test(content)) {
+        offenders.push(file);
+      }
+    }
+    expect(offenders).toEqual([]);
+  });
 });

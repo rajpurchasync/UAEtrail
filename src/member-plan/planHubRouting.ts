@@ -10,7 +10,7 @@ import { planSavedPath } from '../plan/planLens';
 import { planMainTabPath, planWishlistTabPath } from '../plan/planTab';
 
 /**
- * Plan (`/plan`) + profile history URL helpers and legacy query normalization.
+ * Plan (`/plan`) + profile history URL helpers and inbound query normalization.
  * Scheduled outings use **activities** APIs — not a separate “trips” domain.
  * Inbound `/trips` paths redirect in `inboundTripsRedirect.ts`.
  */
@@ -90,7 +90,7 @@ export const planUpcomingPath = (
   return planMainTabPath('upcoming');
 };
 
-/** Deep links that still use legacy `view=plans` + role/sub query (prefer `planRouting` helpers in new code). */
+/** Deep links that still use inbound `view=plans` + role/sub query (prefer `planRouting` helpers in new code). */
 export const planPlansRolePath = (
   role: PlanUpcomingRole | PlanUpcomingSub = 'all'
 ): string => {
@@ -130,24 +130,24 @@ export const parsePlanHubSegment = (raw: string | null): PlanHubSegment => {
 export const parsePlanHistoryRole = (
   raw: string | null,
   segment: PlanHubSegment,
-  options: { canHost: boolean; legacyTab: string | null }
+  options: { canHost: boolean; inboundTab: string | null }
 ): PlanHistoryRole => {
   if (raw === 'self') return 'self';
   if (raw === 'hosted' && options.canHost) return 'hosted';
   if (raw === 'joined') return 'joined';
-  if (options.legacyTab === 'hosted' && options.canHost) return 'hosted';
-  if (segment === 'completed' && options.legacyTab === 'joined') return 'joined';
+  if (options.inboundTab === 'hosted' && options.canHost) return 'hosted';
+  if (segment === 'completed' && options.inboundTab === 'joined') return 'joined';
   return 'joined';
 };
 
-/** Normalize legacy Plan / `/trips` query params (mutates `params`). */
+/** Normalize inbound Plan / `/trips` query params (mutates `params`). */
 export const normalizePlanHubSearchParams = (
   params: URLSearchParams,
   canHost: boolean
 ): { changed: boolean } => {
   let changed = false;
-  const legacyTab = params.get('tab');
-  const legacySub = params.get('sub');
+  const inboundTab = params.get('tab');
+  const inboundSub = params.get('sub');
 
   if (params.get('segment') === 'past') {
     params.set('segment', 'completed');
@@ -201,22 +201,22 @@ export const normalizePlanHubSearchParams = (
     }
   }
 
-  const legacyLayer = params.get('layer');
-  if (legacyLayer === 'places' || legacyLayer === 'shops') {
+  const inboundLayer = params.get('layer');
+  if (inboundLayer === 'places' || inboundLayer === 'shops') {
     params.delete('layer');
     params.set('view', 'plans');
     params.set('role', 'all');
     changed = true;
-  } else if (legacyLayer === 'trips' || legacyLayer === 'activities') {
+  } else if (inboundLayer === 'trips' || inboundLayer === 'activities') {
     params.delete('layer');
     changed = true;
-  } else if (legacyLayer) {
+  } else if (inboundLayer) {
     params.delete('layer');
     changed = true;
   }
 
-  if (!params.get('segment') && (legacyTab || legacySub)) {
-    if (legacySub === 'attended' || legacyTab === 'joined') {
+  if (!params.get('segment') && (inboundTab || inboundSub)) {
+    if (inboundSub === 'attended' || inboundTab === 'joined') {
       params.set('segment', 'completed');
       changed = true;
     }
@@ -235,13 +235,13 @@ export const normalizePlanHubSearchParams = (
       changed = true;
     }
     if (!params.get('role')) {
-      const role = parsePlanHistoryRole(null, 'completed', { canHost, legacyTab });
+      const role = parsePlanHistoryRole(null, 'completed', { canHost, inboundTab });
       params.set('role', role);
       changed = true;
     }
   }
 
-  if (legacyTab || legacySub) {
+  if (inboundTab || inboundSub) {
     params.delete('tab');
     params.delete('sub');
     changed = true;

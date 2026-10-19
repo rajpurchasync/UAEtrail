@@ -88,12 +88,12 @@ const normalizeDirectNotificationPath = (
   }
 
   try {
-    const legacyUrl = new URL(path, 'http://local');
-    const legacyPathname = legacyUrl.pathname;
+    const inboundUrl = new URL(path, 'http://local');
+    const inboundPathname = inboundUrl.pathname;
     if (
-      (legacyPathname === TRIPS_PATH || legacyPathname === ACTIVITIES_PATH) &&
-      legacyUrl.searchParams.get('tab') === 'joined' &&
-      legacyUrl.searchParams.get('segment') === 'upcoming'
+      (inboundPathname === TRIPS_PATH || inboundPathname === ACTIVITIES_PATH) &&
+      inboundUrl.searchParams.get('tab') === 'joined' &&
+      inboundUrl.searchParams.get('segment') === 'upcoming'
     ) {
       return planJoinedSchedulePath();
     }
@@ -177,9 +177,9 @@ export const inferNotificationPath = (
     const actor = toStringValue(meta?.actorUserId) ?? toStringValue(meta?.senderId);
     if (actor) return messagesToUserPath(actor);
   }
-  const legacySenderId = toStringValue(meta?.senderId);
-  if (legacySenderId) {
-    return messagesToUserPath(legacySenderId);
+  const inboundSenderId = toStringValue(meta?.senderId);
+  if (inboundSenderId) {
+    return messagesToUserPath(inboundSenderId);
   }
   if (
     kind === 'join_request_pending' ||

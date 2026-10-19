@@ -32,7 +32,7 @@ export const parseHostFlowIntent = (value: string | null | undefined): HostFlowI
   if (value === 'add-shop') return 'add-shop';
   if (value === 'add-agency') return 'add-agency';
   if (value === 'add-guide') return 'add-guide';
-  // Legacy `/become-host?intent=…` query values (redirect lands on Pro Membership).
+  // Inbound `/become-host?intent=…` query values (redirect lands on Pro Membership).
   if (value === 'become-host' || value === 'become-organizer') return 'pro-application';
   return 'pro-application';
 };

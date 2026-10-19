@@ -36,7 +36,7 @@ export const isJourneyMapPath = (pathname: string): boolean =>
 /** Inbound bookmark — `App.tsx` redirects to {@link PLAN_PATH}. */
 export const INBOUND_ACTIVITIES_HUB_PATH = '/activities' as const;
 
-/** @deprecated Legacy URL — `App.tsx` redirects to {@link PLAN_PATH} or {@link PROFILE_HISTORY_PATH}. */
+/** Inbound bookmark — `App.tsx` redirects to {@link PLAN_PATH} or {@link PROFILE_HISTORY_PATH}. */
 export const TRIPS_PATH = '/trips' as const;
 /** Inbound bookmark — redirects to {@link JOURNEY_MAP_PATH}. */
 export const INBOUND_TRIPS_MAP_PATH = '/trips/map' as const;
@@ -68,10 +68,10 @@ export const PROFILE_SETTINGS_NOTIFICATIONS_PATH = '/profile/settings/notificati
 /** Member achievement badges (no Trail Points wallet) */
 export const PROFILE_BADGES_PATH = '/profile/badges' as const;
 
-/** Legacy community feed — redirects to explore (`App.tsx`). */
+/** Inbound bookmark — redirects to explore (`App.tsx`). */
 export const COMMUNITY_PATH = '/community' as const;
 
-/** Legacy membership marketing URL — App.tsx redirects to explore. */
+/** Inbound bookmark — App.tsx redirects to explore. */
 export const MEMBERSHIP_MARKETING_PATH = '/membership' as const;
 
 /** Social subgraph */

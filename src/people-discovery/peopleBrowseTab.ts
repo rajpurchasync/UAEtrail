@@ -28,15 +28,15 @@ export const serializePeopleBrowseTab = (tab: PeopleBrowseTab): string | null =>
   tab === 'looking' ? null : tab;
 
 /**
- * Explore map/list URL: `peopleTab` / `socialTab` plus legacy `goingTab` when `view=going`.
+ * Explore map/list URL: `peopleTab` / `socialTab` plus inbound `goingTab` when `view=going`.
  */
 export const parsePeopleBrowseTabFromUrl = (
   peopleTab: string | null,
-  legacyGoingTab: string | null
+  inboundGoingTab: string | null
 ): PeopleBrowseTab => {
   if (peopleTab) return parsePeopleBrowseTab(peopleTab);
-  if (legacyGoingTab === 'people') return 'going';
-  if (legacyGoingTab === 'discover') return 'available';
-  if (legacyGoingTab === 'trips') return 'connect';
+  if (inboundGoingTab === 'people') return 'going';
+  if (inboundGoingTab === 'discover') return 'available';
+  if (inboundGoingTab === 'trips') return 'connect';
   return 'looking';
 };

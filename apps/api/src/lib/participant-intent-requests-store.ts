@@ -164,11 +164,11 @@ const resolvePendingActivityJoinRequest = async (
     return direct;
   }
 
-  const legacyIntentRow = await requestsCollection().findOne({
+  const intentBridgeRow = await requestsCollection().findOne({
     _id: requestId,
     intentId: intent._id,
   });
-  const linkedId = legacyIntentRow?.activityRequestId;
+  const linkedId = intentBridgeRow?.activityRequestId;
   if (linkedId) {
     const linked = await findActivityRequestByIdAndActivity(linkedId, publishedActivityId);
     if (linked) {

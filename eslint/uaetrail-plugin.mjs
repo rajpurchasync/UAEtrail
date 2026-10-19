@@ -18,12 +18,12 @@ const plugin = {
   rules: {
     'no-direct-api-facade-ui': createNoDirectApiFacadeRule('ui'),
     'no-direct-api-facade-hooks': createNoDirectApiFacadeRule('hooks'),
-    'no-legacy-messaging-api': {
+    'no-retired-messaging-api': {
       meta: {
         type: 'problem',
         docs: {
           description:
-            'Disallow legacy api.* chat/wall calls outside src/api — use messagingApi from src/messaging',
+            'Disallow retired api.* chat/wall calls outside src/api — use messagingApi from src/messaging',
         },
         schema: [],
       },
