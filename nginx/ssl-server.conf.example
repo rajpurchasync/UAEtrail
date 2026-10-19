@@ -57,6 +57,8 @@ server {
         try_files $uri =404;
     }
 
+    include /etc/nginx/snippets/legacy-bookmark-redirects.conf;
+
     location / {
         root /usr/share/nginx/html;
         index index.html;

@@ -264,11 +264,11 @@ Canonical paths only in **new UI**. Bookmark aliases mount in `src/App.tsx` and 
 | `/discovery` | `/explore` (+ param transform) | 2026-Q4 |
 | `/calendar` | `/explore` | 2026-Q4 |
 | `/shop` (bare) | `/explore?panel=shops` | 2026-Q4 |
-| `/trips`, `/trips/map`, `/activities` (any) | **No SPA route** — normalize via notification deep links only (`resolveInboundPlanHubPath`) | — |
+| `/trips`, `/trips/map` | **nginx 301** → `/plan` or `/profile/history/map` (`nginx/snippets/legacy-bookmark-redirects.conf`); `/activities` — notification normalize only (`resolveInboundPlanHubPath`) | — |
 | `/profile/plans` | `/plan` | 2026-Q4 |
 | `/profile/wishlist` | Plan wishlist tab (`planWishlistRedirectPath()` / `InboundProfileWishlistRedirect`) | 2026-Q4 |
 | `/rewards`, `/my-rewards`, `/trail-points` | `/profile/badges` | 2026-Q4 (Trail Points wallet removed; badges kept) |
-| `/community` | **No SPA route** (Q&A feed removed) | — |
+| `/community` | **nginx 301** → `/explore` (Q&A feed removed; no SPA route) | — |
 | `/membership` | `/explore` (`App.tsx` bookmark redirect; not product home) | 2026-Q4 |
 | `/organizer/*`, `/host/*`, `/operator/*` (console) | `/publishing/*` (`InboundRetiredPublishingConsoleRedirect`) | 2026-Q4 |
 | `/become-organizer` | `/become-host` | 2026-Q4 |

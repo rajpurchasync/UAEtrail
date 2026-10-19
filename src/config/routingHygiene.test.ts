@@ -237,4 +237,18 @@ describe('routingHygiene', () => {
 
     expect(violations).toEqual([]);
   });
+
+  it('nginx legacy bookmark redirects cover inbound plan hub and community paths', () => {
+    const snippet = readFileSync(
+      join(process.cwd(), 'nginx/snippets/legacy-bookmark-redirects.conf'),
+      'utf8'
+    );
+    expect(snippet).toMatch(/\^\/trips\/map/);
+    expect(snippet).toMatch(/\/profile\/history\/map/);
+    expect(snippet).toMatch(/\^\/trips/);
+    expect(snippet).toMatch(/\/plan/);
+    expect(snippet).toMatch(/\^\/community/);
+    expect(snippet).toMatch(/\/explore/);
+    expect(snippet).toMatch(/return 301/);
+  });
 });
