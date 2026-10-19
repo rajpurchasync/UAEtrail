@@ -21,7 +21,7 @@ import { executeActivityMapPeekAction } from '../../activity/executeActivityMapP
 import { readExploreMapItemsFromCache, reloadExploreMap } from '../../hooks/useExploreMap';
 import { isExploreMapBboxEnabled } from '../exploreMapBbox';
 import { invalidateMySeekingPostsQueries } from '../../hooks/seekingClientApi';
-import type { ContributeSubmitResult } from './contributeFlow';
+import type { AddSubmitResult } from './addFlow';
 import type { SeekingSubmitResult } from './seekingFlowEngine';
 import type { useExploreBrowseUrlState } from './useExploreBrowseUrlState';
 import type { ActivityManageInitialView } from '../../components/activity/activityManageViews';
@@ -310,8 +310,8 @@ export const useExploreSelectionActions = ({
     [queryClient, setSelectedId, handleFocusMapLocation, isDesktop, setListOpen]
   );
 
-  const handleContributeSubmitted = useCallback(
-    (result: ContributeSubmitResult) => {
+  const handleAddSubmitted = useCallback(
+    (result: AddSubmitResult) => {
       void reloadExploreMap(queryClient);
       setVenueNotice(
         `"${result.location.name}" submitted for review. You'll see it on the map once it's published.`
@@ -339,7 +339,7 @@ export const useExploreSelectionActions = ({
     openItem,
     handleGuestGatedAction: peekJoin.handleGuestGatedAction,
     handleJoin: peekJoin.handleJoin,
-    handlePeekOrganizerMessage: peekJoin.handlePeekOrganizerMessage,
+    handlePeekHostMessage: peekJoin.handlePeekHostMessage,
     handleHostMessage,
     handleInviteCrew,
     requestHostRemove: removals.requestHostRemove,
@@ -351,6 +351,6 @@ export const useExploreSelectionActions = ({
     tryOpenActivityPinDeepLink,
     handleCloseSelection,
     handleSeekingSubmitted,
-    handleContributeSubmitted,
+    handleAddSubmitted,
   };
 };

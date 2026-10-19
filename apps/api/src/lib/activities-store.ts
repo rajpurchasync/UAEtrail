@@ -12,6 +12,7 @@ import {
   type MongoActivityDoc
 } from './entity-builders.js';
 import { scheduleExploreMapCacheInvalidation } from './explore-map-cache-schedule.js';
+import { scheduleSideEffect } from './schedule-side-effect.js';
 import {
   GROUP_REGION_LEVEL,
   readGroupRegionAtLevel,
@@ -372,6 +373,11 @@ export const publishActivityById = async (activityId: string) => {
     tenantName: tenant?.name ?? null,
   });
   if (mongoDoc.activityMode !== 'seeking') {
+    const { notifyWishlistForPublishedActivity } = await import('../services/wishlist-alerts.js');
+    scheduleSideEffect(
+      notifyWishlistForPublishedActivity(activityId),
+      'activities-store.wishlist_notify'
+    );
     const { notifyAvailabilityHoldersOfHostedActivity } = await import(
       '../services/availability-hosted-match-notifications.js'
     );

@@ -1,6 +1,6 @@
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { isGeographyMapSource } from '@uaetrail/shared-types';
-import type { ExploreCardModel, ExploreCardTone } from '../explore/exploreCardModel';
+import type { DiscoveryCardModel, DiscoveryCardTone } from '../discovery/discoveryCardModel';
 import { resolveExploreCoverImage } from '../explore/exploreCoverImage';
 
 /** Venue id → first real cover URL from explore map venue pins (same feed as list). */
@@ -23,9 +23,9 @@ export const buildVenueCoverByLocationId = (items: ExploreMapItemDTO[]): Map<str
 
 /** Activity/demand rows: use card cover, else linked venue photo — never marketing hero placeholders. */
 export const enrichBrowsePosterCover = (
-  card: ExploreCardModel,
+  card: DiscoveryCardModel,
   venueCoverByLocationId: Map<string, string>
-): ExploreCardModel => {
+): DiscoveryCardModel => {
   if (card.coverImage?.trim()) return card;
 
   const locationId = card.activity?.locationId ?? card.locationId ?? null;
@@ -38,10 +38,10 @@ export const enrichBrowsePosterCover = (
 };
 
 /** Poster hero — venue-first on card model (aligned with explore map peek). */
-export const resolveBrowsePosterCoverUrl = (card: ExploreCardModel): string | null =>
+export const resolveBrowsePosterCoverUrl = (card: DiscoveryCardModel): string | null =>
   card.coverImage?.trim() || null;
 
-const FALLBACK_GRADIENT: Record<ExploreCardTone, string> = {
+const FALLBACK_GRADIENT: Record<DiscoveryCardTone, string> = {
   hiking: 'from-emerald-100 via-emerald-200/90 to-sky-100',
   camping: 'from-amber-100 via-orange-100 to-neutral-100',
   event: 'from-violet-100 via-purple-100 to-neutral-100',
@@ -51,7 +51,7 @@ const FALLBACK_GRADIENT: Record<ExploreCardTone, string> = {
   area: 'from-slate-100 via-gray-100 to-neutral-100',
 };
 
-export const browsePosterFallbackClass = (tone: ExploreCardTone): string => {
+export const browsePosterFallbackClass = (tone: DiscoveryCardTone): string => {
   const gradient = FALLBACK_GRADIENT[tone] ?? FALLBACK_GRADIENT.hiking;
   return `bg-gradient-to-br ${gradient}`;
 };

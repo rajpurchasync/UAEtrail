@@ -9,7 +9,7 @@ const EXPLORE_QUERY_ALLOWLIST = new Set([
   'src/explore/routing.ts',
   'src/explore/compose.ts',
   'src/discovery/discoveryCardModel.ts',
-  'src/explore/exploreCardModel.ts',
+  'src/discovery/discoveryCardModel.ts',
   'src/config/platform.ts',
   'src/config/routingCatalog.ts',
   'src/utils/notificationRouting.ts',

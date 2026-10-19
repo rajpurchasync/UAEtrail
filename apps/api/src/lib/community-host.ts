@@ -1,7 +1,7 @@
 import { countPublishedActivitiesHostedByUser } from './activity-engagement-store.js';
 import { countParticipantIntentsByUser } from './participant-intents-store.js';
 
-/** Published Organize outings or demand posts on the map (any kind). */
+/** Published hosted outings or seeking posts on the map (any kind). */
 export const isCommunityHostByUserId = async (userId: string): Promise<boolean> => {
   const [hosted, demandPosts] = await Promise.all([
     countPublishedActivitiesHostedByUser(userId),

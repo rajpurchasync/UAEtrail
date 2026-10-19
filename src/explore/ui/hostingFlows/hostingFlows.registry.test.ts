@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { organizeActivitiesFlow } from './activities';
-import { organizeCampingFlow } from './camping';
-import { organizeEventsFlow } from './events';
-import { organizeHikingFlow } from './hiking';
-import { organizeRideshareFlow } from './rideshare';
+import { activitiesHostingFlow } from './activities';
+import { campingHostingFlow } from './camping';
+import { eventsHostingFlow } from './events';
+import { hikingHostingFlow } from './hiking';
+import { rideshareHostingFlow } from './rideshare';
 
 describe('organize catalog flows — registry venue step omit', () => {
   const registryDraft = {
@@ -13,7 +13,7 @@ describe('organize catalog flows — registry venue step omit', () => {
   };
 
   it('hiking omits difficulty and about_trail when registry trail selected', () => {
-    const steps = organizeHikingFlow.getSteps(registryDraft);
+    const steps = hikingHostingFlow.getSteps(registryDraft);
     expect(steps).not.toContain('difficulty');
     expect(steps).not.toContain('about_trail');
     expect(steps).toContain('destination');
@@ -21,26 +21,26 @@ describe('organize catalog flows — registry venue step omit', () => {
   });
 
   it('camping omits about_trail when registry camp selected', () => {
-    const steps = organizeCampingFlow.getSteps(registryDraft);
+    const steps = campingHostingFlow.getSteps(registryDraft);
     expect(steps).not.toContain('about_trail');
     expect(steps).toContain('destination');
   });
 
   it('events omits about_trail when registry venue selected', () => {
-    const steps = organizeEventsFlow.getSteps(registryDraft);
+    const steps = eventsHostingFlow.getSteps(registryDraft);
     expect(steps).not.toContain('about_trail');
   });
 
-  it('aligns post-publish carpool on parent organize flows (not rideshare)', () => {
-    expect(organizeHikingFlow.postPublishRideshare).toBe(true);
-    expect(organizeActivitiesFlow.postPublishRideshare).toBe(true);
-    expect(organizeCampingFlow.postPublishRideshare).toBe(true);
-    expect(organizeEventsFlow.postPublishRideshare).toBe(true);
-    expect(organizeRideshareFlow.postPublishRideshare).toBe(false);
+  it('aligns post-publish carpool on parent hosting flows (not rideshare)', () => {
+    expect(hikingHostingFlow.postPublishRideshare).toBe(true);
+    expect(activitiesHostingFlow.postPublishRideshare).toBe(true);
+    expect(campingHostingFlow.postPublishRideshare).toBe(true);
+    expect(eventsHostingFlow.postPublishRideshare).toBe(true);
+    expect(rideshareHostingFlow.postPublishRideshare).toBe(false);
   });
 
   it('keeps full hiking steps for custom venue label', () => {
-    const steps = organizeHikingFlow.getSteps({
+    const steps = hikingHostingFlow.getSteps({
       placeLabelSource: 'custom',
       registryPlaceId: null,
       genericBuddy: false,

@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
-import type { ExploreCardModel } from '../explore/exploreCardModel';
+import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
 import { useExploreMap } from '../hooks/useExploreMap';
 import { buildListFeedCards } from './buildListFeedCards';
 import {
@@ -32,7 +32,7 @@ export const useBrowseListFeed = ({
     [mapEnabled, items, filters, venueRegions]
   );
 
-  const cards: ExploreCardModel[] = useMemo(() => {
+  const cards: DiscoveryCardModel[] = useMemo(() => {
     if (!mapEnabled) return [];
     const built = buildListFeedCards(filteredItems, user, items);
     return built.filter((card) => cardMatchesBrowsePrice(card, filters.price));

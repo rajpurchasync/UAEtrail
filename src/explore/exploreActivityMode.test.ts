@@ -19,7 +19,7 @@ describe('exploreActivityMode (M0)', () => {
     const card = buildDiscoveryCardViewModelCard(item);
     expect(exploreMapItemIsSeeking(item)).toBe(true);
     expect(card.source).toBe('activity');
-    expect(card.composeIntent).toBe('demand');
+    expect(card.composeIntent).toBe('seek');
     expect(card.requirementBadges).toContain('Seeking');
   });
 });

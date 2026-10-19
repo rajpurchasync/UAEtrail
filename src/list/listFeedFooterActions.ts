@@ -1,9 +1,9 @@
 import type { ActivityMapPeekAction, ActivityMapPeekActionId } from '@uaetrail/shared-types';
 import { isGeographyMapSource } from '@uaetrail/shared-types';
-import type { ExploreCardModel } from '../explore/exploreCardModel';
+import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
 import { resolveActivityPeekEngagement } from '../activity/activityPeekEngagement';
 import { activityMapPeekActionLabel } from '../explore/exploreMapPeekActionCopy';
-import { exploreCardHasMapCoords } from '../discovery/discoveryCardModel';
+import { discoveryCardHasMapCoords } from '../discovery/discoveryCardModel';
 import type { JoinRequestUiState } from '../utils/joinRequestUi';
 import { ACTIVITY_CTA_MESSAGE_HOST } from '../content/activityParticipationCopy';
 import {
@@ -36,13 +36,13 @@ export const shouldShowListFeedImageCta = (model: ListFeedFooterModel): boolean 
   );
 };
 
-const detailButton = (card: ExploreCardModel): ListFeedFooterButton => ({
+const detailButton = (card: DiscoveryCardModel): ListFeedFooterButton => ({
   kind: 'link',
   label: card.secondaryCta ?? LIST_FEED_CTA_VIEW_DETAILS,
   href: card.path,
 });
 
-const peekActionLabel = (action: ActivityMapPeekAction, card: ExploreCardModel): string => {
+const peekActionLabel = (action: ActivityMapPeekAction, card: DiscoveryCardModel): string => {
   if (action.id === 'request_join') return card.primaryCta;
   if (action.id === 'message_host') return ACTIVITY_CTA_MESSAGE_HOST;
   return activityMapPeekActionLabel(action.id, action);
@@ -50,7 +50,7 @@ const peekActionLabel = (action: ActivityMapPeekAction, card: ExploreCardModel):
 
 const peekActionToFooterButton = (
   action: ActivityMapPeekAction,
-  card: ExploreCardModel,
+  card: DiscoveryCardModel,
   isGuest: boolean
 ): ListFeedFooterButton => {
   if (action.id === 'pending_join') {
@@ -93,7 +93,7 @@ const peekActionToFooterButton = (
 };
 
 const resolveActivityJoinFooter = (
-  card: ExploreCardModel,
+  card: DiscoveryCardModel,
   options: { isGuest: boolean; joinUiState?: JoinRequestUiState }
 ): ListFeedFooterModel | null => {
   const { isGuest, joinUiState } = options;
@@ -111,7 +111,7 @@ const resolveActivityJoinFooter = (
 };
 
 export const resolveListFeedFooterModel = (
-  card: ExploreCardModel,
+  card: DiscoveryCardModel,
   options: {
     isGuest: boolean;
     joinUiState?: JoinRequestUiState;
@@ -119,7 +119,7 @@ export const resolveListFeedFooterModel = (
 ): ListFeedFooterModel => {
   const { isGuest } = options;
 
-  if (isGeographyMapSource(card.source) && exploreCardHasMapCoords(card)) {
+  if (isGeographyMapSource(card.source) && discoveryCardHasMapCoords(card)) {
     return {
       primary: {
         kind: 'directions',

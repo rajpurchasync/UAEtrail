@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { PanelLeftClose, Search, X, ChevronLeft } from 'lucide-react';
-import type { ExploreCardModel } from '../exploreCardModel';
+import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import type { AreaPublicDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { findPublishedAreaByQuery, isStrongPublishedAreaSearchMatch } from '../exploreAreaFilter';
 import type { ExploreActivityModeFilter } from '../exploreActivityModeFilter';
@@ -88,7 +88,7 @@ export interface ExploreBrowsePanelProps {
   myPlanMapMode?: boolean;
   /** Full-screen mobile browse — poster cards instead of compact rows. */
   usePosterFeed?: boolean;
-  posterFeedCards?: ExploreCardModel[];
+  posterFeedCards?: DiscoveryCardModel[];
   /** Full-viewport browse modal (back affordance, no sheet handle). */
   fullscreenBrowse?: boolean;
   /** Mobile map sheet — horizontal inset for chrome + lists (People browse panel). */
@@ -163,7 +163,7 @@ export const ExploreBrowsePanel = ({
   const mobileSheetPad = !isDesktop && (mobileSheetChrome || fullscreenBrowse);
   const sheetFillsViewport = fullscreenBrowse && !isDesktop;
   const listRowCardById = useMemo(() => {
-    const map = new Map<string, ExploreCardModel>();
+    const map = new Map<string, DiscoveryCardModel>();
     for (const item of listItems) {
       map.set(item.id, buildDiscoveryMapListRowCard(item, mapPool));
     }

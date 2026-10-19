@@ -296,8 +296,6 @@ export const listAdminPlacesPaged = async (input: { skip: number; take: number }
   };
 };
 
-/** @deprecated Use {@link listAdminPlacesPaged} — legacy name for the same query. */
-export const listAdminLocationsPaged = listAdminPlacesPaged;
 
 export const createAdminLocation = async (data: Parameters<typeof createLocationRecord>[0]) => {
   return createLocationRecord(data);

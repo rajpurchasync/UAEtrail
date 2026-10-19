@@ -696,7 +696,7 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
                         aria-label="Curated area"
                       />
                       <p className="mt-1 text-xs text-gray-500">
-                        Organize picks inherit this area when hosts choose this place from the registry.
+                        Hosting picks inherit this area when hosts choose this place from the registry.
                       </p>
                     </div>
                   </div>

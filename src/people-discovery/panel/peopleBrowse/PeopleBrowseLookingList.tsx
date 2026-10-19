@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { buildDiscoveryMapListRowCard } from '@/discovery';
-import type { ExploreCardModel } from '@/explore/exploreCardModel';
+import type { DiscoveryCardModel } from '@/discovery/discoveryCardModel';
 import { ExploreListRow } from '@/explore/ui/ExploreListRow';
 import { ExploreListSkeleton } from '@/explore/ui/ExploreListSkeleton';
 import { EXPLORE_PEOPLE_BROWSE_EMPTY_DISCOVER_LOOKING } from '../../../content/explorePeopleBrowseCopy';
@@ -24,7 +24,7 @@ export const PeopleBrowseLookingList = ({
   buddyUserIds,
 }: Props) => {
   const cardById = useMemo(() => {
-    const map = new Map<string, ExploreCardModel>();
+    const map = new Map<string, DiscoveryCardModel>();
     for (const item of seekingActivities) {
       map.set(item.id, buildDiscoveryMapListRowCard(item, exploreCatalogItems));
     }

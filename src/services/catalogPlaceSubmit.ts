@@ -2,22 +2,22 @@ import type { LocationDTO, PlaceDTO } from '@uaetrail/shared-types';
 import { submitMemberPlace } from '../hooks/memberCatalogSubmitClientApi';
 import { DEFAULT_COUNTRY } from '../config/regions';
 import { formatE164Phone } from '../utils/phone';
-import type { ContributeDraft } from '../explore/ui/contributeFlow';
+import type { AddDraft } from '../explore/ui/addFlow';
 import {
   buildVenueAccessibleBy,
-  validateContributeDraft,
-  type ContributeSubmitResult,
-} from '../explore/ui/contributeFlow';
+  validateAddDraft,
+  type AddSubmitResult,
+} from '../explore/ui/addFlow';
 import type { ActivityDifficulty } from '../explore/ui/hostingFlowEngine';
 
 const toApiDifficulty = (value: ActivityDifficulty): 'easy' | 'moderate' | 'hard' =>
   value === 'medium' ? 'moderate' : value;
 
-/** Member place submit from Contribute wizard — single `POST /me/places` (no publish step). */
-export const submitCatalogPlaceFromContributeDraft = async (
-  draft: ContributeDraft
-): Promise<ContributeSubmitResult> => {
-  const validation = validateContributeDraft(draft);
+/** Member place submit from Add on map — single `POST /me/places` (no publish step). */
+export const submitCatalogPlaceFromAddDraft = async (
+  draft: AddDraft
+): Promise<AddSubmitResult> => {
+  const validation = validateAddDraft(draft);
   if (validation) throw new Error(validation);
   if (!draft.kind) throw new Error('Choose what you are contributing.');
 

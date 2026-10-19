@@ -1,7 +1,7 @@
 ﻿import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import type { ParticipantIntentDTO } from '@uaetrail/shared-types';
-import { useMyParticipantIntents } from '../../hooks/useMyParticipantIntents';
+import { useMySeekingPosts } from '../../hooks/useMySeekingPosts';
 import { ParticipantIntentManageSheet } from '../participant-intent/ParticipantIntentManageSheet';
 import { ActivityHubListRow } from '../mobile/ActivityHubListRow';
 import {
@@ -43,7 +43,7 @@ export const SeekingIntentsSection = ({
     loading: isLoading,
     error: loadError,
     refetch,
-  } = useMyParticipantIntents(true, refreshKey);
+  } = useMySeekingPosts(true, refreshKey);
   const error = loadError ? new Error(loadError) : null;
 
   const { upcoming, completed } = useMemo(

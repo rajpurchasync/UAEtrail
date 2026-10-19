@@ -28,9 +28,6 @@ export const mySeekingPostsQueryKey = (refreshKey?: number): QueryKey =>
     ? ['my-seeking-posts', refreshKey]
     : ['my-seeking-posts'];
 
-/** @deprecated Use {@link mySeekingPostsQueryKey}. */
-export const myParticipantIntentsQueryKey = mySeekingPostsQueryKey;
-
 export const entityFollowsQueryKey = ['me', 'entity-follows'] as const;
 
 export const entityFollowStateQueryKey = (

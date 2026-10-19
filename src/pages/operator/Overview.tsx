@@ -33,8 +33,8 @@ import { NotificationListItem } from '../../components/notifications/Notificatio
 import { invalidateNotificationUnreadBadge } from '../../utils/notificationBadge';
 import { inferNotificationPath } from '../../utils/notificationRouting';
 import {
-  ORGANIZER_FALLBACK_DISPLAY_NAME,
-  ORGANIZER_NOUN_TITLE,
+  HOST_FALLBACK_DISPLAY_NAME,
+  ACTIVITY_HOST_NOUN_TITLE,
   workspaceConsoleLabel,
 } from '../../content/workspaceVocabulary';
 
@@ -81,7 +81,7 @@ export const Overview = () => {
   const messagesPath = MESSAGES_PATH;
 
   const displayName =
-    participant.profile.displayName || user!.displayName || ORGANIZER_FALLBACK_DISPLAY_NAME;
+    participant.profile.displayName || user!.displayName || HOST_FALLBACK_DISPLAY_NAME;
 
   return (
     <ConsoleShell
@@ -124,7 +124,7 @@ export const Overview = () => {
         displayName={displayName}
         email={participant.profile.email || user!.email || ''}
         avatarUrl={participant.profile.avatarUrl}
-        roleLabel={ORGANIZER_NOUN_TITLE}
+        roleLabel={ACTIVITY_HOST_NOUN_TITLE}
         bio={participant.profile.bio}
         phone={participant.profile.phone}
         expanded={showDetails}

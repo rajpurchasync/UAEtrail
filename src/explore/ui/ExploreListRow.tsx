@@ -3,17 +3,17 @@ import { isGeographyMapSource } from '@uaetrail/shared-types';
 import { ChevronRight, Users } from 'lucide-react';
 import { SecureAvatar } from '../../components/ui';
 import { formatExploreRelativeScheduleLabel } from '@uaetrail/shared-types';
-import type { ExploreCardModel } from '../exploreCardModel';
-import { buildExploreListMeta, exploreCardToneTextClass } from '../exploreCardModel';
+import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
+import { buildDiscoveryListMeta, discoveryCardToneTextClass } from '../../discovery/discoveryCardModel';
 import { EnvironmentImage } from '../../components/ui/EnvironmentImage';
 import { EXPLORE_LIST_ROW, EXPLORE_TYPE } from '../../config/exploreTheme';
-import { ExploreCardDetailList, ExploreCardLocationLink, ExploreCardRatingRow } from './ExploreCardPresentation';
-import { ExploreCardTypeIcon } from './ExploreCardTypeIcon';
+import { DiscoveryCardDetailList, DiscoveryCardLocationLink, DiscoveryCardRatingRow } from './DiscoveryCardPresentation';
+import { DiscoveryCardTypeIcon } from './DiscoveryCardTypeIcon';
 import { ExploreListRowWireFooter } from './ExploreListRowWireFooter';
 import { memberProfileLink } from '@/member/memberProfileLink';
 
 interface ExploreListRowProps {
-  card: ExploreCardModel;
+  card: DiscoveryCardModel;
   onClick: () => void;
   onPointerEnter?: () => void;
   /** Two-line title/meta — better on Trips suggested list. */
@@ -30,7 +30,7 @@ const JoiningIndicator = ({
   card,
   buddyUserIds,
 }: {
-  card: ExploreCardModel;
+  card: DiscoveryCardModel;
   buddyUserIds?: Set<string>;
 }) => {
   const previews = card.participantPreviews ?? [];
@@ -81,8 +81,8 @@ export const ExploreListRow = ({
   const titleClamp = multiline ? 'line-clamp-2' : 'truncate';
   const metaClamp = multiline ? 'line-clamp-2' : 'truncate';
   const { listTitle, details, highlightName, suffix, activityHighlight, dateHighlight } = card.sections;
-  const meta = buildExploreListMeta(card);
-  const toneTextClass = exploreCardToneTextClass[card.tone];
+  const meta = buildDiscoveryListMeta(card);
+  const toneTextClass = discoveryCardToneTextClass[card.tone];
   const isCatalogRow = card.source === 'shop' || card.source === 'agency' || isGeographyMapSource(card.source);
   const scheduleChipLabel =
     !isCatalogRow && card.activity?.date
@@ -98,7 +98,7 @@ export const ExploreListRow = ({
         loading="lazy"
       />
       <span className="absolute -bottom-1 -right-1 rounded-full shadow-sm ring-2 ring-white">
-        <ExploreCardTypeIcon
+        <DiscoveryCardTypeIcon
           tone={card.tone}
           source={card.source}
           kind={card.kind}
@@ -108,7 +108,7 @@ export const ExploreListRow = ({
       </span>
     </div>
   ) : (
-    <ExploreCardTypeIcon tone={card.tone} source={card.source} kind={card.kind} emoji={card.emoji} size="sm" />
+    <DiscoveryCardTypeIcon tone={card.tone} source={card.source} kind={card.kind} emoji={card.emoji} size="sm" />
   );
 
   const titleBlock = highlightName ? (
@@ -132,14 +132,14 @@ export const ExploreListRow = ({
         </button>
         <div className={EXPLORE_LIST_ROW.bodyIndent}>
           {card.subtitle ? (
-            <ExploreCardLocationLink
+            <DiscoveryCardLocationLink
               label={card.subtitle}
               latitude={card.mapLatitude}
               longitude={card.mapLongitude}
               className="text-sm text-gray-600"
             />
           ) : null}
-          <ExploreCardRatingRow card={card} compact />
+          <DiscoveryCardRatingRow card={card} compact />
         </div>
       </div>
     );
@@ -161,7 +161,7 @@ export const ExploreListRow = ({
           {meta ? (
             <p className={`mt-0.5 ${metaClamp} text-sm font-medium leading-snug ${EXPLORE_TYPE.muted}`}>{meta}</p>
           ) : (
-            <ExploreCardDetailList details={details} compact />
+            <DiscoveryCardDetailList details={details} compact />
           )}
           {showJoining ? <JoiningIndicator card={card} buddyUserIds={buddyUserIds} /> : null}
         </span>

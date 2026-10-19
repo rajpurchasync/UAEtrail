@@ -3,19 +3,19 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { MapPin } from 'lucide-react';
 import { allowedActivityPricingModes, type ActivityDTO } from '@uaetrail/shared-types';
-import { publishOrganizeActivity as publishCreateActivity } from '../../services/organizeActivityPublish';
+import { publishHostingActivity as publishCreateActivity } from '../../services/hostingActivityPublish';
 import { useAuth } from '../../context/AuthContext';
-import { afterOrganizeActivityPublishClientRefresh } from '../../hooks/organizePublishClientEffects';
+import { afterHostingActivityPublishClientRefresh } from '../../hooks/hostingPublishClientEffects';
 import { useMemberStatus } from '../../hooks/useMemberStatus';
 import { setActiveTenantId } from '../../api/tenant';
-import { listOrganizePublishProfiles, resolveOrganizePublishingProfileKind } from '../organizePublishTenants';
+import { listHostingPublishProfiles, resolveHostingPublishingProfileKind } from '../hostingPublishTenants';
 import {
-  organizePublishGateHref,
-  organizePublishGateInputFromMemberStatus,
-} from '../../utils/organizePublishGate';
+  memberPublishGateHref,
+  memberPublishGateInputFromMemberStatus,
+} from '../../utils/memberPublishGate';
 import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
 import { EXPLORE_Z } from '../../config/exploreTheme';
-import { validateOrganizePlaceArea } from '../organizePublishArea';
+import { validateHostingPlaceArea } from '../hostingPublishArea';
 import {
   buildDateOptions,
   createFlowStepTitle,
@@ -26,40 +26,40 @@ import {
   locationPickerHint,
   locationPickerTitle,
   validateDraftStep,
-  isHikingOrganizeFlow,
-  isCampingOrganizeFlow,
-  isEventOrganizeFlow,
-  isActivityOrganizeFlow,
-  isRideshareOrganizeFlow,
-  isStructuredOrganizeFlow,
-  usesGoingFromOrganizeStep,
+  isHikingHostingFlow,
+  isCampingHostingFlow,
+  isEventHostingFlow,
+  isActivityHostingFlow,
+  isRideshareHostingFlow,
+  isStructuredHostingFlow,
+  usesGoingFromHostingStep,
   type CreateFlowStepId,
   type LocationPrecision,
   type CreateActivityDraft,
   type CreateActivityKind,
 } from './hostingFlowEngine';
-import { organizePublishSeed, type OrganizeComposeKind } from '../compose';
-import { composeFlowIdFromRoute, defaultParticipationForOrganizeRoute } from '../composeFlowCatalog';
+import { hostingPublishSeed, type HostComposeKind } from '../compose';
+import { composeFlowIdFromRoute, defaultParticipationForHostRoute } from '../composeFlowCatalog';
 import {
-  clearOrganizeWizardSession,
-  organizeWizardSessionScope,
-  readOrganizeWizardSession,
-  writeOrganizeWizardSession,
+  clearHostingWizardSession,
+  hostingWizardSessionScope,
+  readHostingWizardSession,
+  writeHostingWizardSession,
 } from './composeWizardSession';
 import { usePlaceRegistry } from '../../hooks/usePlaceRegistry';
 import {
   fromLocationLabel,
-  ORGANIZE_DEMAND_PREFILL_TITLE,
-  ORGANIZE_RIDESHARE_LINKED_NOTICE,
-  ORGANIZE_PROFILE_INCOMPLETE_ERROR,
+  HOSTING_SEEKING_PREFILL_TITLE,
+  HOSTING_RIDESHARE_LINKED_NOTICE,
+  HOSTING_PROFILE_INCOMPLETE_ERROR,
   TO_LOCATION_LABEL,
 } from '../createFlowCopy';
 import { MAP_CONFIG } from '../../config/platform';
-import { OrganizePublishSuccessSheet } from './OrganizePublishSuccessSheet';
+import { HostingPublishSuccessSheet } from './HostingPublishSuccessSheet';
 import { registryPlaceTypeForHostingKindFlow, type HostingKindFlow } from './hostingFlows';
-import type { OrganizeWizardPrefill } from './organizeWizardPrefill';
-import { renderOrganizeWizardSteps } from './organizeWizard/OrganizeWizardSteps';
-import type { OrganizeWizardContext } from './organizeWizard/organizeWizardContext';
+import type { HostingWizardPrefill } from './hostingWizardPrefill';
+import { renderHostingWizardSteps } from './hostingWizard/HostingWizardSteps';
+import type { HostingWizardContext } from './hostingWizard/hostingWizardContext';
 const CreatePlacePicker = lazy(() =>
   import('./CreatePlacePicker').then((m) => ({ default: m.CreatePlacePicker }))
 );
@@ -73,10 +73,10 @@ export interface CreateHostingActivityFlowProps {
   onOpenHostApplication?: () => void;
   onBackToIntent?: () => void;
   signInHref: string;
-  organizeKind?: OrganizeComposeKind | null;
+  hostComposeKind?: HostComposeKind | null;
   /** Locked per-kind hosting flow from `composeFlowCatalog` (FAB → hosting sub-kind). */
   hostingKindFlow?: HostingKindFlow | null;
-  seekingPrefill?: OrganizeWizardPrefill | null;
+  seekingPrefill?: HostingWizardPrefill | null;
   onCreateLinkedRideshare?: (parentActivity: ActivityDTO) => void;
   planWithBuddyUserId?: string | null;
 }
@@ -88,7 +88,7 @@ export const CreateHostingActivityFlow = ({
   onOpenHostApplication,
   onBackToIntent,
   signInHref,
-  organizeKind = null,
+  hostComposeKind = null,
   hostingKindFlow = null,
   seekingPrefill = null,
   onCreateLinkedRideshare,
@@ -110,7 +110,7 @@ export const CreateHostingActivityFlow = ({
   } = useMemberStatus({ enabled: open && Boolean(user) });
 
   const publishTenantOptions = useMemo(
-    () => listOrganizePublishProfiles(ownedProfiles),
+    () => listHostingPublishProfiles(ownedProfiles),
     [ownedProfiles]
   );
   const [publishTenantId, setPublishTenantIdState] = useState<string | null>(null);
@@ -132,7 +132,7 @@ export const CreateHostingActivityFlow = ({
   const tenantId = publishTenantId ?? defaultTenantId;
   const publishingProfileKind = useMemo(() => {
     const profile = publishTenantOptions.find((p) => p.tenantId === tenantId);
-    return profile ? resolveOrganizePublishingProfileKind(profile) : null;
+    return profile ? resolveHostingPublishingProfileKind(profile) : null;
   }, [publishTenantOptions, tenantId]);
   const memberDisplayName = user?.displayName ?? null;
 
@@ -149,13 +149,13 @@ export const CreateHostingActivityFlow = ({
   const [rideshareOfferNotice, setRideshareOfferNotice] = useState<string | null>(null);
 
   const kind = draft.kind ?? selectedKind;
-  const hikingFlow = isHikingOrganizeFlow(kind, draft.genericBuddy);
-  const campingFlow = isCampingOrganizeFlow(kind, draft.genericBuddy);
-  const eventFlow = isEventOrganizeFlow(kind, draft.genericBuddy);
-  const activityFlow = isActivityOrganizeFlow(kind, draft.genericBuddy);
-  const rideshareFlow = isRideshareOrganizeFlow(kind, draft.genericBuddy);
-  const goingFromFlow = usesGoingFromOrganizeStep(kind, draft.genericBuddy);
-  const structuredFlow = isStructuredOrganizeFlow(kind, draft.genericBuddy);
+  const hikingFlow = isHikingHostingFlow(kind, draft.genericBuddy);
+  const campingFlow = isCampingHostingFlow(kind, draft.genericBuddy);
+  const eventFlow = isEventHostingFlow(kind, draft.genericBuddy);
+  const activityFlow = isActivityHostingFlow(kind, draft.genericBuddy);
+  const rideshareFlow = isRideshareHostingFlow(kind, draft.genericBuddy);
+  const goingFromFlow = usesGoingFromHostingStep(kind, draft.genericBuddy);
+  const structuredFlow = isStructuredHostingFlow(kind, draft.genericBuddy);
   const registryPlaceType = hostingKindFlow
     ? registryPlaceTypeForHostingKindFlow(hostingKindFlow)
     : kind === 'hiking' || kind === 'camping' || kind === 'event'
@@ -193,19 +193,19 @@ export const CreateHostingActivityFlow = ({
   );
   const dateOptions = useMemo(() => buildDateOptions(), []);
 
-  const organizeFlowId = useMemo(
+  const hostingFlowId = useMemo(
     () =>
-      organizeKind
-        ? composeFlowIdFromRoute({ intent: 'plan', kind: organizeKind, mode: 'hosting' })
+      hostComposeKind
+        ? composeFlowIdFromRoute({ intent: 'host', kind: hostComposeKind })
         : null,
-    [organizeKind]
+    [hostComposeKind]
   );
   const wizardSessionScope = useMemo(
-    () => organizeWizardSessionScope(seekingPrefill),
+    () => hostingWizardSessionScope(seekingPrefill),
     [seekingPrefill]
   );
-  const wizardInitKey = organizeFlowId
-    ? `${organizeFlowId}:${wizardSessionScope ?? ''}`
+  const wizardInitKey = hostingFlowId
+    ? `${hostingFlowId}:${wizardSessionScope ?? ''}`
     : seekingPrefill
       ? 'prefill'
       : null;
@@ -247,8 +247,8 @@ export const CreateHostingActivityFlow = ({
       return;
     }
 
-    if (organizeKind && organizeFlowId) {
-      const saved = readOrganizeWizardSession(organizeFlowId, wizardSessionScope);
+    if (hostComposeKind && hostingFlowId) {
+      const saved = readHostingWizardSession(hostingFlowId, wizardSessionScope);
       if (saved?.draft?.kind) {
         setDraft(saved.draft);
         setSelectedKind(saved.selectedKind);
@@ -264,10 +264,10 @@ export const CreateHostingActivityFlow = ({
         return;
       }
 
-      const seed = organizePublishSeed(organizeKind);
+      const seed = hostingPublishSeed(hostComposeKind);
       const createKind = seed.createKind;
       const participationMode =
-        defaultParticipationForOrganizeRoute(organizeKind) ?? seed.participationMode;
+        defaultParticipationForHostRoute(hostComposeKind) ?? seed.participationMode;
       const nextDraft: CreateActivityDraft = {
         ...emptyCreateActivityDraft(),
         kind: createKind,
@@ -301,21 +301,21 @@ export const CreateHostingActivityFlow = ({
     signInHref,
     onClose,
     seekingPrefill,
-    organizeKind,
+    hostComposeKind,
     hostingKindFlow,
-    organizeFlowId,
+    hostingFlowId,
     wizardSessionScope,
     wizardInitKey,
   ]);
 
   useEffect(() => {
-    if (!open || !organizeFlowId || publishedActivity) return;
-    writeOrganizeWizardSession(
-      organizeFlowId,
+    if (!open || !hostingFlowId || publishedActivity) return;
+    writeHostingWizardSession(
+      hostingFlowId,
       { step, draft, selectedKind },
       wizardSessionScope
     );
-  }, [open, organizeFlowId, wizardSessionScope, step, draft, selectedKind, publishedActivity]);
+  }, [open, hostingFlowId, wizardSessionScope, step, draft, selectedKind, publishedActivity]);
 
   const patchDraft = useCallback((patch: Partial<CreateActivityDraft>) => {
     setDraft((prev) => ({ ...prev, ...patch }));
@@ -370,7 +370,7 @@ export const CreateHostingActivityFlow = ({
         onClose();
         return;
       }
-      if (step === 'type' || organizeKind) {
+      if (step === 'type' || hostComposeKind) {
         onBackToIntent?.();
         return;
       }
@@ -385,7 +385,7 @@ export const CreateHostingActivityFlow = ({
     step,
     currentStepIndex,
     seekingPrefill,
-    organizeKind,
+    hostComposeKind,
     onClose,
     onBackToIntent,
     flowSteps,
@@ -414,9 +414,9 @@ export const CreateHostingActivityFlow = ({
         onOpenHostApplication();
       } else {
         navigate(
-          organizePublishGateHref(
+          memberPublishGateHref(
             returnPath,
-            organizePublishGateInputFromMemberStatus({
+            memberPublishGateInputFromMemberStatus({
               viewerUserId: user?.id ?? null,
               profileComplete,
               canPublish,
@@ -431,7 +431,7 @@ export const CreateHostingActivityFlow = ({
     }
 
     if (!tenantId) {
-      setError(ORGANIZE_PROFILE_INCOMPLETE_ERROR);
+      setError(HOSTING_PROFILE_INCOMPLETE_ERROR);
       return;
     }
 
@@ -440,7 +440,7 @@ export const CreateHostingActivityFlow = ({
       setError(validation);
       return;
     }
-    const placeAreaValidation = validateOrganizePlaceArea(draft, registryPlaces);
+    const placeAreaValidation = validateHostingPlaceArea(draft, registryPlaces);
     if (placeAreaValidation) {
       setError(placeAreaValidation);
       return;
@@ -458,11 +458,11 @@ export const CreateHostingActivityFlow = ({
         sourceActivityId: seekingPrefill?.sourceActivityId ?? null,
         linkToParentActivityId: seekingPrefill?.linkToParentActivityId ?? null,
       });
-      await afterOrganizeActivityPublishClientRefresh(queryClient, {
+      await afterHostingActivityPublishClientRefresh(queryClient, {
         activityId: activity.id,
         linkedParticipantIntentId: linkedIntentId,
       });
-      if (organizeFlowId) clearOrganizeWizardSession(organizeFlowId, wizardSessionScope);
+      if (hostingFlowId) clearHostingWizardSession(hostingFlowId, wizardSessionScope);
       setPublishedActivity(activity);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not publish. Try again.');
@@ -485,7 +485,7 @@ export const CreateHostingActivityFlow = ({
     draft,
     registryPlaces,
     seekingPrefill,
-    organizeFlowId,
+    hostingFlowId,
     wizardSessionScope,
     queryClient,
     selectedKind,
@@ -512,8 +512,8 @@ export const CreateHostingActivityFlow = ({
   const stepTitle =
     step === 'type' || !kind
       ? seekingPrefill
-        ? ORGANIZE_DEMAND_PREFILL_TITLE
-        : 'Organize'
+        ? HOSTING_SEEKING_PREFILL_TITLE
+        : 'Host an outing'
       : createFlowStepTitle(step as CreateFlowStepId, kind, stepTitleOptions);
 
   const renderRoutePicker = useCallback(
@@ -546,14 +546,14 @@ export const CreateHostingActivityFlow = ({
     [draft.latitude, draft.longitude, draft.toLatitude, draft.toLongitude, hasFromPin, hasToPin]
   );
 
-  const wizardCtx = useMemo((): OrganizeWizardContext => ({
+  const wizardCtx = useMemo((): HostingWizardContext => ({
     step,
     stepTitle,
     kind,
     draft,
     patchDraft,
     hostingKindFlow: hostingKindFlow ?? null,
-    organizeKind: organizeKind ?? null,
+    hostComposeKind: hostComposeKind ?? null,
     seekingPrefill: seekingPrefill ?? null,
     error,
     tenantId,
@@ -600,7 +600,7 @@ export const CreateHostingActivityFlow = ({
     draft,
     patchDraft,
     hostingKindFlow,
-    organizeKind,
+    hostComposeKind,
     seekingPrefill,
     error,
     tenantId,
@@ -645,7 +645,7 @@ export const CreateHostingActivityFlow = ({
         (!hostingKindFlow && (hikingFlow || campingFlow || eventFlow || activityFlow)));
 
     return (
-      <OrganizePublishSuccessSheet
+      <HostingPublishSuccessSheet
         open={open}
         onClose={onClose}
         tenantId={tenantId}
@@ -662,7 +662,7 @@ export const CreateHostingActivityFlow = ({
           setRideshareOfferNotice('Open this plan from Explore to create a linked rideshare.');
         }}
         onRideshareLinked={() => {
-          setRideshareOfferNotice(ORGANIZE_RIDESHARE_LINKED_NOTICE);
+          setRideshareOfferNotice(HOSTING_RIDESHARE_LINKED_NOTICE);
           void onPublished?.(publishedActivity);
         }}
         onRideshareLinkError={(message) => setRideshareOfferNotice(message)}
@@ -746,7 +746,7 @@ export const CreateHostingActivityFlow = ({
       overlayFixed
       panelClassName="max-h-[min(78dvh,720px)] px-5 pb-[calc(var(--safe-bottom)+3rem)] pt-1 lg:px-6 lg:pb-6 lg:pt-2"
     >
-        {renderOrganizeWizardSteps(wizardCtx)}
+        {renderHostingWizardSteps(wizardCtx)}
     </ExploreResponsiveSheet>
   );
 };

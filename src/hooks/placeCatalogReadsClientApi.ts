@@ -27,9 +27,3 @@ export const listPublicPlacesCatalog = async (): Promise<PlaceDTO[]> => {
   const res = await api.getPublicPlaces();
   return res.data ?? [];
 };
-
-/** @deprecated Use {@link fetchPlaceCatalogRows}. */
-export const fetchPlaceRegistryCatalog = fetchPlaceCatalogRows;
-
-/** @deprecated Use {@link loadPlaceCatalogForPicker}. */
-export const loadPlaceRegistryForPicker = loadPlaceCatalogForPicker;

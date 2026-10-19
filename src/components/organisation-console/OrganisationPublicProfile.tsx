@@ -562,6 +562,3 @@ export const OrganisationPublicProfile = ({
     </div>
   );
 };
-
-/** @deprecated Use OrganisationPublicProfile */
-export const HostPublicProfile = OrganisationPublicProfile;

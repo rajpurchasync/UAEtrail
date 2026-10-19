@@ -15,19 +15,19 @@ describe('resolveComposeRouteChange', () => {
     profileComplete: false,
   };
 
-  it('requires sign-in for plan hosting wizard when logged out', () => {
-    const route = { intent: 'plan' as const, kind: 'hiking' as const, mode: 'hosting' as const };
+  it('requires sign-in for host wizard when logged out', () => {
+    const route = { intent: 'host' as const, kind: 'hiking' as const };
     const decision = resolveComposeRouteChange(route, signedOut);
     expect(decision.type).toBe('sign-in');
     if (decision.type === 'sign-in') {
       expect(decision.href).toContain('/signin');
       expect(decision.href).toContain('compose');
-      expect(decision.href).toContain('plan');
+      expect(decision.href).toContain('host');
     }
   });
 
-  it('sends non-publishers to complete profile for plan hosting', () => {
-    const route = { intent: 'plan' as const, kind: 'event' as const, mode: 'hosting' as const };
+  it('sends non-publishers to complete profile for host wizard', () => {
+    const route = { intent: 'host' as const, kind: 'event' as const };
     const decision = resolveComposeRouteChange(route, {
       user: { id: 'u1' },
       hostGateLoading: false,
@@ -41,8 +41,8 @@ describe('resolveComposeRouteChange', () => {
     }
   });
 
-  it('blocks plan hosting while host gate is loading', () => {
-    const route = { intent: 'plan' as const, kind: 'camping' as const, mode: 'hosting' as const };
+  it('blocks host wizard while host gate is loading', () => {
+    const route = { intent: 'host' as const, kind: 'camping' as const };
     expect(
       resolveComposeRouteChange(route, {
         user: { id: 'u1' },
@@ -53,15 +53,15 @@ describe('resolveComposeRouteChange', () => {
     ).toEqual({ type: 'blocked' });
   });
 
-  it('allows seeking/contribute for signed-in users and closing compose', () => {
+  it('allows seek/add for signed-in users and closing compose', () => {
     expect(
       resolveComposeRouteChange(
-        { intent: 'plan', kind: 'hiking', mode: 'seeking' },
+        { intent: 'seek', mode: 'fixed', kind: 'hiking' },
         signedIn
       )
     ).toEqual({
       type: 'set',
-      route: { intent: 'plan', kind: 'hiking', mode: 'seeking' },
+      route: { intent: 'seek', mode: 'fixed', kind: 'hiking' },
     });
     expect(resolveComposeRouteChange(null, signedIn)).toEqual({ type: 'set', route: null });
   });

@@ -45,19 +45,10 @@ export const PLACE_CATALOG_KINDS = [
 
 export type PlaceCatalogKind = (typeof PLACE_CATALOG_KINDS)[number];
 
-/** @deprecated Use {@link PLACE_CATALOG_KINDS} */
-export const DESTINATION_PLACE_KINDS = PLACE_CATALOG_KINDS;
-
-/** @deprecated Use {@link PlaceCatalogKind} */
-export type DestinationPlaceKind = PlaceCatalogKind;
-
 const PLACE_CATALOG_KIND_SET = new Set<string>(PLACE_CATALOG_KINDS);
 
 export const isPlaceCatalogKind = (kind: PlaceKind): kind is PlaceCatalogKind =>
   PLACE_CATALOG_KIND_SET.has(kind);
-
-/** @deprecated Use {@link isPlaceCatalogKind} */
-export const isDestinationPlaceKind = isPlaceCatalogKind;
 
 const PLACE_KIND_SET = new Set<string>(PLACE_KINDS);
 
@@ -127,7 +118,7 @@ const FACILITY_PLACE_KIND_SET = new Set<PlaceKind>(FACILITY_PLACE_KINDS);
 export const isFacilityPlaceKind = (kind: PlaceKind): boolean => FACILITY_PLACE_KIND_SET.has(kind);
 
 /** Member FAB Add → Facilities — subset of {@link FACILITY_PLACE_KINDS}. */
-export const CONTRIBUTABLE_FACILITY_PLACE_KINDS: readonly PlaceKind[] = [
+export const ADDABLE_FACILITY_PLACE_KINDS: readonly PlaceKind[] = [
   'parking',
   'toilet',
   'rest_area',
@@ -139,10 +130,10 @@ export const CONTRIBUTABLE_FACILITY_PLACE_KINDS: readonly PlaceKind[] = [
   'outdoor_shop',
 ];
 
-const CONTRIBUTABLE_FACILITY_KIND_SET = new Set<PlaceKind>(CONTRIBUTABLE_FACILITY_PLACE_KINDS);
+const ADDABLE_FACILITY_KIND_SET = new Set<PlaceKind>(ADDABLE_FACILITY_PLACE_KINDS);
 
-export const isContributableFacilityPlaceKind = (kind: PlaceKind): boolean =>
-  CONTRIBUTABLE_FACILITY_KIND_SET.has(kind);
+export const isAddableFacilityPlaceKind = (kind: PlaceKind): boolean =>
+  ADDABLE_FACILITY_KIND_SET.has(kind);
 
 /** Linked facility POI beside a trail/camp detail page (same `areaId` catalogue). */
 export interface PlaceNearbyFacilityDTO {
@@ -243,7 +234,7 @@ export const placeDetailRouteKindFromPlaceKind = (
   return 'event';
 };
 
-/** Map contribute / Add FAB selection to canonical place kind. */
-export const placeKindFromContributeVenueKind = (
+/** Map Add FAB selection to canonical place kind. */
+export const placeKindFromAddVenueKind = (
   kind: 'hiking' | 'camping' | 'event' | 'shop'
 ): PlaceKind => (kind === 'shop' ? 'shop' : kind === 'event' ? 'outdoor_other' : kind);

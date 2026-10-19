@@ -1,4 +1,4 @@
-import type { ExploreCardModel } from '../../explore/exploreCardModel';
+import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import { isGeographyMapSource } from '@uaetrail/shared-types';
 import type { BrowseMainCategoryKey } from '../browseListTaxonomy';
 import { LIST_FEED } from '../listFeedTheme';
@@ -6,7 +6,7 @@ import { ListFeedPosterCard } from './feed/ListFeedPosterCard';
 import { ListFeedVenuePosterCard } from './feed/ListFeedVenuePosterCard';
 
 interface ListCategoryImageFeedProps {
-  cards: ExploreCardModel[];
+  cards: DiscoveryCardModel[];
   category?: BrowseMainCategoryKey;
   edgeToEdge?: boolean;
 }

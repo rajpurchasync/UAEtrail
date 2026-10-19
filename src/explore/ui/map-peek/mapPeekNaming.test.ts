@@ -27,10 +27,13 @@ describe('map peek naming', () => {
   });
 
   it('DISC-CARD-01: canonical discovery card VM lives under src/discovery/', () => {
-    expect(read('src/discovery/discoveryCardModel.ts')).toMatch(/export interface DiscoveryCardModel/);
-    expect(read('src/discovery/discoveryCardModel.ts')).toMatch(/buildDiscoveryCardModel/);
-    expect(read('src/explore/exploreCardModel.ts')).toMatch(/@deprecated/);
-    expect(read('src/explore/exploreCardModel.ts')).toMatch(/discovery\/discoveryCardModel/);
+    const model = read('src/discovery/discoveryCardModel.ts');
+    expect(model).toMatch(/export interface DiscoveryCardModel/);
+    expect(model).toMatch(/buildDiscoveryCardModel/);
+    expect(model).toMatch(/export type \{ DiscoveryCardKind, DiscoveryCardSource \}/);
+    expect(model).toMatch(/export type DiscoveryCardTone = DiscoveryCardKind/);
+    expect(model).not.toMatch(/ExploreCard/);
+    expect(model).not.toMatch(/@deprecated/);
   });
 
   it('PEEK-NAME-04: map peek wire actions use ActivityPeekEngagementActions + PeekDetailLink', () => {

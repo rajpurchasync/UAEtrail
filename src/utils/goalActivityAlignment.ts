@@ -9,7 +9,7 @@ export const defaultPinTypeForGoalFilter = (
 };
 
 export const goalCountModeLabel = (mode: 'join' | 'host'): string =>
-  mode === 'host' ? 'Organizing' : 'Joining & logs';
+  mode === 'host' ? 'Hosting' : 'Joining & logs';
 
 export const goalProgressHint = (mode: 'join' | 'host'): string =>
   mode === 'host'

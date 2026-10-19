@@ -1,12 +1,12 @@
 import { signInPathForReturn } from '../../utils/authReturnContext';
 import {
-  organizePublishGateHref,
-  organizePublishGateInputFromMemberStatus,
-} from '../../utils/organizePublishGate';
+  memberPublishGateHref,
+  memberPublishGateInputFromMemberStatus,
+} from '../../utils/memberPublishGate';
 import {
   isAddWizard,
-  isFindWizard,
-  isOrganizeWizard,
+  isSeekFixedWizard,
+  isHostWizard,
   isSeekFlexibleWizard,
   type ExploreCompose,
 } from '../compose';
@@ -30,7 +30,7 @@ export const resolveComposeRouteChange = (
   route: ExploreCompose | null,
   ctx: ComposeRouteGuardContext
 ): ComposeRouteGuardDecision => {
-  if (route && isOrganizeWizard(route)) {
+  if (route && isHostWizard(route)) {
     if (!ctx.user) {
       return { type: 'sign-in', href: signInPathForReturn(explorePath({ compose: route })) };
     }
@@ -39,9 +39,9 @@ export const resolveComposeRouteChange = (
       const returnTo = explorePath({ compose: route });
       return {
         type: 'complete-profile',
-        href: organizePublishGateHref(
+        href: memberPublishGateHref(
           returnTo,
-          organizePublishGateInputFromMemberStatus({
+          memberPublishGateInputFromMemberStatus({
             viewerUserId: ctx.user?.id ?? null,
             profileComplete: ctx.profileComplete,
             canPublish: ctx.canPublish,
@@ -53,7 +53,7 @@ export const resolveComposeRouteChange = (
 
   if (
     route &&
-    (isFindWizard(route) || isSeekFlexibleWizard(route) || isAddWizard(route)) &&
+    (isSeekFixedWizard(route) || isSeekFlexibleWizard(route) || isAddWizard(route)) &&
     !ctx.user
   ) {
     return { type: 'sign-in', href: signInPathForReturn(explorePath({ compose: route })) };

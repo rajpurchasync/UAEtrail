@@ -2,8 +2,8 @@
  * Canonical host/organize activity publish payload (join rules, pricing, location refs).
  *
  * Entry points:
- * - Explore FAB: `src/services/organizeActivityPublish.ts` → `buildOrganizeActivityPublishInput` / `publishOrganizeActivity`
- * - Explore Organize: `src/services/organizeActivityPublish.ts` → `buildHostActivityPublishPayload`
+ * - Explore FAB: `src/services/hostingActivityPublish.ts` → `buildHostingActivityPublishInput` / `publishHostingActivity`
+ * - Explore Host: `src/services/hostingActivityPublish.ts` → `buildHostActivityPublishPayload`
  */
 import type {
   ActivityGroupChatPostPolicy,

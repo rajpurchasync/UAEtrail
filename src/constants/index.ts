@@ -49,14 +49,8 @@ export const OPERATOR_CONSOLE_LINKS = [
   { to: OPERATOR_HISTORY_PATH, label: 'History' },
 ];
 
-/** @deprecated Use {@link OPERATOR_CONSOLE_LINKS} */
-export const HOST_CONSOLE_LINKS = OPERATOR_CONSOLE_LINKS;
 
-/** @deprecated Use {@link OPERATOR_CONSOLE_LINKS} */
-export const ORGANISATION_CONSOLE_LINKS = OPERATOR_CONSOLE_LINKS;
 
-/** @deprecated Use {@link OPERATOR_CONSOLE_LINKS} */
-export const HOST_DASHBOARD_LINKS = OPERATOR_CONSOLE_LINKS;
 
 export const ADMIN_LINKS = [
   { to: ADMIN_OVERVIEW_PATH, label: 'Overview' },

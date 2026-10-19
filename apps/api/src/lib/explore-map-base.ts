@@ -1,6 +1,6 @@
 import type { ActivityDTO, ExploreMapItemDTO, ShopPresence } from '@uaetrail/shared-types';
 import {
-  buildExploreCardPresentation,
+  buildDiscoveryCardPresentation,
   buildExploreFeaturedPerson,
   buildExploreMapPlanProjection,
   FACILITY_MAP_SOURCE,
@@ -588,7 +588,7 @@ export const buildExploreMapBasePayload = async (): Promise<{ items: ExploreMapI
   ]);
 
   for (const item of items) {
-    item.presentation = buildExploreCardPresentation(item);
+    item.presentation = buildDiscoveryCardPresentation(item);
     if (item.source === 'area') continue;
     if (isPlaceMapSource(item.source)) {
       const id = item.locationCard?.id ?? item.id.replace(/^(venue|place):/, '');

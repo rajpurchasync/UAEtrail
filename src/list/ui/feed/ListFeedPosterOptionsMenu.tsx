@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { Flag, Heart, MoreVertical, Share2 } from 'lucide-react';
-import type { ExploreCardModel } from '../../../explore/exploreCardModel';
-import { resolveExploreEntityFollowTarget } from '../../../explore/exploreCardModel';
+import type { DiscoveryCardModel } from '../../../discovery/discoveryCardModel';
+import { resolveExploreEntityFollowTarget } from '../../../discovery/discoveryCardModel';
 import { useExploreEntityFollow } from '../../../explore/ui/useExploreEntityFollow';
 import { ReportContentDialog } from '../../../components/ui/ReportContentDialog';
 import { buildShareText, buildShareUrl } from '../../../utils/share';
@@ -10,7 +10,7 @@ import { shouldShowListFeedImageCta } from '../../listFeedFooterActions';
 import { LIST_FEED } from '../../listFeedTheme';
 
 interface ListFeedPosterOptionsMenuProps {
-  card: ExploreCardModel;
+  card: DiscoveryCardModel;
 }
 
 export const ListFeedPosterOptionsMenu = ({ card }: ListFeedPosterOptionsMenuProps) => {

@@ -1,7 +1,7 @@
 import type { PlanCommitmentFilter } from '../../plan/planTab';
 
 const FILTERS: { key: PlanCommitmentFilter; label: string }[] = [
-  { key: 'hosting', label: 'Organizing' },
+  { key: 'hosting', label: 'Hosting' },
   { key: 'joined', label: 'Joined' },
 ];
 

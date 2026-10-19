@@ -19,7 +19,7 @@ import {
   PLAN_PATH,
   PROFILE_PATH,
   PRO_MEMBERSHIP_PATH,
-  exploreOrganizePath,
+  exploreHostPath,
   messagesToUserPath,
   planHostedSchedulePath,
 } from '../config/routingCatalog';
@@ -61,7 +61,7 @@ export const participantHostBookmarkRedirect = (pathname: string): string => {
     return PRO_MEMBERSHIP_PATH;
   }
   if (rest === '/overview' || rest.startsWith('/overview')) {
-    return exploreOrganizePath();
+    return exploreHostPath();
   }
   if (rest.startsWith('/history')) return PLAN_PATH;
   if (rest.startsWith('/security-privacy')) return PROFILE_PATH;

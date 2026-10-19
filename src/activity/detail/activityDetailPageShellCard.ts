@@ -5,7 +5,7 @@ import type {
   ExploreLinkedRideshareDTO,
 } from '@uaetrail/shared-types';
 import { buildDiscoveryCardViewModelCard } from '../../discovery';
-import type { ExploreCardModel } from '../../explore/exploreCardModel';
+import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import { hostedExploreMapItem } from '../../explore/exploreMapItemFixtures';
 import { activityDetailPath } from '../../config/routingCatalog';
 
@@ -40,7 +40,7 @@ export const buildActivityDetailPageShellCard = (input: {
   activity: ActivityDetailDTO;
   viewerAccess: ActivityViewerAccessDTO | null;
   wireStrips?: ActivityEngagementStripsDTO | null;
-}): ExploreCardModel => {
+}): DiscoveryCardModel => {
   const { activity, viewerAccess, wireStrips } = input;
   const mergedViewerAccess =
     viewerAccess && wireStrips

@@ -37,12 +37,10 @@ describe('boundedContextAlignment (frontend + manifest)', () => {
   it('domains/index.ts exports every feDomainModules entry', () => {
     const index = readFileSync(join(ROOT, 'src/api/domains/index.ts'), 'utf8');
     const exportNeedle: Record<string, string> = {
-      placeRegistry: 'fetchPlaceRegistry',
       placeCatalogClient: 'fetchPlaceCatalog',
       places: 'placeApi',
       facilities: 'facilityApi',
       memberCommitmentHub: 'memberCommitmentHubApi',
-      memberPlan: 'memberPlanApi',
     };
     const missing = manifest.feDomainModules.filter((name) => {
       const needle = exportNeedle[name] ?? `${name}Api`;

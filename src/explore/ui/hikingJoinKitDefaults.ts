@@ -1,4 +1,4 @@
-/** Default “what joiners should bring or know” for the hiking organize flow (editable). */
+/** Default “what joiners should bring or know” for the hiking hosting flow (editable). */
 export const DEFAULT_HIKING_JOIN_KIT = `Mandatory:
 💧 2 Liter water
 💧 Sports or Hiking shoes

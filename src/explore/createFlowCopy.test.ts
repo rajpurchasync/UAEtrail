@@ -1,22 +1,22 @@
 import { describe, expect, it } from 'vitest';
 import {
-  ORGANIZE_LINK_RIDESHARE_LABEL,
-  ORGANIZE_PUBLISH_SUCCESS_BODY,
-  ORGANIZE_PUBLISH_SUCCESS_TITLE,
-  ORGANIZE_PUBLISH_VIEW_ON_MAP,
+  HOSTING_LINK_RIDESHARE_LABEL,
+  HOSTING_PUBLISH_SUCCESS_BODY,
+  HOSTING_PUBLISH_SUCCESS_TITLE,
+  HOSTING_PUBLISH_VIEW_ON_MAP,
   PARTICIPANTS_SPOTS_QUESTION,
 } from './createFlowCopy';
 
-describe('createFlowCopy (organize hiking/camping)', () => {
+describe('createFlowCopy (hosting hiking/camping)', () => {
   it('uses Participants copy for structured spot step', () => {
     expect(PARTICIPANTS_SPOTS_QUESTION).toBe('How many spots available?');
   });
 
   it('describes post-publish map focus and optional carpool', () => {
-    expect(ORGANIZE_PUBLISH_SUCCESS_TITLE).toBeTruthy();
-    expect(ORGANIZE_PUBLISH_SUCCESS_BODY).toMatch(/map/i);
-    expect(ORGANIZE_PUBLISH_SUCCESS_BODY).toMatch(/rideshare/i);
-    expect(ORGANIZE_PUBLISH_VIEW_ON_MAP).toBe('View on map');
-    expect(ORGANIZE_LINK_RIDESHARE_LABEL).toBe('Link rideshare');
+    expect(HOSTING_PUBLISH_SUCCESS_TITLE).toBeTruthy();
+    expect(HOSTING_PUBLISH_SUCCESS_BODY).toMatch(/map/i);
+    expect(HOSTING_PUBLISH_SUCCESS_BODY).toMatch(/rideshare/i);
+    expect(HOSTING_PUBLISH_VIEW_ON_MAP).toBe('View on map');
+    expect(HOSTING_LINK_RIDESHARE_LABEL).toBe('Link rideshare');
   });
 });

@@ -1,15 +1,15 @@
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
-import type { ExploreCardModel } from '../explore/exploreCardModel';
+import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
 import { enrichDiscoveryPeekSelection } from '../discovery/enrichDiscoveryPeekSelection';
-import { finalizeExploreCardLinkedRideshare } from '../explore/linkedRideshareExplore';
+import { finalizeDiscoveryCardLinkedRideshare } from '../explore/linkedRideshareExplore';
 
 /** List feed card — discovery VM + linked rideshare + peek selection flags (same as map). */
 export const enrichListFeedCardModel = (
-  card: ExploreCardModel,
+  card: DiscoveryCardModel,
   item: ExploreMapItemDTO,
   items: ExploreMapItemDTO[],
   user: { id: string } | null | undefined
-): ExploreCardModel => {
-  const withRideshare = finalizeExploreCardLinkedRideshare(card, item, items);
+): DiscoveryCardModel => {
+  const withRideshare = finalizeDiscoveryCardLinkedRideshare(card, item, items);
   return enrichDiscoveryPeekSelection(withRideshare, item, user);
 };

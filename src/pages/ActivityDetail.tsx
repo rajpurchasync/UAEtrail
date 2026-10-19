@@ -60,7 +60,7 @@ import { ActivityDetailGuestGate } from '../components/activity/detail/ActivityD
 /**
  * Activity detail **route loader** (`/activity/:id`): fetch, join modals, SEO, host sheets.
  * **L3 kind layout:** `ActivityDetailByKind` → `*ActivityDetailPage` → `ActivityDetailPageShell`
- * (mirrors `HikingPlaceDetailPage` → `PlaceDetailPage` → `PlaceDetailPageShell`).
+ * (mirrors `PlaceDetailPage` → `PlaceDetailPageShell`).
  */
 export const ActivityDetail = () => {
   const { id } = useParams<{ id: string }>();

@@ -44,7 +44,7 @@ describe('GET /api/explore/map golden path', () => {
     expect(pin).toBeDefined();
     expect(pin?.latitude).toBe(25.118);
     expect(pin?.longitude).toBe(55.201);
-    expect(pin?.composeIntent).toBe('organize');
+    expect(pin?.composeIntent).toBe('host');
     expect(pin?.outingCategory).toBe('hiking');
     expect(pin?.participationMode).toMatch(/^(rsvp|approval)$/);
   });

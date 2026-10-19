@@ -1,12 +1,12 @@
 import type { LocationDTO } from '@uaetrail/shared-types';
 import { groupRegionLevelTexts } from '@uaetrail/shared-types';
-import { decodeShopContributeTags } from '@uaetrail/shared-types';
+import { decodeCommunityShopTags } from '@uaetrail/shared-types';
 import type { ShopPublicView } from '../components/shop/ShopPublicPage';
 
 /** Map a community-submitted shop location (`activityType: shop`) to the public shop page model. */
 export const communityShopPlaceToView = (place: LocationDTO): ShopPublicView | null => {
   if (place.activityType !== 'shop') return null;
-  const decoded = decodeShopContributeTags(place.tags);
+  const decoded = decodeCommunityShopTags(place.tags);
   if (!decoded.isCommunityShop) return null;
 
   const productsLine = place.highlights?.[0]?.trim() ?? '';

@@ -1,11 +1,11 @@
 import { Link } from 'react-router-dom';
 import { X } from 'lucide-react';
 import { areaDetailPath } from '@uaetrail/shared-types';
-import type { ExploreCardModel } from '../../../exploreCardModel';
+import type { DiscoveryCardModel } from '../../../../discovery/discoveryCardModel';
 import { EnvironmentImage } from '../../../../components/ui/EnvironmentImage';
 import { ShareButton } from '../../../../components/ui/ShareButton';
 import { ExploreFollowButton } from '../../ExploreFollowButton';
-import { exploreCardPeekShowsFollow } from '../../../exploreCardModel';
+import { discoveryCardPeekShowsFollow } from '../../../../discovery/discoveryCardModel';
 import { resolveCatalogEntityName } from '../../../../list/listVenuePosterPresentation';
 import {
   resolvePlacePeekCuratedArea,
@@ -17,7 +17,7 @@ import {
 } from '../../../../place/peek/resolvePlaceRegistryCoverImage';
 
 type PlacePeekHeroProps = {
-  card: ExploreCardModel;
+  card: DiscoveryCardModel;
   embedMode?: boolean;
   onClose: () => void;
   onBeforeDetailNavigate?: () => void;
@@ -34,7 +34,7 @@ export const PlacePeekHero = ({
   const curated = resolvePlacePeekCuratedArea(card);
   const localLabel = resolvePlacePeekLocalLabel(card);
   const emoji = card.emoji?.trim() || '📍';
-  const showFollow = exploreCardPeekShowsFollow(card);
+  const showFollow = discoveryCardPeekShowsFollow(card);
 
   return (
     <div

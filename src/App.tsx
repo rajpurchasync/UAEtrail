@@ -36,7 +36,7 @@ import {
   discoveryToExploreSearch,
   explorePath,
   explorePeopleBrowsePath,
-  legacyCreateParamToOrganizePath,
+  legacyCreateParamToHostPath,
   parseActivityListFilter,
   LIST_DISCOVERY_PATH,
 } from './config/routingCatalog';
@@ -107,7 +107,7 @@ const PlanBrowseRoute = () => {
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
   const tab = searchParams.get('tab');
-  const legacyCreatePath = legacyCreateParamToOrganizePath(searchParams.get('create'));
+  const legacyCreatePath = legacyCreateParamToHostPath(searchParams.get('create'));
   if (legacyCreatePath) {
     return <Navigate to={legacyCreatePath} replace />;
   }
@@ -234,7 +234,7 @@ const ProfileSettingsNotifications = lazy(() =>
 );
 const ProfileEdit = lazy(() => import('./pages/ProfileEdit').then((m) => ({ default: m.ProfileEdit })));
 const ProfileBadges = lazy(() => import('./pages/ProfileBadges').then((m) => ({ default: m.ProfileBadges })));
-const Contributions = lazy(() => import('./pages/Contributions').then((m) => ({ default: m.Contributions })));
+const Submissions = lazy(() => import('./pages/Submissions').then((m) => ({ default: m.Submissions })));
 const ProfileReviews = lazy(() => import('./pages/ProfileReviews').then((m) => ({ default: m.ProfileReviews })));
 const ProfileWishlist = lazy(() => import('./pages/ProfileWishlist').then((m) => ({ default: m.ProfileWishlist })));
 const JoinRequestDetail = lazy(() =>
@@ -478,7 +478,7 @@ function App() {
             path={PROFILE_SUBMISSIONS_PATH}
             element={
               <ProtectedRoute>
-                <Contributions />
+                <Submissions />
               </ProtectedRoute>
             }
           />

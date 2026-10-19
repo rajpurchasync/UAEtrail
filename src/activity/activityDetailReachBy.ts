@@ -2,14 +2,14 @@ import { extractNonJoinRequirements } from '../utils/joinInstructions';
 
 const TRANSPORT_REQUIREMENT_PATTERN = /^(Reachable by|Vehicle:)/i;
 
-/** Organize publish lines shown on Transport (not Plan activity-details list). */
+/** Host publish lines shown on Transport (not Plan activity-details list). */
 export const extractActivityTransportReachLines = (requirements?: string[] | null): string[] =>
   extractNonJoinRequirements(requirements ?? []).filter((line) => TRANSPORT_REQUIREMENT_PATTERN.test(line.trim()));
 
 export const extractActivityPlanDetailLines = (requirements?: string[] | null): string[] =>
   extractNonJoinRequirements(requirements ?? []).filter((line) => !TRANSPORT_REQUIREMENT_PATTERN.test(line.trim()));
 
-/** Organize capture → consumer transport strip (sedan → car, 4x4 preserved). */
+/** Host capture → consumer transport strip (sedan → car, 4x4 preserved). */
 export const formatActivityAccessibleBySummary = (requirements?: string[] | null): string | null => {
   const lines = extractActivityTransportReachLines(requirements);
   const labels: string[] = [];

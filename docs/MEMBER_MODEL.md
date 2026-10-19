@@ -4,13 +4,13 @@
 
 Do **not** re-implement tier logic in React hooks — consume **`GET /me/status`** (`MemberStatusDTO`; publish under **`publish`**; flat fields dual-read legacy `HostStatusDTO`).
 
-**Capabilities ≠ viewer access:** `status.publish.canPublish` / `canAccessPublishingWorkspace` answer whether this member may **organize or publish** outings and open the **publishing workspace**. They do **not** gate whether someone may **read** full activity detail or a member profile. That is **`buildActivityViewerAccess`** / **`resolveProfileViewerAccess`** ([`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §15; `resolveActivityViewerAccess` remains a compatibility alias). Guest sign-in sheets (`guestBrowseGateCopy`) are presentation when `gateReason === sign_in` only.
+**Capabilities ≠ viewer access:** `status.publish.canPublish` / `canAccessPublishingWorkspace` answer whether this member may **host or publish** outings and open the **publishing workspace**. They do **not** gate whether someone may **read** full activity detail or a member profile. That is **`buildActivityViewerAccess`** / **`resolveProfileViewerAccess`** ([`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §15; `resolveActivityViewerAccess` remains a compatibility alias). Guest sign-in sheets (`guestBrowseGateCopy`) are presentation when `gateReason === sign_in` only.
 
-**Participate ≠ publish:** Joining an outing (RSVP, request to join, demand) requires a **signed-in member** only — **not** `profileComplete`. **Organize / publish** requires **`profileComplete`** (member details on `/welcome`) plus **`canPublish`** (activity-capable tenant).
+**Participate ≠ publish:** Joining an outing (RSVP, request to join, looking for company) requires a **signed-in member** only — **not** `profileComplete`. **Host / publish** requires **`profileComplete`** (member details on `/welcome`) plus **`canPublish`** (activity-capable tenant).
 
 **My Plans surface vs `/me/*`:** Consumer **My Plans** lives at **`/plan`** (`PLAN_PATH`, `src/plan/planRouting.ts`) — **forward-looking only**: upcoming joined/hosting (list or calendar), coordination strip, availability lens, wishlist/saved, goals teaser — **not** outing history or journey map. **`/profile`** is identity and settings; **`/profile/history`** (+ map at `/profile/history/map`) is **past** inventory (joined / hosted / self-logged). HTTP **`GET/PUT /me/goals`**, **`/me/availability`**, **`/me/coordination-attention`** back the Plan page; they are **not** browser routes like `/me/plans`. Explore FAB **Host · Find crew · Add** is separate from the Plan tab ([`NAVIGATION.md`](./NAVIGATION.md) § Plan disambiguation).
 
-**Plan is a UI hub, not a domain entity:** There is no `Plan` collection, `PlanDTO`, or `GET /plans/:id`. The middle tab is a **read-model shell** over real objects — primarily **`activities`** (joined upcoming, **hosted** / organizing filter, seeking via `activityMode: seeking`), plus **`member_goals`**, **`member_availability`**, wishlist saves, and **`coordination-attention`** (join queues, invites). **Organizing an outing** = create/publish an **`Activity`** (tenant-scoped publish, map discovery) — not “creating a Plan.” In code, prefer **activity / hosted / joined / goals / availability** in API and store names; FE hub helpers: `memberCommitmentHubApi` (`goals` + `availability` only). Reserve **Plan** for routes (`/plan`), tab chrome, and inbox grouping copy where noted in [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) (activity detail tab label **Plan** = outing facts on L3 — still not a Plan entity).
+**Plan is a UI hub, not a domain entity:** There is no `Plan` collection, `PlanDTO`, or `GET /plans/:id`. The middle tab is a **read-model shell** over real objects — primarily **`activities`** (joined upcoming, **hosted** / hosting filter, seeking via `activityMode: seeking`), plus **`member_goals`**, **`member_availability`**, wishlist saves, and **`coordination-attention`** (join queues, invites). **Hosting an outing** = create/publish an **`Activity`** (tenant-scoped publish, map discovery) — not “creating a Plan.” In code, prefer **activity / hosted / joined / goals / availability** in API and store names; FE hub helpers: `memberCommitmentHubApi` (`goals` + `availability` only). Reserve **Plan** for routes (`/plan`), tab chrome, and inbox grouping copy where noted in [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) (activity detail tab label **Plan** = outing facts on L3 — still not a Plan entity).
 
 **FE file naming:** Two patterns — pick by **surface**, not by parsing every word in a component name.
 
@@ -23,7 +23,7 @@ Do **not** re-implement tier logic in React hooks — consume **`GET /me/status`
 
 **Activity detail — Pro vs host vs crew:** **Community host** = profile-complete member who may Organize (`canPublish`). **Pro membership** = paid tier for **social depth** on outings (e.g. view host profile before join, full **Buddies** roster after join, offer/add transport when enforced) — applied in **`applyActivityViewEntitlements`** after social `viewerAccess`. **`canAccessCrewSurfaces`** on activity detail is **not** Pro and **not** publishing tier: it means confirmed **participant** or **host** on **this** outing (meeting precision, roster, group chat). Pending joiners stay on **Plan** + join CTAs only. Do not use `UserRole` or `canPublish` for consumer Buddies/Place gates.
 
-**Publishing actor = always a user:** Every publish action has a `userId` actor. A **business** is a **tenant** the user may represent; use **publish as self / {business}** when the member has multiple activity-capable tenants (`GET /me/status` → `publish.ownedProfiles[].publishingProfileKind`; Organize publish step `OrganizePublishAsField`). Workspace publish-as: TBD.
+**Publishing actor = always a user:** Every publish action has a `userId` actor. A **business** is a **tenant** the user may represent; use **publish as self / {business}** when the member has multiple activity-capable tenants (`GET /me/status` → `publish.ownedProfiles[].publishingProfileKind`; Organize publish step `HostingPublishAsField`). Workspace publish-as: TBD.
 
 **Storefront kinds (`PublishingProfileKind`):** See [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §1.3 — `community`, `pro_guide`, `agency`, `shop`, `ecommerce`, `hospitality`, `partner`. Wire `EntityKind.organisation` is the storefront slug URL, not product copy.
 
@@ -56,7 +56,7 @@ flowchart TB
   end
 
   subgraph tiers [Host publishing tiers]
-    C[community — buddy Organize]
+    C[community — buddy Host / publish]
     P[professional — Pro guide]
     B[business — agency / shop / team]
   end
@@ -194,19 +194,19 @@ Trusted fields (year goal, upcoming list, etc.) appear only on **trusted** expos
 
 | Field | Meaning |
 |------|---------|
-| `profileComplete` | Member details on `/welcome` done — **organize/publish** gate (wire also `signupProfileComplete` on legacy paths) |
-| `publish.canPublish` | May run Organize / publish (activity-capable tenant) |
+| `profileComplete` | Member details on `/welcome` done — **host/publish** gate (wire also `signupProfileComplete` on legacy paths) |
+| `publish.canPublish` | May run Host / publish (activity-capable tenant) |
 | `publish.canAccessPublishingWorkspace` | May use publishing workspace (`/publishing/*`; alias `/operator/*`) |
 | `publish.canHostPaidActivities` | Linked **business** tenant; paid pricing when publishing as agency / shop / partner |
-| `publish.isCommunityHost` | Map footprint badge — first activity or demand (not the same as `profileComplete`) |
+| `publish.isCommunityHost` | Map footprint badge — first activity or seeking post (not the same as `profileComplete`) |
 
-**Participate (join, RSVP, demand):** signed-in member only — **not** `profileComplete` or `canPublish`.
+**Participate (join, RSVP, looking for company):** signed-in member only — **not** `profileComplete` or `canPublish`.
 
 ---
 
 ## Member audience ladder
 
-Product-facing **who is viewing** for **capabilities** (Organize, console, future paid SKUs). Orthogonal to **social** activity/profile detail ([`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §15).
+Product-facing **who is viewing** for **capabilities** (Host / publish, console, future paid SKUs). Orthogonal to **social** activity/profile detail ([`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §15).
 
 | Audience (`MemberAudience`) | Who | Typical gates |
 |-----------------------------|-----|----------------|
@@ -222,11 +222,11 @@ Product-facing **who is viewing** for **capabilities** (Organize, console, futur
 |-----------|------|
 | Guest | `guest` |
 | Signed-in, incomplete profile | `member_incomplete` — not “basic” |
-| “Organizer” = can buddy Organize | `member_basic` + `canPublish` (profile complete + tenant) |
+| “Host” = can buddy Host / publish | `member_basic` + `canPublish` (profile complete + tenant) |
 | “Organizer” badge on profile | `isCommunityHost` — first activity or demand on map |
 | Paid membership (future) | `PaidMembershipSku` + layer **7** entitlements — **not** inferred from `hostTiers` alone |
 
-**Resolver:** `resolveMemberAudience({ viewerUserId, hostStatus })` in `packages/shared-types/src/member-access.ts`. **Organize FAB denial:** `organizeEntitlementDenial` (sign-in → welcome → publish capability). Client redirects: `organizePublishGateHref` + `organizePublishGateInputFromMemberStatus` in `src/utils/organizePublishGate.ts` (maps denial → routes).
+**Resolver:** `resolveMemberAudience({ viewerUserId, hostStatus })` in `packages/shared-types/src/member-access.ts`. **Host FAB denial:** `hostPublishEntitlementDenial` (sign-in → welcome → publish capability). Client redirects: `memberPublishGateHref` + `memberPublishGateInputFromMemberStatus` in `src/utils/memberPublishGate.ts` (maps denial → routes).
 
 **Paid tiers:** stub `resolvePaidMembershipSku` → `'none'` until billing ships; enforce in `apps/api/src/services/member-entitlements.ts` **after** `resolveActivityViewerAccess` / social exposure.
 
@@ -284,7 +284,7 @@ UI labels vs capabilities vs wire (do not duplicate in other docs — **update t
 |-------|---------|-------------------|
 | **Guest** | Browse within guest rules | No session |
 | **Auth user** | Signed in; buddies, join, settings | Session; **`profileComplete: false`** → **hosting not enabled** |
-| **Profile-complete member** | **Hosting enabled** — community Organize / publish | `profileComplete` + `publish.canPublish` (community tenant) |
+| **Profile-complete member** | **Hosting enabled** — community Host / publish | `profileComplete` + `publish.canPublish` (community tenant) |
 | **Pro host / Guide** | Individual Pro — richer **member profile** | Pro membership + `pro_guide` tenant; still **`/member/:userId`** |
 | **User + operator** | Person linked to **shop or agency** business | `tenant_memberships` / ownership; ≥1 user per operator tenant |
 
@@ -305,7 +305,7 @@ UI labels vs capabilities vs wire (do not duplicate in other docs — **update t
 | **Guide / Pro host (UI)** | Pro **individual** — same person card, not a second storefront product | `/member/:userId`; Pro fields on profile |
 | **Operator (UI)** | **Shop or agency business** (tenant), always tied to ≥1 **user** | Public **agency / shop profile**; publishing workspace (wire `/operator/*`) |
 | **Operator on member profile** | When a user is linked to a shop/agency, their **`/member/:userId`** shows the **operator display name** as a link → operator profile | API: `linkedOperatorName` + `hostProfilePath` on `GET /member/:userId/profile` |
-| **Organize / publish (capability)** | Member may create/publish outings | `GET /me/status` → `profileComplete` + `publish.canPublish` |
+| **Host / publish (capability)** | Member may create/publish outings | `GET /me/status` → `profileComplete` + `publish.canPublish` |
 | **Profile complete** | DOB, gender, based-in on `/welcome` | `profileComplete` on `/me/status` (legacy `signupProfileComplete`) |
 | **Participate** | Join outings as attendee | Auth only; `activity_requests`, `/activities/:id/requests` |
 | **Community tenant (buddy)** | Free individual publish path | `publishingPurpose: community`, auto tenant after profile complete |
@@ -322,7 +322,7 @@ UI labels vs capabilities vs wire (do not duplicate in other docs — **update t
 | `registerHostJoinRequestRoutes` | `registerHostActivityRequestRoutes` |
 | “Join request” without **activity** or **demand** | Qualified phrase |
 | New writes of `organizerNote` | `hostNote` (`organizerNote` HTTP/Mongo read alias) |
-| `isHostRole` for Organize / publish gates | `publish.canPublish`, `canAccessPublishingWorkspace` from **`useMemberStatus`** |
+| `isHostRole` for Host / publish gates | `publish.canPublish`, `canAccessPublishingWorkspace` from **`useMemberStatus`** |
 | `/become-host` in new UI | `PRO_MEMBERSHIP_PATH` or `/welcome` |
 | `OrganisationHubSections` / `useHostGate` | `ConsoleHubSections` (`src/console`), **`useMemberStatus`** |
 | New `/me/host-status` or “host status” product APIs | **`GET /me/status`** only |

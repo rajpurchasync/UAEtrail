@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { buildDiscoveryCardViewModelCard } from '../discovery';
 import {
-  finalizeExploreCardLinkedRideshare,
+  finalizeDiscoveryCardLinkedRideshare,
   listLinkedRideshareExploreRows,
 } from './linkedRideshareExplore';
 
@@ -32,7 +32,7 @@ describe('listLinkedRideshareExploreRows', () => {
   });
 });
 
-describe('finalizeExploreCardLinkedRideshare', () => {
+describe('finalizeDiscoveryCardLinkedRideshare', () => {
   it('adds carpool badge and linked rows on parent outing peek card', () => {
     const parentId = 'parent-1';
     const parentItem = {
@@ -46,7 +46,7 @@ describe('finalizeExploreCardLinkedRideshare', () => {
       activity: { id: parentId, activityType: 'hiking', requirements: [] },
     } as unknown as ExploreMapItemDTO;
     const items = [parentItem, ride(parentId, 'r1')];
-    const card = finalizeExploreCardLinkedRideshare(
+    const card = finalizeDiscoveryCardLinkedRideshare(
       buildDiscoveryCardViewModelCard(parentItem),
       parentItem,
       items
@@ -68,7 +68,7 @@ describe('finalizeExploreCardLinkedRideshare', () => {
       activity: { id: parentId, activityType: 'hiking' },
     } as ExploreMapItemDTO;
     const carpoolItem = ride(parentId, 'r1');
-    const card = finalizeExploreCardLinkedRideshare(
+    const card = finalizeDiscoveryCardLinkedRideshare(
       buildDiscoveryCardViewModelCard(carpoolItem),
       carpoolItem,
       [parentItem, carpoolItem]

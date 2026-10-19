@@ -3,9 +3,9 @@ import type { HostingKindFlow } from './types';
 import { applyRegistryVenueStepOmit } from './registry';
 import {
   validateLimitedMinAge,
-  validateOrganizeAudienceOthers,
-  validateOrganizePrice,
-  validateOrganizeTitle,
+  validateHostingAudienceOthers,
+  validateHostingPrice,
+  validateHostingTitle,
   validateStructuredAboutTrail,
   validateStructuredDestination,
   validateStructuredPublishVenue,
@@ -29,8 +29,8 @@ const DEFAULT_STEPS: CreateFlowStepId[] = [
 const REGISTRY_OMIT: CreateFlowStepId[] = ['about_trail'];
 
 const validateStep = (step: CreateFlowStepId, draft: CreateActivityDraft): string | null => {
-  if (step === 'title') return validateOrganizeTitle(draft, 'Give your outing a title.');
-  if (step === 'audience') return validateOrganizeAudienceOthers(draft);
+  if (step === 'title') return validateHostingTitle(draft, 'Give your outing a title.');
+  if (step === 'audience') return validateHostingAudienceOthers(draft);
   if (step === 'when' && draft.timeMode === 'specific' && !draft.time) {
     return 'Choose a start time.';
   }
@@ -46,7 +46,7 @@ const validateStep = (step: CreateFlowStepId, draft: CreateActivityDraft): strin
   if (step === 'meeting_point' && (draft.meetingLatitude == null || draft.meetingLongitude == null)) {
     return 'Drop a meeting point pin on the map.';
   }
-  if (step === 'price') return validateOrganizePrice(draft);
+  if (step === 'price') return validateHostingPrice(draft);
   if (step === 'publish') {
     const effectiveFromLat = draft.latitude ?? draft.meetingLatitude;
     const effectiveFromLng = draft.longitude ?? draft.meetingLongitude;
@@ -56,20 +56,20 @@ const validateStep = (step: CreateFlowStepId, draft: CreateActivityDraft): strin
     if (draft.meetingLatitude == null || draft.meetingLongitude == null) {
       return 'Drop a meeting point pin on the map.';
     }
-    const titleErr = validateOrganizeTitle(draft, 'Enter a title.');
+    const titleErr = validateHostingTitle(draft, 'Enter a title.');
     if (titleErr) return titleErr;
     const venueErr = validateStructuredPublishVenue(draft);
     if (venueErr) return venueErr;
     if (draft.joinMode !== 'private' && !draft.joinKit.trim()) {
       return 'Add what joiners should know before joining.';
     }
-    return validateOrganizePrice(draft);
+    return validateHostingPrice(draft);
   }
   return null;
 };
 
-export const organizeCampingFlow: HostingKindFlow = {
-  id: 'plan.camping.hosting',
+export const campingHostingFlow: HostingKindFlow = {
+  id: 'host.camping',
   createKind: 'camping',
   defaultSteps: DEFAULT_STEPS,
   registryVenue: { placeType: 'camping', omitWhenRegistry: REGISTRY_OMIT },

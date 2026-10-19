@@ -37,7 +37,3 @@ export const PlaceCatalogCardFrame = ({ href, children, actions }: PlaceCatalogC
   return <div className={className}>{content}</div>;
 };
 
-/** @deprecated Use PlaceCardActionsConfig */
-export type LocationCardActionsConfig = PlaceCardActionsConfig;
-/** @deprecated Use PlaceCatalogCardFrame */
-export const LocationCatalogCardFrame = PlaceCatalogCardFrame;

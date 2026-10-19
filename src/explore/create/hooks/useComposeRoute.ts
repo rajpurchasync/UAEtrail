@@ -4,8 +4,8 @@ import {
   clearExploreComposeParams,
   isAddWizard,
   isComposeMenu,
-  isFindWizard,
-  isOrganizeWizard,
+  isSeekFixedWizard,
+  isHostWizard,
   isSeekFlexibleWizard,
   migrateLegacyExploreComposeParams,
   parseExploreCompose,
@@ -40,9 +40,9 @@ export const useComposeRoute = ({
   const [guestComposeSignInOpen, setGuestComposeSignInOpen] = useState(false);
 
   const composeMenuOpen = isComposeMenu(composeRoute);
-  const planHostingRoute = isOrganizeWizard(composeRoute) ? composeRoute : null;
-  const planSeekingRoute = isFindWizard(composeRoute) ? composeRoute : null;
-  const contributeRoute = isAddWizard(composeRoute) ? composeRoute : null;
+  const hostComposeRoute = isHostWizard(composeRoute) ? composeRoute : null;
+  const seekFixedRoute = isSeekFixedWizard(composeRoute) ? composeRoute : null;
+  const addRoute = isAddWizard(composeRoute) ? composeRoute : null;
   const seekFlexibleOpen = isSeekFlexibleWizard(composeRoute);
 
   const setComposeRoute = useCallback(
@@ -113,9 +113,9 @@ export const useComposeRoute = ({
   return {
     composeRoute,
     composeMenuOpen,
-    planHostingRoute,
-    planSeekingRoute,
-    contributeRoute,
+    hostComposeRoute,
+    seekFixedRoute,
+    addRoute,
     seekFlexibleOpen,
     setComposeRoute,
     closeCompose,
@@ -123,18 +123,5 @@ export const useComposeRoute = ({
     handleComposeRouteChange,
     guestComposeSignInOpen,
     closeGuestComposeSignIn,
-    /** @deprecated Use {@link composeRoute}. */
-    exploreCompose: composeRoute,
-    /** @deprecated Use {@link planHostingRoute}. */
-    organizeRoute: planHostingRoute,
-    /** @deprecated Use {@link planHostingRoute}. */
-    hostComposeRoute: planHostingRoute,
-    /** @deprecated Use {@link planSeekingRoute}. */
-    findRoute: planSeekingRoute,
-    /** @deprecated Use {@link contributeRoute}. */
-    addRoute: contributeRoute,
   };
 };
-
-/** @deprecated Use {@link useComposeRoute}. */
-export const useExploreComposeRoute = useComposeRoute;

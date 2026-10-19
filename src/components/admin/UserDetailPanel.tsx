@@ -395,7 +395,7 @@ export const UserDetailPanel = ({
     { key: 'overview', label: 'Profile' },
     { key: 'hosts', label: 'Publishing profiles', count: (user.ownedTenants?.length ?? 0) + (user.memberships?.length ?? 0) },
     { key: 'groups', label: 'Groups', count: user.groups?.length },
-    { key: 'hosted', label: 'Organized', count: user.hostedActivities?.length },
+    { key: 'hosted', label: 'Hosted', count: user.hostedActivities?.length },
     { key: 'participated', label: 'Joined', count: user.joinedActivities?.length },
     { key: 'requests', label: 'Requests', count: user.requests?.length }
   ];

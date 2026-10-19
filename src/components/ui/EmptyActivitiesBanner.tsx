@@ -35,7 +35,7 @@ export const EmptyActivitiesBanner = () => {
             className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-600 text-white rounded-full text-sm font-semibold hover:bg-emerald-700 transition-colors"
           >
             <Plus className="w-4 h-4" />
-            Organize an outing
+            Host an outing
           </Link>
         ) : user ? (
           <Link
@@ -43,7 +43,7 @@ export const EmptyActivitiesBanner = () => {
             className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-600 text-white rounded-full text-sm font-semibold hover:bg-emerald-700 transition-colors"
           >
             <Plus className="w-4 h-4" />
-            {canPublish ? 'Organize on the map' : 'Pro Membership'}
+            {canPublish ? 'Host on the map' : 'Pro Membership'}
           </Link>
         ) : (
           <Link
@@ -51,7 +51,7 @@ export const EmptyActivitiesBanner = () => {
             className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-600 text-white rounded-full text-sm font-semibold hover:bg-emerald-700 transition-colors"
           >
             <Plus className="w-4 h-4" />
-            Organize an outing
+            Host an outing
           </Link>
         )}
       </div>

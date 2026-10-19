@@ -1,4 +1,4 @@
-import type { ExploreCardModel } from '../../../explore/exploreCardModel';
+import type { DiscoveryCardModel } from '../../../discovery/discoveryCardModel';
 import { LIST_FEED } from '../../listFeedTheme';
 import { resolveCatalogHeaderAreaLocationLine } from '../../listVenuePosterPresentation';
 import { ListFeedCatalogRatingBadge } from '../poster/ListFeedCatalogRatingBadge';
@@ -8,7 +8,7 @@ export const ListFeedCatalogEntityHeader = ({
   card,
   name,
 }: {
-  card: ExploreCardModel;
+  card: DiscoveryCardModel;
   name: string;
 }) => {
   const areaLocationLine = resolveCatalogHeaderAreaLocationLine(card);

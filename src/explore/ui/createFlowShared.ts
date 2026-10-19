@@ -1,5 +1,5 @@
 /**
- * Primitives shared across Plan hosting, Plan seeking, and Contribute wizards.
+ * Primitives shared across Host, Find crew, and Add on map wizards.
  * Import here — not from `hostingFlowEngine.ts` (hosting-only engine).
  */
 
@@ -49,6 +49,3 @@ export const ACTIVITY_DIFFICULTY_OPTIONS: Array<{
 
 export const resolveActivityDifficultyLabel = (difficulty: ActivityDifficulty): string =>
   ACTIVITY_DIFFICULTY_OPTIONS.find((option) => option.value === difficulty)?.title ?? difficulty;
-
-/** @deprecated Use {@link resolveActivityDifficultyLabel}. */
-export const resolveOrganizeDifficultyLabel = resolveActivityDifficultyLabel;

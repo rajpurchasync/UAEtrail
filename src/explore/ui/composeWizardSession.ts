@@ -1,16 +1,17 @@
 import type { ComposeFlowId } from '../composeFlowCatalog';
+import { canonicalizeComposeWire } from '@uaetrail/shared-types';
 import type { ExploreCompose } from '../compose';
 import { composeFlowIdFromRoute } from '../composeFlowCatalog';
 import { legacyComposeFlowIdsFor, normalizeComposeFlowId } from '../composeFlowIds';
 import type { CreateActivityDraft, CreateActivityKind } from './hostingFlowEngine';
 import type { SeekingDraft, SeekingKind } from './seekingFlowEngine';
-import type { ContributeDraft } from './contributeFlow';
-import type { FacilityContributeDraft } from './contributeFacilityFlow';
-import type { ContributeVenueKind } from '../contributeTypes';
+import type { AddDraft } from './addFlow';
+import type { FacilityAddDraft } from './addFacilityFlow';
+import type { AddVenueKind } from '../addTypes';
 
 const STORAGE_PREFIX = 'uaetrail:compose-wizard';
 
-export type OrganizeWizardSession = {
+export type HostingWizardSession = {
   step: string;
   draft: CreateActivityDraft;
   selectedKind: CreateActivityKind | null;
@@ -22,9 +23,9 @@ export type SeekingWizardSession = {
   selectedKind: SeekingKind | null;
 };
 
-export type ContributeWizardSession = {
+export type AddWizardSession = {
   step: string;
-  draft: ContributeDraft | FacilityContributeDraft;
+  draft: AddDraft | FacilityAddDraft;
 };
 
 const sessionKey = (flowId: ComposeFlowId, scope?: string) => {
@@ -36,7 +37,7 @@ const sessionKey = (flowId: ComposeFlowId, scope?: string) => {
 const legacySessionKey = (flowId: ComposeFlowId, scope?: string) =>
   `uaetrail:compose-wizard:v1:${flowId}${scope ? `:${scope}` : ''}`;
 
-export const organizeWizardSessionScope = (prefill?: {
+export const hostingWizardSessionScope = (prefill?: {
   participantIntentId?: string;
   sourceActivityId?: string;
   linkToParentActivityId?: string;
@@ -48,18 +49,18 @@ export const organizeWizardSessionScope = (prefill?: {
   return undefined;
 };
 
-export const readOrganizeWizardSession = (
+export const readHostingWizardSession = (
   flowId: ComposeFlowId,
   scope?: string
-): OrganizeWizardSession | null => readSessionJson<OrganizeWizardSession>(flowId, scope);
+): HostingWizardSession | null => readSessionJson<HostingWizardSession>(flowId, scope);
 
-export const writeOrganizeWizardSession = (
+export const writeHostingWizardSession = (
   flowId: ComposeFlowId,
-  data: OrganizeWizardSession,
+  data: HostingWizardSession,
   scope?: string
 ): void => writeJson(sessionKey(flowId, scope), data);
 
-export const clearOrganizeWizardSession = (flowId: ComposeFlowId, scope?: string): void => {
+export const clearHostingWizardSession = (flowId: ComposeFlowId, scope?: string): void => {
   try {
     sessionStorage.removeItem(sessionKey(flowId, scope));
   } catch {
@@ -81,26 +82,26 @@ export const clearSeekingWizardSession = (flowId: ComposeFlowId): void => {
   }
 };
 
-const contributeFlowId = (kind: ContributeVenueKind): ComposeFlowId | null =>
+const addFlowId = (kind: AddVenueKind): ComposeFlowId | null =>
   composeFlowIdFromRoute({ intent: 'add', kind });
 
-export const readContributeWizardSession = (
-  kind: ContributeVenueKind
-): ContributeWizardSession | null => {
-  const flowId = contributeFlowId(kind);
-  return flowId ? readSessionJson<ContributeWizardSession>(flowId) : null;
+export const readAddWizardSession = (
+  kind: AddVenueKind
+): AddWizardSession | null => {
+  const flowId = addFlowId(kind);
+  return flowId ? readSessionJson<AddWizardSession>(flowId) : null;
 };
 
-export const writeContributeWizardSession = (
-  kind: ContributeVenueKind,
-  data: ContributeWizardSession
+export const writeAddWizardSession = (
+  kind: AddVenueKind,
+  data: AddWizardSession
 ): void => {
-  const flowId = contributeFlowId(kind);
+  const flowId = addFlowId(kind);
   if (flowId) writeJson(sessionKey(flowId), data);
 };
 
-export const clearContributeWizardSession = (kind: ContributeVenueKind): void => {
-  const flowId = contributeFlowId(kind);
+export const clearAddWizardSession = (kind: AddVenueKind): void => {
+  const flowId = addFlowId(kind);
   if (!flowId) return;
   try {
     sessionStorage.removeItem(sessionKey(flowId));
@@ -111,29 +112,28 @@ export const clearContributeWizardSession = (kind: ContributeVenueKind): void =>
 
 /** Drop saved draft when the user fully dismisses compose (not back-to-menu). */
 export const clearComposeWizardSessionForRoute = (route: ExploreCompose | null): void => {
-  const flowId = composeFlowIdFromRoute(route);
-  if (!flowId || !route || 'surface' in route) return;
-  if (route.intent === 'plan' && 'mode' in route) {
-    if (route.mode === 'hosting') clearOrganizeWizardSession(flowId);
-    else clearSeekingWizardSession(flowId);
+  if (!route) return;
+  const canonical = canonicalizeComposeWire(route);
+  const flowId = composeFlowIdFromRoute(canonical);
+  if (!flowId || 'surface' in canonical) return;
+  if (canonical.intent === 'host') {
+    clearHostingWizardSession(flowId);
     return;
   }
-  if (route.intent === 'contribute' && 'target' in route) {
-    if (route.target === 'facility') {
-      clearContributeWizardSession('facility');
+  if (canonical.intent === 'seek') {
+    clearSeekingWizardSession(flowId);
+    return;
+  }
+  if (canonical.intent === 'add' && 'target' in canonical) {
+    if (canonical.target === 'facility') {
+      clearAddWizardSession('facility');
       return;
     }
     const kind =
-      route.kind === 'outdoor_other' || route.kind === 'event'
+      canonical.kind === 'outdoor_other' || canonical.kind === 'event'
         ? 'event'
-        : (route.kind as ContributeVenueKind);
-    clearContributeWizardSession(kind);
-    return;
-  }
-  if (route.intent === 'organize') clearOrganizeWizardSession(flowId);
-  else if (route.intent === 'find') clearSeekingWizardSession(flowId);
-  else if (route.intent === 'add' && 'kind' in route && route.kind) {
-    clearContributeWizardSession(route.kind);
+        : (canonical.kind as AddVenueKind);
+    clearAddWizardSession(kind);
   }
 };
 

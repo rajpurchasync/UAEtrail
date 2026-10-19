@@ -63,8 +63,8 @@ describe('clientQueryMigrationGuard (MIG-CLIENT-QUERY)', () => {
     expect(content).not.toMatch(/useSafeAsyncEffect/);
   });
 
-  it('OrganizePublishSuccessSheet uses usePublicActivityDetail', () => {
-    const content = read('src/explore/ui/OrganizePublishSuccessSheet.tsx');
+  it('HostingPublishSuccessSheet uses usePublicActivityDetail', () => {
+    const content = read('src/explore/ui/HostingPublishSuccessSheet.tsx');
     expect(content).toMatch(/usePublicActivityDetail/);
     expect(content).not.toMatch(/useSafeAsyncEffect/);
   });

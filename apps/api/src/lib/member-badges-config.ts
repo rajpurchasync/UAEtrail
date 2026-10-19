@@ -23,7 +23,7 @@ export type MemberBadgeKey = (typeof MEMBER_BADGE_ORDER)[number];
 export const MEMBER_BADGE_DEFINITIONS: BadgeDefinition[] = [
   { key: 'newbie', name: 'Newbie', description: 'Signed-in member', emoji: '🌱' },
   { key: 'active', name: 'Active', description: 'Join a trip or activity', emoji: '⚡' },
-  { key: 'host', name: 'Host', description: 'Organize a trip', emoji: '🏔️' },
+  { key: 'host', name: 'Host', description: 'Host an outing', emoji: '🏔️' },
   {
     key: 'helpful_critic',
     name: 'Helpful Critic',
@@ -36,7 +36,7 @@ export const MEMBER_BADGE_DEFINITIONS: BadgeDefinition[] = [
   {
     key: 'trusted_host',
     name: 'Trusted Host',
-    description: 'Organize 5 trips',
+    description: 'Host 5 outings',
     emoji: '⭐',
   },
 ];

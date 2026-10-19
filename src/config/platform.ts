@@ -5,7 +5,6 @@
 
 import {
   BUDDIES_PATH,
-  CONTRIBUTIONS_PATH,
   PROFILE_SUBMISSIONS_PATH,
   LEGACY_CONTRIBUTIONS_PATH,
   GROUPS_PATH,
@@ -28,7 +27,7 @@ import {
   LEGACY_OPERATOR_PROFILE_PATH_PREFIX,
 } from '@uaetrail/shared-types';
 
-export { ADMIN_PLACES_PATH, OPERATOR_PLACES_PATH };
+export { ADMIN_PLACES_PATH, OPERATOR_PLACES_PATH, AGENCY_PROFILE_PATH_PREFIX };
 
 /** Full-screen explore map (mobile-first). */
 export const EXPLORE_MAP_PATH = '/explore' as const;
@@ -39,10 +38,6 @@ export const EXPLORE_DISCOVER_BROWSE_PATH = `${EXPLORE_MAP_PATH}?browse=1` as co
 /** Scroll-first discovery feed (mobile-first layout; desktop centered column). */
 export const LIST_DISCOVERY_PATH = '/list' as const;
 
-/** @deprecated Use {@link ADMIN_PLACES_PATH} */
-export const ADMIN_LOCATIONS_PATH = ADMIN_PLACES_PATH;
-/** @deprecated Use {@link OPERATOR_PLACES_PATH} */
-export const HOST_LOCATIONS_PATH = OPERATOR_PLACES_PATH;
 
 /**
  * Domain glossary — product language vs wire/storage names (Phase 1).
@@ -91,17 +86,8 @@ export const DOMAIN_GLOSSARY = {
   },
 } as const;
 
-/** Post-auth destination for landing “Join” CTA. */
-export const PARTICIPANT_JOIN_REDIRECT = EXPLORE_MAP_PATH;
-
-/** Default business storefront segment (agency). Individuals use `/member/:userId`. */
-export const ORGANISATION_PUBLIC_PATH_PREFIX = AGENCY_PROFILE_PATH_PREFIX;
-
 /** `/operator` console prefix — aliases `/publishing`. Not a public storefront. */
 export const LEGACY_OPERATOR_PUBLIC_PATH_PREFIX = LEGACY_OPERATOR_PROFILE_PATH_PREFIX;
-
-/** @deprecated Use {@link LEGACY_OPERATOR_PUBLIC_PATH_PREFIX} */
-export const OPERATOR_PUBLIC_PATH_PREFIX = LEGACY_OPERATOR_PUBLIC_PATH_PREFIX;
 
 /** Desktop top nav — map-first; discover browse is hamburger-only. */
 export const DESKTOP_NAV_LINKS = [
@@ -112,7 +98,7 @@ export const DESKTOP_NAV_LINKS = [
 
 /** Sign-up URL with post-auth return path (Join free / create account). */
 export const joinAuthPath = (
-  redirect: string = PARTICIPANT_JOIN_REDIRECT,
+  redirect: string = EXPLORE_MAP_PATH,
   options?: { focus?: string; scrollY?: number }
 ): string => signUpPath({ redirect, focus: options?.focus, scrollY: options?.scrollY });
 
@@ -195,10 +181,10 @@ export const CONSUMER_HAMBURGER_MENU: readonly ConsumerHamburgerMenuItem[] = [
 /**
  * User taxonomy (admin + product):
  * - Participant (visitor): mobile app experience only — no sidebar dashboard
- * - Business / Guide Organizer: tenant_owner with COMPANY or GUIDE_OWNED tenant
- * - Organizer Staff: tenant_admin, tenant_guide
+ * - Business / Guide publisher: tenant_owner with COMPANY or GUIDE_OWNED tenant
+ * - Publisher staff: tenant_admin, tenant_guide
  * - Platform Admin: full admin console
- * Accounts are ACTIVE on signup/OAuth; organizer tenants may still require approval.
+ * Accounts are ACTIVE on signup/OAuth; publisher tenants may still require approval.
  */
 
 /** Feature toggles — flip without redeploying copy in many files. */
@@ -381,7 +367,6 @@ export const CONSUMER_SELF_HEADER_EXACT = [
   PROFILE_PATH,
   GROUPS_PATH,
   BUDDIES_PATH,
-  CONTRIBUTIONS_PATH,
   PROFILE_SUBMISSIONS_PATH,
   LEGACY_CONTRIBUTIONS_PATH,
   MESSAGES_PATH,
@@ -432,7 +417,6 @@ export const isMobileBottomNavTabPath = (pathname: string): pathname is MobileBo
 export const MOBILE_BOTTOM_NAV_PROFILE_PATHS = [
   PROFILE_PATH,
   BUDDIES_PATH,
-  CONTRIBUTIONS_PATH,
   PROFILE_SUBMISSIONS_PATH,
   LEGACY_CONTRIBUTIONS_PATH,
   GROUPS_PATH,

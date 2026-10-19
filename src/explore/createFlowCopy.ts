@@ -1,13 +1,13 @@
 /** Warm consumer copy for explore compose wizards — crew-first, not host-console language. */
 
-export const ORGANIZE_TYPE_SHEET_TITLE = 'What kind of plan?';
+export const HOSTING_TYPE_SHEET_TITLE = 'What kind of plan?';
 
-export const ORGANIZE_DEMAND_PREFILL_TITLE = 'Propose Plan';
+export const HOSTING_SEEKING_PREFILL_TITLE = 'Propose Plan';
 
-export const ORGANIZE_PROFILE_INCOMPLETE_ERROR =
+export const HOSTING_PROFILE_INCOMPLETE_ERROR =
   'Finish your profile first — then you can publish this plan on the map.';
 
-export const ORGANIZE_INTRO_PROMPT =
+export const HOSTING_INTRO_PROMPT =
   'Finish your member profile (age, gender, and where you\u2019re based) to publish on the map.';
 
 export const GOING_FROM_LABEL = 'Where are you going from?';
@@ -20,7 +20,7 @@ export const TO_LOCATION_LABEL = 'To location';
 
 export const EXTRA_DIRECTIONS_LABEL = 'Extra directions';
 
-export const ORGANIZE_CREW_CHAT_POLICY_TITLE = 'Crew chat messages';
+export const HOSTING_CREW_CHAT_POLICY_TITLE = 'Crew chat messages';
 
 export const JOIN_RULES_STEP_TITLE = 'Before they join';
 
@@ -80,22 +80,16 @@ export const PARTICIPANTS_WHO_CAN_JOIN = 'Who can join?';
 
 export const PARTICIPANTS_MIN_AGE_LABEL = 'Minimum age';
 
-export const ORGANIZE_VENUE_REGISTRY_LABEL = 'Select venue';
+export const HOSTING_VENUE_REGISTRY_LABEL = 'Select venue';
 
-export const ORGANIZE_VENUE_CUSTOM_NAME_TOGGLE = "Can't find it? Enter the venue name";
+export const HOSTING_VENUE_CUSTOM_NAME_TOGGLE = "Can't find it? Enter the venue name";
 
-export const ORGANIZE_VENUE_CUSTOM_NAME_BACK = 'Search the registry again';
+export const HOSTING_VENUE_CUSTOM_NAME_BACK = 'Search the registry again';
 
-/** @deprecated Use ORGANIZE_VENUE_REGISTRY_LABEL */
-export const ORGANIZE_DESTINATION_CATALOG_LABEL = ORGANIZE_VENUE_REGISTRY_LABEL;
 
-/** @deprecated Use ORGANIZE_VENUE_CUSTOM_NAME_TOGGLE */
-export const ORGANIZE_DESTINATION_MANUAL_TOGGLE = ORGANIZE_VENUE_CUSTOM_NAME_TOGGLE;
 
-/** @deprecated Use ORGANIZE_VENUE_CUSTOM_NAME_BACK */
-export const ORGANIZE_DESTINATION_MANUAL_BACK = ORGANIZE_VENUE_CUSTOM_NAME_BACK;
 
-export const ORGANIZE_PUBLISH_SUCCESS_TITLE = 'You\u2019re live';
+export const HOSTING_PUBLISH_SUCCESS_TITLE = 'You\u2019re live';
 
 export const DEMAND_SUBMIT_SUCCESS_TITLE = 'Request posted';
 
@@ -107,65 +101,65 @@ export const DEMAND_SUBMIT_SUCCESS_BODY_OFF_MAP =
 
 export const DEMAND_SUBMIT_VIEW_CTA = 'View';
 
-export const CONTRIBUTE_SUBMIT_SUCCESS_TITLE = 'Submitted for review';
+export const ADD_SUBMIT_SUCCESS_TITLE = 'Submitted for review';
 
-export const CONTRIBUTE_SUBMIT_SUCCESS_BODY_TRAIL =
+export const ADD_SUBMIT_SUCCESS_BODY_TRAIL =
   'Thanks for sharing this trail. We will review it and let you know when it is live on Explore for everyone.';
 
-export const CONTRIBUTE_SUBMIT_SUCCESS_BODY_CAMP =
+export const ADD_SUBMIT_SUCCESS_BODY_CAMP =
   'Thanks for sharing this camp spot. We will review it and let you know when it is live on Explore for everyone.';
 
-export const CONTRIBUTE_SUBMIT_SUCCESS_BODY_FACILITY =
+export const ADD_SUBMIT_SUCCESS_BODY_FACILITY =
   'Thanks — we’ll review your facility pin and add it to the map once it’s approved.';
 
-export const CONTRIBUTE_SUBMIT_SUCCESS_BODY_SHOP =
+export const ADD_SUBMIT_SUCCESS_BODY_SHOP =
   'Thanks for sharing this shop. We will review it so others can find gear nearby on Explore.';
 
-export const CONTRIBUTE_PENDING_NOTE_LOCATION = 'Pending review';
+export const ADD_PENDING_NOTE_LOCATION = 'Pending review';
 
-export const CONTRIBUTE_REVIEW_FOOTER_TRAIL =
+export const ADD_REVIEW_FOOTER_TRAIL =
   'Submit sends this trail for review. After submit, use View pending to see your preview.';
 
-export const CONTRIBUTE_REVIEW_FOOTER_CAMP =
+export const ADD_REVIEW_FOOTER_CAMP =
   'Submit sends this camp spot for review. After submit, use View pending to see your preview.';
 
-export const CONTRIBUTE_REVIEW_FOOTER_SHOP =
+export const ADD_REVIEW_FOOTER_SHOP =
   'Submit shares this shop as map info for the community. After submit, use View pending to preview your pin.';
 
-export const CONTRIBUTE_PLACE_PENDING_BANNER_TITLE = 'Pending review';
+export const ADD_PLACE_PENDING_BANNER_TITLE = 'Pending review';
 
-export const CONTRIBUTE_PLACE_PENDING_BANNER_BODY =
+export const ADD_PLACE_PENDING_BANNER_BODY =
   'Only you and admins can see this page until it is approved and published on Explore.';
 
-export const CONTRIBUTE_SUBMIT_VIEW_CTA = 'View pending';
+export const ADD_SUBMIT_VIEW_CTA = 'View pending';
 
-export const ORGANIZE_PUBLISH_SUCCESS_BODY_PRIVATE =
+export const HOSTING_PUBLISH_SUCCESS_BODY_PRIVATE =
   'Share the link with your group. They’ll need to sign in to view and RSVP — this plan won’t show on the public map.';
 
-export const ORGANIZE_PUBLISH_SUCCESS_BODY =
+export const HOSTING_PUBLISH_SUCCESS_BODY =
   'Your plan is published. View it on the map or offer a rideshare for your crew.';
 
-export const ORGANIZE_PUBLISH_VIEW_ON_MAP = 'View on map';
+export const HOSTING_PUBLISH_VIEW_ON_MAP = 'View on map';
 
 /** Post-publish success sheet — short primary CTA. */
-export const ORGANIZE_PUBLISH_VIEW_CTA = 'View';
+export const HOSTING_PUBLISH_VIEW_CTA = 'View';
 
-export const ORGANIZE_LINK_RIDESHARE_LABEL = 'Link rideshare';
+export const HOSTING_LINK_RIDESHARE_LABEL = 'Link rideshare';
 
-export const ORGANIZE_OFFER_RIDESHARE_LABEL = 'Offer rideshare';
+export const HOSTING_OFFER_RIDESHARE_LABEL = 'Offer rideshare';
 
-export const ORGANIZE_LINK_RIDESHARE_CREATE = 'Create a rideshare';
+export const HOSTING_LINK_RIDESHARE_CREATE = 'Create a rideshare';
 
-export const ORGANIZE_LINK_RIDESHARE_PASTE_CTA = 'Paste rideshare link';
+export const HOSTING_LINK_RIDESHARE_PASTE_CTA = 'Paste rideshare link';
 
-export const ORGANIZE_LINK_RIDESHARE_PASTE_LABEL = 'Or paste your rideshare link';
+export const HOSTING_LINK_RIDESHARE_PASTE_LABEL = 'Or paste your rideshare link';
 
-export const ORGANIZE_LINK_RIDESHARE_PASTE_PLACEHOLDER = 'https://uaetrail.com/activity/…';
+export const HOSTING_LINK_RIDESHARE_PASTE_PLACEHOLDER = 'https://uaetrail.com/activity/…';
 
-export const ORGANIZE_LINK_RIDESHARE_HINT =
+export const HOSTING_LINK_RIDESHARE_HINT =
   'Publish a rideshare on the map, or link one you already organize — joiners see it on this plan.';
 
-export const ORGANIZE_RIDESHARE_LINKED_NOTICE = 'Rideshare linked — joiners will see it on your plan.';
+export const HOSTING_RIDESHARE_LINKED_NOTICE = 'Rideshare linked — joiners will see it on your plan.';
 
 export const EXPLORE_LINKED_RIDESHARES_PEEK_TITLE = 'Rideshares for this plan';
 
@@ -174,8 +168,6 @@ export const EXPLORE_LINKED_PARENT_PLAN_PEEK_PREFIX = 'For plan:';
 /** User-facing label — always “Rideshare”, not carpool. */
 export const EXPLORE_RIDESHARE_AVAILABLE_LABEL = 'Rideshare available';
 
-/** @deprecated Use EXPLORE_RIDESHARE_AVAILABLE_LABEL */
-export const EXPLORE_RIDESHARE_AVAILABLE_PEEK_LABEL = EXPLORE_RIDESHARE_AVAILABLE_LABEL;
 
 export const EXPLORE_VIEW_LINKED_PLAN_CTA = 'View outing';
 

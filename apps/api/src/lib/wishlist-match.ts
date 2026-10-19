@@ -1,4 +1,4 @@
-import type { ExplorePlanComposeIntent, OutingCategory } from '@uaetrail/shared-types';
+import type { ExploreMapComposeIntent, OutingCategory } from '@uaetrail/shared-types';
 import { distanceKm } from './geo-distance.js';
 
 export const WISHLIST_MATCH_RADIUS_KM = 45;
@@ -13,7 +13,7 @@ export type WishlistWatchRow = {
 };
 
 export type WishlistPinEvent = {
-  composeIntent: ExplorePlanComposeIntent;
+  composeIntent: ExploreMapComposeIntent;
   outingCategory: OutingCategory | null;
   latitude: number | null;
   longitude: number | null;

@@ -163,9 +163,3 @@ export const ConsoleHubSections = ({
     </>
   );
 };
-
-/** @deprecated Use `ConsoleHubSections` from `src/console`. */
-export const OrganisationHubSections = ConsoleHubSections;
-
-/** @deprecated Use `ConsoleHubSections`. */
-export const HostHubSections = ConsoleHubSections;

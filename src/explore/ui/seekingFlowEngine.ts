@@ -3,7 +3,7 @@ import { createSeekingPost } from '../../hooks/seekingClientApi';
 import {
   validateSeekingCuratedAreaStep,
   validateSeekingPublishArea,
-} from '../organizePublishArea';
+} from '../hostingPublishArea';
 import { MAP_CONFIG } from '../../config/platform';
 import { buildDateOptions, todayIso, type LocationPrecision, type TimeMode } from './createFlowShared';
 
@@ -70,7 +70,7 @@ export type SeekingDraft = {
   areaId: string | null;
 };
 
-/** Same order and labels as FAB `FIND_COMPOSE_OPTIONS` / compose catalog `find.*`. */
+/** Same order and labels as FAB `SEEK_FIXED_COMPOSE_OPTIONS` / compose catalog `find.*`. */
 export const SEEKING_TYPE_OPTIONS: Array<{
   key: SeekingKind;
   title: string;

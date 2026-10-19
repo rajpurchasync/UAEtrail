@@ -1,7 +1,7 @@
 import {
   resolveMapPinEmoji,
   type ExploreActivityMode,
-  type ExploreCardKind,
+  type DiscoveryCardKind,
   type PlaceKind,
 } from '@uaetrail/shared-types';
 import type { MapPinKind, MapPinSource } from '../components/ui/mapPinTypes';
@@ -86,9 +86,10 @@ export const resolveMapPinIconHtml = (
   kind: MapPinKind,
   source: MapPinSource = 'activity',
   fontSizePx = 18,
-  placeKind?: PlaceKind
+  placeKind?: PlaceKind,
+  seeking?: boolean
 ): string => {
-  const emoji = resolveMapPinEmoji(kind as ExploreCardKind, source, undefined, placeKind);
+  const emoji = resolveMapPinEmoji(kind as DiscoveryCardKind, source, undefined, placeKind, seeking);
   return `<span class="uaetrail-map-pin-emoji font-emoji" style="font-size:${fontSizePx}px" aria-hidden="true">${emoji}</span>`;
 };
 
@@ -128,15 +129,20 @@ export const buildMapPinFaceHtml = ({
   stackCount: _stackCount = 0,
   exploreItemId,
   positionStyle = '',
-  activityMode: _activityMode = null,
+  activityMode = null,
   placeKind,
 }: MapPinFaceOptions): string => {
   const selectedClass = selected ? ' uaetrail-map-pin-marker--selected' : '';
-  const iconHtml = resolveMapPinIconHtml(kind, source, fontSizePx, placeKind);
+  const iconHtml = resolveMapPinIconHtml(
+    kind,
+    source,
+    fontSizePx,
+    placeKind,
+    activityMode === 'seeking'
+  );
   const dataAttr = exploreItemId ? ` data-explore-item-id="${exploreItemId}"` : '';
 
   void _ringWidth;
-  void _activityMode;
   void _stackCount;
   const markerDataAttr = exploreItemId ? ` data-explore-item-id="${exploreItemId}"` : '';
   const markerHtml = `<span class="uaetrail-map-pin-marker${selectedClass}"${markerDataAttr} style="--pin-ring:${ringColor};width:${size}px;height:${size}px;"><span class="uaetrail-map-pin-face"><span class="uaetrail-map-pin-icon">${iconHtml}</span></span></span>`;

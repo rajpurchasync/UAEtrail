@@ -72,7 +72,7 @@ describe('GET /api/explore/map layer separation', () => {
     expect(activity?.source).toBe('activity');
     expect(activity?.activityMode).toBe('hosted');
     expect(activity?.kind).toBe('hiking');
-    expect(activity?.composeIntent).toBe('organize');
+    expect(activity?.composeIntent).toBe('host');
     expect(activity?.outingCategory).toBe('hiking');
     expect(venueItem?.source).toBe('place');
     expect(venueItem?.kind).toBe('hiking');

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import {
-  DEMAND_EMOJI,
+  SEEKING_EMOJI,
   EXPLORE_PLACES_LAYER_EMOJI,
   MAP_LAYER_FILTER_EMOJI,
   RIDESHARE_EMOJI,
@@ -168,7 +168,7 @@ export const ExploreMapMobileLayerChrome = ({
           aria-expanded={expandedLayer === 'activity'}
           onClick={() => openLayer('activity')}
         >
-          <span className="font-emoji" aria-hidden>{DEMAND_EMOJI}</span>
+          <span className="font-emoji" aria-hidden>{SEEKING_EMOJI}</span>
         </button>
         <span className={SEGMENT_DIVIDER} aria-hidden />
         <button

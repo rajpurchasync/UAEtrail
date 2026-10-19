@@ -1,9 +1,9 @@
 import { Heart } from 'lucide-react';
-import type { ExploreCardModel } from '../exploreCardModel';
+import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import { useExploreEntityFollow } from './useExploreEntityFollow';
 
 interface ExploreFollowButtonProps {
-  card: ExploreCardModel;
+  card: DiscoveryCardModel;
   light?: boolean;
   /** List poster / map photo — icon only, no chip or circle background. */
   bare?: boolean;

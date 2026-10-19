@@ -32,14 +32,14 @@ import { placeCoverFallbackClass, resolvePlaceCoverFromPlace } from '../../peek/
 import { PlaceConsumerKindFacts } from '../PlaceConsumerKindFacts';
 import { splitPlacePracticalTags } from '../../../utils/placePracticalInfo';
 import { PLACE_PEEK_ARRANGE_TRIP, PLACE_PEEK_RATE_LABEL, PLACE_PEEK_SCHEDULED } from '../../../content/placePeekCopy';
-import { navigateOrganizeFromPlace } from '../../peek/navigateOrganizeFromPlaceCard';
+import { navigateHostFromPlace } from '../../peek/navigateHostFromPlaceCard';
 import { capitalize } from '../../../utils';
-import type { ExploreCardTone } from '../../../explore/exploreCardModel';
+import type { DiscoveryCardTone } from '../../../discovery/discoveryCardModel';
 import { PLACE_DETAIL_TAB_LABELS } from '../../../place/placeDetailTab';
 import { resolvePlaceConsumerDetailHeaderChrome } from '../resolvePlaceConsumerDetailHeaderChrome';
 import { PlacePremiumGuidePanel } from '../../../components/place/PlacePremiumGuidePanel';
 
-const toneForKind = (kind: PlaceDetailKind): ExploreCardTone => {
+const toneForKind = (kind: PlaceDetailKind): DiscoveryCardTone => {
   if (kind === 'camp') return 'camping';
   if (kind === 'event') return 'event';
   return 'hiking';
@@ -122,7 +122,7 @@ export const PlaceConsumerDetailPage = ({
       disabled={arranging}
       onClick={() => {
         setArranging(true);
-        void navigateOrganizeFromPlace(navigate, place, kind).finally(() => setArranging(false));
+        void navigateHostFromPlace(navigate, place, kind).finally(() => setArranging(false));
       }}
       className={EXPLORE_PEEK_CTA.primary}
     >

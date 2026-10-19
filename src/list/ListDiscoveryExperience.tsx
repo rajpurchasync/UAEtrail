@@ -7,14 +7,14 @@ import { EXPLORE_MAP_PATH } from '../config/routingCatalog';
 import { EXPLORE_BRAND_ACTIVE } from '../config/exploreTheme';
 import { ComposeHost } from '../explore/create/ComposeHost';
 import { useComposeRoute } from '../explore/create/hooks/useComposeRoute';
-import { contributeVenueKindFromRoute, isPlanHostingWizard, isPlanSeekingWizard } from '../explore/compose';
+import { addVenueKindFromRoute, isHostWizard, isSeekFixedWizard } from '../explore/compose';
 import { useMemberStatus } from '../hooks/useMemberStatus';
 import { reloadExploreMap } from '../hooks/useExploreMap';
 import { buildSignInRedirect } from '../utils/authReturnContext';
 import {
-  organizePublishGateHref,
-  organizePublishGateInputFromMemberStatus,
-} from '../utils/organizePublishGate';
+  memberPublishGateHref,
+  memberPublishGateInputFromMemberStatus,
+} from '../utils/memberPublishGate';
 import { browseListFilterPatchForSearchScope } from './listDiscoverySearchCommit';
 import { browseListShowsTripTopicRow } from './browseListTripTopics';
 import { browseListShowsPlaceTopicRow } from './listVenuePlaceTopics';
@@ -107,12 +107,12 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
   });
   const { inviteShare, listFeedHostActions, hostManageSheet } = hostSheets;
 
-  const navigateOrganizePublishGate = useCallback(
+  const navigateMemberPublishGate = useCallback(
     (returnPath: string) =>
       navigate(
-        organizePublishGateHref(
+        memberPublishGateHref(
           returnPath,
-          organizePublishGateInputFromMemberStatus({
+          memberPublishGateInputFromMemberStatus({
             viewerUserId: user?.id ?? null,
             profileComplete,
             canPublish,
@@ -464,7 +464,7 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
     );
   };
 
-  const hostWizardOpen = Boolean(compose.planHostingRoute);
+  const hostWizardOpen = Boolean(compose.hostComposeRoute);
 
   return (
     <>
@@ -569,28 +569,28 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
         composeRoute={compose.composeRoute}
         composeMenuOpen={compose.composeMenuOpen}
         hostWizardOpen={hostWizardOpen}
-        planSeekingWizardOpen={Boolean(
-          compose.planSeekingRoute && isPlanSeekingWizard(compose.composeRoute)
+        seekFixedWizardOpen={Boolean(
+          compose.seekFixedRoute && isSeekFixedWizard(compose.composeRoute)
         )}
-        contributeWizardOpen={Boolean(compose.contributeRoute)}
+        addWizardOpen={Boolean(compose.addRoute)}
         seekFlexibleOpen={compose.seekFlexibleOpen}
-        planHostingKind={compose.planHostingRoute?.kind ?? null}
-        planSeekingKind={compose.planSeekingRoute?.kind}
-        contributeVenueKind={contributeVenueKindFromRoute(compose.contributeRoute)}
+        hostComposeKind={compose.hostComposeRoute?.kind ?? null}
+        seekFixedKind={compose.seekFixedRoute?.kind}
+        addVenueKind={addVenueKindFromRoute(compose.addRoute)}
         hostingWizardPrefill={null}
         signInHref={buildSignInRedirect({ pathname, search }).href}
         onComposeRouteChange={compose.handleComposeRouteChange}
         onCloseCompose={compose.closeCompose}
         onCloseCreateFlow={compose.closeCompose}
-        onPlanHostingBackToIntent={() => compose.setComposeRoute({ surface: 'menu', intent: 'host' })}
-        onPlanSeekingBackToIntent={() => compose.setComposeRoute({ surface: 'menu', intent: 'seek' })}
-        onContributeBackToIntent={() => compose.setComposeRoute({ surface: 'menu', intent: 'add' })}
+        onHostingBackToIntent={() => compose.setComposeRoute({ surface: 'menu', intent: 'host' })}
+        onSeekingBackToIntent={() => compose.setComposeRoute({ surface: 'menu', intent: 'seek' })}
+        onAddBackToIntent={() => compose.setComposeRoute({ surface: 'menu', intent: 'add' })}
         onActivityPublished={() => void reloadFeed()}
         onSeekingSubmitted={() => void reloadFeed()}
-        onContributeSubmitted={() => void reloadFeed()}
+        onAddSubmitted={() => void reloadFeed()}
         onOpenHostApplication={() => {
           compose.closeCompose();
-          navigateOrganizePublishGate(`${pathname}${search}`);
+          navigateMemberPublishGate(`${pathname}${search}`);
         }}
       />
     </>

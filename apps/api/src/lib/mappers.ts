@@ -13,7 +13,7 @@ import {
   resolveActivityDisplayCoordinates,
   inferHostStorefrontKindFromTenantWire,
   resolveHostPersonDisplayName,
-  ORGANIZER_FALLBACK_DISPLAY_NAME,
+  HOST_FALLBACK_DISPLAY_NAME,
   type PublishingProfileKind,
   TenantBusinessMode,
   TenantType,
@@ -114,7 +114,7 @@ export const buildActivityDto = (event : ActivityWithRelations): ActivityDTO => 
       createdByName,
       tenantOwnerName,
       tenantName,
-    }) ?? ORGANIZER_FALLBACK_DISPLAY_NAME;
+    }) ?? HOST_FALLBACK_DISPLAY_NAME;
   const hostAvatar = event.guide?.profile?.avatarUrl ?? null;
   return toEventDto({
     event,

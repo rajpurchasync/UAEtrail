@@ -1,7 +1,7 @@
 import type { ActivityDetailDTO } from '@uaetrail/shared-types';
 import { resolveMapPinEmoji } from '@uaetrail/shared-types';
-import type { ExploreCardModel } from '../explore/exploreCardModel';
-import { exploreCardIsSeeking } from '../explore/exploreCardModel';
+import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
+import { discoveryCardIsSeeking } from '../discovery/discoveryCardModel';
 import { activityKindChromeEmoji } from './activityKindChrome';
 
 export type ActivityConsumerDetailHeaderChrome = {
@@ -12,7 +12,7 @@ export type ActivityConsumerDetailHeaderChrome = {
 /** Sheet chrome — place kind when linked, otherwise activity pin type (not the outing title). */
 export const resolveActivityConsumerDetailHeaderChrome = (
   activity: ActivityDetailDTO,
-  card: ExploreCardModel | null | undefined
+  card: DiscoveryCardModel | null | undefined
 ): ActivityConsumerDetailHeaderChrome => {
   const place = activity.location;
   const placeKind = place?.activityType;
@@ -30,7 +30,7 @@ export const resolveActivityConsumerDetailHeaderChrome = (
   }
 
   if (card?.source === 'activity' && card.emoji && card.tone) {
-    const seeking = activity.activityMode === 'seeking' || exploreCardIsSeeking(card);
+    const seeking = activity.activityMode === 'seeking' || discoveryCardIsSeeking(card);
     if (seeking) {
       return {
         emoji: card.emoji,

@@ -13,7 +13,7 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 | **List discovery** | `/list` | Full-screen poster/list browse (same filters as explore; `listDiscoveryPath()` ↔ map via `exploreMapPathFromListSearch()`) |
 | **Personal hub** | `/profile`, `/profile/settings`, `/profile/edit`, `/profile/history` | Account hub, settings stack, outing **history** + journey map |
 | **Plan tab** | `/plan` | Active layer — goals, upcoming outings (bottom nav middle tab; UI label **My Plans** — `PRODUCT_PLAN_SURFACE_TITLE`) |
-| **Mobile tabs (signed-in)** | `/explore`, `/plan`, `/chat` | **Three tabs only** — **Explore** · **My Plans** · **Chat** (`md:hidden`). **No List tab.** Map-aligned list from the **List** pill (`list=1`); discover browse from hamburger **Browse** (`browse=1`) or optional full-screen `/list` (`listDiscoveryPathFromExploreSearch()`), not bottom nav. **Facebook / Instagram / WhatsApp** icon row above tabs (`src/config/socialLinks.ts`); same bar on **`/profile`**, settings stack, **Friends**, **Contributions**, and related profile stack routes |
+| **Mobile tabs (signed-in)** | `/explore`, `/plan`, `/chat` | **Three tabs only** — **Explore** · **My Plans** · **Chat** (`md:hidden`). **No List tab.** Map-aligned list from the **List** pill (`list=1`); discover browse from hamburger **Browse** (`browse=1`) or optional full-screen `/list` (`listDiscoveryPathFromExploreSearch()`), not bottom nav. **Facebook / Instagram / WhatsApp** icon row above tabs (`src/config/socialLinks.ts`); same bar on **`/profile`**, settings stack, **Friends**, **Submissions**, and related profile stack routes |
 | **Mobile tabs (guests)** | `/explore`, `/plan`, `/chat` | Same three tabs; **Explore** is the live map. **My Plans** and **Chat** show `GuestTabPlaceholder` + sign-in (`App.tsx` `PlanBrowseRoute`, `MessagesGate`) — not a second marketing home. **Profile** is not a tab; guests reach account flows via sign-in CTAs. |
 | **Entity detail** | `/trail`, `/camp`, `/venue`, `/activity`, `/shop`, `/agency`, `/partner`, `/member/:userId`, `/area/:slug` | Place, scheduled outing, shop, brand profile, person card, or curated **area** hub |
 
@@ -21,8 +21,7 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 
 - **Priority order:** Consumer hub (identity card + **stats row**, About you bio/speaks, **Goals teaser** → Plan **Wishlist** (`planWishlistTabPath()` / `tab=wishlist`), launcher **tiles**) — not stacked settings menus. **Settings** via More sheet or `/profile/settings`.
 - **Badges:** `/profile/badges` — earned badges + share (`ProfileBadges.tsx`); launcher tile + badge-earn notifications → `PROFILE_BADGES_PATH`. Legacy `/rewards`, `/trail-points` redirect here. **Not** on Plan.
-- **Submissions (target CPC-6):** `/profile/submissions` — places and facilities you submitted + link to **Reviews** (`/profile/reviews`). **`/contributions`** redirects here. Launcher tile; back stack → Profile. **Contribute** on Explore FAB is the create path; inventory lives here, not the Plan tab.
-- **Contributions (today):** `/contributions` — same as above until CPC-6 redirect.
+- **Submissions:** `/profile/submissions` — places and facilities you submitted + link to **Reviews** (`/profile/reviews`). Leftover **`/contributions`** inbound-redirects here. Launcher tile; back stack → Profile. **Add on the map** on Explore FAB is the create path; inventory lives here, not the Plan tab.
 - **Edit profile:** `/profile/edit` — name, gender, bio, speaks, location (no DOB edit on this screen).
 - **Pull-to-refresh** reloads hub data at scroll top.
 - **Sign out:** Profile hub (bottom) and Settings → Account.
@@ -98,7 +97,7 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 ### Friends (`/buddies`)
 
 - Consumer label **Friends**; tabs `?tab=friends|requests|following`.
-- **Explore map people panel → Followed:** sub-segments **People** (member follows), **Places** and **Organizers & shops** (entity follows from map/profile); URL `followedKind=places|events`. (Panel URL `view=people`; legacy `view=social` — browse people, not chat; see § Browse — people & crew below.) Private **wishlist** saves live on **Plan → Saved** (`planSavedPath()`; `/profile/wishlist` redirects).
+- **Explore map people panel → Followed:** sub-segments **People** (member follows), **Places** and **Hosts & operators** (entity follows from map/profile); URL `followedKind=places|events`. (Panel URL `view=people`; legacy `view=social` — browse people, not chat; see § Browse — people & crew below.) Private **wishlist** saves live on **Plan → Saved** (`planSavedPath()`; `/profile/wishlist` redirects).
 
 ### Chat (`/chat`)
 
@@ -201,7 +200,7 @@ Map pill label **Find your crew** (see `explorePeopleBrowseCopy.ts`); opens `vie
 | `going` | Friends | `GET /me/member-discovery/roster` + social trip hints — buddies with upcoming outings. |
 | `connect` | Everyone | Directory from `GET /users/browse` / roster; **3** directory rows preview free, then Pro lock; profile opens count toward **3 unique profiles / 30d** (`MEMBER_DISCOVERY_QUOTA_LIMIT`). |
 
-Cards show city, outings attended, and a subtle upcoming trip hint (link opens activity on map). **Friends → Plan a trip** opens compose (`explorePlanWithBuddyPath`). Profile quick launcher: **People** (this panel), **Friends** (`/buddies`), **Messages** (chat). **Join me** on activity detail (`ActivityInviteSharePanel`). APIs: [`API_ROUTING.md`](./API_ROUTING.md) § Member people reads (browse).
+Cards show city, outings attended, and a subtle upcoming trip hint (link opens activity on map). **Friends → Plan a trip** opens compose (`explorePlanWithBuddyPath`). Profile quick launcher: **People** (this panel), **Friends** (`/buddies`), **Messages** (chat). **Join me** on activity detail (`ActivityInviteLauncher`). APIs: [`API_ROUTING.md`](./API_ROUTING.md) § Member people reads (browse).
 
 ## Explore FAB (+)
 
@@ -230,7 +229,7 @@ Legacy compose URLs (`plan:*:hosting|seeking`, `organize:*`, `find:*`, `contribu
 | Layer | Activity | Place (reference) |
 |-------|----------|-------------------|
 | Loader | `ActivityDetail.tsx` | `PlaceDetailPage.tsx` |
-| Kind pick | `ActivityDetailByKind` | `HikingPlaceDetailPage`, … |
+| Kind pick | `ActivityDetailByKind` | `PlaceDetailPage` (`kind`) |
 | L3 shell | `*ActivityDetailPage` → `ActivityDetailPageShell` | `*PlaceDetailPage` → `PlaceDetailPageShell` |
 | Scroll body | `ActivityConsumerDetailBody` | `PlaceConsumerDetailPage` (scroll; no public tab bar) |
 
@@ -273,7 +272,7 @@ Canonical paths only in **new UI**. Legacy URLs redirect in `src/App.tsx` — do
 | `/membership` | `/explore` (`App.tsx` bookmark redirect; not product home) | 2026-Q4 |
 | `/organizer/*` | `/host/*` | 2026-Q4 |
 | `/become-organizer` | `/become-host` | 2026-Q4 |
-| `/become-host` | `/profile/pro-membership` | 2026-Q4 (Pro / agency / shop; buddy Organize uses `/welcome` + `canPublish`) |
+| `/become-host` | `/profile/pro-membership` | 2026-Q4 (Pro / agency / shop; buddy Host / publish uses `/welcome` + `canPublish`) |
 | `/dashboard/*` | role-based redirect | 2026-Q4 |
 | `/admin/organizers` | `/admin/hosts` | 2026-Q4 |
 | `/admin/locations` | `/admin/places` | 2026-Q4 |

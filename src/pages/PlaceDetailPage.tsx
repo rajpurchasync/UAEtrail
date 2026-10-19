@@ -1,7 +1,7 @@
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { PageMeta } from '../components/seo/PageMeta';
 import { PlaceDetailPageShell } from './place/PlaceDetailPageShell';
-import { usePlaceDetailCore } from '../components/place/usePlaceDetailCore';
+import { usePlaceDetailCore } from '../hooks/usePlaceDetailPage';
 import { canonicalPlaceDetailPath, detailBackPath } from '../config/routingCatalog';
 import { PLACE_DETAIL_CONFIG, type PlaceDetailKind } from './placeDetailConfig';
 interface PlaceDetailPageProps {

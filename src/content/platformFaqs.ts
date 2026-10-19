@@ -68,7 +68,7 @@ export const PLATFORM_FAQ_SECTIONS: FaqSection[] = [
       {
         question: 'How do I run activities on UAE Trail?',
         answer:
-          'Sign up and finish your profile, then use Organize on the map to publish hikes, camps, runs, and group plans. Pro membership is reviewed for professional guides and businesses; public profiles show experience and reviews so participants can choose with confidence. Apply from Profile → Pro membership.'
+          'Sign up and finish your profile, then use Host on the map to publish hikes, camps, runs, and group plans. Pro membership is reviewed for professional guides and businesses; public profiles show experience and reviews so participants can choose with confidence. Apply from Profile → Pro membership.'
       },
       {
         question: 'Are activity hosts verified?',

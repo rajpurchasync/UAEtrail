@@ -9,7 +9,7 @@ import {
 import type { MapPinKind } from '../../components/ui/mapPinTypes';
 import { isGeographyMapSource } from '@uaetrail/shared-types';
 import type { ColocatedMapPinEntry, PlaceMapPin } from '../../components/ui/PlacesMap';
-import { resolveMapPinItemSource, resolveMapPinEmoji, type ExploreCardKind } from '../exploreCopy';
+import { resolveMapPinItemSource, resolveMapPinEmoji, type DiscoveryCardKind } from '../exploreCopy';
 import type { ExploreBuddySubtypeKey } from '../exploreBuddySubtype';
 import { isBuddyOthersMapItem, matchesBuddyOthersSubtype } from '../exploreBuddySubtype';
 import type { ExploreOutingTopicKey } from '../exploreOutingTopic';
@@ -32,12 +32,12 @@ export const matchesVenueFilter = (item: ExploreMapItemDTO, venueFilter: VenueLi
 export const isMerchantShopMapItem = (item: ExploreMapItemDTO): boolean =>
   item.source === 'shop' && item.kind === 'shop' && !item.id.startsWith('product:');
 
-/** Member-contributed gear shop pin — map peek only (not merchant profile). */
-export const isContributedShopMapItem = (item: ExploreMapItemDTO): boolean =>
+/** Community-submitted gear shop pin — map peek only (not merchant profile). */
+export const isCommunityShopMapItem = (item: ExploreMapItemDTO): boolean =>
   item.kind === 'shop' && isPeekOnlyCatalogProfile(item.catalogProfileExposure);
 
 export const isShopListItem = (item: ExploreMapItemDTO): boolean =>
-  isMerchantShopMapItem(item) || isContributedShopMapItem(item);
+  isMerchantShopMapItem(item) || isCommunityShopMapItem(item);
 
 /** Permanent catalog: trails, camp spots, shops — not outings or event venues. */
 export const isPlacesMapItem = (item: ExploreMapItemDTO): boolean => {
@@ -319,19 +319,18 @@ export const mapPinEmojiGroupKey = (pin: PlaceMapPin): string => {
   if (isGeographyMapSource(source) && (pin.activityType === 'hiking' || pin.activityType === 'camping')) {
     return `venue:${pin.activityType}`;
   }
+  const seeking = pin.activityMode === 'seeking';
   if (pin.placeKind) {
     return resolveMapPinEmoji(
-      pin.activityType as ExploreCardKind,
+      pin.activityType as DiscoveryCardKind,
       source,
       undefined,
-      pin.placeKind
+      pin.placeKind,
+      seeking
     );
   }
-  return resolveMapPinEmoji(pin.activityType as ExploreCardKind, source);
+  return resolveMapPinEmoji(pin.activityType as DiscoveryCardKind, source, undefined, undefined, seeking);
 };
-
-/** @deprecated Prefer mapPinEmojiGroupKey */
-export const mapPinDisplayGroupKey = (pin: PlaceMapPin): string => mapPinEmojiGroupKey(pin);
 
 const exploreItemIdForPin = (pin: PlaceMapPin): string => pin.exploreItemId ?? pin.id;
 

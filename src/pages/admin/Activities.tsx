@@ -18,7 +18,7 @@ import { ActivityActionsMenu, ActivityListPreview, buildAdminActivityMenuItems, 
 import { useReloadExploreMap } from '../../hooks/useReloadExploreMap';
 import { Link } from 'react-router-dom';
 import { ADMIN_PLACES_PATH } from '../../config/surfacePaths';
-import { navigateToExploreOrganize } from '../../explore/navigateExploreOrganize';
+import { navigateToExploreHost } from '../../explore/navigateExploreHost';
 import { DashboardLayout } from '../../components/layout';
 import { ADMIN_LINKS } from '../../constants';
 import {
@@ -30,7 +30,7 @@ import {
   resolveActivityLocationState,
   resolveActivityTitle,
 } from '../../utils/activityIdentity';
-import { navigateToReorganizeActivity } from '../../explore/navigateReorganizeActivity';
+import { navigateToHostFromExistingActivity } from '../../explore/navigateHostFromExistingActivity';
 
 type Tab = 'active' | 'past';
 
@@ -194,14 +194,14 @@ export const Activities = () => {
     try {
       const duplicate = await duplicateActivity(event.tenantId, event.id);
       await loadEvents();
-      navigateToReorganizeActivity(navigate, duplicate);
+      navigateToHostFromExistingActivity(navigate, duplicate);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to duplicate activity');
     }
   };
 
-  const reorganizeActivity = (event: ActivityDTO) => {
-    navigateToReorganizeActivity(navigate, event);
+  const hostFromExistingActivity = (event: ActivityDTO) => {
+    navigateToHostFromExistingActivity(navigate, event);
   };
 
   const deleteDraft = async () => {
@@ -280,7 +280,7 @@ export const Activities = () => {
               Add place / venue
             </Link>
             <button
-              onClick={() => navigateToExploreOrganize(navigate)}
+              onClick={() => navigateToExploreHost(navigate)}
               className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 text-sm font-medium">
               + Add Activity
             </button>
@@ -320,7 +320,7 @@ export const Activities = () => {
                     className="border-t hover:bg-gray-50 cursor-pointer"
                     onClick={() => {
                       if (event.status === 'draft') {
-                        reorganizeActivity(event);
+                        hostFromExistingActivity(event);
                         return;
                       }
                       toggleExpanded(event.id);
@@ -351,7 +351,7 @@ export const Activities = () => {
                           onPreview: openPreview,
                           onPublish: publish,
                           onDuplicate: duplicateActivity,
-                          onReorganize: reorganizeActivity,
+                          onHostFromExisting: hostFromExistingActivity,
                           onDelete: setConfirmDelete,
                           onCancel: setConfirmCancel,
                           onFeature: () => toggleFeatured(event.id),

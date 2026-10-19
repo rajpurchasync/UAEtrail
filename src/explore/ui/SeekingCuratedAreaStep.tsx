@@ -1,7 +1,7 @@
 import { MapPin } from 'lucide-react';
 import type { AreaPublicDTO } from '@uaetrail/shared-types';
 import { useExplorePublishedAreas } from '../useExplorePublishedAreas';
-import { areaLabelForId } from '../organizePublishArea';
+import { areaLabelForId } from '../hostingPublishArea';
 
 type SeekingCuratedAreaStepProps = {
   areaId: string | null;

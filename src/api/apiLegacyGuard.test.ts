@@ -70,8 +70,6 @@ const SKIP_PREFIXES = ['src/api/', 'src/api\\'];
 
 const LEGACY_SYMBOL_ALLOW = new Set([
   'src/console/ConsoleHubSections.tsx',
-  'src/components/account/OrganisationHubSections.tsx',
-  'src/components/account/index.ts',
   'src/member/organisationNamingGuard.test.ts',
   'src/hooks/tenantActivityClientApi.ts',
 ]);

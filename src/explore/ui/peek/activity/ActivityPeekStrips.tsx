@@ -1,8 +1,8 @@
 import { Users } from 'lucide-react';
-import { exploreCardActivityShowsPeekSpots, type ExploreCardModel } from '../../../exploreCardModel';
+import { discoveryCardActivityShowsPeekSpots, type DiscoveryCardModel } from '../../../../discovery/discoveryCardModel';
 import { exploreActivityPublisherSectionNoun } from '@uaetrail/shared-types';
 import { activityPeekPendingInviteChipLabel } from '../../../../content/activityPeekCopy';
-import { ORGANIZE_LINK_RIDESHARE_LABEL } from '../../../createFlowCopy';
+import { HOSTING_LINK_RIDESHARE_LABEL } from '../../../createFlowCopy';
 import { resolveActivityMapPeekStrips } from '../../../../activity/activityPeekEngagement';
 import {
   ActivityPeekLinkedTransport,
@@ -10,15 +10,15 @@ import {
 } from './ActivityPeekLinkedTransport';
 import {
   ExploreActivityPeekSpotsSection,
-  ExploreCardPeopleRow,
-} from '../../ExploreCardPresentation';
+  DiscoveryCardPeopleRow,
+} from '../../DiscoveryCardPresentation';
 import type { JoinRequestUiState } from '../../../../utils/joinRequestUi';
 
 const stripShell = 'mt-3 rounded-xl border border-neutral-100 bg-neutral-50/80 px-3 py-2.5';
 const stripLabel = 'mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-neutral-500';
 
 export type ActivityPeekStripsProps = {
-  card: ExploreCardModel;
+  card: DiscoveryCardModel;
   joinUiState?: JoinRequestUiState;
   onGuestGatedAction?: () => void;
   onOpenLinkedPin?: (pinItemId: string) => void;
@@ -44,7 +44,7 @@ export const ActivityPeekStrips = ({
   const publisherSectionLabel = exploreActivityPublisherSectionNoun(
     card.activity?.publishingProfileKind
   );
-  const showSpotsSection = strips.showLogisticsStrip && exploreCardActivityShowsPeekSpots(card);
+  const showSpotsSection = strips.showLogisticsStrip && discoveryCardActivityShowsPeekSpots(card);
 
   return (
     <div className="space-y-2">
@@ -55,7 +55,7 @@ export const ActivityPeekStrips = ({
             <Users className="h-3.5 w-3.5" aria-hidden />
             {publisherSectionLabel}
           </div>
-          <ExploreCardPeopleRow
+          <DiscoveryCardPeopleRow
             card={card}
             onGuestGatedAction={onGuestGatedAction}
             hideProMembershipUpsell
@@ -79,7 +79,7 @@ export const ActivityPeekStrips = ({
               onClick={onGuestGatedAction ?? onOfferTransport}
               className="mt-3 w-full rounded-xl border border-sky-200 bg-white px-3 py-2.5 text-left text-sm font-semibold text-sky-900 active:bg-sky-50"
             >
-              {ORGANIZE_LINK_RIDESHARE_LABEL}
+              {HOSTING_LINK_RIDESHARE_LABEL}
             </button>
           ) : null}
         </section>

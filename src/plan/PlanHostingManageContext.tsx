@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, type ReactNode } from 'react';
 import type { ActivityDTO, ParticipantIntentDTO } from '@uaetrail/shared-types';
-import { useMyParticipantIntents } from '../hooks/useMyParticipantIntents';
+import { useMySeekingPosts } from '../hooks/useMySeekingPosts';
 import { useConsoleHubData } from '../console/useHubData';
 import { useOperatorActivityManageActions } from '../hooks/useOperatorActivityManageActions';
 import { PlanHostingManageSheets } from '../components/plan/PlanHostingManageSheets';
@@ -37,7 +37,7 @@ export const PlanHostingManageProvider = ({
 }: PlanHostingManageProviderProps) => {
   const host = useConsoleHubData();
   const hostActions = useOperatorActivityManageActions(host.tenantId, host.reload);
-  const { intents, refetch: refetchIntents } = useMyParticipantIntents(canHost && active, refreshKey);
+  const { intents, refetch: refetchIntents } = useMySeekingPosts(canHost && active, refreshKey);
 
   useEffect(() => {
     if (!refreshKey || !active) return;

@@ -5,7 +5,7 @@ import {
   filterListCatalogByVenueRegions,
   mergeListCatalogPlansAndPlaces,
 } from '@/places-discovery/catalog/listCatalog';
-import type { ExploreCardModel } from '../explore/exploreCardModel';
+import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
 import {
   matchesActivityDateFilter,
   type ExploreActivityDatePreset,
@@ -55,7 +55,7 @@ export const BROWSE_WHEN_OPTIONS: ReadonlyArray<{ key: BrowseWhenFilter; label: 
   { key: 'weekend', label: 'Weekend outings' },
 ];
 
-const cardMatchesPrice = (card: ExploreCardModel, price: BrowsePriceFilter): boolean => {
+const cardMatchesPrice = (card: DiscoveryCardModel, price: BrowsePriceFilter): boolean => {
   if (price === 'all') return true;
   const badge = card.price?.badge?.toLowerCase() ?? '';
   if (price === 'free') return badge.startsWith('free') || !card.price;

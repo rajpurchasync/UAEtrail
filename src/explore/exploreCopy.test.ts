@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { buildDiscoveryCardViewModelCard } from '../discovery';
-import { buildExploreListMeta } from './exploreCardModel';
+import { buildDiscoveryListMeta } from '../discovery/discoveryCardModel';
 import {
   buildExplorePeekSpotsLabel,
   buildExploreRouteLabel,
@@ -12,7 +12,7 @@ import {
   exploreHeadline,
   formatExploreDayShort,
   formatExploreTime,
-  formatPlanPhrase,
+  formatSeekingTitlePhrase,
   resolveMapPinEmoji,
   resolveExploreItemSource,
   sanitizeExploreLocation,
@@ -35,8 +35,10 @@ describe('resolveMapPinEmoji', () => {
     expect(resolveMapPinEmoji('camping', 'venue')).toBe('⛺');
   });
 
-  it('uses shop and demand emojis', () => {
+  it('uses shop and seeking emojis', () => {
     expect(resolveMapPinEmoji('shop', 'shop')).toBe('🛍️');
+    expect(resolveMapPinEmoji('hiking', 'activity', undefined, undefined, true)).toBe('🙋');
+    expect(resolveMapPinEmoji('rideshare', 'activity', undefined, undefined, true)).toBe('🚗');
     expect(resolveMapPinEmoji('hiking', 'demand')).toBe('🙋');
     expect(resolveMapPinEmoji('rideshare', 'demand')).toBe('🚗');
   });
@@ -68,13 +70,13 @@ describe('resolveMapPinEmoji', () => {
   });
 });
 
-describe('formatPlanPhrase', () => {
+describe('formatSeekingTitlePhrase', () => {
   it('turns descriptive titles into natural plan phrases', () => {
-    expect(formatPlanPhrase('See sunrise at Kite Beach', 'event')).toBe('to see sunrise at Kite Beach');
+    expect(formatSeekingTitlePhrase('See sunrise at Kite Beach', 'event')).toBe('to see sunrise at Kite Beach');
   });
 
   it('falls back for auto-generated hiking titles', () => {
-    expect(formatPlanPhrase('Hiking today', 'hiking')).toBe('for a hike');
+    expect(formatSeekingTitlePhrase('Hiking today', 'hiking')).toBe('for a hike');
   });
 });
 
@@ -466,7 +468,7 @@ describe('buildDiscoveryCardViewModelCard (explore list copy)', () => {
     expect(card.price?.badge).toBe('Free');
     expect(card.listTitle).toBe('Sarah is going Hiking on Saturday 12th');
     expect(card.headline).toBe('Sarah is going Hiking on Saturday 12th - Fujairah - Sat at 9:00 - 8 spots');
-    expect(buildExploreListMeta(card)).toContain('Fujairah');
+    expect(buildDiscoveryListMeta(card)).toContain('Fujairah');
     expect(card.sections.highlightName).toBe('Sarah');
     expect(card.sections.suffix).toBe(' is going ');
     expect(card.sections.activityHighlight).toBe('Hiking');
@@ -539,7 +541,7 @@ describe('buildDiscoveryCardViewModelCard (explore list copy)', () => {
     );
     expect(card.routeLabel).toBe('Dubai to Fujairah');
     expect(card.secondaryCta).toBe('Message');
-    expect(buildExploreListMeta(card)).toContain('Dubai to Fujairah');
+    expect(buildDiscoveryListMeta(card)).toContain('Dubai to Fujairah');
     expect(card.sections.highlightName).toBe('Alex');
     expect(card.sections.listTitle).toBe('Rideshare · Alex Rider');
     expect(card.sections.listWhen).toContain('Sep 13');

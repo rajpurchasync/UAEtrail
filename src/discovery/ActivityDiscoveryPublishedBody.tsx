@@ -1,17 +1,17 @@
-import type { ExploreCardModel } from '../explore/exploreCardModel';
+import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
 import {
-  exploreCardPeekShowsDirections,
-  exploreCardShowPeekBodyDirections,
-} from '../explore/exploreCardModel';
+  discoveryCardPeekShowsDirections,
+  discoveryCardShowPeekBodyDirections,
+} from '../discovery/discoveryCardModel';
 import { PlaceDirectionLinks } from '../components/ui/PlaceDirectionLinks';
 import {
   ExploreActivityPeekMeta,
-  ExploreCardDetailList,
-} from '../explore/ui/ExploreCardPresentation';
+  DiscoveryCardDetailList,
+} from '../explore/ui/DiscoveryCardPresentation';
 
 type ActivityDiscoveryPublishedBodyProps = {
-  card: ExploreCardModel;
-  /** Default: map peek rules (`exploreCardPeekShowsDirections`). */
+  card: DiscoveryCardModel;
+  /** Default: map peek rules (`discoveryCardPeekShowsDirections`). */
   showDirections?: boolean;
 };
 
@@ -19,7 +19,7 @@ type ActivityDiscoveryPublishedBodyProps = {
  * Published activity readout for discovery layouts (map peek, browse card, `/activity/:id`).
  *
  * Input: organizer fields on the activity row → API map/detail wire →
- * `buildExploreCardPresentation` → `buildDiscoveryCardViewModelCard` → `card`.
+ * `buildDiscoveryCardPresentation` → `buildDiscoveryCardViewModelCard` → `card`.
  * Do not add parallel fact resolvers here.
  */
 export const ActivityDiscoveryPublishedBody = ({
@@ -29,19 +29,19 @@ export const ActivityDiscoveryPublishedBody = ({
   if (card.source !== 'activity') return null;
 
   const directions =
-    showDirections ?? exploreCardPeekShowsDirections(card);
+    showDirections ?? discoveryCardPeekShowsDirections(card);
 
   return (
     <>
       <ExploreActivityPeekMeta card={card} />
-      <ExploreCardDetailList
+      <DiscoveryCardDetailList
         details={card.sections.details}
         compact
         mapLatitude={card.mapLatitude}
         mapLongitude={card.mapLongitude}
         showDirections={directions}
       />
-      {exploreCardShowPeekBodyDirections(card) ? (
+      {discoveryCardShowPeekBodyDirections(card) ? (
         <PlaceDirectionLinks
           lat={card.mapLatitude as number}
           lng={card.mapLongitude as number}

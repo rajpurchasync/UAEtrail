@@ -24,6 +24,3 @@ export const resolveProfileHistoryContentKey = (input: {
 
 /** @deprecated Use `resolveProfileHistoryContentKey` — My Plans no longer shares this resolver. */
 export type PlanHubContentKey = ProfileHistoryContentKey;
-
-/** @deprecated Use `resolveProfileHistoryContentKey`. */
-export const resolvePlanHubView = resolveProfileHistoryContentKey;

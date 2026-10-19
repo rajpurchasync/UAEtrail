@@ -95,8 +95,6 @@ export const notifyAvailabilityHoldersOfHostedActivity = async (input: {
   }
 };
 
-/** @deprecated Use {@link notifyAvailabilityHoldersOfHostedActivity}. */
-export const notifyAvailabilityHoldersOfHostedActivityInArea = notifyAvailabilityHoldersOfHostedActivity;
 
 /** Member saved availability — surface hosted outings on overlapping days + types. */
 export const notifyMemberOfHostedActivitiesForAvailability = async (input: {

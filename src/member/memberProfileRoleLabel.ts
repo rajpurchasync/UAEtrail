@@ -2,7 +2,7 @@ import type { MemberProfileRoleLabel } from '@uaetrail/shared-types';
 
 const LABELS: Record<MemberProfileRoleLabel, string> = {
   community_member: 'Community member',
-  host: 'Organizer',
+  host: 'Host',
   professional_guide: 'Professional guide',
   agency: 'Agency',
   shop_owner: 'Shop owner',

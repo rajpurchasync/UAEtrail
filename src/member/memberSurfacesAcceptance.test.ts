@@ -141,6 +141,10 @@ describe('member surfaces §11 acceptance (automated)', () => {
     const wishlist = read('apps/api/src/services/wishlist-alerts.ts');
     expect(wishlist).toContain('explorePublishedActivityPinPath');
     expect(wishlist).toMatch(/activityId|seekingActivityId/);
+    expect(read('apps/api/src/lib/activities-store.ts')).toMatch(/notifyWishlistForPublishedActivity/);
+    expect(read('apps/api/src/lib/participant-intents-store.ts')).toMatch(
+      /notifyWishlistForNewSeeking/
+    );
   });
 
   it('G-seek: seeking migration runbook defines post-migration residue cleanup', () => {
@@ -169,8 +173,8 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(buddies).toContain('memberProfileLink');
     expect(buddies).not.toMatch(/to=\{`\/member\/\$\{/);
     expect(existsSync(join(process.cwd(), 'src/explore/ui/peopleBrowse'))).toBe(false);
-    const listPeople = read('src/list/ui/ListDiscoverPeopleView.tsx');
-    expect(listPeople).toContain('@/people-discovery/panel/peopleBrowse');
+    expect(existsSync(join(process.cwd(), 'src/list/ui/ListDiscoverPeopleView.tsx'))).toBe(false);
+    expect(read('src/list/ListDiscoveryExperience.tsx')).toContain('PeopleBrowsePanel');
     const profile = read('src/pages/Profile.tsx');
     expect(profile).toContain('memberPublicPreviewLink');
     expect(profile).not.toMatch(/`\/member\/\$\{/);
@@ -230,15 +234,15 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(sheet).toContain('planHostedActivityManagePath');
   });
 
-  it('G-profile: badges and contributions live on Profile launcher (not Plan)', () => {
+  it('G-profile: badges and submissions live on Profile launcher (not Plan)', () => {
     const launcher = read('src/components/profile/ProfileQuickLauncher.tsx');
     expect(launcher).toContain('PROFILE_BADGES_PATH');
-    expect(launcher).toContain('CONTRIBUTIONS_PATH');
-    const contributions = read('src/pages/Contributions.tsx');
-    expect(contributions).toContain('PROFILE_REVIEWS_PATH');
+    expect(launcher).toContain('PROFILE_SUBMISSIONS_PATH');
+    const submissions = read('src/pages/Submissions.tsx');
+    expect(submissions).toContain('PROFILE_REVIEWS_PATH');
     const plan = read('src/plan/PlanPage.tsx');
     expect(plan).not.toContain('PROFILE_BADGES_PATH');
-    expect(plan).not.toContain('CONTRIBUTIONS_PATH');
+    expect(plan).not.toContain('PROFILE_SUBMISSIONS_PATH');
   });
 
   it('G-profile: hub shortcuts use profile/plan paths (not host shell)', () => {
@@ -364,8 +368,8 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(sidebar).toContain('groupChatPostPolicy');
     const card = read('src/components/activity/ActivityCrewChatPostPolicyCard.tsx');
     expect(card).toContain('updateActivityGroupChatPostPolicy');
-    const audience = read('src/explore/ui/organizeWizard/steps/audience-step.tsx');
-    expect(audience).toContain('OrganizeCrewChatPostPolicyField');
+    const audience = read('src/explore/ui/hostingWizard/steps/audience-step.tsx');
+    expect(audience).toContain('HostingCrewChatPostPolicyField');
     expect(audience).toContain('groupChatPostPolicy');
   });
 
@@ -410,8 +414,9 @@ describe('member surfaces §11 acceptance (automated)', () => {
   });
 
   it('AD-5: transport offer/add gated on wire entitlements', () => {
-    const hostCtas = read('src/components/activity/HostActivityCtas.tsx');
-    expect(hostCtas).toContain('canAddLinkedRide');
+    expect(existsSync(join(process.cwd(), 'src/components/activity/HostActivityCtas.tsx'))).toBe(
+      false
+    );
     const caps = read('src/activity/activityManageCapabilities.ts');
     expect(caps).toContain('canAddLinkedRide');
     const offer = read('src/explore/linkActivityRideshareOffer.ts');
@@ -432,7 +437,7 @@ describe('member surfaces §11 acceptance (automated)', () => {
   it('NA-6: API viewer access uses buildActivityViewerAccess', () => {
     const mod = read('apps/api/src/services/activity-viewer-access.ts');
     expect(mod).toContain('export const buildActivityViewerAccess');
-    expect(mod).toContain('export const resolveActivityViewerAccess = buildActivityViewerAccess');
+    expect(mod).not.toContain('resolveActivityViewerAccess');
     const compose = read('apps/api/src/services/compose-activity-viewer-access.ts');
     expect(compose).toMatch(/buildActivityViewerAccess/);
     expect(compose).not.toMatch(/resolveActivityViewerAccess\(/);
@@ -442,9 +447,12 @@ describe('member surfaces §11 acceptance (automated)', () => {
     const peekEngagement = read('src/activity/activityPeekEngagement.ts');
     expect(peekEngagement).toMatch(/if \(fromApi !== undefined\)/);
     expect(peekEngagement).toMatch(/resolveActivityEngagementPolicy/);
-    const presentation = read('src/activity/resolveActivityPresentation.ts');
-    expect(presentation).toContain("from './activityPeekEngagement'");
-    expect(presentation).toContain("from './activityDetailPresentation'");
+    expect(existsSync(join(process.cwd(), 'src/activity/resolveActivityPresentation.ts'))).toBe(
+      false
+    );
+    expect(read('src/activity/activityDetailPresentation.ts')).toMatch(
+      /resolveActivityDetailPresentation/
+    );
     const privateItem = read('src/explore/privateActivityExploreItem.ts');
     expect(privateItem).not.toMatch(/computeActivityMapPeekActions/);
   });

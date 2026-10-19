@@ -6,7 +6,7 @@ import { join, relative } from 'node:path';
 const ROOT = process.cwd();
 const SCAN_ROOT = join(ROOT, 'src');
 
-/** Retired host-console / form-modal stack — must not exist on disk (use `pages/operator/*`, Explore Organize). */
+/** Retired host-console / form-modal stack — must not exist on disk (use `pages/operator/*`, Explore Host). */
 const RETIRED_PATHS = [
   'src/pages/OrganisationActivities.tsx',
   'src/pages/OrganisationConsoleOverview.tsx',

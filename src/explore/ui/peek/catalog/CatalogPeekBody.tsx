@@ -1,10 +1,10 @@
 import type { DiscoveryCardModel } from '../../../../discovery/discoveryCardModel';
-import { exploreCardIsSeeking } from '../../../../discovery/discoveryCardModel';
+import { discoveryCardIsSeeking } from '../../../../discovery/discoveryCardModel';
 import {
-  ExploreCardCapacityRow,
-  ExploreCardPeopleRow,
-  ExploreCardRequirementBadges,
-} from '../../ExploreCardPresentation';
+  DiscoveryCardCapacityRow,
+  DiscoveryCardPeopleRow,
+  DiscoveryCardRequirementBadges,
+} from '../../DiscoveryCardPresentation';
 
 export type CatalogPeekBodyProps = {
   card: DiscoveryCardModel;
@@ -16,16 +16,16 @@ export const CatalogPeekBody = ({ card, onGuestGatedAction }: CatalogPeekBodyPro
   const isShop = card.source === 'shop';
   const showPeopleRow =
     card.source === 'shop' ||
-    (exploreCardIsSeeking(card) && Boolean(card.listHost || card.hostAvatar));
+    (discoveryCardIsSeeking(card) && Boolean(card.listHost || card.hostAvatar));
 
   return (
     <>
       {isShop && card.sections.aboutLine && (
         <p className="mt-3 text-sm leading-relaxed text-gray-600">{card.sections.aboutLine}</p>
       )}
-      <ExploreCardCapacityRow card={card} />
+      <DiscoveryCardCapacityRow card={card} />
       {card.requirementBadges && card.requirementBadges.length > 0 && (
-        <ExploreCardRequirementBadges badges={card.requirementBadges} />
+        <DiscoveryCardRequirementBadges badges={card.requirementBadges} />
       )}
       {card.price && (
         <p className="mt-3">
@@ -38,7 +38,7 @@ export const CatalogPeekBody = ({ card, onGuestGatedAction }: CatalogPeekBodyPro
           </span>
         </p>
       )}
-      {showPeopleRow && <ExploreCardPeopleRow card={card} onGuestGatedAction={onGuestGatedAction} />}
+      {showPeopleRow && <DiscoveryCardPeopleRow card={card} onGuestGatedAction={onGuestGatedAction} />}
       {card.venueHint && isShop && (
         <p className="mt-3 text-xs leading-relaxed text-slate-500">{card.venueHint}</p>
       )}

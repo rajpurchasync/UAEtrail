@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { buildExploreCardSections } from './explore-presentation.js';
+import { buildDiscoveryCardSections } from './explore-presentation.js';
 
 describe('seeking peek person label', () => {
   it('uses member first name on peek when hostName was Organizer but createdByName is present', () => {
-    const sections = buildExploreCardSections({
+    const sections = buildDiscoveryCardSections({
       source: 'activity',
       activityMode: 'seeking',
       isSeekingPin: true,

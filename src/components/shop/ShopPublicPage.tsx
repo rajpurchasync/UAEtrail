@@ -22,8 +22,8 @@ import { shopPublicPath } from '../../utils/shopPaths';
 import { fetchOrganisationReviews } from '../../hooks/organisationConsoleApi';
 import { useAuth } from '../../context/AuthContext';
 import {
-  CONTRIBUTE_PLACE_PENDING_BANNER_BODY,
-  CONTRIBUTE_PLACE_PENDING_BANNER_TITLE,
+  ADD_PLACE_PENDING_BANNER_BODY,
+  ADD_PLACE_PENDING_BANNER_TITLE,
 } from '../../explore/createFlowCopy';
 
 export type ShopFeaturedPick = {
@@ -156,8 +156,8 @@ export const ShopPublicPage = ({ shop }: ShopPublicPageProps) => {
       <div className="-mx-4 px-4 md:mx-0 md:px-0">
         {shop.communityInfo?.status === 'draft' ? (
           <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
-            <p className="font-semibold">{CONTRIBUTE_PLACE_PENDING_BANNER_TITLE}</p>
-            <p className="mt-1 text-amber-900/90">{CONTRIBUTE_PLACE_PENDING_BANNER_BODY}</p>
+            <p className="font-semibold">{ADD_PLACE_PENDING_BANNER_TITLE}</p>
+            <p className="mt-1 text-amber-900/90">{ADD_PLACE_PENDING_BANNER_BODY}</p>
           </div>
         ) : null}
         <section className="flex items-start gap-4">

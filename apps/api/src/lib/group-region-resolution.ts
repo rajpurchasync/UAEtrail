@@ -92,8 +92,6 @@ export const stampTenantGroupRegionLevels = async (tenant: TenantRecord): Promis
 /** @deprecated Use stampLocationGroupRegionLevels */
 export const stampLocationGroupRegion = stampLocationGroupRegionLevels;
 
-/** @deprecated Use resolveGroupRegionLevelsForActivityDoc */
-export const resolveGroupRegionForActivityDoc = resolveGroupRegionLevelsForActivityDoc;
 
 /** @deprecated Use stampTenantGroupRegionLevels */
 export const stampTenantGroupRegion = stampTenantGroupRegionLevels;

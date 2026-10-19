@@ -14,8 +14,6 @@ const readHeader = (req: Request, name: string): string | undefined => {
 export const readOrganisationIdHeader = (req: Request): string | undefined =>
   readHeader(req, 'x-organisation-id') ?? readHeader(req, 'x-tenant-id');
 
-/** @deprecated Use readOrganisationIdHeader */
-export const readTenantIdHeader = readOrganisationIdHeader;
 
 export const requireTenantContext = async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
   try {

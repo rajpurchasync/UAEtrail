@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { isGeographyMapSource } from '@uaetrail/shared-types';
 import { Link } from 'react-router-dom';
-import type { ExploreCardModel } from '../../explore/exploreCardModel';
+import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import { EnvironmentImage } from '../../components/ui/EnvironmentImage';
 import { browsePosterFallbackClass, resolveBrowsePosterCoverUrl } from '../browsePosterCover';
 import { LIST_DISCOVER_HOME } from '../listDiscoverHomeTheme';
@@ -15,7 +15,7 @@ import { resolveListVenuePosterCopy } from '../listVenuePosterPresentation';
 import { ListFeedCatalogEntityHeader } from './feed/ListFeedCatalogEntityHeader';
 
 interface ListDiscoverRailPreviewCardProps {
-  card: ExploreCardModel;
+  card: DiscoveryCardModel;
 }
 
 /** Discover home — type + location + requirement tags on image; schedule in body below. */

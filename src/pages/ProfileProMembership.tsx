@@ -17,7 +17,7 @@ import { useMemberStatus } from '../hooks/useMemberStatus';
 import { ProfileMapPresenceSection } from '../components/profile/ProfileMapPresenceSection';
 import { resolveAuthRedirect } from '../utils/authRedirect';
 
-/** Pro Membership — professional guide, agency, or shop application (community Organize uses profile complete + `/welcome`). */
+/** Pro Membership — professional guide, agency, or shop application (community Host / publish uses profile complete + `/welcome`). */
 export const ProfileProMembership = () => {
   const { user } = useAuth();
   const navigate = useNavigate();

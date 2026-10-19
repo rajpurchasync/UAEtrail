@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { viewerHostsActivity, viewerIsActivityHostUser } from './viewerHostsActivity';
+import { viewerIsActivityHostUser } from './viewerHostsActivity';
 
 describe('viewerIsActivityHostUser', () => {
   it('is true only for the host user id', () => {
@@ -17,10 +17,3 @@ describe('viewerIsActivityHostUser', () => {
   });
 });
 
-describe('viewerHostsActivity (alias)', () => {
-  it('matches viewerIsActivityHostUser', () => {
-    const activity = { hostUserId: 'u1', tenantId: 't1' };
-    expect(viewerHostsActivity(activity, 'u1')).toBe(true);
-    expect(viewerHostsActivity(activity, 'u2')).toBe(false);
-  });
-});

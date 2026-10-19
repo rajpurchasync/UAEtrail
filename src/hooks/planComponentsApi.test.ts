@@ -27,14 +27,14 @@ describe('componentsClientApi (R8.1)', () => {
       expectNoDirectApi(file);
     }
     expect(read('src/components/participant-intent/SeekingIntentsSection.tsx')).toMatch(
-      /useMyParticipantIntents/
+      /useMySeekingPosts/
     );
     expectNoDirectApi('src/components/participant-intent/SeekingIntentsSection.tsx');
     expect(read('src/components/plan/PlanJoinedUpcoming.tsx')).toMatch(/useMyJoinedActivities/);
     expect(read('src/components/plan/PlanJoinedUpcoming.tsx')).toMatch(/useMyActivityJoinRequests/);
     expectNoDirectApi('src/components/plan/PlanJoinedUpcoming.tsx');
     expect(read('src/components/plan/PlanJoinedUpcoming.tsx')).not.toMatch(/\bapi\./);
-    expect(read('src/components/plan/PlanHostingUpcoming.tsx')).toMatch(/useMyParticipantIntents/);
+    expect(read('src/components/plan/PlanHostingUpcoming.tsx')).toMatch(/useMySeekingPosts/);
     expectNoDirectApi('src/components/plan/PlanHostingUpcoming.tsx');
     expect(read('src/components/plan/PlanHostingUpcoming.tsx')).not.toMatch(/\bapi\./);
     expect(read('src/plan/PlanPage.tsx')).toMatch(/useMemberGoals/);

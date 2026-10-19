@@ -26,6 +26,3 @@ export const activityCancelParticipantNotice = (
   const noun = count === 1 ? 'person has' : 'people have';
   return `${count} ${noun} joined. They'll be notified that this outing is cancelled.`;
 };
-
-/** @deprecated Use {@link activityCancelParticipantNotice}. */
-export const hostActivityCancelParticipantNotice = activityCancelParticipantNotice;

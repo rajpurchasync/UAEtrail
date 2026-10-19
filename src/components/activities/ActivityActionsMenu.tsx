@@ -155,12 +155,10 @@ export const ActivityActionsMenu = ({ items, align = 'right' }: ActivityActionsM
 
 type HostMenuHandlers = {
   onPreview?: (activity: ActivityDTO) => void;
-  /** @deprecated Use onReorganize — explore Organize wizard. */
-  onEdit?: (activity: ActivityDTO) => void;
   onPublish?: (activity: ActivityDTO) => void;
   onDuplicate: (activity: ActivityDTO) => void;
-  /** Explore organize wizard prefill — new activity id on publish. */
-  onReorganize?: (activity: ActivityDTO) => void;
+  /** Explore Host wizard prefill — new activity id on publish. */
+  onHostFromExisting?: (activity: ActivityDTO) => void;
   onDelete?: (activity: ActivityDTO) => void;
   onCancel?: (activity: ActivityDTO) => void;
   onCheckin?: (activity: ActivityDTO) => void;
@@ -174,7 +172,7 @@ export const buildHostActivityMenuItems = (
 ): ActivityMenuItem[] => {
   const status = activity.status;
   const canEdit = status === 'draft' || status === 'published' || status === 'suspended';
-  const editOnMap = handlers.onReorganize ?? handlers.onEdit;
+  const editOnMap = handlers.onHostFromExisting;
 
   return [
     {

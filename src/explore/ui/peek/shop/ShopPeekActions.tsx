@@ -2,11 +2,11 @@ import { ExternalLink } from 'lucide-react';
 import { isPeekOnlyCatalogProfile } from '@uaetrail/shared-types';
 import type { DiscoveryCardModel } from '../../../../discovery/discoveryCardModel';
 import {
-  exploreCardHasMapCoords,
-  exploreCardShowsInlineDirections,
+  discoveryCardHasMapCoords,
+  discoveryCardShowsInlineDirections,
 } from '../../../../discovery/discoveryCardModel';
 import { PRO_MEMBERSHIP_PATH } from '../../../../config/memberRoutes';
-import { ExploreCardDirectionsButton } from '../../ExploreCardPresentation';
+import { DiscoveryCardDirectionsButton } from '../../DiscoveryCardPresentation';
 import { PeekDetailLink } from '../../map-peek/PeekDetailLink';
 
 export type ShopPeekActionsProps = {
@@ -35,8 +35,8 @@ export const ShopPeekActions = ({
   if (peekOnly) {
     return (
       <div className="flex flex-col gap-2">
-        {exploreCardHasMapCoords(card) ? (
-          <ExploreCardDirectionsButton
+        {discoveryCardHasMapCoords(card) ? (
+          <DiscoveryCardDirectionsButton
             latitude={card.mapLatitude}
             longitude={card.mapLongitude}
             className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 py-2.5 text-sm font-bold text-white"
@@ -61,13 +61,13 @@ export const ShopPeekActions = ({
   }
 
   const showGuestDirections =
-    Boolean(gate) && exploreCardHasMapCoords(card) && !exploreCardShowsInlineDirections(card);
+    Boolean(gate) && discoveryCardHasMapCoords(card) && !discoveryCardShowsInlineDirections(card);
 
   if (card.reviewPath) {
     return (
       <div className="flex flex-col gap-2">
         {showGuestDirections ? (
-          <ExploreCardDirectionsButton
+          <DiscoveryCardDirectionsButton
             latitude={card.mapLatitude}
             longitude={card.mapLongitude}
             className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 py-2.5 text-sm font-bold text-white"

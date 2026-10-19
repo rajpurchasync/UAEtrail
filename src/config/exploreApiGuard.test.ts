@@ -44,7 +44,7 @@ describe('exploreApiGuard (R8.1)', () => {
       join(process.cwd(), 'src/explore/ui/CreateHostingActivityFlow.tsx'),
       'utf8'
     );
-    expect(source).toMatch(/afterOrganizeActivityPublishClientRefresh/);
+    expect(source).toMatch(/afterHostingActivityPublishClientRefresh/);
     expect(source).not.toMatch(/\bapi\./);
   });
 

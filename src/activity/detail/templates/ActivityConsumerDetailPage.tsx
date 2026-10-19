@@ -32,14 +32,14 @@ import {
 } from '../../../activity/activityDetailReachBy';
 import { resolveActivityMapPeekStrips } from '../../../activity/activityPeekEngagement';
 import type { ActivityDetailHeroStatusChip } from '../../../activity/activityDetailHeroStatus';
-import type { ExploreCardModel } from '../../../explore/exploreCardModel';
+import type { DiscoveryCardModel } from '../../../discovery/discoveryCardModel';
 import {
   ActivityPeekLinkedTransport,
   activityPeekHasLinkedTransportAffordance,
 } from '../../../explore/ui/peek/activity/ActivityPeekLinkedTransport';
 import {
   EXPLORE_RIDESHARE_AVAILABLE_LABEL,
-  ORGANIZE_LINK_RIDESHARE_LABEL,
+  HOSTING_LINK_RIDESHARE_LABEL,
 } from '../../../explore/createFlowCopy';
 import { navigateToAuthGate } from '../../../utils/authReturnContext';
 import type { JoinRequestUiState } from '../../../utils/joinRequestUi';
@@ -223,7 +223,7 @@ const ConsumerDetailLead = ({
 }: {
   activity: ActivityDetailDTO;
   title: string;
-  card: ExploreCardModel | null;
+  card: DiscoveryCardModel | null;
   venueLine: ReactNode;
   statusChips: ActivityDetailHeroStatusChip[];
 }) => {
@@ -542,7 +542,7 @@ const ConsumerDetailGettingThere = ({
             onClick={onGuestGatedAction ?? onOfferLinkedRideshare}
             className="w-full rounded-xl border border-sky-200 bg-white px-3 py-2.5 text-left text-sm font-semibold text-sky-900 active:bg-sky-50"
           >
-            {ORGANIZE_LINK_RIDESHARE_LABEL}
+            {HOSTING_LINK_RIDESHARE_LABEL}
           </button>
         ) : null}
         {hasDirections ? (
@@ -647,6 +647,3 @@ const ConsumerDetailHostRow = ({
     </section>
   );
 };
-
-/** @deprecated Import `ActivityConsumerDetailPage` from this module — thin re-export for legacy paths. */
-export const ActivityConsumerDetailBody = ActivityConsumerDetailPage;

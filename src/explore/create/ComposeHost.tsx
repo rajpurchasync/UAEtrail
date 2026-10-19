@@ -1,10 +1,10 @@
 import type { ActivityDTO } from '@uaetrail/shared-types';
-import type { ExploreCompose, FindComposeKind, OrganizeComposeKind } from '../compose';
-import type { ContributeVenueKind } from '../contributeTypes';
+import type { ExploreCompose, SeekingComposeKind, HostComposeKind } from '../compose';
+import type { AddVenueKind } from '../addTypes';
 import { HostingFlowHost } from './hosting/HostingFlowHost';
-import { CreateContributeFlow } from '../ui/CreateContributeFlow';
-import { CreateContributeFacilityFlow } from '../ui/CreateContributeFacilityFlow';
-import type { ContributeSubmitResult } from '../ui/contributeFlow';
+import { CreateAddFlow } from '../ui/CreateAddFlow';
+import { CreateAddFacilityFlow } from '../ui/CreateAddFacilityFlow';
+import type { AddSubmitResult } from '../ui/addFlow';
 import { CreateSeekingFlow } from '../ui/CreateSeekingFlow';
 import type { SeekingSubmitResult } from '../ui/seekingFlowEngine';
 import { CreateIntentSheet } from '../ui/CreateIntentSheet';
@@ -14,28 +14,28 @@ export interface ComposeHostProps {
   composeRoute: ExploreCompose | null;
   composeMenuOpen: boolean;
   hostWizardOpen: boolean;
-  planSeekingWizardOpen: boolean;
-  contributeWizardOpen: boolean;
+  seekFixedWizardOpen: boolean;
+  addWizardOpen: boolean;
   seekFlexibleOpen: boolean;
-  planHostingKind: OrganizeComposeKind | null;
-  planSeekingKind: FindComposeKind | null | undefined;
-  contributeVenueKind: ContributeVenueKind | null;
-  hostingWizardPrefill: import('../ui/organizeWizardPrefill').OrganizeWizardPrefill | null;
+  hostComposeKind: HostComposeKind | null;
+  seekFixedKind: SeekingComposeKind | null | undefined;
+  addVenueKind: AddVenueKind | null;
+  hostingWizardPrefill: import('../ui/hostingWizardPrefill').HostingWizardPrefill | null;
   signInHref: string;
   onComposeRouteChange: (route: ExploreCompose | null) => void;
   onCloseCompose: () => void;
   onCloseCreateFlow: () => void;
-  onPlanHostingBackToIntent: () => void;
-  onPlanSeekingBackToIntent: () => void;
-  onContributeBackToIntent: () => void;
+  onHostingBackToIntent: () => void;
+  onSeekingBackToIntent: () => void;
+  onAddBackToIntent: () => void;
   onActivityPublished: (activity: ActivityDTO) => void | Promise<void>;
   onOpenHostApplication: () => void;
-  onContributeSubmitted: (result: ContributeSubmitResult) => void;
+  onAddSubmitted: (result: AddSubmitResult) => void;
   onSeekingSubmitted: (result: SeekingSubmitResult) => void;
   onCreateLinkedRideshare?: (parentActivity: ActivityDTO) => void;
   tenantId?: string | null;
   planWithBuddyUserId?: string | null;
-  /** When map is scoped with `?area=`, prefill seeking/contribute curated area steps. */
+  /** When map is scoped with `?area=`, prefill seeking/add curated area steps. */
   composeAreaSlug?: string | null;
 }
 
@@ -44,23 +44,23 @@ export const ComposeHost = ({
   composeRoute,
   composeMenuOpen,
   hostWizardOpen,
-  planSeekingWizardOpen,
-  contributeWizardOpen,
+  seekFixedWizardOpen,
+  addWizardOpen,
   seekFlexibleOpen,
-  planHostingKind,
-  planSeekingKind,
-  contributeVenueKind,
+  hostComposeKind,
+  seekFixedKind,
+  addVenueKind,
   hostingWizardPrefill,
   signInHref,
   onComposeRouteChange,
   onCloseCompose,
   onCloseCreateFlow,
-  onPlanHostingBackToIntent,
-  onPlanSeekingBackToIntent,
-  onContributeBackToIntent,
+  onHostingBackToIntent,
+  onSeekingBackToIntent,
+  onAddBackToIntent,
   onActivityPublished,
   onOpenHostApplication,
-  onContributeSubmitted,
+  onAddSubmitted,
   onSeekingSubmitted,
   onCreateLinkedRideshare,
   tenantId = null,
@@ -76,25 +76,25 @@ export const ComposeHost = ({
       />
     )}
 
-    {contributeWizardOpen && contributeVenueKind === 'facility' && (
-      <CreateContributeFacilityFlow
-        open={contributeWizardOpen}
+    {addWizardOpen && addVenueKind === 'facility' && (
+      <CreateAddFacilityFlow
+        open={addWizardOpen}
         exploreAreaSlug={composeAreaSlug}
         onClose={onCloseCompose}
-        onBackToIntent={onContributeBackToIntent}
-        onSubmitted={onContributeSubmitted}
+        onBackToIntent={onAddBackToIntent}
+        onSubmitted={onAddSubmitted}
         signInHref={signInHref}
       />
     )}
 
-    {contributeWizardOpen && contributeVenueKind && contributeVenueKind !== 'facility' && (
-      <CreateContributeFlow
-        open={contributeWizardOpen}
-        kind={contributeVenueKind}
+    {addWizardOpen && addVenueKind && addVenueKind !== 'facility' && (
+      <CreateAddFlow
+        open={addWizardOpen}
+        kind={addVenueKind}
         exploreAreaSlug={composeAreaSlug}
         onClose={onCloseCompose}
-        onBackToIntent={onContributeBackToIntent}
-        onSubmitted={onContributeSubmitted}
+        onBackToIntent={onAddBackToIntent}
+        onSubmitted={onAddSubmitted}
         signInHref={signInHref}
       />
     )}
@@ -103,10 +103,10 @@ export const ComposeHost = ({
       <HostingFlowHost
         open={hostWizardOpen}
         onClose={onCloseCreateFlow}
-        planHostingKind={planHostingKind}
+        hostComposeKind={hostComposeKind}
         hostingWizardPrefill={hostingWizardPrefill}
         onCreateLinkedRideshare={onCreateLinkedRideshare}
-        onBackToIntent={onPlanHostingBackToIntent}
+        onBackToIntent={onHostingBackToIntent}
         onPublished={onActivityPublished}
         onOpenHostApplication={onOpenHostApplication}
         signInHref={signInHref}
@@ -122,13 +122,13 @@ export const ComposeHost = ({
       />
     )}
 
-    {planSeekingWizardOpen && (
+    {seekFixedWizardOpen && (
       <CreateSeekingFlow
-        open={planSeekingWizardOpen}
+        open={seekFixedWizardOpen}
         onClose={onCloseCompose}
-        findKind={planSeekingKind ?? null}
+        seekKind={seekFixedKind ?? null}
         exploreAreaSlug={composeAreaSlug}
-        onBackToIntent={onPlanSeekingBackToIntent}
+        onBackToIntent={onSeekingBackToIntent}
         onSubmitted={onSeekingSubmitted}
         signInHref={signInHref}
         tenantId={tenantId}

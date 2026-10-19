@@ -99,7 +99,7 @@ describe('hostMemberGuard', () => {
         /to:\s*HOST_OVERVIEW_PATH/.test(content) ||
         /to:\s*OPERATOR_OVERVIEW_PATH/.test(content)
       ) {
-        violations.push(`${file}: use exploreOrganizePath(), planHostedSchedulePath(), or PRO_MEMBERSHIP_PATH`);
+        violations.push(`${file}: use exploreHostPath(), planHostedSchedulePath(), or PRO_MEMBERSHIP_PATH`);
       }
     }
 

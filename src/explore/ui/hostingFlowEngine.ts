@@ -3,7 +3,7 @@ import {
   allowedActivityPricingModes,
   type PublishingProfileKind,
   exploreMapKindToPlanMapKind,
-  resolveOrganizeCreateKindFromDemandMapItem,
+  resolveHostCreateKindFromSeekingMapItem,
 } from '@uaetrail/shared-types';
 import { type ActivityType } from '../../config/activityTypes';
 import { getHostingKindFlowSteps, validateHostingKindStep } from './hostingFlows';
@@ -11,7 +11,7 @@ import {
   buildParticipationRequirementLines,
 } from '../../utils/activityPublishPayload';
 import { OFFLINE_PAYMENT_NOTE } from '../explorePriceLabel';
-import { validateOrganizePublishArea } from '../organizePublishArea';
+import { validateHostingPublishArea } from '../hostingPublishArea';
 import type { ParticipationMode } from '../compose';
 import {
   ACTIVITY_DIFFICULTY_OPTIONS,
@@ -31,7 +31,7 @@ export type {
 export {
   ACTIVITY_DIFFICULTY_OPTIONS,
   buildDateOptions,
-  resolveOrganizeDifficultyLabel,
+  resolveActivityDifficultyLabel,
   todayIso,
 } from './createFlowShared';
 
@@ -69,7 +69,7 @@ export type PriceMode = 'free' | 'paid' | 'shared';
 
 export type PlaceLabelSource = 'registry' | 'custom';
 
-export type ActivityOrganizeTopic =
+export type ActivityHostingTopic =
   | 'run'
   | 'climb'
   | 'yoga'
@@ -81,7 +81,7 @@ export type CreateActivityDraft = {
   kind: CreateActivityKind | null;
   genericBuddy: boolean;
   /** FLOW-05 — topic chip (stored in requirements until API field exists). */
-  activityTopic: ActivityOrganizeTopic | '';
+  activityTopic: ActivityHostingTopic | '';
   participationMode: ParticipationMode;
   title: string;
   latitude: number | null;
@@ -172,48 +172,48 @@ export const formatHikeCapacityLabel = (value: number): string =>
 /** Rideshare passenger seats (max 10). */
 export const RIDESHARE_CAPACITY_PRESETS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const;
 
-export const isRideshareOrganizeFlow = (
+export const isRideshareHostingFlow = (
   kind: CreateActivityKind | null,
   genericBuddy = false
 ): boolean => kind === 'rideshare' && !genericBuddy;
 
-export const isHikingOrganizeFlow = (
+export const isHikingHostingFlow = (
   kind: CreateActivityKind | null,
   genericBuddy = false
 ): boolean => kind === 'hiking' && !genericBuddy;
 
-export const isCampingOrganizeFlow = (
+export const isCampingHostingFlow = (
   kind: CreateActivityKind | null,
   genericBuddy = false
 ): boolean => kind === 'camping' && !genericBuddy;
 
-export const isEventOrganizeFlow = (
+export const isEventHostingFlow = (
   kind: CreateActivityKind | null,
   genericBuddy = false
 ): boolean => kind === 'event' && !genericBuddy;
 
-export const isActivityOrganizeFlow = (
+export const isActivityHostingFlow = (
   kind: CreateActivityKind | null,
   genericBuddy = false
 ): boolean => kind === 'activity' && !genericBuddy;
 
 /** Hiking / camping / event structured wizards (not legacy venue bundle). */
-export const isStructuredOrganizeFlow = (
+export const isStructuredHostingFlow = (
   kind: CreateActivityKind | null,
   genericBuddy = false
 ): boolean =>
-  isHikingOrganizeFlow(kind, genericBuddy) ||
-  isCampingOrganizeFlow(kind, genericBuddy) ||
-  isEventOrganizeFlow(kind, genericBuddy);
+  isHikingHostingFlow(kind, genericBuddy) ||
+  isCampingHostingFlow(kind, genericBuddy) ||
+  isEventHostingFlow(kind, genericBuddy);
 
 /** Steps that include a separate going-from pin (not events-only wizard). */
-export const usesGoingFromOrganizeStep = (
+export const usesGoingFromHostingStep = (
   kind: CreateActivityKind | null,
   genericBuddy = false
 ): boolean =>
-  isHikingOrganizeFlow(kind, genericBuddy) ||
-  isCampingOrganizeFlow(kind, genericBuddy) ||
-  isActivityOrganizeFlow(kind, genericBuddy);
+  isHikingHostingFlow(kind, genericBuddy) ||
+  isCampingHostingFlow(kind, genericBuddy) ||
+  isActivityHostingFlow(kind, genericBuddy);
 
 export { usesRegistryCatalogVenue } from './hostingFlows/registry';
 
@@ -245,12 +245,12 @@ export const createFlowStepTitle = (
 ): string => {
   const { genericBuddy = false } = options;
   if (step === 'route') return 'From & to';
-  const hikingHost = isHikingOrganizeFlow(kind, genericBuddy);
-  const campingHost = isCampingOrganizeFlow(kind, genericBuddy);
-  const eventHost = isEventOrganizeFlow(kind, genericBuddy);
-  const rideshareHost = isRideshareOrganizeFlow(kind, genericBuddy);
-  const structuredHost = isStructuredOrganizeFlow(kind, genericBuddy);
-  const activityHost = isActivityOrganizeFlow(kind, genericBuddy);
+  const hikingHost = isHikingHostingFlow(kind, genericBuddy);
+  const campingHost = isCampingHostingFlow(kind, genericBuddy);
+  const eventHost = isEventHostingFlow(kind, genericBuddy);
+  const rideshareHost = isRideshareHostingFlow(kind, genericBuddy);
+  const structuredHost = isStructuredHostingFlow(kind, genericBuddy);
+  const activityHost = isActivityHostingFlow(kind, genericBuddy);
 
   if (step === 'activity_type') return 'Activity type';
   if (step === 'title') {
@@ -356,7 +356,7 @@ export const defaultCapacityForKind = (kind: CreateActivityKind): number =>
 
 /** Prefill a host publish draft from a seeking map item (Find post / legacy demand wire). */
 export const createDraftFromSeekingMapItem = (item: ExploreMapItemDTO): CreateActivityDraft => {
-  const kind = resolveOrganizeCreateKindFromDemandMapItem({
+  const kind = resolveHostCreateKindFromSeekingMapItem({
     outingCategory: item.outingCategory ?? null,
     kind: exploreMapKindToPlanMapKind(item.kind),
   }) as CreateActivityKind;
@@ -507,7 +507,7 @@ export const defaultDescription = (kind: CreateActivityKind): string => {
   return 'Hiking outing pinned on the map. Lace up and join fellow trail lovers for a day outdoors in the UAE.';
 };
 
-export const buildOrganizeActivityRequirements = (draft: CreateActivityDraft): string[] => {
+export const buildHostingActivityRequirements = (draft: CreateActivityDraft): string[] => {
   const participationMode =
     draft.kind === 'rideshare'
       ? 'approval'
@@ -621,12 +621,12 @@ export const validateDraftStep = (step: CreateFlowStepId, draft: CreateActivityD
   }
   const kindErr = validateHostingKindStep(draft.kind, step, draft);
   if (kindErr) return kindErr;
-  if (step === 'publish') return validateOrganizePublishArea(draft);
+  if (step === 'publish') return validateHostingPublishArea(draft);
   return null;
 };
 
-export const ACTIVITY_ORGANIZE_TOPIC_OPTIONS: Array<{
-  value: ActivityOrganizeTopic;
+export const ACTIVITY_HOSTING_TOPIC_OPTIONS: Array<{
+  value: ActivityHostingTopic;
   title: string;
   subtitle: string;
 }> = [
@@ -638,8 +638,8 @@ export const ACTIVITY_ORGANIZE_TOPIC_OPTIONS: Array<{
   { value: 'other', title: 'Other', subtitle: 'Anything that gets people outside' },
 ];
 
-export const resolveActivityTopicLabel = (topic: ActivityOrganizeTopic | ''): string =>
-  ACTIVITY_ORGANIZE_TOPIC_OPTIONS.find((option) => option.value === topic)?.title ?? topic;
+export const resolveActivityTopicLabel = (topic: ActivityHostingTopic | ''): string =>
+  ACTIVITY_HOSTING_TOPIC_OPTIONS.find((option) => option.value === topic)?.title ?? topic;
 
 export const VEHICLE_ACCESS_OPTIONS: Array<{ value: VehicleAccess; title: string; subtitle: string }> = [
   { value: 'sedan', title: 'Reachable by sedan', subtitle: 'Standard car access to the camp area' },
@@ -670,7 +670,7 @@ export const priceModeLabel = (mode: PriceMode, kind: CreateActivityKind): strin
 };
 
 /** Publish preview — price line with AED when applicable. */
-export const formatOrganizePricePreview = (
+export const formatHostingPricePreview = (
   draft: Pick<CreateActivityDraft, 'priceMode' | 'priceAmount' | 'sharedCostNote'>,
   kind: CreateActivityKind
 ): string => {

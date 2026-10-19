@@ -235,5 +235,3 @@ export const PlaceSelect = ({
   );
 };
 
-/** @deprecated Use PlaceSelect */
-export const LocationSelect = PlaceSelect;

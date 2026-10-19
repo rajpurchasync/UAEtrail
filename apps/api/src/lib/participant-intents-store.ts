@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto';
 import type { ParticipantIntentDTO } from '@uaetrail/shared-types';
-import { demandFallbackTitle, type OutingCategory } from '@uaetrail/shared-types';
+import { seekingFallbackTitle, type OutingCategory } from '@uaetrail/shared-types';
 import {
   parseMergedParticipantIntent,
   type CreateParticipantIntentInput,
@@ -10,6 +10,7 @@ import {
 import { findAuthUserById } from './auth-users-store.js';
 import { ApiError } from './api-error.js';
 import { scheduleExploreMapCacheInvalidation } from './explore-map-cache-schedule.js';
+import { scheduleSideEffect } from './schedule-side-effect.js';
 import { COLLECTIONS } from './collections.js';
 import { getMongoClient } from './mongo.js';
 import type { MongoActivityDoc } from './entity-builders.js';
@@ -50,7 +51,7 @@ export const resolveIntentPublishedActivityId = (
 ): string | null => doc.activityId ?? doc.seekingActivityId ?? null;
 
 const resolveStoredDemandTitle = (doc: MongoParticipantIntent): string =>
-  doc.title?.trim() || demandFallbackTitle(doc.kind);
+  doc.title?.trim() || seekingFallbackTitle(doc.kind);
 
 export const findParticipantIntentById = async (
   intentId: string
@@ -94,11 +95,16 @@ export const createParticipantIntent = async (
   scheduleExploreMapCacheInvalidation('participant-intents.map_cache');
   const { notifyMemberPublishSubscribers } = await import('../services/member-publish-notifications.js');
   void notifyMemberPublishSubscribers(userId, {
-    publishType: 'demand',
+    publishType: 'seeking',
     intentId,
     title: input.title.trim(),
     activityId: publishedActivityId,
   });
+  const { notifyWishlistForNewSeeking } = await import('../services/wishlist-alerts.js');
+  scheduleSideEffect(
+    notifyWishlistForNewSeeking(intentId, userId),
+    'participant-intents.wishlist_notify'
+  );
   if (areaId) {
     const { notifySeekerOfHostedActivitiesInArea } = await import(
       '../services/seeking-area-match-notifications.js'

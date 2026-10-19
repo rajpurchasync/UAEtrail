@@ -2,7 +2,7 @@
  * Activity detail + map peek wiring gates (code is source of truth).
  * @see docs/SYSTEM_COHERENCE.md §6.2 · mapDetailEngagementParity.test.ts · activity-detail-cta-matrix.test.ts
  */
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
@@ -31,7 +31,7 @@ describe('activity detail program — wiring', () => {
   });
 
   it('AD-PEEK-05: host peek uses My host profile subtitle from mapPeekStrips wire', () => {
-    const peopleRow = read('src/explore/ui/ExploreCardPresentation.tsx');
+    const peopleRow = read('src/explore/ui/DiscoveryCardPresentation.tsx');
     expect(peopleRow).toMatch(/showHostSelfProfileLink/);
     expect(peopleRow).toMatch(/ACTIVITY_PEEK_MY_HOST_PROFILE_SUBTITLE/);
     const copy = read('src/content/activityPeekCopy.ts');
@@ -58,8 +58,9 @@ describe('activity detail program — wiring', () => {
     const model = read('src/explore/shell/useExploreExperienceModel.ts');
     expect(model).toMatch(/useHostActivitySheetBundle/);
     expect(model).toMatch(/onOpenHostManage: tenantId/);
-    const hostHandlers = read('src/activity/publishedActivityCtaHandlers.ts');
-    expect(hostHandlers).toMatch(/onViewParticipants\?:/);
+    expect(existsSync(join(process.cwd(), 'src/activity/publishedActivityCtaHandlers.ts'))).toBe(
+      false
+    );
     const detail = read('src/pages/ActivityDetail.tsx');
     expect(detail).toMatch(/onOpenHostManage/);
     expect(read('src/components/activity/ActivityDetailView.tsx')).toMatch(/onOpenHostManage/);
@@ -74,8 +75,9 @@ describe('activity detail program — wiring', () => {
   it('AD-HYGIENE-02: list wire footers share ListFeedWireFooterButtons', () => {
     const shared = read('src/list/ui/ListFeedWireFooterButtons.tsx');
     expect(shared).toMatch(/ListFeedWireFooterVariant/);
-    const poster = read('src/list/ui/ListFeedPosterFooter.tsx');
-    expect(poster).toMatch(/ListFeedWireFooterButtons/);
+    expect(existsSync(join(process.cwd(), 'src/list/ui/ListFeedPosterFooter.tsx'))).toBe(false);
+    const poster = read('src/list/ui/feed/ListFeedPosterCard.tsx');
+    expect(poster).toMatch(/ListFeedPosterEngagementBar/);
     const compact = read('src/explore/ui/ExploreListRowWireFooter.tsx');
     expect(compact).toMatch(/ListFeedWireFooterButtons/);
   });
@@ -240,8 +242,9 @@ describe('activity detail program — wiring', () => {
       'src/pages/place/CampingPlaceDetailPage.tsx',
       'src/pages/place/EventPlaceDetailPage.tsx',
     ]) {
-      expect(read(file)).toMatch(/PlaceDetailPage/);
+      expect(existsSync(join(process.cwd(), file))).toBe(false);
     }
+    expect(read('src/pages/PlaceDetailPage.tsx')).toMatch(/PlaceDetailPageShell/);
     expect(read('src/pages/AreaDetailPage.tsx')).toMatch(/AreaDetailView/);
   });
 
@@ -275,7 +278,7 @@ describe('activity detail program — wiring', () => {
     expect(read('src/activity/detail/templates/ActivityDetailByKind.tsx')).toMatch(
       /PAGE_BY_KIND/
     );
-    expect(read('src/pages/place/HikingPlaceDetailPage.tsx')).toMatch(/PlaceDetailPage/);
+    expect(read('src/pages/PlaceDetailPage.tsx')).toMatch(/PlaceDetailPageShell/);
     expect(read('src/activity/detail/templates/HikingActivityDetailPage.tsx')).toMatch(
       /ActivityDetailPageShell/
     );
@@ -350,7 +353,7 @@ describe('activity detail program — wiring', () => {
 
 describe('activity detail program — engagement wire (AD-PRO-01, AD-PRES-02)', () => {
   it('AD-PRO-01: peek people row gates roster with canViewFullBuddyRoster', () => {
-    const peopleRow = read('src/explore/ui/ExploreCardPresentation.tsx');
+    const peopleRow = read('src/explore/ui/DiscoveryCardPresentation.tsx');
     expect(peopleRow).toMatch(/canViewFullBuddyRoster/);
     expect(peopleRow).toMatch(/buddyUserIdsOnActivity/);
   });

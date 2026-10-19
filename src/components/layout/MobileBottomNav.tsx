@@ -1,6 +1,6 @@
 import {
   ACTIVITIES_PATH,
-  CHAT_PATH,
+  MESSAGES_PATH,
   EXPLORE_MAP_PATH,
   LIST_DISCOVERY_PATH,
   PLAN_PATH,
@@ -81,7 +81,7 @@ export const MobileBottomNav = () => {
           <span className={tabLabelClass(tripsActive)}>{PRODUCT_PLAN_SURFACE_TITLE}</span>
         </Link>
 
-        <NavLink to={CHAT_PATH} end className={({ isActive }) => tabShellClass(isActive)} aria-label="Chat">
+        <NavLink to={MESSAGES_PATH} end className={({ isActive }) => tabShellClass(isActive)} aria-label="Chat">
           {({ isActive }) => (
             <>
               <span className="relative">

@@ -1,4 +1,4 @@
-import type { ExploreCardModel } from '../../explore/exploreCardModel';
+import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import type { Place } from '../../types/place';
 import { capitalize } from '../../utils';
 
@@ -50,7 +50,7 @@ const campingStyleLabel = (value: string | null | undefined): string | null => {
   return capitalize(value);
 };
 
-const audienceLabelsFromCard = (card: ExploreCardModel): PlacePeekAudienceLabel[] => {
+const audienceLabelsFromCard = (card: DiscoveryCardModel): PlacePeekAudienceLabel[] => {
   const labels: string[] = [];
   if (card.childFriendly) labels.push('Child-friendly');
   const badges = card.requirementBadges ?? [];
@@ -69,7 +69,7 @@ const audienceLabelsFromPlace = (place: Place): PlacePeekAudienceLabel[] => {
   return labels;
 };
 
-export const resolvePlacePeekTrailFactsFromCard = (card: ExploreCardModel): PlacePeekTrailFacts => ({
+export const resolvePlacePeekTrailFactsFromCard = (card: DiscoveryCardModel): PlacePeekTrailFacts => ({
   distanceKm: formatKm(card.venueDistanceKm),
   difficulty: formatDifficulty(card.difficulty ?? null),
   durationHours: formatDuration(card.venueDurationHours),
@@ -90,7 +90,7 @@ export const resolvePlacePeekEventFactsFromPlace = (place: Place): PlacePeekEven
     place.maxGroupSize != null && place.maxGroupSize > 0 ? String(place.maxGroupSize) : null,
 });
 
-export const resolvePlacePeekCampFactsFromCard = (card: ExploreCardModel): PlacePeekCampFacts => {
+export const resolvePlacePeekCampFactsFromCard = (card: DiscoveryCardModel): PlacePeekCampFacts => {
   const surfaces = card.surfaceTypes ?? [];
   const primary = surfaces[0]?.trim();
   const style = card.venueCampingType;
@@ -110,7 +110,7 @@ export const resolvePlacePeekCampFactsFromPlace = (place: Place): PlacePeekCampF
   };
 };
 
-export const resolvePlacePeekAudienceFromCard = (card: ExploreCardModel): PlacePeekAudienceLabel[] =>
+export const resolvePlacePeekAudienceFromCard = (card: DiscoveryCardModel): PlacePeekAudienceLabel[] =>
   audienceLabelsFromCard(card);
 
 export const resolvePlacePeekAudienceFromPlace = (place: Place): PlacePeekAudienceLabel[] =>

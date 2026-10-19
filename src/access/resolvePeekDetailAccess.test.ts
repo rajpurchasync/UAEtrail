@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import type { ExploreCardModel } from '../explore/exploreCardModel';
+import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
 import { resolvePeekDetailAccess } from './resolvePeekDetailAccess';
 
-const baseCard = (overrides: Partial<ExploreCardModel>): ExploreCardModel =>
+const baseCard = (overrides: Partial<DiscoveryCardModel>): DiscoveryCardModel =>
   ({
     id: 'activity:1',
     path: '/activity/1',
@@ -11,7 +11,7 @@ const baseCard = (overrides: Partial<ExploreCardModel>): ExploreCardModel =>
     sections: { plainTitle: 'Sunrise hike' },
     showJoinActions: true,
     ...overrides,
-  }) as ExploreCardModel;
+  }) as DiscoveryCardModel;
 
 describe('resolvePeekDetailAccess', () => {
   it('links public venue peeks for guests', () => {

@@ -1,16 +1,13 @@
 import type { WishlistItemDTO } from '@uaetrail/shared-types';
 import type { PlanHubWishlistLayer } from './planHubRouting';
-import { wishlistItemIsDemandBookmark } from './wishlistDemandBookmark';
 
-/** Personal wishlist — never demand participation bookmarks. */
-export const wishlistItemIsPersonal = (item: WishlistItemDTO): boolean => !wishlistItemIsDemandBookmark(item);
+/** Wishlist rows are private saves — seeking posts are never stored here. */
+export const wishlistItemIsPersonal = (_item: WishlistItemDTO): boolean => true;
 
 export const wishlistItemMatchesPlanWishlistLayer = (
   item: WishlistItemDTO,
   layer: PlanHubWishlistLayer
 ): boolean => {
-  if (!wishlistItemIsPersonal(item)) return false;
-
   const isPlace = Boolean(item.locationId);
   const isOutingPlan = Boolean(item.activityId || item.activity);
 
@@ -18,6 +15,3 @@ export const wishlistItemMatchesPlanWishlistLayer = (
   if (layer === 'shops') return false;
   return isOutingPlan;
 };
-
-/** @deprecated Use {@link wishlistItemMatchesPlanWishlistLayer}. */
-export const wishlistItemMatchesTripsHubLayer = wishlistItemMatchesPlanWishlistLayer;

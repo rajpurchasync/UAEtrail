@@ -79,7 +79,7 @@ export const ExploreExperience = () => {
         rideshareLinkParent={model.rideshareLinkParent}
         rideshareLinkSeeking={model.rideshareLinkSeeking}
         onCloseCreateFlow={model.closeCreateFlow}
-        onPlanHostingBackToIntent={model.onPlanHostingBackToIntent}
+        onHostingBackToIntent={model.onHostingBackToIntent}
         onActivityPublished={model.selection.handleActivityPublished}
         onCreateLinkedRideshare={model.handleCreateLinkedRideshare}
         onOpenHostApplication={model.onOpenHostApplication}

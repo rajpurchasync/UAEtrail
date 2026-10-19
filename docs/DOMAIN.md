@@ -46,7 +46,7 @@ Everything starts with **sign-in** as a **user**. Guests may browse parts of the
 
 ```text
 Guest → Sign in → Auth user (participate; hosting disabled until profile complete)
-  → Profile complete → hosting enabled (community Organize)
+  → Profile complete → hosting enabled (community Host / publish)
   → Optional Pro (/profile/pro-membership)
         ├─ Individual Pro   → Guide / Pro host — public face on /member/:userId
         ├─ Business Pro     → Shop | Tour agency | … → User + operator (tenant); operator profile + map pin (shops only)
@@ -323,7 +323,7 @@ The route `/member/:userId` uses a user id in the URL (storage key). In UI, pref
 
 | Subtype | Role | Map pin? | Manage |
 |---------|------|----------|--------|
-| **Individual Pro** | Member with Pro membership; public intro at `/member/:userId` | No | `/publishing` console; buddy Organize via `canPublish` |
+| **Individual Pro** | Member with Pro membership; public intro at `/member/:userId` | No | `/publishing` console; buddy Host / publish via `canPublish` |
 | **Agency** | Business host; paid trips | No | `/host/*`, `/organisation/manage?kind=agency` |
 | **Shop** | Outdoor retail (pin + `/shop/:id`) | Physical pin typical | `/shop/:id` |
 | **E-commerce** (Business Pro) | Online-first retail | Optional pin | TBD |
@@ -352,7 +352,7 @@ Shop identity: **tenant** (Pro Membership onboarding) + **merchant profile** (`/
 | `pages/operator/Activities` (`Activities`) | `/publishing/activities` | Tenant activity list + manage sheet |
 | `pages/operator/JoinRequests` (`JoinRequests`) | `/publishing/requests` | Activity join queue |
 | `pages/operator/Manage` (`Manage`) | `/organisation/manage` | Agency / shop tenant panels |
-| `ProfileProMembership` (`BecomeHost` legacy export) | `/profile/pro-membership` · redirects from `/become-host`, `/become-organizer` | Pro / agency / shop applications — **not** buddy Organize (`canPublish` via profile complete) |
+| `ProfileProMembership` (`BecomeHost` leftover inbound export) | `/profile/pro-membership` · redirects from `/become-host`, `/become-organizer` | Pro / agency / shop applications — **not** buddy Host / publish (`canPublish` via profile complete) |
 | `ShopPublic` | `/shop/:id` | Public shop host |
 | `pages/admin/Organisations` (`Organisations`) | `/admin/hosts` | Admin copy: **Hosts** — folder is the namespace, not `AdminOrganisations.tsx` |
 
@@ -368,7 +368,7 @@ Shop identity: **tenant** (Pro Membership onboarding) + **merchant profile** (`/
 
 **Organize hiking/camping** picks a **catalog place** (`registryPlaceId` wire field) or uses a **custom label** + **activity anchor** row. **Shops** use `PlaceKind.shop` on the map; host identity remains a **tenant** at `/shop/:id` until shop rows fully live in `locations`.
 
-**Publish pipeline (frontend):** `src/services/organizeActivityPublish.ts` → `POST /host/activities` via `buildHostActivityPublishPayload`.
+**Publish pipeline (frontend):** `src/services/hostingActivityPublish.ts` → `POST /host/activities` via `buildHostActivityPublishPayload`.
 
 ## Explore browse — `OutingCategory` and `OutingTopic`
 

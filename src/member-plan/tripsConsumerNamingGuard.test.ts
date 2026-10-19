@@ -7,7 +7,6 @@ const SCAN_ROOT = join(process.cwd(), 'src');
 const ALLOWLIST = new Set([
   'src/member-plan/tripsConsumerNamingGuard.test.ts',
   'src/member-plan/planHubRouting.ts',
-  'src/member-plan/tripsRouting.ts',
   'src/member-plan/legacyTripsRedirect.ts',
   'src/member-plan/resolvePlanHubView.ts',
   'src/member-plan/participantIntentPlan.ts',
@@ -74,16 +73,19 @@ describe('tripsConsumerNamingGuard', () => {
     expect(violations).toEqual([]);
   });
 
-  it('app code imports planHubRouting (not deprecated member-plan/tripsRouting shim)', () => {
+  it('tripsRouting shim is gone (planHubRouting / routingCatalog only)', () => {
+    expect(existsSync(join(process.cwd(), 'src/member-plan/tripsRouting.ts'))).toBe(false);
+  });
+
+  it('app code does not import deleted member-plan/tripsRouting', () => {
     const violations: string[] = [];
     const deprecatedImport = /from ['"](\.\.\/)+member-plan\/tripsRouting['"]/;
 
     for (const file of collectSourceFiles(SCAN_ROOT)) {
-      if (file === 'src/member-plan/tripsRouting.ts') continue;
       if (ALLOWLIST.has(file)) continue;
       const content = readFileSync(join(process.cwd(), file), 'utf8');
       if (deprecatedImport.test(content)) {
-        violations.push(`${file}: use planHubRouting or routingCatalog — tripsRouting is a shim`);
+        violations.push(`${file}: use planHubRouting or routingCatalog — tripsRouting is removed`);
       }
     }
 
@@ -146,7 +148,7 @@ describe('tripsConsumerNamingGuard', () => {
     expect(violations).toEqual([]);
   });
 
-  it('planHubRouting has no legacy trips* symbol exports (use tripsRouting shim)', () => {
+  it('planHubRouting has no leftover trips* symbol exports', () => {
     const hub = readFileSync(join(process.cwd(), 'src/member-plan/planHubRouting.ts'), 'utf8');
     expect(hub).not.toMatch(/\bexport const trips/);
     expect(hub).not.toMatch(/\bexport type Trips/);

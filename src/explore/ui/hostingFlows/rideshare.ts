@@ -2,9 +2,9 @@ import type { CreateActivityDraft, CreateFlowStepId } from '../hostingFlowEngine
 import type { HostingKindFlow } from './types';
 import { parseRideshareRiderRules } from '../rideshareRiderRules';
 import {
-  validateOrganizeAudienceOthers,
-  validateOrganizePrice,
-  validateOrganizeTitle,
+  validateHostingAudienceOthers,
+  validateHostingPrice,
+  validateHostingTitle,
 } from './validateShared';
 
 const DEFAULT_STEPS: CreateFlowStepId[] = [
@@ -21,9 +21,9 @@ const DEFAULT_STEPS: CreateFlowStepId[] = [
 ];
 
 const validateStep = (step: CreateFlowStepId, draft: CreateActivityDraft): string | null => {
-  if (step === 'title') return validateOrganizeTitle(draft, 'Enter a title.');
+  if (step === 'title') return validateHostingTitle(draft, 'Enter a title.');
   if (step === 'audience') {
-    const others = validateOrganizeAudienceOthers(draft);
+    const others = validateHostingAudienceOthers(draft);
     if (others) return others;
     if (!draft.participantsOpenToAll && draft.limitedMinAgeEnabled && draft.ageMin < 1) {
       return 'Enter a minimum age.';
@@ -51,21 +51,21 @@ const validateStep = (step: CreateFlowStepId, draft: CreateActivityDraft): strin
     }
     return null;
   }
-  if (step === 'price') return validateOrganizePrice(draft);
+  if (step === 'price') return validateHostingPrice(draft);
   if (step === 'publish') {
     if (draft.latitude == null && draft.longitude == null) return 'Drop a pin on the map.';
     if (draft.toLatitude == null || draft.toLongitude == null) {
       return 'Drop a destination pin on the map.';
     }
-    const titleErr = validateOrganizeTitle(draft, 'Enter a title.');
+    const titleErr = validateHostingTitle(draft, 'Enter a title.');
     if (titleErr) return titleErr;
-    return validateOrganizePrice(draft);
+    return validateHostingPrice(draft);
   }
   return null;
 };
 
-export const organizeRideshareFlow: HostingKindFlow = {
-  id: 'plan.rideshare.hosting',
+export const rideshareHostingFlow: HostingKindFlow = {
+  id: 'host.rideshare',
   createKind: 'rideshare',
   defaultSteps: DEFAULT_STEPS,
   postPublishRideshare: false,

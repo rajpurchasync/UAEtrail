@@ -1,12 +1,12 @@
 import {
-  CONTRIBUTABLE_FACILITY_PLACE_KINDS,
-  isContributableFacilityPlaceKind,
+  ADDABLE_FACILITY_PLACE_KINDS,
+  isAddableFacilityPlaceKind,
   type PlaceKind,
 } from '@uaetrail/shared-types';
 import { z } from 'zod';
 
-const contributableFacilityKindSchema = z.enum(
-  CONTRIBUTABLE_FACILITY_PLACE_KINDS as unknown as [string, ...string[]]
+const addableFacilityKindSchema = z.enum(
+  ADDABLE_FACILITY_PLACE_KINDS as unknown as [string, ...string[]]
 );
 
 /** Accept absolute URLs or same-origin relative media paths from local dev uploads. */
@@ -67,10 +67,10 @@ export const locationSubmitBodySchema = z.object({
   shopContactEmail: z.string().email().max(120).optional(),
   shopContactPhoneE164: z.string().min(8).max(24).optional(),
   /** Member/admin facility row — persisted via `place-kind:*` tags + `activityType: event`. */
-  facilityKind: contributableFacilityKindSchema.optional(),
+  facilityKind: addableFacilityKindSchema.optional(),
 }).superRefine((body, ctx) => {
   if (body.facilityKind) {
-    if (!isContributableFacilityPlaceKind(body.facilityKind as PlaceKind)) {
+    if (!isAddableFacilityPlaceKind(body.facilityKind as PlaceKind)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: 'Invalid facility type.',

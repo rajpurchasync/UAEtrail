@@ -110,7 +110,7 @@ export const EXPLORE_BROWSE_SEGMENT_TAB = {
   inactive: `${EXPLORE_BROWSE_PANEL_TAB.tab} ${EXPLORE_BROWSE_PANEL_TAB.inactive}`,
 } as const;
 
-/** Compose FAB sheet — emerald brand (Organize · Find · Add). */
+/** Compose FAB sheet — emerald brand (Host · Find crew · Add). */
 export const EXPLORE_COMPOSE = {
   menuIconWrap: 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/20',
   kindTile:
@@ -118,7 +118,7 @@ export const EXPLORE_COMPOSE = {
   kindIconWrap: 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/25',
 } as const;
 
-/** Create / organize / find / add wizard — shared step titles and choice cards. */
+/** Create / host / seek / add wizard — shared step titles and choice cards. */
 export const EXPLORE_FLOW = {
   stepTitle: 'text-xl font-bold leading-snug text-neutral-900',
   /** Vertical rhythm around centered step / sheet main title */
@@ -142,28 +142,22 @@ export const EXPLORE_FLOW = {
     'flex w-full items-center justify-between gap-3 rounded-2xl border-2 border-neutral-200 px-4 py-4 text-left transition hover:border-emerald-300 active:scale-[0.99]',
 } as const;
 
-/** Create intent — distinct affordances for supply vs demand vs venues. */
+/** Create intent — Host · Find crew · Add on map. */
 export const EXPLORE_INTENT = {
   host: {
     iconWrap: 'bg-rose-600 text-white shadow-md shadow-rose-600/30',
     card: 'border-rose-200 bg-gradient-to-br from-rose-50 to-white active:border-rose-500 lg:hover:border-rose-400',
     label: 'text-rose-800',
   },
-  request: {
+  seek: {
     iconWrap: 'bg-teal-600 text-white shadow-md shadow-teal-600/30',
     card: 'border-teal-200 bg-gradient-to-br from-teal-50 to-white active:border-teal-500 lg:hover:border-teal-400',
     label: 'text-teal-800',
   },
-  contribute: {
+  add: {
     iconWrap: 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30',
     card: 'border-indigo-200 bg-gradient-to-br from-indigo-50 to-white active:border-indigo-500 lg:hover:border-indigo-400',
     label: 'text-indigo-800',
-  },
-  /** @deprecated use host */
-  add: {
-    iconWrap: 'bg-rose-600 text-white shadow-md shadow-rose-600/30',
-    card: 'border-rose-200 bg-gradient-to-br from-rose-50 to-white active:border-rose-500 lg:hover:border-rose-400',
-    label: 'text-rose-800',
   },
 } as const;
 
@@ -241,14 +235,14 @@ export const exploreVenueListFilterActiveClass = (key: VenueListFilterKey): stri
 };
 
 export type MapPinRingKind = 'hiking' | 'camping' | 'event' | 'shop' | 'agency' | 'rideshare' | 'area';
-export type MapPinRingSource = 'activity' | 'venue' | 'shop' | 'agency' | 'seeking' | 'demand';
+export type MapPinRingSource = 'activity' | 'venue' | 'shop' | 'agency' | 'seeking';
 
 /** Type-colored ring on map pins — matches filter / badge colors. */
 export const exploreMapPinRingColor = (
   kind: MapPinRingKind,
   source?: MapPinRingSource
 ): string => {
-  if (source === 'seeking' || source === 'demand') return '#0d9488';
+  if (source === 'seeking') return '#0d9488';
   switch (kind) {
     case 'camping':
       return '#d97706';

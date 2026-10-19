@@ -12,9 +12,9 @@ import {
   buildHostActivityMenuItems,
 } from '../../components/activities';
 import {
-  activityTypeToOrganizeKind,
-  navigateToExploreOrganize,
-} from '../../explore/navigateExploreOrganize';
+  activityTypeToHostComposeKind,
+  navigateToExploreHost,
+} from '../../explore/navigateExploreHost';
 import { ConsoleShell } from '../../console/ConsoleShell';
 import { TenantSwitcher } from '../../components/ui';
 import { ActivityHubInviteIconButton } from '../../components/activity/ActivityHubInviteIconButton';
@@ -79,13 +79,13 @@ export const Activities = () => {
   );
 
   const openCreateActivity = () => {
-    navigateToExploreOrganize(navigate);
+    navigateToExploreHost(navigate);
   };
 
   useEffect(() => {
     if (location.pathname !== OPERATOR_ACTIVITIES_NEW_PATH) return;
     const type = parseActivityTypeParam(searchParams.get('type'));
-    navigateToExploreOrganize(navigate, type ? activityTypeToOrganizeKind(type) : null);
+    navigateToExploreHost(navigate, type ? activityTypeToHostComposeKind(type) : null);
   }, [location.pathname, navigate, searchParams]);
 
   const openManage = (activity: ActivityDTO, view: 'overview' | 'checkin' = 'overview') => {
@@ -231,7 +231,7 @@ export const Activities = () => {
                           onManage: (e) => openManage(e, 'overview'),
                           onPublish: (e) => void publishActivityWithNotice(e),
                           onDuplicate: (e) => void hostActions.duplicateActivity(e),
-                          onReorganize: hostActions.reorganizeActivity,
+                          onHostFromExisting: hostActions.hostFromExistingActivity,
                           onDelete: hostActions.setConfirmDelete,
                           onCancel: hostActions.setConfirmCancel,
                           onCheckin: (e) => openManage(e, 'checkin'),

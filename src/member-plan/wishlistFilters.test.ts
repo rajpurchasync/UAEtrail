@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { WishlistItemDTO } from '@uaetrail/shared-types';
-import { wishlistItemIsDemandBookmark } from './wishlistDemandBookmark';
-import { wishlistItemIsPersonal, wishlistItemMatchesTripsHubLayer } from './wishlistFilters';
+import { wishlistItemIsPersonal, wishlistItemMatchesPlanWishlistLayer } from './wishlistFilters';
 
 const item = (overrides: Partial<WishlistItemDTO>): WishlistItemDTO =>
   ({
@@ -12,15 +11,14 @@ const item = (overrides: Partial<WishlistItemDTO>): WishlistItemDTO =>
   }) as WishlistItemDTO;
 
 describe('wishlistFilters', () => {
-  it('demand bookmarks are never stored as wishlist rows', () => {
-    expect(wishlistItemIsDemandBookmark(item({}))).toBe(false);
+  it('wishlist rows are personal saves (seeking posts are not stored here)', () => {
     expect(wishlistItemIsPersonal(item({}))).toBe(true);
   });
 
   it('maps hub layers for venue and activity saves', () => {
-    expect(wishlistItemMatchesTripsHubLayer(item({ locationId: 'loc-1' }), 'places')).toBe(true);
-    expect(wishlistItemMatchesTripsHubLayer(item({ locationId: 'loc-1' }), 'activities')).toBe(false);
-    expect(wishlistItemMatchesTripsHubLayer(item({ activityId: 'a1' }), 'activities')).toBe(true);
-    expect(wishlistItemMatchesTripsHubLayer(item({ activityId: 'a1' }), 'shops')).toBe(false);
+    expect(wishlistItemMatchesPlanWishlistLayer(item({ locationId: 'loc-1' }), 'places')).toBe(true);
+    expect(wishlistItemMatchesPlanWishlistLayer(item({ locationId: 'loc-1' }), 'activities')).toBe(false);
+    expect(wishlistItemMatchesPlanWishlistLayer(item({ activityId: 'a1' }), 'activities')).toBe(true);
+    expect(wishlistItemMatchesPlanWishlistLayer(item({ activityId: 'a1' }), 'shops')).toBe(false);
   });
 });

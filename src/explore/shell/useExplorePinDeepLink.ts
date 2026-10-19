@@ -26,7 +26,7 @@ type Args = {
   navigate: NavigateFunction;
   pathname: string;
   search: string;
-  composeOrganizeKind: string | null | undefined;
+  hostComposeKind: string | null | undefined;
   rideshareLinkSeeking: ExploreMapItemDTO | null;
   setRideshareLinkSeeking: (item: ExploreMapItemDTO | null) => void;
   setJoinInvitePeekActivityId: (id: string | null) => void;
@@ -42,7 +42,7 @@ export const useExplorePinDeepLink = ({
   navigate,
   pathname,
   search,
-  composeOrganizeKind,
+  hostComposeKind,
   rideshareLinkSeeking,
   setRideshareLinkSeeking,
   setJoinInvitePeekActivityId,
@@ -53,7 +53,7 @@ export const useExplorePinDeepLink = ({
 
   useEffect(() => {
     if (!deepLinkPinId?.startsWith('demand:') || rideshareLinkSeeking || loading) return;
-    if (composeOrganizeKind !== 'rideshare') return;
+    if (hostComposeKind !== 'rideshare') return;
     const item = findExploreMapItemForPinId(selectionItems, deepLinkPinId);
     if (item && exploreMapItemIsSeeking(item)) {
       setRideshareLinkSeeking(item);
@@ -62,7 +62,7 @@ export const useExplorePinDeepLink = ({
     deepLinkPinId,
     rideshareLinkSeeking,
     loading,
-    composeOrganizeKind,
+    hostComposeKind,
     selectionItems,
     setRideshareLinkSeeking,
   ]);

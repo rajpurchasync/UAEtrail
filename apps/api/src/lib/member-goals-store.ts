@@ -135,8 +135,6 @@ export const countHostedOutingsForGoal = async (
   return rows[0]?.count ?? 0;
 };
 
-/** @deprecated Use countVisitedPinsForJoinGoal — kept for notification migration path */
-export const countCheckedInOutingsForGoal = countVisitedPinsForJoinGoal;
 
 export const countGoalProgress = async (
   userId: string,

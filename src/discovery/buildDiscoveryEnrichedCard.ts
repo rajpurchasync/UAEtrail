@@ -1,5 +1,5 @@
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
-import type { ExploreCardModel } from '../explore/exploreCardModel';
+import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
 import { enrichListFeedCardModel } from '../list/enrichListFeedCard';
 import { buildDiscoveryCardViewModel } from './discoveryCardViewModel';
 
@@ -11,7 +11,7 @@ export const buildDiscoveryEnrichedCard = (
   item: ExploreMapItemDTO,
   mapPool: ExploreMapItemDTO[],
   user?: { id: string } | null
-): ExploreCardModel => {
+): DiscoveryCardModel => {
   const { card } = buildDiscoveryCardViewModel(item, { mapItems: mapPool });
   return enrichListFeedCardModel(card, item, mapPool, user);
 };

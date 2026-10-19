@@ -3,14 +3,14 @@
  * Curated **Area** hub link uses `card.areaSlug` / `card.areaName` (from `place.areaId`), not `source: 'area'`.
  * @see docs/DOMAIN_CANONICALS.md §12.1.1
  */
-import type { ExploreCardModel } from '../explore/exploreCardModel';
+import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
 import { resolveCatalogEntityName } from '../list/listVenuePosterPresentation';
 
 const normalize = (value: string | null | undefined): string =>
   value?.trim().toLowerCase().replace(/\s+/g, ' ') ?? '';
 
 /** Emirate / region line — never duplicates Arabic subtitle blobs. */
-export const resolvePlacePeekRegionLabel = (card: ExploreCardModel): string | null => {
+export const resolvePlacePeekRegionLabel = (card: DiscoveryCardModel): string | null => {
   const region = card.venueRegion?.trim();
   if (!region) return null;
   if (normalize(region) === normalize(resolveCatalogEntityName(card))) return null;
@@ -18,7 +18,7 @@ export const resolvePlacePeekRegionLabel = (card: ExploreCardModel): string | nu
 };
 
 /** Local subtitle (Arabic name or wadi label) when it is not the curated hub title. */
-export const resolvePlacePeekLocalLabel = (card: ExploreCardModel): string | null => {
+export const resolvePlacePeekLocalLabel = (card: DiscoveryCardModel): string | null => {
   const subtitle = card.subtitle?.trim();
   if (!subtitle) return null;
 
@@ -39,7 +39,7 @@ export const resolvePlacePeekLocalLabel = (card: ExploreCardModel): string | nul
 };
 
 export const resolvePlacePeekCuratedArea = (
-  card: ExploreCardModel
+  card: DiscoveryCardModel
 ): { slug: string | null; name: string } | null => {
   const name = card.areaName?.trim();
   if (!name) return null;

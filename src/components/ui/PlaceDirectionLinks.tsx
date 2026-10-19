@@ -11,5 +11,3 @@ export const PlaceDirectionLinks = ({ lat, lng, className = '' }: PlaceDirection
   <DirectionsControl lat={lat} lng={lng} variant="compact" className={className} />
 );
 
-/** @deprecated Use {@link PlaceDirectionLinks} or {@link DirectionsControl}. */
-export const LocationDirectionLinks = PlaceDirectionLinks;

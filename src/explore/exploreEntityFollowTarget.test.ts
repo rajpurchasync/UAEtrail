@@ -1,15 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import type { ExploreCardModel } from './exploreCardModel';
-import { resolveExploreEntityFollowTarget } from './exploreCardModel';
+import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
+import { resolveExploreEntityFollowTarget } from '../discovery/discoveryCardModel';
 
-const card = (overrides: Partial<ExploreCardModel>): ExploreCardModel =>
+const card = (overrides: Partial<DiscoveryCardModel>): DiscoveryCardModel =>
   ({
     id: 'x',
     path: '/explore',
     source: 'venue',
     kind: 'hiking',
     ...overrides,
-  }) as ExploreCardModel;
+  }) as DiscoveryCardModel;
 
 describe('resolveExploreEntityFollowTarget', () => {
   it('returns location for venue cards', () => {
@@ -25,7 +25,7 @@ describe('resolveExploreEntityFollowTarget', () => {
           source: 'activity',
           locationId: 'loc-from-activity',
           activity: { id: 'a1', locationId: 'loc-from-activity', tenantId: 't1' },
-        } as Partial<ExploreCardModel>)
+        } as Partial<DiscoveryCardModel>)
       )
     ).toEqual({ locationId: 'loc-from-activity' });
   });
@@ -36,7 +36,7 @@ describe('resolveExploreEntityFollowTarget', () => {
         card({
           source: 'activity',
           activityMode: 'seeking',
-          composeIntent: 'demand',
+          composeIntent: 'seek',
           participantIntentId: 'd1',
           locationId: 'loc-1',
         })

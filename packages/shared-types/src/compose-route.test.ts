@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
   canonicalizeComposeWire,
-  composeWireToLegacyWizard,
   formatComposeWire,
   parseComposeWire,
 } from './compose-route.js';
@@ -38,21 +37,25 @@ describe('compose-route wire', () => {
     });
   });
 
-  it('formats and parses v2 plan and contribute tokens (aliases)', () => {
-    expect(
-      formatComposeWire({ intent: 'plan', kind: 'hiking', mode: 'hosting' })
-    ).toBe('plan:hiking:hosting');
-    expect(
-      formatComposeWire({ intent: 'plan', kind: 'camping', mode: 'seeking' })
-    ).toBe('plan:camping:seeking');
+  it('formats leftover plan/contribute/organize objects as canonical tokens', () => {
+    expect(formatComposeWire({ intent: 'plan', kind: 'hiking', mode: 'hosting' })).toBe(
+      'host:hiking'
+    );
+    expect(formatComposeWire({ intent: 'plan', kind: 'camping', mode: 'seeking' })).toBe(
+      'seek:fixed:camping'
+    );
     expect(
       formatComposeWire({
         intent: 'contribute',
         target: 'facility',
         kind: 'rest_area',
       })
-    ).toBe('contribute:facility:rest_area');
+    ).toBe('add:facility:rest_area');
+    expect(formatComposeWire({ intent: 'organize', kind: 'hiking' })).toBe('host:hiking');
+    expect(formatComposeWire({ intent: 'find' })).toBe('seek');
+  });
 
+  it('parses leftover plan and contribute tokens inbound', () => {
     expect(parseComposeWire('plan:hiking:hosting')).toEqual({
       intent: 'plan',
       kind: 'hiking',
@@ -74,7 +77,7 @@ describe('compose-route wire', () => {
       intent: 'find',
       kind: 'rideshare',
     });
-    expect(parseComposeWire('find')).toEqual({ intent: 'find' });
+    expect(parseComposeWire('find')).toEqual({ surface: 'menu', intent: 'find' });
     expect(parseComposeWire('add:shop')).toEqual({ intent: 'add', kind: 'shop' });
     expect(parseComposeWire('organize:carpool')).toEqual({
       intent: 'organize',
@@ -100,35 +103,12 @@ describe('compose-route wire', () => {
         kind: 'hiking',
       })
     ).toEqual({ intent: 'add', target: 'place', kind: 'hiking' });
+    expect(
+      canonicalizeComposeWire({ intent: 'add', target: 'facility', kind: 'toilet' })
+    ).toEqual({ intent: 'add', target: 'facility', kind: 'toilet' });
+    expect(
+      canonicalizeComposeWire({ intent: 'add', target: 'place', kind: 'hiking' })
+    ).toEqual({ intent: 'add', target: 'place', kind: 'hiking' });
   });
 
-  it('maps v3 and v2 routes to legacy wizard shapes', () => {
-    expect(composeWireToLegacyWizard({ intent: 'host', kind: 'hiking' })).toEqual({
-      intent: 'organize',
-      kind: 'hiking',
-    });
-    expect(
-      composeWireToLegacyWizard({ intent: 'seek', mode: 'fixed', kind: 'rideshare' })
-    ).toEqual({ intent: 'find', kind: 'rideshare' });
-    expect(composeWireToLegacyWizard({ intent: 'seek', mode: 'flexible' })).toEqual({
-      intent: 'find',
-    });
-    expect(
-      composeWireToLegacyWizard({ intent: 'plan', kind: 'hiking', mode: 'hosting' })
-    ).toEqual({ intent: 'organize', kind: 'hiking' });
-    expect(
-      composeWireToLegacyWizard({
-        intent: 'add',
-        target: 'place',
-        kind: 'hiking',
-      })
-    ).toEqual({ intent: 'add', kind: 'hiking' });
-    expect(
-      composeWireToLegacyWizard({
-        intent: 'contribute',
-        target: 'facility',
-        kind: 'rest_area',
-      })
-    ).toEqual({ intent: 'add', kind: 'facility' });
-  });
 });

@@ -1,18 +1,18 @@
 import type { ReactNode } from 'react';
 import { isGeographyMapSource } from '@uaetrail/shared-types';
 import { X } from 'lucide-react';
-import type { ExploreCardModel } from '../../exploreCardModel';
+import type { DiscoveryCardModel } from '../../../discovery/discoveryCardModel';
 import { EXPLORE_PEEK, EXPLORE_SHEET } from '../../../config/exploreTheme';
 import { EnvironmentImage } from '../../../components/ui/EnvironmentImage';
 import { ShareButton } from '../../../components/ui/ShareButton';
 import { ExploreFollowButton } from '../ExploreFollowButton';
-import { exploreCardPeekShowsFollow } from '../../exploreCardModel';
+import { discoveryCardPeekShowsFollow } from '../../../discovery/discoveryCardModel';
 import {
-  ExploreCardHeadline,
-  ExploreCardRatingRow,
-  ExploreCardTypeBadge,
+  DiscoveryCardHeadline,
+  DiscoveryCardRatingRow,
+  DiscoveryCardTypeBadge,
   ExploreVenueImageBadges,
-} from '../ExploreCardPresentation';
+} from '../DiscoveryCardPresentation';
 import { ActivityDiscoveryPublishedBody } from '../../../discovery/ActivityDiscoveryPublishedBody';
 import { PlacePeekBody } from '../peek/place/PlacePeekBody';
 import { PlacePeekHero } from '../peek/place/PlacePeekHero';
@@ -20,7 +20,7 @@ import { activityPeekHasMapWireActions } from '../../../activity/activityPeekEng
 import { resolvePeekDetailAccess } from '../../../access/resolvePeekDetailAccess';
 
 export type MapPeekShellProps = {
-  card: ExploreCardModel;
+  card: DiscoveryCardModel;
   onClose: () => void;
   /** Summary card CTA block (wire actions or join flow — not a full-page footer). */
   actions: ReactNode;
@@ -95,9 +95,9 @@ export const MapPeekShell = ({
 
       {!showPlaceCatalogHero ? (
         <div className={`flex shrink-0 items-start justify-between gap-3 px-4 ${showCoverHero ? 'pt-3' : 'pt-4'}`}>
-          <ExploreCardTypeBadge card={card} size="sm" />
+          <DiscoveryCardTypeBadge card={card} size="sm" />
           <div className="flex items-center gap-1.5">
-            {exploreCardPeekShowsFollow(card) ? (
+            {discoveryCardPeekShowsFollow(card) ? (
               <ExploreFollowButton card={card} light={!showCoverHero} />
             ) : null}
             <ShareButton
@@ -137,7 +137,7 @@ export const MapPeekShell = ({
           />
         ) : (
           <>
-            <ExploreCardHeadline
+            <DiscoveryCardHeadline
               sections={card.sections}
               size="lg"
               tone={card.tone}
@@ -146,7 +146,7 @@ export const MapPeekShell = ({
               onBeforeDetailNavigate={onClose}
             />
             {card.source === 'activity' ? <ActivityDiscoveryPublishedBody card={card} /> : null}
-            <ExploreCardRatingRow card={card} />
+            <DiscoveryCardRatingRow card={card} />
           </>
         )}
         {children}

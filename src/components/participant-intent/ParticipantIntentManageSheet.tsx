@@ -15,9 +15,9 @@ import {
 } from '../../explore/linkActivityRideshareOffer';
 import { navigateToCreateLinkedRideshare } from '../../explore/navigateCreateLinkedRideshare';
 import {
-  ORGANIZE_LINK_RIDESHARE_LABEL,
-  ORGANIZE_LINK_RIDESHARE_PASTE_CTA,
-  ORGANIZE_RIDESHARE_LINKED_NOTICE,
+  HOSTING_LINK_RIDESHARE_LABEL,
+  HOSTING_LINK_RIDESHARE_PASTE_CTA,
+  HOSTING_RIDESHARE_LINKED_NOTICE,
 } from '../../explore/createFlowCopy';
 import { fetchPublicActivityDetail } from '../../hooks/publicActivityClientApi';
 import { useSafeAsyncEffect } from '../../hooks/useSafeAsyncEffect';
@@ -35,9 +35,9 @@ import { useMemberStatus } from '../../hooks/useMemberStatus';
 import { useAuth } from '../../context/AuthContext';
 import { signInPathForReturn } from '../../utils/authReturnContext';
 import {
-  organizePublishGateHref,
-  organizePublishGateInputFromMemberStatus,
-} from '../../utils/organizePublishGate';
+  memberPublishGateHref,
+  memberPublishGateInputFromMemberStatus,
+} from '../../utils/memberPublishGate';
 import { ParticipantIntentEditForm } from './ParticipantIntentEditForm';
 import { ParticipantIntentJoinRequestsSection } from './ParticipantIntentJoinRequestsSection';
 
@@ -132,9 +132,9 @@ export const ParticipantIntentManageSheet = ({
     if (gate.loading) return;
     if (!gate.canPublish) {
       navigate(
-        organizePublishGateHref(
+        memberPublishGateHref(
           returnPath,
-          organizePublishGateInputFromMemberStatus({
+          memberPublishGateInputFromMemberStatus({
             viewerUserId: user.id,
             profileComplete: gate.profileComplete,
             canPublish: gate.canPublish,
@@ -247,7 +247,7 @@ export const ParticipantIntentManageSheet = ({
               {rideshareNotice ? (
                 <p
                   className={`rounded-lg px-3 py-2 text-sm leading-snug ${
-                    rideshareNotice === ORGANIZE_RIDESHARE_LINKED_NOTICE
+                    rideshareNotice === HOSTING_RIDESHARE_LINKED_NOTICE
                       ? 'border border-emerald-200 bg-emerald-50 text-emerald-900'
                       : 'bg-red-50 text-red-700'
                   }`}
@@ -262,7 +262,7 @@ export const ParticipantIntentManageSheet = ({
                   variant="pasteOnly"
                   onCreateRideshare={handleCreateLinkedRideshare}
                   onLinked={() => {
-                    setRideshareNotice(ORGANIZE_RIDESHARE_LINKED_NOTICE);
+                    setRideshareNotice(HOSTING_RIDESHARE_LINKED_NOTICE);
                     setPasteOpen(false);
                   }}
                   onError={(message) => setRideshareNotice(message)}
@@ -271,7 +271,7 @@ export const ParticipantIntentManageSheet = ({
               {showLinkRideshare ? (
                 <div className="space-y-2">
                   <AppButton type="button" className="w-full" onClick={handleCreateLinkedRideshare}>
-                    {ORGANIZE_LINK_RIDESHARE_LABEL}
+                    {HOSTING_LINK_RIDESHARE_LABEL}
                   </AppButton>
                   <AppButton
                     type="button"
@@ -279,12 +279,12 @@ export const ParticipantIntentManageSheet = ({
                     className="w-full"
                     onClick={() => setPasteOpen((value) => !value)}
                   >
-                    {ORGANIZE_LINK_RIDESHARE_PASTE_CTA}
+                    {HOSTING_LINK_RIDESHARE_PASTE_CTA}
                   </AppButton>
                 </div>
               ) : showRideshareOffer ? (
                 <AppButton type="button" className="w-full" onClick={handleOfferRideshareLegacy}>
-                  {ORGANIZE_LINK_RIDESHARE_LABEL}
+                  {HOSTING_LINK_RIDESHARE_LABEL}
                 </AppButton>
               ) : null}
               <AppButton

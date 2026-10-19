@@ -15,9 +15,9 @@ import { useHostingFromActivity } from '../create/hooks/useHostingFromActivity';
 import { useHostingWizardPrefill } from '../create/hooks/useHostingWizardPrefill';
 import { useExploreFulfillIntent } from '../ui/useExploreFulfillIntent';
 import {
-  organizePublishGateHref,
-  organizePublishGateInputFromMemberStatus,
-} from '../../utils/organizePublishGate';
+  memberPublishGateHref,
+  memberPublishGateInputFromMemberStatus,
+} from '../../utils/memberPublishGate';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { areaDetailPath } from '@uaetrail/shared-types';
 import { activityCancelParticipantNotice } from '../../activity/activityCancelParticipantNotice';
@@ -54,12 +54,12 @@ export const useExploreExperienceModel = () => {
     enabled: Boolean(user),
   });
   const navigate = useNavigate();
-  const navigateOrganizePublishGate = useCallback(
+  const navigateMemberPublishGate = useCallback(
     (returnPath: string) =>
       navigate(
-        organizePublishGateHref(
+        memberPublishGateHref(
           returnPath,
-          organizePublishGateInputFromMemberStatus({
+          memberPublishGateInputFromMemberStatus({
             viewerUserId: user?.id ?? null,
             profileComplete,
             canPublish,
@@ -157,7 +157,7 @@ export const useExploreExperienceModel = () => {
     searchParams,
     setSearchParams,
     setComposeRoute: compose.setComposeRoute,
-    planHostingKind: compose.planHostingRoute?.kind ?? null,
+    hostComposeKind: compose.hostComposeRoute?.kind ?? null,
   });
 
   const selected = selectionItems.find((item) => item.id === selectedId) ?? null;
@@ -171,7 +171,7 @@ export const useExploreExperienceModel = () => {
     hostGateLoading,
     canPublish,
     navigate,
-    navigateOrganizePublishGate,
+    navigateMemberPublishGate,
     compose,
     hostingFrom,
     selected,
@@ -238,7 +238,7 @@ export const useExploreExperienceModel = () => {
     navigate,
     pathname,
     search,
-    composeOrganizeKind: compose.planHostingRoute?.kind,
+    hostComposeKind: compose.hostComposeRoute?.kind,
     rideshareLinkSeeking: hostingLauncher.rideshareLinkSeeking,
     setRideshareLinkSeeking: hostingLauncher.setRideshareLinkSeeking,
     setJoinInvitePeekActivityId,
@@ -355,8 +355,8 @@ export const useExploreExperienceModel = () => {
 
   const onOpenHostApplication = useCallback(() => {
     closeCreateFlow();
-    navigateOrganizePublishGate(`${pathname}${search}`);
-  }, [closeCreateFlow, navigateOrganizePublishGate, pathname, search]);
+    navigateMemberPublishGate(`${pathname}${search}`);
+  }, [closeCreateFlow, navigateMemberPublishGate, pathname, search]);
 
   const handleOpenExploreItem = useCallback(
     (exploreItemId: string) => {
@@ -400,9 +400,8 @@ export const useExploreExperienceModel = () => {
     handleCreateLinkedRideshare: hostingLauncher.handleCreateLinkedRideshare,
     primaryFabLabel: 'Add New' as const,
     hostWizardOpen: hostingLauncher.hostWizardOpen,
-    planHostingWizardOpen: hostingLauncher.planHostingWizardOpen,
     hostingWizardPrefill: hostingLauncher.hostingWizardPrefill,
-    onPlanHostingBackToIntent: hostingLauncher.onPlanHostingBackToIntent,
+    onHostingBackToIntent: hostingLauncher.onHostingBackToIntent,
     planWithBuddyUserId,
     hostRemoveParticipantNotice,
     rideshareLinkParent: hostingLauncher.rideshareLinkParent,
@@ -410,9 +409,6 @@ export const useExploreExperienceModel = () => {
     setRideshareLinkParent: hostingLauncher.setRideshareLinkParent,
     setRideshareLinkSeeking: hostingLauncher.setRideshareLinkSeeking,
     closeCreateFlow: hostingLauncher.closeCreateFlow,
-    organizeWizardOpen: hostingLauncher.planHostingWizardOpen,
-    organizeWizardPrefill: hostingLauncher.hostingWizardPrefill,
-    onOrganizeBackToIntent: hostingLauncher.onPlanHostingBackToIntent,
     refreshHostGate,
     exploreSearchModalOpen,
     setExploreSearchModalOpen,

@@ -18,8 +18,8 @@ export const UPL_ACTIVITY = 'Activity';
 export const UPL_HOST = 'Host';
 export const UPL_HOSTED_BY = 'Hosted by';
 
-/** Create / publish on map (capability) */
-export const UPL_ORGANIZE = 'Organize';
+/** Create / publish an outing on the map (FAB Host) */
+export const UPL_HOST_AN_OUTING = 'Host an outing';
 
 /** Map mode: member looking for company */
 export const UPL_SEEKING = 'Looking for company';
@@ -32,7 +32,7 @@ export const UPL_SEEKING = 'Looking for company';
 export const UPL_AREA = 'Area';
 export const UPL_PLACE = 'Place';
 export const UPL_FACILITY = 'Facility';
-export const UPL_MAP_LENS_SPOTS = 'Spots';
+export { MAP_LENS_SPOTS_LABEL as UPL_MAP_LENS_SPOTS } from '../place/geographyVocabulary';
 
 /** People discovery — not map pins */
 export const UPL_PEOPLE = 'People';

@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { useMeWishlist } from '../../hooks/useMeWishlist';
 import { EXPLORE_MAP_PATH } from '../../config/routingCatalog';
 import { explorePath } from '../../explore/routing';
-import { resolveWishlistItemPath, wishlistItemTitle } from '../../member-plan/wishlistDemandBookmark';
+import { resolveWishlistItemPath, wishlistItemTitle } from '../../member-plan/wishlistSavedItem';
 
 export const PlanSavedSection = () => {
   const { items, loading, error, refetch } = useMeWishlist();

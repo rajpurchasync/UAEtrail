@@ -1,3 +1,5 @@
+import { MAP_LENS_SPOTS_LABEL } from '../place/geographyVocabulary';
+
 /** Second-row browse filter — what kind of pin (within topic). See `explore-browse-ia.md`. */
 export type ExplorePinKindFilter = 'all' | 'activities' | 'looking' | 'locations' | 'places' | 'shops';
 
@@ -8,7 +10,7 @@ export type ExplorePinKindFilterLegacyWire = 'trips' | 'locations';
 export const EXPLORE_PIN_KIND_PILLS: ReadonlyArray<{ key: ExplorePinKindFilter; label: string }> = [
   { key: 'all', label: 'All' },
   { key: 'activities', label: 'Activities' },
-  { key: 'places', label: 'Spots' },
+  { key: 'places', label: MAP_LENS_SPOTS_LABEL },
   { key: 'shops', label: 'Shops' },
 ];
 

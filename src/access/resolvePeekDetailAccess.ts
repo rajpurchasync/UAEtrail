@@ -5,19 +5,19 @@ import {
 } from '@uaetrail/shared-types';
 import { activityPeekHasMapWireActions } from '../activity/activityPeekEngagement';
 import { mapViewerAccessToExplorePeekDetail, type ExplorePeekDetailAccess } from './mapViewerAccessToUi';
-import { exploreCardIsSeeking, type ExploreCardModel } from '../explore/exploreCardModel';
+import { discoveryCardIsSeeking, type DiscoveryCardModel } from '../discovery/discoveryCardModel';
 
 export type { ExplorePeekDetailAccess };
 
-export const exploreCardIsHostedPlanPeek = (card: ExploreCardModel): boolean =>
-  card.source === 'activity' || exploreCardIsSeeking(card);
+export const discoveryCardIsHostedPlanPeek = (card: DiscoveryCardModel): boolean =>
+  card.source === 'activity' || discoveryCardIsSeeking(card);
 
-const exploreCardIsCommerceCatalogPeek = (card: ExploreCardModel): boolean =>
+const discoveryCardIsCommerceCatalogPeek = (card: DiscoveryCardModel): boolean =>
   card.source === 'shop' || card.source === 'agency';
 
 /** Map peek title/footer — requires API `viewerAccess` on hosted rows; catalog uses wire or public defaults. */
 export const resolvePeekDetailAccess = (
-  card: ExploreCardModel,
+  card: DiscoveryCardModel,
   options: {
     isGuest: boolean;
     joinStateLoading?: boolean;
@@ -31,24 +31,24 @@ export const resolvePeekDetailAccess = (
     if (card.viewerAccess?.canOpenDetailPage === false) {
       return { kind: 'members_only' };
     }
-    if (card.viewerAccess && exploreCardIsHostedPlanPeek(card)) {
+    if (card.viewerAccess && discoveryCardIsHostedPlanPeek(card)) {
       return mapViewerAccessToExplorePeekDetail(card.viewerAccess, href);
     }
     return { kind: 'link', href };
   }
 
-  if (!exploreCardIsHostedPlanPeek(card)) {
+  if (!discoveryCardIsHostedPlanPeek(card)) {
     if (card.viewerAccess) {
       return mapViewerAccessToExplorePeekDetail(card.viewerAccess, href);
     }
-    if (options.isGuest && exploreCardIsCommerceCatalogPeek(card)) {
+    if (options.isGuest && discoveryCardIsCommerceCatalogPeek(card)) {
       return { kind: 'guest_gate' };
     }
     return { kind: 'link', href };
   }
 
   if (!card.viewerAccess) {
-    if (options.isGuest && !exploreCardIsHostedPlanPeek(card)) {
+    if (options.isGuest && !discoveryCardIsHostedPlanPeek(card)) {
       return { kind: 'guest_gate' };
     }
     return { kind: 'link', href };

@@ -2,7 +2,7 @@
 
  * Compose wizard catalog — one entry per FAB path (Host · Find crew · Add on map).
 
- * Product spec: docs/CREATE_FLOW.md · hostingFlows / seekingFlowEngine / contributeFlow (catalog = place/facility only).
+ * Product spec: docs/CREATE_FLOW.md · hostingFlows / seekingFlowEngine / addFlow (catalog = place/facility only).
 
  */
 
@@ -18,13 +18,13 @@ import type { ActivityType } from '../config/activityTypes';
 
 import type {
 
-  ComposeIntent,
+  FabTopLevel,
 
   ExploreCompose,
 
-  FindComposeKind,
+  SeekingComposeKind,
 
-  OrganizeComposeKind,
+  HostComposeKind,
 
   ParticipationMode,
 
@@ -38,13 +38,11 @@ export type { CanonicalComposeFlowId, ComposeFlowId, LegacyComposeFlowId } from 
 
 export { normalizeComposeFlowId, legacyComposeFlowIdsFor } from './composeFlowIds';
 
-import { composeWireToLegacyWizard } from '@uaetrail/shared-types';
+import { canonicalizeComposeWire } from '@uaetrail/shared-types';
 
-import type { ContributeVenueKind } from './contributeTypes';
+import type { AddFlowStepId } from './ui/addFlow';
 
-import type { ContributeFlowStepId } from './ui/contributeFlow';
-
-import { getContributeFlowSteps } from './ui/contributeFlow';
+import { getAddFlowSteps } from './ui/addFlow';
 
 import type { SeekingFlowStepId, SeekingKind } from './ui/seekingFlowEngine';
 
@@ -54,21 +52,21 @@ import type { CreateFlowStepId } from './ui/hostingFlowEngine';
 
 import {
 
-  organizeActivitiesFlow,
+  activitiesHostingFlow,
 
-  organizeCampingFlow,
+  campingHostingFlow,
 
-  organizeEventsFlow,
+  eventsHostingFlow,
 
-  organizeHikingFlow,
+  hikingHostingFlow,
 
-  organizeRideshareFlow,
+  rideshareHostingFlow,
 
 } from './ui/hostingFlows';
 
 
 
-export const findComposeKindToSeekingKind = (kind: FindComposeKind): SeekingKind => kind;
+export const seekingKindFromComposeKind = (kind: SeekingComposeKind): SeekingKind => kind;
 
 
 
@@ -78,7 +76,7 @@ export type ComposeWizardModule =
 
   | 'seekingFlow'
 
-  | 'contributeFlow';
+  | 'addFlow';
 
 
 
@@ -86,9 +84,9 @@ export type ComposeFlowSpec = {
 
   id: CanonicalComposeFlowId;
 
-  /** Legacy compose flow ids (`plan.*` / `contribute.*`) — v3 wire uses `host.*` / `seek.*` / `add.*`. */
+  /** Canonical FAB wire ids (`host.*` / `seek.*` / `add.*`). */
 
-  intent: ComposeIntent;
+  intent: FabTopLevel;
 
   outingCategory: OutingCategory | null;
 
@@ -98,17 +96,17 @@ export type ComposeFlowSpec = {
 
   requiresHost: boolean;
 
-  /** Organize only — wizard default; host may change before submit. */
+  /** Hosting wizard default; host may change before submit. */
 
   defaultParticipation: ParticipationMode | null;
 
   wizard: ComposeWizardModule;
 
-  organizeSteps?: readonly CreateFlowStepId[];
+  hostingSteps?: readonly CreateFlowStepId[];
 
   seekingSteps?: readonly SeekingFlowStepId[];
 
-  contributeSteps?: readonly ContributeFlowStepId[];
+  addSteps?: readonly AddFlowStepId[];
 
   /** Host publish API activity type when applicable. */
 
@@ -122,11 +120,11 @@ export type ComposeFlowSpec = {
 
 export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpec> = {
 
-  'plan.hiking.hosting': {
+  'host.hiking': {
 
-    id: 'plan.hiking.hosting',
+    id: 'host.hiking',
 
-    intent: 'organize',
+    intent: 'host',
 
     outingCategory: 'hiking',
 
@@ -140,7 +138,7 @@ export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpe
 
     wizard: 'hostingFlow',
 
-    organizeSteps: organizeHikingFlow.defaultSteps,
+    hostingSteps: hikingHostingFlow.defaultSteps,
 
     activityType: 'hiking',
 
@@ -148,11 +146,11 @@ export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpe
 
   },
 
-  'plan.camping.hosting': {
+  'host.camping': {
 
-    id: 'plan.camping.hosting',
+    id: 'host.camping',
 
-    intent: 'organize',
+    intent: 'host',
 
     outingCategory: 'camping',
 
@@ -166,7 +164,7 @@ export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpe
 
     wizard: 'hostingFlow',
 
-    organizeSteps: organizeCampingFlow.defaultSteps,
+    hostingSteps: campingHostingFlow.defaultSteps,
 
     activityType: 'camping',
 
@@ -174,11 +172,11 @@ export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpe
 
   },
 
-  'plan.event.hosting': {
+  'host.event': {
 
-    id: 'plan.event.hosting',
+    id: 'host.event',
 
-    intent: 'organize',
+    intent: 'host',
 
     outingCategory: 'events',
 
@@ -192,7 +190,7 @@ export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpe
 
     wizard: 'hostingFlow',
 
-    organizeSteps: organizeEventsFlow.defaultSteps,
+    hostingSteps: eventsHostingFlow.defaultSteps,
 
     activityType: 'event',
 
@@ -200,11 +198,11 @@ export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpe
 
   },
 
-  'plan.activity.hosting': {
+  'host.activity': {
 
-    id: 'plan.activity.hosting',
+    id: 'host.activity',
 
-    intent: 'organize',
+    intent: 'host',
 
     outingCategory: 'activities',
 
@@ -218,7 +216,7 @@ export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpe
 
     wizard: 'hostingFlow',
 
-    organizeSteps: organizeActivitiesFlow.defaultSteps,
+    hostingSteps: activitiesHostingFlow.defaultSteps,
 
     activityType: 'event',
 
@@ -226,11 +224,11 @@ export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpe
 
   },
 
-  'plan.rideshare.hosting': {
+  'host.rideshare': {
 
-    id: 'plan.rideshare.hosting',
+    id: 'host.rideshare',
 
-    intent: 'organize',
+    intent: 'host',
 
     outingCategory: 'rideshare',
 
@@ -244,7 +242,7 @@ export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpe
 
     wizard: 'hostingFlow',
 
-    organizeSteps: organizeRideshareFlow.defaultSteps,
+    hostingSteps: rideshareHostingFlow.defaultSteps,
 
     activityType: 'rideshare',
 
@@ -252,11 +250,11 @@ export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpe
 
   },
 
-  'plan.hiking.seeking': {
+  'seek.fixed.hiking': {
 
-    id: 'plan.hiking.seeking',
+    id: 'seek.fixed.hiking',
 
-    intent: 'find',
+    intent: 'seek',
 
     outingCategory: 'hiking',
 
@@ -276,11 +274,11 @@ export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpe
 
   },
 
-  'plan.camping.seeking': {
+  'seek.fixed.camping': {
 
-    id: 'plan.camping.seeking',
+    id: 'seek.fixed.camping',
 
-    intent: 'find',
+    intent: 'seek',
 
     outingCategory: 'camping',
 
@@ -300,11 +298,11 @@ export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpe
 
   },
 
-  'plan.event.seeking': {
+  'seek.fixed.event': {
 
-    id: 'plan.event.seeking',
+    id: 'seek.fixed.event',
 
-    intent: 'find',
+    intent: 'seek',
 
     outingCategory: 'activities',
 
@@ -324,11 +322,11 @@ export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpe
 
   },
 
-  'plan.rideshare.seeking': {
+  'seek.fixed.rideshare': {
 
-    id: 'plan.rideshare.seeking',
+    id: 'seek.fixed.rideshare',
 
-    intent: 'find',
+    intent: 'seek',
 
     outingCategory: 'rideshare',
 
@@ -348,9 +346,9 @@ export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpe
 
   },
 
-  'contribute.place.hiking': {
+  'add.place.hiking': {
 
-    id: 'contribute.place.hiking',
+    id: 'add.place.hiking',
 
     intent: 'add',
 
@@ -364,17 +362,17 @@ export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpe
 
     defaultParticipation: null,
 
-    wizard: 'contributeFlow',
+    wizard: 'addFlow',
 
-    contributeSteps: getContributeFlowSteps('hiking'),
+    addSteps: getAddFlowSteps('hiking'),
 
     confirmationDoc: COMPOSE_FLOW_SPEC_DOC,
 
   },
 
-  'contribute.place.camping': {
+  'add.place.camping': {
 
-    id: 'contribute.place.camping',
+    id: 'add.place.camping',
 
     intent: 'add',
 
@@ -388,17 +386,17 @@ export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpe
 
     defaultParticipation: null,
 
-    wizard: 'contributeFlow',
+    wizard: 'addFlow',
 
-    contributeSteps: getContributeFlowSteps('camping'),
+    addSteps: getAddFlowSteps('camping'),
 
     confirmationDoc: COMPOSE_FLOW_SPEC_DOC,
 
   },
 
-  'contribute.place.shop': {
+  'add.place.shop': {
 
-    id: 'contribute.place.shop',
+    id: 'add.place.shop',
 
     intent: 'add',
 
@@ -412,17 +410,17 @@ export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpe
 
     defaultParticipation: null,
 
-    wizard: 'contributeFlow',
+    wizard: 'addFlow',
 
-    contributeSteps: getContributeFlowSteps('shop'),
+    addSteps: getAddFlowSteps('shop'),
 
     confirmationDoc: COMPOSE_FLOW_SPEC_DOC,
 
   },
 
-  'contribute.place.outdoor_other': {
+  'add.place.outdoor_other': {
 
-    id: 'contribute.place.outdoor_other',
+    id: 'add.place.outdoor_other',
 
     intent: 'add',
 
@@ -436,15 +434,15 @@ export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpe
 
     defaultParticipation: null,
 
-    wizard: 'contributeFlow',
+    wizard: 'addFlow',
 
-    contributeSteps: getContributeFlowSteps('event'),
+    addSteps: getAddFlowSteps('event'),
 
   },
 
-  'contribute.facility': {
+  'add.facility': {
 
-    id: 'contribute.facility',
+    id: 'add.facility',
 
     intent: 'add',
 
@@ -458,9 +456,9 @@ export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpe
 
     defaultParticipation: null,
 
-    wizard: 'contributeFlow',
+    wizard: 'addFlow',
 
-    contributeSteps: getContributeFlowSteps('facility'),
+    addSteps: getAddFlowSteps('facility'),
 
   },
 
@@ -474,69 +472,51 @@ export const composeFlowSpec = (id: ComposeFlowId): ComposeFlowSpec =>
 
 
 
-const PLAN_HOSTING_KIND_TO_ID: Record<OrganizeComposeKind, CanonicalComposeFlowId> = {
+const HOST_KIND_TO_FLOW_ID: Record<HostComposeKind, CanonicalComposeFlowId> = {
 
-  hiking: 'plan.hiking.hosting',
+  hiking: 'host.hiking',
 
-  camping: 'plan.camping.hosting',
+  camping: 'host.camping',
 
-  event: 'plan.event.hosting',
+  event: 'host.event',
 
-  rideshare: 'plan.rideshare.hosting',
+  rideshare: 'host.rideshare',
 
-  activity: 'plan.activity.hosting',
-
-};
-
-
-
-export const composeFlowSpecForOrganizeKind = (kind: OrganizeComposeKind): ComposeFlowSpec =>
-
-  composeFlowSpec(PLAN_HOSTING_KIND_TO_ID[kind]);
-
-
-
-const PLAN_SEEKING_KIND_TO_ID: Record<FindComposeKind, CanonicalComposeFlowId> = {
-
-  hiking: 'plan.hiking.seeking',
-
-  camping: 'plan.camping.seeking',
-
-  event: 'plan.event.seeking',
-
-  rideshare: 'plan.rideshare.seeking',
+  activity: 'host.activity',
 
 };
 
 
 
-const LEGACY_ADD_KIND_TO_ID: Record<ContributeVenueKind, CanonicalComposeFlowId> = {
+export const composeFlowSpecForHostKind = (kind: HostComposeKind): ComposeFlowSpec =>
 
-  hiking: 'contribute.place.hiking',
+  composeFlowSpec(HOST_KIND_TO_FLOW_ID[kind]);
 
-  camping: 'contribute.place.camping',
 
-  facility: 'contribute.facility',
 
-  shop: 'contribute.place.shop',
+const SEEK_KIND_TO_FLOW_ID: Record<SeekingComposeKind, CanonicalComposeFlowId> = {
 
-  event: 'contribute.place.outdoor_other',
+  hiking: 'seek.fixed.hiking',
 
-  rideshare: 'contribute.place.outdoor_other',
+  camping: 'seek.fixed.camping',
+
+  event: 'seek.fixed.event',
+
+  rideshare: 'seek.fixed.rideshare',
 
 };
 
 
 
-const contributePlaceKindToId = (kind: string): CanonicalComposeFlowId | null => {
+const addPlaceKindToId = (kind: string): CanonicalComposeFlowId | null => {
 
-  if (kind === 'hiking') return 'contribute.place.hiking';
+  if (kind === 'hiking') return 'add.place.hiking';
 
-  if (kind === 'camping') return 'contribute.place.camping';
+  if (kind === 'camping') return 'add.place.camping';
 
-  if (kind === 'event' || kind === 'outdoor_other') return 'contribute.place.outdoor_other';
+  if (kind === 'event' || kind === 'outdoor_other') return 'add.place.outdoor_other';
 
-  if (kind === 'shop') return 'contribute.place.shop';
+  if (kind === 'shop') return 'add.place.shop';
 
   return null;
 
@@ -544,55 +524,23 @@ const contributePlaceKindToId = (kind: string): CanonicalComposeFlowId | null =>
 
 
 
-/** Resolve catalog entry from an open compose route (v2 `plan:*` / legacy `organize:*`, etc.). */
+/** Resolve catalog entry from an open compose route (`host` / `seek` / `add`; leftover wire inbound-rewritten). */
 
 export const composeFlowIdFromRoute = (route: ExploreCompose | null): CanonicalComposeFlowId | null => {
-
-  if (!route || 'surface' in route) return null;
-
-
-
-  if (route.intent === 'host' && route.kind) {
-    return PLAN_HOSTING_KIND_TO_ID[route.kind];
+  if (!route) return null;
+  const canonical = canonicalizeComposeWire(route);
+  if ('surface' in canonical) return null;
+  if (canonical.intent === 'host' && canonical.kind) return HOST_KIND_TO_FLOW_ID[canonical.kind];
+  if (canonical.intent === 'seek' && canonical.mode === 'fixed' && canonical.kind) {
+    return SEEK_KIND_TO_FLOW_ID[canonical.kind];
   }
-
-  if (route.intent === 'seek' && route.mode === 'fixed' && route.kind) {
-    return PLAN_SEEKING_KIND_TO_ID[route.kind as FindComposeKind];
+  if (canonical.intent === 'add' && 'target' in canonical) {
+    if (canonical.target === 'facility') return 'add.facility';
+    return addPlaceKindToId(canonical.kind);
   }
-
-  if (route.intent === 'plan' && 'mode' in route && route.kind) {
-
-    if (route.mode === 'hosting') return PLAN_HOSTING_KIND_TO_ID[route.kind];
-
-    if (route.mode === 'seeking') return PLAN_SEEKING_KIND_TO_ID[route.kind as FindComposeKind];
-
-  }
-
-
-
-  if ((route.intent === 'add' || route.intent === 'contribute') && 'target' in route) {
-
-    if (route.target === 'facility') return 'contribute.facility';
-
-    return contributePlaceKindToId(route.kind);
-
-  }
-
-
-
-  const legacy = composeWireToLegacyWizard(route);
-
-  if ('surface' in legacy) return null;
-
-  if (legacy.intent === 'organize' && legacy.kind) return PLAN_HOSTING_KIND_TO_ID[legacy.kind];
-
-  if (legacy.intent === 'find' && legacy.kind) return PLAN_SEEKING_KIND_TO_ID[legacy.kind];
-
-  if (legacy.intent === 'add' && legacy.kind) return LEGACY_ADD_KIND_TO_ID[legacy.kind];
-
   return null;
-
 };
+
 
 
 
@@ -606,15 +554,15 @@ export const composeFlowSpecFromRoute = (route: ExploreCompose | null): ComposeF
 
 
 
-/** Default participation for an open organize wizard — catalog wins over compose helpers. */
+/** Default participation for an open hosting wizard — catalog wins over compose helpers. */
 
-export const defaultParticipationForOrganizeRoute = (
+export const defaultParticipationForHostRoute = (
 
-  kind: OrganizeComposeKind
+  kind: HostComposeKind
 
 ): ParticipationMode | null => {
 
-  const spec = composeFlowSpecFromRoute({ intent: 'plan', kind, mode: 'hosting' });
+  const spec = composeFlowSpecFromRoute({ intent: 'host', kind });
 
   return spec?.defaultParticipation ?? null;
 

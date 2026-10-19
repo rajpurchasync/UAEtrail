@@ -1,4 +1,4 @@
-import { DEMAND_EMOJI } from '../../explore/exploreCopy';
+import { SEEKING_EMOJI } from '../../explore/exploreCopy';
 import {
   ExploreFilterIcon,
   type ExploreFilterEmojiContext,
@@ -23,7 +23,7 @@ const TopicEmoji = ({
   if (pill.id === 'topic-looking') {
     return (
       <span className="font-emoji text-[1.35rem] leading-none sm:text-[1.45rem]" aria-hidden>
-        {DEMAND_EMOJI}
+        {SEEKING_EMOJI}
       </span>
     );
   }

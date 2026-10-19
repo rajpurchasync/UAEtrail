@@ -1,11 +1,11 @@
 import { Bookmark, Heart } from 'lucide-react';
-import type { ExploreCardModel } from '../../../explore/exploreCardModel';
+import type { DiscoveryCardModel } from '../../../discovery/discoveryCardModel';
 import { ShareButton } from '../../../components/ui/ShareButton';
 import { useExploreEntityFollow } from '../../../explore/ui/useExploreEntityFollow';
 import { useExploreWishlistSave } from '../../../explore/ui/useExploreWishlistSave';
 
 interface ListFeedPosterEngagementBarProps {
-  card: ExploreCardModel;
+  card: DiscoveryCardModel;
 }
 
 const actionShell =

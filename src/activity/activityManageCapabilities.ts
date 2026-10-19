@@ -45,10 +45,3 @@ export const activityManageCapabilities = (
     kindLabel: kindLabel(activity),
   };
 };
-
-/** @deprecated Use {@link activityManageCapabilities}. */
-export const hostActivityManageCapabilities = activityManageCapabilities;
-/** @deprecated Use {@link ActivityManageCapabilityOptions}. */
-export type HostManageCapabilityOptions = ActivityManageCapabilityOptions;
-/** @deprecated Use {@link ActivityManageCapabilities}. */
-export type HostManageCapabilities = ActivityManageCapabilities;

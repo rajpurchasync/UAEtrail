@@ -5,7 +5,7 @@ import { cancelActivity } from '../../hooks/tenantActivityClientApi';
 import { reloadExploreMap } from '../../hooks/useExploreMap';
 import type { ActivityManageInitialView } from '../../components/activity/activityManageViews';
 
-/** Organizer cancel hosted/seeking activity from map context (C18). */
+/** Host cancel hosted/seeking activity from map context (C18). */
 export const useExploreSelectionRemovals = (input: {
   tenantId: string | null | undefined;
   queryClient: QueryClient;

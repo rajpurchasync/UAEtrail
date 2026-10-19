@@ -25,6 +25,3 @@ export const activityManageSubviewTitle = (
       return activityTitle;
   }
 };
-
-/** @deprecated Use {@link activityManageSubviewTitle}. */
-export const hostActivityManageSubviewTitle = activityManageSubviewTitle;

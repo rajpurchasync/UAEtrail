@@ -7,9 +7,6 @@ export type HostingRegistryVenueConfig = {
   omitWhenRegistry: readonly CreateFlowStepId[];
 };
 
-/** @deprecated Use {@link HostingRegistryVenueConfig}. */
-export type OrganizeRegistryVenueConfig = HostingRegistryVenueConfig;
-
 /** Per activity-kind **hosting** wizard — steps, validation, registry venue rules (not place/facility catalog submit). */
 export type HostingKindFlow = {
   id: CanonicalComposeFlowId;
@@ -24,8 +21,3 @@ export type HostingKindFlow = {
   validateStep: (step: CreateFlowStepId, draft: CreateActivityDraft) => string | null;
 };
 
-/** @deprecated Use {@link HostingKindFlow}. */
-export type HostingCatalogFlow = HostingKindFlow;
-
-/** @deprecated Use {@link HostingKindFlow}. */
-export type OrganizeCatalogFlow = HostingKindFlow;

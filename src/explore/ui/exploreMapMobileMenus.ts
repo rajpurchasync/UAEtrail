@@ -1,3 +1,4 @@
+import { MAP_LENS_SPOTS_LABEL } from '../../place/geographyVocabulary';
 import type { ExplorePanel, MapFilterKey } from '../routing';
 
 export type ExploreMobileActivityMenuKey =
@@ -36,7 +37,7 @@ export const EXPLORE_MOBILE_PLACES_MENU: ReadonlyArray<{
   { key: 'all', label: 'All' },
   { key: 'uae', label: 'UAE' },
   { key: 'trails', label: 'Trails' },
-  { key: 'spots', label: 'Spots' },
+  { key: 'spots', label: MAP_LENS_SPOTS_LABEL },
   { key: 'shops', label: 'Shops' },
   { key: 'camping', label: 'Camping' },
   { key: 'others', label: 'Others' },

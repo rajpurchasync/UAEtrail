@@ -8,9 +8,9 @@ import {
   resolveActivityMapPeekStrips,
   resolveActivityPeekEngagement,
 } from '../activity/activityPeekEngagement';
-import type { ExploreCardModel } from './exploreCardModel';
+import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
 
-const activityCard = (overrides: Partial<ExploreCardModel> = {}): ExploreCardModel =>
+const activityCard = (overrides: Partial<DiscoveryCardModel> = {}): DiscoveryCardModel =>
   ({
     id: 'activity:a1',
     path: '/activity/a1',
@@ -33,7 +33,7 @@ const activityCard = (overrides: Partial<ExploreCardModel> = {}): ExploreCardMod
     sharePath: '/explore?pin=activity:a1',
     sections: { details: [], aboutLine: null },
     activityId: 'a1',
-    activity: { id: 'a1', status: 'published' } as ExploreCardModel['activity'],
+    activity: { id: 'a1', status: 'published' } as DiscoveryCardModel['activity'],
     viewerAccess: {
       exposure: 'full',
       level: 'participant',
@@ -48,7 +48,7 @@ const activityCard = (overrides: Partial<ExploreCardModel> = {}): ExploreCardMod
       ],
     },
     ...overrides,
-  }) as ExploreCardModel;
+  }) as DiscoveryCardModel;
 
 describe('resolveActivityMapPeekStrips', () => {
   it('uses API mapPeekStrips when present', () => {

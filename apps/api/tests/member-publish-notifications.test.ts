@@ -64,13 +64,13 @@ describe('notifyMemberPublishSubscribers', () => {
     expect(row.meta.path).toBe('/activity/act-1');
   });
 
-  it('notifies buddies only for demand posts (followers excluded)', async () => {
+  it('notifies buddies only for seeking posts (followers excluded)', async () => {
     mocks.listBuddiesForUser.mockResolvedValue([{ userId: 'buddy-1' }]);
     mocks.listFollowerIdsForUser.mockResolvedValue(['follower-1']);
 
     await notifyMemberPublishSubscribers('publisher', {
-      publishType: 'demand',
-      intentId: 'demand-1',
+      publishType: 'seeking',
+      intentId: 'seek-1',
       title: 'Looking for a crew',
     });
 
@@ -83,6 +83,6 @@ describe('notifyMemberPublishSubscribers', () => {
       meta: Record<string, string>;
     };
     expect(row.meta.kind).toBe('friend_published');
-    expect(row.meta.intentId).toBe('demand-1');
+    expect(row.meta.intentId).toBe('seek-1');
   });
 });

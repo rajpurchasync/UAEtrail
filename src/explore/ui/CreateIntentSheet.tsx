@@ -12,13 +12,13 @@ import {
 
   COMPOSE_MENU_TITLE,
 
-  CONTRIBUTE_PLACE_OPTIONS,
+  ADD_PLACE_OPTIONS,
 
-  CONTRIBUTE_TARGET_OPTIONS,
+  ADD_TARGET_OPTIONS,
 
-  FIND_COMPOSE_OPTIONS,
+  SEEK_FIXED_COMPOSE_OPTIONS,
 
-  PLAN_COMPOSE_OPTIONS,
+  HOST_COMPOSE_OPTIONS,
 
   SEEK_MODE_OPTIONS,
 
@@ -40,7 +40,7 @@ import {
 
 } from '../compose';
 
-import type { SeekingPlanKind } from '@uaetrail/shared-types';
+import type { SeekingComposeKind } from '@uaetrail/shared-types';
 
 import { EXPLORE_COMPOSE, EXPLORE_FLOW, EXPLORE_Z } from '../../config/exploreTheme';
 
@@ -175,9 +175,7 @@ export const CreateIntentSheet = ({ route, onRouteChange, onClose }: CreateInten
     if (
       route.intent === 'host' ||
       route.intent === 'seek' ||
-      route.intent === 'add' ||
-      route.intent === 'contribute' ||
-      route.intent === 'plan'
+      route.intent === 'add'
     ) {
       onRouteChange({ surface: 'menu' });
       return;
@@ -191,7 +189,7 @@ export const CreateIntentSheet = ({ route, onRouteChange, onClose }: CreateInten
 
   const showTopLevel = !route.intent;
 
-  const showHostKinds = route.intent === 'host' || route.intent === 'plan';
+  const showHostKinds = route.intent === 'host';
 
   const showSeekModes = route.intent === 'seek' && !isSeekFixedKindStep(route);
 
@@ -199,11 +197,11 @@ export const CreateIntentSheet = ({ route, onRouteChange, onClose }: CreateInten
 
   const showAddTargets =
 
-    (route.intent === 'add' || route.intent === 'contribute') && !('target' in route);
+    route.intent === 'add' && !('target' in route);
 
   const showAddPlaceKinds =
 
-    (route.intent === 'add' || route.intent === 'contribute') &&
+    route.intent === 'add' &&
 
     'target' in route &&
 
@@ -303,7 +301,7 @@ export const CreateIntentSheet = ({ route, onRouteChange, onClose }: CreateInten
 
               <div className={EXPLORE_FLOW.choiceGrid2}>
 
-                {PLAN_COMPOSE_OPTIONS.map((option) => (
+                {HOST_COMPOSE_OPTIONS.map((option) => (
 
                   <button
 
@@ -397,7 +395,7 @@ export const CreateIntentSheet = ({ route, onRouteChange, onClose }: CreateInten
 
               <div className={EXPLORE_FLOW.choiceGrid2}>
 
-                {FIND_COMPOSE_OPTIONS.map((option) => (
+                {SEEK_FIXED_COMPOSE_OPTIONS.map((option) => (
 
                   <button
 
@@ -405,7 +403,7 @@ export const CreateIntentSheet = ({ route, onRouteChange, onClose }: CreateInten
 
                     type="button"
 
-                    onClick={() => onRouteChange(seekFixedCompose(option.kind as SeekingPlanKind))}
+                    onClick={() => onRouteChange(seekFixedCompose(option.kind as SeekingComposeKind))}
 
                     className={exploreFlowKindTileClass(false)}
 
@@ -439,7 +437,7 @@ export const CreateIntentSheet = ({ route, onRouteChange, onClose }: CreateInten
 
               <div className={`${menuGroupClass} divide-y divide-neutral-100`}>
 
-                {CONTRIBUTE_TARGET_OPTIONS.map((option) => (
+                {ADD_TARGET_OPTIONS.map((option) => (
 
                   <button
 
@@ -491,7 +489,7 @@ export const CreateIntentSheet = ({ route, onRouteChange, onClose }: CreateInten
 
               <div className={EXPLORE_FLOW.choiceGrid2}>
 
-                {CONTRIBUTE_PLACE_OPTIONS.map((option) => (
+                {ADD_PLACE_OPTIONS.map((option) => (
 
                   <button
 

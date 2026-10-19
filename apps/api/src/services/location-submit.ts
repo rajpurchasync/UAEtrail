@@ -1,7 +1,7 @@
 import {
   deriveVenueAccessibilityFromAccessibleBy,
-  encodeShopContributeTags,
-  isContributableFacilityPlaceKind,
+  encodeCommunityShopTags,
+  isAddableFacilityPlaceKind,
   mergeVenueAreaTag,
   stampGroupRegionLevelsFromGeo,
   tagsForPlaceKind,
@@ -77,11 +77,11 @@ export const buildLocationCreateData = (
 ): LocationCreateData => {
   const shop = isShopSubmit(body);
   const facilityKind =
-    body.facilityKind && isContributableFacilityPlaceKind(body.facilityKind as PlaceKind)
+    body.facilityKind && isAddableFacilityPlaceKind(body.facilityKind as PlaceKind)
       ? (body.facilityKind as PlaceKind)
       : null;
   const shopTags = shop
-    ? encodeShopContributeTags({
+    ? encodeCommunityShopTags({
         searchKeywords: body.shopSearchKeywords ?? '',
         deliveryOffered: body.shopDeliveryOffered === true,
         deliveryRadiusKm: body.shopDeliveryRadiusKm ?? null,

@@ -7,7 +7,7 @@ import {
   resolveBrowsePosterRequirementLabels,
   resolveBrowsePosterScheduleGrid,
 } from '../../listPosterPresentation';
-import type { ExploreCardModel } from '../../../explore/exploreCardModel';
+import type { DiscoveryCardModel } from '../../../discovery/discoveryCardModel';
 
 export type ResolvedPosterCopy = {
   placeLine: string | null;
@@ -19,7 +19,7 @@ export type ResolvedPosterCopy = {
   requirementLabels: string[];
 };
 
-export const resolveListPosterCopy = (card: ExploreCardModel): ResolvedPosterCopy => {
+export const resolveListPosterCopy = (card: DiscoveryCardModel): ResolvedPosterCopy => {
   const heroTitle = resolveBrowsePosterHeroTitle(card);
   return {
     placeLine: resolveBrowsePosterPlaceLine(card),

@@ -120,8 +120,6 @@ export const organisationProfilePath = (
   kind: PublishingProfileKind = 'pro_guide'
 ): string | null => hostBrandProfilePath(tenantSlug, kind);
 
-/** @deprecated Use {@link hostBrandProfilePath} */
-export const hostStorefrontProfilePath = hostBrandProfilePath;
 
 /**
  * Where the viewer tapped through from — same {@link memberProfilePath} page layout;

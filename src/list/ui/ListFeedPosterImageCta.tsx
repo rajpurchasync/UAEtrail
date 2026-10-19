@@ -1,11 +1,11 @@
-import type { ExploreCardModel } from '../../explore/exploreCardModel';
+import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import { DirectionsControl } from '../../components/ui/DirectionsControl';
 import { EXPLORE_BRAND_ACTIVE, EXPLORE_TYPE } from '../../config/exploreTheme';
 import { shouldShowListFeedImageCta } from '../listFeedFooterActions';
 import { useListFeedActions } from './ListFeedActionsProvider';
 
 interface ListFeedPosterImageCtaProps {
-  card: ExploreCardModel;
+  card: DiscoveryCardModel;
   /** `stacked` — full-width row below hero; `overlay` — absolute on image bottom. */
   placement?: 'stacked' | 'overlay';
 }

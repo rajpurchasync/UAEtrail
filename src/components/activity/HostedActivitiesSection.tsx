@@ -12,7 +12,7 @@ import {
 import { ActivityManageSheet } from '../../components/activity/ActivityManageSheet';
 import { HostedActivityListRow } from '../../components/activity/HostedActivityListRow';
 import {
-  exploreOrganizePath,
+  exploreHostPath,
   planHostedSchedulePath,
 } from '../../config/routingCatalog';
 import { matchesActivitySearch } from '../../utils/activitySearch';
@@ -207,7 +207,7 @@ export const HostedActivitiesSection = ({
             lockedTab === 'upcoming' ? 'No upcoming hosted activities.' : 'No past hosted activities yet.'
           }
           actionLabel="Create activity"
-          actionTo={exploreOrganizePath()}
+          actionTo={exploreHostPath()}
         />
       ) : filteredActivities.length === 0 ? (
         <ConsumerInlineEmpty message="No hosted activities match your search." />

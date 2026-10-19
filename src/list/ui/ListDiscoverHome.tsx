@@ -1,5 +1,5 @@
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
-import type { ExploreCardModel } from '../../explore/exploreCardModel';
+import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import type { BrowseMainCategoryKey } from '../browseListTaxonomy';
 import { LIST_CHROME } from '../listChromeTheme';
 import { buildListDiscoverRails, type ListDiscoverRail } from '../listDiscoverRails';
@@ -7,7 +7,7 @@ import { ListDiscoverCategoryNavigateRow } from './ListDiscoverCategoryNavigateR
 import { ListDiscoverRailPreviewCard } from './ListDiscoverRailPreviewCard';
 
 interface ListDiscoverHomeProps {
-  cards: ExploreCardModel[];
+  cards: DiscoveryCardModel[];
   mapItems: ExploreMapItemDTO[];
   onOpenCategory: (key: BrowseMainCategoryKey, patch?: { placeTopics?: import('../listVenuePlaceTopics').ListVenuePlaceTopicKey[] }) => void;
 }

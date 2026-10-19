@@ -117,8 +117,8 @@ const LINE_ALLOW_SUBSTRINGS = [
 
 const BANNED_LINE_PATTERNS: Array<{ pattern: RegExp; hint: string }> = [
   { pattern: /\bHost console\b/, hint: 'Use Workspace or organizer/operator workspace' },
-  { pattern: /\bHost an activity\b/i, hint: 'Use Organize an outing' },
-  { pattern: /\bHost outings\b/, hint: 'Use Organize outings' },
+  { pattern: /\bHost an activity\b/i, hint: 'Use Host an outing' },
+  { pattern: /\bOrganize outing/, hint: 'Use Host an outing / Host outings (UPL Host = lead this outing)' },
   { pattern: /\bHosts & shops\b/, hint: 'Use Hosts & operators' },
   { pattern: /\bHosts & hosting\b/, hint: 'Use Hosts & operators' },
   { pattern: /\bBecome a host\b/i, hint: 'Use Pro membership / guide or agency setup' },
@@ -127,7 +127,7 @@ const BANNED_LINE_PATTERNS: Array<{ pattern: RegExp; hint: string }> = [
   { pattern: /\bSuspend host\b/i, hint: 'Use Suspend publishing account' },
   { pattern: /\bNo hosts found\b/i, hint: 'Use No publishing accounts found' },
   { pattern: /\bHost name\b/, hint: 'Use Display name or brand name' },
-  { pattern: /\bhost your own\b/i, hint: 'Use organize your own' },
+  { pattern: /\borganize your own\b/i, hint: 'Use host your own' },
   { pattern: /\bHost publishing console\b/i, hint: 'Use Publishing workspace' },
   { pattern: /\bHost = user\b/, hint: 'Use Publishing actor = user (wire doc)' },
   { pattern: /\bHost console \(`\/host/, hint: 'Use Publishing workspace (`/host' },

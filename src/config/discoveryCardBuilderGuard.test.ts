@@ -11,7 +11,7 @@ const BUILD_DISCOVERY_CARD_MODEL_ALLOWLIST = new Set([
 ]);
 
 const usesDirectCardModelBuild = (source: string): boolean =>
-  /\bbuildExploreCardModel\b/.test(source) || /\bbuildDiscoveryCardModel\b/.test(source);
+  /\bbuildDiscoveryCardModel\b/.test(source) || /\bbuildDiscoveryCardModel\b/.test(source);
 
 const collectSourceFiles = (dir: string): string[] => {
   const entries = readdirSync(dir);

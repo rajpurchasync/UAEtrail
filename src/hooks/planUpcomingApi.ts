@@ -27,9 +27,6 @@ export const fetchMySeekingPosts = async (): Promise<ParticipantIntentDTO[]> => 
   return res.data;
 };
 
-/** @deprecated Use {@link fetchMySeekingPosts}. */
-export const fetchMyParticipantIntents = fetchMySeekingPosts;
-
 export const fetchMyJoinedActivities = async (): Promise<MyActivityDTO[]> => {
   const res = await api.getMeActivities();
   return res.data;
@@ -61,7 +58,7 @@ export const fetchMemberPlanCalendarSources = async (): Promise<{
   const [activities, requests, seekingIntents] = await Promise.all([
     fetchMyJoinedActivities(),
     fetchMyActivityJoinRequests(),
-    fetchMyParticipantIntents(),
+    fetchMySeekingPosts(),
   ]);
   return { activities, requests, seekingIntents };
 };

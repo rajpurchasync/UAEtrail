@@ -2,18 +2,19 @@ import type {
   ActivityViewerAccessDTO,
   ExploreActivityMode,
   ExploreAreaLensStatsDTO,
-  ExploreCardKind,
-  ExploreCardSource,
+  DiscoveryCardKind,
+  DiscoveryCardSource,
   ExploreLinkedRideshareDTO,
   ExploreMapItemDTO,
   ExploreMapPersonDTO,
-  ExplorePlanComposeIntent,
+  ExploreMapComposeIntent,
   OutingCategory,
   ParticipantPreviewDTO,
   CatalogProfileExposure,
 } from '@uaetrail/shared-types';
 import {
-  buildExploreCardPresentation,
+  buildDiscoveryCardPresentation,
+  canonicalizeMapComposeIntent,
   exploreMapItemIsSeeking,
   isGeographyMapSource,
   isPeekOnlyCatalogProfile,
@@ -25,24 +26,24 @@ import { groupRegionTextAtBrowseFilterLevel } from '../config/groupRegionFilter'
 import {
   buildExploreRouteLabel,
   buildExploreWhenSegment,
-  type ExploreCardSections,
+  type DiscoveryCardSections,
 } from '../explore/exploreCopy';
 import { resolveExplorePrice, type ExplorePriceInfo } from '../explore/explorePriceLabel';
 import { enrichExploreActivityRequirementBadges } from '../explore/exploreRequirementBadges';
 import { exploreMapItemSharePath } from '../explore/routing';
 import { resolveExploreCoverImage } from '../explore/exploreCoverImage';
 
-export type { ExploreCardKind, ExploreCardSource } from '@uaetrail/shared-types';
+export type { DiscoveryCardKind, DiscoveryCardSource } from '@uaetrail/shared-types';
 
-export type ExploreCardTone = ExploreCardKind;
+export type DiscoveryCardTone = DiscoveryCardKind;
 
 /** Discovery projection for map pins, list rows, and peek chrome. */
 export interface DiscoveryCardModel {
   id: string;
   path: string;
-  source: ExploreCardSource;
-  kind: ExploreCardKind;
-  tone: ExploreCardTone;
+  source: DiscoveryCardSource;
+  kind: DiscoveryCardKind;
+  tone: DiscoveryCardTone;
   emoji: string;
   headline: string;
   listTitle: string;
@@ -64,7 +65,7 @@ export interface DiscoveryCardModel {
   requesterUserId?: string | null;
   routeLabel?: string | null;
   whenLabel?: string | null;
-  sections: ExploreCardSections;
+  sections: DiscoveryCardSections;
   hostAvatar?: string | null;
   participantPreviews?: ParticipantPreviewDTO[];
   activity?: ExploreMapItemDTO['activity'];
@@ -77,7 +78,7 @@ export interface DiscoveryCardModel {
   activityId?: string | null;
   participantIntentId?: string | null;
   outingCategory?: OutingCategory | null;
-  composeIntent?: ExplorePlanComposeIntent | null;
+  composeIntent?: ExploreMapComposeIntent | null;
   merchantId?: string | null;
   tenantId?: string | null;
   profileUserId?: string | null;
@@ -107,9 +108,6 @@ export interface DiscoveryCardModel {
   areaLensStats?: ExploreAreaLensStatsDTO | null;
 }
 
-/** @deprecated Prefer {@link DiscoveryCardModel}. */
-export type ExploreCardModel = DiscoveryCardModel;
-
 const resolveCoverImage = (item: ExploreMapItemDTO): string | null =>
   resolveExploreCoverImage(
     item.locationCard?.images?.[0],
@@ -126,9 +124,6 @@ export const discoveryCardIsSeeking = (
     'source' | 'composeIntent' | 'participantIntentId' | 'id' | 'activityMode'
   >
 ): boolean => exploreMapItemIsSeeking(card);
-
-/** @deprecated Use {@link discoveryCardIsSeeking}. */
-export const exploreCardIsSeeking = discoveryCardIsSeeking;
 
 /** Map/list peek uses `resolveActivityPeekEngagement` (hosted + M0 seeking). */
 export const discoveryCardUsesActivityPeekEngagement = (
@@ -153,11 +148,8 @@ export const buildDiscoveryListMeta = (card: DiscoveryCardModel): string | null 
   return null;
 };
 
-/** @deprecated Use {@link buildDiscoveryListMeta}. */
-export const buildExploreListMeta = buildDiscoveryListMeta;
-
 export const buildDiscoveryCardModel = (item: ExploreMapItemDTO): DiscoveryCardModel => {
-  const presentation = item.presentation ?? buildExploreCardPresentation(item);
+  const presentation = item.presentation ?? buildDiscoveryCardPresentation(item);
   const kind = presentation.kind;
   const source = exploreMapItemIsSeeking(item) ? 'activity' : presentation.source;
   const featuredPerson = item.featuredPerson ?? presentation.featuredPerson ?? resolveExploreFeaturedPerson(item);
@@ -243,7 +235,7 @@ export const buildDiscoveryCardModel = (item: ExploreMapItemDTO): DiscoveryCardM
     participantIntentId:
       seeking && !activity?.id ? item.participantIntentId ?? null : null,
     outingCategory: item.outingCategory ?? null,
-    composeIntent: item.composeIntent ?? null,
+    composeIntent: canonicalizeMapComposeIntent(item.composeIntent) ?? null,
     merchantId: item.merchantId ?? null,
     tenantId: item.tenantId ?? item.activity?.tenantId ?? null,
     profileUserId: featuredPerson?.userId ?? item.requesterUserId ?? item.activity?.hostUserId ?? null,
@@ -299,10 +291,7 @@ export const buildDiscoveryCardModel = (item: ExploreMapItemDTO): DiscoveryCardM
   };
 };
 
-/** @deprecated Use {@link buildDiscoveryCardModel}. */
-export const buildExploreCardModel = buildDiscoveryCardModel;
-
-export const discoveryCardToneClass: Record<ExploreCardTone, string> = {
+export const discoveryCardToneClass: Record<DiscoveryCardTone, string> = {
   hiking: 'bg-emerald-50 text-emerald-900',
   camping: 'bg-amber-50 text-amber-900',
   event: 'bg-violet-50 text-violet-900',
@@ -312,10 +301,7 @@ export const discoveryCardToneClass: Record<ExploreCardTone, string> = {
   area: 'bg-slate-50 text-slate-900',
 };
 
-/** @deprecated Use {@link discoveryCardToneClass}. */
-export const exploreCardToneClass = discoveryCardToneClass;
-
-export const discoveryCardToneTextClass: Record<ExploreCardTone, string> = {
+export const discoveryCardToneTextClass: Record<DiscoveryCardTone, string> = {
   hiking: 'text-emerald-800',
   camping: 'text-amber-800',
   event: 'text-violet-800',
@@ -325,14 +311,8 @@ export const discoveryCardToneTextClass: Record<ExploreCardTone, string> = {
   area: 'text-slate-800',
 };
 
-/** @deprecated Use {@link discoveryCardToneTextClass}. */
-export const exploreCardToneTextClass = discoveryCardToneTextClass;
-
 export const discoveryCardHasMapCoords = (card: DiscoveryCardModel): boolean =>
   card.mapLatitude != null && card.mapLongitude != null;
-
-/** @deprecated Use {@link discoveryCardHasMapCoords}. */
-export const exploreCardHasMapCoords = discoveryCardHasMapCoords;
 
 const discoveryCardHostUserId = (card: DiscoveryCardModel): string | null =>
   card.activity?.hostUserId ??
@@ -342,7 +322,7 @@ const discoveryCardHostUserId = (card: DiscoveryCardModel): string | null =>
   null;
 
 /** Profile href for the host / requester row on explore cards and map peek. */
-export const resolveExploreCardHostProfilePath = (card: ExploreCardModel): string | null => {
+export const resolveDiscoveryCardHostProfilePath = (card: DiscoveryCardModel): string | null => {
   if (card.source === 'activity' && card.activity) {
     return resolveActivityPublisherProfilePath({
       publishingProfileKind: card.activity.publishingProfileKind ?? 'community',
@@ -354,8 +334,8 @@ export const resolveExploreCardHostProfilePath = (card: ExploreCardModel): strin
 };
 
 /** Activity peek — signed-in members may open host profile; guests sign up first. */
-export const exploreCardCanOpenHostProfile = (
-  card: ExploreCardModel,
+export const discoveryCardCanOpenHostProfile = (
+  card: DiscoveryCardModel,
   options: { isGuest: boolean }
 ): boolean => {
   if (card.source === 'activity') return !options.isGuest;
@@ -364,15 +344,15 @@ export const exploreCardCanOpenHostProfile = (
 };
 
 /** Scheduled activities — no directions on map peek (venues/shops keep them). */
-export const exploreCardPeekShowsDirections = (card: ExploreCardModel): boolean =>
+export const discoveryCardPeekShowsDirections = (card: DiscoveryCardModel): boolean =>
   card.source !== 'activity';
 
 /** Activity peek — no place/operator follow (venues and shops keep follow). */
-export const exploreCardPeekShowsFollow = (card: ExploreCardModel): boolean =>
+export const discoveryCardPeekShowsFollow = (card: DiscoveryCardModel): boolean =>
   card.source !== 'activity';
 
 /** Hosted activity with a capacity cap and no open spots left. */
-export const exploreCardActivityJoinIsFull = (card: ExploreCardModel): boolean => {
+export const discoveryCardActivityJoinIsFull = (card: DiscoveryCardModel): boolean => {
   const total = card.activity?.slotsTotal ?? 0;
   if (total <= 0) return false;
   const available = card.activity?.slotsAvailable;
@@ -380,18 +360,18 @@ export const exploreCardActivityJoinIsFull = (card: ExploreCardModel): boolean =
   return available <= 0;
 };
 
-export const exploreCardActivityShowsPeekSpots = (card: ExploreCardModel): boolean =>
+export const discoveryCardActivityShowsPeekSpots = (card: DiscoveryCardModel): boolean =>
   (card.activity?.slotsTotal ?? 0) > 0 && Boolean(card.sections.partyLabel);
 
 /** Peek body already shows “Get Directions” on the location row. */
-export const exploreCardShowsInlineDirections = (card: ExploreCardModel): boolean =>
-  exploreCardPeekShowsDirections(card) &&
-  exploreCardHasMapCoords(card) &&
+export const discoveryCardShowsInlineDirections = (card: DiscoveryCardModel): boolean =>
+  discoveryCardPeekShowsDirections(card) &&
+  discoveryCardHasMapCoords(card) &&
   card.sections.details.some((detail) => detail.icon === 'location');
 
 /** Peek action row already includes directions (join activities, shops with review CTAs). */
-export const exploreCardPeekActionsHasDirections = (card: ExploreCardModel): boolean => {
-  if (!exploreCardHasMapCoords(card) || exploreCardShowsInlineDirections(card)) return false;
+export const discoveryCardPeekActionsHasDirections = (card: DiscoveryCardModel): boolean => {
+  if (!discoveryCardHasMapCoords(card) || discoveryCardShowsInlineDirections(card)) return false;
   if (isGeographyMapSource(card.source)) return true;
   if (card.showJoinActions && card.source !== 'activity') return true;
   if (card.source === 'shop' && card.reviewPath) return true;
@@ -399,11 +379,11 @@ export const exploreCardPeekActionsHasDirections = (card: ExploreCardModel): boo
 };
 
 /** Extra directions row in peek body — only when not inline and not in peek actions. */
-export const exploreCardShowPeekBodyDirections = (card: ExploreCardModel): boolean =>
-  exploreCardPeekShowsDirections(card) &&
-  exploreCardHasMapCoords(card) &&
-  !exploreCardShowsInlineDirections(card) &&
-  !exploreCardPeekActionsHasDirections(card);
+export const discoveryCardShowPeekBodyDirections = (card: DiscoveryCardModel): boolean =>
+  discoveryCardPeekShowsDirections(card) &&
+  discoveryCardHasMapCoords(card) &&
+  !discoveryCardShowsInlineDirections(card) &&
+  !discoveryCardPeekActionsHasDirections(card);
 
 export type ExploreEntityFollowPayload = {
   locationId?: string;
@@ -413,9 +393,9 @@ export type ExploreEntityFollowPayload = {
 
 /** Resolve place / host team / shop follow target for this explore card. */
 export const resolveExploreEntityFollowTarget = (
-  card: ExploreCardModel
+  card: DiscoveryCardModel
 ): ExploreEntityFollowPayload | null => {
-  if (exploreCardIsSeeking(card)) return null;
+  if (discoveryCardIsSeeking(card)) return null;
   if (isGeographyMapSource(card.source) && card.locationId) return { locationId: card.locationId };
   if (card.source === 'activity') {
     if (card.locationId) return { locationId: card.locationId };
@@ -438,7 +418,7 @@ export type ExploreWishlistTarget = {
   watchLongitude?: number | null;
 };
 
-const outingCategoryFromCardKind = (card: ExploreCardModel): OutingCategory | null => {
+const outingCategoryFromCardKind = (card: DiscoveryCardModel): OutingCategory | null => {
   if (card.outingCategory) return card.outingCategory;
   if (card.kind === 'rideshare') return 'rideshare';
   if (card.kind === 'hiking' || card.kind === 'camping') return card.kind;
@@ -446,7 +426,7 @@ const outingCategoryFromCardKind = (card: ExploreCardModel): OutingCategory | nu
   return null;
 };
 
-const watchMetaFromCard = (card: ExploreCardModel) => ({
+const watchMetaFromCard = (card: DiscoveryCardModel) => ({
   alertOnMatch: true,
   watchOutingCategory: outingCategoryFromCardKind(card),
   watchLatitude: card.mapLatitude ?? null,
@@ -454,9 +434,9 @@ const watchMetaFromCard = (card: ExploreCardModel) => ({
 });
 
 /** Wishlist = private venue or activity save — not demand, shops, or people (use Follow). */
-export const resolveExploreWishlistTarget = (card: ExploreCardModel): ExploreWishlistTarget | null => {
+export const resolveExploreWishlistTarget = (card: DiscoveryCardModel): ExploreWishlistTarget | null => {
   const watch = watchMetaFromCard(card);
-  if (exploreCardIsSeeking(card)) return null;
+  if (discoveryCardIsSeeking(card)) return null;
   if (card.source === 'activity' && card.activityId) return { activityId: card.activityId, ...watch };
   if (isGeographyMapSource(card.source) && card.locationId) return { locationId: card.locationId, ...watch };
   return null;

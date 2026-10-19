@@ -3,7 +3,7 @@ import { DEFAULT_PHONE_DIAL, PHONE_COUNTRIES } from '../../constants/phoneCountr
 import type { HostApplication } from '../../api/types';
 import { formatE164Phone } from '../../utils/phone';
 
-/** Pro Membership application wizard — guide, agency, or shop (not community Organize). */
+/** Pro Membership application wizard — guide, agency, or shop (not community Host / publish). */
 export type ProProfileApplicationFormState = {
   hostProfileType: HostProfileType | null;
   hostDisplayName: string;

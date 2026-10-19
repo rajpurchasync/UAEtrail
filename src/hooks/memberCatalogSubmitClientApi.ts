@@ -1,6 +1,6 @@
 /**
  * Member catalog **writes** — place submit + facility submit.
- * UI label: FAB **Contribute** (`CREATE_FLOW.md`). No `/contribute` API.
+ * UI label: FAB **Add on the map** (`CREATE_FLOW.md`). No `/contribute` API.
  * @see docs/SYSTEM_COHERENCE.md §8.4.9
  */
 import type { FacilityDTO, LocationDTO, PlaceDTO } from '@uaetrail/shared-types';
@@ -31,19 +31,4 @@ export const fetchMyPlaceSubmissions = async (): Promise<LocationDTO[]> => {
   return res.data;
 };
 
-/** @deprecated Use {@link submitMemberPlace}. */
-export const submitPlaceContribution = submitMemberPlace;
 
-/** @deprecated Use {@link submitMemberPlace}. */
-export const submitUserLocationContribution = async (
-  payload: Partial<LocationDTO>
-): Promise<LocationDTO> => {
-  const res = await api.submitUserPlace(payload);
-  return res.data;
-};
-
-/** @deprecated Use {@link submitMemberFacility}. */
-export const submitUserFacilityContribution = submitMemberFacility;
-
-/** @deprecated Use {@link fetchMyPlaceSubmissions}. */
-export const fetchMySubmittedPlaces = fetchMyPlaceSubmissions;

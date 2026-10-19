@@ -230,7 +230,7 @@
         "src/pages/ShopPublic.tsx",
         "src/pages/ProfileBadges.tsx",
         "src/pages/ProductDetail.tsx",
-        "src/explore/ui/OrganizePublishSuccessSheet.tsx",
+        "src/explore/ui/HostingPublishSuccessSheet.tsx",
         "src/pages/ProfileEdit.tsx",
         "src/pages/Profile.tsx",
         "src/hooks/useParticipantIntentJoinContext.ts",
@@ -761,8 +761,8 @@
       "owner": "product-eng",
       "contextIds": ["compose"],
       "apiRoots": ["apps/api/src/services/member-publish-gate.ts"],
-      "feRoots": ["src/explore/create/hosting", "src/explore/ui/hostingFlow.ts", "src/explore/ui/hostingFlowEngine.ts"],
-      "successMetric": "Single Host compose tree (create/hosting + hostingFlowEngine); organizeFlow/createOrganize/hostingCatalog shims removed"
+      "feRoots": ["src/explore/create/hosting", "src/explore/ui/hostingFlows", "src/explore/ui/hostingFlowEngine.ts"],
+      "successMetric": "Single Host compose tree (create/hosting + hostingFlowEngine); organizeFlow/createOrganize/hostingCatalog/hostingFlow shims removed"
     },
     {
       "id": "MIG-COH-11",

@@ -1,13 +1,13 @@
 import type { GroupRegionLevels } from './group-region.js';
 import type { GroupWallReplyPreviewDTO } from './group-wall.js';
-import type { ExploreCardPresentationDTO } from './explore-presentation.js';
+import type { DiscoveryCardPresentationDTO } from './explore-presentation.js';
 import type { ExploreMapPersonDTO } from './explore-person.js';
 import type { ActivityJoinInviteForViewerDTO } from './activity-join-invite.js';
 import type { ActivityJoinMode } from './activity-join-mode.js';
 import type { ActivityViewerAccessDTO } from './activity-viewer-access.js';
 import type { ParticipationMode } from './activity-participation-mode.js';
 import type {
-  ExplorePlanComposeIntent,
+  ExploreMapComposeIntent,
   OutingCategory,
   OutingTopic,
 } from './explore-plan-projection.js';
@@ -862,20 +862,20 @@ export interface ExploreMapItemDTO {
   averageRating?: number | null;
   reviewCount?: number;
   /** Server-built headlines, list titles, and card sections for explore UI. */
-  presentation?: ExploreCardPresentationDTO;
+  presentation?: DiscoveryCardPresentationDTO;
   /** Tenant id when the map item represents a shop profile. */
   tenantId?: string | null;
   /** Gear shop map presence — physical stores get pins; online partners are list-only. */
   shopPresence?: ShopPresence | null;
   /** Discover home “Gear Shops” rail — platform admin only. */
   discoverFeatured?: boolean;
-  /** Plan browse projection (organize vs demand). Null for venue/shop catalog rows. */
-  composeIntent?: ExplorePlanComposeIntent | null;
+  /** Map browse projection (host vs seek). Null for venue/shop catalog rows. */
+  composeIntent?: ExploreMapComposeIntent | null;
   /** Buddy/activities browse family. Null for venue/shop. */
   outingCategory?: OutingCategory | null;
   /** Optional subtype within `outingCategory` (derive-on-read until E5 persistence). */
   outingTopic?: OutingTopic | null;
-  /** Join mode for published organize plans only. */
+  /** Join mode for published hosted outings only. */
   participationMode?: ParticipationMode | null;
   /** Rideshare activities linked to this parent plan (parent rows only). */
   linkedRideshareActivities?: ExploreLinkedRideshareDTO[];
@@ -1178,12 +1178,12 @@ export interface RewardCatalogDTO {
 }
 
 export {
-  demandFallbackTitle,
-  isGenericDemandPlanTitle,
-  isLegacyEmbeddedDemandTitle,
-  normalizeLegacyDemandTitle,
-  type DemandTitleKind,
-} from './demand-titles.js';
+  seekingFallbackTitle,
+  isGenericSeekingTitle,
+  isLegacyEmbeddedSeekingTitle,
+  normalizeLegacySeekingTitle,
+  type SeekingTitleKind,
+} from './seeking-titles.js';
 
 export {
   buildExploreFeaturedPerson,
@@ -1231,15 +1231,15 @@ export {
   HIKING_VENUE_EMOJI,
   CAMPING_ACTIVITY_EMOJI,
   CAMPING_VENUE_EMOJI,
-  DEMAND_EMOJI,
+  SEEKING_EMOJI,
   EXPLORE_PLACES_LAYER_EMOJI,
   UAE_FLAG_EMOJI,
   RIDESHARE_EMOJI,
   SHOP_MAP_EMOJI,
   MAP_FILTER_EMOJI,
   MAP_LAYER_FILTER_EMOJI,
-  buildExploreCardPresentation,
-  buildExploreCardSections,
+  buildDiscoveryCardPresentation,
+  buildDiscoveryCardSections,
   buildExploreListWhen,
   buildExploreRouteLabel,
   normalizeRideshareRouteLabels,
@@ -1256,7 +1256,7 @@ export {
   formatExploreDayShort,
   formatExploreRelativeScheduleLabel,
   formatExploreTime,
-  formatPlanPhrase,
+  formatSeekingTitlePhrase,
   resolveExploreItemSource,
   resolveMapPinItemSource,
   resolveMapPinEmoji,
@@ -1270,12 +1270,12 @@ export {
   isPlaceMapSource,
   normalizeExploreMapSource,
   sanitizeExploreLocation,
-  type ExploreCardDetail,
-  type ExploreCardDetailIcon,
-  type ExploreCardKind,
-  type ExploreCardPresentationDTO,
-  type ExploreCardSections,
-  type ExploreCardSource,
+  type DiscoveryCardDetail,
+  type DiscoveryCardDetailIcon,
+  type DiscoveryCardKind,
+  type DiscoveryCardPresentationDTO,
+  type DiscoveryCardSections,
+  type DiscoveryCardSource,
 } from './explore-presentation.js';
 
 export {
@@ -1295,11 +1295,12 @@ export {
   exploreSeekingMapItemPath,
   resolveSeekingExploreMapItemId,
   exploreMapKindToPlanMapKind,
+  canonicalizeMapComposeIntent,
   exploreMapSourceToComposeIntent,
-  outingCategoryToOrganizeCreateKind,
+  outingCategoryToHostCreateKind,
   participantIntentKindToOutingCategory,
   resolveActivityOutingTopic,
-  resolveOrganizeCreateKindFromDemandMapItem,
+  resolveHostCreateKindFromSeekingMapItem,
   OUTING_TOPICS,
   mapItemMatchesOutingTopic,
   parseOutingTopic,
@@ -1307,8 +1308,8 @@ export {
   type ExploreMapPlanActivityKind,
   type ExploreMapPlanProjection,
   type ExploreMapPlanSource,
-  type ExplorePlanComposeIntent,
-  type OrganizeCreateKindWire,
+  type ExploreMapComposeIntent,
+  type HostCreateKindWire,
   type OutingCategory,
   type OutingTopic,
   type ParticipantIntentKindForPlan,
@@ -1331,7 +1332,6 @@ export {
 export {
   extractJoinInstructionLines,
   extractNonJoinRequirements,
-  hasActivityJoinInstructions,
   hasJoinInstructions,
   JOIN_INSTRUCTION_PREFIX,
 } from './join-instructions.js';
@@ -1397,10 +1397,10 @@ export {
 } from './catalog-viewer-access.js';
 
 export {
-  memberAudienceMayAttemptOrganize,
+  memberAudienceMayAttemptHostPublish,
   memberHasHostFootprintBadge,
   memberProfileComplete,
-  organizeEntitlementDenial,
+  hostPublishEntitlementDenial,
   resolveMemberAudience,
   resolvePaidMembershipSku,
   viewerMayBrowsePublicMemberDirectory,
@@ -1630,13 +1630,11 @@ export {
 } from './entity-path.js';
 
 export {
-  CONTRIBUTABLE_FACILITY_PLACE_KINDS,
+  ADDABLE_FACILITY_PLACE_KINDS,
   PLACE_CATALOG_KINDS,
-  DESTINATION_PLACE_KINDS,
   FACILITY_PLACE_KINDS,
-  isContributableFacilityPlaceKind,
+  isAddableFacilityPlaceKind,
   isPlaceCatalogKind,
-  isDestinationPlaceKind,
   PLACE_KINDS,
   PLACE_KIND_LABELS,
   PLACE_STORAGE_COLLECTION,
@@ -1647,11 +1645,10 @@ export {
   isPlaceKind,
   locationActivityTypeForPlaceKind,
   placeDetailRouteKindFromPlaceKind,
-  placeKindFromContributeVenueKind,
+  placeKindFromAddVenueKind,
   placeKindFromLocationRow,
   tagsForPlaceKind,
   type PlaceCatalogKind,
-  type DestinationPlaceKind,
   type LocationActivityTypeWire,
   type PlaceDetailRouteKind,
   type PlaceKind,
@@ -1694,29 +1691,28 @@ export {
 
 export {
   canonicalizeComposeWire,
-  composeWireToLegacyWizard,
   formatComposeWire,
   parseComposeWire,
-  PLAN_COMPOSE_KINDS,
-  SEEKING_PLAN_KINDS,
-  CONTRIBUTE_PLACE_KINDS,
+  HOST_COMPOSE_KINDS,
+  SEEKING_COMPOSE_KINDS,
+  ADD_PLACE_KINDS,
   type ComposeMenuIntent,
-  type ContributePlaceKind,
-  type ContributeTarget,
+  type AddPlaceKind,
+  type AddTarget,
   type ExploreComposeWire,
   type LegacyAddKind,
-  type PlanComposeKind,
+  type HostComposeKind,
   type PlanMode,
-  type SeekingPlanKind,
+  type SeekingComposeKind,
 } from './compose-route.js';
 
 export {
   COMMUNITY_SHOP_TAG,
-  decodeShopContributeTags,
-  encodeShopContributeTags,
-  type DecodedShopContributeTags,
-  type ShopContributeTagInput,
-} from './shop-contribute.js';
+  decodeCommunityShopTags,
+  encodeCommunityShopTags,
+  type DecodedCommunityShopTags,
+  type CommunityShopTagInput,
+} from './community-shop-tags.js';
 
 export {
   exploreMapPeekPath,

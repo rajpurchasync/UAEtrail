@@ -36,7 +36,7 @@ const CONSUMER_PEEK_NEEDLES = [
   /ActivityMapPeekHost/,
   /discoveryCardModel/,
   /buildDiscoveryCardViewModel/,
-  /ExploreCardPresentation/,
+  /DiscoveryCardPresentation/,
   /PlaceMapPeekHost/,
 ];
 

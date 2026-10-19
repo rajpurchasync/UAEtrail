@@ -114,5 +114,3 @@ export const buildActivityViewerAccess = async (
   });
 };
 
-/** @deprecated Use `buildActivityViewerAccess` — kept for route/docs compatibility during NA-6. */
-export const resolveActivityViewerAccess = buildActivityViewerAccess;

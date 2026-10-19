@@ -209,6 +209,3 @@ const mountSeekingPostRoutes = (router: Router, mount: SeekingPostRouteMount): v
 export const registerMeSeekingPostRoutes = (router: Router): void => {
   mountSeekingPostRoutes(router, { basePath: '/me/seeking-posts', idParam: 'postId' });
 };
-
-/** @deprecated Use {@link registerMeSeekingPostRoutes} (MIG-COH-01). */
-export const registerMeParticipantIntentRoutes = registerMeSeekingPostRoutes;

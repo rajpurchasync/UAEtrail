@@ -173,6 +173,3 @@ export const buildJourneyMapEntries = async (
 
   return [...byId.values()].sort((a, b) => b.placeDate.localeCompare(a.placeDate));
 };
-
-/** @deprecated Use {@link buildJourneyMapEntries} */
-export const buildOutdoorMapEntries = buildJourneyMapEntries;

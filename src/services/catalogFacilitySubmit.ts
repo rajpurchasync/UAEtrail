@@ -1,15 +1,15 @@
 import type { LocationDTO } from '@uaetrail/shared-types';
 import { submitMemberFacility } from '../hooks/memberCatalogSubmitClientApi';
 import { DEFAULT_COUNTRY } from '../config/regions';
-import type { FacilityContributeDraft } from '../explore/ui/contributeFacilityFlow';
-import { validateFacilityContributeDraft } from '../explore/ui/contributeFacilityFlow';
-import type { ContributeSubmitResult } from '../explore/ui/contributeFlow';
+import type { FacilityAddDraft } from '../explore/ui/addFacilityFlow';
+import { validateFacilityAddDraft } from '../explore/ui/addFacilityFlow';
+import type { AddSubmitResult } from '../explore/ui/addFlow';
 
-/** Member facility submit from Contribute wizard — single `POST /me/facilities`. */
-export const submitCatalogFacilityFromContributeDraft = async (
-  draft: FacilityContributeDraft
-): Promise<ContributeSubmitResult> => {
-  const validation = validateFacilityContributeDraft(draft);
+/** Member facility submit from Add on map — single `POST /me/facilities`. */
+export const submitCatalogFacilityFromAddDraft = async (
+  draft: FacilityAddDraft
+): Promise<AddSubmitResult> => {
+  const validation = validateFacilityAddDraft(draft);
   if (validation) throw new Error(validation);
   if (!draft.facilityKind || !draft.areaId) throw new Error('Complete the form before submitting.');
 

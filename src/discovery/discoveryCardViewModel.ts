@@ -8,12 +8,12 @@ import {
   buildDiscoveryCardModel,
   type DiscoveryCardModel,
 } from './discoveryCardModel';
-import { finalizeExploreCardLinkedRideshare } from '../explore/linkedRideshareExplore';
+import { finalizeDiscoveryCardLinkedRideshare } from '../explore/linkedRideshareExplore';
 import { isExploreMapDiscoveryProjectionEnabled } from '../explore/exploreMapDiscoveryProjection';
 
 /**
  * Full discovery card state for peek / list / poster surfaces.
- * During R1 migration this extends {@link ExploreCardModel}; new UI should prefer
+ * During R1 migration this extends {@link DiscoveryCardModel}; new UI should prefer
  * {@link DiscoveryCardProjection} for read-only chrome and `.card` for legacy hooks.
  */
 export type DiscoveryCardViewModel = DiscoveryCardModel;
@@ -46,7 +46,7 @@ const mergeServerDiscoveryProjectionOntoCard = (
 
 /**
  * Single entry point for map/list discovery cards (R1).
- * Peek and map list selection should use this instead of `buildExploreCardModel` directly.
+ * Peek and map list selection should use this instead of `buildDiscoveryCardModel` directly.
  */
 export const buildDiscoveryCardViewModel = (
   item: ExploreMapItemDTO,
@@ -54,7 +54,7 @@ export const buildDiscoveryCardViewModel = (
 ): DiscoveryCardBuildResult => {
   let card = buildDiscoveryCardModel(item);
   if (options.mapItems) {
-    card = finalizeExploreCardLinkedRideshare(card, item, options.mapItems);
+    card = finalizeDiscoveryCardLinkedRideshare(card, item, options.mapItems);
   }
   if (isExploreMapDiscoveryProjectionEnabled() && item.discoveryCard) {
     const projection = item.discoveryCard;

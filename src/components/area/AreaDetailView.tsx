@@ -5,6 +5,7 @@ import { MobileDetailShell } from '../mobile/MobileDetailShell';
 import { ConsumerEntityTabBar } from '../mobile/ConsumerEntityTabBar';
 import { PageMeta } from '../seo/PageMeta';
 import { explorePath } from '../../explore/routing';
+import { hostCompose, seekFixedCompose } from '../../explore/compose';
 import { areaDetailPath } from '@uaetrail/shared-types';
 import {
   AREA_DETAIL_TAB_LABELS,
@@ -143,7 +144,7 @@ export const AreaDetailView = ({
                 <Link
                   to={explorePath({
                     area: area.slug,
-                    compose: { intent: 'plan', kind: 'hiking', mode: 'seeking' },
+                    compose: seekFixedCompose('hiking'),
                   })}
                   className="rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-900"
                 >
@@ -152,11 +153,11 @@ export const AreaDetailView = ({
                 <Link
                   to={explorePath({
                     area: area.slug,
-                    compose: { intent: 'plan', kind: 'hiking', mode: 'hosting' },
+                    compose: hostCompose('hiking'),
                   })}
                   className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-900"
                 >
-                  Organize outing
+                  Host an outing
                 </Link>
               </section>
 

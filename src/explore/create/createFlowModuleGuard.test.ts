@@ -20,10 +20,8 @@ describe('create flow module boundaries (CPC-9b)', () => {
     expect(seeking).not.toMatch(/`demand:\$\{/);
   });
 
-  it('hostingFlow facade documents engine and does not import demandFlow', () => {
-    const hosting = read('src/explore/ui/hostingFlow.ts');
-    expect(hosting).toMatch(/hostingFlowEngine\.ts/);
-    expect(hosting).not.toMatch(/from ['"].*demandFlow['"]/);
+  it('hostingFlow.ts leftover facade is gone', () => {
+    expect(existsSync(join(ROOT, 'src/explore/ui/hostingFlow.ts'))).toBe(false);
   });
 
   it('hostingFlowEngine does not import seeking wizard', () => {
@@ -42,6 +40,12 @@ describe('create flow module boundaries (CPC-9b)', () => {
 
   it('demandFlow.ts re-export shim is gone (COH-11)', () => {
     expect(existsSync(join(ROOT, 'src/explore/ui/demandFlow.ts'))).toBe(false);
+  });
+
+  it('leftover organizeWizard tree and exploreCardModel barrel are gone', () => {
+    expect(existsSync(join(ROOT, 'src/explore/ui/organizeWizard'))).toBe(false);
+    expect(existsSync(join(ROOT, 'src/explore/ui/hostingWizard'))).toBe(true);
+    expect(existsSync(join(ROOT, 'src/explore/exploreCardModel.ts'))).toBe(false);
   });
 
   it('leftover seekingFlow.ts and exploreSeekingCatalog shims are gone', () => {

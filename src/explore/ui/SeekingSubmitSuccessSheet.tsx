@@ -10,9 +10,9 @@ import {
   DEMAND_SUBMIT_SUCCESS_BODY_ON_MAP,
   DEMAND_SUBMIT_SUCCESS_TITLE,
   DEMAND_SUBMIT_VIEW_CTA,
-  ORGANIZE_LINK_RIDESHARE_LABEL,
-  ORGANIZE_LINK_RIDESHARE_PASTE_CTA,
-  ORGANIZE_RIDESHARE_LINKED_NOTICE,
+  HOSTING_LINK_RIDESHARE_LABEL,
+  HOSTING_LINK_RIDESHARE_PASTE_CTA,
+  HOSTING_RIDESHARE_LINKED_NOTICE,
 } from '../createFlowCopy';
 import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
 import {
@@ -118,7 +118,7 @@ export const SeekingSubmitSuccessSheet = ({
   };
 
   const handleLinked = () => {
-    setRideshareNotice(ORGANIZE_RIDESHARE_LINKED_NOTICE);
+    setRideshareNotice(HOSTING_RIDESHARE_LINKED_NOTICE);
     onRideshareLinked?.();
   };
 
@@ -174,7 +174,7 @@ export const SeekingSubmitSuccessSheet = ({
         {rideshareNotice ? (
           <p
             className={`mt-3 rounded-lg px-3 py-2 text-sm leading-snug ${
-              rideshareNotice === ORGANIZE_RIDESHARE_LINKED_NOTICE
+              rideshareNotice === HOSTING_RIDESHARE_LINKED_NOTICE
                 ? 'border border-emerald-200 bg-emerald-50 text-emerald-900'
                 : 'bg-red-50 text-red-700'
             }`}
@@ -210,7 +210,7 @@ export const SeekingSubmitSuccessSheet = ({
           {showLinkRideshare ? (
             <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1">
               <button type="button" onClick={handleCreateLinked} className={linkButtonClass}>
-                {ORGANIZE_LINK_RIDESHARE_LABEL}
+                {HOSTING_LINK_RIDESHARE_LABEL}
               </button>
               <button
                 type="button"
@@ -218,7 +218,7 @@ export const SeekingSubmitSuccessSheet = ({
                 onClick={() => setPasteOpen((value) => !value)}
                 className={linkButtonClass}
               >
-                {ORGANIZE_LINK_RIDESHARE_PASTE_CTA}
+                {HOSTING_LINK_RIDESHARE_PASTE_CTA}
               </button>
             </div>
           ) : null}

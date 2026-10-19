@@ -1,19 +1,19 @@
 import { exploreMapItemIsSeeking } from './explore-activity-mode.js';
-import { buildExploreCardPresentation, isGeographyMapSource } from './explore-presentation.js';
-import type { ExploreCardKind, ExploreCardSource } from './explore-presentation.js';
-import type { ExploreCardPresentationDTO } from './explore-presentation.js';
-import type { ExplorePresentationBuildInput } from './explore-presentation.js';
+import { buildDiscoveryCardPresentation, isGeographyMapSource } from './explore-presentation.js';
+import type { DiscoveryCardKind, DiscoveryCardSource } from './explore-presentation.js';
+import type { DiscoveryCardPresentationDTO } from './explore-presentation.js';
+import type { DiscoveryCardBuildInput } from './explore-presentation.js';
 
 /** Map/list wire row — structural subset of explore map DTO (avoids importing `index.ts`). */
-export type DiscoveryMapItemWire = ExplorePresentationBuildInput & {
+export type DiscoveryMapItemWire = DiscoveryCardBuildInput & {
   path: string;
   image?: string | null;
-  presentation?: ExploreCardPresentationDTO;
+  presentation?: DiscoveryCardPresentationDTO;
   locationCard?: { id?: string; images?: string[] } | null;
   areaSlug?: string | null;
   merchantId?: string;
   tenantId?: string | null;
-  activity?: ExplorePresentationBuildInput['activity'] & {
+  activity?: DiscoveryCardBuildInput['activity'] & {
     id?: string;
     joinMode?: string;
     bannerUrl?: string | null;
@@ -38,8 +38,8 @@ export type DiscoveryCardProjection = {
   entityRef: DiscoveryCardEntityRef;
   path: string;
   sharePath: string;
-  source: ExploreCardSource;
-  kind: ExploreCardKind;
+  source: DiscoveryCardSource;
+  kind: DiscoveryCardKind;
   headline: string;
   listTitle: string;
   subtitle: string | null;
@@ -70,7 +70,7 @@ export const resolveDiscoveryCardEntityRef = (item: DiscoveryMapItemWire): Disco
     const locationId = item.locationCard?.id ?? item.activity?.locationId;
     if (locationId) return { kind: 'place', locationId };
   }
-  if (exploreMapItemIsSeeking(item) || item.source === 'activity' || item.source === 'demand') {
+  if (exploreMapItemIsSeeking(item) || item.source === 'activity') {
     const activityId = item.activity?.id ?? null;
     if (activityId) return { kind: 'activity', activityId };
   }
@@ -94,7 +94,7 @@ export const buildDiscoveryCardProjectionFromMapItem = (
   item: DiscoveryMapItemWire,
   options: BuildDiscoveryCardProjectionOptions = {}
 ): DiscoveryCardProjection => {
-  const presentation = item.presentation ?? buildExploreCardPresentation(item);
+  const presentation = item.presentation ?? buildDiscoveryCardPresentation(item);
   const seeking = exploreMapItemIsSeeking(item);
   const sharePath =
     options.sharePath ??

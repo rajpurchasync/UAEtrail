@@ -1,21 +1,21 @@
 import type { CreateActivityDraft, CreateFlowStepId } from '../hostingFlowEngine';
 import { usesRegistryCatalogVenue } from './registry';
 
-export const validateOrganizeTitle = (draft: CreateActivityDraft, emptyMessage: string): string | null => {
+export const validateHostingTitle = (draft: CreateActivityDraft, emptyMessage: string): string | null => {
   const titleTrimmed = draft.title.trim();
   if (!titleTrimmed) return emptyMessage;
   if (titleTrimmed.length < 4) return 'Title must be at least 4 characters.';
   return null;
 };
 
-export const validateOrganizeAudienceOthers = (draft: CreateActivityDraft): string | null => {
+export const validateHostingAudienceOthers = (draft: CreateActivityDraft): string | null => {
   if (draft.audienceAccess === 'others' && !draft.audienceOtherNote.trim()) {
     return 'Describe who can attend.';
   }
   return null;
 };
 
-export const validateOrganizePrice = (draft: CreateActivityDraft): string | null => {
+export const validateHostingPrice = (draft: CreateActivityDraft): string | null => {
   if (draft.priceMode === 'paid' && draft.priceAmount <= 0) return 'Enter a price amount.';
   if (draft.priceMode === 'shared' && draft.priceAmount <= 0) return 'Enter a shared cost amount.';
   return null;

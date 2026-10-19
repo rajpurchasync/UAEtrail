@@ -1,8 +1,8 @@
 import { Star } from 'lucide-react';
-import type { ExploreCardModel } from '../../../explore/exploreCardModel';
+import type { DiscoveryCardModel } from '../../../discovery/discoveryCardModel';
 
 /** Compact rating for catalog poster header (neutral, above image). */
-export const ListFeedCatalogRatingBadge = ({ card }: { card: ExploreCardModel }) => {
+export const ListFeedCatalogRatingBadge = ({ card }: { card: DiscoveryCardModel }) => {
   if (!card.reviewCount) {
     return (
       <span className="flex shrink-0 items-center gap-1 text-xs font-semibold text-neutral-500">

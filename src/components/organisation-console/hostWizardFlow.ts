@@ -17,7 +17,7 @@ export type HostFlowStep = 'pick' | HostFlowStepId;
 
 /**
  * How the Pro application wizard was opened — drives sheet title and submit label.
- * Community Organize on the map does not use this flow (`canPublish` + profile complete).
+ * Community Host / publish on the map does not use this flow (`canPublish` + profile complete).
  */
 export type HostFlowIntent = 'pro-application' | 'add-guide' | 'add-shop' | 'add-agency';
 
@@ -112,7 +112,7 @@ export const hostFlowStepTitle = (step: HostFlowStepId, profileType: HostProfile
     case 'review':
       return 'Review & submit';
     default:
-      return 'Organizer profile';
+      return 'Host profile';
   }
 };
 
@@ -207,15 +207,3 @@ export const validateHostFlowStep = (
       return null;
   }
 };
-
-/** Domain aliases — prefer in new code. */
-export type OrganisationFlowIntent = HostFlowIntent;
-export type OrganisationFlowStepId = HostFlowStepId;
-export type OrganisationFlowStep = HostFlowStep;
-export const parseOrganisationFlowIntent = parseHostFlowIntent;
-export const getOrganisationFlowSteps = getHostFlowSteps;
-export const organisationFlowStepTitle = hostFlowStepTitle;
-export const organisationFlowTitle = hostFlowTitle;
-export const organisationFlowSubmitLabel = hostFlowSubmitLabel;
-export const organisationFlowPickSubtitle = hostFlowPickSubtitle;
-export const validateOrganisationFlowStep = validateHostFlowStep;

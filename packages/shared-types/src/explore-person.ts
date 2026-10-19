@@ -120,7 +120,7 @@ export const resolveExploreFeaturedPerson = (
   const source = item.source;
   const activity = item.activity;
 
-  if (exploreMapItemIsSeeking(item) || source === 'demand') {
+  if (exploreMapItemIsSeeking(item)) {
     const displayName =
       resolveHostPersonDisplayName({
         guideName: activity?.hostName ?? item.hostName,

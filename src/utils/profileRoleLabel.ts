@@ -10,8 +10,6 @@ export const resolveProfileHostKind = (
   return null;
 };
 
-/** @deprecated Use resolveProfileHostKind */
-export const resolveProfileOrganisationKind = resolveProfileHostKind;
 
 export const resolvePublicMemberRoleLabel = (profile: {
   profileRoleLabel?: MemberProfileRoleLabel;
@@ -25,7 +23,7 @@ export const resolvePublicMemberRoleLabel = (profile: {
   if (profile.hostProfileKind === 'shop') return 'Shop owner';
   if (profile.hostProfileKind === 'agency') return 'Agency';
   if (profile.isGuideStaff) return 'Guide';
-  if (profile.isHost) return 'Organizer';
+  if (profile.isHost) return 'Host';
   return 'Community member';
 };
 
@@ -37,7 +35,7 @@ export const resolveProfileRoleLabel = (
   const hostKind = resolveProfileHostKind(ownedProfiles);
   if (hostKind === 'shop') return 'Shop owner';
   if (hostKind === 'agency') return 'Agency';
-  if (isCommunityHost) return 'Organizer';
+  if (isCommunityHost) return 'Host';
   if (hostKind === 'guide') return 'Guide';
   if (role === 'tenant_guide') return 'Guide';
   if (role === 'tenant_owner' || role === 'tenant_admin') return 'Explorer';

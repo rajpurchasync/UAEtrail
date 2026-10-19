@@ -64,6 +64,3 @@ export const LIST_FEED_CAPTION_BOTTOM_SCRIM_CLASS: Record<ListFeedCaptionScrim, 
   medium: 'after:from-black/78 after:via-black/48',
   light: 'after:from-black/62 after:via-black/32',
 };
-
-/** @deprecated Use LIST_FEED_CAPTION_BOTTOM_SCRIM_CLASS with overlayPhotoScrimBottom */
-export const LIST_FEED_CAPTION_SCRIM_CLASS = LIST_FEED_CAPTION_BOTTOM_SCRIM_CLASS;

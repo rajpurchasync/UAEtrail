@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   activityTypeToOutingCategory,
   buildExploreMapPlanProjection,
+  canonicalizeMapComposeIntent,
   deriveOutingTopicFromRequirements,
   mapItemMatchesOutingTopic,
   parseOutingTopic,
@@ -9,10 +10,18 @@ import {
   resolveSeekingExploreMapItemId,
   participantIntentKindToOutingCategory,
   resolveActivityOutingTopic,
-  resolveOrganizeCreateKindFromDemandMapItem,
+  resolveHostCreateKindFromSeekingMapItem,
 } from '@uaetrail/shared-types';
 
 describe('explore plan projection mappers', () => {
+  it('inbound-rewrites leftover organize/demand composeIntent', () => {
+    expect(canonicalizeMapComposeIntent('organize')).toBe('host');
+    expect(canonicalizeMapComposeIntent('demand')).toBe('seek');
+    expect(canonicalizeMapComposeIntent('host')).toBe('host');
+    expect(canonicalizeMapComposeIntent('seek')).toBe('seek');
+    expect(canonicalizeMapComposeIntent('other')).toBeNull();
+  });
+
   it('maps activity types to outing categories', () => {
     expect(activityTypeToOutingCategory('hiking')).toBe('hiking');
     expect(activityTypeToOutingCategory('rideshare')).toBe('rideshare');
@@ -27,13 +36,13 @@ describe('explore plan projection mappers', () => {
 
   it('maps demand outing category to organize create kind for fulfill', () => {
     expect(
-      resolveOrganizeCreateKindFromDemandMapItem({
+      resolveHostCreateKindFromSeekingMapItem({
         outingCategory: 'activities',
         kind: 'event',
       })
     ).toBe('activity');
     expect(
-      resolveOrganizeCreateKindFromDemandMapItem({
+      resolveHostCreateKindFromSeekingMapItem({
         outingCategory: 'events',
         kind: 'event',
       })
@@ -72,7 +81,7 @@ describe('explore plan projection mappers', () => {
       participationMode: 'rsvp',
     });
     expect(projection).toEqual({
-      composeIntent: 'organize',
+      composeIntent: 'host',
       outingCategory: 'hiking',
       outingTopic: null,
       participationMode: 'rsvp',
@@ -85,7 +94,7 @@ describe('explore plan projection mappers', () => {
       mapKind: 'event',
       demandIntentKind: 'guide',
     });
-    expect(projection.composeIntent).toBe('demand');
+    expect(projection.composeIntent).toBe('seek');
     expect(projection.outingCategory).toBe('activities');
     expect(projection.participationMode).toBeNull();
   });
@@ -97,7 +106,7 @@ describe('explore plan projection mappers', () => {
       mapKind: 'hiking',
       demandIntentKind: 'hiking',
     });
-    expect(projection.composeIntent).toBe('demand');
+    expect(projection.composeIntent).toBe('seek');
     expect(projection.outingCategory).toBe('hiking');
     expect(projection.participationMode).toBeNull();
   });

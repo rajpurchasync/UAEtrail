@@ -1,9 +1,9 @@
 import type { HostTierFlags } from './host-publishing-tier.js';
 
-/** Subset of member status used for audience + Organize gates (avoid circular imports). */
+/** Subset of member status used for audience + Host / publish gates (avoid circular imports). */
 export type HostStatusAudienceSnapshot = {
   /**
-   * Member profile completion (DOB, gender, based-in) — required to **organize/publish**.
+   * Member profile completion (DOB, gender, based-in) — required to **host/publish**.
    * Not required to join or participate on outings (signed-in member suffices).
    */
   profileComplete?: boolean;
@@ -13,13 +13,13 @@ export type HostStatusAudienceSnapshot = {
   isCommunityHost: boolean;
 };
 
-/** Profile completion for organize/publish gates — reads canonical or legacy wire field. */
+/** Profile completion for host/publish gates — reads canonical or legacy wire field. */
 export const memberProfileComplete = (
   status: Pick<HostStatusAudienceSnapshot, 'profileComplete' | 'signupProfileComplete'> | null | undefined
 ): boolean => status?.profileComplete ?? status?.signupProfileComplete ?? false;
 
 /**
- * Who the viewer is for **member / capability** gating (Organize, Pro, console).
+ * Who the viewer is for **member / capability** gating (Host / publish, Pro, console).
  * Orthogonal to activity **social** viewer access (`activity-viewer-access.ts`).
  *
  * @see docs/MEMBER_MODEL.md § Member audience ladder
@@ -27,7 +27,7 @@ export const memberProfileComplete = (
  */
 export type MemberAudience =
   | 'guest'
-  /** Signed in; `/welcome` profile incomplete — cannot Organize (buddy host). */
+  /** Signed in; `/welcome` profile incomplete — cannot Host / publish (buddy host). */
   | 'member_incomplete'
   /** Profile complete; buddy / community publish path (`canPublish` when tenant exists). */
   | 'member_basic'
@@ -46,7 +46,7 @@ export type PaidMembershipSku = 'none' | 'consumer_pro' | 'host_pro';
 export type MemberEntitlementId =
   | 'sign_in'
   | 'complete_profile'
-  | 'organize_publish'
+  | 'host_publish'
   | 'host_console'
   | 'paid_consumer_detail'
   | 'paid_host_commercial'
@@ -85,13 +85,13 @@ export const resolveMemberAudience = (input: {
   return 'member_basic';
 };
 
-/** Whether this audience may run buddy Organize (`canPublish` prerequisite is profile + tenant). */
-export const memberAudienceMayAttemptOrganize = (audience: MemberAudience): boolean =>
+/** Whether this audience may run buddy Host / publish (`canPublish` prerequisite is profile + tenant). */
+export const memberAudienceMayAttemptHostPublish = (audience: MemberAudience): boolean =>
   audience === 'member_basic' ||
   audience === 'member_professional' ||
   audience === 'member_business';
 
-/** Profile “Host” badge on map — first activity or demand; not the same as profile-complete. */
+/** Profile “Host” badge on map — first activity or seeking post; not the same as profile-complete. */
 export const memberHasHostFootprintBadge = (
   hostStatus: Pick<HostStatusAudienceSnapshot, 'isCommunityHost'> | null
 ): boolean => Boolean(hostStatus?.isCommunityHost);
@@ -116,8 +116,8 @@ export const viewerMaySeeProfileViewStats = (input: {
   return Boolean(tiers?.professional || tiers?.business);
 };
 
-/** Map audience → primary entitlement denial for Organize FAB (capabilities, not activity detail). */
-export const organizeEntitlementDenial = (input: {
+/** Map audience → primary entitlement denial for Host FAB (capabilities, not activity detail). */
+export const hostPublishEntitlementDenial = (input: {
   viewerUserId: string | null;
   hostStatus: HostStatusAudienceSnapshot | null;
   canPublish: boolean;
@@ -133,7 +133,7 @@ export const organizeEntitlementDenial = (input: {
     return { entitlement: 'complete_profile', gateReason: 'profile_required' };
   }
   if (!input.canPublish) {
-    return { entitlement: 'organize_publish', gateReason: 'upgrade_required' };
+    return { entitlement: 'host_publish', gateReason: 'upgrade_required' };
   }
   return null;
 };

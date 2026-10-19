@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Star } from 'lucide-react';
-import { ExploreCardDirectionsButton } from '../../explore/ui/ExploreCardPresentation';
+import { DiscoveryCardDirectionsButton } from '../../explore/ui/DiscoveryCardPresentation';
 
 export type PlaceCardAccent = 'emerald' | 'amber' | 'violet';
 
@@ -47,7 +47,7 @@ export const PlaceCardActions = ({
     {onGuestGatedAction ? (
       <>
         {guestDirections ? (
-          <ExploreCardDirectionsButton
+          <DiscoveryCardDirectionsButton
             latitude={mapLatitude}
             longitude={mapLongitude}
             className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 py-2.5 text-sm font-bold text-white"
@@ -92,7 +92,3 @@ export const PlaceCardActions = ({
   );
 };
 
-/** @deprecated Use PlaceCardAccent */
-export type LocationCardAccent = PlaceCardAccent;
-/** @deprecated Use PlaceCardActions */
-export const LocationCardActions = PlaceCardActions;

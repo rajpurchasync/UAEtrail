@@ -1,73 +1,58 @@
-import type { OrganizeComposeKind } from '../../compose';
+import type { HostComposeKind } from '../../compose';
 import type { CreateActivityDraft, CreateActivityKind, CreateFlowStepId } from '../hostingFlowEngine';
-import { organizeActivitiesFlow } from './activities';
-import { organizeCampingFlow } from './camping';
-import { organizeEventsFlow } from './events';
-import { organizeHikingFlow } from './hiking';
-import { organizeRideshareFlow } from './rideshare';
+import { activitiesHostingFlow } from './activities';
+import { campingHostingFlow } from './camping';
+import { eventsHostingFlow } from './events';
+import { hikingHostingFlow } from './hiking';
+import { rideshareHostingFlow } from './rideshare';
 import type { HostingKindFlow } from './types';
 
 export type {
   HostingKindFlow,
   HostingRegistryVenueConfig,
-  HostingCatalogFlow,
-  OrganizeCatalogFlow,
-  OrganizeRegistryVenueConfig,
 } from './types';
 export { usesRegistryCatalogVenue, applyRegistryVenueStepOmit } from './registry';
 
-export { organizeHikingFlow } from './hiking';
-export { organizeCampingFlow } from './camping';
-export { organizeEventsFlow } from './events';
-export { organizeActivitiesFlow } from './activities';
-export { organizeRideshareFlow } from './rideshare';
+export { hikingHostingFlow } from './hiking';
+export { campingHostingFlow } from './camping';
+export { eventsHostingFlow } from './events';
+export { activitiesHostingFlow } from './activities';
+export { rideshareHostingFlow } from './rideshare';
 
-export const HOSTING_KIND_FLOWS: Record<OrganizeComposeKind, HostingKindFlow> = {
-  hiking: organizeHikingFlow,
-  camping: organizeCampingFlow,
-  event: organizeEventsFlow,
-  rideshare: organizeRideshareFlow,
-  activity: organizeActivitiesFlow,
+export const HOSTING_KIND_FLOWS: Record<HostComposeKind, HostingKindFlow> = {
+  hiking: hikingHostingFlow,
+  camping: campingHostingFlow,
+  event: eventsHostingFlow,
+  rideshare: rideshareHostingFlow,
+  activity: activitiesHostingFlow,
 };
 
-/** @deprecated Use {@link HOSTING_KIND_FLOWS}. */
-export const HOSTING_CATALOG_FLOWS = HOSTING_KIND_FLOWS;
 
-/** @deprecated Use {@link HOSTING_KIND_FLOWS}. */
-export const ORGANIZE_CATALOG_FLOWS = HOSTING_KIND_FLOWS;
 
 const CREATE_KIND_TO_FLOW: Record<CreateActivityKind, HostingKindFlow> = {
-  hiking: organizeHikingFlow,
-  camping: organizeCampingFlow,
-  event: organizeEventsFlow,
-  rideshare: organizeRideshareFlow,
-  activity: organizeActivitiesFlow,
+  hiking: hikingHostingFlow,
+  camping: campingHostingFlow,
+  event: eventsHostingFlow,
+  rideshare: rideshareHostingFlow,
+  activity: activitiesHostingFlow,
 };
 
-export const hostingFlowForComposeKind = (kind: OrganizeComposeKind): HostingKindFlow =>
+export const hostingFlowForComposeKind = (kind: HostComposeKind): HostingKindFlow =>
   HOSTING_KIND_FLOWS[kind];
 
-/** @deprecated Use {@link hostingFlowForComposeKind}. */
-export const hostingCatalogFlowForPlanKind = hostingFlowForComposeKind;
 
-/** @deprecated Use {@link hostingFlowForComposeKind}. */
-export const organizeCatalogFlowForComposeKind = hostingFlowForComposeKind;
 
 export const hostingFlowForCreateKind = (
   kind: CreateActivityKind,
   genericBuddy = false
 ): HostingKindFlow => {
   if (genericBuddy && kind === 'hiking') {
-    return organizeHikingFlow;
+    return hikingHostingFlow;
   }
   return CREATE_KIND_TO_FLOW[kind];
 };
 
-/** @deprecated Use {@link hostingFlowForCreateKind}. */
-export const hostingCatalogFlowForCreateKind = hostingFlowForCreateKind;
 
-/** @deprecated Use {@link hostingFlowForCreateKind}. */
-export const organizeCatalogFlowForCreateKind = hostingFlowForCreateKind;
 
 export const getHostingKindFlowSteps = (
   kind: CreateActivityKind,
@@ -78,11 +63,7 @@ export const getHostingKindFlowSteps = (
   return flow.getSteps({ ...draft, genericBuddy });
 };
 
-/** @deprecated Use {@link getHostingKindFlowSteps}. */
-export const getHostingCatalogFlowSteps = getHostingKindFlowSteps;
 
-/** @deprecated Use {@link getHostingKindFlowSteps}. */
-export const getOrganizeCatalogFlowSteps = getHostingKindFlowSteps;
 
 export const validateHostingKindStep = (
   kind: CreateActivityKind,
@@ -93,18 +74,8 @@ export const validateHostingKindStep = (
   return flow.validateStep(step, draft);
 };
 
-/** @deprecated Use {@link validateHostingKindStep}. */
-export const validateHostingCatalogStep = validateHostingKindStep;
 
-/** @deprecated Use {@link validateHostingKindStep}. */
-export const validateOrganizeCatalogStep = validateHostingKindStep;
 
 export const registryPlaceTypeForHostingKindFlow = (
   flow: HostingKindFlow
 ): 'hiking' | 'camping' | 'event' | undefined => flow.registryVenue?.placeType;
-
-/** @deprecated Use {@link registryPlaceTypeForHostingKindFlow}. */
-export const registryPlaceTypeForHostingFlow = registryPlaceTypeForHostingKindFlow;
-
-/** @deprecated Use {@link registryPlaceTypeForHostingKindFlow}. */
-export const registryPlaceTypeForOrganizeFlow = registryPlaceTypeForHostingKindFlow;

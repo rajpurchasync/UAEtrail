@@ -10,7 +10,7 @@
 |---------|--------|------------|
 | **Chat inbox** (UI label; route `/messages`) | `/messages` | **One inbox** for everyone: **Direct**, **Groups**, **Outing chats** — `?to=`, `?group=`, optional `?activity=` |
 | **Groups admin** | `/groups` | Create/manage groups, members, **who can message** — **no inline chat** |
-| **Activity detail** | `/activity/:id` | Plan/Buddies footers + welcome sheet → **group chat**; invite via `ActivityInviteSharePanel`; crew only when `viewerAccess.canAccessCrewSurfaces` |
+| **Activity detail** | `/activity/:id` | Plan/Buddies footers + welcome sheet → **group chat**; invite via `ActivityInviteLauncher`; crew only when `viewerAccess.canAccessCrewSurfaces` |
 | **Plan (My Plans)** | `/plan` | Hosted manage sheet (`ActivityManageSheet`) → same detail shell + **Message crew**; joined peek sheet → full plan / group chat |
 | **Explore** | `/explore` | Map peek **`viewerAccess.mapPeekActions`** (join, pending, participant, …); activity **host user** sees **Chat · Manage** + **View details** on own pins; shops use **`PeekDetailLink`** (View / Rate); cancel/delete via **`HostActivityCancelDialog`**; withdraw on activity detail only |
 
@@ -108,10 +108,10 @@ See [`NAVIGATION.md`](./NAVIGATION.md) § Activity detail and [`TRIPS_HOST_MANAG
 | Mechanism | Purpose |
 |-----------|---------|
 | **Share link** `/activity/:id` | Off-platform or guest view; Join free in-app |
-| **DM with link** | `ActivityInviteSharePanel` → `sendMessage` with activity context |
+| **DM with link** | `ActivityInviteLauncher` → `sendMessage` with activity context |
 | **Group wall post** | Share message + URL to family/friends group |
 | **Crew chat** | In-app thread for host + approved joiners only |
-| **Join me** | `POST /activities/:id/invites` (`inviteeUserId` or `inviteeUserIds[]`) — host or going member → in-app notification (friend name + outing type + date) + `/explore?pin=activity:{id}&invite=1` (map peek banner). **Does not auto-join** — invitee uses RSVP / request flow; host approval where required. UI: `ActivityInviteSharePanel` (link + multi-friend select); explore peek **Invite crew** opens the same sheet. **Plan a trip** (`planWith` query) pre-selects buddy on publish success. |
+| **Join me** | `POST /activities/:id/invites` (`inviteeUserId` or `inviteeUserIds[]`) — host or going member → in-app notification (friend name + outing type + date) + `/explore?pin=activity:{id}&invite=1` (map peek banner). **Does not auto-join** — invitee uses RSVP / request flow; host approval where required. UI: `ActivityInviteLauncher` (link + multi-friend select); explore peek **Invite crew** opens the same sheet. **Plan a trip** (`planWith` query) pre-selects buddy on publish success. |
 
 Inviting does not add someone to crew chat; **join approval** (or host roster rules) does.
 
@@ -140,7 +140,7 @@ Routing: `src/utils/notificationRouting.ts` — keep in sync with [`NAVIGATION.m
 
 ## Trips / architecture rules
 
-- **Trips** (`/trips`, `tripsRouting.ts`) owns **your** plans, hosted manage, and personal map — not chat APIs.
+- **Plan** (`/plan`, `planHubRouting.ts`) owns **your** plans, hosted manage, and personal map — not chat APIs.
 - Chat always goes through **Messages** + `/me/groups` / `/chat` — do not add `trips*Message` clients.
 - **Explore** discovery stays on `/explore`; opening crew chat leaves the map and returns via `messagesReturnTo` when launched from Trips/host manage.
 

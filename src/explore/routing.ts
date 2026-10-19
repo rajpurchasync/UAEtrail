@@ -3,15 +3,13 @@ import {
   exploreSeekingMapItemPath,
   resolveSeekingExploreMapItemId,
 } from '@uaetrail/shared-types';
-import type { OrganizeComposeKind } from './compose';
+import type { HostComposeKind } from './compose';
 import { EXPLORE_MAP_PATH } from '../config/platform';
 import { PLAN_PATH } from '../constants';
 import { planHostedSchedulePath } from '../plan/planRouting';
-import type { ContributeVenueKind } from './contributeTypes';
 import {
   formatComposeQuery,
-  planHostingCompose,
-  planSeekingCompose,
+  hostCompose,
   type ExploreCompose,
 } from './compose';
 import {
@@ -157,34 +155,41 @@ export const FULFILL_INTENT_QUERY_KEY = 'fulfillIntent';
 /** @deprecated Legacy query key — parsed for backward compatibility. */
 export const LEGACY_FULFILL_INTENT_QUERY_KEY = 'hostDemand';
 
-/** Prefill explore organize wizard from a prior activity (new id on publish). */
-export const ORGANIZE_FROM_ACTIVITY_QUERY_KEY = 'organizeFrom';
+/** Prefill the hosting wizard from a prior outing (new id on publish). */
+export const HOST_FROM_ACTIVITY_QUERY_KEY = 'hostFrom';
+/** Legacy deep link — inbound rewrite only. */
+export const LEGACY_HOST_FROM_ACTIVITY_QUERY_KEY = 'organizeFrom';
 
-export const parseOrganizeFromActivityId = (
+export const parseHostFromActivityId = (
   searchParams: Pick<URLSearchParams, 'get'>
-): string | null => searchParams.get(ORGANIZE_FROM_ACTIVITY_QUERY_KEY)?.trim() || null;
+): string | null =>
+  searchParams.get(HOST_FROM_ACTIVITY_QUERY_KEY)?.trim() ||
+  searchParams.get(LEGACY_HOST_FROM_ACTIVITY_QUERY_KEY)?.trim() ||
+  null;
 
-export const clearOrganizeFromActivityParams = (params: URLSearchParams): void => {
-  params.delete(ORGANIZE_FROM_ACTIVITY_QUERY_KEY);
+export const clearHostFromActivityParams = (params: URLSearchParams): void => {
+  params.delete(HOST_FROM_ACTIVITY_QUERY_KEY);
+  params.delete(LEGACY_HOST_FROM_ACTIVITY_QUERY_KEY);
 };
 
-/** Deep link: reorganize a past outing via FAB wizard (not server duplicate). */
-export const exploreReorganizeActivityPath = (
+/** Deep link: host again from a past outing via FAB wizard (not server duplicate). */
+export const exploreHostFromActivityPath = (
   activityId: string,
-  kind: OrganizeComposeKind
+  kind: HostComposeKind
 ): string =>
   explorePath({
-    compose: planHostingCompose(kind),
-    organizeFrom: activityId,
+    compose: hostCompose(kind),
+    hostFrom: activityId,
   });
 
-export const exploreReorganizeActivityReturnPath = (
+export const exploreHostFromActivityReturnPath = (
   activityId: string,
   currentSearch: URLSearchParams,
   pathname: string = EXPLORE_MAP_PATH
 ): string => {
   const params = new URLSearchParams(currentSearch);
-  params.set(ORGANIZE_FROM_ACTIVITY_QUERY_KEY, activityId);
+  params.set(HOST_FROM_ACTIVITY_QUERY_KEY, activityId);
+  params.delete(LEGACY_HOST_FROM_ACTIVITY_QUERY_KEY);
   if (!params.has('list')) params.set('list', '1');
   return `${pathname}?${params.toString()}`;
 };
@@ -291,12 +296,10 @@ export const explorePath = (options?: {
   /** Selected venue states/emirates (multi-select). */
   regions?: string[];
   addLocation?: boolean;
-  /** Compose menu or wizard route (`menu`, `organize:hiking`, …). */
+  /** Compose menu or wizard route (`menu`, `host.hiking` wire, …). */
   compose?: ExploreCompose | 'menu';
-  /** @deprecated Prefer `compose` — open find wizard. */
+  /** @deprecated Prefer `compose` — leftover inbound `?request=` only. */
   request?: boolean;
-  /** @deprecated Prefer `compose: { intent: 'add', kind }`. */
-  contribute?: boolean | ContributeVenueKind;
   /**
    * Explore map item id for a {@link ParticipantIntent} (`source=demand`) — resume Activity publish.
    * Prefer this over legacy `hostDemand`.
@@ -313,8 +316,8 @@ export const explorePath = (options?: {
   outingTopic?: ExploreOutingTopicKey;
   /** Explore map item id to open on load (`activity:…`, `demand:…`, `venue:…`). */
   pin?: string;
-  /** Prefill organize wizard from an existing activity id (creates a new activity on publish). */
-  organizeFrom?: string;
+  /** Prefill hosting wizard from an existing activity id (creates a new activity on publish). */
+  hostFrom?: string;
   /** Limit pins to signed-in member activities + wishlist (requires auth). */
   myPlan?: boolean;
   /** Open browse member people panel (`view=people`). */
@@ -358,10 +361,6 @@ export const explorePath = (options?: {
     params.set('compose', formatComposeQuery({ surface: 'menu', intent: 'add' }));
   } else if (options?.request) {
     params.set('compose', formatComposeQuery({ surface: 'menu', intent: 'seek' }));
-  } else if (options?.contribute === true) {
-    params.set('compose', formatComposeQuery({ surface: 'menu', intent: 'add' }));
-  } else if (options?.contribute) {
-    params.set('compose', formatComposeQuery({ intent: 'add', kind: options.contribute }));
   }
   const fulfillIntentId = options?.fulfillIntent ?? options?.hostDemand;
   if (fulfillIntentId) {
@@ -391,8 +390,9 @@ export const explorePath = (options?: {
   if (options?.pin?.trim()) {
     params.set(EXPLORE_PIN_QUERY_KEY, options.pin.trim());
   }
-  if (options?.organizeFrom?.trim()) {
-    params.set(ORGANIZE_FROM_ACTIVITY_QUERY_KEY, options.organizeFrom.trim());
+  if (options?.hostFrom?.trim()) {
+    params.set(HOST_FROM_ACTIVITY_QUERY_KEY, options.hostFrom.trim());
+    params.delete(LEGACY_HOST_FROM_ACTIVITY_QUERY_KEY);
   }
   if (options?.myPlan) {
     params.set(MY_PLAN_MAP_QUERY_KEY, '1');
@@ -432,15 +432,15 @@ export const exploreDiscoverBrowsePath = (): string =>
 /** Start create flow with optional buddy to plan with. */
 export const explorePlanWithBuddyPath = (
   buddyUserId: string,
-  mode: 'organize' | 'find'
+  mode: 'host' | 'seek'
 ): string =>
   explorePath({
     list: true,
     planWith: buddyUserId,
     compose:
-      mode === 'organize'
-        ? planHostingCompose('activity')
-        : { surface: 'menu', intent: 'plan' },
+      mode === 'host'
+        ? hostCompose('activity')
+        : { surface: 'menu', intent: 'seek' },
   });
 
 /** Join me notification target — map peek with invite banner. */
@@ -585,9 +585,9 @@ export const myActivitiesPath = (tab: 'joined' | 'hosted' = 'joined'): string =>
   tab === 'hosted' ? planHostedSchedulePath() : PLAN_PATH;
 
 /** Consumer create flow — explore compose organize menu or a specific kind. */
-export const exploreOrganizePath = (kind?: OrganizeComposeKind): string =>
+export const exploreHostPath = (kind?: HostComposeKind): string =>
   kind
-    ? explorePath({ compose: planHostingCompose(kind) })
+    ? explorePath({ compose: hostCompose(kind) })
     : explorePath({ compose: { surface: 'menu', intent: 'host' } });
 
 /** Host with publish access — prefill rideshare organize from an own seeking post. */
@@ -598,24 +598,24 @@ export const exploreOfferRideshareForSeekingPath = (intent: {
 }): string =>
   explorePath({
     pin: resolveParticipantIntentMapItemId(intent),
-    compose: planHostingCompose('rideshare'),
+    compose: hostCompose('rideshare'),
   });
 
 /** Map legacy `/activities?create=` values onto explore compose organize routes. */
-export const legacyCreateParamToOrganizePath = (createParam: string | null): string | null => {
+export const legacyCreateParamToHostPath = (createParam: string | null): string | null => {
   if (!createParam) return null;
   if (createParam === 'hiking' || createParam === 'camping' || createParam === 'event') {
-    return exploreOrganizePath(createParam);
+    return exploreHostPath(createParam);
   }
   if (
     createParam === 'community_activity' ||
     createParam === 'COMMUNITY_ACTIVITY' ||
     createParam === 'EVENT'
   ) {
-    return exploreOrganizePath('event');
+    return exploreHostPath('event');
   }
   if (createParam === 'activity') {
-    return exploreOrganizePath('activity');
+    return exploreHostPath('activity');
   }
   if (
     createParam === 'rideshare' ||
@@ -623,7 +623,7 @@ export const legacyCreateParamToOrganizePath = (createParam: string | null): str
     createParam === 'carpool' ||
     createParam === 'CARPOOL'
   ) {
-    return exploreOrganizePath('rideshare');
+    return exploreHostPath('rideshare');
   }
   return null;
 };

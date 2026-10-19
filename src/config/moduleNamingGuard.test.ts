@@ -4,11 +4,7 @@ import { join, relative } from 'node:path';
 
 const SCAN_ROOT = join(process.cwd(), 'src');
 
-const DEPRECATED_MESSAGE_BUTTON_SHIMS = new Set([
-  'src/components/ui/HostMessageButton.tsx',
-  'src/components/ui/OrganizerMessageButton.tsx',
-  'src/components/ui/index.ts',
-]);
+const DEPRECATED_MESSAGE_BUTTON_SHIMS = new Set<string>();
 
 const SKIP_FILES = new Set(['src/config/moduleNamingGuard.test.ts']);
 

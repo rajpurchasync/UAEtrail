@@ -1,6 +1,6 @@
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { isGeographyMapSource } from '@uaetrail/shared-types';
-import type { ExploreCardModel } from '../explore/exploreCardModel';
+import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
 import {
   LIST_DISCOVER_RAIL_PLACES,
   LIST_DISCOVER_RAIL_SHOPS,
@@ -15,25 +15,25 @@ export const DISCOVER_RAIL_LIMIT = 5;
 export type ListDiscoverRail = {
   id: ListDiscoverRailId;
   title: string;
-  items: ExploreCardModel[];
+  items: DiscoveryCardModel[];
 };
 
 const todayIsoUtc = (): string => new Date().toISOString().slice(0, 10);
 
-const activitySortKey = (card: ExploreCardModel): string => {
+const activitySortKey = (card: DiscoveryCardModel): string => {
   const date = card.activity?.date ?? '';
   const time = card.activity?.time ?? '00:00';
   return `${date}T${time}`;
 };
 
-const isUpcomingActivityCard = (card: ExploreCardModel): boolean => {
+const isUpcomingActivityCard = (card: DiscoveryCardModel): boolean => {
   if (card.source !== 'activity' || !card.activity?.date) return false;
   return card.activity.date >= todayIsoUtc();
 };
 
-const isActivityFeatured = (card: ExploreCardModel): boolean => Boolean(card.activity?.featured);
+const isActivityFeatured = (card: DiscoveryCardModel): boolean => Boolean(card.activity?.featured);
 
-const isVenueFeatured = (card: ExploreCardModel, mapItems: ExploreMapItemDTO[]): boolean => {
+const isVenueFeatured = (card: DiscoveryCardModel, mapItems: ExploreMapItemDTO[]): boolean => {
   const item = mapItems.find((entry) => entry.id === card.id);
   return Boolean(item?.locationCard?.featured);
 };
@@ -45,19 +45,19 @@ const hostedCountAtVenue = (locationId: string | null | undefined, mapItems: Exp
   ).length;
 };
 
-const cardById = (cards: ExploreCardModel[]): Map<string, ExploreCardModel> =>
+const cardById = (cards: DiscoveryCardModel[]): Map<string, DiscoveryCardModel> =>
   new Map(cards.map((card) => [card.id, card]));
 
 export const pickDiscoverTripRailCards = (
-  cards: ExploreCardModel[],
+  cards: DiscoveryCardModel[],
   limit = DISCOVER_RAIL_LIMIT
-): ExploreCardModel[] => {
+): DiscoveryCardModel[] => {
   const activities = cards.filter((c) => c.source === 'activity' && isUpcomingActivityCard(c));
   const featured = activities.filter(isActivityFeatured).sort((a, b) => activitySortKey(a).localeCompare(activitySortKey(b)));
   const rest = activities
     .filter((c) => !isActivityFeatured(c))
     .sort((a, b) => activitySortKey(a).localeCompare(activitySortKey(b)));
-  const merged: ExploreCardModel[] = [];
+  const merged: DiscoveryCardModel[] = [];
   const seen = new Set<string>();
   for (const card of [...featured, ...rest]) {
     if (seen.has(card.id) || merged.length >= limit) continue;
@@ -68,10 +68,10 @@ export const pickDiscoverTripRailCards = (
 };
 
 export const pickDiscoverVenueRailCards = (
-  cards: ExploreCardModel[],
+  cards: DiscoveryCardModel[],
   mapItems: ExploreMapItemDTO[],
   limit = DISCOVER_RAIL_LIMIT
-): ExploreCardModel[] => {
+): DiscoveryCardModel[] => {
   const venues = cards.filter((c) => isGeographyMapSource(c.source));
   const featured = venues
     .filter((c) => isVenueFeatured(c, mapItems))
@@ -79,7 +79,7 @@ export const pickDiscoverVenueRailCards = (
   const rest = venues
     .filter((c) => !isVenueFeatured(c, mapItems))
     .sort((a, b) => hostedCountAtVenue(b.locationId, mapItems) - hostedCountAtVenue(a.locationId, mapItems));
-  const merged: ExploreCardModel[] = [];
+  const merged: DiscoveryCardModel[] = [];
   const seen = new Set<string>();
   for (const card of [...featured, ...rest]) {
     if (seen.has(card.id) || merged.length >= limit) continue;
@@ -92,21 +92,21 @@ export const pickDiscoverVenueRailCards = (
 const isShopMapItem = (item: ExploreMapItemDTO): boolean =>
   item.source === 'shop' || item.source === 'agency';
 
-const shopSortKey = (card: ExploreCardModel): string =>
+const shopSortKey = (card: DiscoveryCardModel): string =>
   (card.listTitle || card.headline || '').toLocaleLowerCase();
 
 export const pickDiscoverShopRailCards = (
-  cards: ExploreCardModel[],
+  cards: DiscoveryCardModel[],
   mapItems: ExploreMapItemDTO[],
   limit = DISCOVER_RAIL_LIMIT
-): ExploreCardModel[] => {
+): DiscoveryCardModel[] => {
   const shops = cards.filter((c) => c.source === 'shop' || c.source === 'agency');
   if (!shops.length) {
     return [];
   }
 
   const byId = cardById(shops);
-  const featured: ExploreCardModel[] = [];
+  const featured: DiscoveryCardModel[] = [];
   for (const item of mapItems) {
     if (!isShopMapItem(item) || !item.discoverFeatured) continue;
     const card = byId.get(item.id);
@@ -118,7 +118,7 @@ export const pickDiscoverShopRailCards = (
     .filter((c) => !featuredIds.has(c.id))
     .sort((a, b) => shopSortKey(a).localeCompare(shopSortKey(b)));
 
-  const merged: ExploreCardModel[] = [];
+  const merged: DiscoveryCardModel[] = [];
   const seen = new Set<string>();
   for (const card of [...featured, ...rest]) {
     if (seen.has(card.id) || merged.length >= limit) continue;
@@ -130,7 +130,7 @@ export const pickDiscoverShopRailCards = (
 };
 
 export const buildListDiscoverRails = (
-  cards: ExploreCardModel[],
+  cards: DiscoveryCardModel[],
   mapItems: ExploreMapItemDTO[] = []
 ): ListDiscoverRail[] => {
   const rails: ListDiscoverRail[] = [];

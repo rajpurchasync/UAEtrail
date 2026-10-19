@@ -5,7 +5,7 @@ import { api } from './services';
 describe('api canonical surface', () => {
   it('exposes place and explore entrypoints', () => {
     expect(typeof api.getPublicPlaces).toBe('function');
-    expect(typeof api.fetchPlaceRegistry).toBe('function');
+    expect(typeof api.fetchPlaceCatalog).toBe('function');
     expect(typeof api.getPublicPlaceDetail).toBe('function');
     expect(typeof api.submitOrganisationPlace).toBe('function');
     expect(typeof api.submitPlace).toBe('function');
@@ -56,4 +56,4 @@ describe('api canonical surface', () => {
     expect(legacy.decideHostActivityJoinRequest).toBeUndefined();
   });
 });
-
+

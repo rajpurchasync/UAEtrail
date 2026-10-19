@@ -1,4 +1,4 @@
-/** Default rider rules — hosts can remove or add more in the rideshare organize flow. */
+/** Default rider rules — hosts can remove or add more in the rideshare hosting flow. */
 export const DEFAULT_RIDESHARE_RIDER_RULES = ['No smoking', 'No eating in the car'] as const;
 
 export const formatRideshareRiderRules = (lines: string[]): string =>

@@ -71,7 +71,7 @@ export const useExploreSelectionPeekJoin = (input: {
     [joinActions]
   );
 
-  const messageOrganizer = useCallback(
+  const messageHost = useCallback(
     (item: ExploreMapItemDTO) => {
       const requesterId = item.requesterUserId ?? item.activity?.hostUserId;
       if (!requesterId) return;
@@ -103,9 +103,9 @@ export const useExploreSelectionPeekJoin = (input: {
     joinActions.openJoinModal();
   }, [input.selected, input.user, joinUiState.kind, joinActions]);
 
-  const handlePeekOrganizerMessage = useCallback(() => {
-    if (input.selected) messageOrganizer(input.selected);
-  }, [input.selected, messageOrganizer]);
+  const handlePeekHostMessage = useCallback(() => {
+    if (input.selected) messageHost(input.selected);
+  }, [input.selected, messageHost]);
 
   return {
     joinUiState,
@@ -117,7 +117,7 @@ export const useExploreSelectionPeekJoin = (input: {
     activityPeekSkipsJoinContext,
     handleGuestGatedAction,
     handleJoin,
-    handlePeekOrganizerMessage,
-    messageOrganizer,
+    handlePeekHostMessage,
+    messageHost,
   };
 };

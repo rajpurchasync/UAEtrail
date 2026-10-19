@@ -31,7 +31,7 @@ describe('seekingPeekUnificationGuard (S12 — one activity peek stack)', () => 
     const actions = read('src/explore/ui/peek/activity/ActivityPeekActions.tsx');
     expect(actions).toMatch(/resolveActivityPeekEngagement/);
     expect(actions).toMatch(/ActivityPeekEngagementActions/);
-    expect(actions).not.toMatch(/LegacyIntent|HostManageActions|exploreCardIsSeeking/);
+    expect(actions).not.toMatch(/LegacyIntent|HostManageActions|discoveryCardIsSeeking/);
   });
 
   it('SEEK-PEEK-03: peek selection enrich is single module (organizer join hide only)', () => {

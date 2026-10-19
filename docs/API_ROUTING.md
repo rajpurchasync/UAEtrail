@@ -187,7 +187,7 @@ Private saves — **venue** (`locationId`) or **activity** (`activityId`) only. 
 | DELETE | `/me/wishlist/:id` | Remove row |
 | GET | `/me/wishlist/check` | Query `locationId` or `activityId` → `{ saved, wishlistItemId }` |
 
-Registration: `registerMeWishlistRoutes.ts` · store: `wishlist-store.ts` · match alerts: `wishlist-alerts.ts`.
+Registration: `registerMeWishlistRoutes.ts` · store: `wishlist-store.ts` · match alerts: `wishlist-alerts.ts` (hosted publish → `notifyWishlistForPublishedActivity`; seeking create → `notifyWishlistForNewDemand`).
 
 ---
 

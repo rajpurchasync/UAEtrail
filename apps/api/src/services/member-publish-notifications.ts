@@ -3,9 +3,9 @@
  *
  * Domain terms:
  * - **Member** — auth user (subscriptions are always userId → userId).
- * - **Buddy** — mutual connection; notified for hosted activities and demand posts.
- * - **Follow** — one-way subscription; notified **only when they host/publish an activity** (not demand/find posts).
- * - **Publish** — activity moved to published, or new participant demand on the map.
+ * - **Buddy** — mutual connection; notified for hosted activities and seeking posts.
+ * - **Follow** — one-way subscription; notified **only when they host/publish an activity** (not seeking posts).
+ * - **Publish** — activity moved to published, or new seeking post on the map.
  *
  * **Place / team / shop** subscriptions use `entity_follows` — see `entity-publish-notifications.ts`.
  */
@@ -19,7 +19,7 @@ import { logger } from '../lib/logger.js';
 
 export type MemberPublishEvent =
   | { publishType: 'activity'; activityId: string; title: string }
-  | { publishType: 'demand'; intentId: string; title: string; activityId?: string | null };
+  | { publishType: 'seeking'; intentId: string; title: string; activityId?: string | null };
 
 const notificationCopy = (
   actorName: string,

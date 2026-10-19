@@ -31,6 +31,3 @@ export const USER_TYPE_BADGE = MEMBER_TYPE_BADGE;
 
 export const isOrganisationOwnerUserType = (userType?: string) =>
   userType === 'business_host' || userType === 'business_organizer';
-
-/** @deprecated Use isOrganisationOwnerUserType */
-export const isBusinessHostUserType = isOrganisationOwnerUserType;

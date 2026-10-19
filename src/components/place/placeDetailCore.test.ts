@@ -34,16 +34,14 @@ describe('placeDetailCore (R3 consumer)', () => {
     );
   });
 
-  it('place kind page templates stay thin (legacy route exports re-export them)', () => {
-    const hiking = read('src/pages/place/HikingPlaceDetailPage.tsx');
-    const camping = read('src/pages/place/CampingPlaceDetailPage.tsx');
-    const eventPlace = read('src/pages/place/EventPlaceDetailPage.tsx');
-    expect(hiking).toMatch(/PlaceDetailPage kind="trail"/);
-    expect(hiking).not.toMatch(/heroKindSection/);
-    expect(camping).toMatch(/PlaceDetailPage kind="camp"/);
-    expect(camping).not.toMatch(/heroKindSection/);
-    expect(eventPlace).toMatch(/PlaceDetailPage kind="event"/);
-    expect(eventPlace).not.toMatch(/heroKindSection/);
+  it('legacy kind page wrappers are gone (canonical PlaceDetailPage + /trail|/camp|/venue Navigate)', () => {
+    for (const kindPage of [
+      'src/pages/place/HikingPlaceDetailPage.tsx',
+      'src/pages/place/CampingPlaceDetailPage.tsx',
+      'src/pages/place/EventPlaceDetailPage.tsx',
+    ]) {
+      expect(existsSync(join(root, kindPage))).toBe(false);
+    }
 
     const trail = read('src/pages/TrailDetail.tsx');
     const camp = read('src/pages/CampDetail.tsx');

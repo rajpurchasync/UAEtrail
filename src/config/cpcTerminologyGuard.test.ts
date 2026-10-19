@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 const ROOT = process.cwd();
@@ -18,21 +18,19 @@ const collectTs = (dir: string, out: string[] = []): string[] => {
   return out;
 };
 
-/** Shims allowed until CPC-7 allowlist shrink. */
 const PLACE_CATALOG_API_SHIM = 'src/hooks/placeCatalogApi.ts';
-const PLACE_REGISTRY_SHIM = 'src/api/domains/placeRegistry.ts';
 
 describe('CPC terminology guard (FE)', () => {
   it('canonical catalog submit imports use memberCatalogSubmitClientApi or placeCatalogReadsClientApi', () => {
     const mustUseCanonical = [
-      'src/explore/ui/contributeFlow.ts',
-      'src/explore/ui/contributeFacilityFlow.ts',
+      'src/explore/ui/addFlow.ts',
+      'src/explore/ui/addFacilityFlow.ts',
       'src/services/catalogPlaceSubmit.ts',
       'src/services/catalogFacilitySubmit.ts',
-      'src/services/organizeActivityPublish.ts',
+      'src/services/hostingActivityPublish.ts',
       'src/components/ui/SubmitPlaceForm.tsx',
       'src/components/ui/PlaceSelect.tsx',
-      'src/pages/Contributions.tsx',
+      'src/pages/Submissions.tsx',
     ];
     const violations: string[] = [];
     for (const file of mustUseCanonical) {
@@ -49,10 +47,9 @@ describe('CPC terminology guard (FE)', () => {
     expect(violations).toEqual([]);
   });
 
-  it('does not add new imports of placeCatalogApi outside the shim', () => {
-    const files = collectTs(join(ROOT, 'src')).filter(
-      (f) => !f.endsWith('.test.ts') && f !== PLACE_CATALOG_API_SHIM
-    );
+  it('does not import removed placeCatalogApi shim', () => {
+    expect(existsSync(join(ROOT, PLACE_CATALOG_API_SHIM))).toBe(false);
+    const files = collectTs(join(ROOT, 'src')).filter((f) => !f.endsWith('.test.ts'));
     const violations: string[] = [];
     for (const file of files) {
       const content = read(file);
@@ -69,7 +66,6 @@ describe('CPC terminology guard (FE)', () => {
       'src/api/services.ts',
       'src/api/apiLegacyGuard.test.ts',
       'src/hooks/memberCatalogSubmitClientApi.ts',
-      'src/hooks/placeCatalogApi.ts',
     ]);
     const violations: string[] = [];
     for (const file of collectTs(join(ROOT, 'src')).filter(

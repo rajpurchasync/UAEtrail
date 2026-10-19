@@ -360,7 +360,7 @@ export const ActivityManageSheet = ({
         activity={activity}
         caps={caps}
         onSelectSubview={setView}
-        onDuplicate={() => actions.reorganizeActivity(activity)}
+        onDuplicate={() => actions.hostFromExistingActivity(activity)}
         onDelete={handleDelete}
       />
 

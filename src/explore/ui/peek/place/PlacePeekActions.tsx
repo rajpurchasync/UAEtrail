@@ -5,7 +5,7 @@ import { LIST_FEED_CTA_VIEW_DETAILS } from '../../../../list/listFeedCtaCopy';
 import { PLACE_PEEK_ARRANGE_TRIP } from '../../../../content/placePeekCopy';
 import { EXPLORE_PEEK_CTA } from '../../../../config/exploreTheme';
 import { PeekDetailLink } from '../../map-peek/PeekDetailLink';
-import { navigateOrganizeFromPlaceCard } from '../../../../place/peek/navigateOrganizeFromPlaceCard';
+import { navigateHostFromPlaceCard } from '../../../../place/peek/navigateHostFromPlaceCard';
 
 export type PlacePeekActionsProps = {
   card: DiscoveryCardModel;
@@ -27,7 +27,7 @@ export const PlacePeekActions = ({
       return;
     }
     setArranging(true);
-    void navigateOrganizeFromPlaceCard(navigate, card).finally(() => setArranging(false));
+    void navigateHostFromPlaceCard(navigate, card).finally(() => setArranging(false));
   };
 
   return (

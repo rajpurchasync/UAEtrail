@@ -2,10 +2,10 @@ import type { ActivityMapPeekActionId } from '@uaetrail/shared-types';
 import type { DiscoveryCardModel } from '../../../../discovery/discoveryCardModel';
 import {
   discoveryCardUsesActivityPeekEngagement,
-  exploreCardActivityJoinIsFull,
-  exploreCardHasMapCoords,
-  exploreCardPeekShowsDirections,
-  exploreCardShowsInlineDirections,
+  discoveryCardActivityJoinIsFull,
+  discoveryCardHasMapCoords,
+  discoveryCardPeekShowsDirections,
+  discoveryCardShowsInlineDirections,
 } from '../../../../discovery/discoveryCardModel';
 import {
   activityPeekHasMapWireActions,
@@ -14,7 +14,7 @@ import {
 import { JoinRequestActions } from '../../../../components/ui/JoinRequestActions';
 import type { JoinRequestUiState } from '../../../../utils/joinRequestUi';
 import { ActivityPeekEngagementActions } from './ActivityPeekEngagementActions';
-import { ExploreCardDirectionsButton } from '../../ExploreCardPresentation';
+import { DiscoveryCardDirectionsButton } from '../../DiscoveryCardPresentation';
 import { PeekDetailLink } from '../../map-peek/PeekDetailLink';
 
 export type ActivityPeekActionsProps = {
@@ -97,7 +97,7 @@ export const ActivityPeekActions = ({
         <JoinRequestActions
           uiState={joinUiState}
           joinLabel={card.primaryCta}
-          isFull={exploreCardActivityJoinIsFull(card)}
+          isFull={discoveryCardActivityJoinIsFull(card)}
           onJoin={gate ?? onJoin}
           joinCtaMarker="explore"
         />
@@ -115,10 +115,10 @@ export const ActivityPeekActions = ({
     return (
       <>
         {gate &&
-        exploreCardPeekShowsDirections(card) &&
-        exploreCardHasMapCoords(card) &&
-        !exploreCardShowsInlineDirections(card) ? (
-          <ExploreCardDirectionsButton latitude={card.mapLatitude} longitude={card.mapLongitude} />
+        discoveryCardPeekShowsDirections(card) &&
+        discoveryCardHasMapCoords(card) &&
+        !discoveryCardShowsInlineDirections(card) ? (
+          <DiscoveryCardDirectionsButton latitude={card.mapLatitude} longitude={card.mapLongitude} />
         ) : null}
         {detailLink(
           card.primaryCta,

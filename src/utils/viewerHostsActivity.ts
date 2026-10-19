@@ -13,5 +13,3 @@ export const viewerIsActivityHostUser = (
   return Boolean(hostUserId && hostUserId === viewerUserId);
 };
 
-/** @deprecated Use `viewerIsActivityHostUser` — same behavior; tenant publish rights do not confer host CTAs. */
-export const viewerHostsActivity = viewerIsActivityHostUser;

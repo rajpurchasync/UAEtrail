@@ -1,9 +1,9 @@
-import type { ExploreCardModel } from '../exploreCardModel';
+import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import { useListFeedActionsOptional } from '../../list/ui/ListFeedActionsProvider';
 import { ListFeedWireFooterButtons } from '../../list/ui/ListFeedWireFooterButtons';
 
 interface ExploreListRowWireFooterProps {
-  card: ExploreCardModel;
+  card: DiscoveryCardModel;
 }
 
 /** L1 peek footer parity on map-aligned compact list rows (`list=1`). */

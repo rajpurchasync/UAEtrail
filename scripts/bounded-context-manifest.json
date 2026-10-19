@@ -159,7 +159,6 @@
       "feDomains": [
         "src/api/domains/places.ts",
         "src/api/domains/placeCatalogClient.ts",
-        "src/api/domains/placeRegistry.ts",
         "src/hooks/memberCatalogSubmitClientApi.ts",
         "src/hooks/placeCatalogReadsClientApi.ts"
       ],
@@ -227,7 +226,7 @@
         "src/pages/MemberProfile.tsx",
         "src/people-discovery",
         "src/member/memberProfileLink.ts",
-        "src/list/ui/ListDiscoverPeopleView.tsx"
+        "src/list/ListDiscoveryExperience.tsx"
       ]
     },
     {
@@ -262,7 +261,7 @@
       ],
       "feRoots": [
         "src/pages/ProfileBadges.tsx",
-        "src/hooks/useEntityFollows.ts",
+        "src/hooks/entityFollowApi.ts",
         "src/wishlist",
         "src/plan"
       ]
@@ -381,11 +380,9 @@
     "member",
     "memberCommitmentHub",
     "memberJourneyMap",
-    "memberPlan",
     "messaging",
     "organisation",
     "placeCatalogClient",
-    "placeRegistry",
     "places",
     "reviews",
     "shop",

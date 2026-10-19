@@ -14,7 +14,7 @@ describe('wishlistWatchMatchesPin', () => {
   it('matches organize pin in same category within radius', () => {
     expect(
       wishlistWatchMatchesPin(watch, {
-        composeIntent: 'organize',
+        composeIntent: 'host',
         outingCategory: 'hiking',
         latitude: 25.11,
         longitude: 55.21,
@@ -26,7 +26,7 @@ describe('wishlistWatchMatchesPin', () => {
   it('skips self-authored pins', () => {
     expect(
       wishlistWatchMatchesPin(watch, {
-        composeIntent: 'organize',
+        composeIntent: 'host',
         outingCategory: 'hiking',
         latitude: 25.11,
         longitude: 55.21,
@@ -38,7 +38,7 @@ describe('wishlistWatchMatchesPin', () => {
   it('rejects different outing category', () => {
     expect(
       wishlistWatchMatchesPin(watch, {
-        composeIntent: 'demand',
+        composeIntent: 'seek',
         outingCategory: 'camping',
         latitude: 25.11,
         longitude: 55.21,

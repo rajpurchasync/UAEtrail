@@ -617,5 +617,3 @@ function CheckboxGroup({
   );
 }
 
-/** @deprecated Use SubmitPlaceForm */
-export const SubmitLocationForm = SubmitPlaceForm;

@@ -15,7 +15,7 @@ const SURFACE_LINKS: Array<{ path: string; constant: string }> = [
   { path: '/community', constant: 'COMMUNITY_PATH' },
   { path: '/profile/badges', constant: 'PROFILE_BADGES_PATH' },
   { path: '/my-requests', constant: 'MY_REQUESTS_PATH' },
-  { path: '/chat', constant: 'CHAT_PATH' },
+  { path: '/chat', constant: 'MESSAGES_PATH' },
   { path: '/notifications', constant: 'NOTIFICATIONS_PATH' },
   { path: '/profile', constant: 'PROFILE_PATH' },
   { path: '/profile/settings', constant: 'PROFILE_SETTINGS_PATH' },
@@ -237,7 +237,7 @@ describe('systemCoherenceGuard', () => {
   it('workspace vocabulary module is canonical for organizer/operator copy', () => {
     expect(existsSync(join(ROOT, 'src/content/workspaceVocabulary.ts'))).toBe(true);
     const vocab = readFileSync(join(ROOT, 'src/content/workspaceVocabulary.ts'), 'utf8');
-    expect(vocab).toMatch(/Organizer workspace/);
+    expect(vocab).toMatch(/Publishing workspace/);
     expect(vocab).toMatch(/Operator workspace/);
     expect(existsSync(join(ROOT, 'src/content/workspaceVocabulary.ts'))).toBe(true);
     expect(existsSync(join(ROOT, 'src/content/workspaceProductLanguageGuard.test.ts'))).toBe(true);
@@ -318,7 +318,7 @@ describe('systemCoherenceGuard', () => {
       join(ROOT, 'src/explore/create/hooks/useHostingFromActivity.ts'),
       'utf8'
     );
-    const effectBlock = content.slice(content.indexOf('parseOrganizeFromActivityId(searchParams)'), content.indexOf('const clearOrganizeFromPrefill'));
+    const effectBlock = content.slice(content.indexOf('parseHostFromActivityId(searchParams)'), content.indexOf('const clearHostingFromActivityPrefill'));
     expect(effectBlock).toMatch(/isCommunityHost/);
     expect(effectBlock).toMatch(/hostTiers/);
   });

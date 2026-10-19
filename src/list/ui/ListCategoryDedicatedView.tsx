@@ -1,10 +1,10 @@
-import type { ExploreCardModel } from '../../explore/exploreCardModel';
+import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import type { BrowseMainCategoryKey } from '../browseListTaxonomy';
 import { ListCategoryImageFeed } from './ListCategoryImageFeed';
 
 interface ListCategoryDedicatedViewProps {
   category: BrowseMainCategoryKey;
-  cards: ExploreCardModel[];
+  cards: DiscoveryCardModel[];
 }
 
 /** Category feed — result count lives in `ListDiscoveryHeader`. */

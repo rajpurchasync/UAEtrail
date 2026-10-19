@@ -85,7 +85,7 @@ export const notifyWishlistForPublishedActivity = async (activityId: string): Pr
     const { latitude, longitude } = resolveActivityPinCoords(doc);
     const outingCategory = resolveActivityOutingCategory(doc);
     const event: WishlistPinEvent = {
-      composeIntent: 'organize',
+      composeIntent: 'host',
       outingCategory,
       latitude,
       longitude,
@@ -104,15 +104,15 @@ export const notifyWishlistForPublishedActivity = async (activityId: string): Pr
   }
 };
 
-/** Notify wishlist *watchers* when a new public demand pin matches their saved intent — not a wishlist row for the demand itself. */
-export const notifyWishlistForNewDemand = async (intentId: string, requesterUserId: string): Promise<void> => {
+/** Notify wishlist watchers when a new public seeking pin matches their saved intent. */
+export const notifyWishlistForNewSeeking = async (intentId: string, requesterUserId: string): Promise<void> => {
   try {
     const activity = await findSeekingActivityByParticipantIntentId(intentId);
     if (!activity) return;
 
     const { latitude, longitude } = resolveActivityPinCoords(activity);
     const event: WishlistPinEvent = {
-      composeIntent: 'demand',
+      composeIntent: 'seek',
       outingCategory: resolveActivityOutingCategory(activity),
       latitude,
       longitude,
@@ -130,6 +130,6 @@ export const notifyWishlistForNewDemand = async (intentId: string, requesterUser
       { intentId, activityId: activity._id }
     );
   } catch (error) {
-    logger.warn({ err: error, intentId }, 'wishlist notify for demand failed');
+    logger.warn({ err: error, intentId }, 'wishlist notify for seeking failed');
   }
 };

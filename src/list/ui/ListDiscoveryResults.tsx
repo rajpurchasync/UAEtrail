@@ -1,4 +1,4 @@
-import type { ExploreCardModel } from '../../explore/exploreCardModel';
+import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 
 import { browseListResultsFoundLabel } from '../browseListCopy';
 
@@ -8,7 +8,7 @@ import { ListCategoryImageFeed } from './ListCategoryImageFeed';
 
 interface ListDiscoveryResultsProps {
 
-  cards: ExploreCardModel[];
+  cards: DiscoveryCardModel[];
 
   showClearAll: boolean;
 

@@ -79,9 +79,6 @@ export const GROUPS_PATH = '/groups' as const;
 export const BUDDIES_PATH = '/buddies' as const;
 export const PROFILE_SUBMISSIONS_PATH = '/profile/submissions' as const;
 
-/** Member catalog submissions hub (places + facilities). */
-export const CONTRIBUTIONS_PATH = PROFILE_SUBMISSIONS_PATH;
-
 /** Legacy URL — redirects to {@link PROFILE_SUBMISSIONS_PATH}. */
 export const LEGACY_CONTRIBUTIONS_PATH = '/contributions' as const;
 
@@ -112,9 +109,7 @@ export const NOTIFICATIONS_PATH = '/notifications' as const;
 
 /** Consumer inbox + threads — keep string literal in sync with `apps/api/src/lib/member-routes.ts`. */
 export const MESSAGES_PATH = '/chat' as const;
-/** Communication hub — UI label: Chat (same route as {@link MESSAGES_PATH}). */
-export const CHAT_PATH = MESSAGES_PATH;
-/** Legacy inbox URL — redirects to {@link CHAT_PATH} in `App.tsx`. */
+/** Legacy inbox URL — redirects to {@link MESSAGES_PATH} in `App.tsx`. */
 export const LEGACY_MESSAGES_PATH = '/messages' as const;
 export const MY_REQUESTS_PATH = '/my-requests' as const;
 

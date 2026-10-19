@@ -11,7 +11,7 @@ import {
 } from '../content/activityParticipationCopy';
 import { JOIN_CANCEL_REQUEST_BUTTON } from '../content/joinWithdrawCopy';
 import { pendingApprovalLabel } from '../utils/joinRequestUi';
-import { ORGANIZE_LINK_RIDESHARE_LABEL } from './createFlowCopy';
+import { HOSTING_LINK_RIDESHARE_LABEL } from './createFlowCopy';
 
 export type ActivityMapPeekActionLabelContext = {
   /** Map peek vs activity detail CTA row. */
@@ -52,7 +52,7 @@ export const activityMapPeekActionLabel = (
         : 'Message';
     case 'link_rideshare':
     case 'offer_rideshare':
-      return ORGANIZE_LINK_RIDESHARE_LABEL;
+      return HOSTING_LINK_RIDESHARE_LABEL;
     case 'share_activity':
       return 'Share outing';
     case 'manage_activity':

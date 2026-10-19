@@ -538,9 +538,3 @@ export const toPlaceDetailData = (
   campingType: item.campingType,
 });
 
-/** @deprecated Use PlaceDetailData */
-export type LocationDetailData = PlaceDetailData;
-/** @deprecated Use PlaceDetailTabs */
-export const LocationDetailTabs = PlaceDetailTabs;
-/** @deprecated Use toPlaceDetailData */
-export const toLocationDetailData = toPlaceDetailData;

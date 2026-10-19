@@ -459,7 +459,7 @@ export const Buddies = () => {
                   <GlassCard padding className="text-center">
                     <p className="font-semibold text-neutral-900">Not following anyone yet</p>
                     <p className="mt-1 text-sm text-neutral-500">
-                      Follow organizers from their profile to get notified when they publish an outing.
+                      Follow hosts from their profile to get notified when they publish an outing.
                     </p>
                   </GlassCard>
                 ) : (

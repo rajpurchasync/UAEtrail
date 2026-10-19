@@ -1,4 +1,4 @@
-import type { ExploreCardModel } from '../explore/exploreCardModel';
+import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
 import { isGeographyMapSource } from '@uaetrail/shared-types';
 import {
   formatListFeedPosterTitleLines,
@@ -19,7 +19,7 @@ const emptySchedule: BrowsePosterScheduleGrid = {
 const normalize = (value: string | null | undefined): string =>
   value?.trim().toLowerCase().replace(/\s+/g, ' ') ?? '';
 
-export const resolveCatalogEntityName = (card: ExploreCardModel): string => {
+export const resolveCatalogEntityName = (card: DiscoveryCardModel): string => {
   const listTitle = card.listTitle?.trim();
   if (listTitle) return listTitle;
   const headline = card.headline?.trim();
@@ -28,7 +28,7 @@ export const resolveCatalogEntityName = (card: ExploreCardModel): string => {
 };
 
 /** Area + location under place name in catalog header (not venue kind). */
-export const resolveCatalogHeaderAreaLocationLine = (card: ExploreCardModel): string | null => {
+export const resolveCatalogHeaderAreaLocationLine = (card: DiscoveryCardModel): string | null => {
   const nameNorm = normalize(resolveCatalogEntityName(card));
   const region = card.venueRegion?.trim() || null;
   const subtitle = card.subtitle?.trim() || null;
@@ -49,7 +49,7 @@ export const resolveCatalogHeaderAreaLocationLine = (card: ExploreCardModel): st
 };
 
 /** Trail / wadi line under emirate — subtitle when it differs from region eyebrow. */
-const resolveVenueLocationFact = (card: ExploreCardModel): string | null => {
+const resolveVenueLocationFact = (card: DiscoveryCardModel): string | null => {
   const subtitle = card.subtitle?.trim();
   if (!subtitle) return null;
   const region = card.venueRegion?.trim();
@@ -58,27 +58,27 @@ const resolveVenueLocationFact = (card: ExploreCardModel): string | null => {
   return subtitle;
 };
 
-const resolveReachabilityLabel = (card: ExploreCardModel): string | null => {
+const resolveReachabilityLabel = (card: DiscoveryCardModel): string | null => {
   const accessibility = card.venueAccessibility;
   if (accessibility === 'remote') return '4x4 required';
   if (accessibility === 'car-accessible') return 'Sedan access';
   return null;
 };
 
-const resolveParkingLabel = (card: ExploreCardModel): string | null => {
+const resolveParkingLabel = (card: DiscoveryCardModel): string | null => {
   if (card.venueHasParking) return 'Parking';
   if (card.venueAccessibility === 'car-accessible') return 'Parking access';
   return null;
 };
 
-const resolveDifficultyLabel = (card: ExploreCardModel): string | null => {
+const resolveDifficultyLabel = (card: DiscoveryCardModel): string | null => {
   const difficulty = card.difficulty;
   if (!difficulty) return null;
   if (difficulty === 'moderate') return 'Moderate';
   return capitalize(difficulty);
 };
 
-const resolveSurfaceLabels = (card: ExploreCardModel): string[] => {
+const resolveSurfaceLabels = (card: DiscoveryCardModel): string[] => {
   const surfaces = card.surfaceTypes ?? [];
   return surfaces
     .map((s) => capitalize(s.replace(/_/g, ' ')))
@@ -86,35 +86,35 @@ const resolveSurfaceLabels = (card: ExploreCardModel): string[] => {
     .slice(0, 2);
 };
 
-const resolveDistanceLabel = (card: ExploreCardModel): string | null => {
+const resolveDistanceLabel = (card: DiscoveryCardModel): string | null => {
   const km = card.venueDistanceKm;
   if (km == null || !Number.isFinite(km) || km <= 0) return null;
   const rounded = km % 1 === 0 ? String(km) : km.toFixed(1);
   return `${rounded} km`;
 };
 
-const resolveElevationLabel = (card: ExploreCardModel): string | null => {
+const resolveElevationLabel = (card: DiscoveryCardModel): string | null => {
   const meters = card.venueElevationM;
   if (meters == null || !Number.isFinite(meters) || meters <= 0) return null;
   const rounded = meters % 1 === 0 ? String(meters) : meters.toFixed(0);
   return `${rounded} m elevation`;
 };
 
-const resolveDurationLabel = (card: ExploreCardModel): string | null => {
+const resolveDurationLabel = (card: DiscoveryCardModel): string | null => {
   const hours = card.venueDurationHours;
   if (hours == null || !Number.isFinite(hours) || hours <= 0) return null;
   const rounded = hours % 1 === 0 ? String(hours) : hours.toFixed(1);
   return `${rounded} hr${hours === 1 ? '' : 's'}`;
 };
 
-const resolveCampingTypeLabel = (card: ExploreCardModel): string | null => {
+const resolveCampingTypeLabel = (card: DiscoveryCardModel): string | null => {
   if (card.kind !== 'camping') return null;
   if (card.venueCampingType === 'self-guided') return 'Self-guided camping';
   if (card.venueCampingType === 'operator-led') return 'Operator-led camping';
   return null;
 };
 
-const resolveMaxGroupLabel = (card: ExploreCardModel): string | null => {
+const resolveMaxGroupLabel = (card: DiscoveryCardModel): string | null => {
   const size = card.venueMaxGroupSize;
   if (size == null || !Number.isFinite(size) || size <= 0) return null;
   return `Up to ${size} people`;
@@ -122,7 +122,7 @@ const resolveMaxGroupLabel = (card: ExploreCardModel): string | null => {
 
 /** Catalog attribute pills — aligned with place detail stats (optional local subtitle for list posters). */
 export const resolvePlaceCatalogFactLabels = (
-  card: ExploreCardModel,
+  card: DiscoveryCardModel,
   options?: { includeLocationSubtitle?: boolean }
 ): string[] => {
   if (card.source === 'shop') return resolveShopPosterFactLabels(card);
@@ -166,7 +166,7 @@ export const resolvePlaceCatalogFactLabels = (
   return [...new Set(labels)].slice(0, 8);
 };
 
-const resolveShopPosterFactLabels = (card: ExploreCardModel): string[] => {
+const resolveShopPosterFactLabels = (card: DiscoveryCardModel): string[] => {
   const labels: string[] = [];
   const region = card.venueRegion?.trim() || card.subtitle?.trim();
   if (region && normalize(region) !== normalize(resolveCatalogEntityName(card))) {
@@ -177,7 +177,7 @@ const resolveShopPosterFactLabels = (card: ExploreCardModel): string[] => {
 };
 
 /** Fact pills on place / shop posters. */
-export const resolveListVenuePosterFactLabels = (card: ExploreCardModel): string[] =>
+export const resolveListVenuePosterFactLabels = (card: DiscoveryCardModel): string[] =>
   resolvePlaceCatalogFactLabels(card, { includeLocationSubtitle: true });
 
 export type ListVenuePosterCopy = {
@@ -188,7 +188,7 @@ export type ListVenuePosterCopy = {
   requirementLabels: string[];
 };
 
-export const resolveListVenuePosterCopy = (card: ExploreCardModel): ListVenuePosterCopy => {
+export const resolveListVenuePosterCopy = (card: DiscoveryCardModel): ListVenuePosterCopy => {
   const heroTitle = resolveCatalogEntityName(card);
   const region = card.venueRegion?.trim() || card.subtitle?.trim() || null;
 

@@ -385,7 +385,7 @@ IA detail (pills, topics): [`experiment/explore-browse-ia.md`](./experiment/expl
 
 **Demand vs activity join:** always qualify — “activity join request” vs “demand join request” ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md) § Naming vocabulary).
 
-**Explore map pins:** `MapPinKind` / `ExploreCardKind` (`components/ui/mapPinTypes.ts`, `discovery/discoveryCardModel.ts`) — keep in sync; prefer shared-types for new pin metadata.
+**Explore map pins:** `MapPinKind` / `DiscoveryCardKind` (`components/ui/mapPinTypes.ts`, `discovery/discoveryCardModel.ts`) — keep in sync; prefer shared-types for new pin metadata.
 
 **Discovery UI methodology:** [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) **§6.1** (L0 wire → L1 card VM → L2 map peek → L3 detail). **Source routing** for the activity peek mount: `map-peek/mapPeekSlots.tsx` only. **Looking-for / seeking** uses the same activity peek stack (`ActivityMapPeekHost` → `ActivityPeekCard`); no intent-only peek fork in FE (`seekingPeekUnificationGuard`).
 
@@ -402,7 +402,7 @@ IA detail (pills, topics): [`experiment/explore-browse-ia.md`](./experiment/expl
 | `AreaPeekActions`, `AreaPeekBody` | `ExploreAreaPeekActions` | **Area** hub **page** chrome — Area is not a map pin |
 | `PlacePeekActions`, `PlacePeekBody` | `PlacePeekActions`, `ExplorePlacePeek*` | **Place** on Spots (`source: 'venue'`) |
 | `ActivityPeekLinkedTransport` | `ExploreLinkedRidesharePeekIndication` | Activity peek transport strip |
-| `DiscoveryCardModel`, `buildDiscoveryCardModel`, `buildDiscoveryCardViewModelCard` | `ExploreCardModel`, `buildExploreCardModel` (re-export stub) | Read model for pins + list |
+| `DiscoveryCardModel`, `buildDiscoveryCardModel`, `buildDiscoveryCardViewModelCard` | `DiscoveryCardModel`, `buildDiscoveryCardModel` (re-export stub) | Read model for pins + list |
 
 **`/explore` route** and folder `src/explore/` = **discovery map surface** (historical package path). **Do not** prefix new **entity** components with `Explore` — use activity / place / pin / map projection vocabulary. Map-only chrome (`ExploreMapStage`, filter pills) may keep surface prefix until renamed in a dedicated pass.
 
@@ -437,7 +437,7 @@ When renaming or adding routes:
 | `tenant` vs Organisation | `x-tenant-id` header |
 | `UserRole` vs `HostStatusDTO` | Auth shell vs product capabilities |
 | `LegacyProMembershipRedirect` | Bookmark `/become-host` → `PRO_MEMBERSHIP_PATH` (no `BecomeHost.tsx` page) |
-| `ProProfileApplicationFlow` | Pro guide/agency/shop application wizard (not community Organize) |
+| `ProProfileApplicationFlow` | Pro guide/agency/shop application wizard (not community Host / publish) |
 | `/activities` route | Bookmark redirect to `/plan` (or history) in `App.tsx` |
 
 ---
@@ -493,12 +493,12 @@ Use this when naming files, hooks, and utils — **one product word per concept*
 | **Follow** (people) | `user_follows` | `MemberFollowControls`, `/me/following/:userId` | Buddies are **friends**; accepting a buddy **auto-follows** both ways |
 | **Wishlist** (private saves) | `user_wishlist` | `WishlistItemDTO`, `GET/POST /me/wishlist` | “Favorite”, demand bookmarks, saving people/shops to wishlist |
 | **Goal** (time + count) | `user_goals` | `MemberGoalDTO`, `GET/POST /me/goals` | Wishlist rows, visited map pins as goal progress |
-| **Host** (FAB) | `activities` publish | `hostingFlowEngine`, `hostingFlows/*`, `create/hosting`, `organizeActivityPublish` | `organizeFlow.ts`, `createOrganize/`, `CreateActivityFlow` shims |
+| **Host** (FAB) | `activities` publish | `hostingFlowEngine`, `hostingFlows/*`, `create/hosting`, `hostingActivityPublish` | `organizeFlow.ts`, `createOrganize/`, `CreateActivityFlow` shims |
 | **Plan** (tab) | joined/hosted/self plans | `src/plan/PlanPage.tsx`, `src/plan/planRouting.ts`, `src/member-plan/planHubRouting.ts`, `components/plan/*`; history chrome: `components/profile-history/*`, `components/journey/*` (journey map only on profile) | `/activities` hub naming, trips-era tabs on `/plan` |
 | **Member discovery roster** | map + directory compose | `seekingOnMap[]` (`seekingTitle`, `participantIntentId`) on `GET /me/member-discovery/roster` | Wire field `lookingFor`, `demandTitle` |
 | **Journey map** (`/profile/history/map`) | `GET /me/journey-map`, `POST/PATCH/DELETE /me/map-pins`, `JourneyMapEntryDTO` | `memberJourneyMapApi`, `src/member-plan/journeyMap*` | `GET /me/trips/map`, `outdoorMap*` |
 | **Explore map** | `GET /explore/map` (guest catalog) + `GET /me/discover/overlay` (signed-in peek) | `src/explore/*`, `exploreMapPinModel`, `applyExploreMapOverlay` | `journeyMap*` (wrong surface); mixing viewer engagement into the public map cache |
-| **Area** (curated **name**, not a pin) | `GET /areas`, `GET /areas/:slug` | `areas-store`, `organizePublishArea.ts`, `/area/:slug`, explore `?area=` | `source: area` map pin; `areaLabel` as a third geo concept; assigning area from meeting-pin polygons |
+| **Area** (curated **name**, not a pin) | `GET /areas`, `GET /areas/:slug` | `areas-store`, `hostingPublishArea.ts`, `/area/:slug`, explore `?area=` | `source: area` map pin; `areaLabel` as a third geo concept; assigning area from meeting-pin polygons |
 | **Place / venue** | `locations` | `place*`, `venue` panel, `Place` in UI | `location` in new routes/components |
 | **Friends** | buddies API | `BUDDIES_PATH`, `buddy*` stores only on API | `buddyUserId`, “buddy entity” |
 | **Publishing console** | `/operator/*`, tenant | `src/pages/operator/*`, `src/console/*`, `useOperatorStatus`, `useConsoleHubData`, `listHostActivities` | `tenant` in consumer UI strings (wire: `x-organisation-id`) |
@@ -530,7 +530,7 @@ Use this when naming files, hooks, and utils — **one product word per concept*
 |--------|-------------------|------|
 | **Area** | Admin `/admin/areas` | Curated **name** + optional center/bounds as camera hint for the hub page — **no explore map pin**. Geography labels (country, state, region) come from the map, not from Area. |
 | **Place** | Admin `/admin/places` or member **Add** (`curatedArea` then pin) | **`locations.areaId` required** on submit (`POST /me/locations`, host `/locations`) |
-| **Hosted activity** | Organize publish | **No `activity.areaId` on write.** `activity.locationId` → catalog **place** with **`place.areaId`**. `validateOrganizePlaceArea` / publish gate. Meeting / going-from pin does **not** define area. |
+| **Hosted activity** | Organize publish | **No `activity.areaId` on write.** `activity.locationId` → catalog **place** with **`place.areaId`**. `validateHostingPlaceArea` / publish gate. Meeting / going-from pin does **not** define area. |
 | **Seeking activity** | Find FAB | **`activities.areaId`** (`activityMode: seeking`) + map pin; synthetic seeking **place** carries same **`areaId`**. |
 | **Availability** | Plan / profile | Member picks **`areaId`** (optional region fallback) — not an activity. |
 
@@ -568,7 +568,7 @@ Use this when naming files, hooks, and utils — **one product word per concept*
 
 Wire: `publishingProfileKind` on `ActivityDTO`; paths via `resolveActivityPublisherProfilePath` (`packages/shared-types/src/activity-publisher-display.ts`). **Explore copy:** headlines always use `resolveActivityHeadlinePersonName` (human); peek/list publisher row uses `resolveActivityPublisherRowPrimaryName` (person vs operator brand); section noun `exploreActivityPublisherSectionNoun` — all in `packages/shared-types/src/activity-actor-display.ts`. **`ActivityDTO.hostName`** is the on-ground **person**, not tenant brand. **Do not** emit `source: agency` explore map rows.
 
-**Code anchors:** `packages/shared-types/src/place-kind.ts` · `apps/api/src/lib/explore-map-area-lens.ts` · `apps/api/src/lib/explore-map.ts` (`attachExploreItemArea`) · `src/explore/organizePublishArea.ts` · `GET /areas/:slug` preview · [`DOMAIN.md`](./DOMAIN.md) § Geography.
+**Code anchors:** `packages/shared-types/src/place-kind.ts` · `apps/api/src/lib/explore-map-area-lens.ts` · `apps/api/src/lib/explore-map.ts` (`attachExploreItemArea`) · `src/explore/hostingPublishArea.ts` · `GET /areas/:slug` preview · [`DOMAIN.md`](./DOMAIN.md) § Geography.
 
 **Known read-path gap (do not confuse with write contract):** legacy or tenant-only shop pins may lack `areaId` on the explore payload until linked/backfilled; **new** catalog places and gated publishes must have **`place.areaId`**.
 
@@ -669,7 +669,7 @@ Any **place, venue, activity meeting point, shop, parking pin**, or other consum
 | **View pin** (read-only, Google search) | `ViewOnMapLink` | `src/components/ui/ViewOnMapLink.tsx` → `buildGoogleMapsSearchUrl` |
 | **In-app map tile** (Leaflet preview, no drive links on canvas) | `MeetingPointMap`, `MapPlacePicker`, explore map | No raw `google.com/maps` / `waze.com` literals in feature code |
 
-**Explore peek:** use `exploreCardShowPeekBodyDirections` so footer + inline directions are not duplicated (`src/discovery/discoveryCardModel.ts`).
+**Explore peek:** use `discoveryCardShowPeekBodyDirections` so footer + inline directions are not duplicated (`src/discovery/discoveryCardModel.ts`).
 
 **Guard:** `src/config/mapNavigationGuard.test.ts` (included in `npm run verify:domain`).
 
@@ -909,7 +909,7 @@ ViewerRequestContext
 |---------|-------|---------|
 | Guest vs signed-in | 0 | `gateReason: sign_in` |
 | Platform admin sees all | 1 | Early bypass in resolver (already `platform_admin` level) |
-| Buddy vs agency **can publish** | 2 | `canPublish`, `canHostPaidActivities` — Organize FAB, `POST /host/activities` |
+| Buddy vs agency **can publish** | 2 | `canPublish`, `canHostPaidActivities` — Host FAB, `POST /host/activities` |
 | Community / pro / business **labels** | 2 | `hostTiers`, `profileRoleLabel` — profile chrome only |
 | Full activity because you're on the crew | 5–6 | `participant` → `exposure: full` |
 | Full trail guide PDF because Pro | **7** | `gateReason: upgrade_required` + link to `PRO_MEMBERSHIP_PATH` — **not** `join_required` |
@@ -931,7 +931,7 @@ ViewerRequestContext
 | Activity social access | `activity-viewer-access.ts` + `computeActivityDetailExposure` |
 | Activity detail pipeline | `compose-activity-viewer-access.ts` (loads buddy entitlement context) → social then `applyActivityViewEntitlements` |
 | Profile social access | `profile-viewer-access.ts` |
-| Member audience ladder | `packages/shared-types/src/member-access.ts` — `MemberAudience`, `organizeEntitlementDenial` |
+| Member audience ladder | `packages/shared-types/src/member-access.ts` — `MemberAudience`, `hostPublishEntitlementDenial` |
 | Future entitlements | `apps/api/src/services/member-entitlements.ts` — composes **after** social exposure |
 | Wire DTO | `packages/shared-types` — `ActivityViewerAccessDTO`, later `EntitlementDenial[]` if needed |
 | Guest copy | `guestBrowseGateCopy` — **presentation** for `sign_in` only |

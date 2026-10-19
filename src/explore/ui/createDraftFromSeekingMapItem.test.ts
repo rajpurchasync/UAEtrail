@@ -34,7 +34,7 @@ describe('createDraftFromSeekingMapItem', () => {
     expect(draft.trailName).toBe('Jebel Jais area');
   });
 
-  it('routes rideshare seeking pin to carpool organize flow', () => {
+  it('routes rideshare seeking pin to carpool hosting flow', () => {
     const draft = createDraftFromSeekingMapItem(
       seekingItem({
         kind: 'rideshare',

@@ -1,10 +1,10 @@
 import type { ActivityMapPeekActionId } from '@uaetrail/shared-types';
-import type { ExploreCardModel } from '../../exploreCardModel';
+import type { DiscoveryCardModel } from '../../../discovery/discoveryCardModel';
 import type { JoinRequestUiState } from '../../../utils/joinRequestUi';
 import { MapPeekShell, MapPeekActionsSlot, MapPeekBodySlot } from '../map-peek';
 
 export type ActivityPeekCardProps = {
-  card: ExploreCardModel;
+  card: DiscoveryCardModel;
   onClose: () => void;
   onJoin?: () => void;
   onMessage?: () => void;

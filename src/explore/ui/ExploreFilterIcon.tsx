@@ -8,7 +8,7 @@ import {
 } from '../exploreCopy';
 import type { ActivityListFilterKey, MapFilterKey, VenueListFilterKey } from '../routing';
 import type { ExploreMapFilterPillKey } from '../exploreBrowseTaxonomy';
-import { DEMAND_EMOJI } from '../exploreCopy';
+import { SEEKING_EMOJI } from '../exploreCopy';
 
 type ExploreFilterKey = MapFilterKey | ActivityListFilterKey | VenueListFilterKey | 'others' | 'shops';
 
@@ -51,7 +51,7 @@ export const ExploreMapFilterPillIcon = ({
   if (pill === 'looking') {
     return (
       <span className={`font-emoji shrink-0 ${className}`} aria-hidden>
-        {DEMAND_EMOJI}
+        {SEEKING_EMOJI}
       </span>
     );
   }
@@ -67,8 +67,6 @@ export const ExploreMapFilterPillIcon = ({
   return <ExploreFilterIcon filter={asFilter} context={context} className={className} />;
 };
 
-/** @deprecated Use ExploreMapFilterPillIcon */
-export const ExploreMapTopicPillIcon = ExploreMapFilterPillIcon;
 
 /** Emoji chip for explore map/list filter pills — matches map pin emoji set. */
 export const ExploreFilterIcon = ({

@@ -1,4 +1,4 @@
-import type { ExploreCardModel } from '../explore/exploreCardModel';
+import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
 import {
   EXPLORE_RIDESHARE_AVAILABLE_BADGE,
   extractExploreRequirementBadges,
@@ -17,7 +17,7 @@ export const LIST_FEED_POSTER_BUILDER = 'buildListFeedCards';
 
 /** Stored `activity.requirements` lines from the map row (no UI inference). */
 export const resolveListFeedPosterStoredRequirements = (
-  card: ExploreCardModel
+  card: DiscoveryCardModel
 ): string[] | null => {
   const stored = card.activity?.requirements;
   if (stored?.length) return stored;
@@ -39,7 +39,7 @@ const appendStoredDifficultyAndReachability = (requirements: string[], badges: s
 };
 
 /** Audience / policy pills on poster overlays — DB requirements + linked rideshare flag only. */
-export const resolveListFeedPosterRequirementLabels = (card: ExploreCardModel): string[] => {
+export const resolveListFeedPosterRequirementLabels = (card: DiscoveryCardModel): string[] => {
   const stored = resolveListFeedPosterStoredRequirements(card) ?? [];
   const badges = extractExploreRequirementBadges(stored);
   appendStoredDifficultyAndReachability(stored, badges);

@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import type { ExploreCardModel } from '../explore/exploreCardModel';
+import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
 import {
   resolveActivityDetailPresentation,
-  resolveActivityPresentationFromExploreCard,
+  resolveActivityPresentationFromDiscoveryCard,
 } from './activityDetailPresentation';
 import {
   filterActivityMapPeekActionsForViewer,
@@ -10,7 +10,7 @@ import {
   resolveActivityPeekEngagement,
 } from './activityPeekEngagement';
 
-const activityCard = (overrides: Partial<ExploreCardModel> = {}): ExploreCardModel =>
+const activityCard = (overrides: Partial<DiscoveryCardModel> = {}): DiscoveryCardModel =>
   ({
     id: 'activity:a1',
     path: '/activity/a1',
@@ -33,7 +33,7 @@ const activityCard = (overrides: Partial<ExploreCardModel> = {}): ExploreCardMod
     sharePath: '/explore?pin=activity:a1',
     sections: { details: [], aboutLine: null },
     activityId: 'a1',
-    activity: { id: 'a1', status: 'published' } as ExploreCardModel['activity'],
+    activity: { id: 'a1', status: 'published' } as DiscoveryCardModel['activity'],
     viewerAccess: {
       exposure: 'redacted',
       level: 'public',
@@ -44,7 +44,7 @@ const activityCard = (overrides: Partial<ExploreCardModel> = {}): ExploreCardMod
       canAccessCrewSurfaces: false,
     },
     ...overrides,
-  }) as ExploreCardModel;
+  }) as DiscoveryCardModel;
 
 describe('resolveActivityPresentation', () => {
   it('opens crew welcome only for instant RSVP joins', () => {
@@ -102,7 +102,7 @@ describe('resolveActivityPresentation', () => {
   });
 
   it('builds presentation from explore card viewer access', () => {
-    const fromCard = resolveActivityPresentationFromExploreCard(activityCard(), {
+    const fromCard = resolveActivityPresentationFromDiscoveryCard(activityCard(), {
       joinUiState: { kind: 'open' },
       isHostUser: false,
       isConfirmedParticipant: false,

@@ -192,9 +192,3 @@ export const claimNotificationOutboxEntry = async (
   }
   return entry.payload;
 };
-
-/** @deprecated Use markOutboxDone */
-export const markNotificationOutboxDone = markOutboxDone;
-
-/** @deprecated Use markOutboxFailed */
-export const markNotificationOutboxFailed = markOutboxFailed;

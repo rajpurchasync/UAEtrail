@@ -16,7 +16,7 @@ export type PlanMode = 'hosting' | 'seeking';
 
 export type SeekComposeMode = 'fixed' | 'flexible';
 
-export const PLAN_COMPOSE_KINDS = [
+export const HOST_COMPOSE_KINDS = [
   'hiking',
   'camping',
   'event',
@@ -24,17 +24,17 @@ export const PLAN_COMPOSE_KINDS = [
   'activity',
 ] as const;
 
-export type PlanComposeKind = (typeof PLAN_COMPOSE_KINDS)[number];
+export type HostComposeKind = (typeof HOST_COMPOSE_KINDS)[number];
 
-export const SEEKING_PLAN_KINDS = ['rideshare', 'hiking', 'camping', 'event'] as const;
+export const SEEKING_COMPOSE_KINDS = ['rideshare', 'hiking', 'camping', 'event'] as const;
 
-export type SeekingPlanKind = (typeof SEEKING_PLAN_KINDS)[number];
+export type SeekingComposeKind = (typeof SEEKING_COMPOSE_KINDS)[number];
 
-export type ContributeTarget = 'place' | 'facility';
+export type AddTarget = 'place' | 'facility';
 
-export const CONTRIBUTE_PLACE_KINDS = ['hiking', 'camping', 'event', 'outdoor_other'] as const;
+export const ADD_PLACE_KINDS = ['hiking', 'camping', 'event', 'outdoor_other'] as const;
 
-export type ContributePlaceKind = (typeof CONTRIBUTE_PLACE_KINDS)[number];
+export type AddPlaceKind = (typeof ADD_PLACE_KINDS)[number];
 
 /** Legacy Add FAB kinds (shipped UI). */
 export type LegacyAddKind = 'hiking' | 'camping' | 'event' | 'shop' | 'facility';
@@ -45,20 +45,20 @@ export type ExploreComposeWire =
   | { surface: 'menu'; intent: 'seek' }
   | { surface: 'menu'; intent: 'seek'; mode: 'fixed' }
   | { surface: 'menu'; intent: 'add' }
-  | { surface: 'menu'; intent: 'add'; target: ContributeTarget }
-  | { surface: 'menu'; intent: 'plan'; kind: PlanComposeKind }
-  | { intent: 'host'; kind: PlanComposeKind }
-  | { intent: 'seek'; mode: 'fixed'; kind: SeekingPlanKind }
+  | { surface: 'menu'; intent: 'add'; target: AddTarget }
+  | { surface: 'menu'; intent: 'plan'; kind: HostComposeKind }
+  | { intent: 'host'; kind: HostComposeKind }
+  | { intent: 'seek'; mode: 'fixed'; kind: SeekingComposeKind }
   | { intent: 'seek'; mode: 'flexible' }
-  | { intent: 'add'; target: ContributeTarget; kind: string }
-  | { intent: 'organize'; kind: PlanComposeKind }
-  | { intent: 'find'; kind?: SeekingPlanKind }
+  | { intent: 'add'; target: AddTarget; kind: string }
+  | { intent: 'organize'; kind: HostComposeKind }
+  | { intent: 'find'; kind?: SeekingComposeKind }
   | { intent: 'add'; kind: LegacyAddKind }
-  | { intent: 'plan'; kind: PlanComposeKind; mode: PlanMode }
-  | { intent: 'contribute'; target: ContributeTarget; kind: string };
+  | { intent: 'plan'; kind: HostComposeKind; mode: PlanMode }
+  | { intent: 'contribute'; target: AddTarget; kind: string };
 
-const PLAN_KIND_SET = new Set<string>(PLAN_COMPOSE_KINDS);
-const SEEKING_KIND_SET = new Set<string>(SEEKING_PLAN_KINDS);
+const HOST_KIND_SET = new Set<string>(HOST_COMPOSE_KINDS);
+const SEEKING_KIND_SET = new Set<string>(SEEKING_COMPOSE_KINDS);
 const LEGACY_ADD_KINDS = new Set<string>(['hiking', 'camping', 'event', 'shop', 'facility']);
 const MENU_INTENTS = new Set<string>([
   'host',
@@ -72,14 +72,11 @@ const MENU_INTENTS = new Set<string>([
 
 const normalizeKindAlias = (kind: string): string => (kind === 'carpool' ? 'rideshare' : kind);
 
-const planKindToSeekingKind = (kind: PlanComposeKind): SeekingPlanKind =>
-  kind === 'activity' ? 'event' : (kind as SeekingPlanKind);
+const planKindToSeekingKind = (kind: HostComposeKind): SeekingComposeKind =>
+  kind === 'activity' ? 'event' : (kind as SeekingComposeKind);
 
-export const formatComposeWire = (route: ExploreComposeWire): string => {
+const formatCanonicalComposeWire = (route: ExploreComposeWire): string => {
   if ('surface' in route) {
-    if (route.intent === 'plan' && 'kind' in route && route.kind) {
-      return `plan:${route.kind}`;
-    }
     if (route.intent === 'seek' && 'mode' in route && route.mode === 'fixed') {
       return 'seek:fixed';
     }
@@ -98,16 +95,7 @@ export const formatComposeWire = (route: ExploreComposeWire): string => {
   if (route.intent === 'add' && 'target' in route) {
     return `add:${route.target}:${route.kind}`;
   }
-  if (route.intent === 'find' && !route.kind) {
-    return 'find';
-  }
-  if (route.intent === 'plan') {
-    return `plan:${route.kind}:${route.mode}`;
-  }
-  if (route.intent === 'contribute') {
-    return `contribute:${route.target}:${route.kind}`;
-  }
-  return `${route.intent}:${route.kind}`;
+  return route.intent;
 };
 
 export const parseComposeWire = (value: string): ExploreComposeWire | null => {
@@ -123,8 +111,8 @@ export const parseComposeWire = (value: string): ExploreComposeWire | null => {
 
   if (intent === 'host' && parts.length >= 2) {
     const kind = normalizeKindAlias(parts[1]);
-    if (!PLAN_KIND_SET.has(kind)) return null;
-    return { intent: 'host', kind: kind as PlanComposeKind };
+    if (!HOST_KIND_SET.has(kind)) return null;
+    return { intent: 'host', kind: kind as HostComposeKind };
   }
 
   if (intent === 'seek') {
@@ -137,13 +125,13 @@ export const parseComposeWire = (value: string): ExploreComposeWire | null => {
     if (parts.length >= 3 && parts[1] === 'fixed') {
       const kind = normalizeKindAlias(parts[2]);
       if (!SEEKING_KIND_SET.has(kind)) return null;
-      return { intent: 'seek', mode: 'fixed', kind: kind as SeekingPlanKind };
+      return { intent: 'seek', mode: 'fixed', kind: kind as SeekingComposeKind };
     }
     return null;
   }
 
   if (intent === 'add' && parts.length >= 3) {
-    const target = parts[1] as ContributeTarget;
+    const target = parts[1] as AddTarget;
     if (target !== 'place' && target !== 'facility') return null;
     const kind = parts.slice(2).join(':');
     if (!kind) return null;
@@ -152,19 +140,19 @@ export const parseComposeWire = (value: string): ExploreComposeWire | null => {
 
   if (intent === 'plan' && parts.length === 2) {
     const kind = normalizeKindAlias(parts[1]);
-    if (!PLAN_KIND_SET.has(kind)) return null;
-    return { surface: 'menu', intent: 'plan', kind: kind as PlanComposeKind };
+    if (!HOST_KIND_SET.has(kind)) return null;
+    return { surface: 'menu', intent: 'plan', kind: kind as HostComposeKind };
   }
 
   if (intent === 'plan' && parts.length >= 3) {
     const kind = normalizeKindAlias(parts[1]);
     const mode = parts[2] as PlanMode;
-    if (!PLAN_KIND_SET.has(kind) || (mode !== 'hosting' && mode !== 'seeking')) return null;
-    return { intent: 'plan', kind: kind as PlanComposeKind, mode };
+    if (!HOST_KIND_SET.has(kind) || (mode !== 'hosting' && mode !== 'seeking')) return null;
+    return { intent: 'plan', kind: kind as HostComposeKind, mode };
   }
 
   if (intent === 'contribute' && parts.length >= 3) {
-    const target = parts[1] as ContributeTarget;
+    const target = parts[1] as AddTarget;
     if (target !== 'place' && target !== 'facility') return null;
     const kind = parts.slice(2).join(':');
     if (!kind) return null;
@@ -173,13 +161,13 @@ export const parseComposeWire = (value: string): ExploreComposeWire | null => {
 
   const legacyKind = normalizeKindAlias(parts.slice(1).join(':'));
 
-  if (intent === 'organize' && PLAN_KIND_SET.has(legacyKind)) {
-    return { intent: 'organize', kind: legacyKind as PlanComposeKind };
+  if (intent === 'organize' && HOST_KIND_SET.has(legacyKind)) {
+    return { intent: 'organize', kind: legacyKind as HostComposeKind };
   }
   if (intent === 'find') {
     if (!legacyKind) return { intent: 'find' };
     if (SEEKING_KIND_SET.has(legacyKind)) {
-      return { intent: 'find', kind: legacyKind as SeekingPlanKind };
+      return { intent: 'find', kind: legacyKind as SeekingComposeKind };
     }
     return null;
   }
@@ -210,6 +198,7 @@ export const canonicalizeComposeWire = (route: ExploreComposeWire): ExploreCompo
     return { intent: 'seek', mode: 'fixed', kind: route.kind };
   }
   if (route.intent === 'add') {
+    if ('target' in route) return route;
     if (route.kind === 'facility') {
       return { intent: 'add', target: 'facility', kind: 'toilet' };
     }
@@ -236,38 +225,7 @@ export const canonicalizeComposeWire = (route: ExploreComposeWire): ExploreCompo
   return route;
 };
 
-/** Map v3 + legacy routes to organize/find/add wizard shapes (catalog + sessions). */
-export const composeWireToLegacyWizard = (route: ExploreComposeWire): ExploreComposeWire => {
-  const canonical = canonicalizeComposeWire(route);
-  if ('surface' in canonical) {
-    if (canonical.intent === 'host') return { surface: 'menu', intent: 'organize' };
-    if (canonical.intent === 'seek') return { surface: 'menu', intent: 'find' };
-    if (canonical.intent === 'add') return { surface: 'menu', intent: 'add' };
-    return canonical;
-  }
-  if (canonical.intent === 'host') {
-    return { intent: 'organize', kind: canonical.kind };
-  }
-  if (canonical.intent === 'seek') {
-    if (canonical.mode === 'flexible') {
-      return { intent: 'find' };
-    }
-    return { intent: 'find', kind: canonical.kind };
-  }
-  if (canonical.intent === 'add' && 'target' in canonical) {
-    if (canonical.target === 'facility') {
-      return { intent: 'add', kind: 'facility' };
-    }
-    if (canonical.kind === 'outdoor_other') {
-      return { intent: 'add', kind: 'event' };
-    }
-    if (canonical.kind === 'hiking' || canonical.kind === 'camping') {
-      return { intent: 'add', kind: canonical.kind };
-    }
-    if (canonical.kind === 'shop') {
-      return { intent: 'add', kind: 'shop' };
-    }
-    return { intent: 'add', kind: 'event' };
-  }
-  return canonical;
-};
+/** Product writer — leftover inbound objects emit canonical `host` / `seek` / `add` tokens. */
+export const formatComposeWire = (route: ExploreComposeWire): string =>
+  formatCanonicalComposeWire(canonicalizeComposeWire(route));
+

@@ -75,9 +75,8 @@ describe('discoveryUiMethodologyGuard', () => {
   });
 
   it('DISC-METH-09: list/map people browse shares people-discovery panel module', () => {
-    expect(read('src/list/ui/ListDiscoverPeopleView.tsx')).toMatch(
-      '@/people-discovery/panel/peopleBrowse'
-    );
+    expect(existsSync(join(process.cwd(), 'src/list/ui/ListDiscoverPeopleView.tsx'))).toBe(false);
+    expect(read('src/list/ListDiscoveryExperience.tsx')).toMatch(/PeopleBrowsePanel/);
     expect(read('src/people-discovery/panel/PeopleBrowsePanel.tsx')).toMatch(
       /from '\.\/peopleBrowse'/
     );

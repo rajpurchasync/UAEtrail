@@ -1,4 +1,4 @@
-import type { ExploreCardModel } from '../../../exploreCardModel';
+import type { DiscoveryCardModel } from '../../../../discovery/discoveryCardModel';
 import {
   resolvePlacePeekAudienceFromCard,
   resolvePlacePeekCampFactsFromCard,
@@ -11,7 +11,7 @@ const factLabelClass = 'text-[11px] font-semibold uppercase tracking-wide text-n
 const labelChipClass =
   'inline-flex rounded-lg border border-neutral-200 bg-white px-2.5 py-1 text-xs font-semibold text-neutral-800';
 
-export const PlacePeekKindFacts = ({ card }: { card: ExploreCardModel }) => {
+export const PlacePeekKindFacts = ({ card }: { card: DiscoveryCardModel }) => {
   const audience = resolvePlacePeekAudienceFromCard(card);
 
   if (card.kind === 'hiking') {

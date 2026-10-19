@@ -27,10 +27,7 @@ import {
 import { findGroupByActivityId, getGroupMembership } from '../src/lib/social-groups-store.js';
 import { findTenantMembershipContext } from '../src/lib/tenant-access.js';
 import { findPendingActivityInviteForInvitee } from '../src/lib/activity-invites-store.js';
-import {
-  buildActivityViewerAccess,
-  resolveActivityViewerAccess,
-} from '../src/services/activity-viewer-access.js';
+import { buildActivityViewerAccess } from '../src/services/activity-viewer-access.js';
 
 const activity = {
   id: 'activity-1',
@@ -42,10 +39,6 @@ const activity = {
 };
 
 describe('buildActivityViewerAccess', () => {
-  it('keeps resolveActivityViewerAccess as an alias', () => {
-    expect(resolveActivityViewerAccess).toBe(buildActivityViewerAccess);
-  });
-
   beforeEach(() => {
     vi.mocked(findActivityParticipantByEventAndUser).mockResolvedValue(null);
     vi.mocked(findActivityRequestByEventAndUser).mockResolvedValue(null);

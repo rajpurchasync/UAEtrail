@@ -326,6 +326,3 @@ export const ActivityParticipantsPanel = ({
 
 export const activityCheckInPath = (activityId: string): string =>
   hostActivitiesCheckInPath(activityId);
-
-/** @deprecated Use ActivityParticipantsPanel */
-export const ActivityCheckInPanel = ActivityParticipantsPanel;

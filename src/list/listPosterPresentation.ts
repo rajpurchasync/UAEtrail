@@ -1,14 +1,14 @@
-import type { ExploreCardModel } from '../explore/exploreCardModel';
+import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
 import { isGeographyMapSource } from '@uaetrail/shared-types';
-import { buildExploreListMeta, exploreCardIsSeeking } from '../explore/exploreCardModel';
+import { buildDiscoveryListMeta, discoveryCardIsSeeking } from '../discovery/discoveryCardModel';
 import { ACTIVITY_TYPE_LABELS, type ActivityType } from '../config/activityTypes';
 import { resolveListFeedPosterRequirementLabels } from './listFeedPosterStandard';
 
 export type BrowsePosterMetaPart = { key: string; label: string };
 
 /** Small eye row — venue / meeting place name. */
-export const resolveBrowsePosterPlaceLine = (card: ExploreCardModel): string | null => {
-  if (card.source === 'activity' || exploreCardIsSeeking(card)) {
+export const resolveBrowsePosterPlaceLine = (card: DiscoveryCardModel): string | null => {
+  if (card.source === 'activity' || discoveryCardIsSeeking(card)) {
     const activity = card.activity;
     const fromActivity =
       activity?.locationName?.trim() ||
@@ -25,7 +25,7 @@ export const resolveBrowsePosterPlaceLine = (card: ExploreCardModel): string | n
 };
 
 /** Large overlay title — social list title or catalog headline. */
-export const resolveBrowsePosterTitle = (card: ExploreCardModel): string => {
+export const resolveBrowsePosterTitle = (card: DiscoveryCardModel): string => {
   const { highlightName, suffix, activityHighlight, dateHighlight } = card.sections;
   if (highlightName) {
     return [highlightName, suffix, activityHighlight, dateHighlight].filter(Boolean).join('');
@@ -56,7 +56,7 @@ export const formatListFeedPosterTitleLines = (
 };
 
 /** Poster overlay headline — outing title / place name (not "Host is going …"). */
-export const resolveBrowsePosterHeroTitle = (card: ExploreCardModel): string => {
+export const resolveBrowsePosterHeroTitle = (card: DiscoveryCardModel): string => {
   const activityTitle = card.activity?.title?.trim();
   if (activityTitle) return activityTitle;
 
@@ -79,7 +79,7 @@ export const resolveBrowsePosterHeroTitle = (card: ExploreCardModel): string => 
   return placeLineFallback(card) ?? 'Outdoor plan';
 };
 
-const placeLineFallback = (card: ExploreCardModel): string | null => {
+const placeLineFallback = (card: DiscoveryCardModel): string | null => {
   return resolveBrowsePosterPlaceLine(card);
 };
 
@@ -122,7 +122,7 @@ const withStartsTimePrefix = (time: string | null): string | null => {
   return `Starts ${time.trim()}`;
 };
 
-const resolveListFeedPriceLabel = (card: ExploreCardModel): string | null => {
+const resolveListFeedPriceLabel = (card: DiscoveryCardModel): string | null => {
   const activityPrice = card.activity?.price;
   if (activityPrice != null && activityPrice <= 0) return 'Free';
   if (card.price?.kind === 'free') return 'Free';
@@ -141,8 +141,8 @@ const resolveListFeedPriceLabel = (card: ExploreCardModel): string | null => {
   return null;
 };
 
-const resolveListFeedSpotsLabel = (card: ExploreCardModel): string | null => {
-  if (card.source !== 'activity' && !exploreCardIsSeeking(card)) return null;
+const resolveListFeedSpotsLabel = (card: DiscoveryCardModel): string | null => {
+  if (card.source !== 'activity' && !discoveryCardIsSeeking(card)) return null;
 
   const activity = card.activity;
   if (activity && card.source === 'activity') {
@@ -161,7 +161,7 @@ const resolveListFeedSpotsLabel = (card: ExploreCardModel): string | null => {
 };
 
 /** Two-row overlay: date | time · spots | price (list feed poster). */
-export const resolveBrowsePosterScheduleGrid = (card: ExploreCardModel): BrowsePosterScheduleGrid => {
+export const resolveBrowsePosterScheduleGrid = (card: DiscoveryCardModel): BrowsePosterScheduleGrid => {
   const dateSource = card.activity?.date ?? card.sections.listWhen ?? null;
   let dateLabel = formatListFeedDate(card.activity?.date ?? null);
 
@@ -187,7 +187,7 @@ export const resolveBrowsePosterScheduleGrid = (card: ExploreCardModel): BrowseP
     timeLabel = split.time ?? timeLabel;
   }
 
-  if (timeLabel && (card.source === 'activity' || exploreCardIsSeeking(card))) {
+  if (timeLabel && (card.source === 'activity' || discoveryCardIsSeeking(card))) {
     timeLabel = withStartsTimePrefix(timeLabel);
   }
 
@@ -199,10 +199,10 @@ export const resolveBrowsePosterScheduleGrid = (card: ExploreCardModel): BrowseP
 };
 
 /** List feed overlay — no extra label chips (minimal card). */
-export const resolveBrowsePosterAudienceLabels = (_card: ExploreCardModel): string[] => [];
+export const resolveBrowsePosterAudienceLabels = (_card: DiscoveryCardModel): string[] => [];
 
 /** Date · time · price · spots — one fact per segment for poster overlay. */
-export const resolveBrowsePosterScheduleFacts = (card: ExploreCardModel): string[] => {
+export const resolveBrowsePosterScheduleFacts = (card: DiscoveryCardModel): string[] => {
   const facts: string[] = [];
   const when = card.whenLabel ?? card.sections.listWhen;
   if (when?.trim()) facts.push(when.trim());
@@ -219,14 +219,14 @@ export const resolveBrowsePosterScheduleFacts = (card: ExploreCardModel): string
   if (spotsFact) facts.push(spotsFact);
 
   if (facts.length === 0) {
-    const meta = buildExploreListMeta(card);
+    const meta = buildDiscoveryListMeta(card);
     if (meta?.trim()) facts.push(meta.trim());
   }
 
   return facts;
 };
 
-export const resolveBrowsePosterMetaParts = (card: ExploreCardModel): BrowsePosterMetaPart[] => {
+export const resolveBrowsePosterMetaParts = (card: DiscoveryCardModel): BrowsePosterMetaPart[] => {
   const parts: BrowsePosterMetaPart[] = [];
   const when = card.whenLabel ?? card.sections.listWhen;
   if (when?.trim()) parts.push({ key: 'when', label: when.trim() });
@@ -238,7 +238,7 @@ export const resolveBrowsePosterMetaParts = (card: ExploreCardModel): BrowsePost
 
   if (card.price?.badge) parts.push({ key: 'price', label: card.price.badge });
 
-  const meta = buildExploreListMeta(card);
+  const meta = buildDiscoveryListMeta(card);
   if (meta && !parts.some((p) => meta.includes(p.label))) {
     parts.push({ key: 'meta', label: meta });
   }
@@ -251,7 +251,7 @@ export const resolveBrowsePosterMetaParts = (card: ExploreCardModel): BrowsePost
 };
 
 /** Outing kind for posters — Hiking, Camping, Event, etc. (not Trip / Spot chips). */
-export const resolveBrowsePosterActivityTypeLabel = (card: ExploreCardModel): string | null => {
+export const resolveBrowsePosterActivityTypeLabel = (card: DiscoveryCardModel): string | null => {
   const activityType = card.activity?.activityType;
   if (activityType && activityType in ACTIVITY_TYPE_LABELS) {
     return ACTIVITY_TYPE_LABELS[activityType as ActivityType];
@@ -260,7 +260,7 @@ export const resolveBrowsePosterActivityTypeLabel = (card: ExploreCardModel): st
     return ACTIVITY_TYPE_LABELS[card.kind as ActivityType];
   }
   if (card.kind === 'rideshare') return 'Rideshare';
-  if (exploreCardIsSeeking(card) && card.sections.activityHighlight?.trim()) {
+  if (discoveryCardIsSeeking(card) && card.sections.activityHighlight?.trim()) {
     const word = card.sections.activityHighlight.trim().split(/\s+/)[0];
     if (word) return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
   }
@@ -271,10 +271,10 @@ export const resolveBrowsePosterActivityTypeLabel = (card: ExploreCardModel): st
 export const resolveBrowsePosterRequirementLabels = resolveListFeedPosterRequirementLabels;
 
 /** Category feed overlay chips — source + kind + requirements. */
-export const resolveBrowsePosterLabels = (card: ExploreCardModel): string[] => {
+export const resolveBrowsePosterLabels = (card: DiscoveryCardModel): string[] => {
   const labels: string[] = [];
   if (card.source === 'activity') labels.push('Trip');
-  if (exploreCardIsSeeking(card)) labels.push('Looking for');
+  if (discoveryCardIsSeeking(card)) labels.push('Looking for');
   if (isGeographyMapSource(card.source)) labels.push('Spot');
   if (card.source === 'shop') labels.push('Shop');
   const typeLabel = resolveBrowsePosterActivityTypeLabel(card);

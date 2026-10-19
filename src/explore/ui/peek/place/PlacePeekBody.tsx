@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import { Star } from 'lucide-react';
-import type { ExploreCardModel } from '../../../exploreCardModel';
+import type { DiscoveryCardModel } from '../../../../discovery/discoveryCardModel';
 import { EXPLORE_TYPE } from '../../../../config/exploreTheme';
 import { fetchPlaceActivities } from '../../../../hooks/placeDetailClientApi';
 import { useSafeAsyncEffect } from '../../../../hooks/useSafeAsyncEffect';
@@ -76,7 +76,7 @@ const PlacePeekScheduledList = ({
   );
 };
 
-const PlacePeekRatingsRow = ({ card, detailPath }: { card: ExploreCardModel; detailPath: string }) => {
+const PlacePeekRatingsRow = ({ card, detailPath }: { card: DiscoveryCardModel; detailPath: string }) => {
   const count = card.reviewCount ?? 0;
   const avg = card.averageRating;
 
@@ -106,7 +106,7 @@ export const PlacePeekBody = ({
   card,
   onBeforeDetailNavigate,
 }: {
-  card: ExploreCardModel;
+  card: DiscoveryCardModel;
   detailAccess?: unknown;
   onGuestGatedDetail?: () => void;
   onBeforeDetailNavigate?: () => void;

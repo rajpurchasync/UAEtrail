@@ -3,10 +3,18 @@ import type { ExploreActivityMode } from './explore-activity-mode.js';
 import { isGeographyMapSource, type ExploreMapSourceWire } from './wire-lexicon.js';
 
 /**
- * Map/list plan projection — Organize vs Demand only.
- * Not the FAB compose surface (`organize` | `find` | `add` in explore compose UI).
+ * Map/list outing projection — host vs seek.
+ * Leftover wire values `organize` / `demand` inbound-rewrite via {@link canonicalizeMapComposeIntent}.
  */
-export type ExplorePlanComposeIntent = 'organize' | 'demand';
+export type ExploreMapComposeIntent = 'host' | 'seek';
+
+export const canonicalizeMapComposeIntent = (
+  raw: string | null | undefined
+): ExploreMapComposeIntent | null => {
+  if (raw === 'host' || raw === 'organize') return 'host';
+  if (raw === 'seek' || raw === 'demand') return 'seek';
+  return null;
+};
 
 export type OutingCategory = 'hiking' | 'camping' | 'events' | 'rideshare' | 'activities';
 
@@ -89,19 +97,19 @@ export const participantIntentKindToOutingCategory = (
   kind: ParticipantIntentKindForPlan
 ): OutingCategory => {
   if (kind === 'rideshare') return 'rideshare';
-  /** FAB `find.event` — member “activities” demand (not organize `events` category). */
+  /** FAB seek event — member “activities” seeking (not hosted `events` category). */
   if (kind === 'event') return 'activities';
   if (kind === 'hiking') return 'hiking';
   if (kind === 'camping') return 'camping';
   return 'activities';
 };
 
-/** Organize wizard `CreateActivityKind` wire — maps from {@link OutingCategory}. */
-export type OrganizeCreateKindWire = 'hiking' | 'camping' | 'event' | 'rideshare' | 'activity';
+/** Hosting wizard `CreateActivityKind` wire — maps from {@link OutingCategory}. */
+export type HostCreateKindWire = 'hiking' | 'camping' | 'event' | 'rideshare' | 'activity';
 
-export const outingCategoryToOrganizeCreateKind = (
+export const outingCategoryToHostCreateKind = (
   category: OutingCategory
-): OrganizeCreateKindWire => {
+): HostCreateKindWire => {
   switch (category) {
     case 'activities':
       return 'activity';
@@ -116,17 +124,17 @@ export const outingCategoryToOrganizeCreateKind = (
   }
 };
 
-/** Host fulfill: demand map row → organize catalog create kind (outing category wins). */
-export const resolveOrganizeCreateKindFromDemandMapItem = (item: {
+/** Host fulfill: seeking map row → hosting catalog create kind (outing category wins). */
+export const resolveHostCreateKindFromSeekingMapItem = (item: {
   outingCategory?: OutingCategory | null;
   kind: ExploreMapPlanActivityKind;
   participantIntentKind?: ParticipantIntentKindForPlan | null;
-}): OrganizeCreateKindWire => {
+}): HostCreateKindWire => {
   if (item.outingCategory) {
-    return outingCategoryToOrganizeCreateKind(item.outingCategory);
+    return outingCategoryToHostCreateKind(item.outingCategory);
   }
   if (item.participantIntentKind) {
-    return outingCategoryToOrganizeCreateKind(
+    return outingCategoryToHostCreateKind(
       participantIntentKindToOutingCategory(item.participantIntentKind)
     );
   }
@@ -210,14 +218,14 @@ export const resolveActivityOutingTopic = (
 
 export const exploreMapSourceToComposeIntent = (
   source: ExploreMapPlanSource
-): ExplorePlanComposeIntent | null => {
-  if (source === 'activity') return 'organize';
-  if (source === 'demand') return 'demand';
+): ExploreMapComposeIntent | null => {
+  if (source === 'activity') return 'host';
+  if (source === 'demand') return 'seek';
   return null;
 };
 
 export type ExploreMapPlanProjection = {
-  composeIntent: ExplorePlanComposeIntent | null;
+  composeIntent: ExploreMapComposeIntent | null;
   outingCategory: OutingCategory | null;
   outingTopic: OutingTopic | null;
   participationMode: ParticipationMode | null;
@@ -235,8 +243,8 @@ export const buildExploreMapPlanProjection = (options: {
   storedOutingTopic?: OutingTopic | null;
 }): ExploreMapPlanProjection => {
   const isSeeking = options.activityMode === 'seeking' || options.source === 'demand';
-  const composeIntent: ExplorePlanComposeIntent | null = isSeeking
-    ? 'demand'
+  const composeIntent: ExploreMapComposeIntent | null = isSeeking
+    ? 'seek'
     : exploreMapSourceToComposeIntent(options.source);
 
   let outingCategory: OutingCategory | null = null;
@@ -255,6 +263,6 @@ export const buildExploreMapPlanProjection = (options: {
     composeIntent,
     outingCategory,
     outingTopic: options.storedOutingTopic ?? null,
-    participationMode: composeIntent === 'organize' ? (options.participationMode ?? null) : null,
+    participationMode: composeIntent === 'host' ? (options.participationMode ?? null) : null,
   };
 };

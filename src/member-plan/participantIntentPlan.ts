@@ -36,6 +36,3 @@ export const formatParticipantIntentMeta = (intent: ParticipantIntentDTO): strin
   if (intent.preferredArea) parts.push(intent.preferredArea);
   return parts.filter(Boolean).join(' · ');
 };
-
-/** @deprecated Use {@link partitionParticipantIntentsForPlanHub}. */
-export const partitionParticipantIntentsForTrips = partitionParticipantIntentsForPlanHub;

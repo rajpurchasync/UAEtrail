@@ -1,5 +1,5 @@
 import type { ExploreLinkedRideshareDTO, ExploreMapItemDTO } from '@uaetrail/shared-types';
-import type { ExploreCardModel } from './exploreCardModel';
+import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
 import { enrichExploreActivityRequirementBadges } from './exploreRequirementBadges';
 
 /** Rideshares on the map whose `linkedActivityId` points at the parent activity. */
@@ -53,19 +53,19 @@ const resolveLinkedParentOnActivity = (
 };
 
 /** Parent hike / camp / event / outing — may have linked rideshare map rows. */
-export const isExploreParentOutingCard = (card: ExploreCardModel): boolean =>
+export const isDiscoveryParentOutingCard = (card: DiscoveryCardModel): boolean =>
   card.source === 'activity' && card.kind !== 'rideshare';
 
 /** Apply linked rideshare rows, parent back-link on rideshare cards, and rideshare peek badges. */
-export const finalizeExploreCardLinkedRideshare = (
-  card: ExploreCardModel,
+export const finalizeDiscoveryCardLinkedRideshare = (
+  card: DiscoveryCardModel,
   mapItem: ExploreMapItemDTO,
   allItems: ExploreMapItemDTO[]
-): ExploreCardModel => {
+): DiscoveryCardModel => {
   const linkedRideshares = resolveLinkedRideshareRows(mapItem, allItems);
   const activity = resolveLinkedParentOnActivity(card.activity, allItems);
   const hasLinkedRides = linkedRideshares.length > 0;
-  const parentOuting = isExploreParentOutingCard(card);
+  const parentOuting = isDiscoveryParentOutingCard(card);
   const rideshareForBadges =
     parentOuting &&
     Boolean(mapItem.rideshareEnabled ?? activity?.rideshareEnabled ?? hasLinkedRides);

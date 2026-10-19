@@ -1,4 +1,4 @@
-import type { ExploreCardModel } from '../../exploreCardModel';
+import type { DiscoveryCardModel } from '../../../discovery/discoveryCardModel';
 import { isGeographyMapSource } from '@uaetrail/shared-types';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 
@@ -8,7 +8,7 @@ import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
  */
 export type MapPeekSurface = 'activity' | 'place' | 'facility' | 'area' | 'shop' | 'other';
 
-export const resolveMapPeekSurfaceFromCard = (card: ExploreCardModel): MapPeekSurface => {
+export const resolveMapPeekSurfaceFromCard = (card: DiscoveryCardModel): MapPeekSurface => {
   if (card.source === 'facility') return 'facility';
   if (isGeographyMapSource(card.source)) return 'place';
   if (card.source === 'activity') return 'activity';

@@ -18,7 +18,7 @@ import {
   navigateToAuthGate,
   withAuthResumeQuery,
 } from '../../utils/authReturnContext';
-import type { ExploreCardModel } from '../../explore/exploreCardModel';
+import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import { ExploreJoinOverlays } from '../../explore/ui/ExploreJoinOverlays';
 import { openActivityGroupChat } from '../../utils/openActivityGroupChat';
 import { messagesRouteForRole } from '../../utils/authRouting';
@@ -33,10 +33,10 @@ import { activityDetailPath } from '../../config/routingCatalog';
 type ListFeedActionsContextValue = {
   isGuest: boolean;
   joinStateLoading: boolean;
-  joinUiStateForCard: (card: ExploreCardModel) => ReturnType<typeof useActivityJoinContext>['uiState'] | undefined;
-  onPrimaryFooter: (card: ExploreCardModel) => void;
-  onSecondaryFooter: (card: ExploreCardModel) => void;
-  footerModel: (card: ExploreCardModel) => ReturnType<typeof resolveListFeedFooterModel>;
+  joinUiStateForCard: (card: DiscoveryCardModel) => ReturnType<typeof useActivityJoinContext>['uiState'] | undefined;
+  onPrimaryFooter: (card: DiscoveryCardModel) => void;
+  onSecondaryFooter: (card: DiscoveryCardModel) => void;
+  footerModel: (card: DiscoveryCardModel) => ReturnType<typeof resolveListFeedFooterModel>;
 };
 
 const ListFeedActionsContext = createContext<ListFeedActionsContextValue | null>(null);
@@ -74,7 +74,7 @@ export const ListFeedActionsProvider = ({
   const isGuest = !user;
 
   const [joinActivityId, setJoinActivityId] = useState<string | null>(null);
-  const [joinCard, setJoinCard] = useState<ExploreCardModel | null>(null);
+  const [joinCard, setJoinCard] = useState<DiscoveryCardModel | null>(null);
   const [pendingJoinOpen, setPendingJoinOpen] = useState(false);
   const [pendingWithdrawOpen, setPendingWithdrawOpen] = useState(false);
 
@@ -132,7 +132,7 @@ export const ListFeedActionsProvider = ({
     }
   }, [user, joinActions]);
 
-  const beginJoin = useCallback((card: ExploreCardModel) => {
+  const beginJoin = useCallback((card: DiscoveryCardModel) => {
     if (!card.activity?.id) return;
     setJoinCard(card);
     setJoinActivityId(card.activity.id);
@@ -140,7 +140,7 @@ export const ListFeedActionsProvider = ({
   }, []);
 
   const runPeekAction = useCallback(
-    (card: ExploreCardModel, actionId: ActivityMapPeekActionId) => {
+    (card: DiscoveryCardModel, actionId: ActivityMapPeekActionId) => {
       if (!user) {
         guestGatedAction();
         return;
@@ -224,7 +224,7 @@ export const ListFeedActionsProvider = ({
   );
 
   const footerModel = useCallback(
-    (card: ExploreCardModel) =>
+    (card: DiscoveryCardModel) =>
       resolveListFeedFooterModel(card, {
         isGuest,
         joinUiState: joinActivityId === card.activity?.id ? joinUiState : undefined,
@@ -233,7 +233,7 @@ export const ListFeedActionsProvider = ({
   );
 
   const onPrimaryFooter = useCallback(
-    (card: ExploreCardModel) => {
+    (card: DiscoveryCardModel) => {
       const model = footerModel(card);
       const primary = model.primary;
 
@@ -256,7 +256,7 @@ export const ListFeedActionsProvider = ({
   );
 
   const onSecondaryFooter = useCallback(
-    (card: ExploreCardModel) => {
+    (card: DiscoveryCardModel) => {
       const secondary = footerModel(card).secondary;
       if (!secondary) return;
       if (secondary.kind === 'guest_gate') {

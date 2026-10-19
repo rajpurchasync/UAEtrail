@@ -51,7 +51,7 @@ import {
 import { buildActivityDetailPageShellCard } from '../../../activity/detail/activityDetailPageShellCard';
 import { resolveActivityDetailHeroImage } from '../../../activity/resolveActivityDetailHeroImage';
 import { resolveActivityDetailWirePresentation } from '../../../activity/resolveActivityDetailWirePresentation';
-import type { ExploreCardModel } from '../../../explore/exploreCardModel';
+import type { DiscoveryCardModel } from '../../../discovery/discoveryCardModel';
 import { activityDetailTabPanelClass } from './activityDetailTabPanelClass';
 import { useActivityDetailJoinSurfaces } from './useActivityDetailJoinSurfaces';
 import {
@@ -437,7 +437,7 @@ export const useActivityDetailViewModel = ({
     pendingJoinInviteCount: wireStrips?.pendingJoinInviteCount,
     confirmedParticipantCount: activity.participants?.length ?? 0,
   });
-  const peekParityCard = useMemo((): ExploreCardModel | null => {
+  const peekParityCard = useMemo((): DiscoveryCardModel | null => {
     if (!consumerDetailLayout || previewMode) return null;
     return buildActivityDetailPageShellCard({
       activity,

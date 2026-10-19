@@ -2,29 +2,26 @@ import { useCallback, useEffect, useState } from 'react';
 import type { HostTierFlags } from '@uaetrail/shared-types';
 import type { NavigateFunction } from 'react-router-dom';
 import { fetchPublicActivityDetail } from '../../../hooks/usePublicActivityDetail';
-import type { ExploreCompose, OrganizeComposeKind } from '../../compose';
+import type { ExploreCompose, HostComposeKind } from '../../compose';
 import {
-  clearOrganizeFromActivityParams,
-  exploreReorganizeActivityReturnPath,
-  parseOrganizeFromActivityId,
+  clearHostFromActivityParams,
+  exploreHostFromActivityReturnPath,
+  parseHostFromActivityId,
 } from '../../routing';
 import {
   createDraftFromPastActivity,
-  resolveOrganizeComposeKindFromActivity,
-} from '../../ui/organizeFromActivity';
+  resolveHostComposeKindFromActivity,
+} from '../../ui/hostingFromActivity';
 import {
-  organizePublishGateHref,
-  organizePublishGateInputFromMemberStatus,
-} from '../../../utils/organizePublishGate';
+  memberPublishGateHref,
+  memberPublishGateInputFromMemberStatus,
+} from '../../../utils/memberPublishGate';
 import type { CreateActivityDraft } from '../../ui/hostingFlowEngine';
 
 export type HostingFromActivityPrefill = {
   draft: CreateActivityDraft;
   sourceActivityId: string;
 };
-
-/** @deprecated Use {@link HostingFromActivityPrefill}. */
-export type OrganizeFromActivityPrefill = HostingFromActivityPrefill;
 
 export type UseHostingFromActivityArgs = {
   user: { id: string } | null | undefined;
@@ -39,12 +36,10 @@ export type UseHostingFromActivityArgs = {
   searchParams: URLSearchParams;
   setSearchParams: (params: URLSearchParams, opts?: { replace?: boolean }) => void;
   setComposeRoute: (route: ExploreCompose | null) => void;
-  planHostingKind?: OrganizeComposeKind | null;
-  /** @deprecated Use {@link UseHostingFromActivityArgs.planHostingKind}. */
-  organizeKind?: OrganizeComposeKind | null;
+  hostComposeKind?: HostComposeKind | null;
 };
 
-/** `organizeFrom=` deep link — load past activity into plan hosting wizard prefill. */
+/** `hostFrom=` deep link — load a past outing into the hosting wizard prefill. */
 export const useHostingFromActivity = (args: UseHostingFromActivityArgs) => {
   const {
     user,
@@ -60,31 +55,31 @@ export const useHostingFromActivity = (args: UseHostingFromActivityArgs) => {
     setSearchParams,
     setComposeRoute,
   } = args;
-  const planHostingKind = args.planHostingKind ?? args.organizeKind ?? null;
+  const hostComposeKind = args.hostComposeKind ?? null;
   const [hostingFromActivityPrefill, setHostingFromActivityPrefill] =
     useState<HostingFromActivityPrefill | null>(null);
 
-  const clearOrganizeFromParam = useCallback(() => {
-    if (!parseOrganizeFromActivityId(searchParams)) return;
+  const clearHostFromParam = useCallback(() => {
+    if (!parseHostFromActivityId(searchParams)) return;
     const params = new URLSearchParams(searchParams);
-    clearOrganizeFromActivityParams(params);
+    clearHostFromActivityParams(params);
     setSearchParams(params, { replace: true });
   }, [searchParams, setSearchParams]);
 
   useEffect(() => {
-    const sourceActivityId = parseOrganizeFromActivityId(searchParams);
+    const sourceActivityId = parseHostFromActivityId(searchParams);
     if (!sourceActivityId) return;
 
     if (!user) return;
     if (hostGateLoading) return;
 
-    const returnPath = exploreReorganizeActivityReturnPath(sourceActivityId, searchParams, pathname);
+    const returnPath = exploreHostFromActivityReturnPath(sourceActivityId, searchParams, pathname);
 
     if (!canPublish) {
       navigate(
-        organizePublishGateHref(
+        memberPublishGateHref(
           returnPath,
-          organizePublishGateInputFromMemberStatus({
+          memberPublishGateInputFromMemberStatus({
             viewerUserId: user.id,
             profileComplete,
             canPublish,
@@ -104,22 +99,22 @@ export const useHostingFromActivity = (args: UseHostingFromActivityArgs) => {
         if (cancelled) return;
 
         if (tenantId && data.tenantId !== tenantId) {
-          clearOrganizeFromParam();
+          clearHostFromParam();
           return;
         }
 
-        const kind = planHostingKind ?? resolveOrganizeComposeKindFromActivity(data);
-        if (!planHostingKind) {
-          setComposeRoute({ intent: 'plan', kind, mode: 'hosting' });
+        const kind = hostComposeKind ?? resolveHostComposeKindFromActivity(data);
+        if (!hostComposeKind) {
+          setComposeRoute({ intent: 'host', kind });
         }
 
         setHostingFromActivityPrefill({
           draft: createDraftFromPastActivity(data),
           sourceActivityId,
         });
-        clearOrganizeFromParam();
+        clearHostFromParam();
       } catch {
-        if (!cancelled) clearOrganizeFromParam();
+        if (!cancelled) clearHostFromParam();
       }
     };
 
@@ -139,9 +134,9 @@ export const useHostingFromActivity = (args: UseHostingFromActivityArgs) => {
     navigate,
     pathname,
     tenantId,
-    planHostingKind,
+    hostComposeKind,
     setComposeRoute,
-    clearOrganizeFromParam,
+    clearHostFromParam,
   ]);
 
   const clearHostingFromActivityPrefill = useCallback(() => {
@@ -152,14 +147,5 @@ export const useHostingFromActivity = (args: UseHostingFromActivityArgs) => {
     hostingFromActivityPrefill,
     setHostingFromActivityPrefill,
     clearHostingFromActivityPrefill,
-    /** @deprecated Use {@link hostingFromActivityPrefill}. */
-    organizeFromPrefill: hostingFromActivityPrefill,
-    /** @deprecated Use {@link setHostingFromActivityPrefill}. */
-    setOrganizeFromPrefill: setHostingFromActivityPrefill,
-    /** @deprecated Use {@link clearHostingFromActivityPrefill}. */
-    clearOrganizeFromPrefill: clearHostingFromActivityPrefill,
   };
 };
-
-/** @deprecated Use {@link useHostingFromActivity}. */
-export const useExploreOrganizeFromActivity = useHostingFromActivity;

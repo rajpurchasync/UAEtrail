@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import type { ExploreCardModel } from '../../../explore/exploreCardModel';
+import type { DiscoveryCardModel } from '../../../discovery/discoveryCardModel';
 import { EnvironmentImage } from '../../../components/ui/EnvironmentImage';
 import { browsePosterFallbackClass, resolveBrowsePosterCoverUrl } from '../../browsePosterCover';
 import { LIST_FEED } from '../../listFeedTheme';
@@ -18,7 +18,7 @@ import { ListFeedCatalogEntityHeader } from './ListFeedCatalogEntityHeader';
 import { ListFeedPosterEngagementBar } from './ListFeedPosterEngagementBar';
 
 interface ListFeedVenuePosterCardProps {
-  card: ExploreCardModel;
+  card: DiscoveryCardModel;
   edgeToEdge?: boolean;
 }
 

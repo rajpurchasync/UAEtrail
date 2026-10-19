@@ -1,5 +1,5 @@
 import type { ActivityDTO } from '@uaetrail/shared-types';
-import type { OrganizeComposeKind } from '../../compose';
+import type { HostComposeKind } from '../../compose';
 import { CreateHostingActivityFlow } from '../../ui/CreateHostingActivityFlow';
 import {
   CreateHostingActivitiesFlow,
@@ -16,8 +16,8 @@ export type HostingFlowHostProps = {
   onOpenHostApplication?: () => void;
   onBackToIntent?: () => void;
   signInHref: string;
-  planHostingKind: OrganizeComposeKind | null;
-  hostingWizardPrefill: import('../../ui/organizeWizardPrefill').OrganizeWizardPrefill | null;
+  hostComposeKind: HostComposeKind | null;
+  hostingWizardPrefill: import('../../ui/hostingWizardPrefill').HostingWizardPrefill | null;
   onCreateLinkedRideshare?: (parentActivity: ActivityDTO) => void;
   planWithBuddyUserId?: string | null;
 };
@@ -30,12 +30,12 @@ export const HostingFlowHost = ({
   onOpenHostApplication,
   onBackToIntent,
   signInHref,
-  planHostingKind,
+  hostComposeKind,
   hostingWizardPrefill,
   onCreateLinkedRideshare,
   planWithBuddyUserId = null,
 }: HostingFlowHostProps) => {
-  const resolvedKind = planHostingKind ?? hostingWizardPrefill?.draft.kind ?? null;
+  const resolvedKind = hostComposeKind ?? hostingWizardPrefill?.draft.kind ?? null;
 
   const shared = {
     open,
@@ -61,6 +61,6 @@ export const HostingFlowHost = ({
     case 'rideshare':
       return <CreateHostingRideshareFlow {...shared} />;
     default:
-      return <CreateHostingActivityFlow {...shared} organizeKind={null} />;
+      return <CreateHostingActivityFlow {...shared} hostComposeKind={null} />;
   }
 };

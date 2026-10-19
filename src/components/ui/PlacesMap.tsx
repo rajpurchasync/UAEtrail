@@ -36,8 +36,6 @@ const toMapPinRingSource = (source: MapPinSource, seeking: boolean): MapPinRingS
       return 'shop';
     case 'agency':
       return 'agency';
-    case 'demand':
-      return 'demand';
     case 'area':
       return 'venue';
     default:
@@ -122,7 +120,7 @@ const boundsFromPins = (pins: PlaceMapPin[], fallback: MapBounds): MapBounds => 
 const resolvePinSource = (pin: Pick<PlaceMapPin, 'id' | 'source'>): MapPinSource => {
   if (pin.id.startsWith('area:')) return 'area';
   if (pin.id.startsWith('venue:')) return 'venue';
-  if (pin.id.startsWith('demand:')) return 'demand'; // inbound rewrite only — map never mints demand: ids
+  if (pin.id.startsWith('demand:')) return 'activity';
   if (pin.id.startsWith('shop:')) return 'shop';
   if (pin.id.startsWith('agency:')) return 'agency';
   if (
@@ -130,7 +128,6 @@ const resolvePinSource = (pin: Pick<PlaceMapPin, 'id' | 'source'>): MapPinSource
     isGeographyMapSource(pin.source) ||
     pin.source === 'shop' ||
     pin.source === 'agency' ||
-    pin.source === 'demand' ||
     pin.source === 'area'
   ) {
     return pin.source;
@@ -1047,7 +1044,3 @@ export const PlacesMap = ({
   );
 };
 
-/** @deprecated Use PlaceMapPin */
-export type LocationMapPin = PlaceMapPin;
-/** @deprecated Use PlacesMap */
-export const LocationsMap = PlacesMap;

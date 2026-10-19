@@ -157,5 +157,3 @@ export const MapPlacePicker = ({
   );
 };
 
-/** @deprecated Use MapPlacePicker */
-export const MapLocationPicker = MapPlacePicker;

@@ -3,10 +3,10 @@
  *
  * 1. **UI actor labels** — **Host** = individual on an outing; **Guide / Pro host** = individual Pro on
  *    `/member/:userId`; **Operator** = shop or agency **business** (tenant profile), not the buddy host.
- * 2. **Capabilities** — **Organize** / **publish** (`GET /me/status` → `publish.*`, `canPublish`);
+ * 2. **Capabilities** — **Host** / **publish** (`GET /me/status` → `publish.*`, `canPublish`);
  *    not HTTP personas or duplicate `/me/publishing-*` routes.
- * 3. **Gates** — **`profileComplete`** to organize/publish; **signed in** suffices to participate
- *    (RSVP, request to join, demand) without full profile.
+ * 3. **Gates** — **`profileComplete`** to host/publish; **signed in** suffices to participate
+ *    (RSVP, request to join, looking for company) without full profile.
  *
  * **BWL (backend wire)** is separate: `packages/shared-types/src/wire-lexicon.ts` — HTTP paths, JSON keys,
  * Mongo collections. Do not rename wire because UPL says Host; map in presentation layer only.
@@ -19,24 +19,11 @@ export const ACTIVITY_HOST_NOUN_LOWER = 'host';
 
 export const HOSTED_BY_LABEL = 'Hosted by';
 
-/** @deprecated Prefer {@link ACTIVITY_HOST_NOUN_TITLE} for individual; kept for gradual copy migration. */
-export const ORGANIZER_NOUN_TITLE = 'Organizer';
-/** @deprecated Prefer {@link ACTIVITY_HOST_NOUN_LOWER}. */
-export const ORGANIZER_NOUN_LOWER = 'organizer';
-/** @deprecated */
-export const ORGANIZER_PLURAL_TITLE = 'Organizers';
-
-export const ORGANIZING_LABEL = 'Organizing';
-/** @deprecated Prefer {@link HOSTED_BY_LABEL}. */
-export const ORGANIZED_BY_LABEL = 'Organized by';
+export const HOSTING_LABEL = 'Hosting';
 
 export const HOST_APPROVAL_REQUIRED = 'Host approval required to join';
-/** @deprecated Prefer {@link HOST_APPROVAL_REQUIRED}. */
-export const ORGANIZER_APPROVAL_REQUIRED = HOST_APPROVAL_REQUIRED;
 
 export const HOST_FALLBACK_DISPLAY_NAME = ACTIVITY_HOST_NOUN_TITLE;
-/** @deprecated Prefer {@link HOST_FALLBACK_DISPLAY_NAME}. */
-export const ORGANIZER_FALLBACK_DISPLAY_NAME = HOST_FALLBACK_DISPLAY_NAME;
 
 export type WorkspaceBrandKind = 'guide' | 'agency' | 'shop';
 
@@ -56,14 +43,14 @@ export const workspaceConsoleLabel = (kind?: WorkspaceBrandKind | null): string 
   if (kind === 'guide') return 'Guide workspace';
   if (kind === 'agency') return 'Operator workspace';
   if (kind === 'shop') return 'Operator workspace';
-  return 'Organizer workspace';
+  return 'Publishing workspace';
 };
 
 export const workspaceProfileLabel = (kind?: WorkspaceBrandKind | null): string => {
   if (kind === 'guide') return 'Guide profile';
   if (kind === 'agency') return 'Agency profile';
   if (kind === 'shop') return 'Shop profile';
-  return 'Organizer profile';
+  return 'Host profile';
 };
 
 export const workspacePublicProfileLabel = (kind?: WorkspaceBrandKind | null): string => {
@@ -77,14 +64,14 @@ export const workspaceNotFoundLabel = (kind?: WorkspaceBrandKind | null): string
   if (kind === 'guide') return 'Guide not found';
   if (kind === 'agency') return 'Agency not found';
   if (kind === 'shop') return 'Shop not found';
-  return 'Organizer not found';
+  return 'Host not found';
 };
 
 export const workspaceSetupTitle = (kind?: WorkspaceBrandKind | null): string => {
   if (kind === 'guide') return 'Set up as a guide';
   if (kind === 'agency') return 'Set up your agency';
   if (kind === 'shop') return 'Set up your shop';
-  return 'Set up as an organizer';
+  return 'Set up publishing';
 };
 
 /** Activity form — tenant the activity is published under. */

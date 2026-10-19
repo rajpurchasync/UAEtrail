@@ -5,7 +5,7 @@ import {
   type MapPeekJoinRequestStatus,
   type ParticipationMode,
 } from '@uaetrail/shared-types';
-import type { ExploreCardModel } from '../explore/exploreCardModel';
+import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
 import type { JoinRequestUiState } from '../utils/joinRequestUi';
 
 export type ActivityPresentationInput = {
@@ -54,11 +54,9 @@ export const resolveActivityDetailPresentation = (input: ActivityPresentationInp
   };
 };
 
-/** @deprecated Use `resolveActivityDetailPresentation` — import shim during NA-5. */
-export const resolveActivityPresentation = resolveActivityDetailPresentation;
 
-export const resolveActivityPresentationFromExploreCard = (
-  card: ExploreCardModel,
+export const resolveActivityPresentationFromDiscoveryCard = (
+  card: DiscoveryCardModel,
   options: {
     joinUiState: JoinRequestUiState;
     isHostUser: boolean;

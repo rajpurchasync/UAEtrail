@@ -12,7 +12,7 @@ describe('workspaceVocabulary', () => {
     expect(workspaceConsoleLabel('agency')).toBe('Operator workspace');
     expect(workspaceConsoleLabel('shop')).toBe('Operator workspace');
     expect(workspaceConsoleLabel('guide')).toBe('Guide workspace');
-    expect(workspaceConsoleLabel(null)).toBe('Organizer workspace');
+    expect(workspaceConsoleLabel(null)).toBe('Publishing workspace');
   });
 
   it('approval requirement accepts Host canonical and Organizer legacy line', () => {

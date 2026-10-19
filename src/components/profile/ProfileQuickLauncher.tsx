@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import {
   BUDDIES_PATH,
-  CONTRIBUTIONS_PATH,
+  PROFILE_SUBMISSIONS_PATH,
   explorePeopleBrowsePath,
   MESSAGES_PATH,
   planHostedSchedulePath,
@@ -104,9 +104,9 @@ export const buildProfileQuickLauncherItems = (input: {
       iconWrapClassName: 'bg-sky-50 text-sky-800',
     },
     {
-      key: 'contributions',
-      label: 'Contributions',
-      to: CONTRIBUTIONS_PATH,
+      key: 'submissions',
+      label: 'Submissions',
+      to: PROFILE_SUBMISSIONS_PATH,
       icon: MapPin,
       iconWrapClassName: 'bg-emerald-50 text-emerald-700',
     },
@@ -122,7 +122,7 @@ export const buildProfileQuickLauncherItems = (input: {
   if (input.showHosting) {
     items.push({
       key: 'hosting',
-      label: 'Organizing',
+      label: 'Hosting',
       to: planHostedSchedulePath(),
       icon: Mountain,
       iconWrapClassName: 'bg-violet-50 text-violet-700',

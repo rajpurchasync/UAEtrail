@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { buildDiscoveryCardViewModel, buildDiscoveryCardViewModelCard } from './discoveryCardViewModel';
 import { buildListFeedCards } from '../list/buildListFeedCards';
-import { buildExploreCardModel } from '../explore/exploreCardModel';
+import { buildDiscoveryCardModel } from '../discovery/discoveryCardModel';
 import { hostedExploreMapItem, venueExploreMapItem } from '../explore/exploreMapItemFixtures';
 import { resolveListVenuePosterCopy } from '../list/listVenuePosterPresentation';
 import { buildDiscoveryEnrichedCard } from './buildDiscoveryEnrichedCard';
@@ -40,9 +40,9 @@ describe('buildDiscoveryCardViewModel (RF-02)', () => {
     expect(listCard.headline).toBe('Server headline');
   });
 
-  it('matches buildExploreCardModel for hosted activity (peek path)', () => {
+  it('matches buildDiscoveryCardModel for hosted activity (peek path)', () => {
     const item = hostedExploreMapItem();
-    const legacy = buildExploreCardModel(item);
+    const legacy = buildDiscoveryCardModel(item);
     const { card, projection } = buildDiscoveryCardViewModel(item);
     expect(card.primaryCta).toBe(legacy.primaryCta);
     expect(card.headline).toBe(legacy.headline);
@@ -80,7 +80,7 @@ describe('buildDiscoveryCardViewModel (RF-02)', () => {
 
   it('venue browse poster copy matches legacy card (RF-02 venue)', () => {
     const item = venueExploreMapItem();
-    const legacy = buildExploreCardModel(item);
+    const legacy = buildDiscoveryCardModel(item);
     const vm = buildDiscoveryCardViewModelCard(item);
     expect(resolveListVenuePosterCopy(vm).heroTitle).toBe(resolveListVenuePosterCopy(legacy).heroTitle);
     expect(vm.primaryCta).toBe(legacy.primaryCta);
@@ -136,7 +136,7 @@ describe('buildDiscoveryCardViewModel (RF-02)', () => {
     } as Parameters<typeof hostedExploreMapItem>[0]);
 
     for (const item of [approvalHike, rsvpEvent, rsvpCamp]) {
-      const legacy = buildExploreCardModel(item);
+      const legacy = buildDiscoveryCardModel(item);
       const card = buildDiscoveryCardViewModelCard(item);
       expect(card.primaryCta).toBe(legacy.primaryCta);
     }

@@ -7,7 +7,7 @@ import {
   publishActivity as publishTenantActivity,
 } from './tenantActivityClientApi';
 import { navigateToCreateLinkedRideshare } from '../explore/navigateCreateLinkedRideshare';
-import { navigateToReorganizeActivity } from '../explore/navigateReorganizeActivity';
+import { navigateToHostFromExistingActivity } from '../explore/navigateHostFromExistingActivity';
 import { openPublishedActivityPreview } from '../components/activities';
 import { useReloadExploreMap } from './useReloadExploreMap';
 import { openActivityGroupChat } from '../utils/openActivityGroupChat';
@@ -79,7 +79,7 @@ export function useHostActivityManageActions(
       try {
         const duplicate = await duplicateTenantActivity(tenantId, activity.id);
         await afterChange();
-        navigateToReorganizeActivity(navigate, duplicate);
+        navigateToHostFromExistingActivity(navigate, duplicate);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Could not duplicate.');
       } finally {
@@ -89,9 +89,9 @@ export function useHostActivityManageActions(
     [afterChange, navigate, tenantId]
   );
 
-  const reorganizeActivity = useCallback(
+  const hostFromExistingActivity = useCallback(
     (activity: ActivityDTO) => {
-      navigateToReorganizeActivity(navigate, activity);
+      navigateToHostFromExistingActivity(navigate, activity);
     },
     [navigate]
   );
@@ -146,7 +146,7 @@ export function useHostActivityManageActions(
     openGroupChat,
     publishActivity,
     duplicateActivity,
-    reorganizeActivity,
+    hostFromExistingActivity,
     createLinkedRideshare,
     previewPublished: openPublishedActivityPreview,
   };

@@ -9,6 +9,7 @@ import {
   EXPLORE_SEARCH_SCOPE_BUDDIES_LABEL,
 } from '../content/explorePeopleBrowseCopy';
 import type { ExplorePanel } from './routing';
+import { MAP_LENS_SPOTS_LABEL } from '../place/geographyVocabulary';
 import type { ExplorePinKindFilter } from './explorePinKindFilter';
 import type { DesktopBrowseTab } from './ui/exploreBrowsePanelCopy';
 
@@ -27,7 +28,7 @@ export type ExploreMapFilterPillKey = 'trips' | 'looking' | 'spots' | 'shops';
 /** Map multi-select pills — seeking rolls into **Activities** (M0); `looking` key kept for legacy `topics=` parse. */
 export const EXPLORE_MAP_FILTER_PILLS: ReadonlyArray<{ key: ExploreMapFilterPillKey; label: string }> = [
   { key: 'trips', label: 'Activities' },
-  { key: 'spots', label: 'Spots' },
+  { key: 'spots', label: MAP_LENS_SPOTS_LABEL },
   { key: 'shops', label: 'Shops' },
 ];
 

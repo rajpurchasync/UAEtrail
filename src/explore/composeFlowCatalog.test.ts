@@ -4,11 +4,11 @@ import {
 
   ADD_COMPOSE_OPTIONS,
 
-  FIND_COMPOSE_OPTIONS,
+  SEEK_FIXED_COMPOSE_OPTIONS,
 
-  ORGANIZE_COMPOSE_OPTIONS,
+  HOST_COMPOSE_OPTIONS,
 
-  organizeCreateActivityKind,
+  hostCreateActivityKind,
 
 } from './compose';
 
@@ -20,39 +20,37 @@ import {
 
   composeFlowSpec,
 
-  defaultParticipationForOrganizeRoute,
+  defaultParticipationForHostRoute,
 
-  findComposeKindToSeekingKind,
+  seekingKindFromComposeKind,
 
 } from './composeFlowCatalog';
 
 import { normalizeComposeFlowId } from './composeFlowIds';
 
-import { getContributeFlowSteps } from './ui/contributeFlow';
+import { getAddFlowSteps } from './ui/addFlow';
 
 import { SEEKING_TYPE_OPTIONS, getSeekingFlowSteps } from './ui/seekingFlowEngine';
 
-import { getHostingFlowSteps } from './ui/hostingFlow';
+import { getCreateFlowSteps } from './ui/hostingFlowEngine';
 
 
 
 describe('compose flow catalog', () => {
 
-  it('maps every FAB organize option to plan.*.hosting flowId', () => {
+  it('maps every FAB host option to host.* flowId', () => {
 
-    for (const option of ORGANIZE_COMPOSE_OPTIONS) {
+    for (const option of HOST_COMPOSE_OPTIONS) {
 
-      const id = composeFlowIdFromRoute({ intent: 'organize', kind: option.kind });
+      const id = composeFlowIdFromRoute({ intent: 'host', kind: option.kind });
 
       expect(id).toBeTruthy();
 
-      expect(id).toMatch(/^plan\./);
-
-      expect(id).toMatch(/\.hosting$/);
+      expect(id).toMatch(/^host\./);
 
       expect(COMPOSE_FLOW_CATALOG[id!].wizard).toBe('hostingFlow');
 
-      expect(COMPOSE_FLOW_CATALOG[id!].intent).toBe('organize');
+      expect(COMPOSE_FLOW_CATALOG[id!].intent).toBe('host');
 
       expect(COMPOSE_FLOW_CATALOG[id!].label.length).toBeGreaterThan(0);
 
@@ -62,19 +60,19 @@ describe('compose flow catalog', () => {
 
 
 
-  it('maps every FAB find option to plan.*.seeking flowId', () => {
+  it('maps every FAB seek option to seek.fixed.* flowId', () => {
 
-    for (const option of FIND_COMPOSE_OPTIONS) {
+    for (const option of SEEK_FIXED_COMPOSE_OPTIONS) {
 
-      const id = composeFlowIdFromRoute({ intent: 'find', kind: option.kind });
+      const id = composeFlowIdFromRoute({ intent: 'seek', mode: 'fixed', kind: option.kind });
 
       expect(id).toBeTruthy();
 
-      expect(id).toMatch(/\.seeking$/);
+      expect(id).toMatch(/^seek\.fixed\./);
 
       expect(COMPOSE_FLOW_CATALOG[id!].wizard).toBe('seekingFlow');
 
-      expect(COMPOSE_FLOW_CATALOG[id!].intent).toBe('find');
+      expect(COMPOSE_FLOW_CATALOG[id!].intent).toBe('seek');
 
     }
 
@@ -82,7 +80,7 @@ describe('compose flow catalog', () => {
 
 
 
-  it('maps every FAB add option to contribute.* flowId', () => {
+  it('maps every FAB add option to add.* flowId', () => {
 
     for (const option of ADD_COMPOSE_OPTIONS) {
 
@@ -90,7 +88,7 @@ describe('compose flow catalog', () => {
 
       expect(id).toBeTruthy();
 
-      expect(id).toMatch(/^contribute\./);
+      expect(id).toMatch(/^add\./);
 
       expect(COMPOSE_FLOW_CATALOG[id!].intent).toBe('add');
 
@@ -100,11 +98,11 @@ describe('compose flow catalog', () => {
 
 
 
-  it('parses organize rideshare from compose URL', () => {
+  it('parses host rideshare from compose URL', () => {
 
-    expect(composeFlowIdFromRoute({ intent: 'organize', kind: 'rideshare' })).toBe(
+    expect(composeFlowIdFromRoute({ intent: 'host', kind: 'rideshare' })).toBe(
 
-      'plan.rideshare.hosting'
+      'host.rideshare'
 
     );
 
@@ -112,25 +110,25 @@ describe('compose flow catalog', () => {
 
 
 
-  it('maps v2 plan hosting and seeking routes to canonical catalog ids', () => {
+  it('maps leftover plan/contribute compose routes to canonical catalog ids', () => {
 
     expect(
 
       composeFlowIdFromRoute({ intent: 'plan', kind: 'hiking', mode: 'hosting' })
 
-    ).toBe('plan.hiking.hosting');
+    ).toBe('host.hiking');
 
     expect(
 
       composeFlowIdFromRoute({ intent: 'plan', kind: 'rideshare', mode: 'seeking' })
 
-    ).toBe('plan.rideshare.seeking');
+    ).toBe('seek.fixed.rideshare');
 
     expect(
 
       composeFlowIdFromRoute({ intent: 'contribute', target: 'place', kind: 'hiking' })
 
-    ).toBe('contribute.place.hiking');
+    ).toBe('add.place.hiking');
 
   });
 
@@ -138,25 +136,27 @@ describe('compose flow catalog', () => {
 
   it('normalizes legacy catalog ids to canonical', () => {
 
-    expect(normalizeComposeFlowId('organize.hiking')).toBe('plan.hiking.hosting');
+    expect(normalizeComposeFlowId('organize.hiking')).toBe('host.hiking');
 
-    expect(normalizeComposeFlowId('host.hiking')).toBe('plan.hiking.hosting');
+    expect(normalizeComposeFlowId('plan.hiking.hosting')).toBe('host.hiking');
 
-    expect(normalizeComposeFlowId('seek.fixed.camping')).toBe('plan.camping.seeking');
+    expect(normalizeComposeFlowId('host.hiking')).toBe('host.hiking');
 
-    expect(normalizeComposeFlowId('add.place.hiking')).toBe('contribute.place.hiking');
+    expect(normalizeComposeFlowId('seek.fixed.camping')).toBe('seek.fixed.camping');
 
-    expect(composeFlowSpec('organize.hiking').id).toBe('plan.hiking.hosting');
+    expect(normalizeComposeFlowId('add.place.hiking')).toBe('add.place.hiking');
+
+    expect(composeFlowSpec('organize.hiking').id).toBe('host.hiking');
 
   });
 
 
 
-  it('catalog default participation matches organize events (rsvp) and rideshare (approval)', () => {
+  it('catalog default participation matches host events (rsvp) and rideshare (approval)', () => {
 
-    expect(defaultParticipationForOrganizeRoute('event')).toBe('rsvp');
+    expect(defaultParticipationForHostRoute('event')).toBe('rsvp');
 
-    expect(defaultParticipationForOrganizeRoute('rideshare')).toBe('approval');
+    expect(defaultParticipationForHostRoute('rideshare')).toBe('approval');
 
   });
 
@@ -164,25 +164,25 @@ describe('compose flow catalog', () => {
 
   it('catalog default participation is approval for hiking, camping, and activity', () => {
 
-    expect(defaultParticipationForOrganizeRoute('hiking')).toBe('approval');
+    expect(defaultParticipationForHostRoute('hiking')).toBe('approval');
 
-    expect(defaultParticipationForOrganizeRoute('camping')).toBe('approval');
+    expect(defaultParticipationForHostRoute('camping')).toBe('approval');
 
-    expect(defaultParticipationForOrganizeRoute('activity')).toBe('approval');
+    expect(defaultParticipationForHostRoute('activity')).toBe('approval');
 
   });
 
 
 
-  it('every organize flow includes audience step for participation / visibility', () => {
+  it('every hosting flow includes audience step for participation / visibility', () => {
 
-    for (const option of ORGANIZE_COMPOSE_OPTIONS) {
+    for (const option of HOST_COMPOSE_OPTIONS) {
 
-      const id = composeFlowIdFromRoute({ intent: 'organize', kind: option.kind });
+      const id = composeFlowIdFromRoute({ intent: 'host', kind: option.kind });
 
       expect(id).toBeTruthy();
 
-      const steps = composeFlowSpec(id!).organizeSteps ?? [];
+      const steps = composeFlowSpec(id!).hostingSteps ?? [];
 
       expect(steps).toContain('audience');
 
@@ -192,17 +192,17 @@ describe('compose flow catalog', () => {
 
 
 
-  it('catalog organizeSteps stay aligned with hostingFlow step lists', () => {
+  it('catalog hostingSteps stay aligned with hostingFlow step lists', () => {
 
-    for (const option of ORGANIZE_COMPOSE_OPTIONS) {
+    for (const option of HOST_COMPOSE_OPTIONS) {
 
-      const id = composeFlowIdFromRoute({ intent: 'organize', kind: option.kind });
+      const id = composeFlowIdFromRoute({ intent: 'host', kind: option.kind });
 
       expect(id).toBeTruthy();
 
-      const createKind = organizeCreateActivityKind(option.kind);
+      const createKind = hostCreateActivityKind(option.kind);
 
-      expect(composeFlowSpec(id!).organizeSteps).toEqual(getHostingFlowSteps(createKind, false));
+      expect(composeFlowSpec(id!).hostingSteps).toEqual(getCreateFlowSteps(createKind, false));
 
     }
 
@@ -212,13 +212,13 @@ describe('compose flow catalog', () => {
 
   it('catalog seekingSteps stay aligned with seekingFlowEngine step lists', () => {
 
-    for (const option of FIND_COMPOSE_OPTIONS) {
+    for (const option of SEEK_FIXED_COMPOSE_OPTIONS) {
 
-      const id = composeFlowIdFromRoute({ intent: 'find', kind: option.kind });
+      const id = composeFlowIdFromRoute({ intent: 'seek', mode: 'fixed', kind: option.kind });
 
       expect(id).toBeTruthy();
 
-      const seekingKind = findComposeKindToSeekingKind(option.kind);
+      const seekingKind = seekingKindFromComposeKind(option.kind);
 
       expect(composeFlowSpec(id!).seekingSteps).toEqual(getSeekingFlowSteps(seekingKind));
 
@@ -228,7 +228,7 @@ describe('compose flow catalog', () => {
 
 
 
-  it('catalog contributeSteps stay aligned with contributeFlow step lists', () => {
+  it('catalog addSteps stay aligned with add-flow step lists', () => {
 
     for (const option of ADD_COMPOSE_OPTIONS) {
 
@@ -236,7 +236,7 @@ describe('compose flow catalog', () => {
 
       expect(id).toBeTruthy();
 
-      expect(composeFlowSpec(id!).contributeSteps).toEqual(getContributeFlowSteps(option.kind));
+      expect(composeFlowSpec(id!).addSteps).toEqual(getAddFlowSteps(option.kind));
 
     }
 
@@ -244,17 +244,17 @@ describe('compose flow catalog', () => {
 
 
 
-  it('demand type picker matches find FAB options', () => {
+  it('seeking type picker matches seek FAB options', () => {
 
     expect(SEEKING_TYPE_OPTIONS.map((row) => row.key)).toEqual(
 
-      FIND_COMPOSE_OPTIONS.map((row) => findComposeKindToSeekingKind(row.kind))
+      SEEK_FIXED_COMPOSE_OPTIONS.map((row) => seekingKindFromComposeKind(row.kind))
 
     );
 
     expect(SEEKING_TYPE_OPTIONS.map((row) => row.title)).toEqual(
 
-      FIND_COMPOSE_OPTIONS.map((row) => row.label)
+      SEEK_FIXED_COMPOSE_OPTIONS.map((row) => row.label)
 
     );
 

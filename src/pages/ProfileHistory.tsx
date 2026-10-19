@@ -144,7 +144,7 @@ export const ProfileHistoryPage = () => {
         return (
           <div className="glass-card p-6 text-center">
             <p className="mb-3 text-sm text-neutral-600">
-              Organize outings on the map to share them with the community.
+              Host outings on the map to share them with the community.
             </p>
             <button
               type="button"

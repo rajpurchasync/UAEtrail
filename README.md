@@ -83,7 +83,7 @@ If a newer Node.js, Docker, or installer requirement is introduced later, update
 | [SYSTEM_COHERENCE.md](docs/SYSTEM_COHERENCE.md) | Whole product — capabilities, modules, API contexts, debt register |
 | [DOCS_GOVERNANCE.md](docs/DOCS_GOVERNANCE.md) | How to keep docs aligned; `npm run verify:docs` |
 | [NORTHSTAR.md](docs/NORTHSTAR.md) | Product concept, voice, surface jobs |
-| [MEMBER_MODEL.md](docs/MEMBER_MODEL.md) | Member tiers, host/join naming, `GET /me/status`, buddy Organize |
+| [MEMBER_MODEL.md](docs/MEMBER_MODEL.md) | Member tiers, host/join naming, `GET /me/status`, buddy Host / publish |
 | [HOST_CLEANUP_ROADMAP.md](docs/HOST_CLEANUP_ROADMAP.md) | P0–P3 host/tenant/fulfill cleanup tracker |
 | [DOMAIN_CANONICALS.md](docs/DOMAIN_CANONICALS.md) | Entities, URL/API canon, `routingCatalog`, routing hygiene |
 | [DOMAIN.md](docs/DOMAIN.md) | Full domain glossary (Place, Activity, Trips UI vs Activity) |

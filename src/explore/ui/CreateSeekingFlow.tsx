@@ -48,8 +48,8 @@ import {
   type SeekingKind,
 } from './seekingFlowEngine';
 import type { LocationPrecision, TimeMode } from './createFlowShared';
-import type { FindComposeKind } from '../compose';
-import { areaLabelForId } from '../organizePublishArea';
+import { seekFixedCompose, type SeekingComposeKind } from '../compose';
+import { areaLabelForId } from '../hostingPublishArea';
 import { areaIdForExploreAreaSlug } from '../exploreAreaFilter';
 import { useExplorePublishedAreas } from '../useExplorePublishedAreas';
 import { SeekingCuratedAreaStep } from './SeekingCuratedAreaStep';
@@ -81,7 +81,7 @@ interface CreateSeekingFlowProps {
   onBackToIntent?: () => void;
   onSubmitted?: (result: SeekingSubmitResult) => void;
   signInHref: string;
-  findKind?: FindComposeKind | null;
+  seekKind?: SeekingComposeKind | null;
   exploreAreaSlug?: string | null;
   tenantId?: string | null;
   onCreateLinkedRideshare?: (parent: ActivityDTO) => void;
@@ -133,7 +133,7 @@ export const CreateSeekingFlow = ({
   onBackToIntent,
   onSubmitted,
   signInHref,
-  findKind = null,
+  seekKind = null,
   exploreAreaSlug = null,
   tenantId = null,
   onCreateLinkedRideshare,
@@ -183,14 +183,8 @@ export const CreateSeekingFlow = ({
 
   const seekingFlowId = useMemo(
     () =>
-      findKind
-        ? composeFlowIdFromRoute({
-            intent: 'plan',
-            kind: findKind === 'event' ? 'activity' : findKind,
-            mode: 'seeking',
-          })
-        : null,
-    [findKind]
+      seekKind ? composeFlowIdFromRoute(seekFixedCompose(seekKind)) : null,
+    [seekKind]
   );
   const seekingInitKey = seekingFlowId ?? null;
   const seekingInitializedRef = useRef<string | null>(null);
@@ -204,7 +198,7 @@ export const CreateSeekingFlow = ({
       setRouteMapTarget(null);
       return;
     }
-    if (findKind && seekingFlowId) {
+    if (seekKind && seekingFlowId) {
       if (seekingInitializedRef.current === seekingInitKey) return;
 
       const saved = readSeekingWizardSession(seekingFlowId);
@@ -225,11 +219,11 @@ export const CreateSeekingFlow = ({
       const areaId = areaIdForExploreAreaSlug(publishedAreas, exploreAreaSlug);
       setDraft({
         ...emptySeekingDraft(),
-        kind: findKind,
+        kind: seekKind,
         ...(areaId ? { areaId } : {}),
       });
-      setSelectedKind(findKind);
-      setStep(getSeekingFlowSteps(findKind)[0]);
+      setSelectedKind(seekKind);
+      setStep(getSeekingFlowSteps(seekKind)[0]);
       setError(null);
       setSubmitting(false);
       setSubmitResult(null);
@@ -249,7 +243,7 @@ export const CreateSeekingFlow = ({
     navigate,
     signInHref,
     onClose,
-    findKind,
+    seekKind,
     seekingFlowId,
     seekingInitKey,
     exploreAreaSlug,
@@ -296,7 +290,7 @@ export const CreateSeekingFlow = ({
       return;
     }
     if (step === 'type' || currentStepIndex <= 0) {
-      if (step === 'type' || findKind) {
+      if (step === 'type' || seekKind) {
         onBackToIntent?.();
         return;
       }
@@ -512,7 +506,7 @@ export const CreateSeekingFlow = ({
       overlayFixed
       panelClassName="max-h-[min(78dvh,720px)] px-5 pb-[calc(var(--safe-bottom)+3rem)] pt-1 lg:px-6 lg:pb-6 lg:pt-2"
     >
-        {step === 'type' && !findKind && (
+        {step === 'type' && !seekKind && (
           <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
             <div className="grid grid-cols-2 gap-3">
               {SEEKING_TYPE_OPTIONS.map((option) => {

@@ -21,7 +21,7 @@ describe('place map peek', () => {
     expect(hero).toMatch(/resolvePlacePeekCuratedArea/);
     expect(body).toMatch(/fetchPlaceActivities/);
     expect(actions).toMatch(/PLACE_PEEK_ARRANGE_TRIP/);
-    expect(actions).toMatch(/navigateOrganizeFromPlaceCard/);
+    expect(actions).toMatch(/navigateHostFromPlaceCard/);
     expect(actions).toMatch(/space-y-2/);
     expect(actions).not.toMatch(/flex w-full gap-2/);
   });

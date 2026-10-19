@@ -12,7 +12,7 @@ import {
 } from './listPosterPresentation';
 import { listCategoryResultsLabel } from './listCategoryCopy';
 import { resolveListFeedFooterModel } from './listFeedFooterActions';
-import type { ExploreCardModel } from '../explore/exploreCardModel';
+import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
 import { seekingExploreMapItem } from '../explore/exploreMapItemFixtures';
 
 describe('list poster presentation', () => {
@@ -190,7 +190,7 @@ describe('listCategoryResultsLabel', () => {
 
 describe('resolveListFeedFooterModel', () => {
   it('guest-gates join on activities', () => {
-    const card: ExploreCardModel = {
+    const card: DiscoveryCardModel = {
       ...buildDiscoveryCardViewModelCard({
         id: 'activity:a1',
         kind: 'hiking',

@@ -1,32 +1,11 @@
 import { isTimeBoundExploreMapItem, type ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { isGeographyMapSource } from '@uaetrail/shared-types';
+import { BROWSE_LIST_CATEGORY_PLACES } from '../place/geographyVocabulary';
 import type { ExploreMapFilterPillKey } from '../explore/exploreBrowseTaxonomy';
 import {
   parseExploreMapFilterPillsParam,
   serializeExploreMapFilterPillsParam,
 } from '../explore/exploreBrowseTaxonomy';
-
-/**
- * List main categories — **activities** (hosted + seeking), places, people, brands.
- * Map `topics` still uses explore wire `trips,looking` when activities category is selected.
- */
-export type BrowseMainCategoryKey = 'activities' | 'venues' | 'people' | 'agencies';
-
-/** Location-bounded catalog pins — trails, camps, outdoor venues, and gear shops. */
-export const mapItemMatchesBrowsePlacesCategory = (item: ExploreMapItemDTO): boolean =>
-  isGeographyMapSource(item.source) || item.source === 'shop';
-
-const isAgencyBrandItem = (item: ExploreMapItemDTO): boolean =>
-  item.source === 'agency' &&
-  (item.path.includes('/agency/') || item.path.includes('/partner/'));
-
-/** Time-bound map rows — hosted + seeking activities. */
-export const mapItemMatchesBrowseActivitiesCategory = (item: ExploreMapItemDTO): boolean =>
-  isTimeBoundExploreMapItem(item);
-
-/** @deprecated Use {@link mapItemMatchesBrowseActivitiesCategory}. */
-export const mapItemMatchesBrowseTripsCategory = mapItemMatchesBrowseActivitiesCategory;
-
 export const mapItemMatchesBrowseMainCategory = (
   item: ExploreMapItemDTO,
   key: BrowseMainCategoryKey
@@ -34,7 +13,7 @@ export const mapItemMatchesBrowseMainCategory = (
   switch (key) {
     case 'activities':
       return mapItemMatchesBrowseActivitiesCategory(item);
-    case 'venues':
+    case BROWSE_LIST_CATEGORY_PLACES:
       return mapItemMatchesBrowsePlacesCategory(item);
     case 'people':
       return false;
@@ -60,7 +39,7 @@ export const parseBrowseMainCategoriesFromTopics = (
   const keys = new Set<BrowseMainCategoryKey>();
   for (const pill of pills) {
     if (pill === 'trips' || pill === 'looking') keys.add('activities');
-    if (pill === 'spots' || pill === 'shops') keys.add('venues');
+    if (pill === 'spots' || pill === 'shops') keys.add(BROWSE_LIST_CATEGORY_PLACES);
   }
   return [...keys];
 };
@@ -72,7 +51,7 @@ export const serializeBrowseMainCategoriesToTopics = (
   if (categories.includes('activities')) {
     pills.push('trips', 'looking');
   }
-  if (categories.includes('venues')) {
+  if (categories.includes(BROWSE_LIST_CATEGORY_PLACES)) {
     pills.push('spots', 'shops');
   }
   return serializeExploreMapFilterPillsParam(pills);
@@ -84,7 +63,7 @@ export const browseMainCategoriesToTopicPills = (
 ): ExploreMapFilterPillKey[] => {
   const pills: ExploreMapFilterPillKey[] = [];
   if (categories.includes('activities')) pills.push('trips', 'looking');
-  if (categories.includes('venues')) {
+  if (categories.includes(BROWSE_LIST_CATEGORY_PLACES)) {
     pills.push('spots', 'shops');
   }
   return pills;
@@ -92,7 +71,7 @@ export const browseMainCategoriesToTopicPills = (
 
 export const BROWSE_MAIN_CATEGORY_LABELS: ReadonlyArray<{ key: BrowseMainCategoryKey; label: string }> = [
   { key: 'activities', label: 'Activities' },
-  { key: 'venues', label: 'Places' },
+  { key: BROWSE_LIST_CATEGORY_PLACES, label: 'Places' },
   { key: 'people', label: 'Buddies' },
   { key: 'agencies', label: 'Agencies' },
 ];

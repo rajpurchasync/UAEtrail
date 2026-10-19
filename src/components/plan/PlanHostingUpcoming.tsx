@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react';
 import type { ActivityDTO, ParticipantIntentDTO } from '@uaetrail/shared-types';
-import { useMyParticipantIntents } from '../../hooks/useMyParticipantIntents';
+import { useMySeekingPosts } from '../../hooks/useMySeekingPosts';
 import { useConsoleHubData } from '../../console/useHubData';
 import {
   ConsumerErrorCard,
@@ -46,7 +46,7 @@ export const PlanHostingUpcoming = ({ refreshKey = 0, canHost }: PlanHostingUpco
     intents,
     loading: intentsLoading,
     refetch: refetchIntents,
-  } = useMyParticipantIntents(true, refreshKey);
+  } = useMySeekingPosts(true, refreshKey);
 
   useEffect(() => {
     if (!refreshKey) return;
@@ -90,7 +90,7 @@ export const PlanHostingUpcoming = ({ refreshKey = 0, canHost }: PlanHostingUpco
   if (!canHost) {
     return (
       <ConsumerInlineEmpty
-        message="Organize outings on the map to share them with others."
+        message="Host outings on the map to share them with others."
         actionLabel="Pro membership"
         actionTo={PRO_MEMBERSHIP_PATH}
       />
@@ -143,7 +143,7 @@ export const PlanHostingUpcoming = ({ refreshKey = 0, canHost }: PlanHostingUpco
               timeLabel={activity.time}
               locationLabel={activity.locationName?.trim() || 'Location TBD'}
               activityTypeLabel={formatActivityType(activity.activityType)}
-              badge={isSeeking ? 'Looking for company' : 'Organizing'}
+              badge={isSeeking ? 'Looking for company' : 'Hosting'}
               participants={activity.participantPreviews}
               actionHint={pendingHint}
               onClick={() => openManageActivity(activity)}

@@ -9,7 +9,6 @@ const SRC = join(ROOT, 'src');
 const MAP_URL_LITERAL_ALLOWLIST = new Set([
   'src/utils/mapLinks.ts',
   'src/utils/mapLinks.test.ts',
-  'src/utils/googleMapsUrl.ts',
   'src/components/ui/MapPinPicker.tsx',
   'src/config/mapNavigationGuard.test.ts',
 ]);

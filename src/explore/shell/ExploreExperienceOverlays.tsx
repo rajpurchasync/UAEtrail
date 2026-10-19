@@ -3,13 +3,13 @@ import { HostActivityCancelDialog } from '../../components/activity/HostActivity
 import { AppButton } from '../../components/mobile/AppButton';
 import { Dialog } from '../../components/ui/Dialog';
 import { EXPLORE_Z } from '../../config/exploreTheme';
-import { contributeVenueKindFromRoute } from '../compose';
+import { addVenueKindFromRoute } from '../compose';
 import { ExploreBrowseSearchModal } from '../ui/ExploreBrowseSearchModal';
 import { ComposeHost } from '../create/ComposeHost';
 import { ExploreGuestSignInCard } from '../ui/ExploreGuestSignInCard';
 import { ExploreJoinOverlays } from '../ui/ExploreJoinOverlays';
 import { ExploreResponsiveSheet } from '../ui/ExploreResponsiveSheet';
-import type { OrganizeWizardPrefill } from '../ui/organizeWizardPrefill';
+import type { HostingWizardPrefill } from '../ui/hostingWizardPrefill';
 import type { useComposeRoute } from '../create/hooks/useComposeRoute';
 import type { ExploreSearchScopeCounts, ExploreSearchScopeKey } from '../exploreBrowseTaxonomy';
 import type { ReactNode } from 'react';
@@ -24,7 +24,7 @@ type Props = {
   compose: ComposeState;
   selection: SelectionState;
   hostWizardOpen: boolean;
-  hostingWizardPrefill: OrganizeWizardPrefill | null;
+  hostingWizardPrefill: HostingWizardPrefill | null;
   pathname: string;
   search: string;
   signInHref: string;
@@ -34,7 +34,7 @@ type Props = {
   rideshareLinkParent: ActivityDTO | null;
   rideshareLinkSeeking: ExploreMapItemDTO | null;
   onCloseCreateFlow: () => void;
-  onPlanHostingBackToIntent: () => void;
+  onHostingBackToIntent: () => void;
   onActivityPublished: (activity: ActivityDTO) => Promise<void>;
   onCreateLinkedRideshare: (parent: ActivityDTO) => void;
   onOpenHostApplication: () => void;
@@ -67,7 +67,7 @@ export const ExploreExperienceOverlays = ({
   rideshareLinkParent,
   rideshareLinkSeeking,
   onCloseCreateFlow,
-  onPlanHostingBackToIntent,
+  onHostingBackToIntent,
   onActivityPublished,
   onCreateLinkedRideshare,
   onOpenHostApplication,
@@ -94,20 +94,20 @@ export const ExploreExperienceOverlays = ({
       composeRoute={compose.composeRoute}
       composeMenuOpen={compose.composeMenuOpen}
       hostWizardOpen={hostWizardOpen}
-      planSeekingWizardOpen={Boolean(compose.planSeekingRoute)}
-      contributeWizardOpen={Boolean(compose.contributeRoute)}
+      seekFixedWizardOpen={Boolean(compose.seekFixedRoute)}
+      addWizardOpen={Boolean(compose.addRoute)}
       seekFlexibleOpen={compose.seekFlexibleOpen}
-      planHostingKind={compose.planHostingRoute?.kind ?? null}
-      planSeekingKind={compose.planSeekingRoute?.kind}
-      contributeVenueKind={contributeVenueKindFromRoute(compose.contributeRoute)}
+      hostComposeKind={compose.hostComposeRoute?.kind ?? null}
+      seekFixedKind={compose.seekFixedRoute?.kind}
+      addVenueKind={addVenueKindFromRoute(compose.addRoute)}
       hostingWizardPrefill={hostingWizardPrefill}
       signInHref={signInHref}
       onComposeRouteChange={compose.handleComposeRouteChange}
       onCloseCompose={compose.closeCompose}
       onCloseCreateFlow={onCloseCreateFlow}
-      onPlanHostingBackToIntent={onPlanHostingBackToIntent}
-      onPlanSeekingBackToIntent={() => compose.setComposeRoute({ surface: 'menu', intent: 'seek' })}
-      onContributeBackToIntent={() => compose.setComposeRoute({ surface: 'menu', intent: 'add' })}
+      onHostingBackToIntent={onHostingBackToIntent}
+      onSeekingBackToIntent={() => compose.setComposeRoute({ surface: 'menu', intent: 'seek' })}
+      onAddBackToIntent={() => compose.setComposeRoute({ surface: 'menu', intent: 'add' })}
       onActivityPublished={async (activity) => {
         await onActivityPublished(activity);
         if (rideshareLinkParent && activity.activityType === 'rideshare') {
@@ -127,7 +127,7 @@ export const ExploreExperienceOverlays = ({
       planWithBuddyUserId={planWithBuddyUserId}
       composeAreaSlug={composeAreaSlug}
       onOpenHostApplication={onOpenHostApplication}
-      onContributeSubmitted={selection.handleContributeSubmitted}
+      onAddSubmitted={selection.handleAddSubmitted}
     />
 
     <HostActivityCancelDialog

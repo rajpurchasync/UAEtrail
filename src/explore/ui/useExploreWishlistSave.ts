@@ -2,8 +2,8 @@ import { joinAuthPath } from '../../config/routingCatalog';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { ExploreCardModel } from '../exploreCardModel';
-import { resolveExploreWishlistTarget } from '../exploreCardModel';
+import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
+import { resolveExploreWishlistTarget } from '../../discovery/discoveryCardModel';
 import {
   addWishlistTarget,
   checkWishlistTarget,
@@ -22,7 +22,7 @@ export type ExploreWishlistSaveState = {
   toggle: () => Promise<void>;
 };
 
-export const useExploreWishlistSave = (card: ExploreCardModel): ExploreWishlistSaveState => {
+export const useExploreWishlistSave = (card: DiscoveryCardModel): ExploreWishlistSaveState => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();

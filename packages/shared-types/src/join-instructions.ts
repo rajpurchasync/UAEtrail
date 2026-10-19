@@ -10,9 +10,6 @@ export const extractJoinInstructionLines = (requirements: string[] | null | unde
 export const hasJoinInstructions = (requirements: string[] | null | undefined): boolean =>
   extractJoinInstructionLines(requirements).length > 0;
 
-/** Alias used by API publish validation. */
-export const hasActivityJoinInstructions = hasJoinInstructions;
-
 /** Requirements shown on activity detail — excludes mandatory join instructions. */
 export const extractNonJoinRequirements = (requirements: string[] | null | undefined): string[] =>
   (requirements ?? [])

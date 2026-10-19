@@ -1,5 +1,5 @@
 import type { MouseEvent, ReactNode } from 'react';
-import type { ExploreCardModel } from '../../explore/exploreCardModel';
+import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import { DirectionsControl } from '../../components/ui/DirectionsControl';
 import { EXPLORE_BRAND_ACTIVE, EXPLORE_TYPE } from '../../config/exploreTheme';
 import type { ListFeedFooterButton, ListFeedFooterModel } from '../listFeedFooterActions';
@@ -45,12 +45,12 @@ const variantStyles: Record<
 };
 
 type ListFeedWireFooterButtonsProps = {
-  card: ExploreCardModel;
+  card: DiscoveryCardModel;
   model: ListFeedFooterModel;
   joinStateLoading: boolean;
   variant: ListFeedWireFooterVariant;
-  onPrimaryFooter: (card: ExploreCardModel) => void;
-  onSecondaryFooter: (card: ExploreCardModel) => void;
+  onPrimaryFooter: (card: DiscoveryCardModel) => void;
+  onSecondaryFooter: (card: DiscoveryCardModel) => void;
 };
 
 const stopPropagation = (event: MouseEvent) => event.stopPropagation();

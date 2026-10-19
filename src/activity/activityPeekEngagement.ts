@@ -7,11 +7,11 @@ import {
   type ActivityViewerAccessDTO,
   type ActivityViewerAccessLevel,
 } from '@uaetrail/shared-types';
-import type { ExploreCardModel } from '../explore/exploreCardModel';
+import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
 import type { JoinRequestUiState } from '../utils/joinRequestUi';
 
 const levelForPeekActions = (
-  card: ExploreCardModel,
+  card: DiscoveryCardModel,
   joinUiState?: JoinRequestUiState
 ): ActivityViewerAccessLevel | null => {
   const level = card.viewerAccess?.level;
@@ -45,7 +45,7 @@ const myParticipationFromJoinUi = (joinUiState?: JoinRequestUiState): unknown | 
 
 /** L1 policy when map enrich omitted wire peek actions — align with detail join context (R1.4). */
 const resolvePeekFallbackEngagementPolicy = (
-  card: ExploreCardModel,
+  card: DiscoveryCardModel,
   joinUiState?: JoinRequestUiState
 ) => {
   const level = levelForPeekActions(card, joinUiState);
@@ -135,7 +135,7 @@ export const filterActivityMapPeekFooterActions = (
 
 /** Resolved wire actions for an activity map peek (API list or computed fallback). */
 export const resolveActivityMapPeekActions = (
-  card: ExploreCardModel,
+  card: DiscoveryCardModel,
   joinUiState?: JoinRequestUiState
 ): ActivityMapPeekAction[] => {
   if (card.source !== 'activity') return [];
@@ -169,7 +169,7 @@ const defaultPeekStrips = (): ActivityEngagementStripsDTO => ({
 
 /** Peek strip affordances (API wire or L1 fallback). */
 export const resolveActivityMapPeekStrips = (
-  card: ExploreCardModel,
+  card: DiscoveryCardModel,
   joinUiState?: JoinRequestUiState
 ): ActivityEngagementStripsDTO => {
   if (card.source !== 'activity') return defaultPeekStrips();
@@ -184,17 +184,17 @@ export const resolveActivityMapPeekStrips = (
 };
 
 export const resolveActivityPresentationPeekActions = (
-  card: ExploreCardModel,
+  card: DiscoveryCardModel,
   joinUiState?: JoinRequestUiState
 ): ActivityMapPeekAction[] => resolveActivityMapPeekActions(card, joinUiState);
 
 /** Map enrich already attached wire CTAs — peek must not wait on `useActivityJoinContext`. */
-export const activityPeekHasMapWireActions = (card: ExploreCardModel): boolean =>
+export const activityPeekHasMapWireActions = (card: DiscoveryCardModel): boolean =>
   Boolean(card.viewerAccess?.mapPeekActions && card.viewerAccess.mapPeekActions.length > 0);
 
 /** Legacy join UI (`JoinRequestActions`) when the server sent no wire peek affordances. */
 export const activityMapPeekShowsJoinFlow = (
-  card: ExploreCardModel,
+  card: DiscoveryCardModel,
   joinUiState?: JoinRequestUiState
 ): boolean => {
   if (card.source !== 'activity' || !card.showJoinActions) return false;
@@ -203,7 +203,7 @@ export const activityMapPeekShowsJoinFlow = (
 
 /** Fetch join context when peek uses wire join actions or legacy join flow. */
 export const activityMapPeekNeedsJoinContext = (
-  card: ExploreCardModel,
+  card: DiscoveryCardModel,
   joinUiState?: JoinRequestUiState
 ): boolean => {
   if (card.source !== 'activity' || !card.showJoinActions) return false;
@@ -216,7 +216,7 @@ export const activityMapPeekNeedsJoinContext = (
 
 /** Host peek crew-chat affordance — used to skip join context fetch. */
 export const activityMapPeekSkipsJoinContext = (
-  card: ExploreCardModel,
+  card: DiscoveryCardModel,
   joinUiState?: JoinRequestUiState
 ): boolean =>
   resolveActivityMapPeekActions(card, joinUiState).some((action) => action.id === 'open_crew_chat');
@@ -231,7 +231,7 @@ export type ActivityPeekEngagement = {
 
 /** Explore map peek + list feed — one bundle for wire actions and join-context fetch rules. */
 export const resolveActivityPeekEngagement = (
-  card: ExploreCardModel,
+  card: DiscoveryCardModel,
   joinUiState?: JoinRequestUiState
 ): ActivityPeekEngagement => {
   const mapPeekActions = resolveActivityMapPeekActions(card, joinUiState);

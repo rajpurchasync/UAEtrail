@@ -10,11 +10,11 @@
 
 **Domain lens** ([`DOMAIN.md`](./DOMAIN.md) § What · Where · Who · How): **Host** / **Find crew (fixed)** → **What** (Activity). **Find crew (flexible)** → `member_availability` (people layer, no map pin). **Add on map** → **Where** (Place or Facility). **Who** (Person / Host / Operator) is chosen when publishing or on detail — not a FAB branch. **How** (join, RSVP, approvals) is **context only** on activity/place/facility surfaces — `viewerAccess`, not new nouns.
 
-**Publishing:** The **host is always a signed-in user**. **Host** shows **Publish as** when the member has multiple activity-capable tenants (`OrganizePublishAsField`); wire uses `x-organisation-id` ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md)). **Operator** (agency / shop / guide workspace) is **`/operator/*`** — not on the FAB.
+**Publishing:** The **host is always a signed-in user**. **Host** shows **Publish as** when the member has multiple activity-capable tenants (`HostingPublishAsField`); wire uses `x-organisation-id` ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md)). **Operator** (agency / shop / guide workspace) is **`/operator/*`** — not on the FAB.
 
 Companion docs: [`DOCS_INDEX.md`](./DOCS_INDEX.md), [`NORTHSTAR.md`](./NORTHSTAR.md), [`MEMBER_MODEL.md`](./MEMBER_MODEL.md), [`DOMAIN.md`](./DOMAIN.md), [`NAVIGATION.md`](./NAVIGATION.md), [`COMMUNICATION.md`](./COMMUNICATION.md), [`TRIPS_HOST_MANAGE.md`](./TRIPS_HOST_MANAGE.md), [`experiment/explore-ux-spec.md`](./experiment/explore-ux-spec.md).
 
-Code (today): `src/explore/compose.ts`, `CreateIntentSheet.tsx`, `SeekFlexibleComposeSheet.tsx`, `hostingFlow.ts` / `hostingFlowEngine.ts`, `seekingFlowEngine.ts`, `contributeFlow.ts`.
+Code (today): `src/explore/compose.ts`, `CreateIntentSheet.tsx`, `SeekFlexibleComposeSheet.tsx`, `hostingFlowEngine.ts` / `hostingFlows/*`, `seekingFlowEngine.ts`, `addFlow.ts`.
 
 **Status:** Spec **approved (CPC)** · **Host · Find crew · Add on map** FAB + compose wire wire **shipped** (legacy compose aliases retained; see [Implementation status](#implementation-status))
 
@@ -34,7 +34,7 @@ Code (today): `src/explore/compose.ts`, `CreateIntentSheet.tsx`, `SeekFlexibleCo
 | Add a place or facility on the map | **Contribute** as API name; backend = place/facility **submit** |
 | Going from | Meeting point Â· Leaving from (in activity flows) |
 | Iâ€™m going | Request to join (when RSVP mode) |
-| Request to join | Organizer approval workflow (in consumer copy) |
+| Request to join | Host approval workflow (in consumer copy) |
 | Do people need my OK to join? | Participation mode Â· joinMode architecture |
 
 ---
@@ -49,7 +49,7 @@ Code (today): `src/explore/compose.ts`, `CreateIntentSheet.tsx`, `SeekFlexibleCo
 |--------|--------------|--------|
 | **Host** | Publish an outing you lead | Kind grid → `hostingFlowEngine` / `hostingFlows/*` |
 | **Find crew** | Looking for people to go with | **Post on map** (kind → `seekingFlowEngine`) or **Share availability** (`member_availability` sheet) |
-| **Add on map** | Trail, camp, outdoor spot, or **facility** | Place vs facility → contribute submit |
+| **Add on map** | Trail, camp, outdoor spot, or **facility** | Place vs facility → catalog submit |
 
 **Disambiguation:** Bottom nav **My Plans** (`/plan`) = upcoming commitments + availability — not this FAB.
 
@@ -84,14 +84,14 @@ Kind grid (hiking, camping, rideshare, event, other activity) → hosting wizard
 
 | UI label | Maps to | Default participation |
 |----------|---------|------------------------|
-| **Hiking** | `activityType: hiking` | Organizer approval |
-| **Camping** | `activityType: camping` | Organizer approval |
-| **Event** | `activityType: event` | Open RSVP (**Iâ€™m going**) |
-| **Activity** | Generic buddy plan (see below) | Organizer approval |
+| **Hiking** | `activityType: hiking` | Host approval |
+| **Camping** | `activityType: camping` | Host approval |
+| **Event** | `activityType: event` | Open RSVP (**I'm going**) |
+| **Activity** | Generic buddy plan (see below) | Host approval |
 
-**Organize / publish** requires **profile completion** (`profileComplete` on `GET /me/status` — same member details as `/welcome`). `publish.canPublish` provisions a community tenant on first check. Gate failure → `/welcome?redirect=…` (not Pro Membership). **Join / participate** on outings requires **sign-in only** — not profile completion. **Pro membership** (`/profile/pro-membership`) adds a **guide**, **agency**, or **shop** public profile — not community Organize. **Paid** pricing (`canHostPaidActivities` = linked business tenant) requires publish-as **agency, shop, or partner**. Individual professionals (no business license on platform) stay **free + shared** only.
+**Host / publish** requires **profile completion** (`profileComplete` on `GET /me/status` — same member details as `/welcome`). `publish.canPublish` provisions a community tenant on first check. Gate failure → `/welcome?redirect=…` (not Pro Membership). **Join / participate** on outings requires **sign-in only** — not profile completion. **Pro membership** (`/profile/pro-membership`) adds a **guide**, **agency**, or **shop** public profile — not community Host / publish. **Paid** pricing (`canHostPaidActivities` = linked business tenant) requires publish-as **agency, shop, or partner**. Individual professionals (no business license on platform) stay **free + shared** only.
 
-**Activity pricing (Organize + host publish):** one mode per outing — `free` · `shared` · `paid` — with a single indicative AED amount when not free. **No tiered packages** and **no in-app payments** (amounts are informational; members settle with the host offline). **Who may set which mode** (`allowedActivityPricingModes`): everyone with Organize → **free + shared**. **Paid** only when the member is **linked to a verified business** (`hostTiers.business`) **and** publishes as **agency, shop, or partner** — not as an individual guide (community / pro guide). External registration URLs are **parked** (not in product UI/API).
+**Activity pricing (host / publish):** one mode per outing — `free` · `shared` · `paid` — with a single indicative AED amount when not free. **No tiered packages** and **no in-app payments** (amounts are informational; members settle with the host offline). **Who may set which mode** (`allowedActivityPricingModes`): everyone who can host → **free + shared**. **Paid** only when the member is **linked to a verified business** (`hostTiers.business`) **and** publishes as **agency, shop, or partner** — not as an individual guide (community / pro guide). External registration URLs are **parked** (not in product UI/API).
 
 ### Seeking (was Find)
 
@@ -119,7 +119,7 @@ Any signed-in member — no host approval to post seeking.
 
 **Submissions inventory:** `/profile/submissions` (redirect from `/contributions`) — pending moderation; no full public detail until approved ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.4.1).
 
-**Organize venue pick:** Hiking/camping use **`GET /places/catalog`** (legacy alias `/places/registry`; see `DOMAIN.md` § Place catalog). Publish: `src/services/organizeActivityPublish.ts` → **`POST /host/activities`** + **`POST /host/activities/:id/publish`** with active tenant header (`buildHostActivityPublishPayload` in `activityPublishPayload.ts`; client: `createHostActivity` / `publishHostActivity` — not `*OrganisationActivity*`). **Admin place/venue catalog** (trails, camps, event venues): `/admin/places` (`AdminPlaces.tsx`) — not the explore compose wizard.
+**Organize venue pick:** Hiking/camping use **`GET /places/catalog`** (legacy alias `/places/registry`; see `DOMAIN.md` § Place catalog). Publish: `src/services/hostingActivityPublish.ts` → **`POST /host/activities`** + **`POST /host/activities/:id/publish`** with active tenant header (`buildHostActivityPublishPayload` in `activityPublishPayload.ts`; client: `createHostActivity` / `publishHostActivity` — not `*OrganisationActivity*`). **Admin place/venue catalog** (trails, camps, event venues): `/admin/places` (`AdminPlaces.tsx`) — not the explore compose wizard.
 
 ---
 
@@ -127,7 +127,7 @@ Any signed-in member — no host approval to post seeking.
 
 **Intent:** runs, climbs, workshops, social outings â€” fifth **outing category** (`activities`), not hiking/camp/event/rideshare.
 
-**Wizard:** `host:activity` → **FLOW-05** (step order in `hostingFlows/activities.ts`, UI in `organizeWizard/steps/`):
+**Wizard:** `host:activity` → **FLOW-05** (step order in `hostingFlows/activities.ts`, UI in `hostingWizard/steps/`):
 
 1. **Activity type** â€” chip (run, climb, yoga, social, â€¦) â†’ `outingTopic` on publish
 2. **Title** â†’ **When** â†’ **Where (meeting)** pin early
@@ -256,7 +256,7 @@ Optional **published rideshare** linked to a **parent** plan (hiking, camping, o
 | **Publish child rideshare** with `linkedActivityId` → parent + `linkedRideshareActivityId` on parent | Add seats / transport while the parent stays open (Find or Organize) |
 | **`POST /me/seeking-posts/:id/link-activity`** | **Graduate** find crew onto a **new hosted** outing (`convertedActivityId`, intent fulfilled) — **not** for publishing a transport child |
 
-**Find → Link transport** prefill must set `linkToParentActivityId` to the **seeking activity id** (`resolveSeekingParentActivityId` in `linkActivityRideshareOffer.ts`). **Never** call `link-activity` when publishing `activityType: rideshare` (`organizeActivityPublish.ts`).
+**Find → Link transport** prefill must set `linkToParentActivityId` to the **seeking activity id** (`resolveSeekingParentActivityId` in `linkActivityRideshareOffer.ts`). **Never** call `link-activity` when publishing `activityType: rideshare` (`hostingActivityPublish.ts`).
 
 **Gates:** profile `canPublish` to create transport; Pro `canOfferTransport` / `canAddLinkedRide` for peek/manage CTAs (see `activity-viewer-entitlements.ts`).
 
@@ -277,11 +277,11 @@ Tracked in [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) **§8.2 S12**. Phases:
 
 ## Reorganize a past outing (host)
 
-From **Activities** hub or host console: **Reorganize on map** opens explore with the matching organize wizard prefilled from the prior row (`organizeFromActivity.ts`). **Publish always creates a new activity id** (audit lineage via optional `clonedFromActivityId` on create).
+From **Activities** hub or host console: **Reorganize on map** opens explore with the matching organize wizard prefilled from the prior row (`hostingFromActivity.ts`). **Publish always creates a new activity id** (audit lineage via optional `clonedFromActivityId` on create).
 
 **Duplicate** in the host console still creates a **server draft** for the legacy activity form — same source outing, different UX.
 
-Deep link: `exploreReorganizeActivityPath(activityId, kind)` in `src/explore/routing.ts`.
+Deep link: `exploreHostFromActivityPath(activityId, kind)` in `src/explore/routing.ts`.
 
 ---
 
@@ -337,7 +337,7 @@ Track what is **spec** vs **shipped**. Update this table in the same PR that lan
 | Profile Up next unified feed | ✅ | ✅ |
 | Warm copy pass in wizards | ✅ | ✅ |
 | `outingCategory` / `outingTopic` on host publish | ✅ | ✅ (host create; map projection + Others browse filters) |
-| Host **area via place** (registry `place.areaId` only) | ✅ | ✅ (`validateOrganizePlaceArea`, publish gate) |
+| Host **area via place** (registry `place.areaId` only) | ✅ | ✅ (`validateHostingPlaceArea`, publish gate) |
 | Find crew (fixed) **area + pin** step | ✅ | ✅ (`curatedArea`, seeking `activities.areaId`) |
 | Add on map place **area-first** | ✅ | ✅ (`curatedArea`, `areaId` on submit) |
 | Host **no custom trail anchor** (catalog or Add) | ✅ | ✅ (structured); rideshare anchor uses bounds match + `areaId` on place |
@@ -360,8 +360,8 @@ Track what is **spec** vs **shipped**. Update this table in the same PR that lan
 |------|---------|
 | **`Explore*` on hooks/components** | Map/browse shell only (`useExploreMapViewport`, pin peek). **Not** FAB compose — compose mounts on `/explore` **and** `/list`. |
 | **`src/explore/create/`** | Cross-surface compose: URL state, guards, `ComposeHost`, hosting prefill/reorganize. |
-| **Product verbs in shell props** | `hostWizardOpen` on `ComposeHost` (+ `planSeekingWizardOpen`, `contributeWizardOpen`); hook/model may still expose `planHostingWizardOpen` alias. Product = Host / Find crew / Add on map. |
-| **Wizard modules (catalog `wizard` field)** | `hostingFlow` → `hostingFlowEngine.ts` + `hostingFlows/*`; `seekingFlow` → `seekingFlowEngine.ts`. Facade: `hostingFlow.ts`. Removed: `seekingFlow.ts`, `organizeFlow.ts`, `organizeFlows/`, `createOrganize/`, `hostingCatalog/`, `CreateActivityFlow.tsx`. |
+| **Product verbs in shell props** | `hostWizardOpen` on `ComposeHost` (+ `seekFixedWizardOpen`, `addWizardOpen`); hook/model may still expose `planHostingWizardOpen` alias. Product = Host / Find crew / Add on map. |
+| **Wizard modules (catalog `wizard` field)** | `hostingFlow` → `hostingFlowEngine.ts` + `hostingFlows/*`; `seekingFlow` → `seekingFlowEngine.ts`. Removed: `hostingFlow.ts` facade, `seekingFlow.ts`, `organizeFlow.ts`, `organizeFlows/`, `createOrganize/`, `hostingCatalog/`, `CreateActivityFlow.tsx`. |
 | **“Catalog” in code** | **Place/facility inventory only** (`GET */catalog`, Add-on-map submit). Per-kind **hosting** wizards = `hostingFlows` (`HostingKindFlow`) — not catalog. |
 | **“Plan” in code** | Bottom nav `/plan` (schedule + availability) — **not** the FAB. FAB wire: `host:*` \| `seek:*` \| `add:*` (aliases `plan:*:hosting|seeking`, `contribute:*`). |
 | **Compose flow ids** | Canonical v3 ids + legacy `plan.*` / `contribute.*` / `organize.*` / `find.*` / `add.*` via `composeFlowIds.ts`. |
@@ -374,10 +374,10 @@ One responsive stack — not separate mobile/desktop implementations.
 | Product (FAB) | UI host / wizard | Flow logic (legacy module names) |
 |----------------------------|------------------|----------------------------------|
 | Compose shell | `create/ComposeHost.tsx`, `CreateIntentSheet.tsx` | `compose.ts`, `create/composeRouteGuard.ts`, `create/hooks/useComposeRoute.ts` |
-| **Host** | `create/hosting/HostingFlowHost` → `CreateHostingActivityFlow.tsx` | `hostingFlow.ts` → `hostingFlowEngine.ts`, `hostingFlows/*` |
+| **Host** | `create/hosting/HostingFlowHost` → `CreateHostingActivityFlow.tsx` | `hostingFlowEngine.ts`, `hostingFlows/*` |
 | **Find crew** (fixed) | `CreateSeekingFlow.tsx` | `seekingFlowEngine.ts` |
 | **Find crew** (flexible) | `SeekFlexibleComposeSheet.tsx` | `PlanAvailabilitySection` (`variant=fab`) |
-| **Add on map** | `CreateContributeFlow.tsx`, `CreateContributeFacilityFlow.tsx` | `contributeFlow.ts`, `contributeFacilityFlow.ts` |
+| **Add on map** | `CreateAddFlow.tsx`, `CreateAddFacilityFlow.tsx` | `addFlow.ts`, `addFacilityFlow.ts` |
 | Map browse shell | `ExploreExperience.tsx` | `useExploreExperienceModel`, map hooks |
 | Place picker | `CreatePlacePicker.tsx` | — |
 
@@ -413,9 +413,9 @@ Do **not** ship Event organize with RSVP marketing until Phase C exists.
 | Explore URL helpers | `src/explore/routing.ts` (`explorePath`, `compose=…`) |
 | FAB entry | `CreateIntentSheet.tsx` |
 | Map shell | `ExploreExperience.tsx`, `useExploreExperienceModel` (map/browse hooks only) |
-| Plan → hosting wizard | `CreateHostingActivityFlow.tsx`, `hostingFlowEngine.ts`, `hostingFlows/*` |
-| Plan → seeking wizard | `CreateSeekingFlow.tsx`, `seekingFlowEngine.ts` |
-| Contribute wizard | `CreateContributeFlow.tsx`, `contributeFlow.ts` → **CPC-9b:** `placeSubmitFlow.ts` / `facilitySubmitFlow.ts`; `catalogPlaceSubmit.ts` / `catalogFacilitySubmit.ts` |
+| Hosting wizard | `CreateHostingActivityFlow.tsx`, `hostingFlowEngine.ts`, `hostingFlows/*` |
+| Seeking wizard | `CreateSeekingFlow.tsx`, `seekingFlowEngine.ts` |
+| Add on map wizard | `CreateAddFlow.tsx`, `CreateAddFacilityFlow.tsx`, `addFlow.ts`, `addFacilityFlow.ts`; `catalogPlaceSubmit.ts` / `catalogFacilitySubmit.ts` |
 | Map pin UI | `CreatePlacePicker.tsx` |
 | Join / RSVP UI | `JoinRequestModal.tsx`, `ActivityDetail.tsx`, `joinRequestUi.ts` |
 | API | activities publish, `POST /me/seeking-posts`, `POST /me/places` / `POST /me/facilities` |

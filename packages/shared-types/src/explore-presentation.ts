@@ -12,7 +12,7 @@ import {
   type ExploreMapPersonDTO,
 } from './explore-person.js';
 import type { PublishingProfileKind } from './publishing-profile-kind.js';
-import { isGenericDemandPlanTitle, type DemandTitleKind } from './demand-titles.js';
+import { isGenericSeekingTitle, type SeekingTitleKind } from './seeking-titles.js';
 import {
   activityJoinCtaLabel,
   resolveParticipationMode,
@@ -37,7 +37,7 @@ import {
   type ExploreMapSourceWire,
 } from './wire-lexicon.js';
 
-export type ExploreCardSource = ExploreMapSourceWire;
+export type DiscoveryCardSource = ExploreMapSourceWire;
 
 export {
   FACILITY_MAP_SOURCE,
@@ -54,12 +54,12 @@ export const CATALOG_PLACE_MAP_SOURCE = PLACE_MAP_SOURCE;
 export const LEGACY_VENUE_MAP_SOURCE = BWL_EXPLORE_MAP_SOURCE.VENUE_LEGACY;
 /** @deprecated Use {@link isGeographyMapSource} (place + facility) or {@link isPlaceMapSource}. */
 export const isCatalogPlaceMapSource = isGeographyMapSource;
-export type ExploreCardKind = 'hiking' | 'camping' | 'event' | 'rideshare' | 'shop' | 'agency' | 'area';
+export type DiscoveryCardKind = 'hiking' | 'camping' | 'event' | 'rideshare' | 'shop' | 'agency' | 'area';
 
-export type ExplorePresentationBuildInput = {
+export type DiscoveryCardBuildInput = {
   id: string;
-  kind: ExploreCardKind | 'hiking' | 'camping' | 'event' | 'shop' | 'agency' | 'rideshare';
-  source: ExploreCardSource;
+  kind: DiscoveryCardKind | 'hiking' | 'camping' | 'event' | 'shop' | 'agency' | 'rideshare';
+  source: DiscoveryCardSource;
   activityMode?: ExploreActivityMode | null;
   participantIntentId?: string | null;
   title: string;
@@ -96,7 +96,7 @@ export type ExplorePresentationBuildInput = {
   placeKind?: PlaceKind | null;
 };
 
-const itemParticipationMode = (item: ExplorePresentationBuildInput): ParticipationMode =>
+const itemParticipationMode = (item: DiscoveryCardBuildInput): ParticipationMode =>
   resolveParticipationMode(item.activity?.participationMode, item.activity?.requirements);
 
 const PLACEHOLDER_FIRST_NAMES = new Set(['pending', 'user', 'guest', 'account', 'new']);
@@ -135,7 +135,7 @@ export const CAMPING_ACTIVITY_EMOJI = '🏕️';
 export const CAMPING_VENUE_EMOJI = '⛺';
 
 /** “Looking for” / participant demand pins (hand raised). */
-export const DEMAND_EMOJI = '🙋';
+export const SEEKING_EMOJI = '🙋';
 
 /** Explore map chrome — places / venue catalog layer (trails, spots, shops). */
 export const EXPLORE_PLACES_LAYER_EMOJI = '📍';
@@ -165,8 +165,8 @@ export const MAP_LAYER_FILTER_EMOJI = {
 
 /** Resolve map item source; falls back to id prefix when source is missing from cache/API. */
 export const resolveExploreItemSource = (
-  item: Pick<ExplorePresentationBuildInput, 'id' | 'source' | 'activityMode' | 'participantIntentId'>
-): ExploreCardSource => {
+  item: Pick<DiscoveryCardBuildInput, 'id' | 'source' | 'activityMode' | 'participantIntentId'>
+): DiscoveryCardSource => {
   const { id, source } = item;
   if (exploreMapItemIsSeeking(item)) return 'activity';
   if (
@@ -190,8 +190,8 @@ export const resolveExploreItemSource = (
 
 /** Map pin emoji source — id prefix wins so venues are never mis-tagged. */
 export const resolveMapPinItemSource = (
-  item: Pick<ExplorePresentationBuildInput, 'id' | 'source' | 'activityMode' | 'participantIntentId'>
-): ExploreCardSource => {
+  item: Pick<DiscoveryCardBuildInput, 'id' | 'source' | 'activityMode' | 'participantIntentId'>
+): DiscoveryCardSource => {
   const { id } = item;
   if (id.startsWith('area:')) return 'area';
   if (id.startsWith('facility:')) return FACILITY_MAP_SOURCE;
@@ -203,10 +203,11 @@ export const resolveMapPinItemSource = (
 };
 
 export const resolveMapPinEmoji = (
-  kind: ExploreCardKind,
-  source: ExploreCardSource = 'activity',
+  kind: DiscoveryCardKind,
+  source: DiscoveryCardSource = 'activity',
   _rideshareEndpoint?: 'from' | 'to',
-  placeKind?: PlaceKind
+  placeKind?: PlaceKind,
+  seeking?: boolean
 ): string => {
   if (placeKind && isFacilityPlaceKind(placeKind)) {
     return facilityPlaceKindPinEmoji(placeKind);
@@ -224,9 +225,9 @@ export const resolveMapPinEmoji = (
 
   if (source === 'shop') return SHOP_MAP_EMOJI;
   if (source === 'agency') return '🏢';
-  if (source === 'demand') {
+  if (seeking || source === BWL_EXPLORE_MAP_SOURCE.DEMAND_LEGACY) {
     if (kind === 'rideshare') return RIDESHARE_EMOJI;
-    return DEMAND_EMOJI;
+    return SEEKING_EMOJI;
   }
 
   if (kind === 'rideshare') return RIDESHARE_EMOJI;
@@ -239,10 +240,10 @@ export const resolveMapPinEmoji = (
 };
 
 interface ExploreHeadlineInput extends ExploreFeaturedPersonInput {
-  source: ExploreCardSource;
+  source: DiscoveryCardSource;
   /** Set when wire uses `activity` + `activityMode: seeking` (not legacy `source: demand`). */
   isSeekingPin?: boolean;
-  kind: ExploreCardKind;
+  kind: DiscoveryCardKind;
   title: string;
   hostName?: string | null;
   tenantName?: string | null;
@@ -257,18 +258,16 @@ interface ExploreHeadlineInput extends ExploreFeaturedPersonInput {
   slotsAvailable?: number;
   slotsTotal?: number;
   participantCount?: number;
-  activity?: ExplorePresentationBuildInput['activity'];
+  activity?: DiscoveryCardBuildInput['activity'];
 }
 
 const headlineIsSeeking = (input: ExploreHeadlineInput): boolean =>
-  input.isSeekingPin === true ||
-  input.source === 'demand' ||
-  exploreMapItemIsSeeking(input);
+  input.isSeekingPin === true || exploreMapItemIsSeeking(input);
 
 const joinExploreParts = (...parts: (string | null | undefined)[]): string =>
   parts.filter((part): part is string => Boolean(part?.trim())).join(' - ');
 
-const isLegacyAutoTitle = (title: string, kind: ExploreCardKind): boolean => {
+const isLegacyAutoTitle = (title: string, kind: DiscoveryCardKind): boolean => {
   const trimmed = title.trim();
   if (!trimmed) return true;
   if (kind === 'hiking' && /^hiking\b/i.test(trimmed)) return true;
@@ -277,14 +276,14 @@ const isLegacyAutoTitle = (title: string, kind: ExploreCardKind): boolean => {
   return false;
 };
 
-const mapDemandTitleKind = (kind: ExploreCardKind): DemandTitleKind => {
+const mapSeekingTitleKind = (kind: DiscoveryCardKind): SeekingTitleKind => {
   if (kind === 'hiking' || kind === 'camping' || kind === 'rideshare' || kind === 'event') {
     return kind;
   }
   return 'other';
 };
 
-const fallbackPlanPhrase = (kind: ExploreCardKind): string => {
+const fallbackSeekingTitlePhrase = (kind: DiscoveryCardKind): string => {
   switch (kind) {
     case 'hiking':
       return 'for a hike';
@@ -299,10 +298,10 @@ const fallbackPlanPhrase = (kind: ExploreCardKind): string => {
   }
 };
 
-/** Turn a user title into a mid-sentence plan phrase, e.g. "See sunrise at Kite Beach" → "to see sunrise at Kite Beach". */
-export const formatPlanPhrase = (title: string, kind: ExploreCardKind): string => {
+/** Turn a user title into a mid-sentence phrase, e.g. "See sunrise at Kite Beach" → "to see sunrise at Kite Beach". */
+export const formatSeekingTitlePhrase = (title: string, kind: DiscoveryCardKind): string => {
   const trimmed = title.trim();
-  if (!trimmed || isLegacyAutoTitle(trimmed, kind)) return fallbackPlanPhrase(kind);
+  if (!trimmed || isLegacyAutoTitle(trimmed, kind)) return fallbackSeekingTitlePhrase(kind);
 
   const lower = trimmed.charAt(0).toLowerCase() + trimmed.slice(1);
   if (/^(to|for|on|at|in)\s/i.test(trimmed)) return lower;
@@ -312,7 +311,7 @@ export const formatPlanPhrase = (title: string, kind: ExploreCardKind): string =
   return `to ${lower}`;
 };
 
-const demandKindLabel = (kind: ExploreCardKind): string => {
+const seekingKindLabel = (kind: DiscoveryCardKind): string => {
   switch (kind) {
     case 'rideshare':
       return 'Rideshare';
@@ -327,13 +326,13 @@ const demandKindLabel = (kind: ExploreCardKind): string => {
   }
 };
 
-/** Prefer the requester's own words; fall back to the demand type label when title is generic. */
-const resolveDemandActivityHighlight = (title: string, kind: ExploreCardKind): string => {
+/** Prefer the seeker's own words; fall back to the seeking type label when title is generic. */
+const resolveSeekingActivityHighlight = (title: string, kind: DiscoveryCardKind): string => {
   const trimmed = title.trim();
-  if (trimmed && !isGenericDemandPlanTitle(trimmed, mapDemandTitleKind(kind))) {
+  if (trimmed && !isGenericSeekingTitle(trimmed, mapSeekingTitleKind(kind))) {
     return trimmed;
   }
-  return demandKindLabel(kind);
+  return seekingKindLabel(kind);
 };
 
 const exploreScheduleDayStart = (value: Date): Date => {
@@ -543,7 +542,7 @@ export const normalizeRideshareRouteLabels = (
 export const buildExploreRouteLabel = (
   fromLabel?: string | null,
   toLabel?: string | null,
-  kind?: ExploreCardKind
+  kind?: DiscoveryCardKind
 ): string | null => {
   if (kind !== 'rideshare') return null;
   const { fromLabel: from, toLabel: to } = normalizeRideshareRouteLabels(fromLabel, toLabel);
@@ -665,10 +664,10 @@ const buildExploreListTitle = (input: ExploreHeadlineInput): string => {
   if (headlineIsSeeking(input)) {
     const user = exploreHeadlinePersonLabel(input);
     const trimmed = input.title.trim();
-    if (trimmed && !isGenericDemandPlanTitle(trimmed, mapDemandTitleKind(input.kind))) {
+    if (trimmed && !isGenericSeekingTitle(trimmed, mapSeekingTitleKind(input.kind))) {
       return trimmed;
     }
-    return `${resolveDemandActivityHighlight(input.title, input.kind)} · ${user}`;
+    return `${resolveSeekingActivityHighlight(input.title, input.kind)} · ${user}`;
   }
 
   if (input.kind === 'rideshare') {
@@ -680,7 +679,7 @@ const buildExploreListTitle = (input: ExploreHeadlineInput): string => {
 
   const host = exploreHeadlinePersonLabel(input);
   const day = formatExploreDayForHeadline(input.date);
-  return `${host} is going ${demandKindLabel(input.kind)}${day ?? ''}`;
+  return `${host} is going ${seekingKindLabel(input.kind)}${day ?? ''}`;
 };
 
 export const exploreHeadline = (input: ExploreHeadlineInput): string => {
@@ -697,7 +696,7 @@ export const exploreHeadline = (input: ExploreHeadlineInput): string => {
   if (headlineIsSeeking(input)) {
     const user = exploreHeadlinePersonLabel(input);
     const day = formatExploreDayForHeadline(input.date);
-    const activityLabel = resolveDemandActivityHighlight(input.title, input.kind);
+    const activityLabel = resolveSeekingActivityHighlight(input.title, input.kind);
     const lead = `${user} is looking for ${activityLabel}${day ?? ''}`;
     return joinExploreParts(lead, route ?? location, when);
   }
@@ -725,17 +724,17 @@ export const exploreHeadline = (input: ExploreHeadlineInput): string => {
     input.source === 'activity'
       ? buildExploreSpotsSegment(input.slotsAvailable, input.slotsTotal)
       : null;
-  return joinExploreParts(`${host} is going ${demandKindLabel(input.kind)}${day ?? ''}`, location, when, spots);
+  return joinExploreParts(`${host} is going ${seekingKindLabel(input.kind)}${day ?? ''}`, location, when, spots);
 };
 
-export type ExploreCardDetailIcon = 'location' | 'time' | 'spots' | 'route' | 'price';
+export type DiscoveryCardDetailIcon = 'location' | 'time' | 'spots' | 'route' | 'price';
 
-export interface ExploreCardDetail {
-  icon: ExploreCardDetailIcon;
+export interface DiscoveryCardDetail {
+  icon: DiscoveryCardDetailIcon;
   label: string;
 }
 
-export interface ExploreCardSections {
+export interface DiscoveryCardSections {
   plainTitle?: string | null;
   highlightName?: string | null;
   prefix?: string | null;
@@ -749,15 +748,15 @@ export interface ExploreCardSections {
   listTitle: string;
   listWhen: string | null;
   listGoing: string | null;
-  details: ExploreCardDetail[];
+  details: DiscoveryCardDetail[];
 }
 
-const finishExploreCardSections = (
+const finishDiscoveryCardSections = (
   input: ExploreHeadlineInput,
-  sections: Omit<ExploreCardSections, 'listTitle' | 'listWhen' | 'listGoing'> & {
+  sections: Omit<DiscoveryCardSections, 'listTitle' | 'listWhen' | 'listGoing'> & {
     participantCount?: number;
   }
-): ExploreCardSections => {
+): DiscoveryCardSections => {
   const { participantCount, ...rest } = sections;
   return {
     ...rest,
@@ -767,15 +766,15 @@ const finishExploreCardSections = (
   };
 };
 
-export const buildExploreCardSections = (input: ExploreHeadlineInput): ExploreCardSections => {
-  const details: ExploreCardDetail[] = [];
-  const push = (icon: ExploreCardDetailIcon, label?: string | null) => {
+export const buildDiscoveryCardSections = (input: ExploreHeadlineInput): DiscoveryCardSections => {
+  const details: DiscoveryCardDetail[] = [];
+  const push = (icon: DiscoveryCardDetailIcon, label?: string | null) => {
     if (label?.trim()) details.push({ icon, label: label.trim() });
   };
 
   if (isGeographyMapSource(input.source) || input.source === 'shop' || input.source === 'agency') {
     push('location', input.subtitle);
-    return finishExploreCardSections(input, {
+    return finishDiscoveryCardSections(input, {
       plainTitle: exploreHeadline(input),
       aboutLine: input.about?.trim() || null,
       details,
@@ -803,10 +802,10 @@ export const buildExploreCardSections = (input: ExploreHeadlineInput): ExploreCa
     push('location', input.kind !== 'rideshare' ? location : null);
     push('time', when);
 
-    return finishExploreCardSections(input, {
+    return finishDiscoveryCardSections(input, {
       highlightName: user,
       suffix: ' is looking for ',
-      activityHighlight: resolveDemandActivityHighlight(input.title, input.kind),
+      activityHighlight: resolveSeekingActivityHighlight(input.title, input.kind),
       dateHighlight: formatExploreDayForHeadline(input.date),
       details,
       partyLabel,
@@ -818,7 +817,7 @@ export const buildExploreCardSections = (input: ExploreHeadlineInput): ExploreCa
     push('route', route);
     push('time', when);
 
-    return finishExploreCardSections(input, {
+    return finishDiscoveryCardSections(input, {
       highlightName: host,
       suffix: ' is offering ',
       activityHighlight: 'Rideshare',
@@ -841,10 +840,10 @@ export const buildExploreCardSections = (input: ExploreHeadlineInput): ExploreCa
     push('route', activityTitle);
   }
 
-  return finishExploreCardSections(input, {
+  return finishDiscoveryCardSections(input, {
     highlightName: host,
     suffix: ' is going ',
-    activityHighlight: demandKindLabel(input.kind),
+    activityHighlight: seekingKindLabel(input.kind),
     dateHighlight: formatExploreDayForHeadline(input.date),
     details,
     participantCount: input.participantCount,
@@ -853,12 +852,12 @@ export const buildExploreCardSections = (input: ExploreHeadlineInput): ExploreCa
 };
 
 export const exploreSubtitle = (
-  item: ExplorePresentationBuildInput,
-  kind: ExploreCardKind,
-  source: ExploreCardSource
+  item: DiscoveryCardBuildInput,
+  kind: DiscoveryCardKind,
+  source: DiscoveryCardSource
 ): string | null => {
   if (isGeographyMapSource(source)) return item.subtitle?.trim() || null;
-  if (exploreMapItemIsSeeking(item) || source === 'demand') {
+  if (exploreMapItemIsSeeking(item)) {
     if (kind === 'rideshare') return null;
     return item.subtitle?.trim() || null;
   }
@@ -866,21 +865,21 @@ export const exploreSubtitle = (
   return item.subtitle ?? item.activity?.locationName ?? null;
 };
 
-export const exploreSpotsLabel = (item: ExplorePresentationBuildInput): string | null => {
-  if (exploreMapItemIsSeeking(item) || item.source === 'demand') return null;
+export const exploreSpotsLabel = (item: DiscoveryCardBuildInput): string | null => {
+  if (exploreMapItemIsSeeking(item)) return null;
   if (item.source !== 'activity') return null;
   return buildExploreSpotsSegment(item.slotsAvailable, item.slotsTotal);
 };
 
 export const explorePrimaryCtaLabel = (
-  source: ExploreCardSource,
+  source: DiscoveryCardSource,
   options?: {
     participationMode?: ParticipationMode | null;
     requirements?: string[] | null;
     seeking?: boolean;
   }
 ): string => {
-  if (source === 'demand' || options?.seeking) return 'Request to join';
+  if (options?.seeking) return 'Request to join';
   if (source === 'shop') return 'View shop';
   if (source === 'agency') return 'View agency';
   if (source === 'activity') {
@@ -893,11 +892,11 @@ export const explorePrimaryCtaLabel = (
 };
 
 export const exploreSecondaryCtaLabel = (
-  source: ExploreCardSource,
+  source: DiscoveryCardSource,
   options?: { websiteUrl?: string | null; seeking?: boolean }
 ): string | null => {
   if (source === 'activity' && !options?.seeking) return 'View details';
-  if (source === 'demand' || options?.seeking) return 'Message';
+  if (options?.seeking) return 'Message';
   if (source === 'shop' && options?.websiteUrl) return 'Visit website';
   return null;
 };
@@ -905,12 +904,12 @@ export const exploreSecondaryCtaLabel = (
 const exploreAgencyHint = (): string => 'Outdoor host on UAE Trail — see plans and connect.';
 
 export const exploreVenueHint = (
-  source: ExploreCardSource,
-  kind: ExploreCardKind,
+  source: DiscoveryCardSource,
+  kind: DiscoveryCardKind,
   shopPresence?: 'physical' | 'online' | null,
   seeking?: boolean
 ): string | null => {
-  if (source === 'demand' || seeking) return null;
+  if (seeking) return null;
   if (source === 'shop') {
     return shopPresence === 'online' ? 'Online gear partner' : 'Gear shop on the map';
   }
@@ -921,9 +920,9 @@ export const exploreVenueHint = (
   return 'Event location';
 };
 
-export interface ExploreCardPresentationDTO {
-  kind: ExploreCardKind;
-  source: ExploreCardSource;
+export interface DiscoveryCardPresentationDTO {
+  kind: DiscoveryCardKind;
+  source: DiscoveryCardSource;
   emoji: string;
   headline: string;
   listTitle: string;
@@ -937,23 +936,23 @@ export interface ExploreCardPresentationDTO {
   shareText: string | null;
   routeLabel: string | null;
   whenLabel: string | null;
-  sections: ExploreCardSections;
+  sections: DiscoveryCardSections;
 }
 
-const isRideshareExploreItem = (item: ExplorePresentationBuildInput): boolean =>
+const isRideshareExploreItem = (item: DiscoveryCardBuildInput): boolean =>
   item.kind === 'rideshare' || item.activity?.activityType === 'rideshare';
 
-const resolveExploreCardKind = (item: ExplorePresentationBuildInput): ExploreCardKind => {
+const resolveDiscoveryCardKind = (item: DiscoveryCardBuildInput): DiscoveryCardKind => {
   if (item.kind === 'shop') return 'shop';
   if (item.kind === 'agency') return 'agency';
   if (isRideshareExploreItem(item)) return 'rideshare';
-  return item.kind as ExploreCardKind;
+  return item.kind as DiscoveryCardKind;
 };
 
-/** Server-side explore card copy — single source of truth for map/list/sheet headlines. */
-export const buildExploreCardPresentation = (
-  item: ExplorePresentationBuildInput
-): ExploreCardPresentationDTO => {
+/** Server-side discovery card copy — single source of truth for map/list/sheet headlines. */
+export const buildDiscoveryCardPresentation = (
+  item: DiscoveryCardBuildInput
+): DiscoveryCardPresentationDTO => {
   const source = resolveExploreItemSource(item);
   if (source === 'area') {
     const subtitle = item.subtitle?.trim() || null;
@@ -980,7 +979,7 @@ export const buildExploreCardPresentation = (
       },
     };
   }
-  const kind = resolveExploreCardKind(item);
+  const kind = resolveDiscoveryCardKind(item);
   const isSeekingPin = exploreMapItemIsSeeking(item);
   const activity = item.activity;
 
@@ -1021,16 +1020,17 @@ export const buildExploreCardPresentation = (
     activity,
   };
 
-  const sections = buildExploreCardSections(headlineInput);
+  const sections = buildDiscoveryCardSections(headlineInput);
 
   return {
     kind,
     source,
     emoji: resolveMapPinEmoji(
       kind,
-      isSeekingPin ? 'demand' : source,
+      source,
       undefined,
-      item.placeKind ?? undefined
+      item.placeKind ?? undefined,
+      isSeekingPin
     ),
     headline: exploreHeadline(headlineInput),
     listTitle: sections.listTitle,

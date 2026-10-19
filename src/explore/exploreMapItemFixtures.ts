@@ -40,7 +40,7 @@ export const seekingExploreMapItem = (
     activityMode: 'seeking',
     participantIntentId: intentId,
     path: exploreSeekingMapItemPath({ intentId, activityId }),
-    composeIntent: 'demand',
+    composeIntent: 'seek',
     ...partial,
   });
 };
@@ -54,7 +54,7 @@ export const legacyDemandExploreMapItem = (
     kind: 'hiking',
     source: 'demand',
     participantIntentId: 'legacy-1',
-    composeIntent: 'demand',
+    composeIntent: 'seek',
     ...partial,
   });
 

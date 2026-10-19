@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildDiscoveryCardViewModelCard } from '../discovery';
-import { resolveExploreWishlistTarget } from './exploreCardModel';
+import { resolveExploreWishlistTarget } from '../discovery/discoveryCardModel';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { seekingExploreMapItem } from './exploreMapItemFixtures';
 
@@ -13,7 +13,7 @@ const baseItem = (overrides: Partial<ExploreMapItemDTO>): ExploreMapItemDTO =>
     path: '/activity/1',
     latitude: 25,
     longitude: 55,
-    composeIntent: 'organize',
+    composeIntent: 'host',
     outingCategory: 'hiking',
     activity: {
       id: '1',

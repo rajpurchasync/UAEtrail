@@ -23,9 +23,9 @@ export const Terms = () => (
           You are responsible for keeping your login credentials secure. We may suspend accounts that violate
           these terms or pose a safety risk to the community.
         </p>
-        <h2 className="text-lg font-semibold text-neutral-900">Activities and organizers</h2>
+        <h2 className="text-lg font-semibold text-neutral-900">Activities and hosts</h2>
         <p>
-          Activity organizers (guides, agencies, and shops) are responsible for their events. UAE Trails facilitates discovery and booking requests
+          Activity hosts (guides, agencies, and shops) are responsible for their events. UAE Trails facilitates discovery and booking requests
           but does not guarantee activity quality or safety outcomes. Participate at your own risk and ensure you
           have appropriate fitness, gear, and insurance.
         </p>

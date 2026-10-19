@@ -3,7 +3,7 @@ import {
   isPlaceCatalogKind,
   isPlaceKind,
   locationActivityTypeForPlaceKind,
-  placeKindFromContributeVenueKind,
+  placeKindFromAddVenueKind,
   placeKindFromLocationRow,
   tagsForPlaceKind,
 } from '@uaetrail/shared-types';
@@ -22,10 +22,10 @@ describe('PlaceKind', () => {
     expect(tagsForPlaceKind('outdoor_other')).toContain('outdoor-other');
   });
 
-  it('maps contribute FAB kinds to PlaceKind', () => {
-    expect(placeKindFromContributeVenueKind('shop')).toBe('shop');
-    expect(placeKindFromContributeVenueKind('event')).toBe('outdoor_other');
-    expect(placeKindFromContributeVenueKind('hiking')).toBe('hiking');
+  it('maps add FAB kinds to PlaceKind', () => {
+    expect(placeKindFromAddVenueKind('shop')).toBe('shop');
+    expect(placeKindFromAddVenueKind('event')).toBe('outdoor_other');
+    expect(placeKindFromAddVenueKind('hiking')).toBe('hiking');
   });
 
   it('separates place catalog kinds from facility kinds', () => {

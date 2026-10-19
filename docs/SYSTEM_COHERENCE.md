@@ -96,15 +96,15 @@ Each context has **one write path** and **one public read model** where possible
 | **Discovery (Explore umbrella)** | **Explore** = discovery shell (URL, layout, chrome). **Projections:** map, list (`list=1`), browse catalogue (`browse=1`, `/list`), search — not separate data stores. **Activity discovery** = hosted + seeking outings from `GET /explore/map`. **Places discovery** = place / facility / shop pins from the same read (filters in explore/list). **Area** is an admin-curated **name** (`?area=` / `/area/:slug`) — **not a pin**. **People discovery** = roster, availability, directory (`member_discovery` APIs); *Looking for* tab composes **activity-discovery** seeking rows. Signed-in peek is `GET /me/discover/overlay`, not a second catalog. | Shell: `src/explore/shell/*`. Activity: `src/activity-discovery/*`, activities list in `src/explore/ui`, `src/list/*`. Places: entity detail + list filters. People: `src/people-discovery/*` | `lib/explore-map.ts`, `GET /explore/map`, `GET /me/discover/overlay` | `activities`, `locations`, `facilities`, `areas`, `tenants` (shops) |
 | **Compose** | FAB intents, wizards, draft → publish payload | `src/explore/create/` (`hosting/`), `compose.ts`, `hostingFlowEngine.ts`, `hostingFlows/`, `seekingFlowEngine.ts` | `POST /publishing/activities`, `POST /me/seeking-posts` | `activities` (seeking rows; `participant_intents` leftover ops/backfill only) |
 | **Participation** | Join, waitlist, RSVP, seeking joins, **Join me** invites | `useActivityJoin*`, detail + explore selection | `join-request.ts`, `activity-invite.ts`, intent join **aliases** (`participant-intent-requests-store`) | **`activity_requests`** (canonical); `participant_intent_requests` legacy-only; `activity_participants`, `activity_invites` |
-| **Browse — member people** | Who can I go with? Network roster + availability + discover directory (quota). **Looking for** tab: `GET /explore/seeking-activities` + `selectSeekingActivitiesFromExploreCatalog` (`src/activity-discovery`). | `src/people-discovery/*` (`PeopleBrowsePanel`, tabs), `ListDiscoverPeopleView` | `explore-seeking-activities-read.ts`, `member-people-engagement.ts`, `member-discovery-roster.ts`, `registerMemberDiscoveryRoutes` | Composes `buddy_*`, `user_follows`, explore catalog (read), `member_profile_views` |
+| **Browse — member people** | Who can I go with? Network roster + availability + discover directory (quota). **Looking for** tab: `GET /explore/seeking-activities` + `selectSeekingActivitiesFromExploreCatalog` (`src/activity-discovery`). | `src/people-discovery/*` (`PeopleBrowsePanel`, tabs), `ListDiscoveryExperience` | `explore-seeking-activities-read.ts`, `member-people-engagement.ts`, `member-discovery-roster.ts`, `registerMemberDiscoveryRoutes` | Composes `buddy_*`, `user_follows`, explore catalog (read), `member_profile_views` |
 | **Member identity** | Profile, welcome gate, visibility, public card | `src/pages/Profile*`, `src/member/*` | `registerProfileRoutes`, `public-member-profile`, `profile-viewer-access` | `auth_users` profile fields |
-| **Member publish capabilities** | Who may organize/publish & open publishing workspace (tier + `profileComplete`) | `useMemberStatus`, `organizePublishGate` | **`services/member-status.ts` only** | `tenants`, `tenant_memberships` |
+| **Member publish capabilities** | Who may organize/publish & open publishing workspace (tier + `profileComplete`) | `useMemberStatus`, `memberPublishGate` | **`services/member-status.ts` only** | `tenants`, `tenant_memberships` |
 | **Publishing console** | Tenant-scoped CRUD, check-in, activity join queue | `src/pages/operator/*`, `src/console/*`, `components/activity/` | `/publishing/*` (`/operator` alias) | same + `activities` |
 | **Communication** | DMs, inbox, group & outing chat (product label **Chat**) | `Messages.tsx`, `src/messaging`, `@/chat` | `routes/chat.ts`, `activity-group-chat`, `member-inbox` | `chat_messages`, `social_groups`, wall collections |
 | **Social graph** | Relationship **writes** & group metadata (not browse roster UI) | `Buddies.tsx`, `Groups.tsx`, `/buddies` | `registerBuddyRoutes`, `buddy-activity-presence.ts`, `registerGroupRoutes`, `registerFollowRoutes` | `buddy_*`, `user_follows`, `social_groups*` |
 | **Places** | Place catalog read, place detail, **member place submit** | `src/places-discovery/*`, `PlaceDetail*`, FAB Contribute→place wizard (`compose` UI) | `place-catalog`, `place-submit`, `GET /places/catalog`, `POST /me/places` | `locations` (place rows) |
 | **Facilities** | Facility catalog read, facility detail, **member facility submit** | FAB Contribute→facility wizard; `adminFacilityPlaceAdapter` | `place-catalog` (facility half), `GET /facilities/catalog`, `POST /me/facilities`, `GET/PATCH /admin/facilities` | **`facilities`** |
-| **Areas** | Admin-curated **name** (`areas`, stable `areaId`) grouping Places/Facilities. **Not a map pin** — country / state / region come from map geography. Hub page `/area/:slug` + filter `?area=`. Children via **`place.areaId`** / **`facility.areaId`**. | `/area/:slug`, Find **Area then pin** (the pin is the seeking/place/facility, not the Area), admin **area** link | `areas-store`, `explore-map-area-lens.ts` (hub rollups, not map emit), `organizePublishArea.ts` | `areas`; **`locations.areaId`**; **`facilities.areaId`**; seeking `areaId` on the activity/post; hosted geography = **`activity.locationId` → `place.areaId`** |
+| **Areas** | Admin-curated **name** (`areas`, stable `areaId`) grouping Places/Facilities. **Not a map pin** — country / state / region come from map geography. Hub page `/area/:slug` + filter `?area=`. Children via **`place.areaId`** / **`facility.areaId`**. | `/area/:slug`, Find **Area then pin** (the pin is the seeking/place/facility, not the Area), admin **area** link | `areas-store`, `explore-map-area-lens.ts` (hub rollups, not map emit), `hostingPublishArea.ts` | `areas`; **`locations.areaId`**; **`facilities.areaId`**; seeking `areaId` on the activity/post; hosted geography = **`activity.locationId` → `place.areaId`** |
 | **Commerce** | Shop public + merchant manage (affiliate) | `ShopPublic`, `/organisation/manage?kind=shop` | `registerShopPublicRoutes` · `registerShopCheckoutRoutes` · `registerShopMerchantManageRoutes` | `merchant_profiles`, `tenants` (SHOP) |
 | **Engagement** | Goals, map pins, wishlist, follow | explore wishlist save, entity/member follow | `registerMeGoalsRoutes`, `registerMeWishlistRoutes`, `registerEntityFollowRoutes`, … | `user_goals`, `user_wishlist`, `entity_follows`, `user_follows` |
 | **Platform ops** | Admin console, audit, applications, master-granted staff | `src/pages/admin/*` (`/admin/users` **Users** nav) | `routes/admin.ts` + `routes/admin/registerAdmin*` | `host_applications`, `audit_logs`, `auth_users` (staff role) |
@@ -132,7 +132,7 @@ Pick a **context id** when changing code; touch registrar + `src/api/domains/*` 
 | places | `locations` (places) | `GET /places/catalog`, `/places/:id`, `POST /me/places` | `placeApi`, `placeCatalogClient`, `memberCatalogSubmitClientApi` | `PlaceDetail*`, `memberCatalogSubmitClientApi`, `placeCatalogReadsClientApi` |
 | facilities | `facilities` | `GET /facilities/catalog`, `/facilities/:id`, `POST /me/facilities`, `/admin/facilities` | `facilityApi`, `memberCatalogSubmitClientApi` | Facility submit wizard, `AdminPlaces` (`catalogSegment=facility`) |
 | commerce | `merchant_profiles`, `products` | `/shop/*` | `shopApi` | `ShopPublic`, shop UI |
-| engagement | `user_badges`, `user_goals`, `user_wishlist`, `entity_follows`, `social_reviews`, … | `/me/badges`, `/me/goals`, `/me/wishlist`, `/me/entity-follows`, `/reviews` | `badgesApi`, `goalsApi`, `wishlistApi`, `entityFollowApi`, `reviewsApi` | `ProfileBadges`, goals, `useEntityFollows`, wishlist guards |
+| engagement | `user_badges`, `user_goals`, `user_wishlist`, `entity_follows`, `social_reviews`, … | `/me/badges`, `/me/goals`, `/me/wishlist`, `/me/entity-follows`, `/reviews` | `badgesApi`, `goalsApi`, `wishlistApi`, `entityFollowApi`, `reviewsApi` | `ProfileBadges`, goals, `entityFollowApi`, wishlist guards |
 | platform_ops | `host_applications`, `audit_logs` | `/admin/*`, `POST/DELETE /admin/platform-admins` (master) | `adminApi` | `src/pages/admin/*`, `DashboardLayout`, `ADMIN_LINKS` — **ops tables**, not discovery L1/L2 |
 
 **API mounts:** `/auth`, `/admin`, `/operator` (legacy `/host/*` rewritten), `/chat`, `/shop`, `/media`, `/safety`, `/` (`user.ts`, including public `/reviews`) — see `apps/api/src/routes/index.ts`.
@@ -393,13 +393,13 @@ Track consolidation here; sub-roadmaps link out but **this table is the system-w
 | **C21** | **Surface/role prefixes in shared components** (`Host*`, `Explore*`, `Plan*` outside owning folders; Host→Organizer synonym renames) | Same mistake as C2; blocks reuse and coherent refactors | Module names = bounded context; props = neutral ids; copy in labels/`workspaceVocabulary` | [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §13 · [`HOST_CLEANUP_ROADMAP.md`](./HOST_CLEANUP_ROADMAP.md) P5 · `moduleNamingGuard.test.ts` |
 | **C22** | **Find vs Organize split in UI** (legacy host-manage peek, `participantIntentId` publish paths, transport vs `link-activity`) | Same map activity, different chrome and wrong transport link | **S12** in [`CREATE_FLOW.md`](./CREATE_FLOW.md) — one host peek; parent `linkToParentActivityId` for transport | **S12 done** |
 | **C23** | ~~**Activity L3 monolith**~~ | — | **Done (S13-W7)** — thin `ActivityDetailBody` + `ActivityDetailPlanColumn` / `ActivityDetailSidebarColumn`; kind `planSections` on plan column | **S13-W7** |
-| **C24** | **People surfaces split** (`PeopleBrowsePanel`, `ListDiscoverPeopleView`, `Buddies`, activity host row) without shared people card VM | Inconsistent roster masks, duplicate buddy CTAs | `memberBrowseRowModel` + one `PeopleBrowseTabContent` — §6.2.2 | **S13-W3 done** |
+| **C24** | **People surfaces split** (`PeopleBrowsePanel`, `ListDiscoveryExperience`, `Buddies`, activity host row) without shared people card VM | Inconsistent roster masks, duplicate buddy CTAs | `memberBrowseRowModel` + one `PeopleBrowseTabContent` — §6.2.2 | **S13-W3 done** |
 | **C25** | ~~Admin / platform_ops FE roots under-documented~~ | — | **Done (S13-W9)** — `NAVIGATION.md` admin table, `adminSurfacesAcceptance`, manifest `feRoots` | **S13-W9** |
 | **C26** | Catalog POI model flat (`locations` + `place-kind` amenities); area-wide “nearby facilities”; FAB **Host·Find crew·Add on map** (legacy **Plan·Contribute** wire only); contribute/submit/registry jargon split | Wrong trail amenities; organize picker pollution; duplicate shop semantics (member pin vs operator storefront) | **Program CPC** (§8.4): **Place** + **Facility** entities; catalog queries; `viewerAccess` on places; compose wire + legacy aliases | **Mitigated (CPC-0–6)** — CPC-7 dual-read tail + `verify:system` before close |
 | **C27** | ~~**Doc corpus sprawl**~~ | — | **Mitigated (Oct 2026)** — `experiment/*` stubs only; bodies `archive/experiment/`; schedules §8.3/§8.6/§8.7 | [`DOCS_GOVERNANCE.md`](./DOCS_GOVERNANCE.md) · `verify:docs` |
 | **C28** | **Multi-quarter refactor without program spine** | Half-migrations, lost context mid-flight | **`scripts/refactor-program.json`** + §8.6 phase gates; manifest + migration IDs; strangler rules | §8.6 below |
 
-**Not debt (intentional):** legacy `/host/*` → `/operator/*` rewrite; Mongo `locations` collection name (wire **Place**); `x-organisation-id` header; `getOrganisationProfile` for **storefront** — not activity roster. **During CPC:** `/trail`·`/camp`·`/venue` and `/contributions` remain until **CPC-6** redirects ship (target `/place/:id`, `/profile/submissions`).
+**Not debt (intentional):** legacy `/host/*` → `/operator/*` rewrite; Mongo `locations` collection name (wire **Place**); `x-organisation-id` header; `getOrganisationProfile` for **storefront** — not activity roster. Leftover inbound URLs: `/trail`·`/camp`·`/venue` → `/place/:id`; `/contributions` → `/profile/submissions`.
 
 ---
 
@@ -500,7 +500,7 @@ Work **top to bottom**. Each wave ends with **`npm run verify:system:quick`** (w
 |------|-----|---------|----------------------|---------------|
 | **0** | **S13a** | Charter frozen in Tier-1 | §6.2 (this file), §3.2.2 member lenses, `DOCS_INDEX` | `verify:docs` |
 | **1** | **S13-W1** | **Profile link lenses** | **`memberProfileLink(userId, lens)`** (`src/member/memberProfileLink.ts`) used by people browse, `/buddies`, roster chips, notifications, chat; owner preview **`memberPublicPreviewLink`** (`view=public`, not a lens); wire = `memberProfilePath` in shared-types | `memberProfileLink.test.ts`, `memberSurfacesAcceptance` S13; no duplicate `explore/ui/peopleBrowse` implementations |
-| **2** | **S13-W2** | **People browse module unity** | One `PeopleBrowseTabContent` import path under `people-discovery`; `explore/ui/peopleBrowse` re-export **deleted** (EXPLORE-IA); `ListDiscoverPeopleView` uses same module | `memberSurfacesAcceptance`, `listModuleHygiene` · DISC-METH-11 |
+| **2** | **S13-W2** | **People browse module unity** | One `PeopleBrowseTabContent` import path under `people-discovery`; `explore/ui/peopleBrowse` re-export **deleted** (EXPLORE-IA); list people browse uses `PeopleBrowsePanel` | `memberSurfacesAcceptance`, `listModuleHygiene` · DISC-METH-11 |
 | **3** | **S13-W3** | **Member browse row VM** | `src/people-discovery/memberBrowseRowModel.ts` — L1 rows for directory, availability, going, seeking; **not** authorization | `memberBrowseRowModel.test.ts` + panel/list consume VM; C24 closed |
 | **4** | **S13-W4** | **Profile L3 polish** | `MemberProfileView` sections keyed off `viewerAccess` only; activity publisher strip uses `resolveActivityPublisherProfilePath`; owner `?view=public` via `memberPublicPreviewLink` | `detailSurfaceWiringAcceptance`, §15 profile tests |
 | **5** | **S13-W5** | **Discovery projection parity** | L1/L2 engagement parity per `listCat` / people tab; member browse L1 in methodology guards | `discoveryUiMethodologyGuard` DISC-METH-07–09 · `listModuleHygiene` peopleBrowse shim |
@@ -535,10 +535,10 @@ Work **top to bottom**. Each wave ends with **`npm run verify:system:quick`** (w
 
 | Phase | Outcome | Primary code | Status |
 |-------|---------|--------------|--------|
-| **S12a** | Transport child links via `linkedActivityId` / `linkParentToRideshareActivity`; **no** `link-activity` on rideshare publish | `useExploreRideshareOrganizeLinks.ts`, `organizeActivityPublish.ts`, `linkActivityRideshareOffer.ts` | **Done** |
+| **S12a** | Transport child links via `linkedActivityId` / `linkParentToRideshareActivity`; **no** `link-activity` on rideshare publish | `useExploreRideshareOrganizeLinks.ts`, `hostingActivityPublish.ts`, `linkActivityRideshareOffer.ts` | **Done** |
 | **S12b** | Owner peek = `ExploreActivityMapPeekActions` for seeking + hosted (legacy demand-owner fork only without activity host wire) | `exploreSelectionSelectedCard.ts`, `enrichListFeedCard.ts` | **Done** |
 | **S12c** | Find success + intent manage → same transport surfaces as Organize (`LinkRidesharePanel`, paste link) | `SeekingSubmitSuccessSheet.tsx`, `ParticipantIntentManageSheet.tsx` | **Done** |
-| **S12d** | Docs/guards: no new `demand`-only product gates; intent APIs read-through only | `seekingPinHygieneGuard` (S12d tests), `exploreCardModel` legacy flags | **Done** |
+| **S12d** | Docs/guards: no new `demand`-only product gates; intent APIs read-through only | `seekingPinHygieneGuard` (S12d tests), `discoveryCardModel` leftover flags | **Done** |
 
 ### 8.1 S10 remediation waves (phase plan)
 
@@ -770,10 +770,10 @@ Mark `[x]` in the PR that completes the item. **Gate:** `npm run verify:system:q
 - [x] Find crew: fixed → `seekingFlowEngine`; flexible → `SeekFlexibleComposeSheet` / `member_availability`
 - [x] Add on map: **Place** (trail/camp/other) \| **Facility** (kinds); drop standalone **Shops** chip
 - [x] `formatComposeQuery` / `parseExploreCompose` v3 canonical + legacy aliases (`packages/shared-types/compose-route.ts`)
-- [x] `composeFlowCatalog.ts` storage ids: `plan.*` / `contribute.*`; v3 wire aliases `host.*` / `seek.fixed.*` / `add.*` via `normalizeComposeFlowId` (`composeFlowIds.ts`)
-- [x] Update area CTAs (`AreaDetailView` find links → `plan:*:seeking`)
-- [x] `composeFlowCatalog.test.ts` / `exploreComposeRouteGuard` (v2 routes)
-- [ ] Rename modules: `contributeFlow` → `contributePlaceFlow` / align with `addPlace*` (optional in same phase)
+- [x] `composeFlowCatalog.ts` storage ids: `host.*` / `seek.fixed.*` / `add.*`; leftover `plan.*` / `contribute.*` / `organize.*` / `find.*` inbound via `normalizeComposeFlowId` (`composeFlowIds.ts`)
+- [x] Update area CTAs (`AreaDetailView` find links → `seek.fixed.*`)
+- [x] `composeFlowCatalog.test.ts` / `exploreComposeRouteGuard` (v2 leftover routes inbound)
+- [x] Add-on-map wizard modules: `addFlow.ts` / `addFacilityFlow.ts` / `CreateAddFlow.tsx`
 - [ ] `src/content/productNorthStar.ts` if FAB strings centralized
 
 **Supersession (shipped):** Product FAB **Host · Find crew · Add on map** with v3 `?compose=` (`host` \| `seek` \| `add`); v2 `plan` / `contribute` remain parse aliases — [`CREATE_FLOW.md`](./CREATE_FLOW.md).
@@ -782,7 +782,7 @@ Mark `[x]` in the PR that completes the item. **Gate:** `npm run verify:system:q
 
 #### 8.4.9 Implementation alignment map (anti-drift)
 
-**Rule:** Product says **Contribute**; code and HTTP say **catalog** + **submit**. Compose wire may use `contribute:place:*` — that is not an API surface.
+**Rule:** Product says **Add on map**; code and HTTP say **catalog** + **submit**. Leftover compose wire may parse `contribute:place:*` — that is not an API surface.
 
 | Concern | Read (catalog) | Write (submit) | Provenance | Do **not** add |
 |---------|----------------|----------------|------------|----------------|
@@ -799,7 +799,7 @@ Mark `[x]` in the PR that completes the item. **Gate:** `npm run verify:system:q
 | `src/hooks/memberCatalogSubmitClientApi.ts` | `submitMemberPlace`, `submitMemberFacility`, `fetchMyPlaceSubmissions` |
 | `src/hooks/placeCatalogReadsClientApi.ts` | picker/list reads |
 
-Legacy shims (one release, no new imports): `placeCatalogApi.ts`, `placeRegistry.ts`.
+Legacy shim (one release, no new imports): `placeRegistry.ts`. `placeCatalogApi.ts` removed — use `memberCatalogSubmitClientApi` / `placeCatalogReadsClientApi`.
 
 **API services (canonical):**
 
@@ -841,9 +841,9 @@ Legacy shims (one release, no new imports): `placeCatalogApi.ts`, `placeRegistry
 
 | Layer | Activities (hosting) | Catalog (place / facility) |
 |-------|----------------------|----------------------------|
-| Wizard UI | `CreateHostingActivityFlow` + `hostingFlowEngine.ts` + `hostingFlows/` | `CreateContributeFlow` + `placeSubmitFlow` / `facilitySubmitFlow` (**CPC-9b** rename from `contributeFlow*`) |
+| Wizard UI | `CreateHostingActivityFlow` + `hostingFlowEngine.ts` + `hostingFlows/` | `CreateAddFlow` + `addFlow.ts` / `addFacilityFlow.ts` |
 | Compose shell (map + list) | `src/explore/create/` — `useComposeRoute`, `ComposeHost`, `useHostingWizardPrefill` (**not** `useExplore*` on create paths) | same FAB host |
-| Orchestrator | `organizeActivityPublish.ts` (`createActivity` → `publishActivity`) | **`catalogPlaceSubmit.ts` / `catalogFacilitySubmit.ts`** — draft from wizard → `memberCatalogSubmitClientApi` only; **no** second publish call |
+| Orchestrator | `hostingActivityPublish.ts` (`createActivity` → `publishActivity`) | **`catalogPlaceSubmit.ts` / `catalogFacilitySubmit.ts`** — draft from wizard → `memberCatalogSubmitClientApi` only; **no** second publish call |
 | Console edit | `/publishing/activities` drafts | **None** for members — only `/profile/submissions` read + admin queue |
 | Pickers | `placeCatalogReadsClientApi` | same |
 

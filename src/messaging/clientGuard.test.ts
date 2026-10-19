@@ -24,7 +24,6 @@ const ALLOW_PREFIXES = [
   'src/api/',
   'src/api\\',
   'src/messaging/clientGuard.test.ts',
-  'src/components/messages/index.ts',
 ];
 
 const collectSourceFiles = (dir: string): string[] => {

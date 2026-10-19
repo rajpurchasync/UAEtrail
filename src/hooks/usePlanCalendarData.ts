@@ -5,7 +5,7 @@ import { useConsoleHubData } from '../console/useHubData';
 import { useMemberAvailability } from './useMemberAvailability';
 import { useMyActivityJoinRequests } from './useMyActivityJoinRequests';
 import { useMyJoinedActivities } from './useMyJoinedActivities';
-import { useMyParticipantIntents } from './useMyParticipantIntents';
+import { useMySeekingPosts } from './useMySeekingPosts';
 import {
   buildPlanCalendarMaps,
   filterPlanCalendarByCommitment,
@@ -41,7 +41,7 @@ export const usePlanCalendarData = (
 
   const joinedQuery = useMyJoinedActivities(memberEnabled, refreshKey);
   const requestsQuery = useMyActivityJoinRequests(memberEnabled, refreshKey);
-  const intentsQuery = useMyParticipantIntents(memberEnabled, refreshKey);
+  const intentsQuery = useMySeekingPosts(memberEnabled, refreshKey);
 
   const hostedActivities = useMemo(
     () => (canHost ? ((host.activities ?? []) as ActivityDTO[]) : []),

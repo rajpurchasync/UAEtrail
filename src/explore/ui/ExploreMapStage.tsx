@@ -4,7 +4,7 @@ import { PlacesMap, type MapBounds, type PlaceMapPin } from '../../components/ui
 import { getMapBounds } from '../../config/regions';
 import { MAP_CONFIG, getExploreMapTiles, type ExploreMapStyle } from '../../config/platform';
 import { EXPLORE_FLOATING_CONTROL } from '../../config/exploreTheme';
-import type { ExploreCardModel } from '../exploreCardModel';
+import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import type { JoinRequestUiState } from '../../utils/joinRequestUi';
 import { ExploreCoachMarks } from './ExploreCoachMarks';
 import { ExploreDismissibleNotice } from './ExploreDismissibleNotice';
@@ -67,7 +67,7 @@ export type ExploreMapStageProps = {
   onPrimaryFab: () => void;
   primaryFabLabel: string;
   selected: ExploreMapItemDTO | null;
-  selectedCard: ExploreCardModel | null;
+  selectedCard: DiscoveryCardModel | null;
   joinUiState: JoinRequestUiState | undefined;
   joinStateLoading: boolean;
   onCloseSelection: () => void;

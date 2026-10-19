@@ -1,16 +1,16 @@
 import {
-  organizeActivitiesFlow,
-  organizeCampingFlow,
-  organizeEventsFlow,
-  organizeHikingFlow,
-  organizeRideshareFlow,
+  activitiesHostingFlow,
+  campingHostingFlow,
+  eventsHostingFlow,
+  hikingHostingFlow,
+  rideshareHostingFlow,
 } from '../../ui/hostingFlows';
 import { bindHostingKindFlow } from './bindHostingKindFlow';
 
-export const CreateHostingHikingFlow = bindHostingKindFlow(organizeHikingFlow, 'hiking');
-export const CreateHostingCampingFlow = bindHostingKindFlow(organizeCampingFlow, 'camping');
-export const CreateHostingEventsFlow = bindHostingKindFlow(organizeEventsFlow, 'event');
-export const CreateHostingActivitiesFlow = bindHostingKindFlow(organizeActivitiesFlow, 'activity');
-export const CreateHostingRideshareFlow = bindHostingKindFlow(organizeRideshareFlow, 'rideshare');
+export const CreateHostingHikingFlow = bindHostingKindFlow(hikingHostingFlow, 'hiking');
+export const CreateHostingCampingFlow = bindHostingKindFlow(campingHostingFlow, 'camping');
+export const CreateHostingEventsFlow = bindHostingKindFlow(eventsHostingFlow, 'event');
+export const CreateHostingActivitiesFlow = bindHostingKindFlow(activitiesHostingFlow, 'activity');
+export const CreateHostingRideshareFlow = bindHostingKindFlow(rideshareHostingFlow, 'rideshare');
 
 export { HostingFlowHost, type HostingFlowHostProps } from './HostingFlowHost';

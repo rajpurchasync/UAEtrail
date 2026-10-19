@@ -11,7 +11,7 @@ import {
 import { canLinkRideshareToActivity } from '../../../linkActivityRideshareOffer';
 import { activityDetailPath } from '../../../../config/routingCatalog';
 import {
-  exploreCardActivityJoinIsFull,
+  discoveryCardActivityJoinIsFull,
   type DiscoveryCardModel,
 } from '../../../../discovery/discoveryCardModel';
 import type { JoinRequestUiState } from '../../../../utils/joinRequestUi';
@@ -119,7 +119,7 @@ export const ActivityPeekEngagementActions = ({
     viewerLevel,
     joinPhase: joinPhaseFromUi(joinUiState),
   };
-  const joinFull = exploreCardActivityJoinIsFull(card);
+  const joinFull = discoveryCardActivityJoinIsFull(card);
   const joinPrimaryClass = joinFull
     ? 'w-full rounded-2xl bg-neutral-200 py-3.5 text-base font-bold text-neutral-500 cursor-not-allowed'
     : 'w-full rounded-2xl bg-emerald-500 py-3.5 text-base font-bold text-white';

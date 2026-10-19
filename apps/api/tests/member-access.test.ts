@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
-  memberAudienceMayAttemptOrganize,
-  organizeEntitlementDenial,
+  memberAudienceMayAttemptHostPublish,
+  hostPublishEntitlementDenial,
   resolveMemberAudience,
 } from '@uaetrail/shared-types';
 
@@ -44,10 +44,10 @@ describe('resolveMemberAudience', () => {
   });
 });
 
-describe('organizeEntitlementDenial', () => {
+describe('hostPublishEntitlementDenial', () => {
   it('requires sign-in for guests', () => {
     expect(
-      organizeEntitlementDenial({
+      hostPublishEntitlementDenial({
         viewerUserId: null,
         hostStatus: null,
         canPublish: false,
@@ -55,9 +55,9 @@ describe('organizeEntitlementDenial', () => {
     ).toMatchObject({ gateReason: 'sign_in' });
   });
 
-  it('requires profile completion before organize', () => {
+  it('requires profile completion before host / publish', () => {
     expect(
-      organizeEntitlementDenial({
+      hostPublishEntitlementDenial({
         viewerUserId: 'u1',
         hostStatus: { ...baseHostStatus, signupProfileComplete: false },
         canPublish: false,
@@ -65,9 +65,9 @@ describe('organizeEntitlementDenial', () => {
     ).toMatchObject({ gateReason: 'profile_required' });
   });
 
-  it('allows organize when canPublish', () => {
+  it('allows host / publish when canPublish', () => {
     expect(
-      organizeEntitlementDenial({
+      hostPublishEntitlementDenial({
         viewerUserId: 'u1',
         hostStatus: baseHostStatus,
         canPublish: true,
@@ -76,10 +76,10 @@ describe('organizeEntitlementDenial', () => {
   });
 });
 
-describe('memberAudienceMayAttemptOrganize', () => {
+describe('memberAudienceMayAttemptHostPublish', () => {
   it('excludes guests and incomplete profiles', () => {
-    expect(memberAudienceMayAttemptOrganize('guest')).toBe(false);
-    expect(memberAudienceMayAttemptOrganize('member_incomplete')).toBe(false);
-    expect(memberAudienceMayAttemptOrganize('member_basic')).toBe(true);
+    expect(memberAudienceMayAttemptHostPublish('guest')).toBe(false);
+    expect(memberAudienceMayAttemptHostPublish('member_incomplete')).toBe(false);
+    expect(memberAudienceMayAttemptHostPublish('member_basic')).toBe(true);
   });
 });

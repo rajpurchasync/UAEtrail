@@ -5,8 +5,8 @@ import {
   memberProfilePath,
   resolveActivityPublisherProfilePath,
 } from '@uaetrail/shared-types';
-import type { ExploreCardModel } from '../explore/exploreCardModel';
-import { exploreCardIsSeeking } from '../explore/exploreCardModel';
+import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
+import { discoveryCardIsSeeking } from '../discovery/discoveryCardModel';
 import { ACTIVITY_HOST_NOUN_TITLE } from '../content/workspaceVocabulary';
 
 export type ListFeedPublisher = {
@@ -16,14 +16,14 @@ export type ListFeedPublisher = {
   profilePath: string | null;
 };
 
-const resolveListFeedPublisherTypeLabel = (card: ExploreCardModel): string => {
+const resolveListFeedPublisherTypeLabel = (card: DiscoveryCardModel): string => {
   const kind = card.activity?.publishingProfileKind ?? (card.source === 'activity' ? 'community' : null);
   if (card.source === 'activity' && kind) {
     return exploreActivityPublisherTypeLabel(kind);
   }
   const role = card.featuredPerson?.role;
   if (role) return explorePersonRoleLabel(role, kind);
-  if (exploreCardIsSeeking(card)) return 'Looking for crew';
+  if (discoveryCardIsSeeking(card)) return 'Looking for crew';
   if (card.source === 'shop' || card.source === 'agency') return 'Shop contact';
   if (card.source === 'activity') return ACTIVITY_HOST_NOUN_TITLE;
   if (card.source === 'facility') return 'Facility';
@@ -32,7 +32,7 @@ const resolveListFeedPublisherTypeLabel = (card: ExploreCardModel): string => {
 };
 
 /** Host / requester row for Instagram-style feed header. */
-export const resolveListFeedPublisher = (card: ExploreCardModel): ListFeedPublisher => {
+export const resolveListFeedPublisher = (card: DiscoveryCardModel): ListFeedPublisher => {
   const name =
     card.listHost?.trim() ||
     card.featuredPerson?.displayName?.trim() ||

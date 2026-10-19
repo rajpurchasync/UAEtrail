@@ -141,7 +141,7 @@ export const Profile = () => {
     if (showHosted) {
       stats.push({
         key: 'hosted',
-        label: 'Organized',
+        label: 'Hosted',
         value: hostedCount,
         to: planHostedSchedulePath(),
       });

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const read = (relativePath: string) => readFileSync(join(process.cwd(), relativePath), 'utf8');
@@ -21,7 +21,7 @@ describe('detailSurfaceWiringAcceptance', () => {
       'src/pages/place/CampingPlaceDetailPage.tsx',
       'src/pages/place/EventPlaceDetailPage.tsx',
     ]) {
-      expect(read(kindPage)).toMatch(/PlaceDetailPage/);
+      expect(existsSync(join(process.cwd(), kindPage))).toBe(false);
     }
 
     const areaPage = read('src/pages/AreaDetailPage.tsx');
