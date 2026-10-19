@@ -28,6 +28,11 @@ const ROUTES = [
     note: 'activityMode seeking — same L3 shell; request to join; no demand: hop',
   },
   { surface: 'Activity (rideshare)', path: '/activity/:id', note: 'Transport tab emphasis' },
+  {
+    surface: 'Activity (host approve)',
+    path: '/activity/:id',
+    note: 'host on Buddies tab — pending requests approve/decline (not /publishing/requests only)',
+  },
   { surface: 'Place trail', path: '/trail/:id' },
   { surface: 'Place camp', path: '/camp/:id' },
   { surface: 'Area hub', path: '/area/hatta?tab=overview', note: 'tabs: overview | places | activities' },

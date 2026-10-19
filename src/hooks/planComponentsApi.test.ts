@@ -68,9 +68,14 @@ describe('componentsClientApi (R8.1)', () => {
     expect(read('src/components/activity/ActivityInviteModalBody.tsx')).toMatch(/activityInviteClientApi/);
     expectNoDirectApi('src/components/activity/ActivityInviteModalBody.tsx');
     for (const file of [
-      'src/components/activity/ActivityCrewChatPostPolicyCard.tsx',
       'src/components/activity/detail/ActivityDetailHostBuddiesHub.tsx',
       'src/components/activity/ActivityManageSheet.tsx',
+    ]) {
+      expect(read(file)).toMatch(/publishingJoinQueueClientApi/);
+      expectNoDirectApi(file);
+    }
+    for (const file of [
+      'src/components/activity/ActivityCrewChatPostPolicyCard.tsx',
       'src/components/activity/ActivityParticipantsPanel.tsx',
     ]) {
       expect(read(file)).toMatch(/tenantActivityClientApi/);

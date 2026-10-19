@@ -500,7 +500,10 @@
         "src/activity/detail",
         "src/components/activity/detail",
         "src/hooks/usePublicActivityDetail.ts",
-        "src/hooks/useActivityJoinFlow.ts"
+        "src/hooks/useActivityJoinFlow.ts",
+        "src/hooks/activityJoinClientApi.ts",
+        "src/hooks/publishingJoinQueueClientApi.ts",
+        "src/config/participationJoinSpineGuard.test.ts"
       ],
       "successMetric": "One L3 shell + kind composers; peek→detail parity; guest/join kit; activityDetailAcceptance + S10f activity rows"
     },

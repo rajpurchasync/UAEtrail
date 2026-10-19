@@ -7,12 +7,28 @@ const read = (rel: string) => readFileSync(join(process.cwd(), rel), 'utf8');
 describe('user route mount shell', () => {
   it('delegates to register* modules (no fat inline handlers)', () => {
     const user = read('src/routes/user.ts');
-    expect(user).toMatch(/registerMemberDiscoveryRoutes/);
-    expect(user).toMatch(/registerProfileRoutes/);
-    expect(user).toMatch(/registerMeWishlistRoutes/);
-    expect(user).toMatch(/registerReviewRoutes/);
-    expect(user).toMatch(/registerMeDiscoverOverlayRoutes/);
+    const member = read('src/routes/user/composeUserMemberRoutes.ts');
+    const publicRoutes = read('src/routes/user/composeUserPublicRoutes.ts');
+    expect(user).toMatch(/composeUserPublicRoutes/);
+    expect(user).toMatch(/composeUserMemberRoutes/);
+    expect(member).toMatch(/registerMemberDiscoveryRoutes/);
+    expect(member).toMatch(/registerProfileRoutes/);
+    expect(member).toMatch(/registerMeWishlistRoutes/);
+    expect(publicRoutes).toMatch(/registerReviewRoutes/);
+    expect(member).toMatch(/registerMeDiscoverOverlayRoutes/);
     expect(user).not.toMatch(/userRouter\.(post|patch|delete)\(['"]\/me\//);
+  });
+
+  it('orders public compose before auth before member compose', () => {
+    const user = read('src/routes/user.ts');
+    const publicIdx = user.indexOf('composeUserPublicRoutes(userRouter');
+    const authIdx = user.indexOf('userRouter.use(requireAuth');
+    const memberIdx = user.indexOf('composeUserMemberRoutes(userRouter');
+    expect(publicIdx).toBeGreaterThan(-1);
+    expect(authIdx).toBeGreaterThan(-1);
+    expect(memberIdx).toBeGreaterThan(-1);
+    expect(publicIdx).toBeLessThan(authIdx);
+    expect(memberIdx).toBeGreaterThan(authIdx);
   });
 
   it('keeps push vapid key as the only public utility route', () => {

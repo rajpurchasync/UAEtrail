@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 const ROOT = process.cwd();
@@ -24,6 +24,11 @@ describe('publishing console routing (MIG-ROUTING-CANON-P1)', () => {
     expect(index).not.toMatch(/legacyHostApiRewrite/);
     expect(index).not.toMatch(/legacyPublishingPathDeprecation/);
     expect(index).not.toMatch(/legacyMemberStatusPathRewrite/);
+  });
+
+  it('retired duplicate console stack under src/pages/operator stays deleted', () => {
+    expect(existsSync(join(ROOT, 'src/pages/operator'))).toBe(false);
+    expect(existsSync(join(ROOT, 'src/hooks/useOperatorActivityManageActions.ts'))).toBe(false);
   });
 
   it('App does not register /host or /organizer console trees', () => {

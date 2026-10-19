@@ -4,8 +4,11 @@ import { join } from 'node:path';
 
 describe('entity follow contract', () => {
   it('registers entity follow routes on user router', () => {
-    const userRoutes = readFileSync(join(process.cwd(), 'src/routes/user.ts'), 'utf8');
-    expect(userRoutes).toMatch(/registerEntityFollowRoutes\(userRouter\)/);
+    const memberCompose = readFileSync(
+      join(process.cwd(), 'src/routes/user/composeUserMemberRoutes.ts'),
+      'utf8'
+    );
+    expect(memberCompose).toMatch(/registerEntityFollowRoutes\(userRouter\)/);
   });
 
   it('fans out entity follow notifications on activity publish', () => {

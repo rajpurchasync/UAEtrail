@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import type { ActivityRequestView } from '../api/types';
-import { getActivityJoinRequests } from './tenantActivityClientApi';
+import { getActivityJoinRequests } from './publishingJoinQueueClientApi';
 import { activityHostJoinRequestsQueryKey } from './clientQueryKeys';
 
 export const useActivityHostJoinRequests = ({

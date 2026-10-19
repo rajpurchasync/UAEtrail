@@ -136,8 +136,12 @@ describe('systemCoherenceGuard', () => {
     expect(existsSync(join(userRoutes, 'registerPublicRewardsRoutes.ts'))).toBe(false);
     expect(existsSync(join(API_SRC, 'lib', 'rewards-config.ts'))).toBe(false);
     const userRouter = readFileSync(join(API_SRC, 'routes', 'user.ts'), 'utf8');
+    const memberCompose = readFileSync(
+      join(API_SRC, 'routes', 'user', 'composeUserMemberRoutes.ts'),
+      'utf8'
+    );
     expect(userRouter).not.toMatch(/registerMeRewardsRoutes|registerPublicRewardsRoutes/);
-    expect(userRouter).toMatch(/registerMeBadgesRoutes/);
+    expect(memberCompose).toMatch(/registerMeBadgesRoutes/);
   });
 
   it('apps/api routes do not register /me/rewards or public rewards catalog', () => {

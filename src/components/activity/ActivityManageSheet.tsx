@@ -8,11 +8,11 @@ import { ActivityJoinRequestCard } from '../../console/ActivityJoinRequestCard';
 import { ActivityJoinRequestDeclineDialog } from '../../console/ActivityJoinRequestDeclineDialog';
 import { ActivityParticipantsPanel } from './ActivityParticipantsPanel';
 import { HostActivityManageCancelDialogs } from './HostActivityManageCancelDialogs';
+import type { ActivityRequestView } from '../../hooks/publishingJoinQueueClientApi';
 import {
   decideActivityJoinRequest,
   getActivityJoinRequests,
-  type ActivityRequestView,
-} from '../../hooks/tenantActivityClientApi';
+} from '../../hooks/publishingJoinQueueClientApi';
 import { fetchPublicActivityDetail } from '../../hooks/usePublicActivityDetail';
 import { resolveActivityTitle } from '../../utils/activityIdentity';
 import { buildActivitySharePayload } from '../../utils/activityShare';

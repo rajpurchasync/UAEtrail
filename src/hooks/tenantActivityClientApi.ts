@@ -7,10 +7,7 @@ import type {
   ActivityGroupChatPostPolicy,
   ParticipantDTO,
 } from '@uaetrail/shared-types';
-import type { ActivityRequestView } from '../api/types';
 import { api } from '../api/index';
-
-export type { ActivityRequestView };
 
 export type ActivityParticipantsSnapshot = {
   participants: ParticipantDTO[];
@@ -68,23 +65,6 @@ export const updateActivityGroupChatPostPolicy = async (
   policy: ActivityGroupChatPostPolicy
 ): Promise<void> => {
   await api.updateActivity(tenantId, activityId, { groupChatPostPolicy: policy });
-};
-
-export const decideActivityJoinRequest = async (
-  tenantId: string,
-  requestId: string,
-  status: 'approved' | 'rejected',
-  hostNote?: string
-): Promise<void> => {
-  await api.decideActivityJoinRequest(tenantId, requestId, status, hostNote);
-};
-
-export const getActivityJoinRequests = async (
-  tenantId: string,
-  options?: { activityId?: string }
-): Promise<ActivityRequestView[]> => {
-  const res = await api.getPublishingActivityJoinRequests(tenantId, options);
-  return res.data;
 };
 
 export const listActivities = async (tenantId: string): Promise<ActivityDTO[]> => {

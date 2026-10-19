@@ -85,20 +85,22 @@ describe('catalog HTTP surface guard', () => {
 
   it('user.ts mounts public catalog reads before requireAuth and member submit after', () => {
     const user = read('apps/api/src/routes/user.ts');
+    const publicCompose = read('apps/api/src/routes/user/composeUserPublicRoutes.ts');
+    const memberCompose = read('apps/api/src/routes/user/composeUserMemberRoutes.ts');
     const authIdx = user.indexOf('userRouter.use(requireAuth');
-    const pubPlaceIdx = user.indexOf('registerPublicPlaceRoutes(userRouter');
-    const pubFacilityIdx = user.indexOf('registerPublicFacilityRoutes(userRouter');
-    const mePlaceIdx = user.indexOf('registerMeSubmittedPlaceRoutes(userRouter');
-    const meFacilityIdx = user.indexOf('registerMeFacilityRoutes(userRouter');
+    const publicIdx = user.indexOf('composeUserPublicRoutes(userRouter');
+    const memberIdx = user.indexOf('composeUserMemberRoutes(userRouter');
+    const pubPlaceIdx = publicCompose.indexOf('registerPublicPlaceRoutes(userRouter');
+    const pubFacilityIdx = publicCompose.indexOf('registerPublicFacilityRoutes(userRouter');
+    const mePlaceIdx = memberCompose.indexOf('registerMeSubmittedPlaceRoutes(userRouter');
+    const meFacilityIdx = memberCompose.indexOf('registerMeFacilityRoutes(userRouter');
     expect(authIdx).toBeGreaterThan(-1);
+    expect(publicIdx).toBeLessThan(authIdx);
+    expect(memberIdx).toBeGreaterThan(authIdx);
     expect(pubPlaceIdx).toBeGreaterThan(-1);
     expect(pubFacilityIdx).toBeGreaterThan(-1);
     expect(mePlaceIdx).toBeGreaterThan(-1);
     expect(meFacilityIdx).toBeGreaterThan(-1);
-    expect(pubPlaceIdx).toBeLessThan(authIdx);
-    expect(pubFacilityIdx).toBeLessThan(authIdx);
-    expect(mePlaceIdx).toBeGreaterThan(authIdx);
-    expect(meFacilityIdx).toBeGreaterThan(authIdx);
   });
 
   it('admin.ts mounts facility and place CRUD via dedicated registrars only', () => {

@@ -40,6 +40,11 @@ const ACTIVITY_S10F_BRIDGE: Array<{
     guardPath: 'src/activity/activityDetailTransport.test.ts',
     mustMatch: /transport|rideshare/i,
   },
+  {
+    manualSurface: 'Activity (host approve)',
+    guardPath: 'src/activity/activityDetailAcceptance.test.ts',
+    mustMatch: /AD-PART-SPINE-01/,
+  },
 ];
 
 describe('activityDetailS10fBridgeGuard (S10f ↔ AD program)', () => {

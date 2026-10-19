@@ -71,6 +71,7 @@
         "src/pages/JoinRequestDetail.tsx",
         "src/pages/ActivityDetail.tsx",
         "src/hooks/useActivityJoinFlow.ts",
+        "src/hooks/activityJoinClientApi.ts",
         "src/hooks/usePublicActivityDetail.ts",
         "src/components/activity/detail"
       ]
@@ -111,6 +112,7 @@
       ],
       "feDomains": [
         "src/api/domains/publishingWorkspace.ts",
+        "src/hooks/publishingJoinQueueClientApi.ts",
         "src/hooks/tenantActivityClientApi.ts",
         "src/hooks/organisationConsoleApi.ts"
       ],

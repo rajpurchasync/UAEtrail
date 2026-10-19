@@ -13,10 +13,12 @@ describe('review HTTP canonical (COH-09)', () => {
     ).toBe(false);
 
     const user = read('src/routes/user.ts');
-    const reviewIdx = user.indexOf('registerReviewRoutes(userRouter)');
+    const publicCompose = read('src/routes/user/composeUserPublicRoutes.ts');
+    expect(publicCompose).toMatch(/registerReviewRoutes\(userRouter\)/);
+    const publicIdx = user.indexOf('composeUserPublicRoutes');
     const authIdx = user.indexOf('userRouter.use(requireAuth');
-    expect(reviewIdx).toBeGreaterThan(-1);
-    expect(authIdx).toBeGreaterThan(reviewIdx);
+    expect(publicIdx).toBeGreaterThan(-1);
+    expect(authIdx).toBeGreaterThan(publicIdx);
 
     const registrar = read('src/routes/user/registerReviewRoutes.ts');
     expect(registrar).toMatch(/\/reviews'/);

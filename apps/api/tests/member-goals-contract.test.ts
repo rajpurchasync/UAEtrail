@@ -4,8 +4,11 @@ import { join } from 'node:path';
 
 describe('member goals contract', () => {
   it('registers goals routes on user router', () => {
-    const userRoutes = readFileSync(join(process.cwd(), 'src/routes/user.ts'), 'utf8');
-    expect(userRoutes).toMatch(/registerMeGoalsRoutes\(userRouter\)/);
+    const memberCompose = readFileSync(
+      join(process.cwd(), 'src/routes/user/composeUserMemberRoutes.ts'),
+      'utf8'
+    );
+    expect(memberCompose).toMatch(/registerMeGoalsRoutes\(userRouter\)/);
   });
 
   it('documents goals paths in OpenAPI', () => {

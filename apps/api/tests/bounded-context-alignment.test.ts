@@ -65,7 +65,7 @@ describe('boundedContextAlignment (API + manifest)', () => {
     for (const entry of readdirSync(userDir)) {
       if (!entry.endsWith('.ts') || entry.endsWith('.test.ts')) continue;
       if (entry === 'schemas.ts') continue;
-      if (!entry.startsWith('register')) {
+      if (!entry.startsWith('register') && !entry.startsWith('composeUser')) {
         violations.push(`routes/user/${entry}`);
       }
     }

@@ -35,6 +35,7 @@ const RETIRED_PATHS = [
   'src/components/organisation-console/OrganisationJoinRequestCard.tsx',
   'src/components/organisation-console/OrganisationJoinRequestDeclineDialog.tsx',
   'src/components/organisation-console/OrganisationRatingChip.tsx',
+  'src/hooks/useOperatorActivityManageActions.ts',
 ];
 
 const DEPRECATED_HOST_PAGE_IMPORTS = RETIRED_PATHS.filter((p) => p.startsWith('src/pages/Organisation'));

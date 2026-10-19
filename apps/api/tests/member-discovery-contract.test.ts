@@ -20,9 +20,9 @@ describe('member-discovery API contract', () => {
   });
 
   it('activity join invites register under participation registrar', () => {
-    const userRouter = read('src/routes/user.ts');
+    const memberCompose = read('src/routes/user/composeUserMemberRoutes.ts');
     const inviteRegistrar = read('src/routes/user/registerActivityJoinInviteRoutes.ts');
-    expect(userRouter).toMatch(/registerActivityJoinInviteRoutes/);
+    expect(memberCompose).toMatch(/registerActivityJoinInviteRoutes/);
     expect(inviteRegistrar).toMatch(/registerActivityRoute/);
     expect(inviteRegistrar).toMatch(/\/:id\/invites/);
   });

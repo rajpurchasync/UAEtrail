@@ -3,7 +3,8 @@ import { useSafeAsyncEffect, type IsActiveGuard } from '../../hooks/useSafeAsync
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import type { ActivityRequestView } from '../../api/types';
-import { getActivityJoinRequests, listActivities } from '../../hooks/tenantActivityClientApi';
+import { getActivityJoinRequests } from '../../hooks/publishingJoinQueueClientApi';
+import { listActivities } from '../../hooks/tenantActivityClientApi';
 import { getActiveTenantId } from '../../api/tenant';
 import { parseActivityTypeParam } from '../../config/activityTypes';
 import {

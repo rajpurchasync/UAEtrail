@@ -132,6 +132,13 @@ describe('activity detail program — wiring', () => {
     expect(view).not.toMatch(/hostMobilePlanAccessory/);
   });
 
+  it('AD-PART-SPINE-01: host Buddies tab approves via publishingJoinQueueClientApi', () => {
+    const hub = read('src/components/activity/detail/ActivityDetailHostBuddiesHub.tsx');
+    expect(hub).toMatch(/publishingJoinQueueClientApi/);
+    expect(hub).toMatch(/afterHostJoinDecisionClientRefresh/);
+    expect(hub).not.toMatch(/\bapi\./);
+  });
+
   it('AD-PRES-01: public activity detail returns presentation envelope', () => {
     const readModel = read('apps/api/src/services/activity-public-read.ts');
     expect(readModel).toMatch(/presentation/);

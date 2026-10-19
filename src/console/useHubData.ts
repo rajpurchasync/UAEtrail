@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { getActivityJoinRequests, listActivities } from '../hooks/tenantActivityClientApi';
+import { getActivityJoinRequests } from '../hooks/publishingJoinQueueClientApi';
+import { listActivities } from '../hooks/tenantActivityClientApi';
 import { getActiveTenantId, setActiveTenantId } from '../api/tenant';
 import { useMemberStatus } from '../hooks/useMemberStatus';
 import { useAuth } from '../context/AuthContext';

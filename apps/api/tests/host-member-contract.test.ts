@@ -139,7 +139,11 @@ describe('host-member API contracts', () => {
     expect(existsSync(join(userRoutes, 'registerMeRewardsRoutes.ts'))).toBe(false);
     expect(existsSync(join(userRoutes, 'registerPublicRewardsRoutes.ts'))).toBe(false);
     const userRouter = readFileSync(join(API_SRC, 'routes', 'user.ts'), 'utf8');
+    const memberCompose = readFileSync(
+      join(API_SRC, 'routes', 'user', 'composeUserMemberRoutes.ts'),
+      'utf8'
+    );
     expect(userRouter).not.toMatch(/registerMeRewardsRoutes|registerPublicRewardsRoutes/);
-    expect(userRouter).toMatch(/registerMeBadgesRoutes/);
+    expect(memberCompose).toMatch(/registerMeBadgesRoutes/);
   });
 });

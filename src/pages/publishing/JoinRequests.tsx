@@ -2,11 +2,11 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo, useState } from 'react';
 import { useSafeAsyncEffect, type IsActiveGuard } from '../../hooks/useSafeAsyncEffect';
 import { afterHostJoinDecisionClientRefresh } from '../../hooks/activityJoinClientEffects';
-import type { ActivityRequestView } from '../../api/types';
+import type { ActivityRequestView } from '../../hooks/publishingJoinQueueClientApi';
 import {
   decideActivityJoinRequest,
   getActivityJoinRequests,
-} from '../../hooks/tenantActivityClientApi';
+} from '../../hooks/publishingJoinQueueClientApi';
 import { getActiveTenantId } from '../../api/tenant';
 import { ConsoleShell } from '../../console/ConsoleShell';
 import { ActivityJoinRequestCard } from '../../console/ActivityJoinRequestCard';
