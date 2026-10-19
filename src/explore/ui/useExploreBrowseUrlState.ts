@@ -21,7 +21,7 @@ import {
   parseExploreBrowseStateFromSearchParams,
   type ExploreBrowseUrlHydratedState,
 } from '../exploreBrowseUrlHydrate';
-import { useExploreBrowseUrlLegacyMigrations } from './useExploreBrowseUrlLegacyMigrations';
+import { useExploreBrowseUrlInboundMigrations } from './useExploreBrowseUrlInboundMigrations';
 import { useExploreBrowseUrlApplyHandlers } from './useExploreBrowseUrlApplyHandlers';
 import type { BuddiesDiscoverySegment } from '../../list/buddiesDiscoverySegment';
 import type { ExplorePinKindFilter } from '../explorePinKindFilter';
@@ -167,7 +167,7 @@ export const useExploreBrowseUrlState = ({
     applyHydratedState(parseExploreBrowseStateFromSearchParams(searchParams, isDesktop));
   }, [searchParams, isDesktop, applyHydratedState]);
 
-  useExploreBrowseUrlLegacyMigrations({ isDesktop, searchParams, setSearchParams });
+  useExploreBrowseUrlInboundMigrations({ isDesktop, searchParams, setSearchParams });
 
   const browseSetters = useMemo(
     () => ({

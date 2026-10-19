@@ -33,7 +33,7 @@ export const PlaceSelect = ({
   tenantId,
   activityType,
   places: placesOverride,
-  locations: legacyPlacesOverride,
+  locations: inboundPlacesOverride,
   required = true,
   placeholder = 'Select place…',
   emptyHelp,
@@ -41,7 +41,7 @@ export const PlaceSelect = ({
   addNewLabel = 'Add place',
   onAddNew,
 }: PlaceSelectProps) => {
-  const injectedPlaces = placesOverride ?? legacyPlacesOverride;
+  const injectedPlaces = placesOverride ?? inboundPlacesOverride;
   const [activeLocations, setActiveLocations] = useState<PlaceDTO[]>(injectedPlaces ?? []);
   const [pendingLocations, setPendingLocations] = useState<PlaceDTO[]>([]);
   const [open, setOpen] = useState(false);

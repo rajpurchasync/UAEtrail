@@ -87,11 +87,11 @@ export const ActivityPeekActions = ({
     );
   }
 
-  if (engagement.showsLegacyJoinFlow && joinStateLoading && !activityPeekHasMapWireActions(card)) {
+  if (engagement.showsFallbackJoinFlow && joinStateLoading && !activityPeekHasMapWireActions(card)) {
     return <PeekLoading />;
   }
 
-  if (engagement.showsLegacyJoinFlow && joinUiState) {
+  if (engagement.showsFallbackJoinFlow && joinUiState) {
     return (
       <>
         <JoinRequestActions

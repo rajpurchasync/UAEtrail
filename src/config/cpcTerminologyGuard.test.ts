@@ -64,7 +64,7 @@ describe('CPC terminology guard (FE)', () => {
     const allow = new Set([
       'src/api/domains/places.ts',
       'src/api/services.ts',
-      'src/api/apiLegacyGuard.test.ts',
+      'src/api/apiClientSurfaceGuard.test.ts',
       'src/hooks/memberCatalogSubmitClientApi.ts',
     ]);
     const violations: string[] = [];

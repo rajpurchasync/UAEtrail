@@ -6,7 +6,7 @@ const ROOTS = [join(process.cwd(), 'src'), join(process.cwd(), 'apps/api/src')];
 
 const ALLOWLIST = new Set([
   'src/wishlist/wishlistNamingGuard.test.ts',
-  'src/api/apiLegacyGuard.test.ts',
+  'src/api/apiClientSurfaceGuard.test.ts',
   'apps/api/src/lib/collections.ts',
   'apps/api/src/lib/mongo-migrations.ts',
   'apps/api/src/routes/user/registerMeWishlistRoutes.ts',

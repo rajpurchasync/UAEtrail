@@ -44,4 +44,4 @@ alwaysApply: true
 
 - `apps/api/tests/host-member-contract.test.ts`
 - `src/member/hostMemberGuard.test.ts`
-- `src/api/apiLegacyGuard.test.ts` (includes `fulfillParticipantIntent`)
+- `src/api/apiClientSurfaceGuard.test.ts` (includes `fulfillParticipantIntent`)

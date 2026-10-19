@@ -340,7 +340,7 @@ describe('systemCoherenceGuard', () => {
 
   it('S10d explore browse URL migrations patch search params without syncExploreUrl', () => {
     const migrations = readFileSync(
-      join(ROOT, 'src/explore/ui/useExploreBrowseUrlLegacyMigrations.ts'),
+      join(ROOT, 'src/explore/ui/useExploreBrowseUrlInboundMigrations.ts'),
       'utf8'
     );
     expect(migrations).not.toMatch(/syncExploreUrl/);

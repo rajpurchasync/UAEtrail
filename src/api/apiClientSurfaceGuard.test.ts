@@ -4,7 +4,7 @@ import { join, relative } from 'node:path';
 
 const SCAN_ROOT = join(process.cwd(), 'src');
 
-/** Legacy `api.*` symbols — use domain names from `src/api/domains/*` via `api`. */
+/** Retired `api.*` symbols — use domain names from `src/api/domains/*` via `api`. */
 const BANNED_CALLS: Array<{ pattern: RegExp; hint: string }> = [
   { pattern: /\bapi\.getTenantProfile\b/, hint: 'Use api.getOrganisationProfile' },
   { pattern: /\bapi\.getUserPublicProfile\b/, hint: 'Use api.getPersonPublicProfile' },
@@ -62,13 +62,13 @@ const BANNED_CALLS: Array<{ pattern: RegExp; hint: string }> = [
   { pattern: /\bapi\.getSocialPeople(?:Preview)?\b/, hint: 'Use api.getMemberPeopleNetwork / getMemberPeopleNetworkPreview' },
   { pattern: /\bFavoriteDTO\b/, hint: 'Use WishlistItemDTO' },
   { pattern: /from ['"][^'"]*\/api\/services['"]/, hint: 'Import from api/index' },
-  { pattern: /from ['"].*legacyApi/, hint: 'legacyApi removed — use src/api/domains/* canonical methods' },
-  { pattern: /\.\.\.legacyApi\b/, hint: 'Do not spread legacyApi on api' },
+  { pattern: /from ['"].*legacyApi/, hint: 'retired api shim removed — use src/api/domains/*' },
+  { pattern: /\.\.\.legacyApi\b/, hint: 'Do not spread retired api shim on api' },
 ];
 
 const SKIP_PREFIXES = ['src/api/', 'src/api\\'];
 
-const LEGACY_SYMBOL_ALLOW = new Set([
+const SURFACE_SYMBOL_ALLOW = new Set([
   'src/console/ConsoleHubSections.tsx',
   'src/member/organisationNamingGuard.test.ts',
   'src/hooks/tenantActivityClientApi.ts',
@@ -89,15 +89,15 @@ const collectSourceFiles = (dir: string): string[] => {
   return files;
 };
 
-describe('apiLegacyGuard', () => {
-  it('app code does not call deprecated legacy api facade symbols', () => {
+describe('apiClientSurfaceGuard', () => {
+  it('app code does not call retired api facade symbols', () => {
     const files = collectSourceFiles(SCAN_ROOT).filter(
       (file) => !SKIP_PREFIXES.some((prefix) => file.startsWith(prefix))
     );
     const violations: string[] = [];
 
     for (const file of files) {
-      if (LEGACY_SYMBOL_ALLOW.has(file)) continue;
+      if (SURFACE_SYMBOL_ALLOW.has(file)) continue;
       const content = readFileSync(join(process.cwd(), file), 'utf8');
       for (const { pattern, hint } of BANNED_CALLS) {
         if (pattern.test(content)) {

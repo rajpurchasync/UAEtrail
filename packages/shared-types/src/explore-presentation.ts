@@ -50,8 +50,6 @@ export {
 
 /** @deprecated Use {@link PLACE_MAP_SOURCE}. */
 export const CATALOG_PLACE_MAP_SOURCE = PLACE_MAP_SOURCE;
-/** @deprecated Use {@link BWL_EXPLORE_MAP_SOURCE.VENUE_LEGACY}. */
-export const LEGACY_VENUE_MAP_SOURCE = BWL_EXPLORE_MAP_SOURCE.VENUE_LEGACY;
 /** @deprecated Use {@link isGeographyMapSource} (place + facility) or {@link isPlaceMapSource}. */
 export const isCatalogPlaceMapSource = isGeographyMapSource;
 export type DiscoveryCardKind = 'hiking' | 'camping' | 'event' | 'rideshare' | 'shop' | 'agency' | 'area';

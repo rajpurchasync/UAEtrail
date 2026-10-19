@@ -20,7 +20,7 @@ export const validatePersonName = (value: string, label: 'Name' | 'Surname'): st
 export const formatDisplayNameFromParts = (givenName: string, surname: string): string =>
   `${givenName.trim()} ${surname.trim()}`;
 
-export const splitLegacyDisplayName = (
+export const splitUndelimitedDisplayName = (
   displayName: string | null | undefined
 ): { givenName: string; surname: string } => {
   const trimmed = displayName?.trim() ?? '';

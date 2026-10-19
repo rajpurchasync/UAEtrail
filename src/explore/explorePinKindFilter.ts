@@ -3,10 +3,7 @@ import { MAP_LENS_SPOTS_LABEL } from '../place/geographyVocabulary';
 /** Second-row browse filter — what kind of pin (within topic). See `explore-browse-ia.md`. */
 export type ExplorePinKindFilter = 'all' | 'activities' | 'looking' | 'locations' | 'places' | 'shops';
 
-/** @deprecated Legacy URL value — parsed to {@link ExplorePinKindFilter}. */
-export type ExplorePinKindFilterLegacyWire = 'trips' | 'locations';
-
-/** Visible map pills — Area is not a pin; legacy `locations` URL maps to Spots. */
+/** Visible map pills — Area is not a pin; inbound `locations` URL maps to Spots. */
 export const EXPLORE_PIN_KIND_PILLS: ReadonlyArray<{ key: ExplorePinKindFilter; label: string }> = [
   { key: 'all', label: 'All' },
   { key: 'activities', label: 'Activities' },

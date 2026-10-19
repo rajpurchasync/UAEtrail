@@ -6,13 +6,13 @@ export type PlaceDetailTabId = (typeof PLACE_DETAIL_TABS)[number];
 /** @deprecated Use PlaceDetailTabId — legacy name in PlaceDetailTabs exports */
 export type LocationTab = PlaceDetailTabId;
 
-const LEGACY_TAB_ALIASES: Record<string, PlaceDetailTabId> = {
+const INBOUND_TAB_ALIASES: Record<string, PlaceDetailTabId> = {
   location: 'transport',
 };
 
 export const parsePlaceDetailTabParam = (value: string | null | undefined): PlaceDetailTabId => {
   if (!value) return 'overview';
-  const normalized = LEGACY_TAB_ALIASES[value] ?? value;
+  const normalized = INBOUND_TAB_ALIASES[value] ?? value;
   if (normalized === 'facts' || normalized === 'transport' || normalized === 'guide') return normalized;
   return 'overview';
 };

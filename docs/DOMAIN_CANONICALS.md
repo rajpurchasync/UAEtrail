@@ -352,7 +352,7 @@ IA detail (pills, topics): [`NAVIGATION.md`](./NAVIGATION.md) · `src/list/`.
 
 **Kebab-case plurals** on URLs: `seeking-posts`, not `intents` or `demand`.
 
-**Client modules:** `src/api/domains/*.ts` — canonical method names (`getOrganisationProfile`, `getMemberStatus`, `getPublicPlaces`). No legacy alias layer on `api` (see `apiLegacyGuard.test.ts`).
+**Client modules:** `src/api/domains/*.ts` — canonical method names (`getOrganisationProfile`, `getMemberStatus`, `getPublicPlaces`). No retired alias layer on `api` (see `apiClientSurfaceGuard.test.ts`).
 
 ### 5.1 API vs UI (read-models)
 
@@ -372,7 +372,7 @@ IA detail (pills, topics): [`NAVIGATION.md`](./NAVIGATION.md) · `src/list/`.
 |--------|------------------|-------|
 | `Place`, `getPublicPlaces` | Location (in UI) | `LocationDTO` = wire DTO |
 | `getOrganisationProfile`, `ShopOrganisation*`, `organisation-console/` (Pro storefront onboarding) | Merchant* (client), HostOrganization* | **Not** activity CRUD/roster — see `MEMBER_MODEL` § Organisation in filenames |
-| `listHostActivities`, `createHostActivity`, `publishHostActivity`, `ActivityParticipantsPanel`, `ActivityManageSheet` | `*OrganisationActivity*`, `OrganisationActivityCheckInPanel`, `listOrganisationActivities` | Guards: `apiLegacyGuard`, `organisationNamingGuard` |
+| `listHostActivities`, `createHostActivity`, `publishHostActivity`, `ActivityParticipantsPanel`, `ActivityManageSheet` | `*OrganisationActivity*`, `OrganisationActivityCheckInPanel`, `listOrganisationActivities` | Guards: `apiClientSurfaceGuard`, `organisationNamingGuard` |
 | `OPERATOR_CONSOLE_LINKS`, `src/pages/publishing/*`, `src/console/*` | `HOST_CONSOLE_LINKS` (alias), `pages/OrganisationActivities` | Publishing console at `/publishing/*` |
 | `getMemberStatus` | `getMemberHostStatus`, `getMyOrganisationStatus` | Tier + nested `publish` |
 | `PersonPublicProfile` | `UserPublicProfile` | Public card |
@@ -413,7 +413,7 @@ IA detail (pills, topics): [`NAVIGATION.md`](./NAVIGATION.md) · `src/list/`.
 2. **No new links** to `/activities` or bare `/trips` — use `PLAN_PATH` or `PROFILE_HISTORY_PATH` (`routingHygiene.test.ts`).
 3. **No raw `/explore?…`** outside explore routing module + small allowlist (`routingHygiene.test.ts`).
 4. **No `isHostRole(`** for product gates — `canPublish` / `publish.canAccessPublishingWorkspace` (`hostMemberGuard.test.ts`).
-5. **No banned `api.*` legacy** calls in app code (`apiLegacyGuard.test.ts`).
+5. **No banned `api.*` retired** calls in app code (`apiClientSurfaceGuard.test.ts`).
 
 ---
 
@@ -435,7 +435,7 @@ When renaming or adding routes:
 | `LocationDTO` vs Place | Mongo `locations` + historical API |
 | `tenant` vs Organisation | `x-organisation-id` header (`tenantId` in storage) |
 | `UserRole` vs `HostStatusDTO` | Auth shell vs product capabilities |
-| `LegacyProMembershipRedirect` | Bookmark `/become-host` → `PRO_MEMBERSHIP_PATH` (no `BecomeHost.tsx` page) |
+| `InboundProMembershipRedirect` | Bookmark `/become-host` → `PRO_MEMBERSHIP_PATH` (no `BecomeHost.tsx` page) |
 | `ProProfileApplicationFlow` | Pro guide/agency/shop application wizard (not community Host / publish) |
 | `/activities` route | Bookmark redirect to `/plan` (or history) in `App.tsx` |
 

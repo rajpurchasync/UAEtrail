@@ -20,7 +20,7 @@ import {
   PERSON_NAME_MIN,
   formatDisplayNameFromParts,
   sanitizePersonNameInput,
-  splitLegacyDisplayName,
+  splitUndelimitedDisplayName,
   validatePersonName,
 } from '../../utils/personName';
 
@@ -115,7 +115,7 @@ export const AccountEditModal = ({
     });
     const names = profile.givenName && profile.surname
       ? { givenName: profile.givenName, surname: profile.surname }
-      : splitLegacyDisplayName(profile.displayName);
+      : splitUndelimitedDisplayName(profile.displayName);
     setGivenName(names.givenName);
     setSurname(names.surname);
     setFormError(null);

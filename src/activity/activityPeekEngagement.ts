@@ -224,7 +224,7 @@ export const activityMapPeekSkipsJoinContext = (
 export type ActivityPeekEngagement = {
   mapPeekActions: ActivityMapPeekAction[];
   mapPeekStrips: ActivityEngagementStripsDTO;
-  showsLegacyJoinFlow: boolean;
+  showsFallbackJoinFlow: boolean;
   needsJoinContext: boolean;
   skipsJoinContext: boolean;
 };
@@ -236,11 +236,11 @@ export const resolveActivityPeekEngagement = (
 ): ActivityPeekEngagement => {
   const mapPeekActions = resolveActivityMapPeekActions(card, joinUiState);
   const mapPeekStrips = resolveActivityMapPeekStrips(card, joinUiState);
-  const showsLegacyJoinFlow = activityMapPeekShowsJoinFlow(card, joinUiState);
+  const showsFallbackJoinFlow = activityMapPeekShowsJoinFlow(card, joinUiState);
   return {
     mapPeekActions,
     mapPeekStrips,
-    showsLegacyJoinFlow,
+    showsFallbackJoinFlow,
     needsJoinContext: activityMapPeekNeedsJoinContext(card, joinUiState),
     skipsJoinContext: activityMapPeekSkipsJoinContext(card, joinUiState),
   };

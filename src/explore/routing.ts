@@ -55,7 +55,7 @@ const VENUE_LIST_FILTER_SET = new Set<VenueListFilterKey>([
   'event',
 ]);
 
-const LEGACY_MAP_FILTER: Record<string, MapFilterKey> = {
+const INBOUND_MAP_FILTER: Record<string, MapFilterKey> = {
   shop: 'shops',
   shops: 'shops',
   activities: 'all',
@@ -65,7 +65,7 @@ const LEGACY_MAP_FILTER: Record<string, MapFilterKey> = {
   events: 'others',
 };
 
-const LEGACY_ACTIVITY_FROM_FILTER: Record<string, ActivityListFilterKey> = {
+const INBOUND_ACTIVITY_FROM_FILTER: Record<string, ActivityListFilterKey> = {
   hiking: 'hiking',
   camping: 'camping',
   event: 'event',
@@ -174,7 +174,7 @@ export const exploreHostFromActivityReturnPath = (
 
 export const parseMapFilter = (value: string | null): MapFilterKey => {
   if (value && MAP_FILTERS.has(value as MapFilterKey)) return value as MapFilterKey;
-  if (value && LEGACY_MAP_FILTER[value]) return LEGACY_MAP_FILTER[value];
+  if (value && INBOUND_MAP_FILTER[value]) return INBOUND_MAP_FILTER[value];
   return 'all';
 };
 
@@ -209,8 +209,8 @@ export const parseActivityListFilter = (
   if (activityParam && ACTIVITY_LIST_FILTER_SET.has(activityParam as ActivityListFilterKey)) {
     return activityParam as ActivityListFilterKey;
   }
-  if (legacyFilterParam && LEGACY_ACTIVITY_FROM_FILTER[legacyFilterParam]) {
-    return LEGACY_ACTIVITY_FROM_FILTER[legacyFilterParam];
+  if (legacyFilterParam && INBOUND_ACTIVITY_FROM_FILTER[legacyFilterParam]) {
+    return INBOUND_ACTIVITY_FROM_FILTER[legacyFilterParam];
   }
   return 'all';
 };
@@ -533,7 +533,7 @@ export const exploreOfferRideshareForSeekingPath = (intent: {
   });
 
 /** Map legacy `/activities?create=` values onto explore compose organize routes. */
-export const legacyCreateParamToHostPath = (createParam: string | null): string | null => {
+export const inboundCreateParamToHostPath = (createParam: string | null): string | null => {
   if (!createParam) return null;
   if (createParam === 'hiking' || createParam === 'camping' || createParam === 'event') {
     return exploreHostPath(createParam);

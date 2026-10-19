@@ -1162,8 +1162,8 @@ export interface RewardCatalogDTO {
 export {
   seekingFallbackTitle,
   isGenericSeekingTitle,
-  isLegacyEmbeddedSeekingTitle,
-  normalizeLegacySeekingTitle,
+  isEmbeddedPersonaSeekingTitle,
+  normalizeEmbeddedPersonaSeekingTitle,
   type SeekingTitleKind,
 } from './seeking-titles.js';
 
@@ -1245,7 +1245,6 @@ export {
   CATALOG_PLACE_MAP_SOURCE,
   FACILITY_MAP_SOURCE,
   PLACE_MAP_SOURCE,
-  LEGACY_VENUE_MAP_SOURCE,
   isCatalogPlaceMapSource,
   isFacilityMapSource,
   isGeographyMapSource,
@@ -1598,7 +1597,7 @@ export {
   parseEntityRefFromPathname,
   placeDetailPath,
   canonicalPlaceDetailPath,
-  legacyPlaceDetailPath,
+  inboundKindPlaceDetailPath,
   PLACE_CANONICAL_PATH_PREFIX,
   facilityDetailPath,
   resolveEntityPath,

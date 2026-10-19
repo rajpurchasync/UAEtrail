@@ -36,7 +36,7 @@ const CATALOG_SYMBOLS = new Set([
   'EXPLORE_SHOPS_LIST_PATH',
   'explorePath',
   'exploreSavedPinPath',
-  'legacyCreateParamToHostPath',
+  'inboundCreateParamToHostPath',
   'planPlansRolePath',
   'profileHistoryCompletedPath',
   'journeyMapPath',

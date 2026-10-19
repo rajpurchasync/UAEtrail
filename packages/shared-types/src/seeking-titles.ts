@@ -20,7 +20,7 @@ export const seekingFallbackTitle = (kind: SeekingTitleKind): string => {
   }
 };
 
-const LEGACY_EMBEDDED_SEEKING_TITLE_PATTERNS: RegExp[] = [
+const EMBEDDED_PERSONA_SEEKING_TITLE_PATTERNS: RegExp[] = [
   /^.+ needs a (?:carpool|rideshare)$/i,
   /^.+ wants to go hiking$/i,
   /^.+ wants to go camping$/i,
@@ -30,23 +30,23 @@ const LEGACY_EMBEDDED_SEEKING_TITLE_PATTERNS: RegExp[] = [
   /^.+ wants to go$/i,
 ];
 
-/** Legacy auto-titles that incorrectly embedded the requester name in the title string. */
-export const isLegacyEmbeddedSeekingTitle = (title: string): boolean => {
+/** Auto-titles that incorrectly embedded the requester name in the title string. */
+export const isEmbeddedPersonaSeekingTitle = (title: string): boolean => {
   const trimmed = title.trim();
   if (!trimmed) return false;
-  return LEGACY_EMBEDDED_SEEKING_TITLE_PATTERNS.some((pattern) => pattern.test(trimmed));
+  return EMBEDDED_PERSONA_SEEKING_TITLE_PATTERNS.some((pattern) => pattern.test(trimmed));
 };
 
-/** One-time migration helper — rewrite legacy embedded titles to canonical fallbacks. */
-export const normalizeLegacySeekingTitle = (title: string, kind: SeekingTitleKind): string => {
+/** One-time migration helper — rewrite embedded persona titles to canonical fallbacks. */
+export const normalizeEmbeddedPersonaSeekingTitle = (title: string, kind: SeekingTitleKind): string => {
   const trimmed = title.trim();
-  if (!trimmed || isLegacyEmbeddedSeekingTitle(trimmed)) {
+  if (!trimmed || isEmbeddedPersonaSeekingTitle(trimmed)) {
     return seekingFallbackTitle(kind);
   }
   return trimmed;
 };
 
-const isLegacyAutoActivityPrefixTitle = (title: string, kind: SeekingTitleKind): boolean => {
+const isRetiredAutoActivityPrefixTitle = (title: string, kind: SeekingTitleKind): boolean => {
   const trimmed = title.trim();
   if (!trimmed) return true;
   if (kind === 'hiking' && /^hiking\b/i.test(trimmed)) return true;
@@ -59,8 +59,8 @@ const isLegacyAutoActivityPrefixTitle = (title: string, kind: SeekingTitleKind):
 export const isGenericSeekingTitle = (title: string, kind: SeekingTitleKind): boolean => {
   const trimmed = title.trim();
   if (!trimmed) return true;
-  if (isLegacyEmbeddedSeekingTitle(trimmed)) return true;
+  if (isEmbeddedPersonaSeekingTitle(trimmed)) return true;
   if (trimmed === seekingFallbackTitle(kind)) return true;
   if (kind === 'rideshare' && /^ride\s*share\s*request$/i.test(trimmed)) return true;
-  return isLegacyAutoActivityPrefixTitle(trimmed, kind);
+  return isRetiredAutoActivityPrefixTitle(trimmed, kind);
 };

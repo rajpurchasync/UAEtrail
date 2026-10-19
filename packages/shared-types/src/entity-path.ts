@@ -47,8 +47,8 @@ export const normalizePlaceActivityType = (activityType: string): PlaceVenueKind
   return 'hiking';
 };
 
-/** Legacy place URL segments (redirect to {@link canonicalPlaceDetailPath}). */
-export const legacyPlaceDetailPath = (activityType: string, placeId: string): string => {
+/** Inbound kind-specific place URL segments (redirect to {@link canonicalPlaceDetailPath}). */
+export const inboundKindPlaceDetailPath = (activityType: string, placeId: string): string => {
   const kind = normalizePlaceActivityType(activityType);
   if (kind === 'shop') return `/shop/${encodeURIComponent(placeId)}`;
   if (kind === 'camping') return `/camp/${encodeURIComponent(placeId)}`;

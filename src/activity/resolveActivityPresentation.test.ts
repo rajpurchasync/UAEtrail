@@ -116,7 +116,7 @@ describe('resolveActivityPeekEngagement', () => {
   it('bundles wire actions and legacy join flow flags', () => {
     const engagement = resolveActivityPeekEngagement(activityCard(), { kind: 'open' });
     expect(engagement.mapPeekActions.map((a) => a.id)).toEqual(['request_join', 'view_detail']);
-    expect(engagement.showsLegacyJoinFlow).toBe(false);
+    expect(engagement.showsFallbackJoinFlow).toBe(false);
     expect(engagement.needsJoinContext).toBe(true);
     expect(engagement.skipsJoinContext).toBe(false);
   });

@@ -21,7 +21,7 @@ import { formatLanguages, parseLanguagesList } from '../utils/profileLanguages';
 import {
   formatDisplayNameFromParts,
   sanitizePersonNameInput,
-  splitLegacyDisplayName,
+  splitUndelimitedDisplayName,
   validatePersonName,
 } from '../utils/personName';
 import { meProfileSignupGateKey } from '../utils/signupProfileGate';
@@ -47,7 +47,7 @@ export const ProfileEdit = () => {
     const names =
       profile.givenName && profile.surname
         ? { givenName: profile.givenName, surname: profile.surname }
-        : splitLegacyDisplayName(profile.displayName ?? '');
+        : splitUndelimitedDisplayName(profile.displayName ?? '');
     setGivenName(names.givenName);
     setSurname(names.surname);
     setBio(profile.bio ?? '');

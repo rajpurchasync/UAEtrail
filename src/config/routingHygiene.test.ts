@@ -18,13 +18,13 @@ const EXPLORE_QUERY_ALLOWLIST = new Set([
 ]);
 
 /** Files allowed to reference `/activities` as a path (legacy redirect / active-state match). */
-const LEGACY_OPERATOR_PATH_ALLOWLIST = new Set([
+const INBOUND_OPERATOR_PATH_ALLOWLIST = new Set([
   'src/App.tsx',
   'src/config/platform.ts',
   'src/config/routingHygiene.test.ts',
 ]);
 
-const LEGACY_EVENT_PLACE_PATH_ALLOWLIST = new Set([
+const INBOUND_EVENT_PLACE_PATH_ALLOWLIST = new Set([
   'src/App.tsx',
   'src/utils/placePaths.test.ts',
   'src/config/routingHygiene.test.ts',
@@ -40,7 +40,7 @@ const ACTIVITIES_PATH_ALLOWLIST = new Set([
   'src/config/routingHygiene.test.ts',
 ]);
 
-const LEGACY_MAP_BROWSE_ALLOWLIST = new Set([
+const INBOUND_MAP_BROWSE_ALLOWLIST = new Set([
   'src/App.tsx',
   'src/config/platform.ts',
   'src/config/routingHygiene.test.ts',
@@ -111,7 +111,7 @@ describe('routingHygiene', () => {
       /(?:to|href)=\{?[`"']\/operator\/|(?:to|href)=["']\/operator\/|navigate\(\s*[`"']\/operator\/|`\/operator\/\$\{/;
 
     for (const file of files) {
-      if (LEGACY_OPERATOR_PATH_ALLOWLIST.has(file)) continue;
+      if (INBOUND_OPERATOR_PATH_ALLOWLIST.has(file)) continue;
       if (file.includes('/api/')) continue;
       const content = readFileSync(join(process.cwd(), file), 'utf8');
       if (linkPattern.test(content)) {
@@ -129,7 +129,7 @@ describe('routingHygiene', () => {
       /(?:to|href)=\{?[`"']\/event\/|(?:to|href)=["']\/event\/|navigate\(\s*[`"']\/event\//;
 
     for (const file of files) {
-      if (LEGACY_EVENT_PLACE_PATH_ALLOWLIST.has(file)) continue;
+      if (INBOUND_EVENT_PLACE_PATH_ALLOWLIST.has(file)) continue;
       if (file.includes('/api/')) continue;
       const content = readFileSync(join(process.cwd(), file), 'utf8');
       if (linkPattern.test(content)) {
@@ -147,7 +147,7 @@ describe('routingHygiene', () => {
       /(?:to|href)=["']\/map(?:[?'"])|navigate\(\s*["']\/map|path:\s*["']\/map["']/;
 
     for (const file of files) {
-      if (LEGACY_MAP_BROWSE_ALLOWLIST.has(file)) continue;
+      if (INBOUND_MAP_BROWSE_ALLOWLIST.has(file)) continue;
       if (file.includes('/api/')) continue;
       const content = readFileSync(join(process.cwd(), file), 'utf8');
       if (linkPattern.test(content)) {

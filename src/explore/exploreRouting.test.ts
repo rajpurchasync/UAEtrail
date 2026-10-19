@@ -8,7 +8,7 @@ import {
   parseExploreMyPlanMapMode,
   explorePlacesPath,
   exploreShopsPath,
-  legacyCreateParamToHostPath,
+  inboundCreateParamToHostPath,
   myActivitiesPath,
   exploreSavedPinPath,
   participantIntentExplorePinPath,
@@ -113,10 +113,10 @@ describe('exploreRouting navigation contract', () => {
     expect(parseHostFromActivityId(new URLSearchParams('organizeFrom=act-legacy'))).toBeNull();
   });
 
-  it('legacyCreateParamToHostPath redirects old activity create URLs', () => {
-    expect(legacyCreateParamToHostPath('hiking')).toBe('/explore?compose=host%3Ahiking');
-    expect(legacyCreateParamToHostPath('EVENT')).toBe('/explore?compose=host%3Aevent');
-    expect(legacyCreateParamToHostPath('rideshare')).toBe('/explore?compose=host%3Arideshare');
-    expect(legacyCreateParamToHostPath(null)).toBeNull();
+  it('inboundCreateParamToHostPath redirects old activity create URLs', () => {
+    expect(inboundCreateParamToHostPath('hiking')).toBe('/explore?compose=host%3Ahiking');
+    expect(inboundCreateParamToHostPath('EVENT')).toBe('/explore?compose=host%3Aevent');
+    expect(inboundCreateParamToHostPath('rideshare')).toBe('/explore?compose=host%3Arideshare');
+    expect(inboundCreateParamToHostPath(null)).toBeNull();
   });
 });

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { execSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 
 const ALLOWLIST = new Set([
   'src/components/activities/ActivityActionsMenu.tsx',
@@ -17,7 +17,7 @@ const listTrackedSourceFiles = (): string[] =>
     .split('\n')
     .filter(Boolean);
 
-describe('activityPayloadLegacyGuard', () => {
+describe('activityPayloadOrganisationShimGuard', () => {
   it('app code uses Host* activity builders, not Organisation-named shims', () => {
     const violations: string[] = [];
 

@@ -21,7 +21,7 @@ const collectTsUnder = (dir: string): string[] => {
 };
 
 const ALLOWLIST = new Set([
-  'src/api/apiLegacyGuard.test.ts',
+  'src/api/apiClientSurfaceGuard.test.ts',
   'src/config/seekingPostsHttpGuard.test.ts',
 ]);
 

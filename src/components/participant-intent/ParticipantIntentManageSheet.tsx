@@ -123,7 +123,7 @@ export const ParticipantIntentManageSheet = ({
     canLinkRideshareToActivity(linkedParentActivity) &&
     canAddLinkedRide;
 
-  const handleOfferRideshareLegacy = () => {
+  const handleOfferRideshareFromSheet = () => {
     const returnPath = exploreOfferRideshareForSeekingPath(intent);
     if (!user) {
       navigate(signInPathForReturn(returnPath));
@@ -155,7 +155,7 @@ export const ParticipantIntentManageSheet = ({
       navigateToCreateLinkedRideshare(navigate, linkedParentActivity);
       return;
     }
-    handleOfferRideshareLegacy();
+    handleOfferRideshareFromSheet();
   };
 
   const confirmRemoveIntent = async () => {
@@ -283,7 +283,7 @@ export const ParticipantIntentManageSheet = ({
                   </AppButton>
                 </div>
               ) : showRideshareOffer ? (
-                <AppButton type="button" className="w-full" onClick={handleOfferRideshareLegacy}>
+                <AppButton type="button" className="w-full" onClick={handleOfferRideshareFromSheet}>
                   {HOSTING_LINK_RIDESHARE_LABEL}
                 </AppButton>
               ) : null}

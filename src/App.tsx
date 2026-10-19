@@ -38,7 +38,7 @@ import {
   discoveryToExploreSearch,
   explorePath,
   explorePeopleBrowsePath,
-  legacyCreateParamToHostPath,
+  inboundCreateParamToHostPath,
   parseActivityListFilter,
   LIST_DISCOVERY_PATH,
 } from './config/routingCatalog';
@@ -66,7 +66,7 @@ import { useMemberStatus } from './hooks/useMemberStatus';
 import { memberCanManageHostedActivities } from './utils/hostedActivitiesGate';
 import { shopPublicPath } from './utils/shopPaths';
 
-const LegacyMessagesRedirect = () => {
+const InboundMessagesRedirect = () => {
   const { search, hash } = useLocation();
   return <Navigate to={`/chat${search}${hash}`} replace />;
 };
@@ -83,8 +83,8 @@ const CommunityActivityRedirect = () => {
   return <Navigate to={canonicalPlaceDetailPath(id)} replace />;
 };
 
-/** Legacy `/event/:id` place URLs → canonical `/place/:id`. */
-const LegacyEventPlaceRedirect = () => {
+/** Inbound `/event/:id` place URLs → canonical `/place/:id`. */
+const InboundEventPlaceRedirect = () => {
   const { id } = useParams<{ id: string }>();
   if (!id) return <Navigate to="/explore" replace />;
   return <Navigate to={canonicalPlaceDetailPath(id)} replace />;
@@ -95,7 +95,7 @@ const DiscoveryRedirect = () => {
   return <Navigate to={`${explorePath()}?${discoveryToExploreSearch(search)}`} replace />;
 };
 
-const LegacyTripsHubRedirect = () => {
+const InboundTripsHubRedirect = () => {
   const { pathname, search } = useLocation();
   const { user } = useAuth();
   const gate = useMemberStatus({ enabled: Boolean(user) });
@@ -108,9 +108,9 @@ const PlanBrowseRoute = () => {
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
   const tab = searchParams.get('tab');
-  const legacyCreatePath = legacyCreateParamToHostPath(searchParams.get('create'));
-  if (legacyCreatePath) {
-    return <Navigate to={legacyCreatePath} replace />;
+  const inboundCreatePath = inboundCreateParamToHostPath(searchParams.get('create'));
+  if (inboundCreatePath) {
+    return <Navigate to={inboundCreatePath} replace />;
   }
   if (user) {
     return (
@@ -144,7 +144,7 @@ const ShopBrowseRoute = () => (
 );
 
 /** Bookmark alias — canonical public shop URL is `/shop/:id`. */
-const LegacyMerchantPublicRedirect = () => {
+const InboundMerchantPublicRedirect = () => {
   const { id } = useParams<{ id: string }>();
   if (!id) return <Navigate to={exploreShopsPath()} replace />;
   return <Navigate to={shopPublicPath({ id })} replace />;
@@ -162,8 +162,8 @@ const FacilityDetailPage = lazy(() =>
 );
 
 const ProductDetail = lazy(() => import('./pages/ProductDetail').then((m) => ({ default: m.ProductDetail })));
-const LegacyProMembershipRedirect = lazy(() =>
-  import('./pages/LegacyProMembershipRedirect').then((m) => ({ default: m.LegacyProMembershipRedirect }))
+const InboundProMembershipRedirectPage = lazy(() =>
+  import('./pages/InboundProMembershipRedirect').then((m) => ({ default: m.InboundProMembershipRedirect }))
 );
 const ProfileProMembership = lazy(() =>
   import('./pages/ProfileProMembership').then((m) => ({ default: m.ProfileProMembership }))
@@ -355,7 +355,7 @@ function App() {
           <Route path="/trail/:id" element={<TrailDetail />} />
           <Route path="/camp/:id" element={<CampDetail />} />
           <Route path="/venue/:id" element={<EventDetail />} />
-          <Route path="/event/:id" element={<LegacyEventPlaceRedirect />} />
+          <Route path="/event/:id" element={<InboundEventPlaceRedirect />} />
           <Route path="/event-spot/:id" element={<EventSpotRedirect />} />
           <Route path="/community-activity/:id" element={<CommunityActivityRedirect />} />
           <Route path="/calendar" element={<Navigate to={explorePath({ panel: 'activities' })} replace />} />
@@ -369,9 +369,9 @@ function App() {
             }
           />
           <Route path="/plan" element={<PlanBrowseRoute />} />
-          <Route path="/trips" element={<LegacyTripsHubRedirect />} />
-          <Route path="/trips/map" element={<LegacyTripsHubRedirect />} />
-          <Route path="/activities" element={<LegacyTripsHubRedirect />} />
+          <Route path="/trips" element={<InboundTripsHubRedirect />} />
+          <Route path="/trips/map" element={<InboundTripsHubRedirect />} />
+          <Route path="/activities" element={<InboundTripsHubRedirect />} />
           <Route
             path="/profile/history"
             element={
@@ -506,7 +506,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path="/messages" element={<LegacyMessagesRedirect />} />
+          <Route path="/messages" element={<InboundMessagesRedirect />} />
           <Route
             path="/chat"
             element={
@@ -564,8 +564,8 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path={INBOUND_BECOME_ORGANIZER_PATH} element={<LegacyProMembershipRedirect />} />
-          <Route path={INBOUND_BECOME_HOST_PATH} element={<LegacyProMembershipRedirect />} />
+          <Route path={INBOUND_BECOME_ORGANIZER_PATH} element={<InboundProMembershipRedirectPage />} />
+          <Route path={INBOUND_BECOME_HOST_PATH} element={<InboundProMembershipRedirectPage />} />
           <Route path={MEMBERSHIP_MARKETING_PATH} element={<Navigate to={EXPLORE_MAP_PATH} replace />} />
           <Route path="/shop" element={<ShopBrowseRoute />} />
           <Route
@@ -584,7 +584,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path="/merchant/:id" element={<LegacyMerchantPublicRedirect />} />
+          <Route path="/merchant/:id" element={<InboundMerchantPublicRedirect />} />
           <Route path={COMMUNITY_PATH} element={<Navigate to={EXPLORE_MAP_PATH} replace />} />
           <Route path={SIGNUP_PATH} element={<SignUp />} />
           <Route path={SIGNIN_PATH} element={<SignIn />} />
@@ -729,7 +729,7 @@ function App() {
             }
           />
           <Route path="/publishing" element={<Navigate to={PUBLISHING_OVERVIEW_PATH} replace />} />
-          <Route path="/publishing/messages" element={<LegacyMessagesRedirect />} />
+          <Route path="/publishing/messages" element={<InboundMessagesRedirect />} />
           <Route
             path={PUBLISHING_OVERVIEW_PATH}
             element={

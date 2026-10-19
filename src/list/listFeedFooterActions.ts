@@ -106,7 +106,7 @@ const resolveActivityJoinFooter = (
   return {
     primary: peekActionToFooterButton(primaryAction, card, isGuest),
     secondary: secondaryAction ? peekActionToFooterButton(secondaryAction, card, isGuest) : null,
-    usesJoinFlow: engagement.showsLegacyJoinFlow,
+    usesJoinFlow: engagement.showsFallbackJoinFlow,
   };
 };
 

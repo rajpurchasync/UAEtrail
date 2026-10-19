@@ -2,7 +2,11 @@ import type { Db, Document, ObjectId } from 'mongodb';
 import { randomUUID } from 'crypto';
 import { COLLECTIONS, LEGACY_COLLECTIONS } from './collections.js';
 import { slugify } from './slug.js';
-import { isLegacyEmbeddedSeekingTitle, normalizeLegacySeekingTitle, type SeekingTitleKind } from '@uaetrail/shared-types';
+import {
+  isEmbeddedPersonaSeekingTitle,
+  normalizeEmbeddedPersonaSeekingTitle,
+  type SeekingTitleKind,
+} from '@uaetrail/shared-types';
 import { runCatalogCpcMigrations } from './catalog-cpc-migrations.js';
 
 const migrateCollectionNameIfNeeded = async (db: Db, from: string, to: string): Promise<void> => {
@@ -174,7 +178,7 @@ const migrateLegacyParticipantIntentTitles = async (db: Db): Promise<void> => {
     if (
       !title ||
       typeof kind !== 'string' ||
-      !isLegacyEmbeddedSeekingTitle(title)
+      !isEmbeddedPersonaSeekingTitle(title)
     ) {
       continue;
     }
@@ -183,7 +187,7 @@ const migrateLegacyParticipantIntentTitles = async (db: Db): Promise<void> => {
       { _id: doc._id },
       {
         $set: {
-          title: normalizeLegacySeekingTitle(title, kind as SeekingTitleKind),
+          title: normalizeEmbeddedPersonaSeekingTitle(title, kind as SeekingTitleKind),
           updatedAt: new Date(),
         },
       }

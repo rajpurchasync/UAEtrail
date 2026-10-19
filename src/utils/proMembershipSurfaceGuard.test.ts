@@ -41,9 +41,9 @@ describe('proMembershipSurfaceGuard', () => {
     expect(violations).toEqual([]);
   });
 
-  it('App mounts LegacyProMembershipRedirect for /become-host routes', () => {
+  it('App mounts InboundProMembershipRedirect for /become-host routes', () => {
     const app = readFileSync('src/App.tsx', 'utf8');
-    expect(app).toMatch(/import\('\.\/pages\/LegacyProMembershipRedirect'\)/);
+    expect(app).toMatch(/import\('\.\/pages\/InboundProMembershipRedirect'\)/);
     expect(app).not.toMatch(/pages\/BecomeHost/);
     expect(app).not.toMatch(/pages\/BecomeOrganisation/);
   });

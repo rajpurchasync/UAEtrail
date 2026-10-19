@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   canonicalPlaceDetailPath,
-  legacyPlaceDetailPath,
+  inboundKindPlaceDetailPath,
   parseEntityRefFromPathname,
   placeDetailPath,
 } from './entity-path.js';
@@ -15,9 +15,9 @@ describe('place detail paths (CPC-6)', () => {
   });
 
   it('preserves legacy segments for redirects', () => {
-    expect(legacyPlaceDetailPath('hiking', 'x')).toBe('/trail/x');
-    expect(legacyPlaceDetailPath('camping', 'x')).toBe('/camp/x');
-    expect(legacyPlaceDetailPath('event', 'x')).toBe('/venue/x');
+    expect(inboundKindPlaceDetailPath('hiking', 'x')).toBe('/trail/x');
+    expect(inboundKindPlaceDetailPath('camping', 'x')).toBe('/camp/x');
+    expect(inboundKindPlaceDetailPath('event', 'x')).toBe('/venue/x');
   });
 
   it('parses canonical place pathname', () => {

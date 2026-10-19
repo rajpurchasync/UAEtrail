@@ -21,7 +21,7 @@ export const personNameFieldsSchema = z.object({
 export const formatDisplayNameFromParts = (givenName: string, surname: string): string =>
   `${givenName.trim()} ${surname.trim()}`;
 
-export const splitLegacyDisplayName = (
+export const splitUndelimitedDisplayName = (
   displayName: string | null | undefined
 ): { givenName: string; surname: string } => {
   const trimmed = displayName?.trim() ?? '';
@@ -42,5 +42,5 @@ export const resolveProfilePersonNames = (profile: {
   const given = profile.givenName?.trim() ?? '';
   const sur = profile.surname?.trim() ?? '';
   if (given && sur) return { givenName: given, surname: sur };
-  return splitLegacyDisplayName(profile.displayName);
+  return splitUndelimitedDisplayName(profile.displayName);
 };

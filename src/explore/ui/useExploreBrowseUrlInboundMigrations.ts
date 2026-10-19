@@ -7,8 +7,8 @@ import {
   parseListCatParam,
 } from '../../list/browseListUrlState';
 
-/** Desktop default list + legacy `list=1`+`listCat` → `browse=1` migrations (C18). */
-export const useExploreBrowseUrlLegacyMigrations = (input: {
+/** Desktop default list + retired `list=1`+`listCat` → `browse=1` migrations (C18). */
+export const useExploreBrowseUrlInboundMigrations = (input: {
   isDesktop: boolean;
   searchParams: URLSearchParams;
   setSearchParams: SetURLSearchParams;
@@ -31,8 +31,8 @@ export const useExploreBrowseUrlLegacyMigrations = (input: {
   useEffect(() => {
     const listParam = input.searchParams.get('list');
     const browseParam = input.searchParams.get(BROWSE_DISCOVER_PARAM);
-    const legacyListCat = parseListCatParam(input.searchParams.get(LIST_CAT_PARAM));
-    if (listParam === '1' && legacyListCat && browseParam !== '1') {
+    const retiredListCat = parseListCatParam(input.searchParams.get(LIST_CAT_PARAM));
+    if (listParam === '1' && retiredListCat && browseParam !== '1') {
       input.setSearchParams(
         (prev) => {
           const next = new URLSearchParams(prev);

@@ -110,7 +110,7 @@ export {
 export {
   placeDetailPath,
   canonicalPlaceDetailPath,
-  legacyPlaceDetailPath,
+  inboundKindPlaceDetailPath,
   PLACE_CANONICAL_PATH_PREFIX,
   facilityDetailPath,
   activityDetailPath,
@@ -146,7 +146,7 @@ export {
   explorePlanWithBuddyPath,
   detailBackPath,
   myActivitiesPath,
-  legacyCreateParamToHostPath,
+  inboundCreateParamToHostPath,
   parseActivityListFilter,
   discoveryToExploreSearch,
   type ExplorePanel,

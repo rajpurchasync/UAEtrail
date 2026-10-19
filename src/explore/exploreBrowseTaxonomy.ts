@@ -163,7 +163,7 @@ export const mapItemMatchesSearchScope = (
 
 const FILTER_PILL_SET = new Set<ExploreMapFilterPillKey>(EXPLORE_MAP_FILTER_PILLS.map((p) => p.key));
 
-const LEGACY_TOPIC_TO_PILL: Record<string, ExploreMapFilterPillKey> = {
+const INBOUND_TOPIC_TO_PILL: Record<string, ExploreMapFilterPillKey> = {
   hiking: 'trips',
   camping: 'trips',
   activity: 'trips',
@@ -176,7 +176,7 @@ export const parseExploreMapFilterPillsParam = (value: string | null): ExploreMa
   const keys = value
     .split(',')
     .map((part) => part.trim().toLowerCase())
-    .map((part) => LEGACY_TOPIC_TO_PILL[part] ?? part)
+    .map((part) => INBOUND_TOPIC_TO_PILL[part] ?? part)
     .filter((part): part is ExploreMapFilterPillKey => FILTER_PILL_SET.has(part as ExploreMapFilterPillKey));
   return [...new Set(keys)];
 };
