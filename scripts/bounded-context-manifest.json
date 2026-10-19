@@ -94,7 +94,7 @@
       "label": "Member publish capabilities",
       "apiFiles": ["apps/api/src/services/member-status.ts"],
       "routeRegistrars": ["apps/api/src/routes/user/registerMemberStatusRoutes.ts"],
-      "feDomains": ["src/api/domains/member.ts"],
+      "feDomains": ["src/api/domains/member.ts", "src/api/domains/organisation.ts"],
       "feRoots": ["src/member"]
     },
     {
@@ -109,7 +109,11 @@
         "apps/api/src/routes/publishing/registerPublishingActivityRequestRoutes.ts",
         "apps/api/src/routes/publishing/registerPublishingSubmittedLocationRoutes.ts"
       ],
-      "feDomains": ["src/api/domains/organisation.ts", "src/api/domains/activities.ts"],
+      "feDomains": [
+        "src/api/domains/publishingWorkspace.ts",
+        "src/hooks/tenantActivityClientApi.ts",
+        "src/hooks/organisationConsoleApi.ts"
+      ],
       "feRoots": [
         "src/pages/publishing",
         "src/pages/ActivityDetail.tsx",

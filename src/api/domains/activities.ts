@@ -4,20 +4,14 @@ import {
   ActivityViewerAccessDTO,
   JoinRequestDTO,
   MyActivityDTO,
-  ParticipantDTO,
   WithdrawReason,
 } from '@uaetrail/shared-types';
 import { apiRequest, getStoredSession } from '../client';
-import { organisationRequestHeaders } from '../orgHeaders';
 import type { ActivityDetail, ActivityRequestView } from '../types';
 
 /**
- * Activity HTTP client — one entity (`activities`), different **routes** by surface:
- * - Browse catalog: `getPublicActivities` / `getFeaturedActivities` → `GET /activities`
- * - Member trips: `getMeActivities` → `GET /me/activities`
- * - Publishing console (tenant + `x-organisation-id`): `listActivities(tenantId)` → `GET /publishing/activities`
- *
- * UI should call `tenantActivityClientApi` — not `api.listActivities` directly (`apiLegacyGuard`).
+ * Activity HTTP client — public catalog, member participation, admin moderation.
+ * Tenant workspace CRUD: `publishingWorkspaceApi` + `tenantActivityClientApi`.
  */
 export const activitiesApi = {
     getPublicActivities: (opts?: { when?: 'upcoming' | 'past' | 'all'; pageSize?: number }) => {
@@ -181,111 +175,4 @@ export const activitiesApi = {
       method: 'PATCH',
       auth: true
     }),
-
-    /** Tenant activity list (`GET /publishing/activities`). */
-    listActivities: (tenantId: string) =>
-      apiRequest<{ data: ActivityDTO[] }>('/publishing/activities?pageSize=100', {
-        auth: true,
-        headers: organisationRequestHeaders(tenantId),
-      }),
-
-    createActivity: (tenantId: string, payload: Record<string, unknown>) =>
-      apiRequest<{ data: ActivityDTO }>('/publishing/activities', {
-        method: 'POST',
-        auth: true,
-        headers: organisationRequestHeaders(tenantId),
-        body: JSON.stringify(payload),
-      }),
-
-    updateActivity: (tenantId: string, activityId: string, payload: Record<string, unknown>) =>
-      apiRequest<{ data: ActivityDTO }>(`/publishing/activities/${activityId}`, {
-        method: 'PATCH',
-        auth: true,
-        headers: organisationRequestHeaders(tenantId),
-        body: JSON.stringify(payload),
-      }),
-
-    publishActivity: (tenantId: string, activityId: string) =>
-      apiRequest(`/publishing/activities/${activityId}/publish`, {
-        method: 'POST',
-        auth: true,
-        headers: organisationRequestHeaders(tenantId),
-      }),
-
-    duplicateActivity: (tenantId: string, activityId: string) =>
-      apiRequest<{ data: ActivityDTO }>(`/publishing/activities/${activityId}/duplicate`, {
-        method: 'POST',
-        auth: true,
-        headers: organisationRequestHeaders(tenantId),
-      }),
-
-    cancelActivity: (tenantId: string, activityId: string) =>
-      apiRequest(`/publishing/activities/${activityId}`, {
-        method: 'DELETE',
-        auth: true,
-        headers: organisationRequestHeaders(tenantId),
-      }),
-
-    getActivityParticipants: (tenantId: string, activityId: string) =>
-    apiRequest<{
-      data: {
-        activityId: string;
-        activityTitle: string;
-        capacity: number;
-        activityEnded: boolean;
-        participants: ParticipantDTO[];
-      };
-    }>(`/publishing/activities/${activityId}/participants`, {
-      auth: true,
-      headers: organisationRequestHeaders(tenantId),
-    }),
-
-    checkinParticipant: (tenantId: string, activityId: string, participantId: string) =>
-    apiRequest(`/publishing/activities/${activityId}/participants/${participantId}/checkin`, {
-      method: 'POST',
-      auth: true,
-      headers: organisationRequestHeaders(tenantId)
-    }),
-
-    undoCheckin: (tenantId: string, activityId: string, participantId: string) =>
-    apiRequest(`/publishing/activities/${activityId}/participants/${participantId}/checkin`, {
-      method: 'DELETE',
-      auth: true,
-      headers: organisationRequestHeaders(tenantId)
-    }),
-
-    revokeActivityParticipant: (
-      tenantId: string,
-      activityId: string,
-      participantId: string,
-      hostNote: string
-    ) =>
-      apiRequest(`/publishing/activities/${activityId}/participants/${participantId}/revoke`, {
-        method: 'POST',
-        auth: true,
-        headers: organisationRequestHeaders(tenantId),
-        body: JSON.stringify({ hostNote }),
-      }),
-
-    rateActivityParticipant: (
-      tenantId: string,
-      activityId: string,
-      participantId: string,
-      payload: { score: number; comment?: string }
-    ) =>
-      apiRequest<{ data: { score: number; comment: string | null; ratedAt: string | null } }>(
-        `/publishing/activities/${activityId}/participants/${participantId}/rating`,
-        {
-          method: 'POST',
-          auth: true,
-          headers: organisationRequestHeaders(tenantId),
-          body: JSON.stringify(payload),
-        }
-      ),
-
-    getActivityHistory: (tenantId: string) =>
-    apiRequest<{ data: Array<{ id: string; title: string; locationName: string; activityType: string; startAt: string; status: string; capacity: number; participantCount: number; checkedInCount: number }> }>(
-      '/publishing/activities/history',
-      { auth: true, headers: organisationRequestHeaders(tenantId) }
-    )
 } as const;

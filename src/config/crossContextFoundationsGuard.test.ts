@@ -27,11 +27,9 @@ const COHERENCE_CONTEXT_IDS = [
   'platform_ops',
 ] as const;
 
-const TENANT_DOMAIN_MODULES = [
-  'src/api/domains/activities.ts',
-  'src/api/domains/organisation.ts',
-  'src/api/domains/places.ts',
-] as const;
+const PUBLISHING_WORKSPACE_DOMAIN = 'src/api/domains/publishingWorkspace.ts';
+
+const TENANT_DOMAIN_MODULES = [PUBLISHING_WORKSPACE_DOMAIN] as const;
 
 describe('crossContextFoundationsGuard', () => {
   it('CTX-FOUND-01: manifest contexts are documented in SYSTEM_COHERENCE §3.1', () => {
@@ -72,13 +70,32 @@ describe('crossContextFoundationsGuard', () => {
     expect(violations).toEqual([]);
   });
 
-  it('CTX-FOUND-03: activity entity — public join/detail vs tenant publish (shared routes, not per-context forks)', () => {
+  it('CTX-FOUND-02b: /publishing HTTP only in publishingWorkspace domain module', () => {
+    const domainDir = join(ROOT, 'src/api/domains');
+    const violations: string[] = [];
+    for (const name of readdirSync(domainDir)) {
+      if (!name.endsWith('.ts') || name.endsWith('.test.ts') || name === 'index.ts') continue;
+      const rel = `src/api/domains/${name}`;
+      if (rel === PUBLISHING_WORKSPACE_DOMAIN) continue;
+      const content = read(rel);
+      if (content.includes('/publishing/')) {
+        violations.push(`${rel}: move /publishing/* to publishingWorkspace.ts`);
+      }
+    }
+    expect(violations).toEqual([]);
+  });
+
+  it('CTX-FOUND-03: activity entity — public join/detail vs tenant publish (workspace isolated)', () => {
     const activities = read('src/api/domains/activities.ts');
-    expect(activities).toMatch(/GET \/activities/);
+    expect(activities).toMatch(/`\/activities\?/);
     expect(activities).toMatch(/`\/activities\/\$\{/);
     expect(activities).toMatch(/\/activities\/.*\/requests/);
-    expect(activities).toMatch(/\/publishing\/activities/);
+    expect(activities).not.toMatch(/\/publishing\/activities/);
     expect(activities).not.toMatch(/\/me\/activities\/.*\/publish/);
+
+    const workspace = read(PUBLISHING_WORKSPACE_DOMAIN);
+    expect(workspace).toMatch(/\/publishing\/activities/);
+    expect(workspace).toMatch(/organisationRequestHeaders/);
 
     const seeking = read('src/api/domains/seeking.ts');
     expect(seeking).toMatch(/\/me\/seeking-posts/);

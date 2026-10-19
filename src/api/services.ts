@@ -19,6 +19,7 @@ import {
   safetyApi,
   memberApi,
   organisationApi,
+  publishingWorkspaceApi,
   shopApi,
   adminApi,
   chatApi,
@@ -47,13 +48,14 @@ export const api = {
   ...safetyApi,
   ...memberApi,
   ...organisationApi,
+  ...publishingWorkspaceApi,
   ...shopApi,
   ...adminApi,
   ...chatApi,
   ...mediaApi,
 
-  /** Alias for {@link placeApi.submitOrganisationPlace} — used by compose / submit-place flows. */
+  /** Tenant workspace place submit (`/publishing/places`). */
   submitPlace(tenantId: string, payload: Partial<PlaceDTO>) {
-    return this.submitOrganisationPlace(tenantId, payload);
+    return publishingWorkspaceApi.submitOrganisationPlace(tenantId, payload);
   },
 };

@@ -14,17 +14,19 @@ describe('publishing HTTP canonical guard (COH-04)', () => {
     expect(index).not.toMatch(/apiRouter\.use\('\/host'/);
   });
 
-  it('FE clients call /publishing not /operator HTTP', () => {
+  it('FE clients call /publishing only from publishingWorkspace domain module', () => {
+    const workspace = read('src/api/domains/publishingWorkspace.ts');
     const org = read('src/api/domains/organisation.ts');
     const places = read('src/api/domains/places.ts');
     const activities = read('src/api/domains/activities.ts');
-    expect(org).toMatch(/\/publishing\/requests/);
-    expect(org).toMatch(/\/publishing\/team/);
-    expect(org).not.toMatch(/['"`]\/operator\//);
-    expect(places).toMatch(/\/publishing\/places/);
-    expect(places).not.toMatch(/['"`]\/operator\/places/);
-    expect(activities).toMatch(/\/publishing\/activities/);
-    expect(activities).not.toMatch(/['"`]\/operator\/activities/);
+    expect(workspace).toMatch(/\/publishing\/requests/);
+    expect(workspace).toMatch(/\/publishing\/team/);
+    expect(workspace).toMatch(/\/publishing\/places/);
+    expect(workspace).toMatch(/\/publishing\/activities/);
+    expect(workspace).not.toMatch(/['"`]\/operator\//);
+    expect(org).not.toMatch(/\/publishing\//);
+    expect(places).not.toMatch(/\/publishing\//);
+    expect(activities).not.toMatch(/\/publishing\//);
   });
 
   it('organisation scope header is x-organisation-id only', () => {

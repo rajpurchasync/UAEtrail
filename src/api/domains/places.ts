@@ -7,7 +7,6 @@ import {
   LocationPremiumSummaryDTO,
 } from '@uaetrail/shared-types';
 import { apiRequest, downloadAuthenticatedFile } from '../client';
-import { organisationRequestHeaders } from '../orgHeaders';
 
 const listAllPublicPlaces = async (countryCode?: string) => {
   const pageSize = 100;
@@ -82,13 +81,6 @@ export const placeApi = {
       auth: true,
     }),
 
-  submitOrganisationPlace: (tenantId: string, payload: Partial<PlaceDTO>) =>
-    apiRequest<{ data: PlaceDTO }>('/publishing/places', {
-      method: 'POST',
-      auth: true,
-      headers: organisationRequestHeaders(tenantId),
-      body: JSON.stringify(payload),
-    }),
   submitUserPlace: (payload: Partial<PlaceDTO>) =>
     apiRequest<{ data: PlaceDTO }>('/me/places', {
       method: 'POST',
@@ -96,33 +88,4 @@ export const placeApi = {
       body: JSON.stringify(payload),
     }),
   getMySubmittedPlaces: () => apiRequest<{ data: LocationDTO[] }>('/me/places', { auth: true }),
-  /** @deprecated Alias of {@link placeApi.getMySubmittedPlaces}. */
-  getMySubmittedLocations: () => apiRequest<{ data: LocationDTO[] }>('/me/places', { auth: true }),
-  getOrganisationSubmittedPlaces: (tenantId: string) =>
-    apiRequest<{ data: LocationDTO[] }>('/publishing/places', {
-      auth: true,
-      headers: organisationRequestHeaders(tenantId),
-    }),
-
-  /** @deprecated Prefer {@link placeApi.submitOrganisationPlace}. */
-  submitLocation: (tenantId: string, payload: Partial<LocationDTO>) =>
-    apiRequest<{ data: LocationDTO }>('/publishing/places', {
-      method: 'POST',
-      auth: true,
-      headers: organisationRequestHeaders(tenantId),
-      body: JSON.stringify(payload),
-    }),
-  /** @deprecated Prefer {@link placeApi.submitUserPlace}. */
-  submitUserLocation: (payload: Partial<LocationDTO>) =>
-    apiRequest<{ data: LocationDTO }>('/me/places', {
-      method: 'POST',
-      auth: true,
-      body: JSON.stringify(payload),
-    }),
-  /** @deprecated Prefer {@link placeApi.getOrganisationSubmittedPlaces}. */
-  getHostSubmittedLocations: (tenantId: string) =>
-    apiRequest<{ data: LocationDTO[] }>('/publishing/places', {
-      auth: true,
-      headers: organisationRequestHeaders(tenantId),
-    }),
 } as const;

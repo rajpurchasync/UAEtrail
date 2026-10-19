@@ -19,6 +19,7 @@ export { reviewsApi } from './reviews';
 export { safetyApi } from './safety';
 export { memberApi } from './member';
 export { organisationApi } from './organisation';
+export { publishingWorkspaceApi } from './publishingWorkspace';
 export { shopApi } from './shop';
 export { adminApi } from './admin';
 export { chatApi } from './chat';

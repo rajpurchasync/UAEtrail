@@ -8,8 +8,8 @@ const SCAN_ROOT = join(process.cwd(), 'src');
 const BANNED_CALLS: Array<{ pattern: RegExp; hint: string }> = [
   { pattern: /\bapi\.getTenantProfile\b/, hint: 'Use api.getOrganisationProfile' },
   { pattern: /\bapi\.getUserPublicProfile\b/, hint: 'Use api.getPersonPublicProfile' },
-  { pattern: /\bapi\.getHostSubmittedPlaces\b/, hint: 'Use api.getOrganisationSubmittedPlaces' },
-  { pattern: /\bapi\.getHostSubmittedLocations\b/, hint: 'Use api.getOrganisationSubmittedPlaces' },
+  { pattern: /\bapi\.getHostSubmittedPlaces\b/, hint: 'Use publishingWorkspaceApi / organisationConsoleApi' },
+  { pattern: /\bapi\.getHostSubmittedLocations\b/, hint: 'Use publishingWorkspaceApi / organisationConsoleApi' },
   {
     pattern: /\bapi\.(create|publish|list|update|cancel|duplicate)OrganisationActivity\b/,
     hint: 'Use tenantActivityClientApi (routes under /publishing/activities)',
@@ -18,10 +18,10 @@ const BANNED_CALLS: Array<{ pattern: RegExp; hint: string }> = [
     pattern: /\bapi\.(getOrganisationJoinRequests|decideOrganisationJoinRequest)\b/,
     hint: 'Use getPublishingActivityJoinRequests / decideActivityJoinRequest',
   },
-  { pattern: /\bapi\.listHostActivities\s*\(/, hint: 'Use api.listActivities' },
-  { pattern: /\bapi\.listOperatorActivities\s*\(/, hint: 'Use api.listActivities' },
-  { pattern: /\bapi\.createHostActivity\s*\(/, hint: 'Use api.createActivity' },
-  { pattern: /\bapi\.createOperatorActivity\s*\(/, hint: 'Use api.createActivity' },
+  { pattern: /\bapi\.listHostActivities\s*\(/, hint: 'Use tenantActivityClientApi.listActivities' },
+  { pattern: /\bapi\.listOperatorActivities\s*\(/, hint: 'Use tenantActivityClientApi.listActivities' },
+  { pattern: /\bapi\.createHostActivity\s*\(/, hint: 'Use tenantActivityClientApi.createActivity' },
+  { pattern: /\bapi\.createOperatorActivity\s*\(/, hint: 'Use tenantActivityClientApi.createActivity' },
   {
     pattern: /\bapi\.getHostActivityJoinRequests\s*\(/,
     hint: 'Use api.getPublishingActivityJoinRequests',
