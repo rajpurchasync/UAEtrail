@@ -2,7 +2,7 @@ import type { PlaceDTO } from '@uaetrail/shared-types';
 import type { ActivityPickerType } from '../../config/activityTypes';
 import { apiRequest } from '../client';
 
-/** Query for place catalog reads (organize picker, host console). */
+/** Query for place catalog reads (Host picker, publishing workspace). */
 export type PlaceCatalogQuery = {
   placeType?: ActivityPickerType;
   countryCode?: string;

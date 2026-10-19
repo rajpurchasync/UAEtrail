@@ -44,7 +44,7 @@ export const LEGACY_TRIPS_MAP_PATH = '/trips/map' as const;
 /** Admin / host place registry consoles */
 export const ADMIN_PLACES_PATH = '/admin/places' as const;
 
-/** Publishing workspace SPA prefix (MIG-COH-04). `/operator/*` console URLs redirect here. */
+/** Publishing workspace SPA prefix (MIG-COH-04). */
 export const PUBLISHING_CONSOLE_PREFIX = '/publishing' as const;
 
 /** Publishing console (organizer + operator tenants) — canonical URLs. Sync `apps/api/src/lib/member-routes.ts`. */
@@ -113,34 +113,9 @@ export const MESSAGES_PATH = '/chat' as const;
 export const LEGACY_MESSAGES_PATH = '/messages' as const;
 export const MY_REQUESTS_PATH = '/my-requests' as const;
 
-/** Console segments that `/operator/{segment}` aliases onto `/publishing/{segment}`. Other slugs are not storefronts. */
-export const OPERATOR_CONSOLE_RESERVED_SEGMENTS = new Set([
-  'overview',
-  'activities',
-  'requests',
-  'team',
-  'profile',
-  'places',
-  'locations',
-  'history',
-  'security-privacy',
-  'messages',
-]);
-
-/** Map `/operator/{console}` onto `/publishing/{console}` (same alias as HTTP). Chat is `/chat`. Non-console slugs are not rewritten. */
-export const rewriteOperatorConsoleToPublishingPath = (pathname: string): string | null => {
-  const match = pathname.match(/^\/operator\/([^/]+)(.*)$/);
-  if (!match) return null;
-  const [, segment, rest] = match;
-  if (!OPERATOR_CONSOLE_RESERVED_SEGMENTS.has(segment)) return null;
-  if (segment === 'messages') return `${MESSAGES_PATH}${rest}`;
-  const destSegment = segment === 'locations' ? 'places' : segment;
-  return `${PUBLISHING_CONSOLE_PREFIX}/${destSegment}${rest}`;
-};
-
 export const isPublishingConsolePath = (pathname: string): boolean =>
   pathname.startsWith(`${PUBLISHING_CONSOLE_PREFIX}/`) ||
-  rewriteOperatorConsoleToPublishingPath(pathname) != null;
+  pathname === PUBLISHING_CONSOLE_PREFIX;
 
 /** Auth funnel */
 export const SIGNIN_PATH = '/signin' as const;

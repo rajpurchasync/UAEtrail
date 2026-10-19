@@ -9,7 +9,7 @@ export const activityIdFromExploreMapItemId = (exploreItemId: string): string | 
   return activityId.length > 0 ? activityId : null;
 };
 
-/** Deep link to map list + pin peek — `activity:` when published; inbound `demand:` preserved. */
+/** Deep link to map list + pin peek — `activity:` only. */
 export const exploreMapItemPathFromSeekingRow = (row: MemberDiscoverySeekingRowDTO): string => {
   const activityId = activityIdFromExploreMapItemId(row.exploreItemId);
   if (activityId) {
@@ -17,9 +17,6 @@ export const exploreMapItemPathFromSeekingRow = (row: MemberDiscoverySeekingRowD
       intentId: row.participantIntentId,
       activityId,
     });
-  }
-  if (row.exploreItemId.startsWith('demand:')) {
-    return explorePath({ pin: row.exploreItemId, list: true, panel: 'activities' });
   }
   return explorePath({ list: true, panel: 'activities' });
 };

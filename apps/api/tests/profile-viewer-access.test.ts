@@ -120,7 +120,7 @@ describe('resolveProfileViewerAccess', () => {
     expect(hasParticipantToHostLink).toHaveBeenCalledWith({
       hostUserId: host,
       participantUserId: privateUser,
-      organizerRoles: expect.arrayContaining([MembershipRole.TENANT_OWNER]),
+      hostMembershipRoles: expect.arrayContaining([MembershipRole.TENANT_OWNER]),
     });
   });
 

@@ -477,7 +477,7 @@ export const CreateHostingActivityFlow = ({
     location.search,
     onOpenHostApplication,
     navigate,
-    signupProfileComplete,
+    profileComplete,
     isCommunityHost,
     hostTiers,
     onClose,

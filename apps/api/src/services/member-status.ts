@@ -167,16 +167,16 @@ export const resolveMemberStatus = async (userId: string): Promise<HostStatusDTO
     hasShopProfile,
   });
 
-  const canAccessHostConsole =
+  const canAccessPublishingWorkspace =
     isPlatformAdmin || canPublish || hostTiers.business || isHostRole;
 
   return {
-    signupProfileComplete: profileComplete,
+    profileComplete,
     isCommunityHost,
     hostTiers,
     profileRoleLabel,
     canPublish,
-    canAccessHostConsole,
+    canAccessPublishingWorkspace,
     applicationStatus,
     tenantId,
     isHostRole,

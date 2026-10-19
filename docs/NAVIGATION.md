@@ -63,7 +63,7 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 
 ### Publishing console (`/publishing/*` routes)
 
-- **Canonical SPA `/publishing/*`** — `/operator/{console}` aliases reserved console segments only (`rewriteOperatorConsoleToPublishingPath`). Product UI uses **Organizer workspace** (community / Pro) or **Operator workspace** (agency / shop); capabilities from **`GET /me/status`** (`useMemberStatus`, `publish.*`). No `/host` or `/organizer` SPA trees. Tenant HTTP API: **`/operator/*`** (alias `/publishing/*`). `/operator/:slug` is **not** a public storefront.
+- **Canonical SPA `/publishing/*`** — publishing workspace routes only (no `/operator` SPA alias). Product UI uses **Organizer workspace** (community / Pro) or **Operator workspace** (agency / shop); capabilities from **`GET /me/status`** (`useMemberStatus`, `publish.*`). No `/host` or `/organizer` SPA trees. Tenant HTTP API: **`/publishing/*`** only. `/operator/:slug` is **not** a public storefront.
 - **Shell nav:** `OPERATOR_CONSOLE_LINKS` + `ConsoleShell` (`src/console/*`); route pages in `src/pages/operator/*`. Copy: `src/content/workspaceVocabulary.ts`.
 - **`/publishing/overview`:** `ConsoleHubSections` — stats, **Up next** preview, header **Add activity** — not a second copy of the shell link list. Below that: **personal** shortcuts (trips as participant, **Chat** → `/chat`, explore map).
 - **Member profile (`/profile`):** consumer hub only; buddies open **Organizing** → `planHostedSchedulePath()` (hosted filter on `/plan`), not `/publishing/overview`. Pro/agency/shop management remains `/publishing/*`.
@@ -146,7 +146,7 @@ Full spec: **[`LANDING.md`](./LANDING.md)** · Voice: **[`NORTHSTAR.md`](./NORTH
   2. Upcoming outings (`HomeActivitiesSection` — public API + curated fallback)
   3. How it works (`HomeHowItWorksSection`)
   4. Reviews + FAQ (`HomeReviewsFaqSection`)
-- **Do not add** demand posting, become-host, buddies, shops, or full map UX to Home — those belong on `/explore` or in-app.
+- **Do not add** seeking posts, become-host, buddies, shops, or full map UX to Home — those belong on `/explore` or in-app.
 - **Copy:** `src/content/homeMarketing.ts` · fallback cards: `homeLanding.ts` · **Components:** `src/components/home/marketing/**`
 - **Layout:** Guest `/` uses a minimal wrapper in `Layout.tsx` (main + deferred site footer only). Signed-in product chrome (`ProductShell`: header, bottom nav, compose rail) loads only on non-marketing routes.
 
@@ -200,7 +200,7 @@ Map pill label **Find your crew** (see `explorePeopleBrowseCopy.ts`); opens `vie
 | `going` | Friends | `GET /me/member-discovery/roster` + social trip hints — buddies with upcoming outings. |
 | `connect` | Everyone | Directory from `GET /users/browse` / roster; **3** directory rows preview free, then Pro lock; profile opens count toward **3 unique profiles / 30d** (`MEMBER_DISCOVERY_QUOTA_LIMIT`). |
 
-Cards show city, outings attended, and a subtle upcoming trip hint (link opens activity on map). **Friends → Plan a trip** opens compose (`explorePlanWithBuddyPath`). Profile quick launcher: **People** (this panel), **Friends** (`/buddies`), **Messages** (chat). **Join me** on activity detail (`ActivityInviteLauncher`). APIs: [`API_ROUTING.md`](./API_ROUTING.md) § Member people reads (browse).
+Cards show city, outings attended, and a subtle upcoming outing hint (link opens activity on map). **Friends → Host an outing** opens compose (`explorePlanWithBuddyPath`). Profile quick launcher: **People** (this panel), **Friends** (`/buddies`), **Messages** (chat). **Join me** on activity detail (`ActivityInviteLauncher`). APIs: [`API_ROUTING.md`](./API_ROUTING.md) § Member people reads (browse).
 
 ## Explore FAB (+)
 
@@ -214,7 +214,7 @@ Signed-in members tap **+** on `/explore` (or list FAB) to compose. **Guests** �
 | **Find crew** | Fixed map seek (`seekingFlowEngine`) or **Share availability** (`member_availability`) |
 | **Add on map** | Place or facility submit |
 
-Legacy compose URLs (`plan:*:hosting|seeking`, `organize:*`, `find:*`, `contribute:*`, `add:*`) still parse as aliases.
+Compose URLs are `host:*` / `seek:*` / `add:*` only.
 
 **Going from:** required map pin on **Host** / **Find crew (fixed)** activity flows; **Add on map** uses place/facility pin only.
 

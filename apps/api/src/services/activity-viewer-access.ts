@@ -20,7 +20,7 @@ export type ActivityViewerAccessResult = ActivityViewerAccessDTO;
 export const PRIVATE_ACTIVITY_MESSAGE =
   'This activity is private — only invited members can view it';
 
-const ORGANIZER_ROLES: MembershipRole[] = [
+const HOST_MEMBERSHIP_ROLES: MembershipRole[] = [
   MembershipRole.TENANT_OWNER,
   MembershipRole.TENANT_ADMIN,
   MembershipRole.TENANT_GUIDE,
@@ -64,7 +64,7 @@ const resolveActivityViewerLevel = async (
   }
 
   const membership = await findTenantMembershipContext(input.activity.tenantId, viewerUserId);
-  if (membership && ORGANIZER_ROLES.includes(membership.role)) {
+  if (membership && HOST_MEMBERSHIP_ROLES.includes(membership.role)) {
     return 'tenant_staff';
   }
 

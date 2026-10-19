@@ -51,20 +51,17 @@ export const BWL_ACTIVITY_PERSON_FIELDS = {
 /**
  * Join request messages (BWL). JSON camelCase — not snake `host_note`.
  * - `note` — joiner → host
- * - `hostNote` — host decision / revoke message (new writes)
- * - `organizerNote` — HTTP/Mongo read alias only
+ * - `hostNote` — host decision / revoke message
  */
 export const BWL_JOIN_REQUEST_FIELDS = {
   NOTE: 'note',
   HOST_NOTE: 'hostNote',
-  ORGANIZER_NOTE_LEGACY: 'organizerNote',
 } as const;
 
 export const resolveHostNote = (input: {
   hostNote?: string | null;
-  organizerNote?: string | null;
 } | null | undefined): string | null => {
-  const raw = input?.hostNote ?? input?.organizerNote ?? null;
+  const raw = input?.hostNote ?? null;
   if (raw == null) return null;
   const trimmed = raw.trim();
   return trimmed.length > 0 ? trimmed : null;
@@ -95,7 +92,7 @@ export const BWL_API_MOUNTS = {
  *
  * Canonical emit: activity · place · facility · shop · agency.
  * Area is **not** a pin — admin-curated name; country/state/region come from map geography.
- * Legacy read-only: venue / catalog_place → place; demand → activity; area → drop from map.
+ * Leftover read-only: venue / catalog_place → place; area → drop from map.
  */
 export const BWL_EXPLORE_MAP_SOURCE = {
   ACTIVITY: 'activity',
@@ -107,8 +104,6 @@ export const BWL_EXPLORE_MAP_SOURCE = {
   VENUE_LEGACY: 'venue',
   /** @deprecated Brief COH-02 target; use `place`. */
   CATALOG_PLACE_LEGACY: 'catalog_place',
-  /** @deprecated Seeking is `activity` + `activityMode: seeking` (MIG-COH-01). */
-  DEMAND_LEGACY: 'demand',
   /** @deprecated Synthetic hub pin — Area is a label, not a map source. */
   AREA_LEGACY: 'area',
 } as const;
@@ -124,7 +119,6 @@ export type ExploreMapSourceWire =
   | ExploreMapSourceCanonical
   | typeof BWL_EXPLORE_MAP_SOURCE.VENUE_LEGACY
   | typeof BWL_EXPLORE_MAP_SOURCE.CATALOG_PLACE_LEGACY
-  | typeof BWL_EXPLORE_MAP_SOURCE.DEMAND_LEGACY
   | typeof BWL_EXPLORE_MAP_SOURCE.AREA_LEGACY;
 
 export const PLACE_MAP_SOURCE = BWL_EXPLORE_MAP_SOURCE.PLACE;
@@ -144,7 +138,6 @@ export const isGeographyMapSource = (source: string | null | undefined): boolean
 
 export const normalizeExploreMapSource = (source: ExploreMapSourceWire): ExploreMapSourceWire => {
   if (isPlaceMapSource(source)) return BWL_EXPLORE_MAP_SOURCE.PLACE;
-  if (source === BWL_EXPLORE_MAP_SOURCE.DEMAND_LEGACY) return BWL_EXPLORE_MAP_SOURCE.ACTIVITY;
   return source;
 };
 

@@ -32,13 +32,7 @@ import type {
 
 import type { CanonicalComposeFlowId, ComposeFlowId } from './composeFlowIds';
 
-import { normalizeComposeFlowId } from './composeFlowIds';
-
-export type { CanonicalComposeFlowId, ComposeFlowId, LegacyComposeFlowId } from './composeFlowIds';
-
-export { normalizeComposeFlowId, legacyComposeFlowIdsFor } from './composeFlowIds';
-
-import { canonicalizeComposeWire } from '@uaetrail/shared-types';
+export type { CanonicalComposeFlowId, ComposeFlowId } from './composeFlowIds';
 
 import type { AddFlowStepId } from './ui/addFlow';
 
@@ -468,7 +462,7 @@ export const COMPOSE_FLOW_CATALOG: Record<CanonicalComposeFlowId, ComposeFlowSpe
 
 export const composeFlowSpec = (id: ComposeFlowId): ComposeFlowSpec =>
 
-  COMPOSE_FLOW_CATALOG[normalizeComposeFlowId(id)];
+  COMPOSE_FLOW_CATALOG[id];
 
 
 
@@ -524,23 +518,20 @@ const addPlaceKindToId = (kind: string): CanonicalComposeFlowId | null => {
 
 
 
-/** Resolve catalog entry from an open compose route (`host` / `seek` / `add`; leftover wire inbound-rewritten). */
-
+/** Resolve catalog entry from an open compose route (`host` / `seek` / `add`). */
 export const composeFlowIdFromRoute = (route: ExploreCompose | null): CanonicalComposeFlowId | null => {
   if (!route) return null;
-  const canonical = canonicalizeComposeWire(route);
-  if ('surface' in canonical) return null;
-  if (canonical.intent === 'host' && canonical.kind) return HOST_KIND_TO_FLOW_ID[canonical.kind];
-  if (canonical.intent === 'seek' && canonical.mode === 'fixed' && canonical.kind) {
-    return SEEK_KIND_TO_FLOW_ID[canonical.kind];
+  if ('surface' in route) return null;
+  if (route.intent === 'host' && route.kind) return HOST_KIND_TO_FLOW_ID[route.kind];
+  if (route.intent === 'seek' && route.mode === 'fixed' && route.kind) {
+    return SEEK_KIND_TO_FLOW_ID[route.kind];
   }
-  if (canonical.intent === 'add' && 'target' in canonical) {
-    if (canonical.target === 'facility') return 'add.facility';
-    return addPlaceKindToId(canonical.kind);
+  if (route.intent === 'add' && 'target' in route) {
+    if (route.target === 'facility') return 'add.facility';
+    return addPlaceKindToId(route.kind);
   }
   return null;
 };
-
 
 
 

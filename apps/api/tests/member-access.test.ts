@@ -6,7 +6,7 @@ import {
 } from '@uaetrail/shared-types';
 
 const baseHostStatus = {
-  signupProfileComplete: true,
+  profileComplete: true,
   isCommunityHost: false,
   hostTiers: { community: true, professional: false, business: false },
 };
@@ -20,7 +20,7 @@ describe('resolveMemberAudience', () => {
     expect(
       resolveMemberAudience({
         viewerUserId: 'u1',
-        hostStatus: { ...baseHostStatus, signupProfileComplete: false },
+        hostStatus: { ...baseHostStatus, profileComplete: false },
       })
     ).toBe('member_incomplete');
   });
@@ -59,7 +59,7 @@ describe('hostPublishEntitlementDenial', () => {
     expect(
       hostPublishEntitlementDenial({
         viewerUserId: 'u1',
-        hostStatus: { ...baseHostStatus, signupProfileComplete: false },
+        hostStatus: { ...baseHostStatus, profileComplete: false },
         canPublish: false,
       })
     ).toMatchObject({ gateReason: 'profile_required' });

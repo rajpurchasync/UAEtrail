@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { buildDiscoveryCardViewModelCard } from './discoveryCardViewModel';
-import { legacyDemandExploreMapItem } from '../explore/exploreMapItemFixtures';
 
 const seekingWithActivity = (
   partial: Partial<ExploreMapItemDTO> = {}
@@ -59,17 +58,5 @@ describe('discoveryCardModel seeking (R4.3)', () => {
     expect(card.sections.highlightName).toBe('Fatima');
     expect(card.headline).toContain('Fatima');
     expect(card.headline).not.toMatch(/^Organizer is looking for/i);
-  });
-
-  it('keeps participantIntentId for legacy demand-only wire rows', () => {
-    const card = buildDiscoveryCardViewModelCard(
-      legacyDemandExploreMapItem({
-        id: 'demand:int-only',
-        participantIntentId: 'int-only',
-        requesterUserId: 'user-1',
-        title: 'Legacy',
-      })
-    );
-    expect(card.participantIntentId).toBe('int-only');
   });
 });

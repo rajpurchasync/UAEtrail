@@ -18,7 +18,7 @@ describe('memberDiscoverySeekingRow routing', () => {
     ).toBe('/explore?list=1&panel=activities&pin=activity%3Aact-9');
   });
 
-  it('preserves inbound demand: bookmarks and does not mint them', () => {
+  it('does not treat leftover demand: exploreItemId as a pin', () => {
     expect(
       exploreMapItemPathFromSeekingRow({
         userId: 'u1',
@@ -28,10 +28,10 @@ describe('memberDiscoverySeekingRow routing', () => {
         seekingTitle: 'Camp',
         exploreItemId: 'demand:int-legacy',
       })
-    ).toBe('/explore?list=1&pin=demand%3Aint-legacy');
+    ).toBe('/explore?list=1');
   });
 
-  it('omits pin when exploreItemId is neither activity nor inbound demand', () => {
+  it('omits pin when exploreItemId is not activity-scoped', () => {
     expect(
       exploreMapItemPathFromSeekingRow({
         userId: 'u1',

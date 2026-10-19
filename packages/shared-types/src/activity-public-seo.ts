@@ -45,7 +45,7 @@ const absImage = (siteOrigin: string, url?: string | null): string | undefined =
 const pickEventImage = (siteOrigin: string, activity: ActivityPublicSeoFields): string | undefined =>
   absImage(siteOrigin, activity.images?.[0] ?? activity.location?.images?.[0] ?? activity.bannerUrl);
 
-const organizerName = (activity: ActivityPublicSeoFields): string =>
+const hostDisplayName = (activity: ActivityPublicSeoFields): string =>
   activity.hostName?.trim() || activity.tenantName?.trim() || 'UAE Trail host';
 
 /** Schema.org Event JSON-LD for activity detail + crawler HTML (region-only location). */
@@ -78,7 +78,7 @@ export const buildActivityEventJsonLd = (
     },
     organizer: {
       '@type': 'Organization',
-      name: organizerName(activity),
+      name: hostDisplayName(activity),
     },
     offers: {
       '@type': 'Offer',

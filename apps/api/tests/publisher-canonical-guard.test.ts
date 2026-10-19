@@ -33,7 +33,8 @@ describe('publisher canonical guard (COH-07)', () => {
     const app = read('src/App.tsx');
     expect(app).not.toMatch(/path="\/guide\//);
     expect(app).not.toMatch(/LegacyOperatorProfileRedirect/);
-    expect(app).toMatch(/OperatorPublishingAlias/);
+    expect(app).not.toMatch(/OperatorPublishingAlias/);
+    expect(app).not.toMatch(/path="\/operator"/);
   });
 
   it('does not emit /guide/ person storefronts from publisher helpers', () => {

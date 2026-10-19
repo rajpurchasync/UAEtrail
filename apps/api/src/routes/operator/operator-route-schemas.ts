@@ -10,7 +10,6 @@ export const activityRequestDecisionSchema = z
   .object({
     status: z.enum(['approved', 'rejected']),
     hostNote: z.string().max(300).optional(),
-    organizerNote: z.string().max(300).optional(),
   })
   .superRefine((data, ctx) => {
     if (data.status !== 'rejected') return;
@@ -41,7 +40,6 @@ export const membershipRoleToPrisma = (role: 'tenant_admin' | 'tenant_guide'): M
 export const hostParticipantRevokeSchema = z
   .object({
     hostNote: z.string().trim().min(3).max(300).optional(),
-    organizerNote: z.string().trim().min(3).max(300).optional(),
   })
   .superRefine((data, ctx) => {
     const note = resolveHostNote(data);

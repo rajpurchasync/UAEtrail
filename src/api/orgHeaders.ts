@@ -1,5 +1,4 @@
-/** Organisation scope headers — send both during x-tenant-id → x-organisation-id transition. */
+/** Organisation scope for `/publishing/*` — canonical `x-organisation-id` only. */
 export const organisationRequestHeaders = (organisationId: string): Record<string, string> => ({
   'x-organisation-id': organisationId,
-  'x-tenant-id': organisationId,
 });

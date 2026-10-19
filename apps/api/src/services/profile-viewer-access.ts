@@ -30,7 +30,7 @@ export type ProfileViewerAccessResult = {
   sharesAcceptedActivity: boolean;
 };
 
-const HOST_ORGANIZER_ROLES: MembershipRole[] = [
+const HOST_MEMBERSHIP_ROLES: MembershipRole[] = [
   MembershipRole.TENANT_OWNER,
   MembershipRole.TENANT_ADMIN,
   MembershipRole.TENANT_GUIDE,
@@ -54,13 +54,13 @@ export const viewerIsHostOfTargetOnActivity = async (
 ): Promise<boolean> => {
   const [fromJoinRequest, fromParticipantLink] = await Promise.all([
     hostHasActiveJoinRequestFromUser(hostUserId, targetUserId, {
-      organizerRoles: HOST_ORGANIZER_ROLES,
+      hostMembershipRoles: HOST_MEMBERSHIP_ROLES,
       activeStatuses: ACTIVE_JOIN_REQUEST_STATUSES,
     }),
     hasParticipantToHostLink({
       hostUserId,
       participantUserId: targetUserId,
-      organizerRoles: HOST_ORGANIZER_ROLES,
+      hostMembershipRoles: HOST_MEMBERSHIP_ROLES,
     }),
   ]);
   return fromJoinRequest || fromParticipantLink;

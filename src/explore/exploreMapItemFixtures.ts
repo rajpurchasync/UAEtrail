@@ -45,19 +45,6 @@ export const seekingExploreMapItem = (
   });
 };
 
-/** Pre-M0 wire — use only in legacy-compat tests. */
-export const legacyDemandExploreMapItem = (
-  partial: Partial<ExploreMapItemDTO> & { id?: string } = {}
-): ExploreMapItemDTO =>
-  base({
-    id: partial.id ?? 'demand:legacy-1',
-    kind: 'hiking',
-    source: 'demand',
-    participantIntentId: 'legacy-1',
-    composeIntent: 'seek',
-    ...partial,
-  });
-
 export const venueExploreMapItem = (
   partial: Partial<ExploreMapItemDTO> & { id?: string } = {}
 ): ExploreMapItemDTO =>

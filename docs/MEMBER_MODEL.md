@@ -2,7 +2,7 @@
 
 **Canonical map** for how one **person account** connects to capabilities, storage, and HTTP. Doc index: [`DOCS_INDEX.md`](./DOCS_INDEX.md). Product voice: [`NORTHSTAR.md`](./NORTHSTAR.md). Domain entities: [`DOMAIN.md`](./DOMAIN.md). HTTP prefixes: [`API_ROUTING.md`](./API_ROUTING.md). Host audit P0–P3: [`HOST_CLEANUP_ROADMAP.md`](./HOST_CLEANUP_ROADMAP.md).
 
-Do **not** re-implement tier logic in React hooks — consume **`GET /me/status`** (`MemberStatusDTO`; publish under **`publish`**; flat fields dual-read legacy `HostStatusDTO`).
+Do **not** re-implement tier logic in React hooks — consume **`GET /me/status`** (`MemberStatusDTO`; profile at root, publish/workspace under **`publish`** only).
 
 **Capabilities ≠ viewer access:** `status.publish.canPublish` / `canAccessPublishingWorkspace` answer whether this member may **host or publish** outings and open the **publishing workspace**. They do **not** gate whether someone may **read** full activity detail or a member profile. That is **`buildActivityViewerAccess`** / **`resolveProfileViewerAccess`** ([`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §15; `resolveActivityViewerAccess` remains a compatibility alias). Guest sign-in sheets (`guestBrowseGateCopy`) are presentation when `gateReason === sign_in` only.
 
@@ -21,20 +21,20 @@ Do **not** re-implement tier logic in React hooks — consume **`GET /me/status`
 
 `src/plan/planRouting.ts` + `planTab.ts` = URL/helpers for `/plan`. SN-6 allows `Plan*` under `src/plan/`, `src/components/plan/`, `src/member-plan/` only. **Do not** split the same upcoming list across `plan/` and `activity/` — that duplicates ownership.
 
-**Activity detail — Pro vs host vs crew:** **Community host** = profile-complete member who may Organize (`canPublish`). **Pro membership** = paid tier for **social depth** on outings (e.g. view host profile before join, full **Buddies** roster after join, offer/add transport when enforced) — applied in **`applyActivityViewEntitlements`** after social `viewerAccess`. **`canAccessCrewSurfaces`** on activity detail is **not** Pro and **not** publishing tier: it means confirmed **participant** or **host** on **this** outing (meeting precision, roster, group chat). Pending joiners stay on **Plan** + join CTAs only. Do not use `UserRole` or `canPublish` for consumer Buddies/Place gates.
+**Activity detail — Pro vs host vs crew:** **Community host** = profile-complete member who may **Host / publish** (`canPublish`). **Pro membership** = paid tier for **social depth** on outings (e.g. view host profile before join, full **Buddies** roster after join, offer/add transport when enforced) — applied in **`applyActivityViewEntitlements`** after social `viewerAccess`. **`canAccessCrewSurfaces`** on activity detail is **not** Pro and **not** publishing tier: it means confirmed **participant** or **host** on **this** outing (meeting precision, roster, group chat). Pending joiners stay on **Plan** + join CTAs only. Do not use `UserRole` or `canPublish` for consumer Buddies/Place gates.
 
-**Publishing actor = always a user:** Every publish action has a `userId` actor. A **business** is a **tenant** the user may represent; use **publish as self / {business}** when the member has multiple activity-capable tenants (`GET /me/status` → `publish.ownedProfiles[].publishingProfileKind`; Organize publish step `HostingPublishAsField`). Workspace publish-as: TBD.
+**Publishing actor = always a user:** Every publish action has a `userId` actor. A **business** is a **tenant** the user may represent; use **publish as self / {business}** when the member has multiple activity-capable tenants (`GET /me/status` → `publish.ownedProfiles[].publishingProfileKind`; Host publish step `HostingPublishAsField`). Workspace publish-as: TBD.
 
 **Storefront kinds (`PublishingProfileKind`):** See [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §1.3 — `community`, `pro_guide`, `agency`, `shop`, `ecommerce`, `hospitality`, `partner`. Wire `EntityKind.organisation` is the storefront slug URL, not product copy.
 
-**Product vocabulary (UI):** **`src/content/workspaceVocabulary.ts`** — **Host** = individual leading **this outing**; **Guide / Pro host** = profile-complete member with **individual Pro** — public face is **`/member/:userId`** (no separate guide storefront); **Operator** = **shop or agency business** (tenant) with a **company / shop profile**; **Organize** / **publish** = capabilities under **`GET /me/status`** → **`publish`**. **Architecture/API:** tenant publishing HTTP **`/publishing/*`** (alias `/operator/*` — UI uses *Organizer* / *Guide* / *Operator* workspace labels, not “operator” for every community host). **Member capabilities:** **`GET /me/status`** · **`useMemberStatus`**.
+**Product vocabulary (UI):** **`src/content/workspaceVocabulary.ts`** — **Host** = individual leading **this outing**; **Guide / Pro host** = profile-complete member with **individual Pro** — public face is **`/member/:userId`** (no separate guide storefront); **Operator** = **shop or agency business** (tenant) with a **company / shop profile**; **Host / publish** = capabilities under **`GET /me/status`** → **`publish`**. **Architecture/API:** tenant publishing HTTP **`/publishing/*`** (alias `/operator/*` — UI uses *Publishing workspace* / *Guide* / *Operator* labels, not “operator” for every community host). **Member capabilities:** **`GET /me/status`** · **`useMemberStatus`**.
 
 ### One stack (person · community · Pro · tenant)
 
 | Concept | What it is | Product entry |
 |---------|------------|---------------|
 | **Member (user)** | One human account | Sign up · `/profile` |
-| **Community host** | Same user, profile complete — free **Organize** on the map | No Pro; auto **community** tenant |
+| **Community host** | Same user, profile complete — free **Host** on the map | No Pro; auto **community** tenant |
 | **Pro membership** | Upgrade path for **individual** (pro guide) or **business** (shop, tour agency, e-commerce, hospitality, …) | `/profile/pro-membership` |
 | **Tenant** | Single persistence row for every storefront (`tenants`); wire name **organisation** in headers/API | `x-organisation-id`, `GET /publishing/*` when managing (alias `/operator/*`) |
 | **Business subtype** | Which Pro business flavor (location-bound shop vs remote agency vs online e-commerce, etc.) | Chosen in Pro application — maps to `PublishingProfileKind` |
@@ -136,7 +136,7 @@ Detail: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §1.6.
 | Key | When |
 |-----|------|
 | `community_member` | Default |
-| `host` (wire) | UI **Organizer** — `isCommunityHost` after first activity **or** demand on map |
+| `host` (wire) | UI **Host** — `isCommunityHost` after first activity **or** seeking on map |
 | `professional_guide` | Professional tier tenant |
 | `agency` | Agency tenant or business tier operator |
 | `shop_owner` | Shop tenant |
@@ -151,7 +151,7 @@ All paths require a **signed-in user**. Upgrade entry: **`/profile/pro-membershi
 
 | Pro path | Who | Required choice | Storefront / capabilities (high level) |
 |----------|-----|-----------------|----------------------------------------|
-| **Individual** | Member with Pro membership | — | Public face **`/member/:userId`**; manage in **`/publishing`**. Organize **free + shared-cost** outings (not paid) |
+| **Individual** | Member with Pro membership | — | Public face **`/member/:userId`**; manage in **`/publishing`**. Host **free + shared-cost** outings (not paid) |
 | **Business** | Company / brand | **Subtype required:** Shop · Tour agency · … | **Shop** → `/shop/:id` + shop details in console; **Agency** → `/agency/:slug` + agency profile; paid commercial trips where product allows |
 | **Partner** | Hotel / campaign partner | Detail later | Partner storefront + “What’s happening” campaigns (future) |
 
@@ -211,8 +211,8 @@ Product-facing **who is viewing** for **capabilities** (Host / publish, console,
 | Audience (`MemberAudience`) | Who | Typical gates |
 |-----------------------------|-----|----------------|
 | `guest` | Not signed in | `gateReason: sign_in` — copy from `guestBrowseGateCopy` |
-| `member_incomplete` | Signed in; `profileComplete === false` | `profile_required` → `/welcome` (organize/publish only) |
-| `member_basic` | Profile complete; community / buddy path | Organize when `canPublish`; map **Organizer** badge is separate (`isCommunityHost`) |
+| `member_incomplete` | Signed in; `profileComplete === false` | `profile_required` → `/welcome` (host/publish only) |
+| `member_basic` | Profile complete; community / buddy path | Host / publish when `canPublish`; map **Host** badge is separate (`isCommunityHost`) |
 | `member_professional` | Pro guide tenant (`hostTiers.professional`) | Console + Pro flows |
 | `member_business` | Agency / shop / team (`hostTiers.business`) | Console + `x-organisation-id` |
 
@@ -223,7 +223,7 @@ Product-facing **who is viewing** for **capabilities** (Host / publish, console,
 | Guest | `guest` |
 | Signed-in, incomplete profile | `member_incomplete` — not “basic” |
 | “Host” = can buddy Host / publish | `member_basic` + `canPublish` (profile complete + tenant) |
-| “Organizer” badge on profile | `isCommunityHost` — first activity or demand on map |
+| “Host” badge on profile | `isCommunityHost` — first activity or seeking on map |
 | Paid membership (future) | `PaidMembershipSku` + layer **7** entitlements — **not** inferred from `hostTiers` alone |
 
 **Resolver:** `resolveMemberAudience({ viewerUserId, hostStatus })` in `packages/shared-types/src/member-access.ts`. **Host FAB denial:** `hostPublishEntitlementDenial` (sign-in → welcome → publish capability). Client redirects: `memberPublishGateHref` + `memberPublishGateInputFromMemberStatus` in `src/utils/memberPublishGate.ts` (maps denial → routes).
@@ -237,7 +237,7 @@ Product-facing **who is viewing** for **capabilities** (Host / publish, console,
 | Intent | Auth | Route family |
 |--------|------|----------------|
 | Browse map | Guest catalog; member overlay | `GET /explore/map`, `GET /me/discover/overlay`, `GET /activities/:id` |
-| Profile, demand, inbox | Member | `GET/PATCH /me/*` |
+| Profile, seeking, inbox | Member | `GET/PATCH /me/*` |
 | Publish / manage outing | Member + tenant | `POST /host/activities`, `x-organisation-id` |
 | Public person | Optional | `GET /users/:id` (or member public profile) |
 | Pro application | Member | `POST /me/pro-application` (alias `/me/host-application`) |
@@ -306,13 +306,13 @@ UI labels vs capabilities vs wire (do not duplicate in other docs — **update t
 | **Operator (UI)** | **Shop or agency business** (tenant), always tied to ≥1 **user** | Public **agency / shop profile**; publishing workspace (wire `/operator/*`) |
 | **Operator on member profile** | When a user is linked to a shop/agency, their **`/member/:userId`** shows the **operator display name** as a link → operator profile | API: `linkedOperatorName` + `hostProfilePath` on `GET /member/:userId/profile` |
 | **Host / publish (capability)** | Member may create/publish outings | `GET /me/status` → `profileComplete` + `publish.canPublish` |
-| **Profile complete** | DOB, gender, based-in on `/welcome` | `profileComplete` on `/me/status` (legacy `signupProfileComplete`) |
+| **Profile complete** | DOB, gender, based-in on `/welcome` | `profileComplete` on `/me/status`; `signupProfileComplete` on `/me/profile` only |
 | **Participate** | Join outings as attendee | Auth only; `activity_requests`, `/activities/:id/requests` |
 | **Community tenant (buddy)** | Free individual publish path | `publishingPurpose: community`, auto tenant after profile complete |
 | **Publishing workspace** | Tenant-scoped publish/manage UI | Wire `/publishing/*` (alias `/operator/*`), `x-organisation-id`, `src/console/*` — shell title from `workspaceConsoleLabel(kind)` |
 | **Pro / business publishing** | Agency, shop, professional guide onboarding | `/profile/pro-membership`, HTTP `/me/pro-application` (collection `host_applications` until rename) |
 | **Activity join request** | Join a **published activity** (approval) | `activity_requests` (`note` joiner → host, `hostNote` host decision); `/publishing/requests` (alias `/operator/requests`) |
-| **Demand join request** | Join a **Find** post (seeking **activity**) | **`activity_requests`** (canonical); `/me/seeking-posts/.../requests` for manage UI |
+| **Seeking join request** | Join a **Find crew** post (seeking **activity**) | **`activity_requests`** (canonical); `/me/seeking-posts/.../requests` for manage UI |
 | **Pro membership (apply)** | Pro/agency/shop onboarding | HTTP `/me/pro-application`; collection `host_applications` (target `pro_applications`) |
 | **Buddy connection (friends)** | Mutual link between **member accounts**; accept also creates **mutual follow** (`user_follows`, no separate follow notification) | `BuddySummaryDTO.userId` = other person’s user id (no “buddy id”) |
 | **`actorUserId` (notifications)** | Who triggered the action | Always a **user** id — see `DOMAIN_CANONICALS.md` §11 |
@@ -320,8 +320,8 @@ UI labels vs capabilities vs wire (do not duplicate in other docs — **update t
 | Do not | Use instead |
 |--------|-------------|
 | `registerHostJoinRequestRoutes` | `registerHostActivityRequestRoutes` |
-| “Join request” without **activity** or **demand** | Qualified phrase |
-| New writes of `organizerNote` | `hostNote` (`organizerNote` HTTP/Mongo read alias) |
+| “Join request” without **activity** or **seeking** | Qualified phrase |
+| `organizerNote` | `hostNote` |
 | `isHostRole` for Host / publish gates | `publish.canPublish`, `canAccessPublishingWorkspace` from **`useMemberStatus`** |
 | `/become-host` in new UI | `PRO_MEMBERSHIP_PATH` or `/welcome` |
 | `OrganisationHubSections` / `useHostGate` | `ConsoleHubSections` (`src/console`), **`useMemberStatus`** |
@@ -359,6 +359,6 @@ Operator route registrars (legacy `registerHost*` filenames): under `routes/oper
 ## Related docs
 
 - [`DOMAIN.md`](./DOMAIN.md) — Place, Activity, Demand glossary  
-- [`CREATE_FLOW.md`](./CREATE_FLOW.md) — Organize vs Find gates  
+- [`CREATE_FLOW.md`](./CREATE_FLOW.md) — Host vs Find crew gates  
 - [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) — URLs, API client, notification meta  
 - [`ARCHITECTURE.md`](./ARCHITECTURE.md) — monorepo layout  

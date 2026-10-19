@@ -2,25 +2,19 @@ import { describe, expect, it } from 'vitest';
 import { seekingExploreMapItem } from './exploreMapItemFixtures';
 import {
   findExploreMapItemForPinId,
-  parseDemandMapItemIntentId,
   resolveActivityIdForExplorePinId,
 } from './exploreMapPinResolve';
 
-describe('exploreMapPinResolve (R4)', () => {
-  it('parses legacy demand pin intent ids', () => {
-    expect(parseDemandMapItemIntentId('demand:int-1')).toBe('int-1');
-    expect(parseDemandMapItemIntentId('activity:act-1')).toBeNull();
-  });
-
-  it('resolves demand deep link to activity seeking row by participantIntentId', () => {
+describe('exploreMapPinResolve', () => {
+  it('does not treat leftover demand: pins as map rows', () => {
     const items = [
       seekingExploreMapItem({
         id: 'activity:act-seek',
         participantIntentId: 'int-legacy',
       }),
     ];
-    expect(findExploreMapItemForPinId(items, 'demand:int-legacy')?.id).toBe('activity:act-seek');
-    expect(resolveActivityIdForExplorePinId(items, 'demand:int-legacy')).toBe('act-seek');
+    expect(findExploreMapItemForPinId(items, 'demand:int-legacy')).toBeNull();
+    expect(resolveActivityIdForExplorePinId(items, 'demand:int-legacy')).toBeNull();
   });
 
   it('keeps direct activity pin resolution', () => {

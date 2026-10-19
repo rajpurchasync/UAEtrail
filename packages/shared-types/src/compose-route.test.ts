@@ -6,7 +6,7 @@ import {
 } from './compose-route.js';
 
 describe('compose-route wire', () => {
-  it('formats and parses v3 host, seek, and add tokens', () => {
+  it('formats and parses host, seek, and add tokens', () => {
     expect(formatComposeWire({ intent: 'host', kind: 'hiking' })).toBe('host:hiking');
     expect(formatComposeWire({ intent: 'seek', mode: 'fixed', kind: 'rideshare' })).toBe(
       'seek:fixed:rideshare'
@@ -37,72 +37,21 @@ describe('compose-route wire', () => {
     });
   });
 
-  it('formats leftover plan/contribute/organize objects as canonical tokens', () => {
-    expect(formatComposeWire({ intent: 'plan', kind: 'hiking', mode: 'hosting' })).toBe(
-      'host:hiking'
-    );
-    expect(formatComposeWire({ intent: 'plan', kind: 'camping', mode: 'seeking' })).toBe(
-      'seek:fixed:camping'
-    );
-    expect(
-      formatComposeWire({
-        intent: 'contribute',
-        target: 'facility',
-        kind: 'rest_area',
-      })
-    ).toBe('add:facility:rest_area');
-    expect(formatComposeWire({ intent: 'organize', kind: 'hiking' })).toBe('host:hiking');
-    expect(formatComposeWire({ intent: 'find' })).toBe('seek');
+  it('rejects leftover plan/contribute/organize/find tokens', () => {
+    expect(parseComposeWire('plan:hiking:hosting')).toBeNull();
+    expect(parseComposeWire('plan:camping:seeking')).toBeNull();
+    expect(parseComposeWire('contribute:facility:toilet')).toBeNull();
+    expect(parseComposeWire('organize:hiking')).toBeNull();
+    expect(parseComposeWire('organize:carpool')).toBeNull();
+    expect(parseComposeWire('find:rideshare')).toBeNull();
+    expect(parseComposeWire('find')).toBeNull();
+    expect(parseComposeWire('add:shop')).toBeNull();
+    expect(parseComposeWire('organize')).toBeNull();
+    expect(parseComposeWire('plan')).toBeNull();
+    expect(parseComposeWire('contribute')).toBeNull();
   });
 
-  it('parses leftover plan and contribute tokens inbound', () => {
-    expect(parseComposeWire('plan:hiking:hosting')).toEqual({
-      intent: 'plan',
-      kind: 'hiking',
-      mode: 'hosting',
-    });
-    expect(parseComposeWire('contribute:facility:toilet')).toEqual({
-      intent: 'contribute',
-      target: 'facility',
-      kind: 'toilet',
-    });
-  });
-
-  it('parses legacy organize, find, and add tokens', () => {
-    expect(parseComposeWire('organize:hiking')).toEqual({
-      intent: 'organize',
-      kind: 'hiking',
-    });
-    expect(parseComposeWire('find:rideshare')).toEqual({
-      intent: 'find',
-      kind: 'rideshare',
-    });
-    expect(parseComposeWire('find')).toEqual({ surface: 'menu', intent: 'find' });
-    expect(parseComposeWire('add:shop')).toEqual({ intent: 'add', kind: 'shop' });
-    expect(parseComposeWire('organize:carpool')).toEqual({
-      intent: 'organize',
-      kind: 'rideshare',
-    });
-  });
-
-  it('canonicalizes legacy and v2 routes to v3', () => {
-    expect(
-      canonicalizeComposeWire({ intent: 'plan', kind: 'hiking', mode: 'hosting' })
-    ).toEqual({ intent: 'host', kind: 'hiking' });
-    expect(
-      canonicalizeComposeWire({ intent: 'plan', kind: 'rideshare', mode: 'seeking' })
-    ).toEqual({ intent: 'seek', mode: 'fixed', kind: 'rideshare' });
-    expect(canonicalizeComposeWire({ intent: 'find' })).toEqual({
-      surface: 'menu',
-      intent: 'seek',
-    });
-    expect(
-      canonicalizeComposeWire({
-        intent: 'contribute',
-        target: 'place',
-        kind: 'hiking',
-      })
-    ).toEqual({ intent: 'add', target: 'place', kind: 'hiking' });
+  it('leaves canonical add routes unchanged', () => {
     expect(
       canonicalizeComposeWire({ intent: 'add', target: 'facility', kind: 'toilet' })
     ).toEqual({ intent: 'add', target: 'facility', kind: 'toilet' });
@@ -110,5 +59,4 @@ describe('compose-route wire', () => {
       canonicalizeComposeWire({ intent: 'add', target: 'place', kind: 'hiking' })
     ).toEqual({ intent: 'add', target: 'place', kind: 'hiking' });
   });
-
 });

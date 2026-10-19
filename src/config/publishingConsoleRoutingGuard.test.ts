@@ -32,7 +32,8 @@ describe('publishing console routing (MIG-ROUTING-CANON-P1)', () => {
     expect(app).not.toMatch(/path="\/host\//);
     expect(app).not.toMatch(/path="\/organizer\//);
     expect(app).toMatch(/path="\/publishing"/);
-    expect(app).toMatch(/path="\/operator"/);
+    expect(app).not.toMatch(/path="\/operator"/);
+    expect(app).not.toMatch(/OperatorPublishingAlias/);
     expect(app).toMatch(/path="\/publishing\/messages"/);
   });
 
@@ -42,7 +43,7 @@ describe('publishing console routing (MIG-ROUTING-CANON-P1)', () => {
     expect(surface).not.toMatch(/rewriteLegacyPublishingConsolePath/);
     expect(surface).toMatch(/OPERATOR_OVERVIEW_PATH/);
     expect(surface).toMatch(/PUBLISHING_CONSOLE_PREFIX/);
-    expect(surface).toMatch(/rewriteOperatorConsoleToPublishingPath/);
+    expect(surface).not.toMatch(/rewriteOperatorConsoleToPublishingPath/);
   });
 
   it('app src does not link to /host/ or /organizer/ publishing paths', () => {

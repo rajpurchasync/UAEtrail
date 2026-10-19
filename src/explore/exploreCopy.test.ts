@@ -39,8 +39,6 @@ describe('resolveMapPinEmoji', () => {
     expect(resolveMapPinEmoji('shop', 'shop')).toBe('🛍️');
     expect(resolveMapPinEmoji('hiking', 'activity', undefined, undefined, true)).toBe('🙋');
     expect(resolveMapPinEmoji('rideshare', 'activity', undefined, undefined, true)).toBe('🚗');
-    expect(resolveMapPinEmoji('hiking', 'demand')).toBe('🙋');
-    expect(resolveMapPinEmoji('rideshare', 'demand')).toBe('🚗');
   });
 
   it('keeps seeking pins on activity source (activityMode)', () => {

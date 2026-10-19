@@ -10,6 +10,7 @@ import {
 
   hostCreateActivityKind,
 
+  addComposeFromVenueKind,
 } from './compose';
 
 import {
@@ -26,7 +27,7 @@ import {
 
 } from './composeFlowCatalog';
 
-import { normalizeComposeFlowId } from './composeFlowIds';
+import { isCanonicalComposeFlowId } from './composeFlowIds';
 
 import { getAddFlowSteps } from './ui/addFlow';
 
@@ -84,7 +85,7 @@ describe('compose flow catalog', () => {
 
     for (const option of ADD_COMPOSE_OPTIONS) {
 
-      const id = composeFlowIdFromRoute({ intent: 'add', kind: option.kind });
+      const id = composeFlowIdFromRoute(addComposeFromVenueKind(option.kind));
 
       expect(id).toBeTruthy();
 
@@ -110,43 +111,35 @@ describe('compose flow catalog', () => {
 
 
 
-  it('maps leftover plan/contribute compose routes to canonical catalog ids', () => {
+  it('rejects leftover plan/contribute compose routes', () => {
 
     expect(
 
-      composeFlowIdFromRoute({ intent: 'plan', kind: 'hiking', mode: 'hosting' })
+      composeFlowIdFromRoute({ intent: 'plan', kind: 'hiking', mode: 'hosting' } as never)
 
-    ).toBe('host.hiking');
-
-    expect(
-
-      composeFlowIdFromRoute({ intent: 'plan', kind: 'rideshare', mode: 'seeking' })
-
-    ).toBe('seek.fixed.rideshare');
+    ).toBeNull();
 
     expect(
 
-      composeFlowIdFromRoute({ intent: 'contribute', target: 'place', kind: 'hiking' })
+      composeFlowIdFromRoute({ intent: 'contribute', target: 'place', kind: 'hiking' } as never)
 
-    ).toBe('add.place.hiking');
+    ).toBeNull();
 
   });
 
 
 
-  it('normalizes legacy catalog ids to canonical', () => {
+  it('catalog ids are host/seek/add only', () => {
 
-    expect(normalizeComposeFlowId('organize.hiking')).toBe('host.hiking');
+    expect(isCanonicalComposeFlowId('host.hiking')).toBe(true);
 
-    expect(normalizeComposeFlowId('plan.hiking.hosting')).toBe('host.hiking');
+    expect(isCanonicalComposeFlowId('seek.fixed.camping')).toBe(true);
 
-    expect(normalizeComposeFlowId('host.hiking')).toBe('host.hiking');
+    expect(isCanonicalComposeFlowId('add.place.hiking')).toBe(true);
 
-    expect(normalizeComposeFlowId('seek.fixed.camping')).toBe('seek.fixed.camping');
+    expect(isCanonicalComposeFlowId('organize.hiking')).toBe(false);
 
-    expect(normalizeComposeFlowId('add.place.hiking')).toBe('add.place.hiking');
-
-    expect(composeFlowSpec('organize.hiking').id).toBe('host.hiking');
+    expect(isCanonicalComposeFlowId('plan.hiking.hosting')).toBe(false);
 
   });
 
@@ -232,7 +225,7 @@ describe('compose flow catalog', () => {
 
     for (const option of ADD_COMPOSE_OPTIONS) {
 
-      const id = composeFlowIdFromRoute({ intent: 'add', kind: option.kind });
+      const id = composeFlowIdFromRoute(addComposeFromVenueKind(option.kind));
 
       expect(id).toBeTruthy();
 

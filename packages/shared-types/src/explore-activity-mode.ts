@@ -8,14 +8,13 @@ export type ExploreMapItemActivityModeFields = {
   id?: string;
 };
 
-/** Resolve mode from wire fields (supports legacy `source: demand` payloads). */
+/** Resolve mode from wire fields (`activityMode`, else hosted activity). */
 export const resolveExploreMapActivityMode = (
   item: ExploreMapItemActivityModeFields
 ): ExploreActivityMode | null => {
   if (item.activityMode === 'hosted' || item.activityMode === 'seeking') {
     return item.activityMode;
   }
-  if (item.source === 'demand' || item.id?.startsWith('demand:')) return 'seeking';
   if (item.source === 'activity' && item.participantIntentId) return 'seeking';
   if (item.source === 'activity') return 'hosted';
   return null;

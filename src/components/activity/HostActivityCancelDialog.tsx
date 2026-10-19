@@ -11,7 +11,7 @@ type HostActivityCancelDialogProps = {
   overlayClassName?: string;
 };
 
-/** Confirm cancel published outing or delete draft — map peek, detail, and host console. */
+/** Confirm cancel published outing or delete draft — map peek, detail, and publishing workspace. */
 export const HostActivityCancelDialog = ({
   activity,
   participantNotice = null,

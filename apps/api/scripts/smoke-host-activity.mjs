@@ -32,7 +32,7 @@ const log = (step, ok, detail = '') => {
 async function req(path, { method = 'GET', token, tenantId, body } = {}) {
   const headers = { Accept: 'application/json' };
   if (token) headers.Authorization = `Bearer ${token}`;
-  if (tenantId) headers['x-tenant-id'] = tenantId;
+  if (tenantId) headers['x-organisation-id'] = tenantId;
   if (body) headers['Content-Type'] = 'application/json';
   const res = await fetch(`${API}${path}`, {
     method,
@@ -125,7 +125,7 @@ async function main() {
   images: []
 };
 
-  const created = await req('/operator/activities', {
+  const created = await req('/publishing/activities', {
     method: 'POST',
     token: orgToken,
     tenantId,
@@ -150,7 +150,7 @@ async function main() {
     return printSummary();
   }
 
-  const published = await req(`/operator/activities/${activityId}/publish`, {
+  const published = await req(`/publishing/activities/${activityId}/publish`, {
     method: 'POST',
     token: orgToken,
     tenantId
@@ -196,7 +196,7 @@ async function main() {
   log('User: meeting point map (UI)', true, 'OSM embed when lat/lng set — verify manually');
   log('Organizer: postpone via edit date (API)', true, 'PATCH date notifies participants');
 
-  const edited = await req(`/operator/activities/${activityId}`, {
+  const edited = await req(`/publishing/activities/${activityId}`, {
     method: 'PATCH',
     token: orgToken,
     tenantId,
@@ -208,7 +208,7 @@ async function main() {
   });
   log('Organizer: edit event', edited.status === 200, edited.status === 200 ? 'title/capacity/price updated' : JSON.stringify(edited.json));
 
-  const cancelled = await req(`/operator/activities/${activityId}`, {
+  const cancelled = await req(`/publishing/activities/${activityId}`, {
     method: 'DELETE',
     token: orgToken,
     tenantId

@@ -48,7 +48,6 @@ const normalizeConsumerChatDeepLinkPath = (
 
   if (
     pathname === LEGACY_MESSAGES_PATH ||
-    pathname === '/operator/messages' ||
     pathname === '/publishing/messages' ||
     pathname === '/host/messages'
   ) {
@@ -82,8 +81,6 @@ const normalizeDirectNotificationPath = (
   meta: Record<string, unknown> | null
 ): string => {
   if (
-    path === '/operator/overview' ||
-    path.startsWith('/operator/overview?') ||
     path === '/host/overview' ||
     path.startsWith('/host/overview?')
   ) {
@@ -115,16 +112,6 @@ const normalizeDirectNotificationPath = (
   ) {
     const resolved = resolveLegacyTripsHubRedirect(pathname, search);
     if (resolved) return resolved;
-  }
-
-  const publishedActivityId =
-    toStringValue(meta?.activityId) ?? toStringValue(meta?.seekingActivityId);
-  if (publishedActivityId && path.includes('pin=demand:')) {
-    return explorePath({
-      list: true,
-      panel: 'activities',
-      pin: `activity:${publishedActivityId}`,
-    });
   }
 
   return normalizeConsumerChatDeepLinkPath(path, meta);
@@ -293,7 +280,7 @@ export const inferNotificationPath = (
     return PROFILE_PATH;
   }
   if (kind === 'location_rejected') {
-    return explorePath({ panel: 'venues', addLocation: true });
+    return explorePath({ panel: 'venues', compose: { surface: 'menu', intent: 'add' } });
   }
 
   if (options?.preferAdminRoutes) {

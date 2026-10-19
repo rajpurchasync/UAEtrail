@@ -1,14 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
   GROUPS_PATH,
-  MESSAGES_PATH,
-  OPERATOR_OVERVIEW_PATH,
-  OPERATOR_PLACES_PATH,
   SIGNIN_PATH,
   groupsManagePath,
   groupsPath,
+  isPublishingConsolePath,
   messagesGroupPath,
-  rewriteOperatorConsoleToPublishingPath,
   signInPath,
 } from './surfacePaths';
 
@@ -32,12 +29,10 @@ describe('surfacePaths', () => {
     expect(messagesGroupPath('g-1', 'act-1')).toBe('/chat?group=g-1&activity=act-1');
   });
 
-  it('rewrites /operator console bookmarks onto /publishing (messages → /chat)', () => {
-    expect(rewriteOperatorConsoleToPublishingPath('/operator/overview')).toBe(OPERATOR_OVERVIEW_PATH);
-    expect(rewriteOperatorConsoleToPublishingPath('/operator/locations')).toBe(OPERATOR_PLACES_PATH);
-    expect(rewriteOperatorConsoleToPublishingPath('/operator/messages')).toBe(MESSAGES_PATH);
-    expect(rewriteOperatorConsoleToPublishingPath('/guide/acme')).toBeNull();
-    expect(rewriteOperatorConsoleToPublishingPath('/operator/acme-guides')).toBeNull();
-    expect(rewriteOperatorConsoleToPublishingPath('/operator/acme-tours')).toBeNull();
+  it('isPublishingConsolePath matches /publishing workspace only', () => {
+    expect(isPublishingConsolePath('/publishing/overview')).toBe(true);
+    expect(isPublishingConsolePath('/publishing')).toBe(true);
+    expect(isPublishingConsolePath('/operator/overview')).toBe(false);
+    expect(isPublishingConsolePath('/guide/acme')).toBe(false);
   });
 });

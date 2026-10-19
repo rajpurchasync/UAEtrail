@@ -14,4 +14,4 @@ export const goalCountModeLabel = (mode: 'join' | 'host'): string =>
 export const goalProgressHint = (mode: 'join' | 'host'): string =>
   mode === 'host'
     ? 'Counts outings you host on UAE Trail — you can host when you’re ready.'
-    : 'Counts trips you log here and visited pins on My Map (including check-ins).';
+    : 'Counts outings you log here and visited pins on My Map (including check-ins).';

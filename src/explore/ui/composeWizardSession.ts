@@ -1,8 +1,7 @@
 import type { ComposeFlowId } from '../composeFlowCatalog';
-import { canonicalizeComposeWire } from '@uaetrail/shared-types';
 import type { ExploreCompose } from '../compose';
+import { addComposeFromVenueKind } from '../compose';
 import { composeFlowIdFromRoute } from '../composeFlowCatalog';
-import { legacyComposeFlowIdsFor, normalizeComposeFlowId } from '../composeFlowIds';
 import type { CreateActivityDraft, CreateActivityKind } from './hostingFlowEngine';
 import type { SeekingDraft, SeekingKind } from './seekingFlowEngine';
 import type { AddDraft } from './addFlow';
@@ -28,14 +27,8 @@ export type AddWizardSession = {
   draft: AddDraft | FacilityAddDraft;
 };
 
-const sessionKey = (flowId: ComposeFlowId, scope?: string) => {
-  const canonical = normalizeComposeFlowId(flowId);
-  return `${STORAGE_PREFIX}:${canonical}${scope ? `:${scope}` : ''}`;
-};
-
-/** Older builds used a suffixed storage namespace — read once, then write under canonical keys. */
-const legacySessionKey = (flowId: ComposeFlowId, scope?: string) =>
-  `uaetrail:compose-wizard:v1:${flowId}${scope ? `:${scope}` : ''}`;
+const sessionKey = (flowId: ComposeFlowId, scope?: string) =>
+  `${STORAGE_PREFIX}:${flowId}${scope ? `:${scope}` : ''}`;
 
 export const hostingWizardSessionScope = (prefill?: {
   participantIntentId?: string;
@@ -83,7 +76,7 @@ export const clearSeekingWizardSession = (flowId: ComposeFlowId): void => {
 };
 
 const addFlowId = (kind: AddVenueKind): ComposeFlowId | null =>
-  composeFlowIdFromRoute({ intent: 'add', kind });
+  composeFlowIdFromRoute(addComposeFromVenueKind(kind));
 
 export const readAddWizardSession = (
   kind: AddVenueKind
@@ -113,44 +106,32 @@ export const clearAddWizardSession = (kind: AddVenueKind): void => {
 /** Drop saved draft when the user fully dismisses compose (not back-to-menu). */
 export const clearComposeWizardSessionForRoute = (route: ExploreCompose | null): void => {
   if (!route) return;
-  const canonical = canonicalizeComposeWire(route);
-  const flowId = composeFlowIdFromRoute(canonical);
-  if (!flowId || 'surface' in canonical) return;
-  if (canonical.intent === 'host') {
+  const flowId = composeFlowIdFromRoute(route);
+  if (!flowId || 'surface' in route) return;
+  if (route.intent === 'host') {
     clearHostingWizardSession(flowId);
     return;
   }
-  if (canonical.intent === 'seek') {
+  if (route.intent === 'seek') {
     clearSeekingWizardSession(flowId);
     return;
   }
-  if (canonical.intent === 'add' && 'target' in canonical) {
-    if (canonical.target === 'facility') {
+  if (route.intent === 'add' && 'target' in route) {
+    if (route.target === 'facility') {
       clearAddWizardSession('facility');
       return;
     }
     const kind =
-      canonical.kind === 'outdoor_other' || canonical.kind === 'event'
+      route.kind === 'outdoor_other' || route.kind === 'event'
         ? 'event'
-        : (canonical.kind as AddVenueKind);
+        : (route.kind as AddVenueKind);
     clearAddWizardSession(kind);
   }
 };
 
-function readJson<T>(key: string, legacyKey?: string): T | null {
+function readJson<T>(key: string): T | null {
   try {
-    let raw = sessionStorage.getItem(key);
-    if (!raw && legacyKey) {
-      raw = sessionStorage.getItem(legacyKey);
-      if (raw) {
-        try {
-          sessionStorage.setItem(key, raw);
-          sessionStorage.removeItem(legacyKey);
-        } catch {
-          /* quota / private mode */
-        }
-      }
-    }
+    const raw = sessionStorage.getItem(key);
     if (!raw) return null;
     return JSON.parse(raw) as T;
   } catch {
@@ -158,26 +139,8 @@ function readJson<T>(key: string, legacyKey?: string): T | null {
   }
 }
 
-const readSessionJson = <T>(flowId: ComposeFlowId, scope?: string): T | null => {
-  const canonical = normalizeComposeFlowId(flowId);
-  const primary = sessionKey(canonical, scope);
-  const fromPrimary = readJson<T>(primary, legacySessionKey(canonical, scope));
-  if (fromPrimary) return fromPrimary;
-  for (const legacyId of legacyComposeFlowIdsFor(canonical)) {
-    const legacyFlowKey = `${STORAGE_PREFIX}:${legacyId}${scope ? `:${scope}` : ''}`;
-    const migrated = readJson<T>(legacyFlowKey);
-    if (migrated) {
-      writeJson(primary, migrated);
-      try {
-        sessionStorage.removeItem(legacyFlowKey);
-      } catch {
-        /* ignore */
-      }
-      return migrated;
-    }
-  }
-  return null;
-};
+const readSessionJson = <T>(flowId: ComposeFlowId, scope?: string): T | null =>
+  readJson<T>(sessionKey(flowId, scope));
 
 function writeJson(key: string, value: unknown): void {
   try {

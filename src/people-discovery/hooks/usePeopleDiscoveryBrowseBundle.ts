@@ -7,13 +7,13 @@ import { useMemberDiscoveryRoster } from './useMemberDiscoveryRoster';
 import { useExplorePeopleAvailability } from './usePeopleAvailability';
 import { buildExploreMemberPeopleMapChip } from '../lib/exploreMemberPeopleMapChip';
 import type { useExploreBrowseUrlState } from '@/explore/ui/useExploreBrowseUrlState';
-import type { HostStatusDTO } from '@uaetrail/shared-types';
+import type { MemberStatusDTO } from '@uaetrail/shared-types';
 
 type BrowseState = ReturnType<typeof useExploreBrowseUrlState>;
 
 type Args = {
   user: { id: string; role?: string } | null;
-  hostStatus: HostStatusDTO | null;
+  hostStatus: MemberStatusDTO | null;
   browse: BrowseState;
   /** Published explore catalog (`GET /explore/map` → `ExploreMapItemDTO[]`). */
   exploreCatalogItems: ExploreMapItemDTO[];
@@ -95,7 +95,9 @@ export const useExplorePeopleBrowseBundle = ({
     [memberPeoplePreview.preview, exploreCatalogItems, user?.id, browse.activityDatePreset]
   );
 
-  const canBrowseAllMembers = memberHasUnlimitedDiscovery(hostStatus);
+  const canBrowseAllMembers = memberHasUnlimitedDiscovery(
+    hostStatus ? { hostTiers: hostStatus.publish.hostTiers } : null
+  );
 
   const peopleBrowsePanelProps = {
     isDesktop,

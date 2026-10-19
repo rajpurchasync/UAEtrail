@@ -14,9 +14,9 @@ import {
 } from '@uaetrail/shared-types';
 
 describe('explore plan projection mappers', () => {
-  it('inbound-rewrites leftover organize/demand composeIntent', () => {
-    expect(canonicalizeMapComposeIntent('organize')).toBe('host');
-    expect(canonicalizeMapComposeIntent('demand')).toBe('seek');
+  it('accepts host/seek composeIntent only', () => {
+    expect(canonicalizeMapComposeIntent('organize')).toBeNull();
+    expect(canonicalizeMapComposeIntent('demand')).toBeNull();
     expect(canonicalizeMapComposeIntent('host')).toBe('host');
     expect(canonicalizeMapComposeIntent('seek')).toBe('seek');
     expect(canonicalizeMapComposeIntent('other')).toBeNull();
@@ -28,13 +28,13 @@ describe('explore plan projection mappers', () => {
     expect(activityTypeToOutingCategory('event')).toBe('events');
   });
 
-  it('maps demand intent kinds to outing categories (find.event → activities)', () => {
+  it('maps seeking intent kinds to outing categories (find.event → activities)', () => {
     expect(participantIntentKindToOutingCategory('guide')).toBe('activities');
     expect(participantIntentKindToOutingCategory('other')).toBe('activities');
     expect(participantIntentKindToOutingCategory('event')).toBe('activities');
   });
 
-  it('maps demand outing category to organize create kind for fulfill', () => {
+  it('maps seeking outing category to host create kind', () => {
     expect(
       resolveHostCreateKindFromSeekingMapItem({
         outingCategory: 'activities',
@@ -49,12 +49,12 @@ describe('explore plan projection mappers', () => {
     ).toBe('event');
   });
 
-  it('does not mint demand: pins from a bare intent id', () => {
+  it('does not mint leftover demand: pins from a bare intent id', () => {
     expect(resolveSeekingExploreMapItemId({ intentId: 'abc' })).toBeNull();
     expect(exploreSeekingMapItemPath({ intentId: 'abc' })).toBe('/explore?list=1&panel=activities');
-    expect(resolveSeekingExploreMapItemId({ intentId: 'demand:abc' })).toBe('demand:abc');
+    expect(resolveSeekingExploreMapItemId({ intentId: 'demand:abc' })).toBeNull();
     expect(exploreSeekingMapItemPath({ intentId: 'demand:abc' })).toBe(
-      '/explore?list=1&panel=activities&pin=demand%3Aabc'
+      '/explore?list=1&panel=activities'
     );
   });
 
@@ -74,7 +74,7 @@ describe('explore plan projection mappers', () => {
     expect(projection.outingCategory).toBe('activities');
   });
 
-  it('sets organize projection with participation mode', () => {
+  it('sets host projection with participation mode', () => {
     const projection = buildExploreMapPlanProjection({
       source: 'activity',
       mapKind: 'hiking',
@@ -88,9 +88,10 @@ describe('explore plan projection mappers', () => {
     });
   });
 
-  it('sets demand projection without participation mode', () => {
+  it('sets seeking projection from activityMode', () => {
     const projection = buildExploreMapPlanProjection({
-      source: 'demand',
+      source: 'activity',
+      activityMode: 'seeking',
       mapKind: 'event',
       demandIntentKind: 'guide',
     });
@@ -99,7 +100,7 @@ describe('explore plan projection mappers', () => {
     expect(projection.participationMode).toBeNull();
   });
 
-  it('maps activityMode seeking to demand compose intent (canonical wire)', () => {
+  it('maps activityMode seeking to seek compose intent', () => {
     const projection = buildExploreMapPlanProjection({
       source: 'activity',
       activityMode: 'seeking',
@@ -111,9 +112,10 @@ describe('explore plan projection mappers', () => {
     expect(projection.participationMode).toBeNull();
   });
 
-  it('sets find.event demand projection to activities outing category', () => {
+  it('sets find.event seeking projection to activities outing category', () => {
     const projection = buildExploreMapPlanProjection({
-      source: 'demand',
+      source: 'activity',
+      activityMode: 'seeking',
       mapKind: 'event',
       demandIntentKind: 'event',
     });

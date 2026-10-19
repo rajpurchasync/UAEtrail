@@ -99,7 +99,7 @@ describe('inferNotificationPath', () => {
     expect(inferNotificationPath(notif({ path: '/trail-points?ref=abc' }))).toBe('/profile/badges');
   });
 
-  it('routes wishlist match alerts via meta.path (activity or demand pin)', () => {
+  it('routes wishlist match alerts via meta.path', () => {
     expect(
       inferNotificationPath(
         notif({
@@ -113,11 +113,11 @@ describe('inferNotificationPath', () => {
       inferNotificationPath(
         notif({
           kind: 'wishlist_match',
-          path: '/explore?pin=demand:int-1',
+          path: '/explore?pin=activity:act-seek-1',
           wishlistItemId: 'wl-2',
         })
       )
-    ).toBe('/explore?pin=demand:int-1');
+    ).toBe('/explore?pin=activity:act-seek-1');
   });
 
   it('rewrites legacy trips hub paths in meta.path to Plan', () => {
@@ -139,7 +139,7 @@ describe('inferNotificationPath', () => {
     ).toBe('/plan?view=plans&filter=joined');
   });
 
-  it('rewrites demand explore pins when activityId is on meta', () => {
+  it('does not rewrite leftover demand: pins in notification paths', () => {
     expect(
       inferNotificationPath(
         notif({
@@ -148,7 +148,7 @@ describe('inferNotificationPath', () => {
           activityId: 'act-seek-1',
         })
       )
-    ).toBe('/explore?list=1&pin=activity%3Aact-seek-1');
+    ).toBe('/explore?pin=demand:int-1&list=1');
   });
 
   it('routes friend publish notifications to seeking explore pins when no top-level activityId', () => {

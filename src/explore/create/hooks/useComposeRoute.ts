@@ -7,7 +7,6 @@ import {
   isSeekFixedWizard,
   isHostWizard,
   isSeekFlexibleWizard,
-  migrateLegacyExploreComposeParams,
   parseExploreCompose,
   setExploreComposeParam,
   type ExploreCompose,
@@ -62,12 +61,6 @@ export const useComposeRoute = ({
     setComposeRoute(null);
     setGuestComposeSignInOpen(false);
   }, [setComposeRoute]);
-
-  useEffect(() => {
-    const migrated = migrateLegacyExploreComposeParams(searchParams);
-    if (!migrated) return;
-    setSearchParams(migrated, { replace: true });
-  }, [searchParams, setSearchParams]);
 
   useEffect(() => {
     if (searchParams.get('compose') !== '1') return;

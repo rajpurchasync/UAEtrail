@@ -54,7 +54,7 @@ const LINE_ALLOW_SUBSTRINGS = [
   'hostTiers',
   'hostGate',
   'host-status',
-  'canAccessHostConsole',
+  'canAccessPublishingWorkspace',
   'isCommunityHost',
   'useHostStatus',
   'hostDashboardRedirect',

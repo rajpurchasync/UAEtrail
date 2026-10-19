@@ -9,33 +9,33 @@ import {
 const ROOT = join(process.cwd(), '..', '..');
 const read = (rel: string) => readFileSync(join(ROOT, rel), 'utf8');
 
-/** MIG-COH-06 — join-request host decision field is JSON `hostNote`. */
+/** MIG-COH-06 — join-request host decision field is JSON `hostNote` only. */
 describe('host-note canonical guard (COH-06)', () => {
-  it('prefers hostNote over organizerNote and trims empty', () => {
+  it('reads hostNote and trims empty', () => {
     expect(BWL_JOIN_REQUEST_FIELDS.HOST_NOTE).toBe('hostNote');
-    expect(BWL_JOIN_REQUEST_FIELDS.ORGANIZER_NOTE_LEGACY).toBe('organizerNote');
-    expect(resolveHostNote({ hostNote: 'a', organizerNote: 'b' })).toBe('a');
-    expect(resolveHostNote({ organizerNote: ' legacy ' })).toBe('legacy');
+    expect(BWL_JOIN_REQUEST_FIELDS).not.toHaveProperty('ORGANIZER_NOTE_LEGACY');
+    expect(resolveHostNote({ hostNote: 'a' })).toBe('a');
+    expect(resolveHostNote({ hostNote: ' legacy ' })).toBe('legacy');
     expect(resolveHostNote({ hostNote: '   ' })).toBeNull();
     expect(resolveHostNote(null)).toBeNull();
   });
 
-  it('Mongo mapper dual-reads via resolveHostNote; new writes set hostNote', () => {
+  it('Mongo mapper reads hostNote; new writes set hostNote', () => {
     const store = read('apps/api/src/lib/activity-engagement-store.ts');
     expect(store).toMatch(/hostNote: resolveHostNote\(doc\)/);
     expect(store).toMatch(/hostNote: opts\.hostNote/);
     expect(store).toMatch(/hostNote: input\.hostNote/);
-    expect(store).not.toMatch(/organizerNote: opts/);
-    expect(store).not.toMatch(/organizerNote: input/);
+    expect(store).not.toMatch(/organizerNote/);
   });
 
-  it('HTTP decide/revoke schemas accept organizerNote alias', () => {
+  it('HTTP decide/revoke schemas accept hostNote only', () => {
     const schemas = read('apps/api/src/routes/operator/operator-route-schemas.ts');
     expect(schemas).toMatch(/hostNote:/);
-    expect(schemas).toMatch(/organizerNote:/);
+    expect(schemas).not.toMatch(/organizerNote/);
     expect(schemas).toMatch(/resolveHostNote/);
     const requests = read('apps/api/src/routes/operator/registerOperatorActivityRequestRoutes.ts');
     expect(requests).toMatch(/hostNote: resolveHostNote\(body\)/);
+    expect(requests).not.toMatch(/organizerNote/);
   });
 
   it('FE writes hostNote JSON; UPL is comment for the host', () => {

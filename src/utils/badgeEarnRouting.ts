@@ -15,10 +15,10 @@ export type BadgeEarnAction = {
 
 const MEMBER_BADGE_ACTIONS: Record<string, BadgeEarnAction> = {
   newbie: { label: 'You\'re in — explore the map', to: EXPLORE_MAP_PATH },
-  active: { label: 'Join a trip or activity', to: PLAN_PATH },
+  active: { label: 'Join an outing', to: PLAN_PATH },
   host: { label: 'Host an outing', to: exploreHostPath() },
   helpful_critic: { label: 'Write a review', to: explorePath({ list: true }) },
-  goat: { label: 'Join more trips', to: PLAN_PATH },
+  goat: { label: 'Join more outings', to: PLAN_PATH },
   ambassador: { label: 'Invite friends', to: BUDDIES_PATH },
   contributor: { label: 'Add a spot', to: PROFILE_SUBMISSIONS_PATH },
   trusted_host: { label: 'Keep hosting outings', to: exploreHostPath() },

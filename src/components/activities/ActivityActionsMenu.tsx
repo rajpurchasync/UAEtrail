@@ -10,7 +10,6 @@ export type ActivityMenuActionId =
   | 'edit'
   | 'publish'
   | 'duplicate'
-  | 'reorganize'
   | 'delete'
   | 'cancel'
   | 'checkin'
@@ -165,7 +164,7 @@ type HostMenuHandlers = {
   onManage?: (activity: ActivityDTO) => void;
 };
 
-/** Row actions for a hosted **activity** (host user console / trips). */
+/** Row actions for a hosted **activity** (publishing workspace / Plan hosted). */
 export const buildHostActivityMenuItems = (
   activity: ActivityDTO,
   handlers: HostMenuHandlers

@@ -19,7 +19,7 @@ export type EntityRef =
 
 export const AGENCY_PROFILE_PATH_PREFIX = '/agency' as const;
 export const PARTNER_PROFILE_PATH_PREFIX = '/partner' as const;
-/** Console prefix `/operator` — aliases `/publishing`. Not a public storefront. */
+/** Publishing workspace SPA prefix — not a public storefront slug. */
 export const LEGACY_OPERATOR_PROFILE_PATH_PREFIX = '/operator' as const;
 
 /** Default explore map target when a shop has no public id yet. */

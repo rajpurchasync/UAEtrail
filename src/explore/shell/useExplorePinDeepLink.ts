@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
 import type { SetURLSearchParams } from 'react-router-dom';
-import { exploreMapItemIsSeeking, type ExploreMapItemDTO } from '@uaetrail/shared-types';
+import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { buildSignInRedirect } from '../../utils/authReturnContext';
 import {
   EXPLORE_JOIN_INVITE_QUERY_KEY,
@@ -26,13 +26,10 @@ type Args = {
   navigate: NavigateFunction;
   pathname: string;
   search: string;
-  hostComposeKind: string | null | undefined;
-  rideshareLinkSeeking: ExploreMapItemDTO | null;
-  setRideshareLinkSeeking: (item: ExploreMapItemDTO | null) => void;
   setJoinInvitePeekActivityId: (id: string | null) => void;
 };
 
-/** `?pin=` and demand→rideshare compose deep links (R2 shell). */
+/** `?pin=` deep links (R2 shell). */
 export const useExplorePinDeepLink = ({
   loading,
   searchParams,
@@ -42,30 +39,11 @@ export const useExplorePinDeepLink = ({
   navigate,
   pathname,
   search,
-  hostComposeKind,
-  rideshareLinkSeeking,
-  setRideshareLinkSeeking,
   setJoinInvitePeekActivityId,
 }: Args) => {
   const deepLinkPinId = parseExplorePinMapItemId(searchParams);
   const joinInviteFromUrl = parseExploreJoinInvitePeek(searchParams);
   const openedDeepLinkPinRef = useRef<string | null>(null);
-
-  useEffect(() => {
-    if (!deepLinkPinId?.startsWith('demand:') || rideshareLinkSeeking || loading) return;
-    if (hostComposeKind !== 'rideshare') return;
-    const item = findExploreMapItemForPinId(selectionItems, deepLinkPinId);
-    if (item && exploreMapItemIsSeeking(item)) {
-      setRideshareLinkSeeking(item);
-    }
-  }, [
-    deepLinkPinId,
-    rideshareLinkSeeking,
-    loading,
-    hostComposeKind,
-    selectionItems,
-    setRideshareLinkSeeking,
-  ]);
 
   useEffect(() => {
     if (!deepLinkPinId || loading) return;

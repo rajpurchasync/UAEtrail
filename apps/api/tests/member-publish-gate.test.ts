@@ -21,12 +21,12 @@ describe('assertMemberCanPublishActivities', () => {
 
   it('rejects incomplete profile', async () => {
     mockedStatus.mockResolvedValue({
-      signupProfileComplete: false,
+      profileComplete: false,
       canPublish: false,
       isCommunityHost: false,
       hostTiers: { community: false, professional: false, business: false },
       profileRoleLabel: 'community_member',
-      canAccessHostConsole: false,
+      canAccessPublishingWorkspace: false,
       applicationStatus: 'none',
       tenantId: null,
       isHostRole: false,
@@ -48,12 +48,12 @@ describe('assertMemberCanPublishActivities', () => {
 
   it('allows when profile complete and canPublish', async () => {
     mockedStatus.mockResolvedValue({
-      signupProfileComplete: true,
+      profileComplete: true,
       canPublish: true,
       isCommunityHost: false,
       hostTiers: { community: true, professional: false, business: false },
       profileRoleLabel: 'community_member',
-      canAccessHostConsole: true,
+      canAccessPublishingWorkspace: true,
       applicationStatus: 'none',
       tenantId: 'tenant-1',
       isHostRole: true,

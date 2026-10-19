@@ -1,4 +1,4 @@
-import { activityOrganizeTopicToOutingTopic, type ActivityDTO } from '@uaetrail/shared-types';
+import { activityHostTopicToOutingTopic, type ActivityDTO } from '@uaetrail/shared-types';
 import { fetchPublishedAreas } from '../hooks/areaHubClientApi';
 import { createActivity, publishActivity } from '../hooks/tenantActivityClientApi';
 import { linkSeekingPostToActivity } from '../hooks/seekingClientApi';
@@ -210,7 +210,7 @@ export const buildHostingActivityPublishInput = (
     outingCategory: planSpec.outingCategory,
     outingTopic:
       kind === 'activity' && draft.activityTopic
-        ? activityOrganizeTopicToOutingTopic(draft.activityTopic)
+        ? activityHostTopicToOutingTopic(draft.activityTopic)
         : null,
     images: [],
     hostId: userId,

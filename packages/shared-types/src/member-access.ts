@@ -7,16 +7,14 @@ export type HostStatusAudienceSnapshot = {
    * Not required to join or participate on outings (signed-in member suffices).
    */
   profileComplete?: boolean;
-  /** @deprecated Prefer {@link HostStatusAudienceSnapshot.profileComplete}. */
-  signupProfileComplete?: boolean;
   hostTiers: HostTierFlags;
   isCommunityHost: boolean;
 };
 
-/** Profile completion for host/publish gates — reads canonical or legacy wire field. */
+/** Profile completion for host/publish gates. */
 export const memberProfileComplete = (
-  status: Pick<HostStatusAudienceSnapshot, 'profileComplete' | 'signupProfileComplete'> | null | undefined
-): boolean => status?.profileComplete ?? status?.signupProfileComplete ?? false;
+  status: Pick<HostStatusAudienceSnapshot, 'profileComplete'> | null | undefined
+): boolean => status?.profileComplete ?? false;
 
 /**
  * Who the viewer is for **member / capability** gating (Host / publish, Pro, console).
@@ -47,7 +45,7 @@ export type MemberEntitlementId =
   | 'sign_in'
   | 'complete_profile'
   | 'host_publish'
-  | 'host_console'
+  | 'publishing_workspace'
   | 'paid_consumer_detail'
   | 'paid_host_commercial'
   /** Pro rideshare / transport tab on activity detail (layer 7 — not crew surfaces). */
@@ -68,14 +66,13 @@ export type MemberEntitlementDenial = {
 };
 
 const hostStatusAudienceInput = (
-  hostStatus: Pick<HostStatusAudienceSnapshot, 'profileComplete' | 'signupProfileComplete' | 'hostTiers'> | null
-): Pick<HostStatusAudienceSnapshot, 'profileComplete' | 'signupProfileComplete' | 'hostTiers'> | null =>
-  hostStatus;
+  hostStatus: Pick<HostStatusAudienceSnapshot, 'profileComplete' | 'hostTiers'> | null
+): Pick<HostStatusAudienceSnapshot, 'profileComplete' | 'hostTiers'> | null => hostStatus;
 
 /** Resolve audience from auth + optional `GET /me/status` snapshot (server or hydrated client). */
 export const resolveMemberAudience = (input: {
   viewerUserId: string | null;
-  hostStatus: Pick<HostStatusAudienceSnapshot, 'profileComplete' | 'signupProfileComplete' | 'hostTiers'> | null;
+  hostStatus: Pick<HostStatusAudienceSnapshot, 'profileComplete' | 'hostTiers'> | null;
 }): MemberAudience => {
   if (!input.viewerUserId) return 'guest';
   const status = hostStatusAudienceInput(input.hostStatus);

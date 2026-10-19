@@ -66,7 +66,7 @@ export const DOMAIN_GLOSSARY = {
     product: 'Organisation',
     description: 'Host tenant — guide, agency, partner, or shop brand profiles.',
     storage: 'Tenant',
-    api: '/publishing (alias /operator), /tenants/:slug',
+    api: '/publishing, /tenants/:slug',
     consoleRoute: '/publishing/*',
     publicRoute: '/agency/:slug · /partner/:slug · /member/:userId (individuals)',
     manageRoute: '/organisation/manage',
@@ -86,7 +86,7 @@ export const DOMAIN_GLOSSARY = {
   },
 } as const;
 
-/** `/operator` console prefix — aliases `/publishing`. Not a public storefront. */
+/** Legacy `/operator/:slug` storefront URLs — not registered in SPA (see `entity-path.ts`). */
 export const LEGACY_OPERATOR_PUBLIC_PATH_PREFIX = LEGACY_OPERATOR_PROFILE_PATH_PREFIX;
 
 /** Desktop top nav — map-first; discover browse is hamburger-only. */
@@ -388,12 +388,10 @@ export const CONSUMER_SELF_HEADER_PREFIXES = [
   '/agency/',
   '/partner/',
   '/venue/',
-  '/operator/',
   '/publishing/',
   '/organisation/manage',
   '/shop/manage',
   '/agency/manage',
-  '/operator/security-privacy',
   '/publishing/security-privacy',
 ] as const;
 
@@ -440,7 +438,7 @@ export const shouldShowMobileBottomNav = (
     const params = new URLSearchParams(search);
     if (params.get('list') === '1') return false;
   }
-  if (pathname === MESSAGES_PATH || pathname === '/operator/messages' || pathname === '/publishing/messages') {
+  if (pathname === MESSAGES_PATH || pathname === '/publishing/messages') {
     const params = new URLSearchParams(search);
     if (params.get('to') || params.get('group')) return false;
   }

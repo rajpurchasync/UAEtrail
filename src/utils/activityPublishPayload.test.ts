@@ -193,7 +193,7 @@ describe('buildHostActivityPublishPayload', () => {
     });
   });
 
-  it('includes paid pricing mode from host console input', () => {
+  it('includes paid pricing mode from publishing workspace input', () => {
     const payload = buildHostActivityPublishPayload({
       activityType: 'event',
       locationId: 'loc-3',

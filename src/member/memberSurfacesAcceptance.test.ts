@@ -66,12 +66,12 @@ describe('member surfaces §11 acceptance (automated)', () => {
   });
 
   it('G-arch: participant /host bookmarks redirect off host console', () => {
-    expect(participantHostBookmarkRedirect('/operator/overview')).toBe('/explore?compose=host');
-    expect(participantHostBookmarkRedirect('/operator/activities')).toContain('/plan');
+    expect(participantHostBookmarkRedirect('/publishing/overview')).toBe('/explore?compose=host');
+    expect(participantHostBookmarkRedirect('/publishing/activities')).toContain('/plan');
   });
 
-  it('G-arch: publishing console path helper includes canonical /operator routes', () => {
-    expect(isPublishingConsolePath('/operator/overview')).toBe(true);
+  it('G-arch: publishing console path helper matches /publishing workspace only', () => {
+    expect(isPublishingConsolePath('/operator/overview')).toBe(false);
     expect(isPublishingConsolePath('/publishing/overview')).toBe(true);
     expect(isPublishingConsolePath('/host/activities')).toBe(false);
     expect(isPublishingConsolePath('/organizer/requests')).toBe(false);

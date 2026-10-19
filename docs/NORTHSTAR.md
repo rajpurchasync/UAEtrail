@@ -58,7 +58,7 @@ Lead with **feelings and outcomes**, not modules:
 | **Keep going** | Same crew, next outing easier |
 | **Low pressure** | Browse free; join when you're ready |
 
-**Mechanisms** (map, organizers, join requests, demand posts, buddies, group chat) exist to **deliver** these experiences. They are not the headline.
+**Mechanisms** (map, hosts, join requests, seeking posts, buddies, group chat) exist to **deliver** these experiences. They are not the headline.
 
 ---
 
@@ -122,7 +122,7 @@ Avoid narrowing marketing to “hiking & camping platform” unless SEO metadata
 - “Hiking and camping only” as product definition  
 - Feature grids that read like an architecture brief  
 - Three identical UI patterns stacked (trust strip clone × 3)  
-- Explaining demand, buddies, host console, or shops on guest landing  
+- Explaining seeking, buddies, publishing workspace, or shops on guest landing  
 
 ---
 

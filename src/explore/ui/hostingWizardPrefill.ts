@@ -1,6 +1,6 @@
 import type { CreateActivityDraft } from './hostingFlowEngine';
 
-/** Prefill for explore organize wizards (demand fulfill or reorganize from a past activity). */
+/** Prefill for explore Host wizards (seeking offer or Host from a past activity). */
 export type HostingWizardPrefill = {
   draft: CreateActivityDraft;
   participantIntentId?: string;

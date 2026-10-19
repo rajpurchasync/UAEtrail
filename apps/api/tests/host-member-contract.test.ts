@@ -61,9 +61,10 @@ describe('host-member API contracts', () => {
     expect(violations).toEqual([]);
   });
 
-  it('API mounts publishing console on /operator only', () => {
+  it('API mounts publishing console on /publishing only', () => {
     const index = readFileSync(join(API_SRC, 'routes', 'index.ts'), 'utf8');
-    expect(index).toMatch(/apiRouter\.use\(['"]\/operator['"]/);
+    expect(index).toMatch(/apiRouter\.use\(['"]\/publishing['"]/);
+    expect(index).not.toMatch(/apiRouter\.use\(['"]\/operator['"], operatorRouter\)/);
     expect(index).not.toMatch(/apiRouter\.use\(['"]\/host['"]/);
     expect(index).not.toMatch(/legacyHostApiRewrite/);
   });

@@ -4,15 +4,14 @@ import { isGeographyMapSource, type ExploreMapSourceWire } from './wire-lexicon.
 
 /**
  * Map/list outing projection — host vs seek.
- * Leftover wire values `organize` / `demand` inbound-rewrite via {@link canonicalizeMapComposeIntent}.
  */
 export type ExploreMapComposeIntent = 'host' | 'seek';
 
 export const canonicalizeMapComposeIntent = (
   raw: string | null | undefined
 ): ExploreMapComposeIntent | null => {
-  if (raw === 'host' || raw === 'organize') return 'host';
-  if (raw === 'seek' || raw === 'demand') return 'seek';
+  if (raw === 'host') return 'host';
+  if (raw === 'seek') return 'seek';
   return null;
 };
 
@@ -145,8 +144,7 @@ export const resolveHostCreateKindFromSeekingMapItem = (item: {
 };
 
 /**
- * Map item id for a find post — `activity:` only.
- * Inbound `demand:` bookmarks are preserved when already prefixed; never minted from a bare intent id.
+ * Map item id for a seeking post — `activity:` only.
  */
 export const resolveSeekingExploreMapItemId = (input: {
   intentId: string;
@@ -154,8 +152,6 @@ export const resolveSeekingExploreMapItemId = (input: {
 }): string | null => {
   const activityId = input.activityId?.trim();
   if (activityId) return `activity:${activityId}`;
-  const inbound = input.intentId.trim();
-  if (inbound.startsWith('demand:')) return inbound;
   return null;
 };
 
@@ -173,8 +169,8 @@ export const exploreSeekingMapItemPath = (input: {
   return `/explore?${params.toString()}`;
 };
 
-/** FLOW-05 organize activity wizard chip → persisted `outingTopic`. */
-export const activityOrganizeTopicToOutingTopic = (topic: string): OutingTopic | null => {
+/** FLOW-05 Host activity wizard chip → persisted `outingTopic`. */
+export const activityHostTopicToOutingTopic = (topic: string): OutingTopic | null => {
   switch (topic) {
     case 'climb':
       return 'climbing';
@@ -220,7 +216,6 @@ export const exploreMapSourceToComposeIntent = (
   source: ExploreMapPlanSource
 ): ExploreMapComposeIntent | null => {
   if (source === 'activity') return 'host';
-  if (source === 'demand') return 'seek';
   return null;
 };
 
@@ -242,7 +237,7 @@ export const buildExploreMapPlanProjection = (options: {
   storedOutingCategory?: OutingCategory | null;
   storedOutingTopic?: OutingTopic | null;
 }): ExploreMapPlanProjection => {
-  const isSeeking = options.activityMode === 'seeking' || options.source === 'demand';
+  const isSeeking = options.activityMode === 'seeking';
   const composeIntent: ExploreMapComposeIntent | null = isSeeking
     ? 'seek'
     : exploreMapSourceToComposeIntent(options.source);

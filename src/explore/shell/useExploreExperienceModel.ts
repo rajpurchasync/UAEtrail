@@ -13,7 +13,6 @@ import { useExploreBrowseUrlState } from '../ui/useExploreBrowseUrlState';
 import { useComposeRoute } from '../create/hooks/useComposeRoute';
 import { useHostingFromActivity } from '../create/hooks/useHostingFromActivity';
 import { useHostingWizardPrefill } from '../create/hooks/useHostingWizardPrefill';
-import { useExploreFulfillIntent } from '../ui/useExploreFulfillIntent';
 import {
   memberPublishGateHref,
   memberPublishGateInputFromMemberStatus,
@@ -138,12 +137,6 @@ export const useExploreExperienceModel = () => {
     navigate(href, { replace: true });
   }, [myPlanMapMode, user, navigate, pathname, search]);
 
-  useExploreFulfillIntent({
-    searchParams,
-    setSearchParams,
-    setSelectedId,
-  });
-
   const hostingFrom = useHostingFromActivity({
     user,
     tenantId,
@@ -238,9 +231,6 @@ export const useExploreExperienceModel = () => {
     navigate,
     pathname,
     search,
-    hostComposeKind: compose.hostComposeRoute?.kind,
-    rideshareLinkSeeking: hostingLauncher.rideshareLinkSeeking,
-    setRideshareLinkSeeking: hostingLauncher.setRideshareLinkSeeking,
     setJoinInvitePeekActivityId,
   });
 

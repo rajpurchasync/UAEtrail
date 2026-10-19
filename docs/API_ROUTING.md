@@ -10,7 +10,7 @@ Companion: [`DOMAIN.md`](./DOMAIN.md), [`CREATE_FLOW.md`](./CREATE_FLOW.md), [`M
 
 | Prefix | Auth | Purpose |
 |--------|------|---------|
-| **`/activities`** | Public read; tenant write via `/publishing` | Published **Organize** outings (join, RSVP, detail) |
+| **`/activities`** | Public read; tenant write via `/publishing` | Published **hosted** outings (join, RSVP, detail) |
 | **`/explore/map`** | Public | Guest discovery catalog (`source`: activity · place · facility · shop · agency). Area is a filter (`areaId`), not a pin. Signed-in peek is **`GET /me/discover/overlay`**. |
 | **`/agent/manifest.json`**, **`/agent/discover`** | Public (rate-limited) | **AI / agent** entry manifest and text search over published outings + registry places |
 | **`/me/*`** | Signed-in member | Own profile, intents, groups, inbox, activity participation |
@@ -52,7 +52,7 @@ Same product verb (**request to join**), two surfaces of **`activity_requests`**
 
 Deprecated alias (do not use in new clients): `…/join-requests` mirrors `…/requests`.
 
-**Messages (COH-06):** JSON **`note`** (joiner → host) and **`hostNote`** (host decision / revoke). PATCH/POST bodies still accept **`organizerNote`** as a read alias; new writes and responses use **`hostNote`**. Mongo dual-reads `hostNote ?? organizerNote`.
+**Messages (COH-06):** JSON **`note`** (joiner → host) and **`hostNote`** (host decision / revoke). HTTP, DTO, and Mongo use **`hostNote` only**.
 
 Storage: `activity_requests` vs `participant_intent_requests`.
 
@@ -317,7 +317,7 @@ Legacy aliases (do not use in new clients): `/me/host-application`, `/admin/host
 | GET/PATCH/DELETE | `/admin/facilities` | Platform admin facility CRUD → `facilities` only | **(today)** |
 | GET | `/areas` | Public curated **names** | **(today)** — Area is **not** a map pin |
 | GET | `/areas/:slug` | Area hub page payload | **(today)** — camera hint only; pins on the hub are Places |
-| GET | `/shop/shops/:id` | **Operator** shop storefront (`EntityKind.shop`) | **(today)** — not FAB Contribute |
+| GET | `/shop/shops/:id` | **Operator** shop storefront (`EntityKind.shop`) | **(today)** — not FAB Add |
 
 **Surface model:** Public read, member submit (`/me/*`), and platform admin (`/admin/*`) are **separate registrars** — not one `/facilities` POST gated by profile. See [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §5.1 · §8.4.9.
 

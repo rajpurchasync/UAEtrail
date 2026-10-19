@@ -41,7 +41,6 @@ type MongoActivityRequest = {
   status: RequestStatus;
   note: string | null;
   hostNote?: string | null;
-  organizerNote?: string | null;
   cancelReason: string | null;
   cancelMessage: string | null;
   cancelledAt: Date | null;
@@ -149,7 +148,7 @@ const loadPublishedEventForJoin = async (activityId: string) => {
 const isEventHost = async (
   event: { hostId?: string | null; createdById?: string; tenantId?: string },
   hostUserId: string,
-  organizerRoles: MembershipRole[]
+  hostMembershipRoles: MembershipRole[]
 ): Promise<boolean> => {
   if (event.hostId === hostUserId || event.createdById === hostUserId) {
     return true;
@@ -158,7 +157,7 @@ const isEventHost = async (
   const membership = await getMongoClient()!
     .db()
     .collection('tenant_memberships')
-    .findOne({ tenantId: event.tenantId, userId: hostUserId, role: { $in: organizerRoles } });
+    .findOne({ tenantId: event.tenantId, userId: hostUserId, role: { $in: hostMembershipRoles } });
   return Boolean(membership);
 };
 
@@ -636,7 +635,7 @@ export const hasSharedActivityParticipation = async (firstUserId: string, second
 export const hasActiveJoinRequestLink = async (input: {
   senderId: string;
   receiverId: string;
-  organizerRoles: MembershipRole[];
+  hostMembershipRoles: MembershipRole[];
   activeStatuses: RequestStatus[];
 }): Promise<boolean> => {
   const requests = await activityRequestsCollection()
@@ -654,7 +653,7 @@ export const hasActiveJoinRequestLink = async (input: {
     const otherUserId = requestUserId === input.senderId ? input.receiverId : input.senderId;
     if (requestUserId !== input.senderId && requestUserId !== input.receiverId) continue;
 
-    if (await isEventHost(event, otherUserId, input.organizerRoles)) {
+    if (await isEventHost(event, otherUserId, input.hostMembershipRoles)) {
       return true;
     }
   }
@@ -667,7 +666,7 @@ export const hostHasActiveJoinRequestFromUser = async (
   hostUserId: string,
   requesterUserId: string,
   input: {
-    organizerRoles: MembershipRole[];
+    hostMembershipRoles: MembershipRole[];
     activeStatuses: RequestStatus[];
   }
 ): Promise<boolean> => {
@@ -681,7 +680,7 @@ export const hostHasActiveJoinRequestFromUser = async (
   for (const request of requests) {
     const event = await findActivityDocInMongo(request.activityId);
     if (!event) continue;
-    if (await isEventHost(event, hostUserId, input.organizerRoles)) {
+    if (await isEventHost(event, hostUserId, input.hostMembershipRoles)) {
       return true;
     }
   }
@@ -692,13 +691,13 @@ export const hostHasActiveJoinRequestFromUser = async (
 export const hasParticipantToHostLink = async (input: {
   participantUserId: string;
   hostUserId: string;
-  organizerRoles: MembershipRole[];
+  hostMembershipRoles: MembershipRole[];
 }): Promise<boolean> => {
   const participants = await activityParticipantsCollection().find({ userId: input.participantUserId }).toArray();
   for (const participant of participants) {
     const event = await findActivityDocInMongo(participant.activityId);
     if (!event) continue;
-    if (await isEventHost(event, input.hostUserId, input.organizerRoles)) {
+    if (await isEventHost(event, input.hostUserId, input.hostMembershipRoles)) {
       return true;
     }
   }
@@ -737,10 +736,10 @@ const loadActivityHostFieldsByIds = async (activityIds: string[]): Promise<Map<s
   return new Map(docs.map((doc) => [doc._id, doc]));
 };
 
-const buildOrganizerHostKeys = async (
+const buildActivityHostKeys = async (
   events: ActivityHostFields[],
   userIds: string[],
-  organizerRoles: MembershipRole[]
+  hostMembershipRoles: MembershipRole[]
 ): Promise<Set<string>> => {
   const keys = new Set<string>();
   const membershipPairs = new Map<string, { tenantId: string; userId: string }>();
@@ -768,7 +767,7 @@ const buildOrganizerHostKeys = async (
     .find({
       tenantId: { $in: tenantIds },
       userId: { $in: checkUserIds },
-      role: { $in: organizerRoles },
+      role: { $in: hostMembershipRoles },
     })
     .toArray();
 
@@ -793,7 +792,7 @@ const buildOrganizerHostKeys = async (
 export const batchCanMessagePartnersFromViewer = async (input: {
   viewerId: string;
   partnerIds: string[];
-  organizerRoles: MembershipRole[];
+  hostMembershipRoles: MembershipRole[];
   activeStatuses: RequestStatus[];
 }): Promise<Set<string>> => {
   const partners = [...new Set(input.partnerIds.filter((id) => id && id !== input.viewerId))];
@@ -829,10 +828,10 @@ export const batchCanMessagePartnersFromViewer = async (input: {
   const activityIds = [...new Set(participantRows.map((row) => row.activityId))];
   const eventById = await loadActivityHostFieldsByIds(activityIds);
   const hostUserIds = [input.viewerId, ...remaining];
-  const organizerHostKeys = await buildOrganizerHostKeys([...eventById.values()], hostUserIds, input.organizerRoles);
+  const activityHostKeys = await buildActivityHostKeys([...eventById.values()], hostUserIds, input.hostMembershipRoles);
 
-  const isOrganizerHost = (activityId: string, userId: string) =>
-    organizerHostKeys.has(`${activityId}:${userId}`);
+  const isActivityHostOnEvent = (activityId: string, userId: string) =>
+    activityHostKeys.has(`${activityId}:${userId}`);
   const isDirectHost = (activityId: string, userId: string) => {
     const event = eventById.get(activityId);
     if (!event) return false;
@@ -853,7 +852,7 @@ export const batchCanMessagePartnersFromViewer = async (input: {
   for (const partnerId of remaining) {
     let ok = false;
     for (const activityId of viewerActivities) {
-      if (isOrganizerHost(activityId, partnerId)) {
+      if (isActivityHostOnEvent(activityId, partnerId)) {
         ok = true;
         break;
       }
@@ -888,15 +887,16 @@ export const batchCanMessagePartnersFromViewer = async (input: {
     for (const [id, event] of loaded) eventById.set(id, event);
   }
 
-  const organizerKeys = await buildOrganizerHostKeys([...eventById.values()], hostUserIds, input.organizerRoles);
-  const isOrgHost = (activityId: string, userId: string) => organizerKeys.has(`${activityId}:${userId}`);
+  const requestHostKeys = await buildActivityHostKeys([...eventById.values()], hostUserIds, input.hostMembershipRoles);
+  const isRequestActivityHost = (activityId: string, userId: string) =>
+    requestHostKeys.has(`${activityId}:${userId}`);
 
   for (const partnerId of remaining) {
     for (const request of requests) {
       const requestUserId = request.userId;
       if (requestUserId !== input.viewerId && requestUserId !== partnerId) continue;
       const otherUserId = requestUserId === input.viewerId ? partnerId : input.viewerId;
-      if (isOrgHost(request.activityId, otherUserId)) {
+      if (isRequestActivityHost(request.activityId, otherUserId)) {
         allowed.add(partnerId);
         break;
       }
@@ -929,11 +929,11 @@ export const usersShareActivity = async (userA: string, userB: string): Promise<
 export const hasActivityInquiryAccess = async (input: {
   activityId: string;
   receiverId: string;
-  organizerRoles: MembershipRole[];
+  hostMembershipRoles: MembershipRole[];
 }): Promise<boolean> => {
   const event = await findActivityDocInMongo(input.activityId);
   if (!event || event.status !== ActivityStatus.PUBLISHED) return false;
-  return isEventHost(event, input.receiverId, input.organizerRoles);
+  return isEventHost(event, input.receiverId, input.hostMembershipRoles);
 };
 
 export const countPendingActivityRequests = async (): Promise<number> =>

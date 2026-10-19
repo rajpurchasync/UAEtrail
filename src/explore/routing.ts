@@ -76,11 +76,11 @@ const LEGACY_ACTIVITY_FROM_FILTER: Record<string, ActivityListFilterKey> = {
 
 const EXPLORE_PANELS = new Set<ExplorePanel>(['activities', 'venues', 'shops']);
 
-/** Open a specific explore map item (peek card), e.g. `activity:uuid` or inbound `demand:uuid`. */
+/** Open a specific explore map item (peek card), e.g. `activity:uuid`. */
 export const EXPLORE_PIN_QUERY_KEY = 'pin';
 /** When `1`, activity peek shows join-invite banner (with `pin=activity:…`). */
 export const EXPLORE_JOIN_INVITE_QUERY_KEY = 'invite';
-/** Buddy user id — prefill post-publish invite after Plan a trip from Social. */
+/** Buddy user id — prefill post-publish invite after Host an outing from Social. */
 export const PLAN_WITH_QUERY_KEY = 'planWith';
 /** When `1`, map/list show only the signed-in member's activities + wishlist pins. */
 export const MY_PLAN_MAP_QUERY_KEY = 'myPlan';
@@ -103,7 +103,7 @@ export const parseExplorePinMapItemId = (searchParams: Pick<URLSearchParams, 'ge
 export const exploreSavedPinPath = (mapItemId: string): string =>
   explorePath({ pin: mapItemId, panel: 'activities', list: true });
 
-/** Map item id for a find post — `activity:` when published; inbound `demand:` bookmarks only. */
+/** Map item id for a seeking post — `activity:` when published. */
 export const resolveParticipantIntentMapItemId = (intent: {
   id: string;
   activityId?: string | null;
@@ -131,15 +131,6 @@ export const exploreMapItemSharePath = (
   options?: { activityId?: string | null; intentId?: string | null }
 ): string => {
   const id = mapItemId.trim();
-  if (id.startsWith('demand:')) {
-    if (options?.activityId) {
-      return exploreSeekingMapItemPath({
-        intentId: id.slice('demand:'.length),
-        activityId: options.activityId,
-      });
-    }
-    return explorePath({ pin: id, list: true, panel: 'activities' });
-  }
   if (options?.activityId && options.intentId) {
     return exploreSeekingMapItemPath({
       intentId: options.intentId,
@@ -149,27 +140,15 @@ export const exploreMapItemSharePath = (
   return explorePath({ pin: id });
 };
 
-/** Resume publishing an {@link Activity} for a map {@link ParticipantIntent} after auth/onboarding. */
-/** Legacy deep link: selects a demand pin on load; poster links via `link-activity`, not host fulfill. */
-export const FULFILL_INTENT_QUERY_KEY = 'fulfillIntent';
-/** @deprecated Legacy query key — parsed for backward compatibility. */
-export const LEGACY_FULFILL_INTENT_QUERY_KEY = 'hostDemand';
-
 /** Prefill the hosting wizard from a prior outing (new id on publish). */
 export const HOST_FROM_ACTIVITY_QUERY_KEY = 'hostFrom';
-/** Legacy deep link — inbound rewrite only. */
-export const LEGACY_HOST_FROM_ACTIVITY_QUERY_KEY = 'organizeFrom';
 
 export const parseHostFromActivityId = (
   searchParams: Pick<URLSearchParams, 'get'>
-): string | null =>
-  searchParams.get(HOST_FROM_ACTIVITY_QUERY_KEY)?.trim() ||
-  searchParams.get(LEGACY_HOST_FROM_ACTIVITY_QUERY_KEY)?.trim() ||
-  null;
+): string | null => searchParams.get(HOST_FROM_ACTIVITY_QUERY_KEY)?.trim() || null;
 
 export const clearHostFromActivityParams = (params: URLSearchParams): void => {
   params.delete(HOST_FROM_ACTIVITY_QUERY_KEY);
-  params.delete(LEGACY_HOST_FROM_ACTIVITY_QUERY_KEY);
 };
 
 /** Deep link: host again from a past outing via FAB wizard (not server duplicate). */
@@ -189,34 +168,6 @@ export const exploreHostFromActivityReturnPath = (
 ): string => {
   const params = new URLSearchParams(currentSearch);
   params.set(HOST_FROM_ACTIVITY_QUERY_KEY, activityId);
-  params.delete(LEGACY_HOST_FROM_ACTIVITY_QUERY_KEY);
-  if (!params.has('list')) params.set('list', '1');
-  return `${pathname}?${params.toString()}`;
-};
-
-export const parseFulfillIntentMapItemId = (
-  searchParams: Pick<URLSearchParams, 'get'>
-): string | null =>
-  searchParams.get(FULFILL_INTENT_QUERY_KEY) ?? searchParams.get(LEGACY_FULFILL_INTENT_QUERY_KEY);
-
-export const setFulfillIntentMapItemParam = (params: URLSearchParams, mapItemId: string): void => {
-  params.set(FULFILL_INTENT_QUERY_KEY, mapItemId);
-  params.delete(LEGACY_FULFILL_INTENT_QUERY_KEY);
-};
-
-export const clearFulfillIntentMapItemParams = (params: URLSearchParams): void => {
-  params.delete(FULFILL_INTENT_QUERY_KEY);
-  params.delete(LEGACY_FULFILL_INTENT_QUERY_KEY);
-};
-
-/** Auth return URL: reopen explore and continue fulfill-intent → Activity publish. */
-export const exploreFulfillIntentReturnPath = (
-  mapItemId: string,
-  currentSearch: URLSearchParams,
-  pathname: string = EXPLORE_MAP_PATH
-): string => {
-  const params = new URLSearchParams(currentSearch);
-  setFulfillIntentMapItemParam(params, mapItemId);
   if (!params.has('list')) params.set('list', '1');
   return `${pathname}?${params.toString()}`;
 };
@@ -295,18 +246,8 @@ export const explorePath = (options?: {
   region?: string;
   /** Selected venue states/emirates (multi-select). */
   regions?: string[];
-  addLocation?: boolean;
   /** Compose menu or wizard route (`menu`, `host.hiking` wire, …). */
   compose?: ExploreCompose | 'menu';
-  /** @deprecated Prefer `compose` — leftover inbound `?request=` only. */
-  request?: boolean;
-  /**
-   * Explore map item id for a {@link ParticipantIntent} (`source=demand`) — resume Activity publish.
-   * Prefer this over legacy `hostDemand`.
-   */
-  fulfillIntent?: string;
-  /** @deprecated Use {@link explorePath} `fulfillIntent` — legacy query key. */
-  hostDemand?: string;
   q?: string;
   /** Scheduled activity day on the map (`YYYY-MM-DD`). */
   date?: string | null;
@@ -314,7 +255,7 @@ export const explorePath = (options?: {
   subtype?: ExploreBuddySubtypeKey;
   /** Drill-down within `filter=others` + `subtype=activities` (climb, run, …). */
   outingTopic?: ExploreOutingTopicKey;
-  /** Explore map item id to open on load (`activity:…`, `demand:…`, `venue:…`). */
+  /** Explore map item id to open on load (`activity:…`, `venue:…`). */
   pin?: string;
   /** Prefill hosting wizard from an existing activity id (creates a new activity on publish). */
   hostFrom?: string;
@@ -357,14 +298,6 @@ export const explorePath = (options?: {
     const route: ExploreCompose =
       options.compose === 'menu' ? { surface: 'menu' } : options.compose;
     params.set('compose', formatComposeQuery(route));
-  } else if (options?.addLocation) {
-    params.set('compose', formatComposeQuery({ surface: 'menu', intent: 'add' }));
-  } else if (options?.request) {
-    params.set('compose', formatComposeQuery({ surface: 'menu', intent: 'seek' }));
-  }
-  const fulfillIntentId = options?.fulfillIntent ?? options?.hostDemand;
-  if (fulfillIntentId) {
-    setFulfillIntentMapItemParam(params, fulfillIntentId);
   }
   if (options?.q) {
     params.set('q', options.q);
@@ -392,7 +325,6 @@ export const explorePath = (options?: {
   }
   if (options?.hostFrom?.trim()) {
     params.set(HOST_FROM_ACTIVITY_QUERY_KEY, options.hostFrom.trim());
-    params.delete(LEGACY_HOST_FROM_ACTIVITY_QUERY_KEY);
   }
   if (options?.myPlan) {
     params.set(MY_PLAN_MAP_QUERY_KEY, '1');
@@ -545,7 +477,6 @@ export const exploreActivitiesPath = (options?: {
 /** Places (trails, spots, shops) on the explore map — URL panel stays `venues`. */
 export const explorePlacesPath = (options?: {
   region?: string;
-  addLocation?: boolean;
   q?: string;
   list?: boolean;
 }): string => explorePath({ panel: 'venues', ...options });
@@ -644,10 +575,6 @@ export const discoveryToExploreSearch = (search: string): string => {
 
   const q = incoming.get('q');
   if (q) next.set('q', q);
-
-  if (incoming.get('addLocation') === '1') {
-    next.set('addLocation', '1');
-  }
 
   return next.toString();
 };

@@ -38,15 +38,13 @@ describe('composeWizardSession', () => {
     expect(readHostingWizardSession('host.hiking', scope)).toBeNull();
   });
 
-  it('inbound-rewrites leftover plan.* session keys', () => {
+  it('does not read legacy plan.* session keys', () => {
     const draft = { ...emptyCreateActivityDraft(), kind: 'hiking' as const, title: 'Legacy hike' };
     sessionStorage.setItem(
       'uaetrail:compose-wizard:plan.hiking.hosting',
       JSON.stringify({ step: 'title', draft, selectedKind: 'hiking' })
     );
-    const saved = readHostingWizardSession('host.hiking');
-    expect(saved?.draft.title).toBe('Legacy hike');
-    expect(sessionStorage.getItem('uaetrail:compose-wizard:host.hiking')).toBeTruthy();
-    expect(sessionStorage.getItem('uaetrail:compose-wizard:plan.hiking.hosting')).toBeNull();
+    expect(readHostingWizardSession('host.hiking')).toBeNull();
+    expect(sessionStorage.getItem('uaetrail:compose-wizard:plan.hiking.hosting')).toBeTruthy();
   });
 });

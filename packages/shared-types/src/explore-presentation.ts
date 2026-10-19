@@ -174,7 +174,6 @@ export const resolveExploreItemSource = (
     isGeographyMapSource(source) ||
     source === 'shop' ||
     source === 'agency' ||
-    source === 'demand' ||
     source === 'area'
   ) {
     return normalizeExploreMapSource(source);
@@ -182,7 +181,6 @@ export const resolveExploreItemSource = (
   if (id.startsWith('area:')) return 'area';
   if (id.startsWith('facility:')) return FACILITY_MAP_SOURCE;
   if (id.startsWith('place:') || id.startsWith('venue:')) return PLACE_MAP_SOURCE;
-  if (id.startsWith('demand:')) return 'activity';
   if (id.startsWith('shop:')) return 'shop';
   if (id.startsWith('agency:')) return 'agency';
   return 'activity';
@@ -196,7 +194,6 @@ export const resolveMapPinItemSource = (
   if (id.startsWith('area:')) return 'area';
   if (id.startsWith('facility:')) return FACILITY_MAP_SOURCE;
   if (id.startsWith('place:') || id.startsWith('venue:')) return PLACE_MAP_SOURCE;
-  if (id.startsWith('demand:')) return 'activity';
   if (id.startsWith('shop:')) return 'shop';
   if (id.startsWith('agency:')) return 'agency';
   return resolveExploreItemSource(item);
@@ -225,7 +222,7 @@ export const resolveMapPinEmoji = (
 
   if (source === 'shop') return SHOP_MAP_EMOJI;
   if (source === 'agency') return '🏢';
-  if (seeking || source === BWL_EXPLORE_MAP_SOURCE.DEMAND_LEGACY) {
+  if (seeking) {
     if (kind === 'rideshare') return RIDESHARE_EMOJI;
     return SEEKING_EMOJI;
   }

@@ -23,7 +23,7 @@ import { applyActivityViewEntitlements } from '../services/member-entitlements.j
 import type { HostStatusDTO } from '@uaetrail/shared-types';
 import { buildMapPeekEngagementPolicyInput } from './activity-engagement-policy-input.js';
 
-const ORGANIZER_ROLES: MembershipRole[] = [
+const HOST_MEMBERSHIP_ROLES: MembershipRole[] = [
   MembershipRole.TENANT_OWNER,
   MembershipRole.TENANT_ADMIN,
   MembershipRole.TENANT_GUIDE,
@@ -177,7 +177,7 @@ export const buildExploreMapViewerAccessContext = async (input: {
 
   const staffTenantIds = new Set(
     memberships
-      .filter((membership) => ORGANIZER_ROLES.includes(membership.role))
+      .filter((membership) => HOST_MEMBERSHIP_ROLES.includes(membership.role))
       .map((membership) => membership.tenantId)
   );
 
@@ -287,10 +287,12 @@ export const attachExploreMapViewerAccess = (
     }
 
     if (exploreMapItemIsSeeking(item)) {
-      const intentId = item.participantIntentId ?? item.id.replace(/^demand:/, '');
+      const intentId = item.participantIntentId;
       const requesterUserId =
         item.featuredPerson?.userId ?? item.requesterUserId ?? null;
-      const joinRequestStatus = ctx.demandJoinStatusByIntentId.get(intentId) ?? null;
+      const joinRequestStatus = intentId
+        ? ctx.demandJoinStatusByIntentId.get(intentId) ?? null
+        : null;
       return {
         ...item,
         viewerAccess: withEntitlements(

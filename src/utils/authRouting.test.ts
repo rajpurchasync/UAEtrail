@@ -78,12 +78,12 @@ describe('auth routing by role', () => {
     expect(merchantDashboardRedirect('unknown')).toBe('/organisation/manage?kind=shop');
   });
 
-  it('maps /operator bookmarks to Plan, explore organize, or pro membership (not tenant console)', () => {
-    expect(participantHostBookmarkRedirect('/operator/overview')).toBe('/explore?compose=host');
-    expect(participantHostBookmarkRedirect('/operator/activities')).toBe('/plan?view=plans&filter=hosting');
-    expect(participantHostBookmarkRedirect('/operator/requests')).toBe('/my-requests');
-    expect(participantHostBookmarkRedirect('/operator/messages')).toBe('/chat');
-    expect(participantHostBookmarkRedirect('/operator/team')).toBe('/profile/pro-membership');
-    expect(participantHostBookmarkRedirect('/operator/places')).toBe('/organisation/manage');
+  it('maps /publishing bookmarks to Plan, explore host, or pro membership (not tenant console)', () => {
+    expect(participantHostBookmarkRedirect('/publishing/overview')).toBe('/explore?compose=host');
+    expect(participantHostBookmarkRedirect('/publishing/activities')).toBe('/plan?view=plans&filter=hosting');
+    expect(participantHostBookmarkRedirect('/publishing/requests')).toBe('/my-requests');
+    expect(participantHostBookmarkRedirect('/publishing/messages')).toBe('/chat');
+    expect(participantHostBookmarkRedirect('/publishing/team')).toBe('/profile/pro-membership');
+    expect(participantHostBookmarkRedirect('/publishing/places')).toBe('/organisation/manage');
   });
 });

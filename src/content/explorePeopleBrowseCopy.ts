@@ -95,7 +95,7 @@ export const explorePeopleBrowseDiscoverQuotaLine = (quota: MemberDiscoveryQuota
 };
 
 export const EXPLORE_PEOPLE_BROWSE_ACTION_MESSAGE = 'Message';
-export const EXPLORE_PEOPLE_BROWSE_ACTION_PLAN_TRIP = 'Plan a trip';
+export const EXPLORE_PEOPLE_BROWSE_ACTION_HOST_OUTING = 'Host an outing';
 export const EXPLORE_PEOPLE_BROWSE_ACTION_ADD_FRIEND = 'Add friend';
 export const EXPLORE_PEOPLE_BROWSE_ACTION_VIEW_PROFILE = 'Profile';
 

@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import {
   hostedExploreMapItem,
-  legacyDemandExploreMapItem,
   seekingExploreMapItem,
   venueExploreMapItem,
 } from './exploreMapItemFixtures';
@@ -21,24 +20,22 @@ describe('exploreBrowseTaxonomy', () => {
     expect(toggleExploreMapFilterPill(['trips'], 'trips')).toEqual([]);
   });
 
-  it('maps legacy topic URL values', () => {
+  it('maps leftover topic URL values', () => {
     expect(parseExploreMapFilterPillsParam('hiking,camping,shop')).toEqual(['trips', 'shops']);
   });
 
   it('classifies trips vs spots', () => {
     const trail = venueExploreMapItem({ id: 'venue:v1' });
     const hosted = hostedExploreMapItem({ id: 'activity:a1', kind: 'event' });
-    const demand = legacyDemandExploreMapItem({ id: 'demand:d1' });
     const seeking = seekingExploreMapItem({ intentId: 'x' });
     expect(mapItemMatchesFilterPill(trail, 'spots')).toBe(true);
     expect(mapItemMatchesFilterPill(hosted, 'trips')).toBe(true);
     expect(mapItemMatchesFilterPill(seeking, 'trips')).toBe(true);
-    expect(mapItemMatchesFilterPill(demand, 'looking')).toBe(true);
     expect(mapItemMatchesFilterPill(seeking, 'looking')).toBe(true);
     expect(mapItemMatchesFilterPill(hosted, 'looking')).toBe(false);
   });
 
-  it('parses legacy and new search scopes', () => {
+  it('parses leftover and new search scopes', () => {
     expect(parseExploreSearchScope('trips')).toBe('activities');
     expect(parseExploreSearchScope('spots')).toBe('places');
     expect(parseExploreSearchScope('people')).toBe('people');
@@ -47,15 +44,14 @@ describe('exploreBrowseTaxonomy', () => {
 
   it('maps search scopes to item sources', () => {
     const hosted = hostedExploreMapItem({ id: 'activity:a1', kind: 'event' });
-    const demand = legacyDemandExploreMapItem({ id: 'demand:d1' });
+    const seeking = seekingExploreMapItem({ intentId: 'd1' });
     const agencyTrip = hostedExploreMapItem({
       id: 'activity:a2',
       activity: { publishingProfileKind: 'agency', tenantSlug: 'uae-adventure' } as ExploreMapItemDTO['activity'],
     });
     expect(mapItemMatchesSearchScope(hosted, 'activities')).toBe(true);
-    expect(mapItemMatchesSearchScope(demand, 'people')).toBe(false);
+    expect(mapItemMatchesSearchScope(seeking, 'people')).toBe(false);
     expect(pinKindForSearchScope('people')).toBe('all');
     expect(mapItemMatchesSearchScope(agencyTrip, 'agencies')).toBe(true);
   });
-
 });

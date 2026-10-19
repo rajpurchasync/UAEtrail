@@ -111,7 +111,7 @@ See [`NAVIGATION.md`](./NAVIGATION.md) § Activity detail and [`TRIPS_HOST_MANAG
 | **DM with link** | `ActivityInviteLauncher` → `sendMessage` with activity context |
 | **Group wall post** | Share message + URL to family/friends group |
 | **Crew chat** | In-app thread for host + approved joiners only |
-| **Join me** | `POST /activities/:id/invites` (`inviteeUserId` or `inviteeUserIds[]`) — host or going member → in-app notification (friend name + outing type + date) + `/explore?pin=activity:{id}&invite=1` (map peek banner). **Does not auto-join** — invitee uses RSVP / request flow; host approval where required. UI: `ActivityInviteLauncher` (link + multi-friend select); explore peek **Invite crew** opens the same sheet. **Plan a trip** (`planWith` query) pre-selects buddy on publish success. |
+| **Join me** | `POST /activities/:id/invites` (`inviteeUserId` or `inviteeUserIds[]`) — host or going member → in-app notification (friend name + outing type + date) + `/explore?pin=activity:{id}&invite=1` (map peek banner). **Does not auto-join** — invitee uses RSVP / request flow; host approval where required. UI: `ActivityInviteLauncher` (link + multi-friend select); explore peek **Invite crew** opens the same sheet. **Host an outing** (`planWith` query) pre-selects buddy on publish success. |
 
 Inviting does not add someone to crew chat; **join approval** (or host roster rules) does.
 

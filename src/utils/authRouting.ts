@@ -43,12 +43,9 @@ export const accountRouteByRole = (role: UserRole): string => {
   return PROFILE_PATH;
 };
 
-/**
- * `/publishing/*` (and legacy `/operator/*` console) bookmarks for members without tenant
- * console roles — send to consumer surfaces.
- */
+/** `/publishing/*` console bookmarks for members without tenant console roles — consumer surfaces. */
 export const participantHostBookmarkRedirect = (pathname: string): string => {
-  const rest = pathname.replace(/^\/(publishing|operator)(?=\/|$)/, '') || '/';
+  const rest = pathname.replace(/^\/publishing(?=\/|$)/, '') || '/';
   if (rest.startsWith('/messages')) {
     return MESSAGES_PATH;
   }

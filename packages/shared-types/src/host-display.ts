@@ -53,33 +53,30 @@ export const hostPersonFirstName = (input: HostPersonNameInput): string => {
 
 type HostIdentityFields = {
   hostName?: string | null;
-  organizerName?: string | null;
 };
 
 type HostUserIdentityFields = {
   hostUserId?: string | null;
-  organizerUserId?: string | null;
 };
 
 type HostAvatarIdentityFields = {
   hostAvatar?: string | null;
-  organizerAvatar?: string | null;
 };
 
-/** Display name for UI — trusts API-resolved hostName; legacy organizerName only for stale client payloads. */
+/** Display name for UI — API `hostName` only. */
 export const resolveActivityHostDisplayName = (activity: HostIdentityFields): string => {
-  const name = activity.hostName ?? activity.organizerName;
+  const name = activity.hostName;
   if (name?.trim() && !isRolePlaceholderDisplayName(name)) return name.trim();
   return HOST_FALLBACK_DISPLAY_NAME;
 };
 
 export const resolveActivityHostUserId = (
   activity: HostUserIdentityFields
-): string | null | undefined => activity.hostUserId ?? activity.organizerUserId ?? null;
+): string | null | undefined => activity.hostUserId ?? null;
 
 export const resolveActivityHostAvatar = (
   activity: HostAvatarIdentityFields
-): string | null | undefined => activity.hostAvatar ?? activity.organizerAvatar ?? null;
+): string | null | undefined => activity.hostAvatar ?? null;
 
 /** Organization brand — shown when different from the individual host (e.g. companies). */
 export const showTenantBrand = (

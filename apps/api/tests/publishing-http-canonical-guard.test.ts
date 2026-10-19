@@ -5,14 +5,12 @@ import { join } from 'node:path';
 const ROOT = join(process.cwd(), '..', '..');
 const read = (rel: string) => readFileSync(join(ROOT, rel), 'utf8');
 
-/** MIG-COH-04 — canonical HTTP `/publishing`; `/operator` mount is alias only. */
+/** MIG-COH-04 — canonical HTTP `/publishing` only (no `/operator` mount). */
 describe('publishing HTTP canonical guard (COH-04)', () => {
-  it('API index mounts /publishing then /operator alias', () => {
+  it('API index mounts /publishing only', () => {
     const index = read('apps/api/src/routes/index.ts');
-    const publishingAt = index.indexOf("apiRouter.use('/publishing', operatorRouter)");
-    const operatorAt = index.indexOf("apiRouter.use('/operator', operatorRouter)");
-    expect(publishingAt).toBeGreaterThanOrEqual(0);
-    expect(operatorAt).toBeGreaterThan(publishingAt);
+    expect(index).toMatch(/apiRouter\.use\('\/publishing', operatorRouter\)/);
+    expect(index).not.toMatch(/apiRouter\.use\('\/operator', operatorRouter\)/);
     expect(index).not.toMatch(/apiRouter\.use\('\/host'/);
   });
 
@@ -29,9 +27,18 @@ describe('publishing HTTP canonical guard (COH-04)', () => {
     expect(activities).not.toMatch(/['"`]\/operator\/activities/);
   });
 
+  it('organisation scope header is x-organisation-id only', () => {
+    const tenantMw = read('apps/api/src/middleware/tenant.ts');
+    const orgHeaders = read('src/api/orgHeaders.ts');
+    expect(tenantMw).toMatch(/readHeader\(req, 'x-organisation-id'\)/);
+    expect(tenantMw).not.toMatch(/x-tenant-id/);
+    expect(orgHeaders).toMatch(/'x-organisation-id': organisationId/);
+    expect(orgHeaders).not.toMatch(/x-tenant-id/);
+  });
+
   it('SPA surface paths are /publishing/*', () => {
     const surface = read('src/config/surfacePaths.ts');
     expect(surface).toMatch(/OPERATOR_OVERVIEW_PATH = '\/publishing\/overview'/);
-    expect(surface).toMatch(/rewriteOperatorConsoleToPublishingPath/);
+    expect(surface).not.toMatch(/rewriteOperatorConsoleToPublishingPath/);
   });
 });

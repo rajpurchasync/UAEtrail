@@ -10,9 +10,9 @@ const readHeader = (req: Request, name: string): string | undefined => {
   return Array.isArray(value) ? value[0] : value;
 };
 
-/** Prefer x-organisation-id; accept legacy x-tenant-id during transition. */
+/** Tenant publishing scope — `x-organisation-id` only (Mongo field remains `tenantId`). */
 export const readOrganisationIdHeader = (req: Request): string | undefined =>
-  readHeader(req, 'x-organisation-id') ?? readHeader(req, 'x-tenant-id');
+  readHeader(req, 'x-organisation-id');
 
 
 export const requireTenantContext = async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
@@ -26,7 +26,7 @@ export const requireTenantContext = async (req: Request, _res: Response, next: N
       throw new ApiError(
         400,
         'organisation_header_missing',
-        'x-organisation-id header is required (x-tenant-id accepted during transition).'
+        'x-organisation-id header is required.'
       );
     }
 

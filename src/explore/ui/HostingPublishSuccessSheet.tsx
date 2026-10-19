@@ -33,7 +33,7 @@ type HostingPublishSuccessSheetProps = {
   onRideshareLinked: () => void;
   onRideshareLinkError: (message: string) => void;
   onViewOnMap: () => void;
-  /** Buddy from Social “Plan a trip” — pre-select on post-publish invite. */
+  /** Buddy from Social “Host an outing” — pre-select on post-publish invite. */
   planWithBuddyUserId?: string | null;
 };
 

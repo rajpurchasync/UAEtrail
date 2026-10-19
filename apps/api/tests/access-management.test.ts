@@ -47,36 +47,36 @@ describe('access management', () => {
     const ownerToken = ownerLogin.body.tokens.accessToken as string;
 
     const addRes = await request(app)
-      .post('/api/operator/team')
+      .post('/api/publishing/team')
       .set('Authorization', `Bearer ${ownerToken}`)
-      .set('x-tenant-id', tenant.id)
+      .set('x-organisation-id', tenant.id)
       .send({ email: teammate.email, role: 'tenant_guide' });
 
     expect(addRes.status).toBe(201);
     const membershipId = String(addRes.body.data.id);
 
     const disableRes = await request(app)
-      .patch(`/api/operator/team/${membershipId}`)
+      .patch(`/api/publishing/team/${membershipId}`)
       .set('Authorization', `Bearer ${ownerToken}`)
-      .set('x-tenant-id', tenant.id)
+      .set('x-organisation-id', tenant.id)
       .send({ isActive: false });
 
     expect(disableRes.status).toBe(200);
     expect(disableRes.body.data.isActive).toBe(false);
 
     const listRes = await request(app)
-      .get('/api/operator/team')
+      .get('/api/publishing/team')
       .set('Authorization', `Bearer ${ownerToken}`)
-      .set('x-tenant-id', tenant.id);
+      .set('x-organisation-id', tenant.id);
 
     expect(listRes.status).toBe(200);
     const disabledMember = listRes.body.data.find((member: { id: string }) => member.id === membershipId);
     expect(disabledMember.isActive).toBe(false);
 
     const blockedEventsRes = await request(app)
-      .get('/api/operator/activities')
+      .get('/api/publishing/activities')
       .set('Authorization', `Bearer ${teammate.accessToken}`)
-      .set('x-tenant-id', tenant.id);
+      .set('x-organisation-id', tenant.id);
 
     expect(blockedEventsRes.status).toBe(403);
 

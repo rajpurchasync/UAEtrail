@@ -704,6 +704,99 @@ export const runMongoMigrations = async (db: Db): Promise<void> => {
   await backfillTenantOwnerMemberships(db);
   await backfillTenantPublishingPurpose(db);
   await runCatalogCpcMigrations(db);
+  await migrateOrganizerNoteToHostNote(db);
+  await migrateDemandExplorePinPaths(db);
+};
+
+/** One-time: leftover `pin=demand:` notification paths → `pin=activity:{id}`. */
+const migrateDemandExplorePinPaths = async (db: Db): Promise<void> => {
+  const notifications = db.collection('notifications');
+  const leftover = await notifications
+    .find({
+      $or: [{ path: /pin=demand(:|%3A)/i }, { 'meta.path': /pin=demand(:|%3A)/i }],
+    })
+    .project({ _id: 1, path: 1, meta: 1 })
+    .toArray();
+  if (leftover.length === 0) return;
+
+  const activities = db.collection(COLLECTIONS.ACTIVITIES);
+  let rewritten = 0;
+  const rewritePath = async (path: string): Promise<string | null> => {
+    const match = path.match(/(?:^|[?&])pin=(?:demand:|demand%3A)([^&]+)/i);
+    if (!match) return null;
+    const intentId = decodeURIComponent(match[1]).trim();
+    if (!intentId) return null;
+    const activity = await activities.findOne(
+      { participantIntentId: intentId },
+      { projection: { _id: 1 } }
+    );
+    if (!activity?._id) return null;
+    const activityId = String(activity._id);
+    return path
+      .replace(/pin=demand%3A[^&]*/gi, `pin=activity%3A${encodeURIComponent(activityId)}`)
+      .replace(/pin=demand:[^&]*/gi, `pin=activity:${activityId}`);
+  };
+
+  for (const row of leftover) {
+    const set: Record<string, string> = {};
+    if (typeof row.path === 'string') {
+      const next = await rewritePath(row.path);
+      if (next && next !== row.path) set.path = next;
+    }
+    const meta =
+      row.meta && typeof row.meta === 'object' ? (row.meta as { path?: unknown }) : null;
+    const metaPath = typeof meta?.path === 'string' ? meta.path : null;
+    if (metaPath) {
+      const next = await rewritePath(metaPath);
+      if (next && next !== metaPath) set['meta.path'] = next;
+    }
+    if (Object.keys(set).length === 0) continue;
+    await notifications.updateOne({ _id: row._id }, { $set: set });
+    rewritten += 1;
+  }
+
+  if (rewritten > 0) {
+    console.log(`[mongo] Rewrote leftover pin=demand: notification path(s): ${rewritten}`);
+  }
+};
+
+/** One-time: leftover `organizerNote` → `hostNote`, then drop the leftover field. */
+const migrateOrganizerNoteToHostNote = async (db: Db): Promise<void> => {
+  const requests = db.collection(COLLECTIONS.ACTIVITY_REQUESTS);
+  const copied = await requests.updateMany(
+    {
+      organizerNote: { $exists: true, $nin: [null, ''] },
+      $or: [{ hostNote: { $exists: false } }, { hostNote: null }, { hostNote: '' }],
+    },
+    [{ $set: { hostNote: '$organizerNote' } }]
+  );
+  const unset = await requests.updateMany(
+    { organizerNote: { $exists: true } },
+    { $unset: { organizerNote: '' } }
+  );
+  if (copied.modifiedCount > 0 || unset.modifiedCount > 0) {
+    console.log(
+      `[mongo] Migrated organizerNote → hostNote on activity_requests (copied ${copied.modifiedCount}, dropped ${unset.modifiedCount})`
+    );
+  }
+
+  const notifications = db.collection('notifications');
+  const metaCopied = await notifications.updateMany(
+    {
+      'meta.organizerNote': { $exists: true, $nin: [null, ''] },
+      $or: [{ 'meta.hostNote': { $exists: false } }, { 'meta.hostNote': null }, { 'meta.hostNote': '' }],
+    },
+    [{ $set: { 'meta.hostNote': '$meta.organizerNote' } }]
+  );
+  const metaUnset = await notifications.updateMany(
+    { 'meta.organizerNote': { $exists: true } },
+    { $unset: { 'meta.organizerNote': '' } }
+  );
+  if (metaCopied.modifiedCount > 0 || metaUnset.modifiedCount > 0) {
+    console.log(
+      `[mongo] Migrated meta.organizerNote → meta.hostNote on notifications (copied ${metaCopied.modifiedCount}, dropped ${metaUnset.modifiedCount})`
+    );
+  }
 };
 
 /** Align tenant rows with community / professional / business publishing tiers. */

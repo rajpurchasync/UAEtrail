@@ -24,7 +24,7 @@ There are **five public entity kinds** on the wire (`EntityKind` / `EntityRef`):
 | `shop` | **Shop** (outdoor retail brand + catalog) | `merchant_profiles` + SHOP `tenants` | “Merchant”, “Partner” for shops |
 | `person` | **Person** / member | `users` (profile fields) | “User” in consumer copy |
 
-**Demand (Find)** is not a sixth entity kind on URLs — it is a **seeking activity** (`activityMode: seeking`) on the map; deep links use **`exploreSeekingMapItemPath`** (`pin=activity:{id}`). Inbound **`pin=demand:{intentId}`** is rewrite-only and is never minted. Not `/demand/:id`.
+**Find crew** is not a sixth entity kind on URLs — it is a **seeking activity** (`activityMode: seeking`) on the map; deep links use **`exploreSeekingMapItemPath`** (`pin=activity:{id}`). Leftover **`pin=demand:`** is not a product path. Not `/demand/:id`.
 
 **Plan** (`/plan`) is the active member tab — **My Plans**: upcoming list or **calendar** (`layout=calendar` — joined, hosting, seeking, your available days), wishlist + goals; **share availability** editor is `?lens=availability` (`planAvailabilityPath()`), not the calendar layout. **Outing history** (`/profile/history`) is profile inventory (past outings, journey map). Wishlist deep links: `planWishlistTabPath()` / `planSavedPath()` (`tab=wishlist`; legacy `lens=saved|goals` normalizes on load). Page module: `src/plan/PlanPage.tsx`. Legacy `/trips` and `/trips/map` redirect via `LEGACY_TRIPS_MAP_PATH` / `resolveLegacyTripsHubRedirect` — not a domain type. Consumer path helpers: import `config/routingCatalog` (not `member-plan/planHubRouting` directly).
 
@@ -40,13 +40,13 @@ There are **five public entity kinds** on the wire (`EntityKind` / `EntityRef`):
 | **Host** | FAB (UI) | Publish a **hosted** map **Activity** | Bottom nav **My Plans** tab |
 | **Find crew** | FAB (UI) | **Seeking** activity (fixed) or **Share availability** (flexible) | Generic “Find” menu; **Plan** as FAB label |
 | **Add on map** | FAB (UI) | Member **place** or **facility** catalog submit | Backend `*Contribute*` module names |
-| **Plan** | Legacy compose wire | Alias `plan:*:hosting\|seeking` → **Host** / **Find crew** | New FAB UI; **My Plans** tab name |
-| **Contribute** | Legacy compose wire | Alias `contribute:*` → **Add on map** | Backend API name; use **place submit** / **facility submit** in code |
-| **Organize** | Legacy compose + console | **Hosting** path; **host** copy and `/operator` publish | Top-level FAB label |
-| **Find** | Legacy compose | Alias `find:*` → **Find crew** (fixed seek) | Top-level FAB label |
-| **Add** | Legacy compose | Alias `add:*` → **Add on map** | Top-level FAB label |
+| **Plan** | Leftover compose wire | Not accepted — use **Host** / **Find crew** wire (`host:*`, `seek:*`) | New FAB UI; **My Plans** tab name |
+| **Contribute** | Leftover compose wire | Not accepted — use **Add on map** wire (`add:place:*`, `add:facility:*`) | Backend API name; use **place submit** / **facility submit** in code |
+| **Organize** | Leftover compose + console | Not accepted — **Host** wire + **host** copy; `/operator` publish workspace | Top-level FAB label |
+| **Find** | Leftover compose | Not accepted — **Find crew** wire (`seek:fixed:*`, `seek:flexible`) | Top-level FAB label |
+| **Add** | Wire token (v3) | `add:place:*` \| `add:facility:*` on `?compose=` (FAB **Add on map**) | Confusing with casual “add a friend” copy |
 | **Create** | Product verb (OK) | Casual copy (“create a plan”) | — |
-| **Compose** | **Wire / code only** | Query `?compose=…` — v3 `host:*` \| `seek:fixed:*` \| `seek:flexible` \| `add:*` ([§1.7](#17-program-cpc--catalog-ontology-fab-compose-wire)); aliases `plan:*`, `contribute:*`, `organize` \| `find` \| `add` | User-facing FAB buttons — reserved word for **message compose** later |
+| **Compose** | **Wire / code only** | Query `?compose=…` — v3 `host:*` \| `seek:fixed:*` \| `seek:flexible` \| `add:*` ([§1.7](#17-program-cpc--catalog-ontology-fab-compose-wire)) | User-facing FAB buttons — reserved word for **message compose** later |
 | **Host** | Product role | Anyone who **publishes** (buddy → pro guide → agency → shop owner → partner) | The Mongo `tenants` row name in UI |
 | **Organisation** | Code + wire | **One tenant row** for all storefronts (guide, agency, shop, e-commerce, …): `Organisation*`, `x-organisation-id`, `EntityKind: organisation` | Solo guide or shop in **consumer** copy — say **guide**, **agency**, **shop**, **partner**; Pro path = [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) § One stack |
 | **Organizer** | Legacy wire | `organizerId`, `organizerDetails` on old payloads | New product nouns — prefer **host** (activity) or **tenant** (storage) |
@@ -79,7 +79,7 @@ One **person** account; zero or more **storefronts** (tenant-backed public brand
 
 | Kind | Product | Map pin? | Join / book model | Public URL (today) |
 |------|---------|----------|-------------------|-------------------|
-| `community` | Buddy host (no brand page) | Via activities/demand only | Organize on map | `/member/:userId` only |
+| `community` | Buddy host (no brand page) | Via activities/seeking only | Host on map | `/member/:userId` only |
 | `pro_guide` | Pro individual — same person as community, plus Pro membership | **No** person pin | Activity join / request | **`/member/:userId`** |
 | `agency` | Tour **operator** (company profile) | **No** agency pin | Activities + paid trips | `/agency/:slug`; linked users show **operator name** on member profile |
 | `shop` | Shop **operator** | **Yes** (shop pin) + catalog | Directions, featured picks | `/shop/:id`; linked users show **operator name** on member profile |
@@ -144,16 +144,16 @@ One **person** account; zero or more **storefronts** (tenant-backed public brand
 | `moderationStatus` | `pending` \| `approved` \| `rejected` \| `suspended` |
 | `publicationStatus` | `listed` \| `unlisted` \| `anchor_only` |
 
-Member **Contribute** → typically `pending` + `unlisted`; public `/place` or `/facility` when policy allows ([`CREATE_FLOW.md`](./CREATE_FLOW.md)).
+Member **Add** → typically `pending` + `unlisted`; public `/place` or `/facility` when policy allows ([`CREATE_FLOW.md`](./CREATE_FLOW.md)).
 
 #### FAB product verbs vs wire
 
-| UI (FAB) | Meaning | Wire `compose` (compose wire) | Legacy wire |
+| UI (FAB) | Meaning | Wire `compose` |
 |----------|---------|---------------------|-------------|
-| **Host** | Publish outing you lead | `host:<kind>` | `plan:<kind>:hosting`, `organize:*` |
-| **Find crew** → fixed | Map seeking post | `seek:fixed:<kind>` | `plan:<kind>:seeking`, `find:*` |
-| **Find crew** → flexible | Member availability | `seek:flexible` | — |
-| **Add on map** | Submit **place** or **facility** | `add:place:<kind>` \| `add:facility:<kind>` | `contribute:*`, `add:*` |
+| **Host** | Publish outing you lead | `host:<kind>` |
+| **Find crew** → fixed | Map seeking post | `seek:fixed:<kind>` |
+| **Find crew** → flexible | Member availability | `seek:flexible` |
+| **Add on map** | Submit **place** or **facility** | `add:place:<kind>` \| `add:facility:<kind>` |
 
 **Compose** remains the **query param name** only — not FAB copy ([§1.1](#11-words-that-must-not-be-confused)).
 
@@ -196,7 +196,7 @@ Evolve from today’s `GET /places/registry` → **`GET /places/catalog`** (plac
 
 | Layer | Use for | Examples |
 |-------|---------|----------|
-| **Product / UI** | Copy, nav labels | Place, Activity, **Organize** (FAB), **Host** (individual), **Operator workspace** (agency/shop), Friends, Pro Membership — not **Compose** for FAB |
+| **Product / UI** | Copy, nav labels | Place, Activity, **Host** (FAB + individual on this outing), **Operator workspace** (agency/shop), Friends, Pro Membership — not **Compose** for FAB |
 | **Code (modules)** | Files, hooks, components — **bounded context** from [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §3 | `src/explore/*`, `src/member-plan/*`, `useMemberStatus`, `tenantActivityClientApi`, `routes/operator/*` — see **§13** |
 | **Wire / storage** | HTTP paths, Mongo until versioned migration | `/locations`, `LocationDTO`, `activity_requests`, `hostUserId`, `x-organisation-id` |
 
@@ -232,11 +232,10 @@ Built only via **`routingCatalog`** or `@uaetrail/shared-types` `entity-path` he
 | Legacy membership marketing | `/membership` | `MEMBERSHIP_MARKETING_PATH` → explore redirect |
 | Pro / business | `/profile/pro-membership` | `PRO_MEMBERSHIP_PATH`, `proMembershipPath()` |
 | Publishing console | `/publishing/*` | `OPERATOR_*_PATH` in `src/config/surfacePaths.ts` |
-| `/operator/{console}` | Alias of `/publishing/{console}` for reserved console segments only | `rewriteOperatorConsoleToPublishingPath` — not a storefront |
 
 **Parse inbound links:** `parseEntityRefFromPathname(pathname)` → `EntityRef`.
 
-**Legacy redirects only** (do not link in new UI): `/map`, `/discovery`, `/trips`, `/activities` → `/plan` or `/profile/history` (or journey map), `/become-host` → Pro Membership, `/merchant/:id`, `/host/*` and `/organizer/*` → `/operator/*` (except `/host/messages` → `/chat`). Table: [`NAVIGATION.md`](./NAVIGATION.md) § Legacy redirects.
+**Legacy redirects only** (do not link in new UI): `/map`, `/discovery`, `/trips`, `/activities` → `/plan` or `/profile/history` (or journey map), `/become-host` → Pro Membership, `/merchant/:id`, `/host/*` and `/organizer/*` → `/publishing/*` where applicable (except `/host/messages` → `/chat`). Table: [`NAVIGATION.md`](./NAVIGATION.md) § Legacy redirects.
 
 ### 3.1 Consumer detail tab wire ids
 
@@ -263,9 +262,9 @@ Detail UIs must load from the **canonical read API** for that entity; writes use
 | **Activity** | `/activity/:id` | `activities` + participation | Member **Organize/Find** FAB, host publish (`member-publish-gate`) | `GET /activities/:id` (`viewerAccess`, presentation) | `usePublicActivityDetail` | Not trail inventory — scheduled outing |
 | **Member (person)** | `/member/:userId` | `users` profile | Member `PATCH /me/profile` | `GET /member/:userId/profile` | `memberPublicProfileApi` | ≠ tenant storefront |
 | **Organisation (pro)** | `/agency`, `/partner` | `tenants` storefront | Host onboarding / `organisationConsoleApi` | `GET /tenants/:slug` (public profile bundle) | `organisationConsoleApi` | Shop tenants → `/shop/:id`; individual Pro → `/member/:userId` |
-| **Shop** | `/shop/:id` | `tenants` / merchant (+ optional place pin) | **Operator** Pro onboarding — **not** FAB Contribute; community gear pin = **facility `outdoor_shop`** ([§1.7](#17-program-cpc--catalog-ontology-fab-compose-wire)) | `GET /shop/shops/:id` | `shopPublicClientApi` | `EntityKind.shop` = storefront only |
-| **Place** | `/place/:id` (CPC-6; legacy `/trail`·`/camp`·`/venue`) | `locations` (place rows) | Admin `/admin/places`; member **Contribute → Place**; operator place submit with `areaId` | `GET /places/:id`; `GET /places/catalog`; linked **facilities** via **`parentPlaceId`** (**CPC-3**) | `placeDetailClientApi` | Place catalog excludes facilities after CPC |
-| **Facility** | `/facility/:id` | **`facilities`** (**CPC-2**) | Admin `/admin/facilities`; member **Contribute → Facility** | `GET /facilities/:id`; `GET /facilities/catalog` | TBD `facilityDetailClientApi` | `areaId` + optional `parentPlaceId` |
+| **Shop** | `/shop/:id` | `tenants` / merchant (+ optional place pin) | **Operator** Pro onboarding — **not** FAB Add; community gear pin = **facility `outdoor_shop`** ([§1.7](#17-program-cpc--catalog-ontology-fab-compose-wire)) | `GET /shop/shops/:id` | `shopPublicClientApi` | `EntityKind.shop` = storefront only |
+| **Place** | `/place/:id` (CPC-6; legacy `/trail`·`/camp`·`/venue`) | `locations` (place rows) | Admin `/admin/places`; member **Add → Place**; operator place submit with `areaId` | `GET /places/:id`; `GET /places/catalog`; linked **facilities** via **`parentPlaceId`** (**CPC-3**) | `placeDetailClientApi` | Place catalog excludes facilities after CPC |
+| **Facility** | `/facility/:id` | **`facilities`** (**CPC-2**) | Admin `/admin/facilities`; member **Add → Facility** | `GET /facilities/:id`; `GET /facilities/catalog` | TBD `facilityDetailClientApi` | `areaId` + optional `parentPlaceId` |
 | **Area** | `/area/:slug` | `areas` curated hubs | **Admin** `/admin/areas` (publish `status`) | `GET /areas/:slug` (preview slices) | `areaHubClientApi` | Previews filter published activities + active places by `areaId` |
 
 **Registry:** place catalog browse uses `GET /places/registry` (explore map) — detail pages use **per-id** `GET /places/:id`, not the registry blob.
@@ -316,7 +315,7 @@ Map/list **peek** and entity **detail** share one engagement contract per viewer
 | Map home | `EXPLORE_MAP_PATH` (`/explore`) | `/map`, bare `/shop` |
 | FAB deep link (wire) | `compose=host:*` \| `seek:fixed:*` \| `seek:flexible` \| `add:*` — param name **compose** is wire-only; product = **Host · Find crew · Add on map** | User-facing “Compose”; `/host/activities/new` for consumers |
 | Panel/filter query | `explorePath({ panel, filter, … })` | Raw `` `/explore?${...}` `` outside `explore/routing.ts` |
-| Seeking / demand pin | `exploreSeekingMapItemPath` (`pin=activity:{id}`); inbound `pin=demand:{intentId}` rewrite only | `/demand/:id`; minting `demand:` from a bare intent id |
+| Seeking pin | `exploreSeekingMapItemPath` (`pin=activity:{id}`) | `/demand/:id`; leftover `demand:` pin ids |
 | Full-screen list browse | `LIST_DISCOVERY_PATH` (`/list`) + `listDiscoveryPath()` | `/list/hiking`, `/shops` as category site roots |
 | List ↔ map handoff | `exploreMapPathFromListSearch()`, `listDiscoveryPathFromExploreSearch()` | Second filter vocabulary on `/list` |
 
@@ -374,7 +373,7 @@ IA detail (pills, topics): [`experiment/explore-browse-ia.md`](./experiment/expl
 | `Place`, `getPublicPlaces` | Location (in UI) | `LocationDTO` = wire DTO |
 | `getOrganisationProfile`, `ShopOrganisation*`, `organisation-console/` (Pro storefront onboarding) | Merchant* (client), HostOrganization* | **Not** activity CRUD/roster — see `MEMBER_MODEL` § Organisation in filenames |
 | `listHostActivities`, `createHostActivity`, `publishHostActivity`, `ActivityParticipantsPanel`, `ActivityManageSheet` | `*OrganisationActivity*`, `OrganisationActivityCheckInPanel`, `listOrganisationActivities` | Guards: `apiLegacyGuard`, `organisationNamingGuard` |
-| `OPERATOR_CONSOLE_LINKS`, `src/pages/operator/*`, `src/console/*` | `HOST_CONSOLE_LINKS` (alias), `pages/OrganisationActivities` | Publishing console at `/operator/*` |
+| `OPERATOR_CONSOLE_LINKS`, `src/pages/operator/*`, `src/console/*` | `HOST_CONSOLE_LINKS` (alias), `pages/OrganisationActivities` | Publishing console at `/publishing/*` |
 | `getMemberHostStatus` | `getMyOrganisationStatus` | Tier flags |
 | `PersonPublicProfile` | `UserPublicProfile` | Public card |
 | `buildHostActivityPublishPayload`, `buildHostActivityMenuItems` | `buildOrganisationActivity*` | Single publish contract (`activityPublishPayload.ts`) |
@@ -413,7 +412,7 @@ IA detail (pills, topics): [`experiment/explore-browse-ia.md`](./experiment/expl
 1. **No consumer links** to `/become-host` — use `PRO_MEMBERSHIP_PATH` (`hostMemberGuard.test.ts`).
 2. **No new links** to `/activities` or bare `/trips` — use `PLAN_PATH` or `PROFILE_HISTORY_PATH` (`routingHygiene.test.ts`).
 3. **No raw `/explore?…`** outside explore routing module + small allowlist (`routingHygiene.test.ts`).
-4. **No `isHostRole(`** for product gates — `canPublish` / `canAccessHostConsole` (`hostMemberGuard.test.ts`).
+4. **No `isHostRole(`** for product gates — `canPublish` / `publish.canAccessPublishingWorkspace` (`hostMemberGuard.test.ts`).
 5. **No banned `api.*` legacy** calls in app code (`apiLegacyGuard.test.ts`).
 
 ---
@@ -434,7 +433,7 @@ When renaming or adding routes:
 | Duplicate | Why |
 |-----------|-----|
 | `LocationDTO` vs Place | Mongo `locations` + historical API |
-| `tenant` vs Organisation | `x-tenant-id` header |
+| `tenant` vs Organisation | `x-organisation-id` header (`tenantId` in storage) |
 | `UserRole` vs `HostStatusDTO` | Auth shell vs product capabilities |
 | `LegacyProMembershipRedirect` | Bookmark `/become-host` → `PRO_MEMBERSHIP_PATH` (no `BecomeHost.tsx` page) |
 | `ProProfileApplicationFlow` | Pro guide/agency/shop application wizard (not community Host / publish) |
@@ -488,7 +487,7 @@ Use this when naming files, hooks, and utils — **one product word per concept*
 | Product (UI copy) | API / wire | Preferred FE symbol / folder | Do not use for new code |
 |-------------------|------------|------------------------------|-------------------------|
 | **Find** (FAB) | `activities` (`activityMode: seeking`) | `CreateSeekingFlow.tsx`, `seekingFlowEngine.ts`, `seekingWizardSteps.tsx` | `CreateDemandFlow.tsx`, `demandFlow.ts`, `demandWizardSteps.tsx`, “wishlist”, “lookingFor” in filenames |
-| **Seeking pin** (public map) | `activities` (`activityMode: seeking`) | Map item id **`activity:{activityId}`**; DTO `activityMode: 'seeking'`; helpers `exploreMapItemIsSeeking`, `resolveExploreMapActivityMode`. Map/list wire **`source: 'activity'`** + **`activityMode: 'seeking'`**; UI copy uses **`composeIntent: 'demand'`** (not a separate map species). **Publisher = activity host** — map peek uses same host actions as Organize (`mapPeekActions`), not a parallel demand-owner chrome. **Linked transport:** child rideshare via `linkedActivityId` on publish + `linkedRideshareActivityId` on parent — not `POST …/link-activity` (`CREATE_FLOW.md` § Linked transport). Inbound **`demand:{intentId}`** ids and **`source: 'demand'`** are parse/rewrite compat only — never minted. | `item.source === 'demand'` for filters; parallel `participant_intent_requests` writes (M2c: reads alias `activity_requests`) |
+| **Seeking pin** (public map) | `activities` (`activityMode: seeking`) | Map item id **`activity:{activityId}`**; DTO `activityMode: 'seeking'`; helpers `exploreMapItemIsSeeking`, `resolveExploreMapActivityMode`. Map/list wire **`source: 'activity'`** + **`activityMode: 'seeking'`**; UI copy uses **`composeIntent: 'seek'`** (not a separate map species). **Publisher = activity host** — map peek uses same host actions as Host (`mapPeekActions`), not a parallel seeking-owner chrome. **Linked transport:** child rideshare via `linkedActivityId` on publish + `linkedRideshareActivityId` on parent — not `POST …/link-activity` (`CREATE_FLOW.md` § Linked transport). | leftover `demand:` pin ids; `item.source === 'demand'`; parallel `participant_intent_requests` writes |
 | **Follow** (venue / host brand / shop alerts) | `entity_follows` | `EntityFollowDTO`, `GET/POST /me/entity-follows` | Wishlist UI, “favorites” |
 | **Follow** (people) | `user_follows` | `MemberFollowControls`, `/me/following/:userId` | Buddies are **friends**; accepting a buddy **auto-follows** both ways |
 | **Wishlist** (private saves) | `user_wishlist` | `WishlistItemDTO`, `GET/POST /me/wishlist` | “Favorite”, demand bookmarks, saving people/shops to wishlist |
@@ -530,7 +529,7 @@ Use this when naming files, hooks, and utils — **one product word per concept*
 |--------|-------------------|------|
 | **Area** | Admin `/admin/areas` | Curated **name** + optional center/bounds as camera hint for the hub page — **no explore map pin**. Geography labels (country, state, region) come from the map, not from Area. |
 | **Place** | Admin `/admin/places` or member **Add** (`curatedArea` then pin) | **`locations.areaId` required** on submit (`POST /me/locations`, host `/locations`) |
-| **Hosted activity** | Organize publish | **No `activity.areaId` on write.** `activity.locationId` → catalog **place** with **`place.areaId`**. `validateHostingPlaceArea` / publish gate. Meeting / going-from pin does **not** define area. |
+| **Hosted activity** | Host publish | **No `activity.areaId` on write.** `activity.locationId` → catalog **place** with **`place.areaId`**. `validateHostingPlaceArea` / publish gate. Meeting / going-from pin does **not** define area. |
 | **Seeking activity** | Find FAB | **`activities.areaId`** (`activityMode: seeking`) + map pin; synthetic seeking **place** carries same **`areaId`**. |
 | **Availability** | Plan / profile | Member picks **`areaId`** (optional region fallback) — not an activity. |
 
@@ -623,11 +622,11 @@ One facade (e.g. `src/hooks/tenantActivityClientApi.ts` — name TBD at implemen
 |---------|------------------------|------------------|
 | List tenant outings | `listActivities(tenantId)` | `GET /operator/activities` |
 | Join queue | `getActivityJoinRequests(tenantId, { activityId? })` | `GET /publishing/requests` (alias `/operator/requests`) |
-| Decide request | `decideActivityJoinRequest(tenantId, requestId, status, hostNote?)` | `PATCH /publishing/requests/:id` (`hostNote`; `organizerNote` read alias) |
+| Decide request | `decideActivityJoinRequest(tenantId, requestId, status, hostNote?)` | `PATCH /publishing/requests/:id` (`hostNote`) |
 | Roster | `getActivityParticipants(tenantId, activityId)` | `GET /operator/activities/:id/participants` |
 | Lifecycle | `publishActivity`, `cancelActivity`, `updateActivity`, `duplicateActivity` | `/operator/activities/:id` … |
 
-**Member capabilities** (not activity-scoped): **`useMemberStatus`** → `GET /me/status` with **`publish`** (`canPublish`, `canAccessPublishingWorkspace`, `ownedProfiles`, …). Flat top-level fields dual-read legacy wire.
+**Member capabilities** (not activity-scoped): **`useMemberStatus`** → `GET /me/status` with **`profileComplete`** + **`publish`** (`canPublish`, `canAccessPublishingWorkspace`, `ownedProfiles`, …) — no duplicate flat publish fields on the wire.
 
 ### 13.3 Communication slice (canonical)
 
@@ -677,7 +676,7 @@ Any **place, venue, activity meeting point, shop, parking pin**, or other consum
 
 ## 15. Viewer access & detail exposure (authorization model)
 
-**Purpose:** One **standardized access-control system** for “who may see full entity detail vs map peek vs sign-in prompt.” Separate from **member capabilities** (`canPublish`, host console) and from **join CTAs** (`participationMode`, `joinRequestUi`).
+**Purpose:** One **standardized access-control system** for “who may see full entity detail vs map peek vs sign-in prompt.” Separate from **member capabilities** (`canPublish`, publishing workspace) and from **join CTAs** (`participationMode`, `joinRequestUi`).
 
 **Related:** [`CREATE_FLOW.md`](./CREATE_FLOW.md) (discovery + participation fields) · [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) (capabilities ≠ viewer access) · [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §7 **C16** · [`API_ROUTING.md`](./API_ROUTING.md) (activity detail route)
 
@@ -690,8 +689,8 @@ Any **place, venue, activity meeting point, shop, parking pin**, or other consum
 | Layer | Question | Canonical source | Never use for |
 |-------|----------|------------------|---------------|
 | **0. Identity** | Is there a signed-in member? | `req.auth` / `viewerUserId` | Host tier, Pro, roster |
-| **1. Platform role** | Admin / merchant / tenant job on JWT? | `UserRole`, `PLATFORM_ADMIN` bypass | Consumer Organize gates |
-| **2. Member capability** | May this account **act** (Organize/publish, publishing workspace, paid publish)? | `MemberStatusDTO` / `publish`, **`member-status.ts` only** | Reading someone else's activity |
+| **1. Platform role** | Admin / merchant / tenant job on JWT? | `UserRole`, `PLATFORM_ADMIN` bypass | Consumer Host / publish gates |
+| **2. Member capability** | May this account **act** (Host / publish, publishing workspace, paid publish)? | `MemberStatusDTO` / `publish`, **`member-status.ts` only** | Reading someone else's activity |
 | **3. Entity discovery** | Is this row on the explore map vs link-only? | `ActivityJoinMode` | RSVP vs approval |
 | **4. Participation** | How do you join the roster? | `ParticipationMode`, demand requests | Detail payload depth |
 | **5. Social viewer access** | Relationship to **this** entity (host, participant, …)? | `*-viewer-access.ts` resolvers | `canPublish`, Pro SKU |
@@ -722,7 +721,7 @@ Any **place, venue, activity meeting point, shop, parking pin**, or other consum
 type ActivityAccessSurface =
   | 'explore_map'      // peek card projection
   | 'activity_route'   // /activity/:id (share link, notification)
-  | 'host_console'
+  | 'publishing_workspace'
   | 'notification_link';
 ```
 
@@ -900,7 +899,7 @@ ViewerRequestContext
 | `viewerUserId` | `null` = guest |
 | `platformRole` | Coarse JWT role (`UserRole`) — shell routes, admin |
 | `hostStatus` | Optional snapshot from **`GET /me/status`** — **capabilities only**, loaded server-side for mutations; avoid shipping whole DTO on every public read |
-| `surface` | `explore_map`, `activity_route`, `host_console`, … |
+| `surface` | `explore_map`, `activity_route`, `publishing_workspace`, … |
 | `tenantScope` | `x-organisation-id` when acting as business host |
 
 **Where each concern lives:**

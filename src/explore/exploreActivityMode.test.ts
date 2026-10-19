@@ -1,17 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import { exploreMapItemIsSeeking, resolveExploreMapActivityMode } from '@uaetrail/shared-types';
 import { buildDiscoveryCardViewModelCard } from '../discovery';
-import {
-  hostedExploreMapItem,
-  legacyDemandExploreMapItem,
-  seekingExploreMapItem,
-} from './exploreMapItemFixtures';
+import { hostedExploreMapItem, seekingExploreMapItem } from './exploreMapItemFixtures';
 
 describe('exploreActivityMode (M0)', () => {
-  it('resolveExploreMapActivityMode supports canonical and legacy wire', () => {
+  it('resolveExploreMapActivityMode uses activityMode and hosted activity source', () => {
     expect(resolveExploreMapActivityMode(seekingExploreMapItem())).toBe('seeking');
     expect(resolveExploreMapActivityMode(hostedExploreMapItem())).toBe('hosted');
-    expect(resolveExploreMapActivityMode(legacyDemandExploreMapItem())).toBe('seeking');
+    expect(
+      resolveExploreMapActivityMode({
+        id: 'demand:int-1',
+        source: 'demand' as never,
+        participantIntentId: 'int-1',
+      })
+    ).toBeNull();
   });
 
   it('discovery VM adds Seeking badge with activity wire source', () => {

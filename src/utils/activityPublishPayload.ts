@@ -53,7 +53,7 @@ export type ActivityPublishRideshare = {
   rideshareDetails?: string | null;
 };
 
-/** Canonical host activity create/update body — shared by explore compose and host console. */
+/** Canonical host activity create/update body — shared by explore Host and publishing workspace. */
 export type ActivityPublishInput = {
   activityType: string;
   locationId: string;

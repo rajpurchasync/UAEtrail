@@ -47,13 +47,13 @@ describe('splitChatMessageLinks', () => {
   });
 
   it('maps local share URLs to in-app paths', () => {
-    const segments = splitChatMessageLinks('http://localhost:5173/explore?pin=demand%3Aabc', opts);
+    const segments = splitChatMessageLinks('http://localhost:5173/explore?pin=activity%3Aabc', opts);
     expect(segments).toEqual([
       {
         kind: 'url',
-        value: 'http://localhost:5173/explore?pin=demand%3Aabc',
-        href: 'http://localhost:5173/explore?pin=demand%3Aabc',
-        to: '/explore?pin=demand%3Aabc',
+        value: 'http://localhost:5173/explore?pin=activity%3Aabc',
+        href: 'http://localhost:5173/explore?pin=activity%3Aabc',
+        to: '/explore?pin=activity%3Aabc',
       },
     ]);
   });

@@ -32,10 +32,10 @@ Program CPC ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.4) splits **Plac
 |--------|------------|----------------|------------|-------------|
 | **Place** | One map/catalog POI — typed, not a separate “venue” or “location” product | `locations`, `PlaceDTO` / `LocationDTO` | See [Place kinds](#place-one-entity-placekind) | Yes (venue / shop pins) |
 | **Activity** | A scheduled outing hosted at a place | `activities`, `ActivityDTO` | `/activity/:id` | Yes |
-| **Event (organize chip)** | **Organize** FAB label — public happening; default **I’m going** RSVP | Same **Activity** row (`activityType: event`) | `/activity/:id` | Yes |
-| **Activity (organize chip)** | **Organize** FAB label — generic buddy plan (run, jog, …); default **request to join** | Same **Activity** row (see CREATE_FLOW for `activityType`) | `/activity/:id` | Yes |
-| **Host** (publishing) | Always a **signed-in user** who publishes; may act **as self** or **on behalf of a business** they’re linked to | `createdById`, `hostId`, `tenantId` on activities; `tenants`, storefronts | See [Host storefronts](#host-storefronts-where-vs-who) | Via activities / demand |
-| **Person** | A member's identity (member card at `/member/:id`) | `users` (profile fields) | `/profile`, `/member/:id` | Via demand cards |
+| **Event (Host chip)** | **Host** FAB label — public happening; default **I’m going** RSVP | Same **Activity** row (`activityType: event`) | `/activity/:id` | Yes |
+| **Activity (Host chip)** | **Host** FAB label — generic buddy plan (run, jog, …); default **request to join** | Same **Activity** row (see CREATE_FLOW for `activityType`) | `/activity/:id` | Yes |
+| **Host** (publishing) | Always a **signed-in user** who publishes; may act **as self** or **on behalf of a business** they’re linked to | `createdById`, `hostId`, `tenantId` on activities; `tenants`, storefronts | See [Host storefronts](#host-storefronts-where-vs-who) | Via activities / seeking |
+| **Person** | A member's identity (member card at `/member/:id`) | `users` (profile fields) | `/profile`, `/member/:id` | Via seeking cards |
 | **User** | Auth account (login, roles, suspension) | `users`, `UserDTO`, `AuthContext` | `/signin`, `/signup` | — |
 
 **Participation** links **Person ↔ Activity ↔ Place**. **Publishing** always has a **user** actor; activities may also reference a **business tenant** when published on behalf of a brand.
@@ -60,9 +60,9 @@ Business capabilities attach to **operator tenants** (shop/agency), each with **
 | Lens | Examples | Not the same as |
 |------|----------|-----------------|
 | **Where** | Trail, camp, **shop pin**, future partner/hotel pin | Tour **agency** (join trips without visiting a pin) |
-| **Who** | Activity, demand, **`/member/:userId`**, **agency / shop operator profiles** (not person map pins) | Calling a gear **shop** a “partner” |
+| **Who** | Activity, seeking, **`/member/:userId`**, **agency / shop operator profiles** (not person map pins) | Calling a gear **shop** a “partner” |
 
-**Publish as:** when a user is linked to a business (`tenant_memberships`), Organize / host console should offer **self** vs **{business}** (dropdown). The **host on the activity is still the user**; `x-organisation-id` scopes the brand. See [`MEMBER_MODEL.md`](./MEMBER_MODEL.md).
+**Publish as:** when a user is linked to a business (`tenant_memberships`), Host / publishing workspace should offer **self** vs **{business}** (dropdown). The **host on the activity is still the user**; `x-organisation-id` scopes the brand. See [`MEMBER_MODEL.md`](./MEMBER_MODEL.md).
 
 ### Member profile visibility
 
@@ -81,14 +81,14 @@ There is **no** `Trip` table, `TripDTO`, or trips API. Everything on the map tha
 |------|--------|---------|-----------------|
 | **Activity** | Domain | Scheduled outing (hike, camp, rideshare, run, …) | `ActivityDTO`, `activityId`, org/host activity APIs |
 | **Outing / plan** | Product copy | Same as activity — emotional, member-facing | UI strings, north star |
-| **Organize** | Action (FAB) | Host flow that **creates or edits** an activity | `compose=organize`, organize wizards — not an entity |
-| **Event** | Overloaded — read context | (1) **Place kind** → venue page `/venue/:id` (2) **Organize chip** → scheduled outing `activityType: event` → `/activity/:id` (3) Legacy JSON `event` on some payloads → use **`activity`** | Never a fourth entity; prefer **place** vs **activity** in code |
+| **Host** | Action (FAB) | Host flow that **creates or edits** an activity | `compose=host`, hosting wizards — not an entity |
+| **Event** | Overloaded — read context | (1) **Place kind** → venue page `/venue/:id` (2) **Host chip** → scheduled outing `activityType: event` → `/activity/:id` (3) Legacy JSON `event` on some payloads → use **`activity`** | Never a fourth entity; prefer **place** vs **activity** in code |
 | **Trip / Trips** | **Legacy UI label** | Redirects to **`/plan`** (My Plans) and **`/profile/history`** — not a domain type | `planHubRouting.ts`, `components/plan/*`, `components/profile-history/*` — **not** API module names |
 | **Hosted** | Relationship | You publish/manage an activity as a host tenant | `HostedActivitiesSection`, org hub — not a type of outing |
 | **Joined** | Relationship | You RSVP’d or have a pending join request | `getMeActivities`, `getMeRequests` |
 | **Self / My plans** | Relationship | Demand or self-started compose (not host publish) | Trips tab slice; still activities or demand when persisted |
 
-**Organize menu labels** (Hiking, Camping, Event, Activity, Rideshare) are **kinds of activity** (`activityType` / compose intent), not separate products. **“Organized activities”** in conversation means activities created via **Organize** — still one `Activity` row.
+**Host menu labels** (Hiking, Camping, Event, Activity, Rideshare) are **kinds of activity** (`activityType` / compose intent), not separate products. **“Hosted activities”** in conversation means activities created via **Host** — still one `Activity` row.
 
 ### Activity modes (map + Plan — phased)
 
@@ -111,7 +111,7 @@ Time-bound map pins are **Activities** with `activityMode` (target wire name; mi
 | **Area** | Platform admin (`/admin/areas`) | Curated **name** + slug; optional `center` / bounds are a **camera hint for the hub page only**. **No** `source: area` pin on Explore |
 | **Place** | Admin `/admin/places` + member **Add** (`curatedArea` then pin) | Every place row has **`place.areaId`**; `POST /me/places` requires **`areaId`** |
 | **Facility** | Admin `/admin/facilities` + member **Add** | Own `facilities` collection; coords so people can navigate; **`areaId`** + optional `parentPlaceId` |
-| **Activity** | Member **Organize** or Find → seeking | **No stored `activity.areaId` on write** (legacy rows may still have one). Geography = **`activity.locationId` → `place.areaId`**. Public publish requires a catalog **place** with **`areaId`**. Meeting / going-from pin does not define area |
+| **Activity** | Member **Host** or Find crew → seeking | **No stored `activity.areaId` on write** (leftover rows may still have one). Geography = **`activity.locationId` → `place.areaId`**. Public publish requires a catalog **place** with **`areaId`**. Meeting / going-from pin does not define area |
 
 **Explore map lenses:** **Activities** — emoji pin per outing (`source: activity`; host row → **member profile** and/or **operator profile** when published as a business). **Spots** — Place pins (`source: place`). **Facilities** share the map (`source: facility`, coords for navigation; peek still Place chrome until a dedicated facility peek ships). **Shops** — **operator** map pin + `/shop/…` profile. **Area** is a **filter** (`?area=`) and a **hub page** (`/area/:slug`) — never its own pin. Legacy `pinKind=locations` URLs alias to Spots. **Members / Pro guides / agencies** — **no** standalone person or agency pins; find via **search**, **people browse**, **activity peek/detail**, and **operator name** on linked users’ member profiles. Detail: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §12.1.
 
@@ -182,7 +182,7 @@ Wall post policy (`all_members` | `admins_only`) applies to group/crew threads. 
 
 **Place detail** lists facilities with **`parentPlaceId = this place`** first — not “every facility in the same `areaId`” (`apps/api/src/lib/place-nearby-facilities.ts` is legacy area-sibling behavior until **CPC-3**).
 
-**Public URL (target):** `/facility/:id`. **FAB:** **Contribute → Facility** ([`CREATE_FLOW.md`](./CREATE_FLOW.md)).
+**Public URL (target):** `/facility/:id`. **FAB:** **Add → Facility** ([`CREATE_FLOW.md`](./CREATE_FLOW.md)).
 
 ---
 
@@ -190,11 +190,11 @@ Wall post policy (`all_members` | `admins_only`) applies to group/crew threads. 
 
 | Layer | Who | Product | Surface |
 |-------|-----|---------|---------|
-| **A — Community pin** | Member **Contribute** | Gear shop **on the map** (informational) | Facility `outdoor_shop`, map **peek** only |
+| **A — Community pin** | Member **Add** | Gear shop **on the map** (informational) | Facility `outdoor_shop`, map **peek** only |
 | **B — Catalog place** | Admin / import | Listed shop place; claim toward Pro | Admin places; optional pin |
 | **C — Operator shop** | Pro **tenant** (shop owner) | Full storefront + workspace depth later | `/shop/:id`, **`/operator/*`**, `EntityKind.shop` |
 
-**Operator** umbrella: same person may run **guide**, **agency**, or **shop** tenant — all publish via **`/operator/*`** ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md)). **Do not** create a shop tenant from FAB Contribute.
+**Operator** umbrella: same person may run **guide**, **agency**, or **shop** tenant — all publish via **`/operator/*`** ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md)). **Do not** create a shop tenant from FAB Add.
 
 **Shop listing lifecycle (layer B → C):** catalog → claimed (Pro) → managed — see [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §1.4.
 
@@ -217,9 +217,9 @@ Anyone can explore and join outings after **basic signup**:
 | Languages | Optional on profile (member details) | `PATCH /me/profile` · Profile / Settings |
 | Default role | **Participant** — browse map, RSVP, request to join, demand posts, buddies, follow | `UserRole.PARTICIPANT` |
 
-**Profile completion** = member details above (DOB, gender, based-in) — `profileComplete` / `signupProfileComplete` on `GET /me/profile` and **`GET /me/status`**. Required before **Organize** (buddy host). Demand and Add do not require it beyond signed-in member.
+**Profile completion** = member details above (DOB, gender, based-in) — `profileComplete` / `signupProfileComplete` on `GET /me/profile` and **`GET /me/status`**. Required before **Host** (buddy host). Seeking and Add do not require it beyond signed-in member.
 
-This is **not** hosting. No tenant is created until profile is complete and the member opens Organize (API provisions a personal guide tenant).
+This is **not** hosting. No tenant is created until profile is complete and the member opens Host (API provisions a personal guide tenant).
 
 ### Publish trips (organizer / operator)
 
@@ -236,7 +236,7 @@ The **publishing actor is always a user** (human on the activity). They publish 
 
 **Shop listing lifecycle:** **catalog** (admin-added place/shop) → **claimed** (Pro verification) → **managed** (owner console). See `DOMAIN_CANONICALS` §1.4.
 
-**Buddy host (Organize on map):** **profile completion** (`signupProfileComplete`) → `canPublish`; API auto-provisions a community tenant. **Host** badge → `isCommunityHost` after first activity **or** demand.  
+**Buddy host (Host on map):** **profile completion** (`signupProfileComplete`) → `canPublish`; API auto-provisions a community tenant. **Host** badge → `isCommunityHost` after first activity **or** seeking.  
 **Pro:** `/profile/pro-membership` — Individual, Business (subtype required), or Partner applications via `host_applications` where required.
 
 ### Business account from profile
@@ -247,7 +247,7 @@ Any member may add a **business hosting identity** without replacing their perso
 |---------|---------|------|
 | Business creator | Becomes **tenant owner / admin** | `MembershipRole.TENANT_OWNER` on new tenant |
 | Team | Owner invites **admins** and **guides** | `/host/team`, `POST` org team APIs; roles `TENANT_ADMIN`, `TENANT_GUIDE` |
-| Publish on behalf of business | Same **user** publishes with **tenant** scope (`x-organisation-id`); picker in console / Organize when linked | `/host/activities` |
+| Publish on behalf of business | Same **user** publishes with **tenant** scope (`x-organisation-id`); picker in console / Host when linked | `/host/activities` |
 | Publish as self | Individual or community tenant | Same user; no business header |
 
 Entry UI: Profile → **Pro Membership** (`/profile/pro-membership`; legacy `/become-host` redirects) or **`/organisation/manage?kind=agency`** (and shop variant). There is not yet a single “create business” toggle that skips the host-application flow.
@@ -273,7 +273,7 @@ Entry UI: Profile → **Pro Membership** (`/profile/pro-membership`; legacy `/be
 
 **Who may see full activity detail vs map peek** is **detail exposure** (viewer access), not `participationMode` or `joinMode`. Resolvers, policy matrix, and implementation phases: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §15.
 
-**Organize defaults:** Event → `rsvp`; Hiking, Camping, generic Activity → `approval`. Creator can toggle on all organize paths.
+**Host defaults:** Event → `rsvp`; Hiking, Camping, generic Activity → `approval`. Creator can toggle on all Host paths.
 
 ## Host vs Organisation in copy
 
@@ -341,7 +341,7 @@ Shop identity: **tenant** (Pro Membership onboarding) + **merchant profile** (`/
 | `/operator/{console}` | Publishing workspace alias | Reserved segments → `/publishing/{console}`; not a storefront |
 | Merchant | Shop | `merchant_profiles`, `/merchant/:id` redirect |
 | Organizer | Host or agency | — |
-| Tenant | Host (copy) / Organisation (code) | `tenants`, `x-tenant-id` |
+| Tenant | Host (copy) / Organisation (code) | `tenants`, `x-organisation-id` |
 
 ## Page renames (routes unchanged)
 
@@ -366,18 +366,18 @@ Shop identity: **tenant** (Pro Membership onboarding) + **merchant profile** (`/
 | **Pending contribution** | Member/host submitted, awaiting admin | `status: draft` | No | Yes (caller’s drafts in registry) |
 | **Activity anchor** | `locationId` for custom outing label only | Created with `activityAnchor: true` | **No** (`registryListed: false`) | No |
 
-**Organize hiking/camping** picks a **catalog place** (`registryPlaceId` wire field) or uses a **custom label** + **activity anchor** row. **Shops** use `PlaceKind.shop` on the map; host identity remains a **tenant** at `/shop/:id` until shop rows fully live in `locations`.
+**Host hiking/camping** picks a **catalog place** (`registryPlaceId` wire field) or uses a **custom label** + **activity anchor** row. **Shops** use `PlaceKind.shop` on the map; host identity remains a **tenant** at `/shop/:id` until shop rows fully live in `locations`.
 
 **Publish pipeline (frontend):** `src/services/hostingActivityPublish.ts` → `POST /host/activities` via `buildHostActivityPublishPayload`.
 
 ## Explore browse — `OutingCategory` and `OutingTopic`
 
-Scheduled outings and **demand** posts on the **Activities** map layer carry plan metadata (not used on the Places catalog layer):
+Scheduled outings and **seeking** posts on the **Activities** map layer carry plan metadata (not used on the Places catalog layer):
 
 | Field | Values (examples) | Set by |
 |-------|-------------------|--------|
-| **`outingCategory`** | `hiking`, `camping`, `events`, `rideshare`, `activities` | Organize flow catalog on publish; demand kind on create; derived on read when missing |
-| **`outingTopic`** | `climbing`, `trail_run`, `workshop`, `community`, … | Organize **Activity** type chip → Mongo; legacy rows may derive from `requirements` (“Activity type: …”) |
+| **`outingCategory`** | `hiking`, `camping`, `events`, `rideshare`, `activities` | Host flow catalog on publish; seeking kind on create; derived on read when missing |
+| **`outingTopic`** | `climbing`, `trail_run`, `workshop`, `community`, … | Host **Activity** type chip → Mongo; leftover rows may derive from `requirements` (“Activity type: …”) |
 
 **Browse filters:** map pills (`filter=hiking`, …) use category; under **Others**, `subtype=events|activities` then optional `outingTopic` for general activities. See [`NAVIGATION.md`](./NAVIGATION.md) § Browse defaults.
 
@@ -395,9 +395,9 @@ Every durable entity has a **stable UUID** in Mongo and a **canonical public rou
 | **Facility** (amenity) | `facilities` | `facility.id` | `/facility/:id` — map `source: facility` |
 | **Area** (curated name) | `areas` | `area.id` | `/area/:slug` — **no map pin** |
 | **Activity** (hosted or seeking outing) | `activities` | `activity.id` | `/activity/:id` — map `source: activity` (`activity:{id}`) |
-| **Seeking (inbound rewrite)** | leftover `participant_intents` (ops/backfill only) | — | Old `demand:` map ids rewrite to the seeking **activity**; never minted |
+| **Seeking** | leftover `participant_intents` (ops/backfill only) | — | Map id **`activity:{id}`** only; leftover `demand:` is not a product path |
 
-**Registration:** members via `/signup` + OTP; Pro / agency / shop via `POST /me/pro-application` (collection `host_applications`) → tenant provision; catalog places/facilities via **member submit** (`POST /me/places`, `POST /me/facilities`) + admin approval — FAB label **Contribute**, not an API noun.
+**Registration:** members via `/signup` + OTP; Pro / agency / shop via `POST /me/pro-application` (collection `host_applications`) → tenant provision; catalog places/facilities via **member submit** (`POST /me/places`, `POST /me/facilities`) + admin approval — FAB label **Add on map**, not an API noun.
 
 **Audit:** `audit_logs` records actor, action, `entityType`, `entityId`, optional `tenantId`, and `metadata`. Host activity lifecycle actions include `activity.create`, `activity.publish`, `activity.duplicate` (server draft copy, new id), `activity.cancel`, etc. Admin UI: `/admin/audit-log`.
 
@@ -406,7 +406,7 @@ Every durable entity has a **stable UUID** in Mongo and a **canonical public rou
 | Flow | What happens | New activity id? |
 |------|----------------|------------------|
 | **Publishing workspace · Duplicate** | `POST /publishing/activities/:id/duplicate` → draft in workspace | Yes — audit `activity.duplicate` + `metadata.sourceActivityId` |
-| **Explore · Reorganize on map** | `?compose=organize:…&organizeFrom=:activityId` → FAB wizard prefill → publish | Yes — `activity.create` with optional `metadata.sourceActivityId` (`clonedFromActivityId` on create body) |
+| **Explore · Reorganize on map** | `?compose=host:…&hostFrom=:activityId` → FAB wizard prefill → publish | Yes — `activity.create` with optional `metadata.sourceActivityId` (`clonedFromActivityId` on create body) |
 
 Reorganize never updates the source row; venue registry ids are **reused** when the draft still points at the same registry place.
 

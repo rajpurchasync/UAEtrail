@@ -209,7 +209,7 @@ const activityTenantSortKey = (tenant: TenantRecord): number => {
   return 1;
 };
 
-/** Default Organize tenant: community buddy host first, then professional guide, then agency. */
+/** Default Host / publish tenant: community buddy host first, then professional guide, then agency. */
 export const pickActivityTenant = (tenants: TenantRecord[]): TenantRecord | null => {
   const activityCapable = tenants.filter(
     (tenant) =>

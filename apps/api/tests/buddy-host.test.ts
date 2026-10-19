@@ -29,7 +29,7 @@ const completeSignupProfile = async (accessToken: string) => {
 };
 
 describe('buddy host access', () => {
-  it('allows tenant owner without membership row on /publishing (and /operator alias) and backfills membership', async () => {
+  it('allows tenant owner without membership row on /publishing and backfills membership', async () => {
     const visitor = await registerVerifiedVisitor(app, `owner-no-mem-${Date.now()}`);
     const user = await findAuthUserByEmail(visitor.email);
     if (!user) throw new Error('expected user');
@@ -44,12 +44,6 @@ describe('buddy host access', () => {
 
     const db = getMongoClient()!.db();
     await db.collection('tenant_memberships').deleteMany({ tenantId: tenant.id, userId: user._id });
-
-    const alias = await request(app)
-      .get('/api/operator/activities')
-      .set('Authorization', `Bearer ${visitor.accessToken}`)
-      .set('x-organisation-id', tenant.id);
-    expect(alias.status).toBe(200);
 
     const canonical = await request(app)
       .get('/api/publishing/activities')
@@ -73,8 +67,8 @@ describe('buddy host access', () => {
       .get('/api/me/status')
       .set('Authorization', `Bearer ${visitor.accessToken}`);
     expect(before.status).toBe(200);
-    expect(before.body.data.canPublish).toBe(false);
-    expect(before.body.data.isCommunityHost).toBe(false);
+    expect(before.body.data.publish.canPublish).toBe(false);
+    expect(before.body.data.publish.isCommunityHost).toBe(false);
 
     await completeSignupProfile(visitor.accessToken);
 
@@ -82,9 +76,9 @@ describe('buddy host access', () => {
       .get('/api/me/status')
       .set('Authorization', `Bearer ${visitor.accessToken}`);
     expect(after.status).toBe(200);
-    expect(after.body.data.signupProfileComplete).toBe(true);
-    expect(after.body.data.canPublish).toBe(true);
-    expect(after.body.data.tenantId).toBeTruthy();
-    expect(after.body.data.hasGuideProfile).toBe(true);
+    expect(after.body.data.profileComplete).toBe(true);
+    expect(after.body.data.publish.canPublish).toBe(true);
+    expect(after.body.data.publish.tenantId).toBeTruthy();
+    expect(after.body.data.publish.hasGuideProfile).toBe(true);
   });
 });

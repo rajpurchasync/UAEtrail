@@ -1,5 +1,5 @@
 import {
-  isOrganizeActivityHostProfileType,
+  isActivityPublishingProfileType,
   type OwnedHostProfileDTO,
   type PublishingProfileKind,
 } from '@uaetrail/shared-types';
@@ -7,7 +7,7 @@ import {
 /** Host tenants eligible for map Host / publish (buddy / guide / agency / verified shop). */
 export const listHostingPublishProfiles = (
   ownedProfiles: OwnedHostProfileDTO[]
-): OwnedHostProfileDTO[] => ownedProfiles.filter((profile) => isOrganizeActivityHostProfileType(profile.type));
+): OwnedHostProfileDTO[] => ownedProfiles.filter((profile) => isActivityPublishingProfileType(profile.type));
 
 export const resolveHostingPublishingProfileKind = (profile: OwnedHostProfileDTO): PublishingProfileKind => {
   if (profile.publishingProfileKind) return profile.publishingProfileKind;

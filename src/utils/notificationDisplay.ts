@@ -11,7 +11,6 @@ export const notificationReasonLine = (notif: NotificationDTO): string | null =>
 
   const hostNote = resolveHostNote({
     hostNote: typeof meta.hostNote === 'string' ? meta.hostNote : null,
-    organizerNote: typeof meta.organizerNote === 'string' ? meta.organizerNote : null,
   });
   if (hostNote) {
     return `From the host: ${hostNote}`;

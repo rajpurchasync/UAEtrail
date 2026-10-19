@@ -1,5 +1,4 @@
 import {
-  canonicalizeComposeWire,
   formatComposeWire,
   parseComposeWire,
   type AddTarget,
@@ -16,9 +15,6 @@ export type ExploreCompose = ExploreComposeWire;
 export type ParticipationMode = 'rsvp' | 'approval';
 
 export type FabTopLevel = 'host' | 'seek' | 'add';
-
-const canonicalize = (route: ExploreComposeWire): ExploreCompose =>
-  canonicalizeComposeWire(route);
 
 export const COMPOSE_QUERY_KEY = 'compose';
 
@@ -129,8 +125,6 @@ export const BUDDY_TITLE_PLACEHOLDER = 'Run, jog, trail run — whatever gets yo
 
 export const PARTICIPATION_TOGGLE_QUESTION = 'Do people need my OK to join?';
 
-const LEGACY_ADD_KINDS = new Set<string>(['hiking', 'camping', 'facility', 'shop', 'event']);
-
 export const defaultParticipationForHostKind = (kind: HostComposeKind): ParticipationMode =>
   kind === 'event' ? 'rsvp' : 'approval';
 
@@ -155,18 +149,16 @@ export const COMPOSE_SEEK_FIXED_KIND_TITLE = 'What are you looking for?';
 export const COMPOSE_ADD_TARGET_TITLE = 'What are you adding?';
 export const COMPOSE_ADD_PLACE_TITLE = 'What kind of place?';
 
-
 export const composeMenuTitle = (route: ExploreCompose | null): string => {
   if (!route) return COMPOSE_MENU_TITLE;
-  const canonical = canonicalize(route);
-  if (!('surface' in canonical)) return COMPOSE_MENU_TITLE;
-  if (canonical.intent === 'host') return COMPOSE_HOST_KIND_TITLE;
-  if (canonical.intent === 'seek') {
-    if ('mode' in canonical && canonical.mode === 'fixed') return COMPOSE_SEEK_FIXED_KIND_TITLE;
+  if (!('surface' in route)) return COMPOSE_MENU_TITLE;
+  if (route.intent === 'host') return COMPOSE_HOST_KIND_TITLE;
+  if (route.intent === 'seek') {
+    if ('mode' in route && route.mode === 'fixed') return COMPOSE_SEEK_FIXED_KIND_TITLE;
     return COMPOSE_SEEK_MODE_TITLE;
   }
-  if (canonical.intent === 'add') {
-    if ('target' in canonical && canonical.target === 'place') return COMPOSE_ADD_PLACE_TITLE;
+  if (route.intent === 'add') {
+    if ('target' in route && route.target === 'place') return COMPOSE_ADD_PLACE_TITLE;
     return COMPOSE_ADD_TARGET_TITLE;
   }
   return COMPOSE_MENU_TITLE;
@@ -200,60 +192,23 @@ export const addFacilityCompose = (kind: string): ExploreCompose => ({
   kind,
 });
 
-/** Serialize an explore compose route to the `compose` query value (v3 wire). */
-export const formatComposeQuery = (route: ExploreCompose): string =>
-  formatComposeWire(canonicalize(route));
-
-const parseComposeQuery = (value: string): ExploreCompose | null => {
-  const wire = parseComposeWire(value);
-  if (!wire) return null;
-  return canonicalize(wire);
+export const addComposeFromVenueKind = (kind: AddVenueKind): ExploreCompose => {
+  if (kind === 'facility') return addFacilityCompose('toilet');
+  if (kind === 'shop') return addPlaceCompose('shop');
+  if (kind === 'hiking' || kind === 'camping') return addPlaceCompose(kind);
+  return addPlaceCompose('outdoor_other');
 };
 
-const legacyParamsToWire = (
-  searchParams: Pick<URLSearchParams, 'get'>
-): ExploreComposeWire | null => {
-  const contribute = searchParams.get('contribute');
-  if (contribute === '1') return { surface: 'menu', intent: 'add' };
-  if (contribute && LEGACY_ADD_KINDS.has(contribute)) {
-    return { intent: 'add', kind: contribute as 'hiking' };
-  }
-  if (searchParams.get('request') === '1') {
-    return { surface: 'menu', intent: 'seek' };
-  }
-  if (searchParams.get('addLocation') === '1') {
-    return { surface: 'menu', intent: 'add' };
-  }
-  return null;
-};
+/** Serialize an explore compose route to the `compose` query value. */
+export const formatComposeQuery = (route: ExploreCompose): string => formatComposeWire(route);
 
-/** Read compose route from explore search params (canonical v2 + legacy keys). */
+/** Read compose route from explore search params — host / seek / add only. */
 export const parseExploreCompose = (
   searchParams: Pick<URLSearchParams, 'get'>
 ): ExploreCompose | null => {
   const composeValue = searchParams.get(COMPOSE_QUERY_KEY);
-  if (composeValue) {
-    const parsed = parseComposeQuery(composeValue);
-    if (parsed) return parsed;
-  }
-  const legacy = legacyParamsToWire(searchParams);
-  return legacy ? canonicalize(legacy) : null;
-};
-
-export const hasLegacyExploreComposeParams = (searchParams: URLSearchParams): boolean =>
-  searchParams.has('request') ||
-  searchParams.has('contribute') ||
-  searchParams.get('addLocation') === '1';
-
-export const migrateLegacyExploreComposeParams = (
-  searchParams: URLSearchParams
-): URLSearchParams | null => {
-  if (!hasLegacyExploreComposeParams(searchParams)) return null;
-  const parsed = parseExploreCompose(searchParams);
-  if (!parsed) return null;
-  const params = new URLSearchParams(searchParams);
-  setExploreComposeParam(params, parsed);
-  return params;
+  if (!composeValue) return null;
+  return parseComposeWire(composeValue);
 };
 
 export const setExploreComposeParam = (params: URLSearchParams, route: ExploreCompose): void => {

@@ -4,7 +4,7 @@ import { requireTenantContext } from '../middleware/tenant.js';
 import { registerOperatorSubmittedLocationRoutes } from './operator/registerOperatorSubmittedLocationRoutes.js';
 import { registerOperatorActivityRoutes } from './operator/registerOperatorActivityRoutes.js';
 
-/** Tenant publishing console (`GET/POST /publishing/*` + `x-organisation-id`; `/operator` alias). */
+/** Tenant publishing console (`GET/POST /publishing/*` + `x-organisation-id`). */
 export const operatorRouter = Router();
 
 operatorRouter.use(requireAuth, requireVerifiedEmail, requireTenantContext);

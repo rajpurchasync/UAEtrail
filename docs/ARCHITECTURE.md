@@ -37,7 +37,7 @@ Catalog HTTP is **surface-first** (path + mount middleware), not **profile-first
 
 **Key flows**
 
-1. **Join / waitlist** — `POST /activities/:id/requests` creates `PENDING` or `WAITLISTED`. Find uses `POST /me/seeking-posts/:id/requests` (same `activity_requests` row when `activityId` is set). Slot opens → waitlist promotion + notification.
+1. **Join / waitlist** — `POST /activities/:id/requests` creates `PENDING` or `WAITLISTED`. Find crew uses `POST /me/seeking-posts/:id/requests` (same `activity_requests` row when `activityId` is set). Slot opens → waitlist promotion + notification.
 2. **Post-event review** — host check-in triggers `REVIEW_PROMPT` notification if user has not reviewed the location.
 3. **Explore map** — unified `/explore/map` payload (`source`: **activity** · **place** · **facility** · **shop**; `agency` wire-compat). **Area** is an admin-curated name (`areaId` on rows) — not a pin. Country / state / region come from map geography. Seeking outings are **activities**, not a separate demand source.
 4. **Shop** — affiliate-style public pages at `/shop/:id` with outbound links; physical shops get map pins, online partners are list-only.
@@ -82,7 +82,7 @@ utils/          authRouting, shopPaths — explore URL builders live in `src/exp
 
 - List endpoints: `{ data, pagination: { page, pageSize, total, totalPages } }`
 - Errors: `{ error: { code, message } }` via `ApiError`
-- Auth: `Authorization: Bearer` + `x-tenant-id` for host routes
+- Auth: `Authorization: Bearer` + `x-organisation-id` for `/publishing/*` routes
 - Dates: stored UTC; returned as local `date` + `time` per tenant `countryCode`
 
 ## Cross-Platform Session + Access Addendum (2026-08)

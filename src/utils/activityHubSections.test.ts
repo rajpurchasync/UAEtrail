@@ -87,13 +87,9 @@ describe('buildUpcomingPlanRows', () => {
 });
 
 describe('requestRecordMeta', () => {
-  it('prefers hostNote and dual-reads organizerNote', () => {
+  it('reads hostNote', () => {
     const date = futureDate();
     const rejected = baseRequest('r1', 'a1', date, 'rejected');
     expect(requestRecordMeta({ ...rejected, hostNote: '  too full  ' })).toBe('Host note: too full');
-    expect(requestRecordMeta({ ...rejected, organizerNote: 'legacy' })).toBe('Host note: legacy');
-    expect(
-      requestRecordMeta({ ...rejected, hostNote: 'canonical', organizerNote: 'legacy' })
-    ).toBe('Host note: canonical');
   });
 });

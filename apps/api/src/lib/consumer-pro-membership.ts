@@ -6,6 +6,6 @@ export const consumerProDevEnabled = (): boolean => process.env.UAETRAIL_CONSUME
 
 export const isConsumerProMember = (hostStatus: HostStatusDTO | null): boolean => {
   if (resolvePaidMembershipSku(hostStatus) === 'consumer_pro') return true;
-  if (consumerProDevEnabled() && hostStatus?.signupProfileComplete) return true;
+  if (consumerProDevEnabled() && hostStatus?.profileComplete) return true;
   return false;
 };

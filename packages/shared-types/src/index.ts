@@ -216,12 +216,6 @@ export interface ActivityDTO {
   tenantName?: string;
   /** How this activity was published — drives public name + profile link on explore/list. */
   publishingProfileKind?: PublishingProfileKind;
-  /** @deprecated Removed from API responses — use hostName */
-  organizerName?: string;
-  /** @deprecated Removed from API responses — use hostAvatar */
-  organizerAvatar?: string;
-  /** @deprecated Removed from API responses — use hostUserId */
-  organizerUserId?: string;
   hostId?: string | null;
   /** User who created this activity */
   createdById?: string;
@@ -288,8 +282,6 @@ export interface JoinRequestDTO {
   waitlisted?: boolean;
   note?: string | null;
   hostNote?: string | null;
-  /** @deprecated COH-06 — use {@link hostNote}. */
-  organizerNote?: string | null;
   cancelReason?: string | null;
   cancelMessage?: string | null;
   cancelledAt?: string | null;
@@ -385,23 +377,20 @@ export interface OwnedHostProfileDTO {
  * Member publishing + publishing workspace eligibility (`GET /me/status`).
  * Single wire contract — clients must not re-derive tiers from `UserRole` alone.
  */
+/** Server resolver shape (`resolveMemberStatus`) — not the `GET /me/status` HTTP wire (`MemberStatusDTO`). */
 export interface HostStatusDTO {
-  /**
-   * Member profile completion (DOB, gender, based-in) — required to **organize/publish**.
-   * Not required to join outings (authenticated member suffices).
-   * @deprecated Wire name; prefer `profileComplete` on `GET /me/status`.
-   */
-  signupProfileComplete: boolean;
-  /** First map publish (activity or demand) — earns Host badge. */
+  /** Member profile completion (DOB, gender, based-in) — required to **host/publish**. */
+  profileComplete: boolean;
+  /** First map publish (activity or seeking post) — earns Host badge. */
   isCommunityHost: boolean;
   /** Active tiers for this account (see `docs/MEMBER_MODEL.md`). */
   hostTiers: HostTierFlags;
   /** Canonical profile subtitle key — map with `memberProfileRoleLabel()`. */
   profileRoleLabel: MemberProfileRoleLabel;
-  /** Can post Organize activities (community / pro / business tenant). */
+  /** Can post Host / publish activities (community / pro / business tenant). */
   canPublish: boolean;
-  /** `/host/*` console (publish queue, team) when publish-capable or business member. */
-  canAccessHostConsole: boolean;
+  /** Publishing workspace (publish queue, team) when publish-capable or business member. */
+  canAccessPublishingWorkspace: boolean;
   applicationStatus: HostApplicationStatus;
   tenantId: string | null;
   isHostRole: boolean;
@@ -416,20 +405,11 @@ export interface HostStatusDTO {
   ownedProfiles: OwnedHostProfileDTO[];
 }
 
-/** Domain aliases — organisation console status (wire: `GET /me/status`). */
+/** Domain aliases — organisation profile types (wire: `GET /me/status`). */
 export type OrganisationApplicationStatus = HostApplicationStatus;
 export type OrganisationProfileType = HostProfileType;
 export type OwnedOrganisationProfileType = OwnedHostProfileType;
 export type OwnedOrganisationProfileDTO = OwnedHostProfileDTO;
-export type OrganisationConsoleStatusDTO = HostStatusDTO;
-/**
- * Publishing console eligibility slice on `GET /me/status` wire.
- * Includes `canAccessOperatorConsole` (mirror of legacy `canAccessHostConsole` on wire).
- */
-export type OperatorConsoleStatusDTO = HostStatusDTO & {
-  canAccessOperatorConsole: boolean;
-};
-
 /** Publish/workspace slice of {@link MemberStatusDTO} — not a separate HTTP resource. */
 export interface MemberPublishCapabilitiesDTO {
   canPublish: boolean;
@@ -448,10 +428,13 @@ export interface MemberPublishCapabilitiesDTO {
   ownedProfiles: OwnedHostProfileDTO[];
 }
 
-/** Member capabilities (`GET /me/status`). Flat fields dual-read legacy `HostStatusDTO`. */
-export type MemberStatusDTO = HostStatusDTO & {
-  /** Same as `signupProfileComplete` — canonical name for organize/publish gates. */
+/**
+ * Member capabilities (`GET /me/status` wire).
+ * Publish/workspace fields live under {@link MemberPublishCapabilitiesDTO} only — not duplicated at the root.
+ */
+export type MemberStatusDTO = {
   profileComplete: boolean;
+  profileRoleLabel: MemberProfileRoleLabel;
   publish: MemberPublishCapabilitiesDTO;
 };
 
@@ -459,7 +442,7 @@ export const buildMemberPublishCapabilities = (
   status: HostStatusDTO
 ): MemberPublishCapabilitiesDTO => ({
   canPublish: status.canPublish,
-  canAccessPublishingWorkspace: status.canAccessHostConsole,
+  canAccessPublishingWorkspace: status.canAccessPublishingWorkspace,
   canHostPaidActivities: status.canHostPaidActivities,
   applicationStatus: status.applicationStatus,
   isCommunityHost: status.isCommunityHost,
@@ -475,8 +458,8 @@ export const buildMemberPublishCapabilities = (
 });
 
 export const buildMemberStatusDto = (status: HostStatusDTO): MemberStatusDTO => ({
-  ...status,
-  profileComplete: status.signupProfileComplete,
+  profileComplete: status.profileComplete,
+  profileRoleLabel: status.profileRoleLabel,
   publish: buildMemberPublishCapabilities(status),
 });
 
@@ -833,13 +816,12 @@ export interface ExploreMapItemDTO {
   toLabel?: string | null;
   websiteUrl?: string | null;
   contactPhone?: string | null;
-  /** @deprecated Use `featuredPerson.userId` for demand items. */
+  /** @deprecated Use `featuredPerson.userId`. */
   requesterUserId?: string | null;
-  /** Demand request id (without demand: prefix). */
+  /** Leftover intent id on seeking rows that still dual-wrote `participant_intents`. */
   participantIntentId?: string | null;
   /**
-   * Time-bound map mode — `hosted` for published outings; `seeking` for Find / participant intents (M0).
-   * Legacy payloads may omit this and use `source: demand` instead.
+   * Time-bound map mode — `hosted` for published outings; `seeking` for Find crew posts.
    */
   activityMode?: 'hosted' | 'seeking' | null;
   /** Curated area membership for explore `?area=` filters. */
@@ -1288,7 +1270,7 @@ export {
 } from './discovery-card-projection.js';
 
 export {
-  activityOrganizeTopicToOutingTopic,
+  activityHostTopicToOutingTopic,
   activityTypeToOutingCategory,
   buildExploreMapPlanProjection,
   deriveOutingTopicFromRequirements,
@@ -1386,7 +1368,7 @@ export {
   type BusinessProSubtype,
   type ProMembershipPath,
   type PublishingProfileKind,
-  isOrganizeActivityHostProfileType,
+  isActivityPublishingProfileType,
   resolvePublishingProfileKind,
   inferHostStorefrontKindFromTenantWire,
 } from './publishing-profile-kind.js';
@@ -1700,9 +1682,7 @@ export {
   type AddPlaceKind,
   type AddTarget,
   type ExploreComposeWire,
-  type LegacyAddKind,
   type HostComposeKind,
-  type PlanMode,
   type SeekingComposeKind,
 } from './compose-route.js';
 

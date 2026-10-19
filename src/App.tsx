@@ -57,7 +57,6 @@ import {
   PLAN_PATH,
   PROFILE_HISTORY_PATH,
   PROFILE_SUBMISSIONS_PATH,
-  rewriteOperatorConsoleToPublishingPath,
 } from './config/surfacePaths';
 import { canonicalPlaceDetailPath } from '@uaetrail/shared-types';
 import { resolveLegacyTripsHubRedirect } from './member-plan/legacyTripsRedirect';
@@ -255,14 +254,6 @@ const About = lazy(() => import('./pages/About').then((m) => ({ default: m.About
 const Contact = lazy(() => import('./pages/Contact').then((m) => ({ default: m.Contact })));
 const SiteMap = lazy(() => import('./pages/SiteMap').then((m) => ({ default: m.SiteMap })));
 const NotFound = lazy(() => import('./pages/NotFound').then((m) => ({ default: m.NotFound })));
-
-/** `/operator/{console}` aliases `/publishing/{console}`. Unknown slugs are not storefronts. */
-const OperatorPublishingAlias = () => {
-  const location = useLocation();
-  const rewritten = rewriteOperatorConsoleToPublishingPath(location.pathname);
-  if (!rewritten) return <NotFound />;
-  return <Navigate to={`${rewritten}${location.search}${location.hash}`} replace />;
-};
 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center">
@@ -563,9 +554,6 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path="/operator" element={<Navigate to={OPERATOR_OVERVIEW_PATH} replace />} />
-          <Route path="/operator/:id/*" element={<OperatorPublishingAlias />} />
-          <Route path="/operator/:id" element={<OperatorPublishingAlias />} />
           <Route
             path="/member/:userId"
             element={

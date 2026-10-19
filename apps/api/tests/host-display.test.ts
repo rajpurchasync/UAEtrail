@@ -64,8 +64,8 @@ describe('resolveActivityHostDisplayName', () => {
     expect(resolveActivityHostDisplayName({ hostName: 'Individual Host' })).toBe('Host');
   });
 
-  it('reads legacy organizerName from stale client payloads only', () => {
-    expect(resolveActivityHostDisplayName({ organizerName: 'Fatima Al Mazrouei' })).toBe('Fatima Al Mazrouei');
+  it('does not invent a name when hostName is missing', () => {
+    expect(resolveActivityHostDisplayName({})).toBe('Host');
   });
 });
 

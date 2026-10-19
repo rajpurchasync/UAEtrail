@@ -17,7 +17,7 @@ const ACTIVE_REQUEST_STATUSES: RequestStatus[] = [
   RequestStatus.WAITLISTED
 ];
 
-const ORGANIZER_ROLES: MembershipRole[] = [
+const HOST_MEMBERSHIP_ROLES: MembershipRole[] = [
   MembershipRole.TENANT_OWNER,
   MembershipRole.TENANT_ADMIN,
   MembershipRole.TENANT_GUIDE
@@ -54,7 +54,7 @@ export async function canMessageUser(
   const joinRequestLink = await hasActiveJoinRequestLink({
     senderId,
     receiverId,
-    organizerRoles: ORGANIZER_ROLES,
+    hostMembershipRoles: HOST_MEMBERSHIP_ROLES,
     activeStatuses: ACTIVE_REQUEST_STATUSES
   });
   if (joinRequestLink) return true;
@@ -62,7 +62,7 @@ export async function canMessageUser(
   const participantToHost = await hasParticipantToHostLink({
     participantUserId: senderId,
     hostUserId: receiverId,
-    organizerRoles: ORGANIZER_ROLES
+    hostMembershipRoles: HOST_MEMBERSHIP_ROLES
   });
   if (participantToHost) return true;
 
@@ -73,7 +73,7 @@ export async function canMessageUser(
     const activityInquiry = await hasActivityInquiryAccess({
       activityId: options.activityId,
       receiverId,
-      organizerRoles: ORGANIZER_ROLES
+      hostMembershipRoles: HOST_MEMBERSHIP_ROLES
     });
     if (activityInquiry) return true;
   }
@@ -120,7 +120,7 @@ export async function filterInboxMessageablePartnerIds(
     const linked = await batchCanMessagePartnersFromViewer({
       viewerId,
       partnerIds: toCheck,
-      organizerRoles: ORGANIZER_ROLES,
+      hostMembershipRoles: HOST_MEMBERSHIP_ROLES,
       activeStatuses: ACTIVE_REQUEST_STATUSES,
     });
     for (const partnerId of linked) {

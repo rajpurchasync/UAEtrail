@@ -18,14 +18,14 @@ describe('member status contract', () => {
     expect(index).not.toMatch(/legacyMemberStatusPathRewrite/);
   });
 
-  it('nests publish capabilities under publish on /me/status wire', () => {
+  it('nests publish capabilities under publish on /me/status wire (no flat duplicate)', () => {
     const dto = buildMemberStatusDto({
-      signupProfileComplete: true,
+      profileComplete: true,
       isCommunityHost: false,
       hostTiers: { community: true, professional: false, business: false },
       profileRoleLabel: 'community_member',
       canPublish: true,
-      canAccessHostConsole: true,
+      canAccessPublishingWorkspace: true,
       applicationStatus: 'none',
       tenantId: 't1',
       isHostRole: false,
@@ -40,8 +40,10 @@ describe('member status contract', () => {
     });
     expect(dto.publish.canPublish).toBe(true);
     expect(dto.publish.canAccessPublishingWorkspace).toBe(true);
-    expect(dto.canPublish).toBe(true);
     expect(dto.profileComplete).toBe(true);
-    expect(dto.signupProfileComplete).toBe(true);
+    expect(dto.profileRoleLabel).toBe('community_member');
+    expect('canPublish' in dto).toBe(false);
+    expect('signupProfileComplete' in dto).toBe(false);
+    expect('tenantId' in dto).toBe(false);
   });
 });

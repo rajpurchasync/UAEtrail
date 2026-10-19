@@ -54,7 +54,6 @@ export {
   OPERATOR_SECURITY_PRIVACY_PATH,
   PUBLISHING_CONSOLE_PREFIX,
   isPublishingConsolePath,
-  rewriteOperatorConsoleToPublishingPath,
   operatorActivitiesCheckInPath,
   SIGNIN_PATH,
   SIGNUP_PATH,

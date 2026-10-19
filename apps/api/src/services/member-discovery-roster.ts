@@ -65,7 +65,7 @@ export const buildMemberDiscoverySeekingRowsFromMapItems = (
       continue;
     }
 
-    const intentId = item.participantIntentId ?? item.id.replace(/^demand:/, '');
+    const intentId = item.participantIntentId ?? '';
     seen.add(userId);
     rows.push({
       userId,

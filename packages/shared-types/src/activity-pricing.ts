@@ -7,7 +7,7 @@ export type ActivityPricingMode = 'free' | 'shared' | 'paid';
 export type ActivityPricingPublishProfile = 'guide' | 'agency' | 'shop';
 
 export type ActivityPricingContext = {
-  /** Storefront kind for the tenant selected in Organize / host publish. */
+  /** Storefront kind for the tenant selected in Host / publish. */
   publishingProfileKind?: PublishingProfileKind | null;
   /** Legacy publish-as wire type — mapped when `publishingProfileKind` is absent. */
   publishProfileType?: ActivityPricingPublishProfile | null;

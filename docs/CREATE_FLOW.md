@@ -2,11 +2,11 @@
 
 **Canonical product spec** for the explore map **+ FAB** (**Host** · **Find crew** · **Add on map**). Read this before changing intent sheets, create wizards, join CTAs, or participation behavior.
 
-**Program:** Implementation follows **Program CPC** ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.4, debt **C26**). **CPC-9+** ships v3 `?compose=` wire (`host` \| `seek` \| `add`); legacy `plan` / `contribute` / `organize` / `find` / `add` URLs still parse as aliases.
+**Program:** Implementation follows **Program CPC** ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.4, debt **C26**). **CPC-9+** ships v3 `?compose=` wire (`host` \| `seek` \| `add`); leftover plan/contribute/organize/find tokens are not accepted.
 
 **Vocabulary (UI):** **Host** · **Find crew** · **Add on map** — not **Compose** (reserved for **message / email compose** later). Bottom nav **Plan** (`/plan`) = *your* schedule and availability — not the FAB ([`NAVIGATION.md`](./NAVIGATION.md)).
 
-**Vocabulary (wire):** Explore query `?compose=…` — **v3** `host:<kind>` \| `seek:fixed:<kind>` \| `seek:flexible` \| `add:place:*` \| `add:facility:*`; **aliases** `plan:*:hosting|seeking`, `contribute:*`, `organize:*`, `find:*`, `add:*` ([`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §1.7).
+**Vocabulary (wire):** Explore query `?compose=…` — **v3** `host:<kind>` \| `seek:fixed:<kind>` \| `seek:flexible` \| `add:place:*` \| `add:facility:*`. Leftover plan/contribute/organize/find tokens are not accepted ([`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §1.7).
 
 **Domain lens** ([`DOMAIN.md`](./DOMAIN.md) § What · Where · Who · How): **Host** / **Find crew (fixed)** → **What** (Activity). **Find crew (flexible)** → `member_availability` (people layer, no map pin). **Add on map** → **Where** (Place or Facility). **Who** (Person / Host / Operator) is chosen when publishing or on detail — not a FAB branch. **How** (join, RSVP, approvals) is **context only** on activity/place/facility surfaces — `viewerAccess`, not new nouns.
 
@@ -16,7 +16,7 @@ Companion docs: [`DOCS_INDEX.md`](./DOCS_INDEX.md), [`NORTHSTAR.md`](./NORTHSTAR
 
 Code (today): `src/explore/compose.ts`, `CreateIntentSheet.tsx`, `SeekFlexibleComposeSheet.tsx`, `hostingFlowEngine.ts` / `hostingFlows/*`, `seekingFlowEngine.ts`, `addFlow.ts`.
 
-**Status:** Spec **approved (CPC)** · **Host · Find crew · Add on map** FAB + compose wire wire **shipped** (legacy compose aliases retained; see [Implementation status](#implementation-status))
+**Status:** Spec **approved (CPC)** · **Host · Find crew · Add on map** FAB + v3 compose wire **shipped** (`host` \| `seek` \| `add` only; see [Implementation status](#implementation-status))
 
 **Last updated:** 2026-10-16
 
@@ -78,7 +78,7 @@ Kind grid (hiking, camping, rideshare, event, other activity) → hosting wizard
 
 **Find crew browse (Available tab):** directory of everyone who saved availability with slots in the selected date range (`GET /explore/people/availability`) — optional map area / activity filter only; **not** personalized match to the viewer. Day + activity-type **notifications** and optional post-save **hosted outing** preview are separate.
 
-**Map read path (seeking):** `activity:{id}` on explore map; manage via **`/me/seeking-posts`**; join **`POST /activities/:id/requests`**. Inbound `pin=demand:{intentId}` is rewrite-only.
+**Map read path (seeking):** `activity:{id}` on explore map; manage via **`/me/seeking-posts`**; join **`POST /activities/:id/requests`**. Leftover `pin=demand:` is not a product path.
 
 ### Hosting (was Organize)
 
@@ -104,22 +104,22 @@ Kind grid (hiking, camping, rideshare, event, other activity) → hosting wizard
 
 Any signed-in member — no host approval to post seeking.
 
-### Contribute (was Add)
+### Add on map (was Contribute)
 
 | Branch | Examples | API (target) |
 |--------|----------|--------------|
 | **Place** | Trail, camp, outdoor other | `POST /me/places` |
 | **Facility** | Toilet, rest area, parking, water, viewpoint, **outdoor shop pin** | `POST /me/facilities` with `facilityKind`, `areaId`, optional `parentPlaceId` |
 
-**Not Contribute:** **Operator shop** (Pro tenant, `/shop/:id`, `/operator/*`) — separate onboarding ([`DOMAIN.md`](./DOMAIN.md) § Shop layers).
+**Not Add on map:** **Operator shop** (Pro tenant, `/shop/:id`, `/operator/*`) — separate onboarding ([`DOMAIN.md`](./DOMAIN.md) § Shop layers).
 
 **Retire:** standalone FAB **Shops** chip — member gear pin = **facility `outdoor_shop`** (peek on map), not `EntityKind.shop`.
 
-**Contribute uses place/facility pin** — not **Going from** (catalog rows are not trips).
+**Add on map uses place/facility pin** — not **Going from** (catalog rows are not trips).
 
 **Submissions inventory:** `/profile/submissions` (redirect from `/contributions`) — pending moderation; no full public detail until approved ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.4.1).
 
-**Organize venue pick:** Hiking/camping use **`GET /places/catalog`** (legacy alias `/places/registry`; see `DOMAIN.md` § Place catalog). Publish: `src/services/hostingActivityPublish.ts` → **`POST /host/activities`** + **`POST /host/activities/:id/publish`** with active tenant header (`buildHostActivityPublishPayload` in `activityPublishPayload.ts`; client: `createHostActivity` / `publishHostActivity` — not `*OrganisationActivity*`). **Admin place/venue catalog** (trails, camps, event venues): `/admin/places` (`AdminPlaces.tsx`) — not the explore compose wizard.
+**Host venue pick:** Hiking/camping use **`GET /places/catalog`** (legacy alias `/places/registry`; see `DOMAIN.md` § Place catalog). Publish: `src/services/hostingActivityPublish.ts` → **`POST /host/activities`** + **`POST /host/activities/:id/publish`** with active tenant header (`buildHostActivityPublishPayload` in `activityPublishPayload.ts`; client: `createHostActivity` / `publishHostActivity` — not `*OrganisationActivity*`). **Admin place/venue catalog** (trails, camps, event venues): `/admin/places` (`AdminPlaces.tsx`) — not the explore compose wizard.
 
 ---
 
@@ -136,7 +136,7 @@ Any signed-in member — no host approval to post seeking.
 
 **Storage (v1):** `activityType: event`, `outingCategory: activities`, `outingTopic` from type chip, `participationMode` default `approval`.
 
-Hiking / Camping / **Event** / **Rideshare** remain **separate** organize branches (Activity = `organize.activities` in `composeFlowCatalog.ts`).
+Hiking / Camping / **Event** / **Rideshare** remain **separate** host branches (generic buddy activity = `host.activity` in `composeFlowCatalog.ts`).
 
 ---
 
@@ -203,28 +203,28 @@ participationMode: 'rsvp' | 'approval'
 
 **Full detail page vs map peek** is **not** `participationMode` or `joinMode` alone — it is **viewer access / detail exposure** (who may open `/activity/:id` with a full payload). Canonical model: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §15. UI maps API `viewerAccess` via `src/access/resolvePeekDetailAccess.ts` — do not add client-side policy.
 
-**Consumer activity detail** (`/activity/:id`): **scroll layout** — published facts from the same L1 card as map peek (`buildActivityDetailPageShellCard`) + **Transport strip** (reachable by / vehicle lines from organize capture; **rideshare available** when linked; host **Offer rideshare** when entitled). No Plan/Place/Buddies/Transport tabs on the public route (`consumerDetailLayout`; embed/manage sheet keeps tabbed `ActivityDetailView`). **Participation → crew:** RSVP → `canAccessCrewSurfaces: true` + welcome sheet; approval grants crew after host approve (`?joined=1`). Pending viewers see published facts + join CTAs only — no meeting precision or crew chat until entitled. **Pro** vs **host:** Pro unlocks roster / pre-join host profile / transport offer per Layer 7 — not `canPublish`; see [`MEMBER_MODEL.md`](./MEMBER_MODEL.md).
+**Consumer activity detail** (`/activity/:id`): **scroll layout** — published facts from the same L1 card as map peek (`buildActivityDetailPageShellCard`) + **Transport strip** (reachable by / vehicle lines from Host capture; **rideshare available** when linked; host **Offer rideshare** when entitled). No Plan/Place/Buddies/Transport tabs on the public route (`consumerDetailLayout`; embed/manage sheet keeps tabbed `ActivityDetailView`). **Participation → crew:** RSVP → `canAccessCrewSurfaces: true` + welcome sheet; approval grants crew after host approve (`?joined=1`). Pending viewers see published facts + join CTAs only — no meeting precision or crew chat until entitled. **Pro** vs **host:** Pro unlocks roster / pre-join host profile / transport offer per Layer 7 — not `canPublish`; see [`MEMBER_MODEL.md`](./MEMBER_MODEL.md).
 
 **Engagement policy (L1 shipped):** `resolveActivityEngagementPolicy` drives **explore** `mapPeekActions` / `mapPeekStrips` and **detail** `presentation` on `GET /activities/:id`. **Peek + detail CTAs:** wire ids only (`executeActivityMapPeekAction`). **FE:** consumer page `ActivityConsumerDetailPage` (alias `ActivityConsumerDetailBody`) — Getting there uses `ActivityPeekLinkedTransport`; peek `ActivityDiscoveryPublishedBody` in `MapPeekShell`. Navigation: [`NAVIGATION.md`](./NAVIGATION.md) § Activity detail.
 
 ---
 
-## Demand (Find) — who is the host?
+## Seeking (Find crew) — who is the host?
 
-The member who posts a **demand** pin is the **host** for that plan (they are looking for crew, not asking a stranger to take over).
+The member who posts a **seeking** pin is the **host** for that plan (they are looking for crew, not asking a stranger to take over).
 
-### Demand join model (locked)
+### Seeking join model (locked)
 
-| Rule | Demand | Organize (activity) |
-|------|--------|---------------------|
-| **Map visibility** | Always **public** when pinned — no `joinMode`, no private demand | `joinMode` open or private |
+| Rule | Seeking | Host (activity) |
+|------|---------|-----------------|
+| **Map visibility** | Always **public** when pinned — no `joinMode`, no private seeking | `joinMode` open or private |
 | **How others join** | **Request to join** only — poster approves on the seeking activity | **I'm going** (`rsvp`) or **Request to join** (`approval`) |
 | **RSVP / instant join** | **Never** — no `participationMode` on seeking rows | Host chooses `participationMode` |
 | **Storage** | Seeking **`activities`** + **`activity_requests`** | RSVPs + `activity_requests` |
 
-Demand is **not** a lightweight RSVP activity. Do not add **I'm going**, private pins, or `participationMode` to seeking rows.
+Seeking is **not** a lightweight RSVP activity. Do not add **I'm going**, private pins, or `participationMode` to seeking rows.
 
-**Explore map wire:** seeking pins use `source: 'activity'`, `activityMode: 'seeking'`, id **`activity:{activityId}`**. Inbound `demand:{intentId}` is rewrite-only — never minted. Join: **`POST /activities/:id/requests`**. Card presentation may still use `source: 'demand'` for copy only.
+**Explore map wire:** seeking pins use `source: 'activity'`, `activityMode: 'seeking'`, id **`activity:{activityId}`**. Leftover `demand:` ids and `source: 'demand'` are not accepted. Join: **`POST /activities/:id/requests`**.
 
 | Who | Peek actions |
 |-----|----------------|
@@ -232,18 +232,18 @@ Demand is **not** a lightweight RSVP activity. Do not add **I'm going**, private
 | **Everyone else** | **Request to join** (same language as approval-mode activities) · **Message** |
 | **Guest** | Sign-in gate on join / message |
 
-When the poster is ready to run a dated outing on the map, they **Organize → publish** an activity — they remain the host. That published row has its **own** `participationMode` / `joinMode` for **new** discoverers. Approved demand joiners are **enrolled on the linked activity** when the poster calls `POST /me/seeking-posts/:id/link-activity` (host-approved `activity_requests` + participants — even if the activity is RSVP for strangers). Join requests on the intent: `POST /me/seeking-posts/:id/requests`.
+When the poster is ready to run a dated outing on the map, they **Host → publish** an activity — they remain the host. That published row has its **own** `participationMode` / `joinMode` for **new** discoverers. Approved seeking joiners are **enrolled on the linked activity** when the poster calls `POST /me/seeking-posts/:id/link-activity` (host-approved `activity_requests` + participants — even if the activity is RSVP for strangers). Join requests on the seeking post: `POST /me/seeking-posts/:id/requests`.
 
 **Not used:** third-party “fulfill / convert” (another member publishing on behalf of the poster). Legacy `?fulfillIntent=` links only reopen the pin.
 
 **Catalog:** `src/explore/composeFlowCatalog.ts` (one entry per FAB path). **Tests:** `npm run test:explore-alignment`, `seekingFlowEngine.test.ts`.
 
-### One activity model (Find + Organize on the map)
+### One activity model (Find crew + Host on the map)
 
 | Concept | Wire | Join (others) | Host (publisher) |
 |---------|------|---------------|------------------|
-| **Find** (looking for crew) | `activities` + `activityMode: seeking`, map id `activity:{activityId}` | Request to join only (`POST /activities/:id/requests`) | Same **host** as Organize — manages plan, join queue, optional **linked transport** |
-| **Organize** (dated outing) | `activities` + `activityMode: hosted` | RSVP or request per `participationMode` | Host — share, manage, optional **linked transport** |
+| **Find crew** (looking for company) | `activities` + `activityMode: seeking`, map id `activity:{activityId}` | Request to join only (`POST /activities/:id/requests`) | Activity **host** — manages plan, join queue, optional **linked transport** |
+| **Host** (dated outing) | `activities` + `activityMode: hosted` | RSVP or request per `participationMode` | Host — share, manage, optional **linked transport** |
 
 `participant_intents` is leftover ops/backfill storage only; the **map pin and join target** are always the **activity row**. UI must not treat Find as a non-activity “demand-only” product surface.
 
@@ -253,7 +253,7 @@ Optional **published rideshare** linked to a **parent** plan (hiking, camping, o
 
 | Mechanism | Use |
 |-----------|-----|
-| **Publish child rideshare** with `linkedActivityId` → parent + `linkedRideshareActivityId` on parent | Add seats / transport while the parent stays open (Find or Organize) |
+| **Publish child rideshare** with `linkedActivityId` → parent + `linkedRideshareActivityId` on parent | Add seats / transport while the parent stays open (Find crew or Host) |
 | **`POST /me/seeking-posts/:id/link-activity`** | **Graduate** find crew onto a **new hosted** outing (`convertedActivityId`, intent fulfilled) — **not** for publishing a transport child |
 
 **Find → Link transport** prefill must set `linkToParentActivityId` to the **seeking activity id** (`resolveSeekingParentActivityId` in `linkActivityRideshareOffer.ts`). **Never** call `link-activity` when publishing `activityType: rideshare` (`hostingActivityPublish.ts`).
@@ -275,11 +275,11 @@ Tracked in [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) **§8.2 S12**. Phases:
 
 ---
 
-## Reorganize a past outing (host)
+## Host from an existing outing
 
-From **Activities** hub or host console: **Reorganize on map** opens explore with the matching organize wizard prefilled from the prior row (`hostingFromActivity.ts`). **Publish always creates a new activity id** (audit lineage via optional `clonedFromActivityId` on create).
+From **Plan hosted** or publishing workspace: **Edit on map** opens explore with the matching Host wizard prefilled from the prior row (`hostingFromActivity.ts`). **Publish always creates a new activity id** (audit lineage via optional `clonedFromActivityId` on create).
 
-**Duplicate** in the host console still creates a **server draft** for the legacy activity form — same source outing, different UX.
+**Duplicate** in the publishing workspace still creates a **server draft** for the leftover activity form — same source outing, different UX.
 
 Deep link: `exploreHostFromActivityPath(activityId, kind)` in `src/explore/routing.ts`.
 
@@ -287,29 +287,29 @@ Deep link: `exploreHostFromActivityPath(activityId, kind)` in `src/explore/routi
 
 ## Going from (activities only)
 
-**Required** for all **Organize** and **Find** activity flows (hiking, camping, event, activity, rideshare demand).
+**Required** for all **Host** and **Find crew** activity flows (hiking, camping, event, activity, rideshare seeking).
 
 | Flow | Label | Notes |
 |------|-------|-------|
-| Organize (all kinds) | **Going from** | Map pin + optional note; replaces â€œMeeting pointâ€ in UI copy |
-| Find (all kinds) | **Going from** | Unify rideshare â€œLeaving fromâ€ â†’ **Going from** |
+| Host (all kinds) | **Going from** | Map pin + optional note; replaces leftover “Meeting point” in UI copy |
+| Find crew (all kinds) | **Going from** | Unify rideshare leftover “Leaving from” → **Going from** |
 | Add (places) | **Pin on the map** / location | Not â€œGoing fromâ€ |
 
 Validation: cannot continue without a placed pin (and label where applicable).
 
 ### Area (registry — not the meeting pin)
 
-Organize **does not** infer area from meeting or going-from pins. **Area** is an admin-registered row (`areaId`). **Place** rows carry **`place.areaId`**. Activities inherit geography only through **`locationId` → place**.
+Host **does not** infer area from meeting or going-from pins. **Area** is an admin-registered row (`areaId`). **Place** rows carry **`place.areaId`**. Activities inherit geography only through **`locationId` → place**.
 
-| Organize | Rule |
-|----------|------|
+| Host | Rule |
+|------|------|
 | **Public map** | Pick a **catalog place** from the registry; that place must have **`place.areaId`** (admin links in `/admin/places`). No separate area field on publish. |
-| **Custom trail name** (no registry row) | Not valid for public map — use **Add** to create a place (select **area** first), then Organize from catalog. |
+| **Custom trail name** (no registry row) | Not valid for public map — use **Add** to create a place (select **area** first), then Host from catalog. |
 | **Private** link-only | Not on public explore map; place area optional |
 
 Publish gate (API): `place_area_required` / `activity_area_required` when linked place has no **`areaId`**.
 
-**Contribute (place/facility):** **Area** step first (`curatedArea`), then emirate + map pin; API **`POST /me/places`** / **`POST /me/facilities`** with **`areaId`** (published area validated server-side). **Lifecycle:** one member **submit** → pending on `/profile/submissions` — **not** draft + publish like hosted activities ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.4.10).
+**Add (place/facility):** **Area** step first (`curatedArea`), then emirate + map pin; API **`POST /me/places`** / **`POST /me/facilities`** with **`areaId`** (published area validated server-side). **Lifecycle:** one member **submit** → pending on `/profile/submissions` — **not** draft + publish like hosted activities ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.4.10).
 
 ### Find (looking for)
 
@@ -327,7 +327,7 @@ Track what is **spec** vs **shipped**. Update this table in the same PR that lan
 |------|------------|--------------|
 | FAB **Host · Find crew · Add on map** | ✅ | ✅ (`CreateIntentSheet`, `compose.ts`) |
 | FAB header “I would like to…” | ✅ | ✅ |
-| v3 `?compose=` (`host` / `seek` / `add`) + legacy aliases | ✅ | ✅ (`compose-route.ts`, `canonicalizeComposeWire`) |
+| `?compose=` (`host` / `seek` / `add`) only | ✅ | ✅ (`compose-route.ts`) |
 | Level-2 drill-down in one sheet | ✅ | ✅ |
 | Skip duplicate type pickers | ✅ | ✅ |
 | Host → Activity generic wizard | ✅ | ✅ |
@@ -350,7 +350,7 @@ Track what is **spec** vs **shipped**. Update this table in the same PR that lan
 | Availability ↔ hosted (date + activity type; notify + FAB hosted preview) | ✅ | ✅ (`availability-hosted-match-notifications.ts`, `GET /me/availability/match-preview` → `hostedOutings` only) |
 | **Find crew → Available** tab (all members with future slots in range) | ✅ | ✅ (`GET /explore/people/availability` — not match-preview) |
 
-**Current code:** `/explore?compose=…` canonicalizes to **v3** (`host:hiking`, `seek:fixed:hiking`, `seek:flexible`, `add:place:hiking`, `add:facility:*`). **Aliases** on parse: `plan:*:hosting|seeking`, `contribute:*`, `organize:*`, `find:*`, `add:*`, plus legacy `request`, `contribute`, and `addLocation` query keys. One Host tree: `create/hosting` + `hostingFlowEngine` + `hostingFlows`. Seeking: `seekingFlowEngine` (no `demandFlow.ts` shim).
+**Current code:** `/explore?compose=…` is **host / seek / add** (`host:hiking`, `seek:fixed:hiking`, `seek:flexible`, `add:place:hiking`, `add:facility:*`). Leftover plan/contribute/organize/find/request/addLocation query keys are not compose. One Host tree: `create/hosting` + `hostingFlowEngine` + `hostingFlows`. Seeking: `seekingFlowEngine` (no `demandFlow.ts` shim).
 
 ### Module naming (CPC-9a)
 
@@ -363,8 +363,8 @@ Track what is **spec** vs **shipped**. Update this table in the same PR that lan
 | **Product verbs in shell props** | `hostWizardOpen` on `ComposeHost` (+ `seekFixedWizardOpen`, `addWizardOpen`); hook/model may still expose `planHostingWizardOpen` alias. Product = Host / Find crew / Add on map. |
 | **Wizard modules (catalog `wizard` field)** | `hostingFlow` → `hostingFlowEngine.ts` + `hostingFlows/*`; `seekingFlow` → `seekingFlowEngine.ts`. Removed: `hostingFlow.ts` facade, `seekingFlow.ts`, `organizeFlow.ts`, `organizeFlows/`, `createOrganize/`, `hostingCatalog/`, `CreateActivityFlow.tsx`. |
 | **“Catalog” in code** | **Place/facility inventory only** (`GET */catalog`, Add-on-map submit). Per-kind **hosting** wizards = `hostingFlows` (`HostingKindFlow`) — not catalog. |
-| **“Plan” in code** | Bottom nav `/plan` (schedule + availability) — **not** the FAB. FAB wire: `host:*` \| `seek:*` \| `add:*` (aliases `plan:*:hosting|seeking`, `contribute:*`). |
-| **Compose flow ids** | Canonical v3 ids + legacy `plan.*` / `contribute.*` / `organize.*` / `find.*` / `add.*` via `composeFlowIds.ts`. |
+| **“Plan” in code** | Bottom nav `/plan` (schedule + availability) — **not** the FAB. FAB wire: `host:*` \| `seek:*` \| `add:*`. |
+| **Compose flow ids** | `host.*` / `seek.fixed.*` / `add.*` via `composeFlowIds.ts`. |
 | **`Explore` in URLs** | `explorePath({ compose })` stays — that is the **route**, not the module name. |
 
 ### Naming (no `Mobile` prefix)
@@ -394,11 +394,11 @@ Plan **hosted** tab lists outings; **create on map** uses the Host wizard (`Crea
 | **A** | This doc + cross-links (authority) |
 | **B** | FAB entry: copy, layout, drill-down, route `{ intent, kind }` |
 | **C** | `participationMode` API + **Iâ€™m going** + profile Up next |
-| **D** | Organize wizards: Going from, approval toggle, Activity generic path |
+| **D** | Host wizards: Going from, approval toggle, Activity generic path |
 | **E** | Explore/detail CTAs + card copy per mode |
 | **F** | Tests + `explore-ux-spec.md` CTA table |
 
-Do **not** ship Event organize with RSVP marketing until Phase C exists.
+Do **not** ship Event Host with RSVP marketing until Phase C exists.
 
 ---
 

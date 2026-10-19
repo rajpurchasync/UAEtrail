@@ -10,7 +10,6 @@ import {
   exploreShopsPath,
   legacyCreateParamToHostPath,
   myActivitiesPath,
-  parseFulfillIntentMapItemId,
   exploreSavedPinPath,
   participantIntentExplorePinPath,
   resolveParticipantIntentMapItemId,
@@ -63,23 +62,18 @@ describe('exploreRouting navigation contract', () => {
       '/explore?list=1&pin=activity%3Aact-1'
     );
     expect(resolveParticipantIntentMapItemId({ id: 'int-1' })).toBeNull();
-    expect(resolveParticipantIntentMapItemId({ id: 'demand:int-1' })).toBe('demand:int-1');
+    expect(resolveParticipantIntentMapItemId({ id: 'demand:int-1' })).toBeNull();
   });
 
   it('encodes pin deep link for saved map items', () => {
-    expect(exploreSavedPinPath('demand:abc')).toBe('/explore?list=1&pin=demand%3Aabc');
+    expect(exploreSavedPinPath('activity:abc')).toBe('/explore?list=1&pin=activity%3Aabc');
     const params = new URLSearchParams('pin=venue%3Ax');
     expect(parseExplorePinMapItemId(params)).toBe('venue:x');
   });
 
-  it('fulfillIntent query param supersedes legacy hostDemand', () => {
-    expect(explorePath({ fulfillIntent: 'demand:abc' })).toBe('/explore?fulfillIntent=demand%3Aabc');
-    expect(explorePath({ hostDemand: 'demand:legacy' })).toBe('/explore?fulfillIntent=demand%3Alegacy');
-
-    const legacy = new URLSearchParams('hostDemand=demand%3Aold');
-    const canonical = new URLSearchParams('fulfillIntent=demand%3Anew');
-    expect(parseFulfillIntentMapItemId(legacy)).toBe('demand:old');
-    expect(parseFulfillIntentMapItemId(canonical)).toBe('demand:new');
+  it('does not emit leftover fulfillIntent or hostDemand query keys', () => {
+    expect(explorePath({ pin: 'activity:abc' })).not.toContain('fulfillIntent');
+    expect(explorePath({ pin: 'activity:abc' })).not.toContain('hostDemand');
   });
 
   it('myActivitiesPath targets trips hub tabs', () => {
@@ -97,7 +91,7 @@ describe('exploreRouting navigation contract', () => {
     expect(explorePath({ myPlan: true, list: true })).toBe('/explore?list=1&myPlan=1');
   });
 
-  it('parseExploreMyPlanMapMode accepts legacy myTrips=1', () => {
+  it('parseExploreMyPlanMapMode accepts leftover myTrips=1', () => {
     expect(parseExploreMyPlanMapMode(new URLSearchParams('myTrips=1'))).toBe(true);
   });
 
@@ -114,11 +108,9 @@ describe('exploreRouting navigation contract', () => {
     );
   });
 
-  it('parseHostFromActivityId inbound-rewrites leftover organizeFrom=', () => {
+  it('parseHostFromActivityId reads hostFrom only', () => {
     expect(parseHostFromActivityId(new URLSearchParams('hostFrom=act-new'))).toBe('act-new');
-    expect(parseHostFromActivityId(new URLSearchParams('organizeFrom=act-legacy'))).toBe(
-      'act-legacy'
-    );
+    expect(parseHostFromActivityId(new URLSearchParams('organizeFrom=act-legacy'))).toBeNull();
   });
 
   it('legacyCreateParamToHostPath redirects old activity create URLs', () => {

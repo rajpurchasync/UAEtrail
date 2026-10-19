@@ -1,5 +1,4 @@
 import {
-  clearFulfillIntentMapItemParams,
   serializeExploreActivityDatePreset,
   serializeVenueListFilter,
   type ActivityListFilterKey,
@@ -205,7 +204,8 @@ export const buildExploreBrowseSearchParams = (input: {
   params.delete('compose');
   params.delete('contribute');
   params.delete('request');
-  clearFulfillIntentMapItemParams(params);
+  params.delete('fulfillIntent');
+  params.delete('hostDemand');
 
   if (patch.listCat === null) params.delete(LIST_CAT_PARAM);
   else if (patch.listCat) params.set(LIST_CAT_PARAM, patch.listCat);

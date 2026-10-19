@@ -20,7 +20,7 @@ import type { useHostingFromActivity } from './useHostingFromActivity';
 type Compose = ReturnType<typeof useComposeRoute>;
 type HostingFrom = ReturnType<typeof useHostingFromActivity>;
 
-/** Plan hosting wizard: linked rideshare, offer-for-seeking, reorganize prefill, and open-state. */
+/** Host wizard: linked rideshare, offer-for-seeking, Host-from-existing prefill, and open-state. */
 export const useHostingWizardPrefill = (input: {
   pathname: string;
   search: string;
