@@ -64,7 +64,7 @@ const mapMongoLocation = (doc: MongoLocationDoc): Location => {
   return { id: _id, ...rest };
 };
 
-type LegacyRideshareMongoFields = {
+type RetiredRideshareMongoFields = {
   carPoolEnabled?: boolean;
   carPoolFree?: boolean | null;
   carPoolPriceAed?: number | null;
@@ -74,7 +74,7 @@ type LegacyRideshareMongoFields = {
 };
 
 const mongoEventToEvent = (doc: MongoActivityDoc): Activity => {
-  const legacy = doc as MongoActivityDoc & LegacyRideshareMongoFields;
+  const retired = doc as MongoActivityDoc & RetiredRideshareMongoFields;
   return {
   id: doc._id,
   tenantId: doc.tenantId,
@@ -96,14 +96,14 @@ const mongoEventToEvent = (doc: MongoActivityDoc): Activity => {
   parkingLat: doc.parkingLat,
   parkingLng: doc.parkingLng,
   meetingDifferent: doc.meetingDifferent,
-  rideshareEnabled: legacy.rideshareEnabled ?? legacy.carPoolEnabled ?? false,
-  rideshareFree: legacy.rideshareFree ?? legacy.carPoolFree ?? null,
-  ridesharePriceAed: legacy.ridesharePriceAed ?? legacy.carPoolPriceAed ?? null,
-  rideshareSeats: legacy.rideshareSeats ?? legacy.carPoolSeats ?? null,
-  rideshareDetails: legacy.rideshareDetails ?? legacy.carPoolDetails ?? null,
+  rideshareEnabled: retired.rideshareEnabled ?? retired.carPoolEnabled ?? false,
+  rideshareFree: retired.rideshareFree ?? retired.carPoolFree ?? null,
+  ridesharePriceAed: retired.ridesharePriceAed ?? retired.carPoolPriceAed ?? null,
+  rideshareSeats: retired.rideshareSeats ?? retired.carPoolSeats ?? null,
+  rideshareDetails: retired.rideshareDetails ?? retired.carPoolDetails ?? null,
   linkedActivityId: doc.linkedActivityId ?? null,
   linkedRideshareActivityId:
-    legacy.linkedRideshareActivityId ?? legacy.linkedCarpoolActivityId ?? null,
+    retired.linkedRideshareActivityId ?? retired.linkedCarpoolActivityId ?? null,
   paymentTerms: doc.paymentTerms,
   pricingMode: doc.pricingMode ?? null,
   itinerary: doc.itinerary,

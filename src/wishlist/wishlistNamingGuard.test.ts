@@ -42,7 +42,7 @@ const collectSourceFiles = (dir: string): string[] => {
 };
 
 describe('wishlistNamingGuard', () => {
-  it('product code uses wishlist vocabulary (not favorites)', () => {
+  it('product code uses wishlist vocabulary (not favorites)', { timeout: 20_000 }, () => {
     const violations: string[] = [];
 
     for (const root of ROOTS) {

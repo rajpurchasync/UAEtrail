@@ -8,10 +8,9 @@ import {
   INBOUND_BECOME_ORGANIZER_PATH,
   MEMBERSHIP_MARKETING_PATH,
   PROFILE_BADGES_PATH,
-  exploreShopsPath,
 } from './config/routingCatalog';
 import { lazy, Suspense, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useParams, useSearchParams } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useSearchParams } from 'react-router-dom';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { Layout } from './components/layout/Layout';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
@@ -35,7 +34,6 @@ const GuestTabPlaceholder = lazy(() =>
 );
 
 import {
-  discoveryToExploreSearch,
   explorePath,
   explorePeopleBrowsePath,
   inboundCreateParamToHostPath,
@@ -60,49 +58,14 @@ import {
   PROFILE_HISTORY_PATH,
   PROFILE_SUBMISSIONS_PATH,
 } from './config/surfacePaths';
-import { canonicalPlaceDetailPath } from '@uaetrail/shared-types';
-import { resolveInboundTripsHubRedirect } from './member-plan/inboundTripsRedirect';
-import { useMemberStatus } from './hooks/useMemberStatus';
-import { memberCanManageHostedActivities } from './utils/hostedActivitiesGate';
-import { shopPublicPath } from './utils/shopPaths';
-
-const InboundMessagesRedirect = () => {
-  const { search, hash } = useLocation();
-  return <Navigate to={`/chat${search}${hash}`} replace />;
-};
-
-const EventSpotRedirect = () => {
-  const { id } = useParams<{ id: string }>();
-  if (!id) return <Navigate to="/explore" replace />;
-  return <Navigate to={canonicalPlaceDetailPath(id)} replace />;
-};
-
-const CommunityActivityRedirect = () => {
-  const { id } = useParams<{ id: string }>();
-  if (!id) return <Navigate to="/explore" replace />;
-  return <Navigate to={canonicalPlaceDetailPath(id)} replace />;
-};
-
-/** Inbound `/event/:id` place URLs → canonical `/place/:id`. */
-const InboundEventPlaceRedirect = () => {
-  const { id } = useParams<{ id: string }>();
-  if (!id) return <Navigate to="/explore" replace />;
-  return <Navigate to={canonicalPlaceDetailPath(id)} replace />;
-};
-
-const DiscoveryRedirect = () => {
-  const { search } = useLocation();
-  return <Navigate to={`${explorePath()}?${discoveryToExploreSearch(search)}`} replace />;
-};
-
-const InboundTripsHubRedirect = () => {
-  const { pathname, search } = useLocation();
-  const { user } = useAuth();
-  const gate = useMemberStatus({ enabled: Boolean(user) });
-  const canHost = memberCanManageHostedActivities(user, gate.canAccessPublishingWorkspace);
-  const target = resolveInboundTripsHubRedirect(pathname, search, { canHost });
-  return <Navigate to={target ?? PLAN_PATH} replace />;
-};
+import {
+  DiscoveryRedirect,
+  InboundCanonicalPlaceRedirect,
+  InboundMerchantPublicRedirect,
+  InboundMessagesRedirect,
+  InboundProMembershipRedirect,
+  InboundTripsHubRedirect,
+} from './routing/inboundBookmarkRedirects';
 
 const PlanBrowseRoute = () => {
   const { user } = useAuth();
@@ -143,17 +106,7 @@ const ShopBrowseRoute = () => (
   <Navigate to={explorePath({ panel: 'shops', filter: 'shops' })} replace />
 );
 
-/** Bookmark alias — canonical public shop URL is `/shop/:id`. */
-const InboundMerchantPublicRedirect = () => {
-  const { id } = useParams<{ id: string }>();
-  if (!id) return <Navigate to={exploreShopsPath()} replace />;
-  return <Navigate to={shopPublicPath({ id })} replace />;
-};
-
 // ─── Lazy-loaded pages ───────────────────────────────────────────────────────
-const TrailDetail = lazy(() => import('./pages/TrailDetail').then((m) => ({ default: m.TrailDetail })));
-const CampDetail = lazy(() => import('./pages/CampDetail').then((m) => ({ default: m.CampDetail })));
-const EventDetail = lazy(() => import('./pages/EventDetail').then((m) => ({ default: m.EventDetail })));
 const CanonicalPlaceDetailPage = lazy(() =>
   import('./pages/PlaceDetailPage').then((m) => ({ default: m.CanonicalPlaceDetailPage }))
 );
@@ -162,9 +115,6 @@ const FacilityDetailPage = lazy(() =>
 );
 
 const ProductDetail = lazy(() => import('./pages/ProductDetail').then((m) => ({ default: m.ProductDetail })));
-const InboundProMembershipRedirectPage = lazy(() =>
-  import('./pages/InboundProMembershipRedirect').then((m) => ({ default: m.InboundProMembershipRedirect }))
-);
 const ProfileProMembership = lazy(() =>
   import('./pages/ProfileProMembership').then((m) => ({ default: m.ProfileProMembership }))
 );
@@ -352,12 +302,12 @@ function App() {
           <Route path="/discovery" element={<DiscoveryRedirect />} />
           <Route path="/place/:id" element={<CanonicalPlaceDetailPage />} />
           <Route path="/facility/:id" element={<FacilityDetailPage />} />
-          <Route path="/trail/:id" element={<TrailDetail />} />
-          <Route path="/camp/:id" element={<CampDetail />} />
-          <Route path="/venue/:id" element={<EventDetail />} />
-          <Route path="/event/:id" element={<InboundEventPlaceRedirect />} />
-          <Route path="/event-spot/:id" element={<EventSpotRedirect />} />
-          <Route path="/community-activity/:id" element={<CommunityActivityRedirect />} />
+          <Route path="/trail/:id" element={<InboundCanonicalPlaceRedirect />} />
+          <Route path="/camp/:id" element={<InboundCanonicalPlaceRedirect />} />
+          <Route path="/venue/:id" element={<InboundCanonicalPlaceRedirect />} />
+          <Route path="/event/:id" element={<InboundCanonicalPlaceRedirect />} />
+          <Route path="/event-spot/:id" element={<InboundCanonicalPlaceRedirect />} />
+          <Route path="/community-activity/:id" element={<InboundCanonicalPlaceRedirect />} />
           <Route path="/calendar" element={<Navigate to={explorePath({ panel: 'activities' })} replace />} />
           <Route path="/people" element={<Navigate to={explorePeopleBrowsePath()} replace />} />
           <Route
@@ -564,8 +514,8 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path={INBOUND_BECOME_ORGANIZER_PATH} element={<InboundProMembershipRedirectPage />} />
-          <Route path={INBOUND_BECOME_HOST_PATH} element={<InboundProMembershipRedirectPage />} />
+          <Route path={INBOUND_BECOME_ORGANIZER_PATH} element={<InboundProMembershipRedirect />} />
+          <Route path={INBOUND_BECOME_HOST_PATH} element={<InboundProMembershipRedirect />} />
           <Route path={MEMBERSHIP_MARKETING_PATH} element={<Navigate to={EXPLORE_MAP_PATH} replace />} />
           <Route path="/shop" element={<ShopBrowseRoute />} />
           <Route

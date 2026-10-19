@@ -73,7 +73,7 @@ describe('geographyTerminologyGuard (Place · Facility · Area)', () => {
     const lexicon = read('packages/shared-types/src/wire-lexicon.ts');
     expect(lexicon).toMatch(/PLACE: 'place'/);
     expect(lexicon).toMatch(/FACILITY: 'facility'/);
-    expect(lexicon).toMatch(/AREA_LEGACY: 'area'/);
+    expect(lexicon).toMatch(/AREA_INBOUND: 'area'/);
     expect(lexicon).toMatch(/isGeographyMapSource/);
     expect(lexicon).not.toMatch(/CATALOG_PLACE_TARGET/);
     const person = read('packages/shared-types/src/explore-person.ts');

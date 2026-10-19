@@ -37,7 +37,7 @@ type MongoShopOrder = {
   items: MongoShopOrderItem[];
 };
 
-type LegacyMongoShopOrderItem = {
+type RetiredMongoShopOrderItem = {
   id?: string;
   productId: string;
   quantity: number;
@@ -153,7 +153,7 @@ const normalizeOrderLineItemStatus = (status?: OrderStatus) => {
 
 const normalizeEmbeddedOrderItem = (
   orderId: string,
-  raw: LegacyMongoShopOrderItem,
+  raw: RetiredMongoShopOrderItem,
   index: number,
   fallbackTimestamp: Date
 ): MongoShopOrderItem => {

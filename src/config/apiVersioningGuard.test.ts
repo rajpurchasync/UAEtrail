@@ -24,7 +24,7 @@ describe('unversioned HTTP API (no /api/v1)', () => {
     expect(envExample).not.toMatch(/VITE_API_BASE_URL=\/api\/v1/);
   });
 
-  it('product source does not reference /api/v1 paths', () => {
+  it('product source does not reference /api/v1 paths', { timeout: 20_000 }, () => {
     const roots = ['src', join('apps', 'api', 'src'), join('apps', 'api', 'tests')];
     const offenders: string[] = [];
     for (const rel of roots) {

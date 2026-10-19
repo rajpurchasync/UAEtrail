@@ -71,8 +71,8 @@ export const COLLECTIONS = {
   AUDIT_LOGS: 'audit_logs',
 } as const;
 
-/** Legacy collection names migrated on startup. */
-export const LEGACY_COLLECTIONS = {
+/** Retired Mongo collection names migrated on startup. */
+export const RETIRED_COLLECTION_NAMES = {
   EVENTS: 'events',
   EVENT_REQUESTS: 'event_requests',
   EVENT_PARTICIPANTS: 'event_participants',

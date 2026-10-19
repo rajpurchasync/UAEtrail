@@ -435,7 +435,7 @@ When renaming or adding routes:
 | `LocationDTO` vs Place | Mongo `locations` + historical API |
 | `tenant` vs Organisation | `x-organisation-id` header (`tenantId` in storage) |
 | `UserRole` vs `HostStatusDTO` | Auth shell vs product capabilities |
-| `InboundProMembershipRedirect` | Bookmark `/become-host` → `PRO_MEMBERSHIP_PATH` (no `BecomeHost.tsx` page) |
+| `InboundProMembershipRedirect` (`src/routing/inboundBookmarkRedirects.tsx`) | Bookmark `/become-host` → `PRO_MEMBERSHIP_PATH` |
 | `ProProfileApplicationFlow` | Pro guide/agency/shop application wizard (not community Host / publish) |
 | `/activities` route | Bookmark redirect to `/plan` (or history) in `App.tsx` |
 

@@ -94,12 +94,12 @@ export const BWL_EXPLORE_MAP_SOURCE = {
   FACILITY: 'facility',
   SHOP: 'shop',
   AGENCY: 'agency',
-  /** @deprecated Read compat — Place pin on Spots (`id` prefix `venue:`). */
-  VENUE_LEGACY: 'venue',
-  /** @deprecated Brief COH-02 target; use `place`. */
-  CATALOG_PLACE_LEGACY: 'catalog_place',
-  /** @deprecated Synthetic hub pin — Area is a label, not a map source. */
-  AREA_LEGACY: 'area',
+  /** Inbound wire — Place pin on Spots (`id` prefix `venue:`). */
+  VENUE_INBOUND: 'venue',
+  /** Inbound wire — brief COH-02 target; use `place`. */
+  CATALOG_PLACE_INBOUND: 'catalog_place',
+  /** Inbound wire — synthetic hub pin; Area is a label, not a map source. */
+  AREA_INBOUND: 'area',
 } as const;
 
 export type ExploreMapSourceCanonical =
@@ -111,17 +111,17 @@ export type ExploreMapSourceCanonical =
 
 export type ExploreMapSourceWire =
   | ExploreMapSourceCanonical
-  | typeof BWL_EXPLORE_MAP_SOURCE.VENUE_LEGACY
-  | typeof BWL_EXPLORE_MAP_SOURCE.CATALOG_PLACE_LEGACY
-  | typeof BWL_EXPLORE_MAP_SOURCE.AREA_LEGACY;
+  | typeof BWL_EXPLORE_MAP_SOURCE.VENUE_INBOUND
+  | typeof BWL_EXPLORE_MAP_SOURCE.CATALOG_PLACE_INBOUND
+  | typeof BWL_EXPLORE_MAP_SOURCE.AREA_INBOUND;
 
 export const PLACE_MAP_SOURCE = BWL_EXPLORE_MAP_SOURCE.PLACE;
 export const FACILITY_MAP_SOURCE = BWL_EXPLORE_MAP_SOURCE.FACILITY;
 
 export const isPlaceMapSource = (source: string | null | undefined): boolean =>
   source === BWL_EXPLORE_MAP_SOURCE.PLACE ||
-  source === BWL_EXPLORE_MAP_SOURCE.VENUE_LEGACY ||
-  source === BWL_EXPLORE_MAP_SOURCE.CATALOG_PLACE_LEGACY;
+  source === BWL_EXPLORE_MAP_SOURCE.VENUE_INBOUND ||
+  source === BWL_EXPLORE_MAP_SOURCE.CATALOG_PLACE_INBOUND;
 
 export const isFacilityMapSource = (source: string | null | undefined): boolean =>
   source === BWL_EXPLORE_MAP_SOURCE.FACILITY;
@@ -139,7 +139,7 @@ export const normalizeExploreMapSource = (source: ExploreMapSourceWire): Explore
 export const BWL_PEOPLE_SEGMENT = {
   ALL: 'all',
   BUDDIES_TARGET: 'buddies',
-  FRIENDS_LEGACY: 'friends',
+  FRIENDS_INBOUND: 'friends',
   FOLLOWED: 'followed',
 } as const;
 
@@ -151,11 +151,11 @@ export type SocialPeopleSegmentCanonical =
 /** HTTP query `segment` — `friends` is a read alias of `buddies`. */
 export type SocialPeopleSegmentWire =
   | SocialPeopleSegmentCanonical
-  | typeof BWL_PEOPLE_SEGMENT.FRIENDS_LEGACY;
+  | typeof BWL_PEOPLE_SEGMENT.FRIENDS_INBOUND;
 
 export const isBuddyPeopleSegment = (segment: string | null | undefined): boolean =>
   segment === BWL_PEOPLE_SEGMENT.BUDDIES_TARGET ||
-  segment === BWL_PEOPLE_SEGMENT.FRIENDS_LEGACY;
+  segment === BWL_PEOPLE_SEGMENT.FRIENDS_INBOUND;
 
 export const normalizePeopleSegment = (
   segment: SocialPeopleSegmentWire | string | null | undefined

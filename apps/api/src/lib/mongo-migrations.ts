@@ -1,6 +1,6 @@
 import type { Db, Document, ObjectId } from 'mongodb';
 import { randomUUID } from 'crypto';
-import { COLLECTIONS, LEGACY_COLLECTIONS } from './collections.js';
+import { COLLECTIONS, RETIRED_COLLECTION_NAMES } from './collections.js';
 import { slugify } from './slug.js';
 import {
   isEmbeddedPersonaSeekingTitle,
@@ -100,7 +100,7 @@ const migrateNotificationKinds = async (db: Db): Promise<void> => {
   }
 };
 
-const migrateLegacyRideshareActivities = async (db: Db): Promise<void> => {
+const migrateRetiredRideshareActivities = async (db: Db): Promise<void> => {
   const collection = db.collection(COLLECTIONS.ACTIVITIES);
   const result = await collection.updateMany(
     {
@@ -167,7 +167,7 @@ const migrateActivityJoinModeFromRequirements = async (db: Db): Promise<void> =>
   }
 };
 
-const migrateLegacyParticipantIntentTitles = async (db: Db): Promise<void> => {
+const migrateEmbeddedPersonaParticipantIntentTitles = async (db: Db): Promise<void> => {
   const collection = db.collection('participant_intents');
   const cursor = collection.find({ title: { $type: 'string' } });
   let updated = 0;
@@ -670,11 +670,11 @@ const purgeDemandBookmarkWishlistRows = async (db: Db): Promise<void> => {
 
 /** One-time migrations for activity terminology and role model alignment. */
 export const runMongoMigrations = async (db: Db): Promise<void> => {
-  await migrateCollectionNameIfNeeded(db, LEGACY_COLLECTIONS.EVENTS, COLLECTIONS.ACTIVITIES);
-  await migrateCollectionNameIfNeeded(db, LEGACY_COLLECTIONS.EVENT_REQUESTS, COLLECTIONS.ACTIVITY_REQUESTS);
-  await migrateCollectionNameIfNeeded(db, LEGACY_COLLECTIONS.EVENT_PARTICIPANTS, COLLECTIONS.ACTIVITY_PARTICIPANTS);
-  await migrateCollectionNameIfNeeded(db, LEGACY_COLLECTIONS.ORGANIZER_APPLICATIONS, COLLECTIONS.HOST_APPLICATIONS);
-  await migrateCollectionNameIfNeeded(db, LEGACY_COLLECTIONS.USER_FAVORITES, COLLECTIONS.USER_WISHLIST);
+  await migrateCollectionNameIfNeeded(db, RETIRED_COLLECTION_NAMES.EVENTS, COLLECTIONS.ACTIVITIES);
+  await migrateCollectionNameIfNeeded(db, RETIRED_COLLECTION_NAMES.EVENT_REQUESTS, COLLECTIONS.ACTIVITY_REQUESTS);
+  await migrateCollectionNameIfNeeded(db, RETIRED_COLLECTION_NAMES.EVENT_PARTICIPANTS, COLLECTIONS.ACTIVITY_PARTICIPANTS);
+  await migrateCollectionNameIfNeeded(db, RETIRED_COLLECTION_NAMES.ORGANIZER_APPLICATIONS, COLLECTIONS.HOST_APPLICATIONS);
+  await migrateCollectionNameIfNeeded(db, RETIRED_COLLECTION_NAMES.USER_FAVORITES, COLLECTIONS.USER_WISHLIST);
 
   for (const name of [
     COLLECTIONS.ACTIVITY_REQUESTS,
@@ -688,14 +688,14 @@ export const runMongoMigrations = async (db: Db): Promise<void> => {
 
   await migrateActivityTypeValues(db, COLLECTIONS.ACTIVITIES);
   await migrateActivityTypeValues(db, 'locations');
-  await migrateLegacyRideshareActivities(db);
+  await migrateRetiredRideshareActivities(db);
   await migrateCarpoolTerminologyToRideshare(db);
   await renameFieldIfPresent(db, COLLECTIONS.ACTIVITIES, 'guideId', 'hostId');
   await migrateUserRoleVisitorToParticipant(db);
   await migrateAuditLogEntityTypes(db);
   await migrateNotificationKinds(db);
   await migrateActivityJoinModeFromRequirements(db);
-  await migrateLegacyParticipantIntentTitles(db);
+  await migrateEmbeddedPersonaParticipantIntentTitles(db);
   await backfillMerchantProfileTenantLinks(db);
   await provisionShopTenantsForOrphanMerchants(db);
   await dedupeMerchantProfileTenantIds(db);

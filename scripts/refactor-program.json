@@ -623,7 +623,7 @@
       "contextIds": ["engagement"],
       "apiRoots": ["apps/api/src/routes/user/registerMeWishlistRoutes.ts"],
       "feRoots": ["src/api/domains/goals.ts", "src/api/domains/wishlist.ts"],
-      "successMetric": "One feDomain module per /me resource; wishlistApi; apiLegacyGuard boundaries"
+      "successMetric": "One feDomain module per /me resource; wishlistApi; apiClientSurfaceGuard boundaries"
     },
     {
       "id": "MIG-ROUTING-CANON-P11",

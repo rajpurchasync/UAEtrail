@@ -8,14 +8,14 @@ export const RSVP_PARTICIPATION_REQUIREMENT = 'Open RSVP — tap I\'m going to j
 /** Written by explore compose publish until `participationMode` is stored on the activity. */
 export const APPROVAL_PARTICIPATION_REQUIREMENT = 'Host approval required to join';
 
-/** @deprecated Legacy requirement line on older activities */
-export const LEGACY_APPROVAL_PARTICIPATION_REQUIREMENT = 'Organizer approval required to join';
+/** Retired requirement line on older activities (organizer wording). */
+export const RETIRED_ORGANIZER_APPROVAL_PARTICIPATION_REQUIREMENT = 'Organizer approval required to join';
 
 const isApprovalRequirementLine = (line: string): boolean => {
   const trimmed = line.trim();
   return (
     trimmed === APPROVAL_PARTICIPATION_REQUIREMENT ||
-    trimmed === LEGACY_APPROVAL_PARTICIPATION_REQUIREMENT
+    trimmed === RETIRED_ORGANIZER_APPROVAL_PARTICIPATION_REQUIREMENT
   );
 };
 

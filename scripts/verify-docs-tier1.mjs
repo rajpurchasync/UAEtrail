@@ -28,7 +28,7 @@ const TIER1 = [
 ];
 
 /** Files that may mention legacy paths in redirect/legacy tables only */
-const LEGACY_PATH_ALLOWLIST = new Set(['docs/NAVIGATION.md', 'docs/DOMAIN.md']);
+const INBOUND_DOC_PATH_ALLOWLIST = new Set(['docs/NAVIGATION.md', 'docs/DOMAIN.md']);
 
 /** Documents that intentionally list banned phrases as guidance */
 const BANNED_PHRASE_ALLOWLIST = new Set(['docs/DOCS_GOVERNANCE.md']);
@@ -55,7 +55,7 @@ for (const rel of TIER1) {
   }
   const text = readFileSync(abs, 'utf8');
   for (const { pattern, label } of BANNED) {
-    if (LEGACY_PATH_ALLOWLIST.has(rel) && pattern.source.includes('become-host')) {
+    if (INBOUND_DOC_PATH_ALLOWLIST.has(rel) && pattern.source.includes('become-host')) {
       continue;
     }
     if (pattern.test(text)) {

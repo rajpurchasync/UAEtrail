@@ -43,7 +43,8 @@ describe('proMembershipSurfaceGuard', () => {
 
   it('App mounts InboundProMembershipRedirect for /become-host routes', () => {
     const app = readFileSync('src/App.tsx', 'utf8');
-    expect(app).toMatch(/import\('\.\/pages\/InboundProMembershipRedirect'\)/);
+    expect(app).toMatch(/InboundProMembershipRedirect/);
+    expect(app).toMatch(/routing\/inboundBookmarkRedirects/);
     expect(app).not.toMatch(/pages\/BecomeHost/);
     expect(app).not.toMatch(/pages\/BecomeOrganisation/);
   });

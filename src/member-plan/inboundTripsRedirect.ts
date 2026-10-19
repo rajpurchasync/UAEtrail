@@ -27,8 +27,8 @@ export const resolveInboundTripsHubRedirect = (
   const params = new URLSearchParams(search.replace(/^\?/, ''));
   const view = params.get('view');
   const segment = params.get('segment');
-  const legacyTab = params.get('tab');
-  const legacySub = params.get('sub');
+  const inboundTab = params.get('tab');
+  const inboundSub = params.get('sub');
 
   if (view === 'map') {
     const qs = params.toString();
@@ -40,8 +40,8 @@ export const resolveInboundTripsHubRedirect = (
     view === 'history' ||
     segment === 'completed' ||
     segment === 'past' ||
-    legacySub === 'attended' ||
-    (legacyTab === 'joined' && segment === 'completed');
+    inboundSub === 'attended' ||
+    (inboundTab === 'joined' && segment === 'completed');
 
   if (wantsHistory) {
     const next = new URLSearchParams(params);

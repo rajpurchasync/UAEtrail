@@ -23,6 +23,7 @@ describe('activityPayloadOrganisationShimGuard', () => {
 
     for (const file of listTrackedSourceFiles()) {
       if (ALLOWLIST.has(file) || file.startsWith('src/api/')) continue;
+      if (!existsSync(file)) continue;
       const content = readFileSync(file, 'utf8');
       if (DEPRECATED_BUILDERS.test(content)) {
         violations.push(file);

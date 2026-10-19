@@ -1,7 +1,7 @@
 import { createNoDirectApiFacadeRule } from './r8-api-facade.mjs';
 
 /** @type {import('eslint').ESLint.Plugin} */
-const LEGACY_MESSAGING_API = {
+const RETIRED_MESSAGING_API_CALLS = {
   getInbox: 'Use messagingApi.getInbox from src/messaging',
   getConversations: 'Use messagingApi.getConversations from src/messaging',
   getMessages: 'Use messagingApi.direct.listMessages from src/messaging',
@@ -34,7 +34,7 @@ const plugin = {
             if (callee.type !== 'MemberExpression') return;
             if (callee.object.type !== 'Identifier' || callee.object.name !== 'api') return;
             if (callee.property.type !== 'Identifier') return;
-            const hint = LEGACY_MESSAGING_API[callee.property.name];
+            const hint = RETIRED_MESSAGING_API_CALLS[callee.property.name];
             if (hint) {
               context.report({ node, message: hint });
             }
