@@ -35,7 +35,7 @@ Do **not** use Home to onboard signed-in users or document the full app.
 
 ## What belongs here (guest signup funnel)
 
-Homepage v2 (`src/components/home/marketing/sections/*`, plan: [`UAE_Trail_Homepage.md`](./UAE_Trail_Homepage.md)):
+Homepage v2 (`src/components/home/marketing/sections/*`, `src/content/homeMarketing.ts`):
 
 | Section | Component | Job |
 |---------|-----------|-----|
@@ -121,4 +121,4 @@ Guest `/` UI lives under `src/components/home/marketing/**` only (v1 launch comp
 - [`NORTHSTAR.md`](./NORTHSTAR.md) — product concept, voice, surface jobs  
 - [`NAVIGATION.md`](./NAVIGATION.md) — three surfaces, auth redirects  
 - [`ARCHITECTURE.md`](./ARCHITECTURE.md) — signed-in default landing is `/explore`  
-- [`experiment/explore-ux-spec.md`](./experiment/explore-ux-spec.md) — map copy (not Home copy)  
+- `src/explore/exploreCopy.ts` — map copy (not Home copy)  

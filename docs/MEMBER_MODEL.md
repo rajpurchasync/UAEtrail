@@ -1,6 +1,6 @@
 # Member model — users, roles, tiers, routes
 
-**Canonical map** for how one **person account** connects to capabilities, storage, and HTTP. Doc index: [`DOCS_INDEX.md`](./DOCS_INDEX.md). Product voice: [`NORTHSTAR.md`](./NORTHSTAR.md). Domain entities: [`DOMAIN.md`](./DOMAIN.md). HTTP prefixes: [`API_ROUTING.md`](./API_ROUTING.md). Host audit P0–P3: [`HOST_CLEANUP_ROADMAP.md`](./HOST_CLEANUP_ROADMAP.md).
+**Canonical map** for how one **person account** connects to capabilities, storage, and HTTP. Doc index: [`DOCS_INDEX.md`](./DOCS_INDEX.md). Product voice: [`NORTHSTAR.md`](./NORTHSTAR.md). Domain entities: [`DOMAIN.md`](./DOMAIN.md). HTTP prefixes: [`API_ROUTING.md`](./API_ROUTING.md). Coherence program: [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.8.
 
 Do **not** re-implement tier logic in React hooks — consume **`GET /me/status`** (`MemberStatusDTO`; profile at root, publish/workspace under **`publish`** only).
 
@@ -276,7 +276,7 @@ Product-facing **who is viewing** for **capabilities** (Host / publish, console,
 
 ## Naming vocabulary
 
-UI labels vs capabilities vs wire (do not duplicate in other docs — **update this section** when semantics change). UI strings: **`src/content/workspaceVocabulary.ts`**.
+UI labels vs capabilities vs wire — **host/join/buddy slice only**; entity + route vocabulary: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §1 · full spine: [`DOCS_GOVERNANCE.md`](./DOCS_GOVERNANCE.md) § Terminology spine. UI strings: **`src/content/workspaceVocabulary.ts`**.
 
 ### Account ladder
 

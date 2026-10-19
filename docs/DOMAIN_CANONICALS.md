@@ -239,7 +239,7 @@ Built only via **`routingCatalog`** or `@uaetrail/shared-types` `entity-path` he
 
 ### 3.1 Consumer detail tab wire ids
 
-Query param **`tab`** where noted. **UI labels** may differ from wire ids (activity). **Code:** activity `src/activity/activityDetailTab.ts`; place `src/place/placeDetailTab.ts`; area/shop/org `src/area|shop|organisation/*DetailTab.ts`; guard canon `src/config/consumerDetailTabWireCanon.ts`. **Plan:** [`experiment/consumer-detail-surfaces-plan.md`](./experiment/consumer-detail-surfaces-plan.md).
+Query param **`tab`** where noted. **UI labels** may differ from wire ids (activity). **Code:** activity `src/activity/activityDetailTab.ts`; place `src/place/placeDetailTab.ts`; area/shop/org `src/area|shop|organisation/*DetailTab.ts`; guard canon `src/config/consumerDetailTabWireCanon.ts`. **Plan:** [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §6.2 / `consumerDetailQaMatrixGuard`.
 
 | Surface | Route prefix | Wire tab ids (canonical → target) | Deep link |
 |---------|--------------|-----------------------------------|-----------|
@@ -271,7 +271,7 @@ Detail UIs must load from the **canonical read API** for that entity; writes use
 
 **API lineage contracts:** `apps/api/tests/detail-surface-lineage-contract.test.ts` (admin area/place publish → public GET; member profile → public profile).
 
-**Cross-links:** [`CREATE_FLOW.md`](./CREATE_FLOW.md) (member writes) · [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) · geography § in this doc · [`experiment/consumer-detail-surfaces-plan.md`](./experiment/consumer-detail-surfaces-plan.md) §18.
+**Cross-links:** [`CREATE_FLOW.md`](./CREATE_FLOW.md) (member writes) · [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) · geography § in this doc · [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §6.2 / `consumerDetailQaMatrixGuard` §18.
 
 ### 3.2.1 Discovery projection → detail page → actions (L1–L3)
 
@@ -337,7 +337,7 @@ Explore URL builders live in `src/explore/routing.ts` (re-exported from `config/
 
 **Three maps (do not conflate):** (1) **Explore** — public discovery; (2) **Journey map** — `/profile/history/map` (consumer), `GET /me/journey-map` + `POST/PATCH/DELETE /me/map-pins`; (3) **Publishing workspace** — tenant tools under `/publishing/*`. See [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §3.1 and §4.1.
 
-IA detail (pills, topics): [`experiment/explore-browse-ia.md`](./experiment/explore-browse-ia.md).
+IA detail (pills, topics): [`NAVIGATION.md`](./NAVIGATION.md) · `src/list/`.
 
 ---
 
@@ -346,19 +346,19 @@ IA detail (pills, topics): [`experiment/explore-browse-ia.md`](./experiment/expl
 | Scope | Prefix | Header | Examples |
 |-------|--------|--------|----------|
 | Public read | `/activities`, `/explore/map`, `/explore/seeking-activities`, `/places` | — | Browse; seeking slice = published `activityMode: seeking` (`explore-seeking-activities-read.ts`) |
-| Member | `/me/*` | Bearer | `seeking-posts`, `host-status`, profile |
+| Member | `/me/*` | Bearer | `seeking-posts`, `status`, profile |
 | Publishing workspace (tenant scope) | `/publishing/*` | Bearer + `x-organisation-id` | `activities`, **`/publishing/requests`** (activity join queue) |
 | Person public | `/users/:id` | optional | Public profile |
 
 **Kebab-case plurals** on URLs: `seeking-posts`, not `intents` or `demand`.
 
-**Client modules:** `src/api/domains/*.ts` — canonical method names (`getOrganisationProfile`, `getMemberHostStatus`, `getPublicPlaces`). No legacy alias layer on `api` (see `apiLegacyGuard.test.ts`).
+**Client modules:** `src/api/domains/*.ts` — canonical method names (`getOrganisationProfile`, `getMemberStatus`, `getPublicPlaces`). No legacy alias layer on `api` (see `apiLegacyGuard.test.ts`).
 
 ### 5.1 API vs UI (read-models)
 
 | Layer | Names | Wire payload |
 |-------|--------|----------------|
-| **HTTP `/me/*`** | Entity or **capability** (`coordination-attention`, `profile-stats`, `host-status`) | Facts: ids, counts, enums — **not** tab copy (`Needs you`, `Plan`) |
+| **HTTP `/me/*`** | Entity or **capability** (`coordination-attention`, `profile-stats`, `status`) | Facts: ids, counts, enums — **not** tab copy (`Needs you`, `Plan`) |
 | **shared-types** | `MemberCoordinationAttention*`, `MemberProfileStatsDTO` | No English `label` or consumer `path` on list rows |
 | **SPA** | `PlanNeedsYouStrip`, `coordinationAttentionPresentation.ts` | Labels + `surfacePaths` / `planHostedSchedulePath` |
 
@@ -374,7 +374,7 @@ IA detail (pills, topics): [`experiment/explore-browse-ia.md`](./experiment/expl
 | `getOrganisationProfile`, `ShopOrganisation*`, `organisation-console/` (Pro storefront onboarding) | Merchant* (client), HostOrganization* | **Not** activity CRUD/roster — see `MEMBER_MODEL` § Organisation in filenames |
 | `listHostActivities`, `createHostActivity`, `publishHostActivity`, `ActivityParticipantsPanel`, `ActivityManageSheet` | `*OrganisationActivity*`, `OrganisationActivityCheckInPanel`, `listOrganisationActivities` | Guards: `apiLegacyGuard`, `organisationNamingGuard` |
 | `OPERATOR_CONSOLE_LINKS`, `src/pages/operator/*`, `src/console/*` | `HOST_CONSOLE_LINKS` (alias), `pages/OrganisationActivities` | Publishing console at `/publishing/*` |
-| `getMemberHostStatus` | `getMyOrganisationStatus` | Tier flags |
+| `getMemberStatus` | `getMemberHostStatus`, `getMyOrganisationStatus` | Tier + nested `publish` |
 | `PersonPublicProfile` | `UserPublicProfile` | Public card |
 | `buildHostActivityPublishPayload`, `buildHostActivityMenuItems` | `buildOrganisationActivity*` | Single publish contract (`activityPublishPayload.ts`) |
 | `registerHostActivityRequestRoutes` | `*JoinRequest*` (host) | Activity join queue only |
@@ -454,7 +454,7 @@ When renaming or adding routes:
 
 | Context | FE module | Canonical calls |
 |---------|-----------|-----------------|
-| Host tier / publish gate | `memberApi` | `getMemberHostStatus()` |
+| Host tier / publish gate | `memberApi` | `getMemberStatus()` |
 | Map / Find | `exploreApi`, `seekingApi` | explore map; `/me/seeking-posts` |
 | Buddies / groups / follow | `buddiesApi`, `groupsApi` | `/me/buddies`, `/me/groups`, `/me/following` |
 | Wishlist / entity follow / reviews | `wishlistApi`, `entityFollowApi`, `reviewsApi` | `/me/wishlist`, `/me/entity-follows`, `/reviews` |
@@ -588,7 +588,7 @@ Wire: `publishingProfileKind` on `ActivityDTO`; paths via `resolveActivityPublis
 | Tenant-scoped HTTP | List/publish/manage for **this tenant** | **`GET /publishing/activities`** (mount prefix only until SN-4); client **`listActivities(tenantId)`**, **`getActivityJoinRequests(tenantId)`** — not `*OperatorActivity*` / `*HostActivity*` on every symbol |
 | This activity, this viewer | May they see Buddies / approve joiners? | **`viewerAccess`**, entitlements on activity detail wire |
 
-**Freeze (Oct 2026):** Do **not** add new `Operator*` identifiers (hooks, client functions, component names) except **route/page shells** already named (`src/pages/operator/*`, lazy `Operator*` pages). Migrate **toward** activity + publishing-access vocabulary per [`HOST_CLEANUP_ROADMAP.md`](./HOST_CLEANUP_ROADMAP.md) **SN-3**.
+**Freeze (Oct 2026):** Do **not** add new `Operator*` identifiers (hooks, client functions, component names) except **route/page shells** already named (`src/pages/operator/*`, lazy `Operator*` pages). Migrate **toward** activity + publishing-access vocabulary per [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.8 **SN-3**.
 
 ### 13.1 Anti-patterns (do not repeat)
 
@@ -605,14 +605,14 @@ Wire: `publishingProfileKind` on `ActivityDTO`; paths via `resolveActivityPublis
 
 | Prefix / name | OK because |
 |---------------|------------|
-| **`/publishing/*` HTTP mount** (canonical) | Stable tenant publishing routes; **not** a license to prefix every TS symbol with `Operator` ([`HOST_CLEANUP_ROADMAP.md`](./HOST_CLEANUP_ROADMAP.md) SN-4 drops `/host` mount). |
+| **`/publishing/*` HTTP mount** (canonical) | Stable tenant publishing routes; **not** a license to prefix every TS symbol with `Operator` ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.8 SN-4 drops `/host` mount). |
 | **`src/pages/operator/*`** | Console **surface** route folder; pages inside still operate on **activities**. Object names (`Overview.tsx`), not `OperatorOverview.tsx`. |
 | **`src/pages/admin/*`** | Ops **surface** route folder (`/admin`). Object names (`Organisations.tsx`, `Members.tsx`); do **not** prefix every file `Admin*`. |
 | **Legacy shims** | `useOperatorStatus`, `usePublishingAccess`, `/me/host-status`, `/me/operator-status`, flat-only `HostStatusDTO` — **deprecated**; no new call sites. |
 | Remaining `Explore*` map chrome under `src/explore/ui` | Shell files until a dedicated pass. **Do not add** new `Explore*` files — folder is the namespace. Entity lists/follows/people live in `people-discovery` / `discovery`. |
 | `Plan*` under `src/components/plan`, `src/member-plan` | Member schedule surface (`/plan`). |
 | `List*` under `src/list/**` | Discover browse feed (`/list`, `browse=1`). |
-| Wire `hostUserId`, `HostStatusDTO` | Storage/API until dual-read migration ([`HOST_CLEANUP_ROADMAP.md`](./HOST_CLEANUP_ROADMAP.md) P4–P5). |
+| Wire `hostUserId`, `HostStatusDTO` | Storage/API until dual-read migration ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.8 P4–P5). |
 
 ### 13.2.1 Target tenant activity client (SN-3)
 
@@ -638,7 +638,7 @@ One facade (e.g. `src/hooks/tenantActivityClientApi.ts` — name TBD at implemen
 
 ### 13.4 Phased program (implementation)
 
-Tracked in [`HOST_CLEANUP_ROADMAP.md`](./HOST_CLEANUP_ROADMAP.md) **P5** and [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) **C21** / **S11**. Order: **policy + guards** → **folder moves with shims** → **client API normalize** → **wire dual-read** → **drop legacy mounts**.
+Tracked in [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.8 **P5** and [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) **C21** / **S11**. Order: **policy + guards** → **folder moves with shims** → **client API normalize** → **wire dual-read** → **drop legacy mounts**.
 
 **Guards:** `src/config/moduleNamingGuard.test.ts`, `hostMemberGuard`, `publishingConsoleHookGuard`, `tripsConsumerNamingGuard`, `workspaceProductLanguageGuard`.
 
@@ -699,7 +699,7 @@ Any **place, venue, activity meeting point, shop, parking pin**, or other consum
 
 **Today:** `computeActivityDetailExposure` implements **layer 6 for activities** from **layers 3 + 5** only. That is the correct *slice* for map peek / join-to-see-detail — not the whole access system.
 
-**UI copy:** `joinMode: open` means **listed on map**, not “open to view full detail.” Product labels: *Listed on map* / *Link-only plan* in organize audience step ([`CREATE_FLOW.md`](./CREATE_FLOW.md), [`PRIVATE-ORGANIZE-PLANS`](./experiment/flows/PRIVATE-ORGANIZE-PLANS.md)).
+**UI copy:** `joinMode: open` means **listed on map**, not “open to view full detail.” Product labels: *Listed on map* / *Link-only plan* in organize audience step ([`CREATE_FLOW.md`](./CREATE_FLOW.md) § audience / join mode).
 
 ---
 
@@ -796,7 +796,7 @@ Computed server-side via **`resolveActivityEngagementPolicy`** → `intents` (+ 
 
 **Participation axis (unchanged):** `participationMode` only affects **how** you join (`I'm going` vs `Request to join`) and `joinRequestUi` — not map discovery. Demand never has `participationMode` ([`CREATE_FLOW.md`](./CREATE_FLOW.md)).
 
-**Engagement CTAs (peek footer + detail footers + strips):** Same viewer state → same affordances on map peek and `/activity/:id`. Full state matrix (guest, Pro, joined, host): [`experiment/activity-detail-tabs-implementation-plan.md`](./experiment/activity-detail-tabs-implementation-plan.md) **§6.2**; wire vocabulary **§6.3**; implementation order **§6.7**.
+**Engagement CTAs (peek footer + detail footers + strips):** Same viewer state → same affordances on map peek and `/activity/:id`. Full state matrix (guest, Pro, joined, host): `activity-detail-cta-matrix.test.ts` · `mapDetailEngagementParity.test.ts` · §15 below.
 
 **Consumer detail tabs (UI only):** **Plan · Place · Buddies · Transport** — not wire field names. Tab content maps to existing DTO slices (`description` / `meetingPoint` / `participants` / `rideshare*`). **`canAccessCrewSurfaces`** gates Place body + Buddies roster/chat surfaces; Transport **reach-by** remains visible without crew; linked rideshare summary may be public per peek policy.
 
@@ -952,4 +952,4 @@ ViewerRequestContext
 
 **Repository / store names** (`listActiveTenantMembershipsByUser`, `findTenantMembershipContext`) are **data access** — not viewer-access vocabulary; rename only with a dedicated tenant-membership pass (out of §15 scope).
 
-**Phased cleanup:** [`experiment/member-surfaces-implementation-plan.md`](./experiment/member-surfaces-implementation-plan.md) **§22 (NA-*)** — runs **parallel** to §21 AD-*; NA-1–NA-4 should land before AD-7 close.
+**Phased cleanup:** `memberSurfacesAcceptance` · `memberBrowseRowModel` — see [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.3.

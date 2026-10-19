@@ -2,7 +2,7 @@
 /**
  * Prints consumer-detail-surfaces plan §8 routes for manual QA.
  * Set BASE_URL (default http://localhost:5173). Replace :id/:slug/:userId from staging seed.
- * @see docs/experiment/consumer-detail-surfaces-plan.md §8
+ * @see consumerDetailQaMatrixGuard · docs/SYSTEM_COHERENCE.md S9/S10f
  */
 const base = (process.env.BASE_URL || 'http://localhost:5173').replace(/\/$/, '');
 
@@ -79,7 +79,7 @@ const NOTIFICATION_EDGE = [
   },
 ];
 
-console.log('\n# S10f notification edge cases (manual — see HOST_CLEANUP_ROADMAP notification matrix)\n');
+console.log('\n# S10f notification edge cases (manual — notificationRouting.test.ts)\n');
 for (const { case: title, steps } of NOTIFICATION_EDGE) {
   console.log(`- ${title}`);
   console.log(`  ${steps}\n`);

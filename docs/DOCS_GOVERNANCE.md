@@ -27,13 +27,32 @@ Tier-1 is a **fixed list** (see `scripts/verify-docs-tier1.mjs`). When behavior 
 | HTTP prefixes & deprecations | `API_ROUTING.md` |
 | Deploy & layers | `ARCHITECTURE.md` |
 | DMs · inbox · crew chat | `COMMUNICATION.md` |
-| Trips manage · crew entry | `TRIPS_HOST_MANAGE.md` |
+| Plan hosted manage · crew chat | `NAVIGATION.md` § `/plan` · `COMMUNICATION.md` |
 | What to read when | `DOCS_INDEX.md` |
 | This policy | `DOCS_GOVERNANCE.md` |
 
-Tier-2: ops (`DEV_RUN.md`, `DEPLOYMENT.md`, `PRE_DEPLOY_CHECKLIST.md`, …). Tier-3: `experiment/*` supplement only (must defer to Tier-1). Tier-4: removed — see `archive/README.md`.
+Tier-2: ops (`DEV_RUN.md`, `DEPLOYMENT.md`, `PRE_DEPLOY_CHECKLIST.md`, …). Tier-3: `experiment/README.md` only (no per-plan markdown). Tier-4: removed — see `archive/README.md`.
 
 **Migration jargon (M0–M2d):** allowed in `experiment/*` history tables only; ops canon is [`SEEKING_STORAGE_RUNBOOK.md`](./operations/SEEKING_STORAGE_RUNBOOK.md) (`seeking:storage-status`). Strip phase letters from Tier-1 API/product docs.
+
+---
+
+## Terminology spine (one vocabulary — do not duplicate)
+
+Use **one row** per concern. Do not copy these tables into `experiment/*` or new markdown.
+
+| Layer | Canonical source | Use for |
+|-------|------------------|---------|
+| **Member-visible copy** | `src/content/upl-glossary.ts`, `productNorthStar.ts`, `workspaceVocabulary.ts` | UI strings, FAB labels |
+| **Wire / HTTP / Mongo** | `packages/shared-types/src/wire-lexicon.ts` | API paths, headers, DTO field names |
+| **Product objects & confused words** | [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §1–1.3 | Entity kinds, Host vs Organisation vs shop |
+| **Host tier · join · buddy naming** | [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) § Naming vocabulary | Publish gates, join queue vocabulary |
+| **HTTP routes** | [`API_ROUTING.md`](./API_ROUTING.md) + [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §4–5 | `/me/status`, `/publishing/*`, `/me/seeking-posts` |
+| **SPA paths & redirects** | [`NAVIGATION.md`](./NAVIGATION.md) + `src/config/routingCatalog.ts` | `/explore`, `/publishing/*`, legacy `/host/*` |
+| **Bounded context placement** | [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §3 + §3.0 | Where code and clients live |
+| **Implementation schedule** | [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.6–8.8 + `scripts/refactor-program.json` | Migrations only — not parallel plan docs |
+
+**Retired product paths (docs + code):** `/operator/*` and `/host/*` as **consumer or API** trees → **`/publishing/*`**; `/me/host-status` → **`GET /me/status`**; Find storage → **`/me/seeking-posts`** + `activityMode: seeking`. Legacy names may appear only in **redirect tables** (`NAVIGATION.md`, `DOMAIN.md`) or **Prefer \| Deprecated** columns (`DOMAIN_CANONICALS.md` §6).
 
 ---
 
@@ -48,7 +67,7 @@ Tier-2: ops (`DEV_RUN.md`, `DEPLOYMENT.md`, `PRE_DEPLOY_CHECKLIST.md`, …). Tie
 
 Do **not** put new product semantics only in `experiment/*` phase trackers or deleted Tier-4 snapshots (see [`archive/README.md`](./archive/README.md)).
 
-**Tier-1 dedupe (platform program P0):** Implementation schedules live in **`SYSTEM_COHERENCE.md` §8** only (S-phases, CPC, **§8.6 P0–P6**). `experiment/*` may hold UX supplements and **stub** pointers — do not copy §8 phase tables into experiment plans; link to §8.6 instead. Historical bodies belong in `docs/archive/`.
+**Tier-1 dedupe (platform program P0):** Implementation schedules live in **`SYSTEM_COHERENCE.md` §8** only. Do not recreate `docs/experiment/*` plan files — use [`experiment/README.md`](./experiment/README.md). Superseded narratives: one-line stubs at doc root or `docs/archive/`.
 
 ---
 

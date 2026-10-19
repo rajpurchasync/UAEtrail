@@ -1,6 +1,6 @@
 /**
  * DOMAIN_CANONICALS §3.2 — write registry → public detail read (catalog, member, host, shop).
- * @see docs/experiment/consumer-detail-surfaces-plan.md §18
+ * @see docs/DOMAIN_CANONICALS.md §3 · detailSurfaceDataLineageGuard
  */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import request from 'supertest';

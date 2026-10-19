@@ -8,7 +8,7 @@ alwaysApply: true
 **Whole system:** `docs/SYSTEM_COHERENCE.md` · `npm run verify:system`  
 **This rule scope:** host capabilities + Pro/buddy publish gates only.
 
-**Canonical docs:** `docs/MEMBER_MODEL.md` (§ Naming vocabulary) · `docs/DOMAIN_CANONICALS.md` · `docs/HOST_CLEANUP_ROADMAP.md`
+**Canonical docs:** `docs/MEMBER_MODEL.md` (§ Naming vocabulary) · `docs/DOMAIN_CANONICALS.md` · `docs/SYSTEM_COHERENCE.md` §8.8
 
 ## Product truth (do not invert)
 

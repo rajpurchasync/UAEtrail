@@ -84,7 +84,7 @@ Enable **both** flags in a staging environment before considering production def
 
 **Watch:** p95 payload size and request rate per session; compare to full `GET /explore/map` baseline. Roll back by unsetting flags (wire falls back to full-region response).
 
-**p95 uncompressed size ratio (promotion gate — [`explore-map-bbox-spec.md`](../experiment/explore-map-bbox-spec.md) §8):**
+**p95 uncompressed size ratio (promotion gate — **S10e** / `npm run s10e:staging-checklist`):**
 
 1. Staging API with `EXPLORE_MAP_BBOX=1`. Record full map body size:  
    `GET /api/explore/map` → note response byte length (gzip off in dev, or decompress in prod sampling).

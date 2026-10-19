@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 const DOCS = join(process.cwd(), 'docs');
@@ -32,13 +32,33 @@ describe('doc coherence (Tier 1)', () => {
   });
 
   it('Tier-1 docs do not teach /operator HTTP or SPA workspace alias', () => {
-    const banned = [/alias `\/operator/i, /Alias `\/operator/i, /POST `\/operator\/activities`/];
+    const banned = [
+      /alias `\/operator/i,
+      /Alias `\/operator/i,
+      /POST [`']\/operator\//,
+      /is [`'`]\/operator\/\*[`'`]/,
+    ];
+    const legacyAllow = new Set(['DOMAIN_CANONICALS.md', 'DOMAIN.md', 'NAVIGATION.md']);
     for (const name of tier1) {
       const text = readFileSync(join(DOCS, name), 'utf8');
       for (const pattern of banned) {
+        if (legacyAllow.has(name) && pattern.source.includes('operator')) continue;
         expect(pattern.test(text), `docs/${name} teaches stale /operator alias`).toBe(false);
       }
     }
+  });
+
+  it('DOMAIN_CANONICALS §10 teaches getMemberStatus (not removed host-status client)', () => {
+    const canon = readFileSync(join(DOCS, 'DOMAIN_CANONICALS.md'), 'utf8');
+    expect(canon).toMatch(/getMemberStatus\(\)/);
+    expect(canon).not.toMatch(/\| `memberApi` \| `getMemberHostStatus\(\)`/);
+  });
+
+  it('DOCS_GOVERNANCE defines terminology spine (no parallel vocab docs)', () => {
+    const gov = readFileSync(join(DOCS, 'DOCS_GOVERNANCE.md'), 'utf8');
+    expect(gov).toMatch(/## Terminology spine/);
+    expect(gov).toMatch(/wire-lexicon\.ts/);
+    expect(gov).toMatch(/upl-glossary\.ts/);
   });
 
   it('removed Tier-4 snapshots are not reintroduced at docs root', () => {
@@ -80,17 +100,12 @@ describe('doc coherence (Tier 1)', () => {
     expect(existsSync(join(process.cwd(), 'scripts/routing-canonical-map.json'))).toBe(true);
   });
 
-  it('experiment folder is stubs-only (schedule §8.8 only)', () => {
+  it('experiment folder has README only (no competing plan markdown)', () => {
     const readme = readFileSync(join(DOCS, 'experiment/README.md'), 'utf8');
-    expect(readme).toMatch(/§8\.8|8\.8/);
-    const plan = readFileSync(
-      join(DOCS, 'experiment/activity-detail-tabs-implementation-plan.md'),
-      'utf8'
-    );
-    expect(plan.startsWith('> Superseded by')).toBe(true);
-    expect(
-      existsSync(join(DOCS, 'archive/experiment/activity-detail-tabs-implementation-plan.md'))
-    ).toBe(false);
+    expect(readme).toMatch(/Do not add plan files/i);
+    const experimentDir = join(DOCS, 'experiment');
+    const plans = readdirSync(experimentDir).filter((f) => f.endsWith('.md') && f !== 'README.md');
+    expect(plans).toEqual([]);
   });
 
   it('PCOH program spine is machine JSON (narrative sync: npm run verify:refactor-program)', () => {
@@ -143,7 +158,9 @@ describe('doc coherence (Tier 1)', () => {
   it('CREATE_FLOW defers to NORTHSTAR and MEMBER_MODEL for gates', () => {
     const create = readFileSync(join(DOCS, 'CREATE_FLOW.md'), 'utf8');
     expect(create).toMatch(/NORTHSTAR/);
-    expect(create).toMatch(/canPublish|host-status|MEMBER_MODEL/i);
+    expect(create).toMatch(/canPublish|\/me\/status|MEMBER_MODEL/i);
+    expect(create).toMatch(/\/publishing\/\*/);
+    expect(create).not.toMatch(/is [`'`]\/operator\/\*[`'`]/);
   });
 
   it('NORTHSTAR states anti-patterns and north-star outcomes', () => {

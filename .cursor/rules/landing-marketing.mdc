@@ -45,7 +45,7 @@ Home may mention *host-approved joins* and *real outings on the map* as trust/su
 | Copy | `src/content/homeMarketing.ts`, `src/content/productNorthStar.ts` |
 | Section order & conditionals | `src/pages/Home.tsx` |
 | Section UI | `src/components/home/*` |
-| Explore copy (separate) | `src/explore/exploreCopy.ts`, `docs/experiment/explore-ux-spec.md` |
+| Explore copy (separate) | `src/explore/exploreCopy.ts` |
 
 ## Section jobs (v2 — no duplicate messaging)
 
@@ -56,7 +56,7 @@ Home may mention *host-approved joins* and *real outings on the map* as trust/su
 | How it works | Only ordered step-by-step flow |
 | Reviews + FAQ | Social proof + objections |
 
-When editing scroll order, update `docs/LANDING.md`, `docs/UAE_Trail_Homepage.md`, and `docs/NAVIGATION.md` § Home to match `Home.tsx`.
+When editing scroll order, update `docs/LANDING.md` and `docs/NAVIGATION.md` § Home to match `Home.tsx`.
 
 ## CTAs
 

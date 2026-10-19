@@ -10,9 +10,9 @@
 
 **Domain lens** ([`DOMAIN.md`](./DOMAIN.md) § What · Where · Who · How): **Host** / **Find crew (fixed)** → **What** (Activity). **Find crew (flexible)** → `member_availability` (people layer, no map pin). **Add on map** → **Where** (Place or Facility). **Who** (Person / Host / Operator) is chosen when publishing or on detail — not a FAB branch. **How** (join, RSVP, approvals) is **context only** on activity/place/facility surfaces — `viewerAccess`, not new nouns.
 
-**Publishing:** The **host is always a signed-in user**. **Host** shows **Publish as** when the member has multiple activity-capable tenants (`HostingPublishAsField`); wire uses `x-organisation-id` ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md)). **Operator** (agency / shop / guide workspace) is **`/operator/*`** — not on the FAB.
+**Publishing:** The **host is always a signed-in user**. **Host** shows **Publish as** when the member has multiple activity-capable tenants (`HostingPublishAsField`); wire uses `x-organisation-id` ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md)). **Publishing workspace** (agency / shop / guide console) is **`/publishing/*`** (HTTP **`/publishing/*`**) — not on the FAB.
 
-Companion docs: [`DOCS_INDEX.md`](./DOCS_INDEX.md), [`NORTHSTAR.md`](./NORTHSTAR.md), [`MEMBER_MODEL.md`](./MEMBER_MODEL.md), [`DOMAIN.md`](./DOMAIN.md), [`NAVIGATION.md`](./NAVIGATION.md), [`COMMUNICATION.md`](./COMMUNICATION.md), [`TRIPS_HOST_MANAGE.md`](./TRIPS_HOST_MANAGE.md), [`experiment/explore-ux-spec.md`](./experiment/explore-ux-spec.md).
+Companion docs: [`DOCS_INDEX.md`](./DOCS_INDEX.md), [`NORTHSTAR.md`](./NORTHSTAR.md), [`MEMBER_MODEL.md`](./MEMBER_MODEL.md), [`DOMAIN.md`](./DOMAIN.md), [`NAVIGATION.md`](./NAVIGATION.md), [`COMMUNICATION.md`](./COMMUNICATION.md), `src/explore/exploreCopy.ts`.
 
 Code (today): `src/explore/compose.ts`, `CreateIntentSheet.tsx`, `SeekFlexibleComposeSheet.tsx`, `hostingFlowEngine.ts` / `hostingFlows/*`, `seekingFlowEngine.ts`, `addFlow.ts`.
 
@@ -111,7 +111,7 @@ Any signed-in member — no host approval to post seeking.
 | **Place** | Trail, camp, outdoor other | `POST /me/places` |
 | **Facility** | Toilet, rest area, parking, water, viewpoint, **outdoor shop pin** | `POST /me/facilities` with `facilityKind`, `areaId`, optional `parentPlaceId` |
 
-**Not Add on map:** **Operator shop** (Pro tenant, `/shop/:id`, `/operator/*`) — separate onboarding ([`DOMAIN.md`](./DOMAIN.md) § Shop layers).
+**Not Add on map:** **Shop** storefront (Pro tenant, `/shop/:id`, `/publishing/*` console) — separate onboarding ([`DOMAIN.md`](./DOMAIN.md) § Shop layers).
 
 **Retire:** standalone FAB **Shops** chip — member gear pin = **facility `outdoor_shop`** (peek on map), not `EntityKind.shop`.
 

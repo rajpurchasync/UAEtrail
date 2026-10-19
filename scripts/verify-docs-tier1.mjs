@@ -37,6 +37,8 @@ const BANNED = [
   { pattern: /\/become-host\?intent=/, label: 'Pro entry must use /profile/pro-membership, not /become-host?intent=' },
   { pattern: /profile chips route to `\/become-host/i, label: 'Update ENGINEERING-style chip routing to PRO_MEMBERSHIP_PATH' },
   { pattern: /request to become (a )?host/i, label: 'Buddy Organize is profile complete + canPublish, not host application' },
+  { pattern: /POST [`']\/operator\//, label: 'Tenant activity write is POST /publishing/*, not /operator/' },
+  { pattern: /is [`'`]\/operator\/\*[`'`]/, label: 'Publishing workspace SPA is /publishing/*, not /operator/*' },
 ];
 
 let failed = false;

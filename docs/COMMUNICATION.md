@@ -2,7 +2,7 @@
 
 **North star:** Help people **connect and go together** — chat supports outings, not a separate social network.  
 **Not in scope here:** Explore **people browse** (who’s going, Buddies list, map `view=people` panel, `/me/member-discovery/*` roster) — that is **member_discovery** / browse ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §3.2, [`NAVIGATION.md`](./NAVIGATION.md) § Browse — people & crew).  
-**Navigation:** [`NAVIGATION.md`](./NAVIGATION.md) (routes) · **Trips / host:** [`TRIPS_HOST_MANAGE.md`](./TRIPS_HOST_MANAGE.md) (crew chat from manage surfaces) · **Domain:** [`DOMAIN.md`](./DOMAIN.md).
+**Navigation:** [`NAVIGATION.md`](./NAVIGATION.md) (routes) · **Plan / host manage:** [`NAVIGATION.md`](./NAVIGATION.md) § `/plan` (crew chat from manage surfaces) · **Domain:** [`DOMAIN.md`](./DOMAIN.md).
 
 ## Surfaces (where users chat)
 
@@ -101,7 +101,7 @@ Shared types: `GroupWallPostPolicy`, `SocialGroupChatPreviewDTO`, `GroupWallRepl
 | Explore peek (participant/host) | `mapPeekActions` chat id | Same |
 | Approve join notification | `meta.path` → `/activity/:id?joined=1` | Welcome sheet → group chat |
 
-See [`NAVIGATION.md`](./NAVIGATION.md) § Activity detail and [`TRIPS_HOST_MANAGE.md`](./TRIPS_HOST_MANAGE.md) (legacy name; manage lives on Plan + embedded detail).
+See [`NAVIGATION.md`](./NAVIGATION.md) § Activity detail and [`NAVIGATION.md`](./NAVIGATION.md) § `/plan` (manage lives on Plan + embedded detail).
 
 ## Invites vs chat
 

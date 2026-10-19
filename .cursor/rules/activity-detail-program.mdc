@@ -21,7 +21,7 @@ globs:
 
 **Source of truth (code):** `src/activity/activityDetailAcceptance.test.ts`, `src/activity/activity-detail-cta-matrix.test.ts`, `src/activity/mapDetailEngagementParity.test.ts`, `src/config/detailSurfaceWiringAcceptance.test.ts`.  
 **Tier-1 narrative (not a checklist):** `docs/SYSTEM_COHERENCE.md` §6.2 · `docs/NAVIGATION.md` § Activity detail · `docs/DOMAIN_CANONICALS.md` §15.  
-**Do not** treat `docs/experiment/*` plans as exit criteria — stub/archive per `MIG-DOCS-EXPERIMENT-STUB`.
+**Do not** treat retired `docs/experiment/` plans as exit criteria — use code gates listed above.
 
 Also read: `.cursor/rules/viewer-access.mdc` for wire-first exposure rules.
 

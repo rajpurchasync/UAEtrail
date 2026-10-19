@@ -92,7 +92,7 @@ There is **no** `Trip` table, `TripDTO`, or trips API. Everything on the map tha
 
 ### Activity modes (map + Plan — phased)
 
-Time-bound map pins are **Activities** with `activityMode` (target wire name; migration M0–M2 in [`experiment/member-surfaces-implementation-plan.md`](./experiment/member-surfaces-implementation-plan.md)):
+Time-bound map pins are **Activities** with `activityMode` (target wire name; seeking storage per [`API_ROUTING.md`](./API_ROUTING.md) · [`operations/SEEKING_STORAGE_RUNBOOK.md`](./operations/SEEKING_STORAGE_RUNBOOK.md)):
 
 | Mode | Meaning | Today (wire) | UX |
 |------|---------|--------------|-----|

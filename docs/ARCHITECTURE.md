@@ -43,7 +43,7 @@ Catalog HTTP is **surface-first** (path + mount middleware), not **profile-first
 4. **Shop** — affiliate-style public pages at `/shop/:id` with outbound links; physical shops get map pins, online partners are list-only.
 5. **Publishing profiles** — individuals publish as members (`/member/:userId`); agencies use `/agency/:slug`. They do **not** appear as explore map pins.
 6. **Push** — Web Push (VAPID) via `PushSubscription` model; optional when keys configured.
-7. **Communication** — Direct chat (`/chat`, SSE to client) and group/crew walls (`/me/groups/:id/wall` on `social_groups`). Activity crew: one group per activity, roster sync on join approve. Inbox previews on `GET /me/groups`. See [`COMMUNICATION.md`](./COMMUNICATION.md) and [`TRIPS_HOST_MANAGE.md`](./TRIPS_HOST_MANAGE.md).
+7. **Communication** — Direct chat (`/chat`, SSE to client) and group/crew walls (`/me/groups/:id/wall` on `social_groups`). Activity crew: one group per activity, roster sync on join approve. Inbox previews on `GET /me/groups`. See [`COMMUNICATION.md`](./COMMUNICATION.md) and [`COMMUNICATION.md`](./COMMUNICATION.md).
 
 ## Domain model (consumer-facing)
 
@@ -119,7 +119,7 @@ Unit tests cover capacity, JWT, datetime (GCC), and waitlist logic.
 |------|--------|------|
 | 1 | [`DOCS_INDEX.md`](./DOCS_INDEX.md) § Tier 1 | Canonical — must match shipped behavior |
 | 2 | Release, ops, rollout trackers | Must not contradict Tier 1 on semantics |
-| 3 | [`experiment/`](./experiment/) | Flow QA; defer to `CREATE_FLOW.md` / `MEMBER_MODEL.md` |
+| 3 | [`DOCS_INDEX.md`](./DOCS_INDEX.md) → Tier-1 | Product + platform canon; `CREATE_FLOW.md` / `MEMBER_MODEL.md` for FAB |
 | 4 | [`archive/README.md`](./archive/README.md) | Removed snapshots — git history only |
 
 Checks: `npm run verify:docs` · `npm run verify:host-member`

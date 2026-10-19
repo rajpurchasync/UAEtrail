@@ -124,4 +124,80 @@ describe('crossContextFoundationsGuard', () => {
     expect(surface).toMatch(/OPERATOR_REQUESTS_PATH = '\/publishing\/requests'/);
     expect(read('src/config/routingCatalog.ts')).toMatch(/surfacePaths/);
   });
+
+  const FACADE_DOMAIN_MODULES = ['messaging.ts', 'memberCommitmentHub.ts'] as const;
+
+  it('CTX-FOUND-08: facade domains compose *Api modules — no second HTTP client stack', () => {
+    for (const name of FACADE_DOMAIN_MODULES) {
+      const content = read(`src/api/domains/${name}`);
+      expect(content).not.toMatch(/apiRequest\s*\(/);
+    }
+    expect(read('src/api/domains/messaging.ts')).toMatch(/chatApi/);
+    expect(read('src/api/domains/messaging.ts')).toMatch(/groupsApi/);
+    expect(read('src/api/domains/memberCommitmentHub.ts')).toMatch(/goalsApi/);
+    expect(read('src/api/domains/memberCommitmentHub.ts')).toMatch(/availabilityApi/);
+  });
+
+  it('CTX-FOUND-09: member_discovery browse — /me/member-discovery client only in account domain', () => {
+    const domainDir = join(ROOT, 'src/api/domains');
+    const violations: string[] = [];
+    for (const name of readdirSync(domainDir)) {
+      if (!name.endsWith('.ts') || name === 'account.ts' || name.endsWith('.test.ts') || name === 'index.ts') {
+        continue;
+      }
+      const content = read(`src/api/domains/${name}`);
+      if (/\/me\/member-discovery/.test(content)) violations.push(`src/api/domains/${name}`);
+    }
+    expect(violations).toEqual([]);
+  });
+
+  it('CTX-FOUND-10: communication — /chat/* wire paths only in chat domain (messaging is façade)', () => {
+    const domainDir = join(ROOT, 'src/api/domains');
+    const violations: string[] = [];
+    for (const name of readdirSync(domainDir)) {
+      if (
+        !name.endsWith('.ts') ||
+        name === 'chat.ts' ||
+        name === 'messaging.ts' ||
+        name.endsWith('.test.ts') ||
+        name === 'index.ts'
+      ) {
+        continue;
+      }
+      const content = read(`src/api/domains/${name}`);
+      if (/\/chat\//.test(content)) violations.push(`src/api/domains/${name}`);
+    }
+    expect(violations).toEqual([]);
+  });
+
+  it('CTX-FOUND-11: places catalog read — GET /places/catalog client only in placeCatalogClient', () => {
+    const domainDir = join(ROOT, 'src/api/domains');
+    const violations: string[] = [];
+    for (const name of readdirSync(domainDir)) {
+      if (!name.endsWith('.ts') || name === 'placeCatalogClient.ts' || name.endsWith('.test.ts')) {
+        continue;
+      }
+      const content = read(`src/api/domains/${name}`);
+      if (/\/places\/catalog/.test(content)) violations.push(`src/api/domains/${name}`);
+    }
+    expect(violations).toEqual([]);
+  });
+
+  it('CTX-FOUND-12: public facility detail — GET /facilities/:id client only in facilities domain', () => {
+    const domainDir = join(ROOT, 'src/api/domains');
+    const violations: string[] = [];
+    for (const name of readdirSync(domainDir)) {
+      if (!name.endsWith('.ts') || name === 'facilities.ts' || name.endsWith('.test.ts')) {
+        continue;
+      }
+      const content = read(`src/api/domains/${name}`);
+      if (/\/facilities\/\$\{/.test(content) || /`\/facilities\/\$\{/.test(content)) {
+        violations.push(`src/api/domains/${name}`);
+      }
+      if (/apiRequest[^;]*['"`]\/facilities\/[^'"]+['"`]/.test(content)) {
+        violations.push(`src/api/domains/${name}`);
+      }
+    }
+    expect(violations).toEqual([]);
+  });
 });

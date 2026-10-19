@@ -11,7 +11,7 @@ globs:
 
 # Viewer access (detail exposure)
 
-**Canonical spec:** `docs/DOMAIN_CANONICALS.md` §15 (+ **§15.11 naming**) · **Phases:** `docs/SYSTEM_COHERENCE.md` S7, S7b, **S7c** · **Activity peek/detail program:** `docs/experiment/activity-detail-tabs-implementation-plan.md` + `.cursor/rules/activity-detail-program.mdc` · **NA-*:** `member-surfaces-implementation-plan.md` §22.
+**Canonical spec:** `docs/DOMAIN_CANONICALS.md` §15 (+ **§15.11 naming**) · **Phases:** `docs/SYSTEM_COHERENCE.md` S7, S7b, **S7c** · **Activity peek/detail:** `.cursor/rules/activity-detail-program.mdc` + `activityDetailAcceptance.test.ts`
 
 ## Layers (see `DOMAIN_CANONICALS.md` §15.1 + §15.10)
 

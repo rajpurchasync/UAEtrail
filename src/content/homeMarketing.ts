@@ -1,4 +1,4 @@
-/** Homepage v2 copy — canonical strings from docs/content.md */
+/** Homepage v2 copy — canonical guest marketing strings (see docs/LANDING.md) */
 
 import { FOUNDER_PROFILES } from './foundersStory';
 import { PRODUCT_EXPLORE_CTA, PRODUCT_JOIN_CTA, PRODUCT_RETRY_LABEL } from './productNorthStar';

@@ -19,9 +19,10 @@
 | [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) | TS symbols, URLs, API client, notifications, routing hygiene, **§15 viewer access** |
 | [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) | Bounded contexts, debt register, **Program CPC** §8.4, **platform program** §8.6 |
 | [`ARCHITECTURE.md`](./ARCHITECTURE.md) | Monorepo, deploy, layers |
-| [`API_ROUTING.md`](./API_ROUTING.md) | `/me/*`, `/host/*`, explore, deprecations |
+| [`API_ROUTING.md`](./API_ROUTING.md) | `/me/*`, `/publishing/*`, explore, deprecations |
+| [`COMMUNICATION.md`](./COMMUNICATION.md) | Chat inbox (`/messages`), `/chat/*` wire, crew wall |
 | [`COMMUNICATION.md`](./COMMUNICATION.md) | Chat, inbox, crew wall |
-| Plan hosting / crew manage | [`NAVIGATION.md`](./NAVIGATION.md) `/plan`, [`COMMUNICATION.md`](./COMMUNICATION.md) |
+**Vocabulary:** [`DOCS_GOVERNANCE.md`](./DOCS_GOVERNANCE.md) § Terminology spine — UPL/BWL in code; Tier-1 for routes and entities.
 
 ---
 
@@ -42,7 +43,7 @@
 
 ## Tier 3 — stubs only (no schedules)
 
-[`experiment/README.md`](./experiment/README.md) — stubs only; schedule **§8.8** only. **QA:** `npm run consumer-detail:qa-routes` · **FAB:** `CREATE_FLOW.md`.
+[`experiment/README.md`](./experiment/README.md) — retired folder (pointer only). Schedule: **§8** + `refactor-program.json`. **QA:** `npm run consumer-detail:qa-routes` · **FAB:** `CREATE_FLOW.md`.
 
 ---
 

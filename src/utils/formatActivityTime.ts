@@ -4,7 +4,7 @@ const formatTime = (d: Date): string =>
   d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
 
 /**
- * Homepage + marketing activity time — docs/content.md
+ * Homepage + marketing activity time — homeMarketing.ts
  * e.g. Fri, 6:00 AM · Tomorrow, 5:00 PM · Today, 8:00 AM
  */
 export function formatActivityTime(startsAt: Date | string, now: Date = new Date()): string {

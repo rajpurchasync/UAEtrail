@@ -11,6 +11,7 @@
  *   P5_EXPLORE_MAP_BBOX_QUERY (default 55,25,56,26)
  *   P5_SMOKE_EMAIL + P5_SMOKE_PASSWORD — optional overlay probe (SLO-EXPLORE-OVERLAY)
  *   P5_SMOKE_EMAIL + P5_SMOKE_PASSWORD + P5_JOIN_ACTIVITY_ID — optional join/RSVP probe (SLO-JOIN)
+ *   P5_ACTIVITY_ID — optional guest GET /api/activities/:id latency samples (L3 public read; defaults to P5_JOIN_ACTIVITY_ID when set)
  */
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -230,6 +231,8 @@ const runPreflight = () => {
   const coverage = [
     ['SLO-EXPLORE-MAP', '/api/explore/map'],
     ['SLO-EXPLORE-OVERLAY', '/api/me/discover/overlay'],
+    ['SLO-JOIN', '/api/activities/${activityId}'],
+    ['SLO-JOIN', 'activity_detail_guest'],
     ['SLO-JOIN', '/api/activities/${activityId}/rsvp'],
     ['SLO-JOIN', '/api/activities/${activityId}/requests'],
     ['SLO-JOIN', "note: 'P5 staging join smoke probe'"],
@@ -276,6 +279,22 @@ const main = async () => {
         path: `/api/explore/map?bbox=${encodeURIComponent(bboxQuery)}`,
         count4xxAsNonError: true,
       })
+    );
+  }
+
+  const activityIdForRead =
+    process.env.P5_ACTIVITY_ID?.trim() || process.env.P5_JOIN_ACTIVITY_ID?.trim();
+  if (activityIdForRead) {
+    latencyTargets.push(
+      runSeries({
+        label: 'activity_detail_guest',
+        path: `/api/activities/${activityIdForRead}`,
+        count4xxAsNonError: true,
+      })
+    );
+  } else {
+    console.log(
+      '[p5:slo-smoke] activity_detail_guest skipped — set P5_ACTIVITY_ID or P5_JOIN_ACTIVITY_ID'
     );
   }
 

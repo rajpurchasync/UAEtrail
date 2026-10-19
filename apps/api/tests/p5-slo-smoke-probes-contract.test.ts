@@ -70,6 +70,8 @@ describe('P5 SLO smoke probes contract (MIG-P5-SLO-SMOKE)', () => {
 
   it('join probe targets public activity RSVP and request routes', () => {
     expect(smoke).toMatch(/\/api\/activities\/\$\{activityId\}/);
+    expect(smoke).toMatch(/activity_detail_guest/);
+    expect(smoke).toMatch(/P5_ACTIVITY_ID/);
     expect(smoke).toMatch(/\/api\/activities\/\$\{activityId\}\/rsvp/);
     expect(smoke).toMatch(/\/api\/activities\/\$\{activityId\}\/requests/);
     expect(auditGetPaths.has('/activities/:id')).toBe(true);

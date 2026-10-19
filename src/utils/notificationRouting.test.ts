@@ -179,6 +179,14 @@ describe('inferNotificationPath', () => {
     ).toBe('/profile/pro-membership');
   });
 
+  it('routes entity follow publish fan-out to activity detail (S10f)', () => {
+    expect(
+      inferNotificationPath(
+        notif({ kind: 'entity_activity_published', activityId: 'act-published-1' })
+      )
+    ).toBe('/activity/act-published-1');
+  });
+
   it('rewrites legacy inbox and stale group chat paths to /chat', () => {
     expect(inferNotificationPath(notif({ path: '/messages?to=u-1' }))).toBe('/chat?to=u-1');
     expect(inferNotificationPath(notif({ path: '/host/messages?group=g-1' }))).toBe('/chat?group=g-1');

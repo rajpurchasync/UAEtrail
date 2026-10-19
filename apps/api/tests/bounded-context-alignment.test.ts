@@ -71,4 +71,24 @@ describe('boundedContextAlignment (API + manifest)', () => {
     }
     expect(violations).toEqual([]);
   });
+
+  it('tenant + commerce route folders use register* modules (shared API methodology)', () => {
+    const assertRegisterOnly = (relDir: string, schemaAllowlist: string[]) => {
+      const dir = join(ROOT, relDir);
+      const violations: string[] = [];
+      for (const entry of readdirSync(dir)) {
+        if (!entry.endsWith('.ts') || entry.endsWith('.test.ts')) continue;
+        if (schemaAllowlist.includes(entry)) continue;
+        if (!entry.startsWith('register')) violations.push(`${relDir}/${entry}`);
+      }
+      return violations;
+    };
+    expect(
+      [
+        ...assertRegisterOnly('apps/api/src/routes/operator', ['operator-route-schemas.ts']),
+        ...assertRegisterOnly('apps/api/src/routes/shop', ['shop-route-schemas.ts']),
+        ...assertRegisterOnly('apps/api/src/routes/admin', []),
+      ]
+    ).toEqual([]);
+  });
 });

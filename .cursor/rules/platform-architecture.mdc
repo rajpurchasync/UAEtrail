@@ -38,7 +38,7 @@ Canonical detail: **`docs/DOCS_INDEX.md`** · **`docs/SYSTEM_COHERENCE.md`** · 
 ## Layer boundaries
 
 - **Hosting UI** → `/host/*` only — not on `/explore` browse chrome or `/` marketing  
-- **Explore copy** → `src/explore/exploreCopy.ts` + `docs/experiment/explore-ux-spec.md`  
+- **Explore copy** → `src/explore/exploreCopy.ts`  
 - **Create / FAB** → `docs/CREATE_FLOW.md` + `src/explore/ui/*Create*`  
 - **Landing copy** → `src/content/homeMarketing.ts` + `docs/LANDING.md` + `docs/NORTHSTAR.md` (+ fallback activities in `homeLanding.ts`)  
 - **Canonical voice strings** → `src/content/productNorthStar.ts`  

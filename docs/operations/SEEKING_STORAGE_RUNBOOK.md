@@ -103,6 +103,6 @@ Set `PARTICIPANT_INTENT_STUB_WRITE=true` and restart API. Does not delete existi
 - `npm run seeking:storage-status -- --strict` exits **0** on every env for **≥30 days** with no rollback.
 - `activeIntentsMissingSeekingActivity === 0` and no new `participant_intents` inserts in ops metrics.
 
-**Then remove:** `PARTICIPANT_INTENT_STUB_WRITE`, stub insert path, phase-letter labels in Tier-1, `demand:` compat — see [`member-surfaces-implementation-plan.md`](../experiment/member-surfaces-implementation-plan.md) §20 P2.
+**Then remove:** `PARTICIPANT_INTENT_STUB_WRITE`, stub insert path, phase-letter labels in Tier-1, `demand:` compat — see [`API_ROUTING.md`](../API_ROUTING.md) seeking-posts section.
 
 **Keep:** `activityMode: seeking`, Find FAB, explore seeking pins, Available vs looking-for split.
