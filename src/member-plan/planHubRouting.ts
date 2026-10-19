@@ -1,6 +1,6 @@
+import { INBOUND_PLAN_HUB_TRIPS_MAP_PATH } from '../config/inboundBookmarkPaths';
 import {
   JOURNEY_MAP_PATH,
-  INBOUND_TRIPS_MAP_PATH,
   PLAN_PATH,
   PROFILE_HISTORY_PATH,
   isJourneyMapPath,
@@ -65,7 +65,12 @@ export const parsePlanHistoryMainView = (
   pathname: string,
   rawView: string | null
 ): PlanHistoryMainView => {
-  if (pathname === INBOUND_TRIPS_MAP_PATH || pathname.endsWith(INBOUND_TRIPS_MAP_PATH)) return 'map';
+  if (
+    pathname === INBOUND_PLAN_HUB_TRIPS_MAP_PATH ||
+    pathname.endsWith(INBOUND_PLAN_HUB_TRIPS_MAP_PATH)
+  ) {
+    return 'map';
+  }
   if (isJourneyMapPath(pathname)) return 'map';
   if (isProfileHistoryListPath(pathname)) {
     if (rawView === 'map') return 'map';
