@@ -217,7 +217,7 @@ Anyone can explore and join outings after **basic signup**:
 | Languages | Optional on profile (member details) | `PATCH /me/profile` · Profile / Settings |
 | Default role | **Participant** — browse map, RSVP, request to join, demand posts, buddies, follow | `UserRole.PARTICIPANT` |
 
-**Profile completion** = member details above (DOB, gender, based-in) — `profileComplete` / `signupProfileComplete` on `GET /me/profile` and **`GET /me/status`**. Required before **Host** (buddy host). Seeking and Add do not require it beyond signed-in member.
+**Profile completion** = member details above (DOB, gender, based-in) — `signupProfileComplete` on `GET /me/profile`; **`profileComplete`** on **`GET /me/status`**. Required before **Host** (buddy host). Seeking and Add do not require it beyond signed-in member.
 
 This is **not** hosting. No tenant is created until profile is complete and the member opens Host (API provisions a personal guide tenant).
 
@@ -236,7 +236,7 @@ The **publishing actor is always a user** (human on the activity). They publish 
 
 **Shop listing lifecycle:** **catalog** (admin-added place/shop) → **claimed** (Pro verification) → **managed** (owner console). See `DOMAIN_CANONICALS` §1.4.
 
-**Buddy host (Host on map):** **profile completion** (`signupProfileComplete`) → `canPublish`; API auto-provisions a community tenant. **Host** badge → `isCommunityHost` after first activity **or** seeking.  
+**Buddy host (Host on map):** **`profileComplete`** on `/me/status` → `publish.canPublish`; API auto-provisions a community tenant. **Host** badge → `publish.isCommunityHost` after first activity **or** seeking.  
 **Pro:** `/profile/pro-membership` — Individual, Business (subtype required), or Partner applications via `host_applications` where required.
 
 ### Business account from profile

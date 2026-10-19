@@ -194,9 +194,9 @@ Trusted fields (year goal, upcoming list, etc.) appear only on **trusted** expos
 
 | Field | Meaning |
 |------|---------|
-| `profileComplete` | Member details on `/welcome` done — **host/publish** gate (wire also `signupProfileComplete` on legacy paths) |
+| `profileComplete` | Member details on `/welcome` done — **host/publish** gate (`signupProfileComplete` on `GET /me/profile` only) |
 | `publish.canPublish` | May run Host / publish (activity-capable tenant) |
-| `publish.canAccessPublishingWorkspace` | May use publishing workspace (`/publishing/*`; alias `/operator/*`) |
+| `publish.canAccessPublishingWorkspace` | May use publishing workspace (`/publishing/*`) |
 | `publish.canHostPaidActivities` | Linked **business** tenant; paid pricing when publishing as agency / shop / partner |
 | `publish.isCommunityHost` | Map footprint badge — first activity or seeking post (not the same as `profileComplete`) |
 
