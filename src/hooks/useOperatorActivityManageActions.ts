@@ -1,5 +1,5 @@
 /**
- * Tenant activity manage actions (publish, cancel, duplicate) — prefer in `/operator/*` and `components/activity/*`.
+ * Tenant activity manage actions (publish, cancel, duplicate) — publishing console `/publishing/*` and `components/activity/*`.
  */
 export {
   useHostActivityManageActions as useOperatorActivityManageActions,

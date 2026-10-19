@@ -338,7 +338,7 @@ Shop identity: **tenant** (Pro Membership onboarding) + **merchant profile** (`/
 |-------------|-------------------|--------------|
 | Location | **Place** (entity) | HTTP **`/places`** (legacy `/locations` alias); collection `locations`; `LocationDTO` — storage name only |
 | Venue | **Place** (word) | Explore panel `?panel=venues` — not a second entity; map `source: venue` normalizes to `place` |
-| `/operator/{console}` | Publishing workspace alias | Reserved segments → `/publishing/{console}`; not a storefront |
+| `/operator/{console}` | Retired console URL | Use `/publishing/{console}` only; not a storefront |
 | Merchant | Shop | `merchant_profiles`, `/merchant/:id` redirect |
 | Organizer | Host or agency | — |
 | Tenant | Host (copy) / Organisation (code) | `tenants`, `x-organisation-id` |
@@ -348,7 +348,7 @@ Shop identity: **tenant** (Pro Membership onboarding) + **merchant profile** (`/
 | File / export | Route | Notes |
 |---------------|-------|-------|
 | `OrganisationProfile` | `/agency/:id`, `/partner/:id` | Public business brand profile |
-| `pages/operator/Overview` (`Overview`) | `/publishing/overview` | **Publishing console** hub (`/operator/overview` aliases) |
+| `pages/operator/Overview` (`Overview`) | `/publishing/overview` | **Publishing console** hub (folder name `operator/`; route `/publishing/*`) |
 | `pages/operator/Activities` (`Activities`) | `/publishing/activities` | Tenant activity list + manage sheet |
 | `pages/operator/JoinRequests` (`JoinRequests`) | `/publishing/requests` | Activity join queue |
 | `pages/operator/Manage` (`Manage`) | `/organisation/manage` | Agency / shop tenant panels |

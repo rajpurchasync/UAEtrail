@@ -159,7 +159,7 @@ Legacy browse URLs (`/map`, `/discovery`, `/calendar`, bare `/activities` as bro
 | Explore URLs | `explorePath()`, `exploreActivitiesPath()`, `explorePlacesPath()`, `exploreShopsPath()` | `src/explore/routing.ts` · import via `config/routingCatalog` in app code |
 | Back from detail | `detailBackPath(kind)` | `src/explore/routing.ts` |
 | My activities hub | `myActivitiesPath('joined' \| 'hosted')` | `src/explore/routing.ts` |
-| Fulfill participant intent (return from auth) | `explorePath({ fulfillIntent })`, `exploreFulfillIntentReturnPath()` | `src/explore/routing.ts` |
+| Leftover `?fulfillIntent=` on explore | Stripped on load (`exploreBrowseUrlSync`); pin via `explorePath({ pin })` only | `src/explore/routing.ts`, `src/explore/exploreBrowseUrlSync.ts` |
 | Platform nav constants | `EXPLORE_MAP_PATH`, `EXPLORE_DISCOVER_BROWSE_PATH`, `joinAuthPath()` | `src/config/platform.ts` |
 | Discover browse on explore | `exploreDiscoverBrowsePath()` | `src/explore/routing.ts` |
 | Sign-in with return | `buildSignInRedirect(location)`, `signInPathForReturn(path)` | `src/utils/authReturnContext.ts` |

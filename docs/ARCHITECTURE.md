@@ -29,7 +29,7 @@ Catalog HTTP is **surface-first** (path + mount middleware), not **profile-first
 
 - `/auth` — JWT + refresh
 - `/` (userRouter) — public catalog (`/places`, `/activities`, `/explore/map`, **`/reviews`**), `/me/*` (profile, seeking-posts, groups, buddies, wishlist)
-- `/publishing` — tenant-scoped activities, check-in, join queue (`/operator` HTTP alias; no `/host` API)
+- `/publishing` — tenant-scoped activities, check-in, join queue (`x-organisation-id`; no `/host` or `/operator` API)
 - `/admin` — platform ops (thin `admin.ts` → `routes/admin/registerAdmin*`; user management at `/admin/users`, staff grant at `/admin/platform-admins` for master admin)
 - `/shop` — shop profiles, featured picks, merchant CRUD (Stripe checkout retained but disabled in product)
 - `/safety` — member content reports (`POST /safety/reports`)

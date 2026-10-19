@@ -652,7 +652,7 @@ Tracked in [`HOST_CLEANUP_ROADMAP.md`](./HOST_CLEANUP_ROADMAP.md) **P5** and [`S
 | NC-E | Optional dot-style notification `kind` migration |
 | NC-F | `outdoorMap*` → `journeyMap*` **done**; explore helpers under `src/explore/` **done**; shrink `src/utils/` domain files (§12) |
 | NC-G | Demand vs wishlist — **done** |
-| NC-H | **Structural naming P5** — activity-centric client + **`useMemberStatus`**; `/operator` HTTP-only; DTO dual-read |
+| NC-H | **Structural naming P5** — activity-centric client + **`useMemberStatus`**; `/publishing` HTTP; optional `Organisation*` file renames (storage `tenantId` unchanged) |
 
 **Verify:** `npm run verify:system` · `moduleNamingGuard.test.ts` · `apps/api/tests/naming-coherence.test.ts`
 

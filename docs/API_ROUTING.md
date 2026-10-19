@@ -268,13 +268,13 @@ See **Member people reads** above for the full `/me/member-discovery/*` table. P
 
 ## Member status (`GET /me/status`)
 
-Signed-in **member capabilities** — profile gates, **publish** workspace eligibility, role labels. **Publish is not its own route**; it is the **`publish`** object on this response (dual-read: same fields also appear flat for legacy clients). Resolved in `apps/api/src/services/member-status.ts` — do not re-derive tiers from `UserRole`.
+Signed-in **member capabilities** — profile gates, **publish** workspace eligibility, role labels. **Publish is not its own route**; workspace fields live under **`publish`** only (root: `profileComplete`, `profileRoleLabel`). Resolved in `apps/api/src/services/member-status.ts` — do not re-derive tiers from `UserRole`.
 
 | Field (subset) | Meaning |
 |----------------|---------|
-| `profileComplete` | **Organize/publish** after `/welcome` (legacy wire: `signupProfileComplete`) |
+| `profileComplete` | Host/publish after `/welcome` (`signupProfileComplete` on `GET /me/profile` only) |
 | `publish.canPublish` | May create/publish tenant activities |
-| `publish.canAccessPublishingWorkspace` | May open publishing workspace (`/operator/*` UI) |
+| `publish.canAccessPublishingWorkspace` | May open publishing workspace (`/publishing/*` UI) |
 | `publish.ownedProfiles` | Tenants member may publish as |
 | `profileRoleLabel` | Display key for profile chrome |
 
