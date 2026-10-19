@@ -1,9 +1,11 @@
 import {
   COMMUNITY_PATH,
   EXPLORE_MAP_PATH,
-  LEGACY_MY_REWARDS_PATH,
-  LEGACY_REWARDS_PATH,
-  LEGACY_TRAIL_POINTS_PATH,
+  INBOUND_MY_REWARDS_PATH,
+  INBOUND_REWARDS_PATH,
+  INBOUND_TRAIL_POINTS_PATH,
+  INBOUND_BECOME_HOST_PATH,
+  INBOUND_BECOME_ORGANIZER_PATH,
   MEMBERSHIP_MARKETING_PATH,
   PROFILE_BADGES_PATH,
   exploreShopsPath,
@@ -44,7 +46,7 @@ import { organisationManagePath, SIGNIN_PATH, SIGNUP_PATH } from './config/routi
 import { PRODUCT_PLAN_SURFACE_TITLE } from './content/productNorthStar';
 import {
   JOURNEY_MAP_PATH,
-  LEGACY_CONTRIBUTIONS_PATH,
+  INBOUND_CONTRIBUTIONS_PATH,
   PUBLISHING_ACTIVITIES_NEW_PATH,
   PUBLISHING_ACTIVITIES_PATH,
   PUBLISHING_HISTORY_PATH,
@@ -59,7 +61,7 @@ import {
   PROFILE_SUBMISSIONS_PATH,
 } from './config/surfacePaths';
 import { canonicalPlaceDetailPath } from '@uaetrail/shared-types';
-import { resolveLegacyTripsHubRedirect } from './member-plan/legacyTripsRedirect';
+import { resolveInboundTripsHubRedirect } from './member-plan/inboundTripsRedirect';
 import { useMemberStatus } from './hooks/useMemberStatus';
 import { memberCanManageHostedActivities } from './utils/hostedActivitiesGate';
 import { shopPublicPath } from './utils/shopPaths';
@@ -98,7 +100,7 @@ const LegacyTripsHubRedirect = () => {
   const { user } = useAuth();
   const gate = useMemberStatus({ enabled: Boolean(user) });
   const canHost = memberCanManageHostedActivities(user, gate.canAccessPublishingWorkspace);
-  const target = resolveLegacyTripsHubRedirect(pathname, search, { canHost });
+  const target = resolveInboundTripsHubRedirect(pathname, search, { canHost });
   return <Navigate to={target ?? PLAN_PATH} replace />;
 };
 
@@ -474,7 +476,7 @@ function App() {
             }
           />
           <Route
-            path={LEGACY_CONTRIBUTIONS_PATH}
+            path={INBOUND_CONTRIBUTIONS_PATH}
             element={<Navigate to={PROFILE_SUBMISSIONS_PATH} replace />}
           />
           <Route
@@ -485,9 +487,9 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path={LEGACY_TRAIL_POINTS_PATH} element={<Navigate to={PROFILE_BADGES_PATH} replace />} />
-          <Route path={LEGACY_MY_REWARDS_PATH} element={<Navigate to={PROFILE_BADGES_PATH} replace />} />
-          <Route path={LEGACY_REWARDS_PATH} element={<Navigate to={PROFILE_BADGES_PATH} replace />} />
+          <Route path={INBOUND_TRAIL_POINTS_PATH} element={<Navigate to={PROFILE_BADGES_PATH} replace />} />
+          <Route path={INBOUND_MY_REWARDS_PATH} element={<Navigate to={PROFILE_BADGES_PATH} replace />} />
+          <Route path={INBOUND_REWARDS_PATH} element={<Navigate to={PROFILE_BADGES_PATH} replace />} />
           <Route
             path="/my-requests"
             element={
@@ -562,8 +564,8 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path="/become-organizer" element={<LegacyProMembershipRedirect />} />
-          <Route path="/become-host" element={<LegacyProMembershipRedirect />} />
+          <Route path={INBOUND_BECOME_ORGANIZER_PATH} element={<LegacyProMembershipRedirect />} />
+          <Route path={INBOUND_BECOME_HOST_PATH} element={<LegacyProMembershipRedirect />} />
           <Route path={MEMBERSHIP_MARKETING_PATH} element={<Navigate to={EXPLORE_MAP_PATH} replace />} />
           <Route path="/shop" element={<ShopBrowseRoute />} />
           <Route
@@ -732,7 +734,7 @@ function App() {
             path={PUBLISHING_OVERVIEW_PATH}
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
-                <OperatorOverview />
+                <PublishingOverview />
               </ProtectedRoute>
             }
           />
@@ -740,7 +742,7 @@ function App() {
             path={PUBLISHING_ACTIVITIES_PATH}
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
-                <OperatorActivities />
+                <PublishingActivities />
               </ProtectedRoute>
             }
           />
@@ -748,7 +750,7 @@ function App() {
             path={PUBLISHING_ACTIVITIES_NEW_PATH}
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
-                <OperatorActivities />
+                <PublishingActivities />
               </ProtectedRoute>
             }
           />
@@ -756,7 +758,7 @@ function App() {
             path={PUBLISHING_REQUESTS_PATH}
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
-                <OperatorJoinRequests />
+                <PublishingJoinRequests />
               </ProtectedRoute>
             }
           />
@@ -764,7 +766,7 @@ function App() {
             path={PUBLISHING_TEAM_PATH}
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
-                <OperatorTeam />
+                <PublishingTeam />
               </ProtectedRoute>
             }
           />
@@ -772,7 +774,7 @@ function App() {
             path={PUBLISHING_PROFILE_PATH}
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
-                <OperatorPublicProfileEdit />
+                <PublishingPublicProfileEdit />
               </ProtectedRoute>
             }
           />
@@ -788,7 +790,7 @@ function App() {
             path={PUBLISHING_PLACES_PATH}
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
-                <OperatorPlaces />
+                <PublishingPlaces />
               </ProtectedRoute>
             }
           />
@@ -797,7 +799,7 @@ function App() {
             path={PUBLISHING_HISTORY_PATH}
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'tenant_guide']}>
-                <OperatorHistory />
+                <PublishingHistory />
               </ProtectedRoute>
             }
           />
@@ -833,7 +835,7 @@ function App() {
             path="/organisation/manage"
             element={
               <ProtectedRoute roles={['tenant_owner', 'tenant_admin', 'merchant_admin']}>
-                <OperatorManage />
+                <PublishingManage />
               </ProtectedRoute>
             }
           />

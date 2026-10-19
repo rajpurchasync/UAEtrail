@@ -16,6 +16,14 @@ const walk = (dir: string, files: string[] = []): string[] => {
 };
 
 describe('unversioned HTTP API (no /api/v1)', () => {
+  it('build and env templates use unversioned /api base', () => {
+    const dockerfile = readFileSync(join(ROOT, 'Dockerfile.frontend'), 'utf8');
+    expect(dockerfile).not.toMatch(/VITE_API_BASE_URL=\/api\/v1/);
+    const envExample = readFileSync(join(ROOT, '.env.example'), 'utf8');
+    expect(envExample).toMatch(/VITE_API_BASE_URL=\/api/);
+    expect(envExample).not.toMatch(/VITE_API_BASE_URL=\/api\/v1/);
+  });
+
   it('product source does not reference /api/v1 paths', () => {
     const roots = ['src', join('apps', 'api', 'src'), join('apps', 'api', 'tests')];
     const offenders: string[] = [];

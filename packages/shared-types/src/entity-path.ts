@@ -19,8 +19,6 @@ export type EntityRef =
 
 export const AGENCY_PROFILE_PATH_PREFIX = '/agency' as const;
 export const PARTNER_PROFILE_PATH_PREFIX = '/partner' as const;
-/** Publishing workspace SPA prefix — not a public storefront slug. */
-export const LEGACY_PUBLISHING_PROFILE_PATH_PREFIX = '/operator' as const;
 
 /** Default explore map target when a shop has no public id yet. */
 export const EXPLORE_SHOPS_PATH = '/explore?filter=shops&panel=shops';
@@ -37,8 +35,8 @@ export const canonicalPlaceDetailPath = (placeId: string): string =>
 /** Public URL segment for event-type **places** (venues), not scheduled activities. */
 export const VENUE_PLACE_PATH_PREFIX = '/venue' as const;
 
-/** @deprecated Place URLs only — redirects to {@link VENUE_PLACE_PATH_PREFIX}. */
-export const LEGACY_EVENT_PLACE_PATH_PREFIX = '/event' as const;
+/** Inbound bookmark — venue places canonicalize to {@link VENUE_PLACE_PATH_PREFIX}. */
+export const INBOUND_EVENT_VENUE_PATH_PREFIX = '/event' as const;
 
 /** Normalise trail / camp / event activity type strings. */
 export const normalizePlaceActivityType = (activityType: string): PlaceVenueKind => {
@@ -231,7 +229,7 @@ export const resolveEntityPath = (ref: EntityRef, options?: ResolveEntityPathOpt
 const CANONICAL_PLACE_PATH_RE = /^\/place\/([^/?#]+)/;
 const PLACE_PATH_RE = /^\/(trail|camp|venue)\/([^/?#]+)/;
 const FACILITY_PATH_RE = /^\/facility\/([^/?#]+)/;
-const LEGACY_EVENT_PLACE_PATH_RE = /^\/event\/([^/?#]+)/;
+const INBOUND_EVENT_VENUE_PATH_RE = /^\/event\/([^/?#]+)/;
 const ACTIVITY_PATH_RE = /^\/activity\/([^/?#]+)/;
 const AGENCY_PROFILE_PATH_RE = /^\/agency\/([^/?#]+)/;
 const PARTNER_PROFILE_PATH_RE = /^\/partner\/([^/?#]+)/;
@@ -264,11 +262,11 @@ export const parseEntityRefFromPathname = (pathname: string): EntityRef | null =
     return { kind: 'place', id, activityType };
   }
 
-  const legacyEventPlaceMatch = path.match(LEGACY_EVENT_PLACE_PATH_RE);
-  if (legacyEventPlaceMatch) {
+  const inboundEventVenueMatch = path.match(INBOUND_EVENT_VENUE_PATH_RE);
+  if (inboundEventVenueMatch) {
     return {
       kind: 'place',
-      id: decodeURIComponent(legacyEventPlaceMatch[1]),
+      id: decodeURIComponent(inboundEventVenueMatch[1]),
       activityType: 'event',
     };
   }

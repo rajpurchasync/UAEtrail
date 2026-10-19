@@ -5,7 +5,9 @@ import { fileURLToPath } from 'node:url';
 
 const rootDir = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 dotenv.config({ path: path.join(rootDir, '.env') });
-const localMongoUri = process.env.MONGODB_URI?.trim() || 'mongodb://127.0.0.1:27017/uaetrail';
+/** `dev:local` always targets Docker/local Mongo — not Atlas from MONGODB_URI_TEST. */
+const localMongoUri =
+  process.env.LOCAL_MONGODB_URI?.trim() || 'mongodb://127.0.0.1:27017/uaetrail_dev';
 
 const run = (command, args, options = {}) =>
   new Promise((resolve, reject) => {

@@ -6,8 +6,8 @@ import {
   ACTIVITIES_PATH,
   EXPLORE_MAP_PATH,
   explorePath,
-  isLegacyRewardsWalletPath,
-  LEGACY_MESSAGES_PATH,
+  isInboundRewardsWalletPath,
+  INBOUND_MESSAGES_PATH,
   memberProfileLink,
   BUDDIES_PATH,
   GROUPS_PATH,
@@ -17,7 +17,7 @@ import {
   PROFILE_PATH,
   PRO_MEMBERSHIP_PATH,
   TRIPS_PATH,
-  LEGACY_TRIPS_MAP_PATH,
+  INBOUND_TRIPS_MAP_PATH,
   messagesGroupPath,
   messagesToUserPath,
   myRequestDetailPath,
@@ -30,7 +30,7 @@ import {
   exploreSeekingMapItemPath,
   placeDetailPath,
 } from '@uaetrail/shared-types';
-import { resolveLegacyTripsHubRedirect } from '../member-plan/legacyTripsRedirect';
+import { resolveInboundTripsHubRedirect } from '../member-plan/inboundTripsRedirect';
 
 const toMetaObject = (meta: NotificationDTO['meta']): Record<string, unknown> | null =>
   meta && typeof meta === 'object' ? (meta as Record<string, unknown>) : null;
@@ -47,7 +47,7 @@ const normalizeConsumerChatDeepLinkPath = (
   const search = queryIndex === -1 ? '' : path.slice(queryIndex);
 
   if (
-    pathname === LEGACY_MESSAGES_PATH ||
+    pathname === INBOUND_MESSAGES_PATH ||
     pathname === '/publishing/messages' ||
     pathname === '/host/messages'
   ) {
@@ -108,9 +108,9 @@ const normalizeDirectNotificationPath = (
   if (
     pathname === TRIPS_PATH ||
     pathname === ACTIVITIES_PATH ||
-    pathname === LEGACY_TRIPS_MAP_PATH
+    pathname === INBOUND_TRIPS_MAP_PATH
   ) {
-    const resolved = resolveLegacyTripsHubRedirect(pathname, search);
+    const resolved = resolveInboundTripsHubRedirect(pathname, search);
     if (resolved) return resolved;
   }
 
@@ -126,7 +126,7 @@ export const inferNotificationPath = (
   const activityIdFromMeta = toStringValue(meta?.activityId);
   const directPath = toStringValue(meta?.path);
   if (directPath && directPath.startsWith('/')) {
-    if (isLegacyRewardsWalletPath(directPath)) return PROFILE_BADGES_PATH;
+    if (isInboundRewardsWalletPath(directPath)) return PROFILE_BADGES_PATH;
     const kindEarly = toStringValue(meta?.kind)?.toLowerCase() ?? '';
     if (
       kindEarly === 'activity_join_invite' &&

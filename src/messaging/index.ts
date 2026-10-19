@@ -3,7 +3,7 @@
  *
  * | Concern | Use |
  * |---------|-----|
- * | Routes (stable URL) | `MESSAGES_PATH` / `MESSAGES_PATH`, `messagesToUserPath`, `messagesGroupPath` |
+ * | Routes (stable URL) | `MESSAGES_PATH`, `messagesToUserPath`, `messagesGroupPath` |
  * | UI label | "Chat" (not "Messages") |
  * | Inbox, DM, stream ticket, crew wall | `messagingApi` |
  * | Group metadata / members (non-thread CRUD) | `groupsApi` |
@@ -15,7 +15,7 @@ export { messagingApi } from '../api/domains/messaging';
 export { groupsApi } from '../api/domains/groups';
 export {
   MESSAGES_PATH,
-  MESSAGES_PATH,
+  INBOUND_MESSAGES_PATH,
   messagesGroupPath,
   messagesToUserPath,
 } from '../config/routingCatalog';

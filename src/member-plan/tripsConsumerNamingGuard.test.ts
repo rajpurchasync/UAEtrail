@@ -7,7 +7,7 @@ const SCAN_ROOT = join(process.cwd(), 'src');
 const ALLOWLIST = new Set([
   'src/member-plan/tripsConsumerNamingGuard.test.ts',
   'src/member-plan/planHubRouting.ts',
-  'src/member-plan/legacyTripsRedirect.ts',
+  'src/member-plan/inboundTripsRedirect.ts',
   'src/member-plan/resolvePlanHubView.ts',
   'src/member-plan/participantIntentPlan.ts',
   'src/config/surfacePaths.ts',

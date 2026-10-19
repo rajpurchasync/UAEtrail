@@ -25,7 +25,7 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 - **Edit profile:** `/profile/edit` — name, gender, bio, speaks, location (no DOB edit on this screen).
 - **Pull-to-refresh** reloads hub data at scroll top.
 - **Sign out:** Profile hub (bottom) and Settings → Account.
-- **Outing history + map:** `/profile/history` — joined / hosted / self **past** outings; **History · My Map** tabs (`PROFILE_HISTORY_MAIN_TABS`). Journey map at `/profile/history/map`. Legacy `/profile/my-trips` redirects; `/trips`, `/trips/map`, `/activities` → `/plan` or history via `resolveLegacyTripsHubRedirect`.
+- **Outing history + map:** `/profile/history` — joined / hosted / self **past** outings; **History · My Map** tabs (`PROFILE_HISTORY_MAIN_TABS`). Journey map at `/profile/history/map`. Legacy `/profile/my-trips` redirects; `/trips`, `/trips/map`, `/activities` → `/plan` or history via `resolveInboundTripsHubRedirect`.
 - **Saved (wishlist):** `/plan?view=plans&tab=wishlist` (`planWishlistTabPath()` / `planSavedPath()`). Legacy `lens=saved|goals` and `/profile/wishlist` normalize on load. Profile shows a teaser only — not a second full list ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §6.2 · `src/plan/`).
 - **Settings stack:** `/profile/settings` index → Account, Privacy, Notifications sub-routes; **iPhone & iPad** (`#ios-install`, Safari steps) and **Android** (`#android-install`, Samsung Internet / Chrome manual steps — no in-app install prompt).
 - **Hamburger (header):** next to the notifications bell on tab chrome and desktop `Header` — Explore, **My Plans**, Messages, Profile/Signup, Download → Android / iOS (deep-link to the matching settings hash). Notifications are the bell only, not in the drawer.
@@ -44,7 +44,7 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 - **Canonical query** (new links; legacy still parses): `view=plans` · `tab=upcoming|wishlist` · `filter=hosting|joined` · `layout=list|calendar` · `lens=availability` (Find crew **share availability** editor only — `planAvailabilityPath()`). Page: **`src/plan/PlanPage.tsx`** · URL helpers: **`src/plan/planRouting.ts`**.
 - **Upcoming · Calendar** (`layout=calendar`): **projection** of your month (dots per day) — not a separate data source. Tap a day → tap an outing: **going / pending** open the outing peek; **organizing / looking for company** open the same manage paths as the hosting list (`planHostedActivityManagePath` / intent manage). **Available** is an indicator strip only; **edit availability** via the calendar link or `planAvailabilityPath()` (`lens=availability`).
 - **Mobile chrome** (`src/plan/planTab.ts`): **Upcoming** · **Wishlist**; goals on Wishlist. Legacy `?lens=saved|goals|calendar` normalizes on load (`calendar` → `layout=calendar`).
-- **`/profile/plans`** → **`/plan`**. **`/trips`**, **`/activities`** → `/plan` or history (`legacyTripsRedirect.ts`).
+- **`/profile/plans`** → **`/plan`**. **`/trips`**, **`/activities`** → `/plan` or history (`inboundTripsRedirect.ts`).
 
 #### “Plan” disambiguation
 
@@ -150,7 +150,7 @@ Full spec: **[`LANDING.md`](./LANDING.md)** · Voice: **[`NORTHSTAR.md`](./NORTH
 - **Copy:** `src/content/homeMarketing.ts` · fallback cards: `homeLanding.ts` · **Components:** `src/components/home/marketing/**`
 - **Layout:** Guest `/` uses a minimal wrapper in `Layout.tsx` (main + deferred site footer only). Signed-in product chrome (`ProductShell`: header, bottom nav, compose rail) loads only on non-marketing routes.
 
-Legacy browse URLs (`/map`, `/discovery`, `/calendar`, bare `/activities` as browse) redirect via `App.tsx` — do not link to them from new UI. Legacy **`/trips`**, **`/activities`**, **`/trips/map`** redirect to **`/plan`**, **`/profile/history`**, or **`/profile/history/map`** (`legacyTripsRedirect.ts`) — canonical active hub is **`/plan`**.
+Legacy browse URLs (`/map`, `/discovery`, `/calendar`, bare `/activities` as browse) redirect via `App.tsx` — do not link to them from new UI. Legacy **`/trips`**, **`/activities`**, **`/trips/map`** redirect to **`/plan`**, **`/profile/history`**, or **`/profile/history/map`** (`inboundTripsRedirect.ts`) — canonical active hub is **`/plan`**.
 
 ## Source of truth (code)
 

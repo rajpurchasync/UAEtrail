@@ -42,6 +42,17 @@ const collectSourceFiles = (dir: string): string[] => {
 };
 
 describe('messaging clientGuard', () => {
+  it('messaging barrel has no duplicate re-exports', () => {
+    const barrel = readFileSync(join(process.cwd(), 'src/messaging/index.ts'), 'utf8');
+    const block = barrel.match(/export\s*\{([^}]+)\}\s*from\s*['"][^'"]+routingCatalog['"]/)?.[1] ?? '';
+    const names = block
+      .split(',')
+      .map((part) => part.trim())
+      .filter(Boolean);
+    const dupes = names.filter((name, idx) => names.indexOf(name) !== idx);
+    expect([...new Set(dupes)]).toEqual([]);
+  });
+
   it('app code uses messagingApi facade instead of legacy api chat/wall symbols', () => {
     const files = collectSourceFiles(SCAN_ROOT).filter(
       (file) => !ALLOW_PREFIXES.some((prefix) => file.startsWith(prefix) || file === prefix)

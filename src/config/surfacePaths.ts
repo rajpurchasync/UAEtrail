@@ -1,5 +1,5 @@
 /**
- * Consumer surface paths (secondary hubs, profile, legacy aliases).
+ * Consumer surface paths (secondary hubs, profile, inbound redirect bookmarks).
  * No imports — safe for platform.ts and routingCatalog.
  *
  * @see docs/NAVIGATION.md · docs/DOMAIN_CANONICALS.md
@@ -33,13 +33,13 @@ export const isJourneyMapPath = (pathname: string): boolean =>
   pathname.endsWith('/profile/history/map') ||
   pathname.endsWith('/my-trips/map');
 
-/** Legacy personal hub bookmark (`/activities`). */
-export const ACTIVITIES_LEGACY_PATH = '/activities' as const;
+/** Inbound bookmark — `App.tsx` redirects to {@link PLAN_PATH}. */
+export const INBOUND_ACTIVITIES_HUB_PATH = '/activities' as const;
 
 /** @deprecated Legacy URL — `App.tsx` redirects to {@link PLAN_PATH} or {@link PROFILE_HISTORY_PATH}. */
 export const TRIPS_PATH = '/trips' as const;
-/** @deprecated Legacy map URL — redirects to {@link JOURNEY_MAP_PATH}. */
-export const LEGACY_TRIPS_MAP_PATH = '/trips/map' as const;
+/** Inbound bookmark — redirects to {@link JOURNEY_MAP_PATH}. */
+export const INBOUND_TRIPS_MAP_PATH = '/trips/map' as const;
 
 /** Admin / host place registry consoles */
 export const ADMIN_PLACES_PATH = '/admin/places' as const;
@@ -79,8 +79,8 @@ export const GROUPS_PATH = '/groups' as const;
 export const BUDDIES_PATH = '/buddies' as const;
 export const PROFILE_SUBMISSIONS_PATH = '/profile/submissions' as const;
 
-/** Legacy URL — redirects to {@link PROFILE_SUBMISSIONS_PATH}. */
-export const LEGACY_CONTRIBUTIONS_PATH = '/contributions' as const;
+/** Inbound bookmark — redirects to {@link PROFILE_SUBMISSIONS_PATH}. */
+export const INBOUND_CONTRIBUTIONS_PATH = '/contributions' as const;
 
 export const groupsPath = (options?: {
   create?: boolean;
@@ -109,8 +109,8 @@ export const NOTIFICATIONS_PATH = '/notifications' as const;
 
 /** Consumer inbox + threads — keep string literal in sync with `apps/api/src/lib/member-routes.ts`. */
 export const MESSAGES_PATH = '/chat' as const;
-/** Legacy inbox URL — redirects to {@link MESSAGES_PATH} in `App.tsx`. */
-export const LEGACY_MESSAGES_PATH = '/messages' as const;
+/** Inbound bookmark — redirects to {@link MESSAGES_PATH} in `App.tsx`. */
+export const INBOUND_MESSAGES_PATH = '/messages' as const;
 export const MY_REQUESTS_PATH = '/my-requests' as const;
 
 export const isPublishingConsolePath = (pathname: string): boolean =>
@@ -176,13 +176,13 @@ export const messagesGroupPath = (groupId: string, activityId?: string): string 
 export const myRequestDetailPath = (requestId: string): string =>
   `${MY_REQUESTS_PATH}/${encodeURIComponent(requestId)}`;
 
-/** Removed Trail Points wallet — legacy URLs redirect to badges in `App.tsx` */
-export const LEGACY_TRAIL_POINTS_PATH = '/trail-points' as const;
-export const LEGACY_MY_REWARDS_PATH = '/my-rewards' as const;
-export const LEGACY_REWARDS_PATH = '/rewards' as const;
+/** Removed Trail Points wallet — inbound URLs redirect to badges in `App.tsx`. */
+export const INBOUND_TRAIL_POINTS_PATH = '/trail-points' as const;
+export const INBOUND_MY_REWARDS_PATH = '/my-rewards' as const;
+export const INBOUND_REWARDS_PATH = '/rewards' as const;
 
-export const isLegacyRewardsWalletPath = (pathname: string): boolean =>
-  pathname === LEGACY_MY_REWARDS_PATH ||
-  pathname === LEGACY_REWARDS_PATH ||
-  pathname === LEGACY_TRAIL_POINTS_PATH ||
-  pathname.startsWith(`${LEGACY_TRAIL_POINTS_PATH}?`);
+export const isInboundRewardsWalletPath = (pathname: string): boolean =>
+  pathname === INBOUND_MY_REWARDS_PATH ||
+  pathname === INBOUND_REWARDS_PATH ||
+  pathname === INBOUND_TRAIL_POINTS_PATH ||
+  pathname.startsWith(`${INBOUND_TRAIL_POINTS_PATH}?`);

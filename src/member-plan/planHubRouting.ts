@@ -1,6 +1,6 @@
 import {
   JOURNEY_MAP_PATH,
-  LEGACY_TRIPS_MAP_PATH,
+  INBOUND_TRIPS_MAP_PATH,
   PLAN_PATH,
   PROFILE_HISTORY_PATH,
   isJourneyMapPath,
@@ -12,7 +12,7 @@ import { planMainTabPath, planWishlistTabPath } from '../plan/planTab';
 /**
  * Plan (`/plan`) + profile history URL helpers and legacy query normalization.
  * Scheduled outings use **activities** APIs — not a separate “trips” domain.
- * Legacy `/trips` paths redirect in `legacyTripsRedirect.ts`.
+ * Inbound `/trips` paths redirect in `inboundTripsRedirect.ts`.
  */
 export type PlanHubWishlistLayer = 'activities' | 'places' | 'shops';
 
@@ -65,7 +65,7 @@ export const parsePlanHistoryMainView = (
   pathname: string,
   rawView: string | null
 ): PlanHistoryMainView => {
-  if (pathname === LEGACY_TRIPS_MAP_PATH || pathname.endsWith(LEGACY_TRIPS_MAP_PATH)) return 'map';
+  if (pathname === INBOUND_TRIPS_MAP_PATH || pathname.endsWith(INBOUND_TRIPS_MAP_PATH)) return 'map';
   if (isJourneyMapPath(pathname)) return 'map';
   if (isProfileHistoryListPath(pathname)) {
     if (rawView === 'map') return 'map';

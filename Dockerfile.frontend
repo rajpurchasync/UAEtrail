@@ -2,7 +2,7 @@ FROM node:24.18.0-alpine AS build
 
 WORKDIR /app
 
-ARG VITE_API_BASE_URL=/api/v1
+ARG VITE_API_BASE_URL=/api
 ARG VITE_SITE_ORIGIN=https://uaetrail.com
 ARG VITE_GOOGLE_CLIENT_ID=
 ARG VITE_RUN_ENV=test

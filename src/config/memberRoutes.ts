@@ -1,8 +1,7 @@
-/** Professional host / agency / shop application (legacy `/become-host` redirects here). */
+/** Professional host / agency / shop application (`INBOUND_BECOME_HOST_PATH` redirects here). */
 export const PRO_MEMBERSHIP_PATH = '/profile/pro-membership';
 
-/** @deprecated Permanent redirect target — do not link in new UI. */
-export const LEGACY_BECOME_HOST_PATH = '/become-host';
+export { INBOUND_BECOME_HOST_PATH } from './inboundRoutePaths';
 
 export const proMembershipPath = (query?: {
   intent?: 'add-guide' | 'add-agency' | 'add-shop' | 'discover-members';

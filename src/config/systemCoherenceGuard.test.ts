@@ -101,7 +101,7 @@ describe('systemCoherenceGuard', () => {
     expect(content).toMatch(/BUDDIES_PATH/);
     expect(content).toMatch(/GROUPS_PATH/);
     expect(content).toMatch(/messagesGroupPath/);
-    expect(content).toMatch(/LEGACY_TRIPS_MAP_PATH/);
+    expect(content).toMatch(/INBOUND_TRIPS_MAP_PATH/);
     expect(content).not.toMatch(/return '\/buddies'/);
     expect(content).not.toMatch(/return '\/groups'/);
     expect(content).not.toMatch(/return `\/messages\?group=/);

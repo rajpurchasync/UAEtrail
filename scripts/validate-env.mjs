@@ -130,6 +130,12 @@ if (vapidPub !== vapidPriv) {
   warnings.push('VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY — set both or neither');
 }
 
+const viteApiBase = process.env.VITE_API_BASE_URL?.trim();
+if (viteApiBase && /\/v1\/?$/.test(viteApiBase)) {
+  errors.push('VITE_API_BASE_URL — use /api (unversioned); /api/v1 is retired');
+}
+
+
 console.log(production ? 'Production env validation' : 'Env validation');
 console.log('─'.repeat(40));
 if (isSet(requiredMongoKey)) {

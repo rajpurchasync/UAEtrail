@@ -6,7 +6,8 @@
 import {
   BUDDIES_PATH,
   PROFILE_SUBMISSIONS_PATH,
-  LEGACY_CONTRIBUTIONS_PATH,
+  INBOUND_CONTRIBUTIONS_PATH,
+  PUBLISHING_CONSOLE_PREFIX,
   GROUPS_PATH,
   MESSAGES_PATH,
   MY_REQUESTS_PATH,
@@ -21,13 +22,18 @@ import {
   PUBLISHING_PLACES_PATH,
   signUpPath,
 } from './surfacePaths';
-import { LEGACY_BECOME_HOST_PATH, PRO_MEMBERSHIP_PATH } from './memberRoutes';
+import { INBOUND_BECOME_HOST_PATH, PRO_MEMBERSHIP_PATH } from './memberRoutes';
 import {
-  AGENCY_PROFILE_PATH_PREFIX,
-  LEGACY_PUBLISHING_PROFILE_PATH_PREFIX,
-} from '@uaetrail/shared-types';
+  INBOUND_BECOME_ORGANIZER_PATH,
+  INBOUND_RETIRED_CONSOLE_PREFIXES,
+} from './inboundRoutePaths';
+import { AGENCY_PROFILE_PATH_PREFIX } from '@uaetrail/shared-types';
 
-export { ADMIN_PLACES_PATH, PUBLISHING_PLACES_PATH, AGENCY_PROFILE_PATH_PREFIX };
+export {
+  ADMIN_PLACES_PATH,
+  PUBLISHING_PLACES_PATH,
+  AGENCY_PROFILE_PATH_PREFIX,
+};
 
 /** Full-screen explore map (mobile-first). */
 export const EXPLORE_MAP_PATH = '/explore' as const;
@@ -301,9 +307,8 @@ export const getExploreMapTiles = (style: ExploreMapStyle) => {
 /** Routes where bottom nav, footer padding, and mobile chrome are hidden. */
 const CONSUMER_CHROME_HIDDEN_PREFIXES = [
   '/admin',
-  '/operator',
-  '/host',
-  '/organizer',
+  PUBLISHING_CONSOLE_PREFIX,
+  ...INBOUND_RETIRED_CONSOLE_PREFIXES,
   '/dashboard',
 ] as const;
 
@@ -365,13 +370,14 @@ export const CONSUMER_SELF_HEADER_EXACT = [
   GROUPS_PATH,
   BUDDIES_PATH,
   PROFILE_SUBMISSIONS_PATH,
-  LEGACY_CONTRIBUTIONS_PATH,
+  INBOUND_CONTRIBUTIONS_PATH,
+  PUBLISHING_CONSOLE_PREFIX,
   MESSAGES_PATH,
   NOTIFICATIONS_PATH,
   MY_REQUESTS_PATH,
-  LEGACY_BECOME_HOST_PATH,
+  INBOUND_BECOME_HOST_PATH,
+  INBOUND_BECOME_ORGANIZER_PATH,
   '/profile/pro-membership',
-  '/become-organizer',
   '/faq',
   '/terms',
   '/privacy',
@@ -413,7 +419,8 @@ export const MOBILE_BOTTOM_NAV_PROFILE_PATHS = [
   PROFILE_PATH,
   BUDDIES_PATH,
   PROFILE_SUBMISSIONS_PATH,
-  LEGACY_CONTRIBUTIONS_PATH,
+  INBOUND_CONTRIBUTIONS_PATH,
+  PUBLISHING_CONSOLE_PREFIX,
   GROUPS_PATH,
   MY_REQUESTS_PATH,
 ] as const;

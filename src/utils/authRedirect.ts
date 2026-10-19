@@ -1,11 +1,13 @@
 import {
   EXPLORE_MAP_PATH,
   GROUPS_PATH,
+  INBOUND_RETIRED_CONSOLE_PREFIXES,
   MESSAGES_PATH,
   MY_REQUESTS_PATH,
   NOTIFICATIONS_PATH,
   PROFILE_BADGES_PATH,
   PROFILE_PATH,
+  PUBLISHING_CONSOLE_PREFIX,
 } from '../config/routingCatalog';
 import type { UserRole } from '@uaetrail/shared-types';
 import type { NavigateFunction } from 'react-router-dom';
@@ -22,8 +24,7 @@ const AUTH_GATED_PREFIXES = [
   MESSAGES_PATH,
   NOTIFICATIONS_PATH,
   GROUPS_PATH,
-  '/operator',
-  '/publishing',
+  PUBLISHING_CONSOLE_PREFIX,
   '/admin',
   '/merchant',
   '/organisation/manage',
@@ -49,8 +50,8 @@ export const canReturnAfterAuth = (path: string, role: UserRole | string): boole
   const hostConsoleRoles = ['tenant_owner', 'tenant_admin', 'tenant_guide'];
   if (hostConsoleRoles.includes(role)) {
     return (
-      pathname.startsWith('/publishing') ||
-      pathname.startsWith('/operator') ||
+      pathname.startsWith(PUBLISHING_CONSOLE_PREFIX) ||
+      INBOUND_RETIRED_CONSOLE_PREFIXES.some((prefix) => pathname.startsWith(prefix)) ||
       pathname.startsWith('/profile')
     );
   }

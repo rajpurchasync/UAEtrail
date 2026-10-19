@@ -11,16 +11,16 @@ export {
   joinAuthPath,
   ADMIN_PLACES_PATH,
   AGENCY_PROFILE_PATH_PREFIX,
-  LEGACY_PUBLISHING_PROFILE_PATH_PREFIX,
   DOMAIN_GLOSSARY,
 } from './platform';
 
 export {
-  PRO_MEMBERSHIP_PATH,
-  LEGACY_BECOME_HOST_PATH,
-  proMembershipPath,
-  proMembershipAnchorPath,
-} from './memberRoutes';
+  INBOUND_BECOME_HOST_PATH,
+  INBOUND_BECOME_ORGANIZER_PATH,
+  INBOUND_RETIRED_CONSOLE_PREFIXES,
+} from './inboundRoutePaths';
+
+export { PRO_MEMBERSHIP_PATH, proMembershipPath, proMembershipAnchorPath } from './memberRoutes';
 
 export {
   PROFILE_PATH,
@@ -39,9 +39,9 @@ export {
   NOTIFICATIONS_PATH,
   BUDDIES_PATH,
   PROFILE_SUBMISSIONS_PATH,
-  LEGACY_CONTRIBUTIONS_PATH,
+  INBOUND_CONTRIBUTIONS_PATH,
   MESSAGES_PATH,
-  LEGACY_MESSAGES_PATH,
+  INBOUND_MESSAGES_PATH,
   MY_REQUESTS_PATH,
   PUBLISHING_OVERVIEW_PATH,
   PUBLISHING_ACTIVITIES_PATH,
@@ -65,15 +65,16 @@ export {
   messagesToUserPath,
   messagesGroupPath,
   myRequestDetailPath,
-  LEGACY_TRAIL_POINTS_PATH,
-  LEGACY_MY_REWARDS_PATH,
-  LEGACY_REWARDS_PATH,
-  isLegacyRewardsWalletPath,
+  INBOUND_TRAIL_POINTS_PATH,
+  INBOUND_MY_REWARDS_PATH,
+  INBOUND_REWARDS_PATH,
+  isInboundRewardsWalletPath,
   PROFILE_HISTORY_PATH,
   JOURNEY_MAP_PATH,
   MY_TRIPS_PATH,
   MY_TRIPS_MAP_PATH,
-  LEGACY_TRIPS_MAP_PATH,
+  INBOUND_TRIPS_MAP_PATH,
+  INBOUND_ACTIVITIES_HUB_PATH,
   isProfileHistoryListPath,
   isJourneyMapPath,
 } from './surfacePaths';

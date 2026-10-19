@@ -1,30 +1,28 @@
 import {
-  ACTIVITIES_LEGACY_PATH,
+  INBOUND_ACTIVITIES_HUB_PATH,
   JOURNEY_MAP_PATH,
   PLAN_PATH,
   PROFILE_HISTORY_PATH,
-  LEGACY_TRIPS_MAP_PATH,
+  INBOUND_TRIPS_MAP_PATH,
   TRIPS_PATH,
 } from '../config/surfacePaths';
 import { planSavedPath } from '../plan/planLens';
 import { normalizePlanHubSearchParams } from './planHubRouting';
 
-const LEGACY_HUB_PATHS = new Set<string>([TRIPS_PATH, ACTIVITIES_LEGACY_PATH]);
+const INBOUND_HUB_PATHS = new Set<string>([TRIPS_PATH, INBOUND_ACTIVITIES_HUB_PATH]);
 
-/**
- * Map legacy `/trips`, `/activities`, and `/trips/map` to {@link PLAN_PATH} or {@link PROFILE_HISTORY_PATH}.
- */
-export const resolveLegacyTripsHubRedirect = (
+/** Map inbound `/trips`, `/activities`, and `/trips/map` to {@link PLAN_PATH} or {@link PROFILE_HISTORY_PATH}. */
+export const resolveInboundTripsHubRedirect = (
   pathname: string,
   search: string,
   options?: { canHost?: boolean }
 ): string | null => {
-  if (pathname === LEGACY_TRIPS_MAP_PATH || pathname.endsWith(LEGACY_TRIPS_MAP_PATH)) {
+  if (pathname === INBOUND_TRIPS_MAP_PATH || pathname.endsWith(INBOUND_TRIPS_MAP_PATH)) {
     const qs = search.replace(/^\?/, '');
     return qs ? `${JOURNEY_MAP_PATH}?${qs}` : JOURNEY_MAP_PATH;
   }
 
-  if (!LEGACY_HUB_PATHS.has(pathname)) return null;
+  if (!INBOUND_HUB_PATHS.has(pathname)) return null;
 
   const params = new URLSearchParams(search.replace(/^\?/, ''));
   const view = params.get('view');
