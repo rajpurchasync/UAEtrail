@@ -17,8 +17,9 @@ export const ApiStatusBanner = () => {
         <p className="font-semibold">Backend unavailable</p>
         <p className="mt-0.5 text-amber-900/90">
           Map data, sign-in, and activities need the API. Start{' '}
-          <code className="rounded bg-amber-100/80 px-1 py-0.5 text-xs">npm run dev:all</code> or check MongoDB
-          Atlas network access, then retry.
+          <code className="rounded bg-amber-100/80 px-1 py-0.5 text-xs">npm run dev:local</code> (Docker Mongo) or{' '}
+          <code className="rounded bg-amber-100/80 px-1 py-0.5 text-xs">npm run dev:all</code> with Atlas reachable,
+          then retry.
         </p>
       </div>
       <button

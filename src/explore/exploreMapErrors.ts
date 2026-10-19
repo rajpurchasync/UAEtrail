@@ -11,7 +11,7 @@ export const describeExploreMapLoadError = (error: unknown): string => {
 
   const message = error instanceof Error ? error.message : String(error);
   if (isBackendUnavailable(message)) {
-    return 'Server unavailable — start the API (npm run dev:all) or check MongoDB, then refresh.';
+    return 'Server unavailable — run npm run dev:local (Docker Mongo) or npm run dev:all, then refresh.';
   }
 
   return 'Map data could not load. Check your connection and refresh.';

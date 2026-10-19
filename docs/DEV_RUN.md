@@ -8,7 +8,8 @@
 "dev run" means:
 
 - Run from VS Code (tasks/workspace run) with hot reload for both frontend and API.
-- Use cloud test database env: `RUN_ENV=test` and `MONGODB_URI_TEST` from root `.env`.
+- **Local DB (recommended):** `npm run dev:local` — starts Docker Mongo (`local-mongo` profile) and forces `MONGODB_URI` to `LOCAL_MONGODB_URI` (`mongodb://127.0.0.1:27017/uaetrail_dev` by default). Requires Docker Desktop.
+- **Cloud test DB:** `npm run dev:all` with `RUN_ENV=test` and reachable `MONGODB_URI_TEST` / `MONGODB_URI` in root `.env` (Atlas IP allowlist).
 - Avoid observability stack containers in this mode (Grafana, Prometheus, Loki, Promtail, exporters) unless explicitly requested.
 - Open the app in the VS Code integrated browser during dev run for live agent-side monitoring checks.
 

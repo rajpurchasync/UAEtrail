@@ -24,10 +24,24 @@ const run = (command, args, options = {}) =>
     });
   });
 
+const dockerComposeEnv = () => ({
+  ...process.env,
+  MONGODB_URI: localMongoUri,
+  S3_ACCESS_KEY_ID: process.env.S3_ACCESS_KEY_ID?.trim() || 'local-dev',
+  S3_SECRET_ACCESS_KEY: process.env.S3_SECRET_ACCESS_KEY?.trim() || 'local-dev-secret',
+});
+
 const startLocalMongo = async () => {
   console.log('[dev:local] Starting local MongoDB (Docker profile local-mongo)…');
   try {
-    await run('docker', ['compose', '--profile', 'local-mongo', 'up', '-d', 'mongo']);
+    await run('docker', ['start', 'uaetrail-mongo-1']);
+  } catch {
+    // Container may not exist yet — create via compose (needs interpolated .env keys).
+  }
+  try {
+    await run('docker', ['compose', '--profile', 'local-mongo', 'up', '-d', 'mongo'], {
+      env: dockerComposeEnv(),
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     console.warn(
