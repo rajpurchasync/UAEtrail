@@ -1,3 +1,7 @@
+/**
+ * Regression: Tier-1 prose must not contradict wire-lexicon and shipped routes.
+ * Product truth lives in code + guards (see docs/DOCS_GOVERNANCE.md § Source of truth).
+ */
 import { describe, expect, it } from 'vitest';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';

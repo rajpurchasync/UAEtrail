@@ -37,6 +37,22 @@ Tier-2: ops (`DEV_RUN.md`, `DEPLOYMENT.md`, `PRE_DEPLOY_CHECKLIST.md`, …). Tie
 
 ---
 
+## Source of truth (code-first)
+
+Product behavior and placement are defined by **implementation + automated guards**, not by markdown.
+
+| Priority | Source | Role |
+|----------|--------|------|
+| 1 | `packages/shared-types/src/wire-lexicon.ts`, `src/content/upl-glossary.ts` | Wire names and member-visible vocabulary |
+| 2 | `scripts/bounded-context-manifest.json`, `scripts/refactor-program.json` | Where modules belong; migration IDs |
+| 3 | Guards and contract tests (`verify:system`, `crossContextFoundationsGuard`, API domain tests) | Enforce invariants; fail CI on drift |
+| 4 | `apps/api/src/routes/*`, `src/api/domains/*`, services, UI | What actually runs |
+| 5 | Tier-1 docs (this table’s links) | **Supporting facts** for humans — update **after** (3–4) change, not instead of them |
+
+`docCoherence.test.ts` and `verify:docs` catch **stale or contradictory prose**; they are not a substitute for fixing code.
+
+---
+
 ## Terminology spine (one vocabulary — do not duplicate)
 
 Use **one row** per concern. Do not copy these tables into `experiment/*` or new markdown.

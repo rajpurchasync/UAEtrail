@@ -3,22 +3,27 @@ description: System-wide alignment — all bounded contexts; update Tier-1 docs 
 alwaysApply: true
 ---
 
-# System coherence (breadth-first, lean docs)
+# System coherence (code-first, breadth across contexts)
 
-**Map:** `docs/SYSTEM_COHERENCE.md` (§3 contexts + §3.1 matrix) · **Names/routes/API:** `docs/DOMAIN_CANONICALS.md` · **Index:** `docs/DOCS_INDEX.md` · **Policy:** `docs/DOCS_GOVERNANCE.md` (closed Tier-1 — **no new canonical markdown**)
+**Truth order:** `packages/shared-types` wire-lexicon · `scripts/bounded-context-manifest.json` · **guards/tests** (`crossContextFoundationsGuard`, `bounded-context-alignment`, domain contracts) · **running code** (API registrars, `src/api/domains/*`, services) · Tier-1 markdown **last** (factual deltas only).
+
+**Orientation (not specs):** `docs/SYSTEM_COHERENCE.md` §3 + §3.0 · `docs/DOMAIN_CANONICALS.md` · `docs/DOCS_GOVERNANCE.md` (closed Tier-1 — **no new canonical markdown**).
 
 ## Alignment work
 
-1. Pick **bounded context** from SYSTEM_COHERENCE §3 (discovery, places, commerce, social_graph, …) — not host-only.
-2. **`npm run verify:system`** before done.
-3. **Horizontal pass:** API registrar + `src/api/domains/*` + UI + **one** Tier-1 doc section (table in DOCS_GOVERNANCE).
+1. Pick **bounded context** from `bounded-context-manifest.json` / SYSTEM_COHERENCE §3 — not host-only.
+2. **Ship the horizontal code pass:** API registrar + services + `src/api/domains/*` + UI surface; add or extend a **guard** when the invariant must not regress.
+3. **`npm run verify:system`** before done.
+4. **Docs:** only if behavior or routes changed — minimal edit to existing Tier-1 (see DOCS_GOVERNANCE). No doc-only “alignment” PRs.
 
 ## Documentation
 
-- **Never** add `NAMING_*`, `ALIGNMENT_*`, or duplicate “audit” docs — extend `DOMAIN_CANONICALS`, `SYSTEM_COHERENCE`, or `MEMBER_MODEL`.
+- Docs **support** code; they do not define product behavior ahead of implementation.
+- **Never** add `NAMING_*`, `ALIGNMENT_*`, or duplicate “audit” docs — extend `DOMAIN_CANONICALS`, `SYSTEM_COHERENCE`, or `MEMBER_MODEL` in place when code already shipped.
 - Superseded filenames stay as **one-line stubs** only (`verify:docs` enforces).
 
 ## Do not
 
 - Treat `host-member-model.mdc` as whole-product scope.
-- Ship doc-only or single-file fixes that leave API/FE/docs for other contexts inconsistent.
+- Ship doc-only or single-file fixes that leave API/FE for other contexts inconsistent.
+- Expand Tier-1 prose to “plan” work that is not yet in code + tests.
