@@ -48,11 +48,11 @@ There are **five public entity kinds** on the wire (`EntityKind` / `EntityRef`):
 | **Create** | Product verb (OK) | Casual copy (“create a plan”) | — |
 | **Compose** | **Wire / code only** | Query `?compose=…` — v3 `host:*` \| `seek:fixed:*` \| `seek:flexible` \| `add:*` ([§1.7](#17-program-cpc--catalog-ontology-fab-compose-wire)) | User-facing FAB buttons — reserved word for **message compose** later |
 | **Host** | Product role | Anyone who **publishes** (buddy → pro guide → agency → shop owner → partner) | The Mongo `tenants` row name in UI |
-| **Organisation** | Code + wire | **One tenant row** for all storefronts (guide, agency, shop, e-commerce, …): `Organisation*`, `x-organisation-id`, `EntityKind: organisation` | Solo guide or shop in **consumer** copy — say **guide**, **agency**, **shop**, **partner**; Pro path = [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) § One stack |
+| **Organisation** | Code + wire | **One tenant row** for all storefronts (guide, agency, shop, partner, …): `Organisation*`, `x-organisation-id`, `EntityKind: organisation` | Solo guide or shop in **consumer** copy — say **guide**, **agency**, **shop**, **partner**; Pro path = [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) § One stack |
 | **Organizer** | Legacy wire | `organizerId`, `organizerDetails` on old payloads | New product nouns — prefer **host** (activity) or **tenant** (storage) |
 | **Partner** | Product kind | Hotel / campaign / brand **host storefront** — not a shop, not a tour agency | Outdoor gear **shop**; do not call shops “partners” in UI |
 | **Agency** | Product kind | **Tour operator** — join trips remotely; storefront is **not** “visit this pin to join” | Gear **shop**; map **Place** venue |
-| **Shop** | Product kind | **Outdoor retail** — directions, hours, picks; may have a **map pin** (Place) + `/shop/:id` | Tour **agency**; hotel **partner** |
+| **Shop** | Product kind | **Outdoor retail** — directions, contact, profile; may have a **map pin** (Place) + `/shop/:id` (no in-app catalog) | Tour **agency**; hotel **partner** |
 
 **Member profile “public”** does **not** mean guests. Setting `profileVisibility: public` allows other **signed-in members** to open the **public card** on `/member/:id`. **Guests** get sign-in prompt only (API policy in P3). See [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) § Profile visibility.
 
@@ -69,7 +69,7 @@ Explore and campaigns answer two questions. Do not merge them in copy or DTOs.
 | **Where** | What **place** or **pin** is here? | Trails, camps, venues, **shop pin**, future **partner pin** (hotel) | `place`, shop as **Place** + `shop` storefront |
 | **Who** | Who can I go with — friends, followed, hosts, demand (“looking”) | Activities, demand, explore **people browse panel** (`view=people`, list **Buddies**), member cards | `activity`, `person`, **buddy**, **`/me/member-discovery/*`** — not `whosGoing` in API/code; not chat. |
 
-An **Activity** is **Who + When** (often anchored to **Where** via `locationId`). A **tour agency** is **Who** (brand + trips) without requiring a visit pin to participate. A **shop** is primarily **Where** (get directions) plus optional e-commerce on `/shop/:id`.
+An **Activity** is **Who + When** (often anchored to **Where** via `locationId`). A **tour agency** is **Who** (brand + trips) without requiring a visit pin to participate. A **shop** is primarily **Where** (get directions) plus contact and outbound website on `/shop/:id` — no in-app product catalog.
 
 ---
 
@@ -82,12 +82,11 @@ One **person** account; zero or more **storefronts** (tenant-backed public brand
 | `community` | Buddy host (no brand page) | Via activities/seeking only | Host on map | `/member/:userId` only |
 | `pro_guide` | Pro individual — same person as community, plus Pro membership | **No** person pin | Activity join / request | **`/member/:userId`** |
 | `agency` | Tour **operator** (company profile) | **No** agency pin | Activities + paid trips | `/agency/:slug`; linked users show **operator name** on member profile |
-| `shop` | Shop **operator** | **Yes** (shop pin) + catalog | Directions, featured picks | `/shop/:id`; linked users show **operator name** on member profile |
-| `ecommerce` | Business Pro — online retail | Optional pin | Catalog / campaigns; not a tour agency | `/shop/:id` or brand URL (TBD) |
+| `shop` | Shop **operator** | **Yes** (shop pin) | Directions, contact, outbound website | `/shop/:id`; linked users show **operator name** on member profile |
 | `hospitality` | Business Pro — hotels, venues | Often **yes** | Stays + linked campaigns (future) | TBD |
 | `partner` | **Partner** Pro path (top-level) | Often **yes** (campaign pin) | Campaigns + linked Activities (future) | `/partner/:slug` |
 
-**Shops ≠ agencies ≠ partners ≠ e-commerce** — separate Pro applications and map rules. Code today: `hostProfileType` `individual` \| `agency` \| `shop`; extend with business **subtype** on Pro Business path ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md) § Pro membership ladder).
+**Shops ≠ agencies ≠ partners** — separate Pro applications and map rules. Code today: `hostProfileType` `individual` \| `agency` \| `shop`; extend with business **subtype** on Pro Business path ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md) § Pro membership ladder).
 
 ---
 
@@ -97,7 +96,7 @@ One **person** account; zero or more **storefronts** (tenant-backed public brand
 |-------|-----|------------------|
 | **Catalog / admin** | Platform admin | Shop **Place** + public `/shop/:id` for discovery; no owner console |
 | **Claimed** | Business via **Pro Membership** | Ownership verified; moves toward managed tenant |
-| **Managed** | Pro shop tenant | Owner console, team, featured picks, profile edit |
+| **Managed** | Pro shop tenant | Owner console, team, profile edit |
 
 **Agencies** and **Pro guides** are **Who**-led (no agency/guide map pins). **Shops** are **Where + Who** (pin + profile). **Partners** may combine pin + campaign surfaces (§1.2). **Pro guides** use the **member profile** as the public individual surface; **shop/agency** use **operator profiles**, discoverable from member cards when the user is linked.
 
@@ -110,7 +109,7 @@ One **person** account; zero or more **storefronts** (tenant-backed public brand
 | `place` | Navigable POI | `PlaceKind` (`hiking`, `shop` pin, …) |
 | `activity` | Scheduled outing | Host tenant + participation |
 | `person` | Member card | `profileVisibility` + profile `viewerAccess` (§15) |
-| `shop` | Shop **storefront** + commerce DTO | `PublishingProfileKind: shop` |
+| `shop` | Shop **storefront** profile | `PublishingProfileKind: shop` |
 | `organisation` | Business **storefront** slug (`/agency`, `/partner`) | `PublishingProfileKind`: `agency` \| `partner` |
 
 **Do not** rename `EntityKind.organisation` in a drive-by PR. Add `PublishingProfileKind` in `shared-types` and resolve from `tenants` + `host_applications`. Consumer copy: **Host** (individual on an outing) / **guide** / **agency** / **shop** / **partner** — not “organisation.” **Operator** = agency/shop **workspace** UI. **Organize/publish** = capabilities on **`GET /me/status`** (`profileComplete`, `publish.*`) — not `/me/*` personas. Retired in **architecture/API**: `host` paths and new `Host*` hooks; see `MEMBER_MODEL.md` § Naming vocabulary.
@@ -246,7 +245,7 @@ Query param **`tab`** where noted. **UI labels** may differ from wire ids (activ
 | Activity | `/activity/:id` | **Public scroll:** `presentation.consumerLayout` (no tab bar). **Embed/manage:** `plan` · `place` · `buddies` · `transport` + `footerByTab` | Legacy `?tab=` → scroll anchors (deprecated). **FE:** `ActivityDetailByKind` → `*ActivityDetailPage` → `ActivityDetailPageShell` → `ActivityConsumerDetailBody` |
 | Place (trail/camp/venue) | `/trail`, `/camp`, `/venue` | **Public scroll** (no tab bar). Legacy wire: `overview` · `facts` · `transport` · `guide` (alias `location` → `transport`) | `?tab=` deprecated · `src/place/placeDetailTab.ts`; **FE:** `*PlaceDetailPage` → `PlaceDetailPage` → `PlaceDetailPageShell` → `PlaceConsumerDetailPage` — L1 `buildPlaceDetailPageModel`; kind facts `PlaceConsumerKindFacts` (trail / camp / event) |
 | Area hub | `/area/:slug` | `overview` · `places` · `activities` (people on overview) | `?tab=` · `src/area/areaDetailTab.ts` |
-| Shop public | `/shop/:id` | `about` · `products` · `location` | `?tab=` · `src/shop/shopPublicDetailTab.ts` |
+| Shop public | `/shop/:id` | `about` · `location` | `?tab=` · `src/shop/shopPublicDetailTab.ts` (inbound `?tab=products` → `about`) |
 | Organisation public | `/agency`, `/partner` | `about` · `outings` · `contact` | `?tab=` · `src/organisation/organisationPublicDetailTab.ts` |
 
 **Aliases (one release when renaming place tabs):** `location` → `transport`; document in Phase 3 PR.
@@ -710,7 +709,7 @@ Any **place, venue, activity meeting point, shop, parking pin**, or other consum
 | **Activity** | `apps/api/src/services/activity-viewer-access.ts` → `buildActivityViewerAccess` (`resolveActivityViewerAccess` alias) | `apps/api/tests/activity-viewer-access.test.ts` | `GET /activities/:id`, future redaction on `GET /explore/map` items |
 | **Member profile** | `resolveProfileViewerAccess` + `computeProfileDetailExposure` (`profile-viewer-access.ts`) | `profile-viewer-access.test.ts`, shared-types | `GET /member/:userId/profile` → `{ data, viewerAccess }`; guests `sign_in` only |
 | **Place (catalog)** | Public read today — no roster | — | `GET /places/:id` |
-| **Shop / operator** | **TBD** — policy in §15.4 row “commerce” | — | Shop public pages |
+| **Shop / operator** | **TBD** — policy in §15.4 row “shop profile” | — | Shop public pages |
 | **Seeking activity** (`activityMode: seeking`) | Same as **Activity** — `buildActivityViewerAccess` on `GET /activities/:id`; map peek via explore enrich | `activity-viewer-access.test.ts`, `explore-map-viewer-access.test.ts` | `/activity/:id` secondary; primary discovery = explore pin |
 
 **Rule:** Routes call the resolver; they do **not** embed parallel `if (!user)` trees. Frontend **must not** invent roster/detail policy (see §15.6 interim drift).
@@ -859,7 +858,7 @@ Peek/detail UI: `src/access/resolvePeekDetailAccess.ts` + `mapViewerAccessToUi.t
 | **VA-4** | Public map guest `viewerAccess`; signed-in peek via `GET /me/discover/overlay` | `explore-map-viewer-access.ts` + overlay read (COH-08) ✅ |
 | **VA-5** | `mapViewerAccessToUi`; peek + `ActivityDetail` consume wire; unify guest lock copy | `mapViewerAccessToUi.ts`, `ActivityDetail.tsx` ✅ |
 | **VA-6** | Single FE peek resolver (`resolvePeekDetailAccess`) | `src/access/resolvePeekDetailAccess.ts` ✅ |
-| **VA-7** | Shop/commerce row in §15.4 + resolver | `catalog-viewer-access.ts` + map enrich ✅ |
+| **VA-7** | Shop profile row in §15.4 + resolver | `catalog-viewer-access.ts` + map enrich ✅ |
 
 **Verify each phase:** `npm run verify:system:quick` minimum; API phases require `activity-viewer-access.test.ts` green before FE relies on fields.
 

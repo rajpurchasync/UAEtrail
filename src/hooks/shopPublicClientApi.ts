@@ -1,5 +1,5 @@
 import { exploreMapPeekPath } from '@uaetrail/shared-types';
-import type { ProductDTO, ShopPublicDTO } from '@uaetrail/shared-types';
+import type { ShopPublicDTO } from '@uaetrail/shared-types';
 import { api } from '../api/index';
 import type { TenantProfile } from '../api/types';
 import type { ShopPublicView } from '../components/shop/ShopPublicPage';
@@ -7,18 +7,8 @@ import { fetchOrganisationProfileBySlug } from './organisationConsoleApi';
 import { fetchPublicPlaceDetail } from './placeDetailClientApi';
 import { communityShopPlaceToView } from '../utils/communityShopPlace';
 
-export type ShopProductDetailPayload = ProductDTO & {
-  merchantId?: string;
-  merchant?: { id: string; shopName: string; description?: string; logo?: string };
-};
-
 export const fetchShopPublic = async (id: string): Promise<ShopPublicDTO> => {
   const res = await api.getShopPublic(id);
-  return res.data;
-};
-
-export const fetchShopProductDetail = async (productId: string): Promise<ShopProductDetailPayload> => {
-  const res = await api.getShopProductDetail(productId);
   return res.data;
 };
 
@@ -37,15 +27,6 @@ const tenantToShopView = (tenant: TenantProfile): ShopPublicView => ({
   longitude: tenant.longitude ?? null,
   contactPersonName: tenant.ownerName ?? null,
   contactPersonUserId: tenant.ownerId ?? null,
-  products: (tenant.shopProducts ?? []).map((product) => ({
-    id: product.id,
-    name: product.name,
-    description: product.description,
-    images: product.images,
-    priceAed: product.priceAed,
-    discountPercent: product.discountPercent,
-    externalUrl: null,
-  })),
   presence: resolvePresence(tenant.latitude, tenant.longitude),
 });
 
@@ -75,15 +56,6 @@ export const fetchShopPublicPage = async (id: string): Promise<ShopPublicPageRes
         contactPersonName: merchant.contactPersonName ?? null,
         contactPersonAvatar: merchant.contactPersonAvatar ?? null,
         contactPersonUserId: merchant.contactPersonUserId ?? null,
-        products: merchant.products.map((product) => ({
-          id: product.id,
-          name: product.name,
-          description: product.description ?? null,
-          images: product.images,
-          priceAed: product.priceAed,
-          discountPercent: product.discountPercent ?? null,
-          externalUrl: product.externalUrl ?? null,
-        })),
         presence: resolvePresence(merchant.latitude, merchant.longitude),
       },
     };

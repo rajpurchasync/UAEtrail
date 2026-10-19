@@ -76,24 +76,6 @@ export const MembershipTier = {
 } as const;
 export type MembershipTier = (typeof MembershipTier)[keyof typeof MembershipTier];
 
-export const ProductStatus = {
-  DRAFT: 'DRAFT',
-  ACTIVE: 'ACTIVE',
-  INACTIVE: 'INACTIVE'
-} as const;
-export type ProductStatus = (typeof ProductStatus)[keyof typeof ProductStatus];
-
-export const OrderStatus = {
-  PENDING: 'PENDING',
-  PROCESSING: 'PROCESSING',
-  SHIPPED: 'SHIPPED',
-  DELIVERED: 'DELIVERED',
-  PAID: 'PAID',
-  CANCELLED: 'CANCELLED',
-  REFUNDED: 'REFUNDED'
-} as const;
-export type OrderStatus = (typeof OrderStatus)[keyof typeof OrderStatus];
-
 export const NotificationType = {
   REQUEST_UPDATE: 'REQUEST_UPDATE',
   SYSTEM: 'SYSTEM',

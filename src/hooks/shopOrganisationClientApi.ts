@@ -1,4 +1,4 @@
-import type { ProductDTO, ShopOrganisationDTO } from '@uaetrail/shared-types';
+import type { ShopOrganisationDTO } from '@uaetrail/shared-types';
 import { api } from '../api/index';
 
 export const fetchShopOrganisationStores = async (): Promise<ShopOrganisationDTO[]> => {
@@ -10,13 +10,6 @@ export const fetchShopOrganisationProfile = async (
   shopId: string
 ): Promise<ShopOrganisationDTO> => {
   const res = await api.getShopOrganisationProfile(shopId);
-  return res.data;
-};
-
-export const fetchShopOrganisationProducts = async (
-  shopId: string
-): Promise<(ProductDTO & { createdAt?: string })[]> => {
-  const res = await api.getShopOrganisationProducts(shopId);
   return res.data;
 };
 
@@ -46,23 +39,4 @@ export const createShopOrganisationProfile = async (payload: {
 }): Promise<ShopOrganisationDTO> => {
   const res = await api.createShopOrganisationProfile(payload);
   return res.data;
-};
-
-export const updateShopOrganisationProduct = async (
-  productId: string,
-  payload: Record<string, unknown>
-): Promise<void> => {
-  await api.updateShopOrganisationProduct(productId, payload);
-};
-
-type ShopOrganisationProductPayload = Parameters<typeof api.addShopOrganisationProduct>[0];
-
-export const addShopOrganisationProduct = async (
-  payload: ShopOrganisationProductPayload
-): Promise<void> => {
-  await api.addShopOrganisationProduct(payload);
-};
-
-export const deleteShopOrganisationProduct = async (productId: string): Promise<void> => {
-  await api.deleteShopOrganisationProduct(productId);
 };

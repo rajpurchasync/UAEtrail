@@ -37,11 +37,6 @@ export const checkMeWishlistTarget = async (input: {
     userId: input.userId,
     locationId: input.locationId,
     activityId: input.activityId,
-    participantIntentId: undefined,
-    productId: undefined,
-    merchantId: undefined,
-    tenantId: undefined,
-    profileUserId: undefined,
   });
   return {
     saved: Boolean(item),

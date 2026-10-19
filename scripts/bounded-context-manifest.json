@@ -200,13 +200,12 @@
       "feRoots": ["src/place/adminFacilityPlaceAdapter.ts", "src/pages/admin/Places.tsx"]
     },
     {
-      "id": "commerce",
-      "label": "Commerce",
+      "id": "shop_profiles",
+      "label": "Shop profiles (no catalog)",
       "apiFiles": ["apps/api/src/routes/shop.ts"],
       "routeRegistrars": [
         "apps/api/src/routes/shop.ts",
         "apps/api/src/routes/shop/registerShopPublicRoutes.ts",
-        "apps/api/src/routes/shop/registerShopCheckoutRoutes.ts",
         "apps/api/src/routes/shop/registerShopMerchantManageRoutes.ts"
       ],
       "feDomains": ["src/api/domains/shop.ts"],
@@ -330,7 +329,6 @@
         "apps/api/src/routes/admin/registerAdminContentReportRoutes.ts",
         "apps/api/src/routes/admin/registerAdminAuditRoutes.ts",
         "apps/api/src/routes/admin/registerAdminNotificationRoutes.ts",
-        "apps/api/src/routes/admin/registerAdminProductRoutes.ts",
         "apps/api/src/routes/admin/registerAdminPlatformStaffRoutes.ts",
         "apps/api/src/routes/safety.ts"
       ],
@@ -347,7 +345,6 @@
         "src/pages/admin/AuditLog.tsx",
         "src/pages/admin/Reports.tsx",
         "src/pages/admin/Settings.tsx",
-        "src/pages/admin/Shop.tsx",
         "src/pages/admin/Notifications.tsx",
         "src/components/layout/DashboardLayout.tsx",
         "src/constants/index.ts",
@@ -409,6 +406,14 @@
         "apps/api/src/routes/social/registerSocialPeopleRoutes.ts"
       ],
       "bannedFeDomains": ["src/api/domains/social.ts"]
+    },
+    "shopCatalog": {
+      "bannedRouteFiles": [
+        "apps/api/src/routes/admin/registerAdminProductRoutes.ts",
+        "apps/api/src/routes/shop/registerShopCheckoutRoutes.ts"
+      ],
+      "bannedFeDomains": [],
+      "bannedFePages": ["src/pages/ProductDetail.tsx", "src/pages/admin/Shop.tsx"]
     }
   }
 }

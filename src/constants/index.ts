@@ -8,7 +8,6 @@ import {
   ADMIN_FACILITIES_PATH,
   ADMIN_OVERVIEW_PATH,
   ADMIN_SETTINGS_PATH,
-  ADMIN_SHOP_PATH,
   ADMIN_USERS_PATH,
 } from '../config/adminSurfacePaths';
 import {
@@ -61,7 +60,6 @@ export const ADMIN_LINKS = [
   { to: ADMIN_USERS_PATH, label: 'Users & Members' },
   { to: ADMIN_HOSTS_PATH, label: 'Operators' },
   { to: ADMIN_GROUPS_PATH, label: 'Groups' },
-  { to: ADMIN_SHOP_PATH, label: 'Shop' },
   { to: ADMIN_REPORTS_PATH, label: 'Reports' },
   { to: ADMIN_AUDIT_LOG_PATH, label: 'Audit Log' },
   { to: ADMIN_SETTINGS_PATH, label: 'Broadcast' },

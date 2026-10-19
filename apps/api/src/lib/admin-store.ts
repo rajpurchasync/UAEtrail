@@ -1,9 +1,8 @@
 import type { Collection } from 'mongodb';
 import { COLLECTIONS } from './collections.js';
-import type { Activity, Location, Product, Tenant, TenantMembership } from '../domain/types.js';
+import type { Activity, Location, Tenant, TenantMembership } from '../domain/types.js';
 import {
   ActivityStatus,
-  ProductStatus,
   TenantBusinessMode,
   TenantStatus,
   TenantType,
@@ -42,12 +41,6 @@ type MongoAdminMetricDoc = {
 
 type MongoAdminLocationDoc = Omit<Location, 'id'> & { _id: string };
 type MongoTenantDoc = Omit<Tenant, 'id'> & { _id: string };
-type MongoProductDoc = Omit<Product, 'id'> & { _id: string };
-type MongoMerchantProfileDoc = {
-  _id: string;
-  shopName: string;
-};
-
 type MongoTenantMembershipDoc = Omit<TenantMembership, 'id'> & {
   _id: string;
   tenant?: Tenant;
@@ -62,12 +55,6 @@ type MongoActivityParticipantDoc = {
 export type AuditLogFilter = {
   action?: string | { contains?: string };
   entityType?: string;
-};
-
-export type ProductAdminFilter = {
-  status?: ProductStatus;
-  category?: string;
-  discountPercent?: { gt: number };
 };
 
 type LocationUpdateData = Partial<Omit<Location, 'id' | 'createdAt'>>;
@@ -109,12 +96,6 @@ const locationsCollection = (): Collection<MongoAdminLocationDoc> =>
 
 const organizerApplicationsCollection = (): Collection<MongoAdminMetricDoc> =>
   getMongoClient()!.db().collection<MongoAdminMetricDoc>(COLLECTIONS.HOST_APPLICATIONS);
-
-const productsCollection = (): Collection<MongoProductDoc> =>
-  getMongoClient()!.db().collection<MongoProductDoc>('products');
-
-const merchantProfilesCollection = (): Collection<MongoMerchantProfileDoc> =>
-  getMongoClient()!.db().collection<MongoMerchantProfileDoc>('merchant_profiles');
 
 const tenantMembershipsCollection = (): Collection<MongoTenantMembershipDoc> =>
   getMongoClient()!.db().collection<MongoTenantMembershipDoc>('tenant_memberships');
@@ -178,11 +159,6 @@ const mapMongoActivity = (doc: MongoActivityDoc) : Activity => ({
   updatedAt: doc.updatedAt
 });
 
-const mapMongoProduct = (doc: MongoProductDoc): Product => {
-  const { _id, ...rest } = doc;
-  return { id: _id, ...rest };
-};
-
 const toMongoAuditQuery = (where: AuditLogFilter): Record<string, unknown> => {
   const query: Record<string, unknown> = {};
   if (where.entityType && typeof where.entityType === 'string') {
@@ -195,16 +171,6 @@ const toMongoAuditQuery = (where: AuditLogFilter): Record<string, unknown> => {
     if (searchRegex) {
       query.action = { $regex: searchRegex, $options: 'i' };
     }
-  }
-  return query;
-};
-
-const toMongoProductQuery = (where: ProductAdminFilter): Record<string, unknown> => {
-  const query: Record<string, unknown> = {};
-  if (where.status) query.status = where.status;
-  if (where.category) query.category = where.category;
-  if (where.discountPercent?.gt != null) {
-    query.discountPercent = { $gt: where.discountPercent.gt };
   }
   return query;
 };
@@ -826,47 +792,4 @@ export const listBroadcastNotificationAuditLogs = async (take: number) => {
       }
     };
   });
-};
-
-export const listAdminProductsPaged = async (input: {
-  where: ProductAdminFilter;
-  skip: number;
-  take: number;
-}) => {
-  const query = toMongoProductQuery(input.where);
-  const [productDocs, total] = await Promise.all([
-    productsCollection().find(query).sort({ createdAt: -1 }).skip(input.skip).limit(input.take).toArray(),
-    productsCollection().countDocuments(query)
-  ]);
-
-  const merchantIds = [...new Set(productDocs.map((product) => product.merchantId))];
-  const merchants = await merchantProfilesCollection().find({ _id: { $in: merchantIds } }).toArray();
-  const merchantMap = new Map(merchants.map((merchant) => [merchant._id, merchant]));
-
-  const items = productDocs.map((productDoc) => ({
-    ...mapMongoProduct(productDoc),
-    merchant: {
-      id: productDoc.merchantId,
-      shopName: merchantMap.get(productDoc.merchantId)?.shopName ?? 'Unknown shop'
-    }
-  }));
-
-  return { items, total };
-};
-
-export const findAdminProductById = async (id: string) => {
-  const doc = await productsCollection().findOne({ _id: id });
-  return doc ? mapMongoProduct(doc) : null;
-};
-
-export const updateAdminProductStatus = async (id: string, status: ProductStatus) => {
-  const result = await productsCollection().findOneAndUpdate(
-    { _id: id },
-    { $set: { status, updatedAt: new Date() } },
-    { returnDocument: 'after' }
-  );
-  if (!result) {
-    throw new Error('Product not found.');
-  }
-  return mapMongoProduct(result);
 };

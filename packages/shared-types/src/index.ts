@@ -588,39 +588,7 @@ export interface ChatMessageDTO {
   reactions?: ChatMessageReactionDTO[];
 }
 
-// ─── Shop DTOs ──────────────────────────────────────────────────────────────
-
-export type ProductStatusType = 'draft' | 'active' | 'inactive';
-
-export type OrderStatus =
-  | 'pending'
-  | 'processing'
-  | 'shipped'
-  | 'delivered'
-  | 'paid'
-  | 'cancelled'
-  | 'refunded';
-
-export interface ProductDTO {
-  id: string;
-  name: string;
-  description?: string;
-  images: string[];
-  priceAed: number;
-  stockQuantity: number;
-  lowStockThreshold: number;
-  discountPercent?: number;
-  memberDiscountPercent?: number;
-  externalUrl?: string | null;
-  packagingInfo?: string;
-  category: string;
-  status: ProductStatusType;
-  merchantId: string;
-  merchantName: string;
-  latitude?: number | null;
-  longitude?: number | null;
-  region?: string | null;
-}
+// ─── Shop DTOs (profiles only — no product catalog) ─────────────────────────
 
 export type ReviewTargetType = 'location' | 'tenant' | 'activity';
 
@@ -647,7 +615,7 @@ export type ShopPresence = 'physical' | 'online';
 
 export interface MerchantProfileDTO {
   id: string;
-  /** Preferred commerce profile id (`merchant_profiles._id`). Same as `id`. */
+  /** Preferred shop profile id (`merchant_profiles._id`). Same as `id`. */
   shopId?: string;
   /** @deprecated Use shopId — legacy alias for the same id. */
   merchantId?: string;
@@ -670,11 +638,10 @@ export interface MerchantProfileDTO {
 /** Domain alias — shop organisation. Storage/API remain `merchant_profiles` / `MerchantProfileDTO`. */
 export type ShopOrganisationDTO = MerchantProfileDTO;
 
-export interface MerchantPublicDTO extends MerchantProfileDTO {
-  products: ProductDTO[];
-}
+/** Public shop profile — same wire shape as {@link MerchantProfileDTO}. */
+export type MerchantPublicDTO = MerchantProfileDTO;
 
-/** Domain alias — public shop page payload. Storage/API remain `merchant_profiles` / `/shop/merchants/:id`. */
+/** Domain alias — public shop page payload. */
 export type ShopPublicDTO = MerchantPublicDTO;
 
 export type ExploreMapKind = ActivityType | 'shop' | 'agency' | 'area';
@@ -804,7 +771,6 @@ export interface ExploreMapItemDTO {
   activity?: ActivityDTO;
   rideshareEnabled?: boolean;
   merchantId?: string;
-  productId?: string;
   priceAed?: number | null;
   /** Carpool destination pin (Phase P2). */
   toLatitude?: number | null;
@@ -885,60 +851,6 @@ export interface ExploreMapOverlayDTO {
   items: ExploreMapOverlayItemDTO[];
 }
 
-export interface ProductClick {
-  id: string;
-  productId: string;
-  timestamp: string;
-  userId: string;
-}
-
-export interface OrderLineItem {
-  id: string;
-  productId: string;
-  quantity: number;
-  totalAed: number;
-  status: OrderStatus;
-  fulfillmentTrackingLink?: string | null;
-  timestamp: string;
-}
-
-export interface MerchantOrderLineItemDTO extends OrderLineItem {
-  orderId: string;
-  product: {
-    id: string;
-    name: string;
-    images: string[];
-    priceAed: number;
-    merchantId: string;
-    stockQuantity: number;
-    lowStockThreshold: number;
-  };
-}
-
-export type MerchantAnalyticsInterval = 'day' | 'month' | 'year';
-
-export interface MerchantAnalyticsPointDTO {
-  bucket: string;
-  salesAed: number;
-  clicks: number;
-  orderCount: number;
-  quantitySold: number;
-}
-
-export interface MerchantAnalyticsSeriesDTO {
-  merchantId?: string;
-  merchantIds: string[];
-  startDate: string;
-  endDate: string;
-  interval: MerchantAnalyticsInterval;
-  points: MerchantAnalyticsPointDTO[];
-}
-
-/** Domain aliases — shop organisation analytics (wire remains `MerchantAnalytics*`). */
-export type ShopAnalyticsInterval = MerchantAnalyticsInterval;
-export type ShopAnalyticsPointDTO = MerchantAnalyticsPointDTO;
-export type ShopAnalyticsSeriesDTO = MerchantAnalyticsSeriesDTO;
-
 // ─── Admin DTOs ─────────────────────────────────────────────────────────────
 
 export type UserStatusType = 'active' | 'suspended';
@@ -992,15 +904,6 @@ export interface OrganisationHostDetailsDTO {
   residence?: string;
 }
 
-export interface TenantPublicProductDTO {
-  id: string;
-  name: string;
-  description: string | null;
-  images: string[];
-  priceAed: number;
-  discountPercent: number | null;
-}
-
 export interface TenantPublicTeamMemberDTO {
   role: string;
   displayName: string;
@@ -1033,7 +936,6 @@ export interface TenantPublicDTO {
   shopId?: string | null;
   /** @deprecated Use shopId */
   merchantId?: string | null;
-  shopProducts?: TenantPublicProductDTO[];
 }
 
 // ─── Participant DTO ────────────────────────────────────────────────────────

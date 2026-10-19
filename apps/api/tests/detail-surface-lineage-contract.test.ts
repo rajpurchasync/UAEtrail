@@ -9,13 +9,12 @@ import {
   ActivityStatus,
   LocationStatus,
   MembershipRole,
-  ProductStatus,
   TenantBusinessMode,
   TenantStatus,
   TenantType,
 } from '../src/domain/enums.js';
 import { getMongoClient } from '../src/lib/mongo.js';
-import { createMerchantProduct, createMerchantProfileForUser } from '../src/lib/shop-store.js';
+import { createMerchantProfileForUser } from '../src/lib/shop-store.js';
 import { createTenantRecord, findTenantById } from '../src/lib/tenant-store.js';
 import { findAuthUserByEmail } from '../src/lib/auth-users-store.js';
 import { upsertTenantMembership } from '../src/lib/tenant-access.js';
@@ -41,7 +40,6 @@ let hostFixture: PublishedEventFixture | null = null;
 let httpPublishedActivityId: string | null = null;
 const hostFixtureSuffix = `${suffix}-host`;
 let shopMerchantId: string | null = null;
-let shopProductId: string | null = null;
 
 const adminAuth = () => ({ Authorization: `Bearer ${adminToken}` });
 
@@ -97,25 +95,11 @@ beforeAll(async () => {
     { tenantId: shopTenant.id, linkShopTenant: true }
   );
   shopMerchantId = merchant.id;
-  const product = await createMerchantProduct({
-    merchantId: merchant.id,
-    name: 'Lineage product',
-    description: 'Shop public detail lineage product row.',
-    images: ['https://example.com/product.jpg'],
-    priceAed: 49,
-    category: 'gear',
-    status: ProductStatus.ACTIVE,
-  });
-  shopProductId = product.id;
 });
 
 afterAll(async () => {
   const db = getMongoClient()!.db();
-  if (shopProductId) {
-    await db.collection('products').deleteMany({ _id: shopProductId });
-  }
   if (shopMerchantId) {
-    await db.collection('products').deleteMany({ merchantId: shopMerchantId });
     await db.collection('merchant_profiles').deleteMany({ _id: shopMerchantId });
   }
   if (httpPublishedActivityId) {
@@ -390,13 +374,11 @@ describe('detail surface lineage (pro tenant → organisation public)', () => {
 });
 
 describe('detail surface lineage (shop merchant → public shop)', () => {
-  it('merchant profile is readable on GET /shops/:id with products', async () => {
+  it('merchant profile is readable on GET /shops/:id', async () => {
     expect(shopMerchantId).toBeTruthy();
     const res = await request(app).get(`/api/shop/shops/${shopMerchantId}`);
     expect(res.status).toBe(200);
     expect(res.body.data.shopName).toMatch(/Lineage Gear/);
-    expect(res.body.data.products).toEqual(
-      expect.arrayContaining([expect.objectContaining({ id: shopProductId })])
-    );
+    expect(res.body.data.products).toBeUndefined();
   });
 });

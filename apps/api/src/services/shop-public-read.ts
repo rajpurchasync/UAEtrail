@@ -1,6 +1,1 @@
-export {
-  findActiveProductById,
-  findMerchantPublicById,
-  listActiveProductsByIds,
-  listPublicProducts,
-} from '../lib/shop-store.js';
+export { findMerchantPublicById, listPublicMerchantsForMap } from '../lib/shop-store.js';

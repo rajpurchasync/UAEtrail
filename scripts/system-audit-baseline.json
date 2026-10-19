@@ -1,25 +1,20 @@
 {
-  "generated": "2026-10-17",
+  "generated": "2026-10-19",
   "description": "CTO system audit baseline. Regenerate: npm run system:audit",
   "summary": {
-    "apiRegistrarFiles": 52,
-    "apiRouteEndpointsParsed": 169,
-    "mongoCollectionsDefined": 55,
-    "mongoCollectionsOrphanInApi": 1,
+    "apiRegistrarFiles": 50,
+    "apiRouteEndpointsParsed": 157,
+    "mongoCollectionsDefined": 46,
+    "mongoCollectionsOrphanInApi": 0,
     "mongoCollectionsMultiWriterOver4": 0,
     "routeRegistrarsWithDirectWrites": 0,
     "apiMounts": 8,
-    "spaRouteElements": 115,
-    "feDomainModules": 28,
+    "spaRouteElements": 112,
+    "feDomainModules": 27,
     "boundedContexts": 17
   },
   "risks": {
-    "orphanCollections": [
-      {
-        "key": "STRIPE_WEBHOOK_EVENTS",
-        "mongoName": "stripe_webhook_events"
-      }
-    ],
+    "orphanCollections": [],
     "multiWriterCollectionsTop": [],
     "routeLayerViolations": []
   },
@@ -35,7 +30,7 @@
     {
       "prefix": "/publishing",
       "file": "apps/api/src/routes/publishing.ts",
-      "note": "HTTP mount /publishing; SPA /publishing/*"
+      "note": "HTTP + SPA /publishing/* (publishingRouter module)"
     },
     {
       "prefix": "/chat",
@@ -282,15 +277,13 @@
     },
     "PARTICIPANT_INTENTS": {
       "mongoName": "participant_intents",
-      "referencingFiles": 8,
-      "writerFiles": 4,
+      "referencingFiles": 4,
+      "writerFiles": 3,
       "sampleFiles": [
         "apps/api/src/lib/mongo-indexes.ts",
         "apps/api/src/lib/mongo-migrations.ts",
-        "apps/api/src/lib/participant-intent-requests-store.ts",
         "apps/api/src/lib/participant-intents-store.ts",
-        "apps/api/src/lib/seeking-storage-ops.ts",
-        "apps/api/src/services/area-public-read.ts"
+        "apps/api/src/lib/seeking-storage-ops.ts"
       ]
     },
     "PARTICIPANT_INTENT_REQUESTS": {
@@ -312,49 +305,13 @@
         "apps/api/src/lib/shop-store.ts"
       ]
     },
-    "PRODUCTS": {
-      "mongoName": "products",
-      "referencingFiles": 2,
-      "writerFiles": 1,
-      "sampleFiles": [
-        "apps/api/src/lib/mongo-indexes.ts",
-        "apps/api/src/lib/shop-store.ts"
-      ]
-    },
-    "SHOP_ORDERS": {
-      "mongoName": "shop_orders",
-      "referencingFiles": 3,
-      "writerFiles": 2,
-      "sampleFiles": [
-        "apps/api/src/lib/mongo-indexes.ts",
-        "apps/api/src/lib/mongo-migrations.ts",
-        "apps/api/src/lib/shop-store.ts"
-      ]
-    },
-    "ORDER_LINE_ITEMS": {
-      "mongoName": "order_line_items",
-      "referencingFiles": 3,
-      "writerFiles": 2,
-      "sampleFiles": [
-        "apps/api/src/lib/mongo-indexes.ts",
-        "apps/api/src/lib/mongo-migrations.ts",
-        "apps/api/src/lib/shop-store.ts"
-      ]
-    },
-    "PRODUCT_CLICKS": {
-      "mongoName": "product_clicks",
-      "referencingFiles": 2,
-      "writerFiles": 1,
-      "sampleFiles": [
-        "apps/api/src/lib/mongo-indexes.ts",
-        "apps/api/src/lib/shop-store.ts"
-      ]
-    },
     "STRIPE_WEBHOOK_EVENTS": {
       "mongoName": "stripe_webhook_events",
-      "referencingFiles": 0,
-      "writerFiles": 0,
-      "sampleFiles": []
+      "referencingFiles": 1,
+      "writerFiles": 1,
+      "sampleFiles": [
+        "apps/api/src/lib/shop-store.ts"
+      ]
     },
     "CHAT_MESSAGES": {
       "mongoName": "chat_messages",
@@ -577,46 +534,6 @@
       "sampleFiles": [
         "apps/api/src/lib/mongo-indexes.ts"
       ]
-    },
-    "EVENTS": {
-      "mongoName": "events",
-      "referencingFiles": 1,
-      "writerFiles": 1,
-      "sampleFiles": [
-        "apps/api/src/lib/mongo-migrations.ts"
-      ]
-    },
-    "EVENT_REQUESTS": {
-      "mongoName": "event_requests",
-      "referencingFiles": 1,
-      "writerFiles": 1,
-      "sampleFiles": [
-        "apps/api/src/lib/mongo-migrations.ts"
-      ]
-    },
-    "EVENT_PARTICIPANTS": {
-      "mongoName": "event_participants",
-      "referencingFiles": 1,
-      "writerFiles": 1,
-      "sampleFiles": [
-        "apps/api/src/lib/mongo-migrations.ts"
-      ]
-    },
-    "ORGANIZER_APPLICATIONS": {
-      "mongoName": "organizer_applications",
-      "referencingFiles": 1,
-      "writerFiles": 1,
-      "sampleFiles": [
-        "apps/api/src/lib/mongo-migrations.ts"
-      ]
-    },
-    "USER_FAVORITES": {
-      "mongoName": "user_favorites",
-      "referencingFiles": 1,
-      "writerFiles": 1,
-      "sampleFiles": [
-        "apps/api/src/lib/mongo-migrations.ts"
-      ]
     }
   },
   "collectionWritersSummary": {
@@ -636,14 +553,10 @@
     "ACTIVITIES": 3,
     "ACTIVITY_REQUESTS": 1,
     "ACTIVITY_PARTICIPANTS": 2,
-    "PARTICIPANT_INTENTS": 4,
+    "PARTICIPANT_INTENTS": 3,
     "PARTICIPANT_INTENT_REQUESTS": 1,
     "MERCHANT_PROFILES": 3,
-    "PRODUCTS": 1,
-    "SHOP_ORDERS": 2,
-    "ORDER_LINE_ITEMS": 2,
-    "PRODUCT_CLICKS": 1,
-    "STRIPE_WEBHOOK_EVENTS": 0,
+    "STRIPE_WEBHOOK_EVENTS": 1,
     "CHAT_MESSAGES": 0,
     "CHAT_MESSAGE_REACTIONS": 1,
     "CONTENT_REPORTS": 1,
@@ -669,12 +582,7 @@
     "ACTIVITY_INVITES": 1,
     "PUSH_SUBSCRIPTIONS": 0,
     "MEDIA_ASSETS": 0,
-    "AUDIT_LOGS": 0,
-    "EVENTS": 1,
-    "EVENT_REQUESTS": 1,
-    "EVENT_PARTICIPANTS": 1,
-    "ORGANIZER_APPLICATIONS": 1,
-    "USER_FAVORITES": 1
+    "AUDIT_LOGS": 0
   },
   "registrarServicesSample": {
     "apps/api/src/routes/admin/registerAdminActivityModerationRoutes.ts": [

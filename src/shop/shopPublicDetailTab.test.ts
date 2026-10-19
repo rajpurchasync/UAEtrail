@@ -6,8 +6,8 @@ describe('parseShopPublicDetailTabParam', () => {
     expect(parseShopPublicDetailTabParam(null)).toBe('about');
   });
 
-  it('parses products and location', () => {
-    expect(parseShopPublicDetailTabParam('products')).toBe('products');
+  it('parses location and maps retired products tab to about', () => {
+    expect(parseShopPublicDetailTabParam('products')).toBe('about');
     expect(parseShopPublicDetailTabParam('location')).toBe('location');
   });
 });

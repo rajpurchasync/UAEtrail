@@ -1,6 +1,5 @@
 import {
   ActivityDetailDTO,
-  ProductDTO,
   ReviewDTO,
   resolveActivityPublisherProfilePath,
 } from '@uaetrail/shared-types';
@@ -129,27 +128,6 @@ export const activityEventSchema = (activity: ActivityDetailDTO) => {
   if (image) schema.image = image;
   return schema;
 };
-
-export const productSchema = (
-  product: ProductDTO & { merchant?: { shopName?: string } }
-) => ({
-  '@context': 'https://schema.org',
-  '@type': 'Product',
-  name: product.name,
-  description: product.description,
-  url: `${SITE_ORIGIN}/product/${product.id}`,
-  image: absImage(product.images?.[0]),
-  brand: product.merchant?.shopName
-    ? { '@type': 'Brand', name: product.merchant.shopName }
-    : undefined,
-  offers: {
-    '@type': 'Offer',
-    price: product.priceAed,
-    priceCurrency: 'AED',
-    availability: 'https://schema.org/InStock',
-    url: `${SITE_ORIGIN}/product/${product.id}`
-  }
-});
 
 const averageRating = (reviews: ReviewDTO[]) => {
   if (reviews.length === 0) return undefined;

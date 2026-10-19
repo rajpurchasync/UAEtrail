@@ -3,7 +3,7 @@ import { ApiError } from '../lib/api-error.js';
 import { findPublicTenantProfileBySlug } from '../lib/activities-store.js';
 import { loadHostDetailsForUser } from '../lib/host-display-details.js';
 import { buildActivityDto, mapTenantBusinessMode, mapTenantType } from '../lib/mappers.js';
-import { findMerchantProfilesByUserIds, findMerchantPublicById } from '../lib/shop-store.js';
+import { findMerchantProfilesByUserIds } from '../lib/shop-store.js';
 
 export const loadPublicTenantProfileBySlug = async (slug: string) => {
   const tenant = await findPublicTenantProfileBySlug(slug);
@@ -14,14 +14,6 @@ export const loadPublicTenantProfileBySlug = async (slug: string) => {
   const hostDetails = await loadHostDetailsForUser(tenant.ownerId);
 
   let merchantId: string | null = null;
-  let shopProducts: Array<{
-    id: string;
-    name: string;
-    description: string | null;
-    images: string[];
-    priceAed: number;
-    discountPercent: number | null;
-  }> = [];
 
   const isShopTenant = tenant.businessMode === TenantBusinessMode.SHOP;
 
@@ -29,16 +21,6 @@ export const loadPublicTenantProfileBySlug = async (slug: string) => {
     const merchant = (await findMerchantProfilesByUserIds([tenant.ownerId])).get(tenant.ownerId) ?? null;
     if (merchant) {
       merchantId = merchant.id;
-      const publicMerchant = await findMerchantPublicById(merchant.id);
-      shopProducts =
-        publicMerchant?.products.map((product) => ({
-          id: product.id,
-          name: product.name,
-          description: product.description ?? null,
-          images: product.images,
-          priceAed: product.priceAed,
-          discountPercent: product.discountPercent ?? null,
-        })) ?? [];
     }
   }
 
@@ -59,7 +41,6 @@ export const loadPublicTenantProfileBySlug = async (slug: string) => {
     ownerBio: ownerProfile?.bio ?? null,
     hostDetails,
     shopId: merchantId,
-    shopProducts,
     memberCount: tenant.memberships.length,
     team: tenant.memberships.map((m) => ({
       role: m.role,

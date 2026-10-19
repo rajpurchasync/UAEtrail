@@ -151,7 +151,7 @@ Pick a **context id** when changing code; touch registrar + `src/api/domains/*` 
 | social_graph | `buddy_*`, `user_follows`, `social_groups*` | `/me/buddies`, `/me/buddy-requests`, `/me/groups`, `/me/following`, … | `buddiesApi`, `groupsApi` | `Buddies`, `Groups` — relationship admin; **not** the explore people browse panel |
 | places | `locations` (places) | `GET /places/catalog`, `/places/:id`, `POST /me/places` | `placeApi`, `placeCatalogClient`, `memberCatalogSubmitClientApi` | `PlaceDetail*`, `memberCatalogSubmitClientApi`, `placeCatalogReadsClientApi` |
 | facilities | `facilities` | `GET /facilities/catalog`, `/facilities/:id`, `POST /me/facilities`, `/admin/facilities` | `facilityApi`, `memberCatalogSubmitClientApi` | Facility submit wizard, `AdminPlaces` (`catalogSegment=facility`) |
-| commerce | `merchant_profiles`, `products` | `/shop/*` | `shopApi` | `ShopPublic`, shop UI |
+| shop_profiles | `merchant_profiles` | `/shop/*` | `shopApi` | `ShopPublic`, shop UI |
 | engagement | `user_badges`, `user_goals`, `user_wishlist`, `entity_follows`, `social_reviews`, … | `/me/badges`, `/me/goals`, `/me/wishlist`, `/me/entity-follows`, `/reviews` | `badgesApi`, `goalsApi`, `wishlistApi`, `entityFollowApi`, `reviewsApi` | `ProfileBadges`, goals, `entityFollowApi`, wishlist guards |
 | platform_ops | `host_applications`, `audit_logs` | `/admin/*`, `POST/DELETE /admin/platform-admins` (master) | `adminApi` | `src/pages/admin/*`, `DashboardLayout`, `ADMIN_LINKS` — **ops tables**, not discovery L1/L2 |
 
@@ -589,7 +589,7 @@ Phases **S0–S4** (guards), **S6–S8** (core), and **S7/S7b/S7c** are in place
 | **Facility** | **Amenity** POI (toilet, rest_area, parking, …; member **outdoor_shop** pin ≠ operator shop). Storage: **`facilities` collection** (target). Optional **`parentPlaceId`** (rest stop on a trail); required **`areaId`**. |
 | **Activity** | Scheduled outing; `activityMode: hosted` \| `seeking`. **Find crew** (fixed) + **Host** on explore FAB (no separate legacy **Find** menu). |
 | **Area** | Curated hub; places and facilities link via `areaId`; activity geography via `activity.locationId → place.areaId`. |
-| **Shop (commerce)** | **Operator tenant** + `/shop/:id` + `/publishing/*` — **not** FAB Add. Member gear pin → **facility `outdoor_shop`** (peek exposure). |
+| **Shop profiles** | **Operator tenant** + `/shop/:id` + `/publishing/*` — **not** FAB Add. Member gear pin → **facility `outdoor_shop`** (peek exposure). No product catalog. |
 | **Add / submit** | **Not** an API or table — **provenance** `registeredByUserId` (alias `submittedById` during migration) on place/facility rows. |
 | **Registry** | **Named catalog queries** — `GET /places/catalog` (places), `GET /facilities/catalog` — not separate Mongo “registry” collections. |
 | **Lifecycle (catalog)** | **Moderation** (`pending` \| `approved` \| `rejected` \| `suspended`) + **publication** (`listed` \| `unlisted` \| `anchor_only`) — migrate from `LocationStatus` + `registryListed`. **No member-facing draft editor** — profile **submissions** + pending copy. |
@@ -728,7 +728,7 @@ Mark `[x]` in the PR that completes the item. **Gate:** `npm run verify:system:q
 *Depends: CPC-3.*
 
 - [x] Explore map reads facilities from `facilities` collection
-- [x] Shop **tenant** pins unchanged (`commerce` context)
+- [x] Shop **tenant** pins unchanged (`shop_profiles` context)
 - [x] Community outdoor_shop: peek-only projection (`catalog-profile-exposure`)
 - [x] Update `explore-map-layers.test.ts`
 - [x] Area lens rollups use facility map pins (`placeKind` on explore items)
@@ -880,7 +880,7 @@ Legacy shim (one release, no new imports): `placeRegistry.ts`. `placeCatalogApi.
 |------------|----------------|---------|
 | `places` | Place catalog, place detail | `locations` (place rows) |
 | `facilities` | Amenities, facility catalog, facility detail | `facilities` |
-| `commerce` | Operator shop storefront | `tenants`, merchants |
+| `shop_profiles` | Operator shop storefront (profile only) | `tenants`, merchants |
 | `publishing_workspace` | Operator activities, tenant place submit | `activities`, places |
 | `compose` | FAB wizards | — |
 
@@ -1064,7 +1064,7 @@ Board one-liner: *P4 thinned the API; **PCOH** (§8.8) finished UPL/BWL coherenc
 
 #### 8.8.3 Bounded contexts — topics covered (manifest §3)
 
-All **17** contexts: `discovery`, `compose`, `participation`, `member_identity`, `member_publish_capabilities`, `publishing_workspace`, `communication`, `social_graph`, `places`, `facilities`, `commerce`, `member_discovery`, `engagement`, `areas`, `availability`, `media`, `platform_ops`.
+All **17** contexts: `discovery`, `compose`, `participation`, `member_identity`, `member_publish_capabilities`, `publishing_workspace`, `communication`, `social_graph`, `places`, `facilities`, `shop_profiles`, `member_discovery`, `engagement`, `areas`, `availability`, `media`, `platform_ops`.
 
 **Cross-cutting (in PCOH scope):** auth & account lifecycle; notifications & push; check-in; viewer access; side-effect outbox; explore Redis cache; agent/OG; premium place PDF; member discovery quota; coordination attention; journey map pins; legacy SPA redirects; `verify:system` / journey tests.
 

@@ -6,7 +6,7 @@ export const CONSUMER_DETAIL_TAB_WIRE_CANON = {
   activity: ['plan', 'place', 'buddies', 'transport'],
   place: ['overview', 'facts', 'transport', 'guide'],
   area: ['overview', 'places', 'activities'],
-  shop: ['about', 'products', 'location'],
+  shop: ['about', 'location'],
   organisation: ['about', 'outings', 'contact'],
 } as const;
 

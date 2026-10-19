@@ -35,7 +35,6 @@ describe('addFlow steps', () => {
       'curatedArea',
       'location',
       'about',
-      'shop_products',
       'shop_keywords',
       'image',
       'shop_delivery',

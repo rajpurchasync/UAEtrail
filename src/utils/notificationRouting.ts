@@ -304,7 +304,6 @@ export const inferNotificationPath = (
     if (toStringValue(meta?.groupId)) return '/admin/groups';
     if (toStringValue(meta?.activityId)) return '/admin/activities';
     if (toStringValue(meta?.locationId)) return ADMIN_PLACES_PATH;
-    if (toStringValue(meta?.productId)) return '/admin/shop';
 
     const adminText = `${notif.title} ${notif.body}`.toLowerCase();
     if (adminText.includes('application') || adminText.includes('host')) return ADMIN_HOSTS_PATH;
@@ -312,7 +311,7 @@ export const inferNotificationPath = (
     if (adminText.includes('group')) return '/admin/groups';
     if (adminText.includes('activity')) return '/admin/activities';
     if (adminText.includes('location')) return ADMIN_PLACES_PATH;
-    if (adminText.includes('product') || adminText.includes('shop')) return '/admin/shop';
+    if (adminText.includes('shop')) return ADMIN_HOSTS_PATH;
   }
 
   return PROFILE_PATH;

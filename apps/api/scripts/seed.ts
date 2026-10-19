@@ -10,7 +10,6 @@ import {
   MembershipRole,
   NotificationType,
   HostApplicationStatus,
-  ProductStatus,
   RequestStatus,
   ReviewTargetType,
   TenantBusinessMode,
@@ -692,43 +691,6 @@ const upsertMerchantProfile = async (
   return (await findManagedMerchantProfileById(adminIds[0]!, created.id))!;
 };
 
-const upsertProduct = async (
-  id: string,
-  merchantId: string,
-  product: {
-    name: string;
-    description: string;
-    images: string[];
-    priceAed: number;
-    discountPercent?: number;
-    packagingInfo?: string;
-    category: string;
-    status: ProductStatus;
-  }
-) => {
-  const now = new Date();
-  await db().collection('products').updateOne(
-    { _id: id },
-    {
-      $set: {
-        merchantId,
-        name: product.name,
-        description: product.description,
-        images: product.images,
-        priceAed: product.priceAed,
-        discountPercent: product.discountPercent ?? null,
-        externalUrl: null,
-        packagingInfo: product.packagingInfo ?? null,
-        category: product.category,
-        status: product.status,
-        updatedAt: now
-      },
-      $setOnInsert: { createdAt: now }
-    },
-    { upsert: true }
-  );
-};
-
 const seedDemandId = (label: string): string => `seed-${label}`;
 
 const upsertSeedSeekingActivity = async (input: {
@@ -760,89 +722,6 @@ const upsertSeedSeekingActivity = async (input: {
   }
 
   await createSeekingActivityForIntent(input.userId, input.intentId, input.payload, input.areaId);
-};
-
-const seedMerchantAnalytics = async (input: {
-  products: Array<{ id: string; priceAed: number }>;
-  userIds: string[];
-}) => {
-  await db().collection('product_clicks').deleteMany({ productId: { $in: input.products.map((product) => product.id) } });
-  await db().collection('shop_orders').deleteMany({
-    'items.productId': { $in: input.products.map((product) => product.id) },
-  });
-
-  const now = new Date();
-  const clickDocs: Array<{ _id: string; productId: string; timestamp: Date; userId: string }> = [];
-  const orderDocs: Array<{
-    _id: string;
-    userId: string;
-    status: string;
-    totalAed: number;
-    stripeSessionId: string | null;
-    createdAt: Date;
-    updatedAt: Date;
-    items: Array<{
-      id: string;
-      productId: string;
-      quantity: number;
-      unitPriceAed: number;
-      totalAed: number;
-      status: string;
-      fulfillmentTrackingLink: string | null;
-      timestamp: Date;
-    }>;
-  }> = [];
-
-  for (let dayOffset = 0; dayOffset < 30; dayOffset += 1) {
-    const timestamp = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - dayOffset, 12, 0, 0, 0));
-    for (const product of input.products) {
-      const clickCount = crypto.randomInt(3, 12);
-      for (let clickIndex = 0; clickIndex < clickCount; clickIndex += 1) {
-        clickDocs.push({
-          _id: crypto.randomUUID(),
-          productId: product.id,
-          timestamp: new Date(timestamp.getTime() + clickIndex * 60_000),
-          userId: input.userIds[crypto.randomInt(0, input.userIds.length)]!
-        });
-      }
-
-      const orderCount = crypto.randomInt(0, 4);
-      for (let orderIndex = 0; orderIndex < orderCount; orderIndex += 1) {
-        const quantity = crypto.randomInt(1, 4);
-        const lineTimestamp = new Date(timestamp.getTime() + orderIndex * 90_000);
-        const orderId = crypto.randomUUID();
-        const totalAed = quantity * product.priceAed;
-        orderDocs.push({
-          _id: orderId,
-          userId: input.userIds[crypto.randomInt(0, input.userIds.length)]!,
-          status: 'PAID',
-          totalAed,
-          stripeSessionId: null,
-          createdAt: lineTimestamp,
-          updatedAt: lineTimestamp,
-          items: [
-            {
-              id: `${orderId}:0`,
-              productId: product.id,
-              quantity,
-              unitPriceAed: product.priceAed,
-              totalAed,
-              status: 'PENDING',
-              fulfillmentTrackingLink: null,
-              timestamp: lineTimestamp,
-            },
-          ],
-        });
-      }
-    }
-  }
-
-  if (clickDocs.length > 0) {
-    await db().collection('product_clicks').insertMany(clickDocs);
-  }
-  if (orderDocs.length > 0) {
-    await db().collection('shop_orders').insertMany(orderDocs);
-  }
 };
 
 const upsertReview = async (input: {
@@ -2094,71 +1973,6 @@ Share your live location and carry extra water in summer months.`
     { linkShopTenant: false }
   );
 
-  const seedProducts = [
-    {
-      id: 'seed-product-nike-trail-running-shoes',
-      merchantId: nikeMerchantProfile.id,
-      name: 'Trail Running Shoes',
-      description: 'Lightweight trail shoes with excellent grip for rocky terrain.',
-      images: ['https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800'],
-      priceAed: 450,
-      discountPercent: 10,
-      category: 'footwear',
-      status: ProductStatus.ACTIVE
-    },
-    {
-      id: 'seed-product-adidas-ultralight-tent-2p',
-      merchantId: adidasMerchantProfile.id,
-      name: 'Ultralight Tent 2P',
-      description: 'Two-person tent weighing only 1.5kg, perfect for desert camping.',
-      images: ['https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=800'],
-      priceAed: 890,
-      category: 'shelter',
-      status: ProductStatus.ACTIVE
-    },
-    {
-      id: 'seed-product-nike-hydration-pack-3l',
-      merchantId: nikeMerchantProfile.id,
-      name: 'Hydration Pack 3L',
-      description: 'Hands-free hydration system with 3-liter reservoir.',
-      images: ['https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=800'],
-      priceAed: 280,
-      discountPercent: 15,
-      packagingInfo: 'Ships in eco-friendly packaging',
-      category: 'accessories',
-      status: ProductStatus.ACTIVE
-    },
-    {
-      id: 'seed-product-adidas-trekking-poles-pair',
-      merchantId: adidasMerchantProfile.id,
-      name: 'Trekking Poles (Pair)',
-      description: 'Carbon fiber trekking poles, adjustable 65-135cm.',
-      images: ['https://images.unsplash.com/photo-1551632811-561732d1e306?w=800'],
-      priceAed: 320,
-      category: 'gear',
-      status: ProductStatus.ACTIVE
-    },
-    {
-      id: 'seed-product-nike-headlamp-pro-800lm',
-      merchantId: nikeMerchantProfile.id,
-      name: 'Headlamp Pro 800lm',
-      description: 'Rechargeable headlamp with 800 lumens, red light mode.',
-      images: ['https://images.unsplash.com/photo-1530541930197-ff16ac917b0e?w=800'],
-      priceAed: 180,
-      category: 'gear',
-      status: ProductStatus.DRAFT
-    }
-  ];
-
-  for (const product of seedProducts) {
-    await upsertProduct(product.id, product.merchantId, product);
-  }
-
-  await seedMerchantAnalytics({
-    products: seedProducts.map((product) => ({ id: product.id, priceAed: product.priceAed })),
-    userIds: [shopOwner._id, participant._id, agencyGuide._id, pendingParticipant._id]
-  });
-
   await upsertReview({
     userId: participant._id,
     targetType: ReviewTargetType.LOCATION,
@@ -2355,7 +2169,7 @@ Share your live location and carry extra water in summer months.`
   console.log(`Shop tenant: ${shopTenant.id} — ${shopTenant.slug} (${shopTenant.businessMode})`);
   console.log(`Pending application: Hatta Hiking Club (by ${pendingParticipant.email})`);
   console.log(`Seeded by admin id: ${admin._id}`);
-  console.log(`Merchant stores: ${nikeMerchantProfile.shopName}, ${adidasMerchantProfile.shopName} (${seedProducts.length} products)`);
+  console.log(`Merchant stores: ${nikeMerchantProfile.shopName}, ${adidasMerchantProfile.shopName}`);
   await restampCatalogGeoIndexFields();
 
   const { invalidateExploreMapCache } = await import('../src/lib/explore-map-cache.js');

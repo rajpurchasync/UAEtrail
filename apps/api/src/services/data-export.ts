@@ -6,7 +6,6 @@ import { findUserBadges } from '../lib/member-badge-store.js';
 import { listMemberGoals } from '../lib/member-goals-store.js';
 import { listMemberMapPinsForUser } from '../lib/member-map-pins-store.js';
 import { countPushSubscriptions } from '../lib/push-subscriptions.js';
-import { listUserShopOrdersBasic } from '../lib/shop-store.js';
 import { listUserWishlistItems } from '../lib/wishlist-store.js';
 
 export interface UserDataExport {
@@ -27,7 +26,6 @@ export interface UserDataExport {
   } | null;
   activityRequests: Array<{ id: string; activityId: string; status: string; createdAt: Date }>;
   participations: Array<{ id: string; activityId: string; checkedInAt: Date | null; createdAt: Date }>;
-  shopOrders: Array<{ id: string; status: string; totalAed: number; createdAt: Date }>;
   wishlist: Array<{
     id: string;
     locationId: string | null;
@@ -95,7 +93,6 @@ export async function buildUserDataExport(userId: string): Promise<UserDataExpor
   const [
     requests,
     participants,
-    shopOrders,
     pushSubscriptionCount,
     wishlistRows,
     entityFollowRows,
@@ -106,7 +103,6 @@ export async function buildUserDataExport(userId: string): Promise<UserDataExpor
   ] = await Promise.all([
     listUserActivityRequestsBasic(userId, 200),
     listUserActivityParticipantsBasic(userId, 200),
-    listUserShopOrdersBasic(userId, 100),
     countPushSubscriptions(userId),
     listUserWishlistItems(userId),
     listEntityFollowsWithDetails(userId),
@@ -169,7 +165,6 @@ export async function buildUserDataExport(userId: string): Promise<UserDataExpor
       checkedInAt: p.checkedInAt,
       createdAt: p.createdAt,
     })),
-    shopOrders,
     wishlist,
     entityFollows,
     memberGoals: memberGoalRows.map((goal) => ({

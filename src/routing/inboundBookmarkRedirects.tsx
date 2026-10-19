@@ -42,6 +42,9 @@ export const InboundTripsHubRedirect = () => {
   return <Navigate to={target ?? PLAN_PATH} replace />;
 };
 
+/** Inbound `/product/:id` — product catalog removed; send guests to shop browse. */
+export const InboundProductPathRedirect = () => <Navigate to={exploreShopsPath()} replace />;
+
 /** Inbound `/merchant/:id` → `/shop/:id`. */
 export const InboundMerchantPublicRedirect = () => {
   const { id } = useParams<{ id: string }>();

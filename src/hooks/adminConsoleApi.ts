@@ -4,7 +4,6 @@ import type {
   FacilityDTO,
   LocationDTO,
   PlaceDTO,
-  ProductDTO,
   TenantListDTO,
   UserListDTO,
 } from '@uaetrail/shared-types';
@@ -307,24 +306,4 @@ export const updateAdminFacility = async (
 
 export const deleteAdminFacility = async (id: string): Promise<void> => {
   await api.deleteAdminFacility(id);
-};
-
-export const fetchAdminProducts = async (filters?: {
-  status?: string;
-  category?: string;
-  featured?: boolean;
-  page?: number;
-  pageSize?: number;
-}): Promise<{
-  data: ProductDTO[];
-  pagination: { total: number; page: number; pageSize: number; totalPages: number };
-}> => {
-  return api.getAdminProducts(filters);
-};
-
-export const updateAdminProductStatus = async (
-  id: string,
-  status: 'active' | 'inactive'
-): Promise<void> => {
-  await api.updateAdminProductStatus(id, status);
 };

@@ -89,10 +89,7 @@ export const buildLocationCreateData = (
         contactPhoneE164: body.shopContactPhoneE164,
       })
     : [];
-  const shopHighlights =
-    shop && body.shopProductsServices?.trim()
-      ? [body.shopProductsServices.trim()]
-      : body.highlights ?? [];
+  const shopHighlights = body.highlights ?? [];
 
   const baseTags = shop ? shopTags : body.tags ?? [];
   let tags = shop ? baseTags : mergeVenueAreaTag(baseTags, body.areaLabel);

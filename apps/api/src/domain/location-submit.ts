@@ -60,7 +60,6 @@ export const locationSubmitBodySchema = z.object({
   /** Activity-only anchor — not listed in the public place registry or venue map pins. */
   activityAnchor: z.boolean().optional(),
   /** Community shop pin — encoded into highlights/tags on submit. */
-  shopProductsServices: z.string().min(2).max(2000).optional(),
   shopSearchKeywords: z.string().min(2).max(500).optional(),
   shopDeliveryOffered: z.boolean().optional(),
   shopDeliveryRadiusKm: z.number().positive().max(1000).optional(),

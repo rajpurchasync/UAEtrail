@@ -62,6 +62,7 @@ import {
   DiscoveryRedirect,
   InboundCanonicalPlaceRedirect,
   InboundMerchantPublicRedirect,
+  InboundProductPathRedirect,
   InboundMessagesRedirect,
   InboundProMembershipRedirect,
   InboundProfileWishlistRedirect,
@@ -115,7 +116,6 @@ const FacilityDetailPage = lazy(() =>
   import('./pages/FacilityDetailPage').then((m) => ({ default: m.FacilityDetailPage }))
 );
 
-const ProductDetail = lazy(() => import('./pages/ProductDetail').then((m) => ({ default: m.ProductDetail })));
 const ProfileProMembership = lazy(() =>
   import('./pages/ProfileProMembership').then((m) => ({ default: m.ProfileProMembership }))
 );
@@ -141,7 +141,6 @@ const AdminGroups = lazy(() => import('./pages/admin/Groups').then((m) => ({ def
 const AdminAuditLog = lazy(() => import('./pages/admin/AuditLog').then((m) => ({ default: m.AuditLog })));
 const AdminReports = lazy(() => import('./pages/admin/Reports').then((m) => ({ default: m.Reports })));
 const AdminSettings = lazy(() => import('./pages/admin/Settings').then((m) => ({ default: m.Settings })));
-const AdminShop = lazy(() => import('./pages/admin/Shop').then((m) => ({ default: m.Shop })));
 const AdminNotifications = lazy(() =>
   import('./pages/admin/Notifications').then((m) => ({ default: m.Notifications }))
 );
@@ -526,14 +525,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route
-            path="/product/:id"
-            element={
-              <ProtectedRoute>
-                <ProductDetail />
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/product/:id" element={<InboundProductPathRedirect />} />
           <Route path="/merchant/:id" element={<InboundMerchantPublicRedirect />} />
           <Route path={COMMUNITY_PATH} element={<Navigate to={EXPLORE_MAP_PATH} replace />} />
           <Route path={SIGNUP_PATH} element={<SignUp />} />
@@ -672,11 +664,7 @@ function App() {
           />
           <Route
             path="/admin/shop"
-            element={
-              <ProtectedRoute roles={['platform_admin']}>
-                <AdminShop />
-              </ProtectedRoute>
-            }
+            element={<Navigate to="/admin/hosts" replace />}
           />
           <Route path="/publishing" element={<Navigate to={PUBLISHING_OVERVIEW_PATH} replace />} />
           <Route path="/publishing/messages" element={<InboundMessagesRedirect />} />

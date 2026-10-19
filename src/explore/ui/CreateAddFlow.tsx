@@ -81,7 +81,6 @@ const REVIEW_EDIT_LABELS: Partial<Record<AddFlowStepId, string>> = {
   difficulty: 'Difficulty',
   parking: 'Parking',
   contact: 'Contact',
-  shop_products: 'Products',
   shop_keywords: 'Keywords',
   shop_delivery: 'Delivery',
   shop_phone: 'Phone',
@@ -540,24 +539,6 @@ export const CreateAddFlow = ({
           {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
           <div className="mt-5 pb-2">
             <NextButton disabled={draft.description.trim().length < 20} onClick={goNext} />
-          </div>
-        </FlowSheetChrome>
-      )}
-
-      {step === 'shop_products' && kind === 'shop' && (
-        <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
-          <textarea
-            value={draft.shopProductsServices}
-            onChange={(event) => patchDraft({ shopProductsServices: event.target.value })}
-            rows={5}
-            placeholder="e.g. Camping gear rental, stove fuel, guided kit checks…"
-            className="w-full resize-none rounded-2xl border border-neutral-200 px-4 py-3 text-base text-gray-900 outline-none focus:border-violet-400"
-            maxLength={2000}
-            autoFocus
-          />
-          {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-          <div className="mt-5 pb-2">
-            <NextButton disabled={draft.shopProductsServices.trim().length < 10} onClick={goNext} />
           </div>
         </FlowSheetChrome>
       )}

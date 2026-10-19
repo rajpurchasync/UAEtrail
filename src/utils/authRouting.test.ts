@@ -66,7 +66,7 @@ describe('auth routing by role', () => {
     expect(adminDashboardRedirect('hosts')).toBe('/admin/hosts');
     expect(adminDashboardRedirect('organizers')).toBe('/admin/hosts');
     expect(adminDashboardRedirect('groups')).toBe('/admin/groups');
-    expect(adminDashboardRedirect('shop')).toBe('/admin/shop');
+    expect(adminDashboardRedirect('shop')).toBe('/admin/hosts');
     expect(adminDashboardRedirect('notifications')).toBe('/admin/notifications');
     expect(adminDashboardRedirect('audit-log')).toBe('/admin/audit-log');
     expect(adminDashboardRedirect('settings')).toBe('/admin/settings');

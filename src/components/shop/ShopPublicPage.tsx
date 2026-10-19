@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ExternalLink, Info, MapPin, Package } from 'lucide-react';
+import { ExternalLink, Info, MapPin } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import type { ReviewDTO } from '@uaetrail/shared-types';
 import { PageMeta } from '../seo/PageMeta';
@@ -13,7 +13,6 @@ import {
   type ShopPublicDetailTabId,
 } from '../../shop/shopPublicDetailTab';
 import { ShopContactSection } from './ShopContactSection';
-import { ShopFeaturedPicksSection } from './ShopFeaturedPicksSection';
 import { ShareButton } from '../ui/ShareButton';
 import { ReviewSection } from '../ui/ReviewSection';
 import { CatalogRatingSummary, DetailReviewFooter, scrollToReviewAnchor } from '../ui/DetailReviewChrome';
@@ -25,16 +24,6 @@ import {
   ADD_PLACE_PENDING_BANNER_BODY,
   ADD_PLACE_PENDING_BANNER_TITLE,
 } from '../../explore/createFlowCopy';
-
-export type ShopFeaturedPick = {
-  id: string;
-  name: string;
-  description?: string | null;
-  images: string[];
-  priceAed: number;
-  discountPercent?: number | null;
-  externalUrl?: string | null;
-};
 
 export type ShopPublicView = {
   id: string;
@@ -52,7 +41,6 @@ export type ShopPublicView = {
   contactPersonName?: string | null;
   contactPersonAvatar?: string | null;
   contactPersonUserId?: string | null;
-  products: ShopFeaturedPick[];
   presence: 'physical' | 'online';
   /** Community map contribution — not a merchant tenant. */
   communityInfo?: {
@@ -67,10 +55,9 @@ interface ShopPublicPageProps {
   shop: ShopPublicView;
 }
 
-/** Unified public gear-shop page — intro, contact, and outbound featured picks. */
+/** Unified public gear-shop page — profile, contact, and outbound website link. */
 const SHOP_TAB_ICONS = {
   about: Info,
-  products: Package,
   location: MapPin,
 } as const;
 
@@ -249,21 +236,6 @@ export const ShopPublicPage = ({ shop }: ShopPublicPageProps) => {
               <div className="hidden md:block">
                 <DetailReviewFooter userReview={userReview} accent="amber" />
               </div>
-            )}
-          </div>
-        )}
-
-        {activeTab === 'products' && (
-          <div className="mt-6 space-y-6">
-            <ShopFeaturedPicksSection
-              products={shop.products}
-              shopWebsiteUrl={website}
-              shopName={shop.shopName}
-            />
-            {shop.products.length === 0 && !website && (
-              <p className="text-sm text-neutral-500">
-                This shop has not added featured picks or a website link yet.
-              </p>
             )}
           </div>
         )}

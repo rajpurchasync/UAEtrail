@@ -1,13 +1,8 @@
 import type Stripe from 'stripe';
-import { LocationUnlockSource, OrderStatus } from '../domain/enums.js';
+import { LocationUnlockSource } from '../domain/enums.js';
 import { ApiError } from '../lib/api-error.js';
 import { findLocationInMongo } from '../lib/entity-sync.js';
-import {
-  findShopOrderById,
-  hasProcessedStripeWebhookEvent,
-  markShopOrderPaid,
-  recordStripeWebhookEvent,
-} from '../lib/shop-store.js';
+import { hasProcessedStripeWebhookEvent, recordStripeWebhookEvent } from '../lib/shop-store.js';
 import { unlockLocationForUser } from './location-premium.js';
 
 const aedToStripeMinorUnits = (amountAed: number): number => Math.round(amountAed * 100);
@@ -41,27 +36,5 @@ export const processStripeCheckoutSessionCompleted = async (
     return {};
   }
 
-  const orderId = session.metadata?.orderId ?? session.client_reference_id;
-  if (!orderId) {
-    return {};
-  }
-
-  const order = await findShopOrderById(orderId);
-  if (!order || order.status !== OrderStatus.PENDING) {
-    return {};
-  }
-
-  if (order.stripeSessionId && order.stripeSessionId !== session.id) {
-    throw new ApiError(400, 'session_mismatch', 'Stripe session does not match order.');
-  }
-  const expectedAmount = aedToStripeMinorUnits(order.totalAed);
-  if (session.amount_total !== expectedAmount) {
-    throw new ApiError(400, 'payment_amount_mismatch', 'Order payment amount mismatch.');
-  }
-  if (session.metadata?.userId && session.metadata.userId !== order.userId) {
-    throw new ApiError(400, 'user_mismatch', 'Order user does not match payment metadata.');
-  }
-
-  await markShopOrderPaid(orderId);
   return {};
 };

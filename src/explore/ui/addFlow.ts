@@ -21,7 +21,6 @@ export type AddFlowStepId =
   | 'difficulty'
   | 'parking'
   | 'contact'
-  | 'shop_products'
   | 'shop_keywords'
   | 'shop_delivery'
   | 'shop_phone'
@@ -56,7 +55,6 @@ export type AddDraft = {
   transport4x4: boolean;
   childFriendly: boolean;
   surfaceTypes: string[];
-  shopProductsServices: string;
   shopSearchKeywords: string;
   shopDeliveryOffered: boolean | null;
   shopDeliveryRadiusKm: number | null;
@@ -106,8 +104,6 @@ export const addFlowStepTitle = (
       return 'Pin location';
     case 'image':
       return kind === 'hiking' || kind === 'camping' ? 'Photos' : kind === 'shop' ? 'Image' : 'Add image';
-    case 'shop_products':
-      return 'Product / service';
     case 'shop_keywords':
       return 'Search keywords';
     case 'shop_delivery':
@@ -177,7 +173,6 @@ export const emptyAddDraft = (): AddDraft => ({
   transport4x4: false,
   childFriendly: false,
   surfaceTypes: [],
-  shopProductsServices: '',
   shopSearchKeywords: '',
   shopDeliveryOffered: null,
   shopDeliveryRadiusKm: null,
@@ -246,11 +241,6 @@ export const validateAddStep = (
     case 'parking':
       if (!draft.parkingPinPlaced || draft.parkingLat == null || draft.parkingLng == null) {
         return 'Pin the parking spot on the map.';
-      }
-      return null;
-    case 'shop_products':
-      if (draft.shopProductsServices.trim().length < 10) {
-        return 'Describe what you sell or offer (at least 10 characters).';
       }
       return null;
     case 'shop_keywords':

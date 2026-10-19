@@ -56,13 +56,6 @@ describe('clientQueryMigrationGuard (MIG-CLIENT-QUERY)', () => {
     expect(content).not.toMatch(/useSafeAsyncEffect/);
   });
 
-  it('ProductDetail uses shopProductDetailQueryKey', () => {
-    const content = read('src/pages/ProductDetail.tsx');
-    expect(content).toMatch(/useQuery/);
-    expect(content).toMatch(/shopProductDetailQueryKey/);
-    expect(content).not.toMatch(/useSafeAsyncEffect/);
-  });
-
   it('HostingPublishSuccessSheet uses usePublicActivityDetail', () => {
     const content = read('src/explore/ui/HostingPublishSuccessSheet.tsx');
     expect(content).toMatch(/usePublicActivityDetail/);

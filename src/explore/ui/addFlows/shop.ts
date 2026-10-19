@@ -5,7 +5,6 @@ export const SHOP_ADD_STEPS = [
   'curatedArea',
   'location',
   'about',
-  'shop_products',
   'shop_keywords',
   'image',
   'shop_delivery',

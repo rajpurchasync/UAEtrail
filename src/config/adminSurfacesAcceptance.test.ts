@@ -24,7 +24,6 @@ export const ADMIN_PLATFORM_ROUTE_CATALOG: Array<{
   { path: '/admin/users', page: 'admin/Members.tsx', element: 'AdminMembers', inSidebar: true },
   { path: '/admin/hosts', page: 'admin/Organisations.tsx', element: 'AdminOrganisations', inSidebar: true },
   { path: '/admin/groups', page: 'admin/Groups.tsx', element: 'AdminGroups', inSidebar: true },
-  { path: '/admin/shop', page: 'admin/Shop.tsx', element: 'AdminShop', inSidebar: true },
   { path: '/admin/reports', page: 'admin/Reports.tsx', element: 'AdminReports', inSidebar: true },
   { path: '/admin/audit-log', page: 'admin/AuditLog.tsx', element: 'AdminAuditLog', inSidebar: true },
   { path: '/admin/settings', page: 'admin/Settings.tsx', element: 'AdminSettings', inSidebar: true },

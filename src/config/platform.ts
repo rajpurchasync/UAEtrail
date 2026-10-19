@@ -194,23 +194,20 @@ export const CONSUMER_HAMBURGER_MENU: readonly ConsumerHamburgerMenuItem[] = [
 export const FEATURE_FLAGS = {
   /** Premium subscription checkout — keep false until launch. */
   membershipEnabled: false,
-  /** Gear shop catalog — live on this experiment branch so shops can appear on the map. */
+  /** Gear shops on explore map — profile + outbound links only (no catalog). */
   shopComingSoon: false,
-  /** In-app Stripe checkout — disabled; shops use outbound affiliate links. */
-  shopCheckoutEnabled: false,
 } as const;
 
 export const MEMBERSHIP_NAV_LINK = FEATURE_FLAGS.membershipEnabled
   ? ({ to: PRO_MEMBERSHIP_PATH, label: 'Pro membership' })
   : null;
 
-/** Shop: catalog, cart, and Stripe checkout (when configured). */
+/** Shop profile surface — member badge hook when membership launches. */
 export const SHOP_V1 = {
   memberDiscountPercent: 10,
   showMemberBadge: FEATURE_FLAGS.membershipEnabled,
-  /** UAE standard VAT rate — shown in cart and added at checkout. */
   vatPercent: 5,
-  vatEnabled: true,
+  vatEnabled: false,
 };
 
 /**

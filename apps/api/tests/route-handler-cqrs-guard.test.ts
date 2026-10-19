@@ -165,7 +165,6 @@ describe('route handler CQRS guard (MIG-CQRS-ROUTES)', () => {
       'apps/api/src/routes/admin/registerAdminGroupRoutes.ts',
       'apps/api/src/routes/admin/registerAdminTenantRoutes.ts',
       'apps/api/src/routes/admin/registerAdminUserRoutes.ts',
-      'apps/api/src/routes/admin/registerAdminProductRoutes.ts',
       'apps/api/src/routes/admin/registerAdminActivityModerationRoutes.ts',
       'apps/api/src/routes/admin/registerAdminPlaceRoutes.ts',
     ];
@@ -394,13 +393,6 @@ describe('route handler CQRS guard (MIG-CQRS-ROUTES)', () => {
     expect(registrar).toMatch(/admin-user-read/);
     expect(registrar).toMatch(/admin-user-commands/);
     expect(listStoreImports('apps/api/src/routes/admin/registerAdminUserRoutes.ts')).toEqual([]);
-  });
-
-  it('admin product registrar wires admin-product read and commands', () => {
-    const registrar = readRegistrar('apps/api/src/routes/admin/registerAdminProductRoutes.ts');
-    expect(registrar).toMatch(/admin-product-read/);
-    expect(registrar).toMatch(/admin-product-commands/);
-    expect(listStoreImports('apps/api/src/routes/admin/registerAdminProductRoutes.ts')).toEqual([]);
   });
 
   it('admin activity moderation registrar wires admin-activity-moderation read and commands', () => {

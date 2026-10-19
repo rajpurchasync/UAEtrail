@@ -1,6 +1,6 @@
 import type { Db, Document, ObjectId } from 'mongodb';
 import { randomUUID } from 'crypto';
-import { COLLECTIONS, RETIRED_COLLECTION_NAMES } from './collections.js';
+import { COLLECTIONS } from './collections.js';
 import { slugify } from './slug.js';
 import {
   isEmbeddedPersonaSeekingTitle,
@@ -9,10 +9,10 @@ import {
 } from '@uaetrail/shared-types';
 import { runCatalogCpcMigrations } from './catalog-cpc-migrations.js';
 
-const migrateCollectionNameIfNeeded = async (db: Db, from: string, to: string): Promise<void> => {
+const migrateRetiredCollectionToCanonicalAndDrop = async (db: Db, from: string, to: string): Promise<void> => {
   const collections = await db.listCollections().toArray();
   const names = new Set(collections.map((c) => c.name));
-  if (!names.has(from) || names.has(to)) return;
+  if (!names.has(from)) return;
 
   const source = db.collection(from);
   const target = db.collection(to);
@@ -31,8 +31,20 @@ const migrateCollectionNameIfNeeded = async (db: Db, from: string, to: string): 
     await target.insertMany(batch, { ordered: false });
   }
 
-  await source.deleteMany({});
-  console.log(`[mongo] Migrated collection ${from} → ${to}`);
+  await source.drop();
+  console.log(`[mongo] Migrated collection ${from} → ${to} and dropped ${from}`);
+};
+
+const REMOVED_COMMERCE_COLLECTIONS = ['products', 'product_clicks', 'shop_orders', 'order_line_items'] as const;
+
+export const dropRemovedCommerceCollections = async (db: Db): Promise<void> => {
+  const collections = await db.listCollections().toArray();
+  const names = new Set(collections.map((c) => c.name));
+  for (const name of REMOVED_COMMERCE_COLLECTIONS) {
+    if (!names.has(name)) continue;
+    await db.collection(name).drop();
+    console.log(`[mongo] Dropped removed shop-catalog collection ${name}`);
+  }
 };
 
 const renameFieldIfPresent = async (
@@ -434,111 +446,6 @@ const provisionShopTenantsForOrphanMerchants = async (db: Db): Promise<void> => 
   }
 };
 
-const collapseOrderLineItemsIntoShopOrders = async (db: Db): Promise<void> => {
-  const orders = db.collection(COLLECTIONS.SHOP_ORDERS);
-  const lineItems = db.collection(COLLECTIONS.ORDER_LINE_ITEMS);
-
-  let normalizedOrders = 0;
-  const orderCursor = orders.find({ items: { $exists: true, $type: 'array', $ne: [] } });
-  for await (const order of orderCursor) {
-    const rawItems = Array.isArray(order.items) ? order.items : [];
-    const fallbackTimestamp = order.updatedAt instanceof Date ? order.updatedAt : new Date();
-    let changed = false;
-    const nextItems = rawItems.map((item: Record<string, unknown>, index: number) => {
-      const productId = typeof item.productId === 'string' ? item.productId : '';
-      const quantity = typeof item.quantity === 'number' ? item.quantity : 0;
-      const unitPriceAed =
-        typeof item.unitPriceAed === 'number'
-          ? item.unitPriceAed
-          : typeof item.totalAed === 'number' && quantity > 0
-            ? item.totalAed / quantity
-            : 0;
-      const totalAed =
-        typeof item.totalAed === 'number' ? item.totalAed : unitPriceAed * quantity;
-      const id =
-        typeof item.id === 'string'
-          ? item.id
-          : `${String(order._id)}:${index}`;
-      if (
-        item.id !== id ||
-        item.totalAed == null ||
-        item.status == null ||
-        item.timestamp == null
-      ) {
-        changed = true;
-      }
-      return {
-        id,
-        productId,
-        quantity,
-        unitPriceAed,
-        totalAed,
-        status: typeof item.status === 'string' ? item.status : 'PENDING',
-        fulfillmentTrackingLink:
-          typeof item.fulfillmentTrackingLink === 'string' ? item.fulfillmentTrackingLink : null,
-        timestamp: item.timestamp instanceof Date ? item.timestamp : fallbackTimestamp,
-      };
-    });
-
-    if (changed) {
-      await orders.updateOne({ _id: order._id }, { $set: { items: nextItems, updatedAt: new Date() } });
-      normalizedOrders += 1;
-    }
-  }
-
-  let mergedLineItems = 0;
-  const lineCursor = lineItems.find({});
-  for await (const line of lineCursor) {
-    const lineId = typeof line._id === 'string' ? line._id : String(line._id);
-    const orderId =
-      typeof line.orderId === 'string'
-        ? line.orderId
-        : lineId.includes(':')
-          ? lineId.split(':')[0]
-          : null;
-    if (!orderId) continue;
-
-    const order = await orders.findOne({ _id: orderId } as Document);
-    if (!order || !Array.isArray(order.items)) continue;
-
-    const items = [...order.items];
-    const indexFromId = lineId.includes(':') ? Number(lineId.split(':')[1]) : -1;
-    const index =
-      Number.isInteger(indexFromId) && indexFromId >= 0 && indexFromId < items.length
-        ? indexFromId
-        : items.findIndex((item) => item?.productId === line.productId);
-
-    const quantity = typeof line.quantity === 'number' ? line.quantity : 0;
-    const totalAed = typeof line.totalAed === 'number' ? line.totalAed : 0;
-    const mergedItem = {
-      id: lineId,
-      productId: typeof line.productId === 'string' ? line.productId : '',
-      quantity,
-      unitPriceAed: quantity > 0 ? totalAed / quantity : 0,
-      totalAed,
-      status: typeof line.status === 'string' ? line.status : 'PENDING',
-      fulfillmentTrackingLink:
-        typeof line.fulfillmentTrackingLink === 'string' ? line.fulfillmentTrackingLink : null,
-      timestamp: line.timestamp instanceof Date ? line.timestamp : new Date(),
-    };
-
-    if (index >= 0) {
-      items[index] = mergedItem;
-    } else {
-      items.push(mergedItem);
-    }
-
-    await orders.updateOne({ _id: orderId } as Document, { $set: { items, updatedAt: new Date() } });
-    mergedLineItems += 1;
-  }
-
-  if (normalizedOrders > 0 || mergedLineItems > 0) {
-    console.log(
-      `[mongo] Collapsed order line items into shop_orders (normalized ${normalizedOrders}, merged ${mergedLineItems})`
-    );
-  }
-};
-
 const migrateParticipantIntentIdsToString = async (db: Db): Promise<void> => {
   const collection = db.collection(COLLECTIONS.PARTICIPANT_INTENTS);
   const cursor = collection.find({ _id: { $type: 'objectId' } });
@@ -655,26 +562,31 @@ const backfillTenantOwnerMemberships = async (db: Db): Promise<void> => {
   }
 };
 
-/** Demand posts are public participation — not wishlist rows (see wishlist-alerts / FLOW-11). */
-const purgeDemandBookmarkWishlistRows = async (db: Db): Promise<void> => {
+/** Wishlist is venue + activity only — drop retired product, shop, profile, and demand bookmark rows. */
+const purgeRetiredWishlistTargetRows = async (db: Db): Promise<void> => {
   const wishlist = db.collection(COLLECTIONS.USER_WISHLIST);
-  const result = await wishlist.deleteMany({
-    participantIntentId: { $exists: true, $nin: [null, ''] },
-  });
+  const retiredTargetFilter = {
+    $or: [
+      { productId: { $exists: true, $nin: [null, ''] } },
+      { merchantId: { $exists: true, $nin: [null, ''] } },
+      { tenantId: { $exists: true, $nin: [null, ''] } },
+      { profileUserId: { $exists: true, $nin: [null, ''] } },
+      { participantIntentId: { $exists: true, $nin: [null, ''] } },
+    ],
+  };
+  const result = await wishlist.deleteMany(retiredTargetFilter);
   if (result.deletedCount > 0) {
-    console.log(
-      `[mongo] Removed ${result.deletedCount} retired demand bookmark row(s) from user_wishlist (wishlist ≠ demand)`
-    );
+    console.log(`[mongo] Removed ${result.deletedCount} retired non-venue/activity wishlist row(s)`);
   }
 };
 
 /** One-time migrations for activity terminology and role model alignment. */
 export const runMongoMigrations = async (db: Db): Promise<void> => {
-  await migrateCollectionNameIfNeeded(db, RETIRED_COLLECTION_NAMES.EVENTS, COLLECTIONS.ACTIVITIES);
-  await migrateCollectionNameIfNeeded(db, RETIRED_COLLECTION_NAMES.EVENT_REQUESTS, COLLECTIONS.ACTIVITY_REQUESTS);
-  await migrateCollectionNameIfNeeded(db, RETIRED_COLLECTION_NAMES.EVENT_PARTICIPANTS, COLLECTIONS.ACTIVITY_PARTICIPANTS);
-  await migrateCollectionNameIfNeeded(db, RETIRED_COLLECTION_NAMES.ORGANIZER_APPLICATIONS, COLLECTIONS.HOST_APPLICATIONS);
-  await migrateCollectionNameIfNeeded(db, RETIRED_COLLECTION_NAMES.USER_FAVORITES, COLLECTIONS.USER_WISHLIST);
+  await migrateRetiredCollectionToCanonicalAndDrop(db, 'events', COLLECTIONS.ACTIVITIES);
+  await migrateRetiredCollectionToCanonicalAndDrop(db, 'event_requests', COLLECTIONS.ACTIVITY_REQUESTS);
+  await migrateRetiredCollectionToCanonicalAndDrop(db, 'event_participants', COLLECTIONS.ACTIVITY_PARTICIPANTS);
+  await migrateRetiredCollectionToCanonicalAndDrop(db, 'organizer_applications', COLLECTIONS.HOST_APPLICATIONS);
+  await migrateRetiredCollectionToCanonicalAndDrop(db, 'user_favorites', COLLECTIONS.USER_WISHLIST);
 
   for (const name of [
     COLLECTIONS.ACTIVITY_REQUESTS,
@@ -700,16 +612,16 @@ export const runMongoMigrations = async (db: Db): Promise<void> => {
   await provisionShopTenantsForOrphanMerchants(db);
   await dedupeMerchantProfileTenantIds(db);
   await backfillParticipantSlotsUsed(db);
-  await collapseOrderLineItemsIntoShopOrders(db);
   await migrateParticipantIntentIdsToString(db);
   await migrateActivityTerminologyValues(db);
   await backfillLocationRegistryListed(db);
-  await purgeDemandBookmarkWishlistRows(db);
+  await purgeRetiredWishlistTargetRows(db);
   await backfillTenantOwnerMemberships(db);
   await backfillTenantPublishingPurpose(db);
   await runCatalogCpcMigrations(db);
   await migrateOrganizerNoteToHostNote(db);
   await migrateDemandExplorePinPaths(db);
+  await dropRemovedCommerceCollections(db);
 };
 
 /** One-time: leftover `pin=demand:` notification paths → `pin=activity:{id}`. */

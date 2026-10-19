@@ -8,7 +8,6 @@ import {
   ADMIN_OVERVIEW_PATH,
   ADMIN_PLACES_PATH,
   ADMIN_SETTINGS_PATH,
-  ADMIN_SHOP_PATH,
   ADMIN_USERS_PATH,
   PUBLISHING_ACTIVITIES_PATH,
   PUBLISHING_OVERVIEW_PATH,
@@ -112,7 +111,7 @@ export const adminDashboardRedirect = (subpath: string): string => {
     case 'groups':
       return ADMIN_GROUPS_PATH;
     case 'shop':
-      return ADMIN_SHOP_PATH;
+      return ADMIN_HOSTS_PATH;
     case 'notifications':
       return ADMIN_NOTIFICATIONS_PATH;
     case 'audit-log':

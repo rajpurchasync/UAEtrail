@@ -53,9 +53,6 @@ export const wishlistTargetStateQueryKey = (
 
 export const shopPublicPageQueryKey = (id: string): QueryKey => ['shop-public-page', id];
 
-/** Legacy product deep link (`GET /shop/products/:id`). */
-export const shopProductDetailQueryKey = (productId: string): QueryKey => ['shop-product-detail', productId];
-
 /** Member earned + catalog badges (`GET /me/badges`). */
 export const memberBadgesQueryKey = (userId: string): QueryKey => ['me', 'badges', userId];
 

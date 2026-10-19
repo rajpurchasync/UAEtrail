@@ -29,12 +29,8 @@ export const COLLECTIONS = {
   PARTICIPANT_INTENTS: 'participant_intents',
   PARTICIPANT_INTENT_REQUESTS: 'participant_intent_requests',
 
-  // Commerce
+  // Commerce (merchant storefront profiles only — product catalog removed)
   MERCHANT_PROFILES: 'merchant_profiles',
-  PRODUCTS: 'products',
-  SHOP_ORDERS: 'shop_orders',
-  ORDER_LINE_ITEMS: 'order_line_items',
-  PRODUCT_CLICKS: 'product_clicks',
   STRIPE_WEBHOOK_EVENTS: 'stripe_webhook_events',
 
   // Social graph (reviews, chat, groups, buddies)
@@ -69,15 +65,6 @@ export const COLLECTIONS = {
   // Platform
   MEDIA_ASSETS: 'media_assets',
   AUDIT_LOGS: 'audit_logs',
-} as const;
-
-/** Retired Mongo collection names migrated on startup. */
-export const RETIRED_COLLECTION_NAMES = {
-  EVENTS: 'events',
-  EVENT_REQUESTS: 'event_requests',
-  EVENT_PARTICIPANTS: 'event_participants',
-  ORGANIZER_APPLICATIONS: 'organizer_applications',
-  USER_FAVORITES: 'user_favorites',
 } as const;
 
 export type CollectionName = (typeof COLLECTIONS)[keyof typeof COLLECTIONS];

@@ -43,7 +43,6 @@ export interface HostApplication {
     notableHikes?: string;
     profilePhoto?: string;
     shopPresence?: 'physical' | 'online';
-    productsServices?: string;
     searchKeywords?: string;
     deliveryOffered?: boolean;
     deliveryRadiusKm?: number | null;

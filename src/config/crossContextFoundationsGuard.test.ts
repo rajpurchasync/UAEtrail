@@ -22,7 +22,7 @@ const COHERENCE_CONTEXT_IDS = [
   'social_graph',
   'places',
   'facilities',
-  'commerce',
+  'shop_profiles',
   'engagement',
   'platform_ops',
 ] as const;

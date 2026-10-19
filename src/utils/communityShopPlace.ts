@@ -9,8 +9,6 @@ export const communityShopPlaceToView = (place: LocationDTO): ShopPublicView | n
   const decoded = decodeCommunityShopTags(place.tags);
   if (!decoded.isCommunityShop) return null;
 
-  const productsLine = place.highlights?.[0]?.trim() ?? '';
-
   return {
     id: place.id,
     reviewTargetId: null,
@@ -26,19 +24,6 @@ export const communityShopPlaceToView = (place: LocationDTO): ShopPublicView | n
     contactPersonName: null,
     contactPersonAvatar: null,
     contactPersonUserId: null,
-    products: productsLine
-      ? [
-          {
-            id: `${place.id}-info`,
-            name: 'What they offer',
-            description: productsLine,
-            images: place.images ?? [],
-            priceAed: 0,
-            discountPercent: null,
-            externalUrl: null,
-          },
-        ]
-      : [],
     presence: 'physical',
     communityInfo: {
       keywordTags: decoded.keywordTags,

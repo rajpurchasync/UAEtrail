@@ -87,7 +87,6 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 | `/admin/users` | `pages/admin/Members` | Users & Members | Member search, suspend, staff grant (`MEMBER_MODEL.md`) |
 | `/admin/hosts` | `pages/admin/Organisations` | Operators | Host / tenant applications (`/admin/organizers` → redirect) |
 | `/admin/groups` | `pages/admin/Groups` | Groups | Platform groups |
-| `/admin/shop` | `pages/admin/Shop` | Shop | Shop catalog ops |
 | `/admin/reports` | `pages/admin/Reports` | Reports | Content reports queue |
 | `/admin/audit-log` | `pages/admin/AuditLog` | Audit Log | Audit trail |
 | `/admin/settings` | `pages/admin/Settings` | Broadcast | Platform broadcast / settings |
@@ -275,7 +274,9 @@ Canonical paths only in **new UI**. Legacy URLs redirect in `src/App.tsx` — do
 | `/become-host` | `/profile/pro-membership` | 2026-Q4 (Pro / agency / shop; buddy Host / publish uses `/welcome` + `canPublish`) |
 | `/dashboard/*` | role-based redirect | 2026-Q4 |
 | `/admin/organizers` | `/admin/hosts` | 2026-Q4 |
+| `/admin/shop` | `/admin/hosts` (shop catalog admin removed) | 2026-Q4 |
 | `/admin/locations` | `/admin/places` | 2026-Q4 |
+| `/product/:id` | `/explore?panel=shops` (product catalog removed) | 2026-Q4 |
 | `/host/locations`, `/host/places` | `/publishing/places` | 2026-Q4 |
 | `/event-spot/:id`, `/community-activity/:id`, `/event/:id` (place) | `/venue/:id` | 2026-Q4 |
 | `/people` | `/explore?…` people browse (`explorePeopleBrowsePath`) | 2026-Q4 |

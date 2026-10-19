@@ -15,7 +15,10 @@ const manifest = JSON.parse(
     feRoots: string[];
   }>;
   feDomainModules: string[];
-  removedProducts: Record<string, { bannedRouteFiles?: string[]; bannedFeDomains?: string[] }>;
+  removedProducts: Record<
+    string,
+    { bannedRouteFiles?: string[]; bannedFeDomains?: string[]; bannedFePages?: string[] }
+  >;
 };
 
 const exists = (rel: string) => existsSync(join(ROOT, rel));
@@ -71,8 +74,14 @@ describe('boundedContextAlignment (frontend + manifest)', () => {
   it('removed product modules stay deleted', () => {
     const violations: string[] = [];
     for (const product of Object.values(manifest.removedProducts)) {
+      for (const file of product.bannedRouteFiles ?? []) {
+        if (exists(file)) violations.push(`removed API route: ${file}`);
+      }
       for (const file of product.bannedFeDomains ?? []) {
         if (exists(file)) violations.push(`removed FE: ${file}`);
+      }
+      for (const file of product.bannedFePages ?? []) {
+        if (exists(file)) violations.push(`removed FE page: ${file}`);
       }
     }
     expect(violations).toEqual([]);

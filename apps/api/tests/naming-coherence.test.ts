@@ -137,7 +137,6 @@ describe('naming coherence (API)', () => {
   it('user search endpoints escape regex via regex-search helper', () => {
     const searchStores = [
       'lib/auth-users-store.ts',
-      'lib/shop-store.ts',
       'lib/social-groups-store.ts',
       'lib/admin-store.ts',
     ];

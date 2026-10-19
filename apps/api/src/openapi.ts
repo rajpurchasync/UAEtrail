@@ -11,7 +11,7 @@ export const openApiTags = [
       'Publishing console — tenant activities, team, places (`/publishing/*`).',
   },
   { name: 'Host', description: 'Deprecated alias for Operator tag — prefer `/publishing/*` paths in new clients.' },
-  { name: 'Shop', description: 'Shop organisations, products, and checkout (`/shop/*`).' },
+  { name: 'Shop', description: 'Shop organisation profiles (`/shop/shops/:id`, merchant manage). No product catalog.' },
   { name: 'Members', description: 'Auth accounts, profiles, and admin member tools.' },
   { name: 'Explore', description: 'Map discovery and public browse endpoints.' },
   { name: 'Social', description: 'Reviews, buddies, and groups.' },
@@ -169,7 +169,7 @@ export const openApiSpec = swaggerJsdoc({
           description: 'Preferred public path. Legacy alias: `GET /shop/merchants/{id}`.',
           parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
           responses: {
-            200: { description: 'Public shop profile and active products.' }
+            200: { description: 'Public shop organisation profile.' }
           }
         }
       },

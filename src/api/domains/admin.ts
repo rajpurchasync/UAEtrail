@@ -1,4 +1,4 @@
-import { ProductDTO, TenantListDTO, UserListDTO } from '@uaetrail/shared-types';
+import { TenantListDTO, UserListDTO } from '@uaetrail/shared-types';
 import { apiRequest } from '../client';
 import type {
   AdminMetrics,
@@ -131,27 +131,6 @@ export const adminApi = {
       { auth: true }
     );
   },
-
-    getAdminProducts: (filters?: { status?: string; category?: string; featured?: boolean; page?: number; pageSize?: number }) => {
-    const params = new URLSearchParams();
-    if (filters?.status) params.set('status', filters.status);
-    if (filters?.category) params.set('category', filters.category);
-    if (filters?.featured) params.set('featured', 'true');
-    if (filters?.page) params.set('page', String(filters.page));
-    if (filters?.pageSize) params.set('pageSize', String(filters.pageSize));
-    const qs = params.toString();
-    return apiRequest<{ data: ProductDTO[]; pagination: { total: number; page: number; pageSize: number; totalPages: number } }>(
-      `/admin/products${qs ? `?${qs}` : ''}`,
-      { auth: true }
-    );
-  },
-
-    updateAdminProductStatus: (id: string, status: 'active' | 'inactive') =>
-    apiRequest(`/admin/products/${id}/status`, {
-      method: 'PATCH',
-      auth: true,
-      body: JSON.stringify({ status })
-    }),
 
     grantPlatformAdmin: (email: string) =>
       apiRequest<{ data: { userId: string; email: string }; message: string }>('/admin/platform-admins', {

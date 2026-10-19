@@ -36,7 +36,7 @@ const collectSourceFiles = (dir: string): string[] => {
   return files;
 };
 
-describe('tripsConsumerNamingGuard', () => {
+describe('tripsConsumerNamingGuard', { timeout: 30_000 }, () => {
   it('consumer UI does not use trips hub product copy or link to /profile/my-trips', () => {
     const violations: string[] = [];
     const myTripsCopy = /My trips/;

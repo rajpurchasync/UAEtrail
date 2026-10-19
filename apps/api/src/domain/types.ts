@@ -11,8 +11,6 @@ import type {
   ActivityStatus,
   LocationStatus,
   MembershipRole,
-  OrderStatus,
-  ProductStatus,
   RequestStatus,
   TenantStatus,
   TenantBusinessMode,
@@ -231,37 +229,3 @@ export interface MerchantProfile {
   updatedAt: Date;
 }
 
-export interface Product {
-  id: string;
-  merchantId: string;
-  name: string;
-  description: string | null;
-  images: string[];
-  priceAed: number;
-  stockQuantity: number;
-  lowStockThreshold: number;
-  discountPercent: number | null;
-  externalUrl: string | null;
-  packagingInfo: string | null;
-  category: string;
-  status: ProductStatus;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface ShopOrder {
-  id: string;
-  userId: string;
-  stripeSessionId: string | null;
-  status: OrderStatus;
-  totalAed: number;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface ProductClick {
-  id: string;
-  productId: string;
-  timestamp: Date;
-  userId: string;
-}

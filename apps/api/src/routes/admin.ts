@@ -13,7 +13,6 @@ import { registerAdminPlaceRoutes } from './admin/registerAdminPlaceRoutes.js';
 import { registerAdminFacilityRoutes } from './admin/registerAdminFacilityRoutes.js';
 import { registerAdminAreaRoutes } from './admin/registerAdminAreaRoutes.js';
 import { registerAdminPlatformStaffRoutes } from './admin/registerAdminPlatformStaffRoutes.js';
-import { registerAdminProductRoutes } from './admin/registerAdminProductRoutes.js';
 import { registerAdminTenantRoutes } from './admin/registerAdminTenantRoutes.js';
 import { registerAdminUserRoutes } from './admin/registerAdminUserRoutes.js';
 
@@ -34,5 +33,4 @@ registerAdminGroupRoutes(adminRouter);
 registerAdminContentReportRoutes(adminRouter);
 registerAdminAuditRoutes(adminRouter);
 registerAdminNotificationRoutes(adminRouter);
-registerAdminProductRoutes(adminRouter);
 registerAdminPlatformStaffRoutes(adminRouter);

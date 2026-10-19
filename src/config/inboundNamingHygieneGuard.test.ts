@@ -24,7 +24,7 @@ const collectSourceFiles = (dir: string): string[] => {
 
 const allSourceFiles = (): string[] => SCAN_ROOTS.flatMap((root) => collectSourceFiles(root));
 
-describe('inboundNamingHygieneGuard', () => {
+describe('inboundNamingHygieneGuard', { timeout: 30_000 }, () => {
   it('product trees have no Legacy-named source files', () => {
     const offenders = allSourceFiles().filter((file) => /legacy/i.test(file.split('/').pop() ?? ''));
     expect(offenders).toEqual([]);

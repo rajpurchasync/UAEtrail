@@ -62,7 +62,6 @@ export const submitCatalogPlaceFromAddDraft = async (
 
   if (draft.kind === 'shop') {
     if (!draft.images[0]) throw new Error('Add a shop image.');
-    payload.shopProductsServices = draft.shopProductsServices.trim();
     payload.shopSearchKeywords = draft.shopSearchKeywords.trim();
     payload.shopDeliveryOffered = draft.shopDeliveryOffered === true;
     if (draft.shopDeliveryOffered === true) {

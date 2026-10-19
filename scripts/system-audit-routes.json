@@ -1,16 +1,6 @@
 {
-  "generated": "2026-10-17",
+  "generated": "2026-10-19",
   "endpoints": [
-    {
-      "method": "GET",
-      "path": "/shop/checkout/config",
-      "registrar": "apps/api/src/routes/shop/registerShopCheckoutRoutes.ts"
-    },
-    {
-      "method": "POST",
-      "path": "/shop/checkout",
-      "registrar": "apps/api/src/routes/shop/registerShopCheckoutRoutes.ts"
-    },
     {
       "method": "GET",
       "path": "/shop/${prefix}/stores",
@@ -30,56 +20,6 @@
       "method": "PATCH",
       "path": "/shop/${prefix}/profile",
       "registrar": "apps/api/src/routes/shop/registerShopMerchantManageRoutes.ts"
-    },
-    {
-      "method": "GET",
-      "path": "/shop/merchant/products",
-      "registrar": "apps/api/src/routes/shop/registerShopMerchantManageRoutes.ts"
-    },
-    {
-      "method": "POST",
-      "path": "/shop/merchant/products",
-      "registrar": "apps/api/src/routes/shop/registerShopMerchantManageRoutes.ts"
-    },
-    {
-      "method": "PATCH",
-      "path": "/shop/merchant/products/:id",
-      "registrar": "apps/api/src/routes/shop/registerShopMerchantManageRoutes.ts"
-    },
-    {
-      "method": "DELETE",
-      "path": "/shop/merchant/products/:id",
-      "registrar": "apps/api/src/routes/shop/registerShopMerchantManageRoutes.ts"
-    },
-    {
-      "method": "GET",
-      "path": "/shop/merchant/orders",
-      "registrar": "apps/api/src/routes/shop/registerShopMerchantManageRoutes.ts"
-    },
-    {
-      "method": "PATCH",
-      "path": "/shop/merchant/orders/:orderId/status",
-      "registrar": "apps/api/src/routes/shop/registerShopMerchantManageRoutes.ts"
-    },
-    {
-      "method": "GET",
-      "path": "/shop/merchant/analytics/sales",
-      "registrar": "apps/api/src/routes/shop/registerShopMerchantManageRoutes.ts"
-    },
-    {
-      "method": "GET",
-      "path": "/shop/merchant/analytics/export",
-      "registrar": "apps/api/src/routes/shop/registerShopMerchantManageRoutes.ts"
-    },
-    {
-      "method": "GET",
-      "path": "/shop/products",
-      "registrar": "apps/api/src/routes/shop/registerShopPublicRoutes.ts"
-    },
-    {
-      "method": "GET",
-      "path": "/shop/products/:id",
-      "registrar": "apps/api/src/routes/shop/registerShopPublicRoutes.ts"
     },
     {
       "method": "GET",
@@ -886,10 +826,6 @@
       "admin-place-read"
     ],
     "apps/api/src/routes/admin/registerAdminPlatformStaffRoutes.ts": [],
-    "apps/api/src/routes/admin/registerAdminProductRoutes.ts": [
-      "admin-product-commands",
-      "admin-product-read"
-    ],
     "apps/api/src/routes/admin/registerAdminTenantRoutes.ts": [
       "admin-tenant-commands",
       "admin-tenant-read"
@@ -900,9 +836,9 @@
     ],
     "apps/api/src/routes/publishing/registerPublishingActivityParticipantRoutes.ts": [
       "checkin",
+      "participant-roster-host",
       "publishing-activity-participant-commands",
-      "publishing-activity-participant-read",
-      "participant-roster-host"
+      "publishing-activity-participant-read"
     ],
     "apps/api/src/routes/publishing/registerPublishingActivityRequestRoutes.ts": [
       "publishing-activity-request-commands",
@@ -919,10 +855,6 @@
     "apps/api/src/routes/publishing/registerPublishingTeamRoutes.ts": [
       "publishing-team-commands",
       "publishing-team-read"
-    ],
-    "apps/api/src/routes/shop/registerShopCheckoutRoutes.ts": [
-      "shop-checkout-commands",
-      "shop-public-read"
     ],
     "apps/api/src/routes/shop/registerShopMerchantManageRoutes.ts": [
       "shop-merchant-commands",

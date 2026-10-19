@@ -410,7 +410,6 @@ export const Organisations = () => {
               {metaField('Bio', applicationDetail.metadata?.bio)}
               {metaField('Website', applicationDetail.metadata?.website)}
               {metaField('Services', applicationDetail.metadata?.services)}
-              {metaField('Products & services', applicationDetail.metadata?.productsServices)}
               {metaField('Search keywords', applicationDetail.metadata?.searchKeywords)}
               {metaField('Shop email', applicationDetail.metadata?.contactEmail)}
               {metaField(

@@ -97,12 +97,6 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
         partialFilterExpression: { activityId: { $type: 'string' } }
       },
       {
-        key: { userId: 1, productId: 1 },
-        unique: true,
-        name: 'userId_productId_unique',
-        partialFilterExpression: { productId: { $type: 'string' } }
-      },
-      {
         key: { userId: 1, merchantId: 1 },
         unique: true,
         name: 'userId_merchantId_unique',
@@ -183,28 +177,9 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
       { key: { targetType: 1, targetId: 1, createdAt: -1 } },
       { key: { userId: 1, createdAt: -1 } }
     ]),
-    db.collection(COLLECTIONS.SHOP_ORDERS).createIndexes([
-      { key: { userId: 1, createdAt: -1 } },
-      { key: { status: 1, createdAt: -1 } },
-      { key: { stripeSessionId: 1 }, sparse: true },
-      { key: { 'items.id': 1 }, sparse: true },
-      { key: { 'items.productId': 1 }, sparse: true },
-    ]),
-    db.collection(COLLECTIONS.PRODUCTS).createIndexes([
-      { key: { merchantId: 1, status: 1, createdAt: -1 } }
-    ]),
     db.collection(COLLECTIONS.MERCHANT_PROFILES).createIndexes([
       { key: { adminIds: 1 } },
       { key: { tenantId: 1 }, sparse: true, unique: true },
-    ]),
-    db.collection(COLLECTIONS.ORDER_LINE_ITEMS).createIndexes([
-      { key: { orderId: 1, createdAt: -1 } },
-      { key: { productId: 1 } },
-      { key: { status: 1, createdAt: -1 } }
-    ]),
-    db.collection(COLLECTIONS.PRODUCT_CLICKS).createIndexes([
-      { key: { productId: 1, createdAt: -1 } },
-      { key: { userId: 1, createdAt: -1 } }
     ]),
     db.collection(COLLECTIONS.MEDIA_ASSETS).createIndexes([
       { key: { uploadedById: 1, createdAt: -1 } },

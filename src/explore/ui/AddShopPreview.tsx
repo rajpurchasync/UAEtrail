@@ -37,13 +37,6 @@ export const AddShopPreview = ({ draft }: AddShopPreviewProps) => {
           <p className="text-sm leading-relaxed text-gray-700">{draft.description.trim()}</p>
         ) : null}
 
-        {draft.shopProductsServices.trim() ? (
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Products & services</p>
-            <p className="mt-1 text-sm text-gray-800">{draft.shopProductsServices.trim()}</p>
-          </div>
-        ) : null}
-
         {draft.shopSearchKeywords.trim() ? (
           <div className="flex flex-wrap gap-1.5">
             {draft.shopSearchKeywords
