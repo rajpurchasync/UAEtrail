@@ -14,7 +14,7 @@ Companion: [`DOMAIN.md`](./DOMAIN.md), [`CREATE_FLOW.md`](./CREATE_FLOW.md), [`M
 | **`/explore/map`** | Public | Guest discovery catalog (`source`: activity · place · facility · shop · agency). Area is a filter (`areaId`), not a pin. Signed-in peek is **`GET /me/discover/overlay`**. |
 | **`/agent/manifest.json`**, **`/agent/discover`** | Public (rate-limited) | **AI / agent** entry manifest and text search over published outings + registry places |
 | **`/me/*`** | Signed-in member | Own profile, intents, groups, inbox, activity participation |
-| **`/publishing/*`** | Verified + **tenant** (`x-organisation-id`) | **Publishing workspace** (any tier): publish, roster, **activity** join queue. Alias `/operator/*`. |
+| **`/publishing/*`** | Verified + **tenant** (`x-organisation-id`) | **Publishing workspace** (any tier): publish, roster, **activity** join queue. |
 | **`/member/:userId/*`** | Optional auth | Public member card (`profile`, `brief`, `upcoming-activities`) — `registerPublicMemberRoutes.ts` |
 | **`/me/discover/overlay`** | Auth | Per-viewer `viewerAccess` for public map item ids (not a second catalog) |
 | **`/me/member-discovery/*`** | Auth | People roster, network, directory browse, quota, user search |
@@ -86,9 +86,9 @@ Storage: `activity_requests` vs `participant_intent_requests`.
 | GET | `/me/seeking-posts/:postId/requests/mine` | Caller’s request |
 | POST | `…/requests/:requestId/approve` \| `…/reject` | **Poster** decides |
 
-**Publish gate:** `POST /operator/activities` + publish require `profileComplete` + `canPublish`. **Join** does not require profile completion.
+**Publish gate:** `POST /publishing/activities` + publish require `profileComplete` + `publish.canPublish`. **Join** does not require profile completion.
 
-**Consumer vs console:** Plan + `/activity/:id` + `/me/seeking-posts/*`. Tenant publishing: **`/publishing/*`** (alias `/operator/*`).
+**Consumer vs console:** Plan + `/activity/:id` + `/me/seeking-posts/*`. Tenant publishing: **`/publishing/*`** (SPA `/publishing/*`).
 
 Registration: `registerMeSeekingPostRoutes` (`registerMeParticipantIntentRoutes.ts`).
 
@@ -118,13 +118,13 @@ Registration: `registerMeBadgesRoutes.ts` · service: `member-badges.ts`.
 | GET | `/me/profile-stats` | Profile counters (`followerCount`, `joinedCount`, `hostedCount`, `activeParticipantIntentCount`, `isCommunityHost`) |
 | GET | `/activities/:id/invites` | Pending **Join me** invitee ids the caller sent for this activity |
 | POST | `/activities/:id/invites` | **Join me** — host or confirmed participant invites another member (notification only; invitee still RSVPs / requests; host approval when required). Rate limit: **20 sends / activity / sender / 24h** (`ACTIVITY_JOIN_INVITE_DAILY_LIMIT_PER_ACTIVITY`) |
-| * | `/operator/activities/*` | CRUD, publish, history — FE: `listHostActivities`, … (`activities.ts` → `/operator/…`) |
-| GET | `/operator/activities/:id/participants` | Approved roster + flags (`registerHostActivityParticipantRoutes`) |
-| POST/DELETE | `/operator/activities/:id/participants/:participantId/checkin` | Confirm / undo attendance |
-| POST | `/publishing/activities/:id/participants/:participantId/revoke` | Remove joiner (`hostNote` → notification; alias `/operator/…`) |
-| POST | `/operator/activities/:id/participants/:participantId/rating` | Host rates attended participant (after outing ends) |
-| GET/PATCH | `/publishing/requests` | Activity join queue (`hostNote` on decide; alias `/operator/requests`) |
-| GET | `/me/status` | Member capabilities (`MemberStatusDTO`; **`publish`** nested); legacy `/me/host-status`, `/me/operator-status` |
+| * | `/publishing/activities/*` | CRUD, publish, history — FE: `tenantActivityClientApi` (`activities.ts` → `/publishing/…`) |
+| GET | `/publishing/activities/:id/participants` | Approved roster + flags (`registerOperatorActivityParticipantRoutes`) |
+| POST/DELETE | `/publishing/activities/:id/participants/:participantId/checkin` | Confirm / undo attendance |
+| POST | `/publishing/activities/:id/participants/:participantId/revoke` | Remove joiner (`hostNote` → notification) |
+| POST | `/publishing/activities/:id/participants/:participantId/rating` | Host rates attended participant (after outing ends) |
+| GET/PATCH | `/publishing/requests` | Activity join queue (`hostNote` on decide) |
+| GET | `/me/status` | Member capabilities (`MemberStatusDTO`; **`publish`** nested) |
 
 Storage: `activity_invites` (`COLLECTIONS.ACTIVITY_INVITES`) · indexes in `mongo-indexes.ts`.
 
@@ -278,7 +278,7 @@ Signed-in **member capabilities** — profile gates, **publish** workspace eligi
 | `publish.ownedProfiles` | Tenants member may publish as |
 | `profileRoleLabel` | Display key for profile chrome |
 
-Canonical client: `memberApi.getMemberStatus()` · `useMemberStatus()`. Legacy routes: `/me/host-status`, `/me/operator-status` (`Deprecation` + `Link` → `/me/status`).
+Canonical client: `memberApi.getMemberStatus()` · `useMemberStatus()`. **Removed:** `/me/host-status`, `/me/operator-status` (use `/me/status` only).
 
 Capability map: [`MEMBER_MODEL.md`](./MEMBER_MODEL.md).
 
@@ -349,6 +349,6 @@ Prefer **`seekingApi.linkSeekingPostToActivity`** when a Find poster graduates c
 
 ## UI component naming (related)
 
-Manage sheets for demand should align with API (**`ParticipantIntent*`**, not `MemberDemand*`) and live under Trips/explore — see [`TRIPS_HOST_MANAGE.md`](./TRIPS_HOST_MANAGE.md). **`src/components/activity/*`** is for **`/operator/*`** and Plan **hosted** manage (`ActivityManageSheet`, **`ActivityParticipantsPanel`** for roster / check-in / revoke / rate). Legacy import path `components/activity/*` is shim-only.
+Manage sheets for demand should align with API (**`ParticipantIntent*`**, not `MemberDemand*`) and live under Trips/explore — see [`TRIPS_HOST_MANAGE.md`](./TRIPS_HOST_MANAGE.md). **`src/components/activity/*`** is for **`/publishing/*`** and Plan **hosted** manage (`ActivityManageSheet`, **`ActivityParticipantsPanel`** for roster / check-in / revoke / rate).
 
 Do **not** add `OrganisationActivity*` symbols or `*OrganisationActivity` client methods — one **Activity** model for community and business hosts; **organisation** naming is tenant storefront scope only ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md) § Organisation in filenames). Member read-only attendance: **`ActivityParticipationStatus`** (not a host roster panel).

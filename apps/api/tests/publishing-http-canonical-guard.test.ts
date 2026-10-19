@@ -41,4 +41,11 @@ describe('publishing HTTP canonical guard (COH-04)', () => {
     expect(surface).toMatch(/OPERATOR_OVERVIEW_PATH = '\/publishing\/overview'/);
     expect(surface).not.toMatch(/rewriteOperatorConsoleToPublishingPath/);
   });
+
+  it('BWL wire-lexicon documents /publishing only (no /operator mount)', () => {
+    const lexicon = read('packages/shared-types/src/wire-lexicon.ts');
+    expect(lexicon).toMatch(/PUBLISHING_WORKSPACE: '\/publishing'/);
+    expect(lexicon).not.toMatch(/PUBLISHING_WORKSPACE_CURRENT/);
+    expect(lexicon).not.toMatch(/['"]\/operator['"]/);
+  });
 });

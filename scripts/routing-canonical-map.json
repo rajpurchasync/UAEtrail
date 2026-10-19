@@ -1,7 +1,7 @@
 {
   "version": 1,
   "enforcement": "phase4",
-  "description": "Canonical HTTP + SPA routing planes per bounded context. Publishing workspace is /publishing (MIG-COH-04); /operator is HTTP/SPA alias.",
+  "description": "Canonical HTTP + SPA routing planes per bounded context. Publishing workspace is /publishing (MIG-COH-04).",
   "pcohTarget": {
     "publishing_workspace_api": "/publishing",
     "publishing_workspace_spa_prefix": "/publishing"

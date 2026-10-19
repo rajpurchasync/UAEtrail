@@ -692,7 +692,7 @@
       "contextIds": ["publishing_workspace"],
       "apiRoots": ["apps/api/src/routes/operator.ts", "apps/api/src/routes/index.ts"],
       "feRoots": ["src/config/surfacePaths.ts", "src/App.tsx"],
-      "successMetric": "HTTP /publishing/* API + SPA; /operator alias; legacy host middleware gone"
+      "successMetric": "HTTP /publishing/* API + SPA; no /operator HTTP mount; legacy host middleware gone"
     },
     {
       "id": "MIG-COH-05",

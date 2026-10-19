@@ -27,7 +27,7 @@ Do **not** re-implement tier logic in React hooks — consume **`GET /me/status`
 
 **Storefront kinds (`PublishingProfileKind`):** See [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §1.3 — `community`, `pro_guide`, `agency`, `shop`, `ecommerce`, `hospitality`, `partner`. Wire `EntityKind.organisation` is the storefront slug URL, not product copy.
 
-**Product vocabulary (UI):** **`src/content/workspaceVocabulary.ts`** — **Host** = individual leading **this outing**; **Guide / Pro host** = profile-complete member with **individual Pro** — public face is **`/member/:userId`** (no separate guide storefront); **Operator** = **shop or agency business** (tenant) with a **company / shop profile**; **Host / publish** = capabilities under **`GET /me/status`** → **`publish`**. **Architecture/API:** tenant publishing HTTP **`/publishing/*`** (alias `/operator/*` — UI uses *Publishing workspace* / *Guide* / *Operator* labels, not “operator” for every community host). **Member capabilities:** **`GET /me/status`** · **`useMemberStatus`**.
+**Product vocabulary (UI):** **`src/content/workspaceVocabulary.ts`** — **Host** = individual leading **this outing**; **Guide / Pro host** = profile-complete member with **individual Pro** — public face is **`/member/:userId`** (no separate guide storefront); **Operator** = **shop or agency business** (tenant) with a **company / shop profile**; **Host / publish** = capabilities under **`GET /me/status`** → **`publish`**. **Architecture/API:** tenant publishing HTTP **`/publishing/*`** (SPA `/publishing/*` — UI uses *Publishing workspace* / *Guide* / *Operator* labels, not “operator” for every community host). **Member capabilities:** **`GET /me/status`** · **`useMemberStatus`**.
 
 ### One stack (person · community · Pro · tenant)
 
@@ -36,7 +36,7 @@ Do **not** re-implement tier logic in React hooks — consume **`GET /me/status`
 | **Member (user)** | One human account | Sign up · `/profile` |
 | **Community host** | Same user, profile complete — free **Host** on the map | No Pro; auto **community** tenant |
 | **Pro membership** | Upgrade path for **individual** (pro guide) or **business** (shop, tour agency, e-commerce, hospitality, …) | `/profile/pro-membership` |
-| **Tenant** | Single persistence row for every storefront (`tenants`); wire name **organisation** in headers/API | `x-organisation-id`, `GET /publishing/*` when managing (alias `/operator/*`) |
+| **Tenant** | Single persistence row for every storefront (`tenants`); wire name **organisation** in headers/API | `x-organisation-id`, `GET /publishing/*` when managing |
 | **Business subtype** | Which Pro business flavor (location-bound shop vs remote agency vs online e-commerce, etc.) | Chosen in Pro application — maps to `PublishingProfileKind` |
 
 There is **not** a second “organisation entity” beside tenants: shops, agencies, and e-commerce brands are **tenants** with different `PublishingProfileKind` / purpose. **Organisation** in code means **tenant scope** (storefront + workspace), not a parallel user type.
@@ -69,7 +69,7 @@ flowchart TB
 
   subgraph api [API surfaces]
     ME["/me/* — member scope"]
-    HOST["/host/* — tenant scope"]
+    PUBWS["/publishing/* — tenant scope"]
     PUB["/users/:id — public person"]
   end
 
@@ -84,7 +84,7 @@ flowchart TB
   C --> A
   P --> A
   B --> A
-  ME --> HOST
+  ME --> PUBWS
   U --> ME
   U --> PUB
 ```
@@ -108,7 +108,7 @@ Detail: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §1.6.
 
 | Layer | What it is | Examples |
 |-------|------------|----------|
-| **HTTP surface** | Which API prefix and registrar owns the call — **not** inferred from profile alone | Public `GET /places/:id` · member `POST /me/places` · admin `PATCH /admin/places` · operator `POST /operator/activities` ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §5.1) |
+| **HTTP surface** | Which API prefix and registrar owns the call — **not** inferred from profile alone | Public `GET /places/:id` · member `POST /me/places` · admin `PATCH /admin/places` · operator `POST /publishing/activities` ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §5.1) |
 | **Person / member** | Human using the app | `users`, `/profile`, `/member/:id` |
 | **UserRole** | Legacy platform job on the user row | `PARTICIPANT`, `TENANT_GUIDE`, `PLATFORM_ADMIN` |
 | **Host publishing tier** | How they publish on the map | `community`, `professional`, `business` |
@@ -250,7 +250,7 @@ Product-facing **who is viewing** for **capabilities** (Host / publish, console,
 |---------|----------|
 | Tier enum (wire) | `packages/shared-types/src/host-publishing-tier.ts` |
 | Tenant purpose (DB) | `apps/api/src/domain/tenant-publishing.ts`, `tenants.publishingPurpose` |
-| **Single resolver** | `apps/api/src/services/member-status.ts` (`resolveMemberStatus`) → **`GET /me/status`** (legacy `/me/host-status`, `/me/operator-status`) |
+| **Single resolver** | `apps/api/src/services/member-status.ts` (`resolveMemberStatus`) → **`GET /me/status`** (**removed** `/me/host-status`, `/me/operator-status`) |
 | Member audience ladder | `packages/shared-types/src/member-access.ts` |
 | Paid / Pro detail (layer 7) | `apps/api/src/services/member-entitlements.ts` |
 | Community footprint | `apps/api/src/lib/community-host.ts` |
@@ -303,15 +303,15 @@ UI labels vs capabilities vs wire (do not duplicate in other docs — **update t
 |------|--------|-----------------|
 | **Host (UI)** | **Individual** leading **this outing** on the map | Copy; wire `hostUserId`; not a `/me/*` resource |
 | **Guide / Pro host (UI)** | Pro **individual** — same person card, not a second storefront product | `/member/:userId`; Pro fields on profile |
-| **Operator (UI)** | **Shop or agency business** (tenant), always tied to ≥1 **user** | Public **agency / shop profile**; publishing workspace (wire `/operator/*`) |
+| **Operator (UI)** | **Shop or agency business** (tenant), always tied to ≥1 **user** | Public **agency / shop profile**; publishing workspace (`/publishing/*` SPA) |
 | **Operator on member profile** | When a user is linked to a shop/agency, their **`/member/:userId`** shows the **operator display name** as a link → operator profile | API: `linkedOperatorName` + `hostProfilePath` on `GET /member/:userId/profile` |
 | **Host / publish (capability)** | Member may create/publish outings | `GET /me/status` → `profileComplete` + `publish.canPublish` |
 | **Profile complete** | DOB, gender, based-in on `/welcome` | `profileComplete` on `/me/status`; `signupProfileComplete` on `/me/profile` only |
 | **Participate** | Join outings as attendee | Auth only; `activity_requests`, `/activities/:id/requests` |
 | **Community tenant (buddy)** | Free individual publish path | `publishingPurpose: community`, auto tenant after profile complete |
-| **Publishing workspace** | Tenant-scoped publish/manage UI | Wire `/publishing/*` (alias `/operator/*`), `x-organisation-id`, `src/console/*` — shell title from `workspaceConsoleLabel(kind)` |
+| **Publishing workspace** | Tenant-scoped publish/manage UI | Wire `/publishing/*`, `x-organisation-id`, `src/console/*` — shell title from `workspaceConsoleLabel(kind)` |
 | **Pro / business publishing** | Agency, shop, professional guide onboarding | `/profile/pro-membership`, HTTP `/me/pro-application` (collection `host_applications` until rename) |
-| **Activity join request** | Join a **published activity** (approval) | `activity_requests` (`note` joiner → host, `hostNote` host decision); `/publishing/requests` (alias `/operator/requests`) |
+| **Activity join request** | Join a **published activity** (approval) | `activity_requests` (`note` joiner → host, `hostNote` host decision); `/publishing/requests` |
 | **Seeking join request** | Join a **Find crew** post (seeking **activity**) | **`activity_requests`** (canonical); `/me/seeking-posts/.../requests` for manage UI |
 | **Pro membership (apply)** | Pro/agency/shop onboarding | HTTP `/me/pro-application`; collection `host_applications` (target `pro_applications`) |
 | **Buddy connection (friends)** | Mutual link between **member accounts**; accept also creates **mutual follow** (`user_follows`, no separate follow notification) | `BuddySummaryDTO.userId` = other person’s user id (no “buddy id”) |

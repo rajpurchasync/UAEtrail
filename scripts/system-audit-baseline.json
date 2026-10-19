@@ -35,7 +35,7 @@
     {
       "prefix": "/publishing",
       "file": "apps/api/src/routes/operator.ts",
-      "note": "/operator HTTP alias; SPA /publishing/*"
+      "note": "HTTP mount /publishing; SPA /publishing/*"
     },
     {
       "prefix": "/chat",

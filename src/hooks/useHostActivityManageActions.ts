@@ -12,7 +12,7 @@ import { openPublishedActivityPreview } from '../components/activities';
 import { useReloadExploreMap } from './useReloadExploreMap';
 import { openActivityGroupChat } from '../utils/openActivityGroupChat';
 
-/** Tenant activity manage actions (`DELETE /operator/activities/:id`, publish, duplicate, …). */
+/** Tenant activity manage actions (`DELETE /publishing/activities/:id`, publish, duplicate, …). */
 export function useHostActivityManageActions(
   tenantId: string | null,
   onActivitiesChanged?: () => void | Promise<void>

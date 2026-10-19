@@ -67,20 +67,14 @@ export const resolveHostNote = (input: {
   return trimmed.length > 0 ? trimmed : null;
 };
 
-/** HTTP mount prefixes (current → target). */
+/** HTTP mount prefixes (canonical). */
 export const BWL_API_MOUNTS = {
   PUBLISHING_WORKSPACE: '/publishing',
-  /** @deprecated Alias of PUBLISHING_WORKSPACE */
-  PUBLISHING_WORKSPACE_CURRENT: '/operator',
-  PUBLISHING_WORKSPACE_TARGET: '/publishing',
-  MEMBER_DISCOVERY_CURRENT: '/me/member-discovery',
+  MEMBER_DISCOVERY: '/me/member-discovery',
   /** Optional target; default keep member-discovery */
   PEOPLE_DISCOVERY_TARGET: '/me/people',
-  PLACES_TARGET: '/places',
-  /** @deprecated Alias of PRO_APPLICATION */
-  PRO_APPLICATION_CURRENT: '/me/host-application',
+  PLACES: '/places',
   PRO_APPLICATION: '/me/pro-application',
-  PRO_APPLICATION_TARGET: '/me/pro-application',
   ADMIN_PRO_APPLICATIONS: '/admin/pro-applications',
   SAFETY_REPORTS: '/safety/reports',
   /** Member seeking posts (activity-backed). */

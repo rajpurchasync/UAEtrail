@@ -192,9 +192,9 @@ Wall post policy (`all_members` | `admins_only`) applies to group/crew threads. 
 |-------|-----|---------|---------|
 | **A — Community pin** | Member **Add** | Gear shop **on the map** (informational) | Facility `outdoor_shop`, map **peek** only |
 | **B — Catalog place** | Admin / import | Listed shop place; claim toward Pro | Admin places; optional pin |
-| **C — Operator shop** | Pro **tenant** (shop owner) | Full storefront + workspace depth later | `/shop/:id`, **`/operator/*`**, `EntityKind.shop` |
+| **C — Operator shop** | Pro **tenant** (shop owner) | Full storefront + workspace depth later | `/shop/:id`, **`/publishing/*`**, `EntityKind.shop` |
 
-**Operator** umbrella: same person may run **guide**, **agency**, or **shop** tenant — all publish via **`/operator/*`** ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md)). **Do not** create a shop tenant from FAB Add.
+**Operator** umbrella: same person may run **guide**, **agency**, or **shop** tenant — all publish via **`/publishing/*`** ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md)). **Do not** create a shop tenant from FAB Add.
 
 **Shop listing lifecycle (layer B → C):** catalog → claimed (Pro) → managed — see [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §1.4.
 

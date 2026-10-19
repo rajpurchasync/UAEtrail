@@ -31,6 +31,16 @@ describe('doc coherence (Tier 1)', () => {
     expect(member).toMatch(/profileComplete/);
   });
 
+  it('Tier-1 docs do not teach /operator HTTP or SPA workspace alias', () => {
+    const banned = [/alias `\/operator/i, /Alias `\/operator/i, /POST `\/operator\/activities`/];
+    for (const name of tier1) {
+      const text = readFileSync(join(DOCS, name), 'utf8');
+      for (const pattern of banned) {
+        expect(pattern.test(text), `docs/${name} teaches stale /operator alias`).toBe(false);
+      }
+    }
+  });
+
   it('removed Tier-4 snapshots are not reintroduced at docs root', () => {
     const removed = [
       'ENGINEERING_PLAN.md',

@@ -299,7 +299,7 @@ describe('detail surface lineage (host publish → activity detail)', () => {
     expect(res.body.presentation.footerByTab).toBeTruthy();
   });
 
-  it('operator POST /operator/activities + publish exposes GET /activities/:id', async () => {
+  it('POST /publishing/activities + publish exposes GET /activities/:id', async () => {
     expect(hostFixture).toBeTruthy();
     const hostEmail = `org-${hostFixtureSuffix}@test.local`;
     const login = await request(app)

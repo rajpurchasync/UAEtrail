@@ -12,7 +12,7 @@ const BANNED_CALLS: Array<{ pattern: RegExp; hint: string }> = [
   { pattern: /\bapi\.getHostSubmittedLocations\b/, hint: 'Use api.getOrganisationSubmittedPlaces' },
   {
     pattern: /\bapi\.(create|publish|list|update|cancel|duplicate)OrganisationActivity\b/,
-    hint: 'Use *OperatorActivity (routes under /operator/activities)',
+    hint: 'Use tenantActivityClientApi (routes under /publishing/activities)',
   },
   {
     pattern: /\bapi\.(getOrganisationJoinRequests|decideOrganisationJoinRequest)\b/,
