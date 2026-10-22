@@ -9,6 +9,7 @@ import type { ExploreBuddySubtypeKey } from '../exploreBuddySubtype';
 import type { ExploreOutingTopicKey } from '../exploreOutingTopic';
 import type { ExploreActivityModeFilter } from '../exploreActivityModeFilter';
 import { mapItemMatchesFilterPills } from '../exploreBrowseTaxonomy';
+import { venueItemMatchesRegions } from '../../utils/venueRegionFilter';
 import type { DesktopBrowseTab } from '../ui/exploreBrowsePanelCopy';
 
 export type ExploreMapPinCatalogArgs = {
@@ -48,7 +49,9 @@ export const selectExploreMapPinCatalog = (args: ExploreMapPinCatalogArgs): Expl
         venueRegions: args.venueRegions,
       });
     }
-    return selectActivitiesFromExploreCatalog(pool, activityCatalogFilters(args));
+    const activities = selectActivitiesFromExploreCatalog(pool, activityCatalogFilters(args));
+    if (args.venueRegions.length === 0) return activities;
+    return activities.filter((item) => venueItemMatchesRegions(item, args.venueRegions));
   }
 
   if (sidebarPanel === 'venues') {
@@ -62,5 +65,7 @@ export const selectExploreMapPinCatalog = (args: ExploreMapPinCatalogArgs): Expl
     return selectShopsFromExploreCatalog(catalog);
   }
 
-  return selectActivitiesFromExploreCatalog(catalog, activityCatalogFilters(args));
+  const activities = selectActivitiesFromExploreCatalog(catalog, activityCatalogFilters(args));
+  if (args.venueRegions.length === 0) return activities;
+  return activities.filter((item) => venueItemMatchesRegions(item, args.venueRegions));
 };

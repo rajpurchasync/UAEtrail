@@ -1,4 +1,4 @@
-import { ChevronLeft, PanelLeftClose, X } from 'lucide-react';
+import { PanelLeftClose, X } from 'lucide-react';
 
 import type { ReactNode } from 'react';
 
@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 import { MobileMenuButton } from '../../components/layout/MobileMenu';
+import { MobileBackButton } from '../../components/mobile/MobileBackButton';
 
 import type { ExploreSearchScopeCounts, ExploreSearchScopeKey } from '../../explore/exploreBrowseTaxonomy';
 
@@ -57,6 +58,10 @@ interface ListDiscoveryHeaderProps {
 
   onBackFromCategory?: () => void;
 
+  categoryBackLabel?: string;
+
+  categoryBackFallbackTo?: string;
+
   categoryFilterRow?: ReactNode;
 
   searchActiveFiltersRow?: ReactNode;
@@ -101,6 +106,10 @@ export const ListDiscoveryHeader = ({
   categoryFocus = null,
 
   onBackFromCategory,
+
+  categoryBackLabel = 'Back',
+
+  categoryBackFallbackTo = '/list',
 
   categoryFilterRow = null,
 
@@ -240,23 +249,14 @@ export const ListDiscoveryHeader = ({
 
         {categoryFocus && onBackFromCategory ? (
 
-          <div className={`grid grid-cols-[2.5rem_1fr_2.5rem] items-center gap-1 ${mapOverlay ? 'min-h-10' : 'min-h-11'}`}>
+          <div className={`grid grid-cols-[minmax(72px,auto)_1fr_2.5rem] items-center gap-1 ${mapOverlay ? 'min-h-10' : 'min-h-11'}`}>
 
-            <button
-
-              type="button"
-
-              onClick={onBackFromCategory}
-
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full text-neutral-900 active:bg-neutral-100 focus:outline-none focus-visible:outline-none"
-
-              aria-label={`Back from ${LIST_CATEGORY_PAGE_TITLE[categoryFocus]}`}
-
-            >
-
-              <ChevronLeft className="h-6 w-6" aria-hidden />
-
-            </button>
+            <MobileBackButton
+              label={categoryBackLabel}
+              fallbackTo={categoryBackFallbackTo}
+              onPress={onBackFromCategory}
+              className="-ml-1 text-neutral-900"
+            />
 
             <div className="min-w-0 px-1 text-center">
 

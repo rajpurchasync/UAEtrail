@@ -11,6 +11,7 @@ import { resolveProfileSharePath } from '../utils/profileShare';
 import { useMemberStatus } from '../hooks/useMemberStatus';
 import { sortBadgesByCatalogOrder } from '../constants/memberBadges';
 import { memberProfileLink } from '../config/routingCatalog';
+import { useProfileHubBackChrome } from '../hooks/useProfileHubBackChrome';
 
 const BadgeSection = ({
   title,
@@ -43,6 +44,7 @@ const BadgeSection = ({
 );
 
 export const ProfileBadges = () => {
+  const backChrome = useProfileHubBackChrome();
   const { user } = useAuth();
   const { ownedProfiles } = useMemberStatus({ enabled: Boolean(user) });
   const { badges, loading, error } = useMemberBadges(user?.id);
@@ -68,7 +70,7 @@ export const ProfileBadges = () => {
       title="My badges"
       maxWidth="4xl"
       showJourney={false}
-      back={{ fallbackTo: '/profile', label: 'Profile' }}
+      back={backChrome}
     >
       <PageMeta title="My badges" noIndex />
 

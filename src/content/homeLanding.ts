@@ -1,6 +1,6 @@
 /** Fallback outing cards for guest `/` when the public API is empty or unavailable. Copy: `homeMarketing.ts`. */
 
-import { EXPLORE_MAP_PATH } from '../config/routingCatalog';
+import { EXPLORE_MAP_PATH } from '../config/routingCatalogLite';
 
 export type HomeLandingActivity = {
   id: string;

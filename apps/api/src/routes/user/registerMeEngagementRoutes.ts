@@ -22,6 +22,8 @@ import {
   listMyParticipatingActivities,
   loadMyActivityJoinRequest,
 } from '../../services/me-activity-participation-read.js';
+import { readUserParticipationRevision } from '../../lib/activity-engagement-store.js';
+import { sendNotModifiedIfMatch, weakEtagFromJson } from '../../lib/http-etag.js';
 import { eventIdParamSchema, pushSubscriptionSchema } from './schemas.js';
 
 const meRequestIdParamSchema = z.object({ requestId: z.string().min(1) });
@@ -119,6 +121,9 @@ export const registerMeActivityParticipationRoutes = (router: Router): void => {
   router.get('/me/activities', async (req, res, next) => {
     try {
       const pg = paginationSchema.parse(req.query);
+      const revision = await readUserParticipationRevision(req.auth!.userId);
+      const etag = weakEtagFromJson({ userId: req.auth!.userId, page: pg.page, pageSize: pg.pageSize, revision });
+      if (sendNotModifiedIfMatch(req, res, etag)) return;
       const { items, total } = await listMyParticipatingActivities({
         userId: req.auth!.userId,
         skip: (pg.page - 1) * pg.pageSize,

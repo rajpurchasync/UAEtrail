@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { UserPlus } from 'lucide-react';
-import { ExploreResponsiveSheet } from '../../explore/ui/ExploreResponsiveSheet';
 import { useAuth } from '../../context/AuthContext';
 import { buildActivitySharePayload, type ActivityShareInput } from '../../utils/activityShare';
 import { ACTIVITY_INVITE_FRIENDS_CTA } from '../../content/activityInviteCopy';
 import { ActivityInviteModalBody } from './ActivityInviteModalBody';
+import { ActivityInviteExploreSheet } from './ActivityInviteExploreSheet';
 
 export type ActivityInviteLauncherProps = {
   activity: ActivityShareInput;
@@ -53,23 +53,15 @@ export const ActivityInviteLauncher = ({
         )}
       </button>
 
-      <ExploreResponsiveSheet
-        open={open}
-        onClose={() => setOpen(false)}
-        title={ACTIVITY_INVITE_FRIENDS_CTA}
-        maxWidthClass="max-w-md"
-        overlayFixed
-        showCloseButton
-      >
-        <div className="px-4 pb-6 pt-1">
-          <ActivityInviteModalBody
-            activityId={activity.id}
-            messageWithUrl={share.messageWithUrl}
-            initialSelectedBuddyIds={initialSelectedBuddyIds}
-            active={open && Boolean(user)}
-          />
-        </div>
-      </ExploreResponsiveSheet>
+      <ActivityInviteExploreSheet open={open} onClose={() => setOpen(false)}>
+        <ActivityInviteModalBody
+          activityId={activity.id}
+          messageWithUrl={share.messageWithUrl}
+          initialSelectedBuddyIds={initialSelectedBuddyIds}
+          active={open && Boolean(user)}
+          onInviteSent={() => setOpen(false)}
+        />
+      </ActivityInviteExploreSheet>
     </>
   );
 };

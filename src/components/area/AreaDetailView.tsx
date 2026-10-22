@@ -67,7 +67,7 @@ export const AreaDetailView = ({
       }
     >
       <PageMeta title={area.name} description={summary.slice(0, 160)} path={detailPath} image={area.imageUrl} />
-      <div className="consumer-bg md:bg-gray-50 min-h-screen">
+      <div className="consumer-bg md:bg-gray-50 app-page-min-h">
         <div className="mx-auto max-w-lg px-4 pb-10 md:max-w-3xl md:px-6">
           <div className="hidden md:block pt-6">
             {area.imageUrl ? (

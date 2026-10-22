@@ -1,5 +1,5 @@
 import { ExploreResponsiveSheet } from '../../explore/ui/ExploreResponsiveSheet';
-import { EXPLORE_Z } from '../../config/exploreTheme';
+import { EXPLORE_SHEET, EXPLORE_Z } from '../../config/exploreTheme';
 import { ACTIVITY_INVITE_FRIENDS_CTA } from '../../content/activityInviteCopy';
 import { ACTIVITY_PEEK_MANAGE_LABEL } from '../../content/activityParticipationCopy';
 import { JOIN_CANCEL_REQUEST_BUTTON, JOIN_WITHDRAW_APPROVED_REQUEST_BUTTON } from '../../content/joinWithdrawCopy';
@@ -32,7 +32,7 @@ export const ActivityParticipationManageSheet = ({
       open={open}
       onClose={onClose}
       title={ACTIVITY_PEEK_MANAGE_LABEL}
-      maxWidthClass="max-w-md"
+      maxWidthClass={EXPLORE_SHEET.compactMaxWidth}
       zClass={EXPLORE_Z.activityDetailInviteSheet}
       overlayFixed
       showCloseButton

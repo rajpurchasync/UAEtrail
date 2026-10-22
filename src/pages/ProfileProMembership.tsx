@@ -16,9 +16,11 @@ import {
 import { useMemberStatus } from '../hooks/useMemberStatus';
 import { ProfileMapPresenceSection } from '../components/profile/ProfileMapPresenceSection';
 import { resolveAuthRedirect } from '../utils/authRedirect';
+import { useProfileHubBackChrome } from '../hooks/useProfileHubBackChrome';
 
 /** Pro Membership — professional guide, agency, or shop application (community Host / publish uses profile complete + `/welcome`). */
 export const ProfileProMembership = () => {
+  const backChrome = useProfileHubBackChrome();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -70,7 +72,7 @@ export const ProfileProMembership = () => {
         layout="stack"
         title="Pro Membership"
         showJourney={false}
-        back={{ fallbackTo: '/profile', label: 'Profile' }}
+        back={backChrome}
       >
         <div className="mx-auto max-w-lg space-y-4 pb-nav-safe animate-fade-up">
           <GlassCard padding className="!p-5">

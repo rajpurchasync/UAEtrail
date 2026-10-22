@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { APP_PAGE_MIN_H_CLASS, APP_SCROLL_BODY_CLASS } from '../../config/layoutScroll';
 import { createPortal } from 'react-dom';
 import { MobileMenuButton } from '../layout/MobileMenu';
 import { ConsumerHeroBanner } from './ConsumerHeroBanner';
@@ -108,7 +109,7 @@ export const MobileDetailShell = ({
 
   return (
   <div
-    className={`min-h-screen ${whitePageChrome ? 'bg-white' : 'consumer-bg md:bg-gray-50'} ${
+    className={`${APP_PAGE_MIN_H_CLASS} overflow-hidden ${whitePageChrome ? 'bg-white' : 'consumer-bg md:bg-gray-50'} ${
       footer ? 'pb-detail-cta-safe md:pb-8' : ''
     }`}
   >
@@ -157,14 +158,14 @@ export const MobileDetailShell = ({
     ) : null}
     {!mobileHeaderOverlay ? (
       <div
-        className={`md:hidden sticky top-0 z-30 ${
+        className={`md:hidden shrink-0 z-30 ${
           whitePageChrome ? 'border-b border-neutral-100 bg-white/95 backdrop-blur-md' : 'glass-header'
         }`}
       >
         {mobileHeaderChrome}
       </div>
     ) : null}
-    {children}
+    <div className={`${APP_SCROLL_BODY_CLASS} min-h-0 flex-1`}>{children}</div>
     {footer ? (
       <MobileDetailFooterPortal flush={flushStickyFooter}>{footer}</MobileDetailFooterPortal>
     ) : null}

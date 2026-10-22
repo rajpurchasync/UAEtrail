@@ -160,6 +160,7 @@ export {
 
 export {
   listDiscoveryPath,
+  listPeopleDiscoveryPath,
   exploreMapPathFromListSearch,
   listDiscoveryPathFromExploreSearch,
 } from '../list/routing';

@@ -12,12 +12,13 @@ import { acceptMeGroupInviteByToken } from '../hooks/notificationInboxApi';
 import { useMeNotificationsInbox } from '../hooks/useMeNotificationsInbox';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { GlassCard } from '../components/mobile/GlassCard';
-import { ConsumerErrorCard, ConsumerLoadingSpinner } from '../components/mobile/ConsumerFeedback';
+import { ConsumerErrorCard } from '../components/mobile/ConsumerFeedback';
 import { PageMeta } from '../components/seo/PageMeta';
 import { NotificationInboxFilters } from '../components/notifications/NotificationInboxFilters';
 import { NotificationListItem } from '../components/notifications/NotificationListItem';
 import { inferNotificationPath } from '../utils/notificationRouting';
 import { useAuth } from '../context/AuthContext';
+import { useProfileHubBackChrome } from '../hooks/useProfileHubBackChrome';
 import { notificationKind } from '../utils/notificationCategories';
 import { matchesNotificationSearch } from '../utils/notificationSearch';
 import {
@@ -57,6 +58,7 @@ const isBuddyInviteNotification = (notif: NotificationDTO): boolean => {
 
 export const Notifications = () => {
   const { user } = useAuth();
+  const backChrome = useProfileHubBackChrome();
   const navigate = useNavigate();
   const [topicFilter, setTopicFilter] = useState<NotificationTopic>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -117,7 +119,7 @@ export const Notifications = () => {
       title="Notifications"
       maxWidth="4xl"
       showJourney={false}
-      back={{ fallbackTo: '/profile', label: 'Profile' }}
+      back={backChrome}
     >
       <PageMeta title="Notifications" noIndex />
 
@@ -125,7 +127,10 @@ export const Notifications = () => {
         {error ? <ConsumerErrorCard message={error} onRetry={() => void reload()} /> : null}
 
         {loading ? (
-          <ConsumerLoadingSpinner />
+          <div className="flex flex-col items-center gap-3 py-12" role="status" aria-live="polite">
+            <div className="h-7 w-7 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent" aria-hidden />
+            <p className="text-sm font-medium text-neutral-600">Loading notifications</p>
+          </div>
         ) : showEmpty ? (
           <GlassCard padding className="text-center py-12">
             <Bell className="w-10 h-10 text-neutral-300 mx-auto mb-3" />

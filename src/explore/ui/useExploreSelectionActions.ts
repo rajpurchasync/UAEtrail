@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState, type Dispatch, type SetStateAction } from 'react';
 import type { QueryClient } from '@tanstack/react-query';
 import type { NavigateFunction } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import {
   type ActivityDTO,
   type ActivityMapPeekActionId,
@@ -17,6 +18,11 @@ import { hostPublishedActivityPeekAccess } from '../../access/resolvePeekDetailA
 import { buildExploreMapItemFromActivity } from '../privateActivityExploreItem';
 import { openActivityGroupChat } from '../../utils/openActivityGroupChat';
 import { messagesRouteForRole } from '../../utils/authRouting';
+import { navigateToMessagesWithReturn } from '../../utils/activityGroupChatNav';
+import {
+  buildMapPeekReturnPath,
+  mapPeekDetailNavState,
+} from '../mapPeekDetailNavState';
 import { executeActivityMapPeekAction } from '../../activity/executeActivityMapPeekAction';
 import { readExploreMapItemsFromCache, reloadExploreMap } from '../../hooks/useExploreMap';
 import { isExploreMapBboxEnabled } from '../exploreMapBbox';
@@ -76,7 +82,16 @@ export const useExploreSelectionActions = ({
   onOpenHostManage,
   onShareHostedActivity,
 }: UseExploreSelectionActionsArgs) => {
+  const location = useLocation();
   const { setListOpen, setMapFilter, setActivityFilter, syncExploreUrl } = browse;
+
+  const peekReturnPath = useCallback(
+    (mapItemId: string | null | undefined): string | undefined => {
+      if (!mapItemId?.trim()) return undefined;
+      return buildMapPeekReturnPath(mapItemId, location);
+    },
+    [location]
+  );
 
   const [exploreNotice, setExploreNotice] = useState<string | null>(null);
   const [venueNotice, setVenueNotice] = useState<string | null>(null);
@@ -94,6 +109,8 @@ export const useExploreSelectionActions = ({
     setExploreNotice,
     setSelectedId,
     navigate,
+    location,
+    selectedId,
   });
 
   const removals = useExploreSelectionRemovals({
@@ -131,12 +148,13 @@ export const useExploreSelectionActions = ({
     const activity = selected?.activity;
     if (!activity) return;
     try {
+      const returnTo = peekReturnPath(selectedId);
       setSelectedId(null);
-      await openActivityGroupChat(navigate, activity.id, activity.groupChatId);
+      await openActivityGroupChat(navigate, activity.id, activity.groupChatId, { returnTo });
     } catch (err) {
       setExploreNotice(err instanceof Error ? err.message : 'Could not open activity chat.');
     }
-  }, [selected, navigate, setSelectedId]);
+  }, [selected, selectedId, navigate, setSelectedId, peekReturnPath]);
 
   const handleMessageActivityHost = useCallback(() => {
     const activity = selected?.activity;
@@ -144,16 +162,19 @@ export const useExploreSelectionActions = ({
     const hostUserId = resolveActivityHostUserId(activity);
     if (!hostUserId) return;
     if (!user) {
-      peekJoin.joinActions.openGuestSheet('activity');
+      peekJoin.joinActions.openGuestBrowseGate('peek-details', 'message_host');
       return;
     }
+    const returnTo = peekReturnPath(selectedId);
     setSelectedId(null);
-    navigate(
+    navigateToMessagesWithReturn(
+      navigate,
       messagesRouteForRole((user.role ?? 'participant') as UserRole, hostUserId, {
         activityId: activity.id,
-      })
+      }),
+      returnTo
     );
-  }, [selected, user, navigate, setSelectedId, peekJoin.joinActions]);
+  }, [selected, selectedId, user, navigate, setSelectedId, peekJoin.joinActions, peekReturnPath]);
 
   const handleInviteCrew = useCallback(() => {
     const activity = selected?.activity;
@@ -194,8 +215,11 @@ export const useExploreSelectionActions = ({
             onOpenHostManage(activity, 'participants');
             return;
           }
+          const detailState = selectedId
+            ? mapPeekDetailNavState(location, selectedId)
+            : undefined;
           setSelectedId(null);
-          navigate(`${activityDetailPath(activity.id)}?tab=buddies`);
+          navigate(`${activityDetailPath(activity.id)}?tab=buddies`, { state: detailState });
         },
         withdrawJoin: () => {
           if (peekJoin.joinUiState.kind === 'pending' || peekJoin.joinUiState.kind === 'confirmed') {
@@ -204,8 +228,11 @@ export const useExploreSelectionActions = ({
         },
         viewDetail: () => {
           if (!activity) return;
+          const detailState = selectedId
+            ? mapPeekDetailNavState(location, selectedId)
+            : undefined;
           setSelectedId(null);
-          navigate(activityDetailPath(activity.id));
+          navigate(activityDetailPath(activity.id), { state: detailState });
         },
       });
     },
@@ -223,6 +250,9 @@ export const useExploreSelectionActions = ({
       onShareHostedActivity,
       navigate,
       setSelectedId,
+      location,
+      selectedId,
+      peekReturnPath,
     ]
   );
 

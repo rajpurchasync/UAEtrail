@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
+import { profileHubMobileBackState } from '../../utils/mobileBackNav';
 import { Camera, Eye, Pencil } from 'lucide-react';
 import { SecureAvatar } from '../ui/SecureAvatar';
 import { ShareButton } from '../ui/ShareButton';
@@ -48,7 +49,7 @@ const ProfileHubStatCell = ({ stat }: { stat: ProfileHubStat }) => {
 
   if (stat.to) {
     return (
-      <Link to={stat.to} className={className}>
+      <Link to={stat.to} state={profileHubMobileBackState()} className={className}>
         {inner}
       </Link>
     );

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { SlidersHorizontal } from 'lucide-react';
 import { getVenueStateFilterOptions } from '../../config/regions';
 import { FilterIconButton } from '../../components/mobile/FilterIconButton';
-import { EXPLORE_FLOATING_CONTROL } from '../../config/exploreTheme';
+import { EXPLORE_BROWSE_SHEET_CONTROL, EXPLORE_FLOATING_CONTROL } from '../../config/exploreTheme';
 import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
 
 interface VenueStateFilterMenuProps {
@@ -30,7 +30,7 @@ export const VenueStateFilterMenu = ({
     <button
       type="button"
       onClick={() => setOpen(true)}
-      className={`${EXPLORE_FLOATING_CONTROL} relative inline-flex h-10 w-10 shrink-0 items-center justify-center text-emerald-950 ${
+      className={`${EXPLORE_BROWSE_SHEET_CONTROL} relative h-10 w-10 ${
         active ? 'ring-2 ring-emerald-500/40' : ''
       }`}
       aria-label={

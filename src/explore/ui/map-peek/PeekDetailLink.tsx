@@ -1,15 +1,19 @@
+import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import type { DiscoveryCardModel } from '../../../discovery/discoveryCardModel';
 import { resolvePeekDetailAccess } from '../../../access/resolvePeekDetailAccess';
+import type { MapPeekDetailNavState } from '../../mapPeekDetailNavState';
 
 export type PeekDetailLinkProps = {
   card: DiscoveryCardModel;
-  label: string;
+  label: ReactNode;
   className: string;
   hrefOverride?: string;
   joinStateLoading?: boolean;
   onGuestGatedAction?: () => void;
   onBeforeNavigate?: () => void;
+  linkState?: MapPeekDetailNavState;
+  ariaLabel?: string;
 };
 
 /** Pin summary → entity detail — one access contract for activities, places, shops. */
@@ -21,6 +25,8 @@ export const PeekDetailLink = ({
   joinStateLoading = false,
   onGuestGatedAction,
   onBeforeNavigate,
+  linkState,
+  ariaLabel,
 }: PeekDetailLinkProps) => {
   const fallbackHref = (hrefOverride ?? card.path)?.trim();
   if (!fallbackHref) return null;
@@ -34,13 +40,19 @@ export const PeekDetailLink = ({
   if (access.kind === 'guest_gate') {
     if (onGuestGatedAction) {
       return (
-        <button type="button" onClick={onGuestGatedAction} className={className}>
+        <button type="button" onClick={onGuestGatedAction} className={className} aria-label={ariaLabel}>
           {label}
         </button>
       );
     }
     return (
-      <Link to={fallbackHref} className={className} onClick={() => onBeforeNavigate?.()}>
+      <Link
+        to={fallbackHref}
+        state={linkState}
+        className={className}
+        aria-label={ariaLabel}
+        onClick={() => onBeforeNavigate?.()}
+      >
         {label}
       </Link>
     );
@@ -48,7 +60,13 @@ export const PeekDetailLink = ({
 
   if (access.kind === 'profile_gate' || access.kind === 'upgrade_gate') {
     return (
-      <Link to={access.href} className={className} onClick={() => onBeforeNavigate?.()}>
+      <Link
+        to={access.href}
+        state={linkState}
+        className={className}
+        aria-label={ariaLabel}
+        onClick={() => onBeforeNavigate?.()}
+      >
         {label}
       </Link>
     );
@@ -57,7 +75,9 @@ export const PeekDetailLink = ({
   return (
     <Link
       to={hrefOverride ?? access.href ?? fallbackHref}
+      state={linkState}
       className={className}
+      aria-label={ariaLabel}
       onClick={() => onBeforeNavigate?.()}
     >
       {label}

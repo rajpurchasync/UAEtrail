@@ -22,6 +22,11 @@ import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import { ExploreJoinOverlays } from '../../explore/ui/ExploreJoinOverlays';
 import { openActivityGroupChat } from '../../utils/openActivityGroupChat';
 import { messagesRouteForRole } from '../../utils/authRouting';
+import { navigateToMessagesWithReturn } from '../../utils/activityGroupChatNav';
+import {
+  buildMapPeekReturnPath,
+  mapPeekDetailNavState,
+} from '../../explore/mapPeekDetailNavState';
 import { useActivityJoinActions, useActivityJoinContext } from '../../hooks/useActivityJoinFlow';
 import { useViewerProfileGender } from '../../hooks/useViewerProfileGender';
 import { womenOnlyJoinMessageForActivity } from '../../utils/activityWomenOnlyJoin';
@@ -154,16 +159,20 @@ export const ListFeedActionsProvider = ({
         requestJoin: () => beginJoin(card),
         openCrewChat: () => {
           if (!activity) return;
-          void openActivityGroupChat(navigate, activity.id, activity.groupChatId);
+          const returnTo = buildMapPeekReturnPath(card.id, location);
+          void openActivityGroupChat(navigate, activity.id, activity.groupChatId, { returnTo });
         },
         messageHost: () => {
           if (!activity) return;
           const hostUserId = resolveActivityHostUserId(activity);
           if (!hostUserId) return;
-          navigate(
+          const returnTo = buildMapPeekReturnPath(card.id, location);
+          navigateToMessagesWithReturn(
+            navigate,
             messagesRouteForRole((user.role ?? 'participant') as UserRole, hostUserId, {
               activityId: activity.id,
-            })
+            }),
+            returnTo
           );
         },
         shareActivity: () => {
@@ -184,7 +193,9 @@ export const ListFeedActionsProvider = ({
             onOpenHostManage(activity, 'participants');
             return;
           }
-          navigate(`${activityDetailPath(activity.id)}?tab=buddies`);
+          navigate(`${activityDetailPath(activity.id)}?tab=buddies`, {
+            state: mapPeekDetailNavState(location, card.id),
+          });
         },
         inviteCrew: () => {
           if (activity && onInviteCrew) onInviteCrew(activity);
@@ -195,7 +206,8 @@ export const ListFeedActionsProvider = ({
         offerRideshare: () => {
           if (activity && onCreateLinkedRideshare) onCreateLinkedRideshare(activity);
         },
-        viewDetail: () => navigate(card.path),
+        viewDetail: () =>
+          navigate(card.path, { state: mapPeekDetailNavState(location, card.id) }),
         withdrawJoin: () => {
           if (joinUiForCard?.kind === 'pending' || joinUiForCard?.kind === 'confirmed') {
             joinActions.setShowWithdraw(true);
@@ -220,6 +232,7 @@ export const ListFeedActionsProvider = ({
       onOpenHostManage,
       onInviteCrew,
       onCreateLinkedRideshare,
+      location,
     ]
   );
 

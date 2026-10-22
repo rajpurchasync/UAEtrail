@@ -4,9 +4,13 @@ import type { JoinRequestUiState } from '../../../../utils/joinRequestUi';
 import {
   ACTIVITY_PEEK_MANAGE_LABEL,
   ACTIVITY_STATUS_JOIN_REQUESTED,
+  ACTIVITY_STATUS_JOINED,
 } from '../../../../content/activityParticipationCopy';
+import { activityPeekViewerIsJoined } from '../../../../activity/activityPeekEngagement';
 import { activityDetailPath } from '../../../../config/routingCatalog';
 import { PeekDetailLink } from '../../map-peek/PeekDetailLink';
+import { useLocation } from 'react-router-dom';
+import { mapPeekDetailNavState } from '../../../mapPeekDetailNavState';
 import { ActivityPeekStrips } from './ActivityPeekStrips';
 
 export type ActivityPeekBodyProps = {
@@ -25,8 +29,10 @@ export const ActivityPeekBody = ({
   onOfferTransport,
   joinUiState,
 }: ActivityPeekBodyProps) => {
+  const location = useLocation();
   const strips = resolveActivityMapPeekStrips(card, joinUiState);
-  const showJoinedChip = strips.showJoinedStatusChipOnPeek;
+  const showJoinedChip =
+    strips.showJoinedStatusChipOnPeek || activityPeekViewerIsJoined(card, joinUiState);
   const showJoinRequestedChip = joinUiState?.kind === 'pending';
   const activityId = card.activityId ?? card.activity?.id;
   const manageHref = activityId ? activityDetailPath(activityId) : undefined;
@@ -41,7 +47,7 @@ export const ActivityPeekBody = ({
         ) : null}
         {showJoinedChip ? (
           <span className="inline-flex rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-900">
-            Joined
+            {ACTIVITY_STATUS_JOINED}
           </span>
         ) : null}
         {manageHref ? (
@@ -51,6 +57,7 @@ export const ActivityPeekBody = ({
             className="text-xs font-semibold text-emerald-800 underline underline-offset-2"
             hrefOverride={manageHref}
             onGuestGatedAction={onGuestGatedAction}
+            linkState={mapPeekDetailNavState(location, card.id)}
           />
         ) : null}
       </div>

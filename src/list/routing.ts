@@ -4,6 +4,7 @@ import {
   inferListCatFromExploreHandoff,
   serializeBrowseListToExploreSearchParams,
 } from './browseListMapHandoff';
+import type { BrowseMainCategoryKey } from './browseListTaxonomy';
 import {
   LIST_CAT_PARAM,
   parseBrowseListFilterState,
@@ -14,7 +15,17 @@ import {
 
 export type ListDiscoveryPathOptions = Partial<BrowseListFilterState> & {
   regions?: string[];
+  listCat?: BrowseMainCategoryKey | null;
 };
+
+/** Full-screen member discovery (`/list?listCat=people`) — not explore map overlay. */
+export const listPeopleDiscoveryPath = (): string =>
+  listDiscoveryPath({
+    listCat: 'people',
+    categories: ['people'],
+    activityDatePreset: 'anyday',
+    buddiesSegment: 'looking',
+  });
 
 /** Full-screen list discovery — query aligned with explore browse where possible. */
 export const listDiscoveryPath = (options?: ListDiscoveryPathOptions): string => {
@@ -30,6 +41,7 @@ export const listDiscoveryPath = (options?: ListDiscoveryPathOptions): string =>
     buddiesSegment: options?.buddiesSegment ?? 'looking',
   };
   const params = serializeBrowseListSearchParams(state, options?.regions ?? []);
+  if (options?.listCat) params.set(LIST_CAT_PARAM, options.listCat);
   const qs = params.toString();
   return qs ? `${LIST_DISCOVERY_PATH}?${qs}` : LIST_DISCOVERY_PATH;
 };

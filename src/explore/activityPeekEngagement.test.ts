@@ -4,6 +4,7 @@ import {
   activityMapPeekShowsJoinFlow,
   activityMapPeekSkipsJoinContext,
   activityPeekHasMapWireActions,
+  activityPeekViewerCanOpenGroupChat,
   resolveActivityMapPeekActions,
   resolveActivityMapPeekStrips,
   resolveActivityPeekEngagement,
@@ -49,6 +50,67 @@ const activityCard = (overrides: Partial<DiscoveryCardModel> = {}): DiscoveryCar
     },
     ...overrides,
   }) as DiscoveryCardModel;
+
+describe('activityPeekViewerCanOpenGroupChat', () => {
+  it('is true for participant wire while join context is still open (no Message host flash)', () => {
+    const card = activityCard({
+      viewerAccess: {
+        ...activityCard().viewerAccess!,
+        level: 'participant',
+      },
+    });
+    expect(activityPeekViewerCanOpenGroupChat(card, { kind: 'open' })).toBe(true);
+  });
+
+  it('is false for public wire with open join UI', () => {
+    const card = activityCard({
+      viewerAccess: {
+        ...activityCard().viewerAccess!,
+        level: 'public',
+        mapPeekActions: [
+          { id: 'request_join', prominence: 'primary' },
+          { id: 'message_host', prominence: 'secondary' },
+        ],
+      },
+    });
+    expect(activityPeekViewerCanOpenGroupChat(card, { kind: 'open' })).toBe(false);
+  });
+
+  it('is false while join request is pending', () => {
+    const card = activityCard({
+      viewerAccess: {
+        ...activityCard().viewerAccess!,
+        level: 'join_request',
+      },
+    });
+    expect(
+      activityPeekViewerCanOpenGroupChat(card, {
+        kind: 'pending',
+        requestId: 'r1',
+        status: 'pending',
+      })
+    ).toBe(false);
+  });
+
+  it('is true when join UI is confirmed', () => {
+    expect(
+      activityPeekViewerCanOpenGroupChat(activityCard(), {
+        kind: 'confirmed',
+        requestId: 'r1',
+      })
+    ).toBe(true);
+  });
+
+  it('is true for host', () => {
+    const card = activityCard({
+      viewerAccess: {
+        ...activityCard().viewerAccess!,
+        level: 'host',
+      },
+    });
+    expect(activityPeekViewerCanOpenGroupChat(card, { kind: 'open' })).toBe(true);
+  });
+});
 
 describe('resolveActivityMapPeekStrips', () => {
   it('uses API mapPeekStrips when present', () => {
@@ -102,7 +164,7 @@ describe('activityPeekHasMapWireActions', () => {
 describe('resolveActivityMapPeekActions', () => {
   it('uses API mapPeekActions when present', () => {
     const actions = resolveActivityMapPeekActions(activityCard());
-    expect(actions.map((a) => a.id)).toEqual(['open_crew_chat', 'view_detail']);
+    expect(actions.map((a) => a.id)).toEqual(['open_crew_chat']);
   });
 
   it('honors empty mapPeekActions from wire (no client recompute)', () => {
@@ -211,6 +273,46 @@ describe('resolveActivityMapPeekActions', () => {
       },
     });
     expect(activityMapPeekNeedsJoinContext(card)).toBe(false);
+  });
+});
+
+describe('joined participant peek enrichment', () => {
+  it('drops view_detail and promotes open_crew_chat when join context is confirmed', () => {
+    const card = activityCard({
+      viewerAccess: {
+        ...activityCard().viewerAccess!,
+        level: 'public',
+        canAccessCrewSurfaces: false,
+        mapPeekActions: [{ id: 'view_detail', prominence: 'primary' }],
+      },
+    });
+    const actions = resolveActivityMapPeekActions(card, {
+      kind: 'confirmed',
+      requestId: 'p1',
+      status: 'confirmed',
+    });
+    expect(actions.map((a) => a.id)).toEqual(['open_crew_chat']);
+  });
+
+  it('forces joined chip on strips when join context is confirmed', () => {
+    const strips = resolveActivityMapPeekStrips(
+      activityCard({
+        viewerAccess: {
+          ...activityCard().viewerAccess!,
+          mapPeekStrips: {
+            showParticipantsStrip: true,
+            showLogisticsStrip: true,
+            showJoinedStatusChipOnPeek: false,
+            showHostSelfProfileLink: false,
+            showOfferRideInLogistics: false,
+            maskRosterToFriendsOnly: true,
+            pendingJoinInviteCount: 0,
+          },
+        },
+      }),
+      { kind: 'confirmed', requestId: 'p1', status: 'confirmed' }
+    );
+    expect(strips.showJoinedStatusChipOnPeek).toBe(true);
   });
 });
 

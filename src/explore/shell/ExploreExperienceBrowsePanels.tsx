@@ -1,8 +1,17 @@
-import { ListDiscoveryExperience } from '../../list/ListDiscoveryExperience';
+import { useCallback } from 'react';
 import { ExploreBrowsePanel, type ExploreBrowsePanelProps } from '../ui/ExploreBrowsePanel';
 import { ExploreMobileBrowseOverlay } from '../ui/ExploreMobileBrowseOverlay';
 import { PeopleBrowsePanel } from '@/people-discovery/panel/PeopleBrowsePanel';
+import { EXPLORE_PEOPLE_BROWSE_PANEL_TITLE } from '../../content/explorePeopleBrowseCopy';
+import { EXPLORE_SEARCH_PROMPT } from '../exploreBrowseTaxonomy';
+import {
+  MOBILE_BROWSE_SHEET_EXPAND_HINT,
+  useMobileBrowseSheetImmersive,
+} from '../../hooks/useMobileBrowseSheetImmersive';
+import { ListDiscoveryExperience } from '../../list/ListDiscoveryExperience';
 import type { ComponentProps, ReactNode } from 'react';
+
+const DISCOVER_BROWSE_SHEET_TITLE = 'Discover';
 type PeopleProps = ComponentProps<typeof PeopleBrowsePanel>;
 
 type BrowsePanelShared = Omit<
@@ -39,6 +48,29 @@ export const ExploreExperienceBrowsePanels = ({
   peopleBrowsePanelProps,
   mapStage,
 }: Props) => {
+  const {
+    immersive: discoverImmersive,
+    enterImmersive: enterDiscoverImmersive,
+    exitImmersive: exitDiscoverImmersive,
+  } = useMobileBrowseSheetImmersive(browse.browseOpen && !isDesktop);
+  const {
+    immersive: listImmersive,
+    enterImmersive: enterListImmersive,
+    exitImmersive: exitListImmersive,
+  } = useMobileBrowseSheetImmersive(browse.showListPanel && !isDesktop && !browse.browseOpen);
+
+  const isPeopleListSheet = browse.listMode === 'people';
+
+  const closeDiscoverSheet = useCallback(() => {
+    exitDiscoverImmersive();
+    browse.closeDiscoverBrowse();
+  }, [browse, exitDiscoverImmersive]);
+
+  const closeListSheet = useCallback(() => {
+    exitListImmersive();
+    browse.closeListPanel();
+  }, [browse, exitListImmersive]);
+
   const desktopMapListPanel = (
     <ExploreBrowsePanel
       {...browsePanelShared}
@@ -55,9 +87,8 @@ export const ExploreExperienceBrowsePanels = ({
       listItems={listItems}
       mapPool={mapItems}
       onClose={browse.closeListPanel}
-      closePanelAriaLabel="Close list"
-      closeButtonVariant="dismiss"
       mobileSheetChrome
+      overlayImmersive={listImmersive}
     />
   );
 
@@ -86,14 +117,36 @@ export const ExploreExperienceBrowsePanels = ({
       {mapStage}
 
       {browse.browseOpen && !isDesktop ? (
-        <ExploreMobileBrowseOverlay open onClose={browse.closeDiscoverBrowse} sheetSize="full">
+        <ExploreMobileBrowseOverlay
+          open
+          onClose={closeDiscoverSheet}
+          sheetSize="full"
+          onExpand={enterDiscoverImmersive}
+          expandHint={MOBILE_BROWSE_SHEET_EXPAND_HINT}
+          immersive={discoverImmersive}
+          immersiveTitle={DISCOVER_BROWSE_SHEET_TITLE}
+          onExitImmersive={closeDiscoverSheet}
+          immersiveBackLabel="Explore"
+        >
           {discoverBrowse}
         </ExploreMobileBrowseOverlay>
       ) : null}
 
       {browse.showListPanel && !isDesktop && !browse.browseOpen ? (
-        <ExploreMobileBrowseOverlay open onClose={browse.closeListPanel} sheetSize="full">
-          {browse.listMode === 'people' ? mobileListPeopleBrowsePanel : mobileMapListPanel}
+        <ExploreMobileBrowseOverlay
+          open
+          onClose={closeListSheet}
+          sheetSize="full"
+          onExpand={enterListImmersive}
+          expandHint={MOBILE_BROWSE_SHEET_EXPAND_HINT}
+          immersive={listImmersive}
+          immersiveTitle={
+            isPeopleListSheet ? EXPLORE_PEOPLE_BROWSE_PANEL_TITLE : EXPLORE_SEARCH_PROMPT
+          }
+          onExitImmersive={closeListSheet}
+          immersiveBackLabel="Explore"
+        >
+          {isPeopleListSheet ? mobileListPeopleBrowsePanel : mobileMapListPanel}
         </ExploreMobileBrowseOverlay>
       ) : null}
 

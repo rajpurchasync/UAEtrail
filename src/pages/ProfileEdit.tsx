@@ -25,8 +25,10 @@ import {
   validatePersonName,
 } from '../utils/personName';
 import { meProfileSignupGateKey } from '../utils/signupProfileGate';
+import { useProfileHubBackChrome } from '../hooks/useProfileHubBackChrome';
 
 export const ProfileEdit = () => {
+  const backChrome = useProfileHubBackChrome();
   const navigate = useNavigate();
   const { user, refreshUser } = useAuth();
   const queryClient = useQueryClient();
@@ -119,7 +121,7 @@ export const ProfileEdit = () => {
       layout="stack"
       title="Edit profile"
       showJourney={false}
-      back={{ fallbackTo: '/profile', label: 'Profile' }}
+      back={backChrome}
     >
       {loading ? (
         <p className="py-10 text-center text-sm text-neutral-500">Loading…</p>

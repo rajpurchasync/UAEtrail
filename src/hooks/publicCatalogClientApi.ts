@@ -1,7 +1,9 @@
-import type { ActivityDTO, LocationDTO } from '@uaetrail/shared-types';
+import type { LocationDTO } from '@uaetrail/shared-types';
 import { api } from '../api/index';
 import { mapLocationToPlace } from '../api/mappers/place';
 import type { Place } from '../types/place';
+
+export { fetchApiActivities } from './publicActivitiesClientApi';
 
 const isVenueActivityType = (activityType: LocationDTO['activityType']) =>
   activityType === 'hiking' || activityType === 'camping' || activityType === 'event';
@@ -14,9 +16,3 @@ export const fetchPublicPlaces = async (countryCode?: string): Promise<Place[]> 
   return mapLocationsToPlaces(response.data);
 };
 
-export const fetchApiActivities = async (
-  when: 'upcoming' | 'past' = 'upcoming'
-): Promise<ActivityDTO[]> => {
-  const events = await api.getPublicActivities({ when, pageSize: 100 });
-  return events.data;
-};

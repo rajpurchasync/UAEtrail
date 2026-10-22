@@ -11,6 +11,7 @@ describe('reloadExploreMap', () => {
     await reloadExploreMap(queryClient);
 
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: exploreMapQueryKeyPrefix });
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['people-discovery', 'seeking-activities'] });
     expect(refetchSpy).toHaveBeenCalledWith({ queryKey: exploreMapQueryKeyPrefix, type: 'active' });
   });
 });

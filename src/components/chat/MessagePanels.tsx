@@ -1,6 +1,7 @@
-import { Loader2, MessageSquare, Plus, Search, X } from 'lucide-react';
+import { MessageSquare, Plus, Search, X } from 'lucide-react';
 import { ChatConversationDTO } from '@uaetrail/shared-types';
 import { MessageAvatar } from './ChatMessageAvatar';
+import { ChatLoadingState } from './ChatLoadingState';
 
 export { MessageAvatar } from './ChatMessageAvatar';
 
@@ -37,8 +38,8 @@ export const ConversationListPanel = ({
     </div>
     <div className="flex-1 overflow-y-auto min-h-0">
       {loading ? (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+        <div className="p-3">
+          <ChatLoadingState variant="list" label="Loading chats" />
         </div>
       ) : conversations.length === 0 ? (
         <div className="text-center py-12 px-4">
@@ -139,8 +140,8 @@ export const NewChatModal = ({
         </div>
         <div className="max-h-72 overflow-y-auto border-t">
           {searching ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
+            <div className="px-3 py-3">
+              <ChatLoadingState variant="list" label="Searching people" rows={3} />
             </div>
           ) : searchResults.length === 0 ? (
             <p className="text-center text-gray-400 text-sm py-8">

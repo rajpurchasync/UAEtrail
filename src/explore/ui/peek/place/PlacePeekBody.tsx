@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import { Star } from 'lucide-react';
 import type { DiscoveryCardModel } from '../../../../discovery/discoveryCardModel';
@@ -7,6 +7,7 @@ import { EXPLORE_TYPE } from '../../../../config/exploreTheme';
 import { fetchPlaceActivities } from '../../../../hooks/placeDetailClientApi';
 import { useSafeAsyncEffect } from '../../../../hooks/useSafeAsyncEffect';
 import { activityDetailPath } from '../../../../config/routingCatalog';
+import { mapPeekDetailNavState } from '../../../mapPeekDetailNavState';
 import { PLACE_PEEK_RATE_LABEL, PLACE_PEEK_SCHEDULED } from '../../../../content/placePeekCopy';
 import { PlacePeekKindFacts } from './PlacePeekKindFacts';
 
@@ -23,12 +24,15 @@ const formatScheduledMeta = (activity: ActivityDTO): string => {
 const PlacePeekScheduledList = ({
   locationId,
   detailPath,
+  mapItemId,
   onNavigate,
 }: {
   locationId: string | null | undefined;
   detailPath: string;
+  mapItemId: string;
   onNavigate?: () => void;
 }) => {
+  const location = useLocation();
   const navigate = useNavigate();
   const [activities, setActivities] = useState<ActivityDTO[]>([]);
 
@@ -60,7 +64,9 @@ const PlacePeekScheduledList = ({
               type="button"
               onClick={() => {
                 onNavigate?.();
-                navigate(activityDetailPath(activity.id));
+                navigate(activityDetailPath(activity.id), {
+                  state: mapPeekDetailNavState(location, mapItemId),
+                });
               }}
               className="flex w-full flex-col gap-0.5 px-3 py-2.5 text-left hover:bg-neutral-50 active:bg-neutral-100"
             >
@@ -120,6 +126,7 @@ export const PlacePeekBody = ({
       <PlacePeekScheduledList
         locationId={card.locationId}
         detailPath={detailPath}
+        mapItemId={card.id}
         onNavigate={onBeforeDetailNavigate}
       />
     </div>

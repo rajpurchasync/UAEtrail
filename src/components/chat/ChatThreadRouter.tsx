@@ -30,6 +30,7 @@ export const ChatThreadRouter = (props: ChatThreadRouterProps) => {
     } = props.group;
     return (
       <GroupChatThread
+        key={groupId}
         groupId={groupId}
         onBack={onBack}
         onGroupActivity={onGroupActivity}

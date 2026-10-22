@@ -123,6 +123,9 @@ export const profileHistoryCompletedPath = (role?: PlanHistoryRole): string => {
 
 export type PlanHistoryRole = 'joined' | 'hosted' | 'self';
 
+/** Plan mobile main tab — must not be stripped by inbound `tab=` cleanup. */
+const PLAN_CANONICAL_MAIN_TAB = 'wishlist';
+
 export const parsePlanHubWishlistLayer = (raw: string | null): PlanHubWishlistLayer =>
   parsePlanSavedLayer(raw);
 
@@ -246,9 +249,12 @@ export const normalizePlanHubSearchParams = (
     }
   }
 
-  if (inboundTab || inboundSub) {
-    params.delete('tab');
+  if (inboundSub) {
     params.delete('sub');
+    changed = true;
+  }
+  if (inboundTab && inboundTab !== PLAN_CANONICAL_MAIN_TAB) {
+    params.delete('tab');
     changed = true;
   }
 

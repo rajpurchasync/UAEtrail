@@ -1,5 +1,5 @@
 import { MAP_LENS_SPOTS_LABEL } from '../../place/geographyVocabulary';
-import type { ExplorePanel, MapFilterKey } from '../routing';
+import type { ExplorePanel, MapFilterKey, VenueListFilterKey } from '../routing';
 
 export type ExploreMobileActivityMenuKey =
   | 'all'
@@ -73,12 +73,42 @@ export const mobilePlacesMenuToMapFilter = (
   }
 };
 
-export const mapFilterToMobilePlacesMenu = (filter: MapFilterKey): ExploreMobilePlacesMenuKey => {
-  if (filter === 'hiking') return 'trails';
-  if (filter === 'camping') return 'spots';
-  if (filter === 'shops') return 'shops';
-  if (filter === 'others') return 'others';
+/** Wire map + venue filters → mobile places menu highlight (spots vs camping share `camping`). */
+export const inferMobilePlacesMenuKey = (
+  mapFilter: MapFilterKey,
+  venueFilter: VenueListFilterKey,
+  preferred?: ExploreMobilePlacesMenuKey
+): ExploreMobilePlacesMenuKey => {
+  if (venueFilter === 'event' || mapFilter === 'others') return 'others';
+  if (mapFilter === 'hiking' || venueFilter === 'hiking') return 'trails';
+  if (mapFilter === 'shops' || venueFilter === 'shop') return 'shops';
+  if (mapFilter === 'camping' || venueFilter === 'camping') {
+    if (preferred === 'camping' || preferred === 'spots') return preferred;
+    return 'spots';
+  }
   return 'all';
+};
+
+export const mobilePlacesMenuToVenueFilter = (
+  key: ExploreMobilePlacesMenuKey
+): VenueListFilterKey | null => {
+  switch (key) {
+    case 'all':
+      return 'all';
+    case 'trails':
+      return 'hiking';
+    case 'spots':
+    case 'camping':
+      return 'camping';
+    case 'shops':
+      return 'shop';
+    case 'others':
+      return 'event';
+    case 'uae':
+      return null;
+    default:
+      return 'all';
+  }
 };
 
 export const mapFilterToMobileActivityMenu = (filter: MapFilterKey): ExploreMobileActivityMenuKey => {

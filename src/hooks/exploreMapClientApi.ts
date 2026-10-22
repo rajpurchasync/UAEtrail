@@ -1,7 +1,11 @@
 import type { ExploreMapItemDTO, ExploreMapOverlayDTO } from '@uaetrail/shared-types';
 import { api } from '../api/index';
-import { getStoredSession } from '../api/client';
+import { apiRequestConditional, getStoredSession } from '../api/client';
 import { applyExploreMapOverlay } from '../explore/applyExploreMapOverlay';
+
+export type ConditionalCatalog<T> =
+  | { notModified: true; etag: string | null }
+  | { notModified: false; etag: string | null; data: T };
 
 export const fetchExploreMapOverlayIfSignedIn = async (params?: {
   bbox?: string;
@@ -19,14 +23,27 @@ export const fetchExploreMapOverlayIfSignedIn = async (params?: {
   }
 };
 
-export const fetchExploreMapItems = async (params?: {
-  bbox?: string;
-  area?: string | null;
-}): Promise<ExploreMapItemDTO[]> => {
-  const res = await api.getExploreMap({
-    bbox: params?.bbox,
-    area: params?.area ?? undefined,
-  });
+export const fetchExploreMapItems = async (
+  params?: {
+    bbox?: string;
+    area?: string | null;
+  },
+  etag?: string | null
+): Promise<ConditionalCatalog<ExploreMapItemDTO[]>> => {
+  const search = new URLSearchParams();
+  if (params?.bbox) search.set('bbox', params.bbox);
+  if (params?.area) search.set('area', params.area);
+  const qs = search.toString();
+  const unscoped = !params?.bbox && !params?.area;
+  const result = await apiRequestConditional<{ data: { items: ExploreMapItemDTO[] } }>(
+    qs ? `/explore/map?${qs}` : '/explore/map',
+    { etag: unscoped ? etag : null }
+  );
+  if (result.notModified) return { notModified: true, etag: result.etag };
   const overlay = await fetchExploreMapOverlayIfSignedIn(params);
-  return applyExploreMapOverlay(res.data.items, overlay);
+  return {
+    notModified: false,
+    etag: result.etag,
+    data: applyExploreMapOverlay(result.body.data.items, overlay),
+  };
 };

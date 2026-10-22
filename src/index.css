@@ -95,6 +95,15 @@
     min-height: 100%;
   }
 
+  /** Product routes (`ProductShell`) — document must not scroll; panes own vertical scroll. */
+  html.product-shell-active,
+  html.product-shell-active body,
+  html.product-shell-active #root {
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+  }
+
   html.guest-landing {
     width: 100%;
     overflow-x: clip;
@@ -136,6 +145,64 @@
 
   .scroll-touch {
     -webkit-overflow-scrolling: touch;
+  }
+
+  /** Chat history grows upward. The browser must not snap this pane back to the top. */
+  .chat-thread-scroll {
+    overflow-anchor: none;
+    scroll-behavior: auto;
+  }
+
+  /** Product shell: non-scrolling flex host; pages scroll in `.app-scroll-body`. */
+  .app-scroll-pane {
+    display: flex;
+    flex: 1 1 0%;
+    flex-direction: column;
+    min-height: 0;
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+  }
+
+  .app-scroll-body {
+    flex: 1 1 0%;
+    min-height: 0;
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: clip;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /** Child route provides its own scroll (e.g. /list feed). */
+  .app-scroll-pane-delegated {
+    display: flex;
+    flex: 1 1 0%;
+    flex-direction: column;
+    min-height: 0;
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+  }
+
+  /** Page roots inside `.app-scroll-pane` — fill the pane without forcing document scroll. */
+  .app-page-min-h {
+    display: flex;
+    flex: 1 1 0%;
+    flex-direction: column;
+    min-height: 0;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .app-page-center {
+    display: flex;
+    flex: 1 1 0%;
+    min-height: 0;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
   }
 }
 
@@ -555,8 +622,16 @@
   }
 
   .home-marketing-card {
-    @apply overflow-hidden bg-home-surface shadow-home-card ring-1 ring-black/[0.06];
+    @apply overflow-hidden border border-black/[0.06] bg-home-surface shadow-home-card;
     border-radius: var(--radius-lg);
+  }
+
+  .home-marketing-card.home-marketing-soft-tile {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--green-50) 72%, var(--surface)) 0%,
+      var(--surface) 100%
+    );
   }
 
   .home-carousel-ring-progress {

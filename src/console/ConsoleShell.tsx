@@ -6,7 +6,8 @@ import { getActiveTenantId } from '../api/tenant';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { FilterChips } from '../components/mobile/FilterChips';
 import { PUBLISHING_CONSOLE_LINKS } from '../constants';
-import { PUBLISHING_PROFILE_PATH, PROFILE_PATH } from '../config/routingCatalog';
+import { PUBLISHING_PROFILE_PATH } from '../config/routingCatalog';
+import { useProfileHubBackChrome } from '../hooks/useProfileHubBackChrome';
 import { ConsoleRatingChip } from './ConsoleRatingChip';
 
 interface ConsoleShellProps {
@@ -18,6 +19,7 @@ interface ConsoleShellProps {
 
 /** Layout for `/publishing/*` publishing workspace (tenant scope header). */
 export const ConsoleShell = ({ title, children, cta, headerExtra }: ConsoleShellProps) => {
+  const backChrome = useProfileHubBackChrome();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -54,7 +56,7 @@ export const ConsoleShell = ({ title, children, cta, headerExtra }: ConsoleShell
       layout="stack"
       title={title}
       showJourney={false}
-      back={{ fallbackTo: PROFILE_PATH, label: 'Profile' }}
+      back={backChrome}
       action={
         avgRating !== null ? (
           <ConsoleRatingChip

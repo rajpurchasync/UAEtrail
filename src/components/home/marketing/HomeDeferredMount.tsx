@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 export const HomeDeferredMount = ({
   children,
   minHeightClass = 'min-h-[min(28rem,55vh)]',
-  rootMargin = '280px 0px'
+  rootMargin = '0px'
 }: {
   children: ReactNode;
   minHeightClass?: string;

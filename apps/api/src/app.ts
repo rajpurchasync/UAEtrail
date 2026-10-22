@@ -7,6 +7,7 @@ import swaggerUi from 'swagger-ui-express';
 import { z } from 'zod';
 import { env } from './config/env.js';
 import { connectMongo, getMongoClient } from './lib/mongo.js';
+import { createReadinessGate } from './lib/readiness.js';
 import { createRequestLogger, logError } from './lib/logger.js';
 import { apiErrorsTotal, httpRequestDurationSeconds, httpRequestsTotal, metricsContentType, metricsText } from './lib/metrics.js';
 import { errorHandler, notFoundHandler } from './middleware/error-handler.js';
@@ -30,6 +31,11 @@ const clientErrorBodySchema = z
     userAgent: z.string().max(500).optional()
   })
   .strict();
+const confirmReady = createReadinessGate(async () => {
+  await connectMongo();
+  await getMongoClient().db('admin').command({ ping: 1 });
+}, 15_000);
+
 export const createApp = async (): Promise<Express> => {
   const app = express();
   const observabilityPaths = new Set(['/health', '/health/ready', '/metrics']);
@@ -76,6 +82,7 @@ export const createApp = async (): Promise<Express> => {
         callback(new Error(`CORS blocked origin: ${origin}`));
       },
       credentials: true,
+      exposedHeaders: ['ETag'],
       maxAge: 86400
     })
   );
@@ -175,8 +182,7 @@ export const createApp = async (): Promise<Express> => {
 
   app.get('/health/ready', async (_req, res) => {
     try {
-      await connectMongo();
-      await getMongoClient().db('admin').command({ ping: 1 });
+      await confirmReady();
       res.json({ status: 'ready', service: 'uaetrail-api', database: 'mongodb', timestamp: new Date().toISOString() });
     } catch (error) {
       logError('health readiness check failed', error, { service: 'uaetrail-api' });

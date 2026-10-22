@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { memberHasUnlimitedDiscovery } from '@uaetrail/shared-types';
 import { usePeopleDiscoverySeekingActivities } from './usePeopleDiscoverySeekingActivities';
@@ -37,7 +37,26 @@ export const useExplorePeopleBrowseBundle = ({
   onOpenSeekingActivity,
   searchFocusNonce,
 }: Args) => {
-  const memberPeoplePreview = useMemberPeopleNetworkPreview(Boolean(user));
+  const [peoplePreviewEnabled, setPeoplePreviewEnabled] = useState(false);
+  useEffect(() => {
+    if (!user) {
+      setPeoplePreviewEnabled(false);
+      return;
+    }
+    let idleId = 0;
+    let timeoutId = 0;
+    const enable = () => setPeoplePreviewEnabled(true);
+    if (typeof requestIdleCallback !== 'undefined') {
+      idleId = requestIdleCallback(enable, { timeout: 2000 });
+    } else {
+      timeoutId = window.setTimeout(enable, 800);
+    }
+    return () => {
+      if (idleId && typeof cancelIdleCallback !== 'undefined') cancelIdleCallback(idleId);
+      if (timeoutId) window.clearTimeout(timeoutId);
+    };
+  }, [user]);
+  const memberPeoplePreview = useMemberPeopleNetworkPreview(Boolean(user) && peoplePreviewEnabled);
   const buddyUserIds = useMemo(
     () => (user ? new Set(memberPeoplePreview.preview?.friendUserIds ?? []) : undefined),
     [user, memberPeoplePreview.preview?.friendUserIds]

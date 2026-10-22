@@ -8,8 +8,10 @@ import { ShopOrganisationPanel } from '../../components/organisation/ShopOrganis
 import { useMemberStatus } from '../../hooks/useMemberStatus';
 
 import { parseOrganisationKind, type OrganisationKind } from '../../config/routingCatalog';
+import { useProfileHubBackChrome } from '../../hooks/useProfileHubBackChrome';
 
 export const Manage = () => {
+  const backChrome = useProfileHubBackChrome();
   const [searchParams, setSearchParams] = useSearchParams();
   const kindParam = parseOrganisationKind(searchParams.get('kind'));
   const { loading, hasAgencyProfile, hasShopProfile } = useMemberStatus();
@@ -50,7 +52,7 @@ export const Manage = () => {
       layout="stack"
       title={shellTitle}
       showJourney={false}
-      back={{ fallbackTo: '/profile', label: 'Profile' }}
+      back={backChrome}
     >
       <div className="space-y-3 pb-nav-safe">
         {hasMultipleKinds && activeKind && (

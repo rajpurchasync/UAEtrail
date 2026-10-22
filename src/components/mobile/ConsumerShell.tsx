@@ -1,4 +1,5 @@
 import { ReactNode } from 'react';
+import { APP_PAGE_MIN_H_CLASS, APP_SCROLL_BODY_CLASS } from '../../config/layoutScroll';
 import { MobileBackButton } from './MobileBackButton';
 import { MobileProfileHeaderLink } from './MobileProfileHeaderLink';
 import { ConsumerPageHeading } from './ConsumerPageHeading';
@@ -20,7 +21,7 @@ interface ConsumerShellProps {
   children: ReactNode;
   flush?: boolean;
   maxWidth?: '4xl' | '7xl';
-  back?: { fallbackTo?: string; label?: string };
+  back?: { fallbackTo?: string; label?: string; backBehavior?: 'history' | 'fallback' };
   /** Hide mobile sticky title row — use Layout MobileTabHeader on bottom-nav tabs. */
   suppressMobileHeader?: boolean;
   /** Trips-style toolbar: no hairline under search/filter on mobile. */
@@ -77,9 +78,9 @@ export const ConsumerShell = ({
   const journeyLabel = journey?.label ?? back?.label ?? 'Back';
 
   return (
-    <div className="min-h-full consumer-bg md:bg-gray-50 overflow-x-clip max-w-full">
+    <div className={`${APP_PAGE_MIN_H_CLASS} consumer-bg md:bg-gray-50 overflow-hidden max-w-full`}>
       {(layout === 'tab' || layout === 'editorial') && banner && (
-        <div className={`hidden md:block ${maxWidthClass[maxWidth]} mx-auto min-w-0 max-w-full ${bannerPad} md:pt-safe-plus-2`}>
+        <div className={`hidden md:block shrink-0 ${maxWidthClass[maxWidth]} mx-auto min-w-0 max-w-full ${bannerPad} md:pt-safe-plus-2`}>
           <ConsumerHeroBanner
             src={banner.src}
             alt={banner.alt}
@@ -97,14 +98,14 @@ export const ConsumerShell = ({
       )}
 
       {banner && toolbar && (
-        <div className={`hidden md:block ${maxWidthClass[maxWidth]} mx-auto min-w-0 max-w-full ${pad} pt-3 pb-3 md:pb-4`}>
+        <div className={`hidden md:block shrink-0 ${maxWidthClass[maxWidth]} mx-auto min-w-0 max-w-full ${pad} pt-3 pb-3 md:pb-4`}>
           {toolbar}
         </div>
       )}
 
       {hasStickyChrome && (
         <div
-          className={`sticky top-0 z-40 md:bg-white/90 md:border-b md:border-gray-100 ${
+          className={`shrink-0 z-40 md:bg-white/90 md:border-b md:border-gray-100 ${
             layout === 'tab' ? 'consumer-top-strip' : 'glass-header'
           }`}
         >
@@ -119,6 +120,7 @@ export const ConsumerShell = ({
                       <MobileBackButton
                         fallbackTo={back?.fallbackTo ?? journeyFallbackTo}
                         label={back?.label ?? journeyLabel}
+                        backBehavior={back?.backBehavior ?? 'history'}
                         className="min-h-[36px] py-0 -ml-1"
                       />
                     ) : null}
@@ -147,7 +149,11 @@ export const ConsumerShell = ({
                 <div className={`relative hidden md:flex items-center min-h-[44px] pb-2 md:pt-4 ${showJourney && !banner ? 'pt-1' : 'pt-safe-plus-2'}`}>
                   {back && !showJourney && (
                     <div className="absolute left-0 z-10 md:hidden">
-                      <MobileBackButton fallbackTo={back.fallbackTo ?? '/'} label={back.label ?? 'Back'} />
+                      <MobileBackButton
+                        fallbackTo={back.fallbackTo ?? '/'}
+                        label={back.label ?? 'Back'}
+                        backBehavior={back.backBehavior ?? 'history'}
+                      />
                     </div>
                   )}
                   {barTitle && (
@@ -168,7 +174,11 @@ export const ConsumerShell = ({
                 {(back || action) && (
                   <div className="hidden md:flex items-center justify-between gap-3 pt-safe-plus-2 md:pt-4 pb-2 md:pb-3">
                     {back ? (
-                      <MobileBackButton fallbackTo={back.fallbackTo ?? '/'} label={back.label ?? 'Home'} />
+                      <MobileBackButton
+                        fallbackTo={back.fallbackTo ?? '/'}
+                        label={back.label ?? 'Home'}
+                        backBehavior={back.backBehavior ?? 'history'}
+                      />
                     ) : (
                       <span className="w-10" aria-hidden />
                     )}
@@ -199,7 +209,7 @@ export const ConsumerShell = ({
       )}
 
       <div
-        className={`${maxWidthClass[maxWidth]} w-full max-w-full min-w-0 mx-auto ${flush ? '' : `${pad} py-4 md:py-6`} ${
+        className={`${APP_SCROLL_BODY_CLASS} ${maxWidthClass[maxWidth]} w-full max-w-full min-w-0 mx-auto ${flush ? '' : `${pad} py-4 md:py-6`} ${
           !hasStickyChrome && !banner ? 'pt-safe-plus-2' : ''
         } ${banner && !hasStickyChrome ? 'pt-0 md:pt-2' : ''}`}
       >

@@ -10,6 +10,28 @@ import {
 import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
 import type { JoinRequestUiState } from '../utils/joinRequestUi';
 
+/** Confirmed participant on this outing (wire level or client join context). */
+export const activityPeekViewerIsJoined = (
+  card: DiscoveryCardModel,
+  joinUiState?: JoinRequestUiState
+): boolean => {
+  if (card.source !== 'activity') return false;
+  if (joinUiState?.kind === 'confirmed') return true;
+  const level = levelForPeekActions(card, joinUiState);
+  return level === 'participant' || level === 'activity_group_member';
+};
+
+/** Approved participant or host — outing group chat (not pre-join / pending approval). */
+export const activityPeekViewerCanOpenGroupChat = (
+  card: DiscoveryCardModel,
+  joinUiState?: JoinRequestUiState
+): boolean => {
+  if (card.source !== 'activity') return false;
+  if (card.viewerAccess?.level === 'host') return true;
+  if (joinUiState?.kind === 'pending') return false;
+  return activityPeekViewerIsJoined(card, joinUiState);
+};
+
 const levelForPeekActions = (
   card: DiscoveryCardModel,
   joinUiState?: JoinRequestUiState
@@ -133,28 +155,52 @@ export const filterActivityMapPeekFooterActions = (
   );
 };
 
+const enrichJoinedParticipantPeekActions = (
+  card: DiscoveryCardModel,
+  actions: ActivityMapPeekAction[],
+  joinUiState?: JoinRequestUiState
+): ActivityMapPeekAction[] => {
+  if (!activityPeekViewerIsJoined(card, joinUiState)) return actions;
+
+  const withoutDetail = actions.filter((action) => action.id !== 'view_detail');
+  const hasChat = withoutDetail.some((action) => action.id === 'open_crew_chat');
+  const canChat =
+    card.viewerAccess?.canAccessCrewSurfaces === true || joinUiState?.kind === 'confirmed';
+
+  if (!hasChat && canChat) {
+    return [{ id: 'open_crew_chat', prominence: 'primary' }, ...withoutDetail];
+  }
+
+  return withoutDetail.map((action) =>
+    action.id === 'open_crew_chat' ? { ...action, prominence: 'primary' } : action
+  );
+};
+
 /** Resolved wire actions for an activity map peek (API list or computed fallback). */
 export const resolveActivityMapPeekActions = (
   card: DiscoveryCardModel,
   joinUiState?: JoinRequestUiState
 ): ActivityMapPeekAction[] => {
   if (card.source !== 'activity') return [];
+
+  let actions: ActivityMapPeekAction[];
   const fromApi = card.viewerAccess?.mapPeekActions;
   if (fromApi !== undefined) {
-    return applyJoinUiStateToMapPeekActions(
+    actions = applyJoinUiStateToMapPeekActions(
       filterActivityMapPeekActionsForViewer(fromApi, card.viewerAccess ?? null),
+      joinUiState
+    );
+  } else {
+    const level = levelForPeekActions(card, joinUiState);
+    const policy = resolvePeekFallbackEngagementPolicy(card, joinUiState);
+    if (!level || !policy) return [];
+    actions = applyJoinUiStateToMapPeekActions(
+      projectActivityMapPeekActions(policy, card.viewerAccess!.entitlements ?? null, level),
       joinUiState
     );
   }
 
-  const level = levelForPeekActions(card, joinUiState);
-  const policy = resolvePeekFallbackEngagementPolicy(card, joinUiState);
-  if (!level || !policy) return [];
-
-  return applyJoinUiStateToMapPeekActions(
-    projectActivityMapPeekActions(policy, card.viewerAccess!.entitlements ?? null, level),
-    joinUiState
-  );
+  return enrichJoinedParticipantPeekActions(card, actions, joinUiState);
 };
 
 const defaultPeekStrips = (): ActivityEngagementStripsDTO => ({
@@ -174,13 +220,20 @@ export const resolveActivityMapPeekStrips = (
 ): ActivityEngagementStripsDTO => {
   if (card.source !== 'activity') return defaultPeekStrips();
   const fromApi = card.viewerAccess?.mapPeekStrips;
-  if (fromApi !== undefined) return fromApi;
+  let strips: ActivityEngagementStripsDTO;
+  if (fromApi !== undefined) {
+    strips = fromApi;
+  } else {
+    const level = levelForPeekActions(card, joinUiState);
+    if (!level || !card.viewerAccess) return defaultPeekStrips();
+    const policy = resolvePeekFallbackEngagementPolicy(card, joinUiState);
+    strips = policy?.strips ?? defaultPeekStrips();
+  }
 
-  const level = levelForPeekActions(card, joinUiState);
-  if (!level || !card.viewerAccess) return defaultPeekStrips();
-
-  const policy = resolvePeekFallbackEngagementPolicy(card, joinUiState);
-  return policy?.strips ?? defaultPeekStrips();
+  if (activityPeekViewerIsJoined(card, joinUiState)) {
+    return { ...strips, showJoinedStatusChipOnPeek: true };
+  }
+  return strips;
 };
 
 export const resolveActivityPresentationPeekActions = (
@@ -207,11 +260,20 @@ export const activityMapPeekNeedsJoinContext = (
   joinUiState?: JoinRequestUiState
 ): boolean => {
   if (card.source !== 'activity' || !card.showJoinActions) return false;
+  if (card.viewerAccess?.level === 'host') return false;
+  if (joinUiState?.kind === 'pending' || joinUiState?.kind === 'confirmed') return true;
   const actions = resolveActivityMapPeekActions(card, joinUiState);
   if (actions.some((action) => action.id === 'request_join')) return true;
   if (actions.some((action) => action.id === 'withdraw_join')) return true;
-  if (joinUiState?.kind === 'pending' || joinUiState?.kind === 'confirmed') return true;
-  return activityMapPeekShowsJoinFlow(card, joinUiState);
+  if (activityMapPeekShowsJoinFlow(card, joinUiState)) return true;
+  if (
+    actions.some((action) => action.id === 'pending_join') &&
+    !actions.some((action) => action.id === 'request_join')
+  ) {
+    return false;
+  }
+  // Public-shaped map wire — still load roster so joined outings show chip + Open chat.
+  return true;
 };
 
 /** Host peek crew-chat affordance — used to skip join context fetch. */

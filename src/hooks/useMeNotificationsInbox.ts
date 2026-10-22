@@ -18,7 +18,7 @@ export const useMeNotificationsInbox = (userId: string | undefined, enabled: boo
   const queryClient = useQueryClient();
   const queryKey = meNotificationsPageQueryKey(1);
 
-  const { data, isLoading, isError, error, refetch } = useQuery({
+  const { data, isPending, isFetching, isError, error, refetch } = useQuery({
     queryKey,
     enabled: enabled && Boolean(userId),
     queryFn: async (): Promise<InboxPayload> => {
@@ -68,7 +68,7 @@ export const useMeNotificationsInbox = (userId: string | undefined, enabled: boo
   return {
     notifications: data?.notifications ?? [],
     unreadCount: data?.unreadCount ?? 0,
-    loading: isLoading,
+    loading: data === undefined && (isPending || isFetching),
     error: isError
       ? error instanceof Error
         ? error.message

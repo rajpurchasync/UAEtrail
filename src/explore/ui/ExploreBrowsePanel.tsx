@@ -7,7 +7,8 @@ import { findPublishedAreaByQuery, isStrongPublishedAreaSearchMatch } from '../e
 import type { ExploreActivityModeFilter } from '../exploreActivityModeFilter';
 import { PRODUCT_EXPLORE_EMPTY_FILTERS } from '../../content/productNorthStar';
 import { planJoinedSchedulePath } from '../../config/routingCatalog';
-import { EXPLORE_SHEET, EXPLORE_TYPE } from '../../config/exploreTheme';
+import { EXPLORE_BROWSE_SHEET_CONTROL, EXPLORE_SHEET, EXPLORE_TYPE } from '../../config/exploreTheme';
+import { exploreActivityDatePresetLabel } from '../exploreActivityDateFilter';
 import type { ExploreActivityDatePreset, ExplorePanel, MapFilterKey } from '../routing';
 import { buildDiscoveryMapListRowCard } from '../../discovery';
 import { ExploreBrowseFilterChrome } from './ExploreBrowseFilterChrome';
@@ -93,6 +94,8 @@ export interface ExploreBrowsePanelProps {
   fullscreenBrowse?: boolean;
   /** Mobile map sheet — horizontal inset for chrome + lists (People browse panel). */
   mobileSheetChrome?: boolean;
+  /** Parent `ExploreMobileBrowseOverlay` is in pull-up full screen — hide duplicate sheet title. */
+  overlayImmersive?: boolean;
 }
 
 const listHeading = (
@@ -158,9 +161,11 @@ export const ExploreBrowsePanel = ({
   posterFeedCards = [],
   fullscreenBrowse = false,
   mobileSheetChrome = false,
+  overlayImmersive = false,
 }: ExploreBrowsePanelProps) => {
   const mapPool = mapPoolProp ?? listItems;
   const mobileSheetPad = !isDesktop && (mobileSheetChrome || fullscreenBrowse);
+  const browseSheetDateBtn = `${EXPLORE_BROWSE_SHEET_CONTROL} h-10 w-10`;
   const sheetFillsViewport = fullscreenBrowse && !isDesktop;
   const listRowCardById = useMemo(() => {
     const map = new Map<string, DiscoveryCardModel>();
@@ -257,10 +262,10 @@ export const ExploreBrowsePanel = ({
 
   return (
     <div
-      className={`flex min-h-0 flex-col overflow-hidden ${sheetFillsViewport || !isDesktop ? 'flex-1' : ''} ${mobileSheetPad ? 'px-4' : ''}`}
+      className={`flex min-h-0 flex-col overflow-hidden ${sheetFillsViewport || !isDesktop ? 'flex-1' : ''} ${mobileSheetPad ? 'px-2' : ''}`}
     >
-      {!fullscreenBrowse ? (
-        <div className="mx-auto mb-2 h-1.5 w-10 shrink-0 rounded-full bg-neutral-200 lg:hidden" />
+      {!fullscreenBrowse && !mobileSheetChrome ? (
+        <div className="mx-auto mb-2 h-1.5 w-10 shrink-0 rounded-full bg-neutral-200 lg:hidden" aria-hidden />
       ) : null}
 
       {myPlanMapMode ? <ExploreMyPlanMapNotice /> : null}
@@ -280,7 +285,7 @@ export const ExploreBrowsePanel = ({
             isDesktop ? 'border-b border-neutral-200 pb-0' : 'pb-0'
           }`}
         >
-          {!isDesktop && !myPlanMapMode ? (
+          {!isDesktop && !myPlanMapMode && !mobileSheetChrome && !overlayImmersive ? (
             <div className="flex items-start justify-between gap-2">
               <h2 className={`min-w-0 flex-1 text-base font-bold tracking-tight ${EXPLORE_TYPE.title}`}>
                 {EXPLORE_SEARCH_PROMPT}
@@ -403,11 +408,29 @@ export const ExploreBrowsePanel = ({
                 ) : null}
               </label>
               {!placesMode && !isDesktop ? (
-                <ExploreMapDateFilter
-                  activityDatePreset={activityDatePreset}
-                  onActivityDatePresetChange={onActivityDatePresetChange}
-                  iconOnly
-                />
+                <div className="flex shrink-0 items-center gap-1.5">
+                  {activityDatePreset !== 'anyday' ? (
+                    <span
+                      className="inline-flex max-w-[8.5rem] items-center gap-0.5 rounded-xl border border-emerald-200/90 bg-emerald-50/95 py-1.5 pl-2.5 pr-1 text-xs font-bold text-emerald-950 shadow-sm"
+                    >
+                      <span className="truncate">{exploreActivityDatePresetLabel(activityDatePreset)}</span>
+                      <button
+                        type="button"
+                        onClick={() => onActivityDatePresetChange('anyday')}
+                        className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-lg text-emerald-800 hover:bg-emerald-100/80"
+                        aria-label="Clear date filter"
+                      >
+                        <X className="h-3.5 w-3.5" aria-hidden />
+                      </button>
+                    </span>
+                  ) : null}
+                  <ExploreMapDateFilter
+                    activityDatePreset={activityDatePreset}
+                    onActivityDatePresetChange={onActivityDatePresetChange}
+                    iconOnly
+                    iconTriggerClassName={browseSheetDateBtn}
+                  />
+                </div>
               ) : null}
               {placesMode ? (
                 <VenueStateFilterMenu
@@ -460,16 +483,16 @@ export const ExploreBrowsePanel = ({
             onOutingTopicChange={onOutingTopicChange}
             activityModeFilter={activityModeFilter}
             onActivityModeFilterChange={onActivityModeFilterChange}
-            className={`mb-2 shrink-0 ${fullscreenBrowse && !isDesktop ? 'px-3' : ''}`}
+            className="mb-2 shrink-0"
           />
 
         <div
-          className={`${EXPLORE_SHEET.browseList} ${
+          className={`${mobileSheetChrome && !isDesktop ? EXPLORE_SHEET.browseListSheet : EXPLORE_SHEET.browseList} ${
             isDesktop
               ? 'min-h-0 flex-1 overflow-y-auto lg:pb-8'
               : sheetFillsViewport
                 ? 'min-h-0 flex-1 overflow-y-auto overscroll-y-contain pb-4'
-                : 'overflow-visible pb-[calc(var(--safe-bottom)+12px)]'
+                : 'overflow-visible'
           }`}
           onMouseLeave={onListItemHoverEnd}
         >

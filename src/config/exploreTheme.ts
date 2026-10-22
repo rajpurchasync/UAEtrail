@@ -11,7 +11,7 @@ export const EXPLORE_SHAPE = {
   pill: 'rounded-full',
   control: 'rounded-2xl',
   sheetTop: 'rounded-t-3xl',
-  sheetDesktop: 'lg:rounded-2xl',
+  sheetDesktop: 'sm:rounded-2xl',
   sheetHandle: 'mx-auto h-1 w-10 shrink-0 rounded-full bg-neutral-200',
 } as const;
 
@@ -19,10 +19,16 @@ export const EXPLORE_SHEET = {
   scrim: 'bg-black/40 lg:bg-black/45',
   panel: 'bg-white shadow-2xl lg:shadow-xl',
   maxHeight: 'lg:max-h-[min(85vh,720px)]',
+  /** Consumer slide-up sheets (invite, compact actions) — matches ConsumerBottomSheet. */
+  compactMaxWidth: 'max-w-md',
+  compactPanelClass: '!overflow-hidden pb-0 sm:shadow-2xl',
   browseHeight: 'flex h-[82dvh] min-h-0 flex-col bg-[#f8fafb]',
   browseFullscreen:
     'flex min-h-0 flex-1 flex-col bg-neutral-50 pt-[var(--safe-top)] pb-[calc(var(--bottom-nav-height,56px)+var(--safe-bottom,0px))]',
-  browseList: 'min-h-0 flex-1 space-y-2.5 overflow-y-auto px-1 pb-[calc(var(--safe-bottom)+12px)] lg:px-0 lg:pb-4',
+  browseList:
+    'min-h-0 flex-1 space-y-2.5 overflow-y-auto px-1 pb-[calc(var(--safe-bottom)+12px)] lg:px-0 lg:pb-4',
+  browseListSheet:
+    'min-h-0 flex-1 space-y-2.5 overflow-y-auto px-0 pb-[calc(var(--safe-bottom)+12px)]',
 } as const;
 
 /** Map list panel rows — activities, venues, shops, people browse. */
@@ -80,7 +86,22 @@ export const EXPLORE_FILTER_PILL = {
     'inline-flex shrink-0 snap-start items-center rounded-full border px-3 py-1 text-[13px] font-bold leading-snug shadow-sm transition',
   list:
     'inline-flex shrink-0 snap-start items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-sm font-bold leading-snug shadow-sm transition',
+  /** Browse list sheet — icon above label, equal-width grid row. */
+  listStacked:
+    'inline-flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-lg border px-0.5 py-1 text-center shadow-sm transition [-webkit-tap-highlight-color:transparent]',
+  /** Stacked filter cell — same shell as listStacked, no flex growth (grid/back chip). */
+  listStackedCell:
+    'inline-flex min-w-0 w-full flex-col items-center justify-center gap-0.5 rounded-lg border px-0.5 py-1 text-center shadow-sm transition [-webkit-tap-highlight-color:transparent]',
+  /** Map mobile expanded row — equal-width grid cells, no horizontal scroll. */
+  mapMobileStacked:
+    'flex min-w-0 flex-1 flex-col items-center justify-center gap-0 rounded-lg border px-0.5 py-1 text-center shadow-sm transition [-webkit-tap-highlight-color:transparent]',
 } as const;
+
+/** Label under emoji on compact map/list filter grids. */
+export const EXPLORE_COMPACT_PILL_LABEL = 'w-full truncate text-[9px] font-bold leading-tight';
+
+/** Equal-width pill grid (pass column count via style). */
+export const EXPLORE_COMPACT_PILL_GRID = 'grid w-full min-w-0 gap-0.5';
 
 /** Explore copy hierarchy — avoid washed-out gray on map and browse. */
 export const EXPLORE_TYPE = {
@@ -161,16 +182,39 @@ export const EXPLORE_INTENT = {
   },
 } as const;
 
-/** Date / secondary map chips — slightly stronger edge than toolbar search & Social. */
-export const EXPLORE_FLOATING_CONTROL =
-  'inline-flex items-center rounded-full border border-neutral-200/90 bg-white text-neutral-950 shadow-[0_2px_12px_rgba(15,23,42,.16)] backdrop-blur-sm';
+/** Map floating chrome — frosted glass over the map (toolbar, filters, List, Find crew). */
+export const EXPLORE_MAP_CHROME_FROST =
+  'bg-white/55 shadow-[0_2px_12px_rgba(15,23,42,.12)] backdrop-blur-md';
 
-/** Search + Social on the map — original frosted pill (unchanged with filter pill styling). */
+/** Date / secondary map chips — same frost as map toolbar. */
+export const EXPLORE_FLOATING_CONTROL =
+  `inline-flex items-center rounded-full border border-white/80 text-neutral-950 ${EXPLORE_MAP_CHROME_FROST}`;
+
+/** Browse list sheet — search row icon buttons (calendar, places filter). */
+export const EXPLORE_BROWSE_SHEET_CONTROL =
+  'inline-flex shrink-0 items-center justify-center rounded-xl border border-neutral-200/80 bg-white text-emerald-800 shadow-sm transition [-webkit-tap-highlight-color:transparent]';
+
+/** Search + intent row on the map (activities · places · search). */
 export const EXPLORE_MAP_TOOLBAR_FLOATING =
-  'inline-flex items-center rounded-full bg-white/95 shadow-[0_2px_12px_rgba(15,23,42,.14)] backdrop-blur-sm';
+  `inline-flex items-center rounded-full ${EXPLORE_MAP_CHROME_FROST}`;
 
 /** Shared vertical padding for map toolbar pills (Social + intent menu). */
 export const EXPLORE_MAP_TOOLBAR_PILL_PADDING = 'py-2';
+
+/** Mobile map — expanded activity/place filters (segmented CTA bar, not list-sheet grid). */
+export const EXPLORE_MAP_MOBILE_FILTER_CTA_BAR =
+  `flex w-full min-w-0 items-stretch gap-1 rounded-2xl p-1 ring-1 ring-white/50 ${EXPLORE_MAP_CHROME_FROST}`;
+
+const MAP_MOBILE_FILTER_CTA_SEGMENT_BASE =
+  'flex min-w-0 flex-1 basis-0 flex-col items-center justify-center gap-px rounded-lg px-0.5 py-1 text-center transition [-webkit-tap-highlight-color:transparent]';
+
+export const exploreMapMobileFilterCtaSegmentClass = (
+  selected: boolean,
+  filterKey: MapFilterKey = 'all'
+): string =>
+  selected
+    ? `${MAP_MOBILE_FILTER_CTA_SEGMENT_BASE} ${exploreMapFilterActiveClass(filterKey)} border-0 shadow-sm ring-1 ring-black/10`
+    : `${MAP_MOBILE_FILTER_CTA_SEGMENT_BASE} text-neutral-800 hover:bg-white/40 active:bg-white/55`;
 
 /** Mobile explore — offsets for floating map chrome below the solid header. */
 export const EXPLORE_MOBILE_MAP_CHROME = {
@@ -269,4 +313,15 @@ export const EXPLORE_PEEK_CTA = {
   secondaryText:
     'block w-full py-2.5 text-center text-sm font-semibold text-neutral-700',
   link: 'text-sm font-semibold text-sky-800 underline underline-offset-2 hover:text-sky-950',
+  /** Compact activity peek footer (join + 3-up row) — fits map pin summary card. */
+  peekJoin:
+    'w-full rounded-lg bg-emerald-600 py-2.5 text-[13px] font-bold leading-snug text-white shadow-sm hover:bg-emerald-700 active:scale-[0.99]',
+  peekJoinDisabled:
+    'w-full cursor-not-allowed rounded-lg bg-neutral-100 py-2.5 text-[13px] font-bold leading-snug text-neutral-500',
+  peekJoinPending:
+    'w-full cursor-not-allowed rounded-lg bg-amber-50 py-2.5 text-[13px] font-bold leading-snug text-amber-900',
+  peekTile:
+    'flex min-h-[2.875rem] flex-1 flex-col items-center justify-center gap-0.5 rounded-lg border border-neutral-200 bg-white px-1 py-1.5 text-center text-[11px] font-semibold leading-tight text-neutral-800 no-underline hover:bg-neutral-50 hover:text-neutral-800 active:bg-neutral-100',
+  /** Icon above peek footer tile label — brand stroke, no grey fill (tile is already white + border). */
+  peekTileIcon: 'h-4 w-4 shrink-0 text-emerald-700',
 } as const;

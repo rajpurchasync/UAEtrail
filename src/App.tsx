@@ -1,49 +1,15 @@
+import { EXPLORE_MAP_PATH, LIST_DISCOVERY_PATH } from './config/routingCatalogLite';
 import {
-  EXPLORE_MAP_PATH,
+  INBOUND_CONTRIBUTIONS_PATH,
   INBOUND_MY_REWARDS_PATH,
   INBOUND_REWARDS_PATH,
   INBOUND_TRAIL_POINTS_PATH,
-  INBOUND_BECOME_HOST_PATH,
-  INBOUND_BECOME_ORGANIZER_PATH,
-  MEMBERSHIP_MARKETING_PATH,
-  PROFILE_BADGES_PATH,
-} from './config/routingCatalog';
-import { lazy, Suspense, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useSearchParams } from 'react-router-dom';
-import { ErrorBoundary } from './components/ErrorBoundary';
-import { Layout } from './components/layout/Layout';
-import { ProtectedRoute } from './components/auth/ProtectedRoute';
-import { clearAuthReturnContext, loadAuthReturnContext } from './utils/authReturnContext';
-import { useAuth } from './context/AuthContext';
-const Home = lazy(() => import('./pages/Home').then((m) => ({ default: m.Home })));
-const ExploreExperience = lazy(() =>
-  import('./explore/ui/ExploreExperience').then((m) => ({ default: m.ExploreExperience }))
-);
-const BrowseListPage = lazy(() =>
-  import('./list/BrowseListPage').then((m) => ({ default: m.BrowseListPage }))
-);
-const NativeDeepLinkHandler = lazy(() =>
-  import('./components/NativeDeepLinkHandler').then((m) => ({ default: m.NativeDeepLinkHandler }))
-);
-const DashboardRedirect = lazy(() =>
-  import('./components/auth/DashboardRedirect').then((m) => ({ default: m.DashboardRedirect }))
-);
-const GuestTabPlaceholder = lazy(() =>
-  import('./components/auth/GuestTabPlaceholder').then((m) => ({ default: m.GuestTabPlaceholder }))
-);
-
-import {
-  explorePath,
-  explorePeopleBrowsePath,
-  inboundCreateParamToHostPath,
-  parseActivityListFilter,
-  LIST_DISCOVERY_PATH,
-} from './config/routingCatalog';
-import { organisationManagePath, SIGNIN_PATH, SIGNUP_PATH } from './config/routingCatalog';
-import { PRODUCT_PLAN_SURFACE_TITLE } from './content/productNorthStar';
-import {
   JOURNEY_MAP_PATH,
-  INBOUND_CONTRIBUTIONS_PATH,
+  MEMBERSHIP_MARKETING_PATH,
+  PLAN_PATH,
+  PROFILE_BADGES_PATH,
+  PROFILE_HISTORY_PATH,
+  PROFILE_SUBMISSIONS_PATH,
   PUBLISHING_ACTIVITIES_NEW_PATH,
   PUBLISHING_ACTIVITIES_PATH,
   PUBLISHING_HISTORY_PATH,
@@ -53,64 +19,84 @@ import {
   PUBLISHING_REQUESTS_PATH,
   PUBLISHING_SECURITY_PRIVACY_PATH,
   PUBLISHING_TEAM_PATH,
-  PLAN_PATH,
-  PROFILE_HISTORY_PATH,
-  PROFILE_SUBMISSIONS_PATH,
+  SIGNIN_PATH,
+  SIGNUP_PATH,
 } from './config/surfacePaths';
-import {
-  DiscoveryRedirect,
-  InboundCanonicalPlaceRedirect,
-  InboundMerchantPublicRedirect,
-  InboundProductPathRedirect,
-  InboundMessagesRedirect,
-  InboundProMembershipRedirect,
-  InboundProfileWishlistRedirect,
-  InboundRetiredPublishingConsoleRedirect,
-  InboundProfileHistoryAliasRedirect,
-  InboundJourneyMapAliasRedirect,
-} from './routing/inboundBookmarkRedirects';
+import { INBOUND_BECOME_HOST_PATH, INBOUND_BECOME_ORGANIZER_PATH } from './config/inboundRoutePaths';
 import {
   INBOUND_JOURNEY_MAP_ALIAS_PATH,
   INBOUND_PROFILE_HISTORY_ALIAS_PATH,
 } from './config/inboundBookmarkPaths';
+import { organisationManagePath } from './member/organisationPaths';
+import { lazy, Suspense, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import { Layout } from './components/layout/Layout';
+import { scrollAppScrollRootTo } from './config/layoutScroll';
+import { clearAuthReturnContext, loadAuthReturnContext } from './utils/authReturnContext';
 
-const PlanBrowseRoute = () => {
-  const { user } = useAuth();
-  const [searchParams] = useSearchParams();
-  const tab = searchParams.get('tab');
-  const inboundCreatePath = inboundCreateParamToHostPath(searchParams.get('create'));
-  if (inboundCreatePath) {
-    return <Navigate to={inboundCreatePath} replace />;
-  }
-  if (user) {
-    return (
-      <Suspense fallback={<PageLoader />}>
-        <PlanPage />
-      </Suspense>
-    );
-  }
-  if (tab === 'joined' || tab === 'hosted' || searchParams.get('checkin') || !tab) {
-    return (
-      <GuestTabPlaceholder
-        title={PRODUCT_PLAN_SURFACE_TITLE}
-        description="Sign in to see what is next on your calendar and track outdoor goals."
-        intent="explore-browse"
-      />
-    );
-  }
-  const activity = parseActivityListFilter(searchParams.get('activity'), searchParams.get('filter'));
-  return (
-    <Navigate
-      to={explorePath({
-        activity: activity !== 'all' ? activity : undefined,
-      })}
-      replace
-    />
-  );
-};
+const ProtectedRoute = lazy(() =>
+  import('./components/auth/ProtectedRoute').then((m) => ({ default: m.ProtectedRoute }))
+);
+const Home = lazy(() => import('./pages/Home').then((m) => ({ default: m.Home })));
+const ExploreExperience = lazy(() => {
+  // Start the map library with the explore route. Home never calls this.
+  void import('./components/ui/PlacesMap');
+  return import('./explore/ui/ExploreExperience').then((m) => ({ default: m.ExploreExperience }));
+});
+const BrowseListPage = lazy(() =>
+  import('./list/BrowseListPage').then((m) => ({ default: m.BrowseListPage }))
+);
+const NativeDeepLinkHandler = lazy(() =>
+  import('./components/NativeDeepLinkHandler').then((m) => ({ default: m.NativeDeepLinkHandler }))
+);
+const DashboardRedirect = lazy(() =>
+  import('./components/auth/DashboardRedirect').then((m) => ({ default: m.DashboardRedirect }))
+);
+const loadInboundRedirects = () => import('./routing/inboundBookmarkRedirects');
+const DiscoveryRedirect = lazy(() =>
+  loadInboundRedirects().then((m) => ({ default: m.DiscoveryRedirect }))
+);
+const InboundCanonicalPlaceRedirect = lazy(() =>
+  loadInboundRedirects().then((m) => ({ default: m.InboundCanonicalPlaceRedirect }))
+);
+const InboundMerchantPublicRedirect = lazy(() =>
+  loadInboundRedirects().then((m) => ({ default: m.InboundMerchantPublicRedirect }))
+);
+const InboundProductPathRedirect = lazy(() =>
+  loadInboundRedirects().then((m) => ({ default: m.InboundProductPathRedirect }))
+);
+const InboundMessagesRedirect = lazy(() =>
+  loadInboundRedirects().then((m) => ({ default: m.InboundMessagesRedirect }))
+);
+const InboundProMembershipRedirect = lazy(() =>
+  loadInboundRedirects().then((m) => ({ default: m.InboundProMembershipRedirect }))
+);
+const InboundProfileWishlistRedirect = lazy(() =>
+  loadInboundRedirects().then((m) => ({ default: m.InboundProfileWishlistRedirect }))
+);
+const InboundRetiredPublishingConsoleRedirect = lazy(() =>
+  loadInboundRedirects().then((m) => ({ default: m.InboundRetiredPublishingConsoleRedirect }))
+);
+const InboundProfileHistoryAliasRedirect = lazy(() =>
+  loadInboundRedirects().then((m) => ({ default: m.InboundProfileHistoryAliasRedirect }))
+);
+const InboundJourneyMapAliasRedirect = lazy(() =>
+  loadInboundRedirects().then((m) => ({ default: m.InboundJourneyMapAliasRedirect }))
+);
 
-const ShopBrowseRoute = () => (
-  <Navigate to={explorePath({ panel: 'shops', filter: 'shops' })} replace />
+const loadExploreEntryRedirects = () => import('./routing/exploreEntryRedirects');
+const ShopBrowseRoute = lazy(() =>
+  loadExploreEntryRedirects().then((m) => ({ default: m.ShopBrowseRoute }))
+);
+const CalendarRedirect = lazy(() =>
+  loadExploreEntryRedirects().then((m) => ({ default: m.CalendarRedirect }))
+);
+const PeopleRedirect = lazy(() =>
+  loadExploreEntryRedirects().then((m) => ({ default: m.PeopleRedirect }))
+);
+const PlanBrowseRoute = lazy(() =>
+  import('./routing/planBrowseRoute').then((m) => ({ default: m.PlanBrowseRoute }))
 );
 
 // ─── Lazy-loaded pages ───────────────────────────────────────────────────────
@@ -170,7 +156,6 @@ const MessagesGate = lazy(() => import('./pages/Messages').then((m) => ({ defaul
 const ShopManageRedirect = () => <Navigate to={organisationManagePath('shop')} replace />;
 const AgencyManageRedirect = () => <Navigate to={organisationManagePath('agency')} replace />;
 const PublishingManage = lazy(() => import('./pages/publishing/Manage').then((m) => ({ default: m.Manage })));
-const PlanPage = lazy(() => import('./plan/PlanPage').then((m) => ({ default: m.PlanPage })));
 const ProfileHistoryPage = lazy(() =>
   import('./pages/ProfileHistory').then((m) => ({ default: m.ProfileHistoryPage }))
 );
@@ -212,7 +197,7 @@ const SiteMap = lazy(() => import('./pages/SiteMap').then((m) => ({ default: m.S
 const NotFound = lazy(() => import('./pages/NotFound').then((m) => ({ default: m.NotFound })));
 
 const PageLoader = () => (
-  <div className="min-h-screen flex items-center justify-center">
+  <div className="app-page-center">
     <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-emerald-600" />
   </div>
 );
@@ -263,7 +248,7 @@ const AuthReturnContextRestorer = () => {
       }
 
       if (attempt >= 12) {
-        window.scrollTo({ top: context.scrollY, behavior: 'auto' });
+        scrollAppScrollRootTo(context.scrollY);
         clearAuthReturnContext();
         return;
       }
@@ -312,8 +297,8 @@ function App() {
           <Route path="/event/:id" element={<InboundCanonicalPlaceRedirect />} />
           <Route path="/event-spot/:id" element={<InboundCanonicalPlaceRedirect />} />
           <Route path="/community-activity/:id" element={<InboundCanonicalPlaceRedirect />} />
-          <Route path="/calendar" element={<Navigate to={explorePath({ panel: 'activities' })} replace />} />
-          <Route path="/people" element={<Navigate to={explorePeopleBrowsePath()} replace />} />
+          <Route path="/calendar" element={<CalendarRedirect />} />
+          <Route path="/people" element={<PeopleRedirect />} />
           <Route
             path="/area/:slug"
             element={

@@ -29,9 +29,14 @@ export const PlanWishlistView = ({
 }: PlanWishlistViewProps) => (
   <div className="space-y-8">
     <section aria-labelledby="plan-wishlist-goals">
-      <h2 id="plan-wishlist-goals" className="mb-3 text-sm font-bold text-neutral-900">
-        Goals
-      </h2>
+      <div className="mb-3 flex items-baseline justify-between gap-2">
+        <h2 id="plan-wishlist-goals" className="text-sm font-bold text-neutral-900">
+          Your goals
+        </h2>
+        {goals.length > 0 ? (
+          <span className="text-xs font-medium text-neutral-500 tabular-nums">{goals.length} total</span>
+        ) : null}
+      </div>
       <ProfileGoalsSection
         layout="trips"
         goals={goals}

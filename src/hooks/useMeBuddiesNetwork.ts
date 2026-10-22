@@ -37,7 +37,7 @@ export const useMeBuddiesNetwork = (enabled = true) => {
     buddies: query.data?.buddies ?? [],
     incomingRequests: query.data?.incomingRequests ?? [],
     outgoingRequests: query.data?.outgoingRequests ?? [],
-    loading: query.isLoading,
+    loading: query.data === undefined && (query.isPending || query.isFetching),
     error: query.error instanceof Error ? query.error.message : query.isError ? 'Failed to load friends' : null,
     refetch: query.refetch,
   };
@@ -54,7 +54,7 @@ export const useMeFollowingMembers = (enabled = true) => {
 
   return {
     following: query.data ?? [],
-    loading: query.isLoading,
+    loading: query.data === undefined && (query.isPending || query.isFetching),
     error: query.error instanceof Error ? query.error.message : query.isError ? 'Failed to load following' : null,
     refetch: query.refetch,
   };

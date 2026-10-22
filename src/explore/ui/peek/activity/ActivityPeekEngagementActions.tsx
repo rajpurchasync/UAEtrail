@@ -16,7 +16,9 @@ import {
 } from '../../../../discovery/discoveryCardModel';
 import type { JoinRequestUiState } from '../../../../utils/joinRequestUi';
 import { pendingApprovalLabel } from '../../../../utils/joinRequestUi';
+import { useLocation } from 'react-router-dom';
 import { PeekDetailLink } from '../../map-peek/PeekDetailLink';
+import { mapPeekDetailNavState } from '../../../mapPeekDetailNavState';
 
 export type ActivityPeekEngagementActionsProps = {
   card: DiscoveryCardModel;
@@ -104,6 +106,7 @@ export const ActivityPeekEngagementActions = ({
   surface = 'peek',
   onOpenParticipationManage,
 }: ActivityPeekEngagementActionsProps) => {
+  const location = useLocation();
   const isDetailBar = surface === 'detail';
   const rowClass = isDetailBar ? 'flex w-full gap-2.5 px-1 pb-0.5' : 'flex w-full gap-2';
   const primaryBtnClass = isDetailBar ? detailDualPrimaryClass : dualPrimaryClass;
@@ -112,6 +115,7 @@ export const ActivityPeekEngagementActions = ({
     isDetailBar ? `${base} w-full rounded-2xl` : base;
 
   const gate = onGuestGatedAction;
+  const peekDetailNavState = mapPeekDetailNavState(location, card.id);
   const activity = card.activity;
   const viewerLevel = card.viewerAccess?.level ?? null;
   const labelContext: ActivityMapPeekActionLabelContext = {
@@ -316,6 +320,7 @@ export const ActivityPeekEngagementActions = ({
               joinStateLoading={effectiveJoinStateLoading}
               onGuestGatedAction={gate}
               onBeforeNavigate={onBeforeDetailNavigate}
+              linkState={peekDetailNavState}
             />
           );
         }

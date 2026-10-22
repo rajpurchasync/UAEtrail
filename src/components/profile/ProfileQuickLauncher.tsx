@@ -1,8 +1,9 @@
 import { Link } from 'react-router-dom';
+import { profileHubMobileBackState } from '../../utils/mobileBackNav';
 import {
   BUDDIES_PATH,
   PROFILE_SUBMISSIONS_PATH,
-  explorePeopleBrowsePath,
+  listPeopleDiscoveryPath,
   MESSAGES_PATH,
   planHostedSchedulePath,
   PROFILE_HISTORY_PATH,
@@ -30,6 +31,7 @@ const LauncherTile = ({ item }: { item: ProfileQuickLauncherItem }) => {
   return (
     <Link
       to={item.to}
+      state={profileHubMobileBackState()}
       className="glass-card-interactive flex min-h-[76px] flex-col items-center justify-center gap-2 p-3 text-center"
     >
       <span className={`relative flex h-10 w-10 items-center justify-center rounded-xl ${item.iconWrapClassName}`}>
@@ -69,7 +71,7 @@ export const buildProfileQuickLauncherItems = (input: {
     {
       key: 'people-browse',
       label: 'People',
-      to: explorePeopleBrowsePath(),
+      to: listPeopleDiscoveryPath(),
       icon: UserRound,
       iconWrapClassName: 'bg-emerald-50 text-emerald-800',
     },

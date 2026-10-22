@@ -1,4 +1,5 @@
 import { ReactNode } from 'react';
+import { APP_PAGE_MIN_H_CLASS, APP_SCROLL_BODY_CLASS } from '../../config/layoutScroll';
 import { Link, useLocation } from 'react-router-dom';
 import { LogOut } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
@@ -26,9 +27,9 @@ export const DashboardLayout = ({ title, links, children }: DashboardLayoutProps
   const breadcrumbLabel = isAdminDashboard ? 'Admin' : 'Home';
 
   return (
-    <div className="min-h-screen bg-gray-50/80">
+    <div className={`${APP_PAGE_MIN_H_CLASS} overflow-hidden bg-gray-50/80`}>
       {/* ─── Mobile-friendly header ─── */}
-      <header className="bg-white/80 backdrop-blur-xl border-b border-gray-100 sticky top-0 z-40">
+      <header className="shrink-0 bg-white/80 backdrop-blur-xl border-b border-gray-100 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3 min-w-0">
             <div className="min-w-0">
@@ -55,7 +56,7 @@ export const DashboardLayout = ({ title, links, children }: DashboardLayoutProps
       </header>
 
       {!isAdminDashboard && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 pt-4 md:pt-5">
+        <section className="shrink-0 max-w-7xl mx-auto px-4 sm:px-6 pt-4 md:pt-5">
           <div className="relative overflow-hidden rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-700 px-4 py-4 sm:px-6 sm:py-5 text-white">
             <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-white/15 blur-2xl" aria-hidden />
             <div className="absolute -left-12 -bottom-12 h-36 w-36 rounded-full bg-black/10 blur-2xl" aria-hidden />
@@ -67,7 +68,9 @@ export const DashboardLayout = ({ title, links, children }: DashboardLayoutProps
         </section>
       )}
 
-      <div className={`max-w-7xl mx-auto px-4 sm:px-6 ${isAdminDashboard ? 'pt-4 md:pt-6' : 'py-4 md:py-6'} grid grid-cols-1 md:grid-cols-[200px_1fr] lg:grid-cols-[220px_1fr] gap-6`}>
+      <div
+        className={`${APP_SCROLL_BODY_CLASS} max-w-7xl mx-auto px-4 sm:px-6 ${isAdminDashboard ? 'pt-4 md:pt-6' : 'py-4 md:py-6'} grid grid-cols-1 md:grid-cols-[200px_1fr] lg:grid-cols-[220px_1fr] gap-6`}
+      >
         {/* Desktop sidebar */}
         <aside className="hidden md:block">
           <div className="bg-white rounded-2xl border border-gray-100 p-2 sticky top-20">

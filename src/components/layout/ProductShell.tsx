@@ -1,14 +1,15 @@
-import { type ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { useLocation } from 'react-router-dom';
 import { ComposeRailProvider } from '../../context/ComposeRailContext';
+import { hasConsumerSelfHeader, isConsumerChromeHidden } from '../../config/platform';
 import {
-  hasConsumerSelfHeader,
-  isConsumerChromeHidden,
-  shouldShowMarketingSiteFooter,
-} from '../../config/platform';
+  APP_SCROLL_PANE_CLASS,
+  APP_SCROLL_PANE_DELEGATED_CLASS,
+  APP_SCROLL_ROOT_ID,
+  isDelegatedProductScrollPath,
+  PRODUCT_SHELL_HTML_CLASS,
+} from '../../config/layoutScroll';
 import { isJourneyMapPath } from '../../config/surfacePaths';
-import { useMobileBottomNav } from '../../hooks/useMobileBottomNav';
-import { Footer } from './Footer';
 import { ComposeRail } from './ComposeRail';
 import { Header } from './Header';
 import { MobileBottomNav } from './MobileBottomNav';
@@ -16,29 +17,48 @@ import { MobileTabHeader } from '../mobile/MobileTabHeader';
 import { MobileConsumerNavBar } from './MobileConsumerNavBar';
 import { MobileMenuProvider } from './MobileMenu';
 import { ApiStatusBanner } from './ApiStatusBanner';
+import { ExploreMapChromeProvider } from '../../explore/ExploreMapChromeContext';
+
+const productViewportShellClass =
+  'flex h-[100dvh] w-full max-w-full flex-col overflow-hidden consumer-bg md:bg-gray-50';
 
 /** Signed-in / product chrome — not used on guest marketing `/`. */
 export const ProductShell = ({ children }: { children: ReactNode }) => {
+  useEffect(() => {
+    document.documentElement.classList.add(PRODUCT_SHELL_HTML_CLASS);
+    return () => document.documentElement.classList.remove(PRODUCT_SHELL_HTML_CLASS);
+  }, []);
+
   const location = useLocation();
-  const showMobileBottomNav = useMobileBottomNav();
   const isExploreMap = location.pathname === '/explore';
   const isJourneyMap = isJourneyMapPath(location.pathname);
   const hideChrome = isConsumerChromeHidden(location.pathname);
   const showConsumerChrome = !hideChrome && !isExploreMap && !isJourneyMap;
+  const delegatedScroll = isDelegatedProductScrollPath(location.pathname);
+
+  const scrollPaneClass = delegatedScroll ? APP_SCROLL_PANE_DELEGATED_CLASS : APP_SCROLL_PANE_CLASS;
+
+  const scrollableMain = (
+    <main id={APP_SCROLL_ROOT_ID} className={scrollPaneClass}>
+      <div className="flex h-full min-h-0 flex-col">{children}</div>
+    </main>
+  );
 
   if (isExploreMap || isJourneyMap) {
     return (
       <ComposeRailProvider>
         <MobileMenuProvider>
-          <div className="flex h-[100dvh] w-full flex-col overflow-hidden consumer-bg">
-            <ApiStatusBanner />
-            <div className="hidden shrink-0 lg:block">
-              <Header />
+          <ExploreMapChromeProvider>
+            <div className={`${productViewportShellClass} md:bg-gray-50`}>
+              <ApiStatusBanner />
+              <div className="hidden shrink-0 lg:block">
+                <Header />
+              </div>
+              <MobileTabHeader />
+              <div className="relative z-0 min-h-0 flex-1 isolate overflow-hidden">{children}</div>
+              <MobileBottomNav />
             </div>
-            <MobileTabHeader />
-            <div className="relative z-0 min-h-0 flex-1 isolate overflow-hidden">{children}</div>
-            <MobileBottomNav />
-          </div>
+          </ExploreMapChromeProvider>
         </MobileMenuProvider>
       </ComposeRailProvider>
     );
@@ -46,23 +66,10 @@ export const ProductShell = ({ children }: { children: ReactNode }) => {
 
   const showMobileConsumerNavBar = showConsumerChrome && !hasConsumerSelfHeader(location.pathname);
 
-  const main = (
-    <main className="flex-1 scroll-touch min-w-0 max-w-full overflow-x-clip">{children}</main>
-  );
-
-  const siteFooter = shouldShowMarketingSiteFooter(location.pathname, {
-    showConsumerChrome,
-    showMobileBottomNav,
-  }) ? (
-    <div className="shrink-0">
-      <Footer />
-    </div>
-  ) : null;
-
   return (
     <ComposeRailProvider>
       <MobileMenuProvider>
-        <div className="flex min-h-screen w-full max-w-full flex-col overflow-x-clip consumer-bg md:bg-gray-50">
+        <div className={productViewportShellClass}>
           <ApiStatusBanner />
           {showMobileConsumerNavBar && <MobileConsumerNavBar />}
           {showConsumerChrome ? (
@@ -72,18 +79,14 @@ export const ProductShell = ({ children }: { children: ReactNode }) => {
           ) : null}
           <MobileTabHeader />
           {showConsumerChrome ? (
-            <div className="flex flex-1 min-h-0 w-full md:flex-row">
-              <div className="flex flex-1 min-w-0 flex-col min-h-0">
-                {main}
-                {siteFooter}
+            <div className="flex min-h-0 flex-1 w-full overflow-hidden md:flex-row">
+              <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+                {scrollableMain}
               </div>
               <ComposeRail />
             </div>
           ) : (
-            <div className="flex flex-1 flex-col min-h-0">
-              {main}
-              {siteFooter}
-            </div>
+            <div className="flex min-h-0 flex-1 flex-col overflow-hidden">{scrollableMain}</div>
           )}
           <MobileBottomNav />
         </div>

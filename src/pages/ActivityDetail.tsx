@@ -7,8 +7,10 @@ import { activityReviewsQueryKey } from '../hooks/clientQueryKeys';
 import { useActivityReviews } from '../hooks/useActivityReviews';
 import { useActivityHostJoinRequests } from '../hooks/useActivityHostJoinRequests';
 import { activityDetailPath, detailBackPath } from '../config/routingCatalog';
+import { readDetailBackToFromLocation } from '../explore/mapPeekDetailNavState';
 import {
   ACTIVITY_JOIN_CTA_SELECTOR,
+  AUTH_RESUME_INVITE_FRIENDS_QUERY,
   AUTH_RESUME_JOIN_QUERY,
   navigateToAuthGate,
   signInPathForReturn,
@@ -69,11 +71,15 @@ export const ActivityDetail = () => {
   const gate = useMemberStatus({ enabled: Boolean(user) });
   const navigate = useNavigate();
   const location = useLocation();
+  const detailBackTo = readDetailBackToFromLocation(location.state);
   const [searchParams, setSearchParams] = useSearchParams();
   const fromJoinInvite = searchParams.get('invite') === '1';
   const resumeJoinAfterAuth = searchParams.get(AUTH_RESUME_JOIN_QUERY) === '1';
+  const resumeInviteFriendsAfterAuth =
+    searchParams.get(AUTH_RESUME_INVITE_FRIENDS_QUERY) === '1';
   const joinInviteAutoOpenRef = useRef(false);
   const resumeJoinHandledRef = useRef(false);
+  const resumeInviteHandledRef = useRef(false);
   const joinedWelcomeHandledRef = useRef(false);
   const {
     activity,
@@ -103,6 +109,7 @@ export const ActivityDetail = () => {
   useEffect(() => {
     joinedWelcomeHandledRef.current = false;
     resumeJoinHandledRef.current = false;
+    resumeInviteHandledRef.current = false;
   }, [id]);
 
   const joinUiState = resolveJoinRequestUiState({
@@ -310,11 +317,32 @@ export const ActivityDetail = () => {
     joinActions,
   ]);
 
+  useEffect(() => {
+    if (!resumeInviteFriendsAfterAuth || loading || !activity || resumeInviteHandledRef.current) {
+      return;
+    }
+    if (!user) return;
+    if (activity.status !== 'published') return;
+    resumeInviteHandledRef.current = true;
+    inviteShare.openInviteFromActivity(activity, { canSendBuddyInvites: true });
+    const next = new URLSearchParams(searchParams);
+    next.delete(AUTH_RESUME_INVITE_FRIENDS_QUERY);
+    setSearchParams(next, { replace: true });
+  }, [
+    resumeInviteFriendsAfterAuth,
+    loading,
+    activity,
+    user,
+    inviteShare,
+    searchParams,
+    setSearchParams,
+  ]);
+
   if (loading) {
     return (
       <>
         <PageMeta title="Loading activity" path={id ? `/activity/${id}` : undefined} />
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="app-page-center bg-gray-50">
           <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-emerald-600" />
         </div>
       </>
@@ -325,7 +353,7 @@ export const ActivityDetail = () => {
     return (
       <>
         <PageMeta title="Activity not found" noIndex path={id ? `/activity/${id}` : undefined} />
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="app-page-center bg-gray-50">
           <div className="text-center px-4">
             <h1 className="text-2xl font-bold text-gray-900 mb-4">We couldn&apos;t find this activity</h1>
             <Link to={detailBackPath('activity')} className="text-emerald-600 hover:text-emerald-700 font-medium">
@@ -428,6 +456,7 @@ export const ActivityDetail = () => {
       ) : null}
       <ActivityDetailByKind
         activity={activity}
+        backTo={detailBackTo ?? detailBackPath('activity')}
         requiresSignIn={requiresSignIn}
         showJoinRequiredHint={showJoinRequiredHint}
         participation={isActivityHostUser ? null : participation ?? null}

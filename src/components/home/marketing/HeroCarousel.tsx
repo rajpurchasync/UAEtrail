@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useId, useRef, useState, type ReactNode } from 'react';
 import type { HeroCarouselSlide } from './heroCarouselTypes';
 import { usePrefersReducedMotion } from '../../../hooks/usePrefersReducedMotion';
-import { stepCarouselIndex } from '../../../utils/heroCarouselState';
+import { heroSlideShouldMount, stepCarouselIndex } from '../../../utils/heroCarouselState';
 import { useMarketingCarouselClock } from './HomeMarketingCarouselSync';
 import { HeroCarouselSlideImage } from './HeroCarouselSlideImage';
 
@@ -23,31 +23,9 @@ export const HeroCarousel = ({
   const [index, setIndex] = useState(0);
   const [userInteracted, setUserInteracted] = useState(false);
   const touchStartX = useRef<number | null>(null);
-  const [prefetchNeighbors, setPrefetchNeighbors] = useState(false);
   const [lcpReady, setLcpReady] = useState(false);
   const total = slides.length;
   const multi = total > 1;
-
-  useEffect(() => {
-    if (!lcpReady) return;
-
-    let timeoutId: ReturnType<typeof setTimeout> | undefined;
-    let idleId: number | undefined;
-    const enable = () => setPrefetchNeighbors(true);
-
-    if (typeof requestIdleCallback !== 'undefined') {
-      idleId = requestIdleCallback(enable, { timeout: 2500 });
-    } else {
-      timeoutId = window.setTimeout(enable, 800);
-    }
-
-    return () => {
-      if (idleId !== undefined && typeof cancelIdleCallback !== 'undefined') {
-        cancelIdleCallback(idleId);
-      }
-      if (timeoutId !== undefined) window.clearTimeout(timeoutId);
-    };
-  }, [lcpReady]);
 
   const markLcpReady = useCallback(() => setLcpReady(true), []);
 
@@ -93,13 +71,7 @@ export const HeroCarousel = ({
 
   const liveMessage = `Slide ${index + 1} of ${total}`;
 
-  const slideShouldMount = (slideIndex: number) => {
-    if (slideIndex === index) return true;
-    if (!prefetchNeighbors || total <= 1) return false;
-    const prev = (index - 1 + total) % total;
-    const next = (index + 1) % total;
-    return slideIndex === prev || slideIndex === next;
-  };
+  const slideShouldMount = (slideIndex: number) => heroSlideShouldMount(slideIndex, index);
 
   return (
     <section
@@ -126,10 +98,6 @@ export const HeroCarousel = ({
         {slides.map((slide, slideIndex) => {
           if (!slideShouldMount(slideIndex)) return null;
           const active = slideIndex === index;
-          const prev = (index - 1 + total) % total;
-          const next = (index + 1) % total;
-          const isNeighbor = slideIndex === prev || slideIndex === next;
-          const loadFullResolution = active || (prefetchNeighbors && isNeighbor);
 
           return (
             <HeroCarouselSlideImage
@@ -137,7 +105,7 @@ export const HeroCarousel = ({
               slide={slide}
               active={active}
               reducedMotion={reducedMotion}
-              loadFullResolution={loadFullResolution}
+              loadFullResolution
               onHiResReady={active ? markLcpReady : undefined}
             />
           );

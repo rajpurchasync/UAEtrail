@@ -1,10 +1,10 @@
 import { lazy, Suspense } from 'react';
-import { EXPLORE_MAP_PATH, joinAuthPath } from '../config/routingCatalog';
+import { EXPLORE_MAP_PATH, joinAuthPath } from '../config/routingCatalogLite';
 import { Navigate } from 'react-router-dom';
 import { DEFAULT_OG_IMAGE } from '../config/seo';
 import { PageMeta } from '../components/seo/PageMeta';
 import { JsonLd } from '../components/seo/JsonLd';
-import { websiteSchema } from '../components/seo/schemas';
+import { websiteSchema } from '../components/seo/websiteSchema';
 import { useAuth } from '../context/AuthContext';
 import { HomeDeferredMount } from '../components/home/marketing/HomeDeferredMount';
 import { HomeMarketingHeader } from '../components/home/marketing/HomeMarketingHeader';
@@ -55,9 +55,13 @@ export const Home = () => {
             <HomeActivitiesBlock />
           </Suspense>
         </HomeDeferredMount>
-        <HomeDeferredMount minHeightClass="min-h-[min(36rem,70vh)]">
+        <HomeDeferredMount minHeightClass="min-h-[min(24rem,50vh)]">
           <Suspense fallback={null}>
             <HomeHowItWorksSection />
+          </Suspense>
+        </HomeDeferredMount>
+        <HomeDeferredMount minHeightClass="min-h-[min(24rem,50vh)]">
+          <Suspense fallback={null}>
             <HomeReviewsFaqSection />
           </Suspense>
         </HomeDeferredMount>

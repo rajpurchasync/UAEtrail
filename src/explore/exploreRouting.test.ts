@@ -19,6 +19,7 @@ import {
   parseHostFromActivityId,
 } from './routing';
 import { EXPLORE_MAP_PATH } from '../config/platform';
+import { buildMapPeekReturnPath } from './mapPeekDetailNavState';
 
 describe('exploreRouting navigation contract', () => {
   it('detailBackPath returns map-first explore URLs', () => {
@@ -63,6 +64,15 @@ describe('exploreRouting navigation contract', () => {
     );
     expect(resolveParticipantIntentMapItemId({ id: 'int-1' })).toBeNull();
     expect(resolveParticipantIntentMapItemId({ id: 'demand:int-1' })).toBeNull();
+  });
+
+  it('buildMapPeekReturnPath preserves explore filters and pin', () => {
+    expect(
+      buildMapPeekReturnPath('activity:abc', {
+        pathname: '/explore',
+        search: '?filter=hiking&list=0',
+      })
+    ).toBe('/explore?filter=hiking&list=0&pin=activity%3Aabc');
   });
 
   it('encodes pin deep link for saved map items', () => {

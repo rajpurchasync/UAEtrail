@@ -23,7 +23,7 @@ export const ReviewCard = ({
 }: ReviewCardProps) => (
   <figure
     className={[
-      'home-v2-font home-marketing-card flex flex-col gap-3 p-5',
+      'home-v2-font home-marketing-card home-marketing-soft-tile flex flex-col gap-3 p-5',
       className
     ].join(' ')}
   >

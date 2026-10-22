@@ -1,10 +1,8 @@
 import { useMemo } from 'react';
-import { ExploreResponsiveSheet } from '../../explore/ui/ExploreResponsiveSheet';
 import type { ActivityShareInput } from '../../utils/activityShare';
 import { buildActivitySharePayload } from '../../utils/activityShare';
-import { ACTIVITY_INVITE_FRIENDS_CTA } from '../../content/activityInviteCopy';
-import { EXPLORE_Z } from '../../config/exploreTheme';
 import { ActivityInviteModalBody } from './ActivityInviteModalBody';
+import { ActivityInviteExploreSheet } from './ActivityInviteExploreSheet';
 import { useAuth } from '../../context/AuthContext';
 
 export type ActivityInviteShareSheetProps = {
@@ -32,25 +30,16 @@ export const ActivityInviteShareSheet = ({
   if (!canSendBuddyInvites) return null;
 
   return (
-    <ExploreResponsiveSheet
-      open={open && Boolean(activity)}
-      onClose={onClose}
-      title={ACTIVITY_INVITE_FRIENDS_CTA}
-      maxWidthClass="max-w-md"
-      zClass={EXPLORE_Z.activityDetailInviteSheet}
-      overlayFixed
-      showCloseButton
-    >
+    <ActivityInviteExploreSheet open={open && Boolean(activity)} onClose={onClose}>
       {activity && share ? (
-        <div className="px-4 pb-6 pt-1">
-          <ActivityInviteModalBody
-            activityId={activity.id}
-            messageWithUrl={share.messageWithUrl}
-            initialSelectedBuddyIds={initialSelectedBuddyIds}
-            active={open && Boolean(user)}
-          />
-        </div>
+        <ActivityInviteModalBody
+          activityId={activity.id}
+          messageWithUrl={share.messageWithUrl}
+          initialSelectedBuddyIds={initialSelectedBuddyIds}
+          active={open && Boolean(user)}
+          onInviteSent={onClose}
+        />
       ) : null}
-    </ExploreResponsiveSheet>
+    </ActivityInviteExploreSheet>
   );
 };

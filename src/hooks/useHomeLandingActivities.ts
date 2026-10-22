@@ -2,7 +2,7 @@ import type { ActivityDTO } from '@uaetrail/shared-types';
 import { useQuery } from '@tanstack/react-query';
 import { groupRegionTextAtBrowseFilterLevel } from '../config/groupRegionFilter';
 import { buildExploreWhenSegment } from '@uaetrail/shared-types';
-import { fetchApiActivities } from './publicCatalogClientApi';
+import { fetchApiActivities } from './publicActivitiesClientApi';
 import { HOME_LANDING_FALLBACK_ACTIVITIES, type HomeLandingActivity } from '../content/homeLanding';
 import { homeLandingActivitiesQueryKey } from './clientQueryKeys';
 
@@ -49,7 +49,7 @@ type HomeLandingActivitiesPayload = {
 };
 
 const fetchHomeLandingActivities = async (): Promise<HomeLandingActivitiesPayload> => {
-  const listings = await fetchApiActivities('upcoming');
+  const listings = await fetchApiActivities('upcoming', 12);
   const upcoming = listings.slice(0, 12);
   if (upcoming.length === 0) {
     return {

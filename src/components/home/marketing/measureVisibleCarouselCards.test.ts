@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import {
   carouselPageCount,
   carouselPageFromCardIndex,
-  carouselStartCardIndex
+  carouselPageFromScrollPosition,
+  carouselStartCardIndex,
+  trackHasHorizontalScroll
 } from './measureVisibleCarouselCards';
 
 describe('carousel page math', () => {
@@ -22,5 +24,18 @@ describe('carousel page math', () => {
     expect(carouselStartCardIndex(0, 3, 15)).toBe(0);
     expect(carouselStartCardIndex(1, 3, 15)).toBe(3);
     expect(carouselStartCardIndex(4, 3, 15)).toBe(12);
+  });
+
+  it('snaps scroll edges to first and last page', () => {
+    expect(carouselPageFromScrollPosition(0, 900, 4, 2)).toBe(0);
+    expect(carouselPageFromScrollPosition(898, 900, 4, 2)).toBe(3);
+    expect(carouselPageFromScrollPosition(450, 900, 4, 1)).toBe(1);
+  });
+
+  it('detects when a track cannot scroll horizontally', () => {
+    const track = { scrollWidth: 400, clientWidth: 400 } as HTMLElement;
+    expect(trackHasHorizontalScroll(track)).toBe(false);
+    const scrollable = { scrollWidth: 900, clientWidth: 400 } as HTMLElement;
+    expect(trackHasHorizontalScroll(scrollable)).toBe(true);
   });
 });

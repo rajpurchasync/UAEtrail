@@ -1,5 +1,5 @@
 import { Gift, ShieldCheck, Users } from 'lucide-react';
-import { EXPLORE_MAP_PATH } from '../../../../config/routingCatalog';
+import { EXPLORE_MAP_PATH } from '../../../../config/routingCatalogLite';
 import { HOME_HERO } from '../../../../content/homeMarketing';
 import { buildHeroSlides } from '../../../../utils/buildHeroSlides';
 import { AppButtonLink } from '../../../mobile/AppButton';

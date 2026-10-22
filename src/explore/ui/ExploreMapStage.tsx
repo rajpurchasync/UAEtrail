@@ -1,6 +1,7 @@
+import { lazy, Suspense, type ReactNode } from 'react';
 import { List, Plus } from 'lucide-react';
 import { isGeographyMapSource, type ExploreMapItemDTO } from '@uaetrail/shared-types';
-import { PlacesMap, type MapBounds, type PlaceMapPin } from '../../components/ui/PlacesMap';
+import type { MapBounds, PlaceMapPin } from '../../components/ui/PlacesMap';
 import { getMapBounds } from '../../config/regions';
 import { MAP_CONFIG, getExploreMapTiles, type ExploreMapStyle } from '../../config/platform';
 import { EXPLORE_FLOATING_CONTROL } from '../../config/exploreTheme';
@@ -16,9 +17,12 @@ import { ExploreMapLocationPrompt } from './ExploreMapLocationPrompt';
 import { ExploreMapStyleToggle } from './ExploreMapStyleToggle';
 import { PlaceMapPeekHost } from './peek/place/PlaceMapPeekHost';
 import type { ExploreSearchScopeCounts, ExploreSearchScopeKey } from '../exploreBrowseTaxonomy';
-import type { ExplorePanel, MapFilterKey } from '../routing';
+import type { ExplorePanel, MapFilterKey, VenueListFilterKey } from '../routing';
 import type { ExploreActivityDatePreset } from '../exploreActivityDateFilter';
-import type { ReactNode } from 'react';
+
+const PlacesMap = lazy(() =>
+  import('../../components/ui/PlacesMap').then((module) => ({ default: module.PlacesMap }))
+);
 
 type ExploreMapTiles = ReturnType<typeof getExploreMapTiles>;
 
@@ -38,6 +42,8 @@ export type ExploreMapStageProps = {
   onMapFilterChange: (filter: MapFilterKey) => void;
   onActivityDatePresetChange: (preset: ExploreActivityDatePreset) => void;
   onVenueRegionsChange: (regions: string[]) => void;
+  venueFilter?: VenueListFilterKey;
+  onVenueFilterChange?: (filter: VenueListFilterKey) => void;
   onOpenPeopleBrowsePanel: () => void;
   peopleBrowsePanelAvatars?: Array<{ id: string; name: string; avatar?: string | null }>;
   peopleBrowsePanelFriendCount?: number;
@@ -79,7 +85,7 @@ export type ExploreMapStageProps = {
   onOfferTransport?: () => void;
   linkRideshareTenantId?: string | null;
   onOpenExploreItem?: (exploreItemId: string) => void;
-  onGuestGatedAction?: () => void;
+  onGuestGatedAction?: (action: import('@uaetrail/shared-types').ActivityMapPeekActionId) => void;
   joinInvitePeekBanner?: string | null;
   /** Desktop Find crew sheet over the map (keeps mapStage a direct flex child in the explore row). */
   desktopPeopleBrowseOverlay?: ReactNode;
@@ -101,6 +107,8 @@ export const ExploreMapStage = ({
   onMapFilterChange,
   onActivityDatePresetChange,
   onVenueRegionsChange,
+  venueFilter,
+  onVenueFilterChange,
   onOpenPeopleBrowsePanel,
   peopleBrowsePanelAvatars,
   peopleBrowsePanelFriendCount,
@@ -153,6 +161,7 @@ export const ExploreMapStage = ({
     <div className="relative z-0 min-h-0 flex-1 isolate overflow-hidden">
       <div className="absolute inset-0 z-0 min-h-[280px]">
         <ExploreMapLoadErrorBoundary onRetry={onReloadMap}>
+        <Suspense fallback={<div className="h-full min-h-[280px] w-full bg-[#2a3441]" aria-hidden />}>
         <PlacesMap
           key={exploreMapStyle}
           pins={mapPins}
@@ -174,6 +183,7 @@ export const ExploreMapStage = ({
           showDesktopZoomControl={isDesktop}
           layoutRevision={listOpen}
         />
+        </Suspense>
         </ExploreMapLoadErrorBoundary>
       </div>
 
@@ -188,6 +198,8 @@ export const ExploreMapStage = ({
         onMapFilterChange={onMapFilterChange}
         onActivityDatePresetChange={onActivityDatePresetChange}
         onVenueRegionsChange={onVenueRegionsChange}
+        venueFilter={venueFilter}
+        onVenueFilterChange={onVenueFilterChange}
         onOpenPeopleBrowsePanel={onOpenPeopleBrowsePanel}
         peopleBrowsePanelAvatars={peopleBrowsePanelAvatars}
         peopleBrowsePanelFriendCount={peopleBrowsePanelFriendCount}
@@ -308,7 +320,7 @@ export const ExploreMapStage = ({
           onMessage={onMessage}
           linkRideshareTenantId={linkRideshareTenantId}
           onOpenExploreItem={onOpenExploreItem}
-          joinUiState={activityPeekSkipsJoinContext ? undefined : joinUiState}
+          joinUiState={joinUiState}
           onWithdraw={onWithdraw}
           joinStateLoading={joinStateLoading}
           onActivityMapPeekAction={onActivityMapPeekAction}

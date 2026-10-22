@@ -178,7 +178,7 @@ Legacy browse URLs (`/map`, `/discovery`, `/calendar`, bare `/activities` as bro
 - Landing on `/explore` without `list` → desktop opens map list; mobile stays map-only.
 - **Mobile map list:** **List** pill (`list=1`, `ExploreBrowsePanel`) — Activities/Places tabs, search, calendar/filter, topic pills, compact rows.
 - **Discover browse:** hamburger / desktop header **Browse** → `/explore?browse=1` (`EXPLORE_DISCOVER_BROWSE_PATH`) or `/list` full screen — `ListDiscoveryExperience`. **Desktop:** opens in the **right** aside (like **People** / Social); **map list** stays on the **left** (`list=1` can coexist with `browse=1`). Mobile: full-screen sheet over the map (mutually exclusive with list). Embedded discover exposes **Full screen browse** → `listDiscoveryPathFromExploreSearch()`. Do not add `/list` to `MOBILE_BOTTOM_NAV_TAB_PATHS`.
-- **Mobile map filters:** horizontal scroll — All · Hiking · Camping · Rideshare · Activities · Shops (no “More” sheet).
+- **Mobile map filters:** **Activities · Places · Search** intent pill (`ExploreMapMobileLayerChrome`) expands a **frosted segmented CTA bar** (shared `EXPLORE_MAP_CHROME_FROST` with List / Find crew) — activities: All · Anyday · Hiking · Camping · Rideshare · Others; places: All · UAE · Trails · Spots · Shops · Camping · Others (spots vs camping share wire `filter=camping`; highlight uses `placesMenuKey`). List sheet filters use compact stacked grids (category → emirates).
 - **Guest join:** tapping Join on an activity opens a signup sheet (returns to map after auth).
 - First map visit shows a 3-step coach (localStorage `uaetrail:explore-coach-seen`); guest join banner appears after coach is dismissed.
 - Pass `list: true` to `explorePath()` only when opening the browse sheet intentionally.

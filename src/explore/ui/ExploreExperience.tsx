@@ -3,10 +3,12 @@ import { EXPLORE_MAP_PATH } from '../../config/routingCatalog';
 import { ExploreExperienceBrowsePanels } from '../shell/ExploreExperienceBrowsePanels';
 import { ExploreExperienceOverlays } from '../shell/ExploreExperienceOverlays';
 import { ExploreMapShell } from '../shell/ExploreMapShell';
+import { useBindExploreMapClosePeek } from '../ExploreMapChromeContext';
 import { useExploreExperienceModel } from '../shell/useExploreExperienceModel';
 
 export const ExploreExperience = () => {
   const model = useExploreExperienceModel();
+  useBindExploreMapClosePeek(model.handleCloseMapSelection);
 
   return (
     <div className="flex h-full min-h-0 w-full flex-col overflow-hidden">

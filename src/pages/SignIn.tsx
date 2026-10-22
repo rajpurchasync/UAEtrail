@@ -155,7 +155,7 @@ export const SignIn = () => {
   const fieldClass = 'ios-input text-[17px] border border-neutral-300 bg-white';
 
   return (
-    <div className="min-h-screen bg-ios-bg flex flex-col py-8 px-6 safe-area-top safe-area-bottom">
+    <div className="app-page-min-h app-scroll-body bg-ios-bg flex flex-col py-8 px-6 safe-area-top safe-area-bottom">
       <PageMeta title="Sign in" noIndex />
 
       <div className="max-w-md w-full mx-auto bg-white rounded-[20px] shadow-ios p-6 sm:p-8 flex-1">

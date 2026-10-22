@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import { stepCarouselIndex } from '../../../utils/heroCarouselState';
 import {
+  CAROUSEL_SCROLL_EDGE_EPS_PX,
   carouselPageCount,
-  carouselPageFromCardIndex,
   carouselStartCardIndex,
-  measureVisibleCarouselCards
+  measureCarouselActivePage,
+  measureVisibleCarouselCards,
+  trackHasHorizontalScroll
 } from './measureVisibleCarouselCards';
 import { scrollHorizontalTrackToIndex } from './scrollHorizontalTrackToIndex';
 import { usePrefersReducedMotion } from '../../../hooks/usePrefersReducedMotion';
@@ -14,13 +16,16 @@ export const useMarketingPeekCarousel = ({
   itemCount,
   carouselMode,
   resetWhen,
-  trackRef: trackRefProp
+  trackRef: trackRefProp,
+  /** Mobile peek rails: one dot per card (not “fully visible” count at scroll 0). */
+  oneCardPerPage = false
 }: {
   itemCount: number;
   carouselMode: boolean;
   /** When any value changes, scroll position and active index reset to 0. */
   resetWhen: unknown[];
   trackRef?: RefObject<HTMLDivElement | null>;
+  oneCardPerPage?: boolean;
 }) => {
   const reducedMotion = usePrefersReducedMotion();
   const internalTrackRef = useRef<HTMLDivElement>(null);
@@ -32,8 +37,18 @@ export const useMarketingPeekCarousel = ({
   const [userPaused, setUserPaused] = useState(false);
   const [hoverPaused, setHoverPaused] = useState(false);
   const [progressCycle, setProgressCycle] = useState(0);
+  const [trackScrollable, setTrackScrollable] = useState(true);
+  const pendingScrollPageRef = useRef<number | null>(null);
 
-  const pageCount = carouselPageCount(itemCount, visibleCardCount);
+  const paginationVisibleCount = oneCardPerPage ? 1 : visibleCardCount;
+  const pageCount =
+    itemCount <= 0
+      ? 0
+      : !trackScrollable
+        ? 1
+        : oneCardPerPage
+          ? itemCount
+          : carouselPageCount(itemCount, visibleCardCount);
   const pageCountRef = useRef(pageCount);
   const [tabVisible, setTabVisible] = useState(
     () => typeof document === 'undefined' || document.visibilityState === 'visible'
@@ -56,10 +71,16 @@ export const useMarketingPeekCarousel = ({
   const remeasureVisible = useCallback(() => {
     const track = trackRef.current;
     if (!track) return;
+    setTrackScrollable(trackHasHorizontalScroll(track));
+    if (oneCardPerPage) {
+      visibleCardCountRef.current = 1;
+      setVisibleCardCount(1);
+      return;
+    }
     const next = measureVisibleCarouselCards(track, 0);
     visibleCardCountRef.current = next;
     setVisibleCardCount(next);
-  }, [trackRef]);
+  }, [oneCardPerPage, trackRef]);
 
   useLayoutEffect(() => {
     if (!carouselMode) return;
@@ -75,7 +96,7 @@ export const useMarketingPeekCarousel = ({
       ro.disconnect();
       window.removeEventListener('resize', remeasureVisible);
     };
-  }, [carouselMode, itemCount, remeasureVisible, trackRef]);
+  }, [carouselMode, itemCount, oneCardPerPage, remeasureVisible, trackRef]);
 
   useEffect(() => {
     if (activePage >= pageCount && pageCount > 0) {
@@ -87,19 +108,28 @@ export const useMarketingPeekCarousel = ({
     (page: number, options?: { bumpProgress?: boolean }) => {
       const track = trackRef.current;
       const pages = pageCountRef.current;
-      const visible = visibleCardCountRef.current;
+      const visible = oneCardPerPage ? 1 : visibleCardCountRef.current;
       if (!track || itemCount === 0 || pages === 0) return;
       const next = Math.max(0, Math.min(page, pages - 1));
       if (options?.bumpProgress && next !== activePageRef.current) {
         setProgressCycle((cycle) => cycle + 1);
       }
-      if (carouselMode) {
+      pendingScrollPageRef.current = next;
+      if (carouselMode && trackScrollable) {
         const cardIndex = carouselStartCardIndex(next, visible, itemCount);
+        const slide = track.children[cardIndex] as HTMLElement | undefined;
+        const targetLeft = slide?.offsetLeft ?? 0;
         scrollHorizontalTrackToIndex(track, cardIndex, 'smooth');
+        if (Math.abs(track.scrollLeft - targetLeft) <= CAROUSEL_SCROLL_EDGE_EPS_PX) {
+          pendingScrollPageRef.current = null;
+        }
+      } else {
+        pendingScrollPageRef.current = null;
       }
+      activePageRef.current = next;
       setActivePage(next);
     },
-    [carouselMode, itemCount, trackRef]
+    [carouselMode, itemCount, oneCardPerPage, trackRef, trackScrollable]
   );
 
   const scrollToPageRef = useRef(scrollToPage);
@@ -109,30 +139,50 @@ export const useMarketingPeekCarousel = ({
     const track = trackRef.current;
     if (!track || !carouselMode) return;
 
-    const onScroll = () => {
-      const children = Array.from(track.children) as HTMLElement[];
-      if (children.length === 0) return;
-      const trackLeft = track.scrollLeft;
-      let closestCard = 0;
-      let minDist = Number.POSITIVE_INFINITY;
-      children.forEach((child, i) => {
-        const dist = Math.abs(child.offsetLeft - trackLeft);
-        if (dist < minDist) {
-          minDist = dist;
-          closestCard = i;
+    const syncPageFromScroll = () => {
+      const visible = oneCardPerPage ? 1 : visibleCardCountRef.current;
+      const page = measureCarouselActivePage(track, itemCount, visible);
+      const pending = pendingScrollPageRef.current;
+      if (pending !== null) {
+        if (page === pending) {
+          pendingScrollPageRef.current = null;
         }
-      });
-      const visible = visibleCardCountRef.current;
-      const pages = carouselPageCount(itemCount, visible);
-      const page = carouselPageFromCardIndex(closestCard, visible, pages);
-      setActivePage(page);
+        return;
+      }
+      if (page !== activePageRef.current) {
+        activePageRef.current = page;
+        setActivePage(page);
+      }
+    };
+
+    const onScroll = () => syncPageFromScroll();
+    const onScrollEnd = () => {
+      const pending = pendingScrollPageRef.current;
+      if (pending === null) {
+        syncPageFromScroll();
+        return;
+      }
+      pendingScrollPageRef.current = null;
+      const visible = oneCardPerPage ? 1 : visibleCardCountRef.current;
+      const measured = measureCarouselActivePage(track, itemCount, visible);
+      const resolved = measured === pending ? measured : pending;
+      if (resolved !== activePageRef.current) {
+        activePageRef.current = resolved;
+        setActivePage(resolved);
+      }
     };
 
     track.addEventListener('scroll', onScroll, { passive: true });
-    return () => track.removeEventListener('scroll', onScroll);
-  }, [carouselMode, itemCount, trackRef]);
+    track.addEventListener('scrollend', onScrollEnd);
+    return () => {
+      track.removeEventListener('scroll', onScroll);
+      track.removeEventListener('scrollend', onScrollEnd);
+    };
+  }, [carouselMode, itemCount, oneCardPerPage, trackRef]);
 
   useEffect(() => {
+    pendingScrollPageRef.current = null;
+    activePageRef.current = 0;
     setActivePage(0);
     setProgressCycle((cycle) => cycle + 1);
     trackRef.current?.scrollTo({ left: 0 });
@@ -175,7 +225,7 @@ export const useMarketingPeekCarousel = ({
     trackRef,
     activePage,
     pageCount,
-    visibleCardCount,
+    visibleCardCount: paginationVisibleCount,
     scrollToPage,
     userPaused,
     setUserPaused,

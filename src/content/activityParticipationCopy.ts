@@ -6,4 +6,7 @@ export const ACTIVITY_STATUS_JOINED = 'Joined';
 export const ACTIVITY_CTA_PENDING_APPROVAL = 'Pending approval';
 export const ACTIVITY_PEEK_MANAGE_LABEL = 'Manage';
 export const ACTIVITY_CTA_OPEN_CHAT = 'Open chat';
+export const ACTIVITY_CTA_OPEN_GROUP_CHAT = 'Open group chat';
 export const ACTIVITY_CTA_MESSAGE_HOST = UPL_MESSAGE_HOST;
+export const ACTIVITY_PEEK_ALREADY_JOINED = 'Already joined';
+export const ACTIVITY_PEEK_INVITATION = 'Invitation';

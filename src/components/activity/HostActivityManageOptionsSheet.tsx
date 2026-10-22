@@ -7,6 +7,7 @@ import {
   Users,
 } from 'lucide-react';
 import type { ActivityManageCapabilities } from '../../activity/activityManageCapabilities';
+import { EXPLORE_SHEET } from '../../config/exploreTheme';
 import { ExploreResponsiveSheet } from '../../explore/ui/ExploreResponsiveSheet';
 import type { ActivityManageSubview } from './activityManageViews';
 import { ACTIVITY_INVITE_FRIENDS_CTA } from '../../content/activityInviteCopy';
@@ -99,7 +100,7 @@ export const HostActivityManageOptionsSheet = ({
       overlayFixed
       showCloseButton
       zClass="z-[1550]"
-      maxWidthClass="max-w-md"
+      maxWidthClass={EXPLORE_SHEET.compactMaxWidth}
     >
       <ul className="space-y-1 px-2 pb-6 pt-1">
         {visible.map((row) => {

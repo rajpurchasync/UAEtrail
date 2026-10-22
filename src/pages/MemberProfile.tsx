@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Loader2, Lock } from 'lucide-react';
 import type { BuddyRelationshipDTO } from '@uaetrail/shared-types';
@@ -29,7 +29,7 @@ import {
   MEMBER_DISCOVERY_QUOTA_GATE_CTA,
   MEMBER_DISCOVERY_QUOTA_GATE_TITLE,
 } from '../content/exploreGoingPanelCopy';
-import { parseProfileReturnNavState } from '../utils/profileReturnNav';
+import { resolveMobileBackChrome } from '../utils/mobileBackNav';
 import { ExploreGuestSignInCard } from '../explore/ui/ExploreGuestSignInCard';
 
 const isFullProfile = (
@@ -45,7 +45,10 @@ export const MemberProfile = () => {
   const [searchParams] = useSearchParams();
   const previewAsPublic = searchParams.get('view') === 'public';
   const fromDiscover = searchParams.get('discover') === '1';
-  const profileReturn = parseProfileReturnNavState(location.state);
+  const backChrome = useMemo(
+    () => resolveMobileBackChrome(location.state, { fallbackTo: myActivitiesPath(), label: 'Back' }),
+    [location.state]
+  );
   const [buddyBusy, setBuddyBusy] = useState(false);
   const [buddyMessage, setBuddyMessage] = useState<string | null>(null);
 
@@ -155,10 +158,7 @@ export const MemberProfile = () => {
       title={pageTitle}
       navTitle={pageTitle.length > 18 ? `${pageTitle.slice(0, 16)}…` : pageTitle}
       showJourney={false}
-      back={{
-        fallbackTo: profileReturn?.from ?? myActivitiesPath(),
-        label: profileReturn?.backLabel ?? 'History',
-      }}
+      back={backChrome}
     >
       <PageMeta title={pageTitle} noIndex />
 

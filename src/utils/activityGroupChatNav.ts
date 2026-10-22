@@ -27,3 +27,15 @@ export const navigateToActivityGroupChat = (
     state: safeReturn ? { [MESSAGES_CHAT_RETURN_TO_KEY]: safeReturn } : undefined,
   });
 };
+
+/** Direct thread from map peek — back returns to explore/list pin when `returnTo` is set. */
+export const navigateToMessagesWithReturn = (
+  navigate: NavigateFunction,
+  messagesPath: string,
+  returnTo?: string
+): void => {
+  const safeReturn = returnTo ? resolveAuthRedirect(returnTo, null) : undefined;
+  navigate(messagesPath, {
+    state: safeReturn ? { [MESSAGES_CHAT_RETURN_TO_KEY]: safeReturn } : undefined,
+  });
+};

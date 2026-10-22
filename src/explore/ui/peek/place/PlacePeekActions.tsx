@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import type { DiscoveryCardModel } from '../../../../discovery/discoveryCardModel';
 import { LIST_FEED_CTA_VIEW_DETAILS } from '../../../../list/listFeedCtaCopy';
 import { PLACE_PEEK_ARRANGE_TRIP } from '../../../../content/placePeekCopy';
 import { EXPLORE_PEEK_CTA } from '../../../../config/exploreTheme';
 import { PeekDetailLink } from '../../map-peek/PeekDetailLink';
+import { mapPeekDetailNavState } from '../../../mapPeekDetailNavState';
 import { navigateHostFromPlaceCard } from '../../../../place/peek/navigateHostFromPlaceCard';
 
 export type PlacePeekActionsProps = {
@@ -18,6 +19,7 @@ export const PlacePeekActions = ({
   onClose,
   onGuestGatedPlanTrip,
 }: PlacePeekActionsProps) => {
+  const location = useLocation();
   const navigate = useNavigate();
   const [arranging, setArranging] = useState(false);
 
@@ -46,6 +48,7 @@ export const PlacePeekActions = ({
         className={EXPLORE_PEEK_CTA.secondary}
         onGuestGatedAction={onGuestGatedPlanTrip}
         onBeforeNavigate={onClose}
+        linkState={mapPeekDetailNavState(location, card.id)}
       />
     </div>
   );

@@ -21,6 +21,7 @@ import {
   type ColocatedPinIconEntry,
 } from '../../explore/mapPinIcons';
 import { MapTileLayers } from './MapTileLayers';
+import { mapTileLoadOptions } from './mapTileLoadOptions';
 import type { MapPinKind, MapPinSource } from './mapPinTypes';
 
 export type { MapPinKind, MapPinSource };
@@ -964,6 +965,7 @@ export const PlacesMap = ({
   );
 
   const resolvedMinZoom = minZoom ?? (exploreMode ? MAP_CONFIG.exploreMinZoom : 9);
+  const tileLoad = mapTileLoadOptions(exploreMode);
 
   return (
     <div
@@ -980,6 +982,7 @@ export const PlacesMap = ({
         minZoom={resolvedMinZoom}
         maxZoom={18}
         scrollWheelZoom
+        fadeAnimation={!exploreMode}
         zoomControl={!fill}
         attributionControl={!fill}
         className="z-0 h-full w-full"
@@ -989,7 +992,16 @@ export const PlacesMap = ({
           width: '100%',
         }}
       >
-        <MapTileLayers tileUrl={tileUrl} labelTileUrl={labelTileUrl} attribution={tileAttribution} maxZoom={18} />
+        <MapTileLayers
+          tileUrl={tileUrl}
+          labelTileUrl={labelTileUrl}
+          attribution={tileAttribution}
+          maxZoom={18}
+          detectRetina={tileLoad.detectRetina}
+          keepBuffer={tileLoad.keepBuffer}
+          updateWhenIdle={tileLoad.updateWhenIdle}
+          deferLabels={tileLoad.deferLabels}
+        />
         {exploreMode ? (
           <ExploreInitialView pinsKeyValue={pinsKeyValue} pinCount={pins.length} />
         ) : (

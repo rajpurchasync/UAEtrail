@@ -36,7 +36,7 @@ export const ShopPublic = () => {
     return (
       <>
         <PageMeta title="Loading shop" path={id ? shopPublicPath({ id }) : undefined} />
-        <div className="flex min-h-screen items-center justify-center">
+        <div className="app-page-center">
           <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-t-2 border-emerald-600" />
         </div>
       </>
@@ -47,7 +47,7 @@ export const ShopPublic = () => {
     return (
       <>
         <PageMeta title="Shop not found" noIndex path={shopPublicPath({ id })} />
-        <div className="flex min-h-screen items-center justify-center">
+        <div className="app-page-center">
           <Link to={mapBack} className="font-medium text-emerald-600">
             Back to explore
           </Link>

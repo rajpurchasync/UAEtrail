@@ -504,7 +504,9 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(routing).toContain('planHostedSchedulePath');
     const app = read('src/App.tsx');
     expect(app).toContain('path="/profile/plans"');
-    expect(app).toContain("import('./plan/PlanPage')");
+    expect(app).toContain('PlanBrowseRoute');
+    const planRoute = read('src/routing/planBrowseRoute.tsx');
+    expect(planRoute).toContain("import('../plan/PlanPage')");
     const planPage = read('src/plan/PlanPage.tsx');
     expect(planPage).toContain('normalizePlanSearchParams');
     const nav = read('docs/NAVIGATION.md');

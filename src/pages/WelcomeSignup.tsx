@@ -55,14 +55,14 @@ export const WelcomeSignup = () => {
 
   if (loadingProfile) {
     return (
-      <div className="min-h-screen bg-ios-bg flex items-center justify-center">
+      <div className="app-page-center bg-ios-bg">
         <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-emerald-600" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-ios-bg flex flex-col justify-center px-6 py-10 safe-area-top safe-area-bottom">
+    <div className="app-page-min-h app-scroll-body bg-ios-bg flex flex-col justify-center px-6 py-10 safe-area-top safe-area-bottom">
       <PageMeta title="Finish signing up" noIndex />
       <div className="max-w-md w-full mx-auto">
         <div className="text-center mb-8">

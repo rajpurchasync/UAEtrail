@@ -1,10 +1,12 @@
-import { Loader2, MessageSquare, Users } from 'lucide-react';
+import { MessageSquare, Users } from 'lucide-react';
 import { inboxThreadBadgeLabel, type InboxFilter, type InboxThread } from '../../utils/inboxThreads';
 import { MessageAvatar } from './ChatMessageAvatar';
+import { ChatLoadingState } from './ChatLoadingState';
 
 interface MessagesInboxListProps {
   threads: InboxThread[];
   loading: boolean;
+  unavailable?: boolean;
   inboxFilter: InboxFilter;
   inboxQuery: string;
   selectedDirectId?: string | null;
@@ -102,6 +104,7 @@ const ThreadRow = ({
 export const MessagesInboxList = ({
   threads,
   loading,
+  unavailable = false,
   inboxFilter,
   inboxQuery,
   selectedDirectId,
@@ -110,9 +113,14 @@ export const MessagesInboxList = ({
   formatTime,
 }: MessagesInboxListProps) => {
   if (loading) {
+    return <ChatLoadingState variant="list" label="Loading chats" />;
+  }
+
+  if (unavailable) {
     return (
-      <div className="flex items-center justify-center py-16">
-        <Loader2 className="h-6 w-6 animate-spin text-neutral-400" />
+      <div role="alert" className="rounded-2xl border border-neutral-200 bg-white px-4 py-12 text-center shadow-ios-sm">
+        <p className="text-sm font-medium text-neutral-800">Couldn’t load chats</p>
+        <p className="mt-2 text-xs leading-relaxed text-neutral-500">Check your connection and open Chat again.</p>
       </div>
     );
   }

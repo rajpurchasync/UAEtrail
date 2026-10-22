@@ -43,4 +43,17 @@ describe('planRouting', () => {
     expect(params.get('lens')).toBe('availability');
     expect(changed).toBe(false);
   });
+
+  it('preserves tab=wishlist when normalizing plan hub params', () => {
+    const params = new URLSearchParams('view=plans&tab=wishlist');
+    normalizePlanSearchParams(params, true);
+    expect(params.get('tab')).toBe('wishlist');
+  });
+
+  it('still strips legacy inbound tab=joined', () => {
+    const params = new URLSearchParams('view=plans&tab=joined');
+    const { changed } = normalizePlanSearchParams(params, true);
+    expect(changed).toBe(true);
+    expect(params.get('tab')).toBeNull();
+  });
 });

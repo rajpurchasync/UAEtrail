@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../context/AuthContext';
 import { LIST_DISCOVERY_PATH } from '../config/platform';
@@ -47,6 +47,11 @@ import { listDiscoveryEmbeddedOnExplore, type ListDiscoverySurface } from './lis
 import { useMemberDiscoveryRoster } from '@/people-discovery/hooks/useMemberDiscoveryRoster';
 import { useExplorePeopleAvailability } from '@/people-discovery/hooks/usePeopleAvailability';
 import { parseExploreAreaSlug } from '../explore/exploreAreaFilter';
+import { exploreMapPathAfterPeopleFullScreen } from '../explore/exploreBrowseReturnPath';
+import {
+  parseMobileBackNavState,
+  resolveMobileBackChrome,
+} from '../utils/mobileBackNav';
 
 const DiscoverHomeSkeleton = () => (
   <div className="space-y-6" aria-hidden>
@@ -86,6 +91,7 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
   const embeddedOnExplore = listDiscoveryEmbeddedOnExplore(surface);
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
   const pathname = embeddedOnExplore ? EXPLORE_MAP_PATH : LIST_DISCOVERY_PATH;
@@ -357,6 +363,30 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
     });
   };
 
+  const categoryBackChrome = useMemo(() => {
+    if (!categoryHeaderFocus) return null;
+    return resolveMobileBackChrome(location.state, {
+      fallbackTo: LIST_DISCOVERY_PATH,
+      label: 'Back',
+    });
+  }, [categoryHeaderFocus, location.state]);
+
+  const handleBackFromCategory = useCallback(() => {
+    if (parseMobileBackNavState(location.state) && !embeddedOnExplore) {
+      const chrome = resolveMobileBackChrome(location.state, {
+        fallbackTo: LIST_DISCOVERY_PATH,
+        label: 'Back',
+      });
+      const target =
+        chrome.fallbackTo === EXPLORE_MAP_PATH || chrome.fallbackTo.startsWith('/explore')
+          ? exploreMapPathAfterPeopleFullScreen(chrome.fallbackTo)
+          : chrome.fallbackTo;
+      navigate(target);
+      return;
+    }
+    backToHome();
+  }, [embeddedOnExplore, location.state, navigate]);
+
   const mapHref = useMemo(() => {
     if (!embeddedOnExplore) return exploreMapPathFromListSearch(search);
     const params = new URLSearchParams(searchParams);
@@ -493,7 +523,9 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
                 closeVariant={surface === 'exploreSidebar' ? 'collapse' : 'dismiss'}
                 categoryFocus={categoryHeaderFocus}
                 categoryResultsLabel={categoryResultsLabel}
-                onBackFromCategory={categoryHeaderFocus ? backToHome : undefined}
+                categoryBackLabel={categoryBackChrome?.label}
+                categoryBackFallbackTo={categoryBackChrome?.fallbackTo}
+                onBackFromCategory={categoryHeaderFocus ? handleBackFromCategory : undefined}
                 categoryFilterRow={
                   view === 'category' && category === 'people' ? null : view === 'category' && category ? (
                     <ListCategoryFilterBar

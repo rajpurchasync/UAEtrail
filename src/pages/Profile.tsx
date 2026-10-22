@@ -33,6 +33,7 @@ import {
   profileHistoryCompletedPath,
   planHostedSchedulePath,
 } from '../config/routingCatalog';
+import { profileHubMobileBackState } from '../utils/mobileBackNav';
 
 export const Profile = () => {
   const { user, refreshUser, signOut } = useAuth();
@@ -164,7 +165,7 @@ export const Profile = () => {
   }, [navigate, user?.id]);
 
   const openEdit = useCallback(() => {
-    navigate('/profile/edit');
+    navigate('/profile/edit', { state: profileHubMobileBackState() });
   }, [navigate]);
 
   const openAvatarEdit = useCallback(() => {

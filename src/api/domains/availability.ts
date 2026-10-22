@@ -37,7 +37,8 @@ export const availabilityApi = {
     if (params.area) search.set('area', params.area);
     if (params.buddiesOnly) search.set('buddiesOnly', '1');
     return apiRequest<{ data: ExploreAvailabilityIndex }>(
-      `/explore/people/availability?${search.toString()}`
+      `/explore/people/availability?${search.toString()}`,
+      { auth: true }
     );
   },
 } as const;

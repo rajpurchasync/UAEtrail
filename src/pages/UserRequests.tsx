@@ -10,6 +10,7 @@ import { AppSelect } from '../components/ui/AppSelect';
 
 import { requestStatusLabel } from '../utils/joinRequestUi';
 import { activityHostName } from '../utils/hostLabels';
+import { useProfileHubBackChrome } from '../hooks/useProfileHubBackChrome';
 
 const REQUEST_STATUS_OPTIONS = [
   { value: 'pending' as const, label: 'Waiting for host' },
@@ -29,6 +30,7 @@ const statusBadge = (status: string) => {
 };
 
 export const UserRequests = () => {
+  const backChrome = useProfileHubBackChrome();
   const [requests, setRequests] = useState<ActivityRequestView[]>([]);
   const [statusFilter, setStatusFilter] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -53,7 +55,7 @@ export const UserRequests = () => {
       title="Join requests"
       maxWidth="4xl"
       showJourney={false}
-      back={{ fallbackTo: '/profile', label: 'Profile' }}
+      back={backChrome}
     >
       <PageMeta title="Join requests" noIndex />
 

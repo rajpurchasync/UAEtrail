@@ -12,6 +12,7 @@ import { AccountDataExportSection, AccountDeleteSection } from '../components/ac
 import { PageMeta } from '../components/seo/PageMeta';
 import { isPublishingConsolePath, PUBLISHING_OVERVIEW_PATH, PROFILE_PATH } from '../config/routingCatalog';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
+import { useMobileBackChrome } from '../hooks/useMobileBackChrome';
 import { GlassCard } from '../components/mobile/GlassCard';
 
 type ProfileVisibility = NonNullable<UserProfile['profileVisibility']>;
@@ -57,6 +58,7 @@ export const SecurityPrivacy = () => {
   const isConsolePath = isPublishingConsolePath(location.pathname);
   const backPath = isConsolePath ? PUBLISHING_OVERVIEW_PATH : PROFILE_PATH;
   const backLabel = isConsolePath ? 'Workspace' : 'Profile';
+  const backChrome = useMobileBackChrome({ fallbackTo: backPath, label: backLabel });
 
   useEffect(() => {
     void fetchMeProfile()
@@ -136,7 +138,7 @@ export const SecurityPrivacy = () => {
         layout="stack"
         title="Security & privacy"
         showJourney={false}
-        back={{ fallbackTo: backPath, label: backLabel }}
+        back={backChrome}
       >
         <p className="mb-4 text-sm text-neutral-600">Keep your account secure and control your personal data.</p>
 

@@ -23,6 +23,9 @@ import {
   readPublicPlacePremiumMapFile,
   recordPublicPlaceView,
 } from '../../services/place-public-read.js';
+import { finishCatalogEtag, readCatalogResponseEtag } from '../../lib/explore-catalog-etag.js';
+import { readExploreMapMemoryCache } from '../../lib/explore-map-cache.js';
+import { sendNotModifiedIfMatch } from '../../lib/http-etag.js';
 import {
   eventIdParamSchema,
   listFilterSchema,
@@ -35,6 +38,9 @@ export const registerPublicPlaceRoutes = (router: Router): void => {
   router.get('/explore/map', async (req, res, next) => {
     try {
       const query = req.query as Record<string, string | undefined>;
+      const unscoped = !query.bbox && !query.cursor && !query.limit && !query.area;
+      const catalogFresh = unscoped && readExploreMapMemoryCache() != null;
+      if (catalogFresh && sendNotModifiedIfMatch(req, res, await readCatalogResponseEtag('map'))) return;
       const data = await loadExploreMapForViewer({
         query: {
           bbox: query.bbox,
@@ -45,6 +51,7 @@ export const registerPublicPlaceRoutes = (router: Router): void => {
         viewerUserId: null,
         userRole: null,
       });
+      if (unscoped && (await finishCatalogEtag(req, res, 'map', data))) return;
       res.json({ data });
     } catch (error) {
       next(error);
@@ -53,7 +60,10 @@ export const registerPublicPlaceRoutes = (router: Router): void => {
 
   router.get('/explore/seeking-activities', async (req, res, next) => {
     try {
+      const catalogFresh = readExploreMapMemoryCache() != null;
+      if (catalogFresh && sendNotModifiedIfMatch(req, res, await readCatalogResponseEtag('seeking'))) return;
       const data = await loadExploreSeekingActivitiesForMapViewer();
+      if (await finishCatalogEtag(req, res, 'seeking', data)) return;
       res.json({ data });
     } catch (error) {
       next(error);

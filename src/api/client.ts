@@ -160,6 +160,75 @@ export const apiRequest = async <T>(path: string, init?: RequestInit & { auth?: 
   return rewriteEnvironmentUrls(await response.json()) as T;
 };
 
+export type ConditionalBody<T> =
+  | { notModified: true; etag: string | null }
+  | { notModified: false; etag: string | null; body: T };
+
+/** GET that can return 304 when `If-None-Match` still matches. Does not use the HTTP cache. */
+export const apiRequestConditional = async <T>(
+  path: string,
+  init?: { auth?: boolean; etag?: string | null }
+): Promise<ConditionalBody<T>> => {
+  const send = async (token?: string): Promise<Response> => {
+    const headers = new Headers();
+    headers.set('Content-Type', 'application/json');
+    if (init?.etag) headers.set('If-None-Match', init.etag);
+    const accessToken = token ?? (init?.auth ? getStoredSession()?.accessToken : undefined);
+    if (accessToken) headers.set('Authorization', `Bearer ${accessToken}`);
+    return fetch(formatEnvironmentUrl(`${API_BASE_URL}${path}`), {
+      credentials: 'include',
+      cache: 'no-store',
+      headers,
+    });
+  };
+
+  let response: Response;
+  try {
+    response = await send();
+  } catch {
+    throw new Error(
+      `Failed to reach API at ${API_BASE_URL}. Start backend on port 4000 and allow your frontend origin in CORS.`
+    );
+  }
+
+  if (response.status === 401 && init?.auth) {
+    const newSession = await refreshAccessToken();
+    if (!newSession) throw new Error('Session expired. Please sign in again.');
+    try {
+      response = await send(newSession.accessToken);
+    } catch {
+      throw new Error(`Failed to reach API at ${API_BASE_URL}.`);
+    }
+    if (response.status === 401) {
+      setStoredSession(null);
+      localStorage.removeItem(USER_STORAGE_KEY);
+      notifySessionInvalidated();
+      throw new Error('Session expired. Please sign in again.');
+    }
+  }
+
+  if (response.status === 304) {
+    return { notModified: true, etag: response.headers.get('ETag') ?? init?.etag ?? null };
+  }
+
+  if (!response.ok) {
+    const body = (await response.json().catch(() => null)) as { error?: ApiError } | null;
+    const error = new Error(body?.error?.message ?? `Request failed with status ${response.status}`) as Error & {
+      status: number;
+      code?: string;
+    };
+    error.status = response.status;
+    error.code = body?.error?.code;
+    throw error;
+  }
+
+  return {
+    notModified: false,
+    etag: response.headers.get('ETag'),
+    body: rewriteEnvironmentUrls(await response.json()) as T,
+  };
+};
+
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? '/api';
 
 /** Download a file with auth (GPX, PDF, etc.). Retries once after token refresh on 401. */

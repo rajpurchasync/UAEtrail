@@ -1,0 +1,50 @@
+import { Suspense, lazy } from 'react';
+import { Navigate, useSearchParams } from 'react-router-dom';
+import { GuestTabPlaceholder } from '../components/auth/GuestTabPlaceholder';
+import { useAuth } from '../context/AuthContext';
+import { PRODUCT_PLAN_SURFACE_TITLE } from '../content/productNorthStar';
+import { explorePath, inboundCreateParamToHostPath, parseActivityListFilter } from '../explore/routing';
+
+const PlanPage = lazy(() => import('../plan/PlanPage').then((m) => ({ default: m.PlanPage })));
+
+const PlanRouteFallback = () => (
+  <div className="app-page-center">
+    <div className="h-8 w-8 animate-spin rounded-full border-t-2 border-b-2 border-emerald-600" />
+  </div>
+);
+
+/** `/plan` — signed-in plan hub, or a guest handoff. Not part of the home bundle. */
+export const PlanBrowseRoute = () => {
+  const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const tab = searchParams.get('tab');
+  const inboundCreatePath = inboundCreateParamToHostPath(searchParams.get('create'));
+  if (inboundCreatePath) {
+    return <Navigate to={inboundCreatePath} replace />;
+  }
+  if (user) {
+    return (
+      <Suspense fallback={<PlanRouteFallback />}>
+        <PlanPage />
+      </Suspense>
+    );
+  }
+  if (tab === 'joined' || tab === 'hosted' || searchParams.get('checkin') || !tab) {
+    return (
+      <GuestTabPlaceholder
+        title={PRODUCT_PLAN_SURFACE_TITLE}
+        description="Sign in to see what is next on your calendar and track outdoor goals."
+        intent="explore-browse"
+      />
+    );
+  }
+  const activity = parseActivityListFilter(searchParams.get('activity'), searchParams.get('filter'));
+  return (
+    <Navigate
+      to={explorePath({
+        activity: activity !== 'all' ? activity : undefined,
+      })}
+      replace
+    />
+  );
+};

@@ -20,9 +20,9 @@ const DETAIL_BACK_VIA_CATALOG: Array<{ path: string; pattern: RegExp }> = [
 const MEMBER_HUB_SHELL = [{ path: 'src/pages/MemberProfile.tsx', pattern: /ConsumerShell/ }];
 
 describe('consumerDetailAntiDriftGuard (plan §15.3)', () => {
-  it('entity detail routes do not render global marketing Footer under sticky CTAs', () => {
+  it('product shell does not render global marketing Footer (entity pages use sticky CTAs only)', () => {
     const shell = read('src/components/layout/ProductShell.tsx');
-    expect(shell).toMatch(/shouldShowMarketingSiteFooter/);
+    expect(shell).not.toMatch(/<Footer\b/);
     expect(read('src/config/platform.ts')).toMatch(/isConsumerEntityDetailRoute/);
   });
 

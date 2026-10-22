@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 
 import { PRO_MEMBERSHIP_PATH } from '../../config/routingCatalog';
+import { profileHubMobileBackState } from '../../utils/mobileBackNav';
 
 
 import { ProfileHubIdentityCard } from './ProfileHubIdentityCard';
@@ -239,6 +240,8 @@ export const ProfileConsumerHub = ({
           subtitle="Professional guide, agency, or shop profile"
 
           to={PRO_MEMBERSHIP_PATH}
+
+          linkState={profileHubMobileBackState()}
 
         />
 

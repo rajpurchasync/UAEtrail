@@ -41,7 +41,7 @@ describe('discoveryUiMethodologyGuard', () => {
     expect(read('src/explore/ui/peek/shop/ShopPeekActions.tsx')).toMatch(/ShopPeekActions/);
     expect(read('src/explore/ui/map-peek/mapPeekSlots.tsx')).toMatch(/ShopPeekActions/);
     expect(read('src/explore/ui/peek/activity/ActivityPeekActions.tsx')).toMatch(
-      /ActivityPeekEngagementActions/
+      /ActivityPeekStandardFooter/
     );
   });
 

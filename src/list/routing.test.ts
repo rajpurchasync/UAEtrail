@@ -3,9 +3,14 @@ import {
   exploreMapPathFromListSearch,
   listDiscoveryPath,
   listDiscoveryPathFromExploreSearch,
+  listPeopleDiscoveryPath,
 } from './routing';
 
 describe('list discovery routing', () => {
+  it('listPeopleDiscoveryPath opens dedicated people category on /list', () => {
+    expect(listPeopleDiscoveryPath()).toBe('/list?listCat=people');
+  });
+
   it('listDiscoveryPath maps Trips to activity + demand topics', () => {
     expect(
       listDiscoveryPath({

@@ -2,6 +2,7 @@
 export const SOCIAL_LINKS = {
   facebook: 'https://www.facebook.com/profile.php?id=61593777959562',
   instagram: 'https://www.instagram.com/uae.trail',
+  youtube: 'https://www.youtube.com/@UAETrail',
   whatsapp: 'https://chat.whatsapp.com/GhTp7ISAn2fCVE0LHb1fvU?s=cl&p=a&ilr=1',
   website: 'https://www.uaetrail.com',
 } as const;

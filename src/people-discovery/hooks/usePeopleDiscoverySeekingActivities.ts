@@ -3,12 +3,11 @@ import { useQuery } from '@tanstack/react-query';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { useAuth } from '@/context/AuthContext';
 import { fetchExploreSeekingActivities } from '@/hooks/exploreSeekingClientApi';
+import { catalogFreshQueryOptions, loadCachedCatalog } from '@/lib/catalogSnapshot';
 import {
   selectSeekingActivitiesFromExploreCatalog,
   type ExploreSeekingCatalogFilters,
 } from '@/activity-discovery/catalog/seeking';
-
-const SEEKING_ACTIVITIES_STALE_MS = 60_000;
 
 export const peopleDiscoverySeekingActivitiesQueryKey = () =>
   ['people-discovery', 'seeking-activities'] as const;
@@ -27,15 +26,14 @@ export const usePeopleDiscoverySeekingActivities = ({
   exploreCatalogFallback,
 }: Args) => {
   const { user } = useAuth();
+  const queryKey = user?.id
+    ? [...peopleDiscoverySeekingActivitiesQueryKey(), user.id]
+    : peopleDiscoverySeekingActivitiesQueryKey();
   const query = useQuery({
-    queryKey: user?.id
-      ? [...peopleDiscoverySeekingActivitiesQueryKey(), user.id]
-      : peopleDiscoverySeekingActivitiesQueryKey(),
+    queryKey,
     enabled,
-    staleTime: SEEKING_ACTIVITIES_STALE_MS,
-    queryFn: async () => {
-      return fetchExploreSeekingActivities();
-    },
+    queryFn: () => loadCachedCatalog(queryKey, (etag) => fetchExploreSeekingActivities(etag)),
+    ...catalogFreshQueryOptions<ExploreMapItemDTO[]>(queryKey),
   });
 
   const catalogSource = query.data ?? exploreCatalogFallback;

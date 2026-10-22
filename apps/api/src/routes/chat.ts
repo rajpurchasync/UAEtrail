@@ -6,7 +6,11 @@ import { createSseTicket, SSE_TICKET_TTL_SECONDS } from '../lib/sse-ticket.js';
 import { presentChatMessagesAsDtos } from '../lib/chat-message-presenter.js';
 import { registerChatStreamClient } from '../services/chat-stream.js';
 import { listMemberDirectConversations, loadMemberInbox } from '../services/member-inbox.js';
-import { loadDirectMessageThread } from '../services/chat-direct-messages-read.js';
+import {
+  loadDirectMessageLatest,
+  loadDirectMessageOlder,
+  loadDirectMessageThread,
+} from '../services/chat-direct-messages-read.js';
 import { sendDirectChatMessage } from '../services/chat-direct-messages-commands.js';
 import { toggleChatMessageReaction } from '../services/chat-message-reaction-commands.js';
 import { assertCanMessageUser } from '../services/chat-policy.js';
@@ -59,20 +63,67 @@ chatRouter.get('/conversations', async (req, res, next) => {
 const messageThreadSchema = z.object({ userId: z.string().min(1) });
 const paginationSchema = z.object({
   page: z.coerce.number().int().positive().default(1),
-  pageSize: z.coerce.number().int().min(1).max(100).default(50),
+  pageSize: z.coerce.number().int().min(1).max(200).default(50),
 });
+
+const dmThreadQuerySchema = z
+  .object({
+    page: z.coerce.number().int().positive().optional(),
+    pageSize: z.coerce.number().int().min(1).max(200).optional(),
+    limit: z.coerce.number().int().min(1).max(200).optional(),
+    beforeMessageId: z.string().min(1).optional(),
+  })
+  .refine(
+    (query) => {
+      if (query.beforeMessageId) {
+        return query.page === undefined && query.pageSize === undefined;
+      }
+      return true;
+    },
+    { message: 'beforeMessageId cannot be combined with page pagination' }
+  );
 
 chatRouter.get(
   '/messages/:userId',
-  validate({ params: messageThreadSchema, query: paginationSchema }),
+  validate({ params: messageThreadSchema, query: dmThreadQuerySchema }),
   async (req, res, next) => {
     try {
       const currentUserId = req.auth!.userId;
       const { userId: partnerId } = req.params as z.infer<typeof messageThreadSchema>;
-      const { page, pageSize } = req.query as unknown as z.infer<typeof paginationSchema>;
+      const query = req.query as unknown as z.infer<typeof dmThreadQuerySchema>;
 
       await assertCanMessageUser(currentUserId, partnerId);
 
+      if (query.beforeMessageId) {
+        const limit = query.limit ?? 20;
+        const { messages, hasMoreOlder } = await loadDirectMessageOlder({
+          currentUserId,
+          partnerId,
+          beforeMessageId: query.beforeMessageId,
+          limit,
+        });
+        res.json({
+          data: await presentChatMessagesAsDtos(messages, currentUserId),
+          meta: { hasMoreOlder },
+        });
+        return;
+      }
+
+      if (query.limit !== undefined) {
+        const { messages, hasMoreOlder, total } = await loadDirectMessageLatest({
+          currentUserId,
+          partnerId,
+          limit: query.limit,
+        });
+        res.json({
+          data: await presentChatMessagesAsDtos(messages, currentUserId),
+          meta: { hasMoreOlder, total },
+        });
+        return;
+      }
+
+      const page = query.page ?? 1;
+      const pageSize = query.pageSize ?? 50;
       const { total, messages } = await loadDirectMessageThread({
         currentUserId,
         partnerId,

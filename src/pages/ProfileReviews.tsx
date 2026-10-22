@@ -5,6 +5,7 @@ import { ChevronRight, Loader2, Star } from 'lucide-react';
 import type { MyReviewDTO } from '@uaetrail/shared-types';
 import { fetchMyReviews, updateMyReviewById } from '../hooks/memberReviewsApi';
 import { useAuth } from '../context/AuthContext';
+import { useProfileHubBackChrome } from '../hooks/useProfileHubBackChrome';
 
 import { PRODUCT_EXPLORE_CTA } from '../content/productNorthStar';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
@@ -162,6 +163,7 @@ const MyReviewCard = ({
 
 /** All reviews the signed-in member has written — view and edit. */
 export const ProfileReviews = () => {
+  const backChrome = useProfileHubBackChrome();
   const { user, initializing } = useAuth();
   const [reviews, setReviews] = useState<MyReviewDTO[]>([]);
   const [loading, setLoading] = useState(true);
@@ -195,7 +197,7 @@ export const ProfileReviews = () => {
       layout="stack"
       title="Reviews"
       showJourney={false}
-      back={{ fallbackTo: '/profile', label: 'Profile' }}
+      back={backChrome}
     >
       <PullToRefresh onRefresh={load}>
         <div className="space-y-3 pb-nav-safe animate-fade-up">

@@ -21,6 +21,7 @@ import {
 } from '../exploreBrowseTaxonomy';
 import type { ExploreBrowseListMode } from './useExploreBrowseUrlState';
 import { selectActivitiesFromExploreCatalog } from '@/activity-discovery/catalog/activities';
+import { venueItemMatchesRegions } from '../../utils/venueRegionFilter';
 import {
   selectPlacesFromExploreCatalog,
   selectShopsFromExploreCatalog,
@@ -126,8 +127,8 @@ export const useExploreBrowseList = ({
   const mapPins = useMemo(() => layoutColocatedMapPins(expandMapPins(mapItems)), [mapItems]);
 
   const browseListBase = useMemo(() => {
-    const timeBoundActivitiesForList = (catalog: ExploreMapItemDTO[]) =>
-      selectActivitiesFromExploreCatalog(catalog, {
+    const timeBoundActivitiesForList = (catalog: ExploreMapItemDTO[]) => {
+      const selected = selectActivitiesFromExploreCatalog(catalog, {
         mapFilter,
         buddySubtype,
         outingTopic,
@@ -135,6 +136,9 @@ export const useExploreBrowseList = ({
         activityDatePreset,
         activityModeFilter,
       });
+      if (venueRegions.length === 0) return selected;
+      return selected.filter((item) => venueItemMatchesRegions(item, venueRegions));
+    };
 
     if (isDesktop) {
       if (desktopBrowseTab === 'activities') {
@@ -180,8 +184,8 @@ export const useExploreBrowseList = ({
       return dedupeExploreListById(browseListBase.filter(matchesQuery));
     }
 
-    const activitySearchPool = () =>
-      selectActivitiesFromExploreCatalog(items, {
+    const activitySearchPool = () => {
+      const selected = selectActivitiesFromExploreCatalog(items, {
         mapFilter,
         buddySubtype,
         outingTopic,
@@ -189,6 +193,9 @@ export const useExploreBrowseList = ({
         activityDatePreset,
         activityModeFilter,
       });
+      if (venueRegions.length === 0) return selected;
+      return selected.filter((item) => venueItemMatchesRegions(item, venueRegions));
+    };
 
     const hostedTripsPool = () =>
       activitySearchPool().filter((item) => mapItemMatchesSearchScope(item, 'activities'));

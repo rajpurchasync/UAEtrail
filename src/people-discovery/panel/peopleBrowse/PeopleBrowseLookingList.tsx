@@ -3,9 +3,8 @@ import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { buildDiscoveryMapListRowCard } from '@/discovery';
 import type { DiscoveryCardModel } from '@/discovery/discoveryCardModel';
 import { ExploreListRow } from '@/explore/ui/ExploreListRow';
-import { ExploreListSkeleton } from '@/explore/ui/ExploreListSkeleton';
-import { EXPLORE_PEOPLE_BROWSE_EMPTY_DISCOVER_LOOKING } from '../../../content/explorePeopleBrowseCopy';
-import { PeopleBrowseListEmpty } from './PeopleBrowseListStates';
+import { EXPLORE_PEOPLE_BROWSE_EMPTY_DISCOVER_LOOKING, EXPLORE_PEOPLE_BROWSE_LOOKING_LOADING } from '../../../content/explorePeopleBrowseCopy';
+import { PeopleBrowseListEmpty, PeopleBrowseListLoading } from './PeopleBrowseListStates';
 
 type Props = {
   seekingActivities: ExploreMapItemDTO[];
@@ -32,7 +31,7 @@ export const PeopleBrowseLookingList = ({
   }, [seekingActivities, exploreCatalogItems]);
 
   if (loading && seekingActivities.length === 0) {
-    return <ExploreListSkeleton rows={6} />;
+    return <PeopleBrowseListLoading label={EXPLORE_PEOPLE_BROWSE_LOOKING_LOADING} />;
   }
 
   if (seekingActivities.length === 0) {

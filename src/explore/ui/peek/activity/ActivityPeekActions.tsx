@@ -1,21 +1,15 @@
 import type { ActivityMapPeekActionId } from '@uaetrail/shared-types';
 import type { DiscoveryCardModel } from '../../../../discovery/discoveryCardModel';
-import {
-  discoveryCardUsesActivityPeekEngagement,
-  discoveryCardActivityJoinIsFull,
-  discoveryCardHasMapCoords,
-  discoveryCardPeekShowsDirections,
-  discoveryCardShowsInlineDirections,
-} from '../../../../discovery/discoveryCardModel';
+import { discoveryCardUsesActivityPeekEngagement } from '../../../../discovery/discoveryCardModel';
 import {
   activityPeekHasMapWireActions,
   resolveActivityPeekEngagement,
 } from '../../../../activity/activityPeekEngagement';
-import { JoinRequestActions } from '../../../../components/ui/JoinRequestActions';
 import type { JoinRequestUiState } from '../../../../utils/joinRequestUi';
-import { ActivityPeekEngagementActions } from './ActivityPeekEngagementActions';
-import { DiscoveryCardDirectionsButton } from '../../DiscoveryCardPresentation';
 import { PeekDetailLink } from '../../map-peek/PeekDetailLink';
+import { useLocation } from 'react-router-dom';
+import { mapPeekDetailNavState } from '../../../mapPeekDetailNavState';
+import { ActivityPeekStandardFooter } from './ActivityPeekStandardFooter';
 
 export type ActivityPeekActionsProps = {
   card: DiscoveryCardModel;
@@ -27,7 +21,7 @@ export type ActivityPeekActionsProps = {
   onWithdraw?: () => void;
   joinStateLoading?: boolean;
   linkRideshareTenantId?: string | null;
-  onGuestGatedAction?: () => void;
+  onGuestGatedAction?: (action: ActivityMapPeekActionId) => void;
 };
 
 const PeekLoading = () => (
@@ -36,7 +30,7 @@ const PeekLoading = () => (
   </div>
 );
 
-/** Hosted + seeking activity peek — `viewerAccess.mapPeekActions` (+ join fallback). */
+/** Hosted + seeking activity map peek — standard four-button footer. */
 export const ActivityPeekActions = ({
   card,
   onClose,
@@ -44,92 +38,59 @@ export const ActivityPeekActions = ({
   onActivityMapPeekAction,
   joinUiState,
   joinStateLoading = false,
-  linkRideshareTenantId = null,
   onGuestGatedAction,
 }: ActivityPeekActionsProps) => {
+  const location = useLocation();
   const gate = onGuestGatedAction;
-
   const effectiveJoinStateLoading = activityPeekHasMapWireActions(card) ? false : joinStateLoading;
-
-  const detailLink = (label: string, className: string) => (
-    <PeekDetailLink
-      card={card}
-      label={label}
-      className={className}
-      joinStateLoading={effectiveJoinStateLoading}
-      onGuestGatedAction={gate}
-      onBeforeNavigate={onClose}
-    />
-  );
+  const peekDetailNavState = mapPeekDetailNavState(location, card.id);
 
   if (!discoveryCardUsesActivityPeekEngagement(card)) {
-    return detailLink(
-      card.secondaryCta ?? 'View details',
-      'block w-full rounded-2xl bg-neutral-100 py-3.5 text-center text-base font-bold text-gray-900'
-    );
-  }
-
-  const engagement = resolveActivityPeekEngagement(card, joinUiState);
-  const wireActions = engagement.mapPeekActions;
-
-  if (wireActions.length > 0 && onActivityMapPeekAction) {
     return (
-      <ActivityPeekEngagementActions
+      <PeekDetailLink
         card={card}
-        actions={wireActions}
-        linkRideshareTenantId={linkRideshareTenantId}
-        onAction={onActivityMapPeekAction}
-        onGuestGatedAction={gate}
-        joinStateLoading={effectiveJoinStateLoading}
-        onBeforeDetailNavigate={onClose}
-        joinUiState={joinUiState}
+        label={card.secondaryCta ?? 'View details'}
+        className="block w-full rounded-2xl bg-neutral-100 py-3.5 text-center text-base font-bold text-gray-900"
+        onGuestGatedAction={gate ? () => gate('view_detail') : undefined}
+        onBeforeNavigate={onClose}
+        linkState={peekDetailNavState}
       />
     );
   }
 
-  if (engagement.showsFallbackJoinFlow && joinStateLoading && !activityPeekHasMapWireActions(card)) {
+  const engagement = resolveActivityPeekEngagement(card, joinUiState);
+
+  if (
+    engagement.showsFallbackJoinFlow &&
+    joinStateLoading &&
+    !activityPeekHasMapWireActions(card) &&
+    !joinUiState
+  ) {
     return <PeekLoading />;
   }
 
-  if (engagement.showsFallbackJoinFlow && joinUiState) {
+  if (!onActivityMapPeekAction) {
     return (
-      <>
-        <JoinRequestActions
-          uiState={joinUiState}
-          joinLabel={card.primaryCta}
-          isFull={discoveryCardActivityJoinIsFull(card)}
-          onJoin={gate ?? onJoin}
-          joinCtaMarker="explore"
-        />
-        {card.secondaryCta ? (
-          detailLink(
-            card.secondaryCta,
-            'block w-full py-2.5 text-center text-sm font-semibold text-gray-600'
-          )
-        ) : null}
-      </>
+      <PeekDetailLink
+        card={card}
+        label={card.secondaryCta ?? 'View details'}
+        className="block w-full rounded-2xl bg-neutral-100 py-3.5 text-center text-base font-bold text-gray-900"
+        onGuestGatedAction={gate ? () => gate('view_detail') : undefined}
+        onBeforeNavigate={onClose}
+        linkState={peekDetailNavState}
+      />
     );
   }
 
-  if (card.showJoinActions && onJoin) {
-    return (
-      <>
-        {gate &&
-        discoveryCardPeekShowsDirections(card) &&
-        discoveryCardHasMapCoords(card) &&
-        !discoveryCardShowsInlineDirections(card) ? (
-          <DiscoveryCardDirectionsButton latitude={card.mapLatitude} longitude={card.mapLongitude} />
-        ) : null}
-        {detailLink(
-          card.primaryCta,
-          'block w-full rounded-2xl bg-emerald-500 py-3.5 text-base font-bold text-white'
-        )}
-      </>
-    );
-  }
-
-  return detailLink(
-    card.secondaryCta ?? 'View details',
-    'block w-full rounded-2xl bg-neutral-100 py-3.5 text-center text-base font-bold text-gray-900'
+  return (
+    <ActivityPeekStandardFooter
+      card={card}
+      joinUiState={joinUiState ?? { kind: 'open' }}
+      joinStateLoading={effectiveJoinStateLoading}
+      onAction={onActivityMapPeekAction}
+      onJoin={onJoin}
+      onGuestGatedAction={gate}
+      onBeforeDetailNavigate={onClose}
+    />
   );
 };

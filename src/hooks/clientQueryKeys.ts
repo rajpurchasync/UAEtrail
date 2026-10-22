@@ -158,6 +158,17 @@ export const areaAvailabilityQueryKey = (slug: string, weekFrom: string): QueryK
 
 export const inboxUnreadQueryKey = (userId: string): QueryKey => ['inbox-unread', userId];
 
+/** Cached open DM thread (messages + pagination cursor); viewer-scoped. */
+export const directChatThreadQueryKey = (viewerId: string, partnerId: string): QueryKey => [
+  'chat',
+  'direct-thread',
+  viewerId,
+  partnerId,
+];
+
+/** Cached group wall for an open crew thread. */
+export const groupChatWallQueryKey = (groupId: string): QueryKey => ['chat', 'group-wall', groupId];
+
 export const notificationUnreadBadgeKey = (userId?: string | null): QueryKey => [
   'me-notification-unread-badge',
   userId,

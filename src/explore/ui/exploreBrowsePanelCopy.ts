@@ -37,7 +37,7 @@ export const DESKTOP_BROWSE_TABS: Array<{ key: DesktopBrowseTab; label: string }
 
 export const MAP_FILTERS_BY_BROWSE_TAB: Record<DesktopBrowseTab, MapFilterKey[]> = {
   activities: ['all', 'hiking', 'camping', 'rideshare', 'others'],
-  venues: ['all', 'hiking', 'camping', 'shops'],
+  venues: ['all', 'hiking', 'camping', 'shops', 'others'],
 };
 
 export const parseDesktopBrowseTab = (panel: ExplorePanel): DesktopBrowseTab =>

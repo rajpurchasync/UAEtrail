@@ -10,7 +10,7 @@ const CARD_PEEK_CLASS =
   'w-[min(88vw,22rem)] shrink-0 snap-start scroll-ml-[var(--gutter-mobile)] sm:w-[min(78vw,24rem)]';
 
 const PEEK_TRACK_CLASS =
-  '-mx-[var(--gutter-mobile)] flex gap-4 overflow-x-auto overflow-y-visible scroll-smooth px-[var(--gutter-mobile)] pb-1 pt-0 snap-x snap-mandatory [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden';
+  '-mx-[var(--gutter-mobile)] flex gap-4 overflow-x-auto overflow-y-visible scroll-smooth px-[var(--gutter-mobile)] py-1 snap-x snap-mandatory [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden';
 
 export interface ReviewCardCarouselProps {
   reviews: ReviewCardProps[];
@@ -40,7 +40,8 @@ export const ReviewCardCarousel = ({ reviews }: ReviewCardCarouselProps) => {
     itemCount: total,
     carouselMode,
     trackRef,
-    resetWhen: [reviews.length, isMobile, overflows]
+    resetWhen: [reviews.length, isMobile, overflows],
+    oneCardPerPage: isMobile
   });
 
   if (total === 0) return null;
@@ -48,7 +49,7 @@ export const ReviewCardCarousel = ({ reviews }: ReviewCardCarouselProps) => {
   const trackClass = isMobile
     ? PEEK_TRACK_CLASS
     : [
-        'home-marketing-adaptive-track pb-1 pt-0',
+        'home-marketing-adaptive-track py-1',
         overflows ? 'home-marketing-adaptive-track--scroll' : 'overflow-x-visible'
       ].join(' ');
 

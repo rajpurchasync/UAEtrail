@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { EXPLORE_MAP_PATH } from '../../../../config/routingCatalog';
+import { EXPLORE_MAP_PATH } from '../../../../config/routingCatalogLite';
 import type { HomeLandingActivity } from '../../../../content/homeLanding';
 import { HOME_ACTIVITIES, HOME_EMIRATE_FILTER_ORDER } from '../../../../content/homeMarketing';
 import { emirateLabelFromId } from '../../../../utils/homeLandingEmirate';

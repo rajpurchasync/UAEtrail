@@ -24,6 +24,10 @@ export type ActivityMapPeekActionLabelContext = {
 export const activityMapPeekViewDetailLabel = (
   context?: ActivityMapPeekActionLabelContext
 ): string => {
+  if (context?.surface === 'peek') {
+    if (context.joinPhase === 'pending') return ACTIVITY_PEEK_MANAGE_LABEL;
+    return 'View details';
+  }
   if (context?.joinPhase === 'pending' || context?.joinPhase === 'confirmed') {
     return ACTIVITY_PEEK_MANAGE_LABEL;
   }

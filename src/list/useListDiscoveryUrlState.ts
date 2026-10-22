@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { LIST_DISCOVERY_PATH } from '../config/platform';
 import type { BrowseTripTopicKey } from './browseListTripTopics';
 import type { BrowseListFilterState } from './browseListFilters';
@@ -50,7 +50,9 @@ type UseListDiscoveryUrlStateOptions = {
 
 export const useListDiscoveryUrlState = (options?: UseListDiscoveryUrlStateOptions) => {
   const mapOverlay = options?.mapOverlay ?? false;
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const filters = useMemo(() => parseBrowseListFilterState(searchParams), [searchParams]);
   const venueRegions = useMemo(() => parseBrowseListVenueRegions(searchParams), [searchParams]);
@@ -99,9 +101,13 @@ export const useListDiscoveryUrlState = (options?: UseListDiscoveryUrlStateOptio
         params.set(BROWSE_DISCOVER_PARAM, '1');
         params.set('list', '0');
       }
-      setSearchParams(params, { replace: true });
+      const qs = params.toString();
+      navigate(
+        { pathname: location.pathname, search: qs ? `?${qs}` : '' },
+        { replace: true, state: location.state }
+      );
     },
-    [filters, venueRegions, listCat, mapOverlay, searchParams, setSearchParams]
+    [filters, venueRegions, listCat, location.pathname, location.state, mapOverlay, navigate, searchParams]
   );
 
   const setQuery = useCallback((query: string) => syncUrl({ query }), [syncUrl]);

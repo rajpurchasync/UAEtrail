@@ -3,34 +3,16 @@ import {
   ReviewDTO,
   resolveActivityPublisherProfilePath,
 } from '@uaetrail/shared-types';
-import { SITE_DESCRIPTION, SITE_NAME, SITE_ORIGIN, toAbsoluteUrl } from '../../config/seo';
+import { SITE_ORIGIN, toAbsoluteUrl } from '../../config/seo';
 import type { Place, PlaceAsCamp, PlaceAsEvent, PlaceAsTrail } from '../../types/place';
 import { placeDetailPath } from '../../utils/placePaths';
 import type { TenantProfile } from '../../api/types';
 import { activityHostName } from '../../utils/hostLabels';
 import { buildActivityEventJsonLd } from '@uaetrail/shared-types';
-import { explorePlacesPath } from '../../config/routingCatalog';
+
+export { websiteSchema } from './websiteSchema';
 
 const absImage = (url?: string | null) => toAbsoluteUrl(url) ?? undefined;
-
-export const websiteSchema = () => ({
-  '@context': 'https://schema.org',
-  '@type': 'WebSite',
-  name: SITE_NAME,
-  url: SITE_ORIGIN,
-  description: SITE_DESCRIPTION,
-  hasPart: {
-    '@type': 'WebPage',
-    name: 'Frequently asked questions',
-    url: `${SITE_ORIGIN}/faq`,
-    description: 'Answers about hiking, camping, and organized outdoor activities in the UAE.'
-  },
-  potentialAction: {
-    '@type': 'SearchAction',
-    target: `${SITE_ORIGIN}${explorePlacesPath()}&q={search_term_string}`,
-    'query-input': 'required name=search_term_string'
-  }
-});
 
 const locationAddress = (region?: string) => ({
   '@type': 'PostalAddress' as const,

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { MapPin, Star } from 'lucide-react';
 import type {
   ActivityDTO,
@@ -24,6 +24,7 @@ import { PageMeta } from '../../../components/seo/PageMeta';
 import { JsonLd } from '../../../components/seo/JsonLd';
 import { placeSchema } from '../../../components/seo/schemas';
 import { detailBackPath } from '../../../config/routingCatalog';
+import { readDetailBackToFromLocation } from '../../../explore/mapPeekDetailNavState';
 import { EXPLORE_PEEK_CTA } from '../../../config/exploreTheme';
 import { buildPlaceDetailPageModel } from '../buildPlaceDetailPageModel';
 import { resolvePlaceDisplayTitle, readPlaceArabicName } from '../../../utils/venueDetailDisplay';
@@ -77,6 +78,7 @@ export const PlaceConsumerDetailPage = ({
   onReviewSubmitted,
 }: PlaceConsumerDetailPageProps) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [arranging, setArranging] = useState(false);
   const pageModel = useMemo(
     () => buildPlaceDetailPageModel({ kind, place, config }),
@@ -107,7 +109,8 @@ export const PlaceConsumerDetailPage = ({
     }
   }, [unlockNotice]);
 
-  const backTo = detailBackPath(pageModel.backKind);
+  const backTo =
+    readDetailBackToFromLocation(location.state) ?? detailBackPath(pageModel.backKind);
   const headerChrome = resolvePlaceConsumerDetailHeaderChrome(kind);
 
   const catalogKind = placeKindFromLocationRow({
@@ -154,7 +157,7 @@ export const PlaceConsumerDetailPage = ({
       <div data-place-consumer-detail-template>
         <ActivityConsumerDetailModalShell
           backTo={backTo}
-          backLabel={config.backLabel}
+          backLabel=""
           headerChrome={headerChrome}
           headerAction={shareControl}
           footer={footer}

@@ -4,6 +4,7 @@ import { explorePersonRoleLabel } from '@uaetrail/shared-types';
 import { ChevronRight, Clock, MapPin, Route, Star, Tag, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { DiscoveryCardModel, DiscoveryCardTone } from '../../discovery/discoveryCardModel';
+import type { MapPeekDetailNavState } from '../mapPeekDetailNavState';
 import {
   discoveryCardActivityJoinIsFull,
   discoveryCardActivityShowsPeekSpots,
@@ -54,12 +55,14 @@ const DiscoveryCardHeadlineShell = ({
   detailAccess,
   onGuestGatedDetail,
   onBeforeDetailNavigate,
+  detailLinkState,
   textClass,
   children,
 }: {
   detailAccess?: ExplorePeekDetailAccess | null;
   onGuestGatedDetail?: () => void;
   onBeforeDetailNavigate?: () => void;
+  detailLinkState?: MapPeekDetailNavState;
   textClass: string;
   children: ReactNode;
 }) => {
@@ -70,6 +73,7 @@ const DiscoveryCardHeadlineShell = ({
     return (
       <Link
         to={detailAccess.href}
+        state={detailLinkState}
         className={titleLinkClass}
         onClick={() => onBeforeDetailNavigate?.()}
       >
@@ -88,6 +92,7 @@ const DiscoveryCardHeadlineShell = ({
     return (
       <Link
         to={detailAccess.href}
+        state={detailLinkState}
         className={titleLinkClass}
         onClick={() => onBeforeDetailNavigate?.()}
       >
@@ -106,6 +111,7 @@ export const DiscoveryCardHeadline = ({
   detailAccess,
   onGuestGatedDetail,
   onBeforeDetailNavigate,
+  detailLinkState,
 }: {
   sections: DiscoveryCardSections;
   size?: 'sm' | 'lg';
@@ -113,6 +119,7 @@ export const DiscoveryCardHeadline = ({
   detailAccess?: ExplorePeekDetailAccess | null;
   onGuestGatedDetail?: () => void;
   onBeforeDetailNavigate?: () => void;
+  detailLinkState?: MapPeekDetailNavState;
 }) => {
   const textClass = size === 'lg' ? 'text-xl font-bold leading-snug' : 'text-[17px] font-bold leading-snug';
   const highlightClass = discoveryCardToneTextClass[tone];
@@ -123,6 +130,7 @@ export const DiscoveryCardHeadline = ({
         detailAccess={detailAccess}
         onGuestGatedDetail={onGuestGatedDetail}
         onBeforeDetailNavigate={onBeforeDetailNavigate}
+        detailLinkState={detailLinkState}
         textClass={textClass}
       >
         {sections.plainTitle}
@@ -136,6 +144,7 @@ export const DiscoveryCardHeadline = ({
         detailAccess={detailAccess}
         onGuestGatedDetail={onGuestGatedDetail}
         onBeforeDetailNavigate={onBeforeDetailNavigate}
+        detailLinkState={detailLinkState}
         textClass={textClass}
       >
         {sections.titleText}
@@ -151,6 +160,7 @@ export const DiscoveryCardHeadline = ({
         detailAccess={detailAccess}
         onGuestGatedDetail={onGuestGatedDetail}
         onBeforeDetailNavigate={onBeforeDetailNavigate}
+        detailLinkState={detailLinkState}
         textClass={textClass}
       >
         <span>{sections.highlightName}</span>

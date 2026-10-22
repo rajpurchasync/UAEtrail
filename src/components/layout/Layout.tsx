@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect, type ReactNode } from 'react';
 import { useLocation } from 'react-router-dom';
+import { resetAppScroll } from '../../config/layoutScroll';
 import { HomeDeferredMount } from '../home/marketing/HomeDeferredMount';
 
 const ProductShell = lazy(() => import('./ProductShell').then((m) => ({ default: m.ProductShell })));
@@ -13,14 +14,14 @@ export const Layout = ({ children }: LayoutProps) => {
   const location = useLocation();
 
   useEffect(() => {
-    window.scrollTo(0, 0);
+    resetAppScroll();
   }, [location.pathname]);
 
   if (location.pathname === '/') {
     return (
       <div className="flex min-h-screen w-full max-w-full flex-col overflow-x-clip max-md:bg-white md:bg-gray-50">
         <main className="flex-1 scroll-touch min-w-0 max-w-full overflow-x-clip">{children}</main>
-        <HomeDeferredMount minHeightClass="min-h-[12rem]" rootMargin="480px 0px">
+        <HomeDeferredMount minHeightClass="min-h-[12rem]" rootMargin="0px">
           <Suspense fallback={null}>
             <Footer />
           </Suspense>
@@ -30,7 +31,11 @@ export const Layout = ({ children }: LayoutProps) => {
   }
 
   return (
-    <Suspense fallback={<div className="min-h-[100dvh] w-full consumer-bg">{children}</div>}>
+    <Suspense
+      fallback={
+        <div className="flex h-[100dvh] w-full flex-col overflow-hidden consumer-bg">{children}</div>
+      }
+    >
       <ProductShell>{children}</ProductShell>
     </Suspense>
   );

@@ -5,6 +5,8 @@ import type {
 } from '@uaetrail/shared-types';
 import type { QueryClient } from '@tanstack/react-query';
 import { api } from '../api/index';
+import { apiRequestConditional } from '../api/client';
+import { catalogSnapshots } from '../lib/catalogSnapshot';
 import type { ActivityRequestView } from '../api/types';
 import { myActivityJoinRequestsQueryKey, myJoinedActivitiesQueryKey } from './clientQueryKeys';
 
@@ -32,7 +34,19 @@ export const fetchMyJoinedActivities = async (): Promise<MyActivityDTO[]> => {
   return res.data;
 };
 
+export const fetchMyJoinedActivitiesConditional = async (
+  etag?: string | null
+): Promise<{ notModified: true; etag: string | null } | { notModified: false; etag: string | null; data: MyActivityDTO[] }> => {
+  const result = await apiRequestConditional<{ data: MyActivityDTO[] }>('/me/activities?pageSize=100', {
+    auth: true,
+    etag,
+  });
+  if (result.notModified) return { notModified: true, etag: result.etag };
+  return { notModified: false, etag: result.etag, data: result.body.data };
+};
+
 export const invalidateMyJoinedActivitiesQueries = (queryClient: QueryClient): void => {
+  catalogSnapshots.clearPrefix(myJoinedActivitiesQueryKey);
   void queryClient.invalidateQueries({ queryKey: myJoinedActivitiesQueryKey });
 };
 

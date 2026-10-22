@@ -8,8 +8,10 @@ import { GlassCard } from '../components/mobile/GlassCard';
 import { PullToRefresh } from '../components/mobile/PullToRefresh';
 import { placeDetailPath } from '@uaetrail/shared-types';
 import { PROFILE_REVIEWS_PATH } from '../config/routingCatalog';
+import { useProfileHubBackChrome } from '../hooks/useProfileHubBackChrome';
 
 export const Submissions = () => {
+  const backChrome = useProfileHubBackChrome();
   const [places, setPlaces] = useState<LocationDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -36,7 +38,7 @@ export const Submissions = () => {
       title="Your submissions"
       maxWidth="4xl"
       showJourney={false}
-      back={{ fallbackTo: '/profile', label: 'Profile' }}
+      back={backChrome}
     >
       <PullToRefresh onRefresh={load}>
         <div className="space-y-3 pb-nav-safe animate-fade-up">

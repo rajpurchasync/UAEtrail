@@ -1,3 +1,4 @@
+import { useCallback, useEffect, useState } from 'react';
 import type { MapFilterKey, ExploreActivityDatePreset } from '../routing';
 import type { ExploreFilterEmojiContext } from './ExploreFilterIcon';
 import type { ExploreBuddySubtypeKey } from '../exploreBuddySubtype';
@@ -11,6 +12,7 @@ import { ExplorePinKindPillsRow } from './ExplorePinKindPillsRow';
 import type { ExplorePinKindFilter } from '../explorePinKindFilter';
 import { ExploreActivityModePillsRow } from './ExploreActivityModePillsRow';
 import type { ExploreActivityModeFilter } from '../exploreActivityModeFilter';
+import { ExploreBrowseListRegionPillsRow } from './ExploreBrowseListRegionPillsRow';
 
 export type ExploreBrowseFilterChromeProps = {
   mapFilter: MapFilterKey;
@@ -96,6 +98,25 @@ export const ExploreBrowseFilterChrome = ({
   onActivityModeFilterChange,
   className = '',
 }: ExploreBrowseFilterChromeProps) => {
+  const [listRegionStep, setListRegionStep] = useState(false);
+  const listShowRegionStep = layout === 'list' && listRegionStep && mapFilter !== 'all';
+
+  useEffect(() => {
+    if (mapFilter === 'all') setListRegionStep(false);
+  }, [mapFilter]);
+
+  const handleListMapFilterChange = useCallback(
+    (filter: MapFilterKey) => {
+      onMapFilterChange(filter);
+      if (filter === 'all') {
+        setListRegionStep(false);
+        return;
+      }
+      setListRegionStep(true);
+    },
+    [onMapFilterChange]
+  );
+
   const unifiedMap = unifiedMapChrome && layout === 'map';
   const showBuddySubtype =
     (unifiedMap || filterEmojiContext !== 'venue') &&
@@ -128,11 +149,44 @@ export const ExploreBrowseFilterChrome = ({
   const pills = (
     <ExploreFilterPillsRow
       mapFilter={mapFilter}
-      onFilterChange={onMapFilterChange}
+      onFilterChange={layout === 'list' ? handleListMapFilterChange : onMapFilterChange}
       allowedKeys={allowedKeys}
       filterEmojiContext={filterEmojiContext}
       layout={layout}
     />
+  );
+
+  const listMobilePills = (
+    <div className="relative min-h-[40px] overflow-hidden">
+      <div
+        className={`absolute inset-0 transition-[transform,opacity] duration-300 ease-out motion-reduce:transition-none ${
+          listShowRegionStep
+            ? 'pointer-events-none -translate-x-4 opacity-0'
+            : 'translate-x-0 opacity-100'
+        }`}
+        aria-hidden={listShowRegionStep}
+      >
+        {pills}
+      </div>
+      <div
+        className={`absolute inset-0 transition-[transform,opacity] duration-300 ease-out motion-reduce:transition-none ${
+          listShowRegionStep
+            ? 'translate-x-0 opacity-100'
+            : 'pointer-events-none translate-x-6 opacity-0'
+        }`}
+        aria-hidden={!listShowRegionStep}
+      >
+        {onVenueRegionsChange ? (
+          <ExploreBrowseListRegionPillsRow
+            venueRegions={venueRegions}
+            onVenueRegionsChange={onVenueRegionsChange}
+            mapFilter={mapFilter}
+            filterEmojiContext={filterEmojiContext}
+            onBackToCategoryFilters={() => setListRegionStep(false)}
+          />
+        ) : null}
+      </div>
+    </div>
   );
 
   const secondary = (
@@ -204,7 +258,7 @@ export const ExploreBrowseFilterChrome = ({
         </div>
       ) : (
         <div className="flex flex-col gap-1.5 lg:hidden">
-          {pills}
+          {listMobilePills}
           {showBuddySubtype ? (
             <ExploreBuddySubtypePillsRow
               subtype={buddySubtype}

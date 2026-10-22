@@ -1,6 +1,10 @@
 import { useCallback, useMemo } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
-import type { ExploreMapItemDTO, UserRole } from '@uaetrail/shared-types';
+import type {
+  ActivityMapPeekActionId,
+  ExploreMapItemDTO,
+  UserRole,
+} from '@uaetrail/shared-types';
 import {
   activityMapPeekNeedsJoinContext,
   activityMapPeekSkipsJoinContext,
@@ -10,6 +14,9 @@ import { useActivityJoinActions, useActivityJoinContext } from '../../hooks/useA
 import { useViewerProfileGender } from '../../hooks/useViewerProfileGender';
 import { womenOnlyJoinMessageForActivity } from '../../utils/activityWomenOnlyJoin';
 import { messagesRouteForRole } from '../../utils/authRouting';
+import { navigateToMessagesWithReturn } from '../../utils/activityGroupChatNav';
+import { buildMapPeekReturnPath } from '../mapPeekDetailNavState';
+import type { Location } from 'react-router-dom';
 
 /** Join context for map peek — activity wire only (hosted + seeking). */
 export const useExploreSelectionPeekJoin = (input: {
@@ -19,6 +26,8 @@ export const useExploreSelectionPeekJoin = (input: {
   setExploreNotice: (message: string | null) => void;
   setSelectedId: (id: string | null) => void;
   navigate: NavigateFunction;
+  location: Pick<Location, 'pathname' | 'search'>;
+  selectedId: string | null;
 }) => {
   const viewerGender = useViewerProfileGender(input.user?.id);
   const joinGuardMessage = useMemo(
@@ -29,7 +38,9 @@ export const useExploreSelectionPeekJoin = (input: {
   const joinContextEnabled = Boolean(
     input.selected?.activity?.id &&
       input.user &&
-      input.selectedCard &&
+      input.selectedCard?.source === 'activity' &&
+      input.selectedCard.showJoinActions &&
+      input.selectedCard.viewerAccess?.level !== 'host' &&
       activityMapPeekNeedsJoinContext(input.selectedCard)
   );
   const {
@@ -51,7 +62,7 @@ export const useExploreSelectionPeekJoin = (input: {
     [input.selectedCard, joinUiState]
   );
 
-  const peekJoinUiState = activityPeekSkipsJoinContext ? undefined : joinUiState;
+  const peekJoinUiState = joinUiState;
   const peekJoinStateLoading = joinStateLoading;
 
   const joinActions = useActivityJoinActions({
@@ -76,21 +87,29 @@ export const useExploreSelectionPeekJoin = (input: {
       const requesterId = item.requesterUserId ?? item.activity?.hostUserId;
       if (!requesterId) return;
       if (!input.user) {
-        joinActions.openGuestSheet('activity');
+        joinActions.openGuestBrowseGate('peek-details', 'message_host');
         return;
       }
-      input.navigate(
-        messagesRouteForRole((input.user.role ?? 'participant') as UserRole, requesterId)
-      );
+      const returnTo = input.selectedId
+        ? buildMapPeekReturnPath(input.selectedId, input.location)
+        : undefined;
       input.setSelectedId(null);
+      navigateToMessagesWithReturn(
+        input.navigate,
+        messagesRouteForRole((input.user.role ?? 'participant') as UserRole, requesterId),
+        returnTo
+      );
     },
-    [input.user, input.navigate, joinActions, input.setSelectedId]
+    [input.user, input.navigate, input.location, input.selectedId, joinActions, input.setSelectedId]
   );
 
-  const handleGuestGatedAction = useCallback(() => {
-    if (input.user) return;
-    joinActions.openGuestBrowseGate('peek-details');
-  }, [input.user, joinActions]);
+  const handleGuestGatedAction = useCallback(
+    (pendingAction: ActivityMapPeekActionId = 'view_detail') => {
+      if (input.user) return;
+      joinActions.openGuestBrowseGate('peek-details', pendingAction);
+    },
+    [input.user, joinActions]
+  );
 
   const handleJoin = useCallback(() => {
     const selected = input.selected;

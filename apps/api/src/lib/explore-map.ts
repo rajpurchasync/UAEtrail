@@ -7,6 +7,7 @@ import {
   clearExploreMapMemoryCache,
   exploreMapRedisPayloadExists,
   readExploreMapMemoryCache,
+  readExploreMapStalePayload,
   writeExploreMapMemoryCache,
 } from './explore-map-cache.js';
 import { buildExploreMapBasePayload } from './explore-map-base.js';
@@ -14,7 +15,9 @@ import { buildExploreMapBasePayload } from './explore-map-base.js';
 export { scheduleExploreMapCacheInvalidation } from './explore-map-cache-schedule.js';
 export { buildExploreMapBasePayload } from './explore-map-base.js';
 
-export const buildExploreMapPayload = async (): Promise<{ items: ExploreMapItemDTO[] }> => {
+let exploreMapInflight: Promise<{ items: ExploreMapItemDTO[] }> | null = null;
+
+const loadExploreMapPayload = async (): Promise<{ items: ExploreMapItemDTO[] }> => {
   const now = Date.now();
   const memoryCached = readExploreMapMemoryCache<{ items: ExploreMapItemDTO[] }>(now);
   if (memoryCached) {
@@ -57,4 +60,31 @@ export const buildExploreMapPayload = async (): Promise<{ items: ExploreMapItemD
   }
 
   return payload;
+};
+
+const startExploreMapRefresh = (): Promise<{ items: ExploreMapItemDTO[] }> => {
+  if (!exploreMapInflight) {
+    exploreMapInflight = loadExploreMapPayload().finally(() => {
+      exploreMapInflight = null;
+    });
+  }
+  return exploreMapInflight;
+};
+
+/**
+ * Fresh catalog is returned immediately.
+ * After the fresh window, the last catalog is returned and one rebuild runs behind it.
+ * A cold process waits for that single rebuild.
+ */
+export const buildExploreMapPayload = (): Promise<{ items: ExploreMapItemDTO[] }> => {
+  const fresh = readExploreMapMemoryCache<{ items: ExploreMapItemDTO[] }>();
+  if (fresh) return Promise.resolve(fresh);
+  const stale = readExploreMapStalePayload<{ items: ExploreMapItemDTO[] }>();
+  if (stale) {
+    void startExploreMapRefresh().catch((err) => {
+      logger.warn({ err }, 'explore map background refresh failed');
+    });
+    return Promise.resolve(stale);
+  }
+  return startExploreMapRefresh();
 };

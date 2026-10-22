@@ -204,12 +204,12 @@ export const ChatMessageBubble = ({
 export const ChatMessageReactionRow = ({
   isMe,
   reactions,
-  reactionBusy,
+  reactionBusy = false,
   onToggle,
 }: {
   isMe: boolean;
   reactions: Array<{ kind: GroupWallReactionKind; count: number; reactedByMe: boolean }>;
-  reactionBusy: boolean;
+  reactionBusy?: boolean;
   onToggle: (kind: GroupWallReactionKind) => void;
 }) => {
   if (reactions.length === 0) return null;

@@ -13,7 +13,6 @@ export interface PlaceDetailKindConfig {
   activityType: PlaceActivityType;
   accent: PlaceDetailAccent;
   pathPrefix: `/trail` | `/camp` | `/venue`;
-  backLabel: string;
   loadingTitle: string;
   notFoundTitle: string;
   imageAltSuffix: string;
@@ -41,7 +40,6 @@ export const PLACE_DETAIL_CONFIG: Record<PlaceDetailKind, PlaceDetailKindConfig>
     activityType: 'hiking',
     accent: 'emerald',
     pathPrefix: '/trail',
-    backLabel: 'Hiking venues',
     loadingTitle: 'Loading trail',
     notFoundTitle: 'Trail not found',
     imageAltSuffix: 'hiking trail',
@@ -58,7 +56,6 @@ export const PLACE_DETAIL_CONFIG: Record<PlaceDetailKind, PlaceDetailKindConfig>
     activityType: 'camping',
     accent: 'amber',
     pathPrefix: '/camp',
-    backLabel: 'Camping venues',
     loadingTitle: 'Loading camp',
     notFoundTitle: 'Camping spot not found',
     imageAltSuffix: 'camping spot',
@@ -75,7 +72,6 @@ export const PLACE_DETAIL_CONFIG: Record<PlaceDetailKind, PlaceDetailKindConfig>
     activityType: 'event',
     accent: 'violet',
     pathPrefix: '/venue',
-    backLabel: 'Event venues',
     loadingTitle: 'Loading event venue',
     notFoundTitle: `${VENUE_TYPE_LABELS.event} not found`,
     imageAltSuffix: `${VENUE_TYPE_LABELS.event.toLowerCase()} venue`,

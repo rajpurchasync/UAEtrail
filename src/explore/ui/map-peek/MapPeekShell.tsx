@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { useLocation } from 'react-router-dom';
 import { isGeographyMapSource } from '@uaetrail/shared-types';
 import { X } from 'lucide-react';
 import type { DiscoveryCardModel } from '../../../discovery/discoveryCardModel';
@@ -18,6 +19,7 @@ import { PlacePeekBody } from '../peek/place/PlacePeekBody';
 import { PlacePeekHero } from '../peek/place/PlacePeekHero';
 import { activityPeekHasMapWireActions } from '../../../activity/activityPeekEngagement';
 import { resolvePeekDetailAccess } from '../../../access/resolvePeekDetailAccess';
+import { mapPeekDetailNavState } from '../../mapPeekDetailNavState';
 
 export type MapPeekShellProps = {
   card: DiscoveryCardModel;
@@ -46,10 +48,12 @@ export const MapPeekShell = ({
   statusBanner = null,
   catalogPlaceSummary = false,
 }: MapPeekShellProps) => {
+  const location = useLocation();
   const titleDetailAccess = resolvePeekDetailAccess(card, {
     isGuest: Boolean(onGuestGatedAction),
     joinStateLoading: activityPeekHasMapWireActions(card) ? false : joinStateLoading,
   });
+  const detailLinkState = mapPeekDetailNavState(location, card.id);
   const shellClass = embedMode
     ? 'overflow-hidden rounded-2xl bg-white shadow-[0_8px_32px_rgba(15,23,42,.16)] ring-1 ring-black/5'
     : EXPLORE_PEEK.shell;
@@ -144,6 +148,7 @@ export const MapPeekShell = ({
               detailAccess={titleDetailAccess}
               onGuestGatedDetail={onGuestGatedAction}
               onBeforeDetailNavigate={onClose}
+              detailLinkState={detailLinkState}
             />
             {card.source === 'activity' ? <ActivityDiscoveryPublishedBody card={card} /> : null}
             <DiscoveryCardRatingRow card={card} />
@@ -164,7 +169,7 @@ export const MapPeekShell = ({
         className={
           embedMode
             ? 'mt-3 space-y-2 border-t border-neutral-100 px-4 py-3'
-            : 'shrink-0 space-y-2 border-t border-neutral-100 px-4 py-3'
+            : 'shrink-0 space-y-1.5 border-t border-neutral-100 px-3 py-2'
         }
       >
         {actions}

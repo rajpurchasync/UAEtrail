@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
+  AUTH_RESUME_INVITE_FRIENDS_QUERY,
   AUTH_RESUME_JOIN_QUERY,
+  withAuthResumeInviteFriends,
   withAuthResumeQuery,
   buildAuthGateUrls,
 } from './authReturnContext';
@@ -15,6 +17,14 @@ describe('withAuthResumeQuery', () => {
   it('preserves existing query and hash', () => {
     expect(withAuthResumeQuery('/activity/abc?invite=1#plan', { join: true })).toBe(
       `/activity/abc?invite=1&${AUTH_RESUME_JOIN_QUERY}=1#plan`
+    );
+  });
+});
+
+describe('withAuthResumeInviteFriends', () => {
+  it('appends inviteFriends=1', () => {
+    expect(withAuthResumeInviteFriends('/activity/abc')).toBe(
+      `/activity/abc?${AUTH_RESUME_INVITE_FRIENDS_QUERY}=1`
     );
   });
 });

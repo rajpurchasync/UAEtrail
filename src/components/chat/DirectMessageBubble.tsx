@@ -1,7 +1,7 @@
-import { useState } from 'react';
 import type { ChatMessageDTO, ChatMessageReactionDTO } from '@uaetrail/shared-types';
 import { messagingApi } from '../../messaging';
 import type { GroupWallReactionKind } from '../../constants/groupReactions';
+import { applyOptimisticReactionToggle, isOptimisticChatId } from '../../utils/chatOptimistic';
 import { ChatMessageBubble, ChatMessageReactionRow } from './ChatMessageBubble';
 import { CHAT_BUBBLE_SHELL_CLASS } from './chatMessageLayout';
 import type { GroupWallReplyTarget } from '../../utils/groupWallReply';
@@ -31,21 +31,25 @@ export const DirectMessageBubble = ({
   resolveQuotedMessage,
   onError,
 }: DirectMessageBubbleProps) => {
-  const [reactionBusy, setReactionBusy] = useState(false);
-
   const reactions = message.reactions ?? [];
   const activeKinds = new Set(reactions.map((reaction) => reaction.kind as GroupWallReactionKind));
 
-  const toggleReaction = async (kind: GroupWallReactionKind) => {
-    setReactionBusy(true);
-    try {
-      const res = await messagingApi.direct.toggleReaction(message.id, partnerUserId, kind);
-      onReactionsChange(message.id, res.data.reactions ?? []);
-    } catch (err) {
-      onError(err instanceof Error ? err.message : 'Could not update reaction.');
-    } finally {
-      setReactionBusy(false);
-    }
+  const reactionsEnabled = !isOptimisticChatId(message.id);
+
+  const toggleReaction = (kind: GroupWallReactionKind) => {
+    if (!reactionsEnabled) return;
+    const previous = reactions;
+    onReactionsChange(
+      message.id,
+      applyOptimisticReactionToggle(previous, kind)
+    );
+    void messagingApi.direct
+      .toggleReaction(message.id, partnerUserId, kind)
+      .then((res) => onReactionsChange(message.id, res.data.reactions ?? []))
+      .catch((err) => {
+        onReactionsChange(message.id, previous);
+        onError(err instanceof Error ? err.message : 'Could not update reaction.');
+      });
   };
 
   return (
@@ -65,11 +69,14 @@ export const DirectMessageBubble = ({
         resolveQuotedMessage={resolveQuotedMessage}
         onScrollToQuotedMessage={onScrollToQuotedMessage}
         onReply={onReply}
-        reactions={{
-          activeKinds,
-          disabled: reactionBusy,
-          onPick: (kind) => void toggleReaction(kind),
-        }}
+        reactions={
+          reactionsEnabled
+            ? {
+                activeKinds,
+                onPick: (kind) => toggleReaction(kind),
+              }
+            : undefined
+        }
       />
       <ChatMessageReactionRow
         isMe={isMe}
@@ -77,8 +84,7 @@ export const DirectMessageBubble = ({
           ...r,
           kind: r.kind as GroupWallReactionKind,
         }))}
-        reactionBusy={reactionBusy}
-        onToggle={(kind) => void toggleReaction(kind)}
+        onToggle={(kind) => toggleReaction(kind)}
       />
     </div>
   );

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Mountain } from 'lucide-react';
 import { ReactNode } from 'react';
 
+import { MobileBackButton } from './MobileBackButton';
 import { MobileProfileHeaderLink } from './MobileProfileHeaderLink';
 
 export type MobileUnifiedTabHeaderCenter =
@@ -13,6 +14,10 @@ interface MobileUnifiedTabHeaderProps {
   center: MobileUnifiedTabHeaderCenter;
   trailing?: ReactNode;
   profileActive?: boolean;
+  /** Profile hub sub-screens (Plans, History, …) — match ConsumerShell back chrome. */
+  leadingBack?: { fallbackTo: string; label: string; backBehavior?: 'history' | 'fallback' };
+  /** Explore map — dismiss pin peek when tapping the brand control. */
+  onExploreBrandClick?: () => void;
 }
 
 /** Single mobile tab header — avatar · brand or title · action (explore, profile, activities, messages). */
@@ -20,16 +25,32 @@ export const MobileUnifiedTabHeader = ({
   center,
   trailing,
   profileActive = false,
+  leadingBack,
+  onExploreBrandClick,
 }: MobileUnifiedTabHeaderProps) => (
   <header className="relative z-[1100] shrink-0 border-b border-neutral-200/80 bg-white pb-2 pt-[calc(var(--safe-top)+4px)] lg:hidden">
-    <div className="grid grid-cols-[2.5rem_1fr_auto] items-center gap-2 px-3">
-      <MobileProfileHeaderLink activeOnProfile={profileActive} />
+    <div
+      className={`grid items-center gap-2 px-3 ${
+        leadingBack ? 'grid-cols-[minmax(72px,auto)_1fr_auto]' : 'grid-cols-[2.5rem_1fr_auto]'
+      }`}
+    >
+      {leadingBack ? (
+        <MobileBackButton
+          fallbackTo={leadingBack.fallbackTo}
+          label={leadingBack.label}
+          backBehavior={leadingBack.backBehavior ?? 'history'}
+          className="min-h-[36px] py-0 -ml-1"
+        />
+      ) : (
+        <MobileProfileHeaderLink activeOnProfile={profileActive} />
+      )}
 
       {center.kind === 'brand' ? (
         <Link
           to={EXPLORE_MAP_PATH}
           className="flex min-w-0 items-center justify-center gap-1.5 justify-self-center"
           aria-label="Explore map"
+          onClick={() => onExploreBrandClick?.()}
         >
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-700">
             <Mountain className="h-4 w-4 text-white" strokeWidth={2.25} />

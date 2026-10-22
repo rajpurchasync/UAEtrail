@@ -100,7 +100,8 @@ export const PeopleBrowsePanel = ({
     queryInputRef.current?.focus();
   }, [searchFocusNonce]);
 
-  const showMobileDismiss = !embedded && (!isDesktop || closeButtonVariant === 'dismiss');
+  const showMobileDismiss =
+    !embedded && !mobileSheetChrome && (!isDesktop || closeButtonVariant === 'dismiss');
   const closeButton = (
     <button
       type="button"
@@ -126,11 +127,11 @@ export const PeopleBrowsePanel = ({
         embedded ? 'min-h-[50vh] flex-1' : mobileSheetChrome ? 'min-h-0 flex-1' : ''
       }`}
     >
-      {!embedded ? (
-        <div className="mx-auto mb-2 h-1.5 w-10 shrink-0 rounded-full bg-neutral-200 lg:hidden" />
+      {!embedded && !mobileSheetChrome ? (
+        <div className="mx-auto mb-2 h-1.5 w-10 shrink-0 rounded-full bg-neutral-200 lg:hidden" aria-hidden />
       ) : null}
 
-      {!embedded ? (
+      {!embedded && !mobileSheetChrome ? (
         <div
           className={`mb-2 shrink-0 flex flex-col gap-2 border-b border-neutral-200/80 pb-3 ${chromePad} ${
             isDesktop ? 'border-neutral-200' : ''

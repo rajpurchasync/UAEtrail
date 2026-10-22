@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { shouldCarouselAutoplay, stepCarouselIndex } from './heroCarouselState';
+import { heroSlideShouldMount, shouldCarouselAutoplay, stepCarouselIndex } from './heroCarouselState';
+
+describe('heroSlideShouldMount', () => {
+  it('loads only the active slide', () => {
+    expect(heroSlideShouldMount(0, 0)).toBe(true);
+    expect(heroSlideShouldMount(1, 0)).toBe(false);
+    expect(heroSlideShouldMount(4, 0)).toBe(false);
+    expect(heroSlideShouldMount(2, 2)).toBe(true);
+  });
+});
 
 describe('stepCarouselIndex', () => {
   it('steps forward and wraps', () => {

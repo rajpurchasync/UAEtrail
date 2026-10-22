@@ -6,8 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 import { isSignupProfileComplete } from '../../constants/userProfileOptions';
 import { accountRouteByRole, participantHostBookmarkRedirect } from '../../utils/authRouting';
 import { isPlatformAdmin } from '../../utils/roles';
-import { WELCOME_PATH } from '../../config/routingCatalog';
-import { isPublishingConsolePath } from '../../config/surfacePaths';
+import { isPublishingConsolePath, WELCOME_PATH } from '../../config/surfacePaths';
 import { buildSignInRedirect } from '../../utils/authReturnContext';
 import type { ReactElement } from 'react';
 import {
@@ -42,7 +41,7 @@ export const ProtectedRoute = ({ roles, children }: ProtectedRouteProps) => {
 
   if (initializing) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="app-page-center">
         <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-emerald-600" />
       </div>
     );
@@ -69,7 +68,7 @@ export const ProtectedRoute = ({ roles, children }: ProtectedRouteProps) => {
   if (gateEnabled) {
     if (signupGateLoading) {
       return (
-        <div className="min-h-screen flex items-center justify-center">
+        <div className="app-page-center">
           <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-emerald-600" />
         </div>
       );

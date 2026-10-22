@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type {
   ActivityDTO,
   ActivityDetailDTO,
+  ActivityMapPeekActionId,
   ActivityParticipationDTO,
   MyActivityRequestDTO,
   WithdrawReason,
@@ -106,6 +107,8 @@ export const useActivityJoinActions = ({
   const [guestSheetSurface, setGuestSheetSurface] = useState<GuestSheetSurface>('join');
   const [guestBrowseGateIntent, setGuestBrowseGateIntent] =
     useState<GuestBrowseGateIntent>('peek-details');
+  const [guestPendingPeekAction, setGuestPendingPeekAction] =
+    useState<ActivityMapPeekActionId | null>(null);
 
   const openJoinModal = useCallback(() => {
     if (joinGuardMessage) {
@@ -120,23 +123,32 @@ export const useActivityJoinActions = ({
     setJoinModalOpen(false);
   }, []);
 
-  const openGuestSheet = useCallback((intent: 'activity' | 'place' = 'activity') => {
-    setGuestSheetSurface('join');
-    setGuestSheetIntent(intent);
-    setGuestSheetOpen(true);
-  }, []);
+  const openGuestSheet = useCallback(
+    (intent: 'activity' | 'place' = 'activity', pendingAction: ActivityMapPeekActionId = 'request_join') => {
+      setGuestSheetSurface('join');
+      setGuestSheetIntent(intent);
+      setGuestPendingPeekAction(pendingAction);
+      setGuestSheetOpen(true);
+    },
+    []
+  );
 
-  const openGuestBrowseGate = useCallback((intent: GuestBrowseGateIntent = 'peek-details') => {
-    setGuestSheetSurface('browse');
-    setGuestBrowseGateIntent(intent);
-    setGuestSheetOpen(true);
-  }, []);
+  const openGuestBrowseGate = useCallback(
+    (intent: GuestBrowseGateIntent = 'peek-details', pendingAction: ActivityMapPeekActionId = 'view_detail') => {
+      setGuestSheetSurface('browse');
+      setGuestBrowseGateIntent(intent);
+      setGuestPendingPeekAction(pendingAction);
+      setGuestSheetOpen(true);
+    },
+    []
+  );
 
   const closeGuestSheet = useCallback(() => {
     setGuestSheetOpen(false);
     setGuestSheetIntent('activity');
     setGuestSheetSurface('join');
     setGuestBrowseGateIntent('peek-details');
+    setGuestPendingPeekAction(null);
   }, []);
 
   const handleJoinSuccess = useCallback(
@@ -189,6 +201,7 @@ export const useActivityJoinActions = ({
     guestSheetIntent,
     guestSheetSurface,
     guestBrowseGateIntent,
+    guestPendingPeekAction,
     openJoinModal,
     closeJoinModal,
     openGuestSheet,

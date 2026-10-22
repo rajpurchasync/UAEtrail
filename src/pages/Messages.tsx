@@ -24,6 +24,8 @@ import {
 import { formatWallInboxPreview } from '../utils/wallMessagePreview';
 import { groupsPath } from '../config/routingCatalog';
 import { parseMessagesChatReturnTo } from '../utils/activityGroupChatNav';
+import { AUTH_RESUME_CREW_CHAT_QUERY } from '../utils/authReturnContext';
+import { fetchActivityGroupChatGroupId } from '../hooks/activityGroupChatClientApi';
 import { useChatStream } from '../hooks/useChatStream';
 import { ReportContentDialog } from '../components/ui/ReportContentDialog';
 import {
@@ -59,7 +61,7 @@ export const MessagesGate = () => {
   const { user, initializing } = useAuth();
   if (initializing) {
     return (
-      <div className="flex min-h-[40dvh] items-center justify-center pb-bottom-nav-safe">
+      <div className="app-page-center pb-bottom-nav-safe">
         <div className="h-8 w-8 animate-spin rounded-full border-t-2 border-b-2 border-emerald-600" />
       </div>
     );
@@ -90,6 +92,7 @@ export const Messages = () => {
     groupThreads,
     directConversationsDegraded,
     loading,
+    unavailable,
     loadInbox,
     setConversations,
     setGroupThreads,
@@ -125,9 +128,14 @@ export const Messages = () => {
     }
   }, [directConversationsDegraded]);
 
+  const inGroupThread = Boolean(selectedGroupId);
+  const inDirectThread = mobileShowThread && !!selectedUserId;
+  const inThread = inGroupThread || inDirectThread;
+
   const directChat = useDirectChatThread({
     currentUserId: user?.id,
-    partnerUserId: selectedUserId,
+    /** Only load/sync a DM thread while it is open — inbox uses preview fields from `getInbox`. */
+    partnerUserId: inDirectThread ? selectedUserId : null,
     contextActivityId,
     conversations,
     setConversations,
@@ -167,6 +175,28 @@ export const Messages = () => {
   useEffect(() => {
     setMobileShowThread(Boolean(searchParams.get('to') || searchParams.get('group')));
   }, [searchParams]);
+
+  const resumeCrewChat = searchParams.get(AUTH_RESUME_CREW_CHAT_QUERY) === '1';
+
+  useEffect(() => {
+    if (!user || !resumeCrewChat || !contextActivityId || selectedGroupId) return;
+    let cancelled = false;
+    void fetchActivityGroupChatGroupId(contextActivityId)
+      .then((groupId) => {
+        if (cancelled || !groupId) return;
+        setSearchParams((prev) => {
+          const next = new URLSearchParams(prev);
+          next.set('group', groupId);
+          next.delete(AUTH_RESUME_CREW_CHAT_QUERY);
+          return next;
+        });
+        setMobileShowThread(true);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [user, resumeCrewChat, contextActivityId, selectedGroupId, setSearchParams]);
 
   const openDirectConversation = useCallback(
     (userId: string) => {
@@ -212,7 +242,9 @@ export const Messages = () => {
     },
     onReconnect: () => {
       void loadInbox();
-      directChat.reloadSilent();
+      if (selectedUserIdRef.current) {
+        directChat.reloadSilent();
+      }
     },
   });
 
@@ -293,17 +325,13 @@ export const Messages = () => {
   }, []);
 
   const backToList = useCallback(() => {
-    if (selectedGroupId && chatReturnTo) {
+    if (chatReturnTo && (selectedGroupId || selectedUserId)) {
       navigate(chatReturnTo, { replace: true });
       return;
     }
     setMobileShowThread(false);
     setSearchParams({});
-  }, [chatReturnTo, navigate, selectedGroupId, setSearchParams]);
-
-  const inGroupThread = Boolean(selectedGroupId);
-  const inDirectThread = mobileShowThread && !!selectedUserId;
-  const inThread = inGroupThread || inDirectThread;
+  }, [chatReturnTo, navigate, selectedGroupId, selectedUserId, setSearchParams]);
 
   const openCreateGroup = () => {
     setShowNewChat(false);
@@ -320,9 +348,12 @@ export const Messages = () => {
       partnerName: directChat.partnerName,
       partnerAvatar: directChat.partnerAvatar,
       loadingMessages: directChat.loadingMessages,
+      loadingOlder: directChat.loadingOlder,
+      showLoadMore: directChat.showLoadMore,
+      onLoadMoreOlder: directChat.loadMoreOlder,
+      consumeScrollMode: directChat.consumeScrollMode,
       messages: directChat.messages,
       draft: directChat.draft,
-      sending: directChat.sending,
       onBack: backToList,
       onReport: openReportDialog,
       onDraftChange: directChat.setDraft,
@@ -337,9 +368,12 @@ export const Messages = () => {
       directChat.partnerName,
       directChat.partnerAvatar,
       directChat.loadingMessages,
+      directChat.loadingOlder,
+      directChat.showLoadMore,
+      directChat.loadMoreOlder,
+      directChat.consumeScrollMode,
       directChat.messages,
       directChat.draft,
-      directChat.sending,
       directChat.setDraft,
       directChat.send,
       directChat.updateMessageReactions,
@@ -448,6 +482,7 @@ export const Messages = () => {
           <MessagesInboxList
             threads={visibleThreads}
             loading={loading}
+            unavailable={unavailable}
             inboxFilter={inboxFilter}
             inboxQuery={inboxQuery}
             selectedDirectId={selectedUserId}

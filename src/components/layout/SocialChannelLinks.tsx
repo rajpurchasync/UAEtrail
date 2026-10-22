@@ -3,6 +3,7 @@ import { SOCIAL_EXTERNAL_LINK_PROPS, SOCIAL_LINKS } from '../../config/socialLin
 import { FacebookIcon } from '../icons/FacebookIcon';
 import { InstagramIcon } from '../icons/InstagramIcon';
 import { WhatsAppIcon } from '../icons/WhatsAppIcon';
+import { YouTubeIcon } from '../icons/YouTubeIcon';
 
 type SocialChannel = {
   href: string;
@@ -23,6 +24,12 @@ const SOCIAL_CHANNELS: SocialChannel[] = [
     label: 'Follow UAE Trail on Facebook',
     icon: FacebookIcon,
     iconClassName: 'h-[1.35rem] w-[1.35rem] text-[#1877F2]',
+  },
+  {
+    href: SOCIAL_LINKS.youtube,
+    label: 'Subscribe to UAE Trail on YouTube',
+    icon: YouTubeIcon,
+    iconClassName: 'h-[1.35rem] w-[1.35rem]',
   },
   {
     href: SOCIAL_LINKS.whatsapp,

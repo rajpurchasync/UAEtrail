@@ -12,12 +12,14 @@ import {
   isJourneyMapPath,
   isProfileHistoryListPath,
 } from '../../config/routingCatalog';
+import { resolveMobileTabHeaderLeadingBack } from '../../utils/mobileBackNav';
 import { joinedSubViewTitle } from '../../pages/activities/shared';
 import { useMemberStatus } from '../../hooks/useMemberStatus';
 import { memberCanManageHostedActivities } from '../../utils/hostedActivitiesGate';
 import { PRODUCT_PLAN_SURFACE_TITLE } from '../../content/productNorthStar';
 import { ConsumerHeaderActions } from '../layout/ConsumerHeaderActions';
 import { MobileUnifiedTabHeader } from './MobileUnifiedTabHeader';
+import { useExploreMapChrome } from '../../explore/ExploreMapChromeContext';
 
 const resolveCenter = (
   pathname: string,
@@ -42,11 +44,12 @@ const resolveCenter = (
 
 /** Layout-mounted tab header — one chrome for Map, Profile, Activities, Messages. */
 export const MobileTabHeader = () => {
-  const { pathname, search } = useLocation();
+  const { pathname, search, state } = useLocation();
   const { user } = useAuth();
   const gate = useMemberStatus({ enabled: Boolean(user) });
   const canHost = memberCanManageHostedActivities(user, gate.canAccessPublishingWorkspace);
 
+  const exploreMapChrome = useExploreMapChrome();
   const visible = shouldShowMobileUnifiedTabHeader(pathname, search, Boolean(user));
   const center = resolveCenter(pathname, search, canHost);
 
@@ -62,11 +65,19 @@ export const MobileTabHeader = () => {
 
   const trailing = showHeaderActions ? <ConsumerHeaderActions /> : null;
 
+  const leadingBack = resolveMobileTabHeaderLeadingBack(pathname, state);
+
   return (
     <MobileUnifiedTabHeader
       center={center}
       trailing={trailing}
       profileActive={pathname === '/profile'}
+      leadingBack={leadingBack}
+      onExploreBrandClick={
+        pathname === EXPLORE_MAP_PATH
+          ? () => exploreMapChrome?.requestClosePeek()
+          : undefined
+      }
     />
   );
 };

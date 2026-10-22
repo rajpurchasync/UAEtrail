@@ -116,6 +116,13 @@ export const countThreadMessages = async (currentUserId: string, partnerId: stri
   });
 };
 
+const threadMatch = (currentUserId: string, partnerId: string) => ({
+  $or: [
+    { senderId: currentUserId, receiverId: partnerId },
+    { senderId: partnerId, receiverId: currentUserId },
+  ],
+});
+
 export const listThreadMessages = async (input: {
   currentUserId: string;
   partnerId: string;
@@ -123,18 +130,62 @@ export const listThreadMessages = async (input: {
   take: number;
 }): Promise<ChatMessage[]> => {
   const rows = await chatMessagesCollection()
-    .find({
-      $or: [
-        { senderId: input.currentUserId, receiverId: input.partnerId },
-        { senderId: input.partnerId, receiverId: input.currentUserId }
-      ]
-    })
+    .find(threadMatch(input.currentUserId, input.partnerId))
     .sort({ createdAt: -1 })
     .skip(input.skip)
     .limit(input.take)
     .toArray();
 
   return rows.map(mapMessage);
+};
+
+/** Latest messages in chronological order (oldest → newest within the batch). */
+export const listThreadMessagesLatest = async (input: {
+  currentUserId: string;
+  partnerId: string;
+  take: number;
+}): Promise<ChatMessage[]> => {
+  const rows = await chatMessagesCollection()
+    .find(threadMatch(input.currentUserId, input.partnerId))
+    .sort({ createdAt: -1 })
+    .limit(input.take)
+    .toArray();
+
+  return rows.map(mapMessage).reverse();
+};
+
+/** Messages older than `beforeMessageId`, chronological order. */
+export const listThreadMessagesBefore = async (input: {
+  currentUserId: string;
+  partnerId: string;
+  beforeMessageId: string;
+  take: number;
+}): Promise<ChatMessage[]> => {
+  const anchor = await chatMessagesCollection().findOne({ _id: input.beforeMessageId });
+  if (!anchor) return [];
+
+  const inThread =
+    (anchor.senderId === input.currentUserId && anchor.receiverId === input.partnerId) ||
+    (anchor.senderId === input.partnerId && anchor.receiverId === input.currentUserId);
+  if (!inThread) return [];
+
+  const rows = await chatMessagesCollection()
+    .find({
+      $and: [
+        threadMatch(input.currentUserId, input.partnerId),
+        {
+          $or: [
+            { createdAt: { $lt: anchor.createdAt } },
+            { createdAt: anchor.createdAt, _id: { $lt: anchor._id } },
+          ],
+        },
+      ],
+    })
+    .sort({ createdAt: -1, _id: -1 })
+    .limit(input.take)
+    .toArray();
+
+  return rows.map(mapMessage).reverse();
 };
 
 export const findChatMessageInThread = async (

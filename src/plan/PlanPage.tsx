@@ -39,7 +39,6 @@ export const PlanPage = () => {
   const canHost = memberCanManageHostedActivities(user, gate.canAccessPublishingWorkspace);
   const {
     goals,
-    primaryGoal,
     saving: goalSaving,
     createGoal,
     updateGoal,
@@ -160,15 +159,12 @@ export const PlanPage = () => {
             {user ? (
               <>
                 <PlanGoalsProgressSummary
-                  primaryGoal={primaryGoal}
+                  goals={goals}
+                  mainTab={mainTab}
                   saving={goalSaving}
-                  onSaveGoal={(input) =>
-                    primaryGoal ? updateGoal(primaryGoal.id, input) : createGoal(input)
-                  }
-                  onClearGoal={() =>
-                    primaryGoal ? deleteGoal(primaryGoal.id) : Promise.resolve()
-                  }
+                  onCreateGoal={createGoal}
                   onReloadGoals={reloadGoals}
+                  onOpenWishlist={() => setMainTab('wishlist')}
                 />
                 <PlanPageTabs active={mainTab} onChange={setMainTab} />
                 {mainTab === 'upcoming' ? (

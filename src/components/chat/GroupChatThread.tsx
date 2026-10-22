@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { Loader2, MessageSquare, Settings2, Users } from 'lucide-react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { MessageSquare, Settings2, Users } from 'lucide-react';
 import { groupsApi, messagingApi } from '../../messaging';
 import type {
   SocialGroupMemberView,
@@ -7,7 +8,7 @@ import type {
   SocialGroupWallMessageView,
 } from '../../api/types';
 import { ChatReplyComposer } from './ChatReplyComposer';
-import { runWithReplyTarget, useThreadReply } from './useThreadReply';
+import { useThreadReply } from './useThreadReply';
 import { ChatThreadShell } from './ChatThreadShell';
 import { ChatThreadHeaderBar } from './ChatThreadHeaderBar';
 import {
@@ -21,12 +22,34 @@ import { useAuth } from '../../context/AuthContext';
 import { GroupWallMessageItem } from './GroupWallMessageItem';
 import { MessageAvatar } from './ChatMessageAvatar';
 import { chatMessageRowAlign } from './chatMessageLayout';
+import {
+  createOptimisticChatId,
+  isOptimisticChatId,
+  replaceOptimisticChatRow,
+} from '../../utils/chatOptimistic';
+import { wallMessageQuoteSnippet } from '../../utils/groupWallReply';
+
+import { ChatThreadLoadMore } from './ChatThreadLoadMore';
+import { ChatLoadingState } from './ChatLoadingState';
+import {
+  CHAT_THREAD_INITIAL_LIMIT,
+  CHAT_THREAD_MANUAL_OLDER_LIMIT,
+  shouldShowChatLoadMore,
+} from '../../utils/chatThreadPagination';
+import { groupChatWallQueryKey } from '../../hooks/clientQueryKeys';
+import {
+  type GroupChatWallCache,
+  groupWallMessagesMatchGroup,
+  mergeChatRowsById,
+} from '../../utils/chatThreadCache';
+import {
+  applyChatScrollPreserveAnchor,
+  captureChatScrollPreserveAnchor,
+  chatMessageAnchorSelector,
+} from '../../utils/chatScrollPreserve';
 
 /** Fallback when SSE is unavailable; primary delivery is `group_wall_message` on chat stream. */
 const WALL_POLL_MS = 45_000;
-const WALL_INITIAL_LIMIT = 120;
-const WALL_OLDER_PAGE = 60;
-const LOAD_OLDER_SCROLL_PX = 72;
 
 type WallScrollMode = 'initial' | 'bottom' | 'preserve';
 
@@ -57,13 +80,13 @@ export const GroupChatThread = ({
   onGroupUpdated,
 }: GroupChatThreadProps) => {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const currentUserId = user?.id;
   const [group, setGroup] = useState<SocialGroupView | null>(null);
   const [membership, setMembership] = useState<SocialGroupMemberView | null>(null);
   const [members, setMembers] = useState<SocialGroupMemberView[]>([]);
   const [wall, setWall] = useState<SocialGroupWallMessageView[]>([]);
   const [loading, setLoading] = useState(true);
-  const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [draft, setDraft] = useState('');
   const [membersOpen, setMembersOpen] = useState(false);
@@ -82,7 +105,16 @@ export const GroupChatThread = ({
   const wallLengthRef = useRef(0);
   const wallLatestAtRef = useRef<string | null>(null);
   const scrollModeRef = useRef<WallScrollMode>('initial');
-  const preserveScrollHeightRef = useRef<number | null>(null);
+  const preserveScrollAnchorRef = useRef<ReturnType<typeof captureChatScrollPreserveAnchor>>(null);
+  const preparedGroupRef = useRef<string | null>(null);
+  if (preparedGroupRef.current !== groupId) {
+    preparedGroupRef.current = groupId;
+    skipScrollRef.current = true;
+    wallLengthRef.current = 0;
+    wallLatestAtRef.current = null;
+    scrollModeRef.current = 'initial';
+    preserveScrollAnchorRef.current = null;
+  }
 
   const canPost =
     group && membership ? canMemberPostToGroupWall(group, membership) : false;
@@ -131,14 +163,28 @@ export const GroupChatThread = ({
       const ids = new Set(current.map((row) => row.id));
       const merged = [...current];
       for (const message of incoming) {
-        if (!ids.has(message.id)) {
-          merged.push(message);
-          ids.add(message.id);
+        if (ids.has(message.id)) continue;
+        if (currentUserId && message.authorUserId === currentUserId) {
+          const pendingIndex = merged.findIndex(
+            (row) =>
+              isOptimisticChatId(row.id) &&
+              row.authorUserId === currentUserId &&
+              row.body === message.body
+          );
+          if (pendingIndex >= 0) {
+            const pendingId = merged[pendingIndex].id;
+            merged[pendingIndex] = message;
+            ids.delete(pendingId);
+            ids.add(message.id);
+            continue;
+          }
         }
+        merged.push(message);
+        ids.add(message.id);
       }
       return merged;
     });
-  }, []);
+  }, [currentUserId]);
 
   const appendWallMessage = useCallback((message: SocialGroupWallMessageView) => {
     appendWallMessages([message]);
@@ -150,30 +196,49 @@ export const GroupChatThread = ({
   }, [wall]);
 
   const loadThread = useCallback(async () => {
-    setLoading(true);
+    const wallKey = groupChatWallQueryKey(groupId);
+    const cached = queryClient.getQueryData<GroupChatWallCache>(wallKey);
+    const hasWallCache = Boolean(cached?.messages.length);
+
+    if (hasWallCache && cached) {
+      setWall(cached.messages);
+      setHasMoreOlder(cached.hasMoreOlder);
+      setLoading(false);
+      scrollModeRef.current = 'initial';
+      skipScrollRef.current = true;
+    } else {
+      setLoading(true);
+    }
     setError(null);
     try {
       const [detailRes, wallRes] = await Promise.all([
         groupsApi.getMeGroupDetail(groupId),
-        messagingApi.crew.getWall(groupId, { limit: WALL_INITIAL_LIMIT }),
+        messagingApi.crew.getWall(groupId, { limit: CHAT_THREAD_INITIAL_LIMIT }),
       ]);
       setGroup(detailRes.data.group);
       setMembership(detailRes.data.membership);
       setMembers(detailRes.data.members);
-      setHasMoreOlder(
-        wallRes.meta?.hasMoreOlder ?? wallRes.data.length >= WALL_INITIAL_LIMIT
-      );
-      mergeWall(wallRes.data);
+      const serverMore =
+        wallRes.meta?.hasMoreOlder ?? wallRes.data.length >= CHAT_THREAD_INITIAL_LIMIT;
+      if (hasWallCache && cached) {
+        setWall(mergeChatRowsById(cached.messages, wallRes.data));
+        setHasMoreOlder(cached.hasMoreOlder || serverMore);
+      } else {
+        setHasMoreOlder(serverMore);
+        mergeWall(wallRes.data);
+      }
       markWallRead();
       const latest = wallRes.data[wallRes.data.length - 1];
       if (latest) notifyWallActivity(latest);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not load group chat.');
-      setWall([]);
+      if (!hasWallCache) {
+        setWall([]);
+      }
     } finally {
       setLoading(false);
     }
-  }, [groupId, markWallRead, mergeWall, notifyWallActivity]);
+  }, [groupId, markWallRead, mergeWall, notifyWallActivity, queryClient]);
 
   const pollNewMessages = useCallback(async () => {
     const since = wallLatestAtRef.current;
@@ -191,56 +256,57 @@ export const GroupChatThread = ({
     }
   }, [appendWallMessages, groupId, markWallRead, notifyWallActivity]);
 
-  const loadOlderMessages = useCallback(async () => {
-    if (loadingOlder || !hasMoreOlder || wall.length === 0) return;
-    const first = wall[0];
-    const container = chatContainerRef.current;
-    preserveScrollHeightRef.current = container?.scrollHeight ?? null;
-    setLoadingOlder(true);
-    try {
-      const wallRes = await messagingApi.crew.getWall(groupId, {
-        beforeMessageId: first.id,
-        limit: WALL_OLDER_PAGE,
-      });
-      if (wallRes.data.length === 0) {
-        setHasMoreOlder(false);
-        return;
+  const loadOlderMessages = useCallback(
+    async (limit: number) => {
+      if (loadingOlder || !hasMoreOlder || wall.length === 0) return;
+      const first = wall.find((row) => !isOptimisticChatId(row.id));
+      if (!first) return;
+      preserveScrollAnchorRef.current = captureChatScrollPreserveAnchor(
+        chatContainerRef.current,
+        chatMessageAnchorSelector(chatContainerRef.current, 'data-wall-message-id')
+      );
+      setLoadingOlder(true);
+      try {
+        const wallRes = await messagingApi.crew.getWall(groupId, {
+          beforeMessageId: first.id,
+          limit,
+        });
+        if (wallRes.data.length === 0) {
+          setHasMoreOlder(false);
+          return;
+        }
+        prependWallMessages(wallRes.data);
+        setHasMoreOlder(wallRes.meta?.hasMoreOlder ?? wallRes.data.length >= limit);
+      } catch {
+        /* history load is best-effort */
+      } finally {
+        setLoadingOlder(false);
       }
-      prependWallMessages(wallRes.data);
-      setHasMoreOlder(wallRes.meta?.hasMoreOlder ?? wallRes.data.length >= WALL_OLDER_PAGE);
-    } catch {
-      /* history load is best-effort */
-    } finally {
-      setLoadingOlder(false);
-    }
-  }, [chatContainerRef, groupId, hasMoreOlder, loadingOlder, prependWallMessages, wall]);
+    },
+    [chatContainerRef, groupId, hasMoreOlder, loadingOlder, prependWallMessages, wall]
+  );
+
+  const showLoadMore = shouldShowChatLoadMore(wall.length, hasMoreOlder);
+
+  const loadMoreManual = useCallback(() => {
+    void loadOlderMessages(CHAT_THREAD_MANUAL_OLDER_LIMIT);
+  }, [loadOlderMessages]);
 
   useEffect(() => {
     void loadThread();
   }, [loadThread]);
 
   useEffect(() => {
-    skipScrollRef.current = true;
-    wallLengthRef.current = 0;
-    wallLatestAtRef.current = null;
-    setHasMoreOlder(false);
-    scrollModeRef.current = 'initial';
-  }, [groupId]);
+    if (!groupWallMessagesMatchGroup(wall, groupId)) return;
+    queryClient.setQueryData<GroupChatWallCache>(groupChatWallQueryKey(groupId), {
+      messages: wall,
+      hasMoreOlder,
+    });
+  }, [groupId, hasMoreOlder, queryClient, wall]);
 
   useEffect(() => {
-    const container = chatContainerRef.current;
-    if (!container || loading) return;
-
-    const onScroll = () => {
-      if (loadingOlder || !hasMoreOlder) return;
-      if (container.scrollTop <= LOAD_OLDER_SCROLL_PX) {
-        void loadOlderMessages();
-      }
-    };
-
-    container.addEventListener('scroll', onScroll, { passive: true });
-    return () => container.removeEventListener('scroll', onScroll);
-  }, [chatContainerRef, hasMoreOlder, loadOlderMessages, loading, loadingOlder]);
+    setHasMoreOlder(false);
+  }, [groupId]);
 
   useEffect(() => {
     const id = window.setInterval(() => {
@@ -265,22 +331,28 @@ export const GroupChatThread = ({
     streamedMessage,
   ]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const container = chatContainerRef.current;
     if (!container || loading) return;
+
+    const anchor = preserveScrollAnchorRef.current;
+    const grew = wall.length > wallLengthRef.current;
+
+    if (anchor) {
+      if (grew) {
+        applyChatScrollPreserveAnchor(container, anchor);
+        preserveScrollAnchorRef.current = null;
+        wallLengthRef.current = wall.length;
+        scrollModeRef.current = 'bottom';
+      } else if (!loadingOlder) {
+        preserveScrollAnchorRef.current = null;
+      }
+      return;
+    }
 
     const mode = scrollModeRef.current;
     scrollModeRef.current = 'bottom';
 
-    if (mode === 'preserve' && preserveScrollHeightRef.current !== null) {
-      const delta = container.scrollHeight - preserveScrollHeightRef.current;
-      container.scrollTop = delta;
-      preserveScrollHeightRef.current = null;
-      wallLengthRef.current = wall.length;
-      return;
-    }
-
-    const grew = wall.length > wallLengthRef.current;
     wallLengthRef.current = wall.length;
 
     if (mode === 'initial' || skipScrollRef.current) {
@@ -292,29 +364,55 @@ export const GroupChatThread = ({
     if (grew && mode === 'bottom') {
       container.scrollTop = container.scrollHeight;
     }
-  }, [chatContainerRef, wall.length, loading]);
+  }, [chatContainerRef, wall.length, loading, loadingOlder]);
 
   const sendMessage = async () => {
     const trimmed = draft.trim();
-    if (!trimmed || !canPost || sending) return;
+    if (!trimmed || !canPost || !currentUserId) return;
     setDraft('');
-    setSending(true);
     setError(null);
+
+    const replyToMessageId = replyTo?.id;
+    const quoted = replyToMessageId ? wall.find((row) => row.id === replyToMessageId) : undefined;
+    const optimisticId = createOptimisticChatId();
+    const optimistic: SocialGroupWallMessageView = {
+      id: optimisticId,
+      groupId,
+      authorUserId: currentUserId,
+      body: trimmed,
+      createdAt: new Date().toISOString(),
+      ...(replyToMessageId ? { replyToMessageId } : {}),
+      ...(quoted
+        ? {
+            replyToPreview: {
+              messageId: quoted.id,
+              authorDisplayName: quoted.author?.displayName?.trim() || 'Member',
+              bodySnippet: wallMessageQuoteSnippet(quoted.body),
+            },
+          }
+        : {}),
+    };
+
+    appendWallMessage(optimistic);
+    skipScrollRef.current = false;
+    notifyWallActivity(optimistic);
+
+    const previousReply = replyTo;
+    setReplyTo(null);
+
     try {
-      await runWithReplyTarget(replyTo, setReplyTo, async (replyToMessageId) => {
-        const res = await messagingApi.crew.post(groupId, trimmed, {
-          replyToMessageId,
-        });
-        appendWallMessage(res.data);
-        skipScrollRef.current = false;
-        markWallRead();
-        notifyWallActivity(res.data);
+      const res = await messagingApi.crew.post(groupId, trimmed, {
+        replyToMessageId,
       });
+      setWall((current) => replaceOptimisticChatRow(current, optimisticId, res.data));
+      skipScrollRef.current = false;
+      markWallRead();
+      notifyWallActivity(res.data);
     } catch (err) {
+      setWall((current) => current.filter((row) => row.id !== optimisticId));
       setDraft(trimmed);
+      setReplyTo(previousReply);
       setError(err instanceof Error ? err.message : 'Could not send message.');
-    } finally {
-      setSending(false);
     }
   };
 
@@ -359,10 +457,14 @@ export const GroupChatThread = ({
           }
           title={title}
           subtitle={
+            loading && !group ? (
+              'Loading chat…'
+            ) : (
             <>
               {activeMemberCount} participant{activeMemberCount === 1 ? '' : 's'} ·{' '}
               {groupWallPostPolicyLabel[postPolicy]}
             </>
+            )
           }
           trailing={
             isAdmin ? (
@@ -387,7 +489,6 @@ export const GroupChatThread = ({
             value={draft}
             onChange={setDraft}
             onSend={sendMessage}
-            sending={sending}
             composeClassName="!border-t-0 !px-4"
           />
         ) : (
@@ -398,9 +499,7 @@ export const GroupChatThread = ({
       }
     >
         {loading ? (
-          <div className="flex justify-center py-16">
-            <Loader2 className="h-7 w-7 animate-spin text-gray-400" />
-          </div>
+          <ChatLoadingState variant="thread" label="Loading messages" />
         ) : wall.length === 0 ? (
           <div className="py-10 text-center">
             <MessageSquare className="mx-auto mb-3 h-10 w-10 text-gray-300" aria-hidden />
@@ -411,18 +510,12 @@ export const GroupChatThread = ({
           </div>
         ) : (
           <>
-            {loadingOlder ? (
-              <div className="flex justify-center py-2" aria-busy="true">
-                <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
-              </div>
-            ) : hasMoreOlder ? (
-              <button
-                type="button"
-                onClick={() => void loadOlderMessages()}
-                className="mx-auto block rounded-full px-3 py-1 text-xs font-medium text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700"
-              >
-                Load earlier messages
-              </button>
+            {showLoadMore ? (
+              <ChatThreadLoadMore loading={loadingOlder} onClick={loadMoreManual} />
+            ) : loadingOlder ? (
+              <p className="flex items-center justify-center gap-2 py-2 text-xs font-medium text-neutral-500" role="status">
+                Loading earlier messages
+              </p>
             ) : null}
             {wall.map((message) => {
               const isMe = Boolean(currentUserId && message.authorUserId === currentUserId);

@@ -5,7 +5,9 @@ import { fetchPublicActivityDetail } from '../../hooks/publicActivityClientApi';
 import { activitySharePath } from '../../utils/activityShare';
 import { resolveActivityHeroImage } from '../../utils/activityHeroImage';
 import { formatActivityType } from '../../utils/activityIdentity';
-import { activityPublicMetaDescription } from '../../utils/activityPublicSeo';
+import { SITE_TITLE_BRAND } from '../../config/seo';
+
+const CHAT_ACTIVITY_PREVIEW_BRAND_MARK = '/icons/icon.svg';
 
 const formatWhen = (date?: string | null, time?: string | null): string | null => {
   if (!date?.trim()) return time?.trim() || null;
@@ -76,8 +78,6 @@ export const ChatActivityLinkPreview = ({ activityId, tone = 'default' }: ChatAc
     bannerUrl: activity.bannerUrl,
     location: activity.location,
   });
-  const subtitle = activityPublicMetaDescription(activity);
-
   return (
     <Link
       to={activitySharePath(activity.id)}
@@ -87,6 +87,14 @@ export const ChatActivityLinkPreview = ({ activityId, tone = 'default' }: ChatAc
     >
       <div className="relative aspect-[16/9] w-full bg-neutral-200">
         <img src={image} alt="" className="h-full w-full object-cover" loading="lazy" decoding="async" />
+        <span
+          className={`absolute left-2 top-2 flex h-7 w-7 items-center justify-center overflow-hidden rounded-lg shadow-sm ring-1 ${
+            tone === 'onPrimary' ? 'bg-white/95 ring-white/40' : 'bg-white ring-black/10'
+          }`}
+          aria-hidden
+        >
+          <img src={CHAT_ACTIVITY_PREVIEW_BRAND_MARK} alt="" className="h-full w-full object-cover" />
+        </span>
         <span
           className={`absolute bottom-2 left-2 rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
             tone === 'onPrimary' ? 'bg-black/50 text-white' : 'bg-white/95 text-emerald-900'
@@ -102,8 +110,8 @@ export const ChatActivityLinkPreview = ({ activityId, tone = 'default' }: ChatAc
         {meta ? (
           <p className={`text-xs ${tone === 'onPrimary' ? 'text-emerald-50/90' : 'text-neutral-600'}`}>{meta}</p>
         ) : null}
-        <p className={`line-clamp-2 text-xs ${tone === 'onPrimary' ? 'text-emerald-50/80' : 'text-neutral-500'}`}>
-          {subtitle}
+        <p className={`text-xs font-medium ${tone === 'onPrimary' ? 'text-emerald-50/85' : 'text-neutral-500'}`}>
+          {SITE_TITLE_BRAND}
         </p>
       </div>
     </Link>

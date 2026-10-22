@@ -29,6 +29,9 @@ import { ExploreGuestSignInCard } from '@/explore/ui/ExploreGuestSignInCard';
 
 export type PeopleBrowseTabKey = 'looking' | 'available' | 'going' | 'connect';
 
+const peopleBrowseAuthError = (message: string): boolean =>
+  /missing bearer token|session expired|authentication is required|sign in again/i.test(message);
+
 export type PeopleBrowseTabContentProps = {
   tab: PeopleBrowseTabKey;
   isSignedIn: boolean;
@@ -97,9 +100,12 @@ export const PeopleBrowseTabContent = ({
 
   if (tab === 'available') {
     if (availabilityLoading) {
-      return <PeopleBrowseListLoading rows={5} />;
+      return <PeopleBrowseListLoading label={EXPLORE_PEOPLE_BROWSE_LOADING} />;
     }
     if (availabilityError) {
+      if (peopleBrowseAuthError(availabilityError)) {
+        return <ExploreGuestSignInCard intent="explore-people-browse" compact />;
+      }
       return <PeopleBrowseListError message={availabilityError} />;
     }
     if (availabilityPeople.length === 0) {
@@ -118,14 +124,14 @@ export const PeopleBrowseTabContent = ({
   }
 
   if (discoveryLoading) {
-    return (
-      <>
-        <PeopleBrowseListLoading rows={5} />
-        <p className={`mt-3 text-center text-sm ${EXPLORE_TYPE.caption}`}>{EXPLORE_PEOPLE_BROWSE_LOADING}</p>
-      </>
-    );
+    return <PeopleBrowseListLoading label={EXPLORE_PEOPLE_BROWSE_LOADING} />;
   }
-  if (discoveryError) return <PeopleBrowseListError message={discoveryError} />;
+  if (discoveryError) {
+    if (peopleBrowseAuthError(discoveryError)) {
+      return <ExploreGuestSignInCard intent="explore-people-browse" compact />;
+    }
+    return <PeopleBrowseListError message={discoveryError} />;
+  }
 
   if (tab === 'going') {
     if (friendsGoing.length === 0) {

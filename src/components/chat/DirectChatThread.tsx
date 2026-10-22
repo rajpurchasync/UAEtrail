@@ -1,5 +1,11 @@
-import { useCallback, useEffect, useRef } from 'react';
-import { Flag, Loader2, MessageSquare } from 'lucide-react';
+import { useCallback, useLayoutEffect, useRef } from 'react';
+import {
+  applyChatScrollPreserveAnchor,
+  type ChatScrollPreserveAnchor,
+  captureChatScrollPreserveAnchor,
+  chatMessageAnchorSelector,
+} from '../../utils/chatScrollPreserve';
+import { Flag, MessageSquare } from 'lucide-react';
 import type { ChatMessageDTO, ChatMessageReactionDTO } from '@uaetrail/shared-types';
 import { DirectMessageBubble } from './DirectMessageBubble';
 import { chatMessageRowAlign } from './chatMessageLayout';
@@ -12,6 +18,9 @@ import { runWithReplyTarget, useThreadReply } from './useThreadReply';
 import { ChatThreadShell } from './ChatThreadShell';
 import { ChatThreadHeaderBar } from './ChatThreadHeaderBar';
 import { MessageAvatar } from './ChatMessageAvatar';
+import { ChatThreadLoadMore } from './ChatThreadLoadMore';
+import { ChatLoadingState } from './ChatLoadingState';
+import type { DirectChatScrollMode } from './useDirectChatThread';
 
 export type DirectChatThreadProps = {
   mobileShowThread: boolean;
@@ -22,13 +31,16 @@ export type DirectChatThreadProps = {
   loadingMessages: boolean;
   messages: ChatMessageDTO[];
   draft: string;
-  sending: boolean;
   onBack: () => void;
   onReport: () => void;
   onDraftChange: (value: string) => void;
   onSend: (options?: { replyToMessageId?: string }) => void | Promise<void>;
   onReactionError?: (message: string) => void;
   onMessageReactionsChange: (messageId: string, reactions: ChatMessageReactionDTO[]) => void;
+  loadingOlder?: boolean;
+  showLoadMore?: boolean;
+  onLoadMoreOlder?: () => void;
+  consumeScrollMode?: () => DirectChatScrollMode;
 };
 
 export const DirectChatThread = ({
@@ -40,16 +52,27 @@ export const DirectChatThread = ({
   loadingMessages,
   messages,
   draft,
-  sending,
   onBack,
   onReport,
   onDraftChange,
   onSend,
   onReactionError,
   onMessageReactionsChange,
+  loadingOlder = false,
+  showLoadMore = false,
+  onLoadMoreOlder,
+  consumeScrollMode,
 }: DirectChatThreadProps) => {
   const prevCountRef = useRef(0);
   const skipInitialScrollRef = useRef(true);
+  const preserveScrollAnchorRef = useRef<ChatScrollPreserveAnchor | null>(null);
+  const preparedPartnerRef = useRef<string | null>(null);
+  if (preparedPartnerRef.current !== partnerUserId) {
+    preparedPartnerRef.current = partnerUserId;
+    skipInitialScrollRef.current = true;
+    prevCountRef.current = 0;
+    preserveScrollAnchorRef.current = null;
+  }
   const {
     replyTo,
     setReplyTo,
@@ -59,10 +82,14 @@ export const DirectChatThread = ({
     scrollToMessage,
   } = useThreadReply(partnerUserId, 'data-dm-message-id');
 
-  useEffect(() => {
-    skipInitialScrollRef.current = true;
-    prevCountRef.current = 0;
-  }, [partnerUserId]);
+  const handleLoadMoreOlder = useCallback(() => {
+    const container = messagesContainerRef.current;
+    preserveScrollAnchorRef.current = captureChatScrollPreserveAnchor(
+      container,
+      chatMessageAnchorSelector(container, 'data-dm-message-id')
+    );
+    onLoadMoreOlder?.();
+  }, [messagesContainerRef, onLoadMoreOlder]);
 
   const resolveQuotedMessage = useCallback(
     (messageId: string) => {
@@ -75,30 +102,52 @@ export const DirectChatThread = ({
   );
 
   const submitMessage = async () => {
-    if (!draft.trim() || sending) return;
+    if (!draft.trim()) return;
     await runWithReplyTarget(replyTo, setReplyTo, (replyToMessageId) =>
       onSend(replyToMessageId ? { replyToMessageId } : undefined)
     );
   };
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (loadingMessages) return;
 
     const container = messagesContainerRef.current;
     if (!container) return;
 
-    if (skipInitialScrollRef.current) {
+    const anchor = preserveScrollAnchorRef.current;
+    if (anchor) {
+      if (messages.length > prevCountRef.current) {
+        applyChatScrollPreserveAnchor(container, anchor);
+        preserveScrollAnchorRef.current = null;
+        prevCountRef.current = messages.length;
+        consumeScrollMode?.();
+      } else if (!loadingOlder) {
+        preserveScrollAnchorRef.current = null;
+      }
+      return;
+    }
+
+    const mode = consumeScrollMode?.() ?? 'bottom';
+
+    if (skipInitialScrollRef.current || mode === 'initial') {
       skipInitialScrollRef.current = false;
       prevCountRef.current = messages.length;
       container.scrollTop = container.scrollHeight;
       return;
     }
 
-    if (messages.length > prevCountRef.current) {
+    if (messages.length > prevCountRef.current && mode === 'bottom') {
       container.scrollTop = container.scrollHeight;
       prevCountRef.current = messages.length;
     }
-  }, [messages.length, loadingMessages, partnerUserId, messagesContainerRef]);
+  }, [
+    messages.length,
+    loadingMessages,
+    loadingOlder,
+    partnerUserId,
+    messagesContainerRef,
+    consumeScrollMode,
+  ]);
 
   return (
     <div
@@ -142,18 +191,22 @@ export const DirectChatThread = ({
               value={draft}
               onChange={onDraftChange}
               onSend={submitMessage}
-              sending={sending}
             />
           }
         >
           {loadingMessages ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
-            </div>
+            <ChatLoadingState variant="thread" label="Loading messages" />
           ) : messages.length === 0 ? (
             <p className="text-center text-gray-400 text-sm mt-16 font-emoji">No messages yet. Say hello! 👋</p>
           ) : (
             <>
+              {showLoadMore && onLoadMoreOlder ? (
+                <ChatThreadLoadMore loading={loadingOlder} onClick={handleLoadMoreOlder} />
+              ) : loadingOlder ? (
+                <p className="flex items-center justify-center gap-2 py-2 text-xs font-medium text-neutral-500" role="status" aria-live="polite">
+                  Loading earlier messages
+                </p>
+              ) : null}
               {messages.map((m, i) => {
                 const isMe = m.senderId === currentUserId;
                 const showDate = shouldShowChatDateSeparator(m.createdAt, messages[i - 1]?.createdAt);

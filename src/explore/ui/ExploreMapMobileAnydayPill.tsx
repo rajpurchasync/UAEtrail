@@ -6,12 +6,14 @@ import {
   exploreActivityDatePresetLabel,
   type ExploreActivityDatePreset,
 } from '../exploreActivityDateFilter';
+import { EXPLORE_COMPACT_PILL_LABEL } from '../../config/exploreTheme';
 import { useExploreMapPillDropdown } from './exploreMapPillDropdown';
 
 type ExploreMapMobileAnydayPillProps = {
   activityDatePreset: ExploreActivityDatePreset;
   onActivityDatePresetChange: (preset: ExploreActivityDatePreset) => void;
   pillClassName: string;
+  compact?: boolean;
   menuOpen?: boolean;
   onMenuOpenChange?: (open: boolean) => void;
 };
@@ -21,6 +23,7 @@ export const ExploreMapMobileAnydayPill = ({
   activityDatePreset,
   onActivityDatePresetChange,
   pillClassName,
+  compact = false,
   menuOpen: menuOpenProp,
   onMenuOpenChange,
 }: ExploreMapMobileAnydayPillProps) => {
@@ -79,20 +82,29 @@ export const ExploreMapMobileAnydayPill = ({
       : null;
 
   return (
-    <div ref={anchorRef} className="relative shrink-0">
+    <div ref={anchorRef} className="relative flex min-w-0 flex-1 basis-0">
       <button
         type="button"
         onClick={(event) => {
           event.stopPropagation();
           setOpen(!open);
         }}
-        className={pillClassName}
+        className={`w-full ${pillClassName}`}
         aria-expanded={open}
         aria-haspopup="listbox"
         aria-controls={panelId}
       >
-        <span className="text-base leading-none" aria-hidden>📅</span>
-        {label}
+        {compact ? (
+          <>
+            <span className="text-sm leading-none" aria-hidden>📅</span>
+            <span className={EXPLORE_COMPACT_PILL_LABEL}>{label}</span>
+          </>
+        ) : (
+          <>
+            <span className="text-base leading-none" aria-hidden>📅</span>
+            {label}
+          </>
+        )}
       </button>
       {menu}
     </div>

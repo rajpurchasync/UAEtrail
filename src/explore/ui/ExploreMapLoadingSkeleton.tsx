@@ -1,20 +1,47 @@
-/** Map-area loading hint — tiles stay visible underneath. */
+const GHOST_PINS: Array<{
+  top: string;
+  left: string;
+  place: boolean;
+  delay: string;
+}> = [
+  { top: '32%', left: '22%', place: false, delay: '0ms' },
+  { top: '40%', left: '48%', place: true, delay: '140ms' },
+  { top: '28%', left: '68%', place: false, delay: '260ms' },
+  { top: '54%', left: '30%', place: true, delay: '80ms' },
+  { top: '58%', left: '62%', place: false, delay: '200ms' },
+  { top: '46%', left: '78%', place: true, delay: '320ms' },
+  { top: '66%', left: '44%', place: false, delay: '160ms' },
+];
+
+/** Ghost outing pins and place chips while the catalog is still empty. The basemap stays visible. */
 export const ExploreMapLoadingSkeleton = () => (
   <div
-    className="pointer-events-none absolute inset-0 z-[1000] animate-pulse bg-[#e8f0ec]/35"
-    aria-hidden
+    className="pointer-events-none absolute inset-0 z-[1000]"
+    role="status"
+    aria-live="polite"
+    aria-label="Loading the map"
   >
-    <div className="absolute inset-0 opacity-60" style={{
-      backgroundImage:
-        'radial-gradient(circle at 25% 30%, rgba(16,185,129,.2), transparent 42%), radial-gradient(circle at 70% 55%, rgba(59,130,246,.15), transparent 38%)',
-    }} />
-    <div className="absolute left-[20%] top-[32%] h-3 w-3 rounded-full bg-emerald-400/70" />
-    <div className="absolute left-[55%] top-[48%] h-2.5 w-2.5 rounded-full bg-amber-400/70" />
-    <div className="absolute left-[38%] top-[62%] h-2.5 w-2.5 rounded-full bg-sky-400/70" />
-    <div className="absolute inset-x-0 bottom-[30%] flex justify-center">
-      <span className="rounded-full bg-white/90 px-4 py-2 text-sm font-medium text-neutral-600 shadow-sm">
-        Loading map…
-      </span>
-    </div>
+    {GHOST_PINS.map((pin) => (
+      <div
+        key={`${pin.top}-${pin.left}`}
+        className="absolute -translate-x-1/2 -translate-y-1/2"
+        style={{ top: pin.top, left: pin.left }}
+      >
+        {pin.place ? (
+          <div className="flex animate-pulse items-center gap-1.5" style={{ animationDelay: pin.delay }}>
+            <span className="h-9 w-9 rounded-[10px] border border-white/90 bg-white/85 shadow-[0_2px_8px_rgba(15,23,42,0.28)]" />
+            <span className="h-4 w-16 rounded-md bg-white/80 shadow-sm" />
+          </div>
+        ) : (
+          <span className="relative block h-8 w-8" style={{ animationDelay: pin.delay }}>
+            <span className="absolute inset-0 animate-ping rounded-full bg-emerald-400/40" style={{ animationDelay: pin.delay }} />
+            <span
+              className="absolute inset-0 animate-pulse rounded-full border-[3px] border-emerald-600/90 bg-white/90 shadow-[0_2px_8px_rgba(15,23,42,0.28)]"
+              style={{ animationDelay: pin.delay }}
+            />
+          </span>
+        )}
+      </div>
+    ))}
   </div>
 );

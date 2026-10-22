@@ -1,6 +1,7 @@
-import { Loader2, MessageCircle, Search, Users } from 'lucide-react';
+import { MessageCircle, Search, Users } from 'lucide-react';
 import { Dialog } from '../ui/Dialog';
 import { MessageAvatar } from './ChatMessageAvatar';
+import { ChatLoadingState } from './ChatLoadingState';
 
 interface SearchUser {
   id: string;
@@ -71,9 +72,7 @@ export const MessagesComposeSheet = ({
 
       <div className="min-h-0 flex-1 overflow-y-auto scroll-touch -mx-1 px-1">
         {searching ? (
-          <div className="flex items-center justify-center py-10">
-            <Loader2 className="h-6 w-6 animate-spin text-neutral-400" />
-          </div>
+          <ChatLoadingState variant="list" label="Searching people" rows={3} />
         ) : searchResults.length === 0 ? (
           <p className="py-8 text-center text-sm text-neutral-400">
             {searchQuery.trim().length >= 2 ? 'No people found' : 'Type at least 2 characters to search'}

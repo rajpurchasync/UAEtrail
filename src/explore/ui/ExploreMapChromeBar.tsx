@@ -5,7 +5,7 @@ import { VenueStateFilterMenu } from './VenueStateFilterMenu';
 import { ExploreMapPeopleBrowseButton } from '@/people-discovery/panel/ExploreMapPeopleBrowseButton';
 import { ExploreMapMobileLayerChrome } from './ExploreMapMobileLayerChrome';
 import { EXPLORE_FLOATING_CONTROL } from '../../config/exploreTheme';
-import type { ExplorePanel, MapFilterKey } from '../routing';
+import type { ExplorePanel, MapFilterKey, VenueListFilterKey } from '../routing';
 import type { ExploreActivityDatePreset } from '../exploreActivityDateFilter';
 
 type ExploreMapChromeBarProps = {
@@ -21,6 +21,8 @@ type ExploreMapChromeBarProps = {
   onMapFilterChange: (filter: MapFilterKey) => void;
   onActivityDatePresetChange: (preset: ExploreActivityDatePreset) => void;
   onVenueRegionsChange: (regions: string[]) => void;
+  venueFilter?: VenueListFilterKey;
+  onVenueFilterChange?: (filter: VenueListFilterKey) => void;
   onOpenPeopleBrowsePanel?: () => void;
   peopleBrowsePanelAvatars?: Array<{ id: string; name: string; avatar?: string | null }>;
   peopleBrowsePanelFriendCount?: number;
@@ -41,6 +43,8 @@ export const ExploreMapChromeBar = ({
   onMapFilterChange,
   onActivityDatePresetChange,
   onVenueRegionsChange,
+  venueFilter,
+  onVenueFilterChange,
   onOpenPeopleBrowsePanel,
   peopleBrowsePanelAvatars = [],
   peopleBrowsePanelFriendCount = 0,
@@ -65,6 +69,8 @@ export const ExploreMapChromeBar = ({
         onMapFilterChange={onMapFilterChange}
         onActivityDatePresetChange={onActivityDatePresetChange}
         onVenueRegionsChange={onVenueRegionsChange}
+        venueFilter={venueFilter}
+        onVenueFilterChange={onVenueFilterChange}
         searchQuery={searchQuery}
         onSearchQueryChange={onSearchQueryChange}
         onSearchCommit={onSearchCommit}

@@ -1,4 +1,4 @@
-import { EXPLORE_MAP_PATH } from '../../../../config/routingCatalog';
+import { EXPLORE_MAP_PATH } from '../../../../config/routingCatalogLite';
 import { HOME_HOW_IT_WORKS } from '../../../../content/homeMarketing';
 import { AppButtonLink } from '../../../mobile/AppButton';
 import { SectionHeader } from '../SectionHeader';

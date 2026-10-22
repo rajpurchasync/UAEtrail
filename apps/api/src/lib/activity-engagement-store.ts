@@ -549,6 +549,26 @@ export const listUserActivityParticipantsPaginated = async (input: {
 export const countUserActivityParticipants = async (userId: string): Promise<number> =>
   activityParticipantsCollection().countDocuments({ userId });
 
+/** Cheap fingerprint for `GET /me/activities` conditional refresh (count + latest timestamps). */
+export const readUserParticipationRevision = async (userId: string): Promise<string> => {
+  const [row] = await activityParticipantsCollection()
+    .aggregate<{ n?: number; created?: Date | null; checked?: Date | null }>([
+      { $match: { userId } },
+      {
+        $group: {
+          _id: null,
+          n: { $sum: 1 },
+          created: { $max: '$createdAt' },
+          checked: { $max: '$checkedInAt' },
+        },
+      },
+    ])
+    .toArray();
+  const created = row?.created ? new Date(row.created).toISOString() : '';
+  const checked = row?.checked ? new Date(row.checked).toISOString() : '';
+  return `${row?.n ?? 0}|${created}|${checked}`;
+};
+
 export const countUserCheckedInParticipations = async (userId: string): Promise<number> =>
   activityParticipantsCollection().countDocuments({ userId, checkedInAt: { $ne: null } });
 

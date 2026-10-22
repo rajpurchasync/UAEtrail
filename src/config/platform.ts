@@ -37,6 +37,12 @@ export {
 /** Full-screen explore map (mobile-first). */
 export const EXPLORE_MAP_PATH = '/explore' as const;
 
+/**
+ * Guest website SearchAction target. Must stay equal to `explorePlacesPath()` with no options
+ * so the home page does not import explore routing.
+ */
+export const EXPLORE_PLACES_SEARCH_PATH = `${EXPLORE_MAP_PATH}?panel=venues` as const;
+
 /** Visual discover browse embedded on explore (`browse=1` — categories, rails, posters). */
 export const EXPLORE_DISCOVER_BROWSE_PATH = `${EXPLORE_MAP_PATH}?browse=1` as const;
 
@@ -325,26 +331,13 @@ export const isConsumerChromeHidden = (pathname: string): boolean =>
 export const isMobileDetailRoute = (pathname: string): boolean =>
   /^\/(trail|camp|venue|event|product|activity|event-spot|community-activity)\//.test(pathname);
 
-/** Public entity detail — own header + sticky CTA; no global marketing `Footer`. */
+/** Public entity detail — own header + sticky CTA (MobileDetailShell). */
 export const isConsumerEntityDetailRoute = (pathname: string): boolean =>
   isMobileDetailRoute(pathname) ||
   pathname.startsWith('/area/') ||
   /^\/shop\/[^/]+/.test(pathname) ||
   pathname.startsWith('/agency/') ||
   pathname.startsWith('/partner/');
-
-/**
- * Dark site footer (social + legal links). Hidden on map tabs (bottom nav) and entity detail pages.
- */
-export const shouldShowMarketingSiteFooter = (
-  pathname: string,
-  options: { showConsumerChrome: boolean; showMobileBottomNav: boolean }
-): boolean => {
-  if (!options.showConsumerChrome) return false;
-  if (options.showMobileBottomNav) return false;
-  if (isConsumerEntityDetailRoute(pathname)) return false;
-  return true;
-};
 
 /**
  * Consumer pages that render their own sticky header (ConsumerShell / MobileScreen / MobileDetailShell).

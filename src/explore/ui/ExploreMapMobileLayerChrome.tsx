@@ -1,18 +1,18 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import {
   SEEKING_EMOJI,
   EXPLORE_PLACES_LAYER_EMOJI,
   MAP_LAYER_FILTER_EMOJI,
   RIDESHARE_EMOJI,
 } from '../exploreCopy';
-import type { ExplorePanel, MapFilterKey } from '../routing';
+import type { ExplorePanel, MapFilterKey, VenueListFilterKey } from '../routing';
 import type { ExploreActivityDatePreset } from '../exploreActivityDateFilter';
 import {
-  EXPLORE_FILTER_PILL,
-  EXPLORE_MAP_FILTER_INACTIVE,
+  EXPLORE_COMPACT_PILL_LABEL,
+  EXPLORE_MAP_MOBILE_FILTER_CTA_BAR,
   EXPLORE_MAP_TOOLBAR_FLOATING,
   EXPLORE_MAP_TOOLBAR_PILL_PADDING,
-  exploreMapFilterActiveClass,
+  exploreMapMobileFilterCtaSegmentClass,
 } from '../../config/exploreTheme';
 import type { ExploreSearchScopeCounts, ExploreSearchScopeKey } from '../exploreBrowseTaxonomy';
 import {
@@ -20,10 +20,11 @@ import {
   EXPLORE_MOBILE_PLACES_MENU,
   browsePanelForMobileLayer,
   defaultMobileMapExpandedLayer,
+  inferMobilePlacesMenuKey,
   mapFilterToMobileActivityMenu,
-  mapFilterToMobilePlacesMenu,
   mobileActivityMenuToMapFilter,
   mobilePlacesMenuToMapFilter,
+  mobilePlacesMenuToVenueFilter,
   type ExploreMobileActivityMenuKey,
   type ExploreMobilePlacesMenuKey,
 } from './exploreMapMobileMenus';
@@ -41,10 +42,16 @@ const segmentButtonClass = (selected: boolean) =>
       : ''
   }`;
 
-const PILL_ROW_SCROLL =
-  'mt-0.5 w-full min-w-0 max-lg:-mr-3 max-lg:w-[calc(100%+0.75rem)] overflow-x-auto overflow-y-visible scroll-smooth scrollbar-none [-webkit-overflow-scrolling:touch]';
+const PILL_ROW_WRAP = 'mt-0.5 w-full min-w-0 max-lg:w-full';
 
-const PILL_ROW_INNER = 'flex w-max flex-nowrap items-center gap-2 pb-0.5 pr-3';
+const ctaSegmentClass = (
+  active: boolean,
+  activeKey: 'all' | 'hiking' | 'camping' | 'rideshare' | 'others' | 'shops'
+) => exploreMapMobileFilterCtaSegmentClass(active, activeKey);
+
+const CompactPillLabel = ({ children }: { children: ReactNode }) => (
+  <span className={EXPLORE_COMPACT_PILL_LABEL}>{children}</span>
+);
 
 type MobileLayer = 'activity' | 'places';
 
@@ -57,6 +64,8 @@ type ExploreMapMobileLayerChromeProps = {
   onMapFilterChange: (filter: MapFilterKey) => void;
   onActivityDatePresetChange: (preset: ExploreActivityDatePreset) => void;
   onVenueRegionsChange: (regions: string[]) => void;
+  venueFilter?: VenueListFilterKey;
+  onVenueFilterChange?: (filter: VenueListFilterKey) => void;
   searchQuery?: string;
   onSearchQueryChange?: (value: string) => void;
   onSearchCommit?: (scope?: ExploreSearchScopeKey | null) => void;
@@ -64,9 +73,6 @@ type ExploreMapMobileLayerChromeProps = {
   /** Open explore search modal (not list discover). */
   onOpenExploreSearch?: () => void;
 };
-
-const pillClass = (active: boolean, activeKey: 'all' | 'hiking' | 'camping' | 'rideshare' | 'others' | 'shops') =>
-  `${EXPLORE_FILTER_PILL.mapTopic} ${active ? exploreMapFilterActiveClass(activeKey) : EXPLORE_MAP_FILTER_INACTIVE}`;
 
 export const ExploreMapMobileLayerChrome = ({
   panel,
@@ -77,6 +83,8 @@ export const ExploreMapMobileLayerChrome = ({
   onMapFilterChange,
   onActivityDatePresetChange,
   onVenueRegionsChange,
+  venueFilter = 'all',
+  onVenueFilterChange,
   onOpenExploreSearch,
 }: ExploreMapMobileLayerChromeProps) => {
   const [expandedLayer, setExpandedLayer] = useState<MobileLayer | null>(() =>
@@ -97,7 +105,26 @@ export const ExploreMapMobileLayerChrome = ({
   }, [panel]);
 
   const activitySelection = mapFilterToMobileActivityMenu(mapFilter);
-  const placesSelection = mapFilterToMobilePlacesMenu(mapFilter);
+  const [placesMenuKey, setPlacesMenuKey] = useState<ExploreMobilePlacesMenuKey>(() =>
+    inferMobilePlacesMenuKey(mapFilter, venueFilter)
+  );
+
+  useEffect(() => {
+    setPlacesMenuKey((current) => inferMobilePlacesMenuKey(mapFilter, venueFilter, current));
+  }, [mapFilter, venueFilter]);
+
+  const applyPlacesVenueFilter = useCallback(
+    (key: ExploreMobilePlacesMenuKey) => {
+      const venue = mobilePlacesMenuToVenueFilter(key);
+      if (venue && onVenueFilterChange) {
+        onVenueFilterChange(venue);
+        return;
+      }
+      const next = mobilePlacesMenuToMapFilter(key);
+      if (next) onMapFilterChange(next);
+    },
+    [onMapFilterChange, onVenueFilterChange]
+  );
 
   const openLayer = (layer: MobileLayer) => {
     onBrowsePanelChange(browsePanelForMobileLayer(layer));
@@ -131,25 +158,26 @@ export const ExploreMapMobileLayerChrome = ({
   const handlePlacesPill = (key: ExploreMobilePlacesMenuKey) => {
     if (key === 'uae') return;
     onBrowsePanelChange(key === 'shops' ? 'shops' : 'venues');
-    const next = mobilePlacesMenuToMapFilter(key);
-    if (!next) return;
     if (key === 'all') {
       if (venueRegions.length > 0) {
         onVenueRegionsChange([]);
         return;
       }
-      if (mapFilter === 'all') {
+      if (placesMenuKey === 'all' && mapFilter === 'all' && venueFilter === 'all') {
         setExpandedLayer(null);
         return;
       }
-      onMapFilterChange('all');
+      setPlacesMenuKey('all');
+      applyPlacesVenueFilter('all');
       return;
     }
-    if (onPlaces && next === mapFilter) {
-      onMapFilterChange('all');
+    if (onPlaces && key === placesMenuKey) {
+      setPlacesMenuKey('all');
+      applyPlacesVenueFilter('all');
       return;
     }
-    onMapFilterChange(next);
+    setPlacesMenuKey(key);
+    applyPlacesVenueFilter(key);
   };
 
   const activitySegmentSelected = expandedLayer === 'activity';
@@ -201,8 +229,8 @@ export const ExploreMapMobileLayerChrome = ({
       </div>
 
       {expandedLayer === 'activity' ? (
-        <div className={`${PILL_ROW_SCROLL} col-span-2 col-start-1 row-start-2 lg:hidden`}>
-          <div className={PILL_ROW_INNER}>
+        <div className={`${PILL_ROW_WRAP} col-span-2 col-start-1 row-start-2 lg:hidden`}>
+          <div className={EXPLORE_MAP_MOBILE_FILTER_CTA_BAR} role="toolbar" aria-label="Activity filters">
             {EXPLORE_MOBILE_ACTIVITY_MENU.map((option) => {
               const activeKey =
                 option.key === 'camping'
@@ -220,31 +248,41 @@ export const ExploreMapMobileLayerChrome = ({
                     key={option.key}
                     activityDatePreset={activityDatePreset}
                     onActivityDatePresetChange={onActivityDatePresetChange}
-                    pillClassName={pillClass(activityDatePreset !== 'anyday', 'all')}
+                    pillClassName={ctaSegmentClass(activityDatePreset !== 'anyday', 'all')}
+                    compact
                   />
                 );
               }
-              const active = onActivities && option.key === activitySelection;
+              const active =
+                onActivities &&
+                option.key === activitySelection &&
+                (option.key !== 'all' || activityDatePreset === 'anyday');
               return (
                 <button
                   key={option.key}
                   type="button"
                   onClick={() => handleActivityPill(option.key)}
-                  className={pillClass(active, activeKey)}
+                  className={ctaSegmentClass(active, activeKey)}
                   aria-pressed={active}
                 >
+                  {option.key === 'all' ? (
+                    <span className="text-[10px] font-bold leading-tight">{option.label}</span>
+                  ) : (
+                    <>
                   {option.key === 'hiking' ? (
-                    <ExploreFilterIcon filter="hiking" context="activity" />
+                    <ExploreFilterIcon filter="hiking" context="activity" className="text-sm leading-none" />
                   ) : option.key === 'camping' ? (
-                    <ExploreFilterIcon filter="camping" context="activity" />
+                    <ExploreFilterIcon filter="camping" context="activity" className="text-sm leading-none" />
                   ) : option.key === 'rideshare' ? (
-                    <span className="font-emoji text-base leading-none" aria-hidden>{RIDESHARE_EMOJI}</span>
+                    <span className="font-emoji text-sm leading-none" aria-hidden>{RIDESHARE_EMOJI}</span>
                   ) : option.key === 'others' ? (
-                    <span className="font-emoji text-base leading-none" aria-hidden>
+                    <span className="font-emoji text-sm leading-none" aria-hidden>
                       {MAP_LAYER_FILTER_EMOJI.others}
                     </span>
                   ) : null}
-                  {option.label}
+                  <CompactPillLabel>{option.label}</CompactPillLabel>
+                    </>
+                  )}
                 </button>
               );
             })}
@@ -253,8 +291,8 @@ export const ExploreMapMobileLayerChrome = ({
       ) : null}
 
       {expandedLayer === 'places' ? (
-        <div className={`${PILL_ROW_SCROLL} col-span-2 col-start-1 row-start-2 lg:hidden`}>
-          <div className={PILL_ROW_INNER}>
+        <div className={`${PILL_ROW_WRAP} col-span-2 col-start-1 row-start-2 lg:hidden`}>
+          <div className={EXPLORE_MAP_MOBILE_FILTER_CTA_BAR} role="toolbar" aria-label="Place filters">
             {EXPLORE_MOBILE_PLACES_MENU.map((option) => {
               if (option.key === 'uae') {
                 return (
@@ -263,11 +301,15 @@ export const ExploreMapMobileLayerChrome = ({
                     venueRegions={venueRegions}
                     onOpen={() => onBrowsePanelChange('venues')}
                     onVenueRegionsChange={onVenueRegionsChange}
-                    pillClassName={pillClass(venueRegions.length > 0, 'all')}
+                    pillClassName={ctaSegmentClass(venueRegions.length > 0, 'all')}
+                    compact
                   />
                 );
               }
-              const active = onPlaces && option.key === placesSelection;
+              const active =
+                onPlaces &&
+                option.key === placesMenuKey &&
+                (option.key !== 'all' || venueRegions.length === 0);
               const activeKey =
                 option.key === 'shops'
                   ? 'shops'
@@ -283,17 +325,25 @@ export const ExploreMapMobileLayerChrome = ({
                   key={option.key}
                   type="button"
                   onClick={() => handlePlacesPill(option.key)}
-                  className={pillClass(active, activeKey)}
+                  className={ctaSegmentClass(active, activeKey)}
                   aria-pressed={active}
                 >
+                  {option.key === 'all' ? (
+                    <span className="text-[10px] font-bold leading-tight">{option.label}</span>
+                  ) : (
+                    <>
                   {option.key === 'trails' ? (
-                    <ExploreFilterIcon filter="hiking" context="venue" />
+                    <ExploreFilterIcon filter="hiking" context="venue" className="text-sm leading-none" />
                   ) : option.key === 'spots' || option.key === 'camping' ? (
-                    <ExploreFilterIcon filter="camping" context="venue" />
+                    <ExploreFilterIcon filter="camping" context="venue" className="text-sm leading-none" />
                   ) : option.key === 'shops' ? (
-                    <ExploreFilterIcon filter="shops" context="venue" />
+                    <ExploreFilterIcon filter="shops" context="venue" className="text-sm leading-none" />
+                  ) : option.key === 'others' ? (
+                    <ExploreFilterIcon filter="others" context="venue" className="text-sm leading-none" />
                   ) : null}
-                  {option.label}
+                  <CompactPillLabel>{option.label}</CompactPillLabel>
+                    </>
+                  )}
                 </button>
               );
             })}

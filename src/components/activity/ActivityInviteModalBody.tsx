@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Check, Loader2, Users } from 'lucide-react';
+import { Check, CheckCircle2, Loader2, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { SecureAvatar } from '../ui';
 import { FormTabBar } from '../ui/FormTabBar';
@@ -31,9 +31,11 @@ import {
   ACTIVITY_INVITE_SEARCH_PLACEHOLDER,
   ACTIVITY_INVITE_SELECT_ALL,
   ACTIVITY_INVITE_SEND_LABEL,
-  ACTIVITY_INVITE_SENT_TOAST,
+  ACTIVITY_INVITE_SENT_SUCCESS_HEADLINE,
+  ACTIVITY_INVITE_GROUPS_SENT_SUCCESS_HEADLINE,
   ACTIVITY_INVITE_TAB_FRIENDS,
   ACTIVITY_INVITE_TAB_GROUPS,
+  activityInviteSentSuccessLine,
 } from '../../content/activityInviteCopy';
 import { EXPLORE_BUDDY_JOIN_ME_INVITE_SENT_LABEL } from '../../content/exploreGoingPanelCopy';
 import { userCreatedSocialGroups } from '../../utils/userCreatedSocialGroups';
@@ -46,7 +48,37 @@ type ActivityInviteModalBodyProps = {
   initialSelectedBuddyIds?: string[];
   /** When modal opens */
   active: boolean;
+  /** After a successful send — sheet closes when animation finishes. */
+  onInviteSent?: () => void;
 };
+
+const INVITE_SENT_AUTO_CLOSE_MS = 1400;
+
+const ActivityInviteSentSuccess = ({
+  headline,
+  detail,
+}: {
+  headline: string;
+  detail: string;
+}) => (
+  <div
+    className="flex min-h-[220px] flex-col items-center justify-center px-2 py-8 text-center"
+    role="status"
+    aria-live="polite"
+  >
+    <div className="relative">
+      <span
+        className="absolute inset-0 rounded-full bg-emerald-400/25 motion-safe:animate-ping"
+        aria-hidden
+      />
+      <div className="relative flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 motion-safe:animate-[bounce_0.55s_ease-out_1]">
+        <CheckCircle2 className="h-9 w-9" strokeWidth={2.25} aria-hidden />
+      </div>
+    </div>
+    <p className="mt-5 text-base font-bold text-neutral-900">{headline}</p>
+    <p className="mt-1.5 max-w-[16rem] text-sm leading-snug text-neutral-600">{detail}</p>
+  </div>
+);
 
 const buddyDisplayName = (displayName: string | null | undefined) =>
   (displayName?.trim() || 'Member').toLowerCase();
@@ -56,6 +88,7 @@ export const ActivityInviteModalBody = ({
   messageWithUrl,
   initialSelectedBuddyIds,
   active,
+  onInviteSent,
 }: ActivityInviteModalBodyProps) => {
   const { user } = useAuth();
   const [tab, setTab] = useState<InviteTab>('friends');
@@ -66,16 +99,25 @@ export const ActivityInviteModalBody = ({
   });
   const [selectedGroupIds, setSelectedGroupIds] = useState<Set<string>>(() => new Set());
   const [busy, setBusy] = useState(false);
-  const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [sentSuccess, setSentSuccess] = useState<{
+    headline: string;
+    detail: string;
+  } | null>(null);
 
   useEffect(() => {
     if (!active) {
       setSearchQuery('');
-      setNotice(null);
       setError(null);
+      setSentSuccess(null);
     }
   }, [active]);
+
+  useEffect(() => {
+    if (!sentSuccess || !onInviteSent) return;
+    const timer = window.setTimeout(() => onInviteSent(), INVITE_SENT_AUTO_CLOSE_MS);
+    return () => window.clearTimeout(timer);
+  }, [sentSuccess, onInviteSent]);
 
   const { data: buddies = [], isLoading: buddiesLoading } = useQuery({
     queryKey: activityInviteBuddiesQueryKey(activityId),
@@ -165,7 +207,6 @@ export const ActivityInviteModalBody = ({
   const send = async () => {
     setBusy(true);
     setError(null);
-    setNotice(null);
     try {
       if (tab === 'friends') {
         const ids = [...selectedBuddyIds];
@@ -173,7 +214,10 @@ export const ActivityInviteModalBody = ({
         const sent = await sendActivityJoinInvitesToBuddies(activityId, ids);
         await refetchSentInvites();
         setSelectedBuddyIds(new Set());
-        setNotice(ACTIVITY_INVITE_SENT_TOAST(sent));
+        setSentSuccess({
+          headline: ACTIVITY_INVITE_SENT_SUCCESS_HEADLINE,
+          detail: activityInviteSentSuccessLine(sent),
+        });
         return;
       }
       const ids = [...selectedGroupIds];
@@ -182,7 +226,10 @@ export const ActivityInviteModalBody = ({
         await messagingApi.crew.post(groupId, messageWithUrl);
       }
       setSelectedGroupIds(new Set());
-      setNotice(ACTIVITY_INVITE_GROUPS_POSTED_TOAST(ids.length));
+      setSentSuccess({
+        headline: ACTIVITY_INVITE_GROUPS_SENT_SUCCESS_HEADLINE,
+        detail: ACTIVITY_INVITE_GROUPS_POSTED_TOAST(ids.length),
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not send.');
     } finally {
@@ -201,6 +248,12 @@ export const ActivityInviteModalBody = ({
 
   const listLoading = tab === 'friends' ? buddiesLoading : groupsLoading;
 
+  if (sentSuccess) {
+    return (
+      <ActivityInviteSentSuccess headline={sentSuccess.headline} detail={sentSuccess.detail} />
+    );
+  }
+
   return (
     <div className="flex min-h-0 flex-col">
       <FormTabBar
@@ -212,8 +265,8 @@ export const ActivityInviteModalBody = ({
         onChange={(id) => {
           setTab(id as InviteTab);
           setSearchQuery('');
-          setNotice(null);
           setError(null);
+          setSentSuccess(null);
         }}
       />
 
@@ -374,7 +427,6 @@ export const ActivityInviteModalBody = ({
           </>
         )}
 
-        {notice ? <p className="text-xs font-medium text-emerald-700">{notice}</p> : null}
         {error ? <p className="text-xs text-red-600">{error}</p> : null}
       </div>
 

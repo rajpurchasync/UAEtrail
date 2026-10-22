@@ -1,10 +1,12 @@
 import { Link } from 'react-router-dom';
+import type { MobileBackNavState } from '../../utils/mobileBackNav';
 import { ChevronRight, type LucideIcon } from 'lucide-react';
 
 export type SettingsMenuRowProps = {
   label: string;
   subtitle?: string;
   to?: string;
+  linkState?: MobileBackNavState;
   onClick?: () => void;
   icon?: LucideIcon;
   badge?: number | string;
@@ -15,6 +17,7 @@ export const SettingsMenuRow = ({
   label,
   subtitle,
   to,
+  linkState,
   onClick,
   icon: Icon,
   badge,
@@ -46,7 +49,7 @@ export const SettingsMenuRow = ({
 
   if (to) {
     return (
-      <Link to={to} className={className}>
+      <Link to={to} state={linkState} className={className}>
         {inner}
       </Link>
     );

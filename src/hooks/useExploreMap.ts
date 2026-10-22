@@ -1,6 +1,7 @@
 import { keepPreviousData, useQuery, type QueryClient } from '@tanstack/react-query';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { useAuth } from '../context/AuthContext';
+import { catalogFreshQueryOptions, catalogSnapshots, loadCachedCatalog } from '../lib/catalogSnapshot';
 import { fetchExploreMapItems } from './exploreMapClientApi';
 import type { ExploreMapFetchScope } from '../explore/exploreMapBbox';
 import { isExploreMapBboxEnabled } from '../explore/exploreMapBbox';
@@ -13,7 +14,10 @@ export {
 } from './exploreMapQuery';
 
 export const reloadExploreMap = async (queryClient: QueryClient): Promise<void> => {
+  catalogSnapshots.clearPrefix(exploreMapQueryKeyPrefix);
+  catalogSnapshots.clearPrefix(['people-discovery', 'seeking-activities']);
   await queryClient.invalidateQueries({ queryKey: exploreMapQueryKeyPrefix });
+  await queryClient.invalidateQueries({ queryKey: ['people-discovery', 'seeking-activities'] });
   await queryClient.refetchQueries({ queryKey: exploreMapQueryKeyPrefix, type: 'active' });
 };
 
@@ -28,22 +32,19 @@ export const useExploreMap = (options?: UseExploreMapOptions) => {
   const scope = options?.scope ?? null;
   const useVnextFetch = isExploreMapBboxEnabled() && scope != null;
   const catalogKey = exploreMapQueryKey(useVnextFetch ? scope : null);
+  const queryKey = user?.id ? [...catalogKey, user.id] : catalogKey;
 
   return useQuery({
-    queryKey: user?.id ? [...catalogKey, user.id] : catalogKey,
+    queryKey,
     enabled: options?.enabled ?? true,
-    queryFn: async (): Promise<ExploreMapItemDTO[]> => {
-      if (useVnextFetch && scope) {
-        return fetchExploreMapItems({
-          bbox: scope.bbox,
-          area: scope.area ?? undefined,
-        });
-      }
-      return fetchExploreMapItems();
-    },
-    staleTime: 60_000,
+    queryFn: (): Promise<ExploreMapItemDTO[]> =>
+      loadCachedCatalog(queryKey, (etag) =>
+        useVnextFetch && scope
+          ? fetchExploreMapItems({ bbox: scope.bbox, area: scope.area ?? undefined }, etag)
+          : fetchExploreMapItems(undefined, etag)
+      ),
     placeholderData: keepPreviousData,
-    // Respect staleTime on remount — `always` refetched the full map on every /explore visit.
     refetchOnMount: true,
+    ...catalogFreshQueryOptions<ExploreMapItemDTO[]>(queryKey),
   });
 };

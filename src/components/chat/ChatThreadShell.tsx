@@ -3,8 +3,10 @@ import type { ReactNode, Ref } from 'react';
 type ChatThreadScrollVariant = 'direct' | 'group';
 
 const SCROLL_AREA_CLASS: Record<ChatThreadScrollVariant, string> = {
-  direct: 'min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto px-3 py-4 sm:px-4 bg-gray-50/50',
-  group: 'min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto px-3 py-4 sm:px-4 bg-gray-50/50',
+  direct:
+    'chat-thread-scroll min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto px-3 py-4 sm:px-4 bg-gray-50/50',
+  group:
+    'chat-thread-scroll min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto px-3 py-4 sm:px-4 bg-gray-50/50',
 };
 
 type ChatThreadShellProps = {

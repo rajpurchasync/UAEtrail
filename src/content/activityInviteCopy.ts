@@ -17,3 +17,7 @@ export const ACTIVITY_INVITE_GROUPS_POSTED_TOAST = (count: number): string =>
 export const ACTIVITY_INVITE_NO_FRIENDS = 'Add friends from Social or member profiles first.';
 export const ACTIVITY_INVITE_SENT_TOAST = (sent: number): string =>
   sent === 1 ? 'Invite sent.' : `Invites sent to ${sent} friends.`;
+export const ACTIVITY_INVITE_SENT_SUCCESS_HEADLINE = 'Invitation sent!';
+export const activityInviteSentSuccessLine = (sent: number): string =>
+  sent === 1 ? 'Your friend will get a notification to join.' : `${sent} friends will get a notification to join.`;
+export const ACTIVITY_INVITE_GROUPS_SENT_SUCCESS_HEADLINE = 'Posted to your crew';

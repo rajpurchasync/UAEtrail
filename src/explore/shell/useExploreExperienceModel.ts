@@ -244,7 +244,9 @@ export const useExploreExperienceModel = () => {
 
   const [searchFocusNonce, setSearchFocusNonce] = useState(0);
   const [exploreSearchModalOpen, setExploreSearchModalOpen] = useState(false);
-  const publishedAreas = useExplorePublishedAreas();
+  const publishedAreas = useExplorePublishedAreas(
+    browse.listOpen || browse.browseOpen || exploreSearchModalOpen || Boolean(areaSlug)
+  );
 
   const openExploreActivityFromRef = useCallback(
     (activity: { exploreItemId: string }) => {

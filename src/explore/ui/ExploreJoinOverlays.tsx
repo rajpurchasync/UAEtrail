@@ -1,13 +1,13 @@
 import type { ActivityDTO } from '@uaetrail/shared-types';
-import { activityDetailPath } from '../../config/routingCatalog';
 import { JoinRequestModal } from '../../components/ui/JoinRequestModal';
 import { WithdrawRequestModal } from '../../components/ui/WithdrawRequestModal';
 import type { ActivityJoinActions } from '../../hooks/useActivityJoinFlow';
 import {
   ACTIVITY_JOIN_CTA_SELECTOR,
-  withAuthResumeQuery,
+  AUTH_RESUME_JOIN_QUERY,
 } from '../../utils/authReturnContext';
 import { useLocation } from 'react-router-dom';
+import { resolveExploreGuestAuthReturnPath } from '../exploreGuestAuthReturn';
 import { ExploreGuestJoinSheet } from './ExploreGuestJoinSheet';
 
 interface ExploreJoinOverlaysProps {
@@ -28,12 +28,13 @@ export const ExploreJoinOverlays = ({
 }: ExploreJoinOverlaysProps) => {
   const location = useLocation();
   const browseReturnPath = `${location.pathname}${location.search}`;
-  const guestAuthReturnPath =
-    joinActions.guestSheetSurface === 'browse'
-      ? browseReturnPath
-      : activity?.id && joinActions.guestSheetIntent === 'activity'
-        ? withAuthResumeQuery(activityDetailPath(activity.id), { join: true })
-        : undefined;
+  const guestAuthReturnPath = resolveExploreGuestAuthReturnPath({
+    guestSheetSurface: joinActions.guestSheetSurface,
+    guestSheetIntent: joinActions.guestSheetIntent,
+    pendingPeekAction: joinActions.guestPendingPeekAction,
+    activity: activity ?? null,
+    browseReturnPath,
+  });
 
   return (
   <>
@@ -76,7 +77,7 @@ export const ExploreJoinOverlays = ({
       requirements={activity?.requirements}
       authReturnPath={guestAuthReturnPath}
       authFocusSelector={
-        joinActions.guestSheetSurface === 'join' && guestAuthReturnPath
+        guestAuthReturnPath?.includes(`${AUTH_RESUME_JOIN_QUERY}=1`)
           ? ACTIVITY_JOIN_CTA_SELECTOR
           : undefined
       }

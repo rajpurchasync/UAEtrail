@@ -3,12 +3,14 @@ import { useId, useState } from 'react';
 import { Check } from 'lucide-react';
 import { getVenueStateFilterOptions } from '../../config/regions';
 import { UaeFlagIcon } from '../../components/ui/UaeFlagIcon';
+import { EXPLORE_COMPACT_PILL_LABEL } from '../../config/exploreTheme';
 import { useExploreMapPillDropdown } from './exploreMapPillDropdown';
 
 type ExploreMapMobileUaePillProps = {
   venueRegions: string[];
   onVenueRegionsChange: (regions: string[]) => void;
   pillClassName: string;
+  compact?: boolean;
   onOpen?: () => void;
 };
 
@@ -17,6 +19,7 @@ export const ExploreMapMobileUaePill = ({
   venueRegions,
   onVenueRegionsChange,
   pillClassName,
+  compact = false,
   onOpen,
 }: ExploreMapMobileUaePillProps) => {
   const [open, setOpen] = useState(false);
@@ -86,7 +89,7 @@ export const ExploreMapMobileUaePill = ({
       : null;
 
   return (
-    <div ref={anchorRef} className="relative shrink-0">
+    <div ref={anchorRef} className="relative flex min-w-0 flex-1 basis-0">
       <button
         type="button"
         onClick={(event) => {
@@ -95,7 +98,7 @@ export const ExploreMapMobileUaePill = ({
           setOpen(next);
           if (next) onOpen?.();
         }}
-        className={pillClassName}
+        className={`w-full ${pillClassName}`}
         aria-expanded={open}
         aria-haspopup="listbox"
         aria-controls={panelId}
@@ -103,11 +106,22 @@ export const ExploreMapMobileUaePill = ({
           active ? `UAE, ${venueRegions.length} emirates selected` : 'UAE emirates'
         }
       >
-        <UaeFlagIcon />
-        <span>UAE</span>
-        {active ? (
-          <span className="text-sm font-bold leading-none">({venueRegions.length})</span>
-        ) : null}
+        {compact ? (
+          <>
+            <UaeFlagIcon className="h-3.5 w-5 shrink-0" />
+            <span className={EXPLORE_COMPACT_PILL_LABEL}>
+              {active ? `${venueRegions.length}` : 'UAE'}
+            </span>
+          </>
+        ) : (
+          <>
+            <UaeFlagIcon />
+            <span>UAE</span>
+            {active ? (
+              <span className="text-sm font-bold leading-none">({venueRegions.length})</span>
+            ) : null}
+          </>
+        )}
       </button>
       {menu}
     </div>
