@@ -1,5 +1,9 @@
-import { Baby, SlidersHorizontal, UserRound, Users } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
+import { Baby, Plus, SlidersHorizontal, UserRound, Users } from 'lucide-react';
+import { formatRideshareVehicleLabel } from '@uaetrail/shared-types';
 import { EXPLORE_FLOW } from '../../config/exploreTheme';
+import { PROFILE_VEHICLES_PATH } from '../../config/surfacePaths';
+import { mobileBackNavState } from '../../utils/mobileBackNav';
 import { exploreFlowChoiceCardClass } from './exploreFlowUi';
 import {
   PARTICIPANTS_ANYONE_SUBTITLE,
@@ -12,15 +16,16 @@ import {
 import {
   formatCapacityLabel,
   RIDESHARE_CAPACITY_PRESETS,
-  RIDESHARE_VEHICLE_OPTIONS,
   resolveLimitedAudienceAccess,
   type CreateActivityDraft,
-  type VehicleAccess,
 } from './hostingFlowEngine';
 import {
   formatParticipantMinAgeFieldValue,
   parseParticipantMinAgeFieldValue,
 } from './hostingParticipantAgeMin';
+import { useMemberVehicles } from '../../hooks/useMemberVehicles';
+import { MemberVehicleCarIcon } from '../../components/vehicles/MemberVehicleCarIcon';
+import { MEMBER_VEHICLE_COLOR_LABELS } from '../../components/vehicles/memberVehicleColorChrome';
 
 type PatchDraft = (patch: Partial<CreateActivityDraft>) => void;
 
@@ -204,23 +209,70 @@ export const RideshareTransportationStepBody = ({
 }: {
   draft: CreateActivityDraft;
   patchDraft: PatchDraft;
-}) => (
-  <>
-    <p className="mb-3 text-sm text-gray-600">What are you driving?</p>
-    <div className={`${EXPLORE_FLOW.choiceGrid2}`}>
-      {RIDESHARE_VEHICLE_OPTIONS.map((option) => {
-        const active = draft.vehicleAccess === option.value;
-        return (
-          <button
-            key={option.value}
-            type="button"
-            onClick={() => patchDraft({ vehicleAccess: option.value as VehicleAccess })}
-            className={exploreFlowChoiceCardClass(active)}
-          >
-            <p className={EXPLORE_FLOW.choiceCardTitle}>{option.title}</p>
-          </button>
-        );
-      })}
-    </div>
-  </>
-);
+}) => {
+  const location = useLocation();
+  const returnTo = `${location.pathname}${location.search}`;
+  const garageBack = mobileBackNavState(returnTo, 'Rideshare');
+  const { data: vehicles = [], isLoading } = useMemberVehicles();
+
+  if (isLoading) {
+    return <p className="text-sm text-neutral-500">Loading your cars…</p>;
+  }
+
+  if (vehicles.length === 0) {
+    return (
+      <div className="rounded-2xl border border-sky-200 bg-sky-50/80 p-4 text-center">
+        <p className="text-sm font-semibold text-sky-950">Add your car first</p>
+        <p className="mt-1 text-xs text-sky-900/80">
+          Make, model, color, year, and plate — plate stays private on the ride page.
+        </p>
+        <Link
+          to={`${PROFILE_VEHICLES_PATH}/new`}
+          state={garageBack}
+          data-nav-focus="rideshare-add-car"
+          className="mt-4 inline-flex items-center gap-1 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white"
+        >
+          <Plus className="h-4 w-4" aria-hidden />
+          Add car
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <p className="mb-3 text-sm text-gray-600">Which car are you driving for this ride?</p>
+      <div className="space-y-2">
+        {vehicles.map((vehicle) => {
+          const active = draft.memberVehicleId === vehicle.id;
+          return (
+            <button
+              key={vehicle.id}
+              type="button"
+              onClick={() => patchDraft({ memberVehicleId: vehicle.id })}
+              className={`flex w-full items-center gap-3 rounded-2xl border p-3 text-left ${
+                active ? 'border-emerald-500 bg-emerald-50/90' : 'border-neutral-200 bg-white'
+              }`}
+            >
+              <MemberVehicleCarIcon color={vehicle.color} />
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-semibold text-neutral-950">
+                  {formatRideshareVehicleLabel(vehicle)}
+                </p>
+                <p className="text-xs text-neutral-600">{MEMBER_VEHICLE_COLOR_LABELS[vehicle.color]}</p>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+      <Link
+        to={PROFILE_VEHICLES_PATH}
+        state={garageBack}
+        data-nav-focus="rideshare-manage-cars"
+        className="mt-3 inline-flex text-sm font-semibold text-emerald-700"
+      >
+        Manage cars in profile
+      </Link>
+    </>
+  );
+};

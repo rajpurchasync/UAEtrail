@@ -3,7 +3,7 @@ import { MAP_CONFIG } from '../../config/platform';
 import { DEFAULT_PHONE_DIAL } from '../../constants/phoneCountries';
 import { ACTIVITY_DIFFICULTY_OPTIONS, type ActivityDifficulty } from './createFlowShared';
 import type { AddVenueKind } from '../addTypes';
-import { formatE164Phone, isValidNationalPhone } from '../../utils/phone';
+import { isValidNationalPhone } from '../../utils/phone';
 import { FACILITY_ADD_STEPS } from './addFacilityFlow';
 import { getOutdoorAddFlowSteps, getShopAddFlowSteps } from './addFlows/registry';
 

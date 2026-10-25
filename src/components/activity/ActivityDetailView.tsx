@@ -106,6 +106,8 @@ export interface ActivityDetailViewProps {
   onParticipantInviteFriends?: () => void;
   /** Host on `/activity/:id` — same Manage sheet as map peek (`manage_activity` wire). */
   onOpenHostManage?: (activity: ActivityDTO, initialView?: ActivityManageInitialView) => void;
+  /** Rideshare host attached a parent outing — refresh detail. */
+  onRideshareParentLinked?: () => void;
 }
 
 export const ActivityDetailView = ({
@@ -152,6 +154,7 @@ export const ActivityDetailView = ({
   onMapPeekChatError,
   onParticipantInviteFriends,
   onOpenHostManage,
+  onRideshareParentLinked,
 }: ActivityDetailViewProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -271,12 +274,14 @@ export const ActivityDetailView = ({
         >
           <ActivityConsumerDetailPage
             model={model}
+            planSections={PlanSections}
             canInviteFriends={
               canSendJoinInvites ||
               model.joinUiState.kind === 'pending' ||
               model.joinUiState.kind === 'confirmed'
             }
             onInviteFriends={openParticipantInviteFriends}
+            onRideshareParentLinked={onRideshareParentLinked}
           />
         </ActivityConsumerDetailModalShell>
       </div>

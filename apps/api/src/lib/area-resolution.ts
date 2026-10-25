@@ -7,6 +7,7 @@ import {
 import type { Location } from '../domain/types.js';
 import type { MongoActivityDoc } from './entity-builders.js';
 import { listPublishedAreas } from './areas-store.js';
+import { resolveCatalogLocationAreaId } from './venue-catalog-enrichment.js';
 
 let publishedAreasCache: AreaDTO[] | null = null;
 let publishedAreasCacheAt = 0;
@@ -81,7 +82,24 @@ export const resolveActivityAnchorCoordinates = (
   return { latitude, longitude };
 };
 
-/** Geography for an activity comes from the linked **place** only (legacy `activity.areaId` read fallback). */
+/**
+ * Audit-only: persisted `areaId`, then seed map, then point-in-polygon.
+ * Request and publish paths must not call this — missing `areaId` is a data fix (`backfill-location-area-ids`).
+ */
+export const resolveEffectiveLocationAreaId = (
+  location: Pick<Location, 'id' | 'areaId' | 'latitude' | 'longitude'>,
+  areas: AreaDTO[]
+): string | null => {
+  if (location.areaId?.trim()) return location.areaId.trim();
+  const catalogAreaId = resolveCatalogLocationAreaId(location.id);
+  if (catalogAreaId) return catalogAreaId;
+  if (location.latitude != null && location.longitude != null) {
+    return resolveAreaIdFromPoint(location.latitude, location.longitude, areas, null);
+  }
+  return null;
+};
+
+/** Geography for an activity is the persisted place `areaId`, then the activity row. */
 export const resolveAreaIdForActivity = (
   activity: Pick<MongoActivityDoc, 'areaId'>,
   location?: Pick<Location, 'areaId'> | null
@@ -91,7 +109,7 @@ export const resolveAreaIdForActivity = (
   return null;
 };
 
-/** Public publish area — linked place `areaId` only (legacy activity.areaId read fallback). */
+/** Public publish area — persisted place or activity `areaId` only. */
 export const resolveAreaIdForActivityPublish = async (
   activity: MongoActivityDoc,
   location?: Location | null

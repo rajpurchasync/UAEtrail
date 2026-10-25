@@ -117,8 +117,6 @@ export const resolveListFeedFooterModel = (
     joinUiState?: JoinRequestUiState;
   }
 ): ListFeedFooterModel => {
-  const { isGuest } = options;
-
   if (isGeographyMapSource(card.source) && discoveryCardHasMapCoords(card)) {
     return {
       primary: {

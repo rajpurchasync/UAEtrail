@@ -80,6 +80,14 @@ export type ActivityCreateInput = {
   ridesharePriceAed?: number | null;
   rideshareSeats?: number | null;
   rideshareDetails?: string | null;
+  rideshareVehicleId?: string | null;
+  rideshareVehicle?: {
+    id: string;
+    make: string;
+    model: string;
+    color: string;
+    year: number;
+  } | null;
   linkedActivityId?: string | null;
   linkedRideshareActivityId?: string | null;
   paymentTerms?: string | null;
@@ -127,6 +135,14 @@ export type ActivityUpdateInput = {
   ridesharePriceAed?: number | null;
   rideshareSeats?: number | null;
   rideshareDetails?: string | null;
+  rideshareVehicleId?: string | null;
+  rideshareVehicle?: {
+    id: string;
+    make: string;
+    model: string;
+    color: string;
+    year: number;
+  } | null;
   linkedActivityId?: string | null;
   linkedRideshareActivityId?: string | null;
   paymentTerms?: string | null;
@@ -237,6 +253,14 @@ export type MongoActivityDoc = {
   ridesharePriceAed: number | null;
   rideshareSeats: number | null;
   rideshareDetails: string | null;
+  rideshareVehicleId: string | null;
+  rideshareVehicle: {
+    id: string;
+    make: string;
+    model: string;
+    color: string;
+    year: number;
+  } | null;
   linkedActivityId: string | null;
   linkedRideshareActivityId: string | null;
   paymentTerms: string | null;
@@ -296,6 +320,8 @@ export const buildActivityFromCreateInput = (data: ActivityCreateInput, id: stri
     ridesharePriceAed: data.ridesharePriceAed ?? null,
     rideshareSeats: data.rideshareSeats ?? null,
     rideshareDetails: data.rideshareDetails ?? null,
+    rideshareVehicleId: data.rideshareVehicleId ?? null,
+    rideshareVehicle: data.rideshareVehicle ?? null,
     linkedActivityId: data.linkedActivityId ?? null,
     linkedRideshareActivityId: data.linkedRideshareActivityId ?? null,
     paymentTerms: data.paymentTerms ?? null,

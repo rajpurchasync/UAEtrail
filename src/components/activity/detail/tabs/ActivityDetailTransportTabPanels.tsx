@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { Car, ChevronRight } from 'lucide-react';
 import type { ActivityDetailDTO } from '@uaetrail/shared-types';
 import { EXPLORE_RIDESHARE_AVAILABLE_LABEL } from '../../../../explore/createFlowCopy';
-import { linkedParentRidesharePeekCopy } from '../../../../explore/exploreLinkedParentRideshareCopy';
+import { ActivityLinkedParentPlanAffordance } from '../../ActivityLinkedParentPlanAffordance';
 import {
   ACTIVITY_DETAIL_PLAN_SUSTAINABILITY_LINE,
   ACTIVITY_DETAIL_TRANSPORT_EMPTY_HINT,
@@ -119,22 +119,10 @@ export const ActivityDetailTransportTabPanels = ({
       </div>
     ) : null}
 
-    {!publicReachOnly && activity.linkedParentActivity ? (() => {
-      const parent = activity.linkedParentActivity;
-      const linkedCopy = linkedParentRidesharePeekCopy(parent.activityType, parent.title);
-      return (
-        <div className={`rounded-2xl border border-sky-100 bg-sky-50/70 p-4 text-sm text-gray-700 ${panelClassName}`}>
-          <p className="font-semibold text-gray-900">{linkedCopy.eyebrow}</p>
-          {linkedCopy.showTitleSubtitle ? <p className="mt-1 text-gray-800">{parent.title}</p> : null}
-          <Link
-            to={`/activity/${parent.id}`}
-            className="mt-2 inline-flex items-center gap-1 font-semibold text-sky-700 hover:text-sky-800"
-          >
-            View outing
-            <ChevronRight className="h-4 w-4" aria-hidden />
-          </Link>
-        </div>
-      );
-    })() : null}
+    {!publicReachOnly && activity.linkedParentActivity ? (
+      <div className={panelClassName}>
+        <ActivityLinkedParentPlanAffordance parent={activity.linkedParentActivity} className="mt-0" />
+      </div>
+    ) : null}
   </>
 );

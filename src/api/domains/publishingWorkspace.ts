@@ -186,7 +186,16 @@ export const publishingWorkspaceApi = {
     tenantId: string,
     activityId: string,
     participantId: string,
-    payload: { score: number; comment?: string }
+    payload: {
+      score?: number;
+      comment?: string;
+      rideshare?: {
+        cleanliness: number;
+        punctuality: number;
+        behaviour: number;
+        payment?: number | null;
+      };
+    }
   ) =>
     apiRequest<{ data: { score: number; comment: string | null; ratedAt: string | null } }>(
       `/publishing/activities/${activityId}/participants/${participantId}/rating`,

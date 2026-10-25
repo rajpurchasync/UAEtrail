@@ -61,11 +61,6 @@ chatRouter.get('/conversations', async (req, res, next) => {
 });
 
 const messageThreadSchema = z.object({ userId: z.string().min(1) });
-const paginationSchema = z.object({
-  page: z.coerce.number().int().positive().default(1),
-  pageSize: z.coerce.number().int().min(1).max(200).default(50),
-});
-
 const dmThreadQuerySchema = z
   .object({
     page: z.coerce.number().int().positive().optional(),

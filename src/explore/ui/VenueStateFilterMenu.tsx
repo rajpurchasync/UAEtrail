@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { SlidersHorizontal } from 'lucide-react';
 import { getVenueStateFilterOptions } from '../../config/regions';
 import { FilterIconButton } from '../../components/mobile/FilterIconButton';
-import { EXPLORE_BROWSE_SHEET_CONTROL, EXPLORE_FLOATING_CONTROL } from '../../config/exploreTheme';
+import { EXPLORE_BROWSE_SHEET_CONTROL } from '../../config/exploreTheme';
 import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
 
 interface VenueStateFilterMenuProps {

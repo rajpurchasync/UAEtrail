@@ -16,6 +16,18 @@ export const updateMeProfile = async (payload: Partial<UserProfile>): Promise<Us
   return res.data;
 };
 
+export const updateMeMedicalSafetyProfile = async (
+  payload: {
+    bloodGroup: NonNullable<UserProfile['bloodGroup']>;
+    medicalConditions: string;
+    emergencyContactName: string;
+    emergencyContactPhone: string;
+  }
+): Promise<UserProfile> => {
+  const res = await api.updateMeMedicalSafetyProfile(payload);
+  return res.data as UserProfile;
+};
+
 export const fetchMeProfileStats = async (): Promise<MemberProfileStatsDTO> => {
   const res = await api.getMeProfileStats();
   return res.data;

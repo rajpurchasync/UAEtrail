@@ -23,8 +23,7 @@ import {
   type PublicActivityDetailPayload,
   usePublicActivityDetail,
 } from '../hooks/usePublicActivityDetail';
-import { useViewerProfileGender } from '../hooks/useViewerProfileGender';
-import { womenOnlyJoinMessageForActivity } from '../utils/activityWomenOnlyJoin';
+import { useActivityJoinGuardMessage } from '../hooks/useActivityJoinGuardMessage';
 import { PageMeta } from '../components/seo/PageMeta';
 import { JsonLd } from '../components/seo/JsonLd';
 import { activityEventSchema } from '../components/seo/schemas';
@@ -32,6 +31,8 @@ import { activityPublicMetaDescription } from '../utils/activityPublicSeo';
 import { resolveActivityHeroImage } from '../utils/activityHeroImage';
 import { MobileDetailShell } from '../components/mobile/MobileDetailShell';
 import { JoinRequestModal, WithdrawRequestModal } from '../components/ui';
+import { DetailPageLoadingState } from '../components/ui/DetailPageLoadingState';
+import { DETAIL_LOADING_ACTIVITY } from '../content/detailLoadingCopy';
 import { ActivityChatCallout } from '../components/ui/ActivityChatCallout';
 import { PushEnableBanner } from '../components/ui/PushEnableBanner';
 import { ActivityDetailByKind } from '../activity/detail/templates/ActivityDetailByKind';
@@ -117,11 +118,7 @@ export const ActivityDetail = () => {
     participation: participation ?? null,
   });
 
-  const viewerGender = useViewerProfileGender(user?.id);
-  const joinGuardMessage = useMemo(
-    () => womenOnlyJoinMessageForActivity(activity?.requirements, viewerGender),
-    [activity?.requirements, viewerGender]
-  );
+  const joinGuardMessage = useActivityJoinGuardMessage(activity?.requirements, user?.id);
 
   const joinActions = useActivityJoinActions({
     activity,
@@ -342,9 +339,7 @@ export const ActivityDetail = () => {
     return (
       <>
         <PageMeta title="Loading activity" path={id ? `/activity/${id}` : undefined} />
-        <div className="app-page-center bg-gray-50">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-emerald-600" />
-        </div>
+        <DetailPageLoadingState label={DETAIL_LOADING_ACTIVITY} variant="page" />
       </>
     );
   }
@@ -524,6 +519,13 @@ export const ActivityDetail = () => {
         onOfferLinkedRideshare={
           canOpenLinkedRideshareFlow && activity
             ? () => navigateToCreateLinkedRideshare(navigate, activity)
+            : undefined
+        }
+        onRideshareParentLinked={
+          id && user
+            ? () => {
+                void queryClient.invalidateQueries({ queryKey: activityDetailQueryKey(id, user.id) });
+              }
             : undefined
         }
       />

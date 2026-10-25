@@ -131,12 +131,14 @@ const ComposeSheetHeader = ({ title, onClose }: { title: string; onClose: () => 
 
 
 const isSeekFixedKindStep = (
-
   route: ExploreCompose
-
-): route is { surface: 'menu'; intent: 'seek'; mode: 'fixed' } =>
-
-  route.surface === 'menu' && route.intent === 'seek' && 'mode' in route && route.mode === 'fixed';
+): route is Extract<ExploreCompose, { surface: 'menu'; intent: 'seek'; mode: 'fixed' }> =>
+  Boolean(
+    isComposeMenu(route) &&
+      route.intent === 'seek' &&
+      'mode' in route &&
+      route.mode === 'fixed'
+  );
 
 
 

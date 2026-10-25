@@ -2,7 +2,6 @@ import type { ActivityMapPeekActionId } from '@uaetrail/shared-types';
 import {
   activityDetailPath,
   messagesGroupPath,
-  messagesToUserPath,
   MESSAGES_PATH,
 } from '../config/routingCatalog';
 import type { GuestSheetSurface } from '../hooks/useActivityJoinFlow';

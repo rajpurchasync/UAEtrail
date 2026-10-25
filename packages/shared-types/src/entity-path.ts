@@ -228,7 +228,6 @@ export const resolveEntityPath = (ref: EntityRef, options?: ResolveEntityPathOpt
 
 const CANONICAL_PLACE_PATH_RE = /^\/place\/([^/?#]+)/;
 const PLACE_PATH_RE = /^\/(trail|camp|venue)\/([^/?#]+)/;
-const FACILITY_PATH_RE = /^\/facility\/([^/?#]+)/;
 const INBOUND_EVENT_VENUE_PATH_RE = /^\/event\/([^/?#]+)/;
 const ACTIVITY_PATH_RE = /^\/activity\/([^/?#]+)/;
 const AGENCY_PROFILE_PATH_RE = /^\/agency\/([^/?#]+)/;

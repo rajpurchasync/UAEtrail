@@ -787,13 +787,18 @@
   }
 
   .pb-detail-cta-safe {
-    padding-bottom: calc(4.75rem + var(--safe-bottom) + 8px);
+    padding-bottom: calc(7.25rem + var(--safe-bottom) + 16px);
+  }
+
+  .consumer-detail-scroll {
+    scroll-padding-bottom: calc(7.25rem + var(--safe-bottom) + 20px);
   }
 
   @media (min-width: 768px) {
     .pb-nav-safe,
     .pb-cta-safe,
     .pb-detail-cta-safe,
+    .consumer-detail-scroll,
     .pb-bottom-nav-safe,
     .pb-mobile-fab {
       padding-bottom: 0;

@@ -58,7 +58,7 @@ const detailDualPrimaryClass =
   'flex min-h-[3.25rem] flex-1 items-center justify-center rounded-2xl bg-emerald-600 px-4 text-center text-sm font-bold text-white shadow-sm active:bg-emerald-700';
 
 const detailDualSecondaryClass =
-  'flex min-h-[3.25rem] flex-1 items-center justify-center rounded-2xl border border-neutral-200 bg-white px-4 text-center text-sm font-bold text-neutral-800 shadow-sm active:bg-neutral-50';
+  'flex min-h-[3.25rem] flex-1 items-center justify-center rounded-2xl border border-white/70 bg-white/75 px-4 text-center text-sm font-bold text-neutral-800 shadow-sm backdrop-blur-sm active:bg-white/90';
 
 const joinPhaseFromUi = (
   joinUiState?: JoinRequestUiState
@@ -108,7 +108,9 @@ export const ActivityPeekEngagementActions = ({
 }: ActivityPeekEngagementActionsProps) => {
   const location = useLocation();
   const isDetailBar = surface === 'detail';
-  const rowClass = isDetailBar ? 'flex w-full gap-2.5 px-1 pb-0.5' : 'flex w-full gap-2';
+  const rowClass = isDetailBar ? 'flex w-full gap-2.5' : 'flex w-full gap-2';
+  const detailStackClass = isDetailBar ? 'w-full space-y-2' : 'space-y-2';
+  const detailRootClass = isDetailBar ? 'w-full' : 'space-y-3';
   const primaryBtnClass = isDetailBar ? detailDualPrimaryClass : dualPrimaryClass;
   const secondaryBtnClass = isDetailBar ? detailDualSecondaryClass : dualSecondaryClass;
   const fullWidthBtnClass = (base: string) =>
@@ -169,7 +171,7 @@ export const ActivityPeekEngagementActions = ({
     const messageHost = visible.find((action) => action.id === 'message_host');
     const pendingDisabled = visible.find((action) => action.id === 'pending_join');
     return (
-      <div className={isDetailBar ? 'w-full' : 'space-y-2'}>
+      <div className={detailStackClass}>
         {pendingDisabled ? (
           <button
             type="button"
@@ -208,7 +210,7 @@ export const ActivityPeekEngagementActions = ({
     const inviteCrew = visible.find((action) => action.id === 'invite_crew');
     if (chat && inviteCrew) {
       return (
-        <div className={isDetailBar ? 'w-full' : 'space-y-2'}>
+        <div className={detailStackClass}>
           <div className={rowClass}>
             <button type="button" onClick={() => runGated('open_crew_chat')} className={primaryBtnClass}>
               {actionLabel(chat, card, labelContext)}
@@ -255,9 +257,9 @@ export const ActivityPeekEngagementActions = ({
   );
 
   return (
-    <div className="space-y-3">
+    <div className={detailRootClass}>
       {dualRow && primaryAction && secondaryAction ? (
-        <div className={isDetailBar ? 'w-full' : 'space-y-2'}>
+        <div className={detailStackClass}>
           <div className={rowClass}>
             {primaryAction.id === 'pending_join' ? (
               <button

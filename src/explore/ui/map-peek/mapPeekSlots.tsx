@@ -22,7 +22,7 @@ export type MapPeekActionsSlotProps = {
   onWithdraw?: () => void;
   joinStateLoading?: boolean;
   linkRideshareTenantId?: string | null;
-  onGuestGatedAction?: () => void;
+  onGuestGatedAction?: (action: ActivityMapPeekActionId) => void;
 };
 
 export const MapPeekActionsSlot = ({
@@ -47,7 +47,9 @@ export const MapPeekActionsSlot = ({
       <ShopPeekActions
         card={card}
         onClose={onClose}
-        onGuestGatedAction={rest.onGuestGatedAction}
+        onGuestGatedAction={
+          rest.onGuestGatedAction ? () => rest.onGuestGatedAction!('view_detail') : undefined
+        }
         externalUrl={externalUrl}
       />
     );

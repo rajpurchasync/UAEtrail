@@ -2,6 +2,10 @@ import { ApiError } from '../lib/api-error.js';
 import { findTenantActivityBasic } from '../lib/activities-store.js';
 import { listActivityParticipantsWithUsers } from '../lib/activity-engagement-store.js';
 import { findActivityDocInMongo } from '../lib/entity-sync.js';
+import {
+  hostVisibleMedicalSafety,
+  medicalSafetyFieldsFromAuthProfile,
+} from '../lib/member-medical-safety-profile.js';
 import { activityTimingHasEnded, mapHostParticipantToDto } from '../lib/participant-roster-dto.js';
 
 export const loadTenantActivityParticipantRoster = async (tenantId: string, activityId: string) => {
@@ -30,6 +34,9 @@ export const loadTenantActivityParticipantRoster = async (tenantId: string, acti
           email: p.user.email,
           phone: p.user.profile?.phone ?? null,
           avatarUrl: p.user.profile?.avatarUrl ?? null,
+          medicalSafety: hostVisibleMedicalSafety(
+            medicalSafetyFieldsFromAuthProfile(p.user.profile)
+          ),
         },
         activityEnded
       )

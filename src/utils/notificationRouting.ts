@@ -3,7 +3,6 @@ import {
   activityDetailPath,
   ADMIN_HOSTS_PATH,
   ADMIN_PLACES_PATH,
-  EXPLORE_MAP_PATH,
   explorePath,
   isInboundRewardsWalletPath,
   INBOUND_MESSAGES_PATH,
@@ -94,6 +93,7 @@ const normalizeDirectNotificationPath = (
     const inboundPathname = inboundUrl.pathname;
     if (
       (inboundPathname === INBOUND_PLAN_HUB_TRIPS_PATH ||
+        inboundPathname === INBOUND_PLAN_HUB_TRIPS_MAP_PATH ||
         inboundPathname === INBOUND_PLAN_HUB_ACTIVITIES_PATH) &&
       inboundUrl.searchParams.get('tab') === 'joined' &&
       inboundUrl.searchParams.get('segment') === 'upcoming'

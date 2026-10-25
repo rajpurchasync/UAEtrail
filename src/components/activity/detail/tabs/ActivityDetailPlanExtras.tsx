@@ -16,6 +16,7 @@ type ActivityDetailPlanExtrasProps = {
   canWriteActivityReview: boolean;
   onActivityReviewSubmitted?: (review: import('@uaetrail/shared-types').ReviewDTO) => void;
   hidePhotoGallery?: boolean;
+  hideActivityReviews?: boolean;
 };
 
 export const ActivityDetailPlanExtras = ({
@@ -27,6 +28,7 @@ export const ActivityDetailPlanExtras = ({
   canWriteActivityReview,
   onActivityReviewSubmitted,
   hidePhotoGallery = false,
+  hideActivityReviews = false,
 }: ActivityDetailPlanExtrasProps) => {
   const mandatoryInstructions = extractJoinInstructionLines(activity.requirements);
   const planDetailLines = extractActivityPlanDetailLines(activity.requirements);
@@ -85,7 +87,10 @@ export const ActivityDetailPlanExtras = ({
         </div>
       ) : null}
 
-      {!previewMode && activity.status === 'published' && onActivityReviewSubmitted ? (
+      {!hideActivityReviews &&
+      !previewMode &&
+      activity.status === 'published' &&
+      onActivityReviewSubmitted ? (
         <ReviewSection
           targetType="activity"
           targetId={activity.id}
@@ -93,7 +98,7 @@ export const ActivityDetailPlanExtras = ({
           onReviewSubmitted={onActivityReviewSubmitted}
           canWriteReview={canWriteActivityReview}
           collapsible
-          defaultExpanded={canWriteActivityReview}
+          defaultExpanded
         />
       ) : null}
     </>

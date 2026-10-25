@@ -31,7 +31,7 @@ describe('guestParticipationKitGuard', () => {
 
   it('GPK-04: map peek view-details uses browse gate not join sheet', () => {
     const peekJoin = read('src/explore/ui/useExploreSelectionPeekJoin.ts');
-    expect(peekJoin).toMatch(/openGuestBrowseGate\('peek-details'\)/);
+    expect(peekJoin).toMatch(/openGuestBrowseGate\('peek-details'/);
   });
 
   it('GPK-05: guest copy keys live in guestBrowseGateCopy only', () => {

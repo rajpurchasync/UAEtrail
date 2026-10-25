@@ -220,6 +220,7 @@ export const buildHostingActivityPublishInput = (
           ridesharePriceAed: isShared || isPaid ? priceAmount : null,
           rideshareSeats: draft.capacity,
           rideshareDetails: 'Rideshare — confirm pickup and drop-off details after joining.',
+          rideshareVehicleId: draft.memberVehicleId,
         }
       : draft.rideshareEnabled
         ? {
@@ -265,6 +266,9 @@ export const publishHostingActivity = async (input: {
   }
   if (draft.kind === 'rideshare' && (draft.toLatitude == null || draft.toLongitude == null)) {
     throw new Error('Drop a destination pin on the map.');
+  }
+  if (draft.kind === 'rideshare' && !draft.memberVehicleId) {
+    throw new Error('Add and select a car for this ride.');
   }
   if (!draft.title.trim()) {
     throw new Error('Enter a title for your plan.');

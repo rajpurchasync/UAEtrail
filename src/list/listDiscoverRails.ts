@@ -137,7 +137,7 @@ export const buildListDiscoverRails = (
   const trips = pickDiscoverTripRailCards(cards);
   const venues = pickDiscoverVenueRailCards(cards, mapItems);
   const shops = pickDiscoverShopRailCards(cards, mapItems);
-  if (trips.length) rails.push({ id: 'trips', title: LIST_DISCOVER_RAIL_TRIPS, items: trips });
+  if (trips.length) rails.push({ id: 'activities', title: LIST_DISCOVER_RAIL_TRIPS, items: trips });
   if (venues.length) rails.push({ id: 'venues', title: LIST_DISCOVER_RAIL_PLACES, items: venues });
   if (shops.length > 0) {
     rails.push({ id: 'shops', title: LIST_DISCOVER_RAIL_SHOPS, items: shops });

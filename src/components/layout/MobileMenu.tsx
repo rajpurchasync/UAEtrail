@@ -1,14 +1,27 @@
-import { EXPLORE_DISCOVER_BROWSE_PATH, EXPLORE_MAP_PATH } from '../../config/routingCatalog';
+import { EXPLORE_MAP_PATH } from '../../config/routingCatalog';
 import { isDiscoverBrowseRoute } from '../../explore/exploreDiscoverBrowse';
 import { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Download, LogIn, LogOut, Menu, RefreshCw, User, X } from 'lucide-react';
+import {
+  Download,
+  LogIn,
+  LogOut,
+  Menu,
+  RefreshCw,
+  Smartphone,
+  Tablet,
+  User,
+  X,
+  type LucideIcon,
+} from 'lucide-react';
 import { iconStroke, MOBILE_NAV_ICON_MAP } from '../../config/navIcons';
 import {
   CONSUMER_HAMBURGER_MENU,
   isConsumerChromeHidden,
+  LIST_DISCOVERY_PATH,
   MOBILE_LANDING_USER_MENU,
+  type ConsumerHamburgerMenuItem,
 } from '../../config/platform';
 import {
   ANDROID_INSTALL_SETTINGS_HASH,
@@ -21,6 +34,47 @@ import { useAuth } from '../../context/AuthContext';
 import { persistAuthSessionTokens, switchMeRoleSession } from '../../hooks/accountSessionApi';
 import { accountRouteByRole } from '../../utils/authRouting';
 import { buildSignInRedirect, signInPathForReturn } from '../../utils/authReturnContext';
+
+type ConsumerHamburgerLinkItem = Extract<ConsumerHamburgerMenuItem, { kind: 'link' }>;
+
+const isConsumerHamburgerLinkActive = (
+  item: ConsumerHamburgerLinkItem,
+  pathname: string,
+  search: string
+): boolean => {
+  if (item.label === 'Explore') {
+    const params = new URLSearchParams(search);
+    return (
+      (pathname === EXPLORE_MAP_PATH || pathname === '/discovery') &&
+      !isDiscoverBrowseRoute(pathname, search) &&
+      params.get('list') !== '1'
+    );
+  }
+  if (item.label === 'Browse') {
+    return isDiscoverBrowseRoute(pathname, search) || pathname === LIST_DISCOVERY_PATH;
+  }
+  return item.match.some((prefix) =>
+    prefix === '/' ? pathname === '/' : pathname === prefix || pathname.startsWith(`${prefix}/`)
+  );
+};
+
+const resolveConsumerHamburgerDestination = (
+  item: ConsumerHamburgerLinkItem,
+  user: { id: string } | null,
+  profileDestination: string,
+  signInHref: string
+): string => {
+  if (item.profileLink) return user ? profileDestination : signInHref;
+  if (item.authGate && !user) return signInPathForReturn(item.to);
+  return item.to;
+};
+import {
+  MOBILE_DRAWER,
+  mobileDrawerIconTone,
+  mobileDrawerIconWell,
+  mobileDrawerRowClass,
+} from './mobileDrawerChrome';
+import { UaeTrailBrandMark } from './UaeTrailBrandMark';
 import { SecureAvatar } from '../ui/SecureAvatar';
 import { useNotificationUnreadCount } from '../../hooks/useNotificationUnreadCount';
 import { useMemberStatus } from '../../hooks/useMemberStatus';
@@ -44,10 +98,17 @@ interface MobileMenuProviderProps {
   children: ReactNode;
 }
 
-const navItemClass = (active: boolean) =>
-  `flex items-center gap-3 rounded-2xl px-3 py-3 transition-colors ${
-    active ? 'bg-emerald-50 text-emerald-800' : 'text-gray-700 hover:bg-gray-50'
-  }`;
+const DrawerNavIcon = ({ active, icon: Icon }: { active: boolean; icon: LucideIcon }) => (
+  <span className={mobileDrawerIconWell(active)} aria-hidden>
+    <Icon
+      className={`h-[18px] w-[18px] ${mobileDrawerIconTone(active)}`}
+      strokeWidth={active ? iconStroke.active : iconStroke.default}
+    />
+  </span>
+);
+
+const drawerNavLabelClass = (active: boolean) =>
+  `${MOBILE_DRAWER.label} ${active ? MOBILE_DRAWER.labelActive : ''}`;
 
 /** Compact text links for admin / host / merchant mobile drawers (matches desktop sidebar). */
 const dashboardLinkClass = (active: boolean) =>
@@ -68,11 +129,21 @@ type MobileDrawerProps = {
   closeMenu: () => void;
   eyebrow?: string;
   title: string;
+  /** Show gradient logo + wordmark (consumer menu / guest landing). */
+  showBrandMark?: boolean;
   ariaLabel: string;
   children: ReactNode;
 };
 
-const MobileDrawer = ({ open, closeMenu, eyebrow, title, ariaLabel, children }: MobileDrawerProps) => {
+const MobileDrawer = ({
+  open,
+  closeMenu,
+  eyebrow,
+  title,
+  showBrandMark = false,
+  ariaLabel,
+  children,
+}: MobileDrawerProps) => {
   if (typeof document === 'undefined') return null;
 
   const overlay = (
@@ -92,28 +163,32 @@ const MobileDrawer = ({ open, closeMenu, eyebrow, title, ariaLabel, children }: 
         role="dialog"
         aria-modal="true"
         aria-label={ariaLabel}
-        className={`absolute inset-y-0 right-0 flex w-[min(100vw-3rem,20rem)] max-w-full flex-col border-l border-neutral-100 bg-white shadow-2xl transition-transform duration-300 ease-out ${
-          open ? 'translate-x-0' : 'translate-x-full'
-        }`}
+        className={`${MOBILE_DRAWER.aside} ${open ? 'translate-x-0' : 'translate-x-full'}`}
       >
-        <div className="flex items-center justify-between gap-3 border-b border-neutral-100 px-4 pb-4 pt-safe-plus-2">
+        <div className="flex items-center justify-between gap-3 border-b border-neutral-200/80 bg-white/95 px-4 pb-3 pt-safe-plus-2 backdrop-blur-sm">
           <div className="min-w-0">
             {eyebrow ? (
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-600/90">{eyebrow}</p>
+              <p className="mb-0.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-600/90">
+                {eyebrow}
+              </p>
             ) : null}
-            <p className="truncate text-lg font-bold text-gray-900">{title}</p>
+            {showBrandMark ? (
+              <UaeTrailBrandMark size="md" />
+            ) : (
+              <p className="truncate text-lg font-semibold text-neutral-900">{title}</p>
+            )}
           </div>
           <button
             type="button"
             onClick={closeMenu}
-            className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full text-gray-500 hover:bg-gray-100"
+            className={MOBILE_DRAWER.closeBtn}
             aria-label="Close menu"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
-        <nav className="flex-1 overflow-y-auto px-3 py-3 pb-safe" aria-label={ariaLabel}>
-          <div className="space-y-0.5">{children}</div>
+        <nav className={MOBILE_DRAWER.nav} aria-label={ariaLabel}>
+          {children}
         </nav>
       </aside>
     </div>
@@ -282,90 +357,81 @@ export const MobileUserMenuButton = ({
       <MobileDrawer
         open={open}
         closeMenu={closeMenu}
-        eyebrow="Menu"
+        eyebrow={user ? 'Menu' : undefined}
         title={user?.displayName || 'UAE Trail'}
+        showBrandMark={!user}
         ariaLabel="Landing navigation"
       >
-        {!user ? (
-          <Link
-            to={signInPathForReturn(EXPLORE_MAP_PATH)}
-            onClick={closeMenu}
-            className={navItemClass(pathname.startsWith('/signin'))}
-          >
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gray-100">
-              <LogIn className="h-5 w-5 text-gray-600" strokeWidth={iconStroke.default} />
-            </span>
-            <span className="font-semibold">Log in</span>
-          </Link>
-        ) : null}
-        {MOBILE_LANDING_USER_MENU.map((item) => {
-          const active =
-            'match' in item && item.label === 'Browse'
-              ? isDiscoverBrowseRoute(pathname, search)
-              : 'match' in item && item.label === 'Explore'
-                ? (pathname === EXPLORE_MAP_PATH || pathname === '/discovery') &&
-                  !isDiscoverBrowseRoute(pathname, search)
-                : 'match' in item
-                  ? isActive(item.match)
-                  : false;
-          const Icon = MOBILE_NAV_ICON_MAP[item.label] ?? User;
-          const content = (
-            <>
-              <span
-                className={`w-9 h-9 rounded-xl flex items-center justify-center ${
-                  active ? 'bg-emerald-600/12' : 'bg-gray-100'
-                }`}
-              >
-                <Icon
-                  className={`w-5 h-5 ${active ? 'text-emerald-700' : 'text-gray-600'}`}
-                  strokeWidth={active ? iconStroke.active : iconStroke.default}
-                />
-              </span>
-              <span className="font-semibold">{item.label}</span>
-            </>
-          );
-
-          if ('href' in item) {
-            return (
-              <a
-                key={item.label}
-                href={item.href}
+        <div className={MOBILE_DRAWER.stack}>
+          <div className={MOBILE_DRAWER.group}>
+            {!user ? (
+              <Link
+                to={signInPathForReturn(EXPLORE_MAP_PATH)}
                 onClick={closeMenu}
-                className={navItemClass(false)}
+                className={mobileDrawerRowClass(pathname.startsWith('/signin'))}
               >
-                {content}
-              </a>
-            );
-          }
+                <DrawerNavIcon active={pathname.startsWith('/signin')} icon={LogIn} />
+                <span className={drawerNavLabelClass(pathname.startsWith('/signin'))}>Log in</span>
+              </Link>
+            ) : null}
+            {MOBILE_LANDING_USER_MENU.map((item) => {
+              const active =
+                'match' in item && item.label === 'Browse'
+                  ? isDiscoverBrowseRoute(pathname, search)
+                  : 'match' in item && item.label === 'Explore'
+                    ? (pathname === EXPLORE_MAP_PATH || pathname === '/discovery') &&
+                      !isDiscoverBrowseRoute(pathname, search)
+                    : 'match' in item
+                      ? isActive(item.match)
+                      : false;
+              const Icon = MOBILE_NAV_ICON_MAP[item.label] ?? User;
 
-          if (item.to === EXPLORE_MAP_PATH) {
-            return (
-              <button
-                key={item.label}
-                type="button"
-                onClick={() => {
-                  closeMenu();
-                  navigate(EXPLORE_MAP_PATH);
-                }}
-                className={`w-full ${navItemClass(active)}`}
-              >
-                {content}
-              </button>
-            );
-          }
+              if ('href' in item) {
+                return (
+                  <a
+                    key={item.label}
+                    href={item.href}
+                    onClick={closeMenu}
+                    className={mobileDrawerRowClass(false)}
+                  >
+                    <DrawerNavIcon active={false} icon={Icon} />
+                    <span className={drawerNavLabelClass(false)}>{item.label}</span>
+                  </a>
+                );
+              }
 
-          return (
-            <Link
-              key={item.label}
-              to={item.to}
-              onClick={closeMenu}
-              className={navItemClass(active)}
-              aria-current={active ? 'page' : undefined}
-            >
-              {content}
-            </Link>
-          );
-        })}
+              if (item.to === EXPLORE_MAP_PATH) {
+                return (
+                  <button
+                    key={item.label}
+                    type="button"
+                    onClick={() => {
+                      closeMenu();
+                      navigate(EXPLORE_MAP_PATH);
+                    }}
+                    className={mobileDrawerRowClass(active)}
+                  >
+                    <DrawerNavIcon active={active} icon={Icon} />
+                    <span className={drawerNavLabelClass(active)}>{item.label}</span>
+                  </button>
+                );
+              }
+
+              return (
+                <Link
+                  key={item.label}
+                  to={item.to}
+                  onClick={closeMenu}
+                  className={mobileDrawerRowClass(active)}
+                  aria-current={active ? 'page' : undefined}
+                >
+                  <DrawerNavIcon active={active} icon={Icon} />
+                  <span className={drawerNavLabelClass(active)}>{item.label}</span>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
       </MobileDrawer>
     </>
   );
@@ -390,11 +456,6 @@ const MobileMenuPanel = () => {
   if (isConsumerChromeHidden(pathname) && !isPrivilegedRole) return null;
 
   const profileDestination = user ? accountRouteByRole(user.role) : signInHref;
-
-  const isActive = (match: readonly string[]) =>
-    match.some((prefix) =>
-      prefix === '/' ? pathname === '/' : pathname === prefix || pathname.startsWith(`${prefix}/`)
-    );
 
   const openPwaInstall = (action: 'pwa-android' | 'pwa-ios') => {
     closeMenu();
@@ -485,100 +546,96 @@ const MobileMenuPanel = () => {
   }
 
   return (
-    <MobileDrawer open={open} closeMenu={closeMenu} title="UAE Trail" ariaLabel="Main menu">
-      {CONSUMER_HAMBURGER_MENU.map((item) => {
-            if (item.kind === 'download') {
-              return (
-                <div key={item.title} className="mt-2 border-t border-neutral-100 pt-2" role="group" aria-label={item.title}>
-                  <p className="px-3 pb-1 text-[11px] font-bold uppercase tracking-wide text-neutral-500">
-                    {item.title}
-                  </p>
-                  {item.items.map((sub) => {
-                    const isAndroid = sub.action === 'pwa-android';
-                    return (
-                      <button
-                        key={sub.label}
-                        type="button"
-                        onClick={() => openPwaInstall(sub.action)}
-                        className={`w-full ${navItemClass(false)}`}
-                      >
-                        <span
-                          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-lg ${
-                            isAndroid ? 'bg-emerald-50' : 'bg-sky-50'
-                          }`}
-                          aria-hidden
-                        >
-                          {sub.emoji}
-                        </span>
-                        <span className="min-w-0 flex-1 text-left font-semibold">{sub.label}</span>
-                        <Download
-                          className={`h-4 w-4 shrink-0 ${isAndroid ? 'text-emerald-600' : 'text-sky-600'}`}
-                          strokeWidth={2.25}
-                          aria-hidden
-                        />
-                      </button>
-                    );
-                  })}
-                </div>
-              );
-            }
-
-            const active =
-              item.to === EXPLORE_DISCOVER_BROWSE_PATH
-                ? isDiscoverBrowseRoute(pathname, search)
-                : isActive(item.match);
-            const label = user || !item.labelGuest ? item.label : item.labelGuest;
-            const emoji = user || !item.emojiGuest ? item.emoji : item.emojiGuest;
-            const destination = item.profileLink ? (user ? profileDestination : signInHref) : item.to;
+    <MobileDrawer
+      open={open}
+      closeMenu={closeMenu}
+      eyebrow="Menu"
+      showBrandMark
+      title="UAE Trail"
+      ariaLabel="Main menu"
+    >
+      <div className={MOBILE_DRAWER.stack}>
+        <div className={MOBILE_DRAWER.group}>
+          {CONSUMER_HAMBURGER_MENU.filter((item) => item.kind === 'link').map((item) => {
+            const linkItem = item as ConsumerHamburgerLinkItem;
+            const active = isConsumerHamburgerLinkActive(linkItem, pathname, search);
+            const label = user || !linkItem.labelGuest ? linkItem.label : linkItem.labelGuest;
+            const iconKey = linkItem.profileLink && !user ? 'Log in' : linkItem.label;
+            const Icon = MOBILE_NAV_ICON_MAP[iconKey as keyof typeof MOBILE_NAV_ICON_MAP] ?? User;
+            const destination = resolveConsumerHamburgerDestination(
+              linkItem,
+              user,
+              profileDestination,
+              signInHref
+            );
             return (
               <Link
                 key={item.label}
                 to={destination}
                 onClick={closeMenu}
-                className={navItemClass(active)}
+                className={mobileDrawerRowClass(active)}
                 aria-current={active ? 'page' : undefined}
               >
-                <span
-                  className={`flex h-9 w-9 items-center justify-center rounded-xl text-lg ${
-                    active ? 'bg-emerald-600/12' : 'bg-gray-100'
-                  }`}
-                  aria-hidden
-                >
-                  {emoji}
-                </span>
-                <span className="font-semibold">{label}</span>
+                <DrawerNavIcon active={active} icon={Icon} />
+                <span className={drawerNavLabelClass(active)}>{label}</span>
               </Link>
             );
           })}
+        </div>
 
-          {canSwitchBack && (
-            <button
-              type="button"
-              onClick={() => void switchRole('original')}
-              className={`w-full ${navItemClass(false)}`}
-            >
-              <span className="w-9 h-9 rounded-xl flex items-center justify-center bg-emerald-50">
-                <RefreshCw className="w-5 h-5 text-emerald-600" strokeWidth={iconStroke.default} />
-              </span>
-              <span className="font-semibold text-emerald-700">Restore {user?.switchedFromRole?.replace(/_/g, ' ')}</span>
-            </button>
-          )}
+        {CONSUMER_HAMBURGER_MENU.filter((item) => item.kind === 'download').map((item) => (
+          <div key={item.title} role="group" aria-label={item.title}>
+            <p className={MOBILE_DRAWER.sectionLabel}>{item.title}</p>
+            <div className={MOBILE_DRAWER.group}>
+              {item.items.map((sub) => {
+                const PlatformIcon = sub.action === 'pwa-android' ? Smartphone : Tablet;
+                return (
+                  <button
+                    key={sub.label}
+                    type="button"
+                    onClick={() => openPwaInstall(sub.action)}
+                    className={mobileDrawerRowClass(false)}
+                  >
+                    <DrawerNavIcon active={false} icon={PlatformIcon} />
+                    <span className={`min-w-0 flex-1 ${drawerNavLabelClass(false)}`}>{sub.label}</span>
+                    <Download className="h-4 w-4 shrink-0 text-emerald-700/70" strokeWidth={2.25} aria-hidden />
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
 
-          {user ? (
-            <button
-              type="button"
-              onClick={async () => {
-                closeMenu();
-                await signOut();
-              }}
-              className={`w-full ${navItemClass(false)}`}
-            >
-              <span className="w-9 h-9 rounded-xl flex items-center justify-center bg-gray-100">
-                <LogOut className="w-5 h-5 text-gray-600" strokeWidth={iconStroke.default} />
-              </span>
-              <span className="font-semibold">Sign Out</span>
-            </button>
-          ) : null}
+        {(canSwitchBack || user) && (
+          <div className={MOBILE_DRAWER.group}>
+            {canSwitchBack ? (
+              <button
+                type="button"
+                onClick={() => void switchRole('original')}
+                className={mobileDrawerRowClass(false)}
+              >
+                <DrawerNavIcon active={false} icon={RefreshCw} />
+                <span className={`${drawerNavLabelClass(false)} text-emerald-800`}>
+                  Restore {user?.switchedFromRole?.replace(/_/g, ' ')}
+                </span>
+              </button>
+            ) : null}
+            {user ? (
+              <button
+                type="button"
+                onClick={async () => {
+                  closeMenu();
+                  await signOut();
+                }}
+                className={mobileDrawerRowClass(false)}
+              >
+                <DrawerNavIcon active={false} icon={LogOut} />
+                <span className={drawerNavLabelClass(false)}>Sign Out</span>
+              </button>
+            ) : null}
+          </div>
+        )}
+      </div>
     </MobileDrawer>
   );
 };

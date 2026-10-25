@@ -11,8 +11,7 @@ import {
 } from '../../activity/activityPeekEngagement';
 import type { DiscoveryCardViewModel } from '../../discovery';
 import { useActivityJoinActions, useActivityJoinContext } from '../../hooks/useActivityJoinFlow';
-import { useViewerProfileGender } from '../../hooks/useViewerProfileGender';
-import { womenOnlyJoinMessageForActivity } from '../../utils/activityWomenOnlyJoin';
+import { useActivityJoinGuardMessage } from '../../hooks/useActivityJoinGuardMessage';
 import { messagesRouteForRole } from '../../utils/authRouting';
 import { navigateToMessagesWithReturn } from '../../utils/activityGroupChatNav';
 import { buildMapPeekReturnPath } from '../mapPeekDetailNavState';
@@ -29,10 +28,9 @@ export const useExploreSelectionPeekJoin = (input: {
   location: Pick<Location, 'pathname' | 'search'>;
   selectedId: string | null;
 }) => {
-  const viewerGender = useViewerProfileGender(input.user?.id);
-  const joinGuardMessage = useMemo(
-    () => womenOnlyJoinMessageForActivity(input.selected?.activity?.requirements, viewerGender),
-    [input.selected?.activity?.requirements, viewerGender]
+  const joinGuardMessage = useActivityJoinGuardMessage(
+    input.selected?.activity?.requirements,
+    input.user?.id
   );
 
   const joinContextEnabled = Boolean(
@@ -100,7 +98,7 @@ export const useExploreSelectionPeekJoin = (input: {
         returnTo
       );
     },
-    [input.user, input.navigate, input.location, input.selectedId, joinActions, input.setSelectedId]
+    [input, joinActions]
   );
 
   const handleGuestGatedAction = useCallback(

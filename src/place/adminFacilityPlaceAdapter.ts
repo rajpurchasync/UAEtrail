@@ -40,7 +40,6 @@ export const adminPlaceFormToFacilityPayload = (
   images: form.images ?? [],
   tags: form.tags ?? tagsForPlaceKind(facilityKind),
   status: form.status ?? 'draft',
-  countryCode: form.countryCode ?? 'AE',
 });
 
 export const facilityKindFromAdminPlaceForm = (form: Partial<PlaceDTO>): PlaceKind | null => {

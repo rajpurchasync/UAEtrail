@@ -5,6 +5,7 @@ import { countPendingActivityInvitesForSenderOnActivity } from '../lib/activity-
 import { findActivityRequestByEventAndUser } from '../lib/activity-engagement-store.js';
 import { buildActivityPresentationForDetail } from '../lib/build-activity-presentation.js';
 import { buildActivityRedactedDetail } from '../lib/activity-redacted-detail.js';
+import { resolveActivityDetailLinkage } from '../lib/activity-detail-linkage.js';
 import { buildActivityDto, toLocationDto, toParticipantPreviews } from '../lib/mappers.js';
 import { canWithdrawRequest } from '../lib/withdraw-reasons.js';
 import { PRIVATE_ACTIVITY_MESSAGE } from './activity-viewer-access.js';
@@ -132,10 +133,14 @@ export const loadPublicActivityDetail = async (input: {
     };
   }
 
+  const linkage = await resolveActivityDetailLinkage(event, findPublishedActivityWithPreviewsById);
+
   if (access.exposure === 'redacted') {
     return {
       data: {
         ...buildActivityRedactedDetail(event),
+        linkedParentActivity: linkage.linkedParentActivity,
+        linkedRideshare: linkage.linkedRideshareSummary,
         myParticipation,
         myRequest,
         myJoinInvite,
@@ -145,31 +150,11 @@ export const loadPublicActivityDetail = async (input: {
     };
   }
 
-  let linkedRideshare = null;
-  if (event.linkedRideshareActivityId) {
-    const linkedEvent = await findPublishedActivityWithPreviewsById(event.linkedRideshareActivityId);
-    if (linkedEvent) {
-      linkedRideshare = buildActivityDto(linkedEvent);
-    }
-  }
-
-  let linkedParentActivity = null;
-  if (event.linkedActivityId) {
-    const parentEvent = await findPublishedActivityWithPreviewsById(event.linkedActivityId);
-    if (parentEvent) {
-      linkedParentActivity = {
-        id: parentEvent.id,
-        title: parentEvent.title,
-        activityType: buildActivityDto(parentEvent).activityType,
-      };
-    }
-  }
-
   return {
     data: {
       ...buildActivityDto(event),
-      linkedRideshare,
-      linkedParentActivity,
+      linkedRideshare: linkage.linkedRideshare,
+      linkedParentActivity: linkage.linkedParentActivity,
       organizerId: event.hostId ?? event.tenant.ownerId,
       participants: toParticipantPreviews(event.participants),
       location: toLocationDto(event.location),

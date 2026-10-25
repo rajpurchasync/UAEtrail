@@ -123,6 +123,7 @@ const resolvePinSource = (pin: Pick<PlaceMapPin, 'id' | 'source'>): MapPinSource
   if (pin.id.startsWith('venue:')) return 'venue';
   if (pin.id.startsWith('shop:')) return 'shop';
   if (pin.id.startsWith('agency:')) return 'agency';
+  if (pin.source === 'catalog_place') return 'venue';
   if (
     pin.source === 'activity' ||
     isGeographyMapSource(pin.source) ||
@@ -130,7 +131,7 @@ const resolvePinSource = (pin: Pick<PlaceMapPin, 'id' | 'source'>): MapPinSource
     pin.source === 'agency' ||
     pin.source === 'area'
   ) {
-    return pin.source;
+    return pin.source ?? 'activity';
   }
   return 'activity';
 };
@@ -140,7 +141,14 @@ const pinIcon = (
   selected: boolean,
   pin: Pick<
     PlaceMapPin,
-    'id' | 'name' | 'source' | 'stackCount' | 'colocatedEntries' | 'activityMode' | 'placeKind'
+    | 'id'
+    | 'name'
+    | 'source'
+    | 'stackCount'
+    | 'colocatedEntries'
+    | 'activityMode'
+    | 'placeKind'
+    | 'exploreItemId'
   >,
   _rideshareEndpoint?: 'from' | 'to',
   selectedExploreItemId?: string,
@@ -214,10 +222,9 @@ const pinIcon = (
     });
   }
 
-  const ringColor = exploreMapPinRingColor(
-    kind,
-    pin.activityMode === 'seeking' ? 'seeking' : source
-  );
+  const ringSource: MapPinRingSource | undefined =
+    pin.activityMode === 'seeking' ? 'seeking' : toMapPinRingSource(source, false);
+  const ringColor = exploreMapPinRingColor(kind, ringSource);
   const isVenue = isGeographyMapSource(source);
   const size = isVenue ? (selected ? 36 : 32) : selected ? 36 : 32;
   const iconSize = isVenue ? 15 : 18;
@@ -791,7 +798,7 @@ const ClusteredMarkers = ({
         const clusterPins = pinsFromCluster(cluster);
         const resolved = resolveClusterMapClick(
           clusterPins,
-          event,
+          event as L.LeafletMouseEvent,
           selectedExploreItemId,
           highlightedExploreItemId
         );

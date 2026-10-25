@@ -21,7 +21,8 @@ import {
   pickActivityTenant,
   resolveOwnedProfileType,
 } from '../lib/tenant-store.js';
-import { resolvePublishingProfileKind } from '@uaetrail/shared-types';
+import { isMedicalSafetyProfileComplete, resolvePublishingProfileKind } from '@uaetrail/shared-types';
+import { medicalSafetyFieldsFromAuthProfile } from '../lib/member-medical-safety-profile.js';
 import type { HostStatusDTO, MemberProfileRoleLabel } from '@uaetrail/shared-types';
 import { inferTenantPublishingPurpose } from '../domain/tenant-publishing.js';
 
@@ -93,6 +94,9 @@ export const resolveMemberStatus = async (userId: string): Promise<HostStatusDTO
   const isPlatformAdmin = role === UserRole.PLATFORM_ADMIN;
 
   const profileComplete = isSignupProfileComplete(user?.profile);
+  const medicalSafetyProfileComplete = isMedicalSafetyProfileComplete(
+    medicalSafetyFieldsFromAuthProfile(user?.profile)
+  );
 
   let ownedByOwnerId = await listTenantsByOwnerId(userId);
   let memberships = await listActiveTenantMembershipsByUser(userId);
@@ -172,6 +176,7 @@ export const resolveMemberStatus = async (userId: string): Promise<HostStatusDTO
 
   return {
     profileComplete,
+    medicalSafetyProfileComplete,
     isCommunityHost,
     hostTiers,
     profileRoleLabel,

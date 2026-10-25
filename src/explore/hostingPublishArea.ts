@@ -9,6 +9,16 @@ import type { CreateActivityDraft } from './ui/hostingFlowEngine';
 
 const PLACE_AREA_REQUIRED =
   'Choose a catalog place linked to an area (admin links places in the registry), or add the spot via Add first.';
+
+const placeAreaError = (place: PlaceDTO | null | undefined, registryPlaceId: string | null): string => {
+  if (place?.name?.trim()) {
+    return `“${place.name.trim()}” isn’t linked to a map area yet. Pick another catalog trail or add your spot via Explore → Add (choose an area first).`;
+  }
+  if (registryPlaceId?.trim()) {
+    return 'We couldn’t verify that venue — open the destination step and select your trail again from the catalog list.';
+  }
+  return PLACE_AREA_REQUIRED;
+};
 const SEEKING_AREA_REQUIRED = 'Choose an area and drop a pin on the map.';
 const SEEKING_AREA_PIN_REQUIRED = 'Drop a pin on the map for the area you selected.';
 
@@ -21,11 +31,13 @@ export const validateHostingPlaceArea = (
   if (draft.placeLabelSource === 'custom') {
     return 'Publish from a catalog place with an area, or add your spot via Add (select an area first).';
   }
+  if (draft.registryPlaceAreaId?.trim()) return null;
+
   const place = draft.registryPlaceId
     ? registryPlaces.find((row) => row.id === draft.registryPlaceId)
     : null;
-  if (!place?.areaId?.trim()) return PLACE_AREA_REQUIRED;
-  return null;
+  if (place?.areaId?.trim()) return null;
+  return placeAreaError(place, draft.registryPlaceId);
 };
 
 /** @deprecated Use validateHostingPlaceArea — kept for import stability during migration. */

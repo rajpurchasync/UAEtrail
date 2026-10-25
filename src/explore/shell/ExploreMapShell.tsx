@@ -55,7 +55,7 @@ export const ExploreMapShell = ({
   peopleBrowseMapChip,
   joinInvitePeekBanner,
   handleCloseMapSelection,
-  handleOfferRideshareForSeeking,
+  handleOfferRideshareForSeeking: _handleOfferRideshareForSeeking,
   primaryFabLabel,
   handleOpenExploreItem,
   searchScopeCounts,

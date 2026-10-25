@@ -161,6 +161,18 @@ export const HOSTING_LINK_RIDESHARE_HINT =
 
 export const HOSTING_RIDESHARE_LINKED_NOTICE = 'Rideshare linked — joiners will see it on your plan.';
 
+export const HOSTING_LINK_PARENT_ACTIVITY_HINT =
+  'Link this ride to a published hike, camp, or event you host so joiners can open the main plan.';
+
+export const HOSTING_LINK_PARENT_PASTE_LABEL = 'Paste outing link';
+
+export const HOSTING_LINK_PARENT_PASTE_PLACEHOLDER = 'https://uaetrail.com/activity/…';
+
+export const HOSTING_LINK_PARENT_SUBMIT = 'Link to outing';
+
+export const ACTIVITY_DETAIL_RIDESHARE_UNLINKED_GUEST =
+  'This ride is not linked to a group outing yet.';
+
 export const EXPLORE_LINKED_RIDESHARES_PEEK_TITLE = 'Rideshares for this plan';
 
 export const EXPLORE_LINKED_PARENT_PLAN_PEEK_PREFIX = 'For plan:';

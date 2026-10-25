@@ -517,11 +517,13 @@ export const exploreOfferRideshareForSeekingPath = (intent: {
   id: string;
   activityId?: string | null;
   seekingActivityId?: string | null;
-}): string =>
-  explorePath({
-    pin: resolveParticipantIntentMapItemId(intent),
+}): string => {
+  const pin = resolveParticipantIntentMapItemId(intent);
+  return explorePath({
+    ...(pin ? { pin } : {}),
     compose: hostCompose('rideshare'),
   });
+};
 
 /** Map inbound `/activities?create=` values onto explore compose organize routes. */
 export const inboundCreateParamToHostPath = (createParam: string | null): string | null => {

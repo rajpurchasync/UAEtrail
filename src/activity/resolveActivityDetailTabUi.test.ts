@@ -42,7 +42,6 @@ describe('resolveActivityDetailTabUi', () => {
     });
 
     expect(ui.showMobileTabs).toBe(true);
-    expect(ui.showPlanTransportTeaser).toBe(true);
     expect(ui.showPlaceLockedOnMobile).toBe(true);
     expect(ui.showPlaceCrewBody).toBe(false);
     expect(ui.showCrewLockedHint).toBe(presentation.tabs.buddies.showCrewLockedHint);
@@ -74,7 +73,6 @@ describe('resolveActivityDetailTabUi', () => {
     });
 
     expect(ui.showMobileTabs).toBe(false);
-    expect(ui.showPlanTransportTeaser).toBe(false);
   });
 
   it('falls back to local crew flags when wire tabs are missing', () => {

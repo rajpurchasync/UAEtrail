@@ -1,7 +1,7 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Car } from 'lucide-react';
-import { MapPin, Mountain, ShoppingBag, Sparkles, Tent } from 'lucide-react';
+import { Building2, MapPin, Mountain, ShoppingBag, Sparkles, Tent } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { MAP_CONFIG } from '../../config/platform';
 import { EXPLORE_Z } from '../../config/exploreTheme';
@@ -66,6 +66,7 @@ const KIND_LABELS: Record<AddVenueKind, { title: string; icon: typeof Mountain }
   shop: { title: 'Shops', icon: ShoppingBag },
   event: { title: 'Others', icon: Sparkles },
   rideshare: { title: 'Rideshare', icon: Car },
+  facility: { title: 'Facility', icon: Building2 },
 };
 
 const REVIEW_EDIT_LABELS: Partial<Record<AddFlowStepId, string>> = {
@@ -152,8 +153,8 @@ export const CreateAddFlow = ({
     }
     if (addInitializedRef.current !== addInitKey) {
       const saved = readAddWizardSession(kind);
-      if (saved?.draft) {
-        setDraft(saved.draft);
+      if (saved?.draft && kind !== 'facility') {
+        setDraft(saved.draft as AddDraft);
         setStep(saved.step as AddFlowStepId);
       } else {
         setStep('title');

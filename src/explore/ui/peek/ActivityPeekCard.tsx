@@ -12,7 +12,7 @@ export type ActivityPeekCardProps = {
   onWithdraw?: () => void;
   joinStateLoading?: boolean;
   linkRideshareTenantId?: string | null;
-  onGuestGatedAction?: () => void;
+  onGuestGatedAction?: (action: ActivityMapPeekActionId) => void;
   onActivityMapPeekAction?: (actionId: ActivityMapPeekActionId) => void;
   onOpenExploreItem?: (exploreItemId: string) => void;
   onOfferTransport?: () => void;
@@ -39,35 +39,40 @@ export const ActivityPeekCard = ({
   onOfferTransport,
   joinInvitePeekBanner = null,
   embedMode = false,
-}: ActivityPeekCardProps) => (
-  <MapPeekShell
-    card={card}
-    onClose={onClose}
-    joinStateLoading={joinStateLoading}
-    onGuestGatedAction={onGuestGatedAction}
-    statusBanner={joinInvitePeekBanner}
-    embedMode={embedMode}
-    actions={
-      <MapPeekActionsSlot
-        card={card}
-        onClose={onClose}
-        onJoin={onJoin}
-        onMessage={onMessage}
-        linkRideshareTenantId={linkRideshareTenantId}
-        joinUiState={joinUiState}
-        onWithdraw={onWithdraw}
-        joinStateLoading={joinStateLoading}
-        onGuestGatedAction={onGuestGatedAction}
-        onActivityMapPeekAction={onActivityMapPeekAction}
-      />
-    }
-  >
-    <MapPeekBodySlot
+}: ActivityPeekCardProps) => {
+  const shellGuestGate = onGuestGatedAction ? () => onGuestGatedAction('view_detail') : undefined;
+  const bodyGuestGate = shellGuestGate;
+
+  return (
+    <MapPeekShell
       card={card}
-      onGuestGatedAction={onGuestGatedAction}
-      onOpenLinkedPin={onOpenExploreItem}
-      onOfferTransport={onOfferTransport}
-      joinUiState={joinUiState}
-    />
-  </MapPeekShell>
-);
+      onClose={onClose}
+      joinStateLoading={joinStateLoading}
+      onGuestGatedAction={shellGuestGate}
+      statusBanner={joinInvitePeekBanner}
+      embedMode={embedMode}
+      actions={
+        <MapPeekActionsSlot
+          card={card}
+          onClose={onClose}
+          onJoin={onJoin}
+          onMessage={onMessage}
+          linkRideshareTenantId={linkRideshareTenantId}
+          joinUiState={joinUiState}
+          onWithdraw={onWithdraw}
+          joinStateLoading={joinStateLoading}
+          onGuestGatedAction={onGuestGatedAction}
+          onActivityMapPeekAction={onActivityMapPeekAction}
+        />
+      }
+    >
+      <MapPeekBodySlot
+        card={card}
+        onGuestGatedAction={bodyGuestGate}
+        onOpenLinkedPin={onOpenExploreItem}
+        onOfferTransport={onOfferTransport}
+        joinUiState={joinUiState}
+      />
+    </MapPeekShell>
+  );
+};

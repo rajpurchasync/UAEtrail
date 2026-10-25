@@ -133,6 +133,11 @@ const attachLinkedRideshareMetadata = (items: ExploreMapItemDTO[]): void => {
         id: parentItem.activity.id,
         title: parentItem.title,
         activityType: parentItem.activity.activityType,
+        date: parentItem.activity.date,
+        time: parentItem.activity.time,
+        description: parentItem.activity.description?.trim()
+          ? parentItem.activity.description.trim().slice(0, 220)
+          : null,
       },
     };
   }

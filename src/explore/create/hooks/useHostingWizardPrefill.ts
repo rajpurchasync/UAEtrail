@@ -47,7 +47,7 @@ export const useHostingWizardPrefill = (input: {
       input.setSelectedId(null);
       input.compose.setComposeRoute(hostCompose('rideshare'));
     },
-    [input.compose.setComposeRoute, input.setSelectedId]
+    [input]
   );
 
   const handleOfferRideshareForSeeking = useCallback(() => {
@@ -70,18 +70,7 @@ export const useHostingWizardPrefill = (input: {
     setRideshareLinkSeeking(selected);
     input.setSelectedId(null);
     input.compose.setComposeRoute(hostCompose('rideshare'));
-  }, [
-    input.selected,
-    input.pathname,
-    input.search,
-    input.user,
-    input.hostGateLoading,
-    input.canPublish,
-    input.navigate,
-    input.navigateMemberPublishGate,
-    input.compose.setComposeRoute,
-    input.setSelectedId,
-  ]);
+  }, [input]);
 
   const hostingWizardPrefill = useMemo((): HostingWizardPrefill | null => {
     if (rideshareLinkParent) {
@@ -123,14 +112,14 @@ export const useHostingWizardPrefill = (input: {
       },
       { replace: true }
     );
-  }, [input.compose, hostingFrom, input.setSearchParams]);
+  }, [input, hostingFrom]);
 
   const onHostingBackToIntent = useCallback(() => {
     hostingFrom.clearHostingFromActivityPrefill();
     setRideshareLinkParent(null);
     setRideshareLinkSeeking(null);
     input.compose.setComposeRoute({ surface: 'menu', intent: 'host' });
-  }, [hostingFrom, input.compose.setComposeRoute]);
+  }, [hostingFrom, input]);
 
   return {
     rideshareLinkParent,

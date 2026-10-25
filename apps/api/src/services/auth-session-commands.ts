@@ -5,7 +5,7 @@ export {
   createRefreshToken,
   revokeRefreshToken,
   revokeRefreshTokensByUser,
-  useEmailChangeToken,
-  useEmailVerificationToken,
-  usePasswordResetToken,
+  consumeEmailChangeToken,
+  consumeEmailVerificationToken,
+  consumePasswordResetToken,
 } from '../lib/auth-tokens-store.js';

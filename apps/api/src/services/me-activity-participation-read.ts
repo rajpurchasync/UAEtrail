@@ -10,6 +10,7 @@ import {
   findActivityRequestByIdForUser,
   listUserActivityParticipantsPaginated,
   listUserActivityRequestsPaginated,
+  readUserParticipationRevision,
 } from '../lib/activity-engagement-store.js';
 import { buildActivityDto } from '../lib/mappers.js';
 import { buildParticipationDto } from './checkin.js';
@@ -92,6 +93,9 @@ export const listMyActivityJoinRequests = async (input: {
 
   return { items, total };
 };
+
+export const readMyParticipationRevision = (userId: string): Promise<string> =>
+  readUserParticipationRevision(userId);
 
 export const listMyParticipatingActivities = async (input: {
   userId: string;

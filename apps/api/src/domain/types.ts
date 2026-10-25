@@ -125,6 +125,14 @@ export interface Activity {
   ridesharePriceAed: number | null;
   rideshareSeats: number | null;
   rideshareDetails: string | null;
+  rideshareVehicleId: string | null;
+  rideshareVehicle: {
+    id: string;
+    make: string;
+    model: string;
+    color: string;
+    year: number;
+  } | null;
   /** Parent hike/camp/event when this is a linked rideshare listing. */
   linkedActivityId: string | null;
   /** Linked rideshare activity id when a ride offer is enabled for this listing. */
@@ -184,6 +192,12 @@ export interface ActivityParticipant {
   hostRatingScore: number | null;
   hostRatingComment: string | null;
   hostRatedAt: Date | null;
+  hostRatingRideshare?: {
+    cleanliness: number;
+    punctuality: number;
+    behaviour: number;
+    payment?: number | null;
+  } | null;
   createdAt: Date;
 }
 

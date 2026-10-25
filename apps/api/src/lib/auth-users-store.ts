@@ -1,5 +1,6 @@
 import { ObjectId, type Collection } from 'mongodb';
 import { MembershipTier } from '../domain/enums.js';
+import type { BloodGroup } from '@uaetrail/shared-types';
 import type { UserCity, UserCountryCode, UserGender } from '../domain/user-profile.js';
 import { getMongoClient } from './mongo.js';
 import { scheduleExploreMapCacheInvalidation } from './explore-map-cache-schedule.js';
@@ -34,6 +35,10 @@ export type AuthUserRecord = {
     platformMasterAdmin?: boolean;
     rewardPoints?: number;
     membershipTier?: MembershipTier;
+    bloodGroup?: BloodGroup | null;
+    medicalConditions?: string | null;
+    emergencyContactName?: string | null;
+    emergencyContactPhone?: string | null;
   };
   createdAt: Date;
   updatedAt: Date;
@@ -233,6 +238,16 @@ export const updateAuthUserProfile = async (
   }
   if (patch.platformMasterAdmin !== undefined) {
     setFields['profile.platformMasterAdmin'] = patch.platformMasterAdmin;
+  }
+  if (patch.bloodGroup !== undefined) setFields['profile.bloodGroup'] = patch.bloodGroup ?? null;
+  if (patch.medicalConditions !== undefined) {
+    setFields['profile.medicalConditions'] = patch.medicalConditions ?? null;
+  }
+  if (patch.emergencyContactName !== undefined) {
+    setFields['profile.emergencyContactName'] = patch.emergencyContactName ?? null;
+  }
+  if (patch.emergencyContactPhone !== undefined) {
+    setFields['profile.emergencyContactPhone'] = patch.emergencyContactPhone ?? null;
   }
   await usersCollection().updateOne({ _id: userId }, { $set: setFields });
   if (patch.displayName !== undefined || patch.givenName !== undefined || patch.surname !== undefined) {

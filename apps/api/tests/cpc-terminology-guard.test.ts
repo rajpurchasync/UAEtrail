@@ -18,7 +18,7 @@ const collectTsFiles = (dir: string, root = dir): string[] => {
 };
 
 /** Compose wire + CPC docs may mention contribute as UI token only. */
-const CONTRIBUTE_COMMENT_ALLOWLIST = new Set([
+const _CONTRIBUTE_COMMENT_ALLOWLIST = new Set([
   'domain/location-submit.ts',
   'services/location-submit.ts',
 ]);

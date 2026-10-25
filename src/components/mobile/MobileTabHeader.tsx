@@ -1,69 +1,33 @@
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
-  isMobileTabHeaderRoute,
+  resolveMobileTabHeaderTitle,
   shouldShowMobileUnifiedTabHeader,
-  type MobileTabHeaderCenter,
 } from '../../config/mobileTabHeader';
-import {
-  EXPLORE_MAP_PATH,
-  MESSAGES_PATH,
-  PLAN_PATH,
-  isJourneyMapPath,
-  isProfileHistoryListPath,
-} from '../../config/routingCatalog';
+import { EXPLORE_MAP_PATH } from '../../config/routingCatalog';
 import { resolveMobileTabHeaderLeadingBack } from '../../utils/mobileBackNav';
-import { joinedSubViewTitle } from '../../pages/activities/shared';
-import { useMemberStatus } from '../../hooks/useMemberStatus';
-import { memberCanManageHostedActivities } from '../../utils/hostedActivitiesGate';
-import { PRODUCT_PLAN_SURFACE_TITLE } from '../../content/productNorthStar';
 import { ConsumerHeaderActions } from '../layout/ConsumerHeaderActions';
 import { MobileUnifiedTabHeader } from './MobileUnifiedTabHeader';
 import { useExploreMapChrome } from '../../explore/ExploreMapChromeContext';
-
-const resolveCenter = (
-  pathname: string,
-  search: string,
-  _canHost: boolean
-): MobileTabHeaderCenter | null => {
-  if (pathname === EXPLORE_MAP_PATH) return { kind: 'brand' };
-  if (pathname === '/profile') return { kind: 'title', text: 'Profile' };
-  if (pathname === PLAN_PATH) {
-    const params = new URLSearchParams(search);
-    const subTitle = joinedSubViewTitle(params.get('sub'));
-    if (subTitle) return { kind: 'title', text: subTitle };
-    return { kind: 'title', text: PRODUCT_PLAN_SURFACE_TITLE };
-  }
-  if (isProfileHistoryListPath(pathname) || isJourneyMapPath(pathname)) {
-    return { kind: 'title', text: isJourneyMapPath(pathname) ? 'My Map' : 'History' };
-  }
-  if (pathname === MESSAGES_PATH) return { kind: 'title', text: 'Chat' };
-  if (!isMobileTabHeaderRoute(pathname)) return null;
-  return null;
-};
 
 /** Layout-mounted tab header — one chrome for Map, Profile, Activities, Messages. */
 export const MobileTabHeader = () => {
   const { pathname, search, state } = useLocation();
   const { user } = useAuth();
-  const gate = useMemberStatus({ enabled: Boolean(user) });
-  const canHost = memberCanManageHostedActivities(user, gate.canAccessPublishingWorkspace);
 
   const exploreMapChrome = useExploreMapChrome();
   const visible = shouldShowMobileUnifiedTabHeader(pathname, search, Boolean(user));
-  const center = resolveCenter(pathname, search, canHost);
+  const title = resolveMobileTabHeaderTitle(pathname, search);
+  const center =
+    pathname === EXPLORE_MAP_PATH
+      ? { kind: 'brand' as const }
+      : title
+        ? { kind: 'title' as const, text: title }
+        : null;
 
   if (!visible || !center) return null;
 
-  const showHeaderActions =
-    pathname === EXPLORE_MAP_PATH ||
-    pathname === '/profile' ||
-    pathname === PLAN_PATH ||
-    isProfileHistoryListPath(pathname) ||
-    isJourneyMapPath(pathname) ||
-    pathname === MESSAGES_PATH;
-
-  const trailing = showHeaderActions ? <ConsumerHeaderActions /> : null;
+  const trailing = <ConsumerHeaderActions />;
 
   const leadingBack = resolveMobileTabHeaderLeadingBack(pathname, state);
 
@@ -72,7 +36,7 @@ export const MobileTabHeader = () => {
       center={center}
       trailing={trailing}
       profileActive={pathname === '/profile'}
-      leadingBack={leadingBack}
+      leadingBack={leadingBack ?? undefined}
       onExploreBrandClick={
         pathname === EXPLORE_MAP_PATH
           ? () => exploreMapChrome?.requestClosePeek()

@@ -4,6 +4,8 @@ import { ChevronDown, ChevronUp } from 'lucide-react';
 import { resolveHostNote } from '@uaetrail/shared-types';
 import type { ActivityRequestView } from '../api/types';
 import { resolveJoinRequestActivity } from '../utils/joinRequestActivity';
+import { RideshareRiderReputationSummary } from '../components/rideshare/RideshareRiderReputationSummary';
+import { MemberMedicalSafetyHostBlock } from '../components/profile/MemberMedicalSafetyHostBlock';
 import { GlassCard } from '../components/mobile/GlassCard';
 import { AppButton } from '../components/mobile/AppButton';
 
@@ -61,6 +63,16 @@ export const ActivityJoinRequestCard = ({
               {request.note}
             </p>
           )}
+          {request.rideshareRiderReputation ? (
+            <RideshareRiderReputationSummary
+              reputation={request.rideshareRiderReputation}
+              compact={!expanded && Boolean(request.note)}
+            />
+          ) : null}
+          <MemberMedicalSafetyHostBlock
+            medicalSafety={request.user?.medicalSafety}
+            compact={!expanded}
+          />
           {hostNote && !isPending && (
             <p className="text-xs text-neutral-500 mt-1 italic">
               {request.status === 'rejected' ? 'Sent to guest: ' : 'Note to guest: '}

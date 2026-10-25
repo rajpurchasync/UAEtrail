@@ -14,8 +14,6 @@ import { OFFLINE_PAYMENT_NOTE } from '../explorePriceLabel';
 import { validateHostingPublishArea } from '../hostingPublishArea';
 import type { ParticipationMode } from '../compose';
 import {
-  ACTIVITY_DIFFICULTY_OPTIONS,
-  buildDateOptions,
   todayIso,
   type ActivityDifficulty,
   type LocationPrecision,
@@ -106,6 +104,8 @@ export type CreateActivityDraft = {
   petsAllowed: boolean;
   difficulty: ActivityDifficulty;
   vehicleAccess: VehicleAccess;
+  /** Saved member car for rideshare publish. */
+  memberVehicleId: string | null;
   description: string;
   ageMin: number;
   ageMax: number;
@@ -119,6 +119,8 @@ export type CreateActivityDraft = {
   trailName: string;
   /** Selected venue id from the place registry (catalog). */
   registryPlaceId: string | null;
+  /** Curated map area on the registry place (cached for publish validation). */
+  registryPlaceAreaId: string | null;
   /** Registry pick vs typed venue name. */
   placeLabelSource: PlaceLabelSource;
   /** Map coordinates from the registry place (activity start on map). */
@@ -416,6 +418,7 @@ export const emptyCreateActivityDraft = (): CreateActivityDraft => ({
   endTime: '12:00',
   trailName: '',
   registryPlaceId: null,
+  registryPlaceAreaId: null,
   placeLabelSource: 'registry',
   trailLatitude: null,
   trailLongitude: null,
@@ -435,6 +438,7 @@ export const emptyCreateActivityDraft = (): CreateActivityDraft => ({
   petsAllowed: false,
   difficulty: 'easy',
   vehicleAccess: 'sedan',
+  memberVehicleId: null,
   description: '',
   ageMin: 5,
   ageMax: 80,

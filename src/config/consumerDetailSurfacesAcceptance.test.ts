@@ -9,7 +9,8 @@ describe('consumerDetailSurfacesAcceptance', () => {
   it('routes /people to full list people discovery (single crew URL)', () => {
     const app = read('src/App.tsx');
     expect(app).toMatch(/path="\/people"/);
-    expect(app).toMatch(/listPeopleDiscoveryPath\(\)/);
+    expect(app).toMatch(/PeopleRedirect/);
+    expect(read('src/routing/exploreEntryRedirects.tsx')).toMatch(/listPeopleDiscoveryPath\(\)/);
   });
 
   it('entity detail views use tab wire modules and shared tab chrome', () => {

@@ -1,6 +1,14 @@
-import { lazy, Suspense, useEffect, type ReactNode } from 'react';
-import { useLocation } from 'react-router-dom';
+import { lazy, Suspense, useEffect, useLayoutEffect, useRef, type ReactNode } from 'react';
+import { useLocation, useNavigationType } from 'react-router-dom';
 import { resetAppScroll } from '../../config/layoutScroll';
+import {
+  applyViewReturnSnapshot,
+  captureLeavingView,
+  installViewReturnFocusCapture,
+  peekViewReturnSnapshot,
+  takeArmedViewReturn,
+  viewReturnPathKey,
+} from '../../utils/viewReturnMemory';
 import { HomeDeferredMount } from '../home/marketing/HomeDeferredMount';
 
 const ProductShell = lazy(() => import('./ProductShell').then((m) => ({ default: m.ProductShell })));
@@ -12,10 +20,43 @@ interface LayoutProps {
 
 export const Layout = ({ children }: LayoutProps) => {
   const location = useLocation();
+  const navType = useNavigationType();
+  const previousPath = useRef<string | null>(null);
 
   useEffect(() => {
-    resetAppScroll();
-  }, [location.pathname]);
+    installViewReturnFocusCapture();
+  }, []);
+
+  useLayoutEffect(() => {
+    const pathKey = viewReturnPathKey(location.pathname, location.search);
+    const leaving = previousPath.current;
+    if (leaving && leaving !== pathKey) captureLeavingView(leaving);
+    previousPath.current = pathKey;
+
+    const armed = takeArmedViewReturn(pathKey);
+    const snapshot = peekViewReturnSnapshot(pathKey);
+    const shouldRestore = Boolean(snapshot) && (navType === 'POP' || armed != null);
+    if (!shouldRestore || !snapshot) {
+      resetAppScroll();
+      return;
+    }
+
+    let cancelled = false;
+    let attempts = 0;
+    let timer = 0;
+    const tryRestore = () => {
+      if (cancelled) return;
+      const restored = applyViewReturnSnapshot(snapshot, armed?.focusSelector);
+      if (restored || attempts >= 12) return;
+      attempts += 1;
+      timer = window.setTimeout(tryRestore, 80);
+    };
+    tryRestore();
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [location.key, location.pathname, location.search, navType]);
 
   if (location.pathname === '/') {
     return (

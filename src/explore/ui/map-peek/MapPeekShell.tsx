@@ -77,7 +77,7 @@ export const MapPeekShell = ({
           }`}
         >
           <EnvironmentImage
-            src={card.coverImage}
+            src={card.coverImage ?? undefined}
             alt=""
             className="h-full w-full object-cover"
             loading="lazy"

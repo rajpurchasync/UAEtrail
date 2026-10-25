@@ -15,6 +15,8 @@ import {
   type ActivityDifficulty,
   type CreateActivityDraft,
 } from './hostingFlowEngine';
+import { fetchPublishedAreas } from '../../hooks/areaHubClientApi';
+import { resolvePublishedAreaIdForPoint } from '../hostingPublishArea';
 import { applyRegistryPlaceToHostingDraft } from './hostingPlaceRegistryDraft';
 import { exploreFlowChoiceCardClass } from './exploreFlowUi';
 
@@ -52,10 +54,25 @@ export const HostingVenuePlaceField = ({
   const onRegistryPick = (placeId: string) => {
     const place = registryPlaces.find((item) => item.id === placeId);
     if (!place) {
-      patchDraft({ registryPlaceId: placeId, placeLabelSource: 'registry' });
+      patchDraft({
+        registryPlaceId: placeId,
+        registryPlaceAreaId: null,
+        placeLabelSource: 'registry',
+      });
       return;
     }
-    patchDraft(applyRegistryPlaceToHostingDraft(draft, place));
+    const basePatch = applyRegistryPlaceToHostingDraft(draft, place);
+    patchDraft(basePatch);
+    if (basePatch.registryPlaceAreaId) return;
+    const lat = place.latitude;
+    const lng = place.longitude;
+    if (lat == null || lng == null) return;
+    void fetchPublishedAreas().then((areas) => {
+      const inferred = resolvePublishedAreaIdForPoint(lat, lng, areas);
+      if (inferred) {
+        patchDraft({ registryPlaceAreaId: inferred });
+      }
+    });
   };
 
   return (
@@ -94,6 +111,13 @@ export const HostingVenuePlaceField = ({
                   Trail difficulty from registry:{' '}
                   <span className="font-semibold">{resolveActivityDifficultyLabel(draft.difficulty)}</span>
                   {showDifficulty ? ' — change below if this outing is different.' : null}
+                </p>
+              ) : null}
+              {!selectedPlace.areaId?.trim() && !draft.registryPlaceAreaId ? (
+                <p className="mt-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-950">
+                  This venue isn’t linked to a map area yet, so it can’t be published on Explore. Choose another
+                  trail from the list or add your spot via <span className="font-semibold">Explore → Add</span>{' '}
+                  (pick an area first).
                 </p>
               ) : null}
             </>

@@ -57,6 +57,7 @@ const publishingTenantActivityFieldsSchema = z.object({
   ridesharePriceAed: z.number().int().min(0).optional(),
   rideshareSeats: z.number().int().min(1).optional(),
   rideshareDetails: z.string().max(1000).optional(),
+  rideshareVehicleId: z.string().uuid().optional(),
   rideshareFromPoint: z.string().max(200).optional(),
   rideshareFromLat: z.number().min(-90).max(90).optional(),
   rideshareFromLng: z.number().min(-180).max(180).optional(),

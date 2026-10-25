@@ -1,7 +1,5 @@
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import { HostActivityCancelDialog } from '../../components/activity/HostActivityCancelDialog';
-import { AppButton } from '../../components/mobile/AppButton';
-import { Dialog } from '../../components/ui/Dialog';
 import { EXPLORE_Z } from '../../config/exploreTheme';
 import { addVenueKindFromRoute } from '../compose';
 import { ExploreBrowseSearchModal } from '../ui/ExploreBrowseSearchModal';

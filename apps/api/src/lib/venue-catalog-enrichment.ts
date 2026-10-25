@@ -1,4 +1,4 @@
-import { ActivityType, Accessibility, Difficulty } from '../domain/enums.js';
+import { Accessibility, Difficulty } from '../domain/enums.js';
 import type { LocationCreateInput } from './entity-builders.js';
 import type { VenueCatalogEntry } from './venue-catalog.js';
 import { curatedAreaSeedId, type CuratedAreaSeedKey } from '@uaetrail/shared-types';

@@ -21,11 +21,16 @@ export const reviewsApi = {
       }),
     }),
 
-  getReviews: (targetType: 'location' | 'tenant' | 'activity', targetId: string, page = 1) =>
+  getReviews: (
+    targetType: 'location' | 'tenant' | 'activity',
+    targetId: string,
+    page = 1,
+    pageSize = 20
+  ) =>
     apiRequest<{
       data: ReviewDTO[];
       meta: { page: number; pageSize: number; total: number; totalPages: number };
-    }>(`/reviews?targetType=${targetType}&targetId=${targetId}&page=${page}&pageSize=20`),
+    }>(`/reviews?targetType=${targetType}&targetId=${targetId}&page=${page}&pageSize=${pageSize}`),
 
   getActivityReviews: (activityId: string, page = 1) =>
     apiRequest<{

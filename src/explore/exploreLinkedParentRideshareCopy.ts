@@ -16,6 +16,9 @@ export const linkedParentRidesharePeekCopy = (
   if (type === 'camping') {
     return { eyebrow: 'Linked to Camping Plan', showTitleSubtitle: true };
   }
+  if (type === 'event') {
+    return { eyebrow: 'Linked to Event', showTitleSubtitle: true };
+  }
   if (title) {
     return { eyebrow: `Linked to ${title}`, showTitleSubtitle: false };
   }

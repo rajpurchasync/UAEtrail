@@ -44,4 +44,22 @@ describe('buildActivityDetailPageShellCard', () => {
     });
     expect(card.linkedRideshares?.[0]?.activityId).toBe('ride-9');
   });
+
+  it('uses explore map price labels on the peek parity card', () => {
+    const card = buildActivityDetailPageShellCard({
+      activity: {
+        id: 'ride-1',
+        activityType: 'rideshare',
+        title: 'Marina → Jais',
+        locationName: 'Jais',
+        status: 'published',
+        rideshareFree: false,
+        ridesharePriceAed: 35,
+        price: 0,
+      } as Parameters<typeof buildActivityDetailPageShellCard>[0]['activity'],
+      viewerAccess: null,
+    });
+    expect(card.price?.badge).toBe('Shared · AED 35/seat');
+    expect(card.price?.kind).toBe('shared');
+  });
 });

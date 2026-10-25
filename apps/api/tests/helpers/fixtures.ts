@@ -11,7 +11,12 @@ import {
   UserStatus
 } from '../../src/domain/enums.js';
 import bcrypt from 'bcryptjs';
-import { createAuthUser, findAuthUserByEmail, updateAuthUserCore } from '../../src/lib/auth-users-store.js';
+import {
+  createAuthUser,
+  findAuthUserByEmail,
+  updateAuthUserCore,
+  updateAuthUserProfile,
+} from '../../src/lib/auth-users-store.js';
 import { newEntityId } from '../../src/lib/entity-builders.js';
 import { createActivityDetailed, createLocationRecord } from '../../src/lib/activities-store.js';
 import { getMongoClient } from '../../src/lib/mongo.js';
@@ -258,6 +263,15 @@ export const registerVerifiedVisitor = async (
   if (verifyRes.status !== 200) {
     throw new Error(`Failed to verify test visitor: ${verifyRes.status}`);
   }
+
+  const created = await findAuthUserByEmail(email);
+  if (!created) throw new Error(`Missing auth user after verify: ${email}`);
+  await updateAuthUserProfile(created._id, {
+    bloodGroup: 'O+',
+    medicalConditions: 'N/A',
+    emergencyContactName: 'Test emergency',
+    emergencyContactPhone: '+971501112233',
+  });
 
   return {
     email,

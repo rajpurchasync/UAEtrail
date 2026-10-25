@@ -2,19 +2,14 @@ import { ChevronRight } from 'lucide-react';
 import {
   EXPLORE_LINKED_PARENT_PLAN_PEEK_PREFIX,
   EXPLORE_RIDESHARE_AVAILABLE_LABEL,
-  EXPLORE_VIEW_LINKED_PLAN_CTA,
 } from '../../../createFlowCopy';
+import { ActivityLinkedParentPlanAffordance } from '../../../../components/activity/ActivityLinkedParentPlanAffordance';
 import type { DiscoveryCardModel } from '../../../../discovery/discoveryCardModel';
-import { linkedParentRidesharePeekCopy } from '../../../exploreLinkedParentRideshareCopy';
 
 export type ActivityPeekLinkedTransportProps = {
   card: DiscoveryCardModel;
   onOpenLinkedPin?: (pinItemId: string) => void;
 };
-
-const panelClass =
-  'mt-3 w-full rounded-xl border border-sky-200 bg-sky-50/90 px-3.5 py-3 text-left';
-const buttonPanelClass = `${panelClass} transition active:bg-sky-100/90`;
 
 export const activityPeekHasLinkedTransportAffordance = (
   card: DiscoveryCardModel
@@ -32,27 +27,15 @@ export const ActivityPeekLinkedTransport = ({
 
   if (card.kind === 'rideshare' && card.activity?.linkedParentActivity) {
     const parent = card.activity.linkedParentActivity;
-    const linkedCopy = linkedParentRidesharePeekCopy(parent.activityType, parent.title);
-    const parentExploreId = `activity:${parent.id}`;
-    const body = (
-      <>
-        <p className="text-xs font-semibold uppercase tracking-wide text-sky-800">{linkedCopy.eyebrow}</p>
-        {linkedCopy.showTitleSubtitle ? (
-          <p className="mt-1 text-sm font-medium text-gray-900">{parent.title}</p>
-        ) : null}
-        <p className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-sky-800">
-          {EXPLORE_VIEW_LINKED_PLAN_CTA}
-          <ChevronRight className="h-4 w-4" aria-hidden />
-        </p>
-      </>
-    );
     if (!open) {
-      return <div className={panelClass}>{body}</div>;
+      return <ActivityLinkedParentPlanAffordance parent={parent} variant="static" />;
     }
     return (
-      <button type="button" className={buttonPanelClass} onClick={() => open(parentExploreId)}>
-        {body}
-      </button>
+      <ActivityLinkedParentPlanAffordance
+        parent={parent}
+        onOpenLinkedPin={open}
+        variant="button"
+      />
     );
   }
 

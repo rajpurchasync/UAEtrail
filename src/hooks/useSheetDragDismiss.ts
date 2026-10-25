@@ -68,12 +68,9 @@ export const useSheetDragDismiss = (
   const applyDragDelta = useCallback(
     (clientY: number) => {
       const dy = clientY - startYRef.current;
-      let next = dy;
-      if (!onExpand) {
-        next = Math.max(0, dy);
-      } else {
-        next = Math.min(EXPAND_DRAG_CAP_PX, Math.max(-EXPAND_DRAG_CAP_PX, dy));
-      }
+      const next = !onExpand
+        ? Math.max(0, dy)
+        : Math.min(EXPAND_DRAG_CAP_PX, Math.max(-EXPAND_DRAG_CAP_PX, dy));
       translateRef.current = next;
       setTranslateY(next);
       return next;

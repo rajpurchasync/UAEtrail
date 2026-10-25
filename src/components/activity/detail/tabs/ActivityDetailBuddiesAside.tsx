@@ -14,6 +14,8 @@ type ActivityDetailBuddiesAsideProps = {
   showCrewLockedHint: boolean;
   activityId: string;
   activityTitle: string;
+  activityType?: string;
+  rideshareHasPayment?: boolean;
   hostBuddiesHub?: {
     joinRequests: ActivityRequestView[];
     requestsLoading: boolean;
@@ -33,6 +35,8 @@ export const ActivityDetailBuddiesAside = ({
   showCrewLockedHint,
   activityId,
   activityTitle,
+  activityType,
+  rideshareHasPayment = false,
   hostBuddiesHub,
   hostCrewChatPolicy,
 }: ActivityDetailBuddiesAsideProps) => (
@@ -46,6 +50,8 @@ export const ActivityDetailBuddiesAside = ({
           tenantId={hostCrewChatPolicy.tenantId}
           activityId={activityId}
           activityTitle={activityTitle}
+          activityType={activityType}
+          rideshareHasPayment={rideshareHasPayment}
           joinRequests={hostBuddiesHub.joinRequests}
           requestsLoading={hostBuddiesHub.requestsLoading}
           onRequestsChanged={hostBuddiesHub.onRequestsChanged}

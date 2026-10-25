@@ -28,8 +28,7 @@ import {
   mapPeekDetailNavState,
 } from '../../explore/mapPeekDetailNavState';
 import { useActivityJoinActions, useActivityJoinContext } from '../../hooks/useActivityJoinFlow';
-import { useViewerProfileGender } from '../../hooks/useViewerProfileGender';
-import { womenOnlyJoinMessageForActivity } from '../../utils/activityWomenOnlyJoin';
+import { useActivityJoinGuardMessage } from '../../hooks/useActivityJoinGuardMessage';
 import { executeActivityMapPeekAction } from '../../activity/executeActivityMapPeekAction';
 import { activityMapPeekNeedsJoinContext } from '../../activity/activityPeekEngagement';
 import { resolveListFeedFooterModel } from '../listFeedFooterActions';
@@ -94,10 +93,9 @@ export const ListFeedActionsProvider = ({
       userId: user?.id,
     });
 
-  const viewerGender = useViewerProfileGender(user?.id);
-  const joinGuardMessage = useMemo(
-    () => womenOnlyJoinMessageForActivity(joinCard?.activity?.requirements, viewerGender),
-    [joinCard?.activity?.requirements, viewerGender]
+  const joinGuardMessage = useActivityJoinGuardMessage(
+    joinCard?.activity?.requirements,
+    user?.id
   );
 
   const joinActions = useActivityJoinActions({

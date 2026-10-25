@@ -51,6 +51,7 @@ export type ActivityPublishRideshare = {
   ridesharePriceAed?: number | null;
   rideshareSeats?: number | null;
   rideshareDetails?: string | null;
+  rideshareVehicleId?: string | null;
 };
 
 /** Canonical host activity create/update body — shared by explore Host and publishing workspace. */
@@ -189,6 +190,7 @@ export const buildHostActivityPublishPayload = (input: ActivityPublishInput): Re
     if (rideshare.ridesharePriceAed !== undefined) payload.ridesharePriceAed = rideshare.ridesharePriceAed;
     if (rideshare.rideshareSeats !== undefined) payload.rideshareSeats = rideshare.rideshareSeats;
     if (rideshare.rideshareDetails !== undefined) payload.rideshareDetails = rideshare.rideshareDetails;
+    if (rideshare.rideshareVehicleId) payload.rideshareVehicleId = rideshare.rideshareVehicleId;
   }
 
   return payload;

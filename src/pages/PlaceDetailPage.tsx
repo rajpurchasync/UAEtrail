@@ -4,6 +4,18 @@ import { PlaceDetailPageShell } from './place/PlaceDetailPageShell';
 import { usePlaceDetailCore } from '../hooks/usePlaceDetailPage';
 import { canonicalPlaceDetailPath, detailBackPath } from '../config/routingCatalog';
 import { PLACE_DETAIL_CONFIG, type PlaceDetailKind } from './placeDetailConfig';
+import { DetailPageLoadingState } from '../components/ui/DetailPageLoadingState';
+import {
+  DETAIL_LOADING_CAMP,
+  DETAIL_LOADING_EVENT_VENUE,
+  DETAIL_LOADING_TRAIL,
+} from '../content/detailLoadingCopy';
+
+const PLACE_LOADING_LABEL: Record<PlaceDetailKind, string> = {
+  trail: DETAIL_LOADING_TRAIL,
+  camp: DETAIL_LOADING_CAMP,
+  event: DETAIL_LOADING_EVENT_VENUE,
+};
 interface PlaceDetailPageProps {
   kind?: PlaceDetailKind;
 }
@@ -32,11 +44,11 @@ export const PlaceDetailPage = ({ kind: kindProp }: PlaceDetailPageProps) => {
     return (
       <>
         <PageMeta title={activeConfig.loadingTitle} path={detailPath} />
-        <div className="app-page-center">
-          <div
-            className={`animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 ${activeConfig.spinnerBorderClass}`}
-          />
-        </div>
+        <DetailPageLoadingState
+          label={PLACE_LOADING_LABEL[kind]}
+          accent={activeConfig.accent}
+          variant="page"
+        />
       </>
     );
   }

@@ -20,7 +20,12 @@ const EXPLORE_PREFIX_ALLOW_PREFIXES = [
   'src/access/mapViewerAccessToUi.ts',
 ];
 
-const PLAN_PREFIX_ALLOW_PREFIXES = ['src/components/plan/', 'src/member-plan/', 'src/plan/'];
+const PLAN_PREFIX_ALLOW_PREFIXES = [
+  'src/components/plan/',
+  'src/member-plan/',
+  'src/plan/',
+  'src/routing/',
+];
 
 const BROWSE_PREFIX_ALLOW_PREFIXES = ['src/list/', 'src/explore/'];
 

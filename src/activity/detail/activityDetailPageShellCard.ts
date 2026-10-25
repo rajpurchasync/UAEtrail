@@ -4,6 +4,7 @@ import type {
   ActivityViewerAccessDTO,
   ExploreLinkedRideshareDTO,
 } from '@uaetrail/shared-types';
+import { buildExploreActivityDisplay } from '@uaetrail/shared-types';
 import { buildDiscoveryCardViewModelCard } from '../../discovery';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import { hostedExploreMapItem } from '../../explore/exploreMapItemFixtures';
@@ -47,6 +48,8 @@ export const buildActivityDetailPageShellCard = (input: {
       ? { ...viewerAccess, mapPeekStrips: wireStrips }
       : viewerAccess;
 
+  const exploreDisplay = buildExploreActivityDisplay(activity);
+
   const item = hostedExploreMapItem({
     id: `activity:${activity.id}`,
     kind: activity.activityType,
@@ -55,6 +58,10 @@ export const buildActivityDetailPageShellCard = (input: {
     subtitle: activity.locationName,
     latitude: activity.meetingLat ?? activity.startLat ?? null,
     longitude: activity.meetingLng ?? activity.startLng ?? null,
+    priceLabel: exploreDisplay.priceLabel,
+    priceDisplay: exploreDisplay.priceDisplay,
+    fromLabel: exploreDisplay.fromLabel,
+    toLabel: exploreDisplay.toLabel,
     activity,
     participantPreviews: activity.participants ?? [],
     linkedRideshareActivities: linkedRidesharesFromDetail(activity),

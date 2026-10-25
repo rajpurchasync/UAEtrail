@@ -6,6 +6,28 @@ import {
   parseExploreMapFilterPillsParam,
   serializeExploreMapFilterPillsParam,
 } from '../explore/exploreBrowseTaxonomy';
+
+/**
+ * List main categories — **activities** (hosted + seeking), places, people, brands.
+ * Map `topics` still uses explore wire `trips,looking` when activities category is selected.
+ */
+export type BrowseMainCategoryKey = 'activities' | 'venues' | 'people' | 'agencies';
+
+/** Location-bounded catalog pins — trails, camps, outdoor venues, and gear shops. */
+export const mapItemMatchesBrowsePlacesCategory = (item: ExploreMapItemDTO): boolean =>
+  isGeographyMapSource(item.source) || item.source === 'shop';
+
+const isAgencyBrandItem = (item: ExploreMapItemDTO): boolean =>
+  item.source === 'agency' &&
+  (item.path.includes('/agency/') || item.path.includes('/partner/'));
+
+/** Time-bound map rows — hosted + seeking activities. */
+export const mapItemMatchesBrowseActivitiesCategory = (item: ExploreMapItemDTO): boolean =>
+  isTimeBoundExploreMapItem(item);
+
+/** @deprecated Use {@link mapItemMatchesBrowseActivitiesCategory}. */
+export const mapItemMatchesBrowseTripsCategory = mapItemMatchesBrowseActivitiesCategory;
+
 export const mapItemMatchesBrowseMainCategory = (
   item: ExploreMapItemDTO,
   key: BrowseMainCategoryKey

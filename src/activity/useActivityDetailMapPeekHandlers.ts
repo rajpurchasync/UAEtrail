@@ -52,7 +52,11 @@ export const useActivityDetailMapPeekHandlers = (
       },
       inviteCrew: () => {
         if (activity.status !== 'published') return;
-        input.onParticipantInviteFriends?.() ?? input.onHostShareOuting?.();
+        if (input.onParticipantInviteFriends) {
+          input.onParticipantInviteFriends();
+        } else {
+          input.onHostShareOuting?.();
+        }
       },
       linkRideshare: () => input.onOfferLinkedRideshare?.(),
       offerRideshare: () => input.onOfferLinkedRideshare?.(),
@@ -76,20 +80,4 @@ export const useActivityDetailMapPeekHandlers = (
       },
       viewDetail: () => undefined,
     };
-  }, [
-    input.activity,
-    input.user,
-    input.joinUiState.kind,
-    input.navigate,
-    input.onJoin,
-    input.onWithdraw,
-    input.onHostShareOuting,
-    input.onParticipantInviteFriends,
-    input.onOfferLinkedRideshare,
-    input.onMobileTabChange,
-    input.onChatError,
-    input.isHostUser,
-    input.onOpenHostManage,
-    input.consumerDetailLayout,
-    input.onOpenParticipationManage,
-  ]);
+  }, [input]);

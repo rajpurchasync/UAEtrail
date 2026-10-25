@@ -76,7 +76,7 @@ export const PeopleBrowsePanel = ({
   onPeopleBrowseTabChange,
   discoveryFriendsGoing,
   discoveryHostsGoing,
-  discoverySeekingOnMap,
+  discoverySeekingOnMap: _discoverySeekingOnMap,
   discoveryDirectory,
   discoveryQuota,
   discoveryLoading,

@@ -21,6 +21,7 @@ describe('member status contract', () => {
   it('nests publish capabilities under publish on /me/status wire (no flat duplicate)', () => {
     const dto = buildMemberStatusDto({
       profileComplete: true,
+      medicalSafetyProfileComplete: true,
       isCommunityHost: false,
       hostTiers: { community: true, professional: false, business: false },
       profileRoleLabel: 'community_member',

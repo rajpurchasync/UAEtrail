@@ -7,7 +7,7 @@ import { EXPLORE_MAP_PATH } from '../config/routingCatalog';
 import { EXPLORE_BRAND_ACTIVE } from '../config/exploreTheme';
 import { ComposeHost } from '../explore/create/ComposeHost';
 import { useComposeRoute } from '../explore/create/hooks/useComposeRoute';
-import { addVenueKindFromRoute, isHostWizard, isSeekFixedWizard } from '../explore/compose';
+import { addVenueKindFromRoute, isSeekFixedWizard } from '../explore/compose';
 import { useMemberStatus } from '../hooks/useMemberStatus';
 import { reloadExploreMap } from '../hooks/useExploreMap';
 import { buildSignInRedirect } from '../utils/authReturnContext';
@@ -348,7 +348,7 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
     });
   };
 
-  const backToHome = () => {
+  const backToHome = useCallback(() => {
     syncUrl({
       categories: [],
       listCat: null,
@@ -361,7 +361,7 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
       buddiesSegment: 'available',
       regions: [],
     });
-  };
+  }, [syncUrl]);
 
   const categoryBackChrome = useMemo(() => {
     if (!categoryHeaderFocus) return null;
@@ -385,7 +385,7 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
       return;
     }
     backToHome();
-  }, [embeddedOnExplore, location.state, navigate]);
+  }, [embeddedOnExplore, location.state, navigate, backToHome]);
 
   const mapHref = useMemo(() => {
     if (!embeddedOnExplore) return exploreMapPathFromListSearch(search);
@@ -563,7 +563,7 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
                       {showSearchTripTopicRow ? (
                         <ListCategoryFilterBar
                           embedded
-                          category="trips"
+                          category="activities"
                           pills={searchTripPills}
                           moreFiltersActive={categoryMoreFiltersActive}
                           showMoreButton={false}

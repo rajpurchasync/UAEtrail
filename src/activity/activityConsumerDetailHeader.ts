@@ -1,5 +1,6 @@
 import type { ActivityDetailDTO } from '@uaetrail/shared-types';
 import { resolveMapPinEmoji } from '@uaetrail/shared-types';
+import type { ConsumerDetailHeaderMark } from '../components/mobile/ConsumerDetailHeaderChromeTitle';
 import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
 import { discoveryCardIsSeeking } from '../discovery/discoveryCardModel';
 import { activityKindChromeEmoji } from './activityKindChrome';
@@ -7,6 +8,7 @@ import { activityKindChromeEmoji } from './activityKindChrome';
 export type ActivityConsumerDetailHeaderChrome = {
   emoji: string;
   label: string;
+  mark?: ConsumerDetailHeaderMark;
 };
 
 /** Sheet chrome — place kind when linked, otherwise activity pin type (not the outing title). */
@@ -18,14 +20,14 @@ export const resolveActivityConsumerDetailHeaderChrome = (
   const placeKind = place?.activityType;
   if (place?.name?.trim() && placeKind) {
     const emoji = card?.emoji ?? resolveMapPinEmoji(placeKind, 'venue');
+    if (placeKind === 'hiking') {
+      return { emoji, label: 'Hiking', mark: 'hiking' };
+    }
+    if (placeKind === 'camping') {
+      return { emoji, label: 'Camping', mark: 'camping' };
+    }
     const label =
-      placeKind === 'hiking'
-        ? 'Trail'
-        : placeKind === 'camping'
-          ? 'Camp'
-          : placeKind === 'event'
-            ? 'Venue'
-            : 'Place';
+      placeKind === 'event' ? 'Venue' : 'Place';
     return { emoji, label };
   }
 
@@ -47,9 +49,11 @@ export const resolveActivityConsumerDetailHeaderChrome = (
 
   switch (type) {
     case 'rideshare':
-      return { emoji, label: 'Rideshare' };
+      return { emoji, label: 'Rideshare', mark: 'rideshare' };
+    case 'hiking':
+      return { emoji, label: 'Hiking', mark: 'hiking' };
     case 'camping':
-      return { emoji, label: 'Camp trip' };
+      return { emoji, label: 'Camping', mark: 'camping' };
     case 'event':
       return { emoji, label: 'Event' };
     default:

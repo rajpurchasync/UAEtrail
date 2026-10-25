@@ -4,7 +4,7 @@
   "summary": {
     "apiRegistrarFiles": 50,
     "apiRouteEndpointsParsed": 157,
-    "mongoCollectionsDefined": 46,
+    "mongoCollectionsDefined": 47,
     "mongoCollectionsOrphanInApi": 0,
     "mongoCollectionsMultiWriterOver4": 0,
     "routeRegistrarsWithDirectWrites": 0,

@@ -13,6 +13,8 @@ import {
   parseAreaDetailTabParam,
   type AreaDetailTabId,
 } from '../area/areaDetailTab';
+import { DetailPageLoadingState } from '../components/ui/DetailPageLoadingState';
+import { DETAIL_LOADING_AREA } from '../content/detailLoadingCopy';
 
 /** Curated area hub — tabbed shell + explore deep links (S9 Phase 4). */
 export const AreaDetailPage = () => {
@@ -69,8 +71,8 @@ export const AreaDetailPage = () => {
   if (isLoading) {
     return (
       <MobileDetailShell backTo={shellBack} backLabel="Explore">
-        <main className="mx-auto max-w-lg px-4 py-10">
-          <p className="text-slate-600">Loading area…</p>
+        <main className="mx-auto max-w-lg px-2 py-4">
+          <DetailPageLoadingState label={DETAIL_LOADING_AREA} accent="emerald" variant="embedded" />
         </main>
       </MobileDetailShell>
     );

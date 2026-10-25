@@ -126,7 +126,9 @@ Registration: `registerMeBadgesRoutes.ts` · service: `member-badges.ts`.
 | POST | `/publishing/activities/:id/participants/:participantId/revoke` | Remove joiner (`hostNote` → notification) |
 | POST | `/publishing/activities/:id/participants/:participantId/rating` | Host rates attended participant (after outing ends) |
 | GET/PATCH | `/publishing/requests` | Activity join queue (`hostNote` on decide) |
-| GET | `/me/status` | Member capabilities (`MemberStatusDTO`; **`publish`** nested) |
+| GET | `/me/status` | Member capabilities (`MemberStatusDTO`; **`publish`** nested; `medicalSafetyProfileComplete`) |
+| GET/PUT | `/me/profile` | Own profile. Safety fields: `bloodGroup`, `medicalConditions`, `emergencyContactName`, `emergencyContactPhone`. `PATCH /me/profile/medical-safety` replaces that block. |
+| GET/POST | `/me/vehicles` | Owner garage (`member_vehicles`). `PATCH/DELETE /me/vehicles/:id`. Public rideshare detail embeds `rideshareVehicle` without `plateNumber`. |
 
 Storage: `activity_invites` (`COLLECTIONS.ACTIVITY_INVITES`) · indexes in `mongo-indexes.ts`.
 
@@ -275,6 +277,7 @@ Signed-in **member capabilities** — profile gates, **publish** workspace eligi
 | Field (subset) | Meaning |
 |----------------|---------|
 | `profileComplete` | Host/publish after `/welcome` (`signupProfileComplete` on `GET /me/profile` only) |
+| `medicalSafetyProfileComplete` | Join/RSVP gate — blood group, conditions (or `N/A`), emergency contact. Incomplete profiles return `medical_safety_profile_required`. |
 | `publish.canPublish` | May create/publish tenant activities |
 | `publish.canAccessPublishingWorkspace` | May open publishing workspace (`/publishing/*` UI) |
 | `publish.ownedProfiles` | Tenants member may publish as |

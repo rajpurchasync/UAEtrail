@@ -85,9 +85,14 @@
       ],
       "routeRegistrars": [
         "apps/api/src/routes/user/registerProfileRoutes.ts",
-        "apps/api/src/routes/user/registerPublicMemberRoutes.ts"
+        "apps/api/src/routes/user/registerPublicMemberRoutes.ts",
+        "apps/api/src/routes/user/registerMeVehiclesRoutes.ts"
       ],
-      "feDomains": ["src/api/domains/account.ts", "src/api/domains/member.ts"],
+      "feDomains": [
+        "src/api/domains/account.ts",
+        "src/api/domains/member.ts",
+        "src/api/domains/memberVehicles.ts"
+      ],
       "feRoots": ["src/pages/Profile.tsx", "src/member"]
     },
     {

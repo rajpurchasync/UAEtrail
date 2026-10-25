@@ -1,4 +1,4 @@
-import type { ParticipantDTO } from '@uaetrail/shared-types';
+import type { MemberMedicalSafetyDTO, ParticipantDTO } from '@uaetrail/shared-types';
 import type { ActivityParticipant } from '../domain/types.js';
 
 export const activityTimingHasEnded = (startAt: Date, endAt: Date | null): boolean => {
@@ -11,6 +11,7 @@ type ParticipantUserFields = {
   email: string;
   phone: string | null;
   avatarUrl: string | null;
+  medicalSafety?: MemberMedicalSafetyDTO | null;
 };
 
 export const mapHostParticipantToDto = (
@@ -24,7 +25,8 @@ export const mapHostParticipantToDto = (
       ? {
           score: participant.hostRatingScore,
           comment: participant.hostRatingComment,
-          ratedAt: participant.hostRatedAt.toISOString()
+          ratedAt: participant.hostRatedAt.toISOString(),
+          rideshare: participant.hostRatingRideshare ?? null,
         }
       : null;
 
@@ -35,6 +37,7 @@ export const mapHostParticipantToDto = (
     email: user.email,
     phone: user.phone ?? undefined,
     avatarUrl: user.avatarUrl ?? undefined,
+    medicalSafety: user.medicalSafety ?? undefined,
     checkedInAt: participant.checkedInAt?.toISOString(),
     joinedAt: participant.createdAt.toISOString(),
     status: attended ? 'attended' : 'going',

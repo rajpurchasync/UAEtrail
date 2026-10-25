@@ -145,7 +145,7 @@ export const ExploreMapStage = ({
   onJoin,
   onMessage,
   onWithdraw,
-  activityPeekSkipsJoinContext = false,
+  activityPeekSkipsJoinContext: _activityPeekSkipsJoinContext = false,
   onActivityMapPeekAction,
   onOfferTransport,
   linkRideshareTenantId = null,
@@ -154,7 +154,9 @@ export const ExploreMapStage = ({
   joinInvitePeekBanner = null,
   desktopPeopleBrowseOverlay = null,
 }: ExploreMapStageProps) => {
-  const guestGatedAction = user ? undefined : onGuestGatedAction;
+  const guestGatedActionForActivity = user ? undefined : onGuestGatedAction;
+  const guestGatedActionForPlace =
+    user || !onGuestGatedAction ? undefined : () => onGuestGatedAction('view_detail');
 
   return (
   <div className="explore-map-stage relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
@@ -309,13 +311,13 @@ export const ExploreMapStage = ({
         <PlaceMapPeekHost
           item={selected}
           onClose={onCloseSelection}
-          onGuestGatedAction={guestGatedAction}
+          onGuestGatedAction={guestGatedActionForPlace}
         />
       ) : selectedCard ? (
         <ActivityMapPeekHost
           card={selectedCard}
           onClose={onCloseSelection}
-          onGuestGatedAction={guestGatedAction}
+          onGuestGatedAction={guestGatedActionForActivity}
           onJoin={onJoin}
           onMessage={onMessage}
           linkRideshareTenantId={linkRideshareTenantId}

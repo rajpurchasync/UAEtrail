@@ -10,9 +10,16 @@ import {
 
 describe('discover browse navigation contract', () => {
   it('hamburger opens discover browse; desktop top nav does not duplicate Browse', () => {
+    const exploreLink = CONSUMER_HAMBURGER_MENU.find(
+      (item) => item.kind === 'link' && item.label === 'Explore'
+    );
     const hamburgerLink = CONSUMER_HAMBURGER_MENU.find(
       (item) => item.kind === 'link' && item.label === 'Browse'
     );
+    expect(exploreLink?.kind).toBe('link');
+    if (exploreLink?.kind === 'link') {
+      expect(exploreLink.to).toBe('/explore');
+    }
     expect(hamburgerLink?.kind).toBe('link');
     if (hamburgerLink?.kind === 'link') {
       expect(hamburgerLink.to).toBe(EXPLORE_DISCOVER_BROWSE_PATH);

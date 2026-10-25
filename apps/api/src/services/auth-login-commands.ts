@@ -6,7 +6,7 @@ import { verifyPassword } from '../lib/password.js';
 import { DEMO_LOGIN_EMAILS } from '../lib/demo-accounts.js';
 import {
   revokeRefreshToken,
-  useEmailVerificationToken,
+  consumeEmailVerificationToken,
 } from './auth-session-commands.js';
 import {
   findActiveRefreshToken,
@@ -137,7 +137,7 @@ export const verifyEmailOtpAndAuthenticate = async (input: {
     throw new ApiError(400, 'invalid_token', 'Verification code is invalid or expired.');
   }
 
-  await useEmailVerificationToken(record.id);
+  await consumeEmailVerificationToken(record.id);
   await updateAuthUserEmailVerifiedAt(user._id, new Date());
 
   const verifiedUser = await findAuthUserById(user._id);

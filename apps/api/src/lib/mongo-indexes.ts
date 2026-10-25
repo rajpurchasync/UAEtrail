@@ -167,7 +167,11 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
       { key: { activityId: 1, userId: 1 }, unique: true },
       { key: { activityId: 1, createdAt: 1 } },
       { key: { userId: 1 } },
+      { key: { userId: 1, hostRatedAt: 1 } },
       { key: { requestId: 1 } }
+    ]),
+    db.collection(COLLECTIONS.MEMBER_VEHICLES).createIndexes([
+      { key: { userId: 1, updatedAt: -1 } }
     ]),
     db.collection(COLLECTIONS.CHAT_MESSAGES).createIndexes([
       { key: { senderId: 1, receiverId: 1, createdAt: -1 } },

@@ -6,7 +6,6 @@ import type {
   MemberDiscoveryQuotaDTO,
   SocialPersonRowDTO,
 } from '@uaetrail/shared-types';
-import { EXPLORE_TYPE } from '../../../config/exploreTheme';
 import {
   EXPLORE_PEOPLE_BROWSE_AVAILABILITY_EMPTY,
   EXPLORE_PEOPLE_BROWSE_CONNECT_EMPTY,

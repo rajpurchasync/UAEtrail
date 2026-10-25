@@ -49,7 +49,7 @@ export const SettingsMenuRow = ({
 
   if (to) {
     return (
-      <Link to={to} state={linkState} className={className}>
+      <Link to={to} state={linkState} className={className} data-nav-focus={to}>
         {inner}
       </Link>
     );

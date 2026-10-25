@@ -187,7 +187,9 @@ export const PlanCalendarSection = ({
                     ? `${row.kind}-${row.activityId}`
                     : row.kind === 'hosting'
                       ? `hosting-${row.activityId}`
-                      : `${row.kind}-${row.intentId ?? row.activityId ?? index}`;
+                      : row.kind === 'seeking'
+                        ? `seeking-${row.intentId ?? row.activityId ?? index}`
+                        : `available-${index}`;
 
                 return (
                   <li key={rowKey}>

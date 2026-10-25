@@ -138,6 +138,7 @@ export const registerPublishingActivityParticipantRoutes = (hostActivitiesRouter
           hostUserId: req.auth!.userId,
           score: body.score,
           comment: body.comment,
+          rideshare: body.rideshare,
         });
 
         await createAuditLog({

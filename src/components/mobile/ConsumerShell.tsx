@@ -1,5 +1,12 @@
 import { ReactNode } from 'react';
+import { useLocation } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import { MOBILE_PRODUCT_HEADER_FROSTED } from '../../config/consumerScrollChrome';
 import { APP_PAGE_MIN_H_CLASS, APP_SCROLL_BODY_CLASS } from '../../config/layoutScroll';
+import { shouldShowMobileUnifiedTabHeader } from '../../config/mobileTabHeader';
+import { shouldShowConsumerShellHamburger } from '../../config/platform';
+import { useAppScrollFrostedHeader } from '../../hooks/useAppScrollFrostedHeader';
+import { ConsumerHeaderActions } from '../layout/ConsumerHeaderActions';
 import { MobileBackButton } from './MobileBackButton';
 import { MobileProfileHeaderLink } from './MobileProfileHeaderLink';
 import { ConsumerPageHeading } from './ConsumerPageHeading';
@@ -56,14 +63,21 @@ export const ConsumerShell = ({
   showJourney = true,
   journey,
 }: ConsumerShellProps) => {
+  const { pathname, search } = useLocation();
+  const { user } = useAuth();
+  const headerFrosted = useAppScrollFrostedHeader();
   const layout: ConsumerLayout = layoutProp ?? (back ? 'stack' : 'tab');
+  const layoutUnifiedHeader = shouldShowMobileUnifiedTabHeader(pathname, search, Boolean(user));
+  const effectiveSuppressMobileHeader = suppressMobileHeader || layoutUnifiedHeader;
+  const shellHamburger = shouldShowConsumerShellHamburger(pathname);
+  const headerTrailing = action ?? (shellHamburger ? <ConsumerHeaderActions showOnDesktop={false} /> : null);
   const barTitle = navTitle ?? title;
   const pad = flush ? '' : 'px-4 sm:px-6 lg:px-8';
   const showTabTitleStrip = layout === 'tab' && title && !banner;
   const showTabActionInStrip = layout === 'tab' && action && !banner;
   const mobileUnifiedTitle = title ?? navTitle;
   const showMobileUnifiedHeader =
-    !suppressMobileHeader &&
+    !effectiveSuppressMobileHeader &&
     Boolean(mobileUnifiedTitle || back || leading || showJourney || action) &&
     (Boolean(banner) || layout === 'tab' || layout === 'editorial' || layout === 'stack');
   const hasTabSticky =
@@ -76,6 +90,12 @@ export const ConsumerShell = ({
   const bannerPad = layout === 'editorial' ? 'px-0 sm:px-6 lg:px-8' : 'px-0 md:px-4 lg:px-8';
   const journeyFallbackTo = journey?.fallbackTo ?? back?.fallbackTo ?? '/';
   const journeyLabel = journey?.label ?? back?.label ?? 'Back';
+
+  const mobileStickyChromeClass = headerFrosted
+    ? MOBILE_PRODUCT_HEADER_FROSTED
+    : layout === 'tab'
+      ? 'consumer-top-strip'
+      : 'glass-header';
 
   return (
     <div className={`${APP_PAGE_MIN_H_CLASS} consumer-bg md:bg-gray-50 overflow-hidden max-w-full`}>
@@ -105,9 +125,7 @@ export const ConsumerShell = ({
 
       {hasStickyChrome && (
         <div
-          className={`shrink-0 z-40 md:bg-white/90 md:border-b md:border-gray-100 ${
-            layout === 'tab' ? 'consumer-top-strip' : 'glass-header'
-          }`}
+          className={`shrink-0 z-40 md:bg-white/90 md:border-b md:border-gray-100 ${mobileStickyChromeClass}`}
         >
           <div className={`${maxWidthClass[maxWidth]} mx-auto min-w-0 max-w-full ${pad}`}>
             {showMobileUnifiedHeader && (
@@ -133,7 +151,7 @@ export const ConsumerShell = ({
                     <span aria-hidden />
                   )}
                   <div className="justify-self-end flex items-center justify-end min-w-[44px]">
-                    {action ?? null}
+                    {headerTrailing}
                   </div>
                 </div>
               </div>

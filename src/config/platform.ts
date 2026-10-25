@@ -129,6 +129,8 @@ export type ConsumerHamburgerMenuItem =
       emoji: string;
       to: string;
       match: readonly string[];
+      /** Guests → sign-in with return to `to`. */
+      authGate?: true;
       profileLink?: true;
       labelGuest?: string;
       emojiGuest?: string;
@@ -143,8 +145,18 @@ export type ConsumerHamburgerMenuItem =
       }[];
     };
 
-/** Hamburger drawer — emoji labels; notifications live in the header bell. */
+/**
+ * Signed-in hamburger drawer — map-first order; notifications stay in the header bell.
+ * Labels/icons: `MOBILE_NAV_ICON_MAP` + `mobileDrawerChrome`.
+ */
 export const CONSUMER_HAMBURGER_MENU: readonly ConsumerHamburgerMenuItem[] = [
+  {
+    kind: 'link',
+    label: 'Explore',
+    emoji: '🗺️',
+    to: EXPLORE_MAP_PATH,
+    match: [EXPLORE_MAP_PATH, '/discovery'],
+  },
   {
     kind: 'link',
     label: 'Browse',
@@ -154,17 +166,27 @@ export const CONSUMER_HAMBURGER_MENU: readonly ConsumerHamburgerMenuItem[] = [
   },
   {
     kind: 'link',
-    label: 'History',
+    label: 'My Plans',
+    emoji: '📅',
+    to: PLAN_PATH,
+    match: [PLAN_PATH],
+    authGate: true,
+  },
+  {
+    kind: 'link',
+    label: 'Outing history',
     emoji: '🧳',
     to: PROFILE_HISTORY_PATH,
-    match: [PROFILE_HISTORY_PATH, JOURNEY_MAP_PATH, INBOUND_PROFILE_HISTORY_ALIAS_PATH, '/activity'],
+    match: [PROFILE_HISTORY_PATH, JOURNEY_MAP_PATH, INBOUND_PROFILE_HISTORY_ALIAS_PATH],
+    authGate: true,
   },
   {
     kind: 'link',
     label: 'Chat',
     emoji: '💬',
     to: MESSAGES_PATH,
-    match: [MESSAGES_PATH],
+    match: [MESSAGES_PATH, '/publishing/messages'],
+    authGate: true,
   },
   {
     kind: 'link',
@@ -178,7 +200,7 @@ export const CONSUMER_HAMBURGER_MENU: readonly ConsumerHamburgerMenuItem[] = [
   },
   {
     kind: 'download',
-    title: 'Download',
+    title: 'Install app',
     items: [
       { label: 'Android', emoji: '🤖', action: 'pwa-android' },
       { label: 'iOS', emoji: '🍎', action: 'pwa-ios' },
@@ -387,6 +409,20 @@ export const hasConsumerSelfHeader = (pathname: string): boolean =>
   CONSUMER_SELF_HEADER_EXACT.includes(pathname as (typeof CONSUMER_SELF_HEADER_EXACT)[number]) ||
   CONSUMER_SELF_HEADER_PREFIXES.some((prefix) => pathname.startsWith(prefix)) ||
   isMobileDetailRoute(pathname);
+
+/** Profile stack + help pages — inject hamburger in ConsumerShell when Layout tab header is absent. */
+export const shouldShowConsumerShellHamburger = (pathname: string): boolean => {
+  if (isConsumerChromeHidden(pathname)) return false;
+  if (pathname === EXPLORE_MAP_PATH || pathname === LIST_DISCOVERY_PATH) return false;
+  if (pathname === '/profile' || pathname === PLAN_PATH || pathname === MESSAGES_PATH) return false;
+  if (pathname === PROFILE_HISTORY_PATH || pathname === JOURNEY_MAP_PATH) return false;
+  if (pathname.startsWith('/profile/')) return true;
+  if (pathname === '/faq' || pathname === '/terms' || pathname === '/privacy') return true;
+  if (pathname.startsWith('/member/')) return true;
+  if (pathname === NOTIFICATIONS_PATH) return true;
+  if ((MOBILE_BOTTOM_NAV_PROFILE_PATHS as readonly string[]).includes(pathname)) return true;
+  return MOBILE_BOTTOM_NAV_PROFILE_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+};
 
 /** Signed-in mobile tab shell — Explore · My Plans · Chat (middle tab route {@link PLAN_PATH}). */
 export const MOBILE_BOTTOM_NAV_TAB_PATHS = [EXPLORE_MAP_PATH, PLAN_PATH, MESSAGES_PATH] as const;

@@ -52,7 +52,21 @@ export const hostParticipantRevokeSchema = z
     }
   });
 
-export const hostParticipantRatingSchema = z.object({
-  score: z.number().int().min(1).max(5),
-  comment: z.string().trim().max(500).optional(),
+const rideshareRiderRatingDimensionsSchema = z.object({
+  cleanliness: z.number().int().min(1).max(5),
+  punctuality: z.number().int().min(1).max(5),
+  behaviour: z.number().int().min(1).max(5),
+  payment: z.number().int().min(1).max(5).optional().nullable(),
 });
+
+export const hostParticipantRatingSchema = z
+  .object({
+    score: z.number().int().min(1).max(5).optional(),
+    comment: z.string().trim().max(500).optional(),
+    rideshare: rideshareRiderRatingDimensionsSchema.optional(),
+  })
+  .superRefine((body, ctx) => {
+    if (!body.rideshare && body.score == null) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Rating score is required.', path: ['score'] });
+    }
+  });

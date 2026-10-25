@@ -7,7 +7,7 @@ import { scheduleSideEffect } from '../lib/schedule-side-effect.js';
 import {
   createPasswordResetToken,
   revokeRefreshTokensByUser,
-  usePasswordResetToken,
+  consumePasswordResetToken,
 } from './auth-session-commands.js';
 import { findPasswordResetToken } from './auth-session-read.js';
 import { findAuthUserByEmail, findAuthUserById } from './member-identity-read.js';
@@ -49,7 +49,7 @@ export const resetPasswordWithToken = async (token: string, password: string) =>
 
   const newHash = await hashPassword(password);
   await updateAuthUserPassword(record.userId, newHash);
-  await usePasswordResetToken(record.id);
+  await consumePasswordResetToken(record.id);
   await revokeRefreshTokensByUser(record.userId);
 
   return { message: 'Password updated successfully.' };
@@ -90,7 +90,7 @@ export const changeAuthenticatedPassword = async (input: {
   const passwordHash = await hashPassword(input.newPassword);
   await updateAuthUserPassword(user._id, passwordHash);
   if (otpRecordId) {
-    await usePasswordResetToken(otpRecordId);
+    await consumePasswordResetToken(otpRecordId);
   }
   await revokeRefreshTokensByUser(user._id);
 

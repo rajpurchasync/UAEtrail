@@ -108,7 +108,8 @@ export default {
       animation: {
         'fade-up': 'fadeUp 0.45s cubic-bezier(0.22, 1, 0.36, 1) both',
         'fade-in': 'fadeIn 0.35s ease-out both',
-        float: 'float 6s ease-in-out infinite'
+        float: 'float 6s ease-in-out infinite',
+        shimmer: 'shimmer 2.2s ease-in-out infinite'
       },
       keyframes: {
         fadeUp: {
@@ -122,6 +123,10 @@ export default {
         float: {
           '0%, 100%': { transform: 'translateY(0)' },
           '50%': { transform: 'translateY(-4px)' }
+        },
+        shimmer: {
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(100%)' }
         }
       }
     }

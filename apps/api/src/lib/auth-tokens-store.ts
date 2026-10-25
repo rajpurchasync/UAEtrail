@@ -125,7 +125,7 @@ export const findEmailVerificationTokenForUser = async (
     : null;
 };
 
-export const useEmailVerificationToken = async (id: string): Promise<void> => {
+export const consumeEmailVerificationToken = async (id: string): Promise<void> => {
   await verificationTokensCollection().updateOne({ _id: id }, { $set: { usedAt: new Date() } });
 };
 
@@ -194,7 +194,7 @@ export const findEmailChangeTokenForUser = async (
     : null;
 };
 
-export const useEmailChangeToken = async (id: string): Promise<void> => {
+export const consumeEmailChangeToken = async (id: string): Promise<void> => {
   await emailChangeTokensCollection().updateOne({ _id: id }, { $set: { usedAt: new Date() } });
 };
 
@@ -227,7 +227,7 @@ export const findPasswordResetToken = async (token: string): Promise<{
     : null;
 };
 
-export const usePasswordResetToken = async (id: string): Promise<void> => {
+export const consumePasswordResetToken = async (id: string): Promise<void> => {
   await resetTokensCollection().updateOne({ _id: id }, { $set: { usedAt: new Date() } });
 };
 

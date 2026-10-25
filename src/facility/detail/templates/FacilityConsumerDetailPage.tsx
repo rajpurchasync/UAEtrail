@@ -69,7 +69,7 @@ export const FacilityConsumerDetailPage = ({
           {latitude != null && longitude != null ? (
             <div>
               <h2 className={CONSUMER_DETAIL_SECTION_TITLE}>Location</h2>
-              <MeetingPointMap latitude={latitude} longitude={longitude} label={facility.name} />
+              <MeetingPointMap lat={latitude} lng={longitude} label={facility.name} />
             </div>
           ) : null}
         </section>

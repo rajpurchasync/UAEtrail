@@ -45,7 +45,16 @@ beforeAll(async () => {
     status: UserStatus.ACTIVE,
     emailVerifiedAt: new Date(),
     referralCode: generateReferralCode(),
-    profile: { displayName: 'Demand Joiner', phone: null, bio: null, avatarUrl: null },
+    profile: {
+      displayName: 'Demand Joiner',
+      phone: null,
+      bio: null,
+      avatarUrl: null,
+      bloodGroup: 'O+',
+      medicalConditions: 'N/A',
+      emergencyContactName: 'Test emergency',
+      emergencyContactPhone: '+971501112233',
+    },
   });
   joinerId = joiner._id;
 

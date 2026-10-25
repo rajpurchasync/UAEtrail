@@ -31,8 +31,14 @@ describe('validateHostingPlaceArea', () => {
     };
     expect(validateHostingPlaceArea(draft, [placeWithArea('loc-1')])).toBeNull();
     expect(validateHostingPlaceArea(draft, [{ ...placeWithArea('loc-1'), areaId: null }])).toMatch(
-      /catalog place/
+      /isn’t linked to a map area/
     );
+    expect(
+      validateHostingPlaceArea(
+        { ...draft, registryPlaceAreaId: HATTA_AREA_ID },
+        [{ ...placeWithArea('loc-1'), areaId: null }]
+      )
+    ).toBeNull();
   });
 
   it('blocks custom venue labels for public map', () => {

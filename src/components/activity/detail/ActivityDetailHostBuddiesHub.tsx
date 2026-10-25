@@ -11,6 +11,8 @@ type ActivityDetailHostBuddiesHubProps = {
   tenantId: string;
   activityId: string;
   activityTitle: string;
+  activityType?: string;
+  rideshareHasPayment?: boolean;
   joinRequests: ActivityRequestView[];
   requestsLoading: boolean;
   onRequestsChanged: () => void | Promise<void>;
@@ -22,6 +24,8 @@ export const ActivityDetailHostBuddiesHub = ({
   tenantId,
   activityId,
   activityTitle,
+  activityType,
+  rideshareHasPayment = false,
   joinRequests,
   requestsLoading,
   onRequestsChanged,
@@ -55,6 +59,8 @@ export const ActivityDetailHostBuddiesHub = ({
         tenantId={tenantId}
         activityId={activityId}
         activityTitle={activityTitle}
+        activityType={activityType}
+        rideshareHasPayment={rideshareHasPayment}
         onError={onError}
       />
       <section className="space-y-2 rounded-2xl border border-neutral-200/80 bg-white p-4 shadow-sm">

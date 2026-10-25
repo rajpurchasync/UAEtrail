@@ -23,7 +23,7 @@ export const useMemberGoals = (enabled: boolean) => {
     staleTime: 60_000,
   });
 
-  const goals = query.data ?? [];
+  const goals = useMemo(() => query.data ?? [], [query.data]);
 
   const reload = useCallback(() => {
     void query.refetch();

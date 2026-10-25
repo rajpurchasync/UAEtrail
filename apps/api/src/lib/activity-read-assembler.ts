@@ -11,7 +11,7 @@ import { ActivityStatus, ActivityType, LocationStatus } from '../domain/enums.js
 import { findAuthUsersByIds, type AuthUserRecord } from './auth-users-store.js';
 import type { MongoActivityDoc } from './entity-builders.js';
 import { getMongoClient } from './mongo.js';
-import { findTenantById, findTenantBySlug, findTenantsByIds, type TenantRecord } from './tenant-store.js';
+import { findTenantBySlug, findTenantsByIds, type TenantRecord } from './tenant-store.js';
 
 const tenantMapForIds = async (tenantIds: string[]): Promise<Map<string, TenantRecord>> => {
   const unique = [...new Set(tenantIds.filter(Boolean))];
@@ -101,6 +101,8 @@ const mongoEventToEvent = (doc: MongoActivityDoc): Activity => {
   ridesharePriceAed: retired.ridesharePriceAed ?? retired.carPoolPriceAed ?? null,
   rideshareSeats: retired.rideshareSeats ?? retired.carPoolSeats ?? null,
   rideshareDetails: retired.rideshareDetails ?? retired.carPoolDetails ?? null,
+  rideshareVehicleId: doc.rideshareVehicleId ?? null,
+  rideshareVehicle: doc.rideshareVehicle ?? null,
   linkedActivityId: doc.linkedActivityId ?? null,
   linkedRideshareActivityId:
     retired.linkedRideshareActivityId ?? retired.linkedCarpoolActivityId ?? null,
@@ -237,9 +239,6 @@ const activityDocHasMapCoordinates = (doc: MongoActivityDoc): boolean =>
   (doc.meetingLat != null && doc.meetingLng != null) ||
   (doc.startLat != null && doc.startLng != null) ||
   (doc.parkingLat != null && doc.parkingLng != null);
-
-const loadActiveLocations = (locationIds: string[]): Promise<Map<string, Location>> =>
-  loadLocationsByIds(locationIds, true);
 
 const assembleEventsWithPublicRelations = async (
   docs: MongoActivityDoc[]

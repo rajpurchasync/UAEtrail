@@ -145,6 +145,8 @@ export const updateActivityDetailed = async (
   if (data.ridesharePriceAed !== undefined) patch.ridesharePriceAed = data.ridesharePriceAed;
   if (data.rideshareSeats !== undefined) patch.rideshareSeats = data.rideshareSeats;
   if (data.rideshareDetails !== undefined) patch.rideshareDetails = data.rideshareDetails;
+  if (data.rideshareVehicleId !== undefined) patch.rideshareVehicleId = data.rideshareVehicleId;
+  if (data.rideshareVehicle !== undefined) patch.rideshareVehicle = data.rideshareVehicle;
   if (data.paymentTerms !== undefined) patch.paymentTerms = data.paymentTerms;
   if (data.pricingMode !== undefined) patch.pricingMode = data.pricingMode;
   if (data.itinerary !== undefined) patch.itinerary = data.itinerary;

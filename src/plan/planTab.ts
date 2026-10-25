@@ -112,7 +112,12 @@ export const normalizePlanMobileParams = (
     }
   }
 
-  if (params.get('view') === 'plans' && params.get('tab') !== 'wishlist' && !params.get('filter')) {
+  if (
+    params.get('view') === 'plans' &&
+    params.get('tab') !== 'wishlist' &&
+    !params.get('filter') &&
+    params.get('lens') !== 'availability'
+  ) {
     params.set('filter', canHost ? 'hosting' : 'joined');
     changed = true;
   }

@@ -1,7 +1,32 @@
+import {
+  MOBILE_PRODUCT_HEADER_FROSTED,
+  MOBILE_PRODUCT_HEADER_TRANSITION,
+} from '../../../config/consumerScrollChrome';
+
 /** Visual tokens for consumer activity detail — each block reads as a different job. */
 
 export const CONSUMER_DETAIL_SECTION_TITLE =
   'text-[13px] font-bold uppercase tracking-wide text-neutral-500';
+
+const CONSUMER_DETAIL_CHROME_PAD = 'px-3 pb-safe pt-3';
+
+/** Sticky engagement bar — frosted while content scrolls underneath. */
+export const CONSUMER_DETAIL_STICKY_FOOTER_FROSTED =
+  `border-t border-neutral-200/45 bg-white/72 ${CONSUMER_DETAIL_CHROME_PAD} shadow-[0_-10px_36px_rgba(15,23,42,.08)] backdrop-blur-xl transition-[background-color,backdrop-filter,box-shadow] duration-200 supports-[backdrop-filter]:bg-white/55`;
+
+/** Footer at rest (bottom of scroll or no overflow) — solid, no faux glass. */
+export const CONSUMER_DETAIL_STICKY_FOOTER_REST =
+  `border-t border-neutral-100 bg-white ${CONSUMER_DETAIL_CHROME_PAD} shadow-none transition-[background-color,backdrop-filter,box-shadow] duration-200`;
+
+/** @deprecated Use {@link CONSUMER_DETAIL_STICKY_FOOTER_FROSTED}. */
+export const CONSUMER_DETAIL_STICKY_FOOTER = CONSUMER_DETAIL_STICKY_FOOTER_FROSTED;
+
+/** Top chrome at scroll offset zero. */
+export const CONSUMER_DETAIL_STICKY_HEADER_REST =
+  `border-b border-transparent bg-gradient-to-b from-emerald-50/80 to-white ${MOBILE_PRODUCT_HEADER_TRANSITION}`;
+
+/** Top chrome while content scrolls beneath the bar. */
+export const CONSUMER_DETAIL_STICKY_HEADER_FROSTED = MOBILE_PRODUCT_HEADER_FROSTED;
 
 export const CONSUMER_DETAIL_PANEL = {
   logistics:

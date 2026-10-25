@@ -62,11 +62,31 @@ export const linkParentToRideshareActivity = async (
   });
 };
 
+/** Rideshare detail — paste parent hike/camp/event link to attach this ride. */
+export const linkRideshareToParentActivityFromPaste = async (
+  tenantId: string,
+  rideshareActivityId: string,
+  paste: string
+): Promise<string> => {
+  const parentActivityId = parseActivityIdFromShareInput(paste);
+  if (!parentActivityId) {
+    throw new Error('Paste a valid activity link or ID.');
+  }
+  await linkParentToRideshareActivity(tenantId, parentActivityId, rideshareActivityId);
+  return parentActivityId;
+};
+
 /** Map/list pin kinds that may have a linked transport (rideshare) child — not rideshare plans. */
 export const parentMapKindMayOfferLinkedRideshare = (
-  kind: ExploreMapItemDTO['kind'] | ActivityDTO['activityType'] | null | undefined
+  kind:
+    | ExploreMapItemDTO['kind']
+    | ActivityDTO['activityType']
+    | ParticipantIntentDTO['kind']
+    | null
+    | undefined
 ): boolean => {
   if (!kind || kind === 'rideshare') return false;
+  if (kind === 'guide' || kind === 'shop' || kind === 'agency' || kind === 'area') return false;
   return kind === 'hiking' || kind === 'camping' || kind === 'event';
 };
 

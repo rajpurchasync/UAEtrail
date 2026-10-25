@@ -182,18 +182,11 @@ export const useActivityDetailJoinSurfaces = ({
               ))
     : undefined;
 
-  const flushMarketingStickyBar = (node: ReactNode | undefined) =>
-    node && consumerWireEngagement ? (
-      <div className="w-full border-t border-neutral-200 bg-white">{node}</div>
-    ) : (
-      node
-    );
-
   const stickyFooter = (
     <ActivityDetailStickyFooter
       tabScopedFooterEnabled={showMobileTabs && !previewMode && consumerJoinEnabled}
       tabFooterKind={tabFooterKind}
-      joinButton={flushMarketingStickyBar(joinButton)}
+      joinButton={joinButton}
       wrapMobileFooter={wrapMobileFooter}
       hasAccessCoordinates={hasAccessCoordinates}
       accessLat={accessLat}

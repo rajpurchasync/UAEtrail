@@ -101,7 +101,7 @@ export const SignIn = () => {
     clearAuthReturnContext();
 
     const memberStatus = await fetchMemberStatus().catch(() => null);
-    const tenantId = memberStatus?.publish.tenantId ?? memberStatus?.tenantId;
+    const tenantId = memberStatus?.publish.tenantId;
     if (tenantId) {
       setActiveTenantId(tenantId);
     }

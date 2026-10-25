@@ -12,6 +12,7 @@ import {
 import { registerMeSeekingPostRoutes } from './registerMeParticipantIntentRoutes.js';
 import { registerMeBadgesRoutes } from './registerMeBadgesRoutes.js';
 import { registerMeGoalsRoutes } from './registerMeGoalsRoutes.js';
+import { registerMeVehiclesRoutes } from './registerMeVehiclesRoutes.js';
 import { registerMeAvailabilityRoutes } from './registerMeAvailabilityRoutes.js';
 import { registerMeMapPinsRoutes } from './registerMeMapPinsRoutes.js';
 import { registerMeDiscoverOverlayRoutes } from './registerMeDiscoverOverlayRoutes.js';
@@ -45,6 +46,7 @@ export const composeUserMemberRoutes = (userRouter: Router): void => {
   registerMeSeekingPostRoutes(userRouter);
   registerMeBadgesRoutes(userRouter);
   registerMeGoalsRoutes(userRouter);
+  registerMeVehiclesRoutes(userRouter);
   registerMeAvailabilityRoutes(userRouter);
   registerMeMapPinsRoutes(userRouter);
   registerMeDiscoverOverlayRoutes(userRouter);

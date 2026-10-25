@@ -10,6 +10,8 @@ import {
   fetchShopPublicPage,
   shopPublicPeekRedirectPath,
 } from '../hooks/shopPublicClientApi';
+import { DetailPageLoadingState } from '../components/ui/DetailPageLoadingState';
+import { DETAIL_LOADING_SHOP } from '../content/detailLoadingCopy';
 
 /** Public gear shop — resolves merchant id or tenant slug to one page. */
 export const ShopPublic = () => {
@@ -36,9 +38,7 @@ export const ShopPublic = () => {
     return (
       <>
         <PageMeta title="Loading shop" path={id ? shopPublicPath({ id }) : undefined} />
-        <div className="app-page-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-t-2 border-emerald-600" />
-        </div>
+        <DetailPageLoadingState label={DETAIL_LOADING_SHOP} accent="emerald" variant="page" />
       </>
     );
   }

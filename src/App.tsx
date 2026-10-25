@@ -4,11 +4,9 @@ import {
   INBOUND_MY_REWARDS_PATH,
   INBOUND_REWARDS_PATH,
   INBOUND_TRAIL_POINTS_PATH,
-  JOURNEY_MAP_PATH,
   MEMBERSHIP_MARKETING_PATH,
   PLAN_PATH,
   PROFILE_BADGES_PATH,
-  PROFILE_HISTORY_PATH,
   PROFILE_SUBMISSIONS_PATH,
   PUBLISHING_ACTIVITIES_NEW_PATH,
   PUBLISHING_ACTIVITIES_PATH,
@@ -151,7 +149,6 @@ const PublishingPublicProfileEdit = lazy(() =>
 const PublishingPlaces = lazy(() => import('./pages/publishing/Places').then((m) => ({ default: m.Places })));
 const PublishingHistory = lazy(() => import('./pages/publishing/History').then((m) => ({ default: m.History })));
 const UserRequests = lazy(() => import('./pages/UserRequests').then((m) => ({ default: m.UserRequests })));
-const Messages = lazy(() => import('./pages/Messages').then((m) => ({ default: m.Messages })));
 const MessagesGate = lazy(() => import('./pages/Messages').then((m) => ({ default: m.MessagesGate })));
 const ShopManageRedirect = () => <Navigate to={organisationManagePath('shop')} replace />;
 const AgencyManageRedirect = () => <Navigate to={organisationManagePath('agency')} replace />;
@@ -172,6 +169,18 @@ const ProfileSettingsPrivacy = lazy(() =>
 );
 const ProfileSettingsNotifications = lazy(() =>
   import('./pages/ProfileSettingsNotifications').then((m) => ({ default: m.ProfileSettingsNotifications }))
+);
+const ProfileSettingsSafety = lazy(() =>
+  import('./pages/ProfileSettingsSafety').then((m) => ({ default: m.ProfileSettingsSafety }))
+);
+const ProfileVehiclesPage = lazy(() =>
+  import('./pages/ProfileVehicles').then((m) => ({ default: m.ProfileVehiclesPage }))
+);
+const ProfileVehicleNewPage = lazy(() =>
+  import('./pages/ProfileVehicles').then((m) => ({ default: m.ProfileVehicleNewPage }))
+);
+const ProfileVehicleEditPage = lazy(() =>
+  import('./pages/ProfileVehicles').then((m) => ({ default: m.ProfileVehicleEditPage }))
 );
 const ProfileEdit = lazy(() => import('./pages/ProfileEdit').then((m) => ({ default: m.ProfileEdit })));
 const ProfileBadges = lazy(() => import('./pages/ProfileBadges').then((m) => ({ default: m.ProfileBadges })));
@@ -372,10 +381,42 @@ function App() {
             }
           />
           <Route
+            path="/profile/settings/safety"
+            element={
+              <ProtectedRoute>
+                <ProfileSettingsSafety />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/profile/settings"
             element={
               <ProtectedRoute>
                 <ProfileSettings />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile/vehicles/new"
+            element={
+              <ProtectedRoute>
+                <ProfileVehicleNewPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile/vehicles/:id/edit"
+            element={
+              <ProtectedRoute>
+                <ProfileVehicleEditPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile/vehicles"
+            element={
+              <ProtectedRoute>
+                <ProfileVehiclesPage />
               </ProtectedRoute>
             }
           />

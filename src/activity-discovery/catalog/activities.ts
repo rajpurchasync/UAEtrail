@@ -1,13 +1,7 @@
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { sortExploreActivities } from '../../explore/exploreListSort';
-import {
-  matchesActivityDateFilter,
-  type ExploreActivityDatePreset,
-} from '../../explore/exploreActivityDateFilter';
-import type { MapFilterKey } from '../../explore/routing';
+import { matchesActivityDateFilter } from '../../explore/exploreActivityDateFilter';
 import { exploreItemMatchesQuery } from '../../explore/exploreSearchMatches';
-import type { ExploreBuddySubtypeKey } from '../../explore/exploreBuddySubtype';
-import type { ExploreOutingTopicKey } from '../../explore/exploreOutingTopic';
 import {
   exploreMapItemMatchesActivityModeFilter,
   type ExploreActivityModeFilter,

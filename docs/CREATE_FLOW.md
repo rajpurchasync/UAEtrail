@@ -89,7 +89,7 @@ Kind grid (hiking, camping, rideshare, event, other activity) → hosting wizard
 | **Event** | `activityType: event` | Open RSVP (**I'm going**) |
 | **Activity** | Generic buddy plan (see below) | Host approval |
 
-**Host / publish** requires **profile completion** (`profileComplete` on `GET /me/status` — same member details as `/welcome`). `publish.canPublish` provisions a community tenant on first check. Gate failure → `/welcome?redirect=…` (not Pro Membership). **Join / participate** on outings requires **sign-in only** — not profile completion. **Pro membership** (`/profile/pro-membership`) adds a **guide**, **agency**, or **shop** public profile — not community Host / publish. **Paid** pricing (`canHostPaidActivities` = linked business tenant) requires publish-as **agency, shop, or partner**. Individual professionals (no business license on platform) stay **free + shared** only.
+**Host / publish** requires **profile completion** (`profileComplete` on `GET /me/status` — same member details as `/welcome`). `publish.canPublish` provisions a community tenant on first check. Gate failure → `/welcome?redirect=…` (not Pro Membership). **Join / participate** requires **sign-in** and a complete **safety profile** (`medicalSafetyProfileComplete` — `/profile/settings/safety`), not profile completion. **Rideshare host** selects a saved car (`/profile/vehicles`, `GET /me/vehicles`); riders see make, model, color, and year. **Pro membership** (`/profile/pro-membership`) adds a **guide**, **agency**, or **shop** public profile — not community Host / publish. **Paid** pricing (`canHostPaidActivities` = linked business tenant) requires publish-as **agency, shop, or partner**. Individual professionals (no business license on platform) stay **free + shared** only.
 
 **Activity pricing (host / publish):** one mode per outing — `free` · `shared` · `paid` — with a single indicative AED amount when not free. **No tiered packages** and **no in-app payments** (amounts are informational; members settle with the host offline). **Who may set which mode** (`allowedActivityPricingModes`): everyone who can host → **free + shared**. **Paid** only when the member is **linked to a verified business** (`hostTiers.business`) **and** publishes as **agency, shop, or partner** — not as an individual guide (community / pro guide). External registration URLs are **parked** (not in product UI/API).
 
@@ -306,7 +306,7 @@ Host **does not** infer area from meeting or going-from pins. **Area** is an adm
 | **Custom trail name** (no registry row) | Not valid for public map — use **Add** to create a place (select **area** first), then Host from catalog. |
 | **Private** link-only | Not on public explore map; place area optional |
 
-Publish gate (API): `place_area_required` / `activity_area_required` when linked place has no **`areaId`**.
+Publish gate (API): `activity_area_required` when the linked place and the activity row both lack a persisted **`areaId`**. Catalog gaps are filled by seed / `scripts/backfill-location-area-ids.ts`, not by guessing an area on each read. Rideshare anchors still **write** `areaId` onto the place from the pin when the host publishes.
 
 **Add (place/facility):** **Area** step first (`curatedArea`), then emirate + map pin; API **`POST /me/places`** / **`POST /me/facilities`** with **`areaId`** (published area validated server-side). **Lifecycle:** one member **submit** → pending on `/profile/submissions` — **not** draft + publish like hosted activities ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.4.10).
 

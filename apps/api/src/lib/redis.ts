@@ -59,7 +59,7 @@ export const getRedisClient = async (): Promise<RedisClientType | null> => {
         });
         redis.on('error', (err) => console.warn('[redis]', err.message));
         await withTimeout(redis.connect(), redisConnectTimeoutMs, 'Redis connect');
-        client = redis as RedisClientType;
+        client = redis as unknown as RedisClientType;
         noteRedisConnectSucceeded();
         console.log('[redis] Connected — rate limits and SSE tickets use Redis.');
         return client;

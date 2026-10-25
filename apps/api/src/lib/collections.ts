@@ -58,6 +58,7 @@ export const COLLECTIONS = {
   USER_GOALS: 'user_goals',
   MEMBER_AVAILABILITY: 'member_availability',
   MEMBER_MAP_PINS: 'member_map_pins',
+  MEMBER_VEHICLES: 'member_vehicles',
   MEMBER_PROFILE_VIEWS: 'member_profile_views',
   ACTIVITY_INVITES: 'activity_invites',
   PUSH_SUBSCRIPTIONS: 'push_subscriptions',

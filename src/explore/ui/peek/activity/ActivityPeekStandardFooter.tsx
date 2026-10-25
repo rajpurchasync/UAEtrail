@@ -75,7 +75,6 @@ export const ActivityPeekStandardFooter = ({
   const location = useLocation();
   const gate = onGuestGatedAction;
   const isHost = card.viewerAccess?.level === 'host';
-  const joined = activityPeekViewerIsJoined(card, joinUiState) || isHost;
   const canOpenGroupChat = activityPeekViewerCanOpenGroupChat(card, joinUiState);
   const joinFull = discoveryCardActivityJoinIsFull(card);
   const mapWire = activityPeekHasMapWireActions(card);

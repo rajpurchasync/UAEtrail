@@ -57,6 +57,7 @@ import {
   resolveActivityLocation,
 } from './host-activity.js';
 import { buildPublishingTenantActivityDto } from './publishing-tenant-activity-read.js';
+import { resolveRideshareVehicleForActivityPublish } from './me-vehicles-publish.js';
 
 export const createPublishingTenantActivity = async (input: {
   tenantId: string;
@@ -93,6 +94,9 @@ export const createPublishingTenantActivity = async (input: {
     pricingMode: body.pricingMode,
   });
   const isRideshare = body.activityType === 'rideshare';
+  const rideshareVehicle = isRideshare
+    ? await resolveRideshareVehicleForActivityPublish(input.actorId, body.rideshareVehicleId)
+    : null;
   assertActivityPricingAllowed({
     hostTiers: hostStatus.hostTiers,
     publishingProfileKind,
@@ -153,6 +157,8 @@ export const createPublishingTenantActivity = async (input: {
       : body.rideshareEnabled
         ? body.rideshareDetails
         : null,
+    rideshareVehicleId: rideshareVehicle?.rideshareVehicleId ?? null,
+    rideshareVehicle: rideshareVehicle?.rideshareVehicle ?? null,
     paymentTerms: body.paymentTerms,
     itinerary: body.itinerary,
     requirements: body.requirements,

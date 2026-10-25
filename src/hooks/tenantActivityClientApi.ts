@@ -54,7 +54,16 @@ export const rateActivityParticipant = async (
   tenantId: string,
   activityId: string,
   participantId: string,
-  payload: { score: number; comment?: string }
+  payload: {
+    score?: number;
+    comment?: string;
+    rideshare?: {
+      cleanliness: number;
+      punctuality: number;
+      behaviour: number;
+      payment?: number | null;
+    };
+  }
 ): Promise<void> => {
   await api.rateActivityParticipant(tenantId, activityId, participantId, payload);
 };

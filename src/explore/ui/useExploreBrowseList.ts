@@ -15,7 +15,6 @@ import {
 } from './exploreMapPinModel';
 import {
   mapItemIsAgencyHostedActivity,
-  mapItemMatchesFilterPills,
   mapItemMatchesSearchScope,
   type ExploreSearchScopeKey,
 } from '../exploreBrowseTaxonomy';

@@ -40,14 +40,7 @@ export const usePeopleDiscoverySeekingActivities = ({
 
   const seekingActivities = useMemo(
     () => selectSeekingActivitiesFromExploreCatalog(catalogSource, filters),
-    [
-      catalogSource,
-      filters.mapFilter,
-      filters.buddySubtype,
-      filters.outingTopic,
-      filters.query,
-      filters.activityDatePreset,
-    ]
+    [catalogSource, filters]
   );
 
   return {

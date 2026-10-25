@@ -19,7 +19,9 @@ describe('activityDetailConsumerLayoutGuard', () => {
     expect(template).toMatch(/ActivityPeekLinkedTransport/);
     expect(template).not.toMatch(/ActivityDetailPhotoGallery/);
     expect(template).not.toMatch(/ActivityDetailConsumerPlanScroll/);
-    expect(template).not.toMatch(/planSections/);
+    expect(template).toMatch(/ActivityDetailPlanColumn/);
+    expect(template).toMatch(/planSections/);
+    expect(template).toMatch(/ACTIVITY_DETAIL_LINKED_VENUE_SUBLINE/);
 
     const view = read('src/components/activity/ActivityDetailView.tsx');
     expect(view).toMatch(/ActivityConsumerDetailPage/);

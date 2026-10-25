@@ -29,7 +29,7 @@ export const navigateHostFromPlaceCard = async (
 
   const kind = resolveCreateActivityKindFromVenueCardKind(card.kind);
   const place = await fetchPublicPlaceDetail(locationId);
-  const composeRoute = hostCompose(kind === 'activity' ? 'activity' : kind);
+  const composeRoute = hostCompose(kind === 'event' ? 'activity' : kind);
   const flowId = composeFlowIdFromRoute(composeRoute);
   if (flowId) {
     writeHostingWizardSession(
@@ -52,7 +52,7 @@ export const navigateHostFromPlace = async (
 ): Promise<void> => {
   const kind = placeDetailKindToOrganizeKind(detailKind);
   const placeDto = await fetchPublicPlaceDetail(place.id);
-  const composeRoute = hostCompose(kind === 'activity' ? 'activity' : kind);
+  const composeRoute = hostCompose(kind === 'event' ? 'activity' : kind);
   const flowId = composeFlowIdFromRoute(composeRoute);
   if (flowId) {
     writeHostingWizardSession(

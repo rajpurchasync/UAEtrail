@@ -169,7 +169,7 @@ export const useActivityDetailViewModel = ({
   );
 
   const linkedRideshareId =
-    activity.linkedRideshare?.id ?? activity.linkedParentActivity?.id ?? null;
+    activity.linkedRideshare?.id ?? activity.linkedRideshareActivityId ?? null;
   const tabUi = useMemo(
     () =>
       resolveActivityDetailTabUi({
@@ -201,7 +201,6 @@ export const useActivityDetailViewModel = ({
   );
   const {
     showMobileTabs: wireShowMobileTabs,
-    showPlanTransportTeaser,
     showPlaceCrewBody: wireShowPlaceCrewBody,
     showPlaceLockedOnMobile: wireShowPlaceLockedOnMobile,
     showCrewLockedHint: wireCrewLockedHint,
@@ -501,7 +500,6 @@ export const useActivityDetailViewModel = ({
     canWriteActivityReview,
     canSendJoinInvites,
     showMobileTabs,
-    showPlanTransportTeaser,
     showPlaceCrewBody,
     showPlaceLockedOnMobile,
     buddiesCrewLockedHint,
@@ -558,6 +556,7 @@ export const useActivityDetailViewModel = ({
     joinUiState,
     consumerEngagementActions: consumerWireEngagementCta,
     onOfferLinkedRideshare,
+    linkRideshareTenantId,
     detailKind: pageModel.kind,
     visibleMobileTabs,
     showPlaceTab,

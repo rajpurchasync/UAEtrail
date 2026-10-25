@@ -23,7 +23,7 @@ const formatScheduledMeta = (activity: ActivityDTO): string => {
 
 const PlacePeekScheduledList = ({
   locationId,
-  detailPath,
+  detailPath: _detailPath,
   mapItemId,
   onNavigate,
 }: {

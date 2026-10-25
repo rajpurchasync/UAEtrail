@@ -26,7 +26,7 @@ export const useExploreBrowseUrlInboundMigrations = (input: {
       },
       { replace: true }
     );
-  }, [input.isDesktop, input.searchParams, input.setSearchParams]);
+  }, [input]);
 
   useEffect(() => {
     const listParam = input.searchParams.get('list');
@@ -43,5 +43,5 @@ export const useExploreBrowseUrlInboundMigrations = (input: {
         { replace: true }
       );
     }
-  }, [input.searchParams, input.setSearchParams]);
+  }, [input]);
 };

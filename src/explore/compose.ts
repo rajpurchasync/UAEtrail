@@ -9,6 +9,8 @@ import {
 import type { CreateActivityKind } from './ui/hostingFlowEngine';
 import type { AddVenueKind } from './addTypes';
 
+export type { HostComposeKind, SeekingComposeKind } from '@uaetrail/shared-types';
+
 /** FAB create-route — Host · Seek · Add (`?compose=` wire). */
 export type ExploreCompose = ExploreComposeWire;
 

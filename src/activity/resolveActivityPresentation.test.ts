@@ -175,7 +175,6 @@ describe('resolveActivityMapPeekActions participant fallback', () => {
     expect(resolveActivityMapPeekActions(card).map((a) => a.id)).toEqual([
       'open_crew_chat',
       'invite_crew',
-      'view_detail',
     ]);
   });
 });

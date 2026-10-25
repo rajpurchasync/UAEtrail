@@ -1,4 +1,4 @@
-import { FACILITY_PLACE_KINDS, type PlaceKind } from './place-kind.js';
+import { FACILITY_PLACE_KINDS } from './place-kind.js';
 
 /** Amenity kinds — persisted on `facilities` collection (CPC target). */
 export const FACILITY_KINDS = FACILITY_PLACE_KINDS;

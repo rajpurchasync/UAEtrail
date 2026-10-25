@@ -1,4 +1,4 @@
-import { Calendar, Clock, Users, ChevronRight } from 'lucide-react';
+import { Calendar, Clock, Users } from 'lucide-react';
 import type { ActivityDetailDTO } from '@uaetrail/shared-types';
 import { ACTIVITY_PRICING_INDICATION_NOTE } from '@uaetrail/shared-types';
 import { formatDate } from '../../../../utils';
@@ -8,20 +8,10 @@ import {
   activityPricingBadge,
   activityPricingModeLabel,
 } from '../../../../utils/activityPricing';
-import {
-  ACTIVITY_DETAIL_PLAN_SUSTAINABILITY_LINE,
-  ACTIVITY_DETAIL_PLAN_TRANSPORT_TEASER_BODY,
-  ACTIVITY_DETAIL_PLAN_TRANSPORT_TEASER_CTA,
-  ACTIVITY_DETAIL_PLAN_TRANSPORT_TEASER_TITLE,
-} from '../../../../content/activityDetailCopy';
-import type { ActivityDetailTabId } from '../../../../activity/activityDetailTab';
-
 type ActivityDetailPlanAboutCardProps = {
   panelClassName: string;
   activity: ActivityDetailDTO;
   showMobileTabs: boolean;
-  showPlanTransportTeaser?: boolean;
-  onMobileTabChange?: (tab: ActivityDetailTabId) => void;
   /** Guest sign-in gate — facts live on hero; omit description and desktop fact grid. */
   hideAboutBody?: boolean;
   /** Consumer scroll with L1 peek card — omit duplicate schedule/pricing grid. */
@@ -32,30 +22,11 @@ export const ActivityDetailPlanAboutCard = ({
   panelClassName,
   activity,
   showMobileTabs,
-  showPlanTransportTeaser = false,
-  onMobileTabChange,
   hideAboutBody = false,
   hideScheduleFactsGrid = false,
 }: ActivityDetailPlanAboutCardProps) => {
   const pricingMode = inferActivityPricingMode(activity);
   const pricingBadge = activityPricingBadge(activity);
-
-  const transportTeaser =
-    showPlanTransportTeaser && onMobileTabChange ? (
-      <div className="rounded-xl border border-sky-100 bg-sky-50/80 p-4">
-        <p className="text-sm font-semibold text-gray-900">{ACTIVITY_DETAIL_PLAN_TRANSPORT_TEASER_TITLE}</p>
-        <p className="mt-1 text-sm text-gray-600 leading-relaxed">{ACTIVITY_DETAIL_PLAN_TRANSPORT_TEASER_BODY}</p>
-        <button
-          type="button"
-          onClick={() => onMobileTabChange('transport')}
-          className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-sky-700 hover:text-sky-800"
-        >
-          {ACTIVITY_DETAIL_PLAN_TRANSPORT_TEASER_CTA}
-          <ChevronRight className="h-4 w-4" aria-hidden />
-        </button>
-        <p className="mt-3 text-xs text-gray-500 leading-relaxed">{ACTIVITY_DETAIL_PLAN_SUSTAINABILITY_LINE}</p>
-      </div>
-    ) : null;
 
   const scheduleFactsGrid = hideScheduleFactsGrid ? null : (
     <div
@@ -114,7 +85,6 @@ export const ActivityDetailPlanAboutCard = ({
         {pricingMode !== 'free' ? (
           <p className="mt-4 text-xs text-gray-500 leading-relaxed">{ACTIVITY_PRICING_INDICATION_NOTE}</p>
         ) : null}
-        {transportTeaser ? <div className="mt-6">{transportTeaser}</div> : null}
       </div>
     );
   }
@@ -134,7 +104,6 @@ export const ActivityDetailPlanAboutCard = ({
         <p className="mt-4 text-xs text-gray-500 leading-relaxed">{ACTIVITY_PRICING_INDICATION_NOTE}</p>
       ) : null}
 
-      {transportTeaser ? <div className="mt-6">{transportTeaser}</div> : null}
     </div>
   );
 };

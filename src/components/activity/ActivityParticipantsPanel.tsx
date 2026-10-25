@@ -19,6 +19,8 @@ interface ActivityParticipantsPanelProps {
   tenantId: string;
   activityId: string;
   activityTitle: string;
+  activityType?: string;
+  rideshareHasPayment?: boolean;
   onError?: (message: string) => void;
 }
 
@@ -38,6 +40,8 @@ export const ActivityParticipantsPanel = ({
   tenantId,
   activityId,
   activityTitle,
+  activityType,
+  rideshareHasPayment = false,
   onError,
 }: ActivityParticipantsPanelProps) => {
   const navigate = useNavigate();
@@ -112,7 +116,16 @@ export const ActivityParticipantsPanel = ({
     }
   };
 
-  const handleRateConfirm = async (payload: { score: number; comment?: string }) => {
+  const handleRateConfirm = async (payload: {
+    score?: number;
+    comment?: string;
+    rideshare?: {
+      cleanliness: number;
+      punctuality: number;
+      behaviour: number;
+      payment?: number | null;
+    };
+  }) => {
     if (!tenantId || !rateTarget) return;
     setRateSubmitting(true);
     try {
@@ -203,6 +216,13 @@ export const ActivityParticipantsPanel = ({
                         {participant.hostRating ? (
                           <p className="text-xs text-amber-700">
                             Rated {participant.hostRating.score}/5
+                          </p>
+                        ) : null}
+                        {participant.medicalSafety ? (
+                          <p className="text-[11px] text-rose-800/90">
+                            {participant.medicalSafety.bloodGroup} ·{' '}
+                            {participant.medicalSafety.medicalConditions} · ICE{' '}
+                            {participant.medicalSafety.emergencyContactName}
                           </p>
                         ) : null}
                       </div>
@@ -317,6 +337,8 @@ export const ActivityParticipantsPanel = ({
         open={Boolean(rateTarget)}
         participant={rateTarget}
         submitting={rateSubmitting}
+        variant={activityType === 'rideshare' ? 'rideshare' : 'outing'}
+        showPaymentDimension={activityType === 'rideshare' && rideshareHasPayment}
         onClose={() => setRateTarget(null)}
         onConfirm={handleRateConfirm}
       />

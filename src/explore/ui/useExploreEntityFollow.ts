@@ -30,8 +30,11 @@ export const useExploreEntityFollow = (card: DiscoveryCardModel): ExploreFollowS
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
 
-  const followQueryKey =
-    user && target ? entityFollowStateQueryKey(user.id, target) : ['entity-follow-state', 'anonymous'];
+  const followQueryKey = useMemo(
+    () =>
+      user && target ? entityFollowStateQueryKey(user.id, target) : ['entity-follow-state', 'anonymous'],
+    [user, target]
+  );
 
   const { data: followState } = useQuery({
     queryKey: followQueryKey,

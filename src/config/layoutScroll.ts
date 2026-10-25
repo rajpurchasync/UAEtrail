@@ -12,16 +12,19 @@ export const APP_PAGE_CENTER_CLASS = 'app-page-center';
 
 export const PRODUCT_SHELL_HTML_CLASS = 'product-shell-active';
 
+/** All product scroll panes under `#app-scroll-root` (some routes nest more than one). */
+export const getAppScrollContainers = (): HTMLElement[] => {
+  const root = document.getElementById(APP_SCROLL_ROOT_ID);
+  if (!root) return [];
+  const bodies = Array.from(root.querySelectorAll<HTMLElement>(`.${APP_SCROLL_BODY_CLASS}`));
+  if (bodies.length > 0) return bodies;
+  return [root];
+};
+
 /** Primary vertical scroll container for the current product route. */
 export const getAppScrollContainer = (): HTMLElement | null => {
-  const root = document.getElementById(APP_SCROLL_ROOT_ID);
-  if (!root) return null;
-  const bodies = root.querySelectorAll<HTMLElement>(`.${APP_SCROLL_BODY_CLASS}`);
-  if (bodies.length === 1) return bodies[0]!;
-  if (bodies.length > 1) {
-    return bodies[0]!;
-  }
-  return root;
+  const containers = getAppScrollContainers();
+  return containers[0] ?? null;
 };
 
 /**

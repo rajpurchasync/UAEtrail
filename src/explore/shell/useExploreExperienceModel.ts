@@ -29,13 +29,9 @@ import { useHostActivitySheetBundle } from '../../hooks/useHostActivitySheetBund
 import { useExplorePublishedAreas } from '../useExplorePublishedAreas';
 import { useExplorePeopleBrowseBundle } from './useExplorePeopleBrowseBundle';
 import { useExplorePinDeepLink } from './useExplorePinDeepLink';
-import type { ComponentProps } from 'react';
-import { PeopleBrowsePanel } from '@/people-discovery/panel/PeopleBrowsePanel';
 import { useExploreMapCatalog } from './useExploreMapCatalog';
 import { resolveExploreItemIdFromMapPin } from '../ui/exploreMapPinModel';
 import { useExploreBrowsePanelShared } from './useExploreBrowsePanelShared';
-
-type PeopleProps = ComponentProps<typeof PeopleBrowsePanel>;
 
 /** Explore map + browse + compose + selection orchestration (R2). */
 export const useExploreExperienceModel = () => {
@@ -74,7 +70,7 @@ export const useExploreExperienceModel = () => {
   const { pathname, search, state: locationState } = useLocation();
   const isDesktop = useMinWidthLg();
 
-  const { myPlanMapMode, areaSlug, mapItems, mapLoading, loadError, mapFetch, mapQueryLoading } =
+  const { myPlanMapMode, areaSlug, mapItems, mapLoading, loadError, mapFetch } =
     useExploreMapCatalog({ userId: user?.id, searchParams });
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -370,7 +366,7 @@ export const useExploreExperienceModel = () => {
     listItems,
     browse,
     browsePanelShared,
-    peopleBrowsePanelProps: peopleBrowsePanelProps as PeopleProps,
+    peopleBrowsePanelProps,
     listFeedHostActions,
     compose,
     selection,

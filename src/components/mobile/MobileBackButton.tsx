@@ -1,5 +1,6 @@
 import { ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { armViewReturn } from '../../utils/viewReturnMemory';
 
 interface MobileBackButtonProps {
   fallbackTo?: string;
@@ -25,6 +26,7 @@ export const MobileBackButton = ({
 
   const handleBack = () => {
     if (backBehavior === 'fallback') {
+      armViewReturn(fallbackTo);
       navigate(fallbackTo);
       return;
     }
@@ -32,6 +34,7 @@ export const MobileBackButton = ({
       navigate(-1);
       return;
     }
+    armViewReturn(fallbackTo);
     navigate(fallbackTo);
   };
 

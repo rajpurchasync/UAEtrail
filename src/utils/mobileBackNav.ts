@@ -1,6 +1,16 @@
 import { EXPLORE_MAP_PATH, MESSAGES_PATH, PLAN_PATH, PROFILE_PATH } from '../config/routingCatalog';
 import { exploreMapPathAfterPeopleFullScreen } from '../explore/exploreBrowseReturnPath';
-import { isJourneyMapPath, isProfileHistoryListPath } from '../config/surfacePaths';
+import {
+  isJourneyMapPath,
+  isProfileHistoryListPath,
+  NOTIFICATIONS_PATH,
+  PROFILE_SETTINGS_PATH,
+  PROFILE_SETTINGS_ACCOUNT_PATH,
+  PROFILE_SETTINGS_PRIVACY_PATH,
+  PROFILE_SETTINGS_NOTIFICATIONS_PATH,
+  PROFILE_SETTINGS_SAFETY_PATH,
+  PROFILE_VEHICLES_PATH,
+} from '../config/surfacePaths';
 
 /** Router location state for contextual mobile back chrome. */
 export type MobileBackNavState = {
@@ -69,6 +79,51 @@ export const resolveMobileTabHeaderLeadingBack = (
   pathname: string,
   locationState: unknown
 ): MobileBackChrome | null => {
+  if (pathname === PROFILE_PATH || pathname === '/explore') return null;
+
+  if (pathname === PROFILE_SETTINGS_ACCOUNT_PATH) {
+    return resolveMobileBackChrome(locationState, {
+      fallbackTo: PROFILE_SETTINGS_PATH,
+      label: 'Settings',
+    });
+  }
+  if (
+    pathname === PROFILE_SETTINGS_PRIVACY_PATH ||
+    pathname === PROFILE_SETTINGS_NOTIFICATIONS_PATH ||
+    pathname === PROFILE_SETTINGS_SAFETY_PATH ||
+    pathname === PROFILE_VEHICLES_PATH ||
+    pathname.startsWith(`${PROFILE_VEHICLES_PATH}/`)
+  ) {
+    return resolveMobileBackChrome(locationState, {
+      fallbackTo: PROFILE_SETTINGS_PATH,
+      label: 'Settings',
+    });
+  }
+  if (pathname.startsWith('/profile/')) {
+    return resolveMobileBackChrome(locationState, {
+      fallbackTo: PROFILE_PATH,
+      label: 'Profile',
+    });
+  }
+  if (pathname === NOTIFICATIONS_PATH) {
+    return resolveMobileBackChrome(locationState, {
+      fallbackTo: PROFILE_PATH,
+      label: 'Profile',
+    });
+  }
+  if (pathname === '/faq' || pathname === '/terms' || pathname === '/privacy' || pathname === '/security-privacy') {
+    return resolveMobileBackChrome(locationState, {
+      fallbackTo: EXPLORE_MAP_PATH,
+      label: 'Back',
+    });
+  }
+  if (pathname.startsWith('/member/')) {
+    return resolveMobileBackChrome(locationState, {
+      fallbackTo: PROFILE_PATH,
+      label: 'Profile',
+    });
+  }
+
   if (!usesUnifiedTabHeaderBack(pathname)) return null;
   return resolveMobileBackChrome(locationState, {
     fallbackTo: EXPLORE_MAP_PATH,

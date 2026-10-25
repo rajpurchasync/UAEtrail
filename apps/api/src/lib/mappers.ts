@@ -15,6 +15,8 @@ import {
   resolveHostPersonDisplayName,
   HOST_FALLBACK_DISPLAY_NAME,
   type PublishingProfileKind,
+  type MemberVehicleColor,
+  type RideshareVehiclePublicDTO,
   TenantBusinessMode,
   TenantType,
   UserRole as SharedUserRole
@@ -191,6 +193,19 @@ export const toLocationDto = (location: Location, opts?: { admin?: boolean }): L
     : {})
 });
 
+const mapRideshareVehiclePublic = (
+  vehicle: Activity['rideshareVehicle']
+): RideshareVehiclePublicDTO | null => {
+  if (!vehicle) return null;
+  return {
+    id: vehicle.id,
+    make: vehicle.make,
+    model: vehicle.model,
+    color: vehicle.color as MemberVehicleColor,
+    year: vehicle.year,
+  };
+};
+
 const toEventDto = ({
   event,
   locationName,
@@ -212,9 +227,9 @@ const toEventDto = ({
   countryCode = 'AE',
   locationLatitude,
   locationLongitude,
-  locationAreaId
+  locationAreaId,
 }: {
-  event : Activity;
+  event: Activity;
   locationName: string;
   activityType: ActivityType | string;
   region?: string;
@@ -287,6 +302,8 @@ const toEventDto = ({
   ridesharePriceAed: event.ridesharePriceAed,
   rideshareSeats: event.rideshareSeats ?? null,
   rideshareDetails: event.rideshareDetails,
+  rideshareVehicleId: event.rideshareVehicleId ?? null,
+  rideshareVehicle: mapRideshareVehiclePublic(event.rideshareVehicle),
   linkedActivityId: event.linkedActivityId ?? null,
   linkedRideshareActivityId: event.linkedRideshareActivityId ?? null,
   paymentTerms: event.paymentTerms,

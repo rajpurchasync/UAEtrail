@@ -52,6 +52,7 @@ export const useMemberStatus = ({ enabled = true }: UseMemberStatusOptions = {})
           ? 'Could not load member status'
           : null,
     profileComplete: status?.profileComplete ?? false,
+    medicalSafetyProfileComplete: status?.medicalSafetyProfileComplete ?? false,
     profileRoleLabel: status?.profileRoleLabel ?? 'community_member',
     isCommunityHost: publish?.isCommunityHost ?? false,
     hostTiers: publish?.hostTiers ?? emptyHostTiers,

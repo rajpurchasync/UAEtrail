@@ -1,6 +1,8 @@
 import { UserRole } from '../domain/enums.js';
 import { resolveProfilePersonNames } from '../domain/person-name.js';
 import { isSignupProfileComplete } from '../domain/user-profile.js';
+import { isMedicalSafetyProfileComplete } from '@uaetrail/shared-types';
+import { medicalSafetyFieldsFromAuthProfile } from '../lib/member-medical-safety-profile.js';
 import { ApiError } from '../lib/api-error.js';
 import { isPlatformMasterAdmin } from '../lib/platform-master-admin.js';
 import { findAuthUserById } from './member-identity-read.js';
@@ -29,6 +31,13 @@ export const getAuthenticatedMemberProfile = async (userId: string) => {
     countryCode: user.profile?.countryCode ?? null,
     languages: user.profile?.languages ?? null,
     signupProfileComplete: isSignupProfileComplete(user.profile),
+    bloodGroup: user.profile?.bloodGroup ?? null,
+    medicalConditions: user.profile?.medicalConditions ?? null,
+    emergencyContactName: user.profile?.emergencyContactName ?? null,
+    emergencyContactPhone: user.profile?.emergencyContactPhone ?? null,
+    medicalSafetyProfileComplete: isMedicalSafetyProfileComplete(
+      medicalSafetyFieldsFromAuthProfile(user.profile)
+    ),
     memberSince: user.createdAt.toISOString(),
     platformMasterAdmin:
       user.role === UserRole.PLATFORM_ADMIN ? isPlatformMasterAdmin(user) : false,

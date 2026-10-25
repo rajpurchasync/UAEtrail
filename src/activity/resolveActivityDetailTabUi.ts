@@ -3,7 +3,6 @@ import type { ActivityDetailTabId } from './activityDetailTab';
 
 export type ActivityDetailTabUi = {
   showMobileTabs: boolean;
-  showPlanTransportTeaser: boolean;
   showPlaceCrewBody: boolean;
   showPlaceLockedOnMobile: boolean;
   showCrewLockedHint: boolean;
@@ -35,7 +34,6 @@ export const resolveActivityDetailTabUi = (
     const showPlaceCrewBody = input.canAccessCrewSurfaces;
     return {
       showMobileTabs,
-      showPlanTransportTeaser: showMobileTabs,
       showPlaceCrewBody,
       showPlaceLockedOnMobile: showMobileTabs && !showPlaceCrewBody,
       showCrewLockedHint: input.showCrewLockedHint,
@@ -54,7 +52,6 @@ export const resolveActivityDetailTabUi = (
 
   return {
     showMobileTabs,
-    showPlanTransportTeaser: input.wireTabs.plan.showTransportTeaser && showMobileTabs,
     showPlaceCrewBody: input.wireTabs.place.showCrewMapAndMeeting,
     showPlaceLockedOnMobile: input.wireTabs.place.showLockedPlaceholder && showMobileTabs,
     showCrewLockedHint: input.wireTabs.buddies.showCrewLockedHint,

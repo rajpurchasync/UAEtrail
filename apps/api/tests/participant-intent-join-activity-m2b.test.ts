@@ -39,7 +39,16 @@ describe('seeking join M2b/M2c (activity canonical)', () => {
       status: UserStatus.ACTIVE,
       emailVerifiedAt: new Date(),
       referralCode: generateReferralCode(),
-      profile: { displayName: 'Joiner', phone: null, bio: null, avatarUrl: null },
+      profile: {
+        displayName: 'Joiner',
+        phone: null,
+        bio: null,
+        avatarUrl: null,
+        bloodGroup: 'O+',
+        medicalConditions: 'N/A',
+        emergencyContactName: 'Test emergency',
+        emergencyContactPhone: '+971501112233',
+      },
     });
 
     const intent = await createParticipantIntent(host._id, {

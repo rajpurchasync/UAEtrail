@@ -15,7 +15,7 @@ interface ReviewSectionProps {
   targetId: string;
   reviews: ReviewDTO[];
   onReviewSubmitted: (review: ReviewDTO) => void;
-  accent?: 'emerald' | 'amber' | 'violet';
+  accent?: 'emerald' | 'amber' | 'violet' | 'sky';
   /** Activity reviews — host must check the member in first. Defaults to true for places/hosts. */
   canWriteReview?: boolean;
   /** Tap header to expand/collapse (e.g. activity detail). */
@@ -74,7 +74,9 @@ export const ReviewSection = ({
       ? 'bg-amber-600 hover:bg-amber-700'
       : accent === 'violet'
         ? 'bg-violet-600 hover:bg-violet-700'
-        : 'bg-emerald-600 hover:bg-emerald-700';
+        : accent === 'sky'
+          ? 'bg-sky-600 hover:bg-sky-700'
+          : 'bg-emerald-600 hover:bg-emerald-700';
   const signInRedirect = buildSignInRedirect(location, {
     focusSelector: '#reviews',
     hash: '#reviews'
@@ -136,7 +138,11 @@ export const ReviewSection = ({
   );
 
   return (
-    <section id="reviews" className="scroll-mt-24" tabIndex={-1}>
+    <section
+      id="reviews"
+      className="scroll-mt-24 scroll-mb-28 pb-2 md:scroll-mb-0"
+      tabIndex={-1}
+    >
       {header}
 
       {collapsible && !expanded ? null : (

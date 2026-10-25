@@ -424,6 +424,7 @@ describe('resolveExplorePrice', () => {
       resolveExplorePrice({ isRideshare: true, rideshareFree: false, ridesharePriceAed: 35 }).badge
     ).toBe('Shared · AED 35/seat');
   });
+
 });
 
 describe('buildDiscoveryCardViewModelCard (explore list copy)', () => {

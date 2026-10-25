@@ -36,9 +36,22 @@ describe('resolveAreaIdForActivityPublish', () => {
     await expect(resolveAreaIdForActivityPublish(activity, location)).resolves.toBe('place-area');
   });
 
-  it('does not infer from coordinates', async () => {
+  it('uses persisted activity.areaId when the place has none', async () => {
+    const activity = { ...baseActivity(), areaId: 'area-persisted-hatta' };
+    const location = { id: 'hatta-dam-loop', areaId: null } as Location;
+    await expect(resolveAreaIdForActivityPublish(activity, location)).resolves.toBe(
+      'area-persisted-hatta'
+    );
+  });
+
+  it('does not invent an area when neither row has areaId', async () => {
     const activity = baseActivity();
-    const location = { areaId: null, latitude: 24.83, longitude: 56.09 } as Location;
+    const location = {
+      id: 'hatta-dam-loop',
+      areaId: null,
+      latitude: 24.78,
+      longitude: 56.12,
+    } as Location;
     await expect(resolveAreaIdForActivityPublish(activity, location)).resolves.toBeNull();
   });
 });

@@ -8,10 +8,12 @@ import {
   completeAuthenticatedSignupProfile,
   confirmAuthenticatedEmailChange,
   patchAuthenticatedMemberProfile,
+  patchAuthenticatedMedicalSafetyProfile,
   requestAuthenticatedEmailChange,
   switchAuthenticatedMemberRole,
 } from '../../services/me-profile-commands.js';
 import { completeSignupProfileSchema } from '../../domain/user-profile.js';
+import { updateMedicalSafetyProfileSchema } from '../../domain/member-medical-safety.js';
 import {
   confirmEmailChangeSchema,
   requestEmailChangeSchema,
@@ -44,6 +46,22 @@ export const registerProfileRoutes = (router: Router): void => {
       next(error);
     }
   });
+
+  router.patch(
+    '/me/profile/medical-safety',
+    validate({ body: updateMedicalSafetyProfileSchema }),
+    async (req, res, next) => {
+      try {
+        const data = await patchAuthenticatedMedicalSafetyProfile(
+          req.auth!.userId,
+          req.body as z.infer<typeof updateMedicalSafetyProfileSchema>
+        );
+        res.json({ data });
+      } catch (error) {
+        next(error);
+      }
+    }
+  );
 
   router.patch('/me/profile', validate({ body: updateProfileSchema }), async (req, res, next) => {
     try {

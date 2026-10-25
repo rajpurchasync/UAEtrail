@@ -48,8 +48,14 @@ export const rateActivityParticipantAsHost = async (input: {
   activityId: string;
   participantId: string;
   hostUserId: string;
-  score: number;
+  score?: number;
   comment?: string | null;
+  rideshare?: {
+    cleanliness: number;
+    punctuality: number;
+    behaviour: number;
+    payment?: number | null;
+  } | null;
 }) => {
   await requireTenantActivity(input.activityId, input.tenantId);
 
@@ -63,8 +69,9 @@ export const rateActivityParticipantAsHost = async (input: {
   return setHostParticipantRating({
     activityId: input.activityId,
     participantId: input.participantId,
-    score: input.score,
+    score: input.score ?? 5,
     comment: input.comment,
+    rideshare: input.rideshare,
     activityEnded
   });
 };

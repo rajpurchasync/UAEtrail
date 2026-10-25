@@ -60,6 +60,27 @@ export const accountApi = {
       body: JSON.stringify(payload)
     }),
 
+    updateMeMedicalSafetyProfile: (payload: {
+      bloodGroup: NonNullable<UserProfile['bloodGroup']>;
+      medicalConditions: string;
+      emergencyContactName: string;
+      emergencyContactPhone: string;
+    }) =>
+      apiRequest<{
+        data: Pick<
+          UserProfile,
+          | 'bloodGroup'
+          | 'medicalConditions'
+          | 'emergencyContactName'
+          | 'emergencyContactPhone'
+          | 'medicalSafetyProfileComplete'
+        >;
+      }>('/me/profile/medical-safety', {
+        method: 'PATCH',
+        auth: true,
+        body: JSON.stringify(payload),
+      }),
+
     completeSignupProfile: (payload: {
     dateOfBirth: string;
     gender: NonNullable<UserProfile['gender']>;

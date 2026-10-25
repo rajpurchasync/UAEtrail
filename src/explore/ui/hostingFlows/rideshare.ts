@@ -44,6 +44,9 @@ const validateStep = (step: CreateFlowStepId, draft: CreateActivityDraft): strin
     if (draft.capacity > 10) return 'Maximum 10 seats.';
     return null;
   }
+  if (step === 'transportation' && !draft.memberVehicleId) {
+    return 'Select which car you are driving.';
+  }
   if (step === 'transportation') return null;
   if (step === 'instructions') {
     if (parseRideshareRiderRules(draft.description).length < 1) {

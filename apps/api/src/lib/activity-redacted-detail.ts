@@ -23,6 +23,7 @@ export const buildActivityRedactedDetail = (event: ActivityDetailSource): Activi
     participationMode: dto.participationMode,
     requirements: extractActivityTransportRequirementLines(dto.requirements),
     rideshareEnabled: dto.rideshareEnabled,
+    linkedActivityId: dto.linkedActivityId ?? null,
     linkedRideshareActivityId: dto.linkedRideshareActivityId ?? null,
     slotsTotal: dto.slotsTotal,
     slotsAvailable: dto.slotsAvailable,

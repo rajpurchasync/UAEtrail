@@ -12,6 +12,7 @@ import type {
   OutingTopic,
 } from './explore-plan-projection.js';
 import type { HostParticipantRosterStatus, ParticipantHostRatingDTO } from './participant-roster.js';
+import type { MemberMedicalSafetyDTO } from './member-medical-safety.js';
 import type { ExploreActivityMode } from './explore-activity-mode.js';
 import type { ActivityGroupChatPostPolicy } from './activity-group-chat-post-policy.js';
 import type { PlaceNearbyFacilityDTO } from './place-kind.js';
@@ -192,10 +193,20 @@ export interface ActivityDTO {
   ridesharePriceAed?: number | null;
   rideshareSeats?: number | null;
   rideshareDetails?: string | null;
+  /** Linked member car for rideshare listings (plate not exposed on public reads). */
+  rideshareVehicleId?: string | null;
+  rideshareVehicle?: import('./member-vehicle.js').RideshareVehiclePublicDTO | null;
   linkedActivityId?: string | null;
   linkedRideshareActivityId?: string | null;
   linkedRideshare?: ActivityDTO | null;
-  linkedParentActivity?: Pick<ActivityDTO, 'id' | 'title' | 'activityType'> | null;
+  linkedParentActivity?: {
+    id: string;
+    title: string;
+    activityType?: string | null;
+    description?: string | null;
+    date?: string;
+    time?: string | null;
+  } | null;
   paymentTerms?: string | null;
   pricingMode?: 'free' | 'shared' | 'paid' | null;
   itinerary?: string[] | null;
@@ -381,6 +392,7 @@ export interface OwnedHostProfileDTO {
 export interface HostStatusDTO {
   /** Member profile completion (DOB, gender, based-in) — required to **host/publish**. */
   profileComplete: boolean;
+  medicalSafetyProfileComplete: boolean;
   /** First map publish (activity or seeking post) — earns Host badge. */
   isCommunityHost: boolean;
   /** Active tiers for this account (see `docs/MEMBER_MODEL.md`). */
@@ -434,6 +446,8 @@ export interface MemberPublishCapabilitiesDTO {
  */
 export type MemberStatusDTO = {
   profileComplete: boolean;
+  /** Blood group, medical conditions, emergency contact — required to join outings. */
+  medicalSafetyProfileComplete: boolean;
   profileRoleLabel: MemberProfileRoleLabel;
   publish: MemberPublishCapabilitiesDTO;
 };
@@ -459,6 +473,7 @@ export const buildMemberPublishCapabilities = (
 
 export const buildMemberStatusDto = (status: HostStatusDTO): MemberStatusDTO => ({
   profileComplete: status.profileComplete,
+  medicalSafetyProfileComplete: status.medicalSafetyProfileComplete,
   profileRoleLabel: status.profileRoleLabel,
   publish: buildMemberPublishCapabilities(status),
 });
@@ -938,9 +953,38 @@ export interface TenantPublicDTO {
   merchantId?: string | null;
 }
 
+// ─── Member medical safety (join / host roster) ─────────────────────────────
+
+export {
+  BLOOD_GROUP_VALUES,
+  MEDICAL_CONDITIONS_NA,
+  formatBloodGroupLabel,
+  isMedicalSafetyProfileComplete,
+  toMemberMedicalSafetyDto,
+} from './member-medical-safety.js';
+export type {
+  BloodGroup,
+  MemberMedicalSafetyDTO,
+  MemberMedicalSafetyFields,
+} from './member-medical-safety.js';
+
 // ─── Participant DTO ────────────────────────────────────────────────────────
 
 export type { HostParticipantRosterStatus, ParticipantHostRatingDTO } from './participant-roster.js';
+export type {
+  RideshareRiderRatingDimensionsDTO,
+  RideshareRiderReputationDTO,
+} from './rideshare-rider-reputation.js';
+export {
+  MEMBER_VEHICLE_COLORS,
+  formatRideshareVehicleLabel,
+} from './member-vehicle.js';
+export type {
+  MemberVehicleColor,
+  MemberVehicleDTO,
+  RideshareVehiclePublicDTO,
+  UpsertMemberVehicleInput,
+} from './member-vehicle.js';
 
 export interface ParticipantDTO {
   id: string;
@@ -954,6 +998,8 @@ export interface ParticipantDTO {
   /** `going` until check-in; `attended` after host confirms attendance. */
   status: HostParticipantRosterStatus;
   hostRating?: ParticipantHostRatingDTO | null;
+  /** Host-only — member safety profile when join/roster is visible. */
+  medicalSafety?: MemberMedicalSafetyDTO | null;
   canConfirmAttendance: boolean;
   canRevoke: boolean;
   canRate: boolean;

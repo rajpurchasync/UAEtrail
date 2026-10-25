@@ -1,6 +1,8 @@
 import {
   Bell,
+  CalendarDays,
   Compass,
+  History,
   LogIn,
   Map,
   MessageCircle,
@@ -30,6 +32,9 @@ export const MOBILE_NAV_ICON_MAP: Record<
   | 'My Profile'
   | 'My activities'
   | 'History'
+  | 'Outing history'
+  | 'My Plans'
+  | 'Chat'
   | 'Notifications'
   | 'Join'
   | 'Join free'
@@ -51,7 +56,10 @@ export const MOBILE_NAV_ICON_MAP: Record<
   Notifications: Bell,
   'Trail catalog': Map,
   'My activities': NAV_ICONS.activities,
-  History: NAV_ICONS.activities,
+  History: History,
+  'Outing history': History,
+  'My Plans': CalendarDays,
+  Chat: MessageCircle,
   'Upcoming Activities': NAV_ICONS.activities,
   'Gears Shop': NAV_ICONS.shop,
 };

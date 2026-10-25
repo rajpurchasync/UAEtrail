@@ -10,8 +10,8 @@ import {
   toggleAdminActivityFeatured,
 } from '../../hooks/adminConsoleApi';
 import {
-  cancelActivity,
-  duplicateActivity,
+  cancelActivity as apiCancelActivity,
+  duplicateActivity as apiDuplicateActivity,
   publishActivity,
 } from '../../hooks/tenantActivityClientApi';
 import { ActivityActionsMenu, ActivityListPreview, buildAdminActivityMenuItems, openPublishedActivityPreview } from '../../components/activities';
@@ -192,7 +192,7 @@ export const Activities = () => {
   const duplicateActivity = async (event: ActivityDTO) => {
     if (!event.tenantId) return;
     try {
-      const duplicate = await duplicateActivity(event.tenantId, event.id);
+      const duplicate = await apiDuplicateActivity(event.tenantId, event.id);
       await loadEvents();
       navigateToHostFromExistingActivity(navigate, duplicate);
     } catch (err) {
@@ -207,7 +207,7 @@ export const Activities = () => {
   const deleteDraft = async () => {
     if (!confirmDelete?.tenantId) return;
     try {
-      await cancelActivity(confirmDelete.tenantId, confirmDelete.id);
+      await apiCancelActivity(confirmDelete.tenantId, confirmDelete.id);
       setConfirmDelete(null);
       await loadEvents();
     } catch (err) {
@@ -219,7 +219,7 @@ export const Activities = () => {
   const cancelActivity = async () => {
     if (!confirmCancel?.tenantId) return;
     try {
-      await cancelActivity(confirmCancel.tenantId, confirmCancel.id);
+      await apiCancelActivity(confirmCancel.tenantId, confirmCancel.id);
       setConfirmCancel(null);
       await loadEvents();
     } catch (err) {

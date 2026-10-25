@@ -3,6 +3,8 @@ import { FacilityConsumerDetailPage } from '../facility/detail/templates/Facilit
 import { PageMeta } from '../components/seo/PageMeta';
 import { facilityDetailPath, detailBackPath } from '../config/routingCatalog';
 import { usePublicFacilityDetail } from '../hooks/usePublicFacilityDetail';
+import { DetailPageLoadingState } from '../components/ui/DetailPageLoadingState';
+import { DETAIL_LOADING_FACILITY } from '../content/detailLoadingCopy';
 
 export const FacilityDetailPage = () => {
   const { id } = useParams();
@@ -14,9 +16,7 @@ export const FacilityDetailPage = () => {
     return (
       <>
         <PageMeta title="Loading facility" path={detailPath} />
-        <div className="app-page-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-violet-600" />
-        </div>
+        <DetailPageLoadingState label={DETAIL_LOADING_FACILITY} accent="violet" variant="page" />
       </>
     );
   }

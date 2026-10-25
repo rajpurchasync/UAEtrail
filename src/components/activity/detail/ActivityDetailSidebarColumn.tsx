@@ -18,6 +18,11 @@ export const ActivityDetailSidebarColumn = ({ model }: ActivityDetailSidebarColu
       showCrewLockedHint={model.buddiesCrewLockedHint}
       activityId={model.activity.id}
       activityTitle={model.activity.title || model.activity.locationName}
+      activityType={model.activity.activityType}
+      rideshareHasPayment={Boolean(
+        !model.activity.rideshareFree &&
+          (model.activity.ridesharePriceAed != null && model.activity.ridesharePriceAed > 0)
+      )}
       hostBuddiesHub={model.requiresSignIn ? undefined : model.showHostManageHub ? model.hostBuddiesHub : undefined}
       hostCrewChatPolicy={model.requiresSignIn ? undefined : model.hostCrewChatPolicy}
     />

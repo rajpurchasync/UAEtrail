@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { APP_PAGE_MIN_H_CLASS, APP_SCROLL_BODY_CLASS } from '../../config/layoutScroll';
 import { createPortal } from 'react-dom';
-import { MobileMenuButton } from '../layout/MobileMenu';
+import { ConsumerHeaderActions } from '../layout/ConsumerHeaderActions';
 import { ConsumerHeroBanner } from './ConsumerHeroBanner';
 import { MobileBackButton } from './MobileBackButton';
 import { EnvironmentImage } from '../ui/EnvironmentImage';
@@ -102,7 +102,7 @@ export const MobileDetailShell = ({
       )}
       <div className="flex items-center gap-2 shrink-0">
         {headerAction}
-        {showMenu && <MobileMenuButton />}
+        {showMenu ? <ConsumerHeaderActions showOnDesktop={false} /> : null}
       </div>
     </div>
   );

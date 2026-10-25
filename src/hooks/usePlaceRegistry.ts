@@ -18,10 +18,7 @@ export const usePlaceRegistry = ({
   const [places, setPlaces] = useState<PlaceDTO[]>([]);
 
   useEffect(() => {
-    if (!enabled) {
-      setPlaces([]);
-      return;
-    }
+    if (!enabled) return;
 
     let disposed = false;
 
@@ -30,7 +27,7 @@ export const usePlaceRegistry = ({
         if (!disposed) setPlaces(data);
       })
       .catch(() => {
-        if (!disposed) setPlaces([]);
+        /* keep last good list so publish validation still resolves the picked venue */
       });
 
     return () => {

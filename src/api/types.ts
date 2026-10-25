@@ -2,6 +2,7 @@ import {
   ActivityDetailDTO,
   GroupWallPostPolicy,
   OrganisationHostDetailsDTO,
+  RideshareRiderReputationDTO,
   SocialGroupChatPreviewDTO,
   TenantListDTO,
   TenantPublicDTO,
@@ -90,11 +91,13 @@ export interface ActivityRequestView {
     id: string;
     email: string;
     displayName: string;
+    medicalSafety?: import('@uaetrail/shared-types').MemberMedicalSafetyDTO | null;
   };
   activity: {
     id: string;
     title: string;
     locationName: string;
+    activityType?: string;
     date?: string;
     time?: string;
     startAt?: string;
@@ -103,6 +106,7 @@ export interface ActivityRequestView {
     tenantName?: string;
     tenantSlug?: string;
   };
+  rideshareRiderReputation?: RideshareRiderReputationDTO | null;
 }
 
 export interface UserProfile {
@@ -132,6 +136,11 @@ export interface UserProfile {
   languages?: string | null;
   countryCode?: 'AE' | 'SA' | 'OM' | 'QA' | 'BH' | 'KW' | null;
   signupProfileComplete?: boolean;
+  bloodGroup?: import('@uaetrail/shared-types').BloodGroup | null;
+  medicalConditions?: string | null;
+  emergencyContactName?: string | null;
+  emergencyContactPhone?: string | null;
+  medicalSafetyProfileComplete?: boolean;
   memberSince?: string;
 }
 

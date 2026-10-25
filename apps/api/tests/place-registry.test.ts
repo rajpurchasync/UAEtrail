@@ -38,7 +38,7 @@ describe('buildPlaceRegistry', () => {
           childFriendly: false,
           maxGroupSize: null,
           accessibility: null,
-          images: [],
+          images: ['https://images.example/wadi-cover.jpg'],
           featured: false,
           status: 'ACTIVE',
           distance: null,

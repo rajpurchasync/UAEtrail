@@ -30,10 +30,13 @@ export const useExploreWishlistSave = (card: DiscoveryCardModel): ExploreWishlis
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
 
-  const wishlistQueryKey =
-    user && target
-      ? wishlistTargetStateQueryKey(user.id, target)
-      : ['wishlist-target-state', 'anonymous'];
+  const wishlistQueryKey = useMemo(
+    () =>
+      user && target
+        ? wishlistTargetStateQueryKey(user.id, target)
+        : ['wishlist-target-state', 'anonymous'],
+    [user, target]
+  );
 
   const { data: wishlistState } = useQuery({
     queryKey: wishlistQueryKey,

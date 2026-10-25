@@ -135,12 +135,6 @@ export const CreateAddFacilityFlow = ({
     setDraft((prev) => ({ ...prev, ...patch }));
   }, []);
 
-  const goToStep = (target: FacilityAddStepId) => {
-    setLocationMapOpen(false);
-    setStep(target);
-    setError(null);
-  };
-
   const goBack = () => {
     if (locationMapOpen) {
       setLocationMapOpen(false);
@@ -364,7 +358,7 @@ export const CreateAddFacilityFlow = ({
           <ImageUpload
             images={draft.images}
             onChange={(images) => patchDraft({ images })}
-            maxImages={5}
+            max={5}
           />
           {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
           <div className="mt-5 pb-2">

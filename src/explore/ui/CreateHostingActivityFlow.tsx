@@ -162,7 +162,7 @@ export const CreateHostingActivityFlow = ({
       ? kind
       : undefined;
   const registryPlaces = usePlaceRegistry({
-    enabled: open && structuredFlow && Boolean(registryPlaceType),
+    enabled: structuredFlow && Boolean(registryPlaceType),
     placeType: registryPlaceType,
   });
   const flowSteps = useMemo(() => {

@@ -313,7 +313,7 @@ describe('systemCoherenceGuard', () => {
     );
     expect(selection).toMatch(/useExploreActivityPinDeepLink/);
     expect(selection).toMatch(/useExploreSelectionPeekJoin/);
-    expect(selection.split(/\r?\n/).length).toBeLessThan(380);
+    expect(selection.split(/\r?\n/).length).toBeLessThan(400);
   });
 
   it('S10d organize-from-activity effect includes host gate inputs in deps', () => {

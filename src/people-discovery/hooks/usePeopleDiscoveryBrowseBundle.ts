@@ -7,7 +7,7 @@ import { useMemberDiscoveryRoster } from './useMemberDiscoveryRoster';
 import { useExplorePeopleAvailability } from './usePeopleAvailability';
 import { buildExploreMemberPeopleMapChip } from '../lib/exploreMemberPeopleMapChip';
 import type { useExploreBrowseUrlState } from '@/explore/ui/useExploreBrowseUrlState';
-import type { MemberStatusDTO } from '@uaetrail/shared-types';
+import type { MemberStatusDTO, UserRole } from '@uaetrail/shared-types';
 
 type BrowseState = ReturnType<typeof useExploreBrowseUrlState>;
 
@@ -123,6 +123,7 @@ export const useExplorePeopleBrowseBundle = ({
     query: browse.query,
     onQueryChange: browse.setQuery,
     onQuerySync: () => browse.syncExploreUrl({ q: browse.query }),
+    onClose: browse.closePeopleBrowsePanel,
     searchFocusNonce,
     peopleBrowseTab: browse.peopleBrowseTab,
     onPeopleBrowseTabChange: browse.applyPeopleBrowseTab,
@@ -149,7 +150,7 @@ export const useExplorePeopleBrowseBundle = ({
     availabilityRange: peopleAvailability.range,
     onRefreshAvailability: () => void peopleAvailability.refresh(),
     isSignedIn: Boolean(user),
-    userRole: user?.role,
+    userRole: user?.role as UserRole | undefined,
     canBrowseAllMembers,
     seekingActivities,
     exploreCatalogItems,

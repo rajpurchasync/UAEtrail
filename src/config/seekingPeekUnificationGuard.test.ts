@@ -4,7 +4,7 @@ import { join, relative } from 'node:path';
 
 const read = (rel: string) => readFileSync(join(process.cwd(), rel), 'utf8');
 
-const collectTsxUnder = (dir: string): string[] => {
+const _collectTsxUnder = (dir: string): string[] => {
   const root = join(process.cwd(), dir);
   const files: string[] = [];
   const walk = (current: string) => {
@@ -30,7 +30,7 @@ describe('seekingPeekUnificationGuard (S12 — one activity peek stack)', () => 
   it('SEEK-PEEK-02: activity peek actions use resolveActivityPeekEngagement only', () => {
     const actions = read('src/explore/ui/peek/activity/ActivityPeekActions.tsx');
     expect(actions).toMatch(/resolveActivityPeekEngagement/);
-    expect(actions).toMatch(/ActivityPeekEngagementActions/);
+    expect(actions).toMatch(/ActivityPeekStandardFooter/);
     expect(actions).not.toMatch(/LegacyIntent|HostManageActions|discoveryCardIsSeeking/);
   });
 

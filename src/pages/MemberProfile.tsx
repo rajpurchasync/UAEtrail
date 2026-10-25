@@ -9,7 +9,7 @@ import {
   declineMemberBuddyRequest,
   sendMemberBuddyRequest,
 } from '../hooks/memberPeopleClientApi';
-import type { PersonPublicProfilePayload } from '../hooks/memberPublicProfileApi';
+/** Public reads: `memberPublicProfileApi` via {@link useMemberProfilePage}. */
 import { useMemberProfilePage } from '../hooks/useMemberProfilePage';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { GlassCard } from '../components/mobile/GlassCard';
@@ -231,6 +231,3 @@ export const MemberProfile = () => {
     </ConsumerShell>
   );
 };
-
-// Detail-surface lineage: public member reads via memberPublicProfileApi (see useMemberProfilePage).
-type _MemberProfileFacade = PersonPublicProfilePayload;

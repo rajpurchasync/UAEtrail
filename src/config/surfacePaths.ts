@@ -8,6 +8,9 @@
 /** Personal hub */
 export const PROFILE_PATH = '/profile' as const;
 
+/** Member garage for rideshare hosts. */
+export const PROFILE_VEHICLES_PATH = '/profile/vehicles' as const;
+
 /** Active member tab — goals, upcoming, plan attention (`docs/NAVIGATION.md`). */
 export const PLAN_PATH = '/plan' as const;
 
@@ -51,6 +54,7 @@ export const PROFILE_SETTINGS_PATH = '/profile/settings' as const;
 export const PROFILE_SETTINGS_ACCOUNT_PATH = '/profile/settings/account' as const;
 export const PROFILE_SETTINGS_PRIVACY_PATH = '/profile/settings/privacy' as const;
 export const PROFILE_SETTINGS_NOTIFICATIONS_PATH = '/profile/settings/notifications' as const;
+export const PROFILE_SETTINGS_SAFETY_PATH = '/profile/settings/safety' as const;
 
 /** Member achievement badges (no Trail Points wallet) */
 export const PROFILE_BADGES_PATH = '/profile/badges' as const;

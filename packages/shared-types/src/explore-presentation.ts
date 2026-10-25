@@ -27,7 +27,6 @@ import {
   type PlaceKind,
 } from './place-kind.js';
 import {
-  BWL_EXPLORE_MAP_SOURCE,
   FACILITY_MAP_SOURCE,
   PLACE_MAP_SOURCE,
   isFacilityMapSource,

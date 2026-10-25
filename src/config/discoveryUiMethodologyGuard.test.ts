@@ -28,7 +28,7 @@ describe('discoveryUiMethodologyGuard', () => {
 
   it('DISC-METH-02: activity peek wires entity slots — not legacy ExploreItemPeekParts', () => {
     const peek = read('src/explore/ui/peek/ActivityPeekCard.tsx');
-    expect(peek).toMatch(/from ['\"].*map-peek/);
+    expect(peek).toMatch(/from ['"].*map-peek/);
     expect(peek).toMatch(/MapPeekActionsSlot/);
     expect(peek).toMatch(/MapPeekBodySlot/);
     expect(peek).not.toMatch(/ExploreItemPeekParts/);

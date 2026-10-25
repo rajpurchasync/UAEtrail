@@ -61,6 +61,12 @@ type MongoActivityParticipant = {
   hostRatingScore?: number | null;
   hostRatingComment?: string | null;
   hostRatedAt?: Date | null;
+  hostRatingRideshare?: {
+    cleanliness: number;
+    punctuality: number;
+    behaviour: number;
+    payment?: number | null;
+  } | null;
   createdAt: Date;
 };
 
@@ -76,6 +82,7 @@ type TenantActivitySummary = {
   title: string;
   startAt: Date;
   locationId: string;
+  activityType?: string;
 };
 
 const activitiesCollection = (): Collection<TenantActivitySummary> =>
@@ -108,6 +115,7 @@ const toActivityParticipantRecord = (doc: MongoActivityParticipant): ActivityPar
   hostRatingScore: doc.hostRatingScore ?? null,
   hostRatingComment: doc.hostRatingComment ?? null,
   hostRatedAt: doc.hostRatedAt ?? null,
+  hostRatingRideshare: doc.hostRatingRideshare ?? null,
   createdAt: doc.createdAt
 });
 
@@ -184,6 +192,8 @@ export async function createJoinOrWaitlistRequest(opts: {
   }
 
   await assertParticipantMeetsWomenOnlyRequirement(opts.userId, event.requirements);
+  const { assertMemberMedicalSafetyForJoin } = await import('./member-medical-safety-profile.js');
+  await assertMemberMedicalSafetyForJoin(opts.userId);
 
   const existing = await findActivityRequestByEventAndUser(opts.activityId, opts.userId);
 
@@ -248,6 +258,8 @@ export async function createRsvpParticipation(opts: {
   }
 
   await assertParticipantMeetsWomenOnlyRequirement(opts.userId, event.requirements);
+  const { assertMemberMedicalSafetyForJoin } = await import('./member-medical-safety-profile.js');
+  await assertMemberMedicalSafetyForJoin(opts.userId);
 
   const existingParticipant = await findActivityParticipantByEventAndUser(opts.activityId, opts.userId);
   if (existingParticipant) {
@@ -974,7 +986,7 @@ export const listTenantActivityRequestsDetailed = async (input: {
   }
 
   const tenantEvents = await activitiesCollection()
-    .find(eventFilter, { projection: { _id: 1, title: 1, startAt: 1, locationId: 1 } })
+    .find(eventFilter, { projection: { _id: 1, title: 1, startAt: 1, locationId: 1, activityType: 1 } })
     .toArray();
   const eventIds = tenantEvents.map((event) => event._id);
   if (eventIds.length === 0) return [];
@@ -986,8 +998,9 @@ export const listTenantActivityRequestsDetailed = async (input: {
         id: event._id,
         title: event.title,
         startAt: event.startAt,
-        locationId: event.locationId
-      }
+        locationId: event.locationId,
+        activityType: event.activityType ?? 'hiking',
+      },
     ])
   );
 
@@ -1013,16 +1026,13 @@ export const listTenantActivityRequestsDetailed = async (input: {
       user: {
         id: request.userId,
         email: user?.email ?? '',
-        profile: user
-          ? {
-              displayName: user.profile.displayName
-            }
-          : null
+        profile: user?.profile ?? null
       },
       activity: {
         id: event.id,
         title: event.title,
         startAt: event.startAt,
+        activityType: event.activityType,
         location: location ?? { id: event.locationId, name: '' }
       }
     };
@@ -1313,17 +1323,35 @@ export const revokeHostActivityParticipant = async (input: {
   return { requestId: participant.requestId, userId: participant.userId };
 };
 
+const meanRideshareScore = (rideshare: {
+  cleanliness: number;
+  punctuality: number;
+  behaviour: number;
+  payment?: number | null;
+}): number => {
+  const parts = [rideshare.cleanliness, rideshare.punctuality, rideshare.behaviour];
+  if (rideshare.payment != null) parts.push(rideshare.payment);
+  return Math.round(parts.reduce((sum, value) => sum + value, 0) / parts.length);
+};
+
 export const setHostParticipantRating = async (input: {
   activityId: string;
   participantId: string;
   score: number;
   comment?: string | null;
+  rideshare?: {
+    cleanliness: number;
+    punctuality: number;
+    behaviour: number;
+    payment?: number | null;
+  } | null;
   activityEnded: boolean;
 }): Promise<ActivityParticipant> => {
   if (!input.activityEnded) {
     throw new ApiError(400, 'activity_not_ended', 'You can rate participants after the outing ends.');
   }
-  if (input.score < 1 || input.score > 5) {
+  const score = input.rideshare ? meanRideshareScore(input.rideshare) : input.score;
+  if (score < 1 || score > 5) {
     throw new ApiError(400, 'invalid_rating', 'Rating must be between 1 and 5.');
   }
 
@@ -1340,8 +1368,9 @@ export const setHostParticipantRating = async (input: {
 
   const ratedAt = new Date();
   await patchActivityParticipantInMongo(participant.id, {
-    hostRatingScore: input.score,
+    hostRatingScore: score,
     hostRatingComment: input.comment?.trim() || null,
+    hostRatingRideshare: input.rideshare ?? null,
     hostRatedAt: ratedAt
   });
 
@@ -1380,7 +1409,11 @@ export const listActivityParticipantsWithUsers = async (activityId: string) => {
           ? {
               displayName: user.profile.displayName,
               phone: user.profile.phone,
-              avatarUrl: user.profile.avatarUrl
+              avatarUrl: user.profile.avatarUrl,
+              bloodGroup: user.profile.bloodGroup ?? null,
+              medicalConditions: user.profile.medicalConditions ?? null,
+              emergencyContactName: user.profile.emergencyContactName ?? null,
+              emergencyContactPhone: user.profile.emergencyContactPhone ?? null,
             }
           : null
       }

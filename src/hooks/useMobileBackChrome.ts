@@ -7,5 +7,5 @@ export const useMobileBackChrome = (defaults: {
   label: string;
 }): MobileBackChrome => {
   const { state } = useLocation();
-  return useMemo(() => resolveMobileBackChrome(state, defaults), [state, defaults.fallbackTo, defaults.label]);
+  return useMemo(() => resolveMobileBackChrome(state, defaults), [state, defaults]);
 };

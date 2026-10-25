@@ -28,7 +28,10 @@ vi.mock('../src/lib/logger.js', () => ({
 }));
 
 vi.mock('../src/services/notification-actor-label.js', () => ({
-  resolveNotificationActorDisplayName: vi.fn(async () => 'Host'),
+  resolveNotificationActorDisplayNamesForRecipients: vi.fn(
+    async (_publisherUserId: string, recipientIds: string[]) =>
+      new Map(recipientIds.map((id) => [id, 'Host']))
+  ),
 }));
 
 import { notifyMemberPublishSubscribers } from '../src/services/member-publish-notifications.js';

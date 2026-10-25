@@ -6,6 +6,13 @@ import {
   completeSignupProfileSchema,
   isSignupProfileComplete,
 } from '../domain/user-profile.js';
+import {
+  normalizeMedicalConditions,
+  updateMedicalSafetyProfileSchema,
+  validateMedicalSafetyPhone,
+} from '../domain/member-medical-safety.js';
+import { isMedicalSafetyProfileComplete } from '@uaetrail/shared-types';
+import { medicalSafetyFieldsFromAuthProfile } from '../lib/member-medical-safety-profile.js';
 import { ApiError } from '../lib/api-error.js';
 import {
   EMAIL_VERIFICATION_OTP_TTL_MS,
@@ -13,7 +20,7 @@ import {
 } from '../lib/auth-constants.js';
 import {
   createEmailChangeToken,
-  useEmailChangeToken,
+  consumeEmailChangeToken,
 } from './auth-session-commands.js';
 import { findEmailChangeTokenForUser } from './auth-session-read.js';
 import { generateEmailOtp } from '../lib/hash.js';
@@ -78,6 +85,28 @@ export const patchAuthenticatedMemberProfile = async (
     countryCode: user?.profile?.countryCode ?? data.countryCode ?? null,
     languages: user?.profile?.languages ?? data.languages ?? null,
     signupProfileComplete: isSignupProfileComplete(user?.profile),
+  };
+};
+
+export const patchAuthenticatedMedicalSafetyProfile = async (
+  userId: string,
+  data: z.infer<typeof updateMedicalSafetyProfileSchema>
+) => {
+  validateMedicalSafetyPhone(data.emergencyContactPhone);
+  await updateAuthUserProfile(userId, {
+    bloodGroup: data.bloodGroup,
+    medicalConditions: normalizeMedicalConditions(data.medicalConditions),
+    emergencyContactName: data.emergencyContactName.trim(),
+    emergencyContactPhone: data.emergencyContactPhone.trim(),
+  });
+  const user = await findAuthUserById(userId);
+  const fields = medicalSafetyFieldsFromAuthProfile(user?.profile);
+  return {
+    bloodGroup: user?.profile?.bloodGroup ?? data.bloodGroup,
+    medicalConditions: user?.profile?.medicalConditions ?? null,
+    emergencyContactName: user?.profile?.emergencyContactName ?? null,
+    emergencyContactPhone: user?.profile?.emergencyContactPhone ?? null,
+    medicalSafetyProfileComplete: isMedicalSafetyProfileComplete(fields),
   };
 };
 
@@ -165,7 +194,7 @@ export const confirmAuthenticatedEmailChange = async (
     email: normalizedEmail,
     emailVerifiedAt: new Date(),
   });
-  await useEmailChangeToken(record.id);
+  await consumeEmailChangeToken(record.id);
 
   return {
     message: 'Email address updated.',

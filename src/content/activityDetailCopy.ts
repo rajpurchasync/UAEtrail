@@ -10,6 +10,23 @@ export const ACTIVITY_DETAIL_CREW_LOCKED_HINT =
 export const ACTIVITY_DETAIL_JOIN_REQUIRED_PLAN_HINT =
   'RSVP or request a spot to unlock meeting details and the group chat.';
 
+/** Linked venue catalog row under the outing title (trail / camp / place). */
+export const ACTIVITY_DETAIL_LINKED_VENUE_SUBLINE =
+  'View venue guide & other scheduled outings at this location';
+
+export const ACTIVITY_DETAIL_THIS_OUTING_LABEL = 'This scheduled outing';
+export const ACTIVITY_DETAIL_LINKED_OUTING_LABEL = 'Linked outing';
+export const ACTIVITY_DETAIL_LINKED_RIDESHARE_LABEL = 'Shared ride for this outing';
+
+export const activityDetailLinkedVenueEyebrow = (
+  placeKind: 'hiking' | 'camping' | 'event' | string | null | undefined
+): string => {
+  if (placeKind === 'camping') return 'Camp on UAE Trail';
+  if (placeKind === 'hiking') return 'Trail on UAE Trail';
+  if (placeKind === 'event') return 'Venue on UAE Trail';
+  return 'Place on UAE Trail';
+};
+
 export const ACTIVITY_DETAIL_TRANSPORT_EMPTY_HINT =
   'No shared ride or transport listing for this outing yet.';
 
@@ -37,11 +54,6 @@ export const ACTIVITY_DETAIL_POST_CHECK_IN_REVIEWS_TITLE =
 export const ACTIVITY_DETAIL_HOST_CHECK_IN_CTA = 'Open roster & check in';
 
 export const ACTIVITY_DETAIL_HOST_RATE_PARTICIPANTS_CTA = 'Rate participants on roster';
-
-export const ACTIVITY_DETAIL_PLAN_TRANSPORT_TEASER_TITLE = 'Getting there & rides';
-export const ACTIVITY_DETAIL_PLAN_TRANSPORT_TEASER_BODY =
-  'How to reach the outing, shared rides, and empty seats — all on Transport.';
-export const ACTIVITY_DETAIL_PLAN_TRANSPORT_TEASER_CTA = 'Open Transport';
 
 export const ACTIVITY_DETAIL_PLAN_SUSTAINABILITY_LINE =
   'Share rides when you can — fewer cars, fuller seats, same crew.';

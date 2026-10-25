@@ -13,10 +13,10 @@ describe('linkedParentRidesharePeekCopy', () => {
     });
   });
 
-  it('embeds event title in eyebrow', () => {
+  it('uses event subtitle when parent is an event', () => {
     expect(linkedParentRidesharePeekCopy('event', 'Beach cleanup')).toEqual({
-      eyebrow: 'Linked to Beach cleanup',
-      showTitleSubtitle: false,
+      eyebrow: 'Linked to Event',
+      showTitleSubtitle: true,
     });
     expect(linkedParentRidesharePeekCopy('guide', 'Group outing')).toEqual({
       eyebrow: 'Linked to Group outing',

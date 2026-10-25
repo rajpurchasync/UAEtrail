@@ -7,7 +7,7 @@
  * Route loader: `pages/ActivityDetail.tsx` · Shell: `ActivityDetailPageShell` · Chrome: `ActivityDetailView`.
  */
 import { useMemo, useState, type ReactNode } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ChevronRight, MapPin, Car } from 'lucide-react';
 import type {
   ActivityDetailDTO,
@@ -19,10 +19,32 @@ import { ActivityDetailGuestGate } from '../../../components/activity/detail/Act
 import { ActivityDetailParticipantsRosterDialog } from '../../../components/activity/detail/ActivityDetailParticipantsRosterDialog';
 import { activityDetailParticipantCountLabel } from '../../../components/activity/detail/activityDetailParticipantCountLabel';
 import { formatActivityDetailConsumerLeadDate } from '../../../activity/formatActivityDetailConsumerLead';
+import { ConsumerDetailLeadDateChip } from '../../../activity/detail/ConsumerDetailLeadDateChip';
 import { resolveActivityConsumerRequirementLines } from '../../../activity/activityDetailConsumerRequirements';
 import { resolveActivityDetailConsumerAudienceBadges } from '../../../activity/activityDetailConsumerAudienceBadges';
 import { shouldShowConsumerDetailLeadVenue } from '../../../activity/activityConsumerDetailLeadVenue';
 import { ACTIVITY_INVITE_FRIENDS_CTA } from '../../../content/activityInviteCopy';
+import {
+  ACTIVITY_DETAIL_LINKED_VENUE_SUBLINE,
+  ACTIVITY_DETAIL_THIS_OUTING_LABEL,
+} from '../../../content/activityDetailCopy';
+import { useAuth } from '../../../context/AuthContext';
+import { ActivityLinkedParentPlanAffordance } from '../../../components/activity/ActivityLinkedParentPlanAffordance';
+import { ActivityLinkedRideshareAffordance } from '../../../components/activity/ActivityLinkedRideshareAffordance';
+import {
+  resolveActivityLinkedParentSummary,
+  resolveActivityLinkedRideshareSummary,
+} from '../../../activity/resolveActivityLinkageSummaries';
+import { resolveConsumerDetailVenueEyebrow } from '../../../activity/resolveConsumerDetailVenueEyebrow';
+import { ConsumerDetailRideshareLinkage } from './ConsumerDetailRideshareLinkage';
+import { ConsumerDetailOfferRideshare } from './ConsumerDetailOfferRideshare';
+import { ConsumerDetailRideshareEssentials } from './ConsumerDetailRideshareEssentials';
+import { ConsumerDetailDriverReviews } from './ConsumerDetailDriverReviews';
+import { TenantHostRatingInline } from '../../../components/reviews/TenantHostRatingInline';
+import { resolveRideshareSeatsAvailability } from '../../resolveRideshareSeatsAvailability';
+import { viewerIsActivityHostUser } from '../../../utils/viewerHostsActivity';
+import type { ActivityDetailPlanSectionsComponent } from '../composers';
+import { ActivityDetailPlanColumn } from '../../../components/activity/detail/ActivityDetailPlanColumn';
 import { activityDetailFriendsGoingLabel } from '../../../activity/activityDetailFriendsGoingLabel';
 import { activityDetailPath } from '../../../config/routingCatalog';
 import { buildActivityDetailPageShellCard } from '../activityDetailPageShellCard';
@@ -30,7 +52,6 @@ import {
   extractActivityTransportReachLines,
   formatActivityAccessibleBySummary,
 } from '../../../activity/activityDetailReachBy';
-import { resolveActivityMapPeekStrips } from '../../../activity/activityPeekEngagement';
 import type { ActivityDetailHeroStatusChip } from '../../../activity/activityDetailHeroStatus';
 import type { DiscoveryCardModel } from '../../../discovery/discoveryCardModel';
 import {
@@ -39,10 +60,7 @@ import {
 } from '../../../explore/ui/peek/activity/ActivityPeekLinkedTransport';
 import {
   EXPLORE_RIDESHARE_AVAILABLE_LABEL,
-  HOSTING_LINK_RIDESHARE_LABEL,
 } from '../../../explore/createFlowCopy';
-import { navigateToAuthGate } from '../../../utils/authReturnContext';
-import type { JoinRequestUiState } from '../../../utils/joinRequestUi';
 import { capitalize } from '../../../utils';
 import { activityRegistryPlacePath } from '../../../utils/activityRegistryPlacePath';
 import { activityHostAvatar, activityHostName, showTenantBrand } from '../../../utils/hostLabels';
@@ -51,53 +69,58 @@ import {
   CONSUMER_DETAIL_PANEL,
   CONSUMER_DETAIL_SECTION_TITLE,
 } from './activityConsumerDetailSectionStyles';
+import { DetailPageLoadingState } from '../../../components/ui/DetailPageLoadingState';
+import { DETAIL_LOADING_ACTIVITY } from '../../../content/detailLoadingCopy';
 
 type ActivityDetailViewModel = ReturnType<typeof useActivityDetailViewModel>;
 
 export type ActivityConsumerDetailPageProps = {
   model: ActivityDetailViewModel;
+  planSections?: ActivityDetailPlanSectionsComponent | null;
   canInviteFriends?: boolean;
   onInviteFriends?: () => void;
+  onRideshareParentLinked?: () => void;
 };
 
 export const ActivityConsumerDetailPage = ({
   model,
+  planSections = null,
   canInviteFriends = false,
   onInviteFriends,
+  onRideshareParentLinked,
 }: ActivityConsumerDetailPageProps) => {
+  const { user } = useAuth();
   if (!model.consumerDetailLayout || model.isEmbedded) {
     return null;
   }
 
   const layout = model.consumerLayout;
   if (!layout) {
-    return (
-      <div className="max-w-6xl mx-auto px-4 pt-4 pb-2">
-        <p className="text-sm text-neutral-600" role="status">
-          Loading activity details…
-        </p>
-      </div>
-    );
+    return <DetailPageLoadingState label={DETAIL_LOADING_ACTIVITY} variant="embedded" />;
   }
 
   const venueLabel =
     model.registryPlaceName?.trim() || model.activity.locationName?.trim() || '';
+  const registryPath = model.registryPlacePath ?? activityRegistryPlacePath(model.activity);
   const hasLinkedPlaceCard = Boolean(
-    model.activity.location?.name?.trim() && activityRegistryPlacePath(model.activity)
+    model.activity.location?.name?.trim() && registryPath
   );
+  const isRideshare = model.activity.activityType === 'rideshare';
+  const linkedParentSummary = resolveActivityLinkedParentSummary(model.activity);
+  const linkedRideshareSummary = resolveActivityLinkedRideshareSummary(model.activity);
   const showLeadVenue = shouldShowConsumerDetailLeadVenue(
     model.activityTitle,
     venueLabel,
     hasLinkedPlaceCard
   );
-  const venueLine =
-    showLeadVenue && model.registryPlacePath && model.registryPlaceName ? (
-      <Link to={model.registryPlacePath} className="text-emerald-800 hover:underline">
-        {model.registryPlaceName}
-      </Link>
-    ) : showLeadVenue ? (
-      model.activity.locationName
-    ) : null;
+  const venueLine = showLeadVenue && !isRideshare ? (
+    <ConsumerDetailVenueLead
+      activity={model.activity}
+      activityTitle={model.activityTitle}
+      venueLabel={venueLabel}
+      placePath={registryPath}
+    />
+  ) : null;
 
   const showParticipantsRow = layout.participants !== 'hidden';
 
@@ -110,6 +133,39 @@ export const ActivityConsumerDetailPage = ({
           avatar: row.avatar ?? null,
         }));
 
+  const isRideHost = viewerIsActivityHostUser(model.activity, user?.id);
+  const rideHostTenantId =
+    isRideHost ? model.linkRideshareTenantId ?? model.activity.tenantId ?? null : null;
+
+  const hostAndSocialBlock =
+    !model.requiresSignIn ? (
+      <>
+        {layout.showHostProfile ? (
+          <ConsumerDetailHostRow
+            activity={model.activity}
+            hostPath={model.hostPath}
+            canOpenHostProfile={model.canOpenHostProfile}
+            showTenantRating={Boolean(model.activity.tenantId)}
+          />
+        ) : null}
+        {showParticipantsRow ? (
+          <ConsumerDetailSocialRow
+            activity={model.activity}
+            participants={model.participants}
+            rosterParticipants={
+              layout.participants === 'roster' ? model.rosterParticipants : rosterPreview
+            }
+            buddyUserIdsOnActivity={
+              model.viewerAccess?.entitlements?.buddyUserIdsOnActivity ?? []
+            }
+            canOpenFullRoster={layout.canOpenParticipantRoster}
+            showInviteAction={canInviteFriends}
+            onInviteFriends={onInviteFriends}
+          />
+        ) : null}
+      </>
+    ) : null;
+
   return (
     <div className="w-full pt-1 pb-2" data-activity-consumer-detail-template>
       <ConsumerDetailLead
@@ -120,52 +176,61 @@ export const ActivityConsumerDetailPage = ({
         statusChips={model.consumerStatusChips}
       />
 
-      {model.requiresSignIn ? (
-        <ActivityDetailGuestGate activity={model.activity} />
-      ) : (
-        <>
-          {layout.showHostProfile ? (
-            <ConsumerDetailHostRow
-              activity={model.activity}
-              hostPath={model.hostPath}
-              canOpenHostProfile={model.canOpenHostProfile}
-            />
-          ) : null}
+      {isRideshare ? (
+        <ConsumerDetailRideshareLinkage
+          activity={model.activity}
+          isRideHost={isRideHost}
+          hostTenantId={rideHostTenantId}
+          onParentLinked={onRideshareParentLinked}
+        />
+      ) : linkedRideshareSummary ? (
+        <section className="mt-2" aria-label="Linked rideshare">
+          <ActivityLinkedRideshareAffordance rideshare={linkedRideshareSummary} className="mt-0" />
+        </section>
+      ) : !model.requiresSignIn ? (
+        <ConsumerDetailOfferRideshare
+          activity={model.activity}
+          viewerAccess={model.viewerAccess}
+          tenantId={model.linkRideshareTenantId ?? model.activity.tenantId ?? null}
+          onCreateRideshare={model.onOfferLinkedRideshare}
+          onRideshareLinked={onRideshareParentLinked}
+        />
+      ) : null}
 
-          {showParticipantsRow ? (
-            <ConsumerDetailSocialRow
-              activity={model.activity}
-              participants={model.participants}
-              rosterParticipants={
-                layout.participants === 'roster' ? model.rosterParticipants : rosterPreview
-              }
-              buddyUserIdsOnActivity={
-                model.viewerAccess?.entitlements?.buddyUserIdsOnActivity ?? []
-              }
-              canOpenFullRoster={layout.canOpenParticipantRoster}
-              showInviteAction={canInviteFriends}
-              onInviteFriends={onInviteFriends}
-            />
-          ) : null}
+      {model.requiresSignIn ? <ActivityDetailGuestGate activity={model.activity} /> : null}
 
-          <div className="mt-3 space-y-6">
-            <ConsumerDetailPlaceCard activity={model.activity} />
-            <ConsumerDetailGettingThere
-              activity={model.activity}
-              viewerAccess={model.viewerAccess}
-              wireStrips={model.wireStrips}
-              joinUiState={model.joinUiState}
-              requiresSignIn={model.requiresSignIn}
-              onOfferLinkedRideshare={model.onOfferLinkedRideshare}
-              showMeetingPoint={layout.showMeetingPoint}
-              accessLat={model.accessLat}
-              accessLng={model.accessLng}
-              hasAccessCoordinates={model.hasAccessCoordinates}
-            />
-            <ConsumerDetailInstructions activity={model.activity} />
-          </div>
-        </>
-      )}
+      {!isRideshare && !model.requiresSignIn ? hostAndSocialBlock : null}
+
+      <div className="mt-3 space-y-6">
+        {isRideshare && !model.requiresSignIn ? (
+          <ConsumerDetailRideshareEssentials activity={model.activity} />
+        ) : null}
+        <ConsumerDetailPlaceCard
+          activity={model.activity}
+          hideForLinkedRideshare={isRideshare && Boolean(linkedParentSummary)}
+        />
+        {!model.requiresSignIn ? (
+          <ConsumerDetailGettingThere
+            activity={model.activity}
+            viewerAccess={model.viewerAccess}
+            wireStrips={model.wireStrips}
+            showMeetingPoint={layout.showMeetingPoint}
+            accessLat={model.accessLat}
+            accessLng={model.accessLng}
+            hasAccessCoordinates={model.hasAccessCoordinates}
+            linkedTransportShownAbove={
+              (isRideshare && Boolean(linkedParentSummary)) ||
+              (!isRideshare && Boolean(linkedRideshareSummary))
+            }
+          />
+        ) : null}
+        {isRideshare && !model.requiresSignIn ? hostAndSocialBlock : null}
+        {!model.requiresSignIn ? <ConsumerDetailInstructions activity={model.activity} /> : null}
+        <ActivityDetailPlanColumn model={model} planSections={planSections} consumerInline />
+        {isRideshare && model.activity.tenantId ? (
+          <ConsumerDetailDriverReviews tenantId={model.activity.tenantId} />
+        ) : null}
+      </div>
     </div>
   );
 };
@@ -229,10 +294,23 @@ const ConsumerDetailLead = ({
 }) => {
   const leadDate = formatActivityDetailConsumerLeadDate(activity.date, activity.time);
   const audienceBadges = resolveActivityDetailConsumerAudienceBadges(activity.requirements);
-  const priceBadge = card?.source === 'activity' && card.price ? card.price.badge : null;
-
   const participationChip = participationStatusChip(statusChips);
-  const hasFactLabels = Boolean(participationChip) || audienceBadges.length > 0;
+  const isRideshareLead = activity.activityType === 'rideshare';
+  const explorePrice = card?.source === 'activity' ? card.price : null;
+  const priceBadge = explorePrice?.badge ?? null;
+  const priceBadgeToneClass =
+    explorePrice?.kind === 'free'
+      ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+      : explorePrice?.kind === 'shared'
+        ? 'border-sky-200 bg-sky-50 text-sky-900'
+        : 'border-amber-200 bg-amber-50 text-amber-900';
+  const rideshareSeats = isRideshareLead ? resolveRideshareSeatsAvailability(activity) : null;
+  const showMetaRow =
+    Boolean(leadDate.time && !isRideshareLead) ||
+    Boolean(priceBadge) ||
+    Boolean(participationChip) ||
+    Boolean(rideshareSeats) ||
+    audienceBadges.length > 0;
 
   return (
     <header className="pb-4">
@@ -240,43 +318,36 @@ const ConsumerDetailLead = ({
         <h1 className="min-w-0 flex-1 text-[26px] font-bold leading-[1.15] tracking-tight text-neutral-950">
           {title}
         </h1>
-        <div
-          className="flex w-[3.75rem] shrink-0 flex-col items-center justify-center rounded-xl bg-emerald-600 px-1.5 py-2.5 text-center text-white shadow-sm"
-          aria-hidden
-        >
-          <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-50/90">
-            {leadDate.month}
-          </span>
-          <span className="text-2xl font-bold leading-none">{leadDate.day}</span>
-        </div>
+        <ConsumerDetailLeadDateChip leadDate={leadDate} />
       </div>
 
-      <p className="mt-2 text-[15px] font-semibold leading-snug text-neutral-800">
-        {leadDate.weekday}
-        {leadDate.time ? (
-          <>
-            <span className="font-normal text-neutral-400"> · </span>
-            {leadDate.time}
-          </>
-        ) : null}
-        {priceBadge ? (
-          <>
-            <span className="font-normal text-neutral-400"> · </span>
+      {showMetaRow ? (
+        <div
+          className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1.5"
+          aria-label="Schedule, price, and who this outing is for"
+        >
+          {leadDate.time && !isRideshareLead ? (
+            <span className="text-[15px] font-semibold leading-snug text-neutral-800">{leadDate.time}</span>
+          ) : null}
+          {priceBadge ? (
             <span
-              className={card?.price?.kind === 'free' ? 'text-emerald-700' : 'text-amber-800'}
+              className={`inline-flex rounded-lg border px-2.5 py-0.5 text-xs font-semibold ${priceBadgeToneClass}`}
             >
               {priceBadge}
             </span>
-          </>
-        ) : null}
-      </p>
-
-      {hasFactLabels ? (
-        <div
-          className="mt-2.5 flex flex-wrap items-center gap-2"
-          aria-label="Outing status and who it is for"
-        >
-          {participationChip ? (
+          ) : null}
+          {rideshareSeats ? (
+            <span
+              className={`inline-flex rounded-lg border px-2.5 py-0.5 text-xs font-semibold ${
+                rideshareSeats.isFull
+                  ? 'border-neutral-200 bg-neutral-100 text-neutral-700'
+                  : 'border-sky-200 bg-sky-50 text-sky-900'
+              }`}
+            >
+              {rideshareSeats.label}
+            </span>
+          ) : null}
+          {participationChip && !rideshareSeats ? (
             <span
               className={`inline-flex items-center rounded-lg border border-transparent px-2.5 py-1 text-xs font-semibold ${statusChipToneClass[participationChip.tone]}`}
             >
@@ -287,10 +358,78 @@ const ConsumerDetailLead = ({
         </div>
       ) : null}
 
-      {venueLine ? (
-        <p className="mt-2 text-sm font-medium leading-snug text-emerald-800">{venueLine}</p>
-      ) : null}
+      {venueLine ? <div className="mt-2">{venueLine}</div> : null}
     </header>
+  );
+};
+
+const ConsumerDetailVenueLead = ({
+  activity,
+  activityTitle,
+  venueLabel,
+  placePath,
+}: {
+  activity: ActivityDetailDTO;
+  activityTitle: string;
+  venueLabel: string;
+  placePath: string | null;
+}) => {
+  const venueEyebrow = resolveConsumerDetailVenueEyebrow(activity, placePath);
+  const outingPath = activityDetailPath(activity.id);
+  const linkedParent = activity.linkedParentActivity;
+  const isRideshare = activity.activityType === 'rideshare';
+
+  const linkedParentRow =
+    linkedParent && !isRideshare ? (
+      <ActivityLinkedParentPlanAffordance parent={linkedParent} className="mt-0" />
+    ) : null;
+
+  const outingRow =
+    isRideshare && linkedParent ? null : (
+      <div>
+        <p className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">
+          {ACTIVITY_DETAIL_THIS_OUTING_LABEL}
+        </p>
+        <Link
+          to={outingPath}
+          className="mt-0.5 block text-sm font-semibold leading-snug text-emerald-900 hover:underline"
+        >
+          {activityTitle}
+        </Link>
+      </div>
+    );
+
+  const venueRow = (
+    <div
+      className={
+        linkedParentRow || outingRow ? 'mt-2.5 border-t border-emerald-200/50 pt-2.5' : ''
+      }
+    >
+      <p className="text-[11px] font-bold uppercase tracking-wide text-emerald-800/80">{venueEyebrow}</p>
+      {placePath ? (
+        <Link
+          to={placePath}
+          className="mt-0.5 block text-sm font-semibold leading-snug text-emerald-900 hover:underline"
+        >
+          {venueLabel}
+        </Link>
+      ) : (
+        <p className="mt-0.5 text-sm font-medium leading-snug text-emerald-800">{venueLabel}</p>
+      )}
+      {placePath ? (
+        <p className="mt-1 text-xs font-medium leading-snug text-emerald-800/90">
+          {ACTIVITY_DETAIL_LINKED_VENUE_SUBLINE}
+        </p>
+      ) : null}
+    </div>
+  );
+
+  return (
+    <div className="rounded-xl border border-emerald-200/70 bg-emerald-50/40 px-3 py-2.5 space-y-0">
+      {linkedParentRow}
+      {outingRow}
+      {venueRow}
+    </div>
   );
 };
 
@@ -420,27 +559,23 @@ const ConsumerDetailGettingThere = ({
   activity,
   viewerAccess,
   wireStrips,
-  joinUiState,
-  requiresSignIn = false,
-  onOfferLinkedRideshare,
   showMeetingPoint = false,
   accessLat,
   accessLng,
   hasAccessCoordinates,
+  linkedTransportShownAbove = false,
 }: {
   activity: ActivityDetailDTO;
   viewerAccess: ActivityViewerAccessDTO | null;
   wireStrips?: ActivityEngagementStripsDTO | null;
-  joinUiState: JoinRequestUiState;
-  requiresSignIn?: boolean;
-  onOfferLinkedRideshare?: () => void;
   showMeetingPoint?: boolean;
   accessLat: number | null;
   accessLng: number | null;
   hasAccessCoordinates: boolean;
+  /** Linked parent / rideshare card already rendered under the title. */
+  linkedTransportShownAbove?: boolean;
 }) => {
   const navigate = useNavigate();
-  const location = useLocation();
   const card = useMemo(
     () => buildActivityDetailPageShellCard({ activity, viewerAccess, wireStrips }),
     [activity, viewerAccess, wireStrips]
@@ -448,16 +583,12 @@ const ConsumerDetailGettingThere = ({
 
   const accessibleBy = formatActivityAccessibleBySummary(activity.requirements);
   const reachLines = extractActivityTransportReachLines(activity.requirements);
-  const strips = resolveActivityMapPeekStrips(card, joinUiState);
-  const entitlements = viewerAccess?.entitlements;
-  const showOfferTransport =
-    Boolean(onOfferLinkedRideshare) &&
-    (strips.showOfferRideInLogistics ||
-      Boolean(entitlements?.canOfferTransport) ||
-      Boolean(entitlements?.canAddLinkedRide));
-  const hasRideshareAffordance = activityPeekHasLinkedTransportAffordance(card);
+  const peekLinkedTransport = activityPeekHasLinkedTransportAffordance(card);
+  const showLinkedTransportInSection = peekLinkedTransport && !linkedTransportShownAbove;
   const showRideshareOpenOffer =
-    Boolean(activity.rideshareEnabled) && !hasRideshareAffordance && card.source === 'activity';
+    Boolean(activity.rideshareEnabled) &&
+    !peekLinkedTransport &&
+    card.source === 'activity';
   const dirLat =
     accessLat ??
     activity.startLat ??
@@ -485,18 +616,13 @@ const ConsumerDetailGettingThere = ({
   if (
     !accessibleBy &&
     reachLines.length === 0 &&
-    !hasRideshareAffordance &&
+    !showLinkedTransportInSection &&
     !showRideshareOpenOffer &&
-    !showOfferTransport &&
     !hasDirections &&
     !showMeetingBlock
   ) {
     return null;
   }
-
-  const onGuestGatedAction = requiresSignIn
-    ? () => navigateToAuthGate(navigate, location, { returnPath: activityDetailPath(activity.id) })
-    : undefined;
 
   const onOpenLinkedActivity = (exploreItemId: string) => {
     const activityId = exploreItemId.startsWith('activity:')
@@ -533,17 +659,8 @@ const ConsumerDetailGettingThere = ({
             {meetingLabel ? <p className="mt-1 font-medium text-neutral-950">{meetingLabel}</p> : null}
           </div>
         ) : null}
-        {hasRideshareAffordance ? (
+        {showLinkedTransportInSection ? (
           <ActivityPeekLinkedTransport card={card} onOpenLinkedPin={onOpenLinkedActivity} />
-        ) : null}
-        {showOfferTransport ? (
-          <button
-            type="button"
-            onClick={onGuestGatedAction ?? onOfferLinkedRideshare}
-            className="w-full rounded-xl border border-sky-200 bg-white px-3 py-2.5 text-left text-sm font-semibold text-sky-900 active:bg-sky-50"
-          >
-            {HOSTING_LINK_RIDESHARE_LABEL}
-          </button>
         ) : null}
         {hasDirections ? (
           <DirectionsControl
@@ -571,7 +688,14 @@ const placeStatLine = (activity: ActivityDetailDTO): string | null => {
   return parts.length > 0 ? parts.join(' · ') : null;
 };
 
-const ConsumerDetailPlaceCard = ({ activity }: { activity: ActivityDetailDTO }) => {
+const ConsumerDetailPlaceCard = ({
+  activity,
+  hideForLinkedRideshare = false,
+}: {
+  activity: ActivityDetailDTO;
+  hideForLinkedRideshare?: boolean;
+}) => {
+  if (hideForLinkedRideshare) return null;
   const place = activity.location;
   const placePath = activityRegistryPlacePath(activity);
   if (!place || !placePath) return null;
@@ -593,6 +717,9 @@ const ConsumerDetailPlaceCard = ({ activity }: { activity: ActivityDetailDTO }) 
       <div className="min-w-0 flex-1">
         <p className="text-xs font-semibold uppercase tracking-wide text-emerald-800/70">{kindLabel}</p>
         <p className="truncate text-[15px] font-semibold text-neutral-950">{name}</p>
+        <p className="mt-0.5 text-xs font-medium text-emerald-800/90">
+          {ACTIVITY_DETAIL_LINKED_VENUE_SUBLINE}
+        </p>
         {stats ? <p className="truncate text-sm text-neutral-600">{stats}</p> : null}
       </div>
       <ChevronRight className="h-5 w-5 shrink-0 text-emerald-700/50" aria-hidden />
@@ -605,13 +732,17 @@ const ConsumerDetailHostRow = ({
   activity,
   hostPath,
   canOpenHostProfile,
+  showTenantRating = false,
 }: {
   activity: ActivityDetailDTO;
   hostPath: string | null;
   canOpenHostProfile: boolean;
+  showTenantRating?: boolean;
 }) => {
   const name = activityHostName(activity);
   const tenant = showTenantBrand(activity) ? activity.tenantName : null;
+  const tenantId = activity.tenantId?.trim() || null;
+  const ratingVariant = activity.activityType === 'rideshare' ? 'driver' : 'host';
   const inner = (
     <>
       <SecureAvatar
@@ -623,6 +754,13 @@ const ConsumerDetailHostRow = ({
         <p className="text-xs font-medium text-neutral-500">Hosted by</p>
         <p className="truncate text-[15px] font-semibold text-neutral-950">{name}</p>
         {tenant ? <p className="truncate text-sm text-neutral-600">{tenant}</p> : null}
+        {showTenantRating && tenantId ? (
+          <TenantHostRatingInline
+            tenantId={tenantId}
+            variant={ratingVariant}
+            linkToReviews={false}
+          />
+        ) : null}
       </div>
       {canOpenHostProfile && hostPath ? (
         <ChevronRight className="h-5 w-5 shrink-0 text-neutral-400" aria-hidden />

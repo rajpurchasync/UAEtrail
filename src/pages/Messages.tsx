@@ -3,17 +3,15 @@ import { useMessagesInbox } from '../hooks/useMessagesInbox';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { X } from 'lucide-react';
-import type { ChatConversationDTO, GroupWallStreamEventDTO } from '@uaetrail/shared-types';
+import type { GroupWallStreamEventDTO } from '@uaetrail/shared-types';
 import { searchMembersByQuery } from '../hooks/memberPeopleClientApi';
 import type { SocialGroupView, SocialGroupWallMessageView } from '../api/types';
 import { useAuth } from '../context/AuthContext';
 import { GuestTabPlaceholder } from '../components/auth/GuestTabPlaceholder';
-import { MobileScreen } from '../components/layout/MobileScreen';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { ConsumerErrorCard } from '../components/mobile/ConsumerFeedback';
 import {
   ChatThreadRouter,
-  ConversationListPanel,
   MessagesComposeSheet,
   MessagesInboxList,
   MessagesInboxToolbar,
@@ -34,7 +32,6 @@ import {
   sortInboxThreads,
   toDirectThread,
   type InboxFilter,
-  type InboxThread,
 } from '../utils/inboxThreads';
 
 interface SearchUser {
@@ -159,7 +156,7 @@ export const Messages = () => {
         )
       )
     );
-  }, []);
+  }, [setGroupThreads]);
 
   useEffect(() => {
     if (!selectedGroupId) return;
@@ -170,7 +167,7 @@ export const Messages = () => {
           : thread
       )
     );
-  }, [selectedGroupId]);
+  }, [selectedGroupId, setGroupThreads]);
 
   useEffect(() => {
     setMobileShowThread(Boolean(searchParams.get('to') || searchParams.get('group')));
@@ -231,7 +228,7 @@ export const Messages = () => {
         )
       );
     },
-    []
+    [setGroupThreads]
   );
 
   useChatStream({
@@ -322,7 +319,7 @@ export const Messages = () => {
 
   const handleGroupMetaUpdated = useCallback((group: SocialGroupView) => {
     setGroupThreads((prev) => patchGroupInboxThread(prev, group));
-  }, []);
+  }, [setGroupThreads]);
 
   const backToList = useCallback(() => {
     if (chatReturnTo && (selectedGroupId || selectedUserId)) {

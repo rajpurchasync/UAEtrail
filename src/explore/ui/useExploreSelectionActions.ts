@@ -252,7 +252,6 @@ export const useExploreSelectionActions = ({
       setSelectedId,
       location,
       selectedId,
-      peekReturnPath,
     ]
   );
 

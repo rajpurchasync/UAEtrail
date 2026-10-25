@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import type { MemberAvailabilityDTO, UpsertMemberAvailabilityInput } from '@uaetrail/shared-types';
+import type { UpsertMemberAvailabilityInput } from '@uaetrail/shared-types';
 import { fetchMyMemberAvailability, saveMyMemberAvailability } from './memberAvailabilityApi';
 import { memberAvailabilityQueryKey } from './clientQueryKeys';
 import { useAuth } from '../context/AuthContext';

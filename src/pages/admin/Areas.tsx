@@ -482,4 +482,4 @@ export const Areas = () => {
   );
 };
 
-export default AdminAreas;
+export default Areas;

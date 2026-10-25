@@ -36,7 +36,7 @@ export const useExploreSelectionRemovals = (input: {
     } finally {
       setHostRemoveBusy(false);
     }
-  }, [hostRemoveConfirm, input.tenantId, input.queryClient, input.setSelectedId, input.setVenueNotice]);
+  }, [hostRemoveConfirm, input]);
 
   return {
     hostRemoveConfirm,

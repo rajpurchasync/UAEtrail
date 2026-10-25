@@ -40,9 +40,16 @@ const expectPeekMatchesDetailWire = (input: {
     viewerAccess: { ...input.viewerAccess, mapPeekActions: undefined },
   };
 
-  const peekIds = resolveActivityMapPeekActions(card, input.joinUiState)
-    .map((action) => action.id)
-    .sort();
+  const joinedPeek =
+    input.joinUiState.kind === 'confirmed' ||
+    input.viewerAccess.level === 'participant' ||
+    input.viewerAccess.level === 'activity_group_member';
+  const peekVisible = (ids: string[]) =>
+    (joinedPeek ? ids.filter((id) => id !== 'view_detail') : ids).sort();
+
+  const peekIds = peekVisible(
+    resolveActivityMapPeekActions(card, input.joinUiState).map((action) => action.id)
+  );
 
   const activity = input.item.activity!;
   const detailPolicy = resolveActivityEngagementPolicy({
@@ -64,13 +71,13 @@ const expectPeekMatchesDetailWire = (input: {
   });
 
   const level = input.viewerAccess.level ?? 'public';
-  const detailPeekIds = projectActivityMapPeekActions(
-    detailPolicy,
-    input.viewerAccess.entitlements ?? null,
-    level
-  )
-    .map((action) => action.id)
-    .sort();
+  const detailPeekIds = peekVisible(
+    projectActivityMapPeekActions(
+      detailPolicy,
+      input.viewerAccess.entitlements ?? null,
+      level
+    ).map((action) => action.id)
+  );
 
   expect(peekIds).toEqual(detailPeekIds);
 

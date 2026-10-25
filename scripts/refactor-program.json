@@ -557,8 +557,8 @@
       "owner": "platform",
       "contextIds": [],
       "apiRoots": ["scripts/verify-docs-tier1.mjs"],
-      "feRoots": ["docs/experiment", "docs/archive/experiment"],
-      "successMetric": "experiment/*.md stubs only; bodies in archive/experiment; verify:docs enforces stub shape"
+      "feRoots": ["docs/experiment"],
+      "successMetric": "experiment/README.md only; plan bodies removed (see docs/archive/README.md); verify:docs enforces stub shape"
     },
     {
       "id": "MIG-ROUTING-CANON-P0",

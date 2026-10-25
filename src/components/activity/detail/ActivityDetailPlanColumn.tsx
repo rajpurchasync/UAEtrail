@@ -14,22 +14,26 @@ type Model = ReturnType<typeof useActivityDetailViewModel>;
 type ActivityDetailPlanColumnProps = {
   model: Model;
   planSections?: ActivityDetailPlanSectionsComponent | null;
+  /** Embedded in `ActivityConsumerDetailPage` — skip tab panels already on the scroll template. */
+  consumerInline?: boolean;
 };
 
 /** Plan / place / transport main column (S13-W7) — kind slots injected via `planSections`. */
 export const ActivityDetailPlanColumn = ({
   model,
   planSections = null,
+  consumerInline = false,
 }: ActivityDetailPlanColumnProps) => {
   const KindPlanSections = planSections;
+  const consumerRideshare = consumerInline && model.activity.activityType === 'rideshare';
 
-  if (model.consumerDetailLayout) {
+  if (model.consumerDetailLayout && !consumerInline) {
     return null;
   }
 
   return (
-    <div className="lg:col-span-2 space-y-4">
-      {model.showInviteShare && model.canSendJoinInvites && !model.consumerDetailLayout ? (
+    <div className={consumerInline ? 'space-y-6' : 'lg:col-span-2 space-y-4'}>
+      {model.showInviteShare && model.canSendJoinInvites && !consumerInline ? (
         <ActivityInviteLauncher
           activity={{
             id: model.activity.id,
@@ -52,7 +56,7 @@ export const ActivityDetailPlanColumn = ({
 
       {model.planRequestManagePanel}
 
-      {model.requiresSignIn && !model.consumerDetailLayout ? (
+      {model.requiresSignIn && !consumerInline ? (
         <div className={model.mobilePlanPanel}>
           <ActivityDetailGuestGate activity={model.activity} compact />
         </div>
@@ -67,16 +71,19 @@ export const ActivityDetailPlanColumn = ({
         </p>
       ) : null}
 
-      <ActivityDetailPlanAboutCard
-        panelClassName={model.mobilePlanPanel}
-        activity={model.activity}
-        showMobileTabs={model.showMobileTabs}
-        showPlanTransportTeaser={model.showPlanTransportTeaser}
-        onMobileTabChange={model.onMobileTabChange}
-        hideAboutBody={model.requiresSignIn}
-      />
+      {!consumerRideshare ? (
+        <ActivityDetailPlanAboutCard
+          panelClassName={model.mobilePlanPanel}
+          activity={model.activity}
+          showMobileTabs={model.showMobileTabs}
+          hideScheduleFactsGrid={consumerInline}
+          hideAboutBody={model.requiresSignIn}
+        />
+      ) : null}
 
-      {!model.requiresSignIn && KindPlanSections ? <KindPlanSections model={model} /> : null}
+      {!model.requiresSignIn && KindPlanSections && !consumerRideshare ? (
+        <KindPlanSections model={model} />
+      ) : null}
 
       {!model.requiresSignIn ? (
         <ActivityDetailPlanExtras
@@ -87,10 +94,11 @@ export const ActivityDetailPlanColumn = ({
           activityReviews={model.activityReviews}
           canWriteActivityReview={model.canWriteActivityReview}
           onActivityReviewSubmitted={model.onActivityReviewSubmitted}
+          hideActivityReviews={consumerRideshare}
         />
       ) : null}
 
-      {model.showPlaceTab ? (
+      {model.showPlaceTab && !consumerInline ? (
         <ActivityDetailPlaceTabPanels
           panelClassName={model.mobilePlacePanel}
           activity={model.activity}
@@ -108,7 +116,7 @@ export const ActivityDetailPlanColumn = ({
         />
       ) : null}
 
-      {model.showTransportTab ? (
+      {model.showTransportTab && !consumerInline ? (
         <ActivityDetailTransportTabPanels
           panelClassName={model.mobileTransportPanel}
           activity={model.activity}

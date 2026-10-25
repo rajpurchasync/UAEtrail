@@ -25,9 +25,7 @@ import {
   type AuthUserRecord
 } from '../src/lib/auth-users-store.js';
 import {
-  buildActivityFromCreateInput,
   buildLocationFromCreateInput,
-  type ActivityCreateInput,
   type LocationCreateInput
 } from '../src/lib/entity-builders.js';
 import {
@@ -430,7 +428,13 @@ const upsertUser = async ({
       status: UserStatus.ACTIVE,
       emailVerifiedAt: new Date()
     });
-    await updateAuthUserProfile(existing._id, { displayName });
+    await updateAuthUserProfile(existing._id, {
+      displayName,
+      bloodGroup: 'O+',
+      medicalConditions: 'N/A',
+      emergencyContactName: 'Demo emergency',
+      emergencyContactPhone: '+971500000001',
+    });
     const updated = await findAuthUserByEmail(email);
     if (!updated) throw new Error(`Failed to update user: ${email}`);
     return updated;
@@ -445,7 +449,16 @@ const upsertUser = async ({
     status: UserStatus.ACTIVE,
     emailVerifiedAt: new Date(),
     referralCode: buildReferralCode(email),
-    profile: { displayName, phone: null, bio: null, avatarUrl: null }
+    profile: {
+      displayName,
+      phone: null,
+      bio: null,
+      avatarUrl: null,
+      bloodGroup: 'O+',
+      medicalConditions: 'N/A',
+      emergencyContactName: 'Demo emergency',
+      emergencyContactPhone: '+971500000001',
+    }
   });
 };
 
@@ -531,21 +544,6 @@ const upsertLocation = async (id: string, data: LocationCreateInput) => {
   location = await stampLocationGroupRegionLevels(location);
   await writeLocationToMongo(location);
   return location;
-};
-
-const upsertEvent = async (id: string, data: ActivityCreateInput) => {
-  const doc = buildActivityFromCreateInput(data, id);
-  const existing = await findActivityDocInMongo(id);
-  if (existing) {
-    doc.createdAt = existing.createdAt;
-  }
-  const linked = doc.locationId ? await findLocationInMongo(doc.locationId) : null;
-  doc.groupRegionLevels = await resolveGroupRegionLevelsForActivityDoc(doc, linked);
-  await writeActivityDocToMongo(doc, {
-    countryCode: linked?.countryCode ?? 'AE',
-    location: linked,
-  });
-  return doc;
 };
 
 /** Re-stamp `groupRegionLevels`, `groupRegionBrowseKey`, and `geo` on all catalog rows after seed upserts. */
@@ -1987,6 +1985,24 @@ Share your live location and carry extra water in summer months.`
     targetId: agencyTenant.id,
     rating: 5,
     comment: 'UAE Adventure Co runs well-organized activities with clear communication and safety briefings.'
+  });
+
+  await upsertReview({
+    userId: agencyGuide._id,
+    targetType: ReviewTargetType.TENANT,
+    targetId: individualHostTenant.id,
+    rating: 5,
+    comment:
+      'Omar is punctual, the car was clean, and pickup from Marina was exactly on time. Would ride again for Jebel Jais weekends.'
+  });
+
+  await upsertReview({
+    userId: participant._id,
+    targetType: ReviewTargetType.TENANT,
+    targetId: individualHostTenant.id,
+    rating: 4,
+    comment:
+      'Fair seat contribution and easy coordination on WhatsApp. Helpful with bags at the trailhead.'
   });
 
   await upsertReview({
