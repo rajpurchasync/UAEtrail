@@ -51,7 +51,8 @@ const envSchema = z.object({
   S3_SECRET_ACCESS_KEY: z.string().optional(),
   S3_FORCE_PATH_STYLE: z.coerce.boolean().default(true),
   S3_PUBLIC_URL: z.string().url().optional(),
-  GOOGLE_CLIENT_ID: z.string().optional()
+  GOOGLE_CLIENT_ID: z.string().optional(),
+  GOOGLE_MAPS_API_KEY: z.string().optional()
 });
 
 const parsed = envSchema.safeParse(process.env);

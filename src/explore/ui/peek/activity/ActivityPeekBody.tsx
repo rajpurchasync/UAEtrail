@@ -57,7 +57,7 @@ export const ActivityPeekBody = ({
             className="text-xs font-semibold text-emerald-800 underline underline-offset-2"
             hrefOverride={manageHref}
             onGuestGatedAction={onGuestGatedAction}
-            linkState={mapPeekDetailNavState(location, card.id)}
+            linkState={mapPeekDetailNavState(location)}
           />
         ) : null}
       </div>

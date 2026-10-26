@@ -17,7 +17,14 @@ import { MEMBER_VEHICLE_COLOR_LABELS } from '../../../components/vehicles/member
 import { DirectionsControl } from '../../../components/ui/DirectionsControl';
 
 /** Ride share schedule, seats, car, pickup, and payment — single block under the title on consumer detail. */
-export const ConsumerDetailRideshareEssentials = ({ activity }: { activity: ActivityDetailDTO }) => {
+export const ConsumerDetailRideshareEssentials = ({
+  activity,
+  showVehiclePlate = false,
+}: {
+  activity: ActivityDetailDTO;
+  /** Plate only for ride crew (host + confirmed participants) — see `viewerAccess.canAccessCrewSurfaces`. */
+  showVehiclePlate?: boolean;
+}) => {
   const facts = resolveRidesharePlanFacts(activity);
   if (!ridesharePlanFactsHasContent(facts) && !activity.date) return null;
 
@@ -85,7 +92,10 @@ export const ConsumerDetailRideshareEssentials = ({ activity }: { activity: Acti
             <div className="min-w-0">
               <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Car</p>
               <p className="text-sm font-semibold text-neutral-950">{formatRideshareVehicleLabel(vehicle)}</p>
-              <p className="text-xs text-neutral-600">{MEMBER_VEHICLE_COLOR_LABELS[vehicle.color]}</p>
+              <p className="text-xs text-neutral-600">
+                {MEMBER_VEHICLE_COLOR_LABELS[vehicle.color]}
+                {showVehiclePlate && vehicle.plateNumber ? ` · Plate ${vehicle.plateNumber}` : ''}
+              </p>
             </div>
           </div>
         ) : facts.vehicle ? (

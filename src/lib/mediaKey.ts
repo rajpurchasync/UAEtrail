@@ -15,7 +15,9 @@ export const extractMediaKey = (src: string): string | null => {
     if (fromQuery) return fromQuery;
 
     const parts = url.pathname.split('/').filter(Boolean);
-    const mediaIdx = parts.findIndex((part, index) => part === 'media' && parts[index + 1] === 'local');
+    const mediaIdx = parts.findIndex((part, index) =>
+      part === 'media' && ['local', 'public'].includes(parts[index + 1] ?? '')
+    );
     if (mediaIdx >= 0) {
       const rest = parts.slice(mediaIdx + 2).join('/');
       return rest || null;

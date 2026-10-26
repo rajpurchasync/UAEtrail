@@ -217,11 +217,13 @@ export const useExploreBrowseUrlApplyHandlers = (args: UseExploreBrowseUrlApplyH
       }
       setters.setListMode('people');
       setters.setListOpen(true);
+      setters.setBrowseOpen(false);
       syncExploreUrl({
         listMode: 'people',
         peopleBrowseTab: initialTab,
         panel: 'activities',
         list: true,
+        browse: false,
       });
     },
     [isDesktop, clearSelection, setters, syncExploreUrl]
@@ -289,8 +291,10 @@ export const useExploreBrowseUrlApplyHandlers = (args: UseExploreBrowseUrlApplyH
 
   const closeListPanel = useCallback(() => {
     setters.setListOpen(false);
-    if (!isDesktop && listMode === 'people') {
-      setters.setListMode('default');
+    if (!isDesktop) {
+      if (listMode === 'people') {
+        setters.setListMode('default');
+      }
       syncExploreUrl({ list: false, listMode: 'default' });
       return;
     }

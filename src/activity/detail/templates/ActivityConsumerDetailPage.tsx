@@ -203,7 +203,10 @@ export const ActivityConsumerDetailPage = ({
 
       <div className="mt-3 space-y-6">
         {isRideshare && !model.requiresSignIn ? (
-          <ConsumerDetailRideshareEssentials activity={model.activity} />
+          <ConsumerDetailRideshareEssentials
+            activity={model.activity}
+            showVehiclePlate={model.viewerAccess?.canAccessCrewSurfaces === true}
+          />
         ) : null}
         <ConsumerDetailPlaceCard
           activity={model.activity}

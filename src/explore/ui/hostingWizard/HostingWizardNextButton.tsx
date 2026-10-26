@@ -1,3 +1,5 @@
+import { ComposeWizardPrimaryButton } from '../ComposeWizardPrimaryButton';
+
 export const HostingWizardNextButton = ({
   label = 'Next',
   disabled,
@@ -9,12 +11,12 @@ export const HostingWizardNextButton = ({
   loading?: boolean;
   onClick: () => void;
 }) => (
-  <button
-    type="button"
-    disabled={disabled || loading}
+  <ComposeWizardPrimaryButton
+    label={label}
+    disabled={disabled}
+    loading={loading}
+    loadingLabel="Publishing…"
     onClick={onClick}
-    className="w-full rounded-2xl bg-emerald-600 py-4 text-base font-bold text-white shadow-lg shadow-emerald-600/25 disabled:cursor-not-allowed disabled:opacity-50"
-  >
-    {loading ? 'Publishing…' : `${label} →`}
-  </button>
+    tone="host"
+  />
 );

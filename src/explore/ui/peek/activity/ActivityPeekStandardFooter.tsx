@@ -184,7 +184,7 @@ export const ActivityPeekStandardFooter = ({
             joinStateLoading={false}
             onGuestGatedAction={gate ? () => gate('view_detail') : undefined}
             onBeforeNavigate={onBeforeDetailNavigate}
-            linkState={mapPeekDetailNavState(location, card.id)}
+            linkState={mapPeekDetailNavState(location)}
             ariaLabel="View details"
           />
         ) : (

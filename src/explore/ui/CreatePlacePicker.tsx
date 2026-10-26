@@ -1,10 +1,16 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Circle, MapContainer, useMap, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import { ChevronLeft, MapPin, Navigation, X } from 'lucide-react';
+import { ChevronLeft, MapPin, Navigation, Pencil, Search, X } from 'lucide-react';
 import { MAP_CONFIG } from '../../config/platform';
 import { MapTileLayers } from '../../components/ui/MapTileLayers';
+import { ViewOnMapLink } from '../../components/ui/ViewOnMapLink';
+import { resolvePlaceSelection, searchPlaces, type PlaceSearchResult } from '../../lib/placeSearch';
+import { formatCoord, parseCoord } from '../../utils/coords';
 import type { LocationPrecision } from './createFlowShared';
+import { useComposeWizardEnterSubmit } from './useComposeWizardEnterSubmit';
+
+type PickerPhase = 'search' | 'adjust';
 
 const MapFlyTo = ({ center, zoom }: { center: [number, number] | null; zoom: number }) => {
   const map = useMap();
@@ -14,6 +20,7 @@ const MapFlyTo = ({ center, zoom }: { center: [number, number] | null; zoom: num
   }, [map, center, zoom]);
   return null;
 };
+
 const MapResize = () => {
   const map = useMap();
   useEffect(() => {
@@ -35,7 +42,6 @@ const MapCenterTracker = ({
   onCenterChange: (lat: number, lng: number) => void;
 }) => {
   const map = useMap();
-
   useEffect(() => {
     const update = () => {
       const center = map.getCenter();
@@ -47,15 +53,10 @@ const MapCenterTracker = ({
       map.off('moveend', update);
     };
   }, [map, onCenterChange]);
-
   return null;
 };
 
-const MapLocate = ({
-  onLocated,
-}: {
-  onLocated: (lat: number, lng: number) => void;
-}) => {
+const MapLocate = ({ onLocated }: { onLocated: (lat: number, lng: number) => void }) => {
   const map = useMap();
   useMapEvents({
     locationfound(event) {
@@ -78,8 +79,9 @@ interface CreatePlacePickerProps {
   headerTitle?: string;
   confirmLabel?: string;
   hint?: string;
-  /** Initial map zoom — 15+ for street-level pin placement. */
   initialZoom?: number;
+  /** Skip Google search — adjust an existing pin (user tapped Edit). */
+  openInAdjustMode?: boolean;
 }
 
 export const CreatePlacePicker = ({
@@ -95,14 +97,50 @@ export const CreatePlacePicker = ({
   confirmLabel = 'Confirm location',
   hint,
   initialZoom = 15,
+  openInAdjustMode = false,
 }: CreatePlacePickerProps) => {
+  const [phase, setPhase] = useState<PickerPhase>(openInAdjustMode ? 'adjust' : 'search');
   const [mapReady, setMapReady] = useState(false);
   const [locating, setLocating] = useState(false);
   const [flyTo, setFlyTo] = useState<[number, number] | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<PlaceSearchResult[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [resolvingPlace, setResolvingPlace] = useState(false);
+  const [selectedPlaceLabel, setSelectedPlaceLabel] = useState<string | null>(null);
+  const [coordsEditing, setCoordsEditing] = useState(false);
+  const [latInput, setLatInput] = useState(formatCoord(latitude));
+  const [lngInput, setLngInput] = useState(formatCoord(longitude));
+
+  useComposeWizardEnterSubmit(onConfirm, { enabled: phase === 'adjust' });
 
   useEffect(() => {
     setMapReady(true);
   }, []);
+
+  useEffect(() => {
+    if (!coordsEditing) {
+      setLatInput(formatCoord(latitude));
+      setLngInput(formatCoord(longitude));
+    }
+  }, [latitude, longitude, coordsEditing]);
+
+  useEffect(() => {
+    if (phase !== 'search') return;
+    const q = searchQuery.trim();
+    if (q.length < 2) {
+      setSearchResults([]);
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      setSearching(true);
+      void searchPlaces(q)
+        .then(setSearchResults)
+        .catch(() => setSearchResults([]))
+        .finally(() => setSearching(false));
+    }, 200);
+    return () => window.clearTimeout(timer);
+  }, [searchQuery, phase]);
 
   const handleCenterChange = useCallback(
     (lat: number, lng: number) => {
@@ -111,14 +149,57 @@ export const CreatePlacePicker = ({
     [onLocationChange]
   );
 
+  const movePin = (lat: number, lng: number) => {
+    onLocationChange(lat, lng);
+    setFlyTo([lat, lng]);
+  };
+
+  const enterAdjustPhase = (label: string | null) => {
+    setSelectedPlaceLabel(label);
+    setCoordsEditing(false);
+    setPhase('adjust');
+  };
+
+  const pickSearchResult = async (result: PlaceSearchResult) => {
+    let lat = result.lat;
+    let lng = result.lng;
+    let label = result.label;
+
+    if (lat == null || lng == null) {
+      setResolvingPlace(true);
+      const resolved = await resolvePlaceSelection({
+        placeId: result.placeId,
+        query: result.label,
+      });
+      setResolvingPlace(false);
+      if (!resolved || resolved.lat == null || resolved.lng == null) return;
+      lat = resolved.lat;
+      lng = resolved.lng;
+      label = resolved.label;
+    }
+
+    movePin(lat, lng);
+    setSearchQuery(label);
+    setSearchResults([]);
+    enterAdjustPhase(label);
+  };
+
+  const applyCoordInputs = () => {
+    const lat = parseCoord(latInput);
+    const lng = parseCoord(lngInput);
+    if (lat == null || lng == null) return;
+    if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return;
+    movePin(lat, lng);
+    setCoordsEditing(false);
+  };
+
   const handleLocate = () => {
     if (!navigator.geolocation) return;
     setLocating(true);
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        const next: [number, number] = [position.coords.latitude, position.coords.longitude];
-        onLocationChange(next[0], next[1]);
-        setFlyTo(next);
+        movePin(position.coords.latitude, position.coords.longitude);
+        enterAdjustPhase('My location');
         setLocating(false);
       },
       () => setLocating(false),
@@ -127,6 +208,109 @@ export const CreatePlacePicker = ({
   };
 
   const generalRadiusMeters = 1200;
+
+  if (phase === 'search') {
+    return (
+      <div className="flex h-full min-h-0 flex-col bg-white">
+        <header className="flex shrink-0 items-center justify-between gap-3 border-b border-neutral-100 px-4 pb-3 pt-safe-plus-2">
+          <button
+            type="button"
+            onClick={onBack}
+            className="flex h-10 w-10 items-center justify-center rounded-full text-gray-700 hover:bg-neutral-100"
+            aria-label="Back"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+          <div className="min-w-0 flex-1 text-center">
+            <p className="truncate text-sm font-bold text-gray-900">{headerTitle}</p>
+            <p className="text-xs text-gray-500">Search places</p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex h-10 w-10 items-center justify-center rounded-full text-gray-700 hover:bg-neutral-100"
+            aria-label="Close"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </header>
+
+        <div className="flex min-h-0 flex-1 flex-col px-4 py-4">
+          <p className="text-sm text-gray-600">
+            {hint ?? 'Search for a place, then drag the map to fine-tune the pin.'}
+          </p>
+
+          <label className="relative mt-4 block">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <input
+              type="search"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Search for a place or address"
+              className="w-full rounded-2xl border border-neutral-200 bg-neutral-50 py-3 pl-10 pr-3 text-base text-gray-900 outline-none focus:border-emerald-400 focus:bg-white"
+              autoComplete="off"
+              autoFocus
+            />
+          </label>
+
+          {(searching || resolvingPlace) && (
+            <p className="mt-3 text-sm text-gray-500">
+              {resolvingPlace ? 'Loading place…' : 'Searching places…'}
+            </p>
+          )}
+
+          <ul className="mt-3 min-h-0 flex-1 overflow-y-auto rounded-2xl border border-neutral-100 bg-white shadow-sm">
+            {searchResults.length === 0 && searchQuery.trim().length >= 2 && !searching && !resolvingPlace && (
+              <li className="px-4 py-6 text-center text-sm text-gray-500">
+                No places found. Try adding an area name (e.g. Dubai) or set the pin on the map.
+              </li>
+            )}
+            {searchResults.map((result, index) => {
+              const Icon = result.kind === 'query' ? Search : MapPin;
+              const rowKey = result.placeId ?? `${result.label}-${index}`;
+              return (
+                <li key={rowKey} className="border-b border-neutral-100 last:border-0">
+                  <button
+                    type="button"
+                    disabled={resolvingPlace}
+                    onClick={() => void pickSearchResult(result)}
+                    className="flex w-full items-start gap-3 px-4 py-3.5 text-left hover:bg-neutral-50 active:bg-neutral-100/80 disabled:opacity-60"
+                  >
+                    <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-gray-600">
+                      <Icon className="h-4 w-4" aria-hidden />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm font-semibold text-gray-900">{result.mainText}</span>
+                      {result.secondaryText ? (
+                        <span className="mt-0.5 block truncate text-sm text-gray-500">{result.secondaryText}</span>
+                      ) : null}
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+
+          <div className="mt-4 shrink-0 space-y-2 pb-[var(--safe-bottom)]">
+            <button
+              type="button"
+              onClick={() => enterAdjustPhase(null)}
+              className="w-full rounded-2xl border-2 border-neutral-200 py-3.5 text-sm font-semibold text-gray-800 hover:border-emerald-300"
+            >
+              Set pin on map without search
+            </button>
+            <button
+              type="button"
+              onClick={handleLocate}
+              className="w-full rounded-2xl bg-neutral-100 py-3.5 text-sm font-semibold text-gray-800"
+            >
+              Use my current location
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative h-full w-full overflow-hidden bg-neutral-200">
@@ -149,7 +333,7 @@ export const CreatePlacePicker = ({
           <MapFlyTo center={flyTo} zoom={Math.max(initialZoom, 16)} />
           <MapResize />
           <MapCenterTracker onCenterChange={handleCenterChange} />
-          <MapLocate onLocated={onLocationChange} />
+          <MapLocate onLocated={(lat, lng) => movePin(lat, lng)} />
           {precision === 'general' && (
             <Circle
               center={[latitude, longitude]}
@@ -179,7 +363,7 @@ export const CreatePlacePicker = ({
         </div>
       </div>
 
-      <header className="absolute inset-x-0 top-0 z-[600] px-4 pt-safe-plus-2">
+      <header className="absolute inset-x-0 top-0 z-[600] space-y-2 px-4 pt-safe-plus-2">
         <div className="relative flex items-center justify-center">
           <div className="flex rounded-full bg-white/95 p-1 shadow-md">
             {(['general', 'specific'] as LocationPrecision[]).map((mode) => {
@@ -198,7 +382,6 @@ export const CreatePlacePicker = ({
               );
             })}
           </div>
-
           <button
             type="button"
             onClick={onClose}
@@ -209,18 +392,76 @@ export const CreatePlacePicker = ({
           </button>
         </div>
 
-        <div className="mx-auto mt-4 max-w-sm rounded-2xl bg-white/95 px-4 py-3 text-center shadow-lg">
-          <p className="text-sm font-bold text-gray-900">{headerTitle}</p>
-          <p className="mt-0.5 text-xs text-gray-500">
-            {hint ??
-              (precision === 'general'
-                ? "If you're not sure about the exact location"
-                : 'Pinch or drag to zoom — place the pin on the map')}
-          </p>
+        <div className="mx-auto max-w-md rounded-2xl bg-white/95 px-3 py-3 shadow-lg">
+          <p className="text-center text-sm font-bold text-gray-900">Edit pin location</p>
+          <p className="mt-0.5 text-center text-xs text-gray-500">Drag the map to move the pin. Tap Edit to type GPS coordinates.</p>
+          {selectedPlaceLabel && (
+            <p className="mt-2 line-clamp-2 text-center text-xs font-medium text-emerald-800">{selectedPlaceLabel}</p>
+          )}
+          <button
+            type="button"
+            onClick={() => {
+              setPhase('search');
+              setCoordsEditing(false);
+            }}
+            className="mt-2 mx-auto block text-xs font-semibold text-emerald-700 underline-offset-2 hover:underline"
+          >
+            Search for a different place
+          </button>
         </div>
       </header>
 
       <div className="absolute bottom-[calc(var(--safe-bottom)+16px)] left-4 right-4 z-[600] space-y-3">
+        <div className="rounded-2xl bg-white/95 px-3 py-2.5 shadow-lg">
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">GPS coordinates</p>
+            <button
+              type="button"
+              onClick={() => {
+                if (coordsEditing) applyCoordInputs();
+                else setCoordsEditing(true);
+              }}
+              className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700"
+            >
+              <Pencil className="h-3.5 w-3.5" />
+              {coordsEditing ? 'Apply' : 'Edit'}
+            </button>
+          </div>
+          {coordsEditing ? (
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              <label className="block">
+                <span className="text-[10px] font-medium text-gray-500">Latitude</span>
+                <input
+                  value={latInput}
+                  onChange={(event) => setLatInput(event.target.value)}
+                  className="mt-0.5 w-full rounded-lg border border-neutral-200 px-2 py-1.5 font-mono text-xs"
+                  inputMode="decimal"
+                />
+              </label>
+              <label className="block">
+                <span className="text-[10px] font-medium text-gray-500">Longitude</span>
+                <input
+                  value={lngInput}
+                  onChange={(event) => setLngInput(event.target.value)}
+                  className="mt-0.5 w-full rounded-lg border border-neutral-200 px-2 py-1.5 font-mono text-xs"
+                  inputMode="decimal"
+                />
+              </label>
+            </div>
+          ) : (
+            <p className="mt-1 font-mono text-sm text-gray-900">
+              {formatCoord(latitude)}, {formatCoord(longitude)}
+            </p>
+          )}
+          <ViewOnMapLink
+            lat={latitude}
+            lng={longitude}
+            className="mt-1 inline-flex text-[11px] font-medium text-emerald-700 hover:text-emerald-800"
+          >
+            Open in Google Maps →
+          </ViewOnMapLink>
+        </div>
+
         <div className="flex items-end justify-between gap-3">
           <button
             type="button"

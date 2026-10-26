@@ -18,6 +18,7 @@ import { MobileConsumerNavBar } from './MobileConsumerNavBar';
 import { MobileMenuProvider } from './MobileMenu';
 import { ApiStatusBanner } from './ApiStatusBanner';
 import { ExploreMapChromeProvider } from '../../explore/ExploreMapChromeContext';
+import { ComposeImmersiveChromeProvider } from '../../explore/create/ComposeImmersiveChromeContext';
 
 const productViewportShellClass =
   'flex h-[100dvh] w-full max-w-full flex-col overflow-hidden consumer-bg md:bg-gray-50';
@@ -48,6 +49,7 @@ export const ProductShell = ({ children }: { children: ReactNode }) => {
     return (
       <ComposeRailProvider>
         <MobileMenuProvider>
+          <ComposeImmersiveChromeProvider>
           <ExploreMapChromeProvider>
             <div className={`${productViewportShellClass} md:bg-gray-50`}>
               <ApiStatusBanner />
@@ -59,6 +61,7 @@ export const ProductShell = ({ children }: { children: ReactNode }) => {
               <MobileBottomNav />
             </div>
           </ExploreMapChromeProvider>
+          </ComposeImmersiveChromeProvider>
         </MobileMenuProvider>
       </ComposeRailProvider>
     );
@@ -69,6 +72,7 @@ export const ProductShell = ({ children }: { children: ReactNode }) => {
   return (
     <ComposeRailProvider>
       <MobileMenuProvider>
+        <ComposeImmersiveChromeProvider>
         <div className={productViewportShellClass}>
           <ApiStatusBanner />
           {showMobileConsumerNavBar && <MobileConsumerNavBar />}
@@ -90,6 +94,7 @@ export const ProductShell = ({ children }: { children: ReactNode }) => {
           )}
           <MobileBottomNav />
         </div>
+        </ComposeImmersiveChromeProvider>
       </MobileMenuProvider>
     </ComposeRailProvider>
   );

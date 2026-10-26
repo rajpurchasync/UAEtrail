@@ -1,6 +1,9 @@
 import { useMemo } from 'react';
 
-import { PRO_MEMBERSHIP_PATH } from '../../config/routingCatalog';
+import { Car, HeartPulse } from 'lucide-react';
+
+import { PRO_MEMBERSHIP_PATH, PROFILE_SETTINGS_SAFETY_PATH } from '../../config/routingCatalog';
+import { PROFILE_VEHICLES_PATH } from '../../config/surfacePaths';
 import { profileHubMobileBackState } from '../../utils/mobileBackNav';
 
 
@@ -228,6 +231,25 @@ export const ProfileConsumerHub = ({
 
 
       <ProfilePlanGoalsTeaser goalsCount={goalsCount} />
+
+
+
+      <SettingsMenuGroup>
+        <SettingsMenuRow
+          label="My cars"
+          subtitle="Garage for rideshare — plate shared with your ride crew only"
+          to={PROFILE_VEHICLES_PATH}
+          linkState={profileHubMobileBackState()}
+          icon={Car}
+        />
+        <SettingsMenuRow
+          label="Safety & emergency"
+          subtitle="Blood group, medical notes, ICE contact — required to join outings"
+          to={PROFILE_SETTINGS_SAFETY_PATH}
+          linkState={profileHubMobileBackState()}
+          icon={HeartPulse}
+        />
+      </SettingsMenuGroup>
 
 
 

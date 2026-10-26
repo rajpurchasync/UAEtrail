@@ -1,6 +1,13 @@
 import { createPortal } from 'react-dom';
 import type { ReactNode } from 'react';
-import { EXPLORE_SHEET, EXPLORE_TYPE, EXPLORE_Z, exploreSheetPanelClass } from '../../config/exploreTheme';
+import {
+  EXPLORE_BROWSE_PEEK_SHEET,
+  EXPLORE_SHEET,
+  EXPLORE_TYPE,
+  EXPLORE_Z,
+  exploreSheetPanelClass,
+} from '../../config/exploreTheme';
+import { X } from 'lucide-react';
 import { MobileSheetDragHandle } from '../../components/mobile/MobileSheetDragHandle';
 import { MobileBackButton } from '../../components/mobile/MobileBackButton';
 import { useModalA11y } from '../../hooks/useModalA11y';
@@ -38,10 +45,15 @@ export const ExploreMobileBrowseOverlay = ({
 }: ExploreMobileBrowseOverlayProps) => {
   const panelRef = useRef<HTMLDivElement>(null);
   const titleId = useId();
-  const { panelRef: dragPanelRef, panelStyle, dragZoneProps } = useSheetDragDismiss(onClose, {
-    enabled: open,
-    onExpand: immersive ? undefined : onExpand,
-  });
+  const peekGestures = open && !immersive;
+  const { panelRef: dragPanelRef, panelStyle, overlayStyle, dragZoneProps } = useSheetDragDismiss(
+    onClose,
+    {
+      enabled: peekGestures,
+      onExpand: peekGestures ? onExpand : undefined,
+      mode: peekGestures ? 'peek' : 'default',
+    }
+  );
   const mergePanelRef = (node: HTMLDivElement | null) => {
     panelRef.current = node;
     dragPanelRef.current = node;
@@ -54,16 +66,17 @@ export const ExploreMobileBrowseOverlay = ({
   const panelHeightClass = immersive
     ? 'h-[100dvh] max-h-[100dvh] rounded-none'
     : contentSized
-      ? 'h-auto max-h-[min(85dvh,calc(100dvh-var(--safe-top,0px)-2.75rem))]'
-      : 'h-[min(94dvh,calc(100dvh-var(--safe-top,0px)-2.75rem))] max-h-[min(94dvh,calc(100dvh-var(--safe-top,0px)-2.75rem))]';
+      ? `h-auto ${EXPLORE_BROWSE_PEEK_SHEET.panelMaxHeight}`
+      : `${EXPLORE_BROWSE_PEEK_SHEET.panelHeight} ${EXPLORE_BROWSE_PEEK_SHEET.panelMaxHeight}`;
 
   const dragHint = onExpand ? expandHint : undefined;
 
   return createPortal(
     <div
       className={`fixed inset-0 ${EXPLORE_Z.browseSheet} flex flex-col justify-end ${
-        immersive ? 'pt-0' : 'pt-[calc(var(--safe-top,0px)+2.75rem)]'
+        immersive ? 'pt-0' : EXPLORE_BROWSE_PEEK_SHEET.shellTopPad
       } ${immersive ? 'bg-white' : EXPLORE_SHEET.scrim}`}
+      style={peekGestures ? overlayStyle : undefined}
       role="presentation"
     >
       {!immersive ? (
@@ -76,7 +89,7 @@ export const ExploreMobileBrowseOverlay = ({
         aria-labelledby={titleId}
         className={`relative flex w-full min-h-0 flex-col overflow-hidden bg-neutral-50 shadow-[0_-12px_48px_rgba(15,23,42,.18)] ${panelHeightClass} ${immersive ? '' : exploreSheetPanelClass}`}
         onClick={(event) => event.stopPropagation()}
-        style={panelStyle}
+        style={peekGestures ? panelStyle : undefined}
       >
         <h2 id={titleId} className="sr-only">
           {immersive && immersiveTitle
@@ -97,10 +110,24 @@ export const ExploreMobileBrowseOverlay = ({
             <p className={`min-w-0 truncate text-center text-base font-bold ${EXPLORE_TYPE.title}`}>
               {immersiveTitle}
             </p>
-            <span className="w-10 shrink-0" aria-hidden />
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-neutral-700 hover:bg-neutral-100"
+              aria-label="Close"
+            >
+              <X className="h-5 w-5" aria-hidden />
+            </button>
           </div>
         ) : null}
-        {!immersive ? <MobileSheetDragHandle hint={dragHint} dragZoneProps={dragZoneProps} /> : null}
+        {!immersive ? (
+          <MobileSheetDragHandle
+            hint={dragHint}
+            expandGestures={Boolean(onExpand)}
+            onExpand={onExpand}
+            dragZoneProps={dragZoneProps}
+          />
+        ) : null}
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
           {children}
         </div>

@@ -7,6 +7,7 @@ import { buildActivityPresentationForDetail } from '../lib/build-activity-presen
 import { buildActivityRedactedDetail } from '../lib/activity-redacted-detail.js';
 import { resolveActivityDetailLinkage } from '../lib/activity-detail-linkage.js';
 import { buildActivityDto, toLocationDto, toParticipantPreviews } from '../lib/mappers.js';
+import { enrichActivityRideshareVehicleForCrew } from '../lib/rideshare-vehicle-crew.js';
 import { canWithdrawRequest } from '../lib/withdraw-reasons.js';
 import { PRIVATE_ACTIVITY_MESSAGE } from './activity-viewer-access.js';
 import { resolveViewerPendingJoinInvite } from './activity-invite.js';
@@ -136,9 +137,14 @@ export const loadPublicActivityDetail = async (input: {
   const linkage = await resolveActivityDetailLinkage(event, findPublishedActivityWithPreviewsById);
 
   if (access.exposure === 'redacted') {
+    const redactedDto = await enrichActivityRideshareVehicleForCrew(
+      buildActivityRedactedDetail(event),
+      hostUserId,
+      access.canAccessCrewSurfaces
+    );
     return {
       data: {
-        ...buildActivityRedactedDetail(event),
+        ...redactedDto,
         linkedParentActivity: linkage.linkedParentActivity,
         linkedRideshare: linkage.linkedRideshareSummary,
         myParticipation,
@@ -150,9 +156,15 @@ export const loadPublicActivityDetail = async (input: {
     };
   }
 
+  const activityDto = await enrichActivityRideshareVehicleForCrew(
+    buildActivityDto(event),
+    hostUserId,
+    access.canAccessCrewSurfaces
+  );
+
   return {
     data: {
-      ...buildActivityDto(event),
+      ...activityDto,
       linkedRideshare: linkage.linkedRideshare,
       linkedParentActivity: linkage.linkedParentActivity,
       organizerId: event.hostId ?? event.tenant.ownerId,

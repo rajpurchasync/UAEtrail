@@ -7,6 +7,8 @@ import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
 export type ActivityMapPeekHostProps = ActivityPeekCardProps & {
   /** Map stage anchor vs portaled sheet (member hub sheets, etc.). */
   presentation?: 'map' | 'modal';
+  /** Modal presentation only — stack above compose wizard when nested. */
+  modalZClass?: string;
 };
 
 /**
@@ -16,6 +18,7 @@ export type ActivityMapPeekHostProps = ActivityPeekCardProps & {
  */
 export const ActivityMapPeekHost = ({
   presentation = 'map',
+  modalZClass = EXPLORE_Z.composeFlow,
   ...props
 }: ActivityMapPeekHostProps) => {
   if (presentation === 'modal') {
@@ -24,7 +27,7 @@ export const ActivityMapPeekHost = ({
         open
         onClose={props.onClose}
         overlayFixed
-        zClass={EXPLORE_Z.composeFlow}
+        zClass={modalZClass}
         maxWidthClass="max-w-md"
         panelClassName="!rounded-2xl !p-0 !shadow-none !ring-0 overflow-hidden bg-transparent"
         showHandle={false}

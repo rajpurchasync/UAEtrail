@@ -330,6 +330,7 @@ export const ProProfileApplicationFlow = ({
       <div className="fixed inset-0 z-[1500] bg-neutral-100">
         <Suspense fallback={<div className="h-full w-full animate-pulse bg-emerald-50" />}>
           <CreatePlacePicker
+            openInAdjustMode={form.latitude != null && form.longitude != null}
             precision={mapPrecision}
             latitude={form.latitude ?? MAP_CONFIG.defaultCenter.lat}
             longitude={form.longitude ?? MAP_CONFIG.defaultCenter.lng}

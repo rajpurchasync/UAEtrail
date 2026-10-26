@@ -45,6 +45,7 @@ export const MapTileLayers = ({
   return (
     <>
       <TileLayer
+        key={resolvedTileUrl}
         attribution={resolvedAttribution}
         url={resolvedTileUrl}
         maxZoom={maxZoom}
@@ -62,6 +63,7 @@ export const MapTileLayers = ({
       />
       {labelUrl && labelsReady ? (
         <TileLayer
+          key={labelUrl}
           url={labelUrl}
           pane="overlayPane"
           maxZoom={maxZoom}

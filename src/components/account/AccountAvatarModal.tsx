@@ -1,6 +1,4 @@
 import { useEffect, useState } from 'react';
-import { AppButton } from '../mobile/AppButton';
-import { Dialog } from '../ui/Dialog';
 import { ProfilePhotoEditorField } from './ProfilePhotoEditorField';
 
 interface AccountAvatarModalProps {
@@ -9,17 +7,17 @@ interface AccountAvatarModalProps {
   avatarUrl?: string | null;
   displayName: string;
   saving: boolean;
-  message: string | null;
+  message?: string | null;
   onSave: (avatarUrl: string) => void | Promise<void>;
 }
 
+/** Profile avatar change: file picker → crop → save. No extra “Save photo” sheet. */
 export const AccountAvatarModal = ({
   open,
   onClose,
   avatarUrl,
   displayName,
   saving,
-  message,
   onSave,
 }: AccountAvatarModalProps) => {
   const [draftUrl, setDraftUrl] = useState(avatarUrl ?? '');
@@ -29,26 +27,23 @@ export const AccountAvatarModal = ({
     setDraftUrl(avatarUrl ?? '');
   }, [open, avatarUrl]);
 
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    if (!draftUrl.trim()) return;
-    await onSave(draftUrl.trim());
+  if (!open) return null;
+
+  const commitPhoto = async (url: string) => {
+    setDraftUrl(url);
+    await onSave(url);
   };
 
   return (
-    <Dialog open={open} onClose={onClose} title="Profile photo">
-      <form className="space-y-4" onSubmit={handleSubmit}>
-        <ProfilePhotoEditorField
-          value={draftUrl || undefined}
-          name={displayName}
-          onChange={setDraftUrl}
-          disabled={saving}
-        />
-        <AppButton type="submit" disabled={saving || !draftUrl.trim()} fullWidth>
-          {saving ? 'Saving…' : 'Save photo'}
-        </AppButton>
-        {message && <p className="text-sm text-emerald-700 text-center font-medium">{message}</p>}
-      </form>
-    </Dialog>
+    <ProfilePhotoEditorField
+      value={draftUrl || undefined}
+      name={displayName}
+      onChange={setDraftUrl}
+      disabled={saving}
+      autoOpenPicker
+      suppressChrome
+      onDismiss={onClose}
+      onPhotoCommitted={commitPhoto}
+    />
   );
 };

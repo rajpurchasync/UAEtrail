@@ -5,6 +5,7 @@ import {
 } from '../../utils/memberPublishGate';
 import {
   isAddWizard,
+  isComposeMenu,
   isSeekFixedWizard,
   isHostWizard,
   isSeekFlexibleWizard,
@@ -23,6 +24,17 @@ type ComposeRouteGuardContext = {
   hostGateLoading: boolean;
   canPublish: boolean;
   profileComplete: boolean;
+};
+
+/** Create wizards that require a signed-in member (not the FAB intent menu). */
+export const composeRouteRequiresAuth = (route: ExploreCompose | null): boolean => {
+  if (!route || isComposeMenu(route)) return false;
+  return (
+    isHostWizard(route) ||
+    isSeekFixedWizard(route) ||
+    isSeekFlexibleWizard(route) ||
+    isAddWizard(route)
+  );
 };
 
 /** Auth and host-gate checks before applying a `?compose=` URL change. */

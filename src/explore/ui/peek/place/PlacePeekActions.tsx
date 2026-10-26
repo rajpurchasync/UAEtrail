@@ -48,7 +48,7 @@ export const PlacePeekActions = ({
         className={EXPLORE_PEEK_CTA.secondary}
         onGuestGatedAction={onGuestGatedPlanTrip}
         onBeforeNavigate={onClose}
-        linkState={mapPeekDetailNavState(location, card.id)}
+        linkState={mapPeekDetailNavState(location)}
       />
     </div>
   );

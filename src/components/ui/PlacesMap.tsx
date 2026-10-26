@@ -9,6 +9,7 @@ import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import { formatActivityType } from '../../utils/activityIdentity';
 import { MAP_CONFIG } from '../../config/platform';
+import type { MapRecenterTarget } from '../../lib/mapRecenter';
 import { exploreMapPinRingColor, type MapPinRingSource } from '../../config/exploreTheme';
 import { HIKING_VENUE_EMOJI, CAMPING_VENUE_EMOJI, CAMPING_ACTIVITY_EMOJI, MAP_FILTER_EMOJI } from '../../explore/exploreCopy';
 import {
@@ -486,29 +487,20 @@ const pinsKey = (pins: PlaceMapPin[]): string =>
     .sort()
     .join('|');
 
-const ExploreInitialView = ({ pinsKeyValue, pinCount }: { pinsKeyValue: string; pinCount: number }) => {
+const ExploreInitialView = () => {
   const map = useMap();
-  const lastKeyRef = useRef<string | null>(null);
+  const didSetInitialRef = useRef(false);
 
   useEffect(() => {
-    if (lastKeyRef.current === pinsKeyValue) return;
-    lastKeyRef.current = pinsKeyValue;
-
-    if (pinCount === 0) {
-      map.setView(
-        [MAP_CONFIG.exploreDefaultCenter.lat, MAP_CONFIG.exploreDefaultCenter.lng],
-        MAP_CONFIG.exploreDefaultZoom,
-        { animate: false }
-      );
-      return;
-    }
+    if (didSetInitialRef.current) return;
+    didSetInitialRef.current = true;
 
     map.setView(
       [MAP_CONFIG.exploreDefaultCenter.lat, MAP_CONFIG.exploreDefaultCenter.lng],
       MAP_CONFIG.exploreDefaultZoom,
       { animate: false }
     );
-  }, [map, pinsKeyValue, pinCount]);
+  }, [map]);
 
   return null;
 };
@@ -602,18 +594,37 @@ const MapResize = ({ layoutRevision }: { layoutRevision?: number | string | bool
 
 const RecenterMap = ({
   target,
-  zoom,
+  exploreDefaultZoom,
 }: {
-  target: { lat: number; lng: number } | null;
-  zoom?: number;
+  target: MapRecenterTarget | null;
+  exploreDefaultZoom?: number;
 }) => {
   const map = useMap();
+  const lat = target?.lat;
+  const lng = target?.lng;
+  const zoom = target?.zoom;
+  const zoomIn = target?.zoomIn;
+  const flyDuration = target?.flyDuration;
+  const nonce = target?.nonce;
 
   useEffect(() => {
-    if (!target) return;
-    const targetZoom = zoom ?? Math.max(map.getZoom(), 13);
-    map.flyTo([target.lat, target.lng], targetZoom, { duration: 0.55 });
-  }, [map, target, zoom]);
+    if (lat == null || lng == null) return;
+    let targetZoom: number;
+    if (zoomIn) {
+      targetZoom = zoom ?? MAP_CONFIG.exploreLocateZoom;
+    } else if (zoom != null) {
+      targetZoom = zoom;
+    } else if (exploreDefaultZoom != null) {
+      targetZoom = exploreDefaultZoom;
+    } else {
+      targetZoom = Math.max(map.getZoom(), 13);
+    }
+    const duration = flyDuration ?? (zoomIn ? 1.15 : 0.65);
+    map.flyTo([lat, lng], targetZoom, {
+      duration,
+      easeLinearity: 0.2,
+    });
+  }, [map, exploreDefaultZoom, lat, lng, zoom, zoomIn, flyDuration, nonce]);
 
   return null;
 };
@@ -865,7 +876,7 @@ interface PlacesMapProps {
   showLegend?: boolean;
   tileUrl?: string;
   labelTileUrl?: string | null;
-  recenterTo?: { lat: number; lng: number } | null;
+  recenterTo?: MapRecenterTarget | null;
   exploreMode?: boolean;
   /** Overrides explore default center — device fix or regional UAE framing. */
   exploreMapCenter?: { lat: number; lng: number } | null;
@@ -1010,14 +1021,14 @@ export const PlacesMap = ({
           deferLabels={tileLoad.deferLabels}
         />
         {exploreMode ? (
-          <ExploreInitialView pinsKeyValue={pinsKeyValue} pinCount={pins.length} />
+          <ExploreInitialView />
         ) : (
           <FitMapBounds mapBounds={mapBounds} maxZoom={14} pinCount={pins.length} pinsKeyValue={pinsKeyValue} />
         )}
         <MapResize layoutRevision={layoutRevision} />
         <RecenterMap
           target={recenterTo}
-          zoom={exploreMode ? MAP_CONFIG.exploreDefaultZoom : undefined}
+          exploreDefaultZoom={exploreMode ? MAP_CONFIG.exploreDefaultZoom : undefined}
         />
         <MapZoomReporter onZoomChange={onZoomChange} />
         {onVisibleBoundsChange ? (

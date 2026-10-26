@@ -33,6 +33,7 @@ import {
   normalizeProfileVisibility,
   parseMediaKey
 } from '../lib/media-access.js';
+import { convertImageToDisplayJpeg } from '../lib/convert-image-to-jpeg.js';
 
 /** Resolve absolute path for local uploads (relative to apps/api/) */
 const LOCAL_UPLOADS_DIR = join(process.cwd(), 'uploads');
@@ -164,10 +165,14 @@ const extraKnownBuckets = (): string[] => [env.S3_PUBLIC_BUCKET, env.S3_PRIVATE_
 
 export const mediaRouter = Router();
 
-const servePublicMedia = async (key: string, res: import('express').Response): Promise<boolean> => {
+const servePublicMedia = async (
+  key: string,
+  res: import('express').Response,
+  options: { allowPrivateKinds?: boolean } = {}
+): Promise<boolean> => {
   const parsed = parseMediaKey(key);
   const kind = parsed?.kind ?? 'general';
-  if (isPrivateMediaKind(kind)) {
+  if (isPrivateMediaKind(kind) && !options.allowPrivateKinds) {
     res.status(403).json({ error: { code: 'forbidden', message: 'This media is not public.' } });
     return true;
   }
@@ -184,6 +189,8 @@ const servePublicMedia = async (key: string, res: import('express').Response): P
           ext === 'png' ? 'image/png' :
           ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg' :
           ext === 'gif' ? 'image/gif' :
+          ext === 'heic' ? 'image/heic' :
+          ext === 'heif' ? 'image/heif' :
           'application/octet-stream';
         res.setHeader('Content-Type', contentType);
         res.setHeader('Cache-Control', 'public, max-age=86400');
@@ -216,7 +223,7 @@ if (isLocalMediaDevMode()) {
   /* ─── Serve local uploads when S3 is not configured (dev only) ─────────── */
   mediaRouter.get(/^\/local\/(.+)$/, async (req, res) => {
     const filePath = req.params[0];
-    const served = await servePublicMedia(filePath, res);
+    const served = await servePublicMedia(filePath, res, { allowPrivateKinds: true });
     if (!served && !res.headersSent) {
       res.status(404).json({ error: { code: 'not_found', message: 'File not found.' } });
     }
@@ -323,7 +330,8 @@ mediaRouter.get('/resolve', optionalAuth, validate({ query: resolveQuerySchema }
 
     res.json({
       data: {
-        url: `/api/media/public/${key}`,
+        // Private kinds cannot use /public; local dev serves authorized objects from disk.
+        url: `/api/media/local/${key}`,
         expiresAt: expiresAt.toISOString(),
         key
       }
@@ -334,6 +342,28 @@ mediaRouter.get('/resolve', optionalAuth, validate({ query: resolveQuerySchema }
 });
 
 mediaRouter.use(requireAuth, requireVerifiedEmail);
+
+mediaRouter.post(
+  '/prepare-image',
+  raw({ type: '*/*', limit: MAX_UPLOAD_BYTES }),
+  async (req, res, next) => {
+    try {
+      const buffer = req.body as Buffer;
+      if (!Buffer.isBuffer(buffer) || buffer.length === 0) {
+        throw new ApiError(400, 'empty_body', 'No image data received.');
+      }
+      if (buffer.length > MAX_UPLOAD_BYTES) {
+        throw new ApiError(400, 'file_too_large', 'Image exceeds the size limit.');
+      }
+      const jpeg = await convertImageToDisplayJpeg(buffer);
+      res.setHeader('Content-Type', 'image/jpeg');
+      res.setHeader('Cache-Control', 'no-store');
+      res.send(jpeg);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
 
 mediaRouter.post('/presign-upload', validate({ body: presignSchema }), async (req, res, next) => {
   try {

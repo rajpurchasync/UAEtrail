@@ -501,6 +501,14 @@ export const publishPublishingTenantActivity = async (input: {
     throw new ApiError(400, 'activity_not_draft', 'Only draft activities can be published.');
   }
   assertActivityJoinInstructions(event.requirements ?? []);
+  const memberStatus = await resolveMemberStatus(input.actorId);
+  try {
+    const { assertCommunityRideshareCanPublish } = await import('../lib/rideshare-destination-publish.js');
+    await assertCommunityRideshareCanPublish(event, memberStatus.hostTiers);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Invalid rideshare destination.';
+    throw new ApiError(400, 'rideshare_destination_invalid', message);
+  }
   const updated = await publishActivityById(event.id);
   await createAuditLog({
     actorId: input.actorId,

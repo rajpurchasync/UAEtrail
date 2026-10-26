@@ -193,7 +193,7 @@ export interface ActivityDTO {
   ridesharePriceAed?: number | null;
   rideshareSeats?: number | null;
   rideshareDetails?: string | null;
-  /** Linked member car for rideshare listings (plate not exposed on public reads). */
+  /** Linked member car for rideshare listings (plate only for ride crew on activity detail). */
   rideshareVehicleId?: string | null;
   rideshareVehicle?: import('./member-vehicle.js').RideshareVehiclePublicDTO | null;
   linkedActivityId?: string | null;
@@ -1723,3 +1723,18 @@ export {
   normalizePeopleSegment,
 } from './wire-lexicon.js';
 export type { ActivityModeWire } from './wire-lexicon.js';
+
+export {
+  sniffHeicContainerBuffer,
+  sniffHeicContainerBytes,
+} from './heic-container.js';
+
+export {
+  RIDESHARE_DESTINATION_ACTIVITY_PREFIX,
+  RIDESHARE_DESTINATION_PLACE_PREFIX,
+  RIDESHARE_PENDING_DESTINATION_PLACE_PREFIX,
+  rideshareDestinationActivityId,
+  rideshareDestinationPlaceId,
+  rideshareHasPendingDestinationPlace,
+  type RideshareDestinationKind,
+} from './rideshare-destination.js';

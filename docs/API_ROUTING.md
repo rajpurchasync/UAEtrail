@@ -134,6 +134,21 @@ Storage: `activity_invites` (`COLLECTIONS.ACTIVITY_INVITES`) · indexes in `mong
 
 ---
 
+## Geo search (`/geo`)
+
+Place autocomplete and community rideshare destinations. Registered in `apps/api/src/routes/geo-search.ts` (`apiRouter.use('/geo')`). Optional auth. Place autocomplete is cached on the API for 60s; destination search caches the public half (outings + catalog places) for 20s and loads the caller’s draft places on each request.
+
+| Method | Path | Notes |
+|--------|------|--------|
+| GET | `/geo/search?q=` | Place autocomplete. Photon, then Nominatim, then Google Places when `GOOGLE_MAPS_API_KEY` is set and the free providers return nothing. |
+| POST | `/geo/resolve` | `{ placeId }` or `{ query }` → one place row with coordinates. |
+| GET | `/geo/rideshare-destinations?q=` | Parallel search: published outing **meeting** points (`meetingLat` / `meetingLng` / `meetingPoint`), active catalog places that have an area and a cover, and the caller’s draft place submissions. Rides are excluded. |
+| POST | `/geo/rideshare-destinations/resolve` | `{ kind, id }` → one destination row by id (`activity_meeting` · `catalog_place` · `pending_place`). |
+
+Community host publish stores the chosen row on the activity `requirements` lines (`Rideshare destination activity:` / `Rideshare destination place:` / `Rideshare pending destination place:`). Pro hosts may pin any map destination and skip this search.
+
+---
+
 ## Buddies (`/me/buddies`)
 
 | Method | Path | Who |

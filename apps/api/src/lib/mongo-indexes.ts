@@ -134,6 +134,7 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
     db.collection(COLLECTIONS.ACTIVITIES).createIndexes([
       { key: { tenantId: 1, startAt: 1 } },
       { key: { status: 1, startAt: 1 } },
+      { key: { status: 1, activityType: 1, meetingLat: 1 }, name: 'status_activityType_meetingLat' },
       { key: { locationId: 1 } },
       { key: { featured: 1, status: 1, startAt: 1 } },
       { key: { areaId: 1, status: 1 }, sparse: true },

@@ -3,7 +3,7 @@
  * Use instead of `@prisma/client` model types in store layers.
  */
 
-import type { OutingCategory, OutingTopic } from '@uaetrail/shared-types';
+import type { MemberVehicleColor, OutingCategory, OutingTopic } from '@uaetrail/shared-types';
 import type {
   Accessibility,
   ActivityType,
@@ -130,7 +130,7 @@ export interface Activity {
     id: string;
     make: string;
     model: string;
-    color: string;
+    color: MemberVehicleColor;
     year: number;
   } | null;
   /** Parent hike/camp/event when this is a linked rideshare listing. */

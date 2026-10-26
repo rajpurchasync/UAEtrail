@@ -9,6 +9,8 @@ import { CreateSeekingFlow } from '../ui/CreateSeekingFlow';
 import type { SeekingSubmitResult } from '../ui/seekingFlowEngine';
 import { CreateIntentSheet } from '../ui/CreateIntentSheet';
 import { SeekFlexibleComposeSheet } from '../ui/SeekFlexibleComposeSheet';
+import { ComposeSheetExpandedProvider } from './ComposeSheetExpandedContext';
+import { ComposeWizardNavigationProvider } from './ComposeWizardNavigationContext';
 
 export interface ComposeHostProps {
   composeRoute: ExploreCompose | null;
@@ -37,6 +39,7 @@ export interface ComposeHostProps {
   planWithBuddyUserId?: string | null;
   /** When map is scoped with `?area=`, prefill seeking/add curated area steps. */
   composeAreaSlug?: string | null;
+  wizardEnteredFromMenu: boolean;
 }
 
 /** FAB compose menu and create wizards — `/explore` and `/list`. */
@@ -66,8 +69,18 @@ export const ComposeHost = ({
   tenantId = null,
   planWithBuddyUserId = null,
   composeAreaSlug = null,
-}: ComposeHostProps) => (
-  <>
+  wizardEnteredFromMenu,
+}: ComposeHostProps) => {
+  const composeSessionOpen =
+    composeMenuOpen ||
+    hostWizardOpen ||
+    seekFixedWizardOpen ||
+    addWizardOpen ||
+    seekFlexibleOpen;
+
+  return (
+    <ComposeWizardNavigationProvider value={wizardEnteredFromMenu}>
+    <ComposeSheetExpandedProvider composeSessionOpen={composeSessionOpen}>
     {composeMenuOpen && composeRoute && (
       <CreateIntentSheet
         route={composeRoute}
@@ -135,5 +148,7 @@ export const ComposeHost = ({
         onCreateLinkedRideshare={onCreateLinkedRideshare}
       />
     )}
-  </>
-);
+    </ComposeSheetExpandedProvider>
+    </ComposeWizardNavigationProvider>
+  );
+};

@@ -215,9 +215,7 @@ export const useExploreSelectionActions = ({
             onOpenHostManage(activity, 'participants');
             return;
           }
-          const detailState = selectedId
-            ? mapPeekDetailNavState(location, selectedId)
-            : undefined;
+          const detailState = mapPeekDetailNavState(location);
           setSelectedId(null);
           navigate(`${activityDetailPath(activity.id)}?tab=buddies`, { state: detailState });
         },
@@ -228,9 +226,7 @@ export const useExploreSelectionActions = ({
         },
         viewDetail: () => {
           if (!activity) return;
-          const detailState = selectedId
-            ? mapPeekDetailNavState(location, selectedId)
-            : undefined;
+          const detailState = mapPeekDetailNavState(location);
           setSelectedId(null);
           navigate(activityDetailPath(activity.id), { state: detailState });
         },
@@ -251,7 +247,6 @@ export const useExploreSelectionActions = ({
       navigate,
       setSelectedId,
       location,
-      selectedId,
     ]
   );
 

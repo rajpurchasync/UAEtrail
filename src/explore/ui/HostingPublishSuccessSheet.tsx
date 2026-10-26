@@ -10,6 +10,7 @@ import {
   HOSTING_LINK_RIDESHARE_LABEL,
   HOSTING_LINK_RIDESHARE_PASTE_CTA,
   HOSTING_PUBLISH_SUCCESS_BODY,
+  HOSTING_RIDESHARE_PENDING_DESTINATION_BODY,
   HOSTING_PUBLISH_SUCCESS_BODY_PRIVATE,
   HOSTING_PUBLISH_SUCCESS_TITLE,
   HOSTING_PUBLISH_VIEW_CTA,
@@ -100,7 +101,9 @@ export const HostingPublishSuccessSheet = ({
           <p className="mt-2 max-w-[18rem] text-pretty text-sm leading-relaxed text-neutral-600">
             {publishedActivity.joinMode === 'private'
               ? HOSTING_PUBLISH_SUCCESS_BODY_PRIVATE
-              : HOSTING_PUBLISH_SUCCESS_BODY}
+              : kind === 'rideshare' && draft.rideshareDestinationKind === 'pending_place'
+                ? HOSTING_RIDESHARE_PENDING_DESTINATION_BODY
+                : HOSTING_PUBLISH_SUCCESS_BODY}
           </p>
         </div>
 

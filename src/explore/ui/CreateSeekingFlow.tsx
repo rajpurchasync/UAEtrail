@@ -19,6 +19,15 @@ import { FlowStepTextArea, FlowStepTextInput } from './useFlowSheetPrimaryFieldF
 import { EXPLORE_FLOW } from '../../config/exploreTheme';
 import { MAP_CONFIG } from '../../config/platform';
 import { EXPLORE_Z } from '../../config/exploreTheme';
+import { COMPOSE_SHEET_DRAG_HINT } from '../../hooks/useMobileBrowseSheetImmersive';
+import { useComposeSheetExpandedState } from '../create/ComposeSheetExpandedContext';
+import { useComposeWizardExitBack } from '../create/useComposeWizardExitBack';
+import {
+  composeWizardHasDraftContent,
+  finishComposeFlowClose,
+  isPastWizardStep,
+  requestComposeFlowClose,
+} from './composeFlowClose';
 import {
   buildDateOptions,
   buildSeekingComment,
@@ -68,6 +77,7 @@ import {
 } from './seekingWizardSteps';
 import { SeekingSubmitSuccessSheet } from './SeekingSubmitSuccessSheet';
 import { EXPLORE_REGION_PILL_LABELS } from '../../config/regions';
+import { ComposeWizardPrimaryButton } from './ComposeWizardPrimaryButton';
 
 const CreatePlacePicker = lazy(() =>
   import('./CreatePlacePicker').then((m) => ({ default: m.CreatePlacePicker }))
@@ -98,14 +108,14 @@ const NextButton = ({
   loading?: boolean;
   onClick: () => void;
 }) => (
-  <button
-    type="button"
-    disabled={disabled || loading}
+  <ComposeWizardPrimaryButton
+    label={label}
+    disabled={disabled}
+    loading={loading}
+    loadingLabel="Posting…"
     onClick={onClick}
-    className="w-full rounded-2xl bg-emerald-500 py-4 text-base font-bold text-white shadow-lg shadow-emerald-500/25 disabled:cursor-not-allowed disabled:opacity-50"
-  >
-    {loading ? 'Posting…' : `${label} →`}
-  </button>
+    tone="flow"
+  />
 );
 
 const REVIEW_EDIT_LABELS: Partial<Record<SeekingFlowStepId, string>> = {
@@ -234,7 +244,6 @@ export const CreateSeekingFlow = ({
       return;
     }
     if (!user) {
-      navigate(signInHref);
       onClose();
     }
   }, [
@@ -259,10 +268,27 @@ export const CreateSeekingFlow = ({
     setDraft((prev) => ({ ...prev, ...patch }));
   }, []);
 
-  const handleClose = () => {
+  const { sheetExpanded, expandSheet } = useComposeSheetExpandedState();
+
+  const finishClose = () => {
     if (submitting) return;
-    onClose();
+    finishComposeFlowClose(onClose);
   };
+
+  const hasComposeDraft = composeWizardHasDraftContent({
+    title: draft.title,
+    notes: draft.comment || draft.additionalInfo,
+    placeLabel: draft.preferredArea,
+  });
+  const composeInProgress =
+    isPastWizardStep(currentStepIndex) ||
+    (step === 'type' && selectedKind != null) ||
+    hasComposeDraft;
+
+  const requestClose = () =>
+    requestComposeFlowClose({ hasDraft: hasComposeDraft, inProgress: composeInProgress }, finishClose);
+
+  const exitWizardBack = useComposeWizardExitBack(requestClose, onBackToIntent);
 
   const goToFirstStep = () => {
     if (!selectedKind) return;
@@ -290,8 +316,14 @@ export const CreateSeekingFlow = ({
       return;
     }
     if (step === 'type' || currentStepIndex <= 0) {
-      if (step === 'type' || seekKind) {
-        onBackToIntent?.();
+      if (step === 'type' && !seekKind) {
+        exitWizardBack();
+        setError(null);
+        return;
+      }
+      if (currentStepIndex <= 0) {
+        exitWizardBack();
+        setError(null);
         return;
       }
       setStep('type');
@@ -455,11 +487,13 @@ export const CreateSeekingFlow = ({
             : isFromStep
               ? GOING_FROM_LABEL
               : 'Where would you like to go?';
+    const pinAlreadySet = isToStep ? draft.toPinPlaced : draft.fromPinPlaced;
 
     return (
       <div className={`fixed inset-0 ${EXPLORE_Z.composeFlow} bg-neutral-100`}>
         <Suspense fallback={<div className="h-full w-full animate-pulse bg-emerald-50" />}>
           <CreatePlacePicker
+            openInAdjustMode={pinAlreadySet}
             precision={draft.locationPrecision}
             latitude={lat}
             longitude={lng}
@@ -475,7 +509,7 @@ export const CreateSeekingFlow = ({
               }
             }}
             onBack={goBack}
-            onClose={handleClose}
+            onClose={requestClose}
             onConfirm={() => {
               if (isToStep) {
                 patchDraft({ toPinPlaced: true });
@@ -501,13 +535,17 @@ export const CreateSeekingFlow = ({
   return (
     <ExploreResponsiveSheet
       open
-      onClose={handleClose}
+      onClose={requestClose}
       zClass={EXPLORE_Z.composeFlow}
       overlayFixed
-      panelClassName="max-h-[min(78dvh,720px)] px-5 pb-[calc(var(--safe-bottom)+3rem)] pt-1 lg:px-6 lg:pb-6 lg:pt-2"
+      mobileComposeChrome
+      expanded={sheetExpanded}
+      onExpand={expandSheet}
+      expandHint={COMPOSE_SHEET_DRAG_HINT}
+      panelClassName="px-5 pb-[calc(var(--safe-bottom)+1rem)] pt-0 lg:px-6 lg:pb-6 lg:pt-2"
     >
         {step === 'type' && !seekKind && (
-          <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
+          <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
             <div className="grid grid-cols-2 gap-3">
               {SEEKING_TYPE_OPTIONS.map((option) => {
                 const active = selectedKind === option.key;
@@ -538,7 +576,7 @@ export const CreateSeekingFlow = ({
         )}
 
         {step === 'title' && kind && (
-          <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
+          <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
             <label className="block">
               {!usesGuidedSeekingFlow(kind) ? (
                 <span className="mb-2 block text-sm font-medium text-gray-700">
@@ -573,7 +611,7 @@ export const CreateSeekingFlow = ({
         )}
 
         {step === 'curatedArea' && kind && (
-          <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
+          <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
             <SeekingCuratedAreaStep
               areaId={draft.areaId}
               pinPlaced={draft.areaPinPlaced}
@@ -602,7 +640,7 @@ export const CreateSeekingFlow = ({
         )}
 
         {step === 'destination' && kind && (usesHikingSeekingFlow(kind) || usesCampingSeekingFlow(kind)) && (
-          <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
+          <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
             <SeekingDestinationStepBody draft={draft} patchDraft={patchDraft} />
             {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
             <div className="mt-5 pb-2">
@@ -612,7 +650,7 @@ export const CreateSeekingFlow = ({
         )}
 
         {step === 'to' && kind === 'rideshare' && (
-          <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
+          <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
             <SeekingRideshareDestinationStepBody
               draft={draft}
               patchDraft={patchDraft}
@@ -632,7 +670,7 @@ export const CreateSeekingFlow = ({
         )}
 
         {step === 'from' && kind === 'rideshare' && (
-          <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
+          <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
             <p className="mb-4 text-sm text-gray-600">Pin where you are leaving from.</p>
             {renderMapPinPicker('from', { title: 'Pickup pin', accent: 'emerald' })}
             {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
@@ -643,7 +681,7 @@ export const CreateSeekingFlow = ({
         )}
 
         {step === 'from' && kind && (usesHikingSeekingFlow(kind) || usesCampingSeekingFlow(kind)) && (
-          <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
+          <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
             <p className="mb-4 text-sm text-gray-600">Pin where you are leaving from.</p>
             {renderMapPinPicker('from', { title: 'Going from', accent: 'emerald' })}
             {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
@@ -659,7 +697,7 @@ export const CreateSeekingFlow = ({
             usesCampingSeekingFlow(kind) ||
             usesEventSeekingFlow(kind) ||
             kind === 'rideshare') && (
-          <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
+          <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
             <SeekingAudienceStepBody draft={draft} patchDraft={patchDraft} kind={kind} />
             {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
             <div className="mt-5 pb-2">
@@ -669,7 +707,7 @@ export const CreateSeekingFlow = ({
         )}
 
         {step === 'transport' && kind && (usesHikingSeekingFlow(kind) || usesCampingSeekingFlow(kind)) && (
-          <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
+          <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
             <SeekingTransportStepBody draft={draft} patchDraft={patchDraft} />
             {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
             <div className="mt-5 pb-2">
@@ -686,7 +724,7 @@ export const CreateSeekingFlow = ({
         )}
 
         {step === 'area' && kind && usesEventSeekingFlow(kind) && (
-          <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
+          <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
             <p className="mb-4 text-sm text-gray-600">Pin where you want this event to happen.</p>
             <button
               type="button"
@@ -714,7 +752,7 @@ export const CreateSeekingFlow = ({
         )}
 
         {step === 'area' && kind && !usesEventSeekingFlow(kind) && (
-          <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
+          <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
             <label className="block">
               <input
                 value={draft.preferredArea}
@@ -759,7 +797,7 @@ export const CreateSeekingFlow = ({
         )}
 
         {step === 'when' && kind && (
-          <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
+          <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
             <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
               {dateOptions.map((option) => {
                 const active = draft.date === option.iso;
@@ -842,7 +880,7 @@ export const CreateSeekingFlow = ({
         )}
 
         {step === 'route' && kind === 'rideshare' && (
-          <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
+          <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
             <p className="mb-4 text-sm text-gray-600">Set both pickup and destination on the map.</p>
             <div className="space-y-3">
               {renderRoutePicker('from')}
@@ -859,7 +897,7 @@ export const CreateSeekingFlow = ({
         )}
 
         {step === 'persons' && kind && (
-          <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
+          <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
             <p className="mb-3 text-sm text-gray-600">Including yourself</p>
             <div className="flex flex-wrap gap-2">
               {SEEKING_PARTY_PRESETS.map((value) => {
@@ -886,7 +924,7 @@ export const CreateSeekingFlow = ({
         )}
 
         {step === 'info' && kind && usesGuidedSeekingFlow(kind) && (
-          <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
+          <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
             <textarea
               value={draft.additionalInfo}
               onChange={(event) => patchDraft({ additionalInfo: event.target.value })}
@@ -904,7 +942,7 @@ export const CreateSeekingFlow = ({
         )}
 
         {step === 'comment' && kind && !usesGuidedSeekingFlow(kind) && (
-          <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
+          <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
             <label className="block">
               <textarea
                 value={draft.comment}
@@ -923,7 +961,7 @@ export const CreateSeekingFlow = ({
         )}
 
         {step === 'review' && kind && (
-          <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
+          <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
             <div className="rounded-2xl border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-gray-700">
               <p className="flex items-center gap-2 font-semibold text-gray-900">
                 {kind === 'rideshare' ? (

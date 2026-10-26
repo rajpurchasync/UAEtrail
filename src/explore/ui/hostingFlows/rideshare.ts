@@ -36,8 +36,29 @@ const validateStep = (step: CreateFlowStepId, draft: CreateActivityDraft): strin
   if (step === 'meeting' && (draft.latitude == null || draft.longitude == null)) {
     return 'Drop a pin on the map.';
   }
-  if (step === 'to' && (draft.toLatitude == null || draft.toLongitude == null)) {
-    return 'Drop a destination pin on the map.';
+  if (step === 'to') {
+    if (draft.toLatitude == null || draft.toLongitude == null) {
+      return 'Choose a ride destination.';
+    }
+    if (
+      draft.rideshareDestinationKind === 'activity_meeting' &&
+      !draft.rideshareDestinationActivityId?.trim()
+    ) {
+      return 'Select an outing meeting point from search (not another ride).';
+    }
+    if (
+      (draft.rideshareDestinationKind === 'catalog_place' ||
+        draft.rideshareDestinationKind === 'pending_place') &&
+      !draft.rideshareDestinationPlaceId?.trim()
+    ) {
+      return 'Select a catalog place or submit a new place for approval.';
+    }
+    if (draft.rideshareDestinationKind === 'map') {
+      return null;
+    }
+    if (!draft.rideshareDestinationKind) {
+      return 'Select an outing meeting point or catalog place from search.';
+    }
   }
   if (step === 'spots') {
     if (draft.capacity < 1) return 'Choose at least one seat.';

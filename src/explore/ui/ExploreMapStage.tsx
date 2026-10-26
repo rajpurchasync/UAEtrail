@@ -14,11 +14,13 @@ import { ExploreMapChromeBar } from './ExploreMapChromeBar';
 import { ExploreMapLoadErrorBoundary } from './ExploreMapLoadErrorBoundary';
 import { ExploreMapLoadingSkeleton } from './ExploreMapLoadingSkeleton';
 import { ExploreMapLocationPrompt } from './ExploreMapLocationPrompt';
+import { ExploreMapLocateButton } from './ExploreMapLocateButton';
 import { ExploreMapStyleToggle } from './ExploreMapStyleToggle';
 import { PlaceMapPeekHost } from './peek/place/PlaceMapPeekHost';
 import type { ExploreSearchScopeCounts, ExploreSearchScopeKey } from '../exploreBrowseTaxonomy';
 import type { ExplorePanel, MapFilterKey, VenueListFilterKey } from '../routing';
 import type { ExploreActivityDatePreset } from '../exploreActivityDateFilter';
+import type { MapRecenterTarget } from '../../lib/mapRecenter';
 
 const PlacesMap = lazy(() =>
   import('../../components/ui/PlacesMap').then((module) => ({ default: module.PlacesMap }))
@@ -50,10 +52,11 @@ export type ExploreMapStageProps = {
   exploreMapStyle: ExploreMapStyle;
   exploreMapTiles: ExploreMapTiles;
   onToggleMapStyle: () => void;
+  onLocateMe: () => void;
   mapPins: PlaceMapPin[];
   selectedId: string | null;
   highlightedExploreItemId?: string | null;
-  recenterTo: { lat: number; lng: number } | null;
+  recenterTo: MapRecenterTarget | null;
   exploreMapCenter: { lat: number; lng: number };
   onPinClick: (pin: PlaceMapPin) => void;
   onVisibleBoundsChange?: (bounds: MapBounds) => void;
@@ -115,6 +118,7 @@ export const ExploreMapStage = ({
   exploreMapStyle,
   exploreMapTiles,
   onToggleMapStyle,
+  onLocateMe,
   mapPins,
   selectedId,
   highlightedExploreItemId = null,
@@ -165,7 +169,6 @@ export const ExploreMapStage = ({
         <ExploreMapLoadErrorBoundary onRetry={onReloadMap}>
         <Suspense fallback={<div className="h-full min-h-[280px] w-full bg-[#2a3441]" aria-hidden />}>
         <PlacesMap
-          key={exploreMapStyle}
           pins={mapPins}
           bounds={getMapBounds()}
           fill
@@ -271,6 +274,7 @@ export const ExploreMapStage = ({
             className="pointer-events-auto flex flex-col items-center"
             style={{ gap: 'var(--explore-map-fab-stack-gap)' }}
           >
+            <ExploreMapLocateButton onLocate={onLocateMe} locating={locatingDevice} />
             <ExploreMapStyleToggle style={exploreMapStyle} onToggle={onToggleMapStyle} />
             <button
               type="button"
@@ -291,6 +295,11 @@ export const ExploreMapStage = ({
           gap: 'var(--explore-map-fab-stack-gap)',
         }}
       >
+        <ExploreMapLocateButton
+          onLocate={onLocateMe}
+          locating={locatingDevice}
+          className={`${EXPLORE_FLOATING_CONTROL} h-11 w-11 justify-center !text-neutral-950`}
+        />
         <ExploreMapStyleToggle
           style={exploreMapStyle}
           onToggle={onToggleMapStyle}

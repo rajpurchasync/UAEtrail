@@ -284,7 +284,11 @@ export const publishHostingActivity = async (input: {
     linkedActivityId: draft.kind === 'rideshare' && parentLinkId ? parentLinkId : null,
   });
   const created = await createActivity(tenantId, publishBody);
-  await publishActivity(tenantId, created.id);
+  const pendingPlaceDestination =
+    draft.kind === 'rideshare' && draft.rideshareDestinationKind === 'pending_place';
+  if (!pendingPlaceDestination) {
+    await publishActivity(tenantId, created.id);
+  }
 
   // Graduate find crew onto a new hosted outing only — never when publishing a transport child.
   if (participantIntentId && draft.kind !== 'rideshare') {

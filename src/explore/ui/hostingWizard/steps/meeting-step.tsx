@@ -5,6 +5,7 @@ import {
   HostingWizardStepNext
 } from '../HostingWizardChrome';
 import { EXPLORE_FLOW } from '../../../../config/exploreTheme';
+import { formatCoord } from '../../../../utils/coords';
 import { RIDESHARE_PICKUP_HINT, EXTRA_DIRECTIONS_LABEL, GOING_FROM_HINT, GOING_FROM_WITH_TIME_HINT, PICKUP_POINT_LABEL } from '../../../createFlowCopy';
 import type { ReactNode } from 'react';
 import type { HostingWizardContext } from '../hostingWizardContext';
@@ -46,8 +47,8 @@ export function renderMeetingStep(ctx: HostingWizardContext): ReactNode | null {
                     <span>
                       <span className="block text-sm font-bold">{PICKUP_POINT_LABEL}</span>
                       <span className="text-xs text-gray-500">
-                        {hasFromPin
-                          ? `${draft.latitude?.toFixed(4)}, ${draft.longitude?.toFixed(4)}`
+                        {hasFromPin && draft.latitude != null && draft.longitude != null
+                          ? `${formatCoord(draft.latitude)}, ${formatCoord(draft.longitude)}`
                           : 'Tap to choose on map'}
                       </span>
                     </span>

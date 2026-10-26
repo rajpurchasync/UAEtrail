@@ -27,12 +27,22 @@ import {
   writeAddWizardSession,
 } from './composeWizardSession';
 import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
-import { FlowSheetBackButton, FlowSheetChrome } from './ExploreFlowSheetChrome';
+import { FlowSheetChrome } from './ExploreFlowSheetChrome';
+import { COMPOSE_SHEET_DRAG_HINT } from '../../hooks/useMobileBrowseSheetImmersive';
+import { useComposeSheetExpandedState } from '../create/ComposeSheetExpandedContext';
+import { useComposeWizardExitBack } from '../create/useComposeWizardExitBack';
+import {
+  composeWizardHasDraftContent,
+  finishComposeFlowClose,
+  isPastWizardStep,
+  requestComposeFlowClose,
+} from './composeFlowClose';
 import { FlowStepTextInput } from './useFlowSheetPrimaryFieldFocus';
 import type { LocationPrecision } from './createFlowShared';
 import { ImageUpload } from '../../components/ui/ImageUpload';
 import { MAP_CONFIG } from '../../config/platform';
 import { exploreFlowKindTileClass } from './exploreFlowUi';
+import { ComposeWizardPrimaryButton } from './ComposeWizardPrimaryButton';
 
 const CreatePlacePicker = lazy(() =>
   import('./CreatePlacePicker').then((m) => ({ default: m.CreatePlacePicker }))
@@ -58,14 +68,13 @@ const NextButton = ({
   label?: string;
   onClick: () => void;
 }) => (
-  <button
-    type="button"
-    disabled={disabled || loading}
+  <ComposeWizardPrimaryButton
+    label={label}
+    disabled={disabled}
+    loading={loading}
     onClick={onClick}
-    className="w-full rounded-2xl bg-emerald-500 py-4 text-base font-bold text-white shadow-lg shadow-emerald-500/25 disabled:cursor-not-allowed disabled:opacity-50"
-  >
-    {loading ? 'Submitting…' : `${label} →`}
-  </button>
+    tone="flow"
+  />
 );
 
 export const CreateAddFacilityFlow = ({
@@ -87,6 +96,7 @@ export const CreateAddFacilityFlow = ({
   const [error, setError] = useState<string | null>(null);
   const [locationMapOpen, setLocationMapOpen] = useState(false);
   const [mapPrecision, setMapPrecision] = useState<LocationPrecision>('specific');
+  const { sheetExpanded, expandSheet } = useComposeSheetExpandedState();
 
   const flowSteps = FACILITY_ADD_STEPS;
   const currentStepIndex = flowSteps.indexOf(step);
@@ -117,7 +127,6 @@ export const CreateAddFacilityFlow = ({
       initializedRef.current = true;
     }
     if (!user) {
-      navigate(signInHref);
       onClose();
     }
   }, [open, user, navigate, signInHref, onClose, exploreAreaSlug, publishedAreas]);
@@ -135,6 +144,22 @@ export const CreateAddFacilityFlow = ({
     setDraft((prev) => ({ ...prev, ...patch }));
   }, []);
 
+  const finishClose = () => {
+    if (submitting) return;
+    finishComposeFlowClose(onClose);
+  };
+
+  const hasComposeDraft = composeWizardHasDraftContent({
+    title: draft.title,
+    description: draft.description,
+  });
+  const composeInProgress = isPastWizardStep(currentStepIndex) || hasComposeDraft;
+
+  const requestClose = () =>
+    requestComposeFlowClose({ hasDraft: hasComposeDraft, inProgress: composeInProgress }, finishClose);
+
+  const exitWizardBack = useComposeWizardExitBack(requestClose, onBackToIntent);
+
   const goBack = () => {
     if (locationMapOpen) {
       setLocationMapOpen(false);
@@ -142,8 +167,7 @@ export const CreateAddFacilityFlow = ({
       return;
     }
     if (currentStepIndex <= 0) {
-      onBackToIntent?.();
-      onClose();
+      exitWizardBack();
       return;
     }
     setStep(flowSteps[currentStepIndex - 1]);
@@ -218,6 +242,7 @@ export const CreateAddFacilityFlow = ({
       <div className={`fixed inset-0 ${EXPLORE_Z.composeFlow} bg-neutral-100`}>
         <Suspense fallback={<div className="h-full w-full animate-pulse bg-emerald-50" />}>
           <CreatePlacePicker
+            openInAdjustMode={draft.locationPinPlaced}
             precision={mapPrecision}
             latitude={lat}
             longitude={lng}
@@ -226,7 +251,7 @@ export const CreateAddFacilityFlow = ({
               patchDraft({ latitude: nextLat, longitude: nextLng });
             }}
             onBack={goBack}
-            onClose={onClose}
+            onClose={requestClose}
             onConfirm={() => {
               patchDraft({ locationPinPlaced: true });
               setLocationMapOpen(false);
@@ -244,13 +269,17 @@ export const CreateAddFacilityFlow = ({
   return (
     <ExploreResponsiveSheet
       open
-      onClose={onClose}
+      onClose={requestClose}
       zClass={EXPLORE_Z.composeFlow}
       overlayFixed
-      panelClassName="max-h-[min(78dvh,720px)] px-5 pb-[calc(var(--safe-bottom)+3rem)] pt-1 lg:px-6 lg:pb-6 lg:pt-2"
+      mobileComposeChrome
+      expanded={sheetExpanded}
+      onExpand={expandSheet}
+      expandHint={COMPOSE_SHEET_DRAG_HINT}
+      panelClassName="px-5 pb-[calc(var(--safe-bottom)+1rem)] pt-0 lg:px-6 lg:pb-6 lg:pt-2"
     >
       {step === 'title' && (
-        <FlowSheetChrome title={headerTitle} onClose={onClose} onBack={goBack}>
+        <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
           <FlowStepTextInput
             value={draft.title}
             onChange={(event) => patchDraft({ title: event.target.value })}
@@ -266,7 +295,7 @@ export const CreateAddFacilityFlow = ({
       )}
 
       {step === 'facilityType' && (
-        <FlowSheetChrome title={headerTitle} onClose={onClose} onBack={goBack}>
+        <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
           <div className="grid grid-cols-2 gap-2">
             {FACILITY_ADD_OPTIONS.map((option) => (
               <button
@@ -288,7 +317,7 @@ export const CreateAddFacilityFlow = ({
       )}
 
       {step === 'curatedArea' && (
-        <FlowSheetChrome title={headerTitle} onClose={onClose} onBack={goBack}>
+        <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
           <AddCuratedAreaStep
             areaId={draft.areaId}
             onAreaIdChange={(next) => {
@@ -308,7 +337,7 @@ export const CreateAddFacilityFlow = ({
       )}
 
       {step === 'location' && (
-        <FlowSheetChrome title={headerTitle} onClose={onClose} onBack={goBack}>
+        <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
           <label className="mb-4 block">
             <span className="mb-1.5 block text-sm font-semibold text-gray-800">Emirate / state</span>
             <select
@@ -354,7 +383,7 @@ export const CreateAddFacilityFlow = ({
       )}
 
       {step === 'image' && (
-        <FlowSheetChrome title={headerTitle} onClose={onClose} onBack={goBack}>
+        <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
           <ImageUpload
             images={draft.images}
             onChange={(images) => patchDraft({ images })}
@@ -368,7 +397,7 @@ export const CreateAddFacilityFlow = ({
       )}
 
       {step === 'description' && (
-        <FlowSheetChrome title={headerTitle} onClose={onClose} onBack={goBack}>
+        <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
           <textarea
             value={draft.description}
             onChange={(event) => patchDraft({ description: event.target.value })}
@@ -385,12 +414,11 @@ export const CreateAddFacilityFlow = ({
       )}
 
       {step === 'review' && (
-        <FlowSheetChrome title={headerTitle} onClose={onClose} onBack={goBack}>
+        <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
           <AddFacilityPreview draft={draft} publishedAreas={publishedAreas} />
           {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
           <div className="mt-5 flex flex-col gap-2 pb-2">
             <NextButton loading={submitting} label="Submit for review" onClick={() => void handleSubmit()} />
-            <FlowSheetBackButton onBack={goBack} />
           </div>
         </FlowSheetChrome>
       )}

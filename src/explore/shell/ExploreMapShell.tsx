@@ -86,6 +86,7 @@ export const ExploreMapShell = ({
     exploreMapStyle={viewport.exploreMapStyle}
     exploreMapTiles={exploreMapTiles}
     onToggleMapStyle={viewport.toggleExploreMapStyle}
+    onLocateMe={viewport.handleLocateMe}
     mapPins={mapPins}
     selectedId={selectedId}
     highlightedExploreItemId={highlightedExploreItemId}

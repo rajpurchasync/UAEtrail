@@ -19,7 +19,7 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 
 ### Profile hub (`/profile`)
 
-- **Priority order:** Consumer hub (identity card + **stats row**, About you bio/speaks, **Goals teaser** → Plan **Wishlist** (`planWishlistTabPath()` / `tab=wishlist`), launcher **tiles**) — not stacked settings menus. **Settings** via More sheet or `/profile/settings`.
+- **Priority order:** Consumer hub (identity card + **stats row**, About you bio/speaks, **Goals teaser** → Plan **Wishlist** (`planWishlistTabPath()` / `tab=wishlist`), launcher **tiles**, **My cars** + **Safety & emergency** rows) — not a full settings stack on the hub. **Settings** via launcher or `/profile/settings` (account, privacy, notifications).
 - **Badges:** `/profile/badges` — earned badges + share (`ProfileBadges.tsx`); launcher tile + badge-earn notifications → `PROFILE_BADGES_PATH`. Legacy `/rewards`, `/trail-points` redirect here. **Not** on Plan.
 - **Submissions:** `/profile/submissions` — places and facilities you submitted + link to **Reviews** (`/profile/reviews`). Leftover **`/contributions`** inbound-redirects here. Launcher tile; back stack → Profile. **Add on the map** on Explore FAB is the create path; inventory lives here, not the Plan tab.
 - **Edit profile:** `/profile/edit` — name, gender, bio, speaks, location (no DOB edit on this screen).
@@ -27,7 +27,7 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 - **Sign out:** Profile hub (bottom) and Settings → Account.
 - **Outing history + map:** `/profile/history` — joined / hosted / self **past** outings; **History · My Map** tabs (`PROFILE_HISTORY_MAIN_TABS`). Journey map at `/profile/history/map`. Legacy `/profile/my-trips` redirects; `/trips`, `/trips/map`, `/activities` → `/plan` or history via `resolveInboundTripsHubRedirect`.
 - **Saved (wishlist):** `/plan?view=plans&tab=wishlist` (`planWishlistTabPath()` / `planSavedPath()`). Legacy `lens=saved|goals` and `/profile/wishlist` normalize on load. Profile shows a teaser only — not a second full list ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §6.2 · `src/plan/`).
-- **Settings stack:** `/profile/settings` index → Account, **My cars** (`/profile/vehicles`, add/edit under that path), **Safety & emergency** (`/profile/settings/safety`), Privacy, Notifications; **iPhone & iPad** (`#ios-install`, Safari steps) and **Android** (`#android-install`, Samsung Internet / Chrome manual steps — no in-app install prompt). Back returns to the screen that opened the page (settings, profile, or the rideshare host step) and restores that screen’s scroll position and the control that was used.
+- **Cars & safety (profile hub):** **My cars** (`/profile/vehicles`, add/edit under that path) and **Safety & emergency** (`/profile/settings/safety`) open from `/profile`, not the settings index. **Settings stack:** `/profile/settings` → Account, Privacy, Notifications; **iPhone & iPad** (`#ios-install`, Safari steps) and **Android** (`#android-install`, Samsung Internet / Chrome manual steps — no in-app install prompt). Back returns to the screen that opened the page (profile, settings, or the rideshare host step) and restores that screen’s scroll position and the control that was used.
 - **Hamburger (header):** next to the notifications bell on tab chrome and desktop `Header` — Explore, Browse, **My Plans**, Outing history, Chat, Profile/Signup, **Install app** → Android / iOS (deep-link to the matching settings hash). **My Plans**, history, and Chat send guests through sign-in and back to that path. Notifications are the bell only, not in the drawer.
 - **View public card (eye):** opens `/member/:userId` — preview should match what **other signed-in members** see (`public` visibility), not the owner’s full hub (API P3).
 - **Pro membership:** `/profile/pro-membership` — Individual, Business (subtype required), or Partner paths ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md)).
@@ -205,7 +205,7 @@ Cards show city, outings attended, and a subtle upcoming outing hint (link opens
 
 **Shipped (CPC v3):** **Host** · **Find crew** · **Add on map** — see [`CREATE_FLOW.md`](./CREATE_FLOW.md). **Not** the bottom nav **My Plans** tab (`/plan`). Domain lens: **What** (Host / fixed seek → activity) · **Where** (Add → place/facility) · **Who** / **How** on detail only — [`DOMAIN.md`](./DOMAIN.md) § What · Where · Who · How.
 
-Signed-in members tap **+** on `/explore` (or list FAB) to compose. **Guests** → sign-in, then return to explore.
+Signed-in members tap **+** on `/explore` (or list FAB) to compose. **Guests** → sign-in sheet, then the same compose URL. Closing the wizard returns to the explore or list surface the member opened it from (scroll and the control that opened compose are restored). Community rideshare **To** uses `GET /geo/rideshare-destinations` (see [`API_ROUTING.md`](./API_ROUTING.md) § Geo search). **My cars** and **Safety** opened from that step use the same back stack as the profile hub.
 
 | Choice | Opens |
 |--------|--------|

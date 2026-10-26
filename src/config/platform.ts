@@ -269,6 +269,8 @@ export const MAP_CONFIG = {
   /** Explore browse — upper UAE / Emirates overview (not city street zoom). */
   exploreDefaultCenter: { lat: 25.42, lng: 55.72 },
   exploreDefaultZoom: 8,
+  /** “Locate me” on Explore — street-level framing (never zoom out from current view). */
+  exploreLocateZoom: 15,
   /** Explore / detail maps — light base + label overlay. */
   tileUrl:
     envTileUrl ||

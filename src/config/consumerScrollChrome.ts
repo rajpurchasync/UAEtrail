@@ -11,5 +11,9 @@ export const MOBILE_PRODUCT_HEADER_REST =
 export const MOBILE_PRODUCT_HEADER_FROSTED =
   `border-b border-neutral-200/25 bg-white/40 backdrop-blur-2xl shadow-[0_4px_20px_rgba(15,23,42,.04)] ${MOBILE_PRODUCT_HEADER_TRANSITION} supports-[backdrop-filter]:bg-white/30`;
 
+/** Full-screen FAB compose — tab header stays on top; sheet scrolls underneath. */
+export const MOBILE_PRODUCT_HEADER_COMPOSE_IMMERSIVE =
+  `border-b border-neutral-200/15 bg-white/20 backdrop-blur-xl shadow-none ${MOBILE_PRODUCT_HEADER_TRANSITION} supports-[backdrop-filter]:bg-white/15`;
+
 /** Activity / place consumer detail scroll — clearance for absolute sticky join CTA. */
 export const CONSUMER_DETAIL_SCROLL_CLASS = 'consumer-detail-scroll';

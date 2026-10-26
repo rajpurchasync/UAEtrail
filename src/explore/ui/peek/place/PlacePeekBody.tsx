@@ -58,25 +58,30 @@ const PlacePeekScheduledList = ({
         {PLACE_PEEK_SCHEDULED}
       </h3>
       <ul className="divide-y divide-neutral-100 rounded-xl border border-neutral-100 bg-white">
-        {activities.map((activity) => (
+        {activities.map((activity) => {
+          const title = activity.title?.trim();
+          if (!title) return null;
+          return (
           <li key={activity.id}>
             <button
               type="button"
+              data-nav-focus={`place-${mapItemId}-activity-${activity.id}`}
               onClick={() => {
                 onNavigate?.();
                 navigate(activityDetailPath(activity.id), {
-                  state: mapPeekDetailNavState(location, mapItemId),
+                  state: mapPeekDetailNavState(location),
                 });
               }}
               className="flex w-full flex-col gap-0.5 px-3 py-2.5 text-left hover:bg-neutral-50 active:bg-neutral-100"
             >
               <span className="text-sm font-semibold text-neutral-900 line-clamp-2">
-                {activity.title?.trim() || 'Outdoor plan'}
+                {title}
               </span>
               <span className={`text-xs ${EXPLORE_TYPE.muted}`}>{formatScheduledMeta(activity)}</span>
             </button>
           </li>
-        ))}
+          );
+        })}
       </ul>
     </section>
   );

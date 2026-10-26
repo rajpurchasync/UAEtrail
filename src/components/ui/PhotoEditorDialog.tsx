@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { RotateCcw, RotateCw } from 'lucide-react';
+import { isAllowedImageUploadFile, prepareImageUploadFile, withTimeout } from '../../lib/imageUploadFile';
 import { Dialog } from './Dialog';
 
 export type PhotoShape = 'circle' | 'rectangle';
@@ -29,7 +30,7 @@ interface Point {
 }
 
 const PREVIEW_MAX = 248;
-const MAX_INPUT_SIZE = 10 * 1024 * 1024;
+const MAX_INPUT_SIZE = 20 * 1024 * 1024;
 
 const clamp = (value: number, min: number, max: number): number => Math.min(max, Math.max(min, value));
 
@@ -145,8 +146,10 @@ export const PhotoEditorDialog = ({
   const outputHeight = outputHeightProp ?? (shape === 'circle' ? 512 : 1200);
 
   const [error, setError] = useState<string | null>(null);
+  const [preparing, setPreparing] = useState(false);
   const [src, setSrc] = useState<string | null>(null);
   const [imageSize, setImageSize] = useState<{ width: number; height: number } | null>(null);
+  const previewUrlRef = useRef<string | null>(null);
   const [zoom, setZoom] = useState(1);
   const [rotationDeg, setRotationDeg] = useState(0);
   const [offset, setOffset] = useState<Point>({ x: 0, y: 0 });
@@ -154,35 +157,69 @@ export const PhotoEditorDialog = ({
 
   useEffect(() => {
     if (!open || !file) return;
-    if (!file.type.startsWith('image/')) {
-      setError('Please choose an image file.');
-      return;
-    }
-    if (file.size > MAX_INPUT_SIZE) {
-      setError('Image is too large. Maximum size is 10 MB.');
-      return;
-    }
 
-    const objectUrl = URL.createObjectURL(file);
-    setError(null);
-    setZoom(1);
-    setRotationDeg(0);
-    setOffset({ x: 0, y: 0 });
+    let cancelled = false;
 
-    readImageSize(objectUrl)
-      .then((size) => {
-        setSrc(objectUrl);
-        setImageSize(size);
-      })
-      .catch((err) => {
-        URL.revokeObjectURL(objectUrl);
-        setError(err instanceof Error ? err.message : 'Failed to open image.');
-      });
+    void (async () => {
+      if (!isAllowedImageUploadFile(file)) {
+        setError('Please choose an image file.');
+        setPreparing(false);
+        return;
+      }
+      if (file.size > MAX_INPUT_SIZE) {
+        setError('Image is too large. Maximum size is 20 MB.');
+        setPreparing(false);
+        return;
+      }
 
-    return () => {
-      URL.revokeObjectURL(objectUrl);
+      setError(null);
+      setPreparing(true);
+      setZoom(1);
+      setRotationDeg(0);
+      setOffset({ x: 0, y: 0 });
       setSrc(null);
       setImageSize(null);
+
+      try {
+        const ready = await prepareImageUploadFile(file);
+        if (cancelled) return;
+        if (ready.size > MAX_INPUT_SIZE) {
+          setError('Image is too large. Maximum size is 20 MB.');
+          setPreparing(false);
+          return;
+        }
+        const objectUrl = URL.createObjectURL(ready);
+        const size = await withTimeout(
+          readImageSize(objectUrl),
+          10_000,
+          'Preview timed out. Try again or use JPG/PNG.'
+        );
+        if (cancelled) {
+          URL.revokeObjectURL(objectUrl);
+          return;
+        }
+        if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
+        previewUrlRef.current = objectUrl;
+        setSrc(objectUrl);
+        setImageSize(size);
+        setPreparing(false);
+      } catch (err) {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : 'Failed to open image.');
+          setPreparing(false);
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+      if (previewUrlRef.current) {
+        URL.revokeObjectURL(previewUrlRef.current);
+        previewUrlRef.current = null;
+      }
+      setSrc(null);
+      setImageSize(null);
+      setPreparing(false);
     };
   }, [open, file]);
 
@@ -279,12 +316,20 @@ export const PhotoEditorDialog = ({
           onPointerUp={onPointerUp}
           onPointerCancel={onPointerUp}
         >
+          {preparing && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-white/90">
+              <div className="h-8 w-8 border-2 border-white/80 border-t-transparent rounded-full animate-spin" />
+              <span className="text-xs font-medium">Preparing photo…</span>
+            </div>
+          )}
           {src && imageSize && (
             <img
               src={src}
               alt="Crop preview"
               draggable={false}
               className="absolute left-1/2 top-1/2 max-w-none"
+              width={imageSize.width}
+              height={imageSize.height}
               style={{
                 transform: `translate(calc(-50% + ${offset.x}px), calc(-50% + ${offset.y}px)) scale(${baseScale * zoom}) rotate(${rotationDeg}deg)`,
                 transformOrigin: 'center center',
@@ -338,7 +383,7 @@ export const PhotoEditorDialog = ({
           <button
             type="button"
             onClick={apply}
-            disabled={applying || !src || !imageSize}
+            disabled={applying || preparing || !src || !imageSize}
             className="ios-btn min-h-[42px] flex-1 text-sm text-white bg-emerald-600 hover:bg-emerald-700"
           >
             {applying ? 'Processing…' : 'Use this photo'}

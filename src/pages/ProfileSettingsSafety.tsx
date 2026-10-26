@@ -14,11 +14,11 @@ import { useMeProfile } from '../hooks/useMeProfile';
 import { updateMeMedicalSafetyProfile } from '../hooks/memberProfileApi';
 import { useAuth } from '../context/AuthContext';
 import { meProfileQueryKey, memberStatusQueryKey } from '../hooks/clientQueryKeys';
-import { useProfileSettingsBackChrome } from '../hooks/useProfileHubBackChrome';
-import { PROFILE_SETTINGS_PATH } from '../config/surfacePaths';
+import { useProfileHubBackChrome } from '../hooks/useProfileHubBackChrome';
+import { navigateWithBackChrome } from '../utils/mobileBackNav';
 
 export const ProfileSettingsSafety = () => {
-  const backChrome = useProfileSettingsBackChrome();
+  const backChrome = useProfileHubBackChrome();
   const navigate = useNavigate();
   const { user, refreshUser } = useAuth();
   const queryClient = useQueryClient();
@@ -86,8 +86,7 @@ export const ProfileSettingsSafety = () => {
           queryClient.invalidateQueries({ queryKey: memberStatusQueryKey(user.id) }),
         ]);
       }
-      if (window.history.length > 1) navigate(-1);
-      else navigate(PROFILE_SETTINGS_PATH);
+      navigateWithBackChrome(navigate, backChrome);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not save safety profile.');
     } finally {
@@ -186,11 +185,10 @@ export const ProfileSettingsSafety = () => {
               type="button"
               className="font-semibold text-emerald-700"
               onClick={() => {
-                if (window.history.length > 1) navigate(-1);
-                else navigate(PROFILE_SETTINGS_PATH);
+                navigateWithBackChrome(navigate, backChrome);
               }}
             >
-              Back to settings
+              {`Back to ${backChrome.label}`}
             </button>
           </p>
         </form>

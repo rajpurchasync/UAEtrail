@@ -117,7 +117,7 @@ export const ActivityPeekEngagementActions = ({
     isDetailBar ? `${base} w-full rounded-2xl` : base;
 
   const gate = onGuestGatedAction;
-  const peekDetailNavState = mapPeekDetailNavState(location, card.id);
+  const peekDetailNavState = mapPeekDetailNavState(location);
   const activity = card.activity;
   const viewerLevel = card.viewerAccess?.level ?? null;
   const labelContext: ActivityMapPeekActionLabelContext = {

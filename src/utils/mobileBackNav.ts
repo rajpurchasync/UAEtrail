@@ -1,4 +1,6 @@
+import type { NavigateFunction } from 'react-router-dom';
 import { EXPLORE_MAP_PATH, MESSAGES_PATH, PLAN_PATH, PROFILE_PATH } from '../config/routingCatalog';
+import { armViewReturn } from './viewReturnMemory';
 import { exploreMapPathAfterPeopleFullScreen } from '../explore/exploreBrowseReturnPath';
 import {
   isJourneyMapPath,
@@ -48,6 +50,19 @@ export const parseMobileBackNavState = (state: unknown): MobileBackNavState | nu
   };
 };
 
+/** Same path as the header back control: explicit return restores scroll and focus. */
+export const navigateWithBackChrome = (
+  navigate: NavigateFunction,
+  chrome: Pick<MobileBackChrome, 'fallbackTo' | 'backBehavior'>
+): void => {
+  if (chrome.backBehavior === 'fallback' || window.history.length <= 1) {
+    armViewReturn(chrome.fallbackTo);
+    navigate(chrome.fallbackTo);
+    return;
+  }
+  navigate(-1);
+};
+
 export const resolveMobileBackChrome = (
   locationState: unknown,
   defaults: { fallbackTo: string; label: string }
@@ -89,14 +104,29 @@ export const resolveMobileTabHeaderLeadingBack = (
   }
   if (
     pathname === PROFILE_SETTINGS_PRIVACY_PATH ||
-    pathname === PROFILE_SETTINGS_NOTIFICATIONS_PATH ||
-    pathname === PROFILE_SETTINGS_SAFETY_PATH ||
-    pathname === PROFILE_VEHICLES_PATH ||
-    pathname.startsWith(`${PROFILE_VEHICLES_PATH}/`)
+    pathname === PROFILE_SETTINGS_NOTIFICATIONS_PATH
   ) {
     return resolveMobileBackChrome(locationState, {
       fallbackTo: PROFILE_SETTINGS_PATH,
       label: 'Settings',
+    });
+  }
+  if (pathname === PROFILE_SETTINGS_SAFETY_PATH) {
+    return resolveMobileBackChrome(locationState, {
+      fallbackTo: PROFILE_PATH,
+      label: 'Profile',
+    });
+  }
+  if (pathname === PROFILE_VEHICLES_PATH) {
+    return resolveMobileBackChrome(locationState, {
+      fallbackTo: PROFILE_PATH,
+      label: 'Profile',
+    });
+  }
+  if (pathname.startsWith(`${PROFILE_VEHICLES_PATH}/`)) {
+    return resolveMobileBackChrome(locationState, {
+      fallbackTo: PROFILE_VEHICLES_PATH,
+      label: 'My cars',
     });
   }
   if (pathname.startsWith('/profile/')) {

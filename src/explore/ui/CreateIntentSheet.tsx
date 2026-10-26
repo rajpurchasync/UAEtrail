@@ -1,8 +1,9 @@
-import { ChevronRight, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 
 import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
-
-import { FlowSheetBackButton } from './ExploreFlowSheetChrome';
+import { COMPOSE_SHEET_DRAG_HINT } from '../../hooks/useMobileBrowseSheetImmersive';
+import { useComposeSheetExpandedState } from '../create/ComposeSheetExpandedContext';
+import { finishComposeFlowClose, requestComposeFlowClose } from './composeFlowClose';
 
 import {
 
@@ -112,9 +113,28 @@ const ComposeMenuHero = ({ onClose }: { onClose: () => void }) => (
 
 
 
-const ComposeSheetHeader = ({ title, onClose }: { title: string; onClose: () => void }) => (
+const ComposeSheetHeader = ({
+  title,
+  onClose,
+  onBack,
+}: {
+  title: string;
+  onClose: () => void;
+  onBack?: () => void;
+}) => (
 
   <header className={EXPLORE_FLOW.stepHeaderShell}>
+
+    {onBack ? (
+      <button
+        type="button"
+        onClick={onBack}
+        className="absolute left-0 top-2 -ml-2 inline-flex items-center rounded-full p-2 text-neutral-600 hover:bg-neutral-100"
+        aria-label="Back"
+      >
+        <ChevronLeft className="h-5 w-5" aria-hidden />
+      </button>
+    ) : null}
 
     <ComposeSheetCloseButton onClose={onClose} className="absolute right-0 top-2 -mr-2" />
 
@@ -145,12 +165,20 @@ const isSeekFixedKindStep = (
 export const CreateIntentSheet = ({ route, onRouteChange, onClose }: CreateIntentSheetProps) => {
 
   const open = isComposeMenu(route);
+  const { sheetExpanded, expandSheet } = useComposeSheetExpandedState();
 
   if (!open) return null;
 
 
 
   const headerTitle = composeMenuTitle(route);
+
+  const composeInProgress = Boolean(route.intent);
+
+  const finishClose = () => finishComposeFlowClose(onClose);
+
+  const requestClose = () =>
+    requestComposeFlowClose({ hasDraft: false, inProgress: composeInProgress }, finishClose);
 
 
 
@@ -183,7 +211,7 @@ export const CreateIntentSheet = ({ route, onRouteChange, onClose }: CreateInten
       return;
     }
 
-    onClose();
+    requestClose();
 
   };
 
@@ -217,7 +245,7 @@ export const CreateIntentSheet = ({ route, onRouteChange, onClose }: CreateInten
 
       open
 
-      onClose={onClose}
+      onClose={requestClose}
 
       title={headerTitle}
 
@@ -227,7 +255,17 @@ export const CreateIntentSheet = ({ route, onRouteChange, onClose }: CreateInten
 
       overlayFixed
 
-      panelClassName="overflow-hidden px-0 pb-[calc(var(--safe-bottom)+1.5rem)] pt-0 lg:pb-8 lg:pt-3"
+      mobileComposeChrome
+
+      expanded={sheetExpanded}
+
+      onExpand={expandSheet}
+
+      expandHint={COMPOSE_SHEET_DRAG_HINT}
+
+      showHandle={false}
+
+      panelClassName="overflow-hidden px-0 pb-[calc(var(--safe-bottom)+1rem)] pt-0 lg:pb-8 lg:pt-3"
 
     >
 
@@ -237,7 +275,7 @@ export const CreateIntentSheet = ({ route, onRouteChange, onClose }: CreateInten
 
           <>
 
-            <ComposeMenuHero onClose={onClose} />
+            <ComposeMenuHero onClose={requestClose} />
 
             <div className={`${menuGroupClass} divide-y divide-neutral-100`}>
 
@@ -295,7 +333,7 @@ export const CreateIntentSheet = ({ route, onRouteChange, onClose }: CreateInten
 
           <>
 
-            <ComposeSheetHeader title={headerTitle} onClose={onClose} />
+            <ComposeSheetHeader title={headerTitle} onClose={requestClose} onBack={handleBack} />
 
 
 
@@ -528,8 +566,6 @@ export const CreateIntentSheet = ({ route, onRouteChange, onClose }: CreateInten
             ) : null}
 
 
-
-            <FlowSheetBackButton onBack={handleBack} />
 
           </>
 

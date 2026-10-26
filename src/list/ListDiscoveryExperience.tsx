@@ -6,7 +6,9 @@ import { LIST_DISCOVERY_PATH } from '../config/platform';
 import { EXPLORE_MAP_PATH } from '../config/routingCatalog';
 import { EXPLORE_BRAND_ACTIVE } from '../config/exploreTheme';
 import { ComposeHost } from '../explore/create/ComposeHost';
+import { GuestComposeSignInSheet } from '../explore/ui/GuestComposeSignInSheet';
 import { useComposeRoute } from '../explore/create/hooks/useComposeRoute';
+import { clearComposeWizardSessionForRoute } from '../explore/ui/composeWizardSession';
 import { addVenueKindFromRoute, isSeekFixedWizard } from '../explore/compose';
 import { useMemberStatus } from '../hooks/useMemberStatus';
 import { reloadExploreMap } from '../hooks/useExploreMap';
@@ -133,6 +135,8 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
   const compose = useComposeRoute({
     user,
     navigate,
+    pathname,
+    search,
     searchParams,
     setSearchParams,
     onOpenComposeMenu: () => {},
@@ -494,7 +498,7 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
     );
   };
 
-  const hostWizardOpen = Boolean(compose.hostComposeRoute);
+  const hostWizardOpen = Boolean(compose.hostComposeRoute) && Boolean(user);
 
   return (
     <>
@@ -601,11 +605,11 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
         composeRoute={compose.composeRoute}
         composeMenuOpen={compose.composeMenuOpen}
         hostWizardOpen={hostWizardOpen}
-        seekFixedWizardOpen={Boolean(
-          compose.seekFixedRoute && isSeekFixedWizard(compose.composeRoute)
-        )}
-        addWizardOpen={Boolean(compose.addRoute)}
-        seekFlexibleOpen={compose.seekFlexibleOpen}
+        seekFixedWizardOpen={
+          Boolean(compose.seekFixedRoute && isSeekFixedWizard(compose.composeRoute)) && Boolean(user)
+        }
+        addWizardOpen={Boolean(compose.addRoute) && Boolean(user)}
+        seekFlexibleOpen={compose.seekFlexibleOpen && Boolean(user)}
         hostComposeKind={compose.hostComposeRoute?.kind ?? null}
         seekFixedKind={compose.seekFixedRoute?.kind}
         addVenueKind={addVenueKindFromRoute(compose.addRoute)}
@@ -614,9 +618,19 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
         onComposeRouteChange={compose.handleComposeRouteChange}
         onCloseCompose={compose.closeCompose}
         onCloseCreateFlow={compose.closeCompose}
-        onHostingBackToIntent={() => compose.setComposeRoute({ surface: 'menu', intent: 'host' })}
-        onSeekingBackToIntent={() => compose.setComposeRoute({ surface: 'menu', intent: 'seek' })}
-        onAddBackToIntent={() => compose.setComposeRoute({ surface: 'menu', intent: 'add' })}
+        wizardEnteredFromMenu={compose.wizardEnteredFromMenu}
+        onHostingBackToIntent={() => {
+          clearComposeWizardSessionForRoute(compose.hostComposeRoute);
+          compose.setComposeRoute({ surface: 'menu', intent: 'host' });
+        }}
+        onSeekingBackToIntent={() => {
+          clearComposeWizardSessionForRoute(compose.seekFixedRoute);
+          compose.setComposeRoute({ surface: 'menu', intent: 'seek' });
+        }}
+        onAddBackToIntent={() => {
+          clearComposeWizardSessionForRoute(compose.addRoute);
+          compose.setComposeRoute({ surface: 'menu', intent: 'add' });
+        }}
         onActivityPublished={() => void reloadFeed()}
         onSeekingSubmitted={() => void reloadFeed()}
         onAddSubmitted={() => void reloadFeed()}
@@ -624,6 +638,12 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
           compose.closeCompose();
           navigateMemberPublishGate(`${pathname}${search}`);
         }}
+      />
+
+      <GuestComposeSignInSheet
+        open={compose.guestComposeSignInOpen}
+        onClose={compose.closeGuestComposeSignIn}
+        authReturnPath={compose.guestComposeSignInReturnPath}
       />
     </>
   );

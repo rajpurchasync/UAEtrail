@@ -15,7 +15,18 @@ import {
 } from '../../utils/memberPublishGate';
 import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
 import { EXPLORE_Z } from '../../config/exploreTheme';
+import { formatCoord } from '../../utils/coords';
+import { COMPOSE_SHEET_DRAG_HINT } from '../../hooks/useMobileBrowseSheetImmersive';
+import { useComposeSheetExpandedState } from '../create/ComposeSheetExpandedContext';
+import { useComposeWizardExitBack } from '../create/useComposeWizardExitBack';
+import {
+  composeWizardHasDraftContent,
+  finishComposeFlowClose,
+  isPastWizardStep,
+  requestComposeFlowClose,
+} from './composeFlowClose';
 import { validateHostingPlaceArea } from '../hostingPublishArea';
+import { hostHasProRideshareMapDestination } from '../rideshareDestinationPolicy';
 import {
   buildDateOptions,
   createFlowStepTitle,
@@ -291,7 +302,6 @@ export const CreateHostingActivityFlow = ({
     }
 
     if (!user) {
-      navigate(signInHref);
       onClose();
     }
   }, [
@@ -328,10 +338,59 @@ export const CreateHostingActivityFlow = ({
     }
   }, [hostTiers, publishingProfileKind, draft.priceMode, patchDraft]);
 
-  const handleClose = useCallback(() => {
+  const { sheetExpanded } = useComposeSheetExpandedState();
+
+  const finishClose = useCallback(() => {
     if (submitting) return;
-    onClose();
+    finishComposeFlowClose(onClose);
   }, [submitting, onClose]);
+
+  const currentStepIndex = kind && step !== 'type' ? flowSteps.indexOf(step as CreateFlowStepId) : -1;
+
+  const composeDraftFields = useMemo(
+    () => ({
+      title: draft.title,
+      description: draft.description || draft.aboutTrail,
+      notes: draft.additionalInstructions || draft.joinKit,
+      placeLabel: draft.trailName || draft.rideshareFromLabel,
+      locationLabel: draft.meetingPointLabel || draft.rideshareToLabel,
+    }),
+    [
+      draft.aboutTrail,
+      draft.additionalInstructions,
+      draft.description,
+      draft.joinKit,
+      draft.meetingPointLabel,
+      draft.rideshareFromLabel,
+      draft.rideshareToLabel,
+      draft.title,
+      draft.trailName,
+    ]
+  );
+
+  const hasComposeDraft = useMemo(
+    () => composeWizardHasDraftContent(composeDraftFields),
+    [composeDraftFields]
+  );
+
+  const composeInProgress = useMemo(
+    () =>
+      isPastWizardStep(currentStepIndex) ||
+      (step === 'type' && selectedKind != null) ||
+      hasComposeDraft,
+    [currentStepIndex, hasComposeDraft, selectedKind, step]
+  );
+
+  const requestClose = useCallback(
+    () =>
+      requestComposeFlowClose(
+        { hasDraft: hasComposeDraft, inProgress: composeInProgress },
+        finishClose
+      ),
+    [composeInProgress, finishClose, hasComposeDraft]
+  );
+
+  const exitWizardBack = useComposeWizardExitBack(requestClose, onBackToIntent);
 
   const goToFirstStep = useCallback(() => {
     if (!selectedKind) return;
@@ -346,8 +405,6 @@ export const CreateHostingActivityFlow = ({
     });
     setStep(getCreateFlowSteps(selectedKind)[0]);
   }, [patchDraft, selectedKind]);
-
-  const currentStepIndex = kind && step !== 'type' ? flowSteps.indexOf(step as CreateFlowStepId) : -1;
 
   const goBack = useCallback(() => {
     if (routeMapTarget) {
@@ -367,11 +424,15 @@ export const CreateHostingActivityFlow = ({
     }
     if (step === 'type' || currentStepIndex <= 0) {
       if (seekingPrefill) {
-        onClose();
+        requestClose();
         return;
       }
-      if (step === 'type' || hostComposeKind) {
-        onBackToIntent?.();
+      if (step === 'type' && !hostComposeKind) {
+        exitWizardBack();
+        return;
+      }
+      if (currentStepIndex <= 0) {
+        exitWizardBack();
         return;
       }
       setStep('type');
@@ -386,8 +447,8 @@ export const CreateHostingActivityFlow = ({
     currentStepIndex,
     seekingPrefill,
     hostComposeKind,
-    onClose,
-    onBackToIntent,
+    requestClose,
+    exitWizardBack,
     flowSteps,
   ]);
 
@@ -535,7 +596,9 @@ export const CreateHostingActivityFlow = ({
             <span>
               <span className="block text-sm font-bold">{isTo ? TO_LOCATION_LABEL : fromLocationLabel('rideshare')}</span>
               <span className="text-xs text-gray-500">
-                {placed ? `${lat?.toFixed(4)}, ${lng?.toFixed(4)}` : 'Tap to choose on map'}
+                {placed && lat != null && lng != null
+                  ? `${formatCoord(lat)}, ${formatCoord(lng)}`
+                  : 'Tap to choose on map'}
               </span>
             </span>
           </span>
@@ -583,7 +646,7 @@ export const CreateHostingActivityFlow = ({
     goNext,
     goBack,
     goToFirstStep,
-    handleClose,
+    handleClose: requestClose,
     handlePublish,
     renderRoutePicker,
     hikingFlow,
@@ -624,7 +687,7 @@ export const CreateHostingActivityFlow = ({
     goNext,
     goBack,
     goToFirstStep,
-    handleClose,
+    requestClose,
     handlePublish,
     renderRoutePicker,
     hikingFlow,
@@ -689,11 +752,17 @@ export const CreateHostingActivityFlow = ({
         : draft.longitude ?? MAP_CONFIG.exploreDefaultCenter.lng;
     const mapEndpoint: 'from' | 'to' = isToStep ? 'to' : 'from';
     const mapStep: CreateFlowStepId = step as CreateFlowStepId;
+    const pinAlreadySet = isMeetingPin
+      ? draft.meetingLatitude != null && draft.meetingLongitude != null
+      : isToStep
+        ? hasToPin
+        : hasFromPin;
 
     return (
       <div className={`fixed inset-0 ${EXPLORE_Z.composeFlow} bg-neutral-100`}>
         <Suspense fallback={<div className="h-full w-full animate-pulse bg-emerald-50" />}>
           <CreatePlacePicker
+            openInAdjustMode={pinAlreadySet}
             precision={draft.locationPrecision}
             latitude={lat}
             longitude={lng}
@@ -707,15 +776,37 @@ export const CreateHostingActivityFlow = ({
                 return;
               }
               if (isToStep) {
-                patchDraft({ toLatitude: latitude, toLongitude: longitude });
+                if (hostHasProRideshareMapDestination(hostTiers)) {
+                  patchDraft({ toLatitude: latitude, toLongitude: longitude });
+                } else {
+                  patchDraft({
+                    toLatitude: latitude,
+                    toLongitude: longitude,
+                    rideshareDestinationKind: null,
+                    rideshareDestinationActivityId: null,
+                    rideshareDestinationPlaceId: null,
+                    rideshareDestinationDetailLine: null,
+                    rideshareDestinationPlaceLabel: null,
+                    toLabel: '',
+                  });
+                }
               } else {
                 patchDraft({ latitude, longitude });
               }
             }}
             onBack={goBack}
-            onClose={handleClose}
+            onClose={requestClose}
             onConfirm={() => {
               if (isRouteMapOverlay || isDestMapOpen) {
+                if (isToStep && hostHasProRideshareMapDestination(hostTiers)) {
+                  patchDraft({
+                    rideshareDestinationKind: 'map',
+                    rideshareDestinationActivityId: null,
+                    rideshareDestinationPlaceId: null,
+                    rideshareDestinationDetailLine: null,
+                    rideshareDestinationPlaceLabel: null,
+                  });
+                }
                 setRouteMapTarget(null);
                 setError(null);
                 return;
@@ -741,10 +832,13 @@ export const CreateHostingActivityFlow = ({
   return (
     <ExploreResponsiveSheet
       open
-      onClose={handleClose}
+      onClose={requestClose}
       zClass={EXPLORE_Z.composeFlow}
       overlayFixed
-      panelClassName="max-h-[min(78dvh,720px)] px-5 pb-[calc(var(--safe-bottom)+3rem)] pt-1 lg:px-6 lg:pb-6 lg:pt-2"
+      mobileComposeChrome
+      expanded={sheetExpanded}
+      expandHint={COMPOSE_SHEET_DRAG_HINT}
+      panelClassName="px-5 pb-[calc(var(--safe-bottom)+1rem)] pt-0 lg:px-6 lg:pb-6 lg:pt-2"
     >
         {renderHostingWizardSteps(wizardCtx)}
     </ExploreResponsiveSheet>

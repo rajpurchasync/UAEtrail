@@ -16,6 +16,7 @@ import { HostingPinReviewLine, HostingPublishPreviewBlock } from '../../hostingP
 import type { ReactNode } from 'react';
 import type { HostingWizardContext } from '../hostingWizardContext';
 import { HostingPublishAsField } from '../../HostingPublishAsField';
+import { RidesharePublishLogisticsPreview } from '../../hostingRideshareWizardSteps';
 
 export function renderPublishStep(ctx: HostingWizardContext): ReactNode | null {
   const {
@@ -204,7 +205,30 @@ export function renderPublishStep(ctx: HostingWizardContext): ReactNode | null {
                 title="To"
                 latitude={draft.toLatitude}
                 longitude={draft.toLongitude}
-                label={draft.toLabel}
+                label={
+                  draft.rideshareDestinationKind === 'activity_meeting'
+                    ? draft.rideshareDestinationDetailLine ?? draft.toLabel
+                    : draft.toLabel
+                }
+                linkedEventTitle={
+                  draft.rideshareDestinationKind === 'activity_meeting' ? draft.toLabel : null
+                }
+                linkedPlaceName={
+                  draft.rideshareDestinationKind === 'activity_meeting'
+                    ? draft.rideshareDestinationPlaceLabel
+                    : null
+                }
+                notes={
+                  draft.rideshareDestinationKind === 'catalog_place' ||
+                  draft.rideshareDestinationKind === 'pending_place'
+                    ? draft.rideshareDestinationDetailLine
+                    : null
+                }
+                linkedActivityId={
+                  draft.rideshareDestinationKind === 'activity_meeting'
+                    ? draft.rideshareDestinationActivityId
+                    : null
+                }
               />
             </>
           ) : (
@@ -239,7 +263,14 @@ export function renderPublishStep(ctx: HostingWizardContext): ReactNode | null {
         ) : null}
 
         <HostingPublishPreviewBlock title="Logistics">
-          <p className="text-sm capitalize text-gray-800">{logisticsLine}</p>
+          {rideshareFlow ? (
+            <RidesharePublishLogisticsPreview
+              memberVehicleId={draft.memberVehicleId}
+              fallbackLabel={resolveRideshareVehicleLabel(draft.vehicleAccess)}
+            />
+          ) : (
+            <p className="text-sm capitalize text-gray-800">{logisticsLine}</p>
+          )}
         </HostingPublishPreviewBlock>
 
         {structuredFlow && (draft.trailName.trim() || draft.aboutTrail.trim()) ? (
@@ -264,8 +295,9 @@ export function renderPublishStep(ctx: HostingWizardContext): ReactNode | null {
         {(activityFlow && draft.joinKit.trim()) ||
         (structuredFlow && draft.joinKit.trim()) ||
         (!structuredFlow && draft.meetingPointInfo.trim()) ||
-        (!structuredFlow && draft.description.trim()) ||
-        ((draft.additionalInstructions.trim() || (kind === 'rideshare' && draft.description.trim())) && !structuredFlow) ? (
+        (!structuredFlow && draft.description.trim() && kind !== 'rideshare') ||
+        ((draft.additionalInstructions.trim() || (kind === 'rideshare' && draft.description.trim())) &&
+          !structuredFlow) ? (
           <HostingPublishPreviewBlock title="Joiners should know">
             {activityFlow && draft.joinKit.trim() ? (
               <p className="line-clamp-4 leading-relaxed">
@@ -285,7 +317,7 @@ export function renderPublishStep(ctx: HostingWizardContext): ReactNode | null {
                 {draft.meetingPointInfo}
               </p>
             ) : null}
-            {!structuredFlow && draft.description.trim() ? (
+            {!structuredFlow && draft.description.trim() && kind !== 'rideshare' ? (
               <p className="line-clamp-3 leading-relaxed">
                 <span className="font-semibold text-gray-700">About: </span>
                 {draft.description}
@@ -318,13 +350,6 @@ export function renderPublishStep(ctx: HostingWizardContext): ReactNode | null {
       {!canPublish && !hostGateLoading && (
         <p className="mt-3 rounded-xl bg-emerald-50 px-3 py-2 text-sm text-emerald-900">{HOSTING_INTRO_PROMPT}</p>
       )}
-
-      {canPublish && draft.joinMode !== 'private' ? (
-        <p className="mt-3 text-xs text-gray-600">
-          Map and area filters use your <span className="font-semibold">catalog place</span> — pick a registry trail or
-          spot that admin linked to an area.
-        </p>
-      ) : null}
 
       {canPublish && publishTenantId ? (
         <HostingPublishAsField

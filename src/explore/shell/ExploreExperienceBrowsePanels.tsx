@@ -125,8 +125,8 @@ export const ExploreExperienceBrowsePanels = ({
           expandHint={MOBILE_BROWSE_SHEET_EXPAND_HINT}
           immersive={discoverImmersive}
           immersiveTitle={DISCOVER_BROWSE_SHEET_TITLE}
-          onExitImmersive={closeDiscoverSheet}
-          immersiveBackLabel="Explore"
+          onExitImmersive={exitDiscoverImmersive}
+          immersiveBackLabel="Back"
         >
           {discoverBrowse}
         </ExploreMobileBrowseOverlay>
@@ -143,8 +143,8 @@ export const ExploreExperienceBrowsePanels = ({
           immersiveTitle={
             isPeopleListSheet ? EXPLORE_PEOPLE_BROWSE_PANEL_TITLE : EXPLORE_SEARCH_PROMPT
           }
-          onExitImmersive={closeListSheet}
-          immersiveBackLabel="Explore"
+          onExitImmersive={exitListImmersive}
+          immersiveBackLabel="Back"
         >
           {isPeopleListSheet ? mobileListPeopleBrowsePanel : mobileMapListPanel}
         </ExploreMobileBrowseOverlay>

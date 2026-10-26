@@ -192,7 +192,7 @@ export const ListFeedActionsProvider = ({
             return;
           }
           navigate(`${activityDetailPath(activity.id)}?tab=buddies`, {
-            state: mapPeekDetailNavState(location, card.id),
+            state: mapPeekDetailNavState(location),
           });
         },
         inviteCrew: () => {
@@ -205,7 +205,7 @@ export const ListFeedActionsProvider = ({
           if (activity && onCreateLinkedRideshare) onCreateLinkedRideshare(activity);
         },
         viewDetail: () =>
-          navigate(card.path, { state: mapPeekDetailNavState(location, card.id) }),
+          navigate(card.path, { state: mapPeekDetailNavState(location) }),
         withdrawJoin: () => {
           if (joinUiForCard?.kind === 'pending' || joinUiForCard?.kind === 'confirmed') {
             joinActions.setShowWithdraw(true);

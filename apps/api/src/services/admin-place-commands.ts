@@ -11,6 +11,7 @@ import {
   placeDetailPath,
   resolveCatalogSubmitterUserId,
 } from '@uaetrail/shared-types';
+import { activityDetailPath } from '../lib/member-routes.js';
 import { createAuditLog } from '../lib/audit.js';
 import { ApiError } from '../lib/api-error.js';
 import { toLocationDto } from '../lib/mappers.js';
@@ -306,6 +307,29 @@ export const updateAdminPlaceRecord = async (input: {
         label: `Location approved: ${updated.name}`,
       }),
       'admin.location_approved_rewards'
+    );
+
+    scheduleSideEffect(
+      (async () => {
+        const { publishDraftRidesharesPendingDestinationPlace } = await import(
+          '../lib/rideshare-destination-publish.js'
+        );
+        const rideIds = await publishDraftRidesharesPendingDestinationPlace(updated.id);
+        for (const activityId of rideIds) {
+          await dispatchNotification({
+            userId: catalogSubmitterId,
+            title: 'Your ride is live',
+            body: `"${updated.name}" is approved — your linked ride is now on the explore map.`,
+            type: NotificationType.SYSTEM,
+            meta: {
+              activityId,
+              kind: 'rideshare_destination_live',
+              path: activityDetailPath(activityId),
+            },
+          });
+        }
+      })(),
+      'admin.rideshare_pending_destination_publish'
     );
   }
 

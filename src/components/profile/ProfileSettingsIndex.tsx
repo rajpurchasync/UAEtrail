@@ -1,4 +1,4 @@
-import { Bell, Car, HeartPulse, KeyRound, Shield } from 'lucide-react';
+import { Bell, KeyRound, Shield } from 'lucide-react';
 import { ConsumerShell } from '../mobile/ConsumerShell';
 import { PullToRefresh } from '../mobile/PullToRefresh';
 import { SettingsMenuGroup, SettingsMenuRow } from '../settings/SettingsMenuRow';
@@ -7,9 +7,7 @@ import {
   PROFILE_SETTINGS_NOTIFICATIONS_PATH,
   PROFILE_SETTINGS_PRIVACY_PATH,
   PROFILE_SETTINGS_PATH,
-  PROFILE_SETTINGS_SAFETY_PATH,
 } from '../../config/routingCatalog';
-import { PROFILE_VEHICLES_PATH } from '../../config/surfacePaths';
 import { mobileBackNavState } from '../../utils/mobileBackNav';
 import { useProfileHubBackChrome } from '../../hooks/useProfileHubBackChrome';
 import { AndroidInstallSettingsSection } from '../pwa/AndroidInstallSettingsSection';
@@ -31,20 +29,6 @@ export const ProfileSettingsIndex = ({ onRefresh }: ProfileSettingsIndexProps) =
           linkState={settingsChildBack}
           icon={KeyRound}
           subtitle="Email, password, sign out"
-        />
-        <SettingsMenuRow
-          label="My cars"
-          to={PROFILE_VEHICLES_PATH}
-          linkState={settingsChildBack}
-          icon={Car}
-          subtitle="Garage for rideshare — plate stays private"
-        />
-        <SettingsMenuRow
-          label="Safety & emergency"
-          to={PROFILE_SETTINGS_SAFETY_PATH}
-          linkState={settingsChildBack}
-          icon={HeartPulse}
-          subtitle="Blood group, medical notes, ICE contact — required to join outings"
         />
         <SettingsMenuRow
           label="Privacy"

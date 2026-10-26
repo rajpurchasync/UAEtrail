@@ -55,6 +55,20 @@ describe('validateHostingPlaceArea', () => {
     const draft = { ...emptyCreateActivityDraft(), kind: 'hiking' as const, joinMode: 'private' as const };
     expect(validateHostingPlaceArea(draft, [])).toBeNull();
   });
+
+  it('accepts rideshare destination from a linked outing meeting point', () => {
+    const draft = {
+      ...emptyCreateActivityDraft(),
+      kind: 'rideshare' as const,
+      joinMode: 'open' as const,
+      rideshareDestinationKind: 'activity_meeting' as const,
+      rideshareDestinationActivityId: 'act-hike-1',
+      toLatitude: 25.1,
+      toLongitude: 55.2,
+    };
+    expect(validateHostingPlaceArea(draft, [])).toBeNull();
+    expect(validateHostingPublishArea(draft)).toBeNull();
+  });
 });
 
 describe('validateHostingPublishArea (legacy shim)', () => {

@@ -4,13 +4,63 @@ import {
   buildActivityFromCreateInput,
   type ActivityCreateInput,
 } from '../src/lib/entity-builders.js';
+import { COLLECTIONS } from '../src/lib/collections.js';
 import { findActivityDocInMongo, writeActivityDocToMongo } from '../src/lib/entity-sync.js';
 import { invalidateExploreMapCache } from '../src/lib/explore-map-cache.js';
-import { connectMongo } from '../src/lib/mongo.js';
+import { connectMongo, getMongoClient } from '../src/lib/mongo.js';
 import { findTenantById } from '../src/lib/tenant-store.js';
+import type { MemberVehicleColor } from '@uaetrail/shared-types';
 
 const AGENCY_TENANT_ID = 'tenant-uae-adventure';
 const HOST_TENANT_ID = 'tenant-desert-explorer';
+
+/** Stable garage row for Omar (individual host) — linked from demo rideshare outings. */
+export const DEMO_INDIVIDUAL_HOST_VEHICLE_ID = 'seed-member-vehicle-omar-landcruiser';
+
+const DEMO_INDIVIDUAL_HOST_VEHICLE = {
+  make: 'Toyota',
+  model: 'Land Cruiser',
+  color: 'blue' as MemberVehicleColor,
+  year: 2019,
+  plateNumber: 'L 48291',
+};
+
+const demoIndividualHostVehiclePublicSnapshot = () => ({
+  id: DEMO_INDIVIDUAL_HOST_VEHICLE_ID,
+  make: DEMO_INDIVIDUAL_HOST_VEHICLE.make,
+  model: DEMO_INDIVIDUAL_HOST_VEHICLE.model,
+  color: DEMO_INDIVIDUAL_HOST_VEHICLE.color,
+  year: DEMO_INDIVIDUAL_HOST_VEHICLE.year,
+});
+
+const ensureDemoIndividualHostVehicle = async (userId: string): Promise<void> => {
+  const now = new Date();
+  await getMongoClient()!
+    .db()
+    .collection<{
+      _id: string;
+      userId: string;
+      make: string;
+      model: string;
+      color: MemberVehicleColor;
+      year: number;
+      plateNumber: string;
+      createdAt: Date;
+      updatedAt: Date;
+    }>(COLLECTIONS.MEMBER_VEHICLES)
+    .updateOne(
+      { _id: DEMO_INDIVIDUAL_HOST_VEHICLE_ID },
+      {
+        $set: {
+          userId,
+          ...DEMO_INDIVIDUAL_HOST_VEHICLE,
+          updatedAt: now,
+        },
+        $setOnInsert: { createdAt: now },
+      },
+      { upsert: true }
+    );
+};
 
 /** Published demo outings that should appear on `GET /explore/map` (refreshed on ensure). */
 export const DEMO_EXPLORE_PUBLISHED_ACTIVITY_IDS = [
@@ -188,6 +238,8 @@ export const seedDemoScheduledActivities = async (
     participationMode: 'rsvp',
   });
 
+  await ensureDemoIndividualHostVehicle(ctx.individualHostId);
+
   // Linked to `seed-event-jais` — explore map peek shows “Rideshare available” on the parent hike.
   await upsertEvent('seed-event-rideshare-marina-jais', {
     tenant: { connect: { id: ctx.individualHostTenantId } },
@@ -206,8 +258,14 @@ export const seedDemoScheduledActivities = async (
     startLat: 25.9433,
     startLng: 56.1422,
     pricingMode: 'shared',
+    rideshareEnabled: true,
     rideshareFree: false,
     ridesharePriceAed: 35,
+    rideshareSeats: 4,
+    rideshareDetails:
+      'Blue Toyota Land Cruiser (2019). AC on, roof rack for one hiking bag per seat. Non-smoking.',
+    rideshareVehicleId: DEMO_INDIVIDUAL_HOST_VEHICLE_ID,
+    rideshareVehicle: demoIndividualHostVehiclePublicSnapshot(),
     priceAed: 35,
     capacity: 4,
     featured: true,

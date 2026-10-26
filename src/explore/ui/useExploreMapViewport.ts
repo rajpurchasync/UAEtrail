@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
 import { MAP_CONFIG, readExploreMapStyle, EXPLORE_MAP_STYLE_STORAGE_KEY, type ExploreMapStyle } from '../../config/platform';
 import { useExploreDeviceLocation } from '../../hooks/useExploreDeviceLocation';
+import type { MapRecenterTarget } from '../../lib/mapRecenter';
 import { shouldOpenExploreLocationPromptFromWelcome } from '../exploreWelcomeNavigation';
 
 type UseExploreMapViewportArgs = {
@@ -19,7 +20,7 @@ export const useExploreMapViewport = ({
   search,
   navigate,
 }: UseExploreMapViewportArgs) => {
-  const [recenterTo, setRecenterTo] = useState<{ lat: number; lng: number } | null>(null);
+  const [recenterTo, setRecenterTo] = useState<MapRecenterTarget | null>(null);
   const [locationPromptOpen, setLocationPromptOpen] = useState(false);
   const [exploreMapStyle, setExploreMapStyle] = useState<ExploreMapStyle>(() => readExploreMapStyle());
   const mapCenteredRef = useRef(false);
@@ -44,12 +45,22 @@ export const useExploreMapViewport = ({
     });
   }, []);
 
-  const handleFocusMapLocation = useCallback((coords: { lat: number; lng: number }) => {
-    setRecenterTo(null);
-    window.requestAnimationFrame(() => {
-      setRecenterTo(coords);
-    });
-  }, []);
+  const handleFocusMapLocation = useCallback(
+    (coords: { lat: number; lng: number }, options?: { zoomIn?: boolean }) => {
+      setRecenterTo(null);
+      window.requestAnimationFrame(() => {
+        setRecenterTo({
+          lat: coords.lat,
+          lng: coords.lng,
+          zoomIn: Boolean(options?.zoomIn),
+          zoom: options?.zoomIn ? MAP_CONFIG.exploreLocateZoom : undefined,
+          flyDuration: options?.zoomIn ? 1.15 : 0.65,
+          nonce: Date.now(),
+        });
+      });
+    },
+    []
+  );
 
   const exploreMapCenter = useMemo(() => {
     if (deviceFix) return deviceFix;
@@ -72,13 +83,13 @@ export const useExploreMapViewport = ({
   const handleAllowMapLocation = () => {
     void enableDeviceLocation().then((fix) => {
       setLocationPromptOpen(false);
-      if (fix) handleFocusMapLocation(fix);
+      if (fix) handleFocusMapLocation(fix, { zoomIn: true });
     });
   };
 
   const handleLocateMe = () => {
     void requestDeviceLocation().then((fix) => {
-      if (fix) handleFocusMapLocation(fix);
+      if (fix) handleFocusMapLocation(fix, { zoomIn: true });
     });
   };
 

@@ -1,12 +1,15 @@
 import type { ActivityDetailDTO } from '@uaetrail/shared-types';
 import { extractActivityTransportRequirementLines } from '@uaetrail/shared-types';
 import { buildActivityDto } from './mappers.js';
+import { sanitizeRideshareVehiclePublic } from './rideshare-vehicle-crew.js';
 
 type ActivityDetailSource = Parameters<typeof buildActivityDto>[0];
 
 /** Map-safe / pre-join fields for activity detail (no meeting point, itinerary, or full description). */
 export const buildActivityRedactedDetail = (event: ActivityDetailSource): ActivityDetailDTO => {
   const dto = buildActivityDto(event);
+  const isRideshareListing = dto.activityType === 'rideshare';
+
   return {
     id: dto.id,
     title: dto.title,
@@ -23,6 +26,14 @@ export const buildActivityRedactedDetail = (event: ActivityDetailSource): Activi
     participationMode: dto.participationMode,
     requirements: extractActivityTransportRequirementLines(dto.requirements),
     rideshareEnabled: dto.rideshareEnabled,
+    rideshareFree: dto.rideshareFree ?? null,
+    ridesharePriceAed: dto.ridesharePriceAed ?? null,
+    rideshareSeats: dto.rideshareSeats ?? null,
+    rideshareDetails: dto.rideshareDetails ?? null,
+    rideshareVehicleId: isRideshareListing ? (dto.rideshareVehicleId ?? null) : null,
+    rideshareVehicle: isRideshareListing
+      ? sanitizeRideshareVehiclePublic(dto.rideshareVehicle)
+      : null,
     linkedActivityId: dto.linkedActivityId ?? null,
     linkedRideshareActivityId: dto.linkedRideshareActivityId ?? null,
     slotsTotal: dto.slotsTotal,
@@ -45,7 +56,18 @@ export const buildActivityRedactedDetail = (event: ActivityDetailSource): Activi
     countryCode: dto.countryCode,
     tenantId: dto.tenantId,
     tenantSlug: dto.tenantSlug,
-    message:
-      'Join this outing to unlock the full plan — meeting point, host notes, and crew chat.',
+    ...(isRideshareListing
+      ? {
+          meetingPoint: dto.meetingPoint ?? null,
+          meetingLat: dto.meetingLat ?? null,
+          meetingLng: dto.meetingLng ?? null,
+          startPoint: dto.startPoint ?? null,
+          startLat: dto.startLat ?? null,
+          startLng: dto.startLng ?? null,
+        }
+      : {}),
+    message: isRideshareListing
+      ? 'Join this ride to unlock crew chat and the full host notes.'
+      : 'Join this outing to unlock the full plan — meeting point, host notes, and crew chat.',
   };
 };

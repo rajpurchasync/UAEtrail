@@ -70,6 +70,7 @@ export const ExploreExperience = () => {
       <ExploreExperienceOverlays
         compose={model.compose}
         selection={model.selection}
+        user={model.user}
         hostWizardOpen={model.hostWizardOpen}
         hostingWizardPrefill={model.hostingWizardPrefill}
         pathname={model.pathname}

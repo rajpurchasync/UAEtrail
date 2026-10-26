@@ -26,13 +26,15 @@ export interface MemberVehicleDTO {
   updatedAt: string;
 }
 
-/** Public rideshare detail — no plate number. */
+/** Rideshare car on listings — make/model/color/year for everyone; plate only for ride crew. */
 export interface RideshareVehiclePublicDTO {
   id: string;
   make: string;
   model: string;
   color: MemberVehicleColor;
   year: number;
+  /** Host + confirmed participants on the outing only — never on member public profile. */
+  plateNumber?: string;
 }
 
 export interface UpsertMemberVehicleInput {

@@ -1,4 +1,5 @@
 import { randomUUID } from 'crypto';
+import type { MemberVehicleColor } from '@uaetrail/shared-types';
 import type { Location } from '../domain/types.js';
 import {
   ActivityType,
@@ -85,7 +86,7 @@ export type ActivityCreateInput = {
     id: string;
     make: string;
     model: string;
-    color: string;
+    color: MemberVehicleColor;
     year: number;
   } | null;
   linkedActivityId?: string | null;
@@ -140,7 +141,7 @@ export type ActivityUpdateInput = {
     id: string;
     make: string;
     model: string;
-    color: string;
+    color: MemberVehicleColor;
     year: number;
   } | null;
   linkedActivityId?: string | null;
@@ -258,7 +259,7 @@ export type MongoActivityDoc = {
     id: string;
     make: string;
     model: string;
-    color: string;
+    color: MemberVehicleColor;
     year: number;
   } | null;
   linkedActivityId: string | null;

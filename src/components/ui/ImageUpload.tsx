@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { IMAGE_UPLOAD_PRESETS, type ImageUploadPreset } from '../../constants/imageUploadPresets';
+import { isAllowedImageUploadFile, prepareImageUploadFile } from '../../lib/imageUploadFile';
 import { uploadMediaBlob } from '../../lib/mediaUpload';
 import { EnvironmentImage } from './EnvironmentImage';
 import { PhotoEditorDialog } from './PhotoEditorDialog';
@@ -72,7 +73,7 @@ export const ImageUpload = ({
     }
 
     const toUpload = Array.from(files)
-      .filter((file) => file.type.startsWith('image/'))
+      .filter((file) => isAllowedImageUploadFile(file))
       .slice(0, replaceMode ? 1 : remaining);
 
     if (toUpload.length === 0) {
@@ -90,7 +91,8 @@ export const ImageUpload = ({
         let base = queuedImagesRef.current ?? images;
         for (const file of toUpload) {
           try {
-            await uploadFile(file, base);
+            const ready = await prepareImageUploadFile(file);
+            await uploadFile(ready, base);
             base = queuedImagesRef.current ?? base;
           } catch (err) {
             setUploading((prev) =>
@@ -181,7 +183,7 @@ export const ImageUpload = ({
           <input
             ref={inputRef}
             type="file"
-            accept="image/*"
+            accept="image/*,.heic,.heif"
             multiple={max > 1 && preset !== 'profile'}
             className="hidden"
             onChange={(e) => startUploadQueue(e.target.files)}
@@ -192,7 +194,7 @@ export const ImageUpload = ({
             </span>
             {skipEditor ? ' or drag and drop' : ' then adjust before saving'}
           </p>
-          <p className="text-xs text-gray-400 mt-1">JPG, PNG, or WebP up to 20 MB</p>
+          <p className="text-xs text-gray-400 mt-1">JPG, PNG, WebP, or HEIC up to 20 MB</p>
         </div>
       )}
 

@@ -1,5 +1,18 @@
 import { describe, expect, it } from 'vitest';
-import { resolveComposeRouteChange } from './create/composeRouteGuard';
+import { composeRouteRequiresAuth, resolveComposeRouteChange } from './create/composeRouteGuard';
+
+describe('composeRouteRequiresAuth', () => {
+  it('treats FAB menu as public', () => {
+    expect(composeRouteRequiresAuth({ surface: 'menu' })).toBe(false);
+    expect(composeRouteRequiresAuth({ surface: 'menu', intent: 'host' })).toBe(false);
+  });
+
+  it('requires auth for create wizards', () => {
+    expect(composeRouteRequiresAuth({ intent: 'host', kind: 'hiking' })).toBe(true);
+    expect(composeRouteRequiresAuth({ intent: 'seek', mode: 'fixed', kind: 'hiking' })).toBe(true);
+    expect(composeRouteRequiresAuth(null)).toBe(false);
+  });
+});
 
 describe('resolveComposeRouteChange', () => {
   const signedIn = {

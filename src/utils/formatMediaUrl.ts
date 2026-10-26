@@ -2,6 +2,36 @@ import { formatEnvironmentUrl } from './formatEnvironmentUrl';
 
 const KNOWN_BUCKETS = ['uaetrail-private', 'uaetrail-public', 'uaetrail-assets'];
 
+const KIND_FROM_SEGMENT: Record<string, string> = {
+  avatars: 'avatar',
+  waivers: 'waiver',
+  'private-photos': 'private_photo',
+  uploads: 'general',
+  activities: 'activity',
+  events: 'activity',
+  locations: 'location',
+  shop: 'shop',
+  guides: 'guide',
+};
+
+const PRIVATE_MEDIA_KINDS = new Set(['avatar', 'waiver', 'private_photo']);
+
+const mediaKindFromStorageKey = (key: string): string => {
+  const parts = key.split('/').filter(Boolean);
+  if (parts[0] === 'users' && parts[2]) {
+    return KIND_FROM_SEGMENT[parts[2]] ?? 'general';
+  }
+  if (parts[0] === 'tenants' && parts[2]) {
+    return KIND_FROM_SEGMENT[parts[2]] ?? 'general';
+  }
+  return 'general';
+};
+
+const isPrivateMediaKey = (key: string): boolean => PRIVATE_MEDIA_KINDS.has(mediaKindFromStorageKey(key));
+
+const resolveMediaPath = (key: string): string =>
+  `/api/media/resolve?key=${encodeURIComponent(key)}`;
+
 /** Extract a storage object key from a media URL or key string. */
 export const extractMediaStorageKey = (raw: string): string | null => {
   const value = raw.trim();
@@ -18,7 +48,9 @@ export const extractMediaStorageKey = (raw: string): string | null => {
     if (fromQuery) return fromQuery;
 
     const parts = url.pathname.split('/').filter(Boolean);
-    const mediaIdx = parts.findIndex((part, index) => part === 'media' && ['local', 'public'].includes(parts[index + 1] ?? ''));
+    const mediaIdx = parts.findIndex((part, index) =>
+      part === 'media' && ['local', 'public'].includes(parts[index + 1] ?? '')
+    );
     if (mediaIdx >= 0) {
       const rest = parts.slice(mediaIdx + 2).join('/');
       return rest || null;
@@ -38,7 +70,7 @@ export const extractMediaStorageKey = (raw: string): string | null => {
 
 /**
  * Resolve a stored media URL for browser display/download.
- * Public objects are served through the API proxy so MinIO/S3 ACLs are not required.
+ * Public objects use the API proxy; avatars and other private kinds use /media/resolve.
  */
 export const formatMediaUrl = (url: string): string => {
   if (!url || typeof url !== 'string') return url;
@@ -49,6 +81,9 @@ export const formatMediaUrl = (url: string): string => {
 
   const key = extractMediaStorageKey(url);
   if (key) {
+    if (isPrivateMediaKey(key)) {
+      return formatEnvironmentUrl(resolveMediaPath(key));
+    }
     return `/api/media/public/${key}`;
   }
 

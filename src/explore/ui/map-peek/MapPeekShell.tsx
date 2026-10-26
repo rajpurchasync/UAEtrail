@@ -29,8 +29,10 @@ export type MapPeekShellProps = {
   children?: ReactNode;
   joinStateLoading?: boolean;
   onGuestGatedAction?: () => void;
-  /** Inline rail / list — hide dismiss controls on the card chrome. */
+  /** Inline rail / list — compact card chrome (dismiss hidden unless `showDismissChrome`). */
   embedMode?: boolean;
+  /** When set, overrides default dismiss visibility (`!embedMode`). */
+  showDismissChrome?: boolean;
   statusBanner?: string | null;
   /** Catalog place pins (`source: venue`) — hero + kind facts via `PlacePeekCard`. */
   catalogPlaceSummary?: boolean;
@@ -45,15 +47,17 @@ export const MapPeekShell = ({
   joinStateLoading = false,
   onGuestGatedAction,
   embedMode = false,
+  showDismissChrome,
   statusBanner = null,
   catalogPlaceSummary = false,
 }: MapPeekShellProps) => {
+  const dismissVisible = showDismissChrome ?? !embedMode;
   const location = useLocation();
   const titleDetailAccess = resolvePeekDetailAccess(card, {
     isGuest: Boolean(onGuestGatedAction),
     joinStateLoading: activityPeekHasMapWireActions(card) ? false : joinStateLoading,
   });
-  const detailLinkState = mapPeekDetailNavState(location, card.id);
+  const detailLinkState = mapPeekDetailNavState(location);
   const shellClass = embedMode
     ? 'overflow-hidden rounded-2xl bg-white shadow-[0_8px_32px_rgba(15,23,42,.16)] ring-1 ring-black/5'
     : EXPLORE_PEEK.shell;
@@ -84,7 +88,7 @@ export const MapPeekShell = ({
           />
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-black/10" />
           <ExploreVenueImageBadges card={card} />
-          {!embedMode ? (
+          {dismissVisible ? (
             <button
               type="button"
               onClick={onClose}
@@ -111,7 +115,7 @@ export const MapPeekShell = ({
               iconOnly
               light={!showCoverHero}
             />
-            {!showCoverHero && !embedMode ? (
+            {!showCoverHero && dismissVisible ? (
               <button
                 type="button"
                 onClick={onClose}

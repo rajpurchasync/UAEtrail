@@ -1,5 +1,6 @@
 import { curatedAreaSeedId, type CuratedAreaSeedKey } from '@uaetrail/shared-types';
 import type { AreaDTO } from '@uaetrail/shared-types';
+import { LocationStatus } from '../src/domain/enums.js';
 import { resolveAreaIdFromPoint } from '../src/lib/area-resolution.js';
 import { listPublishedAreas } from '../src/lib/areas-store.js';
 import { resolveCatalogLocationAreaKey } from '../src/lib/venue-catalog-enrichment.js';
@@ -41,7 +42,7 @@ export const backfillSeedCatalogLocationAreaIds = async (): Promise<void> => {
   const collection = getMongoClient()!.db().collection(COLLECTIONS.LOCATIONS);
 
   const docs = await collection
-    .find({ status: 'active' })
+    .find({ status: { $in: [LocationStatus.ACTIVE, 'active', 'ACTIVE'] } })
     .project({ _id: 1, latitude: 1, longitude: 1, areaId: 1 })
     .toArray();
 

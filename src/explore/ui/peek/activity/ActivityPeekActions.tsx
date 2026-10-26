@@ -43,7 +43,7 @@ export const ActivityPeekActions = ({
   const location = useLocation();
   const gate = onGuestGatedAction;
   const effectiveJoinStateLoading = activityPeekHasMapWireActions(card) ? false : joinStateLoading;
-  const peekDetailNavState = mapPeekDetailNavState(location, card.id);
+  const peekDetailNavState = mapPeekDetailNavState(location);
 
   if (!discoveryCardUsesActivityPeekEngagement(card)) {
     return (

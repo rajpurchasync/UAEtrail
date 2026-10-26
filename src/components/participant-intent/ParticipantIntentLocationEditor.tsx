@@ -179,6 +179,7 @@ export const ParticipantIntentLocationEditor = ({
         <div className={`fixed inset-0 ${EXPLORE_Z.composeFlow} z-[3000] bg-neutral-100`}>
           <Suspense fallback={<div className="h-full w-full animate-pulse bg-emerald-50" />}>
             <CreatePlacePicker
+              openInAdjustMode={mapTarget === 'to' ? toPlaced : primaryPlaced}
               precision={mapTarget === 'to' ? 'specific' : draftPrecision}
               latitude={draftLat}
               longitude={draftLng}

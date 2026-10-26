@@ -12,7 +12,8 @@ import {
   buildRideshareDraftFromSeekingMapItem,
   buildRideshareDraftFromParentActivity,
 } from '../../linkRidesharePrefill';
-import { PLAN_WITH_QUERY_KEY, parseHostFromActivityId } from '../../routing';
+import { parseHostFromActivityId } from '../../routing';
+import { clearComposeWizardSessionForRoute } from '../../ui/composeWizardSession';
 import type { HostingWizardPrefill } from '../../ui/hostingWizardPrefill';
 import type { useComposeRoute } from './useComposeRoute';
 import type { useHostingFromActivity } from './useHostingFromActivity';
@@ -97,24 +98,18 @@ export const useHostingWizardPrefill = (input: {
 
   const hostFromPending = Boolean(parseHostFromActivityId(input.searchParams));
   const hostWizardOpen =
-    Boolean(hostingWizardPrefill) ||
-    (Boolean(input.compose.hostComposeRoute) && !hostFromPending);
+    (Boolean(hostingWizardPrefill) && Boolean(input.user)) ||
+    (Boolean(input.compose.hostComposeRoute) && !hostFromPending && Boolean(input.user));
 
   const closeCreateFlow = useCallback(() => {
-    input.compose.closeCompose();
     hostingFrom.clearHostingFromActivityPrefill();
     setRideshareLinkParent(null);
-    input.setSearchParams(
-      (prev) => {
-        const next = new URLSearchParams(prev);
-        next.delete(PLAN_WITH_QUERY_KEY);
-        return next;
-      },
-      { replace: true }
-    );
+    setRideshareLinkSeeking(null);
+    input.compose.closeCompose();
   }, [input, hostingFrom]);
 
   const onHostingBackToIntent = useCallback(() => {
+    clearComposeWizardSessionForRoute(input.compose.hostComposeRoute);
     hostingFrom.clearHostingFromActivityPrefill();
     setRideshareLinkParent(null);
     setRideshareLinkSeeking(null);

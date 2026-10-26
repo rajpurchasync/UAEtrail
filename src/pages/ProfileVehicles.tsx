@@ -6,19 +6,19 @@ import { MemberVehicleCarIcon } from '../components/vehicles/MemberVehicleCarIco
 import { MEMBER_VEHICLE_COLOR_LABELS } from '../components/vehicles/memberVehicleColorChrome';
 import { PROFILE_VEHICLES_PATH } from '../config/surfacePaths';
 import { useMemberVehicleMutations, useMemberVehicles } from '../hooks/useMemberVehicles';
-import { useProfileSettingsBackChrome } from '../hooks/useProfileHubBackChrome';
-import { mobileBackNavState } from '../utils/mobileBackNav';
+import { useProfileHubBackChrome, useProfileVehiclesBackChrome } from '../hooks/useProfileHubBackChrome';
+import { mobileBackNavState, navigateWithBackChrome } from '../utils/mobileBackNav';
 import { formatRideshareVehicleLabel } from '@uaetrail/shared-types';
 
 export const ProfileVehiclesPage = () => {
   const { vehicles, isLoading } = useProfileVehiclesContent();
-  const backChrome = useProfileSettingsBackChrome();
+  const backChrome = useProfileHubBackChrome();
 
   return (
     <ConsumerShell layout="stack" title="My cars" showJourney={false} back={backChrome}>
       <div className="space-y-4 pb-nav-safe animate-fade-up">
         <p className="text-sm text-neutral-600">
-          Cars you use for rideshare. Number plates are only visible to you — riders see make, model, color, and year on the ride.
+          Cars you use for rideshare. Make, model, color, and year show on the ride listing; the number plate is only visible to you and people on that ride with you.
         </p>
         {isLoading ? (
           <p className="text-sm text-neutral-500">Loading…</p>
@@ -90,7 +90,7 @@ export const ProfileVehicleEditPage = () => {
   const { data: vehicles = [] } = useMemberVehicles();
   const { update, remove } = useMemberVehicleMutations();
   const vehicle = vehicles.find((row) => row.id === id) ?? null;
-  const backChrome = useProfileSettingsBackChrome();
+  const backChrome = useProfileVehiclesBackChrome();
 
   if (!vehicle) {
     return (
@@ -108,8 +108,7 @@ export const ProfileVehicleEditPage = () => {
         busy={update.isPending}
         onSubmit={async (input) => {
           await update.mutateAsync({ id: vehicle.id, input });
-          if (window.history.length > 1) navigate(-1);
-          else navigate(PROFILE_VEHICLES_PATH);
+          navigateWithBackChrome(navigate, backChrome);
         }}
       />
       <button
@@ -117,8 +116,7 @@ export const ProfileVehicleEditPage = () => {
         disabled={remove.isPending}
         onClick={async () => {
           await remove.mutateAsync(vehicle.id);
-          if (window.history.length > 1) navigate(-1);
-          else navigate(PROFILE_VEHICLES_PATH);
+          navigateWithBackChrome(navigate, backChrome);
         }}
         className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl border border-red-200 py-3 text-sm font-semibold text-red-700"
       >
@@ -132,7 +130,7 @@ export const ProfileVehicleEditPage = () => {
 export const ProfileVehicleNewPage = () => {
   const navigate = useNavigate();
   const { create } = useMemberVehicleMutations();
-  const backChrome = useProfileSettingsBackChrome();
+  const backChrome = useProfileVehiclesBackChrome();
 
   return (
     <ConsumerShell layout="stack" title="Add car" showJourney={false} back={backChrome}>
@@ -141,8 +139,7 @@ export const ProfileVehicleNewPage = () => {
         busy={create.isPending}
         onSubmit={async (input) => {
           await create.mutateAsync(input);
-          if (window.history.length > 1) navigate(-1);
-          else navigate(PROFILE_VEHICLES_PATH);
+          navigateWithBackChrome(navigate, backChrome);
         }}
       />
     </ConsumerShell>

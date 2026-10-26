@@ -131,6 +131,12 @@ export const EXPLORE_BROWSE_SEGMENT_TAB = {
   inactive: `${EXPLORE_BROWSE_PANEL_TAB.tab} ${EXPLORE_BROWSE_PANEL_TAB.inactive}`,
 } as const;
 
+/** Mobile pull-up compose — scroll insets under transparent tab header / above home indicator. */
+export const EXPLORE_COMPOSE_IMMERSIVE = {
+  scrollPadTop: 'max-lg:pt-[var(--safe-top)]',
+  scrollPadBottom: 'max-lg:pb-[calc(var(--safe-bottom)+1.25rem)]',
+} as const;
+
 /** Compose FAB sheet — emerald brand (Host · Find crew · Add). */
 export const EXPLORE_COMPOSE = {
   menuIconWrap: 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/20',
@@ -222,6 +228,16 @@ export const EXPLORE_MOBILE_MAP_CHROME = {
   noticeTop: 'max-lg:top-[8rem]',
 } as const;
 
+/** Bottom sheets over the map (Find crew list, compose peek) — leave filters visible. */
+export const EXPLORE_BROWSE_PEEK_SHEET = {
+  shellTopPad: 'pt-[var(--explore-browse-peek-top)]',
+  panelMaxHeight: 'max-h-[calc(100dvh-var(--explore-browse-peek-top)-var(--safe-bottom,0px))]',
+  panelHeight:
+    'h-[min(70dvh,calc(100dvh-var(--explore-browse-peek-top)-var(--safe-bottom,0px)))]',
+  /** Mobile map peek only — desktop compose dialog keeps lg height cap. */
+  panelPeekMobile: `max-lg:h-[min(70dvh,calc(100dvh-var(--explore-browse-peek-top)-var(--safe-bottom,0px)))] max-lg:max-h-[calc(100dvh-var(--explore-browse-peek-top)-var(--safe-bottom,0px))]`,
+} as const;
+
 /** Explore map stacking — keep in sync across peek cards, filters, and sheets. */
 export const EXPLORE_Z = {
   /** Map filter pill row */
@@ -236,8 +252,12 @@ export const EXPLORE_Z = {
   browseSheet: 'z-[5500]',
   /** FAB compose menu + organize / find / add wizards (above map filters & browse sheet) */
   composeFlow: 'z-[6500]',
+  /** Mobile compose pull-up full screen (same stack as peek compose; tab header hidden while open). */
+  composeFlowImmersive: 'z-[6500]',
   /** Guest sign-in / join modal — above compose menu & peek (FAB, join, browse gates) */
   guestJoinSheet: 'z-[6600]',
+  /** Discard-draft confirm above immersive compose */
+  composeDiscardConfirm: 'z-[6700]',
 } as const;
 
 /** Compact map peek card — centered overlay so it cannot grow into the header. */

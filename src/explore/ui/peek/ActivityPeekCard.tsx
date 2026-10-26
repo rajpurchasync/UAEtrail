@@ -18,6 +18,7 @@ export type ActivityPeekCardProps = {
   onOfferTransport?: () => void;
   joinInvitePeekBanner?: string | null;
   embedMode?: boolean;
+  showDismissChrome?: boolean;
 };
 
 /**
@@ -39,6 +40,7 @@ export const ActivityPeekCard = ({
   onOfferTransport,
   joinInvitePeekBanner = null,
   embedMode = false,
+  showDismissChrome,
 }: ActivityPeekCardProps) => {
   const shellGuestGate = onGuestGatedAction ? () => onGuestGatedAction('view_detail') : undefined;
   const bodyGuestGate = shellGuestGate;
@@ -51,6 +53,7 @@ export const ActivityPeekCard = ({
       onGuestGatedAction={shellGuestGate}
       statusBanner={joinInvitePeekBanner}
       embedMode={embedMode}
+      showDismissChrome={showDismissChrome}
       actions={
         <MapPeekActionsSlot
           card={card}

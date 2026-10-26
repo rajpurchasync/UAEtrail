@@ -8,6 +8,15 @@ import { EXPLORE_Z } from '../../config/exploreTheme';
 import { ImageUpload } from '../../components/ui/ImageUpload';
 import { PhoneInput } from '../../components/ui/PhoneInput';
 import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
+import { COMPOSE_SHEET_DRAG_HINT } from '../../hooks/useMobileBrowseSheetImmersive';
+import { useComposeSheetExpandedState } from '../create/ComposeSheetExpandedContext';
+import { useComposeWizardExitBack } from '../create/useComposeWizardExitBack';
+import {
+  composeWizardHasDraftContent,
+  finishComposeFlowClose,
+  isPastWizardStep,
+  requestComposeFlowClose,
+} from './composeFlowClose';
 import { FlowSheetChrome } from './ExploreFlowSheetChrome';
 import { FlowStepTextInput } from './useFlowSheetPrimaryFieldFocus';
 import type { AddVenueKind } from '../addTypes';
@@ -45,6 +54,7 @@ import {
   readAddWizardSession,
   writeAddWizardSession,
 } from './composeWizardSession';
+import { ComposeWizardPrimaryButton } from './ComposeWizardPrimaryButton';
 
 const CreatePlacePicker = lazy(() =>
   import('./CreatePlacePicker').then((m) => ({ default: m.CreatePlacePicker }))
@@ -99,14 +109,13 @@ const NextButton = ({
   loading?: boolean;
   onClick: () => void;
 }) => (
-  <button
-    type="button"
-    disabled={disabled || loading}
+  <ComposeWizardPrimaryButton
+    label={label}
+    disabled={disabled}
+    loading={loading}
     onClick={onClick}
-    className="w-full rounded-2xl bg-emerald-500 py-4 text-base font-bold text-white shadow-lg shadow-emerald-500/25 disabled:cursor-not-allowed disabled:opacity-50"
-  >
-    {loading ? 'Submitting…' : `${label} →`}
-  </button>
+    tone="flow"
+  />
 );
 
 export const CreateAddFlow = ({
@@ -169,7 +178,6 @@ export const CreateAddFlow = ({
       addInitializedRef.current = addInitKey;
     }
     if (!user) {
-      navigate(signInHref);
       onClose();
     }
   }, [open, user, navigate, signInHref, onClose, kind, addInitKey, exploreAreaSlug, publishedAreas]);
@@ -183,10 +191,24 @@ export const CreateAddFlow = ({
     setDraft((prev) => ({ ...prev, ...patch }));
   }, []);
 
-  const handleClose = () => {
+  const { sheetExpanded, expandSheet } = useComposeSheetExpandedState();
+
+  const finishClose = () => {
     if (submitting) return;
-    onClose();
+    finishComposeFlowClose(onClose);
   };
+
+  const hasComposeDraft = composeWizardHasDraftContent({
+    title: draft.title,
+    description: draft.description,
+    placeLabel: draft.areaLabel,
+  });
+  const composeInProgress = isPastWizardStep(currentStepIndex) || hasComposeDraft;
+
+  const requestClose = () =>
+    requestComposeFlowClose({ hasDraft: hasComposeDraft, inProgress: composeInProgress }, finishClose);
+
+  const exitWizardBack = useComposeWizardExitBack(requestClose, onBackToIntent);
 
   const goToStep = (target: AddFlowStepId) => {
     setLocationMapOpen(false);
@@ -207,8 +229,7 @@ export const CreateAddFlow = ({
       return;
     }
     if (currentStepIndex <= 0) {
-      onBackToIntent?.();
-      onClose();
+      exitWizardBack();
       return;
     }
     setStep(flowSteps[currentStepIndex - 1]);
@@ -314,11 +335,13 @@ export const CreateAddFlow = ({
     const lng = isParking
       ? draft.parkingLng ?? MAP_CONFIG.exploreDefaultCenter.lng
       : curatedCenter?.longitude ?? draft.longitude ?? MAP_CONFIG.exploreDefaultCenter.lng;
+    const pinAlreadySet = isParking ? draft.parkingPinPlaced : draft.locationPinPlaced;
 
     return (
       <div className={`fixed inset-0 ${EXPLORE_Z.composeFlow} bg-neutral-100`}>
         <Suspense fallback={<div className="h-full w-full animate-pulse bg-emerald-50" />}>
           <CreatePlacePicker
+            openInAdjustMode={pinAlreadySet}
             precision={mapPrecision}
             latitude={lat}
             longitude={lng}
@@ -331,7 +354,7 @@ export const CreateAddFlow = ({
               }
             }}
             onBack={goBack}
-            onClose={handleClose}
+            onClose={requestClose}
             onConfirm={() => {
               if (isParking) {
                 patchDraft({ parkingPinPlaced: true });
@@ -362,13 +385,17 @@ export const CreateAddFlow = ({
   return (
     <ExploreResponsiveSheet
       open
-      onClose={handleClose}
+      onClose={requestClose}
       zClass={EXPLORE_Z.composeFlow}
       overlayFixed
-      panelClassName="max-h-[min(78dvh,720px)] px-5 pb-[calc(var(--safe-bottom)+3rem)] pt-1 lg:px-6 lg:pb-6 lg:pt-2"
+      mobileComposeChrome
+      expanded={sheetExpanded}
+      onExpand={expandSheet}
+      expandHint={COMPOSE_SHEET_DRAG_HINT}
+      panelClassName="px-5 pb-[calc(var(--safe-bottom)+1rem)] pt-0 lg:px-6 lg:pb-6 lg:pt-2"
     >
       {step === 'title' && (
-        <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
+        <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
           <label className="block">
             <FlowStepTextInput
               value={draft.title}
@@ -386,7 +413,7 @@ export const CreateAddFlow = ({
       )}
 
       {step === 'curatedArea' && (
-        <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
+        <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
           <AddCuratedAreaStep
             areaId={draft.areaId}
             onAreaIdChange={(next) => {
@@ -406,7 +433,7 @@ export const CreateAddFlow = ({
       )}
 
       {step === 'location' && (
-        <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
+        <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
           <label className="mb-4 block">
             <span className="mb-1.5 block text-sm font-semibold text-gray-800">Emirate / state</span>
             <select
@@ -465,7 +492,7 @@ export const CreateAddFlow = ({
       )}
 
       {step === 'image' && (
-        <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
+        <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
           {kind === 'hiking' || kind === 'camping' ? (
             <p className="mb-3 text-sm text-gray-600">At least 1 photo required · up to 5.</p>
           ) : kind === 'shop' ? (
@@ -490,7 +517,7 @@ export const CreateAddFlow = ({
       )}
 
       {(step === 'description' || step === 'about') && kind !== 'shop' && (
-        <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
+        <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
           <textarea
             value={draft.description}
             onChange={(event) => patchDraft({ description: event.target.value })}
@@ -526,7 +553,7 @@ export const CreateAddFlow = ({
       )}
 
       {step === 'about' && kind === 'shop' && (
-        <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
+        <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
           <textarea
             value={draft.description}
             onChange={(event) => patchDraft({ description: event.target.value })}
@@ -545,7 +572,7 @@ export const CreateAddFlow = ({
       )}
 
       {step === 'shop_keywords' && kind === 'shop' && (
-        <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
+        <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
           <textarea
             value={draft.shopSearchKeywords}
             onChange={(event) => patchDraft({ shopSearchKeywords: event.target.value })}
@@ -563,7 +590,7 @@ export const CreateAddFlow = ({
       )}
 
       {step === 'trail_stats' && kind === 'hiking' && (
-        <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
+        <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
           <div className="space-y-4">
             <label className="block">
               <span className="mb-1.5 block text-sm font-semibold text-gray-800">Distance (km)</span>
@@ -614,7 +641,7 @@ export const CreateAddFlow = ({
       )}
 
       {step === 'surface' && kind === 'camping' && (
-        <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
+        <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
           <p className="mb-4 text-sm text-gray-600">What is the ground like? Pick all that apply.</p>
           <div className="flex flex-wrap gap-2">
             {CAMPING_ADD_SURFACE_OPTIONS.map((surface) => {
@@ -648,7 +675,7 @@ export const CreateAddFlow = ({
       )}
 
       {step === 'transport' && (kind === 'hiking' || kind === 'camping') && (
-        <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
+        <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
           <p className="mb-4 text-sm text-gray-600">
             {kind === 'hiking'
               ? 'How can people reach the trailhead?'
@@ -706,7 +733,7 @@ export const CreateAddFlow = ({
       )}
 
       {step === 'difficulty' && kind === 'hiking' && (
-        <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
+        <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
           <div className="grid grid-cols-1 gap-3">
             {ACTIVITY_DIFFICULTY_OPTIONS.map((option) => {
               const active = draft.difficulty === option.value;
@@ -733,7 +760,7 @@ export const CreateAddFlow = ({
       )}
 
       {step === 'parking' && kind === 'event' && (
-        <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
+        <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
           <p className="mb-4 text-sm text-gray-600">Where should people park before heading in?</p>
           {renderPinButton(
             draft.parkingPinPlaced,
@@ -750,7 +777,7 @@ export const CreateAddFlow = ({
       )}
 
       {step === 'shop_delivery' && kind === 'shop' && (
-        <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
+        <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
           <p className="mb-4 text-sm text-gray-600">Do you deliver gear or services?</p>
           <div className="grid grid-cols-2 gap-3">
             {[
@@ -815,7 +842,7 @@ export const CreateAddFlow = ({
       )}
 
       {step === 'shop_phone' && kind === 'shop' && (
-        <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
+        <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
           <label className="block">
             <span className="mb-2 block text-sm font-medium text-gray-700">Mobile number</span>
             <PhoneInput
@@ -834,7 +861,7 @@ export const CreateAddFlow = ({
       )}
 
       {step === 'shop_email' && kind === 'shop' && (
-        <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
+        <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
           <label className="block">
             <span className="mb-2 block text-sm font-medium text-gray-700">Shop email</span>
             <input
@@ -854,7 +881,7 @@ export const CreateAddFlow = ({
       )}
 
       {step === 'review' && kind === 'hiking' && (
-        <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
+        <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
           <AddHikingTrailPreview draft={{ ...draft, kind }} />
           <div className="mt-3 flex flex-wrap gap-2">
             {flowSteps
@@ -879,7 +906,7 @@ export const CreateAddFlow = ({
       )}
 
       {step === 'review' && kind === 'camping' && (
-        <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
+        <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
           <AddCampingSpotPreview draft={{ ...draft, kind }} />
           <div className="mt-3 flex flex-wrap gap-2">
             {flowSteps
@@ -904,7 +931,7 @@ export const CreateAddFlow = ({
       )}
 
       {step === 'review' && kind === 'shop' && (
-        <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
+        <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
           <AddShopPreview draft={{ ...draft, kind }} />
           <div className="mt-3 flex flex-wrap gap-2">
             {flowSteps
@@ -929,7 +956,7 @@ export const CreateAddFlow = ({
       )}
 
       {step === 'review' && kind !== 'hiking' && kind !== 'camping' && kind !== 'shop' && (
-        <FlowSheetChrome title={headerTitle} onClose={handleClose} onBack={goBack}>
+        <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
           <div className="rounded-2xl border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-gray-700">
             <p className="flex items-center gap-2 font-semibold text-gray-900">
               <KindIcon className="h-4 w-4 text-emerald-600" />

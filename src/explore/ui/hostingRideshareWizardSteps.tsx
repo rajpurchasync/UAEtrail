@@ -224,7 +224,7 @@ export const RideshareTransportationStepBody = ({
       <div className="rounded-2xl border border-sky-200 bg-sky-50/80 p-4 text-center">
         <p className="text-sm font-semibold text-sky-950">Add your car first</p>
         <p className="mt-1 text-xs text-sky-900/80">
-          Make, model, color, year, and plate — plate stays private on the ride page.
+          Make, model, color, year, and plate — plate is shared with your ride crew after they join.
         </p>
         <Link
           to={`${PROFILE_VEHICLES_PATH}/new`}
@@ -275,4 +275,34 @@ export const RideshareTransportationStepBody = ({
       </Link>
     </>
   );
+};
+
+/** Publish review — selected garage car (not generic body-type label). */
+export const RidesharePublishLogisticsPreview = ({
+  memberVehicleId,
+  fallbackLabel,
+}: {
+  memberVehicleId: string | null;
+  fallbackLabel: string;
+}) => {
+  const { data: vehicles = [], isLoading } = useMemberVehicles();
+  const vehicle = memberVehicleId ? vehicles.find((row) => row.id === memberVehicleId) : null;
+
+  if (isLoading) {
+    return <p className="text-sm text-gray-500">Loading your car…</p>;
+  }
+
+  if (vehicle) {
+    return (
+      <div className="flex items-center gap-3 rounded-xl border border-neutral-200/90 bg-white px-3 py-2.5">
+        <MemberVehicleCarIcon color={vehicle.color} />
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-gray-900">{formatRideshareVehicleLabel(vehicle)}</p>
+          <p className="text-xs text-gray-600">{MEMBER_VEHICLE_COLOR_LABELS[vehicle.color]}</p>
+        </div>
+      </div>
+    );
+  }
+
+  return <p className="text-sm text-gray-800">{fallbackLabel}</p>;
 };

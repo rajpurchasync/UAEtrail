@@ -15,7 +15,6 @@ import {
   resolveHostPersonDisplayName,
   HOST_FALLBACK_DISPLAY_NAME,
   type PublishingProfileKind,
-  type MemberVehicleColor,
   type RideshareVehiclePublicDTO,
   TenantBusinessMode,
   TenantType,
@@ -24,6 +23,7 @@ import {
 
 import { formatActivityLocal } from './datetime.js';
 import { resolveActivityDtoType } from '../domain/activity-type.js';
+import { sanitizeRideshareVehiclePublic } from './rideshare-vehicle-crew.js';
 
 const enumMap = <T extends string>(value: string | null | undefined): T =>
   (typeof value === 'string' ? value.toLowerCase() : '') as T;
@@ -195,16 +195,7 @@ export const toLocationDto = (location: Location, opts?: { admin?: boolean }): L
 
 const mapRideshareVehiclePublic = (
   vehicle: Activity['rideshareVehicle']
-): RideshareVehiclePublicDTO | null => {
-  if (!vehicle) return null;
-  return {
-    id: vehicle.id,
-    make: vehicle.make,
-    model: vehicle.model,
-    color: vehicle.color as MemberVehicleColor,
-    year: vehicle.year,
-  };
-};
+): RideshareVehiclePublicDTO | null => sanitizeRideshareVehiclePublic(vehicle);
 
 const toEventDto = ({
   event,

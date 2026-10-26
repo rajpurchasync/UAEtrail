@@ -136,6 +136,9 @@ export const ADD_SUBMIT_VIEW_CTA = 'View pending';
 export const HOSTING_PUBLISH_SUCCESS_BODY_PRIVATE =
   'Share the link with your group. They’ll need to sign in to view and RSVP — this plan won’t show on the public map.';
 
+export const HOSTING_RIDESHARE_PENDING_DESTINATION_BODY =
+  'Your ride is saved. It goes live on the map when your destination place is approved — we’ll notify you.';
+
 export const HOSTING_PUBLISH_SUCCESS_BODY =
   'Your plan is published. View it on the map or offer a rideshare for your crew.';
 
@@ -182,5 +185,8 @@ export const EXPLORE_RIDESHARE_AVAILABLE_LABEL = 'Rideshare available';
 
 
 export const EXPLORE_VIEW_LINKED_PLAN_CTA = 'View outing';
+
+/** Rideshare wizard — open the linked destination outing (not internal “peek” jargon). */
+export const RIDESHARE_VIEW_DESTINATION_OUTING_CTA = 'View this outing';
 
 export const EXPLORE_VIEW_LINKED_RIDESHARE_CTA = 'View rideshare';

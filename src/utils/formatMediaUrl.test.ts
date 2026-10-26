@@ -24,4 +24,11 @@ describe('formatMediaUrl', () => {
     const url = '/api/media/resolve?key=users%2Fu1%2Favatars%2Fphoto.jpg';
     expect(formatMediaUrl(url)).toBe(url);
   });
+
+  it('rewrites mistaken public avatar URLs to resolve', () => {
+    const key = 'users/u1/avatars/photo.webp';
+    expect(formatMediaUrl(`/api/media/public/${key}`)).toBe(
+      `/api/media/resolve?key=${encodeURIComponent(key)}`
+    );
+  });
 });

@@ -9,6 +9,7 @@ import { shopRouter } from './shop.js';
 import { safetyRouter } from './safety.js';
 import { userRouter } from './user.js';
 import { agentRouter } from './agent.js';
+import { geoSearchRouter } from './geo-search.js';
 
 export const apiRouter = Router();
 
@@ -18,6 +19,7 @@ apiRouter.use('/publishing', publishingRouter);
 apiRouter.use('/chat', chatRouter);
 apiRouter.use('/shop', shopRouter);
 apiRouter.use('/media', mediaRouter);
+apiRouter.use('/geo', geoSearchRouter);
 apiRouter.use('/safety', safetyRouter);
 apiRouter.use('/agent', agentRouter);
 apiRouter.use('/', userRouter);

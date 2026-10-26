@@ -4,6 +4,10 @@ import {
   type PublishingProfileKind,
   exploreMapKindToPlanMapKind,
   resolveHostCreateKindFromSeekingMapItem,
+  RIDESHARE_DESTINATION_ACTIVITY_PREFIX,
+  RIDESHARE_DESTINATION_PLACE_PREFIX,
+  RIDESHARE_PENDING_DESTINATION_PLACE_PREFIX,
+  type RideshareDestinationKind,
 } from '@uaetrail/shared-types';
 import { type ActivityType } from '../../config/activityTypes';
 import { getHostingKindFlowSteps, validateHostingKindStep } from './hostingFlows';
@@ -141,6 +145,14 @@ export type CreateActivityDraft = {
   rideshareToLng: number | null;
   rideshareFromLabel: string;
   rideshareToLabel: string;
+  /** Community rideshare — how destination was chosen (Pro may use `map`). */
+  rideshareDestinationKind: RideshareDestinationKind | null;
+  rideshareDestinationActivityId: string | null;
+  rideshareDestinationPlaceId: string | null;
+  /** Search row subtitle — meeting point line or place region (publish preview). */
+  rideshareDestinationDetailLine: string | null;
+  /** Catalog / map place name when destination is an outing (separate from event title). */
+  rideshareDestinationPlaceLabel: string | null;
   /** Hiking participants step — open to all vs limited restrictions */
   participantsOpenToAll: boolean;
   limitedWomenOnly: boolean;
@@ -452,6 +464,11 @@ export const emptyCreateActivityDraft = (): CreateActivityDraft => ({
   rideshareToLng: null,
   rideshareFromLabel: '',
   rideshareToLabel: '',
+  rideshareDestinationKind: null,
+  rideshareDestinationActivityId: null,
+  rideshareDestinationPlaceId: null,
+  rideshareDestinationDetailLine: null,
+  rideshareDestinationPlaceLabel: null,
   participantsOpenToAll: true,
   limitedWomenOnly: false,
   limitedFamilyOnly: false,
@@ -613,6 +630,18 @@ export const buildHostingActivityRequirements = (draft: CreateActivityDraft): st
     } else {
       requirements.push('Age: 5 onwards');
     }
+  }
+  if (draft.kind === 'rideshare' && draft.rideshareDestinationKind === 'activity_meeting') {
+    const id = draft.rideshareDestinationActivityId?.trim();
+    if (id) requirements.push(`${RIDESHARE_DESTINATION_ACTIVITY_PREFIX}${id}`);
+  }
+  if (draft.kind === 'rideshare' && draft.rideshareDestinationKind === 'catalog_place') {
+    const id = draft.rideshareDestinationPlaceId?.trim();
+    if (id) requirements.push(`${RIDESHARE_DESTINATION_PLACE_PREFIX}${id}`);
+  }
+  if (draft.kind === 'rideshare' && draft.rideshareDestinationKind === 'pending_place') {
+    const id = draft.rideshareDestinationPlaceId?.trim();
+    if (id) requirements.push(`${RIDESHARE_PENDING_DESTINATION_PLACE_PREFIX}${id}`);
   }
   return requirements;
 };

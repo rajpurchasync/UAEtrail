@@ -22,12 +22,48 @@ const placeAreaError = (place: PlaceDTO | null | undefined, registryPlaceId: str
 const SEEKING_AREA_REQUIRED = 'Choose an area and drop a pin on the map.';
 const SEEKING_AREA_PIN_REQUIRED = 'Drop a pin on the map for the area you selected.';
 
+const RIDESHARE_DESTINATION_REQUIRED =
+  'Choose an outing meeting point or an approved catalog place as your ride destination.';
+
+/** Community / pro rideshare destination — not the hike/camp `registryPlaceId` path. */
+export const validateRideshareDestinationArea = (
+  draft: CreateActivityDraft,
+  registryPlaces: PlaceDTO[] = []
+): string | null => {
+  if (draft.kind !== 'rideshare') return null;
+
+  const destKind = draft.rideshareDestinationKind;
+  if (destKind === 'activity_meeting') {
+    return draft.rideshareDestinationActivityId?.trim() ? null : RIDESHARE_DESTINATION_REQUIRED;
+  }
+  if (destKind === 'pending_place') {
+    return draft.rideshareDestinationPlaceId?.trim() ? null : RIDESHARE_DESTINATION_REQUIRED;
+  }
+  if (destKind === 'catalog_place') {
+    const placeId = draft.rideshareDestinationPlaceId?.trim();
+    if (!placeId) return RIDESHARE_DESTINATION_REQUIRED;
+    const place = registryPlaces.find((row) => row.id === placeId);
+    if (place?.areaId?.trim()) return null;
+    if (!place) return null;
+    return placeAreaError(place, placeId);
+  }
+  if (destKind === 'map') {
+    return draft.toLatitude != null && draft.toLongitude != null
+      ? null
+      : 'Drop a destination pin on the map.';
+  }
+  return RIDESHARE_DESTINATION_REQUIRED;
+};
+
 /** Public organize publish — area lives on the catalog **place**, not the activity row. */
 export const validateHostingPlaceArea = (
   draft: CreateActivityDraft,
   registryPlaces: PlaceDTO[]
 ): string | null => {
   if (draft.joinMode === 'private') return null;
+  if (draft.kind === 'rideshare') {
+    return validateRideshareDestinationArea(draft, registryPlaces);
+  }
   if (draft.placeLabelSource === 'custom') {
     return 'Publish from a catalog place with an area, or add your spot via Add (select an area first).';
   }
@@ -43,6 +79,9 @@ export const validateHostingPlaceArea = (
 /** @deprecated Use validateHostingPlaceArea — kept for import stability during migration. */
 export const validateHostingPublishArea = (draft: CreateActivityDraft): string | null => {
   if (draft.joinMode === 'private') return null;
+  if (draft.kind === 'rideshare') {
+    return validateRideshareDestinationArea(draft);
+  }
   if (!draft.registryPlaceId?.trim()) return PLACE_AREA_REQUIRED;
   return null;
 };
@@ -77,18 +116,24 @@ export const resolveRegistryPlaceAreaId = (place: PlaceDTO | null | undefined): 
   place?.areaId?.trim() ? place.areaId.trim() : null;
 
 /** Ephemeral activity-anchor places only (e.g. rideshare) — not for hosted trail/camp catalog tagging. */
-export const resolvePublishedAreaIdForPoint = (
+export const resolvePublishedAreaForPoint = (
   latitude: number,
   longitude: number,
   areas: AreaPublicDTO[]
-): string | null => {
+): AreaPublicDTO | null => {
   const hits = areas.filter((area) => pointInAreaBounds(latitude, longitude, area.bounds));
   if (hits.length === 0) return null;
   hits.sort(
     (a, b) => approximateAreaBoundsKm2(a.bounds) - approximateAreaBoundsKm2(b.bounds)
   );
-  return hits[0]?.id ?? null;
+  return hits[0] ?? null;
 };
+
+export const resolvePublishedAreaIdForPoint = (
+  latitude: number,
+  longitude: number,
+  areas: AreaPublicDTO[]
+): string | null => resolvePublishedAreaForPoint(latitude, longitude, areas)?.id ?? null;
 
 export const areaLabelForId = (
   areaId: string | null | undefined,

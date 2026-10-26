@@ -1,12 +1,11 @@
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import { HostActivityCancelDialog } from '../../components/activity/HostActivityCancelDialog';
-import { EXPLORE_Z } from '../../config/exploreTheme';
 import { addVenueKindFromRoute } from '../compose';
+import { clearComposeWizardSessionForRoute } from '../ui/composeWizardSession';
 import { ExploreBrowseSearchModal } from '../ui/ExploreBrowseSearchModal';
 import { ComposeHost } from '../create/ComposeHost';
-import { ExploreGuestSignInCard } from '../ui/ExploreGuestSignInCard';
+import { GuestComposeSignInSheet } from '../ui/GuestComposeSignInSheet';
 import { ExploreJoinOverlays } from '../ui/ExploreJoinOverlays';
-import { ExploreResponsiveSheet } from '../ui/ExploreResponsiveSheet';
 import type { HostingWizardPrefill } from '../ui/hostingWizardPrefill';
 import type { useComposeRoute } from '../create/hooks/useComposeRoute';
 import type { ExploreSearchScopeCounts, ExploreSearchScopeKey } from '../exploreBrowseTaxonomy';
@@ -21,6 +20,7 @@ type SelectionState = ReturnType<typeof useExploreSelectionActions>;
 type Props = {
   compose: ComposeState;
   selection: SelectionState;
+  user: { id: string } | null | undefined;
   hostWizardOpen: boolean;
   hostingWizardPrefill: HostingWizardPrefill | null;
   pathname: string;
@@ -56,6 +56,7 @@ type Props = {
 export const ExploreExperienceOverlays = ({
   compose,
   selection,
+  user,
   hostWizardOpen,
   hostingWizardPrefill,
   signInHref,
@@ -92,9 +93,9 @@ export const ExploreExperienceOverlays = ({
       composeRoute={compose.composeRoute}
       composeMenuOpen={compose.composeMenuOpen}
       hostWizardOpen={hostWizardOpen}
-      seekFixedWizardOpen={Boolean(compose.seekFixedRoute)}
-      addWizardOpen={Boolean(compose.addRoute)}
-      seekFlexibleOpen={compose.seekFlexibleOpen}
+      seekFixedWizardOpen={Boolean(compose.seekFixedRoute) && Boolean(user)}
+      addWizardOpen={Boolean(compose.addRoute) && Boolean(user)}
+      seekFlexibleOpen={compose.seekFlexibleOpen && Boolean(user)}
       hostComposeKind={compose.hostComposeRoute?.kind ?? null}
       seekFixedKind={compose.seekFixedRoute?.kind}
       addVenueKind={addVenueKindFromRoute(compose.addRoute)}
@@ -104,8 +105,15 @@ export const ExploreExperienceOverlays = ({
       onCloseCompose={compose.closeCompose}
       onCloseCreateFlow={onCloseCreateFlow}
       onHostingBackToIntent={onHostingBackToIntent}
-      onSeekingBackToIntent={() => compose.setComposeRoute({ surface: 'menu', intent: 'seek' })}
-      onAddBackToIntent={() => compose.setComposeRoute({ surface: 'menu', intent: 'add' })}
+      wizardEnteredFromMenu={compose.wizardEnteredFromMenu}
+      onSeekingBackToIntent={() => {
+        clearComposeWizardSessionForRoute(compose.seekFixedRoute);
+        compose.setComposeRoute({ surface: 'menu', intent: 'seek' });
+      }}
+      onAddBackToIntent={() => {
+        clearComposeWizardSessionForRoute(compose.addRoute);
+        compose.setComposeRoute({ surface: 'menu', intent: 'add' });
+      }}
       onActivityPublished={async (activity) => {
         await onActivityPublished(activity);
         if (rideshareLinkParent && activity.activityType === 'rideshare') {
@@ -154,27 +162,10 @@ export const ExploreExperienceOverlays = ({
       onPickArea={onPickExploreArea}
     />
 
-    <ExploreResponsiveSheet
+    <GuestComposeSignInSheet
       open={compose.guestComposeSignInOpen}
       onClose={compose.closeGuestComposeSignIn}
-      maxWidthClass="max-w-md"
-      zClass={EXPLORE_Z.guestJoinSheet}
-      overlayFixed
-      layout="centered"
-      showCloseButton
-      showHandle={false}
-      ariaLabel="Sign in to continue"
-    >
-      <div className="px-4 pb-5 pt-8 sm:px-6 sm:pb-6">
-        <ExploreGuestSignInCard intent="peek-details" compact />
-        <button
-          type="button"
-          onClick={compose.closeGuestComposeSignIn}
-          className="mt-2 block w-full py-2 text-center text-sm font-medium text-neutral-400"
-        >
-          Keep browsing
-        </button>
-      </div>
-    </ExploreResponsiveSheet>
+      authReturnPath={compose.guestComposeSignInReturnPath}
+    />
   </>
 );

@@ -113,6 +113,8 @@ export const useExploreExperienceModel = () => {
   const compose = useComposeRoute({
     user,
     navigate,
+    pathname,
+    search,
     searchParams,
     setSearchParams,
     onOpenComposeMenu: clearSelection,

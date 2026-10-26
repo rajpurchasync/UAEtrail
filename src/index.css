@@ -13,6 +13,13 @@
     --explore-float-base: var(--safe-bottom);
     /** Extra lift for map “+” FAB above bottom nav / safe area */
     --explore-map-fab-inset: 2.75rem;
+    /** Mobile explore tab header (safe area + avatar row). */
+    --explore-mobile-tab-header-stack: calc(var(--safe-top, 0px) + 2.75rem);
+    /** Map intent + activity filter toolbar — peek sheets start below this stack. */
+    --explore-mobile-map-filter-stack: 5.75rem;
+    --explore-browse-peek-top: calc(
+      var(--explore-mobile-tab-header-stack) + var(--explore-mobile-map-filter-stack)
+    );
     /** Vertical gap between map layer toggle and compose FAB */
     --explore-map-fab-stack-gap: 1.25rem;
     /** Desktop explore — right rail (Add New + layer toggle) vs Leaflet +/- */
@@ -1207,5 +1214,22 @@
   .marker-cluster-medium div,
   .marker-cluster-large div {
     background: transparent !important;
+  }
+
+  @keyframes compose-sheet-immersive-in {
+    from {
+      opacity: 0.94;
+      transform: translate3d(0, 5%, 0);
+    }
+    to {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+  }
+
+  @media (max-width: 1023px) {
+    .compose-sheet-immersive-enter {
+      animation: compose-sheet-immersive-in 0.34s cubic-bezier(0.32, 0.72, 0, 1);
+    }
   }
 }

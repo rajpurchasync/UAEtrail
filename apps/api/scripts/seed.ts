@@ -62,6 +62,7 @@ import { createSeekingActivityForIntent } from '../src/services/participant-inte
 import { findSeekingActivityByParticipantIntentId } from '../src/services/participant-intent-activity-readthrough.js';
 import type { CreateParticipantIntentInput } from '../src/domain/participant-intent.js';
 import { curatedAreaSeedId } from '@uaetrail/shared-types';
+import { deactivateOrphanActiveLocations } from './cleanup-orphan-activity-anchor-locations.js';
 import { backfillSeedCatalogLocationAreaIds, seedLocationAreaId } from './seed-location-area-map.js';
 import {
   createGroupWallMessage,
@@ -959,6 +960,7 @@ async function main() {
   if (!(await shouldRunSeed())) {
     await seedCuratedAreas();
     await backfillSeedCatalogLocationAreaIds();
+    await deactivateOrphanActiveLocations();
     await restampCatalogGeoIndexFields();
     const { invalidateExploreMapCache } = await import('../src/lib/explore-map-cache.js');
     await invalidateExploreMapCache();
@@ -1882,6 +1884,7 @@ Share your live location and carry extra water in summer months.`
   }
 
   await backfillSeedCatalogLocationAreaIds();
+  await deactivateOrphanActiveLocations();
 
   const facilitySeed = await seedCatalogFacilities();
   console.log(
