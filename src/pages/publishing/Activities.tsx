@@ -223,7 +223,9 @@ export const Activities = () => {
                     <div className="flex items-center gap-1">
                       {event.status === 'published' && (
                         <ActivityHubInviteIconButton
-                          onClick={() => inviteShare.openInviteFromActivity(event)}
+                          onClick={() =>
+                            inviteShare.openShareFromActivity(event, { canSendBuddyInvites: true })
+                          }
                         />
                       )}
                       <ActivityActionsMenu

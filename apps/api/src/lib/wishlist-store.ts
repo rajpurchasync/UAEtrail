@@ -32,8 +32,8 @@ export type WishlistRecord = {
 };
 
 export type WishlistItemWithDetails = WishlistRecord & {
-  location: { id: string; name: string; images: string[] } | null;
-  activity: { id: string; title: string; locationName: string | null } | null;
+  location: { id: string; name: string; images: string[]; activityType: string } | null;
+  activity: { id: string; title: string; locationName: string | null; activityType: string } | null;
 };
 
 const wishlistCollection = (): Collection<MongoWishlistDoc> =>
@@ -157,10 +157,17 @@ export const listWishlistItemsWithDetails = async (userId: string): Promise<Wish
 
   const [locationDocs, activityDocs] = await Promise.all([
     locationIds.length > 0
-      ? locationsCollection().find({ _id: { $in: locationIds } }, { projection: { name: 1, images: 1 } }).toArray()
+      ? locationsCollection()
+          .find({ _id: { $in: locationIds } }, { projection: { name: 1, images: 1, activityType: 1 } })
+          .toArray()
       : Promise.resolve([]),
     activityIds.length > 0
-      ? activitiesCollection().find({ _id: { $in: activityIds } }, { projection: { title: 1, locationId: 1 } }).toArray()
+      ? activitiesCollection()
+          .find(
+            { _id: { $in: activityIds } },
+            { projection: { title: 1, locationId: 1, activityType: 1 } }
+          )
+          .toArray()
       : Promise.resolve([]),
   ]);
 
@@ -168,9 +175,11 @@ export const listWishlistItemsWithDetails = async (userId: string): Promise<Wish
   const activityLocationIds = [...new Set(activityDocs.map((activity) => activity.locationId))];
   const activityLocationDocs =
     activityLocationIds.length > 0
-      ? await locationsCollection().find({ _id: { $in: activityLocationIds } }, { projection: { name: 1 } }).toArray()
+      ? await locationsCollection()
+          .find({ _id: { $in: activityLocationIds } }, { projection: { name: 1, activityType: 1 } })
+          .toArray()
       : [];
-  const activityLocationMap = new Map(activityLocationDocs.map((location) => [location._id, location.name]));
+  const activityLocationMap = new Map(activityLocationDocs.map((location) => [location._id, location]));
   const activityMap = new Map(activityDocs.map((activity) => [activity._id, activity]));
 
   return wishlistRows.map((item) => ({
@@ -179,18 +188,27 @@ export const listWishlistItemsWithDetails = async (userId: string): Promise<Wish
       ? (() => {
           const location = locationMap.get(item.locationId);
           return location
-            ? { id: location._id, name: location.name, images: location.images }
+            ? {
+                id: location._id,
+                name: location.name,
+                images: location.images,
+                activityType: location.activityType,
+              }
             : null;
         })()
       : null,
     activity: item.activityId
       ? (() => {
           const activity = activityMap.get(item.activityId);
-          return activity
+          if (!activity) return null;
+          const linkedPlace = activityLocationMap.get(activity.locationId);
+          const activityType = activity.activityType ?? linkedPlace?.activityType;
+          return activityType
             ? {
                 id: activity._id,
                 title: activity.title,
-                locationName: activityLocationMap.get(activity.locationId) ?? null,
+                locationName: linkedPlace?.name ?? null,
+                activityType,
               }
             : null;
         })()
@@ -202,13 +220,40 @@ export const deleteWishlistItemsForUser = async (userId: string): Promise<void> 
   await wishlistCollection().deleteMany({ userId });
 };
 
+/** Members who saved this catalog place and want trip alerts (`locationId` on wishlist row). */
+export const listWishlistSaversForLocation = async (
+  locationId: string
+): Promise<Array<{ userId: string; wishlistItemId: string }>> => {
+  const rows = await wishlistCollection()
+    .find(
+      {
+        locationId,
+        alertOnMatch: { $ne: false },
+      },
+      { projection: { userId: 1 } }
+    )
+    .toArray();
+  return rows.map((doc) => ({ userId: doc.userId, wishlistItemId: doc._id }));
+};
+
 /** wishlistRows that opted into geographic/category wishlist alerts. */
 export const listWishlistWatchCandidates = async () => {
   const rows = await wishlistCollection()
-    .find({
-      alertOnMatch: { $ne: false },
-      watchOutingCategory: { $exists: true, $ne: null },
-    })
+    .find(
+      {
+        alertOnMatch: { $ne: false },
+        watchOutingCategory: { $exists: true, $ne: null },
+      },
+      {
+        projection: {
+          userId: 1,
+          alertOnMatch: 1,
+          watchOutingCategory: 1,
+          watchLatitude: 1,
+          watchLongitude: 1,
+        },
+      }
+    )
     .toArray();
 
   return rows.map((doc) => ({

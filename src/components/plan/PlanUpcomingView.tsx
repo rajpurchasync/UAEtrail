@@ -8,6 +8,9 @@ import { PlanJoinedUpcoming } from './PlanJoinedUpcoming';
 import { PlanNeedsYouStrip } from './PlanNeedsYouStrip';
 import { parsePlanLens } from '../../plan/planLens';
 import { PlanHostingManageProvider } from '../../plan/PlanHostingManageContext';
+import { PLAN_SUMMARY_FOCUS_ELEMENT_IDS } from '../../plan/planSummaryFocusScroll';
+
+const PLAN_SUMMARY_SCROLL_MT = 'scroll-mt-[calc(var(--safe-top)+7.5rem)] outline-none';
 
 type PlanUpcomingViewProps = {
   refreshKey: number;
@@ -30,6 +33,9 @@ export const PlanUpcomingView = ({
 }: PlanUpcomingViewProps) => {
   const planLens = parsePlanLens(lensRaw);
   const hostingActive = canHost && filter === 'hosting';
+  const listSections = planLens !== 'availability' && layout === 'list';
+  const hostingAnchorOnChips = canHost && (!listSections || filter !== 'hosting');
+  const joinedAnchorOnChips = !listSections || filter !== 'joined';
 
   const upcomingBody =
     planLens === 'availability' ? (
@@ -45,11 +51,29 @@ export const PlanUpcomingView = ({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3">
-        <PlanCommitmentFilterChips
-          value={filter}
-          onChange={onFilterChange}
-          showHosting={canHost}
-        />
+        <div className="min-w-0 flex-1">
+          {hostingAnchorOnChips ? (
+            <span
+              id={PLAN_SUMMARY_FOCUS_ELEMENT_IDS.hosting}
+              tabIndex={-1}
+              aria-hidden
+              className={`pointer-events-none block h-0 w-full ${PLAN_SUMMARY_SCROLL_MT}`}
+            />
+          ) : null}
+          <PlanCommitmentFilterChips
+            value={filter}
+            onChange={onFilterChange}
+            showHosting={canHost}
+          />
+          {joinedAnchorOnChips ? (
+            <span
+              id={PLAN_SUMMARY_FOCUS_ELEMENT_IDS.joined}
+              tabIndex={-1}
+              aria-hidden
+              className={`pointer-events-none block h-0 w-full ${PLAN_SUMMARY_SCROLL_MT}`}
+            />
+          ) : null}
+        </div>
         <div className="flex shrink-0 rounded-xl border border-neutral-200/80 bg-white p-0.5">
           <button
             type="button"
@@ -79,7 +103,27 @@ export const PlanUpcomingView = ({
         canHost={canHost}
         active={hostingActive}
       >
-        {upcomingBody}
+        {listSections && filter === 'hosting' ? (
+          <section
+            id={PLAN_SUMMARY_FOCUS_ELEMENT_IDS.hosting}
+            tabIndex={-1}
+            className={PLAN_SUMMARY_SCROLL_MT}
+            aria-label="Hosting"
+          >
+            {upcomingBody}
+          </section>
+        ) : listSections && filter === 'joined' ? (
+          <section
+            id={PLAN_SUMMARY_FOCUS_ELEMENT_IDS.joined}
+            tabIndex={-1}
+            className={PLAN_SUMMARY_SCROLL_MT}
+            aria-label="Joined"
+          >
+            {upcomingBody}
+          </section>
+        ) : (
+          upcomingBody
+        )}
       </PlanHostingManageProvider>
     </div>
   );

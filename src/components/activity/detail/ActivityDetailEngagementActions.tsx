@@ -4,8 +4,13 @@ import { buildActivityDetailPageShellCard } from '../../../activity/detail/activ
 import { resolveActivityMapPeekActions } from '../../../activity/activityPeekEngagement';
 import { executeActivityMapPeekAction } from '../../../activity/executeActivityMapPeekAction';
 import type { ActivityMapPeekActionHandlers } from '../../../activity/executeActivityMapPeekAction';
-import { ActivityPeekEngagementActions } from '../../../explore/ui/peek/activity/ActivityPeekEngagementActions';
+import { discoveryCardActivityJoinIsFull } from '../../../discovery/discoveryCardModel';
 import { ActivityParticipationManageSheet } from '../ActivityParticipationManageSheet';
+import { ActivityDetailStandardFooter } from './ActivityDetailStandardFooter.tsx';
+import {
+  resolveActivityDetailStandardFooter,
+  type ActivityDetailFooterAction,
+} from './activityDetailFooterSlots';
 import type {
   ActivityDetailDTO,
   ActivityEngagementStripsDTO,
@@ -18,7 +23,6 @@ export type ActivityDetailEngagementModel = {
   viewerAccess: ActivityViewerAccessDTO | null;
   wireStrips: ActivityEngagementStripsDTO | null;
   joinUiState: JoinRequestUiState;
-  showHostManageHub: boolean;
 };
 
 type Model = ActivityDetailEngagementModel;
@@ -37,7 +41,6 @@ type ActivityDetailEngagementActionsProps = {
 export const ActivityDetailEngagementActions = ({
   model,
   handlers,
-  linkRideshareTenantId = null,
   onParticipantInviteFriends,
   onWithdraw,
   registerParticipationManageOpener,
@@ -64,13 +67,55 @@ export const ActivityDetailEngagementActions = ({
   }, [card, model.joinUiState]);
 
   const showParticipationManage =
-    !model.showHostManageHub &&
+    Boolean(onWithdraw) &&
     (model.joinUiState.kind === 'pending' || model.joinUiState.kind === 'confirmed');
+  const canManageParticipation = showParticipationManage;
+  const pendingWire = actions.find((action) => action.id === 'pending_join');
 
-  if (actions.length === 0 && !showParticipationManage) return null;
+  const footer = resolveActivityDetailStandardFooter({
+    isHost: card.viewerAccess?.level === 'host',
+    joinUiState: model.joinUiState,
+    viewerLevel: card.viewerAccess?.level ?? null,
+    wirePending: Boolean(pendingWire),
+    pendingStatus: pendingWire?.joinRequestStatus ?? null,
+    joinFull: discoveryCardActivityJoinIsFull(card),
+    joinLabel: card.primaryCta,
+    canManageParticipation,
+  });
 
   const onAction = (actionId: ActivityMapPeekActionId) => {
     executeActivityMapPeekAction(actionId, handlers);
+  };
+
+  const onFooterPress = (action: ActivityDetailFooterAction) => {
+    switch (action) {
+      case 'request_join':
+        onAction('request_join');
+        return;
+      case 'message_host':
+        onAction('message_host');
+        return;
+      case 'open_crew_chat':
+        onAction('open_crew_chat');
+        return;
+      case 'invite_crew':
+        onAction('invite_crew');
+        return;
+      case 'share_activity':
+        onAction('share_activity');
+        return;
+      case 'host_manage':
+        onAction('manage_activity');
+        return;
+      case 'open_pending_manage':
+      case 'open_participation_manage':
+        if (canManageParticipation) setManageOpen(true);
+        return;
+      default: {
+        const _exhaustive: never = action;
+        return _exhaustive;
+      }
+    }
   };
 
   const inviteFromManage = () => {
@@ -80,16 +125,11 @@ export const ActivityDetailEngagementActions = ({
 
   return (
     <>
-      <ActivityPeekEngagementActions
-        card={card}
-        actions={actions}
-        linkRideshareTenantId={linkRideshareTenantId}
-        onAction={onAction}
-        joinUiState={model.joinUiState}
-        surface="detail"
-        onOpenParticipationManage={
-          showParticipationManage && onWithdraw ? () => setManageOpen(true) : undefined
-        }
+      <ActivityDetailStandardFooter
+        mode={footer.mode}
+        left={footer.left}
+        right={footer.right}
+        onPress={onFooterPress}
       />
       {showParticipationManage && onWithdraw ? (
         <ActivityParticipationManageSheet

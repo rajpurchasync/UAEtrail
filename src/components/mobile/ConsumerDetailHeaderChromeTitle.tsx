@@ -1,4 +1,4 @@
-import { Car, Footprints, Tent } from 'lucide-react';
+import { Car, Mountain, Tent } from 'lucide-react';
 import { iconStroke } from '../../config/navIcons';
 
 export const CONSUMER_DETAIL_HEADER_CHROME_ROW_CLASS =
@@ -9,8 +9,8 @@ export const CONSUMER_DETAIL_HEADER_CHROME_EMOJI_CLASS =
 
 const LUCIDE_MARK_CLASS = 'h-6 w-6 shrink-0 text-neutral-900';
 
-/** Lucide marks for scheduled outing types (emoji fallback for venues / events). */
-export type ConsumerDetailHeaderMark = 'rideshare' | 'hiking' | 'camping';
+/** Lucide marks for scheduled outing types and trail places (emoji fallback for other venues). */
+export type ConsumerDetailHeaderMark = 'rideshare' | 'hiking' | 'trail' | 'camping';
 
 type ConsumerDetailHeaderChromeTitleProps = {
   emoji: string;
@@ -24,11 +24,34 @@ const HeaderChromeLucideMark = ({ mark }: { mark: ConsumerDetailHeaderMark }) =>
     case 'rideshare':
       return <Car className={LUCIDE_MARK_CLASS} strokeWidth={stroke} aria-hidden />;
     case 'hiking':
-      return <Footprints className={LUCIDE_MARK_CLASS} strokeWidth={stroke} aria-hidden />;
+    case 'trail':
+      return <Mountain className={LUCIDE_MARK_CLASS} strokeWidth={stroke} aria-hidden />;
     case 'camping':
       return <Tent className={LUCIDE_MARK_CLASS} strokeWidth={stroke} aria-hidden />;
   }
 };
+
+/** Type / place pin mark for sheet headers (not the outing photo). */
+export const ConsumerDetailHeaderTypeMark = ({
+  emoji,
+  mark,
+  sizeClass = 'h-9 w-9',
+}: {
+  emoji: string;
+  mark?: ConsumerDetailHeaderMark;
+  sizeClass?: string;
+}) => (
+  <span
+    className={`flex shrink-0 items-center justify-center rounded-lg bg-neutral-100 ring-1 ring-black/5 ${sizeClass}`}
+    aria-hidden
+  >
+    {mark ? (
+      <HeaderChromeLucideMark mark={mark} />
+    ) : (
+      <span className="font-emoji text-xl leading-none">{emoji}</span>
+    )}
+  </span>
+);
 
 /** Center title on consumer entity detail sticky headers (activity, trail, camp, shop facility, …). */
 export const ConsumerDetailHeaderChromeTitle = ({

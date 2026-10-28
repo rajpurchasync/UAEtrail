@@ -35,7 +35,7 @@ export const useHostActivitySheetBundle = (input: {
   const shareHostedActivity = useCallback(
     (activity: ActivityDTO) => {
       if (activity.status !== 'published') return;
-      inviteShare.openInviteFromActivity(activity, { canSendBuddyInvites: true });
+      inviteShare.openShareFromActivity(activity, { canSendBuddyInvites: true });
     },
     [inviteShare]
   );
@@ -51,7 +51,7 @@ export const useHostActivitySheetBundle = (input: {
       onOpenHostManage: input.tenantId ? openHostManage : undefined,
       onInviteCrew: (activity: ActivityDTO) => {
         if (activity.status !== 'published') return;
-        inviteShare.openInviteFromActivity(activity, { canSendBuddyInvites: true });
+        inviteShare.openShareFromActivity(activity, { canSendBuddyInvites: true });
       },
       onCreateLinkedRideshare,
     }),
@@ -73,7 +73,7 @@ export const useHostActivitySheetBundle = (input: {
         actions={hostManageActions}
         initialView={manageInitialView}
         onOpenPublicPage={(a) => navigate(activityDetailPath(a.id))}
-        onShare={(a) => inviteShare.openInviteFromActivity(a, { canSendBuddyInvites: true })}
+        onShare={(a) => inviteShare.openShareFromActivity(a, { canSendBuddyInvites: true })}
         onClose={closeManage}
         onRequestsChanged={() => void input.onMapDataChanged()}
       />

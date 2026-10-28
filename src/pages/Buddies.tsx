@@ -1,6 +1,6 @@
 import { EXPLORE_MAP_PATH, MESSAGES_PATH } from '../config/routingCatalog';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { MessageCircle, UserMinus, UserRound } from 'lucide-react';
 import type { BuddyRequestDTO, BuddySummaryDTO, MemberFollowSummaryDTO } from '@uaetrail/shared-types';
 import { setMemberFollow } from '../hooks/memberFollowApi';
@@ -23,6 +23,7 @@ import { useProfileHubBackChrome } from '../hooks/useProfileHubBackChrome';
 
 import { PRODUCT_EXPLORE_CTA } from '../content/productNorthStar';
 import { memberProfileLink } from '../member/memberProfileLink';
+import { mobileBackNavState } from '../utils/mobileBackNav';
 type FriendsTab = 'friends' | 'requests' | 'following';
 
 const parseFriendsTab = (raw: string | null): FriendsTab => {
@@ -46,6 +47,7 @@ export const Buddies = () => {
   const { user } = useAuth();
   const backChrome = useProfileHubBackChrome();
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = parseFriendsTab(searchParams.get('tab'));
 
@@ -201,6 +203,10 @@ export const Buddies = () => {
   }, [activeTab, buddies, findQuery]);
 
   const showFindRow = activeTab === 'friends' || activeTab === 'following';
+  const friendsReturn = mobileBackNavState(
+    location.search ? `${location.pathname}${location.search}` : location.pathname,
+    'Friends'
+  );
 
   return (
     <ConsumerShell
@@ -269,6 +275,7 @@ export const Buddies = () => {
                                 </div>
                                 <Link
                                   to={memberProfileLink(row.id, 'friends')}
+                                  state={friendsReturn}
                                   className={`shrink-0 ${friendActionPrimary}`}
                                 >
                                   View
@@ -323,6 +330,7 @@ export const Buddies = () => {
                           <div className="mt-3 grid grid-cols-3 gap-2">
                             <Link
                               to={memberProfileLink(buddy.userId, 'friends')}
+                              state={friendsReturn}
                               className={friendActionSecondary}
                             >
                               <UserRound className="h-3.5 w-3.5 shrink-0" aria-hidden />
@@ -330,6 +338,7 @@ export const Buddies = () => {
                             </Link>
                             <Link
                               to={`${messagesPath}?to=${buddy.userId}`}
+                              state={friendsReturn}
                               className={friendActionPrimary}
                             >
                               <MessageCircle className="h-3.5 w-3.5 shrink-0" aria-hidden />
@@ -435,6 +444,7 @@ export const Buddies = () => {
                                 <div className="mt-3 flex gap-2">
                                   <Link
                                     to={memberProfileLink(request.toUserId, 'friends')}
+                                    state={friendsReturn}
                                     className={`flex-1 ${friendActionSecondary}`}
                                   >
                                     View profile
@@ -502,6 +512,7 @@ export const Buddies = () => {
                           <div className="mt-3 flex gap-2">
                             <Link
                               to={memberProfileLink(member.userId, 'friends')}
+                              state={friendsReturn}
                               className={`flex-1 ${friendActionSecondary}`}
                             >
                               View profile

@@ -19,6 +19,7 @@ export const ActivityInviteExploreSheet = ({ open, onClose, children }: Activity
     maxWidthClass={EXPLORE_SHEET.compactMaxWidth}
     zClass={EXPLORE_Z.activityDetailInviteSheet}
     overlayFixed
+    pullToDismiss
     showCloseButton={false}
     panelClassName={`flex max-h-[min(88dvh,720px)] flex-col overflow-hidden ${EXPLORE_SHEET.compactPanelClass}`}
   >

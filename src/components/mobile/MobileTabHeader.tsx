@@ -32,7 +32,7 @@ export const MobileTabHeader = () => {
 
   const trailing = <ConsumerHeaderActions />;
 
-  const leadingBack = resolveMobileTabHeaderLeadingBack(pathname, state);
+  const leadingBack = resolveMobileTabHeaderLeadingBack(pathname, state, search);
 
   return (
     <MobileUnifiedTabHeader

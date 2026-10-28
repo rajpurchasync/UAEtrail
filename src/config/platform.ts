@@ -353,7 +353,9 @@ export const isConsumerChromeHidden = (pathname: string): boolean =>
 
 /** Mobile detail pages render their own back header (activity, trail, camp, product). */
 export const isMobileDetailRoute = (pathname: string): boolean =>
-  /^\/(trail|camp|venue|event|product|activity|event-spot|community-activity)\//.test(pathname);
+  /^\/(trail|camp|venue|event|product|activity|event-spot|community-activity|place)\//.test(
+    pathname
+  );
 
 /** Public entity detail — own header + sticky CTA (MobileDetailShell). */
 export const isConsumerEntityDetailRoute = (pathname: string): boolean =>

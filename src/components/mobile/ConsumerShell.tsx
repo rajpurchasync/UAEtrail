@@ -138,7 +138,7 @@ export const ConsumerShell = ({
                       <MobileBackButton
                         fallbackTo={back?.fallbackTo ?? journeyFallbackTo}
                         label={back?.label ?? journeyLabel}
-                        backBehavior={back?.backBehavior ?? 'history'}
+                        backBehavior={back?.backBehavior ?? 'fallback'}
                         className="min-h-[36px] py-0 -ml-1"
                       />
                     ) : null}
@@ -170,7 +170,7 @@ export const ConsumerShell = ({
                       <MobileBackButton
                         fallbackTo={back.fallbackTo ?? '/'}
                         label={back.label ?? 'Back'}
-                        backBehavior={back.backBehavior ?? 'history'}
+                        backBehavior="fallback"
                       />
                     </div>
                   )}
@@ -195,7 +195,7 @@ export const ConsumerShell = ({
                       <MobileBackButton
                         fallbackTo={back.fallbackTo ?? '/'}
                         label={back.label ?? 'Home'}
-                        backBehavior={back.backBehavior ?? 'history'}
+                        backBehavior="fallback"
                       />
                     ) : (
                       <span className="w-10" aria-hidden />

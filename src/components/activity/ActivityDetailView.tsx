@@ -250,14 +250,6 @@ export const ActivityDetailView = ({
     return <ActivityDetailBody {...model} planSections={PlanSections} />;
   }
 
-  const openParticipantInviteFriends = () => {
-    if (onParticipantInviteFriends) {
-      onParticipantInviteFriends();
-      return;
-    }
-    mapPeekActionHandlers.inviteCrew?.();
-  };
-
   if (consumerDetailLayout) {
     const headerChrome = resolveActivityConsumerDetailHeaderChrome(
       model.activity,
@@ -275,12 +267,6 @@ export const ActivityDetailView = ({
           <ActivityConsumerDetailPage
             model={model}
             planSections={PlanSections}
-            canInviteFriends={
-              canSendJoinInvites ||
-              model.joinUiState.kind === 'pending' ||
-              model.joinUiState.kind === 'confirmed'
-            }
-            onInviteFriends={openParticipantInviteFriends}
             onRideshareParentLinked={onRideshareParentLinked}
           />
         </ActivityConsumerDetailModalShell>

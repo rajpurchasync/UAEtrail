@@ -1,10 +1,11 @@
 import { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronLeft, Mountain } from 'lucide-react';
+import { Mountain } from 'lucide-react';
 import { PRODUCT_JOIN_CTA } from '../../content/productNorthStar';
 import { ConsumerHeaderActions } from './ConsumerHeaderActions';
 import { MobileMenuButton, MobileUserMenuButton } from './MobileMenu';
 import { MobileSessionHeaderActions } from './MobileSessionHeaderActions';
+import { MobileBackButton } from '../mobile/MobileBackButton';
 
 interface MobileBrandBarProps {
   tone?: 'light' | 'default';
@@ -38,18 +39,16 @@ export const MobileBrandBar = ({
   <div className={`flex items-center justify-between gap-2 sm:gap-3 ${className}`}>
     <div className="flex min-w-0 flex-1 items-center gap-2">
       {backTo && (
-        <Link
-          to={backTo}
-          aria-label={backLabel}
-          className={`hidden md:inline-flex h-11 items-center justify-center gap-1.5 rounded-full px-0 sm:px-3 sm:justify-start shrink-0 transition-colors active:scale-95 ${
+        <MobileBackButton
+          fallbackTo={backTo}
+          label={backLabel}
+          tone={tone === 'light' ? 'light' : 'default'}
+          className={`hidden md:inline-flex h-11 items-center justify-center gap-1.5 rounded-full px-0 sm:px-3 sm:justify-start shrink-0 ${
             tone === 'light'
               ? 'text-white bg-white/15 backdrop-blur-sm border border-white/25 hover:bg-white/25'
               : 'text-emerald-700 bg-emerald-50 border border-emerald-100 hover:bg-emerald-100'
           }`}
-        >
-          <ChevronLeft className="w-5 h-5" strokeWidth={2.25} />
-          <span className="hidden sm:inline text-[15px] font-medium">{backLabel}</span>
-        </Link>
+        />
       )}
       <Link to="/" className="flex items-center gap-2 min-w-0">
         <div className="w-8 h-8 shrink-0 bg-gradient-to-br from-emerald-400 to-emerald-700 rounded-lg flex items-center justify-center">

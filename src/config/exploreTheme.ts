@@ -207,12 +207,24 @@ export const EXPLORE_MAP_TOOLBAR_FLOATING =
 /** Shared vertical padding for map toolbar pills (Social + intent menu). */
 export const EXPLORE_MAP_TOOLBAR_PILL_PADDING = 'py-2';
 
-/** Mobile map — expanded activity/place filters (segmented CTA bar, not list-sheet grid). */
+/** Emoji glyphs in h-7 map toolbar segments (intent row + mobile filter CTA). 25% above `text-lg`. */
+export const EXPLORE_MAP_TOOLBAR_SEGMENT_ICON = 'text-[1.40625rem] leading-none';
+
+/** Mobile map — expanded activity/place filters (same outer height as intent toolbar: py-2 + h-7). */
 export const EXPLORE_MAP_MOBILE_FILTER_CTA_BAR =
-  `flex w-full min-w-0 items-stretch gap-1 rounded-2xl p-1 ring-1 ring-white/50 ${EXPLORE_MAP_CHROME_FROST}`;
+  `flex w-full min-w-0 items-stretch gap-1 rounded-2xl px-1.5 ${EXPLORE_MAP_TOOLBAR_PILL_PADDING} ring-1 ring-white/50 ${EXPLORE_MAP_CHROME_FROST}`;
+
+/** Segment hit area — matches intent bar `h-7` (28px) inside `EXPLORE_MAP_TOOLBAR_PILL_PADDING`. */
+export const EXPLORE_MAP_MOBILE_FILTER_CTA_SEGMENT_HIT = 'h-7';
+
+/** Same glyph size as `EXPLORE_MAP_TOOLBAR_SEGMENT_ICON`. */
+export const EXPLORE_MAP_MOBILE_FILTER_CTA_ICON = EXPLORE_MAP_TOOLBAR_SEGMENT_ICON;
+
+/** “All” text-only segment in the same bar. */
+export const EXPLORE_MAP_MOBILE_FILTER_CTA_ALL_LABEL = 'text-xs font-bold leading-none';
 
 const MAP_MOBILE_FILTER_CTA_SEGMENT_BASE =
-  'flex min-w-0 flex-1 basis-0 flex-col items-center justify-center gap-px rounded-lg px-0.5 py-1 text-center transition [-webkit-tap-highlight-color:transparent]';
+  `flex min-w-0 flex-1 basis-0 ${EXPLORE_MAP_MOBILE_FILTER_CTA_SEGMENT_HIT} items-center justify-center rounded-lg px-1 text-center transition [-webkit-tap-highlight-color:transparent]`;
 
 export const exploreMapMobileFilterCtaSegmentClass = (
   selected: boolean,

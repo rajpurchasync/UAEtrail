@@ -27,7 +27,11 @@ export const usePlanHostingManageDeepLink = ({
   useEffect(() => {
     if (!enabled) return;
     const openId = planHostingDeepLinkId(searchParams);
-    if (!openId || activitiesLoading) return;
+    if (!openId) {
+      openedDeepLinkRef.current = null;
+      return;
+    }
+    if (activitiesLoading) return;
     if (openedDeepLinkRef.current === openId) return;
 
     const activity = activities.find((event) => event.id === openId);

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   SEEKING_EMOJI,
   EXPLORE_PLACES_LAYER_EMOJI,
@@ -8,10 +8,12 @@ import {
 import type { ExplorePanel, MapFilterKey, VenueListFilterKey } from '../routing';
 import type { ExploreActivityDatePreset } from '../exploreActivityDateFilter';
 import {
-  EXPLORE_COMPACT_PILL_LABEL,
+  EXPLORE_MAP_MOBILE_FILTER_CTA_ALL_LABEL,
   EXPLORE_MAP_MOBILE_FILTER_CTA_BAR,
+  EXPLORE_MAP_MOBILE_FILTER_CTA_ICON,
   EXPLORE_MAP_TOOLBAR_FLOATING,
   EXPLORE_MAP_TOOLBAR_PILL_PADDING,
+  EXPLORE_MAP_TOOLBAR_SEGMENT_ICON,
   exploreMapMobileFilterCtaSegmentClass,
 } from '../../config/exploreTheme';
 import type { ExploreSearchScopeCounts, ExploreSearchScopeKey } from '../exploreBrowseTaxonomy';
@@ -36,7 +38,7 @@ const INTENT_SEGMENT_HIT = 'h-7 w-11 shrink-0';
 const SEGMENT_DIVIDER = 'mx-0.5 h-5 w-px shrink-0 bg-neutral-300/60';
 
 const segmentButtonClass = (selected: boolean) =>
-  `relative inline-flex ${INTENT_SEGMENT_HIT} items-center justify-center text-lg leading-none transition [-webkit-tap-highlight-color:transparent] ${
+  `relative inline-flex ${INTENT_SEGMENT_HIT} items-center justify-center ${EXPLORE_MAP_TOOLBAR_SEGMENT_ICON} transition [-webkit-tap-highlight-color:transparent] ${
     selected
       ? "after:pointer-events-none after:absolute after:inset-x-2 after:bottom-0 after:h-[2px] after:rounded-full after:bg-emerald-600 after:content-['']"
       : ''
@@ -48,10 +50,6 @@ const ctaSegmentClass = (
   active: boolean,
   activeKey: 'all' | 'hiking' | 'camping' | 'rideshare' | 'others' | 'shops'
 ) => exploreMapMobileFilterCtaSegmentClass(active, activeKey);
-
-const CompactPillLabel = ({ children }: { children: ReactNode }) => (
-  <span className={EXPLORE_COMPACT_PILL_LABEL}>{children}</span>
-);
 
 type MobileLayer = 'activity' | 'places';
 
@@ -95,13 +93,9 @@ export const ExploreMapMobileLayerChrome = ({
   const onActivities = panel === 'activities';
   const onPlaces = panel === 'venues' || panel === 'shops';
 
-  // List sheet / desktop tabs change `panel` — keep map chrome on the same browse mode (not a second layer).
+  // List sheet / browse tabs change `panel` — keep the matching filter row open (do not collapse to null).
   useEffect(() => {
-    setExpandedLayer((current) => {
-      if (panel === 'activities' && current === 'places') return null;
-      if ((panel === 'venues' || panel === 'shops') && current === 'activity') return null;
-      return current;
-    });
+    setExpandedLayer(defaultMobileMapExpandedLayer(panel));
   }, [panel]);
 
   const activitySelection = mapFilterToMobileActivityMenu(mapFilter);
@@ -128,7 +122,7 @@ export const ExploreMapMobileLayerChrome = ({
 
   const openLayer = (layer: MobileLayer) => {
     onBrowsePanelChange(browsePanelForMobileLayer(layer));
-    setExpandedLayer((current) => (current === layer ? null : layer));
+    setExpandedLayer(layer);
   };
 
   const handleActivityPill = (key: ExploreMobileActivityMenuKey) => {
@@ -142,7 +136,6 @@ export const ExploreMapMobileLayerChrome = ({
         return;
       }
       if (mapFilter === 'all') {
-        setExpandedLayer(null);
         return;
       }
       onMapFilterChange('all');
@@ -164,7 +157,6 @@ export const ExploreMapMobileLayerChrome = ({
         return;
       }
       if (placesMenuKey === 'all' && mapFilter === 'all' && venueFilter === 'all') {
-        setExpandedLayer(null);
         return;
       }
       setPlacesMenuKey('all');
@@ -214,10 +206,7 @@ export const ExploreMapMobileLayerChrome = ({
             type="button"
             className={segmentButtonClass(false)}
             aria-label="Search explore"
-            onClick={() => {
-              setExpandedLayer(null);
-              onOpenExploreSearch();
-            }}
+            onClick={() => onOpenExploreSearch()}
           >
             <span className="font-emoji" aria-hidden>🔍</span>
           </button>
@@ -264,25 +253,21 @@ export const ExploreMapMobileLayerChrome = ({
                   onClick={() => handleActivityPill(option.key)}
                   className={ctaSegmentClass(active, activeKey)}
                   aria-pressed={active}
+                  aria-label={option.label}
                 >
                   {option.key === 'all' ? (
-                    <span className="text-[10px] font-bold leading-tight">{option.label}</span>
-                  ) : (
-                    <>
-                  {option.key === 'hiking' ? (
-                    <ExploreFilterIcon filter="hiking" context="activity" className="text-sm leading-none" />
+                    <span className={EXPLORE_MAP_MOBILE_FILTER_CTA_ALL_LABEL}>{option.label}</span>
+                  ) : option.key === 'hiking' ? (
+                    <ExploreFilterIcon filter="hiking" context="activity" className={EXPLORE_MAP_MOBILE_FILTER_CTA_ICON} />
                   ) : option.key === 'camping' ? (
-                    <ExploreFilterIcon filter="camping" context="activity" className="text-sm leading-none" />
+                    <ExploreFilterIcon filter="camping" context="activity" className={EXPLORE_MAP_MOBILE_FILTER_CTA_ICON} />
                   ) : option.key === 'rideshare' ? (
-                    <span className="font-emoji text-sm leading-none" aria-hidden>{RIDESHARE_EMOJI}</span>
+                    <span className={`font-emoji ${EXPLORE_MAP_MOBILE_FILTER_CTA_ICON}`} aria-hidden>{RIDESHARE_EMOJI}</span>
                   ) : option.key === 'others' ? (
-                    <span className="font-emoji text-sm leading-none" aria-hidden>
+                    <span className={`font-emoji ${EXPLORE_MAP_MOBILE_FILTER_CTA_ICON}`} aria-hidden>
                       {MAP_LAYER_FILTER_EMOJI.others}
                     </span>
                   ) : null}
-                  <CompactPillLabel>{option.label}</CompactPillLabel>
-                    </>
-                  )}
                 </button>
               );
             })}
@@ -327,23 +312,19 @@ export const ExploreMapMobileLayerChrome = ({
                   onClick={() => handlePlacesPill(option.key)}
                   className={ctaSegmentClass(active, activeKey)}
                   aria-pressed={active}
+                  aria-label={option.label}
                 >
                   {option.key === 'all' ? (
-                    <span className="text-[10px] font-bold leading-tight">{option.label}</span>
-                  ) : (
-                    <>
-                  {option.key === 'trails' ? (
-                    <ExploreFilterIcon filter="hiking" context="venue" className="text-sm leading-none" />
+                    <span className={EXPLORE_MAP_MOBILE_FILTER_CTA_ALL_LABEL}>{option.label}</span>
+                  ) : option.key === 'trails' ? (
+                    <ExploreFilterIcon filter="hiking" context="venue" className={EXPLORE_MAP_MOBILE_FILTER_CTA_ICON} />
                   ) : option.key === 'spots' || option.key === 'camping' ? (
-                    <ExploreFilterIcon filter="camping" context="venue" className="text-sm leading-none" />
+                    <ExploreFilterIcon filter="camping" context="venue" className={EXPLORE_MAP_MOBILE_FILTER_CTA_ICON} />
                   ) : option.key === 'shops' ? (
-                    <ExploreFilterIcon filter="shops" context="venue" className="text-sm leading-none" />
+                    <ExploreFilterIcon filter="shops" context="venue" className={EXPLORE_MAP_MOBILE_FILTER_CTA_ICON} />
                   ) : option.key === 'others' ? (
-                    <ExploreFilterIcon filter="others" context="venue" className="text-sm leading-none" />
+                    <ExploreFilterIcon filter="others" context="venue" className={EXPLORE_MAP_MOBILE_FILTER_CTA_ICON} />
                   ) : null}
-                  <CompactPillLabel>{option.label}</CompactPillLabel>
-                    </>
-                  )}
                 </button>
               );
             })}

@@ -1,6 +1,6 @@
 import { activityHostTopicToOutingTopic, type ActivityDTO } from '@uaetrail/shared-types';
 import { fetchPublishedAreas } from '../hooks/areaHubClientApi';
-import { createActivity, publishActivity } from '../hooks/tenantActivityClientApi';
+import { createActivity, publishActivity, updateActivity } from '../hooks/tenantActivityClientApi';
 import { linkSeekingPostToActivity } from '../hooks/seekingClientApi';
 import { submitMemberPlace } from '../hooks/memberCatalogSubmitClientApi';
 import { HOME_HERO_OG_PATH } from '../config/seo';
@@ -300,4 +300,27 @@ export const publishHostingActivity = async (input: {
   }
 
   return created;
+};
+
+/** Update an existing hosted outing in place (Plan manage edit — same draft pipeline as publish). */
+export const updateHostingActivity = async (input: {
+  activityId: string;
+  draft: CreateActivityDraft;
+  tenantId: string;
+  userId: string;
+}): Promise<ActivityDTO> => {
+  const { activityId, draft, tenantId, userId } = input;
+  if (!draft.kind) throw new Error('Choose an activity type.');
+  if (!draft.title.trim()) {
+    throw new Error('Enter a title for your plan.');
+  }
+
+  const ctx: OrganizePublishContext = { draft, tenantId, userId };
+  const locationId = await resolveOrganizeActivityLocationId(ctx);
+  const payload = buildHostingActivityPublishInput({ ...ctx, locationId });
+  const body = buildHostActivityPublishPayload(payload);
+  delete body.clonedFromActivityId;
+  delete body.linkedActivityId;
+
+  return updateActivity(tenantId, activityId, body);
 };

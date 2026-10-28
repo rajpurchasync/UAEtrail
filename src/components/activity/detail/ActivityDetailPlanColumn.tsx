@@ -1,4 +1,7 @@
+import { activityDetailPath } from '../../../config/routingCatalog';
 import { ACTIVITY_DETAIL_JOIN_REQUIRED_PLAN_HINT } from '../../../content/activityDetailCopy';
+import { planHostedActivityManagePath } from '../../../plan/planRouting';
+import { ActivityDetailLinkedPlaceLink } from './ActivityDetailLinkedPlaceLink';
 import { ActivityDetailGuestGate } from './ActivityDetailGuestGate';
 import { ActivityInviteLauncher } from '../ActivityInviteLauncher';
 import { ActivityPostCheckInReviewPrompts } from '../ActivityPostCheckInReviewPrompts';
@@ -10,6 +13,12 @@ import { ActivityDetailTransportTabPanels } from './tabs/ActivityDetailTransport
 import type { useActivityDetailViewModel } from './useActivityDetailViewModel';
 
 type Model = ReturnType<typeof useActivityDetailViewModel>;
+
+const linkedPlaceEyebrow = (kind: string | null | undefined): string => {
+  if (kind === 'hiking') return 'Trail';
+  if (kind === 'camping') return 'Camp spot';
+  return 'Place';
+};
 
 type ActivityDetailPlanColumnProps = {
   model: Model;
@@ -81,6 +90,23 @@ export const ActivityDetailPlanColumn = ({
         />
       ) : null}
 
+      {!consumerInline && model.registryPlaceName ? (
+        <div className={model.mobilePlanPanel}>
+          <ActivityDetailLinkedPlaceLink
+            name={model.registryPlaceName}
+            to={model.registryPlacePath}
+            returnTo={
+              model.isEmbedded
+                ? planHostedActivityManagePath(model.activity.id)
+                : activityDetailPath(model.activity.id)
+            }
+            eyebrow={linkedPlaceEyebrow(
+              model.activity.location?.activityType ?? model.activity.activityType
+            )}
+          />
+        </div>
+      ) : null}
+
       {!model.requiresSignIn && KindPlanSections && !consumerRideshare ? (
         <KindPlanSections model={model} />
       ) : null}
@@ -108,6 +134,11 @@ export const ActivityDetailPlanColumn = ({
           showPlaceLockedOnMobile={model.showPlaceLockedOnMobile}
           registryPlacePath={model.registryPlacePath}
           registryPlaceName={model.registryPlaceName}
+          placeReturnTo={
+            model.isEmbedded
+              ? planHostedActivityManagePath(model.activity.id)
+              : activityDetailPath(model.activity.id)
+          }
           hasAccessCoordinates={model.hasAccessCoordinates}
           accessLat={model.accessLat}
           accessLng={model.accessLng}

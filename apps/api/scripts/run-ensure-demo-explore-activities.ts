@@ -4,6 +4,7 @@
  * Usage: npm --workspace @uaetrail/api run ensure-demo-explore-activities
  */
 import { connectMongo, disconnectMongo } from '../src/lib/mongo.js';
+import { disconnectRedis } from '../src/lib/redis.js';
 import { ensureDemoExploreActivities } from './seed-demo-scheduled-activities.js';
 
 const main = async () => {
@@ -24,4 +25,6 @@ main()
   })
   .finally(async () => {
     await disconnectMongo();
+    await disconnectRedis();
+    process.exit(process.exitCode ?? 0);
   });

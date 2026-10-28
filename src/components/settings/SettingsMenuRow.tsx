@@ -43,7 +43,11 @@ export const SettingsMenuRow = ({
           {typeof badge === 'number' && badge > 99 ? '99+' : badge}
         </span>
       ) : null}
-      <ChevronRight className="h-4 w-4 shrink-0 text-neutral-300" aria-hidden />
+      {to ? (
+        <ChevronRight className="h-4 w-4 shrink-0 text-neutral-300" aria-hidden />
+      ) : (
+        <span className="w-4 shrink-0" aria-hidden />
+      )}
     </>
   );
 

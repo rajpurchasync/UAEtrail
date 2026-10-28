@@ -10,8 +10,8 @@ export interface WishlistItemDTO {
   watchLatitude?: number | null;
   watchLongitude?: number | null;
   createdAt?: string;
-  location?: { id: string; name: string; images: string[]; activityType?: string | null } | null;
-  activity?: { id: string; title: string; locationName: string | null } | null;
+  location?: { id: string; name: string; images: string[]; activityType: string } | null;
+  activity?: { id: string; title: string; locationName: string | null; activityType: string } | null;
 }
 
 export type WishlistCheckDTO = {

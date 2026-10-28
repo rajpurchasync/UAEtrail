@@ -1,5 +1,6 @@
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Car, Plus, Trash2 } from 'lucide-react';
+import { AppButtonLink } from '../components/mobile/AppButton';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { MemberVehicleForm } from '../components/vehicles/MemberVehicleForm';
 import { MemberVehicleCarIcon } from '../components/vehicles/MemberVehicleCarIcon';
@@ -23,27 +24,24 @@ export const ProfileVehiclesPage = () => {
         {isLoading ? (
           <p className="text-sm text-neutral-500">Loading…</p>
         ) : vehicles.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-neutral-200 bg-neutral-50/80 p-6 text-center">
+          <div className="glass-card border-dashed p-6 text-center">
             <Car className="mx-auto h-8 w-8 text-neutral-400" aria-hidden />
             <p className="mt-2 text-sm font-semibold text-neutral-900">No cars yet</p>
             <p className="mt-1 text-xs text-neutral-600">Add one before you host a rideshare.</p>
-            <Link
+            <AppButtonLink
               to={`${PROFILE_VEHICLES_PATH}/new`}
               state={mobileBackNavState(PROFILE_VEHICLES_PATH, 'My cars')}
-              className="mt-4 inline-flex items-center gap-1 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-bold text-white"
+              className="mt-4"
             >
               <Plus className="h-4 w-4" aria-hidden />
               Add car
-            </Link>
+            </AppButtonLink>
           </div>
         ) : (
           <>
             <ul className="space-y-2">
               {vehicles.map((vehicle) => (
-                <li
-                  key={vehicle.id}
-                  className="flex items-center gap-3 rounded-2xl border border-neutral-200 bg-white p-3 shadow-sm"
-                >
+                <li key={vehicle.id} className="glass-card flex items-center gap-3 p-3">
                   <MemberVehicleCarIcon color={vehicle.color} />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-semibold text-neutral-950">
@@ -64,14 +62,15 @@ export const ProfileVehiclesPage = () => {
                 </li>
               ))}
             </ul>
-            <Link
+            <AppButtonLink
               to={`${PROFILE_VEHICLES_PATH}/new`}
               state={mobileBackNavState(PROFILE_VEHICLES_PATH, 'My cars')}
-              className="flex w-full items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 py-3 text-sm font-bold text-emerald-800"
+              variant="tint"
+              fullWidth
             >
               <Plus className="h-4 w-4" aria-hidden />
               Add another car
-            </Link>
+            </AppButtonLink>
           </>
         )}
       </div>
@@ -102,6 +101,7 @@ export const ProfileVehicleEditPage = () => {
 
   return (
     <ConsumerShell layout="stack" title="Edit car" showJourney={false} back={backChrome}>
+      <div className="pb-nav-safe animate-fade-up">
       <MemberVehicleForm
         initial={vehicle}
         submitLabel="Save car"
@@ -118,11 +118,12 @@ export const ProfileVehicleEditPage = () => {
           await remove.mutateAsync(vehicle.id);
           navigateWithBackChrome(navigate, backChrome);
         }}
-        className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl border border-red-200 py-3 text-sm font-semibold text-red-700"
+        className="mt-6 flex w-full items-center justify-center gap-2 rounded-2xl border border-red-200 py-3 text-sm font-semibold text-red-700"
       >
         <Trash2 className="h-4 w-4" aria-hidden />
         Remove car
       </button>
+      </div>
     </ConsumerShell>
   );
 };
@@ -134,14 +135,16 @@ export const ProfileVehicleNewPage = () => {
 
   return (
     <ConsumerShell layout="stack" title="Add car" showJourney={false} back={backChrome}>
-      <MemberVehicleForm
-        submitLabel="Save car"
-        busy={create.isPending}
-        onSubmit={async (input) => {
-          await create.mutateAsync(input);
-          navigateWithBackChrome(navigate, backChrome);
-        }}
-      />
+      <div className="pb-nav-safe animate-fade-up">
+        <MemberVehicleForm
+          submitLabel="Save car"
+          busy={create.isPending}
+          onSubmit={async (input) => {
+            await create.mutateAsync(input);
+            navigateWithBackChrome(navigate, backChrome);
+          }}
+        />
+      </div>
     </ConsumerShell>
   );
 };

@@ -1,4 +1,5 @@
 import type { NavigateFunction } from 'react-router-dom';
+import { getAppScrollContainer } from '../config/layoutScroll';
 import { signInPath, signUpPath } from '../config/surfacePaths';
 
 interface LocationLike {
@@ -71,7 +72,9 @@ export const buildSignInRedirect = (
 ): { href: string; signUpHref: string; from: string } => {
   const from = options?.returnPath ?? buildPathFromLocation(location, options?.hash);
   const win = getSafeWindow();
-  const scrollY = win ? Math.max(0, Math.round(win.scrollY)) : undefined;
+  // Product routes scroll inside `#app-scroll-root`, not the window.
+  const scrollTop = win ? (getAppScrollContainer()?.scrollTop ?? win.scrollY) : undefined;
+  const scrollY = scrollTop === undefined ? undefined : Math.max(0, Math.round(scrollTop));
   const focus = options?.focusSelector;
   return {
     from,

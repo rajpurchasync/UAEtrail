@@ -3,7 +3,6 @@ import { useId, useState } from 'react';
 import { Check } from 'lucide-react';
 import { getVenueStateFilterOptions } from '../../config/regions';
 import { UaeFlagIcon } from '../../components/ui/UaeFlagIcon';
-import { EXPLORE_COMPACT_PILL_LABEL } from '../../config/exploreTheme';
 import { useExploreMapPillDropdown } from './exploreMapPillDropdown';
 
 type ExploreMapMobileUaePillProps = {
@@ -107,12 +106,7 @@ export const ExploreMapMobileUaePill = ({
         }
       >
         {compact ? (
-          <>
-            <UaeFlagIcon className="h-3.5 w-5 shrink-0" />
-            <span className={EXPLORE_COMPACT_PILL_LABEL}>
-              {active ? `${venueRegions.length}` : 'UAE'}
-            </span>
-          </>
+          <UaeFlagIcon className="h-5 w-[1.875rem] shrink-0" aria-hidden />
         ) : (
           <>
             <UaeFlagIcon />

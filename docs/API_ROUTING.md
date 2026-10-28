@@ -186,7 +186,7 @@ Registration: `registerMemberDiscoveryRoutes.ts` · `registerPublicPlaceRoutes.t
 | Method | Path | Who |
 |--------|------|-----|
 | GET | `/reviews` | Public list. Query: `targetType=location\|tenant\|activity`, `targetId`, pagination |
-| POST | `/reviews` | Signed-in · place, host/shop, or **activity** (activity requires host check-in) |
+| POST | `/reviews` | Signed-in · place, host/shop, or **activity** (activity requires host check-in and a finished schedule — `activityInstantHasEnded` on the place `countryCode`) |
 | GET | `/me/reviews` | Signed-in member's reviews |
 | PATCH | `/me/reviews/:id` | Edit own review |
 
@@ -206,7 +206,7 @@ Private saves — **venue** (`locationId`) or **activity** (`activityId`) only. 
 | DELETE | `/me/wishlist/:id` | Remove row |
 | GET | `/me/wishlist/check` | Query `locationId` or `activityId` → `{ saved, wishlistItemId }` |
 
-Registration: `registerMeWishlistRoutes.ts` · store: `wishlist-store.ts` · match alerts: `wishlist-alerts.ts` (hosted publish → `notifyWishlistForPublishedActivity`; seeking create → `notifyWishlistForNewDemand`).
+Registration: `registerMeWishlistRoutes.ts` · store: `wishlist-store.ts` · match alerts: `wishlist-alerts.ts`. Hosted publish (`notifyWishlistForPublishedActivity`) notifies members who saved that catalog place (`locationId`, index `wishlist_locationId`) and members whose geographic/category watch matches the pin. Seeking create → `notifyWishlistForNewSeeking`. Place name and host display name come from the stored place and profile; a missing place row skips the saved-place fan-out.
 
 ---
 

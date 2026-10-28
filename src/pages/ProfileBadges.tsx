@@ -67,7 +67,7 @@ export const ProfileBadges = () => {
   return (
     <ConsumerShell
       layout="stack"
-      title="My badges"
+      title="Badges"
       maxWidth="4xl"
       showJourney={false}
       back={backChrome}

@@ -36,6 +36,8 @@ interface ExploreResponsiveSheetProps {
   ariaLabel?: string;
   /** Mobile compose flows: drag handle, pull-down dismiss, optional pull-up expand (matches browse sheet). */
   mobileComposeChrome?: boolean;
+  /** Bottom sheet with drag handle: pull down to dismiss (non-compose sheets). */
+  pullToDismiss?: boolean;
   expanded?: boolean;
   onExpand?: () => void;
   expandHint?: string;
@@ -56,6 +58,7 @@ export const ExploreResponsiveSheet = ({
   title,
   ariaLabel = 'Panel',
   mobileComposeChrome = false,
+  pullToDismiss = false,
   expanded = false,
   onExpand,
   expandHint,
@@ -63,10 +66,12 @@ export const ExploreResponsiveSheet = ({
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
   const composePeekGestures = mobileComposeChrome && !expanded;
+  const pullDismissGestures = pullToDismiss && showHandle && layout !== 'centered' && layout !== 'fullscreen';
+  const sheetDragGestures = composePeekGestures || pullDismissGestures;
   const { panelRef: dragPanelRef, panelStyle, overlayStyle, dragZoneProps } = useSheetDragDismiss(
     onClose,
     {
-      enabled: open && composePeekGestures,
+      enabled: open && sheetDragGestures,
       onExpand: composePeekGestures ? onExpand : undefined,
       mode: composePeekGestures ? 'peek' : 'default',
     }
@@ -118,17 +123,25 @@ export const ExploreResponsiveSheet = ({
     ? `relative flex h-[100dvh] max-h-[100dvh] w-full max-w-none flex-col overflow-hidden rounded-none bg-neutral-50 shadow-none ${panelClassName}`
     : mobileComposeChrome
       ? composeMobilePanelClass
-      : `relative w-full max-h-[min(90dvh,640px)] overflow-y-auto explore-sheet-panel ${exploreSheetPanelClass} ${maxWidthClass} ${panelClassName} ${
-          centered
-            ? 'rounded-2xl shadow-2xl'
-            : 'shadow-[0_-8px_40px_rgba(15,23,42,.12)] sm:shadow-2xl'
-        }`;
+      : pullDismissGestures
+        ? `relative flex w-full max-h-[min(90dvh,640px)] flex-col overflow-hidden explore-sheet-panel ${exploreSheetPanelClass} ${maxWidthClass} ${panelClassName} ${
+            centered
+              ? 'rounded-2xl shadow-2xl'
+              : 'shadow-[0_-8px_40px_rgba(15,23,42,.12)] sm:shadow-2xl'
+          }`
+        : `relative w-full max-h-[min(90dvh,640px)] overflow-y-auto explore-sheet-panel ${exploreSheetPanelClass} ${maxWidthClass} ${panelClassName} ${
+            centered
+              ? 'rounded-2xl shadow-2xl'
+              : 'shadow-[0_-8px_40px_rgba(15,23,42,.12)] sm:shadow-2xl'
+          }`;
 
   const composeScrollClass = mobileComposeChrome
     ? composeExpanded
       ? `flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain ${EXPLORE_COMPOSE_IMMERSIVE.scrollPadTop} ${EXPLORE_COMPOSE_IMMERSIVE.scrollPadBottom} lg:overflow-visible lg:flex-none lg:pt-0 lg:pb-0`
       : 'flex min-h-0 flex-1 flex-col overflow-y-auto lg:overflow-visible lg:flex-none'
-    : undefined;
+    : pullDismissGestures && !panelClassName.includes('overflow-hidden')
+      ? 'flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto overscroll-contain'
+      : undefined;
 
   const dragHandle = composePeekGestures ? (
     <div className="shrink-0 sm:hidden">
@@ -139,6 +152,10 @@ export const ExploreResponsiveSheet = ({
         dragZoneProps={dragZoneProps}
       />
     </div>
+  ) : pullDismissGestures ? (
+    <div className="shrink-0 sm:hidden">
+      <MobileSheetDragHandle dragZoneProps={dragZoneProps} />
+    </div>
   ) : showHandle && !centered ? (
     <div className={`mb-2 mt-3 sm:hidden ${EXPLORE_SHAPE.sheetHandle}`} />
   ) : null;
@@ -148,7 +165,7 @@ export const ExploreResponsiveSheet = ({
       className={`${overlayPosition} inset-0 ${effectiveZClass} flex ${shellClass} ${
         composeExpanded ? 'bg-white' : EXPLORE_SHEET.scrim
       } ${overlayFixed || fullscreen || composeExpanded ? '' : 'lg:fixed'}`}
-      style={composePeekGestures ? overlayStyle : undefined}
+      style={sheetDragGestures ? overlayStyle : undefined}
     >
       {showBackdropDismiss ? (
         <button
@@ -159,7 +176,7 @@ export const ExploreResponsiveSheet = ({
         />
       ) : null}
       <div
-        ref={mobileComposeChrome ? mergePanelRef : panelRef}
+        ref={mobileComposeChrome || pullDismissGestures ? mergePanelRef : panelRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby={title ? titleId : undefined}
@@ -167,7 +184,7 @@ export const ExploreResponsiveSheet = ({
         className={`relative z-10 ${panelSurfaceClass}${
           immersiveEnter ? ' compose-sheet-immersive-enter max-lg:compose-sheet-immersive-enter' : ''
         }`}
-        style={composePeekGestures ? panelStyle : undefined}
+        style={sheetDragGestures ? panelStyle : undefined}
         onClick={(event) => event.stopPropagation()}
       >
         {title ? (
@@ -190,7 +207,11 @@ export const ExploreResponsiveSheet = ({
         ) : (
           <>
             {dragHandle}
-            <div className={composeScrollClass}>{children}</div>
+            {composeScrollClass ? (
+              <div className={composeScrollClass}>{children}</div>
+            ) : (
+              children
+            )}
           </>
         )}
       </div>

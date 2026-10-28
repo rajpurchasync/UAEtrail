@@ -1,6 +1,6 @@
 import { EXPLORE_MAP_PATH } from '../../config/routingCatalog';
 import { useMemo } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import type { MyActivityDTO } from '@uaetrail/shared-types';
 import { useJoinedUpcomingPlanData } from '../../hooks/useJoinedUpcomingPlanData';
 import { ActivityHubEmptyState } from '../../components/mobile/ActivityHubEmptyState';
@@ -33,6 +33,8 @@ import { requestStatusClassName, requestStatusLabel } from '../../utils/joinRequ
 import { getRequestEventDate } from '../../utils/activityDates';
 import { useActivityInviteShareSheet } from '../../hooks/useActivityInviteShareSheet';
 import { ActivityHubInviteIconButton } from '../../components/activity/ActivityHubInviteIconButton';
+import { profileHistoryEntityLinkState } from '../../explore/mapPeekDetailNavState';
+import { viewReturnPathKey } from '../../utils/viewReturnMemory';
 
 const formatActivityMeta = (activity: MyActivityDTO) => {
   const parts = [formatActivityType(activity.activityType), activity.date];
@@ -61,6 +63,11 @@ export const JoinedSection = ({
   scope?: 'all' | 'attended-only';
 }) => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const historyReturn = profileHistoryEntityLinkState(viewReturnPathKey(location.pathname, location.search));
+  const openActivity = (activityId: string) => {
+    navigate(`/activity/${activityId}`, { state: historyReturn });
+  };
   const inviteShare = useActivityInviteShareSheet();
   const [searchParams, setSearchParams] = useSearchParams();
   const subTab = parseJoinedSubTab(searchParams.get('sub'));
@@ -151,10 +158,10 @@ export const JoinedSection = ({
                       Joined
                     </span>
                   }
-                  onClick={() => navigate(`/activity/${row.activity.id}`)}
+                  onClick={() => openActivity(row.activity.id)}
                   menu={
                     <ActivityHubInviteIconButton
-                      onClick={() => inviteShare.openInviteFromActivity(row.activity)}
+                      onClick={() => inviteShare.openShareFromActivity(row.activity)}
                     />
                   }
                 />
@@ -170,7 +177,7 @@ export const JoinedSection = ({
                       {requestStatusLabel(row.request.status)}
                     </span>
                   }
-                  onClick={() => navigate(`/activity/${row.request.activity.id}`)}
+                  onClick={() => openActivity(row.request.activity.id)}
                 />
               )
             )}
@@ -195,14 +202,14 @@ export const JoinedSection = ({
                 title={activity.title || activity.locationName}
                 meta={formatActivityMeta(activity)}
                 badge={
-                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-violet-500/15 text-violet-700">
+                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-600/15 text-emerald-800">
                     Attended
                   </span>
                 }
-                onClick={() => navigate(`/activity/${activity.id}`)}
+                onClick={() => openActivity(activity.id)}
                 menu={
                   <ActivityHubInviteIconButton
-                    onClick={() => inviteShare.openInviteFromActivity(activity)}
+                    onClick={() => inviteShare.openShareFromActivity(activity)}
                   />
                 }
               />

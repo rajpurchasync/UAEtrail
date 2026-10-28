@@ -25,6 +25,7 @@ import {
   parsePlanHistoryRole,
   type PlanHistoryRole,
 } from '../config/routingCatalog';
+import { mobileBackNavState } from '../utils/mobileBackNav';
 import { resolveProfileHistoryContentKey } from '../member-plan/resolvePlanHubView';
 
 /** Profile outing history list — `/profile/history`. */
@@ -54,12 +55,11 @@ export const ProfileHistoryPage = () => {
     }
     if (!user) return;
     const next = new URLSearchParams(searchParams);
-    const { changed } = normalizePlanHubSearchParams(next, canHost);
-    let shouldReplace = changed;
     if (!next.get('view') && isProfileHistoryListPath(location.pathname)) {
       next.set('view', 'completed');
-      shouldReplace = true;
     }
+    const { changed } = normalizePlanHubSearchParams(next, canHost);
+    const shouldReplace = changed || next.toString() !== searchParams.toString();
     if (shouldReplace) setSearchParams(next, { replace: true });
   }, [canHost, location.pathname, navigate, searchParams, setSearchParams, user]);
 
@@ -148,10 +148,17 @@ export const ProfileHistoryPage = () => {
             </p>
             <button
               type="button"
-              onClick={() => navigate(PRO_MEMBERSHIP_PATH)}
+              onClick={() =>
+                navigate(PRO_MEMBERSHIP_PATH, {
+                  state: mobileBackNavState(
+                    `${PROFILE_HISTORY_PATH}${location.search}`,
+                    'History'
+                  ),
+                })
+              }
               className="text-sm font-semibold text-emerald-700"
             >
-              Pro Membership
+              Pro membership
             </button>
           </div>
         );

@@ -1,10 +1,8 @@
-import type { MemberMedicalSafetyDTO, ParticipantDTO } from '@uaetrail/shared-types';
+import { activityInstantHasEnded, type MemberMedicalSafetyDTO, type ParticipantDTO } from '@uaetrail/shared-types';
 import type { ActivityParticipant } from '../domain/types.js';
 
-export const activityTimingHasEnded = (startAt: Date, endAt: Date | null): boolean => {
-  const end = endAt ?? startAt;
-  return end.getTime() <= Date.now();
-};
+/** @deprecated Import `activityInstantHasEnded` from `@uaetrail/shared-types`. */
+export const activityTimingHasEnded = activityInstantHasEnded;
 
 type ParticipantUserFields = {
   displayName: string;

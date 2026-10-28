@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { Car, HeartPulse } from 'lucide-react';
+import { Car, HeartPulse, Sparkles } from 'lucide-react';
 
 import { PRO_MEMBERSHIP_PATH, PROFILE_SETTINGS_SAFETY_PATH } from '../../config/routingCatalog';
 import { PROFILE_VEHICLES_PATH } from '../../config/surfacePaths';
@@ -210,6 +210,8 @@ export const ProfileConsumerHub = ({
 
           onClick={onCompleteProfile}
 
+          data-nav-focus="profile-complete"
+
           className="glass-card-interactive flex w-full items-center gap-3 border border-emerald-200/60 bg-emerald-50/50 px-3 py-3 text-left"
 
         >
@@ -257,13 +259,15 @@ export const ProfileConsumerHub = ({
 
         <SettingsMenuRow
 
-          label="Pro Membership"
+          label="Pro membership"
 
           subtitle="Professional guide, agency, or shop profile"
 
           to={PRO_MEMBERSHIP_PATH}
 
           linkState={profileHubMobileBackState()}
+
+          icon={Sparkles}
 
         />
 

@@ -1,6 +1,7 @@
 import type { UserRole } from '@uaetrail/shared-types';
 import type { NavigateFunction } from 'react-router-dom';
 import { canReturnAfterAuth } from './authRedirect';
+import { armViewReturn, seedViewReturnSnapshot } from './viewReturnMemory';
 import {
   clearAuthReturnContext,
   parseAuthReturnContextFromSearch,
@@ -26,6 +27,14 @@ export const persistAuthReturnContextForPath = (
       scrollY: 0,
     };
   saveAuthReturnContext(context);
+  if (context.scrollY > 0 || context.focusSelector) {
+    seedViewReturnSnapshot(from, {
+      scrollTops: [context.scrollY],
+      focusSelector: context.focusSelector ?? null,
+    });
+  }
+  // Task done (signed in / profile complete): land on the opener at its remembered scroll / control.
+  armViewReturn(from, context.focusSelector ?? null);
 };
 
 /** Navigate to the saved return path after sign-in/up; returns false when no safe return target. */

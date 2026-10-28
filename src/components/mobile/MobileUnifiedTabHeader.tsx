@@ -58,7 +58,7 @@ export const MobileUnifiedTabHeader = ({
           <MobileBackButton
             fallbackTo={leadingBack.fallbackTo}
             label={leadingBack.label}
-            backBehavior={leadingBack.backBehavior ?? 'history'}
+            backBehavior={leadingBack.backBehavior ?? 'fallback'}
             className="min-h-[36px] py-0 -ml-1"
           />
         ) : (

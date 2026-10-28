@@ -28,6 +28,8 @@ import {
   IOS_INSTALL_SETTINGS_HASH,
 } from '../../config/phoneAppInstall';
 import { PROFILE_SETTINGS_PATH } from '../../config/routingCatalog';
+import { resolveMobileTabHeaderTitle } from '../../config/mobileTabHeader';
+import { exploreMapMobileBackState, mobileBackNavState, type MobileBackNavState } from '../../utils/mobileBackNav';
 import { isPublishingConsolePath } from '../../config/surfacePaths';
 import { ADMIN_LINKS, PUBLISHING_CONSOLE_LINKS } from '../../constants';
 import { useAuth } from '../../context/AuthContext';
@@ -67,6 +69,23 @@ const resolveConsumerHamburgerDestination = (
   if (item.profileLink) return user ? profileDestination : signInHref;
   if (item.authGate && !user) return signInPathForReturn(item.to);
   return item.to;
+};
+
+/** Plan opened from explore menu — header back returns to map, not profile in history stack. */
+const resolveConsumerHamburgerLinkState = (
+  item: ConsumerHamburgerLinkItem,
+  pathname: string,
+  search: string
+): MobileBackNavState | undefined => {
+  if (item.label !== 'My Plans') return undefined;
+  const onExplore =
+    pathname === EXPLORE_MAP_PATH ||
+    pathname === '/discovery' ||
+    pathname === LIST_DISCOVERY_PATH ||
+    isDiscoverBrowseRoute(pathname, search);
+  if (!onExplore) return undefined;
+  const returnTo = search ? `${pathname}?${search}` : pathname;
+  return exploreMapMobileBackState(returnTo);
 };
 import {
   MOBILE_DRAWER,
@@ -460,7 +479,11 @@ const MobileMenuPanel = () => {
   const openPwaInstall = (action: 'pwa-android' | 'pwa-ios') => {
     closeMenu();
     const hash = action === 'pwa-ios' ? IOS_INSTALL_SETTINGS_HASH : ANDROID_INSTALL_SETTINGS_HASH;
-    navigate(`${PROFILE_SETTINGS_PATH}${hash}`);
+    const from = search ? `${pathname}${search}` : pathname;
+    const label = resolveMobileTabHeaderTitle(pathname, search) ?? 'Back';
+    navigate(`${PROFILE_SETTINGS_PATH}${hash}`, {
+      state: mobileBackNavState(from, label),
+    });
   };
 
   const switchRole = async (target: 'participant' | 'original') => {
@@ -568,10 +591,12 @@ const MobileMenuPanel = () => {
               profileDestination,
               signInHref
             );
+            const linkState = resolveConsumerHamburgerLinkState(linkItem, pathname, search);
             return (
               <Link
                 key={item.label}
                 to={destination}
+                state={linkState}
                 onClick={closeMenu}
                 className={mobileDrawerRowClass(active)}
                 aria-current={active ? 'page' : undefined}

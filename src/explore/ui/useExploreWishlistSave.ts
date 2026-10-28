@@ -1,6 +1,6 @@
 import { joinAuthPath } from '../../config/routingCatalog';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import { resolveExploreWishlistTarget } from '../../discovery/discoveryCardModel';
@@ -48,6 +48,12 @@ export const useExploreWishlistSave = (card: DiscoveryCardModel): ExploreWishlis
   const saved = wishlistState?.saved ?? false;
   const wishlistItemId = wishlistState?.wishlistItemId ?? null;
 
+  useEffect(() => {
+    if (!notice) return;
+    const timer = window.setTimeout(() => setNotice(null), 4000);
+    return () => window.clearTimeout(timer);
+  }, [notice]);
+
   const toggle = useCallback(async () => {
     if (!target) return;
     if (!user) {
@@ -64,7 +70,11 @@ export const useExploreWishlistSave = (card: DiscoveryCardModel): ExploreWishlis
       } else {
         const item = await addWishlistTarget(target);
         queryClient.setQueryData(wishlistQueryKey, { saved: true, wishlistItemId: item.id });
-        setNotice('Saved to your wishlist — we can alert you when similar plans show up.');
+        setNotice(
+          target.locationId
+            ? 'Saved — we will notify you when outings are planned here.'
+            : 'Saved to your wishlist — we can alert you when similar plans show up.'
+        );
       }
       invalidateMeWishlistQueries(queryClient);
     } catch (err) {

@@ -91,6 +91,16 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
         partialFilterExpression: { locationId: { $type: 'string' } }
       },
       {
+        key: { locationId: 1 },
+        name: 'wishlist_locationId',
+        partialFilterExpression: { locationId: { $type: 'string' } }
+      },
+      {
+        key: { watchOutingCategory: 1 },
+        name: 'wishlist_watch_category',
+        partialFilterExpression: { watchOutingCategory: { $type: 'string' } }
+      },
+      {
         key: { userId: 1, activityId: 1 },
         unique: true,
         name: 'userId_activityId_unique',

@@ -79,6 +79,7 @@ export const useMemberGoals = (enabled: boolean) => {
     goals,
     primaryGoal,
     saving,
+    loading: enabled && Boolean(user) && query.isPending && query.data === undefined,
     createGoal,
     updateGoal,
     deleteGoal,

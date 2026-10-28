@@ -7,6 +7,7 @@ import { meProfileQueryKey, participantHubQueryKey } from '../hooks/clientQueryK
 import { useAuth } from '../context/AuthContext';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { AppButton } from '../components/mobile/AppButton';
+import { AppSelect } from '../components/ui/AppSelect';
 import { GlassCard } from '../components/mobile/GlassCard';
 import {
   USER_CITY_OPTIONS,
@@ -26,6 +27,8 @@ import {
 } from '../utils/personName';
 import { meProfileSignupGateKey } from '../utils/signupProfileGate';
 import { useProfileHubBackChrome } from '../hooks/useProfileHubBackChrome';
+import { PROFILE_PATH } from '../config/routingCatalog';
+import { navigateBack } from '../utils/backStack';
 
 export const ProfileEdit = () => {
   const backChrome = useProfileHubBackChrome();
@@ -108,7 +111,7 @@ export const ProfileEdit = () => {
           queryClient.invalidateQueries({ queryKey: meProfileSignupGateKey(user.id) }),
         ]);
       }
-      navigate('/profile', { replace: true });
+      navigateBack(navigate, PROFILE_PATH);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not save profile.');
     } finally {
@@ -181,38 +184,28 @@ export const ProfileEdit = () => {
             </div>
             <div>
               <label className="mb-2 block text-sm font-semibold text-neutral-800">Country</label>
-              <select
-                className="ios-input w-full text-[15px]"
+              <AppSelect
                 value={countryCode}
-                onChange={(e) => {
-                  const next = e.target.value as UserCountryCode | '';
+                onChange={(value) => {
+                  const next = value as UserCountryCode;
                   setCountryCode(next);
                   if (next !== 'AE') setCity('');
                 }}
-              >
-                <option value="">Select country</option>
-                {USER_COUNTRY_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+                placeholder="Select country"
+                aria-label="Country"
+                options={USER_COUNTRY_OPTIONS}
+              />
             </div>
             {countryCode === 'AE' ? (
               <div>
                 <label className="mb-2 block text-sm font-semibold text-neutral-800">City / emirate</label>
-                <select
-                  className="ios-input w-full text-[15px]"
+                <AppSelect
                   value={city}
-                  onChange={(e) => setCity(e.target.value as UserCity)}
-                >
-                  <option value="">Select emirate</option>
-                  {USER_CITY_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(value) => setCity(value as UserCity)}
+                  placeholder="Select emirate"
+                  aria-label="City or emirate"
+                  options={USER_CITY_OPTIONS}
+                />
               </div>
             ) : null}
           </GlassCard>

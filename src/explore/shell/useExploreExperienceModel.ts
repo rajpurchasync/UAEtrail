@@ -192,7 +192,7 @@ export const useExploreExperienceModel = () => {
     closeCompose: compose.closeCompose,
     handleFocusMapLocation: viewport.handleFocusMapLocation,
     setLinkOnlyPeekItems,
-    onInviteActivity: inviteShare.openInviteFromActivity,
+    onInviteActivity: inviteShare.openShareFromActivity,
     onCreateLinkedRideshare: hostingLauncher.handleCreateLinkedRideshare,
     onOpenHostManage: tenantId ? openHostManage : undefined,
     onShareHostedActivity: shareHostedActivity,

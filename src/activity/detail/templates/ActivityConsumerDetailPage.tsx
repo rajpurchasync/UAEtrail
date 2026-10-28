@@ -23,7 +23,6 @@ import { ConsumerDetailLeadDateChip } from '../../../activity/detail/ConsumerDet
 import { resolveActivityConsumerRequirementLines } from '../../../activity/activityDetailConsumerRequirements';
 import { resolveActivityDetailConsumerAudienceBadges } from '../../../activity/activityDetailConsumerAudienceBadges';
 import { shouldShowConsumerDetailLeadVenue } from '../../../activity/activityConsumerDetailLeadVenue';
-import { ACTIVITY_INVITE_FRIENDS_CTA } from '../../../content/activityInviteCopy';
 import {
   ACTIVITY_DETAIL_LINKED_VENUE_SUBLINE,
   ACTIVITY_DETAIL_THIS_OUTING_LABEL,
@@ -42,11 +41,13 @@ import { ConsumerDetailRideshareEssentials } from './ConsumerDetailRideshareEsse
 import { ConsumerDetailDriverReviews } from './ConsumerDetailDriverReviews';
 import { TenantHostRatingInline } from '../../../components/reviews/TenantHostRatingInline';
 import { resolveRideshareSeatsAvailability } from '../../resolveRideshareSeatsAvailability';
+import { rideshareCardCoversDirections } from '../../rideshareCardDirections';
 import { viewerIsActivityHostUser } from '../../../utils/viewerHostsActivity';
 import type { ActivityDetailPlanSectionsComponent } from '../composers';
 import { ActivityDetailPlanColumn } from '../../../components/activity/detail/ActivityDetailPlanColumn';
 import { activityDetailFriendsGoingLabel } from '../../../activity/activityDetailFriendsGoingLabel';
 import { activityDetailPath } from '../../../config/routingCatalog';
+import { activityPlaceReturnState } from '../../../explore/mapPeekDetailNavState';
 import { buildActivityDetailPageShellCard } from '../activityDetailPageShellCard';
 import {
   extractActivityTransportReachLines,
@@ -77,16 +78,12 @@ type ActivityDetailViewModel = ReturnType<typeof useActivityDetailViewModel>;
 export type ActivityConsumerDetailPageProps = {
   model: ActivityDetailViewModel;
   planSections?: ActivityDetailPlanSectionsComponent | null;
-  canInviteFriends?: boolean;
-  onInviteFriends?: () => void;
   onRideshareParentLinked?: () => void;
 };
 
 export const ActivityConsumerDetailPage = ({
   model,
   planSections = null,
-  canInviteFriends = false,
-  onInviteFriends,
   onRideshareParentLinked,
 }: ActivityConsumerDetailPageProps) => {
   const { user } = useAuth();
@@ -159,8 +156,6 @@ export const ActivityConsumerDetailPage = ({
               model.viewerAccess?.entitlements?.buddyUserIdsOnActivity ?? []
             }
             canOpenFullRoster={layout.canOpenParticipantRoster}
-            showInviteAction={canInviteFriends}
-            onInviteFriends={onInviteFriends}
           />
         ) : null}
       </>
@@ -317,7 +312,7 @@ const ConsumerDetailLead = ({
 
   return (
     <header className="pb-4">
-      <div className="flex items-start gap-3">
+      <div className="flex items-center gap-3">
         <h1 className="min-w-0 flex-1 text-[26px] font-bold leading-[1.15] tracking-tight text-neutral-950">
           {title}
         </h1>
@@ -330,7 +325,9 @@ const ConsumerDetailLead = ({
           aria-label="Schedule, price, and who this outing is for"
         >
           {leadDate.time && !isRideshareLead ? (
-            <span className="text-[15px] font-semibold leading-snug text-neutral-800">{leadDate.time}</span>
+            <span className="inline-flex items-center rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-900">
+              {leadDate.time}
+            </span>
           ) : null}
           {priceBadge ? (
             <span
@@ -412,6 +409,7 @@ const ConsumerDetailVenueLead = ({
       {placePath ? (
         <Link
           to={placePath}
+          state={activityPlaceReturnState(outingPath)}
           className="mt-0.5 block text-sm font-semibold leading-snug text-emerald-900 hover:underline"
         >
           {venueLabel}
@@ -442,16 +440,12 @@ const ConsumerDetailSocialRow = ({
   rosterParticipants,
   buddyUserIdsOnActivity = [],
   canOpenFullRoster = false,
-  onInviteFriends,
-  showInviteAction = false,
 }: {
   activity: ActivityDetailDTO;
   participants: NonNullable<ActivityDetailDTO['participants']>;
   rosterParticipants: NonNullable<ActivityDetailDTO['participants']>;
   buddyUserIdsOnActivity?: string[];
   canOpenFullRoster?: boolean;
-  onInviteFriends?: () => void;
-  showInviteAction?: boolean;
 }) => {
   const [rosterOpen, setRosterOpen] = useState(false);
   const countLabel = activityDetailParticipantCountLabel(activity);
@@ -491,15 +485,6 @@ const ConsumerDetailSocialRow = ({
           ) : null}
         </div>
       </button>
-      {showInviteAction && onInviteFriends ? (
-        <button
-          type="button"
-          onClick={onInviteFriends}
-          className="shrink-0 rounded-2xl bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-emerald-900/20 ring-1 ring-emerald-700/30 active:bg-emerald-700"
-        >
-          {ACTIVITY_INVITE_FRIENDS_CTA}
-        </button>
-      ) : null}
       <ActivityDetailParticipantsRosterDialog
         open={rosterOpen}
         onClose={() => setRosterOpen(false)}
@@ -609,6 +594,8 @@ const ConsumerDetailGettingThere = ({
     activity.location?.longitude ??
     null;
   const hasDirections = dirLat != null && dirLng != null;
+  const directionsOnRideCard =
+    hasDirections && rideshareCardCoversDirections(activity, dirLat as number, dirLng as number);
   const meetingLabel =
     activity.meetingPoint?.trim() ||
     activity.startPoint?.trim() ||
@@ -621,7 +608,7 @@ const ConsumerDetailGettingThere = ({
     reachLines.length === 0 &&
     !showLinkedTransportInSection &&
     !showRideshareOpenOffer &&
-    !hasDirections &&
+    (!hasDirections || directionsOnRideCard) &&
     !showMeetingBlock
   ) {
     return null;
@@ -665,7 +652,7 @@ const ConsumerDetailGettingThere = ({
         {showLinkedTransportInSection ? (
           <ActivityPeekLinkedTransport card={card} onOpenLinkedPin={onOpenLinkedActivity} />
         ) : null}
-        {hasDirections ? (
+        {hasDirections && !directionsOnRideCard ? (
           <DirectionsControl
             lat={dirLat as number}
             lng={dirLng as number}
@@ -713,7 +700,11 @@ const ConsumerDetailPlaceCard = ({
   return (
     <section aria-label="Where">
       <p className={`mb-2 ${CONSUMER_DETAIL_SECTION_TITLE}`}>Where</p>
-    <Link to={placePath} className={CONSUMER_DETAIL_PANEL.place}>
+    <Link
+      to={placePath}
+      state={activityPlaceReturnState(activityDetailPath(activity.id))}
+      className={CONSUMER_DETAIL_PANEL.place}
+    >
       <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-900 shadow-inner">
         <MapPin className="h-5 w-5" aria-hidden />
       </div>

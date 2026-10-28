@@ -5,6 +5,7 @@ import { listActivities } from '../hooks/tenantActivityClientApi';
 import { getActiveTenantId, setActiveTenantId } from '../api/tenant';
 import { useMemberStatus } from '../hooks/useMemberStatus';
 import { useAuth } from '../context/AuthContext';
+import { CATALOG_FRESH_MS } from '../lib/catalogSnapshot';
 
 const consoleHubKey = (tenantId: string) => ['console-hub', tenantId] as const;
 
@@ -21,7 +22,7 @@ async function fetchConsoleHub(tenantId: string) {
 }
 
 /** Publishing workspace hub: activities + join queue for active tenant. */
-export const useConsoleHubData = () => {
+export const useConsoleHubData = (enabled = true) => {
   const { user } = useAuth();
   const hostStatus = useMemberStatus({ enabled: Boolean(user) });
   const storedTenantId = getActiveTenantId();
@@ -37,7 +38,8 @@ export const useConsoleHubData = () => {
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: tenantId ? consoleHubKey(tenantId) : ['console-hub', 'none'],
     queryFn: () => fetchConsoleHub(tenantId!),
-    enabled: Boolean(tenantId),
+    enabled: enabled && Boolean(tenantId),
+    staleTime: CATALOG_FRESH_MS,
   });
 
   const activities = useMemo(() => data?.activities ?? [], [data?.activities]);

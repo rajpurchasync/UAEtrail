@@ -123,9 +123,9 @@ Discovery: **`/area/:slug`** (hub), and explore **`?area=`** filter by **`areaSl
 
 | My Plans UI | Domain data |
 |-------------|-------------|
-| Upcoming list (joined / hosting filters) | `GET /me/activities`, `GET /me/requests`; host: `listHostActivities`, join queue |
-| Upcoming **calendar** (`layout=calendar`) | **Projection** of the same joined/hosting data — day sheet rows drill to outing peek or Plan manage URLs; **available** = indicator strip only (`planCalendarOpen`) |
-| Wishlist tab (`tab=wishlist`; legacy `lens=saved`) | Private venue + activity saves (`/me/wishlist`) — not demand, not Follow |
+| Upcoming list (joined / hosting filters) | `GET /me/activities`, `GET /me/requests`; host: `listHostActivities`, join queue. Rows open `/activity/:id`; back restores this list |
+| Upcoming **calendar** (`layout=calendar`) | **Projection** of the same joined/hosting data — going / pending open `/activity/:id`; organizing / looking for company open Plan manage URLs; **available** = indicator strip only (`planCalendarOpen`) |
+| Wishlist tab (`tab=wishlist`; legacy `lens=saved`) | Private venue + activity saves (`/me/wishlist`, place rows keyed by `locationId`) — not demand, not Follow. A published outing at a saved place notifies those members |
 | Goals (on Wishlist tab) | `GET/POST /me/goals` |
 | Share availability editor (`?lens=availability`) | `GET/POST /me/availability` — Find crew; deep link only, not the calendar toggle |
 | Journey map (`/profile/history/map`) | `memberJourneyMapApi` → `GET /me/journey-map`; pin CRUD → `/me/map-pins` |

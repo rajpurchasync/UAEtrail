@@ -1,10 +1,12 @@
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { SettingsMenuGroup, SettingsMenuRow } from '../components/settings/SettingsMenuRow';
-import { NOTIFICATIONS_PATH, planHubPath } from '../config/routingCatalog';
+import { NOTIFICATIONS_PATH, planHubPath, PROFILE_SETTINGS_NOTIFICATIONS_PATH } from '../config/routingCatalog';
 import { useProfileSettingsBackChrome } from '../hooks/useProfileHubBackChrome';
+import { mobileBackNavState } from '../utils/mobileBackNav';
 
 export const ProfileSettingsNotifications = () => {
   const backChrome = useProfileSettingsBackChrome();
+  const notificationsChildBack = mobileBackNavState(PROFILE_SETTINGS_NOTIFICATIONS_PATH, 'Notifications');
 
   return (
     <ConsumerShell layout="stack" title="Notifications" showJourney={false} back={backChrome}>
@@ -16,11 +18,13 @@ export const ProfileSettingsNotifications = () => {
           <SettingsMenuRow
             label="Notification inbox"
             to={NOTIFICATIONS_PATH}
+            linkState={notificationsChildBack}
             subtitle="Activity, friends, and map alerts"
           />
           <SettingsMenuRow
             label="Saved map & alerts"
             to={planHubPath({ layer: 'places' })}
+            linkState={notificationsChildBack}
             subtitle="Places, shops, and plans you starred"
           />
         </SettingsMenuGroup>

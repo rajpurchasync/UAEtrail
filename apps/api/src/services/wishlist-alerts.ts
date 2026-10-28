@@ -1,11 +1,12 @@
 import { activityTypeToOutingCategory, type OutingCategory } from '@uaetrail/shared-types';
 import { NotificationType } from '../domain/enums.js';
-import { findActivityDocInMongo } from '../lib/entity-sync.js';
+import { findActivityDocInMongo, findLocationInMongo } from '../lib/entity-sync.js';
 import { createNotificationsMany } from '../lib/notifications-store.js';
-import { listWishlistWatchCandidates } from '../lib/wishlist-store.js';
+import { listWishlistSaversForLocation, listWishlistWatchCandidates } from '../lib/wishlist-store.js';
 import { wishlistWatchMatchesPin, type WishlistPinEvent } from '../lib/wishlist-match.js';
 import { activityDetailPath, explorePublishedActivityPinPath } from '../lib/member-routes.js';
 import { findSeekingActivityByParticipantIntentId } from './participant-intent-activity-readthrough.js';
+import { resolveNotificationActorDisplayNamesForRecipients } from './notification-actor-label.js';
 import { logger } from '../lib/logger.js';
 
 const resolveActivityPinCoords = (doc: {
@@ -35,22 +36,24 @@ const resolveActivityOutingCategory = (doc: {
   return null;
 };
 
+type WishlistNotifyRow = {
+  userId: string;
+  title: string;
+  body: string;
+  type: typeof NotificationType.ACTIVITY;
+  meta: Record<string, unknown>;
+};
+
 const fanOutWishlistNotifications = async (
   event: WishlistPinEvent,
   title: string,
   body: string,
   path: string,
-  entityMeta: { activityId?: string; intentId?: string }
-) => {
+  entityMeta: { activityId?: string; intentId?: string },
+  notified: Set<string>
+): Promise<void> => {
   const watches = await listWishlistWatchCandidates();
-  const notified = new Set<string>();
-  const rows: Array<{
-    userId: string;
-    title: string;
-    body: string;
-    type: typeof NotificationType.ACTIVITY;
-    meta: unknown;
-  }> = [];
+  const rows: WishlistNotifyRow[] = [];
 
   for (const watch of watches) {
     if (!wishlistWatchMatchesPin(watch, event)) continue;
@@ -77,10 +80,78 @@ const fanOutWishlistNotifications = async (
   }
 };
 
+/** Saved catalog place (`locationId` on wishlist) — same trip-alert intent as map “Save place”. */
+const fanOutSavedPlaceWishlistNotifications = async (
+  input: {
+    activityId: string;
+    title: string;
+    hostUserId: string;
+    locationId: string;
+  },
+  notified: Set<string>
+): Promise<void> => {
+  const savers = await listWishlistSaversForLocation(input.locationId);
+  if (savers.length === 0) return;
+
+  const location = await findLocationInMongo(input.locationId);
+  if (!location) return;
+  const placeName = location.name;
+  const path = activityDetailPath(input.activityId);
+  const recipientIds = savers.map((row) => row.userId).filter((userId) => userId !== input.hostUserId);
+  if (recipientIds.length === 0) return;
+
+  const actorNames = await resolveNotificationActorDisplayNamesForRecipients(
+    input.hostUserId,
+    recipientIds
+  );
+
+  const rows: WishlistNotifyRow[] = [];
+  for (const saver of savers) {
+    if (saver.userId === input.hostUserId) continue;
+    if (notified.has(saver.userId)) continue;
+    notified.add(saver.userId);
+    const actorName = actorNames.get(saver.userId);
+    if (!actorName) continue;
+    rows.push({
+      userId: saver.userId,
+      title: `New outing at ${placeName}`,
+      body: `${actorName}: ${input.title}`,
+      type: NotificationType.ACTIVITY,
+      meta: {
+        kind: 'wishlist_match',
+        path,
+        activityId: input.activityId,
+        locationId: input.locationId,
+        wishlistItemId: saver.wishlistItemId,
+        actorUserId: input.hostUserId,
+      },
+    });
+  }
+
+  if (rows.length > 0) {
+    await createNotificationsMany(rows);
+  }
+};
+
 export const notifyWishlistForPublishedActivity = async (activityId: string): Promise<void> => {
   try {
     const doc = await findActivityDocInMongo(activityId);
     if (!doc) return;
+
+    const notified = new Set<string>();
+    const path = activityDetailPath(activityId);
+
+    if (doc.locationId) {
+      await fanOutSavedPlaceWishlistNotifications(
+        {
+          activityId,
+          title: doc.title,
+          hostUserId: doc.createdById,
+          locationId: doc.locationId,
+        },
+        notified
+      );
+    }
 
     const { latitude, longitude } = resolveActivityPinCoords(doc);
     const outingCategory = resolveActivityOutingCategory(doc);
@@ -96,8 +167,9 @@ export const notifyWishlistForPublishedActivity = async (activityId: string): Pr
       event,
       'New plan near your saved map',
       doc.title,
-      activityDetailPath(activityId),
-      { activityId }
+      path,
+      { activityId },
+      notified
     );
   } catch (error) {
     logger.warn({ err: error, activityId }, 'wishlist notify for activity failed');
@@ -127,7 +199,8 @@ export const notifyWishlistForNewSeeking = async (intentId: string, requesterUse
         intentId,
         activityId: activity._id,
       }),
-      { intentId, activityId: activity._id }
+      { intentId, activityId: activity._id },
+      new Set<string>()
     );
   } catch (error) {
     logger.warn({ err: error, intentId }, 'wishlist notify for seeking failed');

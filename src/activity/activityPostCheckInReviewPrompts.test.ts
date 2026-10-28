@@ -14,7 +14,8 @@ const baseActivity = (): ActivityDetailDTO =>
     hostUserId: 'u-host',
     publishingProfileKind: 'pro_guide',
     status: 'published',
-    date: '2026-12-01',
+    date: '2020-01-01',
+    time: '09:00',
     title: 'Hike',
     locationName: 'Trail',
     slotsTotal: 10,
@@ -22,6 +23,17 @@ const baseActivity = (): ActivityDetailDTO =>
   }) as ActivityDetailDTO;
 
 describe('buildParticipantPostCheckInReviewPrompts', () => {
+  it('returns empty when checked in but outing is not over', () => {
+    expect(
+      buildParticipantPostCheckInReviewPrompts({
+        activity: { ...baseActivity(), date: '2099-12-01', time: '09:00' },
+        viewerUserId: 'u1',
+        activityReviews: [],
+        checkedIn: true,
+      })
+    ).toEqual([]);
+  });
+
   it('returns empty when not checked in', () => {
     expect(
       buildParticipantPostCheckInReviewPrompts({

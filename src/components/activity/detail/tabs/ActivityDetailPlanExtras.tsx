@@ -5,6 +5,7 @@ import {
   MANDATORY_INSTRUCTIONS_LABEL,
 } from '../../../../utils/joinInstructions';
 import { extractActivityPlanDetailLines } from '../../../../activity/activityDetailReachBy';
+import { activityScheduleHasEnded } from '@uaetrail/shared-types';
 import { ReviewSection } from '../../../ui/ReviewSection';
 
 type ActivityDetailPlanExtrasProps = {
@@ -32,6 +33,9 @@ export const ActivityDetailPlanExtras = ({
 }: ActivityDetailPlanExtrasProps) => {
   const mandatoryInstructions = extractJoinInstructionLines(activity.requirements);
   const planDetailLines = extractActivityPlanDetailLines(activity.requirements);
+  const participantCheckedIn = Boolean(activity.myParticipation?.checkedInAt);
+  const activityEnded = activityScheduleHasEnded(activity);
+  const activityAwaitingCompletion = participantCheckedIn && !activityEnded;
 
   if (!canViewSensitivePlanContent) {
     return null;
@@ -97,6 +101,7 @@ export const ActivityDetailPlanExtras = ({
           reviews={activityReviews}
           onReviewSubmitted={onActivityReviewSubmitted}
           canWriteReview={canWriteActivityReview}
+          activityAwaitingCompletion={activityAwaitingCompletion}
           collapsible
           defaultExpanded
         />

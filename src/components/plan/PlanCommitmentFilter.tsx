@@ -1,9 +1,7 @@
 import type { PlanCommitmentFilter } from '../../plan/planTab';
 
-const FILTERS: { key: PlanCommitmentFilter; label: string }[] = [
-  { key: 'hosting', label: 'Hosting' },
-  { key: 'joined', label: 'Joined' },
-];
+const JOINED_FILTER = { key: 'joined' as const, label: 'Joined' };
+const HOSTING_FILTER = { key: 'hosting' as const, label: 'Hosting' };
 
 type PlanCommitmentFilterProps = {
   value: PlanCommitmentFilter;
@@ -16,7 +14,7 @@ export const PlanCommitmentFilterChips = ({
   onChange,
   showHosting,
 }: PlanCommitmentFilterProps) => {
-  const options = showHosting ? FILTERS : FILTERS.filter((f) => f.key === 'joined');
+  const options = showHosting ? [HOSTING_FILTER, JOINED_FILTER] : [JOINED_FILTER];
 
   return (
     <div className="flex gap-2" role="tablist" aria-label="Upcoming filter">

@@ -147,6 +147,8 @@ export const HOSTING_PUBLISH_VIEW_ON_MAP = 'View on map';
 /** Post-publish success sheet — short primary CTA. */
 export const HOSTING_PUBLISH_VIEW_CTA = 'View';
 
+export const HOSTING_EDIT_SAVE_CTA = 'Save changes';
+
 export const HOSTING_LINK_RIDESHARE_LABEL = 'Link rideshare';
 
 export const HOSTING_OFFER_RIDESHARE_LABEL = 'Offer rideshare';

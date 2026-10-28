@@ -11,6 +11,7 @@ import {
 } from '../config/routingCatalog';
 import type { UserRole } from '@uaetrail/shared-types';
 import type { NavigateFunction } from 'react-router-dom';
+import { navigateBack } from './backStack';
 
 const AUTH_LOOP_PATHS = new Set(['/signin', '/signup', '/verify']);
 
@@ -95,25 +96,13 @@ export const resolveAuthExitFallback = (redirect?: string | null): string => {
   return EXPLORE_MAP_PATH;
 };
 
-/** Prefer real back navigation; never bounce back into protected routes. */
+/**
+ * Back from sign-in / sign-up: return to the in-app screen that opened auth
+ * (scroll + focus restored). Without in-app history, land on a public
+ * fallback — never bounce into a protected route.
+ */
 export const navigateAuthBack = (navigate: NavigateFunction, redirect?: string | null) => {
-  const safeFallback = resolveAuthExitFallback(redirect);
-  const storedFrom = resolveAuthRedirect(redirect, null);
-
-  if (storedFrom && isAuthGatedPath(storedFrom)) {
-    if (typeof window !== 'undefined' && window.history.length > 1) {
-      navigate(-1);
-      return;
-    }
-    navigate(safeFallback, { replace: true });
-    return;
-  }
-
-  if (typeof window !== 'undefined' && window.history.length > 1) {
-    navigate(-1);
-    return;
-  }
-  navigate(safeFallback, { replace: true });
+  navigateBack(navigate, resolveAuthExitFallback(redirect), { skipPath: isAuthGatedPath });
 };
 
 /** Close/dismiss auth screens — land on explore or another public redirect target. */

@@ -77,6 +77,9 @@ interface ListDiscoveryHeaderProps {
   /** Shown under centered category title (e.g. “7 activities”). */
   categoryResultsLabel?: string | null;
 
+  /** Parent sheet already renders full-screen back + title (mobile explore immersive). */
+  overlayImmersive?: boolean;
+
 }
 
 
@@ -125,6 +128,8 @@ export const ListDiscoveryHeader = ({
 
   categoryResultsLabel = null,
 
+  overlayImmersive = false,
+
 }: ListDiscoveryHeaderProps) => {
 
   const { user } = useAuth();
@@ -142,6 +147,9 @@ export const ListDiscoveryHeader = ({
   const isHome = view === 'home';
 
   const dedicatedCategoryChrome = Boolean(categoryFocus);
+  const parentImmersiveChrome = mapOverlay && overlayImmersive;
+  const peopleCategoryImmersive =
+    parentImmersiveChrome && dedicatedCategoryChrome && categoryFocus === 'people';
 
   const topPad = mapOverlay
 
@@ -227,6 +235,10 @@ export const ListDiscoveryHeader = ({
 
 
 
+  if (peopleCategoryImmersive) {
+    return null;
+  }
+
   return (
 
     <div
@@ -247,7 +259,7 @@ export const ListDiscoveryHeader = ({
 
       >
 
-        {categoryFocus && onBackFromCategory ? (
+        {categoryFocus && onBackFromCategory && !parentImmersiveChrome ? (
 
           <div className={`grid grid-cols-[minmax(72px,auto)_1fr_2.5rem] items-center gap-1 ${mapOverlay ? 'min-h-10' : 'min-h-11'}`}>
 
@@ -294,25 +306,27 @@ export const ListDiscoveryHeader = ({
 
           <>
 
-            <div className="grid grid-cols-[2.5rem_1fr_2.5rem] items-center gap-1 min-h-10">
+            {!parentImmersiveChrome ? (
+              <div className="grid grid-cols-[2.5rem_1fr_2.5rem] items-center gap-1 min-h-10">
 
-              <span className="w-10 shrink-0" aria-hidden />
+                <span className="w-10 shrink-0" aria-hidden />
 
-              <h2 className="min-w-0 px-1 text-center text-lg font-bold leading-tight tracking-tight text-neutral-900">
+                <h2 className="min-w-0 px-1 text-center text-lg font-bold leading-tight tracking-tight text-neutral-900">
 
-                {LIST_DISCOVER_LOOKING_PROMPT}
+                  {LIST_DISCOVER_LOOKING_PROMPT}
 
-              </h2>
+                </h2>
 
-              <div className="flex items-center justify-end">
+                <div className="flex items-center justify-end">
 
-                {embeddedOnExplore ? closeButton : (
-                  <MobileMenuButton tone="default" showOnDesktop className={LIST_CHROME.menuButton} />
-                )}
+                  {embeddedOnExplore ? closeButton : (
+                    <MobileMenuButton tone="default" showOnDesktop className={LIST_CHROME.menuButton} />
+                  )}
+
+                </div>
 
               </div>
-
-            </div>
+            ) : null}
 
             {searchField}
 
@@ -327,7 +341,7 @@ export const ListDiscoveryHeader = ({
 
           </>
 
-        ) : embeddedOnExplore && !categoryFocus ? (
+        ) : embeddedOnExplore && !categoryFocus && !parentImmersiveChrome ? (
 
           <div className="flex justify-end gap-1">{closeButton}</div>
 

@@ -23,7 +23,7 @@ export const ExploreFollowButton = ({ card, light = false, bare = false }: Explo
   const followLabel = following ? 'Unfollow' : 'Follow';
 
   return (
-    <div className="flex flex-col items-end gap-1">
+    <div className="relative shrink-0">
       <button
         type="button"
         disabled={busy}
@@ -43,7 +43,12 @@ export const ExploreFollowButton = ({ card, light = false, bare = false }: Explo
         />
       </button>
       {notice ? (
-        <p className="max-w-[200px] text-right text-[10px] font-medium leading-snug text-neutral-600">
+        <p
+          role="status"
+          className={`pointer-events-none absolute right-0 top-full z-20 mt-1 w-max max-w-[min(240px,72vw)] rounded-lg px-2.5 py-1.5 text-right text-[10px] font-medium leading-snug shadow-md ring-1 ring-black/5 ${
+            bare || light ? 'bg-white/95 text-neutral-800' : 'bg-white text-neutral-700'
+          }`}
+        >
           {notice}
         </p>
       ) : null}

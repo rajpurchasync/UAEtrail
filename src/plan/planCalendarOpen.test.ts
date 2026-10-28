@@ -6,7 +6,7 @@ describe('resolvePlanCalendarRowOpenAction', () => {
     expect(resolvePlanCalendarRowOpenAction({ kind: 'available' })).toEqual({ type: 'indicator' });
   });
 
-  it('opens joined and pending via peek', () => {
+  it('navigates joined and pending to activity detail', () => {
     const joined = {
       kind: 'joined' as const,
       title: 'Hike',
@@ -16,8 +16,8 @@ describe('resolvePlanCalendarRowOpenAction', () => {
       locationLine: 'Wadi',
     };
     expect(resolvePlanCalendarRowOpenAction(joined)).toEqual({
-      type: 'joined_peek',
-      activityId: 'a1',
+      type: 'navigate',
+      href: '/activity/a1',
     });
   });
 

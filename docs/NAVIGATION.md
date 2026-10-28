@@ -42,7 +42,8 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 - **Bottom nav middle tab** — UI label **My Plans**; route **`/plan`** (`PLAN_PATH`) — not `/me/plans` (API) or `/profile/plans` (alias redirect only).
 - **Forward commitments** only — past outings → **`/profile/history`** · journey map → **`/profile/history/map`**.
 - **Canonical query** (new links; legacy still parses): `view=plans` · `tab=upcoming|wishlist` · `filter=hosting|joined` · `layout=list|calendar` · `lens=availability` (Find crew **share availability** editor only — `planAvailabilityPath()`). Page: **`src/plan/PlanPage.tsx`** · URL helpers: **`src/plan/planRouting.ts`**.
-- **Upcoming · Calendar** (`layout=calendar`): **projection** of your month (dots per day) — not a separate data source. Tap a day → tap an outing: **going / pending** open the outing peek; **organizing / looking for company** open the same manage paths as the hosting list (`planHostedActivityManagePath` / intent manage). **Available** is an indicator strip only; **edit availability** via the calendar link or `planAvailabilityPath()` (`lens=availability`).
+- **Summary** on the hub counts hosting, joined, goals, and saved places from the same catalog queries as the lists (`usePlanHubSummary`). Host console data loads only when the member can host, and stays fresh for 60s so the summary and the hosting list share one fetch.
+- **Upcoming list and calendar** open the outing (`/activity/:id`) for going and pending rows. Hosting and looking-for-company rows open the same manage paths as before (`planHostedActivityManagePath` / intent manage). **Back** returns to the same Plan URL (filter, layout, scroll) with that row focused. **Available** is an indicator strip only; **edit availability** via the calendar link or `planAvailabilityPath()` (`lens=availability`).
 - **Mobile chrome** (`src/plan/planTab.ts`): **Upcoming** · **Wishlist**; goals on Wishlist. Legacy `?lens=saved|goals|calendar` normalizes on load (`calendar` → `layout=calendar`).
 - **`/profile/plans`** → **`/plan`**. **`/trips`**, **`/activities`** → `/plan` or history (`inboundTripsRedirect.ts`).
 
@@ -243,6 +244,8 @@ Public scroll slots come from **`GET /activities/:id` → `presentation.consumer
 **Crew gating:** roster, meeting point, crew chat gated on `viewerAccess.canAccessCrewSurfaces`. Pending viewers see published facts + join CTAs; crew blocks unlock after approval/RSVP. Welcome sheet: **Join group chat** · meeting on page when entitled. Deep link: `?joined=1`. **Host:** manage via wire **Manage** / `ActivityManageSheet` (not a public tab). Copy: `src/content/activityDetailCopy.ts` · engagement: `activityPeekEngagement.ts` · consumer layout guard: `src/config/activityDetailConsumerLayoutGuard.test.ts`.
 
 ## Back navigation
+
+Header **Back** walks the in-app stack (`src/utils/backStack.ts`) and pops browser history so the previous screen keeps its scroll position and the control that opened the next screen (`data-nav-focus`, restored by `src/utils/viewReturnMemory.ts`). Auth, verify, and edit/create forms are skipped. A declared parent (`detailBackPath`, profile, Plan, Explore) is used only when nothing in this session is underneath (pasted URL, reload). Hamburger **My Plans** from Explore stores that Explore return. A tagged place opened from an outing returns to that outing.
 
 | Entity | `detailBackPath()` kind | Destination |
 |--------|-------------------------|-------------|

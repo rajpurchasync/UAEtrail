@@ -90,6 +90,7 @@ export type ExploreMapStageProps = {
   onOpenExploreItem?: (exploreItemId: string) => void;
   onGuestGatedAction?: (action: import('@uaetrail/shared-types').ActivityMapPeekActionId) => void;
   joinInvitePeekBanner?: string | null;
+  onShareActivity?: () => void;
   /** Desktop Find crew sheet over the map (keeps mapStage a direct flex child in the explore row). */
   desktopPeopleBrowseOverlay?: ReactNode;
 };
@@ -156,6 +157,7 @@ export const ExploreMapStage = ({
   onOpenExploreItem,
   onGuestGatedAction,
   joinInvitePeekBanner = null,
+  onShareActivity,
   desktopPeopleBrowseOverlay = null,
 }: ExploreMapStageProps) => {
   const guestGatedActionForActivity = user ? undefined : onGuestGatedAction;
@@ -337,6 +339,7 @@ export const ExploreMapStage = ({
           onActivityMapPeekAction={onActivityMapPeekAction}
           onOfferTransport={onOfferTransport}
           joinInvitePeekBanner={joinInvitePeekBanner}
+          onShareActivity={onShareActivity}
         />
       ) : null}
     </div>

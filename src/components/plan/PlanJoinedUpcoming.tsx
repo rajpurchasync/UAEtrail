@@ -1,6 +1,8 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useMyActivityJoinRequests } from '../../hooks/useMyActivityJoinRequests';
 import { useMyJoinedActivities } from '../../hooks/useMyJoinedActivities';
+import { activityDetailPath } from '../../config/routingCatalog';
+import { planUpcomingActivityFocusId } from '../../plan/planUpcomingReturnCapture';
 import {
   ConsumerErrorCard,
   ConsumerInlineEmpty,
@@ -17,7 +19,6 @@ import { buildUpcomingPlanRows } from '../../utils/activityHubSections';
 import { formatDate } from '../../utils';
 import { formatActivityType, resolveActivityTitle } from '../../utils/activityIdentity';
 import { PlanCommitmentCard } from './PlanCommitmentCard';
-import { PlanJoinedPeekSheet } from './PlanJoinedPeekSheet';
 
 /**
  * My Plans → Upcoming → joined filter: confirmed outings + pending/waitlisted requests.
@@ -27,15 +28,7 @@ type PlanJoinedUpcomingProps = {
   refreshKey?: number;
 };
 
-type PeekState = {
-  activityId: string;
-  title: string;
-  whenLine: string;
-  locationLine: string;
-};
-
 export const PlanJoinedUpcoming = ({ refreshKey = 0 }: PlanJoinedUpcomingProps) => {
-  const [peek, setPeek] = useState<PeekState | null>(null);
   const {
     activities,
     loading: joinedLoading,
@@ -73,75 +66,47 @@ export const PlanJoinedUpcoming = ({ refreshKey = 0 }: PlanJoinedUpcomingProps) 
     );
   }
 
-  const openPeek = (state: PeekState) => setPeek(state);
-
   return (
-    <>
-      <div className="space-y-3">
-        {sorted.map((row) => {
-          if (row.kind === 'confirmed') {
-            const activity = row.activity;
-            const whenLine = [formatDate(activity.date), activity.time, formatActivityType(activity.activityType)]
-              .filter(Boolean)
-              .join(' · ');
-            return (
-              <PlanCommitmentCard
-                key={activity.id}
-                title={resolveActivityTitle(activity)}
-                dateLabel={formatDate(activity.date)}
-                timeLabel={activity.time}
-                locationLabel={activity.locationName?.trim() || 'Location TBD'}
-                activityTypeLabel={formatActivityType(activity.activityType)}
-                badge="Going"
-                participants={activity.participantPreviews}
-                onClick={() =>
-                  openPeek({
-                    activityId: activity.id,
-                    title: resolveActivityTitle(activity),
-                    whenLine,
-                    locationLine: activity.locationName?.trim() || 'Location TBD',
-                  })
-                }
-              />
-            );
-          }
-          const request = row.request;
-          const badge = request.status === 'waitlisted' ? 'Waitlist' : 'Pending';
-          const whenLine = [formatDate(row.date), request.activity.time].filter(Boolean).join(' · ');
+    <div className="space-y-3">
+      {sorted.map((row) => {
+        if (row.kind === 'confirmed') {
+          const activity = row.activity;
           return (
             <PlanCommitmentCard
-              key={request.id}
-              title={resolveActivityTitle(request.activity)}
-              dateLabel={formatDate(row.date)}
-              timeLabel={request.activity.time}
-              locationLabel={request.activity.locationName?.trim() || 'Location TBD'}
-              activityTypeLabel={
-                'activityType' in request.activity && request.activity.activityType
-                  ? formatActivityType(request.activity.activityType as import('@uaetrail/shared-types').ActivityType)
-                  : undefined
-              }
-              badge={badge}
-              onClick={() =>
-                openPeek({
-                  activityId: request.activity.id,
-                  title: resolveActivityTitle(request.activity),
-                  whenLine,
-                  locationLine: request.activity.locationName?.trim() || 'Location TBD',
-                })
-              }
+              key={activity.id}
+              title={resolveActivityTitle(activity)}
+              dateLabel={formatDate(activity.date)}
+              timeLabel={activity.time}
+              locationLabel={activity.locationName}
+              activityTypeLabel={formatActivityType(activity.activityType)}
+              badge="Going"
+              participants={activity.participantPreviews}
+              activityDetailTo={activityDetailPath(activity.id)}
+              navFocus={planUpcomingActivityFocusId(activity.id)}
             />
           );
-        })}
-      </div>
-
-      <PlanJoinedPeekSheet
-        open={Boolean(peek)}
-        activityId={peek?.activityId ?? null}
-        title={peek?.title ?? ''}
-        whenLine={peek?.whenLine}
-        locationLine={peek?.locationLine}
-        onClose={() => setPeek(null)}
-      />
-    </>
+        }
+        const request = row.request;
+        const badge = request.status === 'waitlisted' ? 'Waitlist' : 'Pending';
+        const activityId = request.activity.id;
+        return (
+          <PlanCommitmentCard
+            key={request.id}
+            title={resolveActivityTitle(request.activity)}
+            dateLabel={formatDate(row.date)}
+            timeLabel={request.activity.time}
+            locationLabel={request.activity.locationName}
+            activityTypeLabel={
+              'activityType' in request.activity && request.activity.activityType
+                ? formatActivityType(request.activity.activityType as import('@uaetrail/shared-types').ActivityType)
+                : undefined
+            }
+            badge={badge}
+            activityDetailTo={activityDetailPath(activityId)}
+            navFocus={planUpcomingActivityFocusId(activityId)}
+          />
+        );
+      })}
+    </div>
   );
 };

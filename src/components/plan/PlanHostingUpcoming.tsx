@@ -66,7 +66,7 @@ export const PlanHostingUpcoming = ({ refreshKey = 0, canHost }: PlanHostingUpco
   const rows = useMemo((): HostingRow[] => {
     const list: HostingRow[] = [];
     for (const event of host.activities) {
-      if (event.status === 'draft') continue;
+      if (event.status !== 'published') continue;
       if (new Date(event.date) < today) continue;
       list.push({
         kind: 'activity',
@@ -141,7 +141,7 @@ export const PlanHostingUpcoming = ({ refreshKey = 0, canHost }: PlanHostingUpco
               title={resolveActivityTitle(activity)}
               dateLabel={formatDate(activity.date)}
               timeLabel={activity.time}
-              locationLabel={activity.locationName?.trim() || 'Location TBD'}
+              locationLabel={activity.locationName}
               activityTypeLabel={formatActivityType(activity.activityType)}
               badge={isSeeking ? 'Looking for company' : 'Hosting'}
               participants={activity.participantPreviews}

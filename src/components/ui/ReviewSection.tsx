@@ -9,6 +9,12 @@ import { ReportContentButton } from './ReportContentDialog';
 import { EmojiPickerButton } from './EmojiPickerButton';
 import { buildSignInRedirect } from '../../utils/authReturnContext';
 import { myReviewElementId, scrollToReviewAnchor, myReviewHash } from './DetailReviewChrome';
+import {
+  ACTIVITY_DETAIL_REVIEWS_EMPTY_INVITE,
+  ACTIVITY_DETAIL_REVIEWS_EMPTY_NEUTRAL,
+  ACTIVITY_DETAIL_REVIEWS_GATE_AFTER_END,
+  ACTIVITY_DETAIL_REVIEWS_GATE_CHECK_IN,
+} from '../../content/activityDetailCopy';
 
 interface ReviewSectionProps {
   targetType: 'location' | 'tenant' | 'place' | 'activity';
@@ -16,8 +22,10 @@ interface ReviewSectionProps {
   reviews: ReviewDTO[];
   onReviewSubmitted: (review: ReviewDTO) => void;
   accent?: 'emerald' | 'amber' | 'violet' | 'sky';
-  /** Activity reviews — host must check the member in first. Defaults to true for places/hosts. */
+  /** Activity reviews — host check-in + outing ended. Defaults to true for places/hosts. */
   canWriteReview?: boolean;
+  /** Checked in but schedule not finished — hide compose form until then. */
+  activityAwaitingCompletion?: boolean;
   /** Tap header to expand/collapse (e.g. activity detail). */
   collapsible?: boolean;
   defaultExpanded?: boolean;
@@ -37,6 +45,7 @@ export const ReviewSection = ({
   onReviewSubmitted,
   accent = 'emerald',
   canWriteReview = true,
+  activityAwaitingCompletion = false,
   collapsible = false,
   defaultExpanded = true,
 }: ReviewSectionProps) => {
@@ -116,6 +125,11 @@ export const ReviewSection = ({
   };
 
   const reviewCountLabel = reviews.length > 0 ? ` (${reviews.length})` : '';
+  const activityReviewsOpen = targetType !== 'activity' || canWriteReview;
+  const emptyReviewsCopy =
+    targetType === 'activity' && !canWriteReview
+      ? ACTIVITY_DETAIL_REVIEWS_EMPTY_NEUTRAL
+      : ACTIVITY_DETAIL_REVIEWS_EMPTY_INVITE;
 
   const header = collapsible ? (
     <button
@@ -149,7 +163,9 @@ export const ReviewSection = ({
         <>
       {user && !existingReview && !success && !canWriteReview && targetType === 'activity' ? (
         <p className="mb-4 rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2.5 text-sm text-neutral-700">
-          Reviews open after your host checks you in on the outing.
+          {activityAwaitingCompletion
+            ? ACTIVITY_DETAIL_REVIEWS_GATE_AFTER_END
+            : ACTIVITY_DETAIL_REVIEWS_GATE_CHECK_IN}
         </p>
       ) : null}
 
@@ -193,14 +209,14 @@ export const ReviewSection = ({
         </form>
       )}
 
-      {!user && (
+      {!user && activityReviewsOpen ? (
         <p className="text-sm text-gray-600 mb-4">
           <Link to={signInRedirect.href} state={{ from: signInRedirect.from }} className="text-emerald-700 font-medium hover:underline">
             Sign in
           </Link>{' '}
           to leave a review.
         </p>
-      )}
+      ) : null}
 
       {existingReview && (
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-emerald-50 px-3 py-2">
@@ -223,7 +239,7 @@ export const ReviewSection = ({
 
       {reviews.length === 0 ? (
         <div className="bg-white rounded-lg shadow-sm p-8 text-center">
-          <p className="text-gray-600">No reviews yet. Be the first to share your experience.</p>
+          <p className="text-gray-600">{emptyReviewsCopy}</p>
         </div>
       ) : (
         <div className="space-y-4">

@@ -3,7 +3,11 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { MapPin } from 'lucide-react';
 import { allowedActivityPricingModes, type ActivityDTO } from '@uaetrail/shared-types';
-import { publishHostingActivity as publishCreateActivity } from '../../services/hostingActivityPublish';
+import {
+  publishHostingActivity as publishCreateActivity,
+  updateHostingActivity,
+} from '../../services/hostingActivityPublish';
+import { createDraftFromPastActivity } from './hostingFromActivity';
 import { useAuth } from '../../context/AuthContext';
 import { afterHostingActivityPublishClientRefresh } from '../../hooks/hostingPublishClientEffects';
 import { useMemberStatus } from '../../hooks/useMemberStatus';
@@ -17,7 +21,7 @@ import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
 import { EXPLORE_Z } from '../../config/exploreTheme';
 import { formatCoord } from '../../utils/coords';
 import { COMPOSE_SHEET_DRAG_HINT } from '../../hooks/useMobileBrowseSheetImmersive';
-import { useComposeSheetExpandedState } from '../create/ComposeSheetExpandedContext';
+import { useComposeSheetExpandedStateOrLocal } from '../create/ComposeSheetExpandedContext';
 import { useComposeWizardExitBack } from '../create/useComposeWizardExitBack';
 import {
   composeWizardHasDraftContent,
@@ -90,6 +94,8 @@ export interface CreateHostingActivityFlowProps {
   seekingPrefill?: HostingWizardPrefill | null;
   onCreateLinkedRideshare?: (parentActivity: ActivityDTO) => void;
   planWithBuddyUserId?: string | null;
+  /** Plan manage / host console — update this outing in place (not a new map publish). */
+  editActivity?: ActivityDTO | null;
 }
 
 export const CreateHostingActivityFlow = ({
@@ -104,6 +110,7 @@ export const CreateHostingActivityFlow = ({
   seekingPrefill = null,
   onCreateLinkedRideshare,
   planWithBuddyUserId = null,
+  editActivity = null,
 }: CreateHostingActivityFlowProps) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -211,15 +218,26 @@ export const CreateHostingActivityFlow = ({
         : null,
     [hostComposeKind]
   );
-  const wizardSessionScope = useMemo(
-    () => hostingWizardSessionScope(seekingPrefill),
-    [seekingPrefill]
+  const wizardPrefill = useMemo(
+    () =>
+      seekingPrefill ??
+      (editActivity ? { draft: createDraftFromPastActivity(editActivity) } : null),
+    [seekingPrefill, editActivity]
   );
-  const wizardInitKey = hostingFlowId
-    ? `${hostingFlowId}:${wizardSessionScope ?? ''}`
-    : seekingPrefill
-      ? 'prefill'
-      : null;
+  const wizardSessionScope = useMemo(
+    () =>
+      editActivity
+        ? `edit:${editActivity.id}`
+        : hostingWizardSessionScope(wizardPrefill),
+    [editActivity, wizardPrefill]
+  );
+  const wizardInitKey = editActivity
+    ? `edit:${editActivity.id}`
+    : hostingFlowId
+      ? `${hostingFlowId}:${wizardSessionScope ?? ''}`
+      : wizardPrefill
+        ? 'prefill'
+        : null;
   const wizardInitializedRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -235,17 +253,17 @@ export const CreateHostingActivityFlow = ({
 
     if (wizardInitKey && wizardInitializedRef.current === wizardInitKey) return;
 
-    if (seekingPrefill?.draft.kind) {
-      const prefillKind = seekingPrefill.draft.kind;
-      setDraft(seekingPrefill.draft);
+    if (wizardPrefill?.draft.kind) {
+      const prefillKind = wizardPrefill.draft.kind;
+      setDraft(wizardPrefill.draft);
       setSelectedKind(prefillKind);
       const steps = hostingKindFlow
         ? hostingKindFlow.getSteps({
-            placeLabelSource: seekingPrefill.draft.placeLabelSource,
-            registryPlaceId: seekingPrefill.draft.registryPlaceId,
-            genericBuddy: seekingPrefill.draft.genericBuddy,
+            placeLabelSource: wizardPrefill.draft.placeLabelSource,
+            registryPlaceId: wizardPrefill.draft.registryPlaceId,
+            genericBuddy: wizardPrefill.draft.genericBuddy,
           })
-        : getCreateFlowSteps(prefillKind, seekingPrefill.draft.genericBuddy);
+        : getCreateFlowSteps(prefillKind, wizardPrefill.draft.genericBuddy);
       setStep(steps[0] ?? 'title');
       setError(null);
       setSubmitting(false);
@@ -310,7 +328,8 @@ export const CreateHostingActivityFlow = ({
     navigate,
     signInHref,
     onClose,
-    seekingPrefill,
+    wizardPrefill,
+    editActivity,
     hostComposeKind,
     hostingKindFlow,
     hostingFlowId,
@@ -338,7 +357,7 @@ export const CreateHostingActivityFlow = ({
     }
   }, [hostTiers, publishingProfileKind, draft.priceMode, patchDraft]);
 
-  const { sheetExpanded } = useComposeSheetExpandedState();
+  const { sheetExpanded } = useComposeSheetExpandedStateOrLocal(open);
 
   const finishClose = useCallback(() => {
     if (submitting) return;
@@ -423,7 +442,7 @@ export const CreateHostingActivityFlow = ({
       return;
     }
     if (step === 'type' || currentStepIndex <= 0) {
-      if (seekingPrefill) {
+      if (wizardPrefill || editActivity) {
         requestClose();
         return;
       }
@@ -445,7 +464,8 @@ export const CreateHostingActivityFlow = ({
     meetingPointMapOpen,
     step,
     currentStepIndex,
-    seekingPrefill,
+    wizardPrefill,
+    editActivity,
     hostComposeKind,
     requestClose,
     exitWizardBack,
@@ -510,14 +530,30 @@ export const CreateHostingActivityFlow = ({
     setSubmitting(true);
     setError(null);
     try {
-      const linkedIntentId = seekingPrefill?.participantIntentId ?? null;
+      const normalizedDraft = { ...draft, kind: draft.kind ?? selectedKind, rideshareEnabled: false };
+      if (editActivity) {
+        const updated = await updateHostingActivity({
+          activityId: editActivity.id,
+          draft: normalizedDraft,
+          tenantId,
+          userId: user.id,
+        });
+        await afterHostingActivityPublishClientRefresh(queryClient, {
+          activityId: updated.id,
+          linkedParticipantIntentId: null,
+        });
+        await onPublished?.(updated);
+        onClose();
+        return;
+      }
+      const linkedIntentId = wizardPrefill?.participantIntentId ?? null;
       const activity = await publishCreateActivity({
-        draft: { ...draft, kind: draft.kind ?? selectedKind, rideshareEnabled: false },
+        draft: normalizedDraft,
         tenantId,
         userId: user.id,
         participantIntentId: linkedIntentId,
-        sourceActivityId: seekingPrefill?.sourceActivityId ?? null,
-        linkToParentActivityId: seekingPrefill?.linkToParentActivityId ?? null,
+        sourceActivityId: wizardPrefill?.sourceActivityId ?? null,
+        linkToParentActivityId: wizardPrefill?.linkToParentActivityId ?? null,
       });
       await afterHostingActivityPublishClientRefresh(queryClient, {
         activityId: activity.id,
@@ -545,11 +581,13 @@ export const CreateHostingActivityFlow = ({
     tenantId,
     draft,
     registryPlaces,
-    seekingPrefill,
+    wizardPrefill,
+    editActivity,
     hostingFlowId,
     wizardSessionScope,
     queryClient,
     selectedKind,
+    onPublished,
   ]);
 
   const handleViewOnMap = async () => {
@@ -571,11 +609,13 @@ export const CreateHostingActivityFlow = ({
   const hasToPin = draft.toLatitude != null && draft.toLongitude != null;
 
   const stepTitle =
-    step === 'type' || !kind
-      ? seekingPrefill
-        ? HOSTING_SEEKING_PREFILL_TITLE
-        : 'Host an outing'
-      : createFlowStepTitle(step as CreateFlowStepId, kind, stepTitleOptions);
+    editActivity
+      ? 'Edit outing'
+      : step === 'type' || !kind
+        ? wizardPrefill?.participantIntentId
+          ? HOSTING_SEEKING_PREFILL_TITLE
+          : 'Host an outing'
+        : createFlowStepTitle(step as CreateFlowStepId, kind, stepTitleOptions);
 
   const renderRoutePicker = useCallback(
     (endpoint: 'from' | 'to') => {
@@ -617,7 +657,7 @@ export const CreateHostingActivityFlow = ({
     patchDraft,
     hostingKindFlow: hostingKindFlow ?? null,
     hostComposeKind: hostComposeKind ?? null,
-    seekingPrefill: seekingPrefill ?? null,
+    seekingPrefill: wizardPrefill ?? null,
     error,
     tenantId,
     publishTenantOptions,
@@ -656,6 +696,7 @@ export const CreateHostingActivityFlow = ({
     rideshareFlow,
     structuredFlow,
     goingFromFlow,
+    isEditMode: Boolean(editActivity),
   }), [
     step,
     stepTitle,
@@ -664,7 +705,8 @@ export const CreateHostingActivityFlow = ({
     patchDraft,
     hostingKindFlow,
     hostComposeKind,
-    seekingPrefill,
+    wizardPrefill,
+    editActivity,
     error,
     tenantId,
     publishTenantOptions,
@@ -701,7 +743,7 @@ export const CreateHostingActivityFlow = ({
 
   if (!open) return null;
 
-  if (publishedActivity && kind) {
+  if (publishedActivity && kind && !editActivity) {
     const showPostPublishRideshare =
       draft.joinMode !== 'private' &&
       (hostingKindFlow?.postPublishRideshare === true ||

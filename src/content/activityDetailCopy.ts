@@ -1,3 +1,5 @@
+import { SITE_TITLE_BRAND } from '../config/seo';
+
 /** Consumer activity detail — tab labels only (not API / domain names). */
 export const ACTIVITY_DETAIL_TAB_PLAN = 'Plan';
 export const ACTIVITY_DETAIL_TAB_PLACE = 'Place';
@@ -21,10 +23,10 @@ export const ACTIVITY_DETAIL_LINKED_RIDESHARE_LABEL = 'Shared ride for this outi
 export const activityDetailLinkedVenueEyebrow = (
   placeKind: 'hiking' | 'camping' | 'event' | string | null | undefined
 ): string => {
-  if (placeKind === 'camping') return 'Camp on UAE Trail';
-  if (placeKind === 'hiking') return 'Trail on UAE Trail';
-  if (placeKind === 'event') return 'Venue on UAE Trail';
-  return 'Place on UAE Trail';
+  if (placeKind === 'camping') return `Camp on ${SITE_TITLE_BRAND}`;
+  if (placeKind === 'hiking') return `Trail on ${SITE_TITLE_BRAND}`;
+  if (placeKind === 'event') return `Venue on ${SITE_TITLE_BRAND}`;
+  return `Place on ${SITE_TITLE_BRAND}`;
 };
 
 export const ACTIVITY_DETAIL_TRANSPORT_EMPTY_HINT =
@@ -50,6 +52,14 @@ export const ACTIVITY_DETAIL_MEETING_PLACE_ACTION = 'Meeting spot';
 
 export const ACTIVITY_DETAIL_POST_CHECK_IN_REVIEWS_TITLE =
   'You went — help the community';
+
+export const ACTIVITY_DETAIL_REVIEWS_EMPTY_NEUTRAL = 'No reviews yet.';
+export const ACTIVITY_DETAIL_REVIEWS_EMPTY_INVITE =
+  'No reviews yet. Be the first to share your experience.';
+export const ACTIVITY_DETAIL_REVIEWS_GATE_CHECK_IN =
+  'Reviews open after your host checks you in on the outing.';
+export const ACTIVITY_DETAIL_REVIEWS_GATE_AFTER_END =
+  'Reviews open after this outing ends.';
 
 export const ACTIVITY_DETAIL_HOST_CHECK_IN_CTA = 'Open roster & check in';
 

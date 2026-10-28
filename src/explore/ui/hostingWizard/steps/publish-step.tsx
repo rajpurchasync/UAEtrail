@@ -11,7 +11,12 @@ import {
   resolveRideshareVehicleLabel,
   resolveActivityTopicLabel,
 } from '../../hostingFlowEngine';
-import { GOING_FROM_NOTES_PREVIEW_LABEL, JOIN_RULES_PREVIEW_LABEL, HOSTING_INTRO_PROMPT } from '../../../createFlowCopy';
+import {
+  GOING_FROM_NOTES_PREVIEW_LABEL,
+  HOSTING_EDIT_SAVE_CTA,
+  HOSTING_INTRO_PROMPT,
+  JOIN_RULES_PREVIEW_LABEL,
+} from '../../../createFlowCopy';
 import { HostingPinReviewLine, HostingPublishPreviewBlock } from '../../hostingPinReview';
 import type { ReactNode } from 'react';
 import type { HostingWizardContext } from '../hostingWizardContext';
@@ -43,6 +48,7 @@ export function renderPublishStep(ctx: HostingWizardContext): ReactNode | null {
     activityFlow,
     rideshareFlow,
     structuredFlow,
+    isEditMode,
   } = ctx;
 
   if (!(step === 'publish' && kind)) {
@@ -341,7 +347,7 @@ export function renderPublishStep(ctx: HostingWizardContext): ReactNode | null {
         </p>
       )}
 
-      {canPublish && draft.joinMode !== 'private' && (
+      {canPublish && draft.joinMode !== 'private' && !isEditMode && (
         <p className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50/80 px-3 py-2 text-sm text-emerald-900">
           Publishing adds your activity to the explore map at the pin you chose. You can manage it from Plan.
         </p>
@@ -364,7 +370,9 @@ export function renderPublishStep(ctx: HostingWizardContext): ReactNode | null {
       <HostingWizardStepError error={error} />
 
       <HostingWizardStepNext
-        label={canPublish ? 'Publish' : 'Complete your profile first'}
+        label={
+          canPublish ? (isEditMode ? HOSTING_EDIT_SAVE_CTA : 'Publish') : 'Complete your profile first'
+        }
         loading={submitting || hostGateLoading}
         onClick={handlePublish}
       />

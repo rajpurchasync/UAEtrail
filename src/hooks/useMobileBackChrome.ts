@@ -5,6 +5,7 @@ import { resolveMobileBackChrome, type MobileBackChrome } from '../utils/mobileB
 export const useMobileBackChrome = (defaults: {
   fallbackTo: string;
   label: string;
+  backBehavior?: 'history' | 'fallback';
 }): MobileBackChrome => {
   const { state } = useLocation();
   return useMemo(() => resolveMobileBackChrome(state, defaults), [state, defaults]);

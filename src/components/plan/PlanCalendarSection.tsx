@@ -1,7 +1,12 @@
 import { useMemo, useState } from 'react';
 import { ChevronRight } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
-import { PlanJoinedPeekSheet } from './PlanJoinedPeekSheet';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { planUpcomingEntityLinkState } from '../../explore/mapPeekDetailNavState';
+import {
+  capturePlanUpcomingViewReturn,
+  planUpcomingActivityFocusId,
+} from '../../plan/planUpcomingReturnCapture';
+import { viewReturnPathKey } from '../../utils/viewReturnMemory';
 import { todayIso } from '../../explore';
 import { usePlanCalendarData } from '../../hooks/usePlanCalendarData';
 import { planAvailabilityPath } from '../../plan/planRouting';
@@ -47,7 +52,7 @@ const detailLabel = (row: PlanCalendarDayDetail): string => {
 };
 
 const rowButtonClass =
-  'flex w-full items-center justify-between gap-2 rounded-xl bg-neutral-50 px-3 py-2.5 text-left text-sm font-medium text-neutral-900 active:bg-neutral-100';
+  'flex w-full items-center justify-between gap-2 rounded-2xl bg-neutral-50 px-3 py-2.5 text-left text-sm font-medium text-neutral-900 active:bg-neutral-100';
 
 type PlanCalendarSectionProps = {
   refreshKey?: number;
@@ -61,6 +66,7 @@ export const PlanCalendarSection = ({
   filter,
 }: PlanCalendarSectionProps) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { loading, error, markers, details } = usePlanCalendarData(
     true,
     canHost,
@@ -68,13 +74,6 @@ export const PlanCalendarSection = ({
     refreshKey
   );
   const [selectedDate, setSelectedDate] = useState<string | null>(todayIso());
-  const [peek, setPeek] = useState<{
-    activityId: string;
-    title: string;
-    whenLine: string;
-    locationLine: string;
-  } | null>(null);
-
   const dayRows = useMemo(
     () => (selectedDate ? details.get(selectedDate) ?? [] : []),
     [details, selectedDate]
@@ -92,16 +91,13 @@ export const PlanCalendarSection = ({
 
   const openRow = (row: PlanCalendarDayDetail) => {
     const action = resolvePlanCalendarRowOpenAction(row);
-    if (action.type === 'joined_peek' && (row.kind === 'joined' || row.kind === 'requested')) {
-      setPeek({
-        activityId: row.activityId,
-        title: row.title,
-        whenLine: row.whenLine,
-        locationLine: row.locationLine,
-      });
-      return;
-    }
     if (action.type === 'navigate') {
+      if (action.href.startsWith('/activity/')) {
+        const returnTo = viewReturnPathKey(location.pathname, location.search);
+        capturePlanUpcomingViewReturn(location.pathname, location.search);
+        navigate(action.href, { state: planUpcomingEntityLinkState(returnTo) });
+        return;
+      }
       navigate(action.href);
     }
   };
@@ -195,6 +191,11 @@ export const PlanCalendarSection = ({
                   <li key={rowKey}>
                     <button
                       type="button"
+                      data-nav-focus={
+                        'activityId' in row && row.activityId
+                          ? planUpcomingActivityFocusId(row.activityId)
+                          : rowKey
+                      }
                       onClick={() => openRow(row)}
                       className={rowButtonClass}
                     >
@@ -209,14 +210,6 @@ export const PlanCalendarSection = ({
         </section>
       ) : null}
 
-      <PlanJoinedPeekSheet
-        open={Boolean(peek)}
-        activityId={peek?.activityId ?? null}
-        title={peek?.title ?? ''}
-        whenLine={peek?.whenLine}
-        locationLine={peek?.locationLine}
-        onClose={() => setPeek(null)}
-      />
     </div>
   );
 };

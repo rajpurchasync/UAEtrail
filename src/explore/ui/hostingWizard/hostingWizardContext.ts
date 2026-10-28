@@ -63,4 +63,5 @@ export type HostingWizardContext = {
   rideshareFlow: boolean;
   structuredFlow: boolean;
   goingFromFlow: boolean;
+  isEditMode: boolean;
 };

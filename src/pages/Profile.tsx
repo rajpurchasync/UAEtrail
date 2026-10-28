@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { updateMeProfile } from '../hooks/memberProfileApi';
@@ -40,7 +40,7 @@ export const Profile = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const queryClient = useQueryClient();
-  const { profile, setProfile, incomingBuddyRequests, loading, error, reload } = useParticipantHubData();
+  const { profile, setProfile, incomingBuddyRequests, loading, error, reload, profileLoaded } = useParticipantHubData();
 
   const {
     ownedProfiles,
@@ -64,11 +64,17 @@ export const Profile = () => {
   const memberSince = profile.memberSince ?? null;
   const visibility = profile.profileVisibility ?? 'public';
 
+  const openEditHandledForKey = useRef<string | null>(null);
   useEffect(() => {
     const state = location.state as { openEdit?: boolean } | null;
-    if (!state?.openEdit) return;
-    navigate('/profile/edit', { replace: true, state: null });
-  }, [location.pathname, location.state, navigate]);
+    if (!state?.openEdit) {
+      openEditHandledForKey.current = null;
+      return;
+    }
+    if (openEditHandledForKey.current === location.key) return;
+    openEditHandledForKey.current = location.key;
+    navigate('/profile/edit', { state: profileHubMobileBackState() });
+  }, [location.key, location.pathname, location.state, navigate]);
 
   const hostProfileKind = useMemo(() => resolveProfileHostKind(ownedProfiles), [ownedProfiles]);
   const isActivityHost =
@@ -161,7 +167,7 @@ export const Profile = () => {
 
   const openPublicProfile = useCallback(() => {
     if (!user?.id) return;
-    navigate(memberPublicPreviewLink(user.id));
+    navigate(memberPublicPreviewLink(user.id), { state: profileHubMobileBackState() });
   }, [navigate, user?.id]);
 
   const openEdit = useCallback(() => {
@@ -232,8 +238,8 @@ export const Profile = () => {
             displayName={displayName}
             roleLabel={roleLabel}
             avatarUrl={avatarUrl}
-            completionPercent={completion.percent}
-            completionItems={completion.items}
+            completionPercent={profileLoaded ? completion.percent : 0}
+            completionItems={profileLoaded ? completion.items : []}
             onCompleteProfile={handleCompleteProfile}
             shareTitle={`${displayName} on UAE Trail`}
             shareText={shareText}
@@ -242,9 +248,9 @@ export const Profile = () => {
             onEditAvatar={openAvatarEdit}
             onEditProfile={openEdit}
             onViewProfile={openPublicProfile}
-            memberSinceLabel={memberSinceLabel}
-            visibilityLabel={profileVisibilityLabel(visibility)}
-            cityLabel={profileCityLabel}
+            cityLabel={profileLoaded ? profileCityLabel : null}
+            memberSinceLabel={profileLoaded ? memberSinceLabel : null}
+            visibilityLabel={profileLoaded ? profileVisibilityLabel(visibility) : null}
             hubStats={profileHubStats}
             goalsCount={goals.length}
             badgesEarnedCount={badgesEarnedCount}

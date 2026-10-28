@@ -1,5 +1,5 @@
 import type { ExploreMapItemDTO, WishlistItemDTO } from '@uaetrail/shared-types';
-import { exploreMapItemIsSeeking } from '@uaetrail/shared-types';
+import { exploreMapItemIsSeeking, resolveMapPinEmoji } from '@uaetrail/shared-types';
 import { wishlistItemTitle } from '../member-plan/wishlistSavedItem';
 
 export type PlanWishlistSuggestion = {
@@ -7,6 +7,7 @@ export type PlanWishlistSuggestion = {
   title: string;
   href: string;
   subtitle?: string | null;
+  kindEmoji: string;
 };
 
 const todayStart = () => new Date(new Date().toDateString());
@@ -30,6 +31,16 @@ const mapItemMatchesSavedActivity = (item: ExploreMapItemDTO, activityId: string
 const mapItemMatchesSavedPlace = (item: ExploreMapItemDTO, locationId: string): boolean => {
   if (item.id === `venue:${locationId}`) return true;
   return item.activity?.locationId === locationId;
+};
+
+const mapItemPinEmoji = (item: ExploreMapItemDTO): string => {
+  if (item.activity?.activityType) {
+    return resolveMapPinEmoji(item.activity.activityType, 'activity');
+  }
+  if (item.kind === 'shop' || item.kind === 'agency') {
+    return resolveMapPinEmoji(item.kind, 'activity');
+  }
+  return resolveMapPinEmoji(item.kind, 'venue');
 };
 
 /** Map saved wishlist rows to live explore items the member can open on the map. */
@@ -65,6 +76,7 @@ export const planWishlistExploreMatches = (
       title: wishlistItemTitle(save),
       href: match.path,
       subtitle: match.subtitle ?? match.activity?.locationName ?? null,
+      kindEmoji: mapItemPinEmoji(match),
     });
     if (suggestions.length >= max) break;
   }

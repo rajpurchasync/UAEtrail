@@ -14,6 +14,9 @@ type PlanWishlistViewProps = {
   onReloadGoals: () => void;
   openAddSheet?: boolean;
   onOpenAddSheetHandled?: () => void;
+  /** Bumped when user taps Saved in the plan summary strip — scroll after saved list loads. */
+  savedSummaryScrollRequest?: number;
+  onSavedSummaryScrollReady?: () => void;
 };
 
 export const PlanWishlistView = ({
@@ -26,11 +29,18 @@ export const PlanWishlistView = ({
   onReloadGoals,
   openAddSheet,
   onOpenAddSheetHandled,
+  savedSummaryScrollRequest = 0,
+  onSavedSummaryScrollReady,
 }: PlanWishlistViewProps) => (
   <div className="space-y-8">
-    <section aria-labelledby="plan-wishlist-goals">
+    <section
+      id="plan-wishlist-goals"
+      tabIndex={-1}
+      className="scroll-mt-[calc(var(--safe-top)+7.5rem)] outline-none"
+      aria-labelledby="plan-wishlist-goals-heading"
+    >
       <div className="mb-3 flex items-baseline justify-between gap-2">
-        <h2 id="plan-wishlist-goals" className="text-sm font-bold text-neutral-900">
+        <h2 id="plan-wishlist-goals-heading" className="text-sm font-bold text-neutral-900">
           Your goals
         </h2>
         {goals.length > 0 ? (
@@ -49,12 +59,20 @@ export const PlanWishlistView = ({
         onOpenAddSheetHandled={onOpenAddSheetHandled}
       />
     </section>
-    <PlanSuggestedRail refreshKey={refreshKey} />
-    <section aria-labelledby="plan-wishlist-saved">
-      <h2 id="plan-wishlist-saved" className="mb-3 text-sm font-bold text-neutral-900">
+    <section
+      id="plan-wishlist-saved"
+      tabIndex={-1}
+      className="scroll-mt-[calc(var(--safe-top)+7.5rem)] outline-none"
+      aria-labelledby="plan-wishlist-saved-heading"
+    >
+      <h2 id="plan-wishlist-saved-heading" className="mb-3 text-sm font-bold text-neutral-900">
         Saved
       </h2>
-      <PlanSavedSection />
+      <PlanSavedSection
+        summaryScrollRequest={savedSummaryScrollRequest}
+        onSummaryScrollReady={onSavedSummaryScrollReady}
+      />
     </section>
+    <PlanSuggestedRail refreshKey={refreshKey} />
   </div>
 );

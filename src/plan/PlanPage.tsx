@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Plus } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -13,7 +13,10 @@ import { useMemberStatus } from '../hooks/useMemberStatus';
 import { memberCanManageHostedActivities } from '../utils/hostedActivitiesGate';
 import { signInPathForReturn } from '../utils/authReturnContext';
 import { useMemberGoals } from '../hooks/useMemberGoals';
-import { PlanGoalsProgressSummary } from '../components/plan/PlanGoalsProgressSummary';
+import {
+  PlanGoalsProgressSummary,
+  type PlanSummaryFocus,
+} from '../components/plan/PlanGoalsProgressSummary';
 import { PlanPageTabs } from '../components/plan/PlanPageTabs';
 import { PlanUpcomingView } from '../components/plan/PlanUpcomingView';
 import { PlanWishlistView } from '../components/plan/PlanWishlistView';
@@ -27,6 +30,7 @@ import {
   type PlanUpcomingLayout,
 } from './planTab';
 import { normalizePlanSearchParams } from './planRouting';
+import { scrollToPlanSummaryFocus } from './planSummaryFocusScroll';
 
 /** My Plans tab — `/plan` (`PLAN_PATH`). */
 export const PlanPage = () => {
@@ -35,10 +39,14 @@ export const PlanPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [refreshKey, setRefreshKey] = useState(0);
   const [goalAddSheet, setGoalAddSheet] = useState(false);
+  const pendingSummaryFocusRef = useRef<PlanSummaryFocus | null>(null);
+  const pendingSavedSummaryScrollRef = useRef(false);
+  const [savedSummaryScrollRequest, setSavedSummaryScrollRequest] = useState(0);
   const gate = useMemberStatus({ enabled: Boolean(user) });
   const canHost = memberCanManageHostedActivities(user, gate.canAccessPublishingWorkspace);
   const {
     goals,
+    loading: goalsLoading,
     saving: goalSaving,
     createGoal,
     updateGoal,
@@ -114,6 +122,45 @@ export const PlanPage = () => {
     [searchParams, setSearchParams]
   );
 
+  const completeSavedSummaryScroll = useCallback(() => {
+    if (!pendingSavedSummaryScrollRef.current) return;
+    pendingSavedSummaryScrollRef.current = false;
+    window.requestAnimationFrame(() => scrollToPlanSummaryFocus('saved'));
+  }, []);
+
+  const handleSummaryFocus = useCallback(
+    (focus: PlanSummaryFocus) => {
+      if (focus === 'hosting' && !canHost) return;
+
+      const targetTab: PlanMainTab =
+        focus === 'hosting' || focus === 'joined' ? 'upcoming' : 'wishlist';
+
+      if (focus === 'saved') {
+        pendingSavedSummaryScrollRef.current = true;
+        setSavedSummaryScrollRequest((n) => n + 1);
+        if (mainTab !== targetTab) {
+          setMainTab(targetTab);
+        }
+        return;
+      }
+
+      if (mainTab !== targetTab) {
+        pendingSummaryFocusRef.current = focus;
+        setMainTab(targetTab);
+        return;
+      }
+      scrollToPlanSummaryFocus(focus);
+    },
+    [canHost, mainTab, setMainTab]
+  );
+
+  useEffect(() => {
+    const focus = pendingSummaryFocusRef.current;
+    if (!focus) return;
+    pendingSummaryFocusRef.current = null;
+    scrollToPlanSummaryFocus(focus);
+  }, [mainTab]);
+
   const setUpcomingLayout = useCallback(
     (layout: PlanUpcomingLayout) => {
       const next = new URLSearchParams(searchParams);
@@ -160,11 +207,13 @@ export const PlanPage = () => {
               <>
                 <PlanGoalsProgressSummary
                   goals={goals}
-                  mainTab={mainTab}
+                  goalsLoading={goalsLoading}
+                  canHost={canHost}
+                  refreshKey={refreshKey}
                   saving={goalSaving}
                   onCreateGoal={createGoal}
                   onReloadGoals={reloadGoals}
-                  onOpenWishlist={() => setMainTab('wishlist')}
+                  onSummaryFocus={handleSummaryFocus}
                 />
                 <PlanPageTabs active={mainTab} onChange={setMainTab} />
                 {mainTab === 'upcoming' ? (
@@ -188,6 +237,8 @@ export const PlanPage = () => {
                     onReloadGoals={reloadGoals}
                     openAddSheet={goalAddSheet}
                     onOpenAddSheetHandled={() => setGoalAddSheet(false)}
+                    savedSummaryScrollRequest={savedSummaryScrollRequest}
+                    onSavedSummaryScrollReady={completeSavedSummaryScroll}
                   />
                 )}
               </>

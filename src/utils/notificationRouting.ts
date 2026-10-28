@@ -243,6 +243,12 @@ export const inferNotificationPath = (
     if (followerUserId) return memberProfileLink(followerUserId);
     return PROFILE_PATH;
   }
+  if (kind === 'wishlist_match' && activityId) {
+    return activityDetailPath(activityId);
+  }
+  if (kind === 'entity_activity_published' && activityId) {
+    return activityDetailPath(activityId);
+  }
   if (kind === 'member_published' || kind === 'friend_published' || kind === 'friend_activity_published') {
     if (activityId) return activityDetailPath(activityId);
     const intentId = toStringValue(meta?.intentId);

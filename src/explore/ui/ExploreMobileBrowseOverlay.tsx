@@ -26,6 +26,7 @@ type ExploreMobileBrowseOverlayProps = {
   /** Full-viewport sheet with back control (still on explore). */
   immersive?: boolean;
   immersiveTitle?: string;
+  immersiveSubtitle?: string | null;
   onExitImmersive?: () => void;
   immersiveBackLabel?: string;
 };
@@ -40,6 +41,7 @@ export const ExploreMobileBrowseOverlay = ({
   expandHint,
   immersive = false,
   immersiveTitle,
+  immersiveSubtitle = null,
   onExitImmersive,
   immersiveBackLabel = 'Explore',
 }: ExploreMobileBrowseOverlayProps) => {
@@ -107,9 +109,14 @@ export const ExploreMobileBrowseOverlay = ({
               onPress={onExitImmersive ?? onClose}
               className="-ml-1 text-neutral-900"
             />
-            <p className={`min-w-0 truncate text-center text-base font-bold ${EXPLORE_TYPE.title}`}>
-              {immersiveTitle}
-            </p>
+            <div className="min-w-0 px-1 text-center">
+              <p className={`truncate text-base font-bold ${EXPLORE_TYPE.title}`}>{immersiveTitle}</p>
+              {immersiveSubtitle ? (
+                <p className="mt-0.5 truncate text-xs font-semibold tabular-nums text-neutral-600">
+                  {immersiveSubtitle}
+                </p>
+              ) : null}
+            </div>
             <button
               type="button"
               onClick={onClose}

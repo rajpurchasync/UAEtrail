@@ -30,6 +30,7 @@ import {
 } from '../../../activity/activityDetailProSocial';
 import { activityDetailPath, proMembershipPath } from '../../../config/routingCatalog';
 import { useAuth } from '../../../context/AuthContext';
+import { activityScheduleHasEnded } from '@uaetrail/shared-types';
 import {
   buildParticipantPostCheckInReviewPrompts,
   participantPostCheckInReviewsPending,
@@ -248,12 +249,15 @@ export const useActivityDetailViewModel = ({
         activity,
         viewerUserId: user?.id ?? null,
         activityReviews,
-        checkedIn: canWriteActivityReview,
+        checkedIn: Boolean(participation?.checkedInAt),
       }),
-    [activity, user?.id, activityReviews, canWriteActivityReview]
+    [activity, user?.id, activityReviews, participation?.checkedInAt]
   );
+  const outingScheduleEnded = activityScheduleHasEnded(activity);
   const showParticipantReviewPrompts =
-    !previewMode && participantPostCheckInReviewsPending(participantReviewPrompts);
+    !previewMode &&
+    outingScheduleEnded &&
+    participantPostCheckInReviewsPending(participantReviewPrompts);
 
   const hostReviewHints = useHostParticipantReviewHints(
     hostCrewChatPolicy?.tenantId ?? null,
@@ -377,7 +381,6 @@ export const useActivityDetailViewModel = ({
                 viewerAccess: viewerAccess ?? null,
                 wireStrips: wireStrips ?? null,
                 joinUiState: joinUiStateForSurfaces,
-                showHostManageHub,
               } satisfies ActivityDetailEngagementModel
             }
             handlers={mapPeekActionHandlers}

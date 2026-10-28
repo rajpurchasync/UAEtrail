@@ -1702,6 +1702,15 @@ export {
   type ActivityPublicSeoFields,
 } from './activity-public-seo.js';
 
+export {
+  activityInstantHasEnded,
+  activityScheduleHasEnded,
+  parseActivityLocalDateTime,
+  resolveActivityScheduleEndFromFields,
+  resolveActivityScheduleEndInstant,
+  type ActivityScheduleFields,
+} from './activity-schedule.js';
+
 export type {
   AgentDiscoverEntityKind,
   AgentDiscoverItemDTO,

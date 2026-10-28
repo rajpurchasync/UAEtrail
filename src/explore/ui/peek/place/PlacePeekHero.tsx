@@ -4,8 +4,7 @@ import { areaDetailPath } from '@uaetrail/shared-types';
 import type { DiscoveryCardModel } from '../../../../discovery/discoveryCardModel';
 import { EnvironmentImage } from '../../../../components/ui/EnvironmentImage';
 import { ShareButton } from '../../../../components/ui/ShareButton';
-import { ExploreFollowButton } from '../../ExploreFollowButton';
-import { discoveryCardPeekShowsFollow } from '../../../../discovery/discoveryCardModel';
+import { ExploreWishlistSaveButton } from '../../ExploreWishlistSaveButton';
 import { resolveCatalogEntityName } from '../../../../list/listVenuePosterPresentation';
 import {
   resolvePlacePeekCuratedArea,
@@ -34,8 +33,6 @@ export const PlacePeekHero = ({
   const curated = resolvePlacePeekCuratedArea(card);
   const localLabel = resolvePlacePeekLocalLabel(card);
   const emoji = card.emoji?.trim() || '📍';
-  const showFollow = discoveryCardPeekShowsFollow(card);
-
   return (
     <div
       className={`relative w-full shrink-0 overflow-hidden bg-neutral-100${
@@ -58,8 +55,8 @@ export const PlacePeekHero = ({
         <span className="flex h-10 w-10 items-center justify-center rounded-full bg-black/35 text-2xl backdrop-blur-sm">
           {emoji}
         </span>
-        <div className="flex items-center gap-1.5">
-          {showFollow ? <ExploreFollowButton card={card} light /> : null}
+        <div className="flex shrink-0 items-start gap-1.5">
+          <ExploreWishlistSaveButton card={card} light />
           <ShareButton
             title={card.shareTitle}
             text={card.shareText ?? undefined}

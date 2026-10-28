@@ -1,4 +1,8 @@
-import type { ActivityDetailDTO, ReviewDTO } from '@uaetrail/shared-types';
+import {
+  activityScheduleHasEnded,
+  type ActivityDetailDTO,
+  type ReviewDTO,
+} from '@uaetrail/shared-types';
 import {
   resolveActivityPublisherProfilePath,
   type PublishingProfileKind,
@@ -22,6 +26,7 @@ export const buildParticipantPostCheckInReviewPrompts = (input: {
   checkedIn: boolean;
 }): PostCheckInReviewPromptItem[] => {
   if (!input.checkedIn || !input.viewerUserId) return [];
+  if (!activityScheduleHasEnded(input.activity)) return [];
 
   const { activity, viewerUserId, activityReviews } = input;
   const hasActivityReview = activityReviews.some((row) => row.userId === viewerUserId);

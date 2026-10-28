@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react';
+import { useLocation } from 'react-router-dom';
 import { APP_PAGE_MIN_H_CLASS, APP_SCROLL_BODY_CLASS } from '../../config/layoutScroll';
 import { createPortal } from 'react-dom';
+import { resolveMobileBackChrome } from '../../utils/mobileBackNav';
 import { ConsumerHeaderActions } from '../layout/ConsumerHeaderActions';
 import { ConsumerHeroBanner } from './ConsumerHeroBanner';
 import { MobileBackButton } from './MobileBackButton';
@@ -86,6 +88,11 @@ export const MobileDetailShell = ({
   overlayMobileHeaderOnHero = false,
   whitePageChrome = false,
 }: MobileDetailShellProps) => {
+  const location = useLocation();
+  const backChrome = resolveMobileBackChrome(location.state, {
+    fallbackTo: backTo,
+    label: backLabel,
+  });
   const mobileHeaderOverlay = Boolean(mobileHero && overlayMobileHeaderOnHero);
 
   const mobileHeaderChrome = (
@@ -94,7 +101,12 @@ export const MobileDetailShell = ({
         mobileHeaderOverlay ? 'bg-white/75 backdrop-blur-md' : ''
       }`}
     >
-      <MobileBackButton fallbackTo={backTo} label={backLabel} className="flex-1 min-w-0" />
+      <MobileBackButton
+        fallbackTo={backChrome.fallbackTo}
+        label={backChrome.label}
+        backBehavior={backChrome.backBehavior}
+        className="flex-1 min-w-0"
+      />
       {banner?.title && (
         <h1 className="absolute left-1/2 max-w-[52%] -translate-x-1/2 truncate text-center text-[17px] font-semibold text-neutral-900 pointer-events-none">
           {banner.title}

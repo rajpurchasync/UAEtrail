@@ -197,8 +197,12 @@ export const useExploreSelectionActions = ({
         },
         requestJoin: peekJoin.handleJoin,
         shareActivity: () => {
-          if (activity && onShareHostedActivity) {
-            onShareHostedActivity(activity);
+          if (activity?.status === 'published') {
+            if (onShareHostedActivity) {
+              onShareHostedActivity(activity);
+              return;
+            }
+            onInviteActivity?.(activity, { canSendBuddyInvites: Boolean(user) });
             return;
           }
           const card = selectedCard;
@@ -244,6 +248,8 @@ export const useExploreSelectionActions = ({
       onCreateLinkedRideshare,
       onOpenHostManage,
       onShareHostedActivity,
+      onInviteActivity,
+      user,
       navigate,
       setSelectedId,
       location,
@@ -366,6 +372,7 @@ export const useExploreSelectionActions = ({
     handlePeekHostMessage: peekJoin.handlePeekHostMessage,
     handleHostMessage,
     handleInviteCrew,
+    handleShareActivityPeek: handleInviteCrew,
     requestHostRemove: removals.requestHostRemove,
     hostRemoveConfirm: removals.hostRemoveConfirm,
     setHostRemoveConfirm: removals.setHostRemoveConfirm,

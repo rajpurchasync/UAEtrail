@@ -1,5 +1,5 @@
-import { Link } from 'react-router-dom';
-import { Car, ChevronRight } from 'lucide-react';
+import { Car } from 'lucide-react';
+import { ActivityDetailLinkedPlaceLink } from '../ActivityDetailLinkedPlaceLink';
 import type { ActivityDetailDTO } from '@uaetrail/shared-types';
 import {
   DirectionsControl,
@@ -21,6 +21,8 @@ type ActivityDetailPlaceTabPanelsProps = {
   showPlaceLockedOnMobile?: boolean;
   registryPlacePath: string | null;
   registryPlaceName: string | null;
+  /** Where Back on the place screen should land (this outing). */
+  placeReturnTo: string;
   hasAccessCoordinates: boolean;
   accessLat: number | null;
   accessLng: number | null;
@@ -37,24 +39,22 @@ export const ActivityDetailPlaceTabPanels = ({
   showPlaceLockedOnMobile,
   registryPlacePath,
   registryPlaceName,
+  placeReturnTo,
   hasAccessCoordinates,
   accessLat,
   accessLng,
   onMobileTabChange,
 }: ActivityDetailPlaceTabPanelsProps) => (
   <>
-    {registryPlacePath && registryPlaceName ? (
-      <div className={`bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 ${panelClassName}`}>
-        <Link
-          to={registryPlacePath}
-          className="flex items-center justify-between gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-left transition hover:bg-gray-100"
-        >
-          <div className="min-w-0">
-            <p className="text-sm font-semibold text-gray-900 truncate">{registryPlaceName}</p>
-            <p className="mt-0.5 text-xs text-gray-600">Venue guide</p>
-          </div>
-          <ChevronRight className="h-5 w-5 shrink-0 text-gray-400" aria-hidden />
-        </Link>
+    {registryPlaceName ? (
+      <div className={panelClassName}>
+        <div className="md:hidden rounded-2xl border border-gray-100 bg-white p-5 sm:p-6">
+          <ActivityDetailLinkedPlaceLink
+            name={registryPlaceName}
+            to={registryPlacePath}
+            returnTo={placeReturnTo}
+          />
+        </div>
       </div>
     ) : null}
 

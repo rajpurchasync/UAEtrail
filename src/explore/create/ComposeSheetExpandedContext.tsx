@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
 import { useComposeSheetExpanded } from '../../hooks/useMobileBrowseSheetImmersive';
 import { ComposeDiscardConfirmHost } from '../ui/ComposeDiscardConfirmHost';
 import { useComposeImmersiveChrome } from './ComposeImmersiveChromeContext';
@@ -37,4 +37,29 @@ export const useComposeSheetExpandedState = (): ComposeSheetExpandedValue => {
     throw new Error('useComposeSheetExpandedState requires ComposeSheetExpandedProvider');
   }
   return ctx;
+};
+
+/** Explore FAB compose uses provider; Plan manage edit / other hosts use isolated sheet expand state. */
+export const useComposeSheetExpandedStateOrLocal = (
+  sheetOpen: boolean
+): ComposeSheetExpandedValue => {
+  const ctx = useContext(ComposeSheetExpandedContext);
+  const [expanded, setExpanded] = useState(false);
+
+  useEffect(() => {
+    if (!sheetOpen) setExpanded(false);
+  }, [sheetOpen]);
+
+  const expandSheet = useCallback(() => setExpanded(true), []);
+  const collapseSheet = useCallback(() => setExpanded(false), []);
+  const clearExpandedSession = useCallback(() => setExpanded(false), []);
+
+  const local: ComposeSheetExpandedValue = {
+    sheetExpanded: expanded,
+    expandSheet,
+    collapseSheet,
+    clearExpandedSession,
+  };
+
+  return ctx ?? local;
 };

@@ -24,6 +24,7 @@ import { listDiscoveryHasActiveFilters } from './listDiscoveryMode';
 import { buildListFeedCards } from './buildListFeedCards';
 import { buildListCategoryPrimaryPills, listCategorySecondaryFiltersActive } from './listCategoryFilterPills';
 import { listCategoryResultsLabel } from './listCategoryCopy';
+import { discoverBrowseHomeFilterPatch } from './discoverBrowseHomePatch';
 import { resolveListCategoryHeaderFocus, resolveListDiscoveryView } from './listDiscoveryMode';
 import { BROWSE_LIST_EMPTY } from './browseListCopy';
 import { countExploreSearchScopes } from '../explore/exploreSearchMatches';
@@ -54,6 +55,7 @@ import {
   parseMobileBackNavState,
   resolveMobileBackChrome,
 } from '../utils/mobileBackNav';
+import { navigateBack } from '../utils/backStack';
 
 const DiscoverHomeSkeleton = () => (
   <div className="space-y-6" aria-hidden>
@@ -87,9 +89,17 @@ const CategoryFeedSkeleton = ({ venues = false }: { venues?: boolean }) => (
 type ListDiscoveryExperienceProps = {
   surface: ListDiscoverySurface;
   onCloseMapOverlay?: () => void;
+  /** Mobile explore discover sheet — parent renders immersive app bar. */
+  overlayImmersive?: boolean;
+  onImmersiveSubtitleChange?: (subtitle: string | null) => void;
 };
 
-export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDiscoveryExperienceProps) => {
+export const ListDiscoveryExperience = ({
+  surface,
+  onCloseMapOverlay,
+  overlayImmersive = false,
+  onImmersiveSubtitleChange,
+}: ListDiscoveryExperienceProps) => {
   const embeddedOnExplore = listDiscoveryEmbeddedOnExplore(surface);
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -353,19 +363,16 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
   };
 
   const backToHome = useCallback(() => {
-    syncUrl({
-      categories: [],
-      listCat: null,
-      tripTopics: [],
-      placeTopics: [],
-      tripLookingOnly: false,
-      price: 'all',
-      when: 'any',
-      activityDatePreset: 'anyday',
-      buddiesSegment: 'available',
-      regions: [],
-    });
+    syncUrl(discoverBrowseHomeFilterPatch());
   }, [syncUrl]);
+
+  useEffect(() => {
+    if (!overlayImmersive || surface !== 'mapOverlay') {
+      onImmersiveSubtitleChange?.(null);
+      return;
+    }
+    onImmersiveSubtitleChange?.(categoryResultsLabel);
+  }, [overlayImmersive, surface, categoryResultsLabel, onImmersiveSubtitleChange]);
 
   const categoryBackChrome = useMemo(() => {
     if (!categoryHeaderFocus) return null;
@@ -385,7 +392,7 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
         chrome.fallbackTo === EXPLORE_MAP_PATH || chrome.fallbackTo.startsWith('/explore')
           ? exploreMapPathAfterPeopleFullScreen(chrome.fallbackTo)
           : chrome.fallbackTo;
-      navigate(target);
+      navigateBack(navigate, target);
       return;
     }
     backToHome();
@@ -530,6 +537,7 @@ export const ListDiscoveryExperience = ({ surface, onCloseMapOverlay }: ListDisc
                 categoryBackLabel={categoryBackChrome?.label}
                 categoryBackFallbackTo={categoryBackChrome?.fallbackTo}
                 onBackFromCategory={categoryHeaderFocus ? handleBackFromCategory : undefined}
+                overlayImmersive={overlayImmersive}
                 categoryFilterRow={
                   view === 'category' && category === 'people' ? null : view === 'category' && category ? (
                     <ListCategoryFilterBar

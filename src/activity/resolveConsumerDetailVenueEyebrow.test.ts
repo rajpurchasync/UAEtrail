@@ -12,7 +12,7 @@ const base = (overrides: Partial<ActivityDetailDTO> = {}): ActivityDetailDTO =>
 
 describe('resolveConsumerDetailVenueEyebrow', () => {
   it('uses trail path when scheduled type is rideshare', () => {
-    expect(resolveConsumerDetailVenueEyebrow(base(), '/trail/p1')).toBe('Trail on UAE Trail');
+    expect(resolveConsumerDetailVenueEyebrow(base(), '/trail/p1')).toBe('Trail on UAETrail');
   });
 
   it('prefers linked location catalog kind', () => {
@@ -21,6 +21,6 @@ describe('resolveConsumerDetailVenueEyebrow', () => {
         base({ location: { activityType: 'camping', name: 'X' } as ActivityDetailDTO['location'] }),
         '/camp/p1'
       )
-    ).toBe('Camp on UAE Trail');
+    ).toBe('Camp on UAETrail');
   });
 });

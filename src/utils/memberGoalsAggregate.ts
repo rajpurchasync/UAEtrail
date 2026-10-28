@@ -8,8 +8,12 @@ export type MemberGoalsAggregate = {
   progress: number;
 };
 
+/** In progress — excludes completed goals and targets already met. */
+export const isActiveMemberGoal = (goal: MemberGoalDTO): boolean =>
+  !goal.completed && goal.currentCount < goal.targetCount;
+
 export const aggregateMemberGoals = (goals: MemberGoalDTO[]): MemberGoalsAggregate => {
-  const activeGoals = goals.filter((goal) => !goal.completed);
+  const activeGoals = goals.filter(isActiveMemberGoal);
   const completedCount = goals.length - activeGoals.length;
   const totalCurrent = activeGoals.reduce((sum, goal) => sum + goal.currentCount, 0);
   const totalTarget = activeGoals.reduce((sum, goal) => sum + goal.targetCount, 0);

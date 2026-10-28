@@ -1,6 +1,6 @@
 import { EXPLORE_MAP_PATH, proMembershipPath, signInPath } from '../config/routingCatalog';
 import { useEffect, useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { Sparkles } from 'lucide-react';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { GlassCard } from '../components/mobile/GlassCard';
@@ -17,6 +17,7 @@ import { useMemberStatus } from '../hooks/useMemberStatus';
 import { ProfileMapPresenceSection } from '../components/profile/ProfileMapPresenceSection';
 import { resolveAuthRedirect } from '../utils/authRedirect';
 import { useProfileHubBackChrome } from '../hooks/useProfileHubBackChrome';
+import { navigateBack } from '../utils/backStack';
 
 /** Pro Membership — professional guide, agency, or shop application (community Host / publish uses profile complete + `/welcome`). */
 export const ProfileProMembership = () => {
@@ -24,6 +25,7 @@ export const ProfileProMembership = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const location = useLocation();
   const intent = parseHostFlowIntent(searchParams.get('intent'));
   const returnTo = resolveAuthRedirect(null, searchParams.get('redirect')) ?? EXPLORE_MAP_PATH;
 
@@ -50,14 +52,17 @@ export const ProfileProMembership = () => {
     }
     const params = new URLSearchParams(searchParams);
     params.set('intent', nextIntent);
-    navigate(`/profile/pro-membership?${params.toString()}`, { replace: true });
+    navigate(`/profile/pro-membership?${params.toString()}`, {
+      replace: true,
+      state: location.state,
+    });
     setFlowOpen(true);
   };
 
   const handleSubmitted = async () => {
     setFlowOpen(false);
     await refreshHostGate();
-    navigate(returnTo, { replace: true });
+    navigateBack(navigate, returnTo);
   };
 
   return (
@@ -70,14 +75,14 @@ export const ProfileProMembership = () => {
       />
       <ConsumerShell
         layout="stack"
-        title="Pro Membership"
+        title="Pro membership"
         showJourney={false}
         back={backChrome}
       >
         <div className="mx-auto max-w-lg space-y-4 pb-nav-safe animate-fade-up">
           <GlassCard padding className="!p-5">
             <div className="flex items-start gap-3">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-violet-50 text-violet-700">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-800">
                 <Sparkles className="h-5 w-5" aria-hidden />
               </span>
               <div>
@@ -86,7 +91,7 @@ export const ProfileProMembership = () => {
                   Anyone with a completed profile can organize free and shared-cost outings on the map. Pro
                   membership is for a public operator profile: professional guides (individual), tour agencies, or
                   gear shops — each with their own profile page. Guides host free and shared-cost trips only;
-                  verified **business** accounts (agency, shop, or partner) may list paid commercial trips when you
+                  verified business accounts (agency, shop, or partner) may list paid commercial trips when you
                   publish as that business; individual guides stay free and shared-cost only.
                 </p>
                 <p className="mt-2 text-xs font-medium text-neutral-500">

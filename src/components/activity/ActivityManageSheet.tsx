@@ -35,9 +35,22 @@ import {
   type ActivityManageInitialView,
   type ActivityManageSubview,
 } from './activityManageViews';
-import { planHostedActivityManagePath } from '../../plan/planRouting';
 import { useModalA11y } from '../../hooks/useModalA11y';
 import { useAuth } from '../../context/AuthContext';
+import {
+  MOBILE_PRODUCT_HEADER_FROSTED,
+  MOBILE_PRODUCT_HEADER_REST,
+} from '../../config/consumerScrollChrome';
+import { useConsumerDetailScrollChrome } from '../../activity/detail/templates/useConsumerDetailScrollChrome';
+import { resolveActivityConsumerDetailHeaderChrome } from '../../activity/activityConsumerDetailHeader';
+import { ConsumerHeaderActions } from '../layout/ConsumerHeaderActions';
+import { ConsumerDetailHeaderTypeMark } from '../mobile/ConsumerDetailHeaderChromeTitle';
+import { MobileBackButton } from '../mobile/MobileBackButton';
+import { CreateHostingActivityFlow } from '../../explore/ui/CreateHostingActivityFlow';
+import { hostingFlowForComposeKind } from '../../explore/ui/hostingFlows';
+import { resolveHostComposeKindFromActivity } from '../../explore/ui/hostingFromActivity';
+import { joinAuthPath } from '../../config/routingCatalog';
+import { planHostedActivityManagePath } from '../../plan/planRouting';
 
 export type ActivityManageSheetProps = {
   open: boolean;
@@ -62,12 +75,17 @@ export const ActivityManageSheet = ({
   initialView = 'overview',
   onClose,
   onRequestsChanged,
+  onShare,
 }: ActivityManageSheetProps) => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const panelRef = useRef<HTMLDivElement>(null);
+  const scrollContentRef = useRef<HTMLDivElement>(null);
+  const { headerFrosted } = useConsumerDetailScrollChrome(panelRef, scrollContentRef);
   const [view, setView] = useState<ActivityManageSubview>('overview');
   const [manageOptionsOpen, setManageOptionsOpen] = useState(false);
+  const [returnToManageMenu, setReturnToManageMenu] = useState(false);
+  const [editWizardOpen, setEditWizardOpen] = useState(false);
   const [busyRequestId, setBusyRequestId] = useState<string | null>(null);
   const [declineRequest, setDeclineRequest] = useState<ActivityRequestView | null>(null);
   const [rideshareNotice, setRideshareNotice] = useState<string | null>(null);
@@ -75,11 +93,13 @@ export const ActivityManageSheet = ({
   const [requestsLoading, setRequestsLoading] = useState(false);
   const [detailTab, setDetailTab] = useState<ActivityDetailTabId>('plan');
   const [sheetActivity, setSheetActivity] = useState<ActivityDTO | null>(activity);
+  const [taggedPlace, setTaggedPlace] = useState<ActivityDetailDTO['location']>(undefined);
   const [viewerEntitlements, setViewerEntitlements] = useState<ActivityViewerEntitlementsDTO | null>(null);
   const [wirePresentation, setWirePresentation] = useState<ActivityPresentationDTO | null>(null);
 
   useEffect(() => {
     setSheetActivity(activity);
+    setTaggedPlace(undefined);
   }, [activity]);
 
   useEffect(() => {
@@ -92,6 +112,15 @@ export const ActivityManageSheet = ({
       .then((res) => {
         setViewerEntitlements(res.viewerAccess?.entitlements ?? null);
         setWirePresentation(res.presentation ?? null);
+        setTaggedPlace(res.activity.location);
+        setSheetActivity((prev) => {
+          if (!prev || prev.id !== res.activity.id) return prev;
+          return {
+            ...prev,
+            locationId: prev.locationId?.trim() ? prev.locationId : res.activity.locationId,
+            locationName: prev.locationName?.trim() ? prev.locationName : res.activity.locationName,
+          };
+        });
       })
       .catch(() => {
         setViewerEntitlements(null);
@@ -128,6 +157,8 @@ export const ActivityManageSheet = ({
     setView(normalizeActivityManageView(initialView));
     setRideshareNotice(null);
     setManageOptionsOpen(false);
+    setReturnToManageMenu(false);
+    setEditWizardOpen(false);
     setDetailTab('plan');
   }, [open, initialView, activity?.id]);
 
@@ -159,6 +190,7 @@ export const ActivityManageSheet = ({
     setView('overview');
     setRideshareNotice(null);
     setManageOptionsOpen(false);
+    setReturnToManageMenu(false);
     actions.setError(null);
     onClose();
   };
@@ -168,8 +200,20 @@ export const ActivityManageSheet = ({
       handleClose();
       return;
     }
-    setView('overview');
     actions.setError(null);
+    if (returnToManageMenu) {
+      setView('overview');
+      setManageOptionsOpen(true);
+      setReturnToManageMenu(false);
+      return;
+    }
+    setView('overview');
+  };
+
+  const openManageSubviewFromMenu = (subview: ActivityManageSubview) => {
+    setReturnToManageMenu(true);
+    setView(subview);
+    setManageOptionsOpen(false);
   };
 
   const handleDelete = () => {
@@ -210,30 +254,41 @@ export const ActivityManageSheet = ({
     activity.id,
     view === 'participants' ? 'checkin' : 'overview'
   );
-  const inviteShare = buildActivitySharePayload({
+  const sharePayload = buildActivitySharePayload({
     id: activity.id,
     title,
     activityType: activity.activityType,
     date: activity.date,
     locationName: activity.locationName,
   });
+  const showShareFooter = activity.status === 'published' && Boolean(onShare);
+  const typeChrome = resolveActivityConsumerDetailHeaderChrome(activity, null);
 
   return (
     <>
       <div className="fixed inset-0 z-[1500] flex flex-col bg-neutral-50">
-        <header className="shrink-0 border-b border-neutral-200/80 bg-white pt-safe-plus-2">
-          <div className="flex items-center gap-2 px-3 pb-2">
-            <button
-              type="button"
-              onClick={handleHeaderBack}
-              className="shrink-0 rounded-xl px-3 py-2 text-sm font-semibold text-neutral-600 active:bg-neutral-100"
-            >
-              {view === 'overview' ? 'Close' : 'Back'}
-            </button>
-            <h1 className="min-w-0 flex-1 truncate text-center text-[17px] font-semibold text-neutral-900">
-              {headerTitle}
-            </h1>
-            <div className="w-[4.5rem] shrink-0" aria-hidden />
+        <header
+          className={`pointer-events-none fixed inset-x-0 top-0 z-20 pt-safe-plus-2 ${
+            headerFrosted ? MOBILE_PRODUCT_HEADER_FROSTED : MOBILE_PRODUCT_HEADER_REST
+          }`}
+        >
+          <div className="pointer-events-auto grid grid-cols-[minmax(72px,auto)_1fr_auto] items-center gap-2 px-3 pb-2">
+            <MobileBackButton
+              onPress={handleHeaderBack}
+              label="Back"
+              className="min-h-[36px] py-0 -ml-1"
+            />
+            <div className="flex min-w-0 items-center justify-center gap-2 px-1">
+              <ConsumerDetailHeaderTypeMark
+                emoji={typeChrome.emoji}
+                mark={typeChrome.mark}
+                sizeClass="h-8 w-8"
+              />
+              <h1 className="min-w-0 truncate text-center text-[15px] font-semibold leading-tight text-neutral-900">
+                {headerTitle}
+              </h1>
+            </div>
+            <ConsumerHeaderActions showOnDesktop={false} />
           </div>
         </header>
 
@@ -242,8 +297,9 @@ export const ActivityManageSheet = ({
           role="dialog"
           aria-modal="true"
           aria-label={headerTitle}
-          className="min-h-0 flex-1 overflow-y-auto scroll-touch px-4 py-4 pb-4"
+          className="min-h-0 flex-1 overflow-y-auto scroll-touch px-4 pb-4 pt-[calc(var(--safe-top)+3.5rem)]"
         >
+          <div ref={scrollContentRef} className="py-4">
           {actions.error ? (
             <p className="mb-3 rounded-xl border border-red-100 bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">
               {actions.error}
@@ -292,7 +348,7 @@ export const ActivityManageSheet = ({
             <div className="mx-auto w-full max-w-md">
               <ActivityInviteModalBody
                 activityId={activity.id}
-                messageWithUrl={inviteShare.messageWithUrl}
+                messageWithUrl={sharePayload.messageWithUrl}
                 active={Boolean(user)}
               />
             </div>
@@ -320,7 +376,7 @@ export const ActivityManageSheet = ({
             <div className="mx-auto w-full max-w-2xl">
               <ActivityDetailView
                 layout="embedded"
-                activity={sheetActivity as ActivityDetailDTO}
+                activity={{ ...(sheetActivity as ActivityDetailDTO), location: taggedPlace ?? (sheetActivity as ActivityDetailDTO).location }}
                 mobileTab={detailTab}
                 onMobileTabChange={setDetailTab}
                 canAccessCrewSurfaces
@@ -339,11 +395,14 @@ export const ActivityManageSheet = ({
               />
             </div>
           ) : null}
+          </div>
         </div>
 
         <HostActivityManageFooterActions
           caps={caps}
           busy={actions.busy}
+          showShare={showShareFooter}
+          onOpenShare={onShare ? () => onShare(activity) : undefined}
           onChat={async () => {
             const opened = await actions.openGroupChat(activity.id, activity.groupChatId, {
               returnTo: chatReturnTo,
@@ -359,7 +418,12 @@ export const ActivityManageSheet = ({
         onClose={() => setManageOptionsOpen(false)}
         activity={activity}
         caps={caps}
-        onSelectSubview={setView}
+        onSelectSubview={openManageSubviewFromMenu}
+        onEdit={() => {
+          setManageOptionsOpen(false);
+          setReturnToManageMenu(true);
+          setEditWizardOpen(true);
+        }}
         onDuplicate={() => actions.hostFromExistingActivity(activity)}
         onDelete={handleDelete}
       />
@@ -376,6 +440,22 @@ export const ActivityManageSheet = ({
       />
 
       <HostActivityManageCancelDialogs actions={actions} onAfterConfirm={handleClose} />
+
+      {activity ? (
+        <CreateHostingActivityFlow
+          open={editWizardOpen}
+          editActivity={activity}
+          hostingKindFlow={hostingFlowForComposeKind(resolveHostComposeKindFromActivity(activity))}
+          hostComposeKind={resolveHostComposeKindFromActivity(activity)}
+          signInHref={joinAuthPath(planHostedActivityManagePath(activity.id))}
+          onClose={() => setEditWizardOpen(false)}
+          onPublished={async (updated) => {
+            setSheetActivity(updated);
+            setEditWizardOpen(false);
+            await onRequestsChanged();
+          }}
+        />
+      ) : null}
     </>
   );
 };

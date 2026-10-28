@@ -49,7 +49,7 @@ const ProfileHubStatCell = ({ stat }: { stat: ProfileHubStat }) => {
 
   if (stat.to) {
     return (
-      <Link to={stat.to} state={profileHubMobileBackState()} className={className}>
+      <Link to={stat.to} state={profileHubMobileBackState()} data-nav-focus={`profile-stat-${stat.key}`} className={className}>
         {inner}
       </Link>
     );
@@ -93,7 +93,8 @@ export const ProfileHubIdentityCard = ({
         <button
           type="button"
           onClick={onViewProfile}
-          className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-2xl bg-violet-100/90 text-violet-700 shadow-sm ring-1 ring-violet-200/80 active:scale-[0.98]"
+          data-nav-focus="profile-view-public"
+          className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-2xl bg-white/90 text-neutral-700 shadow-sm ring-1 ring-neutral-200/80 active:scale-[0.98]"
           aria-label="View public profile"
         >
           <Eye className="h-4 w-4" strokeWidth={2.25} aria-hidden />
@@ -106,6 +107,7 @@ export const ProfileHubIdentityCard = ({
         <button
           type="button"
           onClick={onEditProfile}
+          data-nav-focus="profile-edit"
           className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-2xl bg-white/90 text-neutral-700 shadow-sm ring-1 ring-neutral-200/80 active:scale-[0.98]"
           aria-label="Edit profile"
         >
@@ -163,6 +165,8 @@ export const ProfileHubIdentityCard = ({
       {visibilityLabel ? (
         <Link
           to={PROFILE_SETTINGS_PRIVACY_PATH}
+          state={profileHubMobileBackState()}
+          data-nav-focus="profile-privacy"
           className="mt-1.5 inline-block text-[11px] font-semibold text-emerald-700 underline-offset-2 hover:underline"
         >
           {visibilityLabel}

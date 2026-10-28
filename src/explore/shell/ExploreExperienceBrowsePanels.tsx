@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { ExploreBrowsePanel, type ExploreBrowsePanelProps } from '../ui/ExploreBrowsePanel';
 import { ExploreMobileBrowseOverlay } from '../ui/ExploreMobileBrowseOverlay';
 import { PeopleBrowsePanel } from '@/people-discovery/panel/PeopleBrowsePanel';
@@ -8,7 +8,11 @@ import {
   MOBILE_BROWSE_SHEET_EXPAND_HINT,
   useMobileBrowseSheetImmersive,
 } from '../../hooks/useMobileBrowseSheetImmersive';
+import { discoverBrowseHomeFilterPatch } from '../../list/discoverBrowseHomePatch';
+import { LIST_CATEGORY_PAGE_TITLE } from '../../list/listCategoryCopy';
+import { resolveListCategoryHeaderFocus, resolveListDiscoveryView } from '../../list/listDiscoveryMode';
 import { ListDiscoveryExperience } from '../../list/ListDiscoveryExperience';
+import { useListDiscoveryUrlState } from '../../list/useListDiscoveryUrlState';
 import type { ComponentProps, ReactNode } from 'react';
 
 const DISCOVER_BROWSE_SHEET_TITLE = 'Discover';
@@ -61,8 +65,49 @@ export const ExploreExperienceBrowsePanels = ({
 
   const isPeopleListSheet = browse.listMode === 'people';
 
+  const mapOverlayDiscoverOpen = browse.browseOpen && !isDesktop;
+  const discoverBrowseUrl = useListDiscoveryUrlState({ mapOverlay: mapOverlayDiscoverOpen });
+  const discoverCategoryFocus = useMemo(
+    () =>
+      mapOverlayDiscoverOpen
+        ? resolveListCategoryHeaderFocus(
+            discoverBrowseUrl.filters,
+            discoverBrowseUrl.venueRegions,
+            discoverBrowseUrl.listCat
+          )
+        : null,
+    [mapOverlayDiscoverOpen, discoverBrowseUrl.filters, discoverBrowseUrl.venueRegions, discoverBrowseUrl.listCat]
+  );
+  const discoverView = useMemo(
+    () =>
+      mapOverlayDiscoverOpen
+        ? resolveListDiscoveryView(
+            discoverBrowseUrl.filters,
+            discoverBrowseUrl.venueRegions,
+            discoverBrowseUrl.listCat
+          ).view
+        : 'home',
+    [mapOverlayDiscoverOpen, discoverBrowseUrl.filters, discoverBrowseUrl.venueRegions, discoverBrowseUrl.listCat]
+  );
+  const [discoverImmersiveSubtitle, setDiscoverImmersiveSubtitle] = useState<string | null>(null);
+
+  const discoverImmersiveTitle = useMemo(() => {
+    if (discoverCategoryFocus) return LIST_CATEGORY_PAGE_TITLE[discoverCategoryFocus];
+    if (discoverView === 'home') return DISCOVER_BROWSE_SHEET_TITLE;
+    return DISCOVER_BROWSE_SHEET_TITLE;
+  }, [discoverCategoryFocus, discoverView]);
+
+  const handleDiscoverImmersiveBack = useCallback(() => {
+    if (discoverImmersive && discoverCategoryFocus) {
+      discoverBrowseUrl.syncUrl(discoverBrowseHomeFilterPatch());
+      return;
+    }
+    exitDiscoverImmersive();
+  }, [discoverImmersive, discoverCategoryFocus, discoverBrowseUrl, exitDiscoverImmersive]);
+
   const closeDiscoverSheet = useCallback(() => {
     exitDiscoverImmersive();
+    setDiscoverImmersiveSubtitle(null);
     browse.closeDiscoverBrowse();
   }, [browse, exitDiscoverImmersive]);
 
@@ -70,6 +115,11 @@ export const ExploreExperienceBrowsePanels = ({
     exitListImmersive();
     browse.closeListPanel();
   }, [browse, exitListImmersive]);
+
+  /** Full-screen list / Find crew — back returns to the map, not the peek sheet. */
+  const handleListImmersiveBack = useCallback(() => {
+    closeListSheet();
+  }, [closeListSheet]);
 
   const desktopMapListPanel = (
     <ExploreBrowsePanel
@@ -103,7 +153,12 @@ export const ExploreExperienceBrowsePanels = ({
   );
 
   const discoverBrowse = (
-    <ListDiscoveryExperience surface="mapOverlay" onCloseMapOverlay={browse.closeDiscoverBrowse} />
+    <ListDiscoveryExperience
+      surface="mapOverlay"
+      onCloseMapOverlay={browse.closeDiscoverBrowse}
+      overlayImmersive={discoverImmersive}
+      onImmersiveSubtitleChange={discoverImmersive ? setDiscoverImmersiveSubtitle : undefined}
+    />
   );
 
   return (
@@ -124,8 +179,9 @@ export const ExploreExperienceBrowsePanels = ({
           onExpand={enterDiscoverImmersive}
           expandHint={MOBILE_BROWSE_SHEET_EXPAND_HINT}
           immersive={discoverImmersive}
-          immersiveTitle={DISCOVER_BROWSE_SHEET_TITLE}
-          onExitImmersive={exitDiscoverImmersive}
+          immersiveTitle={discoverImmersiveTitle}
+          immersiveSubtitle={discoverImmersiveSubtitle}
+          onExitImmersive={handleDiscoverImmersiveBack}
           immersiveBackLabel="Back"
         >
           {discoverBrowse}
@@ -143,7 +199,7 @@ export const ExploreExperienceBrowsePanels = ({
           immersiveTitle={
             isPeopleListSheet ? EXPLORE_PEOPLE_BROWSE_PANEL_TITLE : EXPLORE_SEARCH_PROMPT
           }
-          onExitImmersive={exitListImmersive}
+          onExitImmersive={handleListImmersiveBack}
           immersiveBackLabel="Back"
         >
           {isPeopleListSheet ? mobileListPeopleBrowsePanel : mobileMapListPanel}

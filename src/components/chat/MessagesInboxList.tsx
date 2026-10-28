@@ -55,6 +55,7 @@ const ThreadRow = ({
     <button
       type="button"
       onClick={() => (isDirect ? onSelectDirect(thread.id) : onSelectGroup(thread.id))}
+      data-nav-focus={`chat-thread-${thread.id}`}
       className={`flex w-full items-center gap-3 border-b border-neutral-100 px-4 py-3 text-left transition-colors last:border-b-0 hover:bg-neutral-50 ${
         isSelected ? 'bg-emerald-50 border-l-2 border-l-emerald-500' : ''
       }`}

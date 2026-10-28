@@ -6,7 +6,7 @@ import {
   exploreActivityDatePresetLabel,
   type ExploreActivityDatePreset,
 } from '../exploreActivityDateFilter';
-import { EXPLORE_COMPACT_PILL_LABEL } from '../../config/exploreTheme';
+import { EXPLORE_MAP_MOBILE_FILTER_CTA_ICON } from '../../config/exploreTheme';
 import { useExploreMapPillDropdown } from './exploreMapPillDropdown';
 
 type ExploreMapMobileAnydayPillProps = {
@@ -93,12 +93,10 @@ export const ExploreMapMobileAnydayPill = ({
         aria-expanded={open}
         aria-haspopup="listbox"
         aria-controls={panelId}
+        aria-label={compact ? `When: ${label}` : undefined}
       >
         {compact ? (
-          <>
-            <span className="text-sm leading-none" aria-hidden>📅</span>
-            <span className={EXPLORE_COMPACT_PILL_LABEL}>{label}</span>
-          </>
+          <span className={EXPLORE_MAP_MOBILE_FILTER_CTA_ICON} aria-hidden>📅</span>
         ) : (
           <>
             <span className="text-base leading-none" aria-hidden>📅</span>

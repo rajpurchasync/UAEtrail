@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import { useConsoleHubData } from '../../console/useHubData';
 import { useHostActivityManageActions } from '../../hooks/useHostActivityManageActions';
@@ -19,7 +19,8 @@ import { matchesActivitySearch } from '../../utils/activitySearch';
 import { resolveJoinRequestActivity } from '../../utils/joinRequestActivity';
 import type { ActivityRequestView } from '../../api/types';
 import { useActivityInviteShareSheet } from '../../hooks/useActivityInviteShareSheet';
-import { useNavigate } from 'react-router-dom';
+import { profileHistoryEntityLinkState } from '../../explore/mapPeekDetailNavState';
+import { viewReturnPathKey } from '../../utils/viewReturnMemory';
 
 type ActivityTab = 'upcoming' | 'past';
 
@@ -46,6 +47,8 @@ export const HostedActivitiesSection = ({
 }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const historyReturn = profileHistoryEntityLinkState(viewReturnPathKey(location.pathname, location.search));
   const host = useConsoleHubData();
   const hostActions = useHostActivityManageActions(host.tenantId, host.reload);
   const inviteShare = useActivityInviteShareSheet();
@@ -233,8 +236,10 @@ export const HostedActivitiesSection = ({
         pendingRequests={host.pendingRequests}
         actions={hostActions}
         initialView={manageInitialView}
-        onOpenPublicPage={(a) => navigate(`/activity/${a.id}`)}
-        onShare={(a) => inviteShare.openInviteFromActivity(a)}
+        onOpenPublicPage={(a) => navigate(`/activity/${a.id}`, { state: historyReturn })}
+        onShare={(a) =>
+          inviteShare.openShareFromActivity(a, { canSendBuddyInvites: true })
+        }
         onClose={() => {
           setManageActivity(null);
           setManageInitialView('overview');

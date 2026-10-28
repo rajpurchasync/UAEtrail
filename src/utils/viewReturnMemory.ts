@@ -47,6 +47,9 @@ export const installViewReturnFocusCapture = (): void => {
     (event) => {
       const selector = focusSelectorFromElement(event.target);
       if (selector) pendingFocusSelector = selector;
+      // Capture while this page's scroll container is still mounted. The route
+      // commit replaces it before Layout can read the position.
+      captureLeavingView(viewReturnPathKey(window.location.pathname, window.location.search));
     },
     true
   );
@@ -55,11 +58,54 @@ export const installViewReturnFocusCapture = (): void => {
 export const captureLeavingView = (pathKey: string): void => {
   if (typeof document === 'undefined') return;
   const containers = getAppScrollContainers();
+  const prev = snapshots.get(pathKey);
   snapshots.set(pathKey, {
-    scrollTops: containers.map((el) => el.scrollTop),
-    focusSelector: pendingFocusSelector,
+    scrollTops: containers.length > 0 ? containers.map((el) => el.scrollTop) : (prev?.scrollTops ?? []),
+    focusSelector: pendingFocusSelector ?? prev?.focusSelector ?? null,
   });
   pendingFocusSelector = null;
+};
+
+/** Keep scroll current while the page is still mounted. Does not clear a pending focus target. */
+export const rememberViewScroll = (pathKey: string): void => {
+  if (typeof document === 'undefined') return;
+  const containers = getAppScrollContainers();
+  if (containers.length === 0) return;
+  const prev = snapshots.get(pathKey);
+  snapshots.set(pathKey, {
+    scrollTops: containers.map((el) => el.scrollTop),
+    focusSelector: prev?.focusSelector ?? pendingFocusSelector,
+  });
+};
+
+/**
+ * Route commit has already swapped scroll containers. Keep the snapshot taken
+ * while the previous page was mounted instead of reading the new page at 0.
+ */
+export const sealLeavingView = (pathKey: string): void => {
+  const existing = snapshots.get(pathKey);
+  const focusSelector = pendingFocusSelector ?? existing?.focusSelector ?? null;
+  pendingFocusSelector = null;
+  if (!existing && !focusSelector) return;
+  snapshots.set(pathKey, {
+    scrollTops: existing?.scrollTops ?? [],
+    focusSelector,
+  });
+};
+
+/** Merge an external snapshot (post-auth scrollY / focus) without wiping a captured one. */
+export const seedViewReturnSnapshot = (
+  pathKey: string,
+  snapshot: Partial<ViewReturnSnapshot>
+): void => {
+  const key = viewReturnPathKey(pathKey);
+  const prev = snapshots.get(key);
+  const scrollTops = snapshot.scrollTops ?? prev?.scrollTops ?? [];
+  const focusSelector =
+    snapshot.focusSelector !== undefined
+      ? snapshot.focusSelector
+      : (prev?.focusSelector ?? null);
+  snapshots.set(key, { scrollTops, focusSelector });
 };
 
 /** Explicit back (not browser POP) should restore this path, optionally a different control. */
@@ -99,5 +145,8 @@ export const applyViewReturnSnapshot = (
   const target = document.querySelector<HTMLElement>(selector);
   if (!target) return false;
   target.focus({ preventScroll: true });
+  if (typeof target.scrollIntoView === 'function') {
+    target.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'auto' });
+  }
   return true;
 };

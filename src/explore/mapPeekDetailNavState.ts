@@ -1,7 +1,11 @@
 import type { Location } from 'react-router-dom';
 import { EXPLORE_MAP_PATH, LIST_DISCOVERY_PATH } from '../config/platform';
 import { detailBackPath } from '../config/routingCatalog';
+import { planWishlistTabPath } from '../plan/planTab';
 import { EXPLORE_JOIN_INVITE_QUERY_KEY, exploreSavedPinPath } from './routing';
+import type { MobileBackNavState } from '../utils/mobileBackNav';
+import { mobileBackNavState, planWishlistMobileBackState } from '../utils/mobileBackNav';
+import { PRODUCT_PLAN_SURFACE_TITLE } from '../content/productNorthStar';
 
 export type MapPeekDetailNavState = {
   detailBackTo: string;
@@ -60,3 +64,49 @@ export const readDetailBackToFromLocation = (state: unknown): string | undefined
   const value = (state as MapPeekDetailNavState).detailBackTo;
   return typeof value === 'string' && value.trim() ? value.trim() : undefined;
 };
+
+export type ActivityPlaceReturnState = MapPeekDetailNavState &
+  MobileBackNavState & {
+    /** Place back opens this outing again instead of a history entry that dropped the screen. */
+    detailBackPrefersDeclared: true;
+  };
+
+/** Activity or hosting manage → tagged place. Back returns to `returnTo`. */
+export const activityPlaceReturnState = (returnTo: string): ActivityPlaceReturnState => ({
+  ...mobileBackNavState(returnTo, 'Outing'),
+  detailBackTo: returnTo,
+  detailBackPrefersDeclared: true,
+});
+
+export const readDetailBackPrefersDeclared = (state: unknown): boolean => {
+  if (!state || typeof state !== 'object') return false;
+  return (
+    (state as { detailBackPrefersDeclared?: unknown }).detailBackPrefersDeclared === true &&
+    Boolean(readDetailBackToFromLocation(state))
+  );
+};
+
+/** Plan wishlist rows — activity / place detail back returns to saved tab. */
+export const planWishlistEntityLinkState = (): MapPeekDetailNavState & MobileBackNavState => {
+  const path = planWishlistTabPath();
+  return {
+    ...planWishlistMobileBackState(),
+    detailBackTo: path,
+  };
+};
+
+/** Plan upcoming row → activity detail; back returns to the same Plan URL (filter, layout). */
+export const planUpcomingEntityLinkState = (
+  returnTo: string
+): MapPeekDetailNavState & MobileBackNavState => ({
+  ...mobileBackNavState(returnTo, PRODUCT_PLAN_SURFACE_TITLE),
+  detailBackTo: returnTo,
+});
+
+/** Profile history row → activity detail; back returns to the same history list. */
+export const profileHistoryEntityLinkState = (
+  returnTo: string
+): MapPeekDetailNavState & MobileBackNavState => ({
+  ...mobileBackNavState(returnTo, 'History'),
+  detailBackTo: returnTo,
+});

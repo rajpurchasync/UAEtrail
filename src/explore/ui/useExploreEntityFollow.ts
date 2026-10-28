@@ -1,5 +1,5 @@
 import { joinAuthPath } from '../../config/routingCatalog';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
@@ -45,6 +45,12 @@ export const useExploreEntityFollow = (card: DiscoveryCardModel): ExploreFollowS
 
   const following = followState?.following ?? false;
   const followId = followState?.followId ?? null;
+
+  useEffect(() => {
+    if (!notice) return;
+    const timer = window.setTimeout(() => setNotice(null), 4000);
+    return () => window.clearTimeout(timer);
+  }, [notice]);
 
   const toggle = useCallback(async () => {
     if (!target) return;

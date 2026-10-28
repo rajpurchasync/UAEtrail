@@ -7,11 +7,13 @@ import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { GlassCard } from '../components/mobile/GlassCard';
 import { PullToRefresh } from '../components/mobile/PullToRefresh';
 import { placeDetailPath } from '@uaetrail/shared-types';
-import { PROFILE_REVIEWS_PATH } from '../config/routingCatalog';
+import { PROFILE_REVIEWS_PATH, PROFILE_SUBMISSIONS_PATH } from '../config/routingCatalog';
 import { useProfileHubBackChrome } from '../hooks/useProfileHubBackChrome';
+import { mobileBackNavState } from '../utils/mobileBackNav';
 
 export const Submissions = () => {
   const backChrome = useProfileHubBackChrome();
+  const submissionsBack = mobileBackNavState(PROFILE_SUBMISSIONS_PATH, 'Submissions');
   const [places, setPlaces] = useState<LocationDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -35,14 +37,14 @@ export const Submissions = () => {
   return (
     <ConsumerShell
       layout="stack"
-      title="Your submissions"
+      title="Submissions"
       maxWidth="4xl"
       showJourney={false}
       back={backChrome}
     >
       <PullToRefresh onRefresh={load}>
         <div className="space-y-3 pb-nav-safe animate-fade-up">
-          <Link to={PROFILE_REVIEWS_PATH} className="block">
+          <Link to={PROFILE_REVIEWS_PATH} state={submissionsBack} data-nav-focus="submissions-reviews" className="block">
             <GlassCard padding className="glass-card-interactive !py-3.5">
               <div className="flex items-center gap-3">
                 <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 text-amber-700">
@@ -78,7 +80,7 @@ export const Submissions = () => {
                 const path = placeDetailPath(place.activityType ?? 'hiking', place.id);
                 return (
                   <li key={place.id}>
-                    <Link to={path} className="block">
+                    <Link to={path} state={submissionsBack} data-nav-focus={`submission-${place.id}`} className="block">
                       <GlassCard padding className="glass-card-interactive !py-3">
                         <div className="flex items-center justify-between gap-2">
                           <div className="min-w-0">

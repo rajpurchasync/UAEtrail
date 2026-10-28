@@ -21,9 +21,9 @@ export const CONSUMER_DETAIL_STICKY_FOOTER_REST =
 /** @deprecated Use {@link CONSUMER_DETAIL_STICKY_FOOTER_FROSTED}. */
 export const CONSUMER_DETAIL_STICKY_FOOTER = CONSUMER_DETAIL_STICKY_FOOTER_FROSTED;
 
-/** Top chrome at scroll offset zero. */
+/** Top chrome at scroll offset zero — glass, so the first pixels of content show through. */
 export const CONSUMER_DETAIL_STICKY_HEADER_REST =
-  `border-b border-transparent bg-gradient-to-b from-emerald-50/80 to-white ${MOBILE_PRODUCT_HEADER_TRANSITION}`;
+  `border-b border-neutral-200/20 bg-white/55 backdrop-blur-2xl shadow-none ${MOBILE_PRODUCT_HEADER_TRANSITION} supports-[backdrop-filter]:bg-white/40`;
 
 /** Top chrome while content scrolls beneath the bar. */
 export const CONSUMER_DETAIL_STICKY_HEADER_FROSTED = MOBILE_PRODUCT_HEADER_FROSTED;

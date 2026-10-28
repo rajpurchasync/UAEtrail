@@ -1,8 +1,10 @@
 import { useEffect, useRef, type ReactNode } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { readDetailBackPrefersDeclared } from '../../../explore/mapPeekDetailNavState';
 import { ConsumerHeaderActions } from '../../../components/layout/ConsumerHeaderActions';
 import { MobileBackButton } from '../../../components/mobile/MobileBackButton';
 import {
-  ConsumerDetailHeaderChromeTitle,
+  ConsumerDetailHeaderTypeMark,
   type ConsumerDetailHeaderMark,
 } from '../../../components/mobile/ConsumerDetailHeaderChromeTitle';
 import {
@@ -39,9 +41,27 @@ export const ActivityConsumerDetailModalShell = ({
   footer,
   children,
 }: ActivityConsumerDetailModalShellProps) => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const preferDeclaredBack = readDetailBackPrefersDeclared(location.state);
   const scrollRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
   const { headerFrosted, footerFrosted } = useConsumerDetailScrollChrome(scrollRef, contentRef);
+
+  /** Keep the first block clear of the overlay bar; further scroll passes under the glass. */
+  useEffect(() => {
+    const header = headerRef.current;
+    const scroll = scrollRef.current;
+    if (!header || !scroll) return;
+    const apply = () => {
+      scroll.style.setProperty('--detail-header-pad', `${header.offsetHeight}px`);
+    };
+    apply();
+    const resizeObserver = new ResizeObserver(apply);
+    resizeObserver.observe(header);
+    return () => resizeObserver.disconnect();
+  }, [headerChrome, headerAction, showMenu]);
 
   /** Explore map sets `body { overflow: hidden }` — restore so wheel scroll works if cleanup lags. */
   useEffect(() => {
@@ -69,43 +89,49 @@ export const ActivityConsumerDetailModalShell = ({
         }`}
       >
         <div
-          className={`sticky top-0 z-30 px-4 pb-3 pt-2 ${
+          ref={contentRef}
+          className="px-4 pb-6 pt-[var(--detail-header-pad,calc(var(--safe-top)+4.75rem))]"
+        >
+          {children}
+        </div>
+      </div>
+
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-30">
+        <div
+          ref={headerRef}
+          className={`pointer-events-auto px-4 pb-3 pt-2 ${
             headerFrosted ? CONSUMER_DETAIL_STICKY_HEADER_FROSTED : CONSUMER_DETAIL_STICKY_HEADER_REST
           }`}
         >
-          <div className="relative flex min-h-11 items-center justify-between gap-3 pt-safe-plus-2">
-            <MobileBackButton
-              fallbackTo={backTo}
-              label={backLabel}
-              className="relative z-10 shrink-0"
-              backBehavior="fallback"
-            />
-            {headerChrome ? (
-              <div
-                className="pointer-events-none absolute inset-x-0 top-1/2 z-0 flex -translate-y-1/2 justify-center px-[4.25rem]"
-              >
-                <ConsumerDetailHeaderChromeTitle
-                  emoji={headerChrome.emoji}
-                  label={headerChrome.label}
-                  mark={headerChrome.mark}
-                />
+          <div className="pt-safe-plus-2">
+            <div className="relative flex min-h-11 items-center">
+              <MobileBackButton
+                fallbackTo={backTo}
+                label={backLabel}
+                className="relative z-10 shrink-0"
+                backBehavior="fallback"
+                onPress={preferDeclaredBack ? () => navigate(backTo, { replace: true }) : undefined}
+              />
+              <div className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center px-16">
+                <div className="flex min-w-0 max-w-full items-center justify-center gap-2">
+                  {headerChrome ? (
+                    <ConsumerDetailHeaderTypeMark
+                      emoji={headerChrome.emoji}
+                      mark={headerChrome.mark}
+                      sizeClass="h-8 w-8"
+                    />
+                  ) : null}
+                  <p className="min-w-0 truncate text-center text-[15px] font-bold leading-tight text-neutral-900">
+                    {headerChrome?.label ?? 'Details'}
+                  </p>
+                </div>
               </div>
-            ) : (
-              <p
-                className="pointer-events-none absolute left-1/2 top-1/2 z-0 max-w-[58%] -translate-x-1/2 -translate-y-1/2 truncate text-center text-[15px] font-bold text-neutral-900"
-              >
-                Details
-              </p>
-            )}
-            <div className="relative z-10 flex shrink-0 items-center gap-0.5">
-              {headerAction}
-              {showMenu ? <ConsumerHeaderActions showOnDesktop={false} /> : null}
+              <div className="relative z-10 ml-auto flex shrink-0 items-center justify-end gap-0.5">
+                {headerAction}
+                {showMenu ? <ConsumerHeaderActions showOnDesktop={false} /> : null}
+              </div>
             </div>
           </div>
-        </div>
-
-        <div ref={contentRef} className="px-4 pb-6">
-          {children}
         </div>
       </div>
 

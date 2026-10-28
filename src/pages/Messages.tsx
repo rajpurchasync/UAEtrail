@@ -20,8 +20,9 @@ import {
   type GroupChatActivityPayload,
 } from '../components/chat';
 import { formatWallInboxPreview } from '../utils/wallMessagePreview';
-import { groupsPath } from '../config/routingCatalog';
+import { groupsPath, MESSAGES_PATH } from '../config/routingCatalog';
 import { parseMessagesChatReturnTo } from '../utils/activityGroupChatNav';
+import { navigateBack } from '../utils/backStack';
 import { AUTH_RESUME_CREW_CHAT_QUERY } from '../utils/authReturnContext';
 import { fetchActivityGroupChatGroupId } from '../hooks/activityGroupChatClientApi';
 import { useChatStream } from '../hooks/useChatStream';
@@ -323,12 +324,13 @@ export const Messages = () => {
 
   const backToList = useCallback(() => {
     if (chatReturnTo && (selectedGroupId || selectedUserId)) {
-      navigate(chatReturnTo, { replace: true });
+      navigateBack(navigate, chatReturnTo);
       return;
     }
     setMobileShowThread(false);
-    setSearchParams({});
-  }, [chatReturnTo, navigate, selectedGroupId, selectedUserId, setSearchParams]);
+    // Thread → inbox: pop the inbox entry underneath (keeps its scroll) rather than pushing a new one.
+    navigateBack(navigate, MESSAGES_PATH);
+  }, [chatReturnTo, navigate, selectedGroupId, selectedUserId]);
 
   const openCreateGroup = () => {
     setShowNewChat(false);

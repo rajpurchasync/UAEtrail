@@ -187,6 +187,19 @@ describe('inferNotificationPath', () => {
     ).toBe('/activity/act-published-1');
   });
 
+  it('routes saved-place wishlist alerts to the published activity', () => {
+    expect(
+      inferNotificationPath(
+        notif({
+          kind: 'wishlist_match',
+          activityId: 'act-at-saved-place',
+          locationId: 'loc-1',
+          wishlistItemId: 'wl-1',
+        })
+      )
+    ).toBe('/activity/act-at-saved-place');
+  });
+
   it('rewrites legacy inbox and stale group chat paths to /chat', () => {
     expect(inferNotificationPath(notif({ path: '/messages?to=u-1' }))).toBe('/chat?to=u-1');
     expect(inferNotificationPath(notif({ path: '/host/messages?group=g-1' }))).toBe('/chat?group=g-1');

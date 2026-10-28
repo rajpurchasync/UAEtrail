@@ -156,6 +156,7 @@ export const useParticipantHubData = () => {
     groups,
     buddies,
     incomingBuddyRequests,
+    profileLoaded: data != null,
     loading: isLoading || planLoading,
     error: combinedError,
     reload,

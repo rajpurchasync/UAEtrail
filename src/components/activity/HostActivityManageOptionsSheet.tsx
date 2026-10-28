@@ -2,6 +2,7 @@ import type { ActivityDTO } from '@uaetrail/shared-types';
 import {
   Car,
   Copy,
+  Pencil,
   Trash2,
   UserPlus,
   Users,
@@ -19,6 +20,7 @@ type HostActivityManageOptionsSheetProps = {
   activity: ActivityDTO;
   caps: ActivityManageCapabilities;
   onSelectSubview: (view: ActivityManageSubview) => void;
+  onEdit: () => void;
   onDuplicate: () => void;
   onDelete: () => void;
 };
@@ -43,13 +45,24 @@ export const HostActivityManageOptionsSheet = ({
   activity,
   caps,
   onSelectSubview,
+  onEdit,
   onDuplicate,
   onDelete,
 }: HostActivityManageOptionsSheetProps) => {
   const published = activity.status === 'published';
   const canDelete = published || activity.status === 'draft';
+  const canEdit =
+    activity.status === 'draft' || activity.status === 'published' || activity.status === 'suspended';
 
   const options: OptionRow[] = [
+    {
+      id: 'edit',
+      label: 'Edit outing',
+      description: 'Date, place, capacity, and join rules',
+      icon: Pencil,
+      hidden: !canEdit,
+      onClick: onEdit,
+    },
     {
       id: 'participants',
       label: ACTIVITY_PARTICIPANTS_SECTION_LABEL,
@@ -99,6 +112,7 @@ export const HostActivityManageOptionsSheet = ({
       title="Manage outing"
       overlayFixed
       showCloseButton
+      pullToDismiss
       zClass="z-[1550]"
       maxWidthClass={EXPLORE_SHEET.compactMaxWidth}
     >

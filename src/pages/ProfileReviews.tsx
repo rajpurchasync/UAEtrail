@@ -6,6 +6,7 @@ import type { MyReviewDTO } from '@uaetrail/shared-types';
 import { fetchMyReviews, updateMyReviewById } from '../hooks/memberReviewsApi';
 import { useAuth } from '../context/AuthContext';
 import { useProfileHubBackChrome } from '../hooks/useProfileHubBackChrome';
+import { mobileBackNavState } from '../utils/mobileBackNav';
 
 import { PRODUCT_EXPLORE_CTA } from '../content/productNorthStar';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
@@ -62,6 +63,7 @@ const MyReviewCard = ({
           </p>
           <Link
             to={review.targetPath}
+            state={mobileBackNavState(PROFILE_REVIEWS_PATH, 'Reviews')}
             className="mt-0.5 block truncate text-base font-bold text-neutral-900 hover:text-emerald-700"
           >
             {review.targetLabel}

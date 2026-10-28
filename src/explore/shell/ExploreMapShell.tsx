@@ -124,6 +124,7 @@ export const ExploreMapShell = ({
     onOpenExploreItem={handleOpenExploreItem}
     onWithdraw={() => selection.joinActions.setShowWithdraw(true)}
     onGuestGatedAction={selection.handleGuestGatedAction}
+    onShareActivity={selection.handleShareActivityPeek}
     desktopPeopleBrowseOverlay={
       isDesktop && browse.peopleBrowseOpen ? (
         <aside

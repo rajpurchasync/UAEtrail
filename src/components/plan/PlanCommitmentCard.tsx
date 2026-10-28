@@ -3,6 +3,8 @@ import { ParticipantPreview } from '../ui/ParticipantPreview';
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import { formatDate } from '../../utils';
 import { formatActivityType, resolveActivityTitle } from '../../utils/activityIdentity';
+import { isPlanSummaryFocusScrollGuardActive } from '../../plan/planSummaryFocusScroll';
+import { PlanUpcomingDetailLink } from './PlanUpcomingDetailLink';
 
 export type PlanCommitmentBadge =
   | 'Hosting'
@@ -19,6 +21,9 @@ const badgeClass: Record<PlanCommitmentBadge, string> = {
   Waitlist: 'bg-neutral-500/15 text-neutral-700',
 };
 
+const cardShellClass =
+  'glass-card-interactive flex w-full items-center gap-3 p-4 text-left active:scale-[0.99]';
+
 type PlanCommitmentCardProps = {
   title: string;
   dateLabel: string;
@@ -28,7 +33,10 @@ type PlanCommitmentCardProps = {
   badge: PlanCommitmentBadge;
   participants?: ActivityDTO['participantPreviews'];
   actionHint?: string | null;
-  onClick: () => void;
+  /** Link to full activity page (Plan upcoming — restores scroll on back). */
+  activityDetailTo?: string;
+  navFocus?: string;
+  onClick?: () => void;
 };
 
 export const PlanCommitmentCard = ({
@@ -40,16 +48,13 @@ export const PlanCommitmentCard = ({
   badge,
   participants,
   actionHint,
+  activityDetailTo,
+  navFocus,
   onClick,
 }: PlanCommitmentCardProps) => {
   const when = [dateLabel, timeLabel, activityTypeLabel].filter(Boolean).join(' · ');
 
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="glass-card-interactive flex w-full items-center gap-3 p-4 text-left active:scale-[0.99]"
-    >
+  const body = (
       <div className="min-w-0 flex-1 space-y-2">
         <div className="flex flex-wrap items-center gap-2">
           <span
@@ -77,7 +82,30 @@ export const PlanCommitmentCard = ({
           </div>
         ) : null}
       </div>
-      <ChevronRight className="h-5 w-5 shrink-0 text-neutral-300" aria-hidden />
+  );
+
+  const chevron = <ChevronRight className="h-5 w-5 shrink-0 text-neutral-300" aria-hidden />;
+
+  if (activityDetailTo && navFocus) {
+    return (
+      <PlanUpcomingDetailLink to={activityDetailTo} navFocus={navFocus} className={cardShellClass}>
+        {body}
+        {chevron}
+      </PlanUpcomingDetailLink>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        if (isPlanSummaryFocusScrollGuardActive()) return;
+        onClick?.();
+      }}
+      className={cardShellClass}
+    >
+      {body}
+      {chevron}
     </button>
   );
 };
@@ -94,7 +122,7 @@ export const planCardFromActivity = (
     title={resolveActivityTitle(activity)}
     dateLabel={formatDate(activity.date)}
     timeLabel={activity.time}
-    locationLabel={activity.locationName?.trim() || 'Location TBD'}
+    locationLabel={activity.locationName}
     activityTypeLabel={formatActivityType(activity.activityType)}
     badge={options.badge}
     participants={activity.participantPreviews}

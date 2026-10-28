@@ -37,9 +37,9 @@ describe('participant-roster-dto', () => {
   });
 
   it('activityTimingHasEnded uses endAt when present', () => {
-    const past = new Date(Date.now() - 60_000);
-    expect(activityTimingHasEnded(past, null)).toBe(true);
+    const yesterday = new Date(Date.now() - 86_400_000);
+    expect(activityTimingHasEnded(yesterday, null, 'AE')).toBe(true);
     const future = new Date(Date.now() + 60_000);
-    expect(activityTimingHasEnded(future, null)).toBe(false);
+    expect(activityTimingHasEnded(future, null, 'AE')).toBe(false);
   });
 });

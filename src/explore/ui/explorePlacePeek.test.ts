@@ -5,7 +5,7 @@ import { join } from 'node:path';
 const read = (relativePath: string) => readFileSync(join(process.cwd(), relativePath), 'utf8');
 
 describe('place map peek', () => {
-  it('uses structured body and stacked CTAs without maps-app chevron', () => {
+  it('uses structured body and compact footer tiles without maps-app chevron', () => {
     const preview = read('src/explore/ui/peek/place/PlaceMapPeekHost.tsx');
     const actions = read('src/explore/ui/peek/place/PlacePeekActions.tsx');
     const body = read('src/explore/ui/peek/place/PlacePeekBody.tsx');
@@ -20,10 +20,12 @@ describe('place map peek', () => {
     expect(kindFacts).toMatch(/resolvePlacePeekTrailFactsFromCard/);
     expect(hero).toMatch(/resolvePlacePeekCuratedArea/);
     expect(body).toMatch(/fetchPlaceActivities/);
-    expect(actions).toMatch(/PLACE_PEEK_ARRANGE_TRIP/);
+    expect(actions).toMatch(/PLACE_PEEK_FOOTER_PLAN_TRIP/);
     expect(actions).toMatch(/navigateHostFromPlaceCard/);
-    expect(actions).toMatch(/space-y-2/);
-    expect(actions).not.toMatch(/flex w-full gap-2/);
+    expect(actions).toMatch(/grid-cols-3/);
+    expect(actions).toMatch(/PLACE_PEEK_FOOTER_TRIP_ALERTS/);
+    expect(actions).toMatch(/useExploreWishlistSave/);
+    expect(hero).toMatch(/ExploreWishlistSaveButton/);
   });
 });
 

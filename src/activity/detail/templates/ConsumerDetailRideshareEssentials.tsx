@@ -43,6 +43,12 @@ export const ConsumerDetailRideshareEssentials = ({
   const pickupLat = activity.meetingLat ?? null;
   const pickupLng = activity.meetingLng ?? null;
   const hasPickupCoords = pickupLat != null && pickupLng != null;
+  const dropoffLat = activity.startLat ?? null;
+  const dropoffLng = activity.startLng ?? null;
+  const hasSeparateDropoffCoords =
+    dropoffLat != null &&
+    dropoffLng != null &&
+    (pickupLat == null || dropoffLat !== pickupLat || dropoffLng !== pickupLng);
 
   return (
     <section className="mt-3" aria-label="Ride share details">
@@ -79,9 +85,20 @@ export const ConsumerDetailRideshareEssentials = ({
         ) : null}
 
         {dropoff && pickup !== dropoff ? (
-          <p className="mt-2 text-sm font-medium leading-snug text-neutral-700">
-            Drop-off · {dropoff}
-          </p>
+          <div className="mt-3 rounded-xl border border-sky-100 bg-white/90 p-3">
+            <div className="flex items-start gap-2">
+              <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-sky-700" aria-hidden />
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-semibold uppercase tracking-wide text-sky-800/80">Drop-off</p>
+                <p className="mt-0.5 text-sm font-semibold leading-snug text-neutral-900">{dropoff}</p>
+              </div>
+            </div>
+            {hasSeparateDropoffCoords && dropoffLat != null && dropoffLng != null ? (
+              <div className="mt-3">
+                <DirectionsControl lat={dropoffLat} lng={dropoffLng} variant="compact" />
+              </div>
+            ) : null}
+          </div>
         ) : routeLine && !pickup ? (
           <p className="mt-2 text-sm font-medium leading-snug text-neutral-700">{routeLine}</p>
         ) : null}

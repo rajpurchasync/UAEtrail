@@ -1,4 +1,5 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { recordNavigation, resetBackStack } from './backStack';
 import {
   canReturnAfterAuth,
   isAuthGatedPath,
@@ -57,25 +58,33 @@ describe('isAuthGatedPath', () => {
 });
 
 describe('navigateAuthBack', () => {
-  it('uses browser history when available for public redirects', () => {
+  beforeEach(() => {
+    resetBackStack();
+    window.history.replaceState(null, '', '/signin');
+  });
+
+  it('pops to the in-app screen that opened sign-in', () => {
+    recordNavigation('k1', '/explore?panel=venues', 'POP');
+    recordNavigation('k2', '/signin', 'PUSH');
     const navigate = vi.fn();
-    vi.spyOn(window.history, 'length', 'get').mockReturnValue(3);
     navigateAuthBack(navigate, '/explore?panel=venues');
     expect(navigate).toHaveBeenCalledWith(-1);
   });
 
-  it('falls back to explore for gated routes without history', () => {
+  it('falls back to explore for gated routes without in-app history', () => {
+    recordNavigation('k1', '/signin', 'POP');
     const navigate = vi.fn();
-    vi.spyOn(window.history, 'length', 'get').mockReturnValue(1);
     navigateAuthBack(navigate, '/profile');
     expect(navigate).toHaveBeenCalledWith('/explore', { replace: true });
   });
 
-  it('uses history for gated routes when history exists', () => {
+  it('skips the sign-up step underneath and returns to the opener', () => {
+    recordNavigation('k1', '/activity/abc', 'POP');
+    recordNavigation('k2', '/signup', 'PUSH');
+    recordNavigation('k3', '/signin', 'PUSH');
     const navigate = vi.fn();
-    vi.spyOn(window.history, 'length', 'get').mockReturnValue(2);
     navigateAuthBack(navigate, '/profile');
-    expect(navigate).toHaveBeenCalledWith(-1);
+    expect(navigate).toHaveBeenCalledWith(-2);
   });
 });
 

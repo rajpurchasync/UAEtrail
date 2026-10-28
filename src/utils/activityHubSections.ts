@@ -16,8 +16,11 @@ export const parseJoinedSubTab = (value: string | null): JoinedSubTab => {
 export const isAttendedActivity = (activity: MyActivityDTO): boolean =>
   Boolean(activity.participation?.checkedInAt);
 
+export const isActiveUpcomingJoinedActivity = (activity: MyActivityDTO): boolean =>
+  isUpcomingActivity(activity) && activity.status === 'published';
+
 export const upcomingConfirmedActivities = (activities: MyActivityDTO[]) =>
-  activities.filter(isUpcomingActivity);
+  activities.filter(isActiveUpcomingJoinedActivity);
 
 export const attendedActivities = (activities: MyActivityDTO[]) =>
   activities

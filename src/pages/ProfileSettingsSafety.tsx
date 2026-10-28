@@ -180,17 +180,6 @@ export const ProfileSettingsSafety = () => {
           <AppButton type="submit" disabled={saving} className="w-full">
             {saving ? 'Saving…' : 'Save safety profile'}
           </AppButton>
-          <p className="px-1 text-xs text-neutral-500">
-            <button
-              type="button"
-              className="font-semibold text-emerald-700"
-              onClick={() => {
-                navigateWithBackChrome(navigate, backChrome);
-              }}
-            >
-              {`Back to ${backChrome.label}`}
-            </button>
-          </p>
         </form>
       )}
     </ConsumerShell>

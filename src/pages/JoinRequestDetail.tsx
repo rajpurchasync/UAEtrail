@@ -15,6 +15,7 @@ import { AppButton } from '../components/mobile/AppButton';
 import { WithdrawRequestModal } from '../components/ui/WithdrawRequestModal';
 import { requestStatusLabel } from '../utils/joinRequestUi';
 import { MY_REQUESTS_PATH, messagesToUserPath } from '../config/routingCatalog';
+import { navigateBack } from '../utils/backStack';
 
 const statusBadge: Record<string, string> = {
   pending: 'bg-amber-500/15 text-amber-700',
@@ -69,7 +70,7 @@ export const JoinRequestDetail = () => {
     setError(null);
     try {
       await cancelJoinRequest(request.activity.id, request.id, payload);
-      navigate(MY_REQUESTS_PATH, { replace: true });
+      navigateBack(navigate, MY_REQUESTS_PATH);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Couldn\'t cancel your request — try again.');
       setShowWithdraw(false);

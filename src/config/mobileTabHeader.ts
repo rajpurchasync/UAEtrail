@@ -22,6 +22,8 @@ import {
   PROFILE_HISTORY_PATH,
   JOURNEY_MAP_PATH,
   PROFILE_PATH,
+  PROFILE_REVIEWS_PATH,
+  PROFILE_VEHICLES_PATH,
   PROFILE_SETTINGS_PATH,
   PROFILE_SETTINGS_ACCOUNT_PATH,
   PROFILE_SETTINGS_PRIVACY_PATH,
@@ -69,9 +71,10 @@ const LAYOUT_UNIFIED_HEADER_EXACT = new Set([
 export const isLayoutMobileUnifiedHeaderRoute = (pathname: string): boolean => {
   if (isConsumerChromeHidden(pathname)) return false;
   if (isConsumerEntityDetailRoute(pathname)) return false;
+  // Member cards title themselves in ConsumerShell (display name), not "Member".
+  if (pathname.startsWith('/member/')) return false;
   if (pathname === '/explore' || isMobileTabHeaderRoute(pathname)) return true;
   if (pathname.startsWith('/profile/')) return true;
-  if (pathname.startsWith('/member/')) return true;
   if (LAYOUT_UNIFIED_HEADER_EXACT.has(pathname)) return true;
   return (MOBILE_BOTTOM_NAV_PROFILE_PATHS as readonly string[]).includes(pathname);
 };
@@ -97,6 +100,10 @@ export const resolveMobileTabHeaderTitle = (pathname: string, search: string): s
   if (pathname === '/profile/edit') return 'Edit profile';
   if (pathname === '/profile/pro-membership') return 'Pro membership';
   if (pathname === '/profile/badges') return 'Badges';
+  if (pathname === PROFILE_REVIEWS_PATH) return 'Reviews';
+  if (pathname === PROFILE_VEHICLES_PATH) return 'My cars';
+  if (pathname === `${PROFILE_VEHICLES_PATH}/new`) return 'Add car';
+  if (/^\/profile\/vehicles\/[^/]+\/edit$/.test(pathname)) return 'Edit car';
   if (pathname === BUDDIES_PATH) return 'Friends';
   if (pathname === GROUPS_PATH) return 'Groups';
   if (pathname === PROFILE_SUBMISSIONS_PATH) return 'Submissions';
@@ -106,7 +113,6 @@ export const resolveMobileTabHeaderTitle = (pathname: string, search: string): s
   if (pathname === '/terms') return 'Terms';
   if (pathname === '/privacy') return 'Privacy';
   if (pathname === '/security-privacy') return 'Security & privacy';
-  if (pathname.startsWith('/member/')) return 'Member';
   if (pathname.startsWith('/profile/')) {
     const segment = pathname.split('/').filter(Boolean).pop() ?? 'Profile';
     return segment.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());

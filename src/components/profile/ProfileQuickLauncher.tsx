@@ -32,6 +32,7 @@ const LauncherTile = ({ item }: { item: ProfileQuickLauncherItem }) => {
     <Link
       to={item.to}
       state={profileHubMobileBackState()}
+      data-nav-focus={`profile-launcher-${item.key}`}
       className="glass-card-interactive flex min-h-[76px] flex-col items-center justify-center gap-2 p-3 text-center"
     >
       <span className={`relative flex h-10 w-10 items-center justify-center rounded-xl ${item.iconWrapClassName}`}>

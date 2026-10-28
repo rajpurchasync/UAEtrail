@@ -1,7 +1,11 @@
 import { useEffect, type ReactNode } from 'react';
 import { useLocation } from 'react-router-dom';
 import { ComposeRailProvider } from '../../context/ComposeRailContext';
-import { hasConsumerSelfHeader, isConsumerChromeHidden } from '../../config/platform';
+import {
+  hasConsumerSelfHeader,
+  isConsumerChromeHidden,
+  isConsumerEntityDetailRoute,
+} from '../../config/platform';
 import {
   APP_SCROLL_PANE_CLASS,
   APP_SCROLL_PANE_DELEGATED_CLASS,
@@ -67,7 +71,10 @@ export const ProductShell = ({ children }: { children: ReactNode }) => {
     );
   }
 
-  const showMobileConsumerNavBar = showConsumerChrome && !hasConsumerSelfHeader(location.pathname);
+  const showMobileConsumerNavBar =
+    showConsumerChrome &&
+    !hasConsumerSelfHeader(location.pathname) &&
+    !isConsumerEntityDetailRoute(location.pathname);
 
   return (
     <ComposeRailProvider>

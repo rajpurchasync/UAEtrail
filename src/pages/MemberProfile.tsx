@@ -21,6 +21,8 @@ import {
   EXPLORE_MAP_PATH,
   memberProfileLink,
   myActivitiesPath,
+  PROFILE_PATH,
+  PROFILE_SETTINGS_PRIVACY_PATH,
   proMembershipPath,
   SIGNIN_PATH,
 } from '../config/routingCatalog';
@@ -29,7 +31,7 @@ import {
   MEMBER_DISCOVERY_QUOTA_GATE_CTA,
   MEMBER_DISCOVERY_QUOTA_GATE_TITLE,
 } from '../content/exploreGoingPanelCopy';
-import { resolveMobileBackChrome } from '../utils/mobileBackNav';
+import { profileHubMobileBackState, resolveMobileBackChrome } from '../utils/mobileBackNav';
 import { ExploreGuestSignInCard } from '../explore/ui/ExploreGuestSignInCard';
 
 const isFullProfile = (
@@ -45,9 +47,15 @@ export const MemberProfile = () => {
   const [searchParams] = useSearchParams();
   const previewAsPublic = searchParams.get('view') === 'public';
   const fromDiscover = searchParams.get('discover') === '1';
+  const isSelf = Boolean(user?.id && user.id === userId);
   const backChrome = useMemo(
-    () => resolveMobileBackChrome(location.state, { fallbackTo: myActivitiesPath(), label: 'Back' }),
-    [location.state]
+    () =>
+      resolveMobileBackChrome(location.state, {
+        fallbackTo: isSelf ? PROFILE_PATH : EXPLORE_MAP_PATH,
+        label: isSelf ? 'Profile' : 'Explore',
+        backBehavior: 'fallback',
+      }),
+    [isSelf, location.state]
   );
   const [buddyBusy, setBuddyBusy] = useState(false);
   const [buddyMessage, setBuddyMessage] = useState<string | null>(null);
@@ -146,11 +154,10 @@ export const MemberProfile = () => {
 
   const fullProfile = profile && isFullProfile(profile) ? profile : null;
 
-  const isSelf = user?.id === userId;
   const guestSignInRequired = viewerAccess?.gateReason === 'sign_in' && !user;
   const isPrivate =
     profile?.visibilityState === 'private' && viewerAccess?.exposure === 'none' && !guestSignInRequired;
-  const pageTitle = fullProfile?.displayName ?? 'Member';
+  const pageTitle = fullProfile?.displayName ?? (isSelf ? user?.displayName || 'Profile' : 'Member');
 
   return (
     <ConsumerShell
@@ -192,6 +199,23 @@ export const MemberProfile = () => {
         </GlassCard>
       ) : guestSignInRequired ? (
         <ExploreGuestSignInCard intent="member-profile" />
+      ) : isPrivate && isSelf && previewAsPublic ? (
+        <GlassCard padding className="!p-5 text-center">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-neutral-100">
+            <Lock className="h-7 w-7 text-neutral-500" />
+          </div>
+          <h2 className="mt-4 text-lg font-bold text-neutral-900">Private profile</h2>
+          <p className="mt-2 text-sm text-neutral-600 leading-relaxed">
+            This is what other people see. Your profile stays hidden until you make it public or share it with friends.
+          </p>
+          <Link
+            to={PROFILE_SETTINGS_PRIVACY_PATH}
+            state={profileHubMobileBackState()}
+            className="mt-4 inline-block text-sm font-semibold text-emerald-700"
+          >
+            Change visibility
+          </Link>
+        </GlassCard>
       ) : isPrivate ? (
         <GlassCard padding className="!p-5 text-center">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-neutral-100">

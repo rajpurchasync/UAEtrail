@@ -2,7 +2,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, Link, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { Lock } from 'lucide-react';
-import { type ActivityDetailDTO, type ReviewDTO } from '@uaetrail/shared-types';
+import {
+  activityScheduleHasEnded,
+  type ActivityDetailDTO,
+  type ReviewDTO,
+} from '@uaetrail/shared-types';
 import { activityReviewsQueryKey } from '../hooks/clientQueryKeys';
 import { useActivityReviews } from '../hooks/useActivityReviews';
 import { useActivityHostJoinRequests } from '../hooks/useActivityHostJoinRequests';
@@ -148,7 +152,10 @@ export const ActivityDetail = () => {
     setSearchParams(next, { replace: true });
   }, [activity, searchParams, setSearchParams]);
 
-  const canWriteActivityReview = Boolean(participation?.checkedInAt);
+  const activityParticipantCheckedIn = Boolean(participation?.checkedInAt);
+  const canWriteActivityReview =
+    activityParticipantCheckedIn &&
+    Boolean(activity && activityScheduleHasEnded(activity));
 
   const detailExposure = useMemo(() => {
     if (!activity) return 'full' as const;
@@ -251,12 +258,12 @@ export const ActivityDetail = () => {
 
   const onHostShareOuting = useCallback(() => {
     if (!activity || activity.status !== 'published') return;
-    inviteShare.openInviteFromActivity(activity, { canSendBuddyInvites: true });
+    inviteShare.openShareFromActivity(activity, { canSendBuddyInvites: true });
   }, [activity, inviteShare]);
 
   const onParticipantInviteFriends = useCallback(() => {
     if (!activity || activity.status !== 'published') return;
-    inviteShare.openInviteFromActivity(activity, { canSendBuddyInvites: true });
+    inviteShare.openShareFromActivity(activity, { canSendBuddyInvites: true });
   }, [activity, inviteShare]);
 
   const canInviteFriendsToActivity =
@@ -321,7 +328,7 @@ export const ActivityDetail = () => {
     if (!user) return;
     if (activity.status !== 'published') return;
     resumeInviteHandledRef.current = true;
-    inviteShare.openInviteFromActivity(activity, { canSendBuddyInvites: true });
+    inviteShare.openShareFromActivity(activity, { canSendBuddyInvites: true });
     const next = new URLSearchParams(searchParams);
     next.delete(AUTH_RESUME_INVITE_FRIENDS_QUERY);
     setSearchParams(next, { replace: true });

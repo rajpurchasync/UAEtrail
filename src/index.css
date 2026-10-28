@@ -180,6 +180,17 @@
     overflow-y: auto;
     overscroll-behavior-y: contain;
     -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(15, 23, 42, 0.28) transparent;
+  }
+
+  .app-scroll-body::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .app-scroll-body::-webkit-scrollbar-thumb {
+    background: rgba(15, 23, 42, 0.28);
+    border-radius: 999px;
   }
 
   /** Child route provides its own scroll (e.g. /list feed). */

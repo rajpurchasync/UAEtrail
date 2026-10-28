@@ -1,12 +1,13 @@
 import type { ReactNode } from 'react';
 import { useLocation } from 'react-router-dom';
 import { isGeographyMapSource } from '@uaetrail/shared-types';
-import { X } from 'lucide-react';
+import { Share2, X } from 'lucide-react';
 import type { DiscoveryCardModel } from '../../../discovery/discoveryCardModel';
 import { EXPLORE_PEEK, EXPLORE_SHEET } from '../../../config/exploreTheme';
 import { EnvironmentImage } from '../../../components/ui/EnvironmentImage';
 import { ShareButton } from '../../../components/ui/ShareButton';
 import { ExploreFollowButton } from '../ExploreFollowButton';
+import { ExploreWishlistSaveButton } from '../ExploreWishlistSaveButton';
 import { discoveryCardPeekShowsFollow } from '../../../discovery/discoveryCardModel';
 import {
   DiscoveryCardHeadline,
@@ -36,6 +37,8 @@ export type MapPeekShellProps = {
   statusBanner?: string | null;
   /** Catalog place pins (`source: venue`) — hero + kind facts via `PlacePeekCard`. */
   catalogPlaceSummary?: boolean;
+  /** Activity pins — opens canonical outing share sheet (in-app + external). */
+  onShareActivity?: () => void;
 };
 
 /** Shared chrome for map/list pin summaries (activities, places, shops). */
@@ -50,6 +53,7 @@ export const MapPeekShell = ({
   showDismissChrome,
   statusBanner = null,
   catalogPlaceSummary = false,
+  onShareActivity,
 }: MapPeekShellProps) => {
   const dismissVisible = showDismissChrome ?? !embedMode;
   const location = useLocation();
@@ -63,6 +67,9 @@ export const MapPeekShell = ({
     : EXPLORE_PEEK.shell;
   const showCoverHero = Boolean(card.coverImage) && !catalogPlaceSummary;
   const showPlaceCatalogHero = catalogPlaceSummary && isGeographyMapSource(card.source);
+  const shareIconButtonClass = showCoverHero
+    ? 'inline-flex items-center justify-center w-8 h-8 rounded-full bg-black/35 backdrop-blur-sm text-white hover:bg-black/50 transition-colors'
+    : 'inline-flex items-center justify-center w-8 h-8 rounded-full bg-white text-neutral-700 shadow-sm ring-1 ring-neutral-200/90 hover:bg-neutral-50 transition-colors';
 
   return (
     <div className={shellClass} data-pin-summary="card">
@@ -104,17 +111,34 @@ export const MapPeekShell = ({
       {!showPlaceCatalogHero ? (
         <div className={`flex shrink-0 items-start justify-between gap-3 px-4 ${showCoverHero ? 'pt-3' : 'pt-4'}`}>
           <DiscoveryCardTypeBadge card={card} size="sm" />
-          <div className="flex items-center gap-1.5">
-            {discoveryCardPeekShowsFollow(card) ? (
+          <div className="flex shrink-0 items-start gap-1.5">
+            {isGeographyMapSource(card.source) ? (
+              <ExploreWishlistSaveButton card={card} light={!showCoverHero} />
+            ) : discoveryCardPeekShowsFollow(card) ? (
               <ExploreFollowButton card={card} light={!showCoverHero} />
             ) : null}
-            <ShareButton
-              title={card.shareTitle}
-              text={card.shareText ?? undefined}
-              path={card.sharePath}
-              iconOnly
-              light={!showCoverHero}
-            />
+            {card.source === 'activity' && onShareActivity ? (
+              <button
+                type="button"
+                aria-label="Share"
+                className={shareIconButtonClass}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onShareActivity();
+                }}
+              >
+                <Share2 className="h-4 w-4" aria-hidden />
+              </button>
+            ) : (
+              <ShareButton
+                title={card.shareTitle}
+                text={card.shareText ?? undefined}
+                path={card.sharePath}
+                iconOnly
+                light={!showCoverHero}
+              />
+            )}
             {!showCoverHero && dismissVisible ? (
               <button
                 type="button"

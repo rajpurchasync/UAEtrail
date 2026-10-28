@@ -6,6 +6,8 @@ import {
   captureLeavingView,
   focusSelectorFromElement,
   peekViewReturnSnapshot,
+  seedViewReturnSnapshot,
+  sealLeavingView,
   takeArmedViewReturn,
   viewReturnPathKey,
 } from './viewReturnMemory';
@@ -50,6 +52,44 @@ describe('viewReturnMemory', () => {
     expect(applyViewReturnSnapshot(snapshot!, armed?.focusSelector)).toBe(true);
     expect(body.scrollTop).toBe(240);
     expect(document.activeElement).toBe(row);
+
+    root.remove();
+  });
+
+  it('seeds scroll and focus from an external return context without wiping a capture', () => {
+    const root = document.createElement('div');
+    root.id = APP_SCROLL_ROOT_ID;
+    document.body.append(root);
+    captureLeavingView('/explore?panel=venues');
+    seedViewReturnSnapshot('/explore?panel=venues', {
+      scrollTops: [320],
+      focusSelector: '[data-explore-join-cta]',
+    });
+    expect(peekViewReturnSnapshot('/explore?panel=venues')).toEqual({
+      scrollTops: [320],
+      focusSelector: '[data-explore-join-cta]',
+    });
+    root.remove();
+  });
+
+  it('does not replace a saved scroll position after the next page mounts at the top', () => {
+    const root = document.createElement('div');
+    root.id = APP_SCROLL_ROOT_ID;
+    const body = document.createElement('div');
+    body.className = 'app-scroll-body';
+    body.scrollTop = 480;
+    root.append(body);
+    document.body.append(root);
+
+    captureLeavingView('/profile');
+    body.remove();
+    const next = document.createElement('div');
+    next.className = 'app-scroll-body';
+    next.scrollTop = 0;
+    root.append(next);
+
+    sealLeavingView('/profile');
+    expect(peekViewReturnSnapshot('/profile')?.scrollTops).toEqual([480]);
 
     root.remove();
   });

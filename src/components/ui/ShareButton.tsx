@@ -25,6 +25,8 @@ interface ShareButtonProps {
   className?: string;
   /** Overrides default “Share” label on full button variant. */
   label?: string;
+  /** Raise share menu above explore/activity sheets (z ~5100). */
+  stackAboveModals?: boolean;
 }
 
 export const ShareButton = ({
@@ -40,6 +42,7 @@ export const ShareButton = ({
   disabled = false,
   className = '',
   label,
+  stackAboveModals = false,
 }: ShareButtonProps) => {
   const [showShareMenu, setShowShareMenu] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -132,9 +135,12 @@ export const ShareButton = ({
 
       {showShareMenu && (
         <>
-          <div className="fixed inset-0 z-[60] bg-black/30 md:bg-transparent" onClick={() => setShowShareMenu(false)} />
           <div
-            className="fixed inset-x-0 bottom-0 z-[70] glass rounded-t-[24px] border-t border-white/60 p-4 pb-safe-plus-2 animate-fade-up md:absolute md:inset-auto md:right-0 md:top-full md:mt-2 md:w-64 md:rounded-2xl md:border md:pb-4 md:shadow-xl"
+            className={`fixed inset-0 ${stackAboveModals ? 'z-[5190]' : 'z-[60]'} bg-black/30 md:bg-transparent`}
+            onClick={() => setShowShareMenu(false)}
+          />
+          <div
+            className={`fixed inset-x-0 bottom-0 ${stackAboveModals ? 'z-[5200]' : 'z-[70]'} glass rounded-t-[24px] border-t border-white/60 p-4 pb-safe-plus-2 animate-fade-up md:absolute md:inset-auto md:right-0 md:top-full md:mt-2 md:w-64 md:rounded-2xl md:border md:pb-4 md:shadow-xl`}
             role="menu"
           >
             <p className="text-sm font-bold text-neutral-900 mb-3 px-1 md:hidden">Share with friends</p>
