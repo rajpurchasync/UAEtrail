@@ -181,15 +181,26 @@
     overscroll-behavior-y: contain;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: thin;
-    scrollbar-color: rgba(15, 23, 42, 0.28) transparent;
+    scrollbar-color: rgba(15, 23, 42, 0.35) transparent;
   }
 
-  .app-scroll-body::-webkit-scrollbar {
-    width: 8px;
+  /* Product scrollbars stay thin. Hidden rails (scrollbar-none) override this. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(15, 23, 42, 0.35) transparent;
   }
 
-  .app-scroll-body::-webkit-scrollbar-thumb {
-    background: rgba(15, 23, 42, 0.28);
+  *::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background: rgba(15, 23, 42, 0.35);
     border-radius: 999px;
   }
 
@@ -837,28 +848,8 @@
   }
 
   .desktop-scrollbar-x {
-    scrollbar-gutter: stable both-edges;
-  }
-
-  @media (pointer: fine) {
-    .desktop-scrollbar-x::-webkit-scrollbar {
-      height: 10px;
-    }
-
-    .desktop-scrollbar-x::-webkit-scrollbar-track {
-      background: #e5e7eb;
-      border-radius: 9999px;
-    }
-
-    .desktop-scrollbar-x::-webkit-scrollbar-thumb {
-      background: #9ca3af;
-      border-radius: 9999px;
-    }
-
-    .desktop-scrollbar-x {
-      scrollbar-width: thin;
-      scrollbar-color: #9ca3af #e5e7eb;
-    }
+    scrollbar-width: thin;
+    scrollbar-color: rgba(15, 23, 42, 0.35) transparent;
   }
 
   /* Shop featured marquee — scrolls right to left */
@@ -1242,5 +1233,27 @@
     .compose-sheet-immersive-enter {
       animation: compose-sheet-immersive-in 0.34s cubic-bezier(0.32, 0.72, 0, 1);
     }
+  }
+
+  /* Full-screen compose: thin scrollbar on the edge, no reserved gutter beside it. */
+  .compose-sheet-scroll {
+    direction: ltr;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(15, 23, 42, 0.35) transparent;
+    scrollbar-gutter: auto;
+  }
+
+  .compose-sheet-scroll::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  .compose-sheet-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .compose-sheet-scroll::-webkit-scrollbar-thumb {
+    background: rgba(15, 23, 42, 0.35);
+    border-radius: 999px;
   }
 }

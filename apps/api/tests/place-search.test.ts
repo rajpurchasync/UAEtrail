@@ -1,5 +1,11 @@
 import { describe, expect, it, vi, afterEach } from 'vitest';
-import { clearPlaceSearchCache, resolvePlaceSelection, searchPlaces } from '../src/lib/place-search.js';
+import {
+  clearPlaceSearchCache,
+  communityCityLabel,
+  resolvePlaceSelection,
+  reverseCommunityCity,
+  searchPlaces,
+} from '../src/lib/place-search.js';
 
 describe('searchPlaces', () => {
   afterEach(() => {
@@ -154,5 +160,52 @@ describe('resolvePlaceSelection', () => {
     const resolved = await resolvePlaceSelection({ query: 'Axis Silver Dubai' });
     expect(resolved?.mainText).toBe('Axis Silver');
     expect(resolved?.provider).toBe('photon');
+  });
+});
+
+describe('communityCityLabel', () => {
+  it('joins the community and the city', () => {
+    expect(communityCityLabel(['Al Barsha', 'Dubai'], ['Dubai'])).toEqual({
+      community: 'Al Barsha',
+      city: 'Dubai',
+      label: 'Al Barsha, Dubai',
+    });
+  });
+
+  it('returns null when the community is missing', () => {
+    expect(communityCityLabel(['Dubai'], ['Dubai'])).toBeNull();
+  });
+});
+
+describe('reverseCommunityCity', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('keeps the caller coordinates and names the community from photon', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({
+        ok: true,
+        json: async () => ({
+          features: [
+            {
+              properties: {
+                district: 'Al Barsha',
+                city: 'Dubai',
+                state: 'Dubai',
+                name: 'Al Barsha Pond Park',
+              },
+            },
+          ],
+        }),
+      }))
+    );
+
+    await expect(reverseCommunityCity(25.112, 55.196)).resolves.toEqual({
+      community: 'Al Barsha',
+      city: 'Dubai',
+      label: 'Al Barsha, Dubai',
+    });
   });
 });

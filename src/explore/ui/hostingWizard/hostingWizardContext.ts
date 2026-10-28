@@ -16,6 +16,8 @@ import type { HostingWizardPrefill } from '../hostingWizardPrefill';
 
 export type HostingWizardSeekingPrefill = HostingWizardPrefill | null;
 
+export type MeetingPointPickerIntent = 'search' | 'pin' | 'edit';
+
 export type HostingWizardContext = {
   step: HostingWizardFlowStep;
   stepTitle: string;
@@ -46,6 +48,7 @@ export type HostingWizardContext = {
   hasToPin: boolean;
   meetingPointMapOpen: boolean;
   setMeetingPointMapOpen: (open: boolean) => void;
+  setMeetingPickerIntent: (intent: MeetingPointPickerIntent) => void;
   setWhereMapOpen: (open: boolean) => void;
   setRouteMapTarget: (target: 'from' | 'to' | null) => void;
   selectedKind: CreateActivityKind | null;

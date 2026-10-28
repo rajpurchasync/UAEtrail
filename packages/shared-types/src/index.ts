@@ -1489,10 +1489,14 @@ export {
 } from './group-region.js';
 
 export {
+  UAE_GROUP_REGION_AREA_LABELS,
+  groupRegionAnchorForLabel,
   normalizeGroupRegionLabel,
+  resolveGroupRegionAreaAnchor,
   resolveGroupRegionFromCoordinates,
   resolveGroupRegionLabel,
   stampGroupRegionLevelsFromGeo,
+  type GroupRegionAreaAnchor,
   type GroupRegionResolutionInput,
   type StampGroupRegionLevelsGeoInput,
   type UaeGroupRegionCatalogLabel,

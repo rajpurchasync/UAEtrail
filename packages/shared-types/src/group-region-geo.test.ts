@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
+  groupRegionAnchorForLabel,
   normalizeGroupRegionLabel,
+  resolveGroupRegionAreaAnchor,
   resolveGroupRegionFromCoordinates,
   resolveGroupRegionLabel,
 } from './group-region-geo.js';
@@ -20,6 +22,14 @@ describe('group-region-geo', () => {
     expect(resolveGroupRegionFromCoordinates(25.33, 56.34)).toBe('Sharjah');
     expect(resolveGroupRegionFromCoordinates(24.45, 54.37)).toBe('Abu Dhabi');
     expect(resolveGroupRegionFromCoordinates(25.923, 56.115)).toBe('RAK');
+  });
+
+  it('returns the emirate center, not the device coordinate', () => {
+    const anchor = resolveGroupRegionAreaAnchor(25.2048, 55.2708);
+    expect(anchor?.label).toBe('Dubai');
+    expect(anchor?.latitude).not.toBeCloseTo(25.2048, 2);
+    expect(anchor?.longitude).not.toBeCloseTo(55.2708, 2);
+    expect(groupRegionAnchorForLabel('Sharjah').label).toBe('Sharjah');
   });
 
   it('prefers explicit state hint over coordinates', () => {

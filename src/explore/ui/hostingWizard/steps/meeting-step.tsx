@@ -7,6 +7,7 @@ import {
 import { EXPLORE_FLOW } from '../../../../config/exploreTheme';
 import { formatCoord } from '../../../../utils/coords';
 import { RIDESHARE_PICKUP_HINT, EXTRA_DIRECTIONS_LABEL, GOING_FROM_HINT, GOING_FROM_WITH_TIME_HINT, PICKUP_POINT_LABEL } from '../../../createFlowCopy';
+import { HikingStartAreaStep } from './HikingStartAreaStep';
 import type { ReactNode } from 'react';
 import type { HostingWizardContext } from '../hostingWizardContext';
 
@@ -26,6 +27,7 @@ export function renderMeetingStep(ctx: HostingWizardContext): ReactNode | null {
     activityFlow,
     structuredFlow,
     goingFromFlow,
+    hikingFlow,
   } = ctx;
 
   if (!(step === 'meeting' && kind)) {
@@ -75,6 +77,12 @@ export function renderMeetingStep(ctx: HostingWizardContext): ReactNode | null {
                   <span className="text-xs font-semibold text-emerald-700">{hasFromPin ? 'Edit' : 'Map'}</span>
                 </button>
               </>
+            ) : hikingFlow ? (
+              <HikingStartAreaStep
+                draft={draft}
+                patchDraft={patchDraft}
+                onPin={() => setWhereMapOpen(true)}
+              />
             ) : goingFromFlow ? (
               <>
                 <p className="mb-4 text-sm text-gray-600">{GOING_FROM_HINT}</p>
@@ -169,12 +177,14 @@ export function renderMeetingStep(ctx: HostingWizardContext): ReactNode | null {
             <HostingWizardStepError error={error} />
             <HostingWizardStepNext
                 disabled={
-                  !(hasFromPin || (activityFlow && draft.meetingLatitude != null && draft.meetingLongitude != null)) ||
-                  (!goingFromFlow &&
-                    !structuredFlow &&
-                    kind !== 'rideshare' &&
-                    !draft.genericBuddy &&
-                    !draft.meetingTime.trim())
+                  hikingFlow
+                    ? !draft.fromLabel.trim() || draft.latitude == null || draft.longitude == null
+                    : !(hasFromPin || (activityFlow && draft.meetingLatitude != null && draft.meetingLongitude != null)) ||
+                      (!goingFromFlow &&
+                        !structuredFlow &&
+                        kind !== 'rideshare' &&
+                        !draft.genericBuddy &&
+                        !draft.meetingTime.trim())
                 }
                 onClick={goNext}
                />

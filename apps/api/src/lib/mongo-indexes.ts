@@ -148,6 +148,7 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
       { key: { locationId: 1 } },
       { key: { featured: 1, status: 1, startAt: 1 } },
       { key: { areaId: 1, status: 1 }, sparse: true },
+      { key: { originLat: 1, originLng: 1 }, name: 'origin_lat_lng', sparse: true },
       { key: { geo: '2dsphere' }, sparse: true },
       { key: { status: 1, groupRegionBrowseKey: 1, startAt: 1 }, sparse: true },
     ]),

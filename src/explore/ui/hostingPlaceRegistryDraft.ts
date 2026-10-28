@@ -25,6 +25,17 @@ export const applyRegistryPlaceToHostingDraft = (
   trailName: place.name,
   trailLatitude: place.latitude ?? null,
   trailLongitude: place.longitude ?? null,
+  ...(place.latitude != null && place.longitude != null
+    ? {
+        meetingLatitude: place.latitude,
+        meetingLongitude: place.longitude,
+        meetingPointLabel: place.name,
+      }
+    : {
+        meetingLatitude: null,
+        meetingLongitude: null,
+        meetingPointLabel: '',
+      }),
   difficulty: mapRegistryPlaceDifficulty(place.difficulty),
   aboutTrail: draft.aboutTrail.trim() ? draft.aboutTrail : place.description?.trim().slice(0, 2000) ?? '',
 });

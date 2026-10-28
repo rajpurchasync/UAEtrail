@@ -12,6 +12,23 @@ export const HOSTING_INTRO_PROMPT =
 
 export const GOING_FROM_LABEL = 'Where are you going from?';
 
+export const HOME_START_STEP_TITLE = 'Where do you start?';
+
+export const HOME_START_HINT =
+  'Where you live, or where you’ll start the drive — so people nearby can find this hike. We show the community and city. The place itself stays saved so others leaving from here can be matched.';
+
+export const HOME_START_USE_LOCATION = 'Use my location';
+
+export const HOME_START_AREA_NOTE = 'Shown as the community and city.';
+
+export const HOME_START_PIN_OFFER = 'Pin the area if the name is off, or if you start from somewhere else.';
+
+export const HOME_START_PIN_CTA = 'Pin a spot';
+
+export const HOME_START_AREA_REQUIRED = 'Choose the area you start from.';
+
+export const HOME_START_UNMATCHED = 'We couldn’t name that community and city. Try another spot.';
+
 export const PICKUP_POINT_LABEL = 'Pickup point';
 
 export const CAMP_LOCATION_LABEL = 'Camp location';
@@ -35,6 +52,25 @@ export const JOIN_RULES_PREVIEW_LABEL = 'Before joining: ';
 export const RIDESHARE_PICKUP_HINT = 'Set the pickup point on the map.';
 
 export const GOING_FROM_HINT = 'Drop a pin for where you\u2019re starting from.';
+
+export const MEETING_FROM_VENUE_HINT =
+  'People meet at the spot you chose. Edit it if the group meets somewhere else.';
+
+export const MEETING_FROM_VENUE_EDIT = 'Edit';
+
+export const MEETING_POINT_SEARCH = 'Search';
+
+export const MEETING_POINT_PIN = 'Pin';
+
+export const MEETING_POINT_EDIT_COORDS = 'Edit';
+
+export const MEETING_POINT_SEARCH_HINT = 'Search for a place';
+
+export const MEETING_POINT_PIN_HINT = 'Drop a pin on the map';
+
+export const MEETING_POINT_EDIT_HINT = 'Type the coordinates';
+
+export const MEETING_POINT_CHOOSE = 'Choose where people should meet.';
 
 export const GOING_FROM_WITH_TIME_HINT = 'Set where you\u2019re starting from and an optional meet time.';
 

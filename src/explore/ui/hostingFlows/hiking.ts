@@ -14,16 +14,16 @@ import {
 const DEFAULT_STEPS: CreateFlowStepId[] = [
   'title',
   'when',
-  'meeting',
+  'destination',
+  'meeting_point',
   'audience',
   'spots',
   'price',
-  'destination',
   'difficulty',
   'about_trail',
-  'meeting_point',
   'join_kit',
   'transportation',
+  'meeting',
   'publish',
 ];
 
@@ -40,8 +40,14 @@ const validateStep = (step: CreateFlowStepId, draft: CreateActivityDraft): strin
     }
     return null;
   }
-  if (step === 'meeting' && (draft.latitude == null || draft.longitude == null)) {
-    return 'Drop a pin on the map.';
+  if (step === 'meeting') {
+    if (draft.genericBuddy) {
+      if (draft.latitude == null || draft.longitude == null) return 'Drop a pin on the map.';
+      return null;
+    }
+    if (!draft.fromLabel.trim() || draft.latitude == null || draft.longitude == null) {
+      return 'Choose the area you start from.';
+    }
   }
   if (step === 'spots') {
     if (draft.capacity < 1) return 'Choose at least one spot.';
@@ -57,7 +63,7 @@ const validateStep = (step: CreateFlowStepId, draft: CreateActivityDraft): strin
     const effectiveFromLat = draft.latitude ?? draft.meetingLatitude;
     const effectiveFromLng = draft.longitude ?? draft.meetingLongitude;
     if (effectiveFromLat == null || effectiveFromLng == null) {
-      return 'Drop a going-from pin on the map.';
+      return 'Choose the area you start from.';
     }
     if (draft.meetingLatitude == null || draft.meetingLongitude == null) {
       return 'Drop a meeting point pin on the map.';

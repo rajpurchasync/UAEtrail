@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { resolvePlaceSelection, searchPlaces } from '../lib/place-search.js';
+import { resolvePlaceSelection, reverseCommunityCity, searchPlaces } from '../lib/place-search.js';
 import {
   resolveRideshareDestinationRow,
   searchRideshareDestinations,
@@ -60,6 +60,30 @@ geoSearchRouter.post(
       const data = await resolveRideshareDestinationRow(body.kind, body.id, req.auth?.userId ?? null);
       if (!data) {
         res.status(404).json({ error: 'Destination not found' });
+        return;
+      }
+      res.json({ data });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+const reverseQuerySchema = z.object({
+  lat: z.coerce.number().min(-90).max(90),
+  lng: z.coerce.number().min(-180).max(180),
+});
+
+geoSearchRouter.get(
+  '/reverse',
+  optionalAuth,
+  validate({ query: reverseQuerySchema }),
+  async (req, res, next) => {
+    try {
+      const { lat, lng } = req.query as unknown as z.infer<typeof reverseQuerySchema>;
+      const data = await reverseCommunityCity(lat, lng);
+      if (!data) {
+        res.status(404).json({ error: 'Community not found' });
         return;
       }
       res.json({ data });

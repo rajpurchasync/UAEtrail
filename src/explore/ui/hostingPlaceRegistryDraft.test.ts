@@ -32,6 +32,9 @@ describe('hostingPlaceRegistryDraft', () => {
       trailName: 'Jebel Jais',
       trailLatitude: 25.9,
       trailLongitude: 56.1,
+      meetingLatitude: 25.9,
+      meetingLongitude: 56.1,
+      meetingPointLabel: 'Jebel Jais',
       difficulty: 'medium',
       aboutTrail: 'Classic summit trail with wide views.',
     });

@@ -51,6 +51,10 @@ const publishingTenantActivityFieldsSchema = z.object({
   parkingPoint: z.string().max(200).optional(),
   parkingLat: z.number().min(-90).max(90).optional(),
   parkingLng: z.number().min(-180).max(180).optional(),
+  /** Consented start point for matching people leaving from the same place. Shown label is originLabel. */
+  originLat: z.number().min(-90).max(90).optional(),
+  originLng: z.number().min(-180).max(180).optional(),
+  originLabel: z.string().max(160).optional(),
   meetingDifferent: z.boolean().optional(),
   rideshareEnabled: z.boolean().optional(),
   rideshareFree: z.boolean().optional(),

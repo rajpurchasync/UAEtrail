@@ -113,7 +113,7 @@ export const ExploreResponsiveSheet = ({
 
   const composeMobilePanelClass = mobileComposeChrome
     ? composeExpanded
-      ? `fixed inset-0 z-[1] flex w-full max-w-none flex-col overflow-hidden bg-white ${panelClassName}`
+      ? `fixed inset-0 z-[1] flex w-full max-w-none flex-col overflow-hidden bg-white !px-0 ${panelClassName}`
       : `relative flex w-full min-h-0 flex-col overflow-hidden explore-sheet-panel ${exploreSheetPanelClass} ${maxWidthClass} ${panelClassName} shadow-[0_-8px_40px_rgba(15,23,42,.12)] sm:shadow-2xl lg:max-h-[min(78dvh,720px)] lg:h-auto lg:overflow-y-auto ${EXPLORE_BROWSE_PEEK_SHEET.panelPeekMobile}`
     : '';
 
@@ -137,7 +137,7 @@ export const ExploreResponsiveSheet = ({
 
   const composeScrollClass = mobileComposeChrome
     ? composeExpanded
-      ? `flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain ${EXPLORE_COMPOSE_IMMERSIVE.scrollPadTop} ${EXPLORE_COMPOSE_IMMERSIVE.scrollPadBottom} lg:overflow-visible lg:flex-none lg:pt-0 lg:pb-0`
+      ? `compose-sheet-scroll flex min-h-0 w-full min-w-0 flex-1 flex-col overflow-y-auto overscroll-contain px-5 lg:px-6 ${EXPLORE_COMPOSE_IMMERSIVE.scrollPadTop} ${EXPLORE_COMPOSE_IMMERSIVE.scrollPadBottom} lg:overflow-y-auto lg:flex-1 lg:pt-0`
       : 'flex min-h-0 flex-1 flex-col overflow-y-auto lg:overflow-visible lg:flex-none'
     : pullDismissGestures && !panelClassName.includes('overflow-hidden')
       ? 'flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto overscroll-contain'

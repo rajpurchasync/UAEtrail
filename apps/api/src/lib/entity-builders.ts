@@ -75,6 +75,9 @@ export type ActivityCreateInput = {
   parkingPoint?: string | null;
   parkingLat?: number | null;
   parkingLng?: number | null;
+  originLat?: number | null;
+  originLng?: number | null;
+  originLabel?: string | null;
   meetingDifferent?: boolean;
   rideshareEnabled?: boolean;
   rideshareFree?: boolean | null;
@@ -130,6 +133,9 @@ export type ActivityUpdateInput = {
   parkingPoint?: string | null;
   parkingLat?: number | null;
   parkingLng?: number | null;
+  originLat?: number | null;
+  originLng?: number | null;
+  originLabel?: string | null;
   meetingDifferent?: boolean;
   rideshareEnabled?: boolean;
   rideshareFree?: boolean | null;
@@ -248,6 +254,9 @@ export type MongoActivityDoc = {
   parkingPoint: string | null;
   parkingLat: number | null;
   parkingLng: number | null;
+  originLat: number | null;
+  originLng: number | null;
+  originLabel: string | null;
   meetingDifferent: boolean;
   rideshareEnabled: boolean;
   rideshareFree: boolean | null;
@@ -315,6 +324,9 @@ export const buildActivityFromCreateInput = (data: ActivityCreateInput, id: stri
     parkingPoint: data.parkingPoint ?? null,
     parkingLat: data.parkingLat ?? null,
     parkingLng: data.parkingLng ?? null,
+    originLat: data.originLat ?? null,
+    originLng: data.originLng ?? null,
+    originLabel: data.originLabel ?? null,
     meetingDifferent: data.meetingDifferent ?? false,
     rideshareEnabled: data.rideshareEnabled ?? false,
     rideshareFree: data.rideshareFree ?? null,

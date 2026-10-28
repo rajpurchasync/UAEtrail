@@ -80,8 +80,13 @@ interface CreatePlacePickerProps {
   confirmLabel?: string;
   hint?: string;
   initialZoom?: number;
-  /** Skip Google search — adjust an existing pin (user tapped Edit). */
+  /** Skip search — adjust an existing pin. */
   openInAdjustMode?: boolean;
+  /** Search, map pin, or coordinate edit. Overrides `openInAdjustMode` when set. */
+  initialPhase?: 'search' | 'adjust';
+  /** Open the coordinate fields on the map. */
+  startCoordsEditing?: boolean;
+  onPlaceLabel?: (label: string) => void;
 }
 
 export const CreatePlacePicker = ({
@@ -98,8 +103,13 @@ export const CreatePlacePicker = ({
   hint,
   initialZoom = 15,
   openInAdjustMode = false,
+  initialPhase,
+  startCoordsEditing = false,
+  onPlaceLabel,
 }: CreatePlacePickerProps) => {
-  const [phase, setPhase] = useState<PickerPhase>(openInAdjustMode ? 'adjust' : 'search');
+  const [phase, setPhase] = useState<PickerPhase>(
+    initialPhase ?? (openInAdjustMode ? 'adjust' : 'search')
+  );
   const [mapReady, setMapReady] = useState(false);
   const [locating, setLocating] = useState(false);
   const [flyTo, setFlyTo] = useState<[number, number] | null>(null);
@@ -108,7 +118,7 @@ export const CreatePlacePicker = ({
   const [searching, setSearching] = useState(false);
   const [resolvingPlace, setResolvingPlace] = useState(false);
   const [selectedPlaceLabel, setSelectedPlaceLabel] = useState<string | null>(null);
-  const [coordsEditing, setCoordsEditing] = useState(false);
+  const [coordsEditing, setCoordsEditing] = useState(startCoordsEditing);
   const [latInput, setLatInput] = useState(formatCoord(latitude));
   const [lngInput, setLngInput] = useState(formatCoord(longitude));
 
@@ -181,6 +191,7 @@ export const CreatePlacePicker = ({
     movePin(lat, lng);
     setSearchQuery(label);
     setSearchResults([]);
+    onPlaceLabel?.(label);
     enterAdjustPhase(label);
   };
 

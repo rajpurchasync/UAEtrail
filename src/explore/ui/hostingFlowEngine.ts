@@ -89,6 +89,8 @@ export type CreateActivityDraft = {
   latitude: number | null;
   longitude: number | null;
   fromLabel: string;
+  /** Hiking start: false keeps the emirate center; true is an opted-in precise pin. */
+  fromLocationPrecise: boolean;
   toLatitude: number | null;
   toLongitude: number | null;
   toLabel: string;
@@ -280,6 +282,7 @@ export const createFlowStepTitle = (
     return 'Activity date & time';
   }
   if (step === 'meeting') {
+    if (hikingHost) return 'Where do you start?';
     if (activityHost) return 'Going from';
     if (eventHost) return 'Meeting point';
     if (rideshareHost) return 'Going from';
@@ -419,6 +422,7 @@ export const emptyCreateActivityDraft = (): CreateActivityDraft => ({
   latitude: null,
   longitude: null,
   fromLabel: '',
+  fromLocationPrecise: false,
   toLatitude: null,
   toLongitude: null,
   toLabel: '',
@@ -596,6 +600,9 @@ export const buildHostingActivityRequirements = (draft: CreateActivityDraft): st
   }
   if (draft.kind === 'event' && draft.trailName.trim()) {
     requirements.push(`Venue: ${draft.trailName.trim()}`);
+  }
+  if (draft.kind === 'hiking' && !draft.genericBuddy && draft.fromLabel.trim()) {
+    requirements.push(`Going from: ${draft.fromLabel.trim()}`);
   }
   if ((draft.kind === 'hiking' || draft.kind === 'camping') && draft.goingFromNotes.trim()) {
     requirements.push(`Going from: ${draft.goingFromNotes.trim()}`);

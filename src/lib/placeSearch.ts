@@ -11,6 +11,26 @@ export type PlaceSearchResult = {
   placeId?: string;
 };
 
+export type CommunityCityLabel = {
+  community: string;
+  city: string;
+  label: string;
+};
+
+export const reverseCommunityCity = async (
+  lat: number,
+  lng: number
+): Promise<CommunityCityLabel | null> => {
+  const response = await fetch(
+    `/api/geo/reverse?lat=${encodeURIComponent(String(lat))}&lng=${encodeURIComponent(String(lng))}`
+  );
+  if (!response.ok) return null;
+  const payload = (await response.json()) as { data?: CommunityCityLabel };
+  const data = payload.data;
+  if (!data?.community || !data.city || !data.label) return null;
+  return data;
+};
+
 export const searchPlaces = async (query: string): Promise<PlaceSearchResult[]> => {
   const q = query.trim();
   if (q.length < 2) return [];

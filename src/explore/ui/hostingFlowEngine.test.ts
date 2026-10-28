@@ -27,14 +27,14 @@ describe('hostingFlowEngine', () => {
     expect(getCreateFlowSteps('hiking', false, options)).toEqual([
       'title',
       'when',
-      'meeting',
+      'destination',
+      'meeting_point',
       'audience',
       'spots',
       'price',
-      'destination',
-      'meeting_point',
       'join_kit',
       'transportation',
+      'meeting',
       'publish',
     ]);
     expect(getCreateFlowSteps('camping', false, options)).not.toContain('about_trail');
@@ -45,16 +45,16 @@ describe('hostingFlowEngine', () => {
     expect(getCreateFlowSteps('hiking', false)).toEqual([
       'title',
       'when',
-      'meeting',
+      'destination',
+      'meeting_point',
       'audience',
       'spots',
       'price',
-      'destination',
       'difficulty',
       'about_trail',
-      'meeting_point',
       'join_kit',
       'transportation',
+      'meeting',
       'publish',
     ]);
   });
@@ -64,7 +64,7 @@ describe('hostingFlowEngine', () => {
     expect(createFlowStepTitle('title', 'hiking')).toBe('Give it a title');
     expect(createFlowStepTitle('spots', 'hiking')).toBe('Participants');
     expect(createFlowStepTitle('when', 'hiking')).toBe('When are you going?');
-    expect(createFlowStepTitle('meeting', 'hiking')).toBe('Where are you going from?');
+    expect(createFlowStepTitle('meeting', 'hiking')).toBe('Where do you start?');
     expect(createFlowStepTitle('join_kit', 'hiking')).toBe('What joiners should bring or know');
     expect(createFlowStepTitle('difficulty', 'hiking')).toBe('How difficult is the hike?');
     expect(createFlowStepTitle('meeting', 'rideshare')).toBe('Going from');
@@ -75,7 +75,7 @@ describe('hostingFlowEngine', () => {
 
   it('validateDraftStep requires a pin on meeting step', () => {
     const draft = { ...emptyCreateActivityDraft(), kind: 'hiking' as const, title: 'Sunrise hike' };
-    expect(validateDraftStep('meeting', draft)).toBe('Drop a pin on the map.');
+    expect(validateDraftStep('meeting', draft)).toBe('Choose the area you start from.');
   });
 
   it('validateDraftStep allows empty join kit on hiking join_kit step', () => {

@@ -81,6 +81,10 @@ export type ActivityPublishInput = {
   /** Parent hike/camp/event when publishing a linked rideshare. */
   linkedActivityId?: string | null;
   groupChatPostPolicy?: ActivityGroupChatPostPolicy;
+  /** Consented home/start point. Label is community + city; coordinates match neighbours later. */
+  originLabel?: string;
+  originLat?: number;
+  originLng?: number;
 };
 
 export const defaultParticipationModeForActivityType = (activityType: string): ParticipationMode =>
@@ -160,6 +164,13 @@ export const buildHostActivityPublishPayload = (input: ActivityPublishInput): Re
     parkingLat: location.parkingLat,
     parkingLng: location.parkingLng,
     meetingDifferent: location.meetingDifferent ?? false,
+    ...(input.originLabel && input.originLat != null && input.originLng != null
+      ? {
+          originLabel: input.originLabel,
+          originLat: input.originLat,
+          originLng: input.originLng,
+        }
+      : {}),
     requirements: input.requirements,
     joinMode: input.joinMode,
     participationMode: input.participationMode,

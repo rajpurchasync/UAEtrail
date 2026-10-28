@@ -22,6 +22,7 @@ import { EXPLORE_Z } from '../../config/exploreTheme';
 import { formatCoord } from '../../utils/coords';
 import { COMPOSE_SHEET_DRAG_HINT } from '../../hooks/useMobileBrowseSheetImmersive';
 import { useComposeSheetExpandedStateOrLocal } from '../create/ComposeSheetExpandedContext';
+import type { MeetingPointPickerIntent } from './hostingWizard/hostingWizardContext';
 import { useComposeWizardExitBack } from '../create/useComposeWizardExitBack';
 import {
   composeWizardHasDraftContent,
@@ -66,9 +67,11 @@ import {
   fromLocationLabel,
   HOSTING_SEEKING_PREFILL_TITLE,
   HOSTING_RIDESHARE_LINKED_NOTICE,
+  HOME_START_UNMATCHED,
   HOSTING_PROFILE_INCOMPLETE_ERROR,
   TO_LOCATION_LABEL,
 } from '../createFlowCopy';
+import { reverseCommunityCity } from '../../lib/placeSearch';
 import { MAP_CONFIG } from '../../config/platform';
 import { HostingPublishSuccessSheet } from './HostingPublishSuccessSheet';
 import { registryPlaceTypeForHostingKindFlow, type HostingKindFlow } from './hostingFlows';
@@ -163,6 +166,7 @@ export const CreateHostingActivityFlow = ({
   const [routeMapTarget, setRouteMapTarget] = useState<'from' | 'to' | null>(null);
   const [whereMapOpen, setWhereMapOpen] = useState(false);
   const [meetingPointMapOpen, setMeetingPointMapOpen] = useState(false);
+  const [meetingPickerIntent, setMeetingPickerIntent] = useState<MeetingPointPickerIntent>('search');
   const [publishedActivity, setPublishedActivity] = useState<ActivityDTO | null>(null);
   const [rideshareOfferNotice, setRideshareOfferNotice] = useState<string | null>(null);
 
@@ -357,7 +361,7 @@ export const CreateHostingActivityFlow = ({
     }
   }, [hostTiers, publishingProfileKind, draft.priceMode, patchDraft]);
 
-  const { sheetExpanded } = useComposeSheetExpandedStateOrLocal(open);
+  const { sheetExpanded, expandSheet } = useComposeSheetExpandedStateOrLocal(open);
 
   const finishClose = useCallback(() => {
     if (submitting) return;
@@ -679,6 +683,7 @@ export const CreateHostingActivityFlow = ({
     hasToPin,
     meetingPointMapOpen,
     setMeetingPointMapOpen,
+    setMeetingPickerIntent,
     setWhereMapOpen,
     setRouteMapTarget,
     selectedKind,
@@ -782,13 +787,14 @@ export const CreateHostingActivityFlow = ({
     const isToStep = isRouteMapOverlay
       ? routeMapTarget === 'to'
       : step === 'to';
+    const hikeCampMeeting = isMeetingPin && (hikingFlow || campingFlow);
     const lat = isMeetingPin
-      ? draft.meetingLatitude ?? MAP_CONFIG.exploreDefaultCenter.lat
+      ? draft.meetingLatitude ?? draft.trailLatitude ?? MAP_CONFIG.exploreDefaultCenter.lat
       : isToStep
         ? draft.toLatitude ?? MAP_CONFIG.exploreDefaultCenter.lat
         : draft.latitude ?? MAP_CONFIG.exploreDefaultCenter.lat;
     const lng = isMeetingPin
-      ? draft.meetingLongitude ?? MAP_CONFIG.exploreDefaultCenter.lng
+      ? draft.meetingLongitude ?? draft.trailLongitude ?? MAP_CONFIG.exploreDefaultCenter.lng
       : isToStep
         ? draft.toLongitude ?? MAP_CONFIG.exploreDefaultCenter.lng
         : draft.longitude ?? MAP_CONFIG.exploreDefaultCenter.lng;
@@ -804,7 +810,19 @@ export const CreateHostingActivityFlow = ({
       <div className={`fixed inset-0 ${EXPLORE_Z.composeFlow} bg-neutral-100`}>
         <Suspense fallback={<div className="h-full w-full animate-pulse bg-emerald-50" />}>
           <CreatePlacePicker
-            openInAdjustMode={pinAlreadySet}
+            openInAdjustMode={hikeCampMeeting ? meetingPickerIntent !== 'search' : pinAlreadySet}
+            initialPhase={
+              hikeCampMeeting ? (meetingPickerIntent === 'search' ? 'search' : 'adjust') : undefined
+            }
+            startCoordsEditing={hikeCampMeeting && meetingPickerIntent === 'edit'}
+            onPlaceLabel={
+              isMeetingPin
+                ? (label) => {
+                    const trimmed = label.trim();
+                    if (trimmed) patchDraft({ meetingPointLabel: trimmed });
+                  }
+                : undefined
+            }
             precision={draft.locationPrecision}
             latitude={lat}
             longitude={lng}
@@ -854,6 +872,26 @@ export const CreateHostingActivityFlow = ({
                 return;
               }
               if (isPickupMapOpen || isWhereMapOpen) {
+                if (isPickupMapOpen && kind === 'hiking' && !draft.genericBuddy) {
+                  const latitude = draft.latitude;
+                  const longitude = draft.longitude;
+                  if (latitude == null || longitude == null) return;
+                  void reverseCommunityCity(latitude, longitude).then((place) => {
+                    if (!place) {
+                      setError(HOME_START_UNMATCHED);
+                      return;
+                    }
+                    patchDraft({
+                      fromLocationPrecise: true,
+                      fromLabel: place.label,
+                      latitude,
+                      longitude,
+                    });
+                    setWhereMapOpen(false);
+                    setError(null);
+                  });
+                  return;
+                }
                 setWhereMapOpen(false);
                 setError(null);
                 return;
@@ -879,6 +917,7 @@ export const CreateHostingActivityFlow = ({
       overlayFixed
       mobileComposeChrome
       expanded={sheetExpanded}
+      onExpand={expandSheet}
       expandHint={COMPOSE_SHEET_DRAG_HINT}
       panelClassName="px-5 pb-[calc(var(--safe-bottom)+1rem)] pt-0 lg:px-6 lg:pb-6 lg:pt-2"
     >

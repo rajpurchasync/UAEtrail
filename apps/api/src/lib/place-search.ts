@@ -349,6 +349,94 @@ export const searchPlaces = async (query: string): Promise<PlaceSearchResult[]> 
   return google;
 };
 
+export type CommunityCityLabel = {
+  community: string;
+  city: string;
+  /** Shown to the host: community, then city. Coordinates stay separate for matching. */
+  label: string;
+};
+
+const samePlaceName = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
+
+/** First distinct community and city. Returns null when either name is missing. */
+export const communityCityLabel = (
+  communityParts: Array<string | null | undefined>,
+  cityParts: Array<string | null | undefined>
+): CommunityCityLabel | null => {
+  const city = cityParts.map((part) => part?.trim()).find((part): part is string => Boolean(part));
+  if (!city) return null;
+  const community = communityParts
+    .map((part) => part?.trim())
+    .find((part): part is string => Boolean(part) && !samePlaceName(part ?? '', city));
+  if (!community) return null;
+  return { community, city, label: `${community}, ${city}` };
+};
+
+const reversePhoton = async (lat: number, lng: number): Promise<CommunityCityLabel | null> => {
+  const url = new URL('https://photon.komoot.io/reverse');
+  url.searchParams.set('lat', String(lat));
+  url.searchParams.set('lon', String(lng));
+  url.searchParams.set('lang', 'en');
+  const response = await fetch(url.toString(), { headers: { Accept: 'application/json' } });
+  if (!response.ok) return null;
+  const payload = (await response.json()) as {
+    features?: Array<{
+      properties?: PhotonProperties & {
+        locality?: string;
+        county?: string;
+        suburb?: string;
+      };
+    }>;
+  };
+  const props = payload.features?.[0]?.properties;
+  if (!props) return null;
+  return communityCityLabel(
+    [props.district, props.suburb, props.locality, props.county, props.name],
+    [props.city, props.state]
+  );
+};
+
+const reverseNominatim = async (lat: number, lng: number): Promise<CommunityCityLabel | null> => {
+  const url = new URL('https://nominatim.openstreetmap.org/reverse');
+  url.searchParams.set('format', 'json');
+  url.searchParams.set('lat', String(lat));
+  url.searchParams.set('lon', String(lng));
+  url.searchParams.set('addressdetails', '1');
+  url.searchParams.set('accept-language', 'en');
+  const response = await fetch(url.toString(), {
+    headers: { 'Accept-Language': 'en', 'User-Agent': NOMINATIM_USER_AGENT },
+  });
+  if (!response.ok) return null;
+  const row = (await response.json()) as {
+    address?: {
+      suburb?: string;
+      neighbourhood?: string;
+      city_district?: string;
+      city?: string;
+      town?: string;
+      village?: string;
+      state?: string;
+    };
+  };
+  const address = row.address;
+  if (!address) return null;
+  return communityCityLabel(
+    [address.suburb, address.neighbourhood, address.city_district],
+    [address.city, address.town, address.village, address.state]
+  );
+};
+
+/** Community and city for a consented point. The caller keeps the original coordinates. */
+export const reverseCommunityCity = async (
+  lat: number,
+  lng: number
+): Promise<CommunityCityLabel | null> => {
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+  const photon = await reversePhoton(lat, lng);
+  if (photon) return photon;
+  return reverseNominatim(lat, lng);
+};
+
 export const resolvePlaceSelection = async (input: {
   placeId?: string;
   query?: string;

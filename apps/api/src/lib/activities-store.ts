@@ -139,6 +139,9 @@ export const updateActivityDetailed = async (
   if (data.parkingPoint !== undefined) patch.parkingPoint = data.parkingPoint;
   if (data.parkingLat !== undefined) patch.parkingLat = data.parkingLat;
   if (data.parkingLng !== undefined) patch.parkingLng = data.parkingLng;
+  if (data.originLat !== undefined) patch.originLat = data.originLat;
+  if (data.originLng !== undefined) patch.originLng = data.originLng;
+  if (data.originLabel !== undefined) patch.originLabel = data.originLabel;
   if (data.meetingDifferent !== undefined) patch.meetingDifferent = data.meetingDifferent;
   if (data.rideshareEnabled !== undefined) patch.rideshareEnabled = data.rideshareEnabled;
   if (data.rideshareFree !== undefined) patch.rideshareFree = data.rideshareFree;

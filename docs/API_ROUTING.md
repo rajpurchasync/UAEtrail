@@ -141,6 +141,7 @@ Place autocomplete and community rideshare destinations. Registered in `apps/api
 | Method | Path | Notes |
 |--------|------|--------|
 | GET | `/geo/search?q=` | Place autocomplete. Photon, then Nominatim, then Google Places when `GOOGLE_MAPS_API_KEY` is set and the free providers return nothing. |
+| GET | `/geo/reverse?lat=&lng=` | Community and city for a consented point (`Al Barsha, Dubai`). The coordinates themselves are stored on the activity as `originLat` / `originLng` for later matching. |
 | POST | `/geo/resolve` | `{ placeId }` or `{ query }` → one place row with coordinates. |
 | GET | `/geo/rideshare-destinations?q=` | Parallel search: published outing **meeting** points (`meetingLat` / `meetingLng` / `meetingPoint`), active catalog places that have an area and a cover, and the caller’s draft place submissions. Rides are excluded. |
 | POST | `/geo/rideshare-destinations/resolve` | `{ kind, id }` → one destination row by id (`activity_meeting` · `catalog_place` · `pending_place`). |

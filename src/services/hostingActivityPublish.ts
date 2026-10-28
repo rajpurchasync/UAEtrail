@@ -199,6 +199,17 @@ export const buildHostingActivityPublishInput = (
       startLng: toLng,
       meetingDifferent: structuredLike ? meetingDifferent : false,
     },
+    ...(hiking &&
+    !draft.genericBuddy &&
+    draft.fromLabel.trim() &&
+    draft.latitude != null &&
+    draft.longitude != null
+      ? {
+          originLabel: draft.fromLabel.trim(),
+          originLat: draft.latitude,
+          originLng: draft.longitude,
+        }
+      : {}),
     requirements,
     joinMode: draft.kind === 'rideshare' ? 'open' : draft.joinMode,
     participationMode:

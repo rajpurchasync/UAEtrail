@@ -107,22 +107,72 @@ const resolveFromPublishedAreas = (
   return normalizeGroupRegionLabel(hits[0].region);
 };
 
-const resolveFromStaticZones = (
-  latitude: number,
-  longitude: number
-): UaeGroupRegionCatalogLabel | null => {
-  const hits = UAE_GROUP_REGION_GEO_ZONES.filter((zone) =>
-    pointInAreaBounds(latitude, longitude, zone.bounds)
-  );
-  if (hits.length === 0) return null;
-
-  hits.sort((a, b) => {
+const sortZones = (zones: GroupRegionGeoZone[]): GroupRegionGeoZone[] =>
+  [...zones].sort((a, b) => {
     const priorityDiff = a.priority - b.priority;
     if (priorityDiff !== 0) return priorityDiff;
     return approximateAreaBoundsKm2(a.bounds) - approximateAreaBoundsKm2(b.bounds);
   });
 
-  return hits[0].label;
+const boundsCenter = (bounds: AreaBoundsRing): { latitude: number; longitude: number } => {
+  const latitude = bounds.reduce((sum, point) => sum + point.latitude, 0) / bounds.length;
+  const longitude = bounds.reduce((sum, point) => sum + point.longitude, 0) / bounds.length;
+  return { latitude, longitude };
+};
+
+const matchingStaticZone = (
+  latitude: number,
+  longitude: number
+): GroupRegionGeoZone | null => {
+  const hits = UAE_GROUP_REGION_GEO_ZONES.filter((zone) =>
+    pointInAreaBounds(latitude, longitude, zone.bounds)
+  );
+  return sortZones(hits)[0] ?? null;
+};
+
+const resolveFromStaticZones = (
+  latitude: number,
+  longitude: number
+): UaeGroupRegionCatalogLabel | null => matchingStaticZone(latitude, longitude)?.label ?? null;
+
+/** Area name plus the zone center — never the device coordinate. */
+export type GroupRegionAreaAnchor = {
+  label: UaeGroupRegionCatalogLabel;
+  latitude: number;
+  longitude: number;
+};
+
+export const UAE_GROUP_REGION_AREA_LABELS: readonly UaeGroupRegionCatalogLabel[] = [
+  'Dubai',
+  'Abu Dhabi',
+  'Sharjah',
+  'Ajman',
+  'Umm Al Quwain',
+  'RAK',
+  'Fujairah',
+  'Al Ain',
+];
+
+/** Match a point to an emirate and return that area’s center, not the point itself. */
+export const resolveGroupRegionAreaAnchor = (
+  latitude: number,
+  longitude: number
+): GroupRegionAreaAnchor | null => {
+  const zone = matchingStaticZone(latitude, longitude);
+  if (!zone) return null;
+  return { label: zone.label, ...boundsCenter(zone.bounds) };
+};
+
+/** Representative center for an emirate the member picked without sharing a precise point. */
+export const groupRegionAnchorForLabel = (
+  label: UaeGroupRegionCatalogLabel
+): GroupRegionAreaAnchor => {
+  const zones = UAE_GROUP_REGION_GEO_ZONES.filter((zone) => zone.label === label);
+  const largest = [...zones].sort(
+    (a, b) => approximateAreaBoundsKm2(b.bounds) - approximateAreaBoundsKm2(a.bounds)
+  )[0];
+  if (!largest) throw new Error(`No geo zone for ${label}`);
+  return { label, ...boundsCenter(largest.bounds) };
 };
 
 export const resolveGroupRegionFromCoordinates = (
