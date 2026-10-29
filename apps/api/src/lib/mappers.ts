@@ -14,6 +14,8 @@ import {
   inferHostStorefrontKindFromTenantWire,
   resolveHostPersonDisplayName,
   HOST_FALLBACK_DISPLAY_NAME,
+  acceptedActivityGuides,
+  type ActivityGuidePublicDTO,
   type PublishingProfileKind,
   type RideshareVehiclePublicDTO,
   TenantBusinessMode,
@@ -89,6 +91,7 @@ type ActivityWithRelations = Activity & {
     type?: string;
     businessMode?: string | null;
     publishingPurpose?: string | null;
+    logoUrl?: string | null;
   };
   guide?: { profile?: { displayName?: string | null; avatarUrl?: string | null; bio?: string | null } | null } | null;
   createdBy?: { profile?: { displayName?: string | null } | null } | null;
@@ -118,6 +121,17 @@ export const buildActivityDto = (event : ActivityWithRelations): ActivityDTO => 
       tenantName,
     }) ?? HOST_FALLBACK_DISPLAY_NAME;
   const hostAvatar = event.guide?.profile?.avatarUrl ?? null;
+  const publicGuides: ActivityGuidePublicDTO[] = acceptedActivityGuides(event.guides).map((guide) => ({
+    userId: guide.userId,
+    displayName: guide.displayName,
+    avatarUrl: guide.avatarUrl,
+  }));
+  const guides =
+    publicGuides.length > 0
+      ? publicGuides
+      : hostUserId
+        ? [{ userId: hostUserId, displayName: hostName, avatarUrl: hostAvatar }]
+        : [];
   return toEventDto({
     event,
     locationName: event.location.name,
@@ -130,7 +144,9 @@ export const buildActivityDto = (event : ActivityWithRelations): ActivityDTO => 
     hostAvatar,
     hostBio: event.guide?.profile?.bio ?? null,
     tenantName,
+    tenantLogoUrl: event.tenant.logoUrl ?? null,
     publishingProfileKind,
+    guides,
     hostId: event.hostId ?? undefined,
     createdById: event.createdById,
     createdByName: createdByName ?? undefined,
@@ -209,7 +225,9 @@ const toEventDto = ({
   hostAvatar,
   hostBio,
   tenantName,
+  tenantLogoUrl,
   publishingProfileKind,
+  guides,
   hostId,
   createdById,
   createdByName,
@@ -231,7 +249,9 @@ const toEventDto = ({
   hostAvatar?: string | null;
   hostBio?: string | null;
   tenantName: string;
+  tenantLogoUrl?: string | null;
   publishingProfileKind: PublishingProfileKind;
+  guides?: ActivityGuidePublicDTO[];
   hostId?: string;
   createdById?: string;
   createdByName?: string;
@@ -310,7 +330,10 @@ const toEventDto = ({
   hostAvatar: hostAvatar ?? undefined,
   hostBio: hostBio ?? undefined,
   tenantName,
+  tenantLogoUrl: tenantLogoUrl ?? null,
   publishingProfileKind,
+  guides,
+  acceptedGuideCount: guides?.length ?? (hostUserId ? 1 : 0),
   hostId: hostId ?? null,
   createdById,
   createdByName,

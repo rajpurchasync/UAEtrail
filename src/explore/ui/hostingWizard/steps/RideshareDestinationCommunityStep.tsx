@@ -282,9 +282,9 @@ export const RideshareDestinationCommunityStep = ({
           onChange={setPlaceImages}
           keyPrefix="locations"
           kind="location"
-          max={1}
-          label="Place photo"
-          preset="rectangle"
+          max={5}
+          label="Photo (required)"
+          preset="location"
         />
         <button
           type="button"

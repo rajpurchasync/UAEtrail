@@ -67,4 +67,5 @@ export type HostingWizardContext = {
   structuredFlow: boolean;
   goingFromFlow: boolean;
   isEditMode: boolean;
+  editActivityId: string | null;
 };

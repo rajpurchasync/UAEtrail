@@ -345,7 +345,7 @@ export const useExploreBrowseUrlApplyHandlers = (args: UseExploreBrowseUrlApplyH
   );
 
   const applyPanel = useCallback(
-    (next: ExplorePanel) => applyBrowsePanel(next, { openList: true }),
+    (next: ExplorePanel) => applyBrowsePanel(next),
     [applyBrowsePanel]
   );
 

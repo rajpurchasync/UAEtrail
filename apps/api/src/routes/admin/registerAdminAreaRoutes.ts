@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { z } from 'zod';
+import { mediaUrlSchema } from '../../domain/location-submit.js';
 import { validate } from '../../middleware/validate.js';
 import {
   createAdminAreaRecord,
@@ -32,7 +33,7 @@ const areaBodySchema = z.object({
   priority: z.number().int().min(0).max(9999).optional(),
   summary: z.string().max(2000).optional().nullable(),
   countryCode: z.string().min(2).max(8).optional(),
-  imageUrl: z.union([z.string().url(), z.literal(''), z.null()]).optional(),
+  imageUrl: z.union([mediaUrlSchema, z.literal(''), z.null()]).optional(),
 });
 
 const areaPatchSchema = areaBodySchema.partial();

@@ -586,6 +586,7 @@ function App() {
           <Route path="/onboarding" element={<Navigate to="/" replace />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/admin/login" element={<SignIn />} />
+          <Route path="/admin" element={<Navigate to="/admin/overview" replace />} />
           <Route
             path="/admin/overview"
             element={

@@ -5,12 +5,12 @@ import {
 } from '../explore/exploreRequirementBadges';
 
 /**
- * List feed poster — single data contract for category/search posters and discover-home rails.
+ * Shared requirement labels for list explorer cards and place peek.
  *
- * Build path: `GET /explore/map` → `buildListFeedCards` → `ListFeedPosterCard` / rail preview.
+ * Build path: `GET /explore/map` → `buildListFeedCards` → `ListExplorer*`.
  * Presentation resolvers: `listPosterPresentation.ts` (import requirement helper from here).
  *
- * Do not read inferred peek badges (`card.requirementBadges`) on posters — those add defaults
+ * Do not read inferred peek badges (`card.requirementBadges`) here — those add defaults
  * for map peek only (`enrichExploreActivityRequirementBadges`).
  */
 export const LIST_FEED_POSTER_BUILDER = 'buildListFeedCards';

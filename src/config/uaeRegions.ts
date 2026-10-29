@@ -15,7 +15,7 @@ const UAE_STATES_BY_EMIRATE: Record<UaeEmirate, string[]> = {
   'Abu Dhabi': ['Abu Dhabi City', 'Al Ain', 'Liwa', 'Al Dhafra'],
   Dubai: ['Dubai', 'Hatta'],
   Sharjah: ['Sharjah', 'Kalba', 'Khor Fakkan'],
-  Ajman: ['Ajman'],
+  Ajman: ['Ajman', 'Masfut', 'Manama'],
   'Umm Al Quwain': ['Umm Al Quwain'],
   'Ras Al Khaimah': ['RAK City', 'Jebel Jais', 'Wadi Shawka', 'Al Rams'],
   Fujairah: ['Fujairah', 'Dibba', 'Masafi'],

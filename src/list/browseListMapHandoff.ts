@@ -4,7 +4,6 @@ import type { BrowseListFilterState } from './browseListFilters';
 import type { BrowseMainCategoryKey } from './browseListTaxonomy';
 import { BUDDIES_SEGMENT_URL_PARAM, serializeBuddiesDiscoverySegment } from './buddiesDiscoverySegment';
 import {
-  BROWSE_DISCOVER_PARAM,
   LIST_CAT_PARAM,
   serializeBrowseListSearchParams,
 } from './browseListUrlState';
@@ -77,29 +76,16 @@ export const serializeBrowseListToExploreSearchParams = (
   else params.delete('pinKind');
 
   if (listCat === 'people') {
-    params.set(LIST_CAT_PARAM, 'people');
-    params.set(BROWSE_DISCOVER_PARAM, '1');
-    params.set('list', '0');
+    params.delete(LIST_CAT_PARAM);
     const serializedBuddies = serializeBuddiesDiscoverySegment(state.buddiesSegment);
     if (serializedBuddies) params.set(BUDDIES_SEGMENT_URL_PARAM, serializedBuddies);
     else params.delete(BUDDIES_SEGMENT_URL_PARAM);
-    params.delete('view');
-    params.delete('peopleTab');
+    params.set('view', 'people');
+    params.set('list', '1');
     params.delete('date');
     params.delete('when');
   } else if (listCat) {
     params.set(LIST_CAT_PARAM, listCat);
-    params.set(BROWSE_DISCOVER_PARAM, '1');
-    params.set('list', '0');
-  } else if (
-    state.query.trim() ||
-    state.categories.length > 0 ||
-    state.tripTopics.length > 0 ||
-    state.placeTopics.length > 0 ||
-    state.tripLookingOnly
-  ) {
-    params.set(BROWSE_DISCOVER_PARAM, '1');
-    params.set('list', '0');
   }
 
   return params;

@@ -40,9 +40,9 @@ const discoverFeaturedSchema = z.object({
 
 /** Platform admin tenant list, detail, and suspend/activate (`/admin/tenants/*`). */
 export const registerAdminTenantRoutes = (adminRouter: Router): void => {
-  adminRouter.get('/tenants', async (req, res, next) => {
+  adminRouter.get('/tenants', validate({ query: paginationSchema }), async (req, res, next) => {
     try {
-      const pg = paginationSchema.parse(req.query);
+      const pg = req.query as unknown as z.infer<typeof paginationSchema>;
       const { items, total } = await listAdminTenantsPage({
         page: pg.page,
         pageSize: pg.pageSize,

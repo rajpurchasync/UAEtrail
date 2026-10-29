@@ -2,7 +2,12 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } fro
 import { useQueryClient } from '@tanstack/react-query';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { MapPin } from 'lucide-react';
-import { allowedActivityPricingModes, type ActivityDTO } from '@uaetrail/shared-types';
+import {
+  allowedActivityPricingModes,
+  defaultHikingPackingItems,
+  withHikingKitExtras,
+  type ActivityDTO,
+} from '@uaetrail/shared-types';
 import {
   publishHostingActivity as publishCreateActivity,
   updateHostingActivity,
@@ -37,6 +42,7 @@ import {
   createFlowStepTitle,
   defaultCapacityForKind,
   emptyCreateActivityDraft,
+  hydrateCreateActivityDraft,
   getCreateFlowSteps,
   locationPickerConfirmLabel,
   locationPickerHint,
@@ -259,7 +265,7 @@ export const CreateHostingActivityFlow = ({
 
     if (wizardPrefill?.draft.kind) {
       const prefillKind = wizardPrefill.draft.kind;
-      setDraft(wizardPrefill.draft);
+      setDraft(hydrateCreateActivityDraft(wizardPrefill.draft));
       setSelectedKind(prefillKind);
       const steps = hostingKindFlow
         ? hostingKindFlow.getSteps({
@@ -283,7 +289,7 @@ export const CreateHostingActivityFlow = ({
     if (hostComposeKind && hostingFlowId) {
       const saved = readHostingWizardSession(hostingFlowId, wizardSessionScope);
       if (saved?.draft?.kind) {
-        setDraft(saved.draft);
+        setDraft(hydrateCreateActivityDraft(saved.draft));
         setSelectedKind(saved.selectedKind);
         setStep(saved.step as FlowStep);
         setError(null);
@@ -361,6 +367,13 @@ export const CreateHostingActivityFlow = ({
     }
   }, [hostTiers, publishingProfileKind, draft.priceMode, patchDraft]);
 
+  useEffect(() => {
+    if (draft.kind !== 'hiking' && draft.kind !== 'event') return;
+    const next = withHikingKitExtras(draft.packingItems ?? []);
+    if (next.length === (draft.packingItems ?? []).length) return;
+    patchDraft({ packingItems: next });
+  }, [draft.kind, draft.packingItems, patchDraft]);
+
   const { sheetExpanded, expandSheet } = useComposeSheetExpandedStateOrLocal(open);
 
   const finishClose = useCallback(() => {
@@ -425,6 +438,11 @@ export const CreateHostingActivityFlow = ({
       ...(selectedKind === 'rideshare'
         ? { joinMode: 'open' as const, participationMode: 'approval' as const }
         : {}),
+      ...(selectedKind === 'hiking'
+        ? { packingAckMode: 'strict' as const, packingItems: defaultHikingPackingItems() }
+        : selectedKind === 'event'
+          ? { packingAckMode: 'lenient' as const, packingItems: defaultHikingPackingItems() }
+          : {}),
     });
     setStep(getCreateFlowSteps(selectedKind)[0]);
   }, [patchDraft, selectedKind]);
@@ -603,11 +621,18 @@ export const CreateHostingActivityFlow = ({
 
   const isPickupMapOpen = step === 'meeting' && whereMapOpen;
   const isWhereMapOpen = step === 'where' && whereMapOpen;
+  const isCustomSpotMapOpen =
+    step === 'destination' && whereMapOpen && draft.placeLabelSource === 'custom';
   const isMeetingPointMapOpen = step === 'meeting_point' && meetingPointMapOpen;
   const isDestMapOpen = step === 'to' && routeMapTarget === 'to';
   const isRouteMapOverlay = kind === 'rideshare' && step === 'route' && routeMapTarget !== null;
   const isFullScreenLocationStep =
-    isPickupMapOpen || isWhereMapOpen || isDestMapOpen || isRouteMapOverlay || isMeetingPointMapOpen;
+    isPickupMapOpen ||
+    isWhereMapOpen ||
+    isCustomSpotMapOpen ||
+    isDestMapOpen ||
+    isRouteMapOverlay ||
+    isMeetingPointMapOpen;
 
   const hasFromPin = draft.latitude != null && draft.longitude != null;
   const hasToPin = draft.toLatitude != null && draft.toLongitude != null;
@@ -702,6 +727,7 @@ export const CreateHostingActivityFlow = ({
     structuredFlow,
     goingFromFlow,
     isEditMode: Boolean(editActivity),
+    editActivityId: editActivity?.id ?? null,
   }), [
     step,
     stepTitle,
@@ -784,27 +810,34 @@ export const CreateHostingActivityFlow = ({
 
   if ((isFullScreenLocationStep || isRouteMapOverlay) && kind) {
     const isMeetingPin = step === 'meeting_point';
+    const isCustomSpotPin = isCustomSpotMapOpen;
     const isToStep = isRouteMapOverlay
       ? routeMapTarget === 'to'
       : step === 'to';
     const hikeCampMeeting = isMeetingPin && (hikingFlow || campingFlow);
-    const lat = isMeetingPin
-      ? draft.meetingLatitude ?? draft.trailLatitude ?? MAP_CONFIG.exploreDefaultCenter.lat
-      : isToStep
-        ? draft.toLatitude ?? MAP_CONFIG.exploreDefaultCenter.lat
-        : draft.latitude ?? MAP_CONFIG.exploreDefaultCenter.lat;
-    const lng = isMeetingPin
-      ? draft.meetingLongitude ?? draft.trailLongitude ?? MAP_CONFIG.exploreDefaultCenter.lng
-      : isToStep
-        ? draft.toLongitude ?? MAP_CONFIG.exploreDefaultCenter.lng
-        : draft.longitude ?? MAP_CONFIG.exploreDefaultCenter.lng;
-    const mapEndpoint: 'from' | 'to' = isToStep ? 'to' : 'from';
+    const lat = isCustomSpotPin
+      ? draft.trailLatitude ?? MAP_CONFIG.exploreDefaultCenter.lat
+      : isMeetingPin
+        ? draft.meetingLatitude ?? draft.trailLatitude ?? MAP_CONFIG.exploreDefaultCenter.lat
+        : isToStep
+          ? draft.toLatitude ?? MAP_CONFIG.exploreDefaultCenter.lat
+          : draft.latitude ?? MAP_CONFIG.exploreDefaultCenter.lat;
+    const lng = isCustomSpotPin
+      ? draft.trailLongitude ?? MAP_CONFIG.exploreDefaultCenter.lng
+      : isMeetingPin
+        ? draft.meetingLongitude ?? draft.trailLongitude ?? MAP_CONFIG.exploreDefaultCenter.lng
+        : isToStep
+          ? draft.toLongitude ?? MAP_CONFIG.exploreDefaultCenter.lng
+          : draft.longitude ?? MAP_CONFIG.exploreDefaultCenter.lng;
+    const mapEndpoint: 'from' | 'to' = isToStep || isCustomSpotPin ? 'to' : 'from';
     const mapStep: CreateFlowStepId = step as CreateFlowStepId;
-    const pinAlreadySet = isMeetingPin
-      ? draft.meetingLatitude != null && draft.meetingLongitude != null
-      : isToStep
-        ? hasToPin
-        : hasFromPin;
+    const pinAlreadySet = isCustomSpotPin
+      ? draft.trailLatitude != null && draft.trailLongitude != null
+      : isMeetingPin
+        ? draft.meetingLatitude != null && draft.meetingLongitude != null
+        : isToStep
+          ? hasToPin
+          : hasFromPin;
 
     return (
       <div className={`fixed inset-0 ${EXPLORE_Z.composeFlow} bg-neutral-100`}>
@@ -831,6 +864,10 @@ export const CreateHostingActivityFlow = ({
             hint={locationPickerHint(kind, draft.locationPrecision)}
             onPrecisionChange={(locationPrecision: LocationPrecision) => patchDraft({ locationPrecision })}
             onLocationChange={(latitude, longitude) => {
+              if (isCustomSpotPin) {
+                patchDraft({ trailLatitude: latitude, trailLongitude: longitude });
+                return;
+              }
               if (isMeetingPin) {
                 patchDraft({ meetingLatitude: latitude, meetingLongitude: longitude });
                 return;
@@ -892,6 +929,11 @@ export const CreateHostingActivityFlow = ({
                   });
                   return;
                 }
+                setWhereMapOpen(false);
+                setError(null);
+                return;
+              }
+              if (isCustomSpotMapOpen) {
                 setWhereMapOpen(false);
                 setError(null);
                 return;

@@ -1,13 +1,11 @@
 import {
-  GROUP_REGION_LEVEL,
-  readGroupRegionAtLevel,
   type OutingCategory,
   type OutingTopic,
 } from '@uaetrail/shared-types';
 import type { Collection } from 'mongodb';
 import type { Activity, ActivityParticipant, Location } from '../domain/types.js';
 import { resolveJoinMode, shouldHideActivityFromExploreMap } from '../domain/activity-join-mode.js';
-import { ActivityStatus, ActivityType, LocationStatus } from '../domain/enums.js';
+import { ActivityStatus, LocationStatus } from '../domain/enums.js';
 import { findAuthUsersByIds, type AuthUserRecord } from './auth-users-store.js';
 import type { MongoActivityDoc } from './entity-builders.js';
 import { getMongoClient } from './mongo.js';
@@ -39,7 +37,18 @@ type MongoLocationDoc = Omit<Location, 'id'> & {
 
 export type ActivityWithPublicRelations = Activity & {
   location: Location;
-  tenant: Pick<TenantRecord, 'id' | 'slug' | 'name' | 'countryCode' | 'ownerId'>;
+  tenant: Pick<
+    TenantRecord,
+    | 'id'
+    | 'slug'
+    | 'name'
+    | 'countryCode'
+    | 'ownerId'
+    | 'type'
+    | 'businessMode'
+    | 'publishingPurpose'
+    | 'logoUrl'
+  >;
   guide: { profile: { displayName: string | null; avatarUrl: string | null; bio: string | null } | null };
   createdBy: { profile: { displayName: string | null } | null };
   tenantOwner: { profile: { displayName: string | null } | null };
@@ -127,10 +136,36 @@ const mongoEventToEvent = (doc: MongoActivityDoc): Activity => {
   activityMode: doc.activityMode ?? null,
   participantIntentId: doc.participantIntentId ?? null,
   groupChatPostPolicy: doc.groupChatPostPolicy ?? null,
+  guides: doc.guides ?? [],
   createdAt: doc.createdAt,
   updatedAt: doc.updatedAt,
   };
 };
+
+const toPublicActivityTenant = (
+  tenant: Pick<
+    TenantRecord,
+    | 'id'
+    | 'slug'
+    | 'name'
+    | 'countryCode'
+    | 'ownerId'
+    | 'type'
+    | 'businessMode'
+    | 'publishingPurpose'
+    | 'logoUrl'
+  >
+): ActivityWithPublicRelations['tenant'] => ({
+  id: tenant.id,
+  slug: tenant.slug,
+  name: tenant.name,
+  countryCode: tenant.countryCode,
+  ownerId: tenant.ownerId,
+  type: tenant.type,
+  businessMode: tenant.businessMode,
+  publishingPurpose: tenant.publishingPurpose,
+  logoUrl: tenant.logoUrl ?? null,
+});
 
 const toGuidePreview = (user: AuthUserRecord | undefined) =>
   user
@@ -153,68 +188,6 @@ const toParticipantUser = (user: AuthUserRecord | undefined) => ({
     : null
 });
 
-const fallbackLocationFromActivityDoc = (
-  doc: MongoActivityDoc,
-  seed?: Pick<
-    Location,
-    'name' | 'region' | 'groupRegionLevels' | 'countryCode' | 'latitude' | 'longitude'
-  >
-): Location =>
-  ({
-    id: doc.locationId,
-    name: seed?.name?.trim() || doc.title,
-    region:
-      seed?.region?.trim() ||
-      readGroupRegionAtLevel(seed?.groupRegionLevels, GROUP_REGION_LEVEL.state)?.trim() ||
-      '',
-    areaLabel: null,
-    activityType: ActivityType.HIKING,
-    description: doc.description,
-    difficulty: null,
-    season: [],
-    childFriendly: false,
-    maxGroupSize: null,
-    accessibility: null,
-    images: doc.images ?? [],
-    featured: false,
-    status: LocationStatus.ACTIVE,
-    distance: null,
-    duration: null,
-    elevation: null,
-    campingType: null,
-    latitude:
-      seed?.latitude ??
-      doc.meetingLat ??
-      doc.startLat ??
-      doc.parkingLat ??
-      null,
-    longitude:
-      seed?.longitude ??
-      doc.meetingLng ??
-      doc.startLng ??
-      doc.parkingLng ??
-      null,
-    groupRegionLevels: seed?.groupRegionLevels ?? doc.groupRegionLevels ?? null,
-    highlights: [],
-    surfaceType: [],
-    tags: [],
-    parkingLink: null,
-    parkingLat: doc.parkingLat ?? null,
-    parkingLng: doc.parkingLng ?? null,
-    premiumImages: [],
-    accessibleBy: [],
-    viewCount: 0,
-    countryCode: seed?.countryCode ?? 'AE',
-    gpxKey: null,
-    guidePdfKey: null,
-    guideMarkdown: null,
-    guidePreview: null,
-    unlockPriceAed: 0,
-    submittedById: null,
-    createdAt: doc.createdAt,
-    updatedAt: doc.updatedAt
-  }) as Location;
-
 const loadLocationsByIds = async (
   locationIds: string[],
   activeOnly = false
@@ -235,20 +208,13 @@ const loadLocationsByIds = async (
   return map;
 };
 
-const activityDocHasMapCoordinates = (doc: MongoActivityDoc): boolean =>
-  (doc.meetingLat != null && doc.meetingLng != null) ||
-  (doc.startLat != null && doc.startLng != null) ||
-  (doc.parkingLat != null && doc.parkingLng != null);
-
 const assembleEventsWithPublicRelations = async (
   docs: MongoActivityDoc[]
 ): Promise<ActivityWithPublicRelations[]> => {
   if (docs.length === 0) return [];
 
   const locationMap = await loadLocationsByIds(docs.map((doc) => doc.locationId), false);
-  const filteredDocs = docs.filter(
-    (doc) => locationMap.has(doc.locationId) || activityDocHasMapCoordinates(doc)
-  );
+  const filteredDocs = docs.filter((doc) => locationMap.has(doc.locationId));
   if (filteredDocs.length === 0) return [];
 
   const tenantMap = await tenantMapForIds(filteredDocs.map((doc) => doc.tenantId));
@@ -277,9 +243,9 @@ const assembleEventsWithPublicRelations = async (
   const users = await findAuthUsersByIds([...userIds]);
   const userMap = new Map(users.map((user) => [user._id, user]));
   return filteredDocs.flatMap((doc) => {
-    const location = locationMap.get(doc.locationId) ?? fallbackLocationFromActivityDoc(doc);
+    const location = locationMap.get(doc.locationId);
     const tenant = tenantMap.get(doc.tenantId);
-    if (!tenant) return [];
+    if (!location || !tenant) return [];
 
     const participants = (participantsByActivity.get(doc._id) ?? []).map((participant) => ({
       id: participant._id,
@@ -299,13 +265,7 @@ const assembleEventsWithPublicRelations = async (
       {
         ...mongoEventToEvent(doc),
         location,
-        tenant: {
-          id: tenant.id,
-          slug: tenant.slug,
-          name: tenant.name,
-          countryCode: tenant.countryCode,
-          ownerId: tenant.ownerId
-        },
+        tenant: toPublicActivityTenant(tenant),
         guide: doc.hostId ? toGuidePreview(userMap.get(doc.hostId)) : { profile: null },
         createdBy: (() => {
           const creator = userMap.get(doc.createdById);
@@ -329,7 +289,7 @@ const filterPublishedDocs = async (
   const now = new Date();
   return docs.filter((doc) => {
     if (doc.status !== ActivityStatus.PUBLISHED) return false;
-    if (!locations.has(doc.locationId) && !activityDocHasMapCoordinates(doc)) return false;
+    if (!locations.has(doc.locationId)) return false;
     if (shouldHideActivityFromExploreMap(doc.joinMode, doc.requirements)) return false;
     if (
       when === 'upcoming' &&
@@ -530,13 +490,7 @@ const assembleEventsForExploreMap = async (
     docs.map((doc) => doc.locationId),
     false
   );
-  const filteredDocs = docs.filter(
-    (doc) =>
-      locationMap.has(doc.locationId) ||
-      (doc.meetingLat != null && doc.meetingLng != null) ||
-      (doc.startLat != null && doc.startLng != null) ||
-      (doc.parkingLat != null && doc.parkingLng != null)
-  );
+  const filteredDocs = docs.filter((doc) => locationMap.has(doc.locationId));
   if (filteredDocs.length === 0) return [];
 
   const tenantMap = await tenantMapForIds(filteredDocs.map((doc) => doc.tenantId));
@@ -565,16 +519,9 @@ const assembleEventsForExploreMap = async (
   const users = await findAuthUsersByIds([...userIds]);
   const userMap = new Map(users.map((user) => [user._id, user]));
   return filteredDocs.flatMap((doc) => {
-    const linkedLocation = locationMap.get(doc.locationId);
-    const location = linkedLocation ?? fallbackLocationFromActivityDoc(doc);
-
-    const tenant = tenantMap.get(doc.tenantId) ?? {
-      id: doc.tenantId,
-      slug: 'host',
-      name: 'Host',
-      countryCode: location.countryCode ?? 'AE',
-      ownerId: doc.createdById
-    };
+    const location = locationMap.get(doc.locationId);
+    const tenant = tenantMap.get(doc.tenantId);
+    if (!location || !tenant) return [];
 
     const participants = (participantsByActivity.get(doc._id) ?? []).map((participant) => ({
       id: participant._id,
@@ -594,13 +541,7 @@ const assembleEventsForExploreMap = async (
       {
         ...mongoEventToEvent(doc),
         location,
-        tenant: {
-          id: tenant.id,
-          slug: tenant.slug,
-          name: tenant.name,
-          countryCode: tenant.countryCode,
-          ownerId: tenant.ownerId
-        },
+        tenant: toPublicActivityTenant(tenant),
         guide: doc.hostId ? toGuidePreview(userMap.get(doc.hostId)) : { profile: null },
         createdBy: (() => {
           const creator = userMap.get(doc.createdById);

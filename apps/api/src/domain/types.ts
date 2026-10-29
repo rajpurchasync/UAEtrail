@@ -161,9 +161,21 @@ export interface Activity {
   areaId?: string | null;
   activityMode?: 'hosted' | 'seeking' | null;
   participantIntentId?: string | null;
+  /** On-ground guides. Pending rows stay off public DTOs. */
+  guides?: ActivityGuideRecord[];
   createdAt: Date;
   updatedAt: Date;
 }
+
+export type ActivityGuideRecord = {
+  userId: string;
+  displayName: string;
+  avatarUrl: string | null;
+  status: 'accepted' | 'pending';
+  assignedByUserId: string;
+  assignedAt: Date;
+  respondedAt: Date | null;
+};
 
 export interface ActivityRequest {
   id: string;

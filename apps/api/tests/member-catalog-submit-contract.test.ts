@@ -24,7 +24,7 @@ const placeSubmitBody = (suffix: string) => ({
   description: 'Member-submitted hiking place for catalog submit contract coverage.',
   latitude: 25.1,
   longitude: 55.2,
-  images: ['https://example.com/trail-member.jpg'],
+  images: ['https://example.com/trail-member.jpg', 'https://example.com/trail-member-2.jpg'],
 });
 
 describe('member catalog submit (CPC-4)', () => {

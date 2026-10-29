@@ -55,7 +55,7 @@ const buildMongoFilter = (filters: LocationListFilters): Record<string, unknown>
         ? 'HIKING'
         : filters.activityType === 'camping'
           ? 'CAMPING'
-          : { $in: ['EVENT', 'COMMUNITY_ACTIVITY'] };
+          : 'EVENT';
   }
   if (filters.featured !== undefined) {
     query.featured = filters.featured;

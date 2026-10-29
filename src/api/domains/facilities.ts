@@ -1,5 +1,6 @@
 import type { ActivityViewerAccessDTO, FacilityDTO } from '@uaetrail/shared-types';
 import { apiRequest } from '../client';
+import { ADMIN_TABLE_PAGE_SIZE } from '../listAllPages';
 
 export const facilityApi = {
   getPublicFacilityDetail: (id: string) =>
@@ -28,8 +29,11 @@ export const facilityApi = {
       body: JSON.stringify(payload),
     }),
 
-  getAdminFacilities: () =>
-    apiRequest<{ data: FacilityDTO[] }>('/admin/facilities?pageSize=250', { auth: true }),
+  getAdminFacilities: (page = 1, pageSize = ADMIN_TABLE_PAGE_SIZE) =>
+    apiRequest<{ data: FacilityDTO[]; meta?: { total: number } }>(
+      `/admin/facilities?page=${page}&pageSize=${pageSize}`,
+      { auth: true }
+    ),
 
   createAdminFacility: (payload: Partial<FacilityDTO> & { facilityKind: FacilityDTO['facilityKind'] }) =>
     apiRequest<{ data: FacilityDTO }>('/admin/facilities', {

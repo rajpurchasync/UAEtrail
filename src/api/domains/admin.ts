@@ -1,5 +1,6 @@
 import { TenantListDTO, UserListDTO } from '@uaetrail/shared-types';
 import { apiRequest } from '../client';
+import { ADMIN_TABLE_PAGE_SIZE } from '../listAllPages';
 import type {
   AdminMetrics,
   AdminSocialGroupDetail,
@@ -13,8 +14,11 @@ import type {
 export const adminApi = {
     getAdminMetrics: () => apiRequest<{ data: AdminMetrics }>('/admin/metrics', { auth: true }),
 
-    getAdminOrganisationApplications: () =>
-    apiRequest<{ data: HostApplication[] }>('/admin/pro-applications', { auth: true }),
+    getAdminOrganisationApplications: (page = 1, pageSize = ADMIN_TABLE_PAGE_SIZE) =>
+      apiRequest<{ data: HostApplication[]; meta?: { total: number } }>(
+        `/admin/pro-applications?page=${page}&pageSize=${pageSize}`,
+        { auth: true }
+      ),
 
     reviewAdminApplication: (id: string, status: 'approved' | 'rejected', reviewerNote?: string) =>
     apiRequest(`/admin/pro-applications/${id}`, {
@@ -71,8 +75,11 @@ export const adminApi = {
       body: JSON.stringify({ status, comment })
     }),
 
-    getAdminTenants: () =>
-    apiRequest<{ data: TenantListDTO[] }>('/admin/tenants', { auth: true }),
+    getAdminTenants: (page = 1, pageSize = ADMIN_TABLE_PAGE_SIZE) =>
+      apiRequest<{ data: TenantListDTO[]; meta?: { total: number } }>(
+        `/admin/tenants?page=${page}&pageSize=${pageSize}`,
+        { auth: true }
+      ),
 
     getAdminTenantDetail: (id: string) =>
     apiRequest<{ data: TenantDetail }>(`/admin/tenants/${id}`, { auth: true }),

@@ -1,0 +1,167 @@
+import { describe, expect, it } from 'vitest';
+import type { BrowseListFilterState } from '../browseListFilters';
+import {
+  countListExplorerFilters,
+  parseListExplorerLayout,
+  serializeListExplorerLayout,
+} from './listExplorerLayout';
+import {
+  listExplorerBucketCategories,
+  listExplorerBucketTotalLabel,
+  listExplorerSearchBucketCounts,
+  parseListExplorerBucket,
+  serializeListExplorerBucket,
+} from './listExplorerBucket';
+import { parseListFilterFabCorner, snapListFilterFabCorner } from './listExplorerFabSnap';
+import { listExplorerEntityLinkState } from './listExplorerNavState';
+import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
+import { listExplorerCardMeta, listExplorerCardTitle, listExplorerPriceLabel } from './listExplorerCardMeta';
+
+const emptyFilters = (): BrowseListFilterState => ({
+  query: 'wadi',
+  categories: [],
+  tripTopics: [],
+  placeTopics: [],
+  tripLookingOnly: false,
+  price: 'all',
+  when: 'any',
+  activityDatePreset: 'anyday',
+  buddiesSegment: 'looking',
+});
+
+describe('list explorer layout', () => {
+  it('defaults thumbnails and omits the URL param', () => {
+    expect(parseListExplorerLayout(null)).toBe('thumbnails');
+    expect(parseListExplorerLayout('list')).toBe('list');
+    expect(parseListExplorerLayout('calendar')).toBe('calendar');
+    expect(serializeListExplorerLayout('thumbnails')).toBeNull();
+    expect(serializeListExplorerLayout('list')).toBe('list');
+  });
+
+  it('counts applied filters for the open Events/Places view', () => {
+    expect(countListExplorerFilters(emptyFilters(), [])).toBe(0);
+    expect(
+      countListExplorerFilters(
+        {
+          ...emptyFilters(),
+          tripTopics: ['hiking', 'camping'],
+          price: 'free',
+          activityDatePreset: 'week',
+        },
+        ['Dubai']
+      )
+    ).toBe(5);
+    expect(
+      countListExplorerFilters(
+        {
+          ...emptyFilters(),
+          tripTopics: ['hiking'],
+          placeTopics: ['hiking'],
+        },
+        []
+      )
+    ).toBe(1);
+    expect(
+      countListExplorerFilters(
+        {
+          ...emptyFilters(),
+          tripTopics: ['hiking'],
+          placeTopics: ['hiking', 'shop'],
+          price: 'paid',
+        },
+        ['Dubai'],
+        'places'
+      )
+    ).toBe(3);
+  });
+});
+
+describe('list explorer events/places bucket', () => {
+  it('defaults to events and omits listCat', () => {
+    expect(parseListExplorerBucket(null)).toBe('events');
+    expect(parseListExplorerBucket('activities')).toBe('events');
+    expect(parseListExplorerBucket('venues')).toBe('places');
+    expect(serializeListExplorerBucket('events')).toBeNull();
+    expect(serializeListExplorerBucket('places')).toBe('venues');
+    expect(listExplorerBucketCategories('events')).toEqual(['activities']);
+    expect(listExplorerBucketCategories('places')).toEqual(['venues']);
+  });
+
+  it('labels the current total and search counts on both buckets', () => {
+    expect(listExplorerBucketTotalLabel('events', 17)).toBe('17 events');
+    expect(listExplorerBucketTotalLabel('places', 1)).toBe('1 place');
+    expect(
+      listExplorerSearchBucketCounts({
+        activities: 2,
+        places: 1,
+        people: 0,
+        shops: 1,
+        agencies: 0,
+        facilities: 0,
+      })
+    ).toEqual({ events: 2, places: 2 });
+  });
+});
+
+describe('list explorer filter fab snap', () => {
+  it('snaps to the nearest corner', () => {
+    expect(snapListFilterFabCorner(10, 10, 400, 800)).toBe('tl');
+    expect(snapListFilterFabCorner(390, 10, 400, 800)).toBe('tr');
+    expect(snapListFilterFabCorner(10, 790, 400, 800)).toBe('bl');
+    expect(snapListFilterFabCorner(390, 790, 400, 800)).toBe('br');
+    expect(parseListFilterFabCorner('tr')).toBe('tr');
+    expect(parseListFilterFabCorner('nope')).toBe('bl');
+  });
+});
+
+describe('list explorer thumbnail copy', () => {
+  const socialHeadline = 'Samira Khan is going Hiking on Saturday 31st';
+  const eventCard = {
+    source: 'activity',
+    listTitle: socialHeadline,
+    headline: `${socialHeadline} - Hatta`,
+    listHost: 'Samira Khan',
+    hostAvatar: 'https://cdn.example/samira.jpg',
+    sections: { hostName: 'Samira Khan', activityHighlight: 'Hiking', details: [] },
+    activity: { title: 'Hatta Dam Loop' },
+    price: { kind: 'paid', badge: 'Paid Event · AED 120' },
+  } as DiscoveryCardModel;
+
+  it('uses the host-provided event name instead of the social headline', () => {
+    expect(listExplorerCardTitle(eventCard)).toBe('Hatta Dam Loop');
+    expect(listExplorerCardMeta(eventCard).title).toBe('Hatta Dam Loop');
+    expect(listExplorerCardMeta(eventCard).hostName).toBe('Samira Khan');
+  });
+
+  it('shows a compact price for the image overlay', () => {
+    expect(listExplorerPriceLabel(eventCard)).toBe('AED 120');
+    expect(listExplorerPriceLabel({ ...eventCard, price: { kind: 'free', badge: 'Free' } })).toBe('Free');
+  });
+
+  it('uses the company logo and name when the outing is published by an agency', () => {
+    const companyCard = {
+      ...eventCard,
+      listHost: 'Fatima Al Mazrouei',
+      hostAvatar: 'https://cdn.example/fatima.jpg',
+      activity: {
+        title: 'Hatta Dam Loop',
+        publishingProfileKind: 'agency',
+        tenantName: 'UAE Adventure Co',
+        tenantLogoUrl: 'https://cdn.example/logo.png',
+      },
+    } as DiscoveryCardModel;
+    const meta = listExplorerCardMeta(companyCard);
+    expect(meta.hostName).toBe('UAE Adventure Co');
+    expect(meta.hostAvatar).toBe('https://cdn.example/logo.png');
+  });
+});
+
+describe('list explorer entity back state', () => {
+  it('returns to the list URL after nested detail screens', () => {
+    expect(listExplorerEntityLinkState('/list?q=hatta')).toEqual({
+      from: '/list?q=hatta',
+      backLabel: 'Browse',
+      detailBackTo: '/list?q=hatta',
+    });
+  });
+});

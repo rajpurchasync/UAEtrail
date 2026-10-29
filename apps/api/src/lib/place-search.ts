@@ -358,6 +358,16 @@ export type CommunityCityLabel = {
 
 const samePlaceName = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
 
+const firstNamed = (parts: Array<string | null | undefined>): string | null =>
+  parts.map((part) => part?.trim()).find((part): part is string => Boolean(part)) ?? null;
+
+/** City/community/state from a pin — city is enough even when community is missing. */
+export type PlaceLocality = {
+  city: string | null;
+  community: string | null;
+  state: string | null;
+};
+
 /** First distinct community and city. Returns null when either name is missing. */
 export const communityCityLabel = (
   communityParts: Array<string | null | undefined>,
@@ -435,6 +445,81 @@ export const reverseCommunityCity = async (
   const photon = await reversePhoton(lat, lng);
   if (photon) return photon;
   return reverseNominatim(lat, lng);
+};
+
+const reversePhotonLocality = async (lat: number, lng: number): Promise<PlaceLocality | null> => {
+  const url = new URL('https://photon.komoot.io/reverse');
+  url.searchParams.set('lat', String(lat));
+  url.searchParams.set('lon', String(lng));
+  url.searchParams.set('lang', 'en');
+  const response = await fetch(url.toString(), { headers: { Accept: 'application/json' } });
+  if (!response.ok) return null;
+  const payload = (await response.json()) as {
+    features?: Array<{
+      properties?: PhotonProperties & { locality?: string; county?: string; suburb?: string };
+    }>;
+  };
+  const props = payload.features?.[0]?.properties;
+  if (!props) return null;
+  const city = firstNamed([props.city, props.locality, props.name]);
+  const state = firstNamed([props.state]);
+  const community = firstNamed([props.district, props.suburb, props.county]);
+  if (!city && !state && !community) return null;
+  return {
+    city,
+    state,
+    community: community && city && samePlaceName(community, city) ? null : community,
+  };
+};
+
+const reverseNominatimLocality = async (lat: number, lng: number): Promise<PlaceLocality | null> => {
+  const url = new URL('https://nominatim.openstreetmap.org/reverse');
+  url.searchParams.set('format', 'json');
+  url.searchParams.set('lat', String(lat));
+  url.searchParams.set('lon', String(lng));
+  url.searchParams.set('addressdetails', '1');
+  url.searchParams.set('accept-language', 'en');
+  const response = await fetch(url.toString(), {
+    headers: { 'Accept-Language': 'en', 'User-Agent': NOMINATIM_USER_AGENT },
+  });
+  if (!response.ok) return null;
+  const row = (await response.json()) as {
+    address?: {
+      suburb?: string;
+      neighbourhood?: string;
+      city_district?: string;
+      city?: string;
+      town?: string;
+      village?: string;
+      state?: string;
+    };
+  };
+  const address = row.address;
+  if (!address) return null;
+  const city = firstNamed([address.city, address.town, address.village]);
+  const state = firstNamed([address.state]);
+  const community = firstNamed([address.suburb, address.neighbourhood, address.city_district]);
+  if (!city && !state && !community) return null;
+  return {
+    city,
+    state,
+    community: community && city && samePlaceName(community, city) ? null : community,
+  };
+};
+
+/** Reverse-geocode a pin for catalog city tagging (does not require a community name). */
+export const reversePlaceLocality = async (
+  lat: number,
+  lng: number
+): Promise<PlaceLocality | null> => {
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+  try {
+    const photon = await reversePhotonLocality(lat, lng);
+    if (photon?.city || photon?.state) return photon;
+    return await reverseNominatimLocality(lat, lng);
+  } catch {
+    return null;
+  }
 };
 
 export const resolvePlaceSelection = async (input: {

@@ -72,7 +72,7 @@ export const buildTestLocationSubmitBody = (
   areaId: defaultTestAreaId(),
   activityType: 'hiking',
   description: 'Integration test trail with enough characters for schema validation.',
-  images: ['/media/test.jpg'],
+  images: ['/media/test.jpg', '/media/test-2.jpg'],
   surfaceType: [],
   highlights: [],
   tags: [],

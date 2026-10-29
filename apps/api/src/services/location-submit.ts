@@ -115,7 +115,7 @@ export const buildLocationCreateData = (
   groupRegionLevels,
   region: body.region,
   areaLabel: body.areaLabel?.trim() || null,
-  areaId: body.areaId.trim(),
+  areaId: body.areaId?.trim() || '',
   activityType: facilityKind ? ActivityType.EVENT : toActivityType(body.activityType),
   description: body.description,
   difficulty: shop ? undefined : toDifficulty(body.difficulty),

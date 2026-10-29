@@ -58,19 +58,31 @@ export const fetchAdminMetrics = async (): Promise<AdminMetrics> => {
   return res.data;
 };
 
-export const fetchAdminModerationActivities = async (): Promise<ActivityDTO[]> => {
-  const res = await api.getAdminActivities();
-  return res.data;
+export const fetchAdminModerationActivities = async (
+  page = 1,
+  pageSize?: number
+): Promise<{ items: ActivityDTO[]; total: number }> => {
+  const res = await api.getAdminActivities(page, pageSize);
+  return { items: res.data, total: res.meta?.total ?? res.data.length };
 };
 
-export const fetchAdminPlacesCatalog = async (): Promise<LocationDTO[]> => {
-  const res = await api.getAdminPlaces();
-  return res.data;
+export const fetchAdminPlacesCatalog = async (
+  page = 1,
+  pageSize?: number
+): Promise<{ items: LocationDTO[]; total: number }> => {
+  const res = await api.getAdminPlaces(page, pageSize);
+  return { items: res.data, total: res.meta?.total ?? res.data.length };
 };
 
-export const fetchAdminFacilitiesCatalog = async (): Promise<PlaceDTO[]> => {
-  const res = await api.getAdminFacilities();
-  return res.data.map(facilityDtoToAdminPlaceRow);
+export const fetchAdminFacilitiesCatalog = async (
+  page = 1,
+  pageSize?: number
+): Promise<{ items: PlaceDTO[]; total: number }> => {
+  const res = await api.getAdminFacilities(page, pageSize);
+  return {
+    items: res.data.map(facilityDtoToAdminPlaceRow),
+    total: res.meta?.total ?? res.data.length,
+  };
 };
 
 export const fetchAdminActivityEngagement = async (
@@ -94,14 +106,20 @@ export const toggleAdminActivityFeatured = async (
   return api.toggleActivityFeatured(activityId);
 };
 
-export const fetchAdminOrganisationApplications = async (): Promise<HostApplication[]> => {
-  const res = await api.getAdminOrganisationApplications();
-  return res.data;
+export const fetchAdminOrganisationApplications = async (
+  page = 1,
+  pageSize?: number
+): Promise<{ items: HostApplication[]; total: number }> => {
+  const res = await api.getAdminOrganisationApplications(page, pageSize);
+  return { items: res.data, total: res.meta?.total ?? res.data.length };
 };
 
-export const fetchAdminTenants = async (): Promise<TenantListDTO[]> => {
-  const res = await api.getAdminTenants();
-  return res.data;
+export const fetchAdminTenants = async (
+  page = 1,
+  pageSize?: number
+): Promise<{ items: TenantListDTO[]; total: number }> => {
+  const res = await api.getAdminTenants(page, pageSize);
+  return { items: res.data, total: res.meta?.total ?? res.data.length };
 };
 
 export const reviewAdminOrganisationApplication = async (

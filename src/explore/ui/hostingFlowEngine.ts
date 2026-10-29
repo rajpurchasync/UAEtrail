@@ -1,4 +1,11 @@
-import type { ActivityGroupChatPostPolicy, ExploreMapItemDTO, HostTierFlags } from '@uaetrail/shared-types';
+import type {
+  ActivityGroupChatPostPolicy,
+  ExploreMapItemDTO,
+  HostTierFlags,
+  PackingAckMode,
+  PackingItem,
+} from '@uaetrail/shared-types';
+import { encodePackingListRequirements } from '@uaetrail/shared-types';
 import {
   allowedActivityPricingModes,
   type PublishingProfileKind,
@@ -136,6 +143,9 @@ export type CreateActivityDraft = {
   aboutTrail: string;
   /** Hiking — gear and must-know lines for joiners. */
   joinKit: string;
+  /** Hiking/event packing checklist — joiners see or must tick these. */
+  packingAckMode: PackingAckMode;
+  packingItems: PackingItem[];
   /** Hiking — meeting point pin (step 9), separate from going-from pin. */
   meetingLatitude: number | null;
   meetingLongitude: number | null;
@@ -162,6 +172,16 @@ export type CreateActivityDraft = {
   limitedMinAgeEnabled: boolean;
   /** Crew group chat — who can post after publish (synced to activity group wall). */
   groupChatPostPolicy: ActivityGroupChatPostPolicy;
+  /** Extra on-ground guides (creator is always included). */
+  guideUserIds: string[];
+  /** New catalog spot — photos for admin review (custom venue). */
+  customPlaceImages: string[];
+  /** Curated area for a new (non-registry) trail/camp/venue. */
+  customPlaceAreaId: string | null;
+  /** Proposed area name when the pin is outside published polygons. */
+  customPlaceProposedAreaName: string;
+  /** UAE emirate for search/Home filters — inferred from the pin, else picked. */
+  customPlaceEmirate: string;
 };
 
 export const resolveLimitedAudienceAccess = (draft: Pick<
@@ -306,7 +326,10 @@ export const createFlowStepTitle = (
     if (activityHost) return 'Where (meeting)';
     return eventHost ? 'Meeting point' : 'Meeting point';
   }
-  if (step === 'join_kit') return 'What joiners should bring or know';
+  if (step === 'join_kit') {
+    if (hikingHost || eventHost) return 'What to bring';
+    return 'What joiners should bring or know';
+  }
   if (step === 'spots' && (structuredHost || activityHost)) return 'Participants';
   if (step === 'spots' && rideshareHost) return 'Seats';
   if (step === 'price') return 'Price';
@@ -413,6 +436,15 @@ export const createDraftFromSeekingMapItem = (item: ExploreMapItemDTO): CreateAc
   };
 };
 
+export const hydrateCreateActivityDraft = (
+  draft?: Partial<CreateActivityDraft> | null
+): CreateActivityDraft => ({
+  ...emptyCreateActivityDraft(),
+  ...draft,
+  packingItems: Array.isArray(draft?.packingItems) ? draft.packingItems : [],
+  packingAckMode: draft?.packingAckMode === 'strict' ? 'strict' : 'lenient',
+});
+
 export const emptyCreateActivityDraft = (): CreateActivityDraft => ({
   kind: null,
   genericBuddy: false,
@@ -440,6 +472,8 @@ export const emptyCreateActivityDraft = (): CreateActivityDraft => ({
   trailLongitude: null,
   aboutTrail: '',
   joinKit: '',
+  packingAckMode: 'lenient',
+  packingItems: [],
   meetingLatitude: null,
   meetingLongitude: null,
   meetingPointLabel: '',
@@ -478,6 +512,11 @@ export const emptyCreateActivityDraft = (): CreateActivityDraft => ({
   limitedFamilyOnly: false,
   limitedMinAgeEnabled: false,
   groupChatPostPolicy: 'all_participants',
+  guideUserIds: [],
+  customPlaceImages: [],
+  customPlaceAreaId: null,
+  customPlaceProposedAreaName: '',
+  customPlaceEmirate: '',
 });
 
 
@@ -591,6 +630,17 @@ export const buildHostingActivityRequirements = (draft: CreateActivityDraft): st
   }
   if (draft.kind === 'activity' && draft.activityTopic) {
     requirements.push(`Activity type: ${resolveActivityTopicLabel(draft.activityTopic)}`);
+  }
+  if (
+    (draft.kind === 'hiking' || draft.kind === 'event') &&
+    (draft.packingItems ?? []).some((item) => item.label.trim())
+  ) {
+    requirements.push(
+      ...encodePackingListRequirements(
+        draft.packingAckMode,
+        (draft.packingItems ?? []).filter((item) => item.label.trim())
+      )
+    );
   }
   if (draft.kind === 'hiking' && draft.trailName.trim()) {
     requirements.push(`Trail: ${draft.trailName.trim()}`);

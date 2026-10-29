@@ -1,10 +1,10 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import { todayIso } from '../../explore';
 
 interface MobileMonthCalendarProps {
   selectedDate: string;
   onSelectDate: (iso: string) => void;
+  /** When omitted, every day is selectable (list explorer calendar). */
   minDate?: string;
   /** ISO dates (YYYY-MM-DD) with scheduled map activities — subtle marker on day cells. */
   markedDates?: ReadonlySet<string>;
@@ -22,15 +22,19 @@ const parseIso = (iso: string): { year: number; month: number; day: number } => 
 export const MobileMonthCalendar = ({
   selectedDate,
   onSelectDate,
-  minDate = todayIso(),
+  minDate,
   markedDates,
 }: MobileMonthCalendarProps) => {
   const initial = parseIso(selectedDate);
   const [viewYear, setViewYear] = useState(initial.year);
   const [viewMonth, setViewMonth] = useState(initial.month);
 
-  const min = parseIso(minDate);
-  const minTimestamp = new Date(min.year, min.month, min.day).getTime();
+  const minTimestamp = minDate
+    ? (() => {
+        const min = parseIso(minDate);
+        return new Date(min.year, min.month, min.day).getTime();
+      })()
+    : null;
 
   const cells = useMemo(() => {
     const firstDay = new Date(viewYear, viewMonth, 1);
@@ -42,7 +46,7 @@ export const MobileMonthCalendar = ({
     for (let day = 1; day <= daysInMonth; day += 1) {
       const iso = toIso(viewYear, viewMonth, day);
       const ts = new Date(viewYear, viewMonth, day).getTime();
-      rows.push({ iso, day, disabled: ts < minTimestamp });
+      rows.push({ iso, day, disabled: minTimestamp != null && ts < minTimestamp });
     }
     return rows;
   }, [viewYear, viewMonth, minTimestamp]);

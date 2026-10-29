@@ -298,6 +298,7 @@ export type MongoActivityDoc = {
   /** Hosted activity id when a seeking pin was fulfilled (M2d activity-primary rows). */
   seekingConvertedActivityId?: string | null;
   groupChatPostPolicy?: 'all_participants' | 'host_only' | null;
+  guides?: import('../domain/types.js').ActivityGuideRecord[];
   createdAt: Date;
   updatedAt: Date;
 };

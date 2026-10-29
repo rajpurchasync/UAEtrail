@@ -9,6 +9,8 @@ const SKIP_BADGE_PATTERNS = [
   /^General area/i,
   /^Shared cost:/i,
   /^Instructions:/i,
+  /^Packing ack:/i,
+  /^Packing item:/i,
   /^Reachable by/i,
   /^Vehicle:/i,
   /^Difficulty:/i,

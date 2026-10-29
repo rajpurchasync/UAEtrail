@@ -1,4 +1,9 @@
-import type { ActivityDTO, OutingTopic } from '@uaetrail/shared-types';
+import {
+  extractJoinInstructionLines,
+  parsePackingList,
+  type ActivityDTO,
+  type OutingTopic,
+} from '@uaetrail/shared-types';
 import type { HostComposeKind } from '../compose';
 import type { ActivityHostingTopic, CreateActivityDraft, CreateActivityKind } from './hostingFlowEngine';
 import { emptyCreateActivityDraft, todayIso } from './hostingFlowEngine';
@@ -56,6 +61,8 @@ export const createDraftFromPastActivity = (activity: ActivityDTO): CreateActivi
       : '';
 
   const base = emptyCreateActivityDraft();
+  const packing = parsePackingList(activity.requirements);
+  const joinNotes = extractJoinInstructionLines(activity.requirements).join('\n');
 
   return {
     ...base,
@@ -92,7 +99,12 @@ export const createDraftFromPastActivity = (activity: ActivityDTO): CreateActivi
     trailLatitude: structured ? startLat : null,
     trailLongitude: structured ? startLng : null,
     aboutTrail: structured ? activity.description?.trim() || '' : '',
-    joinKit: genericActivity ? activity.description?.trim() || '' : '',
+    joinKit: genericActivity ? activity.description?.trim() || '' : joinNotes,
+    packingAckMode: packing.mode,
+    packingItems: packing.items,
     rideshareEnabled: Boolean(activity.rideshareEnabled),
+    guideUserIds: (activity.guides ?? [])
+      .map((guide) => guide.userId)
+      .filter((id) => id && id !== activity.hostUserId && id !== activity.createdById),
   };
 };

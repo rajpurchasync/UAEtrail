@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Accessibility, ActivityType } from '../src/domain/enums.js';
+import { locationSubmitBodySchema } from '../src/domain/location-submit.js';
 import { buildLocationCreateData } from '../src/services/location-submit.js';
 import { buildTestLocationSubmitBody, testAreas } from './helpers/test-seed.js';
 
@@ -56,5 +57,43 @@ describe('buildLocationCreateData', () => {
     expect(data.activityType).toBe(ActivityType.EVENT);
     expect(data.tags).toContain('place-kind:toilet');
     expect(data.status).toBe('DRAFT');
+  });
+});
+
+describe('locationSubmitBodySchema outdoor photos', () => {
+  it('requires at least one photo for a hiking spot', () => {
+    const parsed = locationSubmitBodySchema.safeParse(
+      buildTestLocationSubmitBody({ images: [] })
+    );
+    expect(parsed.success).toBe(false);
+  });
+
+  it('accepts one photo for a hiking spot', () => {
+    const parsed = locationSubmitBodySchema.safeParse(
+      buildTestLocationSubmitBody({ images: ['https://example.com/one.jpg'] })
+    );
+    expect(parsed.success).toBe(true);
+  });
+
+  it('accepts a proposed area name instead of a published area id', () => {
+    const parsed = locationSubmitBodySchema.safeParse(
+      buildTestLocationSubmitBody({
+        areaId: undefined,
+        proposedAreaName: 'Wadi Naqab',
+        latitude: 25.7,
+        longitude: 56.1,
+      })
+    );
+    expect(parsed.success).toBe(true);
+  });
+
+  it('allows a single photo on activity-anchor pins', () => {
+    const parsed = locationSubmitBodySchema.safeParse(
+      buildTestLocationSubmitBody({
+        activityAnchor: true,
+        images: ['https://example.com/one.jpg'],
+      })
+    );
+    expect(parsed.success).toBe(true);
   });
 });

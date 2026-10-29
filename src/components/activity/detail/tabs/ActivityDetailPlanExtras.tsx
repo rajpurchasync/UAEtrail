@@ -5,6 +5,7 @@ import {
   MANDATORY_INSTRUCTIONS_LABEL,
 } from '../../../../utils/joinInstructions';
 import { extractActivityPlanDetailLines } from '../../../../activity/activityDetailReachBy';
+import { ActivityPackingListPreview } from '../../ActivityPackingListPreview';
 import { activityScheduleHasEnded } from '@uaetrail/shared-types';
 import { ReviewSection } from '../../../ui/ReviewSection';
 
@@ -18,6 +19,7 @@ type ActivityDetailPlanExtrasProps = {
   onActivityReviewSubmitted?: (review: import('@uaetrail/shared-types').ReviewDTO) => void;
   hidePhotoGallery?: boolean;
   hideActivityReviews?: boolean;
+  hidePackingList?: boolean;
 };
 
 export const ActivityDetailPlanExtras = ({
@@ -30,6 +32,7 @@ export const ActivityDetailPlanExtras = ({
   onActivityReviewSubmitted,
   hidePhotoGallery = false,
   hideActivityReviews = false,
+  hidePackingList = false,
 }: ActivityDetailPlanExtrasProps) => {
   const mandatoryInstructions = extractJoinInstructionLines(activity.requirements);
   const planDetailLines = extractActivityPlanDetailLines(activity.requirements);
@@ -56,6 +59,10 @@ export const ActivityDetailPlanExtras = ({
           </ul>
         </div>
       ) : null}
+
+      {hidePackingList ? null : (
+        <ActivityPackingListPreview requirements={activity.requirements} className={`mb-4 ${panelClassName}`} />
+      )}
 
       {mandatoryInstructions.length > 0 ? (
         <div className={`bg-white rounded-2xl border border-amber-100 p-5 sm:p-6 ${panelClassName}`}>

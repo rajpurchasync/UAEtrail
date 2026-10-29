@@ -41,6 +41,7 @@ export type ActivityViewerAccessInput = {
     createdById: string;
     joinMode?: unknown;
     requirements?: string[] | null;
+    guides?: Array<{ userId: string; status?: string }>;
   };
   isPlatformAdmin?: boolean;
 };
@@ -60,6 +61,12 @@ const resolveActivityViewerLevel = async (
 
   const hostUserId = input.activity.hostId ?? input.activity.createdById;
   if (viewerUserId === hostUserId || viewerUserId === input.activity.createdById) {
+    return 'host';
+  }
+  const acceptedGuide = (input.activity.guides ?? []).some(
+    (guide) => guide.userId === viewerUserId && (guide.status ?? 'accepted') === 'accepted'
+  );
+  if (acceptedGuide) {
     return 'host';
   }
 
@@ -91,6 +98,13 @@ const resolveActivityViewerLevel = async (
     toUserId: viewerUserId,
   });
   if (pendingInvite) {
+    return 'join_request';
+  }
+
+  const pendingGuide = (input.activity.guides ?? []).some(
+    (guide) => guide.userId === viewerUserId && guide.status === 'pending'
+  );
+  if (pendingGuide) {
     return 'join_request';
   }
 

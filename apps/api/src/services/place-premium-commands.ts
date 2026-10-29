@@ -12,10 +12,7 @@ import {
 const publicPlaceDetailPath = (location: { id: string; activityType: ActivityType }) => {
   if (location.activityType === ActivityType.SHOP) return `/shop/${location.id}`;
   if (location.activityType === ActivityType.CAMPING) return `/camp/${location.id}`;
-  if (
-    location.activityType === ActivityType.EVENT ||
-    location.activityType === ActivityType.COMMUNITY_ACTIVITY
-  ) {
+  if (location.activityType === ActivityType.EVENT) {
     return `/venue/${location.id}`;
   }
   return `/trail/${location.id}`;

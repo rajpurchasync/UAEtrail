@@ -46,8 +46,7 @@ export const formatListFeedPosterTitleLines = (
 ): ListFeedPosterTitleLines => {
   const words = title.trim().split(/\s+/).filter(Boolean).slice(0, maxWords);
   if (words.length === 0) {
-    const fallback = title.trim() || 'Outdoor plan';
-    return { line1: fallback, line2: null };
+    return { line1: title.trim(), line2: null };
   }
   const line1 = words.slice(0, wordsPerLine).join(' ');
   const line2 =
@@ -76,7 +75,7 @@ export const resolveBrowsePosterHeroTitle = (card: DiscoveryCardModel): string =
   const headlineLead = card.headline?.split(' - ')[0]?.trim();
   if (headlineLead && !card.sections.highlightName) return headlineLead;
 
-  return placeLineFallback(card) ?? 'Outdoor plan';
+  return placeLineFallback(card) ?? card.listTitle.trim();
 };
 
 const placeLineFallback = (card: DiscoveryCardModel): string | null => {

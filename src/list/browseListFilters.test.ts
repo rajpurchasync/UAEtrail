@@ -66,6 +66,22 @@ describe('filterExploreMapItemsForList', () => {
     expect(filtered[0].source).toBe('venue');
   });
 
+  it('does not apply event when/date filters on the Places view', () => {
+    const items = [hikingVenue('v1')];
+    const filtered = filterExploreMapItemsForList(
+      items,
+      {
+        ...baseState,
+        categories: ['venues'],
+        when: 'weekend',
+        activityDatePreset: 'today',
+      },
+      []
+    );
+    expect(filtered).toHaveLength(1);
+    expect(filtered[0].source).toBe('venue');
+  });
+
   it('tripLookingOnly uses activity-discovery seeking selector', () => {
     const items = [
       hostedExploreMapItem({ id: 'activity:host-1' }),

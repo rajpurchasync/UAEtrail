@@ -37,7 +37,8 @@ import {
   type AddDraft,
 } from './addFlow';
 import type { ActivityDifficulty, LocationPrecision } from './createFlowShared';
-import { getVenueStateFilterOptions } from '../../config/regions';
+import { inferEmirateFromPin } from '../hostingPublishArea';
+import { EmirateFromPinField } from './EmirateFromPinField';
 import { AddHikingTrailPreview } from './AddHikingTrailPreview';
 import { AddCampingSpotPreview } from './AddCampingSpotPreview';
 import { AddSubmitSuccessSheet } from './AddSubmitSuccessSheet';
@@ -360,7 +361,15 @@ export const CreateAddFlow = ({
                 patchDraft({ parkingPinPlaced: true });
                 setParkingMapOpen(false);
               } else {
-                patchDraft({ locationPinPlaced: true });
+                const inferred = inferEmirateFromPin(
+                  draft.latitude,
+                  draft.longitude,
+                  publishedAreas
+                );
+                patchDraft({
+                  locationPinPlaced: true,
+                  emirate: inferred ?? '',
+                });
                 setLocationMapOpen(false);
               }
               setError(null);
@@ -416,10 +425,13 @@ export const CreateAddFlow = ({
         <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
           <AddCuratedAreaStep
             areaId={draft.areaId}
+            proposedAreaName={draft.areaLabel}
+            onProposedAreaNameChange={(areaLabel) => patchDraft({ areaLabel, areaId: areaLabel.trim() ? null : draft.areaId })}
             onAreaIdChange={(next) => {
               const center = next ? publishedAreas.find((area) => area.id === next)?.center : null;
               patchDraft({
                 areaId: next,
+                areaLabel: next ? '' : draft.areaLabel,
                 locationPinPlaced: false,
                 ...(center ? { latitude: center.latitude, longitude: center.longitude } : {}),
               });
@@ -427,27 +439,16 @@ export const CreateAddFlow = ({
           />
           {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
           <div className="mt-5 pb-2">
-            <NextButton disabled={!draft.areaId} onClick={goNext} />
+            <NextButton
+              disabled={!draft.areaId && (draft.areaLabel.trim() || draft.title.trim()).length < 2}
+              onClick={goNext}
+            />
           </div>
         </FlowSheetChrome>
       )}
 
       {step === 'location' && (
         <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
-          <label className="mb-4 block">
-            <span className="mb-1.5 block text-sm font-semibold text-gray-800">Emirate / state</span>
-            <select
-              value={draft.emirate}
-              onChange={(event) => patchDraft({ emirate: event.target.value })}
-              className="w-full rounded-2xl border border-neutral-200 bg-white px-4 py-3 text-base text-gray-900 outline-none focus:border-emerald-400"
-            >
-              {getVenueStateFilterOptions().map((option) => (
-                <option key={option.key} value={option.key}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </label>
           {(kind === 'hiking' || kind === 'camping' || kind === 'event') && (
             <label className="mb-4 block">
               <span className="mb-1.5 block text-sm font-semibold text-gray-800">
@@ -484,17 +485,32 @@ export const CreateAddFlow = ({
                   : 'Location pin',
             () => setLocationMapOpen(true)
           )}
+          <EmirateFromPinField
+            pinned={draft.locationPinPlaced}
+            inferred={inferEmirateFromPin(draft.latitude, draft.longitude, publishedAreas)}
+            value={draft.emirate}
+            onChange={(emirate) => patchDraft({ emirate })}
+          />
           {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
           <div className="mt-5 pb-2">
-            <NextButton disabled={!draft.locationPinPlaced || !draft.emirate.trim()} onClick={goNext} />
+            <NextButton
+              disabled={
+                !draft.locationPinPlaced ||
+                !(
+                  draft.emirate.trim() ||
+                  inferEmirateFromPin(draft.latitude, draft.longitude, publishedAreas)
+                )
+              }
+              onClick={goNext}
+            />
           </div>
         </FlowSheetChrome>
       )}
 
       {step === 'image' && (
         <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
-          {kind === 'hiking' || kind === 'camping' ? (
-            <p className="mb-3 text-sm text-gray-600">At least 1 photo required · up to 5.</p>
+          {kind === 'hiking' || kind === 'camping' || kind === 'event' ? (
+            <p className="mb-3 text-sm text-gray-600">At least 1 photo required · up to 5. Photos are cropped to the same size.</p>
           ) : kind === 'shop' ? (
             <p className="mb-3 text-sm text-gray-600">One shop cover image (logo or storefront).</p>
           ) : null}
@@ -507,11 +523,14 @@ export const CreateAddFlow = ({
             kind="location"
             max={kind === 'shop' ? 1 : 5}
             label=""
-            preset="rectangle"
+            preset="location"
           />
           {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
           <div className="mt-5 pb-2">
-            <NextButton disabled={!draft.images.length} onClick={goNext} />
+            <NextButton
+              disabled={!draft.images.length}
+              onClick={goNext}
+            />
           </div>
         </FlowSheetChrome>
       )}

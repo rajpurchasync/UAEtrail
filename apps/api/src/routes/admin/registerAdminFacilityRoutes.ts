@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { FACILITY_KINDS, type FacilityKind } from '@uaetrail/shared-types';
+import { mediaUrlSchema } from '../../domain/location-submit.js';
 import { paginatedResponse, paginationSchema } from '../../lib/pagination.js';
 import { validate } from '../../middleware/validate.js';
 import {
@@ -22,7 +23,7 @@ const facilityFieldsSchema = z.object({
   description: z.string().min(20),
   latitude: z.number().min(-90).max(90).optional().nullable(),
   longitude: z.number().min(-180).max(180).optional().nullable(),
-  images: z.array(z.string().url()).default([]),
+  images: z.array(mediaUrlSchema).default([]),
   tags: z.array(z.string()).default([]),
   featured: z.boolean().default(false),
   status: z.enum(['draft', 'active', 'inactive']).default('active'),
@@ -58,9 +59,9 @@ const idParamSchema = z.object({ id: z.string().min(1) });
 
 /** Platform admin facility CRUD — canonical `facilities` collection (CPC-7: no `locations` dual-write). */
 export const registerAdminFacilityRoutes = (adminRouter: Router): void => {
-  adminRouter.get('/facilities', async (req, res, next) => {
+  adminRouter.get('/facilities', validate({ query: paginationSchema }), async (req, res, next) => {
     try {
-      const pg = paginationSchema.parse(req.query);
+      const pg = req.query as unknown as z.infer<typeof paginationSchema>;
       const { items, total } = await listAdminFacilitiesPage({
         page: pg.page,
         pageSize: pg.pageSize,

@@ -40,7 +40,7 @@ describe('exploreRouting navigation contract', () => {
     expect(explorePlacesPath()).toBe('/explore?panel=venues');
     expect(exploreShopsPath()).toBe('/explore?filter=shops&panel=shops');
     expect(exploreActivitiesPath({ list: true })).toBe('/explore?list=1');
-    expect(exploreDiscoverBrowsePath()).toBe('/explore?browse=1');
+    expect(exploreDiscoverBrowsePath()).toBe('/list');
     expect(explorePath({ browse: true, list: true })).toBe('/explore?browse=1');
   });
 

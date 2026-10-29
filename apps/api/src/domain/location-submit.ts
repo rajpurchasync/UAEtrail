@@ -10,7 +10,7 @@ const addableFacilityKindSchema = z.enum(
 );
 
 /** Accept absolute URLs or same-origin relative media paths from local dev uploads. */
-const mediaUrlSchema = z.string().min(1).refine(
+export const mediaUrlSchema = z.string().min(1).refine(
   (value) => value.startsWith('/') || /^https?:\/\//i.test(value),
   { message: 'Invalid media URL' }
 );
@@ -22,21 +22,14 @@ export const locationSubmitBodySchema = z.object({
   emirate: z.string().min(2).max(80).optional(),
   groupRegion: z.string().min(2).max(80).optional(),
   region: z.string().min(2).max(80),
-  /** Admin-registered area — required for every place row. */
-  areaId: z.string().min(1).max(80),
+  /** Admin-registered area — required unless proposing a new area from a pin. */
+  areaId: z.string().min(1).max(80).optional(),
+  /** Host-proposed area when the pin is outside published area polygons. */
+  proposedAreaName: z.string().min(2).max(80).optional(),
   areaLabel: z.string().min(2).max(120).optional(),
   childFriendly: z.boolean().optional(),
   accessibility: z.enum(['car-accessible', 'remote']).optional(),
-  activityType: z.enum([
-    'hiking',
-    'camping',
-    'event',
-    'shop',
-    'rideshare',
-    'EVENT',
-    'COMMUNITY_ACTIVITY',
-    'community_activity',
-  ]),
+  activityType: z.enum(['hiking', 'camping', 'event', 'shop', 'rideshare']),
   description: z.string().min(20).max(3000),
   difficulty: z.enum(['easy', 'moderate', 'hard']).optional(),
   distance: z.number().positive().optional(),
@@ -90,7 +83,30 @@ export const locationSubmitBodySchema = z.object({
         path: ['activityType'],
       });
     }
+    if (!body.areaId?.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Choose a published area.',
+        path: ['areaId'],
+      });
+    }
     return;
+  }
+  const hasArea = Boolean(body.areaId?.trim());
+  const proposing = Boolean(body.proposedAreaName?.trim());
+  if (!hasArea && !proposing) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Choose a published area, or name a new one for this pin.',
+      path: ['areaId'],
+    });
+  }
+  if (proposing && (body.latitude == null || body.longitude == null)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Pin the spot on the map to propose a new area.',
+      path: ['latitude'],
+    });
   }
   if (body.activityType.toLowerCase() !== 'shop') return;
   if (body.latitude == null || body.longitude == null) {

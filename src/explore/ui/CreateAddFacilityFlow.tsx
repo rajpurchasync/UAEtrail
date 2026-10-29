@@ -6,7 +6,8 @@ import { useAuth } from '../../context/AuthContext';
 import { useExplorePublishedAreas } from '../useExplorePublishedAreas';
 import { areaIdForExploreAreaSlug } from '../exploreAreaFilter';
 import { EXPLORE_Z } from '../../config/exploreTheme';
-import { getVenueStateFilterOptions } from '../../config/regions';
+import { inferEmirateFromPin } from '../hostingPublishArea';
+import { EmirateFromPinField } from './EmirateFromPinField';
 import { AddCuratedAreaStep } from './AddCuratedAreaStep';
 import { AddSubmitSuccessSheet } from './AddSubmitSuccessSheet';
 import { AddFacilityPreview } from './AddFacilityPreview';
@@ -253,7 +254,15 @@ export const CreateAddFacilityFlow = ({
             onBack={goBack}
             onClose={requestClose}
             onConfirm={() => {
-              patchDraft({ locationPinPlaced: true });
+              const inferred = inferEmirateFromPin(
+                draft.latitude,
+                draft.longitude,
+                publishedAreas
+              );
+              patchDraft({
+                locationPinPlaced: true,
+                emirate: inferred ?? '',
+              });
               setLocationMapOpen(false);
               setError(null);
             }}
@@ -320,6 +329,7 @@ export const CreateAddFacilityFlow = ({
         <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
           <AddCuratedAreaStep
             areaId={draft.areaId}
+            allowNewArea={false}
             onAreaIdChange={(next) => {
               const center = next ? publishedAreas.find((area) => area.id === next)?.center : null;
               patchDraft({
@@ -338,20 +348,6 @@ export const CreateAddFacilityFlow = ({
 
       {step === 'location' && (
         <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
-          <label className="mb-4 block">
-            <span className="mb-1.5 block text-sm font-semibold text-gray-800">Emirate / state</span>
-            <select
-              value={draft.emirate}
-              onChange={(event) => patchDraft({ emirate: event.target.value })}
-              className="w-full rounded-2xl border border-neutral-200 bg-white px-4 py-3 text-base text-gray-900 outline-none focus:border-emerald-400"
-            >
-              {getVenueStateFilterOptions().map((option) => (
-                <option key={option.key} value={option.key}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </label>
           <button
             type="button"
             onClick={() => setLocationMapOpen(true)}
@@ -372,10 +368,23 @@ export const CreateAddFacilityFlow = ({
               {draft.locationPinPlaced ? 'Edit' : 'Map'}
             </span>
           </button>
+          <EmirateFromPinField
+            pinned={draft.locationPinPlaced}
+            inferred={inferEmirateFromPin(draft.latitude, draft.longitude, publishedAreas)}
+            value={draft.emirate}
+            onChange={(emirate) => patchDraft({ emirate })}
+          />
           {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
           <div className="mt-5 pb-2">
             <NextButton
-              disabled={!draft.locationPinPlaced || draft.latitude == null}
+              disabled={
+                !draft.locationPinPlaced ||
+                draft.latitude == null ||
+                !(
+                  draft.emirate.trim() ||
+                  inferEmirateFromPin(draft.latitude, draft.longitude, publishedAreas)
+                )
+              }
               onClick={goNext}
             />
           </div>

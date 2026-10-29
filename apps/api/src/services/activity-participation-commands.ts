@@ -62,6 +62,8 @@ export const submitPublicActivityJoinRequest = async (input: {
   userId: string;
   isPlatformAdmin: boolean;
   note?: string | null;
+  packingCheckedIds?: string[];
+  packingSignature?: string;
 }) => {
   await assertPrivateActivityJoinAllowed({
     activityId: input.activityId,
@@ -73,6 +75,8 @@ export const submitPublicActivityJoinRequest = async (input: {
     activityId: input.activityId,
     userId: input.userId,
     note: input.note ?? undefined,
+    packingCheckedIds: input.packingCheckedIds,
+    packingSignature: input.packingSignature,
   });
 
   void notifyParticipantJoinRequestSubmitted({
@@ -99,6 +103,9 @@ export const submitPublicActivityRsvp = async (input: {
   activityId: string;
   userId: string;
   isPlatformAdmin: boolean;
+  note?: string | null;
+  packingCheckedIds?: string[];
+  packingSignature?: string;
 }) => {
   await assertPrivateActivityJoinAllowed({
     activityId: input.activityId,
@@ -109,6 +116,9 @@ export const submitPublicActivityRsvp = async (input: {
   const { request, participation } = await createRsvpParticipation({
     activityId: input.activityId,
     userId: input.userId,
+    note: input.note ?? undefined,
+    packingCheckedIds: input.packingCheckedIds,
+    packingSignature: input.packingSignature,
   });
 
   const eventDoc = await findActivityDocInMongo(input.activityId);

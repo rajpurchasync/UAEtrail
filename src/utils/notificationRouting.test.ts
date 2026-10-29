@@ -73,6 +73,12 @@ describe('inferNotificationPath', () => {
     ).toBe('/activity/act-42?invite=1');
   });
 
+  it('routes community guide invites to the outing detail page', () => {
+    expect(
+      inferNotificationPath(notif({ kind: 'activity_guide_invite', activityId: 'act-9' }))
+    ).toBe('/activity/act-9');
+  });
+
   it('rewrites legacy explore invite paths to activity detail', () => {
     expect(
       inferNotificationPath(

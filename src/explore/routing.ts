@@ -4,7 +4,7 @@ import {
   resolveSeekingExploreMapItemId,
 } from '@uaetrail/shared-types';
 import type { HostComposeKind } from './compose';
-import { EXPLORE_MAP_PATH } from '../config/platform';
+import { EXPLORE_MAP_PATH, LIST_DISCOVERY_PATH } from '../config/platform';
 import { PLAN_PATH } from '../constants';
 import { planHostedSchedulePath } from '../plan/planRouting';
 import {
@@ -348,9 +348,8 @@ export const explorePath = (options?: {
 export const explorePeopleBrowsePath = (options?: { list?: boolean }): string =>
   explorePath({ peopleBrowse: true, list: options?.list ?? true });
 
-/** Explore with visual discover browse open (`browse=1` — categories, rails, posters). */
-export const exploreDiscoverBrowsePath = (): string =>
-  explorePath({ browse: true });
+/** Full-screen list explorer. */
+export const exploreDiscoverBrowsePath = (): string => LIST_DISCOVERY_PATH;
 
 /** Start create flow with optional buddy to plan with. */
 export const explorePlanWithBuddyPath = (

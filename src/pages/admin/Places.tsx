@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useSafeAsyncEffect } from '../../hooks/useSafeAsyncEffect';
 import {
   type AreaDTO,
@@ -25,6 +25,7 @@ import {
   updateAdminFacility,
   updateAdminPlace,
 } from '../../hooks/adminConsoleApi';
+import { AdminTablePager } from '../../components/admin/AdminTablePager';
 import { DashboardLayout } from '../../components/layout';
 import { ADMIN_LINKS } from '../../constants';
 import { MapPinPicker } from '../../components/ui/MapPinPicker';
@@ -40,6 +41,7 @@ const HIKING_ACCESSIBLE = ['4X4 required', 'Any cars', 'Bike'];
 const CAMPING_ACCESSIBLE = ['4X4 required', 'Any cars'];
 const TAG_OPTIONS = ['Child-free', 'Pet-friendly', 'Family-friendly', 'Solo-friendly', 'Wheelchair-accessible', 'Night-hiking', 'Sunrise spot', 'Sunset spot'];
 import { SUPPORTED_COUNTRIES, DEFAULT_COUNTRY, getRegionsForCountry, CountryCode } from '../../config/regions';
+import { ADMIN_TABLE_PAGE_SIZE } from '../../api/listAllPages';
 import { ADMIN_AREAS_PATH } from '../../config/adminSurfacePaths';
 import { VENUE_TYPE_LABELS } from '../../config/activityTypes';
 const SEASONS = ['winter', 'spring', 'summer', 'autumn', 'year-round'];
@@ -95,6 +97,8 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const filterAreaId = searchParams.get('areaId')?.trim() || null;
   const [places, setPlaces] = useState<PlaceDTO[]>([]);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
   const [form, setForm] = useState<Partial<PlaceDTO>>(emptyForm);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -114,10 +118,12 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
     try {
       const catalog =
         catalogSegment === 'facility'
-          ? await fetchAdminFacilitiesCatalog()
-          : await fetchAdminPlacesCatalog();
+          ? await fetchAdminFacilitiesCatalog(page, ADMIN_TABLE_PAGE_SIZE)
+          : await fetchAdminPlacesCatalog(page, ADMIN_TABLE_PAGE_SIZE);
       if (!isActive()) return;
-      setPlaces(catalog);
+      setError(null);
+      setPlaces(catalog.items);
+      setTotal(catalog.total);
     } catch (err) {
       if (!isActive()) return;
       setError(err instanceof Error ? err.message : 'Failed to load places');
@@ -126,7 +132,11 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
     }
   };
 
-  useSafeAsyncEffect((isActive) => loadPlaces(isActive), [catalogSegment]);
+  useEffect(() => {
+    setPage(1);
+  }, [catalogSegment]);
+
+  useSafeAsyncEffect((isActive) => loadPlaces(isActive), [catalogSegment, page]);
 
   useSafeAsyncEffect(async (isActive) => {
     try {
@@ -418,7 +428,17 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
                   </td>
                   <td className="px-4 py-3 text-gray-700">{loc.region}</td>
                   <td className="px-4 py-3 text-gray-600 text-xs">
-                    {loc.areaId ? areaNameById.get(loc.areaId) ?? '—' : '—'}
+                    {loc.areaId ? (
+                      <>
+                        {areaNameById.get(loc.areaId) ?? loc.areaName ?? '—'}
+                        {loc.areaStatus === 'draft' ||
+                        adminAreas.find((area) => area.id === loc.areaId)?.status === 'draft' ? (
+                          <span className="ml-1 font-semibold text-amber-800">(new)</span>
+                        ) : null}
+                      </>
+                    ) : (
+                      '—'
+                    )}
                   </td>
                   <td className="px-4 py-3">
                     {catalogSegment === 'facility' ? (
@@ -453,9 +473,15 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
             </tbody>
           </table>
         </div>
+        <AdminTablePager
+          page={page}
+          pageSize={ADMIN_TABLE_PAGE_SIZE}
+          total={total}
+          onPage={setPage}
+        />
         <p className="text-xs text-gray-500">
-          Showing {filtered.length} of {segmentPlaces.length}{' '}
-          {catalogSegment === 'facility' ? 'facilities' : 'places'}. Click a row to preview.
+          Showing {filtered.length} on this page
+          {catalogSegment === 'facility' ? ' (facilities)' : ' (places)'}. Click a row to preview.
         </p>
       </div>
 
@@ -554,6 +580,16 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
                     ? 'This will hide the place.'
                     : 'This will make the place visible.'}
             </p>
+            {(confirmAction.type === 'publish' ||
+              (confirmAction.type === 'status' && confirmAction.loc.status !== 'active')) &&
+            (confirmAction.loc.areaStatus === 'draft' ||
+              adminAreas.find((area) => area.id === confirmAction.loc.areaId)?.status === 'draft') ? (
+              <p className="mb-3 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-950">
+                This place is linked to a <span className="font-semibold">new area</span>
+                {confirmAction.loc.areaName ? ` (${confirmAction.loc.areaName})` : ''}. Approving
+                will also publish that area on Explore.
+              </p>
+            ) : null}
             <p className="text-sm font-medium text-gray-900 mb-4">{confirmAction.loc.name}</p>
             <div className="flex gap-3 justify-end">
               <button onClick={() => setConfirmAction(null)} className="px-4 py-2 border rounded-md text-sm text-gray-700 hover:bg-gray-50">Cancel</button>
@@ -688,16 +724,26 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
                       <AppSelect
                         value={form.areaId ?? ''}
                         onChange={(areaId) => setForm({ ...form, areaId: areaId || null })}
-                        options={adminAreas
-                          .filter((area) => area.status === 'published')
-                          .map((area) => ({ value: area.id, label: `${area.name} · ${area.region}` }))}
+                        options={adminAreas.map((area) => ({
+                          value: area.id,
+                          label: `${area.name} · ${area.region}${
+                            area.status === 'draft' ? ' (new — not published yet)' : ''
+                          }`,
+                        }))}
                         placeholder="Link to Hatta, Jebel Jais, …"
                         inputClassName={ADMIN_SELECT_CLASS}
                         aria-label="Curated area"
                       />
-                      <p className="mt-1 text-xs text-gray-500">
-                        Hosting picks inherit this area when hosts choose this place from the registry.
-                      </p>
+                      {adminAreas.find((area) => area.id === form.areaId)?.status === 'draft' ? (
+                        <p className="mt-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-950">
+                          This place is linked to a new area. Approving the place will also publish
+                          that area on Explore.
+                        </p>
+                      ) : (
+                        <p className="mt-1 text-xs text-gray-500">
+                          Hosting picks inherit this area when hosts choose this place from the registry.
+                        </p>
+                      )}
                     </div>
                   </div>
 

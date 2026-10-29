@@ -58,6 +58,7 @@ import {
 } from './host-activity.js';
 import { buildPublishingTenantActivityDto } from './publishing-tenant-activity-read.js';
 import { resolveRideshareVehicleForActivityPublish } from './me-vehicles-publish.js';
+import { syncActivityGuides } from './activity-guides.js';
 
 export const createPublishingTenantActivity = async (input: {
   tenantId: string;
@@ -191,6 +192,13 @@ export const createPublishingTenantActivity = async (input: {
     entityId: created.id,
     tenantId: input.tenantId,
     metadata: body.clonedFromActivityId ? { sourceActivityId: body.clonedFromActivityId } : undefined,
+  });
+
+  await syncActivityGuides({
+    activityId: created.id,
+    actorUserId: input.actorId,
+    guideUserIds: body.guideUserIds ?? [],
+    publishingProfileKind,
   });
 
   const groupChatId = await ensureActivityGroupChat(created.id);
@@ -410,6 +418,14 @@ export const updatePublishingTenantActivity = async (input: {
       previousStartAt: existing.startAt,
       newStartAt: nextStartAt,
       countryCode,
+    });
+  }
+
+  if (body.guideUserIds) {
+    await syncActivityGuides({
+      activityId,
+      actorUserId: input.actorId,
+      guideUserIds: body.guideUserIds,
     });
   }
 

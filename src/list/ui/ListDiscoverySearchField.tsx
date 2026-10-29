@@ -1,4 +1,4 @@
-import { Map, Search, SlidersHorizontal, X } from 'lucide-react';
+import { Map, Search, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
@@ -20,8 +20,6 @@ type ListDiscoverySearchFieldProps = {
   onClearQuery?: () => void;
   searchScopeCounts: ExploreSearchScopeCounts;
   mapHref: string;
-  showRefine?: boolean;
-  onOpenRefine?: () => void;
   compactTop?: boolean;
   hideMapLink?: boolean;
   className?: string;
@@ -39,8 +37,6 @@ export const ListDiscoverySearchField = ({
   onClearQuery,
   searchScopeCounts,
   mapHref,
-  showRefine = false,
-  onOpenRefine,
   compactTop = false,
   hideMapLink = false,
   className = '',
@@ -167,11 +163,6 @@ export const ListDiscoverySearchField = ({
             <Map className="h-5 w-5 stroke-[2.25]" aria-hidden />
           </Link>
         )}
-        {showRefine && onOpenRefine ? (
-          <button type="button" onClick={onOpenRefine} className={LIST_SEARCH.sideAction} aria-label="Refine">
-            <SlidersHorizontal className="h-5 w-5" aria-hidden />
-          </button>
-        ) : null}
       </form>
     </div>
   );

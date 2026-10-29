@@ -27,14 +27,16 @@ export const fetchExploreMapItems = async (
   params?: {
     bbox?: string;
     area?: string | null;
+    projection?: 'list';
   },
   etag?: string | null
 ): Promise<ConditionalCatalog<ExploreMapItemDTO[]>> => {
   const search = new URLSearchParams();
   if (params?.bbox) search.set('bbox', params.bbox);
   if (params?.area) search.set('area', params.area);
+  if (params?.projection) search.set('projection', params.projection);
   const qs = search.toString();
-  const unscoped = !params?.bbox && !params?.area;
+  const unscoped = !params?.bbox && !params?.area && !params?.projection;
   const result = await apiRequestConditional<{ data: { items: ExploreMapItemDTO[] } }>(
     qs ? `/explore/map?${qs}` : '/explore/map',
     { etag: unscoped ? etag : null }

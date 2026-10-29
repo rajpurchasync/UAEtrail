@@ -9,6 +9,7 @@ import {
   LogOut,
   Menu,
   RefreshCw,
+  Shield,
   Smartphone,
   Tablet,
   User,
@@ -32,6 +33,8 @@ import { resolveMobileTabHeaderTitle } from '../../config/mobileTabHeader';
 import { exploreMapMobileBackState, mobileBackNavState, type MobileBackNavState } from '../../utils/mobileBackNav';
 import { isPublishingConsolePath } from '../../config/surfacePaths';
 import { ADMIN_LINKS, PUBLISHING_CONSOLE_LINKS } from '../../constants';
+import { ADMIN_OVERVIEW_PATH } from '../../config/adminSurfacePaths';
+import { isAdminConsoleNavActive } from '../../admin/adminNavActive';
 import { useAuth } from '../../context/AuthContext';
 import { persistAuthSessionTokens, switchMeRoleSession } from '../../hooks/accountSessionApi';
 import { accountRouteByRole } from '../../utils/authRouting';
@@ -220,14 +223,16 @@ const DashboardDrawerLinks = ({
   links,
   pathname,
   closeMenu,
+  adminNav = false,
 }: {
   links: readonly DashboardNavLink[];
   pathname: string;
   closeMenu: () => void;
+  adminNav?: boolean;
 }) => (
   <>
     {links.map((link) => {
-      const active = isPathActive(pathname, link.to);
+      const active = adminNav ? isAdminConsoleNavActive(pathname, link.to) : isPathActive(pathname, link.to);
       return (
         <Link
           key={link.to}
@@ -240,6 +245,15 @@ const DashboardDrawerLinks = ({
         </Link>
       );
     })}
+  </>
+);
+
+const DashboardDrawerExploreLink = ({ closeMenu }: { closeMenu: () => void }) => (
+  <>
+    <DashboardDrawerDivider />
+    <Link to={EXPLORE_MAP_PATH} onClick={closeMenu} className={dashboardLinkClass(false)}>
+      Explore map
+    </Link>
   </>
 );
 
@@ -505,11 +519,11 @@ const MobileMenuPanel = () => {
         title={user?.displayName || 'Account'}
         ariaLabel="Admin navigation"
       >
-        <DashboardDrawerLinks links={ADMIN_LINKS} pathname={pathname} closeMenu={closeMenu} />
+        <DashboardDrawerLinks links={ADMIN_LINKS} pathname={pathname} closeMenu={closeMenu} adminNav />
         <Link
           to="/admin/notifications"
           onClick={closeMenu}
-          className={`${dashboardLinkClass(pathname.startsWith('/admin/notifications'))} flex items-center justify-between gap-2`}
+          className={`${dashboardLinkClass(isAdminConsoleNavActive(pathname, '/admin/notifications'))} flex items-center justify-between gap-2`}
         >
           <span>Notifications</span>
           {unreadNotifications > 0 && (
@@ -518,7 +532,7 @@ const MobileMenuPanel = () => {
             </span>
           )}
         </Link>
-        <DashboardDrawerSiteLink closeMenu={closeMenu} />
+        <DashboardDrawerExploreLink closeMenu={closeMenu} />
         <button
           type="button"
           onClick={() => void switchRole('participant')}
@@ -630,6 +644,22 @@ const MobileMenuPanel = () => {
             </div>
           </div>
         ))}
+
+        {isAdminRole && !onAdminConsole ? (
+          <div role="group" aria-label="Platform admin">
+            <p className={MOBILE_DRAWER.sectionLabel}>Platform</p>
+            <div className={MOBILE_DRAWER.group}>
+              <Link
+                to={ADMIN_OVERVIEW_PATH}
+                onClick={closeMenu}
+                className={mobileDrawerRowClass(false)}
+              >
+                <DrawerNavIcon active={false} icon={Shield} />
+                <span className={drawerNavLabelClass(false)}>Admin console</span>
+              </Link>
+            </div>
+          </div>
+        ) : null}
 
         {(canSwitchBack || user) && (
           <div className={MOBILE_DRAWER.group}>

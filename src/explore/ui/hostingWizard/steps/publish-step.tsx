@@ -16,11 +16,17 @@ import {
   HOSTING_EDIT_SAVE_CTA,
   HOSTING_INTRO_PROMPT,
   JOIN_RULES_PREVIEW_LABEL,
+  PACKING_LIST_TITLE,
+  PACKING_MODE_LENIENT_TITLE,
+  PACKING_MODE_STRICT_TITLE,
+  packingChipClassName,
 } from '../../../createFlowCopy';
+import { packingItemDisplay } from '@uaetrail/shared-types';
 import { HostingPinReviewLine, HostingPublishPreviewBlock } from '../../hostingPinReview';
 import type { ReactNode } from 'react';
 import type { HostingWizardContext } from '../hostingWizardContext';
 import { HostingPublishAsField } from '../../HostingPublishAsField';
+import { HostingGuidesField } from '../../HostingGuidesField';
 import { RidesharePublishLogisticsPreview } from '../../hostingRideshareWizardSteps';
 
 export function renderPublishStep(ctx: HostingWizardContext): ReactNode | null {
@@ -49,6 +55,9 @@ export function renderPublishStep(ctx: HostingWizardContext): ReactNode | null {
     rideshareFlow,
     structuredFlow,
     isEditMode,
+    editActivityId,
+    patchDraft,
+    publishingProfileKind,
   } = ctx;
 
   if (!(step === 'publish' && kind)) {
@@ -295,6 +304,36 @@ export function renderPublishStep(ctx: HostingWizardContext): ReactNode | null {
                 {draft.aboutTrail}
               </p>
             ) : null}
+            {draft.placeLabelSource === 'custom' ? (
+              <p className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-950">
+                This spot isn’t in the registry yet. We’ll send it for admin review — your outing goes live on
+                the map and in search once it’s approved.
+              </p>
+            ) : null}
+          </HostingPublishPreviewBlock>
+        ) : null}
+
+        {(draft.packingItems ?? []).some((item) => item.label.trim()) ? (
+          <HostingPublishPreviewBlock title={PACKING_LIST_TITLE}>
+            <p className="mb-2 text-xs font-semibold text-gray-500">
+              {draft.packingAckMode === 'strict' ? PACKING_MODE_STRICT_TITLE : PACKING_MODE_LENIENT_TITLE}{' '}
+              join
+            </p>
+            <ul className="flex flex-wrap gap-1.5">
+              {(draft.packingItems ?? [])
+                .filter((item) => item.label.trim())
+                .map((item) => (
+                  <li
+                    key={item.id}
+                    className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-sm ${packingChipClassName(item.required)}`}
+                  >
+                    {packingItemDisplay(item)}
+                    <span className="text-[10px] font-semibold uppercase tracking-wide opacity-80">
+                      {item.required ? 'must' : 'nice'}
+                    </span>
+                  </li>
+                ))}
+            </ul>
           </HostingPublishPreviewBlock>
         ) : null}
 
@@ -363,6 +402,17 @@ export function renderPublishStep(ctx: HostingWizardContext): ReactNode | null {
           value={publishTenantId}
           onChange={setPublishTenantId}
           memberDisplayName={memberDisplayName}
+          disabled={submitting || hostGateLoading}
+        />
+      ) : null}
+
+      {canPublish && kind !== 'rideshare' ? (
+        <HostingGuidesField
+          tenantId={publishTenantId}
+          activityId={isEditMode ? editActivityId : null}
+          publishingProfileKind={publishingProfileKind}
+          selectedIds={draft.guideUserIds}
+          onChange={(guideUserIds) => patchDraft({ guideUserIds })}
           disabled={submitting || hostGateLoading}
         />
       ) : null}

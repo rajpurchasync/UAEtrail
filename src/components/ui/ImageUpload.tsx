@@ -1,6 +1,10 @@
 import { useRef, useState } from 'react';
 import { IMAGE_UPLOAD_PRESETS, type ImageUploadPreset } from '../../constants/imageUploadPresets';
-import { isAllowedImageUploadFile, prepareImageUploadFile } from '../../lib/imageUploadFile';
+import {
+  coverCropJpegFile,
+  isAllowedImageUploadFile,
+  prepareImageUploadFile,
+} from '../../lib/imageUploadFile';
 import { uploadMediaBlob } from '../../lib/mediaUpload';
 import { EnvironmentImage } from './EnvironmentImage';
 import { PhotoEditorDialog } from './PhotoEditorDialog';
@@ -92,7 +96,8 @@ export const ImageUpload = ({
         for (const file of toUpload) {
           try {
             const ready = await prepareImageUploadFile(file);
-            await uploadFile(ready, base);
+            const sized = await coverCropJpegFile(ready, outputWidth, outputHeight);
+            await uploadFile(sized, base);
             base = queuedImagesRef.current ?? base;
           } catch (err) {
             setUploading((prev) =>

@@ -24,6 +24,7 @@ export const useBrowseListFeed = ({
   const { user } = useAuth();
   const { data: items = [], isError, error, refetch, isFetching, isPending } = useExploreMap({
     enabled: mapEnabled,
+    projection: 'list',
   });
   const feedLoading = mapEnabled && isPending && items.length === 0;
 
@@ -35,8 +36,10 @@ export const useBrowseListFeed = ({
   const cards: DiscoveryCardModel[] = useMemo(() => {
     if (!mapEnabled) return [];
     const built = buildListFeedCards(filteredItems, user, items);
-    return built.filter((card) => cardMatchesBrowsePrice(card, filters.price));
-  }, [mapEnabled, filteredItems, filters.price, items, user]);
+    const tripsInScope =
+      filters.categories.length === 0 || filters.categories.includes('activities');
+    return tripsInScope ? built.filter((card) => cardMatchesBrowsePrice(card, filters.price)) : built;
+  }, [mapEnabled, filteredItems, filters.categories, filters.price, items, user]);
 
   return {
     cards,

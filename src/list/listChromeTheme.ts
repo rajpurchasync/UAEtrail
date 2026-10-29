@@ -1,3 +1,5 @@
+import { EXPLORE_BRAND_ACTIVE } from '../config/exploreTheme';
+
 /** List discovery chrome — super-app tokens (not map overlay pills). */
 
 export const LIST_CHROME = {
@@ -34,7 +36,7 @@ export const LIST_CHIP_SCROLL =
 export const listChipClass = (active: boolean): string =>
   [
     'inline-flex shrink-0 snap-start items-center rounded-full px-3.5 py-2 text-[13px] font-semibold transition-colors active:scale-[0.98]',
-    active ? 'bg-neutral-900 text-white' : 'bg-neutral-100 text-neutral-700',
+    active ? EXPLORE_BRAND_ACTIVE : 'bg-neutral-100 text-neutral-700',
   ].join(' ');
 
 /** Category page pills — compact, single-line scroll rows. */

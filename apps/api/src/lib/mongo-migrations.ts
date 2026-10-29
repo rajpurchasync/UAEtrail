@@ -62,13 +62,42 @@ const renameFieldIfPresent = async (
   }
 };
 
+const migrateActivityLocationIdAliases = async (db: Db): Promise<void> => {
+  const activities = db.collection(COLLECTIONS.ACTIVITIES);
+  for (const from of ['placeId', 'venueId', 'location_id'] as const) {
+    const result = await activities.updateMany(
+      {
+        $and: [
+          { $or: [{ locationId: { $exists: false } }, { locationId: null }, { locationId: '' }] },
+          { [from]: { $exists: true, $nin: [null, ''] } },
+        ],
+      },
+      [{ $set: { locationId: `$${from}` } }]
+    );
+    if (result.modifiedCount > 0) {
+      console.log(`[mongo] Copied ${from} → locationId on activities (${result.modifiedCount} docs)`);
+    }
+  }
+};
+
 const migrateActivityTypeValues = async (db: Db, collectionName: string): Promise<void> => {
   const collection = db.collection(collectionName);
-  for (const from of ['COMMUNITY_EVENT', 'COMMUNITY_ACTIVITY'] as const) {
-    const result = await collection.updateMany({ activityType: from }, { $set: { activityType: 'EVENT' } });
+  const aliases: Array<[string, string]> = [
+    ['COMMUNITY_EVENT', 'EVENT'],
+    ['COMMUNITY_ACTIVITY', 'EVENT'],
+    ['community_activity', 'EVENT'],
+    ['community_event', 'EVENT'],
+    ['hiking', 'HIKING'],
+    ['camping', 'CAMPING'],
+    ['event', 'EVENT'],
+    ['shop', 'SHOP'],
+    ['rideshare', 'RIDESHARE'],
+  ];
+  for (const [from, to] of aliases) {
+    const result = await collection.updateMany({ activityType: from }, { $set: { activityType: to } });
     if (result.modifiedCount > 0) {
       console.log(
-        `[mongo] Migrated activityType ${from} → EVENT on ${collectionName} (${result.modifiedCount} docs)`
+        `[mongo] Migrated activityType ${from} → ${to} on ${collectionName} (${result.modifiedCount} docs)`
       );
     }
   }
@@ -600,6 +629,7 @@ export const runMongoMigrations = async (db: Db): Promise<void> => {
 
   await migrateActivityTypeValues(db, COLLECTIONS.ACTIVITIES);
   await migrateActivityTypeValues(db, 'locations');
+  await migrateActivityLocationIdAliases(db);
   await migrateRetiredRideshareActivities(db);
   await migrateCarpoolTerminologyToRideshare(db);
   await renameFieldIfPresent(db, COLLECTIONS.ACTIVITIES, 'guideId', 'hostId');

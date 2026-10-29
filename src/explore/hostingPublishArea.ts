@@ -1,14 +1,17 @@
 import {
   approximateAreaBoundsKm2,
+  inferEmirateFromLocalityName,
   pointInAreaBounds,
+  resolveGroupRegionFromCoordinates,
   type AreaPublicDTO,
   type PlaceDTO,
+  type UaeGroupRegionCatalogLabel,
 } from '@uaetrail/shared-types';
 import type { SeekingDraft, SeekingKind } from './ui/seekingFlowEngine';
 import type { CreateActivityDraft } from './ui/hostingFlowEngine';
 
 const PLACE_AREA_REQUIRED =
-  'Choose a catalog place linked to an area (admin links places in the registry), or add the spot via Add first.';
+  'Choose a catalog place linked to an area, or add a new spot with a pin and a photo for admin review.';
 
 const placeAreaError = (place: PlaceDTO | null | undefined, registryPlaceId: string | null): string => {
   if (place?.name?.trim()) {
@@ -65,7 +68,7 @@ export const validateHostingPlaceArea = (
     return validateRideshareDestinationArea(draft, registryPlaces);
   }
   if (draft.placeLabelSource === 'custom') {
-    return 'Publish from a catalog place with an area, or add your spot via Add (select an area first).';
+    return validateCustomVenueDetails(draft);
   }
   if (draft.registryPlaceAreaId?.trim()) return null;
 
@@ -76,11 +79,73 @@ export const validateHostingPlaceArea = (
   return placeAreaError(place, draft.registryPlaceId);
 };
 
+/** Match search/Home emirate pills from a pin (published area polygons, then UAE envelopes). */
+export const inferEmirateFromPin = (
+  latitude: number | null | undefined,
+  longitude: number | null | undefined,
+  areas: Pick<AreaPublicDTO, 'id' | 'region' | 'bounds' | 'priority'>[] = [],
+  localityName?: string | null
+): UaeGroupRegionCatalogLabel | null => {
+  const fromGeo =
+    latitude != null && longitude != null
+      ? resolveGroupRegionFromCoordinates(latitude, longitude, { publishedAreas: areas })
+      : null;
+  return fromGeo || inferEmirateFromLocalityName(localityName);
+};
+
+export const resolveRequiredEmirate = (
+  explicit: string | null | undefined,
+  latitude: number | null | undefined,
+  longitude: number | null | undefined,
+  areas: Pick<AreaPublicDTO, 'id' | 'region' | 'bounds' | 'priority'>[] = [],
+  localityName?: string | null
+): string =>
+  explicit?.trim() || inferEmirateFromPin(latitude, longitude, areas, localityName) || '';
+
+/** New spot name doubles as the new area name when the pin is outside listed hubs. */
+export const resolveCustomProposedAreaName = (draft: CreateActivityDraft): string =>
+  draft.customPlaceProposedAreaName.trim() || draft.trailName.trim();
+
+const EMIRATE_REQUIRED =
+  'Choose the emirate (Dubai, Ras Al Khaimah, Sharjah, …). Search and Home use this filter.';
+
+/** New (non-registry) trail/camp/venue — submitted as a DRAFT place for admin review. */
+export const validateCustomVenueDetails = (draft: CreateActivityDraft): string | null => {
+  if (!draft.trailName.trim()) {
+    if (draft.kind === 'camping') return 'Name the camp or area.';
+    if (draft.kind === 'event') return 'Name the venue or area.';
+    return 'Name the trail or where you are going.';
+  }
+  if (draft.trailLatitude == null || draft.trailLongitude == null) {
+    return 'Pin the spot on the map.';
+  }
+  const emirate =
+    draft.customPlaceEmirate.trim() ||
+    inferEmirateFromPin(
+      draft.trailLatitude,
+      draft.trailLongitude,
+      [],
+      `${draft.trailName} ${draft.customPlaceProposedAreaName}`
+    ) ||
+    '';
+  if (!emirate) return EMIRATE_REQUIRED;
+  if (!draft.customPlaceAreaId?.trim() && resolveCustomProposedAreaName(draft).length < 2) {
+    return 'Name this spot — we’ll submit it as a new area for admin review.';
+  }
+  if (draft.customPlaceImages.filter((url) => url.trim()).length < 1) {
+    return 'Add at least one photo of this spot.';
+  }
+  return null;
+};
+
 /** @deprecated Use validateHostingPlaceArea — kept for import stability during migration. */
 export const validateHostingPublishArea = (draft: CreateActivityDraft): string | null => {
   if (draft.joinMode === 'private') return null;
   if (draft.kind === 'rideshare') {
     return validateRideshareDestinationArea(draft);
+  }
+  if (draft.placeLabelSource === 'custom') {
+    return validateCustomVenueDetails(draft);
   }
   if (!draft.registryPlaceId?.trim()) return PLACE_AREA_REQUIRED;
   return null;

@@ -5,6 +5,7 @@
 import type {
   ActivityDTO,
   ActivityGroupChatPostPolicy,
+  ActivityGuideHostDTO,
   ParticipantDTO,
 } from '@uaetrail/shared-types';
 import { api } from '../api/index';
@@ -129,4 +130,12 @@ export const createActivity = async (
 ): Promise<ActivityDTO> => {
   const res = await api.createActivity(tenantId, payload);
   return res.data;
+};
+
+export const listActivityGuides = async (
+  tenantId: string,
+  activityId: string
+): Promise<ActivityGuideHostDTO[]> => {
+  const res = await api.getPublishingActivityGuides(tenantId, activityId);
+  return res.data ?? [];
 };

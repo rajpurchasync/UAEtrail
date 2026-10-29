@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   APPROVAL_PARTICIPATION_REQUIREMENT,
   RSVP_PARTICIPATION_REQUIREMENT,
+  defaultHikingPackingItems,
 } from '@uaetrail/shared-types';
 import { OPEN_JOIN_REQUIREMENT } from '../../utils/activityPublishPayload';
 import {
@@ -9,6 +10,7 @@ import {
   formatHostingPricePreview,
   createFlowStepTitle,
   emptyCreateActivityDraft,
+  hydrateCreateActivityDraft,
   getCreateFlowSteps,
   usesRegistryCatalogVenue,
   isCampingHostingFlow,
@@ -18,6 +20,13 @@ import {
 } from './hostingFlowEngine';
 
 describe('hostingFlowEngine', () => {
+  it('hydrates legacy wizard drafts without packing fields', () => {
+    const hydrated = hydrateCreateActivityDraft({ kind: 'hiking', title: 'Sunrise' });
+    expect(hydrated.packingItems).toEqual([]);
+    expect(hydrated.packingAckMode).toBe('lenient');
+    expect(hydrated.title).toBe('Sunrise');
+  });
+
   it('skips difficulty and about_trail when a registry venue is selected', () => {
     const options = {
       placeLabelSource: 'registry' as const,
@@ -65,7 +74,7 @@ describe('hostingFlowEngine', () => {
     expect(createFlowStepTitle('spots', 'hiking')).toBe('Participants');
     expect(createFlowStepTitle('when', 'hiking')).toBe('When are you going?');
     expect(createFlowStepTitle('meeting', 'hiking')).toBe('Where do you start?');
-    expect(createFlowStepTitle('join_kit', 'hiking')).toBe('What joiners should bring or know');
+    expect(createFlowStepTitle('join_kit', 'hiking')).toBe('What to bring');
     expect(createFlowStepTitle('difficulty', 'hiking')).toBe('How difficult is the hike?');
     expect(createFlowStepTitle('meeting', 'rideshare')).toBe('Going from');
     expect(createFlowStepTitle('where', 'camping')).toBe('Camp location');
@@ -78,7 +87,7 @@ describe('hostingFlowEngine', () => {
     expect(validateDraftStep('meeting', draft)).toBe('Choose the area you start from.');
   });
 
-  it('validateDraftStep allows empty join kit on hiking join_kit step', () => {
+  it('validateDraftStep requires a packing item on hiking join_kit step', () => {
     const draft = {
       ...emptyCreateActivityDraft(),
       kind: 'hiking' as const,
@@ -87,7 +96,10 @@ describe('hostingFlowEngine', () => {
       longitude: 55.2,
       joinKit: '',
     };
-    expect(validateDraftStep('join_kit', draft)).toBeNull();
+    expect(validateDraftStep('join_kit', draft)).toBe('Add at least one item to bring.');
+    expect(
+      validateDraftStep('join_kit', { ...draft, packingItems: defaultHikingPackingItems() })
+    ).toBeNull();
   });
 
   it('organize camping uses twelve structured steps (aligned with hiking)', () => {
@@ -155,6 +167,7 @@ describe('hostingFlowEngine', () => {
       title: 'Sunrise hike',
       latitude: 25.1,
       longitude: 55.2,
+      packingItems: defaultHikingPackingItems(),
       joinKit: 'Bring water and headlamp.',
       capacity: 6,
     };
@@ -249,6 +262,7 @@ describe('hostingFlowEngine', () => {
         longitude: 55.2,
         meetingLatitude: 25.1,
         meetingLongitude: 55.2,
+        packingItems: defaultHikingPackingItems(),
         joinKit: 'Bring water and sturdy shoes.',
       })
     ).toBeNull();
@@ -280,6 +294,39 @@ describe('hostingFlowEngine', () => {
     expect(validateDraftStep('destination', draft)).toBe('Name the camp or area.');
   });
 
+  it('validateDraftStep requires a pin for a new camp spot', () => {
+    const draft = {
+      ...emptyCreateActivityDraft(),
+      kind: 'camping' as const,
+      placeLabelSource: 'custom' as const,
+      trailName: 'Al Qudra overnight',
+    };
+    expect(validateDraftStep('destination', draft)).toMatch(/Pin the spot/);
+  });
+
+  it('validateDraftStep publish accepts a complete new spot pending admin review', () => {
+    const draft = {
+      ...emptyCreateActivityDraft(),
+      kind: 'hiking' as const,
+      title: 'New wadi sunrise',
+      latitude: 24.8,
+      longitude: 56.1,
+      meetingLatitude: 24.81,
+      meetingLongitude: 56.11,
+      placeLabelSource: 'custom' as const,
+      trailName: 'Hidden wadi loop',
+      customPlaceAreaId: 'area-hatta',
+      trailLatitude: 24.82,
+      trailLongitude: 56.12,
+      customPlaceImages: ['/media/a.jpg'],
+      aboutTrail: 'Quiet sunrise loop with shade and a short scramble near the dam.',
+      packingItems: defaultHikingPackingItems(),
+      joinKit: 'Water 2 L minimum.',
+    };
+    expect(validateDraftStep('destination', draft)).toBeNull();
+    expect(validateDraftStep('publish', draft)).toBeNull();
+  });
+
   it('validateDraftStep requires registry trail pick by default', () => {
     const draft = {
       ...emptyCreateActivityDraft(),
@@ -304,6 +351,7 @@ describe('hostingFlowEngine', () => {
       trailName: 'Wadi loop',
       aboutTrail: 'Moderate sunrise loop with steady elevation.',
       capacity: 8,
+      packingItems: defaultHikingPackingItems(),
       joinKit: 'Water 2 L minimum.',
     };
     expect(validateDraftStep('publish', draft)).toBeNull();
@@ -335,6 +383,8 @@ describe('hostingFlowEngine', () => {
       limitedMinAgeEnabled: true,
       ageMin: 18,
       petsAllowed: false,
+      packingItems: defaultHikingPackingItems(),
+      packingAckMode: 'strict' as const,
       joinKit: 'Headlamp',
     };
     const requirements = buildHostingActivityRequirements(draft);
@@ -346,6 +396,8 @@ describe('hostingFlowEngine', () => {
         'Minimum age: 18',
         'No pets',
         'Instructions: Headlamp',
+        'Packing ack: strict',
+        'Packing item: must|shoes|🥾|Hiking Shoes',
       ])
     );
   });

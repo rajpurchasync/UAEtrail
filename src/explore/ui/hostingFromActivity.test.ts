@@ -38,6 +38,40 @@ describe('hostingFromActivity', () => {
     expect(draft.registryPlaceId).toBe('place-1');
     expect(draft.title).toBe('Sunrise hike');
     expect(draft.meetingLatitude).toBe(25.1);
+    expect(draft.guideUserIds).toEqual([]);
+  });
+
+  it('copies packing list and join notes from requirements', () => {
+    const draft = createDraftFromPastActivity(
+      baseActivity({
+        requirements: [
+          'Instructions: Water 2 L.',
+          'Packing ack: strict',
+          'Packing item: must|shoes|🥾|Hiking Shoes',
+          'Packing item: nice|poles|🎿|Trekking poles',
+        ],
+      })
+    );
+    expect(draft.joinKit).toBe('Water 2 L.');
+    expect(draft.packingAckMode).toBe('strict');
+    expect(draft.packingItems).toEqual([
+      { id: 'shoes', label: 'Hiking Shoes', emoji: '🥾', required: true },
+      { id: 'poles', label: 'Trekking poles', emoji: '🎿', required: false },
+    ]);
+  });
+
+  it('copies extra accepted guides and skips the creator', () => {
+    const draft = createDraftFromPastActivity(
+      baseActivity({
+        hostUserId: 'host-1',
+        createdById: 'host-1',
+        guides: [
+          { userId: 'host-1', displayName: 'Samira', avatarUrl: null },
+          { userId: 'guide-2', displayName: 'Omar', avatarUrl: null },
+        ],
+      })
+    );
+    expect(draft.guideUserIds).toEqual(['guide-2']);
   });
 
   it('maps activities outing category to organize activity kind', () => {

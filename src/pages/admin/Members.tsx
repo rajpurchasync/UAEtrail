@@ -85,6 +85,7 @@ export const Members = () => {
         pageSize: 20
       });
       if (!isActive()) return;
+      setError(null);
       setMembers(res.data as unknown as MemberRow[]);
       setTotal(res.total ?? 0);
     } catch (e) {

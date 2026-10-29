@@ -62,7 +62,7 @@ export const CURATED_AREA_CATALOG: readonly CuratedAreaCatalogEntry[] = [
     'Dubai',
     10,
     { latitude: 24.83, longitude: 56.11 },
-    { south: 24.75, west: 55.95, north: 24.92, east: 56.25 },
+    { south: 24.75, west: 56.08, north: 24.9, east: 56.22 },
     'Hajar foothills — dam loops, wadi hikes, kayaking, and weekend camping a short drive from Dubai.'
   ),
   entry(
@@ -119,7 +119,7 @@ export const CURATED_AREA_CATALOG: readonly CuratedAreaCatalogEntry[] = [
     'khorfakkan',
     'khorfakkan',
     'Khorfakkan',
-    'Fujairah',
+    'Sharjah',
     12,
     { latitude: 25.36, longitude: 56.35 },
     { south: 25.3, west: 56.28, north: 25.42, east: 56.42 },

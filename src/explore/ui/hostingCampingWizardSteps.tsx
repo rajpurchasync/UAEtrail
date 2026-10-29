@@ -21,11 +21,13 @@ export const CampingDestinationStepBody = ({
   patchDraft,
   tenantId,
   registryPlaces,
+  onOpenSpotMap,
 }: {
   draft: CreateActivityDraft;
   patchDraft: PatchDraft;
   tenantId?: string | null;
   registryPlaces: PlaceDTO[];
+  onOpenSpotMap?: () => void;
 }) => (
   <HostingVenuePlaceField
     draft={draft}
@@ -35,6 +37,7 @@ export const CampingDestinationStepBody = ({
     placeType="camping"
     customNameLabel="Camp or area name"
     customNamePlaceholder="e.g. Al Qudra lakes overnight"
+    onOpenSpotMap={onOpenSpotMap}
   />
 );
 

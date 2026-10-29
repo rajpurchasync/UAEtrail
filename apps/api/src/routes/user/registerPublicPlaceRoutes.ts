@@ -25,6 +25,8 @@ import {
 } from '../../services/place-public-read.js';
 import { finishCatalogEtag, readCatalogResponseEtag } from '../../lib/explore-catalog-etag.js';
 import { readExploreMapMemoryCache } from '../../lib/explore-map-cache.js';
+import { toExploreListProjection } from '../../lib/explore-map-list-projection.js';
+import type { ExploreMapRouteResult } from '../../lib/explore-map-route.js';
 import { sendNotModifiedIfMatch } from '../../lib/http-etag.js';
 import {
   eventIdParamSchema,
@@ -39,7 +41,8 @@ export const registerPublicPlaceRoutes = (router: Router): void => {
     try {
       const query = req.query as Record<string, string | undefined>;
       const unscoped = !query.bbox && !query.cursor && !query.limit && !query.area;
-      const catalogFresh = unscoped && readExploreMapMemoryCache() != null;
+      const listProjection = query.projection === 'list';
+      const catalogFresh = unscoped && !listProjection && readExploreMapMemoryCache() != null;
       if (catalogFresh && sendNotModifiedIfMatch(req, res, await readCatalogResponseEtag('map'))) return;
       const data = await loadExploreMapForViewer({
         query: {
@@ -51,8 +54,11 @@ export const registerPublicPlaceRoutes = (router: Router): void => {
         viewerUserId: null,
         userRole: null,
       });
-      if (unscoped && (await finishCatalogEtag(req, res, 'map', data))) return;
-      res.json({ data });
+      const payload: ExploreMapRouteResult = listProjection
+        ? { ...data, items: toExploreListProjection(data.items) }
+        : data;
+      if (unscoped && !listProjection && (await finishCatalogEtag(req, res, 'map', payload))) return;
+      res.json({ data: payload });
     } catch (error) {
       next(error);
     }

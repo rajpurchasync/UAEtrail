@@ -7,6 +7,7 @@ export const listPublishingTeamMembers = async (tenantId: string) => {
     userId: member.userId,
     email: member.user.email,
     displayName: member.user.profile?.displayName ?? member.user.email,
+    avatarUrl: member.user.profile?.avatarUrl ?? null,
     role: member.role.toLowerCase(),
     createdAt: member.createdAt,
     isActive: member.isActive ?? true,

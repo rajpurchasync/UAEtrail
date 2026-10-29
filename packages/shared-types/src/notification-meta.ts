@@ -38,6 +38,8 @@ export type NotificationKind =
   | 'user_registered'
   | 'activity_published'
   | 'entity_activity_published'
+  | 'activity_guide_invite'
+  | 'activity_venue_live'
   | 'wishlist_match'
   | (string & {});
 

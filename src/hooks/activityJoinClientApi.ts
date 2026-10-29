@@ -36,17 +36,35 @@ export type ActivityJoinSubmitResult = {
 /** RSVP or approval join request — shared by join modal (R8.1: no api in components). */
 export const submitActivityJoin = async (
   activityId: string,
-  input: { participationMode: 'rsvp' | 'approval' | string; note?: string }
+  input: {
+    participationMode: 'rsvp' | 'approval' | string;
+    note?: string;
+    packingCheckedIds?: string[];
+    packingSignature?: string;
+  }
 ): Promise<ActivityJoinSubmitResult> => {
+  const joinBody = {
+    note: input.note?.trim() || undefined,
+    packingCheckedIds: input.packingCheckedIds,
+    packingSignature: input.packingSignature?.trim() || undefined,
+  };
   if (input.participationMode === 'rsvp') {
-    await api.rsvpActivity(activityId);
+    await api.rsvpActivity(activityId, joinBody);
     return { successMessage: "You're going! Find it on your Plan." };
   }
 
-  const res = await api.createJoinRequest(activityId, input.note?.trim() || undefined);
+  const res = await api.createJoinRequest(activityId, joinBody);
   const successMessage =
     res.data.waitlisted || res.data.status === 'waitlisted'
       ? "Added to the waitlist — we'll let you know when a spot opens."
       : 'Request sent! The host will get back to you soon.';
   return { successMessage };
+};
+
+export const acceptActivityGuideInvite = async (activityId: string): Promise<void> => {
+  await api.acceptActivityGuideInvite(activityId);
+};
+
+export const declineActivityGuideInvite = async (activityId: string): Promise<void> => {
+  await api.declineActivityGuideInvite(activityId);
 };

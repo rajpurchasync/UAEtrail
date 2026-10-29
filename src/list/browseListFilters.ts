@@ -109,10 +109,10 @@ export const filterExploreMapItemsForList = (
     pool = pool.filter((item) => exploreItemMatchesQuery(item, state.query));
   }
 
-  if (state.activityDatePreset !== 'anyday') {
+  if (tripsCategoryInScope && state.activityDatePreset !== 'anyday') {
     pool = pool.filter((item) => matchesActivityDateFilter(item, state.activityDatePreset));
   }
-  if (state.when === 'weekend') {
+  if (tripsCategoryInScope && state.when === 'weekend') {
     pool = pool.filter(matchesWeekendBrowseFilter);
   }
 

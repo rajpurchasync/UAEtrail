@@ -41,7 +41,25 @@ export const HOSTING_CREW_CHAT_POLICY_TITLE = 'Crew chat messages';
 
 export const JOIN_RULES_STEP_TITLE = 'Before they join';
 
-export const JOIN_RULES_LABEL = 'What to know before joining *';
+export const PACKING_LIST_TITLE = 'What to bring';
+export const PACKING_MODE_STRICT_TITLE = 'Strict';
+export const PACKING_MODE_STRICT_SUBTITLE =
+  'Joiners tick every must-have item and type their full name to confirm.';
+export const PACKING_MODE_LENIENT_TITLE = 'Lenient';
+export const PACKING_MODE_LENIENT_SUBTITLE = 'Joiners only see the list — no ticks or signature.';
+export const PACKING_MUST_LABEL = 'Must have';
+export const PACKING_NICE_LABEL = 'Nice to have';
+export const PACKING_SIGNATURE_LABEL = 'Full name (digital signature)';
+export const PACKING_SIGNATURE_HINT = 'Type your first and last name to confirm you will bring the must-have items.';
+export const PACKING_DEFAULTS_CTA = 'Use typical hiking kit';
+
+export const packingMustChipClass =
+  'border border-amber-300 bg-amber-100 text-amber-950';
+export const packingNiceChipClass = 'border border-sky-300 bg-sky-100 text-sky-950';
+export const packingChipClassName = (required: boolean): string =>
+  required ? packingMustChipClass : packingNiceChipClass;
+
+export const JOIN_RULES_LABEL = 'Anything else they should know';
 
 export const RIDE_RULES_LABEL = 'What riders should know *';
 
@@ -118,14 +136,19 @@ export const PARTICIPANTS_MIN_AGE_LABEL = 'Minimum age';
 
 export const HOSTING_VENUE_REGISTRY_LABEL = 'Select venue';
 
-export const HOSTING_VENUE_CUSTOM_NAME_TOGGLE = "Can't find it? Enter the venue name";
+export const HOSTING_VENUE_CUSTOM_NAME_TOGGLE = "Can't find it? Add a new spot";
 
 export const HOSTING_VENUE_CUSTOM_NAME_BACK = 'Search the registry again';
+
+export const HOSTING_VENUE_CUSTOM_REVIEW_NOTE =
+  'Pin the spot and add a photo. If this is a new area, we submit the spot and the area together — both stay pending until an admin approves them.';
 
 
 
 
 export const HOSTING_PUBLISH_SUCCESS_TITLE = 'You\u2019re live';
+
+export const HOSTING_PENDING_VENUE_TITLE = 'Submitted for review';
 
 export const DEMAND_SUBMIT_SUCCESS_TITLE = 'Request posted';
 
@@ -174,6 +197,9 @@ export const HOSTING_PUBLISH_SUCCESS_BODY_PRIVATE =
 
 export const HOSTING_RIDESHARE_PENDING_DESTINATION_BODY =
   'Your ride is saved. It goes live on the map when your destination place is approved — we’ll notify you.';
+
+export const HOSTING_PENDING_VENUE_BODY =
+  'This plan, the new spot, and the area are pending admin review. Nothing is live on the map or in search yet — we’ll notify you when they’re approved.';
 
 export const HOSTING_PUBLISH_SUCCESS_BODY =
   'Your plan is published. View it on the map or offer a rideshare for your crew.';

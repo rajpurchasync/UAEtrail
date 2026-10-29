@@ -1,9 +1,10 @@
 import type { AreaDTO, GroupRegionLevels } from '@uaetrail/shared-types';
-import { stampGroupRegionLevelsFromGeo } from '@uaetrail/shared-types';
+import { normalizeGroupRegionLabel, stampGroupRegionLevelsFromGeo } from '@uaetrail/shared-types';
 import type { Location } from '../domain/types.js';
 import type { MongoActivityDoc } from './entity-builders.js';
 import { listPublishedAreas } from './areas-store.js';
 import { resolveActivityAnchorCoordinates } from './area-resolution.js';
+import { reversePlaceLocality } from './place-search.js';
 import type { TenantRecord } from './tenant-store.js';
 
 let publishedAreasCache: AreaDTO[] | null = null;
@@ -36,12 +37,29 @@ const stampLevels = async (input: {
   areaId?: string | null;
 }): Promise<GroupRegionLevels> => {
   const publishedAreas = await loadPublishedAreasCached();
-  return stampGroupRegionLevelsFromGeo({
+  const stamped = stampGroupRegionLevelsFromGeo({
     ...input,
     countryCode: input.countryCode?.trim() ? input.countryCode : 'AE',
     publishedAreas,
   });
+  const lat = input.latitude;
+  const lng = input.longitude;
+  if (lat == null || lng == null) return stamped;
+  if (process.env.VITEST) return stamped;
+  const geo = await reversePlaceLocality(lat, lng);
+  if (!geo) return stamped;
+  const city = geo.city?.trim() || null;
+  const l2 =
+    stamped.l2?.trim() ||
+    (geo.state ? normalizeGroupRegionLabel(geo.state) : null) ||
+    (city ? normalizeGroupRegionLabel(city) : null) ||
+    null;
+  const l3 = stamped.l3?.trim() || city || null;
+  const l4 = stamped.l4?.trim() || geo.community?.trim() || null;
+  return { ...stamped, l2, l3, l4 };
 };
+
+export const stampGroupRegionLevelsForPin = stampLevels;
 
 export const stampLocationGroupRegionLevels = async (location: Location): Promise<Location> => {
   const groupRegionLevels = await stampLevels({

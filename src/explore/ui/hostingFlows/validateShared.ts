@@ -1,4 +1,5 @@
 import type { CreateActivityDraft, CreateFlowStepId } from '../hostingFlowEngine';
+import { validateCustomVenueDetails } from '../../hostingPublishArea';
 import { usesRegistryCatalogVenue } from './registry';
 
 export const validateHostingTitle = (draft: CreateActivityDraft, emptyMessage: string): string | null => {
@@ -40,12 +41,7 @@ export const validateStructuredAboutTrail = (
 
 export const validateStructuredDestination = (draft: CreateActivityDraft): string | null => {
   if (draft.placeLabelSource === 'custom') {
-    if (!draft.trailName.trim()) {
-      if (draft.kind === 'camping') return 'Name the camp or area.';
-      if (draft.kind === 'event') return 'Name the venue or area.';
-      return 'Name the trail or where you are going.';
-    }
-    return null;
+    return validateCustomVenueDetails(draft);
   }
   if (!draft.registryPlaceId) {
     if (draft.kind === 'camping') return 'Choose a camp from the registry.';

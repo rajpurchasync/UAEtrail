@@ -331,7 +331,7 @@ describe('systemCoherenceGuard', () => {
     const model = readFileSync(modelPath, 'utf8');
     expect(model).toMatch(/useExploreMapCatalog/);
     expect(model).toMatch(/useHostingWizardPrefill/);
-    expect(model).toMatch(/useExploreBrowsePanelShared/);
+    expect(model).not.toMatch(/useExploreBrowsePanelShared/);
     expect(model.split(/\r?\n/).length).toBeLessThan(445);
     const experience = readFileSync(join(ROOT, 'src/explore/ui/ExploreExperience.tsx'), 'utf8');
     expect(experience.split(/\r?\n/).length).toBeLessThan(280);
@@ -343,16 +343,8 @@ describe('systemCoherenceGuard', () => {
       'utf8'
     );
     expect(migrations).not.toMatch(/syncExploreUrl/);
-    const legacyBlock = migrations.slice(
-      migrations.indexOf('legacyListCat'),
-      migrations.indexOf('}, [input.searchParams')
-    );
-    expect(legacyBlock).not.toMatch(/syncExploreUrl\(\{ browse: true, list: false \}\)/);
-    const desktopListBlock = migrations.slice(
-      migrations.indexOf("if (listParam === '0' || listParam === '1') return;"),
-      migrations.indexOf('}, [input.isDesktop')
-    );
-    expect(desktopListBlock).not.toMatch(/syncExploreUrl\(\{ list: true \}\)/);
+    expect(migrations).toMatch(/listDiscoveryPathFromExploreSearch/);
+    expect(migrations).toMatch(/replace: true/);
     const browseHook = readFileSync(
       join(ROOT, 'src/explore/ui/useExploreBrowseUrlState.ts'),
       'utf8'

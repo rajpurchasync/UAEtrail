@@ -8,7 +8,8 @@ import {
   UserRound,
   Users,
 } from 'lucide-react';
-import { ensureHikingJoinKitText } from './hikingJoinKitDefaults';
+import { HostingPackingListEditor } from './HostingPackingListEditor';
+import { defaultHikingPackingItems, withHikingKitExtras } from '@uaetrail/shared-types';
 import {
   formatHikeCapacityLabel,
   HIKE_CAPACITY_PRESETS,
@@ -296,11 +297,13 @@ export const HikingDestinationStepBody = ({
   patchDraft,
   tenantId,
   registryPlaces,
+  onOpenSpotMap,
 }: {
   draft: CreateActivityDraft;
   patchDraft: PatchDraft;
   tenantId?: string | null;
   registryPlaces: PlaceDTO[];
+  onOpenSpotMap?: () => void;
 }) => (
   <HostingVenuePlaceField
     draft={draft}
@@ -312,6 +315,7 @@ export const HikingDestinationStepBody = ({
     customNamePlaceholder="e.g. Wadi Shawka loop"
     showDifficulty={Boolean(draft.registryPlaceId)}
     registryDifficultyHint
+    onOpenSpotMap={onOpenSpotMap}
   />
 );
 
@@ -371,20 +375,35 @@ export const HikingJoinKitStepBody = ({
   patchDraft: PatchDraft;
 }) => {
   useEffect(() => {
-    if (draft.kind === 'hiking' && !draft.joinKit.trim()) {
-      patchDraft({ joinKit: ensureHikingJoinKitText('') });
+    if (draft.kind !== 'hiking') return;
+    if ((draft.packingItems?.length ?? 0) === 0) {
+      patchDraft({ packingItems: defaultHikingPackingItems(), packingAckMode: 'strict' });
+      return;
     }
-  }, [draft.kind, draft.joinKit, patchDraft]);
+    const next = withHikingKitExtras(draft.packingItems);
+    if (next.length !== draft.packingItems.length) patchDraft({ packingItems: next });
+  }, [draft.kind, draft.packingItems, patchDraft]);
 
   return (
-    <textarea
-      value={draft.joinKit}
-      onChange={(event) => patchDraft({ joinKit: event.target.value })}
-      rows={12}
-      placeholder="Water, shoes, headlamp, fitness level, rules…"
-      aria-label={JOIN_RULES_LABEL}
-      className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-base leading-relaxed"
-      maxLength={1000}
-    />
+    <div className="space-y-4">
+      <HostingPackingListEditor
+        mode={draft.packingAckMode}
+        items={draft.packingItems ?? []}
+        defaultMode="strict"
+        onChange={patchDraft}
+      />
+      <label className="block">
+        <span className="mb-2 block text-sm font-semibold text-neutral-800">{JOIN_RULES_LABEL}</span>
+        <textarea
+          value={draft.joinKit}
+          onChange={(event) => patchDraft({ joinKit: event.target.value })}
+          rows={4}
+          placeholder="Anything else joiners should know…"
+          aria-label={JOIN_RULES_LABEL}
+          className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-base leading-relaxed"
+          maxLength={1000}
+        />
+      </label>
+    </div>
   );
 };

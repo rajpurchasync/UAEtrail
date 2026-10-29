@@ -10,7 +10,6 @@ import {
   resolveBrowsePosterRequirementLabels,
   resolveBrowsePosterScheduleGrid,
 } from './listPosterPresentation';
-import { listCategoryResultsLabel } from './listCategoryCopy';
 import { resolveListFeedFooterModel } from './listFeedFooterActions';
 import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
 import { seekingExploreMapItem } from '../explore/exploreMapItemFixtures';
@@ -173,18 +172,6 @@ describe('list poster presentation', () => {
     expect(grid.timeLabel).toBe('Starts 4 PM');
     expect(grid.priceLabel).toBe('AED 200');
     expect(grid.spotsLabel).toBe('5 spots');
-  });
-});
-
-describe('listCategoryResultsLabel', () => {
-  it('uses activity count copy for trips', () => {
-    expect(listCategoryResultsLabel(7, 'activities')).toBe('Found 7 activities');
-    expect(listCategoryResultsLabel(1, 'activities')).toBe('Found 1 activity');
-  });
-
-  it('uses place count copy for venues', () => {
-    expect(listCategoryResultsLabel(3, 'venues')).toBe('Found 3 places');
-    expect(listCategoryResultsLabel(1, 'venues')).toBe('Found 1 place');
   });
 });
 

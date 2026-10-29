@@ -14,7 +14,7 @@ type Props = {
   buddyUserIds?: Set<string>;
 };
 
-/** Published seeking activities — same `ExploreListRow` as the Activities list. */
+/** Published seeking activities — compact `ExploreListRow`. */
 export const PeopleBrowseLookingList = ({
   seekingActivities,
   exploreCatalogItems,

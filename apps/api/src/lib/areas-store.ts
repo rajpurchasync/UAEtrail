@@ -46,6 +46,7 @@ export const toAreaPublicDto = (area: AreaDTO): AreaPublicDTO => ({
   region: area.region,
   center: area.center,
   bounds: area.bounds,
+  priority: area.priority,
   summary: area.summary ?? null,
   countryCode: area.countryCode ?? 'AE',
   imageUrl: area.imageUrl ?? null,
@@ -77,6 +78,13 @@ export const findAreaById = async (areaId: string): Promise<AreaDTO | null> => {
 export const findPublishedAreaById = async (areaId: string): Promise<AreaDTO | null> => {
   const doc = await collection().findOne({ _id: areaId, status: 'published' });
   return doc ? mapAreaDto(doc) : null;
+};
+
+export const findAreasByIds = async (areaIds: string[]): Promise<AreaDTO[]> => {
+  const ids = [...new Set(areaIds.map((id) => id.trim()).filter(Boolean))];
+  if (ids.length === 0) return [];
+  const docs = await collection().find({ _id: { $in: ids } }).toArray();
+  return docs.map(mapAreaDto);
 };
 
 export type AdminAreaInput = {

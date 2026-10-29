@@ -1,6 +1,7 @@
 import type { LocationDTO, PlaceDTO } from '@uaetrail/shared-types';
 import { submitMemberPlace } from '../hooks/memberCatalogSubmitClientApi';
 import { DEFAULT_COUNTRY } from '../config/regions';
+import { resolveRequiredEmirate } from '../explore/hostingPublishArea';
 import { formatE164Phone } from '../utils/phone';
 import type { AddDraft } from '../explore/ui/addFlow';
 import {
@@ -23,12 +24,29 @@ export const submitCatalogPlaceFromAddDraft = async (
 
   const activityType =
     draft.kind === 'event' ? 'event' : draft.kind === 'shop' ? 'shop' : draft.kind;
+  const proposedArea = (draft.areaLabel.trim() || draft.title.trim());
+  const emirate = resolveRequiredEmirate(
+    draft.emirate,
+    draft.latitude,
+    draft.longitude,
+    [],
+    proposedArea
+  );
+  if (!emirate) {
+    throw new Error(
+      'Choose the emirate (Dubai, Ras Al Khaimah, Sharjah, …). Search and Home use this filter.'
+    );
+  }
+  const listedAreaId = draft.areaId?.trim() || '';
   const payload: Record<string, unknown> = {
     name: draft.title.trim(),
     countryCode: DEFAULT_COUNTRY,
-    emirate: draft.emirate.trim(),
-    region: draft.emirate.trim(),
-    areaId: draft.areaId!.trim(),
+    emirate,
+    groupRegion: emirate,
+    region: emirate,
+    ...(listedAreaId
+      ? { areaId: listedAreaId }
+      : { proposedAreaName: proposedArea, areaLabel: proposedArea }),
     activityType,
     description: draft.description.trim(),
     latitude: draft.latitude ?? undefined,

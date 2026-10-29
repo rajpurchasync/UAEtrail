@@ -11,9 +11,14 @@ export const submitMemberPlace = async (
   payload: Partial<PlaceDTO>,
   tenantId?: string
 ): Promise<PlaceDTO> => {
-  const res = tenantId
-    ? await api.submitPlace(tenantId, payload)
-    : await api.submitUserPlace(payload);
+  const proposing = Boolean(
+    typeof (payload as { proposedAreaName?: string }).proposedAreaName === 'string' &&
+      (payload as { proposedAreaName?: string }).proposedAreaName?.trim()
+  );
+  const res =
+    tenantId && !proposing
+      ? await api.submitPlace(tenantId, payload)
+      : await api.submitUserPlace(payload);
   return res.data;
 };
 

@@ -11,6 +11,8 @@ import {
   updateAdminTenantStatus,
 } from '../../hooks/adminConsoleApi';
 import { fetchAdminTenantDetail } from '../../hooks/adminDrilldownApi';
+import { ADMIN_TABLE_PAGE_SIZE } from '../../api/listAllPages';
+import { AdminTablePager } from '../../components/admin/AdminTablePager';
 import { DashboardLayout } from '../../components/layout';
 import { ADMIN_LINKS } from '../../constants';
 import { SecureAvatar } from '../../components/ui/SecureAvatar';
@@ -26,6 +28,10 @@ export const Organisations = () => {
   const [tenantFilter, setTenantFilter] = useState<TenantFilter>('all');
   const [applications, setApplications] = useState<OrganisationApplication[]>([]);
   const [tenants, setTenants] = useState<TenantListDTO[]>([]);
+  const [appsPage, setAppsPage] = useState(1);
+  const [appsTotal, setAppsTotal] = useState(0);
+  const [tenantsPage, setTenantsPage] = useState(1);
+  const [tenantsTotal, setTenantsTotal] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [noteModal, setNoteModal] = useState<{ id: string; action: 'approved' | 'rejected' } | null>(null);
@@ -40,12 +46,15 @@ export const Organisations = () => {
     setLoading(true);
     try {
       const [apps, tenantList] = await Promise.all([
-        fetchAdminOrganisationApplications(),
-        fetchAdminTenants(),
+        fetchAdminOrganisationApplications(appsPage, ADMIN_TABLE_PAGE_SIZE),
+        fetchAdminTenants(tenantsPage, ADMIN_TABLE_PAGE_SIZE),
       ]);
       if (!isActive()) return;
-      setApplications(apps);
-      setTenants(tenantList);
+      setError(null);
+      setApplications(apps.items);
+      setAppsTotal(apps.total);
+      setTenants(tenantList.items);
+      setTenantsTotal(tenantList.total);
     } catch (err) {
       if (!isActive()) return;
       setError(err instanceof Error ? err.message : 'Failed to load data');
@@ -54,7 +63,7 @@ export const Organisations = () => {
     }
   };
 
-  useSafeAsyncEffect((isActive) => loadData(isActive), []);
+  useSafeAsyncEffect((isActive) => loadData(isActive), [appsPage, tenantsPage]);
 
   const filteredTenants = useMemo(() => {
     if (tenantFilter === 'all') return tenants;
@@ -191,6 +200,7 @@ export const Organisations = () => {
         )}
 
         {!loading && tab === 'applications' && (
+          <>
           <div className="bg-white border rounded-lg overflow-x-auto desktop-scrollbar-x">
             <table className="min-w-full text-sm">
               <thead className="bg-gray-50">
@@ -240,6 +250,13 @@ export const Organisations = () => {
               </tbody>
             </table>
           </div>
+          <AdminTablePager
+            page={appsPage}
+            pageSize={ADMIN_TABLE_PAGE_SIZE}
+            total={appsTotal}
+            onPage={setAppsPage}
+          />
+          </>
         )}
 
         {!loading && tab === 'tenants' && (
@@ -303,6 +320,12 @@ export const Organisations = () => {
                 </tbody>
               </table>
             </div>
+            <AdminTablePager
+              page={tenantsPage}
+              pageSize={ADMIN_TABLE_PAGE_SIZE}
+              total={tenantsTotal}
+              onPage={setTenantsPage}
+            />
           </>
         )}
       </div>

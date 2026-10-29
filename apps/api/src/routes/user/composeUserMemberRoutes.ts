@@ -1,4 +1,5 @@
 import type { Router } from 'express';
+import { registerActivityGuideRoutes } from './registerActivityGuideRoutes.js';
 import { registerActivityJoinInviteRoutes } from './registerActivityJoinInviteRoutes.js';
 import { registerBuddyRoutes } from './registerBuddyRoutes.js';
 import { registerEntityFollowRoutes } from './registerEntityFollowRoutes.js';
@@ -29,6 +30,7 @@ import { registerProfileRoutes } from './registerProfileRoutes.js';
 export const composeUserMemberRoutes = (userRouter: Router): void => {
   registerMeActivityParticipationRoutes(userRouter);
   registerActivityJoinInviteRoutes(userRouter);
+  registerActivityGuideRoutes(userRouter);
 
   registerProfileRoutes(userRouter);
   registerMemberDiscoveryRoutes(userRouter);

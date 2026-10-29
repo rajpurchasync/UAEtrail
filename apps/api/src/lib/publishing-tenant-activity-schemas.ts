@@ -79,6 +79,7 @@ const publishingTenantActivityFieldsSchema = z.object({
   images: z.array(z.string()).default([]),
   bannerUrl: optionalHttpUrlSchema,
   hostId: z.string().optional(),
+  guideUserIds: z.array(z.string().min(1)).max(20).optional(),
   pricingMode: z.enum(['free', 'shared', 'paid']).optional(),
   outingCategory: outingCategorySchema.optional(),
   outingTopic: outingTopicSchema.optional(),

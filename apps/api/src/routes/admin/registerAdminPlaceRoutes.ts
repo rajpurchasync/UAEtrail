@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { z } from 'zod';
+import { mediaUrlSchema } from '../../domain/location-submit.js';
 import { paginatedResponse, paginationSchema } from '../../lib/pagination.js';
 import { validate } from '../../middleware/validate.js';
 import {
@@ -14,14 +15,14 @@ const locationFieldsSchema = z.object({
   region: z.string().min(2),
   areaLabel: z.string().min(2).max(120).optional().nullable(),
   areaId: z.string().min(1).max(80).optional().nullable(),
-  activityType: z.enum(['hiking', 'camping', 'event', 'shop', 'EVENT', 'community_activity', 'COMMUNITY_ACTIVITY']),
+  activityType: z.enum(['hiking', 'camping', 'event', 'shop']),
   description: z.string().min(20),
   difficulty: z.enum(['easy', 'moderate', 'hard']).optional(),
   season: z.array(z.string()).min(1),
   childFriendly: z.boolean().default(false),
   maxGroupSize: z.number().int().positive().optional(),
   accessibility: z.enum(['car-accessible', 'remote']).optional(),
-  images: z.array(z.string().url()).default([]),
+  images: z.array(mediaUrlSchema).default([]),
   featured: z.boolean().default(false),
   status: z.enum(['draft', 'active', 'inactive']).default('active'),
   distance: z.number().positive().optional(),
@@ -79,9 +80,9 @@ const adminPlaceItemPaths = ['/places/:id'] as const;
 /** Platform admin place CRUD (`/admin/places`; SPA redirects legacy `/admin/locations`). */
 export const registerAdminPlaceRoutes = (adminRouter: Router): void => {
   adminPlaceCollectionPaths.forEach((path) => {
-    adminRouter.get(path, async (req, res, next) => {
+    adminRouter.get(path, validate({ query: paginationSchema }), async (req, res, next) => {
       try {
-        const pg = paginationSchema.parse(req.query);
+        const pg = req.query as unknown as z.infer<typeof paginationSchema>;
         const { items, total } = await listAdminPlacesPage({
           page: pg.page,
           pageSize: pg.pageSize,

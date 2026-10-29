@@ -1,5 +1,6 @@
 import { ActivityStatus, ActivityType } from '../src/domain/enums.js';
-import { findAuthUserByEmail } from '../src/lib/auth-users-store.js';
+import { findAuthUserByEmail, findAuthUsersByIds } from '../src/lib/auth-users-store.js';
+import type { ActivityGuideRecord } from '../src/domain/types.js';
 import {
   buildActivityFromCreateInput,
   type ActivityCreateInput,
@@ -94,6 +95,34 @@ const upsertEvent = async (id: string, data: ActivityCreateInput) => {
   return doc;
 };
 
+const acceptedGuides = async (
+  userIds: string[],
+  assignedByUserId: string
+): Promise<ActivityGuideRecord[]> => {
+  const now = new Date();
+  const users = await findAuthUsersByIds(userIds);
+  const byId = new Map(users.map((user) => [user._id, user]));
+  return userIds.map((userId) => {
+    const user = byId.get(userId);
+    return {
+      userId,
+      displayName: user?.profile.displayName?.trim() || 'Guide',
+      avatarUrl: user?.profile.avatarUrl ?? null,
+      status: 'accepted' as const,
+      assignedByUserId,
+      assignedAt: now,
+      respondedAt: now,
+    };
+  });
+};
+
+const attachGuides = async (activityId: string, userIds: string[], assignedByUserId: string) => {
+  const doc = await findActivityDocInMongo(activityId);
+  if (!doc) return;
+  doc.guides = await acceptedGuides(userIds, assignedByUserId);
+  await writeActivityDocToMongo(doc);
+};
+
 const daysFromNow = (days: number, hours: number, minutes = 0): Date => {
   const date = new Date();
   date.setDate(date.getDate() + days);
@@ -125,6 +154,7 @@ export const seedDemoScheduledActivities = async (
     requirements: ['Water 2L', 'Hiking shoes', 'Cap and sunscreen'],
     outingCategory: 'hiking',
   });
+  await attachGuides('seed-event-jais', [ctx.agencyGuideId, ctx.agencyOwnerId], ctx.agencyOwnerId);
 
   await upsertEvent('seed-event-fossil-camp', {
     tenant: { connect: { id: ctx.individualHostTenantId } },

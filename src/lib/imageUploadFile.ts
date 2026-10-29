@@ -259,6 +259,74 @@ const prepareImageViaApi = async (file: File): Promise<File> => {
   });
 };
 
+/** Cover-crop to a fixed JPEG size so catalog photos share one aspect. */
+export const coverCropJpegFile = async (
+  file: File,
+  outputWidth: number,
+  outputHeight: number
+): Promise<File> => {
+  if (outputWidth <= 0 || outputHeight <= 0) return file;
+  if (typeof createImageBitmap === 'function') {
+    try {
+      const bitmap = await withTimeout(
+        createImageBitmap(file, { imageOrientation: 'from-image' }),
+        ENCODE_TIMEOUT_MS,
+        'encode_timeout'
+      );
+      const scale = Math.max(outputWidth / bitmap.width, outputHeight / bitmap.height);
+      const drawW = bitmap.width * scale;
+      const drawH = bitmap.height * scale;
+      const dx = (outputWidth - drawW) / 2;
+      const dy = (outputHeight - drawH) / 2;
+      const result = await canvasToJpegFile(
+        file,
+        (ctx) => {
+          ctx.drawImage(bitmap, dx, dy, drawW, drawH);
+          bitmap.close();
+        },
+        outputWidth,
+        outputHeight
+      );
+      return result;
+    } catch {
+      /* fall through to HTMLImageElement */
+    }
+  }
+
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await withTimeout(
+      new Promise<HTMLImageElement>((resolve, reject) => {
+        const el = new Image();
+        el.decoding = 'async';
+        el.onload = () => resolve(el);
+        el.onerror = () => reject(new Error('decode_failed'));
+        el.src = url;
+      }),
+      ENCODE_TIMEOUT_MS,
+      'encode_timeout'
+    );
+    const width = img.naturalWidth;
+    const height = img.naturalHeight;
+    if (width <= 0 || height <= 0) return file;
+    const scale = Math.max(outputWidth / width, outputHeight / height);
+    const drawW = width * scale;
+    const drawH = height * scale;
+    const dx = (outputWidth - drawW) / 2;
+    const dy = (outputHeight - drawH) / 2;
+    return await canvasToJpegFile(
+      file,
+      (ctx) => {
+        ctx.drawImage(img, dx, dy, drawW, drawH);
+      },
+      outputWidth,
+      outputHeight
+    );
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+};
+
 /**
  * Prepare for upload/crop: decode on-device when possible; stored files are always
  * JPEG/PNG/WebP/GIF — HEIC/HEIF is transcoded locally or via API so all clients can load it.

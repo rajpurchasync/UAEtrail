@@ -31,7 +31,6 @@ import { useExplorePeopleBrowseBundle } from './useExplorePeopleBrowseBundle';
 import { useExplorePinDeepLink } from './useExplorePinDeepLink';
 import { useExploreMapCatalog } from './useExploreMapCatalog';
 import { resolveExploreItemIdFromMapPin } from '../ui/exploreMapPinModel';
-import { useExploreBrowsePanelShared } from './useExploreBrowsePanelShared';
 
 /** Explore map + browse + compose + selection orchestration (R2). */
 export const useExploreExperienceModel = () => {
@@ -88,19 +87,6 @@ export const useExploreExperienceModel = () => {
   useEffect(() => {
     if (!browse.listOpen) setHighlightedExploreItemId(null);
   }, [browse.listOpen]);
-
-  const handleListItemHover = useCallback(
-    (itemId: string) => {
-      if (!isDesktop) return;
-      setHighlightedExploreItemId(itemId);
-    },
-    [isDesktop]
-  );
-
-  const handleListItemHoverEnd = useCallback(() => {
-    if (!isDesktop) return;
-    setHighlightedExploreItemId(null);
-  }, [isDesktop]);
 
   const viewport = useExploreMapViewport({
     user,
@@ -173,7 +159,7 @@ export const useExploreExperienceModel = () => {
     tenantId,
     onMapDataChanged: () => reloadExploreMap(queryClient),
   });
-  const { inviteShare, shareHostedActivity, openHostManage, listFeedHostActions, hostManageSheet } =
+  const { inviteShare, shareHostedActivity, openHostManage, hostManageSheet } =
     hostSheets;
 
   const planWithBuddyUserId = parsePlanWithUserId(searchParams);
@@ -254,7 +240,7 @@ export const useExploreExperienceModel = () => {
     [mapItems, selection]
   );
 
-  const { mapPins, listItems, shopListSections, searchScopeCounts } = useExploreBrowseList({
+  const { mapPins, searchScopeCounts } = useExploreBrowseList({
     items: mapItems,
     ephemeralMapItems: linkOnlyPeekItems,
     mapFilter: browse.mapFilter,
@@ -271,7 +257,7 @@ export const useExploreExperienceModel = () => {
     activityModeFilter: browse.activityModeFilter,
   });
 
-  const { peopleBrowsePanelProps, openPeopleBrowsePanel, peopleBrowseMapChip, memberPeoplePreview } =
+  const { peopleBrowsePanelProps, openPeopleBrowsePanel, peopleBrowseMapChip } =
     useExplorePeopleBrowseBundle({
       user,
       hostStatus,
@@ -319,23 +305,6 @@ export const useExploreExperienceModel = () => {
     [browse]
   );
 
-  const browsePanelShared = useExploreBrowsePanelShared({
-    isDesktop,
-    mapLoading,
-    myPlanMapMode,
-    shopListSections,
-    browse,
-    publishedAreas,
-    onPickArea: handlePickExploreArea,
-    onOpenItem: selection.openItem,
-    searchScopeCounts,
-    onSearchScopePick: handleExploreSearchCommit,
-    searchFocusNonce,
-    buddyUserIds: user ? new Set(memberPeoplePreview.preview?.friendUserIds ?? []) : undefined,
-    onListItemHover: handleListItemHover,
-    onListItemHoverEnd: handleListItemHoverEnd,
-  });
-
   const signInHref = useMemo(
     () => buildSignInRedirect({ pathname, search }).href,
     [pathname, search]
@@ -365,11 +334,8 @@ export const useExploreExperienceModel = () => {
     myPlanMapMode,
     areaSlug,
     mapItems,
-    listItems,
     browse,
-    browsePanelShared,
     peopleBrowsePanelProps,
-    listFeedHostActions,
     compose,
     selection,
     selectionItems,

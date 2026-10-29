@@ -3,6 +3,7 @@ import { emptySeekingDraft } from './ui/seekingFlowEngine';
 import { emptyCreateActivityDraft } from './ui/hostingFlowEngine';
 import { curatedAreaSeedId, type PlaceDTO } from '@uaetrail/shared-types';
 import {
+  inferEmirateFromPin,
   seekingPostVisibleOnMap,
   validateSeekingPublishArea,
   validateHostingPlaceArea,
@@ -41,14 +42,88 @@ describe('validateHostingPlaceArea', () => {
     ).toBeNull();
   });
 
-  it('blocks custom venue labels for public map', () => {
+  it('requires pin and a photo; unmatched pins use the spot name as a new area', () => {
     const draft = {
       ...emptyCreateActivityDraft(),
       kind: 'hiking' as const,
       joinMode: 'open' as const,
       placeLabelSource: 'custom' as const,
+      trailName: 'New wadi loop',
     };
-    expect(validateHostingPlaceArea(draft, [])).toMatch(/catalog place/);
+    expect(validateHostingPlaceArea(draft, [])).toMatch(/Pin the spot/);
+    expect(
+      validateHostingPlaceArea(
+        {
+          ...draft,
+          trailLatitude: 24.8,
+          trailLongitude: 56.1,
+          customPlaceImages: ['/media/a.jpg'],
+        },
+        []
+      )
+    ).toBeNull();
+    expect(
+      validateHostingPlaceArea(
+        {
+          ...draft,
+          customPlaceAreaId: HATTA_AREA_ID,
+          trailLatitude: 24.8,
+          trailLongitude: 56.1,
+          customPlaceImages: ['/media/a.jpg'],
+        },
+        []
+      )
+    ).toBeNull();
+    expect(
+      validateHostingPlaceArea(
+        {
+          ...draft,
+          customPlaceProposedAreaName: 'Wadi Naqab',
+          trailLatitude: 24.8,
+          trailLongitude: 56.1,
+          customPlaceImages: ['/media/a.jpg'],
+        },
+        []
+      )
+    ).toBeNull();
+  });
+
+  it('infers search/Home emirates from the pin and requires a dropdown when unmatched', () => {
+    expect(inferEmirateFromPin(24.8, 56.1)).toBe('Dubai');
+    expect(inferEmirateFromPin(24.813, 56.052)).toBe('Ajman');
+    expect(inferEmirateFromPin(24.978, 56.226)).toBe('Sharjah');
+    expect(inferEmirateFromPin(20, 50, [], 'Wadi Al Helo')).toBe('Sharjah');
+    expect(inferEmirateFromPin(25.346, 55.421)).toBe('Sharjah');
+    expect(inferEmirateFromPin(25.79, 55.94)).toBe('RAK');
+    expect(inferEmirateFromPin(20, 50)).toBeNull();
+    const unmatched = {
+      ...emptyCreateActivityDraft(),
+      kind: 'hiking' as const,
+      joinMode: 'open' as const,
+      placeLabelSource: 'custom' as const,
+      trailName: 'Offshore pin',
+      trailLatitude: 20,
+      trailLongitude: 50,
+      customPlaceProposedAreaName: 'Open water',
+      customPlaceImages: ['/media/a.jpg'],
+    };
+    expect(validateHostingPlaceArea(unmatched, [])).toMatch(/Choose the emirate/);
+    expect(validateHostingPlaceArea({ ...unmatched, customPlaceEmirate: 'Sharjah' }, [])).toBeNull();
+    expect(
+      validateHostingPlaceArea(
+        {
+          ...emptyCreateActivityDraft(),
+          kind: 'hiking' as const,
+          joinMode: 'open' as const,
+          placeLabelSource: 'custom' as const,
+          trailName: 'Wadi Al Helo',
+          trailLatitude: 24.978,
+          trailLongitude: 56.226,
+          customPlaceImages: ['/media/a.jpg'],
+        },
+        []
+      )
+    ).toBeNull();
   });
 
   it('skips for private link-only outings', () => {

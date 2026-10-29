@@ -50,6 +50,13 @@ export const getVenueStateFilterOptions = (code: CountryCode = DEFAULT_COUNTRY) 
     label: EXPLORE_REGION_PILL_LABELS[region] ?? region,
   }));
 
+/** Emirate picker when a pin cannot be matched — same labels as search/Home, plus Ajman / UAQ. */
+export const EMIRATE_SELECT_OPTIONS: Array<{ key: string; label: string }> = [
+  ...getVenueStateFilterOptions('AE'),
+  { key: 'Ajman', label: 'Ajman' },
+  { key: 'Umm Al Quwain', label: 'Umm Al Quwain' },
+];
+
 export const getMapBounds = (code: CountryCode = DEFAULT_COUNTRY): { west: number; south: number; east: number; north: number } => {
   const bounds: Record<CountryCode, { west: number; south: number; east: number; north: number }> = {
     AE: { west: 51.5, south: 22.5, east: 56.5, north: 26.5 },

@@ -19,6 +19,9 @@ type FacilitySubmitBody = z.infer<typeof locationSubmitBodySchema> & {
 };
 
 export const submitMyFacility = async (userId: string, body: FacilitySubmitBody) => {
+  if (!body.areaId?.trim()) {
+    throw new ApiError(400, 'area_required', 'Choose a published area.');
+  }
   const area = await findPublishedAreaById(body.areaId.trim());
   if (!area) {
     throw new ApiError(400, 'area_not_found', 'Choose a published area.');

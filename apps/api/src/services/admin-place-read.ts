@@ -1,5 +1,6 @@
 import { listAdminPlacesPaged } from '../lib/admin-store.js';
 import { toLocationDto } from '../lib/mappers.js';
+import { withPlaceAreaMetaMany } from '../lib/place-area-meta.js';
 
 export const listAdminPlacesPage = async (input: { page: number; pageSize: number }) => {
   const { items: locations, total } = await listAdminPlacesPaged({
@@ -8,6 +9,6 @@ export const listAdminPlacesPage = async (input: { page: number; pageSize: numbe
   });
   return {
     total,
-    items: locations.map((l) => toLocationDto(l, { admin: true })),
+    items: await withPlaceAreaMetaMany(locations.map((l) => toLocationDto(l, { admin: true }))),
   };
 };

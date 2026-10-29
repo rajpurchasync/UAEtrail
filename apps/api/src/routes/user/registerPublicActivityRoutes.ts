@@ -83,12 +83,16 @@ export const registerPublicActivityRoutes = (router: Router): void => {
     async (req, res, next) => {
       try {
         const { id } = req.params as z.infer<typeof eventIdParamSchema>;
-        const { note } = req.body as z.infer<typeof createRequestSchema>;
+        const { note, packingCheckedIds, packingSignature } = req.body as z.infer<
+          typeof createRequestSchema
+        >;
         const data = await submitPublicActivityJoinRequest({
           activityId: id,
           userId: req.auth!.userId,
           isPlatformAdmin: req.auth?.role === 'PLATFORM_ADMIN',
           note,
+          packingCheckedIds,
+          packingSignature,
         });
         res.status(201).json({ data });
       } catch (error) {
@@ -107,10 +111,14 @@ export const registerPublicActivityRoutes = (router: Router): void => {
     async (req, res, next) => {
       try {
         const { id } = req.params as z.infer<typeof eventIdParamSchema>;
+        const { note, packingCheckedIds, packingSignature } = req.body as z.infer<typeof rsvpSchema>;
         const data = await submitPublicActivityRsvp({
           activityId: id,
           userId: req.auth!.userId,
           isPlatformAdmin: req.auth?.role === 'PLATFORM_ADMIN',
+          note,
+          packingCheckedIds,
+          packingSignature,
         });
         res.status(201).json({ data });
       } catch (error) {

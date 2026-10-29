@@ -25,13 +25,19 @@ type UseExploreMapOptions = {
   enabled?: boolean;
   /** When `VITE_EXPLORE_MAP_BBOX=1`, fetches a bbox subset from the API. Omit on `/list` for full catalog. */
   scope?: ExploreMapFetchScope | null;
+  /** `/list` uses the same Redis catalog with a lighter item projection. */
+  projection?: 'list';
 };
 
 export const useExploreMap = (options?: UseExploreMapOptions) => {
   const { user } = useAuth();
   const scope = options?.scope ?? null;
+  const projection = options?.projection;
   const useVnextFetch = isExploreMapBboxEnabled() && scope != null;
-  const catalogKey = exploreMapQueryKey(useVnextFetch ? scope : null);
+  const catalogKey = [
+    ...exploreMapQueryKey(useVnextFetch ? scope : null),
+    ...(projection ? [projection] : []),
+  ];
   const queryKey = user?.id ? [...catalogKey, user.id] : catalogKey;
 
   return useQuery({
@@ -40,8 +46,11 @@ export const useExploreMap = (options?: UseExploreMapOptions) => {
     queryFn: (): Promise<ExploreMapItemDTO[]> =>
       loadCachedCatalog(queryKey, (etag) =>
         useVnextFetch && scope
-          ? fetchExploreMapItems({ bbox: scope.bbox, area: scope.area ?? undefined }, etag)
-          : fetchExploreMapItems(undefined, etag)
+          ? fetchExploreMapItems(
+              { bbox: scope.bbox, area: scope.area ?? undefined, projection },
+              etag
+            )
+          : fetchExploreMapItems(projection ? { projection } : undefined, etag)
       ),
     placeholderData: keepPreviousData,
     refetchOnMount: true,

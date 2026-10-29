@@ -30,89 +30,74 @@ const collectListSources = (): string[] => {
 describe('list module hygiene', () => {
   const sources = collectListSources();
 
-  it('keeps discover home on navigation previews (not category feed poster)', () => {
-    const home = readFileSync(join(process.cwd(), 'src/list/ui/ListDiscoverHome.tsx'), 'utf8');
-    expect(home).toMatch(/ListDiscoverRailPreviewCard/);
-    expect(home).not.toMatch(/ListFeedPosterCard/);
-  });
-
-  it('uses half-image discover rail without category full-hero overlay', () => {
-    const preview = readFileSync(join(process.cwd(), 'src/list/ui/ListDiscoverRailPreviewCard.tsx'), 'utf8');
-    expect(preview).toMatch(/mediaHalf/);
-    expect(preview).not.toMatch(/ListPosterCategoryOverlay/);
-    expect(preview).not.toMatch(/aspect-\[4\/5\]/);
-    expect(preview).not.toMatch(/ListFeedPosterCard/);
-  });
-
-  it('routes category browse through Instagram-style feed poster', () => {
-    const categoryFeed = readFileSync(join(process.cwd(), 'src/list/ui/ListCategoryImageFeed.tsx'), 'utf8');
-    expect(categoryFeed).toMatch(/ListFeedPosterCard/);
-    expect(categoryFeed).toMatch(/ListFeedVenuePosterCard/);
-  });
-
-  it('keeps venue category posters with catalog entity header (not activity host avatar)', () => {
-    const venuePoster = readFileSync(
-      join(process.cwd(), 'src/list/ui/feed/ListFeedVenuePosterCard.tsx'),
-      'utf8'
-    );
-    expect(venuePoster).toMatch(/resolveListVenuePosterCopy/);
-    expect(venuePoster).toMatch(/ListFeedCatalogEntityHeader/);
-    expect(venuePoster).not.toMatch(/ListFeedPosterOptionsMenu/);
-    expect(venuePoster).not.toMatch(/SecureAvatar/);
-  });
-
-  it('keeps category schedule on hero via LIST_FEED overlay (not a white strip below)', () => {
-    const poster = readFileSync(join(process.cwd(), 'src/list/ui/feed/ListFeedPosterCard.tsx'), 'utf8');
-    const overlay = readFileSync(join(process.cwd(), 'src/list/ui/poster/ListPosterCategoryOverlay.tsx'), 'utf8');
-    expect(poster).toMatch(/ListPosterCategoryOverlay/);
-    expect(overlay).toMatch(/LIST_FEED\.overlayFactsGrid/);
-    expect(overlay).toMatch(/LIST_FEED\.overlayFooterStack/);
-    expect(poster).not.toMatch(/ListPosterDiscoverScheduleBody/);
-  });
-
-  it('keeps discover home schedule below the half-hero image', () => {
-    const preview = readFileSync(join(process.cwd(), 'src/list/ui/ListDiscoverRailPreviewCard.tsx'), 'utf8');
-    expect(preview).toMatch(/ListPosterDiscoverScheduleBody/);
-    expect(preview).toMatch(/ListPosterDiscoverHeroRequirements/);
-    expect(preview).not.toMatch(/ListPosterCategoryOverlay/);
-  });
-
-  it('shows requirement tags below category facts panel (discover rails use ListPosterDiscoverHeroRequirements)', () => {
-    const overlay = readFileSync(join(process.cwd(), 'src/list/ui/poster/ListPosterCategoryOverlay.tsx'), 'utf8');
-    expect(overlay).toMatch(/labelRequirement/);
-    expect(overlay).toMatch(/requirementLabels/);
-  });
-
-  it('routes search results through the same category image feed', () => {
-    const results = readFileSync(join(process.cwd(), 'src/list/ui/ListDiscoveryResults.tsx'), 'utf8');
-    expect(results).toMatch(/ListCategoryImageFeed/);
-    expect(results).not.toMatch(/ListFeedPosterCard/);
-  });
-
-  it('scopes join actions provider to category and search feeds only', () => {
+  it('renders the full-screen explorer instead of poster or map-list rows', () => {
     const experience = readFileSync(join(process.cwd(), 'src/list/ListDiscoveryExperience.tsx'), 'utf8');
-    expect(experience).toMatch(/ListFeedActionsProvider/);
-    expect(experience).toMatch(/useHostActivitySheetBundle/);
-    expect(experience).toMatch(/hostManageSheet/);
-    expect(experience).toMatch(/ListCategoryDedicatedView/);
-    expect(experience).not.toMatch(/<ListFeedActionsProvider>\s*<BrowseListPageShell/);
+    expect(experience).toMatch(/ListExplorer/);
+    expect(experience).toMatch(/countListExplorerFilters/);
+    expect(experience).toMatch(/listExplorerEntityLinkState/);
+    expect(experience).toMatch(/parseListExplorerBucket/);
+    expect(experience).toMatch(/listExplorerBucketCategories/);
+    expect(experience).not.toMatch(/ListDiscoverHome/);
+    expect(experience).not.toMatch(/ListFeedPosterCard/);
+    expect(experience).not.toMatch(/ListCategoryDedicatedView/);
+    expect(experience).not.toMatch(/ExploreBrowsePanel/);
   });
 
-  it('map list compact rows omit join CTAs (tap row opens peek)', () => {
-    const browsePanels = readFileSync(
-      join(process.cwd(), 'src/explore/shell/ExploreExperienceBrowsePanels.tsx'),
-      'utf8'
+  it('old poster, rail, and map-list UI files are gone', () => {
+    const gone = [
+      'src/explore/ui/ExploreBrowsePanel.tsx',
+      'src/explore/shell/useExploreBrowsePanelShared.ts',
+      'src/list/ui/ListDiscoverHome.tsx',
+      'src/list/ui/ListDiscoveryHeader.tsx',
+      'src/list/ui/ListRefineSheet.tsx',
+      'src/list/listDiscoveryMode.ts',
+      'src/list/listDiscoverRails.ts',
+      'src/list/listFeedTheme.ts',
+    ];
+    expect(gone.filter((file) => existsSync(join(process.cwd(), file)))).toEqual([]);
+  });
+
+  it('thumbnail grid is at least two columns on mobile', () => {
+    const explorer = readFileSync(join(process.cwd(), 'src/list/explorer/ListExplorer.tsx'), 'utf8');
+    expect(explorer).toMatch(/grid-cols-2/);
+    expect(explorer).toMatch(/ListExplorerThumbnailCard/);
+    expect(explorer).toMatch(/ListExplorerFilterFab/);
+  });
+
+  it('puts type icon on the thumbnail and keeps search in the header', () => {
+    const thumb = readFileSync(join(process.cwd(), 'src/list/explorer/ListExplorerThumbnailCard.tsx'), 'utf8');
+    const header = readFileSync(join(process.cwd(), 'src/list/explorer/ListExplorerHeader.tsx'), 'utf8');
+    expect(thumb).toMatch(/DiscoveryCardTypeIcon/);
+    expect(thumb).toMatch(/SecureAvatar/);
+    expect(thumb).toMatch(/meta\.title/);
+    expect(thumb).toMatch(/meta\.price/);
+    expect(readFileSync(join(process.cwd(), 'src/list/explorer/listExplorerCardMeta.ts'), 'utf8')).toMatch(
+      /resolveActivityPublisherChip/
     );
-    expect(browsePanels).not.toMatch(/ListFeedActionsProvider/);
-    expect(browsePanels).toMatch(/ExploreBrowsePanel/);
-    expect(browsePanels).toMatch(/\{mapStage\}/);
-    const mapStage = readFileSync(join(process.cwd(), 'src/explore/ui/ExploreMapStage.tsx'), 'utf8');
-    expect(mapStage).toMatch(/desktopPeopleBrowseOverlay/);
+    expect(thumb).not.toMatch(/listTitle \|\| card\.headline/);
+    expect(header).toMatch(/ListDiscoverySearchField/);
+    expect(header).toMatch(/stickySearch/);
+    expect(header).toMatch(/ListExplorerViewSwitch/);
+    expect(header).toMatch(/ListExplorerBucketToggle/);
+    expect(header).toMatch(/searchCounts/);
   });
 
-  it('forbids legacy rail poster variant strings', () => {
+  it('filter fab snaps to corners and shows applied count', () => {
+    const fab = readFileSync(join(process.cwd(), 'src/list/explorer/ListExplorerFilterFab.tsx'), 'utf8');
+    const pop = readFileSync(join(process.cwd(), 'src/list/explorer/ListExplorerFilterPop.tsx'), 'utf8');
+    expect(fab).toMatch(/snapListFilterFabCorner/);
+    expect(fab).toMatch(/filterCount/);
+    expect(fab).toMatch(/ListExplorerFilterPop/);
+    expect(fab).toMatch(/z-\[1220\]/);
+    expect(fab).toMatch(/bucket/);
+    expect(pop).toMatch(/listVenuePlaceTopicsForUi/);
+    expect(pop).toMatch(/bucket === 'places'/);
+  });
+
+  it('forbids leftover poster/rail strings in list sources', () => {
     const violations: string[] = [];
     for (const file of sources) {
+      if (file.includes('/explorer/')) continue;
       const content = readFileSync(join(process.cwd(), file), 'utf8');
       if (/variant\s*=\s*["']rail["']/.test(content)) violations.push(file);
       if (/BrowsePosterCard/.test(content)) violations.push(file);
@@ -127,7 +112,7 @@ describe('list module hygiene', () => {
     expect(browseCategoriesForSearchScope('facilities' as ExploreSearchScopeKey)).toBeNull();
   });
 
-  it('people search scope opens member discovery list category (not demand)', () => {
+  it('people search scope opens member discovery list category', () => {
     expect(browseListFilterPatchForSearchScope('people')).toEqual({
       categories: ['people'],
       tripLookingOnly: false,
@@ -141,7 +126,7 @@ describe('list module hygiene', () => {
     expect(existsSync(join(process.cwd(), 'src/explore/peopleBrowseTab.ts'))).toBe(false);
   });
 
-  it('keeps explore People panel separate from map list and discover browse', () => {
+  it('keeps explore People panel separate from the list explorer', () => {
     const browsePanels = readFileSync(
       join(process.cwd(), 'src/explore/shell/ExploreExperienceBrowsePanels.tsx'),
       'utf8'
@@ -150,12 +135,9 @@ describe('list module hygiene', () => {
       join(process.cwd(), 'src/people-discovery/panel/PeopleBrowsePanel.tsx'),
       'utf8'
     );
-    const mapListPanel = readFileSync(join(process.cwd(), 'src/explore/ui/ExploreBrowsePanel.tsx'), 'utf8');
     expect(browsePanels).toMatch(/PeopleBrowsePanel/);
-    expect(browsePanels).toMatch(/ListDiscoveryExperience/);
-    expect(browsePanels).toMatch(/ExploreBrowsePanel/);
-    expect(mapListPanel).toMatch(/ExploreListRow/);
-    expect(mapListPanel).toMatch(/PANEL_TABS/);
+    expect(browsePanels).not.toMatch(/ExploreBrowsePanel/);
+    expect(browsePanels).not.toMatch(/ListDiscoveryExperience/);
     expect(peoplePanel).toMatch(/from '\.\/peopleBrowse'/);
     const peopleLookingList = readFileSync(
       join(process.cwd(), 'src/people-discovery/panel/peopleBrowse/PeopleBrowseLookingList.tsx'),
@@ -165,13 +147,12 @@ describe('list module hygiene', () => {
     expect(peoplePanel).not.toMatch(/buildListFeedCards/);
   });
 
-  it('list discover people category uses member discovery roster (not map poster feed)', () => {
+  it('list discover people category uses member discovery roster', () => {
     const experience = readFileSync(join(process.cwd(), 'src/list/ListDiscoveryExperience.tsx'), 'utf8');
     expect(experience).toMatch(/PeopleBrowsePanel/);
     expect(experience).toMatch(/embedded/);
     expect(experience).toMatch(/listCat: 'people'/);
     expect(experience).toMatch(/useMemberDiscoveryRoster/);
-    expect(experience).toMatch(/PeopleBrowseTabContent|PeopleBrowsePanel/);
   });
 
   it('explore map pin pool uses discovery selectors via shell composer', () => {
@@ -189,7 +170,6 @@ describe('list module hygiene', () => {
     );
     expect(experience).toMatch(/usePeopleDiscoverySeekingActivities/);
     expect(bundle).toMatch(/usePeopleDiscoverySeekingActivities/);
-    expect(bundle).toMatch(/usePeopleDiscoverySeekingActivities/);
     expect(bundle).not.toMatch(/from ['"]@\/api\/domains\//);
   });
 
@@ -203,26 +183,7 @@ describe('list module hygiene', () => {
   it('builds enriched cards through buildListFeedCards', () => {
     const feed = readFileSync(join(process.cwd(), 'src/list/useBrowseListFeed.ts'), 'utf8');
     const experience = readFileSync(join(process.cwd(), 'src/list/ListDiscoveryExperience.tsx'), 'utf8');
-    const mapListPanel = readFileSync(join(process.cwd(), 'src/explore/ui/ExploreBrowsePanel.tsx'), 'utf8');
     expect(feed).toMatch(/buildListFeedCards/);
-    expect(experience).toMatch(/buildListFeedCards/);
     expect(experience).not.toMatch(/buildBrowseCardsFromMapItems/);
-    expect(mapListPanel).toMatch(/buildListFeedCards/);
-    expect(mapListPanel).not.toMatch(/usePosterFeed=\{true\}/);
-  });
-
-  it('search results use topic pills only (no duplicate removable chip row)', () => {
-    const experience = readFileSync(join(process.cwd(), 'src/list/ListDiscoveryExperience.tsx'), 'utf8');
-    expect(experience).not.toMatch(/ListActiveFilterChipsRow/);
-    expect(experience).toMatch(/searchTripPills/);
-    expect(experience).toMatch(/searchPlacePills/);
-  });
-
-  it('poster requirement pills use stored requirements, not peek inference', () => {
-    const presentation = readFileSync(join(process.cwd(), 'src/list/listPosterPresentation.ts'), 'utf8');
-    const standard = readFileSync(join(process.cwd(), 'src/list/listFeedPosterStandard.ts'), 'utf8');
-    expect(standard).toMatch(/extractExploreRequirementBadges/);
-    expect(presentation).toMatch(/resolveListFeedPosterRequirementLabels/);
-    expect(presentation).not.toMatch(/card\.requirementBadges/);
   });
 });

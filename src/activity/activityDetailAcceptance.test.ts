@@ -76,22 +76,15 @@ describe('activity detail program — wiring', () => {
     const shared = read('src/list/ui/ListFeedWireFooterButtons.tsx');
     expect(shared).toMatch(/ListFeedWireFooterVariant/);
     expect(existsSync(join(process.cwd(), 'src/list/ui/ListFeedPosterFooter.tsx'))).toBe(false);
-    const poster = read('src/list/ui/feed/ListFeedPosterCard.tsx');
-    expect(poster).toMatch(/ListFeedPosterEngagementBar/);
     const compact = read('src/explore/ui/ExploreListRowWireFooter.tsx');
     expect(compact).toMatch(/ListFeedWireFooterButtons/);
   });
 
   it('AD-HYGIENE-01: People browse panel is not wrapped in ListFeedActionsProvider', () => {
     const browsePanels = read('src/explore/shell/ExploreExperienceBrowsePanels.tsx');
-    const peoplePanelBlock = browsePanels.match(
-      /const mobileListPeopleBrowsePanel = \([\s\S]*?\n {2}\);/
-    )?.[0];
-    expect(peoplePanelBlock).toBeTruthy();
-    expect(peoplePanelBlock!).toMatch(/PeopleBrowsePanel/);
-    expect(peoplePanelBlock!).not.toMatch(/ListFeedActionsProvider/);
-    expect(browsePanels).toMatch(/const mobileMapListPanel[\s\S]*ExploreBrowsePanel/);
-    expect(browsePanels).not.toMatch(/const mobileMapListPanel[\s\S]*ListFeedActionsProvider/);
+    expect(browsePanels).toMatch(/PeopleBrowsePanel/);
+    expect(browsePanels).not.toMatch(/ListFeedActionsProvider/);
+    expect(browsePanels).not.toMatch(/ExploreBrowsePanel/);
   });
 
   it('AD-LIST-08: list feed and map peek share executeActivityMapPeekAction', () => {
@@ -104,7 +97,9 @@ describe('activity detail program — wiring', () => {
     expect(exploreActions).toMatch(/executeActivityMapPeekAction/);
   });
 
-  it('AD-PEEK-07: explore map list rows open peek without inline join CTAs', () => {
+  it('AD-PEEK-07: list explorer opens entity detail; people rows omit join CTAs without provider', () => {
+    const explorerLink = read('src/list/explorer/ListExplorerItemLink.tsx');
+    expect(explorerLink).toMatch(/listExplorerEntityLinkState/);
     const browsePanels = read('src/explore/shell/ExploreExperienceBrowsePanels.tsx');
     expect(browsePanels).not.toMatch(/ListFeedActionsProvider/);
     const listRow = read('src/explore/ui/ExploreListRow.tsx');

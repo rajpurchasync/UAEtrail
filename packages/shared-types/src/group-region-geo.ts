@@ -38,18 +38,57 @@ const ringFromBBox = (
   { latitude: north, longitude: west },
 ];
 
-/** UAE state envelopes — fallback when curated area polygons miss the pin. */
+const bboxZone = (
+  label: UaeGroupRegionCatalogLabel,
+  priority: number,
+  south: number,
+  west: number,
+  north: number,
+  east: number
+): GroupRegionGeoZone => ({
+  label,
+  priority,
+  bounds: ringFromBBox(south, west, north, east),
+});
+
+/**
+ * Dubai / Sharjah / Ajman / RAK interlock (Masfut, Hatta, Manama, Kalba, Khor Fakkan).
+ * Match these first — even before a fat published “Hatta” polygon — so Masfut is not Dubai.
+ */
+const UAE_GROUP_REGION_EXCLAVES: GroupRegionGeoZone[] = [
+  bboxZone('Ajman', 1, 24.785, 55.975, 24.855, 56.072), // Masfut (Ajman), west of Hatta
+  bboxZone('Dubai', 2, 24.755, 56.085, 24.875, 56.22), // Hatta town / dam / Wadi Hub
+  bboxZone('Ajman', 3, 25.3, 55.975, 25.355, 56.075), // Manama (Ajman inland)
+  bboxZone('RAK', 4, 25.08, 55.98, 25.22, 56.14), // Wadi Shawka / Sfai
+  bboxZone('RAK', 5, 25.28, 56.04, 25.44, 56.22), // Shawka–Jais foothills
+  bboxZone('Sharjah', 6, 24.88, 56.12, 25.05, 56.28), // Wadi Al Helo (Sharjah), north of Hatta
+  bboxZone('Sharjah', 7, 24.99, 56.29, 25.095, 56.42), // Kalba
+  bboxZone('Sharjah', 8, 25.3, 56.3, 25.42, 56.42), // Khor Fakkan
+  bboxZone('Sharjah', 9, 25.605, 56.255, 25.635, 56.285), // Dibba Al-Hisn
+  bboxZone('Sharjah', 10, 24.93, 55.72, 25.06, 55.9), // Al Madam
+];
+
+/**
+ * Emirate cores. Coastal Dubai stops south of Al Nahda; Sharjah/Ajman are split so
+ * the ~1 km border strip is unmatched and the host must pick the filter.
+ */
+const UAE_GROUP_REGION_CORES: GroupRegionGeoZone[] = [
+  bboxZone('Ajman', 11, 25.388, 55.42, 25.46, 55.58),
+  bboxZone('Umm Al Quwain', 12, 25.48, 55.48, 25.62, 55.72),
+  bboxZone('Sharjah', 13, 25.288, 55.36, 25.382, 55.55),
+  bboxZone('Sharjah', 14, 25.08, 55.7, 25.34, 56.0), // Mleiha / Dhaid
+  bboxZone('Al Ain', 15, 24.0, 55.6, 24.55, 56.25),
+  bboxZone('Dubai', 20, 24.8, 54.96, 25.276, 55.42),
+  bboxZone('Dubai', 21, 24.78, 55.38, 25.2, 55.7),
+  bboxZone('RAK', 23, 25.52, 55.78, 26.08, 56.22),
+  bboxZone('Fujairah', 24, 25.1, 56.2, 25.58, 56.38),
+  bboxZone('Fujairah', 25, 25.55, 56.2, 25.72, 56.36),
+  bboxZone('Abu Dhabi', 90, 22.63, 51.0, 24.82, 55.75),
+];
+
 const UAE_GROUP_REGION_GEO_ZONES: GroupRegionGeoZone[] = [
-  { label: 'Umm Al Quwain', priority: 10, bounds: ringFromBBox(25.48, 55.48, 25.62, 55.72) },
-  { label: 'Ajman', priority: 11, bounds: ringFromBBox(25.32, 55.43, 25.48, 55.58) },
-  { label: 'Al Ain', priority: 12, bounds: ringFromBBox(24.0, 55.6, 24.55, 56.25) },
-  { label: 'Sharjah', priority: 14, bounds: ringFromBBox(25.28, 56.28, 25.42, 56.38) },
-  { label: 'Dubai', priority: 15, bounds: ringFromBBox(24.76, 56.05, 24.92, 56.28) },
-  { label: 'Dubai', priority: 20, bounds: ringFromBBox(24.74, 54.95, 25.36, 55.65) },
-  { label: 'Sharjah', priority: 21, bounds: ringFromBBox(25.15, 55.45, 25.55, 55.85) },
-  { label: 'Fujairah', priority: 22, bounds: ringFromBBox(24.95, 56.15, 25.65, 56.38) },
-  { label: 'RAK', priority: 23, bounds: ringFromBBox(25.45, 55.75, 26.0, 56.15) },
-  { label: 'Abu Dhabi', priority: 90, bounds: ringFromBBox(22.63, 51.0, 24.85, 55.75) },
+  ...UAE_GROUP_REGION_EXCLAVES,
+  ...UAE_GROUP_REGION_CORES,
 ];
 
 const normalizeToken = (value: string): string =>
@@ -62,6 +101,7 @@ const TEXT_TO_UAE_GROUP_REGION: ReadonlyArray<{
   { tokens: ['dubai'], label: 'Dubai' },
   { tokens: ['abu dhabi', 'abudhabi'], label: 'Abu Dhabi' },
   { tokens: ['al ain', 'alain'], label: 'Al Ain' },
+  { tokens: ['dibba al hisn', 'dibba al-hisn'], label: 'Sharjah' },
   { tokens: ['sharjah', 'kalba', 'khor fakkan', 'khorfakkan'], label: 'Sharjah' },
   { tokens: ['rak', 'ras al khaimah', 'ras al khaima', 'rask al khaimah'], label: 'RAK' },
   { tokens: ['fujairah', 'dibba', 'masafi'], label: 'Fujairah' },
@@ -81,6 +121,43 @@ export const normalizeGroupRegionLabel = (
     }
   }
   return null;
+};
+
+/**
+ * Place / wadi names that are not emirate keys — used when the pin sits between boxes.
+ * Do not fold these through {@link normalizeGroupRegionLabel} (that would wipe L3 locality).
+ */
+const LOCALITY_TO_UAE_GROUP_REGION: ReadonlyArray<{
+  tokens: string[];
+  label: UaeGroupRegionCatalogLabel;
+}> = [
+  { tokens: ['wadi al helo', 'wadi al-helo', 'wadi helo', 'al helo'], label: 'Sharjah' },
+  { tokens: ['wadi shees', 'shees'], label: 'Sharjah' },
+  { tokens: ['masfut', 'masfoot'], label: 'Ajman' },
+  { tokens: ['hatta'], label: 'Dubai' },
+  { tokens: ['shawka'], label: 'RAK' },
+  { tokens: ['mleiha', 'maleha'], label: 'Sharjah' },
+  { tokens: ['kalba'], label: 'Sharjah' },
+  { tokens: ['khor fakkan', 'khorfakkan'], label: 'Sharjah' },
+];
+
+/** Infer emirate from a trail / area name when coordinates are ambiguous. */
+export const inferEmirateFromLocalityName = (
+  raw: string | null | undefined
+): UaeGroupRegionCatalogLabel | null => {
+  if (!raw?.trim()) return null;
+  const token = normalizeToken(raw);
+  let best: { label: UaeGroupRegionCatalogLabel; length: number } | null = null;
+  for (const entry of LOCALITY_TO_UAE_GROUP_REGION) {
+    for (const candidate of entry.tokens) {
+      if (token === candidate || token.includes(candidate)) {
+        if (!best || candidate.length > best.length) {
+          best = { label: entry.label, length: candidate.length };
+        }
+      }
+    }
+  }
+  return best?.label ?? null;
 };
 
 const resolveFromPublishedAreas = (
@@ -175,6 +252,16 @@ export const groupRegionAnchorForLabel = (
   return { label, ...boundsCenter(largest.bounds) };
 };
 
+const resolveFromExclaves = (
+  latitude: number,
+  longitude: number
+): UaeGroupRegionCatalogLabel | null => {
+  const hits = UAE_GROUP_REGION_EXCLAVES.filter((zone) =>
+    pointInAreaBounds(latitude, longitude, zone.bounds)
+  );
+  return sortZones(hits)[0]?.label ?? null;
+};
+
 export const resolveGroupRegionFromCoordinates = (
   latitude: number,
   longitude: number,
@@ -183,6 +270,8 @@ export const resolveGroupRegionFromCoordinates = (
     publishedAreas?: Pick<AreaDTO, 'id' | 'region' | 'bounds' | 'priority'>[];
   }
 ): UaeGroupRegionCatalogLabel | null => {
+  const fromExclave = resolveFromExclaves(latitude, longitude);
+  if (fromExclave) return fromExclave;
   const fromAreas = options?.publishedAreas?.length
     ? resolveFromPublishedAreas(latitude, longitude, options.publishedAreas, options.placeAreaId)
     : null;

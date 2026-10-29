@@ -1,5 +1,6 @@
 import {
   ActivityDTO,
+  type ActivityGuideHostDTO,
   LocationDTO,
   ParticipantDTO,
   PlaceDTO,
@@ -206,6 +207,12 @@ export const publishingWorkspaceApi = {
         body: JSON.stringify(payload),
       }
     ),
+
+  getPublishingActivityGuides: (tenantId: string, activityId: string) =>
+    apiRequest<{ data: ActivityGuideHostDTO[] }>(`/publishing/activities/${activityId}/guides`, {
+      auth: true,
+      headers: organisationRequestHeaders(tenantId),
+    }),
 
   getActivityHistory: (tenantId: string) =>
     apiRequest<{

@@ -7,6 +7,7 @@ import {
   WithdrawReason,
 } from '@uaetrail/shared-types';
 import { apiRequest, getStoredSession } from '../client';
+import { ADMIN_TABLE_PAGE_SIZE } from '../listAllPages';
 import type { ActivityDetail, ActivityRequestView } from '../types';
 
 /**
@@ -45,6 +46,18 @@ export const activitiesApi = {
         auth: true,
         body: JSON.stringify({ inviteeUserId }),
       }),
+
+    acceptActivityGuideInvite: (activityId: string) =>
+      apiRequest<{ data: { status: 'accepted' | 'declined' } }>(
+        `/activities/${activityId}/guides/accept`,
+        { method: 'POST', auth: true }
+      ),
+
+    declineActivityGuideInvite: (activityId: string) =>
+      apiRequest<{ data: { status: 'accepted' | 'declined' } }>(
+        `/activities/${activityId}/guides/decline`,
+        { method: 'POST', auth: true }
+      ),
 
     sendActivityJoinInvites: (activityId: string, inviteeUserIds: string[]) =>
       apiRequest<{ data: { sent: number; inviteeUserIds: string[] } }>(
@@ -92,20 +105,26 @@ export const activitiesApi = {
       auth: true,
     }),
 
-    createJoinRequest: (activityId: string, note?: string) =>
+    createJoinRequest: (
+      activityId: string,
+      body?: { note?: string; packingCheckedIds?: string[]; packingSignature?: string }
+    ) =>
     apiRequest<{ data: JoinRequestDTO }>(`/activities/${activityId}/requests`, {
       method: 'POST',
       auth: true,
-      body: JSON.stringify(note !== undefined ? { note } : {}),
+      body: JSON.stringify(body ?? {}),
     }),
 
-    rsvpActivity: (activityId: string) =>
+    rsvpActivity: (
+      activityId: string,
+      body?: { note?: string; packingCheckedIds?: string[]; packingSignature?: string }
+    ) =>
     apiRequest<{ data: { request: JoinRequestDTO; participation: MyActivityDTO['participation'] } }>(
       `/activities/${activityId}/rsvp`,
       {
         method: 'POST',
         auth: true,
-        body: JSON.stringify({}),
+        body: JSON.stringify(body ?? {}),
       }
     ),
 
@@ -135,7 +154,11 @@ export const activitiesApi = {
     getMeActivities: () =>
       apiRequest<{ data: MyActivityDTO[] }>('/me/activities?pageSize=100', { auth: true }),
 
-    getAdminActivities: () => apiRequest<{ data: ActivityDTO[] }>('/admin/activities/moderation', { auth: true }),
+    getAdminActivities: (page = 1, pageSize = ADMIN_TABLE_PAGE_SIZE) =>
+      apiRequest<{ data: ActivityDTO[]; meta?: { total: number } }>(
+        `/admin/activities/moderation?page=${page}&pageSize=${pageSize}`,
+        { auth: true }
+      ),
 
     getAdminActivityDetail: (id: string) =>
     apiRequest<{ data: ActivityDTO }>(`/admin/activities/${id}`, { auth: true }),

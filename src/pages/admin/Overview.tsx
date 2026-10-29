@@ -33,16 +33,16 @@ export const Overview = () => {
     try {
       const [metrics, events, apps, auditRes] = await Promise.all([
         fetchAdminMetrics(),
-        fetchAdminModerationActivities(),
-        fetchAdminOrganisationApplications(),
+        fetchAdminModerationActivities(1, 10),
+        fetchAdminOrganisationApplications(1, 10),
         fetchAdminAuditLogs({ pageSize: 10 }).catch(() => ({ data: [] as AuditLogEntry[] })),
       ]);
       if (!isActive()) return;
       setMetrics(metrics);
       setRecentEvents(
-        [...events].sort((a, b) => b.date.localeCompare(a.date) || b.time.localeCompare(a.time)).slice(0, 5)
+        [...events.items].sort((a, b) => b.date.localeCompare(a.date) || b.time.localeCompare(a.time)).slice(0, 5)
       );
-      setRecentApps(apps.filter((a) => a.status === 'pending').slice(0, 5));
+      setRecentApps(apps.items.filter((a) => a.status === 'pending').slice(0, 5));
       setAuditLogs(auditRes.data.slice(0, 10));
     } catch (err) {
       if (!isActive()) return;

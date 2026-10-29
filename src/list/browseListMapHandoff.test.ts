@@ -27,7 +27,7 @@ describe('browseListMapHandoff', () => {
     );
     expect(params.get('pinKind')).toBe('places');
     expect(params.get('listCat')).toBe('venues');
-    expect(params.get('browse')).toBe('1');
+    expect(params.get('browse')).toBeNull();
     expect(params.get('filter')).toBe('hiking');
     expect(params.get('topics')).toBe('spots,shops');
   });
@@ -58,10 +58,10 @@ describe('browseListMapHandoff', () => {
       { listCat: 'people' }
     );
     expect(params.get('pinKind')).toBeNull();
-    expect(params.get('listCat')).toBe('people');
-    expect(params.get('browse')).toBe('1');
-    expect(params.get('view')).toBeNull();
-    expect(params.get('peopleTab')).toBeNull();
+    expect(params.get('listCat')).toBeNull();
+    expect(params.get('browse')).toBeNull();
+    expect(params.get('view')).toBe('people');
+    expect(params.get('list')).toBe('1');
     expect(params.get('buddies')).toBeNull();
   });
 

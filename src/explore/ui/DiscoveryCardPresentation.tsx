@@ -1,6 +1,10 @@
 import type { ReactNode } from 'react';
-import { isGeographyMapSource } from '@uaetrail/shared-types';
-import { explorePersonRoleLabel } from '@uaetrail/shared-types';
+import {
+  activityGuideCountLabel,
+  explorePersonRoleLabel,
+  isGeographyMapSource,
+  resolveActivityPublisherChip,
+} from '@uaetrail/shared-types';
 import { ChevronRight, Clock, MapPin, Route, Star, Tag, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { DiscoveryCardModel, DiscoveryCardTone } from '../../discovery/discoveryCardModel';
@@ -420,7 +424,17 @@ export const DiscoveryCardPeopleRow = ({
     !isHostViewer &&
     participants.length > visibleParticipants.length;
   const person = card.featuredPerson;
-  const hostName = card.listHost ?? person?.displayName ?? card.sections.hostName ?? card.sections.highlightName;
+  const publisher = resolveActivityPublisherChip({
+    publishingProfileKind: card.activity?.publishingProfileKind,
+    tenantName: card.activity?.tenantName,
+    tenantLogoUrl: card.activity?.tenantLogoUrl,
+    hostName: card.listHost ?? person?.displayName ?? card.sections.hostName ?? card.sections.highlightName,
+    hostAvatar: card.hostAvatar,
+    listHost: card.listHost,
+  });
+  const hostName = publisher.name;
+  const hostAvatar = publisher.avatarUrl ?? card.hostAvatar;
+  const acceptedGuideCount = card.activity?.acceptedGuideCount ?? card.activity?.guides?.length ?? 0;
   const publishingProfileKind = card.activity?.publishingProfileKind;
   const hostProfilePath = resolveDiscoveryCardHostProfilePath(card);
   const isGuestViewer = Boolean(onGuestGatedAction);
@@ -440,6 +454,23 @@ export const DiscoveryCardPeopleRow = ({
     card.source === 'activity' && resolveActivityMapPeekStrips(card).showHostSelfProfileLink;
   const hostProfileSubtitle = (base: string) =>
     showMyHostProfileSubtitle ? ACTIVITY_PEEK_MY_HOST_PROFILE_SUBTITLE : base;
+  const peekGuideCountLine =
+    card.source === 'activity' && acceptedGuideCount > 1
+      ? activityGuideCountLabel(acceptedGuideCount)
+      : null;
+  const peekPublisherRole =
+    publisher.kind === 'company'
+      ? 'Tour operator'
+      : personRoleLabel
+        ? personRoleLabel
+        : discoveryCardIsSeeking(card)
+          ? 'Posted this request'
+          : card.source === 'shop'
+            ? 'Shop contact'
+            : 'Host';
+  const peekPublisherSubtitle = peekGuideCountLine
+    ? `${peekPublisherRole} · ${peekGuideCountLine}`
+    : `${peekPublisherRole} · view profile`;
 
   const showHostRow =
     Boolean(hostName || card.hostAvatar) &&
@@ -456,22 +487,14 @@ export const DiscoveryCardPeopleRow = ({
         className="flex items-center gap-3 group rounded-xl -mx-1 px-1 py-1 hover:bg-neutral-50 transition-colors"
       >
         <SecureAvatar
-          src={card.hostAvatar}
+          src={hostAvatar}
           name={hostName}
           className="h-10 w-10 text-sm ring-2 ring-white shrink-0"
         />
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold text-gray-900 group-hover:text-emerald-700 truncate">{hostName}</p>
           <p className={`text-xs font-medium ${EXPLORE_TYPE.muted}`}>
-            {hostProfileSubtitle(
-              personRoleLabel
-                ? `${personRoleLabel} · view profile`
-                : discoveryCardIsSeeking(card)
-                  ? 'Posted this request · view profile'
-                  : card.source === 'shop'
-                    ? 'Shop contact · view profile'
-                    : 'Host · view profile'
-            )}
+            {hostProfileSubtitle(peekPublisherSubtitle)}
           </p>
         </div>
         <ChevronRight className="h-4 w-4 text-gray-400 shrink-0" />
@@ -483,22 +506,14 @@ export const DiscoveryCardPeopleRow = ({
         className="flex w-full items-center gap-3 rounded-xl -mx-1 px-1 py-1 text-left hover:bg-neutral-50 transition-colors"
       >
         <SecureAvatar
-          src={card.hostAvatar}
+          src={hostAvatar}
           name={hostName}
           className="h-10 w-10 text-sm ring-2 ring-white shrink-0"
         />
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold text-gray-900 truncate">{hostName}</p>
           <p className={`text-xs font-medium ${EXPLORE_TYPE.muted}`}>
-            {hostProfileSubtitle(
-              personRoleLabel
-                ? `${personRoleLabel} · view profile`
-                : discoveryCardIsSeeking(card)
-                  ? 'Posted this request · view profile'
-                  : card.source === 'shop'
-                    ? 'Shop contact · view profile'
-                    : 'Host · view profile'
-            )}
+            {hostProfileSubtitle(peekPublisherSubtitle)}
           </p>
         </div>
         <ChevronRight className="h-4 w-4 text-gray-400 shrink-0" />
@@ -506,21 +521,16 @@ export const DiscoveryCardPeopleRow = ({
     ) : (
       <div className="flex items-center gap-3">
         <SecureAvatar
-          src={card.hostAvatar}
+          src={hostAvatar}
           name={hostName}
           className="h-10 w-10 text-sm ring-2 ring-white"
         />
         <div className="min-w-0">
           <p className="text-sm font-semibold text-gray-900">{hostName}</p>
           <p className={`text-xs font-medium ${EXPLORE_TYPE.muted}`}>
-            {showMyHostProfileSubtitle
-              ? ACTIVITY_PEEK_MY_HOST_PROFILE_SUBTITLE
-              : personRoleLabel ??
-                (discoveryCardIsSeeking(card)
-                  ? 'Posted this request'
-                  : card.source === 'shop'
-                    ? 'Shop contact'
-                    : 'Host')}
+            {hostProfileSubtitle(
+              peekGuideCountLine ? `${peekPublisherRole} · ${peekGuideCountLine}` : peekPublisherRole
+            )}
           </p>
         </div>
       </div>

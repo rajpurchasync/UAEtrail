@@ -22,7 +22,7 @@ describe('discover browse navigation contract', () => {
     }
     expect(hamburgerLink?.kind).toBe('link');
     if (hamburgerLink?.kind === 'link') {
-      expect(hamburgerLink.to).toBe(EXPLORE_DISCOVER_BROWSE_PATH);
+      expect(hamburgerLink.to).toBe('/list');
     }
     expect(DESKTOP_NAV_LINKS.some((link) => link.to === EXPLORE_DISCOVER_BROWSE_PATH)).toBe(false);
   });
@@ -31,7 +31,7 @@ describe('discover browse navigation contract', () => {
     const explore = MOBILE_LANDING_USER_MENU.find((item) => item.label === 'Explore');
     const browse = MOBILE_LANDING_USER_MENU.find((item) => item.label === 'Browse');
     expect(explore?.to).toBe('/explore');
-    expect(browse?.to).toBe(EXPLORE_DISCOVER_BROWSE_PATH);
+    expect(browse?.to).toBe('/list');
   });
 
   it('ExploreExperience wires map list and discover browse separately', () => {
@@ -44,8 +44,9 @@ describe('discover browse navigation contract', () => {
     expect(experience).toMatch(/ExploreExperienceBrowsePanels/);
     expect(experience).toMatch(/ExploreMapShell/);
     expect(mapShell).toMatch(/openMapListPanel/);
-    expect(browsePanels).toMatch(/closeDiscoverBrowse/);
-    expect(browsePanels).toMatch(/browse\.browseOpen/);
+    expect(browsePanels).toMatch(/PeopleBrowsePanel/);
+    expect(browsePanels).not.toMatch(/ExploreBrowsePanel/);
+    expect(browsePanels).not.toMatch(/ListDiscoveryExperience/);
   });
 
   it('consumer hamburger stays on map for operators (workspace drawer on publishing console paths)', () => {
@@ -54,5 +55,7 @@ describe('discover browse navigation contract', () => {
     expect(menu).toMatch(/isPublishingConsolePath/);
     expect(menu).toMatch(/useMemberStatus/);
     expect(menu).toMatch(/CONSUMER_HAMBURGER_MENU/);
+    expect(menu).toMatch(/isAdminRole && !onAdminConsole/);
+    expect(menu).toMatch(/Admin console/);
   });
 });

@@ -1,10 +1,20 @@
-import { activityHostTopicToOutingTopic, type ActivityDTO } from '@uaetrail/shared-types';
+import {
+  activityHasPendingVenuePlace,
+  activityHostTopicToOutingTopic,
+  PENDING_VENUE_PLACE_PREFIX,
+  type ActivityDTO,
+} from '@uaetrail/shared-types';
 import { fetchPublishedAreas } from '../hooks/areaHubClientApi';
 import { createActivity, publishActivity, updateActivity } from '../hooks/tenantActivityClientApi';
 import { linkSeekingPostToActivity } from '../hooks/seekingClientApi';
 import { submitMemberPlace } from '../hooks/memberCatalogSubmitClientApi';
 import { HOME_HERO_OG_PATH } from '../config/seo';
-import { resolvePublishedAreaIdForPoint } from '../explore/hostingPublishArea';
+import {
+  inferEmirateFromPin,
+  resolveCustomProposedAreaName,
+  resolvePublishedAreaForPoint,
+  resolvePublishedAreaIdForPoint,
+} from '../explore/hostingPublishArea';
 import {
   buildHostActivityPublishPayload,
   type ActivityPublishInput,
@@ -59,9 +69,76 @@ export const resolveOrganizeActivityLocationId = async (
 
   if (registryVenueId) return registryVenueId;
 
+  if (structured && draft.placeLabelSource === 'custom') {
+    const name = draft.trailName.trim();
+    const photos = draft.customPlaceImages.filter((url) => url.trim());
+    if (!name) throw new Error('Name the trail, camp, or venue.');
+    if (draft.trailLatitude == null || draft.trailLongitude == null) {
+      throw new Error('Pin the spot on the map.');
+    }
+    if (photos.length < 1) throw new Error('Add at least one photo of this spot.');
+    const about =
+      draft.aboutTrail.trim() ||
+      draft.description.trim() ||
+      defaultDescription(draft.kind);
+    if (about.length < 20) {
+      throw new Error('Tell joiners about this spot (at least 20 characters).');
+    }
+    const publishedAreas = await fetchPublishedAreas();
+    const inferred = resolvePublishedAreaForPoint(
+      draft.trailLatitude,
+      draft.trailLongitude,
+      publishedAreas
+    );
+    const areaId = draft.customPlaceAreaId?.trim() || inferred?.id || '';
+    const area = areaId ? publishedAreas.find((row) => row.id === areaId) ?? inferred : null;
+    const proposedName = resolveCustomProposedAreaName(draft);
+    if (!area && proposedName.length < 2) {
+      throw new Error('Name this spot — we’ll submit it as a new area for admin review.');
+    }
+    const emirate =
+      draft.customPlaceEmirate.trim() ||
+      inferEmirateFromPin(
+        draft.trailLatitude,
+        draft.trailLongitude,
+        publishedAreas,
+        `${draft.trailName} ${proposedName}`
+      ) ||
+      '';
+    if (!emirate) {
+      throw new Error(
+        'Choose the emirate (Dubai, Ras Al Khaimah, Sharjah, …). Search and Home use this filter.'
+      );
+    }
+    const countryCode = (area?.countryCode?.trim().toUpperCase() || 'AE');
+    const hiking = isHikingHostingFlow(draft.kind, draft.genericBuddy);
+    const place = await submitMemberPlace(
+      {
+        name: name.slice(0, 120),
+        countryCode,
+        emirate,
+        groupRegion: emirate,
+        region: emirate,
+        ...(area
+          ? { areaId: area.id, areaLabel: area.name }
+          : { proposedAreaName: proposedName, areaLabel: proposedName }),
+        activityType,
+        description: about.slice(0, 3000),
+        latitude: draft.trailLatitude,
+        longitude: draft.trailLongitude,
+        images: photos,
+        ...(hiking
+          ? { difficulty: draft.difficulty === 'medium' ? 'moderate' : draft.difficulty }
+          : {}),
+      } as Record<string, unknown>,
+      tenantId
+    );
+    return place.id;
+  }
+
   if (structured) {
     throw new Error(
-      'Choose a catalog place linked to an area, or add your spot via Explore → Add (select an area first).'
+      'Choose a catalog place linked to an area, or add a new spot with a pin and a photo.'
     );
   }
 
@@ -89,12 +166,20 @@ export const resolveOrganizeActivityLocationId = async (
   const anchorDescription =
     (activityHost ? draft.joinKit.trim() : draft.description.trim()) || defaultDescription(draft.kind);
 
+  const emirate = inferEmirateFromPin(lat, lng, publishedAreas);
+  if (!emirate) {
+    throw new Error(
+      'Could not match an emirate for this pin. Move the pin, or add the spot from Explore → Add and choose Dubai, Ras Al Khaimah, Sharjah, or another filter.'
+    );
+  }
+
   const place = await submitMemberPlace(
     {
       name: anchorName,
       countryCode: 'AE',
-      emirate: 'Dubai',
-      region: 'Dubai',
+      emirate,
+      groupRegion: emirate,
+      region: emirate,
       areaId,
       activityType,
       description: anchorDescription.slice(0, 3000),
@@ -133,10 +218,12 @@ export const buildHostingActivityPublishInput = (
       ? draft.registryPlaceId
       : null;
 
-  const trailStartLat =
-    registryVenueId && draft.trailLatitude != null ? draft.trailLatitude : fromLat;
-  const trailStartLng =
-    registryVenueId && draft.trailLongitude != null ? draft.trailLongitude : fromLng;
+  const useSpotCoords =
+    Boolean(registryVenueId || (structured && draft.placeLabelSource === 'custom')) &&
+    draft.trailLatitude != null &&
+    draft.trailLongitude != null;
+  const trailStartLat = useSpotCoords ? draft.trailLatitude! : fromLat;
+  const trailStartLng = useSpotCoords ? draft.trailLongitude! : fromLng;
   const toLat = isRideshare ? draft.toLatitude! : trailStartLat;
   const toLng = isRideshare ? draft.toLongitude! : trailStartLng;
   const trailOrFrom =
@@ -159,6 +246,9 @@ export const buildHostingActivityPublishInput = (
   const isShared = draft.priceMode === 'shared';
   const priceAmount = Math.max(0, draft.priceAmount);
   const requirements = buildHostingActivityRequirements(draft);
+  if (structured && draft.placeLabelSource === 'custom') {
+    requirements.push(`${PENDING_VENUE_PLACE_PREFIX}${locationId}`);
+  }
   const startTime =
     draft.timeMode === 'flexible' ? '09:00' : draft.meetingTime.trim() || draft.time;
   const planSpec = composeFlowSpecForHostKind(kind);
@@ -225,6 +315,7 @@ export const buildHostingActivityPublishInput = (
         : null,
     images: [],
     hostId: userId,
+    guideUserIds: draft.guideUserIds,
     rideshare: isRideshare
       ? {
           rideshareFree: !isShared && !isPaid,
@@ -297,7 +388,11 @@ export const publishHostingActivity = async (input: {
   const created = await createActivity(tenantId, publishBody);
   const pendingPlaceDestination =
     draft.kind === 'rideshare' && draft.rideshareDestinationKind === 'pending_place';
-  if (!pendingPlaceDestination) {
+  const pendingVenue =
+    structured &&
+    draft.placeLabelSource === 'custom' &&
+    activityHasPendingVenuePlace(payload.requirements);
+  if (!pendingPlaceDestination && !pendingVenue) {
     await publishActivity(tenantId, created.id);
   }
 

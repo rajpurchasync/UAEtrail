@@ -4,6 +4,7 @@ import { DEFAULT_PHONE_DIAL } from '../../constants/phoneCountries';
 import { ACTIVITY_DIFFICULTY_OPTIONS, type ActivityDifficulty } from './createFlowShared';
 import type { AddVenueKind } from '../addTypes';
 import { isValidNationalPhone } from '../../utils/phone';
+import { inferEmirateFromPin } from '../hostingPublishArea';
 import { FACILITY_ADD_STEPS } from './addFacilityFlow';
 import { getOutdoorAddFlowSteps, getShopAddFlowSteps } from './addFlows/registry';
 
@@ -154,7 +155,7 @@ export const emptyAddDraft = (): AddDraft => ({
   title: '',
   areaId: null,
   areaLabel: '',
-  emirate: 'Dubai',
+  emirate: '',
   latitude: MAP_CONFIG.exploreDefaultCenter.lat,
   longitude: MAP_CONFIG.exploreDefaultCenter.lng,
   locationPinPlaced: false,
@@ -198,10 +199,22 @@ export const validateAddStep = (
       if (!draft.title.trim()) return 'Enter a title.';
       return null;
     case 'curatedArea':
-      if (!draft.areaId?.trim()) return 'Choose which area this place belongs to.';
+      if (!draft.areaId?.trim() && (draft.areaLabel.trim() || draft.title.trim()).length < 2) {
+        return 'Choose a listed area, or name a new one for admin review.';
+      }
       return null;
     case 'location':
-      if (!draft.emirate.trim()) return 'Choose the emirate / state.';
+      if (
+        !draft.emirate.trim() &&
+        !inferEmirateFromPin(
+          draft.latitude,
+          draft.longitude,
+          [],
+          `${draft.title} ${draft.areaLabel}`
+        )
+      ) {
+        return 'Choose the emirate (Dubai, Ras Al Khaimah, Sharjah, …). Search and Home use this filter.';
+      }
       if (!draft.locationPinPlaced || draft.latitude == null || draft.longitude == null) {
         if (kind === 'hiking') return 'Pin the trail start on the map.';
         if (kind === 'camping') return 'Pin the camp location on the map.';

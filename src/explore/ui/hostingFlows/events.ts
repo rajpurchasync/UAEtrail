@@ -43,6 +43,12 @@ const validateStep = (step: CreateFlowStepId, draft: CreateActivityDraft): strin
     return 'Drop a meeting point pin on the map.';
   }
   if (step === 'price') return validateHostingPrice(draft);
+  if (step === 'join_kit') {
+    if ((draft.packingItems ?? []).filter((item) => item.label.trim()).length < 1) {
+      return 'Add at least one item to bring.';
+    }
+    return null;
+  }
   if (step === 'publish') {
     if (draft.meetingLatitude == null || draft.meetingLongitude == null) {
       return 'Drop a meeting point pin on the map.';
@@ -51,8 +57,12 @@ const validateStep = (step: CreateFlowStepId, draft: CreateActivityDraft): strin
     if (titleErr) return titleErr;
     const venueErr = validateStructuredPublishVenue(draft);
     if (venueErr) return venueErr;
-    if (draft.joinMode !== 'private' && !draft.joinKit.trim()) {
-      return 'Add what joiners should know before joining.';
+    if (
+      draft.joinMode !== 'private' &&
+      (draft.packingItems ?? []).filter((item) => item.label.trim()).length < 1 &&
+      !draft.joinKit.trim()
+    ) {
+      return 'Add what joiners should bring, or a short note.';
     }
     return validateHostingPrice(draft);
   }

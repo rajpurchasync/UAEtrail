@@ -21,7 +21,7 @@ import {
   type ExploreMapFilterPillKey,
   type ExploreSearchScopeKey,
 } from './exploreBrowseTaxonomy';
-import { BROWSE_DISCOVER_PARAM, parseBrowseDiscoverOpen } from '../list/browseListUrlState';
+import { BROWSE_DISCOVER_PARAM } from '../list/browseListUrlState';
 import type { ExploreBrowseListMode } from './exploreBrowseUrlSync';
 import {
   BUDDIES_SEGMENT_URL_PARAM,
@@ -90,8 +90,13 @@ export const parseExploreBrowseStateFromSearchParams = (
     mapFilter: nextMapFilter,
     activityFilter: parseActivityListFilter(searchParams.get('activity'), searchParams.get('filter')),
     panel: nextPanel,
-    listOpen: parseListOpen(searchParams.get('list'), isDesktop, searchParams.get(BROWSE_DISCOVER_PARAM)),
-    browseOpen: parseBrowseDiscoverOpen(searchParams.get(BROWSE_DISCOVER_PARAM)),
+    listOpen: parseListOpen(
+      searchParams.get('list'),
+      isDesktop,
+      searchParams.get(BROWSE_DISCOVER_PARAM),
+      isPeopleBrowseListView(searchParams.get('view'))
+    ),
+    browseOpen: false,
     query: searchParams.get('q') ?? '',
     venueFilter: parseVenueListFilter(
       searchParams.get('places'),

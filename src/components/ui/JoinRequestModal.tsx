@@ -1,6 +1,16 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { ActivityDetailDTO, activityJoinCtaLabel, resolveParticipationMode, type ActivityDTO } from '@uaetrail/shared-types';
+import {
+  ActivityDetailDTO,
+  activityJoinCtaLabel,
+  formatPackingJoinNote,
+  isPackingSignatureValid,
+  missingRequiredPackingIds,
+  parsePackingList,
+  resolveParticipationMode,
+  type ActivityDTO,
+} from '@uaetrail/shared-types';
+import { JoinPackingAck } from '../activity/JoinPackingAck';
 import { formatDate } from '../../utils';
 import { activityHostName, showTenantBrand } from '../../utils/hostLabels';
 import { resolveExplorePrice } from '../../explore/explorePriceLabel';
@@ -54,6 +64,8 @@ export const JoinRequestModal = ({
   const queryClient = useQueryClient();
   const [note, setNote] = useState('');
   const [agreed, setAgreed] = useState(false);
+  const [packingCheckedIds, setPackingCheckedIds] = useState<string[]>([]);
+  const [packingSignature, setPackingSignature] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -64,9 +76,16 @@ export const JoinRequestModal = ({
   );
   const isRsvp = participationMode === 'rsvp';
   const instructions = extractJoinInstructionLines(activity.requirements);
+  const packing = parsePackingList(activity.requirements);
   const hasInstructions = instructions.length > 0;
+  const hasPacking = packing.items.length > 0;
+  const packingStrict = hasPacking && packing.mode === 'strict';
   const full = isFull ?? activity.slotsAvailable <= 0;
   const needsAgreement = hasInstructions;
+  const packingReady =
+    !packingStrict ||
+    (missingRequiredPackingIds(packing.items, packingCheckedIds).length === 0 &&
+      isPackingSignatureValid(packingSignature));
 
   const priceInfo = resolveExplorePrice({
     isRideshare: false,
@@ -83,6 +102,8 @@ export const JoinRequestModal = ({
     if (!open) return;
     setNote('');
     setAgreed(false);
+    setPackingCheckedIds([]);
+    setPackingSignature('');
     setSubmitting(false);
     setSubmitted(false);
     setError(null);
@@ -96,13 +117,31 @@ export const JoinRequestModal = ({
       setError('Please read the mandatory instructions and confirm before joining.');
       return;
     }
+    if (packingStrict && missingRequiredPackingIds(packing.items, packingCheckedIds).length > 0) {
+      setError('Tick every must-have item before joining.');
+      return;
+    }
+    if (packingStrict && !isPackingSignatureValid(packingSignature)) {
+      setError('Type your first and last name to confirm.');
+      return;
+    }
 
     setSubmitting(true);
     setError(null);
     try {
+      const packedNote = hasPacking
+        ? formatPackingJoinNote({
+            items: packing.items,
+            checkedIds: packingCheckedIds,
+            signature: packingSignature,
+            note: note.trim(),
+          })
+        : note.trim();
       const { successMessage } = await submitActivityJoin(activity.id, {
         participationMode,
-        note: note.trim() || undefined,
+        note: packedNote || undefined,
+        packingCheckedIds: hasPacking ? packingCheckedIds : undefined,
+        packingSignature: packingStrict ? packingSignature.trim() : undefined,
       });
       afterActivityJoinClientRefresh(queryClient, {
         activityId: activity.id,
@@ -165,6 +204,21 @@ export const JoinRequestModal = ({
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {hasPacking ? (
+              <JoinPackingAck
+                mode={packing.mode}
+                items={packing.items}
+                checkedIds={packingCheckedIds}
+                signature={packingSignature}
+                onToggle={(id, next) =>
+                  setPackingCheckedIds((current) =>
+                    next ? [...new Set([...current, id])] : current.filter((value) => value !== id)
+                  )
+                }
+                onSignatureChange={setPackingSignature}
+              />
+            ) : null}
+
             {hasInstructions ? (
               <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
                 <p className="text-sm font-semibold text-amber-900 mb-1">{MANDATORY_INSTRUCTIONS_LABEL}</p>
@@ -231,7 +285,7 @@ export const JoinRequestModal = ({
 
             <button
               type="submit"
-              disabled={submitting || full || (hasInstructions && !agreed)}
+              disabled={submitting || full || (needsAgreement && !agreed) || !packingReady}
               className="w-full bg-emerald-600 text-white py-3 rounded-lg hover:bg-emerald-700 transition-colors font-medium disabled:opacity-60"
             >
               {submitLabel}

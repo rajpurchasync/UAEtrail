@@ -1,11 +1,14 @@
-import { ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
 import { APP_PAGE_MIN_H_CLASS, APP_SCROLL_BODY_CLASS } from '../../config/layoutScroll';
-import { Link, useLocation } from 'react-router-dom';
-import { LogOut } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { MobileBackButton } from '../mobile/MobileBackButton';
 import { MobileMenuButton } from './MobileMenu';
 import { NotificationBellPopover } from './NotificationBellPopover';
+import { AdminConsoleSidebar } from '../admin/AdminConsoleSidebar';
+import { useNotificationUnreadCount } from '../../hooks/useNotificationUnreadCount';
+import { persistAuthSessionTokens, switchMeRoleSession } from '../../hooks/accountSessionApi';
+import { EXPLORE_MAP_PATH } from '../../config/routingCatalog';
 
 interface DashboardLayoutProps {
   title: string;
@@ -15,11 +18,28 @@ interface DashboardLayoutProps {
 
 export const DashboardLayout = ({ title, links, children }: DashboardLayoutProps) => {
   const location = useLocation();
-  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+  const { user, signOut, refreshUser } = useAuth();
+  const unreadNotifications = useNotificationUnreadCount();
+  const [switchingRole, setSwitchingRole] = useState(false);
   const isAdminDashboard = location.pathname.startsWith('/admin');
 
   const handleSignOut = async () => {
     await signOut();
+  };
+
+  const switchToVisitor = async () => {
+    setSwitchingRole(true);
+    try {
+      const res = await switchMeRoleSession('participant');
+      persistAuthSessionTokens(res.tokens);
+      await refreshUser();
+      navigate(EXPLORE_MAP_PATH, { replace: true });
+    } catch {
+      /* noop */
+    } finally {
+      setSwitchingRole(false);
+    }
   };
 
   const breadcrumbFallbackTo = isAdminDashboard ? '/admin/overview' : '/';
@@ -28,7 +48,6 @@ export const DashboardLayout = ({ title, links, children }: DashboardLayoutProps
 
   return (
     <div className={`${APP_PAGE_MIN_H_CLASS} overflow-hidden bg-gray-50/80`}>
-      {/* ─── Mobile-friendly header ─── */}
       <header className="shrink-0 bg-white/80 backdrop-blur-xl border-b border-gray-100 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3 min-w-0">
@@ -71,42 +90,41 @@ export const DashboardLayout = ({ title, links, children }: DashboardLayoutProps
       <div
         className={`${APP_SCROLL_BODY_CLASS} max-w-7xl mx-auto px-4 sm:px-6 ${isAdminDashboard ? 'pt-4 md:pt-6' : 'py-4 md:py-6'} grid grid-cols-1 md:grid-cols-[200px_1fr] lg:grid-cols-[220px_1fr] gap-6`}
       >
-        {/* Desktop sidebar */}
         <aside className="hidden md:block">
-          <div className="bg-white rounded-2xl border border-gray-100 p-2 sticky top-20">
-            <nav className="space-y-0.5">
-              {links.map((link) => (
+          {isAdminDashboard ? (
+            <AdminConsoleSidebar
+              pathname={location.pathname}
+              unreadNotifications={unreadNotifications}
+              onSignOut={handleSignOut}
+              onSwitchToVisitor={switchToVisitor}
+              switchingRole={switchingRole}
+            />
+          ) : (
+            <div className="bg-white rounded-2xl border border-gray-100 p-2 sticky top-20">
+              <nav className="space-y-0.5">
+                {links.map((link) => (
+                  <Link
+                    key={link.to}
+                    to={link.to}
+                    className={`block px-3 py-2 rounded-xl text-sm transition-all ${
+                      location.pathname === link.to
+                        ? 'bg-emerald-50 text-emerald-800 font-semibold'
+                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                    }`}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+                <div className="my-2 border-t border-gray-100" />
                 <Link
-                  key={link.to}
-                  to={link.to}
-                  className={`block px-3 py-2 rounded-xl text-sm transition-all ${
-                    location.pathname === link.to
-                      ? 'bg-emerald-50 text-emerald-800 font-semibold'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                  }`}
+                  to="/"
+                  className="block px-3 py-2 rounded-xl text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all"
                 >
-                  {link.label}
+                  Landing page
                 </Link>
-              ))}
-              <div className="my-2 border-t border-gray-100" />
-              <Link
-                to="/"
-                className="block px-3 py-2 rounded-xl text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all"
-              >
-                Landing page
-              </Link>
-              {isAdminDashboard && (
-                <button
-                  type="button"
-                  onClick={() => void handleSignOut()}
-                  className="w-full mt-2 flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-red-600 hover:bg-red-50 transition-all border-t border-gray-100 pt-3"
-                >
-                  <LogOut className="w-4 h-4" />
-                  Sign out
-                </button>
-              )}
-            </nav>
-          </div>
+              </nav>
+            </div>
+          )}
         </aside>
         <main>{children}</main>
       </div>

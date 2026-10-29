@@ -18,6 +18,7 @@ export function renderDestinationStep(ctx: HostingWizardContext): ReactNode | nu
     error,
     tenantId,
     registryPlaces,
+    setWhereMapOpen,
     goNext,
     goBack,
     handleClose,
@@ -38,6 +39,7 @@ export function renderDestinationStep(ctx: HostingWizardContext): ReactNode | nu
                 patchDraft={patchDraft}
                 tenantId={tenantId}
                 registryPlaces={registryPlaces}
+                onOpenSpotMap={() => setWhereMapOpen(true)}
               />
             ) : eventFlow ? (
               <EventDestinationStepBody
@@ -45,6 +47,7 @@ export function renderDestinationStep(ctx: HostingWizardContext): ReactNode | nu
                 patchDraft={patchDraft}
                 tenantId={tenantId}
                 registryPlaces={registryPlaces}
+                onOpenSpotMap={() => setWhereMapOpen(true)}
               />
             ) : (
               <HikingDestinationStepBody
@@ -52,6 +55,7 @@ export function renderDestinationStep(ctx: HostingWizardContext): ReactNode | nu
                 patchDraft={patchDraft}
                 tenantId={tenantId}
                 registryPlaces={registryPlaces}
+                onOpenSpotMap={() => setWhereMapOpen(true)}
               />
             )}
             <HostingWizardStepError error={error} />

@@ -40,9 +40,9 @@ const eventModerationSchema = z
 export const registerAdminActivityModerationRoutes = (adminRouter: Router): void => {
   const adminActivitiesRouter = Router();
 
-  adminActivitiesRouter.get('/moderation', async (req, res, next) => {
+  adminActivitiesRouter.get('/moderation', validate({ query: paginationSchema }), async (req, res, next) => {
     try {
-      const pg = paginationSchema.parse(req.query);
+      const pg = req.query as unknown as z.infer<typeof paginationSchema>;
       const { items, total } = await listAdminActivityModerationPage({
         page: pg.page,
         pageSize: pg.pageSize,

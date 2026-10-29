@@ -30,9 +30,6 @@ export const ExploreExperience = () => {
         <ExploreExperienceBrowsePanels
           isDesktop={model.isDesktop}
           browse={model.browse}
-          browsePanelShared={model.browsePanelShared}
-          listItems={model.listItems}
-          mapItems={model.mapItems}
           peopleBrowsePanelProps={model.peopleBrowsePanelProps}
           mapStage={
             <ExploreMapShell

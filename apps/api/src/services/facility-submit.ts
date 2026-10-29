@@ -14,7 +14,7 @@ export const buildFacilitySubmitInput = (
   return {
     name: body.name.trim(),
     region: body.region.trim(),
-    areaId: body.areaId.trim(),
+    areaId: body.areaId!.trim(),
     areaLabel: body.areaLabel?.trim() || null,
     facilityKind: body.facilityKind,
     parentPlaceId: body.parentPlaceId?.trim() || null,

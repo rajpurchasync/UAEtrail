@@ -70,6 +70,8 @@ export interface LocationDTO {
   /** Populated on place detail reads when `areaId` resolves to a published area. */
   areaSlug?: string | null;
   areaName?: string | null;
+  /** Area lifecycle when `areaId` is set — `draft` means approving the place also publishes this area. */
+  areaStatus?: 'draft' | 'published' | null;
   /** @deprecated Prefer {@link PlaceKind} in new code — persisted as `activityType` on Mongo today. */
   activityType: PlaceActivityType;
   description: string;
@@ -225,8 +227,14 @@ export interface ActivityDTO {
   hostBio?: string | null;
   /** Guide / agency brand name when posting as business (not community). */
   tenantName?: string;
+  /** Tenant logo — denormalized for list/peek so the FE does not wait on a profile fetch. */
+  tenantLogoUrl?: string | null;
   /** How this activity was published — drives public name + profile link on explore/list. */
   publishingProfileKind?: PublishingProfileKind;
+  /** Accepted on-ground guides (pending invites omitted). */
+  guides?: ActivityGuidePublicDTO[];
+  /** Accepted guide count — peek uses this instead of loading each profile. */
+  acceptedGuideCount?: number;
   hostId?: string | null;
   /** User who created this activity */
   createdById?: string;
@@ -264,6 +272,8 @@ export interface ActivityDetailDTO extends ActivityDTO {
   myRequest?: MyActivityRequestDTO | null;
   /** Set when the viewer has a pending Join me invite for this activity. */
   myJoinInvite?: ActivityJoinInviteForViewerDTO | null;
+  /** Set when the viewer has a pending community guide invite for this activity. */
+  myGuideInvite?: { status: 'pending' } | null;
 }
 
 export interface MyActivityDTO extends ActivityDTO {
@@ -366,6 +376,7 @@ export type {
 } from './host-publishing-tier.js';
 import type { HostTierFlags, MemberProfileRoleLabel } from './host-publishing-tier.js';
 import type { PublishingProfileKind } from './publishing-profile-kind.js';
+import type { ActivityGuidePublicDTO } from './activity-guides.js';
 
 export type HostApplicationStatus = 'none' | 'pending' | 'approved' | 'rejected';
 
@@ -1265,6 +1276,30 @@ export {
   JOIN_INSTRUCTION_PREFIX,
 } from './join-instructions.js';
 
+export {
+  DEFAULT_HIKING_PACKING_ITEMS,
+  PACKING_ACK_PREFIX,
+  PACKING_ITEM_PREFIX,
+  defaultHikingPackingItems,
+  withHikingKitExtras,
+  encodePackingListRequirements,
+  formatPackingJoinNote,
+  hasPackingList,
+  isPackingRequirementLine,
+  isPackingSignatureValid,
+  missingRequiredPackingIds,
+  movePackingItemInGroup,
+  placePackingItem,
+  optionalPackingItems,
+  packingItemDisplay,
+  parsePackingAckMode,
+  parsePackingList,
+  parsePackingListItems,
+  requiredPackingItems,
+  type PackingAckMode,
+  type PackingItem,
+} from './activity-packing-list.js';
+
 export { extractActivityTransportRequirementLines } from './activity-transport-requirements.js';
 
 export {
@@ -1491,6 +1526,7 @@ export {
 export {
   UAE_GROUP_REGION_AREA_LABELS,
   groupRegionAnchorForLabel,
+  inferEmirateFromLocalityName,
   normalizeGroupRegionLabel,
   resolveGroupRegionAreaAnchor,
   resolveGroupRegionFromCoordinates,
@@ -1526,6 +1562,19 @@ export {
   type ActivityAvailabilityStatus,
   type ActivityJoinCountInput,
 } from './activity-availability.js';
+
+export {
+  acceptedActivityGuides,
+  activityGuideConsentRequired,
+  activityGuideCountLabel,
+  resolveActivityPublisherChip,
+  type ActivityGuideHostDTO,
+  type ActivityGuidePublicDTO,
+  type ActivityGuideStatus,
+  type ActivityPublisherChip,
+  type ActivityPublisherChipInput,
+  type ActivityPublisherChipKind,
+} from './activity-guides.js';
 
 export {
   EXPLORE_SHOPS_LIST_PATH,
@@ -1751,3 +1800,9 @@ export {
   rideshareHasPendingDestinationPlace,
   type RideshareDestinationKind,
 } from './rideshare-destination.js';
+
+export {
+  PENDING_VENUE_PLACE_PREFIX,
+  activityHasPendingVenuePlace,
+  pendingVenuePlaceId,
+} from './pending-venue-place.js';

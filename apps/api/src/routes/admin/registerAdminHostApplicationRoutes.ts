@@ -15,18 +15,24 @@ const applicationPatchSchema = z.object({
 
 /** Platform admin review of Pro membership applications (`/admin/pro-applications`). */
 export const registerAdminHostApplicationRoutes = (router: Router): void => {
-  registerProApplicationAlias(router, 'get', '/pro-applications', async (req, res, next) => {
-    try {
-      const pg = paginationSchema.parse(req.query);
-      const { items, total } = await listAdminHostApplicationsPage({
-        page: pg.page,
-        pageSize: pg.pageSize,
-      });
-      res.json(paginatedResponse(items, total, pg));
-    } catch (error) {
-      next(error);
+  registerProApplicationAlias(
+    router,
+    'get',
+    '/pro-applications',
+    validate({ query: paginationSchema }),
+    async (req, res, next) => {
+      try {
+        const pg = req.query as unknown as z.infer<typeof paginationSchema>;
+        const { items, total } = await listAdminHostApplicationsPage({
+          page: pg.page,
+          pageSize: pg.pageSize,
+        });
+        res.json(paginatedResponse(items, total, pg));
+      } catch (error) {
+        next(error);
+      }
     }
-  });
+  );
 
   registerProApplicationAlias(
     router,

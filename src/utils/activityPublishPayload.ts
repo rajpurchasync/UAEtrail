@@ -73,6 +73,7 @@ export type ActivityPublishInput = {
   images?: string[];
   bannerUrl?: string | null;
   hostId?: string;
+  guideUserIds?: string[];
   rideshare?: ActivityPublishRideshare;
   outingCategory?: OutingCategory | null;
   outingTopic?: OutingTopic | null;
@@ -177,6 +178,7 @@ export const buildHostActivityPublishPayload = (input: ActivityPublishInput): Re
     images: input.images ?? [],
     bannerUrl: input.bannerUrl ?? null,
     hostId: input.hostId,
+    ...(input.guideUserIds ? { guideUserIds: input.guideUserIds } : {}),
   };
 
   if (input.outingCategory) {

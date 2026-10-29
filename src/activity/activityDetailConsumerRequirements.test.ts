@@ -10,6 +10,8 @@ describe('resolveActivityConsumerRequirementLines', () => {
       'Trail: Wadi Loop',
       'Difficulty: Moderate',
       'Vehicle: SUV',
+      'Packing ack: strict',
+      'Packing item: must|shoes|🥾|Hiking Shoes',
     ]);
     expect(lines).toEqual(['Water 1.5L', 'Trail shoes']);
   });

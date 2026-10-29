@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { SetURLSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { listDiscoveryPathFromExploreSearch } from '../../list/routing';
+import { exploreMapMobileBackState } from '../../utils/mobileBackNav';
 import { MAP_FILTER_PILLS } from '../../config/exploreMapFilters';
 import {
   type ActivityListFilterKey,
@@ -9,8 +12,7 @@ import {
   type ExploreActivityDatePreset,
 } from '../routing';
 import { MAP_FILTERS_BY_BROWSE_TAB, type DesktopBrowseTab } from './exploreBrowsePanelCopy';
-import { mapFilterToPanel, readInitialListOpen } from './exploreListPanelUrl';
-import { BROWSE_DISCOVER_PARAM } from '../../list/browseListUrlState';
+import { mapFilterToPanel } from './exploreListPanelUrl';
 import { type ExploreMapFilterPillKey, type ExploreSearchScopeKey } from '../exploreBrowseTaxonomy';
 import {
   buildExploreBrowseSearchParams,
@@ -47,13 +49,9 @@ export const useExploreBrowseUrlState = ({
   setSearchParams,
   clearSelection,
 }: UseExploreBrowseUrlStateArgs) => {
-  const initial = useRef({
-    ...parseExploreBrowseStateFromSearchParams(searchParams, isDesktop),
-    listOpen: readInitialListOpen(
-      searchParams.get('list'),
-      searchParams.get(BROWSE_DISCOVER_PARAM)
-    ),
-  }).current;
+  const navigate = useNavigate();
+  const location = useLocation();
+  const initial = useRef(parseExploreBrowseStateFromSearchParams(searchParams, isDesktop)).current;
 
   const [mapFilter, setMapFilter] = useState<MapFilterKey>(initial.mapFilter);
   const [activityFilter, setActivityFilter] = useState<ActivityListFilterKey>(initial.activityFilter);
@@ -167,7 +165,7 @@ export const useExploreBrowseUrlState = ({
     applyHydratedState(parseExploreBrowseStateFromSearchParams(searchParams, isDesktop));
   }, [searchParams, isDesktop, applyHydratedState]);
 
-  useExploreBrowseUrlInboundMigrations({ isDesktop, searchParams, setSearchParams });
+  useExploreBrowseUrlInboundMigrations({ searchParams, setSearchParams });
 
   const browseSetters = useMemo(
     () => ({
@@ -211,7 +209,15 @@ export const useExploreBrowseUrlState = ({
     setters: browseSetters,
   });
 
-  const showListPanel = listOpen;
+  const openListExplorer = useCallback(() => {
+    clearSelection();
+    const current = `${location.pathname}${location.search}`;
+    navigate(listDiscoveryPathFromExploreSearch(searchParams.toString()), {
+      state: exploreMapMobileBackState(current),
+    });
+  }, [clearSelection, location.pathname, location.search, navigate, searchParams]);
+
+  const showListPanel = listOpen && listMode === 'people';
   const sidebarPanel: ExplorePanel = isDesktop
     ? panel === 'venues'
       ? 'venues'
@@ -267,9 +273,9 @@ export const useExploreBrowseUrlState = ({
     applyPanel: handlers.applyPanel,
     applyVenueFilter: handlers.applyVenueFilter,
     applyBrowsePanel: handlers.applyBrowsePanel,
-    openBrowse: handlers.openBrowse,
-    openMapListPanel: handlers.openMapListPanel,
-    openDiscoverBrowse: handlers.openDiscoverBrowse,
+    openBrowse: openListExplorer,
+    openMapListPanel: openListExplorer,
+    openDiscoverBrowse: openListExplorer,
     closeDiscoverBrowse: handlers.closeDiscoverBrowse,
     browseOpen,
     closeListPanel: handlers.closeListPanel,

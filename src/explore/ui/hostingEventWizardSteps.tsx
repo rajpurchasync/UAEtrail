@@ -1,7 +1,9 @@
-import { HostingVenuePlaceField } from './HostingVenuePlaceField';
-import type { PlaceDTO } from '@uaetrail/shared-types';
+import { useEffect } from 'react';
+import { defaultHikingPackingItems, withHikingKitExtras, type PlaceDTO } from '@uaetrail/shared-types';
 import { EXPLORE_FLOW } from '../../config/exploreTheme';
 import { JOIN_RULES_LABEL } from '../createFlowCopy';
+import { HostingVenuePlaceField } from './HostingVenuePlaceField';
+import { HostingPackingListEditor } from './HostingPackingListEditor';
 import type { CreateActivityDraft } from './hostingFlowEngine';
 
 export {
@@ -21,11 +23,13 @@ export const EventDestinationStepBody = ({
   patchDraft,
   tenantId,
   registryPlaces,
+  onOpenSpotMap,
 }: {
   draft: CreateActivityDraft;
   patchDraft: PatchDraft;
   tenantId?: string | null;
   registryPlaces: PlaceDTO[];
+  onOpenSpotMap?: () => void;
 }) => (
   <HostingVenuePlaceField
     draft={draft}
@@ -35,6 +39,7 @@ export const EventDestinationStepBody = ({
     placeType="event"
     customNameLabel="Venue or area name"
     customNamePlaceholder="e.g. Kite beach community run"
+    onOpenSpotMap={onOpenSpotMap}
   />
 );
 
@@ -64,19 +69,39 @@ export const EventJoinKitStepBody = ({
 }: {
   draft: CreateActivityDraft;
   patchDraft: PatchDraft;
-}) => (
-  <label className="block">
-    <span className={`mb-2 block ${EXPLORE_FLOW.choiceCardTitle}`}>{JOIN_RULES_LABEL}</span>
-    <textarea
-      value={draft.joinKit}
-      onChange={(event) => patchDraft({ joinKit: event.target.value })}
-      rows={4}
-      placeholder="What to bring, dress code, ID, etc."
-      className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-base text-gray-900 outline-none focus:border-emerald-500"
-      maxLength={2000}
-    />
-  </label>
-);
+}) => {
+  useEffect(() => {
+    if (draft.kind !== 'event') return;
+    if ((draft.packingItems?.length ?? 0) === 0) {
+      patchDraft({ packingItems: defaultHikingPackingItems(), packingAckMode: 'lenient' });
+      return;
+    }
+    const next = withHikingKitExtras(draft.packingItems);
+    if (next.length !== draft.packingItems.length) patchDraft({ packingItems: next });
+  }, [draft.kind, draft.packingItems, patchDraft]);
+
+  return (
+    <div className="space-y-4">
+      <HostingPackingListEditor
+        mode={draft.packingAckMode}
+        items={draft.packingItems ?? []}
+        defaultMode="lenient"
+        onChange={patchDraft}
+      />
+      <label className="block">
+        <span className={`mb-2 block ${EXPLORE_FLOW.choiceCardTitle}`}>{JOIN_RULES_LABEL}</span>
+        <textarea
+          value={draft.joinKit}
+          onChange={(event) => patchDraft({ joinKit: event.target.value })}
+          rows={4}
+          placeholder="What to bring, dress code, ID, etc."
+          className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-base text-gray-900 outline-none focus:border-emerald-500"
+          maxLength={2000}
+        />
+      </label>
+    </div>
+  );
+};
 
 export const EventChildrenAllowedField = ({
   draft,

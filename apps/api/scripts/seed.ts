@@ -1752,7 +1752,7 @@ Drive via Dubai–Hatta Road (E44). Main car park is signed at the dam visitor a
       id: 'khorfakkan-beach-trail',
       data: {
         name: 'Khorfakkan Beach Walk',
-        region: 'Fujairah',
+        region: 'Sharjah',
         areaLabel: 'Khorfakkan corniche',
         areaId: curatedAreaSeedId('khorfakkan'),
         activityType: ActivityType.HIKING,

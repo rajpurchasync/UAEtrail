@@ -34,7 +34,16 @@ export interface AreaDTO {
 /** Public card — no admin-only fields beyond status filter at API. */
 export type AreaPublicDTO = Pick<
   AreaDTO,
-  'id' | 'slug' | 'name' | 'region' | 'center' | 'bounds' | 'summary' | 'countryCode' | 'imageUrl'
+  | 'id'
+  | 'slug'
+  | 'name'
+  | 'region'
+  | 'center'
+  | 'bounds'
+  | 'priority'
+  | 'summary'
+  | 'countryCode'
+  | 'imageUrl'
 >;
 
 export const areaDetailPath = (slug: string): string => `/area/${encodeURIComponent(slug)}`;

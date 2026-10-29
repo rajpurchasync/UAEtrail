@@ -9,10 +9,11 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ChevronRight, MapPin, Car } from 'lucide-react';
-import type {
-  ActivityDetailDTO,
-  ActivityEngagementStripsDTO,
-  ActivityViewerAccessDTO,
+import {
+  hasPackingList,
+  type ActivityDetailDTO,
+  type ActivityEngagementStripsDTO,
+  type ActivityViewerAccessDTO,
 } from '@uaetrail/shared-types';
 import type { useActivityDetailViewModel } from '../../../components/activity/detail/useActivityDetailViewModel';
 import { ActivityDetailGuestGate } from '../../../components/activity/detail/ActivityDetailGuestGate';
@@ -21,6 +22,7 @@ import { activityDetailParticipantCountLabel } from '../../../components/activit
 import { formatActivityDetailConsumerLeadDate } from '../../../activity/formatActivityDetailConsumerLead';
 import { ConsumerDetailLeadDateChip } from '../../../activity/detail/ConsumerDetailLeadDateChip';
 import { resolveActivityConsumerRequirementLines } from '../../../activity/activityDetailConsumerRequirements';
+import { ActivityPackingListPreview } from '../../../components/activity/ActivityPackingListPreview';
 import { resolveActivityDetailConsumerAudienceBadges } from '../../../activity/activityDetailConsumerAudienceBadges';
 import { shouldShowConsumerDetailLeadVenue } from '../../../activity/activityConsumerDetailLeadVenue';
 import {
@@ -64,7 +66,10 @@ import {
 } from '../../../explore/createFlowCopy';
 import { capitalize } from '../../../utils';
 import { activityRegistryPlacePath } from '../../../utils/activityRegistryPlacePath';
-import { activityHostAvatar, activityHostName, showTenantBrand } from '../../../utils/hostLabels';
+import { activityHostAvatar, showTenantBrand } from '../../../utils/hostLabels';
+import { ActivityGuidesList } from '../../../activity/ActivityGuidesList';
+import { activityPublisherFromDetail } from '../../../activity/activityPublisherDisplay';
+import { ActivityGuideInviteBanner } from '../../../activity/ActivityGuideInviteBanner';
 import { DirectionsControl, ParticipantPreview, SecureAvatar } from '../../../components/ui';
 import {
   CONSUMER_DETAIL_PANEL,
@@ -138,12 +143,15 @@ export const ActivityConsumerDetailPage = ({
     !model.requiresSignIn ? (
       <>
         {layout.showHostProfile ? (
-          <ConsumerDetailHostRow
-            activity={model.activity}
-            hostPath={model.hostPath}
-            canOpenHostProfile={model.canOpenHostProfile}
-            showTenantRating={Boolean(model.activity.tenantId)}
-          />
+          <>
+            <ActivityGuideInviteBanner activity={model.activity} />
+            <ConsumerDetailHostRow
+              activity={model.activity}
+              hostPath={model.hostPath}
+              canOpenHostProfile={model.canOpenHostProfile}
+              showTenantRating={Boolean(model.activity.tenantId)}
+            />
+          </>
         ) : null}
         {showParticipantsRow ? (
           <ConsumerDetailSocialRow
@@ -223,6 +231,7 @@ export const ActivityConsumerDetailPage = ({
           />
         ) : null}
         {isRideshare && !model.requiresSignIn ? hostAndSocialBlock : null}
+        <ConsumerDetailPacking activity={model.activity} />
         {!model.requiresSignIn ? <ConsumerDetailInstructions activity={model.activity} /> : null}
         <ActivityDetailPlanColumn model={model} planSections={planSections} consumerInline />
         {isRideshare && model.activity.tenantId ? (
@@ -526,6 +535,19 @@ const ConsumerDetailOpenSection = ({
   </section>
 );
 
+const ConsumerDetailPacking = ({ activity }: { activity: ActivityDetailDTO }) => {
+  if (!hasPackingList(activity.requirements)) return null;
+  return (
+    <ConsumerDetailOpenSection id="activity-detail-packing" title="What to bring" tone="prep">
+      <ActivityPackingListPreview
+        requirements={activity.requirements}
+        showTitle={false}
+        className="border-0 bg-transparent p-0"
+      />
+    </ConsumerDetailOpenSection>
+  );
+};
+
 const ConsumerDetailInstructions = ({ activity }: { activity: ActivityDetailDTO }) => {
   const lines = resolveActivityConsumerRequirementLines(activity.requirements);
   if (lines.length === 0) return null;
@@ -733,21 +755,26 @@ const ConsumerDetailHostRow = ({
   canOpenHostProfile: boolean;
   showTenantRating?: boolean;
 }) => {
-  const name = activityHostName(activity);
+  const publisher = activityPublisherFromDetail(activity);
   const tenant = showTenantBrand(activity) ? activity.tenantName : null;
   const tenantId = activity.tenantId?.trim() || null;
   const ratingVariant = activity.activityType === 'rideshare' ? 'driver' : 'host';
+  const sectionLabel = publisher.kind === 'company' ? 'Operator' : 'Host';
   const inner = (
     <>
       <SecureAvatar
-        src={activityHostAvatar(activity)}
-        name={name}
+        src={publisher.avatarUrl ?? activityHostAvatar(activity)}
+        name={publisher.name}
         className="h-10 w-10 shrink-0 text-sm ring-2 ring-white"
       />
       <div className="min-w-0 flex-1">
-        <p className="text-xs font-medium text-neutral-500">Hosted by</p>
-        <p className="truncate text-[15px] font-semibold text-neutral-950">{name}</p>
-        {tenant ? <p className="truncate text-sm text-neutral-600">{tenant}</p> : null}
+        <p className="text-xs font-medium text-neutral-500">
+          {publisher.kind === 'company' ? 'Tour operator' : 'Hosted by'}
+        </p>
+        <p className="truncate text-[15px] font-semibold text-neutral-950">{publisher.name}</p>
+        {tenant && publisher.kind !== 'company' ? (
+          <p className="truncate text-sm text-neutral-600">{tenant}</p>
+        ) : null}
         {showTenantRating && tenantId ? (
           <TenantHostRatingInline
             tenantId={tenantId}
@@ -764,18 +791,15 @@ const ConsumerDetailHostRow = ({
 
   const shell = `mt-4 flex items-center gap-3 ${CONSUMER_DETAIL_PANEL.trust} active:opacity-95`;
 
-  if (canOpenHostProfile && hostPath) {
-    return (
-      <section aria-label="Host">
-        <p className={`mb-2 ${CONSUMER_DETAIL_SECTION_TITLE}`}>Host</p>
-        <Link to={hostPath} className={shell}>{inner}</Link>
-      </section>
-    );
-  }
   return (
-    <section aria-label="Host">
-      <p className={`mb-2 ${CONSUMER_DETAIL_SECTION_TITLE}`}>Host</p>
-      <div className={shell}>{inner}</div>
+    <section aria-label={sectionLabel}>
+      <p className={`mb-2 ${CONSUMER_DETAIL_SECTION_TITLE}`}>{sectionLabel}</p>
+      {canOpenHostProfile && hostPath ? (
+        <Link to={hostPath} className={shell}>{inner}</Link>
+      ) : (
+        <div className={shell}>{inner}</div>
+      )}
+      <ActivityGuidesList activity={activity} compact />
     </section>
   );
 };

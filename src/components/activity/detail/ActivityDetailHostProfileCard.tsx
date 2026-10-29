@@ -2,7 +2,10 @@ import { Link } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 import type { ActivityDetailDTO } from '@uaetrail/shared-types';
 import { MessageMemberButton, SecureAvatar } from '../../ui';
-import { showTenantBrand, activityHostAvatar, activityHostName } from '../../../utils/hostLabels';
+import { showTenantBrand, activityHostAvatar } from '../../../utils/hostLabels';
+import { ActivityGuidesList } from '../../../activity/ActivityGuidesList';
+import { activityPublisherFromDetail } from '../../../activity/activityPublisherDisplay';
+import { ActivityGuideInviteBanner } from '../../../activity/ActivityGuideInviteBanner';
 import {
   ACTIVITY_DETAIL_PRO_HOST_PROFILE_HINT,
   ACTIVITY_DETAIL_PRO_SOCIAL_CTA,
@@ -34,7 +37,12 @@ export const ActivityDetailHostProfileCard = ({
   showHostProfileProUpsell,
   proSocialMembershipPath,
   variant = 'card',
-}: ActivityDetailHostProfileCardProps) => (
+}: ActivityDetailHostProfileCardProps) => {
+  const publisher = activityPublisherFromDetail(activity);
+  const publisherName = publisher.name;
+  const publisherAvatar = publisher.avatarUrl ?? activityHostAvatar(activity);
+  const sectionLabel = publisher.kind === 'company' ? 'Operator' : 'Host';
+  return (
   <div
     className={
       variant === 'section'
@@ -44,20 +52,21 @@ export const ActivityDetailHostProfileCard = ({
           : `bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 ${panelClassName}`
     }
   >
-    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Host</p>
+    <ActivityGuideInviteBanner activity={activity} />
+    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">{sectionLabel}</p>
     <div className="flex items-center gap-2">
       {hostPath ? (
         <Link to={hostPath} className="flex items-center gap-3 group flex-1 min-w-0">
           <SecureAvatar
-            src={activityHostAvatar(activity)}
-            name={activityHostName(activity)}
+            src={publisherAvatar}
+            name={publisherName}
             className="w-11 h-11 text-sm ring-2 ring-emerald-50 shrink-0"
           />
           <div className="min-w-0 flex-1">
             <p className="font-semibold text-gray-900 group-hover:text-emerald-700 truncate">
-              {activityHostName(activity)}
+              {publisherName}
             </p>
-            {showTenantBrand(activity) && activity.tenantName ? (
+            {publisher.kind !== 'company' && showTenantBrand(activity) && activity.tenantName ? (
               <p className="text-xs text-gray-500 truncate">{activity.tenantName}</p>
             ) : null}
             {variant !== 'marketing' ? (
@@ -69,13 +78,13 @@ export const ActivityDetailHostProfileCard = ({
       ) : (
         <div className="flex items-center gap-3 flex-1 min-w-0">
           <SecureAvatar
-            src={activityHostAvatar(activity)}
-            name={activityHostName(activity)}
+            src={publisherAvatar}
+            name={publisherName}
             className="w-11 h-11 text-sm ring-2 ring-emerald-50 shrink-0"
           />
           <div className="min-w-0 flex-1">
-            <p className="font-semibold text-gray-900 truncate">{activityHostName(activity)}</p>
-            {showTenantBrand(activity) && activity.tenantName ? (
+            <p className="font-semibold text-gray-900 truncate">{publisherName}</p>
+            {publisher.kind !== 'company' && showTenantBrand(activity) && activity.tenantName ? (
               <p className="text-xs text-gray-500 truncate">{activity.tenantName}</p>
             ) : null}
             {!hostPath && hostProfileHint ? (
@@ -104,5 +113,7 @@ export const ActivityDetailHostProfileCard = ({
     {variant !== 'marketing' && activity.hostBio ? (
       <p className="mt-3 text-sm text-gray-600 leading-relaxed">{activity.hostBio}</p>
     ) : null}
+    <ActivityGuidesList activity={activity} compact />
   </div>
-);
+  );
+};

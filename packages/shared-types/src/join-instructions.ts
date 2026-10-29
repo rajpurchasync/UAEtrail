@@ -1,3 +1,5 @@
+import { hasPackingList, isPackingRequirementLine } from './activity-packing-list.js';
+
 export const JOIN_INSTRUCTION_PREFIX = 'Instructions: ';
 
 export const extractJoinInstructionLines = (requirements: string[] | null | undefined): string[] =>
@@ -8,10 +10,10 @@ export const extractJoinInstructionLines = (requirements: string[] | null | unde
     .filter(Boolean);
 
 export const hasJoinInstructions = (requirements: string[] | null | undefined): boolean =>
-  extractJoinInstructionLines(requirements).length > 0;
+  extractJoinInstructionLines(requirements).length > 0 || hasPackingList(requirements);
 
 /** Requirements shown on activity detail — excludes mandatory join instructions. */
 export const extractNonJoinRequirements = (requirements: string[] | null | undefined): string[] =>
   (requirements ?? [])
     .map((item) => item.trim())
-    .filter((item) => item && !item.startsWith(JOIN_INSTRUCTION_PREFIX));
+    .filter((item) => item && !item.startsWith(JOIN_INSTRUCTION_PREFIX) && !isPackingRequirementLine(item));

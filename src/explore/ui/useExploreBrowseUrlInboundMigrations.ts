@@ -1,47 +1,48 @@
 import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { SetURLSearchParams } from 'react-router-dom';
+import { listDiscoveryPathFromExploreSearch } from '../../list/routing';
 import {
   BROWSE_DISCOVER_PARAM,
-  LIST_CAT_PARAM,
   parseBrowseDiscoverOpen,
-  parseListCatParam,
 } from '../../list/browseListUrlState';
+import { EXPLORE_PIN_QUERY_KEY } from '../routing';
 
-/** Desktop default list + retired `list=1`+`listCat` → `browse=1` migrations (C18). */
+const isPeopleView = (view: string | null): boolean =>
+  view === 'people' || view === 'social' || view === 'going';
+
+/** Catalog list/browse on `/explore` opens the full-screen `/list` explorer. */
 export const useExploreBrowseUrlInboundMigrations = (input: {
-  isDesktop: boolean;
   searchParams: URLSearchParams;
   setSearchParams: SetURLSearchParams;
 }) => {
-  useEffect(() => {
-    if (!input.isDesktop) return;
-    if (parseBrowseDiscoverOpen(input.searchParams.get(BROWSE_DISCOVER_PARAM))) return;
-    const listParam = input.searchParams.get('list');
-    if (listParam === '0' || listParam === '1') return;
-    input.setSearchParams(
-      (prev) => {
-        const next = new URLSearchParams(prev);
-        next.set('list', '1');
-        return next;
-      },
-      { replace: true }
-    );
-  }, [input]);
+  const navigate = useNavigate();
+  const search = input.searchParams.toString();
+  const setSearchParams = input.setSearchParams;
 
   useEffect(() => {
-    const listParam = input.searchParams.get('list');
-    const browseParam = input.searchParams.get(BROWSE_DISCOVER_PARAM);
-    const retiredListCat = parseListCatParam(input.searchParams.get(LIST_CAT_PARAM));
-    if (listParam === '1' && retiredListCat && browseParam !== '1') {
-      input.setSearchParams(
+    const params = new URLSearchParams(search);
+    const browse = parseBrowseDiscoverOpen(params.get(BROWSE_DISCOVER_PARAM));
+    const list = params.get('list') === '1';
+    const people = isPeopleView(params.get('view'));
+    const pin = params.get(EXPLORE_PIN_QUERY_KEY)?.trim();
+
+    if (people) return;
+
+    if (list && pin && !browse) {
+      setSearchParams(
         (prev) => {
           const next = new URLSearchParams(prev);
-          next.set(BROWSE_DISCOVER_PARAM, '1');
-          next.set('list', '0');
+          next.delete('list');
           return next;
         },
         { replace: true }
       );
+      return;
     }
-  }, [input]);
+
+    if (browse || list) {
+      navigate(listDiscoveryPathFromExploreSearch(search), { replace: true });
+    }
+  }, [search, setSearchParams, navigate]);
 };

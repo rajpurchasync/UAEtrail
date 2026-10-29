@@ -14,6 +14,7 @@ import { resolveViewerPendingJoinInvite } from './activity-invite.js';
 import { buildParticipationDto } from './checkin.js';
 import { composeActivityViewerAccess } from './compose-activity-viewer-access.js';
 import { resolveMemberStatus } from './member-status.js';
+import { viewerGuideInviteStatus } from './activity-guides.js';
 
 export const listFeaturedActivitiesPublic = async (limit: number): Promise<ActivityDTO[]> => {
   const events = await listFeaturedPublishedActivities(limit);
@@ -64,6 +65,7 @@ export const loadPublicActivityDetail = async (input: {
         createdById: event.createdById,
         joinMode: event.joinMode,
         requirements: event.requirements,
+        guides: event.guides,
       },
       isPlatformAdmin: input.isPlatformAdmin,
     },
@@ -74,6 +76,7 @@ export const loadPublicActivityDetail = async (input: {
   let myParticipation = null;
   let myRequest = null;
   let myJoinInvite = null;
+  const myGuideInvite = viewerGuideInviteStatus(event.guides, viewerUserId);
   if (viewerUserId) {
     const mine = event.participants.find((p) => p.userId === viewerUserId);
     if (mine) {
@@ -150,6 +153,7 @@ export const loadPublicActivityDetail = async (input: {
         myParticipation,
         myRequest,
         myJoinInvite,
+        myGuideInvite,
       },
       viewerAccess: access,
       presentation,
@@ -173,6 +177,7 @@ export const loadPublicActivityDetail = async (input: {
       myParticipation,
       myRequest,
       myJoinInvite,
+      myGuideInvite,
     },
     viewerAccess: access,
     presentation,

@@ -115,7 +115,7 @@ export const MOBILE_LANDING_USER_MENU = [
   { label: 'Explore', to: EXPLORE_MAP_PATH, match: [EXPLORE_MAP_PATH] as const },
   {
     label: 'Browse',
-    to: EXPLORE_DISCOVER_BROWSE_PATH,
+    to: LIST_DISCOVERY_PATH,
     match: [EXPLORE_DISCOVER_BROWSE_PATH, LIST_DISCOVERY_PATH, '/discovery'] as const,
   },
   { label: 'Join free', to: joinAuthPath(), match: ['/signin', '/signup'] as const },
@@ -161,7 +161,7 @@ export const CONSUMER_HAMBURGER_MENU: readonly ConsumerHamburgerMenuItem[] = [
     kind: 'link',
     label: 'Browse',
     emoji: '🧭',
-    to: EXPLORE_DISCOVER_BROWSE_PATH,
+    to: LIST_DISCOVERY_PATH,
     match: [EXPLORE_DISCOVER_BROWSE_PATH, LIST_DISCOVERY_PATH, '/discovery'],
   },
   {

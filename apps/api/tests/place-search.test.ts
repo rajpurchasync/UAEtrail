@@ -4,6 +4,7 @@ import {
   communityCityLabel,
   resolvePlaceSelection,
   reverseCommunityCity,
+  reversePlaceLocality,
   searchPlaces,
 } from '../src/lib/place-search.js';
 
@@ -206,6 +207,30 @@ describe('reverseCommunityCity', () => {
       community: 'Al Barsha',
       city: 'Dubai',
       label: 'Al Barsha, Dubai',
+    });
+  });
+});
+
+describe('reversePlaceLocality', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('tags city from a pin even when community is missing', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({
+        ok: true,
+        json: async () => ({
+          features: [{ properties: { city: 'Hatta', state: 'Dubai' } }],
+        }),
+      }))
+    );
+
+    await expect(reversePlaceLocality(24.82, 56.13)).resolves.toEqual({
+      city: 'Hatta',
+      community: null,
+      state: 'Dubai',
     });
   });
 });

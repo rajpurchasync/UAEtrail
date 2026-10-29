@@ -74,6 +74,7 @@ export interface TeamMember {
   userId: string;
   email: string;
   displayName: string;
+  avatarUrl?: string | null;
   role: string;
   isActive?: boolean;
 }

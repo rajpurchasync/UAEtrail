@@ -7,29 +7,18 @@ import {
   LocationPremiumSummaryDTO,
 } from '@uaetrail/shared-types';
 import { apiRequest, downloadAuthenticatedFile } from '../client';
+import { ADMIN_TABLE_PAGE_SIZE, LIST_PAGE_SIZE, fetchAllPages } from '../listAllPages';
 
 const listAllPublicPlaces = async (countryCode?: string) => {
-  const pageSize = 100;
-  const all: LocationDTO[] = [];
-  let page = 1;
-  let total = Number.POSITIVE_INFINITY;
-
-  while (all.length < total && page <= 20) {
+  const data = await fetchAllPages((page, pageSize) => {
     const params = new URLSearchParams({ pageSize: String(pageSize), page: String(page) });
     if (countryCode) params.set('countryCode', countryCode);
-    const response = await apiRequest<{ data: LocationDTO[]; meta?: { total: number } }>(
-      `/places?${params.toString()}`
-    );
-    all.push(...response.data);
-    total = response.meta?.total ?? response.data.length;
-    if (response.data.length === 0) break;
-    page += 1;
-  }
-
-  return { data: all };
+    return apiRequest<{ data: LocationDTO[]; meta?: { total: number } }>(`/places?${params.toString()}`);
+  });
+  return { data };
 };
 
-const getPlacesPage = (page = 1, pageSize = 100, countryCode?: string) => {
+const getPlacesPage = (page = 1, pageSize = LIST_PAGE_SIZE, countryCode?: string) => {
   const params = new URLSearchParams({ pageSize: String(pageSize), page: String(page) });
   if (countryCode) params.set('countryCode', countryCode);
   return apiRequest<{ data: LocationDTO[]; meta?: { total: number } }>(`/places?${params.toString()}`);
@@ -62,7 +51,11 @@ export const placeApi = {
   getPopularPlaces: (limit = 6) => apiRequest<{ data: LocationDTO[] }>(`/places/popular?limit=${limit}`),
   trackPlaceView: (id: string) => apiRequest('/places/' + id + '/view', { method: 'POST' }),
 
-  getAdminPlaces: () => apiRequest<{ data: LocationDTO[] }>('/admin/places?pageSize=250', { auth: true }),
+  getAdminPlaces: (page = 1, pageSize = ADMIN_TABLE_PAGE_SIZE) =>
+    apiRequest<{ data: LocationDTO[]; meta?: { total: number } }>(
+      `/admin/places?page=${page}&pageSize=${pageSize}`,
+      { auth: true }
+    ),
   createAdminPlace: (payload: Partial<PlaceDTO>) =>
     apiRequest<{ data: PlaceDTO }>('/admin/places', {
       method: 'POST',

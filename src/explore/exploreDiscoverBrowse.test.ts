@@ -3,8 +3,8 @@ import { isDiscoverBrowseRoute } from './exploreDiscoverBrowse';
 import { exploreDiscoverBrowsePath } from './routing';
 
 describe('discover browse routes', () => {
-  it('exploreDiscoverBrowsePath sets browse=1', () => {
-    expect(exploreDiscoverBrowsePath()).toBe('/explore?browse=1');
+  it('exploreDiscoverBrowsePath opens the list explorer', () => {
+    expect(exploreDiscoverBrowsePath()).toBe('/list');
   });
 
   it('isDiscoverBrowseRoute matches /list and /explore?browse=1', () => {

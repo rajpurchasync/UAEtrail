@@ -2,10 +2,11 @@ import { useState, Fragment } from 'react';
 import { useSafeAsyncEffect } from '../../hooks/useSafeAsyncEffect';
 import { useNavigate } from 'react-router-dom';
 import { ActivityDTO, LocationDTO } from '@uaetrail/shared-types';
+import { ADMIN_TABLE_PAGE_SIZE } from '../../api/listAllPages';
+import { AdminTablePager } from '../../components/admin/AdminTablePager';
 import {
   fetchAdminActivityEngagement,
   fetchAdminModerationActivities,
-  fetchAdminPlacesCatalog,
   moderateAdminActivity,
   toggleAdminActivityFeatured,
 } from '../../hooks/adminConsoleApi';
@@ -15,6 +16,7 @@ import {
   publishActivity,
 } from '../../hooks/tenantActivityClientApi';
 import { ActivityActionsMenu, ActivityListPreview, buildAdminActivityMenuItems, openPublishedActivityPreview } from '../../components/activities';
+import { fetchPublicPlaceDetail } from '../../hooks/placeDetailClientApi';
 import { useReloadExploreMap } from '../../hooks/useReloadExploreMap';
 import { Link } from 'react-router-dom';
 import { ADMIN_PLACES_PATH } from '../../config/surfacePaths';
@@ -37,7 +39,9 @@ type Tab = 'active' | 'past';
 export const Activities = () => {
   const navigate = useNavigate();
   const [events, setEvents] = useState<ActivityDTO[]>([]);
-  const [locations, setLocations] = useState<LocationDTO[]>([]);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [previewVenue, setPreviewVenue] = useState<LocationDTO | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<Tab>('active');
@@ -76,9 +80,11 @@ export const Activities = () => {
   const loadEvents = async (isActive: () => boolean = () => true) => {
     setLoading(true);
     try {
-      const list = await fetchAdminModerationActivities();
+      const list = await fetchAdminModerationActivities(page, ADMIN_TABLE_PAGE_SIZE);
       if (!isActive()) return;
-      setEvents(list);
+      setError(null);
+      setEvents(list.items);
+      setTotal(list.total);
     } catch (err) {
       if (!isActive()) return;
       setError(err instanceof Error ? err.message : 'Could not load events');
@@ -87,16 +93,22 @@ export const Activities = () => {
     }
   };
 
-  const loadRefs = async (isActive: () => boolean = () => true) => {
-    try {
-      const places = await fetchAdminPlacesCatalog();
-      if (isActive()) setLocations(places);
-    } catch { /* non-critical */ }
-  };
+  useSafeAsyncEffect(async (isActive) => {
+    await loadEvents(isActive);
+  }, [page]);
 
   useSafeAsyncEffect(async (isActive) => {
-    await Promise.all([loadEvents(isActive), loadRefs(isActive)]);
-  }, []);
+    if (!previewActivity?.locationId) {
+      if (isActive()) setPreviewVenue(undefined);
+      return;
+    }
+    try {
+      const venue = await fetchPublicPlaceDetail(previewActivity.locationId);
+      if (isActive()) setPreviewVenue(venue);
+    } catch {
+      if (isActive()) setPreviewVenue(undefined);
+    }
+  }, [previewActivity?.locationId]);
 
   const loadEngagement = async (activityId: string) => {
     if (engagementByActivityId[activityId]) return;
@@ -250,10 +262,6 @@ export const Activities = () => {
       setPreviewPublishing(false);
     }
   };
-
-  const previewVenue = previewActivity
-    ? locations.find((location) => location.id === previewActivity.locationId)
-    : undefined;
 
   return (
     <DashboardLayout title="Admin Dashboard" links={ADMIN_LINKS}>
@@ -467,7 +475,8 @@ export const Activities = () => {
             </tbody>
           </table>
         </div>
-        <p className="text-xs text-gray-500">Showing {filtered.length} of {displayed.length} {tab} events</p>
+        <AdminTablePager page={page} pageSize={ADMIN_TABLE_PAGE_SIZE} total={total} onPage={setPage} />
+        <p className="text-xs text-gray-500">Showing {filtered.length} of {displayed.length} {tab} events on this page</p>
       </div>
 
       <ActivityListPreview

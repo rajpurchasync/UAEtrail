@@ -5,6 +5,7 @@ import {
   facilityPlaceKindPinEmoji,
 } from '@uaetrail/shared-types';
 import { MAP_CONFIG } from '../../config/platform';
+import { inferEmirateFromPin } from '../hostingPublishArea';
 import type { AddSubmitResult } from './addFlow';
 
 export type FacilityAddStepId =
@@ -48,7 +49,7 @@ export const emptyFacilityAddDraft = (): FacilityAddDraft => ({
   title: '',
   facilityKind: null,
   areaId: null,
-  emirate: 'Dubai',
+  emirate: '',
   latitude: MAP_CONFIG.exploreDefaultCenter.lat,
   longitude: MAP_CONFIG.exploreDefaultCenter.lng,
   locationPinPlaced: false,
@@ -92,7 +93,9 @@ export const validateFacilityAddStep = (
       if (!draft.areaId?.trim()) return 'Choose which area this facility is in.';
       return null;
     case 'location':
-      if (!draft.emirate.trim()) return 'Choose the emirate / state.';
+      if (!draft.emirate.trim() && !inferEmirateFromPin(draft.latitude, draft.longitude)) {
+        return 'Choose the emirate (Dubai, Ras Al Khaimah, Sharjah, …). Search and Home use this filter.';
+      }
       if (!draft.locationPinPlaced || draft.latitude == null || draft.longitude == null) {
         return 'Pin the facility on the map.';
       }

@@ -8,10 +8,12 @@ export const eventIdParamSchema = z.object({ id: z.string().min(1) });
 export const requestIdParamSchema = z.object({ id: z.string().min(1), requestId: z.string().min(1) });
 
 export const createRequestSchema = z.object({
-  note: z.string().max(300).optional(),
+  note: z.string().max(1000).optional(),
+  packingCheckedIds: z.array(z.string().min(1).max(80)).max(40).optional(),
+  packingSignature: z.string().max(80).optional(),
 });
 
-export const rsvpSchema = z.object({});
+export const rsvpSchema = createRequestSchema;
 
 const mediaUrlSchema = z.string().min(1).refine(
   (value) => value.startsWith('/') || /^https?:\/\//i.test(value),
@@ -150,10 +152,7 @@ export const SWITCHABLE_PRIVILEGED_ROLES: UserRole[] = [
 ];
 
 export const listFilterSchema = z.object({
-  activityType: z
-    .enum(['hiking', 'camping', 'event', 'COMMUNITY_ACTIVITY'])
-    .optional()
-    .transform((value) => (value === 'COMMUNITY_ACTIVITY' ? 'event' : value)),
+  activityType: z.enum(['hiking', 'camping', 'event']).optional(),
   featured: z.coerce.boolean().optional(),
   lat: z.coerce.number().optional(),
   lng: z.coerce.number().optional(),

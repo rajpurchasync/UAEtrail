@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
+import { z } from 'zod';
 import { ApiError } from '../lib/api-error.js';
 import { isDuplicateKeyError } from '../lib/mongo-errors.js';
 import { env } from '../config/env.js';
@@ -8,6 +9,18 @@ export const notFoundHandler = (_req: Request, _res: Response, next: NextFunctio
 };
 
 export const errorHandler = (error: unknown, req: Request, res: Response, _next: NextFunction): void => {
+  if (error instanceof z.ZodError) {
+    res.status(400).json({
+      error: {
+        code: 'validation_error',
+        message: 'Request validation failed.',
+        details: { issues: error.issues },
+        traceId: req.traceId
+      }
+    });
+    return;
+  }
+
   if (error instanceof ApiError) {
     res.status(error.statusCode).json({
       error: {

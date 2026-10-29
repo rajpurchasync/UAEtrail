@@ -15,7 +15,10 @@ import { activityDetailPath } from '../lib/member-routes.js';
 import { createAuditLog } from '../lib/audit.js';
 import { ApiError } from '../lib/api-error.js';
 import { toLocationDto } from '../lib/mappers.js';
+import { invalidatePublishedAreasCache } from '../lib/area-resolution.js';
+import { findAreaById, updateAdminArea } from '../lib/areas-store.js';
 import { scheduleExploreMapCacheInvalidation } from '../lib/explore-map-cache-schedule.js';
+import { withPlaceAreaMeta } from '../lib/place-area-meta.js';
 import { awardPoints } from './rewards.js';
 import {
   locationHasCatalogImportTag,
@@ -254,6 +257,17 @@ export const updateAdminPlaceRecord = async (input: {
     unlockPriceAed: body.unlockPriceAed,
   });
 
+  if (activating) {
+    const linkedAreaId = (updated.areaId ?? existing.areaId)?.trim();
+    if (linkedAreaId) {
+      const linkedArea = await findAreaById(linkedAreaId);
+      if (linkedArea?.status === 'draft') {
+        await updateAdminArea(linkedArea.id, { status: 'published' });
+        invalidatePublishedAreasCache();
+      }
+    }
+  }
+
   scheduleExploreMapCacheInvalidation('admin.place_update_map_cache');
 
   await createAuditLog({
@@ -331,6 +345,49 @@ export const updateAdminPlaceRecord = async (input: {
       })(),
       'admin.rideshare_pending_destination_publish'
     );
+
+    scheduleSideEffect(
+      (async () => {
+        const { publishDraftActivitiesPendingVenuePlace } = await import(
+          '../lib/pending-venue-publish.js'
+        );
+        const { listTenantMembershipsWithUsers } = await import('../lib/tenant-access.js');
+        const hits = await publishDraftActivitiesPendingVenuePlace(updated.id);
+        const notified = new Set<string>();
+        for (const hit of hits) {
+          const recipients = new Set<string>([
+            catalogSubmitterId,
+            hit.hostUserId,
+            ...hit.notifyUserIds,
+          ]);
+          try {
+            const members = await listTenantMembershipsWithUsers(hit.tenantId);
+            for (const member of members) {
+              if (member.isActive !== false && member.userId) recipients.add(member.userId);
+            }
+          } catch {
+            /* still notify host + submitter */
+          }
+          for (const userId of recipients) {
+            if (notified.has(`${userId}:${hit.activityId}`)) continue;
+            notified.add(`${userId}:${hit.activityId}`);
+            await dispatchNotification({
+              userId,
+              title: 'Your outing is live',
+              body: `"${updated.name}" is approved — “${hit.title}” is now on the explore map and in search.`,
+              type: NotificationType.SYSTEM,
+              meta: {
+                activityId: hit.activityId,
+                locationId: updated.id,
+                kind: 'activity_venue_live',
+                path: activityDetailPath(hit.activityId),
+              },
+            });
+          }
+        }
+      })(),
+      'admin.pending_venue_publish'
+    );
   }
 
   if (deactivating && catalogSubmitterId) {
@@ -346,7 +403,7 @@ export const updateAdminPlaceRecord = async (input: {
     });
   }
 
-  return toLocationDto(updated, { admin: true });
+  return withPlaceAreaMeta(toLocationDto(updated, { admin: true }));
 };
 
 export const deleteAdminPlaceRecord = async (input: { actorId: string; placeId: string }) => {

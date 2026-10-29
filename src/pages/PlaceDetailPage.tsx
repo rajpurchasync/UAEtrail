@@ -1,8 +1,11 @@
-import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { useLocation, useParams, useSearchParams } from 'react-router-dom';
 import { PageMeta } from '../components/seo/PageMeta';
 import { PlaceDetailPageShell } from './place/PlaceDetailPageShell';
 import { usePlaceDetailCore } from '../hooks/usePlaceDetailPage';
 import { canonicalPlaceDetailPath, detailBackPath } from '../config/routingCatalog';
+import { readDetailBackToFromLocation } from '../explore/mapPeekDetailNavState';
+import { parseMobileBackNavState } from '../utils/mobileBackNav';
+import { MobileBackButton } from '../components/mobile/MobileBackButton';
 import { PLACE_DETAIL_CONFIG, type PlaceDetailKind } from './placeDetailConfig';
 import { DetailPageLoadingState } from '../components/ui/DetailPageLoadingState';
 import {
@@ -25,7 +28,10 @@ export const PlaceDetailPage = ({ kind: kindProp }: PlaceDetailPageProps) => {
   const placeholderKind: PlaceDetailKind = kindProp ?? 'trail';
   const config = PLACE_DETAIL_CONFIG[placeholderKind];
   const { id } = useParams();
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
+  const detailBackTo =
+    readDetailBackToFromLocation(location.state) ?? parseMobileBackNavState(location.state)?.from;
 
   const core = usePlaceDetailCore({
     kind: kindProp,
@@ -59,9 +65,12 @@ export const PlaceDetailPage = ({ kind: kindProp }: PlaceDetailPageProps) => {
         <PageMeta title={activeConfig.notFoundTitle} noIndex path={detailPath} />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
           <h1 className="text-2xl font-bold text-gray-900">{activeConfig.notFoundTitle}</h1>
-          <Link to={detailBackPath(backKind)} className={`${activeConfig.notFoundLinkClass} mt-4 inline-block`}>
-            Back to map
-          </Link>
+          <div className="mt-4 flex justify-center">
+            <MobileBackButton
+              fallbackTo={detailBackTo ?? detailBackPath(backKind)}
+              label={detailBackTo ? 'Browse' : 'Explore'}
+            />
+          </div>
         </div>
       </>
     );

@@ -12,6 +12,7 @@ import { useActivityReviews } from '../hooks/useActivityReviews';
 import { useActivityHostJoinRequests } from '../hooks/useActivityHostJoinRequests';
 import { activityDetailPath, detailBackPath } from '../config/routingCatalog';
 import { readDetailBackToFromLocation } from '../explore/mapPeekDetailNavState';
+import { MobileBackButton } from '../components/mobile/MobileBackButton';
 import {
   ACTIVITY_JOIN_CTA_SELECTOR,
   AUTH_RESUME_INVITE_FRIENDS_QUERY,
@@ -358,9 +359,12 @@ export const ActivityDetail = () => {
         <div className="app-page-center bg-gray-50">
           <div className="text-center px-4">
             <h1 className="text-2xl font-bold text-gray-900 mb-4">We couldn&apos;t find this activity</h1>
-            <Link to={detailBackPath('activity')} className="text-emerald-600 hover:text-emerald-700 font-medium">
-              View all activities
-            </Link>
+            <div className="flex justify-center">
+              <MobileBackButton
+                fallbackTo={detailBackTo ?? detailBackPath('activity')}
+                label={detailBackTo ? 'Browse' : 'Activities'}
+              />
+            </div>
           </div>
         </div>
       </>

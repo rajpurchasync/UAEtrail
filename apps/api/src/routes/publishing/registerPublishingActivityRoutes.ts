@@ -24,6 +24,7 @@ import {
 import { registerPublishingActivityRequestRoutes } from './registerPublishingActivityRequestRoutes.js';
 import { registerPublishingTeamRoutes } from './registerPublishingTeamRoutes.js';
 import { registerPublishingActivityParticipantRoutes } from './registerPublishingActivityParticipantRoutes.js';
+import { registerPublishingActivityGuideRoutes } from './registerPublishingActivityGuideRoutes.js';
 import { idParamSchema } from './publishing-route-schemas.js';
 
 /** Publishing workspace **activity** CRUD, publish, and history (`/publishing/activities/*`). */
@@ -146,6 +147,7 @@ export const registerPublishingActivityRoutes = (publishingRouter: Router): void
   registerPublishingActivityRequestRoutes(publishingRouter);
   registerPublishingTeamRoutes(publishingRouter);
   registerPublishingActivityParticipantRoutes(hostActivitiesRouter);
+  registerPublishingActivityGuideRoutes(hostActivitiesRouter);
 
   hostActivitiesRouter.get('/history', async (req, res, next) => {
     try {

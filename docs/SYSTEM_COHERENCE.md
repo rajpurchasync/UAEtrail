@@ -113,7 +113,7 @@ Each context has **one write path** and **one public read model** where possible
 
 | Context | Responsibility | Frontend home | API home | Storage (see `collections.ts`) |
 |---------|----------------|---------------|----------|--------------------------------|
-| **Discovery (Explore umbrella)** | **Explore** = discovery shell (URL, layout, chrome). **Projections:** map, list (`list=1`), browse catalogue (`browse=1`, `/list`), search — not separate data stores. **Activity discovery** = hosted + seeking outings from `GET /explore/map`. **Places discovery** = place / facility / shop pins from the same read (filters in explore/list). **Area** is an admin-curated **name** (`?area=` / `/area/:slug`) — **not a pin**. **People discovery** = roster, availability, directory (`member_discovery` APIs); *Looking for* tab composes **activity-discovery** seeking rows. Signed-in peek is `GET /me/discover/overlay`, not a second catalog. | Shell: `src/explore/shell/*`. Activity: `src/activity-discovery/*`, activities list in `src/explore/ui`, `src/list/*`. Places: entity detail + list filters. People: `src/people-discovery/*` | `lib/explore-map.ts`, `GET /explore/map`, `GET /me/discover/overlay` | `activities`, `locations`, `facilities`, `areas`, `tenants` (shops) |
+| **Discovery (Explore umbrella)** | **Explore** = discovery shell (URL, layout, chrome). **Projections:** map, list explorer (`/list`), search — not separate data stores. **Activity discovery** = hosted + seeking outings from `GET /explore/map`. **Places discovery** = place / facility / shop pins from the same read (filters in explore/list). **Area** is an admin-curated **name** (`?area=` / `/area/:slug`) — **not a pin**. **People discovery** = roster, availability, directory (`member_discovery` APIs); *Looking for* tab composes **activity-discovery** seeking rows. Signed-in peek is `GET /me/discover/overlay`, not a second catalog. | Shell: `src/explore/shell/*`. Activity: `src/activity-discovery/*`, activities list in `src/explore/ui`, `src/list/*`. Places: entity detail + list filters. People: `src/people-discovery/*` | `lib/explore-map.ts`, `GET /explore/map`, `GET /me/discover/overlay` | `activities`, `locations`, `facilities`, `areas`, `tenants` (shops) |
 | **Compose** | FAB intents, wizards, draft → publish payload | `src/explore/create/` (`hosting/`), `compose.ts`, `hostingFlowEngine.ts`, `hostingFlows/`, `seekingFlowEngine.ts` | `POST /publishing/activities`, `POST /me/seeking-posts` | `activities` (seeking rows; `participant_intents` leftover ops/backfill only) |
 | **Participation** | Join, waitlist, RSVP, seeking joins, **Join me** invites | `useActivityJoin*`, detail + explore selection | `join-request.ts`, `activity-invite.ts`, intent join **aliases** (`participant-intent-requests-store`) | **`activity_requests`** (canonical); `participant_intent_requests` legacy-only; `activity_participants`, `activity_invites` |
 | **Browse — member people** | Who can I go with? Network roster + availability + discover directory (quota). **Looking for** tab: `GET /explore/seeking-activities` + `selectSeekingActivitiesFromExploreCatalog` (`src/activity-discovery`). | `src/people-discovery/*` (`PeopleBrowsePanel`, tabs), `ListDiscoveryExperience` | `explore-seeking-activities-read.ts`, `member-people-engagement.ts`, `member-discovery-roster.ts`, `registerMemberDiscoveryRoutes` | Composes `buddy_*`, `user_follows`, explore catalog (read), `member_profile_views` |
@@ -197,12 +197,12 @@ Canonical navigation: [`NAVIGATION.md`](./NAVIGATION.md). Structural rules:
 
 Aligned with [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §4.1 and [`NORTHSTAR.md`](./NORTHSTAR.md):
 
-- **Few browse surfaces, many filterable views** — `/explore` map-first; **map list** (`list=1` / List pill) vs **discover browse** (`browse=1`, hamburger Browse, optional `/list`) share filter vocabulary (`src/list/routing.ts` ↔ `explorePath()`). **Mobile bottom nav stays three tabs** — Explore · Plan · Chat (middle tab route **`/plan`**) ([`NAVIGATION.md`](./NAVIGATION.md)).
+- **Few browse surfaces, many filterable views** — `/explore` map-first; **list explorer** (`/list`, List pill and hamburger Browse) shares filter vocabulary (`src/list/routing.ts` ↔ `explorePath()`). **Mobile bottom nav stays three tabs** — Explore · Plan · Chat (middle tab route **`/plan`**) ([`NAVIGATION.md`](./NAVIGATION.md)).
 - **One discovery catalog on the server** — `GET /explore/map` (+ query). Map stage, explore list sheet, and list discovery UI are **projections**; avoid separate “catalog” endpoints per category unless a new bounded context is approved in Tier-1. Signed-in peek/engagement is **`GET /me/discover/overlay`** (`viewerAccess` by item id) — not a second catalog. Product writes bust the Redis map via **`scheduleExploreMapCacheInvalidation`** (outbox when `SIDE_EFFECT_OUTBOX=1`).
 - **Many entity URLs where identity matters** — `/activity`, place paths, `/shop`, brand paths: sharing, notifications, per-id cache and `viewerAccess`. These are **not** browse department homepages.
 - **Private engagement off the public map** — wishlist, entity follow, member follow, goals: `/me/*` and trips/profile UI ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md) § Follow · Wishlist · Goal).
 
-**Scale levers (prefer before new route trees):** bbox/region or cursor on explore map; normalized query cache keys; lighter list DTO if poster feed outgrows map payload; SSR on entity + marketing only unless SEO category landings are explicitly added.
+**Scale levers (prefer before new route trees):** bbox/region or cursor on explore map; normalized query cache keys; **`GET /explore/map?projection=list`** for `/list` (same Redis catalog, stripped nested fields + `discoveryCard`); admin tables use **server pages** (`page` / `pageSize`, no client concatenation); SSR on entity + marketing only unless SEO category landings are explicitly added.
 
 ---
 
@@ -290,7 +290,7 @@ Canon table: [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) (Discovery UI file
 | Family | Routes (anchor) | Shell / layout | Uses L1–L3 discovery stack? |
 |--------|-----------------|----------------|----------------------------|
 | **Marketing & auth** | `/`, sign-in, `/welcome` | Marketing layout · guest rules on `/` | No — CTAs hand off to `/explore` |
-| **Discovery shell** | `/explore`, `list=1`, `browse=1`, `/list` | `ExploreExperience` + map stage / browse asides | **L1–L2** on pins/rows/posters; not L3 |
+| **Discovery shell** | `/explore`, `/list` | `ExploreExperience` + map stage; `ListDiscoveryExperience` explorer | **L1–L2** on pins; list explorer → L3; not L3 on the map |
 | **Personal hub** | `/profile`, `/profile/settings/*` | `ConsumerShell` + profile stack | Launcher only — not a second browse home |
 | **Plan & commitments** | `/plan` | `ConsumerShell` | Embeds manage sheets; may deep-link L3 |
 | **Communication** | `/chat`, `/messages`, `/groups` | Tab chrome / inbox | No peek; people **names** link to `/member` or storefront |
@@ -329,8 +329,7 @@ One **person account**; **one consumer profile page** (`/member/:userId` — `Me
 | Projection | Entry | Row/card builder | Deep link |
 |------------|-------|------------------|-----------|
 | Map pins | `/explore` | L1 `buildDiscoveryCardViewModel` → L2 peek | `pin=` / selection |
-| Map list panel | `list=1` | Same L1 → compact row + `mapPeekActions` | Peek or L3 |
-| Discover browse | `browse=1` or `/list` | `buildListFeedCards` / posters | Entity routes |
+| List explorer | `/list` | Same L1 → thumbnails / list / calendar | Entity routes (back to `/list`) |
 | Header search | Explore search modal | `exploreItemSearch` taxonomy | Entity or filtered explore |
 | People — looking | `peopleTab=looking` | Activity L1 (seeking) | `/activity` |
 | People — network | `going` / `connect` | Network roster VM | `/member`, message |
@@ -460,7 +459,7 @@ Ordered for **coherence**, not feature count:
 |-------|----------------|--------|
 | **L0 Wire** | API DTO + `viewerAccess` / entitlements | Server only — [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §15 |
 | **L1 Projection** | Card/row view model | `discoveryCardModel` (catalog pins) · `memberPeople*` (people browse) · future `activityDetailPageModel` (L3) |
-| **L2 Peek / row / poster** | Minimized engagement | `MapPeekShell` + `peek/{entity}/*` · list rows · list posters |
+| **L2 Peek / row / explorer card** | Minimized engagement | `MapPeekShell` + `peek/{entity}/*` · list explorer cards |
 | **L3 Page composer** | Sections + tabs for one id | `*ActivityDetailPage`, `PlaceConsumerDetailPage`, `MemberProfile`, `ShopPublicPage`, … |
 | **L3 Shell** | Shared chrome (hero, tabs, sticky footer) | `MobileDetailShell`, `EntityPublicDetailShell`, `ActivityDetailPageShell` |
 
@@ -468,7 +467,7 @@ Ordered for **coherence**, not feature count:
 flowchart LR
   subgraph discovery [Discovery shell only]
     MAP["/explore map"]
-    LIST["list=1 / browse=1 / /list"]
+    LIST["/list explorer"]
     PEOPLE["view=people"]
   end
   subgraph L1L2 [L1 VM to L2]

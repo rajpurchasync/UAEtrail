@@ -200,16 +200,19 @@ const loadEventsWithRelations = async (eventDocs: MongoActivityDoc[]) => {
     participantsByActivity.set(participant.activityId, existing);
   }
 
-  return eventDocs.map((eventDoc) => {
+  return eventDocs.flatMap((eventDoc) => {
     const guide = eventDoc.hostId ? userMap.get(eventDoc.hostId) : null;
     const createdBy = userMap.get(eventDoc.createdById) ?? null;
     const tenant = tenantMap.get(eventDoc.tenantId);
     const location = locationMap.get(eventDoc.locationId);
     if (!tenant || !location) {
-      throw new Error('Failed to load event relations.');
+      console.warn(
+        `[admin] Skipping activity ${eventDoc._id}: missing ${!tenant ? 'tenant' : 'location'} (${eventDoc.tenantId} / ${eventDoc.locationId})`
+      );
+      return [];
     }
 
-    return {
+    return [{
       ...mapMongoActivity(eventDoc),
       location,
       tenant: {
@@ -231,7 +234,7 @@ const loadEventsWithRelations = async (eventDocs: MongoActivityDoc[]) => {
         ? { profile: { displayName: createdBy.profile.displayName } }
         : null,
       participants: participantsByActivity.get(eventDoc._id) ?? []
-    };
+    }];
   });
 };
 

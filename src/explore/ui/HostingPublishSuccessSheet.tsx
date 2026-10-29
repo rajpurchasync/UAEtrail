@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { usePublicActivityDetail } from '../../hooks/usePublicActivityDetail';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, Clock } from 'lucide-react';
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import { EXPLORE_Z } from '../../config/exploreTheme';
 import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
@@ -11,6 +11,8 @@ import {
   HOSTING_LINK_RIDESHARE_PASTE_CTA,
   HOSTING_PUBLISH_SUCCESS_BODY,
   HOSTING_RIDESHARE_PENDING_DESTINATION_BODY,
+  HOSTING_PENDING_VENUE_BODY,
+  HOSTING_PENDING_VENUE_TITLE,
   HOSTING_PUBLISH_SUCCESS_BODY_PRIVATE,
   HOSTING_PUBLISH_SUCCESS_TITLE,
   HOSTING_PUBLISH_VIEW_CTA,
@@ -73,6 +75,8 @@ export const HostingPublishSuccessSheet = ({
     tenantId &&
     canLinkRideshareToActivity(publishedActivity) &&
     canAddLinkedRide;
+  const pendingVenue = draft.placeLabelSource === 'custom';
+  const successTitle = pendingVenue ? HOSTING_PENDING_VENUE_TITLE : HOSTING_PUBLISH_SUCCESS_TITLE;
 
   return (
     <ExploreResponsiveSheet
@@ -84,26 +88,30 @@ export const HostingPublishSuccessSheet = ({
       overlayFixed
       showCloseButton
       showHandle={false}
-      ariaLabel={HOSTING_PUBLISH_SUCCESS_TITLE}
+      ariaLabel={successTitle}
       panelClassName="min-w-0 overflow-x-hidden px-5 pb-5 pt-10 sm:px-6 sm:pb-6"
     >
       <div className="flex min-w-0 flex-col">
         <div className="flex flex-col items-center text-center">
           <div
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-100 text-emerald-700"
+            className={`flex h-11 w-11 items-center justify-center rounded-full ${
+              pendingVenue ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-700'
+            }`}
             aria-hidden
           >
-            <CheckCircle2 className="h-6 w-6" />
+            {pendingVenue ? <Clock className="h-6 w-6" /> : <CheckCircle2 className="h-6 w-6" />}
           </div>
           <h2 className="mt-3 text-lg font-bold tracking-tight text-neutral-900">
-            {HOSTING_PUBLISH_SUCCESS_TITLE}
+            {successTitle}
           </h2>
           <p className="mt-2 max-w-[18rem] text-pretty text-sm leading-relaxed text-neutral-600">
             {publishedActivity.joinMode === 'private'
               ? HOSTING_PUBLISH_SUCCESS_BODY_PRIVATE
               : kind === 'rideshare' && draft.rideshareDestinationKind === 'pending_place'
                 ? HOSTING_RIDESHARE_PENDING_DESTINATION_BODY
-                : HOSTING_PUBLISH_SUCCESS_BODY}
+                : draft.placeLabelSource === 'custom'
+                  ? HOSTING_PENDING_VENUE_BODY
+                  : HOSTING_PUBLISH_SUCCESS_BODY}
           </p>
         </div>
 

@@ -173,6 +173,8 @@ export async function createJoinOrWaitlistRequest(opts: {
   activityId: string;
   userId: string;
   note?: string;
+  packingCheckedIds?: string[];
+  packingSignature?: string;
 }) {
   const event = await loadPublishedEventForJoin(opts.activityId);
   if (!event) {
@@ -194,6 +196,20 @@ export async function createJoinOrWaitlistRequest(opts: {
   await assertParticipantMeetsWomenOnlyRequirement(opts.userId, event.requirements);
   const { assertMemberMedicalSafetyForJoin } = await import('./member-medical-safety-profile.js');
   await assertMemberMedicalSafetyForJoin(opts.userId);
+  const { assertPackingAckForJoin, composePackingJoinNote } = await import(
+    '../domain/activity-packing-ack.js'
+  );
+  assertPackingAckForJoin({
+    requirements: event.requirements,
+    packingCheckedIds: opts.packingCheckedIds,
+    packingSignature: opts.packingSignature,
+  });
+  const joinNote = composePackingJoinNote({
+    requirements: event.requirements,
+    packingCheckedIds: opts.packingCheckedIds,
+    packingSignature: opts.packingSignature,
+    note: opts.note,
+  });
 
   const existing = await findActivityRequestByEventAndUser(opts.activityId, opts.userId);
 
@@ -213,7 +229,7 @@ export async function createJoinOrWaitlistRequest(opts: {
         activityId: opts.activityId,
         userId: opts.userId,
         status,
-        note: opts.note ?? existing?.note ?? null,
+        note: joinNote ?? existing?.note ?? null,
         hostNote: null,
         cancelReason: null,
         cancelMessage: null,
@@ -239,6 +255,9 @@ export async function createJoinOrWaitlistRequest(opts: {
 export async function createRsvpParticipation(opts: {
   activityId: string;
   userId: string;
+  note?: string;
+  packingCheckedIds?: string[];
+  packingSignature?: string;
 }) {
   const event = await loadPublishedEventForJoin(opts.activityId);
   if (!event) {
@@ -260,6 +279,20 @@ export async function createRsvpParticipation(opts: {
   await assertParticipantMeetsWomenOnlyRequirement(opts.userId, event.requirements);
   const { assertMemberMedicalSafetyForJoin } = await import('./member-medical-safety-profile.js');
   await assertMemberMedicalSafetyForJoin(opts.userId);
+  const { assertPackingAckForJoin, composePackingJoinNote } = await import(
+    '../domain/activity-packing-ack.js'
+  );
+  assertPackingAckForJoin({
+    requirements: event.requirements,
+    packingCheckedIds: opts.packingCheckedIds,
+    packingSignature: opts.packingSignature,
+  });
+  const joinNote = composePackingJoinNote({
+    requirements: event.requirements,
+    packingCheckedIds: opts.packingCheckedIds,
+    packingSignature: opts.packingSignature,
+    note: opts.note,
+  });
 
   const existingParticipant = await findActivityParticipantByEventAndUser(opts.activityId, opts.userId);
   if (existingParticipant) {
@@ -293,7 +326,7 @@ export async function createRsvpParticipation(opts: {
           activityId: opts.activityId,
           userId: opts.userId,
           status: RequestStatus.APPROVED,
-          note: existing?.note ?? null,
+          note: joinNote ?? existing?.note ?? null,
           hostNote: null,
           cancelReason: null,
           cancelMessage: null,

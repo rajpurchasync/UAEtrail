@@ -121,6 +121,7 @@ export const ActivityDetailPlanColumn = ({
           canWriteActivityReview={model.canWriteActivityReview}
           onActivityReviewSubmitted={model.onActivityReviewSubmitted}
           hideActivityReviews={consumerRideshare}
+          hidePackingList={consumerInline}
         />
       ) : null}
 

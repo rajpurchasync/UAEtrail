@@ -26,7 +26,7 @@ const WHEN_PARAM = 'when';
 /** List-only: dedicated category page (decoupled from map `topics` pills). */
 export const LIST_CAT_PARAM = 'listCat';
 
-/** Visual discover browse on `/explore` (poster feed) — not map-aligned `list=1`. */
+/** Legacy inbound `browse=1` on `/explore` — rewritten to `/list`. */
 export const BROWSE_DISCOVER_PARAM = 'browse';
 
 export const parseBrowseDiscoverOpen = (value: string | null): boolean => value === '1';
