@@ -17,6 +17,7 @@ import {
   listMyTenantMemberships,
   loadMyInbox,
 } from '../../services/me-account-session-read.js';
+import { memberInboxQuerySchema } from '../../services/member-inbox.js';
 import {
   listMyActivityJoinRequests,
   listMyParticipatingActivities,
@@ -176,9 +177,10 @@ export const registerMeAccountSessionRoutes = (router: Router): void => {
     }
   });
 
-  router.get('/me/inbox', async (req, res, next) => {
+  router.get('/me/inbox', validate({ query: memberInboxQuerySchema }), async (req, res, next) => {
     try {
-      const data = await loadMyInbox(req.auth!.userId);
+      const { scope } = req.query as z.infer<typeof memberInboxQuerySchema>;
+      const data = await loadMyInbox(req.auth!.userId, scope);
       res.json({ data });
     } catch (error) {
       next(error);

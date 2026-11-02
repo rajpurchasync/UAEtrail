@@ -7,6 +7,7 @@ import { useExplorePublishedAreas } from '../useExplorePublishedAreas';
 import { areaIdForExploreAreaSlug } from '../exploreAreaFilter';
 import { EXPLORE_Z } from '../../config/exploreTheme';
 import { inferEmirateFromPin } from '../hostingPublishArea';
+import { placeRegionReady } from '../../config/regions';
 import { EmirateFromPinField } from './EmirateFromPinField';
 import { AddCuratedAreaStep } from './AddCuratedAreaStep';
 import { AddSubmitSuccessSheet } from './AddSubmitSuccessSheet';
@@ -261,7 +262,7 @@ export const CreateAddFacilityFlow = ({
               );
               patchDraft({
                 locationPinPlaced: true,
-                emirate: inferred ?? '',
+                emirate: draft.countryCode === 'AE' ? inferred ?? draft.emirate : draft.emirate,
               });
               setLocationMapOpen(false);
               setError(null);
@@ -371,6 +372,8 @@ export const CreateAddFacilityFlow = ({
           <EmirateFromPinField
             pinned={draft.locationPinPlaced}
             inferred={inferEmirateFromPin(draft.latitude, draft.longitude, publishedAreas)}
+            countryCode={draft.countryCode}
+            onCountryChange={(countryCode) => patchDraft({ countryCode })}
             value={draft.emirate}
             onChange={(emirate) => patchDraft({ emirate })}
           />
@@ -380,8 +383,9 @@ export const CreateAddFacilityFlow = ({
               disabled={
                 !draft.locationPinPlaced ||
                 draft.latitude == null ||
-                !(
-                  draft.emirate.trim() ||
+                !placeRegionReady(
+                  draft.countryCode,
+                  draft.emirate,
                   inferEmirateFromPin(draft.latitude, draft.longitude, publishedAreas)
                 )
               }

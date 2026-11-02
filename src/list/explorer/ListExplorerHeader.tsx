@@ -1,4 +1,5 @@
-import { Map } from 'lucide-react';
+import { ChevronLeft, Map, Maximize2, Minimize2, X } from 'lucide-react';
+import { useExploreDesktopListDrawerChrome } from '../../explore/ui/ExploreDesktopListDrawer';
 import { Link } from 'react-router-dom';
 import { MobileBackButton } from '../../components/mobile/MobileBackButton';
 import { MobileMenuButton } from '../../components/layout/MobileMenu';
@@ -28,6 +29,7 @@ type ListExplorerHeaderProps = {
   onBucketChange: (bucket: ListExplorerBucket) => void;
   resultCount: number | null;
   stickySearch: boolean;
+  onClose?: () => void;
 };
 
 export const ListExplorerHeader = ({
@@ -44,9 +46,11 @@ export const ListExplorerHeader = ({
   onBucketChange,
   resultCount,
   stickySearch,
+  onClose,
 }: ListExplorerHeaderProps) => {
   const searching = query.trim().length > 0;
   const searchCounts = searching ? listExplorerSearchBucketCounts(searchScopeCounts) : null;
+  const drawer = useExploreDesktopListDrawerChrome();
 
   return (
     <header
@@ -54,20 +58,66 @@ export const ListExplorerHeader = ({
         stickySearch ? 'z-30 shadow-[0_4px_16px_rgba(15,23,42,.08)]' : ''
       }`}
     >
-    <div className={`${LIST_CHROME.horizontalPad} mx-auto w-full max-w-6xl pb-2.5 pt-1`}>
+    <div
+      className={`${onClose ? 'px-3' : LIST_CHROME.horizontalPad} mx-auto w-full ${
+        onClose ? 'max-w-none' : 'max-w-6xl'
+      } pb-2.5 pt-1`}
+    >
       <div className={`${LIST_APP_BAR.row} mb-1`}>
         <div className="flex min-w-0 items-center gap-1">
-          <MobileBackButton fallbackTo={mapHref} label="Explore" className="!min-h-10 pl-0" />
+          {onClose ? (
+            <button
+              type="button"
+              onClick={onClose}
+              className="inline-flex min-h-10 items-center gap-0.5 pl-0 text-sm font-medium text-emerald-700/90 hover:text-emerald-800"
+              aria-label="Back to Explore"
+            >
+              <ChevronLeft className="h-5 w-5 shrink-0" strokeWidth={2.25} aria-hidden />
+              <span className="truncate">Explore</span>
+            </button>
+          ) : (
+            <MobileBackButton fallbackTo={mapHref} label="Explore" className="!min-h-10 pl-0" />
+          )}
         </div>
         <div className="flex items-center gap-1">
-          <Link
-            to={mapHref}
-            className={`${LIST_SEARCH.sideAction} ${LIST_SEARCH.sideActionMap} !h-10 !w-10 text-emerald-700`}
-            aria-label="Map"
-          >
-            <Map className="h-5 w-5 stroke-[2.25]" aria-hidden />
-          </Link>
-          <MobileMenuButton className={LIST_CHROME.menuButton} />
+          {onClose ? (
+            <>
+              {drawer ? (
+                <button
+                  type="button"
+                  onClick={drawer.toggleMaximized}
+                  className={`${LIST_SEARCH.sideAction} !h-10 !w-10 text-neutral-700`}
+                  aria-label={drawer.maximized ? 'Exit full screen' : 'Full screen'}
+                  aria-pressed={drawer.maximized}
+                >
+                  {drawer.maximized ? (
+                    <Minimize2 className="h-5 w-5 stroke-[2.25]" aria-hidden />
+                  ) : (
+                    <Maximize2 className="h-5 w-5 stroke-[2.25]" aria-hidden />
+                  )}
+                </button>
+              ) : null}
+              <button
+                type="button"
+                onClick={onClose}
+                className={`${LIST_SEARCH.sideAction} ${LIST_SEARCH.sideActionMap} !h-10 !w-10 text-neutral-700`}
+                aria-label="Close list"
+              >
+                <X className="h-5 w-5 stroke-[2.25]" aria-hidden />
+              </button>
+            </>
+          ) : (
+            <>
+              <Link
+                to={mapHref}
+                className={`${LIST_SEARCH.sideAction} ${LIST_SEARCH.sideActionMap} !h-10 !w-10 text-emerald-700`}
+                aria-label="Map"
+              >
+                <Map className="h-5 w-5 stroke-[2.25]" aria-hidden />
+              </Link>
+              <MobileMenuButton className={LIST_CHROME.menuButton} />
+            </>
+          )}
         </div>
       </div>
       <ListDiscoverySearchField
@@ -93,7 +143,11 @@ export const ListExplorerHeader = ({
             {resultCount == null ? ' ' : listExplorerBucketTotalLabel(bucket, resultCount)}
           </p>
         </div>
-        <ListExplorerViewSwitch layout={layout} onChange={onLayoutChange} />
+        <ListExplorerViewSwitch
+          layout={bucket === 'places' && layout === 'calendar' ? 'thumbnails' : layout}
+          onChange={onLayoutChange}
+          showCalendar={bucket !== 'places'}
+        />
       </div>
     </div>
   </header>

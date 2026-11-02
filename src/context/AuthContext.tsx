@@ -10,6 +10,7 @@ import {
   registerAccount,
   verifyEmailOtp,
 } from '../hooks/accountAuthClientApi';
+import { applyDisplayPreferences, applySignedOutTheme } from '../preferences/displayPreferences';
 import {
   PendingEmailVerification,
   RegisterPendingVerification
@@ -119,6 +120,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setStoredSession(null);
         setStoredUser(null);
         setUser(null);
+        applySignedOutTheme();
       })
       .finally(() => {
         setInitializing(false);
@@ -148,6 +150,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const hydrated = await hydrateUserFromProfile(response.user);
     setStoredUser(hydrated);
     setUser(hydrated);
+    applyDisplayPreferences();
     return hydrated;
   }, [hydrateUserFromProfile]);
 
@@ -262,6 +265,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setStoredSession(null);
     setStoredUser(null);
     setUser(null);
+    applySignedOutTheme();
     if (window.location.pathname !== '/') {
       window.location.replace('/');
     }

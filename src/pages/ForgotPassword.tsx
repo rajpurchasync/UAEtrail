@@ -79,7 +79,7 @@ export const ForgotPassword = () => {
   return (
     <div className="app-page-center bg-ios-bg p-6 safe-area-top safe-area-bottom">
       <PageMeta title="Reset password" noIndex />
-      <div className="max-w-md w-full bg-white rounded-[20px] shadow-ios p-8">
+      <div className="auth-card max-w-md w-full bg-white rounded-[20px] shadow-ios p-8">
         {/* Step 1: Enter email */}
         {step === 'email' && (
           <>

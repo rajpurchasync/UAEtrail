@@ -1,7 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Mountain } from 'lucide-react';
+import { Moon, Mountain, Sun } from 'lucide-react';
 import { HOME_HEADER_NAV } from '../../../content/homeMarketing';
+import {
+  DISPLAY_PREFERENCES_EVENT,
+  readGuestTheme,
+  resolveTheme,
+  writeGuestTheme,
+} from '../../../preferences/displayPreferences';
 import { AppButtonLink } from '../../mobile/AppButton';
 
 export interface HomeMarketingHeaderLink {
@@ -12,35 +18,40 @@ export interface HomeMarketingHeaderLink {
 export interface HomeMarketingHeaderProps {
   navLinks?: HomeMarketingHeaderLink[];
   signupHref: string;
-  /** When true, keeps transparent-on-hero styling (e.g. hero overlay demos). */
-  forceOverHero?: boolean;
 }
 
 export const HomeMarketingHeader = ({
   navLinks = [],
-  signupHref,
-  forceOverHero = false
+  signupHref
 }: HomeMarketingHeaderProps) => {
-  const [solid, setSolid] = useState(!forceOverHero);
+  const [scrolled, setScrolled] = useState(false);
+  const [guestDark, setGuestDark] = useState(() => resolveTheme(readGuestTheme()) === 'dark');
 
   useEffect(() => {
-    if (forceOverHero) {
-      setSolid(false);
-      return;
-    }
-    const onScroll = () => setSolid(window.scrollY > 40);
+    const onScroll = () => setScrolled(window.scrollY > 40);
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
-  }, [forceOverHero]);
+  }, []);
 
-  const overHero = forceOverHero || !solid;
+  useEffect(() => {
+    const sync = () => setGuestDark(document.documentElement.dataset.theme === 'dark');
+    sync();
+    window.addEventListener(DISPLAY_PREFERENCES_EVENT, sync);
+    return () => window.removeEventListener(DISPLAY_PREFERENCES_EVENT, sync);
+  }, []);
+
+  const switchGuestTheme = () => {
+    const next = guestDark ? 'light' : 'dark';
+    writeGuestTheme(next);
+    setGuestDark(next === 'dark');
+  };
 
   return (
     <header
       className={[
-        'home-v2-font sticky top-0 z-50 transition-[background-color,box-shadow,color] duration-[var(--duration-ui)]',
-        overHero ? 'bg-transparent text-white' : 'bg-home-surface text-home-ink shadow-home-header'
+        'home-marketing-header home-v2-font sticky top-0 z-50 bg-transparent',
+        scrolled ? 'is-scrolled text-home-ink' : 'text-white'
       ].join(' ')}
     >
       <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:bg-home-surface focus:px-3 focus:py-2 focus:text-home-ink">
@@ -73,7 +84,16 @@ export const HomeMarketingHeader = ({
           </nav>
         ) : null}
 
-        <div className="flex items-center md:ml-auto">
+        <div className="flex items-center gap-2 md:ml-auto">
+          <button
+            type="button"
+            className="home-focus-ring inline-flex h-10 w-10 items-center justify-center rounded-full border border-current/25 bg-black/25 text-current backdrop-blur-md"
+            aria-label={guestDark ? 'Switch to light theme' : 'Switch to dark theme'}
+            aria-pressed={guestDark}
+            onClick={switchGuestTheme}
+          >
+            {guestDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          </button>
           <AppButtonLink
             id="home-header-signup-cta"
             to={signupHref}

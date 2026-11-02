@@ -85,7 +85,7 @@ export const ChatMessageActionsSheet = ({
         onClick={onClose}
       />
       <div
-        className="fixed z-[1651] w-[300px] max-w-[calc(100vw-1.5rem)] rounded-2xl border border-neutral-200 bg-white p-2 shadow-2xl"
+        className="chat-message-actions fixed z-[1651] w-[300px] max-w-[calc(100vw-1.5rem)] rounded-2xl border border-neutral-200 bg-white p-2 shadow-2xl"
         role="dialog"
         aria-label="Message actions"
         style={{
@@ -100,9 +100,9 @@ export const ChatMessageActionsSheet = ({
             type="button"
             disabled={!replyEnabled}
             onClick={handleReply}
-            className="flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl text-sm font-semibold text-neutral-800 hover:bg-neutral-50 disabled:opacity-40"
+            className="chat-actions-reply flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl text-sm font-semibold text-neutral-800 hover:bg-neutral-50 disabled:opacity-40"
           >
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+            <span className="chat-actions-reply-icon flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
               <CornerDownLeft className="h-5 w-5" aria-hidden />
             </span>
             Reply

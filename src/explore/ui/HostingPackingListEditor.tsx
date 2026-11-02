@@ -11,6 +11,7 @@ import { ChevronDown, ChevronUp, GripVertical } from 'lucide-react';
 import type { PackingAckMode, PackingItem } from '@uaetrail/shared-types';
 import {
   defaultHikingPackingItems,
+  packingLabelKey,
   placePackingItem,
 } from '@uaetrail/shared-types';
 import { EXPLORE_FLOW } from '../../config/exploreTheme';
@@ -199,7 +200,8 @@ export const HostingPackingListEditor = ({
     const label = draftLabel.trim();
     if (!label) return;
     let id = slugId(label);
-    if (items.some((item) => item.label.toLowerCase() === label.toLowerCase())) {
+    const key = packingLabelKey(label);
+    if (items.some((item) => packingLabelKey(item.label) === key)) {
       setDraftLabel('');
       return;
     }
@@ -272,7 +274,7 @@ export const HostingPackingListEditor = ({
 
       <PackingEditorSection
         title={PACKING_MUST_LABEL}
-        hint="Drag to reorder, or drop here from nice-to-have."
+        hint="Drag to reorder, or drop here from optional."
         items={must}
         required
         dropIndex={drag?.dropRequired === true ? drag.dropIndex : null}
@@ -358,7 +360,7 @@ export const HostingPackingListEditor = ({
           </span>
           <span className="min-w-0 flex-1 text-sm font-semibold text-neutral-900">{drag.item.label}</span>
           <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-800">
-            {drag.dropRequired ? 'Must' : 'Nice'}
+            {drag.dropRequired ? 'Must' : 'Optional'}
           </span>
         </div>
       ) : null}
@@ -503,7 +505,7 @@ const PackingEditorRow = ({
       onClick={() => onSetRequired(item.id, !required)}
       className="rounded-full bg-neutral-100 px-2 py-1 text-[11px] font-semibold text-neutral-600"
     >
-      {required ? 'Make nice' : 'Make must'}
+      {required ? 'Make optional' : 'Make must'}
     </button>
     <button
       type="button"

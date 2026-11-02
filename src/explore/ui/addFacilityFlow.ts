@@ -5,6 +5,7 @@ import {
   facilityPlaceKindPinEmoji,
 } from '@uaetrail/shared-types';
 import { MAP_CONFIG } from '../../config/platform';
+import type { CountryCode } from '../../config/regions';
 import { inferEmirateFromPin } from '../hostingPublishArea';
 import type { AddSubmitResult } from './addFlow';
 
@@ -32,6 +33,7 @@ export type FacilityAddDraft = {
   facilityKind: PlaceKind | null;
   areaId: string | null;
   emirate: string;
+  countryCode: CountryCode;
   latitude: number | null;
   longitude: number | null;
   locationPinPlaced: boolean;
@@ -50,6 +52,7 @@ export const emptyFacilityAddDraft = (): FacilityAddDraft => ({
   facilityKind: null,
   areaId: null,
   emirate: '',
+  countryCode: 'AE',
   latitude: MAP_CONFIG.exploreDefaultCenter.lat,
   longitude: MAP_CONFIG.exploreDefaultCenter.lng,
   locationPinPlaced: false,

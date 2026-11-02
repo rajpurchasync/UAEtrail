@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { formatExploreEventDateLabel } from '@uaetrail/shared-types';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import { MobileMonthCalendar } from '../../components/mobile/MobileMonthCalendar';
 import { todayIso } from '../../explore/exploreActivityDateFilter';
@@ -10,12 +11,7 @@ type ListExplorerCalendarProps = {
   cards: DiscoveryCardModel[];
 };
 
-const formatDayHeading = (iso: string): string =>
-  new Date(`${iso}T12:00:00`).toLocaleDateString('en-GB', {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'short',
-  });
+const formatDayHeading = (iso: string): string => formatExploreEventDateLabel(iso) ?? iso;
 
 export const ListExplorerCalendar = ({ cards }: ListExplorerCalendarProps) => {
   const byDate = useMemo(() => {

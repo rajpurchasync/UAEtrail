@@ -113,7 +113,7 @@ describe('mapPinIcons', () => {
     ).toBe('ride');
   });
 
-  it('omits stack count badge on activity pins (including colocated stacks)', () => {
+  it('shows a count badge when several activity pins share a cluster', () => {
     const stacked = buildMapPinFaceHtml({
       kind: 'hiking',
       source: 'activity',
@@ -123,12 +123,14 @@ describe('mapPinIcons', () => {
       ringWidth: 2.5,
       stackCount: 3,
     });
-    expect(stacked).not.toContain('uaetrail-map-cluster-badge');
+    expect(stacked).toContain('uaetrail-map-cluster-badge');
+    expect(stacked).toContain('>3<');
   });
 
-  it('buildMapClusterIconHtml matches lone activity pin (no count)', () => {
+  it('buildMapClusterIconHtml shows how many pins sit in the cluster', () => {
     const html = buildMapClusterIconHtml('hiking', 'activity', '#059669', 4);
     expect(html).toContain('uaetrail-map-pin-face');
-    expect(html).not.toContain('uaetrail-map-cluster-badge');
+    expect(html).toContain('uaetrail-map-cluster-badge');
+    expect(html).toContain('>4<');
   });
 });

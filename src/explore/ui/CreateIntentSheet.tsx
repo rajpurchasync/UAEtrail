@@ -277,7 +277,7 @@ export const CreateIntentSheet = ({ route, onRouteChange, onClose }: CreateInten
 
             <ComposeMenuHero onClose={requestClose} />
 
-            <div className={`${menuGroupClass} divide-y divide-neutral-100`}>
+            <div className={`${menuGroupClass} compose-menu-list`}>
 
               {COMPOSE_MENU_OPTIONS.map((option) => (
 
@@ -321,12 +321,6 @@ export const CreateIntentSheet = ({ route, onRouteChange, onClose }: CreateInten
 
             </div>
 
-            <p className="mt-5 px-1 text-center text-xs leading-relaxed text-neutral-400">
-
-              Free to post · UAE &amp; GCC outdoors
-
-            </p>
-
           </>
 
         ) : (
@@ -341,7 +335,7 @@ export const CreateIntentSheet = ({ route, onRouteChange, onClose }: CreateInten
 
               <div className={EXPLORE_FLOW.choiceGrid2}>
 
-                {HOST_COMPOSE_OPTIONS.map((option) => (
+                {HOST_COMPOSE_OPTIONS.map((option, index) => (
 
                   <button
 
@@ -351,13 +345,17 @@ export const CreateIntentSheet = ({ route, onRouteChange, onClose }: CreateInten
 
                     onClick={() => onRouteChange(hostCompose(option.kind))}
 
-                    className={exploreFlowKindTileClass(false)}
+                    className={`${exploreFlowKindTileClass(false)}${
+                      index === HOST_COMPOSE_OPTIONS.length - 1 && HOST_COMPOSE_OPTIONS.length % 2 === 1
+                        ? ' col-span-2'
+                        : ''
+                    }`}
 
                   >
 
                     <span
 
-                      className={`inline-flex h-9 w-9 items-center justify-center rounded-xl text-xl font-emoji leading-none ${EXPLORE_COMPOSE.kindIconWrap}`}
+                      className="text-3xl leading-none font-emoji"
 
                       aria-hidden
 
@@ -367,7 +365,7 @@ export const CreateIntentSheet = ({ route, onRouteChange, onClose }: CreateInten
 
                     </span>
 
-                    <p className={`mt-2 ${EXPLORE_FLOW.choiceCardTitle}`}>{option.label}</p>
+                    <p className={EXPLORE_FLOW.choiceCardTitle}>{option.label}</p>
 
                   </button>
 
@@ -381,7 +379,7 @@ export const CreateIntentSheet = ({ route, onRouteChange, onClose }: CreateInten
 
             {showSeekModes ? (
 
-              <div className={`${menuGroupClass} divide-y divide-neutral-100`}>
+              <div className={`${menuGroupClass} compose-menu-list`}>
 
                 {SEEK_MODE_OPTIONS.map((option) => (
 
@@ -451,7 +449,7 @@ export const CreateIntentSheet = ({ route, onRouteChange, onClose }: CreateInten
 
                     <span
 
-                      className={`inline-flex h-9 w-9 items-center justify-center rounded-xl text-xl font-emoji leading-none ${EXPLORE_COMPOSE.kindIconWrap}`}
+                      className="text-3xl leading-none font-emoji"
 
                       aria-hidden
 
@@ -461,7 +459,7 @@ export const CreateIntentSheet = ({ route, onRouteChange, onClose }: CreateInten
 
                     </span>
 
-                    <p className={`mt-2 ${EXPLORE_FLOW.choiceCardTitle}`}>{option.label}</p>
+                    <p className={EXPLORE_FLOW.choiceCardTitle}>{option.label}</p>
 
                   </button>
 
@@ -475,7 +473,7 @@ export const CreateIntentSheet = ({ route, onRouteChange, onClose }: CreateInten
 
             {showAddTargets ? (
 
-              <div className={`${menuGroupClass} divide-y divide-neutral-100`}>
+              <div className={`${menuGroupClass} compose-menu-list`}>
 
                 {ADD_TARGET_OPTIONS.map((option) => (
 
@@ -545,7 +543,7 @@ export const CreateIntentSheet = ({ route, onRouteChange, onClose }: CreateInten
 
                     <span
 
-                      className={`inline-flex h-9 w-9 items-center justify-center rounded-xl text-xl font-emoji leading-none ${EXPLORE_COMPOSE.kindIconWrap}`}
+                      className="text-3xl leading-none font-emoji"
 
                       aria-hidden
 
@@ -555,7 +553,7 @@ export const CreateIntentSheet = ({ route, onRouteChange, onClose }: CreateInten
 
                     </span>
 
-                    <p className={`mt-2 ${EXPLORE_FLOW.choiceCardTitle}`}>{option.label}</p>
+                    <p className={EXPLORE_FLOW.choiceCardTitle}>{option.label}</p>
 
                   </button>
 

@@ -341,6 +341,7 @@ export const useExploreExperienceModel = () => {
     selectionItems,
     selectedId,
     highlightedExploreItemId,
+    setHighlightedExploreItemId,
     viewport,
     mapPins,
     exploreMapTiles,

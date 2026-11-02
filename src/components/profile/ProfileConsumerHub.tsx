@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { Car, HeartPulse, Sparkles } from 'lucide-react';
+import { Car, HeartPulse, LogOut, Sparkles } from 'lucide-react';
 
 import { PRO_MEMBERSHIP_PATH, PROFILE_SETTINGS_SAFETY_PATH } from '../../config/routingCatalog';
 import { PROFILE_VEHICLES_PATH } from '../../config/surfacePaths';
@@ -271,7 +271,7 @@ export const ProfileConsumerHub = ({
 
         />
 
-        <SettingsMenuRow label="Sign out" destructive onClick={onSignOut} />
+        <SettingsMenuRow label="Sign out" icon={LogOut} destructive onClick={onSignOut} />
 
       </SettingsMenuGroup>
 

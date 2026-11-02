@@ -30,7 +30,11 @@ export const SettingsMenuRow = ({
   const inner = (
     <>
       {Icon ? (
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-neutral-100 text-neutral-600">
+        <span
+          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${
+            destructive ? 'bg-red-50 text-red-600' : 'bg-neutral-100 text-neutral-600'
+          }`}
+        >
           <Icon className="h-[18px] w-[18px]" strokeWidth={2.25} aria-hidden />
         </span>
       ) : null}
@@ -77,7 +81,7 @@ export const SettingsMenuGroup = ({
     {title ? (
       <p className="mb-0.5 px-0.5 text-[11px] font-bold uppercase tracking-wide text-neutral-500">{title}</p>
     ) : null}
-    <div className="overflow-hidden rounded-2xl border border-neutral-200/80 bg-white shadow-sm divide-y divide-neutral-100">
+    <div className="settings-menu-rows overflow-hidden rounded-2xl border border-neutral-200/80 bg-white shadow-sm">
       {children}
     </div>
   </div>

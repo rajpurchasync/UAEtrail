@@ -135,7 +135,7 @@ export const buildExploreBrowseSearchParams = (input: {
   else params.set('panel', panelValue);
 
   if (listValue) params.set('list', '1');
-  else params.set('list', '0');
+  else params.delete('list');
 
   if (browseValue) params.set(BROWSE_DISCOVER_PARAM, '1');
   else params.delete(BROWSE_DISCOVER_PARAM);

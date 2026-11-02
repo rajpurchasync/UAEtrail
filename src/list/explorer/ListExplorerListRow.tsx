@@ -7,19 +7,29 @@ import { EXPLORE_LIST_ROW, EXPLORE_TYPE } from '../../config/exploreTheme';
 import { resolveBrowsePosterCoverUrl } from '../browsePosterCover';
 import { ListExplorerItemLink } from './ListExplorerItemLink';
 import { listExplorerCardMeta } from './listExplorerCardMeta';
+import { usePlaceDistanceLabel } from './listPlaceDistance';
 
 type ListExplorerListRowProps = {
   card: DiscoveryCardModel;
 };
 
+const splitWhen = (when: string | null): { date: string; time: string | null } | null => {
+  if (!when) return null;
+  const at = when.match(/^(.*?)\s+at\s+(.+)$/);
+  if (!at) return { date: when, time: null };
+  return { date: at[1], time: at[2] };
+};
+
 export const ListExplorerListRow = ({ card }: ListExplorerListRowProps) => {
   const cover = resolveBrowsePosterCoverUrl(card);
   const meta = listExplorerCardMeta(card);
-  const placeLine = [meta.location, meta.when].filter(Boolean).join(' · ');
+  const whenParts = splitWhen(meta.when);
+  const distance = usePlaceDistanceLabel(card.mapLatitude, card.mapLongitude);
 
   return (
     <ListExplorerItemLink
       to={card.path}
+      exploreItemId={card.id}
       className={`${EXPLORE_LIST_ROW.shell} flex items-center gap-3 p-2.5 pr-3 active:scale-[0.995]`}
     >
       <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-neutral-100">
@@ -49,10 +59,11 @@ export const ListExplorerListRow = ({ card }: ListExplorerListRowProps) => {
         <h3 className={`truncate text-[15px] font-bold leading-snug ${EXPLORE_TYPE.title}`}>
           {meta.title}
         </h3>
-        {placeLine ? (
+        {meta.location ? (
           <p className={`mt-0.5 flex items-center gap-1 truncate text-sm font-medium ${EXPLORE_TYPE.muted}`}>
             <MapPin className="h-3.5 w-3.5 shrink-0 text-emerald-600" aria-hidden />
-            <span className="truncate">{placeLine}</span>
+            <span className="truncate">{meta.location}</span>
+            {distance ? <span className="shrink-0 tabular-nums text-neutral-500">{distance}</span> : null}
           </p>
         ) : null}
         {meta.hostName ? (
@@ -69,6 +80,14 @@ export const ListExplorerListRow = ({ card }: ListExplorerListRowProps) => {
           <p className="mt-0.5 text-[11px] font-bold uppercase tracking-wide text-red-600">Sold out</p>
         ) : null}
       </div>
+      {whenParts ? (
+        <div className="shrink-0 text-right leading-tight">
+          <p className="whitespace-nowrap text-[13px] font-semibold text-neutral-900">{whenParts.date}</p>
+          {whenParts.time ? (
+            <p className="mt-0.5 whitespace-nowrap text-xs font-medium text-emerald-700">{whenParts.time}</p>
+          ) : null}
+        </div>
+      ) : null}
       <ChevronRight className="h-4 w-4 shrink-0 text-neutral-400" aria-hidden />
     </ListExplorerItemLink>
   );

@@ -1,5 +1,6 @@
 import type { LocationDTO } from '@uaetrail/shared-types';
 import { MAP_CONFIG } from '../../config/platform';
+import type { CountryCode } from '../../config/regions';
 import { DEFAULT_PHONE_DIAL } from '../../constants/phoneCountries';
 import { ACTIVITY_DIFFICULTY_OPTIONS, type ActivityDifficulty } from './createFlowShared';
 import type { AddVenueKind } from '../addTypes';
@@ -36,6 +37,7 @@ export type AddDraft = {
   /** Trailhead, wadi, or landmark — list poster location chip (`locations.areaLabel`). */
   areaLabel: string;
   emirate: string;
+  countryCode: CountryCode;
   latitude: number | null;
   longitude: number | null;
   locationPinPlaced: boolean;
@@ -156,6 +158,7 @@ export const emptyAddDraft = (): AddDraft => ({
   areaId: null,
   areaLabel: '',
   emirate: '',
+  countryCode: 'AE',
   latitude: MAP_CONFIG.exploreDefaultCenter.lat,
   longitude: MAP_CONFIG.exploreDefaultCenter.lng,
   locationPinPlaced: false,

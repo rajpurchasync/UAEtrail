@@ -42,8 +42,13 @@ export const listExplorerPriceLabel = (card: DiscoveryCardModel): string | null 
   return price.badge;
 };
 
+export const listExplorerCardDateIso = (card: DiscoveryCardModel): string | null => {
+  const rawDate = card.scheduleDate?.trim() || card.activity?.date?.trim() || '';
+  return /^\d{4}-\d{2}-\d{2}/.test(rawDate) ? rawDate.slice(0, 10) : null;
+};
+
 export const listExplorerCardMeta = (card: DiscoveryCardModel): ListExplorerCardMeta => {
-  const dateIso = card.activity?.date?.trim() || null;
+  const dateIso = listExplorerCardDateIso(card);
   const soldOut =
     card.activity?.slotsAvailable === 0 || SOLD_OUT.test(card.spotsLabel ?? '');
   const location = card.venueHint?.trim() || card.subtitle?.trim() || null;
@@ -69,6 +74,3 @@ export const listExplorerCardMeta = (card: DiscoveryCardModel): ListExplorerCard
     dateIso,
   };
 };
-
-export const listExplorerCardDateIso = (card: DiscoveryCardModel): string | null =>
-  listExplorerCardMeta(card).dateIso;

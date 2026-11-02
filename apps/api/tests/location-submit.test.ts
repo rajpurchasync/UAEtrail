@@ -61,6 +61,11 @@ describe('buildLocationCreateData', () => {
 });
 
 describe('locationSubmitBodySchema outdoor photos', () => {
+  it('requires a country code instead of assuming UAE', () => {
+    const { countryCode: _countryCode, ...body } = buildTestLocationSubmitBody();
+    expect(locationSubmitBodySchema.safeParse(body).success).toBe(false);
+  });
+
   it('requires at least one photo for a hiking spot', () => {
     const parsed = locationSubmitBodySchema.safeParse(
       buildTestLocationSubmitBody({ images: [] })

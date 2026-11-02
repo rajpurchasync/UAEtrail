@@ -6,7 +6,9 @@ import './index.css';
 import { AuthProvider } from './context/AuthContext';
 import { queryClient } from './lib/queryClient';
 import { initPwaDisplayMode, registerAppServiceWorker } from './utils/pwa';
+import { applyBootTheme } from './preferences/displayPreferences';
 
+applyBootTheme();
 initPwaDisplayMode();
 registerAppServiceWorker();
 

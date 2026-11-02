@@ -1,4 +1,6 @@
 import { useMemo } from 'react';
+import { setExploreClockStyle } from '@uaetrail/shared-types';
+import { useDisplayPreferences } from '../preferences/useDisplayPreferences';
 import { useAuth } from '../context/AuthContext';
 import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
 import { useExploreMap } from '../hooks/useExploreMap';
@@ -22,6 +24,7 @@ export const useBrowseListFeed = ({
   mapEnabled = true,
 }: UseBrowseListFeedArgs) => {
   const { user } = useAuth();
+  const { clock } = useDisplayPreferences();
   const { data: items = [], isError, error, refetch, isFetching, isPending } = useExploreMap({
     enabled: mapEnabled,
     projection: 'list',
@@ -35,11 +38,12 @@ export const useBrowseListFeed = ({
 
   const cards: DiscoveryCardModel[] = useMemo(() => {
     if (!mapEnabled) return [];
+    setExploreClockStyle(clock);
     const built = buildListFeedCards(filteredItems, user, items);
     const tripsInScope =
       filters.categories.length === 0 || filters.categories.includes('activities');
     return tripsInScope ? built.filter((card) => cardMatchesBrowsePrice(card, filters.price)) : built;
-  }, [mapEnabled, filteredItems, filters.categories, filters.price, items, user]);
+  }, [mapEnabled, filteredItems, filters.categories, filters.price, items, user, clock]);
 
   return {
     cards,

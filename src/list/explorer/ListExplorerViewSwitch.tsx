@@ -14,15 +14,23 @@ const OPTIONS: ReadonlyArray<{
 type ListExplorerViewSwitchProps = {
   layout: ListExplorerLayout;
   onChange: (layout: ListExplorerLayout) => void;
+  /** Calendar is for dated outings. Places, shops, and spots hide it. */
+  showCalendar?: boolean;
 };
 
-export const ListExplorerViewSwitch = ({ layout, onChange }: ListExplorerViewSwitchProps) => (
+export const ListExplorerViewSwitch = ({
+  layout,
+  onChange,
+  showCalendar = true,
+}: ListExplorerViewSwitchProps) => {
+  const options = showCalendar ? OPTIONS : OPTIONS.filter((option) => option.key !== 'calendar');
+  return (
   <div
     className="inline-flex shrink-0 rounded-full border border-neutral-200/80 bg-neutral-100/80 p-0.5"
     role="tablist"
     aria-label="View"
   >
-    {OPTIONS.map(({ key, label, icon: Icon }) => {
+    {options.map(({ key, label, icon: Icon }) => {
       const active = layout === key;
       return (
         <button
@@ -44,4 +52,5 @@ export const ListExplorerViewSwitch = ({ layout, onChange }: ListExplorerViewSwi
       );
     })}
   </div>
-);
+  );
+};

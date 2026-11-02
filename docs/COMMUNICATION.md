@@ -46,6 +46,7 @@ Do **not** merge transports in storage without a product decision — inbox alre
 ### Unified inbox
 
 - **`GET /chat/inbox`** or **`GET /me/inbox`** — same payload: `{ direct: ChatConversationDTO[], groups: MemberInboxGroupDTO[] }` (preferred for Messages tab and nav badge).
+- **Scope query** (`?scope=`): `direct` (people), `groups` (family/friends), `outings` (activity crew), `unread` (badge + Unread tab). Omitted scope is the full inbox. Messages **All** calls the unscoped endpoint once and fills the slice caches. People, Groups, and Outings each call only their scope. The nav badge and the Unread tab share the `unread` cache (`messages-inbox` / `unread`). Group scope is applied in the groups query (`type`), and last-message lookups run only for threads that need a preview.
 - **Legacy:** `GET /chat/conversations` + `GET /me/groups` still work; new UI should use inbox endpoints above.
 
 ### Direct (`/chat`)

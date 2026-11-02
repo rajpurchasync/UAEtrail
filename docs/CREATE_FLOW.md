@@ -310,7 +310,7 @@ Host **does not** infer area from meeting or going-from pins. **Area** is an adm
 
 Publish gate (API): `activity_area_required` when the linked place and the activity row both lack a persisted **`areaId`**. Catalog gaps are filled by seed / `scripts/backfill-location-area-ids.ts`, not by guessing an area on each read. Rideshare anchors still **write** `areaId` onto the place from the pin when the host publishes.
 
-**Add (place/facility):** **Area** step first (`curatedArea`), then emirate + map pin; API **`POST /me/places`** / **`POST /me/facilities`** with **`areaId`** (published area validated server-side). **Lifecycle:** one member **submit** → pending on `/profile/submissions` — **not** draft + publish like hosted activities ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.4.10).
+**Add (place/facility):** **Area** step first (`curatedArea`), then country + region (emirate, province, governorate, or municipality) and map pin; API **`POST /me/places`** / **`POST /me/facilities`** with **`countryCode`** (required — no default) and **`areaId`** (published area validated server-side). **Lifecycle:** one member **submit** → pending on `/profile/submissions` — **not** draft + publish like hosted activities ([`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.4.10).
 
 ### Find (looking for)
 

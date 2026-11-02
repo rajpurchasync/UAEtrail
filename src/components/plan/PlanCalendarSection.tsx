@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronRight } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { planUpcomingEntityLinkState } from '../../explore/mapPeekDetailNavState';
@@ -74,6 +74,8 @@ export const PlanCalendarSection = ({
     refreshKey
   );
   const [selectedDate, setSelectedDate] = useState<string | null>(todayIso());
+  const calendarRef = useRef<HTMLDivElement>(null);
+  const eventsRef = useRef<HTMLElement>(null);
   const dayRows = useMemo(
     () => (selectedDate ? details.get(selectedDate) ?? [] : []),
     [details, selectedDate]
@@ -88,6 +90,21 @@ export const PlanCalendarSection = ({
     : null;
 
   const legend = legendForFilter(filter);
+
+  useEffect(() => {
+    const events = eventsRef.current;
+    const calendar = calendarRef.current;
+    if (!selectedDate || !events || !calendar) return;
+    const scroller = calendar.closest('.app-scroll-body');
+    if (!(scroller instanceof HTMLElement)) return;
+    const scrollerRect = scroller.getBoundingClientRect();
+    const eventsRect = events.getBoundingClientRect();
+    const hiddenBelow = eventsRect.bottom - scrollerRect.bottom;
+    if (hiddenBelow <= 12) return;
+    const roomBeforeCalendarClips = calendar.getBoundingClientRect().top - scrollerRect.top;
+    const delta = Math.min(hiddenBelow + 16, Math.max(0, roomBeforeCalendarClips));
+    if (delta > 0) scroller.scrollBy({ top: delta, behavior: 'smooth' });
+  }, [selectedDate, dayRows.length]);
 
   const openRow = (row: PlanCalendarDayDetail) => {
     const action = resolvePlanCalendarRowOpenAction(row);
@@ -121,11 +138,13 @@ export const PlanCalendarSection = ({
         list; going / pending open the outing.
       </p>
 
-      <PlanIndicatorMonthCalendar
-        markersByDay={markers}
-        selectedDate={selectedDate}
-        onSelectDate={setSelectedDate}
-      />
+      <div ref={calendarRef}>
+        <PlanIndicatorMonthCalendar
+          markersByDay={markers}
+          selectedDate={selectedDate}
+          onSelectDate={setSelectedDate}
+        />
+      </div>
 
       <ul className="flex flex-wrap gap-x-4 gap-y-2 text-xs text-neutral-600">
         {legend.map((item) => (
@@ -144,7 +163,7 @@ export const PlanCalendarSection = ({
       </Link>
 
       {selectedDate ? (
-        <section className="rounded-2xl border border-neutral-200 bg-white p-4">
+        <section ref={eventsRef} className="rounded-2xl border border-neutral-200 bg-white p-4">
           <h2 className="mb-3 text-sm font-bold text-neutral-900">{selectedLabel}</h2>
 
           {dayRows.length === 0 ? (

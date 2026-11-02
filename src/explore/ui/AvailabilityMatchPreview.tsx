@@ -1,4 +1,4 @@
-import type { MemberAvailabilityMatchPreviewDTO } from '@uaetrail/shared-types';
+import { formatExploreEventDateLabel, type MemberAvailabilityMatchPreviewDTO } from '@uaetrail/shared-types';
 import { Link } from 'react-router-dom';
 import { AppButton } from '../../components/mobile/AppButton';
 import { activityDetailPath } from '../../config/routingCatalog';
@@ -9,11 +9,7 @@ type AvailabilityMatchPreviewProps = {
   onDone: () => void;
 };
 
-const formatOutingDay = (iso: string): string => {
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return '';
-  return date.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
-};
+const formatOutingDay = (iso: string): string => formatExploreEventDateLabel(iso) ?? '';
 
 /** Post-save hint — hosted outings on saved days + activity types (Find crew lists all available members). */
 export const AvailabilityMatchPreview = ({ preview, onDone }: AvailabilityMatchPreviewProps) => {

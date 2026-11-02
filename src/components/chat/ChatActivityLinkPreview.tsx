@@ -1,3 +1,4 @@
+import { formatExploreEventDateLabel } from '@uaetrail/shared-types';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { activityDetailQueryKey } from '../../hooks/clientQueryKeys';
@@ -11,11 +12,7 @@ const CHAT_ACTIVITY_PREVIEW_BRAND_MARK = '/icons/icon.svg';
 
 const formatWhen = (date?: string | null, time?: string | null): string | null => {
   if (!date?.trim()) return time?.trim() || null;
-  const formatted = new Date(date).toLocaleDateString(undefined, {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-  });
+  const formatted = formatExploreEventDateLabel(date) ?? date;
   return time?.trim() ? `${formatted} · ${time.trim()}` : formatted;
 };
 

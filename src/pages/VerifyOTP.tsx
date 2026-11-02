@@ -129,7 +129,7 @@ export const VerifyOTP = () => {
     return (
       <div className="app-page-center bg-ios-bg p-6 safe-area-top safe-area-bottom">
         <PageMeta title="Reset password" noIndex />
-        <div className="max-w-md w-full bg-white rounded-[20px] shadow-ios p-8 text-center">
+        <div className="auth-card max-w-md w-full bg-white rounded-[20px] shadow-ios p-8 text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Reset your password</h1>
           <p className="text-sm text-gray-500 mb-6">Check your email for the reset link sent to {email}.</p>
           <button
@@ -147,7 +147,7 @@ export const VerifyOTP = () => {
   return (
     <div className="app-page-min-h app-scroll-body bg-ios-bg flex flex-col justify-center px-6 py-10 safe-area-top safe-area-bottom">
       <PageMeta title="Verify email" noIndex />
-      <div className="max-w-md w-full mx-auto bg-white rounded-[20px] shadow-ios p-8">
+      <div className="auth-card max-w-md w-full mx-auto bg-white rounded-[20px] shadow-ios p-8">
         <Link to="/" className="flex items-center justify-center gap-2 mb-6">
           <div className="w-9 h-9 bg-gradient-to-br from-emerald-400 to-emerald-700 rounded-[10px] flex items-center justify-center">
             <Mountain className="w-5 h-5 text-white" />

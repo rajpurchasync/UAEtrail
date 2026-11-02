@@ -5,7 +5,11 @@ export const chatApi = {
     getConversations: () =>
     apiRequest<{ data: ChatConversationDTO[] }>('/chat/conversations', { auth: true }),
 
-    getInbox: () => apiRequest<{ data: MemberInboxDTO }>('/chat/inbox', { auth: true }),
+    getInbox: (scope?: 'direct' | 'groups' | 'outings' | 'unread') =>
+    apiRequest<{ data: MemberInboxDTO }>(
+      scope ? `/chat/inbox?scope=${scope}` : '/chat/inbox',
+      { auth: true }
+    ),
 
     createChatStreamTicket: () =>
     apiRequest<{ data: { ticket: string; expiresIn: number } }>('/chat/stream-ticket', {

@@ -1,15 +1,9 @@
+import { formatExploreEventDateLabel } from '@uaetrail/shared-types';
 import { DifficultyLevel } from '../types';
 import { DIFFICULTY_COLORS } from '../constants';
 
-export const formatDate = (dateString: string): string => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', {
-    weekday: 'short',
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  });
-};
+export const formatDate = (dateString: string): string =>
+  formatExploreEventDateLabel(dateString) ?? dateString;
 
 export const getDifficultyColor = (difficulty: DifficultyLevel): string => {
   return DIFFICULTY_COLORS[difficulty];

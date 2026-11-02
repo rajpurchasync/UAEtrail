@@ -7,6 +7,7 @@ import { EXPLORE_SHAPE, EXPLORE_TYPE } from '../../config/exploreTheme';
 import { resolveBrowsePosterCoverUrl } from '../browsePosterCover';
 import { ListExplorerItemLink } from './ListExplorerItemLink';
 import { listExplorerCardMeta } from './listExplorerCardMeta';
+import { usePlaceDistanceLabel } from './listPlaceDistance';
 
 type ListExplorerThumbnailCardProps = {
   card: DiscoveryCardModel;
@@ -15,11 +16,13 @@ type ListExplorerThumbnailCardProps = {
 export const ListExplorerThumbnailCard = ({ card }: ListExplorerThumbnailCardProps) => {
   const cover = resolveBrowsePosterCoverUrl(card);
   const meta = listExplorerCardMeta(card);
-  const showBottom = Boolean(meta.location || meta.when || meta.price);
+  const distance = usePlaceDistanceLabel(card.mapLatitude, card.mapLongitude);
+  const showBottom = Boolean(meta.location || meta.when || meta.price || distance);
 
   return (
     <ListExplorerItemLink
       to={card.path}
+      exploreItemId={card.id}
       className={`${EXPLORE_SHAPE.control} group flex h-full flex-col overflow-hidden border border-neutral-200/80 bg-white shadow-[0_1px_8px_rgba(15,23,42,.06)] ring-1 ring-black/[0.02] transition active:scale-[0.99]`}
     >
       <div className="relative aspect-[4/3] w-full overflow-hidden bg-neutral-100">
@@ -73,10 +76,11 @@ export const ListExplorerThumbnailCard = ({ card }: ListExplorerThumbnailCardPro
           <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 via-black/40 to-transparent px-2 pb-1.5 pt-8">
             <div className="flex items-end gap-1.5">
               <div className="min-w-0 flex-1">
-                {meta.location ? (
+                {meta.location || distance ? (
                   <p className="flex items-center gap-1 text-[10px] font-semibold leading-tight text-white">
                     <MapPin className="h-3 w-3 shrink-0 text-emerald-300" aria-hidden />
-                    <span className="truncate">{meta.location}</span>
+                    {meta.location ? <span className="truncate">{meta.location}</span> : null}
+                    {distance ? <span className="shrink-0 tabular-nums text-white/90">{distance}</span> : null}
                   </p>
                 ) : null}
                 {meta.when ? (

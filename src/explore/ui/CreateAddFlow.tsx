@@ -38,6 +38,7 @@ import {
 } from './addFlow';
 import type { ActivityDifficulty, LocationPrecision } from './createFlowShared';
 import { inferEmirateFromPin } from '../hostingPublishArea';
+import { placeRegionReady } from '../../config/regions';
 import { EmirateFromPinField } from './EmirateFromPinField';
 import { AddHikingTrailPreview } from './AddHikingTrailPreview';
 import { AddCampingSpotPreview } from './AddCampingSpotPreview';
@@ -368,7 +369,8 @@ export const CreateAddFlow = ({
                 );
                 patchDraft({
                   locationPinPlaced: true,
-                  emirate: inferred ?? '',
+                  emirate:
+                    draft.countryCode === 'AE' ? inferred ?? draft.emirate : draft.emirate,
                 });
                 setLocationMapOpen(false);
               }
@@ -488,6 +490,8 @@ export const CreateAddFlow = ({
           <EmirateFromPinField
             pinned={draft.locationPinPlaced}
             inferred={inferEmirateFromPin(draft.latitude, draft.longitude, publishedAreas)}
+            countryCode={draft.countryCode}
+            onCountryChange={(countryCode) => patchDraft({ countryCode })}
             value={draft.emirate}
             onChange={(emirate) => patchDraft({ emirate })}
           />
@@ -496,8 +500,9 @@ export const CreateAddFlow = ({
             <NextButton
               disabled={
                 !draft.locationPinPlaced ||
-                !(
-                  draft.emirate.trim() ||
+                !placeRegionReady(
+                  draft.countryCode,
+                  draft.emirate,
                   inferEmirateFromPin(draft.latitude, draft.longitude, publishedAreas)
                 )
               }

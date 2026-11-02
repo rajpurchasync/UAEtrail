@@ -329,133 +329,111 @@ const resolveSeekingActivityHighlight = (title: string, kind: DiscoveryCardKind)
   return seekingKindLabel(kind);
 };
 
+const EXPLORE_EVENT_MONTHS = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+] as const;
+
+const EXPLORE_EVENT_WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const;
+
 const exploreScheduleDayStart = (value: Date): Date => {
   const copy = new Date(value);
   copy.setHours(0, 0, 0, 0);
   return copy;
 };
 
-const exploreScheduleIso = (value: Date): string => {
-  const year = value.getFullYear();
-  const month = String(value.getMonth() + 1).padStart(2, '0');
-  const day = String(value.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-};
-
-const exploreMondayOfWeek = (value: Date): Date => {
-  const copy = exploreScheduleDayStart(value);
-  const mondayOffset = (copy.getDay() + 6) % 7;
-  copy.setDate(copy.getDate() - mondayOffset);
-  return copy;
-};
-
-const exploreWeekRange = (anchor: Date): { start: string; end: string } => {
-  const start = exploreMondayOfWeek(anchor);
-  const end = new Date(start);
-  end.setDate(end.getDate() + 6);
-  return { start: exploreScheduleIso(start), end: exploreScheduleIso(end) };
-};
-
-const exploreMonthRange = (anchor: Date): { start: string; end: string } => {
-  const start = new Date(anchor.getFullYear(), anchor.getMonth(), 1);
-  const end = new Date(anchor.getFullYear(), anchor.getMonth() + 1, 0);
-  return { start: exploreScheduleIso(start), end: exploreScheduleIso(end) };
-};
-
-/** Smart schedule chip — Today, Tomorrow, This week, Next week, This month, Next month, or short date. */
-export const formatExploreRelativeScheduleLabel = (
+/** Short weekday within the next 6 days (`Sat`); otherwise weekday plus `Sat 09 Nov 26`. */
+export const formatExploreEventDateLabel = (
   date?: string | null,
   now: Date = new Date()
 ): string | null => {
   if (!date?.trim()) return null;
-  const target = new Date(`${date.trim()}T12:00:00`);
+  const target = new Date(`${date.trim().slice(0, 10)}T12:00:00`);
   if (Number.isNaN(target.getTime())) return null;
 
   const today = exploreScheduleDayStart(now);
   const targetDay = exploreScheduleDayStart(target);
   const diff = Math.round((targetDay.getTime() - today.getTime()) / 86400000);
+  const weekday = EXPLORE_EVENT_WEEKDAYS[target.getDay()] ?? '';
 
-  if (diff === 0) return 'Today';
-  if (diff === 1) return 'Tomorrow';
+  if (diff >= 0 && diff <= 6) return weekday;
 
-  const targetIso = exploreScheduleIso(targetDay);
-  const thisWeek = exploreWeekRange(today);
-  if (targetIso >= thisWeek.start && targetIso <= thisWeek.end) return 'This week';
-
-  const nextWeekAnchor = new Date(thisWeek.start);
-  nextWeekAnchor.setDate(nextWeekAnchor.getDate() + 7);
-  const nextWeek = exploreWeekRange(nextWeekAnchor);
-  if (targetIso >= nextWeek.start && targetIso <= nextWeek.end) return 'Next week';
-
-  const thisMonth = exploreMonthRange(today);
-  if (targetIso >= thisMonth.start && targetIso <= thisMonth.end) return 'This month';
-
-  const nextMonthAnchor = new Date(today.getFullYear(), today.getMonth() + 1, 1);
-  const nextMonth = exploreMonthRange(nextMonthAnchor);
-  if (targetIso >= nextMonth.start && targetIso <= nextMonth.end) return 'Next month';
-
-  return target.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const day = String(target.getDate()).padStart(2, '0');
+  const month = EXPLORE_EVENT_MONTHS[target.getMonth()] ?? '';
+  const year = String(target.getFullYear()).slice(-2);
+  return `${weekday} ${day} ${month} ${year}`;
 };
 
-export const formatExploreDayShort = (date?: string | null): string | null => {
-  if (!date) return null;
-  const target = new Date(`${date}T00:00:00`);
-  if (Number.isNaN(target.getTime())) return null;
+/** Schedule chip — same rule as `formatExploreEventDateLabel`. */
+export const formatExploreRelativeScheduleLabel = (
+  date?: string | null,
+  now: Date = new Date()
+): string | null => formatExploreEventDateLabel(date, now);
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const diff = Math.round((target.getTime() - today.getTime()) / 86400000);
+export const formatExploreDayShort = (
+  date?: string | null,
+  now: Date = new Date()
+): string | null => formatExploreEventDateLabel(date, now);
 
-  if (diff === 0) return 'Today';
-  if (diff === 1) return 'Tomorrow';
-  return target.toLocaleDateString('en-US', { weekday: 'short' });
+/** Mid-sentence day phrase for card titles, e.g. " on Sat", " on Sat 09 Nov 26". */
+export const formatExploreDayForHeadline = (
+  date?: string | null,
+  now: Date = new Date()
+): string | null => {
+  const label = formatExploreEventDateLabel(date, now);
+  return label ? ` on ${label}` : null;
 };
 
-/** Mid-sentence day phrase for card titles, e.g. " on Sunday 7th", " today". */
-export const formatExploreDayForHeadline = (date?: string | null): string | null => {
-  if (!date) return null;
-  const target = new Date(`${date}T00:00:00`);
-  if (Number.isNaN(target.getTime())) return null;
+export type ExploreClockStyle = '12' | '24';
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const diff = Math.round((target.getTime() - today.getTime()) / 86400000);
-  const weekday = target.toLocaleDateString('en-US', { weekday: 'long' });
-  const dayLabel = formatExploreDayOrdinal(target.getDate());
+let exploreClockStyle: ExploreClockStyle = '12';
 
-  if (diff === 0) return ' today';
-  if (diff === 1) return ' tomorrow';
-  return ` on ${weekday} ${dayLabel}`;
+/** Display preference from profile settings. Defaults to 12-hour with AM/PM. */
+export const setExploreClockStyle = (style: ExploreClockStyle): void => {
+  exploreClockStyle = style;
 };
 
-const formatExploreDayOrdinal = (day: number): string => {
-  const mod10 = day % 10;
-  const mod100 = day % 100;
-  if (mod100 >= 11 && mod100 <= 13) return `${day}th`;
-  if (mod10 === 1) return `${day}st`;
-  if (mod10 === 2) return `${day}nd`;
-  if (mod10 === 3) return `${day}rd`;
-  return `${day}th`;
-};
+export const getExploreClockStyle = (): ExploreClockStyle => exploreClockStyle;
 
-export const formatExploreTime = (time?: string | null): string | null => {
+/** Always includes minutes. 12-hour times include AM/PM (`7:00 AM`). */
+export const formatExploreTime = (
+  time?: string | null,
+  clock: ExploreClockStyle = exploreClockStyle
+): string | null => {
   if (!time?.trim()) return null;
   const match = time.trim().match(/^(\d{1,2}):(\d{2})$/);
   if (!match) return time.trim();
 
   const hours = parseInt(match[1], 10);
   const minutes = parseInt(match[2], 10);
-  if (Number.isNaN(hours) || Number.isNaN(minutes)) return time.trim();
+  if (Number.isNaN(hours) || Number.isNaN(minutes) || hours > 23 || minutes > 59) return time.trim();
+
+  const minuteText = String(minutes).padStart(2, '0');
+  if (clock === '24') return `${String(hours).padStart(2, '0')}:${minuteText}`;
 
   const period = hours >= 12 ? 'PM' : 'AM';
   const hour12 = hours % 12 || 12;
+  return `${hour12}:${minuteText} ${period}`;
+};
 
-  if (minutes === 0) {
-    if (hours > 0 && hours < 12) return `${hour12}:00`;
-    return `${hour12} ${period}`;
-  }
-
-  return `${hour12}:${String(minutes).padStart(2, '0')} ${period}`;
+/** Clock time for a timestamp, using the display preference (`7:00 AM` or `07:00`). */
+export const formatExploreClockFromDate = (
+  date: Date,
+  clock: ExploreClockStyle = exploreClockStyle
+): string => {
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  return formatExploreTime(`${hours}:${minutes}`, clock) ?? '';
 };
 
 export const buildExploreWhenSegment = (
@@ -579,11 +557,10 @@ export const sanitizeExploreLocation = (label?: string | null): string | null =>
 };
 
 export const buildExploreListWhen = (date?: string | null, time?: string | null): string | null => {
-  const day = date ? formatExploreRelativeScheduleLabel(date) : null;
+  const day = date ? formatExploreEventDateLabel(date) : null;
   if (!day) return formatExploreTime(time);
-  const shortDay = day === 'Tomorrow' ? 'Tmr' : day;
   const clock = formatExploreTime(time);
-  return clock ? `${shortDay} · ${clock}` : shortDay;
+  return clock ? `${day} · ${clock}` : day;
 };
 
 const buildExploreListGoingLabel = (

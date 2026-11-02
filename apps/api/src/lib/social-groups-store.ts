@@ -364,11 +364,18 @@ export type GroupChatPreview = {
 
 export type GroupRecordWithChatPreview = GroupRecord & { chatPreview: GroupChatPreview };
 
-const listGroupsForMemberships = async (memberships: MongoGroupMember[]): Promise<GroupRecord[]> => {
+const listGroupsForMemberships = async (
+  memberships: MongoGroupMember[],
+  kind?: 'user' | 'activity'
+): Promise<GroupRecord[]> => {
   if (memberships.length === 0) return [];
 
   const uniqueGroupIds = [...new Set(memberships.map((m) => m.groupId))];
-  const groups = await groupsCollection().find({ _id: { $in: uniqueGroupIds } }).toArray();
+  const typeQuery =
+    kind === 'activity' ? { type: 'activity' as const } : kind === 'user' ? { type: { $ne: 'activity' as const } } : {};
+  const groups = await groupsCollection()
+    .find({ _id: { $in: uniqueGroupIds }, ...typeQuery })
+    .toArray();
   const byId = new Map(groups.map((g) => [g._id, g]));
 
   return uniqueGroupIds
@@ -386,36 +393,29 @@ export const listGroupsForUser = async (userId: string): Promise<GroupRecord[]> 
   return listGroupsForMemberships(memberships);
 };
 
+export type InboxGroupPreviewFilter = {
+  /** User groups (family, friends) or outing chats. */
+  kind?: 'user' | 'activity';
+  /** Skip last-message lookups for groups that have nothing unread. */
+  unreadOnly?: boolean;
+};
+
 export const listGroupsForUserWithChatPreview = async (
-  userId: string
+  userId: string,
+  filter?: InboxGroupPreviewFilter
 ): Promise<GroupRecordWithChatPreview[]> => {
   const memberships = await membersCollection()
     .find({ userId, memberType: 'adult', isActive: { $ne: false } })
     .sort({ createdAt: -1 })
     .toArray();
 
-  const groups = await listGroupsForMemberships(memberships);
+  const groups = await listGroupsForMemberships(memberships, filter?.kind);
   if (groups.length === 0) return [];
 
   const groupIds = groups.map((group) => group.id);
   const readAtByGroup = new Map(
     memberships.map((membership) => [membership.groupId, membership.wallLastReadAt ?? new Date(0)])
   );
-
-  const latestRows = await wallCollection()
-    .aggregate<{ _id: string; body: string; createdAt: Date }>([
-      { $match: { groupId: { $in: groupIds } } },
-      { $sort: { createdAt: -1 } },
-      {
-        $group: {
-          _id: '$groupId',
-          body: { $first: '$body' },
-          createdAt: { $first: '$createdAt' },
-        },
-      },
-    ])
-    .toArray();
-  const latestByGroup = new Map(latestRows.map((row) => [row._id, row]));
 
   const readAtBranches = groupIds.map((groupId) => ({
     case: { $eq: ['$groupId', groupId] },
@@ -451,7 +451,29 @@ export const listGroupsForUserWithChatPreview = async (
     unreadByGroup.set(row._id, row.unreadCount);
   }
 
-  return groups.map((group) => {
+  const previewGroups = filter?.unreadOnly
+    ? groups.filter((group) => (unreadByGroup.get(group.id) ?? 0) > 0)
+    : groups;
+  const previewIds = previewGroups.map((group) => group.id);
+  const latestRows =
+    previewIds.length === 0
+      ? []
+      : await wallCollection()
+          .aggregate<{ _id: string; body: string; createdAt: Date }>([
+            { $match: { groupId: { $in: previewIds } } },
+            { $sort: { createdAt: -1 } },
+            {
+              $group: {
+                _id: '$groupId',
+                body: { $first: '$body' },
+                createdAt: { $first: '$createdAt' },
+              },
+            },
+          ])
+          .toArray();
+  const latestByGroup = new Map(latestRows.map((row) => [row._id, row]));
+
+  return previewGroups.map((group) => {
     const latest = latestByGroup.get(group.id);
     return {
       ...group,

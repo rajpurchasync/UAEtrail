@@ -1,5 +1,5 @@
 import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
-import { isGeographyMapSource } from '@uaetrail/shared-types';
+import { formatExploreEventDateLabel, formatExploreTime, isGeographyMapSource } from '@uaetrail/shared-types';
 import { buildDiscoveryListMeta, discoveryCardIsSeeking } from '../discovery/discoveryCardModel';
 import { ACTIVITY_TYPE_LABELS, type ActivityType } from '../config/activityTypes';
 import { resolveListFeedPosterRequirementLabels } from './listFeedPosterStandard';
@@ -97,23 +97,10 @@ const splitWhenDateAndTime = (when: string): { date: string; time: string | null
   return { date: when.trim(), time: null };
 };
 
-const formatListFeedDate = (date?: string | null): string | null => {
-  if (!date?.trim()) return null;
-  const target = new Date(`${date.trim()}T00:00:00`);
-  if (Number.isNaN(target.getTime())) return null;
-  return target.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-};
+const formatListFeedDate = (date?: string | null): string | null =>
+  formatExploreEventDateLabel(date);
 
-const formatListFeedTime = (time?: string | null): string | null => {
-  if (!time?.trim()) return null;
-  const [h, m] = time.trim().split(':');
-  const hour = Number(h);
-  const minute = Number(m);
-  if (!Number.isFinite(hour)) return time.trim();
-  const period = hour >= 12 ? 'PM' : 'AM';
-  const h12 = hour % 12 || 12;
-  return minute > 0 ? `${h12}:${String(minute).padStart(2, '0')} ${period}` : `${h12} ${period}`;
-};
+const formatListFeedTime = (time?: string | null): string | null => formatExploreTime(time);
 
 const withStartsTimePrefix = (time: string | null): string | null => {
   if (!time?.trim()) return null;

@@ -287,6 +287,8 @@ export const ListDiscoveryExperience = ({
           loading={isLoading}
           error={isError}
           onRetry={() => void reloadMap()}
+          onClose={onCloseMapOverlay}
+          embedded={embeddedOnExplore}
           query={draftQuery}
           onQueryChange={setDraftQuery}
           onQuerySync={commitQuery}
@@ -302,6 +304,7 @@ export const ListDiscoveryExperience = ({
               query: draftQuery,
               listCat: serializeListExplorerBucket(next),
               categories: [],
+              ...(next === 'places' && layout === 'calendar' ? { layout: 'thumbnails' as const } : {}),
             })
           }
           filters={filters}

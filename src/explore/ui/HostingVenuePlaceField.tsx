@@ -95,17 +95,17 @@ export const HostingVenuePlaceField = ({
       if (
         draft.customPlaceAreaId !== hit.id ||
         draft.customPlaceProposedAreaName ||
-        (emirate && draft.customPlaceEmirate !== emirate)
+        (emirate && !draft.customPlaceEmirate.trim())
       ) {
         patchDraft({
           customPlaceAreaId: hit.id,
           customPlaceProposedAreaName: '',
-          ...(emirate ? { customPlaceEmirate: emirate } : {}),
+          ...(emirate && !draft.customPlaceEmirate.trim() ? { customPlaceEmirate: emirate } : {}),
         });
       }
       return;
     }
-    if (emirate && draft.customPlaceEmirate !== emirate) {
+    if (emirate && !draft.customPlaceEmirate.trim()) {
       patchDraft({ customPlaceEmirate: emirate });
     }
     if (draft.customPlaceAreaId && !draft.customPlaceProposedAreaName.trim()) {
@@ -306,6 +306,8 @@ export const HostingVenuePlaceField = ({
           <EmirateFromPinField
             pinned={spotPinned}
             inferred={inferredEmirate}
+            countryCode={draft.customPlaceCountry}
+            onCountryChange={(customPlaceCountry) => patchDraft({ customPlaceCountry })}
             value={draft.customPlaceEmirate}
             onChange={(customPlaceEmirate) => patchDraft({ customPlaceEmirate })}
           />

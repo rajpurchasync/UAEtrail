@@ -168,8 +168,8 @@ describe('list poster presentation', () => {
     };
 
     const grid = resolveBrowsePosterScheduleGrid(cardWithPrice);
-    expect(grid.dateLabel).toMatch(/Oct 12/);
-    expect(grid.timeLabel).toBe('Starts 4 PM');
+    expect(grid.dateLabel).toMatch(/12 Oct 26/);
+    expect(grid.timeLabel).toBe('Starts 4:00 PM');
     expect(grid.priceLabel).toBe('AED 200');
     expect(grid.spotsLabel).toBe('5 spots');
   });

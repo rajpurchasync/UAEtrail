@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ChevronRight, MapPin, Plus, UserCircle, Users, UsersRound } from 'lucide-react';
-import { ActivityDTO } from '@uaetrail/shared-types';
+import { formatExploreEventDateLabel, type ActivityDTO } from '@uaetrail/shared-types';
 import {
   PUBLISHING_ACTIVITIES_NEW_PATH,
   PUBLISHING_ACTIVITIES_PATH,
@@ -84,11 +84,7 @@ export const ConsoleHubSections = ({
                     {evt.title || '—'}
                   </p>
                   <p className="text-xs text-neutral-500 mt-0.5 truncate">
-                    {evt.locationName} · {new Date(evt.date).toLocaleDateString(undefined, {
-                      weekday: 'short',
-                      month: 'short',
-                      day: 'numeric',
-                    })}
+                    {evt.locationName} · {formatExploreEventDateLabel(evt.date) ?? evt.date}
                     {evt.time ? ` · ${evt.time}` : ''}
                   </p>
                 </div>

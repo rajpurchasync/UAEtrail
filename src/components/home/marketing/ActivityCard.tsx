@@ -49,7 +49,7 @@ const ActivityCardInner = ({
           loading="lazy"
         />
         <span
-          className="absolute bottom-2 left-2 rounded-home-sm bg-home-ink/80 px-2 py-1 text-[length:var(--text-xs)] font-medium text-white"
+          className="absolute bottom-2 left-2 rounded-home-sm bg-black/70 px-2 py-1 text-[length:var(--text-xs)] font-medium text-white"
         >
           {emirate}
         </span>

@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { EXPLORE_BRAND_ACTIVE } from '../../config/exploreTheme';
 import { APP_SCROLL_BODY_CLASS } from '../../config/layoutScroll';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
@@ -9,6 +10,11 @@ import { ListExplorerFilterFab } from './ListExplorerFilterFab';
 import { ListExplorerHeader } from './ListExplorerHeader';
 import { ListExplorerListRow } from './ListExplorerListRow';
 import { ListExplorerThumbnailCard } from './ListExplorerThumbnailCard';
+import { groupListExplorerDateSections } from './listExplorerDateSections';
+import { PlaceDistanceProvider } from './listPlaceDistance';
+import { distanceMeters } from './placeDistance';
+import { useViewerLocation } from './useViewerLocation';
+import { useDisplayPreferences } from '../../preferences/useDisplayPreferences';
 import type { ListExplorerBucket } from './listExplorerBucket';
 import type { ListExplorerLayout } from './listExplorerLayout';
 
@@ -33,10 +39,56 @@ type ListExplorerProps = {
   filterCount: number;
   onApplyFilters: (state: BrowseListFilterState, regions: string[]) => void;
   onClearFilters: () => void;
+  onClose?: () => void;
+  embedded?: boolean;
+};
+
+const THUMB_GRID = 'list-explorer-thumb-grid grid max-lg:grid-cols-2 gap-2.5';
+
+const ListExplorerDateGroups = ({
+  cards,
+  layout,
+}: {
+  cards: DiscoveryCardModel[];
+  layout: ListExplorerLayout;
+}) => {
+  const sections = groupListExplorerDateSections(cards);
+  return (
+    <div className="space-y-5">
+      {sections.map((section) => (
+        <section key={section.key}>
+          {section.label ? (
+            <h2 className="mb-2 flex items-center gap-2.5 text-sm font-semibold text-neutral-800">
+              <span className="h-0.5 w-8 shrink-0 rounded-full bg-emerald-600" aria-hidden />
+              <span className="shrink-0">{section.label}</span>
+              <span className="h-0.5 min-w-6 flex-1 rounded-full bg-neutral-200" aria-hidden />
+            </h2>
+          ) : null}
+          {layout === 'list' ? (
+            <ul className="space-y-2">
+              {section.cards.map((card) => (
+                <li key={card.id}>
+                  <ListExplorerListRow card={card} />
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <ul className={THUMB_GRID}>
+              {section.cards.map((card) => (
+                <li key={card.id} className="min-w-0">
+                  <ListExplorerThumbnailCard card={card} />
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      ))}
+    </div>
+  );
 };
 
 const ThumbnailSkeleton = () => (
-  <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4" aria-hidden>
+  <div className={THUMB_GRID} aria-hidden>
     {Array.from({ length: 6 }, (_, index) => (
       <div key={index} className="overflow-hidden rounded-2xl bg-neutral-200">
         <div className="aspect-[4/3] animate-pulse bg-neutral-300/80" />
@@ -70,9 +122,29 @@ export const ListExplorer = ({
   filterCount,
   onApplyFilters,
   onClearFilters,
+  onClose,
+  embedded = false,
 }: ListExplorerProps) => {
   const stickySearch = query.trim().length > 0;
   const resultCount = loading ? null : cards.length;
+  const showCalendar = bucket !== 'places';
+  const effectiveLayout = showCalendar ? layout : layout === 'calendar' ? 'thumbnails' : layout;
+  const viewer = useViewerLocation(bucket === 'places');
+  const { units } = useDisplayPreferences();
+  const orderedCards = useMemo(() => {
+    if (bucket !== 'places' || !viewer) return cards;
+    return [...cards].sort((left, right) => {
+      const leftMeters =
+        left.mapLatitude != null && left.mapLongitude != null
+          ? distanceMeters(viewer, left.mapLatitude, left.mapLongitude)
+          : Number.POSITIVE_INFINITY;
+      const rightMeters =
+        right.mapLatitude != null && right.mapLongitude != null
+          ? distanceMeters(viewer, right.mapLatitude, right.mapLongitude)
+          : Number.POSITIVE_INFINITY;
+      return leftMeters - rightMeters;
+    });
+  }, [bucket, cards, viewer]);
 
   return (
     <div className="relative flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-neutral-50">
@@ -84,17 +156,26 @@ export const ListExplorer = ({
         onClearQuery={onClearQuery}
         searchScopeCounts={searchScopeCounts}
         mapHref={mapHref}
-        layout={layout}
+        layout={effectiveLayout}
         onLayoutChange={onLayoutChange}
         bucket={bucket}
         onBucketChange={onBucketChange}
         resultCount={resultCount}
         stickySearch={stickySearch}
+        onClose={onClose}
       />
       <div
-        className={`${APP_SCROLL_BODY_CLASS} min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain pb-[calc(var(--bottom-nav-height,56px)+var(--safe-bottom,0px)+24px)]`}
+        className={`${APP_SCROLL_BODY_CLASS} min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain ${
+          embedded
+            ? 'pb-6'
+            : 'pb-[calc(var(--bottom-nav-height,56px)+var(--safe-bottom,0px)+24px)]'
+        }`}
       >
-        <div className="mx-auto w-full max-w-6xl px-3 py-3 md:px-6 md:py-5">
+        <div
+          className={`mx-auto w-full px-3 py-3 ${
+            embedded ? 'max-w-none md:px-3 md:py-3' : 'max-w-6xl md:px-6 md:py-5'
+          }`}
+        >
           {loading ? (
             <ThumbnailSkeleton />
           ) : error ? (
@@ -121,24 +202,12 @@ export const ListExplorer = ({
                 </button>
               ) : null}
             </div>
-          ) : layout === 'calendar' ? (
-            <ListExplorerCalendar cards={cards} />
-          ) : layout === 'list' ? (
-            <ul className="space-y-2">
-              {cards.map((card) => (
-                <li key={card.id}>
-                  <ListExplorerListRow card={card} />
-                </li>
-              ))}
-            </ul>
+          ) : effectiveLayout === 'calendar' ? (
+            <ListExplorerCalendar cards={orderedCards} />
           ) : (
-            <ul className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4">
-              {cards.map((card) => (
-                <li key={card.id} className="min-w-0">
-                  <ListExplorerThumbnailCard card={card} />
-                </li>
-              ))}
-            </ul>
+            <PlaceDistanceProvider viewer={viewer} units={units}>
+              <ListExplorerDateGroups cards={orderedCards} layout={effectiveLayout} />
+            </PlaceDistanceProvider>
           )}
         </div>
       </div>

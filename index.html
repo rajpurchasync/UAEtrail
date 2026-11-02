@@ -1,6 +1,25 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <script>
+      (function () {
+        var theme = 'light';
+        try {
+          var session = sessionStorage.getItem('uaetrail_session') || localStorage.getItem('uaetrail_session');
+          var signedIn = !!(session && JSON.parse(session).accessToken);
+          var pref = signedIn
+            ? (JSON.parse(localStorage.getItem('uaetrail:display') || '{}').theme || 'system')
+            : (localStorage.getItem('uaetrail:guest-theme') || 'system');
+          if (pref === 'dark') theme = 'dark';
+          else if (pref === 'light') theme = 'light';
+          else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) theme = 'dark';
+        } catch (e) {
+          theme = 'light';
+        }
+        document.documentElement.dataset.theme = theme;
+        document.documentElement.style.colorScheme = theme;
+      })();
+    </script>
     <meta charset="UTF-8" />
     <meta
       http-equiv="Content-Security-Policy"

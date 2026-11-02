@@ -9,6 +9,7 @@ import { createActivity, publishActivity, updateActivity } from '../hooks/tenant
 import { linkSeekingPostToActivity } from '../hooks/seekingClientApi';
 import { submitMemberPlace } from '../hooks/memberCatalogSubmitClientApi';
 import { HOME_HERO_OG_PATH } from '../config/seo';
+import { subdivisionNoun } from '../config/regions';
 import {
   inferEmirateFromPin,
   resolveCustomProposedAreaName,
@@ -107,10 +108,10 @@ export const resolveOrganizeActivityLocationId = async (
       '';
     if (!emirate) {
       throw new Error(
-        'Choose the emirate (Dubai, Ras Al Khaimah, Sharjah, …). Search and Home use this filter.'
+        `Choose the ${subdivisionNoun(draft.customPlaceCountry).toLowerCase()}. Search and Home use this filter.`
       );
     }
-    const countryCode = (area?.countryCode?.trim().toUpperCase() || 'AE');
+    const countryCode = draft.customPlaceCountry.trim().toUpperCase();
     const hiking = isHikingHostingFlow(draft.kind, draft.genericBuddy);
     const place = await submitMemberPlace(
       {

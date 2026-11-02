@@ -86,31 +86,25 @@ describe('exploreMapPinModel', () => {
     expect(pins[1].id).toBe('c1:to');
   });
 
-  it('layoutColocatedMapPins splits emojis and stacks same emoji counts', () => {
+  it('layoutColocatedMapPins keeps one marker per item so clusters can spiderfy', () => {
     const pins = expandMapPins([
       baseItem({ id: 'h1', kind: 'hiking', source: 'activity', latitude: 25, longitude: 55 }),
       baseItem({ id: 'h2', kind: 'hiking', source: 'activity', latitude: 25, longitude: 55 }),
       baseItem({ id: 'c1', kind: 'camping', source: 'activity', latitude: 25, longitude: 55 }),
     ]);
     const laidOut = layoutColocatedMapPins(pins);
-    expect(laidOut).toHaveLength(1);
-    expect(laidOut[0].colocatedEntries).toHaveLength(2);
-    const hiking = laidOut[0].colocatedEntries!.find((e) => e.activityType === 'hiking');
-    const camping = laidOut[0].colocatedEntries!.find((e) => e.activityType === 'camping');
-    expect(hiking?.stackCount).toBe(2);
-    expect(hiking?.stackExploreItemIds).toEqual(['h1', 'h2']);
-    expect(camping?.stackCount).toBe(1);
+    expect(laidOut).toHaveLength(3);
+    expect(laidOut.every((pin) => pin.stackCount === 1)).toBe(true);
   });
 
-  it('layoutColocatedMapPins keeps single stack pin when only one emoji group', () => {
+  it('layoutColocatedMapPins does not merge same-emoji pins at one coordinate', () => {
     const pins = expandMapPins([
       baseItem({ id: 'h1', kind: 'hiking', source: 'activity', latitude: 25, longitude: 55 }),
       baseItem({ id: 'h2', kind: 'hiking', source: 'activity', latitude: 25, longitude: 55 }),
     ]);
     const laidOut = layoutColocatedMapPins(pins);
-    expect(laidOut).toHaveLength(1);
+    expect(laidOut).toHaveLength(2);
     expect(laidOut[0].colocatedEntries).toBeUndefined();
-    expect(laidOut[0].stackCount).toBe(2);
   });
 
   it('resolveExploreItemIdFromMapPin prefers explicit exploreItemId', () => {

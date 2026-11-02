@@ -29,7 +29,7 @@ export const ConsumerDetailRideshareEssentials = ({
   if (!ridesharePlanFactsHasContent(facts) && !activity.date) return null;
 
   const leadDate = formatActivityDetailConsumerLeadDate(activity.date, activity.time);
-  const scheduleLine = [leadDate.weekday, `${leadDate.month} ${leadDate.day}`, leadDate.time]
+  const scheduleLine = [leadDate.label, leadDate.time]
     .filter(Boolean)
     .join(' · ');
   const contribution = resolveRideshareContributionPresentation(activity);

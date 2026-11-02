@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import type { ActivityDTO } from '@uaetrail/shared-types';
+import { formatExploreEventDateLabel, type ActivityDTO } from '@uaetrail/shared-types';
 import { Star } from 'lucide-react';
 import type { DiscoveryCardModel } from '../../../../discovery/discoveryCardModel';
 import { EXPLORE_TYPE } from '../../../../config/exploreTheme';
@@ -12,11 +12,7 @@ import { PLACE_PEEK_RATE_LABEL, PLACE_PEEK_SCHEDULED } from '../../../../content
 import { PlacePeekKindFacts } from './PlacePeekKindFacts';
 
 const formatScheduledMeta = (activity: ActivityDTO): string => {
-  const datePart = new Date(activity.date).toLocaleDateString(undefined, {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-  });
+  const datePart = formatExploreEventDateLabel(activity.date) ?? activity.date;
   const timePart = activity.time?.trim();
   return timePart ? `${datePart} · ${timePart}` : datePart;
 };

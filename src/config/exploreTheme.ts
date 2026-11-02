@@ -161,7 +161,7 @@ export const EXPLORE_FLOW = {
   choiceCardSubtitle: 'mt-0.5 text-xs leading-snug text-neutral-500',
   choiceGrid2: 'grid grid-cols-2 gap-3',
   kindTile:
-    'rounded-2xl border-2 px-3 py-4 text-left transition active:scale-[0.99] sm:px-4',
+    'flex min-h-[7.25rem] flex-col items-center justify-center gap-1.5 rounded-2xl border-2 px-3 py-4 text-center transition active:scale-[0.99] sm:px-4',
   kindTileActive: 'border-emerald-600 bg-emerald-50/60 shadow-sm',
   kindTileIdle: 'border-neutral-200 bg-white',
   menuRowTitle: 'text-base font-bold leading-snug text-neutral-900 lg:text-[17px]',

@@ -11,14 +11,16 @@ import { EXPLORE_PIN_QUERY_KEY } from '../routing';
 const isPeopleView = (view: string | null): boolean =>
   view === 'people' || view === 'social' || view === 'going';
 
-/** Catalog list/browse on `/explore` opens the full-screen `/list` explorer. */
+/** Mobile catalog list/browse on `/explore` opens `/list`. Desktop keeps `list=1` on the map. */
 export const useExploreBrowseUrlInboundMigrations = (input: {
   searchParams: URLSearchParams;
   setSearchParams: SetURLSearchParams;
+  isDesktop: boolean;
 }) => {
   const navigate = useNavigate();
   const search = input.searchParams.toString();
   const setSearchParams = input.setSearchParams;
+  const isDesktop = input.isDesktop;
 
   useEffect(() => {
     const params = new URLSearchParams(search);
@@ -41,8 +43,10 @@ export const useExploreBrowseUrlInboundMigrations = (input: {
       return;
     }
 
+    if (isDesktop) return;
+
     if (browse || list) {
       navigate(listDiscoveryPathFromExploreSearch(search), { replace: true });
     }
-  }, [search, setSearchParams, navigate]);
+  }, [search, setSearchParams, navigate, isDesktop]);
 };

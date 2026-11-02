@@ -49,6 +49,15 @@ describe('activity packing list', () => {
     );
   });
 
+  it('does not append a kit extra whose label is already on the list', () => {
+    const items = defaultHikingPackingItems().filter((item) => item.id !== 'headlamp');
+    items.push({ id: 'custom-lamp', label: 'Head lamp', emoji: '🔦', required: true });
+    const next = withHikingKitExtras(items);
+    expect(next.filter((item) => item.label.toLowerCase().includes('head')).map((item) => item.id)).toEqual([
+      'custom-lamp',
+    ]);
+  });
+
   it('appends new kit extras without restoring removed defaults', () => {
     const items = defaultHikingPackingItems().filter((item) => item.id !== 'jacket');
     const next = withHikingKitExtras(items.filter((item) => item.id !== 'headlamp'));

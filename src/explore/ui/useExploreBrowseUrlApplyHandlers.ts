@@ -206,12 +206,13 @@ export const useExploreBrowseUrlApplyHandlers = (args: UseExploreBrowseUrlApplyH
       if (isDesktop) {
         setters.setPeopleBrowseOpen(true);
         setters.setListMode('default');
+        setters.setListOpen(false);
         syncExploreUrl({
           peopleBrowseOpen: true,
           listMode: 'default',
           peopleBrowseTab: initialTab,
           panel: 'activities',
-          list: true,
+          list: false,
         });
         return;
       }
@@ -298,7 +299,7 @@ export const useExploreBrowseUrlApplyHandlers = (args: UseExploreBrowseUrlApplyH
       syncExploreUrl({ list: false, listMode: 'default' });
       return;
     }
-    syncExploreUrl({ list: false });
+    syncExploreUrl({ list: false, browse: false });
   }, [isDesktop, listMode, setters, syncExploreUrl]);
 
   const applyBuddySubtype = useCallback(

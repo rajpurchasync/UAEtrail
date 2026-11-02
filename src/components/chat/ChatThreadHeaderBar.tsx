@@ -40,7 +40,7 @@ export const ChatThreadHeaderBar = ({
   );
 
   return (
-    <div className="flex shrink-0 items-center gap-2 border-b bg-white p-3 shadow-sm pt-safe-plus-2 md:gap-3 md:pt-3">
+    <div className="chat-thread-header flex shrink-0 items-center gap-2 border-b bg-white p-2 shadow-sm pt-safe-plus-2 md:gap-3 md:px-3 md:pt-3">
       <button type="button" onClick={onBack} className={backClass} aria-label={backLabel}>
         <ArrowLeft className="h-5 w-5" />
       </button>

@@ -1,6 +1,6 @@
 import type { LocationDTO, PlaceDTO } from '@uaetrail/shared-types';
 import { submitMemberPlace } from '../hooks/memberCatalogSubmitClientApi';
-import { DEFAULT_COUNTRY } from '../config/regions';
+import { subdivisionNoun } from '../config/regions';
 import { resolveRequiredEmirate } from '../explore/hostingPublishArea';
 import { formatE164Phone } from '../utils/phone';
 import type { AddDraft } from '../explore/ui/addFlow';
@@ -34,13 +34,13 @@ export const submitCatalogPlaceFromAddDraft = async (
   );
   if (!emirate) {
     throw new Error(
-      'Choose the emirate (Dubai, Ras Al Khaimah, Sharjah, …). Search and Home use this filter.'
+      `Choose the ${subdivisionNoun(draft.countryCode).toLowerCase()}. Search and Home use this filter.`
     );
   }
   const listedAreaId = draft.areaId?.trim() || '';
   const payload: Record<string, unknown> = {
     name: draft.title.trim(),
-    countryCode: DEFAULT_COUNTRY,
+    countryCode: draft.countryCode,
     emirate,
     groupRegion: emirate,
     region: emirate,

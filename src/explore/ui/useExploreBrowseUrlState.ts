@@ -165,7 +165,7 @@ export const useExploreBrowseUrlState = ({
     applyHydratedState(parseExploreBrowseStateFromSearchParams(searchParams, isDesktop));
   }, [searchParams, isDesktop, applyHydratedState]);
 
-  useExploreBrowseUrlInboundMigrations({ searchParams, setSearchParams });
+  useExploreBrowseUrlInboundMigrations({ searchParams, setSearchParams, isDesktop });
 
   const browseSetters = useMemo(
     () => ({
@@ -211,13 +211,21 @@ export const useExploreBrowseUrlState = ({
 
   const openListExplorer = useCallback(() => {
     clearSelection();
+    if (isDesktop) {
+      setPeopleBrowseOpen(false);
+      setListMode('default');
+      setListOpen(true);
+      syncExploreUrl({ list: true, listMode: 'default', peopleBrowseOpen: false });
+      return;
+    }
     const current = `${location.pathname}${location.search}`;
     navigate(listDiscoveryPathFromExploreSearch(searchParams.toString()), {
       state: exploreMapMobileBackState(current),
     });
-  }, [clearSelection, location.pathname, location.search, navigate, searchParams]);
+  }, [clearSelection, isDesktop, location.pathname, location.search, navigate, searchParams, syncExploreUrl]);
 
   const showListPanel = listOpen && listMode === 'people';
+  const showDesktopCatalogDrawer = isDesktop && listOpen && listMode !== 'people';
   const sidebarPanel: ExplorePanel = isDesktop
     ? panel === 'venues'
       ? 'venues'
@@ -280,6 +288,7 @@ export const useExploreBrowseUrlState = ({
     browseOpen,
     closeListPanel: handlers.closeListPanel,
     showListPanel,
+    showDesktopCatalogDrawer,
     sidebarPanel,
     desktopFilterKeys,
     browseFilterKeys,

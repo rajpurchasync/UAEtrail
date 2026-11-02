@@ -1,6 +1,6 @@
 import { listActiveTenantMembershipsByUser } from '../lib/activities-store.js';
 import { listAuthUsers } from '../lib/auth-users-store.js';
-import { loadMemberInbox } from './member-inbox.js';
+import { loadMemberInbox, type MemberInboxScope } from './member-inbox.js';
 
 export const listMyTenantMemberships = async (userId: string) => {
   const memberships = await listActiveTenantMembershipsByUser(userId);
@@ -13,7 +13,7 @@ export const listMyTenantMemberships = async (userId: string) => {
   }));
 };
 
-export const loadMyInbox = (userId: string) => loadMemberInbox(userId);
+export const loadMyInbox = (userId: string, scope?: MemberInboxScope) => loadMemberInbox(userId, scope);
 
 export const searchUsersForNewConversation = async (input: { viewerUserId: string; query: string }) => {
   const users = (await listAuthUsers({ status: 'ACTIVE', search: input.query, take: 20 }))

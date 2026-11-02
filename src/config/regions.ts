@@ -25,6 +25,30 @@ const REGIONS_BY_COUNTRY: Record<CountryCode, string[]> = {
 export const getRegionsForCountry = (code: CountryCode = DEFAULT_COUNTRY): string[] =>
   REGIONS_BY_COUNTRY[code] ?? REGIONS_BY_COUNTRY.AE;
 
+/** Level-2 label for a country: emirate, province, governorate, or region. */
+export const subdivisionNoun = (code: CountryCode): string => {
+  switch (code) {
+    case 'AE':
+      return 'Emirate';
+    case 'SA':
+      return 'Province';
+    case 'OM':
+    case 'BH':
+    case 'KW':
+      return 'Governorate';
+    case 'QA':
+      return 'Municipality';
+    default:
+      return 'Region';
+  }
+};
+
+export const placeRegionReady = (
+  country: CountryCode,
+  region: string,
+  inferred: string | null
+): boolean => (country === 'AE' ? Boolean(region.trim() || inferred) : Boolean(region.trim()));
+
 /** Human labels for explore venue filter pills (filter value → display). */
 export const EXPLORE_REGION_PILL_LABELS: Record<string, string> = {
   'Abu Dhabi': 'Abu Dhabi',

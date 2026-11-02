@@ -5,7 +5,11 @@ import { validate } from '../middleware/validate.js';
 import { createSseTicket, SSE_TICKET_TTL_SECONDS } from '../lib/sse-ticket.js';
 import { presentChatMessagesAsDtos } from '../lib/chat-message-presenter.js';
 import { registerChatStreamClient } from '../services/chat-stream.js';
-import { listMemberDirectConversations, loadMemberInbox } from '../services/member-inbox.js';
+import {
+  listMemberDirectConversations,
+  loadMemberInbox,
+  memberInboxQuerySchema,
+} from '../services/member-inbox.js';
 import {
   loadDirectMessageLatest,
   loadDirectMessageOlder,
@@ -39,9 +43,10 @@ chatRouter.post('/stream-ticket', async (req, res, next) => {
   }
 });
 
-chatRouter.get('/inbox', async (req, res, next) => {
+chatRouter.get('/inbox', validate({ query: memberInboxQuerySchema }), async (req, res, next) => {
   try {
-    const data = await loadMemberInbox(req.auth!.userId);
+    const { scope } = req.query as z.infer<typeof memberInboxQuerySchema>;
+    const data = await loadMemberInbox(req.auth!.userId, scope);
     res.json({ data });
   } catch (error) {
     next(error);

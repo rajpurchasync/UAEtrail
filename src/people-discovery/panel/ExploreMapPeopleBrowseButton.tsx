@@ -41,7 +41,7 @@ export const ExploreMapPeopleBrowseButton = ({
                   key={person.id}
                   src={person.avatar}
                   name={person.name}
-                  className="h-7 w-7 ring-2 ring-white"
+                  className="find-crew-avatar h-7 w-7 ring-1 ring-white/70"
                 />
               ))}
             </span>
@@ -51,7 +51,7 @@ export const ExploreMapPeopleBrowseButton = ({
             {Array.from({ length: PLACEHOLDER_SLOTS }, (_, index) => (
               <span
                 key={index}
-                className="inline-block h-7 w-7 rounded-full bg-gradient-to-br from-neutral-200 to-neutral-300 ring-2 ring-white"
+                className="find-crew-avatar inline-block h-7 w-7 rounded-full bg-gradient-to-br from-neutral-200 to-neutral-300 ring-1 ring-white/70"
               />
             ))}
           </span>

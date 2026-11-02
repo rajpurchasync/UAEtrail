@@ -8,8 +8,8 @@ import {
 } from '@uaetrail/shared-types';
 import type { MapPinKind } from '../../components/ui/mapPinTypes';
 import { isGeographyMapSource } from '@uaetrail/shared-types';
-import type { ColocatedMapPinEntry, PlaceMapPin } from '../../components/ui/PlacesMap';
-import { resolveMapPinItemSource, resolveMapPinEmoji, type DiscoveryCardKind } from '../exploreCopy';
+import type { PlaceMapPin } from '../../components/ui/PlacesMap';
+import { resolveMapPinItemSource } from '../exploreCopy';
 import type { ExploreBuddySubtypeKey } from '../exploreBuddySubtype';
 import { isBuddyOthersMapItem, matchesBuddyOthersSubtype } from '../exploreBuddySubtype';
 import type { ExploreOutingTopicKey } from '../exploreOutingTopic';
@@ -304,120 +304,15 @@ export const expandMapPins = (items: ExploreMapItemDTO[]): PlaceMapPin[] => {
   return pins.sort((a, b) => pinLayerOrder(a.source) - pinLayerOrder(b.source));
 };
 
-const COORD_PRECISION = 4;
-
-export const mapPinLocationKey = (pin: PlaceMapPin): string => {
-  const lat = pin.latitude.toFixed(COORD_PRECISION);
-  const lng = pin.longitude.toFixed(COORD_PRECISION);
-  const endpoint = pin.rideshareEndpoint ?? '';
-  return `${lat},${lng},${endpoint}`;
-};
-
-/** Group pins at one coordinate — catalog venues by kind; activities by map emoji. */
-export const mapPinEmojiGroupKey = (pin: PlaceMapPin): string => {
-  const source = pin.source ?? 'activity';
-  if (isGeographyMapSource(source) && (pin.activityType === 'hiking' || pin.activityType === 'camping')) {
-    return `venue:${pin.activityType}`;
-  }
-  const seeking = pin.activityMode === 'seeking';
-  if (pin.placeKind) {
-    return resolveMapPinEmoji(
-      pin.activityType as DiscoveryCardKind,
-      source,
-      undefined,
-      pin.placeKind,
-      seeking
-    );
-  }
-  return resolveMapPinEmoji(pin.activityType as DiscoveryCardKind, source, undefined, undefined, seeking);
-};
-
-const exploreItemIdForPin = (pin: PlaceMapPin): string => pin.exploreItemId ?? pin.id;
-
 /** After map click resolution — prefer explicit explore item id over stack defaults. */
 export const resolveExploreItemIdFromMapPin = (pin: PlaceMapPin): string =>
   pin.exploreItemId ?? pin.stackExploreItemIds?.[0] ?? pin.id;
 
-const buildColocatedEntry = (groupPins: PlaceMapPin[]): ColocatedMapPinEntry => {
-  const sorted = [...groupPins].sort((a, b) => exploreItemIdForPin(a).localeCompare(exploreItemIdForPin(b)));
-  const lead = sorted[0]!;
-  const stackIds = sorted.map(exploreItemIdForPin);
-  return {
-    activityType: lead.activityType,
-    source: lead.source,
-    activityMode: lead.activityMode,
-    exploreItemId: stackIds[0]!,
-    stackExploreItemIds: stackIds.length > 1 ? stackIds : undefined,
-    stackCount: stackIds.length,
-  };
-};
-
 /**
- * Same coordinates: one emoji circle per distinct map emoji; duplicate emoji → count on that circle.
- * Multiple emojis → one composite Leaflet marker (fan) so clustering does not merge types.
+ * Keep one Leaflet marker per catalog item so MarkerCluster can group nearby pins
+ * and spiderfy the same coordinate. Layer order is preserved for paint.
  */
-export const layoutColocatedMapPins = (pins: PlaceMapPin[]): PlaceMapPin[] => {
-  const byLocation = new Map<string, PlaceMapPin[]>();
-  for (const pin of pins) {
-    const key = mapPinLocationKey(pin);
-    const bucket = byLocation.get(key);
-    if (bucket) bucket.push(pin);
-    else byLocation.set(key, [pin]);
-  }
-
-  const laidOut: PlaceMapPin[] = [];
-
-  for (const locationPins of byLocation.values()) {
-    const centerLat = locationPins[0]!.latitude;
-    const centerLng = locationPins[0]!.longitude;
-    const byEmoji = new Map<string, PlaceMapPin[]>();
-
-    for (const pin of locationPins) {
-      const emojiKey = mapPinEmojiGroupKey(pin);
-      const bucket = byEmoji.get(emojiKey);
-      if (bucket) bucket.push(pin);
-      else byEmoji.set(emojiKey, [pin]);
-    }
-
-    const emojiGroups = [...byEmoji.values()].sort(
-      (a, b) => pinLayerOrder(a[0]?.source) - pinLayerOrder(b[0]?.source)
-    );
-
-    if (emojiGroups.length === 1) {
-      const groupPins = emojiGroups[0]!;
-      const entry = buildColocatedEntry(groupPins);
-      const lead = groupPins[0]!;
-
-      if ((entry.stackCount ?? 1) <= 1) {
-        laidOut.push({ ...lead, latitude: centerLat, longitude: centerLng, stackCount: entry.stackCount ?? 1 });
-        continue;
-      }
-
-      laidOut.push({
-        ...lead,
-        id: `stack:${entry.stackExploreItemIds!.join('+')}`,
-        exploreItemId: entry.exploreItemId,
-        latitude: centerLat,
-        longitude: centerLng,
-        stackExploreItemIds: entry.stackExploreItemIds,
-        stackCount: entry.stackCount,
-      });
-      continue;
-    }
-
-    const entries = emojiGroups.map(buildColocatedEntry);
-    const entryIds = entries.flatMap((e) => e.stackExploreItemIds ?? [e.exploreItemId]).sort();
-    const lead = emojiGroups[0]![0]!;
-
-    laidOut.push({
-      ...lead,
-      id: `colocate:${entryIds.join('+')}`,
-      exploreItemId: entries[0]!.exploreItemId,
-      latitude: centerLat,
-      longitude: centerLng,
-      colocatedEntries: entries,
-    });
-  }
-
-  return laidOut.sort((a, b) => pinLayerOrder(a.source) - pinLayerOrder(b.source));
-};
+export const layoutColocatedMapPins = (pins: PlaceMapPin[]): PlaceMapPin[] =>
+  [...pins]
+    .map((pin) => ({ ...pin, stackCount: pin.stackCount ?? 1 }))
+    .sort((a, b) => pinLayerOrder(a.source) - pinLayerOrder(b.source));

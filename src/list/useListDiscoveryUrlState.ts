@@ -48,6 +48,7 @@ const EXPLORE_PRESERVE_PARAM_KEYS = [
   'pin',
   'myPlan',
   'myTrips',
+  'list',
 ] as const;
 
 type UseListDiscoveryUrlStateOptions = {
@@ -119,8 +120,8 @@ export const useListDiscoveryUrlState = (options?: UseListDiscoveryUrlStateOptio
         params.set(LIST_CAT_PARAM, listCat);
       }
       if (mapOverlay) {
-        params.set(BROWSE_DISCOVER_PARAM, '1');
-        params.set('list', '0');
+        params.set('list', '1');
+        params.delete(BROWSE_DISCOVER_PARAM);
       }
       const qs = params.toString();
       navigate(

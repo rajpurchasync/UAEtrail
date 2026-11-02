@@ -43,7 +43,7 @@ export const Header = () => {
 
   return (
     <header className="bg-white/80 backdrop-blur-xl shadow-sm sticky top-0 z-50 border-b border-gray-100">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full px-4 sm:px-5 lg:px-4">
         <div className="flex justify-between items-center h-11 lg:h-12">
           <Link to="/" className="flex items-center space-x-2">
             <div className="w-7 h-7 bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-lg flex items-center justify-center">

@@ -65,6 +65,8 @@ export interface DiscoveryCardModel {
   requesterUserId?: string | null;
   routeLabel?: string | null;
   whenLabel?: string | null;
+  /** Outing day `YYYY-MM-DD`, when the plan has one. */
+  scheduleDate?: string | null;
   sections: DiscoveryCardSections;
   hostAvatar?: string | null;
   participantPreviews?: ParticipantPreviewDTO[];
@@ -149,7 +151,9 @@ export const buildDiscoveryListMeta = (card: DiscoveryCardModel): string | null 
 };
 
 export const buildDiscoveryCardModel = (item: ExploreMapItemDTO): DiscoveryCardModel => {
-  const presentation = item.presentation ?? buildDiscoveryCardPresentation(item);
+  const presentation = item.date
+    ? buildDiscoveryCardPresentation(item)
+    : (item.presentation ?? buildDiscoveryCardPresentation(item));
   const kind = presentation.kind;
   const source = exploreMapItemIsSeeking(item) ? 'activity' : presentation.source;
   const featuredPerson = item.featuredPerson ?? presentation.featuredPerson ?? resolveExploreFeaturedPerson(item);
@@ -217,6 +221,7 @@ export const buildDiscoveryCardModel = (item: ExploreMapItemDTO): DiscoveryCardM
     requesterUserId: featuredPerson?.userId ?? item.requesterUserId ?? null,
     routeLabel,
     whenLabel,
+    scheduleDate: item.date?.trim().slice(0, 10) || activity?.date?.trim().slice(0, 10) || null,
     sections,
     hostAvatar: featuredPerson?.avatarUrl ?? item.hostAvatar ?? null,
     participantPreviews: item.participantPreviews,

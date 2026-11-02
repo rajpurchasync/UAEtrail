@@ -126,7 +126,7 @@ export const buildMapPinFaceHtml = ({
   fontSizePx,
   ringWidth: _ringWidth,
   selected = false,
-  stackCount: _stackCount = 0,
+  stackCount = 0,
   exploreItemId,
   positionStyle = '',
   activityMode = null,
@@ -141,11 +141,11 @@ export const buildMapPinFaceHtml = ({
     activityMode === 'seeking'
   );
   const dataAttr = exploreItemId ? ` data-explore-item-id="${exploreItemId}"` : '';
+  const countBadge = venueStackCountBadgeHtml(stackCount);
 
   void _ringWidth;
-  void _stackCount;
   const markerDataAttr = exploreItemId ? ` data-explore-item-id="${exploreItemId}"` : '';
-  const markerHtml = `<span class="uaetrail-map-pin-marker${selectedClass}"${markerDataAttr} style="--pin-ring:${ringColor};width:${size}px;height:${size}px;"><span class="uaetrail-map-pin-face"><span class="uaetrail-map-pin-icon">${iconHtml}</span></span></span>`;
+  const markerHtml = `<span class="uaetrail-map-pin-marker${selectedClass}"${markerDataAttr} style="--pin-ring:${ringColor};width:${size}px;height:${size}px;"><span class="uaetrail-map-pin-face"><span class="uaetrail-map-pin-icon">${iconHtml}</span></span>${countBadge}</span>`;
 
   if (positionStyle) {
     return `<span class="uaetrail-map-pin-slot" style="${positionStyle}"${dataAttr}>${markerHtml}</span>`;
@@ -307,12 +307,12 @@ export const resolveDominantMapPinSource = (
   return dominant;
 };
 
-/** Clustered activity marker — same emoji face as a lone pin (no count badge). */
+/** Clustered activity marker — same emoji face plus a count when several sit together. */
 export const buildMapClusterIconHtml = (
   kind: MapPinKind,
   source: MapPinSource,
   ringColor: string,
-  _count: number
+  count: number
 ): string =>
   buildMapPinFaceHtml({
     kind,
@@ -321,4 +321,5 @@ export const buildMapClusterIconHtml = (
     size: 48,
     fontSizePx: 18,
     ringWidth: 2.5,
+    stackCount: count,
   });

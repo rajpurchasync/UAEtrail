@@ -24,6 +24,10 @@ import {
 import { MapTileLayers } from './MapTileLayers';
 import { mapTileLoadOptions } from './mapTileLoadOptions';
 import type { MapPinKind, MapPinSource } from './mapPinTypes';
+import {
+  exploreMapClusterIsSameSpot,
+  exploreMapClusterRadiusPx,
+} from '../../explore/ui/exploreMapCluster';
 
 export type { MapPinKind, MapPinSource };
 
@@ -292,32 +296,6 @@ const pinForExploreItemClick = (pin: PlaceMapPin, exploreItemId: string): PlaceM
     )?.stackExploreItemIds ?? pin.stackExploreItemIds,
 });
 
-const pinMatchesExploreItemId = (pin: PlaceMapPin, exploreItemId: string): boolean => {
-  if (pin.colocatedEntries?.length) {
-    return pin.colocatedEntries.some(
-      (entry) =>
-        entry.exploreItemId === exploreItemId || entry.stackExploreItemIds?.includes(exploreItemId)
-    );
-  }
-  return (
-    pin.exploreItemId === exploreItemId ||
-    pin.id === exploreItemId ||
-    Boolean(pin.stackExploreItemIds?.includes(exploreItemId))
-  );
-};
-
-const resolvePinForExploreItemId = (
-  pins: PlaceMapPin[],
-  exploreItemId: string
-): PlaceMapPin | null => {
-  for (const pin of pins) {
-    if (!pinMatchesExploreItemId(pin, exploreItemId)) continue;
-    if (pin.colocatedEntries?.length) return pinForExploreItemClick(pin, exploreItemId);
-    return { ...pin, exploreItemId };
-  }
-  return null;
-};
-
 const colocatedIconRootFromEvent = (event?: L.LeafletMouseEvent): HTMLElement | null => {
   const target = event?.originalEvent?.target as HTMLElement | null;
   if (!target) return null;
@@ -354,39 +332,6 @@ const resolvePinClick = (pin: PlaceMapPin, event?: L.LeafletMouseEvent): PlaceMa
     return pinForExploreItemClick(pin, itemId);
   }
   return pin;
-};
-
-const resolveClusterMapClick = (
-  clusterPins: PlaceMapPin[],
-  event: L.LeafletMouseEvent,
-  selectedExploreItemId?: string,
-  highlightedExploreItemId?: string
-): PlaceMapPin | null => {
-  const target = (event.originalEvent?.target as HTMLElement | null)?.closest?.('[data-explore-item-id]');
-  const fromTarget = target?.getAttribute('data-explore-item-id');
-  if (fromTarget) return resolvePinForExploreItemId(clusterPins, fromTarget);
-
-  const iconRoot = colocatedIconRootFromEvent(event);
-  const pointerEntries =
-    clusterPins.find((pin) => (pin.colocatedEntries?.length ?? 0) > 1)?.colocatedEntries ??
-    aggregateClusterPinEntries(clusterPins, selectedExploreItemId, highlightedExploreItemId);
-
-  if (pointerEntries.length > 1 && iconRoot) {
-    const rect = iconRoot.getBoundingClientRect();
-    const x = event.originalEvent.clientX - rect.left;
-    const y = event.originalEvent.clientY - rect.top;
-    const itemId = resolveColocatedExploreItemIdFromPointer(
-      pointerEntries,
-      x,
-      y,
-      rect.width,
-      rect.height
-    );
-    if (itemId) return resolvePinForExploreItemId(clusterPins, itemId);
-  }
-
-  if (clusterPins.length === 1) return resolvePinClick(clusterPins[0]!, event);
-  return null;
 };
 
 const markerZIndex = (
@@ -545,7 +490,7 @@ const ExploreMapDesktopZoomControl = () => {
   const map = useMap();
 
   useEffect(() => {
-    const control = L.control.zoom({ position: 'bottomright' });
+    const control = L.control.zoom({ position: 'bottomleft' });
     control.addTo(map);
     const container = control.getContainer();
     if (container) {
@@ -757,10 +702,10 @@ const ClusteredMarkers = ({
       group = L.markerClusterGroup({
         chunkedLoading: true,
         showCoverageOnHover: false,
-        maxClusterRadius: 32,
+        maxClusterRadius: exploreMapClusterRadiusPx,
         spiderfyOnMaxZoom: true,
+        spiderfyDistanceMultiplier: 1.6,
         zoomToBoundsOnClick: false,
-        disableClusteringAtZoom: 18,
         iconCreateFunction: (cluster) => {
           const clusterPins = pinsFromCluster(cluster);
           const entries = aggregateClusterPinEntries(
@@ -805,19 +750,16 @@ const ClusteredMarkers = ({
       });
 
       group.on('clusterclick', (event) => {
-        const cluster = event.layer;
-        const clusterPins = pinsFromCluster(cluster);
-        const resolved = resolveClusterMapClick(
-          clusterPins,
-          event as L.LeafletMouseEvent,
-          selectedExploreItemId,
-          highlightedExploreItemId
-        );
-        if (resolved) {
-          onPinClickRef.current?.(resolved);
+        L.DomEvent.stopPropagation(event);
+        const cluster = event.layer as L.MarkerCluster;
+        const bounds = cluster.getBounds();
+        const spanMeters = bounds.getNorthEast().distanceTo(bounds.getSouthWest());
+        const atMaxZoom = map.getZoom() >= map.getMaxZoom();
+        if (!exploreMapClusterIsSameSpot(spanMeters) && !atMaxZoom) {
+          cluster.zoomToBounds({ padding: [72, 72], maxZoom: map.getMaxZoom() });
           return;
         }
-        cluster.zoomToBounds({ padding: [72, 72], maxZoom: 17 });
+        cluster.spiderfy();
       });
 
       for (let index = 0; index < pins.length; index += 1) {

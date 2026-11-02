@@ -30,11 +30,16 @@ export const defaultHikingPackingItems = (): PackingItem[] =>
 
 const HIKING_KIT_EXTRA_IDS = new Set(['headlamp', 'towel', 'snacks', 'electrolytes']);
 
+/** Case- and space-insensitive packing label, so "Head lamp" matches "Headlamp". */
+export const packingLabelKey = (label: string): string => label.toLowerCase().replace(/[^a-z0-9]/g, '');
+
 /** Append newly added default kit rows without restoring items the host already removed. */
 export const withHikingKitExtras = (items: PackingItem[]): PackingItem[] => {
   const have = new Set(items.map((item) => item.id));
+  const labels = new Set(items.map((item) => packingLabelKey(item.label)));
   const extras = DEFAULT_HIKING_PACKING_ITEMS.filter(
-    (item) => HIKING_KIT_EXTRA_IDS.has(item.id) && !have.has(item.id)
+    (item) =>
+      HIKING_KIT_EXTRA_IDS.has(item.id) && !have.has(item.id) && !labels.has(packingLabelKey(item.label))
   ).map((item) => ({ ...item }));
   return extras.length ? [...items, ...extras] : items;
 };

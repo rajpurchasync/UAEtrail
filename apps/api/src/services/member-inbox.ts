@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import type { ChatConversationDTO, MemberInboxDTO, MemberInboxGroupDTO } from '@uaetrail/shared-types';
 import { findAuthUsersByIds } from '../lib/auth-users-store.js';
 import {
@@ -5,7 +6,11 @@ import {
   getUnreadCountByPartner,
   listConversationPartnerIds,
 } from '../lib/chat-messages-store.js';
-import { listGroupsForUserWithChatPreview, type GroupRecordWithChatPreview } from '../lib/social-groups-store.js';
+import {
+  listGroupsForUserWithChatPreview,
+  type GroupRecordWithChatPreview,
+  type InboxGroupPreviewFilter,
+} from '../lib/social-groups-store.js';
 import { filterInboxMessageablePartnerIds } from './chat-policy.js';
 import { logger } from '../lib/logger.js';
 
@@ -30,8 +35,15 @@ export type MemberDirectConversationsResult = {
   policyDegraded?: boolean;
 };
 
+export type MemberInboxScope = 'direct' | 'groups' | 'outings' | 'unread';
+
+export const memberInboxQuerySchema = z.object({
+  scope: z.enum(['direct', 'groups', 'outings', 'unread']).optional(),
+});
+
 export const listMemberDirectConversations = async (
-  userId: string
+  userId: string,
+  options?: { unreadOnly?: boolean }
 ): Promise<MemberDirectConversationsResult> => {
   const partnerIds = await listConversationPartnerIds(userId);
 
@@ -39,23 +51,28 @@ export const listMemberDirectConversations = async (
     return { conversations: [] };
   }
 
-  const [partners, unreadCounts] = await Promise.all([
-    findAuthUsersByIds(partnerIds),
-    getUnreadCountByPartner(userId, partnerIds),
-  ]);
+  const unreadCounts = await getUnreadCountByPartner(userId, partnerIds);
+  const scopedIds = options?.unreadOnly
+    ? partnerIds.filter((partnerId) => (unreadCounts.get(partnerId) ?? 0) > 0)
+    : partnerIds;
+  if (scopedIds.length === 0) {
+    return { conversations: [] };
+  }
+
+  const partners = await findAuthUsersByIds(scopedIds);
 
   const partnerMap = new Map(partners.map((p) => [p._id, p]));
-  const lastMessageMap = await getLastMessageByPartner(userId, partnerIds);
+  const lastMessageMap = await getLastMessageByPartner(userId, scopedIds);
 
   let messageableIds: Set<string>;
   try {
-    messageableIds = await filterInboxMessageablePartnerIds(userId, partnerIds);
+    messageableIds = await filterInboxMessageablePartnerIds(userId, scopedIds);
   } catch (error) {
     logger.warn({ err: error, userId }, 'member inbox message policy failed');
     return { conversations: [], policyDegraded: true };
   }
 
-  const conversationRows = partnerIds
+  const conversationRows = scopedIds
     .filter((partnerId) => messageableIds.has(partnerId))
     .map((partnerId) => {
       const partner = partnerMap.get(partnerId);
@@ -77,15 +94,53 @@ export const listMemberDirectConversations = async (
   return { conversations, policyDegraded: false };
 };
 
-export const loadMemberInbox = async (userId: string): Promise<MemberInboxDTO> => {
+const loadInboxGroups = async (userId: string, filter?: InboxGroupPreviewFilter) => {
+  const groups = await listGroupsForUserWithChatPreview(userId, filter);
+  return groups.map(serializeInboxGroup);
+};
+
+/** Full inbox, or one slice. Omitted scope stays the combined payload other surfaces use. */
+export const loadMemberInbox = async (
+  userId: string,
+  scope?: MemberInboxScope
+): Promise<MemberInboxDTO> => {
+  if (scope === 'direct') {
+    const directResult = await listMemberDirectConversations(userId);
+    return {
+      direct: directResult.conversations,
+      groups: [],
+      directConversationsDegraded: directResult.policyDegraded ?? false,
+    };
+  }
+
+  if (scope === 'groups') {
+    return { direct: [], groups: await loadInboxGroups(userId, { kind: 'user' }) };
+  }
+
+  if (scope === 'outings') {
+    return { direct: [], groups: await loadInboxGroups(userId, { kind: 'activity' }) };
+  }
+
+  if (scope === 'unread') {
+    const [directResult, groups] = await Promise.all([
+      listMemberDirectConversations(userId, { unreadOnly: true }),
+      loadInboxGroups(userId, { unreadOnly: true }),
+    ]);
+    return {
+      direct: directResult.conversations,
+      groups,
+      directConversationsDegraded: directResult.policyDegraded ?? false,
+    };
+  }
+
   const [directResult, groups] = await Promise.all([
     listMemberDirectConversations(userId),
-    listGroupsForUserWithChatPreview(userId),
+    loadInboxGroups(userId),
   ]);
 
   return {
     direct: directResult.conversations,
-    groups: groups.map(serializeInboxGroup),
+    groups,
     directConversationsDegraded: directResult.policyDegraded ?? false,
   };
 };

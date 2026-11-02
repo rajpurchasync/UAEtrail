@@ -10,6 +10,7 @@ import {
 } from '../../config/routingCatalog';
 import { mobileBackNavState } from '../../utils/mobileBackNav';
 import { useProfileHubBackChrome } from '../../hooks/useProfileHubBackChrome';
+import { DisplayPreferencesSection } from './DisplayPreferencesSection';
 import { AndroidInstallSettingsSection } from '../pwa/AndroidInstallSettingsSection';
 import { IosInstallSettingsSection } from '../pwa/IosInstallSettingsSection';
 
@@ -22,6 +23,7 @@ export const ProfileSettingsIndex = ({ onRefresh }: ProfileSettingsIndexProps) =
   const settingsChildBack = mobileBackNavState(PROFILE_SETTINGS_PATH, 'Settings');
   const content = (
     <div className="space-y-4 pb-nav-safe animate-fade-up">
+      <DisplayPreferencesSection />
       <SettingsMenuGroup>
         <SettingsMenuRow
           label="Account"

@@ -137,7 +137,7 @@ describe('list module hygiene', () => {
     );
     expect(browsePanels).toMatch(/PeopleBrowsePanel/);
     expect(browsePanels).not.toMatch(/ExploreBrowsePanel/);
-    expect(browsePanels).not.toMatch(/ListDiscoveryExperience/);
+    expect(browsePanels).toMatch(/ListDiscoveryExperience/);
     expect(peoplePanel).toMatch(/from '\.\/peopleBrowse'/);
     const peopleLookingList = readFileSync(
       join(process.cwd(), 'src/people-discovery/panel/peopleBrowse/PeopleBrowseLookingList.tsx'),

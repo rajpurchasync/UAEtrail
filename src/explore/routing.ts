@@ -1,6 +1,7 @@
 import {
   exploreAreaQueryParam,
   exploreSeekingMapItemPath,
+  formatExploreEventDateLabel,
   resolveSeekingExploreMapItemId,
 } from '@uaetrail/shared-types';
 import type { HostComposeKind } from './compose';
@@ -187,11 +188,7 @@ export {
 } from './exploreActivityDateFilter';
 
 export const formatExploreActivityDateLabel = (iso: string): string =>
-  new Date(`${iso}T12:00:00`).toLocaleDateString(undefined, {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-  });
+  formatExploreEventDateLabel(iso) ?? iso;
 
 export const parseActivityListFilter = (
   activityParam: string | null,

@@ -1,13 +1,9 @@
 import { useNavigate } from 'react-router-dom';
-import type { ActivityDTO } from '@uaetrail/shared-types';
+import { formatExploreEventDateLabel, type ActivityDTO } from '@uaetrail/shared-types';
 import { ActivityHubListRow } from '../mobile/ActivityHubListRow';
 
 const formatActivityRowMeta = (activity: ActivityDTO): string => {
-  const datePart = new Date(activity.date).toLocaleDateString(undefined, {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-  });
+  const datePart = formatExploreEventDateLabel(activity.date) ?? activity.date;
   const parts: string[] = [];
   if (activity.locationName?.trim()) parts.push(activity.locationName.trim());
   parts.push(datePart);

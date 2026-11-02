@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronDown, ChevronUp } from 'lucide-react';
-import { resolveHostNote } from '@uaetrail/shared-types';
+import { formatExploreEventDateLabel, resolveHostNote } from '@uaetrail/shared-types';
 import type { ActivityRequestView } from '../api/types';
 import { resolveJoinRequestActivity } from '../utils/joinRequestActivity';
 import { RideshareRiderReputationSummary } from '../components/rideshare/RideshareRiderReputationSummary';
@@ -16,14 +16,7 @@ const statusStyle: Record<string, string> = {
   cancelled: 'bg-neutral-500/10 text-neutral-500',
 };
 
-const formatDate = (value?: string) => {
-  if (!value) return '';
-  return new Date(value).toLocaleDateString(undefined, {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-  });
-};
+const formatDate = (value?: string) => (value ? formatExploreEventDateLabel(value) ?? '' : '');
 
 interface ActivityJoinRequestCardProps {
   request: ActivityRequestView;

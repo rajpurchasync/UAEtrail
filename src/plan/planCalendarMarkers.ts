@@ -1,5 +1,5 @@
 import type { ActivityDTO, MemberAvailabilitySlotDTO, ParticipantIntentDTO } from '@uaetrail/shared-types';
-import { memberAvailabilityCalendarDays } from '@uaetrail/shared-types';
+import { formatExploreEventDateLabel, memberAvailabilityCalendarDays } from '@uaetrail/shared-types';
 import type { ActivityRequestView } from '../api/types';
 import { getRequestEventDate } from '../utils/activityDates';
 import { viewerIsActivityHostUser } from '../utils/viewerHostsActivity';
@@ -45,11 +45,7 @@ export const activityScheduleDay = (dateStr: string | null | undefined): string 
 const planCalendarWhenLine = (dateStr: string | null | undefined, time?: string | null): string => {
   const day = activityScheduleDay(dateStr);
   if (!day) return '';
-  const dateLabel = new Date(`${day}T12:00:00`).toLocaleDateString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
+  const dateLabel = formatExploreEventDateLabel(day) ?? day;
   return [dateLabel, time?.trim()].filter(Boolean).join(' · ');
 };
 

@@ -196,6 +196,7 @@ export const ExploreMapStage = ({
 
       {!listOpen && !isDesktop && user ? <ExploreCoachMarks /> : null}
 
+      {!(isDesktop && listOpen) ? (
       <ExploreMapChromeBar
         panel={panel}
         mapFilter={mapFilter}
@@ -216,6 +217,7 @@ export const ExploreMapStage = ({
         searchScopeCounts={searchScopeCounts}
         onOpenExploreSearch={onOpenExploreSearch}
       />
+      ) : null}
 
       {user && !listOpen ? (
         <ExploreMapLocationPrompt
@@ -300,12 +302,12 @@ export const ExploreMapStage = ({
         <ExploreMapLocateButton
           onLocate={onLocateMe}
           locating={locatingDevice}
-          className={`${EXPLORE_FLOATING_CONTROL} h-11 w-11 justify-center !text-neutral-950`}
+          className={`${EXPLORE_FLOATING_CONTROL} explore-float-glyph h-11 w-11 justify-center`}
         />
         <ExploreMapStyleToggle
           style={exploreMapStyle}
           onToggle={onToggleMapStyle}
-          className={`${EXPLORE_FLOATING_CONTROL} h-11 w-11 justify-center !text-neutral-950`}
+          className={`${EXPLORE_FLOATING_CONTROL} explore-float-glyph h-11 w-11 justify-center`}
         />
         <button
           type="button"

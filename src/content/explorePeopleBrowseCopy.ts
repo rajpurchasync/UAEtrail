@@ -6,6 +6,7 @@ import type {
 } from '@uaetrail/shared-types';
 import {
   areMemberAvailabilityDaysContiguous,
+  formatExploreEventDateLabel,
   groupConsecutiveMemberAvailabilityDays,
   memberAvailabilityCalendarDays,
 } from '@uaetrail/shared-types';
@@ -110,11 +111,8 @@ export const memberPersonTripHintLine = (trip: SocialPersonTripHintDTO): string 
   return `${verb} ${title} · ${datePart}`;
 };
 
-export const formatPeopleBrowseShortDate = (isoDate: string): string => {
-  const date = new Date(`${isoDate}T12:00:00`);
-  if (Number.isNaN(date.getTime())) return isoDate;
-  return date.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
-};
+export const formatPeopleBrowseShortDate = (isoDate: string): string =>
+  formatExploreEventDateLabel(isoDate) ?? isoDate;
 
 const formatMemberTripDate = formatPeopleBrowseShortDate;
 

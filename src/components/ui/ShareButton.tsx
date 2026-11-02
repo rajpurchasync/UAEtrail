@@ -106,7 +106,7 @@ export const ShareButton = ({
     ? bare
       ? 'inline-flex h-9 w-9 items-center justify-center text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.55)] transition-opacity hover:opacity-90'
       : light
-        ? 'inline-flex items-center justify-center w-8 h-8 rounded-full bg-white text-neutral-700 shadow-sm ring-1 ring-neutral-200/90 hover:bg-neutral-50 transition-colors'
+        ? 'inline-flex h-11 w-11 items-center justify-center rounded-full bg-white text-neutral-700 shadow-sm ring-1 ring-neutral-200/90 transition-colors hover:bg-neutral-50'
         : 'inline-flex items-center justify-center w-8 h-8 rounded-full bg-black/35 backdrop-blur-sm text-white hover:bg-black/50 transition-colors'
     : compact
       ? 'inline-flex items-center justify-center min-h-[44px] min-w-[44px] rounded-full bg-black/40 backdrop-blur-sm text-white hover:bg-black/55 transition-colors'
@@ -128,7 +128,7 @@ export const ShareButton = ({
             aria-hidden
           />
         ) : (
-          <Share2 className={iconClassName ?? (iconOnly ? 'w-3.5 h-3.5' : 'w-5 h-5')} aria-hidden />
+          <Share2 className={iconClassName ?? (iconOnly ? (light ? 'h-5 w-5' : 'h-3.5 w-3.5') : 'h-5 w-5')} aria-hidden />
         )}
         {!compact && !iconOnly && (label ?? 'Share')}
       </button>

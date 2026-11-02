@@ -2,8 +2,8 @@ import { parseBrowseDiscoverOpen } from '../../list/browseListUrlState';
 import type { ExplorePanel, MapFilterKey } from '../routing';
 
 /**
- * Map-aligned catalog list panel is retired (`/list` explorer).
- * `list=1` only opens the People sheet on mobile.
+ * Desktop: `list=1` opens the map-side catalog drawer.
+ * Mobile: `list=1` only opens the People sheet (`view=people`); catalog list is `/list`.
  */
 export const parseListOpen = (
   listParam: string | null,
@@ -11,10 +11,10 @@ export const parseListOpen = (
   browseParam: string | null = null,
   peopleView = false
 ): boolean => {
-  if (!peopleView) return false;
-  if (isDesktop) return false;
   if (parseBrowseDiscoverOpen(browseParam)) return false;
   if (listParam === '0') return false;
+  if (isDesktop) return listParam === '1' && !peopleView;
+  if (!peopleView) return false;
   return true;
 };
 

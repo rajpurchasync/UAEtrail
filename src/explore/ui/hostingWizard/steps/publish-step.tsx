@@ -319,21 +319,35 @@ export function renderPublishStep(ctx: HostingWizardContext): ReactNode | null {
               {draft.packingAckMode === 'strict' ? PACKING_MODE_STRICT_TITLE : PACKING_MODE_LENIENT_TITLE}{' '}
               join
             </p>
-            <ul className="flex flex-wrap gap-1.5">
-              {(draft.packingItems ?? [])
-                .filter((item) => item.label.trim())
-                .map((item) => (
-                  <li
-                    key={item.id}
-                    className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-sm ${packingChipClassName(item.required)}`}
-                  >
-                    {packingItemDisplay(item)}
-                    <span className="text-[10px] font-semibold uppercase tracking-wide opacity-80">
-                      {item.required ? 'must' : 'nice'}
-                    </span>
-                  </li>
-                ))}
-            </ul>
+            <div className="grid grid-cols-2 gap-3">
+              {(['must', 'optional'] as const).map((column) => {
+                const required = column === 'must';
+                const columnItems = (draft.packingItems ?? []).filter(
+                  (item) => item.label.trim() && item.required === required
+                );
+                return (
+                  <div key={column} className="min-w-0">
+                    <p className="mb-1.5 text-[11px] font-bold uppercase tracking-wide text-gray-500">
+                      {required ? 'Must' : 'Optional'}
+                    </p>
+                    {columnItems.length === 0 ? (
+                      <p className="text-xs text-gray-400">None</p>
+                    ) : (
+                      <ul className="space-y-1.5">
+                        {columnItems.map((item) => (
+                          <li
+                            key={item.id}
+                            className={`flex items-center gap-1 rounded-xl px-2.5 py-1.5 text-sm ${packingChipClassName(item.required)}`}
+                          >
+                            <span className="min-w-0 flex-1">{packingItemDisplay(item)}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </HostingPublishPreviewBlock>
         ) : null}
 

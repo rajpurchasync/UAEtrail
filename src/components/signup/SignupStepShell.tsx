@@ -19,7 +19,7 @@ export const SignupStepShell = ({
   children,
   footer,
 }: SignupStepShellProps) => (
-  <div className="bg-white rounded-[20px] shadow-ios overflow-hidden">
+  <div className="auth-card bg-white rounded-[20px] shadow-ios overflow-hidden">
     <div className="border-b border-emerald-100/80 bg-gradient-to-br from-emerald-50/90 via-white to-teal-50/40 px-5 py-4">
       <div className="h-1 w-full rounded-full bg-neutral-100 mb-3 overflow-hidden">
         <div

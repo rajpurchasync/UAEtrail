@@ -1,14 +1,6 @@
 import { FilterChips } from '../mobile/FilterChips';
 import { TabPageSearchRow } from '../mobile/TabPageSearchRow';
-import type { InboxFilter } from '../../utils/inboxThreads';
-
-const FILTER_OPTIONS: Array<{ key: InboxFilter; label: string }> = [
-  { key: 'all', label: 'All' },
-  { key: 'people', label: 'Direct' },
-  { key: 'groups', label: 'Groups' },
-  { key: 'outings', label: 'Outings' },
-  { key: 'unread', label: 'Unread' },
-];
+import { INBOX_FILTER_OPTIONS, type InboxFilter } from '../../utils/inboxThreads';
 
 interface MessagesInboxToolbarProps {
   query: string;
@@ -33,6 +25,6 @@ export const MessagesInboxToolbar = ({
       onAction={onCompose}
       actionAriaLabel="Compose message"
     />
-    <FilterChips options={FILTER_OPTIONS} value={filter} onChange={onFilterChange} />
+    <FilterChips options={INBOX_FILTER_OPTIONS} value={filter} onChange={onFilterChange} />
   </div>
 );

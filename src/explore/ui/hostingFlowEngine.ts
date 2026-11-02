@@ -17,6 +17,7 @@ import {
   type RideshareDestinationKind,
 } from '@uaetrail/shared-types';
 import { type ActivityType } from '../../config/activityTypes';
+import type { CountryCode } from '../../config/regions';
 import { getHostingKindFlowSteps, validateHostingKindStep } from './hostingFlows';
 import {
   buildParticipationRequirementLines,
@@ -180,7 +181,9 @@ export type CreateActivityDraft = {
   customPlaceAreaId: string | null;
   /** Proposed area name when the pin is outside published polygons. */
   customPlaceProposedAreaName: string;
-  /** UAE emirate for search/Home filters — inferred from the pin, else picked. */
+  /** Country for a new spot. Region noun follows this (emirate, province, governorate). */
+  customPlaceCountry: CountryCode;
+  /** Region for search/Home filters — inferred from the pin, else picked. */
   customPlaceEmirate: string;
 };
 
@@ -516,6 +519,7 @@ export const emptyCreateActivityDraft = (): CreateActivityDraft => ({
   customPlaceImages: [],
   customPlaceAreaId: null,
   customPlaceProposedAreaName: '',
+  customPlaceCountry: 'AE',
   customPlaceEmirate: '',
 });
 

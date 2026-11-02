@@ -3,7 +3,7 @@ import { useMessagesInbox } from '../hooks/useMessagesInbox';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { X } from 'lucide-react';
-import type { GroupWallStreamEventDTO } from '@uaetrail/shared-types';
+import { formatExploreClockFromDate, type GroupWallStreamEventDTO } from '@uaetrail/shared-types';
 import { searchMembersByQuery } from '../hooks/memberPeopleClientApi';
 import type { SocialGroupView, SocialGroupWallMessageView } from '../api/types';
 import { useAuth } from '../context/AuthContext';
@@ -49,7 +49,7 @@ const formatTime = (dateStr: string) => {
   const now = new Date();
   const diffMs = now.getTime() - d.getTime();
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  if (diffDays === 0) return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  if (diffDays === 0) return formatExploreClockFromDate(d);
   if (diffDays === 1) return 'Yesterday';
   if (diffDays < 7) return d.toLocaleDateString([], { weekday: 'short' });
   return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
@@ -85,6 +85,8 @@ export const Messages = () => {
   const selectedUserId = searchParams.get('to');
   const selectedGroupId = searchParams.get('group');
   const contextActivityId = searchParams.get('activity');
+  const [inboxQuery, setInboxQuery] = useState('');
+  const [inboxFilter, setInboxFilter] = useState<InboxFilter>('unread');
   const {
     conversations,
     groupThreads,
@@ -94,7 +96,7 @@ export const Messages = () => {
     loadInbox,
     setConversations,
     setGroupThreads,
-  } = useMessagesInbox(user?.id);
+  } = useMessagesInbox(user?.id, inboxFilter);
   const [error, setError] = useState<string | null>(null);
   const [showNewChat, setShowNewChat] = useState(false);
   const [composeQuery, setComposeQuery] = useState('');
@@ -103,8 +105,6 @@ export const Messages = () => {
   const [mobileShowThread, setMobileShowThread] = useState(!!searchParams.get('to'));
   const [showReport, setShowReport] = useState(false);
   const openReportDialog = useCallback(() => setShowReport(true), []);
-  const [inboxQuery, setInboxQuery] = useState('');
-  const [inboxFilter, setInboxFilter] = useState<InboxFilter>('all');
 
   const selectedUserIdRef = useRef<string | null>(selectedUserId);
   const selectedGroupIdRef = useRef<string | null>(selectedGroupId);
@@ -279,7 +279,7 @@ export const Messages = () => {
     [threads, inboxFilter, inboxQuery]
   );
 
-  const hasInboxThreads = threads.length > 0;
+  const hasInboxThreads = threads.length > 0 || inboxFilter !== 'all';
   const openCompose = hasInboxThreads ? () => setShowNewChat(true) : undefined;
 
   const startConversation = (userResult: SearchUser) => {
@@ -410,12 +410,77 @@ export const Messages = () => {
       />
     ) : null;
 
-  const threadFullscreen = inThread ? (
-    <>
+  const threadPane = inGroupThread && selectedGroupId ? (
+    <ChatThreadRouter
+      mode="group"
+      group={{
+        groupId: selectedGroupId,
+        onBack: backToList,
+        onGroupActivity: handleGroupChatActivity,
+        streamedMessage: streamedWallMessage,
+        onStreamedMessageApplied: () => setStreamedWallMessage(null),
+        onGroupUpdated: handleGroupMetaUpdated,
+      }}
+    />
+  ) : inDirectThread ? (
+    <ChatThreadRouter mode="direct" direct={{ ...directThreadProps, mobileShowThread: true }} />
+  ) : (
+    <div className="chat-thread-empty hidden h-full min-h-0 flex-1 flex-col items-center justify-center px-8 text-center lg:flex">
+      <p className="text-lg font-semibold text-neutral-800">Your chats</p>
+      <p className="mt-2 max-w-sm text-sm text-neutral-500">
+        Pick a conversation to read and reply. Outing chats and direct messages stay in this list.
+      </p>
+    </div>
+  );
+
+  return (
+    <div className="chat-app flex h-full min-h-0 w-full flex-1 overflow-hidden">
       <div
-        className="fixed inset-0 z-[1300] flex h-[100dvh] w-full max-w-[100vw] flex-col overflow-hidden bg-white"
+        className={`${inThread ? 'hidden lg:flex' : 'flex'} h-full min-h-0 w-full min-w-0 flex-col lg:w-[22.5rem] lg:max-w-[40%] lg:shrink-0 lg:border-r lg:border-neutral-200`}
       >
-        {error ? (
+        <ConsumerShell
+          layout="tab"
+          title="Chat"
+          suppressMobileHeader
+          suppressMobileToolbarBorder
+          maxWidth="4xl"
+          flush
+          toolbar={
+            <MessagesInboxToolbar
+              query={inboxQuery}
+              filter={inboxFilter}
+              onQueryChange={setInboxQuery}
+              onFilterChange={setInboxFilter}
+              onCompose={openCompose}
+            />
+          }
+        >
+          {error ? <ConsumerErrorCard message={error} className="mb-3" /> : null}
+          <div className="pb-bottom-nav-safe lg:pb-0">
+            <MessagesInboxList
+              threads={visibleThreads}
+              loading={loading}
+              unavailable={unavailable}
+              inboxFilter={inboxFilter}
+              inboxQuery={inboxQuery}
+              selectedDirectId={selectedUserId}
+              selectedGroupId={selectedGroupId}
+              onSelectDirect={selectConversation}
+              onSelectGroup={openGroupThread}
+              formatTime={formatTime}
+            />
+          </div>
+        </ConsumerShell>
+      </div>
+
+      <div
+        className={
+          inThread
+            ? 'fixed inset-0 z-[1300] flex h-[100dvh] w-full max-w-[100vw] flex-col overflow-hidden bg-white lg:static lg:z-auto lg:h-full lg:max-w-none lg:min-w-0 lg:flex-1'
+            : 'hidden min-h-0 min-w-0 flex-1 bg-white lg:flex'
+        }
+      >
+        {error && inThread ? (
           <div className="flex shrink-0 items-center justify-between border-b border-red-200 bg-red-50 p-3">
             <p className="text-sm text-red-700">{error}</p>
             <button
@@ -427,72 +492,10 @@ export const Messages = () => {
             </button>
           </div>
         ) : null}
-        <div className="flex min-h-0 flex-1 flex-col">
-          {inGroupThread && selectedGroupId ? (
-            <ChatThreadRouter
-              mode="group"
-              group={{
-                groupId: selectedGroupId,
-                onBack: backToList,
-                onGroupActivity: handleGroupChatActivity,
-                streamedMessage: streamedWallMessage,
-                onStreamedMessageApplied: () => setStreamedWallMessage(null),
-                onGroupUpdated: handleGroupMetaUpdated,
-              }}
-            />
-          ) : (
-            <ChatThreadRouter
-              mode="direct"
-              direct={{ ...directThreadProps, mobileShowThread: true }}
-            />
-          )}
-        </div>
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col">{threadPane}</div>
       </div>
       {newChatModal}
       {reportDialog}
-    </>
-  ) : null;
-
-  if (inThread) {
-    return threadFullscreen;
-  }
-
-  return (
-    <>
-      <ConsumerShell
-        layout="tab"
-        title="Chat"
-        suppressMobileHeader
-        suppressMobileToolbarBorder
-        maxWidth="4xl"
-        flush
-        toolbar={
-          <MessagesInboxToolbar
-            query={inboxQuery}
-            filter={inboxFilter}
-            onQueryChange={setInboxQuery}
-            onFilterChange={setInboxFilter}
-            onCompose={openCompose}
-          />
-        }
-      >
-        {error ? <ConsumerErrorCard message={error} className="mb-3" /> : null}
-        <div className="pb-bottom-nav-safe md:pb-4">
-          <MessagesInboxList
-            threads={visibleThreads}
-            loading={loading}
-            unavailable={unavailable}
-            inboxFilter={inboxFilter}
-            inboxQuery={inboxQuery}
-            selectedDirectId={selectedUserId}
-            onSelectDirect={selectConversation}
-            onSelectGroup={openGroupThread}
-            formatTime={formatTime}
-          />
-        </div>
-      </ConsumerShell>
-      {newChatModal}
-      {reportDialog}
-    </>
+    </div>
   );
 };

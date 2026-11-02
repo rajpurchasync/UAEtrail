@@ -46,7 +46,8 @@ describe('discover browse navigation contract', () => {
     expect(mapShell).toMatch(/openMapListPanel/);
     expect(browsePanels).toMatch(/PeopleBrowsePanel/);
     expect(browsePanels).not.toMatch(/ExploreBrowsePanel/);
-    expect(browsePanels).not.toMatch(/ListDiscoveryExperience/);
+    expect(browsePanels).toMatch(/ListDiscoveryExperience/);
+    expect(browsePanels).toMatch(/ExploreDesktopListDrawer/);
   });
 
   it('consumer hamburger stays on map for operators (workspace drawer on publishing console paths)', () => {

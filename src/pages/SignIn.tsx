@@ -158,7 +158,7 @@ export const SignIn = () => {
     <div className="app-page-min-h app-scroll-body bg-ios-bg flex flex-col py-8 px-6 safe-area-top safe-area-bottom">
       <PageMeta title="Sign in" noIndex />
 
-      <div className="max-w-md w-full mx-auto bg-white rounded-[20px] shadow-ios p-6 sm:p-8 flex-1">
+      <div className="auth-card max-w-md w-full mx-auto bg-white rounded-[20px] shadow-ios p-6 sm:p-8 flex-1">
         <div className="relative z-20 flex items-center justify-between mb-2">
           <button
             type="button"

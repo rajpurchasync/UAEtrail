@@ -17,7 +17,7 @@ export const mediaUrlSchema = z.string().min(1).refine(
 
 export const locationSubmitBodySchema = z.object({
   name: z.string().min(2).max(120),
-  countryCode: z.string().length(2).default('AE'),
+  countryCode: z.string().length(2),
   /** UAE FE uses “emirate”; persisted as `groupRegionLevels.l2`. */
   emirate: z.string().min(2).max(80).optional(),
   groupRegion: z.string().min(2).max(80).optional(),

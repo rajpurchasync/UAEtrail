@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { filterInboxThreads, groupThreadFromSocialGroup, type InboxThread } from './inboxThreads';
+import {
+  INBOX_FILTER_OPTIONS,
+  filterInboxThreads,
+  groupThreadFromSocialGroup,
+  type InboxThread,
+} from './inboxThreads';
 import type { SocialGroupView } from '../api/types';
 
 const threads: InboxThread[] = [
@@ -49,6 +54,18 @@ describe('groupThreadFromSocialGroup', () => {
     expect(thread.kind).toBe('user-group');
     expect(thread.lastMessage).toBe('See you there');
     expect(thread.unreadCount).toBe(3);
+  });
+});
+
+describe('INBOX_FILTER_OPTIONS', () => {
+  it('leads with unread and keeps all last', () => {
+    expect(INBOX_FILTER_OPTIONS.map((option) => option.key)).toEqual([
+      'unread',
+      'people',
+      'groups',
+      'outings',
+      'all',
+    ]);
   });
 });
 

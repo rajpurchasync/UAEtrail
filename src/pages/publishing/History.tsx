@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { formatExploreEventDateLabel } from '@uaetrail/shared-types';
 import { ConsoleShell } from '../../console/ConsoleShell';
 import { getActivityHistory, type ActivityHistoryRow } from '../../hooks/tenantActivityClientApi';
 import { formatActivityType } from '../../utils/activityIdentity';
@@ -81,7 +82,7 @@ export const History = () => {
                     <p className="text-xs text-gray-500">{formatActivityType(e.activityType)}</p>
                   </td>
                   <td className="px-4 py-3 text-gray-700">{e.locationName}</td>
-                  <td className="px-4 py-3 text-gray-600">{new Date(e.startAt).toLocaleDateString()}</td>
+                  <td className="px-4 py-3 text-gray-600">{formatExploreEventDateLabel(e.startAt) ?? ''}</td>
                   <td className="px-4 py-3">{statusBadge(e.status)}</td>
                   <td className="px-4 py-3 text-gray-700">{e.participantCount}/{e.capacity}</td>
                   <td className="px-4 py-3">

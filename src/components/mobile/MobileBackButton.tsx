@@ -48,10 +48,10 @@ export const MobileBackButton = ({
     <button
       type="button"
       onClick={onPress ?? handleBack}
-      className={`inline-flex items-center gap-0.5 min-h-[44px] text-sm font-medium ${buttonClass} ${className}`}
+      className={`mobile-back-control inline-flex items-center gap-1 min-h-[44px] text-base font-semibold ${buttonClass} ${className}`}
       aria-label={!effectiveLabel || effectiveLabel === 'Back' ? 'Go back' : `Back to ${effectiveLabel}`}
     >
-      <ChevronLeft className="w-5 h-5 shrink-0" strokeWidth={2.25} />
+      <ChevronLeft className="h-6 w-6 shrink-0" strokeWidth={2.4} />
       {effectiveLabel ? <span className="truncate">{effectiveLabel}</span> : null}
     </button>
   );

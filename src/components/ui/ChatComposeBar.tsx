@@ -78,7 +78,7 @@ export const ChatComposeBar = forwardRef<ChatComposeBarHandle, ChatComposeBarPro
   return (
     <form
       onSubmit={handleSubmit}
-      className={`box-border w-full max-w-full shrink-0 border-t border-neutral-200 bg-white px-2 sm:px-3 pt-2 pb-safe flex items-end gap-1 gap-x-1.5 overflow-hidden ${className}`}
+      className={`chat-compose box-border flex w-full max-w-full shrink-0 items-end gap-1 gap-x-1.5 overflow-hidden border-t border-neutral-200 bg-white px-2 pb-safe pt-2 sm:px-3 ${className}`}
     >
       <EmojiPickerButton onPick={insertEmoji} disabled={sending} />
       {multiline ? (

@@ -103,6 +103,14 @@ export const memberJourneyMapQueryKey = (userId: string): QueryKey => ['me', 'jo
 
 export const messagesInboxQueryKey = (userId: string): QueryKey => ['messages-inbox', userId];
 
+export type MessagesInboxSlice = 'direct' | 'groups' | 'outings' | 'unread';
+
+export const messagesInboxSliceQueryKey = (userId: string, slice: MessagesInboxSlice): QueryKey => [
+  'messages-inbox',
+  userId,
+  slice,
+];
+
 export const placeDetailCoreQueryKey = (placeId: string, scope: string): QueryKey => [
   'place-detail-core',
   placeId,

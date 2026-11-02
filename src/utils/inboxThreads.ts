@@ -3,7 +3,15 @@ import type { SocialGroupView } from '../api/types';
 import { messagingApi } from '../messaging';
 import { formatWallInboxPreview } from './wallMessagePreview';
 
-export type InboxFilter = 'all' | 'unread' | 'people' | 'groups' | 'outings';
+export type InboxFilter = 'unread' | 'people' | 'groups' | 'outings' | 'all';
+
+export const INBOX_FILTER_OPTIONS: Array<{ key: InboxFilter; label: string }> = [
+  { key: 'unread', label: 'Unread' },
+  { key: 'people', label: 'Direct' },
+  { key: 'groups', label: 'Groups' },
+  { key: 'outings', label: 'Outings' },
+  { key: 'all', label: 'All' },
+];
 
 export type InboxThread =
   | {

@@ -39,8 +39,8 @@ const QuoteBlock = ({
 }) => {
   const quoteClass =
     tone === 'onPrimary'
-      ? 'mb-2 min-w-0 max-w-full rounded-xl border border-white/25 border-l-4 border-l-white/70 bg-white/15 px-3 py-2 text-left transition-colors'
-      : 'mb-2 min-w-0 max-w-full rounded-xl border border-emerald-200/80 border-l-4 border-l-emerald-500 bg-emerald-50/90 px-3 py-2 text-left transition-colors';
+      ? 'chat-quote mb-2 min-w-0 max-w-full rounded-lg border border-white/25 border-l-4 border-l-white/70 bg-white/15 px-3 py-2 text-left transition-colors'
+      : 'chat-quote mb-2 min-w-0 max-w-full rounded-lg border border-emerald-200/80 border-l-4 border-l-emerald-500 bg-emerald-50/90 px-3 py-2 text-left transition-colors';
   const labelClass =
     tone === 'onPrimary'
       ? 'block text-[11px] font-semibold uppercase tracking-wide text-emerald-100'

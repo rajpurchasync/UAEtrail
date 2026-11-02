@@ -179,7 +179,7 @@ export const ExploreMapMobileLayerChrome = ({
     <>
       <div
         ref={intentBarRef}
-        className={`${EXPLORE_MAP_TOOLBAR_FLOATING} ${EXPLORE_MAP_TOOLBAR_PILL_PADDING} col-start-1 row-start-1 inline-flex shrink-0 items-center overflow-visible pl-2 pr-2.5 lg:hidden`}
+        className={`${EXPLORE_MAP_TOOLBAR_FLOATING} ${EXPLORE_MAP_TOOLBAR_PILL_PADDING} col-start-1 row-start-1 inline-flex w-fit shrink-0 items-center self-start overflow-visible pl-2 pr-2.5`}
       >
         <button
           type="button"
@@ -218,7 +218,7 @@ export const ExploreMapMobileLayerChrome = ({
       </div>
 
       {expandedLayer === 'activity' ? (
-        <div className={`${PILL_ROW_WRAP} col-span-2 col-start-1 row-start-2 lg:hidden`}>
+        <div className={`${PILL_ROW_WRAP} col-span-2 col-start-1 row-start-2 lg:w-[36rem] lg:max-w-full`}>
           <div className={EXPLORE_MAP_MOBILE_FILTER_CTA_BAR} role="toolbar" aria-label="Activity filters">
             {EXPLORE_MOBILE_ACTIVITY_MENU.map((option) => {
               const activeKey =
@@ -276,7 +276,7 @@ export const ExploreMapMobileLayerChrome = ({
       ) : null}
 
       {expandedLayer === 'places' ? (
-        <div className={`${PILL_ROW_WRAP} col-span-2 col-start-1 row-start-2 lg:hidden`}>
+        <div className={`${PILL_ROW_WRAP} col-span-2 col-start-1 row-start-2 lg:w-[36rem] lg:max-w-full`}>
           <div className={EXPLORE_MAP_MOBILE_FILTER_CTA_BAR} role="toolbar" aria-label="Place filters">
             {EXPLORE_MOBILE_PLACES_MENU.map((option) => {
               if (option.key === 'uae') {
