@@ -1,5 +1,9 @@
 import { CalendarDays, List } from 'lucide-react';
 import type { PlanCommitmentFilter, PlanUpcomingLayout } from '../../plan/planTab';
+import {
+  PRODUCT_PLAN_UPCOMING_HOSTING_CONTEXT,
+  PRODUCT_PLAN_UPCOMING_JOINED_CONTEXT,
+} from '../../content/productNorthStar';
 import { PlanAvailabilitySection } from './PlanAvailabilitySection';
 import { PlanCalendarSection } from './PlanCalendarSection';
 import { PlanCommitmentFilterChips } from './PlanCommitmentFilter';
@@ -49,7 +53,14 @@ export const PlanUpcomingView = ({
     );
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 md:space-y-2">
+      {planLens !== 'availability' && layout === 'list' ? (
+        <p className="text-xs leading-snug text-neutral-500 md:text-[11px]">
+          {filter === 'hosting' && canHost
+            ? PRODUCT_PLAN_UPCOMING_HOSTING_CONTEXT
+            : PRODUCT_PLAN_UPCOMING_JOINED_CONTEXT}
+        </p>
+      ) : null}
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0 flex-1">
           {hostingAnchorOnChips ? (

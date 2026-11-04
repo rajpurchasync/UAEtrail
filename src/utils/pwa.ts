@@ -61,8 +61,11 @@ export function initPwaDisplayMode(): void {
 export function registerAppServiceWorker(): void {
   if (!('serviceWorker' in navigator)) return;
 
-  if (import.meta.env.DEV) {
-    // Vite HMR + `?t=` module URLs break when an old SW intercepts fetch (e.g. after dev:fresh).
+  const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
+  const isLocalHost = hostname === 'localhost' || hostname === '127.0.0.1';
+
+  if (import.meta.env.DEV || isLocalHost) {
+    // Vite HMR + Docker localhost stacks: avoid SW intercepting static assets / manifest icons.
     void navigator.serviceWorker.getRegistrations().then((registrations) => {
       for (const registration of registrations) {
         void registration.unregister();

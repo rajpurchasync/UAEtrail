@@ -1,11 +1,13 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSafeAsyncEffect } from '../../hooks/useSafeAsyncEffect';
 import type { AdminSocialGroupDetail, AdminSocialGroupListItem } from '../../api/types';
 import { fetchAdminSocialGroups, updateAdminSocialGroupStatus } from '../../hooks/adminConsoleApi';
 import { fetchAdminGroupDetail } from '../../hooks/adminDrilldownApi';
 import { DashboardLayout } from '../../components/layout';
 import { ADMIN_LINKS } from '../../constants';
-import { AppSelect, ADMIN_FILTER_SELECT_CLASS } from '../../components/ui/AppSelect';
+import { AppSelect, ADMIN_FILTER_SELECT_CLASS, ADMIN_INPUT_CLASS } from '../../components/ui/AppSelect';
+import { AdminTablePager, DEFAULT_ADMIN_PAGE_SIZE, paginateRows, type AdminPageSize } from '../../components/admin/AdminTablePager';
+import { formatAdminDate } from '../../utils/formatAdminDate';
 
 const GROUP_TYPE_OPTIONS = [
   { value: 'family' as const, label: 'Family' },
@@ -27,31 +29,37 @@ const inviteStatusClass: Record<string, string> = {
 
 export const Groups = () => {
   const [groups, setGroups] = useState<AdminSocialGroupListItem[]>([]);
-  const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState<AdminPageSize>(DEFAULT_ADMIN_PAGE_SIZE);
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [creatorFilter, setCreatorFilter] = useState('');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [detail, setDetail] = useState<AdminSocialGroupDetail | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [confirmTarget, setConfirmTarget] = useState<AdminSocialGroupListItem | null>(null);
   const [suspendComment, setSuspendComment] = useState('');
-  const pageSize = 20;
 
   const loadGroups = async (isActive: () => boolean = () => true) => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetchAdminSocialGroups({
-        search: search || undefined,
-        type: typeFilter ? (typeFilter as 'family' | 'friends') : undefined,
-        page,
-        pageSize,
-      });
-      if (!isActive()) return;
-      setGroups(res.data);
-      setTotal(res.meta.total);
+      const all: AdminSocialGroupListItem[] = [];
+      let nextPage = 1;
+      let catalogTotal = Number.POSITIVE_INFINITY;
+      while (all.length < catalogTotal && nextPage <= 50) {
+        const res = await fetchAdminSocialGroups({ page: nextPage, pageSize: 100 });
+        if (!isActive()) return;
+        all.push(...res.data);
+        catalogTotal = res.meta.total;
+        if (res.data.length === 0) break;
+        nextPage += 1;
+      }
+      setGroups(all);
     } catch (err) {
       if (!isActive()) return;
       setError(err instanceof Error ? err.message : 'Failed to load groups');
@@ -60,12 +68,34 @@ export const Groups = () => {
     }
   };
 
-  useSafeAsyncEffect((isActive) => loadGroups(isActive), [page, typeFilter]);
+  useSafeAsyncEffect((isActive) => loadGroups(isActive), []);
+
+  const visibleGroups = groups.filter((group) => {
+    if (search.trim()) {
+      const q = search.trim().toLowerCase();
+      const hay = `${group.name ?? ''} ${group.admin?.displayName ?? ''} ${group.admin?.email ?? ''}`.toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    if (typeFilter && group.type !== typeFilter) return false;
+    if (statusFilter && (group.status ?? 'active') !== statusFilter) return false;
+    if (creatorFilter) {
+      const q = creatorFilter.toLowerCase();
+      const creator = `${group.admin?.displayName ?? ''} ${group.admin?.email ?? ''}`.toLowerCase();
+      if (!creator.includes(q)) return false;
+    }
+    const created = group.createdAt.slice(0, 10);
+    if (dateFrom && created < dateFrom) return false;
+    if (dateTo && created > dateTo) return false;
+    return true;
+  });
+
+  useEffect(() => {
+    setPage(1);
+  }, [search, typeFilter, statusFilter, creatorFilter, dateFrom, dateTo]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setPage(1);
-    void loadGroups();
   };
 
   const openDetail = async (id: string) => {
@@ -79,7 +109,7 @@ export const Groups = () => {
     }
   };
 
-  const formatDate = (value: string) => new Date(value).toLocaleString();
+  const formatDate = (value: string) => formatAdminDate(value);
 
   const statusBadge = (status?: string) => {
     const isActive = (status ?? 'active') === 'active';
@@ -124,8 +154,8 @@ export const Groups = () => {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by group name..."
-            className="border border-gray-200 rounded-md px-3 py-2 text-sm w-56"
+            placeholder="Search name or slogan..."
+            className={`${ADMIN_INPUT_CLASS} w-56`}
           />
           <button type="submit" className="px-4 py-2 bg-emerald-600 text-white rounded-md text-sm hover:bg-emerald-700">
             Search
@@ -141,6 +171,42 @@ export const Groups = () => {
           placeholder="All types"
           inputClassName={ADMIN_FILTER_SELECT_CLASS}
           aria-label="Filter by group type"
+        />
+        <AppSelect
+          value={statusFilter}
+          onChange={(value) => {
+            setStatusFilter(value);
+            setPage(1);
+          }}
+          options={[
+            { value: 'active', label: 'Active' },
+            { value: 'suspended', label: 'Suspended' },
+          ]}
+          placeholder="Status"
+          inputClassName={ADMIN_FILTER_SELECT_CLASS}
+          aria-label="Filter by status"
+        />
+        <input
+          type="date"
+          value={dateFrom}
+          onChange={(e) => setDateFrom(e.target.value)}
+          className={ADMIN_INPUT_CLASS}
+          aria-label="Created from"
+        />
+        <input
+          type="date"
+          value={dateTo}
+          onChange={(e) => setDateTo(e.target.value)}
+          className={ADMIN_INPUT_CLASS}
+          aria-label="Created to"
+        />
+        <input
+          type="text"
+          value={creatorFilter}
+          onChange={(e) => setCreatorFilter(e.target.value)}
+          placeholder="Creator"
+          className={`${ADMIN_INPUT_CLASS} w-40`}
+          aria-label="Filter by creator"
         />
       </div>
 
@@ -165,18 +231,22 @@ export const Groups = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {groups.length === 0 ? (
+              {visibleGroups.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-4 py-10 text-center text-gray-500">
                     No groups found.
                   </td>
                 </tr>
               ) : (
-                groups.map((group) => (
+                paginateRows(visibleGroups, page, pageSize).map((group) => (
                   <tr key={group.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3">
-                      <div className="font-medium text-gray-900">{group.name}</div>
-                      {group.slogan && <div className="text-xs text-gray-500 mt-0.5">{group.slogan}</div>}
+                    <td className="admin-table-hit">
+                      <button type="button" onClick={() => void openDetail(group.id)}>
+                        <span>
+                          <span className="block font-medium text-gray-900">{group.name}</span>
+                          {group.slogan && <span className="block text-xs text-gray-500 mt-0.5">{group.slogan}</span>}
+                        </span>
+                      </button>
                     </td>
                     <td className="px-4 py-3">
                       <span className="px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700">
@@ -220,36 +290,21 @@ export const Groups = () => {
         </div>
       )}
 
-      {total > pageSize && (
-        <div className="flex justify-between items-center mt-4">
-          <p className="text-sm text-gray-600">
-            Showing {(page - 1) * pageSize + 1}-{Math.min(page * pageSize, total)} of {total}
-          </p>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              disabled={page === 1}
-              onClick={() => setPage(page - 1)}
-              className="px-3 py-1 border rounded text-sm disabled:opacity-50"
-            >
-              Previous
-            </button>
-            <button
-              type="button"
-              disabled={page * pageSize >= total}
-              onClick={() => setPage(page + 1)}
-              className="px-3 py-1 border rounded text-sm disabled:opacity-50"
-            >
-              Next
-            </button>
-          </div>
-        </div>
-      )}
+      <AdminTablePager
+        page={page}
+        pageSize={pageSize}
+        total={visibleGroups.length}
+        onPage={setPage}
+        onPageSize={(size) => {
+          setPageSize(size);
+          setPage(1);
+        }}
+      />
 
       {detailOpen && detail && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setDetailOpen(false)}>
+        <div className="admin-dialog-backdrop fixed inset-0 flex items-center justify-center z-50 p-4" onClick={() => setDetailOpen(false)}>
           <div
-            className="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[85vh] overflow-y-auto p-6"
+            className="admin-dialog bg-white rounded-lg w-full max-w-3xl max-h-[85vh] overflow-y-auto p-6"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-between items-start gap-4 mb-5">
@@ -373,8 +428,8 @@ export const Groups = () => {
       )}
 
       {confirmTarget && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[60]" onClick={() => setConfirmTarget(null)}>
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6" onClick={(e) => e.stopPropagation()}>
+        <div className="admin-dialog-backdrop fixed inset-0 flex items-center justify-center z-[60]" onClick={() => setConfirmTarget(null)}>
+          <div className="admin-dialog bg-white rounded-lg max-w-md w-full mx-4 p-6" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
               {(confirmTarget.status ?? 'active') === 'active' ? 'Suspend Group?' : 'Activate Group?'}
             </h3>

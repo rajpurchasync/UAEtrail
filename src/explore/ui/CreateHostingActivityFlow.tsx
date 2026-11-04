@@ -24,9 +24,12 @@ import {
 } from '../../utils/memberPublishGate';
 import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
 import { EXPLORE_Z } from '../../config/exploreTheme';
+import { COMPOSE_DESKTOP_INSET_FIXED } from '../create/composeDesktopInset';
 import { formatCoord } from '../../utils/coords';
 import { COMPOSE_SHEET_DRAG_HINT } from '../../hooks/useMobileBrowseSheetImmersive';
 import { useComposeSheetExpandedStateOrLocal } from '../create/ComposeSheetExpandedContext';
+import { bundleHostingWizardPages, COMPOSE_WIDE_SHEET_MAX_WIDTH, wizardPageContaining } from '../create/composeWideWizard';
+import { useIsMobile } from '../../hooks/useIsMobile';
 import type { MeetingPointPickerIntent } from './hostingWizard/hostingWizardContext';
 import { useComposeWizardExitBack } from '../create/useComposeWizardExitBack';
 import {
@@ -125,6 +128,7 @@ export const CreateHostingActivityFlow = ({
   const location = useLocation();
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const isMobile = useIsMobile();
   const {
     canPublish,
     profileComplete,
@@ -207,6 +211,10 @@ export const CreateHostingActivityFlow = ({
       registryPlaceId: draft.registryPlaceId,
     });
   }, [kind, hostingKindFlow, draft.genericBuddy, draft.placeLabelSource, draft.registryPlaceId]);
+  const wizardPages = useMemo(
+    () => (isMobile ? flowSteps.map((id) => [id]) : bundleHostingWizardPages(flowSteps)),
+    [flowSteps, isMobile]
+  );
 
   useEffect(() => {
     if (!kind || step === 'type') return;
@@ -382,6 +390,15 @@ export const CreateHostingActivityFlow = ({
   }, [submitting, onClose]);
 
   const currentStepIndex = kind && step !== 'type' ? flowSteps.indexOf(step as CreateFlowStepId) : -1;
+  const widePageSteps = useMemo(
+    () =>
+      kind && step !== 'type' ? wizardPageContaining(wizardPages, step as CreateFlowStepId) : [],
+    [kind, step, wizardPages]
+  );
+  const currentPageIndex =
+    kind && step !== 'type'
+      ? wizardPages.findIndex((page) => page.includes(step as CreateFlowStepId))
+      : -1;
 
   const composeDraftFields = useMemo(
     () => ({
@@ -463,7 +480,7 @@ export const CreateHostingActivityFlow = ({
       setError(null);
       return;
     }
-    if (step === 'type' || currentStepIndex <= 0) {
+    if (step === 'type' || currentPageIndex <= 0) {
       if (wizardPrefill || editActivity) {
         requestClose();
         return;
@@ -472,39 +489,41 @@ export const CreateHostingActivityFlow = ({
         exitWizardBack();
         return;
       }
-      if (currentStepIndex <= 0) {
+      if (currentPageIndex <= 0) {
         exitWizardBack();
         return;
       }
       setStep('type');
       return;
     }
-    setStep(flowSteps[currentStepIndex - 1]);
+    setStep(wizardPages[currentPageIndex - 1][0]);
   }, [
     routeMapTarget,
     whereMapOpen,
     meetingPointMapOpen,
     step,
-    currentStepIndex,
+    currentPageIndex,
     wizardPrefill,
     editActivity,
     hostComposeKind,
     requestClose,
     exitWizardBack,
-    flowSteps,
+    wizardPages,
   ]);
 
   const goNext = useCallback(() => {
     if (!kind || step === 'type') return;
-    const validation = validateDraftStep(step as CreateFlowStepId, draft);
-    if (validation) {
-      setError(validation);
-      return;
+    for (const id of widePageSteps) {
+      const validation = validateDraftStep(id, draft);
+      if (validation) {
+        setError(validation);
+        return;
+      }
     }
     setError(null);
-    if (currentStepIndex >= flowSteps.length - 1) return;
-    setStep(flowSteps[currentStepIndex + 1]);
-  }, [kind, step, draft, currentStepIndex, flowSteps]);
+    if (currentPageIndex < 0 || currentPageIndex >= wizardPages.length - 1) return;
+    setStep(wizardPages[currentPageIndex + 1][0]);
+  }, [kind, step, draft, currentPageIndex, wizardPages, widePageSteps]);
 
   const handlePublish = useCallback(async () => {
     if (!user?.id) return;
@@ -637,14 +656,17 @@ export const CreateHostingActivityFlow = ({
   const hasFromPin = draft.latitude != null && draft.longitude != null;
   const hasToPin = draft.toLatitude != null && draft.toLongitude != null;
 
-  const stepTitle =
+  const widePageTitle =
     editActivity
       ? 'Edit outing'
       : step === 'type' || !kind
         ? wizardPrefill?.participantIntentId
           ? HOSTING_SEEKING_PREFILL_TITLE
           : 'Host an outing'
-        : createFlowStepTitle(step as CreateFlowStepId, kind, stepTitleOptions);
+        : widePageSteps.length > 1
+          ? 'Outing details'
+          : createFlowStepTitle(step as CreateFlowStepId, kind, stepTitleOptions);
+  const stepTitle = widePageTitle;
 
   const renderRoutePicker = useCallback(
     (endpoint: 'from' | 'to') => {
@@ -680,6 +702,8 @@ export const CreateHostingActivityFlow = ({
 
   const wizardCtx = useMemo((): HostingWizardContext => ({
     step,
+    widePageSteps,
+    widePageTitle,
     stepTitle,
     kind,
     draft,
@@ -730,6 +754,8 @@ export const CreateHostingActivityFlow = ({
     editActivityId: editActivity?.id ?? null,
   }), [
     step,
+    widePageSteps,
+    widePageTitle,
     stepTitle,
     kind,
     draft,
@@ -840,7 +866,7 @@ export const CreateHostingActivityFlow = ({
           : hasFromPin;
 
     return (
-      <div className={`fixed inset-0 ${EXPLORE_Z.composeFlow} bg-neutral-100`}>
+      <div className={`${COMPOSE_DESKTOP_INSET_FIXED} ${EXPLORE_Z.composeFlow} bg-neutral-100`}>
         <Suspense fallback={<div className="h-full w-full animate-pulse bg-emerald-50" />}>
           <CreatePlacePicker
             openInAdjustMode={hikeCampMeeting ? meetingPickerIntent !== 'search' : pinAlreadySet}
@@ -961,6 +987,7 @@ export const CreateHostingActivityFlow = ({
       expanded={sheetExpanded}
       onExpand={expandSheet}
       expandHint={COMPOSE_SHEET_DRAG_HINT}
+      maxWidthClass={isMobile ? 'lg:max-w-lg' : COMPOSE_WIDE_SHEET_MAX_WIDTH}
       panelClassName="px-5 pb-[calc(var(--safe-bottom)+1rem)] pt-0 lg:px-6 lg:pb-6 lg:pt-2"
     >
         {renderHostingWizardSteps(wizardCtx)}

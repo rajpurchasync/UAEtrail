@@ -27,6 +27,7 @@ export type TenantRecord = {
   groupRegionLevels?: import('@uaetrail/shared-types').GroupRegionLevels | null;
   publishingPurpose?: TenantPublishingPurpose | null;
   discoverFeatured?: boolean;
+  hiddenFromPublic?: boolean;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -50,6 +51,7 @@ type MongoTenantDoc = {
   groupRegionLevels?: import('@uaetrail/shared-types').GroupRegionLevels | null;
   publishingPurpose?: TenantPublishingPurpose | null;
   discoverFeatured?: boolean;
+  hiddenFromPublic?: boolean;
   groupRegionBrowseKey?: string | null;
   geo?: GeoPoint;
   createdAt: Date;
@@ -78,6 +80,7 @@ const mapMongoTenant = (doc: MongoTenantDoc): TenantRecord => ({
   groupRegionLevels: doc.groupRegionLevels ?? null,
   publishingPurpose: doc.publishingPurpose ?? null,
   discoverFeatured: doc.discoverFeatured ?? false,
+  hiddenFromPublic: doc.hiddenFromPublic ?? false,
   createdAt: doc.createdAt,
   updatedAt: doc.updatedAt
 });
@@ -103,6 +106,7 @@ const tenantRowToMongoDoc = (row: TenantRecord): MongoTenantDoc => {
     groupRegionLevels: row.groupRegionLevels ?? null,
     publishingPurpose: row.publishingPurpose ?? null,
     discoverFeatured: row.discoverFeatured ?? false,
+    hiddenFromPublic: row.hiddenFromPublic ?? false,
     ...indexFields,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
@@ -316,11 +320,27 @@ export const listPublicShopTenantsForExplore = async (limit = 250): Promise<Tena
   const docs = await tenantsCollection()
     .find({
       businessMode: TenantBusinessMode.SHOP,
-      status: TenantStatus.ACTIVE
+      status: TenantStatus.ACTIVE,
+      hiddenFromPublic: { $ne: true },
     })
     .limit(limit)
     .toArray();
   return docs.map(mapMongoTenant);
+};
+
+export const setTenantHiddenFromPublic = async (
+  tenantId: string,
+  hiddenFromPublic: boolean
+): Promise<TenantRecord | null> => {
+  const existing = await findTenantById(tenantId);
+  if (!existing) return null;
+  const updated: TenantRecord = {
+    ...existing,
+    hiddenFromPublic,
+    updatedAt: new Date(),
+  };
+  await writeTenantToMongo(updated);
+  return updated;
 };
 
 export const setTenantDiscoverFeatured = async (

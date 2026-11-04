@@ -354,9 +354,17 @@ export interface TenantDetail {
   status: TenantListDTO['status'];
   businessMode?: string | null;
   discoverFeatured?: boolean;
+  hiddenFromPublic?: boolean;
   owner: { id: string; email: string; displayName: string | null };
   createdAt: string;
-  members: Array<{ userId: string; email: string; displayName: string | null; role: string; joinedAt: string }>;
+  members: Array<{
+    membershipId: string;
+    userId: string;
+    email: string;
+    displayName: string | null;
+    role: string;
+    joinedAt: string;
+  }>;
   activities: Array<{ id: string; title: string; locationName: string; startAt: string; status: string; capacity: number; participantCount: number; checkedInCount: number; guideName: string | null }>;
 }
 

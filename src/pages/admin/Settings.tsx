@@ -7,6 +7,8 @@ import {
 import { DashboardLayout } from '../../components/layout';
 import { ADMIN_LINKS } from '../../constants';
 import { AppSelect, ADMIN_SELECT_CLASS } from '../../components/ui/AppSelect';
+import { AdminTablePager, DEFAULT_ADMIN_PAGE_SIZE, paginateRows, type AdminPageSize } from '../../components/admin/AdminTablePager';
+import { formatAdminDate } from '../../utils/formatAdminDate';
 
 const BROADCAST_TARGET_OPTIONS = [
   { value: 'all' as const, label: 'All Active Users' },
@@ -35,6 +37,8 @@ export const Settings = () => {
   const [history, setHistory] = useState<BroadcastHistory[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(true);
   const [confirmSend, setConfirmSend] = useState(false);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState<AdminPageSize>(DEFAULT_ADMIN_PAGE_SIZE);
 
   const loadHistory = async (isActive: () => boolean = () => true) => {
     setLoadingHistory(true);
@@ -174,9 +178,9 @@ export const Settings = () => {
                   </td></tr>
                 ) : history.length === 0 ? (
                   <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-500">No broadcasts sent yet</td></tr>
-                ) : history.map((h) => (
+                ) : paginateRows(history, page, pageSize).map((h) => (
                   <tr key={h.id} className="border-t hover:bg-gray-50">
-                    <td className="px-4 py-3 text-xs text-gray-600 whitespace-nowrap">{new Date(h.sentAt).toLocaleString()}</td>
+                    <td className="px-4 py-3 text-xs text-gray-600 whitespace-nowrap">{formatAdminDate(h.sentAt)}</td>
                     <td className="px-4 py-3 font-medium text-gray-900">{h.title}</td>
                     <td className="px-4 py-3 text-gray-600 max-w-xs truncate">{h.body}</td>
                     <td className="px-4 py-3">
@@ -188,6 +192,16 @@ export const Settings = () => {
               </tbody>
             </table>
           </div>
+          <AdminTablePager
+            page={page}
+            pageSize={pageSize}
+            total={history.length}
+            onPage={setPage}
+            onPageSize={(size) => {
+              setPageSize(size);
+              setPage(1);
+            }}
+          />
         </div>
       </div>
     </DashboardLayout>

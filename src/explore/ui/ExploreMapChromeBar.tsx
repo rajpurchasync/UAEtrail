@@ -24,6 +24,8 @@ type ExploreMapChromeBarProps = {
   peopleBrowsePanelAvatars?: Array<{ id: string; name: string; avatar?: string | null }>;
   peopleBrowsePanelFriendCount?: number;
   onOpenExploreSearch?: () => void;
+  /** Docked desktop pin panel — shift filters so they sit in the remaining map. */
+  dockedPeek?: boolean;
 };
 
 /** Map toolbar — same Activities / Places browse context as the list panel. */
@@ -46,10 +48,13 @@ export const ExploreMapChromeBar = ({
   peopleBrowsePanelAvatars = [],
   peopleBrowsePanelFriendCount = 0,
   onOpenExploreSearch,
+  dockedPeek = false,
 }: ExploreMapChromeBarProps) => {
   return (
   <div
-    className={`pointer-events-none absolute inset-x-0 top-0 px-3 pt-2 lg:px-3 lg:pt-3 ${EXPLORE_MOBILE_MAP_CHROME.filterTop} ${EXPLORE_Z.mapFilters}`}
+    className={`pointer-events-none absolute inset-x-0 top-0 px-3 pt-2 lg:px-3 lg:pt-3 ${
+      dockedPeek ? 'lg:pl-[26.5rem]' : ''
+    } ${EXPLORE_MOBILE_MAP_CHROME.filterTop} ${EXPLORE_Z.mapFilters}`}
   >
     <div
       className="pointer-events-auto grid w-full grid-cols-[auto_minmax(0,1fr)] grid-rows-[auto_auto] items-start gap-x-2 gap-y-3.5 lg:flex lg:items-start lg:justify-between"
@@ -78,7 +83,7 @@ export const ExploreMapChromeBar = ({
           avatars={peopleBrowsePanelAvatars}
           friendCount={peopleBrowsePanelFriendCount}
           onClick={onOpenPeopleBrowsePanel}
-          className="col-start-2 row-start-1 inline-flex shrink-0 justify-self-end"
+          className="col-start-2 row-start-1 inline-flex shrink-0 justify-self-end md:hidden"
         />
       ) : null}
     </div>

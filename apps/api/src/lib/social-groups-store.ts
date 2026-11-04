@@ -1108,12 +1108,17 @@ export const listAllSocialGroupsAdmin = async (input: {
   take: number;
   search?: string;
   type?: GroupType;
+  status?: 'active' | 'suspended';
 }) => {
   const filter: Record<string, unknown> = {};
   if (input.type) filter.type = input.type;
+  if (input.status) filter.status = input.status;
   const searchRegex = normalizeSearchRegexInput(input.search);
   if (searchRegex) {
-    filter.name = { $regex: searchRegex, $options: 'i' };
+    filter.$or = [
+      { name: { $regex: searchRegex, $options: 'i' } },
+      { slogan: { $regex: searchRegex, $options: 'i' } },
+    ];
   }
 
   const [rows, total] = await Promise.all([

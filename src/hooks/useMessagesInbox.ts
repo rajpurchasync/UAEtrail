@@ -8,8 +8,11 @@ import {
   type MessagesInboxSlice,
 } from './clientQueryKeys';
 import {
+  emptyInboxFilterCounts,
+  inboxFilterCountsFromThreads,
   loadGroupThreadPreviews,
   sortInboxThreads,
+  toDirectThread,
   type InboxFilter,
   type InboxThread,
 } from '../utils/inboxThreads';
@@ -30,6 +33,7 @@ type UnreadSlice = {
 };
 
 const SLICE_STALE_MS = 20_000;
+const INBOX_QUERY_OPTIONS = { staleTime: SLICE_STALE_MS, refetchOnWindowFocus: false } as const;
 
 const pendingDirectKey = (userId: string) => ['messages-inbox-pending', userId, 'direct'] as const;
 const pendingGroupKey = (userId: string) => ['messages-inbox-pending', userId, 'groups'] as const;
@@ -93,19 +97,19 @@ export const useMessagesInbox = (userId: string | undefined, filter: InboxFilter
     queryKey: sliceKey(userKey, 'direct'),
     queryFn: fetchDirectSlice,
     enabled: enabled && filter === 'people',
-    staleTime: SLICE_STALE_MS,
+    ...INBOX_QUERY_OPTIONS,
   });
   const groups = useQuery({
     queryKey: sliceKey(userKey, 'groups'),
     queryFn: () => fetchGroupSlice('groups'),
     enabled: enabled && filter === 'groups',
-    staleTime: SLICE_STALE_MS,
+    ...INBOX_QUERY_OPTIONS,
   });
   const outings = useQuery({
     queryKey: sliceKey(userKey, 'outings'),
     queryFn: () => fetchGroupSlice('outings'),
     enabled: enabled && filter === 'outings',
-    staleTime: SLICE_STALE_MS,
+    ...INBOX_QUERY_OPTIONS,
   });
 
   const pendingDirectQuery = useQuery({
@@ -145,7 +149,7 @@ export const useMessagesInbox = (userId: string | undefined, filter: InboxFilter
       return directSlice;
     },
     enabled: enabled && filter === 'all',
-    staleTime: SLICE_STALE_MS,
+    ...INBOX_QUERY_OPTIONS,
   });
 
   const slicesCoverAll = direct.isSuccess && groups.isSuccess && outings.isSuccess;
@@ -153,8 +157,8 @@ export const useMessagesInbox = (userId: string | undefined, filter: InboxFilter
   const unread = useQuery({
     queryKey: sliceKey(userKey, 'unread'),
     queryFn: fetchUnreadSlice,
-    enabled: enabled && filter === 'unread' && !slicesCoverAll,
-    staleTime: SLICE_STALE_MS,
+    enabled,
+    ...INBOX_QUERY_OPTIONS,
   });
 
   const pendingDirect = pendingDirectQuery.data ?? [];
@@ -355,9 +359,23 @@ export const useMessagesInbox = (userId: string | undefined, filter: InboxFilter
       ? !allReady && combined.isError
       : Boolean(activeQuery?.isError && activeQuery.data === undefined);
 
+  const filterCounts = inboxFilterCountsFromThreads(
+    sortInboxThreads([
+      ...mergeConversations(
+        mergeConversations(direct.data?.conversations ?? [], unread.data?.conversations ?? []),
+        pendingDirect
+      ).map(toDirectThread),
+      ...mergeThreads(
+        mergeThreads(userGroups, outingThreads),
+        mergeThreads(unread.data?.threads ?? [], pendingGroups)
+      ),
+    ])
+  );
+
   return {
     conversations,
     groupThreads: sortInboxThreads(groupThreads),
+    filterCounts: enabled ? filterCounts : emptyInboxFilterCounts(),
     directConversationsDegraded:
       direct.data?.degraded === true || (filter === 'unread' && unread.data?.degraded === true),
     loading,

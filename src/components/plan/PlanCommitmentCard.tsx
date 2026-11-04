@@ -22,7 +22,7 @@ const badgeClass: Record<PlanCommitmentBadge, string> = {
 };
 
 const cardShellClass =
-  'glass-card-interactive flex w-full items-center gap-3 p-4 text-left active:scale-[0.99]';
+  'glass-card-interactive flex w-full items-center gap-2.5 p-3 text-left active:scale-[0.99] md:gap-2 md:p-2.5 lg:p-2';
 
 type PlanCommitmentCardProps = {
   title: string;
@@ -55,36 +55,45 @@ export const PlanCommitmentCard = ({
   const when = [dateLabel, timeLabel, activityTypeLabel].filter(Boolean).join(' · ');
 
   const body = (
-      <div className="min-w-0 flex-1 space-y-2">
-        <div className="flex flex-wrap items-center gap-2">
+      <div className="min-w-0 flex-1 space-y-1.5 md:space-y-1">
+        <div className="flex flex-wrap items-start gap-x-2 gap-y-1 md:items-center">
           <span
-            className={`shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-bold ${badgeClass[badge]}`}
+            className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold md:px-1.5 md:text-[9px] ${badgeClass[badge]}`}
           >
             {badge}
           </span>
           {actionHint ? (
-            <span className="text-[11px] font-semibold text-amber-800">{actionHint}</span>
+            <span className="text-[10px] font-semibold text-amber-800 md:text-[9px]">{actionHint}</span>
           ) : null}
+          <p className="min-w-0 flex-1 basis-full line-clamp-2 text-[15px] font-semibold leading-snug text-neutral-900 md:basis-auto md:line-clamp-1 md:text-sm">
+            {title}
+          </p>
         </div>
-        <p className="line-clamp-2 text-[16px] font-semibold leading-snug text-neutral-900">{title}</p>
-        <div className="flex items-center gap-1.5 text-xs text-neutral-600">
-          <Calendar className="h-3.5 w-3.5 shrink-0 text-neutral-400" aria-hidden />
-          <span className="truncate">{when}</span>
-        </div>
-        <div className="flex items-center gap-1.5 text-xs text-neutral-500">
-          <MapPin className="h-3.5 w-3.5 shrink-0 text-neutral-400" aria-hidden />
-          <span className="truncate">{locationLabel}</span>
+        <div className="flex flex-col gap-0.5 text-xs text-neutral-600 md:flex-row md:flex-wrap md:items-center md:gap-x-2 md:gap-y-0">
+          <span className="flex min-w-0 items-center gap-1">
+            <Calendar className="h-3 w-3 shrink-0 text-neutral-400 md:h-2.5 md:w-2.5" aria-hidden />
+            <span className="truncate">{when}</span>
+          </span>
+          <span className="hidden text-neutral-300 md:inline" aria-hidden>
+            ·
+          </span>
+          <span className="flex min-w-0 items-center gap-1 text-neutral-500">
+            <MapPin className="h-3 w-3 shrink-0 text-neutral-400 md:h-2.5 md:w-2.5" aria-hidden />
+            <span className="truncate">{locationLabel}</span>
+          </span>
         </div>
         {participants && participants.length > 0 ? (
-          <div className="flex items-center gap-2">
-            <Users className="h-3.5 w-3.5 shrink-0 text-neutral-400" aria-hidden />
+          <div className="flex items-center gap-1.5 md:mt-0">
+            <Users className="h-3 w-3 shrink-0 text-neutral-400 md:h-2.5 md:w-2.5" aria-hidden />
             <ParticipantPreview participants={participants} max={4} size="sm" />
           </div>
         ) : null}
       </div>
   );
 
-  const chevron = <ChevronRight className="h-5 w-5 shrink-0 text-neutral-300" aria-hidden />;
+  const chevron = (
+    <ChevronRight className="h-5 w-5 shrink-0 text-neutral-300 md:h-4 md:w-4" aria-hidden />
+  );
 
   if (activityDetailTo && navFocus) {
     return (

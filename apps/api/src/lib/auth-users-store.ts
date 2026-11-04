@@ -83,6 +83,7 @@ const buildUserQuery = (input: {
       $or: [
         { email: { $regex: searchRegex, $options: 'i' } },
         { 'profile.displayName': { $regex: searchRegex, $options: 'i' } },
+        { 'profile.phone': { $regex: searchRegex, $options: 'i' } },
       ],
     });
   }
@@ -144,6 +145,16 @@ export const findAuthUsersByIds = async (ids: string[]): Promise<AuthUserRecord[
   if (ids.length === 0) return [];
   const rows = await usersCollection().find({ _id: { $in: ids } }).toArray();
   return rows.map(normalizeAuthUser);
+};
+
+/** Case-insensitive match on id, email, display name, or phone. */
+export const findAuthUserIdsMatchingActorSearch = async (search: string): Promise<string[]> => {
+  const trimmed = search.trim();
+  if (!trimmed) return [];
+  const byId = await findAuthUserById(trimmed);
+  if (byId) return [byId._id];
+  const rows = await listAuthUsers({ search: trimmed, take: 80 });
+  return rows.map((row) => row._id);
 };
 
 export const getAuthUserMembershipTier = async (userId: string): Promise<MembershipTier> => {

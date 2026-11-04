@@ -547,6 +547,38 @@ const upsertLocation = async (id: string, data: LocationCreateInput) => {
   return location;
 };
 
+/** Fail fast when demo activities reference missing tenants or locations. */
+const assertSeedActivityReferentialIntegrity = async (): Promise<void> => {
+  const activityIds = await db()
+    .collection('activities')
+    .find({}, { projection: { _id: 1, tenantId: 1, locationId: 1 } })
+    .map((doc) => ({
+      id: String(doc._id),
+      tenantId: doc.tenantId as string | undefined,
+      locationId: doc.locationId as string | undefined,
+    }))
+    .toArray();
+
+  for (const row of activityIds) {
+    if (!row.tenantId) {
+      throw new Error(`[seed integrity] activity ${row.id} missing tenantId`);
+    }
+    const tenant = await findTenantById(row.tenantId);
+    if (!tenant) {
+      throw new Error(`[seed integrity] activity ${row.id} references unknown tenant ${row.tenantId}`);
+    }
+    if (!row.locationId) {
+      throw new Error(`[seed integrity] activity ${row.id} missing locationId`);
+    }
+    const location = await findLocationInMongo(row.locationId);
+    if (!location) {
+      throw new Error(`[seed integrity] activity ${row.id} references unknown location ${row.locationId}`);
+    }
+  }
+
+  console.log(`[seed] Activity referential integrity OK (${activityIds.length} rows)`);
+};
+
 /** Re-stamp `groupRegionLevels`, `groupRegionBrowseKey`, and `geo` on all catalog rows after seed upserts. */
 const restampCatalogGeoIndexFields = async (): Promise<void> => {
   const locationIds = await db()
@@ -574,7 +606,13 @@ const restampCatalogGeoIndexFields = async (): Promise<void> => {
   for (const activityId of activityIds) {
     const doc = await findActivityDocInMongo(activityId);
     if (!doc) continue;
-    const linked = doc.locationId ? await findLocationInMongo(doc.locationId) : null;
+    if (!doc.locationId) {
+      throw new Error(`[seed] activity ${activityId} missing locationId before geo restamp`);
+    }
+    const linked = await findLocationInMongo(doc.locationId);
+    if (!linked) {
+      throw new Error(`[seed] activity ${activityId} references missing location ${doc.locationId}`);
+    }
     const groupRegionLevels = await resolveGroupRegionLevelsForActivityDoc(doc, linked);
     await writeActivityDocToMongo(
       { ...doc, groupRegionLevels },
@@ -2190,6 +2228,7 @@ Share your live location and carry extra water in summer months.`
   console.log(`Seeded by admin id: ${admin._id}`);
   console.log(`Merchant stores: ${nikeMerchantProfile.shopName}, ${adidasMerchantProfile.shopName}`);
   await restampCatalogGeoIndexFields();
+  await assertSeedActivityReferentialIntegrity();
 
   const { invalidateExploreMapCache } = await import('../src/lib/explore-map-cache.js');
   await invalidateExploreMapCache();

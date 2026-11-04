@@ -1,4 +1,5 @@
 import { Heart } from 'lucide-react';
+import { UiTooltip } from '../../components/ui/UiTooltip';
 import {
   PLACE_PEEK_FOOTER_TRIP_ALERTS,
   PLACE_PEEK_FOOTER_TRIP_ALERTS_ON,
@@ -32,6 +33,7 @@ export const ExploreWishlistSaveButton = ({
 
   return (
     <div className="relative shrink-0">
+      <UiTooltip label={saveLabel}>
       <button
         type="button"
         disabled={busy}
@@ -41,7 +43,6 @@ export const ExploreWishlistSaveButton = ({
         }}
         className={`inline-flex h-9 w-9 items-center justify-center disabled:opacity-60 ${bare ? '' : 'rounded-full'} ${shell}`}
         aria-label={saveLabel}
-        title={saveLabel}
         aria-pressed={saved}
       >
         <Heart
@@ -50,6 +51,7 @@ export const ExploreWishlistSaveButton = ({
           aria-hidden
         />
       </button>
+      </UiTooltip>
       {notice ? (
         <p
           role="status"

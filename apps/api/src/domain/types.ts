@@ -33,6 +33,7 @@ export interface Tenant {
   latitude?: number | null;
   longitude?: number | null;
   region?: string | null;
+  hiddenFromPublic?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }

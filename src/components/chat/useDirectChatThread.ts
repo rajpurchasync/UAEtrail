@@ -203,24 +203,38 @@ export const useDirectChatThread = ({
     );
   }, [currentUserId, hasMoreOlder, messages, partnerUserId, queryClient]);
 
-  useEffect(() => {
-    if (!partnerUserId) {
-      setPartnerBrief(null);
-      return;
-    }
-    const conv = conversations.find((conversation) => conversation.userId === partnerUserId);
-    if (conv) {
-      setPartnerBrief({ displayName: conv.displayName, avatarUrl: conv.avatarUrl });
-      return;
-    }
-    fetchUserBrief(partnerUserId)
-      .then((brief) => setPartnerBrief({ displayName: brief.displayName, avatarUrl: brief.avatarUrl }))
-      .catch(() => setPartnerBrief(null));
-  }, [partnerUserId, conversations]);
-
   const selectedConversation = conversations.find(
     (conversation) => conversation.userId === partnerUserId
   );
+  const selectedName = selectedConversation?.displayName;
+  const selectedAvatar = selectedConversation?.avatarUrl;
+
+  useEffect(() => {
+    if (!partnerUserId) {
+      setPartnerBrief((current) => (current === null ? current : null));
+      return;
+    }
+    if (selectedName) {
+      setPartnerBrief((current) =>
+        current?.displayName === selectedName && current.avatarUrl === selectedAvatar
+          ? current
+          : { displayName: selectedName, avatarUrl: selectedAvatar }
+      );
+      return;
+    }
+    let cancelled = false;
+    fetchUserBrief(partnerUserId)
+      .then((brief) => {
+        if (cancelled) return;
+        setPartnerBrief({ displayName: brief.displayName, avatarUrl: brief.avatarUrl });
+      })
+      .catch(() => {
+        if (!cancelled) setPartnerBrief(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [partnerUserId, selectedName, selectedAvatar]);
   const partnerName = selectedConversation?.displayName ?? partnerBrief?.displayName ?? 'User';
   const partnerAvatar = selectedConversation?.avatarUrl ?? partnerBrief?.avatarUrl ?? undefined;
 

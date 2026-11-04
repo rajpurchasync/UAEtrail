@@ -1,4 +1,5 @@
 import { ChevronLeft, Map, Maximize2, Minimize2, X } from 'lucide-react';
+import { UiTooltip } from '../../components/ui/UiTooltip';
 import { useExploreDesktopListDrawerChrome } from '../../explore/ui/ExploreDesktopListDrawer';
 import { Link } from 'react-router-dom';
 import { MobileBackButton } from '../../components/mobile/MobileBackButton';
@@ -63,26 +64,29 @@ export const ListExplorerHeader = ({
         onClose ? 'max-w-none' : 'max-w-6xl'
       } pb-2.5 pt-1`}
     >
-      <div className={`${LIST_APP_BAR.row} mb-1`}>
+      <div className={`${LIST_APP_BAR.row} mb-1 ${onClose ? '' : 'md:hidden'}`}>
         <div className="flex min-w-0 items-center gap-1">
           {onClose ? (
             <button
               type="button"
               onClick={onClose}
-              className="inline-flex min-h-10 items-center gap-0.5 pl-0 text-sm font-medium text-emerald-700/90 hover:text-emerald-800"
+              className="inline-flex min-h-8 items-center gap-0.5 pl-0 text-sm font-medium text-emerald-700/90 hover:text-emerald-800"
               aria-label="Back to Explore"
             >
               <ChevronLeft className="h-5 w-5 shrink-0" strokeWidth={2.25} aria-hidden />
               <span className="truncate">Explore</span>
             </button>
           ) : (
-            <MobileBackButton fallbackTo={mapHref} label="Explore" className="!min-h-10 pl-0" />
+            <div className="md:hidden">
+              <MobileBackButton fallbackTo={mapHref} label="Explore" className="!min-h-10 pl-0" />
+            </div>
           )}
         </div>
         <div className="flex items-center gap-1">
           {onClose ? (
             <>
               {drawer ? (
+                <UiTooltip label={drawer.maximized ? 'Exit full screen' : 'Full screen'}>
                 <button
                   type="button"
                   onClick={drawer.toggleMaximized}
@@ -96,7 +100,9 @@ export const ListExplorerHeader = ({
                     <Maximize2 className="h-5 w-5 stroke-[2.25]" aria-hidden />
                   )}
                 </button>
+                </UiTooltip>
               ) : null}
+              <UiTooltip label="Close list">
               <button
                 type="button"
                 onClick={onClose}
@@ -105,9 +111,11 @@ export const ListExplorerHeader = ({
               >
                 <X className="h-5 w-5 stroke-[2.25]" aria-hidden />
               </button>
+              </UiTooltip>
             </>
           ) : (
             <>
+              <UiTooltip label="Map">
               <Link
                 to={mapHref}
                 className={`${LIST_SEARCH.sideAction} ${LIST_SEARCH.sideActionMap} !h-10 !w-10 text-emerald-700`}
@@ -115,6 +123,7 @@ export const ListExplorerHeader = ({
               >
                 <Map className="h-5 w-5 stroke-[2.25]" aria-hidden />
               </Link>
+              </UiTooltip>
               <MobileMenuButton className={LIST_CHROME.menuButton} />
             </>
           )}
@@ -132,7 +141,7 @@ export const ListExplorerHeader = ({
         compactTop
         className="!mt-0"
       />
-      <div className="mt-2 flex items-center justify-between gap-2">
+      <div className="mt-1.5 flex items-center justify-between gap-2">
         <div className="flex min-w-0 items-center gap-2">
           <ListExplorerBucketToggle
             bucket={bucket}
@@ -143,11 +152,24 @@ export const ListExplorerHeader = ({
             {resultCount == null ? ' ' : listExplorerBucketTotalLabel(bucket, resultCount)}
           </p>
         </div>
-        <ListExplorerViewSwitch
-          layout={bucket === 'places' && layout === 'calendar' ? 'thumbnails' : layout}
-          onChange={onLayoutChange}
-          showCalendar={bucket !== 'places'}
-        />
+        <div className="flex shrink-0 items-center gap-1.5">
+          {onClose ? null : (
+            <UiTooltip label="Map">
+              <Link
+                to={mapHref}
+                className={`${LIST_SEARCH.sideAction} ${LIST_SEARCH.sideActionMap} !hidden !h-8 !w-8 text-emerald-700 md:!inline-flex`}
+                aria-label="Map"
+              >
+                <Map className="h-4 w-4 stroke-[2.25]" aria-hidden />
+              </Link>
+            </UiTooltip>
+          )}
+          <ListExplorerViewSwitch
+            layout={bucket === 'places' && layout === 'calendar' ? 'thumbnails' : layout}
+            onChange={onLayoutChange}
+            showCalendar={bucket !== 'places'}
+          />
+        </div>
       </div>
     </div>
   </header>

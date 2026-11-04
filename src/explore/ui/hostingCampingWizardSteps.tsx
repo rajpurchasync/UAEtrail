@@ -87,8 +87,8 @@ export const CampingTransportationStepBody = ({
   hint?: string;
 }) => (
   <>
-    <p className="mb-3 text-sm text-gray-600">{hint}</p>
-    <div className="space-y-3">
+    <p className="mb-3 text-sm text-neutral-600 md:mb-2 md:text-xs">{hint}</p>
+    <div className="flex flex-col gap-3 md:flex-row md:gap-2">
       {VEHICLE_ACCESS_OPTIONS.map((option) => {
         const active = draft.vehicleAccess === option.value;
         return (
@@ -96,10 +96,10 @@ export const CampingTransportationStepBody = ({
             key={option.value}
             type="button"
             onClick={() => patchDraft({ vehicleAccess: option.value as VehicleAccess })}
-            className={exploreFlowChoiceCardClass(active)}
+            className={`${exploreFlowChoiceCardClass(active)} md:flex-1 md:min-w-0 md:px-2 md:py-2`}
           >
-            <p className={EXPLORE_FLOW.choiceCardTitle}>{option.title}</p>
-            <p className={EXPLORE_FLOW.choiceCardSubtitle}>{option.subtitle}</p>
+            <p className={`${EXPLORE_FLOW.choiceCardTitle} md:text-xs`}>{option.title}</p>
+            <p className={`${EXPLORE_FLOW.choiceCardSubtitle} md:hidden`}>{option.subtitle}</p>
           </button>
         );
       })}

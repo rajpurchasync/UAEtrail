@@ -31,6 +31,7 @@ import {
   type LocationPrecision,
   type TimeMode,
 } from './createFlowShared';
+import { DEFAULT_PARTICIPANT_MIN_AGE } from './hostingParticipantAgeMin';
 
 export type { ParticipationMode } from '../compose';
 export type {
@@ -142,6 +143,10 @@ export type CreateActivityDraft = {
   trailLongitude: number | null;
   /** Hiking — trail / outing description. */
   aboutTrail: string;
+  /** Hiking — trail length (km) for joiners; prefilled from registry when available. */
+  trailDistanceKm: number | null;
+  /** Hiking — elevation gain (m); prefilled from registry when available. */
+  trailElevationM: number | null;
   /** Hiking — gear and must-know lines for joiners. */
   joinKit: string;
   /** Hiking/event packing checklist — joiners see or must tick these. */
@@ -474,6 +479,8 @@ export const emptyCreateActivityDraft = (): CreateActivityDraft => ({
   trailLatitude: null,
   trailLongitude: null,
   aboutTrail: '',
+  trailDistanceKm: null,
+  trailElevationM: null,
   joinKit: '',
   packingAckMode: 'lenient',
   packingItems: [],
@@ -493,7 +500,7 @@ export const emptyCreateActivityDraft = (): CreateActivityDraft => ({
   vehicleAccess: 'sedan',
   memberVehicleId: null,
   description: '',
-  ageMin: 5,
+  ageMin: DEFAULT_PARTICIPANT_MIN_AGE,
   ageMax: 80,
   additionalInstructions: '',
   meetingPointInfo: '',
@@ -681,15 +688,21 @@ export const buildHostingActivityRequirements = (draft: CreateActivityDraft): st
           ? 'Medium (For regulars)'
           : 'Hard (For professionals)';
     requirements.push(`Difficulty: ${difficultyLabel}`);
+    if (draft.trailDistanceKm != null && draft.trailDistanceKm > 0) {
+      requirements.push(`Distance: ${draft.trailDistanceKm} km`);
+    }
+    if (draft.trailElevationM != null && draft.trailElevationM >= 0) {
+      requirements.push(`Elevation gain: ${draft.trailElevationM} m`);
+    }
     requirements.push(
       draft.vehicleAccess === '4x4' ? 'Reachable by 4x4 only' : 'Reachable by sedan'
     );
   } else if (draft.kind !== 'hiking' && draft.kind !== 'camping') {
-    if (draft.ageMin > 5 || draft.ageMax < 80) {
+    if (draft.ageMin > DEFAULT_PARTICIPANT_MIN_AGE || draft.ageMax < 80) {
       const maxLabel = draft.ageMax >= 80 ? '80+' : String(draft.ageMax);
       requirements.push(`Age range: ${draft.ageMin}–${maxLabel}`);
     } else {
-      requirements.push('Age: 5 onwards');
+      requirements.push(`Age: ${DEFAULT_PARTICIPANT_MIN_AGE} onwards`);
     }
   }
   if (draft.kind === 'rideshare' && draft.rideshareDestinationKind === 'activity_meeting') {

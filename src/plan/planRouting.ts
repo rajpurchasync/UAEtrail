@@ -60,6 +60,31 @@ export const planHostedSchedulePath = (): string => planHostingFilterPath();
 /** Notification / API deep links — joined filter on upcoming. */
 export const planJoinedSchedulePath = (): string => planJoinedFilterPath();
 
+const isPlanPath = (pathname: string): boolean =>
+  pathname === PLAN_PATH || pathname.startsWith(`${PLAN_PATH}/`);
+
+/** True when upcoming tab is filtered to outings the member hosts. */
+export const isPlanHostingFilterRoute = (pathname: string, search: string): boolean =>
+  isPlanPath(pathname) && new URLSearchParams(search).get('filter') === 'hosting';
+
+/**
+ * Desktop sidebar “My Plans” target when Organise → Hosting schedule is shown:
+ * participant view (joined) so the two links are not the same landing.
+ */
+export const planMemberNavPath = (showOrganiserShortcut: boolean): string =>
+  showOrganiserShortcut ? planJoinedFilterPath() : PLAN_PATH;
+
+/** Highlight My Plans nav (not the organiser hosting shortcut). */
+export const isPlanMemberNavActive = (
+  pathname: string,
+  search: string,
+  showOrganiserShortcut: boolean
+): boolean => {
+  if (!isPlanPath(pathname)) return false;
+  if (!showOrganiserShortcut) return true;
+  return !isPlanHostingFilterRoute(pathname, search);
+};
+
 export const planAvailabilityPath = (): string => planLensPath('availability');
 
 export { planHostedActivityManagePath, planSelfDemandManagePath, planPlansRolePath };

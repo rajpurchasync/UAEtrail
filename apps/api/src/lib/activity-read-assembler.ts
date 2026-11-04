@@ -675,7 +675,7 @@ export const findPublicTenantProfileBySlugFromMongo = async (
   slug: string
 ): Promise<PublicTenantProfile | null> => {
   const tenant = await findTenantBySlug(slug);
-  if (!tenant || tenant.status !== 'ACTIVE') return null;
+  if (!tenant || tenant.status !== 'ACTIVE' || tenant.hiddenFromPublic) return null;
 
   const owner = await findAuthUsersByIds([tenant.ownerId]).then((users) => users[0]);
   if (!owner) return null;

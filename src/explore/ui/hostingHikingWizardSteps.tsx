@@ -21,6 +21,7 @@ import {
 import {
   formatParticipantMinAgeFieldValue,
   parseParticipantMinAgeFieldValue,
+  DEFAULT_PARTICIPANT_MIN_AGE,
 } from './hostingParticipantAgeMin';
 import { HostingVenuePlaceField } from './HostingVenuePlaceField';
 import type { PlaceDTO } from '@uaetrail/shared-types';
@@ -91,7 +92,7 @@ export const HikingAudienceStepBody = ({
               }
               className={exploreFlowChoiceCardClass(active)}
             >
-              <Icon className={`h-5 w-5 ${active ? 'text-emerald-600' : 'text-gray-500'}`} />
+              <Icon className={`h-5 w-5 ${active ? 'text-emerald-600' : 'text-neutral-500'}`} />
               <p className={`mt-2 ${EXPLORE_FLOW.choiceCardTitle}`}>{option.title}</p>
               <p className={EXPLORE_FLOW.choiceCardSubtitle}>{option.subtitle}</p>
             </button>
@@ -99,8 +100,8 @@ export const HikingAudienceStepBody = ({
         })}
       </div>
 
-      {isPublic ? (
-        <div>
+      <div className="relative">
+        <div className={isPublic ? undefined : 'invisible'} aria-hidden={!isPublic}>
           <p className={`mb-2 ${EXPLORE_FLOW.choiceCardTitle}`}>{HIKE_APPROVAL_QUESTION}</p>
           <div className={EXPLORE_FLOW.choiceGrid2}>
             {([
@@ -123,10 +124,12 @@ export const HikingAudienceStepBody = ({
                 <button
                   key={option.key}
                   type="button"
+                  tabIndex={isPublic ? 0 : -1}
+                  disabled={!isPublic}
                   onClick={() => patchDraft({ participationMode: option.key as ParticipationMode })}
                   className={exploreFlowChoiceCardClass(active)}
                 >
-                  <Icon className={`h-5 w-5 ${active ? 'text-emerald-600' : 'text-gray-500'}`} />
+                  <Icon className={`h-5 w-5 ${active ? 'text-emerald-600' : 'text-neutral-500'}`} />
                   <p className={`mt-2 ${EXPLORE_FLOW.choiceCardTitle}`}>{option.title}</p>
                   <p className={EXPLORE_FLOW.choiceCardSubtitle}>{option.subtitle}</p>
                 </button>
@@ -134,9 +137,14 @@ export const HikingAudienceStepBody = ({
             })}
           </div>
         </div>
-      ) : (
-        <p className="rounded-xl bg-neutral-50 px-3 py-2 text-sm text-gray-600">{HIKE_PRIVATE_EVENT_INFO}</p>
-      )}
+        {!isPublic ? (
+          <div className="absolute inset-0 flex items-start">
+            <p className="w-full rounded-xl bg-neutral-50 px-3 py-2 text-sm leading-snug text-neutral-600">
+              {HIKE_PRIVATE_EVENT_INFO}
+            </p>
+          </div>
+        ) : null}
+      </div>
     </>
   );
 };
@@ -163,7 +171,7 @@ export const HikingSpotsStepBody = ({
   return (
     <>
       <p className={`mb-3 ${EXPLORE_FLOW.choiceCardTitle}`}>{PARTICIPANTS_SPOTS_QUESTION}</p>
-      <div className="mb-5 flex flex-wrap gap-2">
+      <div className="mb-5 flex flex-wrap items-center gap-2">
         {HIKE_CAPACITY_PRESETS.map((value) => {
           const active = draft.capacity === value;
           return (
@@ -171,18 +179,36 @@ export const HikingSpotsStepBody = ({
               key={value}
               type="button"
               onClick={() => patchDraft({ capacity: value })}
-              className={`rounded-full px-4 py-2 text-sm font-bold ${
-                active ? 'bg-emerald-600 text-white' : 'bg-neutral-100 text-gray-800'
+              className={`rounded-full px-4 py-2 text-sm font-bold md:px-3 md:py-1.5 md:text-xs ${
+                active ? 'bg-emerald-600 text-white' : 'bg-neutral-100 text-neutral-800'
               }`}
             >
               {formatHikeCapacityLabel(value)}
             </button>
           );
         })}
+        <label className="flex items-center gap-2 text-sm text-neutral-700 md:ml-2">
+          <span className="whitespace-nowrap text-neutral-500">Custom</span>
+          <input
+            type="number"
+            inputMode="numeric"
+            min={1}
+            max={99}
+            value={draft.capacity}
+            onChange={(event) => {
+              const raw = Number(event.target.value);
+              if (!Number.isFinite(raw)) return;
+              patchDraft({ capacity: Math.min(99, Math.max(1, Math.round(raw))) });
+            }}
+            className={`w-16 ${EXPLORE_FLOW.composeField}`}
+            aria-label="Number of spots"
+          />
+        </label>
       </div>
 
       <p className={`mb-2 ${EXPLORE_FLOW.choiceCardTitle}`}>{PARTICIPANTS_WHO_CAN_JOIN}</p>
-      <div className={`mb-3 ${EXPLORE_FLOW.choiceGrid2}`}>
+      <div className="md:grid md:grid-cols-[minmax(0,1fr)_minmax(11rem,14rem)] md:items-start md:gap-4">
+        <div className={`mb-3 md:mb-0 ${EXPLORE_FLOW.choiceGrid2}`}>
         {([
           {
             key: 'open' as const,
@@ -218,17 +244,28 @@ export const HikingSpotsStepBody = ({
               }
               className={exploreFlowChoiceCardClass(active)}
             >
-              <Icon className={`h-5 w-5 ${active ? 'text-emerald-600' : 'text-gray-500'}`} />
+              <Icon className={`h-5 w-5 ${active ? 'text-emerald-600' : 'text-neutral-500'}`} />
               <p className={`mt-2 ${EXPLORE_FLOW.choiceCardTitle}`}>{option.title}</p>
               <p className={EXPLORE_FLOW.choiceCardSubtitle}>{option.subtitle}</p>
             </button>
           );
         })}
-      </div>
+        </div>
 
-      {!draft.participantsOpenToAll ? (
-        <div className="mb-4 space-y-2 rounded-2xl border border-neutral-200 bg-neutral-50/80 p-3">
-          <label className="flex items-center gap-2 text-sm font-medium text-gray-800">
+        <div
+          className={`mb-4 min-h-[9.5rem] rounded-xl border p-2.5 md:mb-0 ${
+            draft.participantsOpenToAll
+              ? 'border-dashed border-neutral-200 bg-neutral-50/40'
+              : 'border-neutral-200 bg-neutral-50/80'
+          }`}
+        >
+          {draft.participantsOpenToAll ? (
+            <p className="px-1 py-6 text-center text-xs leading-snug text-neutral-400">
+              Choose <span className="font-semibold text-neutral-500">Limited</span> to set who can join.
+            </p>
+          ) : (
+            <div className="space-y-2">
+          <label className="flex items-center gap-2 text-sm font-medium text-neutral-800">
             <input
               type="checkbox"
               checked={draft.limitedWomenOnly}
@@ -238,7 +275,7 @@ export const HikingSpotsStepBody = ({
             <UserRound className="h-4 w-4 text-emerald-600" aria-hidden />
             Women only
           </label>
-          <label className="flex items-center gap-2 text-sm font-medium text-gray-800">
+          <label className="flex items-center gap-2 text-sm font-medium text-neutral-800">
             <input
               type="checkbox"
               checked={draft.limitedFamilyOnly}
@@ -248,13 +285,17 @@ export const HikingSpotsStepBody = ({
             <Users className="h-4 w-4 text-emerald-600" aria-hidden />
             Family only
           </label>
-          <label className="flex items-start gap-2 text-sm font-medium text-gray-800">
+          <label className="flex items-start gap-2 text-sm font-medium text-neutral-800">
             <input
               type="checkbox"
               checked={draft.limitedMinAgeEnabled}
-              onChange={(event) =>
-                patchAudience({ limitedMinAgeEnabled: event.target.checked })
-              }
+              onChange={(event) => {
+                const enabled = event.target.checked;
+                patchAudience({
+                  limitedMinAgeEnabled: enabled,
+                  ...(enabled && draft.ageMin < 1 ? { ageMin: DEFAULT_PARTICIPANT_MIN_AGE } : null),
+                });
+              }}
               className="mt-0.5 rounded border-gray-300 text-emerald-600"
             />
             <Baby className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" aria-hidden />
@@ -266,20 +307,23 @@ export const HikingSpotsStepBody = ({
                   inputMode="numeric"
                   min={1}
                   max={99}
+                  placeholder={String(DEFAULT_PARTICIPANT_MIN_AGE)}
                   value={formatParticipantMinAgeFieldValue(draft.ageMin)}
                   onChange={(event) =>
                     patchDraft({ ageMin: parseParticipantMinAgeFieldValue(event.target.value) })
                   }
-                  className="mt-2 w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-base font-semibold text-gray-900"
+                  className="mt-2 w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-base font-semibold text-neutral-900 md:mt-1 md:py-1.5 md:text-sm"
                   aria-label={PARTICIPANTS_MIN_AGE_LABEL}
                 />
               ) : null}
             </span>
           </label>
+            </div>
+          )}
         </div>
-      ) : null}
+      </div>
 
-      <label className="flex items-center gap-2 text-sm text-gray-800">
+      <label className="flex items-center gap-2 text-sm text-neutral-800">
         <input
           type="checkbox"
           checked={draft.petsAllowed}
@@ -319,6 +363,51 @@ export const HikingDestinationStepBody = ({
   />
 );
 
+export const HikingTrailStatsFields = ({
+  draft,
+  patchDraft,
+}: {
+  draft: CreateActivityDraft;
+  patchDraft: PatchDraft;
+}) => (
+  <div className="mt-4 grid grid-cols-2 gap-3">
+    <label className="block">
+      <span className="mb-1 block text-xs font-semibold text-neutral-500">Length (km)</span>
+      <input
+        type="number"
+        min={0.1}
+        step={0.1}
+        inputMode="decimal"
+        required
+        value={draft.trailDistanceKm ?? ''}
+        onChange={(event) => {
+          const raw = event.target.value;
+          patchDraft({ trailDistanceKm: raw === '' ? null : Number(raw) });
+        }}
+        placeholder="e.g. 8.5"
+        className={EXPLORE_FLOW.composeField}
+      />
+    </label>
+    <label className="block">
+      <span className="mb-1 block text-xs font-semibold text-neutral-500">Elevation gain (m)</span>
+      <input
+        type="number"
+        min={0}
+        step={1}
+        inputMode="numeric"
+        required
+        value={draft.trailElevationM ?? ''}
+        onChange={(event) => {
+          const raw = event.target.value;
+          patchDraft({ trailElevationM: raw === '' ? null : Number(raw) });
+        }}
+        placeholder="e.g. 450"
+        className={EXPLORE_FLOW.composeField}
+      />
+    </label>
+  </div>
+);
+
 export const HikingDifficultyStepBody = ({
   draft,
   patchDraft,
@@ -327,10 +416,10 @@ export const HikingDifficultyStepBody = ({
   patchDraft: PatchDraft;
 }) => (
   <>
-    <p className="mb-3 text-sm text-gray-600">
-      For this outing — registry trails may suggest a level; you can change it here.
+    <p className="mb-3 text-sm text-neutral-600 md:mb-2 md:text-xs">
+      Set difficulty and trail stats for this outing — registry trails prefill when you pick one.
     </p>
-    <div className="space-y-2">
+    <div className="flex flex-col gap-2 md:flex-row md:flex-nowrap md:gap-2">
       {ACTIVITY_DIFFICULTY_OPTIONS.map((option) => {
         const active = draft.difficulty === option.value;
         return (
@@ -338,14 +427,15 @@ export const HikingDifficultyStepBody = ({
             key={option.value}
             type="button"
             onClick={() => patchDraft({ difficulty: option.value as ActivityDifficulty })}
-            className={exploreFlowChoiceCardClass(active)}
+            className={`${exploreFlowChoiceCardClass(active)} md:flex-1 md:min-w-0 md:px-2 md:py-2`}
           >
-            <p className={EXPLORE_FLOW.choiceCardTitle}>{option.title}</p>
-            <p className={EXPLORE_FLOW.choiceCardSubtitle}>{option.subtitle}</p>
+            <p className={`${EXPLORE_FLOW.choiceCardTitle} md:text-xs`}>{option.title}</p>
+            <p className={`${EXPLORE_FLOW.choiceCardSubtitle} md:hidden`}>{option.subtitle}</p>
           </button>
         );
       })}
     </div>
+    <HikingTrailStatsFields draft={draft} patchDraft={patchDraft} />
   </>
 );
 

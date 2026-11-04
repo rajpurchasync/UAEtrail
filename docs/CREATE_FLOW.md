@@ -53,7 +53,7 @@ Code (today): `src/explore/compose.ts`, `CreateIntentSheet.tsx`, `SeekFlexibleCo
 
 **Disambiguation:** Bottom nav **My Plans** (`/plan`) = upcoming commitments + availability — not this FAB.
 
-**Layout:** Sheet height fits content; warm tone; 2-col chips or tight rows on level 2. See [`NAVIGATION.md`](./NAVIGATION.md) § Explore FAB.
+**Layout:** Mobile stays a peek sheet you pull up to full screen. Tablet and desktop (`md+`) use **one scrollable form page** for all text/choice fields, then separate full screens for map pins, photos (when needed), and publish/review. Warm tone; section headings on wide forms. See [`NAVIGATION.md`](./NAVIGATION.md) § Explore FAB.
 
 ### Legacy FAB labels
 

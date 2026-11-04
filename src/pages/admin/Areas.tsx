@@ -1,7 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useSafeAsyncEffect } from '../../hooks/useSafeAsyncEffect';
 import type { AreaDTO, AreaStatus } from '@uaetrail/shared-types';
-import { areaDetailPath } from '@uaetrail/shared-types';
 import { Link } from 'react-router-dom';
 import {
   createAdminArea,
@@ -16,6 +15,9 @@ import { ImageUpload } from '../../components/ui';
 import { AppSelect, ADMIN_SELECT_CLASS } from '../../components/ui/AppSelect';
 import { SUPPORTED_COUNTRIES, DEFAULT_COUNTRY, getRegionsForCountry, type CountryCode } from '../../config/regions';
 import { adminPlacesPath } from '../../config/adminSurfacePaths';
+import { AdminIconButton } from '../../components/admin/AdminIconButton';
+import { AdminTablePager, DEFAULT_ADMIN_PAGE_SIZE, paginateRows, type AdminPageSize } from '../../components/admin/AdminTablePager';
+import { MapPin, Pencil, Trash2 } from 'lucide-react';
 
 const COUNTRY_OPTIONS = SUPPORTED_COUNTRIES.map((country) => ({
   value: country.code,
@@ -64,6 +66,8 @@ const emptyForm = (): AreaFormState => ({
 /** Platform admin — curated geographic areas (country → region → hub). */
 export const Areas = () => {
   const [areas, setAreas] = useState<AreaDTO[]>([]);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState<AdminPageSize>(DEFAULT_ADMIN_PAGE_SIZE);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -227,27 +231,26 @@ export const Areas = () => {
                     </td>
                   </tr>
                 ) : (
-                  areas.map((area) => (
+                  paginateRows(areas, page, pageSize).map((area) => (
                     <tr key={area.id} className="border-t hover:bg-gray-50">
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-3">
-                          {area.imageUrl ? (
-                            <img src={area.imageUrl} alt="" className="w-10 h-10 rounded-lg object-cover" />
-                          ) : (
-                            <div className="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-800 flex items-center justify-center text-lg">
-                              📍
-                            </div>
-                          )}
-                          <div>
-                            <p className="font-medium text-gray-900">{area.name}</p>
-                            <p className="text-xs text-gray-500">
-                              <Link to={areaDetailPath(area.slug)} className="hover:underline" target="_blank" rel="noreferrer">
-                                /area/{area.slug}
-                              </Link>
-                              {' · '}p{area.priority}
-                            </p>
-                          </div>
-                        </div>
+                      <td className="admin-table-hit">
+                        <button type="button" onClick={() => openEdit(area)}>
+                          <span className="flex items-center gap-3">
+                            {area.imageUrl ? (
+                              <img src={area.imageUrl} alt="" className="w-10 h-10 rounded-lg object-cover" />
+                            ) : (
+                              <div className="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-800 flex items-center justify-center text-lg">
+                                📍
+                              </div>
+                            )}
+                            <span>
+                              <span className="block font-medium text-gray-900">{area.name}</span>
+                              <span className="block text-xs text-gray-500">
+                                /area/{area.slug} · p{area.priority}
+                              </span>
+                            </span>
+                          </span>
+                        </button>
                       </td>
                       <td className="px-4 py-3 text-gray-700">{area.region}</td>
                       <td className="px-4 py-3">
@@ -263,26 +266,19 @@ export const Areas = () => {
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex flex-wrap gap-1.5">
-                          <button
-                            type="button"
-                            onClick={() => openEdit(area)}
-                            className="px-2 py-1 rounded bg-blue-100 text-blue-800 hover:bg-blue-200 text-xs"
-                          >
-                            Edit
-                          </button>
-                          <Link
+                          <AdminIconButton label="Edit" icon={Pencil} onClick={() => openEdit(area)} />
+                          <AdminIconButton
+                            label="Manage places"
+                            icon={MapPin}
+                            tone="emerald"
                             to={adminPlacesPath(area.id)}
-                            className="px-2 py-1 rounded bg-emerald-100 text-emerald-800 hover:bg-emerald-200 text-xs inline-block"
-                          >
-                            Manage places
-                          </Link>
-                          <button
-                            type="button"
+                          />
+                          <AdminIconButton
+                            label="Delete"
+                            icon={Trash2}
+                            tone="red"
                             onClick={() => setConfirmDelete(area)}
-                            className="px-2 py-1 rounded bg-red-100 text-red-800 hover:bg-red-200 text-xs"
-                          >
-                            Delete
-                          </button>
+                          />
                         </div>
                       </td>
                     </tr>
@@ -292,6 +288,16 @@ export const Areas = () => {
             </table>
           </div>
         )}
+        <AdminTablePager
+          page={page}
+          pageSize={pageSize}
+          total={areas.length}
+          onPage={setPage}
+          onPageSize={(size) => {
+            setPageSize(size);
+            setPage(1);
+          }}
+        />
       </div>
 
       {modalOpen && (

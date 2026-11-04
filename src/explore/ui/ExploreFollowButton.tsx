@@ -1,4 +1,5 @@
 import { Heart } from 'lucide-react';
+import { UiTooltip } from '../../components/ui/UiTooltip';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import { useExploreEntityFollow } from './useExploreEntityFollow';
 
@@ -24,6 +25,7 @@ export const ExploreFollowButton = ({ card, light = false, bare = false }: Explo
 
   return (
     <div className="relative shrink-0">
+      <UiTooltip label={followLabel}>
       <button
         type="button"
         disabled={busy}
@@ -33,7 +35,6 @@ export const ExploreFollowButton = ({ card, light = false, bare = false }: Explo
         }}
         className={`inline-flex h-9 w-9 items-center justify-center disabled:opacity-60 ${bare ? '' : 'rounded-full'} ${shell}`}
         aria-label={followLabel}
-        title={followLabel}
         aria-pressed={following}
       >
         <Heart
@@ -42,6 +43,7 @@ export const ExploreFollowButton = ({ card, light = false, bare = false }: Explo
           aria-hidden
         />
       </button>
+      </UiTooltip>
       {notice ? (
         <p
           role="status"

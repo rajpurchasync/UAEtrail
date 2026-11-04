@@ -918,6 +918,7 @@ export interface TenantListDTO {
   ownerName: string;
   memberCount: number;
   activityCount: number;
+  hiddenFromPublic?: boolean;
 }
 
 export interface OrganisationHostDetailsDTO {

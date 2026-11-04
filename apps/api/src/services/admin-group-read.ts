@@ -9,6 +9,7 @@ export const listAdminSocialGroupsPage = async (input: {
   pageSize: number;
   search?: string;
   type?: 'family' | 'friends';
+  status?: 'active' | 'suspended';
 }) => {
   const skip = (input.page - 1) * input.pageSize;
   const { data, total } = await listAllSocialGroupsAdmin({
@@ -16,6 +17,7 @@ export const listAdminSocialGroupsPage = async (input: {
     take: input.pageSize,
     search: input.search,
     type: input.type,
+    status: input.status,
   });
 
   return {

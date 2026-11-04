@@ -1,4 +1,5 @@
 import { LocateFixed } from 'lucide-react';
+import { UiTooltip } from '../../components/ui/UiTooltip';
 
 type ExploreMapLocateButtonProps = {
   onLocate: () => void;
@@ -11,14 +12,16 @@ export const ExploreMapLocateButton = ({
   onLocate,
   locating = false,
   className = '',
-}: ExploreMapLocateButtonProps) => (
+}: ExploreMapLocateButtonProps) => {
+  const label = locating ? 'Locating you on the map' : 'Locate me on the map';
+  return (
+  <UiTooltip label={label}>
   <button
     type="button"
     onClick={onLocate}
     disabled={locating}
     className={`pointer-events-auto inline-flex shrink-0 items-center justify-center text-white drop-shadow-[0_1px_4px_rgba(0,0,0,.75)] transition active:scale-95 disabled:opacity-60 ${className}`}
-    aria-label={locating ? 'Locating you on the map' : 'Locate me on the map'}
-    title="Locate me"
+    aria-label={label}
   >
     <LocateFixed
       className={`h-6 w-6 shrink-0 ${locating ? 'animate-pulse' : ''}`}
@@ -26,4 +29,6 @@ export const ExploreMapLocateButton = ({
       aria-hidden
     />
   </button>
-);
+  </UiTooltip>
+  );
+};

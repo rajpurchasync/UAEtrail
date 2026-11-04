@@ -15,15 +15,22 @@ import { useAuth } from '../../context/AuthContext';
 import { invalidateNotificationUnreadBadge } from '../../utils/notificationBadge';
 import { notificationReasonLine } from '../../utils/notificationDisplay';
 import { inferNotificationPath } from '../../utils/notificationRouting';
+import { AdminTablePager, DEFAULT_ADMIN_PAGE_SIZE, type AdminPageSize } from '../../components/admin/AdminTablePager';
+import { formatAdminDateTime } from '../../utils/formatAdminDate';
+import { useDisplayPreferences } from '../../preferences/useDisplayPreferences';
 
 export const Notifications = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { clock } = useDisplayPreferences();
   const [notifications, setNotifications] = useState<NotificationDTO[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState<AdminPageSize>(DEFAULT_ADMIN_PAGE_SIZE);
+  const [total, setTotal] = useState(0);
 
   const syncUnreadBadge = () => {
     if (!user?.id) return;
@@ -34,10 +41,11 @@ export const Notifications = () => {
     setLoading(true);
     setError(null);
     try {
-      const page = await fetchMeNotificationsPage(1);
+      const result = await fetchMeNotificationsPage(page, pageSize);
       if (!isActive()) return;
-      setNotifications(page.data);
-      setUnreadCount(page.unreadCount ?? page.data.filter((item) => !item.isRead).length);
+      setNotifications(result.data);
+      setTotal(result.total);
+      setUnreadCount(result.unreadCount ?? result.data.filter((item) => !item.isRead).length);
     } catch (err) {
       if (!isActive()) return;
       setError(err instanceof Error ? err.message : 'Failed to load notifications');
@@ -46,7 +54,7 @@ export const Notifications = () => {
     }
   };
 
-  useSafeAsyncEffect((isActive) => load(isActive), []);
+  useSafeAsyncEffect((isActive) => load(isActive), [page, pageSize]);
 
   const markRead = async (id: string) => {
     await markNotificationReadById(id).catch(() => undefined);
@@ -119,14 +127,16 @@ export const Notifications = () => {
                       <span className="w-2 h-2 rounded-full bg-emerald-500 mt-2 shrink-0" aria-hidden />
                     )}
                     <div className={`flex-1 min-w-0 ${notif.isRead ? '' : 'pl-0'}`}>
-                      <p className="font-medium text-gray-900">{notif.title}</p>
+                      <div className="flex items-start justify-between gap-3">
+                        <p className="min-w-0 font-medium text-gray-900">{notif.title}</p>
+                        <p className="shrink-0 text-xs text-gray-400 whitespace-nowrap">
+                          {formatAdminDateTime(notif.createdAt, clock)}
+                        </p>
+                      </div>
                       <p className="text-sm text-gray-600 mt-1">{notif.body}</p>
                       {reasonLine && (
                         <p className="text-xs font-medium text-gray-700 mt-2">{reasonLine}</p>
                       )}
-                      <p className="text-xs text-gray-400 mt-2">
-                        {new Date(notif.createdAt).toLocaleString()}
-                      </p>
                     </div>
                   </div>
                 </button>
@@ -135,6 +145,16 @@ export const Notifications = () => {
             </div>
           )}
         </div>
+        <AdminTablePager
+          page={page}
+          pageSize={pageSize}
+          total={total}
+          onPage={setPage}
+          onPageSize={(size) => {
+            setPageSize(size);
+            setPage(1);
+          }}
+        />
       </div>
     </DashboardLayout>
   );

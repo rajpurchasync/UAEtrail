@@ -12,9 +12,9 @@ describe('organize catalog flows — registry venue step omit', () => {
     genericBuddy: false,
   };
 
-  it('hiking omits difficulty and about_trail when registry trail selected', () => {
+  it('hiking omits about_trail when registry trail selected but keeps difficulty', () => {
     const steps = hikingHostingFlow.getSteps(registryDraft);
-    expect(steps).not.toContain('difficulty');
+    expect(steps).toContain('difficulty');
     expect(steps).not.toContain('about_trail');
     expect(steps).toContain('destination');
     expect(steps).toContain('meeting_point');

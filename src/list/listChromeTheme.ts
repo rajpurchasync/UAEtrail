@@ -13,14 +13,14 @@ export const LIST_CHROME = {
 } as const;
 
 export const LIST_APP_BAR = {
-  row: 'flex min-h-12 items-center justify-between gap-3',
+  row: 'flex min-h-12 items-center justify-between gap-3 md:min-h-9',
   title: 'truncate text-lg font-semibold tracking-tight text-neutral-900',
   guestLink: 'text-lg font-semibold text-emerald-700 active:opacity-80',
 } as const;
 
 export const LIST_SEARCH = {
   shell:
-    'flex min-h-11 items-center gap-2 rounded-2xl border border-neutral-200/80 bg-white px-3 shadow-[0_1px_2px_rgba(15,23,42,.04)] transition-[box-shadow,border-color] focus-within:border-emerald-200 focus-within:shadow-[0_0_0_3px_rgba(16,185,129,.12)]',
+    'flex min-h-11 items-center gap-2 rounded-2xl border border-neutral-200/80 bg-white px-3 shadow-[0_1px_2px_rgba(15,23,42,.04)] transition-[box-shadow,border-color] focus-within:border-emerald-200 focus-within:shadow-[0_0_0_3px_rgba(16,185,129,.12)] md:min-h-9 lg:min-h-8 lg:rounded-xl lg:px-2.5',
   input:
     'min-w-0 flex-1 bg-transparent text-[15px] font-medium text-neutral-900 outline-none placeholder:font-normal placeholder:text-neutral-400',
   icon: 'h-[17px] w-[17px] shrink-0 text-neutral-400',
@@ -35,7 +35,7 @@ export const LIST_CHIP_SCROLL =
 
 export const listChipClass = (active: boolean): string =>
   [
-    'inline-flex shrink-0 snap-start items-center rounded-full px-3.5 py-2 text-[13px] font-semibold transition-colors active:scale-[0.98]',
+    'inline-flex shrink-0 snap-start items-center rounded-full px-3.5 py-2 text-[13px] font-semibold transition-colors active:scale-[0.98] lg:min-h-8 lg:px-3 lg:py-1',
     active ? EXPLORE_BRAND_ACTIVE : 'bg-neutral-100 text-neutral-700',
   ].join(' ');
 

@@ -18,7 +18,6 @@ import { EXPLORE_FLOW } from '../../config/exploreTheme';
 import { exploreFlowChoiceCardClass } from './exploreFlowUi';
 import {
   PACKING_DEFAULTS_CTA,
-  PACKING_LIST_TITLE,
   PACKING_MODE_LENIENT_SUBTITLE,
   PACKING_MODE_LENIENT_TITLE,
   PACKING_MODE_STRICT_SUBTITLE,
@@ -95,9 +94,10 @@ export const HostingPackingListEditor = ({
   onChange,
 }: HostingPackingListEditorProps) => {
   const items = packingItems ?? [];
-  const [draftLabel, setDraftLabel] = useState('');
-  const [draftEmoji, setDraftEmoji] = useState('✅');
-  const [draftRequired, setDraftRequired] = useState(true);
+  const [mustDraftLabel, setMustDraftLabel] = useState('');
+  const [mustDraftEmoji, setMustDraftEmoji] = useState('✅');
+  const [niceDraftLabel, setNiceDraftLabel] = useState('');
+  const [niceDraftEmoji, setNiceDraftEmoji] = useState('✨');
   const [drag, setDrag] = useState<DragState | null>(null);
   const dragRef = useRef<DragState | null>(null);
   const itemsRef = useRef(items);
@@ -196,22 +196,36 @@ export const HostingPackingListEditor = ({
     };
   };
 
-  const addItem = () => {
-    const label = draftLabel.trim();
+  const appendItem = (labelRaw: string, emojiRaw: string, required: boolean) => {
+    const label = labelRaw.trim();
     if (!label) return;
     let id = slugId(label);
     const key = packingLabelKey(label);
     if (items.some((item) => packingLabelKey(item.label) === key)) {
-      setDraftLabel('');
       return;
     }
     if (items.some((item) => item.id === id)) {
       id = `${id}-${Date.now().toString(36)}`;
     }
+    const group = items.filter((item) => item.required === required);
     onChange({
-      packingItems: [...items, { id, label, emoji: draftEmoji.trim() || '•', required: draftRequired }],
+      packingItems: placePackingItem(
+        [...items, { id, label, emoji: emojiRaw.trim() || '•', required }],
+        id,
+        required,
+        group.length
+      ),
     });
-    setDraftLabel('');
+  };
+
+  const addMustItem = () => {
+    appendItem(mustDraftLabel, mustDraftEmoji, true);
+    setMustDraftLabel('');
+  };
+
+  const addNiceItem = () => {
+    appendItem(niceDraftLabel, niceDraftEmoji, false);
+    setNiceDraftLabel('');
   };
 
   const updateDragFromPointer = useCallback((clientX: number, clientY: number) => {
@@ -240,7 +254,6 @@ export const HostingPackingListEditor = ({
 
   return (
     <div className="space-y-4">
-      <p className={`mb-1 ${EXPLORE_FLOW.choiceCardTitle}`}>{PACKING_LIST_TITLE}</p>
       <div className="grid grid-cols-2 gap-2">
         <button
           type="button"
@@ -266,81 +279,51 @@ export const HostingPackingListEditor = ({
           onClick={() =>
             onChange({ packingItems: defaultHikingPackingItems(), packingAckMode: defaultMode })
           }
-          className="w-full rounded-2xl border border-dashed border-emerald-300 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800"
+          className="w-full rounded-2xl border border-dashed border-emerald-300 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800 md:rounded-md md:py-2 md:text-xs"
         >
           {PACKING_DEFAULTS_CTA}
         </button>
       ) : null}
 
-      <PackingEditorSection
-        title={PACKING_MUST_LABEL}
-        hint="Drag to reorder, or drop here from optional."
-        items={must}
-        required
-        dropIndex={drag?.dropRequired === true ? drag.dropIndex : null}
-        placeholderHeight={drag?.dropRequired === true ? drag.height : 0}
-        listRef={mustRootRef}
-        onGripPointerDown={beginDrag}
-        onMove={moveItem}
-        onSetRequired={setRequired}
-        onRemove={removeItem}
-      />
-      <PackingEditorSection
-        title={PACKING_NICE_LABEL}
-        hint="Drag to reorder, or drop here from must-have."
-        items={nice}
-        required={false}
-        dropIndex={drag?.dropRequired === false ? drag.dropIndex : null}
-        placeholderHeight={drag?.dropRequired === false ? drag.height : 0}
-        listRef={niceRootRef}
-        onGripPointerDown={beginDrag}
-        onMove={moveItem}
-        onSetRequired={setRequired}
-        onRemove={removeItem}
-      />
-
-      <div className="rounded-2xl border border-neutral-200 bg-white p-3">
-        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-500">Add an item</p>
-        <div className="flex gap-2">
-          <input
-            value={draftEmoji}
-            onChange={(event) => setDraftEmoji(event.target.value.slice(0, 4))}
-            aria-label="Emoji"
-            className="w-14 rounded-xl border border-neutral-200 px-2 py-2 text-center text-lg"
-          />
-          <input
-            value={draftLabel}
-            onChange={(event) => setDraftLabel(event.target.value)}
-            placeholder="e.g. Headlamp"
-            className="min-w-0 flex-1 rounded-xl border border-neutral-200 px-3 py-2 text-sm"
-            maxLength={80}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter') {
-                event.preventDefault();
-                addItem();
-              }
-            }}
-          />
-        </div>
-        <div className="mt-2 flex items-center justify-between gap-2">
-          <label className="flex items-center gap-2 text-sm text-neutral-700">
-            <input
-              type="checkbox"
-              checked={draftRequired}
-              onChange={(event) => setDraftRequired(event.target.checked)}
-              className="h-4 w-4 rounded border-neutral-300 text-emerald-600"
-            />
-            Must have
-          </label>
-          <button
-            type="button"
-            onClick={addItem}
-            disabled={!draftLabel.trim()}
-            className="rounded-xl bg-emerald-600 px-3 py-1.5 text-sm font-semibold text-white disabled:opacity-50"
-          >
-            Add
-          </button>
-        </div>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-3">
+        <PackingEditorSection
+          title={PACKING_MUST_LABEL}
+          hint="Drag to reorder · drop optional items here."
+          hintShort="Drag or use add row below."
+          items={must}
+          required
+          dropIndex={drag?.dropRequired === true ? drag.dropIndex : null}
+          placeholderHeight={drag?.dropRequired === true ? drag.height : 0}
+          listRef={mustRootRef}
+          draftEmoji={mustDraftEmoji}
+          draftLabel={mustDraftLabel}
+          onDraftEmojiChange={setMustDraftEmoji}
+          onDraftLabelChange={setMustDraftLabel}
+          onAdd={addMustItem}
+          onGripPointerDown={beginDrag}
+          onMove={moveItem}
+          onSetRequired={setRequired}
+          onRemove={removeItem}
+        />
+        <PackingEditorSection
+          title={PACKING_NICE_LABEL}
+          hint="Drag to reorder · drop must-have items here."
+          hintShort="Drag or use add row below."
+          items={nice}
+          required={false}
+          dropIndex={drag?.dropRequired === false ? drag.dropIndex : null}
+          placeholderHeight={drag?.dropRequired === false ? drag.height : 0}
+          listRef={niceRootRef}
+          draftEmoji={niceDraftEmoji}
+          draftLabel={niceDraftLabel}
+          onDraftEmojiChange={setNiceDraftEmoji}
+          onDraftLabelChange={setNiceDraftLabel}
+          onAdd={addNiceItem}
+          onGripPointerDown={beginDrag}
+          onMove={moveItem}
+          onSetRequired={setRequired}
+          onRemove={removeItem}
+        />
       </div>
 
       {drag ? (
@@ -371,11 +354,17 @@ export const HostingPackingListEditor = ({
 const PackingEditorSection = ({
   title,
   hint,
+  hintShort,
   items,
   required,
   dropIndex,
   placeholderHeight,
   listRef,
+  draftEmoji,
+  draftLabel,
+  onDraftEmojiChange,
+  onDraftLabelChange,
+  onAdd,
   onGripPointerDown,
   onMove,
   onSetRequired,
@@ -383,11 +372,17 @@ const PackingEditorSection = ({
 }: {
   title: string;
   hint: string;
+  hintShort: string;
   items: PackingItem[];
   required: boolean;
   dropIndex: number | null;
   placeholderHeight: number;
   listRef: RefObject<HTMLDivElement | null>;
+  draftEmoji: string;
+  draftLabel: string;
+  onDraftEmojiChange: (value: string) => void;
+  onDraftLabelChange: (value: string) => void;
+  onAdd: () => void;
   onGripPointerDown: (event: ReactPointerEvent, item: PackingItem) => void;
   onMove: (id: string, required: boolean, toIndex: number) => void;
   onSetRequired: (id: string, required: boolean) => void;
@@ -423,26 +418,82 @@ const PackingEditorSection = ({
   }
 
   return (
-    <section>
-      <p className="text-sm font-semibold text-neutral-900">{title}</p>
-      <p className="mb-2 text-xs text-neutral-500">{hint}</p>
+    <section className="flex min-h-0 flex-col rounded-xl border border-neutral-200 bg-neutral-50/50 p-2 md:rounded-lg md:p-2.5">
+      <p className="text-sm font-semibold text-neutral-900 md:text-[13px]">{title}</p>
+      <p className="mb-2 text-xs text-neutral-500 max-md:hidden">{hint}</p>
+      <p className="mb-2 text-xs text-neutral-500 md:hidden">{hintShort}</p>
       <div
         ref={listRef}
-        className={`rounded-2xl border border-dashed p-2 transition-[background-color,border-color,min-height] duration-200 ${
-          dropIndex != null ? 'border-emerald-300 bg-emerald-50/40' : 'border-transparent bg-transparent'
+        className={`min-h-[4.5rem] flex-1 rounded-lg border border-dashed p-1.5 transition-[background-color,border-color] duration-200 md:min-h-[3rem] ${
+          dropIndex != null ? 'border-emerald-300 bg-emerald-50/40' : 'border-neutral-200/80 bg-white/60'
         }`}
       >
         {rows.length === 0 ? (
-          <p className="rounded-xl bg-neutral-50 px-3 py-6 text-center text-sm text-neutral-500">
+          <p className="rounded-md bg-neutral-50 px-2 py-4 text-center text-xs text-neutral-500 md:py-3">
             None yet.
           </p>
         ) : (
-          <ul className="space-y-2">{rows}</ul>
+          <ul className="space-y-1.5">{rows}</ul>
         )}
       </div>
+      <PackingColumnAddRow
+        draftEmoji={draftEmoji}
+        draftLabel={draftLabel}
+        onDraftEmojiChange={onDraftEmojiChange}
+        onDraftLabelChange={onDraftLabelChange}
+        onAdd={onAdd}
+        addLabel={required ? 'Add must-have' : 'Add optional'}
+      />
     </section>
   );
 };
+
+const PackingColumnAddRow = ({
+  draftEmoji,
+  draftLabel,
+  onDraftEmojiChange,
+  onDraftLabelChange,
+  onAdd,
+  addLabel,
+}: {
+  draftEmoji: string;
+  draftLabel: string;
+  onDraftEmojiChange: (value: string) => void;
+  onDraftLabelChange: (value: string) => void;
+  onAdd: () => void;
+  addLabel: string;
+}) => (
+  <div className="mt-2 flex gap-1.5">
+    <input
+      value={draftEmoji}
+      onChange={(event) => onDraftEmojiChange(event.target.value.slice(0, 4))}
+      aria-label="Emoji"
+      className={EXPLORE_FLOW.composeFieldEmoji}
+    />
+    <input
+      value={draftLabel}
+      onChange={(event) => onDraftLabelChange(event.target.value)}
+      placeholder="e.g. Headlamp"
+      className={`min-w-0 flex-1 ${EXPLORE_FLOW.composeField}`}
+      maxLength={80}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          onAdd();
+        }
+      }}
+    />
+    <button
+      type="button"
+      onClick={onAdd}
+      disabled={!draftLabel.trim()}
+      className={EXPLORE_FLOW.composeBtnSm}
+      aria-label={addLabel}
+    >
+      Add
+    </button>
+  </div>
+);
 
 const PackingEditorRow = ({
   item,
@@ -465,7 +516,7 @@ const PackingEditorRow = ({
 }) => (
   <li
     data-packing-id={item.id}
-    className={`flex items-center gap-1.5 rounded-2xl px-2 py-2 shadow-sm transition-transform duration-200 ease-out sm:gap-2 sm:px-3 ${packingChipClassName(required)}`}
+    className={`flex items-center gap-1 rounded-xl px-2 py-1.5 shadow-sm transition-transform duration-200 ease-out sm:gap-1.5 md:rounded-md md:py-1 ${packingChipClassName(required)}`}
   >
     <button
       type="button"
@@ -476,10 +527,10 @@ const PackingEditorRow = ({
     >
       <GripVertical className="h-4 w-4" />
     </button>
-    <span className="text-lg" aria-hidden>
+    <span className="text-base md:text-sm" aria-hidden>
       {item.emoji}
     </span>
-    <span className="min-w-0 flex-1 text-sm font-medium text-neutral-900">{item.label}</span>
+    <span className="min-w-0 flex-1 text-sm font-medium text-neutral-900 md:text-[13px]">{item.label}</span>
     <div className="flex flex-col">
       <button
         type="button"

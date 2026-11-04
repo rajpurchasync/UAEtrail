@@ -13,6 +13,32 @@ export const INBOX_FILTER_OPTIONS: Array<{ key: InboxFilter; label: string }> = 
   { key: 'all', label: 'All' },
 ];
 
+export const DEFAULT_INBOX_FILTER: InboxFilter = 'people';
+
+export type InboxFilterCounts = Record<InboxFilter, number>;
+
+export const emptyInboxFilterCounts = (): InboxFilterCounts => ({
+  unread: 0,
+  people: 0,
+  groups: 0,
+  outings: 0,
+  all: 0,
+});
+
+export const inboxFilterCountsFromThreads = (threads: InboxThread[]): InboxFilterCounts => {
+  let people = 0;
+  let groups = 0;
+  let outings = 0;
+  for (const thread of threads) {
+    if (thread.unreadCount <= 0) continue;
+    if (thread.kind === 'direct') people += thread.unreadCount;
+    else if (thread.kind === 'user-group') groups += thread.unreadCount;
+    else outings += thread.unreadCount;
+  }
+  const unread = people + groups + outings;
+  return { unread, people, groups, outings, all: unread };
+};
+
 export type InboxThread =
   | {
       kind: 'direct';

@@ -1,21 +1,18 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  SEEKING_EMOJI,
-  EXPLORE_PLACES_LAYER_EMOJI,
-  MAP_LAYER_FILTER_EMOJI,
-  RIDESHARE_EMOJI,
-} from '../exploreCopy';
+import { useCallback, useEffect, useRef, useState, type ReactElement } from 'react';
 import type { ExplorePanel, MapFilterKey, VenueListFilterKey } from '../routing';
 import type { ExploreActivityDatePreset } from '../exploreActivityDateFilter';
+import { UiTooltip } from '../../components/ui/UiTooltip';
 import {
   EXPLORE_MAP_MOBILE_FILTER_CTA_ALL_LABEL,
-  EXPLORE_MAP_MOBILE_FILTER_CTA_BAR,
   EXPLORE_MAP_MOBILE_FILTER_CTA_ICON,
   EXPLORE_MAP_TOOLBAR_FLOATING,
   EXPLORE_MAP_TOOLBAR_PILL_PADDING,
   EXPLORE_MAP_TOOLBAR_SEGMENT_ICON,
+  exploreMapLayerFilterBarClass,
+  exploreMapLayerIconClass,
   exploreMapMobileFilterCtaSegmentClass,
 } from '../../config/exploreTheme';
+import { EXPLORE_PLACES_LAYER_EMOJI, SEEKING_EMOJI } from '../exploreCopy';
 import type { ExploreSearchScopeCounts, ExploreSearchScopeKey } from '../exploreBrowseTaxonomy';
 import {
   EXPLORE_MOBILE_ACTIVITY_MENU,
@@ -36,13 +33,8 @@ import { ExploreMapMobileUaePill } from './ExploreMapMobileUaePill';
 
 const INTENT_SEGMENT_HIT = 'h-7 w-11 shrink-0';
 const SEGMENT_DIVIDER = 'mx-0.5 h-5 w-px shrink-0 bg-neutral-300/60';
-
-const segmentButtonClass = (selected: boolean) =>
-  `relative inline-flex ${INTENT_SEGMENT_HIT} items-center justify-center ${EXPLORE_MAP_TOOLBAR_SEGMENT_ICON} transition [-webkit-tap-highlight-color:transparent] ${
-    selected
-      ? "after:pointer-events-none after:absolute after:inset-x-2 after:bottom-0 after:h-[2px] after:rounded-full after:bg-emerald-600 after:content-['']"
-      : ''
-  }`;
+const FILTER_SLIDE =
+  'flex h-full w-full min-w-0 items-stretch gap-1 transition-transform duration-300 ease-out motion-reduce:transition-none';
 
 const PILL_ROW_WRAP = 'mt-0.5 w-full min-w-0 max-lg:w-full';
 
@@ -50,6 +42,12 @@ const ctaSegmentClass = (
   active: boolean,
   activeKey: 'all' | 'hiking' | 'camping' | 'rideshare' | 'others' | 'shops'
 ) => exploreMapMobileFilterCtaSegmentClass(active, activeKey);
+
+const tip = (label: string, button: ReactElement, className?: string) => (
+  <UiTooltip label={label} className={className}>
+    {button}
+  </UiTooltip>
+);
 
 type MobileLayer = 'activity' | 'places';
 
@@ -175,162 +173,245 @@ export const ExploreMapMobileLayerChrome = ({
   const activitySegmentSelected = expandedLayer === 'activity';
   const placesSegmentSelected = expandedLayer === 'places';
 
+  const layerSwitcher = (layout: 'compact' | 'bar') => (
+    <>
+      {tip(
+        'Events — outing filters',
+        <button
+          type="button"
+          className={`${exploreMapLayerIconClass(activitySegmentSelected, 'activity', layout)} ${EXPLORE_MAP_TOOLBAR_SEGMENT_ICON}`}
+          aria-label="Events — outing filters"
+          aria-pressed={activitySegmentSelected}
+          aria-expanded={expandedLayer === 'activity'}
+          aria-controls="explore-map-layer-filters"
+          onClick={() => openLayer('activity')}
+        >
+          <span className="font-emoji" aria-hidden>
+            {SEEKING_EMOJI}
+          </span>
+        </button>
+      )}
+      {layout === 'compact' ? <span className={SEGMENT_DIVIDER} aria-hidden /> : null}
+      {tip(
+        'Places — trails and venues',
+        <button
+          type="button"
+          className={`${exploreMapLayerIconClass(placesSegmentSelected, 'places', layout)} ${EXPLORE_MAP_TOOLBAR_SEGMENT_ICON}`}
+          aria-label="Places — trail and venue filters"
+          aria-pressed={placesSegmentSelected}
+          aria-expanded={expandedLayer === 'places'}
+          aria-controls="explore-map-layer-filters"
+          onClick={() => openLayer('places')}
+        >
+          <span className="font-emoji" aria-hidden>
+            {EXPLORE_PLACES_LAYER_EMOJI}
+          </span>
+        </button>
+      )}
+    </>
+  );
+
+  const activityPills = EXPLORE_MOBILE_ACTIVITY_MENU.map((option) => {
+    const activeKey =
+      option.key === 'camping'
+        ? 'camping'
+        : option.key === 'rideshare'
+          ? 'rideshare'
+          : option.key === 'others'
+            ? 'others'
+            : option.key === 'hiking'
+              ? 'hiking'
+              : 'all';
+    if (option.key === 'anyday') {
+      return (
+        <ExploreMapMobileAnydayPill
+          key={option.key}
+          activityDatePreset={activityDatePreset}
+          onActivityDatePresetChange={onActivityDatePresetChange}
+          pillClassName={ctaSegmentClass(activityDatePreset !== 'anyday', 'all')}
+          compact
+        />
+      );
+    }
+    const active =
+      onActivities &&
+      option.key === activitySelection &&
+      (option.key !== 'all' || activityDatePreset === 'anyday');
+    const button = (
+      <button
+        type="button"
+        onClick={() => handleActivityPill(option.key)}
+        className={ctaSegmentClass(active, activeKey)}
+        aria-pressed={active}
+        aria-label={option.label}
+      >
+        {option.key === 'all' ? (
+          <span className={EXPLORE_MAP_MOBILE_FILTER_CTA_ALL_LABEL}>{option.label}</span>
+        ) : (
+          <ExploreFilterIcon
+            filter={
+              option.key === 'rideshare'
+                ? 'rideshare'
+                : option.key === 'others'
+                  ? 'others'
+                  : option.key === 'camping'
+                    ? 'camping'
+                    : 'hiking'
+            }
+            context="activity"
+            className={EXPLORE_MAP_MOBILE_FILTER_CTA_ICON}
+          />
+        )}
+      </button>
+    );
+    return (
+      <span key={option.key} className="flex min-w-0 flex-1 basis-0">
+        {option.key === 'all' ? button : tip(option.label, button, 'flex min-w-0 flex-1')}
+      </span>
+    );
+  });
+
+  const placesPills = EXPLORE_MOBILE_PLACES_MENU.map((option) => {
+    if (option.key === 'uae') {
+      return (
+        <ExploreMapMobileUaePill
+          key={option.key}
+          venueRegions={venueRegions}
+          onOpen={() => onBrowsePanelChange('venues')}
+          onVenueRegionsChange={onVenueRegionsChange}
+          pillClassName={ctaSegmentClass(venueRegions.length > 0, 'all')}
+          compact
+        />
+      );
+    }
+    const active =
+      onPlaces &&
+      option.key === placesMenuKey &&
+      (option.key !== 'all' || venueRegions.length === 0);
+    const activeKey =
+      option.key === 'shops'
+        ? 'shops'
+        : option.key === 'trails'
+          ? 'hiking'
+          : option.key === 'camping'
+            ? 'camping'
+            : option.key === 'spots'
+              ? 'rideshare'
+              : option.key === 'others'
+                ? 'others'
+                : 'all';
+    const button = (
+      <button
+        type="button"
+        onClick={() => handlePlacesPill(option.key)}
+        className={ctaSegmentClass(active, activeKey)}
+        aria-pressed={active}
+        aria-label={option.label}
+      >
+        {option.key === 'all' ? (
+          <span className={EXPLORE_MAP_MOBILE_FILTER_CTA_ALL_LABEL}>{option.label}</span>
+        ) : (
+          <ExploreFilterIcon
+            filter={
+              option.key === 'trails'
+                ? 'trails'
+                : option.key === 'spots'
+                  ? 'spots'
+                  : option.key === 'shops'
+                    ? 'shops'
+                    : option.key === 'camping'
+                      ? 'camping'
+                      : 'others'
+            }
+            context="venue"
+            className={EXPLORE_MAP_MOBILE_FILTER_CTA_ICON}
+          />
+        )}
+      </button>
+    );
+    return (
+      <span key={option.key} className="flex min-w-0 flex-1 basis-0">
+        {option.key === 'all' ? button : tip(option.label, button, 'flex min-w-0 flex-1')}
+      </span>
+    );
+  });
+
+  const slidingFilters = (
+    <div
+      id="explore-map-layer-filters"
+      className="relative min-h-8 min-w-0 flex-1 self-stretch overflow-hidden"
+    >
+      <div
+        className={`${FILTER_SLIDE} ${
+          expandedLayer === 'activity'
+            ? 'translate-x-0'
+            : 'pointer-events-none -translate-x-full'
+        }`}
+        role="toolbar"
+        aria-label="Event filters"
+        aria-hidden={expandedLayer !== 'activity'}
+      >
+        {activityPills}
+      </div>
+      <div
+        className={`absolute inset-0 ${FILTER_SLIDE} ${
+          expandedLayer === 'places'
+            ? 'translate-x-0'
+            : 'pointer-events-none translate-x-full'
+        }`}
+        role="toolbar"
+        aria-label="Place filters"
+        aria-hidden={expandedLayer !== 'places'}
+      >
+        {placesPills}
+      </div>
+    </div>
+  );
+
   return (
     <>
       <div
         ref={intentBarRef}
-        className={`${EXPLORE_MAP_TOOLBAR_FLOATING} ${EXPLORE_MAP_TOOLBAR_PILL_PADDING} col-start-1 row-start-1 inline-flex w-fit shrink-0 items-center self-start overflow-visible pl-2 pr-2.5`}
+        className={`${EXPLORE_MAP_TOOLBAR_FLOATING} ${EXPLORE_MAP_TOOLBAR_PILL_PADDING} col-start-1 row-start-1 inline-flex w-fit shrink-0 items-center self-start overflow-visible pl-2 pr-2.5 md:hidden`}
       >
-        <button
-          type="button"
-          className={segmentButtonClass(activitySegmentSelected)}
-          aria-label="Activities — same filters as the list"
-          aria-expanded={expandedLayer === 'activity'}
-          onClick={() => openLayer('activity')}
-        >
-          <span className="font-emoji" aria-hidden>{SEEKING_EMOJI}</span>
-        </button>
-        <span className={SEGMENT_DIVIDER} aria-hidden />
-        <button
-          type="button"
-          className={segmentButtonClass(placesSegmentSelected)}
-          aria-label="Places — same filters as the list"
-          aria-expanded={expandedLayer === 'places'}
-          onClick={() => openLayer('places')}
-        >
-          <span className="font-emoji" aria-hidden>{EXPLORE_PLACES_LAYER_EMOJI}</span>
-        </button>
+        {layerSwitcher('compact')}
         <span className={SEGMENT_DIVIDER} aria-hidden />
         {onOpenExploreSearch ? (
-          <button
-            type="button"
-            className={segmentButtonClass(false)}
-            aria-label="Search explore"
-            onClick={() => onOpenExploreSearch()}
-          >
-            <span className="font-emoji" aria-hidden>🔍</span>
-          </button>
+          tip(
+            'Search',
+            <button
+              type="button"
+              className={`${exploreMapLayerIconClass(false, 'activity')} ${EXPLORE_MAP_TOOLBAR_SEGMENT_ICON}`}
+              aria-label="Search explore"
+              onClick={() => onOpenExploreSearch()}
+            >
+              <span className="font-emoji" aria-hidden>
+                🔍
+              </span>
+            </button>
+          )
         ) : (
           <span className={`inline-flex ${INTENT_SEGMENT_HIT} items-center justify-center text-lg opacity-40`} aria-hidden>
-            🔍
+            <span className="font-emoji" aria-hidden>
+              🔍
+            </span>
           </span>
         )}
       </div>
 
-      {expandedLayer === 'activity' ? (
-        <div className={`${PILL_ROW_WRAP} col-span-2 col-start-1 row-start-2 lg:w-[36rem] lg:max-w-full`}>
-          <div className={EXPLORE_MAP_MOBILE_FILTER_CTA_BAR} role="toolbar" aria-label="Activity filters">
-            {EXPLORE_MOBILE_ACTIVITY_MENU.map((option) => {
-              const activeKey =
-                option.key === 'camping'
-                  ? 'camping'
-                  : option.key === 'rideshare'
-                    ? 'rideshare'
-                    : option.key === 'others'
-                      ? 'others'
-                      : option.key === 'hiking'
-                        ? 'hiking'
-                        : 'all';
-              if (option.key === 'anyday') {
-                return (
-                  <ExploreMapMobileAnydayPill
-                    key={option.key}
-                    activityDatePreset={activityDatePreset}
-                    onActivityDatePresetChange={onActivityDatePresetChange}
-                    pillClassName={ctaSegmentClass(activityDatePreset !== 'anyday', 'all')}
-                    compact
-                  />
-                );
-              }
-              const active =
-                onActivities &&
-                option.key === activitySelection &&
-                (option.key !== 'all' || activityDatePreset === 'anyday');
-              return (
-                <button
-                  key={option.key}
-                  type="button"
-                  onClick={() => handleActivityPill(option.key)}
-                  className={ctaSegmentClass(active, activeKey)}
-                  aria-pressed={active}
-                  aria-label={option.label}
-                >
-                  {option.key === 'all' ? (
-                    <span className={EXPLORE_MAP_MOBILE_FILTER_CTA_ALL_LABEL}>{option.label}</span>
-                  ) : option.key === 'hiking' ? (
-                    <ExploreFilterIcon filter="hiking" context="activity" className={EXPLORE_MAP_MOBILE_FILTER_CTA_ICON} />
-                  ) : option.key === 'camping' ? (
-                    <ExploreFilterIcon filter="camping" context="activity" className={EXPLORE_MAP_MOBILE_FILTER_CTA_ICON} />
-                  ) : option.key === 'rideshare' ? (
-                    <span className={`font-emoji ${EXPLORE_MAP_MOBILE_FILTER_CTA_ICON}`} aria-hidden>{RIDESHARE_EMOJI}</span>
-                  ) : option.key === 'others' ? (
-                    <span className={`font-emoji ${EXPLORE_MAP_MOBILE_FILTER_CTA_ICON}`} aria-hidden>
-                      {MAP_LAYER_FILTER_EMOJI.others}
-                    </span>
-                  ) : null}
-                </button>
-              );
-            })}
-          </div>
+      <div className={`${PILL_ROW_WRAP} col-span-2 col-start-1 row-start-2 md:row-start-1 lg:w-auto lg:max-w-[46rem]`}>
+        <div
+          className={`${exploreMapLayerFilterBarClass(
+            expandedLayer === 'places' ? 'places' : 'activity'
+          )} transition-colors duration-300 motion-reduce:transition-none`}
+        >
+          <span className="hidden shrink-0 items-stretch gap-1 self-stretch md:inline-flex">
+            {layerSwitcher('bar')}
+            <span className={`${SEGMENT_DIVIDER} self-center`} aria-hidden />
+          </span>
+          {slidingFilters}
         </div>
-      ) : null}
-
-      {expandedLayer === 'places' ? (
-        <div className={`${PILL_ROW_WRAP} col-span-2 col-start-1 row-start-2 lg:w-[36rem] lg:max-w-full`}>
-          <div className={EXPLORE_MAP_MOBILE_FILTER_CTA_BAR} role="toolbar" aria-label="Place filters">
-            {EXPLORE_MOBILE_PLACES_MENU.map((option) => {
-              if (option.key === 'uae') {
-                return (
-                  <ExploreMapMobileUaePill
-                    key={option.key}
-                    venueRegions={venueRegions}
-                    onOpen={() => onBrowsePanelChange('venues')}
-                    onVenueRegionsChange={onVenueRegionsChange}
-                    pillClassName={ctaSegmentClass(venueRegions.length > 0, 'all')}
-                    compact
-                  />
-                );
-              }
-              const active =
-                onPlaces &&
-                option.key === placesMenuKey &&
-                (option.key !== 'all' || venueRegions.length === 0);
-              const activeKey =
-                option.key === 'shops'
-                  ? 'shops'
-                  : option.key === 'trails'
-                    ? 'hiking'
-                    : option.key === 'spots' || option.key === 'camping'
-                      ? 'camping'
-                      : option.key === 'others'
-                        ? 'others'
-                        : 'all';
-              return (
-                <button
-                  key={option.key}
-                  type="button"
-                  onClick={() => handlePlacesPill(option.key)}
-                  className={ctaSegmentClass(active, activeKey)}
-                  aria-pressed={active}
-                  aria-label={option.label}
-                >
-                  {option.key === 'all' ? (
-                    <span className={EXPLORE_MAP_MOBILE_FILTER_CTA_ALL_LABEL}>{option.label}</span>
-                  ) : option.key === 'trails' ? (
-                    <ExploreFilterIcon filter="hiking" context="venue" className={EXPLORE_MAP_MOBILE_FILTER_CTA_ICON} />
-                  ) : option.key === 'spots' || option.key === 'camping' ? (
-                    <ExploreFilterIcon filter="camping" context="venue" className={EXPLORE_MAP_MOBILE_FILTER_CTA_ICON} />
-                  ) : option.key === 'shops' ? (
-                    <ExploreFilterIcon filter="shops" context="venue" className={EXPLORE_MAP_MOBILE_FILTER_CTA_ICON} />
-                  ) : option.key === 'others' ? (
-                    <ExploreFilterIcon filter="others" context="venue" className={EXPLORE_MAP_MOBILE_FILTER_CTA_ICON} />
-                  ) : null}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      ) : null}
+      </div>
     </>
   );
 };

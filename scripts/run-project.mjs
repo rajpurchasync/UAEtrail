@@ -2,9 +2,28 @@ import { spawn } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { resolveRuntimeEnv } from './resolve-runtime-env.mjs';
+import { parseEnvFile, resolveRuntimeEnv } from './resolve-runtime-env.mjs';
 
 const rootDir = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
+const composeFile = path.join(rootDir, 'docker-compose.yml');
+const localPortsComposeFile = path.join(rootDir, 'docker-compose.local-ports.yml');
+
+const shouldAttachLocalhostPort80 = (env) => {
+  if (!existsSync(localPortsComposeFile)) return false;
+  const flag = String(env.FRONTEND_LOCALHOST_ALIAS ?? '').trim().toLowerCase();
+  if (flag === '0' || flag === 'false' || flag === 'no') return false;
+  if (flag === '1' || flag === 'true' || flag === 'yes') return true;
+  return process.platform === 'win32';
+};
+
+const dockerComposeArgs = (env, ...rest) => {
+  const args = ['compose', '-f', composeFile];
+  if (shouldAttachLocalhostPort80(env)) {
+    args.push('-f', localPortsComposeFile);
+  }
+  args.push(...rest);
+  return args;
+};
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -86,7 +105,7 @@ const waitForUrl = async (url, attempts, delayMs) => {
 const startFastDevStack = async (env) => {
   console.log(`[4/5] Starting fast VS Code dev stack for RUN_ENV=${env.RUN_ENV} using ${env.MONGODB_URI_SOURCE}...`);
 
-  let exitCode = await runCommand('docker', ['compose', 'up', '-d', '--wait', '--wait-timeout', '120', 'redis', 'minio'], env);
+  let exitCode = await runCommand('docker', dockerComposeArgs(env, 'up', '-d', '--wait', '--wait-timeout', '120', 'redis', 'minio'), env);
   if (exitCode !== 0) {
     console.error('Infra startup failed.');
     process.exit(exitCode);
@@ -99,19 +118,19 @@ const startFastDevStack = async (env) => {
 
 const startDockerStack = async (env) => {
   console.log(`[4/5] Bringing up all containers for RUN_ENV=${env.RUN_ENV} using ${env.MONGODB_URI_SOURCE}...`);
-  let exitCode = await runCommand('docker', ['compose', 'build', 'api'], env);
+  let exitCode = await runCommand('docker', dockerComposeArgs(env, 'build', 'api'), env);
   if (exitCode !== 0) {
     console.error('API build failed.');
     process.exit(exitCode);
   }
 
-  exitCode = await runCommand('docker', ['compose', 'up', '-d', '--wait', '--wait-timeout', '240'], env);
+  exitCode = await runCommand('docker', dockerComposeArgs(env, 'up', '-d', '--wait', '--wait-timeout', '240'), env);
   if (exitCode !== 0) {
     console.log('Initial compose startup had failures. Retrying full stack every 5 seconds...');
     for (let retryAttempt = 1; retryAttempt <= 24; retryAttempt += 1) {
       console.log(`Retry ${retryAttempt}/24 in 5 seconds...`);
       await sleep(5000);
-      exitCode = await runCommand('docker', ['compose', 'up', '-d', '--wait', '--wait-timeout', '120'], env);
+      exitCode = await runCommand('docker', dockerComposeArgs(env, 'up', '-d', '--wait', '--wait-timeout', '120'), env);
       if (exitCode === 0) {
         break;
       }
@@ -120,9 +139,9 @@ const startDockerStack = async (env) => {
 
   if (exitCode !== 0) {
     console.error('One or more containers could not be recovered.');
-    await runCommand('docker', ['compose', 'ps', '-a'], env);
-    await runCommand('docker', ['compose', 'logs', '--tail', '80', 'api'], env);
-    await runCommand('docker', ['compose', 'logs', '--tail', '80', 'frontend'], env);
+    await runCommand('docker', dockerComposeArgs(env, 'ps', '-a'), env);
+    await runCommand('docker', dockerComposeArgs(env, 'logs', '--tail', '80', 'api'), env);
+    await runCommand('docker', dockerComposeArgs(env, 'logs', '--tail', '80', 'frontend'), env);
     process.exit(exitCode);
   }
 
@@ -141,7 +160,7 @@ const startDockerStack = async (env) => {
     console.log('[5/5] Seeding API data (with retries)...');
 
     for (let seedAttempt = 0; seedAttempt < 12; seedAttempt += 1) {
-      exitCode = await runCommand('docker', ['compose', 'exec', '-T', 'api', 'npm', '--workspace', '@uaetrail/api', 'run', 'seed'], env);
+      exitCode = await runCommand('docker', dockerComposeArgs(env, 'exec', '-T', 'api', 'npm', '--workspace', '@uaetrail/api', 'run', 'seed'), env);
       if (exitCode === 0) {
         break;
       }
@@ -161,13 +180,17 @@ const startDockerStack = async (env) => {
   const frontendReady = await waitForUrl(frontendUrl, 24, 5000);
   if (!frontendReady) {
     console.error(`Frontend URL check failed: ${frontendUrl}`);
-    await runCommand('docker', ['compose', 'logs', '--tail', '60', 'frontend'], env);
+    await runCommand('docker', dockerComposeArgs(env, 'logs', '--tail', '60', 'frontend'), env);
     process.exit(1);
   }
 
   console.log('');
   console.log('Project stack is up.');
   console.log(`App:        ${frontendUrl}`);
+  console.log('Tip: After a frontend rebuild, hard-refresh (Ctrl+Shift+R) or clear localhost site data if you see 404 on /assets/*.js');
+  if (shouldAttachLocalhostPort80(env) && env.FRONTEND_PORT !== '80') {
+    console.log('App (80):   http://localhost/  (Windows local alias for PWA icons/bookmarks)');
+  }
   console.log(`API:        ${frontendUrl}/api`);
   console.log(`API Docs:   ${frontendUrl}/api/docs`);
   console.log('Grafana:    http://localhost:3000  (set GRAFANA_ADMIN_PASSWORD in .env)');
@@ -175,8 +198,19 @@ const startDockerStack = async (env) => {
   console.log('MinIO:      http://localhost:9001');
 };
 
+const resolveFrontendPort = (mode, fileEnv, baseEnv) => {
+  const fromFile = String(fileEnv.FRONTEND_PORT ?? '').trim();
+  const fromShell = String(baseEnv.FRONTEND_PORT ?? '').trim();
+  if (fromFile) return fromFile;
+  if (fromShell) return fromShell;
+  return mode === 'fast' ? '5175' : '8080';
+};
+
 const main = async () => {
   const mode = parseMode();
+  const envFilePath = path.join(rootDir, '.env');
+  const fileEnv = existsSync(envFilePath) ? parseEnvFile(envFilePath) : {};
+
   const env = {
     ...process.env,
     JWT_ACCESS_SECRET: process.env.JWT_ACCESS_SECRET || 'dev-access-secret-dev-access-secret',
@@ -185,25 +219,13 @@ const main = async () => {
     S3_SECRET_ACCESS_KEY: process.env.S3_SECRET_ACCESS_KEY || 'minioadmin',
     APP_BASE_URL: process.env.APP_BASE_URL || 'http://localhost',
     APP_BASE_URLS: process.env.APP_BASE_URLS || 'http://localhost,http://localhost:5175',
-    VITE_API_BASE_URL: process.env.VITE_API_BASE_URL || '/api',
-    FRONTEND_PORT: process.env.FRONTEND_PORT || '5175'
+    VITE_API_BASE_URL: process.env.VITE_API_BASE_URL || '/api'
   };
 
-  // --- Dynamic API_BASE_URL Routing ---
-// --- Universal Mode-Based Routing (Generic for Dev, Test, Prod) ---
-  if (mode === 'docker') {
-    // Docker containers use internal service names
-    env.API_BASE_URL = env.API_BASE_URL || 'http://api:4000';
-    env.S3_ENDPOINT = env.S3_ENDPOINT || 'http://minio:9000';
-  } else {
-    // Local host execution (Fast / Dev mode) uses loopback interface
-    env.API_BASE_URL = env.API_BASE_URL || 'http://127.0.0.1:4000';
-    env.S3_ENDPOINT = env.S3_ENDPOINT || 'http://127.0.0.1:9000';
-  }
-  // ------------------------------------
+  env.FRONTEND_PORT = resolveFrontendPort(mode, fileEnv, process.env);
 
   if (mode === 'fast') {
-    const currentRunEnv = String(env.RUN_ENV || '').toLowerCase();
+    const currentRunEnv = String(env.RUN_ENV || fileEnv.RUN_ENV || '').toLowerCase();
     if (!currentRunEnv || currentRunEnv === 'local') {
       env.RUN_ENV = 'test';
     }
@@ -213,9 +235,20 @@ const main = async () => {
     delete env.MONGODB_URI_STAGING;
     delete env.MONGODB_URI_TEST;
     delete env.MONGODB_URI_PROD;
+  } else {
+    delete env.MONGODB_URI;
+    delete env.MONGODB_URI_STAGING;
+    delete env.MONGODB_URI_TEST;
+    delete env.MONGODB_URI_PROD;
   }
 
-  const envFilePath = path.join(rootDir, '.env');
+  if (mode === 'docker') {
+    env.API_BASE_URL = 'http://api:4000';
+    env.S3_ENDPOINT = 'http://minio:9000';
+  } else {
+    env.API_BASE_URL = String(fileEnv.API_BASE_URL ?? env.API_BASE_URL ?? '').trim() || 'http://127.0.0.1:4000';
+    env.S3_ENDPOINT = String(fileEnv.S3_ENDPOINT ?? env.S3_ENDPOINT ?? '').trim() || 'http://127.0.0.1:9000';
+  }
   if (!existsSync(envFilePath)) {
     throw new Error(
       'No .env file found. Copy the example and fill in your values:\n' +
@@ -225,7 +258,8 @@ const main = async () => {
   }
 
   try {
-    Object.assign(env, resolveRuntimeEnv({ baseEnv: env, envFilePath }));
+    Object.assign(env, resolveRuntimeEnv({ baseEnv: env, envFilePath, preferEnvFileKeys: true }));
+    env.FRONTEND_PORT = resolveFrontendPort(mode, fileEnv, env);
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
     if (msg.includes('Missing MongoDB URI')) {
@@ -239,11 +273,18 @@ const main = async () => {
     throw error;
   }
 
+  if (mode === 'docker') {
+    env.API_BASE_URL = 'http://api:4000';
+    env.S3_ENDPOINT = 'http://minio:9000';
+  }
+
   if (mode === 'fast' && env.MONGODB_URI_SOURCE !== 'MONGODB_URI_TEST') {
     throw new Error(
       `Fast dev mode requires cloud test MongoDB. Selected ${env.MONGODB_URI_SOURCE}; set MONGODB_URI_TEST.`
     );
   }
+
+  console.log(`Using ${env.MONGODB_URI_SOURCE} for RUN_ENV=${env.RUN_ENV}.`);
 
   console.log('[3/5] Validating environment...');
   

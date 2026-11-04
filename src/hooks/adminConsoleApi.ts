@@ -138,6 +138,13 @@ export const updateAdminTenantStatus = async (
   await api.updateAdminTenantStatus(id, status, comment);
 };
 
+export const setAdminTenantHiddenFromPublic = async (
+  id: string,
+  hidden: boolean
+): Promise<{ message: string; hiddenFromPublic: boolean }> => {
+  return api.setAdminTenantHidden(id, hidden);
+};
+
 export const setAdminTenantDiscoverFeatured = async (
   id: string,
   featured: boolean
@@ -145,14 +152,19 @@ export const setAdminTenantDiscoverFeatured = async (
   return api.setAdminTenantDiscoverFeatured(id, featured);
 };
 
-export const fetchAdminContentReports = async (
-  page?: number,
-  pageSize?: number
-): Promise<{
+export const fetchAdminContentReports = async (filters?: {
+  page?: number;
+  pageSize?: number;
+  reason?: string;
+  targetType?: string;
+  reporter?: string;
+  from?: string;
+  to?: string;
+}): Promise<{
   data: AdminContentReportEntry[];
   pagination: { total: number; page: number; pageSize: number; totalPages: number };
 }> => {
-  return api.getAdminContentReports(page, pageSize);
+  return api.getAdminContentReports(filters);
 };
 
 export type AdminNotificationRow = {
@@ -178,9 +190,33 @@ export const sendAdminNotificationBroadcast = async (payload: {
   return res.data;
 };
 
+export const addAdminTenantTeamMember = async (
+  tenantId: string,
+  payload: { email: string; displayName?: string; role: 'tenant_admin' | 'tenant_guide' }
+) => {
+  const res = await api.addAdminTenantTeamMember(tenantId, payload);
+  return res.data;
+};
+
+export const patchAdminTenantTeamMember = async (
+  tenantId: string,
+  membershipId: string,
+  payload: { role: 'tenant_admin' | 'tenant_guide' }
+) => {
+  const res = await api.patchAdminTenantTeamMember(tenantId, membershipId, payload);
+  return res.data;
+};
+
+export const removeAdminTenantTeamMember = async (tenantId: string, membershipId: string) => {
+  await api.removeAdminTenantTeamMember(tenantId, membershipId);
+};
+
 export const fetchAdminAuditLogs = async (filters?: {
   action?: string;
   entityType?: string;
+  actor?: string;
+  from?: string;
+  to?: string;
   page?: number;
   pageSize?: number;
 }): Promise<{
@@ -230,6 +266,7 @@ export const fetchAdminMemberDetail = async (
 export const fetchAdminSocialGroups = async (filters?: {
   search?: string;
   type?: 'family' | 'friends';
+  status?: 'active' | 'suspended';
   page?: number;
   pageSize?: number;
 }): Promise<{
@@ -325,3 +362,9 @@ export const updateAdminFacility = async (
 export const deleteAdminFacility = async (id: string): Promise<void> => {
   await api.deleteAdminFacility(id);
 };
+
+/** Staff account on `/admin/account` — same `/me/profile` wire as consumer settings. */
+export {
+  fetchMeProfile as fetchAdminStaffProfile,
+  updateMeProfile as updateAdminStaffProfile,
+} from './memberProfileApi';

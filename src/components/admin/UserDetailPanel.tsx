@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useSafeAsyncEffect } from '../../hooks/useSafeAsyncEffect';
 import { Link } from 'react-router-dom';
+import { UserMinus, UserPlus } from 'lucide-react';
 import { AdminUserType, ActivityDTO } from '@uaetrail/shared-types';
 import {
   fetchAdminActivityDetail,
@@ -9,10 +10,14 @@ import {
   type AdminSocialGroupDetail,
   type TenantDetail,
 } from '../../hooks/adminDrilldownApi';
+import { addAdminTenantTeamMember, removeAdminTenantTeamMember } from '../../hooks/adminConsoleApi';
+import { AppSelect, ADMIN_FILTER_SELECT_CLASS, ADMIN_INPUT_CLASS } from '../ui/AppSelect';
+import { AdminIconButton } from './AdminIconButton';
 import { USER_TYPE_BADGE, USER_TYPE_LABELS } from '../../constants/userTypes';
 import { formatActivityType } from '../../utils/activityIdentity';
 import { activityHostName } from '../../utils/hostLabels';
 import { tenantBrandPublicPath } from '../../utils/organisationLinks';
+import { formatAdminDate } from '../../utils/formatAdminDate';
 
 export interface UserDetail {
   id: string;
@@ -154,12 +159,19 @@ const ClickableCard = ({
 const TenantDrillDown = ({
   tenant,
   loading,
-  onOpenUser
+  onOpenUser,
+  onReload,
 }: {
   tenant: TenantDetail | null;
   loading: boolean;
   onOpenUser?: (userId: string) => void;
+  onReload: () => Promise<void>;
 }) => {
+  const [email, setEmail] = useState('');
+  const [role, setRole] = useState<'tenant_guide' | 'tenant_admin'>('tenant_guide');
+  const [teamError, setTeamError] = useState<string | null>(null);
+  const [teamBusy, setTeamBusy] = useState(false);
+
   if (loading) {
     return <p className="text-sm text-gray-500 py-8 text-center">Loading publishing profile…</p>;
   }
@@ -167,12 +179,41 @@ const TenantDrillDown = ({
     return <p className="text-sm text-gray-500 py-8 text-center">Publishing profile not found.</p>;
   }
 
+  const addGuide = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setTeamError(null);
+    setTeamBusy(true);
+    try {
+      await addAdminTenantTeamMember(tenant.id, { email: email.trim(), role });
+      setEmail('');
+      await onReload();
+    } catch (err) {
+      setTeamError(err instanceof Error ? err.message : 'Failed to add team member');
+    } finally {
+      setTeamBusy(false);
+    }
+  };
+
+  const removeMember = async (membershipId: string) => {
+    if (!window.confirm('Remove this guide or staff member from the business?')) return;
+    setTeamError(null);
+    setTeamBusy(true);
+    try {
+      await removeAdminTenantTeamMember(tenant.id, membershipId);
+      await onReload();
+    } catch (err) {
+      setTeamError(err instanceof Error ? err.message : 'Failed to remove team member');
+    } finally {
+      setTeamBusy(false);
+    }
+  };
+
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap gap-2 items-center">
         {statusBadge(tenant.status)}
         <span className="text-xs text-gray-500 capitalize">{tenant.type.replace(/_/g, ' ')}</span>
-        <span className="text-xs text-gray-500">Since {new Date(tenant.createdAt).toLocaleDateString()}</span>
+        <span className="text-xs text-gray-500">Since {formatAdminDate(tenant.createdAt)}</span>
       </div>
 
       <Section title="Owner">
@@ -194,9 +235,34 @@ const TenantDrillDown = ({
       </Section>
 
       <Section title={`Team (${tenant.members.length})`}>
+        <form onSubmit={(event) => void addGuide(event)} className="mb-3 flex flex-wrap items-center gap-2">
+          <input
+            type="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Guide email"
+            className={`${ADMIN_INPUT_CLASS} min-w-[200px]`}
+          />
+          <AppSelect
+            value={role}
+            onChange={(value) => setRole(value as 'tenant_guide' | 'tenant_admin')}
+            options={[
+              { value: 'tenant_guide', label: 'Guide' },
+              { value: 'tenant_admin', label: 'Staff' },
+            ]}
+            inputClassName={ADMIN_FILTER_SELECT_CLASS}
+            aria-label="Team role"
+          />
+          <button type="submit" className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-sm text-white hover:bg-emerald-700 disabled:opacity-60" disabled={teamBusy}>
+            <UserPlus className="h-3.5 w-3.5" aria-hidden />
+            Add
+          </button>
+        </form>
+        {teamError ? <p className="mb-2 text-sm text-red-600">{teamError}</p> : null}
         <div className="space-y-2 max-h-48 overflow-y-auto">
           {tenant.members.map((member) => (
-            <div key={member.userId} className="flex items-center justify-between rounded-lg border border-gray-100 px-3 py-2 text-sm">
+            <div key={member.membershipId || member.userId} className="flex items-center justify-between rounded-lg border border-gray-100 px-3 py-2 text-sm">
               <div>
                 <p className="font-medium text-gray-900">{member.displayName || member.email}</p>
                 <p className="text-xs text-gray-500">{member.email}</p>
@@ -208,6 +274,15 @@ const TenantDrillDown = ({
                     View
                   </button>
                 )}
+                {member.role !== 'tenant_owner' && member.membershipId ? (
+                  <AdminIconButton
+                    label="Remove from business"
+                    icon={UserMinus}
+                    tone="red"
+                    disabled={teamBusy}
+                    onClick={() => void removeMember(member.membershipId)}
+                  />
+                ) : null}
               </div>
             </div>
           ))}
@@ -226,7 +301,7 @@ const TenantDrillDown = ({
                   {statusBadge(activity.status)}
                 </div>
                 <p className="text-xs text-gray-500 mt-0.5">
-                  {activity.locationName} · {new Date(activity.startAt).toLocaleDateString()} · {activity.participantCount}/{activity.capacity} joined
+                  {activity.locationName} · {formatAdminDate(activity.startAt)} · {activity.participantCount}/{activity.capacity} joined
                 </p>
               </div>
             ))}
@@ -264,7 +339,7 @@ const GroupDrillDown = ({ detail, loading }: { detail: AdminSocialGroupDetail | 
       <div className="flex flex-wrap gap-2 items-center">
         <span className="px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700 capitalize">{detail.group.type}</span>
         {statusBadge(detail.group.status ?? 'active')}
-        <span className="text-xs text-gray-500">Created {new Date(detail.group.createdAt).toLocaleString()}</span>
+        <span className="text-xs text-gray-500">Created {formatAdminDate(detail.group.createdAt)}</span>
       </div>
       {detail.group.slogan && <p className="text-sm text-gray-600">{detail.group.slogan}</p>}
 
@@ -321,7 +396,7 @@ const ActivityDrillDown = ({ activity, loading }: { activity: ActivityDTO | null
     <div className="space-y-4">
       <div className="flex flex-wrap gap-2 items-center">
         {statusBadge(activity.status)}
-        <span className="text-xs text-gray-500">{activity.date} {activity.time}</span>
+        <span className="text-xs text-gray-500">{formatAdminDate(activity.date)} {activity.time}</span>
         <span className="text-xs text-gray-500">{formatActivityType(activity.activityType)}</span>
       </div>
 
@@ -442,9 +517,9 @@ export const UserDetailPanel = ({
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <div className="admin-dialog-backdrop fixed inset-0 flex items-center justify-center z-50 p-4" onClick={onClose}>
         <div
-          className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col"
+          className="admin-dialog bg-white rounded-xl w-full max-w-4xl max-h-[90vh] flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="px-6 pt-6 pb-4 border-b border-gray-100 shrink-0">
@@ -491,11 +566,11 @@ export const UserDetailPanel = ({
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
                   <div className="rounded-lg bg-gray-50 p-3">
                     <p className="text-xs text-gray-500">Joined</p>
-                    <p className="font-medium text-gray-900">{new Date(user.createdAt).toLocaleDateString()}</p>
+                    <p className="font-medium text-gray-900">{formatAdminDate(user.createdAt)}</p>
                   </div>
                   <div className="rounded-lg bg-gray-50 p-3">
                     <p className="text-xs text-gray-500">Last active</p>
-                    <p className="font-medium text-gray-900">{user.lastActiveAt ? new Date(user.lastActiveAt).toLocaleString() : '—'}</p>
+                    <p className="font-medium text-gray-900">{user.lastActiveAt ? formatAdminDate(user.lastActiveAt) : '—'}</p>
                   </div>
                   <div className="rounded-lg bg-gray-50 p-3">
                     <p className="text-xs text-gray-500">Auth</p>
@@ -503,7 +578,7 @@ export const UserDetailPanel = ({
                   </div>
                   <div className="rounded-lg bg-gray-50 p-3">
                     <p className="text-xs text-gray-500">Email verified</p>
-                    <p className="font-medium text-gray-900">{user.emailVerifiedAt ? new Date(user.emailVerifiedAt).toLocaleDateString() : 'No'}</p>
+                    <p className="font-medium text-gray-900">{user.emailVerifiedAt ? formatAdminDate(user.emailVerifiedAt) : 'No'}</p>
                   </div>
                 </div>
 
@@ -575,7 +650,7 @@ export const UserDetailPanel = ({
                         <ClickableCard
                           key={m.tenantId}
                           title={m.tenantName}
-                          subtitle={`${m.role.replace(/_/g, ' ')} · Joined ${new Date(m.joinedAt).toLocaleDateString()}`}
+                          subtitle={`${m.role.replace(/_/g, ' ')} · Joined ${formatAdminDate(m.joinedAt)}`}
                           meta={m.tenantSlug ? <span className="text-xs text-gray-500">/{m.tenantSlug}</span> : undefined}
                           onView={() => setDrillDown({ type: 'tenant', id: m.tenantId })}
                           href={
@@ -602,7 +677,7 @@ export const UserDetailPanel = ({
                         <ClickableCard
                           key={group.id}
                           title={group.name}
-                          subtitle={`${group.type} · Admin · Joined ${new Date(group.joinedAt).toLocaleDateString()}`}
+                          subtitle={`${group.type} · Admin · Joined ${formatAdminDate(group.joinedAt)}`}
                           status={statusBadge(group.status)}
                           onView={() => setDrillDown({ type: 'group', id: group.id })}
                         />
@@ -620,7 +695,7 @@ export const UserDetailPanel = ({
                         <ClickableCard
                           key={group.id}
                           title={group.name}
-                          subtitle={`${group.type} · ${group.role} · Joined ${new Date(group.joinedAt).toLocaleDateString()}`}
+                          subtitle={`${group.type} · ${group.role} · Joined ${formatAdminDate(group.joinedAt)}`}
                           status={statusBadge(group.status)}
                           onView={() => setDrillDown({ type: 'group', id: group.id })}
                         />
@@ -641,7 +716,7 @@ export const UserDetailPanel = ({
                       <ClickableCard
                         key={activity.activityId}
                         title={activity.title}
-                        subtitle={[activity.locationName, activity.tenantName, activity.date].filter(Boolean).join(' · ')}
+                        subtitle={[activity.locationName, activity.tenantName, formatAdminDate(activity.date)].filter(Boolean).join(' · ')}
                         meta={<span className="text-xs capitalize text-gray-500">{activity.role}</span>}
                         status={statusBadge(activity.status)}
                         onView={() => setDrillDown({ type: 'activity', id: activity.activityId })}
@@ -663,7 +738,7 @@ export const UserDetailPanel = ({
                       <ClickableCard
                         key={joinedActivity.activityId}
                         title={joinedActivity.activityTitle ?? 'Untitled activity'}
-                        subtitle={[joinedActivity.locationName, joinedActivity.tenantName, joinedActivity.date].filter(Boolean).join(' · ')}
+                        subtitle={[joinedActivity.locationName, joinedActivity.tenantName, formatAdminDate(joinedActivity.date)].filter(Boolean).join(' · ')}
                         meta={joinedActivity.checkedInAt ? <span className="text-xs bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded">Checked in</span> : undefined}
                         onView={() => setDrillDown({ type: 'activity', id: joinedActivity.activityId })}
                         href={`/activity/${joinedActivity.activityId}`}
@@ -684,7 +759,7 @@ export const UserDetailPanel = ({
                       <ClickableCard
                         key={request.id}
                         title={request.activityTitle}
-                        subtitle={[request.locationName, new Date(request.createdAt).toLocaleDateString()].filter(Boolean).join(' · ')}
+                        subtitle={[request.locationName, formatAdminDate(request.createdAt)].filter(Boolean).join(' · ')}
                         status={statusBadge(request.status)}
                         onView={() => setDrillDown({ type: 'activity', id: request.activityId })}
                         href={`/activity/${request.activityId}`}
@@ -701,8 +776,8 @@ export const UserDetailPanel = ({
       </div>
 
       {drillDown && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[60] p-4" onClick={() => setDrillDown(null)}>
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+        <div className="admin-dialog-backdrop fixed inset-0 flex items-center justify-center z-[60] p-4" onClick={() => setDrillDown(null)}>
+          <div className="admin-dialog bg-white rounded-xl w-full max-w-2xl max-h-[85vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
             <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between gap-3 shrink-0">
               <h3 className="text-lg font-semibold text-gray-900 truncate">{drillTitle}</h3>
               <button type="button" onClick={() => setDrillDown(null)} className="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
@@ -710,7 +785,15 @@ export const UserDetailPanel = ({
             <div className="flex-1 overflow-y-auto px-5 py-4">
               {drillError && <p className="text-sm text-red-600 mb-3">{drillError}</p>}
               {drillDown.type === 'tenant' && (
-                <TenantDrillDown tenant={tenantDetail} loading={drillLoading} onOpenUser={onOpenUser} />
+                <TenantDrillDown
+                  tenant={tenantDetail}
+                  loading={drillLoading}
+                  onOpenUser={onOpenUser}
+                  onReload={async () => {
+                    const detail = await fetchAdminTenantDetail(drillDown.id);
+                    setTenantDetail(detail);
+                  }}
+                />
               )}
               {drillDown.type === 'group' && <GroupDrillDown detail={groupDetail} loading={drillLoading} />}
               {drillDown.type === 'activity' && <ActivityDrillDown activity={activityDetail} loading={drillLoading} />}

@@ -5,10 +5,18 @@ import { Building2, MapPin, Mountain, ShoppingBag, Sparkles, Tent } from 'lucide
 import { useAuth } from '../../context/AuthContext';
 import { MAP_CONFIG } from '../../config/platform';
 import { EXPLORE_Z } from '../../config/exploreTheme';
+import { COMPOSE_DESKTOP_INSET_FIXED } from '../create/composeDesktopInset';
 import { ImageUpload } from '../../components/ui/ImageUpload';
 import { PhoneInput } from '../../components/ui/PhoneInput';
 import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
 import { COMPOSE_SHEET_DRAG_HINT } from '../../hooks/useMobileBrowseSheetImmersive';
+import { useIsMobile } from '../../hooks/useIsMobile';
+import { ComposeWidePageSlot } from '../create/ComposeWidePageSlot';
+import {
+  bundleAddWizardPages,
+  COMPOSE_WIDE_SHEET_MAX_WIDTH,
+  wizardPageContaining,
+} from '../create/composeWideWizard';
 import { useComposeSheetExpandedState } from '../create/ComposeSheetExpandedContext';
 import { useComposeWizardExitBack } from '../create/useComposeWizardExitBack';
 import {
@@ -17,7 +25,6 @@ import {
   isPastWizardStep,
   requestComposeFlowClose,
 } from './composeFlowClose';
-import { FlowSheetChrome } from './ExploreFlowSheetChrome';
 import { FlowStepTextInput } from './useFlowSheetPrimaryFieldFocus';
 import type { AddVenueKind } from '../addTypes';
 import { useExplorePublishedAreas } from '../useExplorePublishedAreas';
@@ -56,6 +63,8 @@ import {
   readAddWizardSession,
   writeAddWizardSession,
 } from './composeWizardSession';
+import { exploreFlowComposeFieldClass } from './exploreFlowUi';
+import { EXPLORE_FLOW } from '../../config/exploreTheme';
 import { ComposeWizardPrimaryButton } from './ComposeWizardPrimaryButton';
 
 const CreatePlacePicker = lazy(() =>
@@ -131,6 +140,7 @@ export const CreateAddFlow = ({
 }: CreateAddFlowProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const isMobile = useIsMobile();
   const publishedAreas = useExplorePublishedAreas();
 
   const [step, setStep] = useState<AddFlowStepId>('title');
@@ -146,10 +156,18 @@ export const CreateAddFlow = ({
   const [mapPrecision, setMapPrecision] = useState<LocationPrecision>('specific');
 
   const flowSteps = useMemo(() => getAddFlowSteps(kind), [kind]);
+  const wizardPages = useMemo(
+    () => (isMobile ? flowSteps.map((id) => [id]) : bundleAddWizardPages(flowSteps)),
+    [flowSteps, isMobile]
+  );
+  const widePageSteps = wizardPageContaining(wizardPages, step);
+  const currentPageIndex = wizardPages.findIndex((page) => page.includes(step));
+  const pageHas = (id: AddFlowStepId) => widePageSteps.includes(id);
   const currentStepIndex = flowSteps.indexOf(step);
-  const headerTitle = addFlowStepTitle(step, kind);
   const kindMeta = KIND_LABELS[kind];
   const KindIcon = kindMeta.icon;
+  const headerTitle =
+    widePageSteps.length > 1 ? `Add ${kindMeta.title}` : addFlowStepTitle(step, kind);
 
   const addInitKey = kind;
   const addInitializedRef = useRef<AddVenueKind | null>(null);
@@ -230,23 +248,25 @@ export const CreateAddFlow = ({
       setError(null);
       return;
     }
-    if (currentStepIndex <= 0) {
+    if (currentPageIndex <= 0) {
       exitWizardBack();
       return;
     }
-    setStep(flowSteps[currentStepIndex - 1]);
+    setStep(wizardPages[currentPageIndex - 1][0]);
     setError(null);
   };
 
   const goNext = () => {
-    const validation = validateAddStep(step, { ...draft, kind });
-    if (validation) {
-      setError(validation);
-      return;
+    for (const id of widePageSteps) {
+      const validation = validateAddStep(id, { ...draft, kind });
+      if (validation) {
+        setError(validation);
+        return;
+      }
     }
     setError(null);
-    if (currentStepIndex >= flowSteps.length - 1) return;
-    setStep(flowSteps[currentStepIndex + 1]);
+    if (currentPageIndex < 0 || currentPageIndex >= wizardPages.length - 1) return;
+    setStep(wizardPages[currentPageIndex + 1][0]);
   };
 
   const handleSubmit = async () => {
@@ -281,11 +301,11 @@ export const CreateAddFlow = ({
       onClick={onOpen}
       className="flex w-full items-center justify-between gap-3 rounded-2xl border-2 border-neutral-200 px-4 py-4 text-left hover:border-emerald-300"
     >
-      <span className="flex items-center gap-2 text-gray-800">
+      <span className="flex items-center gap-2 text-neutral-800">
         <MapPin className="h-5 w-5 text-emerald-500" />
         <span>
           <span className="block text-sm font-bold">{label}</span>
-          <span className="text-xs text-gray-500">
+          <span className="text-xs text-neutral-500">
             {placed && lat != null && lng != null
               ? `${lat.toFixed(4)}, ${lng.toFixed(4)}`
               : 'Tap to choose on map'}
@@ -340,7 +360,7 @@ export const CreateAddFlow = ({
     const pinAlreadySet = isParking ? draft.parkingPinPlaced : draft.locationPinPlaced;
 
     return (
-      <div className={`fixed inset-0 ${EXPLORE_Z.composeFlow} bg-neutral-100`}>
+      <div className={`${COMPOSE_DESKTOP_INSET_FIXED} ${EXPLORE_Z.composeFlow} bg-neutral-100`}>
         <Suspense fallback={<div className="h-full w-full animate-pulse bg-emerald-50" />}>
           <CreatePlacePicker
             openInAdjustMode={pinAlreadySet}
@@ -403,28 +423,58 @@ export const CreateAddFlow = ({
       expanded={sheetExpanded}
       onExpand={expandSheet}
       expandHint={COMPOSE_SHEET_DRAG_HINT}
+      maxWidthClass={isMobile ? 'lg:max-w-lg' : COMPOSE_WIDE_SHEET_MAX_WIDTH}
       panelClassName="px-5 pb-[calc(var(--safe-bottom)+1rem)] pt-0 lg:px-6 lg:pb-6 lg:pt-2"
     >
-      {step === 'title' && (
-        <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
+      {pageHas('title') && (
+        <ComposeWidePageSlot
+          stepId="title"
+          pageSteps={widePageSteps}
+          title={addFlowStepTitle('title', kind)}
+          pageTitle={headerTitle}
+          onClose={requestClose}
+          onBack={goBack}
+          footer={
+            <>
+              {error ? <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
+              <div className="mt-5 pb-2">
+                <NextButton disabled={!draft.title.trim()} onClick={goNext} />
+              </div>
+            </>
+          }
+        >
           <label className="block">
             <FlowStepTextInput
               value={draft.title}
               onChange={(event) => patchDraft({ title: event.target.value })}
               placeholder={addTitlePlaceholder(kind)}
-              className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-base text-gray-900 outline-none focus:border-emerald-400"
+              className={exploreFlowComposeFieldClass()}
               maxLength={120}
             />
           </label>
-          {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-          <div className="mt-5 pb-2">
-            <NextButton disabled={!draft.title.trim()} onClick={goNext} />
-          </div>
-        </FlowSheetChrome>
+        </ComposeWidePageSlot>
       )}
 
-      {step === 'curatedArea' && (
-        <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
+      {pageHas('curatedArea') && (
+        <ComposeWidePageSlot
+          stepId="curatedArea"
+          pageSteps={widePageSteps}
+          title={addFlowStepTitle('curatedArea', kind)}
+          pageTitle={headerTitle}
+          onClose={requestClose}
+          onBack={goBack}
+          footer={
+            <>
+              {error ? <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
+              <div className="mt-5 pb-2">
+                <NextButton
+                  disabled={!draft.areaId && (draft.areaLabel.trim() || draft.title.trim()).length < 2}
+                  onClick={goNext}
+                />
+              </div>
+            </>
+          }
+        >
           <AddCuratedAreaStep
             areaId={draft.areaId}
             proposedAreaName={draft.areaLabel}
@@ -439,33 +489,51 @@ export const CreateAddFlow = ({
               });
             }}
           />
-          {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-          <div className="mt-5 pb-2">
-            <NextButton
-              disabled={!draft.areaId && (draft.areaLabel.trim() || draft.title.trim()).length < 2}
-              onClick={goNext}
-            />
-          </div>
-        </FlowSheetChrome>
+        </ComposeWidePageSlot>
       )}
 
-      {step === 'location' && (
-        <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
+      {pageHas('location') && (
+        <ComposeWidePageSlot
+          stepId="location"
+          pageSteps={widePageSteps}
+          title={addFlowStepTitle('location', kind)}
+          pageTitle={headerTitle}
+          onClose={requestClose}
+          onBack={goBack}
+          footer={
+            <>
+              {error ? <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
+              <div className="mt-5 pb-2">
+                <NextButton
+                  disabled={
+                    !draft.locationPinPlaced ||
+                    !placeRegionReady(
+                      draft.countryCode,
+                      draft.emirate,
+                      inferEmirateFromPin(draft.latitude, draft.longitude, publishedAreas)
+                    )
+                  }
+                  onClick={goNext}
+                />
+              </div>
+            </>
+          }
+        >
           {(kind === 'hiking' || kind === 'camping' || kind === 'event') && (
             <label className="mb-4 block">
-              <span className="mb-1.5 block text-sm font-semibold text-gray-800">
-                Area or landmark <span className="font-normal text-gray-500">(optional)</span>
+              <span className="mb-1.5 block text-sm font-semibold text-neutral-800">
+                Area or landmark <span className="font-normal text-neutral-500">(optional)</span>
               </span>
               <FlowStepTextInput
                 value={draft.areaLabel}
                 onChange={(event) => patchDraft({ areaLabel: event.target.value })}
                 placeholder="e.g. Wadi Shawka Dam, Hatta visitor park"
-                className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-base text-gray-900 outline-none focus:border-emerald-400"
+                className={exploreFlowComposeFieldClass()}
                 maxLength={120}
               />
             </label>
           )}
-          <p className="mb-4 text-sm text-gray-600">
+          <p className="mb-4 text-sm text-neutral-600">
             {kind === 'hiking'
               ? 'Pin where the trail starts.'
               : kind === 'camping'
@@ -495,29 +563,30 @@ export const CreateAddFlow = ({
             value={draft.emirate}
             onChange={(emirate) => patchDraft({ emirate })}
           />
-          {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-          <div className="mt-5 pb-2">
-            <NextButton
-              disabled={
-                !draft.locationPinPlaced ||
-                !placeRegionReady(
-                  draft.countryCode,
-                  draft.emirate,
-                  inferEmirateFromPin(draft.latitude, draft.longitude, publishedAreas)
-                )
-              }
-              onClick={goNext}
-            />
-          </div>
-        </FlowSheetChrome>
+        </ComposeWidePageSlot>
       )}
 
-      {step === 'image' && (
-        <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
+      {pageHas('image') && (
+        <ComposeWidePageSlot
+          stepId="image"
+          pageSteps={widePageSteps}
+          title={addFlowStepTitle('image', kind)}
+          pageTitle={headerTitle}
+          onClose={requestClose}
+          onBack={goBack}
+          footer={
+            <>
+              {error ? <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
+              <div className="mt-5 pb-2">
+                <NextButton disabled={!draft.images.length} onClick={goNext} />
+              </div>
+            </>
+          }
+        >
           {kind === 'hiking' || kind === 'camping' || kind === 'event' ? (
-            <p className="mb-3 text-sm text-gray-600">At least 1 photo required · up to 5. Photos are cropped to the same size.</p>
+            <p className="mb-3 text-sm text-neutral-600">At least 1 photo required · up to 5. Photos are cropped to the same size.</p>
           ) : kind === 'shop' ? (
-            <p className="mb-3 text-sm text-gray-600">One shop cover image (logo or storefront).</p>
+            <p className="mb-3 text-sm text-neutral-600">One shop cover image (logo or storefront).</p>
           ) : null}
           <ImageUpload
             images={draft.images}
@@ -530,34 +599,42 @@ export const CreateAddFlow = ({
             label=""
             preset="location"
           />
-          {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-          <div className="mt-5 pb-2">
-            <NextButton
-              disabled={!draft.images.length}
-              onClick={goNext}
-            />
-          </div>
-        </FlowSheetChrome>
+        </ComposeWidePageSlot>
       )}
 
-      {(step === 'description' || step === 'about') && kind !== 'shop' && (
-        <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
+      {(pageHas('description') || pageHas('about')) && kind !== 'shop' && (
+        <ComposeWidePageSlot
+          stepId={pageHas('about') ? 'about' : 'description'}
+          pageSteps={widePageSteps}
+          title={addFlowStepTitle(pageHas('about') ? 'about' : 'description', kind)}
+          pageTitle={headerTitle}
+          onClose={requestClose}
+          onBack={goBack}
+          footer={
+            <>
+              {error ? <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
+              <div className="mt-5 pb-2">
+                <NextButton disabled={draft.description.trim().length < 20} onClick={goNext} />
+              </div>
+            </>
+          }
+        >
           <textarea
             value={draft.description}
             onChange={(event) => patchDraft({ description: event.target.value })}
             rows={5}
             placeholder={
-              kind === 'hiking' && step === 'about'
+              kind === 'hiking' && pageHas('about')
                 ? 'Trail highlights, best season, water, shade, and what hikers should know…'
-                : kind === 'camping' && step === 'about'
+                : kind === 'camping' && pageHas('about')
                   ? 'What makes this spot good for camping? Access, shade, facilities, and tips…'
                   : addDescriptionPlaceholder(kind)
             }
-            className="w-full resize-none rounded-2xl border border-neutral-200 px-4 py-3 text-base text-gray-900 outline-none focus:border-emerald-400"
+            className={`w-full resize-none ${exploreFlowComposeFieldClass()}`}
             maxLength={3000}
             autoFocus
           />
-          {(kind === 'hiking' || kind === 'camping') && step === 'about' && (
+          {(kind === 'hiking' || kind === 'camping') && pageHas('about') && (
             <label className="mt-4 flex cursor-pointer items-center gap-3 rounded-2xl border border-neutral-200 px-4 py-3">
               <input
                 type="checkbox"
@@ -565,59 +642,100 @@ export const CreateAddFlow = ({
                 onChange={(event) => patchDraft({ childFriendly: event.target.checked })}
                 className="size-5 rounded border-neutral-300 text-emerald-600 focus:ring-emerald-500"
               />
-              <span className="text-sm font-medium text-gray-800">Family-friendly spot</span>
+              <span className="text-sm font-medium text-neutral-800">Family-friendly spot</span>
             </label>
           )}
-          <p className="mt-2 text-xs text-gray-500">At least 20 characters.</p>
-          {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-          <div className="mt-5 pb-2">
-            <NextButton disabled={draft.description.trim().length < 20} onClick={goNext} />
-          </div>
-        </FlowSheetChrome>
+          <p className="mt-2 text-xs text-neutral-500">At least 20 characters.</p>
+        </ComposeWidePageSlot>
       )}
 
-      {step === 'about' && kind === 'shop' && (
-        <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
+      {pageHas('about') && kind === 'shop' && (
+        <ComposeWidePageSlot
+          stepId="about"
+          pageSteps={widePageSteps}
+          title={addFlowStepTitle('about', kind)}
+          pageTitle={headerTitle}
+          onClose={requestClose}
+          onBack={goBack}
+          footer={
+            <>
+              {error ? <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
+              <div className="mt-5 pb-2">
+                <NextButton disabled={draft.description.trim().length < 20} onClick={goNext} />
+              </div>
+            </>
+          }
+        >
           <textarea
             value={draft.description}
             onChange={(event) => patchDraft({ description: event.target.value })}
             rows={5}
             placeholder="Tell explorers what your shop is about — who you serve and what makes you different…"
-            className="w-full resize-none rounded-2xl border border-neutral-200 px-4 py-3 text-base text-gray-900 outline-none focus:border-violet-400"
+            className={`w-full resize-none ${exploreFlowComposeFieldClass('focus:border-violet-400')}`}
             maxLength={2000}
             autoFocus
           />
-          <p className="mt-2 text-xs text-gray-500">At least 20 characters.</p>
-          {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-          <div className="mt-5 pb-2">
-            <NextButton disabled={draft.description.trim().length < 20} onClick={goNext} />
-          </div>
-        </FlowSheetChrome>
+          <p className="mt-2 text-xs text-neutral-500">At least 20 characters.</p>
+        </ComposeWidePageSlot>
       )}
 
-      {step === 'shop_keywords' && kind === 'shop' && (
-        <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
+      {pageHas('shop_keywords') && kind === 'shop' && (
+        <ComposeWidePageSlot
+          stepId="shop_keywords"
+          pageSteps={widePageSteps}
+          title={addFlowStepTitle('shop_keywords', kind)}
+          pageTitle={headerTitle}
+          onClose={requestClose}
+          onBack={goBack}
+          footer={
+            <>
+              {error ? <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
+              <div className="mt-5 pb-2">
+                <NextButton disabled={draft.shopSearchKeywords.trim().length < 3} onClick={goNext} />
+              </div>
+            </>
+          }
+        >
           <textarea
             value={draft.shopSearchKeywords}
             onChange={(event) => patchDraft({ shopSearchKeywords: event.target.value })}
             rows={3}
             placeholder="hiking boots, camping, 4x4 gear — separate with commas"
-            className="w-full resize-none rounded-2xl border border-neutral-200 px-4 py-3 text-base text-gray-900 outline-none focus:border-violet-400"
+            className={`w-full resize-none ${exploreFlowComposeFieldClass('focus:border-violet-400')}`}
             maxLength={500}
             autoFocus
           />
-          {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-          <div className="mt-5 pb-2">
-            <NextButton disabled={draft.shopSearchKeywords.trim().length < 3} onClick={goNext} />
-          </div>
-        </FlowSheetChrome>
+        </ComposeWidePageSlot>
       )}
 
-      {step === 'trail_stats' && kind === 'hiking' && (
-        <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
+      {pageHas('trail_stats') && kind === 'hiking' && (
+        <ComposeWidePageSlot
+          stepId="trail_stats"
+          pageSteps={widePageSteps}
+          title={addFlowStepTitle('trail_stats', kind)}
+          pageTitle={headerTitle}
+          onClose={requestClose}
+          onBack={goBack}
+          footer={
+            <>
+              {error ? <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
+              <div className="mt-5 pb-2">
+                <NextButton
+                  disabled={
+                    draft.trailDistanceKm == null ||
+                    draft.trailDistanceKm <= 0 ||
+                    draft.trailElevationM == null ||
+                    draft.trailElevationM < 0
+                  }
+                  onClick={goNext}
+                />
+              </div>
+            </>
+          }
+        >
           <div className="space-y-4">
             <label className="block">
-              <span className="mb-1.5 block text-sm font-semibold text-gray-800">Distance (km)</span>
+              <span className="mb-1.5 block text-sm font-semibold text-neutral-800">Distance (km)</span>
               <input
                 type="number"
                 min={0.1}
@@ -629,11 +747,11 @@ export const CreateAddFlow = ({
                   patchDraft({ trailDistanceKm: raw === '' ? null : Number(raw) });
                 }}
                 placeholder="e.g. 8.5"
-                className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-base text-gray-900 outline-none focus:border-emerald-400"
+                className={exploreFlowComposeFieldClass()}
               />
             </label>
             <label className="block">
-              <span className="mb-1.5 block text-sm font-semibold text-gray-800">Elevation gain (m)</span>
+              <span className="mb-1.5 block text-sm font-semibold text-neutral-800">Elevation gain (m)</span>
               <input
                 type="number"
                 min={0}
@@ -645,28 +763,31 @@ export const CreateAddFlow = ({
                   patchDraft({ trailElevationM: raw === '' ? null : Number(raw) });
                 }}
                 placeholder="e.g. 450"
-                className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-base text-gray-900 outline-none focus:border-emerald-400"
+                className={exploreFlowComposeFieldClass()}
               />
             </label>
           </div>
-          {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-          <div className="mt-5 pb-2">
-            <NextButton
-              disabled={
-                draft.trailDistanceKm == null ||
-                draft.trailDistanceKm <= 0 ||
-                draft.trailElevationM == null ||
-                draft.trailElevationM < 0
-              }
-              onClick={goNext}
-            />
-          </div>
-        </FlowSheetChrome>
+        </ComposeWidePageSlot>
       )}
 
-      {step === 'surface' && kind === 'camping' && (
-        <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
-          <p className="mb-4 text-sm text-gray-600">What is the ground like? Pick all that apply.</p>
+      {pageHas('surface') && kind === 'camping' && (
+        <ComposeWidePageSlot
+          stepId="surface"
+          pageSteps={widePageSteps}
+          title={addFlowStepTitle('surface', kind)}
+          pageTitle={headerTitle}
+          onClose={requestClose}
+          onBack={goBack}
+          footer={
+            <>
+              {error ? <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
+              <div className="mt-5 pb-2">
+                <NextButton disabled={!draft.surfaceTypes.length} onClick={goNext} />
+              </div>
+            </>
+          }
+        >
+          <p className="mb-4 text-sm text-neutral-600">What is the ground like? Pick all that apply.</p>
           <div className="flex flex-wrap gap-2">
             {CAMPING_ADD_SURFACE_OPTIONS.map((surface) => {
               const active = draft.surfaceTypes.includes(surface);
@@ -683,7 +804,7 @@ export const CreateAddFlow = ({
                   className={`rounded-full border-2 px-4 py-2 text-sm font-semibold ${
                     active
                       ? 'border-amber-600 bg-amber-50 text-amber-950'
-                      : 'border-neutral-200 bg-white text-gray-700'
+                      : 'border-neutral-200 bg-white text-neutral-700'
                   }`}
                 >
                   {surface}
@@ -691,16 +812,27 @@ export const CreateAddFlow = ({
               );
             })}
           </div>
-          {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-          <div className="mt-5 pb-2">
-            <NextButton disabled={!draft.surfaceTypes.length} onClick={goNext} />
-          </div>
-        </FlowSheetChrome>
+        </ComposeWidePageSlot>
       )}
 
-      {step === 'transport' && (kind === 'hiking' || kind === 'camping') && (
-        <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
-          <p className="mb-4 text-sm text-gray-600">
+      {pageHas('transport') && (kind === 'hiking' || kind === 'camping') && (
+        <ComposeWidePageSlot
+          stepId="transport"
+          pageSteps={widePageSteps}
+          title={addFlowStepTitle('transport', kind)}
+          pageTitle={headerTitle}
+          onClose={requestClose}
+          onBack={goBack}
+          footer={
+            <>
+              {error ? <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
+              <div className="mt-5 pb-2">
+                <NextButton disabled={!draft.transportSedan && !draft.transport4x4} onClick={goNext} />
+              </div>
+            </>
+          }
+        >
+          <p className="mb-4 text-sm text-neutral-600">
             {kind === 'hiking'
               ? 'How can people reach the trailhead?'
               : 'How can people reach the camp area?'}
@@ -724,7 +856,7 @@ export const CreateAddFlow = ({
                         : { transport4x4: !draft.transport4x4 }
                     )
                   }
-                  className={`flex items-center gap-3 rounded-2xl border-2 px-4 py-4 text-left ${
+                  className={`${EXPLORE_FLOW.composeOptionRow} ${
                     active
                       ? accent === 'amber'
                         ? 'border-amber-500 bg-amber-50/50'
@@ -738,26 +870,37 @@ export const CreateAddFlow = ({
                         ? accent === 'amber'
                           ? 'text-amber-600'
                           : 'text-emerald-600'
-                        : 'text-gray-400'
+                        : 'text-neutral-400'
                     }`}
                   />
                   <span>
-                    <span className="block text-sm font-bold text-gray-900">{option.title}</span>
-                    <span className="text-xs text-gray-500">{option.subtitle}</span>
+                    <span className="block text-sm font-bold text-neutral-900">{option.title}</span>
+                    <span className="text-xs text-neutral-500">{option.subtitle}</span>
                   </span>
                 </button>
               );
             })}
           </div>
-          {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-          <div className="mt-5 pb-2">
-            <NextButton disabled={!draft.transportSedan && !draft.transport4x4} onClick={goNext} />
-          </div>
-        </FlowSheetChrome>
+        </ComposeWidePageSlot>
       )}
 
-      {step === 'difficulty' && kind === 'hiking' && (
-        <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
+      {pageHas('difficulty') && kind === 'hiking' && (
+        <ComposeWidePageSlot
+          stepId="difficulty"
+          pageSteps={widePageSteps}
+          title={addFlowStepTitle('difficulty', kind)}
+          pageTitle={headerTitle}
+          onClose={requestClose}
+          onBack={goBack}
+          footer={
+            <>
+              {error ? <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
+              <div className="mt-5 pb-2">
+                <NextButton disabled={!draft.difficulty} onClick={goNext} />
+              </div>
+            </>
+          }
+        >
           <div className="grid grid-cols-1 gap-3">
             {ACTIVITY_DIFFICULTY_OPTIONS.map((option) => {
               const active = draft.difficulty === option.value;
@@ -766,26 +909,37 @@ export const CreateAddFlow = ({
                   key={option.value}
                   type="button"
                   onClick={() => patchDraft({ difficulty: option.value as ActivityDifficulty })}
-                  className={`rounded-2xl border-2 px-4 py-4 text-left ${
+                  className={`${EXPLORE_FLOW.composeOptionRow} ${
                     active ? 'border-emerald-500 bg-emerald-50/50' : 'border-neutral-200 bg-white'
                   }`}
                 >
-                  <p className="text-sm font-bold text-gray-900">{option.title}</p>
-                  <p className="mt-0.5 text-xs text-gray-500">{option.subtitle}</p>
+                  <p className="text-sm font-bold text-neutral-900">{option.title}</p>
+                  <p className="mt-0.5 text-xs text-neutral-500">{option.subtitle}</p>
                 </button>
               );
             })}
           </div>
-          {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-          <div className="mt-5 pb-2">
-            <NextButton disabled={!draft.difficulty} onClick={goNext} />
-          </div>
-        </FlowSheetChrome>
+        </ComposeWidePageSlot>
       )}
 
-      {step === 'parking' && kind === 'event' && (
-        <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
-          <p className="mb-4 text-sm text-gray-600">Where should people park before heading in?</p>
+      {pageHas('parking') && kind === 'event' && (
+        <ComposeWidePageSlot
+          stepId="parking"
+          pageSteps={widePageSteps}
+          title={addFlowStepTitle('parking', kind)}
+          pageTitle={headerTitle}
+          onClose={requestClose}
+          onBack={goBack}
+          footer={
+            <>
+              {error ? <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
+              <div className="mt-5 pb-2">
+                <NextButton disabled={!draft.parkingPinPlaced} onClick={goNext} />
+              </div>
+            </>
+          }
+        >
+          <p className="mb-4 text-sm text-neutral-600">Where should people park before heading in?</p>
           {renderPinButton(
             draft.parkingPinPlaced,
             draft.parkingLat,
@@ -793,16 +947,33 @@ export const CreateAddFlow = ({
             'Parking pin',
             () => setParkingMapOpen(true)
           )}
-          {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-          <div className="mt-5 pb-2">
-            <NextButton disabled={!draft.parkingPinPlaced} onClick={goNext} />
-          </div>
-        </FlowSheetChrome>
+        </ComposeWidePageSlot>
       )}
 
-      {step === 'shop_delivery' && kind === 'shop' && (
-        <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
-          <p className="mb-4 text-sm text-gray-600">Do you deliver gear or services?</p>
+      {pageHas('shop_delivery') && kind === 'shop' && (
+        <ComposeWidePageSlot
+          stepId="shop_delivery"
+          pageSteps={widePageSteps}
+          title={addFlowStepTitle('shop_delivery', kind)}
+          pageTitle={headerTitle}
+          onClose={requestClose}
+          onBack={goBack}
+          footer={
+            <>
+              {error ? <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
+              <div className="mt-5 pb-2">
+                <NextButton
+                  disabled={
+                    draft.shopDeliveryOffered === null ||
+                    (draft.shopDeliveryOffered && draft.shopDeliveryRadiusKm == null)
+                  }
+                  onClick={goNext}
+                />
+              </div>
+            </>
+          }
+        >
+          <p className="mb-4 text-sm text-neutral-600">Do you deliver gear or services?</p>
           <div className="grid grid-cols-2 gap-3">
             {[
               { value: false, label: 'No' },
@@ -830,7 +1001,7 @@ export const CreateAddFlow = ({
           </div>
           {draft.shopDeliveryOffered === true ? (
             <div className="mt-4">
-              <p className="mb-2 text-sm font-semibold text-gray-800">Delivery distance</p>
+              <p className="mb-2 text-sm font-semibold text-neutral-800">Delivery distance</p>
               <div className="flex flex-wrap gap-2">
                 {SHOP_DELIVERY_RADIUS_KM_OPTIONS.map((km) => {
                   const active = draft.shopDeliveryRadiusKm === km;
@@ -842,7 +1013,7 @@ export const CreateAddFlow = ({
                       className={`rounded-full border-2 px-4 py-2 text-sm font-semibold ${
                         active
                           ? 'border-violet-600 bg-violet-50 text-violet-900'
-                          : 'border-neutral-200 text-gray-700'
+                          : 'border-neutral-200 text-neutral-700'
                       }`}
                     >
                       {km} km
@@ -852,23 +1023,28 @@ export const CreateAddFlow = ({
               </div>
             </div>
           ) : null}
-          {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-          <div className="mt-5 pb-2">
-            <NextButton
-              disabled={
-                draft.shopDeliveryOffered === null ||
-                (draft.shopDeliveryOffered && draft.shopDeliveryRadiusKm == null)
-              }
-              onClick={goNext}
-            />
-          </div>
-        </FlowSheetChrome>
+        </ComposeWidePageSlot>
       )}
 
-      {step === 'shop_phone' && kind === 'shop' && (
-        <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
+      {pageHas('shop_phone') && kind === 'shop' && (
+        <ComposeWidePageSlot
+          stepId="shop_phone"
+          pageSteps={widePageSteps}
+          title={addFlowStepTitle('shop_phone', kind)}
+          pageTitle={headerTitle}
+          onClose={requestClose}
+          onBack={goBack}
+          footer={
+            <>
+              {error ? <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
+              <div className="mt-5 pb-2">
+                <NextButton disabled={!draft.phone.trim()} onClick={goNext} />
+              </div>
+            </>
+          }
+        >
           <label className="block">
-            <span className="mb-2 block text-sm font-medium text-gray-700">Mobile number</span>
+            <span className="mb-2 block text-sm font-medium text-neutral-700">Mobile number</span>
             <PhoneInput
               dialCode={draft.phoneCountryCode}
               nationalNumber={draft.phone}
@@ -877,35 +1053,57 @@ export const CreateAddFlow = ({
               required
             />
           </label>
-          {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-          <div className="mt-5 pb-2">
-            <NextButton disabled={!draft.phone.trim()} onClick={goNext} />
-          </div>
-        </FlowSheetChrome>
+        </ComposeWidePageSlot>
       )}
 
-      {step === 'shop_email' && kind === 'shop' && (
-        <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
+      {pageHas('shop_email') && kind === 'shop' && (
+        <ComposeWidePageSlot
+          stepId="shop_email"
+          pageSteps={widePageSteps}
+          title={addFlowStepTitle('shop_email', kind)}
+          pageTitle={headerTitle}
+          onClose={requestClose}
+          onBack={goBack}
+          footer={
+            <>
+              {error ? <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
+              <div className="mt-5 pb-2">
+                <NextButton disabled={!draft.contactEmail.trim()} onClick={goNext} />
+              </div>
+            </>
+          }
+        >
           <label className="block">
-            <span className="mb-2 block text-sm font-medium text-gray-700">Shop email</span>
+            <span className="mb-2 block text-sm font-medium text-neutral-700">Shop email</span>
             <input
               type="email"
               value={draft.contactEmail}
               onChange={(event) => patchDraft({ contactEmail: event.target.value })}
               placeholder="shop@example.com"
-              className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-base text-gray-900 outline-none focus:border-violet-400"
+              className={exploreFlowComposeFieldClass('focus:border-violet-400')}
               autoFocus
             />
           </label>
-          {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-          <div className="mt-5 pb-2">
-            <NextButton disabled={!draft.contactEmail.trim()} onClick={goNext} />
-          </div>
-        </FlowSheetChrome>
+        </ComposeWidePageSlot>
       )}
 
-      {step === 'review' && kind === 'hiking' && (
-        <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
+      {pageHas('review') && kind === 'hiking' && (
+        <ComposeWidePageSlot
+          stepId="review"
+          pageSteps={widePageSteps}
+          title={addFlowStepTitle('review', kind)}
+          pageTitle={headerTitle}
+          onClose={requestClose}
+          onBack={goBack}
+          footer={
+            <>
+              {error ? <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
+              <div className="mt-5 pb-2">
+                <NextButton label="Submit" loading={submitting} onClick={handleSubmit} />
+              </div>
+            </>
+          }
+        >
           <AddHikingTrailPreview draft={{ ...draft, kind }} />
           <div className="mt-3 flex flex-wrap gap-2">
             {flowSteps
@@ -915,22 +1113,33 @@ export const CreateAddFlow = ({
                   key={target}
                   type="button"
                   onClick={() => goToStep(target)}
-                  className="rounded-full border border-neutral-200 px-3 py-1.5 text-xs font-semibold text-gray-700 hover:border-emerald-300"
+                  className="rounded-full border border-neutral-200 px-3 py-1.5 text-xs font-semibold text-neutral-700 hover:border-emerald-300"
                 >
                   Edit {REVIEW_EDIT_LABELS[target] ?? target}
                 </button>
               ))}
           </div>
-          <p className="mt-3 text-xs text-gray-500">{ADD_REVIEW_FOOTER_TRAIL}</p>
-          {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-          <div className="mt-5 pb-2">
-            <NextButton label="Submit" loading={submitting} onClick={handleSubmit} />
-          </div>
-        </FlowSheetChrome>
+          <p className="mt-3 text-xs text-neutral-500">{ADD_REVIEW_FOOTER_TRAIL}</p>
+        </ComposeWidePageSlot>
       )}
 
-      {step === 'review' && kind === 'camping' && (
-        <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
+      {pageHas('review') && kind === 'camping' && (
+        <ComposeWidePageSlot
+          stepId="review"
+          pageSteps={widePageSteps}
+          title={addFlowStepTitle('review', kind)}
+          pageTitle={headerTitle}
+          onClose={requestClose}
+          onBack={goBack}
+          footer={
+            <>
+              {error ? <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
+              <div className="mt-5 pb-2">
+                <NextButton label="Submit" loading={submitting} onClick={handleSubmit} />
+              </div>
+            </>
+          }
+        >
           <AddCampingSpotPreview draft={{ ...draft, kind }} />
           <div className="mt-3 flex flex-wrap gap-2">
             {flowSteps
@@ -940,22 +1149,33 @@ export const CreateAddFlow = ({
                   key={target}
                   type="button"
                   onClick={() => goToStep(target)}
-                  className="rounded-full border border-neutral-200 px-3 py-1.5 text-xs font-semibold text-gray-700 hover:border-amber-300"
+                  className="rounded-full border border-neutral-200 px-3 py-1.5 text-xs font-semibold text-neutral-700 hover:border-amber-300"
                 >
                   Edit {REVIEW_EDIT_LABELS[target] ?? target}
                 </button>
               ))}
           </div>
-          <p className="mt-3 text-xs text-gray-500">{ADD_REVIEW_FOOTER_CAMP}</p>
-          {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-          <div className="mt-5 pb-2">
-            <NextButton label="Submit" loading={submitting} onClick={handleSubmit} />
-          </div>
-        </FlowSheetChrome>
+          <p className="mt-3 text-xs text-neutral-500">{ADD_REVIEW_FOOTER_CAMP}</p>
+        </ComposeWidePageSlot>
       )}
 
-      {step === 'review' && kind === 'shop' && (
-        <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
+      {pageHas('review') && kind === 'shop' && (
+        <ComposeWidePageSlot
+          stepId="review"
+          pageSteps={widePageSteps}
+          title={addFlowStepTitle('review', kind)}
+          pageTitle={headerTitle}
+          onClose={requestClose}
+          onBack={goBack}
+          footer={
+            <>
+              {error ? <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
+              <div className="mt-5 pb-2">
+                <NextButton label="Submit" loading={submitting} onClick={handleSubmit} />
+              </div>
+            </>
+          }
+        >
           <AddShopPreview draft={{ ...draft, kind }} />
           <div className="mt-3 flex flex-wrap gap-2">
             {flowSteps
@@ -965,47 +1185,58 @@ export const CreateAddFlow = ({
                   key={target}
                   type="button"
                   onClick={() => goToStep(target)}
-                  className="rounded-full border border-neutral-200 px-3 py-1.5 text-xs font-semibold text-gray-700 hover:border-violet-300"
+                  className="rounded-full border border-neutral-200 px-3 py-1.5 text-xs font-semibold text-neutral-700 hover:border-violet-300"
                 >
                   Edit {REVIEW_EDIT_LABELS[target] ?? target}
                 </button>
               ))}
           </div>
-          <p className="mt-3 text-xs text-gray-500">{ADD_REVIEW_FOOTER_SHOP}</p>
-          {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-          <div className="mt-5 pb-2">
-            <NextButton label="Submit" loading={submitting} onClick={handleSubmit} />
-          </div>
-        </FlowSheetChrome>
+          <p className="mt-3 text-xs text-neutral-500">{ADD_REVIEW_FOOTER_SHOP}</p>
+        </ComposeWidePageSlot>
       )}
 
-      {step === 'review' && kind !== 'hiking' && kind !== 'camping' && kind !== 'shop' && (
-        <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
-          <div className="rounded-2xl border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-gray-700">
-            <p className="flex items-center gap-2 font-semibold text-gray-900">
+      {pageHas('review') && kind !== 'hiking' && kind !== 'camping' && kind !== 'shop' && (
+        <ComposeWidePageSlot
+          stepId="review"
+          pageSteps={widePageSteps}
+          title={addFlowStepTitle('review', kind)}
+          pageTitle={headerTitle}
+          onClose={requestClose}
+          onBack={goBack}
+          footer={
+            <>
+              {error ? <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
+              <div className="mt-5 pb-2">
+                <NextButton label="Submit" loading={submitting} onClick={handleSubmit} />
+              </div>
+            </>
+          }
+        >
+          <div className="rounded-2xl border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-neutral-700">
+            <p className="flex items-center gap-2 font-semibold text-neutral-900">
               <KindIcon className="h-4 w-4 text-emerald-600" />
               {kindMeta.title}
             </p>
             {draft.title && (
-              <p className="mt-2 text-xs text-gray-600">
-                <span className="font-semibold text-gray-700">Title: </span>
+              <p className="mt-2 text-xs text-neutral-600">
+                <span className="font-semibold text-neutral-700">Title: </span>
                 {draft.title}
               </p>
             )}
             {draft.locationPinPlaced && (
-              <p className="mt-2 flex items-center gap-1.5 text-xs text-gray-600">
+              <p className="mt-2 flex items-center gap-1.5 text-xs text-neutral-600">
                 <MapPin className="h-3.5 w-3.5 text-emerald-500" />
                 Location: {draft.latitude?.toFixed(4)}, {draft.longitude?.toFixed(4)}
               </p>
             )}
             {draft.images[0] && (
-              <p className="mt-1 text-xs text-gray-500">{draft.images.length} photo{draft.images.length === 1 ? '' : 's'}</p>
+              <p className="mt-1 text-xs text-neutral-500">{draft.images.length} photo{draft.images.length === 1 ? '' : 's'}</p>
             )}
             {draft.description.trim() && (
-              <p className="mt-2 line-clamp-4 text-xs text-gray-600">{draft.description}</p>
+              <p className="mt-2 line-clamp-4 text-xs text-neutral-600">{draft.description}</p>
             )}
             {draft.parkingPinPlaced && (
-              <p className="mt-1 flex items-center gap-1.5 text-xs text-gray-600">
+              <p className="mt-1 flex items-center gap-1.5 text-xs text-neutral-600">
                 <MapPin className="h-3.5 w-3.5 text-sky-500" />
                 Parking: {draft.parkingLat?.toFixed(4)}, {draft.parkingLng?.toFixed(4)}
               </p>
@@ -1020,21 +1251,17 @@ export const CreateAddFlow = ({
                   key={target}
                   type="button"
                   onClick={() => goToStep(target)}
-                  className="rounded-full border border-neutral-200 px-3 py-1.5 text-xs font-semibold text-gray-700 hover:border-emerald-300"
+                  className="rounded-full border border-neutral-200 px-3 py-1.5 text-xs font-semibold text-neutral-700 hover:border-emerald-300"
                 >
                   Edit {REVIEW_EDIT_LABELS[target] ?? target}
                 </button>
               ))}
           </div>
 
-          <p className="mt-3 text-xs text-gray-500">
+          <p className="mt-3 text-xs text-neutral-500">
             Your venue will be reviewed before it appears on the map for others to discover and host at.
           </p>
-          {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-          <div className="mt-5 pb-2">
-            <NextButton label="Submit" loading={submitting} onClick={handleSubmit} />
-          </div>
-        </FlowSheetChrome>
+        </ComposeWidePageSlot>
       )}
     </ExploreResponsiveSheet>
   );

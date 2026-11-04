@@ -67,7 +67,7 @@ export const PlanJoinedUpcoming = ({ refreshKey = 0 }: PlanJoinedUpcomingProps) 
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2 md:space-y-1.5">
       {sorted.map((row) => {
         if (row.kind === 'confirmed') {
           const activity = row.activity;

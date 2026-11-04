@@ -3,7 +3,10 @@ import { useSafeAsyncEffect } from '../../hooks/useSafeAsyncEffect';
 import type { AdminContentReportEntry } from '../../api/types';
 import { fetchAdminContentReports } from '../../hooks/adminConsoleApi';
 import { DashboardLayout } from '../../components/layout';
+import { AdminTablePager, DEFAULT_ADMIN_PAGE_SIZE, type AdminPageSize } from '../../components/admin/AdminTablePager';
 import { ADMIN_LINKS } from '../../constants';
+import { AppSelect, ADMIN_FILTER_SELECT_CLASS, ADMIN_INPUT_CLASS } from '../../components/ui/AppSelect';
+import { formatAdminDate } from '../../utils/formatAdminDate';
 
 const reasonLabel: Record<AdminContentReportEntry['reason'], string> = {
   spam: 'Spam',
@@ -11,17 +14,54 @@ const reasonLabel: Record<AdminContentReportEntry['reason'], string> = {
   other: 'Other',
 };
 
+const REASON_OPTIONS = [
+  { value: 'spam' as const, label: 'Spam' },
+  { value: 'harassment' as const, label: 'Harassment' },
+  { value: 'other' as const, label: 'Other' },
+];
+
+const TARGET_OPTIONS = [
+  { value: 'user' as const, label: 'Member' },
+  { value: 'message' as const, label: 'Message' },
+  { value: 'review' as const, label: 'Review' },
+  { value: 'post' as const, label: 'Post (legacy)' },
+  { value: 'reply' as const, label: 'Reply (legacy)' },
+];
+
+const dateToIso = (value: string, endOfDay: boolean): string | undefined => {
+  if (!value) return undefined;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return undefined;
+  if (endOfDay) date.setHours(23, 59, 59, 999);
+  return date.toISOString();
+};
+
 export const Reports = () => {
   const [reports, setReports] = useState<AdminContentReportEntry[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState<AdminPageSize>(DEFAULT_ADMIN_PAGE_SIZE);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [reason, setReason] = useState('');
+  const [targetType, setTargetType] = useState('');
+  const [reporterQuery, setReporterQuery] = useState('');
+  const [reporterApplied, setReporterApplied] = useState('');
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
 
   const loadReports = async (isActive: () => boolean = () => true) => {
     setLoading(true);
     try {
-      const res = await fetchAdminContentReports(page, 25);
+      const res = await fetchAdminContentReports({
+        page,
+        pageSize,
+        reason: reason || undefined,
+        targetType: targetType || undefined,
+        reporter: reporterApplied || undefined,
+        from: dateToIso(fromDate, false),
+        to: dateToIso(toDate, true),
+      });
       if (!isActive()) return;
       setReports(res.data);
       setTotal(res.pagination?.total ?? 0);
@@ -33,17 +73,92 @@ export const Reports = () => {
     }
   };
 
-  useSafeAsyncEffect((isActive) => loadReports(isActive), [page]);
-
-  const totalPages = Math.max(1, Math.ceil(total / 25));
+  useSafeAsyncEffect((isActive) => loadReports(isActive), [
+    page,
+    pageSize,
+    reason,
+    targetType,
+    reporterApplied,
+    fromDate,
+    toDate,
+  ]);
 
   return (
-    <DashboardLayout title="Admin Dashboard" links={ADMIN_LINKS}>
+    <DashboardLayout title="Reports" links={ADMIN_LINKS}>
       <div className="space-y-4">
         <div>
           <h2 className="text-lg font-semibold text-gray-900">Member reports</h2>
           <p className="text-sm text-gray-500">Spam, harassment, and other issues submitted in chat and across the app.</p>
         </div>
+
+        <form
+          className="flex flex-wrap items-end gap-2"
+          onSubmit={(event) => {
+            event.preventDefault();
+            setPage(1);
+            setReporterApplied(reporterQuery.trim());
+          }}
+        >
+          <label className="text-xs text-gray-500">
+            From
+            <input
+              type="date"
+              value={fromDate}
+              onChange={(e) => {
+                setFromDate(e.target.value);
+                setPage(1);
+              }}
+              className={`${ADMIN_INPUT_CLASS} mt-1 block`}
+            />
+          </label>
+          <label className="text-xs text-gray-500">
+            To
+            <input
+              type="date"
+              value={toDate}
+              onChange={(e) => {
+                setToDate(e.target.value);
+                setPage(1);
+              }}
+              className={`${ADMIN_INPUT_CLASS} mt-1 block`}
+            />
+          </label>
+          <label className="text-xs text-gray-500">
+            Reporter ID / name / email / phone
+            <input
+              type="search"
+              value={reporterQuery}
+              onChange={(e) => setReporterQuery(e.target.value)}
+              placeholder="Case insensitive"
+              className={`${ADMIN_INPUT_CLASS} mt-1 block w-56`}
+            />
+          </label>
+          <AppSelect
+            value={reason}
+            onChange={(value) => {
+              setReason(value);
+              setPage(1);
+            }}
+            options={REASON_OPTIONS}
+            placeholder="All reasons"
+            inputClassName={ADMIN_FILTER_SELECT_CLASS}
+            aria-label="Filter by reason"
+          />
+          <AppSelect
+            value={targetType}
+            onChange={(value) => {
+              setTargetType(value);
+              setPage(1);
+            }}
+            options={TARGET_OPTIONS}
+            placeholder="All targets"
+            inputClassName={ADMIN_FILTER_SELECT_CLASS}
+            aria-label="Filter by target type"
+          />
+          <button type="submit" className="rounded-lg bg-emerald-600 px-3 py-1.5 text-sm text-white hover:bg-emerald-700">
+            Apply
+          </button>
+        </form>
 
         {error ? <p className="text-sm text-red-600">{error}</p> : null}
 
@@ -65,9 +180,9 @@ export const Reports = () => {
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {reports.map((report) => (
-                  <tr key={report.id} className="align-top">
+                  <tr key={report.id} className="align-top hover:bg-gray-50">
                     <td className="whitespace-nowrap px-4 py-3 text-gray-600">
-                      {new Date(report.createdAt).toLocaleString()}
+                      {formatAdminDate(report.createdAt)}
                     </td>
                     <td className="px-4 py-3">
                       <p className="font-medium text-gray-900">
@@ -92,27 +207,16 @@ export const Reports = () => {
           </div>
         )}
 
-        {totalPages > 1 ? (
-          <div className="flex items-center justify-between text-sm">
-            <button
-              type="button"
-              disabled={page <= 1}
-              onClick={() => setPage((p) => p - 1)}
-              className="rounded-lg border border-gray-200 px-3 py-1.5 disabled:opacity-40"
-            >
-              Previous
-            </button>
-            <span className="text-gray-500">Page {page} of {totalPages}</span>
-            <button
-              type="button"
-              disabled={page >= totalPages}
-              onClick={() => setPage((p) => p + 1)}
-              className="rounded-lg border border-gray-200 px-3 py-1.5 disabled:opacity-40"
-            >
-              Next
-            </button>
-          </div>
-        ) : null}
+        <AdminTablePager
+          page={page}
+          pageSize={pageSize}
+          total={total}
+          onPage={setPage}
+          onPageSize={(size) => {
+            setPageSize(size);
+            setPage(1);
+          }}
+        />
       </div>
     </DashboardLayout>
   );

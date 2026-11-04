@@ -1,9 +1,9 @@
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { useLocation } from 'react-router-dom';
 import { isGeographyMapSource } from '@uaetrail/shared-types';
 import { Share2, X } from 'lucide-react';
 import type { DiscoveryCardModel } from '../../../discovery/discoveryCardModel';
-import { EXPLORE_PEEK, EXPLORE_SHEET } from '../../../config/exploreTheme';
+import { EXPLORE_PEEK } from '../../../config/exploreTheme';
 import { EnvironmentImage } from '../../../components/ui/EnvironmentImage';
 import { ShareButton } from '../../../components/ui/ShareButton';
 import { ExploreFollowButton } from '../ExploreFollowButton';
@@ -21,6 +21,7 @@ import { PlacePeekHero } from '../peek/place/PlacePeekHero';
 import { activityPeekHasMapWireActions } from '../../../activity/activityPeekEngagement';
 import { resolvePeekDetailAccess } from '../../../access/resolvePeekDetailAccess';
 import { mapPeekDetailNavState } from '../../mapPeekDetailNavState';
+import { UiTooltip } from '../../../components/ui/UiTooltip';
 
 export type MapPeekShellProps = {
   card: DiscoveryCardModel;
@@ -96,6 +97,7 @@ export const MapPeekShell = ({
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-black/10" />
           <ExploreVenueImageBadges card={card} />
           {dismissVisible ? (
+            <UiTooltip label="Close">
             <button
               type="button"
               onClick={onClose}
@@ -104,6 +106,7 @@ export const MapPeekShell = ({
             >
               <X className="h-4 w-4" />
             </button>
+            </UiTooltip>
           ) : null}
         </div>
       ) : null}
@@ -118,6 +121,7 @@ export const MapPeekShell = ({
               <ExploreFollowButton card={card} light={!showCoverHero} />
             ) : null}
             {card.source === 'activity' && onShareActivity ? (
+              <UiTooltip label="Share">
               <button
                 type="button"
                 aria-label="Share"
@@ -130,6 +134,7 @@ export const MapPeekShell = ({
               >
                 <Share2 className="h-4 w-4" aria-hidden />
               </button>
+              </UiTooltip>
             ) : (
               <ShareButton
                 title={card.shareTitle}
@@ -140,6 +145,7 @@ export const MapPeekShell = ({
               />
             )}
             {!showCoverHero && dismissVisible ? (
+              <UiTooltip label="Close">
               <button
                 type="button"
                 onClick={onClose}
@@ -148,6 +154,7 @@ export const MapPeekShell = ({
               >
                 <X className="h-4 w-4" />
               </button>
+              </UiTooltip>
             ) : null}
           </div>
         </div>
@@ -206,23 +213,36 @@ export const MapPeekShell = ({
   );
 };
 
-/** Floating pin summary above the map projection (scrim + centered slot). */
+/** Pin summary above the map — scrim + centered slot on mobile, docked left panel on desktop. */
 export const MapPeekOverlay = ({
   children,
   onClose,
 }: {
   children: ReactNode;
   onClose?: () => void;
-}) => (
-  <div className={`${EXPLORE_PEEK.position} ${EXPLORE_SHEET.scrim} pointer-events-none`}>
-    {onClose ? (
-      <button
-        type="button"
-        className="pointer-events-auto absolute inset-0 z-0"
-        aria-label="Close"
-        onClick={onClose}
-      />
-    ) : null}
-    <div className={`${EXPLORE_PEEK.inner} pointer-events-auto relative z-10`}>{children}</div>
-  </div>
-);
+}) => {
+  useEffect(() => {
+    if (!onClose) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape' || event.defaultPrevented) return;
+      if (document.querySelector('[role="dialog"][aria-modal="true"]')) return;
+      onClose();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [onClose]);
+
+  return (
+    <div className={`${EXPLORE_PEEK.position} ${EXPLORE_PEEK.scrim} pointer-events-none`}>
+      {onClose ? (
+        <button
+          type="button"
+          className="pointer-events-auto absolute inset-0 z-0 lg:hidden"
+          aria-label="Close"
+          onClick={onClose}
+        />
+      ) : null}
+      <div className={`${EXPLORE_PEEK.inner} pointer-events-auto relative z-10`}>{children}</div>
+    </div>
+  );
+};

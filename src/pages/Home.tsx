@@ -1,11 +1,13 @@
 import { lazy, Suspense } from 'react';
 import { EXPLORE_MAP_PATH, joinAuthPath } from '../config/routingCatalogLite';
+import { ADMIN_OVERVIEW_PATH } from '../config/adminSurfacePaths';
 import { Navigate } from 'react-router-dom';
 import { DEFAULT_OG_IMAGE } from '../config/seo';
 import { PageMeta } from '../components/seo/PageMeta';
 import { JsonLd } from '../components/seo/JsonLd';
 import { websiteSchema } from '../components/seo/websiteSchema';
 import { useAuth } from '../context/AuthContext';
+import { isPlatformAdmin } from '../utils/roles';
 import { HomeDeferredMount } from '../components/home/marketing/HomeDeferredMount';
 import { HomeMarketingHeader } from '../components/home/marketing/HomeMarketingHeader';
 import { HomeHeroSection } from '../components/home/marketing/sections/HomeHeroSection';
@@ -32,6 +34,9 @@ export const Home = () => {
   const { user } = useAuth();
 
   if (user) {
+    if (isPlatformAdmin(user.role)) {
+      return <Navigate to={ADMIN_OVERVIEW_PATH} replace />;
+    }
     return <Navigate to={EXPLORE_MAP_PATH} replace />;
   }
 

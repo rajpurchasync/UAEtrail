@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react';
+
 export const MessageAvatar = ({
   name,
   url,
@@ -7,9 +9,18 @@ export const MessageAvatar = ({
   url?: string;
   size?: 'sm' | 'md' | 'lg';
 }) => {
+  const [failed, setFailed] = useState(false);
+  useEffect(() => setFailed(false), [url]);
   const sizes = { sm: 'w-8 h-8 text-xs', md: 'w-10 h-10 text-sm', lg: 'w-12 h-12 text-base' };
-  if (url) {
-    return <img src={url} alt={name} className={`${sizes[size]} rounded-full object-cover flex-shrink-0`} />;
+  if (url && !failed) {
+    return (
+      <img
+        src={url}
+        alt={name}
+        onError={() => setFailed(true)}
+        className={`${sizes[size]} rounded-full object-cover flex-shrink-0`}
+      />
+    );
   }
   return (
     <div

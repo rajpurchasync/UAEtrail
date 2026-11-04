@@ -34,6 +34,7 @@ const groupStatusSchema = suspendCommentSchema
 const groupListQuerySchema = paginationSchema.extend({
   search: z.string().optional(),
   type: z.enum(['family', 'friends']).optional(),
+  status: z.enum(['active', 'suspended']).optional(),
 });
 
 /** Platform admin social group list, detail, and suspend/activate (`/admin/groups/*`). */
@@ -47,6 +48,7 @@ export const registerAdminGroupRoutes = (adminRouter: Router): void => {
         pageSize: pg.pageSize,
         search: query.search,
         type: query.type,
+        status: query.status,
       });
       res.json(paginatedResponse(items, total, pg));
     } catch (error) {

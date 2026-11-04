@@ -28,6 +28,23 @@ export const PRODUCT_EXPLORE_CTA = 'Explore the map';
 /** Signed-in hub tab + mobile header title (`/plan`). */
 export const PRODUCT_PLAN_SURFACE_TITLE = 'My Plans';
 
+/** Sidebar / page context — outings you join and save (every member). */
+export const PRODUCT_PLAN_MEMBER_NAV_HINT =
+  'Outings you join, saved places, and goals — your side of getting outside together.';
+
+/** Host console shortcut — same `/plan` surface, hosting filter (not a separate product). */
+export const PRODUCT_HOSTING_SCHEDULE_NAV_LABEL = 'Hosting schedule';
+
+export const PRODUCT_HOSTING_SCHEDULE_NAV_HINT =
+  'Outings you organize — publish, edit, and review join requests.';
+
+/** Upcoming list context (Plan page). */
+export const PRODUCT_PLAN_UPCOMING_JOINED_CONTEXT =
+  'Plans you’re going on — RSVP’d or waiting for host approval.';
+
+export const PRODUCT_PLAN_UPCOMING_HOSTING_CONTEXT =
+  'Plans you’re organizing — published outings and open “find company” posts.';
+
 /** Goals CRUD lives on Plan → Wishlist — not a standalone route. */
 export const PRODUCT_PLAN_GOALS_ON_WISHLIST =
   'Set outdoor goals on your Wishlist tab — track progress next to saved plans.';

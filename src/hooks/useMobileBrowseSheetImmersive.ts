@@ -24,18 +24,26 @@ export const useMobileBrowseSheetImmersive = (sheetOpen: boolean) => {
   return { immersive, enterImmersive, exitImmersive };
 };
 
-/** Pull-up full screen for FAB compose sheets; survives brief leave (e.g. profile → back). */
+const isPhoneComposeViewport = () =>
+  typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches;
+
+/** Pull-up full screen for FAB compose sheets; tablet/desktop always open immersive. */
 export const useComposeSheetExpanded = (sheetOpen: boolean) => {
   const [expanded, setExpanded] = useState(() =>
-    sheetOpen ? readComposeSheetExpandedSession() : false
+    sheetOpen ? !isPhoneComposeViewport() || readComposeSheetExpandedSession() : false
   );
 
   useEffect(() => {
-    if (sheetOpen) {
-      setExpanded(readComposeSheetExpandedSession());
-    } else {
+    if (!sheetOpen) {
       setExpanded(false);
+      return;
     }
+    if (!isPhoneComposeViewport()) {
+      setExpanded(true);
+      writeComposeSheetExpandedSession(true);
+      return;
+    }
+    setExpanded(readComposeSheetExpandedSession());
   }, [sheetOpen]);
 
   const expandSheet = useCallback(() => {

@@ -69,7 +69,8 @@ export default defineConfig(({ mode }) => {
     },
     build: {
       cssCodeSplit: true,
-      modulePreload: { polyfill: false },
+      // Fewer parallel /assets/* fetches — helps Docker Desktop port-forward on Windows.
+      modulePreload: false,
       assetsInlineLimit: 4096,
       rollupOptions: {
         output: {

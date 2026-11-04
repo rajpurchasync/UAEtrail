@@ -41,10 +41,13 @@ const resolveCommand = (command) => {
 };
 
 const runCommand = (command, args, options = {}) => {
-  const result = spawnSync(resolveCommand(command), args, {
+  const isWindowsNpm = process.platform === 'win32' && command === 'npm';
+  const executable = isWindowsNpm ? 'cmd' : resolveCommand(command);
+  const spawnArgs = isWindowsNpm ? ['/d', '/s', '/c', 'npm.cmd', ...args] : args;
+  const result = spawnSync(executable, spawnArgs, {
     cwd: rootDir,
     encoding: 'utf8',
-    shell: process.platform === 'win32',
+    shell: false,
     ...options
   });
 

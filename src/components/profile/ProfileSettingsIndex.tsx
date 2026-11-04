@@ -1,4 +1,6 @@
+import { lazy, Suspense } from 'react';
 import { Bell, KeyRound, Shield } from 'lucide-react';
+import { useMinWidthLg } from '../../hooks/useMinWidthLg';
 import { ConsumerShell } from '../mobile/ConsumerShell';
 import { PullToRefresh } from '../mobile/PullToRefresh';
 import { SettingsMenuGroup, SettingsMenuRow } from '../settings/SettingsMenuRow';
@@ -18,9 +20,23 @@ type ProfileSettingsIndexProps = {
   onRefresh?: () => Promise<void>;
 };
 
+const DesktopSettingsPage = lazy(() =>
+  import('./DesktopSettingsPage').then((m) => ({ default: m.DesktopSettingsPage }))
+);
+
 export const ProfileSettingsIndex = ({ onRefresh }: ProfileSettingsIndexProps) => {
   const backChrome = useProfileHubBackChrome();
+  const isDesktop = useMinWidthLg();
   const settingsChildBack = mobileBackNavState(PROFILE_SETTINGS_PATH, 'Settings');
+
+  if (isDesktop) {
+    return (
+      <Suspense fallback={null}>
+        <DesktopSettingsPage />
+      </Suspense>
+    );
+  }
+
   const content = (
     <div className="space-y-4 pb-nav-safe animate-fade-up">
       <DisplayPreferencesSection />

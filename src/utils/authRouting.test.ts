@@ -9,6 +9,7 @@ import {
   participantDashboardRedirect,
   participantHostBookmarkRedirect,
 } from './authRouting';
+import { isConsumerProfilePath, isPlatformAdminConsolePath } from './roles';
 
 describe('auth routing by role', () => {
   it('maps account routes for each role', () => {
@@ -18,12 +19,22 @@ describe('auth routing by role', () => {
       ['tenant_owner', '/profile'],
       ['tenant_admin', '/profile'],
       ['tenant_guide', '/profile'],
-      ['platform_admin', '/admin/overview'],
+      ['platform_admin', '/admin/account'],
     ];
 
     for (const [role, expected] of cases) {
       expect(accountRouteByRole(role)).toBe(expected);
     }
+  });
+
+  it('treats only /admin paths as the locked admin console', () => {
+    expect(isPlatformAdminConsolePath('/admin')).toBe(true);
+    expect(isPlatformAdminConsolePath('/admin/overview')).toBe(true);
+    expect(isPlatformAdminConsolePath('/explore')).toBe(false);
+    expect(isPlatformAdminConsolePath('/plan')).toBe(false);
+    expect(isConsumerProfilePath('/profile')).toBe(true);
+    expect(isConsumerProfilePath('/profile/settings')).toBe(true);
+    expect(isConsumerProfilePath('/admin/account')).toBe(false);
   });
 
   it('maps default post-login routes for each role', () => {
@@ -70,6 +81,7 @@ describe('auth routing by role', () => {
     expect(adminDashboardRedirect('notifications')).toBe('/admin/notifications');
     expect(adminDashboardRedirect('audit-log')).toBe('/admin/audit-log');
     expect(adminDashboardRedirect('settings')).toBe('/admin/settings');
+    expect(adminDashboardRedirect('account')).toBe('/admin/account');
     expect(adminDashboardRedirect('unknown')).toBe('/admin/overview');
   });
 

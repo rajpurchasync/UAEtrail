@@ -17,38 +17,53 @@ type PlanGoalsProgressSummaryProps = {
   onSummaryFocus: (focus: PlanSummaryFocus) => void;
 };
 
+const statIconTone: Record<'hosting' | 'joined' | 'goals' | 'saved', string> = {
+  hosting: 'text-amber-600',
+  joined: 'text-emerald-700',
+  goals: 'text-orange-600',
+  saved: 'text-sky-700',
+};
+
 const StatCell = ({
   label,
   value,
   icon,
   onClick,
   dimmed,
+  tone,
 }: {
   label: string;
   value: number | string;
   icon: ReactNode;
   onClick: () => void;
   dimmed?: boolean;
+  tone: keyof typeof statIconTone;
 }) => (
   <button
     type="button"
     onClick={onClick}
-    className={`flex min-w-0 flex-1 flex-col items-center gap-1 rounded-2xl px-1 py-2 text-center transition active:bg-neutral-100 ${
+    className={`plan-summary-stat flex min-h-[3.25rem] min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-xl px-1 py-1.5 text-center transition active:bg-orange-100/40 md:min-h-[3rem] lg:min-h-10 lg:flex-row lg:justify-center lg:gap-2 lg:py-1.5 lg:px-2 ${
       dimmed ? 'opacity-70' : ''
     }`}
   >
-    <span className="text-emerald-800" aria-hidden>{icon}</span>
-    <span className="text-lg font-bold tabular-nums leading-none text-neutral-900">{value}</span>
-    <span className="text-[10px] font-bold uppercase tracking-wide text-neutral-500">{label}</span>
+    <span className={`shrink-0 ${statIconTone[tone]} lg:[&_svg]:h-4 lg:[&_svg]:w-4`} aria-hidden>
+      {icon}
+    </span>
+    <span className="plan-summary-stat-value text-base font-bold tabular-nums leading-none text-neutral-900 md:text-sm lg:text-base">
+      {value}
+    </span>
+    <span className="plan-summary-stat-label text-[9px] font-bold uppercase tracking-wide text-orange-900/70 md:text-[10px] lg:normal-case lg:text-xs lg:font-semibold lg:tracking-normal">
+      {label}
+    </span>
   </button>
 );
 
 /** Plan hub summary — hosting, joined, goals, and saved places at a glance. */
 const SummaryStatSkeleton = () => (
-  <div className="flex min-w-0 flex-1 flex-col items-center gap-1.5 px-1 py-2">
-    <div className="h-4 w-4 animate-pulse rounded bg-neutral-200" aria-hidden />
-    <div className="h-5 w-7 animate-pulse rounded-md bg-neutral-200" aria-hidden />
-    <div className="h-2.5 w-11 animate-pulse rounded bg-neutral-100" aria-hidden />
+  <div className="flex min-h-[3.25rem] min-w-0 flex-1 flex-col items-center justify-center gap-1 px-1 py-1.5 md:min-h-[3rem] lg:min-h-10 lg:flex-row lg:gap-2 lg:py-1.5">
+    <div className="h-4 w-4 animate-pulse rounded bg-orange-200/80" aria-hidden />
+    <div className="h-4 w-6 animate-pulse rounded-md bg-orange-200/70" aria-hidden />
+    <div className="h-2.5 w-10 animate-pulse rounded bg-orange-100" aria-hidden />
   </div>
 );
 
@@ -82,25 +97,29 @@ export const PlanGoalsProgressSummary = ({
   return (
     <>
       <div
-        className="glass-card w-full px-3 py-3"
+        className="plan-summary-strip w-full rounded-2xl border border-orange-200/60 bg-gradient-to-b from-amber-50/90 to-white px-2.5 py-2 shadow-sm md:px-2 md:py-1.5 lg:flex lg:items-center lg:gap-4 lg:rounded-xl lg:px-3 lg:py-2"
         role="region"
         aria-label="Plan summary"
         aria-busy={loading}
       >
-        <p className="mb-2 text-[11px] font-bold uppercase tracking-wide text-neutral-500">
+        <p className="plan-summary-heading mb-1.5 text-[10px] font-bold uppercase tracking-wide text-orange-800/90 md:mb-1 lg:mb-0 lg:shrink-0 lg:text-[10px]">
           Summary
         </p>
         {loading ? (
-          <div className="grid grid-cols-4 gap-0.5" aria-label="Loading summary">
+          <div
+            className="plan-summary-stats-grid grid flex-1 grid-cols-4 gap-0.5 lg:gap-0 lg:divide-x lg:divide-orange-200/50"
+            aria-label="Loading summary"
+          >
             <SummaryStatSkeleton />
             <SummaryStatSkeleton />
             <SummaryStatSkeleton />
             <SummaryStatSkeleton />
           </div>
         ) : (
-          <div className="grid grid-cols-4 gap-0.5">
+          <div className="plan-summary-stats-grid grid flex-1 grid-cols-4 gap-0.5 lg:gap-0 lg:divide-x lg:divide-orange-200/50">
             <StatCell
               label="Hosting"
+              tone="hosting"
               value={canHost ? String(hosting) : '—'}
               icon={<Users className="h-4 w-4" strokeWidth={2.25} />}
               onClick={() => {
@@ -110,18 +129,21 @@ export const PlanGoalsProgressSummary = ({
             />
             <StatCell
               label="Joined"
+              tone="joined"
               value={String(joined)}
               icon={<CalendarCheck className="h-4 w-4" strokeWidth={2.25} />}
               onClick={() => onSummaryFocus('joined')}
             />
             <StatCell
               label="Goals"
+              tone="goals"
               value={String(activeGoalCount)}
               icon={<Target className="h-4 w-4" strokeWidth={2.25} />}
               onClick={focusGoals}
             />
             <StatCell
               label="Saved"
+              tone="saved"
               value={String(savedPlaces)}
               icon={<Bookmark className="h-4 w-4" strokeWidth={2.25} />}
               onClick={() => onSummaryFocus('saved')}

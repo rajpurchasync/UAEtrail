@@ -8,6 +8,8 @@ type ConsumerHeaderActionsProps = {
   /** Bell styling — tab header vs desktop bar. */
   notificationVariant?: 'tab' | 'desktop';
   showOnDesktop?: boolean;
+  /** Extra classes for the hamburger (e.g. `md:hidden` where the account menu takes over). */
+  menuClassName?: string;
 };
 
 /** Hamburger menu + notifications (signed-in) for consumer chrome. */
@@ -16,13 +18,14 @@ export const ConsumerHeaderActions = ({
   className = '',
   notificationVariant = 'tab',
   showOnDesktop = true,
+  menuClassName = '',
 }: ConsumerHeaderActionsProps) => {
   const { user } = useAuth();
 
   return (
     <div className={`flex shrink-0 items-center gap-0.5 ${className}`}>
       {user ? <NotificationBellPopover triggerVariant={notificationVariant} tone={tone} /> : null}
-      <MobileMenuButton tone={tone} showOnDesktop={showOnDesktop} />
+      <MobileMenuButton tone={tone} showOnDesktop={showOnDesktop} className={menuClassName} />
     </div>
   );
 };

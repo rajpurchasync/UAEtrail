@@ -10,6 +10,7 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { isEmailConfiguredFromEnv } from './lib/resolve-email-env.mjs';
+import { ENV_FILE_PRIORITY_KEYS } from './resolve-runtime-env.mjs';
 
 const args = process.argv.slice(2);
 const production = args.includes('--production');
@@ -32,7 +33,10 @@ if (envFile) {
     if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
       value = value.slice(1, -1);
     }
-    if (!process.env[key]) process.env[key] = value;
+    const fileWins = ENV_FILE_PRIORITY_KEYS.has(key) && value.trim().length > 0;
+    if (fileWins || !process.env[key]) {
+      process.env[key] = value;
+    }
   }
 }
 

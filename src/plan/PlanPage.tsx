@@ -202,7 +202,7 @@ export const PlanPage = () => {
         maxWidth="4xl"
       >
         <PullToRefresh onRefresh={handleRefresh}>
-          <div className={`space-y-4 pt-1 ${showFab ? 'pb-mobile-fab' : 'pb-bottom-nav-safe'}`}>
+          <div className={`space-y-3 pt-0.5 md:space-y-1.5 ${showFab ? 'pb-mobile-fab' : 'pb-bottom-nav-safe'}`}>
             {user ? (
               <>
                 <PlanGoalsProgressSummary

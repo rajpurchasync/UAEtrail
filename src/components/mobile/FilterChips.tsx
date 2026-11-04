@@ -3,6 +3,8 @@ import { useRef } from 'react';
 interface ChipOption<T extends string> {
   key: T;
   label: string;
+  /** Unread / match count — hidden when 0. */
+  count?: number;
 }
 
 interface FilterChipsProps<T extends string> {
@@ -78,6 +80,15 @@ export function FilterChips<T extends string>({
             className={active ? activeClass : 'app-chip-inactive'}
           >
             {opt.label}
+            {opt.count && opt.count > 0 ? (
+              <span
+                className={`ml-1 min-w-[1.125rem] rounded-full px-1 text-center text-[10px] font-bold leading-4 ${
+                  active ? 'bg-white/95 text-emerald-800' : 'bg-emerald-600 text-white'
+                }`}
+              >
+                {opt.count > 99 ? '99+' : opt.count}
+              </span>
+            ) : null}
           </button>
         );
       })}

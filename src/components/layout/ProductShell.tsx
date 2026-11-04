@@ -1,5 +1,5 @@
 import { useEffect, type ReactNode } from 'react';
-import { useLocation } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { ComposeRailProvider } from '../../context/ComposeRailContext';
 import {
   hasConsumerSelfHeader,
@@ -14,6 +14,7 @@ import {
   PRODUCT_SHELL_HTML_CLASS,
 } from '../../config/layoutScroll';
 import { isJourneyMapPath } from '../../config/surfacePaths';
+import { ADMIN_ACCOUNT_PATH, ADMIN_OVERVIEW_PATH } from '../../config/adminSurfacePaths';
 import { ComposeRail } from './ComposeRail';
 import { Header } from './Header';
 import { MobileBottomNav } from './MobileBottomNav';
@@ -23,18 +24,31 @@ import { MobileMenuProvider } from './MobileMenu';
 import { ApiStatusBanner } from './ApiStatusBanner';
 import { ExploreMapChromeProvider } from '../../explore/ExploreMapChromeContext';
 import { ComposeImmersiveChromeProvider } from '../../explore/create/ComposeImmersiveChromeContext';
+import { useAuth } from '../../context/AuthContext';
+import { isConsumerProfilePath, isPlatformAdmin, isPlatformAdminConsolePath } from '../../utils/roles';
+import { useIsMobile } from '../../hooks/useIsMobile';
+import { shouldShowDesktopSideNav } from '../../config/desktopNav';
+import { DesktopSideNav } from './desktop/DesktopSideNav';
 
 const productViewportShellClass =
   'flex h-[100dvh] w-full max-w-full flex-col overflow-hidden consumer-bg md:bg-gray-50';
 
 /** Signed-in / product chrome — not used on guest marketing `/`. */
 export const ProductShell = ({ children }: { children: ReactNode }) => {
+  const { user } = useAuth();
+  const location = useLocation();
+  const isMobile = useIsMobile();
+
   useEffect(() => {
     document.documentElement.classList.add(PRODUCT_SHELL_HTML_CLASS);
     return () => document.documentElement.classList.remove(PRODUCT_SHELL_HTML_CLASS);
   }, []);
 
-  const location = useLocation();
+  if (isPlatformAdmin(user?.role) && !isPlatformAdminConsolePath(location.pathname)) {
+    return (
+      <Navigate to={isConsumerProfilePath(location.pathname) ? ADMIN_ACCOUNT_PATH : ADMIN_OVERVIEW_PATH} replace />
+    );
+  }
   const isExploreMap = location.pathname === '/explore';
   const isJourneyMap = isJourneyMapPath(location.pathname);
   const hideChrome = isConsumerChromeHidden(location.pathname);
@@ -50,6 +64,8 @@ export const ProductShell = ({ children }: { children: ReactNode }) => {
   );
 
   if (isExploreMap || isJourneyMap) {
+    const showMapSideNav =
+      !isMobile && shouldShowDesktopSideNav(location.pathname, Boolean(user));
     return (
       <ComposeRailProvider>
         <MobileMenuProvider>
@@ -57,11 +73,16 @@ export const ProductShell = ({ children }: { children: ReactNode }) => {
           <ExploreMapChromeProvider>
             <div className={`${productViewportShellClass} md:bg-gray-50`}>
               <ApiStatusBanner />
-              <div className="hidden shrink-0 lg:block">
-                <Header />
+              {!isMobile ? (
+                <div className="hidden shrink-0 md:block">
+                  <Header />
+                </div>
+              ) : null}
+              {isMobile ? <MobileTabHeader /> : null}
+              <div className="flex min-h-0 flex-1 overflow-hidden">
+                {showMapSideNav ? <DesktopSideNav /> : null}
+                <div className="relative z-0 min-h-0 min-w-0 flex-1 isolate overflow-hidden">{children}</div>
               </div>
-              <MobileTabHeader />
-              <div className="relative z-0 min-h-0 flex-1 isolate overflow-hidden">{children}</div>
               <MobileBottomNav />
             </div>
           </ExploreMapChromeProvider>
@@ -75,6 +96,8 @@ export const ProductShell = ({ children }: { children: ReactNode }) => {
     showConsumerChrome &&
     !hasConsumerSelfHeader(location.pathname) &&
     !isConsumerEntityDetailRoute(location.pathname);
+  const showDesktopSideNav =
+    !isMobile && showConsumerChrome && shouldShowDesktopSideNav(location.pathname, Boolean(user));
 
   return (
     <ComposeRailProvider>
@@ -83,14 +106,17 @@ export const ProductShell = ({ children }: { children: ReactNode }) => {
         <div className={productViewportShellClass}>
           <ApiStatusBanner />
           {showMobileConsumerNavBar && <MobileConsumerNavBar />}
-          {showConsumerChrome ? (
+          {showConsumerChrome && !isMobile ? (
             <div className="hidden md:block shrink-0">
               <Header />
             </div>
           ) : null}
-          <MobileTabHeader />
+          {isMobile || !showConsumerChrome ? <MobileTabHeader /> : null}
           {showConsumerChrome ? (
             <div className="flex min-h-0 flex-1 w-full overflow-hidden md:flex-row">
+              {showDesktopSideNav ? (
+                <DesktopSideNav />
+              ) : null}
               <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
                 {scrollableMain}
               </div>

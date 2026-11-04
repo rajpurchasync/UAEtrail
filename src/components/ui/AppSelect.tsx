@@ -23,7 +23,11 @@ interface AppSelectProps<T extends string> {
 export const ADMIN_SELECT_CLASS = 'w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm';
 
 /** Compact toolbar filter (admin tables). */
-export const ADMIN_FILTER_SELECT_CLASS = 'rounded border border-gray-200 bg-white px-3 py-1.5 text-sm';
+export const ADMIN_FILTER_SELECT_CLASS =
+  'rounded border border-gray-200 bg-white px-3 py-1.5 text-sm text-gray-900';
+
+export const ADMIN_INPUT_CLASS =
+  'rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm text-gray-900 placeholder:text-gray-400';
 
 /** Styled dropdown — avoids native `<select>` popover glitches on mobile and desktop. */
 export function AppSelect<T extends string>({

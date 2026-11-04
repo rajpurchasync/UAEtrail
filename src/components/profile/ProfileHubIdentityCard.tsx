@@ -87,7 +87,7 @@ export const ProfileHubIdentityCard = ({
 }: ProfileHubIdentityCardProps) => (
   <div className="glass-card overflow-hidden animate-fade-up">
     <div
-      className="relative flex min-h-[min(40dvh,380px)] flex-col justify-center bg-gradient-to-b from-emerald-50/70 via-white/40 to-transparent px-4 pb-4 pt-4 text-center"
+      className="relative flex min-h-[min(40dvh,380px)] flex-col justify-center lg:min-h-[280px] bg-gradient-to-b from-emerald-50/70 via-white/40 to-transparent px-4 pb-4 pt-4 text-center"
     >
       <div className="absolute left-1 top-1">
         <button

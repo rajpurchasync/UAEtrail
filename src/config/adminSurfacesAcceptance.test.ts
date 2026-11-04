@@ -17,9 +17,9 @@ export const ADMIN_PLATFORM_ROUTE_CATALOG: Array<{
   inSidebar: boolean;
 }> = [
   { path: '/admin/overview', page: 'admin/Overview.tsx', element: 'AdminOverview', inSidebar: true },
+  { path: '/admin/activities', page: 'admin/Activities.tsx', element: 'AdminActivities', inSidebar: true },
   { path: '/admin/areas', page: 'admin/Areas.tsx', element: 'AdminAreas', inSidebar: true },
   { path: '/admin/places', page: 'admin/Places.tsx', element: 'AdminPlaces', inSidebar: true },
-  { path: '/admin/activities', page: 'admin/Activities.tsx', element: 'AdminActivities', inSidebar: true },
   { path: '/admin/facilities', page: 'admin/Places.tsx', element: 'AdminPlaces', inSidebar: true },
   { path: '/admin/users', page: 'admin/Members.tsx', element: 'AdminMembers', inSidebar: true },
   { path: '/admin/hosts', page: 'admin/Organisations.tsx', element: 'AdminOrganisations', inSidebar: true },
@@ -27,6 +27,7 @@ export const ADMIN_PLATFORM_ROUTE_CATALOG: Array<{
   { path: '/admin/reports', page: 'admin/Reports.tsx', element: 'AdminReports', inSidebar: true },
   { path: '/admin/audit-log', page: 'admin/AuditLog.tsx', element: 'AdminAuditLog', inSidebar: true },
   { path: '/admin/settings', page: 'admin/Settings.tsx', element: 'AdminSettings', inSidebar: true },
+  { path: '/admin/account', page: 'admin/Account.tsx', element: 'AdminAccount', inSidebar: true },
   { path: '/admin/notifications', page: 'admin/Notifications.tsx', element: 'AdminNotifications', inSidebar: false },
 ];
 

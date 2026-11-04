@@ -27,7 +27,7 @@ const DEFAULT_STEPS: CreateFlowStepId[] = [
   'publish',
 ];
 
-const REGISTRY_OMIT: CreateFlowStepId[] = ['difficulty', 'about_trail'];
+const REGISTRY_OMIT: CreateFlowStepId[] = ['about_trail'];
 
 const validateStep = (step: CreateFlowStepId, draft: CreateActivityDraft): string | null => {
   if (step === 'title') return validateHostingTitle(draft, 'Give your outing a title.');
@@ -54,6 +54,16 @@ const validateStep = (step: CreateFlowStepId, draft: CreateActivityDraft): strin
     return validateLimitedMinAge(draft);
   }
   if (step === 'destination') return validateStructuredDestination(draft);
+  if (step === 'difficulty') {
+    if (!draft.difficulty) return 'Choose trail difficulty.';
+    if (draft.trailDistanceKm == null || draft.trailDistanceKm <= 0) {
+      return 'Enter trail length (km).';
+    }
+    if (draft.trailElevationM == null || draft.trailElevationM < 0) {
+      return 'Enter elevation gain (m).';
+    }
+    return null;
+  }
   if (step === 'about_trail') return validateStructuredAboutTrail(draft, step);
   if (step === 'meeting_point' && (draft.meetingLatitude == null || draft.meetingLongitude == null)) {
     return 'Drop a meeting point pin on the map.';

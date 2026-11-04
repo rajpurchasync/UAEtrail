@@ -38,10 +38,11 @@ services:
     volumes:
       - uaetrail_minio:/data
     healthcheck:
-      test: ["CMD", "mc", "ready", "local"]
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:9000/minio/health/live || wget -qO- http://127.0.0.1:9000/minio/health/live >/dev/null 2>&1"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 10s
 
   api:
     build:
@@ -54,7 +55,7 @@ services:
       minio:
         condition: service_healthy
     environment:
-      NODE_ENV: ${NODE_ENV:-production}
+      NODE_ENV: ${NODE_ENV:-development}
       PORT: 4000
       MONGODB_URI: ${MONGODB_URI:?Set MONGODB_URI in .env}
       REDIS_URL: redis://redis:6379
@@ -120,8 +121,9 @@ services:
       api:
         condition: service_healthy
     ports:
-      - "${FRONTEND_PORT:-80}:80"
-      - "${FRONTEND_SSL_PORT:-443}:443"
+      - "${FRONTEND_BIND:-127.0.0.1}:${FRONTEND_PORT:-8080}:80"
+      # Publish 443 only after mounting nginx/conf.d/ssl.conf (see ssl-server.conf.example).
+      # - "${FRONTEND_BIND:-127.0.0.1}:${FRONTEND_SSL_PORT:-443}:443"
     volumes:
       - ./nginx/certs:/etc/nginx/certs:ro
       # Uncomment after copying ssl-server.conf.example → nginx/conf.d/ssl.conf

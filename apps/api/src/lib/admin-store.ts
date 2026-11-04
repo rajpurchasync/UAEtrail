@@ -55,6 +55,9 @@ type MongoActivityParticipantDoc = {
 export type AuditLogFilter = {
   action?: string | { contains?: string };
   entityType?: string;
+  actorIds?: string[];
+  createdAtFrom?: Date;
+  createdAtTo?: Date;
 };
 
 type LocationUpdateData = Partial<Omit<Location, 'id' | 'createdAt'>>;
@@ -174,6 +177,15 @@ const toMongoAuditQuery = (where: AuditLogFilter): Record<string, unknown> => {
       query.action = { $regex: searchRegex, $options: 'i' };
     }
   }
+  if (where.actorIds) {
+    query.actorId = { $in: where.actorIds };
+  }
+  if (where.createdAtFrom || where.createdAtTo) {
+    const createdAt: Record<string, Date> = {};
+    if (where.createdAtFrom) createdAt.$gte = where.createdAtFrom;
+    if (where.createdAtTo) createdAt.$lte = where.createdAtTo;
+    query.createdAt = createdAt;
+  }
   return query;
 };
 
@@ -205,11 +217,15 @@ const loadEventsWithRelations = async (eventDocs: MongoActivityDoc[]) => {
     const createdBy = userMap.get(eventDoc.createdById) ?? null;
     const tenant = tenantMap.get(eventDoc.tenantId);
     const location = locationMap.get(eventDoc.locationId);
-    if (!tenant || !location) {
-      console.warn(
-        `[admin] Skipping activity ${eventDoc._id}: missing ${!tenant ? 'tenant' : 'location'} (${eventDoc.tenantId} / ${eventDoc.locationId})`
+    if (!tenant) {
+      throw new Error(
+        `[admin] Activity ${eventDoc._id} references missing tenant ${eventDoc.tenantId} — fix seed or DB, do not skip in read path.`
       );
-      return [];
+    }
+    if (!location) {
+      throw new Error(
+        `[admin] Activity ${eventDoc._id} references missing location ${eventDoc.locationId} — fix seed or DB, do not skip in read path.`
+      );
     }
 
     return [{
@@ -510,19 +526,21 @@ export const listTenantMembershipsForUser = async (userId: string) => {
   const tenantIds = [...new Set(memberships.map((membership) => membership.tenantId))];
   const tenantMap = await loadTenantsByIds(tenantIds);
 
-  return memberships.flatMap((membership) => {
+  return memberships.map((membership) => {
     const tenant = tenantMap.get(membership.tenantId);
-    if (!tenant) return [];
-    return [
-      {
-        id: membership._id,
-        tenantId: membership.tenantId,
-        userId: membership.userId,
-        role: membership.role,
-        createdAt: membership.createdAt,
-        tenant
-      }
-    ];
+    if (!tenant) {
+      throw new Error(
+        `[admin] Membership ${membership._id} references missing tenant ${membership.tenantId} — fix seed or DB.`
+      );
+    }
+    return {
+      id: membership._id,
+      tenantId: membership.tenantId,
+      userId: membership.userId,
+      role: membership.role,
+      createdAt: membership.createdAt,
+      tenant
+    };
   });
 };
 

@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "node scripts/clean-dist.mjs && tsc -p tsconfig.json",
+    "build": "node scripts/clean-dist.mjs && tsc -p tsconfig.json && node scripts/copy-dist-data.mjs",
     "start": "node dist/src/index.js",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "seed": "tsx scripts/seed.ts",

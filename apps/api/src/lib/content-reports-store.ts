@@ -61,10 +61,26 @@ export type AdminContentReportRow = {
 export const listContentReportsAdmin = async (input: {
   skip: number;
   take: number;
+  reason?: ContentReportReason;
+  targetType?: ContentReportTargetType;
+  reporterUserIds?: string[];
+  createdAtFrom?: Date;
+  createdAtTo?: Date;
 }): Promise<{ items: AdminContentReportRow[]; total: number }> => {
+  const query: Record<string, unknown> = {};
+  if (input.reason) query.reason = input.reason;
+  if (input.targetType) query.targetType = input.targetType;
+  if (input.reporterUserIds) query.reporterUserId = { $in: input.reporterUserIds };
+  if (input.createdAtFrom || input.createdAtTo) {
+    const createdAt: Record<string, Date> = {};
+    if (input.createdAtFrom) createdAt.$gte = input.createdAtFrom;
+    if (input.createdAtTo) createdAt.$lte = input.createdAtTo;
+    query.createdAt = createdAt;
+  }
+
   const [docs, total] = await Promise.all([
-    reportsCollection().find({}).sort({ createdAt: -1 }).skip(input.skip).limit(input.take).toArray(),
-    reportsCollection().countDocuments(),
+    reportsCollection().find(query).sort({ createdAt: -1 }).skip(input.skip).limit(input.take).toArray(),
+    reportsCollection().countDocuments(query),
   ]);
 
   const reporterIds = [...new Set(docs.map((doc) => doc.reporterUserId))];

@@ -1,5 +1,6 @@
 import { lazy, Suspense, type ReactNode } from 'react';
 import { List, Plus } from 'lucide-react';
+import { UiTooltip } from '../../components/ui/UiTooltip';
 import { isGeographyMapSource, type ExploreMapItemDTO } from '@uaetrail/shared-types';
 import type { MapBounds, PlaceMapPin } from '../../components/ui/PlacesMap';
 import { getMapBounds } from '../../config/regions';
@@ -216,6 +217,7 @@ export const ExploreMapStage = ({
         onSearchCommit={onSearchCommit}
         searchScopeCounts={searchScopeCounts}
         onOpenExploreSearch={onOpenExploreSearch}
+        dockedPeek={Boolean(selectedCard)}
       />
       ) : null}
 
@@ -251,19 +253,8 @@ export const ExploreMapStage = ({
 
       {loading && mapPins.length === 0 ? <ExploreMapLoadingSkeleton /> : null}
 
-      {!listOpen && isDesktop ? (
-        <button
-          type="button"
-          onClick={onOpenBrowse}
-          className={`${EXPLORE_FLOATING_CONTROL} pointer-events-auto absolute left-0 top-1/2 z-[1100] hidden -translate-y-1/2 rounded-l-none border-l-0 px-2.5 py-3 lg:inline-flex`}
-          aria-label="Show activities list"
-        >
-          <List className="h-4 w-4" aria-hidden />
-        </button>
-      ) : null}
-
       {!listOpen ? (
-        <div className="pointer-events-none absolute inset-x-0 bottom-[calc(var(--explore-float-base)+var(--explore-map-fab-inset))] z-[1100] flex items-end justify-between gap-3 px-4 lg:hidden">
+        <div className="pointer-events-none absolute inset-x-0 bottom-[calc(var(--explore-float-base)+var(--explore-map-fab-inset))] z-[1100] flex items-end justify-between gap-3 px-4 md:hidden">
           <div className="pointer-events-auto flex items-center gap-2">
             <button
               type="button"
@@ -280,6 +271,7 @@ export const ExploreMapStage = ({
           >
             <ExploreMapLocateButton onLocate={onLocateMe} locating={locatingDevice} />
             <ExploreMapStyleToggle style={exploreMapStyle} onToggle={onToggleMapStyle} />
+            <UiTooltip label={primaryFabLabel}>
             <button
               type="button"
               onClick={onPrimaryFab}
@@ -288,12 +280,13 @@ export const ExploreMapStage = ({
             >
               <Plus className="h-6 w-6 shrink-0" strokeWidth={2.5} aria-hidden />
             </button>
+            </UiTooltip>
           </div>
         </div>
       ) : null}
 
       <div
-        className="pointer-events-none absolute right-4 z-[1100] hidden lg:flex lg:flex-col lg:items-end"
+        className="pointer-events-none absolute right-4 z-[1100] hidden md:flex md:flex-col md:items-end"
         style={{
           bottom: 'var(--explore-map-desktop-fab-bottom)',
           gap: 'var(--explore-map-fab-stack-gap)',

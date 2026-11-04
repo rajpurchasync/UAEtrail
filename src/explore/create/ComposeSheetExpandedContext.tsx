@@ -44,10 +44,16 @@ export const useComposeSheetExpandedStateOrLocal = (
   sheetOpen: boolean
 ): ComposeSheetExpandedValue => {
   const ctx = useContext(ComposeSheetExpandedContext);
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(
+    () => typeof window !== 'undefined' && !window.matchMedia('(max-width: 767px)').matches
+  );
 
   useEffect(() => {
-    if (!sheetOpen) setExpanded(false);
+    if (!sheetOpen) {
+      setExpanded(false);
+      return;
+    }
+    if (!window.matchMedia('(max-width: 767px)').matches) setExpanded(true);
   }, [sheetOpen]);
 
   const expandSheet = useCallback(() => setExpanded(true), []);

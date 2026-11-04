@@ -126,7 +126,7 @@ export const PlanHostingUpcoming = ({ refreshKey = 0, canHost }: PlanHostingUpco
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2 md:space-y-1.5">
       {rows.map((row) => {
         if (row.kind === 'activity') {
           const activity = row.activity;

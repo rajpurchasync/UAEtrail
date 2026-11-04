@@ -320,6 +320,44 @@ Legacy aliases (do not use in new clients): `/me/host-application`, `/admin/host
 
 ---
 
+## Platform admin list routes (paginated)
+
+Shared query: `page` (1-based), `pageSize` (cap varies by route). Responses use `paginatedResponse` (`data` + `meta.total`) unless noted.
+
+| Method | Path | Registrar | Notes |
+|--------|------|-----------|-------|
+| GET | `/admin/activities/moderation` | `registerAdminActivityModerationRoutes` | Outing moderation queue |
+| GET | `/admin/places` · `/admin/locations` | `registerAdminPlaceRoutes` | Catalog places (alias) |
+| GET | `/admin/facilities` | `registerAdminFacilityRoutes` | Facility catalog |
+| GET | `/admin/groups` | `registerAdminGroupRoutes` | Platform groups (+ filters) |
+| GET | `/admin/pro-applications` | `registerAdminHostApplicationRoutes` | Pro / host application queue |
+| GET | `/admin/users` | `registerAdminUserRoutes` | Member search (`search`, `role`, `status`, …) |
+| GET | `/admin/reports` | `registerAdminContentReportRoutes` | Content reports (`reason`, `targetType`, date range) |
+| GET | `/admin/audit-log` | `registerAdminAuditRoutes` | Audit trail (`action`, `entityType`, `actor`, date range) |
+
+SPA tables: `AdminTablePager` + `adminConsoleApi` list helpers — load pages, not full tables.
+
+---
+
+## Platform admin tenants (`/admin/tenants/*`)
+
+Registered in `registerAdminTenantRoutes.ts` — paginated list, detail, moderation, discover flags, publishing team (same team schemas as `/publishing/*`).
+
+| Method | Path | Who |
+|--------|------|-----|
+| GET | `/admin/tenants` | Platform admin — paginated tenant list (`page`, `pageSize`) |
+| GET | `/admin/tenants/:id` | Tenant detail for Operators console |
+| PATCH | `/admin/tenants/:id/status` | Suspend / activate (`comment` required when suspending) |
+| PATCH | `/admin/tenants/:id/hidden` | Hide tenant from public discovery |
+| PATCH | `/admin/tenants/:id/discover-featured` | Discover featured flag |
+| POST | `/admin/tenants/:id/team` | Add publishing team member |
+| PATCH | `/admin/tenants/:id/team/:membershipId` | Patch team membership |
+| DELETE | `/admin/tenants/:id/team/:membershipId` | Remove team member |
+
+SPA: `/admin/hosts` → `pages/admin/Organisations` (see [`NAVIGATION.md`](./NAVIGATION.md) § Admin route catalog).
+
+---
+
 ## Program CPC — catalog HTTP (target)
 
 **Tracker:** [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.4. Shipped paths below marked **(today)** until phase lands.

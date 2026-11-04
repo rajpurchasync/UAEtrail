@@ -227,7 +227,21 @@ export const useExploreExperienceModel = () => {
   }, []);
 
   const [searchFocusNonce, setSearchFocusNonce] = useState(0);
-  const [exploreSearchModalOpen, setExploreSearchModalOpen] = useState(false);
+  const [exploreSearchModalOpen, setExploreSearchModalOpen] = useState(
+    () => searchParams.get('search') === '1'
+  );
+
+  useEffect(() => {
+    if (searchParams.get('search') === '1') setExploreSearchModalOpen(true);
+  }, [searchParams]);
+
+  const closeExploreSearchModal = useCallback(() => {
+    setExploreSearchModalOpen(false);
+    if (searchParams.get('search') !== '1') return;
+    const next = new URLSearchParams(searchParams);
+    next.delete('search');
+    setSearchParams(next, { replace: true });
+  }, [searchParams, setSearchParams]);
   const publishedAreas = useExplorePublishedAreas(
     browse.listOpen || browse.browseOpen || exploreSearchModalOpen || Boolean(areaSlug)
   );
@@ -291,10 +305,10 @@ export const useExploreExperienceModel = () => {
 
   const handlePickExploreArea = useCallback(
     (slug: string) => {
-      setExploreSearchModalOpen(false);
+      closeExploreSearchModal();
       navigate(areaDetailPath(slug));
     },
-    [navigate]
+    [closeExploreSearchModal, navigate]
   );
 
   const handleExploreSearchCommit = useCallback(
@@ -369,6 +383,7 @@ export const useExploreExperienceModel = () => {
     refreshHostGate,
     exploreSearchModalOpen,
     setExploreSearchModalOpen,
+    closeExploreSearchModal,
     handleExploreSearchCommit,
     searchScopeCounts,
     publishedAreas,

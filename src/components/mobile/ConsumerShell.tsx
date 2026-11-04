@@ -5,6 +5,7 @@ import { MOBILE_PRODUCT_HEADER_FROSTED } from '../../config/consumerScrollChrome
 import { APP_PAGE_MIN_H_CLASS, APP_SCROLL_BODY_CLASS } from '../../config/layoutScroll';
 import { shouldShowMobileUnifiedTabHeader } from '../../config/mobileTabHeader';
 import { shouldShowConsumerShellHamburger } from '../../config/platform';
+import { isWideNavRootPath } from '../../config/desktopNav';
 import { useAppScrollFrostedHeader } from '../../hooks/useAppScrollFrostedHeader';
 import { ConsumerHeaderActions } from '../layout/ConsumerHeaderActions';
 import { MobileBackButton } from './MobileBackButton';
@@ -40,8 +41,8 @@ interface ConsumerShellProps {
 }
 
 const maxWidthClass = {
-  '4xl': 'max-w-4xl md:max-w-none',
-  '7xl': 'max-w-7xl md:max-w-none',
+  '4xl': 'max-w-4xl md:max-w-none lg:max-w-5xl',
+  '7xl': 'max-w-7xl md:max-w-none lg:max-w-7xl',
 };
 
 export const ConsumerShell = ({
@@ -125,7 +126,7 @@ export const ConsumerShell = ({
 
       {hasStickyChrome && (
         <div
-          className={`shrink-0 z-40 md:bg-white/90 md:border-b md:border-gray-100 ${mobileStickyChromeClass}`}
+          className={`consumer-shell-chrome shrink-0 z-40 md:bg-white/90 md:border-b md:border-gray-100 lg:border-b-0 lg:bg-transparent ${mobileStickyChromeClass}`}
         >
           <div className={`${maxWidthClass[maxWidth]} mx-auto min-w-0 max-w-full ${pad}`}>
             {showMobileUnifiedHeader && (
@@ -157,7 +158,7 @@ export const ConsumerShell = ({
               </div>
             )}
 
-            {showJourney && !banner && (
+            {showJourney && !banner && !(layout === 'tab' && isWideNavRootPath(pathname)) && (
               <div className="hidden md:block pt-safe-plus-2 pb-1">
                 <MobileBackButton fallbackTo={journeyFallbackTo} label={journeyLabel} />
               </div>
@@ -208,11 +209,11 @@ export const ConsumerShell = ({
             )}
 
             {layout === 'tab' && (
-              <div className="hidden md:block pt-safe-plus-2 pb-3 md:py-4">
+              <div className={`hidden md:block pt-safe-plus-2 pb-2 md:py-2 lg:px-3 lg:py-1.5 ${flush ? 'md:px-4' : ''}`}>
                 {showTabTitleStrip && (
                   <ConsumerTabBanner title={title!} action={showTabActionInStrip ? action : undefined} />
                 )}
-                {toolbar && <div className={showTabTitleStrip ? 'mt-3' : ''}>{toolbar}</div>}
+                {toolbar && <div className={showTabTitleStrip ? 'mt-2 lg:mt-1.5' : ''}>{toolbar}</div>}
               </div>
             )}
             {layout === 'tab' && toolbar && (
@@ -227,7 +228,7 @@ export const ConsumerShell = ({
       )}
 
       <div
-        className={`${APP_SCROLL_BODY_CLASS} ${maxWidthClass[maxWidth]} w-full max-w-full min-w-0 mx-auto ${flush ? '' : `${pad} py-4 md:py-6`} ${
+        className={`${APP_SCROLL_BODY_CLASS} ${maxWidthClass[maxWidth]} w-full max-w-full min-w-0 mx-auto ${flush ? '' : `${pad} py-3 md:py-4`} ${
           !hasStickyChrome && !banner ? 'pt-safe-plus-2' : ''
         } ${banner && !hasStickyChrome ? 'pt-0 md:pt-2' : ''}`}
       >

@@ -1,0 +1,10 @@
+apps/api
+monitoring
+docker-compose.yml
+docker-compose.*.yml
+Dockerfile*
+run-project.*
+*.md
+.git
+agent-transcripts
+.cursor

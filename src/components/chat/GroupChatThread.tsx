@@ -445,6 +445,7 @@ export const GroupChatThread = ({
         <ChatThreadHeaderBar
           onBack={onBack}
           backLabel="Back to chat list"
+          backVisibility="mobile-only"
           titleButton={{ onClick: () => setMembersOpen(true) }}
           leading={
             group?.photoUrl ? (

@@ -7,11 +7,11 @@ export type MeNotificationsPage = {
   unreadCount: number;
 };
 
-export const fetchMeNotificationsPage = async (page = 1): Promise<MeNotificationsPage> => {
-  const res = await api.getMeNotifications(page);
+export const fetchMeNotificationsPage = async (page = 1, pageSize = 20): Promise<MeNotificationsPage> => {
+  const res = await api.getMeNotifications(page, pageSize);
   return {
     data: res.data,
-    total: res.total,
+    total: res.meta?.total ?? res.total ?? res.data.length,
     unreadCount: res.unreadCount ?? res.data.filter((n) => !n.isRead).length,
   };
 };

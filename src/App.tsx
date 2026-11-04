@@ -130,6 +130,7 @@ const AdminGroups = lazy(() => import('./pages/admin/Groups').then((m) => ({ def
 const AdminAuditLog = lazy(() => import('./pages/admin/AuditLog').then((m) => ({ default: m.AuditLog })));
 const AdminReports = lazy(() => import('./pages/admin/Reports').then((m) => ({ default: m.Reports })));
 const AdminSettings = lazy(() => import('./pages/admin/Settings').then((m) => ({ default: m.Settings })));
+const AdminAccount = lazy(() => import('./pages/admin/Account').then((m) => ({ default: m.Account })));
 const AdminNotifications = lazy(() =>
   import('./pages/admin/Notifications').then((m) => ({ default: m.Notifications }))
 );
@@ -687,6 +688,14 @@ function App() {
             element={
               <ProtectedRoute roles={['platform_admin']}>
                 <AdminSettings />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/account"
+            element={
+              <ProtectedRoute roles={['platform_admin']}>
+                <AdminAccount />
               </ProtectedRoute>
             }
           />

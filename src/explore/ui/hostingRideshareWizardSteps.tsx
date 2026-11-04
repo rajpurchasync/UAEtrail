@@ -22,6 +22,7 @@ import {
 import {
   formatParticipantMinAgeFieldValue,
   parseParticipantMinAgeFieldValue,
+  DEFAULT_PARTICIPANT_MIN_AGE,
 } from './hostingParticipantAgeMin';
 import { useMemberVehicles } from '../../hooks/useMemberVehicles';
 import { MemberVehicleCarIcon } from '../../components/vehicles/MemberVehicleCarIcon';
@@ -51,7 +52,7 @@ export const RideshareAudienceStepBody = ({
 
   return (
     <>
-      <p className="mb-2 text-sm text-gray-600">
+      <p className="mb-2 text-sm text-neutral-600">
         Rides are listed on the explore map. Choose who can request a seat.
       </p>
       <p className={`mb-2 ${EXPLORE_FLOW.choiceCardTitle}`}>{PARTICIPANTS_WHO_CAN_JOIN}</p>
@@ -91,7 +92,7 @@ export const RideshareAudienceStepBody = ({
               }
               className={exploreFlowChoiceCardClass(active)}
             >
-              <Icon className={`h-5 w-5 ${active ? 'text-emerald-600' : 'text-gray-500'}`} />
+              <Icon className={`h-5 w-5 ${active ? 'text-emerald-600' : 'text-neutral-500'}`} />
               <p className={`mt-2 ${EXPLORE_FLOW.choiceCardTitle}`}>{option.title}</p>
               <p className={EXPLORE_FLOW.choiceCardSubtitle}>{option.subtitle}</p>
             </button>
@@ -101,7 +102,7 @@ export const RideshareAudienceStepBody = ({
 
       {!draft.participantsOpenToAll ? (
         <div className="mb-4 space-y-2 rounded-2xl border border-neutral-200 bg-neutral-50/80 p-3">
-          <label className="flex items-center gap-2 text-sm font-medium text-gray-800">
+          <label className="flex items-center gap-2 text-sm font-medium text-neutral-800">
             <input
               type="checkbox"
               checked={draft.limitedWomenOnly}
@@ -111,7 +112,7 @@ export const RideshareAudienceStepBody = ({
             <UserRound className="h-4 w-4 text-emerald-600" aria-hidden />
             Women only
           </label>
-          <label className="flex items-center gap-2 text-sm font-medium text-gray-800">
+          <label className="flex items-center gap-2 text-sm font-medium text-neutral-800">
             <input
               type="checkbox"
               checked={draft.limitedFamilyOnly}
@@ -121,13 +122,17 @@ export const RideshareAudienceStepBody = ({
             <Users className="h-4 w-4 text-emerald-600" aria-hidden />
             Family only
           </label>
-          <label className="flex items-start gap-2 text-sm font-medium text-gray-800">
+          <label className="flex items-start gap-2 text-sm font-medium text-neutral-800">
             <input
               type="checkbox"
               checked={draft.limitedMinAgeEnabled}
-              onChange={(event) =>
-                patchAudience({ limitedMinAgeEnabled: event.target.checked })
-              }
+              onChange={(event) => {
+                const enabled = event.target.checked;
+                patchAudience({
+                  limitedMinAgeEnabled: enabled,
+                  ...(enabled && draft.ageMin < 1 ? { ageMin: DEFAULT_PARTICIPANT_MIN_AGE } : null),
+                });
+              }}
               className="mt-0.5 rounded border-gray-300 text-emerald-600"
             />
             <Baby className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" aria-hidden />
@@ -139,11 +144,12 @@ export const RideshareAudienceStepBody = ({
                   inputMode="numeric"
                   min={1}
                   max={99}
+                  placeholder={String(DEFAULT_PARTICIPANT_MIN_AGE)}
                   value={formatParticipantMinAgeFieldValue(draft.ageMin)}
                   onChange={(event) =>
                     patchDraft({ ageMin: parseParticipantMinAgeFieldValue(event.target.value) })
                   }
-                  className="mt-2 w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-base font-semibold text-gray-900"
+                  className="mt-2 w-full rounded-xl border border-neutral-200 bg-white px-3 py-2 text-base font-semibold text-neutral-900"
                   aria-label={PARTICIPANTS_MIN_AGE_LABEL}
                 />
               ) : null}
@@ -152,7 +158,7 @@ export const RideshareAudienceStepBody = ({
         </div>
       ) : null}
 
-      <label className="mb-3 flex items-center gap-2 text-sm text-gray-800">
+      <label className="mb-3 flex items-center gap-2 text-sm text-neutral-800">
         <input
           type="checkbox"
           checked={draft.childrenAllowed}
@@ -161,7 +167,7 @@ export const RideshareAudienceStepBody = ({
         />
         Children allowed
       </label>
-      <label className="flex items-center gap-2 text-sm text-gray-800">
+      <label className="flex items-center gap-2 text-sm text-neutral-800">
         <input
           type="checkbox"
           checked={draft.petsAllowed}
@@ -182,7 +188,7 @@ export const RideshareSeatsStepBody = ({
   patchDraft: PatchDraft;
 }) => (
   <>
-    <p className="mb-3 text-sm text-gray-600">How many passenger seats can you offer? (max 10)</p>
+    <p className="mb-3 text-sm text-neutral-600">How many passenger seats can you offer? (max 10)</p>
     <div className="flex flex-wrap gap-2">
       {RIDESHARE_CAPACITY_PRESETS.map((value) => {
         const active = draft.capacity === value;
@@ -192,7 +198,7 @@ export const RideshareSeatsStepBody = ({
             type="button"
             onClick={() => patchDraft({ capacity: value })}
             className={`rounded-full px-4 py-2 text-sm font-bold ${
-              active ? 'bg-emerald-600 text-white' : 'bg-neutral-100 text-gray-800'
+              active ? 'bg-emerald-600 text-white' : 'bg-neutral-100 text-neutral-800'
             }`}
           >
             {formatCapacityLabel(value)}
@@ -241,7 +247,7 @@ export const RideshareTransportationStepBody = ({
 
   return (
     <>
-      <p className="mb-3 text-sm text-gray-600">Which car are you driving for this ride?</p>
+      <p className="mb-3 text-sm text-neutral-600">Which car are you driving for this ride?</p>
       <div className="space-y-2">
         {vehicles.map((vehicle) => {
           const active = draft.memberVehicleId === vehicle.id;
@@ -289,7 +295,7 @@ export const RidesharePublishLogisticsPreview = ({
   const vehicle = memberVehicleId ? vehicles.find((row) => row.id === memberVehicleId) : null;
 
   if (isLoading) {
-    return <p className="text-sm text-gray-500">Loading your car…</p>;
+    return <p className="text-sm text-neutral-500">Loading your car…</p>;
   }
 
   if (vehicle) {
@@ -297,12 +303,12 @@ export const RidesharePublishLogisticsPreview = ({
       <div className="flex items-center gap-3 rounded-xl border border-neutral-200/90 bg-white px-3 py-2.5">
         <MemberVehicleCarIcon color={vehicle.color} />
         <div className="min-w-0">
-          <p className="text-sm font-semibold text-gray-900">{formatRideshareVehicleLabel(vehicle)}</p>
-          <p className="text-xs text-gray-600">{MEMBER_VEHICLE_COLOR_LABELS[vehicle.color]}</p>
+          <p className="text-sm font-semibold text-neutral-900">{formatRideshareVehicleLabel(vehicle)}</p>
+          <p className="text-xs text-neutral-600">{MEMBER_VEHICLE_COLOR_LABELS[vehicle.color]}</p>
         </div>
       </div>
     );
   }
 
-  return <p className="text-sm text-gray-800">{fallbackLabel}</p>;
+  return <p className="text-sm text-neutral-800">{fallbackLabel}</p>;
 };

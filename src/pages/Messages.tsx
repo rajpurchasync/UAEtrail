@@ -32,6 +32,7 @@ import {
   patchGroupInboxThread,
   sortInboxThreads,
   toDirectThread,
+  DEFAULT_INBOX_FILTER,
   type InboxFilter,
 } from '../utils/inboxThreads';
 
@@ -86,10 +87,11 @@ export const Messages = () => {
   const selectedGroupId = searchParams.get('group');
   const contextActivityId = searchParams.get('activity');
   const [inboxQuery, setInboxQuery] = useState('');
-  const [inboxFilter, setInboxFilter] = useState<InboxFilter>('unread');
+  const [inboxFilter, setInboxFilter] = useState<InboxFilter>(DEFAULT_INBOX_FILTER);
   const {
     conversations,
     groupThreads,
+    filterCounts,
     directConversationsDegraded,
     loading,
     unavailable,
@@ -449,6 +451,7 @@ export const Messages = () => {
             <MessagesInboxToolbar
               query={inboxQuery}
               filter={inboxFilter}
+              counts={filterCounts}
               onQueryChange={setInboxQuery}
               onFilterChange={setInboxFilter}
               onCompose={openCompose}

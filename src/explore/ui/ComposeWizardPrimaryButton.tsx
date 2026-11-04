@@ -1,4 +1,5 @@
 import { useComposeWizardEnterSubmit } from './useComposeWizardEnterSubmit';
+import { exploreFlowComposePrimaryClass } from './exploreFlowUi';
 
 export type ComposeWizardPrimaryButtonProps = {
   label?: string;
@@ -9,11 +10,6 @@ export type ComposeWizardPrimaryButtonProps = {
   /** Host organize flows use emerald-600; seek/add use emerald-500. */
   tone?: 'host' | 'flow';
 };
-
-const toneClass = {
-  host: 'bg-emerald-600 shadow-emerald-600/25',
-  flow: 'bg-emerald-500 shadow-emerald-500/25',
-} as const satisfies Record<NonNullable<ComposeWizardPrimaryButtonProps['tone']>, string>;
 
 export const ComposeWizardPrimaryButton = ({
   label = 'Next',
@@ -34,7 +30,7 @@ export const ComposeWizardPrimaryButton = ({
       type="button"
       disabled={disabled || loading}
       onClick={onClick}
-      className={`w-full rounded-2xl py-4 text-base font-bold text-white shadow-lg disabled:cursor-not-allowed disabled:opacity-50 ${toneClass[tone]}`}
+      className={exploreFlowComposePrimaryClass(tone)}
     >
       {loading ? busy : `${label} →`}
     </button>

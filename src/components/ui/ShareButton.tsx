@@ -3,6 +3,7 @@ import { Share2, Send, Link as LinkIcon, Mail, Check } from 'lucide-react';
 import { FacebookIcon } from '../icons/FacebookIcon';
 import { WhatsAppIcon } from '../icons/WhatsAppIcon';
 import { buildShareText, buildShareUrl } from '../../utils/share';
+import { UiTooltip } from './UiTooltip';
 
 interface ShareButtonProps {
   title: string;
@@ -112,8 +113,7 @@ export const ShareButton = ({
       ? 'inline-flex items-center justify-center min-h-[44px] min-w-[44px] rounded-full bg-black/40 backdrop-blur-sm text-white hover:bg-black/55 transition-colors'
       : 'inline-flex items-center gap-2 px-3.5 py-2 rounded-full glass text-neutral-800 text-sm font-semibold hover:bg-white/90 transition-colors';
 
-  return (
-    <div className={`relative ${className}`} onClick={(e) => e.stopPropagation()}>
+  const trigger = (
       <button
         type="button"
         disabled={disabled}
@@ -132,6 +132,11 @@ export const ShareButton = ({
         )}
         {!compact && !iconOnly && (label ?? 'Share')}
       </button>
+  );
+
+  return (
+    <div className={`relative ${className}`} onClick={(e) => e.stopPropagation()}>
+      {compact || iconOnly ? <UiTooltip label="Share">{trigger}</UiTooltip> : trigger}
 
       {showShareMenu && (
         <>

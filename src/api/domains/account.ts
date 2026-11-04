@@ -153,8 +153,13 @@ export const accountApi = {
       }
     ),
 
-    getMeNotifications: (page = 1) =>
-    apiRequest<{ data: NotificationDTO[]; total: number; unreadCount: number }>(`/me/notifications?page=${page}&pageSize=50`, { auth: true }),
+    getMeNotifications: (page = 1, pageSize = 20) =>
+    apiRequest<{
+      data: NotificationDTO[];
+      total?: number;
+      unreadCount: number;
+      meta?: { total: number; page: number; pageSize: number; totalPages: number };
+    }>(`/me/notifications?page=${page}&pageSize=${pageSize}`, { auth: true }),
 
     markNotificationRead: (id: string) =>
     apiRequest(`/me/notifications/${id}/read`, { method: 'PATCH', auth: true }),

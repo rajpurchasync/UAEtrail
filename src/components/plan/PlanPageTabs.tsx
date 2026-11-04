@@ -18,7 +18,7 @@ export const PlanPageTabs = ({ active, onChange }: PlanPageTabsProps) => (
           role="tab"
           aria-selected={selected}
           onClick={() => onChange(tab.key)}
-          className={`relative flex-1 py-3 text-sm font-semibold transition-colors ${
+          className={`relative flex-1 py-2.5 text-sm font-semibold transition-colors md:py-2 md:text-[13px] ${
             selected ? 'text-emerald-800' : 'text-neutral-500'
           }`}
         >

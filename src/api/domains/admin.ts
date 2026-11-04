@@ -52,10 +52,17 @@ export const adminApi = {
       body: JSON.stringify({ status, comment })
     }),
 
-    getAdminGroups: (filters?: { search?: string; type?: 'family' | 'friends'; page?: number; pageSize?: number }) => {
+    getAdminGroups: (filters?: {
+      search?: string;
+      type?: 'family' | 'friends';
+      status?: 'active' | 'suspended';
+      page?: number;
+      pageSize?: number;
+    }) => {
     const params = new URLSearchParams();
     if (filters?.search) params.set('search', filters.search);
     if (filters?.type) params.set('type', filters.type);
+    if (filters?.status) params.set('status', filters.status);
     if (filters?.page) params.set('page', String(filters.page));
     if (filters?.pageSize) params.set('pageSize', String(filters.pageSize));
     const qs = params.toString();
@@ -74,6 +81,13 @@ export const adminApi = {
       auth: true,
       body: JSON.stringify({ status, comment })
     }),
+
+    setAdminTenantHidden: (id: string, hidden: boolean) =>
+      apiRequest<{ message: string; hiddenFromPublic: boolean }>(`/admin/tenants/${id}/hidden`, {
+        method: 'PATCH',
+        auth: true,
+        body: JSON.stringify({ hidden }),
+      }),
 
     getAdminTenants: (page = 1, pageSize = ADMIN_TABLE_PAGE_SIZE) =>
       apiRequest<{ data: TenantListDTO[]; meta?: { total: number } }>(
@@ -98,10 +112,23 @@ export const adminApi = {
       body: JSON.stringify({ status, comment })
     }),
 
-    getAdminContentReports: (page?: number, pageSize?: number) => {
+    getAdminContentReports: (filters?: {
+    page?: number;
+    pageSize?: number;
+    reason?: string;
+    targetType?: string;
+    reporter?: string;
+    from?: string;
+    to?: string;
+  }) => {
     const params = new URLSearchParams();
-    if (page) params.set('page', String(page));
-    if (pageSize) params.set('pageSize', String(pageSize));
+    if (filters?.page) params.set('page', String(filters.page));
+    if (filters?.pageSize) params.set('pageSize', String(filters.pageSize));
+    if (filters?.reason) params.set('reason', filters.reason);
+    if (filters?.targetType) params.set('targetType', filters.targetType);
+    if (filters?.reporter) params.set('reporter', filters.reporter);
+    if (filters?.from) params.set('from', filters.from);
+    if (filters?.to) params.set('to', filters.to);
     const qs = params.toString();
     return apiRequest<{
       data: AdminContentReportEntry[];
@@ -109,10 +136,46 @@ export const adminApi = {
     }>(`/admin/reports${qs ? `?${qs}` : ''}`, { auth: true });
   },
 
-    getAdminAuditLogs: (filters?: { action?: string; entityType?: string; page?: number; pageSize?: number }) => {
+    addAdminTenantTeamMember: (
+      tenantId: string,
+      payload: { email: string; displayName?: string; role: 'tenant_admin' | 'tenant_guide' }
+    ) =>
+      apiRequest<{ data: { id: string; userId: string; email: string; displayName: string; role: string } }>(
+        `/admin/tenants/${tenantId}/team`,
+        { method: 'POST', auth: true, body: JSON.stringify(payload) }
+      ),
+
+    patchAdminTenantTeamMember: (
+      tenantId: string,
+      membershipId: string,
+      payload: { role?: 'tenant_admin' | 'tenant_guide' }
+    ) =>
+      apiRequest<{ data: { id: string; role: string; isActive: boolean } }>(
+        `/admin/tenants/${tenantId}/team/${membershipId}`,
+        { method: 'PATCH', auth: true, body: JSON.stringify(payload) }
+      ),
+
+    removeAdminTenantTeamMember: (tenantId: string, membershipId: string) =>
+      apiRequest<{ data: { removed: boolean } }>(`/admin/tenants/${tenantId}/team/${membershipId}`, {
+        method: 'DELETE',
+        auth: true,
+      }),
+
+    getAdminAuditLogs: (filters?: {
+    action?: string;
+    entityType?: string;
+    actor?: string;
+    from?: string;
+    to?: string;
+    page?: number;
+    pageSize?: number;
+  }) => {
     const params = new URLSearchParams();
     if (filters?.action) params.set('action', filters.action);
     if (filters?.entityType) params.set('entityType', filters.entityType);
+    if (filters?.actor) params.set('actor', filters.actor);
+    if (filters?.from) params.set('from', filters.from);
+    if (filters?.to) params.set('to', filters.to);
     if (filters?.page) params.set('page', String(filters.page));
     if (filters?.pageSize) params.set('pageSize', String(filters.pageSize));
     const qs = params.toString();

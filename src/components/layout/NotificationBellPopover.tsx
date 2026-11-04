@@ -15,6 +15,7 @@ import { sortNotificationsNewestFirst } from '../../utils/notificationCategories
 import { NotificationListItem } from '../notifications/NotificationListItem';
 import { inferNotificationPath } from '../../utils/notificationRouting';
 import { buildSignInRedirect } from '../../utils/authReturnContext';
+import { UiTooltip } from '../ui/UiTooltip';
 
 interface NotificationBellPopoverProps {
   tone?: 'default' | 'light';
@@ -136,6 +137,7 @@ export const NotificationBellPopover = ({
 
   return (
     <div ref={rootRef} className={`relative shrink-0 ${className}`}>
+      <UiTooltip label={user ? 'Notifications' : 'Sign in to view notifications'}>
       <button
         type="button"
         onClick={() => {
@@ -152,11 +154,12 @@ export const NotificationBellPopover = ({
       >
         <Bell className={triggerVariant === 'desktop' ? 'w-5 h-5' : 'w-5 h-5'} strokeWidth={2.25} />
         {user && badgeUnreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-white">
+          <span className="absolute top-1 right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-white">
             {badgeUnreadCount > 99 ? '99+' : badgeUnreadCount}
           </span>
         )}
       </button>
+      </UiTooltip>
 
       {open && (
         <>

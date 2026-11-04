@@ -19,7 +19,11 @@ import { FlowStepTextArea, FlowStepTextInput } from './useFlowSheetPrimaryFieldF
 import { EXPLORE_FLOW } from '../../config/exploreTheme';
 import { MAP_CONFIG } from '../../config/platform';
 import { EXPLORE_Z } from '../../config/exploreTheme';
+import { COMPOSE_DESKTOP_INSET_FIXED } from '../create/composeDesktopInset';
 import { COMPOSE_SHEET_DRAG_HINT } from '../../hooks/useMobileBrowseSheetImmersive';
+import { useIsMobile } from '../../hooks/useIsMobile';
+import { ComposeWidePageSlot } from '../create/ComposeWidePageSlot';
+import { bundleSeekingWizardPages, COMPOSE_WIDE_SHEET_MAX_WIDTH, wizardPageContaining } from '../create/composeWideWizard';
 import { useComposeSheetExpandedState } from '../create/ComposeSheetExpandedContext';
 import { useComposeWizardExitBack } from '../create/useComposeWizardExitBack';
 import {
@@ -150,6 +154,7 @@ export const CreateSeekingFlow = ({
 }: CreateSeekingFlowProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const isMobile = useIsMobile();
 
   const [step, setStep] = useState<FlowStep>('type');
   const [draft, setDraft] = useState<SeekingDraft>(emptySeekingDraft);
@@ -183,13 +188,26 @@ export const CreateSeekingFlow = ({
 
   const kind = draft.kind ?? selectedKind;
   const flowSteps = useMemo(() => (kind ? getSeekingFlowSteps(kind) : []), [kind]);
+  const wizardPages = useMemo(
+    () => (isMobile ? flowSteps.map((id) => [id]) : bundleSeekingWizardPages(flowSteps)),
+    [flowSteps, isMobile]
+  );
   const dateOptions = useMemo(() => buildDateOptions(), []);
   const currentStepIndex = kind && step !== 'type' ? flowSteps.indexOf(step as SeekingFlowStepId) : -1;
+  const widePageSteps =
+    kind && step !== 'type' ? wizardPageContaining(wizardPages, step as SeekingFlowStepId) : [];
+  const currentPageIndex =
+    kind && step !== 'type'
+      ? wizardPages.findIndex((page) => page.includes(step as SeekingFlowStepId))
+      : -1;
+  const pageHas = (id: SeekingFlowStepId) => widePageSteps.includes(id);
 
   const headerTitle =
     step === 'type' || !kind
       ? 'Find'
-      : seekingFlowStepTitle(step as SeekingFlowStepId, kind);
+      : widePageSteps.length > 1
+        ? seekingFlowStepTitle(widePageSteps[0], kind)
+        : seekingFlowStepTitle(step as SeekingFlowStepId, kind);
 
   const seekingFlowId = useMemo(
     () =>
@@ -315,13 +333,13 @@ export const CreateSeekingFlow = ({
       setError(null);
       return;
     }
-    if (step === 'type' || currentStepIndex <= 0) {
+    if (step === 'type' || currentPageIndex <= 0) {
       if (step === 'type' && !seekKind) {
         exitWizardBack();
         setError(null);
         return;
       }
-      if (currentStepIndex <= 0) {
+      if (currentPageIndex <= 0) {
         exitWizardBack();
         setError(null);
         return;
@@ -330,20 +348,22 @@ export const CreateSeekingFlow = ({
       setError(null);
       return;
     }
-    setStep(flowSteps[currentStepIndex - 1]);
+    setStep(wizardPages[currentPageIndex - 1][0]);
     setError(null);
   };
 
   const goNext = () => {
     if (!kind || step === 'type') return;
-    const validation = validateSeekingStep(step as SeekingFlowStepId, draft);
-    if (validation) {
-      setError(validation);
-      return;
+    for (const id of widePageSteps) {
+      const validation = validateSeekingStep(id, draft);
+      if (validation) {
+        setError(validation);
+        return;
+      }
     }
     setError(null);
-    if (currentStepIndex >= flowSteps.length - 1) return;
-    setStep(flowSteps[currentStepIndex + 1]);
+    if (currentPageIndex < 0 || currentPageIndex >= wizardPages.length - 1) return;
+    setStep(wizardPages[currentPageIndex + 1][0]);
   };
 
   const handleSubmit = async () => {
@@ -490,7 +510,7 @@ export const CreateSeekingFlow = ({
     const pinAlreadySet = isToStep ? draft.toPinPlaced : draft.fromPinPlaced;
 
     return (
-      <div className={`fixed inset-0 ${EXPLORE_Z.composeFlow} bg-neutral-100`}>
+      <div className={`${COMPOSE_DESKTOP_INSET_FIXED} ${EXPLORE_Z.composeFlow} bg-neutral-100`}>
         <Suspense fallback={<div className="h-full w-full animate-pulse bg-emerald-50" />}>
           <CreatePlacePicker
             openInAdjustMode={pinAlreadySet}
@@ -542,6 +562,7 @@ export const CreateSeekingFlow = ({
       expanded={sheetExpanded}
       onExpand={expandSheet}
       expandHint={COMPOSE_SHEET_DRAG_HINT}
+      maxWidthClass={isMobile ? 'lg:max-w-lg' : COMPOSE_WIDE_SHEET_MAX_WIDTH}
       panelClassName="px-5 pb-[calc(var(--safe-bottom)+1rem)] pt-0 lg:px-6 lg:pb-6 lg:pt-2"
     >
         {step === 'type' && !seekKind && (
@@ -575,8 +596,23 @@ export const CreateSeekingFlow = ({
           </FlowSheetChrome>
         )}
 
-        {step === 'title' && kind && (
-          <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
+        {pageHas('title') && kind && (
+          <ComposeWidePageSlot
+            stepId="title"
+            pageSteps={widePageSteps}
+            title={seekingFlowStepTitle('title', kind)}
+            pageTitle={headerTitle}
+            onClose={requestClose}
+            onBack={goBack}
+            footer={
+              <>
+                {error ? <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
+                <div className="mt-5 pb-2">
+                  <NextButton disabled={!draft.title.trim()} onClick={goNext} />
+                </div>
+              </>
+            }
+          >
             <label className="block">
               {!usesGuidedSeekingFlow(kind) ? (
                 <span className="mb-2 block text-sm font-medium text-gray-700">
@@ -603,11 +639,7 @@ export const CreateSeekingFlow = ({
                 />
               )}
             </label>
-            {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-            <div className="mt-5 pb-2">
-              <NextButton disabled={!draft.title.trim()} onClick={goNext} />
-            </div>
-          </FlowSheetChrome>
+          </ComposeWidePageSlot>
         )}
 
         {step === 'curatedArea' && kind && (
@@ -691,36 +723,58 @@ export const CreateSeekingFlow = ({
           </FlowSheetChrome>
         )}
 
-        {step === 'audience' &&
+        {pageHas('audience') &&
           kind &&
           (usesHikingSeekingFlow(kind) ||
             usesCampingSeekingFlow(kind) ||
             usesEventSeekingFlow(kind) ||
             kind === 'rideshare') && (
-          <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
+          <ComposeWidePageSlot
+            stepId="audience"
+            pageSteps={widePageSteps}
+            title={seekingFlowStepTitle('audience', kind)}
+            pageTitle={headerTitle}
+            onClose={requestClose}
+            onBack={goBack}
+            footer={
+              <>
+                {error ? <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
+                <div className="mt-5 pb-2">
+                  <NextButton disabled={kind === 'hiking' && !draft.fitnessLevel} onClick={goNext} />
+                </div>
+              </>
+            }
+          >
             <SeekingAudienceStepBody draft={draft} patchDraft={patchDraft} kind={kind} />
-            {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-            <div className="mt-5 pb-2">
-              <NextButton disabled={kind === 'hiking' && !draft.fitnessLevel} onClick={goNext} />
-            </div>
-          </FlowSheetChrome>
+          </ComposeWidePageSlot>
         )}
 
-        {step === 'transport' && kind && (usesHikingSeekingFlow(kind) || usesCampingSeekingFlow(kind)) && (
-          <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
+        {pageHas('transport') && kind && (usesHikingSeekingFlow(kind) || usesCampingSeekingFlow(kind)) && (
+          <ComposeWidePageSlot
+            stepId="transport"
+            pageSteps={widePageSteps}
+            title={seekingFlowStepTitle('transport', kind)}
+            pageTitle={headerTitle}
+            onClose={requestClose}
+            onBack={goBack}
+            footer={
+              <>
+                {error ? <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
+                <div className="mt-5 pb-2">
+                  <NextButton
+                    disabled={
+                      !draft.transportMode ||
+                      (draft.transportMode === 'self' && !draft.selfVehicleType) ||
+                      (draft.transportMode === 'rideshare' && draft.rideshareSeatsNeeded < 1)
+                    }
+                    onClick={goNext}
+                  />
+                </div>
+              </>
+            }
+          >
             <SeekingTransportStepBody draft={draft} patchDraft={patchDraft} />
-            {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-            <div className="mt-5 pb-2">
-              <NextButton
-                disabled={
-                  !draft.transportMode ||
-                  (draft.transportMode === 'self' && !draft.selfVehicleType) ||
-                  (draft.transportMode === 'rideshare' && draft.rideshareSeatsNeeded < 1)
-                }
-                onClick={goNext}
-              />
-            </div>
-          </FlowSheetChrome>
+          </ComposeWidePageSlot>
         )}
 
         {step === 'area' && kind && usesEventSeekingFlow(kind) && (
@@ -796,8 +850,31 @@ export const CreateSeekingFlow = ({
           </FlowSheetChrome>
         )}
 
-        {step === 'when' && kind && (
-          <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
+        {pageHas('when') && kind && (
+          <ComposeWidePageSlot
+            stepId="when"
+            pageSteps={widePageSteps}
+            title={seekingFlowStepTitle('when', kind)}
+            pageTitle={headerTitle}
+            onClose={requestClose}
+            onBack={goBack}
+            footer={
+              <>
+                {error ? <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
+                <div className="mt-4 pb-2">
+                  <NextButton
+                    disabled={seekingWhenShowsTime(kind) && draft.timeMode === 'specific' && !draft.time}
+                    onClick={() => {
+                      if (!seekingWhenShowsTime(kind)) {
+                        patchDraft({ timeMode: 'flexible', time: '' });
+                      }
+                      goNext();
+                    }}
+                  />
+                </div>
+              </>
+            }
+          >
             <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
               {dateOptions.map((option) => {
                 const active = draft.date === option.iso;
@@ -864,19 +941,7 @@ export const CreateSeekingFlow = ({
                 />
               </label>
             )}
-            {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-            <div className="mt-4 pb-2">
-              <NextButton
-                disabled={seekingWhenShowsTime(kind) && draft.timeMode === 'specific' && !draft.time}
-                onClick={() => {
-                  if (!seekingWhenShowsTime(kind)) {
-                    patchDraft({ timeMode: 'flexible', time: '' });
-                  }
-                  goNext();
-                }}
-              />
-            </div>
-          </FlowSheetChrome>
+          </ComposeWidePageSlot>
         )}
 
         {step === 'route' && kind === 'rideshare' && (
@@ -896,8 +961,23 @@ export const CreateSeekingFlow = ({
           </FlowSheetChrome>
         )}
 
-        {step === 'persons' && kind && (
-          <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
+        {pageHas('persons') && kind && (
+          <ComposeWidePageSlot
+            stepId="persons"
+            pageSteps={widePageSteps}
+            title={seekingFlowStepTitle('persons', kind)}
+            pageTitle={headerTitle}
+            onClose={requestClose}
+            onBack={goBack}
+            footer={
+              <>
+                {error ? <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
+                <div className="mt-5 pb-2">
+                  <NextButton onClick={goNext} />
+                </div>
+              </>
+            }
+          >
             <p className="mb-3 text-sm text-gray-600">Including yourself</p>
             <div className="flex flex-wrap gap-2">
               {SEEKING_PARTY_PRESETS.map((value) => {
@@ -916,15 +996,26 @@ export const CreateSeekingFlow = ({
                 );
               })}
             </div>
-            {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-            <div className="mt-5 pb-2">
-              <NextButton onClick={goNext} />
-            </div>
-          </FlowSheetChrome>
+          </ComposeWidePageSlot>
         )}
 
-        {step === 'info' && kind && usesGuidedSeekingFlow(kind) && (
-          <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
+        {pageHas('info') && kind && usesGuidedSeekingFlow(kind) && (
+          <ComposeWidePageSlot
+            stepId="info"
+            pageSteps={widePageSteps}
+            title={seekingFlowStepTitle('info', kind)}
+            pageTitle={headerTitle}
+            onClose={requestClose}
+            onBack={goBack}
+            footer={
+              <>
+                {error ? <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
+                <div className="mt-5 pb-2">
+                  <NextButton onClick={goNext} />
+                </div>
+              </>
+            }
+          >
             <textarea
               value={draft.additionalInfo}
               onChange={(event) => patchDraft({ additionalInfo: event.target.value })}
@@ -934,15 +1025,26 @@ export const CreateSeekingFlow = ({
               className="w-full rounded-2xl border border-neutral-200 px-4 py-3 text-base text-gray-900 outline-none focus:border-emerald-400"
               maxLength={1000}
             />
-            {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-            <div className="mt-5 pb-2">
-              <NextButton onClick={goNext} />
-            </div>
-          </FlowSheetChrome>
+          </ComposeWidePageSlot>
         )}
 
-        {step === 'comment' && kind && !usesGuidedSeekingFlow(kind) && (
-          <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
+        {pageHas('comment') && kind && !usesGuidedSeekingFlow(kind) && (
+          <ComposeWidePageSlot
+            stepId="comment"
+            pageSteps={widePageSteps}
+            title={seekingFlowStepTitle('comment', kind)}
+            pageTitle={headerTitle}
+            onClose={requestClose}
+            onBack={goBack}
+            footer={
+              <>
+                {error ? <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
+                <div className="mt-5 pb-2">
+                  <NextButton onClick={goNext} />
+                </div>
+              </>
+            }
+          >
             <label className="block">
               <textarea
                 value={draft.comment}
@@ -953,11 +1055,7 @@ export const CreateSeekingFlow = ({
                 maxLength={1000}
               />
             </label>
-            {error && <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-            <div className="mt-5 pb-2">
-              <NextButton onClick={goNext} />
-            </div>
-          </FlowSheetChrome>
+          </ComposeWidePageSlot>
         )}
 
         {step === 'review' && kind && (

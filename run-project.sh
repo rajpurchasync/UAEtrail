@@ -111,25 +111,17 @@ if ! version_ge "$NODE_ACTIVE_VERSION" "$NODE_MIN_VERSION" ; then
   exit 1
 fi
 
-# --- ADDED DEFAULT ENVIRONMENT VARIABLES ---
-export NODE_ENV="${NODE_ENV:-test}"
-export RUN_ENV="${RUN_ENV:-test}"
+echo "[2/4] Ensuring dev-only secret defaults (see .env for ports and Mongo)..."
 export JWT_ACCESS_SECRET="${JWT_ACCESS_SECRET:-dev-access-secret-dev-access-secret}"
 export JWT_REFRESH_SECRET="${JWT_REFRESH_SECRET:-dev-refresh-secret-dev-refresh-secret}"
 export S3_ACCESS_KEY_ID="${S3_ACCESS_KEY_ID:-minioadmin}"
 export S3_SECRET_ACCESS_KEY="${S3_SECRET_ACCESS_KEY:-minioadmin}"
 export APP_BASE_URL="${APP_BASE_URL:-http://localhost}"
 export APP_BASE_URLS="${APP_BASE_URLS:-http://localhost,http://localhost:5175}"
-export API_BASE_URL="${API_BASE_URL:-http://localhost:4000}"
 export VITE_API_BASE_URL="${VITE_API_BASE_URL:-/api}"
-export FRONTEND_PORT="${FRONTEND_PORT:-5175}"
-# -----------------------------------------
 
-echo "[2/4] Verifying host versions and workspace dependencies..."
+echo "[3/4] Verifying host versions and workspace dependencies..."
 node scripts/run-project-preflight.mjs
-
-echo "[3/4] Checking Docker engine status..."
-docker info >/dev/null 2>&1 || true
 
 echo "[4/4] Starting project stack..."
 node scripts/run-project.mjs "$@"

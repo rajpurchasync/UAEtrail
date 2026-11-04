@@ -70,10 +70,13 @@ export const ListExplorerFilterFab = ({
     const navVar = readCssPx(styles.getPropertyValue('--bottom-nav-height'), 56);
     const nav = mobile ? Math.max(navVar, 56) : 0;
     const createFab = mobile ? 64 : 0;
+    const sideNavRight = mobile
+      ? 0
+      : document.querySelector('[data-desktop-side-nav]')?.getBoundingClientRect().right ?? 0;
     return {
       top: Math.max(safeTop, 8) + 56,
       bottom: safeBottom + nav + LIST_FILTER_FAB_EDGE + (corner === 'br' ? createFab : 0),
-      left: LIST_FILTER_FAB_EDGE,
+      left: LIST_FILTER_FAB_EDGE + sideNavRight,
       right: LIST_FILTER_FAB_EDGE,
     };
   };

@@ -30,9 +30,9 @@ export const ListExplorerListRow = ({ card }: ListExplorerListRowProps) => {
     <ListExplorerItemLink
       to={card.path}
       exploreItemId={card.id}
-      className={`${EXPLORE_LIST_ROW.shell} flex items-center gap-3 p-2.5 pr-3 active:scale-[0.995]`}
+      className={`${EXPLORE_LIST_ROW.shell} flex items-center gap-3 p-2.5 pr-3 active:scale-[0.995] md:gap-2 md:p-1.5 md:pr-2`}
     >
-      <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-neutral-100">
+      <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-neutral-100 md:h-11 md:w-11">
         {cover ? (
           <EnvironmentImage
             src={cover}
@@ -56,7 +56,7 @@ export const ListExplorerListRow = ({ card }: ListExplorerListRowProps) => {
         />
       </div>
       <div className="min-w-0 flex-1">
-        <h3 className={`truncate text-[15px] font-bold leading-snug ${EXPLORE_TYPE.title}`}>
+        <h3 className={`truncate text-[15px] font-bold leading-snug md:text-sm ${EXPLORE_TYPE.title}`}>
           {meta.title}
         </h3>
         {meta.location ? (

@@ -89,7 +89,8 @@ const isDemoLoginAllowed = (req: Request): boolean =>
   isDemoLoginAllowedForRequest(
     env.NODE_ENV,
     req.socket?.remoteAddress,
-    process.env.ALLOW_DEMO_LOGIN
+    process.env.ALLOW_DEMO_LOGIN,
+    env.RUN_ENV ?? process.env.RUN_ENV
   );
 
 export const authRouter = Router();

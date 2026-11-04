@@ -35,10 +35,10 @@ export const PlanNeedsYouStrip = ({ refreshKey = 0 }: PlanNeedsYouStripProps) =>
   return (
     <Link
       to={href}
-      className="flex items-center gap-3 rounded-2xl border border-amber-200/70 bg-amber-50/80 px-4 py-3 active:bg-amber-50"
+      className="flex items-center gap-2 rounded-xl border border-amber-200/70 bg-amber-50/80 px-3 py-2 active:bg-amber-50 md:py-1.5"
     >
       <span className="flex h-2 w-2 shrink-0 rounded-full bg-amber-500" aria-hidden />
-      <span className="min-w-0 flex-1 text-sm font-semibold text-amber-950">
+      <span className="min-w-0 flex-1 text-[13px] font-semibold text-amber-950 md:text-xs">
         Needs you · {label}
         {extra > 0 ? ` (+${extra} more)` : ''}
       </span>

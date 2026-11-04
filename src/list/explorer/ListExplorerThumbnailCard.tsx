@@ -25,7 +25,7 @@ export const ListExplorerThumbnailCard = ({ card }: ListExplorerThumbnailCardPro
       exploreItemId={card.id}
       className={`${EXPLORE_SHAPE.control} group flex h-full flex-col overflow-hidden border border-neutral-200/80 bg-white shadow-[0_1px_8px_rgba(15,23,42,.06)] ring-1 ring-black/[0.02] transition active:scale-[0.99]`}
     >
-      <div className="relative aspect-[4/3] w-full overflow-hidden bg-neutral-100">
+      <div className="relative aspect-[4/3] w-full overflow-hidden bg-neutral-100 lg:aspect-[5/3]">
         {cover ? (
           <EnvironmentImage
             src={cover}

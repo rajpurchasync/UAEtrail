@@ -31,5 +31,11 @@ export { EmptyActivitiesBanner } from './EmptyActivitiesBanner';
 export { ActivityParticipationStatus } from './ActivityParticipationStatus';
 export { WithdrawRequestModal } from './WithdrawRequestModal';
 export { JoinRequestActions } from './JoinRequestActions';
-export { AppSelect, ADMIN_FILTER_SELECT_CLASS, ADMIN_SELECT_CLASS, type AppSelectOption } from './AppSelect';
+export {
+  AppSelect,
+  ADMIN_FILTER_SELECT_CLASS,
+  ADMIN_INPUT_CLASS,
+  ADMIN_SELECT_CLASS,
+  type AppSelectOption,
+} from './AppSelect';
 export { PlacesMap, type PlaceMapPin, type MapPinKind, type MapPinSource } from './PlacesMap';

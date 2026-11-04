@@ -17,6 +17,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { iconStroke, MOBILE_NAV_ICON_MAP } from '../../config/navIcons';
+import { UiTooltip } from '../ui/UiTooltip';
 import {
   CONSUMER_HAMBURGER_MENU,
   isConsumerChromeHidden,
@@ -248,15 +249,6 @@ const DashboardDrawerLinks = ({
   </>
 );
 
-const DashboardDrawerExploreLink = ({ closeMenu }: { closeMenu: () => void }) => (
-  <>
-    <DashboardDrawerDivider />
-    <Link to={EXPLORE_MAP_PATH} onClick={closeMenu} className={dashboardLinkClass(false)}>
-      Explore map
-    </Link>
-  </>
-);
-
 const DashboardDrawerSiteLink = ({ closeMenu }: { closeMenu: () => void }) => (
   <>
     <DashboardDrawerDivider />
@@ -320,6 +312,7 @@ export const MobileMenuButton = ({ tone = 'default', className = '', showOnDeskt
       : 'text-emerald-700 bg-emerald-50 border border-emerald-100 hover:bg-emerald-100';
 
   return (
+    <UiTooltip label="Menu">
     <button
       type="button"
       onClick={openMenu}
@@ -328,6 +321,7 @@ export const MobileMenuButton = ({ tone = 'default', className = '', showOnDeskt
     >
       <Menu className="w-5 h-5" strokeWidth={2.25} />
     </button>
+    </UiTooltip>
   );
 };
 
@@ -532,7 +526,6 @@ const MobileMenuPanel = () => {
             </span>
           )}
         </Link>
-        <DashboardDrawerExploreLink closeMenu={closeMenu} />
         <button
           type="button"
           onClick={() => void switchRole('participant')}
@@ -671,7 +664,9 @@ const MobileMenuPanel = () => {
               >
                 <DrawerNavIcon active={false} icon={RefreshCw} />
                 <span className={`${drawerNavLabelClass(false)} text-emerald-800`}>
-                  Restore {user?.switchedFromRole?.replace(/_/g, ' ')}
+                  {user?.switchedFromRole === 'platform_admin'
+                    ? 'Switch to admin'
+                    : `Restore ${user?.switchedFromRole?.replace(/_/g, ' ')}`}
                 </span>
               </button>
             ) : null}

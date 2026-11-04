@@ -5,8 +5,9 @@ import { fetchMeProfile } from '../../hooks/memberProfileApi';
 import { useAuth } from '../../context/AuthContext';
 import { isSignupProfileComplete } from '../../constants/userProfileOptions';
 import { accountRouteByRole, participantHostBookmarkRedirect } from '../../utils/authRouting';
-import { isPlatformAdmin } from '../../utils/roles';
+import { isConsumerProfilePath, isPlatformAdmin } from '../../utils/roles';
 import { isPublishingConsolePath, WELCOME_PATH } from '../../config/surfacePaths';
+import { ADMIN_ACCOUNT_PATH } from '../../config/adminSurfacePaths';
 import { buildSignInRedirect } from '../../utils/authReturnContext';
 import type { ReactElement } from 'react';
 import {
@@ -56,6 +57,10 @@ export const ProtectedRoute = ({ roles, children }: ProtectedRouteProps) => {
         state={{ from: location.pathname + location.search }}
       />
     );
+  }
+
+  if (isPlatformAdmin(user.role) && isConsumerProfilePath(location.pathname)) {
+    return <Navigate to={ADMIN_ACCOUNT_PATH} replace />;
   }
 
   if (roles && !roles.includes(user.role)) {

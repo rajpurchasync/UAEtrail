@@ -43,7 +43,7 @@
     "dev:fast": "node scripts/run-project.mjs --fast",
     "deploy:stack": "node scripts/run-project.mjs --docker",
     "build": "vite build",
-    "build:api": "npm --workspace @uaetrail/api run build",
+    "build:api": "npm run build --workspace @uaetrail/shared-types && npm --workspace @uaetrail/api run build",
     "lint": "eslint . --max-warnings 0",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit -p tsconfig.app.json",

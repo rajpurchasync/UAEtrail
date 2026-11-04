@@ -1,4 +1,5 @@
 import { Component, ErrorInfo, ReactNode } from 'react';
+import { AppButton } from './mobile/AppButton';
 import { reportClientError } from '../lib/clientErrorReporting';
 
 interface Props {
@@ -54,19 +55,13 @@ export class ErrorBoundary extends Component<Props, State> {
                 </pre>
               </details>
             )}
-            <div className="flex gap-3 justify-center">
-              <button
-                onClick={this.handleReset}
-                className="px-5 py-2.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-medium"
-              >
+            <div className="flex gap-3 justify-center flex-wrap">
+              <AppButton variant="primary" onClick={this.handleReset}>
                 Try Again
-              </button>
-              <button
-                onClick={() => window.location.reload()}
-                className="px-5 py-2.5 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium"
-              >
+              </AppButton>
+              <AppButton variant="secondary" onClick={() => window.location.reload()}>
                 Reload Page
-              </button>
+              </AppButton>
             </div>
           </div>
         </div>

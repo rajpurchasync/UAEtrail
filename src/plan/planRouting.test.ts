@@ -4,12 +4,23 @@ import {
   planAvailabilityPath,
   planHostedSchedulePath,
   planJoinedSchedulePath,
+  planMemberNavPath,
+  isPlanHostingFilterRoute,
+  isPlanMemberNavActive,
   planUpcomingPath,
   planWishlistTabPath,
   planPlansRolePath,
 } from './planRouting';
 
 describe('planRouting', () => {
+  it('splits member vs organiser nav targets', () => {
+    expect(planMemberNavPath(false)).toBe('/plan');
+    expect(planMemberNavPath(true)).toBe('/plan?view=plans&filter=joined');
+    expect(isPlanHostingFilterRoute('/plan', '?view=plans&filter=hosting')).toBe(true);
+    expect(isPlanMemberNavActive('/plan', '?view=plans&filter=hosting', true)).toBe(false);
+    expect(isPlanMemberNavActive('/plan', '?view=plans&filter=joined', true)).toBe(true);
+  });
+
   it('builds canonical upcoming and wishlist paths', () => {
     expect(planUpcomingPath('hosting')).toBe('/plan?view=plans&filter=hosting');
     expect(planUpcomingPath('joined')).toBe('/plan?view=plans&filter=joined');

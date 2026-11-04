@@ -3,8 +3,9 @@ import { createAuditLog } from '../lib/audit.js';
 import { ApiError } from '../lib/api-error.js';
 import { findAdminTenantById, updateAdminTenantStatus } from '../lib/admin-store.js';
 import { PUBLISHING_OVERVIEW_PATH, PRO_MEMBERSHIP_PATH } from '../lib/member-routes.js';
-import { findTenantById, setTenantDiscoverFeatured } from '../lib/tenant-store.js';
+import { findTenantById, setTenantDiscoverFeatured, setTenantHiddenFromPublic } from '../lib/tenant-store.js';
 import { notifyUserAdminAction } from './admin-notifications.js';
+import { scheduleExploreMapCacheInvalidation } from '../lib/explore-map-cache-schedule.js';
 
 export const setAdminTenantStatus = async (input: {
   actorId: string;
@@ -46,6 +47,30 @@ export const setAdminTenantStatus = async (input: {
   });
 
   return { message: `Tenant ${input.status === 'active' ? 'activated' : 'suspended'}.` };
+};
+
+export const setAdminTenantHiddenFromPublic = async (input: {
+  actorId: string;
+  tenantId: string;
+  hidden: boolean;
+}) => {
+  const updated = await setTenantHiddenFromPublic(input.tenantId, input.hidden);
+  if (!updated) {
+    throw new ApiError(404, 'tenant_not_found', 'Tenant not found.');
+  }
+
+  await createAuditLog({
+    actorId: input.actorId,
+    action: input.hidden ? 'tenant.hide' : 'tenant.unhide',
+    entityType: 'tenant',
+    entityId: input.tenantId,
+  });
+  scheduleExploreMapCacheInvalidation('admin-tenant.hide_from_public');
+
+  return {
+    message: input.hidden ? 'Publishing profile hidden from public surfaces.' : 'Publishing profile is visible again.',
+    hiddenFromPublic: updated.hiddenFromPublic ?? false,
+  };
 };
 
 export const setAdminTenantDiscoverFeatured = async (input: {

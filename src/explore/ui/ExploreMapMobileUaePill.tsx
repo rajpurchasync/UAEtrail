@@ -2,6 +2,7 @@ import { createPortal } from 'react-dom';
 import { useId, useState } from 'react';
 import { Check } from 'lucide-react';
 import { getVenueStateFilterOptions } from '../../config/regions';
+import { UiTooltip } from '../../components/ui/UiTooltip';
 import { UaeFlagIcon } from '../../components/ui/UaeFlagIcon';
 import { useExploreMapPillDropdown } from './exploreMapPillDropdown';
 
@@ -87,36 +88,45 @@ export const ExploreMapMobileUaePill = ({
         )
       : null;
 
+  const uaeLabel = active ? `UAE, ${venueRegions.length} emirates selected` : 'UAE emirates';
+  const trigger = (
+    <button
+      type="button"
+      onClick={(event) => {
+        event.stopPropagation();
+        const next = !open;
+        setOpen(next);
+        if (next) onOpen?.();
+      }}
+      className={`w-full ${pillClassName}`}
+      aria-expanded={open}
+      aria-haspopup="listbox"
+      aria-controls={panelId}
+      aria-label={uaeLabel}
+    >
+      {compact ? (
+        <UaeFlagIcon className="h-5 w-[1.875rem] shrink-0" aria-hidden />
+      ) : (
+        <>
+          <UaeFlagIcon />
+          <span>UAE</span>
+          {active ? (
+            <span className="text-sm font-bold leading-none">({venueRegions.length})</span>
+          ) : null}
+        </>
+      )}
+    </button>
+  );
+
   return (
     <div ref={anchorRef} className="relative flex min-w-0 flex-1 basis-0">
-      <button
-        type="button"
-        onClick={(event) => {
-          event.stopPropagation();
-          const next = !open;
-          setOpen(next);
-          if (next) onOpen?.();
-        }}
-        className={`w-full ${pillClassName}`}
-        aria-expanded={open}
-        aria-haspopup="listbox"
-        aria-controls={panelId}
-        aria-label={
-          active ? `UAE, ${venueRegions.length} emirates selected` : 'UAE emirates'
-        }
-      >
-        {compact ? (
-          <UaeFlagIcon className="h-5 w-[1.875rem] shrink-0" aria-hidden />
-        ) : (
-          <>
-            <UaeFlagIcon />
-            <span>UAE</span>
-            {active ? (
-              <span className="text-sm font-bold leading-none">({venueRegions.length})</span>
-            ) : null}
-          </>
-        )}
-      </button>
+      {compact ? (
+        <UiTooltip label={uaeLabel} className="flex min-w-0 flex-1">
+          {trigger}
+        </UiTooltip>
+      ) : (
+        trigger
+      )}
       {menu}
     </div>
   );

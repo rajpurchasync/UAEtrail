@@ -16,7 +16,7 @@ set "NODE_EXE=%NODE_INSTALL_DIR%\node.exe"
 
 call :ensure_node
 
-echo [1/6] Checking prerequisites...
+echo [1/4] Checking prerequisites...
 where node >nul 2>nul
 if errorlevel 1 (
   echo Node.js %NODE_MIN_VERSION% or newer not found after bootstrap.
@@ -29,43 +29,20 @@ if errorlevel 1 (
   exit /b 1
 )
 
-echo [2/6] Ensuring required environment defaults...
+echo [2/4] Ensuring dev-only secret defaults ^(see .env for ports and Mongo^)...
 if "%JWT_ACCESS_SECRET%"=="" set "JWT_ACCESS_SECRET=dev-access-secret-dev-access-secret"
 if "%JWT_REFRESH_SECRET%"=="" set "JWT_REFRESH_SECRET=dev-refresh-secret-dev-refresh-secret"
 if "%S3_ACCESS_KEY_ID%"=="" set "S3_ACCESS_KEY_ID=minioadmin"
 if "%S3_SECRET_ACCESS_KEY%"=="" set "S3_SECRET_ACCESS_KEY=minioadmin"
 if "%APP_BASE_URL%"=="" set "APP_BASE_URL=http://localhost"
 if "%APP_BASE_URLS%"=="" set "APP_BASE_URLS=http://localhost,http://localhost:5175"
-if "%API_BASE_URL%"=="" set "API_BASE_URL=http://localhost:4000"
 if "%VITE_API_BASE_URL%"=="" set "VITE_API_BASE_URL=/api"
-if "%FRONTEND_PORT%"=="" set "FRONTEND_PORT=5175"
 
-set "RUNTIME_ENV_FILE=%TEMP%\uaetrail-runtime-env.txt"
-if exist "%RUNTIME_ENV_FILE%" del "%RUNTIME_ENV_FILE%" >nul 2>nul
-
-echo [3/6] Verifying host versions and workspace dependencies...
+echo [3/4] Verifying host versions and workspace dependencies...
 node scripts\run-project-preflight.mjs
 if errorlevel 1 exit /b %errorlevel%
 
-echo [4/6] Resolving runtime environment...
-node scripts\resolve-runtime-env.mjs > "%RUNTIME_ENV_FILE%"
-if errorlevel 1 (
-  if exist "%RUNTIME_ENV_FILE%" del "%RUNTIME_ENV_FILE%" >nul 2>nul
-  exit /b 1
-)
-
-for /f "usebackq tokens=1,* delims==" %%A in ("%RUNTIME_ENV_FILE%") do set "%%A=%%B"
-if exist "%RUNTIME_ENV_FILE%" del "%RUNTIME_ENV_FILE%" >nul 2>nul
-
-echo Using %MONGODB_URI_SOURCE% for RUN_ENV=%RUN_ENV%.
-
-echo [5/6] Checking Docker engine status...
-docker info >nul 2>nul
-if errorlevel 1 (
-  echo Docker is not ready yet. The preflight will attempt install/start if possible.
-)
-
-echo [6/6] Starting project stack...
+echo [4/4] Starting project stack...
 node scripts\run-project.mjs %*
 exit /b %errorlevel%
 

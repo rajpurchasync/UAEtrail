@@ -6,7 +6,9 @@ import {
   exploreActivityDatePresetLabel,
   type ExploreActivityDatePreset,
 } from '../exploreActivityDateFilter';
+import { UiTooltip } from '../../components/ui/UiTooltip';
 import { EXPLORE_MAP_MOBILE_FILTER_CTA_ICON } from '../../config/exploreTheme';
+import { CalendarGlyph } from './exploreActionGlyphs';
 import { useExploreMapPillDropdown } from './exploreMapPillDropdown';
 
 type ExploreMapMobileAnydayPillProps = {
@@ -81,29 +83,41 @@ export const ExploreMapMobileAnydayPill = ({
         )
       : null;
 
+  const trigger = (
+    <button
+      type="button"
+      onClick={(event) => {
+        event.stopPropagation();
+        setOpen(!open);
+      }}
+      className={`w-full ${pillClassName}`}
+      aria-expanded={open}
+      aria-haspopup="listbox"
+      aria-controls={panelId}
+      aria-label={compact ? `When: ${label}` : undefined}
+    >
+      {compact ? (
+        <span className={EXPLORE_MAP_MOBILE_FILTER_CTA_ICON} aria-hidden>
+          <CalendarGlyph />
+        </span>
+      ) : (
+        <>
+          <CalendarGlyph className="text-base" />
+          {label}
+        </>
+      )}
+    </button>
+  );
+
   return (
     <div ref={anchorRef} className="relative flex min-w-0 flex-1 basis-0">
-      <button
-        type="button"
-        onClick={(event) => {
-          event.stopPropagation();
-          setOpen(!open);
-        }}
-        className={`w-full ${pillClassName}`}
-        aria-expanded={open}
-        aria-haspopup="listbox"
-        aria-controls={panelId}
-        aria-label={compact ? `When: ${label}` : undefined}
-      >
-        {compact ? (
-          <span className={EXPLORE_MAP_MOBILE_FILTER_CTA_ICON} aria-hidden>📅</span>
-        ) : (
-          <>
-            <span className="text-base leading-none" aria-hidden>📅</span>
-            {label}
-          </>
-        )}
-      </button>
+      {compact ? (
+        <UiTooltip label={`When: ${label}`} className="flex min-w-0 flex-1">
+          {trigger}
+        </UiTooltip>
+      ) : (
+        trigger
+      )}
       {menu}
     </div>
   );

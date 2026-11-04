@@ -56,3 +56,4 @@ tmp-osm-stats.txt
 android/keystore.properties
 android/*.keystore
 *.keystore
+.vercel

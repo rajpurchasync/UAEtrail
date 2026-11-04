@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 type ChatThreadHeaderBarProps = {
   onBack: () => void;
   backLabel: string;
-  /** Mobile-only back on direct threads; group threads always show back. */
+  /** Show back below lg only — desktop split pane keeps the inbox visible. */
   backVisibility?: 'always' | 'mobile-only';
   leading?: ReactNode;
   title: ReactNode;
@@ -26,8 +26,8 @@ export const ChatThreadHeaderBar = ({
 }: ChatThreadHeaderBarProps) => {
   const backClass =
     backVisibility === 'mobile-only'
-      ? 'md:hidden min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-600'
-      : 'flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-gray-600 hover:bg-gray-100';
+      ? 'flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg hover:bg-gray-100 text-gray-600 lg:hidden'
+      : 'flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-gray-600 hover:bg-gray-100 lg:min-h-8 lg:min-w-8';
 
   const titleBlock = (
     <>
@@ -40,7 +40,7 @@ export const ChatThreadHeaderBar = ({
   );
 
   return (
-    <div className="chat-thread-header flex shrink-0 items-center gap-2 border-b bg-white p-2 shadow-sm pt-safe-plus-2 md:gap-3 md:px-3 md:pt-3">
+    <div className="chat-thread-header flex shrink-0 items-center gap-2 border-b bg-white p-2 shadow-sm pt-safe-plus-2 md:gap-2 md:px-2 md:py-1.5">
       <button type="button" onClick={onBack} className={backClass} aria-label={backLabel}>
         <ArrowLeft className="h-5 w-5" />
       </button>

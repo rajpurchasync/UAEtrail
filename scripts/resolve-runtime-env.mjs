@@ -73,12 +73,31 @@ export const validateMongoUri = (mongoUri) => {
   }
 };
 
+/** Keys that `.env` should win over stale shell exports (launchers, persistent terminals). */
+export const ENV_FILE_PRIORITY_KEYS = new Set([
+  'RUN_ENV',
+  'MONGODB_URI_TEST',
+  'MONGODB_URI_STAGING',
+  'MONGODB_URI_PROD',
+  'FRONTEND_PORT',
+  'API_PORT'
+]);
+
 export const resolveRuntimeEnv = ({
   baseEnv = process.env,
-  envFilePath = path.resolve(process.cwd(), '.env')
+  envFilePath = path.resolve(process.cwd(), '.env'),
+  preferEnvFileKeys = false
 } = {}) => {
   const fileEnv = parseEnvFile(envFilePath);
-  const getEnv = (key) => baseEnv[key] ?? fileEnv[key] ?? '';
+  const getEnv = (key) => {
+    if (preferEnvFileKeys && ENV_FILE_PRIORITY_KEYS.has(key)) {
+      const fromFile = fileEnv[key];
+      if (fromFile !== undefined && String(fromFile).trim() !== '') {
+        return fromFile;
+      }
+    }
+    return baseEnv[key] ?? fileEnv[key] ?? '';
+  };
 
   const rawRunEnv = (getEnv('RUN_ENV') || 'test').toLowerCase();
   const normalizedRunEnv = rawRunEnv === 'local' ? 'test' : rawRunEnv;

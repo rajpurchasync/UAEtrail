@@ -25,13 +25,15 @@ import {
   updateAdminFacility,
   updateAdminPlace,
 } from '../../hooks/adminConsoleApi';
-import { AdminTablePager } from '../../components/admin/AdminTablePager';
+import { AdminTablePager, DEFAULT_ADMIN_PAGE_SIZE, paginateRows, type AdminPageSize } from '../../components/admin/AdminTablePager';
+import { AdminIconButton } from '../../components/admin/AdminIconButton';
 import { DashboardLayout } from '../../components/layout';
 import { ADMIN_LINKS } from '../../constants';
+import { Check, Pencil, Power, Trash2 } from 'lucide-react';
 import { MapPinPicker } from '../../components/ui/MapPinPicker';
 import { ImageUpload } from '../../components/ui';
 import { AssetKeyUpload } from '../../components/ui/AssetKeyUpload';
-import { AppSelect, ADMIN_SELECT_CLASS } from '../../components/ui/AppSelect';
+import { AppSelect, ADMIN_INPUT_CLASS, ADMIN_SELECT_CLASS } from '../../components/ui/AppSelect';
 
 /* ─── Constants ──────────────────────────────────────────────────────────── */
 
@@ -41,7 +43,6 @@ const HIKING_ACCESSIBLE = ['4X4 required', 'Any cars', 'Bike'];
 const CAMPING_ACCESSIBLE = ['4X4 required', 'Any cars'];
 const TAG_OPTIONS = ['Child-free', 'Pet-friendly', 'Family-friendly', 'Solo-friendly', 'Wheelchair-accessible', 'Night-hiking', 'Sunrise spot', 'Sunset spot'];
 import { SUPPORTED_COUNTRIES, DEFAULT_COUNTRY, getRegionsForCountry, CountryCode } from '../../config/regions';
-import { ADMIN_TABLE_PAGE_SIZE } from '../../api/listAllPages';
 import { ADMIN_AREAS_PATH } from '../../config/adminSurfacePaths';
 import { VENUE_TYPE_LABELS } from '../../config/activityTypes';
 const SEASONS = ['winter', 'spring', 'summer', 'autumn', 'year-round'];
@@ -98,7 +99,7 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
   const filterAreaId = searchParams.get('areaId')?.trim() || null;
   const [places, setPlaces] = useState<PlaceDTO[]>([]);
   const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(0);
+  const [pageSize, setPageSize] = useState<AdminPageSize>(DEFAULT_ADMIN_PAGE_SIZE);
   const [form, setForm] = useState<Partial<PlaceDTO>>(emptyForm);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -116,14 +117,22 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
   const loadPlaces = async (isActive: () => boolean = () => true) => {
     setLoading(true);
     try {
-      const catalog =
-        catalogSegment === 'facility'
-          ? await fetchAdminFacilitiesCatalog(page, ADMIN_TABLE_PAGE_SIZE)
-          : await fetchAdminPlacesCatalog(page, ADMIN_TABLE_PAGE_SIZE);
-      if (!isActive()) return;
+      const all: PlaceDTO[] = [];
+      let nextPage = 1;
+      let catalogTotal = Number.POSITIVE_INFINITY;
+      while (all.length < catalogTotal && nextPage <= 50) {
+        const catalog =
+          catalogSegment === 'facility'
+            ? await fetchAdminFacilitiesCatalog(nextPage, 100)
+            : await fetchAdminPlacesCatalog(nextPage, 100);
+        if (!isActive()) return;
+        all.push(...catalog.items);
+        catalogTotal = catalog.total;
+        if (catalog.items.length === 0) break;
+        nextPage += 1;
+      }
       setError(null);
-      setPlaces(catalog.items);
-      setTotal(catalog.total);
+      setPlaces(all);
     } catch (err) {
       if (!isActive()) return;
       setError(err instanceof Error ? err.message : 'Failed to load places');
@@ -134,9 +143,9 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
 
   useEffect(() => {
     setPage(1);
-  }, [catalogSegment]);
+  }, [catalogSegment, activeTab, search, filterAreaId]);
 
-  useSafeAsyncEffect((isActive) => loadPlaces(isActive), [catalogSegment, page]);
+  useSafeAsyncEffect((isActive) => loadPlaces(isActive), [catalogSegment]);
 
   useSafeAsyncEffect(async (isActive) => {
     try {
@@ -279,6 +288,7 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
       return l.activityType === activeTab;
     })
     .filter((l) => !search || l.name.toLowerCase().includes(search.toLowerCase()) || l.region.toLowerCase().includes(search.toLowerCase()));
+  const pagedPlaces = paginateRows(filtered, page, pageSize);
 
   const areaNameById = useMemo(
     () => new Map(adminAreas.map((area) => [area.id, area.name])),
@@ -376,8 +386,13 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
             ) : null}
           </div>
           <div className="flex items-center gap-3">
-            <input type="text" placeholder="Search name or region..." value={search} onChange={(e) => setSearch(e.target.value)}
-              className="border rounded-lg px-3 py-1.5 text-sm w-52" />
+            <input
+              type="text"
+              placeholder="Search name or region..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className={`${ADMIN_INPUT_CLASS} w-52`}
+            />
             <button onClick={openCreate} className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 text-sm font-medium">
               {catalogSegment === 'facility' ? '+ Add facility' : '+ Add Place'}
             </button>
@@ -406,8 +421,8 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
                 </td></tr>
               ) : filtered.length === 0 ? (
                 <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-500">No places found</td></tr>
-              ) : filtered.map((loc) => (
-                <tr key={loc.id} className={`border-t hover:bg-gray-50 cursor-pointer ${loc.status === 'draft' ? 'bg-amber-50/40' : ''}`}
+              ) : pagedPlaces.map((loc) => (
+                <tr key={loc.id} className="border-t hover:bg-gray-50 cursor-pointer"
                   onClick={() => setPreviewLoc(loc)}>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
@@ -455,17 +470,29 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
                   <td className="px-4 py-3">{statusBadge(loc.status)}</td>
                   <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                     <div className="flex gap-1.5 flex-wrap">
-                      <button onClick={() => openEdit(loc)} className="px-2 py-1 rounded bg-blue-100 text-blue-800 hover:bg-blue-200 text-xs">Edit</button>
+                      <AdminIconButton label="Edit" icon={Pencil} onClick={() => openEdit(loc)} />
                       {loc.status === 'draft' && (
-                        <button onClick={() => setConfirmAction({ type: 'publish', loc })} className="px-2 py-1 rounded bg-emerald-100 text-emerald-800 hover:bg-emerald-200 text-xs">Approve</button>
+                        <AdminIconButton
+                          label="Approve"
+                          icon={Check}
+                          tone="emerald"
+                          onClick={() => setConfirmAction({ type: 'publish', loc })}
+                        />
                       )}
                       {loc.status !== 'draft' && (
-                        <button onClick={() => setConfirmAction({ type: 'status', loc })}
-                          className={`px-2 py-1 rounded text-xs ${loc.status === 'active' ? 'bg-gray-100 text-gray-700 hover:bg-gray-200' : 'bg-green-100 text-green-800 hover:bg-green-200'}`}>
-                          {loc.status === 'active' ? 'Deactivate' : 'Activate'}
-                        </button>
+                        <AdminIconButton
+                          label={loc.status === 'active' ? 'Deactivate' : 'Activate'}
+                          icon={Power}
+                          tone={loc.status === 'active' ? 'gray' : 'green'}
+                          onClick={() => setConfirmAction({ type: 'status', loc })}
+                        />
                       )}
-                      <button onClick={() => setConfirmAction({ type: 'delete', loc })} className="px-2 py-1 rounded bg-red-100 text-red-800 hover:bg-red-200 text-xs">Delete</button>
+                      <AdminIconButton
+                        label="Delete"
+                        icon={Trash2}
+                        tone="red"
+                        onClick={() => setConfirmAction({ type: 'delete', loc })}
+                      />
                     </div>
                   </td>
                 </tr>
@@ -475,13 +502,16 @@ export const Places = ({ catalogSegment = 'outdoor' }: PlacesProps) => {
         </div>
         <AdminTablePager
           page={page}
-          pageSize={ADMIN_TABLE_PAGE_SIZE}
-          total={total}
+          pageSize={pageSize}
+          total={filtered.length}
           onPage={setPage}
+          onPageSize={(size) => {
+            setPageSize(size);
+            setPage(1);
+          }}
         />
         <p className="text-xs text-gray-500">
-          Showing {filtered.length} on this page
-          {catalogSegment === 'facility' ? ' (facilities)' : ' (places)'}. Click a row to preview.
+          Click a row to preview{catalogSegment === 'facility' ? ' a facility' : ' a place'}.
         </p>
       </div>
 

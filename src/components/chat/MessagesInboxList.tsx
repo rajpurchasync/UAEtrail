@@ -18,10 +18,10 @@ interface MessagesInboxListProps {
 
 const GroupAvatar = ({ url }: { url?: string }) => {
   if (url) {
-    return <img src={url} alt="" className="h-12 w-12 shrink-0 rounded-full object-cover" />;
+    return <img src={url} alt="" className="h-10 w-10 shrink-0 rounded-full object-cover" />;
   }
   return (
-    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-sky-100 text-sky-700">
+    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-sky-100 text-sky-700">
       <Users className="h-5 w-5" aria-hidden />
     </div>
   );
@@ -54,12 +54,12 @@ const ThreadRow = ({
       type="button"
       onClick={() => (isDirect ? onSelectDirect(thread.id) : onSelectGroup(thread.id))}
       data-nav-focus={`chat-thread-${thread.id}`}
-      className={`chat-row flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-neutral-50 ${
+      className={`chat-row flex w-full items-center gap-2.5 px-3 py-2 text-left transition-colors hover:bg-neutral-50 lg:gap-2 lg:py-1.5 ${
         isSelected ? 'chat-row-selected bg-emerald-50' : ''
       }`}
     >
       {isDirect ? (
-        <MessageAvatar name={thread.title} url={thread.avatarUrl} size="lg" />
+        <MessageAvatar name={thread.title} url={thread.avatarUrl} size="md" />
       ) : (
         <GroupAvatar url={thread.kind === 'user-group' ? thread.avatarUrl : undefined} />
       )}

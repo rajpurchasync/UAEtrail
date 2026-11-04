@@ -1,3 +1,6 @@
+/** Default shown when hosts enable a minimum age on limited join options. */
+export const DEFAULT_PARTICIPANT_MIN_AGE = 16;
+
 /** Min age field — avoid `Number(x) || 0` so users can clear and re-type (e.g. 18). */
 export const formatParticipantMinAgeFieldValue = (ageMin: number): string =>
   ageMin > 0 ? String(ageMin) : '';

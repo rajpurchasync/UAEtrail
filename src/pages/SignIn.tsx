@@ -7,6 +7,7 @@ import { fetchMemberStatus } from '../hooks/memberStatusApi';
 import { GoogleAuthSection } from '../components/auth/GoogleAuthSection';
 import { useAuth } from '../context/AuthContext';
 import { accountRouteByRole, defaultRouteByRole } from '../utils/authRouting';
+import { isPlatformAdmin } from '../utils/roles';
 import {
   navigateAuthBack,
   navigateAuthClose,
@@ -81,7 +82,7 @@ export const SignIn = () => {
 
     const profile = await fetchMeProfile().catch(() => null);
     const postAuthDefault =
-      signedInUser.role === 'participant'
+      signedInUser.role === 'participant' || isPlatformAdmin(signedInUser.role)
         ? defaultRouteByRole(signedInUser.role)
         : accountRouteByRole(signedInUser.role);
     const welcomeRedirectTo = resolvePostAuthReturnPath(from, signedInUser.role) ?? postAuthDefault;
@@ -107,7 +108,7 @@ export const SignIn = () => {
     }
 
     navigate(
-      signedInUser.role === 'participant'
+      signedInUser.role === 'participant' || isPlatformAdmin(signedInUser.role)
         ? defaultRouteByRole(signedInUser.role)
         : accountRouteByRole(signedInUser.role),
       { replace: true }

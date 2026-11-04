@@ -160,7 +160,9 @@ export const ProfileConsumerHub = ({
 
   return (
 
-    <div className="space-y-3 pb-nav-safe animate-fade-up">
+    <div className="space-y-3 pb-nav-safe animate-fade-up lg:grid lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start lg:gap-6 lg:space-y-0">
+
+      <div className="min-w-0 space-y-3">
 
       <ProfileHubIdentityCard
 
@@ -198,7 +200,9 @@ export const ProfileConsumerHub = ({
 
 
 
-      <ProfileQuickLauncher items={launcherItems} />
+      <div className="lg:hidden">
+        <ProfileQuickLauncher items={launcherItems} />
+      </div>
 
 
 
@@ -234,7 +238,9 @@ export const ProfileConsumerHub = ({
 
       <ProfilePlanGoalsTeaser goalsCount={goalsCount} />
 
+      </div>
 
+      <div className="space-y-3">
 
       <SettingsMenuGroup>
         <SettingsMenuRow
@@ -274,6 +280,8 @@ export const ProfileConsumerHub = ({
         <SettingsMenuRow label="Sign out" icon={LogOut} destructive onClick={onSignOut} />
 
       </SettingsMenuGroup>
+
+      </div>
 
     </div>
 

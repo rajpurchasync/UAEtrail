@@ -8,6 +8,7 @@ import {
   ADMIN_FACILITIES_PATH,
   ADMIN_OVERVIEW_PATH,
   ADMIN_SETTINGS_PATH,
+  ADMIN_ACCOUNT_PATH,
   ADMIN_USERS_PATH,
 } from '../config/adminSurfacePaths';
 import {
@@ -48,9 +49,9 @@ export const PUBLISHING_CONSOLE_LINKS = [
 
 export const ADMIN_LINKS = [
   { to: ADMIN_OVERVIEW_PATH, label: 'Overview' },
+  { to: ADMIN_ACTIVITIES_PATH, label: 'Activities' },
   { to: ADMIN_AREAS_PATH, label: 'Areas' },
   { to: ADMIN_PLACES_PATH, label: 'Places' },
-  { to: ADMIN_ACTIVITIES_PATH, label: 'Activities' },
   { to: ADMIN_FACILITIES_PATH, label: 'Facilities' },
   { to: ADMIN_USERS_PATH, label: 'Users & Members' },
   { to: ADMIN_HOSTS_PATH, label: 'Operators' },
@@ -58,6 +59,7 @@ export const ADMIN_LINKS = [
   { to: ADMIN_REPORTS_PATH, label: 'Reports' },
   { to: ADMIN_AUDIT_LOG_PATH, label: 'Audit Log' },
   { to: ADMIN_SETTINGS_PATH, label: 'Broadcast' },
+  { to: ADMIN_ACCOUNT_PATH, label: 'Account' },
 ];
 
 export const COUNTRIES = [

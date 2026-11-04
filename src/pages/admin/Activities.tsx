@@ -1,9 +1,8 @@
-import { useState, Fragment } from 'react';
+import { useEffect, useMemo, useState, Fragment } from 'react';
 import { useSafeAsyncEffect } from '../../hooks/useSafeAsyncEffect';
 import { useNavigate } from 'react-router-dom';
 import { ActivityDTO, LocationDTO } from '@uaetrail/shared-types';
-import { ADMIN_TABLE_PAGE_SIZE } from '../../api/listAllPages';
-import { AdminTablePager } from '../../components/admin/AdminTablePager';
+import { AdminTablePager, DEFAULT_ADMIN_PAGE_SIZE, paginateRows, type AdminPageSize } from '../../components/admin/AdminTablePager';
 import {
   fetchAdminActivityEngagement,
   fetchAdminModerationActivities,
@@ -33,6 +32,9 @@ import {
   resolveActivityTitle,
 } from '../../utils/activityIdentity';
 import { navigateToHostFromExistingActivity } from '../../explore/navigateHostFromExistingActivity';
+import { AppSelect, ADMIN_FILTER_SELECT_CLASS, ADMIN_INPUT_CLASS } from '../../components/ui/AppSelect';
+import { ACTIVITY_TYPE_LABELS, SCHEDULED_ACTIVITY_TYPES } from '../../config/activityTypes';
+import { formatAdminDate } from '../../utils/formatAdminDate';
 
 type Tab = 'active' | 'past';
 
@@ -40,12 +42,19 @@ export const Activities = () => {
   const navigate = useNavigate();
   const [events, setEvents] = useState<ActivityDTO[]>([]);
   const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(0);
+  const [pageSize, setPageSize] = useState<AdminPageSize>(DEFAULT_ADMIN_PAGE_SIZE);
   const [previewVenue, setPreviewVenue] = useState<LocationDTO | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<Tab>('active');
   const [search, setSearch] = useState('');
+  const [typeFilter, setTypeFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+  const [hostFilter, setHostFilter] = useState('');
+  const [areaFilter, setAreaFilter] = useState('');
+  const [placeFilter, setPlaceFilter] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [engagementByActivityId, setEngagementByActivityId] = useState<
     Record<
@@ -80,11 +89,19 @@ export const Activities = () => {
   const loadEvents = async (isActive: () => boolean = () => true) => {
     setLoading(true);
     try {
-      const list = await fetchAdminModerationActivities(page, ADMIN_TABLE_PAGE_SIZE);
-      if (!isActive()) return;
+      const all: ActivityDTO[] = [];
+      let nextPage = 1;
+      let catalogTotal = Number.POSITIVE_INFINITY;
+      while (all.length < catalogTotal && nextPage <= 50) {
+        const list = await fetchAdminModerationActivities(nextPage, 100);
+        if (!isActive()) return;
+        all.push(...list.items);
+        catalogTotal = list.total;
+        if (list.items.length === 0) break;
+        nextPage += 1;
+      }
       setError(null);
-      setEvents(list.items);
-      setTotal(list.total);
+      setEvents(all);
     } catch (err) {
       if (!isActive()) return;
       setError(err instanceof Error ? err.message : 'Could not load events');
@@ -95,7 +112,7 @@ export const Activities = () => {
 
   useSafeAsyncEffect(async (isActive) => {
     await loadEvents(isActive);
-  }, [page]);
+  }, []);
 
   useSafeAsyncEffect(async (isActive) => {
     if (!previewActivity?.locationId) {
@@ -159,17 +176,63 @@ export const Activities = () => {
   const pastEvents = events.filter((e) => e.date < now || e.status === 'cancelled').sort(sortByLatestDate);
   const displayed = tab === 'active' ? activeEvents : pastEvents;
 
-  const filtered = displayed.filter((e) => {
-    if (!search) return true;
-    const q = search.toLowerCase();
-    return (
-      (e.title ?? '').toLowerCase().includes(q) ||
-      e.locationName.toLowerCase().includes(q) ||
-      (e.region ?? '').toLowerCase().includes(q) ||
-      (e.tenantName ?? '').toLowerCase().includes(q) ||
-      (e.hostName ?? '').toLowerCase().includes(q)
+  const includesCi = (value: string | null | undefined, query: string) =>
+    (value ?? '').toLowerCase().includes(query.toLowerCase());
+
+  const areaOptions = useMemo(() => {
+    const values = [...new Set(events.map((e) => e.region?.trim()).filter(Boolean) as string[])].sort((a, b) =>
+      a.localeCompare(b)
     );
+    return values.map((value) => ({ value, label: value }));
+  }, [events]);
+
+  const placeOptions = useMemo(() => {
+    const values = [...new Set(events.map((e) => e.locationName?.trim()).filter(Boolean) as string[])].sort((a, b) =>
+      a.localeCompare(b)
+    );
+    return values.map((value) => ({ value, label: value }));
+  }, [events]);
+
+  const hostOptions = useMemo(() => {
+    const values = [
+      ...new Set(
+        events
+          .map((e) => resolveActivityHostLabel(e) || e.tenantName?.trim() || '')
+          .filter(Boolean)
+      ),
+    ].sort((a, b) => a.localeCompare(b));
+    return values.map((value) => ({ value, label: value }));
+  }, [events]);
+
+  const filtered = displayed.filter((e) => {
+    if (search) {
+      const q = search.toLowerCase();
+      const matchesSearch =
+        includesCi(e.title, q) ||
+        includesCi(e.locationName, q) ||
+        includesCi(e.region, q) ||
+        includesCi(e.tenantName, q) ||
+        includesCi(e.hostName, q) ||
+        includesCi(e.createdByName, q) ||
+        includesCi(formatActivityType(e.activityType), q);
+      if (!matchesSearch) return false;
+    }
+    if (typeFilter && e.activityType !== typeFilter) return false;
+    if (statusFilter && e.status !== statusFilter) return false;
+    if (dateFrom && e.date < dateFrom) return false;
+    if (dateTo && e.date > dateTo) return false;
+    if (hostFilter) {
+      const host = resolveActivityHostLabel(e) || e.tenantName || '';
+      if (!includesCi(host, hostFilter)) return false;
+    }
+    if (areaFilter && !includesCi(e.region, areaFilter)) return false;
+    if (placeFilter && !includesCi(e.locationName, placeFilter)) return false;
+    return true;
   });
+
+  useEffect(() => {
+    setPage(1);
+  }, [tab, search, typeFilter, statusFilter, dateFrom, dateTo, hostFilter, areaFilter, placeFilter]);
 
   const statusBadge = (status: string) => {
     const colors: Record<string, string> = {
@@ -279,8 +342,6 @@ export const Activities = () => {
             </button>
           </div>
           <div className="flex items-center gap-3">
-            <input type="text" placeholder="Search activities..." value={search} onChange={(e) => setSearch(e.target.value)}
-              className="border rounded-lg px-3 py-1.5 text-sm w-56" />
             <Link
               to={ADMIN_PLACES_PATH}
               className="px-4 py-2 border border-gray-300 text-gray-800 rounded-lg hover:bg-gray-50 text-sm font-medium"
@@ -293,6 +354,75 @@ export const Activities = () => {
               + Add Activity
             </button>
           </div>
+        </div>
+
+        <div className="flex flex-wrap items-end gap-2">
+          <input
+            type="text"
+            placeholder="Search (case insensitive)..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className={`${ADMIN_INPUT_CLASS} w-56`}
+          />
+          <AppSelect
+            value={typeFilter}
+            onChange={setTypeFilter}
+            options={SCHEDULED_ACTIVITY_TYPES.map((value) => ({ value, label: ACTIVITY_TYPE_LABELS[value] }))}
+            placeholder="Type"
+            inputClassName={ADMIN_FILTER_SELECT_CLASS}
+            aria-label="Filter by type"
+          />
+          <input
+            type="date"
+            value={dateFrom}
+            onChange={(e) => setDateFrom(e.target.value)}
+            className={ADMIN_INPUT_CLASS}
+            aria-label="From date"
+          />
+          <input
+            type="date"
+            value={dateTo}
+            onChange={(e) => setDateTo(e.target.value)}
+            className={ADMIN_INPUT_CLASS}
+            aria-label="To date"
+          />
+          <AppSelect
+            value={statusFilter}
+            onChange={setStatusFilter}
+            options={[
+              { value: 'draft', label: 'Draft' },
+              { value: 'published', label: 'Published' },
+              { value: 'cancelled', label: 'Cancelled' },
+              { value: 'suspended', label: 'Suspended' },
+            ]}
+            placeholder="Status"
+            inputClassName={ADMIN_FILTER_SELECT_CLASS}
+            aria-label="Filter by status"
+          />
+          <AppSelect
+            value={hostFilter}
+            onChange={setHostFilter}
+            options={hostOptions}
+            placeholder="Host"
+            inputClassName={ADMIN_FILTER_SELECT_CLASS}
+            aria-label="Filter by host"
+          />
+          <AppSelect
+            value={areaFilter}
+            onChange={setAreaFilter}
+            options={areaOptions}
+            placeholder="Area"
+            inputClassName={ADMIN_FILTER_SELECT_CLASS}
+            aria-label="Filter by area"
+          />
+          <AppSelect
+            value={placeFilter}
+            onChange={setPlaceFilter}
+            options={placeOptions}
+            placeholder="Place"
+            inputClassName={ADMIN_FILTER_SELECT_CLASS}
+            aria-label="Filter by place"
+          />
         </div>
 
         {error && <p className="text-red-600 text-sm">{error}</p>}
@@ -322,7 +452,7 @@ export const Activities = () => {
                 <tr><td colSpan={9} className="px-4 py-8 text-center text-gray-500">
                   {tab === 'active' ? 'No active events' : 'No past events'}
                 </td></tr>
-              ) : filtered.map((event) => (
+              ) : paginateRows(filtered, page, pageSize).map((event) => (
                 <Fragment key={event.id}>
                   <tr
                     className="border-t hover:bg-gray-50 cursor-pointer"
@@ -347,7 +477,7 @@ export const Activities = () => {
                     <td className="px-4 py-3">{resolveActivityHostLabel(event)}</td>
                     <td className="px-4 py-3">{resolveActivityLocationState(event)}</td>
                     <td className="px-4 py-3 whitespace-nowrap">
-                      <p className="text-gray-900">{event.date}</p>
+                      <p className="text-gray-900">{formatAdminDate(event.date)}</p>
                       <p className="text-xs text-gray-500">{event.time}</p>
                     </td>
                     <td className="px-4 py-3 text-center text-gray-900">{formatActivityCapacity(event)}</td>
@@ -475,8 +605,16 @@ export const Activities = () => {
             </tbody>
           </table>
         </div>
-        <AdminTablePager page={page} pageSize={ADMIN_TABLE_PAGE_SIZE} total={total} onPage={setPage} />
-        <p className="text-xs text-gray-500">Showing {filtered.length} of {displayed.length} {tab} events on this page</p>
+        <AdminTablePager
+          page={page}
+          pageSize={pageSize}
+          total={filtered.length}
+          onPage={setPage}
+          onPageSize={(size) => {
+            setPageSize(size);
+            setPage(1);
+          }}
+        />
       </div>
 
       <ActivityListPreview

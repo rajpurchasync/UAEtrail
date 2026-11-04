@@ -34,6 +34,19 @@ Internet
 
 All defined in `docker-compose.yml`.
 
+### Vercel (SPA + upstream API proxy)
+
+Vercel is supported for the **Vite frontend** plus lightweight **serverless proxies** under `api/` (same paths nginx forwards today: `/api/*`, `/health`, `/og/*`, `/sitemap-activities.xml`). The Express API, MongoDB, Redis, and MinIO still run on your VPS/Docker stack (or another host) — Vercel does not replace that backend.
+
+1. `npx vercel login` and `npx vercel link` (repo root).
+2. **Project env (Vercel dashboard):**
+   - `UAETRAIL_API_ORIGIN` — public origin of the running API stack **without** a trailing slash (e.g. `https://app.example.com`). Proxies preserve `/api` and cookies when the browser uses `VITE_API_BASE_URL=/api`.
+   - Build: `VITE_API_BASE_URL=/api`, `VITE_SITE_ORIGIN=https://<your-vercel-domain>`, plus optional `VITE_GOOGLE_CLIENT_ID`, `VITE_RUN_ENV`.
+3. On the **API server**, add each Vercel preview/production URL to `APP_BASE_URLS` (CORS + auth cookies).
+4. Deploy: `npx vercel --prod` (build runs on Vercel; config in `vercel.json`).
+
+Local CLI builds on Windows may fail with symlink `EPERM`; use remote Git deploy or run the CLI from WSL/macOS if that happens.
+
 ---
 
 ## Prerequisites

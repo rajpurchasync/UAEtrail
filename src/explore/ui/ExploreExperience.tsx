@@ -88,7 +88,7 @@ export const ExploreExperience = () => {
         setRideshareLinkParent={model.setRideshareLinkParent}
         setRideshareLinkSeeking={model.setRideshareLinkSeeking}
         exploreSearchModalOpen={model.exploreSearchModalOpen}
-        onCloseExploreSearchModal={() => model.setExploreSearchModalOpen(false)}
+        onCloseExploreSearchModal={model.closeExploreSearchModal}
         browseQuery={model.browse.query}
         onBrowseQueryChange={model.browse.setQuery}
         onExploreSearchCommit={model.handleExploreSearchCommit}

@@ -1,4 +1,4 @@
-import { useLayoutEffect, useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { CornerDownLeft, MoreHorizontal } from 'lucide-react';
 import type { GroupWallReactionKind } from '../../constants/groupReactions';
@@ -35,23 +35,29 @@ export const ChatMessageActionsSheet = ({
 }: ChatMessageActionsSheetProps) => {
   const [position, setPosition] = useState<{ top: number; left: number } | null>(null);
   const [fullPickerOpen, setFullPickerOpen] = useState(false);
+  const positionRef = useRef(position);
+  positionRef.current = position;
+  const hasReactions = reactions != null;
 
   useLayoutEffect(() => {
     if (!open) {
-      setFullPickerOpen(false);
+      setFullPickerOpen((current) => (current ? false : current));
     }
   }, [open]);
 
   useLayoutEffect(() => {
     if (!open || !anchor) {
-      setPosition(null);
+      if (positionRef.current !== null) {
+        positionRef.current = null;
+        setPosition(null);
+      }
       return;
     }
 
     const centerX = anchor.left + anchor.width / 2;
     const centerY = anchor.top + anchor.height / 2;
     const cardW = Math.min(300, window.innerWidth - 24);
-    const cardH = reactions ? (fullPickerOpen ? 220 : 120) : 72;
+    const cardH = hasReactions ? (fullPickerOpen ? 220 : 120) : 72;
     const margin = 12;
 
     let left = centerX;
@@ -61,8 +67,12 @@ export const ChatMessageActionsSheet = ({
     left = Math.min(Math.max(halfW + margin, left), window.innerWidth - halfW - margin);
     top = Math.min(Math.max(cardH / 2 + margin, top), window.innerHeight - cardH / 2 - margin);
 
-    setPosition({ top, left });
-  }, [open, anchor, reactions, fullPickerOpen]);
+    const current = positionRef.current;
+    if (current && current.top === top && current.left === left) return;
+    const next = { top, left };
+    positionRef.current = next;
+    setPosition(next);
+  }, [open, anchor, hasReactions, fullPickerOpen]);
 
   if (!open || !anchor || !position) return null;
 

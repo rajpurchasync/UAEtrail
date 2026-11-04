@@ -9,6 +9,7 @@ import {
   EXPLORE_Z,
   exploreSheetPanelClass,
 } from '../../config/exploreTheme';
+import { COMPOSE_DESKTOP_INSET_FIXED } from '../create/composeDesktopInset';
 import { MobileSheetDragHandle } from '../../components/mobile/MobileSheetDragHandle';
 import { useModalA11y } from '../../hooks/useModalA11y';
 import { MOBILE_BROWSE_SHEET_EXPAND_HINT } from '../../hooks/useMobileBrowseSheetImmersive';
@@ -137,8 +138,8 @@ export const ExploreResponsiveSheet = ({
 
   const composeScrollClass = mobileComposeChrome
     ? composeExpanded
-      ? `compose-sheet-scroll flex min-h-0 w-full min-w-0 flex-1 flex-col overflow-y-auto overscroll-contain px-5 lg:px-6 ${EXPLORE_COMPOSE_IMMERSIVE.scrollPadTop} ${EXPLORE_COMPOSE_IMMERSIVE.scrollPadBottom} lg:overflow-y-auto lg:flex-1 lg:pt-0`
-      : 'flex min-h-0 flex-1 flex-col overflow-y-auto lg:overflow-visible lg:flex-none'
+      ? `compose-sheet-scroll compose-form-shell flex min-h-0 w-full min-w-0 flex-1 flex-col overflow-y-auto overscroll-contain px-5 lg:px-6 ${EXPLORE_COMPOSE_IMMERSIVE.scrollPadTop} ${EXPLORE_COMPOSE_IMMERSIVE.scrollPadBottom} lg:overflow-y-auto lg:flex-1 lg:pt-0`
+      : 'compose-form-shell flex min-h-0 flex-1 flex-col overflow-y-auto lg:overflow-visible lg:flex-none'
     : pullDismissGestures && !panelClassName.includes('overflow-hidden')
       ? 'flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto overscroll-contain'
       : undefined;
@@ -162,7 +163,9 @@ export const ExploreResponsiveSheet = ({
 
   const sheetTree = (
     <div
-      className={`${overlayPosition} inset-0 ${effectiveZClass} flex ${shellClass} ${
+      className={`${
+        mobileComposeChrome ? COMPOSE_DESKTOP_INSET_FIXED : `${overlayPosition} inset-0`
+      } ${effectiveZClass} flex ${shellClass} ${
         composeExpanded ? 'bg-white' : EXPLORE_SHEET.scrim
       } ${overlayFixed || fullscreen || composeExpanded ? '' : 'lg:fixed'}`}
       style={sheetDragGestures ? overlayStyle : undefined}

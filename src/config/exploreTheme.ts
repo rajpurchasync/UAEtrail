@@ -147,26 +147,39 @@ export const EXPLORE_COMPOSE = {
 
 /** Create / host / seek / add wizard — shared step titles and choice cards. */
 export const EXPLORE_FLOW = {
-  stepTitle: 'text-xl font-bold leading-snug text-neutral-900',
+  stepTitle:
+    'text-xl font-bold leading-snug text-neutral-900 md:text-base md:font-semibold lg:text-base',
   /** Vertical rhythm around centered step / sheet main title */
-  stepHeaderShell: 'relative pt-3 pb-4 mb-3 lg:pt-4 lg:pb-5 lg:mb-4',
+  stepHeaderShell: 'relative pt-3 pb-4 mb-3 md:mb-2 md:pb-2 md:pt-2 lg:mb-2 lg:pb-2 lg:pt-2',
   stepTitleBlock: 'flex flex-col items-center px-8 py-1 text-center',
   stepBackRow: 'mt-2 flex justify-start border-t border-neutral-100/90 pt-2',
   stepBackButton:
     'inline-flex items-center gap-0.5 rounded-full py-1 pl-1 pr-2 text-xs font-semibold text-neutral-600 hover:bg-neutral-100',
-  choiceCardBase: 'w-full rounded-2xl border-2 px-4 py-3.5 text-left transition active:scale-[0.99]',
+  choiceCardBase:
+    'w-full rounded-2xl border-2 px-4 py-3.5 text-left transition active:scale-[0.99] md:rounded-md md:border md:px-3 md:py-2 md:active:scale-100',
   choiceCardActive: 'border-emerald-600 bg-emerald-50/50',
   choiceCardInactive: 'border-neutral-200 bg-white',
   choiceCardTitle: 'text-sm font-bold text-neutral-900',
   choiceCardSubtitle: 'mt-0.5 text-xs leading-snug text-neutral-500',
-  choiceGrid2: 'grid grid-cols-2 gap-3',
+  choiceGrid2: 'grid grid-cols-2 gap-3 md:gap-2',
   kindTile:
-    'flex min-h-[7.25rem] flex-col items-center justify-center gap-1.5 rounded-2xl border-2 px-3 py-4 text-center transition active:scale-[0.99] sm:px-4',
+    'flex min-h-[7.25rem] flex-col items-center justify-center gap-1.5 rounded-2xl border-2 px-3 py-4 text-center transition active:scale-[0.99] sm:px-4 lg:min-h-16 lg:gap-1 lg:py-2',
   kindTileActive: 'border-emerald-600 bg-emerald-50/60 shadow-sm',
   kindTileIdle: 'border-neutral-200 bg-white',
   menuRowTitle: 'text-base font-bold leading-snug text-neutral-900 lg:text-[17px]',
   mapPinCard:
-    'flex w-full items-center justify-between gap-3 rounded-2xl border-2 border-neutral-200 px-4 py-4 text-left transition hover:border-emerald-300 active:scale-[0.99]',
+    'flex w-full items-center justify-between gap-3 rounded-2xl border-2 border-neutral-200 px-4 py-4 text-left transition hover:border-emerald-300 active:scale-[0.99] md:rounded-md md:border md:px-3 md:py-2.5 md:active:scale-100',
+  /** Text fields in host / seek / add compose (large touch on mobile, form-like on md+). */
+  composeField:
+    'w-full rounded-2xl border border-neutral-200 px-4 py-3 text-base text-neutral-900 outline-none focus:border-emerald-400 md:rounded-md md:border-neutral-300 md:px-3 md:py-1.5 md:text-sm',
+  composeFieldEmoji:
+    'w-12 shrink-0 rounded-2xl border border-neutral-200 px-1 py-2 text-center text-lg outline-none focus:border-emerald-400 md:w-10 md:rounded-md md:py-1.5 md:text-base',
+  composeBtnSm:
+    'shrink-0 rounded-xl bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50 md:rounded-md md:px-2.5 md:py-1.5 md:text-xs',
+  composePrimary:
+    'w-full min-h-12 rounded-2xl px-4 py-3.5 text-base font-bold text-white shadow-lg disabled:cursor-not-allowed disabled:opacity-50 md:min-h-9 md:max-w-xs md:rounded-md md:py-2 md:text-sm md:font-semibold md:shadow-sm',
+  composeOptionRow:
+    'flex w-full items-center gap-3 rounded-2xl border-2 px-4 py-3.5 text-left md:rounded-md md:border md:px-3 md:py-2',
 } as const;
 
 /** Create intent — Host · Find crew · Add on map. */
@@ -210,29 +223,55 @@ export const EXPLORE_MAP_TOOLBAR_PILL_PADDING = 'py-2';
 /** Emoji glyphs in h-7 map toolbar segments (intent row + mobile filter CTA). 25% above `text-lg`. */
 export const EXPLORE_MAP_TOOLBAR_SEGMENT_ICON = 'text-[1.40625rem] leading-none';
 
+/** Layout for the map filter tray (frost fill applied separately so layer tints can win). */
+const EXPLORE_MAP_FILTER_TRAY_LAYOUT =
+  'flex w-full min-w-0 items-stretch gap-1 rounded-2xl p-1 shadow-[0_2px_12px_rgba(15,23,42,.12)] backdrop-blur-md';
+
 /** Mobile map — expanded activity/place filters (same outer height as intent toolbar: py-2 + h-7). */
 export const EXPLORE_MAP_MOBILE_FILTER_CTA_BAR =
-  `flex w-full min-w-0 items-stretch gap-1 rounded-2xl px-1.5 ${EXPLORE_MAP_TOOLBAR_PILL_PADDING} ring-1 ring-white/50 ${EXPLORE_MAP_CHROME_FROST}`;
+  `${EXPLORE_MAP_FILTER_TRAY_LAYOUT} ring-1 ring-white/50 bg-white/55`;
 
-/** Segment hit area — matches intent bar `h-7` (28px) inside `EXPLORE_MAP_TOOLBAR_PILL_PADDING`. */
-export const EXPLORE_MAP_MOBILE_FILTER_CTA_SEGMENT_HIT = 'h-7';
+/** Layer switcher fill — Events = brand emerald, Places = sky. `bar` matches the filter pills. */
+export const exploreMapLayerIconClass = (
+  selected: boolean,
+  layer: 'activity' | 'places',
+  layout: 'compact' | 'bar' = 'compact',
+) => {
+  const base =
+    layout === 'bar'
+      ? 'relative inline-flex h-full min-h-8 w-10 shrink-0 items-center justify-center self-stretch rounded-xl transition-colors duration-200 [-webkit-tap-highlight-color:transparent]'
+      : 'relative inline-flex h-7 w-11 shrink-0 items-center justify-center rounded-xl transition-colors duration-200 [-webkit-tap-highlight-color:transparent]';
+  if (!selected) return `${base} hover:bg-white/70 active:bg-white/85`;
+  return layer === 'places'
+    ? `${base} bg-sky-500/25 ring-1 ring-sky-400/50`
+    : `${base} bg-emerald-500/25 ring-1 ring-emerald-400/50`;
+};
 
-/** Same glyph size as `EXPLORE_MAP_TOOLBAR_SEGMENT_ICON`. */
-export const EXPLORE_MAP_MOBILE_FILTER_CTA_ICON = EXPLORE_MAP_TOOLBAR_SEGMENT_ICON;
+/** Filter tray tint matches the active Events / Places icon. */
+export const exploreMapLayerFilterBarClass = (layer: 'activity' | 'places') =>
+  layer === 'places'
+    ? `${EXPLORE_MAP_FILTER_TRAY_LAYOUT} bg-sky-50/80 ring-1 ring-sky-200/70`
+    : `${EXPLORE_MAP_FILTER_TRAY_LAYOUT} bg-emerald-50/80 ring-1 ring-emerald-200/70`;
+
+/** Segment fills the tray. 32px clears the WCAG 2.2 target-size minimum (24px). */
+export const EXPLORE_MAP_MOBILE_FILTER_CTA_SEGMENT_HIT = 'h-full min-h-8 self-stretch';
+
+/** Filter glyphs stay readable inside the shorter desktop bar. */
+export const EXPLORE_MAP_MOBILE_FILTER_CTA_ICON = 'text-[1.35rem] leading-none';
 
 /** “All” text-only segment in the same bar. */
 export const EXPLORE_MAP_MOBILE_FILTER_CTA_ALL_LABEL = 'text-xs font-bold leading-none';
 
 const MAP_MOBILE_FILTER_CTA_SEGMENT_BASE =
-  `flex min-w-0 flex-1 basis-0 ${EXPLORE_MAP_MOBILE_FILTER_CTA_SEGMENT_HIT} items-center justify-center rounded-lg px-1 text-center transition [-webkit-tap-highlight-color:transparent]`;
+  `flex min-w-0 flex-1 basis-0 ${EXPLORE_MAP_MOBILE_FILTER_CTA_SEGMENT_HIT} items-center justify-center rounded-xl px-1 text-center transition [-webkit-tap-highlight-color:transparent]`;
 
 export const exploreMapMobileFilterCtaSegmentClass = (
   selected: boolean,
   filterKey: MapFilterKey = 'all'
 ): string =>
   selected
-    ? `${MAP_MOBILE_FILTER_CTA_SEGMENT_BASE} ${exploreMapFilterActiveClass(filterKey)} border-0 shadow-sm ring-1 ring-black/10`
-    : `${MAP_MOBILE_FILTER_CTA_SEGMENT_BASE} text-neutral-800 hover:bg-white/40 active:bg-white/55`;
+    ? `${MAP_MOBILE_FILTER_CTA_SEGMENT_BASE} ${exploreMapFilterActiveClass(filterKey)} border-0 shadow-none ring-0`
+    : `${MAP_MOBILE_FILTER_CTA_SEGMENT_BASE} text-neutral-800 hover:bg-white/70 active:bg-white/85`;
 
 /** Mobile explore — offsets for floating map chrome below the solid header. */
 export const EXPLORE_MOBILE_MAP_CHROME = {
@@ -272,11 +311,16 @@ export const EXPLORE_Z = {
   composeDiscardConfirm: 'z-[6700]',
 } as const;
 
-/** Compact map peek card — centered overlay so it cannot grow into the header. */
+/**
+ * Map peek card — centered overlay on mobile so it cannot grow into the header;
+ * docked full-height panel on the left of the map on desktop (map stays interactive).
+ */
 export const EXPLORE_PEEK = {
   position:
-    `absolute inset-0 ${EXPLORE_Z.peekCard} flex items-center justify-center px-4 pt-3 pb-[calc(var(--explore-float-base)+0.5rem)] lg:p-6`,
-  inner: 'relative mx-auto flex max-h-full w-full max-w-md flex-col',
+    `absolute inset-0 ${EXPLORE_Z.peekCard} flex items-center justify-center px-4 pt-3 pb-[calc(var(--explore-float-base)+0.5rem)] lg:items-stretch lg:justify-start lg:p-3`,
+  scrim: 'bg-black/40 lg:bg-transparent',
+  inner:
+    'relative mx-auto flex max-h-full w-full max-w-md flex-col lg:mx-0 lg:h-full lg:w-[400px] lg:max-w-[calc(100%-1.5rem)] lg:[&_[data-pin-summary=card]]:h-full',
   shell:
     'flex min-h-0 max-h-full flex-col overflow-hidden rounded-2xl bg-white shadow-[0_8px_32px_rgba(15,23,42,.16)] ring-1 ring-black/5',
 } as const;

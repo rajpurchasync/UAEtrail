@@ -2,13 +2,13 @@ import { Plus, Search } from 'lucide-react';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 
 const actionButtonClass =
-  'inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-white shadow-sm active:scale-[0.98] min-h-[40px] min-w-[40px] max-h-11 max-w-11';
+  'inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-white shadow-sm active:scale-[0.98] min-h-[40px] min-w-[40px] max-h-11 max-w-11 lg:h-8 lg:w-8 lg:min-h-8 lg:min-w-8 lg:max-h-8 lg:max-w-8';
 
 const searchToggleClass =
   'touch-target-icon inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-neutral-200/90 bg-white text-neutral-600 shadow-sm active:scale-[0.98] md:hidden';
 
 const searchInputClass =
-  'w-full min-h-[44px] rounded-2xl border border-neutral-200 bg-white py-2 pl-10 pr-4 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20';
+  'w-full min-h-[44px] rounded-2xl border border-neutral-200 bg-white py-2 pl-10 pr-4 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 lg:min-h-8 lg:rounded-xl lg:py-1 lg:pl-9 lg:pr-3 lg:text-[13px]';
 
 interface TabPageSearchRowProps {
   value: string;

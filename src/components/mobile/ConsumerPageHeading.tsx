@@ -12,9 +12,9 @@ export const ConsumerPageHeading = ({
   subtitle,
   className = '',
 }: ConsumerPageHeadingProps) => (
-  <header className={`mb-5 animate-fade-up ${className}`}>
+  <div className={`mb-5 animate-fade-up ${className}`}>
     {eyebrow && <p className="consumer-eyebrow">{eyebrow}</p>}
     <h1 className="consumer-page-heading">{title}</h1>
     {subtitle && <p className="consumer-page-lead">{subtitle}</p>}
-  </header>
+  </div>
 );

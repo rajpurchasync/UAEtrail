@@ -350,6 +350,7 @@
         "src/pages/admin/AuditLog.tsx",
         "src/pages/admin/Reports.tsx",
         "src/pages/admin/Settings.tsx",
+        "src/pages/admin/Account.tsx",
         "src/pages/admin/Notifications.tsx",
         "src/components/layout/DashboardLayout.tsx",
         "src/constants/index.ts",

@@ -27,7 +27,7 @@ describe('hostingFlowEngine', () => {
     expect(hydrated.title).toBe('Sunrise');
   });
 
-  it('skips difficulty and about_trail when a registry venue is selected', () => {
+  it('skips about_trail when a registry venue is selected but keeps difficulty', () => {
     const options = {
       placeLabelSource: 'registry' as const,
       registryPlaceId: 'place-1',
@@ -41,6 +41,7 @@ describe('hostingFlowEngine', () => {
       'audience',
       'spots',
       'price',
+      'difficulty',
       'join_kit',
       'transportation',
       'meeting',

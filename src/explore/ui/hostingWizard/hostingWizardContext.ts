@@ -20,6 +20,9 @@ export type MeetingPointPickerIntent = 'search' | 'pin' | 'edit';
 
 export type HostingWizardContext = {
   step: HostingWizardFlowStep;
+  /** Combined form page on tablet/desktop; one id on mobile. */
+  widePageSteps: CreateFlowStepId[];
+  widePageTitle: string;
   stepTitle: string;
   kind: CreateActivityKind | null;
   draft: CreateActivityDraft;

@@ -1,10 +1,16 @@
+import { Navigate } from 'react-router-dom';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { ProfileVisibilitySection } from '../components/profile/ProfileVisibilitySection';
 import { ProfileMapPresenceSection } from '../components/profile/ProfileMapPresenceSection';
 import { useProfileSettingsBackChrome } from '../hooks/useProfileHubBackChrome';
+import { useMinWidthLg } from '../hooks/useMinWidthLg';
+import { desktopSettingsSectionPath } from '../config/desktopSettings';
 
 export const ProfileSettingsPrivacy = () => {
   const backChrome = useProfileSettingsBackChrome();
+  const isDesktop = useMinWidthLg();
+
+  if (isDesktop) return <Navigate to={desktopSettingsSectionPath('privacy')} replace />;
 
   return (
     <ConsumerShell layout="stack" title="Privacy" showJourney={false} back={backChrome}>

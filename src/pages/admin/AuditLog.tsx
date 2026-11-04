@@ -3,8 +3,11 @@ import { useSafeAsyncEffect } from '../../hooks/useSafeAsyncEffect';
 import type { AuditLogEntry } from '../../api/types';
 import { fetchAdminAuditLogs } from '../../hooks/adminConsoleApi';
 import { DashboardLayout } from '../../components/layout';
+import { AdminTablePager, DEFAULT_ADMIN_PAGE_SIZE, type AdminPageSize } from '../../components/admin/AdminTablePager';
 import { ADMIN_LINKS } from '../../constants';
-import { AppSelect, ADMIN_FILTER_SELECT_CLASS } from '../../components/ui/AppSelect';
+import { AppSelect, ADMIN_FILTER_SELECT_CLASS, ADMIN_INPUT_CLASS } from '../../components/ui/AppSelect';
+import { formatAdminDateTime } from '../../utils/formatAdminDate';
+import { useDisplayPreferences } from '../../preferences/useDisplayPreferences';
 
 const ACTION_FILTER_OPTIONS = [
   { value: 'create' as const, label: 'Create' },
@@ -33,23 +36,40 @@ const ENTITY_FILTER_OPTIONS = [
   { value: 'reply' as const, label: 'Reply (legacy feed)' },
 ];
 
+const datetimeLocalToIso = (value: string, endOfDay: boolean): string | undefined => {
+  if (!value) return undefined;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return undefined;
+  if (endOfDay && value.length === 10) date.setHours(23, 59, 59, 999);
+  return date.toISOString();
+};
+
 export const AuditLog = () => {
   const [logs, setLogs] = useState<AuditLogEntry[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState<AdminPageSize>(DEFAULT_ADMIN_PAGE_SIZE);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [actionFilter, setActionFilter] = useState('');
   const [entityFilter, setEntityFilter] = useState('');
+  const [actorQuery, setActorQuery] = useState('');
+  const [actorApplied, setActorApplied] = useState('');
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
+  const { clock } = useDisplayPreferences();
 
   const loadLogs = async (isActive: () => boolean = () => true) => {
     setLoading(true);
     try {
       const res = await fetchAdminAuditLogs({
         page,
-        pageSize: 25,
+        pageSize,
         action: actionFilter || undefined,
         entityType: entityFilter || undefined,
+        actor: actorApplied || undefined,
+        from: datetimeLocalToIso(fromDate, false),
+        to: datetimeLocalToIso(toDate, true),
       });
       if (!isActive()) return;
       setLogs(res.data);
@@ -62,7 +82,15 @@ export const AuditLog = () => {
     }
   };
 
-  useSafeAsyncEffect((isActive) => loadLogs(isActive), [page, actionFilter, entityFilter]);
+  useSafeAsyncEffect((isActive) => loadLogs(isActive), [
+    page,
+    pageSize,
+    actionFilter,
+    entityFilter,
+    actorApplied,
+    fromDate,
+    toDate,
+  ]);
 
   const actionBadge = (action: string) => {
     const colors: Record<string, string> = {
@@ -95,11 +123,52 @@ export const AuditLog = () => {
   };
 
   return (
-    <DashboardLayout title="Admin Dashboard" links={ADMIN_LINKS}>
+    <DashboardLayout title="Audit Log" links={ADMIN_LINKS}>
       <div className="space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-end justify-between gap-3">
           <h2 className="text-lg font-semibold text-gray-900">Audit Log</h2>
-          <div className="flex gap-3">
+          <form
+            className="flex flex-wrap items-end gap-2"
+            onSubmit={(event) => {
+              event.preventDefault();
+              setPage(1);
+              setActorApplied(actorQuery.trim());
+            }}
+          >
+            <label className="text-xs text-gray-500">
+              From
+              <input
+                type="date"
+                value={fromDate}
+                onChange={(e) => {
+                  setFromDate(e.target.value);
+                  setPage(1);
+                }}
+                className={`${ADMIN_INPUT_CLASS} mt-1 block`}
+              />
+            </label>
+            <label className="text-xs text-gray-500">
+              To
+              <input
+                type="date"
+                value={toDate}
+                onChange={(e) => {
+                  setToDate(e.target.value);
+                  setPage(1);
+                }}
+                className={`${ADMIN_INPUT_CLASS} mt-1 block`}
+              />
+            </label>
+            <label className="text-xs text-gray-500">
+              User ID / name / email / phone
+              <input
+                type="search"
+                value={actorQuery}
+                onChange={(e) => setActorQuery(e.target.value)}
+                placeholder="Case insensitive"
+                className={`${ADMIN_INPUT_CLASS} mt-1 block w-56`}
+              />
+            </label>
             <AppSelect
               value={actionFilter}
               onChange={(value) => {
@@ -122,7 +191,10 @@ export const AuditLog = () => {
               inputClassName={ADMIN_FILTER_SELECT_CLASS}
               aria-label="Filter by entity"
             />
-          </div>
+            <button type="submit" className="rounded-lg bg-emerald-600 px-3 py-1.5 text-sm text-white hover:bg-emerald-700">
+              Apply
+            </button>
+          </form>
         </div>
 
         {error && <p className="text-red-600 text-sm">{error}</p>}
@@ -149,7 +221,7 @@ export const AuditLog = () => {
               ) : logs.map((log) => (
                 <tr key={log.id} className="border-t hover:bg-gray-50">
                   <td className="px-4 py-3 whitespace-nowrap text-xs text-gray-600">
-                    {new Date(log.createdAt).toLocaleString()}
+                    {formatAdminDateTime(log.createdAt, clock)}
                   </td>
                   <td className="px-4 py-3">
                     <p className="text-sm font-medium text-gray-900">{log.actorName || 'System'}</p>
@@ -176,16 +248,16 @@ export const AuditLog = () => {
           </table>
         </div>
 
-        {/* Pagination */}
-        {total > 25 && (
-          <div className="flex justify-between items-center">
-            <p className="text-sm text-gray-600">Showing {(page - 1) * 25 + 1}-{Math.min(page * 25, total)} of {total}</p>
-            <div className="flex gap-2">
-              <button disabled={page === 1} onClick={() => setPage(page - 1)} className="px-3 py-1 border rounded text-sm disabled:opacity-50">Previous</button>
-              <button disabled={page * 25 >= total} onClick={() => setPage(page + 1)} className="px-3 py-1 border rounded text-sm disabled:opacity-50">Next</button>
-            </div>
-          </div>
-        )}
+        <AdminTablePager
+          page={page}
+          pageSize={pageSize}
+          total={total}
+          onPage={setPage}
+          onPageSize={(size) => {
+            setPageSize(size);
+            setPage(1);
+          }}
+        />
       </div>
     </DashboardLayout>
   );

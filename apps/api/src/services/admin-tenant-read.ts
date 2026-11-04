@@ -23,6 +23,7 @@ export const listAdminTenantsPage = async (input: { page: number; pageSize: numb
       ownerEmail: t.owner.email,
       memberCount: t._count.memberships,
       activityCount: t._count.activities,
+      hiddenFromPublic: Boolean(t.hiddenFromPublic),
       createdAt: t.createdAt,
     })),
   };
@@ -44,6 +45,7 @@ export const loadAdminTenantDetail = async (tenantId: string) => {
     status: tenant.status.toLowerCase(),
     businessMode: mongoTenant?.businessMode?.toLowerCase() ?? null,
     discoverFeatured: mongoTenant?.discoverFeatured ?? false,
+    hiddenFromPublic: mongoTenant?.hiddenFromPublic ?? false,
     owner: {
       id: tenant.owner.id,
       email: tenant.owner.email,
@@ -51,6 +53,7 @@ export const loadAdminTenantDetail = async (tenantId: string) => {
     },
     createdAt: tenant.createdAt,
     members: tenant.memberships.map((m) => ({
+      membershipId: m.id,
       userId: m.userId,
       email: m.user.email,
       displayName: m.user.profile?.displayName ?? null,

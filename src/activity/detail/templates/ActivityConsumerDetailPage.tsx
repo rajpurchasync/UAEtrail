@@ -320,7 +320,7 @@ const ConsumerDetailLead = ({
     audienceBadges.length > 0;
 
   return (
-    <header className="pb-4">
+    <div className="pb-4">
       <div className="flex items-center gap-3">
         <h1 className="min-w-0 flex-1 text-[26px] font-bold leading-[1.15] tracking-tight text-neutral-950">
           {title}
@@ -368,7 +368,7 @@ const ConsumerDetailLead = ({
       ) : null}
 
       {venueLine ? <div className="mt-2">{venueLine}</div> : null}
-    </header>
+    </div>
   );
 };
 

@@ -8,6 +8,7 @@ import {
   ADMIN_OVERVIEW_PATH,
   ADMIN_PLACES_PATH,
   ADMIN_SETTINGS_PATH,
+  ADMIN_ACCOUNT_PATH,
   ADMIN_USERS_PATH,
   PUBLISHING_ACTIVITIES_PATH,
   PUBLISHING_OVERVIEW_PATH,
@@ -38,7 +39,7 @@ export const defaultRouteByRole = (role: UserRole): string => {
 
 /** Participant account home — all explorers including hosts and shop owners. */
 export const accountRouteByRole = (role: UserRole): string => {
-  if (isPlatformAdmin(role)) return ADMIN_OVERVIEW_PATH;
+  if (isPlatformAdmin(role)) return ADMIN_ACCOUNT_PATH;
   return PROFILE_PATH;
 };
 
@@ -118,6 +119,8 @@ export const adminDashboardRedirect = (subpath: string): string => {
       return ADMIN_AUDIT_LOG_PATH;
     case 'settings':
       return ADMIN_SETTINGS_PATH;
+    case 'account':
+      return ADMIN_ACCOUNT_PATH;
     default:
       return ADMIN_OVERVIEW_PATH;
   }

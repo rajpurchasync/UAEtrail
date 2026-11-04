@@ -8,6 +8,7 @@ interface MobileMonthCalendarProps {
   minDate?: string;
   /** ISO dates (YYYY-MM-DD) with scheduled map activities — subtle marker on day cells. */
   markedDates?: ReadonlySet<string>;
+  className?: string;
 }
 
 const toIso = (year: number, month: number, day: number): string =>
@@ -24,6 +25,7 @@ export const MobileMonthCalendar = ({
   onSelectDate,
   minDate,
   markedDates,
+  className = '',
 }: MobileMonthCalendarProps) => {
   const initial = parseIso(selectedDate);
   const [viewYear, setViewYear] = useState(initial.year);
@@ -63,7 +65,9 @@ export const MobileMonthCalendar = ({
   };
 
   return (
-    <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-3">
+    <div
+      className={`rounded-2xl border border-neutral-200 bg-neutral-50 p-3 ${className}`.trim()}
+    >
       <div className="mb-3 flex items-center justify-between">
         <button
           type="button"

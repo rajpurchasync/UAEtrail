@@ -9,12 +9,16 @@ import {
   updateAdminMemberStatus,
 } from '../../hooks/adminConsoleApi';
 import { UserDetail, UserDetailPanel } from '../../components/admin/UserDetailPanel';
+import { AdminTablePager, DEFAULT_ADMIN_PAGE_SIZE, type AdminPageSize } from '../../components/admin/AdminTablePager';
 import { DashboardLayout } from '../../components/layout';
 import { ADMIN_LINKS } from '../../constants';
-import { AppSelect, ADMIN_FILTER_SELECT_CLASS } from '../../components/ui/AppSelect';
+import { AppSelect, ADMIN_FILTER_SELECT_CLASS, ADMIN_INPUT_CLASS } from '../../components/ui/AppSelect';
+import { AdminIconButton } from '../../components/admin/AdminIconButton';
+import { Ban, Eye, ShieldOff, UserCheck } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 import { MEMBER_TYPE_BADGE, MEMBER_TYPE_LABELS } from '../../constants/userTypes';
+import { formatAdminDate } from '../../utils/formatAdminDate';
 
 const MEMBER_TYPE_OPTIONS = [
   { value: 'participant' as const, label: MEMBER_TYPE_LABELS.participant },
@@ -58,6 +62,7 @@ export const Members = () => {
   const [members, setMembers] = useState<MemberRow[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState<AdminPageSize>(DEFAULT_ADMIN_PAGE_SIZE);
   const [roleFilter, setRoleFilter] = useState('');
   const [userTypeFilter, setUserTypeFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -82,7 +87,7 @@ export const Members = () => {
         status: statusFilter || undefined,
         search: search || undefined,
         page,
-        pageSize: 20
+        pageSize
       });
       if (!isActive()) return;
       setError(null);
@@ -96,7 +101,7 @@ export const Members = () => {
     }
   };
 
-  useSafeAsyncEffect((isActive) => loadUsers(isActive), [page, roleFilter, userTypeFilter, statusFilter]);
+  useSafeAsyncEffect((isActive) => loadUsers(isActive), [page, pageSize, roleFilter, userTypeFilter, statusFilter]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -206,7 +211,7 @@ export const Members = () => {
               placeholder="member@example.com"
               value={grantEmail}
               onChange={(e) => setGrantEmail(e.target.value)}
-              className="border rounded-md px-3 py-1.5 text-sm min-w-[220px] bg-white"
+              className={`${ADMIN_INPUT_CLASS} min-w-[220px]`}
             />
             <button
               type="submit"
@@ -221,8 +226,13 @@ export const Members = () => {
 
       <div className="flex flex-wrap gap-3 mb-4">
         <form onSubmit={handleSearch} className="flex gap-2">
-          <input type="text" placeholder="Search email or name..." value={search} onChange={(e) => setSearch(e.target.value)}
-            className="border rounded px-3 py-1.5 text-sm w-60" />
+          <input
+            type="text"
+            placeholder="Search email, name, or phone..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className={`${ADMIN_INPUT_CLASS} w-60`}
+          />
           <button type="submit" className="bg-emerald-600 text-white px-3 py-1.5 rounded text-sm hover:bg-emerald-700">Search</button>
         </form>
         <AppSelect
@@ -284,8 +294,12 @@ export const Members = () => {
               <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-500">No members found</td></tr>
             ) : members.map((u) => (
               <tr key={u.id} className="border-t hover:bg-gray-50">
-                <td className="px-4 py-3">
-                  <div className="flex items-center gap-3">
+                <td className="admin-table-hit">
+                  <button
+                    type="button"
+                    onClick={() => void openDetail(u.id)}
+                    className="flex items-center gap-3"
+                  >
                     {u.avatarUrl ? (
                       <img src={u.avatarUrl} alt="" className="w-8 h-8 rounded-full object-cover" />
                     ) : (
@@ -297,32 +311,36 @@ export const Members = () => {
                       <p className="font-medium text-gray-900">{u.displayName || 'No name'}</p>
                       <p className="text-xs text-gray-500">{u.email}</p>
                     </div>
-                  </div>
+                  </button>
                 </td>
                 <td className="px-4 py-3">{typeBadge(u.userType)}</td>
                 <td className="px-4 py-3">{statusBadge(u.status)}</td>
-                <td className="px-4 py-3 text-gray-600 text-xs whitespace-nowrap">{new Date(u.createdAt).toLocaleDateString()}</td>
+                <td className="px-4 py-3 text-gray-600 text-xs whitespace-nowrap">{formatAdminDate(u.createdAt)}</td>
                 <td className="px-4 py-3 text-gray-600 text-xs whitespace-nowrap">
-                  {u.lastActiveAt ? new Date(u.lastActiveAt).toLocaleString() : '—'}
+                  {u.lastActiveAt ? formatAdminDate(u.lastActiveAt) : '—'}
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex flex-wrap gap-2">
-                    <button onClick={() => openDetail(u.id)} className="px-2 py-1 rounded bg-blue-100 text-blue-800 hover:bg-blue-200 text-xs">View</button>
+                    <AdminIconButton label="View" icon={Eye} onClick={() => void openDetail(u.id)} />
                     {u.role !== 'platform_admin' && (
-                      <button onClick={() => { setConfirmTarget(u); setSuspendComment(''); }}
-                        className={`px-2 py-1 rounded text-xs ${u.status === 'active' ? 'bg-red-100 text-red-800 hover:bg-red-200' : 'bg-green-100 text-green-800 hover:bg-green-200'}`}>
-                        {u.status === 'active' ? 'Suspend' : 'Activate'}
-                      </button>
+                      <AdminIconButton
+                        label={u.status === 'active' ? 'Suspend' : 'Activate'}
+                        icon={u.status === 'active' ? Ban : UserCheck}
+                        tone={u.status === 'active' ? 'red' : 'green'}
+                        onClick={() => {
+                          setConfirmTarget(u);
+                          setSuspendComment('');
+                        }}
+                      />
                     )}
                     {isMasterAdmin && u.role === 'platform_admin' && u.id !== authUser?.id && (
-                      <button
-                        type="button"
+                      <AdminIconButton
+                        label="Revoke admin"
+                        icon={ShieldOff}
+                        tone="purple"
                         disabled={actionLoading}
                         onClick={() => void revokePlatformAdmin(u)}
-                        className="px-2 py-1 rounded text-xs bg-purple-100 text-purple-900 hover:bg-purple-200 disabled:opacity-60"
-                      >
-                        Revoke admin
-                      </button>
+                      />
                     )}
                   </div>
                 </td>
@@ -332,19 +350,20 @@ export const Members = () => {
         </table>
       </div>
 
-      {total > 20 && (
-        <div className="flex justify-between items-center mt-4">
-          <p className="text-sm text-gray-600">Showing {(page - 1) * 20 + 1}-{Math.min(page * 20, total)} of {total}</p>
-          <div className="flex gap-2">
-            <button disabled={page === 1} onClick={() => setPage(page - 1)} className="px-3 py-1 border rounded text-sm disabled:opacity-50">Previous</button>
-            <button disabled={page * 20 >= total} onClick={() => setPage(page + 1)} className="px-3 py-1 border rounded text-sm disabled:opacity-50">Next</button>
-          </div>
-        </div>
-      )}
+      <AdminTablePager
+        page={page}
+        pageSize={pageSize}
+        total={total}
+        onPage={setPage}
+        onPageSize={(size) => {
+          setPageSize(size);
+          setPage(1);
+        }}
+      />
 
       {confirmTarget && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setConfirmTarget(null)}>
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6" onClick={(e) => e.stopPropagation()}>
+        <div className="admin-dialog-backdrop fixed inset-0 flex items-center justify-center z-50" onClick={() => setConfirmTarget(null)}>
+          <div className="admin-dialog bg-white rounded-lg max-w-md w-full mx-4 p-6" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
               {confirmTarget.status === 'active' ? 'Suspend member?' : 'Activate member?'}
             </h3>
