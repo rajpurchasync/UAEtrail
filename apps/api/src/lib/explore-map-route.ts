@@ -1,6 +1,11 @@
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { buildExploreMapPayload } from './explore-map.js';
 import { readExploreMapMemoryCacheGeneration } from './explore-map-cache.js';
+import {
+  applyGuestExploreMapCatalogCap,
+  guestExploreMapCatalogCapApplied,
+  isGuestExploreMapCatalogCapEnabled,
+} from './explore-map-guest-catalog-cap.js';
 import { enrichExploreMapPayloadViewerAccess } from './explore-map-viewer-access.js';
 import {
   assertExploreMapBboxQueryAllowed,
@@ -23,6 +28,8 @@ export type ExploreMapRouteResult = {
   nextCursor?: string | null;
   region?: { slug: string | null; bbox: { south: number; west: number; north: number; east: number } };
   cacheGeneration?: number | null;
+  /** Anonymous map preview — capped places/events per session policy. */
+  guestCatalogPreview?: boolean;
 };
 
 export const loadExploreMapForRequest = async (input: {
@@ -31,6 +38,18 @@ export const loadExploreMapForRequest = async (input: {
   userRole: string | null | undefined;
 }): Promise<ExploreMapRouteResult> => {
   assertExploreMapBboxQueryAllowed(input.query);
+  const applyGuestCap = !input.viewerUserId;
+
+  const finishGuestPayload = (payload: ExploreMapRouteResult): ExploreMapRouteResult => {
+    if (!applyGuestCap || !isGuestExploreMapCatalogCapEnabled()) return payload;
+    const before = payload.items;
+    const items = applyGuestExploreMapCatalogCap(before);
+    return {
+      ...payload,
+      items,
+      guestCatalogPreview: guestExploreMapCatalogCapApplied(before, items),
+    };
+  };
 
   const cached = await buildExploreMapPayload();
   const bboxRaw = input.query.bbox?.trim();
@@ -51,12 +70,12 @@ export const loadExploreMapForRequest = async (input: {
       { viewerUserId: input.viewerUserId, userRole: input.userRole }
     );
     const items = enrichExploreMapItemsDiscoveryProjection(enriched.items);
-    return {
+    return finishGuestPayload({
       items,
       nextCursor: page.nextCursor,
       region: page.region,
       cacheGeneration: readExploreMapMemoryCacheGeneration(),
-    };
+    });
   }
 
   const enriched = await enrichExploreMapPayloadViewerAccess(cached, {
@@ -64,5 +83,5 @@ export const loadExploreMapForRequest = async (input: {
     userRole: input.userRole,
   });
   const items = enrichExploreMapItemsDiscoveryProjection(enriched.items);
-  return { items };
+  return finishGuestPayload({ items });
 };

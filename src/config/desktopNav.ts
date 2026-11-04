@@ -116,7 +116,6 @@ export const DESKTOP_MAP_NAV: readonly DesktopNavItem[] = [
     to: explorePeopleBrowsePath({ list: false }),
     icon: Users,
     match: [],
-    authGate: true,
   },
   {
     key: 'search',
@@ -213,9 +212,8 @@ export const isDesktopNavItemActive = (item: DesktopNavItem, pathname: string, s
   return item.match.some((prefix) => matchesPrefix(pathname, prefix));
 };
 
-/** Signed-in tablet/desktop chrome — every stacked product view plus the explore map. */
-export const shouldShowDesktopSideNav = (pathname: string, signedIn: boolean): boolean => {
-  if (!signedIn) return false;
+/** Tablet/desktop chrome — explore map and stacked product views (guests and members). */
+export const shouldShowDesktopSideNav = (pathname: string, _signedIn: boolean): boolean => {
   if (pathname === JOURNEY_MAP_PATH) return false;
   return true;
 };

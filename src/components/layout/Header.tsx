@@ -1,22 +1,15 @@
 import { EXPLORE_MAP_PATH, joinAuthPath } from '../../config/routingCatalog';
 import { Link, useLocation } from 'react-router-dom';
-import { HelpCircle, Mountain } from 'lucide-react';
+import { Mountain } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { buildSignInRedirect } from '../../utils/authReturnContext';
-import { DESKTOP_PRIMARY_NAV, isDesktopNavItemActive } from '../../config/desktopNav';
 import { ConsumerHeaderActions } from './ConsumerHeaderActions';
 import { DesktopAccountMenu } from './desktop/DesktopAccountMenu';
-
-const desktopNavLinkClass = (active: boolean) =>
-  `relative inline-flex h-10 items-center gap-1.5 rounded-xl px-2.5 text-sm font-semibold transition-colors lg:gap-2 lg:px-3 ${
-    active ? 'bg-emerald-50 text-emerald-700' : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900'
-  }`;
 
 export const Header = () => {
   const { user } = useAuth();
   const { pathname, search } = useLocation();
   const { href: signInHref } = buildSignInRedirect({ pathname, search });
-  const primaryNav = DESKTOP_PRIMARY_NAV.filter((item) => user || !item.authGate);
 
   return (
     <header className="bg-white/80 backdrop-blur-xl shadow-sm sticky top-0 z-50 border-b border-gray-100">
@@ -29,31 +22,7 @@ export const Header = () => {
             <span className="text-sm font-bold text-gray-900 tracking-tight lg:text-base">UAE Trail</span>
           </Link>
 
-          {user ? (
-            <div className="flex-1" />
-          ) : (
-            <nav aria-label="Primary" className="mx-auto hidden items-center gap-0.5 md:flex lg:gap-1">
-              {primaryNav.map((item) => {
-                const active = isDesktopNavItemActive(item, pathname, search);
-                const Icon = item.icon;
-                return (
-                  <Link
-                    key={item.key}
-                    to={item.to}
-                    aria-current={active ? 'page' : undefined}
-                    className={desktopNavLinkClass(active)}
-                  >
-                    <Icon className="hidden h-[18px] w-[18px] xl:block" strokeWidth={active ? 2.4 : 2} aria-hidden />
-                    {item.label}
-                  </Link>
-                );
-              })}
-              <Link to="/faq" className={desktopNavLinkClass(pathname === '/faq')}>
-                <HelpCircle className="hidden h-[18px] w-[18px] xl:block" aria-hidden />
-                Help
-              </Link>
-            </nav>
-          )}
+          <div className="flex-1" />
 
           <div className="flex items-center gap-2 lg:min-w-[12rem] lg:justify-end">
             <ConsumerHeaderActions notificationVariant="desktop" showOnDesktop menuClassName="md:hidden" />

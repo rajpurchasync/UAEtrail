@@ -1,15 +1,23 @@
-import { lazy, Suspense, type ReactNode } from 'react';
+import { lazy, Suspense, useState, type ReactNode } from 'react';
+import { EXPLORE_GUEST_MAP_PREVIEW_NOTICE } from '../exploreBrowseTaxonomy';
+import {
+  isGuestMapCatalogPreviewLimited,
+  guestExplorePreviewLimitReached,
+  readExploreGuestMapPreviewDismissed,
+  writeExploreGuestMapPreviewDismissed,
+} from '../guestMapPreviewPolicy';
 import { List, Plus } from 'lucide-react';
 import { UiTooltip } from '../../components/ui/UiTooltip';
 import { isGeographyMapSource, type ExploreMapItemDTO } from '@uaetrail/shared-types';
 import type { MapBounds, PlaceMapPin } from '../../components/ui/PlacesMap';
 import { getMapBounds } from '../../config/regions';
 import { MAP_CONFIG, getExploreMapTiles, type ExploreMapStyle } from '../../config/platform';
-import { EXPLORE_FLOATING_CONTROL } from '../../config/exploreTheme';
+import { EXPLORE_FLOATING_CONTROL, EXPLORE_Z } from '../../config/exploreTheme';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import type { JoinRequestUiState } from '../../utils/joinRequestUi';
 import { ExploreCoachMarks } from './ExploreCoachMarks';
 import { ExploreDismissibleNotice } from './ExploreDismissibleNotice';
+import { ExploreGuestPreviewLimitBanner } from './ExploreGuestPreviewLimitBanner';
 import { ActivityMapPeekHost } from './ActivityMapPeekHost';
 import { ExploreMapChromeBar } from './ExploreMapChromeBar';
 import { ExploreMapLoadErrorBoundary } from './ExploreMapLoadErrorBoundary';
@@ -47,7 +55,7 @@ export type ExploreMapStageProps = {
   onVenueRegionsChange: (regions: string[]) => void;
   venueFilter?: VenueListFilterKey;
   onVenueFilterChange?: (filter: VenueListFilterKey) => void;
-  onOpenPeopleBrowsePanel: () => void;
+  onOpenPeopleBrowsePanel?: () => void;
   peopleBrowsePanelAvatars?: Array<{ id: string; name: string; avatar?: string | null }>;
   peopleBrowsePanelFriendCount?: number;
   exploreMapStyle: ExploreMapStyle;
@@ -92,8 +100,13 @@ export type ExploreMapStageProps = {
   onGuestGatedAction?: (action: import('@uaetrail/shared-types').ActivityMapPeekActionId) => void;
   joinInvitePeekBanner?: string | null;
   onShareActivity?: () => void;
-  /** Desktop Find crew sheet over the map (keeps mapStage a direct flex child in the explore row). */
-  desktopPeopleBrowseOverlay?: ReactNode;
+  /** Desktop overlay — Find crew rail or guest sign-in popup. */
+  desktopRightPanelOverlay?: ReactNode;
+  /** `rail` = right column; `centered` = modal over map (guest gates). */
+  desktopMapOverlayLayout?: 'rail' | 'centered';
+  /** Search modal + results — scoped to map pane. */
+  mapSearchOverlay?: ReactNode;
+  mapSearchOpen?: boolean;
 };
 
 export const ExploreMapStage = ({
@@ -159,8 +172,21 @@ export const ExploreMapStage = ({
   onGuestGatedAction,
   joinInvitePeekBanner = null,
   onShareActivity,
-  desktopPeopleBrowseOverlay = null,
+  desktopRightPanelOverlay = null,
+  desktopMapOverlayLayout = 'rail',
+  mapSearchOverlay = null,
+  mapSearchOpen = false,
 }: ExploreMapStageProps) => {
+  const [guestPreviewDismissed, setGuestPreviewDismissed] = useState(() =>
+    readExploreGuestMapPreviewDismissed()
+  );
+  const showGuestMapPreviewNotice =
+    isGuestMapCatalogPreviewLimited() &&
+    !user &&
+    !listOpen &&
+    !guestPreviewDismissed &&
+    !guestExplorePreviewLimitReached() &&
+    !mapSearchOpen;
   const guestGatedActionForActivity = user ? undefined : onGuestGatedAction;
   const guestGatedActionForPlace =
     user || !onGuestGatedAction ? undefined : () => onGuestGatedAction('view_detail');
@@ -236,6 +262,20 @@ export const ExploreMapStage = ({
 
       {exploreNotice ? (
         <ExploreDismissibleNotice message={exploreNotice} onDismiss={onDismissExploreNotice} />
+      ) : null}
+
+      {showGuestMapPreviewNotice ? (
+        <ExploreDismissibleNotice
+          message={EXPLORE_GUEST_MAP_PREVIEW_NOTICE}
+          onDismiss={() => {
+            writeExploreGuestMapPreviewDismissed();
+            setGuestPreviewDismissed(true);
+          }}
+        />
+      ) : null}
+
+      {!user && !listOpen && guestExplorePreviewLimitReached() ? (
+        <ExploreGuestPreviewLimitBanner />
       ) : null}
 
       {loadError ? (
@@ -339,12 +379,25 @@ export const ExploreMapStage = ({
       ) : null}
     </div>
 
-    {desktopPeopleBrowseOverlay ? (
+    {desktopRightPanelOverlay ? (
       <div
-        className="pointer-events-none absolute inset-0 z-[1200] flex justify-end"
+        className={
+          desktopMapOverlayLayout === 'centered'
+            ? `pointer-events-none absolute inset-0 ${EXPLORE_Z.guestJoinSheet}`
+            : 'pointer-events-none absolute inset-0 z-[1200] flex h-full min-h-0 justify-end'
+        }
         role="presentation"
       >
-        {desktopPeopleBrowseOverlay}
+        {desktopRightPanelOverlay}
+      </div>
+    ) : null}
+
+    {mapSearchOverlay ? (
+      <div
+        className={`pointer-events-none absolute inset-0 min-h-0 ${EXPLORE_Z.browseSheet}`}
+        role="presentation"
+      >
+        {mapSearchOverlay}
       </div>
     ) : null}
   </div>

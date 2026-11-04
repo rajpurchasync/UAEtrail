@@ -88,10 +88,18 @@ describe('list module hygiene', () => {
     expect(fab).toMatch(/snapListFilterFabCorner/);
     expect(fab).toMatch(/filterCount/);
     expect(fab).toMatch(/ListExplorerFilterPop/);
-    expect(fab).toMatch(/z-\[1220\]/);
+    expect(fab).toMatch(/LIST_FILTER_FAB_Z/);
     expect(fab).toMatch(/bucket/);
     expect(pop).toMatch(/listVenuePlaceTopicsForUi/);
     expect(pop).toMatch(/bucket === 'places'/);
+  });
+
+  it('sort overlay stacks above filter fab', () => {
+    const sort = readFileSync(join(process.cwd(), 'src/list/explorer/ListExplorerSortControl.tsx'), 'utf8');
+    const theme = readFileSync(join(process.cwd(), 'src/list/listChromeTheme.ts'), 'utf8');
+    expect(sort).toMatch(/LIST_OVERLAY_Z/);
+    expect(theme).toMatch(/LIST_FILTER_FAB_Z/);
+    expect(theme).toMatch(/LIST_OVERLAY_Z/);
   });
 
   it('forbids leftover poster/rail strings in list sources', () => {

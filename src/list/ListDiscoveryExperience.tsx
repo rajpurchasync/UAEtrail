@@ -38,12 +38,55 @@ import {
   serializeListExplorerBucket,
 } from './explorer/listExplorerBucket';
 import { ListExplorer } from './explorer/ListExplorer';
+import { ListDiscoveryMapColumn } from './explorer/ListDiscoveryMapColumn';
+import { useBindExploreListMapHover } from '../explore/ExploreMapChromeContext';
+import { useMinWidthMd } from '../hooks/useMinWidthMd';
+import { useMinWidthPx } from '../hooks/useMinWidthPx';
+import { collapseDesktopSideNav } from '../hooks/useDesktopSideNavExpanded';
+import {
+  LIST_DISCOVERY_MAP_AUTO_MIN_PX,
+  LIST_DISCOVERY_MAP_DISMISSED_STORAGE_KEY,
+  LIST_DISCOVERY_MAP_OPEN_STORAGE_KEY,
+} from './listDiscoveryMapLayout';
+import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 
 type ListDiscoveryExperienceProps = {
   surface: ListDiscoverySurface;
   onCloseMapOverlay?: () => void;
   overlayImmersive?: boolean;
   onImmersiveSubtitleChange?: (subtitle: string | null) => void;
+};
+
+const readListMapColumnOpen = (): boolean => {
+  try {
+    return sessionStorage.getItem(LIST_DISCOVERY_MAP_OPEN_STORAGE_KEY) === '1';
+  } catch {
+    return false;
+  }
+};
+
+const writeListMapColumnOpen = (open: boolean) => {
+  try {
+    sessionStorage.setItem(LIST_DISCOVERY_MAP_OPEN_STORAGE_KEY, open ? '1' : '0');
+  } catch {
+    /* ignore */
+  }
+};
+
+const readListMapDismissed = (): boolean => {
+  try {
+    return sessionStorage.getItem(LIST_DISCOVERY_MAP_DISMISSED_STORAGE_KEY) === '1';
+  } catch {
+    return false;
+  }
+};
+
+const writeListMapDismissed = (dismissed: boolean) => {
+  try {
+    sessionStorage.setItem(LIST_DISCOVERY_MAP_DISMISSED_STORAGE_KEY, dismissed ? '1' : '0');
+  } catch {
+    /* ignore */
+  }
 };
 
 export const ListDiscoveryExperience = ({
@@ -113,7 +156,7 @@ export const ListDiscoveryExperience = ({
   }, [queryClient, refreshHostGate]);
 
   const browseUrl = useListDiscoveryUrlState({ mapOverlay: embeddedOnExplore });
-  const { filters, syncUrl, venueRegions, listCat, layout } = browseUrl;
+  const { filters, syncUrl, venueRegions, listCat, layout, sort } = browseUrl;
   const isPeopleCategory = listCat === 'people';
   const explorerBucket = parseListExplorerBucket(listCat);
   const [draftQuery, setDraftQuery] = useState(filters.query);
@@ -138,7 +181,7 @@ export const ListDiscoveryExperience = ({
     areaSlug,
     mapFilter: 'all',
   });
-  const { cards, items, isLoading, isError, refetch: reloadMap } = useBrowseListFeed({
+  const { cards, filteredItems, items, isLoading, isError, refetch: reloadMap } = useBrowseListFeed({
     filters: isPeopleCategory
       ? { ...filters, query: draftQuery, categories: [] }
       : {
@@ -245,6 +288,52 @@ export const ListDiscoveryExperience = ({
 
   const hostWizardOpen = Boolean(compose.hostComposeRoute) && Boolean(user);
 
+  const desktopMd = useMinWidthMd();
+  const wideListMapSplit = useMinWidthPx(LIST_DISCOVERY_MAP_AUTO_MIN_PX);
+  const [listMapColumnOpen, setListMapColumnOpen] = useState(readListMapColumnOpen);
+  const [listMapDismissed, setListMapDismissed] = useState(readListMapDismissed);
+  const [listMapHighlightedId, setListMapHighlightedId] = useState<string | null>(null);
+  const [listMapSelectedId, setListMapSelectedId] = useState<string | null>(null);
+  const listMapSplitEnabled = !embeddedOnExplore && !isPeopleCategory;
+  const showListMapColumn =
+    listMapSplitEnabled && desktopMd && !listMapDismissed && (wideListMapSplit || listMapColumnOpen);
+  const showListMapColumnPrompt =
+    listMapSplitEnabled &&
+    desktopMd &&
+    !showListMapColumn &&
+    (listMapDismissed || !wideListMapSplit);
+
+  useBindExploreListMapHover(setListMapHighlightedId);
+
+  const openListMapColumn = useCallback(() => {
+    collapseDesktopSideNav();
+    setListMapDismissed(false);
+    writeListMapDismissed(false);
+    setListMapColumnOpen(true);
+    writeListMapColumnOpen(true);
+  }, []);
+
+  const closeListMapColumn = useCallback(() => {
+    setListMapDismissed(true);
+    writeListMapDismissed(true);
+    setListMapColumnOpen(false);
+    writeListMapColumnOpen(false);
+    setListMapHighlightedId(null);
+    setListMapSelectedId(null);
+  }, []);
+
+  useEffect(() => {
+    if (wideListMapSplit && !listMapDismissed) {
+      setListMapColumnOpen(false);
+      writeListMapColumnOpen(false);
+    }
+  }, [wideListMapSplit, listMapDismissed]);
+
+  const handleListMapSelectItem = useCallback((item: ExploreMapItemDTO) => {
+    setListMapSelectedId(item.id);
+    setListMapHighlightedId(item.id);
+  }, []);
+
   return (
     <>
       {isPeopleCategory ? (
@@ -282,37 +371,56 @@ export const ListDiscoveryExperience = ({
           onOpenSeekingActivity={handleOpenSeekingActivity}
         />
       ) : (
-        <ListExplorer
-          cards={cards}
-          loading={isLoading}
-          error={isError}
-          onRetry={() => void reloadMap()}
-          onClose={onCloseMapOverlay}
-          embedded={embeddedOnExplore}
-          query={draftQuery}
-          onQueryChange={setDraftQuery}
-          onQuerySync={commitQuery}
-          onSearchCommit={handleSearchCommit}
-          onClearQuery={() => syncUrl({ query: '' })}
-          searchScopeCounts={searchScopeCounts}
-          mapHref={mapHref}
-          layout={layout}
-          onLayoutChange={(next) => syncUrl({ layout: next })}
-          bucket={explorerBucket}
-          onBucketChange={(next) =>
-            syncUrl({
-              query: draftQuery,
-              listCat: serializeListExplorerBucket(next),
-              categories: [],
-              ...(next === 'places' && layout === 'calendar' ? { layout: 'thumbnails' as const } : {}),
-            })
-          }
-          filters={filters}
-          regions={venueRegions}
-          filterCount={filterCount}
-          onApplyFilters={(state, regions) => syncUrl({ ...state, regions })}
-          onClearFilters={clearAllFilters}
-        />
+        <div className="flex h-full min-h-0 min-w-0 flex-1 flex-row">
+          <ListExplorer
+            cards={cards}
+            loading={isLoading}
+            error={isError}
+            onRetry={() => void reloadMap()}
+            onClose={onCloseMapOverlay}
+            embedded={embeddedOnExplore}
+            query={draftQuery}
+            onQueryChange={setDraftQuery}
+            onQuerySync={commitQuery}
+            onSearchCommit={handleSearchCommit}
+            onClearQuery={() => syncUrl({ query: '' })}
+            searchScopeCounts={searchScopeCounts}
+            mapHref={mapHref}
+            layout={layout}
+            onLayoutChange={(next) => syncUrl({ layout: next })}
+            bucket={explorerBucket}
+            onBucketChange={(next) =>
+              syncUrl({
+                query: draftQuery,
+                listCat: serializeListExplorerBucket(next),
+                categories: [],
+                ...(next === 'places' && layout === 'calendar' ? { layout: 'thumbnails' as const } : {}),
+              })
+            }
+            filters={filters}
+            regions={venueRegions}
+            filterCount={filterCount}
+            onApplyFilters={(state, regions) => syncUrl({ ...state, regions })}
+            onClearFilters={clearAllFilters}
+            mapColumnVisible={showListMapColumn}
+            showMapColumnPrompt={showListMapColumnPrompt}
+            onOpenMapColumn={openListMapColumn}
+            onMapHover={showListMapColumn ? setListMapHighlightedId : undefined}
+            sort={sort}
+            onSortChange={(next) => syncUrl({ sort: next })}
+          />
+          {showListMapColumn ? (
+            <ListDiscoveryMapColumn
+              items={filteredItems}
+              loading={isLoading}
+              highlightedExploreItemId={listMapHighlightedId}
+              selectedExploreItemId={listMapSelectedId}
+              onSelectItem={handleListMapSelectItem}
+              onClose={closeListMapColumn}
+              layoutRevision={showListMapColumn}
+            />
+          ) : null}
+        </div>
       )}
 
       {embeddedOnExplore || overlayImmersive ? null : <BrowseListCreateFab onClick={compose.handleCreateTap} />}

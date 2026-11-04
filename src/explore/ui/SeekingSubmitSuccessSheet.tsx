@@ -138,7 +138,8 @@ export const SeekingSubmitSuccessSheet = ({
       showCloseButton
       showHandle={false}
       ariaLabel={DEMAND_SUBMIT_SUCCESS_TITLE}
-      panelClassName="min-w-0 overflow-x-hidden px-5 pb-5 pt-10 sm:px-6 sm:pb-6"
+      viewportAdaptive
+      panelClassName="min-w-0 overflow-x-hidden"
     >
       <div className="flex min-w-0 flex-col">
         <div className="flex flex-col items-center text-center">

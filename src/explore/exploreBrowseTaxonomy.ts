@@ -22,6 +22,18 @@ export const EXPLORE_SEARCH_PROMPT = 'What are you looking for?';
 
 export const EXPLORE_SEARCH_OPEN_PLACEHOLDER = 'Activities, places, people, shops…';
 
+/** Guest map search — no member People scope until signed in. */
+export const EXPLORE_SEARCH_GUEST_PLACEHOLDER = 'Activities, places, spots, events, shops…';
+
+export const EXPLORE_GUEST_MAP_PREVIEW_NOTICE =
+  'Preview map — up to 3 outings and 3 places per visit. Join free to explore the full UAE catalog.';
+
+/** Map search modal — guest sees capped map matches only. */
+export const EXPLORE_SEARCH_GUEST_PREVIEW_NOTICE = 'Preview only — 3 outings & 3 places.';
+
+/** Align with API guest map cap (`explore-map-guest-catalog-cap`). */
+export const EXPLORE_GUEST_MAP_PREVIEW_MAX_MATCHES = 3;
+
 /** Map chrome — multi-select filter pills. */
 export type ExploreMapFilterPillKey = 'trips' | 'looking' | 'spots' | 'shops';
 

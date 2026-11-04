@@ -9,6 +9,8 @@ import { isConsumerProfilePath, isPlatformAdmin } from '../../utils/roles';
 import { isPublishingConsolePath, WELCOME_PATH } from '../../config/surfacePaths';
 import { ADMIN_ACCOUNT_PATH } from '../../config/adminSurfacePaths';
 import { buildSignInRedirect } from '../../utils/authReturnContext';
+import { GuestGatedSurfaceLayout } from './GuestGatedSurfaceLayout';
+import { resolveGuestSurfaceForPath } from '../../utils/guestSurfaceByPath';
 import type { ReactElement } from 'react';
 import {
   isSignupProfileGateExemptPath,
@@ -49,6 +51,16 @@ export const ProtectedRoute = ({ roles, children }: ProtectedRouteProps) => {
   }
 
   if (!user) {
+    const surface = resolveGuestSurfaceForPath(location.pathname);
+    if (surface) {
+      return (
+        <GuestGatedSurfaceLayout
+          title={surface.title}
+          feature={surface.feature}
+          authReturnPath={`${location.pathname}${location.search}`}
+        />
+      );
+    }
     const { href: signInHref } = buildSignInRedirect(location);
     return (
       <Navigate

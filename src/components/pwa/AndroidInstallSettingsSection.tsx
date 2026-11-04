@@ -7,7 +7,7 @@ import { InstallGuideCard } from './InstallGuideCard';
 
 export const AndroidInstallSettingsSection = () => {
   const { hash } = useLocation();
-  const { installed, isNativeShell, platform, androidGuide } = usePhoneAppInstall();
+  const { installed, isNativeShell, platform, androidGuide, installReady, promptInstall } = usePhoneAppInstall();
 
   const deepLinked = hash === ANDROID_INSTALL_SETTINGS_HASH;
   const visible = !isNativeShell && !installed && (platform === 'android' || deepLinked);
@@ -25,6 +25,19 @@ export const AndroidInstallSettingsSection = () => {
         guide={androidGuide}
         accent="emerald"
         defaultStepsOpen={platform === 'android'}
+        installAction={
+          installReady ? (
+            <button
+              type="button"
+              onClick={() => {
+                promptInstall();
+              }}
+              className="mt-3 w-full rounded-xl bg-emerald-600 px-3 py-2.5 text-sm font-semibold text-white active:bg-emerald-700"
+            >
+              {ANDROID_INSTALL.installButton}
+            </button>
+          ) : null
+        }
       />
     </SettingsMenuGroup>
   );

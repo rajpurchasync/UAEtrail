@@ -2,16 +2,13 @@ import type { ActivityDTO } from '@uaetrail/shared-types';
 import { HostActivityCancelDialog } from '../../components/activity/HostActivityCancelDialog';
 import { addVenueKindFromRoute } from '../compose';
 import { clearComposeWizardSessionForRoute } from '../ui/composeWizardSession';
-import { ExploreBrowseSearchModal } from '../ui/ExploreBrowseSearchModal';
 import { ComposeHost } from '../create/ComposeHost';
 import { GuestComposeSignInSheet } from '../ui/GuestComposeSignInSheet';
 import { ExploreJoinOverlays } from '../ui/ExploreJoinOverlays';
 import type { HostingWizardPrefill } from '../ui/hostingWizardPrefill';
 import type { useComposeRoute } from '../create/hooks/useComposeRoute';
-import type { ExploreSearchScopeCounts, ExploreSearchScopeKey } from '../exploreBrowseTaxonomy';
 import type { ReactNode } from 'react';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
-import type { AreaPublicDTO } from '@uaetrail/shared-types';
 import type { useExploreSelectionActions } from '../ui/useExploreSelectionActions';
 
 type ComposeState = ReturnType<typeof useComposeRoute>;
@@ -39,20 +36,13 @@ type Props = {
   onRefreshHostGate: () => void;
   setRideshareLinkParent: (value: ActivityDTO | null) => void;
   setRideshareLinkSeeking: (value: ExploreMapItemDTO | null) => void;
-  exploreSearchModalOpen: boolean;
-  onCloseExploreSearchModal: () => void;
-  browseQuery: string;
-  onBrowseQueryChange: (q: string) => void;
-  onExploreSearchCommit: (scope?: ExploreSearchScopeKey | null) => void;
-  searchScopeCounts: ExploreSearchScopeCounts;
-  publishedAreas: AreaPublicDTO[];
-  onPickExploreArea: (slug: string) => void;
   inviteShareSheet: ReactNode;
   hostManageSheet: ReactNode;
   tenantId: string | null;
+  useDesktopGuestGatePanel: boolean;
 };
 
-/** Compose wizards, join overlays, host dialogs, search modal (R2). */
+/** Compose wizards, join overlays, host dialogs (R2). Map search lives on {@link ExploreMapStage}. */
 export const ExploreExperienceOverlays = ({
   compose,
   selection,
@@ -73,17 +63,10 @@ export const ExploreExperienceOverlays = ({
   onRefreshHostGate,
   setRideshareLinkParent,
   setRideshareLinkSeeking,
-  exploreSearchModalOpen,
-  onCloseExploreSearchModal,
-  browseQuery,
-  onBrowseQueryChange,
-  onExploreSearchCommit,
-  searchScopeCounts,
-  publishedAreas,
-  onPickExploreArea,
   inviteShareSheet,
   hostManageSheet,
   tenantId,
+  useDesktopGuestGatePanel,
 }: Props) => (
   <>
     {inviteShareSheet}
@@ -149,23 +132,15 @@ export const ExploreExperienceOverlays = ({
       exploreMapItemId={selection.selected?.id}
       joinActions={selection.joinActions}
       onJoinSuccess={selection.handlePeekJoinSuccess}
+      useDesktopGuestGatePanel={useDesktopGuestGatePanel}
     />
 
-    <ExploreBrowseSearchModal
-      open={exploreSearchModalOpen}
-      onClose={onCloseExploreSearchModal}
-      query={browseQuery}
-      onQueryChange={onBrowseQueryChange}
-      onCommit={onExploreSearchCommit}
-      scopeCounts={searchScopeCounts}
-      publishedAreas={publishedAreas}
-      onPickArea={onPickExploreArea}
-    />
-
+    {!useDesktopGuestGatePanel ? (
     <GuestComposeSignInSheet
       open={compose.guestComposeSignInOpen}
       onClose={compose.closeGuestComposeSignIn}
       authReturnPath={compose.guestComposeSignInReturnPath}
     />
+    ) : null}
   </>
 );

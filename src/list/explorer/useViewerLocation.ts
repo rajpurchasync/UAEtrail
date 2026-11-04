@@ -6,6 +6,12 @@ const FRESH_MS = 5 * 60 * 1000;
 
 type CachedFix = ViewerFix & { at: number };
 
+export type ViewerLocationState = {
+  fix: ViewerFix | null;
+  pending: boolean;
+  denied: boolean;
+};
+
 const readCache = (): CachedFix | null => {
   try {
     const raw = sessionStorage.getItem(STORAGE_KEY);
@@ -20,19 +26,31 @@ const readCache = (): CachedFix | null => {
 
 /**
  * One coarse location fix, reused for 5 minutes. No watch and no server round-trip.
- * Returns null when location is unavailable.
  */
-export const useViewerLocation = (enabled: boolean): ViewerFix | null => {
+export const useViewerLocation = (enabled: boolean): ViewerLocationState => {
   const [fix, setFix] = useState<ViewerFix | null>(null);
+  const [pending, setPending] = useState(false);
+  const [denied, setDenied] = useState(false);
 
   useEffect(() => {
-    if (!enabled || typeof navigator === 'undefined' || !navigator.geolocation) return;
+    if (!enabled) {
+      setPending(false);
+      return;
+    }
+    if (typeof navigator === 'undefined' || !navigator.geolocation) {
+      setDenied(true);
+      return;
+    }
     const cached = readCache();
     if (cached && Date.now() - cached.at < FRESH_MS) {
       setFix({ lat: cached.lat, lng: cached.lng });
+      setPending(false);
+      setDenied(false);
       return;
     }
     let cancel = false;
+    setPending(true);
+    setDenied(false);
     navigator.geolocation.getCurrentPosition(
       (position) => {
         if (cancel) return;
@@ -47,8 +65,13 @@ export const useViewerLocation = (enabled: boolean): ViewerFix | null => {
           /* private mode */
         }
         setFix({ lat: next.lat, lng: next.lng });
+        setPending(false);
       },
-      () => {},
+      () => {
+        if (cancel) return;
+        setDenied(true);
+        setPending(false);
+      },
       { enableHighAccuracy: false, maximumAge: FRESH_MS, timeout: 8000 }
     );
     return () => {
@@ -56,5 +79,5 @@ export const useViewerLocation = (enabled: boolean): ViewerFix | null => {
     };
   }, [enabled]);
 
-  return enabled ? fix : null;
+  return { fix: enabled ? fix : null, pending: enabled && pending, denied: enabled && denied };
 };

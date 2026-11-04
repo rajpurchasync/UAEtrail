@@ -35,7 +35,7 @@ Complete these **on the VPS** when you connect. Use this list to track progress.
 ## Deep links (after release keystore exists)
 
 - [ ] Get SHA-256 fingerprint: `keytool -list -v -keystore uaetrail-release.keystore`
-- [ ] Replace placeholder in `public/.well-known/assetlinks.json`
+- [ ] When the Android release keystore exists, add the real SHA-256 statement to `public/.well-known/assetlinks.json` (keep `[]` until then — a placeholder fingerprint makes Chrome and Edge report that the app cannot be installed)
 - [ ] Apple: replace `TEAM_ID` in `public/.well-known/apple-app-site-association`
 - [ ] Verify: [Google Asset Links tester](https://developers.google.com/digital-asset-links/tools/generator)
 

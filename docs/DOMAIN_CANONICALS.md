@@ -817,7 +817,7 @@ Computed server-side via **`resolveActivityEngagementPolicy`** → `intents` (+ 
 |--------|------|
 | `peek-details` | Guest tapped detail-adjacent surface on explore |
 | `join-activity` | Guest tapped join / gated plan trip |
-| `explore-browse` / `explore-people-browse` / `explore-social` | Activities/places list / **browse people panel** on map (`view=people`; legacy `view=social`, `view=going`) — **not** Messages or group chat |
+| `plan-hub` / `explore-people-browse` / `explore-social` | Signed-in **Plan** hub (`/plan`) / **browse people panel** on map (`view=people`; legacy `view=social`, `view=going`) — **not** public map list or `/list` |
 
 **Rule:** Authorization outcome comes from **§15.2**; guest copy only explains **why to sign in**.
 

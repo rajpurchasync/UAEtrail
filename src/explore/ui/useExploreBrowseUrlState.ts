@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { SetURLSearchParams } from 'react-router-dom';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, type SetURLSearchParams } from 'react-router-dom';
 import { listDiscoveryPathFromExploreSearch } from '../../list/routing';
 import { exploreMapMobileBackState } from '../../utils/mobileBackNav';
 import { MAP_FILTER_PILLS } from '../../config/exploreMapFilters';
@@ -20,6 +19,7 @@ import {
   type ExploreBrowseUrlSyncPatch,
 } from '../exploreBrowseUrlSync';
 import {
+  clampGuestPeopleBrowse,
   parseExploreBrowseStateFromSearchParams,
   type ExploreBrowseUrlHydratedState,
 } from '../exploreBrowseUrlHydrate';
@@ -37,21 +37,21 @@ export type { ExploreBrowseListMode } from '../exploreBrowseUrlSync';
 export const UNIFIED_MAP_FILTER_KEYS: MapFilterKey[] = MAP_FILTER_PILLS.map((pill) => pill.key);
 
 type UseExploreBrowseUrlStateArgs = {
-  isDesktop: boolean;
+  isDesktop: boolean; isSignedIn: boolean;
   searchParams: URLSearchParams;
   setSearchParams: SetURLSearchParams;
   clearSelection: () => void;
 };
 
 export const useExploreBrowseUrlState = ({
-  isDesktop,
+  isDesktop, isSignedIn,
   searchParams,
   setSearchParams,
   clearSelection,
 }: UseExploreBrowseUrlStateArgs) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const initial = useRef(parseExploreBrowseStateFromSearchParams(searchParams, isDesktop)).current;
+  const initial = useRef(clampGuestPeopleBrowse(parseExploreBrowseStateFromSearchParams(searchParams, isDesktop), isSignedIn)).current;
 
   const [mapFilter, setMapFilter] = useState<MapFilterKey>(initial.mapFilter);
   const [activityFilter, setActivityFilter] = useState<ActivityListFilterKey>(initial.activityFilter);
@@ -162,8 +162,8 @@ export const useExploreBrowseUrlState = ({
   }, [isDesktop]);
 
   useEffect(() => {
-    applyHydratedState(parseExploreBrowseStateFromSearchParams(searchParams, isDesktop));
-  }, [searchParams, isDesktop, applyHydratedState]);
+    applyHydratedState(clampGuestPeopleBrowse(parseExploreBrowseStateFromSearchParams(searchParams, isDesktop), isSignedIn));
+  }, [searchParams, isDesktop, isSignedIn, applyHydratedState]);
 
   useExploreBrowseUrlInboundMigrations({ searchParams, setSearchParams, isDesktop });
 
@@ -193,7 +193,7 @@ export const useExploreBrowseUrlState = ({
   );
 
   const handlers = useExploreBrowseUrlApplyHandlers({
-    isDesktop,
+    isDesktop, isSignedIn,
     clearSelection,
     syncExploreUrl,
     listOpen,

@@ -29,6 +29,19 @@
     <link rel="icon" type="image/svg+xml" href="/icons/icon.svg" />
     <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
+    <script>
+      (function () {
+        window.__uaeTrailDeferredInstall = null;
+        window.addEventListener('beforeinstallprompt', function (event) {
+          window.__uaeTrailDeferredInstall = event;
+          window.dispatchEvent(new Event('uaetrail-install-available'));
+        });
+        window.addEventListener('appinstalled', function () {
+          window.__uaeTrailDeferredInstall = null;
+          window.dispatchEvent(new Event('uaetrail-app-installed'));
+        });
+      })();
+    </script>
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
     <meta
       name="viewport"

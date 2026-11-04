@@ -1,6 +1,7 @@
 import { Search, X } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import {
+  EXPLORE_SEARCH_GUEST_PLACEHOLDER,
   EXPLORE_SEARCH_OPEN_PLACEHOLDER,
   EXPLORE_SEARCH_PROMPT,
   type ExploreSearchScopeCounts,
@@ -8,7 +9,9 @@ import {
 } from '../exploreBrowseTaxonomy';
 import type { AreaPublicDTO } from '@uaetrail/shared-types';
 import { findPublishedAreaByQuery, isStrongPublishedAreaSearchMatch } from '../exploreAreaFilter';
+import { isGuestMapCatalogPreviewLimited } from '../guestMapPreviewPolicy';
 import { ExploreSearchAreaHints } from './ExploreSearchAreaHints';
+import { ExploreSearchGuestPreviewNotice } from './ExploreSearchGuestPreviewNotice';
 import { ExploreSearchScopeHints } from './ExploreSearchScopeHints';
 import { EXPLORE_MAP_SEARCH_INPUT_FONT_PX } from './exploreMapPillDropdown';
 
@@ -22,6 +25,7 @@ export type ExploreBrowseSearchPanelProps = {
   /** Focus input on mount (map search modal). */
   autoFocus?: boolean;
   variant?: 'modal' | 'inline';
+  signedIn?: boolean;
 };
 
 /** Canonical explore search — map modal + list discover header share this UI. */
@@ -34,6 +38,7 @@ export const ExploreBrowseSearchPanel = ({
   onPickArea,
   autoFocus = false,
   variant = 'inline',
+  signedIn = true,
 }: ExploreBrowseSearchPanelProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const hasQuery = query.trim().length > 0;
@@ -55,10 +60,13 @@ export const ExploreBrowseSearchPanel = ({
       : 'flex items-center gap-2';
 
   return (
-    <div className={variant === 'modal' ? 'p-4' : ''}>
+    <div className={variant === 'modal' ? 'min-w-0' : ''}>
       <p className={variant === 'modal' ? 'mb-3 text-sm font-bold text-neutral-950' : 'sr-only'}>
         {EXPLORE_SEARCH_PROMPT}
       </p>
+      {!signedIn && variant === 'modal' && isGuestMapCatalogPreviewLimited() ? (
+        <ExploreSearchGuestPreviewNotice className="mb-3" />
+      ) : null}
       <label className={inputShell}>
         <Search className="h-4 w-4 shrink-0 text-gray-400" aria-hidden />
         <input
@@ -82,7 +90,7 @@ export const ExploreBrowseSearchPanel = ({
               commit(null);
             }
           }}
-          placeholder={EXPLORE_SEARCH_OPEN_PLACEHOLDER}
+          placeholder={signedIn ? EXPLORE_SEARCH_OPEN_PLACEHOLDER : EXPLORE_SEARCH_GUEST_PLACEHOLDER}
           className="min-w-0 flex-1 bg-transparent outline-none placeholder:text-gray-400"
           style={variant === 'modal' ? { fontSize: EXPLORE_MAP_SEARCH_INPUT_FONT_PX } : undefined}
           aria-label="Search explore"
@@ -113,6 +121,8 @@ export const ExploreBrowseSearchPanel = ({
             counts={scopeCounts}
             onPick={(scope) => commit(scope)}
             className={variant === 'modal' ? 'border-t border-neutral-100 pt-1' : ''}
+            signedIn={signedIn}
+            guestPreview={!signedIn && isGuestMapCatalogPreviewLimited()}
           />
         </>
       ) : null}

@@ -16,6 +16,8 @@ interface ExploreJoinOverlaysProps {
   onJoinSuccess?: (message: string) => void;
   exploreMapItemId?: string | null;
   guestPlaceTitle?: string | null;
+  /** Desktop guests use the map right rail instead of a centered sheet. */
+  useDesktopGuestGatePanel?: boolean;
 }
 
 /** Join / withdraw modals and guest sign-up sheet for explore map selection. */
@@ -25,6 +27,7 @@ export const ExploreJoinOverlays = ({
   onJoinSuccess,
   exploreMapItemId,
   guestPlaceTitle,
+  useDesktopGuestGatePanel = false,
 }: ExploreJoinOverlaysProps) => {
   const location = useLocation();
   const browseReturnPath = `${location.pathname}${location.search}`;
@@ -62,7 +65,7 @@ export const ExploreJoinOverlays = ({
     )}
 
     <ExploreGuestJoinSheet
-      open={joinActions.guestSheetOpen}
+      open={joinActions.guestSheetOpen && !useDesktopGuestGatePanel}
       onClose={joinActions.closeGuestSheet}
       intent={joinActions.guestSheetIntent}
       browseGateIntent={

@@ -57,15 +57,19 @@ export function initPwaDisplayMode(): void {
   }
 }
 
-/** Register the service worker for PWA install and web push. */
+function isLoopbackHost(hostname: string): boolean {
+  return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]';
+}
+
+/**
+ * Register the service worker Chrome and Edge require before “Install app”.
+ * Loopback dev stays unregistered so Vite HMR is not intercepted. A phone on
+ * https (or any non-loopback host) still gets the worker.
+ */
 export function registerAppServiceWorker(): void {
-  if (!('serviceWorker' in navigator)) return;
+  if (!('serviceWorker' in navigator) || typeof window === 'undefined') return;
 
-  const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
-  const isLocalHost = hostname === 'localhost' || hostname === '127.0.0.1';
-
-  if (import.meta.env.DEV || isLocalHost) {
-    // Vite HMR + Docker localhost stacks: avoid SW intercepting static assets / manifest icons.
+  if (isLoopbackHost(window.location.hostname)) {
     void navigator.serviceWorker.getRegistrations().then((registrations) => {
       for (const registration of registrations) {
         void registration.unregister();
@@ -74,11 +78,11 @@ export function registerAppServiceWorker(): void {
     return;
   }
 
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(() => {
+  void navigator.serviceWorker
+    .register('/sw.js', { scope: '/', updateViaCache: 'none' })
+    .catch(() => {
       /* non-fatal — push registration retries on user action */
     });
-  });
 }
 
 export type MobileWebPlatform = 'ios' | 'android' | 'other';

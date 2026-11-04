@@ -3,6 +3,7 @@ import { SlidersHorizontal } from 'lucide-react';
 import type { BrowseListFilterState } from '../browseListFilters';
 import type { ListExplorerBucket } from './listExplorerBucket';
 import { ListExplorerFilterPop } from './ListExplorerFilterPop';
+import { LIST_FILTER_FAB_Z } from '../listChromeTheme';
 import {
   LIST_FILTER_FAB_DRAG_PX,
   LIST_FILTER_FAB_EDGE,
@@ -133,7 +134,7 @@ export const ListExplorerFilterFab = ({
   return (
     <div
       ref={fabRef}
-      className="pointer-events-none fixed z-[1220]"
+      className={`pointer-events-none fixed ${LIST_FILTER_FAB_Z}`}
       style={{
         ...positionStyle,
         width: live ? LIST_FILTER_FAB_SIZE : undefined,

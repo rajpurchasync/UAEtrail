@@ -19,7 +19,13 @@ export function detectAndroidWebBrowser(): AndroidWebBrowser {
   return 'other';
 }
 
-export function resolveAndroidInstallSteps(browser: AndroidWebBrowser): PhoneInstallStepBlock {
+export function resolveAndroidInstallSteps(
+  browser: AndroidWebBrowser,
+  secureContext = true
+): PhoneInstallStepBlock {
+  if (!secureContext) {
+    return { notice: ANDROID_INSTALL.insecureNotice, steps: ANDROID_INSTALL.stepsSecure };
+  }
   if (browser === 'edge') {
     return { notice: ANDROID_INSTALL.edgeNotice, steps: ANDROID_INSTALL.stepsEdge };
   }

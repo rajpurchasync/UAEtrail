@@ -8,10 +8,12 @@ type ListExplorerItemLinkProps = {
   className?: string;
   exploreItemId?: string | null;
   children: ReactNode;
+  /** Standalone list side map — hover sync without explore chrome. */
+  onMapHover?: (exploreItemId: string | null) => void;
 };
 
 const isDesktopHover = () =>
-  typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches;
+  typeof window !== 'undefined' && window.matchMedia('(min-width: 768px)').matches;
 
 /** Detail / place / shop from the list explorer — back returns here after nested screens. */
 export const ListExplorerItemLink = ({
@@ -19,22 +21,33 @@ export const ListExplorerItemLink = ({
   className,
   exploreItemId,
   children,
+  onMapHover,
 }: ListExplorerItemLinkProps) => {
   const location = useLocation();
   const chrome = useExploreMapChrome();
   const returnTo = `${location.pathname}${location.search}`;
+
+  const emitHover = (id: string | null) => {
+    if (onMapHover) {
+      onMapHover(id);
+      return;
+    }
+    if (!isDesktopHover()) return;
+    chrome?.setListHoverExploreItemId(id);
+  };
+
   return (
     <Link
       to={to}
       state={listExplorerEntityLinkState(returnTo)}
       className={className}
       onMouseEnter={() => {
-        if (!exploreItemId || !isDesktopHover()) return;
-        chrome?.setListHoverExploreItemId(exploreItemId);
+        if (!exploreItemId) return;
+        emitHover(exploreItemId);
       }}
       onMouseLeave={() => {
         if (!exploreItemId) return;
-        chrome?.setListHoverExploreItemId(null);
+        emitHover(null);
       }}
     >
       {children}

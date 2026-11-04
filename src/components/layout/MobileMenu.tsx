@@ -29,6 +29,8 @@ import {
   ANDROID_INSTALL_SETTINGS_HASH,
   IOS_INSTALL_SETTINGS_HASH,
 } from '../../config/phoneAppInstall';
+import { detectAndroidWebBrowser, resolveAndroidInstallSteps } from '../../utils/pwaInstallGuide';
+import { promptAndroidInstall } from '../../utils/pwaInstallPrompt';
 import { PROFILE_SETTINGS_PATH } from '../../config/routingCatalog';
 import { resolveMobileTabHeaderTitle } from '../../config/mobileTabHeader';
 import { exploreMapMobileBackState, mobileBackNavState, type MobileBackNavState } from '../../utils/mobileBackNav';
@@ -71,7 +73,7 @@ const resolveConsumerHamburgerDestination = (
   signInHref: string
 ): string => {
   if (item.profileLink) return user ? profileDestination : signInHref;
-  if (item.authGate && !user) return signInPathForReturn(item.to);
+  if (item.authGate && !user) return item.to;
   return item.to;
 };
 
@@ -472,6 +474,7 @@ const MobileMenuPanel = () => {
   const { canAccessPublishingWorkspace } = useMemberStatus({ enabled: Boolean(user) });
   const unreadNotifications = useNotificationUnreadCount();
   const { href: signInHref } = buildSignInRedirect({ pathname, search });
+  const [androidHelpOpen, setAndroidHelpOpen] = useState(false);
 
   const isAdminRole = user?.role === 'platform_admin';
   const isPrivilegedRole = canAccessPublishingWorkspace || isAdminRole;
@@ -621,17 +624,46 @@ const MobileMenuPanel = () => {
             <div className={MOBILE_DRAWER.group}>
               {item.items.map((sub) => {
                 const PlatformIcon = sub.action === 'pwa-android' ? Smartphone : Tablet;
+                const androidGuide =
+                  sub.action === 'pwa-android'
+                    ? resolveAndroidInstallSteps(detectAndroidWebBrowser(), window.isSecureContext)
+                    : null;
                 return (
-                  <button
-                    key={sub.label}
-                    type="button"
-                    onClick={() => openPwaInstall(sub.action)}
-                    className={mobileDrawerRowClass(false)}
-                  >
-                    <DrawerNavIcon active={false} icon={PlatformIcon} />
-                    <span className={`min-w-0 flex-1 ${drawerNavLabelClass(false)}`}>{sub.label}</span>
-                    <Download className="h-4 w-4 shrink-0 text-emerald-700/70" strokeWidth={2.25} aria-hidden />
-                  </button>
+                  <div key={sub.label}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (sub.action === 'pwa-android') {
+                          if (promptAndroidInstall()) {
+                            closeMenu();
+                            return;
+                          }
+                          if (user) {
+                            openPwaInstall('pwa-android');
+                            return;
+                          }
+                          setAndroidHelpOpen(true);
+                          return;
+                        }
+                        openPwaInstall(sub.action);
+                      }}
+                      className={mobileDrawerRowClass(false)}
+                    >
+                      <DrawerNavIcon active={false} icon={PlatformIcon} />
+                      <span className={`min-w-0 flex-1 ${drawerNavLabelClass(false)}`}>{sub.label}</span>
+                      <Download className="h-4 w-4 shrink-0 text-emerald-700/70" strokeWidth={2.25} aria-hidden />
+                    </button>
+                    {sub.action === 'pwa-android' && androidHelpOpen && androidGuide ? (
+                      <div className="px-4 pb-3 text-xs leading-relaxed text-neutral-600">
+                        {androidGuide.notice ? <p>{androidGuide.notice}</p> : null}
+                        <ol className="mt-2 list-decimal space-y-1 pl-4">
+                          {androidGuide.steps.map((step) => (
+                            <li key={step}>{step}</li>
+                          ))}
+                        </ol>
+                      </div>
+                    ) : null}
+                  </div>
                 );
               })}
             </div>

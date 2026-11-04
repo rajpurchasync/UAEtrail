@@ -66,6 +66,19 @@ export type ExploreBrowseUrlHydratedState = {
   expandSearch: boolean;
 };
 
+/** Guests do not open the people browse rail from a shared URL. */
+export const clampGuestPeopleBrowse = (
+  state: ExploreBrowseUrlHydratedState,
+  isSignedIn: boolean
+): ExploreBrowseUrlHydratedState =>
+  isSignedIn
+    ? state
+    : {
+        ...state,
+        peopleBrowseOpen: false,
+        listMode: state.listMode === 'people' ? 'default' : state.listMode,
+      };
+
 /** Parse explore browse UI state from URL (R2 / C18). */
 export const parseExploreBrowseStateFromSearchParams = (
   searchParams: URLSearchParams,

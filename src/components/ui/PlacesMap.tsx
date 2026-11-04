@@ -667,6 +667,45 @@ const FlyToSelectedPin = ({
   return null;
 };
 
+const LIST_HOVER_CLOSE_ZOOM = 14;
+const LIST_HOVER_ZOOM_BUMP = 2;
+
+/** List sidecar — pan/zoom toward hovered pin (+2 zoom when not already close). */
+const FlyToHighlightedPin = ({
+  pins,
+  highlightedExploreItemId,
+  enabled = false,
+}: {
+  pins: PlaceMapPin[];
+  highlightedExploreItemId?: string;
+  enabled?: boolean;
+}) => {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!enabled || !highlightedExploreItemId) return;
+    const related = pins.filter((entry) => pinMatchesSelection(entry, highlightedExploreItemId));
+    if (related.length === 0) return;
+
+    if (related.length >= 2) {
+      const bounds = L.latLngBounds(related.map((entry) => [entry.latitude, entry.longitude]));
+      map.flyToBounds(bounds, { padding: [56, 56], maxZoom: 14, duration: 0.4 });
+      return;
+    }
+
+    const pin = related[0]!;
+    const currentZoom = map.getZoom();
+    const maxZoom = map.getMaxZoom();
+    let targetZoom = currentZoom;
+    if (currentZoom < LIST_HOVER_CLOSE_ZOOM) {
+      targetZoom = Math.min(maxZoom, Math.max(currentZoom + LIST_HOVER_ZOOM_BUMP, 13));
+    }
+    map.flyTo([pin.latitude, pin.longitude], targetZoom, { duration: 0.4 });
+  }, [enabled, highlightedExploreItemId, map, pins]);
+
+  return null;
+};
+
 /** Imperative cluster layer — avoids react-leaflet-markercluster compatibility issues. */
 const ClusteredMarkers = ({
   pins,
@@ -830,6 +869,8 @@ interface PlacesMapProps {
   showDesktopZoomControl?: boolean;
   /** Bumps Leaflet invalidateSize when mobile list sheet / layout chrome changes. */
   layoutRevision?: number | string | boolean;
+  /** List `/list` side map — fly toward hovered pins with a modest zoom bump. */
+  flyToHighlightedPin?: boolean;
 }
 
 /** Interactive map with location pins anchored to coordinates (Leaflet map tiles). */
@@ -856,6 +897,7 @@ export const PlacesMap = ({
   minZoom,
   showDesktopZoomControl = false,
   layoutRevision,
+  flyToHighlightedPin = false,
 }: PlacesMapProps) => {
   const mapBounds = useMemo(() => boundsFromPins(pins, bounds), [pins, bounds]);
   const pinsKeyValue = useMemo(() => pinsKey(pins), [pins]);
@@ -977,6 +1019,11 @@ export const PlacesMap = ({
           <MapVisibleBoundsReporter onVisibleBoundsChange={onVisibleBoundsChange} />
         ) : null}
         <FlyToSelectedPin pins={pins} selectedExploreItemId={activeSelection} />
+        <FlyToHighlightedPin
+          pins={pins}
+          highlightedExploreItemId={highlightedExploreItemId}
+          enabled={flyToHighlightedPin}
+        />
         {exploreMode && showDesktopZoomControl ? <ExploreMapDesktopZoomControl /> : null}
         {exploreMode ? (
           <ClusteredMarkers

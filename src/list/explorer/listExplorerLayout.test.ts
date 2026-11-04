@@ -15,7 +15,7 @@ import {
 import { parseListFilterFabCorner, snapListFilterFabCorner } from './listExplorerFabSnap';
 import { listExplorerEntityLinkState } from './listExplorerNavState';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
-import { listExplorerCardMeta, listExplorerCardTitle, listExplorerPriceLabel } from './listExplorerCardMeta';
+import { listExplorerCardMeta, listExplorerCardTitle, listExplorerPriceLabel, formatListExplorerRowDateLabel, listExplorerRowWhenDisplay } from './listExplorerCardMeta';
 
 const emptyFilters = (): BrowseListFilterState => ({
   query: 'wadi',
@@ -153,6 +153,23 @@ describe('list explorer thumbnail copy', () => {
     const meta = listExplorerCardMeta(companyCard);
     expect(meta.hostName).toBe('UAE Adventure Co');
     expect(meta.hostAvatar).toBe('https://cdn.example/logo.png');
+  });
+
+  it('formats list row dates in full and prefixes This for this-week section', () => {
+    const now = new Date('2026-10-30T10:00:00');
+    expect(formatListExplorerRowDateLabel('2026-10-30', now)).toBe('Fri 30 Oct 26');
+    expect(formatListExplorerRowDateLabel('2026-10-31', now)).toBe('This Sat 31 Oct 26');
+
+    const weekCard = {
+      ...eventCard,
+      scheduleDate: '2026-10-31',
+      whenLabel: 'Sat at 4:00 PM',
+      activity: { title: 'Hatta Dam Loop', date: '2026-10-31', time: '16:00' },
+    } as DiscoveryCardModel;
+    expect(listExplorerRowWhenDisplay(weekCard, now)).toEqual({
+      date: 'This Sat 31 Oct 26',
+      time: '4:00 PM',
+    });
   });
 });
 

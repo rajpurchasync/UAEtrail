@@ -55,6 +55,7 @@ type Setters = {
 
 export type UseExploreBrowseUrlApplyHandlersArgs = {
   isDesktop: boolean;
+  isSignedIn: boolean;
   clearSelection: () => void;
   syncExploreUrl: SyncExploreUrl;
   listOpen: boolean;
@@ -74,6 +75,7 @@ export type UseExploreBrowseUrlApplyHandlersArgs = {
 export const useExploreBrowseUrlApplyHandlers = (args: UseExploreBrowseUrlApplyHandlersArgs) => {
   const {
     isDesktop,
+    isSignedIn,
     clearSelection,
     syncExploreUrl,
     listOpen,
@@ -199,6 +201,7 @@ export const useExploreBrowseUrlApplyHandlers = (args: UseExploreBrowseUrlApplyH
 
   const openPeopleBrowsePanel = useCallback(
     (initialTab: PeopleBrowseTab = 'looking') => {
+      if (!isSignedIn) return;
       clearSelection();
       setters.setPeopleBrowseTab(initialTab);
       setters.setPanel('activities');
@@ -227,7 +230,7 @@ export const useExploreBrowseUrlApplyHandlers = (args: UseExploreBrowseUrlApplyH
         browse: false,
       });
     },
-    [isDesktop, clearSelection, setters, syncExploreUrl]
+    [isDesktop, isSignedIn, clearSelection, setters, syncExploreUrl]
   );
 
   const closePeopleBrowsePanel = useCallback(() => {

@@ -86,11 +86,22 @@ const sectionSlot = (iso: string, now: Date): SectionSlot | null => {
   };
 };
 
+/** Matches the “This week” list section — not Today or later buckets. */
+export const listExplorerIsThisWeekSectionDate = (iso: string, now: Date = new Date()): boolean =>
+  sectionSlot(iso, now)?.key === 'week';
+
 export const groupListExplorerDateSections = (
   cards: DiscoveryCardModel[],
   now: Date = new Date()
+): ListExplorerDateSection[] =>
+  groupListExplorerByIso(cards, listExplorerCardDateIso, now);
+
+export const groupListExplorerByIso = (
+  cards: DiscoveryCardModel[],
+  isoForCard: (card: DiscoveryCardModel) => string | null,
+  now: Date = new Date()
 ): ListExplorerDateSection[] => {
-  const dated = cards.some((card) => listExplorerCardDateIso(card));
+  const dated = cards.some((card) => isoForCard(card));
   if (!dated) {
     return [{ key: 'all', label: '', cards }];
   }
@@ -99,7 +110,7 @@ export const groupListExplorerDateSections = (
   const undated: DiscoveryCardModel[] = [];
 
   for (const card of cards) {
-    const iso = listExplorerCardDateIso(card);
+    const iso = isoForCard(card);
     const slot = iso ? sectionSlot(iso, now) : null;
     if (!slot) {
       undated.push(card);
@@ -113,7 +124,7 @@ export const groupListExplorerDateSections = (
   const sections = [...buckets.values()].sort((a, b) => a.sort - b.sort);
   for (const section of sections) {
     section.cards.sort((a, b) =>
-      (listExplorerCardDateIso(a) ?? '').localeCompare(listExplorerCardDateIso(b) ?? '')
+      (isoForCard(a) ?? '').localeCompare(isoForCard(b) ?? '')
     );
   }
   if (undated.length > 0) {

@@ -15,7 +15,7 @@ import {
   DESKTOP_SIDE_NAV_MIN_WIDTH,
   useDesktopSideNavExpanded,
 } from '../../../hooks/useDesktopSideNavExpanded';
-import { ADMIN_OVERVIEW_PATH, PROFILE_PATH } from '../../../config/routingCatalog';
+import { ADMIN_OVERVIEW_PATH, EXPLORE_MAP_PATH, joinAuthPath, PLAN_PATH, PROFILE_PATH } from '../../../config/routingCatalog';
 import {
   PRODUCT_HOSTING_SCHEDULE_NAV_HINT,
   PRODUCT_HOSTING_SCHEDULE_NAV_LABEL,
@@ -26,6 +26,7 @@ import { useInboxUnreadCount } from '../../../hooks/useInboxUnreadCount';
 import { useMemberStatus } from '../../../hooks/useMemberStatus';
 import { useNotificationUnreadCount } from '../../../hooks/useNotificationUnreadCount';
 import { SecureAvatar } from '../../ui/SecureAvatar';
+import { buildSignInRedirect } from '../../../utils/authReturnContext';
 
 const FOOTER_LINKS = [
   { to: '/about', label: 'About' },
@@ -92,10 +93,22 @@ const SideNavLink = ({ to, label, icon: Icon, active, compact, badge = 0, navHin
   return tooltip ? <UiTooltip label={tooltip}>{link}</UiTooltip> : link;
 };
 
-/** Persistent left navigation for signed-in tablet and desktop. */
+const resolveDesktopNavHref = (
+  item: DesktopNavItem,
+  user: { id: string } | null,
+  showOrganiserPlanShortcut: boolean
+): string => {
+  if (item.key === 'plan') {
+    return user ? planMemberNavPath(showOrganiserPlanShortcut) : PLAN_PATH;
+  }
+  return item.to;
+};
+
+/** Persistent left navigation for tablet and desktop (guests and signed-in members). */
 export const DesktopSideNav = () => {
   const { pathname, search } = useLocation();
   const { user } = useAuth();
+  const { href: signInHref } = buildSignInRedirect({ pathname, search });
   const {
     width,
     expanded,
@@ -111,24 +124,21 @@ export const DesktopSideNav = () => {
   const unreadNotifications = useNotificationUnreadCount();
 
   useEffect(() => {
-    if (!user) return;
     document.documentElement.style.setProperty('--desktop-side-nav-width', `${width}px`);
     return () => {
       document.documentElement.style.removeProperty('--desktop-side-nav-width');
     };
-  }, [user, width]);
-
-  if (!user) return null;
+  }, [width]);
 
   const badgeCount = (badge?: DesktopNavBadge) =>
     badge === 'chat' ? unreadChat : badge === 'notifications' ? unreadNotifications : 0;
-  const displayName = user.displayName || user.email || 'Your profile';
+  const displayName = user?.displayName || user?.email || 'Your profile';
   const profileActive = pathname === PROFILE_PATH;
   const sectionTitleClass = compact
     ? 'sr-only'
     : 'block px-3 pb-1 pt-4 text-[11px] font-semibold uppercase tracking-[0.14em] text-neutral-500';
 
-  const showOrganiserPlanShortcut = canAccessPublishingWorkspace;
+  const showOrganiserPlanShortcut = Boolean(user && canAccessPublishingWorkspace);
 
   const renderItems = (items: readonly DesktopNavItem[]) =>
     items.map((item) => {
@@ -136,16 +146,18 @@ export const DesktopSideNav = () => {
       return (
         <SideNavLink
           key={item.key}
-          to={isPlan ? planMemberNavPath(showOrganiserPlanShortcut) : item.to}
+          to={resolveDesktopNavHref(item, user, showOrganiserPlanShortcut)}
           label={item.label}
           icon={item.icon}
           active={
             isPlan
-              ? isPlanMemberNavActive(pathname, search, showOrganiserPlanShortcut)
+              ? user
+                ? isPlanMemberNavActive(pathname, search, showOrganiserPlanShortcut)
+                : false
               : isDesktopNavItemActive(item, pathname, search)
           }
           compact={compact}
-          badge={badgeCount(item.badge)}
+          badge={user ? badgeCount(item.badge) : 0}
           navHint={item.navHint}
         />
       );
@@ -158,21 +170,49 @@ export const DesktopSideNav = () => {
       style={{ width }}
       className="relative z-[6800] hidden shrink-0 flex-col border-r border-neutral-200 bg-white md:flex md:overflow-visible"
     >
-      <nav aria-label="Primary" className="flex min-h-0 flex-1 flex-col overflow-y-auto px-2 py-3 scroll-touch">
-        <Link
-          to={PROFILE_PATH}
-          title={displayName}
-          aria-current={profileActive ? 'page' : undefined}
-          className={`flex items-center gap-3 rounded-xl py-2 transition-colors ${
-            compact ? 'justify-center px-0' : 'justify-start px-3'
-          } ${profileActive ? 'bg-emerald-50' : 'hover:bg-neutral-100'}`}
-        >
-          <SecureAvatar src={user.avatarUrl} name={displayName} className="h-9 w-9 shrink-0 text-sm" />
-          <span className={compact ? 'sr-only' : 'min-w-0 flex-1'}>
-            <span className="block truncate text-sm font-semibold text-neutral-900">{displayName}</span>
-            <span className="block truncate text-xs text-neutral-500">View your profile</span>
-          </span>
-        </Link>
+      <nav aria-label="Primary" className="flex min-h-0 flex-1 flex-col overflow-y-auto px-2 py-3 scroll-touch product-sidebar-scroll">
+        {user ? (
+          <Link
+            to={PROFILE_PATH}
+            title={displayName}
+            aria-current={profileActive ? 'page' : undefined}
+            className={`flex items-center gap-3 rounded-xl py-2 transition-colors ${
+              compact ? 'justify-center px-0' : 'justify-start px-3'
+            } ${profileActive ? 'bg-emerald-50' : 'hover:bg-neutral-100'}`}
+          >
+            <SecureAvatar src={user.avatarUrl} name={displayName} className="h-9 w-9 shrink-0 text-sm" />
+            <span className={compact ? 'sr-only' : 'min-w-0 flex-1'}>
+              <span className="block truncate text-sm font-semibold text-neutral-900">{displayName}</span>
+              <span className="block truncate text-xs text-neutral-500">View your profile</span>
+            </span>
+          </Link>
+        ) : (
+          <div
+            className={`flex flex-col gap-2 rounded-xl py-2 ${
+              compact ? 'items-center px-0' : 'px-3'
+            }`}
+          >
+            {!compact ? (
+              <p className="text-sm font-semibold text-neutral-900">Find your people outdoors</p>
+            ) : null}
+            <Link
+              to={joinAuthPath(EXPLORE_MAP_PATH)}
+              className={`rounded-full bg-emerald-600 text-center text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 ${
+                compact ? 'px-3 py-2' : 'px-4 py-2'
+              }`}
+            >
+              Join free
+            </Link>
+            <Link
+              to={signInHref}
+              className={`text-center text-sm font-medium text-neutral-600 hover:text-neutral-900 ${
+                compact ? 'py-1' : 'py-0.5'
+              }`}
+            >
+              Sign in
+            </Link>
+          </div>
+        )}
 
         <div role="group" aria-label="Go" className="mt-1">
           <p className={sectionTitleClass}>Go</p>
@@ -184,11 +224,14 @@ export const DesktopSideNav = () => {
         <div role="group" aria-label="On the map" className="mt-1">
           <p className={sectionTitleClass}>On the map</p>
           <div className={`space-y-0.5 ${compact ? 'mt-2 border-t border-neutral-100 pt-2' : 'mt-0'}`}>
-            {renderItems(DESKTOP_MAP_NAV)}
+            {renderItems(
+              user ? DESKTOP_MAP_NAV : DESKTOP_MAP_NAV.filter((item) => item.key !== 'findCrew')
+            )}
           </div>
         </div>
 
-        {DESKTOP_SIDE_NAV_SECTIONS.map((section) => (
+        {user
+          ? DESKTOP_SIDE_NAV_SECTIONS.map((section) => (
           <div key={section.key} role="group" aria-label={section.title} className="mt-1">
             <p className={sectionTitleClass}>{section.title}</p>
             <div
@@ -197,9 +240,10 @@ export const DesktopSideNav = () => {
               {renderItems(section.items)}
             </div>
           </div>
-        ))}
+        ))
+          : null}
 
-        {canAccessPublishingWorkspace || user.role === 'platform_admin' ? (
+        {user && (canAccessPublishingWorkspace || user.role === 'platform_admin') ? (
           <div role="group" aria-label="Organise" className="mt-1">
             <p className={sectionTitleClass}>Organise</p>
             {!compact && canAccessPublishingWorkspace ? (
@@ -299,14 +343,14 @@ export const DesktopSideNav = () => {
           className="group/resize absolute inset-y-0 -right-px z-[7000] flex w-3 cursor-col-resize touch-none items-center justify-center max-md:hidden"
         >
           <span
-            className="pointer-events-none absolute inset-y-3 right-[5px] w-px bg-emerald-400/70 transition-colors group-hover/resize:bg-emerald-500 group-focus-visible/resize:bg-emerald-500"
+            className="pointer-events-none absolute inset-y-3 right-[5px] w-px bg-neutral-300/80 transition-colors group-hover/resize:bg-neutral-400 group-focus-visible/resize:bg-neutral-500"
             aria-hidden
           />
           <span className="pointer-events-none relative flex flex-col gap-[3px]" aria-hidden>
             {Array.from({ length: 6 }, (_, index) => (
               <span
                 key={index}
-                className="h-[3px] w-[3px] rounded-full bg-neutral-500 shadow-[0_0_0_1px_rgba(255,255,255,.85)] transition-colors group-hover/resize:bg-emerald-600 group-focus-visible/resize:bg-emerald-600"
+                className="h-[3px] w-[3px] rounded-full bg-neutral-400 shadow-[0_0_0_1px_rgba(255,255,255,.85)] transition-colors group-hover/resize:bg-neutral-600 group-focus-visible/resize:bg-neutral-600"
               />
             ))}
           </span>

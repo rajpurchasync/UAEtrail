@@ -20,6 +20,12 @@ import {
   serializeListExplorerLayout,
   type ListExplorerLayout,
 } from './explorer/listExplorerLayout';
+import {
+  LIST_SORT_PARAM,
+  parseListExplorerSort,
+  serializeListExplorerSort,
+  type ListExplorerSortMode,
+} from './explorer/listExplorerSort';
 
 const LIST_FILTER_PARAM_KEYS = [
   'q',
@@ -32,6 +38,7 @@ const LIST_FILTER_PARAM_KEYS = [
   LIST_CAT_PARAM,
   BUDDIES_SEGMENT_URL_PARAM,
   LIST_LAYOUT_PARAM,
+  LIST_SORT_PARAM,
 ] as const;
 
 /** Explore-only keys — keep when list overlay updates browse filters. */
@@ -75,12 +82,18 @@ export const useListDiscoveryUrlState = (options?: UseListDiscoveryUrlStateOptio
     [searchParams]
   );
 
+  const sort = useMemo(
+    () => parseListExplorerSort(searchParams.get(LIST_SORT_PARAM)),
+    [searchParams]
+  );
+
   const syncUrl = useCallback(
     (
       patch: Partial<BrowseListFilterState> & {
         regions?: string[];
         listCat?: BrowseMainCategoryKey | null;
         layout?: ListExplorerLayout;
+        sort?: ListExplorerSortMode;
       }
     ) => {
       const next: BrowseListFilterState = {
@@ -92,6 +105,11 @@ export const useListDiscoveryUrlState = (options?: UseListDiscoveryUrlStateOptio
       const nextLayout = patch.layout ?? layout;
       const layoutParam = serializeListExplorerLayout(nextLayout);
       if (layoutParam) listParams.set(LIST_LAYOUT_PARAM, layoutParam);
+
+      const nextSort = patch.sort ?? sort;
+      const sortParam = serializeListExplorerSort(nextSort);
+      if (sortParam) listParams.set(LIST_SORT_PARAM, sortParam);
+      else listParams.delete(LIST_SORT_PARAM);
 
       const params = new URLSearchParams(searchParams);
       const preserved = new Map<string, string>();
@@ -129,7 +147,7 @@ export const useListDiscoveryUrlState = (options?: UseListDiscoveryUrlStateOptio
         { replace: true, state: location.state }
       );
     },
-    [filters, venueRegions, listCat, layout, location.pathname, location.state, mapOverlay, navigate, searchParams]
+    [filters, venueRegions, listCat, layout, sort, location.pathname, location.state, mapOverlay, navigate, searchParams]
   );
 
   const setQuery = useCallback((query: string) => syncUrl({ query }), [syncUrl]);
@@ -156,6 +174,7 @@ export const useListDiscoveryUrlState = (options?: UseListDiscoveryUrlStateOptio
     venueRegions,
     listCat,
     layout,
+    sort,
     searchString,
     listPath: searchString ? `${LIST_DISCOVERY_PATH}?${searchString}` : LIST_DISCOVERY_PATH,
     setQuery,

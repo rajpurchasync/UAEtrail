@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { ChevronDown, Smartphone } from 'lucide-react';
 import type { PhoneInstallStepBlock } from '../../utils/pwaInstallGuide';
 
@@ -11,6 +11,7 @@ type InstallGuideCardProps = {
   guide: PhoneInstallStepBlock;
   accent: 'sky' | 'emerald';
   defaultStepsOpen?: boolean;
+  installAction?: ReactNode;
 };
 
 export const InstallGuideCard = ({
@@ -22,6 +23,7 @@ export const InstallGuideCard = ({
   guide,
   accent,
   defaultStepsOpen = false,
+  installAction,
 }: InstallGuideCardProps) => {
   const [stepsOpen, setStepsOpen] = useState(defaultStepsOpen);
 
@@ -50,6 +52,8 @@ export const InstallGuideCard = ({
           <p className="mt-1 text-xs leading-relaxed text-neutral-500">{body}</p>
         </div>
       </div>
+
+      {installAction}
 
       <button
         type="button"

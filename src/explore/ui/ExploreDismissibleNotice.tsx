@@ -15,7 +15,7 @@ export const ExploreDismissibleNotice = ({ message, onDismiss }: ExploreDismissi
       <button
         type="button"
         onClick={onDismiss}
-        className="shrink-0 text-emerald-700"
+        className="-m-1 shrink-0 rounded-lg p-1 text-emerald-700 hover:bg-emerald-100/80 active:bg-emerald-100"
         aria-label="Dismiss"
       >
         <X className="h-4 w-4" />

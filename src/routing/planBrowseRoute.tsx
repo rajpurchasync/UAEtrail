@@ -1,6 +1,6 @@
 import { Suspense, lazy } from 'react';
 import { Navigate, useSearchParams } from 'react-router-dom';
-import { GuestTabPlaceholder } from '../components/auth/GuestTabPlaceholder';
+import { GuestGatedSurfaceLayout } from '../components/auth/GuestGatedSurfaceLayout';
 import { useAuth } from '../context/AuthContext';
 import { PRODUCT_PLAN_SURFACE_TITLE } from '../content/productNorthStar';
 import { explorePath, inboundCreateParamToHostPath, parseActivityListFilter } from '../explore/routing';
@@ -30,13 +30,7 @@ export const PlanBrowseRoute = () => {
     );
   }
   if (tab === 'joined' || tab === 'hosted' || searchParams.get('checkin') || !tab) {
-    return (
-      <GuestTabPlaceholder
-        title={PRODUCT_PLAN_SURFACE_TITLE}
-        description="Sign in to see what is next on your calendar and track outdoor goals."
-        intent="explore-browse"
-      />
-    );
+    return <GuestGatedSurfaceLayout title={PRODUCT_PLAN_SURFACE_TITLE} feature="plan" />;
   }
   const activity = parseActivityListFilter(searchParams.get('activity'), searchParams.get('filter'));
   return (

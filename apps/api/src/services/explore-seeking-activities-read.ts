@@ -1,4 +1,5 @@
 import { exploreMapItemIsSeeking, type ExploreMapItemDTO } from '@uaetrail/shared-types';
+import { GUEST_EXPLORE_MAP_MAX_EVENTS, isGuestExploreMapCatalogCapEnabled } from '../lib/explore-map-guest-catalog-cap.js';
 import { loadExploreMapItemsForMemberEngagement } from '../lib/explore-map-member-engagement.js';
 
 /**
@@ -11,7 +12,11 @@ export const loadExploreSeekingActivitiesForViewer = async (input: {
   userRole?: string | null;
 }): Promise<ExploreMapItemDTO[]> => {
   const items = await loadExploreMapItemsForMemberEngagement(input);
-  return items.filter(
+  const seeking = items.filter(
     (item) => exploreMapItemIsSeeking(item) && item.viewerAccess?.exposure !== 'none'
   );
+  if (!input.viewerUserId && isGuestExploreMapCatalogCapEnabled()) {
+    return seeking.slice(0, GUEST_EXPLORE_MAP_MAX_EVENTS);
+  }
+  return seeking;
 };

@@ -8,24 +8,28 @@ import { resolveBrowsePosterCoverUrl } from '../browsePosterCover';
 import { ListExplorerItemLink } from './ListExplorerItemLink';
 import { listExplorerCardMeta } from './listExplorerCardMeta';
 import { usePlaceDistanceLabel } from './listPlaceDistance';
+import { ListExplorerDistanceChip } from './ListExplorerDistanceChip';
 
 type ListExplorerThumbnailCardProps = {
   card: DiscoveryCardModel;
+  onMapHover?: (exploreItemId: string | null) => void;
+  showDistance?: boolean;
 };
 
-export const ListExplorerThumbnailCard = ({ card }: ListExplorerThumbnailCardProps) => {
+export const ListExplorerThumbnailCard = ({ card, onMapHover, showDistance = false }: ListExplorerThumbnailCardProps) => {
   const cover = resolveBrowsePosterCoverUrl(card);
   const meta = listExplorerCardMeta(card);
   const distance = usePlaceDistanceLabel(card.mapLatitude, card.mapLongitude);
-  const showBottom = Boolean(meta.location || meta.when || meta.price || distance);
+  const showBottom = Boolean(meta.location || meta.when || meta.price || distance || (showDistance && distance));
 
   return (
     <ListExplorerItemLink
       to={card.path}
       exploreItemId={card.id}
+      onMapHover={onMapHover}
       className={`${EXPLORE_SHAPE.control} group flex h-full flex-col overflow-hidden border border-neutral-200/80 bg-white shadow-[0_1px_8px_rgba(15,23,42,.06)] ring-1 ring-black/[0.02] transition active:scale-[0.99]`}
     >
-      <div className="relative aspect-[4/3] w-full overflow-hidden bg-neutral-100 lg:aspect-[5/3]">
+      <div className="relative h-[9.75rem] w-full shrink-0 overflow-hidden bg-neutral-100 sm:h-[8.75rem] md:h-32 lg:h-[7.25rem]">
         {cover ? (
           <EnvironmentImage
             src={cover}
@@ -36,7 +40,7 @@ export const ListExplorerThumbnailCard = ({ card }: ListExplorerThumbnailCardPro
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-neutral-100 to-neutral-200">
-            <span className="select-none text-4xl" aria-hidden>
+            <span className="select-none text-3xl md:text-2xl" aria-hidden>
               {card.emoji}
             </span>
           </div>
@@ -47,7 +51,7 @@ export const ListExplorerThumbnailCard = ({ card }: ListExplorerThumbnailCardPro
           kind={card.kind}
           emoji={card.emoji}
           size="overlay"
-          className="absolute left-1.5 top-1.5 shadow-sm ring-2 ring-white/90"
+          className="absolute left-1 top-1 h-5 w-5 text-xs shadow-sm ring-2 ring-white/90 md:h-[1.125rem] md:w-[1.125rem]"
         />
         {meta.hostName ? (
           <div className="absolute right-1.5 top-1.5 flex max-w-[68%] flex-col items-end gap-1">
@@ -77,10 +81,14 @@ export const ListExplorerThumbnailCard = ({ card }: ListExplorerThumbnailCardPro
             <div className="flex items-end gap-1.5">
               <div className="min-w-0 flex-1">
                 {meta.location || distance ? (
-                  <p className="flex items-center gap-1 text-[10px] font-semibold leading-tight text-white">
-                    <MapPin className="h-3 w-3 shrink-0 text-emerald-300" aria-hidden />
-                    {meta.location ? <span className="truncate">{meta.location}</span> : null}
-                    {distance ? <span className="shrink-0 tabular-nums text-white/90">{distance}</span> : null}
+                  <p className="flex flex-wrap items-center gap-1 text-[10px] font-semibold leading-tight text-white">
+                    {meta.location ? (
+                      <>
+                        <MapPin className="h-3 w-3 shrink-0 text-emerald-300" aria-hidden />
+                        <span className="min-w-0 truncate">{meta.location}</span>
+                      </>
+                    ) : null}
+                    {distance ? <ListExplorerDistanceChip label={distance} variant="dark" /> : null}
                   </p>
                 ) : null}
                 {meta.when ? (
@@ -99,8 +107,8 @@ export const ListExplorerThumbnailCard = ({ card }: ListExplorerThumbnailCardPro
           </div>
         ) : null}
       </div>
-      <div className="px-2.5 py-2">
-        <h3 className={`line-clamp-2 text-[13px] font-bold leading-snug ${EXPLORE_TYPE.title}`}>
+      <div className="px-2.5 py-2 md:px-2 md:py-1.5">
+        <h3 className={`line-clamp-2 text-[13px] font-bold leading-snug md:text-xs md:leading-snug ${EXPLORE_TYPE.title}`}>
           {meta.title}
         </h3>
       </div>

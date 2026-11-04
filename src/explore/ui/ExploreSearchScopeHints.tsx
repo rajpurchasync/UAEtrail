@@ -1,4 +1,5 @@
 import {
+  EXPLORE_GUEST_MAP_PREVIEW_MAX_MATCHES,
   EXPLORE_SEARCH_SCOPE_COPY,
   type ExploreSearchScopeCounts,
   type ExploreSearchScopeKey,
@@ -15,6 +16,9 @@ type ExploreSearchScopeHintsProps = {
   counts: ExploreSearchScopeCounts;
   onPick: (scope: ExploreSearchScopeKey) => void;
   className?: string;
+  signedIn?: boolean;
+  /** Label match counts as preview-only for guests (map cap). */
+  guestPreview?: boolean;
 };
 
 const formatCount = (count: number) => (count === 1 ? '1 match' : `${count} matches`);
@@ -24,8 +28,10 @@ export const ExploreSearchScopeHints = ({
   counts,
   onPick,
   className = '',
+  signedIn = true,
+  guestPreview = false,
 }: ExploreSearchScopeHintsProps) => {
-  const scopes = exploreSearchScopesForQuery(query, counts);
+  const scopes = exploreSearchScopesForQuery(query, counts, { signedIn });
   if (scopes.length === 0) return null;
 
   return (
@@ -52,7 +58,15 @@ export const ExploreSearchScopeHints = ({
                 <span className={`block truncate text-xs font-medium ${EXPLORE_TYPE.muted}`}>{description}</span>
               </span>
               <span className={`shrink-0 text-xs font-bold tabular-nums ${EXPLORE_TYPE.body}`}>
-                {shipped ? (usesMapCounts ? formatCount(count) : 'Search') : 'Soon'}
+                {shipped
+                  ? usesMapCounts
+                    ? guestPreview && !signedIn
+                      ? count > 0
+                        ? `${Math.min(count, EXPLORE_GUEST_MAP_PREVIEW_MAX_MATCHES)} preview`
+                        : 'Preview'
+                      : formatCount(count)
+                    : 'Search'
+                  : 'Soon'}
               </span>
             </button>
           </li>

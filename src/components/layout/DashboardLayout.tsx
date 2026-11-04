@@ -79,7 +79,7 @@ export const DashboardLayout = ({ title, links, children }: DashboardLayoutProps
           </div>
         </header>
         <div className="flex min-h-0 flex-1">
-          <aside className="hidden w-[220px] shrink-0 overflow-y-auto border-r border-gray-200 bg-white p-3 md:block">
+          <aside className="product-sidebar-scroll hidden w-[220px] shrink-0 overflow-y-auto border-r border-gray-200 bg-white p-3 md:block">
             <AdminConsoleSidebar
               pathname={location.pathname}
               unreadNotifications={unreadNotifications}

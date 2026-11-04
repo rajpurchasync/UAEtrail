@@ -47,6 +47,7 @@ export const useBrowseListFeed = ({
 
   return {
     cards,
+    filteredItems,
     items: mapEnabled ? items : [],
     isLoading: feedLoading,
     isError: mapEnabled ? isError : false,

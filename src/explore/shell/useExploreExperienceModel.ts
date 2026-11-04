@@ -7,6 +7,7 @@ import { useMemberStatus } from '../../hooks/useMemberStatus';
 import { reloadExploreMap } from '../../hooks/useExploreMap';
 import { buildSignInRedirect } from '../../utils/authReturnContext';
 import { useMinWidthLg } from '../../hooks/useMinWidthLg';
+import { useMinWidthMd } from '../../hooks/useMinWidthMd';
 import { getExploreMapTiles } from '../../config/platform';
 import { useExploreBrowseList } from '../ui/useExploreBrowseList';
 import { useExploreBrowseUrlState } from '../ui/useExploreBrowseUrlState';
@@ -25,6 +26,7 @@ import { useExploreSelectionActions } from '../ui/useExploreSelectionActions';
 import { parsePlanWithUserId } from '../routing';
 import { activityJoinInviteBanner } from '../../content/exploreGoingPanelCopy';
 import type { ExploreSearchScopeKey } from '../exploreBrowseTaxonomy';
+import { guestExplorePreviewCanSearch } from '../guestMapPreviewPolicy';
 import { useHostActivitySheetBundle } from '../../hooks/useHostActivitySheetBundle';
 import { useExplorePublishedAreas } from '../useExplorePublishedAreas';
 import { useExplorePeopleBrowseBundle } from './useExplorePeopleBrowseBundle';
@@ -68,6 +70,8 @@ export const useExploreExperienceModel = () => {
   const queryClient = useQueryClient();
   const { pathname, search, state: locationState } = useLocation();
   const isDesktop = useMinWidthLg();
+  /** Side nav + in-map right rail for guest gates (md+), not browse panel layout (lg+). */
+  const useDesktopGuestGatePanel = useMinWidthMd() && !user;
 
   const { myPlanMapMode, areaSlug, mapItems, mapLoading, loadError, mapFetch } =
     useExploreMapCatalog({ userId: user?.id, searchParams });
@@ -79,6 +83,7 @@ export const useExploreExperienceModel = () => {
 
   const browse = useExploreBrowseUrlState({
     isDesktop,
+    isSignedIn: Boolean(user),
     searchParams,
     setSearchParams,
     clearSelection,
@@ -313,10 +318,15 @@ export const useExploreExperienceModel = () => {
 
   const handleExploreSearchCommit = useCallback(
     (scope?: ExploreSearchScopeKey | null) => {
+      if (!user && !guestExplorePreviewCanSearch()) {
+        selection.handleGuestPreviewLimitGate();
+        closeExploreSearchModal();
+        return;
+      }
       browse.commitExploreSearch(scope);
       setSearchFocusNonce((n) => n + 1);
     },
-    [browse]
+    [browse, closeExploreSearchModal, selection, user]
   );
 
   const signInHref = useMemo(
@@ -345,6 +355,7 @@ export const useExploreExperienceModel = () => {
     pathname,
     search,
     isDesktop,
+    useDesktopGuestGatePanel,
     myPlanMapMode,
     areaSlug,
     mapItems,

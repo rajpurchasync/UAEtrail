@@ -48,6 +48,16 @@ const persist = (expanded: boolean, width: number) => {
   }
 };
 
+export const DESKTOP_SIDE_NAV_SYNC_EVENT = 'uaetrail:desktop-side-nav-sync';
+
+/** Collapse icon rail — e.g. guest gated map column needs horizontal space. */
+export const collapseDesktopSideNav = () => {
+  persist(false, DESKTOP_SIDE_NAV_COLLAPSED_WIDTH);
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event(DESKTOP_SIDE_NAV_SYNC_EVENT));
+  }
+};
+
 /** User-sized left nav; remembered. Collapse snaps to the icon rail. */
 export const useDesktopSideNavExpanded = () => {
   const [width, setWidth] = useState(defaultWidth);
@@ -62,6 +72,9 @@ export const useDesktopSideNavExpanded = () => {
     const next = defaultWidth();
     setWidth(next);
     if (next > DESKTOP_SIDE_NAV_COLLAPSED_WIDTH) lastExpandedWidthRef.current = next;
+    const sync = () => setWidth(defaultWidth());
+    window.addEventListener(DESKTOP_SIDE_NAV_SYNC_EVENT, sync);
+    return () => window.removeEventListener(DESKTOP_SIDE_NAV_SYNC_EVENT, sync);
   }, []);
 
   const expanded = width > DESKTOP_SIDE_NAV_COLLAPSED_WIDTH;

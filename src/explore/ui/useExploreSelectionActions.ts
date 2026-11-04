@@ -36,6 +36,7 @@ import { useExploreSelectionPeekJoin } from './useExploreSelectionPeekJoin';
 import { useExploreActivityPinDeepLink } from './useExploreActivityPinDeepLink';
 import { useExploreSelectionRemovals } from './useExploreSelectionRemovals';
 import { hostPublishAvailabilityNoticeMessage } from '../../plan/hostPublishAvailabilityNotice';
+import { recordGuestExplorePreviewView } from '../guestMapPreviewPolicy';
 
 type BrowseState = ReturnType<typeof useExploreBrowseUrlState>;
 
@@ -121,15 +122,23 @@ export const useExploreSelectionActions = ({
     onOpenHostManage,
   });
 
+  const handleGuestPreviewLimitGate = useCallback(() => {
+    if (!user) peekJoin.joinActions.openGuestBrowseGate('preview-limit', 'view_detail');
+  }, [user, peekJoin.joinActions]);
+
   const openItem = useCallback(
     (item: ExploreMapItemDTO) => {
+      if (!user && !recordGuestExplorePreviewView(item.id).allowed) {
+        handleGuestPreviewLimitGate();
+        return;
+      }
       closeCompose();
       setSelectedId(item.id);
       if (!isDesktop) {
         setListOpen(false);
       }
     },
-    [closeCompose, isDesktop, setListOpen, setSelectedId]
+    [closeCompose, handleGuestPreviewLimitGate, isDesktop, setListOpen, setSelectedId, user]
   );
 
   const { tryOpenActivityPinDeepLink } = useExploreActivityPinDeepLink({
@@ -368,6 +377,7 @@ export const useExploreSelectionActions = ({
     setVenueNotice,
     openItem,
     handleGuestGatedAction: peekJoin.handleGuestGatedAction,
+    handleGuestPreviewLimitGate,
     handleJoin: peekJoin.handleJoin,
     handlePeekHostMessage: peekJoin.handlePeekHostMessage,
     handleHostMessage,

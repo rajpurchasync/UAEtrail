@@ -15,6 +15,7 @@ describe('exploreSearchScopeUi', () => {
     expect(exploreSearchScopesForQuery('act', counts).some((s) => s === 'activities')).toBe(true);
     expect(exploreSearchScopesForQuery('x', counts)).toEqual([]);
     expect(exploreSearchScopesForQuery('xyz', counts)).toContain('people');
+    expect(exploreSearchScopesForQuery('xyz', counts, { signedIn: false })).not.toContain('people');
   });
 
   it('includes scopes with matches even when title does not match', () => {

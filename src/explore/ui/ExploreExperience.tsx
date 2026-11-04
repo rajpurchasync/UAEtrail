@@ -37,6 +37,7 @@ export const ExploreExperience = () => {
               user={model.user}
               tenantId={model.tenantId}
               isDesktop={model.isDesktop}
+              useDesktopGuestGatePanel={model.useDesktopGuestGatePanel}
               browse={model.browse}
               compose={model.compose}
               selection={model.selection}
@@ -58,6 +59,11 @@ export const ExploreExperience = () => {
               handleOpenExploreItem={model.handleOpenExploreItem}
               searchScopeCounts={model.searchScopeCounts}
               setExploreSearchModalOpen={model.setExploreSearchModalOpen}
+              exploreSearchModalOpen={model.exploreSearchModalOpen}
+              closeExploreSearchModal={model.closeExploreSearchModal}
+              handleExploreSearchCommit={model.handleExploreSearchCommit}
+              publishedAreas={model.publishedAreas}
+              handlePickExploreArea={model.handlePickExploreArea}
               onVisibleMapBoundsChange={model.onVisibleMapBoundsChange}
               peopleBrowsePanelProps={model.peopleBrowsePanelProps}
             />
@@ -87,17 +93,10 @@ export const ExploreExperience = () => {
         onRefreshHostGate={model.refreshHostGate}
         setRideshareLinkParent={model.setRideshareLinkParent}
         setRideshareLinkSeeking={model.setRideshareLinkSeeking}
-        exploreSearchModalOpen={model.exploreSearchModalOpen}
-        onCloseExploreSearchModal={model.closeExploreSearchModal}
-        browseQuery={model.browse.query}
-        onBrowseQueryChange={model.browse.setQuery}
-        onExploreSearchCommit={model.handleExploreSearchCommit}
-        searchScopeCounts={model.searchScopeCounts}
-        publishedAreas={model.publishedAreas}
-        onPickExploreArea={model.handlePickExploreArea}
         inviteShareSheet={model.inviteShareSheet}
         hostManageSheet={model.hostManageSheet}
         tenantId={model.tenantId}
+        useDesktopGuestGatePanel={model.useDesktopGuestGatePanel}
       />
     </div>
   );

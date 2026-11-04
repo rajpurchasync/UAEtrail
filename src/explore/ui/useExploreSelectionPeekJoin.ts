@@ -15,6 +15,7 @@ import { useActivityJoinGuardMessage } from '../../hooks/useActivityJoinGuardMes
 import { messagesRouteForRole } from '../../utils/authRouting';
 import { navigateToMessagesWithReturn } from '../../utils/activityGroupChatNav';
 import { buildMapPeekReturnPath } from '../mapPeekDetailNavState';
+import { guestExplorePreviewLimitReached } from '../guestMapPreviewPolicy';
 import type { Location } from 'react-router-dom';
 
 /** Join context for map peek — activity wire only (hosted + seeking). */
@@ -104,6 +105,10 @@ export const useExploreSelectionPeekJoin = (input: {
   const handleGuestGatedAction = useCallback(
     (pendingAction: ActivityMapPeekActionId = 'view_detail') => {
       if (input.user) return;
+      if (pendingAction === 'view_detail' && guestExplorePreviewLimitReached()) {
+        joinActions.openGuestBrowseGate('preview-limit', pendingAction);
+        return;
+      }
       joinActions.openGuestBrowseGate('peek-details', pendingAction);
     },
     [input.user, joinActions]

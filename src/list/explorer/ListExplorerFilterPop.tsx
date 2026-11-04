@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { EXPLORE_BRAND_ACTIVE, EXPLORE_SHAPE } from '../../config/exploreTheme';
 import { getVenueStateFilterOptions } from '../../config/regions';
 import {
@@ -84,12 +84,14 @@ export const ListExplorerFilterPop = ({
 }: ListExplorerFilterPopProps) => {
   const [draft, setDraft] = useState(applied);
   const [draftRegions, setDraftRegions] = useState(regions);
+  const wasOpenRef = useRef(false);
 
   useEffect(() => {
-    if (open) {
+    if (open && !wasOpenRef.current) {
       setDraft(applied);
       setDraftRegions(regions);
     }
+    wasOpenRef.current = open;
   }, [open, applied, regions]);
 
   if (!open) return null;
@@ -117,8 +119,11 @@ export const ListExplorerFilterPop = ({
           <button
             type="button"
             onClick={() => {
-              setDraft(resetVisibleFilters(draft, bucket));
-              setDraftRegions([]);
+              const next = resetVisibleFilters(draft, bucket);
+              const nextRegions: string[] = [];
+              onApply(next, nextRegions);
+              setDraft(next);
+              setDraftRegions(nextRegions);
             }}
             className="text-sm font-semibold text-emerald-700"
           >

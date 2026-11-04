@@ -15,18 +15,19 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
-  const { hostname } = new URL(event.request.url);
-  if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    // Let the browser handle Vite dev / preview without SW passthrough (avoids failed fetch on HMR).
+  let url;
+  try {
+    url = new URL(event.request.url);
+  } catch {
     return;
   }
 
-  event.respondWith(
-    fetch(event.request).catch((error) => {
-      console.warn('[sw] fetch failed', event.request.url, error);
-      return Response.error();
-    })
-  );
+  // Chromium (Chrome and Edge) only treats the worker as installable when a fetch
+  // handler exists. Same-origin navigations and assets pass through to the network.
+  if (url.origin !== self.location.origin) return;
+  if (url.protocol !== 'https:' && url.protocol !== 'http:') return;
+
+  event.respondWith(fetch(event.request));
 });
 
 self.addEventListener('push', (event) => {

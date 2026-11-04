@@ -7,7 +7,7 @@ import { formatExploreClockFromDate, type GroupWallStreamEventDTO } from '@uaetr
 import { searchMembersByQuery } from '../hooks/memberPeopleClientApi';
 import type { SocialGroupView, SocialGroupWallMessageView } from '../api/types';
 import { useAuth } from '../context/AuthContext';
-import { GuestTabPlaceholder } from '../components/auth/GuestTabPlaceholder';
+import { GuestGatedSurfaceLayout } from '../components/auth/GuestGatedSurfaceLayout';
 import { ConsumerShell } from '../components/mobile/ConsumerShell';
 import { ConsumerErrorCard } from '../components/mobile/ConsumerFeedback';
 import {
@@ -67,11 +67,7 @@ export const MessagesGate = () => {
   }
   if (!user) {
     return (
-      <GuestTabPlaceholder
-        title="Chat"
-        description="Sign in to chat with hosts and your crew."
-        intent="peek-details"
-      />
+      <GuestGatedSurfaceLayout title="Chat" feature="chat" />
     );
   }
   return <Messages />;

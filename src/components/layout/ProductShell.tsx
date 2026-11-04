@@ -59,7 +59,7 @@ export const ProductShell = ({ children }: { children: ReactNode }) => {
 
   const scrollableMain = (
     <main id={APP_SCROLL_ROOT_ID} className={scrollPaneClass}>
-      <div className="flex h-full min-h-0 flex-col">{children}</div>
+      <div className="flex min-h-0 flex-1 flex-col">{children}</div>
     </main>
   );
 

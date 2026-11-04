@@ -2,7 +2,9 @@ import type { ParticipationMode } from '@uaetrail/shared-types';
 import type { GuestJoinSheetIntent } from '../../content/guestJoinCopy';
 import type { GuestBrowseGateIntent } from '../../content/guestBrowseGateCopy';
 import { EXPLORE_Z } from '../../config/exploreTheme';
-import { ExploreGuestSignInCard } from './ExploreGuestSignInCard';
+import { useMinWidthMd } from '../../hooks/useMinWidthMd';
+import { EXPLORE_DESKTOP_POPUP } from '../exploreDesktopPopup';
+import { GuestFeatureUnlockPanelFromIntent } from './GuestFeatureUnlockPanel';
 import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
 
 interface ExploreGuestJoinSheetProps {
@@ -18,47 +20,45 @@ interface ExploreGuestJoinSheetProps {
   browseGateIntent?: GuestBrowseGateIntent | null;
 }
 
-/** Centered sign-in modal when a guest taps Join — uses shared sign-in card. */
+/** Guest gate sheet — centered popup on md+, bottom-weighted on small phones. */
 export const ExploreGuestJoinSheet = ({
   open,
   onClose,
-  activityTitle,
-  intent = 'activity',
-  participationMode,
-  requirements,
   authReturnPath,
   authFocusSelector,
   browseGateIntent = null,
-}: ExploreGuestJoinSheetProps) => (
-  <ExploreResponsiveSheet
-    open={open}
-    onClose={onClose}
-    maxWidthClass="max-w-md"
-    zClass={EXPLORE_Z.guestJoinSheet}
-    overlayFixed
-    layout="centered"
-    showCloseButton
-    showHandle={false}
-    ariaLabel={browseGateIntent ? 'Sign in to continue' : 'Sign in to join'}
-  >
-    <div className="px-4 pb-5 pt-8 sm:px-6 sm:pb-6">
-      <ExploreGuestSignInCard
+}: ExploreGuestJoinSheetProps) => {
+  const desktopPopup = useMinWidthMd();
+
+  const content = (
+    <>
+      <GuestFeatureUnlockPanelFromIntent
         intent={browseGateIntent ?? 'join-activity'}
-        joinIntent={browseGateIntent ? undefined : intent}
-        activityTitle={activityTitle}
-        participationMode={browseGateIntent ? undefined : participationMode}
-        requirements={browseGateIntent ? undefined : requirements}
+        presentation={desktopPopup ? 'dialog' : 'card'}
+        className={desktopPopup ? 'border-0 bg-transparent p-0 shadow-none ring-0' : undefined}
         authReturnPath={authReturnPath}
         authFocusSelector={authFocusSelector}
-        compact
       />
-      <button
-        type="button"
-        onClick={onClose}
-        className="mt-2 block w-full py-2 text-center text-sm font-medium text-neutral-400"
-      >
+      <button type="button" onClick={onClose} className={EXPLORE_DESKTOP_POPUP.dismissLink}>
         Keep browsing
       </button>
-    </div>
-  </ExploreResponsiveSheet>
-);
+    </>
+  );
+
+  return (
+    <ExploreResponsiveSheet
+      open={open}
+      onClose={onClose}
+      maxWidthClass="max-w-md"
+      zClass={EXPLORE_Z.guestJoinSheet}
+      overlayFixed
+      layout="centered"
+      showCloseButton
+      showHandle={false}
+      ariaLabel="Sign up to use this feature"
+      viewportAdaptive={desktopPopup}
+    >
+      {desktopPopup ? content : <div className="px-4 pb-5 pt-8 sm:px-6 sm:pb-6">{content}</div>}
+    </ExploreResponsiveSheet>
+  );
+};

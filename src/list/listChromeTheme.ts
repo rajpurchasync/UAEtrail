@@ -66,6 +66,12 @@ export const LIST_SECTION_TITLE = 'text-[15px] font-semibold text-neutral-500';
 export const LIST_FLOAT_FIXED =
   'fixed z-[1150] transition active:scale-95 md:hidden';
 
+/** Filter FAB — draggable on list surfaces. */
+export const LIST_FILTER_FAB_Z = 'z-[1220]';
+
+/** Sort sheet / dropdown — must stack above {@link LIST_FILTER_FAB_Z}. */
+export const LIST_OVERLAY_Z = 'z-[1250]';
+
 export const LIST_MAP_FLOAT =
   `${LIST_FLOAT_FIXED} inline-flex min-h-11 items-center gap-2 rounded-full bg-white px-4 py-2.5 text-sm font-semibold text-neutral-900 shadow-[0_4px_20px_rgba(15,23,42,.12)] ring-1 ring-black/[0.06] backdrop-blur-sm`;
 

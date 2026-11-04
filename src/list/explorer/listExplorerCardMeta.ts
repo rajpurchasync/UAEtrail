@@ -1,5 +1,23 @@
 import { isGeographyMapSource, resolveActivityPublisherChip } from '@uaetrail/shared-types';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
+import { listExplorerIsThisWeekSectionDate } from './listExplorerDateSections';
+
+const LIST_ROW_MONTHS = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+] as const;
+
+const LIST_ROW_WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const;
 
 const SOLD_OUT = /sold\s*out/i;
 const AED_IN_BADGE = /AED\s*[\d.]+(?:\/seat)?/i;
@@ -45,6 +63,48 @@ export const listExplorerPriceLabel = (card: DiscoveryCardModel): string | null 
 export const listExplorerCardDateIso = (card: DiscoveryCardModel): string | null => {
   const rawDate = card.scheduleDate?.trim() || card.activity?.date?.trim() || '';
   return /^\d{4}-\d{2}-\d{2}/.test(rawDate) ? rawDate.slice(0, 10) : null;
+};
+
+/** List row date column — always `Fri 20 Nov 26`; prefix `This` for “This week” section dates. */
+export const formatListExplorerRowDateLabel = (
+  iso: string | null,
+  now: Date = new Date()
+): string | null => {
+  if (!iso?.trim()) return null;
+  const target = new Date(`${iso.trim().slice(0, 10)}T12:00:00`);
+  if (Number.isNaN(target.getTime())) return null;
+
+  const weekday = LIST_ROW_WEEKDAYS[target.getDay()] ?? '';
+  const day = String(target.getDate()).padStart(2, '0');
+  const month = LIST_ROW_MONTHS[target.getMonth()] ?? '';
+  const year = String(target.getFullYear()).slice(-2);
+  const core = `${weekday} ${day} ${month} ${year}`;
+
+  if (listExplorerIsThisWeekSectionDate(iso, now)) return `This ${core}`;
+  return core;
+};
+
+const splitExploreWhenLabel = (when: string | null): { date: string; time: string | null } | null => {
+  if (!when?.trim()) return null;
+  const atIdx = when.lastIndexOf(' at ');
+  if (atIdx > 0) {
+    return { date: when.slice(0, atIdx).trim(), time: when.slice(atIdx + 4).trim() };
+  }
+  return { date: when.trim(), time: null };
+};
+
+/** Date/time column for list rows — full date from ISO; time from explore when label. */
+export const listExplorerRowWhenDisplay = (
+  card: DiscoveryCardModel,
+  now: Date = new Date()
+): { date: string; time: string | null } | null => {
+  const iso = listExplorerCardDateIso(card);
+  const when = card.whenLabel?.trim() || null;
+  const fromWhen = splitExploreWhenLabel(when);
+  const date = formatListExplorerRowDateLabel(iso, now) ?? fromWhen?.date ?? null;
+  const time = fromWhen?.time ?? null;
+  if (!date && !time) return null;
+  return { date: date ?? '', time };
 };
 
 export const listExplorerCardMeta = (card: DiscoveryCardModel): ListExplorerCardMeta => {

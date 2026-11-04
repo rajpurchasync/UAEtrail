@@ -10,13 +10,19 @@ import { ListExplorerFilterFab } from './ListExplorerFilterFab';
 import { ListExplorerHeader } from './ListExplorerHeader';
 import { ListExplorerListRow } from './ListExplorerListRow';
 import { ListExplorerThumbnailCard } from './ListExplorerThumbnailCard';
-import { groupListExplorerDateSections } from './listExplorerDateSections';
 import { PlaceDistanceProvider } from './listPlaceDistance';
-import { distanceMeters } from './placeDistance';
 import { useViewerLocation } from './useViewerLocation';
 import { useDisplayPreferences } from '../../preferences/useDisplayPreferences';
 import type { ListExplorerBucket } from './listExplorerBucket';
 import type { ListExplorerLayout } from './listExplorerLayout';
+import type { ListExplorerDateSection } from './listExplorerDateSections';
+import {
+  groupListExplorerSections,
+  listExplorerSortShowsDistance,
+  listExplorerSortUsesViewerLocation,
+  sortListExplorerCards,
+  type ListExplorerSortMode,
+} from './listExplorerSort';
 
 type ListExplorerProps = {
   cards: DiscoveryCardModel[];
@@ -41,18 +47,32 @@ type ListExplorerProps = {
   onClearFilters: () => void;
   onClose?: () => void;
   embedded?: boolean;
+  mapColumnVisible?: boolean;
+  showMapColumnPrompt?: boolean;
+  onOpenMapColumn?: () => void;
+  onMapHover?: (exploreItemId: string | null) => void;
+  sort: ListExplorerSortMode;
+  onSortChange: (mode: ListExplorerSortMode) => void;
 };
 
-const THUMB_GRID = 'list-explorer-thumb-grid grid max-lg:grid-cols-2 gap-2.5';
+const thumbGridClass = (sideMap: boolean) =>
+  `list-explorer-thumb-grid grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-2 ${
+    sideMap ? 'list-explorer-thumb-grid--side-map' : ''
+  }`;
 
 const ListExplorerDateGroups = ({
-  cards,
+  sections,
   layout,
+  onMapHover,
+  compactThumbGrid = false,
+  showDistance = false,
 }: {
-  cards: DiscoveryCardModel[];
+  sections: ListExplorerDateSection[];
   layout: ListExplorerLayout;
+  onMapHover?: (exploreItemId: string | null) => void;
+  compactThumbGrid?: boolean;
+  showDistance?: boolean;
 }) => {
-  const sections = groupListExplorerDateSections(cards);
   return (
     <div className="space-y-5">
       {sections.map((section) => (
@@ -68,15 +88,15 @@ const ListExplorerDateGroups = ({
             <ul className="space-y-2">
               {section.cards.map((card) => (
                 <li key={card.id}>
-                  <ListExplorerListRow card={card} />
+                  <ListExplorerListRow card={card} onMapHover={onMapHover} showDistance={showDistance} />
                 </li>
               ))}
             </ul>
           ) : (
-            <ul className={THUMB_GRID}>
+            <ul className={thumbGridClass(compactThumbGrid)}>
               {section.cards.map((card) => (
                 <li key={card.id} className="min-w-0">
-                  <ListExplorerThumbnailCard card={card} />
+                  <ListExplorerThumbnailCard card={card} onMapHover={onMapHover} showDistance={showDistance} />
                 </li>
               ))}
             </ul>
@@ -87,12 +107,12 @@ const ListExplorerDateGroups = ({
   );
 };
 
-const ThumbnailSkeleton = () => (
-  <div className={THUMB_GRID} aria-hidden>
+const ThumbnailSkeleton = ({ compactThumbGrid = false }: { compactThumbGrid?: boolean }) => (
+  <div className={thumbGridClass(compactThumbGrid)} aria-hidden>
     {Array.from({ length: 6 }, (_, index) => (
       <div key={index} className="overflow-hidden rounded-2xl bg-neutral-200">
-        <div className="aspect-[4/3] animate-pulse bg-neutral-300/80" />
-        <div className="space-y-1.5 p-2.5">
+        <div className="h-[9.75rem] animate-pulse bg-neutral-300/80 sm:h-[8.75rem] md:h-32" />
+        <div className="space-y-1 p-2">
           <div className="h-2.5 w-4/5 animate-pulse rounded bg-neutral-300/80" />
           <div className="h-3 w-full animate-pulse rounded bg-neutral-300/70" />
         </div>
@@ -124,27 +144,29 @@ export const ListExplorer = ({
   onClearFilters,
   onClose,
   embedded = false,
+  mapColumnVisible = false,
+  showMapColumnPrompt = false,
+  onOpenMapColumn,
+  onMapHover,
+  sort,
+  onSortChange,
 }: ListExplorerProps) => {
   const stickySearch = query.trim().length > 0;
   const resultCount = loading ? null : cards.length;
   const showCalendar = bucket !== 'places';
   const effectiveLayout = showCalendar ? layout : layout === 'calendar' ? 'thumbnails' : layout;
-  const viewer = useViewerLocation(bucket === 'places');
+  const locationEnabled = bucket === 'places' || listExplorerSortUsesViewerLocation(sort);
+  const { fix: viewer, pending: locationPending, denied: locationDenied } = useViewerLocation(locationEnabled);
   const { units } = useDisplayPreferences();
-  const orderedCards = useMemo(() => {
-    if (bucket !== 'places' || !viewer) return cards;
-    return [...cards].sort((left, right) => {
-      const leftMeters =
-        left.mapLatitude != null && left.mapLongitude != null
-          ? distanceMeters(viewer, left.mapLatitude, left.mapLongitude)
-          : Number.POSITIVE_INFINITY;
-      const rightMeters =
-        right.mapLatitude != null && right.mapLongitude != null
-          ? distanceMeters(viewer, right.mapLatitude, right.mapLongitude)
-          : Number.POSITIVE_INFINITY;
-      return leftMeters - rightMeters;
-    });
-  }, [bucket, cards, viewer]);
+  const showDistance = bucket === 'places' || listExplorerSortShowsDistance(sort);
+  const listSections = useMemo(() => {
+    const sorted = sortListExplorerCards(cards, sort, viewer);
+    return groupListExplorerSections(sorted, sort, viewer);
+  }, [cards, sort, viewer]);
+  const calendarCards = useMemo(
+    () => sortListExplorerCards(cards, sort, viewer),
+    [cards, sort, viewer]
+  );
 
   return (
     <div className="relative flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-neutral-50">
@@ -163,6 +185,13 @@ export const ListExplorer = ({
         resultCount={resultCount}
         stickySearch={stickySearch}
         onClose={onClose}
+        showMapColumnPrompt={showMapColumnPrompt}
+        onOpenMapColumn={onOpenMapColumn}
+        mapColumnVisible={mapColumnVisible}
+        sort={sort}
+        onSortChange={onSortChange}
+        locationPending={locationPending}
+        locationDenied={locationDenied}
       />
       <div
         className={`${APP_SCROLL_BODY_CLASS} min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain ${
@@ -173,11 +202,13 @@ export const ListExplorer = ({
       >
         <div
           className={`mx-auto w-full px-3 py-3 ${
-            embedded ? 'max-w-none md:px-3 md:py-3' : 'max-w-6xl md:px-6 md:py-5'
+            embedded || mapColumnVisible
+              ? 'max-w-none md:px-4 md:py-4'
+              : 'max-w-6xl md:px-6 md:py-5'
           }`}
         >
           {loading ? (
-            <ThumbnailSkeleton />
+            <ThumbnailSkeleton compactThumbGrid={mapColumnVisible} />
           ) : error ? (
             <div className="rounded-3xl border border-red-200 bg-red-50 p-6 text-center">
               <p className="text-sm font-semibold text-red-900">Could not load plans right now.</p>
@@ -203,10 +234,16 @@ export const ListExplorer = ({
               ) : null}
             </div>
           ) : effectiveLayout === 'calendar' ? (
-            <ListExplorerCalendar cards={orderedCards} />
+            <ListExplorerCalendar cards={calendarCards} onMapHover={onMapHover} />
           ) : (
             <PlaceDistanceProvider viewer={viewer} units={units}>
-              <ListExplorerDateGroups cards={orderedCards} layout={effectiveLayout} />
+              <ListExplorerDateGroups
+                sections={listSections}
+                layout={effectiveLayout}
+                onMapHover={onMapHover}
+                compactThumbGrid={mapColumnVisible}
+                showDistance={showDistance}
+              />
             </PlaceDistanceProvider>
           )}
         </div>

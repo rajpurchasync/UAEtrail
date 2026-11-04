@@ -9,11 +9,12 @@ import { listExplorerCardDateIso } from './listExplorerCardMeta';
 
 type ListExplorerCalendarProps = {
   cards: DiscoveryCardModel[];
+  onMapHover?: (exploreItemId: string | null) => void;
 };
 
 const formatDayHeading = (iso: string): string => formatExploreEventDateLabel(iso) ?? iso;
 
-export const ListExplorerCalendar = ({ cards }: ListExplorerCalendarProps) => {
+export const ListExplorerCalendar = ({ cards, onMapHover }: ListExplorerCalendarProps) => {
   const byDate = useMemo(() => {
     const map = new Map<string, DiscoveryCardModel[]>();
     for (const card of cards) {
@@ -55,7 +56,7 @@ export const ListExplorerCalendar = ({ cards }: ListExplorerCalendarProps) => {
           <ul className="space-y-2">
             {dayCards.map((card) => (
               <li key={card.id}>
-                <ListExplorerListRow card={card} />
+                <ListExplorerListRow card={card} onMapHover={onMapHover} />
               </li>
             ))}
           </ul>
@@ -67,7 +68,7 @@ export const ListExplorerCalendar = ({ cards }: ListExplorerCalendarProps) => {
           <ul className="space-y-2">
             {undated.map((card) => (
               <li key={card.id}>
-                <ListExplorerListRow card={card} />
+                <ListExplorerListRow card={card} onMapHover={onMapHover} />
               </li>
             ))}
           </ul>

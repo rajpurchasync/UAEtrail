@@ -1,36 +1,42 @@
-/** Home screen app — Android (Chrome, Edge, and other browsers). */
+/** Home screen app — Android Chrome, Edge, and Samsung Internet. */
 export const ANDROID_INSTALL = {
   settingsHash: '#android-install',
   sectionTitle: 'Android',
   headline: 'Add UAE Trail to your home screen',
   body: 'Open the map and chat with your crew in one tap — like an app, no Play Store required.',
+  installButton: 'Install app',
   showSteps: 'How to add on this phone',
+  insecureNotice:
+    'Chrome and Edge only install over https. Open https://uaetrail.com in Chrome or Edge on this phone, then tap Install app.',
   chromeNotice:
-    'Use the steps below — do not rely on Edge’s “Install” if it says the app cannot be installed.',
+    'On Galaxy phones, Chrome installs from the button below or from the ⋮ menu at the top right.',
   edgeNotice:
-    'Microsoft Edge often shows “This app cannot be installed.” That is normal — use Chrome or Samsung Internet below for the full home-screen app.',
+    'On Galaxy phones, Edge installs from the button below or from ··· at the bottom → Add to phone.',
   samsungNotice:
-    'On Samsung phones, Samsung Internet or Chrome works best. Edge may only offer a shortcut that opens inside the browser.',
+    'Samsung Internet can add UAE Trail from the menu below. Chrome and Edge on this phone use Install app.',
+  stepsSecure: [
+    'Open https://uaetrail.com in Google Chrome or Microsoft Edge.',
+    'Wait until the page finishes loading.',
+    'Tap Install app in the menu, or use the browser menu: Chrome ⋮ → Install app, Edge ··· → Add to phone.',
+  ],
   stepsSamsung: [
-    'Open uaetrail.com in Samsung Internet (or install Chrome from the Play Store).',
-    'Tap the menu (≡) at the bottom.',
+    'Tap Install app if it is shown.',
+    'Or tap the menu (≡) at the bottom.',
     'Tap Add page to → Home screen, then tap Add.',
   ],
   stepsChrome: [
-    'Open uaetrail.com in Google Chrome (not Microsoft Edge).',
-    'Wait for the page to finish loading (pull to refresh once if needed).',
-    'Tap ⋮ (menu) → Install app or Add to Home screen → Install.',
-    'If Install app is missing, choose Add to Home screen instead.',
+    'Tap Install app on this screen.',
+    'Or tap ⋮ at the top right → Install app or Add to Home screen → Install.',
+    'Confirm Add. The home-screen icon opens UAE Trail without the browser bar.',
   ],
   stepsEdge: [
-    'Copy this page address, open Google Chrome (or Samsung Internet), and paste the link.',
-    'In Chrome: tap ⋮ → Install app or Add to Home screen.',
-    'In Samsung Internet: tap ≡ → Add page to → Home screen.',
-    'Ignore Edge “Create shortcut” if it only opens inside Edge — that is not the full app.',
+    'Tap Install app on this screen. Edge uses the same install prompt as Chrome.',
+    'Or tap ··· at the bottom of Edge → Add to phone (or Install app) → Install.',
+    'Confirm Add. The home-screen icon opens UAE Trail full screen.',
   ],
   stepsOther: [
-    'Open this site in Google Chrome if you can.',
-    'Tap the browser menu.',
-    'Look for Install app, Add to Home screen, or Add page to → Home screen.',
+    'Open this site in Google Chrome or Microsoft Edge.',
+    'Tap Install app when it appears.',
+    'Or open the browser menu and choose Install app, Add to phone, or Add to Home screen.',
   ],
 } as const;

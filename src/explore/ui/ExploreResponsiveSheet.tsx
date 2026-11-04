@@ -10,6 +10,11 @@ import {
   exploreSheetPanelClass,
 } from '../../config/exploreTheme';
 import { COMPOSE_DESKTOP_INSET_FIXED } from '../create/composeDesktopInset';
+import {
+  exploreCenteredSheetPopupBodyClass,
+  exploreCenteredSheetPopupPanelClass,
+  exploreDesktopPopupCloseButtonClass,
+} from '../exploreDesktopPopup';
 import { MobileSheetDragHandle } from '../../components/mobile/MobileSheetDragHandle';
 import { useModalA11y } from '../../hooks/useModalA11y';
 import { MOBILE_BROWSE_SHEET_EXPAND_HINT } from '../../hooks/useMobileBrowseSheetImmersive';
@@ -26,6 +31,8 @@ interface ExploreResponsiveSheetProps {
   zClass?: string;
   /** Full-viewport overlay (needed above map peek z-index when rendered outside map stage). */
   overlayFixed?: boolean;
+  /** Keep overlay `absolute` within the map pane (sidebar stays interactive). */
+  overlayContained?: boolean;
   showHandle?: boolean;
   /** Bottom sheet on small screens; centered dialog on lg+. */
   layout?: 'responsive' | 'centered' | 'fullscreen';
@@ -42,6 +49,8 @@ interface ExploreResponsiveSheetProps {
   expanded?: boolean;
   onExpand?: () => void;
   expandHint?: string;
+  /** Centered dialogs: shared max-height + short-viewport typography (see `.explore-desktop-popup-panel`). */
+  viewportAdaptive?: boolean;
 }
 
 /** Bottom sheet on mobile; centered dialog on desktop (lg+). */
@@ -53,6 +62,7 @@ export const ExploreResponsiveSheet = ({
   maxWidthClass = 'lg:max-w-lg',
   zClass = 'z-[1400]',
   overlayFixed = false,
+  overlayContained = false,
   showHandle = true,
   layout = 'responsive',
   showCloseButton = false,
@@ -63,6 +73,7 @@ export const ExploreResponsiveSheet = ({
   expanded = false,
   onExpand,
   expandHint,
+  viewportAdaptive = false,
 }: ExploreResponsiveSheetProps) => {
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
@@ -95,9 +106,14 @@ export const ExploreResponsiveSheet = ({
 
   if (!open) return null;
 
-  const overlayPosition = overlayFixed ? 'fixed' : 'absolute';
+  const overlayPosition =
+    overlayFixed && !overlayContained ? 'fixed' : 'absolute';
   const centered = layout === 'centered';
   const fullscreen = layout === 'fullscreen';
+  const centeredPopup = centered && viewportAdaptive;
+  /** Dialog max height minus overlay padding (p-4 / sm:p-6). */
+  const centeredPanelMaxHeight =
+    '!max-h-[min(calc(100dvh-2rem),640px)] sm:!max-h-[min(calc(100dvh-3rem),640px)] lg:!max-h-[min(calc(100dvh-3rem),640px)]';
   const composeExpanded = mobileComposeChrome && expanded;
   const composePeek = mobileComposeChrome && !expanded;
   const composeImmersiveMobile = composeExpanded;
@@ -107,7 +123,9 @@ export const ExploreResponsiveSheet = ({
   const shellClass = fullscreen || composeExpanded
     ? 'items-stretch justify-stretch p-0'
     : centered
-      ? `items-center justify-center p-4 sm:p-6`
+      ? overlayContained
+        ? `flex min-h-full flex-col items-center justify-center overflow-y-auto overscroll-contain p-4 sm:p-6`
+        : `flex flex-col overflow-y-auto overscroll-contain p-4 sm:p-6`
       : composePeek
         ? `flex-col items-center justify-end ${EXPLORE_BROWSE_PEEK_SHEET.shellTopPad} sm:justify-center sm:p-4 lg:p-6`
         : `flex-col items-center justify-end sm:justify-center sm:p-4 lg:p-6`;
@@ -130,11 +148,18 @@ export const ExploreResponsiveSheet = ({
               ? 'rounded-2xl shadow-2xl'
               : 'shadow-[0_-8px_40px_rgba(15,23,42,.12)] sm:shadow-2xl'
           }`
-        : `relative w-full max-h-[min(90dvh,640px)] overflow-y-auto explore-sheet-panel ${exploreSheetPanelClass} ${maxWidthClass} ${panelClassName} ${
-            centered
-              ? 'rounded-2xl shadow-2xl'
-              : 'shadow-[0_-8px_40px_rgba(15,23,42,.12)] sm:shadow-2xl'
-          }`;
+        : centered
+          ? centeredPopup
+            ? `${exploreCenteredSheetPopupPanelClass}${overlayContained ? ' explore-map-pane-popup-panel' : ''} ${maxWidthClass} ${panelClassName}`
+            : `relative mx-auto my-auto flex w-full flex-col overflow-hidden explore-sheet-panel ${exploreSheetPanelClass} ${maxWidthClass} ${centeredPanelMaxHeight} rounded-2xl shadow-2xl ${panelClassName}`
+          : `relative w-full max-h-[min(90dvh,640px)] overflow-y-auto explore-sheet-panel ${exploreSheetPanelClass} ${maxWidthClass} ${panelClassName} shadow-[0_-8px_40px_rgba(15,23,42,.12)] sm:shadow-2xl`;
+
+  const centeredBodyScroll =
+    centered && !mobileComposeChrome && !fullscreen
+      ? centeredPopup
+        ? exploreCenteredSheetPopupBodyClass
+        : 'min-h-0 flex-1 overflow-y-auto overscroll-contain'
+      : undefined;
 
   const composeScrollClass = mobileComposeChrome
     ? composeExpanded
@@ -167,7 +192,7 @@ export const ExploreResponsiveSheet = ({
         mobileComposeChrome ? COMPOSE_DESKTOP_INSET_FIXED : `${overlayPosition} inset-0`
       } ${effectiveZClass} flex ${shellClass} ${
         composeExpanded ? 'bg-white' : EXPLORE_SHEET.scrim
-      } ${overlayFixed || fullscreen || composeExpanded ? '' : 'lg:fixed'}`}
+      } ${overlayContained ? 'pointer-events-auto' : ''} ${overlayFixed || fullscreen || composeExpanded || overlayContained ? '' : 'lg:fixed'}`}
       style={sheetDragGestures ? overlayStyle : undefined}
     >
       {showBackdropDismiss ? (
@@ -199,7 +224,11 @@ export const ExploreResponsiveSheet = ({
           <button
             type="button"
             onClick={onClose}
-            className="absolute right-3 top-3 z-10 rounded-full p-2 text-neutral-500 hover:bg-neutral-100 hover:text-neutral-800"
+            className={
+              centeredPopup
+                ? exploreDesktopPopupCloseButtonClass
+                : 'absolute right-3 top-3 z-10 rounded-full p-2 text-neutral-500 hover:bg-neutral-100 hover:text-neutral-800'
+            }
             aria-label="Close"
           >
             <X className="h-5 w-5" aria-hidden />
@@ -212,6 +241,8 @@ export const ExploreResponsiveSheet = ({
             {dragHandle}
             {composeScrollClass ? (
               <div className={composeScrollClass}>{children}</div>
+            ) : centeredBodyScroll ? (
+              <div className={centeredBodyScroll}>{children}</div>
             ) : (
               children
             )}
