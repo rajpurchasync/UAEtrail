@@ -36,7 +36,9 @@ export const requireAuth = async (req: Request, _res: Response, next: NextFuncti
     req.auth = {
       userId: user._id,
       email: user.email,
-      role: user.role
+      role: user.role,
+      emailVerifiedAt: user.emailVerifiedAt,
+      userStatus: user.status,
     };
     void touchLastActive(user._id);
     next();
@@ -71,7 +73,9 @@ export const requireSseTicket = async (
     req.auth = {
       userId: user._id,
       email: user.email,
-      role: user.role
+      role: user.role,
+      emailVerifiedAt: user.emailVerifiedAt,
+      userStatus: user.status,
     };
     void touchLastActive(user._id);
     next();
@@ -85,8 +89,7 @@ export const requireVerifiedEmail = async (req: Request, _res: Response, next: N
     if (!req.auth) {
       throw new ApiError(401, 'unauthorized', 'Authentication is required.');
     }
-    const user = await findAuthUserById(req.auth.userId);
-    if (!user?.emailVerifiedAt) {
+    if (!req.auth.emailVerifiedAt) {
       throw new ApiError(403, 'email_verification_required', 'Email verification is required.');
     }
     next();

@@ -45,6 +45,8 @@ Vercel is supported for the **Vite frontend** plus lightweight **serverless prox
 3. On the **API server**, add each Vercel preview/production URL to `APP_BASE_URLS` (CORS + auth cookies).
 4. Deploy: `npx vercel --prod` (build runs on Vercel; config in `vercel.json`).
 
+**Chat SSE:** Browsers should open **`/api/chat/stream` on the same origin that terminates at the Express API** (nginx `app.example.com` or direct API host). Do not rely on the Vercel serverless proxy alone for long-lived SSE — see [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.9.
+
 Local CLI builds on Windows may fail with symlink `EPERM`; use remote Git deploy or run the CLI from WSL/macOS if that happens.
 
 ---

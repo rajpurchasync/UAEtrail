@@ -33,6 +33,9 @@ describe('list module hygiene', () => {
   it('renders the full-screen explorer instead of poster or map-list rows', () => {
     const experience = readFileSync(join(process.cwd(), 'src/list/ListDiscoveryExperience.tsx'), 'utf8');
     expect(experience).toMatch(/ListExplorer/);
+    const explorer = readFileSync(join(process.cwd(), 'src/list/explorer/ListExplorer.tsx'), 'utf8');
+    expect(explorer).toMatch(/ListGuestCatalogPreviewNotice/);
+    expect(experience).toMatch(/showGuestCatalogPreview=\{!user && !embeddedOnExplore/);
     expect(experience).toMatch(/countListExplorerFilters/);
     expect(experience).toMatch(/listExplorerEntityLinkState/);
     expect(experience).toMatch(/parseListExplorerBucket/);
@@ -67,10 +70,15 @@ describe('list module hygiene', () => {
   it('puts type icon on the thumbnail and keeps search in the header', () => {
     const thumb = readFileSync(join(process.cwd(), 'src/list/explorer/ListExplorerThumbnailCard.tsx'), 'utf8');
     const header = readFileSync(join(process.cwd(), 'src/list/explorer/ListExplorerHeader.tsx'), 'utf8');
-    expect(thumb).toMatch(/DiscoveryCardTypeIcon/);
-    expect(thumb).toMatch(/SecureAvatar/);
+    expect(thumb).toMatch(/DiscoveryBrowsePosterBanner/);
     expect(thumb).toMatch(/meta\.title/);
-    expect(thumb).toMatch(/meta\.price/);
+    const banner = readFileSync(
+      join(process.cwd(), 'src/list/explorer/DiscoveryBrowsePosterBanner.tsx'),
+      'utf8'
+    );
+    expect(banner).toMatch(/DiscoveryCardTypeIcon/);
+    expect(banner).toMatch(/SecureAvatar/);
+    expect(banner).toMatch(/meta\.price/);
     expect(readFileSync(join(process.cwd(), 'src/list/explorer/listExplorerCardMeta.ts'), 'utf8')).toMatch(
       /resolveActivityPublisherChip/
     );

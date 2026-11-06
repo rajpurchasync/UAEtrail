@@ -47,7 +47,7 @@ describe('resolveActivityPeekGuestAuthReturnPath', () => {
         activity,
         browseReturnPath: explore,
       })
-    ).toBe('/chat?group=grp-9&activity=abc');
+    ).toBe('/chat?group=grp-9&chat=1&activity=abc');
   });
 
   it('crew chat without group id resumes thread on chat route', () => {

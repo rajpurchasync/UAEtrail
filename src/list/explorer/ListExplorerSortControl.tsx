@@ -1,13 +1,14 @@
-import { ArrowDownAZ, ArrowDownZA, ArrowUpDown, Calendar, MapPin, Newspaper, X } from 'lucide-react';
+import { ArrowDown, ArrowDownAZ, ArrowDownZA, ArrowUp, Calendar, MapPin, Newspaper, X } from 'lucide-react';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { UiTooltip } from '../../components/ui/UiTooltip';
-import { LIST_OVERLAY_Z, LIST_SEARCH } from '../listChromeTheme';
+import { LIST_OVERLAY_Z, LIST_SEARCH, listExplorerSortTriggerClass } from '../listChromeTheme';
 import {
   DEFAULT_LIST_EXPLORER_SORT,
   LIST_EXPLORER_SORT_GROUP_DEFS,
   listExplorerSortAriaLabel,
   listExplorerSortButtonLabel,
+  listExplorerSortTrigger,
   type ListExplorerSortMode,
 } from './listExplorerSort';
 
@@ -17,12 +18,13 @@ type Props = {
   locationPending?: boolean;
   locationDenied?: boolean;
   className?: string;
+  /** Side-map list column — smaller trigger + truncated sort label. */
+  compact?: boolean;
 };
 
 type SortOption = {
   mode: ListExplorerSortMode;
   label: string;
-  hint?: string;
   icon: typeof Calendar;
 };
 
@@ -36,17 +38,12 @@ const SORT_OPTION_ICONS: Record<ListExplorerSortMode, typeof Calendar> = {
   near_me: MapPin,
 };
 
-const SORT_OPTION_HINTS: Partial<Record<ListExplorerSortMode, string>> = {
-  near_me: '5 km · 10 km · 30 km · Other',
-};
-
 const SORT_GROUPS: ReadonlyArray<{ title: string; options: SortOption[] }> =
   LIST_EXPLORER_SORT_GROUP_DEFS.map((group) => ({
     title: group.title,
     options: group.options.map((option) => ({
       ...option,
       icon: SORT_OPTION_ICONS[option.mode],
-      hint: SORT_OPTION_HINTS[option.mode],
     })),
   }));
 
@@ -132,14 +129,7 @@ const SortMenuBody = ({
                     className={`shrink-0 text-emerald-700 ${touchFriendly ? 'mt-0.5 h-4 w-4' : 'mt-px h-3.5 w-3.5'}`}
                     aria-hidden
                   />
-                  <span className="min-w-0">
-                    <span className="block">{option.label}</span>
-                    {option.hint ? (
-                      <span className="mt-0.5 block text-[10px] font-normal leading-tight text-neutral-500 md:text-[11px]">
-                        {option.hint}
-                      </span>
-                    ) : null}
-                  </span>
+                  <span className="min-w-0">{option.label}</span>
                 </button>
               </li>
             );
@@ -166,6 +156,7 @@ export const ListExplorerSortControl = ({
   locationPending,
   locationDenied,
   className = '',
+  compact = false,
 }: Props) => {
   const [open, setOpen] = useState(false);
   const anchorRef = useRef<HTMLDivElement>(null);
@@ -225,6 +216,8 @@ export const ListExplorerSortControl = ({
   }, [open, useSheet]);
 
   const activeSort = sort !== DEFAULT_LIST_EXPLORER_SORT;
+  const triggerMeta = listExplorerSortTrigger(sort);
+  const SortDirectionIcon = triggerMeta.direction === 'asc' ? ArrowUp : ArrowDown;
 
   const dropdownMenu =
     open && !useSheet && menuLayout
@@ -306,16 +299,23 @@ export const ListExplorerSortControl = ({
     <button
       type="button"
       onClick={() => setOpen((value) => !value)}
-      className={`${LIST_SEARCH.sideAction} !inline-flex !h-9 min-w-9 !w-auto max-w-full gap-1.5 px-2.5 text-neutral-700 md:!h-8 lg:max-w-[11rem] ${
-        activeSort ? '!text-emerald-800 ring-1 ring-emerald-500/30' : ''
+      className={`${LIST_SEARCH.sideAction} ${listExplorerSortTriggerClass(activeSort)} !inline-flex min-w-9 !w-auto max-w-full ${
+        compact ? '!h-7 min-w-7 max-w-[6.5rem] gap-0.5 px-1.5' : '!h-8 gap-1 px-2'
       }`}
       aria-label={listExplorerSortAriaLabel(sort)}
       aria-expanded={open}
       aria-haspopup="dialog"
     >
-      <ArrowUpDown className="h-4 w-4 shrink-0 stroke-[2.25]" aria-hidden />
-      <span className="min-w-0 truncate text-[11px] font-semibold leading-tight">
-        {listExplorerSortButtonLabel(sort)}
+      <SortDirectionIcon
+        className={`shrink-0 stroke-[2.25] ${compact ? 'h-3.5 w-3.5' : 'h-4 w-4'}`}
+        aria-hidden
+      />
+      <span
+        className={`min-w-0 truncate font-semibold leading-tight ${
+          compact ? 'text-[10px]' : 'text-[11px]'
+        }`}
+      >
+        {triggerMeta.label}
       </span>
     </button>
   );

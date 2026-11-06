@@ -20,10 +20,6 @@ import {
   readGuestComposeResumeSession,
   writeGuestComposeResumeSession,
 } from '../guestComposeResume';
-import {
-  clearComposeSheetExpandedSession,
-  writeComposeSheetExpandedSession,
-} from '../composeSheetExpandedSession';
 import { clearComposeWizardSessionForRoute } from '../../ui/composeWizardSession';
 import { PLAN_WITH_QUERY_KEY } from '../../routing';
 import { composeRouteRequiresAuth, resolveComposeRouteChange } from '../composeRouteGuard';
@@ -97,7 +93,6 @@ export const useComposeRoute = ({
       },
       { replace: true }
     );
-    clearComposeSheetExpandedSession();
     setWizardEnteredFromMenu(false);
     setGuestComposeSignInOpen(false);
     setGuestComposePendingRoute(null);
@@ -149,7 +144,7 @@ export const useComposeRoute = ({
   useEffect(() => {
     if (user) return;
     if (!composeRoute || !composeRouteRequiresAuth(composeRoute)) return;
-    blockGuestComposeWizard(composeRoute, false);
+    blockGuestComposeWizard(composeRoute, isComposeMenu(composeRoute));
   }, [user, composeRoute, blockGuestComposeWizard]);
 
   useEffect(() => {
@@ -168,7 +163,6 @@ export const useComposeRoute = ({
       setComposeRoute(route);
     }
     if (resume.fromMenu) setWizardEnteredFromMenu(true);
-    writeComposeSheetExpandedSession(resume.sheetExpanded);
     clearGuestComposeResumeSession();
     setGuestComposePendingRoute(null);
     setGuestComposeSignInOpen(false);
@@ -190,7 +184,10 @@ export const useComposeRoute = ({
       if (decision.type === 'sign-in') {
         if (!user) {
           if (route && composeRouteRequiresAuth(route)) {
-            blockGuestComposeWizard(route, isComposeMenu(composeRoute));
+            blockGuestComposeWizard(
+              route,
+              isComposeMenu(route) || isComposeMenu(composeRoute)
+            );
           }
           return;
         }
@@ -225,7 +222,19 @@ export const useComposeRoute = ({
     setGuestComposeSignInOpen(false);
     setGuestComposePendingRoute(null);
     clearGuestComposeResumeSession();
-  }, []);
+    setSearchParams(
+      (prev) => {
+        const pending = parseExploreCompose(prev);
+        if (!pending || !composeRouteRequiresAuth(pending)) {
+          return prev;
+        }
+        const params = new URLSearchParams(prev);
+        clearExploreComposeParams(params);
+        return params;
+      },
+      { replace: true }
+    );
+  }, [setSearchParams]);
 
   return {
     composeRoute,

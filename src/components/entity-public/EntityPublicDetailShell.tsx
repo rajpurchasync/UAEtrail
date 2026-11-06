@@ -34,6 +34,6 @@ export const EntityPublicDetailShell = ({
   ...shell
 }: EntityPublicDetailShellProps) => (
   <MobileDetailShell {...shell}>
-    <div className={`mx-auto ${maxWidthClass} px-4 py-6 md:py-8 pb-10`}>{children}</div>
+    <div className={`mx-auto min-h-0 overflow-y-auto ${maxWidthClass} px-4 py-4 md:px-6 md:py-6 lg:px-6 pb-10`}>{children}</div>
   </MobileDetailShell>
 );

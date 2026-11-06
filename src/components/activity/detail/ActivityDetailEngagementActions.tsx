@@ -1,11 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import type { ActivityMapPeekActionId } from '@uaetrail/shared-types';
 import { buildActivityDetailPageShellCard } from '../../../activity/detail/activityDetailPageShellCard';
 import { resolveActivityMapPeekActions } from '../../../activity/activityPeekEngagement';
 import { executeActivityMapPeekAction } from '../../../activity/executeActivityMapPeekAction';
 import type { ActivityMapPeekActionHandlers } from '../../../activity/executeActivityMapPeekAction';
 import { discoveryCardActivityJoinIsFull } from '../../../discovery/discoveryCardModel';
-import { ActivityParticipationManageSheet } from '../ActivityParticipationManageSheet';
 import { ActivityDetailStandardFooter } from './ActivityDetailStandardFooter.tsx';
 import {
   resolveActivityDetailStandardFooter,
@@ -33,8 +32,8 @@ type ActivityDetailEngagementActionsProps = {
   linkRideshareTenantId?: string | null;
   onParticipantInviteFriends?: () => void;
   onWithdraw?: () => void;
-  /** Wire `manage_activity` on consumer layout (no Buddies tab). */
-  registerParticipationManageOpener?: (open: () => void) => void;
+  /** Same as host manage sheet gate — not wire `viewerAccess.level` alone. */
+  isHostUser?: boolean;
 };
 
 /** Wire peek parity CTAs on activity detail (policy-driven, same ids as map peek). */
@@ -43,14 +42,8 @@ export const ActivityDetailEngagementActions = ({
   handlers,
   onParticipantInviteFriends,
   onWithdraw,
-  registerParticipationManageOpener,
+  isHostUser = false,
 }: ActivityDetailEngagementActionsProps) => {
-  const [manageOpen, setManageOpen] = useState(false);
-
-  useEffect(() => {
-    registerParticipationManageOpener?.(() => setManageOpen(true));
-  }, [registerParticipationManageOpener]);
-
   const card = useMemo(
     () =>
       buildActivityDetailPageShellCard({
@@ -73,7 +66,7 @@ export const ActivityDetailEngagementActions = ({
   const pendingWire = actions.find((action) => action.id === 'pending_join');
 
   const footer = resolveActivityDetailStandardFooter({
-    isHost: card.viewerAccess?.level === 'host',
+    isHost: isHostUser,
     joinUiState: model.joinUiState,
     viewerLevel: card.viewerAccess?.level ?? null,
     wirePending: Boolean(pendingWire),
@@ -101,6 +94,12 @@ export const ActivityDetailEngagementActions = ({
       case 'invite_crew':
         onAction('invite_crew');
         return;
+      case 'participant_invite':
+        onParticipantInviteFriends?.();
+        return;
+      case 'participant_withdraw':
+        onWithdraw?.();
+        return;
       case 'share_activity':
         onAction('share_activity');
         return;
@@ -109,7 +108,6 @@ export const ActivityDetailEngagementActions = ({
         return;
       case 'open_pending_manage':
       case 'open_participation_manage':
-        if (canManageParticipation) setManageOpen(true);
         return;
       default: {
         const _exhaustive: never = action;
@@ -118,28 +116,13 @@ export const ActivityDetailEngagementActions = ({
     }
   };
 
-  const inviteFromManage = () => {
-    onParticipantInviteFriends?.();
-    handlers.inviteCrew?.();
-  };
-
   return (
-    <>
-      <ActivityDetailStandardFooter
-        mode={footer.mode}
-        left={footer.left}
-        right={footer.right}
-        onPress={onFooterPress}
-      />
-      {showParticipationManage && onWithdraw ? (
-        <ActivityParticipationManageSheet
-          open={manageOpen}
-          joinUiState={model.joinUiState}
-          onClose={() => setManageOpen(false)}
-          onInviteFriends={inviteFromManage}
-          onWithdraw={onWithdraw}
-        />
-      ) : null}
-    </>
+    <ActivityDetailStandardFooter
+      mode={footer.mode}
+      left={footer.left}
+      center={footer.center}
+      right={footer.right}
+      onPress={onFooterPress}
+    />
   );
 };

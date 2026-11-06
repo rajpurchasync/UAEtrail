@@ -60,6 +60,10 @@ describe('clientQueryMigrationGuard (MIG-CLIENT-QUERY)', () => {
     const content = read('src/explore/ui/HostingPublishSuccessSheet.tsx');
     expect(content).toMatch(/usePublicActivityDetail/);
     expect(content).not.toMatch(/useSafeAsyncEffect/);
+    expect(content).toMatch(/HOSTING_PUBLISH_SHARE_CTA/);
+    expect(content).toMatch(/LinkRidesharePanel/);
+    expect(content).toMatch(/LinkParentActivityPanel/);
+    expect(content).toMatch(/pickExisting/);
   });
 
   it('ProfileEdit uses useMeProfile', () => {

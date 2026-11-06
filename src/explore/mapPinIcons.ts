@@ -62,8 +62,8 @@ export const buildVenueMapPinHtml = (options: {
   const selectedClass = options.selected ? ' uaetrail-map-venue-pin--selected' : '';
   const stackCount = options.stackCount ?? 1;
   const clusterClass = stackCount > 1 ? ' uaetrail-map-venue-chip--cluster' : '';
-  const badgeSize = options.mapZoom < VENUE_MAP_LABEL_MIN_ZOOM ? 40 : 36;
-  const glyphSize = options.mapZoom < VENUE_MAP_LABEL_MIN_ZOOM ? 24 : 22;
+  const badgeSize = 36;
+  const glyphSize = 22;
   const badgeHtml = buildVenueMapBadgeHtml(options.kind, glyphSize);
   const { show, text } = venueMapLabelForZoom(options.label ?? '', options.mapZoom);
   const labelHtml = show
@@ -200,25 +200,82 @@ export const resolveColocatedExploreItemIdFromPointer = (
   pointerX: number,
   pointerY: number,
   iconWidth: number,
-  iconHeight: number
+  _iconHeight: number,
+  bodyHeight: number = _iconHeight
 ): string | null => {
   if (entries.length === 0) return null;
   const { orbit, n } = colocatedPinCanvasMetrics(entries.length);
-  const cx = pointerX - iconWidth / 2;
-  const cy = pointerY - iconHeight / 2;
+  const cx = iconWidth / 2;
+  const cy = bodyHeight / 2;
+  const dx = pointerX - cx;
+  const dy = pointerY - cy;
   let bestId = entries[0]!.exploreItemId;
   let bestDist = Infinity;
   for (let index = 0; index < n; index += 1) {
     const angle = (2 * Math.PI * index) / n - Math.PI / 2;
     const sx = orbit * Math.cos(angle);
     const sy = orbit * Math.sin(angle);
-    const dist = (cx - sx) ** 2 + (cy - sy) ** 2;
+    const dist = (dx - sx) ** 2 + (dy - sy) ** 2;
     if (dist < bestDist) {
       bestDist = dist;
       bestId = entries[index]!.exploreItemId;
     }
   }
   return bestId;
+};
+
+/** Single map pin when several types or items share one spot — mini icons + total count. */
+const collidedPinIconLayout = (
+  slotCount: number
+): { emojiPx: number; venueGlyphPx: number; boxPx: number } => {
+  if (slotCount >= 4) return { emojiPx: 9, venueGlyphPx: 9, boxPx: 11 };
+  if (slotCount === 3) return { emojiPx: 10, venueGlyphPx: 10, boxPx: 12 };
+  if (slotCount === 2) return { emojiPx: 12, venueGlyphPx: 11, boxPx: 14 };
+  return { emojiPx: 15, venueGlyphPx: 13, boxPx: 17 };
+};
+
+export const buildMapCollidedPinIconHtml = (
+  entries: ColocatedPinIconEntry[],
+  totalCount: number
+): { html: string; size: number } => {
+  const size = 48;
+  if (entries.length === 0) {
+    return { html: '', size };
+  }
+  const dominant = entries.reduce(
+    (best, entry) => ((entry.stackCount ?? 1) > (best.stackCount ?? 1) ? entry : best),
+    entries[0]!
+  );
+  const visible = entries.slice(0, 3);
+  const hasOverflow = entries.length > 3;
+  const slotCount = visible.length + (hasOverflow ? 1 : 0);
+  const layout = collidedPinIconLayout(slotCount);
+  const glyphBoxStyle = `width:${layout.boxPx}px;height:${layout.boxPx}px;max-width:${layout.boxPx}px;max-height:${layout.boxPx}px;`;
+
+  const glyphs = visible
+    .map((entry) => {
+      if (isCatalogVenueMapPin(entry.kind, entry.source)) {
+        return `<span class="uaetrail-map-collided-glyph uaetrail-map-collided-glyph--venue" style="${glyphBoxStyle}">${buildVenueMapBadgeHtml(entry.kind, layout.venueGlyphPx)}</span>`;
+      }
+      const icon = resolveMapPinIconHtml(
+        entry.kind,
+        entry.source,
+        layout.emojiPx,
+        undefined,
+        entry.activityMode === 'seeking'
+      );
+      return `<span class="uaetrail-map-collided-glyph" style="${glyphBoxStyle}">${icon}</span>`;
+    })
+    .join('');
+  const overflow = hasOverflow
+    ? `<span class="uaetrail-map-collided-glyph uaetrail-map-collided-more font-emoji" style="${glyphBoxStyle}" aria-hidden="true">…</span>`
+    : '';
+  const countBadge = venueStackCountBadgeHtml(totalCount);
+  const dataAttr = dominant.exploreItemId ? ` data-explore-item-id="${dominant.exploreItemId}"` : '';
+  const emphasized = entries.some((entry) => entry.selected);
+  const markerSelectedClass = emphasized ? ' uaetrail-map-pin-marker--selected' : '';
+  const html = `<span class="uaetrail-map-pin-collided"${dataAttr}><span class="uaetrail-map-pin-marker${markerSelectedClass}" style="--pin-ring:${dominant.ringColor};width:${size}px;height:${size}px;"><span class="uaetrail-map-pin-face uaetrail-map-pin-face--collided"><span class="uaetrail-map-pin-collided-icons uaetrail-map-pin-collided-icons--${slotCount}">${glyphs}${overflow}</span></span>${countBadge}</span></span>`;
+  return { html, size };
 };
 
 /** Fan at one lat/lng — venue catalog chips; activities/shops use emoji circles. */
@@ -312,7 +369,9 @@ export const buildMapClusterIconHtml = (
   kind: MapPinKind,
   source: MapPinSource,
   ringColor: string,
-  count: number
+  count: number,
+  exploreItemId?: string,
+  selected = false
 ): string =>
   buildMapPinFaceHtml({
     kind,
@@ -322,4 +381,39 @@ export const buildMapClusterIconHtml = (
     fontSizePx: 18,
     ringWidth: 2.5,
     stackCount: count,
+    exploreItemId,
+    selected,
   });
+
+const clusterIconRootFromPointerTarget = (target: EventTarget | null | undefined): HTMLElement | null => {
+  const el = target as HTMLElement | null;
+  if (!el) return null;
+  return (
+    el.closest('.uaetrail-map-pin-multi') ??
+    el.closest('.uaetrail-map-cluster-wrap') ??
+    el.closest('.leaflet-marker-icon')
+  );
+};
+
+/** Resolve which explore item a cluster icon click should open (fan or single bubble). */
+export const resolveClusterClickExploreItemId = (
+  entries: Array<{ exploreItemId: string }>,
+  originalEvent?: MouseEvent | null
+): string | null => {
+  if (entries.length === 0) return null;
+  const target = (originalEvent?.target as HTMLElement | null)?.closest?.('[data-explore-item-id]');
+  const fromTarget = target?.getAttribute('data-explore-item-id');
+  if (fromTarget) return fromTarget;
+  if (entries.length === 1) return entries[0]!.exploreItemId;
+  if (!originalEvent) return entries[0]!.exploreItemId;
+  const iconRoot = clusterIconRootFromPointerTarget(originalEvent.target);
+  if (iconRoot?.querySelector('.uaetrail-map-pin-collided')) {
+    return entries[0]!.exploreItemId;
+  }
+  if (!iconRoot) return entries[0]!.exploreItemId;
+  const rect = iconRoot.getBoundingClientRect();
+  const x = originalEvent.clientX - rect.left;
+  const y = originalEvent.clientY - rect.top;
+  const bodyHeight = colocatedPinCanvasMetrics(entries.length).canvas;
+  return resolveColocatedExploreItemIdFromPointer(entries, x, y, rect.width, rect.height, bodyHeight);
+};

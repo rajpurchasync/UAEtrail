@@ -34,8 +34,9 @@ import type { ExploreOutingTopicKey } from '../exploreOutingTopic';
 
 export type { ExploreBrowseListMode } from '../exploreBrowseUrlSync';
 
-export const UNIFIED_MAP_FILTER_KEYS: MapFilterKey[] = MAP_FILTER_PILLS.map((pill) => pill.key);
-
+export const UNIFIED_MAP_FILTER_KEYS: MapFilterKey[] = MAP_FILTER_PILLS.map((pill) => pill.key).filter(
+  (key) => key !== 'facilities'
+);
 type UseExploreBrowseUrlStateArgs = {
   isDesktop: boolean; isSignedIn: boolean;
   searchParams: URLSearchParams;
@@ -160,13 +161,10 @@ export const useExploreBrowseUrlState = ({
       if (state.expandSearch) setSearchExpanded(true);
     }
   }, [isDesktop]);
-
   useEffect(() => {
     applyHydratedState(clampGuestPeopleBrowse(parseExploreBrowseStateFromSearchParams(searchParams, isDesktop), isSignedIn));
   }, [searchParams, isDesktop, isSignedIn, applyHydratedState]);
-
   useExploreBrowseUrlInboundMigrations({ searchParams, setSearchParams, isDesktop });
-
   const browseSetters = useMemo(
     () => ({
       setMapFilter,

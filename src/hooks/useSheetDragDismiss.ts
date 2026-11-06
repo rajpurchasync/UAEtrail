@@ -18,7 +18,7 @@ type UseSheetDragDismissOptions = {
   enabled?: boolean;
   /** Pull up past threshold (when handle drag allows negative offset). */
   onExpand?: () => void;
-  /** Peek bottom sheets — pull down close / pull up expand (FAB + browse). */
+  /** Peek bottom sheets — pull down close / pull up expand (browse). */
   mode?: SheetDragMode;
 };
 
@@ -33,9 +33,12 @@ type UseSheetDragDismissResult = {
   panelRef: RefObject<HTMLDivElement | null>;
   panelStyle: CSSProperties;
   overlayStyle: CSSProperties;
+  isDragging: boolean;
   /** Spread on the full-width drag zone (handle + hint). */
   dragZoneProps: DragZoneProps;
 };
+
+const GESTURE_AXIS_LOCK_PX = 10;
 
 /** Pull down on the drag zone to dismiss; optional pull up to expand. */
 export const useSheetDragDismiss = (
@@ -59,6 +62,7 @@ export const useSheetDragDismiss = (
   const translateRef = useRef(0);
   const pointerIdRef = useRef<number | null>(null);
   const exitTimerRef = useRef<number | null>(null);
+  const peekGestureLockRef = useRef<'dismiss' | 'expand' | null>(null);
 
   const clearExitTimer = useCallback(() => {
     if (exitTimerRef.current != null) {
@@ -87,23 +91,36 @@ export const useSheetDragDismiss = (
     const onExpand = onExpandRef.current;
 
     if (dy >= DISMISS_THRESHOLD_PX) {
+      if (peek && peekGestureLockRef.current === 'expand') {
+        resetTransform(true);
+        peekGestureLockRef.current = null;
+        return;
+      }
       const closed = onCloseRef.current();
       if (closed === false) {
         resetTransform(true);
       } else if (!peek) {
         resetTransform(false);
       }
+      peekGestureLockRef.current = null;
       // Peek: keep drag offset until parent unmounts — snapping to 0 flashes the white sheet.
       return;
     }
     if (onExpand && dy <= -EXPAND_THRESHOLD_PX) {
+      if (peek && peekGestureLockRef.current === 'dismiss') {
+        resetTransform(true);
+        peekGestureLockRef.current = null;
+        return;
+      }
       resetTransform(true);
       window.requestAnimationFrame(() => {
         onExpand();
       });
+      peekGestureLockRef.current = null;
       return;
     }
     resetTransform(true);
+    peekGestureLockRef.current = null;
   }, [exiting, peek, resetTransform]);
 
   const applyDragDelta = useCallback(
@@ -113,7 +130,15 @@ export const useSheetDragDismiss = (
       let next: number;
 
       if (peek) {
-        if (dy > 0) {
+        if (peekGestureLockRef.current === null && Math.abs(dy) >= GESTURE_AXIS_LOCK_PX) {
+          peekGestureLockRef.current = dy > 0 ? 'dismiss' : 'expand';
+        }
+        const lock = peekGestureLockRef.current;
+        if (lock === 'dismiss') {
+          next = Math.min(Math.max(0, dy), COMPOSE_DISMISS_DRAG_CAP_PX);
+        } else if (lock === 'expand' && onExpand) {
+          next = dy > 0 ? 0 : Math.max(dy * 0.55, -COMPOSE_EXPAND_PULL_CAP_PX);
+        } else if (dy > 0) {
           next = Math.min(dy, COMPOSE_DISMISS_DRAG_CAP_PX);
         } else if (onExpand) {
           next = Math.max(dy * 0.55, -COMPOSE_EXPAND_PULL_CAP_PX);
@@ -142,6 +167,7 @@ export const useSheetDragDismiss = (
       startYRef.current = clientY;
       translateRef.current = 0;
       setTranslateY(0);
+      peekGestureLockRef.current = null;
     },
     [enabled, exiting]
   );
@@ -234,6 +260,7 @@ export const useSheetDragDismiss = (
     panelRef,
     panelStyle,
     overlayStyle,
+    isDragging,
     dragZoneProps: {
       onPointerDown: onDragZonePointerDown,
       onPointerMove: onDragZonePointerMove,

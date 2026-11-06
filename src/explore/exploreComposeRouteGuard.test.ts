@@ -2,9 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { composeRouteRequiresAuth, resolveComposeRouteChange } from './create/composeRouteGuard';
 
 describe('composeRouteRequiresAuth', () => {
-  it('treats FAB menu as public', () => {
+  it('treats top-level FAB menu as public', () => {
     expect(composeRouteRequiresAuth({ surface: 'menu' })).toBe(false);
-    expect(composeRouteRequiresAuth({ surface: 'menu', intent: 'host' })).toBe(false);
+  });
+
+  it('requires auth for FAB submenu picks (host / seek / add)', () => {
+    expect(composeRouteRequiresAuth({ surface: 'menu', intent: 'host' })).toBe(true);
+    expect(composeRouteRequiresAuth({ surface: 'menu', intent: 'seek' })).toBe(true);
+    expect(composeRouteRequiresAuth({ surface: 'menu', intent: 'add' })).toBe(true);
   });
 
   it('requires auth for create wizards', () => {
@@ -64,6 +69,17 @@ describe('resolveComposeRouteChange', () => {
         profileComplete: true,
       })
     ).toEqual({ type: 'blocked' });
+  });
+
+  it('requires sign-in when guest picks Host / Find crew / Add from FAB menu', () => {
+    for (const intent of ['host', 'seek', 'add'] as const) {
+      const decision = resolveComposeRouteChange({ surface: 'menu', intent }, signedOut);
+      expect(decision.type).toBe('sign-in');
+      if (decision.type === 'sign-in') {
+        expect(decision.href).toContain('/signin');
+        expect(decision.href).toContain('compose');
+      }
+    }
   });
 
   it('allows seek/add for signed-in users and closing compose', () => {

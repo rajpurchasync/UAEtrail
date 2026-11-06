@@ -20,7 +20,7 @@ import { optionalAuth } from '../middleware/optional-auth.js';
 import { requireAuth, requireVerifiedEmail } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
 import { env } from '../config/env.js';
-import { assertPresignedUploadOwner, registerPresignedUpload } from '../lib/media-presign.js';
+import { assertPresignedUploadOwner, registerPresignedUpload, verifyPresignedUploadOwner } from '../lib/media-presign.js';
 import { persistMediaAssetRecord } from '../services/media-asset-commands.js';
 import { getMediaAssetByKey } from '../services/media-asset-read.js';
 import { hasTenantMembership } from '../lib/tenant-access.js';
@@ -34,6 +34,11 @@ import {
   parseMediaKey
 } from '../lib/media-access.js';
 import { convertImageToDisplayJpeg } from '../lib/convert-image-to-jpeg.js';
+import {
+  convertBufferToCatalogThumbJpeg,
+  deriveMediaThumbStorageKey,
+  isImageMimeType,
+} from '../lib/media-thumb.js';
 
 /** Resolve absolute path for local uploads (relative to apps/api/) */
 const LOCAL_UPLOADS_DIR = join(process.cwd(), 'uploads');
@@ -219,13 +224,60 @@ const servePublicMedia = async (
   return false;
 };
 
+const assertViewerCanReadMediaKey = async (
+  key: string,
+  viewerUserId: string | null,
+  isPlatformAdmin: boolean
+): Promise<void> => {
+  const asset = await getMediaAssetByKey(key);
+  const parsed = parseMediaKey(key);
+  const kind = asset?.kind ?? parsed?.kind ?? 'general';
+  const ownerUserId = asset?.uploadedById ?? parsed?.userId ?? null;
+
+  if (isPrivateMediaKind(kind) && !ownerUserId) {
+    throw new ApiError(403, 'forbidden', 'You cannot access this media.');
+  }
+
+  const owner = ownerUserId ? await findAuthUserById(ownerUserId) : null;
+  const visibility = normalizeProfileVisibility(owner?.profile?.profileVisibility);
+
+  const profileAccess = ownerUserId
+    ? await resolveProfileViewerAccess({
+        viewerUserId,
+        targetUserId: ownerUserId,
+        targetVisibility: visibility,
+        isPlatformAdmin,
+      })
+    : null;
+
+  const allowed = canAccessMedia({
+    kind,
+    visibility,
+    viewerUserId,
+    ownerUserId,
+    sharesGroupOrActivity: profileAccess?.sharesGroup ?? false,
+    profileAccessGranted: profileAccess?.canViewFullProfile ?? false,
+    isPlatformAdmin,
+  });
+  if (!allowed) {
+    throw new ApiError(403, 'forbidden', 'You cannot access this media.');
+  }
+};
+
 if (isLocalMediaDevMode()) {
   /* ─── Serve local uploads when S3 is not configured (dev only) ─────────── */
-  mediaRouter.get(/^\/local\/(.+)$/, async (req, res) => {
-    const filePath = req.params[0];
-    const served = await servePublicMedia(filePath, res, { allowPrivateKinds: true });
-    if (!served && !res.headersSent) {
-      res.status(404).json({ error: { code: 'not_found', message: 'File not found.' } });
+  mediaRouter.get(/^\/local\/(.+)$/, optionalAuth, async (req, res, next) => {
+    try {
+      const filePath = req.params[0];
+      const viewerUserId = req.auth?.userId ?? null;
+      const isPlatformAdmin = req.auth?.role === 'PLATFORM_ADMIN';
+      await assertViewerCanReadMediaKey(filePath, viewerUserId, isPlatformAdmin);
+      const served = await servePublicMedia(filePath, res);
+      if (!served && !res.headersSent) {
+        res.status(404).json({ error: { code: 'not_found', message: 'File not found.' } });
+      }
+    } catch (error) {
+      next(error);
     }
   });
 
@@ -234,20 +286,39 @@ mediaRouter.put(
   /^\/upload-local\/(.+)$/,
   requireAuth,
   raw({ type: '*/*', limit: '20mb' }),
-  async (req, res) => {
-    const key = req.params[0] ?? req.path.replace('/upload-local/', '');
-    const filePath = safePathUnder(LOCAL_UPLOADS_DIR, key);
-    if (!filePath) {
-      res.status(400).json({ error: { code: 'invalid_path', message: 'Invalid upload path.' } });
-      return;
-    }
-
+  async (req, res, next) => {
     try {
+      const key = req.params[0] ?? req.path.replace('/upload-local/', '');
+      const filePath = safePathUnder(LOCAL_UPLOADS_DIR, key);
+      if (!filePath) {
+        res.status(400).json({ error: { code: 'invalid_path', message: 'Invalid upload path.' } });
+        return;
+      }
+
+      try {
+        await verifyPresignedUploadOwner(key, req.auth!.userId);
+      } catch {
+        throw new ApiError(403, 'invalid_upload', 'Upload key is invalid or was issued to another user.');
+      }
+
       await mkdir(dirname(filePath), { recursive: true });
-      await writeFile(filePath, req.body as Buffer);
+      const body = req.body as Buffer;
+      await writeFile(filePath, body);
+      if (body.length > 0 && isImageMimeType(req.headers['content-type'] as string | undefined)) {
+        try {
+          const thumbKey = deriveMediaThumbStorageKey(key);
+          const thumbPath = safePathUnder(LOCAL_UPLOADS_DIR, thumbKey);
+          if (thumbPath) {
+            const thumbJpeg = await convertBufferToCatalogThumbJpeg(body);
+            await writeFile(thumbPath, thumbJpeg);
+          }
+        } catch {
+          /* thumb is best-effort for map/catalog */
+        }
+      }
       res.status(200).json({ ok: true });
-    } catch {
-      res.status(500).json({ error: { code: 'upload_failed', message: 'Local file write failed.' } });
+    } catch (error) {
+      next(error);
     }
   });
 }

@@ -41,15 +41,25 @@ const assertRideshareForLink = (rideshare: ActivityDTO, tenantId: string, parent
   }
 };
 
-/** Link a standalone rideshare activity to a parent hike/camp/event/activity. */
+/** Attach a self-hosted ride to a parent outing. Updates the parent pin only when it is the same tenant. */
 export const linkParentToRideshareActivity = async (
   tenantId: string,
   parentActivityId: string,
   rideshareActivityId: string
 ): Promise<void> => {
-  const detail = await fetchPublicActivityDetail(rideshareActivityId);
-  const rideshare = detail.activity as ActivityDTO;
+  const [rideshareDetail, parentDetail] = await Promise.all([
+    fetchPublicActivityDetail(rideshareActivityId),
+    fetchPublicActivityDetail(parentActivityId),
+  ]);
+  const rideshare = rideshareDetail.activity as ActivityDTO;
+  const parent = parentDetail.activity as ActivityDTO;
   assertRideshareForLink(rideshare, tenantId, parentActivityId);
+  if (!canLinkRideshareToActivity(parent)) {
+    throw new Error('That outing cannot take a linked ride.');
+  }
+  if (parent.status !== 'published') {
+    throw new Error('Publish the outing first, then link this ride.');
+  }
   if (rideshare.linkedActivityId === parentActivityId) {
     return;
   }
@@ -57,9 +67,11 @@ export const linkParentToRideshareActivity = async (
   await updateActivity(tenantId, rideshareActivityId, {
     linkedActivityId: parentActivityId,
   });
-  await updateActivity(tenantId, parentActivityId, {
-    linkedRideshareActivityId: rideshareActivityId,
-  });
+  if (parent.tenantId === tenantId) {
+    await updateActivity(tenantId, parentActivityId, {
+      linkedRideshareActivityId: rideshareActivityId,
+    });
+  }
 };
 
 /** Rideshare detail — paste parent hike/camp/event link to attach this ride. */

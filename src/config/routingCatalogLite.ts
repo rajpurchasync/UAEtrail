@@ -8,3 +8,9 @@ export {
   LIST_DISCOVERY_PATH,
   joinAuthPath,
 } from './platform';
+export {
+  SIGNIN_PATH,
+  SESSION_EXPIRED_QUERY_KEY,
+  hasSessionExpiredQuery,
+  sessionExpiredHomePath,
+} from './surfacePaths';

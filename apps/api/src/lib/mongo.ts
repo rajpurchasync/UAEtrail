@@ -11,6 +11,22 @@ const defaultSrvFallbackDnsServers = ['1.1.1.1', '8.8.8.8'];
 const mongoConnectWatchdogMs = env.NODE_ENV === 'production' ? 12_000 : 60_000;
 const mongoSelectionTimeoutMs = env.NODE_ENV === 'production' ? 5_000 : 12_000;
 
+export const redactMongoUri = (uri: string): string =>
+  uri.replace(/\/\/([^@/]+)@/i, '//***@');
+
+const mongoClientOptions = {
+  serverSelectionTimeoutMS: mongoSelectionTimeoutMs,
+  connectTimeoutMS: mongoSelectionTimeoutMs,
+  maxPoolSize: 20,
+  minPoolSize: 2,
+  maxIdleTimeMS: 30_000,
+  serverApi: {
+    version: ServerApiVersion.v1,
+    strict: true,
+    deprecationErrors: true,
+  },
+} as const;
+
 const isAtlasSrvUri = (uri: string): boolean => uri.startsWith('mongodb+srv://');
 
 const shouldRetryMongoWithDnsFallback = (uri: string, message: string): boolean =>
@@ -55,15 +71,7 @@ export const connectMongo = async (): Promise<MongoClient> => {
   if (!connecting) {
     connecting = (async () => {
       const connectOnce = async (): Promise<MongoClient> => {
-        const mongoClient = new MongoClient(env.MONGODB_URI, {
-          serverSelectionTimeoutMS: mongoSelectionTimeoutMs,
-          connectTimeoutMS: mongoSelectionTimeoutMs,
-          serverApi: {
-            version: ServerApiVersion.v1,
-            strict: true,
-            deprecationErrors: true
-          }
-        });
+        const mongoClient = new MongoClient(env.MONGODB_URI, mongoClientOptions);
 
         const watchdog = new Promise<never>((_, reject) => {
           setTimeout(() => {
@@ -110,7 +118,7 @@ export const connectMongo = async (): Promise<MongoClient> => {
           }
         }
 
-        throw new Error(`Failed to connect to MongoDB at ${env.MONGODB_URI}: ${message}`, {
+        throw new Error(`Failed to connect to MongoDB at ${redactMongoUri(env.MONGODB_URI)}: ${message}`, {
           cause: error,
         });
       } finally {

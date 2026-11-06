@@ -19,7 +19,7 @@ const tabShellClass = (active: boolean) =>
   ].join(' ');
 
 const tabLabelClass = (active: boolean) =>
-  ['text-[10px] font-semibold leading-none', active ? 'text-emerald-700' : 'text-neutral-500'].join(' ');
+  ['text-[12px] font-semibold leading-none', active ? 'text-emerald-700' : 'text-neutral-500'].join(' ');
 
 const TabIcon = ({ icon: Icon, active }: { icon: LucideIcon; active: boolean }) => (
   <Icon

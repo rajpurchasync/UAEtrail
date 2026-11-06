@@ -26,8 +26,8 @@ export const ChatThreadHeaderBar = ({
 }: ChatThreadHeaderBarProps) => {
   const backClass =
     backVisibility === 'mobile-only'
-      ? 'flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg hover:bg-gray-100 text-gray-600 lg:hidden'
-      : 'flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-gray-600 hover:bg-gray-100 lg:min-h-8 lg:min-w-8';
+      ? 'flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg hover:bg-gray-100 text-gray-600 md:hidden'
+      : 'flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-gray-600 hover:bg-gray-100 md:min-h-8 md:min-w-8';
 
   const titleBlock = (
     <>
@@ -40,7 +40,11 @@ export const ChatThreadHeaderBar = ({
   );
 
   return (
-    <div className="chat-thread-header flex shrink-0 items-center gap-2 border-b bg-white p-2 shadow-sm pt-safe-plus-2 md:gap-2 md:px-2 md:py-1.5">
+    <div
+      className={`chat-thread-header flex shrink-0 items-center gap-2 border-b bg-white p-2 shadow-sm pt-safe-plus-2 md:gap-2 md:py-2 ${
+        backVisibility === 'mobile-only' ? 'md:pl-4 md:pr-3' : 'md:px-3'
+      }`}
+    >
       <button type="button" onClick={onBack} className={backClass} aria-label={backLabel}>
         <ArrowLeft className="h-5 w-5" />
       </button>

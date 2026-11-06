@@ -82,7 +82,7 @@ const FlowHeader = ({
           <p className="mt-0.5 text-[11px] font-semibold uppercase tracking-wide text-emerald-600">{stepCounter}</p>
         )}
       </div>
-      <button type="button" onClick={onClose} className="rounded-full p-1.5 text-neutral-500 hover:bg-neutral-100" aria-label="Close">
+      <button type="button" onClick={onClose} className="rounded-full bg-neutral-100 p-1.5 text-neutral-600 shadow-sm ring-1 ring-black/5 hover:bg-neutral-200 hover:text-neutral-800" aria-label="Close">
         <X className="h-5 w-5" />
       </button>
     </div>

@@ -59,6 +59,7 @@ describe('buildExploreMemberPeopleMapChip', () => {
     });
     expect(chip.avatars).toHaveLength(2);
     expect(chip.avatars[0]?.name).toBe('Amina');
+    expect(chip.crewCount).toBe(2);
   });
 
   it('merges friends first then map going faces', () => {

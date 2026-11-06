@@ -1,4 +1,5 @@
 import { Gift, ShieldCheck, Users } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { EXPLORE_MAP_PATH } from '../../../../config/routingCatalogLite';
 import { HOME_HERO } from '../../../../content/homeMarketing';
 import { buildHeroSlides } from '../../../../utils/buildHeroSlides';
@@ -63,16 +64,18 @@ export const HomeHeroSection = () => {
               {HOME_HERO.features.map((feature) => {
                 const Icon = HERO_FEATURE_ICONS[feature.id];
                 return (
-                  <li
-                    key={feature.id}
-                    className="home-hero-proof-chip flex min-w-0 flex-1 flex-col items-center justify-center gap-1.5 rounded-xl px-2 py-2 text-center sm:px-2.5 sm:py-2.5"
-                  >
+                  <li key={feature.id} className="flex min-w-0 flex-1">
+                    <Link
+                      to={EXPLORE_MAP_PATH}
+                      className="home-hero-proof-chip flex w-full min-w-0 flex-col items-center justify-center gap-1.5 rounded-xl px-2 py-2 text-center sm:px-2.5 sm:py-2.5"
+                    >
                     <span className="flex h-9 w-9 shrink-0 items-center justify-center" aria-hidden>
                       <Icon className="h-[18px] w-[18px] text-emerald-200/95" strokeWidth={2.25} />
                     </span>
                     <span className="text-[11px] font-semibold leading-tight tracking-tight text-white/92 [text-shadow:0_1px_8px_rgba(0,0,0,0.35)] sm:text-xs">
                       {MOBILE_CHIP_LABEL[feature.id]}
                     </span>
+                    </Link>
                   </li>
                 );
               })}
@@ -86,10 +89,11 @@ export const HomeHeroSection = () => {
               {HOME_HERO.features.map((feature) => {
                 const Icon = HERO_FEATURE_ICONS[feature.id];
                 return (
-                  <li
-                    key={feature.id}
-                    className="home-hero-proof-chip flex min-w-0 items-center gap-3 rounded-xl p-3.5 text-left lg:gap-3.5 lg:p-4"
-                  >
+                  <li key={feature.id}>
+                    <Link
+                      to={EXPLORE_MAP_PATH}
+                      className="home-hero-proof-chip flex h-full min-w-0 items-center gap-3 rounded-xl p-3.5 text-left lg:gap-3.5 lg:p-4"
+                    >
                     <span className="flex h-12 w-12 shrink-0 items-center justify-center lg:h-14 lg:w-14" aria-hidden>
                       <Icon className="h-6 w-6 text-emerald-200/95 lg:h-7 lg:w-7" strokeWidth={2.25} />
                     </span>
@@ -104,6 +108,7 @@ export const HomeHeroSection = () => {
                         {feature.detail}
                       </p>
                     </div>
+                    </Link>
                   </li>
                 );
               })}

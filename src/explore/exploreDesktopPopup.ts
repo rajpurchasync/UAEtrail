@@ -5,9 +5,13 @@ export const exploreCenteredSheetPopupPanelClass =
 export const exploreCenteredSheetPopupBodyClass =
   'explore-desktop-popup-body min-h-0 flex-1 overflow-y-auto overscroll-contain';
 
+/** Resting chip on white sheet panels — hover darkens one step. */
+export const EXPLORE_SHEET_CLOSE_BUTTON_SURFACE =
+  'rounded-full bg-neutral-100 text-neutral-600 shadow-sm ring-1 ring-black/5 hover:bg-neutral-200 hover:text-neutral-800';
+
 /** Close control — sits on the white panel surface (not the scrim). */
 export const exploreDesktopPopupCloseButtonClass =
-  'absolute right-2 top-2 z-20 rounded-full bg-white/95 p-2 text-neutral-500 shadow-sm ring-1 ring-neutral-200/80 hover:bg-neutral-50 hover:text-neutral-800';
+  `absolute right-2 top-2 z-20 p-2 ${EXPLORE_SHEET_CLOSE_BUTTON_SURFACE}`;
 
 export const EXPLORE_DESKTOP_POPUP = {
   scrimShell:

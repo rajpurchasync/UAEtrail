@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import type { ActivityDetailDTO } from '@uaetrail/shared-types';
-import { resolveConsumerDetailVenueEyebrow } from './resolveConsumerDetailVenueEyebrow';
+import {
+  resolveConsumerDetailVenueEyebrow,
+  resolveConsumerDetailVenueKindLabel,
+} from './resolveConsumerDetailVenueEyebrow';
 
 const base = (overrides: Partial<ActivityDetailDTO> = {}): ActivityDetailDTO =>
   ({
@@ -13,6 +16,7 @@ const base = (overrides: Partial<ActivityDetailDTO> = {}): ActivityDetailDTO =>
 describe('resolveConsumerDetailVenueEyebrow', () => {
   it('uses trail path when scheduled type is rideshare', () => {
     expect(resolveConsumerDetailVenueEyebrow(base(), '/trail/p1')).toBe('Trail on UAETrail');
+    expect(resolveConsumerDetailVenueKindLabel(base(), '/trail/p1')).toBe('Trail');
   });
 
   it('prefers linked location catalog kind', () => {

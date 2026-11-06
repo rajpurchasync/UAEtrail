@@ -7,7 +7,10 @@ import {
   PLAN_PATH,
   PROFILE_BADGES_PATH,
   PROFILE_HISTORY_PATH,
-  PROFILE_SETTINGS_PATH,
+  PROFILE_SETTINGS_ACCOUNT_PATH,
+  PROFILE_SETTINGS_NOTIFICATIONS_PATH,
+  PROFILE_SETTINGS_PRIVACY_PATH,
+  PROFILE_SETTINGS_SAFETY_PATH,
   PROFILE_SUBMISSIONS_PATH,
 } from '../config/routingCatalog';
 import { PRODUCT_PLAN_SURFACE_TITLE } from '../content/productNorthStar';
@@ -19,7 +22,10 @@ export type GuestSurfaceGate = {
 };
 
 const PREFIX_GATES: ReadonlyArray<{ prefix: string; gate: GuestSurfaceGate }> = [
-  { prefix: PROFILE_SETTINGS_PATH, gate: { feature: 'settings-hub', title: 'Settings' } },
+  { prefix: PROFILE_SETTINGS_ACCOUNT_PATH, gate: { feature: 'settings-hub', title: 'Account' } },
+  { prefix: PROFILE_SETTINGS_PRIVACY_PATH, gate: { feature: 'settings-hub', title: 'Privacy' } },
+  { prefix: PROFILE_SETTINGS_NOTIFICATIONS_PATH, gate: { feature: 'settings-hub', title: 'Notifications' } },
+  { prefix: PROFILE_SETTINGS_SAFETY_PATH, gate: { feature: 'settings-hub', title: 'Safety' } },
   { prefix: PROFILE_HISTORY_PATH, gate: { feature: 'outing-history', title: 'Outing history' } },
   { prefix: PROFILE_BADGES_PATH, gate: { feature: 'badges', title: 'Badges' } },
   { prefix: PROFILE_SUBMISSIONS_PATH, gate: { feature: 'submissions', title: 'Submissions' } },

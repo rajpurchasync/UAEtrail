@@ -1,0 +1,62 @@
+import { useQuery } from '@tanstack/react-query';
+import { listActivities } from './tenantActivityClientApi';
+import { useMyJoinedActivities } from './useMyJoinedActivities';
+import {
+  filterEligibleSelfRideshares,
+  mergeEligibleRideshareParents,
+  type RideshareParentCandidate,
+  type SelfRideshareCandidate,
+} from '../explore/eligibleRideshareParentActivities';
+
+const publishingTenantActivitiesQueryKey = (tenantId: string) =>
+  ['publishing', 'activities', tenantId] as const;
+
+function usePublishingTenantActivities(tenantId: string | null, enabled: boolean) {
+  return useQuery({
+    queryKey: tenantId ? publishingTenantActivitiesQueryKey(tenantId) : ['publishing', 'activities', 'none'],
+    queryFn: () => listActivities(tenantId!),
+    enabled: enabled && Boolean(tenantId),
+  });
+}
+
+export function useEligibleRideshareParentActivities(input: {
+  enabled: boolean;
+  tenantId: string | null;
+  excludeActivityId?: string;
+}): {
+  candidates: RideshareParentCandidate[];
+  loading: boolean;
+} {
+  const joined = useMyJoinedActivities(input.enabled);
+  const hostedQuery = usePublishingTenantActivities(input.tenantId, input.enabled);
+
+  const candidates = mergeEligibleRideshareParents({
+    joined: joined.activities,
+    hosted: hostedQuery.data ?? [],
+    excludeActivityId: input.excludeActivityId,
+  });
+
+  return {
+    candidates,
+    loading:
+      (input.enabled && joined.loading) ||
+      Boolean(input.enabled && input.tenantId && hostedQuery.isPending && hostedQuery.data === undefined),
+  };
+}
+
+export function useEligibleSelfRideshares(input: {
+  enabled: boolean;
+  tenantId: string | null;
+  parentActivityId: string;
+}): {
+  candidates: SelfRideshareCandidate[];
+  loading: boolean;
+} {
+  const hostedQuery = usePublishingTenantActivities(input.tenantId, input.enabled);
+  return {
+    candidates: filterEligibleSelfRideshares(hostedQuery.data ?? [], input.parentActivityId),
+    loading: Boolean(
+      input.enabled && input.tenantId && hostedQuery.isPending && hostedQuery.data === undefined
+    ),
+  };
+}

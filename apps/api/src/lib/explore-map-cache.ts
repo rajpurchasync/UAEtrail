@@ -2,7 +2,7 @@ import { clearCatalogResponseEtags, noteExplorePayloadTag } from './explore-cata
 import { weakEtagFromJson } from './http-etag.js';
 import { getRedisClient } from './redis.js';
 
-export const EXPLORE_MAP_REDIS_KEY = 'explore:map:payload:v6';
+export const EXPLORE_MAP_REDIS_KEY = 'explore:map:payload:v7';
 export const EXPLORE_MAP_CACHE_MS = 60_000;
 export const EXPLORE_MAP_CACHE_TTL_SEC = 60;
 
@@ -63,6 +63,7 @@ export const invalidateExploreMapCache = async (): Promise<void> => {
   if (!redis) return;
   try {
     await redis.del(EXPLORE_MAP_REDIS_KEY);
+    await redis.del('explore:map:payload:v6');
   } catch {
     /* non-fatal */
   }

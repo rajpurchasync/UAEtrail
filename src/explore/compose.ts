@@ -166,6 +166,36 @@ export const composeMenuTitle = (route: ExploreCompose | null): string => {
   return COMPOSE_MENU_TITLE;
 };
 
+/** Emoji for the compose top bar — selected item, or the menu step. */
+export const composeItemEmoji = (route: ExploreCompose | null): string => {
+  if (!route) return COMPOSE_MENU_THINKING_EMOJI;
+  if (route.intent === 'host' && 'kind' in route && route.kind) {
+    return HOST_COMPOSE_OPTIONS.find((option) => option.kind === route.kind)?.emoji ?? '🧭';
+  }
+  if (route.intent === 'seek') {
+    if ('kind' in route && route.kind) {
+      return SEEK_FIXED_COMPOSE_OPTIONS.find((option) => option.kind === route.kind)?.emoji ?? '🙋';
+    }
+    if ('mode' in route && route.mode === 'flexible') {
+      return SEEK_MODE_OPTIONS.find((option) => option.mode === 'flexible')?.emoji ?? '📅';
+    }
+    if ('mode' in route && route.mode === 'fixed') {
+      return SEEK_MODE_OPTIONS.find((option) => option.mode === 'fixed')?.emoji ?? '📌';
+    }
+    return '🙋';
+  }
+  if (route.intent === 'add') {
+    if ('kind' in route && route.kind) {
+      return ADD_PLACE_OPTIONS.find((option) => option.kind === route.kind)?.emoji
+        ?? (route.target === 'facility' ? '🚻' : '📍');
+    }
+    if ('target' in route && route.target === 'place') return '🥾';
+    if ('target' in route && route.target === 'facility') return '🚻';
+    return '📍';
+  }
+  return COMPOSE_MENU_THINKING_EMOJI;
+};
+
 export const hostCompose = (kind: HostComposeKind): ExploreCompose => ({
   intent: 'host',
   kind,

@@ -19,7 +19,9 @@ export const optionalAuth = async (req: Request, _res: Response, next: NextFunct
       req.auth = {
         userId: user._id,
         email: user.email,
-        role: user.role
+        role: user.role,
+        emailVerifiedAt: user.emailVerifiedAt,
+        userStatus: user.status,
       };
     }
     next();

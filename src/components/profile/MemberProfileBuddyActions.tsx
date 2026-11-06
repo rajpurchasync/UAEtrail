@@ -57,8 +57,8 @@ export const MemberProfileBuddyActions = ({
   const connectionLabel = resolveMemberBuddyConnectionLabel(buddyRel);
 
   return (
-    <div className="mt-4 space-y-2 px-1">
-      <div className="flex justify-center">
+    <div className="mt-4 space-y-2 px-1 lg:px-0">
+      <div className="flex justify-center lg:justify-start">
         <BuddyStatusPill label={connectionLabel} />
       </div>
 

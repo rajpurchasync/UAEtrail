@@ -1,5 +1,6 @@
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { ApiError } from './api-error.js';
+import { filterExploreMapItemsByBboxIndexed } from './explore-map-spatial-index.js';
 import { UAE_LAND_BBOX, type UaeBbox } from './uae-bbox.js';
 
 const DEFAULT_PAGE_LIMIT = 150;
@@ -157,7 +158,7 @@ export const buildExploreMapBboxPage = (input: {
   limit: number;
   cursor: string | null | undefined;
 }): ExploreMapBboxPage => {
-  let filtered = filterExploreMapItemsByBbox(input.items, input.bbox);
+  let filtered = filterExploreMapItemsByBboxIndexed(input.items, input.bbox);
   if (input.areaSlug) {
     filtered = filterExploreMapItemsByAreaSlug(filtered, input.areaSlug);
   }

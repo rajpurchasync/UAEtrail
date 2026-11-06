@@ -68,18 +68,11 @@ export const AreaDetailView = ({
     >
       <PageMeta title={area.name} description={summary.slice(0, 160)} path={detailPath} image={area.imageUrl} />
       <div className="consumer-bg md:bg-gray-50 app-page-min-h">
-        <div className="mx-auto max-w-lg px-4 pb-10 md:max-w-3xl md:px-6">
-          <div className="hidden md:block pt-6">
-            {area.imageUrl ? (
-              <img
-                src={area.imageUrl}
-                alt=""
-                className="mb-6 w-full rounded-2xl object-cover aspect-[16/9]"
-              />
-            ) : null}
+        <div className="mx-auto min-h-0 max-w-lg overflow-y-auto px-4 pb-10 md:max-w-3xl md:px-6 lg:max-w-5xl">
+          <div className="hidden md:block pt-4">
             <p className="text-sm font-medium text-emerald-800">{area.region}</p>
-            <h1 className="mt-1 text-3xl font-bold text-slate-900">{area.name}</h1>
-            <p className="mt-3 text-slate-600">{summary}</p>
+            <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-900 lg:text-xl">{area.name}</h1>
+            <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-600 lg:text-[13px]">{summary}</p>
           </div>
 
           <div className="md:hidden pt-3 pb-1">
@@ -116,21 +109,42 @@ export const AreaDetailView = ({
           </div>
 
           {activeTab === 'overview' && (
-            <div className="mt-6 space-y-6">
-              <dl className="grid grid-cols-3 gap-3 text-center">
-                <div className="rounded-2xl bg-white/80 px-3 py-4 shadow-sm border border-white/60">
-                  <dt className="text-xs uppercase tracking-wide text-slate-500">Activities</dt>
-                  <dd className="text-2xl font-semibold text-slate-900">{counts.activities}</dd>
+            <div className="mt-4 space-y-4">
+              <dl className="grid grid-cols-3 gap-2 text-center">
+                <div className="rounded-xl border border-white/60 bg-white/80 px-2 py-3 shadow-sm">
+                  <dt className="text-[10px] uppercase tracking-wide text-slate-500">Activities</dt>
+                  <dd className="text-xl font-semibold text-slate-900 lg:text-lg">{counts.activities}</dd>
                 </div>
-                <div className="rounded-2xl bg-white/80 px-3 py-4 shadow-sm border border-white/60">
-                  <dt className="text-xs uppercase tracking-wide text-slate-500">Places</dt>
-                  <dd className="text-2xl font-semibold text-slate-900">{counts.places}</dd>
+                <div className="rounded-xl border border-white/60 bg-white/80 px-2 py-3 shadow-sm">
+                  <dt className="text-[10px] uppercase tracking-wide text-slate-500">Places</dt>
+                  <dd className="text-xl font-semibold text-slate-900 lg:text-lg">{counts.places}</dd>
                 </div>
-                <div className="rounded-2xl bg-white/80 px-3 py-4 shadow-sm border border-white/60">
-                  <dt className="text-xs uppercase tracking-wide text-slate-500">Seeking</dt>
-                  <dd className="text-2xl font-semibold text-slate-900">{counts.seeking}</dd>
+                <div className="rounded-xl border border-white/60 bg-white/80 px-2 py-3 shadow-sm">
+                  <dt className="text-[10px] uppercase tracking-wide text-slate-500">Seeking</dt>
+                  <dd className="text-xl font-semibold text-slate-900 lg:text-lg">{counts.seeking}</dd>
                 </div>
               </dl>
+
+              <section className="flex flex-wrap gap-2">
+                <Link
+                  to={explorePath({
+                    area: area.slug,
+                    compose: seekFixedCompose('hiking'),
+                  })}
+                  className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-sm font-semibold text-emerald-900"
+                >
+                  Find crew
+                </Link>
+                <Link
+                  to={explorePath({
+                    area: area.slug,
+                    compose: hostCompose('hiking'),
+                  })}
+                  className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-900"
+                >
+                  Host an outing
+                </Link>
+              </section>
 
               <AreaHubMapStrip
                 areaSlug={area.slug}
@@ -140,33 +154,12 @@ export const AreaDetailView = ({
                 places={preview?.places ?? []}
               />
 
-              <section className="flex flex-wrap gap-2">
-                <Link
-                  to={explorePath({
-                    area: area.slug,
-                    compose: seekFixedCompose('hiking'),
-                  })}
-                  className="rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-900"
-                >
-                  Find crew
-                </Link>
-                <Link
-                  to={explorePath({
-                    area: area.slug,
-                    compose: hostCompose('hiking'),
-                  })}
-                  className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-900"
-                >
-                  Host an outing
-                </Link>
-              </section>
-
               {availabilityIndex && availabilityIndex.people.length > 0 ? (
                 <section className="space-y-2">
-                  <h2 className="text-lg font-semibold text-slate-900">Available this week</h2>
-                  <ul className="divide-y rounded-2xl border border-slate-200 bg-white">
+                  <h2 className="text-base font-semibold text-slate-900 lg:text-sm">Available this week</h2>
+                  <ul className="max-h-48 divide-y overflow-y-auto rounded-2xl border border-slate-200 bg-white">
                     {availabilityIndex.people.slice(0, 8).map((person) => (
-                      <li key={person.userId} className="px-4 py-3 text-sm text-slate-800">
+                      <li key={person.userId} className="px-4 py-2.5 text-sm text-slate-800">
                         {person.displayName} · {person.kinds.join(', ')}
                       </li>
                     ))}

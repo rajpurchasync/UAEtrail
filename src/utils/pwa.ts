@@ -61,15 +61,20 @@ function isLoopbackHost(hostname: string): boolean {
   return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]';
 }
 
+/** True when the page is eligible for Chromium “Install app” (https or localhost only). */
+export function isPwaInstallSecureContext(): boolean {
+  if (typeof window === 'undefined') return true;
+  return window.isSecureContext;
+}
+
 /**
  * Register the service worker Chrome and Edge require before “Install app”.
- * Loopback dev stays unregistered so Vite HMR is not intercepted. A phone on
- * https (or any non-loopback host) still gets the worker.
+ * Skips loopback (Vite HMR) and non-secure origins (e.g. http://192.168.x.x on Wi‑Fi dev).
  */
 export function registerAppServiceWorker(): void {
   if (!('serviceWorker' in navigator) || typeof window === 'undefined') return;
 
-  if (isLoopbackHost(window.location.hostname)) {
+  if (isLoopbackHost(window.location.hostname) || !window.isSecureContext) {
     void navigator.serviceWorker.getRegistrations().then((registrations) => {
       for (const registration of registrations) {
         void registration.unregister();

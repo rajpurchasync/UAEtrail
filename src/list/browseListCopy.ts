@@ -15,3 +15,6 @@ export const BROWSE_LIST_SECTION_VENUES = 'Venues';
 export const BROWSE_LIST_SECTION_SHOPS = 'Shops';
 export const BROWSE_LIST_EMPTY = 'Nothing matches — try clearing filters or search.';
 export const BROWSE_LIST_CLEAR_FILTERS = 'Clear filters';
+/** Guest `GET /explore/map` preview — align with `explore-map-guest-catalog-cap` + map copy. */
+export const LIST_GUEST_CATALOG_PREVIEW_NOTICE =
+  'Preview: 3 oldest outings and 3 oldest places. Log in to browse the full catalog.';

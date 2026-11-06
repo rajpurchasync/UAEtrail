@@ -1,47 +1,62 @@
 import { ChevronLeft, X } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { EXPLORE_FLOW } from '../../config/exploreTheme';
+import { EXPLORE_SHEET_CLOSE_BUTTON_SURFACE } from '../exploreDesktopPopup';
+import { useComposeWizardItemEmoji } from '../create/ComposeWizardItemContext';
 
 export const FlowSheetHeader = ({
   title,
+  emoji,
   onClose,
   onBack,
 }: {
   title: string;
+  emoji?: string;
   onClose: () => void;
   onBack?: () => void;
-}) => (
-  <header className={`${EXPLORE_FLOW.stepHeaderShell} relative z-10`}>
-    {onBack ? (
+}) => {
+  const itemEmoji = useComposeWizardItemEmoji();
+  const icon = emoji ?? itemEmoji;
+
+  return (
+    <header className="relative z-10 mb-4 flex min-h-12 shrink-0 items-center gap-1 pt-[var(--safe-top)] lg:pt-0">
+      {onBack ? (
+        <button
+          type="button"
+          onClick={(event) => {
+            event.stopPropagation();
+            onBack();
+          }}
+          className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-neutral-700 hover:bg-neutral-100 pointer-events-auto"
+          aria-label="Back"
+        >
+          <ChevronLeft className="h-5 w-5" aria-hidden />
+        </button>
+      ) : (
+        <span className="h-10 w-10 shrink-0" aria-hidden />
+      )}
+      <div className="flex min-w-0 flex-1 items-center justify-center gap-2 px-1">
+        {icon ? (
+          <span className="shrink-0 text-lg leading-none font-emoji" aria-hidden>
+            {icon}
+          </span>
+        ) : null}
+        <h2 className="truncate text-base font-bold text-neutral-900">{title}</h2>
+      </div>
       <button
         type="button"
         onClick={(event) => {
           event.stopPropagation();
-          onBack();
+          onClose();
         }}
-        className="absolute left-0 top-2 z-20 -ml-1 inline-flex min-h-10 items-center gap-0.5 rounded-full py-1.5 pl-1 pr-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-100 pointer-events-auto"
-        aria-label="Back"
+        className={`inline-flex h-10 w-10 shrink-0 items-center justify-center pointer-events-auto ${EXPLORE_SHEET_CLOSE_BUTTON_SURFACE}`}
+        aria-label="Close"
       >
-        <ChevronLeft className="h-5 w-5 shrink-0" aria-hidden />
-        <span className="sr-only sm:not-sr-only">Back</span>
+        <X className="h-5 w-5" />
       </button>
-    ) : null}
-    <button
-      type="button"
-      onClick={(event) => {
-        event.stopPropagation();
-        onClose();
-      }}
-      className="absolute right-0 top-2 z-20 min-h-10 min-w-10 rounded-full p-1.5 text-gray-500 hover:bg-neutral-100 pointer-events-auto"
-      aria-label="Close"
-    >
-      <X className="h-5 w-5" />
-    </button>
-    <div className={EXPLORE_FLOW.stepTitleBlock}>
-      <h2 className={EXPLORE_FLOW.stepTitle}>{title}</h2>
-    </div>
-  </header>
-);
+    </header>
+  );
+};
 
 export const FlowSheetBackButton = ({ onBack }: { onBack: () => void }) => (
   <div className={EXPLORE_FLOW.stepBackRow}>
@@ -52,20 +67,22 @@ export const FlowSheetBackButton = ({ onBack }: { onBack: () => void }) => (
   </div>
 );
 
-/** Step shell: centered title, scrollable body, optional footer (e.g. Next). */
+/** Step shell: top bar (back · item · close), scrollable body, optional footer. */
 export const FlowSheetChrome = ({
   title,
+  emoji,
   onClose,
   onBack,
   children,
 }: {
   title: string;
+  emoji?: string;
   onClose: () => void;
   onBack: () => void;
   children: ReactNode;
 }) => (
   <>
-    <FlowSheetHeader title={title} onClose={onClose} onBack={onBack} />
+    <FlowSheetHeader title={title} emoji={emoji} onClose={onClose} onBack={onBack} />
     {children}
   </>
 );

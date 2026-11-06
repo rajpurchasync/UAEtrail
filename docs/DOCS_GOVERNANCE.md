@@ -108,6 +108,9 @@ Do **not** put new product semantics only in `experiment/*` phase trackers or de
 | `UserRole` / `isHostRole` for publish UI | `GET /me/status` (`useMemberStatus`) |
 | `/host/requests` as onboarding | Activity join queue |
 | Consumer lead = “trail inventory / host console” only | North star: find people · get outside · go together |
+| Platform rewrite to Next.js / Nest / microservices | Keep Vite SPA + Express — §8.9 |
+| WebSockets for chat | SSE on API origin — §8.9 |
+| SSR/SSG for `/explore` map | Optional prerender for entity detail + guest `/` only — §8.9 |
 
 ---
 

@@ -15,7 +15,6 @@ import {
 } from './activityConsumerDetailSectionStyles';
 import { CONSUMER_DETAIL_SCROLL_CLASS } from '../../../config/consumerScrollChrome';
 import { useConsumerDetailScrollChrome } from './useConsumerDetailScrollChrome';
-import { useMinWidthLg } from '../../../hooks/useMinWidthLg';
 
 export type ActivityConsumerDetailModalShellProps = {
   backTo: string;
@@ -30,8 +29,8 @@ export type ActivityConsumerDetailModalShellProps = {
 };
 
 /**
- * Public activity / place consumer detail — full-screen route page (`/activity/:id`, `/trail/:id`, …).
- * No stacked map modal; back navigates to `backTo` (map when opened from a pin summary).
+ * Public activity / place consumer detail — one panel beside the product nav.
+ * Join / arrange actions stay in a bottom bar of this same panel (no right rail).
  */
 export const ActivityConsumerDetailModalShell = ({
   backTo,
@@ -45,7 +44,6 @@ export const ActivityConsumerDetailModalShell = ({
   const location = useLocation();
   const navigate = useNavigate();
   const preferDeclaredBack = readDetailBackPrefersDeclared(location.state);
-  const isDesktop = useMinWidthLg();
   const scrollRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
@@ -77,48 +75,22 @@ export const ActivityConsumerDetailModalShell = ({
     };
   }, []);
 
-  const footerInAside = Boolean(footer) && isDesktop;
-
   return (
   <div
     className="flex h-full min-h-0 max-h-full w-full flex-1 flex-col overflow-hidden bg-white max-md:h-[100dvh] max-md:max-h-[100dvh] max-md:flex-none"
     data-activity-detail-modal-shell
     data-activity-detail-mobile-fullscreen
   >
-    <div className="relative min-h-0 flex-1">
-      <div
-        ref={scrollRef}
-        className={`min-h-0 h-full overflow-y-auto overscroll-contain scroll-touch ${CONSUMER_DETAIL_SCROLL_CLASS} ${
-          footer && !footerInAside ? 'pb-detail-cta-safe' : 'pb-4'
-        }`}
-      >
-        <div
-          ref={contentRef}
-          className={`px-4 pb-6 pt-[var(--detail-header-pad,calc(var(--safe-top)+4.75rem))] lg:mx-auto lg:max-w-6xl lg:px-8 lg:pb-12 ${
-            footerInAside ? 'lg:grid lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start lg:gap-10' : 'lg:max-w-3xl'
-          }`}
-        >
-          <div className="min-w-0">{children}</div>
-          {footerInAside ? (
-            <aside
-              className="sticky top-[calc(var(--detail-header-pad,4rem)+0.5rem)] rounded-2xl border border-neutral-200 bg-white p-4 shadow-[0_8px_30px_rgba(15,23,42,.08)]"
-              aria-label="Join this outing"
-            >
-              {footer}
-            </aside>
-          ) : null}
-        </div>
-      </div>
-
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-30">
+    <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
+      <div className="pointer-events-none z-30 max-lg:absolute max-lg:inset-x-0 max-lg:top-0 lg:relative lg:shrink-0">
         <div
           ref={headerRef}
-          className={`pointer-events-auto px-4 pb-3 pt-2 lg:px-8 ${
+          className={`pointer-events-auto px-4 pb-3 pt-2 md:px-6 lg:px-6 lg:py-1.5 ${
             headerFrosted ? CONSUMER_DETAIL_STICKY_HEADER_FROSTED : CONSUMER_DETAIL_STICKY_HEADER_REST
           }`}
         >
-          <div className="pt-safe-plus-2 lg:mx-auto lg:max-w-6xl">
-            <div className="relative flex min-h-11 items-center">
+          <div className="pt-safe-plus-2 lg:pt-0">
+            <div className="relative flex min-h-11 items-center lg:min-h-9">
               <MobileBackButton
                 fallbackTo={backTo}
                 label={backLabel}
@@ -132,10 +104,10 @@ export const ActivityConsumerDetailModalShell = ({
                     <ConsumerDetailHeaderTypeMark
                       emoji={headerChrome.emoji}
                       mark={headerChrome.mark}
-                      sizeClass="h-8 w-8"
+                      sizeClass="h-8 w-8 lg:h-6 lg:w-6"
                     />
                   ) : null}
-                  <p className="min-w-0 truncate text-center text-[15px] font-bold leading-tight text-neutral-900">
+                  <p className="min-w-0 truncate text-center text-[15px] font-bold leading-tight text-neutral-900 lg:text-[13px] lg:font-semibold">
                     {headerChrome?.label ?? 'Details'}
                   </p>
                 </div>
@@ -153,14 +125,28 @@ export const ActivityConsumerDetailModalShell = ({
         </div>
       </div>
 
-      {footer && !footerInAside ? (
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 md:fixed md:z-40">
+      <div
+        ref={scrollRef}
+        className={`h-0 min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain scroll-touch ${CONSUMER_DETAIL_SCROLL_CLASS} ${
+          footer ? 'pb-3' : 'pb-4 lg:pb-6'
+        }`}
+      >
+        <div
+          ref={contentRef}
+          className="px-4 pb-6 pt-[var(--detail-header-pad,calc(var(--safe-top)+4.75rem))] md:px-6 lg:px-6 lg:pb-4 lg:pt-3"
+        >
+          <div className="min-w-0 lg:text-[13px] lg:leading-snug">{children}</div>
+        </div>
+      </div>
+
+      {footer ? (
+        <div className="pointer-events-none z-20 shrink-0">
           <div
             className={`pointer-events-auto ${
               footerFrosted ? CONSUMER_DETAIL_STICKY_FOOTER_FROSTED : CONSUMER_DETAIL_STICKY_FOOTER_REST
             }`}
           >
-            {footer}
+            <div className="mx-auto w-full max-w-full">{footer}</div>
           </div>
         </div>
       ) : null}

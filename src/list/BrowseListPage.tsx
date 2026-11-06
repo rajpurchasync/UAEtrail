@@ -1,6 +1,7 @@
 import { PageMeta } from '../components/seo/PageMeta';
 import { LIST_DISCOVERY_PATH } from '../config/platform';
 import { ListDiscoveryExperience } from './ListDiscoveryExperience';
+import '../styles/explore-map-chrome.css';
 
 export const BrowseListPage = () => (
   <>

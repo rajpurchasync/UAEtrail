@@ -24,7 +24,8 @@ export const isDemoLoginAllowedForRequest = (
   const normalizedRunEnv = normalizeRunEnv(runEnv);
   if (normalizedRunEnv === 'production') return false;
   if (nodeEnv === 'test') return true;
-  if (normalizedRunEnv === 'test' || normalizedRunEnv === 'staging') return true;
+  if (normalizedRunEnv === 'staging') return allowDemoLoginEnv === 'true';
+  if (normalizedRunEnv === 'test') return true;
   if (allowDemoLoginEnv === 'true') return true;
   if (nodeEnv === 'development') {
     return isLoopbackAddress(remoteAddress);

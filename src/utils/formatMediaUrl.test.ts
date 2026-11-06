@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { extractMediaStorageKey, formatMediaUrl } from './formatMediaUrl';
+import { extractMediaStorageKey, formatMediaUrl, formatMediaCatalogUrl } from './formatMediaUrl';
 
 describe('formatMediaUrl', () => {
   it('extracts keys from API local/public URLs', () => {
@@ -25,10 +25,10 @@ describe('formatMediaUrl', () => {
     expect(formatMediaUrl(url)).toBe(url);
   });
 
-  it('rewrites mistaken public avatar URLs to resolve', () => {
-    const key = 'users/u1/avatars/photo.webp';
-    expect(formatMediaUrl(`/api/media/public/${key}`)).toBe(
-      `/api/media/resolve?key=${encodeURIComponent(key)}`
+  it('formatMediaCatalogUrl prefers -thumb.jpg siblings', () => {
+    const key = 'tenants/t1/activities/123-photo.jpg';
+    expect(formatMediaCatalogUrl(`/api/media/public/${key}`)).toBe(
+      `/api/media/public/tenants/t1/activities/123-photo-thumb.jpg`
     );
   });
 });

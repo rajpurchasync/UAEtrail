@@ -89,9 +89,10 @@ export const MemberProfileView = ({
   const joinedLabel = formatMemberJoinedLabel(profile.memberSince);
   const profileLink = memberProfileLink(userId);
   return (
-    <div className="space-y-3 pb-nav-safe animate-fade-up">
+    <div className="min-h-0 space-y-3 overflow-y-auto pb-nav-safe animate-fade-up">
+      <div className="space-y-3">
       <GlassCard padding className="!p-0 overflow-hidden">
-        <div className="relative bg-gradient-to-b from-emerald-50/90 to-white px-5 pb-5 pt-6 text-center">
+        <div className="relative bg-gradient-to-b from-emerald-50/90 to-white px-5 pb-5 pt-6 text-center lg:flex lg:items-start lg:gap-5 lg:px-5 lg:py-4 lg:text-left">
           <div className="absolute right-3 top-3 flex items-center gap-1">
             <ShareButton
               title={`${profile.displayName} on UAE Trail`}
@@ -104,10 +105,11 @@ export const MemberProfileView = ({
           <SecureAvatar
             src={profile.avatarUrl}
             name={profile.displayName}
-            className="mx-auto h-24 w-24 text-2xl ring-4 ring-white shadow-md"
+            className="mx-auto h-24 w-24 text-2xl ring-4 ring-white shadow-md lg:mx-0 lg:h-16 lg:w-16 lg:text-lg"
           />
 
-          <h1 className="mt-4 text-2xl font-bold tracking-tight text-neutral-900">{profile.displayName}</h1>
+          <div className="min-w-0 flex-1 lg:pt-1">
+          <h1 className="mt-4 text-2xl font-bold tracking-tight text-neutral-900 lg:mt-0 lg:text-xl">{profile.displayName}</h1>
           <p className="mt-1 text-sm font-medium text-neutral-500">{roleLabel}</p>
           {profile.linkedOperatorName && profile.hostProfilePath ? (
             <Link
@@ -122,6 +124,7 @@ export const MemberProfileView = ({
           ) : null}
 
           {showConnectActions ? (
+            <div className="lg:max-w-sm">
             <MemberProfileBuddyActions
               buddyRel={buddyRel}
               buddyBusy={buddyBusy}
@@ -131,6 +134,7 @@ export const MemberProfileView = ({
               onCancelBuddyRequest={onCancelBuddyRequest}
               onMessage={onMessage}
             />
+            </div>
           ) : null}
 
           {!isSelf && !userLoggedIn ? (
@@ -144,8 +148,9 @@ export const MemberProfileView = ({
           ) : null}
 
           {buddyMessage ? (
-            <p className="mt-2 text-center text-xs font-medium text-neutral-600">{buddyMessage}</p>
+            <p className="mt-2 text-center text-xs font-medium text-neutral-600 lg:text-left">{buddyMessage}</p>
           ) : null}
+          </div>
         </div>
 
         <div className="grid grid-cols-2 divide-x divide-neutral-100 border-t border-neutral-100">
@@ -153,6 +158,13 @@ export const MemberProfileView = ({
           <StatBlock label="Activities hosted" value={profile.stats.activitiesHosted} />
         </div>
       </GlassCard>
+
+      {canViewFullProfile && profile.bio && (
+        <GlassCard padding>
+          <SectionHeading>About</SectionHeading>
+          <p className="text-[15px] leading-7 text-neutral-700 whitespace-pre-line">{profile.bio}</p>
+        </GlassCard>
+      )}
 
       {canViewFullProfile && profile.yearGoal ? (
         <PublicMemberYearGoal goal={profile.yearGoal} />
@@ -185,13 +197,6 @@ export const MemberProfileView = ({
         </GlassCard>
       )}
 
-      {canViewFullProfile && profile.bio && (
-        <GlassCard padding>
-          <SectionHeading>About</SectionHeading>
-          <p className="text-[15px] leading-7 text-neutral-700 whitespace-pre-line">{profile.bio}</p>
-        </GlassCard>
-      )}
-
       {canViewFullProfile && upcomingActivities.length > 0 && (
         <GlassCard padding className="space-y-3">
           <AccountSectionHeader title="Upcoming activities" />
@@ -209,6 +214,7 @@ export const MemberProfileView = ({
           <MemberFollowControls targetUserId={userId} onStatusMessage={onBuddyMessage} />
         </GlassCard>
       ) : null}
+      </div>
     </div>
   );
 };

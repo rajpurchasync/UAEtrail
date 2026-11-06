@@ -609,8 +609,17 @@ const purgeRetiredWishlistTargetRows = async (db: Db): Promise<void> => {
   }
 };
 
+/** Bump when adding a new migration step so existing deployments run it once. */
+export const MONGO_MIGRATION_VERSION = 2025110501;
+
 /** One-time migrations for activity terminology and role model alignment. */
 export const runMongoMigrations = async (db: Db): Promise<void> => {
+  const meta = db.collection<{ _id: string; version?: number }>('schema_meta');
+  const state = await meta.findOne({ _id: 'migrations' });
+  if (typeof state?.version === 'number' && state.version >= MONGO_MIGRATION_VERSION) {
+    return;
+  }
+
   await migrateRetiredCollectionToCanonicalAndDrop(db, 'events', COLLECTIONS.ACTIVITIES);
   await migrateRetiredCollectionToCanonicalAndDrop(db, 'event_requests', COLLECTIONS.ACTIVITY_REQUESTS);
   await migrateRetiredCollectionToCanonicalAndDrop(db, 'event_participants', COLLECTIONS.ACTIVITY_PARTICIPANTS);
@@ -652,6 +661,12 @@ export const runMongoMigrations = async (db: Db): Promise<void> => {
   await migrateOrganizerNoteToHostNote(db);
   await migrateDemandExplorePinPaths(db);
   await dropRemovedCommerceCollections(db);
+
+  await meta.updateOne(
+    { _id: 'migrations' },
+    { $set: { version: MONGO_MIGRATION_VERSION, appliedAt: new Date() } },
+    { upsert: true }
+  );
 };
 
 /** One-time: leftover `pin=demand:` notification paths → `pin=activity:{id}`. */

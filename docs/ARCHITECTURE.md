@@ -92,17 +92,33 @@ Auth/session invariants for dev and deploy: [`DEV_RUN.md`](./DEV_RUN.md) § Auth
 Architecture-level invariants:
 
 - Refresh token transport is cookie-based (`httpOnly`) and access token refresh occurs via `POST /auth/refresh` with credentials.
-- Frontend session persistence is localStorage-based (`uaetrail_session`) and retries one authenticated request after refresh.
+- Frontend access token is **in-memory only** (not `localStorage`); signed-in profile hint uses `uaetrail_user` (non-secret). Full page load rehydrates via refresh cookie (`bootstrapSessionFromRefresh`).
 - Role switch (`POST /me/role/switch`) changes session role without changing account identity.
 - Team/group access state is modeled with `isActive` flags, not only membership deletion.
 - Social post/reply/review text is sanitized before write.
+- Production async side effects (notifications, explore map cache bust) use the **side-effect outbox** (on by default when `NODE_ENV=production`).
+
+**Platform north star (defaults, rejected rewrites, waves):** [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) **§8.9**.
 
 ## Deployment notes
 
 - Ensure `MONGODB_URI` is set and MongoDB is reachable before API start
 - Demo seed only when `SEED_DATA=true` (or `FORCE_SEED=1` / `RUN_PROJECT_FORCE_SEED=1`); never in production
 - Optional env: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`
-- Frontend build: `npm run build` → serve via nginx (`nginx/default.conf`)
+- Production: `REDIS_URL` required; side-effect outbox on by default (`SIDE_EFFECT_OUTBOX=0` is rejected)
+- Frontend build: `npm run build` → serve via nginx (`nginx/default.conf`) or Vercel static + API proxy (see `DEPLOYMENT.md`)
+- Long-lived **chat SSE** should hit the **API origin**, not only the Vercel serverless proxy (§8.9)
+
+## Allowed evolution (after §8.9 waves)
+
+- **Wave 3:** OpenAPI spec generated from `*-route-schemas.ts`, then optional generated FE client
+- **Optional SEO:** prerender or SSG for guest `/`, `/activity/:id`, and place detail — **not** for `/explore` map shell
+- Drop legacy `TrailDetail` / `CampDetail` / `EventDetail` shims after `App.tsx` lazy-loads `*PlaceDetailPage` directly (kind templates live under `src/pages/place/`)
+- FCM native apps when product requires it (web push covers PWA today)
+
+## Out of scope (do not document as product roadmap)
+
+See [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) §8.9 — includes Next.js/Nest/microservice rewrites, Mongoose/Kafka, WebSockets for chat, and SSR for the explore map.
 
 ## Testing
 
@@ -123,10 +139,3 @@ Unit tests cover capacity, JWT, datetime (GCC), and waitlist logic.
 | 4 | [`archive/README.md`](./archive/README.md) | Removed snapshots — git history only |
 
 Checks: `npm run verify:docs` · `npm run verify:host-member`
-
-## Future (not in scope)
-
-- OpenAPI-generated client
-- Drop legacy `TrailDetail` / `CampDetail` / `EventDetail` shims after `App.tsx` lazy-loads `*PlaceDetailPage` directly (kind templates live under `src/pages/place/`)
-- SSR/SSG for SEO-critical pages
-- FCM native apps (web push covers PWA today)

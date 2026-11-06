@@ -103,13 +103,14 @@ const listActiveLocationsFromMongoGeo = async (
 
 const listActiveLocationsFromMongo = async (
   filters: LocationListFilters,
-  offset: number
+  offset: number,
+  projection?: Record<string, 0 | 1>
 ): Promise<{ items: Location[]; total: number }> => {
   const query = buildMongoFilter(filters);
 
   const [items, total] = await Promise.all([
     locationsCollection()
-      .find(query)
+      .find(query, projection ? { projection } : undefined)
       .sort({ featured: -1, createdAt: -1 })
       .skip(offset)
       .limit(filters.pageSize)
@@ -119,6 +120,35 @@ const listActiveLocationsFromMongo = async (
 
   return { items: items.map(mapMongoLocation), total };
 };
+
+/** Fields required by explore map base assembly (not full location documents). */
+const EXPLORE_MAP_LOCATION_PROJECTION = {
+  _id: 1,
+  name: 1,
+  activityType: 1,
+  latitude: 1,
+  longitude: 1,
+  images: 1,
+  description: 1,
+  region: 1,
+  groupRegionLevels: 1,
+  areaId: 1,
+  areaLabel: 1,
+  tags: 1,
+  featured: 1,
+  childFriendly: 1,
+  season: 1,
+  status: 1,
+  registryListed: 1,
+} as const;
+
+export async function listActiveLocationsForExploreMap(
+  pageSize: number
+): Promise<{ items: Location[]; total: number }> {
+  return withQueryTiming('listActiveLocationsForExploreMap', () =>
+    listActiveLocationsFromMongo({ page: 1, pageSize }, 0, EXPLORE_MAP_LOCATION_PROJECTION)
+  );
+}
 
 export async function listActiveLocations(
   filters: LocationListFilters

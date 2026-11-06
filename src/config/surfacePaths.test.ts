@@ -4,12 +4,21 @@ import {
   SIGNIN_PATH,
   groupsManagePath,
   groupsPath,
+  hasSessionExpiredQuery,
   isPublishingConsolePath,
   messagesGroupPath,
+  messagesGroupChatPath,
+  sessionExpiredHomePath,
   signInPath,
 } from './surfacePaths';
 
 describe('surfacePaths', () => {
+  it('sessionExpiredHomePath lands guests on home with the expired flag', () => {
+    expect(sessionExpiredHomePath()).toBe('/?session=expired');
+    expect(hasSessionExpiredQuery(new URLSearchParams('session=expired'))).toBe(true);
+    expect(hasSessionExpiredQuery(new URLSearchParams('session=ok'))).toBe(false);
+  });
+
   it('signInPath builds auth URLs with optional query', () => {
     expect(signInPath()).toBe(SIGNIN_PATH);
     expect(signInPath({ redirect: '/trips' })).toBe(`${SIGNIN_PATH}?redirect=%2Ftrips`);
@@ -26,7 +35,8 @@ describe('surfacePaths', () => {
     expect(groupsPath({ invite: 'tok' })).toBe(`${GROUPS_PATH}?invite=tok`);
     expect(groupsManagePath('g-1')).toBe(`${GROUPS_PATH}?group=g-1&tab=members`);
     expect(groupsManagePath('g-1', 'manage')).toBe(`${GROUPS_PATH}?group=g-1&tab=manage`);
-    expect(messagesGroupPath('g-1', 'act-1')).toBe('/chat?group=g-1&activity=act-1');
+    expect(messagesGroupPath('g-1', 'act-1')).toBe('/chat?group=g-1&chat=1&activity=act-1');
+    expect(messagesGroupChatPath('g-1', 'act-1')).toBe('/chat?group=g-1&chat=1&activity=act-1');
   });
 
   it('isPublishingConsolePath matches /publishing workspace only', () => {

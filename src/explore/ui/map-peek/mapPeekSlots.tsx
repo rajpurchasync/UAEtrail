@@ -64,6 +64,7 @@ export type MapPeekBodySlotProps = {
   onOpenLinkedPin?: (exploreItemId: string) => void;
   onOfferTransport?: () => void;
   joinUiState?: JoinRequestUiState;
+  mapPeekCompact?: boolean;
 };
 
 export const MapPeekBodySlot = ({
@@ -72,6 +73,7 @@ export const MapPeekBodySlot = ({
   onOpenLinkedPin,
   onOfferTransport,
   joinUiState,
+  mapPeekCompact = false,
 }: MapPeekBodySlotProps) => {
   if (card.source === 'area') {
     return <AreaPeekBody card={card} />;
@@ -85,9 +87,10 @@ export const MapPeekBodySlot = ({
         onOpenLinkedPin={onOpenLinkedPin}
         onOfferTransport={onOfferTransport}
         joinUiState={joinUiState}
+        mapPeekCompact={mapPeekCompact}
       />
     );
   }
 
-  return <CatalogPeekBody card={card} onGuestGatedAction={onGuestGatedAction} />;
+  return <CatalogPeekBody card={card} onGuestGatedAction={onGuestGatedAction} mapPeekCompact={mapPeekCompact} />;
 };

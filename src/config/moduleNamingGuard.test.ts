@@ -18,6 +18,7 @@ const EXPLORE_PREFIX_ALLOW_PREFIXES = [
   'src/api/domains/availability.ts',
   'src/config/platform.ts',
   'src/access/mapViewerAccessToUi.ts',
+  'src/routing/appLazyPages.tsx',
 ];
 
 const PLAN_PREFIX_ALLOW_PREFIXES = [
@@ -27,9 +28,9 @@ const PLAN_PREFIX_ALLOW_PREFIXES = [
   'src/routing/',
 ];
 
-const BROWSE_PREFIX_ALLOW_PREFIXES = ['src/list/', 'src/explore/'];
+const BROWSE_PREFIX_ALLOW_PREFIXES = ['src/list/', 'src/explore/', 'src/routing/appLazyPages.tsx'];
 
-const LIST_PREFIX_ALLOW_PREFIXES = ['src/list/'];
+const LIST_PREFIX_ALLOW_PREFIXES = ['src/list/', 'src/routing/appLazyPages.tsx'];
 
 const EXPORT_SYMBOL =
   /export\s+(?:const|function|class|type|interface)\s+(Explore|Plan|Browse|List)[A-Za-z0-9_]*/g;

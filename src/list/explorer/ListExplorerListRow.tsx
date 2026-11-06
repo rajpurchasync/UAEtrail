@@ -34,6 +34,7 @@ export const ListExplorerListRow = ({ card, onMapHover, showDistance = false }: 
         {cover ? (
           <EnvironmentImage
             src={cover}
+            catalogThumb
             alt=""
             className="h-full w-full object-cover"
             loading="lazy"

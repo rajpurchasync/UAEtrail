@@ -1,6 +1,8 @@
 import {
   exploreMapItemIsSeeking,
   exploreVenueIsPlacesSpot,
+  isFacilityMapSource,
+  isFacilityPlaceKind,
   isPeekOnlyCatalogProfile,
   isTimeBoundExploreMapItem,
   resolveExploreMapActivityMode,
@@ -20,9 +22,14 @@ import type { ExplorePinKindFilter } from '../explorePinKindFilter';
 import { matchesActivityDateFilter } from '../exploreActivityDateFilter';
 import { venueItemMatchesRegions } from '../../utils/venueRegionFilter';
 
+export const isFacilityExploreMapItem = (item: ExploreMapItemDTO): boolean =>
+  isFacilityMapSource(item.source) || Boolean(item.placeKind && isFacilityPlaceKind(item.placeKind));
+
 export const matchesVenueFilter = (item: ExploreMapItemDTO, venueFilter: VenueListFilterKey): boolean => {
   if (venueFilter === 'all') return true;
   if (venueFilter === 'shop') return item.kind === 'shop';
+  if (venueFilter === 'facilities') return isFacilityExploreMapItem(item);
+  if (isFacilityExploreMapItem(item)) return false;
   if (venueFilter === 'hiking') return item.kind === 'hiking';
   if (venueFilter === 'camping') return item.kind === 'camping';
   if (venueFilter === 'event') return item.kind === 'event' && isGeographyMapSource(item.source);
@@ -70,7 +77,16 @@ export const matchesPlacesMapFilter = (item: ExploreMapItemDTO, mapFilter: MapFi
   if (!isPlacesMapItem(item)) return false;
   if (mapFilter === 'all') return true;
   if (mapFilter === 'shops') return isShopMapItem(item) || item.kind === 'shop';
-  if (mapFilter === 'rideshare' || mapFilter === 'others') return false;
+  if (mapFilter === 'facilities') return isFacilityExploreMapItem(item);
+  if (mapFilter === 'rideshare') return false;
+  if (mapFilter === 'others') {
+    return (
+      !isShopMapItem(item) &&
+      !isFacilityExploreMapItem(item) &&
+      item.kind !== 'hiking' &&
+      item.kind !== 'camping'
+    );
+  }
   return matchesVenueFilter(item, mapFilterToVenueListFilter(mapFilter));
 };
 
@@ -182,7 +198,11 @@ export const matchesMapFilter = (item: ExploreMapItemDTO, mapFilter: MapFilterKe
   if (mapFilter === 'rideshare') {
     return kind === 'rideshare' && isTimeBoundExploreMapItem(item);
   }
+  if (mapFilter === 'facilities') {
+    return isFacilityExploreMapItem(item);
+  }
   if (mapFilter === 'others') {
+    if (isFacilityExploreMapItem(item)) return false;
     const eventKind =
       kind === 'event' || (item.source === 'activity' && item.activity?.activityType === 'event');
     return eventKind && (isTimeBoundExploreMapItem(item) || isGeographyMapSource(item.source));

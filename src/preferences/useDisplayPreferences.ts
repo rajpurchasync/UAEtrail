@@ -4,21 +4,23 @@ import {
   applyDisplayPreferences,
   DISPLAY_PREFERENCES_EVENT,
   hasAccountSession,
-  readDisplayPreferences,
-  readGuestTheme,
+  readActiveDisplayPreferences,
+  readGuestDisplayPreferences,
   type DisplayPreferences,
   type ThemePreference,
 } from './displayPreferences';
 
 export const useDisplayPreferences = (): DisplayPreferences => {
-  const [preferences, setPreferences] = useState(readDisplayPreferences);
+  const [preferences, setPreferences] = useState(readActiveDisplayPreferences);
 
   useEffect(() => {
     if (hasAccountSession()) applyDisplayPreferences(preferences);
     else applyBootTheme();
-    const refresh = () => setPreferences(readDisplayPreferences());
+    const refresh = () => setPreferences(readActiveDisplayPreferences());
     window.addEventListener(DISPLAY_PREFERENCES_EVENT, refresh);
-    const followSystem = hasAccountSession() ? preferences.theme === 'system' : readGuestTheme() === 'system';
+    const followSystem = hasAccountSession()
+      ? preferences.theme === 'system'
+      : readGuestDisplayPreferences().theme === 'system';
     if (!followSystem) return () => window.removeEventListener(DISPLAY_PREFERENCES_EVENT, refresh);
     let media: MediaQueryList | null = null;
     try {

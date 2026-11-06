@@ -1,6 +1,6 @@
 import { AuthResponse, AuthUser } from '@uaetrail/shared-types';
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { getStoredSession, setStoredSession, setSessionInvalidatedHandler, USER_STORAGE_KEY } from '../api/client';
+import { bootstrapSessionFromRefresh, getStoredSession, setStoredSession, setSessionInvalidatedHandler, USER_STORAGE_KEY } from '../api/client';
 import {
   fetchMeProfileAuth,
   loginDemo,
@@ -10,7 +10,12 @@ import {
   registerAccount,
   verifyEmailOtp,
 } from '../hooks/accountAuthClientApi';
-import { applyDisplayPreferences, applySignedOutTheme } from '../preferences/displayPreferences';
+import { sessionExpiredLandingPath, signedOutLandingPath } from '../utils/authSessionLanding';
+import {
+  applyDisplayPreferences,
+  applySignedOutTheme,
+  clearGuestDisplayPreferences,
+} from '../preferences/displayPreferences';
 import {
   PendingEmailVerification,
   RegisterPendingVerification
@@ -78,31 +83,40 @@ const setStoredUser = (user: AuthUser | null): void => {
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<AuthUser | null>(getStoredUser);
   const [loading, setLoading] = useState(false);
-  const [initializing, setInitializing] = useState(() => !!getStoredSession());
+  const [initializing, setInitializing] = useState(() => !!getStoredUser());
 
-  // Revalidate stored session on mount; clear stale user if session is missing
+  // Revalidate stored profile on mount; access token lives in memory + refresh cookie only
   useEffect(() => {
     setSessionInvalidatedHandler(() => {
       setStoredUser(null);
       setUser(null);
       const path = window.location.pathname;
       if (!path.startsWith('/signin') && !path.startsWith('/signup') && !path.startsWith('/verify')) {
-        window.location.assign('/signin?session=expired');
+        const next = sessionExpiredLandingPath();
+        if (`${path}${window.location.search}` !== next) {
+          window.location.assign(next);
+        }
       }
     });
 
-    const session = getStoredSession();
-    if (!session?.accessToken) {
-      if (getStoredUser()) {
-        setStoredUser(null);
-        setUser(null);
-      }
+    const storedUser = getStoredUser();
+    if (!storedUser) {
       setInitializing(false);
       return () => setSessionInvalidatedHandler(null);
     }
 
-    fetchMeProfileAuth()
+    void bootstrapSessionFromRefresh()
+      .then((session) => {
+        if (!session?.accessToken) {
+          setStoredUser(null);
+          setUser(null);
+          applySignedOutTheme();
+          return null;
+        }
+        return fetchMeProfileAuth();
+      })
       .then((profile) => {
+        if (!profile) return;
         const revalidatedUser: AuthUser = {
           id: profile.id,
           email: profile.email,
@@ -114,9 +128,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         };
         setStoredUser(revalidatedUser);
         setUser(revalidatedUser);
+        clearGuestDisplayPreferences();
+        applyDisplayPreferences();
       })
       .catch(() => {
-        // Token invalid — clear everything
         setStoredSession(null);
         setStoredUser(null);
         setUser(null);
@@ -150,6 +165,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const hydrated = await hydrateUserFromProfile(response.user);
     setStoredUser(hydrated);
     setUser(hydrated);
+    clearGuestDisplayPreferences();
     applyDisplayPreferences();
     return hydrated;
   }, [hydrateUserFromProfile]);
@@ -266,8 +282,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setStoredUser(null);
     setUser(null);
     applySignedOutTheme();
-    if (window.location.pathname !== '/') {
-      window.location.replace('/');
+    const next = signedOutLandingPath();
+    if (`${window.location.pathname}${window.location.search}` !== next) {
+      window.location.replace(next);
     }
   };
 

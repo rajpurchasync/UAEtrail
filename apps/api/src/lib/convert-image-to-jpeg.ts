@@ -20,9 +20,18 @@ const convertHeicBufferToJpeg = async (input: Buffer): Promise<Buffer> => {
   return jpeg;
 };
 
+/** Max edge length for server-side normalize — limits decompression CPU on uploads. */
+const MAX_DISPLAY_EDGE_PX = 4096;
+
 const convertRasterBufferToJpeg = async (input: Buffer): Promise<Buffer> => {
   const jpeg = await sharp(input, { failOn: 'none' })
     .rotate()
+    .resize({
+      width: MAX_DISPLAY_EDGE_PX,
+      height: MAX_DISPLAY_EDGE_PX,
+      fit: 'inside',
+      withoutEnlargement: true,
+    })
     .jpeg({ quality: 90, mozjpeg: true })
     .toBuffer();
   if (jpeg.length === 0) {

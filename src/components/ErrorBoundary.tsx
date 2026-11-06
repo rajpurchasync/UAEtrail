@@ -28,6 +28,11 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   handleReset = () => {
+    const message = this.state.error?.message ?? '';
+    if (message.includes('useContext') || message.includes('Invalid hook call')) {
+      window.location.reload();
+      return;
+    }
     this.setState({ hasError: false, error: null });
   };
 

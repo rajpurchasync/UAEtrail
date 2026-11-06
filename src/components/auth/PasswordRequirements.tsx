@@ -7,7 +7,7 @@ interface PasswordRequirementsProps {
 }
 
 export const PasswordRequirements = ({ password, className = '' }: PasswordRequirementsProps) => (
-  <ul className={`space-y-1 ${className}`} aria-label="Password requirements">
+  <ul className={`grid grid-cols-1 gap-x-3 gap-y-1 sm:grid-cols-2 ${className}`} aria-label="Password requirements">
     {PASSWORD_REQUIREMENTS.map((rule) => {
       const met = rule.test(password);
       return (

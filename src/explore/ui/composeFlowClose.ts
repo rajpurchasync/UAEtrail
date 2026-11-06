@@ -1,5 +1,3 @@
-import { clearComposeSheetExpandedSession } from '../create/composeSheetExpandedSession';
-
 export const COMPOSE_FLOW_DISCARD_MESSAGE =
   'Discard this draft? Your progress will not be saved.';
 
@@ -55,9 +53,8 @@ export const requestComposeFlowClose = (
   return runComposeFlowClose(options.inProgress, close);
 };
 
-/** Exit compose entirely — do not collapse to peek (clears full-screen session before unmount). */
+/** Exit compose entirely. */
 export const finishComposeFlowClose = (close: () => void): void => {
-  clearComposeSheetExpandedSession();
   close();
 };
 

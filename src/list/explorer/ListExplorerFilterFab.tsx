@@ -149,15 +149,15 @@ export const ListExplorerFilterFab = ({
           onPointerMove={onPointerMove}
           onPointerUp={onPointerUp}
           onPointerCancel={onPointerUp}
-          className={`inline-flex h-12 w-12 items-center justify-center rounded-full border shadow-[0_4px_20px_rgba(15,23,42,.18)] ring-1 ring-black/[0.06] transition ${
+          className={`inline-flex h-12 w-12 items-center justify-center rounded-full border shadow-[0_4px_20px_rgba(15,23,42,.18)] ring-1 ring-black/[0.06] transition md:h-9 md:w-9 ${
             filterCount > 0
               ? 'border-emerald-700 bg-emerald-700 text-white'
               : 'border-white/80 bg-white text-neutral-900'
           } ${dragging ? 'cursor-grabbing scale-105' : 'cursor-grab active:scale-95'}`}
         >
-          <SlidersHorizontal className="h-5 w-5" strokeWidth={2.25} aria-hidden />
+          <SlidersHorizontal className="h-5 w-5 stroke-[2.25] md:h-4 md:w-4" aria-hidden />
           <span
-            className={`absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full px-1 text-[10px] font-bold ring-2 ring-white ${
+            className={`absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full px-1 text-[10px] font-bold ring-2 ring-white md:h-4 md:min-w-4 md:text-[9px] md:ring-1 ${
               filterCount > 0 ? 'bg-emerald-600 text-white' : 'bg-neutral-200 text-neutral-600'
             }`}
           >

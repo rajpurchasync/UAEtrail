@@ -39,12 +39,12 @@ export const GuestPreviewCatalogList = ({
               onFocus={() => onHighlight(item.id)}
               onBlur={() => onHighlight(null)}
               onClick={() => onSelect(item)}
-              className={`flex w-full items-start gap-2 rounded-xl px-2 py-2 text-left transition ${
+              className={`consumer-list-row-interactive flex w-full select-none items-start gap-2 rounded-xl px-2 py-2 text-left ${
                 active
-                  ? 'bg-emerald-50 ring-2 ring-emerald-500/40'
+                  ? 'consumer-list-row-selected ring-2 ring-emerald-500/40'
                   : hovered
                     ? 'bg-neutral-50 ring-2 ring-emerald-400/30'
-                    : 'hover:bg-neutral-50'
+                    : ''
               }`}
             >
               <span

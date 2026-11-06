@@ -93,6 +93,7 @@ export const ExploreListRow = ({
     <div className="relative h-14 w-14 shrink-0">
       <EnvironmentImage
         src={card.coverImage}
+        catalogThumb
         alt=""
         className="h-14 w-14 rounded-xl object-cover ring-1 ring-neutral-200/80"
         loading="lazy"

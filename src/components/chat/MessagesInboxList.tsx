@@ -54,14 +54,14 @@ const ThreadRow = ({
       type="button"
       onClick={() => (isDirect ? onSelectDirect(thread.id) : onSelectGroup(thread.id))}
       data-nav-focus={`chat-thread-${thread.id}`}
-      className={`chat-row flex w-full items-center gap-2.5 px-3 py-2 text-left transition-colors hover:bg-neutral-50 lg:gap-2 lg:py-1.5 ${
-        isSelected ? 'chat-row-selected bg-emerald-50' : ''
+      className={`chat-row consumer-list-row-interactive flex w-full items-center gap-2.5 px-3 py-2 text-left lg:gap-2 lg:py-1.5 ${
+        isSelected ? 'chat-row-selected consumer-list-row-selected' : ''
       }`}
     >
       {isDirect ? (
         <MessageAvatar name={thread.title} url={thread.avatarUrl} size="md" />
       ) : (
-        <GroupAvatar url={thread.kind === 'user-group' ? thread.avatarUrl : undefined} />
+        <GroupAvatar url={thread.avatarUrl} />
       )}
       <div className="min-w-0 flex-1 border-b border-neutral-100 py-1">
         <div className="flex items-baseline justify-between gap-2">

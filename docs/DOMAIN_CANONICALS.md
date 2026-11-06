@@ -106,7 +106,7 @@ One **person** account; zero or more **storefronts** (tenant-backed public brand
 
 | `EntityKind` | Role on the wire | Paired with |
 |--------------|------------------|-------------|
-| `place` | Navigable POI | `PlaceKind` (`hiking`, `shop` pin, …) |
+| `place` | Navigable POI | `PlaceKind` (`hiking` = **Trail** in UI, `shop` pin, …) |
 | `activity` | Scheduled outing | Host tenant + participation |
 | `person` | Member card | `profileVisibility` + profile `viewerAccess` (§15) |
 | `shop` | Shop **storefront** profile | `PublishingProfileKind: shop` |

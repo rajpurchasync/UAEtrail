@@ -1,6 +1,7 @@
 import { ReactNode, useRef } from 'react';
 import { X } from 'lucide-react';
 import { useModalA11y } from '../../hooks/useModalA11y';
+import { CONSUMER_MAIN_OVERLAY_INSET } from '../../config/consumerOverlayInset';
 
 export interface ConsumerBottomSheetProps {
   open: boolean;
@@ -44,7 +45,7 @@ export const ConsumerBottomSheet = ({
 
   return (
     <div
-      className="fixed inset-0 flex items-end justify-center sm:items-center sm:p-4"
+      className={`${CONSUMER_MAIN_OVERLAY_INSET} flex items-end justify-center sm:items-center sm:p-4`}
       style={{ zIndex }}
     >
       <button

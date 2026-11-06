@@ -13,7 +13,7 @@ import {
   resolveActivityDisplayCoordinates,
   resolveActivityHostUserId,
 } from '@uaetrail/shared-types';
-import { buildShareText, buildShareUrl } from '../../utils/share';
+import { useExplorePeekShareAction } from './useExplorePeekShareAction';
 import { hostPublishedActivityPeekAccess } from '../../access/resolvePeekDetailAccess';
 import { buildExploreMapItemFromActivity } from '../privateActivityExploreItem';
 import { openActivityGroupChat } from '../../utils/openActivityGroupChat';
@@ -191,6 +191,14 @@ export const useExploreSelectionActions = ({
     onInviteActivity?.(activity, { canSendBuddyInvites: true });
   }, [onInviteActivity, selected?.activity]);
 
+  const handleSharePeek = useExplorePeekShareAction({
+    selectedCard,
+    activity: selected?.activity,
+    user,
+    onInviteActivity,
+    onShareHostedActivity,
+  });
+
   const handleActivityMapPeekAction = useCallback(
     (actionId: ActivityMapPeekActionId) => {
       const activity = selected?.activity;
@@ -206,21 +214,7 @@ export const useExploreSelectionActions = ({
         },
         requestJoin: peekJoin.handleJoin,
         shareActivity: () => {
-          if (activity?.status === 'published') {
-            if (onShareHostedActivity) {
-              onShareHostedActivity(activity);
-              return;
-            }
-            onInviteActivity?.(activity, { canSendBuddyInvites: Boolean(user) });
-            return;
-          }
-          const card = selectedCard;
-          if (!card?.sharePath) return;
-          const url = buildShareUrl(card.sharePath);
-          const text = buildShareText(card.shareTitle, card.shareText ?? undefined);
-          if (typeof navigator !== 'undefined' && navigator.share) {
-            void navigator.share({ title: card.shareTitle, text, url }).catch(() => undefined);
-          }
+          handleSharePeek();
         },
         manageActivity: () => {
           if (!activity) return;
@@ -247,7 +241,6 @@ export const useExploreSelectionActions = ({
     },
     [
       selected?.activity,
-      selectedCard,
       handleHostMessage,
       handleMessageActivityHost,
       handleInviteCrew,
@@ -256,9 +249,7 @@ export const useExploreSelectionActions = ({
       peekJoin.joinUiState.kind,
       onCreateLinkedRideshare,
       onOpenHostManage,
-      onShareHostedActivity,
-      onInviteActivity,
-      user,
+      handleSharePeek,
       navigate,
       setSelectedId,
       location,
@@ -382,7 +373,7 @@ export const useExploreSelectionActions = ({
     handlePeekHostMessage: peekJoin.handlePeekHostMessage,
     handleHostMessage,
     handleInviteCrew,
-    handleShareActivityPeek: handleInviteCrew,
+    handleSharePeek,
     requestHostRemove: removals.requestHostRemove,
     hostRemoveConfirm: removals.hostRemoveConfirm,
     setHostRemoveConfirm: removals.setHostRemoveConfirm,

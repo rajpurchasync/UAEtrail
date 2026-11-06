@@ -54,8 +54,13 @@ export async function proxyToUpstream(req, res, upstreamPath) {
 
     res.status(upstream.status);
     forwardResponseHeaders(upstream, res);
-    const body = Buffer.from(await upstream.arrayBuffer());
-    res.send(body);
+    if (!upstream.body) {
+      res.end();
+      return;
+    }
+    const { Readable } = await import('node:stream');
+    const { pipeline } = await import('node:stream/promises');
+    await pipeline(Readable.fromWeb(upstream.body), res);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Upstream request failed';
     res.status(502).json({ error: message, target });

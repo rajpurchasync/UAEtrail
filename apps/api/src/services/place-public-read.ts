@@ -35,6 +35,7 @@ export const loadExploreMapForViewer = (input: {
     cursor?: string;
     limit?: string;
     area?: string;
+    projection?: string;
   };
   viewerUserId: string | null;
   userRole?: string | null;

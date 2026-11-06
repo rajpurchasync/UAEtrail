@@ -13,12 +13,15 @@ export type ActivityDetailConsumerLeadDate = {
 const formatTimeLabel = (time?: string | null): string | null => formatExploreTime(time?.trim().slice(0, 5));
 
 export const formatActivityDetailConsumerLeadDate = (
-  dateStr: string,
+  dateStr?: string | null,
   time?: string | null
 ): ActivityDetailConsumerLeadDate => {
+  const timeLabel = formatTimeLabel(time);
+  if (!dateStr) {
+    return { label: '', month: '', day: '', weekday: '', time: timeLabel };
+  }
   const date = new Date(`${dateStr.slice(0, 10)}T12:00:00`);
   const label = formatExploreEventDateLabel(dateStr) ?? dateStr;
-  const timeLabel = formatTimeLabel(time);
   return {
     label,
     month: date.toLocaleDateString('en-GB', { month: 'short' }),

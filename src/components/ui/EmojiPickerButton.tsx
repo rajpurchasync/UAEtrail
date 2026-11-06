@@ -70,11 +70,11 @@ export const EmojiPickerButton = ({ onPick, disabled, className = '' }: EmojiPic
         ? createPortal(
             <div
               id="emoji-picker-portal"
-              className="fixed z-[2000] w-[min(280px,calc(100vw-2rem))] rounded-xl border border-neutral-200 bg-white p-2 shadow-lg"
+              className="fixed z-[2000] w-[min(280px,calc(100vw-2rem))] rounded-xl border border-neutral-200 bg-white p-1.5 shadow-lg"
               style={{ top: pickerPos.top, left: pickerPos.left, transform: 'translateY(-100%)' }}
               onPointerDown={(event) => event.stopPropagation()}
             >
-              <div className="grid grid-cols-8 gap-0.5 max-h-40 overflow-y-auto">
+              <div className="grid grid-cols-8 gap-0.5">
                 {CHAT_EMOJI_LIST.map((emoji) => (
                   <button
                     key={emoji}
@@ -83,7 +83,7 @@ export const EmojiPickerButton = ({ onPick, disabled, className = '' }: EmojiPic
                       onPick(emoji);
                       setOpen(false);
                     }}
-                    className="font-emoji h-9 w-9 rounded-lg text-xl hover:bg-neutral-100 active:bg-neutral-200"
+                    className="font-emoji flex h-7 w-7 items-center justify-center rounded-md text-base leading-none hover:bg-neutral-100 active:bg-neutral-200"
                   >
                     {emoji}
                   </button>

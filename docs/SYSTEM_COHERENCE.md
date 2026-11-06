@@ -198,11 +198,11 @@ Canonical navigation: [`NAVIGATION.md`](./NAVIGATION.md). Structural rules:
 Aligned with [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §4.1 and [`NORTHSTAR.md`](./NORTHSTAR.md):
 
 - **Few browse surfaces, many filterable views** — `/explore` map-first; **list explorer** (`/list`, List pill and hamburger Browse) shares filter vocabulary (`src/list/routing.ts` ↔ `explorePath()`). **Mobile bottom nav stays three tabs** — Explore · Plan · Chat (middle tab route **`/plan`**) ([`NAVIGATION.md`](./NAVIGATION.md)).
-- **One discovery catalog on the server** — `GET /explore/map` (+ query). Map stage, explore list sheet, and list discovery UI are **projections**; avoid separate “catalog” endpoints per category unless a new bounded context is approved in Tier-1. Signed-in peek/engagement is **`GET /me/discover/overlay`** (`viewerAccess` by item id) — not a second catalog. Product writes bust the Redis map via **`scheduleExploreMapCacheInvalidation`** (outbox when `SIDE_EFFECT_OUTBOX=1`).
+- **One discovery catalog on the server** — `GET /explore/map` (+ query). Map stage, explore list sheet, and list discovery UI are **projections**; avoid separate “catalog” endpoints per category unless a new bounded context is approved in Tier-1. Signed-in peek/engagement is **`GET /me/discover/overlay`** (`viewerAccess` by item id) — not a second catalog. Product writes bust the Redis map via **`scheduleExploreMapCacheInvalidation`** (durable outbox in production — §8.9).
 - **Many entity URLs where identity matters** — `/activity`, place paths, `/shop`, brand paths: sharing, notifications, per-id cache and `viewerAccess`. These are **not** browse department homepages.
 - **Private engagement off the public map** — wishlist, entity follow, member follow, goals: `/me/*` and trips/profile UI ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md) § Follow · Wishlist · Goal).
 
-**Scale levers (prefer before new route trees):** bbox/region or cursor on explore map; normalized query cache keys; **`GET /explore/map?projection=list`** for `/list` (same Redis catalog, stripped nested fields + `discoveryCard`); admin tables use **server pages** (`page` / `pageSize`, no client concatenation); SSR on entity + marketing only unless SEO category landings are explicitly added.
+**Scale levers (prefer before new route trees):** bbox/region or cursor on explore map (**production default target** — §8.9); normalized query cache keys; **`GET /explore/map?projection=list`** for `/list` (same Redis catalog, stripped nested fields + `discoveryCard`); admin tables use **server pages** (`page` / `pageSize`, no client concatenation); **optional** HTML prerender for **`/`** guest marketing and **entity detail** routes only — not a whole-SPA framework rewrite (§8.9 out of scope).
 
 ---
 
@@ -218,7 +218,7 @@ Aligned with [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §4.1 and [`NORTHS
 
 **Explore read model:** Single aggregator `GET /explore/map` (guest catalog) — clients should not reconstruct the map from three legacy catalog calls. Signed-in members merge `GET /me/discover/overlay`.
 
-**Async side effects:** Fire-and-forget rewards, email, notifications, and group-chat roster updates use `scheduleNotification` / `scheduleSideEffect` (`apps/api/src/lib/schedule-side-effect.ts`) — failures **warn-log** with `logContext` (see `DEV_RUN.md`). Optional durable notification queue: `SIDE_EFFECT_OUTBOX=1` (MIG-OUTBOX; default off). **Chat inbox:** non-buddy partners use batched policy (`batchCanMessagePartnersFromViewer`); policy failure surfaces `directConversationsDegraded` (not silent empty inbox); regression `apps/api/tests/chat-policy.test.ts`. **Media:** private-bucket kinds deny anonymous presign (`media-access.test.ts`). **Search:** user substring search escapes via `regex-search` (`regex-search.test.ts`, `naming-coherence.test.ts`). **Read paths:** activity assembly, `/me/reviews`, `/me/entity-follows`, member browse + people rows (`countCheckedInParticipationsForUserIds`, `filterInboxMessageablePartnerIds`, read-only `batchResolveMemberProfileRoleLabelsForDirectory`), active tenant memberships (`tenant-access` + `findTenantsByIds`), host join-queue locations, wishlist profile hydration, group wall unread aggregation, publish fan-out actor labels (`resolveNotificationActorDisplayNamesForRecipients`); legacy demand map pins batch hide (`batchShouldHideFromMapMemberDiscovery`) — `naming-coherence.test.ts`. **Mount fetches / explore hygiene:** `useSafeAsyncEffect` (**S10a–b**), browse URL + pin-deep-link deps (**S10d**) — `systemCoherenceGuard.test.ts`. **Release (S10e/f):** bbox promote + manual QA — [`PRE_DEPLOY_CHECKLIST.md`](./PRE_DEPLOY_CHECKLIST.md), `npm run consumer-detail:qa-routes`; tracker **§8.1**.
+**Async side effects:** Notifications, explore map cache bust, and roster fan-out use the **side-effect outbox** in production (default on when `NODE_ENV=production`; drain in `side-effect-outbox-processor.ts`). Non-production may use fire-and-forget unless `SIDE_EFFECT_OUTBOX=1`. **`scheduleSideEffect`** remains for best-effort work in test/dev only — see `DEV_RUN.md`. **Chat inbox:** non-buddy partners use batched policy (`batchCanMessagePartnersFromViewer`); policy failure surfaces `directConversationsDegraded` (not silent empty inbox); regression `apps/api/tests/chat-policy.test.ts`. **Media:** private-bucket kinds deny anonymous presign (`media-access.test.ts`). **Search:** user substring search escapes via `regex-search` (`regex-search.test.ts`, `naming-coherence.test.ts`). **Read paths:** activity assembly, `/me/reviews`, `/me/entity-follows`, member browse + people rows (`countCheckedInParticipationsForUserIds`, `filterInboxMessageablePartnerIds`, read-only `batchResolveMemberProfileRoleLabelsForDirectory`), active tenant memberships (`tenant-access` + `findTenantsByIds`), host join-queue locations, wishlist profile hydration, group wall unread aggregation, publish fan-out actor labels (`resolveNotificationActorDisplayNamesForRecipients`); legacy demand map pins batch hide (`batchShouldHideFromMapMemberDiscovery`) — `naming-coherence.test.ts`. **Mount fetches / explore hygiene:** `useSafeAsyncEffect` (**S10a–b**), browse URL + pin-deep-link deps (**S10d**) — `systemCoherenceGuard.test.ts`. **Release (S10e/f):** bbox promote + manual QA — [`PRE_DEPLOY_CHECKLIST.md`](./PRE_DEPLOY_CHECKLIST.md), `npm run consumer-detail:qa-routes`; tracker **§8.1**.
 
 Detail: [`API_ROUTING.md`](./API_ROUTING.md).
 
@@ -941,7 +941,7 @@ Board one-liner: *P4 thinned the API; **PCOH** (§8.8) finished UPL/BWL coherenc
 | **MIG-PLAN-HUB** | P0 | Plan manage deep links (one surface, not program center) | **Complete** |
 | **MIG-CPC-P1** | P1 | CPC-7+ catalog vocabulary (**C26**) | **Complete** |
 | **MIG-SEEKING-READ** | P1 | `seeking:deploy-gate`; C20 read paths | **Complete** |
-| **MIG-OUTBOX** | P2 | Side-effect outbox (`SIDE_EFFECT_OUTBOX=1`; notifications + map bust + drain) | **Complete** |
+| **MIG-OUTBOX** | P2 | Side-effect outbox (production default on; `SIDE_EFFECT_OUTBOX=0` blocked in prod) | **Complete** |
 | **MIG-EXPLORE-READ** | P2 | `discoveryCard` on map (incl. bbox) + list/peek via VM merge; flags default off | **Complete** |
 | **MIG-CLIENT-QUERY** | P3 | `clientQueryKeys` + hooks across discovery, social, member, messaging, place detail | **Complete** |
 | **MIG-CQRS-ROUTES** | P4 | Route CQRS guard; entire `apps/api/src/routes/**` tree → read/command services (no `*-store`) | **Complete** |
@@ -1108,8 +1108,8 @@ Discover map `GET /explore/map` (guest catalog) · overlay `GET /me/discover/ove
 | Publishing HTTP | `/publishing` |
 | Activity `host_id` | Keep in BWL |
 | Individual public URL | `/member/:userId` (community and Pro). `/guide` is not a surface |
-| Explore map HTTP | Public `GET /explore/map`; signed-in peek `GET /me/discover/overlay` |
-| Explore map cache bust | `scheduleExploreMapCacheInvalidation` (outbox when enabled); direct Redis delete only in processor/tests/seeds |
+| Explore map HTTP | Public `GET /explore/map` (default **slim pin**; `?projection=full` for nested DTOs); signed-in peek `GET /me/discover/overlay` (viewerAccess index only) |
+| Explore map cache bust | `scheduleExploreMapCacheInvalidation` (durable outbox in production); direct Redis delete only in processor/tests/seeds |
 | FE social facade | Deleted (COH-09). Use `buddiesApi`, `groupsApi`, `wishlistApi`, `entityFollowApi`, `reviewsApi` — no `socialApi` / `socialRouter` |
 | Wishlist collection | `user_wishlist` (startup migrate from `user_favorites`) |
 | Reviews HTTP | `GET /reviews` public on `userRouter` before `requireAuth`; writes keep per-route auth |
@@ -1125,6 +1125,59 @@ Discover map `GET /explore/map` (guest catalog) · overlay `GET /me/discover/ove
 
 One seeking model · one join pipeline · one place HTTP prefix · one publishing HTTP prefix · one pro onboarding BWL · UPL only in content modules · BWL in wire-lexicon · publisher resolver on map/detail/notifications · no `socialApi` / `socialRouter` / empty `socialGraphRouter` · one Host compose tree · shop `registerShop*` · admin `registerAdmin*` + `adminSurfacesAcceptance` · no Navigate-only page modules · identity/chat/review data in `*-store` (no `auth-users.ts` / `chat-data.ts` / `social-data.ts`) · `verify:domain` fe/api/journey shards · `npm run verify:system` + journey suite per §8.8.3.
 
+### 8.9 Architecture north star (Nov 2026 — platform defaults)
+
+**Purpose:** Single target for **tech stack, performance, security, and code practice** so future work strengthens the current monorepo — not a parallel platform. **Do not add** new Tier-1 files for this; update this section + `ARCHITECTURE.md` + ops checklists when defaults change.
+
+#### Target shape (keep)
+
+| Layer | Choice | Rule |
+|-------|--------|------|
+| **Client** | Vite SPA + React 19 + TanStack Query | Domain modules in `src/api/domains/*`; hooks facades; `routingCatalog` for paths |
+| **API** | Express 5 + Mongo driver (no Mongoose) + Zod | Surface-first `register*` → services → stores (stores not imported from routes) |
+| **Contracts** | `packages/shared-types` | One wire lexicon; hand-written domains until OpenAPI generation ships (wave 3) |
+| **Edge** | **Canonical:** nginx same-origin → `api:4000` | Vercel = static SPA + thin `/api` proxy only — **not** Express on serverless |
+| **Realtime chat** | SSE + Redis pub/sub + short-lived tickets | Terminate **`/chat/stream` on the API origin** (avoid long-lived streams through Vercel proxy) |
+| **Mobile** | Capacitor WebView over `dist/` | Same API/session rules as web until native push is a product requirement |
+| **Capabilities** | `GET /me/status` only | Not `UserRole` / `isHostRole` for product gates |
+
+#### Production defaults (must match code)
+
+| Default | Expected | Ops / env |
+|---------|----------|-----------|
+| **Outbox** | Durable notifications + explore cache bust | On when `NODE_ENV=production`; do not set `SIDE_EFFECT_OUTBOX=0` |
+| **Redis** | Rate limits, SSE tickets, explore blob, presign owners | `REDIS_URL` required in production |
+| **Explore map** | Viewport fetch + slim pin DTO | Staging promote: `EXPLORE_MAP_BBOX=1` + `VITE_EXPLORE_MAP_BBOX=1` after **S10e** (`PRE_DEPLOY_CHECKLIST`) |
+| **Session** | httpOnly refresh cookie + **in-memory access token** | No bearer in `localStorage`; profile hint `uaetrail_user` is non-secret |
+| **Assets** | Hashed chunks immutable; `index.html` no-store | Vercel/nginx cache policy — entry chunk must not be `no-cache` |
+
+#### Implementation waves (sequencing)
+
+| Wave | Focus | Exit |
+|------|-------|------|
+| **W0** | Prod parity | Outbox on in prod; Vercel entry cache; staging bbox checklist; chat/SSE to API origin documented |
+| **W1** | Session + media hardening | Memory token + refresh bootstrap; CSP scripts without `unsafe-inline`; local dev media ACL; sharp pixel budget; staging demo-login requires `ALLOW_DEMO_LOGIN=true` |
+| **W2** | Explore read model | Slim pin DTO default; overlay index; Mongo participant cap; catalog `-thumb.jpg` on local upload; `formatMediaCatalogUrl`; S10e bbox = ops promote |
+| **W3** | Program tail | Platform-admin TOTP when secret set; SSE per-user connection cap; P4b guards shipped — **S10f human QA** + **P5 staging SLO** + **participant_intent store removal** = ops/backfill gates |
+
+Track wave status in **`scripts/refactor-program.json`** (`MIG-ARCH-W0` + §8.9 table) — not new markdown plans.
+
+#### Out of scope — do not propose or document as roadmap
+
+These are **rejected** for UAE Trail unless the CEO explicitly reopens platform strategy:
+
+- Rewriting the consumer app in **Next.js / Remix / Nest** or splitting into **microservices**
+- **WebSockets** for chat (use SSE on API origin first)
+- **Mongoose**, **Kafka**, or a second activity/join storage path
+- **OpenAPI-first** client before route schemas stabilize (after P4b)
+- **SSR/SSG for `/explore`** or the map shell (optional prerender for `/`, `/activity/:id`, place detail only)
+- New **`AUDIT_*` / `PLAN_*` / `ALIGNMENT_*`** Tier-1 markdown (use §8.9 + `refactor-program.json`)
+- Removing **intentional** legacy SPA redirects (`/host/*` → `/publishing/*`, `/trail` → `/place/:id`, inbound `/become-host`)
+
+#### Horizontal change rule (unchanged)
+
+One bounded context per PR: API registrar + `src/api/domains/*` + UI root + guard when the invariant must not regress. Gate: **`npm run verify:system`**.
+
 ---
 
 ## 9. Change checklist (any substantial PR)
@@ -1134,6 +1187,7 @@ One seeking model · one join pipeline · one place HTTP prefix · one publishin
 3. Update **Tier 1** doc(s): `CREATE_FLOW`, `NAVIGATION`, `API_ROUTING`, or `MEMBER_MODEL` — not only experiment plans.
 4. **Program CPC** work: check off items in §8.4.6; run **`npm run verify:system`** (or `verify:system:quick` before push); explore/FAB also needs `test:explore-alignment`.
 5. **Platform program (P0–P6):** if touching a migration in [`refactor-program.json`](../scripts/refactor-program.json), update manifest roots + migration `status` in the same PR.
+6. **Architecture defaults (§8.9):** do not add rejected stack items (Next.js rewrite, WebSockets for chat, microservices) to Tier-1 “future” lists.
 
 ---
 
@@ -1149,5 +1203,6 @@ One seeking model · one join pipeline · one place HTTP prefix · one publishin
 | HTTP paths | `API_ROUTING.md` |
 | Deploy & monorepo layers | `ARCHITECTURE.md` |
 | System-wide debt register | §7–8 (this file) |
+| Platform north star (defaults + rejected stack) | **§8.9** (this file) |
 | Coherence implementation schedule | **§8.8** + `refactor-program.json` `MIG-COH-*` |
 | UPL vs BWL | `src/content/upl-glossary.ts` · `packages/shared-types/src/wire-lexicon.ts` |

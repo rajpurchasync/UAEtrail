@@ -39,6 +39,59 @@ export const listChipClass = (active: boolean): string =>
     active ? EXPLORE_BRAND_ACTIVE : 'bg-neutral-100 text-neutral-700',
   ].join(' ');
 
+/** Events / Places tabs — brand fill on selection (contrast vs track in dark theme). */
+export const listExplorerBucketTabClass = (active: boolean): string =>
+  [
+    'border',
+    active
+      ? EXPLORE_BRAND_ACTIVE
+      : 'border-transparent bg-transparent text-neutral-500 hover:text-neutral-800',
+  ].join(' ');
+
+export const listExplorerBucketCountClass = (active: boolean): string =>
+  active
+    ? 'list-explorer-bucket-count list-explorer-bucket-count--active bg-white text-emerald-900 shadow-sm ring-1 ring-emerald-950/10'
+    : 'bg-neutral-200/90 text-neutral-600';
+
+/** Sort menu trigger — no `!` on text colors so dark-theme remaps apply. */
+export const listExplorerSortTriggerClass = (nonDefaultSort: boolean): string =>
+  [
+    'list-explorer-sort-trigger',
+    nonDefaultSort
+      ? 'list-explorer-sort-trigger--active text-emerald-800 ring-1 ring-emerald-500/30'
+      : 'text-neutral-700',
+  ].join(' ');
+
+/** Filter FAB popover chips — dense on md+ (narrow list / side-map column). */
+export const listFilterPopChipClass = (active: boolean): string =>
+  [
+    'inline-flex h-8 min-h-8 shrink-0 items-center justify-center rounded-full px-3 text-xs font-semibold transition-colors active:scale-[0.98]',
+    'md:h-7 md:min-h-7 md:px-2 md:text-[10px] md:leading-none',
+    active ? EXPLORE_BRAND_ACTIVE : 'bg-neutral-100 text-neutral-700',
+  ].join(' ');
+
+/** Area grid — equal cell chips (long emirate names truncate). */
+export const listFilterPopGridChipClass = (active: boolean): string =>
+  `${listFilterPopChipClass(active)} w-full min-w-0 px-1 md:px-0.5`;
+
+/** Filter pop layout tokens (mobile touch targets, desktop compact, no inner scroll). */
+export const LIST_FILTER_POP = {
+  shell: 'w-[min(20.5rem,calc(100vw-2rem))] md:w-[17.25rem]',
+  panel:
+    'border border-neutral-200/90 bg-white p-3 shadow-[0_12px_40px_rgba(15,23,42,.18)] md:p-2 md:rounded-xl',
+  sections: 'space-y-2.5 md:space-y-1',
+  block: 'space-y-1 md:space-y-0.5',
+  label: 'text-[10px] font-semibold uppercase tracking-wide text-neutral-500 md:text-[9px] md:tracking-wider',
+  chipRow: 'flex flex-wrap gap-1.5 md:gap-0.5',
+  headerRow: 'mb-2 flex items-center justify-between gap-2 md:mb-1',
+  title: 'text-sm font-bold text-neutral-900 md:text-xs',
+  reset: 'text-sm font-semibold text-emerald-700 md:text-[11px]',
+  footer: 'mt-2.5 flex gap-2 md:mt-1.5 md:gap-1.5',
+  footerBtn:
+    'min-h-11 flex-1 rounded-2xl text-sm font-semibold md:min-h-7 md:rounded-lg md:py-0.5 md:text-[11px]',
+  areaGrid: 'grid grid-cols-3 gap-1 md:grid-cols-3 md:gap-0.5',
+} as const;
+
 /** Category page pills — compact, single-line scroll rows. */
 export const listCategoryPillClass = (active: boolean): string =>
   [
@@ -83,3 +136,7 @@ export const LIST_MAP_FLOAT_POSITION =
 
 export const LIST_DESKTOP_MAP_LINK =
   'hidden min-h-10 items-center rounded-full bg-neutral-100 px-4 text-sm font-semibold text-neutral-900 md:inline-flex active:bg-neutral-200';
+
+/** Side map column — close control (list super-app chrome, not dark map HUD). */
+export const LIST_MAP_COLUMN_CLOSE =
+  'absolute right-3 top-3 z-[1000] inline-flex h-9 w-9 items-center justify-center rounded-full border border-neutral-200/80 bg-white/95 text-neutral-700 shadow-[0_4px_18px_rgba(15,23,42,.12)] ring-1 ring-black/[0.06] backdrop-blur-md transition active:scale-[0.97] hover:bg-neutral-50';

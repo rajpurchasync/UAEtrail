@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { ChevronLeft, Mail, Mountain, Gift, X } from 'lucide-react';
+import { Mail, Gift } from 'lucide-react';
+import { AuthFunnelShell } from '../components/auth/AuthFunnelShell';
 import { GoogleAuthSection } from '../components/auth/GoogleAuthSection';
 import { PasswordRequirements } from '../components/auth/PasswordRequirements';
 import { useAuth } from '../context/AuthContext';
@@ -135,36 +136,13 @@ export const SignUp = () => {
   const fieldClass = 'ios-input text-[17px] border border-neutral-300 bg-white';
 
   return (
-    <div className="app-page-min-h app-scroll-body bg-ios-bg flex flex-col py-8 px-6 safe-area-top safe-area-bottom">
+    <AuthFunnelShell
+      title="Create Account"
+      subline={PRODUCT_AUTH_SIGNUP_SUBLINE}
+      onBack={handleBack}
+      onClose={handleClose}
+    >
       <PageMeta title="Create account" noIndex />
-
-      <div className="auth-card max-w-md w-full mx-auto bg-white rounded-[20px] shadow-ios p-6 sm:p-8 flex-1">
-        <div className="relative z-20 flex items-center justify-between mb-4">
-          <button
-            type="button"
-            onClick={handleBack}
-            className="relative z-20 inline-flex items-center gap-0.5 -ml-1 pl-1 pr-2 py-1 text-emerald-600 active:opacity-60"
-          >
-            <ChevronLeft className="w-6 h-6" strokeWidth={2.25} />
-            <span className="text-[17px] font-medium">Back</span>
-          </button>
-          <button
-            type="button"
-            onClick={handleClose}
-            className="relative z-20 inline-flex h-9 w-9 items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 active:opacity-60"
-            aria-label="Close"
-          >
-            <X className="w-5 h-5" strokeWidth={2.25} />
-          </button>
-        </div>
-        <Link to="/" className="relative z-0 flex items-center justify-center gap-2 mb-6">
-          <div className="w-9 h-9 bg-gradient-to-br from-emerald-400 to-emerald-700 rounded-[10px] flex items-center justify-center">
-            <Mountain className="w-5 h-5 text-white" />
-          </div>
-          <span className="text-lg font-bold text-neutral-900 tracking-tight">UAE Trail</span>
-        </Link>
-        <h1 className="text-[28px] font-bold text-neutral-900 mb-1 tracking-tight">Create Account</h1>
-        <p className="text-[15px] text-neutral-500 mb-6">{PRODUCT_AUTH_SIGNUP_SUBLINE}</p>
 
         {referralCode && (
           <div className="mb-4 flex items-center gap-2 rounded-xl bg-emerald-50 border border-emerald-100 px-3 py-2.5 text-sm text-emerald-800">
@@ -189,35 +167,37 @@ export const SignUp = () => {
         />
 
         <form className="space-y-3" onSubmit={handleSubmit}>
-          <div>
-            <label className="text-sm font-medium text-gray-700 block mb-1">Name</label>
-            <input
-              className={fieldClass}
-              placeholder="First name"
-              value={formData.givenName}
-              onChange={(e) =>
-                setFormData((c) => ({ ...c, givenName: sanitizePersonNameInput(e.target.value) }))
-              }
-              required
-              minLength={PERSON_NAME_MIN}
-              maxLength={PERSON_NAME_MAX}
-              autoComplete="given-name"
-            />
-          </div>
-          <div>
-            <label className="text-sm font-medium text-gray-700 block mb-1">Surname</label>
-            <input
-              className={fieldClass}
-              placeholder="Surname"
-              value={formData.surname}
-              onChange={(e) =>
-                setFormData((c) => ({ ...c, surname: sanitizePersonNameInput(e.target.value) }))
-              }
-              required
-              minLength={PERSON_NAME_MIN}
-              maxLength={PERSON_NAME_MAX}
-              autoComplete="family-name"
-            />
+          <div className="grid gap-3 md:grid-cols-2">
+            <div>
+              <label className="text-sm font-medium text-gray-700 block mb-1">Name</label>
+              <input
+                className={fieldClass}
+                placeholder="First name"
+                value={formData.givenName}
+                onChange={(e) =>
+                  setFormData((c) => ({ ...c, givenName: sanitizePersonNameInput(e.target.value) }))
+                }
+                required
+                minLength={PERSON_NAME_MIN}
+                maxLength={PERSON_NAME_MAX}
+                autoComplete="given-name"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-700 block mb-1">Surname</label>
+              <input
+                className={fieldClass}
+                placeholder="Surname"
+                value={formData.surname}
+                onChange={(e) =>
+                  setFormData((c) => ({ ...c, surname: sanitizePersonNameInput(e.target.value) }))
+                }
+                required
+                minLength={PERSON_NAME_MIN}
+                maxLength={PERSON_NAME_MAX}
+                autoComplete="family-name"
+              />
+            </div>
           </div>
           <div>
             <label className="text-sm font-medium text-gray-700 block mb-1">Email</label>
@@ -291,13 +271,12 @@ export const SignUp = () => {
           </button>
         </form>
 
-        <p className="text-sm text-gray-500 mt-5 text-center">
+        <p className="text-sm text-gray-500 mt-5 text-center md:text-left">
           Already have an account?{' '}
           <Link to={signInHref} className="text-emerald-700 hover:text-emerald-900 font-medium">
             Log in
           </Link>
         </p>
-      </div>
-    </div>
+    </AuthFunnelShell>
   );
 };

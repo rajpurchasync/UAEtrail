@@ -14,6 +14,7 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [tailwindcss(), react(), devQrPlugin()],
     resolve: {
+      dedupe: ['react', 'react-dom', 'react-router', 'react-router-dom'],
       alias: [
         {
           find: '@/chat',
@@ -81,7 +82,9 @@ export default defineConfig(({ mode }) => {
               return 'vendor-react';
             }
             if (id.includes('@tanstack/react-query')) return 'vendor-query';
-            if (id.includes('leaflet')) return 'vendor-map';
+            if (id.includes('react-leaflet')) return 'vendor-map-react-leaflet';
+            if (id.includes('leaflet.markercluster')) return 'vendor-map-cluster';
+            if (id.includes('leaflet')) return 'vendor-map-leaflet';
             if (id.includes('@react-oauth') || id.includes('google-auth')) return 'vendor-google';
             if (id.includes('lucide-react')) return 'vendor-icons';
             if (id.includes('@capacitor')) return 'vendor-capacitor';

@@ -7,9 +7,22 @@ import {
   listGroupsForUserWithChatPreview,
   listGroupWallMessages,
 } from '../lib/social-groups-store.js';
+import { syncActivityGroupChatPhotoFromActivity } from './activity-group-chat.js';
+
+const syncPhotosForActivityGroups = async (userId: string) => {
+  const groups = await listGroupsForUserWithChatPreview(userId);
+  const activityIds = [
+    ...new Set(
+      groups.map((g) => g.activityId).filter((id): id is string => typeof id === 'string' && id.length > 0)
+    ),
+  ];
+  if (activityIds.length === 0) return groups;
+  await Promise.all(activityIds.map((activityId) => syncActivityGroupChatPhotoFromActivity(activityId)));
+  return listGroupsForUserWithChatPreview(userId);
+};
 
 export const listMyGroupsWithChatPreview = async (userId: string) => {
-  const groups = await listGroupsForUserWithChatPreview(userId);
+  const groups = await syncPhotosForActivityGroups(userId);
   return groups.map((group) => ({
     ...group,
     createdAt: group.createdAt,
@@ -29,13 +42,18 @@ export const loadMyGroupDetail = async (groupId: string, userId: string) => {
     throw new ApiError(404, 'group_not_found', 'Group not found.');
   }
 
+  if (group.activityId) {
+    await syncActivityGroupChatPhotoFromActivity(group.activityId);
+  }
+  const refreshedGroup = group.activityId ? ((await findGroupById(groupId)) ?? group) : group;
+
   const [members, invites] = await Promise.all([
     listGroupMembersDetailed(groupId),
     membership.role === 'admin' ? listGroupInvites(groupId) : Promise.resolve([]),
   ]);
 
   return {
-    group,
+    group: refreshedGroup,
     membership,
     members,
     invites,

@@ -865,6 +865,10 @@ export interface ExploreMapItemDTO {
    * Attached on `GET /explore/map` after cache read — not stored in Redis.
    */
   discoveryCard?: import('./discovery-card-projection.js').DiscoveryCardProjection | null;
+  /** ISO timestamp — guest preview cap picks oldest posted events (server catalog assembly). */
+  catalogPostedAt?: string | null;
+  /** ISO timestamp — guest preview cap picks oldest updated places (server catalog assembly). */
+  catalogUpdatedAt?: string | null;
 }
 
 /** Signed-in peek overlay keyed by public map item id (`GET /me/discover/overlay`). */

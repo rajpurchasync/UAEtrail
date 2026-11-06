@@ -15,13 +15,19 @@
 
 Use full run-project scripts only when explicitly requested.
 
+### Phone on Wi‑Fi (dev) vs PWA install
+
+- **Browse / test UI:** scan the terminal QR or open `http://192.168.x.x:5175` from `npm run dev` (`host: true`). Same Wi‑Fi as the laptop; allow port **5175** in Windows Firewall if needed. Optional override: `DEV_MOBILE_URL=http://192.168.x.x:5175/` when auto-detect picks the wrong NIC.
+- **Install app (Chrome / Edge on Android):** **not** on plain `http://192.168…` — only **`https://`** counts as a secure context (localhost is special on the laptop, not on the phone). Use **https://uaetrail.com** on the phone for real install testing after deploy.
+- **Install while hitting local code:** expose dev over HTTPS, e.g. `cloudflared tunnel --url http://127.0.0.1:5175` and open the `https://*.trycloudflare.com` link on the phone (accept any cert warnings once). Production-like install still means **https://uaetrail.com**.
+
 ### Demo data (`SEED_DATA`)
 
 - Seed **does not** run on every dev start. Use `SEED_DATA=true` (or `FORCE_SEED=1`) when you need demo users, map pins, and host fixtures — see `README.md` and `docs/DEPLOYMENT.md`.
 - **Demo login** (`POST /auth/demo-login`) is off in `NODE_ENV=production`. In development it only accepts loopback TCP peers unless you set `ALLOW_DEMO_LOGIN=true` (e.g. API in Docker, browser on host).
 - **Demo / seed passwords:** set `DEMO_ACCOUNT_PASSWORD` in root `.env` before `SEED_DATA=true npm run seed` or demo-login user creation (no plaintext passwords in source). API tests use a fixed in-memory password automatically.
 - **Prometheus `/metrics`:** requires `METRICS_TOKEN` bearer auth except in `NODE_ENV=test` or local dev loopback peers (same trust model as demo login).
-- **Async side effects** (rewards, emails, group-chat roster, notifications): failures log with `logContext` via `scheduleSideEffect` / `scheduleNotification` — check API warn logs if something did not fire. Optional durable side effects: `SIDE_EFFECT_OUTBOX=1` (notifications + async map cache bust; drain every 30s via `SIDE_EFFECT_OUTBOX_DRAIN_INTERVAL_MS`). Staging experiments until MIG-OUTBOX completes.
+- **Async side effects** (notifications, explore map cache bust): **production** uses the durable outbox automatically (`NODE_ENV=production`). Local/staging: set `SIDE_EFFECT_OUTBOX=1` to match prod (drain every 30s via `SIDE_EFFECT_OUTBOX_DRAIN_INTERVAL_MS`). Without the flag, dev uses fire-and-forget + warn logs — see `scheduleSideEffect` in `apps/api/src/lib/schedule-side-effect.ts`.
 - **`npm run seed` without `SEED_DATA`:** still **upserts curated areas** and **backfills `place.areaId`** on catalog rows (safe on existing DBs).
 - After pulling member/host changes, restart the API once so Mongo migrations run (`tenant_memberships` owner backfill, `publishingPurpose` on tenants).
 - Buddy **Host** requires **signup profile complete** (`PATCH /me/profile/signup-details`); `GET /me/status` exposes `profileComplete` and `publish.canPublish`. Publish/create on `POST /publishing/activities` enforces the same server-side.
@@ -30,8 +36,8 @@ Use full run-project scripts only when explicitly requested.
 
 ### Auth & session baseline (do not regress)
 
-1. Refresh token is httpOnly cookie; access refresh uses `POST /auth/refresh` with `credentials: include`.
-2. Session in `localStorage` key `uaetrail_session` (not `sessionStorage`).
+1. Refresh token is httpOnly cookie; access token is **in-memory**; full reload rehydrates via `POST /auth/refresh` (`bootstrapSessionFromRefresh` in `src/api/client.ts`) with `credentials: include`.
+2. Non-secret signed-in hint: `localStorage` key `uaetrail_user` (profile card). **Do not** persist bearer tokens in `localStorage`.
 3. API client: one shared in-flight refresh on `401`, then retry once (`src/api/client.ts`).
 4. Role switch is session-level: `POST /me/role/switch` (`visitor` ↔ `original`) — same account identity.
 5. Team/group memberships support `isActive` disable (not only hard delete).

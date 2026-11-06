@@ -142,6 +142,10 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
       },
     ]),
     db.collection(COLLECTIONS.ACTIVITIES).createIndexes([
+      { key: { hostId: 1, status: 1 }, sparse: true },
+      { key: { createdById: 1, status: 1 } },
+      { key: { participantIntentId: 1 }, sparse: true },
+      { key: { activityMode: 1, status: 1, hostId: 1 }, sparse: true },
       { key: { tenantId: 1, startAt: 1 } },
       { key: { status: 1, startAt: 1 } },
       { key: { status: 1, activityType: 1, meetingLat: 1 }, name: 'status_activityType_meetingLat' },
@@ -156,6 +160,7 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
     db.collection(COLLECTIONS.TENANTS).createIndexes([
       { key: { slug: 1 }, unique: true },
       { key: { ownerId: 1 } },
+      { key: { businessMode: 1, status: 1, hiddenFromPublic: 1 }, sparse: true },
       { key: { status: 1 } },
       { key: { type: 1, ownerId: 1 } },
       { key: { geo: '2dsphere' }, sparse: true },
@@ -187,6 +192,7 @@ export const ensureMongoIndexes = async (db: Db): Promise<void> => {
     ]),
     db.collection(COLLECTIONS.CHAT_MESSAGES).createIndexes([
       { key: { senderId: 1, receiverId: 1, createdAt: -1 } },
+      { key: { receiverId: 1, senderId: 1, createdAt: -1 } },
       { key: { receiverId: 1, readAt: 1 } }
     ]),
     db.collection(COLLECTIONS.SOCIAL_REVIEWS).createIndexes([

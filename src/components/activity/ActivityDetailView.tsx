@@ -17,7 +17,7 @@ import type {
 import { activityDetailEyebrowForActivity } from '../../config/activityTypes';
 import { detailBackPath } from '../../config/routingCatalog';
 import type { ActivityViewerAccessDTO, ActivityViewerEntitlementsDTO } from '@uaetrail/shared-types';
-import { MobileDetailShell } from '../mobile/MobileDetailShell';
+import { activityShareInputFromActivity } from '../../utils/activityShare';
 import { ShareButton } from '../ui';
 import type { ActivityDetailTabId } from '../../activity/activityDetailTab';
 import type { ActivityDTO } from '@uaetrail/shared-types';
@@ -29,6 +29,7 @@ import type { ActivityDetailTabFooterKind } from '../../activity/activityDetailT
 import { ActivityDetailBody } from './detail/ActivityDetailBody';
 import { ActivityConsumerDetailPage } from '../../activity/detail/templates/ActivityConsumerDetailPage';
 import { ActivityConsumerDetailModalShell } from '../../activity/detail/templates/ActivityConsumerDetailModalShell';
+import { MobileDetailShell } from '../mobile/MobileDetailShell';
 import { resolveActivityConsumerDetailHeaderChrome } from '../../activity/activityConsumerDetailHeader';
 import { useActivityDetailViewModel } from './detail/useActivityDetailViewModel';
 import type { ActivityRequestView } from '../../api/types';
@@ -104,7 +105,7 @@ export interface ActivityDetailViewProps {
   linkRideshareTenantId?: string | null;
   onMapPeekChatError?: (message: string) => void;
   onParticipantInviteFriends?: () => void;
-  /** Host on `/activity/:id` — same Manage sheet as map peek (`manage_activity` wire). */
+  /** Host on `/activity/:id` — manage sheet (roster, options); not the edit wizard. */
   onOpenHostManage?: (activity: ActivityDTO, initialView?: ActivityManageInitialView) => void;
   /** Rideshare host attached a parent outing — refresh detail. */
   onRideshareParentLinked?: () => void;
@@ -229,7 +230,6 @@ export const ActivityDetailView = ({
     mapPeekActionHandlers,
     linkRideshareTenantId,
     onParticipantInviteFriends,
-    participationManageOpenerRef: openParticipationManageRef,
   });
 
   const PlanSections =
@@ -241,6 +241,8 @@ export const ActivityDetailView = ({
         title={model.sharePayload.title}
         text={model.sharePayload.text}
         path={model.sharePayload.path}
+        activityShare={activityShareInputFromActivity(activity)}
+        canSendBuddyInvites={Boolean(user && canSendJoinInvites)}
         iconOnly
         light
       />
@@ -256,7 +258,10 @@ export const ActivityDetailView = ({
       model.peekParityCard
     );
     return (
-      <div data-activity-detail-template={detailKind ?? undefined}>
+      <div
+        className="flex h-full min-h-0 flex-1 flex-col overflow-hidden"
+        data-activity-detail-template={detailKind ?? undefined}
+      >
         <ActivityConsumerDetailModalShell
           backTo={backTo}
           backLabel={backLabel}
@@ -275,7 +280,10 @@ export const ActivityDetailView = ({
   }
 
   return (
-    <div data-activity-detail-template={detailKind ?? undefined}>
+    <div
+      className="flex h-full min-h-0 flex-1 flex-col overflow-hidden"
+      data-activity-detail-template={detailKind ?? undefined}
+    >
       <MobileDetailShell
         backTo={backTo}
         backLabel={backLabel}

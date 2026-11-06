@@ -32,11 +32,10 @@ export const PlanHostingManageSheets = ({
   const navigate = useNavigate();
   const inviteShare = useActivityInviteShareSheet();
 
-  if (!tenantId) return inviteShare.sheet;
+  if (!tenantId) return null;
 
   return (
     <>
-      {inviteShare.sheet}
       <ActivityManageSheet
         open={Boolean(manageActivity)}
         activity={manageActivity}

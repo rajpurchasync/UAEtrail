@@ -30,15 +30,23 @@ import {
 export type ExplorePanel = 'activities' | 'venues' | 'shops';
 
 /** Map overlay filter — controls which pins appear on the map. */
-export type MapFilterKey = 'all' | 'hiking' | 'camping' | 'rideshare' | 'others' | 'shops';
+export type MapFilterKey = 'all' | 'hiking' | 'camping' | 'facilities' | 'rideshare' | 'others' | 'shops';
 
 /** Side-panel activity list filter. */
 export type ActivityListFilterKey = 'all' | 'hiking' | 'camping' | 'event' | 'rideshare';
 
 /** Side-panel venue list filter. */
-export type VenueListFilterKey = 'all' | 'hiking' | 'camping' | 'shop' | 'event';
+export type VenueListFilterKey = 'all' | 'hiking' | 'camping' | 'facilities' | 'shop' | 'event';
 
-const MAP_FILTERS = new Set<MapFilterKey>(['all', 'hiking', 'camping', 'rideshare', 'others', 'shops']);
+const MAP_FILTERS = new Set<MapFilterKey>([
+  'all',
+  'hiking',
+  'camping',
+  'facilities',
+  'rideshare',
+  'others',
+  'shops',
+]);
 
 const ACTIVITY_LIST_FILTER_SET = new Set<ActivityListFilterKey>([
   'all',
@@ -52,6 +60,7 @@ const VENUE_LIST_FILTER_SET = new Set<VenueListFilterKey>([
   'all',
   'hiking',
   'camping',
+  'facilities',
   'shop',
   'event',
 ]);
@@ -59,6 +68,8 @@ const VENUE_LIST_FILTER_SET = new Set<VenueListFilterKey>([
 const INBOUND_MAP_FILTER: Record<string, MapFilterKey> = {
   shop: 'shops',
   shops: 'shops',
+  facility: 'facilities',
+  facilities: 'facilities',
   activities: 'all',
   venues: 'all',
   looking: 'all',
@@ -394,6 +405,8 @@ export const mapFilterToVenueListFilter = (filter: MapFilterKey): VenueListFilte
       return 'hiking';
     case 'camping':
       return 'camping';
+    case 'facilities':
+      return 'facilities';
     case 'shops':
       return 'shop';
     case 'others':
@@ -409,6 +422,8 @@ export const venueFilterToMapFilter = (filter: VenueListFilterKey): MapFilterKey
       return 'hiking';
     case 'camping':
       return 'camping';
+    case 'facilities':
+      return 'facilities';
     case 'shop':
       return 'shops';
     case 'event':

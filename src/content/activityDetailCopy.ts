@@ -20,14 +20,18 @@ export const ACTIVITY_DETAIL_THIS_OUTING_LABEL = 'This scheduled outing';
 export const ACTIVITY_DETAIL_LINKED_OUTING_LABEL = 'Linked outing';
 export const ACTIVITY_DETAIL_LINKED_RIDESHARE_LABEL = 'Shared ride for this outing';
 
-export const activityDetailLinkedVenueEyebrow = (
+export const activityDetailLinkedVenueKindLabel = (
   placeKind: 'hiking' | 'camping' | 'event' | string | null | undefined
 ): string => {
-  if (placeKind === 'camping') return `Camp on ${SITE_TITLE_BRAND}`;
-  if (placeKind === 'hiking') return `Trail on ${SITE_TITLE_BRAND}`;
-  if (placeKind === 'event') return `Venue on ${SITE_TITLE_BRAND}`;
-  return `Place on ${SITE_TITLE_BRAND}`;
+  if (placeKind === 'camping') return 'Camp';
+  if (placeKind === 'hiking') return 'Trail';
+  if (placeKind === 'event') return 'Venue';
+  return 'Place';
 };
+
+export const activityDetailLinkedVenueEyebrow = (
+  placeKind: 'hiking' | 'camping' | 'event' | string | null | undefined
+): string => `${activityDetailLinkedVenueKindLabel(placeKind)} on ${SITE_TITLE_BRAND}`;
 
 export const ACTIVITY_DETAIL_TRANSPORT_EMPTY_HINT =
   'No shared ride or transport listing for this outing yet.';

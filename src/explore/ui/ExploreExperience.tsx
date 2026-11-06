@@ -1,5 +1,6 @@
 import { PageMeta } from '../../components/seo/PageMeta';
 import { EXPLORE_MAP_PATH } from '../../config/routingCatalog';
+import '../../styles/explore-map-chrome.css';
 import { ExploreExperienceBrowsePanels } from '../shell/ExploreExperienceBrowsePanels';
 import { ExploreExperienceOverlays } from '../shell/ExploreExperienceOverlays';
 import { ExploreMapShell } from '../shell/ExploreMapShell';
@@ -32,6 +33,7 @@ export const ExploreExperience = () => {
           isDesktop={model.isDesktop}
           browse={model.browse}
           peopleBrowsePanelProps={model.peopleBrowsePanelProps}
+          prefetchedCatalogItems={model.mapItems}
           mapStage={
             <ExploreMapShell
               user={model.user}
@@ -93,7 +95,6 @@ export const ExploreExperience = () => {
         onRefreshHostGate={model.refreshHostGate}
         setRideshareLinkParent={model.setRideshareLinkParent}
         setRideshareLinkSeeking={model.setRideshareLinkSeeking}
-        inviteShareSheet={model.inviteShareSheet}
         hostManageSheet={model.hostManageSheet}
         tenantId={model.tenantId}
         useDesktopGuestGatePanel={model.useDesktopGuestGatePanel}

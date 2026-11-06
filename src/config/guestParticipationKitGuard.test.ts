@@ -25,8 +25,8 @@ describe('guestParticipationKitGuard', () => {
     expect(gate).toMatch(/ExploreGuestSignInCard/);
     expect(gate).toMatch(/intent="join-activity"/);
     expect(gate).not.toMatch(/guestJoinSheetHeadline/);
-    const page = read('src/pages/ActivityDetail.tsx');
-    expect(page).toMatch(/if \(!user\)[\s\S]*ActivityDetailGuestGate/);
+    const template = read('src/activity/detail/templates/ActivityConsumerDetailPage.tsx');
+    expect(template).toMatch(/requiresSignIn[\s\S]*ActivityDetailGuestGate/);
   });
 
   it('GPK-04: map peek view-details uses browse gate not join sheet', () => {
@@ -39,5 +39,18 @@ describe('guestParticipationKitGuard', () => {
     expect(copy).toMatch(/explore-people-browse/);
     expect(copy).toMatch(/member-profile/);
     expect(copy).toMatch(/peek-details/);
+  });
+
+  it('GPK-06: guest gated member routes use unified mobile tab header chrome', () => {
+    const layout = read('src/components/auth/GuestGatedSurfaceLayout.tsx');
+    expect(layout).toMatch(/MobileUnifiedTabHeader/);
+    expect(layout).toMatch(/EXPLORE_MAP_PATH/);
+    expect(layout).not.toMatch(/border-neutral-100 px-5 py-4 md:hidden/);
+  });
+
+  it('GPK-07: guest gated routes hide layout MobileTabHeader (avoid double chrome)', () => {
+    const tabHeader = read('src/config/mobileTabHeader.ts');
+    expect(tabHeader).toMatch(/resolveGuestSurfaceForPath/);
+    expect(tabHeader).toMatch(/if \(!signedIn && resolveGuestSurfaceForPath\(pathname\)\) return false/);
   });
 });

@@ -85,6 +85,12 @@ const validateProductionConfig = (): void => {
   if (!process.env.REDIS_URL) {
     throw new Error('Production requires REDIS_URL for rate limits and SSE tickets.');
   }
+
+  if (process.env.SIDE_EFFECT_OUTBOX?.trim() === '0') {
+    throw new Error(
+      'Production cannot disable SIDE_EFFECT_OUTBOX — durable notifications and map cache bust are required.'
+    );
+  }
 };
 
 /** Warn at startup when payment features are partially configured. */

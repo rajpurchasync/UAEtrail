@@ -10,8 +10,6 @@ import {
   DEMAND_SUBMIT_SUCCESS_BODY_ON_MAP,
   DEMAND_SUBMIT_SUCCESS_TITLE,
   DEMAND_SUBMIT_VIEW_CTA,
-  HOSTING_LINK_RIDESHARE_LABEL,
-  HOSTING_LINK_RIDESHARE_PASTE_CTA,
   HOSTING_RIDESHARE_LINKED_NOTICE,
 } from '../createFlowCopy';
 import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
@@ -58,9 +56,6 @@ const formatWhenLine = (draft: SeekingDraft, kind: SeekingKind): string => {
   return `${draft.date}${timePart}`;
 };
 
-const linkButtonClass =
-  'text-sm font-semibold text-sky-800 underline underline-offset-2 hover:text-sky-950';
-
 export const SeekingSubmitSuccessSheet = ({
   open,
   onClose,
@@ -70,12 +65,11 @@ export const SeekingSubmitSuccessSheet = ({
   tenantId,
   publishedActivity,
   onPrimaryAction,
-  onCreateLinkedRideshare,
   onRideshareLinked,
   onRideshareLinkError,
 }: SeekingSubmitSuccessSheetProps) => {
-  const [pasteOpen, setPasteOpen] = useState(false);
   const [canAddLinkedRide, setCanAddLinkedRide] = useState(false);
+  const [rideLinked, setRideLinked] = useState(Boolean(publishedActivity?.linkedRideshareActivityId));
   const [rideshareNotice, setRideshareNotice] = useState<string | null>(null);
 
   useSafeAsyncEffect(
@@ -107,17 +101,11 @@ export const SeekingSubmitSuccessSheet = ({
     Boolean(tenantId && publishedActivity) &&
     parentMapKindMayOfferLinkedRideshare(kind) &&
     canLinkRideshareToActivity(publishedActivity) &&
-    canAddLinkedRide;
-
-  const handleCreateLinked = () => {
-    if (!publishedActivity || !onCreateLinkedRideshare) {
-      setRideshareNotice('Open this plan from Explore to create a linked rideshare.');
-      return;
-    }
-    onCreateLinkedRideshare(publishedActivity);
-  };
+    canAddLinkedRide &&
+    !rideLinked;
 
   const handleLinked = () => {
+    setRideLinked(true);
     setRideshareNotice(HOSTING_RIDESHARE_LINKED_NOTICE);
     onRideshareLinked?.();
   };
@@ -184,17 +172,13 @@ export const SeekingSubmitSuccessSheet = ({
           </p>
         ) : null}
 
-        {showLinkRideshare && pasteOpen && tenantId && publishedActivity ? (
+        {showLinkRideshare && tenantId && publishedActivity ? (
           <div className="mt-4 min-w-0">
             <LinkRidesharePanel
               tenantId={tenantId}
               parentActivityId={publishedActivity.id}
-              variant="pasteOnly"
-              onCreateRideshare={handleCreateLinked}
-              onLinked={() => {
-                handleLinked();
-                setPasteOpen(false);
-              }}
+              variant="pickExisting"
+              onLinked={handleLinked}
               onError={handleLinkError}
             />
           </div>
@@ -208,21 +192,6 @@ export const SeekingSubmitSuccessSheet = ({
           >
             {visibleOnMap ? DEMAND_SUBMIT_VIEW_CTA : 'Done'}
           </button>
-          {showLinkRideshare ? (
-            <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1">
-              <button type="button" onClick={handleCreateLinked} className={linkButtonClass}>
-                {HOSTING_LINK_RIDESHARE_LABEL}
-              </button>
-              <button
-                type="button"
-                aria-expanded={pasteOpen}
-                onClick={() => setPasteOpen((value) => !value)}
-                className={linkButtonClass}
-              >
-                {HOSTING_LINK_RIDESHARE_PASTE_CTA}
-              </button>
-            </div>
-          ) : null}
         </div>
       </div>
     </ExploreResponsiveSheet>

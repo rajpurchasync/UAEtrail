@@ -7,6 +7,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import { applyPanelResizeCursor, clearPanelResizeCursor } from '../../config/panelResizeCursor';
 
 const STORAGE_KEY = 'uaetrail:explore-list-drawer-width';
 /** Two thumbnail cards at their minimum size, plus the list padding and gap. */
@@ -63,8 +64,7 @@ export const ExploreDesktopListDrawer = ({ children, onClose }: ExploreDesktopLi
   const onPointerUp = useCallback(() => {
     if (!dragRef.current) return;
     dragRef.current = null;
-    document.body.style.removeProperty('cursor');
-    document.body.style.removeProperty('user-select');
+    clearPanelResizeCursor();
     window.removeEventListener('pointermove', onPointerMove);
     window.removeEventListener('pointerup', onPointerUp);
     setWidth((current) => {
@@ -77,8 +77,7 @@ export const ExploreDesktopListDrawer = ({ children, onClose }: ExploreDesktopLi
     if (maximized) return;
     event.preventDefault();
     dragRef.current = { startX: event.clientX, startWidth: width };
-    document.body.style.cursor = 'col-resize';
-    document.body.style.userSelect = 'none';
+    applyPanelResizeCursor();
     window.addEventListener('pointermove', onPointerMove);
     window.addEventListener('pointerup', onPointerUp);
   };
@@ -87,8 +86,7 @@ export const ExploreDesktopListDrawer = ({ children, onClose }: ExploreDesktopLi
     () => () => {
       window.removeEventListener('pointermove', onPointerMove);
       window.removeEventListener('pointerup', onPointerUp);
-      document.body.style.removeProperty('cursor');
-      document.body.style.removeProperty('user-select');
+      clearPanelResizeCursor();
     },
     [onPointerMove, onPointerUp]
   );
@@ -114,7 +112,7 @@ export const ExploreDesktopListDrawer = ({ children, onClose }: ExploreDesktopLi
             aria-orientation="vertical"
             aria-label="Resize list panel"
             onPointerDown={onHandlePointerDown}
-            className="absolute inset-y-0 right-0 z-20 w-2 cursor-col-resize touch-none hover:bg-emerald-500/25"
+            className="absolute inset-y-0 right-0 z-20 w-2 cursor-ew-resize touch-none hover:bg-emerald-500/25"
           />
         )}
       </aside>

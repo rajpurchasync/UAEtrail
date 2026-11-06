@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { readAppRouteRegistry } from '../../scripts/readAppRouteRegistry.mjs';
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
@@ -32,7 +33,7 @@ describe('publishing console routing (MIG-ROUTING-CANON-P1)', () => {
   });
 
   it('App uses publishing workspace and retired-console bookmark redirects only', () => {
-    const app = readFileSync(join(ROOT, 'src/App.tsx'), 'utf8');
+    const app = readAppRouteRegistry();
     expect(app).not.toMatch(/LegacyPublishingConsoleRedirect/);
     expect(app).toMatch(/InboundRetiredPublishingConsoleRedirect/);
     expect(app).toMatch(/path="\/host\/\*"/);
@@ -54,6 +55,7 @@ describe('publishing console routing (MIG-ROUTING-CANON-P1)', () => {
   it('app src does not link to /host/ or /organizer/ publishing paths', () => {
     const allow = new Set([
       'src/App.tsx',
+      'src/routing/AppRoutes.tsx',
       'src/routing/inboundBookmarkRedirects.tsx',
       'src/config/publishingConsoleRoutingGuard.test.ts',
       'src/content/workspaceProductLanguageGuard.test.ts',

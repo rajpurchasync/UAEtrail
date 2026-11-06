@@ -23,7 +23,7 @@ describe('resolveActivityDetailStandardFooter', () => {
     expect(footer.right.action).toBe('message_host');
   });
 
-  it('keeps Message host beside a pending status', () => {
+  it('keeps Invite and Cancel beside Message host when pending', () => {
     const footer = resolveActivityDetailStandardFooter({
       isHost: false,
       joinUiState: { kind: 'pending', requestId: 'r1', status: 'pending' },
@@ -31,12 +31,12 @@ describe('resolveActivityDetailStandardFooter', () => {
       canManageParticipation: true,
     });
     expect(footer.mode).toBe('pending');
-    expect(footer.left.label).toBe('Pending approval');
-    expect(footer.left.disabled).toBe(false);
+    expect(footer.left.action).toBe('participant_invite');
+    expect(footer.center?.action).toBe('participant_withdraw');
     expect(footer.right.label).toBe(ACTIVITY_CTA_MESSAGE_HOST);
   });
 
-  it('uses Open chat and Manage once you are going', () => {
+  it('uses Open chat, Invite friends, and Withdraw when you are going', () => {
     const footer = resolveActivityDetailStandardFooter({
       isHost: false,
       joinUiState: { kind: 'confirmed', requestId: 'r1' },
@@ -46,7 +46,9 @@ describe('resolveActivityDetailStandardFooter', () => {
     });
     expect(footer.mode).toBe('joined');
     expect(footer.left.label).toBe(ACTIVITY_CTA_OPEN_CHAT);
-    expect(footer.right.label).toBe(ACTIVITY_PEEK_MANAGE_LABEL);
+    expect(footer.center?.label).toBe('Invite Friends');
+    expect(footer.center?.action).toBe('participant_invite');
+    expect(footer.right.action).toBe('participant_withdraw');
   });
 
   it('uses Share outing and Manage for the host on every outing', () => {

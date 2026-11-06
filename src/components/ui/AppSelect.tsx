@@ -91,7 +91,11 @@ export function AppSelect<T extends string>({
           disabled ? 'pointer-events-none opacity-50' : ''
         }`}
       >
-        <span className={`truncate ${showPlaceholder ? 'text-neutral-400' : ''}`}>{displayLabel}</span>
+        <span
+          className={`truncate ${showPlaceholder ? 'text-neutral-400' : 'place-select-trigger-value text-neutral-900'}`}
+        >
+          {displayLabel}
+        </span>
         <ChevronDown
           className={`h-4 w-4 shrink-0 text-neutral-400 transition-transform ${open ? 'rotate-180' : ''}`}
           aria-hidden
@@ -103,7 +107,7 @@ export function AppSelect<T extends string>({
           id={listId}
           role="listbox"
           aria-label={ariaLabel}
-          className={`absolute top-[calc(100%+4px)] z-[100] max-h-60 overflow-y-auto scroll-touch rounded-2xl border border-neutral-200/90 bg-white py-1 shadow-lg shadow-neutral-900/10 ${menuAlignClass} ${menuClassName}`}
+          className={`place-select-panel top-[calc(100%+4px)] z-[100] max-h-60 py-1 ${menuAlignClass} ${menuClassName}`}
         >
           {options.map((option) => {
             const active = option.value === value;
@@ -117,8 +121,8 @@ export function AppSelect<T extends string>({
                     onChange(option.value);
                     setOpen(false);
                   }}
-                  className={`flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left text-sm transition hover:bg-neutral-50 ${
-                    active ? 'bg-emerald-50 font-medium text-emerald-800' : 'text-neutral-700'
+                  className={`place-select-option items-center justify-between ${
+                    active ? 'place-select-option--selected' : ''
                   }`}
                 >
                   <span>{option.label}</span>

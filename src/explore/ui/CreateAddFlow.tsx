@@ -9,7 +9,8 @@ import { COMPOSE_DESKTOP_INSET_FIXED } from '../create/composeDesktopInset';
 import { ImageUpload } from '../../components/ui/ImageUpload';
 import { PhoneInput } from '../../components/ui/PhoneInput';
 import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
-import { COMPOSE_SHEET_DRAG_HINT } from '../../hooks/useMobileBrowseSheetImmersive';
+import { ComposeWizardItemProvider } from '../create/ComposeWizardItemContext';
+import { composeItemEmoji } from '../compose';
 import { useIsMobile } from '../../hooks/useIsMobile';
 import { ComposeWidePageSlot } from '../create/ComposeWidePageSlot';
 import {
@@ -17,7 +18,6 @@ import {
   COMPOSE_WIDE_SHEET_MAX_WIDTH,
   wizardPageContaining,
 } from '../create/composeWideWizard';
-import { useComposeSheetExpandedState } from '../create/ComposeSheetExpandedContext';
 import { useComposeWizardExitBack } from '../create/useComposeWizardExitBack';
 import {
   composeWizardHasDraftContent,
@@ -210,8 +210,6 @@ export const CreateAddFlow = ({
   const patchDraft = useCallback((patch: Partial<AddDraft>) => {
     setDraft((prev) => ({ ...prev, ...patch }));
   }, []);
-
-  const { sheetExpanded, expandSheet } = useComposeSheetExpandedState();
 
   const finishClose = () => {
     if (submitting) return;
@@ -420,12 +418,18 @@ export const CreateAddFlow = ({
       zClass={EXPLORE_Z.composeFlow}
       overlayFixed
       mobileComposeChrome
-      expanded={sheetExpanded}
-      onExpand={expandSheet}
-      expandHint={COMPOSE_SHEET_DRAG_HINT}
+      showHandle={false}
+      showCloseButton={false}
       maxWidthClass={isMobile ? 'lg:max-w-lg' : COMPOSE_WIDE_SHEET_MAX_WIDTH}
       panelClassName="px-5 pb-[calc(var(--safe-bottom)+1rem)] pt-0 lg:px-6 lg:pb-6 lg:pt-2"
     >
+      <ComposeWizardItemProvider
+        emoji={composeItemEmoji(
+          kind === 'facility'
+            ? { intent: 'add', target: 'facility', kind: 'toilet' }
+            : { intent: 'add', target: 'place', kind }
+        )}
+      >
       {pageHas('title') && (
         <ComposeWidePageSlot
           stepId="title"
@@ -1263,6 +1267,7 @@ export const CreateAddFlow = ({
           </p>
         </ComposeWidePageSlot>
       )}
+      </ComposeWizardItemProvider>
     </ExploreResponsiveSheet>
   );
 };

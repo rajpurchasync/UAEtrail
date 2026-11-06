@@ -66,14 +66,14 @@ describe('locationSubmitBodySchema outdoor photos', () => {
     expect(locationSubmitBodySchema.safeParse(body).success).toBe(false);
   });
 
-  it('requires at least one photo for a hiking spot', () => {
+  it('requires at least one photo for a trail', () => {
     const parsed = locationSubmitBodySchema.safeParse(
       buildTestLocationSubmitBody({ images: [] })
     );
     expect(parsed.success).toBe(false);
   });
 
-  it('accepts one photo for a hiking spot', () => {
+  it('accepts one photo for a trail', () => {
     const parsed = locationSubmitBodySchema.safeParse(
       buildTestLocationSubmitBody({ images: ['https://example.com/one.jpg'] })
     );

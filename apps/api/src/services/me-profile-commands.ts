@@ -28,6 +28,7 @@ import { sendVerificationEmail } from '../lib/email.js';
 import { isValidE164Phone } from '../lib/phone.js';
 import { signAccessToken } from '../lib/jwt.js';
 import { toSharedRole } from '../lib/mappers.js';
+import { auditMemberRoleSwitch } from '../lib/platform-security-audit.js';
 import {
   confirmEmailChangeSchema,
   requestEmailChangeSchema,
@@ -211,6 +212,7 @@ export const switchAuthenticatedMemberRole = async (
     throw new ApiError(404, 'user_not_found', 'User not found.');
   }
 
+  const previousRole = user.role;
   let nextRole = user.role;
   let switchedFromRole = user.profile?.switchedFromRole ?? null;
 
@@ -240,6 +242,16 @@ export const switchAuthenticatedMemberRole = async (
       userId: user._id,
       role: nextRole,
       profile: { switchedFromRole: null },
+    });
+  }
+
+  if (nextRole !== previousRole) {
+    await auditMemberRoleSwitch({
+      actorId: user._id,
+      previousRole,
+      nextRole,
+      target: body.target,
+      switchedFromRole: user.profile?.switchedFromRole ?? null,
     });
   }
 

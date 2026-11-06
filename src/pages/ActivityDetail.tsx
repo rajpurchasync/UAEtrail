@@ -4,7 +4,6 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Lock } from 'lucide-react';
 import {
   activityScheduleHasEnded,
-  type ActivityDetailDTO,
   type ReviewDTO,
 } from '@uaetrail/shared-types';
 import { activityReviewsQueryKey } from '../hooks/clientQueryKeys';
@@ -63,7 +62,6 @@ import {
   resolveActivityDetailWirePresentation,
 } from '../activity/resolveActivityDetailWirePresentation';
 import { ActivityDetailJoinWelcomeSheet } from '../components/activity/detail/ActivityDetailJoinWelcomeSheet';
-import { ActivityDetailGuestGate } from '../components/activity/detail/ActivityDetailGuestGate';
 
 /**
  * Activity detail **route loader** (`/activity/:id`): fetch, join modals, SEO, host sheets.
@@ -405,20 +403,6 @@ export const ActivityDetail = () => {
     );
   }
 
-  if (!user) {
-    const pageTitle = activity.title || activity.locationName || 'Activity';
-    return (
-      <>
-        <PageMeta title={pageTitle} noIndex path={id ? `/activity/${id}` : undefined} />
-        <MobileDetailShell backTo={detailBackPath('activity')} backLabel="">
-          <div className="max-w-lg mx-auto px-4 pt-4 pb-10">
-            <ActivityDetailGuestGate activity={activity as ActivityDetailDTO} />
-          </div>
-        </MobileDetailShell>
-      </>
-    );
-  }
-
   const isRedactedPreview = detailExposure === 'redacted';
 
   const heroImage = resolveActivityHeroImage({
@@ -452,14 +436,16 @@ export const ActivityDetail = () => {
         ogType="article"
       />
       <JsonLd data={activityEventSchema(activity)} id={`activity-${activity.id}`} />
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
       {(fromJoinInvite || activity.myJoinInvite) && !isConfirmedParticipant ? (
         <p
-          className="mx-auto max-w-3xl px-4 pt-4 text-sm font-medium text-emerald-900 bg-emerald-50 border border-emerald-100 rounded-xl py-3"
+          className="mx-auto max-w-3xl shrink-0 px-4 pt-4 text-sm font-medium text-emerald-900 bg-emerald-50 border border-emerald-100 rounded-xl py-3"
           role="status"
         >
           {activityJoinInviteBanner(activity.myJoinInvite?.inviterDisplayName)}
         </p>
       ) : null}
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
       <ActivityDetailByKind
         activity={activity}
         backTo={detailBackTo ?? detailBackPath('activity')}
@@ -499,7 +485,7 @@ export const ActivityDetail = () => {
                 onSaved: (policy) => {
                   if (!id) return;
                   queryClient.setQueryData<PublicActivityDetailPayload>(
-                    activityDetailQueryKey(id, user.id),
+                    activityDetailQueryKey(id, user?.id ?? 'guest'),
                     (prev) =>
                       prev
                         ? {
@@ -540,6 +526,8 @@ export const ActivityDetail = () => {
             : undefined
         }
       />
+      </div>
+      </div>
       {activity && id ? (
         <ActivityDetailJoinWelcomeSheet
           open={joinWelcomeOpen}
@@ -565,7 +553,6 @@ export const ActivityDetail = () => {
         isFull={activity.slotsAvailable <= 0}
         onSuccess={handleJoinSuccess}
       />
-      {inviteShare.sheet}
       {hostSheets.hostManageSheet}
     </>
   );

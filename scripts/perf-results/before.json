@@ -1,0 +1,7 @@
+{
+  "capturedAt": "2025-11-05T00:00:00.000Z",
+  "note": "Placeholder baseline — run `npm run perf:api -- --label before` with API up to replace.",
+  "baseUrl": "http://localhost:4000",
+  "samples": 8,
+  "probes": []
+}

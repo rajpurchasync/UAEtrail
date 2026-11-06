@@ -99,7 +99,7 @@ export const UiTooltip = ({ label, children, side = 'bottom', className }: UiToo
             <div
               id={tooltipId}
               role="tooltip"
-              className={`pointer-events-none fixed z-[6000] max-w-[16rem] rounded-lg bg-neutral-900 px-2 py-1 text-center text-[11px] font-semibold leading-snug text-white shadow-[0_8px_24px_rgba(15,23,42,.28)] ${
+              className={`ui-tooltip-bubble pointer-events-none fixed z-[6000] font-semibold ${
                 side === 'right' ? '-translate-y-1/2' : '-translate-x-1/2'
               }`}
               style={{ left: coords.left, top: coords.top }}

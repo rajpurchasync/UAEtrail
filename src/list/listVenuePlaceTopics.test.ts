@@ -6,9 +6,15 @@ import {
 } from './listVenuePlaceTopics';
 
 describe('listVenuePlaceTopics', () => {
-  it('reserves facilities in catalog; UI omits until location amenities ship', () => {
+  it('shows Trail, Camping, Facilities, Shopping, Other', () => {
     expect(LIST_VENUE_PLACE_TOPIC_FILTERS.map((t) => t.key)).toContain('facilities');
-    expect(listVenuePlaceTopicsForUi().map((t) => t.label)).toEqual(['Trails', 'Spots', 'Shops']);
+    expect(listVenuePlaceTopicsForUi().map((t) => t.label)).toEqual([
+      'Trail',
+      'Camping',
+      'Facilities',
+      'Shopping',
+      'Other',
+    ]);
   });
 
   it('toggles place topics independently', () => {

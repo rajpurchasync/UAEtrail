@@ -11,7 +11,7 @@ export type DisplayPreferences = {
 
 const STORAGE_KEY = 'uaetrail:display';
 const GUEST_THEME_KEY = 'uaetrail:guest-theme';
-const SESSION_KEY = 'uaetrail_session';
+const GUEST_DISPLAY_KEY = 'uaetrail:guest-display';
 const CHANGE_EVENT = 'uaetrail-display-preferences';
 
 export const DEFAULT_DISPLAY_PREFERENCES: DisplayPreferences = {
@@ -27,17 +27,24 @@ const isClock = (value: unknown): value is ExploreClockStyle => value === '12' |
 
 const isUnits = (value: unknown): value is UnitSystem => value === 'metric' || value === 'imperial';
 
-export const readDisplayPreferences = (): DisplayPreferences => {
-  if (typeof window === 'undefined') return DEFAULT_DISPLAY_PREFERENCES;
+const parsePreferences = (raw: string | null): DisplayPreferences | null => {
+  if (!raw) return null;
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return DEFAULT_DISPLAY_PREFERENCES;
     const parsed = JSON.parse(raw) as Partial<DisplayPreferences>;
     return {
       theme: isTheme(parsed.theme) ? parsed.theme : 'system',
       clock: isClock(parsed.clock) ? parsed.clock : '12',
       units: isUnits(parsed.units) ? parsed.units : 'metric',
     };
+  } catch {
+    return null;
+  }
+};
+
+export const readDisplayPreferences = (): DisplayPreferences => {
+  if (typeof window === 'undefined') return DEFAULT_DISPLAY_PREFERENCES;
+  try {
+    return parsePreferences(window.localStorage.getItem(STORAGE_KEY)) ?? DEFAULT_DISPLAY_PREFERENCES;
   } catch {
     return DEFAULT_DISPLAY_PREFERENCES;
   }
@@ -62,24 +69,35 @@ const paintTheme = (theme: 'light' | 'dark'): void => {
 export const hasAccountSession = (): boolean => {
   if (typeof window === 'undefined') return false;
   try {
-    const raw = window.sessionStorage.getItem(SESSION_KEY) ?? window.localStorage.getItem(SESSION_KEY);
-    if (!raw) return false;
-    const parsed = JSON.parse(raw) as { accessToken?: string };
-    return Boolean(parsed?.accessToken);
+    return Boolean(window.localStorage.getItem('uaetrail_user'));
   } catch {
     return false;
   }
 };
 
-export const readGuestTheme = (): ThemePreference => {
-  if (typeof window === 'undefined') return 'system';
+const readGuestStore = (): string | null => {
   try {
-    const raw = window.localStorage.getItem(GUEST_THEME_KEY);
-    return isTheme(raw) ? raw : 'system';
+    return window.sessionStorage.getItem(GUEST_DISPLAY_KEY);
   } catch {
-    return 'system';
+    return null;
   }
 };
+
+export const readGuestDisplayPreferences = (): DisplayPreferences => {
+  if (typeof window === 'undefined') return DEFAULT_DISPLAY_PREFERENCES;
+  try {
+    const fromSession = parsePreferences(readGuestStore());
+    if (fromSession) return fromSession;
+    return DEFAULT_DISPLAY_PREFERENCES;
+  } catch {
+    return DEFAULT_DISPLAY_PREFERENCES;
+  }
+};
+
+export const readGuestTheme = (): ThemePreference => readGuestDisplayPreferences().theme;
+
+export const readActiveDisplayPreferences = (): DisplayPreferences =>
+  hasAccountSession() ? readDisplayPreferences() : readGuestDisplayPreferences();
 
 export const applyDisplayPreferences = (preferences: DisplayPreferences = readDisplayPreferences()): void => {
   setExploreClockStyle(preferences.clock);
@@ -87,11 +105,12 @@ export const applyDisplayPreferences = (preferences: DisplayPreferences = readDi
   paintTheme(resolveTheme(preferences.theme));
 };
 
-/** Signed-out pages follow the guest choice, which defaults to the system theme. */
+/** Signed-out pages follow guest display prefs (theme, clock, units). */
 export const applySignedOutTheme = (): void => {
   if (typeof document === 'undefined') return;
-  setExploreClockStyle(readDisplayPreferences().clock);
-  paintTheme(resolveTheme(readGuestTheme()));
+  const guest = readGuestDisplayPreferences();
+  setExploreClockStyle(guest.clock);
+  paintTheme(resolveTheme(guest.theme));
 };
 
 /** Signed-in pages use the saved display preference. Signed-out pages use the guest default. */
@@ -100,11 +119,23 @@ export const applyBootTheme = (): void => {
   else applySignedOutTheme();
 };
 
-export const writeGuestTheme = (theme: ThemePreference): ThemePreference => {
-  window.localStorage.setItem(GUEST_THEME_KEY, theme);
+export const writeGuestDisplayPreferences = (patch: Partial<DisplayPreferences>): DisplayPreferences => {
+  const next = { ...readGuestDisplayPreferences(), ...patch };
+  window.sessionStorage.setItem(GUEST_DISPLAY_KEY, JSON.stringify(next));
   applySignedOutTheme();
   window.dispatchEvent(new Event(CHANGE_EVENT));
-  return theme;
+  return next;
+};
+
+export const writeGuestTheme = (theme: ThemePreference): ThemePreference =>
+  writeGuestDisplayPreferences({ theme }).theme;
+
+/** Drop guest theme/clock/units so a new session does not keep signed-out choices. */
+export const clearGuestDisplayPreferences = (): void => {
+  if (typeof window === 'undefined') return;
+  window.sessionStorage.removeItem(GUEST_DISPLAY_KEY);
+  window.localStorage.removeItem(GUEST_DISPLAY_KEY);
+  window.localStorage.removeItem(GUEST_THEME_KEY);
 };
 
 export const writeDisplayPreferences = (patch: Partial<DisplayPreferences>): DisplayPreferences => {
@@ -114,5 +145,8 @@ export const writeDisplayPreferences = (patch: Partial<DisplayPreferences>): Dis
   window.dispatchEvent(new Event(CHANGE_EVENT));
   return next;
 };
+
+export const writeActiveDisplayPreferences = (patch: Partial<DisplayPreferences>): DisplayPreferences =>
+  hasAccountSession() ? writeDisplayPreferences(patch) : writeGuestDisplayPreferences(patch);
 
 export const DISPLAY_PREFERENCES_EVENT = CHANGE_EVENT;

@@ -1,7 +1,28 @@
+import { Fragment } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { LLMS_TXT_PATH } from '../../config/seo';
 import { HOME_FOOTER_FOUNDERS, HOME_FOOTER_FOUNDERS_HEADING } from '../../content/homeMarketing';
 import { SocialChannelLinks } from './SocialChannelLinks';
+import { UaeTrailBrandMark } from './UaeTrailBrandMark';
+
+const APP_NAME = 'UAE Trail';
+
+const FooterQuoteLine = ({ text }: { text: string }) => {
+  const parts = text.split(APP_NAME);
+  if (parts.length === 1) return <>{text}</>;
+  return (
+    <>
+      {parts.map((part, index) => (
+        <Fragment key={index}>
+          {index > 0 ? (
+            <UaeTrailBrandMark size="inline" tone="light" className="mx-0.5 inline-flex translate-y-0.5" />
+          ) : null}
+          {part}
+        </Fragment>
+      ))}
+    </>
+  );
+};
 
 const HOME_FOOTER_FOUNDERS_SECTION_CLASS =
   'mb-8 rounded-2xl border border-emerald-700/35 bg-gradient-to-b from-emerald-950/50 to-gray-900/80 px-5 py-6 text-left shadow-[inset_0_1px_0_rgba(52,211,153,0.12)] sm:px-6 md:mb-10 md:px-8 md:py-8';
@@ -55,7 +76,9 @@ export const Footer = () => {
                   <blockquote className="flex-1 text-[15px] leading-relaxed text-gray-100 md:text-base md:leading-relaxed">
                     {person.lines.map((line, lineIndex) => (
                       <p key={lineIndex} className={lineIndex > 0 ? 'mt-3' : undefined}>
-                        &ldquo;{line}&rdquo;
+                        &ldquo;
+                        <FooterQuoteLine text={line} />
+                        &rdquo;
                       </p>
                     ))}
                   </blockquote>

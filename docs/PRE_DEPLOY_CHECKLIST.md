@@ -14,6 +14,8 @@ Complete these **on the VPS** when you connect. Use this list to track progress.
 
 - [ ] `./run-project.sh`
 - [ ] Do **not** run demo seed in production; leave `DEMO_ACCOUNT_PASSWORD` unset on the VPS
+- [ ] Staging: set `ALLOW_DEMO_LOGIN=true` only if demo-login is required; never in production
+- [ ] Production ops: set `PLATFORM_ADMIN_MFA_SECRET` (base32 TOTP) and use `totp` on `POST /auth/login` for platform-admin accounts (S10g)
 - [ ] First-time dev/staging only (if needed): `SEED_DATA=true docker compose exec -T api npm --workspace @uaetrail/api run seed`
 - [ ] `curl https://uaetrail.com/health` returns OK
 
@@ -56,7 +58,9 @@ CI / no live API: `npm run p5:slo-preflight` (wired into `verify:domain`). Recor
 
 ## Release gates (before traffic)
 
+- [ ] Side-effect outbox: production API runs with `NODE_ENV=production` (outbox on by default — do **not** set `SIDE_EFFECT_OUTBOX=0`); confirm outbox drain logs on startup
 - [ ] `npm run verify:system` (or `verify:system:quick` on CI) on the release commit
+- [ ] Optional hot-path snapshot (API running locally or staging): `npm run perf:api -- --label staging` — compare with `npm run perf:api:compare` after updating `scripts/perf-results/*.json`
 - [ ] **Catalog CPC (places + facilities):** after deploy, if amenity pins are missing on explore map, run `npm --workspace @uaetrail/api run seed:catalog-facilities` (see [`operations/EXPLORE_MAP_RUNBOOK.md`](./operations/EXPLORE_MAP_RUNBOOK.md)); smoke `GET /api/facilities/catalog` and `/place/:id` + `/facility/:id` on staging
 - [ ] `npm run test:explore-alignment` when explore/FAB changed (S10e automated gate before C19 promote)
 - [ ] **Explore map bbox promote (S10e / C19):** `npm run s10e:staging-checklist` (add `--verify` for quick system gate); then set `EXPLORE_MAP_BBOX=1` (API) and `VITE_EXPLORE_MAP_BBOX=1` (FE build) on **staging only**; smoke per [`operations/EXPLORE_MAP_RUNBOOK.md`](./operations/EXPLORE_MAP_RUNBOOK.md) § bbox bbox fetch; do **not** enable in production until p95 metrics pass

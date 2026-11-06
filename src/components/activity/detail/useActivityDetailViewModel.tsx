@@ -62,7 +62,7 @@ import {
 import type { ActivityMapPeekActionHandlers } from '../../../activity/executeActivityMapPeekAction';
 import { activityHostUserId } from '../../../utils/hostLabels';
 import { resolveJoinRequestUiState } from '../../../utils/joinRequestUi';
-import type { MutableRefObject, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import type { ActivityRequestView } from '../../../api/types';
 
 export type ActivityDetailViewModelInput = {
@@ -115,7 +115,6 @@ export type ActivityDetailViewModelInput = {
   mapPeekActionHandlers?: ActivityMapPeekActionHandlers;
   linkRideshareTenantId?: string | null;
   onParticipantInviteFriends?: () => void;
-  participationManageOpenerRef?: MutableRefObject<() => void>;
 };
 
 /** Tab layout, join surfaces, hero, and sidebar inputs for activity detail (R6). */
@@ -159,7 +158,6 @@ export const useActivityDetailViewModel = ({
   mapPeekActionHandlers,
   linkRideshareTenantId = null,
   onParticipantInviteFriends,
-  participationManageOpenerRef,
 }: ActivityDetailViewModelInput) => {
   const { user } = useAuth();
   const isEmbedded = layout === 'embedded';
@@ -387,13 +385,7 @@ export const useActivityDetailViewModel = ({
             linkRideshareTenantId={linkRideshareTenantId}
             onParticipantInviteFriends={onParticipantInviteFriends}
             onWithdraw={onWithdraw}
-            registerParticipationManageOpener={
-              participationManageOpenerRef
-                ? (open) => {
-                    participationManageOpenerRef.current = open;
-                  }
-                : undefined
-            }
+            isHostUser={Boolean(hostCrewChatPolicy)}
           />
         )
       : undefined;

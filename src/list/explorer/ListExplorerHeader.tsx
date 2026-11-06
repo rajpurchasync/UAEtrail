@@ -10,7 +10,6 @@ import { ListDiscoverySearchField } from '../ui/ListDiscoverySearchField';
 import { ListExplorerBucketToggle } from './ListExplorerBucketToggle';
 import { ListExplorerViewSwitch } from './ListExplorerViewSwitch';
 import {
-  listExplorerBucketTotalLabel,
   listExplorerSearchBucketCounts,
   type ListExplorerBucket,
 } from './listExplorerBucket';
@@ -66,12 +65,20 @@ export const ListExplorerHeader = ({
   locationDenied,
 }: ListExplorerHeaderProps) => {
   const hideSideMapChrome = mapColumnVisible || showMapColumnPrompt;
+  const standaloneListSurface = !onClose;
   const searching = query.trim().length > 0;
   const searchCounts = searching ? listExplorerSearchBucketCounts(searchScopeCounts) : null;
+  const bucketTabCounts: Record<ListExplorerBucket, number | null> = searchCounts
+    ? { events: searchCounts.events, places: searchCounts.places }
+    : {
+        events: bucket === 'events' ? resultCount : null,
+        places: bucket === 'places' ? resultCount : null,
+      };
   const drawer = useExploreDesktopListDrawerChrome();
 
   return (
     <header
+      data-consumer-chrome-header
       className={`${LIST_CHROME.chromeBg} ${LIST_CHROME.chromeBorder} shrink-0 ${
         stickySearch ? 'z-30 shadow-[0_4px_16px_rgba(15,23,42,.08)]' : ''
       }`}
@@ -143,22 +150,24 @@ export const ListExplorerHeader = ({
         onClearQuery={onClearQuery}
         searchScopeCounts={searchScopeCounts}
         mapHref={mapHref}
-        hideMapLink={hideSideMapChrome}
+        hideMapLink={hideSideMapChrome || standaloneListSurface}
         compactTop
         className="!mt-0"
       />
-      <div className="mt-1.5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex min-w-0 items-center gap-2">
+      <div
+        className={`mt-1.5 flex min-w-0 flex-row items-center justify-between gap-1 ${
+          mapColumnVisible ? '' : 'gap-2 sm:gap-3'
+        }`}
+      >
+        <div className={`flex min-w-0 items-center ${mapColumnVisible ? 'gap-1' : 'gap-2'}`}>
           <ListExplorerBucketToggle
             bucket={bucket}
             onChange={onBucketChange}
-            searchCounts={searchCounts}
+            bucketCounts={bucketTabCounts}
+            compact={mapColumnVisible}
           />
-          <p className="truncate text-xs font-semibold tabular-nums text-neutral-500">
-            {resultCount == null ? ' ' : listExplorerBucketTotalLabel(bucket, resultCount)}
-          </p>
         </div>
-        <div className="flex min-w-0 items-center justify-end gap-1.5">
+        <div className="flex min-w-0 shrink-0 items-center justify-end gap-1">
           {onClose ? null : showMapColumnPrompt && onOpenMapColumn ? (
             <UiTooltip label="Show map alongside list">
               <button
@@ -173,7 +182,7 @@ export const ListExplorerHeader = ({
                 </span>
               </button>
             </UiTooltip>
-          ) : hideSideMapChrome ? null : (
+          ) : hideSideMapChrome || standaloneListSurface ? null : (
             <UiTooltip label="Open explore map">
               <Link
                 to={mapHref}
@@ -190,12 +199,14 @@ export const ListExplorerHeader = ({
             onSortChange={onSortChange}
             locationPending={locationPending}
             locationDenied={locationDenied}
-            className="min-w-0 flex-1 sm:max-w-[10.5rem] md:max-w-[11rem]"
+            compact={mapColumnVisible}
+            className="min-w-0 shrink-0"
           />
           <ListExplorerViewSwitch
             layout={bucket === 'places' && layout === 'calendar' ? 'thumbnails' : layout}
             onChange={onLayoutChange}
             showCalendar={bucket !== 'places'}
+            compact={mapColumnVisible}
           />
         </div>
       </div>

@@ -18,6 +18,7 @@ import {
   PROFILE_PATH,
   PRO_MEMBERSHIP_PATH,
   messagesGroupPath,
+  messagesGroupChatPath,
   messagesToUserPath,
   myRequestDetailPath,
   planJoinedSchedulePath,
@@ -70,7 +71,7 @@ const normalizeConsumerChatDeepLinkPath = (
       (kind === 'group_message' || kind === 'group_invite_accepted')
     ) {
       const activityId = toStringValue(meta?.activityId);
-      return messagesGroupPath(groupId, activityId ?? undefined);
+      return messagesGroupChatPath(groupId, activityId ?? undefined);
     }
   }
 
@@ -204,7 +205,7 @@ export const inferNotificationPath = (
   }
   if (kind === 'group_message') {
     const groupId = toStringValue(meta?.groupId);
-    if (groupId) return messagesGroupPath(groupId);
+    if (groupId) return messagesGroupChatPath(groupId);
   }
   if (kind === 'group_invite') {
     const inviteToken = toStringValue(meta?.inviteToken);

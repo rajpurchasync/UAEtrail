@@ -1,4 +1,5 @@
 import cookieParser from 'cookie-parser';
+import compression from 'compression';
 import cors from 'cors';
 import express, { type Express } from 'express';
 import helmet from 'helmet';
@@ -94,7 +95,7 @@ export const createApp = async (): Promise<Express> => {
             contentSecurityPolicy: {
               directives: {
                 defaultSrc: ["'self'"],
-                scriptSrc: ["'self'", "'unsafe-inline'", 'https://accounts.google.com'],
+                scriptSrc: ["'self'", 'https://accounts.google.com'],
                 styleSrc: ["'self'", "'unsafe-inline'"],
                 fontSrc: ["'self'", 'data:'],
                 imgSrc: [
@@ -175,6 +176,7 @@ export const createApp = async (): Promise<Express> => {
 
   app.use(express.json({ limit: '1mb' }));
   app.use(cookieParser());
+  app.use(compression({ threshold: 1024 }));
 
   app.get('/health', (_req, res) => {
     res.json({ status: 'ok', service: 'uaetrail-api', timestamp: new Date().toISOString() });

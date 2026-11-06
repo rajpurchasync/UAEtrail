@@ -81,6 +81,7 @@ export const Messages = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const selectedUserId = searchParams.get('to');
   const selectedGroupId = searchParams.get('group');
+  const groupChatOpen = Boolean(selectedGroupId && searchParams.get('chat') !== '0');
   const contextActivityId = searchParams.get('activity');
   const [inboxQuery, setInboxQuery] = useState('');
   const [inboxFilter, setInboxFilter] = useState<InboxFilter>(DEFAULT_INBOX_FILTER);
@@ -106,6 +107,7 @@ export const Messages = () => {
 
   const selectedUserIdRef = useRef<string | null>(selectedUserId);
   const selectedGroupIdRef = useRef<string | null>(selectedGroupId);
+  const groupChatOpenRef = useRef(groupChatOpen);
   const [streamedWallMessage, setStreamedWallMessage] = useState<SocialGroupWallMessageView | null>(
     null
   );
@@ -119,12 +121,16 @@ export const Messages = () => {
   }, [selectedGroupId]);
 
   useEffect(() => {
+    groupChatOpenRef.current = groupChatOpen;
+  }, [groupChatOpen]);
+
+  useEffect(() => {
     if (directConversationsDegraded) {
       setError('Some direct chats could not be loaded. Refresh to try again.');
     }
   }, [directConversationsDegraded]);
 
-  const inGroupThread = Boolean(selectedGroupId);
+  const inGroupThread = groupChatOpen;
   const inDirectThread = mobileShowThread && !!selectedUserId;
   const inThread = inGroupThread || inDirectThread;
 
@@ -158,7 +164,7 @@ export const Messages = () => {
   }, [setGroupThreads]);
 
   useEffect(() => {
-    if (!selectedGroupId) return;
+    if (!selectedGroupId || !groupChatOpen) return;
     setGroupThreads((prev) =>
       prev.map((thread) =>
         thread.id === selectedGroupId && thread.kind !== 'direct'
@@ -166,7 +172,7 @@ export const Messages = () => {
           : thread
       )
     );
-  }, [selectedGroupId, setGroupThreads]);
+  }, [selectedGroupId, groupChatOpen, setGroupThreads]);
 
   useEffect(() => {
     setMobileShowThread(Boolean(searchParams.get('to') || searchParams.get('group')));
@@ -183,6 +189,7 @@ export const Messages = () => {
         setSearchParams((prev) => {
           const next = new URLSearchParams(prev);
           next.set('group', groupId);
+          next.set('chat', '1');
           next.delete(AUTH_RESUME_CREW_CHAT_QUERY);
           return next;
         });
@@ -200,6 +207,7 @@ export const Messages = () => {
         const next = new URLSearchParams(prev);
         next.set('to', userId);
         next.delete('group');
+        next.delete('chat');
         return next;
       });
       setMobileShowThread(true);
@@ -209,7 +217,8 @@ export const Messages = () => {
 
   const handleGroupWallStream = useCallback((payload: GroupWallStreamEventDTO) => {
       const openGroupId = selectedGroupIdRef.current;
-      const isOpen = openGroupId === payload.groupId;
+      const isOpen =
+        openGroupId === payload.groupId && groupChatOpenRef.current;
       if (isOpen) {
         setStreamedWallMessage(payload.message as SocialGroupWallMessageView);
       }
@@ -309,10 +318,19 @@ export const Messages = () => {
     openDirectConversation(userId);
   };
 
-  const openGroupThread = (groupId: string) => {
-    setSearchParams({ group: groupId });
-    setMobileShowThread(true);
-  };
+  const openGroupChat = useCallback(
+    (groupId: string) => {
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        next.set('group', groupId);
+        next.set('chat', '1');
+        next.delete('to');
+        return next;
+      });
+      setMobileShowThread(true);
+    },
+    [setSearchParams]
+  );
 
   const chatReturnTo = parseMessagesChatReturnTo(location.state);
 
@@ -423,7 +441,7 @@ export const Messages = () => {
   ) : inDirectThread ? (
     <ChatThreadRouter mode="direct" direct={{ ...directThreadProps, mobileShowThread: true }} />
   ) : (
-    <div className="chat-thread-empty hidden h-full min-h-0 flex-1 flex-col items-center justify-center px-8 text-center lg:flex">
+    <div className="chat-thread-empty hidden h-full min-h-0 flex-1 flex-col items-center justify-center px-8 text-center md:flex">
       <p className="text-lg font-semibold text-neutral-800">Your chats</p>
       <p className="mt-2 max-w-sm text-sm text-neutral-500">
         Pick a conversation to read and reply. Outing chats and direct messages stay in this list.
@@ -432,9 +450,13 @@ export const Messages = () => {
   );
 
   return (
-    <div className="chat-app flex h-full min-h-0 w-full flex-1 overflow-hidden">
+    <div
+      className={`chat-app flex h-full min-h-0 w-full flex-1 overflow-hidden ${
+        inThread ? 'md:[--chat-inbox-width:22.5rem]' : ''
+      }`}
+    >
       <div
-        className={`${inThread ? 'hidden lg:flex' : 'flex'} h-full min-h-0 w-full min-w-0 flex-col lg:w-[22.5rem] lg:max-w-[40%] lg:shrink-0 lg:border-r lg:border-neutral-200`}
+        className={`${inThread ? 'hidden md:flex' : 'flex'} h-full min-h-0 w-full min-w-0 flex-col md:w-[22.5rem] md:max-w-[40%] md:shrink-0 md:border-r md:border-neutral-200`}
       >
         <ConsumerShell
           layout="tab"
@@ -455,7 +477,7 @@ export const Messages = () => {
           }
         >
           {error ? <ConsumerErrorCard message={error} className="mb-3" /> : null}
-          <div className="pb-bottom-nav-safe lg:pb-0">
+          <div className="pb-bottom-nav-safe md:pb-0">
             <MessagesInboxList
               threads={visibleThreads}
               loading={loading}
@@ -465,7 +487,7 @@ export const Messages = () => {
               selectedDirectId={selectedUserId}
               selectedGroupId={selectedGroupId}
               onSelectDirect={selectConversation}
-              onSelectGroup={openGroupThread}
+              onSelectGroup={openGroupChat}
               formatTime={formatTime}
             />
           </div>
@@ -475,8 +497,8 @@ export const Messages = () => {
       <div
         className={
           inThread
-            ? 'fixed inset-0 z-[1300] flex h-[100dvh] w-full max-w-[100vw] flex-col overflow-hidden bg-white lg:static lg:z-auto lg:h-full lg:max-w-none lg:min-w-0 lg:flex-1'
-            : 'hidden min-h-0 min-w-0 flex-1 bg-white lg:flex'
+            ? 'flex h-full min-h-0 min-w-0 w-full max-w-full flex-1 flex-col overflow-hidden bg-white max-md:fixed max-md:inset-0 max-md:z-[1300] max-md:h-[100dvh] max-md:max-w-[100vw]'
+            : 'hidden min-h-0 min-w-0 flex-1 bg-white md:flex'
         }
       >
         {error && inThread ? (

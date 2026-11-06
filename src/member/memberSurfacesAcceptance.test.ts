@@ -6,6 +6,7 @@ import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { parsePeopleBrowseTabFromUrl } from '../people-discovery/peopleBrowseTab';
+import { readAppRouteRegistry } from '../../scripts/readAppRouteRegistry.mjs';
 import { PLAN_MAIN_TABS } from '../plan/planTab';
 import { isPublishingConsolePath } from '../config/surfacePaths';
 import { participantHostBookmarkRedirect } from '../utils/authRouting';
@@ -502,7 +503,7 @@ describe('member surfaces §11 acceptance (automated)', () => {
     const routing = read('src/plan/planRouting.ts');
     expect(routing).toContain('normalizePlanSearchParams');
     expect(routing).toContain('planHostedSchedulePath');
-    const app = read('src/App.tsx');
+    const app = readAppRouteRegistry();
     expect(app).toContain('path="/profile/plans"');
     expect(app).toContain('PlanBrowseRoute');
     const planRoute = read('src/routing/planBrowseRoute.tsx');

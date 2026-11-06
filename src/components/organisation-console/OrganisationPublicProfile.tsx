@@ -256,7 +256,7 @@ export const OrganisationPublicProfile = ({
       )}
 
       <GlassCard padding className="!p-0 overflow-hidden">
-        <div className="relative bg-gradient-to-b from-emerald-50/90 to-white px-5 pb-5 pt-6 text-center">
+        <div className="relative bg-gradient-to-b from-emerald-50/90 to-white px-5 pb-5 pt-6 text-center lg:flex lg:items-start lg:gap-5 lg:px-5 lg:py-4 lg:text-left">
           <div className="absolute right-3 top-3 flex items-center gap-1">
             <ShareButton
               title={tenant.name}
@@ -269,10 +269,11 @@ export const OrganisationPublicProfile = ({
           <SecureAvatar
             src={tenant.ownerAvatar}
             name={tenant.ownerName}
-            className="mx-auto h-24 w-24 text-2xl ring-4 ring-white shadow-md"
+            className="mx-auto h-24 w-24 text-2xl ring-4 ring-white shadow-md lg:mx-0 lg:h-16 lg:w-16 lg:text-lg"
           />
-          <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight text-neutral-900">{tenant.name}</h1>
+          <div className="min-w-0 flex-1">
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-2 lg:mt-0 lg:justify-start">
+            <h1 className="text-2xl font-bold tracking-tight text-neutral-900 lg:text-xl">{tenant.name}</h1>
             <ShieldCheck className="h-5 w-5 text-emerald-600 shrink-0" aria-hidden />
           </div>
           {tenant.ownerId && !isOwner ? (
@@ -286,8 +287,9 @@ export const OrganisationPublicProfile = ({
             <p className="mt-1 text-sm font-medium text-neutral-500">{tenant.ownerName}</p>
           )}
           {tenant.ownerBio && !editing && (
-            <p className="mx-auto mt-3 max-w-md text-[15px] leading-relaxed text-neutral-600">{tenant.ownerBio}</p>
+            <p className="mx-auto mt-3 max-w-md text-[15px] leading-relaxed text-neutral-600 lg:mx-0 lg:max-w-2xl">{tenant.ownerBio}</p>
           )}
+          </div>
         </div>
 
         <div className="grid grid-cols-3 divide-x divide-neutral-100 border-t border-neutral-100">

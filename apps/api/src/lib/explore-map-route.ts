@@ -3,10 +3,8 @@ import { buildExploreMapPayload } from './explore-map.js';
 import { readExploreMapMemoryCacheGeneration } from './explore-map-cache.js';
 import {
   applyGuestExploreMapCatalogCap,
-  guestExploreMapCatalogCapApplied,
   isGuestExploreMapCatalogCapEnabled,
 } from './explore-map-guest-catalog-cap.js';
-import { enrichExploreMapPayloadViewerAccess } from './explore-map-viewer-access.js';
 import {
   assertExploreMapBboxQueryAllowed,
   buildExploreMapBboxPage,
@@ -15,12 +13,15 @@ import {
   parseExploreMapLimitParam,
 } from './explore-map-bbox.js';
 import { enrichExploreMapItemsDiscoveryProjection } from './explore-map-discovery-projection.js';
+import { applyExploreMapHttpProjection } from './explore-map-list-projection.js';
 
 export type ExploreMapRouteQuery = {
   bbox?: string;
   cursor?: string;
   limit?: string;
   area?: string;
+  /** `full` keeps nested activity/venue payloads; default is slim pin projection. */
+  projection?: string;
 };
 
 export type ExploreMapRouteResult = {
@@ -32,56 +33,68 @@ export type ExploreMapRouteResult = {
   guestCatalogPreview?: boolean;
 };
 
-export const loadExploreMapForRequest = async (input: {
-  query: ExploreMapRouteQuery;
-  viewerUserId: string | null;
-  userRole: string | null | undefined;
-}): Promise<ExploreMapRouteResult> => {
-  assertExploreMapBboxQueryAllowed(input.query);
-  const applyGuestCap = !input.viewerUserId;
-
-  const finishGuestPayload = (payload: ExploreMapRouteResult): ExploreMapRouteResult => {
-    if (!applyGuestCap || !isGuestExploreMapCatalogCapEnabled()) return payload;
-    const before = payload.items;
-    const items = applyGuestExploreMapCatalogCap(before);
-    return {
-      ...payload,
-      items,
-      guestCatalogPreview: guestExploreMapCatalogCapApplied(before, items),
-    };
-  };
-
+/** Cached catalog rows for a map query — no viewer enrich or HTTP projection. */
+export const resolveExploreMapCatalogItemsForQuery = async (
+  query: ExploreMapRouteQuery
+): Promise<{ items: ExploreMapItemDTO[]; pageMeta?: Omit<ExploreMapRouteResult, 'items'> }> => {
+  assertExploreMapBboxQueryAllowed(query);
   const cached = await buildExploreMapPayload();
-  const bboxRaw = input.query.bbox?.trim();
+  const bboxRaw = query.bbox?.trim();
 
   if (bboxRaw && isExploreMapBboxEnabled()) {
     const bbox = parseExploreMapBboxParam(bboxRaw);
-    const limit = parseExploreMapLimitParam(input.query.limit);
-    const areaSlug = input.query.area?.trim() || null;
+    const limit = parseExploreMapLimitParam(query.limit);
+    const areaSlug = query.area?.trim() || null;
     const page = buildExploreMapBboxPage({
       items: cached.items,
       bbox,
       areaSlug,
       limit,
-      cursor: input.query.cursor?.trim() || null,
+      cursor: query.cursor?.trim() || null,
     });
-    const enriched = await enrichExploreMapPayloadViewerAccess(
-      { items: page.items },
-      { viewerUserId: input.viewerUserId, userRole: input.userRole }
-    );
-    const items = enrichExploreMapItemsDiscoveryProjection(enriched.items);
-    return finishGuestPayload({
-      items,
-      nextCursor: page.nextCursor,
-      region: page.region,
-      cacheGeneration: readExploreMapMemoryCacheGeneration(),
-    });
+    return {
+      items: page.items,
+      pageMeta: {
+        nextCursor: page.nextCursor,
+        region: page.region,
+        cacheGeneration: readExploreMapMemoryCacheGeneration(),
+      },
+    };
   }
 
-  const enriched = await enrichExploreMapPayloadViewerAccess(cached, {
-    viewerUserId: input.viewerUserId,
-    userRole: input.userRole,
-  });
-  const items = enrichExploreMapItemsDiscoveryProjection(enriched.items);
-  return finishGuestPayload({ items });
+  return { items: cached.items };
+};
+
+export const loadExploreMapForRequest = async (input: {
+  query: ExploreMapRouteQuery;
+  viewerUserId: string | null;
+  userRole: string | null | undefined;
+}): Promise<ExploreMapRouteResult> => {
+  const applyGuestCap = !input.viewerUserId;
+
+  const capGuestCatalogItems = (
+    items: ExploreMapItemDTO[]
+  ): { items: ExploreMapItemDTO[]; guestCatalogPreview: boolean } => {
+    if (!applyGuestCap || !isGuestExploreMapCatalogCapEnabled()) {
+      return { items, guestCatalogPreview: false };
+    }
+    const capped = applyGuestExploreMapCatalogCap(items);
+    return {
+      items: capped,
+      guestCatalogPreview: true,
+    };
+  };
+
+  const { items: catalogItems, pageMeta } = await resolveExploreMapCatalogItemsForQuery(input.query);
+  const { items: cappedCatalog, guestCatalogPreview } = capGuestCatalogItems(catalogItems);
+  const projected = applyExploreMapHttpProjection(
+    enrichExploreMapItemsDiscoveryProjection(cappedCatalog),
+    input.query.projection
+  );
+
+  return {
+    items: projected,
+    guestCatalogPreview,
+    ...pageMeta,
+  };
 };

@@ -1,4 +1,5 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { EXPLORE_BRAND_ACTIVE } from '../../config/exploreTheme';
 import { APP_SCROLL_BODY_CLASS } from '../../config/layoutScroll';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
@@ -16,6 +17,7 @@ import { useDisplayPreferences } from '../../preferences/useDisplayPreferences';
 import type { ListExplorerBucket } from './listExplorerBucket';
 import type { ListExplorerLayout } from './listExplorerLayout';
 import type { ListExplorerDateSection } from './listExplorerDateSections';
+import { ListGuestCatalogPreviewNotice } from '../ui/ListGuestCatalogPreviewNotice';
 import {
   groupListExplorerSections,
   listExplorerSortShowsDistance,
@@ -53,6 +55,8 @@ type ListExplorerProps = {
   onMapHover?: (exploreItemId: string | null) => void;
   sort: ListExplorerSortMode;
   onSortChange: (mode: ListExplorerSortMode) => void;
+  showGuestCatalogPreview?: boolean;
+  listPanelWidthPx?: number;
 };
 
 const thumbGridClass = (sideMap: boolean) =>
@@ -60,18 +64,59 @@ const thumbGridClass = (sideMap: boolean) =>
     sideMap ? 'list-explorer-thumb-grid--side-map' : ''
   }`;
 
+const LIST_VIRTUALIZE_MIN = 36;
+const LIST_ROW_ESTIMATE_PX = 92;
+
+const VirtualizedListRows = ({
+  cards,
+  onMapHover,
+  showDistance,
+  scrollElement,
+}: {
+  cards: DiscoveryCardModel[];
+  onMapHover?: (exploreItemId: string | null) => void;
+  showDistance?: boolean;
+  scrollElement: HTMLElement | null;
+}) => {
+  const virtualizer = useVirtualizer({
+    count: cards.length,
+    getScrollElement: () => scrollElement,
+    estimateSize: () => LIST_ROW_ESTIMATE_PX,
+    overscan: 8,
+  });
+
+  return (
+    <ul className="relative w-full" style={{ height: virtualizer.getTotalSize() }}>
+      {virtualizer.getVirtualItems().map((virtualRow) => {
+        const card = cards[virtualRow.index]!;
+        return (
+          <li
+            key={card.id}
+            className="absolute left-0 top-0 w-full pb-2"
+            style={{ transform: `translateY(${virtualRow.start}px)` }}
+          >
+            <ListExplorerListRow card={card} onMapHover={onMapHover} showDistance={showDistance} />
+          </li>
+        );
+      })}
+    </ul>
+  );
+};
+
 const ListExplorerDateGroups = ({
   sections,
   layout,
   onMapHover,
   compactThumbGrid = false,
   showDistance = false,
+  scrollElement,
 }: {
   sections: ListExplorerDateSection[];
   layout: ListExplorerLayout;
   onMapHover?: (exploreItemId: string | null) => void;
   compactThumbGrid?: boolean;
   showDistance?: boolean;
+  scrollElement?: HTMLElement | null;
 }) => {
   return (
     <div className="space-y-5">
@@ -85,6 +130,14 @@ const ListExplorerDateGroups = ({
             </h2>
           ) : null}
           {layout === 'list' ? (
+            section.cards.length >= LIST_VIRTUALIZE_MIN && scrollElement ? (
+              <VirtualizedListRows
+                cards={section.cards}
+                onMapHover={onMapHover}
+                showDistance={showDistance}
+                scrollElement={scrollElement}
+              />
+            ) : (
             <ul className="space-y-2">
               {section.cards.map((card) => (
                 <li key={card.id}>
@@ -92,6 +145,7 @@ const ListExplorerDateGroups = ({
                 </li>
               ))}
             </ul>
+            )
           ) : (
             <ul className={thumbGridClass(compactThumbGrid)}>
               {section.cards.map((card) => (
@@ -150,7 +204,10 @@ export const ListExplorer = ({
   onMapHover,
   sort,
   onSortChange,
+  showGuestCatalogPreview = false,
+  listPanelWidthPx,
 }: ListExplorerProps) => {
+  const [scrollElement, setScrollElement] = useState<HTMLElement | null>(null);
   const stickySearch = query.trim().length > 0;
   const resultCount = loading ? null : cards.length;
   const showCalendar = bucket !== 'places';
@@ -169,7 +226,20 @@ export const ListExplorer = ({
   );
 
   return (
-    <div className="relative flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-neutral-50">
+    <div
+      className={`relative flex h-full min-h-0 flex-col overflow-hidden bg-neutral-50 ${
+        mapColumnVisible && listPanelWidthPx != null
+          ? 'shrink-0'
+          : mapColumnVisible
+            ? 'min-w-[360px] max-w-[680px] shrink basis-[450px]'
+            : 'min-w-0 flex-1'
+      }`}
+      style={
+        mapColumnVisible && listPanelWidthPx != null
+          ? { width: listPanelWidthPx, flex: '0 0 auto' }
+          : undefined
+      }
+    >
       <ListExplorerHeader
         query={query}
         onQueryChange={onQueryChange}
@@ -194,6 +264,7 @@ export const ListExplorer = ({
         locationDenied={locationDenied}
       />
       <div
+        ref={setScrollElement}
         className={`${APP_SCROLL_BODY_CLASS} min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain ${
           embedded
             ? 'pb-6'
@@ -207,6 +278,7 @@ export const ListExplorer = ({
               : 'max-w-6xl md:px-6 md:py-5'
           }`}
         >
+          {showGuestCatalogPreview ? <ListGuestCatalogPreviewNotice className="mb-3" /> : null}
           {loading ? (
             <ThumbnailSkeleton compactThumbGrid={mapColumnVisible} />
           ) : error ? (
@@ -243,6 +315,7 @@ export const ListExplorer = ({
                 onMapHover={onMapHover}
                 compactThumbGrid={mapColumnVisible}
                 showDistance={showDistance}
+                scrollElement={scrollElement}
               />
             </PlaceDistanceProvider>
           )}

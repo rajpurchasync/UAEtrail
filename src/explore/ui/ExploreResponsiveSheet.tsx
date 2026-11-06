@@ -1,15 +1,13 @@
-import { type ReactNode, useEffect, useId, useRef, useState } from 'react';
+import { type ReactNode, useId, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import {
-  EXPLORE_BROWSE_PEEK_SHEET,
   EXPLORE_COMPOSE_IMMERSIVE,
   EXPLORE_SHAPE,
   EXPLORE_SHEET,
-  EXPLORE_Z,
   exploreSheetPanelClass,
 } from '../../config/exploreTheme';
-import { COMPOSE_DESKTOP_INSET_FIXED } from '../create/composeDesktopInset';
+import { COMPOSE_DESKTOP_INSET_FIXED, CONSUMER_MAIN_OVERLAY_INSET } from '../../config/consumerOverlayInset';
 import {
   exploreCenteredSheetPopupBodyClass,
   exploreCenteredSheetPopupPanelClass,
@@ -17,10 +15,7 @@ import {
 } from '../exploreDesktopPopup';
 import { MobileSheetDragHandle } from '../../components/mobile/MobileSheetDragHandle';
 import { useModalA11y } from '../../hooks/useModalA11y';
-import { MOBILE_BROWSE_SHEET_EXPAND_HINT } from '../../hooks/useMobileBrowseSheetImmersive';
 import { useSheetDragDismiss } from '../../hooks/useSheetDragDismiss';
-
-const COMPOSE_PEEK_DRAG_HINT = MOBILE_BROWSE_SHEET_EXPAND_HINT;
 
 interface ExploreResponsiveSheetProps {
   open: boolean;
@@ -42,13 +37,10 @@ interface ExploreResponsiveSheetProps {
   title?: string;
   /** Fallback accessible name when `title` is omitted. */
   ariaLabel?: string;
-  /** Mobile compose flows: drag handle, pull-down dismiss, optional pull-up expand (matches browse sheet). */
+  /** FAB create wizard — full screen on mobile/tablet; desktop inset beside side nav. */
   mobileComposeChrome?: boolean;
   /** Bottom sheet with drag handle: pull down to dismiss (non-compose sheets). */
   pullToDismiss?: boolean;
-  expanded?: boolean;
-  onExpand?: () => void;
-  expandHint?: string;
   /** Centered dialogs: shared max-height + short-viewport typography (see `.explore-desktop-popup-panel`). */
   viewportAdaptive?: boolean;
 }
@@ -70,34 +62,18 @@ export const ExploreResponsiveSheet = ({
   ariaLabel = 'Panel',
   mobileComposeChrome = false,
   pullToDismiss = false,
-  expanded = false,
-  onExpand,
-  expandHint,
   viewportAdaptive = false,
 }: ExploreResponsiveSheetProps) => {
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
-  const composePeekGestures = mobileComposeChrome && !expanded;
   const pullDismissGestures = pullToDismiss && showHandle && layout !== 'centered' && layout !== 'fullscreen';
-  const sheetDragGestures = composePeekGestures || pullDismissGestures;
   const { panelRef: dragPanelRef, panelStyle, overlayStyle, dragZoneProps } = useSheetDragDismiss(
     onClose,
     {
-      enabled: open && sheetDragGestures,
-      onExpand: composePeekGestures ? onExpand : undefined,
-      mode: composePeekGestures ? 'peek' : 'default',
+      enabled: open && pullDismissGestures,
+      mode: 'default',
     }
   );
-  const [immersiveEnter, setImmersiveEnter] = useState(false);
-  useEffect(() => {
-    if (!mobileComposeChrome || !expanded) {
-      setImmersiveEnter(false);
-      return;
-    }
-    setImmersiveEnter(true);
-    const timer = window.setTimeout(() => setImmersiveEnter(false), 360);
-    return () => window.clearTimeout(timer);
-  }, [expanded, mobileComposeChrome]);
   const mergePanelRef = (node: HTMLDivElement | null) => {
     panelRef.current = node;
     dragPanelRef.current = node;
@@ -114,34 +90,25 @@ export const ExploreResponsiveSheet = ({
   /** Dialog max height minus overlay padding (p-4 / sm:p-6). */
   const centeredPanelMaxHeight =
     '!max-h-[min(calc(100dvh-2rem),640px)] sm:!max-h-[min(calc(100dvh-3rem),640px)] lg:!max-h-[min(calc(100dvh-3rem),640px)]';
-  const composeExpanded = mobileComposeChrome && expanded;
-  const composePeek = mobileComposeChrome && !expanded;
-  const composeImmersiveMobile = composeExpanded;
 
-  const effectiveZClass = composeImmersiveMobile ? EXPLORE_Z.composeFlowImmersive : zClass;
-
-  const shellClass = fullscreen || composeExpanded
+  const shellClass = fullscreen || mobileComposeChrome
     ? 'items-stretch justify-stretch p-0'
     : centered
       ? overlayContained
         ? `flex min-h-full flex-col items-center justify-center overflow-y-auto overscroll-contain p-4 sm:p-6`
         : `flex flex-col overflow-y-auto overscroll-contain p-4 sm:p-6`
-      : composePeek
-        ? `flex-col items-center justify-end ${EXPLORE_BROWSE_PEEK_SHEET.shellTopPad} sm:justify-center sm:p-4 lg:p-6`
-        : `flex-col items-center justify-end sm:justify-center sm:p-4 lg:p-6`;
+      : `flex-col items-center justify-end sm:justify-center sm:p-4 lg:p-6`;
 
-  const composeMobilePanelClass = mobileComposeChrome
-    ? composeExpanded
-      ? `fixed inset-0 z-[1] flex w-full max-w-none flex-col overflow-hidden bg-white !px-0 ${panelClassName}`
-      : `relative flex w-full min-h-0 flex-col overflow-hidden explore-sheet-panel ${exploreSheetPanelClass} ${maxWidthClass} ${panelClassName} shadow-[0_-8px_40px_rgba(15,23,42,.12)] sm:shadow-2xl lg:max-h-[min(78dvh,720px)] lg:h-auto lg:overflow-y-auto ${EXPLORE_BROWSE_PEEK_SHEET.panelPeekMobile}`
+  const composePanelClass = mobileComposeChrome
+    ? `fixed inset-0 z-[1] flex w-full max-w-none flex-col overflow-hidden bg-white !px-0 ${panelClassName}`
     : '';
 
-  const showBackdropDismiss = !fullscreen && !composeExpanded;
+  const showBackdropDismiss = !fullscreen && !mobileComposeChrome;
 
   const panelSurfaceClass = fullscreen
     ? `relative flex h-[100dvh] max-h-[100dvh] w-full max-w-none flex-col overflow-hidden rounded-none bg-neutral-50 shadow-none ${panelClassName}`
     : mobileComposeChrome
-      ? composeMobilePanelClass
+      ? composePanelClass
       : pullDismissGestures
         ? `relative flex w-full max-h-[min(90dvh,640px)] flex-col overflow-hidden explore-sheet-panel ${exploreSheetPanelClass} ${maxWidthClass} ${panelClassName} ${
             centered
@@ -162,38 +129,31 @@ export const ExploreResponsiveSheet = ({
       : undefined;
 
   const composeScrollClass = mobileComposeChrome
-    ? composeExpanded
-      ? `compose-sheet-scroll compose-form-shell flex min-h-0 w-full min-w-0 flex-1 flex-col overflow-y-auto overscroll-contain px-5 lg:px-6 ${EXPLORE_COMPOSE_IMMERSIVE.scrollPadTop} ${EXPLORE_COMPOSE_IMMERSIVE.scrollPadBottom} lg:overflow-y-auto lg:flex-1 lg:pt-0`
-      : 'compose-form-shell flex min-h-0 flex-1 flex-col overflow-y-auto lg:overflow-visible lg:flex-none'
+    ? `compose-sheet-scroll compose-form-shell flex min-h-0 w-full min-w-0 flex-1 flex-col overflow-y-auto overscroll-contain px-5 lg:px-6 ${EXPLORE_COMPOSE_IMMERSIVE.scrollPadBottom} lg:overflow-y-auto lg:flex-1 lg:pt-0`
     : pullDismissGestures && !panelClassName.includes('overflow-hidden')
       ? 'flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto overscroll-contain'
       : undefined;
 
-  const dragHandle = composePeekGestures ? (
-    <div className="shrink-0 sm:hidden">
-      <MobileSheetDragHandle
-        hint={expandHint ?? COMPOSE_PEEK_DRAG_HINT}
-        expandGestures={Boolean(onExpand)}
-        onExpand={onExpand}
-        dragZoneProps={dragZoneProps}
-      />
-    </div>
-  ) : pullDismissGestures ? (
+  const dragHandle = pullDismissGestures ? (
     <div className="shrink-0 sm:hidden">
       <MobileSheetDragHandle dragZoneProps={dragZoneProps} />
     </div>
-  ) : showHandle && !centered ? (
+  ) : showHandle && !centered && !mobileComposeChrome ? (
     <div className={`mb-2 mt-3 sm:hidden ${EXPLORE_SHAPE.sheetHandle}`} />
   ) : null;
 
+  const overlayInsetClass = mobileComposeChrome
+    ? COMPOSE_DESKTOP_INSET_FIXED
+    : overlayFixed && !overlayContained
+      ? CONSUMER_MAIN_OVERLAY_INSET
+      : `${overlayPosition} inset-0`;
+
   const sheetTree = (
     <div
-      className={`${
-        mobileComposeChrome ? COMPOSE_DESKTOP_INSET_FIXED : `${overlayPosition} inset-0`
-      } ${effectiveZClass} flex ${shellClass} ${
-        composeExpanded ? 'bg-white' : EXPLORE_SHEET.scrim
-      } ${overlayContained ? 'pointer-events-auto' : ''} ${overlayFixed || fullscreen || composeExpanded || overlayContained ? '' : 'lg:fixed'}`}
-      style={sheetDragGestures ? overlayStyle : undefined}
+      className={`${overlayInsetClass} ${zClass} flex ${shellClass} ${
+        mobileComposeChrome ? 'bg-white' : EXPLORE_SHEET.scrim
+      } ${overlayContained ? 'pointer-events-auto' : ''} ${overlayFixed || fullscreen || mobileComposeChrome || overlayContained ? '' : 'lg:fixed'}`}
+      style={pullDismissGestures ? overlayStyle : undefined}
     >
       {showBackdropDismiss ? (
         <button
@@ -209,10 +169,8 @@ export const ExploreResponsiveSheet = ({
         aria-modal="true"
         aria-labelledby={title ? titleId : undefined}
         aria-label={title ? undefined : ariaLabel}
-        className={`relative z-10 ${panelSurfaceClass}${
-          immersiveEnter ? ' compose-sheet-immersive-enter max-lg:compose-sheet-immersive-enter' : ''
-        }`}
-        style={sheetDragGestures ? panelStyle : undefined}
+        className={`relative z-10 ${panelSurfaceClass}`}
+        style={pullDismissGestures ? panelStyle : undefined}
         onClick={(event) => event.stopPropagation()}
       >
         {title ? (
@@ -224,29 +182,19 @@ export const ExploreResponsiveSheet = ({
           <button
             type="button"
             onClick={onClose}
-            className={
-              centeredPopup
-                ? exploreDesktopPopupCloseButtonClass
-                : 'absolute right-3 top-3 z-10 rounded-full p-2 text-neutral-500 hover:bg-neutral-100 hover:text-neutral-800'
-            }
+            className={exploreDesktopPopupCloseButtonClass}
             aria-label="Close"
           >
             <X className="h-5 w-5" aria-hidden />
           </button>
         ) : null}
-        {composeExpanded ? (
+        {dragHandle}
+        {composeScrollClass ? (
           <div className={composeScrollClass}>{children}</div>
+        ) : centeredBodyScroll ? (
+          <div className={centeredBodyScroll}>{children}</div>
         ) : (
-          <>
-            {dragHandle}
-            {composeScrollClass ? (
-              <div className={composeScrollClass}>{children}</div>
-            ) : centeredBodyScroll ? (
-              <div className={centeredBodyScroll}>{children}</div>
-            ) : (
-              children
-            )}
-          </>
+          children
         )}
       </div>
     </div>

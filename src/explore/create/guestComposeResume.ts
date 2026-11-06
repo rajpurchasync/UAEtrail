@@ -5,14 +5,12 @@ import {
   setExploreComposeParam,
   type ExploreCompose,
 } from '../compose';
-import { readComposeSheetExpandedSession } from './composeSheetExpandedSession';
 
 const GUEST_COMPOSE_RESUME_KEY = 'uaetrail.compose.guestResume';
 
 export type GuestComposeResume = {
   composeWire: string;
   fromMenu: boolean;
-  sheetExpanded: boolean;
 };
 
 export const writeGuestComposeResumeSession = (payload: GuestComposeResume): void => {
@@ -66,5 +64,4 @@ export const guestComposeResumeRoute = (resume: GuestComposeResume): ExploreComp
 export const captureGuestComposeResume = (route: ExploreCompose, fromMenu: boolean): GuestComposeResume => ({
   composeWire: formatComposeQuery(route),
   fromMenu,
-  sheetExpanded: readComposeSheetExpandedSession(),
 });

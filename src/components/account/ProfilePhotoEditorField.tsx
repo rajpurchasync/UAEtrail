@@ -71,6 +71,9 @@ export const ProfilePhotoEditorField = ({
     if (suppressChrome) onDismiss?.();
   };
 
+  const uploadPreset =
+    kind === 'group-photo' ? IMAGE_UPLOAD_PRESETS.groupPhoto : IMAGE_UPLOAD_PRESETS.profile;
+
   return (
     <div className={suppressChrome ? 'sr-only' : 'space-y-3'}>
       {!suppressChrome && (
@@ -145,9 +148,9 @@ export const ProfilePhotoEditorField = ({
           dismissChromeless();
         }}
         applying={uploading}
-        shape={IMAGE_UPLOAD_PRESETS.profile.shape}
-        outputWidth={IMAGE_UPLOAD_PRESETS.profile.outputWidth}
-        outputHeight={IMAGE_UPLOAD_PRESETS.profile.outputHeight}
+        shape={uploadPreset.shape}
+        outputWidth={uploadPreset.outputWidth}
+        outputHeight={uploadPreset.outputHeight}
         onApply={async ({ blob }) => {
           if (!editorFile) return;
           setError(null);

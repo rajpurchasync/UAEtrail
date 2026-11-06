@@ -1,5 +1,8 @@
-import { lazy, Suspense, useState, type ReactNode } from 'react';
-import { EXPLORE_GUEST_MAP_PREVIEW_NOTICE } from '../exploreBrowseTaxonomy';
+import { lazy, Suspense, useCallback, useRef, useState, type ReactNode } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import type { Map as LeafletMap } from 'leaflet';
+import { SessionExpiredNotice } from '../../components/auth/SessionExpiredNotice';
+import { ExploreGuestMapPreviewNotice } from './ExploreGuestMapPreviewNotice';
 import {
   isGuestMapCatalogPreviewLimited,
   guestExplorePreviewLimitReached,
@@ -12,7 +15,8 @@ import { isGeographyMapSource, type ExploreMapItemDTO } from '@uaetrail/shared-t
 import type { MapBounds, PlaceMapPin } from '../../components/ui/PlacesMap';
 import { getMapBounds } from '../../config/regions';
 import { MAP_CONFIG, getExploreMapTiles, type ExploreMapStyle } from '../../config/platform';
-import { EXPLORE_FLOATING_CONTROL, EXPLORE_Z } from '../../config/exploreTheme';
+import { hasSessionExpiredQuery } from '../../config/surfacePaths';
+import { EXPLORE_MAP_FLOATING_CHROME_BTN, EXPLORE_Z } from '../../config/exploreTheme';
 import type { DiscoveryCardModel } from '../../discovery/discoveryCardModel';
 import type { JoinRequestUiState } from '../../utils/joinRequestUi';
 import { ExploreCoachMarks } from './ExploreCoachMarks';
@@ -23,13 +27,13 @@ import { ExploreMapChromeBar } from './ExploreMapChromeBar';
 import { ExploreMapLoadErrorBoundary } from './ExploreMapLoadErrorBoundary';
 import { ExploreMapLoadingSkeleton } from './ExploreMapLoadingSkeleton';
 import { ExploreMapLocationPrompt } from './ExploreMapLocationPrompt';
-import { ExploreMapLocateButton } from './ExploreMapLocateButton';
-import { ExploreMapStyleToggle } from './ExploreMapStyleToggle';
+import { ExploreMapControlToolbar } from './ExploreMapControlToolbar';
 import { PlaceMapPeekHost } from './peek/place/PlaceMapPeekHost';
 import type { ExploreSearchScopeCounts, ExploreSearchScopeKey } from '../exploreBrowseTaxonomy';
 import type { ExplorePanel, MapFilterKey, VenueListFilterKey } from '../routing';
 import type { ExploreActivityDatePreset } from '../exploreActivityDateFilter';
 import type { MapRecenterTarget } from '../../lib/mapRecenter';
+import type { MapPeekPinAnchor } from '../mapPeekBubbleLayout';
 
 const PlacesMap = lazy(() =>
   import('../../components/ui/PlacesMap').then((module) => ({ default: module.PlacesMap }))
@@ -58,6 +62,8 @@ export type ExploreMapStageProps = {
   onOpenPeopleBrowsePanel?: () => void;
   peopleBrowsePanelAvatars?: Array<{ id: string; name: string; avatar?: string | null }>;
   peopleBrowsePanelFriendCount?: number;
+  peopleBrowseGuest?: boolean;
+  peopleBrowsePossibleCrewCount?: number;
   exploreMapStyle: ExploreMapStyle;
   exploreMapTiles: ExploreMapTiles;
   onToggleMapStyle: () => void;
@@ -130,6 +136,8 @@ export const ExploreMapStage = ({
   onOpenPeopleBrowsePanel,
   peopleBrowsePanelAvatars,
   peopleBrowsePanelFriendCount,
+  peopleBrowseGuest = false,
+  peopleBrowsePossibleCrewCount = 0,
   exploreMapStyle,
   exploreMapTiles,
   onToggleMapStyle,
@@ -177,16 +185,32 @@ export const ExploreMapStage = ({
   mapSearchOverlay = null,
   mapSearchOpen = false,
 }: ExploreMapStageProps) => {
+  const [searchParams] = useSearchParams();
   const [guestPreviewDismissed, setGuestPreviewDismissed] = useState(() =>
     readExploreGuestMapPreviewDismissed()
   );
+  const [pinAnchor, setPinAnchor] = useState<MapPeekPinAnchor | null>(null);
+  const handleSelectedPinScreenPoint = useCallback((point: MapPeekPinAnchor | null) => {
+    setPinAnchor(point);
+  }, []);
+  const leafletMapRef = useRef<LeafletMap | null>(null);
+  const handleMapReady = useCallback((map: LeafletMap | null) => {
+    leafletMapRef.current = map;
+  }, []);
+  const handleZoomIn = useCallback(() => {
+    leafletMapRef.current?.zoomIn();
+  }, []);
+  const handleZoomOut = useCallback(() => {
+    leafletMapRef.current?.zoomOut();
+  }, []);
   const showGuestMapPreviewNotice =
     isGuestMapCatalogPreviewLimited() &&
     !user &&
     !listOpen &&
     !guestPreviewDismissed &&
     !guestExplorePreviewLimitReached() &&
-    !mapSearchOpen;
+    !mapSearchOpen &&
+    !hasSessionExpiredQuery(searchParams);
   const guestGatedActionForActivity = user ? undefined : onGuestGatedAction;
   const guestGatedActionForPlace =
     user || !onGuestGatedAction ? undefined : () => onGuestGatedAction('view_detail');
@@ -214,8 +238,9 @@ export const ExploreMapStage = ({
           recenterTo={recenterTo}
           exploreMapCenter={exploreMapCenter}
           className="h-full w-full min-h-[280px]"
-          showDesktopZoomControl={isDesktop}
+          onMapReady={handleMapReady}
           layoutRevision={listOpen}
+          onSelectedPinScreenPoint={handleSelectedPinScreenPoint}
         />
         </Suspense>
         </ExploreMapLoadErrorBoundary>
@@ -238,12 +263,13 @@ export const ExploreMapStage = ({
         onOpenPeopleBrowsePanel={onOpenPeopleBrowsePanel}
         peopleBrowsePanelAvatars={peopleBrowsePanelAvatars}
         peopleBrowsePanelFriendCount={peopleBrowsePanelFriendCount}
+        peopleBrowseGuest={peopleBrowseGuest}
+        peopleBrowsePossibleCrewCount={peopleBrowsePossibleCrewCount}
         searchQuery={searchQuery}
         onSearchQueryChange={onSearchQueryChange}
         onSearchCommit={onSearchCommit}
         searchScopeCounts={searchScopeCounts}
         onOpenExploreSearch={onOpenExploreSearch}
-        dockedPeek={Boolean(selectedCard)}
       />
       ) : null}
 
@@ -264,9 +290,10 @@ export const ExploreMapStage = ({
         <ExploreDismissibleNotice message={exploreNotice} onDismiss={onDismissExploreNotice} />
       ) : null}
 
+      <SessionExpiredNotice variant="overlay" />
+
       {showGuestMapPreviewNotice ? (
-        <ExploreDismissibleNotice
-          message={EXPLORE_GUEST_MAP_PREVIEW_NOTICE}
+        <ExploreGuestMapPreviewNotice
           onDismiss={() => {
             writeExploreGuestMapPreviewDismissed();
             setGuestPreviewDismissed(true);
@@ -294,23 +321,34 @@ export const ExploreMapStage = ({
       {loading && mapPins.length === 0 ? <ExploreMapLoadingSkeleton /> : null}
 
       {!listOpen ? (
-        <div className="pointer-events-none absolute inset-x-0 bottom-[calc(var(--explore-float-base)+var(--explore-map-fab-inset))] z-[1100] flex items-end justify-between gap-3 px-4 md:hidden">
-          <div className="pointer-events-auto flex items-center gap-2">
+        <div
+          className="pointer-events-none absolute inset-x-0 bottom-[calc(var(--explore-float-base)+var(--explore-map-fab-inset))] z-[1100] grid grid-cols-[1fr_auto] grid-rows-[auto_auto] items-center gap-x-3 px-4 md:hidden"
+          style={{ rowGap: 'var(--explore-map-fab-stack-gap)' }}
+        >
+          <div className="pointer-events-auto col-start-1 row-start-1 self-center justify-self-start">
             <button
               type="button"
               onClick={onOpenBrowse}
-              className={`${EXPLORE_FLOATING_CONTROL} inline-flex gap-2 px-4 py-2.5 text-sm font-semibold text-gray-900`}
+              className={EXPLORE_MAP_FLOATING_CHROME_BTN}
             >
-              <List className="h-4 w-4" aria-hidden />
+              <List
+                className="h-6 w-6 shrink-0 text-current"
+                strokeWidth={1.25}
+                absoluteStrokeWidth
+                aria-hidden
+              />
               List
             </button>
           </div>
-          <div
-            className="pointer-events-auto flex flex-col items-center"
-            style={{ gap: 'var(--explore-map-fab-stack-gap)' }}
-          >
-            <ExploreMapLocateButton onLocate={onLocateMe} locating={locatingDevice} />
-            <ExploreMapStyleToggle style={exploreMapStyle} onToggle={onToggleMapStyle} />
+          <div className="pointer-events-auto col-start-2 row-start-1">
+            <ExploreMapControlToolbar
+              onLocate={onLocateMe}
+              locating={locatingDevice}
+              mapStyle={exploreMapStyle}
+              onToggleMapStyle={onToggleMapStyle}
+            />
+          </div>
+          <div className="pointer-events-auto col-start-2 row-start-2 justify-self-center">
             <UiTooltip label={primaryFabLabel}>
             <button
               type="button"
@@ -328,24 +366,28 @@ export const ExploreMapStage = ({
       <div
         className="pointer-events-none absolute right-4 z-[1100] hidden md:flex md:flex-col md:items-end"
         style={{
-          bottom: 'var(--explore-map-desktop-fab-bottom)',
-          gap: 'var(--explore-map-fab-stack-gap)',
+          bottom:
+            'calc(var(--explore-map-desktop-fab-bottom) + var(--explore-map-desktop-primary-fab-height) + var(--explore-map-fab-stack-gap) + var(--explore-map-desktop-zoom-clearance))',
         }}
       >
-        <ExploreMapLocateButton
+        <ExploreMapControlToolbar
+          showZoom
+          onZoomIn={handleZoomIn}
+          onZoomOut={handleZoomOut}
           onLocate={onLocateMe}
           locating={locatingDevice}
-          className={`${EXPLORE_FLOATING_CONTROL} explore-float-glyph h-11 w-11 justify-center`}
+          mapStyle={exploreMapStyle}
+          onToggleMapStyle={onToggleMapStyle}
         />
-        <ExploreMapStyleToggle
-          style={exploreMapStyle}
-          onToggle={onToggleMapStyle}
-          className={`${EXPLORE_FLOATING_CONTROL} explore-float-glyph h-11 w-11 justify-center`}
-        />
+      </div>
+      <div
+        className="pointer-events-none absolute right-4 z-[1100] hidden md:block"
+        style={{ bottom: 'var(--explore-map-desktop-fab-bottom)' }}
+      >
         <button
           type="button"
           onClick={onPrimaryFab}
-          className="pointer-events-auto inline-flex shrink-0 items-center gap-2 rounded-full bg-emerald-600 px-6 py-3.5 text-base font-bold text-white shadow-[0_4px_20px_rgba(5,150,105,.45)] hover:bg-emerald-700 active:scale-[0.98]"
+          className="pointer-events-auto inline-flex min-h-14 shrink-0 items-center gap-2 rounded-full bg-emerald-600 px-6 py-3.5 text-base font-bold text-white shadow-[0_4px_20px_rgba(5,150,105,.45)] hover:bg-emerald-700 active:scale-[0.98]"
           aria-label={primaryFabLabel}
         >
           <Plus className="h-5 w-5 shrink-0" strokeWidth={2.5} aria-hidden />
@@ -358,10 +400,14 @@ export const ExploreMapStage = ({
           item={selected}
           onClose={onCloseSelection}
           onGuestGatedAction={guestGatedActionForPlace}
+          pinAnchor={pinAnchor}
+          pinKey={selected.id}
         />
       ) : selectedCard ? (
         <ActivityMapPeekHost
           card={selectedCard}
+          pinAnchor={pinAnchor}
+          pinKey={selected?.id ?? null}
           onClose={onCloseSelection}
           onGuestGatedAction={guestGatedActionForActivity}
           onJoin={onJoin}

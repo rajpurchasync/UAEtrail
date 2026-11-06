@@ -25,6 +25,7 @@ type Props = {
   };
   peopleBrowsePanelProps: PeopleProps;
   mapStage: ReactNode;
+  prefetchedCatalogItems?: import('@uaetrail/shared-types').ExploreMapItemDTO[];
 };
 
 /** Map stage plus desktop catalog drawer and mobile People sheet. */
@@ -33,6 +34,7 @@ export const ExploreExperienceBrowsePanels = ({
   browse,
   peopleBrowsePanelProps,
   mapStage,
+  prefetchedCatalogItems,
 }: Props) => {
   const peopleSheet = browse.showListPanel && !isDesktop && browse.listMode === 'people';
   const desktopCatalog = isDesktop && browse.showDesktopCatalogDrawer;
@@ -45,6 +47,7 @@ export const ExploreExperienceBrowsePanels = ({
             <ListDiscoveryExperience
               surface="exploreSidebar"
               onCloseMapOverlay={browse.closeListPanel}
+              prefetchedCatalogItems={prefetchedCatalogItems}
             />
           </Suspense>
         </ExploreDesktopListDrawer>

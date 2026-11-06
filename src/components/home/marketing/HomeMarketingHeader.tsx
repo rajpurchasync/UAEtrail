@@ -8,6 +8,7 @@ import {
   resolveTheme,
   writeGuestTheme,
 } from '../../../preferences/displayPreferences';
+import { SessionExpiredNotice } from '../../auth/SessionExpiredNotice';
 import { AppButtonLink } from '../../mobile/AppButton';
 
 export interface HomeMarketingHeaderLink {
@@ -50,7 +51,7 @@ export const HomeMarketingHeader = ({
   return (
     <header
       className={[
-        'home-marketing-header home-v2-font sticky top-0 z-50 bg-transparent',
+        'home-marketing-header home-v2-font sticky top-0 z-50 overflow-visible bg-transparent',
         scrolled ? 'is-scrolled text-home-ink' : 'text-white'
       ].join(' ')}
     >
@@ -84,7 +85,7 @@ export const HomeMarketingHeader = ({
           </nav>
         ) : null}
 
-        <div className="flex items-center gap-2 md:ml-auto">
+        <div className="relative flex items-center gap-2 md:ml-auto">
           <button
             type="button"
             className="home-focus-ring inline-flex h-10 w-10 items-center justify-center rounded-full border border-current/25 bg-black/25 text-current backdrop-blur-md"
@@ -102,6 +103,7 @@ export const HomeMarketingHeader = ({
           >
             {HOME_HEADER_NAV.signup}
           </AppButtonLink>
+          <SessionExpiredNotice variant="header" />
         </div>
       </div>
     </header>

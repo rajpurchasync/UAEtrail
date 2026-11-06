@@ -230,8 +230,13 @@ export const DesktopSideNav = () => {
           </div>
         </div>
 
-        {user
-          ? DESKTOP_SIDE_NAV_SECTIONS.map((section) => (
+        {(user
+          ? DESKTOP_SIDE_NAV_SECTIONS
+          : DESKTOP_SIDE_NAV_SECTIONS.map((section) => ({
+              ...section,
+              items: section.items.filter((item) => item.key === 'settings'),
+            })).filter((section) => section.items.length > 0)
+        ).map((section) => (
           <div key={section.key} role="group" aria-label={section.title} className="mt-1">
             <p className={sectionTitleClass}>{section.title}</p>
             <div
@@ -240,8 +245,7 @@ export const DesktopSideNav = () => {
               {renderItems(section.items)}
             </div>
           </div>
-        ))
-          : null}
+        ))}
 
         {user && (canAccessPublishingWorkspace || user.role === 'platform_admin') ? (
           <div role="group" aria-label="Organise" className="mt-1">
@@ -340,12 +344,8 @@ export const DesktopSideNav = () => {
           onPointerUp={onResizePointerUp}
           onPointerCancel={onResizePointerUp}
           onKeyDown={onResizeKeyDown}
-          className="group/resize absolute inset-y-0 -right-px z-[7000] flex w-3 cursor-col-resize touch-none items-center justify-center max-md:hidden"
+          className="group/resize absolute inset-y-0 -right-px z-[7000] flex w-3 cursor-ew-resize touch-none items-center justify-center max-md:hidden"
         >
-          <span
-            className="pointer-events-none absolute inset-y-3 right-[5px] w-px bg-neutral-300/80 transition-colors group-hover/resize:bg-neutral-400 group-focus-visible/resize:bg-neutral-500"
-            aria-hidden
-          />
           <span className="pointer-events-none relative flex flex-col gap-[3px]" aria-hidden>
             {Array.from({ length: 6 }, (_, index) => (
               <span

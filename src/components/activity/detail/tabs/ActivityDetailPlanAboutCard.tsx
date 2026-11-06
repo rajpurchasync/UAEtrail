@@ -77,8 +77,8 @@ export const ActivityDetailPlanAboutCard = ({
 
   if (hideAboutBody) {
     return (
-      <div className={`bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 ${panelClassName}`}>
-        <h2 className="text-lg font-bold text-gray-900 mb-3 hidden md:block">
+      <div className={`bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 lg:rounded-xl lg:p-3 ${panelClassName}`}>
+        <h2 className="text-lg font-bold text-gray-900 mb-3 hidden md:block lg:mb-2 lg:text-[13px] lg:font-semibold lg:uppercase lg:tracking-wide lg:text-neutral-500">
           About this {activity.activityType === 'event' ? 'event' : 'activity'}
         </h2>
         {scheduleFactsGrid}
@@ -90,12 +90,12 @@ export const ActivityDetailPlanAboutCard = ({
   }
 
   return (
-    <div className={`bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 ${panelClassName}`}>
-      <h2 className="text-lg font-bold text-gray-900 mb-3 hidden md:block">
+    <div className={`bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 lg:rounded-xl lg:p-3 ${panelClassName}`}>
+      <h2 className="text-lg font-bold text-gray-900 mb-3 hidden md:block lg:mb-2 lg:text-[13px] lg:font-semibold lg:uppercase lg:tracking-wide lg:text-neutral-500">
         About this {activity.activityType === 'event' ? 'event' : 'activity'}
       </h2>
       {activity.description ? (
-        <p className="text-gray-600 leading-relaxed whitespace-pre-line">{activity.description}</p>
+        <p className="text-gray-600 leading-relaxed whitespace-pre-line lg:text-[13px] lg:leading-5">{activity.description}</p>
       ) : null}
 
       {scheduleFactsGrid}

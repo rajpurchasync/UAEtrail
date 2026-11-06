@@ -78,6 +78,7 @@ export const ActivityPeekCard = ({
         onOpenLinkedPin={onOpenExploreItem}
         onOfferTransport={onOfferTransport}
         joinUiState={joinUiState}
+        mapPeekCompact={!embedMode}
       />
     </MapPeekShell>
   );

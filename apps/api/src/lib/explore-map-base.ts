@@ -27,7 +27,7 @@ import {
 import type { Location } from '../domain/types.js';
 import { resolveJoinMode } from '../domain/activity-join-mode.js';
 import { listPublishedActivitiesForExploreMap } from './activities-store.js';
-import { listActiveLocations } from './location-query.js';
+import { listActiveLocationsForExploreMap } from './location-query.js';
 import { buildActivityDto, toLocationDto } from './mappers.js';
 import { buildExploreActivityDisplay } from './explore-display.js';
 import {
@@ -44,9 +44,41 @@ import { listFacilitiesForExploreMap } from './facilities-store.js';
 import { resolveAreaIdFromPoint } from './area-resolution.js';
 import { overlayCatalogDefaultsOnLocation } from './venue-catalog.js';
 
+const catalogTimestampIso = (
+  ...candidates: Array<Date | string | null | undefined>
+): string | undefined => {
+  for (const candidate of candidates) {
+    if (candidate == null) continue;
+    if (candidate instanceof Date) {
+      if (Number.isFinite(candidate.getTime())) return candidate.toISOString();
+      continue;
+    }
+    if (typeof candidate === 'string' && candidate.trim()) {
+      const ms = Date.parse(candidate);
+      if (Number.isFinite(ms)) return new Date(ms).toISOString();
+    }
+  }
+  return undefined;
+};
+
+const catalogPostedAtField = (
+  ...candidates: Array<Date | string | null | undefined>
+): Pick<ExploreMapItemDTO, 'catalogPostedAt'> | Record<string, never> => {
+  const catalogPostedAt = catalogTimestampIso(...candidates);
+  return catalogPostedAt ? { catalogPostedAt } : {};
+};
+
+const catalogUpdatedAtField = (
+  ...candidates: Array<Date | string | null | undefined>
+): Pick<ExploreMapItemDTO, 'catalogUpdatedAt'> | Record<string, never> => {
+  const catalogUpdatedAt = catalogTimestampIso(...candidates);
+  return catalogUpdatedAt ? { catalogUpdatedAt } : {};
+};
+
 const resolveShopPresence = (latitude: number | null, longitude: number | null): ShopPresence =>
   latitude != null && longitude != null ? 'physical' : 'online';
 
+/** Map place kind. Wire `hiking` is a trail in product copy (`/trail/:id`). */
 const venueKind = (activityType: string): 'hiking' | 'camping' | 'event' => {
   const kind = activityType.toLowerCase();
   if (kind === 'camping') return 'camping';
@@ -167,8 +199,8 @@ export const buildExploreMapBasePayload = async (): Promise<{ items: ExploreMapI
   const [activityEvents, locationsResult, facilityRows, shopTenants, publishedAreas] =
     await Promise.all([
       listPublishedActivitiesForExploreMap(250),
-      listActiveLocations({ page: 1, pageSize: 1200 }),
-      listFacilitiesForExploreMap(1200),
+      listActiveLocationsForExploreMap(800),
+      listFacilitiesForExploreMap(800),
       listPublicShopTenantsForExplore(250),
       listPublishedAreas(),
     ]);
@@ -270,6 +302,7 @@ export const buildExploreMapBasePayload = async (): Promise<{ items: ExploreMapI
           toLabel: display.toLabel,
           activity,
           groupRegionLevels: activity.groupRegionLevels ?? null,
+          ...catalogPostedAtField(event.publishedAt, event.createdAt),
         },
         event.location?.areaId ?? activity.areaId,
         areaSlugById,
@@ -311,6 +344,7 @@ export const buildExploreMapBasePayload = async (): Promise<{ items: ExploreMapI
             image: dto.images?.[0] ?? null,
             about: dto.description,
             catalogProfileExposure: 'peek',
+            ...catalogUpdatedAtField(catalogLocation.updatedAt, catalogLocation.createdAt),
           },
           dto.areaId,
           areaSlugById,
@@ -368,6 +402,7 @@ export const buildExploreMapBasePayload = async (): Promise<{ items: ExploreMapI
               images: dto.images ?? [],
               featured: dto.featured,
             },
+            ...catalogUpdatedAtField(catalogLocation.updatedAt, catalogLocation.createdAt),
           },
           dto.areaId,
           areaSlugById,
@@ -423,6 +458,7 @@ export const buildExploreMapBasePayload = async (): Promise<{ items: ExploreMapI
             parkingLng: dto.parkingLng ?? null,
             parkingPoint: catalogLocation.parkingLink ?? null,
           },
+          ...catalogUpdatedAtField(catalogLocation.updatedAt, catalogLocation.createdAt),
         },
         dto.areaId,
         areaSlugById,
@@ -466,6 +502,7 @@ export const buildExploreMapBasePayload = async (): Promise<{ items: ExploreMapI
             images: facility.images ?? [],
             featured: facility.featured,
           },
+          ...catalogUpdatedAtField(facility.updatedAt, facility.createdAt),
         },
         facility.areaId,
         areaSlugById,
@@ -523,6 +560,7 @@ export const buildExploreMapBasePayload = async (): Promise<{ items: ExploreMapI
           hostName: owner?.name ?? null,
           hostAvatar: owner?.avatarUrl ?? null,
           requesterUserId: owner?.userId ?? null,
+          ...catalogUpdatedAtField(shop.updatedAt, shop.createdAt),
         },
         shopAreaId,
         areaSlugById,

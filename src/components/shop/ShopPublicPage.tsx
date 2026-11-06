@@ -121,7 +121,7 @@ export const ShopPublicPage = ({ shop }: ShopPublicPageProps) => {
       backLabel="Explore"
       showMenu={false}
       footer={reviewFooter}
-      maxWidthClass="max-w-3xl"
+      maxWidthClass="max-w-5xl"
       headerAction={
         <ShareButton
           title={shop.shopName}
@@ -147,16 +147,16 @@ export const ShopPublicPage = ({ shop }: ShopPublicPageProps) => {
             <p className="mt-1 text-amber-900/90">{ADD_PLACE_PENDING_BANNER_BODY}</p>
           </div>
         ) : null}
-        <section className="flex items-start gap-4">
+        <section className="flex items-start gap-4 md:gap-6">
           {shop.logo ? (
-            <img src={shop.logo} alt="" className="h-16 w-16 rounded-2xl object-cover" />
+            <img src={shop.logo} alt="" className="h-16 w-16 rounded-2xl object-cover md:h-20 md:w-20" />
           ) : (
-            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-xl">
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-xl md:h-20 md:w-20 md:text-2xl">
               🛍️
             </div>
           )}
           <div className="min-w-0 flex-1">
-            <h1 className="text-2xl font-bold leading-snug text-gray-900">{shop.shopName}</h1>
+            <h1 className="text-2xl font-bold leading-snug text-gray-900 lg:text-xl">{shop.shopName}</h1>
             {shop.region && (
               <p className="mt-1 flex items-center gap-1.5 text-sm text-gray-500">
                 <MapPin className="h-4 w-4 shrink-0" aria-hidden />

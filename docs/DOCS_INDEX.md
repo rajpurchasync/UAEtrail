@@ -17,7 +17,7 @@
 | [`MEMBER_MODEL.md`](./MEMBER_MODEL.md) | Person account, host tiers, capabilities, host/join/buddy **naming** |
 | [`DOMAIN.md`](./DOMAIN.md) | Entity glossary (Place, Activity, Demand, …) |
 | [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) | TS symbols, URLs, API client, notifications, routing hygiene, **§15 viewer access** |
-| [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) | Bounded contexts, debt register, **Program CPC** §8.4, **platform program** §8.6 |
+| [`SYSTEM_COHERENCE.md`](./SYSTEM_COHERENCE.md) | Bounded contexts, debt register, **platform north star §8.9**, **Program CPC** §8.4, **platform program** §8.6 |
 | [`ARCHITECTURE.md`](./ARCHITECTURE.md) | Monorepo, deploy, layers |
 | [`API_ROUTING.md`](./API_ROUTING.md) | `/me/*`, `/publishing/*`, explore, deprecations |
 | [`COMMUNICATION.md`](./COMMUNICATION.md) | Chat inbox (`/messages`), `/chat/*` wire, crew wall |
@@ -67,4 +67,5 @@ Map / FAB / publish?       → CREATE_FLOW + NORTHSTAR
 Names / api.* / meta?      → DOMAIN_CANONICALS §6–12
 Copy on map or home?       → exploreCopy / homeLanding + NORTHSTAR
 Go live?                   → PRE_DEPLOY_CHECKLIST + DEPLOYMENT
+Platform defaults / rejected stack? → SYSTEM_COHERENCE §8.9 + refactor-program MIG-ARCH-*
 ```

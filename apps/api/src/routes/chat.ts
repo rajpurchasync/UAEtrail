@@ -23,13 +23,16 @@ import { GROUP_WALL_REACTION_KINDS } from '../domain/group-wall-reactions.js';
 
 export const chatRouter = Router();
 
-chatRouter.get('/stream', requireSseTicket, requireVerifiedEmail, (req, res) => {
+chatRouter.get('/stream', requireSseTicket, requireVerifiedEmail, (req, res, next) => {
   const userId = req.auth!.userId;
-  const unregister = registerChatStreamClient(userId, res);
-
-  req.on('close', () => {
-    unregister();
-  });
+  try {
+    const unregister = registerChatStreamClient(userId, res);
+    req.on('close', () => {
+      unregister();
+    });
+  } catch (error) {
+    next(error);
+  }
 });
 
 chatRouter.use(requireAuth, requireVerifiedEmail);

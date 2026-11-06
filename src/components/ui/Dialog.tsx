@@ -2,6 +2,7 @@ import { type ReactNode, useId, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { useModalA11y } from '../../hooks/useModalA11y';
+import { CONSUMER_MAIN_OVERLAY_INSET } from '../../config/consumerOverlayInset';
 
 interface DialogProps {
   open: boolean;
@@ -49,7 +50,7 @@ export const Dialog = ({
 
   return createPortal(
     <div
-      className={`fixed inset-0 ${overlayClassName} flex items-end justify-center bg-black/40 p-0 md:items-center md:p-4`}
+      className={`${CONSUMER_MAIN_OVERLAY_INSET} ${overlayClassName} flex items-end justify-center bg-black/40 p-0 md:items-center md:p-4`}
       onClick={onClose}
       role="presentation"
     >

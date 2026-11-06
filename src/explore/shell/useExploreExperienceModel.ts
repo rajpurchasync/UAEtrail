@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import type { PlaceMapPin } from '../../components/ui/PlacesMap';
@@ -68,6 +68,16 @@ export const useExploreExperienceModel = () => {
   );
   const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
+  const wasGuestRef = useRef(!user);
+  useEffect(() => {
+    if (user && wasGuestRef.current) {
+      wasGuestRef.current = false;
+      void reloadExploreMap(queryClient);
+    }
+    if (!user) {
+      wasGuestRef.current = true;
+    }
+  }, [user, queryClient]);
   const { pathname, search, state: locationState } = useLocation();
   const isDesktop = useMinWidthLg();
   /** Side nav + in-map right rail for guest gates (md+), not browse panel layout (lg+). */
@@ -399,7 +409,6 @@ export const useExploreExperienceModel = () => {
     searchScopeCounts,
     publishedAreas,
     handlePickExploreArea,
-    inviteShareSheet: inviteShare.sheet,
     hostManageSheet,
     signInHref,
     onOpenHostApplication,

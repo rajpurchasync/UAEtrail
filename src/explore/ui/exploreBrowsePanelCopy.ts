@@ -19,10 +19,11 @@ export const ACTIVITY_LIST_FILTERS: Array<{ key: ActivityListFilterKey; label: s
 
 export const VENUE_LIST_FILTERS: Array<{ key: VenueListFilterKey; label: string }> = [
   { key: 'all', label: 'All' },
-  { key: 'hiking', label: 'Hiking' },
+  { key: 'hiking', label: 'Trail' },
   { key: 'camping', label: 'Camping' },
-  { key: 'event', label: 'Events' },
-  { key: 'shop', label: 'Shop' },
+  { key: 'facilities', label: 'Facilities' },
+  { key: 'shop', label: 'Shopping' },
+  { key: 'event', label: 'Other' },
 ];
 
 export const PANEL_TABS: Array<{ key: ExplorePanel; label: string }> = [
@@ -37,7 +38,7 @@ export const DESKTOP_BROWSE_TABS: Array<{ key: DesktopBrowseTab; label: string }
 
 export const MAP_FILTERS_BY_BROWSE_TAB: Record<DesktopBrowseTab, MapFilterKey[]> = {
   activities: ['all', 'hiking', 'camping', 'rideshare', 'others'],
-  venues: ['all', 'hiking', 'camping', 'shops', 'others'],
+  venues: ['all', 'hiking', 'camping', 'facilities', 'shops', 'others'],
 };
 
 export const parseDesktopBrowseTab = (panel: ExplorePanel): DesktopBrowseTab =>
@@ -53,9 +54,10 @@ const listItemLabel = (activityFilter: ActivityListFilterKey, count: number): st
 
 const venueListLabel = (venueFilter: VenueListFilterKey, count: number): string => {
   if (venueFilter === 'hiking') return `${count} trail${count === 1 ? '' : 's'}`;
-  if (venueFilter === 'camping') return `${count} spot${count === 1 ? '' : 's'}`;
+  if (venueFilter === 'camping') return `${count} camp${count === 1 ? '' : 's'}`;
+  if (venueFilter === 'facilities') return `${count} facilit${count === 1 ? 'y' : 'ies'}`;
   if (venueFilter === 'shop') return `${count} shop${count === 1 ? '' : 's'}`;
-  if (venueFilter === 'event') return `${count} event venue${count === 1 ? '' : 's'} in your area`;
+  if (venueFilter === 'event') return `${count} other place${count === 1 ? '' : 's'}`;
   return `${count} place${count === 1 ? '' : 's'}`;
 };
 

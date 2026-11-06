@@ -3,6 +3,7 @@
  * Data + routes: `src/messaging`.
  */
 export { ChatThreadRouter, type GroupChatActivityPayload } from './ChatThreadRouter';
+export { GroupChatHubPanel } from './GroupChatHubPanel';
 export { type DirectChatThreadProps } from './DirectChatThread';
 export { useDirectChatThread } from './useDirectChatThread';
 export { MessagesComposeSheet } from './MessagesComposeSheet';

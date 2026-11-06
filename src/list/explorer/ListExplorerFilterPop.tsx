@@ -22,7 +22,7 @@ import {
   toggleListVenuePlaceTopic,
   type ListVenuePlaceTopicKey,
 } from '../listVenuePlaceTopics';
-import { listChipClass } from '../listChromeTheme';
+import { LIST_FILTER_POP, listFilterPopChipClass, listFilterPopGridChipClass } from '../listChromeTheme';
 import type { ListExplorerBucket } from './listExplorerBucket';
 
 type ListExplorerFilterPopProps = {
@@ -46,11 +46,16 @@ const ChipRow = <T extends string>({
   value: T;
   onChange: (key: T) => void;
 }) => (
-  <div className="space-y-1.5">
-    <p className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">{label}</p>
-    <div className="flex flex-wrap gap-1.5">
+  <div className={LIST_FILTER_POP.block}>
+    <p className={LIST_FILTER_POP.label}>{label}</p>
+    <div className={LIST_FILTER_POP.chipRow}>
       {options.map(({ key, label: optionLabel }) => (
-        <button key={key} type="button" onClick={() => onChange(key)} className={listChipClass(value === key)}>
+        <button
+          key={key}
+          type="button"
+          onClick={() => onChange(key)}
+          className={listFilterPopChipClass(value === key)}
+        >
           {optionLabel}
         </button>
       ))}
@@ -98,24 +103,22 @@ export const ListExplorerFilterPop = ({
 
   const origin =
     corner === 'tl'
-      ? 'top-14 left-0'
+      ? 'top-14 left-0 md:top-11'
       : corner === 'tr'
-        ? 'top-14 right-0'
+        ? 'top-14 right-0 md:top-11'
         : corner === 'bl'
-          ? 'bottom-14 left-0'
-          : 'bottom-14 right-0';
+          ? 'bottom-14 left-0 md:bottom-11'
+          : 'bottom-14 right-0 md:bottom-11';
 
   return (
     <div
-      className={`absolute z-[20] w-[min(20.5rem,calc(100vw-2rem))] ${origin}`}
+      className={`absolute z-[20] ${LIST_FILTER_POP.shell} ${origin}`}
       role="dialog"
       aria-label="Filters"
     >
-      <div
-        className={`${EXPLORE_SHAPE.control} max-h-[min(70vh,32rem)] overflow-y-auto border border-neutral-200/90 bg-white p-3.5 shadow-[0_12px_40px_rgba(15,23,42,.18)]`}
-      >
-        <div className="mb-3 flex items-center justify-between gap-2">
-          <p className="text-sm font-bold text-neutral-900">Filters</p>
+      <div className={`${EXPLORE_SHAPE.control} ${LIST_FILTER_POP.panel}`}>
+        <div className={LIST_FILTER_POP.headerRow}>
+          <p className={LIST_FILTER_POP.title}>Filters</p>
           <button
             type="button"
             onClick={() => {
@@ -125,20 +128,20 @@ export const ListExplorerFilterPop = ({
               setDraft(next);
               setDraftRegions(nextRegions);
             }}
-            className="text-sm font-semibold text-emerald-700"
+            className={LIST_FILTER_POP.reset}
           >
             Reset
           </button>
         </div>
-        <div className="space-y-4">
+        <div className={LIST_FILTER_POP.sections}>
           {bucket === 'places' ? (
-            <div className="space-y-1.5">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">Type</p>
-              <div className="flex flex-wrap gap-1.5">
+            <div className={LIST_FILTER_POP.block}>
+              <p className={LIST_FILTER_POP.label}>Type</p>
+              <div className={LIST_FILTER_POP.chipRow}>
                 <button
                   type="button"
                   onClick={() => setDraft((prev) => ({ ...prev, placeTopics: [] }))}
-                  className={listChipClass(draft.placeTopics.length === 0)}
+                  className={listFilterPopChipClass(draft.placeTopics.length === 0)}
                 >
                   All
                 </button>
@@ -152,7 +155,7 @@ export const ListExplorerFilterPop = ({
                         placeTopics: toggleListVenuePlaceTopic(prev.placeTopics, key as ListVenuePlaceTopicKey),
                       }))
                     }
-                    className={listChipClass(draft.placeTopics.includes(key as ListVenuePlaceTopicKey))}
+                    className={listFilterPopChipClass(draft.placeTopics.includes(key as ListVenuePlaceTopicKey))}
                   >
                     {label}
                   </button>
@@ -161,13 +164,13 @@ export const ListExplorerFilterPop = ({
             </div>
           ) : (
             <>
-              <div className="space-y-1.5">
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">Type</p>
-                <div className="flex flex-wrap gap-1.5">
+              <div className={LIST_FILTER_POP.block}>
+                <p className={LIST_FILTER_POP.label}>Type</p>
+                <div className={LIST_FILTER_POP.chipRow}>
                   <button
                     type="button"
                     onClick={() => setDraft((prev) => ({ ...prev, tripTopics: [], tripLookingOnly: false }))}
-                    className={listChipClass(draft.tripTopics.length === 0 && !draft.tripLookingOnly)}
+                    className={listFilterPopChipClass(draft.tripTopics.length === 0 && !draft.tripLookingOnly)}
                   >
                     All
                   </button>
@@ -182,7 +185,7 @@ export const ListExplorerFilterPop = ({
                           tripLookingOnly: false,
                         }))
                       }
-                      className={listChipClass(draft.tripTopics.includes(key as BrowseTripTopicKey))}
+                      className={listFilterPopChipClass(draft.tripTopics.includes(key as BrowseTripTopicKey))}
                     >
                       {label}
                     </button>
@@ -192,7 +195,7 @@ export const ListExplorerFilterPop = ({
                     onClick={() =>
                       setDraft((prev) => ({ ...prev, tripLookingOnly: !prev.tripLookingOnly, tripTopics: [] }))
                     }
-                    className={listChipClass(draft.tripLookingOnly)}
+                    className={listFilterPopChipClass(draft.tripLookingOnly)}
                   >
                     Looking for
                   </button>
@@ -223,9 +226,9 @@ export const ListExplorerFilterPop = ({
               />
             </>
           )}
-          <div className="space-y-1.5">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">Area</p>
-            <div className="grid grid-cols-2 gap-1">
+          <div className={LIST_FILTER_POP.block}>
+            <p className={LIST_FILTER_POP.label}>Area</p>
+            <div className={LIST_FILTER_POP.areaGrid}>
               {getVenueStateFilterOptions().map((option) => {
                 const checked = draftRegions.includes(option.key);
                 return (
@@ -239,21 +242,22 @@ export const ListExplorerFilterPop = ({
                           : [...prev, option.key]
                       )
                     }
-                    className={listChipClass(checked)}
+                    className={listFilterPopGridChipClass(checked)}
                     aria-pressed={checked}
+                    title={option.label}
                   >
-                    {option.label}
+                    <span className="block w-full truncate text-center">{option.label}</span>
                   </button>
                 );
               })}
             </div>
           </div>
         </div>
-        <div className="mt-4 flex gap-2">
+        <div className={LIST_FILTER_POP.footer}>
           <button
             type="button"
             onClick={onClose}
-            className="min-h-11 flex-1 rounded-2xl border border-neutral-200 text-sm font-semibold text-neutral-700"
+            className={`${LIST_FILTER_POP.footerBtn} border border-neutral-200 text-neutral-700`}
           >
             Close
           </button>
@@ -263,7 +267,7 @@ export const ListExplorerFilterPop = ({
               onApply(draft, draftRegions);
               onClose();
             }}
-            className={`min-h-11 flex-1 rounded-2xl text-sm font-bold ${EXPLORE_BRAND_ACTIVE}`}
+            className={`${LIST_FILTER_POP.footerBtn} font-bold ${EXPLORE_BRAND_ACTIVE}`}
           >
             Apply
           </button>

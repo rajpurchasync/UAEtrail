@@ -84,6 +84,14 @@ export const updateMyGroupChatSettings = async (
     throw new ApiError(404, 'group_not_found', 'Group not found.');
   }
 
+  if (body.photoUrl !== undefined && group.type === 'activity') {
+    throw new ApiError(
+      400,
+      'activity_group_locked',
+      'Activity group image is synced from the outing cover.'
+    );
+  }
+
   const photoUrl =
     body.photoUrl === undefined
       ? undefined

@@ -64,6 +64,7 @@ export type InboxThread =
       id: string;
       title: string;
       activityId?: string | null;
+      avatarUrl?: string;
       lastMessage: string;
       lastMessageAt: string;
       unreadCount: number;
@@ -98,6 +99,7 @@ export const groupThreadFromSocialGroup = (group: SocialGroupView): InboxThread 
       id: group.id,
       title: group.name,
       activityId: group.activityId,
+      avatarUrl: group.photoUrl ?? undefined,
       lastMessage,
       lastMessageAt,
       unreadCount,
@@ -126,7 +128,7 @@ export const patchGroupInboxThread = (
   group: Pick<SocialGroupView, 'id' | 'photoUrl'>
 ): InboxThread[] =>
   threads.map((thread) =>
-    thread.kind === 'user-group' && thread.id === group.id
+    thread.id === group.id && thread.kind !== 'direct'
       ? { ...thread, avatarUrl: group.photoUrl ?? undefined }
       : thread
   );

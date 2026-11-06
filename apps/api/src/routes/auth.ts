@@ -11,6 +11,7 @@ import { validate } from '../middleware/validate.js';
 import { requireAuth } from '../middleware/auth.js';
 import { env } from '../config/env.js';
 import { isDemoLoginAllowedForRequest } from '../lib/demo-login-policy.js';
+import { assertPlatformAdminMfaIfRequired } from '../lib/platform-admin-mfa.js';
 import { loginWithDemoAccount } from '../services/auth-demo-commands.js';
 import { authenticateWithGoogleIdToken } from '../services/auth-google-commands.js';
 import {
@@ -50,6 +51,7 @@ const registerSchema = z
 const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(1),
+  totp: z.string().regex(/^\d{6}$/, 'Enter the 6-digit authenticator code.').optional(),
 });
 
 const demoLoginSchema = z.object({
@@ -124,7 +126,7 @@ authRouter.post('/register', validate({ body: registerSchema }), async (req, res
 
 authRouter.post('/login', validate({ body: loginSchema }), async (req, res, next) => {
   try {
-    const { email, password } = req.body as z.infer<typeof loginSchema>;
+    const { email, password, totp } = req.body as z.infer<typeof loginSchema>;
     const outcome = await loginWithEmailPassword({
       email,
       password,
@@ -140,6 +142,8 @@ authRouter.post('/login', validate({ body: loginSchema }), async (req, res, next
       });
       return;
     }
+
+    assertPlatformAdminMfaIfRequired({ role: outcome.role, totp });
 
     const tokens = await createMemberSession({
       userId: outcome.userId,

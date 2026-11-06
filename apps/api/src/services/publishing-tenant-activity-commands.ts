@@ -42,6 +42,7 @@ import type {
 import {
   ensureActivityGroupChat,
   syncActivityGroupChatWallPolicyFromActivity,
+  syncActivityGroupChatPhotoFromActivity,
 } from './activity-group-chat.js';
 import {
   notifyParticipantsOfScheduleChange,
@@ -395,6 +396,10 @@ export const updatePublishingTenantActivity = async (input: {
 
   if (body.groupChatPostPolicy !== undefined) {
     await syncActivityGroupChatWallPolicyFromActivity(activityId);
+  }
+
+  if (body.images !== undefined || body.bannerUrl !== undefined) {
+    await syncActivityGroupChatPhotoFromActivity(activityId);
   }
 
   await createAuditLog({

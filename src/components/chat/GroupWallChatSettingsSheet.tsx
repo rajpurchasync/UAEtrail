@@ -6,6 +6,7 @@ import {
   type SocialGroupView,
 } from '../../hooks/socialGroupSettingsApi';
 import { ProfilePhotoEditorField } from '../account/ProfilePhotoEditorField';
+import { CHAT_SPLIT_OVERLAY_INSET } from '../../config/consumerOverlayInset';
 import { groupWallPostPolicyLabel } from '../../utils/groupWallPostPolicy';
 
 type GroupWallChatSettingsSheetProps = {
@@ -66,7 +67,7 @@ export const GroupWallChatSettingsSheet = ({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[1400] flex flex-col justify-end bg-black/40" role="dialog" aria-modal="true">
+    <div className={`${CHAT_SPLIT_OVERLAY_INSET} z-[1400] flex flex-col justify-end bg-black/40`} role="dialog" aria-modal="true">
       <button type="button" className="flex-1" aria-label="Close settings" onClick={onClose} />
       <div className="max-h-[85dvh] overflow-y-auto rounded-t-2xl bg-white shadow-xl pb-safe">
         <div className="flex items-center justify-between border-b px-4 py-3">
@@ -75,7 +76,7 @@ export const GroupWallChatSettingsSheet = ({
             type="button"
             onClick={onClose}
             disabled={busy}
-            className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-neutral-600 hover:bg-neutral-100"
+            className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-neutral-100 text-neutral-600 shadow-sm ring-1 ring-black/5 hover:bg-neutral-200 disabled:opacity-40"
             aria-label="Close"
           >
             <X className="h-5 w-5" />
@@ -83,23 +84,34 @@ export const GroupWallChatSettingsSheet = ({
         </div>
 
         <div className="border-b px-4 py-4">
-          <ProfilePhotoEditorField
-            value={group.photoUrl ?? undefined}
-            name={group.name}
-            label="Group image"
-            editorTitle="Edit group image"
-            keyPrefix={`groups/${group.id}`}
-            kind="group-photo"
-            disabled={busy}
-            onChange={(url) => void savePhoto(url)}
-          />
-          {savingPhoto ? (
-            <p className="mt-2 flex items-center gap-2 text-xs text-neutral-500">
-              <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
-              Saving image…
-            </p>
+          {group.type === 'activity' ? (
+            <>
+              <p className="text-xs font-medium text-neutral-700 mb-2">Group image</p>
+              <p className="text-xs text-neutral-500">
+                Synced from the outing cover. Update images on the activity to change this icon.
+              </p>
+            </>
           ) : (
-            <p className="mt-2 text-xs text-neutral-500">Shown in chat and your inbox list.</p>
+            <>
+              <ProfilePhotoEditorField
+                value={group.photoUrl ?? undefined}
+                name={group.name}
+                label="Group image"
+                editorTitle="Edit group image"
+                keyPrefix={`groups/${group.id}`}
+                kind="group-photo"
+                disabled={busy}
+                onChange={(url) => void savePhoto(url)}
+              />
+              {savingPhoto ? (
+                <p className="mt-2 flex items-center gap-2 text-xs text-neutral-500">
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
+                  Saving image…
+                </p>
+              ) : (
+                <p className="mt-2 text-xs text-neutral-500">Shown in chat and your inbox list.</p>
+              )}
+            </>
           )}
         </div>
 

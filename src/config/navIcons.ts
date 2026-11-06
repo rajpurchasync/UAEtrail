@@ -6,6 +6,7 @@ import {
   LogIn,
   Map,
   MessageCircle,
+  Settings,
   ShoppingBag,
   User,
   type LucideIcon
@@ -39,7 +40,8 @@ export const MOBILE_NAV_ICON_MAP: Record<
   | 'Join'
   | 'Join free'
   | 'Log in'
-  | 'Contact',
+  | 'Contact'
+  | 'Settings',
   LucideIcon
 > = {
   'Explore Map': NAV_ICONS.explore,
@@ -61,6 +63,7 @@ export const MOBILE_NAV_ICON_MAP: Record<
   'My Plans': CalendarDays,
   Chat: MessageCircle,
   'Upcoming Activities': NAV_ICONS.activities,
+  Settings,
   'Gears Shop': NAV_ICONS.shop,
 };
 

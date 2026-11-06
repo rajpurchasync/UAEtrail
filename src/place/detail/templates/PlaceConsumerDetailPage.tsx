@@ -16,7 +16,7 @@ import {
 import type { PlaceDetailKind, PlaceDetailKindConfig } from '../../../pages/placeDetailConfig';
 import type { Place } from '../../../types/place';
 import { ActivityConsumerDetailModalShell } from '../../../activity/detail/templates/ActivityConsumerDetailModalShell';
-import { CONSUMER_DETAIL_PANEL, CONSUMER_DETAIL_SECTION_TITLE } from '../../../activity/detail/templates/activityConsumerDetailSectionStyles';
+import { CONSUMER_DETAIL_MEDIA_BLEED, CONSUMER_DETAIL_PANEL, CONSUMER_DETAIL_SECTION_TITLE } from '../../../activity/detail/templates/activityConsumerDetailSectionStyles';
 import { EnvironmentImage } from '../../../components/ui/EnvironmentImage';
 import { ShareButton, ReviewSection, MeetingPointMap, DirectionsControl } from '../../../components/ui';
 import { ProfileActivityListRow } from '../../../components/profile/ProfileActivityListRow';
@@ -127,7 +127,7 @@ export const PlaceConsumerDetailPage = ({
         setArranging(true);
         void navigateHostFromPlace(navigate, place, kind).finally(() => setArranging(false));
       }}
-      className={EXPLORE_PEEK_CTA.primary}
+      className={`${EXPLORE_PEEK_CTA.primary} lg:!rounded-lg lg:!py-2 lg:!text-[13px]`}
     >
       {arranging ? 'Opening…' : PLACE_PEEK_ARRANGE_TRIP}
     </button>
@@ -154,7 +154,10 @@ export const PlaceConsumerDetailPage = ({
       />
       <JsonLd data={placeSchema(place)} id={`${kind}-${place.id}`} />
 
-      <div data-place-consumer-detail-template>
+      <div
+        className="flex h-full min-h-0 flex-1 flex-col overflow-hidden"
+        data-place-consumer-detail-template
+      >
         <ActivityConsumerDetailModalShell
           backTo={backTo}
           backLabel=""
@@ -162,7 +165,7 @@ export const PlaceConsumerDetailPage = ({
           headerAction={shareControl}
           footer={footer}
         >
-          <div className="relative -mx-4 mb-4 h-[min(32dvh,220px)] w-[calc(100%+2rem)] overflow-hidden bg-neutral-100">
+          <div className={`relative mb-4 h-[min(32dvh,220px)] md:mb-6 md:h-[min(40dvh,340px)] lg:mb-3 lg:h-[11rem] ${CONSUMER_DETAIL_MEDIA_BLEED}`}>
             {coverUrl ? (
               <EnvironmentImage src={coverUrl} alt="" className="h-full w-full object-cover" loading="eager" />
             ) : (
@@ -172,9 +175,9 @@ export const PlaceConsumerDetailPage = ({
                 <MapPin className="h-12 w-12 text-neutral-400" aria-hidden />
               </div>
             )}
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-            <div className="absolute inset-x-0 bottom-0 px-4 pb-4 text-white">
-              <p className="text-sm font-medium text-white/90">{place.region}</p>
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent" />
+            <div className="absolute inset-x-0 bottom-0 px-4 pb-4 text-white md:px-6 md:pb-6 lg:px-4 lg:pb-3">
+              <p className="text-sm font-medium text-white/90 lg:text-xs">{place.region}</p>
               {areaLabel ? (
                 <p className="text-sm font-semibold">
                   {areaSlug ? (
@@ -189,19 +192,20 @@ export const PlaceConsumerDetailPage = ({
                   )}
                 </p>
               ) : null}
-              <h1 className="mt-1 text-[26px] font-bold leading-snug">{displayName}</h1>
+              <h1 className="mt-1 text-[1.5rem] font-bold leading-snug md:text-[1.85rem] lg:mt-0.5 lg:text-lg">{displayName}</h1>
               {nameAr && nameAr !== displayName ? (
                 <p className="mt-1 text-sm text-white/90" dir="rtl" lang="ar">{nameAr}</p>
               ) : null}
             </div>
           </div>
 
-          <div className="space-y-6">
-            <section aria-label="At a glance">
+          <div className="flex flex-col gap-6 lg:gap-3">
+            <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between md:gap-6">
+            <section className="min-w-0 flex-1" aria-label="At a glance">
               <PlaceConsumerKindFacts kind={kind} place={place} />
             </section>
 
-            <section aria-label="Ratings">
+            <section className="shrink-0 md:pt-1" aria-label="Ratings">
               {avgRating != null ? (
                 <p className="flex items-center gap-1.5 text-sm font-semibold text-neutral-900">
                   <Star className="h-4 w-4 fill-amber-400 text-amber-400" aria-hidden />
@@ -221,11 +225,12 @@ export const PlaceConsumerDetailPage = ({
                 </p>
               )}
             </section>
+            </div>
 
             {place.description?.trim() ? (
               <section aria-label="About">
                 <h2 className={`mb-2 ${CONSUMER_DETAIL_SECTION_TITLE}`}>About</h2>
-                <p className="whitespace-pre-wrap text-base leading-relaxed text-neutral-800">{place.description}</p>
+                <p className="whitespace-pre-wrap text-[15px] leading-relaxed text-neutral-800 md:text-base md:leading-7 lg:text-[13px] lg:leading-5">{place.description}</p>
               </section>
             ) : null}
 
@@ -245,6 +250,7 @@ export const PlaceConsumerDetailPage = ({
               </section>
             ) : null}
 
+            <div className="grid gap-6 md:grid-cols-2 lg:gap-3">
             {showTransport ? (
               <section id="place-detail-transport" aria-label="Getting there">
                 <h2 className={`mb-3 ${CONSUMER_DETAIL_SECTION_TITLE}`}>
@@ -283,34 +289,6 @@ export const PlaceConsumerDetailPage = ({
                 </div>
               </section>
             ) : null}
-
-            {activities.length > 0 ? (
-              <section aria-label={PLACE_PEEK_SCHEDULED}>
-                <h2 className={`mb-3 ${CONSUMER_DETAIL_SECTION_TITLE}`}>{PLACE_PEEK_SCHEDULED}</h2>
-                <ul className="divide-y divide-neutral-100 rounded-xl border border-neutral-100 bg-white">
-                  {activities.map((activity) => (
-                    <li key={activity.id}>
-                      <ProfileActivityListRow activity={activity} />
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            ) : null}
-
-            <section id="place-guide" aria-label={PLACE_DETAIL_TAB_LABELS.guide}>
-                <h2 className={`mb-3 ${CONSUMER_DETAIL_SECTION_TITLE}`}>{PLACE_DETAIL_TAB_LABELS.guide}</h2>
-                <div className={CONSUMER_DETAIL_PANEL.prep}>
-                  <PlacePremiumGuidePanel
-                    placeId={placeId}
-                    placeName={displayName}
-                    premium={premium}
-                    onPremiumChange={(value) => onPremiumChange(value)}
-                    unlockNotice={unlockNotice}
-                    onDismissUnlockNotice={onDismissUnlockNotice}
-                    accent={config.accent === 'emerald' ? undefined : config.accent}
-                  />
-                </div>
-            </section>
 
             {showNearbySection ? (
               <section aria-label="Nearby facilities">
@@ -359,6 +337,35 @@ export const PlaceConsumerDetailPage = ({
                 </div>
               </section>
             ) : null}
+            </div>
+
+            {activities.length > 0 ? (
+              <section aria-label={PLACE_PEEK_SCHEDULED}>
+                <h2 className={`mb-3 ${CONSUMER_DETAIL_SECTION_TITLE}`}>{PLACE_PEEK_SCHEDULED}</h2>
+                <ul className="divide-y divide-neutral-100 rounded-xl border border-neutral-100 bg-white">
+                  {activities.map((activity) => (
+                    <li key={activity.id}>
+                      <ProfileActivityListRow activity={activity} />
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ) : null}
+
+            <section id="place-guide" aria-label={PLACE_DETAIL_TAB_LABELS.guide}>
+                <h2 className={`mb-3 ${CONSUMER_DETAIL_SECTION_TITLE}`}>{PLACE_DETAIL_TAB_LABELS.guide}</h2>
+                <div className={CONSUMER_DETAIL_PANEL.prep}>
+                  <PlacePremiumGuidePanel
+                    placeId={placeId}
+                    placeName={displayName}
+                    premium={premium}
+                    onPremiumChange={(value) => onPremiumChange(value)}
+                    unlockNotice={unlockNotice}
+                    onDismissUnlockNotice={onDismissUnlockNotice}
+                    accent={config.accent === 'emerald' ? undefined : config.accent}
+                  />
+                </div>
+            </section>
 
             <section id="place-reviews" aria-label="Reviews">
               <h2 className={`mb-2 ${CONSUMER_DETAIL_SECTION_TITLE}`}>Reviews</h2>

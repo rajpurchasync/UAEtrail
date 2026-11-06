@@ -1,4 +1,9 @@
 import { Map, Satellite } from 'lucide-react';
+import {
+  EXPLORE_MAP_OVERLAY_ICON,
+  EXPLORE_MAP_OVERLAY_ICON_BTN,
+  EXPLORE_MAP_OVERLAY_ICON_STROKE,
+} from '../../config/exploreTheme';
 import { UiTooltip } from '../../components/ui/UiTooltip';
 import type { ExploreMapStyle } from '../../config/platform';
 interface ExploreMapStyleToggleProps {
@@ -18,10 +23,10 @@ export const ExploreMapStyleToggle = ({ style, onToggle, className = '' }: Explo
     <button
       type="button"
       onClick={onToggle}
-      className={`pointer-events-auto inline-flex shrink-0 items-center justify-center text-white drop-shadow-[0_1px_4px_rgba(0,0,0,.75)] transition active:scale-95 ${className}`}
+      className={`${EXPLORE_MAP_OVERLAY_ICON_BTN} ${className}`}
       aria-label={label}
     >
-      <Icon className="h-6 w-6 shrink-0" strokeWidth={2.25} aria-hidden />
+      <Icon className={EXPLORE_MAP_OVERLAY_ICON} strokeWidth={EXPLORE_MAP_OVERLAY_ICON_STROKE} aria-hidden />
     </button>
     </UiTooltip>
   );

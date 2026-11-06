@@ -9,6 +9,14 @@ export const HOME_HEADER_NAV = {
   signup: PRODUCT_JOIN_CTA
 } as const;
 
+/** Guest home banner when the signed-in session was wiped (`?session=expired`). */
+export const HOME_SESSION_EXPIRED = {
+  title: 'Session expired',
+  body: 'Log in again to pick up where you left off.',
+  signIn: HOME_HEADER_NAV.login,
+  dismissAria: 'Dismiss session expired message',
+} as const;
+
 export const HOME_HERO = {
   eyebrow: 'HOSTED HIKES & CAMPS · UAE',
   eyebrowShort: 'Hikes & camps · UAE',

@@ -47,8 +47,8 @@ export const ActivityDetailPlanExtras = ({
   return (
     <>
       {activity.itinerary && activity.itinerary.length > 0 ? (
-        <div className={`bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 ${panelClassName}`}>
-          <h2 className="text-lg font-bold text-gray-900 mb-3">Itinerary</h2>
+        <div className={`bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 lg:rounded-xl lg:p-3 ${panelClassName}`}>
+          <h2 className="text-lg font-bold text-gray-900 mb-3 lg:mb-2 lg:text-[13px] lg:font-semibold lg:uppercase lg:tracking-wide lg:text-neutral-500">Itinerary</h2>
           <ul className="space-y-2">
             {activity.itinerary.map((item, i) => (
               <li key={i} className="flex items-start gap-2 text-gray-700 text-sm">
@@ -65,8 +65,8 @@ export const ActivityDetailPlanExtras = ({
       )}
 
       {mandatoryInstructions.length > 0 ? (
-        <div className={`bg-white rounded-2xl border border-amber-100 p-5 sm:p-6 ${panelClassName}`}>
-          <h2 className="text-lg font-bold text-gray-900 mb-1">{MANDATORY_INSTRUCTIONS_LABEL}</h2>
+        <div className={`bg-white rounded-2xl border border-amber-100 p-5 sm:p-6 lg:rounded-xl lg:p-3 ${panelClassName}`}>
+          <h2 className="text-lg font-bold text-gray-900 mb-1 lg:text-[13px] lg:font-semibold lg:uppercase lg:tracking-wide lg:text-neutral-500">{MANDATORY_INSTRUCTIONS_LABEL}</h2>
           <p className="text-xs text-gray-500 mb-3">Joiners must agree to these when requesting a spot.</p>
           <ul className="list-disc list-inside space-y-1 text-gray-700 text-sm">
             {mandatoryInstructions.map((item, i) => (
@@ -77,8 +77,8 @@ export const ActivityDetailPlanExtras = ({
       ) : null}
 
       {planDetailLines.length > 0 ? (
-        <div className={`bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 ${panelClassName}`}>
-          <h2 className="text-lg font-bold text-gray-900 mb-3">Activity details</h2>
+        <div className={`bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 lg:rounded-xl lg:p-3 ${panelClassName}`}>
+          <h2 className="text-lg font-bold text-gray-900 mb-3 lg:mb-2 lg:text-[13px] lg:font-semibold lg:uppercase lg:tracking-wide lg:text-neutral-500">Activity details</h2>
           <ul className="list-disc list-inside space-y-1 text-gray-700 text-sm">
             {planDetailLines.map((item, i) => (
               <li key={i}>{item}</li>
@@ -88,7 +88,7 @@ export const ActivityDetailPlanExtras = ({
       ) : null}
 
       {!hidePhotoGallery && activity.images && activity.images.length > 1 ? (
-        <div className={`bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 ${panelClassName}`}>
+        <div className={`bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 lg:rounded-xl lg:p-3 ${panelClassName}`}>
           <h2 className="text-lg font-bold text-gray-900 mb-3">Photos</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {activity.images.map((img, i) => (

@@ -791,6 +791,21 @@
       ],
       "feRoots": ["src/App.tsx", "src/config/routingHygiene.test.ts"],
       "successMetric": "Navigate-only page shims deleted; verify:domain fe/api/journey shards; routingHygiene bans ShopManage/BecomeHost/Membership modules"
+    },
+    {
+      "id": "MIG-ARCH-W0",
+      "phase": "P2",
+      "status": "complete",
+      "owner": "platform",
+      "contextIds": ["discovery", "communication"],
+      "apiRoots": [
+        "apps/api/src/lib/side-effect-outbox.ts",
+        "apps/api/src/config/env.ts",
+        "scripts/validate-env.mjs",
+        "vercel.json"
+      ],
+      "feRoots": [],
+      "successMetric": "W0–W3 eng defaults shipped: outbox prod-on; Vercel entry cache; memory token; CSP script boot files; local media ACL; sharp 4096; explore slim pin + overlay index + participant Mongo cap + catalog thumbs; demo-login staging gate; SSE connection cap; platform-admin TOTP when PLATFORM_ADMIN_MFA_SECRET set; S10e/S10f/P5 ops gates remain in PRE_DEPLOY"
     }
   ],
   "stranglerRules": [

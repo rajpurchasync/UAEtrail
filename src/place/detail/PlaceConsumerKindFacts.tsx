@@ -9,7 +9,7 @@ import {
 } from '../peek/resolvePlacePeekCatalogFacts';
 
 const factCellClass =
-  'rounded-xl border border-neutral-100 bg-neutral-50/90 px-3 py-2.5 text-sm text-neutral-900';
+  'rounded-xl border border-neutral-100 bg-neutral-50/90 px-3 py-2.5 text-sm text-neutral-900 lg:rounded-lg lg:px-2.5 lg:py-1.5 lg:text-[13px]';
 const factLabelClass = 'text-[11px] font-semibold uppercase tracking-wide text-neutral-500';
 const labelChipClass =
   'inline-flex rounded-lg border border-neutral-200 bg-white px-2.5 py-1 text-xs font-semibold text-neutral-800';

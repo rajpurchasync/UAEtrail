@@ -120,7 +120,7 @@ export const ExploreMobileBrowseOverlay = ({
             <button
               type="button"
               onClick={onClose}
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-neutral-700 hover:bg-neutral-100"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-neutral-700 shadow-sm ring-1 ring-black/5 hover:bg-neutral-200"
               aria-label="Close"
             >
               <X className="h-5 w-5" aria-hidden />

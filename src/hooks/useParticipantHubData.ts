@@ -1,57 +1,13 @@
 import { useCallback, useMemo, type SetStateAction } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import {
-  BuddyRequestDTO,
-  BuddySummaryDTO,
-  ChatConversationDTO,
-  MemberInboxGroupDTO,
-} from '@uaetrail/shared-types';
+import type { ChatConversationDTO, MemberInboxGroupDTO } from '@uaetrail/shared-types';
 import type { UserProfile } from '../api/types';
-import { fetchMeBuddies, fetchMeBuddyRequests } from './activityInviteClientApi';
-import { fetchMeProfile } from './memberProfileApi';
-import { fetchMeNotificationsPage } from './notificationInboxApi';
+import { useAuth } from '../context/AuthContext';
 import { participantHubQueryKey } from './clientQueryKeys';
 import { useJoinedUpcomingPlanData } from './useJoinedUpcomingPlanData';
-import { messagingApi } from '../messaging';
-import { useAuth } from '../context/AuthContext';
 import { isUpcomingActivity, upcomingActivitiesTotal } from '../utils/activityDates';
 import { buildUpcomingPlanRows } from '../utils/activityHubSections';
-import {
-  isTopCardMessagingNotification,
-  sortNotificationsNewestFirst,
-} from '../utils/notificationCategories';
-
-async function fetchParticipantHubSocial() {
-  const [profile, notifPage, inboxRes, buddies, incomingBuddyRequests] = await Promise.all([
-    fetchMeProfile(),
-    fetchMeNotificationsPage(1).catch(() => ({
-      data: [],
-      unreadCount: 0,
-      total: 0,
-    })),
-    messagingApi.getInbox().catch(() => ({
-      data: { direct: [] as ChatConversationDTO[], groups: [] as MemberInboxGroupDTO[] },
-    })),
-    fetchMeBuddies().catch(() => [] as BuddySummaryDTO[]),
-    fetchMeBuddyRequests('incoming').catch(() => [] as BuddyRequestDTO[]),
-  ]);
-
-  const inbox = inboxRes.data;
-
-  return {
-    profile,
-    notifications: sortNotificationsNewestFirst(notifPage.data)
-      .filter((notif) => isTopCardMessagingNotification(notif))
-      .slice(0, 5),
-    unreadNotifications: notifPage.unreadCount ?? 0,
-    conversations: inbox.direct?.slice(0, 4) ?? [],
-    groups: inbox.groups ?? [],
-    buddies,
-    incomingBuddyRequests: incomingBuddyRequests.filter(
-      (request: BuddyRequestDTO) => request.status === 'pending'
-    ),
-  };
-}
+import { fetchParticipantHubSnapshot } from './participantHubClientApi';
 
 export const useParticipantHubData = () => {
   const { user } = useAuth();
@@ -66,7 +22,7 @@ export const useParticipantHubData = () => {
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: user ? participantHubQueryKey(user.id) : ['participant-hub', 'anonymous'],
-    queryFn: fetchParticipantHubSocial,
+    queryFn: fetchParticipantHubSnapshot,
     enabled: !!user,
   });
 
@@ -83,7 +39,7 @@ export const useParticipantHubData = () => {
       if (!user) return;
       queryClient.setQueryData(
         participantHubQueryKey(user.id),
-        (old: Awaited<ReturnType<typeof fetchParticipantHubSocial>> | undefined) => {
+        (old: Awaited<ReturnType<typeof fetchParticipantHubSnapshot>> | undefined) => {
           if (!old) return old;
           const nextProfile =
             typeof updater === 'function' ? updater(old.profile) : updater;

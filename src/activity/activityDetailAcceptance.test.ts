@@ -5,6 +5,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { readAppRouteRegistry } from '../../scripts/readAppRouteRegistry.mjs';
 
 const read = (rel: string) => readFileSync(join(process.cwd(), rel), 'utf8');
 
@@ -52,7 +53,8 @@ describe('activity detail program — wiring', () => {
     const actions = read('src/explore/ui/useExploreSelectionActions.ts');
     expect(actions).toMatch(/executeActivityMapPeekAction/);
     expect(actions).toMatch(/shareActivity:/);
-    expect(actions).toMatch(/navigator\.share/);
+    expect(actions).toMatch(/handleSharePeek/);
+    expect(read('src/explore/ui/useExplorePeekShareAction.ts')).toMatch(/shareSheet\.openShare/);
     expect(actions).toMatch(/manageActivity:/);
     expect(actions).toMatch(/onOpenHostManage/);
     const model = read('src/explore/shell/useExploreExperienceModel.ts');
@@ -121,6 +123,7 @@ describe('activity detail program — wiring', () => {
     const page = read('src/pages/ActivityDetail.tsx');
     expect(page).toMatch(/onOpenHostManage/);
     expect(page).toMatch(/hostSheets\.hostManageSheet/);
+    expect(page).not.toMatch(/CreateHostingActivityFlow/);
     expect(page).not.toMatch(/hostDetailCtas/);
     expect(page).not.toMatch(/footerOverride/);
     const view = read('src/components/activity/ActivityDetailView.tsx');
@@ -160,13 +163,14 @@ describe('activity detail program — wiring', () => {
     expect(consumerBody).toMatch(/activity-detail-meeting-point/);
     const actions = read('src/components/activity/detail/ActivityDetailEngagementActions.tsx');
     expect(actions).toMatch(/resolveActivityMapPeekActions/);
-    expect(actions).toMatch(/view_detail/);
+    expect(actions).toMatch(/participant_invite/);
+    expect(actions).not.toMatch(/ActivityParticipationManageSheet/);
   });
 
-  it('AD-GUEST-01: guests get page-level sign-in gate only (map peek uses browse gate)', () => {
-    const page = read('src/pages/ActivityDetail.tsx');
-    expect(page).toMatch(/ActivityDetailGuestGate/);
-    expect(page).toMatch(/if \(!user\)/);
+  it('AD-GUEST-01: guests get in-page sign-in gate on the consumer template (map peek uses browse gate)', () => {
+    const template = read('src/activity/detail/templates/ActivityConsumerDetailPage.tsx');
+    expect(template).toMatch(/ActivityDetailGuestGate/);
+    expect(template).toMatch(/requiresSignIn/);
     const peekJoin = read('src/explore/ui/useExploreSelectionPeekJoin.ts');
     expect(peekJoin).toMatch(/openGuestBrowseGate/);
     const access = read('src/access/mapViewerAccessToUi.ts');
@@ -184,13 +188,16 @@ describe('activity detail program — wiring', () => {
     expect(handlers).toMatch(/onOpenParticipationManage/);
   });
 
-  it('AD-LAYOUT-02: guests never render consumer detail shell (sign-in gate only)', () => {
+  it('AD-LAYOUT-02: guests share the consumer detail shell (compact sign-in gate in the same panel)', () => {
     const page = read('src/pages/ActivityDetail.tsx');
     expect(page).toMatch(/inviteOnlyLock/);
-    expect(page).toMatch(/if \(!user\) \{[\s\S]*ActivityDetailGuestGate/);
     expect(page).toMatch(/backLabel=""/);
+    const template = read('src/activity/detail/templates/ActivityConsumerDetailPage.tsx');
+    expect(template).toMatch(/ActivityDetailGuestGate/);
+    expect(template).toMatch(/compact/);
     const view = read('src/components/activity/ActivityDetailView.tsx');
     expect(view).toMatch(/backLabel = ''/);
+    expect(view).toMatch(/ActivityConsumerDetailModalShell/);
   });
 
   it('AD-PRIVATE-01: private hosted plans stay off Explore/Browse and invite-only on detail', () => {
@@ -217,7 +224,7 @@ describe('activity detail program — wiring', () => {
     const header = read('src/activity/activityConsumerDetailHeader.ts');
     expect(header).toMatch(/activityMode === 'seeking'/);
     expect(header).toMatch(/Looking for company/);
-    const app = read('src/App.tsx');
+    const app = readAppRouteRegistry();
     expect(app).toMatch(/path="\/activity\/:id"/);
     expect(app).not.toMatch(/path="\/demand/);
     const qaRoutes = read('scripts/consumer-detail-manual-qa-routes.mjs');

@@ -1,10 +1,18 @@
 import { describe, expect, it } from 'vitest';
-import { exploreMapClusterIsSameSpot, exploreMapClusterRadiusPx } from './exploreMapCluster';
+import {
+  EXPLORE_MAP_CLUSTER_DISABLE_AT_ZOOM,
+  exploreMapClusterIsSameSpot,
+  exploreMapClusterRadiusPx,
+} from './exploreMapCluster';
 
 describe('explore map cluster', () => {
-  it('uses a wide radius at country zoom and tightens as the user zooms in', () => {
-    expect(exploreMapClusterRadiusPx(7)).toBe(80);
-    expect(exploreMapClusterRadiusPx(10)).toBe(58);
+  it('disables clustering at country and regional zoom', () => {
+    expect(EXPLORE_MAP_CLUSTER_DISABLE_AT_ZOOM).toBe(10);
+  });
+
+  it('uses moderate radius only when zoomed in past disable threshold', () => {
+    expect(exploreMapClusterRadiusPx(7)).toBe(36);
+    expect(exploreMapClusterRadiusPx(10)).toBe(36);
     expect(exploreMapClusterRadiusPx(13)).toBe(44);
     expect(exploreMapClusterRadiusPx(16)).toBe(36);
   });

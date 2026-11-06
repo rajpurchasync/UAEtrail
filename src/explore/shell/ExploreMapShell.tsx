@@ -156,9 +156,13 @@ export const ExploreMapShell = ({
       onVenueRegionsChange={browse.applyVenueRegions}
       venueFilter={browse.venueFilter}
       onVenueFilterChange={browse.applyVenueFilter}
-      onOpenPeopleBrowsePanel={user ? openPeopleBrowsePanel : undefined}
-      peopleBrowsePanelAvatars={peopleBrowseMapChip.avatars}
+      onOpenPeopleBrowsePanel={
+        user ? openPeopleBrowsePanel : () => selection.handleGuestGatedAction('view_detail')
+      }
+      peopleBrowsePanelAvatars={user ? peopleBrowseMapChip.avatars : []}
       peopleBrowsePanelFriendCount={peopleBrowseMapChip.friendCount}
+      peopleBrowseGuest={!user}
+      peopleBrowsePossibleCrewCount={peopleBrowseMapChip.crewCount}
       searchQuery={browse.query}
       onSearchQueryChange={browse.setQuery}
       onOpenExploreSearch={() => {
@@ -210,7 +214,7 @@ export const ExploreMapShell = ({
       onOpenExploreItem={handleOpenExploreItem}
       onWithdraw={() => selection.joinActions.setShowWithdraw(true)}
       onGuestGatedAction={selection.handleGuestGatedAction}
-      onShareActivity={selection.handleShareActivityPeek}
+      onShareActivity={selection.handleSharePeek}
       desktopRightPanelOverlay={desktopRightPanelOverlay}
       desktopMapOverlayLayout={desktopMapOverlayLayout}
       mapSearchOpen={exploreSearchModalOpen}

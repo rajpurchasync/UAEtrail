@@ -1,0 +1,7 @@
+{
+  "capturedAt": "2025-11-05T00:00:00.000Z",
+  "note": "Post-optimization snapshot — run `npm run perf:api -- --label after` with API up for live numbers.",
+  "baseUrl": "http://localhost:4000",
+  "samples": 8,
+  "probes": []
+}

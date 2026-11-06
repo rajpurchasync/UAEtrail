@@ -109,8 +109,11 @@ export const resolveMemberStatus = async (userId: string): Promise<HostStatusDTO
       ownedByOwnerId = await listTenantsByOwnerId(userId);
       memberships = await listActiveTenantMembershipsByUser(userId);
     } else {
-      await ensureOwnerMembershipForTenant(userId, activityPre.id);
-      memberships = await listActiveTenantMembershipsByUser(userId);
+      const hasMembership = memberships.some((membership) => membership.tenantId === activityPre.id);
+      if (!hasMembership) {
+        await ensureOwnerMembershipForTenant(userId, activityPre.id);
+        memberships = await listActiveTenantMembershipsByUser(userId);
+      }
     }
   }
 

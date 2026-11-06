@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { MessageSquare, Settings2, Users } from 'lucide-react';
+import { MessageSquare, Users } from 'lucide-react';
 import { groupsApi, messagingApi } from '../../messaging';
 import type {
   SocialGroupMemberView,
@@ -18,6 +18,7 @@ import {
 } from '../../utils/groupWallPostPolicy';
 import { GroupWallChatSettingsSheet } from './GroupWallChatSettingsSheet';
 import { GroupWallMembersSheet } from './GroupWallMembersSheet';
+import { ChatGroupSummarySheet } from './ChatGroupSummarySheet';
 import { useAuth } from '../../context/AuthContext';
 import { GroupWallMessageItem } from './GroupWallMessageItem';
 import { MessageAvatar } from './ChatMessageAvatar';
@@ -91,6 +92,7 @@ export const GroupChatThread = ({
   const [draft, setDraft] = useState('');
   const [membersOpen, setMembersOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [summaryOpen, setSummaryOpen] = useState(false);
   const [hasMoreOlder, setHasMoreOlder] = useState(false);
   const [loadingOlder, setLoadingOlder] = useState(false);
   const {
@@ -118,7 +120,6 @@ export const GroupChatThread = ({
 
   const canPost =
     group && membership ? canMemberPostToGroupWall(group, membership) : false;
-  const isAdmin = membership?.role === 'admin';
   const postPolicy = group ? resolveGroupWallPostPolicy(group) : 'all_members';
 
   const notifyWallActivity = useCallback(
@@ -446,7 +447,7 @@ export const GroupChatThread = ({
           onBack={onBack}
           backLabel="Back to chat list"
           backVisibility="mobile-only"
-          titleButton={{ onClick: () => setMembersOpen(true) }}
+          titleButton={{ onClick: () => setSummaryOpen(true) }}
           leading={
             group?.photoUrl ? (
               <MessageAvatar name={title} url={group.photoUrl} />
@@ -467,18 +468,7 @@ export const GroupChatThread = ({
             </>
             )
           }
-          trailing={
-            isAdmin ? (
-              <button
-                type="button"
-                onClick={() => setSettingsOpen(true)}
-                className="flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-lg text-gray-600 hover:bg-gray-100"
-                aria-label="Chat settings"
-              >
-                <Settings2 className="h-5 w-5" />
-              </button>
-            ) : null
-          }
+          trailing={null}
         />
       }
       footer={
@@ -543,6 +533,16 @@ export const GroupChatThread = ({
 
     {group ? (
       <>
+        <ChatGroupSummarySheet
+          open={summaryOpen}
+          onClose={() => setSummaryOpen(false)}
+          group={group}
+          members={members}
+          membership={membership}
+          currentUserId={currentUserId}
+          onShowParticipants={() => setMembersOpen(true)}
+          onEditChatSettings={() => setSettingsOpen(true)}
+        />
         <GroupWallMembersSheet
           open={membersOpen}
           onClose={() => setMembersOpen(false)}

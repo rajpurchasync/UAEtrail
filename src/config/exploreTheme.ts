@@ -66,6 +66,8 @@ export const exploreMapFilterActiveClass = (key: MapFilterKey): string => {
       return 'bg-violet-700 text-white border-violet-800 shadow-sm shadow-violet-900/20';
     case 'shops':
       return 'bg-rose-700 text-white border-rose-800 shadow-sm shadow-rose-900/20';
+    case 'facilities':
+      return 'bg-teal-700 text-white border-teal-800 shadow-sm shadow-teal-900/20';
     default:
       return EXPLORE_BRAND_ACTIVE;
   }
@@ -156,16 +158,16 @@ export const EXPLORE_FLOW = {
   stepBackButton:
     'inline-flex items-center gap-0.5 rounded-full py-1 pl-1 pr-2 text-xs font-semibold text-neutral-600 hover:bg-neutral-100',
   choiceCardBase:
-    'w-full rounded-2xl border-2 px-4 py-3.5 text-left transition active:scale-[0.99] md:rounded-md md:border md:px-3 md:py-2 md:active:scale-100',
-  choiceCardActive: 'border-emerald-600 bg-emerald-50/50',
-  choiceCardInactive: 'border-neutral-200 bg-white',
+    'explore-flow-choice-card w-full rounded-2xl border-2 px-4 py-3.5 text-left transition-colors duration-150 ease-out active:scale-[0.99] md:rounded-md md:border md:px-3 md:py-2 md:active:scale-100',
+  choiceCardActive: 'explore-flow-choice-card--active border-emerald-600 bg-emerald-50/50',
+  choiceCardInactive: 'explore-flow-choice-card--inactive border-neutral-200 bg-white',
   choiceCardTitle: 'text-sm font-bold text-neutral-900',
   choiceCardSubtitle: 'mt-0.5 text-xs leading-snug text-neutral-500',
   choiceGrid2: 'grid grid-cols-2 gap-3 md:gap-2',
   kindTile:
-    'flex min-h-[7.25rem] flex-col items-center justify-center gap-1.5 rounded-2xl border-2 px-3 py-4 text-center transition active:scale-[0.99] sm:px-4 lg:min-h-16 lg:gap-1 lg:py-2',
-  kindTileActive: 'border-emerald-600 bg-emerald-50/60 shadow-sm',
-  kindTileIdle: 'border-neutral-200 bg-white',
+    'explore-flow-choice-card flex min-h-[7.25rem] flex-col items-center justify-center gap-1.5 rounded-2xl border-2 px-3 py-4 text-center transition-colors duration-150 ease-out active:scale-[0.99] sm:px-4 lg:min-h-16 lg:gap-1 lg:py-2',
+  kindTileActive: 'explore-flow-choice-card--active border-emerald-600 bg-emerald-50/60 shadow-sm',
+  kindTileIdle: 'explore-flow-choice-card--inactive border-neutral-200 bg-white',
   menuRowTitle: 'text-base font-bold leading-snug text-neutral-900 lg:text-[17px]',
   mapPinCard:
     'flex w-full items-center justify-between gap-3 rounded-2xl border-2 border-neutral-200 px-4 py-4 text-left transition hover:border-emerald-300 active:scale-[0.99] md:rounded-md md:border md:px-3 md:py-2.5 md:active:scale-100',
@@ -209,6 +211,46 @@ export const EXPLORE_MAP_CHROME_FROST =
 export const EXPLORE_FLOATING_CONTROL =
   `inline-flex items-center rounded-full border border-white/80 text-neutral-950 ${EXPLORE_MAP_CHROME_FROST}`;
 
+/** Locate / layer / style icons floating on the map (mobile + desktop) — theme via `.explore-map-overlay-icon-btn`. */
+export const EXPLORE_MAP_OVERLAY_ICON_BTN =
+  'explore-map-overlay-icon-btn pointer-events-auto inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border transition active:scale-95 disabled:opacity-60';
+
+export const EXPLORE_MAP_OVERLAY_ICON =
+  'h-6 w-6 shrink-0';
+
+/** Stroke for map chrome glyphs — sits with 12px chrome labels. */
+export const EXPLORE_MAP_OVERLAY_ICON_STROKE = 1.5;
+
+export const EXPLORE_MAP_OVERLAY_ICON_BTN_SIZE = 'h-11 w-11';
+
+/** Map filter pill when active — Places layer uses sky-forward chips. */
+export const exploreMapPlacesFilterActiveClass = (key: MapFilterKey): string => {
+  switch (key) {
+    case 'all':
+    case 'hiking':
+    case 'camping':
+      return 'bg-sky-600 text-white shadow-sm shadow-sky-900/20';
+    case 'facilities':
+      return 'bg-teal-700 text-white border-teal-800 shadow-sm shadow-teal-900/20';
+    case 'shops':
+      return 'bg-rose-700 text-white border-rose-800 shadow-sm shadow-rose-900/20';
+    case 'others':
+      return 'bg-violet-700 text-white border-violet-800 shadow-sm shadow-violet-900/20';
+    default:
+      return 'bg-sky-600 text-white shadow-sm shadow-sky-900/20';
+  }
+};
+
+/** Floating map chrome label — matches bottom nav / Find crew (12px semibold). */
+export const EXPLORE_MAP_CHROME_LABEL = 'text-[12px] font-semibold leading-none';
+
+/** Shared frost shell — sub-filter row and map control toolbar. */
+export const EXPLORE_MAP_FROST_TRAY =
+  'explore-map-filter-tray rounded-2xl bg-white/55 p-1 shadow-[0_2px_12px_rgba(15,23,42,.12)] ring-1 ring-white/70 backdrop-blur-md';
+
+/** List / map float controls — readable on satellite and desert tiles. */
+export const EXPLORE_MAP_FLOATING_CHROME_BTN = `${EXPLORE_MAP_FROST_TRAY} explore-map-floating-chrome-btn inline-flex items-center gap-2 px-4 py-2.5 ${EXPLORE_MAP_CHROME_LABEL} text-neutral-900 transition hover:bg-white/95 hover:text-neutral-950 active:bg-white active:text-neutral-950`;
+
 /** Browse list sheet — search row icon buttons (calendar, places filter). */
 export const EXPLORE_BROWSE_SHEET_CONTROL =
   'inline-flex shrink-0 items-center justify-center rounded-xl border border-neutral-200/80 bg-white text-emerald-800 shadow-sm transition [-webkit-tap-highlight-color:transparent]';
@@ -225,7 +267,7 @@ export const EXPLORE_MAP_TOOLBAR_SEGMENT_ICON = 'text-[1.40625rem] leading-none'
 
 /** Layout for the map filter tray (frost fill applied separately so layer tints can win). */
 const EXPLORE_MAP_FILTER_TRAY_LAYOUT =
-  'flex w-full min-w-0 items-stretch gap-1 rounded-2xl p-1 shadow-[0_2px_12px_rgba(15,23,42,.12)] backdrop-blur-md';
+  'flex w-full min-w-0 items-stretch gap-1 md:gap-1.5 rounded-2xl p-1 md:px-1.5 shadow-[0_2px_12px_rgba(15,23,42,.12)] backdrop-blur-md';
 
 /** Mobile map — expanded activity/place filters (same outer height as intent toolbar: py-2 + h-7). */
 export const EXPLORE_MAP_MOBILE_FILTER_CTA_BAR =
@@ -263,7 +305,7 @@ export const EXPLORE_MAP_MOBILE_FILTER_CTA_ICON = 'text-[1.35rem] leading-none';
 export const EXPLORE_MAP_MOBILE_FILTER_CTA_ALL_LABEL = 'text-xs font-bold leading-none';
 
 const MAP_MOBILE_FILTER_CTA_SEGMENT_BASE =
-  `flex min-w-0 flex-1 basis-0 ${EXPLORE_MAP_MOBILE_FILTER_CTA_SEGMENT_HIT} items-center justify-center rounded-xl px-1 text-center transition [-webkit-tap-highlight-color:transparent]`;
+  `flex min-w-0 flex-1 basis-0 ${EXPLORE_MAP_MOBILE_FILTER_CTA_SEGMENT_HIT} items-center justify-center rounded-xl px-1 md:px-2 text-center transition [-webkit-tap-highlight-color:transparent]`;
 
 export const exploreMapMobileFilterCtaSegmentClass = (
   selected: boolean,
@@ -273,10 +315,38 @@ export const exploreMapMobileFilterCtaSegmentClass = (
     ? `${MAP_MOBILE_FILTER_CTA_SEGMENT_BASE} ${exploreMapFilterActiveClass(filterKey)} border-0 shadow-none ring-0`
     : `${MAP_MOBILE_FILTER_CTA_SEGMENT_BASE} text-neutral-800 hover:bg-white/70 active:bg-white/85`;
 
+const MAP_CHILD_CHIP_BASE =
+  'inline-flex h-full min-h-[2.375rem] w-full max-lg:min-w-0 shrink-0 items-center justify-center gap-1.5 rounded-full px-2 py-[0.4rem] lg:w-auto lg:px-2.5 lg:py-[0.45rem] text-[12px] font-semibold leading-none transition [-webkit-tap-highlight-color:transparent]';
+
+/** Second-level map category chip (icon + label). */
+export const exploreMapChildChipClass = (
+  selected: boolean,
+  filterKey: MapFilterKey = 'all',
+  layer: 'activity' | 'places' = 'activity'
+): string => {
+  const activeClass =
+    layer === 'places' ? exploreMapPlacesFilterActiveClass(filterKey) : exploreMapFilterActiveClass(filterKey);
+  return selected
+    ? `${MAP_CHILD_CHIP_BASE} ${activeClass} border-0 shadow-none ring-0`
+    : `${MAP_CHILD_CHIP_BASE} text-neutral-900 hover:bg-white/50 active:bg-white/70`;
+};
+
+/** “All” is text-only in the mark — min width on lg+ matches icon + label chips (e.g. Rideshare). */
+export const EXPLORE_MAP_FILTER_ALL_CHIP_CLASS = 'lg:min-w-[6.5rem]';
+
+export const exploreMapScopeSegmentClass = (selected: boolean, layer: 'activity' | 'places'): string => {
+  const base =
+    'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-semibold leading-none transition [-webkit-tap-highlight-color:transparent]';
+  if (!selected) return `${base} text-neutral-700 hover:bg-white/80`;
+  return layer === 'places'
+    ? `${base} bg-sky-600 text-white shadow-sm shadow-sky-900/20`
+    : `${base} bg-emerald-700 text-white shadow-sm shadow-emerald-900/20`;
+};
+
 /** Mobile explore — offsets for floating map chrome below the solid header. */
 export const EXPLORE_MOBILE_MAP_CHROME = {
   filterTop: 'max-lg:top-0',
-  noticeTop: 'max-lg:top-[8rem]',
+  noticeTop: 'max-lg:top-[11.25rem]',
 } as const;
 
 /** Bottom sheets over the map (Find crew list, compose peek) — leave filters visible. */
@@ -291,9 +361,9 @@ export const EXPLORE_BROWSE_PEEK_SHEET = {
 
 /** Explore map stacking — keep in sync across peek cards, filters, and sheets. */
 export const EXPLORE_Z = {
-  /** Map filter pill row */
-  mapFilters: 'z-[3000]',
-  /** Pin selection peek card (above filters, below browse sheet) */
+  /** Map filter pill row — above pin peek so the toolbar stays usable */
+  mapFilters: 'z-[4200]',
+  /** Pin selection peek card (below filters, below browse sheet) */
   peekCard: 'z-[4000]',
   /** Public `/activity/:id` consumer shell */
   activityDetailModal: 'z-[5000]',
@@ -309,20 +379,19 @@ export const EXPLORE_Z = {
   guestJoinSheet: 'z-[6600]',
   /** Discard-draft confirm above immersive compose */
   composeDiscardConfirm: 'z-[6700]',
+  /** Share / invite sheet — above compose publish-success */
+  shareSheet: 'z-[6800]',
 } as const;
 
 /**
- * Map peek card — centered overlay on mobile so it cannot grow into the header;
- * docked full-height panel on the left of the map on desktop (map stays interactive).
+ * Map peek card — compact bubble over the pin (mobile + desktop), not a full-height dock.
  */
 export const EXPLORE_PEEK = {
-  position:
-    `absolute inset-0 ${EXPLORE_Z.peekCard} flex items-center justify-center px-4 pt-3 pb-[calc(var(--explore-float-base)+0.5rem)] lg:items-stretch lg:justify-start lg:p-3`,
-  scrim: 'bg-black/40 lg:bg-transparent',
-  inner:
-    'relative mx-auto flex max-h-full w-full max-w-md flex-col lg:mx-0 lg:h-full lg:w-[400px] lg:max-w-[calc(100%-1.5rem)] lg:[&_[data-pin-summary=card]]:h-full',
+  position: `absolute inset-0 ${EXPLORE_Z.peekCard} pointer-events-none`,
+  scrim: 'map-peek-bubble-scrim pointer-events-auto absolute inset-0',
+  inner: 'map-peek-bubble pointer-events-auto absolute flex w-[min(100%-1.5rem,23.75rem)] flex-col',
   shell:
-    'flex min-h-0 max-h-full flex-col overflow-hidden rounded-2xl bg-white shadow-[0_8px_32px_rgba(15,23,42,.16)] ring-1 ring-black/5',
+    'map-peek-bubble-card flex shrink-0 flex-col overflow-hidden rounded-[1.35rem] bg-white shadow-[0_12px_40px_rgba(15,23,42,.22)] ring-1 ring-black/8',
 } as const;
 
 export const EXPLORE_LIST_FILTER_INACTIVE =
@@ -345,6 +414,8 @@ export const exploreVenueListFilterActiveClass = (key: VenueListFilterKey): stri
   switch (key) {
     case 'camping':
       return 'bg-amber-700 text-white shadow-sm shadow-amber-900/20';
+    case 'facilities':
+      return 'bg-teal-700 text-white shadow-sm shadow-teal-900/20';
     case 'event':
       return 'bg-violet-700 text-white shadow-sm shadow-violet-900/20';
     case 'shop':

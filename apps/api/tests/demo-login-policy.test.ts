@@ -18,7 +18,8 @@ describe('demo-login-policy', () => {
     expect(isDemoLoginAllowedForRequest('development', '10.0.0.5')).toBe(false);
     expect(isDemoLoginAllowedForRequest('development', '10.0.0.5', 'true')).toBe(true);
     expect(isDemoLoginAllowedForRequest('development', '172.18.0.4', undefined, 'test')).toBe(true);
-    expect(isDemoLoginAllowedForRequest('development', '172.18.0.4', undefined, 'staging')).toBe(true);
+    expect(isDemoLoginAllowedForRequest('development', '172.18.0.4', undefined, 'staging')).toBe(false);
+    expect(isDemoLoginAllowedForRequest('development', '172.18.0.4', 'true', 'staging')).toBe(true);
     expect(isDemoLoginAllowedForRequest('development', '172.18.0.4', undefined, 'production')).toBe(false);
   });
 

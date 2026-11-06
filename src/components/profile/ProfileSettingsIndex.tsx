@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react';
 import { Bell, KeyRound, Shield } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 import { useMinWidthLg } from '../../hooks/useMinWidthLg';
 import { ConsumerShell } from '../mobile/ConsumerShell';
 import { PullToRefresh } from '../mobile/PullToRefresh';
@@ -25,9 +26,11 @@ const DesktopSettingsPage = lazy(() =>
 );
 
 export const ProfileSettingsIndex = ({ onRefresh }: ProfileSettingsIndexProps) => {
+  const { user } = useAuth();
   const backChrome = useProfileHubBackChrome();
   const isDesktop = useMinWidthLg();
   const settingsChildBack = mobileBackNavState(PROFILE_SETTINGS_PATH, 'Settings');
+  const guest = !user;
 
   if (isDesktop) {
     return (
@@ -43,24 +46,27 @@ export const ProfileSettingsIndex = ({ onRefresh }: ProfileSettingsIndexProps) =
       <SettingsMenuGroup>
         <SettingsMenuRow
           label="Account"
-          to={PROFILE_SETTINGS_ACCOUNT_PATH}
+          to={guest ? undefined : PROFILE_SETTINGS_ACCOUNT_PATH}
           linkState={settingsChildBack}
           icon={KeyRound}
-          subtitle="Email, password, sign out"
+          subtitle={guest ? 'Log in to change email and password' : 'Email, password, sign out'}
+          disabled={guest}
         />
         <SettingsMenuRow
           label="Privacy"
-          to={PROFILE_SETTINGS_PRIVACY_PATH}
+          to={guest ? undefined : PROFILE_SETTINGS_PRIVACY_PATH}
           linkState={settingsChildBack}
           icon={Shield}
-          subtitle="Profile visibility and publishing profiles"
+          subtitle={guest ? 'Log in to control who sees you' : 'Profile visibility and publishing profiles'}
+          disabled={guest}
         />
         <SettingsMenuRow
           label="Notifications"
-          to={PROFILE_SETTINGS_NOTIFICATIONS_PATH}
+          to={guest ? undefined : PROFILE_SETTINGS_NOTIFICATIONS_PATH}
           linkState={settingsChildBack}
           icon={Bell}
-          subtitle="Inbox and outing alerts"
+          subtitle={guest ? 'Log in to manage outing alerts' : 'Inbox and outing alerts'}
+          disabled={guest}
         />
       </SettingsMenuGroup>
       <IosInstallSettingsSection />

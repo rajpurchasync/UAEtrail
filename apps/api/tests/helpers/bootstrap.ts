@@ -11,6 +11,8 @@ export const configureTestEnv = (): void => {
     process.env.JWT_REFRESH_SECRET ?? 'test-refresh-secret-test-refresh-secret';
   process.env.APP_BASE_URL = process.env.APP_BASE_URL ?? 'http://localhost:5173';
   process.env.API_BASE_URL = process.env.API_BASE_URL ?? 'http://localhost:4000';
+  /** Full anonymous catalog for map integration tests; production defaults to capped preview. */
+  process.env.EXPLORE_MAP_GUEST_CATALOG_CAP = '0';
   delete process.env.REDIS_URL;
 };
 

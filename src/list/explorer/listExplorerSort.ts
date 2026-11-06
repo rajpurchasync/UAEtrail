@@ -54,13 +54,13 @@ export const LIST_EXPLORER_SORT_GROUP_DEFS: ReadonlyArray<ListExplorerSortGroupD
   {
     title: 'Name',
     options: [
-      { mode: 'name_asc', label: 'Name Ascending' },
-      { mode: 'name_desc', label: 'Name Descending' },
+      { mode: 'name_asc', label: 'A → Z' },
+      { mode: 'name_desc', label: 'Z → A' },
     ],
   },
   {
     title: 'Near me',
-    options: [{ mode: 'near_me', label: 'By distance' }],
+    options: [{ mode: 'near_me', label: 'Closest first' }],
   },
 ];
 
@@ -74,23 +74,39 @@ export const findListExplorerSortOption = (
   return null;
 };
 
-const listExplorerSortGroupShortTitle = (title: string): string => {
-  if (title === 'Event date / time') return 'Event';
-  if (title === 'Post date') return 'Post';
-  return title;
+export type ListExplorerSortTrigger = {
+  label: string;
+  direction: 'asc' | 'desc';
+};
+
+/** Trigger copy — field name only; direction is the arrow. Distinct from menu item labels. */
+export const listExplorerSortTrigger = (mode: ListExplorerSortMode): ListExplorerSortTrigger => {
+  switch (mode) {
+    case 'event_desc':
+      return { label: 'Date', direction: 'desc' };
+    case 'post_asc':
+      return { label: 'Posting Date', direction: 'asc' };
+    case 'post_desc':
+      return { label: 'Posting Date', direction: 'desc' };
+    case 'name_asc':
+      return { label: 'Name', direction: 'asc' };
+    case 'name_desc':
+      return { label: 'Name', direction: 'desc' };
+    case 'near_me':
+      return { label: 'Near Me', direction: 'desc' };
+    case 'event_asc':
+    default:
+      return { label: 'Date', direction: 'asc' };
+  }
 };
 
 /** Compact label on the sort trigger button. */
-export const listExplorerSortButtonLabel = (mode: ListExplorerSortMode): string => {
-  const found = findListExplorerSortOption(mode);
-  if (!found) return 'Sort';
-  return `${listExplorerSortGroupShortTitle(found.groupTitle)} · ${found.label}`;
-};
+export const listExplorerSortButtonLabel = (mode: ListExplorerSortMode): string =>
+  listExplorerSortTrigger(mode).label;
 
 export const listExplorerSortAriaLabel = (mode: ListExplorerSortMode): string => {
-  const found = findListExplorerSortOption(mode);
-  if (!found) return 'Sort list';
-  return `Sort: ${found.groupTitle}, ${found.label}`;
+  const { label, direction } = listExplorerSortTrigger(mode);
+  return `Sort by ${label}, ${direction === 'asc' ? 'ascending' : 'descending'}`;
 };
 
 export const parseListExplorerSort = (value: string | null): ListExplorerSortMode => {
@@ -193,7 +209,9 @@ const nameGroupLabel = (letters: readonly string[]): string => {
   return first === last ? first : `${first} – ${last}`;
 };
 
-/** Merge first letters into a few sections sized to the current result set. */
+const MAX_NAME_SECTIONS = 5;
+
+/** Partition first letters into ≤5 contiguous ranges with roughly equal card counts. */
 const buildNameLetterGroups = (
   cards: DiscoveryCardModel[]
 ): Array<{ key: string; label: string; letters: Set<string> }> => {
@@ -209,29 +227,46 @@ const buildNameLetterGroups = (
   });
   if (letters.length === 0) return [];
 
+  if (letters.length <= MAX_NAME_SECTIONS) {
+    return letters.map((letter) => ({
+      key: letter,
+      label: nameGroupLabel([letter]),
+      letters: new Set([letter]),
+    }));
+  }
+
   type Bucket = { letters: string[]; count: number };
-  let buckets: Bucket[] = letters.map((letter) => ({
-    letters: [letter],
+  const entries = letters.map((letter) => ({
+    letter,
     count: letterCounts.get(letter)!,
   }));
+  const total = entries.reduce((sum, entry) => sum + entry.count, 0);
+  const target = total / MAX_NAME_SECTIONS;
+  const buckets: Bucket[] = [];
+  let current: Bucket = { letters: [], count: 0 };
 
-  while (buckets.length > 6) {
-    let mergeAt = 0;
-    let smallestPair = Number.POSITIVE_INFINITY;
-    for (let index = 0; index < buckets.length - 1; index += 1) {
-      const pairSize = buckets[index]!.count + buckets[index + 1]!.count;
-      if (pairSize < smallestPair) {
-        smallestPair = pairSize;
-        mergeAt = index;
-      }
+  for (let index = 0; index < entries.length; index += 1) {
+    const entry = entries[index]!;
+    const isLast = index === entries.length - 1;
+    if (isLast) {
+      current.letters.push(entry.letter);
+      current.count += entry.count;
+      if (current.letters.length > 0) buckets.push(current);
+      break;
     }
-    const left = buckets[mergeAt]!;
-    const right = buckets[mergeAt + 1]!;
-    buckets = [
-      ...buckets.slice(0, mergeAt),
-      { letters: [...left.letters, ...right.letters], count: left.count + right.count },
-      ...buckets.slice(mergeAt + 2),
-    ];
+    const nextCount = current.count + entry.count;
+    const shouldSplit =
+      buckets.length < MAX_NAME_SECTIONS - 1 &&
+      current.letters.length > 0 &&
+      current.count >= target * 0.75 &&
+      nextCount > target * 1.1;
+    if (shouldSplit) {
+      buckets.push(current);
+      current = { letters: [entry.letter], count: entry.count };
+    } else {
+      current.letters.push(entry.letter);
+      current.count = nextCount;
+    }
   }
 
   return buckets.map((group) => ({
@@ -291,8 +326,8 @@ const groupByDistance = (
 };
 
 const relabelPostDateSection = (section: ListExplorerDateSection): ListExplorerDateSection => {
-  const { key, label } = section;
-  if (key === 'all' || key === 'anytime') {
+  const { key } = section;
+  if (key === 'all') {
     return { ...section, label: 'No post date' };
   }
   switch (key) {
@@ -302,13 +337,9 @@ const relabelPostDateSection = (section: ListExplorerDateSection): ListExplorerD
       return { ...section, label: 'Posted this week' };
     case 'month':
       return { ...section, label: 'Posted this month' };
+    case 'other':
+      return { ...section, label: 'Other' };
     default:
-      if (key.startsWith('month-') && label) {
-        return { ...section, label: `Posted in ${label}` };
-      }
-      if (key.startsWith('year-') && label) {
-        return { ...section, label: `Posted in ${label}` };
-      }
       return section;
   }
 };

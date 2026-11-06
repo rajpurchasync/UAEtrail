@@ -264,8 +264,6 @@ export const Activities = () => {
         onPublish={publishFromPreview}
       />
 
-      {inviteShare.sheet}
-
       <ActivityManageSheet
         open={Boolean(manageActivity)}
         activity={manageActivity}

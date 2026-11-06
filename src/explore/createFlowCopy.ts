@@ -202,7 +202,10 @@ export const HOSTING_PENDING_VENUE_BODY =
   'This plan, the new spot, and the area are pending admin review. Nothing is live on the map or in search yet — we’ll notify you when they’re approved.';
 
 export const HOSTING_PUBLISH_SUCCESS_BODY =
-  'Your plan is published. View it on the map or offer a rideshare for your crew.';
+  'Your plan is published. Share it, view it on the map, or tap a ride below to attach it.';
+
+export const HOSTING_RIDESHARE_SUCCESS_BODY =
+  'Your ride is published. Share it, or tap an outing below to attach this ride.';
 
 export const HOSTING_PUBLISH_VIEW_ON_MAP = 'View on map';
 
@@ -210,6 +213,12 @@ export const HOSTING_PUBLISH_VIEW_ON_MAP = 'View on map';
 export const HOSTING_PUBLISH_VIEW_CTA = 'View';
 
 export const HOSTING_EDIT_SAVE_CTA = 'Save changes';
+
+export const HOSTING_PUBLISH_SHARE_CTA = 'Share';
+
+export const HOSTING_PUBLISH_CREATE_RIDE_CTA = 'Create a ride';
+
+export const HOSTING_PUBLISH_LINK_OWN_RIDE_CTA = 'Link a ride you created';
 
 export const HOSTING_LINK_RIDESHARE_LABEL = 'Link rideshare';
 
@@ -224,12 +233,22 @@ export const HOSTING_LINK_RIDESHARE_PASTE_LABEL = 'Or paste your rideshare link'
 export const HOSTING_LINK_RIDESHARE_PASTE_PLACEHOLDER = 'https://uaetrail.com/activity/…';
 
 export const HOSTING_LINK_RIDESHARE_HINT =
-  'Publish a rideshare on the map, or link one you already organize — joiners see it on this plan.';
+  'Tap a ride you already published to attach it here. Joiners will see it on this plan.';
+
+export const HOSTING_LINK_RIDESHARE_PICK_LABEL = 'Your rides';
+
+export const HOSTING_LINK_RIDESHARE_EMPTY =
+  'No published rides yet. Paste a ride link below.';
 
 export const HOSTING_RIDESHARE_LINKED_NOTICE = 'Rideshare linked — joiners will see it on your plan.';
 
 export const HOSTING_LINK_PARENT_ACTIVITY_HINT =
-  'Link this ride to a published hike, camp, or event you host so joiners can open the main plan.';
+  'Link this ride to a published hike, camp, or event you’ve joined or host.';
+
+export const HOSTING_LINK_PARENT_EMPTY =
+  'No published hikes, camps, or events you’ve joined or host yet. Paste an outing link instead.';
+
+export const HOSTING_LINK_PARENT_PICK_LABEL = 'Your outings';
 
 export const HOSTING_LINK_PARENT_PASTE_LABEL = 'Paste outing link';
 

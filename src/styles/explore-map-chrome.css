@@ -1,0 +1,109 @@
+/* Explore-only chrome — loaded with map surfaces, not the marketing shell. */
+@media (prefers-reduced-motion: reduce) {
+  .explore-sheet-panel {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+.explore-desktop-popup-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  max-height: min(calc(100dvh - 2rem), 640px);
+  overflow: hidden;
+}
+
+.explore-map-pane-popup-panel {
+  max-height: min(calc(100% - 2rem), min(calc(100dvh - 8rem), 640px));
+  width: min(100%, 28rem);
+}
+
+.explore-desktop-popup-body {
+  padding: 2rem 1.25rem 1.25rem;
+}
+
+@media (max-height: 760px) {
+  .explore-desktop-popup-body {
+    padding: 1.5rem 1rem 1rem;
+  }
+
+  .explore-desktop-popup-panel :where(h2, h3) {
+    font-size: 1.0625rem;
+    line-height: 1.35;
+  }
+
+  .explore-desktop-popup-panel :where(p) {
+    font-size: 0.8125rem;
+    line-height: 1.45;
+  }
+
+  .explore-popup-adaptive {
+    padding: 1rem !important;
+  }
+
+  .explore-popup-adaptive-emoji {
+    margin-bottom: 0.5rem;
+    height: 2.75rem;
+    width: 2.75rem;
+    font-size: 1.375rem;
+  }
+
+  .explore-popup-adaptive-title {
+    font-size: 1.0625rem;
+    line-height: 1.35;
+  }
+
+  .explore-popup-adaptive-lead {
+    margin-top: 0.375rem;
+    font-size: 0.8125rem;
+    line-height: 1.45;
+  }
+
+  .explore-popup-adaptive-bullets {
+    margin-top: 0.625rem;
+    font-size: 0.8125rem;
+    row-gap: 0.375rem;
+  }
+
+  .explore-popup-adaptive-actions {
+    margin-top: 0.75rem;
+  }
+}
+
+@media (max-height: 620px) {
+  .explore-desktop-popup-body {
+    padding: 1.25rem 0.875rem 0.875rem;
+  }
+
+  .explore-popup-adaptive {
+    padding: 0.75rem !important;
+  }
+
+  .explore-popup-adaptive-lead {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+  }
+
+  .explore-popup-adaptive-bullets {
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  .explore-popup-adaptive-bullets li:nth-child(n + 4) {
+    display: none;
+  }
+
+  .explore-popup-adaptive-actions {
+    margin-top: 0.625rem;
+  }
+
+  .explore-popup-adaptive-actions .ios-btn {
+    min-height: 2.5rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    font-size: 0.8125rem;
+  }
+}

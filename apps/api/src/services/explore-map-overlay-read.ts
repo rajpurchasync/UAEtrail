@@ -1,5 +1,9 @@
 import type { ExploreMapOverlayDTO } from '@uaetrail/shared-types';
-import { loadExploreMapForRequest } from '../lib/explore-map-route.js';
+import {
+  attachExploreMapViewerAccess,
+  buildExploreMapViewerAccessContext,
+} from '../lib/explore-map-viewer-access.js';
+import { resolveExploreMapCatalogItemsForQuery } from '../lib/explore-map-route.js';
 
 /** Signed-in peek/engagement for the public explore catalog (`GET /me/discover/overlay`). */
 export const loadExploreMapOverlayForViewer = async (input: {
@@ -12,13 +16,15 @@ export const loadExploreMapOverlayForViewer = async (input: {
   viewerUserId: string;
   userRole?: string | null;
 }): Promise<ExploreMapOverlayDTO> => {
-  const payload = await loadExploreMapForRequest({
-    query: input.query,
+  const { items } = await resolveExploreMapCatalogItemsForQuery(input.query);
+  const ctx = await buildExploreMapViewerAccessContext({
     viewerUserId: input.viewerUserId,
     userRole: input.userRole ?? null,
+    items,
   });
+  const withAccess = attachExploreMapViewerAccess(items, ctx);
   return {
-    items: payload.items.flatMap((item) =>
+    items: withAccess.flatMap((item) =>
       item.viewerAccess ? [{ id: item.id, viewerAccess: item.viewerAccess }] : []
     ),
   };

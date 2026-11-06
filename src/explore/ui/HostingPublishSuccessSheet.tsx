@@ -1,16 +1,19 @@
 import { useState } from 'react';
 import { usePublicActivityDetail } from '../../hooks/usePublicActivityDetail';
-import { CheckCircle2, Clock } from 'lucide-react';
+import { CheckCircle2, Clock, Share2 } from 'lucide-react';
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import { EXPLORE_Z } from '../../config/exploreTheme';
+import { useAuth } from '../../context/AuthContext';
+import { useShareSheet } from '../../context/ShareSheetContext';
 import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
 import { LinkRidesharePanel } from './LinkRidesharePanel';
+import { LinkParentActivityPanel } from './LinkParentActivityPanel';
 import {
   HOSTING_RIDESHARE_LINKED_NOTICE,
-  HOSTING_LINK_RIDESHARE_LABEL,
-  HOSTING_LINK_RIDESHARE_PASTE_CTA,
+  HOSTING_PUBLISH_SHARE_CTA,
   HOSTING_PUBLISH_SUCCESS_BODY,
   HOSTING_RIDESHARE_PENDING_DESTINATION_BODY,
+  HOSTING_RIDESHARE_SUCCESS_BODY,
   HOSTING_PENDING_VENUE_BODY,
   HOSTING_PENDING_VENUE_TITLE,
   HOSTING_PUBLISH_SUCCESS_BODY_PRIVATE,
@@ -32,7 +35,6 @@ type HostingPublishSuccessSheetProps = {
   kind: CreateActivityKind;
   showPostPublishRideshare: boolean;
   rideshareNotice: string | null;
-  onCreateLinkedRideshare: () => void;
   onRideshareLinked: () => void;
   onRideshareLinkError: (message: string) => void;
   onViewOnMap: () => void;
@@ -47,8 +49,10 @@ const SuccessDetailRow = ({ label, value }: { label: string; value: string }) =>
   </div>
 );
 
-const linkButtonClass =
-  'text-sm font-semibold text-sky-800 underline underline-offset-2 hover:text-sky-950';
+const primaryButtonClass =
+  'min-h-12 w-full rounded-xl bg-emerald-600 px-3 py-3 text-base font-bold text-white shadow-md shadow-emerald-600/20';
+const secondaryButtonClass =
+  'flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-neutral-200 bg-white px-3 py-3 text-base font-bold text-neutral-900';
 
 export const HostingPublishSuccessSheet = ({
   open,
@@ -59,24 +63,44 @@ export const HostingPublishSuccessSheet = ({
   kind,
   showPostPublishRideshare,
   rideshareNotice,
-  onCreateLinkedRideshare,
   onRideshareLinked,
   onRideshareLinkError,
   onViewOnMap,
   planWithBuddyUserId = null,
 }: HostingPublishSuccessSheetProps) => {
-  const [pasteOpen, setPasteOpen] = useState(false);
+  const { user } = useAuth();
+  const shareSheet = useShareSheet();
+  const [rideLinked, setRideLinked] = useState(Boolean(publishedActivity.linkedRideshareActivityId));
+  const [parentLinked, setParentLinked] = useState(Boolean(publishedActivity.linkedActivityId));
   const activityId = open ? publishedActivity.id : undefined;
-  const { viewerAccess } = usePublicActivityDetail(activityId);
-  const canAddLinkedRide = viewerAccess?.entitlements?.canAddLinkedRide ?? false;
+  usePublicActivityDetail(activityId);
 
-  const showLinkRideshare =
+  const showLinkRide =
     showPostPublishRideshare &&
-    tenantId &&
+    Boolean(tenantId) &&
     canLinkRideshareToActivity(publishedActivity) &&
-    canAddLinkedRide;
+    !rideLinked;
+  const showLinkParentOuting =
+    kind === 'rideshare' && Boolean(tenantId) && !parentLinked;
   const pendingVenue = draft.placeLabelSource === 'custom';
   const successTitle = pendingVenue ? HOSTING_PENDING_VENUE_TITLE : HOSTING_PUBLISH_SUCCESS_TITLE;
+
+  const successBody =
+    publishedActivity.joinMode === 'private'
+      ? HOSTING_PUBLISH_SUCCESS_BODY_PRIVATE
+      : kind === 'rideshare' && draft.rideshareDestinationKind === 'pending_place'
+        ? HOSTING_RIDESHARE_PENDING_DESTINATION_BODY
+        : kind === 'rideshare'
+          ? HOSTING_RIDESHARE_SUCCESS_BODY
+          : draft.placeLabelSource === 'custom'
+            ? HOSTING_PENDING_VENUE_BODY
+            : HOSTING_PUBLISH_SUCCESS_BODY;
+
+  const handleShare = () => {
+    shareSheet.openShareFromActivity(publishedActivity, {
+      canSendBuddyInvites: Boolean(user),
+    });
+  };
 
   return (
     <ExploreResponsiveSheet
@@ -102,18 +126,8 @@ export const HostingPublishSuccessSheet = ({
           >
             {pendingVenue ? <Clock className="h-6 w-6" /> : <CheckCircle2 className="h-6 w-6" />}
           </div>
-          <h2 className="mt-3 text-lg font-bold tracking-tight text-neutral-900">
-            {successTitle}
-          </h2>
-          <p className="mt-2 max-w-[18rem] text-pretty text-sm leading-relaxed text-neutral-600">
-            {publishedActivity.joinMode === 'private'
-              ? HOSTING_PUBLISH_SUCCESS_BODY_PRIVATE
-              : kind === 'rideshare' && draft.rideshareDestinationKind === 'pending_place'
-                ? HOSTING_RIDESHARE_PENDING_DESTINATION_BODY
-                : draft.placeLabelSource === 'custom'
-                  ? HOSTING_PENDING_VENUE_BODY
-                  : HOSTING_PUBLISH_SUCCESS_BODY}
-          </p>
+          <h2 className="mt-3 text-lg font-bold tracking-tight text-neutral-900">{successTitle}</h2>
+          <p className="mt-2 max-w-[18rem] text-pretty text-sm leading-relaxed text-neutral-600">{successBody}</p>
         </div>
 
         <div className="mt-5 min-w-0 overflow-hidden rounded-xl border border-neutral-200 bg-neutral-50/90 px-4 py-3">
@@ -157,45 +171,43 @@ export const HostingPublishSuccessSheet = ({
           </div>
         ) : null}
 
-        {showLinkRideshare && pasteOpen ? (
+        {showLinkRide && tenantId ? (
           <div className="mt-4 min-w-0">
             <LinkRidesharePanel
               tenantId={tenantId}
               parentActivityId={publishedActivity.id}
-              variant="pasteOnly"
-              onCreateRideshare={onCreateLinkedRideshare}
+              variant="pickExisting"
               onLinked={() => {
+                setRideLinked(true);
                 onRideshareLinked();
-                setPasteOpen(false);
               }}
               onError={onRideshareLinkError}
             />
           </div>
         ) : null}
 
-        <div className="mt-6 space-y-3">
-          <button
-            type="button"
-            onClick={onViewOnMap}
-            className="min-h-12 w-full rounded-xl bg-emerald-600 px-3 py-3 text-base font-bold text-white shadow-md shadow-emerald-600/20"
-          >
+        {showLinkParentOuting && tenantId ? (
+          <div className="mt-4 min-w-0">
+            <LinkParentActivityPanel
+              tenantId={tenantId}
+              rideshareActivityId={publishedActivity.id}
+              onLinked={() => {
+                setParentLinked(true);
+                onRideshareLinked();
+              }}
+              onError={onRideshareLinkError}
+            />
+          </div>
+        ) : null}
+
+        <div className="mt-6 space-y-2">
+          <button type="button" onClick={onViewOnMap} className={primaryButtonClass}>
             {HOSTING_PUBLISH_VIEW_CTA}
           </button>
-          {showLinkRideshare ? (
-            <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1">
-              <button type="button" onClick={onCreateLinkedRideshare} className={linkButtonClass}>
-                {HOSTING_LINK_RIDESHARE_LABEL}
-              </button>
-              <button
-                type="button"
-                aria-expanded={pasteOpen}
-                onClick={() => setPasteOpen((value) => !value)}
-                className={linkButtonClass}
-              >
-                {HOSTING_LINK_RIDESHARE_PASTE_CTA}
-              </button>
-            </div>
-          ) : null}
+          <button type="button" onClick={handleShare} className={secondaryButtonClass}>
+            <Share2 className="h-4 w-4" aria-hidden />
+            {HOSTING_PUBLISH_SHARE_CTA}
+          </button>
         </div>
       </div>
     </ExploreResponsiveSheet>

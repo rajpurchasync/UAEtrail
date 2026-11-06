@@ -1,7 +1,9 @@
-/** Leaflet cluster radius — tighter as the user zooms in so nearby pins split, then same-spot spiderfies. */
+/** At this zoom and below, pins stay on their own coordinates (no centroid mega-clusters). */
+export const EXPLORE_MAP_CLUSTER_DISABLE_AT_ZOOM = 10;
+
+/** Leaflet cluster radius — tighter as the user zooms in so only nearby pins merge. */
 export const exploreMapClusterRadiusPx = (zoom: number): number => {
-  if (zoom < 9) return 80;
-  if (zoom < 12) return 58;
+  if (zoom < 12) return 36;
   if (zoom < 15) return 44;
   return 36;
 };

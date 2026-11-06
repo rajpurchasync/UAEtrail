@@ -26,9 +26,10 @@ type ComposeRouteGuardContext = {
   profileComplete: boolean;
 };
 
-/** Create wizards that require a signed-in member (not the FAB intent menu). */
+/** Create wizards and FAB submenu picks that require a signed-in member. */
 export const composeRouteRequiresAuth = (route: ExploreCompose | null): boolean => {
-  if (!route || isComposeMenu(route)) return false;
+  if (!route) return false;
+  if (isComposeMenu(route)) return Boolean(route.intent);
   return (
     isHostWizard(route) ||
     isSeekFixedWizard(route) ||
@@ -42,6 +43,10 @@ export const resolveComposeRouteChange = (
   route: ExploreCompose | null,
   ctx: ComposeRouteGuardContext
 ): ComposeRouteGuardDecision => {
+  if (route && isComposeMenu(route) && route.intent && !ctx.user) {
+    return { type: 'sign-in', href: signInPathForReturn(explorePath({ compose: route })) };
+  }
+
   if (route && isHostWizard(route)) {
     if (!ctx.user) {
       return { type: 'sign-in', href: signInPathForReturn(explorePath({ compose: route })) };

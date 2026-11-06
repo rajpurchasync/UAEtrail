@@ -1,11 +1,15 @@
-import { useMemo } from 'react';
+import { lazy, Suspense, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import type { AreaCenter, AreaBoundsRing } from '@uaetrail/shared-types';
 import { placeDetailPath } from '@uaetrail/shared-types';
 import type { LocationDTO } from '@uaetrail/shared-types';
-import { PlacesMap, type MapBounds, type PlaceMapPin } from '../ui/PlacesMap';
+import type { MapBounds, PlaceMapPin } from '../ui/placesMapTypes';
 import { explorePath } from '../../explore/routing';
 import { placeDetailRouteKindForRow } from './areaHubPlaceGroups';
+
+const LazyPlacesMap = lazy(() =>
+  import('../ui/PlacesMap').then((module) => ({ default: module.PlacesMap }))
+);
 
 type AreaHubMapStripProps = {
   areaSlug: string;
@@ -69,19 +73,27 @@ export const AreaHubMapStrip = ({
 
   return (
     <section className="relative mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
-      <PlacesMap
-        pins={pins}
-        bounds={fallbackBounds}
-        minHeight={200}
-        allowEmpty
-        showLegend={false}
-        exploreMode
-        exploreMapCenter={{ lat: center.latitude, lng: center.longitude }}
-        className="rounded-2xl"
-        onPinClick={(pin) => {
-          navigate(pin.path);
-        }}
-      />
+      <Suspense
+        fallback={
+          <div className="flex min-h-[200px] items-center justify-center text-sm text-slate-500">
+            Loading map…
+          </div>
+        }
+      >
+        <LazyPlacesMap
+          pins={pins}
+          bounds={fallbackBounds}
+          minHeight={200}
+          allowEmpty
+          showLegend={false}
+          exploreMode
+          exploreMapCenter={{ lat: center.latitude, lng: center.longitude }}
+          className="rounded-2xl"
+          onPinClick={(pin) => {
+            navigate(pin.path);
+          }}
+        />
+      </Suspense>
       <Link
         to={exploreInArea}
         className="absolute inset-x-0 bottom-0 flex items-center justify-center bg-gradient-to-t from-slate-900/70 to-transparent px-4 py-3 text-sm font-semibold text-white"

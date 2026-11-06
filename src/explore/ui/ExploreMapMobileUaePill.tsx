@@ -1,9 +1,10 @@
 import { createPortal } from 'react-dom';
 import { useId, useState } from 'react';
-import { Check } from 'lucide-react';
+import { Check, MapPin } from 'lucide-react';
 import { getVenueStateFilterOptions } from '../../config/regions';
 import { UiTooltip } from '../../components/ui/UiTooltip';
 import { UaeFlagIcon } from '../../components/ui/UaeFlagIcon';
+import { ExploreMapFilterMenuShell } from './ExploreMapFilterMenuShell';
 import { useExploreMapPillDropdown } from './exploreMapPillDropdown';
 
 type ExploreMapMobileUaePillProps = {
@@ -11,6 +12,7 @@ type ExploreMapMobileUaePillProps = {
   onVenueRegionsChange: (regions: string[]) => void;
   pillClassName: string;
   compact?: boolean;
+  wrapClassName?: string;
   onOpen?: () => void;
 };
 
@@ -20,14 +22,16 @@ export const ExploreMapMobileUaePill = ({
   onVenueRegionsChange,
   pillClassName,
   compact = false,
+  wrapClassName = 'relative flex min-w-0 flex-1 basis-0',
   onOpen,
 }: ExploreMapMobileUaePillProps) => {
   const [open, setOpen] = useState(false);
   const panelId = useId();
-  const { anchorRef, menuRef, menuStyle } = useExploreMapPillDropdown({
+  const { anchorRef, menuRef, menuStyle, caretLeftPx } = useExploreMapPillDropdown({
     open,
     onOpenChange: setOpen,
     minWidthPx: 220,
+    showCaret: true,
   });
   const options = getVenueStateFilterOptions();
   const active = venueRegions.length > 0;
@@ -41,23 +45,26 @@ export const ExploreMapMobileUaePill = ({
   const menu =
     open && typeof document !== 'undefined'
       ? createPortal(
-          <div
-            ref={menuRef}
-            id={panelId}
-            role="listbox"
-            aria-label="Filter places by emirate"
-            aria-multiselectable="true"
-            style={menuStyle}
-            className="overflow-hidden rounded-2xl border border-neutral-200/90 bg-white py-1 shadow-[0_12px_40px_rgba(15,23,42,.18)]"
-            onMouseDown={(event) => event.stopPropagation()}
+          <ExploreMapFilterMenuShell
+            menuRef={menuRef}
+            menuStyle={menuStyle}
+            caretLeftPx={caretLeftPx}
+            label="Where"
+            icon={<MapPin className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden />}
+            extraListProps={{
+              id: panelId,
+              role: 'listbox',
+              'aria-label': 'Filter places by emirate',
+              'aria-multiselectable': 'true',
+            }}
           >
-            <div className="flex items-center justify-between gap-2 border-b border-neutral-100 px-3.5 py-2">
-              <span className="text-xs font-semibold text-neutral-600">Emirates</span>
+            <div className="flex items-center justify-between gap-2 px-3.5 pb-1 pt-0.5">
+              <span className="text-[12px] font-semibold text-neutral-500">Emirates</span>
               {active ? (
                 <button
                   type="button"
                   onClick={() => onVenueRegionsChange([])}
-                  className="text-xs font-semibold text-emerald-600 hover:text-emerald-700"
+                  className="text-[12px] font-semibold text-emerald-600 hover:text-emerald-700"
                 >
                   Clear
                 </button>
@@ -83,7 +90,7 @@ export const ExploreMapMobileUaePill = ({
                 </button>
               );
             })}
-          </div>,
+          </ExploreMapFilterMenuShell>,
           document.body
         )
       : null;
@@ -98,16 +105,27 @@ export const ExploreMapMobileUaePill = ({
         setOpen(next);
         if (next) onOpen?.();
       }}
-      className={`w-full ${pillClassName}`}
+      className={`w-full ${pillClassName} ${
+        open ? 'bg-white shadow-sm ring-1 ring-sky-400/70' : ''
+      }`}
       aria-expanded={open}
       aria-haspopup="listbox"
       aria-controls={panelId}
       aria-label={uaeLabel}
     >
       {compact ? (
-        <UaeFlagIcon className="h-5 w-[1.875rem] shrink-0" aria-hidden />
+        <span className="inline-flex items-center gap-1">
+          <MapPin className="explore-map-chrome-stroke h-5 w-5 shrink-0" strokeWidth={1.5} aria-hidden />
+          <UaeFlagIcon className="h-3.5 w-[1.3125rem] shrink-0" aria-hidden />
+          {active ? (
+            <span className="text-[12px] font-semibold leading-none tabular-nums">
+              {venueRegions.length}
+            </span>
+          ) : null}
+        </span>
       ) : (
         <>
+          <MapPin className="explore-map-chrome-stroke h-5 w-5 shrink-0" strokeWidth={1.5} aria-hidden />
           <UaeFlagIcon />
           <span>UAE</span>
           {active ? (
@@ -119,7 +137,7 @@ export const ExploreMapMobileUaePill = ({
   );
 
   return (
-    <div ref={anchorRef} className="relative flex min-w-0 flex-1 basis-0">
+    <div ref={anchorRef} className={wrapClassName}>
       {compact ? (
         <UiTooltip label={uaeLabel} className="flex min-w-0 flex-1">
           {trigger}

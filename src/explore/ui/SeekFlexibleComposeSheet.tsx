@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { MemberAvailabilityMatchPreviewDTO } from '@uaetrail/shared-types';
-import { X } from 'lucide-react';
 import { PlanAvailabilitySection } from '../../components/plan/PlanAvailabilitySection';
 import { EXPLORE_FLOW, EXPLORE_Z } from '../../config/exploreTheme';
 import { fetchMyAvailabilityMatchPreview } from '../../hooks/memberAvailabilityApi';
@@ -8,6 +7,8 @@ import { useExplorePublishedAreas } from '../useExplorePublishedAreas';
 import { areaIdForExploreAreaSlug } from '../exploreAreaFilter';
 import { AvailabilityMatchPreview } from './AvailabilityMatchPreview';
 import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
+import { FlowSheetHeader } from './ExploreFlowSheetChrome';
+import { composeItemEmoji } from '../compose';
 
 type SeekFlexibleComposeSheetProps = {
   open: boolean;
@@ -25,6 +26,7 @@ export const SeekFlexibleComposeSheet = ({
   const publishedAreas = useExplorePublishedAreas();
   const [step, setStep] = useState<'form' | 'preview'>('form');
   const [preview, setPreview] = useState<MemberAvailabilityMatchPreviewDTO | null>(null);
+  const itemEmoji = composeItemEmoji({ intent: 'seek', mode: 'flexible' });
 
   useEffect(() => {
     if (!open) return;
@@ -60,29 +62,23 @@ export const SeekFlexibleComposeSheet = ({
       maxWidthClass="lg:max-w-lg"
       zClass={EXPLORE_Z.composeFlow}
       overlayFixed
+      mobileComposeChrome
+      showHandle={false}
+      showCloseButton={false}
       panelClassName="overflow-hidden px-0 pb-[calc(var(--safe-bottom)+1.5rem)] pt-0 lg:pb-8 lg:pt-3"
     >
       <div className="px-5 pt-2 lg:px-6 lg:pt-0">
-        <header className={EXPLORE_FLOW.stepHeaderShell}>
-          <button
-            type="button"
-            onClick={onClose}
-            className="absolute right-0 top-2 -mr-2 rounded-full p-2.5 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600"
-            aria-label="Close"
-          >
-            <X className="h-5 w-5" />
-          </button>
-          <div className={EXPLORE_FLOW.stepTitleBlock}>
-            <h2 className={EXPLORE_FLOW.stepTitle}>
-              {step === 'preview' ? 'Matches for you' : 'When are you free?'}
-            </h2>
-            {step === 'form' ? (
-              <p className={`mt-2 ${EXPLORE_FLOW.choiceCardSubtitle}`}>
-                Pick days and what you’re open to — region and area are optional. No map pin.
-              </p>
-            ) : null}
-          </div>
-        </header>
+        <FlowSheetHeader
+          title={step === 'preview' ? 'Matches for you' : 'When are you free?'}
+          emoji={itemEmoji}
+          onClose={onClose}
+          onBack={step === 'preview' ? () => setStep('form') : undefined}
+        />
+        {step === 'form' ? (
+          <p className={`mb-4 ${EXPLORE_FLOW.choiceCardSubtitle}`}>
+            Pick days and what you’re open to — region and area are optional. No map pin.
+          </p>
+        ) : null}
         {open && step === 'form' ? (
           <PlanAvailabilitySection
             variant="fab"

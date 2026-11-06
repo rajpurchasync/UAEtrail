@@ -100,6 +100,9 @@ if (production) {
   if (!isSet('REDIS_URL')) {
     errors.push('REDIS_URL — required in production for rate limits and SSE tickets');
   }
+  if (process.env.SIDE_EFFECT_OUTBOX?.trim() === '0') {
+    errors.push('SIDE_EFFECT_OUTBOX — must not be 0 in production (outbox is on by default when NODE_ENV=production)');
+  }
   if (!isSet('EMAIL_FROM') && !isSet('EMAIL_FROM_PROD')) {
     warnings.push('EMAIL_FROM_PROD — set a verified production sender address');
   }

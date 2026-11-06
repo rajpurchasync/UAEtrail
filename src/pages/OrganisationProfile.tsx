@@ -69,7 +69,7 @@ export const OrganisationProfile = () => {
   }
 
   return (
-    <EntityPublicDetailShell backTo={shellBack} backLabel="Explore" showMenu={false} maxWidthClass="max-w-lg">
+    <EntityPublicDetailShell backTo={shellBack} backLabel="Explore" showMenu={false} maxWidthClass="max-w-5xl">
       <OrganisationPublicProfile
         slug={id}
         mode="public"

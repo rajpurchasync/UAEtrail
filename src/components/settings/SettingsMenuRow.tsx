@@ -11,6 +11,7 @@ export type SettingsMenuRowProps = {
   icon?: LucideIcon;
   badge?: number | string;
   destructive?: boolean;
+  disabled?: boolean;
 };
 
 export const SettingsMenuRow = ({
@@ -22,9 +23,14 @@ export const SettingsMenuRow = ({
   icon: Icon,
   badge,
   destructive = false,
+  disabled = false,
 }: SettingsMenuRowProps) => {
-  const className = `flex w-full items-center gap-3 px-4 py-3.5 text-left active:bg-neutral-50 ${
-    destructive ? 'text-red-600' : 'text-neutral-900'
+  const className = `flex w-full items-center gap-3 px-4 py-3.5 text-left ${
+    disabled
+      ? 'cursor-not-allowed opacity-45'
+      : destructive
+        ? 'text-red-600 active:bg-neutral-50'
+        : 'text-neutral-900 active:bg-neutral-50'
   }`;
 
   const inner = (
@@ -54,6 +60,14 @@ export const SettingsMenuRow = ({
       )}
     </>
   );
+
+  if (disabled) {
+    return (
+      <div className={className} aria-disabled="true">
+        {inner}
+      </div>
+    );
+  }
 
   if (to) {
     return (

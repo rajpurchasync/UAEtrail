@@ -5,6 +5,20 @@ import type { UserCity, UserCountryCode, UserGender } from '../domain/user-profi
 import { getMongoClient } from './mongo.js';
 import { scheduleExploreMapCacheInvalidation } from './explore-map-cache-schedule.js';
 import { normalizeSearchRegexInput } from './regex-search.js';
+import {
+  invalidateAuthUserReadCache,
+  readCachedAuthUserById,
+  writeCachedAuthUserById,
+} from './auth-user-read-cache.js';
+
+/** Default batch load for public/assembled relations — excludes secrets and medical fields. */
+const AUTH_USER_RELATION_PROJECTION = {
+  passwordHash: 0,
+  'profile.medicalConditions': 0,
+  'profile.bloodGroup': 0,
+  'profile.emergencyContactName': 0,
+  'profile.emergencyContactPhone': 0,
+} as const;
 
 export type AuthUserRecord = {
   _id: string;
@@ -101,8 +115,12 @@ export const findAuthUserByEmail = async (email: string): Promise<AuthUserRecord
 };
 
 export const findAuthUserById = async (id: string): Promise<AuthUserRecord | null> => {
+  const cached = readCachedAuthUserById(id);
+  if (cached !== undefined) return cached;
   const row = await usersCollection().findOne({ _id: id });
-  return row ? normalizeAuthUser(row) : null;
+  const user = row ? normalizeAuthUser(row) : null;
+  writeCachedAuthUserById(id, user);
+  return user;
 };
 
 export const findAuthUserByGoogleId = async (googleId: string): Promise<AuthUserRecord | null> => {
@@ -143,8 +161,12 @@ export const countAuthUsers = async (input: {
 
 export const findAuthUsersByIds = async (ids: string[]): Promise<AuthUserRecord[]> => {
   if (ids.length === 0) return [];
-  const rows = await usersCollection().find({ _id: { $in: ids } }).toArray();
-  return rows.map(normalizeAuthUser);
+  const rows = await usersCollection()
+    .find({ _id: { $in: ids } }, { projection: AUTH_USER_RELATION_PROJECTION })
+    .toArray();
+  return rows.map((row) =>
+    normalizeAuthUser({ ...row, passwordHash: row.passwordHash ?? null })
+  );
 };
 
 /** Case-insensitive match on id, email, display name, or phone. */
@@ -261,6 +283,7 @@ export const updateAuthUserProfile = async (
     setFields['profile.emergencyContactPhone'] = patch.emergencyContactPhone ?? null;
   }
   await usersCollection().updateOne({ _id: userId }, { $set: setFields });
+  invalidateAuthUserReadCache(userId);
   if (patch.displayName !== undefined || patch.givenName !== undefined || patch.surname !== undefined) {
     scheduleExploreMapCacheInvalidation('auth-users.profile_map_cache');
   }
@@ -274,6 +297,7 @@ export const updateAuthUserLastActive = async (userId: string): Promise<void> =>
 };
 
 export const updateAuthUserPassword = async (userId: string, passwordHash: string): Promise<void> => {
+  invalidateAuthUserReadCache(userId);
   await usersCollection().updateOne({ _id: userId }, { $set: { passwordHash, updatedAt: new Date() } });
 };
 
@@ -282,9 +306,11 @@ export const updateAuthUserEmailVerifiedAt = async (userId: string, verifiedAt: 
     { _id: userId },
     { $set: { emailVerifiedAt: verifiedAt, updatedAt: new Date() } }
   );
+  invalidateAuthUserReadCache(userId);
 };
 
 export const updateAuthUserStatus = async (userId: string, status: 'ACTIVE' | 'SUSPENDED'): Promise<void> => {
+  invalidateAuthUserReadCache(userId);
   await usersCollection().updateOne({ _id: userId }, { $set: { status, updatedAt: new Date() } });
 };
 
@@ -319,6 +345,7 @@ export const updateAuthUserGoogleLink = async (input: {
     }
   }
   await usersCollection().updateOne({ _id: input.userId }, { $set: setFields });
+  invalidateAuthUserReadCache(input.userId);
 };
 
 export const updateAuthUserCore = async (input: {
@@ -368,4 +395,12 @@ export const updateAuthUserCore = async (input: {
       ...(Object.keys(unsetFields).length > 0 ? { $unset: unsetFields } : {})
     }
   );
+  invalidateAuthUserReadCache(input.userId);
+  if (
+    input.profile?.displayName !== undefined ||
+    input.profile?.givenName !== undefined ||
+    input.profile?.surname !== undefined
+  ) {
+    scheduleExploreMapCacheInvalidation('auth-users.core_profile_map_cache');
+  }
 };

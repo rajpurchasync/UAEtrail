@@ -30,7 +30,7 @@ type UseExploreMapOptions = {
 };
 
 export const useExploreMap = (options?: UseExploreMapOptions) => {
-  const { user } = useAuth();
+  const { user, initializing } = useAuth();
   const scope = options?.scope ?? null;
   const projection = options?.projection;
   const useVnextFetch = isExploreMapBboxEnabled() && scope != null;
@@ -39,10 +39,11 @@ export const useExploreMap = (options?: UseExploreMapOptions) => {
     ...(projection ? [projection] : []),
   ];
   const queryKey = user?.id ? [...catalogKey, user.id] : catalogKey;
+  const authSessionReady = !user || !initializing;
 
   return useQuery({
     queryKey,
-    enabled: options?.enabled ?? true,
+    enabled: (options?.enabled ?? true) && authSessionReady,
     queryFn: (): Promise<ExploreMapItemDTO[]> =>
       loadCachedCatalog(queryKey, (etag) =>
         useVnextFetch && scope
@@ -52,7 +53,7 @@ export const useExploreMap = (options?: UseExploreMapOptions) => {
             )
           : fetchExploreMapItems(projection ? { projection } : undefined, etag)
       ),
-    placeholderData: keepPreviousData,
+    placeholderData: user?.id ? undefined : keepPreviousData,
     refetchOnMount: true,
     ...catalogFreshQueryOptions<ExploreMapItemDTO[]>(queryKey),
   });

@@ -26,8 +26,7 @@ import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
 import { EXPLORE_Z } from '../../config/exploreTheme';
 import { COMPOSE_DESKTOP_INSET_FIXED } from '../create/composeDesktopInset';
 import { formatCoord } from '../../utils/coords';
-import { COMPOSE_SHEET_DRAG_HINT } from '../../hooks/useMobileBrowseSheetImmersive';
-import { useComposeSheetExpandedStateOrLocal } from '../create/ComposeSheetExpandedContext';
+import { ComposeWizardItemProvider } from '../create/ComposeWizardItemContext';
 import { bundleHostingWizardPages, COMPOSE_WIDE_SHEET_MAX_WIDTH, wizardPageContaining } from '../create/composeWideWizard';
 import { useIsMobile } from '../../hooks/useIsMobile';
 import type { MeetingPointPickerIntent } from './hostingWizard/hostingWizardContext';
@@ -63,7 +62,7 @@ import {
   type CreateActivityDraft,
   type CreateActivityKind,
 } from './hostingFlowEngine';
-import { hostingPublishSeed, type HostComposeKind } from '../compose';
+import { composeItemEmoji, hostingPublishSeed, type HostComposeKind } from '../compose';
 import { composeFlowIdFromRoute, defaultParticipationForHostRoute } from '../composeFlowCatalog';
 import {
   clearHostingWizardSession,
@@ -120,7 +119,6 @@ export const CreateHostingActivityFlow = ({
   hostComposeKind = null,
   hostingKindFlow = null,
   seekingPrefill = null,
-  onCreateLinkedRideshare,
   planWithBuddyUserId = null,
   editActivity = null,
 }: CreateHostingActivityFlowProps) => {
@@ -381,8 +379,6 @@ export const CreateHostingActivityFlow = ({
     if (next.length === (draft.packingItems ?? []).length) return;
     patchDraft({ packingItems: next });
   }, [draft.kind, draft.packingItems, patchDraft]);
-
-  const { sheetExpanded, expandSheet } = useComposeSheetExpandedStateOrLocal(open);
 
   const finishClose = useCallback(() => {
     if (submitting) return;
@@ -816,13 +812,6 @@ export const CreateHostingActivityFlow = ({
         kind={kind}
         showPostPublishRideshare={showPostPublishRideshare}
         rideshareNotice={rideshareOfferNotice}
-        onCreateLinkedRideshare={() => {
-          if (onCreateLinkedRideshare) {
-            onCreateLinkedRideshare(publishedActivity);
-            return;
-          }
-          setRideshareOfferNotice('Open this plan from Explore to create a linked rideshare.');
-        }}
         onRideshareLinked={() => {
           setRideshareOfferNotice(HOSTING_RIDESHARE_LINKED_NOTICE);
           void onPublished?.(publishedActivity);
@@ -984,13 +973,18 @@ export const CreateHostingActivityFlow = ({
       zClass={EXPLORE_Z.composeFlow}
       overlayFixed
       mobileComposeChrome
-      expanded={sheetExpanded}
-      onExpand={expandSheet}
-      expandHint={COMPOSE_SHEET_DRAG_HINT}
+      showHandle={false}
+      showCloseButton={false}
       maxWidthClass={isMobile ? 'lg:max-w-lg' : COMPOSE_WIDE_SHEET_MAX_WIDTH}
       panelClassName="px-5 pb-[calc(var(--safe-bottom)+1rem)] pt-0 lg:px-6 lg:pb-6 lg:pt-2"
     >
+      <ComposeWizardItemProvider
+        emoji={composeItemEmoji(
+          hostComposeKind ? { intent: 'host', kind: hostComposeKind } : { surface: 'menu', intent: 'host' }
+        )}
+      >
         {renderHostingWizardSteps(wizardCtx)}
+      </ComposeWizardItemProvider>
     </ExploreResponsiveSheet>
   );
 };

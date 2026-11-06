@@ -16,6 +16,7 @@ import {
   JOURNEY_MAP_PATH,
   PROFILE_HISTORY_PATH,
   PLAN_PATH,
+  PROFILE_SETTINGS_PATH,
   ADMIN_PLACES_PATH,
   PUBLISHING_PLACES_PATH,
   signUpPath,
@@ -197,6 +198,13 @@ export const CONSUMER_HAMBURGER_MENU: readonly ConsumerHamburgerMenuItem[] = [
     to: PROFILE_PATH,
     match: [PROFILE_PATH, MY_REQUESTS_PATH, '/signin', '/signup'],
     profileLink: true,
+  },
+  {
+    kind: 'link',
+    label: 'Settings',
+    emoji: '⚙️',
+    to: PROFILE_SETTINGS_PATH,
+    match: [PROFILE_SETTINGS_PATH],
   },
   {
     kind: 'download',

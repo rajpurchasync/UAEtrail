@@ -1,4 +1,9 @@
 import { LocateFixed } from 'lucide-react';
+import {
+  EXPLORE_MAP_OVERLAY_ICON,
+  EXPLORE_MAP_OVERLAY_ICON_BTN,
+  EXPLORE_MAP_OVERLAY_ICON_STROKE,
+} from '../../config/exploreTheme';
 import { UiTooltip } from '../../components/ui/UiTooltip';
 
 type ExploreMapLocateButtonProps = {
@@ -20,12 +25,12 @@ export const ExploreMapLocateButton = ({
     type="button"
     onClick={onLocate}
     disabled={locating}
-    className={`pointer-events-auto inline-flex shrink-0 items-center justify-center text-white drop-shadow-[0_1px_4px_rgba(0,0,0,.75)] transition active:scale-95 disabled:opacity-60 ${className}`}
+    className={`${EXPLORE_MAP_OVERLAY_ICON_BTN} ${className}`}
     aria-label={label}
   >
     <LocateFixed
-      className={`h-6 w-6 shrink-0 ${locating ? 'animate-pulse' : ''}`}
-      strokeWidth={2.25}
+      className={`${EXPLORE_MAP_OVERLAY_ICON} ${locating ? 'animate-pulse' : ''}`}
+      strokeWidth={EXPLORE_MAP_OVERLAY_ICON_STROKE}
       aria-hidden
     />
   </button>

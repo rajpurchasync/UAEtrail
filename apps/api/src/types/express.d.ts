@@ -8,6 +8,8 @@ declare global {
         userId: string;
         email: string;
         role: UserRole;
+        emailVerifiedAt: Date | null;
+        userStatus: 'ACTIVE' | 'SUSPENDED';
       };
       tenantContext?: {
         tenantId: string;

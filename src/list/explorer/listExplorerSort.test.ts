@@ -4,6 +4,7 @@ import {
   DEFAULT_LIST_EXPLORER_SORT,
   groupListExplorerSections,
   listExplorerCardPostDateIso,
+  listExplorerSortAriaLabel,
   listExplorerSortButtonLabel,
   parseListExplorerSort,
   serializeListExplorerSort,
@@ -93,15 +94,29 @@ describe('listExplorerSort', () => {
     expect(sections.map((section) => section.label)).toEqual([
       'Posted today',
       'Posted this week',
-      'Posted in November',
-      'No post date',
+      'Other',
     ]);
     expect(listExplorerCardPostDateIso(card('undated', 'No stamp'))).toBeNull();
   });
 
+  it('merges many first letters into at most five balanced sections', () => {
+    const cards = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map((letter, index) =>
+      card(String(index), `${letter} outing`)
+    );
+    const sections = groupListExplorerSections(cards, 'name_asc', null);
+    expect(sections.length).toBeLessThanOrEqual(5);
+    expect(sections.flatMap((section) => section.cards).length).toBe(26);
+    const sizes = sections.map((section) => section.cards.length);
+    expect(Math.max(...sizes) - Math.min(...sizes)).toBeLessThanOrEqual(6);
+  });
+
   it('labels the sort trigger from the active mode', () => {
-    expect(listExplorerSortButtonLabel('event_asc')).toBe('Event · Oldest first');
-    expect(listExplorerSortButtonLabel('post_desc')).toBe('Post · Newest first');
-    expect(listExplorerSortButtonLabel('near_me')).toBe('Near me · By distance');
+    expect(listExplorerSortButtonLabel('event_asc')).toBe('Date');
+    expect(listExplorerSortButtonLabel('post_desc')).toBe('Posting Date');
+    expect(listExplorerSortButtonLabel('name_asc')).toBe('Name');
+    expect(listExplorerSortButtonLabel('name_desc')).toBe('Name');
+    expect(listExplorerSortButtonLabel('near_me')).toBe('Near Me');
+    expect(listExplorerSortAriaLabel('name_asc')).toBe('Sort by Name, ascending');
+    expect(listExplorerSortAriaLabel('name_desc')).toBe('Sort by Name, descending');
   });
 });

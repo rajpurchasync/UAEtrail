@@ -100,6 +100,7 @@ export const buildExploreMemberPeopleMapChip = (input: {
   avatars: SocialMapChipAvatar[];
   extraCount: number;
   friendCount: number;
+  crewCount: number;
 } => {
   const friendUserIds = new Set(input.preview?.friendUserIds ?? []);
   const network = previewNetworkAvatars(input.preview);
@@ -127,5 +128,6 @@ export const buildExploreMemberPeopleMapChip = (input: {
     avatars: merged,
     extraCount: Math.max(0, allUniqueCount - merged.length),
     friendCount,
+    crewCount: allUniqueCount,
   };
 };

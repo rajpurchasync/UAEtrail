@@ -1,10 +1,15 @@
-import { MemberProfileStatsDTO, NotificationDTO } from '@uaetrail/shared-types';
 import { apiRequest, downloadAuthenticatedFile, getStoredSession } from '../client';
 import type {
   ActivityDTO,
-  MemberDiscoveryQuotaDTO,
-  ProfileViewerAccessDTO,
   BuddyActivityPresenceRowDTO,
+  BuddyRequestDTO,
+  BuddySummaryDTO,
+  ChatConversationDTO,
+  MemberDiscoveryQuotaDTO,
+  MemberInboxGroupDTO,
+  MemberProfileStatsDTO,
+  NotificationDTO,
+  ProfileViewerAccessDTO,
   SocialPeopleDTO,
   SocialPeoplePreviewDTO,
   SocialPeopleSegment,
@@ -18,6 +23,22 @@ import type {
 
 export const accountApi = {
     getMeProfile: () => apiRequest<{ data: UserProfile }>('/me/profile', { auth: true }),
+
+    getParticipantHub: () =>
+      apiRequest<{
+        data: {
+          profile: UserProfile;
+          notifications: NotificationDTO[];
+          unreadNotifications: number;
+          inbox: {
+            direct: ChatConversationDTO[];
+            groups: MemberInboxGroupDTO[];
+            directConversationsDegraded?: boolean;
+          };
+          buddies: BuddySummaryDTO[];
+          incomingBuddyRequests: BuddyRequestDTO[];
+        };
+      }>('/me/participant-hub', { auth: true }),
 
     getPersonPublicProfile: (userId: string, options?: { discover?: boolean }) => {
       const qs = options?.discover ? '?from=discover' : '';

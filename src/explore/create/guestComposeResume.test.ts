@@ -6,12 +6,10 @@ import {
   readGuestComposeResumeSession,
   writeGuestComposeResumeSession,
 } from './guestComposeResume';
-import { clearComposeSheetExpandedSession } from './composeSheetExpandedSession';
 
 describe('guestComposeResume', () => {
   afterEach(() => {
     clearGuestComposeResumeSession();
-    clearComposeSheetExpandedSession();
   });
 
   it('builds return path with compose wizard on current surface', () => {
@@ -30,12 +28,10 @@ describe('guestComposeResume', () => {
     writeGuestComposeResumeSession({
       composeWire: 'host:rideshare',
       fromMenu: true,
-      sheetExpanded: true,
     });
     expect(readGuestComposeResumeSession()).toEqual({
       composeWire: 'host:rideshare',
       fromMenu: true,
-      sheetExpanded: true,
     });
   });
 });

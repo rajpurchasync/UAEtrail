@@ -1,5 +1,6 @@
 import { createPortal } from 'react-dom';
 import { EXPLORE_PEEK, EXPLORE_Z } from '../../config/exploreTheme';
+import type { MapPeekPinAnchor } from '../mapPeekBubbleLayout';
 import { MapPeekOverlay } from './map-peek';
 import { ActivityPeekCard, type ActivityPeekCardProps } from './peek/ActivityPeekCard';
 import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
@@ -9,6 +10,8 @@ export type ActivityMapPeekHostProps = ActivityPeekCardProps & {
   presentation?: 'map' | 'modal';
   /** Modal presentation only — stack above compose wizard when nested. */
   modalZClass?: string;
+  pinAnchor?: MapPeekPinAnchor | null;
+  pinKey?: string | null;
 };
 
 /**
@@ -19,6 +22,8 @@ export type ActivityMapPeekHostProps = ActivityPeekCardProps & {
 export const ActivityMapPeekHost = ({
   presentation = 'map',
   modalZClass = EXPLORE_Z.composeFlow,
+  pinAnchor = null,
+  pinKey = null,
   ...props
 }: ActivityMapPeekHostProps) => {
   if (presentation === 'modal') {
@@ -42,7 +47,7 @@ export const ActivityMapPeekHost = ({
   }
 
   return (
-    <MapPeekOverlay onClose={props.onClose}>
+    <MapPeekOverlay onClose={props.onClose} pinAnchor={pinAnchor} pinKey={pinKey}>
       <ActivityPeekCard {...props} />
     </MapPeekOverlay>
   );

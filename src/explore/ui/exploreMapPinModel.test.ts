@@ -35,6 +35,20 @@ describe('exploreMapPinModel', () => {
     expect(matchesMapFilter(activity, 'camping')).toBe(false);
   });
 
+  it('places facilities filter matches amenity pins and excludes camp spots', () => {
+    const toilet = baseItem({
+      id: 'facility:1',
+      source: 'facility',
+      kind: 'event',
+      placeKind: 'toilet',
+    });
+    const camp = venueExploreMapItem({ id: 'venue:camp', kind: 'camping' });
+    expect(matchesPlacesMapFilter(toilet, 'facilities')).toBe(true);
+    expect(matchesPlacesMapFilter(camp, 'facilities')).toBe(false);
+    expect(matchesPlacesMapFilter(toilet, 'camping')).toBe(false);
+    expect(matchesPlacesMapFilter(toilet, 'others')).toBe(false);
+  });
+
   it('Places layer excludes activities and demand', () => {
     const activity = baseItem({ id: 'a1', source: 'activity', kind: 'hiking' });
     const demand = seekingExploreMapItem({ intentId: 'd1' });

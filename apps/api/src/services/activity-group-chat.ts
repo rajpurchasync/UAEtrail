@@ -6,12 +6,14 @@ import {
 import { findActivityDocInMongo } from '../lib/entity-sync.js';
 import { isDuplicateKeyError } from '../lib/mongo-errors.js';
 import { resolveActivityWallPostPolicyFromDoc } from '../lib/activity-group-chat-post-policy.js';
+import { resolveActivityPrimaryImageUrl } from '../lib/activity-group-photo.js';
 import {
   createActivityGroup,
   ensureGroupMember,
   findGroupByActivityId,
   getGroupMembership,
   removeGroupMember,
+  updateGroupChatSettings,
   updateGroupWallPostPolicy,
 } from '../lib/social-groups-store.js';
 
@@ -85,7 +87,19 @@ export const ensureActivityGroupChat = async (activityId: string): Promise<strin
 
   await syncActivityGroupChatRoster(activityId, group.id);
   await syncActivityGroupChatWallPolicyFromActivity(activityId);
+  await syncActivityGroupChatPhotoFromActivity(activityId);
   return group.id;
+};
+
+/** Crew chat list avatar — mirrors outing cover (updated when activity art changes). */
+export const syncActivityGroupChatPhotoFromActivity = async (activityId: string): Promise<void> => {
+  const eventDoc = await findActivityDocInMongo(activityId);
+  if (!eventDoc) return;
+  const group = await findGroupByActivityId(activityId);
+  if (!group) return;
+  const photoUrl = resolveActivityPrimaryImageUrl(eventDoc);
+  if ((group.photoUrl ?? null) === photoUrl) return;
+  await updateGroupChatSettings(group.id, { photoUrl });
 };
 
 /** Keep activity crew group wall policy aligned with `activities.groupChatPostPolicy`. */
@@ -111,6 +125,7 @@ export const openActivityGroupChat = async (activityId: string): Promise<string 
   if (!groupId) return null;
   await syncActivityGroupChatRoster(activityId, groupId);
   await syncActivityGroupChatWallPolicyFromActivity(activityId);
+  await syncActivityGroupChatPhotoFromActivity(activityId);
   return groupId;
 };
 

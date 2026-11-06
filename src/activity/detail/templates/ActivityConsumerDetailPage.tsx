@@ -36,7 +36,12 @@ import {
   resolveActivityLinkedParentSummary,
   resolveActivityLinkedRideshareSummary,
 } from '../../../activity/resolveActivityLinkageSummaries';
-import { resolveConsumerDetailVenueEyebrow } from '../../../activity/resolveConsumerDetailVenueEyebrow';
+import {
+  resolveConsumerDetailVenueEyebrow,
+  resolveConsumerDetailVenueKindLabel,
+} from '../../../activity/resolveConsumerDetailVenueEyebrow';
+import { UaeTrailBrandMark } from '../../../components/layout/UaeTrailBrandMark';
+import { SITE_TITLE_BRAND } from '../../../config/seo';
 import { ConsumerDetailRideshareLinkage } from './ConsumerDetailRideshareLinkage';
 import { ConsumerDetailOfferRideshare } from './ConsumerDetailOfferRideshare';
 import { ConsumerDetailRideshareEssentials } from './ConsumerDetailRideshareEssentials';
@@ -75,9 +80,6 @@ import {
   CONSUMER_DETAIL_PANEL,
   CONSUMER_DETAIL_SECTION_TITLE,
 } from './activityConsumerDetailSectionStyles';
-import { DetailPageLoadingState } from '../../../components/ui/DetailPageLoadingState';
-import { DETAIL_LOADING_ACTIVITY } from '../../../content/detailLoadingCopy';
-
 type ActivityDetailViewModel = ReturnType<typeof useActivityDetailViewModel>;
 
 export type ActivityConsumerDetailPageProps = {
@@ -96,10 +98,15 @@ export const ActivityConsumerDetailPage = ({
     return null;
   }
 
-  const layout = model.consumerLayout;
-  if (!layout) {
-    return <DetailPageLoadingState label={DETAIL_LOADING_ACTIVITY} variant="embedded" />;
-  }
+  const layout = model.consumerLayout ?? {
+    showPublishedCatalog: true,
+    showHostProfile: true,
+    participants: 'preview' as const,
+    showMeetingPoint: true,
+    showTransportSection: true,
+    showHostManageHub: false,
+    canOpenParticipantRoster: false,
+  };
 
   const venueLabel =
     model.registryPlaceName?.trim() || model.activity.locationName?.trim() || '';
@@ -139,11 +146,10 @@ export const ActivityConsumerDetailPage = ({
   const rideHostTenantId =
     isRideHost ? model.linkRideshareTenantId ?? model.activity.tenantId ?? null : null;
 
-  const hostAndSocialBlock =
-    !model.requiresSignIn ? (
-      <>
+  const hostAndSocialBlock = (
+      <div className="grid gap-4 md:grid-cols-2 lg:gap-3">
         {layout.showHostProfile ? (
-          <>
+          <div className="min-w-0">
             <ActivityGuideInviteBanner activity={model.activity} />
             <ConsumerDetailHostRow
               activity={model.activity}
@@ -151,7 +157,7 @@ export const ActivityConsumerDetailPage = ({
               canOpenHostProfile={model.canOpenHostProfile}
               showTenantRating={Boolean(model.activity.tenantId)}
             />
-          </>
+          </div>
         ) : null}
         {showParticipantsRow ? (
           <ConsumerDetailSocialRow
@@ -166,8 +172,8 @@ export const ActivityConsumerDetailPage = ({
             canOpenFullRoster={layout.canOpenParticipantRoster}
           />
         ) : null}
-      </>
-    ) : null;
+      </div>
+    );
 
   return (
     <div className="w-full pt-1 pb-2" data-activity-consumer-detail-template>
@@ -200,22 +206,26 @@ export const ActivityConsumerDetailPage = ({
         />
       ) : null}
 
-      {model.requiresSignIn ? <ActivityDetailGuestGate activity={model.activity} /> : null}
+      {model.requiresSignIn ? (
+        <div className="mt-3">
+          <ActivityDetailGuestGate activity={model.activity} compact />
+        </div>
+      ) : null}
 
-      {!isRideshare && !model.requiresSignIn ? hostAndSocialBlock : null}
+      {!isRideshare ? hostAndSocialBlock : null}
 
-      <div className="mt-3 space-y-6">
-        {isRideshare && !model.requiresSignIn ? (
+      <div className="mt-3 flex flex-col gap-6 lg:mt-2 lg:gap-3">
+        {isRideshare ? (
           <ConsumerDetailRideshareEssentials
             activity={model.activity}
             showVehiclePlate={model.viewerAccess?.canAccessCrewSurfaces === true}
           />
         ) : null}
-        <ConsumerDetailPlaceCard
-          activity={model.activity}
-          hideForLinkedRideshare={isRideshare && Boolean(linkedParentSummary)}
-        />
-        {!model.requiresSignIn ? (
+        <div className="grid gap-6 md:grid-cols-2 lg:gap-3">
+          <ConsumerDetailPlaceCard
+            activity={model.activity}
+            hideForLinkedRideshare={isRideshare && Boolean(linkedParentSummary)}
+          />
           <ConsumerDetailGettingThere
             activity={model.activity}
             viewerAccess={model.viewerAccess}
@@ -229,10 +239,10 @@ export const ActivityConsumerDetailPage = ({
               (!isRideshare && Boolean(linkedRideshareSummary))
             }
           />
-        ) : null}
-        {isRideshare && !model.requiresSignIn ? hostAndSocialBlock : null}
+        </div>
+        {isRideshare ? hostAndSocialBlock : null}
         <ConsumerDetailPacking activity={model.activity} />
-        {!model.requiresSignIn ? <ConsumerDetailInstructions activity={model.activity} /> : null}
+        <ConsumerDetailInstructions activity={model.activity} />
         <ActivityDetailPlanColumn model={model} planSections={planSections} consumerInline />
         {isRideshare && model.activity.tenantId ? (
           <ConsumerDetailDriverReviews tenantId={model.activity.tenantId} />
@@ -320,9 +330,9 @@ const ConsumerDetailLead = ({
     audienceBadges.length > 0;
 
   return (
-    <div className="pb-4">
-      <div className="flex items-center gap-3">
-        <h1 className="min-w-0 flex-1 text-[26px] font-bold leading-[1.15] tracking-tight text-neutral-950">
+    <div className="pb-4 lg:border-b lg:border-neutral-200/80 lg:pb-3">
+      <div className="flex items-start gap-3 lg:gap-3">
+        <h1 className="min-w-0 flex-1 text-[1.5rem] font-bold leading-[1.15] tracking-tight text-neutral-950 md:text-[1.75rem] lg:text-[1.375rem] lg:leading-tight lg:tracking-tight">
           {title}
         </h1>
         <ConsumerDetailLeadDateChip leadDate={leadDate} />
@@ -384,6 +394,7 @@ const ConsumerDetailVenueLead = ({
   placePath: string | null;
 }) => {
   const venueEyebrow = resolveConsumerDetailVenueEyebrow(activity, placePath);
+  const venueKindLabel = resolveConsumerDetailVenueKindLabel(activity, placePath);
   const outingPath = activityDetailPath(activity.id);
   const linkedParent = activity.linkedParentActivity;
   const isRideshare = activity.activityType === 'rideshare';
@@ -395,7 +406,7 @@ const ConsumerDetailVenueLead = ({
 
   const outingRow =
     isRideshare && linkedParent ? null : (
-      <div>
+      <div className="lg:hidden">
         <p className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">
           {ACTIVITY_DETAIL_THIS_OUTING_LABEL}
         </p>
@@ -414,7 +425,17 @@ const ConsumerDetailVenueLead = ({
         linkedParentRow || outingRow ? 'mt-2.5 border-t border-emerald-200/50 pt-2.5' : ''
       }
     >
-      <p className="text-[11px] font-bold uppercase tracking-wide text-emerald-800/80">{venueEyebrow}</p>
+      <p
+        className="flex min-w-0 items-center gap-1.5 text-[11px] font-bold tracking-wide text-emerald-800/80"
+        aria-label={venueEyebrow}
+      >
+        <span>{venueKindLabel} on</span>
+        <UaeTrailBrandMark
+          size="inline"
+          wordmark={SITE_TITLE_BRAND}
+          className="translate-y-px [&_span:last-child]:text-emerald-950"
+        />
+      </p>
       {placePath ? (
         <Link
           to={placePath}
@@ -435,7 +456,7 @@ const ConsumerDetailVenueLead = ({
   );
 
   return (
-    <div className="rounded-xl border border-emerald-200/70 bg-emerald-50/40 px-3 py-2.5 space-y-0">
+    <div className="rounded-xl border border-emerald-200/70 bg-emerald-50/40 px-3 py-2.5 space-y-0 lg:inline-flex lg:max-w-full lg:flex-wrap lg:items-baseline lg:gap-x-3 lg:rounded-lg lg:border-neutral-200/80 lg:bg-neutral-50 lg:px-2.5 lg:py-1.5">
       {linkedParentRow}
       {outingRow}
       {venueRow}
@@ -468,7 +489,7 @@ const ConsumerDetailSocialRow = ({
     .join(', ');
 
   return (
-    <section className="mt-4" aria-label="Going">
+    <section aria-label="Going">
       <p className={`mb-2 ${CONSUMER_DETAIL_SECTION_TITLE}`}>Going</p>
       <div className={`flex items-center gap-3 ${CONSUMER_DETAIL_PANEL.social}`}>
       <button
@@ -520,13 +541,13 @@ const ConsumerDetailOpenSection = ({
   icon?: ReactNode;
   tone?: ConsumerDetailPanelTone;
 }) => (
-  <section id={id} className="scroll-mt-24">
-    <div className="mb-2.5 flex items-center gap-2">
+  <section id={id} className="scroll-mt-24 lg:scroll-mt-12">
+    <div className="mb-2.5 flex items-center gap-2 lg:mb-1.5">
       {icon}
       <h2 className={CONSUMER_DETAIL_SECTION_TITLE}>{title}</h2>
     </div>
     <div
-      className={`text-sm leading-relaxed text-neutral-800 ${
+      className={`text-sm leading-relaxed text-neutral-800 lg:text-[13px] lg:leading-snug ${
         tone === 'prep' ? CONSUMER_DETAIL_PANEL.prep : CONSUMER_DETAIL_PANEL.logistics
       }`}
     >
@@ -727,12 +748,12 @@ const ConsumerDetailPlaceCard = ({
       state={activityPlaceReturnState(activityDetailPath(activity.id))}
       className={CONSUMER_DETAIL_PANEL.place}
     >
-      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-900 shadow-inner">
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-900 shadow-inner lg:h-9 lg:w-9 lg:rounded-lg">
         <MapPin className="h-5 w-5" aria-hidden />
       </div>
       <div className="min-w-0 flex-1">
         <p className="text-xs font-semibold uppercase tracking-wide text-emerald-800/70">{kindLabel}</p>
-        <p className="truncate text-[15px] font-semibold text-neutral-950">{name}</p>
+        <p className="truncate text-[15px] font-semibold text-neutral-950 lg:text-[13px]">{name}</p>
         <p className="mt-0.5 text-xs font-medium text-emerald-800/90">
           {ACTIVITY_DETAIL_LINKED_VENUE_SUBLINE}
         </p>
@@ -765,13 +786,13 @@ const ConsumerDetailHostRow = ({
       <SecureAvatar
         src={publisher.avatarUrl ?? activityHostAvatar(activity)}
         name={publisher.name}
-        className="h-10 w-10 shrink-0 text-sm ring-2 ring-white"
+        className="h-10 w-10 shrink-0 text-sm ring-2 ring-white lg:h-8 lg:w-8 lg:text-xs"
       />
       <div className="min-w-0 flex-1">
         <p className="text-xs font-medium text-neutral-500">
           {publisher.kind === 'company' ? 'Tour operator' : 'Hosted by'}
         </p>
-        <p className="truncate text-[15px] font-semibold text-neutral-950">{publisher.name}</p>
+        <p className="truncate text-[15px] font-semibold text-neutral-950 lg:text-[13px]">{publisher.name}</p>
         {tenant && publisher.kind !== 'company' ? (
           <p className="truncate text-sm text-neutral-600">{tenant}</p>
         ) : null}
@@ -789,7 +810,7 @@ const ConsumerDetailHostRow = ({
     </>
   );
 
-  const shell = `mt-4 flex items-center gap-3 ${CONSUMER_DETAIL_PANEL.trust} active:opacity-95`;
+  const shell = `flex items-center gap-3 ${CONSUMER_DETAIL_PANEL.trust} active:opacity-95`;
 
   return (
     <section aria-label={sectionLabel}>

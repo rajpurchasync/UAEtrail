@@ -30,51 +30,68 @@ export const LocationSpotGlyph = ({ className }: { className?: string }) => (
   </GlyphFrame>
 );
 
-/** Trail — one pine, a dotted path, and two place pins. */
-export const TrailMapGlyph = ({ className }: { className?: string }) => (
-  <GlyphFrame className={className} viewBox="0 0 32 32">
+/** Trail / hiking — same mountain as map venue pins, with a white edge. */
+export const HikingVenueGlyph = ({ className = '' }: { className?: string }) => (
+  <svg
+    className={`explore-hiking-glyph uaetrail-venue-glyph block h-[1.15em] w-[1.15em] shrink-0 overflow-visible text-emerald-700 ${className}`}
+    viewBox="0 0 24 24"
+    aria-hidden
+    xmlns="http://www.w3.org/2000/svg"
+  >
     <path
-      d="M4 29.4c2.6-4.4 4-7.6 5.6-10.6 1.6-3 1.2-5 3.4-6.6 2.4-1.7 4.6-1.5 7-2.8 2.2-1.2 3.6-2.8 4.8-4.4"
+      fill="#047857"
+      d="M2.5 19.5 8.2 9.8 11.5 14.2 15.8 7.5 21.5 19.5z"
+    />
+    <path
       fill="none"
-      stroke="#fb923c"
-      strokeWidth="2.6"
-      strokeLinecap="round"
-      strokeDasharray="0.15 3.15"
+      stroke="#fff"
+      strokeWidth={2.4}
+      strokeLinejoin="round"
+      d="M2.5 19.5 8.2 9.8 11.5 14.2 15.8 7.5 21.5 19.5"
     />
     <path
-      d="M12.2 16.8c2.4 1.7 4.6 2.5 7.4 3.3 2.2.6 3.8 1.4 5.2 2.2"
       fill="none"
-      stroke="#f59e0b"
-      strokeWidth="2.4"
-      strokeLinecap="round"
-      strokeDasharray="0.15 3.05"
+      stroke="#047857"
+      strokeWidth={1.15}
+      strokeLinejoin="round"
+      d="M2.5 19.5 8.2 9.8 11.5 14.2 15.8 7.5 21.5 19.5"
     />
-    <path fill="#4ade80" d="M2.2 20.2 8.4 7.6 14.6 20.2Z" />
-    <path fill="#16a34a" d="M3.6 15.4 8.4 5.4 13.2 15.4Z" />
-    <path fill="#166534" d="M4.8 12.2 8.4 4.2 12 12.2Z" />
-    <path fill="#92400e" d="M7.5 20h1.8v6.2H7.5z" />
+    <circle cx={15.8} cy={7.5} r={1.45} fill="#fff" />
+    <circle cx={15.8} cy={7.5} r={0.85} fill="#047857" />
+  </svg>
+);
+
+/** Amenities — toilets, water, rest areas. */
+export const FacilityGlyph = ({ className }: { className?: string }) => (
+  <GlyphFrame className={`explore-facility-glyph ${className}`}>
+    <circle cx="8.1" cy="5.6" r="2.15" fill="#1d4ed8" stroke="#fff" strokeWidth="1.1" />
     <path
-      fill="#e11d48"
-      d="M25.4 1.4c-2.2 0-3.8 1.65-3.8 3.65 0 2.8 3.8 6.7 3.8 6.7s3.8-3.9 3.8-6.7c0-2-1.6-3.65-3.8-3.65Z"
+      fill="#1d4ed8"
+      stroke="#fff"
+      strokeWidth="1.1"
+      strokeLinejoin="round"
+      d="M8.1 8.5c-2.55 0-4.35 1.45-4.35 3.35v6.15h2.2v-4.05h4.3v4.05h2.2v-6.15c0-1.9-1.8-3.35-4.35-3.35Z"
     />
-    <circle cx="25.4" cy="5" r="1.25" fill="#fff" />
     <path
-      fill="#0284c7"
-      d="M24.2 17.4c-2.1 0-3.6 1.55-3.6 3.5 0 2.65 3.6 6.4 3.6 6.4s3.6-3.75 3.6-6.4c0-1.95-1.5-3.5-3.6-3.5Z"
+      fill="#f59e0b"
+      stroke="#fff"
+      strokeWidth="1.1"
+      strokeLinejoin="round"
+      d="M17.15 9.1c0 1.85-1.45 3.35-3.2 3.35-1.75 0-3.2-1.5-3.2-3.35 0-2.05 3.2-5.55 3.2-5.55s3.2 3.5 3.2 5.55Z"
     />
-    <circle cx="24.2" cy="20.8" r="1.15" fill="#fff" />
+    <circle cx="13.95" cy="9.35" r="1.05" fill="#fff" />
   </GlyphFrame>
 );
 
 /** Others — three colored dots, shared by Events and Places. */
 export const OtherPlaceGlyph = ({ className }: { className?: string }) => (
-  <GlyphFrame className={className}>
-    <circle cx="8.1" cy="8.2" r="3.15" fill="#34d399" />
-    <circle cx="16.2" cy="8.6" r="2.7" fill="#38bdf8" />
-    <circle cx="12" cy="16.35" r="3.35" fill="#a78bfa" />
-    <circle cx="8.1" cy="8.2" r="1.15" fill="#ecfdf5" />
-    <circle cx="16.2" cy="8.6" r="1" fill="#e0f2fe" />
-    <circle cx="12" cy="16.35" r="1.2" fill="#f5f3ff" />
+  <GlyphFrame className={`explore-other-glyph ${className}`}>
+    <circle cx="7.4" cy="7.6" r="4.35" fill="#10b981" stroke="#fff" strokeWidth="1.25" />
+    <circle cx="16.7" cy="8.1" r="3.85" fill="#0ea5e9" stroke="#fff" strokeWidth="1.25" />
+    <circle cx="12" cy="16.5" r="4.55" fill="#8b5cf6" stroke="#fff" strokeWidth="1.25" />
+    <circle cx="7.4" cy="7.6" r="1.35" fill="#ecfdf5" />
+    <circle cx="16.7" cy="8.1" r="1.2" fill="#e0f2fe" />
+    <circle cx="12" cy="16.5" r="1.4" fill="#f5f3ff" />
   </GlyphFrame>
 );
 

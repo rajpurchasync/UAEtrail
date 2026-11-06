@@ -1,4 +1,5 @@
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
+import { gunzipSync, gzipSync } from 'node:zlib';
 import { logger } from './logger.js';
 import { getRedisClient } from './redis.js';
 import {
@@ -17,6 +18,15 @@ export { buildExploreMapBasePayload } from './explore-map-base.js';
 
 let exploreMapInflight: Promise<{ items: ExploreMapItemDTO[] }> | null = null;
 
+const serializeExploreMapRedisPayload = (payload: { items: ExploreMapItemDTO[] }): string =>
+  gzipSync(Buffer.from(JSON.stringify(payload), 'utf8')).toString('base64');
+
+const parseExploreMapRedisPayload = (raw: string): { items: ExploreMapItemDTO[] } => {
+  const buf = Buffer.from(raw, 'base64');
+  const json = gunzipSync(buf).toString('utf8');
+  return JSON.parse(json) as { items: ExploreMapItemDTO[] };
+};
+
 const loadExploreMapPayload = async (): Promise<{ items: ExploreMapItemDTO[] }> => {
   const now = Date.now();
   const memoryCached = readExploreMapMemoryCache<{ items: ExploreMapItemDTO[] }>(now);
@@ -34,7 +44,7 @@ const loadExploreMapPayload = async (): Promise<{ items: ExploreMapItemDTO[] }> 
     try {
       const cached = await redis.get(EXPLORE_MAP_REDIS_KEY);
       if (cached) {
-        const payload = JSON.parse(cached) as { items: ExploreMapItemDTO[] };
+        const payload = parseExploreMapRedisPayload(cached);
         writeExploreMapMemoryCache(payload, now);
         return payload;
       }
@@ -53,7 +63,11 @@ const loadExploreMapPayload = async (): Promise<{ items: ExploreMapItemDTO[] }> 
 
   if (redis) {
     try {
-      await redis.setEx(EXPLORE_MAP_REDIS_KEY, EXPLORE_MAP_CACHE_TTL_SEC, JSON.stringify(payload));
+      await redis.setEx(
+        EXPLORE_MAP_REDIS_KEY,
+        EXPLORE_MAP_CACHE_TTL_SEC,
+        serializeExploreMapRedisPayload(payload)
+      );
     } catch (err) {
       logger.warn({ err }, 'explore map redis write failed');
     }

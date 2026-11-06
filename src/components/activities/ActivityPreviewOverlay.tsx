@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import type { ActivityDetailDTO, ActivityViewerAccessDTO } from '@uaetrail/shared-types';
 import { ActivityDetailView } from '../activity/ActivityDetailView';
 import { detailBackPath } from '../../config/routingCatalog';
+import { CONSUMER_MAIN_OVERLAY_INSET } from '../../config/consumerOverlayInset';
 import { resolveActivityDetailWirePresentation } from '../../activity/resolveActivityDetailWirePresentation';
 
 type ActivityPreviewOverlayProps = {
@@ -169,7 +170,7 @@ export const ActivityPreviewOverlay = (props: ActivityPreviewOverlayProps) => {
   const footerOverride = listFooter ?? formFooter;
 
   return createPortal(
-    <div className="fixed inset-0 z-[100] overflow-y-auto bg-gray-50">
+    <div className={`${CONSUMER_MAIN_OVERLAY_INSET} z-[100] overflow-y-auto bg-gray-50`}>
       <button
         type="button"
         onClick={onClose}

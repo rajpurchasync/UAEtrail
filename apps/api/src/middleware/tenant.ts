@@ -4,6 +4,7 @@ import { ApiError } from '../lib/api-error.js';
 import { ensureOwnerMembershipForTenant } from '../lib/buddy-host-tenant.js';
 import { findTenantMembershipContext } from '../lib/tenant-access.js';
 import { findTenantById } from '../lib/tenant-store.js';
+import { auditPlatformAdminTenantScope } from '../lib/platform-security-audit.js';
 
 const readHeader = (req: Request, name: string): string | undefined => {
   const value = req.headers[name];
@@ -44,6 +45,14 @@ export const requireTenantContext = async (req: Request, _res: Response, next: N
         membershipRole: MembershipRole.TENANT_ADMIN,
         actingAsPlatformAdmin: true
       };
+      if (req.method !== 'GET' && req.method !== 'HEAD') {
+        void auditPlatformAdminTenantScope({
+          actorId: req.auth.userId,
+          tenantId: organisationId,
+          method: req.method,
+          path: req.path,
+        });
+      }
       return next();
     }
 

@@ -1,13 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { readAppRouteRegistry } from '../../scripts/readAppRouteRegistry.mjs';
 
 const read = (relativePath: string) => readFileSync(join(process.cwd(), relativePath), 'utf8');
 
 /** S9 Phase 7 — cross-surface wiring called out in consumer-detail-surfaces §8. */
 describe('consumerDetailSurfacesAcceptance', () => {
   it('routes /people to full list people discovery (single crew URL)', () => {
-    const app = read('src/App.tsx');
+    const app = readAppRouteRegistry();
     expect(app).toMatch(/path="\/people"/);
     expect(app).toMatch(/PeopleRedirect/);
     expect(read('src/routing/exploreEntryRedirects.tsx')).toMatch(/listPeopleDiscoveryPath\(\)/);

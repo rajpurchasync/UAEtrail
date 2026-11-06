@@ -111,6 +111,7 @@ const DiscoveryCardHeadlineShell = ({
 export const DiscoveryCardHeadline = ({
   sections,
   size = 'lg',
+  lineClamp,
   tone = 'hiking',
   detailAccess,
   onGuestGatedDetail,
@@ -119,13 +120,18 @@ export const DiscoveryCardHeadline = ({
 }: {
   sections: DiscoveryCardSections;
   size?: 'sm' | 'lg';
+  /** Map pin summary — keep title on two lines max. */
+  lineClamp?: 2;
   tone?: DiscoveryCardTone;
   detailAccess?: ExplorePeekDetailAccess | null;
   onGuestGatedDetail?: () => void;
   onBeforeDetailNavigate?: () => void;
   detailLinkState?: MapPeekDetailNavState;
 }) => {
-  const textClass = size === 'lg' ? 'text-xl font-bold leading-snug' : 'text-[17px] font-bold leading-snug';
+  const textClass =
+    (size === 'lg'
+      ? 'text-xl font-bold leading-snug'
+      : 'text-[16px] font-bold leading-snug') + (lineClamp === 2 ? ' line-clamp-2' : '');
   const highlightClass = discoveryCardToneTextClass[tone];
 
   if (sections.plainTitle) {
@@ -190,7 +196,7 @@ export const DiscoveryCardRatingRow = ({
 }) => {
   if (!isGeographyMapSource(card.source) && card.source !== 'shop' && card.source !== 'agency') return null;
 
-  const spacing = compact ? 'mt-1' : 'mt-2';
+  const spacing = compact ? 'mt-0' : 'mt-2';
 
   if (!card.reviewCount) {
     return (
@@ -290,12 +296,14 @@ export const DiscoveryCardLocationLink = ({
 export const DiscoveryCardDetailList = ({
   details,
   compact = false,
+  mapPeekCompact = false,
   mapLatitude,
   mapLongitude,
   showDirections = true,
 }: {
   details: DiscoveryCardDetail[];
   compact?: boolean;
+  mapPeekCompact?: boolean;
   mapLatitude?: number | null;
   mapLongitude?: number | null;
   showDirections?: boolean;
@@ -304,6 +312,9 @@ export const DiscoveryCardDetailList = ({
 
   if (compact) {
     const locationDetail = details.find((detail) => detail.icon === 'location');
+    const detailClass = mapPeekCompact
+      ? `mt-1 text-xs leading-snug line-clamp-2 ${EXPLORE_TYPE.body}`
+      : `mt-2 text-sm ${EXPLORE_TYPE.body}`;
     if (locationDetail) {
       return (
         <DiscoveryCardLocationLink
@@ -311,13 +322,13 @@ export const DiscoveryCardDetailList = ({
           latitude={mapLatitude}
           longitude={mapLongitude}
           showDirections={showDirections}
-          className={`mt-2 text-sm ${EXPLORE_TYPE.body}`}
+          className={detailClass}
         />
       );
     }
 
     return (
-      <p className={`mt-2 text-sm font-semibold leading-relaxed ${EXPLORE_TYPE.body}`}>
+      <p className={`${detailClass}${mapPeekCompact ? '' : ' font-semibold leading-relaxed'}`}>
         {details.map((detail) => detail.label).join(' · ')}
       </p>
     );
@@ -355,15 +366,23 @@ export const DiscoveryCardDetailList = ({
   );
 };
 
-export const DiscoveryCardRequirementBadges = ({ badges }: { badges: string[] }) => {
+export const DiscoveryCardRequirementBadges = ({
+  badges,
+  compact = false,
+}: {
+  badges: string[];
+  compact?: boolean;
+}) => {
   if (badges.length === 0) return null;
 
   return (
-    <div className="flex flex-wrap gap-1.5">
+    <div className={`flex flex-wrap ${compact ? 'gap-1' : 'gap-1.5'}`}>
       {badges.map((badge) => (
         <span
           key={badge}
-          className={`inline-flex rounded-full bg-neutral-100 px-2.5 py-1 text-[11px] font-bold ${EXPLORE_TYPE.body}`}
+          className={`inline-flex rounded-full bg-neutral-100 font-bold ${EXPLORE_TYPE.body} ${
+            compact ? 'px-2 py-0.5 text-[10px] leading-tight' : 'px-2.5 py-1 text-[11px]'
+          }`}
         >
           {badge}
         </span>
@@ -373,19 +392,31 @@ export const DiscoveryCardRequirementBadges = ({ badges }: { badges: string[] })
 };
 
 /** Restriction chips + price on map peek — join mode is conveyed by the primary CTA only. */
-export const ExploreActivityPeekMeta = ({ card }: { card: DiscoveryCardModel }) => {
+export const ExploreActivityPeekMeta = ({
+  card,
+  compact = false,
+}: {
+  card: DiscoveryCardModel;
+  compact?: boolean;
+}) => {
   if (card.source !== 'activity') return null;
 
   const hasBadges = (card.requirementBadges?.length ?? 0) > 0;
   const hasPrice = Boolean(card.price);
   if (!hasBadges && !hasPrice) return null;
 
+  const badgeClass = compact
+    ? 'inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold leading-tight'
+    : 'inline-flex rounded-full px-3 py-1 text-xs font-semibold';
+
   return (
-    <div className="mt-3 flex flex-wrap items-center gap-2">
-      {hasBadges ? <DiscoveryCardRequirementBadges badges={card.requirementBadges!} /> : null}
+    <div className={`flex flex-wrap items-center gap-2 ${compact ? 'mt-0' : 'mt-3 gap-2'}`}>
+      {hasBadges ? (
+        <DiscoveryCardRequirementBadges badges={card.requirementBadges!} compact={compact} />
+      ) : null}
       {card.price ? (
         <span
-          className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
+          className={`${badgeClass} ${
             card.price.kind === 'free' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-800'
           }`}
         >
@@ -401,6 +432,7 @@ export const DiscoveryCardPeopleRow = ({
   onGuestGatedAction,
   hideProMembershipUpsell = false,
   compactSection = false,
+  mapPeekCompact = false,
 }: {
   card: DiscoveryCardModel;
   onGuestGatedAction?: () => void;
@@ -408,6 +440,7 @@ export const DiscoveryCardPeopleRow = ({
   hideProMembershipUpsell?: boolean;
   /** Nested in peek strip — drop outer divider spacing. */
   compactSection?: boolean;
+  mapPeekCompact?: boolean;
 }) => {
   const participants = card.participantPreviews ?? [];
   const entitlements = card.viewerAccess?.entitlements;
@@ -480,54 +513,69 @@ export const DiscoveryCardPeopleRow = ({
 
   if (!showHostRow && participants.length === 0) return null;
 
+  const avatarClass = mapPeekCompact
+    ? 'h-8 w-8 text-xs ring-2 ring-white shrink-0'
+    : 'h-10 w-10 text-sm ring-2 ring-white shrink-0';
+  const avatarClassPlain = mapPeekCompact
+    ? 'h-8 w-8 text-xs ring-2 ring-white'
+    : 'h-10 w-10 text-sm ring-2 ring-white';
+  const nameClass = mapPeekCompact
+    ? 'text-xs font-semibold text-gray-900 truncate'
+    : 'text-sm font-semibold text-gray-900 truncate';
+  const linkNameClass = `${nameClass}${mapPeekCompact ? '' : ' group-hover:text-emerald-700'}`;
+  const subtitleClass = mapPeekCompact
+    ? `text-[10px] font-medium leading-tight ${EXPLORE_TYPE.muted}`
+    : `text-xs font-medium ${EXPLORE_TYPE.muted}`;
+  const rowGap = mapPeekCompact ? 'gap-2' : 'gap-3';
+
   const hostRow = showHostRow && hostName ? (
     hostPath ? (
       <Link
         to={hostPath}
-        className="flex items-center gap-3 group rounded-xl -mx-1 px-1 py-1 hover:bg-neutral-50 transition-colors"
+        className={`flex items-center ${rowGap} group rounded-xl -mx-1 px-1 py-0.5 hover:bg-neutral-50 transition-colors`}
       >
         <SecureAvatar
           src={hostAvatar}
           name={hostName}
-          className="h-10 w-10 text-sm ring-2 ring-white shrink-0"
+          className={avatarClass}
         />
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-gray-900 group-hover:text-emerald-700 truncate">{hostName}</p>
-          <p className={`text-xs font-medium ${EXPLORE_TYPE.muted}`}>
+          <p className={linkNameClass}>{hostName}</p>
+          <p className={subtitleClass}>
             {hostProfileSubtitle(peekPublisherSubtitle)}
           </p>
         </div>
-        <ChevronRight className="h-4 w-4 text-gray-400 shrink-0" />
+        <ChevronRight className={`${mapPeekCompact ? 'h-3.5 w-3.5' : 'h-4 w-4'} text-gray-400 shrink-0`} />
       </Link>
     ) : hostProfilePath && isGuestViewer ? (
       <button
         type="button"
         onClick={onGuestGatedAction}
-        className="flex w-full items-center gap-3 rounded-xl -mx-1 px-1 py-1 text-left hover:bg-neutral-50 transition-colors"
+        className={`flex w-full items-center ${rowGap} rounded-xl -mx-1 px-1 py-0.5 text-left hover:bg-neutral-50 transition-colors`}
       >
         <SecureAvatar
           src={hostAvatar}
           name={hostName}
-          className="h-10 w-10 text-sm ring-2 ring-white shrink-0"
+          className={avatarClass}
         />
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-gray-900 truncate">{hostName}</p>
-          <p className={`text-xs font-medium ${EXPLORE_TYPE.muted}`}>
+          <p className={nameClass}>{hostName}</p>
+          <p className={subtitleClass}>
             {hostProfileSubtitle(peekPublisherSubtitle)}
           </p>
         </div>
-        <ChevronRight className="h-4 w-4 text-gray-400 shrink-0" />
+        <ChevronRight className={`${mapPeekCompact ? 'h-3.5 w-3.5' : 'h-4 w-4'} text-gray-400 shrink-0`} />
       </button>
     ) : (
-      <div className="flex items-center gap-3">
+      <div className={`flex items-center ${rowGap}`}>
         <SecureAvatar
           src={hostAvatar}
           name={hostName}
-          className="h-10 w-10 text-sm ring-2 ring-white"
+          className={avatarClassPlain}
         />
         <div className="min-w-0">
-          <p className="text-sm font-semibold text-gray-900">{hostName}</p>
-          <p className={`text-xs font-medium ${EXPLORE_TYPE.muted}`}>
+          <p className={nameClass}>{hostName}</p>
+          <p className={subtitleClass}>
             {hostProfileSubtitle(
               peekGuideCountLine ? `${peekPublisherRole} · ${peekGuideCountLine}` : peekPublisherRole
             )}
@@ -540,7 +588,11 @@ export const DiscoveryCardPeopleRow = ({
   return (
     <div
       className={
-        compactSection ? 'space-y-4' : 'mt-5 border-t border-neutral-100 pt-4 space-y-4'
+        compactSection
+          ? mapPeekCompact
+            ? 'space-y-2'
+            : 'space-y-4'
+          : 'mt-5 border-t border-neutral-100 pt-4 space-y-4'
       }
     >
       {hostRow}
@@ -628,14 +680,22 @@ export const ExploreVenueImageBadges = ({ card }: { card: DiscoveryCardModel }) 
   );
 };
 
-export const DiscoveryCardCapacityRow = ({ card }: { card: DiscoveryCardModel }) => {
+export const DiscoveryCardCapacityRow = ({
+  card,
+  compact = false,
+}: {
+  card: DiscoveryCardModel;
+  compact?: boolean;
+}) => {
   const label = card.sections.partyLabel;
   if (!label) return null;
 
   return (
-    <p className={`text-sm font-medium ${EXPLORE_TYPE.body}`}>
+    <p className={`${compact ? 'text-xs' : 'text-sm'} font-medium ${EXPLORE_TYPE.body}`}>
       <span className="font-semibold tabular-nums">{label}</span>
-      <span className={`ml-1.5 text-xs font-medium ${EXPLORE_TYPE.muted}`}>spots</span>
+      <span className={`ml-1 ${compact ? 'text-[10px]' : 'ml-1.5 text-xs'} font-medium ${EXPLORE_TYPE.muted}`}>
+        spots
+      </span>
     </p>
   );
 };
@@ -645,17 +705,31 @@ const peekStripLabel =
   'mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-neutral-500';
 
 /** Map peek — capacity above host; not grouped with rideshare. */
-export const ExploreActivityPeekSpotsSection = ({ card }: { card: DiscoveryCardModel }) => {
+export const ExploreActivityPeekSpotsSection = ({
+  card,
+  compact = false,
+}: {
+  card: DiscoveryCardModel;
+  compact?: boolean;
+}) => {
   if (!discoveryCardActivityShowsPeekSpots(card)) return null;
   const isFull = discoveryCardActivityJoinIsFull(card);
+  const shell = compact
+    ? 'rounded-xl border border-neutral-100 bg-neutral-50/80 px-3 py-2.5'
+    : peekStripShell;
+  const label = compact
+    ? 'mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-neutral-500'
+    : peekStripLabel;
 
   return (
-    <section className={peekStripShell} aria-label={ACTIVITY_PEEK_SECTION_SPOTS}>
-      <div className={peekStripLabel}>{ACTIVITY_PEEK_SECTION_SPOTS}</div>
+    <section className={shell} aria-label={ACTIVITY_PEEK_SECTION_SPOTS}>
+      <div className={label}>{ACTIVITY_PEEK_SECTION_SPOTS}</div>
       {isFull ? (
-        <p className={`text-sm font-semibold ${EXPLORE_TYPE.body}`}>{ACTIVITY_PEEK_FULL_CAPACITY_LABEL}</p>
+        <p className={`${compact ? 'text-xs' : 'text-sm'} font-semibold ${EXPLORE_TYPE.body}`}>
+          {ACTIVITY_PEEK_FULL_CAPACITY_LABEL}
+        </p>
       ) : (
-        <DiscoveryCardCapacityRow card={card} />
+        <DiscoveryCardCapacityRow card={card} compact={compact} />
       )}
     </section>
   );

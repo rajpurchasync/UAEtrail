@@ -7,7 +7,6 @@ import {
   Download,
   LogIn,
   LogOut,
-  Menu,
   RefreshCw,
   Shield,
   Smartphone,
@@ -29,7 +28,7 @@ import {
   ANDROID_INSTALL_SETTINGS_HASH,
   IOS_INSTALL_SETTINGS_HASH,
 } from '../../config/phoneAppInstall';
-import { detectAndroidWebBrowser, resolveAndroidInstallSteps } from '../../utils/pwaInstallGuide';
+import { detectAndroidWebBrowser, resolveAndroidInstallSteps, resolveIosInstallSteps } from '../../utils/pwaInstallGuide';
 import { promptAndroidInstall } from '../../utils/pwaInstallPrompt';
 import { PROFILE_SETTINGS_PATH } from '../../config/routingCatalog';
 import { resolveMobileTabHeaderTitle } from '../../config/mobileTabHeader';
@@ -103,11 +102,60 @@ import { UaeTrailBrandMark } from './UaeTrailBrandMark';
 import { SecureAvatar } from '../ui/SecureAvatar';
 import { useNotificationUnreadCount } from '../../hooks/useNotificationUnreadCount';
 import { useMemberStatus } from '../../hooks/useMemberStatus';
+import { DisplayPreferencesSection } from '../profile/DisplayPreferencesSection';
 
 export type MobileMenuTone = 'default' | 'light';
 
-/** Above map chrome (1100), below dialogs (1400). Portaled to escape `isolation` on marketing hero. */
-const MOBILE_MENU_OVERLAY_Z = 'z-[2000]';
+/** Above map filters (4200). Header with the burger sits at 5100 while open. */
+const MOBILE_MENU_OVERLAY_Z = 'z-[5000]';
+
+const AnimatedBurgerIcon = ({ open }: { open: boolean }) => (
+  <svg
+    width={20}
+    height={16}
+    viewBox="0 0 20 16"
+    fill="none"
+    aria-hidden
+    className="block shrink-0 overflow-visible"
+    stroke="currentColor"
+    strokeWidth={2}
+    strokeLinecap="butt"
+    strokeLinejoin="miter"
+  >
+    <line
+      x1="2"
+      y1="3"
+      x2="18"
+      y2="3"
+      className="transition-transform duration-300 ease-out"
+      style={{
+        transformBox: 'view-box',
+        transformOrigin: '10px 3px',
+        transform: open ? 'translateY(5px) rotate(45deg)' : 'none',
+      }}
+    />
+    <line
+      x1="2"
+      y1="8"
+      x2="18"
+      y2="8"
+      className="transition-opacity duration-200"
+      style={{ opacity: open ? 0 : 1 }}
+    />
+    <line
+      x1="2"
+      y1="13"
+      x2="18"
+      y2="13"
+      className="transition-transform duration-300 ease-out"
+      style={{
+        transformBox: 'view-box',
+        transformOrigin: '10px 13px',
+        transform: open ? 'translateY(-5px) rotate(-45deg)' : 'none',
+      }}
+    />
+  </svg>
+);
 
 type DashboardNavLink = { to: string; label: string };
 
@@ -115,6 +163,7 @@ interface MobileMenuContextValue {
   open: boolean;
   openMenu: () => void;
   closeMenu: () => void;
+  toggleMenu: () => void;
 }
 
 const MobileMenuContext = createContext<MobileMenuContextValue | null>(null);
@@ -126,7 +175,7 @@ interface MobileMenuProviderProps {
 const DrawerNavIcon = ({ active, icon: Icon }: { active: boolean; icon: LucideIcon }) => (
   <span className={mobileDrawerIconWell(active)} aria-hidden>
     <Icon
-      className={`h-[18px] w-[18px] ${mobileDrawerIconTone(active)}`}
+      className={`h-4 w-4 ${mobileDrawerIconTone(active)}`}
       strokeWidth={active ? iconStroke.active : iconStroke.default}
     />
   </span>
@@ -149,25 +198,31 @@ const DashboardDrawerDivider = () => <div className="my-2 border-t border-gray-1
 const isPathActive = (pathname: string, to: string) =>
   pathname === to || pathname.startsWith(`${to}/`);
 
+type MobileDrawerHeader = {
+  eyebrow?: string;
+  title: string;
+  /** Show gradient logo + wordmark (guest landing / consoles without app brand chrome). */
+  showBrandMark?: boolean;
+};
+
 type MobileDrawerProps = {
   open: boolean;
   closeMenu: () => void;
-  eyebrow?: string;
-  title: string;
-  /** Show gradient logo + wordmark (consumer menu / guest landing). */
-  showBrandMark?: boolean;
   ariaLabel: string;
   children: ReactNode;
+  /**
+   * In-panel title + close. Omit on the consumer map/hub — the tab header already
+   * shows brand and the morphing burger.
+   */
+  header?: MobileDrawerHeader;
 };
 
 const MobileDrawer = ({
   open,
   closeMenu,
-  eyebrow,
-  title,
-  showBrandMark = false,
   ariaLabel,
   children,
+  header,
 }: MobileDrawerProps) => {
   if (typeof document === 'undefined') return null;
 
@@ -190,28 +245,30 @@ const MobileDrawer = ({
         aria-label={ariaLabel}
         className={`${MOBILE_DRAWER.aside} ${open ? 'translate-x-0' : 'translate-x-full'}`}
       >
-        <div className="flex items-center justify-between gap-3 border-b border-neutral-200/80 bg-white/95 px-4 pb-3 pt-safe-plus-2 backdrop-blur-sm">
-          <div className="min-w-0">
-            {eyebrow ? (
-              <p className="mb-0.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-600/90">
-                {eyebrow}
-              </p>
-            ) : null}
-            {showBrandMark ? (
-              <UaeTrailBrandMark size="md" />
-            ) : (
-              <p className="truncate text-lg font-semibold text-neutral-900">{title}</p>
-            )}
+        {header ? (
+          <div className="flex items-center justify-between gap-3 border-b border-neutral-200/80 bg-white/95 px-3 py-2 backdrop-blur-sm">
+            <div className="min-w-0">
+              {header.eyebrow ? (
+                <p className="mb-0.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-600/90">
+                  {header.eyebrow}
+                </p>
+              ) : null}
+              {header.showBrandMark ? (
+                <UaeTrailBrandMark size="md" />
+              ) : (
+                <p className="truncate text-lg font-semibold text-neutral-900">{header.title}</p>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={closeMenu}
+              className={MOBILE_DRAWER.closeBtn}
+              aria-label="Close menu"
+            >
+              <X className="h-5 w-5" />
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={closeMenu}
-            className={MOBILE_DRAWER.closeBtn}
-            aria-label="Close menu"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
+        ) : null}
         <nav className={MOBILE_DRAWER.nav} aria-label={ariaLabel}>
           {children}
         </nav>
@@ -266,6 +323,14 @@ export const MobileMenuProvider = ({ children }: MobileMenuProviderProps) => {
 
   const closeMenu = useCallback(() => setOpen(false), []);
   const openMenu = useCallback(() => setOpen(true), []);
+  const toggleMenu = useCallback(() => setOpen((current) => !current), []);
+
+  useEffect(() => {
+    document.documentElement.dataset.mobileMenu = open ? 'open' : '';
+    return () => {
+      delete document.documentElement.dataset.mobileMenu;
+    };
+  }, [open]);
 
   useEffect(() => {
     closeMenu();
@@ -285,7 +350,7 @@ export const MobileMenuProvider = ({ children }: MobileMenuProviderProps) => {
   }, [open, closeMenu]);
 
   return (
-    <MobileMenuContext.Provider value={{ open, openMenu, closeMenu }}>
+    <MobileMenuContext.Provider value={{ open, openMenu, closeMenu, toggleMenu }}>
       {children}
       <MobileMenuPanel />
     </MobileMenuContext.Provider>
@@ -306,22 +371,25 @@ interface MobileMenuButtonProps {
   showOnDesktop?: boolean;
 }
 
+export const useMobileMenuOpen = (): boolean => useContext(MobileMenuContext)?.open ?? false;
+
 export const MobileMenuButton = ({ tone = 'default', className = '', showOnDesktop = false }: MobileMenuButtonProps) => {
-  const { openMenu } = useMobileMenu();
+  const { open, toggleMenu } = useMobileMenu();
   const toneClass =
     tone === 'light'
       ? 'text-white bg-white/15 backdrop-blur-sm border border-white/25 hover:bg-white/25'
       : 'text-emerald-700 bg-emerald-50 border border-emerald-100 hover:bg-emerald-100';
 
   return (
-    <UiTooltip label="Menu">
+    <UiTooltip label={open ? 'Close menu' : 'Menu'}>
     <button
       type="button"
-      onClick={openMenu}
-      className={`${showOnDesktop ? '' : 'md:hidden'} h-11 w-11 shrink-0 inline-flex items-center justify-center rounded-full transition-colors active:scale-95 ${toneClass} ${className}`}
-      aria-label="Open menu"
+      onClick={toggleMenu}
+      className={`${showOnDesktop ? '' : 'md:hidden'} relative z-[5100] h-11 w-11 shrink-0 inline-flex items-center justify-center rounded-full transition-colors active:scale-95 ${toneClass} ${className}`}
+      aria-label={open ? 'Close menu' : 'Open menu'}
+      aria-expanded={open}
     >
-      <Menu className="w-5 h-5" strokeWidth={2.25} />
+      <AnimatedBurgerIcon open={open} />
     </button>
     </UiTooltip>
   );
@@ -386,10 +454,12 @@ export const MobileUserMenuButton = ({
       <MobileDrawer
         open={open}
         closeMenu={closeMenu}
-        eyebrow={user ? 'Menu' : undefined}
-        title={user?.displayName || 'UAE Trail'}
-        showBrandMark={!user}
         ariaLabel="Landing navigation"
+        header={{
+          eyebrow: user ? 'Menu' : undefined,
+          title: user?.displayName || 'UAE Trail',
+          showBrandMark: !user,
+        }}
       >
         <div className={MOBILE_DRAWER.stack}>
           <div className={MOBILE_DRAWER.group}>
@@ -475,6 +545,14 @@ const MobileMenuPanel = () => {
   const unreadNotifications = useNotificationUnreadCount();
   const { href: signInHref } = buildSignInRedirect({ pathname, search });
   const [androidHelpOpen, setAndroidHelpOpen] = useState(false);
+  const [iosHelpOpen, setIosHelpOpen] = useState(false);
+
+  useEffect(() => {
+    if (!open) {
+      setAndroidHelpOpen(false);
+      setIosHelpOpen(false);
+    }
+  }, [open]);
 
   const isAdminRole = user?.role === 'platform_admin';
   const isPrivilegedRole = canAccessPublishingWorkspace || isAdminRole;
@@ -512,9 +590,8 @@ const MobileMenuPanel = () => {
       <MobileDrawer
         open={open}
         closeMenu={closeMenu}
-        eyebrow="Admin"
-        title={user?.displayName || 'Account'}
         ariaLabel="Admin navigation"
+        header={{ eyebrow: 'Admin', title: user?.displayName || 'Account' }}
       >
         <DashboardDrawerLinks links={ADMIN_LINKS} pathname={pathname} closeMenu={closeMenu} adminNav />
         <Link
@@ -555,9 +632,8 @@ const MobileMenuPanel = () => {
       <MobileDrawer
         open={open}
         closeMenu={closeMenu}
-        eyebrow="Organise"
-        title={user?.displayName || 'Account'}
         ariaLabel="Workspace navigation"
+        header={{ eyebrow: 'Organise', title: user?.displayName || 'Account' }}
       >
         <DashboardDrawerLinks links={PUBLISHING_CONSOLE_LINKS} pathname={pathname} closeMenu={closeMenu} />
         <DashboardDrawerSiteLink closeMenu={closeMenu} />
@@ -579,14 +655,7 @@ const MobileMenuPanel = () => {
   }
 
   return (
-    <MobileDrawer
-      open={open}
-      closeMenu={closeMenu}
-      eyebrow="Menu"
-      showBrandMark
-      title="UAE Trail"
-      ariaLabel="Main menu"
-    >
+    <MobileDrawer open={open} closeMenu={closeMenu} ariaLabel="Main menu">
       <div className={MOBILE_DRAWER.stack}>
         <div className={MOBILE_DRAWER.group}>
           {CONSUMER_HAMBURGER_MENU.filter((item) => item.kind === 'link').map((item) => {
@@ -618,6 +687,15 @@ const MobileMenuPanel = () => {
           })}
         </div>
 
+        {!user ? (
+          <div>
+            <p className={MOBILE_DRAWER.sectionLabel}>Display</p>
+            <div className={MOBILE_DRAWER.group}>
+              <DisplayPreferencesSection compact />
+            </div>
+          </div>
+        ) : null}
+
         {CONSUMER_HAMBURGER_MENU.filter((item) => item.kind === 'download').map((item) => (
           <div key={item.title} role="group" aria-label={item.title}>
             <p className={MOBILE_DRAWER.sectionLabel}>{item.title}</p>
@@ -628,12 +706,19 @@ const MobileMenuPanel = () => {
                   sub.action === 'pwa-android'
                     ? resolveAndroidInstallSteps(detectAndroidWebBrowser(), window.isSecureContext)
                     : null;
+                const iosSteps =
+                  sub.action === 'pwa-ios' ? resolveIosInstallSteps() : null;
                 return (
                   <div key={sub.label}>
                     <button
                       type="button"
                       onClick={() => {
                         if (sub.action === 'pwa-android') {
+                          if (androidHelpOpen) {
+                            setAndroidHelpOpen(false);
+                            return;
+                          }
+                          setIosHelpOpen(false);
                           if (promptAndroidInstall()) {
                             closeMenu();
                             return;
@@ -645,7 +730,19 @@ const MobileMenuPanel = () => {
                           setAndroidHelpOpen(true);
                           return;
                         }
-                        openPwaInstall(sub.action);
+                        if (sub.action === 'pwa-ios') {
+                          if (iosHelpOpen) {
+                            setIosHelpOpen(false);
+                            return;
+                          }
+                          setAndroidHelpOpen(false);
+                          if (user) {
+                            openPwaInstall('pwa-ios');
+                            return;
+                          }
+                          setIosHelpOpen(true);
+                          return;
+                        }
                       }}
                       className={mobileDrawerRowClass(false)}
                     >
@@ -658,6 +755,15 @@ const MobileMenuPanel = () => {
                         {androidGuide.notice ? <p>{androidGuide.notice}</p> : null}
                         <ol className="mt-2 list-decimal space-y-1 pl-4">
                           {androidGuide.steps.map((step) => (
+                            <li key={step}>{step}</li>
+                          ))}
+                        </ol>
+                      </div>
+                    ) : null}
+                    {sub.action === 'pwa-ios' && iosHelpOpen && iosSteps ? (
+                      <div className="px-4 pb-3 text-xs leading-relaxed text-neutral-600">
+                        <ol className="list-decimal space-y-1 pl-4">
+                          {iosSteps.map((step) => (
                             <li key={step}>{step}</li>
                           ))}
                         </ol>

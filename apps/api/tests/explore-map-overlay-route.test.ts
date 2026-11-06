@@ -34,7 +34,7 @@ describe('GET /api/explore/map vs GET /api/me/discover/overlay (COH-08)', () => 
     const publicPin = (
       publicMap.body.data.items as Array<{ id: string; viewerAccess?: { level?: string } }>
     ).find((item) => item.id === pinId);
-    expect(publicPin?.viewerAccess?.level).toBe('public');
+    expect(publicPin?.viewerAccess).toBeUndefined();
 
     const unauth = await request(app).get('/api/me/discover/overlay');
     expect(unauth.status).toBe(401);
@@ -52,7 +52,7 @@ describe('GET /api/explore/map vs GET /api/me/discover/overlay (COH-08)', () => 
     const signedPin = (
       signedMap.body.data.items as Array<{ id: string; viewerAccess?: { level?: string } }>
     ).find((item) => item.id === pinId);
-    expect(signedPin?.viewerAccess?.level).toBe('public');
+    expect(signedPin?.viewerAccess).toBeUndefined();
 
     const overlay = await request(app)
       .get('/api/me/discover/overlay')

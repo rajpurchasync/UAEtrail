@@ -1,10 +1,15 @@
 import type { Response } from 'express';
 import type { ChatMessageDTO, GroupWallStreamEventDTO } from '@uaetrail/shared-types';
+import { ApiError } from '../lib/api-error.js';
 import { getRedisClient } from '../lib/redis.js';
 
 const CHAT_REDIS_CHANNEL = 'chat:stream';
 const HEARTBEAT_MS = 25_000;
 const REDIS_SUBSCRIBE_TIMEOUT_MS = 8000;
+const MAX_SSE_CONNECTIONS_PER_USER = Math.max(
+  1,
+  Number.parseInt(process.env.CHAT_SSE_MAX_CONNECTIONS_PER_USER ?? '4', 10) || 4
+);
 
 export type ChatStreamEvent =
   | { type: 'chat_message'; data: ChatMessageDTO }
@@ -35,6 +40,15 @@ const deliverLocal = (userId: string, event: ChatStreamEvent): void => {
 };
 
 export const registerChatStreamClient = (userId: string, res: Response): (() => void) => {
+  const existing = clientsByUser.get(userId)?.size ?? 0;
+  if (existing >= MAX_SSE_CONNECTIONS_PER_USER) {
+    throw new ApiError(
+      429,
+      'sse_connection_limit',
+      'Too many live chat connections. Close another tab or device and try again.'
+    );
+  }
+
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');

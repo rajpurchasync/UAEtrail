@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { readAppRouteRegistry } from '../../scripts/readAppRouteRegistry.mjs';
 import { execSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 
@@ -42,9 +43,9 @@ describe('proMembershipSurfaceGuard', () => {
   });
 
   it('App mounts InboundProMembershipRedirect for /become-host routes', () => {
-    const app = readFileSync('src/App.tsx', 'utf8');
+    const app = readAppRouteRegistry();
     expect(app).toMatch(/InboundProMembershipRedirect/);
-    expect(app).toMatch(/routing\/inboundBookmarkRedirects/);
+    expect(app).toMatch(/loadInboundRedirects/);
     expect(app).not.toMatch(/pages\/BecomeHost/);
     expect(app).not.toMatch(/pages\/BecomeOrganisation/);
   });

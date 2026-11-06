@@ -8,6 +8,7 @@ import {
   GROUP_WALL_REACTION_LABEL,
 } from '../../constants/groupReactions';
 import { GroupWallReactionPicker } from './GroupWallReactionPicker';
+import { CHAT_SPLIT_OVERLAY_INSET, readConsumerOverlayContentLeftPx } from '../../config/consumerOverlayInset';
 
 export type MessageAnchorRect = Pick<DOMRect, 'top' | 'left' | 'width' | 'height'>;
 
@@ -54,9 +55,12 @@ export const ChatMessageActionsSheet = ({
       return;
     }
 
+    const contentLeft = readConsumerOverlayContentLeftPx();
+    const contentRight = window.innerWidth;
+    const contentWidth = contentRight - contentLeft;
     const centerX = anchor.left + anchor.width / 2;
     const centerY = anchor.top + anchor.height / 2;
-    const cardW = Math.min(300, window.innerWidth - 24);
+    const cardW = Math.min(300, contentWidth - 24);
     const cardH = hasReactions ? (fullPickerOpen ? 220 : 120) : 72;
     const margin = 12;
 
@@ -64,7 +68,7 @@ export const ChatMessageActionsSheet = ({
     let top = centerY;
 
     const halfW = cardW / 2;
-    left = Math.min(Math.max(halfW + margin, left), window.innerWidth - halfW - margin);
+    left = Math.min(Math.max(contentLeft + halfW + margin, left), contentRight - halfW - margin);
     top = Math.min(Math.max(cardH / 2 + margin, top), window.innerHeight - cardH / 2 - margin);
 
     const current = positionRef.current;
@@ -90,7 +94,7 @@ export const ChatMessageActionsSheet = ({
     <>
       <button
         type="button"
-        className="fixed inset-0 z-[1650] bg-black/35"
+        className={`${CHAT_SPLIT_OVERLAY_INSET} z-[1650] bg-black/35`}
         aria-label="Close message actions"
         onClick={onClose}
       />

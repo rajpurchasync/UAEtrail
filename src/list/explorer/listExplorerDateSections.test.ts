@@ -8,7 +8,7 @@ const card = (id: string, scheduleDate: string | null): DiscoveryCardModel =>
 describe('groupListExplorerDateSections', () => {
   const now = new Date('2026-10-30T10:00:00');
 
-  it('groups today, this week, this month, later months, later years, then earlier', () => {
+  it('groups into Today, This week, This month, and Other', () => {
     const sections = groupListExplorerDateSections(
       [
         card('later-year', '2027-01-02'),
@@ -29,16 +29,22 @@ describe('groupListExplorerDateSections', () => {
       'Today',
       'This week',
       'This month',
-      'November',
-      'December',
-      'September',
-      '2027',
-      '2025',
-      'Anytime',
+      'Other',
     ]);
     expect(sections.find((section) => section.label === 'This week')?.cards.map((item) => item.id)).toEqual([
       'earlier-week',
       'week',
+    ]);
+    expect(sections.find((section) => section.label === 'This month')?.cards.map((item) => item.id)).toEqual([
+      'month',
+    ]);
+    expect(sections.find((section) => section.label === 'Other')?.cards.map((item) => item.id)).toEqual([
+      'past-year',
+      'sep',
+      'nov',
+      'dec',
+      'later-year',
+      'open',
     ]);
   });
 

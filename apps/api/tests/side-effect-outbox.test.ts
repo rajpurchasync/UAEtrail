@@ -21,6 +21,23 @@ import { configureTestMongoUri } from './helpers/test-db.js';
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+import { isSideEffectOutboxEnabled } from '../src/lib/side-effect-outbox.js';
+
+describe('side-effect outbox enablement', () => {
+  it('is on in production unless explicitly disabled', () => {
+    const prevNode = process.env.NODE_ENV;
+    const prevFlag = process.env.SIDE_EFFECT_OUTBOX;
+    process.env.NODE_ENV = 'production';
+    delete process.env.SIDE_EFFECT_OUTBOX;
+    expect(isSideEffectOutboxEnabled()).toBe(true);
+    process.env.SIDE_EFFECT_OUTBOX = '0';
+    expect(isSideEffectOutboxEnabled()).toBe(false);
+    process.env.NODE_ENV = prevNode;
+    if (prevFlag === undefined) delete process.env.SIDE_EFFECT_OUTBOX;
+    else process.env.SIDE_EFFECT_OUTBOX = prevFlag;
+  });
+});
+
 describe('side-effect notification outbox (SIDE_EFFECT_OUTBOX)', () => {
   beforeAll(async () => {
     configureTestEnv();

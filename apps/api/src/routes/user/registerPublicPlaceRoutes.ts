@@ -25,7 +25,6 @@ import {
 } from '../../services/place-public-read.js';
 import { finishCatalogEtag, readCatalogResponseEtag } from '../../lib/explore-catalog-etag.js';
 import { readExploreMapMemoryCache } from '../../lib/explore-map-cache.js';
-import { toExploreListProjection } from '../../lib/explore-map-list-projection.js';
 import type { ExploreMapRouteResult } from '../../lib/explore-map-route.js';
 import { sendNotModifiedIfMatch } from '../../lib/http-etag.js';
 import {
@@ -40,9 +39,9 @@ export const registerPublicPlaceRoutes = (router: Router): void => {
   router.get('/explore/map', async (req, res, next) => {
     try {
       const query = req.query as Record<string, string | undefined>;
+      const projection = query.projection?.trim();
       const unscoped = !query.bbox && !query.cursor && !query.limit && !query.area;
-      const listProjection = query.projection === 'list';
-      const catalogFresh = unscoped && !listProjection && readExploreMapMemoryCache() != null;
+      const catalogFresh = unscoped && projection !== 'full' && readExploreMapMemoryCache() != null;
       if (catalogFresh && sendNotModifiedIfMatch(req, res, await readCatalogResponseEtag('map'))) return;
       const data = await loadExploreMapForViewer({
         query: {
@@ -50,14 +49,13 @@ export const registerPublicPlaceRoutes = (router: Router): void => {
           cursor: query.cursor,
           limit: query.limit,
           area: query.area,
+          projection,
         },
         viewerUserId: null,
         userRole: null,
       });
-      const payload: ExploreMapRouteResult = listProjection
-        ? { ...data, items: toExploreListProjection(data.items) }
-        : data;
-      if (unscoped && !listProjection && (await finishCatalogEtag(req, res, 'map', payload))) return;
+      const payload: ExploreMapRouteResult = data;
+      if (unscoped && projection !== 'full' && (await finishCatalogEtag(req, res, 'map', payload))) return;
       res.json({ data: payload });
     } catch (error) {
       next(error);

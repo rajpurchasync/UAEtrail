@@ -25,6 +25,7 @@ import { registerMeFacilityRoutes } from './registerMeFacilityRoutes.js';
 import { registerMemberDiscoveryRoutes } from './registerMemberDiscoveryRoutes.js';
 import { registerNotificationRoutes } from './registerNotificationRoutes.js';
 import { registerProfileRoutes } from './registerProfileRoutes.js';
+import { registerMeParticipantHubRoutes } from './registerMeParticipantHubRoutes.js';
 
 /** Verified-member routes (`requireAuth` + `requireVerifiedEmail` applied on the shell). */
 export const composeUserMemberRoutes = (userRouter: Router): void => {
@@ -33,6 +34,7 @@ export const composeUserMemberRoutes = (userRouter: Router): void => {
   registerActivityGuideRoutes(userRouter);
 
   registerProfileRoutes(userRouter);
+  registerMeParticipantHubRoutes(userRouter);
   registerMemberDiscoveryRoutes(userRouter);
   registerNotificationRoutes(userRouter);
   registerBuddyRoutes(userRouter);

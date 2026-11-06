@@ -14,20 +14,28 @@ export async function registerPresignedUpload(key: string, userId: string): Prom
   memoryPending.set(key, { userId, expiresAt: Date.now() + PRESIGN_TTL_SECONDS * 1000 });
 }
 
-export async function assertPresignedUploadOwner(key: string, userId: string): Promise<void> {
+export async function verifyPresignedUploadOwner(key: string, userId: string): Promise<void> {
   const redis = await getRedisClient();
   if (redis) {
     const owner = await redis.get(presignKey(key));
     if (!owner || owner !== userId) {
       throw new Error('invalid_presign_owner');
     }
-    await redis.del(presignKey(key));
     return;
   }
 
   const entry = memoryPending.get(key);
-  memoryPending.delete(key);
   if (!entry || entry.userId !== userId || entry.expiresAt < Date.now()) {
     throw new Error('invalid_presign_owner');
   }
+}
+
+export async function assertPresignedUploadOwner(key: string, userId: string): Promise<void> {
+  await verifyPresignedUploadOwner(key, userId);
+  const redis = await getRedisClient();
+  if (redis) {
+    await redis.del(presignKey(key));
+    return;
+  }
+  memoryPending.delete(key);
 }

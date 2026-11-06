@@ -27,6 +27,7 @@ import type {
 import { resolveActivityDetailWirePresentation } from '../../activity/resolveActivityDetailWirePresentation';
 import { ActivityDetailView } from './ActivityDetailView';
 import type { ActivityDetailTabId } from '../../activity/activityDetailTab';
+import { CONSUMER_MAIN_OVERLAY_INSET } from '../../config/consumerOverlayInset';
 import { HostActivityManageFooterActions } from './HostActivityManageFooterActions';
 import { HostActivityManageOptionsSheet } from './HostActivityManageOptionsSheet';
 import {
@@ -266,7 +267,7 @@ export const ActivityManageSheet = ({
 
   return (
     <>
-      <div className="fixed inset-0 z-[1500] flex flex-col bg-neutral-50">
+      <div className={`${CONSUMER_MAIN_OVERLAY_INSET} z-[1500] flex flex-col bg-neutral-50`}>
         <header
           className={`pointer-events-none fixed inset-x-0 top-0 z-20 pt-safe-plus-2 ${
             headerFrosted ? MOBILE_PRODUCT_HEADER_FROSTED : MOBILE_PRODUCT_HEADER_REST

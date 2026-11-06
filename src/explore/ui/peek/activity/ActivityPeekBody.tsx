@@ -19,6 +19,7 @@ export type ActivityPeekBodyProps = {
   onOpenLinkedPin?: (exploreItemId: string) => void;
   onOfferTransport?: () => void;
   joinUiState?: JoinRequestUiState;
+  mapPeekCompact?: boolean;
 };
 
 /** Hosted / seeking activity pin body (strips + joined chip). */
@@ -28,6 +29,7 @@ export const ActivityPeekBody = ({
   onOpenLinkedPin,
   onOfferTransport,
   joinUiState,
+  mapPeekCompact = false,
 }: ActivityPeekBodyProps) => {
   const location = useLocation();
   const strips = resolveActivityMapPeekStrips(card, joinUiState);
@@ -39,7 +41,7 @@ export const ActivityPeekBody = ({
 
   const statusChipRow =
     showJoinedChip || showJoinRequestedChip ? (
-      <div className="mt-2 flex flex-wrap items-center gap-2">
+      <div className={`flex flex-wrap items-center gap-2 ${mapPeekCompact ? 'mt-0' : 'mt-2'}`}>
         {showJoinRequestedChip ? (
           <span className="inline-flex rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-900">
             {joinUiState.status === 'waitlisted' ? 'On waitlist' : ACTIVITY_STATUS_JOIN_REQUESTED}
@@ -66,13 +68,16 @@ export const ActivityPeekBody = ({
   return (
     <>
       {statusChipRow}
+      <div className={mapPeekCompact ? 'mt-2.5' : 'mt-3'}>
       <ActivityPeekStrips
         card={card}
         joinUiState={joinUiState}
         onGuestGatedAction={onGuestGatedAction}
         onOpenLinkedPin={onOpenLinkedPin}
         onOfferTransport={onOfferTransport}
+        mapPeekCompact={mapPeekCompact}
       />
+      </div>
     </>
   );
 };

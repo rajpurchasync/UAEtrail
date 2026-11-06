@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Share2, Send, Link as LinkIcon, Mail, Check } from 'lucide-react';
 import { FacebookIcon } from '../icons/FacebookIcon';
 import { WhatsAppIcon } from '../icons/WhatsAppIcon';
+import { useOptionalShareSheet } from '../../context/ShareSheetContext';
+import type { ActivityShareInput } from '../../utils/activityShare';
 import { buildShareText, buildShareUrl } from '../../utils/share';
 import { UiTooltip } from './UiTooltip';
 
@@ -28,6 +30,9 @@ interface ShareButtonProps {
   label?: string;
   /** Raise share menu above explore/activity sheets (z ~5100). */
   stackAboveModals?: boolean;
+  /** Signed-in in-app invite (friends + groups) when sharing an activity link. */
+  canSendBuddyInvites?: boolean;
+  activityShare?: ActivityShareInput | null;
 }
 
 export const ShareButton = ({
@@ -44,7 +49,10 @@ export const ShareButton = ({
   className = '',
   label,
   stackAboveModals = false,
+  canSendBuddyInvites = false,
+  activityShare = null,
 }: ShareButtonProps) => {
+  const shareSheet = useOptionalShareSheet();
   const [showShareMenu, setShowShareMenu] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -92,13 +100,19 @@ export const ShareButton = ({
     }
   };
 
-  const openMenu = async (e: React.MouseEvent) => {
+  const openMenu = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (disabled) return;
-    if (!showShareMenu && (compact || iconOnly) && canNativeShare) {
-      const shared = await handleNativeShare();
-      if (shared) return;
+    if (shareSheet && path) {
+      shareSheet.openShare(
+        { title, text: text ?? '', path },
+        {
+          canSendBuddyInvites: Boolean(canSendBuddyInvites && activityShare),
+          activity: activityShare,
+        }
+      );
+      return;
     }
     setShowShareMenu((open) => !open);
   };

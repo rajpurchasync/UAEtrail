@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../context/AuthContext';
@@ -39,10 +39,12 @@ import {
 } from './explorer/listExplorerBucket';
 import { ListExplorer } from './explorer/ListExplorer';
 import { ListDiscoveryMapColumn } from './explorer/ListDiscoveryMapColumn';
+import { ListSideMapResizeHandle } from './explorer/ListSideMapResizeHandle';
 import { useBindExploreListMapHover } from '../explore/ExploreMapChromeContext';
 import { useMinWidthMd } from '../hooks/useMinWidthMd';
 import { useMinWidthPx } from '../hooks/useMinWidthPx';
 import { collapseDesktopSideNav } from '../hooks/useDesktopSideNavExpanded';
+import { useListSideMapWidth } from './explorer/useListSideMapWidth';
 import {
   LIST_DISCOVERY_MAP_AUTO_MIN_PX,
   LIST_DISCOVERY_MAP_DISMISSED_STORAGE_KEY,
@@ -55,6 +57,8 @@ type ListDiscoveryExperienceProps = {
   onCloseMapOverlay?: () => void;
   overlayImmersive?: boolean;
   onImmersiveSubtitleChange?: (subtitle: string | null) => void;
+  /** Explore desktop drawer — reuse map catalog (no projection=list refetch). */
+  prefetchedCatalogItems?: ExploreMapItemDTO[];
 };
 
 const readListMapColumnOpen = (): boolean => {
@@ -94,6 +98,7 @@ export const ListDiscoveryExperience = ({
   onCloseMapOverlay,
   overlayImmersive = false,
   onImmersiveSubtitleChange,
+  prefetchedCatalogItems,
 }: ListDiscoveryExperienceProps) => {
   const embeddedOnExplore = listDiscoveryEmbeddedOnExplore(surface);
   const { user } = useAuth();
@@ -118,7 +123,7 @@ export const ListDiscoveryExperience = ({
     tenantId,
     onMapDataChanged: () => reloadExploreMap(queryClient),
   });
-  const { inviteShare, hostManageSheet } = hostSheets;
+  const { hostManageSheet } = hostSheets;
 
   const navigateMemberPublishGate = useCallback(
     (returnPath: string) =>
@@ -181,6 +186,17 @@ export const ListDiscoveryExperience = ({
     areaSlug,
     mapFilter: 'all',
   });
+  const wasGuestRef = useRef(!user);
+  useEffect(() => {
+    if (user && wasGuestRef.current) {
+      wasGuestRef.current = false;
+      void reloadExploreMap(queryClient);
+    }
+    if (!user) {
+      wasGuestRef.current = true;
+    }
+  }, [user, queryClient]);
+
   const { cards, filteredItems, items, isLoading, isError, refetch: reloadMap } = useBrowseListFeed({
     filters: isPeopleCategory
       ? { ...filters, query: draftQuery, categories: [] }
@@ -192,6 +208,7 @@ export const ListDiscoveryExperience = ({
         },
     venueRegions,
     mapEnabled: !isPeopleCategory || peopleSegment === 'looking',
+    catalogItems: embeddedOnExplore ? prefetchedCatalogItems : undefined,
   });
 
   const { seekingActivities } = usePeopleDiscoverySeekingActivities({
@@ -334,6 +351,8 @@ export const ListDiscoveryExperience = ({
     setListMapHighlightedId(item.id);
   }, []);
 
+  const sideMapWidth = useListSideMapWidth(showListMapColumn);
+
   return (
     <>
       {isPeopleCategory ? (
@@ -371,7 +390,7 @@ export const ListDiscoveryExperience = ({
           onOpenSeekingActivity={handleOpenSeekingActivity}
         />
       ) : (
-        <div className="flex h-full min-h-0 min-w-0 flex-1 flex-row">
+        <div ref={sideMapWidth.splitRef} className="flex h-full min-h-0 min-w-0 flex-1 flex-row">
           <ListExplorer
             cards={cards}
             loading={isLoading}
@@ -408,24 +427,34 @@ export const ListDiscoveryExperience = ({
             onMapHover={showListMapColumn ? setListMapHighlightedId : undefined}
             sort={sort}
             onSortChange={(next) => syncUrl({ sort: next })}
+            showGuestCatalogPreview={!user && !embeddedOnExplore && !isPeopleCategory}
+            listPanelWidthPx={showListMapColumn ? sideMapWidth.listPanelWidth : undefined}
           />
           {showListMapColumn ? (
-            <ListDiscoveryMapColumn
-              items={filteredItems}
-              loading={isLoading}
-              highlightedExploreItemId={listMapHighlightedId}
-              selectedExploreItemId={listMapSelectedId}
-              onSelectItem={handleListMapSelectItem}
-              onClose={closeListMapColumn}
-              layoutRevision={showListMapColumn}
-            />
+            <>
+              <ListSideMapResizeHandle
+                getStartWidth={sideMapWidth.getStartListWidth}
+                onWidthChange={sideMapWidth.setListPanelWidthClamped}
+                onResizeCommit={sideMapWidth.commitListPanelWidth}
+                ariaValueNow={sideMapWidth.listPanelWidth}
+                ariaValueMax={sideMapWidth.listPanelMaxPx()}
+              />
+              <ListDiscoveryMapColumn
+                items={filteredItems}
+                loading={isLoading}
+                highlightedExploreItemId={listMapHighlightedId}
+                selectedExploreItemId={listMapSelectedId}
+                onSelectItem={handleListMapSelectItem}
+                onClose={closeListMapColumn}
+                layoutRevision={sideMapWidth.listPanelWidth}
+              />
+            </>
           ) : null}
         </div>
       )}
 
       {embeddedOnExplore || overlayImmersive ? null : <BrowseListCreateFab onClick={compose.handleCreateTap} />}
 
-      {inviteShare.sheet}
       {hostManageSheet}
 
       <ComposeHost

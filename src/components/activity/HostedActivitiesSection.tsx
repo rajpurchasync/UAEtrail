@@ -140,7 +140,6 @@ export const HostedActivitiesSection = ({
   if (peekBridgeOnly && host.tenantId) {
     return (
       <>
-        {inviteShare.sheet}
         <ActivityManageSheet
           open={Boolean(manageActivity)}
           activity={manageActivity}
@@ -226,8 +225,6 @@ export const HostedActivitiesSection = ({
           ))}
         </div>
       )}
-
-      {inviteShare.sheet}
 
       <ActivityManageSheet
         open={Boolean(manageActivity)}

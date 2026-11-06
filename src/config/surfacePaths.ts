@@ -130,6 +130,16 @@ const authFunnelQuery = (options?: {
   return params.toString();
 };
 
+/** Guest home query after a refresh/session wipe (`/?session=expired`). */
+export const SESSION_EXPIRED_QUERY_KEY = 'session' as const;
+export const SESSION_EXPIRED_QUERY_VALUE = 'expired' as const;
+
+export const sessionExpiredHomePath = (): string =>
+  `/?${SESSION_EXPIRED_QUERY_KEY}=${SESSION_EXPIRED_QUERY_VALUE}`;
+
+export const hasSessionExpiredQuery = (search: URLSearchParams): boolean =>
+  search.get(SESSION_EXPIRED_QUERY_KEY) === SESSION_EXPIRED_QUERY_VALUE;
+
 export const signInPath = (options?: {
   redirect?: string;
   focus?: string;
@@ -155,11 +165,15 @@ export const publishingActivitiesCheckInPath = (activityId: string): string =>
 export const messagesToUserPath = (userId: string): string =>
   `${MESSAGES_PATH}?to=${encodeURIComponent(userId)}`;
 
+/** Opens the group wall thread on `/chat`. */
 export const messagesGroupPath = (groupId: string, activityId?: string): string => {
-  const params = new URLSearchParams({ group: groupId });
+  const params = new URLSearchParams({ group: groupId, chat: '1' });
   if (activityId?.trim()) params.set('activity', activityId.trim());
   return `${MESSAGES_PATH}?${params.toString()}`;
 };
+
+/** @deprecated Alias of {@link messagesGroupPath} — inbox opens the thread directly. */
+export const messagesGroupChatPath = messagesGroupPath;
 
 export const myRequestDetailPath = (requestId: string): string =>
   `${MY_REQUESTS_PATH}/${encodeURIComponent(requestId)}`;

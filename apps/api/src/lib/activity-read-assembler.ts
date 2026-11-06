@@ -303,6 +303,28 @@ const filterPublishedDocs = async (
   });
 };
 
+const buildPublishedActivitiesMongoFilter = (
+  when: 'upcoming' | 'past' | 'all'
+): Record<string, unknown> => {
+  const now = new Date();
+  const base: Record<string, unknown> = {
+    status: ActivityStatus.PUBLISHED,
+    joinMode: { $ne: 'private' },
+  };
+  if (when === 'upcoming') {
+    return {
+      ...base,
+      $or: [{ activityMode: 'seeking' }, { startAt: { $gte: now } }],
+    };
+  }
+  if (when === 'past') {
+    return { ...base, startAt: { $lt: now }, activityMode: { $ne: 'seeking' } };
+  }
+  return base;
+};
+
+const EXPLORE_MAP_PARTICIPANT_CAP = 12;
+
 /** @deprecated Use filterPublishedDocs */
 const filterPublishedUpcomingDocs = async (docs: MongoActivityDoc[]): Promise<MongoActivityDoc[]> =>
   filterPublishedDocs(docs, 'upcoming');
@@ -328,14 +350,32 @@ export const listPublishedActivitiesWithPreviewsFromMongo = async (input: {
   when?: 'upcoming' | 'past' | 'all';
 }): Promise<{ items: ActivityWithPublicRelations[]; total: number }> => {
   const when = input.when ?? 'upcoming';
-  const docs = await activitiesCollection()
-    .find({ status: ActivityStatus.PUBLISHED })
-    .sort({ startAt: when === 'past' ? -1 : 1 })
-    .toArray();
+  const filter = buildPublishedActivitiesMongoFilter(when);
+  const sort = { startAt: when === 'past' ? -1 : 1 } as const;
+  const total = await activitiesCollection().countDocuments(filter);
 
-  const filtered = await filterPublishedDocs(docs, when);
-  const items = await assembleEventsWithPublicRelations(filtered.slice(input.skip, input.skip + input.take));
-  return { items, total: filtered.length };
+  const need = input.skip + input.take;
+  let mongoSkip = 0;
+  const batchSize = Math.max(input.take * 3, 40);
+  const collected: MongoActivityDoc[] = [];
+
+  while (collected.length < need) {
+    const batch = await activitiesCollection()
+      .find(filter)
+      .sort(sort)
+      .skip(mongoSkip)
+      .limit(batchSize)
+      .toArray();
+    if (batch.length === 0) break;
+    const filtered = await filterPublishedDocs(batch, when);
+    collected.push(...filtered);
+    mongoSkip += batch.length;
+    if (batch.length < batchSize) break;
+  }
+
+  const page = collected.slice(input.skip, input.skip + input.take);
+  const items = await assembleEventsWithPublicRelations(page);
+  return { items, total };
 };
 
 export const listPublishedActivitiesForExploreMapFromMongo = async (
@@ -355,7 +395,7 @@ export const listPublishedActivitiesForExploreMapFromMongo = async (
       ],
     })
     .sort({ startAt: 1 })
-    .limit(Math.max(take * 8, 200))
+    .limit(Math.max(take + 80, take * 2))
     .toArray();
 
   const visible = docs.filter(
@@ -496,13 +536,27 @@ const assembleEventsForExploreMap = async (
   const tenantMap = await tenantMapForIds(filteredDocs.map((doc) => doc.tenantId));
 
   const eventIds = filteredDocs.map((doc) => doc._id);
-  const participantDocs = await activityParticipantsCollection().find({ activityId: { $in: eventIds } }).toArray();
-  const participantsByActivity = new Map<string, MongoActivityParticipant[]>();
-  for (const participant of participantDocs) {
-    const list = participantsByActivity.get(participant.activityId) ?? [];
-    list.push(participant);
-    participantsByActivity.set(participant.activityId, list);
-  }
+  const participantAgg = await activityParticipantsCollection()
+    .aggregate<{ _id: string; participants: MongoActivityParticipant[] }>([
+      { $match: { activityId: { $in: eventIds } } },
+      { $sort: { createdAt: 1 } },
+      {
+        $group: {
+          _id: '$activityId',
+          participants: { $push: '$$ROOT' },
+        },
+      },
+      {
+        $project: {
+          participants: { $slice: ['$participants', EXPLORE_MAP_PARTICIPANT_CAP] },
+        },
+      },
+    ])
+    .toArray();
+  const participantsByActivity = new Map<string, MongoActivityParticipant[]>(
+    participantAgg.map((row) => [row._id, row.participants as MongoActivityParticipant[]])
+  );
+  const participantDocs = participantAgg.flatMap((row) => row.participants as MongoActivityParticipant[]);
 
   const userIds = new Set<string>();
   for (const doc of filteredDocs) {

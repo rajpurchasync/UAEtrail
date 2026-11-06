@@ -1,5 +1,6 @@
 import { X } from 'lucide-react';
 import type { SocialGroupMemberView, SocialGroupView } from '../../api/types';
+import { CHAT_SPLIT_OVERLAY_INSET } from '../../config/consumerOverlayInset';
 import { SecureAvatar } from '../ui/SecureAvatar';
 
 type GroupWallMembersSheetProps = {
@@ -21,7 +22,7 @@ export const GroupWallMembersSheet = ({ open, onClose, group, members }: GroupWa
   const adults = members.filter((m) => m.memberType === 'adult' && m.isActive !== false);
 
   return (
-    <div className="fixed inset-0 z-[1400] flex flex-col justify-end bg-black/40" role="dialog" aria-modal="true">
+    <div className={`${CHAT_SPLIT_OVERLAY_INSET} z-[1400] flex flex-col justify-end bg-black/40`} role="dialog" aria-modal="true">
       <button type="button" className="flex-1" aria-label="Close participants" onClick={onClose} />
       <div className="max-h-[70dvh] rounded-t-2xl bg-white shadow-xl pb-safe">
         <div className="flex items-center justify-between border-b px-4 py-3">
@@ -29,7 +30,7 @@ export const GroupWallMembersSheet = ({ open, onClose, group, members }: GroupWa
           <button
             type="button"
             onClick={onClose}
-            className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-neutral-600 hover:bg-neutral-100"
+            className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-neutral-100 text-neutral-600 shadow-sm ring-1 ring-black/5 hover:bg-neutral-200"
             aria-label="Close"
           >
             <X className="h-5 w-5" />
@@ -39,7 +40,7 @@ export const GroupWallMembersSheet = ({ open, onClose, group, members }: GroupWa
           {adults.map((member) => (
             <li
               key={member.id}
-              className="flex items-center gap-3 rounded-xl px-3 py-2.5 hover:bg-neutral-50"
+              className="consumer-list-row-interactive flex items-center gap-3 rounded-xl px-3 py-2.5"
             >
               <SecureAvatar
                 src={member.user?.avatarUrl}

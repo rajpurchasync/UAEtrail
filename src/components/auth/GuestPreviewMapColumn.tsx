@@ -1,11 +1,11 @@
-import { lazy, Suspense, useMemo, useState } from 'react';
+import { lazy, Suspense, useMemo } from 'react';
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { getMapBounds } from '../../config/regions';
 import { MAP_CONFIG, getExploreMapTiles, readExploreMapStyle } from '../../config/platform';
 import { useExploreMap } from '../../hooks/useExploreMap';
 import { expandMapPins, layoutColocatedMapPins } from '../../explore/ui/exploreMapPinModel';
 import { ExploreMapLoadingSkeleton } from '../../explore/ui/ExploreMapLoadingSkeleton';
-import type { MapRecenterTarget } from '../../lib/mapRecenter';
+import { LIST_SIDE_MAP_MIN_PX } from '../../list/listDiscoverySideMapSplit';
 
 const PlacesMap = lazy(() =>
   import('../ui/PlacesMap').then((module) => ({ default: module.PlacesMap }))
@@ -16,6 +16,7 @@ type Props = {
   selectedExploreItemId: string | null;
   onSelectItem: (item: ExploreMapItemDTO) => void;
   className?: string;
+  layoutRevision?: boolean | number | string;
 };
 
 /** Guest preview catalog — compact map column with hover/selection emphasis on pins. */
@@ -24,9 +25,9 @@ export const GuestPreviewMapColumn = ({
   selectedExploreItemId,
   onSelectItem,
   className = '',
+  layoutRevision,
 }: Props) => {
   const { data: items = [], isLoading } = useExploreMap();
-  const [recenterTo, setRecenterTo] = useState<MapRecenterTarget | null>(null);
   const exploreMapTiles = getExploreMapTiles(readExploreMapStyle());
 
   const mapPins = useMemo(
@@ -39,20 +40,13 @@ export const GuestPreviewMapColumn = ({
     const item = items.find((entry) => entry.id === id);
     if (item) {
       onSelectItem(item);
-      if (item.latitude != null && item.longitude != null) {
-        setRecenterTo({
-          lat: item.latitude,
-          lng: item.longitude,
-          zoom: 12,
-          nonce: Date.now(),
-        });
-      }
     }
   };
 
   return (
     <div
-      className={`relative min-h-0 min-w-0 flex-1 self-stretch border-l border-neutral-200 bg-[#2a3441] md:min-w-[min(36vw,420px)] md:max-w-[min(42vw,480px)] md:flex-none ${className}`}
+      className={`relative min-h-0 min-w-0 flex-1 self-stretch border-l border-neutral-200 bg-[#2a3441] md:flex ${className}`}
+      style={{ flex: '1 1 0%', minWidth: LIST_SIDE_MAP_MIN_PX }}
       aria-label="Preview map"
     >
       {isLoading && mapPins.length === 0 ? <ExploreMapLoadingSkeleton /> : null}
@@ -70,7 +64,8 @@ export const GuestPreviewMapColumn = ({
           tileAttribution={MAP_CONFIG.exploreTileAttribution}
           labelTileUrl={exploreMapTiles.labelTileUrl}
           onPinClick={handlePinClick}
-          recenterTo={recenterTo}
+          flyToHighlightedPin
+          layoutRevision={layoutRevision}
           className="h-full w-full min-h-[240px]"
         />
       </Suspense>

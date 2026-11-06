@@ -20,6 +20,11 @@ export const explorePeopleBrowseMapButtonAriaLabel = (friendCount: number): stri
     ? `Find crew. ${friendCount} friends`
     : 'Find crew. Browse members free to get outside';
 
+export const explorePeopleBrowseGuestMapButtonAriaLabel = (crewCount: number): string =>
+  crewCount > 0
+    ? `Find crew. ${crewCount} possible crew on outings`
+    : 'Find crew. Join free to meet people going outside';
+
 export const EXPLORE_PEOPLE_BROWSE_LOADING = 'Loading your people…';
 export const EXPLORE_PEOPLE_BROWSE_LOOKING_LOADING = 'Loading outings…';
 export const EXPLORE_PEOPLE_BROWSE_EMPTY_ALL =

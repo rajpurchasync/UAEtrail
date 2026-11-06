@@ -160,7 +160,7 @@ Wall post policy (`all_members` | `admins_only`) applies to group/crew threads. 
 
 | Place kind | Product | Public URL (today → CPC target) |
 |------------|---------|----------------------------------|
-| `hiking` | Hiking trail | `/trail/:id` → **`/place/:id`** |
+| `hiking` | **Trail** (not “hiking spot”) | `/trail/:id` → **`/place/:id`** |
 | `camping` | Camping spot | `/camp/:id` → **`/place/:id`** |
 | `event` | Event / meetup venue | `/venue/:id` → **`/place/:id`** |
 | `outdoor_other` | Parks, beaches | `/venue/:id` → **`/place/:id`** |

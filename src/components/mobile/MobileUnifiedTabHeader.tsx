@@ -10,6 +10,7 @@ import {
 import { useComposeImmersiveChrome } from '../../explore/create/ComposeImmersiveChromeContext';
 import { useAppScrollFrostedHeader } from '../../hooks/useAppScrollFrostedHeader';
 import { UaeTrailBrandMark } from '../layout/UaeTrailBrandMark';
+import { useMobileMenuOpen } from '../layout/MobileMenu';
 import { MobileBackButton } from './MobileBackButton';
 import { MobileProfileHeaderLink } from './MobileProfileHeaderLink';
 
@@ -37,6 +38,7 @@ export const MobileUnifiedTabHeader = ({
 }: MobileUnifiedTabHeaderProps) => {
   const headerFrosted = useAppScrollFrostedHeader();
   const { immersiveCompose } = useComposeImmersiveChrome();
+  const menuOpen = useMobileMenuOpen();
   const headerSurfaceClass = immersiveCompose
     ? MOBILE_PRODUCT_HEADER_COMPOSE_IMMERSIVE
     : headerFrosted
@@ -45,7 +47,8 @@ export const MobileUnifiedTabHeader = ({
 
   return (
     <header
-      className={`relative z-[1100] shrink-0 pb-2 pt-[calc(var(--safe-top)+4px)] lg:hidden ${
+      data-consumer-chrome-header
+      className={`relative ${menuOpen ? 'z-[5100]' : 'z-[1100]'} shrink-0 pb-2 pt-[calc(var(--safe-top)+4px)] md:hidden ${
         immersiveCompose ? 'pointer-events-none' : ''
       } ${headerSurfaceClass}`}
     >

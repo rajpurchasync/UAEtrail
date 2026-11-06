@@ -12,6 +12,16 @@ interface AuthSession {
 const SESSION_STORAGE_KEY = 'uaetrail_session';
 export const USER_STORAGE_KEY = 'uaetrail_user';
 
+/** In-memory access token only — refresh cookie rehydrates on load (see bootstrapSessionFromRefresh). */
+let memoryAccessToken: string | null = null;
+
+if (typeof localStorage !== 'undefined') {
+  localStorage.removeItem(SESSION_STORAGE_KEY);
+}
+if (typeof sessionStorage !== 'undefined') {
+  sessionStorage.removeItem(SESSION_STORAGE_KEY);
+}
+
 let onSessionInvalidated: (() => void) | null = null;
 
 /** Register a handler when refresh fails and stored session is cleared. */
@@ -24,26 +34,18 @@ const notifySessionInvalidated = (): void => {
 };
 
 export const getStoredSession = (): AuthSession | null => {
-  const raw = sessionStorage.getItem(SESSION_STORAGE_KEY) ?? localStorage.getItem(SESSION_STORAGE_KEY);
-  if (!raw) return null;
-  try {
-    const parsed = JSON.parse(raw) as { accessToken?: string; refreshToken?: string };
-    if (!parsed.accessToken) return null;
-    return { accessToken: parsed.accessToken };
-  } catch {
-    return null;
-  }
+  if (!memoryAccessToken) return null;
+  return { accessToken: memoryAccessToken };
 };
 
 export const setStoredSession = (session: AuthSession | null): void => {
-  // Persist auth on web until explicit sign-out; keep cleanup for legacy sessionStorage.
   sessionStorage.removeItem(SESSION_STORAGE_KEY);
-  if (!session) {
-    localStorage.removeItem(SESSION_STORAGE_KEY);
-    return;
-  }
-  localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session));
+  localStorage.removeItem(SESSION_STORAGE_KEY);
+  memoryAccessToken = session?.accessToken ?? null;
 };
+
+/** Restore session after full page load using the httpOnly refresh cookie. */
+export const bootstrapSessionFromRefresh = (): Promise<AuthSession | null> => refreshAccessToken();
 
 // ─── Token Refresh Logic ─────────────────────────────────────────────────────
 

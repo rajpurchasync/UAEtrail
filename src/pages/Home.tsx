@@ -1,7 +1,7 @@
 import { lazy, Suspense } from 'react';
-import { EXPLORE_MAP_PATH, joinAuthPath } from '../config/routingCatalogLite';
+import { EXPLORE_MAP_PATH, hasSessionExpiredQuery, joinAuthPath } from '../config/routingCatalogLite';
 import { ADMIN_OVERVIEW_PATH } from '../config/adminSurfacePaths';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useSearchParams } from 'react-router-dom';
 import { DEFAULT_OG_IMAGE } from '../config/seo';
 import { PageMeta } from '../components/seo/PageMeta';
 import { JsonLd } from '../components/seo/JsonLd';
@@ -12,6 +12,8 @@ import { HomeDeferredMount } from '../components/home/marketing/HomeDeferredMoun
 import { HomeMarketingHeader } from '../components/home/marketing/HomeMarketingHeader';
 import { HomeHeroSection } from '../components/home/marketing/sections/HomeHeroSection';
 import { HomeMarketingCarouselSyncProvider } from '../components/home/marketing/HomeMarketingCarouselSync';
+import { useIsMobile } from '../hooks/useIsMobile';
+import { sessionExpiredExplorePath } from '../utils/authSessionLanding';
 
 const HomeActivitiesBlock = lazy(() =>
   import('../components/home/marketing/sections/HomeActivitiesBlock').then((m) => ({
@@ -32,6 +34,13 @@ const HomeReviewsFaqSection = lazy(() =>
 /** Guest marketing funnel only — signed-in users redirect to /explore. See docs/LANDING.md */
 export const Home = () => {
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const isMobile = useIsMobile();
+  const sessionExpired = hasSessionExpiredQuery(searchParams);
+
+  if (!user && isMobile && sessionExpired) {
+    return <Navigate to={sessionExpiredExplorePath()} replace />;
+  }
 
   if (user) {
     if (isPlatformAdmin(user.role)) {

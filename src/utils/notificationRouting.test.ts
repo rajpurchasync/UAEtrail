@@ -217,7 +217,7 @@ describe('inferNotificationPath', () => {
           path: '/groups?group=g-2',
         })
       )
-    ).toBe('/chat?group=g-2');
+    ).toBe('/chat?group=g-2&chat=1');
     expect(
       inferNotificationPath(
         notif({
@@ -226,7 +226,7 @@ describe('inferNotificationPath', () => {
           path: '/groups?group=g-2',
         })
       )
-    ).toBe('/chat?group=g-2&activity=act-1');
+    ).toBe('/chat?group=g-2&chat=1&activity=act-1');
   });
 
 });

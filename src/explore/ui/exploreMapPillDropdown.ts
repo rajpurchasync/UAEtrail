@@ -10,6 +10,8 @@ import {
 
 const VIEWPORT_PADDING = 12;
 const FULL_WIDTH_MAX = 352;
+const CARET_INSET = 16;
+const ANCHOR_GAP = 12;
 
 /** iOS Safari zooms focused inputs below 16px — use explicit px in map overlays. */
 export const EXPLORE_MAP_SEARCH_INPUT_FONT_PX = 16;
@@ -60,6 +62,8 @@ type UseExploreMapPillDropdownArgs = {
   positionBelowRef?: RefObject<HTMLElement | null>;
   /** Re-run layout when content changes (e.g. search hints) — not on every pixel resize. */
   repositionDeps?: ReadonlyArray<unknown>;
+  /** Leaves overflow visible so a caret can sit on the top edge. */
+  showCaret?: boolean;
 };
 
 /** Fixed-position menu for map filter pills (escapes horizontal scroll clipping). */
@@ -71,10 +75,13 @@ export const useExploreMapPillDropdown = ({
   layout = 'minWidth',
   positionBelowRef,
   repositionDeps = [],
+  showCaret = false,
 }: UseExploreMapPillDropdownArgs) => {
   const anchorRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const [menuStyle, setMenuStyle] = useState<CSSProperties>({});
+  const [caretLeftPx, setCaretLeftPx] = useState(CARET_INSET);
+  const lastCaretRef = useRef(CARET_INSET);
   const lastStyleKeyRef = useRef('');
   const rafRef = useRef(0);
   const repositionKey = JSON.stringify(repositionDeps);
@@ -83,21 +90,30 @@ export const useExploreMapPillDropdown = ({
     const positionEl = positionBelowRef?.current ?? anchorRef.current;
     if (!positionEl) return;
     const rect = positionEl.getBoundingClientRect();
-    const gap = 8;
     const viewport = readVisualViewport();
+    const minLeft = viewport.left + VIEWPORT_PADDING;
+    const maxRight = viewport.left + viewport.width - VIEWPORT_PADDING;
+    const maxWidth = Math.max(120, maxRight - minLeft);
+    const anchorCenter = rect.left + rect.width / 2;
+
+    const clampLeft = (left: number, width: number) =>
+      Math.min(Math.max(left, minLeft), Math.max(minLeft, maxRight - width));
+
+    const caretFor = (left: number, width: number) =>
+      Math.min(width - CARET_INSET, Math.max(CARET_INSET, anchorCenter - left));
 
     let next: CSSProperties;
+    let caret: number;
 
     if (layout === 'fullWidth') {
-      const width = Math.min(FULL_WIDTH_MAX, viewport.width - VIEWPORT_PADDING * 2);
-      const left =
-        viewport.left + Math.max(VIEWPORT_PADDING, (viewport.width - width) / 2);
-      const top = rect.bottom + gap;
-      const maxHeight = Math.max(
-        160,
-        viewport.top + viewport.height - top - VIEWPORT_PADDING
+      const width = Math.min(FULL_WIDTH_MAX, maxWidth);
+      const top = rect.bottom + ANCHOR_GAP;
+      const maxHeight = Math.max(160, viewport.top + viewport.height - top - VIEWPORT_PADDING);
+      const left = clampLeft(
+        viewport.left + Math.max(VIEWPORT_PADDING, (viewport.width - width) / 2),
+        width
       );
-
+      caret = caretFor(left, width);
       next = {
         position: 'fixed',
         top,
@@ -105,32 +121,42 @@ export const useExploreMapPillDropdown = ({
         width,
         maxWidth: width,
         maxHeight,
-        overflowY: 'auto',
-        WebkitOverflowScrolling: 'touch',
         zIndex,
+        ...(showCaret
+          ? {}
+          : { overflowY: 'auto', WebkitOverflowScrolling: 'touch' }),
       };
     } else {
-      const left = Math.max(
-        viewport.left + VIEWPORT_PADDING,
-        Math.min(
-          rect.left,
-          viewport.left + viewport.width - minWidthPx - VIEWPORT_PADDING
-        )
-      );
+      const measured = menuRef.current?.offsetWidth ?? 0;
+      const width = Math.min(Math.max(minWidthPx, measured), maxWidth);
+      const top = rect.bottom + ANCHOR_GAP;
+      const left = clampLeft(anchorCenter - width / 2, width);
+      caret = caretFor(left, width);
+      const maxHeight = Math.max(160, viewport.top + viewport.height - top - VIEWPORT_PADDING);
       next = {
         position: 'fixed',
-        top: rect.bottom + gap,
+        top,
         left,
-        minWidth: minWidthPx,
+        width,
+        maxWidth: width,
+        maxHeight,
         zIndex,
+        ...(showCaret
+          ? {}
+          : { overflowY: 'auto', WebkitOverflowScrolling: 'touch' }),
       };
     }
 
+    const roundedCaret = Math.round(caret);
+    if (roundedCaret !== lastCaretRef.current) {
+      lastCaretRef.current = roundedCaret;
+      setCaretLeftPx(roundedCaret);
+    }
     const key = styleSignature(next);
     if (key === lastStyleKeyRef.current) return;
     lastStyleKeyRef.current = key;
     setMenuStyle(next);
-  }, [layout, minWidthPx, positionBelowRef, zIndex]);
+  }, [layout, minWidthPx, positionBelowRef, showCaret, zIndex]);
 
   const schedulePosition = useCallback(() => {
     if (rafRef.current) return;
@@ -179,7 +205,7 @@ export const useExploreMapPillDropdown = ({
     };
   }, [open, onOpenChange, schedulePosition]);
 
-  return { anchorRef, menuRef, menuStyle, updatePosition: schedulePosition };
+  return { anchorRef, menuRef, menuStyle, caretLeftPx, updatePosition: schedulePosition };
 };
 
 export type ExploreMapPillDropdownRefs = {

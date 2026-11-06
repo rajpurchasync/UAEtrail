@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
+import { applyPanelResizeCursor, clearPanelResizeCursor } from '../config/panelResizeCursor';
 
 const EXPANDED_KEY = 'uaetrail.desktopNav.expanded';
 const WIDTH_KEY = 'uaetrail.desktopNav.width';
@@ -74,7 +75,10 @@ export const useDesktopSideNavExpanded = () => {
     if (next > DESKTOP_SIDE_NAV_COLLAPSED_WIDTH) lastExpandedWidthRef.current = next;
     const sync = () => setWidth(defaultWidth());
     window.addEventListener(DESKTOP_SIDE_NAV_SYNC_EVENT, sync);
-    return () => window.removeEventListener(DESKTOP_SIDE_NAV_SYNC_EVENT, sync);
+    return () => {
+      window.removeEventListener(DESKTOP_SIDE_NAV_SYNC_EVENT, sync);
+      clearPanelResizeCursor();
+    };
   }, []);
 
   const expanded = width > DESKTOP_SIDE_NAV_COLLAPSED_WIDTH;
@@ -97,6 +101,7 @@ export const useDesktopSideNavExpanded = () => {
       event.preventDefault();
       (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
       dragRef.current = { startX: event.clientX, startWidth: width };
+      applyPanelResizeCursor();
     },
     [width]
   );
@@ -111,6 +116,7 @@ export const useDesktopSideNavExpanded = () => {
 
   const onResizePointerUp = useCallback((event: PointerEvent<HTMLElement>) => {
     dragRef.current = null;
+    clearPanelResizeCursor();
     try {
       event.currentTarget.releasePointerCapture(event.pointerId);
     } catch {

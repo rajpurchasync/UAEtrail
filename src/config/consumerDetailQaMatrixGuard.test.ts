@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { readAppRouteRegistry } from '../../scripts/readAppRouteRegistry.mjs';
 
 const read = (relativePath: string) => readFileSync(join(process.cwd(), relativePath), 'utf8');
 
@@ -66,7 +67,7 @@ const ENTITY_DETAIL_QA_MATRIX: Array<{
 
 describe('consumerDetailQaMatrixGuard (plan §8 entity detail)', () => {
   it('App.tsx registers §8 entity detail routes', () => {
-    const app = read('src/App.tsx');
+    const app = readAppRouteRegistry();
     const missing: string[] = [];
     for (const { surface, routePattern } of ENTITY_DETAIL_QA_MATRIX) {
       if (!routePattern.test(app)) {

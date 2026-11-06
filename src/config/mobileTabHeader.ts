@@ -6,6 +6,7 @@ import {
   PROFILE_SUBMISSIONS_PATH,
 } from './routingCatalog';
 import { PRODUCT_PLAN_SURFACE_TITLE } from '../content/productNorthStar';
+import { resolveGuestSurfaceForPath } from '../utils/guestSurfaceByPath';
 import { joinedSubViewTitle } from '../pages/activities/shared';
 import {
   isConsumerChromeHidden,
@@ -126,6 +127,7 @@ export const shouldShowMobileUnifiedTabHeader = (
   search: string,
   signedIn: boolean
 ): boolean => {
+  if (!signedIn && resolveGuestSurfaceForPath(pathname)) return false;
   if (!isLayoutMobileUnifiedHeaderRoute(pathname)) return false;
   if (pathname === '/explore') return true;
   if (!signedIn) return isMobileBottomNavTabPath(pathname);

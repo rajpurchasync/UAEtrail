@@ -24,7 +24,7 @@ export const GoogleAuthSection = ({
 
   return (
     <GoogleOAuthProvider clientId={clientId}>
-      <div className="mb-6 space-y-4">
+      <div className="mb-4 space-y-3 md:mb-5">
         <GoogleSignInButton onSuccess={onSuccess} onError={onError} text={text} disabled={disabled} />
         <div className="relative">
           <div className="absolute inset-0 flex items-center">

@@ -1,13 +1,11 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { ActivityDTO } from '@uaetrail/shared-types';
 import { activityDetailPath } from '../config/routingCatalog';
-import { ActivityManageSheet } from '../components/activity/ActivityManageSheet';
-import type { ActivityManageInitialView } from '../components/activity/activityManageViews';
 import type { ListFeedHostActivityActions } from '../list/ui/ListFeedActionsProvider';
 import { navigateToCreateLinkedRideshare } from '../explore/navigateCreateLinkedRideshare';
 import { useActivityInviteShareSheet } from './useActivityInviteShareSheet';
-import { useHostActivityManageActions } from './useHostActivityManageActions';
+import { useDeferredHostManageSheet } from './DeferredHostActivityManageSheet';
 
 /** Invite share + host manage sheet — explore map peek, list feed, and browse. */
 export const useHostActivitySheetBundle = (input: {
@@ -16,21 +14,26 @@ export const useHostActivitySheetBundle = (input: {
 }) => {
   const navigate = useNavigate();
   const inviteShare = useActivityInviteShareSheet();
-  const [manageActivity, setManageActivity] = useState<ActivityDTO | null>(null);
-  const [manageInitialView, setManageInitialView] =
-    useState<ActivityManageInitialView>('overview');
-  const hostManageActions = useHostActivityManageActions(
-    input.tenantId ?? null,
-    input.onMapDataChanged
+
+  const onOpenPublicPage = useCallback(
+    (activity: ActivityDTO) => navigate(activityDetailPath(activity.id)),
+    [navigate]
   );
 
-  const openHostManage = useCallback(
-    (activity: ActivityDTO, initialView: ActivityManageInitialView = 'participants') => {
-      setManageActivity(activity);
-      setManageInitialView(initialView);
+  const onShare = useCallback(
+    (activity: ActivityDTO) => {
+      if (activity.status !== 'published') return;
+      inviteShare.openShareFromActivity(activity, { canSendBuddyInvites: true });
     },
-    []
+    [inviteShare]
   );
+
+  const deferredManage = useDeferredHostManageSheet({
+    tenantId: input.tenantId,
+    onMapDataChanged: input.onMapDataChanged,
+    onOpenPublicPage,
+    onShare,
+  });
 
   const shareHostedActivity = useCallback(
     (activity: ActivityDTO) => {
@@ -48,43 +51,22 @@ export const useHostActivitySheetBundle = (input: {
   const listFeedHostActions: ListFeedHostActivityActions = useMemo(
     () => ({
       onShareHostedActivity: shareHostedActivity,
-      onOpenHostManage: input.tenantId ? openHostManage : undefined,
+      onOpenHostManage: input.tenantId ? deferredManage.openHostManage : undefined,
       onInviteCrew: (activity: ActivityDTO) => {
         if (activity.status !== 'published') return;
         inviteShare.openShareFromActivity(activity, { canSendBuddyInvites: true });
       },
       onCreateLinkedRideshare,
     }),
-    [shareHostedActivity, input.tenantId, openHostManage, inviteShare, onCreateLinkedRideshare]
+    [shareHostedActivity, input.tenantId, deferredManage.openHostManage, inviteShare, onCreateLinkedRideshare]
   );
-
-  const closeManage = useCallback(() => {
-    setManageActivity(null);
-    setManageInitialView('overview');
-  }, []);
-
-  const hostManageSheet =
-    input.tenantId ? (
-      <ActivityManageSheet
-        open={Boolean(manageActivity)}
-        activity={manageActivity}
-        tenantId={input.tenantId}
-        pendingRequests={[]}
-        actions={hostManageActions}
-        initialView={manageInitialView}
-        onOpenPublicPage={(a) => navigate(activityDetailPath(a.id))}
-        onShare={(a) => inviteShare.openShareFromActivity(a, { canSendBuddyInvites: true })}
-        onClose={closeManage}
-        onRequestsChanged={() => void input.onMapDataChanged()}
-      />
-    ) : null;
 
   return {
     inviteShare,
     shareHostedActivity,
-    openHostManage,
+    openHostManage: deferredManage.openHostManage,
     listFeedHostActions,
-    hostManageSheet,
+    hostManageSheet: deferredManage.hostManageSheet,
     openInviteFromActivity: inviteShare.openInviteFromActivity,
   };
 };

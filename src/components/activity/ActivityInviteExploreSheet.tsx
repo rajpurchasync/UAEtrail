@@ -8,16 +8,22 @@ type ActivityInviteExploreSheetProps = {
   open: boolean;
   onClose: () => void;
   children: ReactNode;
+  zClass?: string;
 };
 
 /** Invite friends — compact slide-up (mobile) / centered dialog (sm+), aligned with ConsumerBottomSheet. */
-export const ActivityInviteExploreSheet = ({ open, onClose, children }: ActivityInviteExploreSheetProps) => (
+export const ActivityInviteExploreSheet = ({
+  open,
+  onClose,
+  children,
+  zClass = EXPLORE_Z.shareSheet,
+}: ActivityInviteExploreSheetProps) => (
   <ExploreResponsiveSheet
     open={open}
     onClose={onClose}
     ariaLabel={ACTIVITY_INVITE_FRIENDS_CTA}
     maxWidthClass={EXPLORE_SHEET.compactMaxWidth}
-    zClass={EXPLORE_Z.activityDetailInviteSheet}
+    zClass={zClass}
     overlayFixed
     pullToDismiss
     showCloseButton={false}

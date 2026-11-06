@@ -3,6 +3,7 @@ import { setExploreClockStyle } from '@uaetrail/shared-types';
 import { useDisplayPreferences } from '../preferences/useDisplayPreferences';
 import { useAuth } from '../context/AuthContext';
 import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
+import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 import { useExploreMap } from '../hooks/useExploreMap';
 import { buildListFeedCards } from './buildListFeedCards';
 import {
@@ -16,20 +17,25 @@ type UseBrowseListFeedArgs = {
   venueRegions: string[];
   /** Buddies category uses member-discovery only — skip map fetch. */
   mapEnabled?: boolean;
+  /** When embedded on explore, reuse the map catalog instead of a second fetch. */
+  catalogItems?: ExploreMapItemDTO[];
 };
 
 export const useBrowseListFeed = ({
   filters,
   venueRegions,
   mapEnabled = true,
+  catalogItems,
 }: UseBrowseListFeedArgs) => {
   const { user } = useAuth();
   const { clock } = useDisplayPreferences();
-  const { data: items = [], isError, error, refetch, isFetching, isPending } = useExploreMap({
-    enabled: mapEnabled,
+  const useExternalCatalog = catalogItems !== undefined && mapEnabled;
+  const { data: fetchedItems = [], isError, error, refetch, isFetching, isPending } = useExploreMap({
+    enabled: mapEnabled && !useExternalCatalog,
     projection: 'list',
   });
-  const feedLoading = mapEnabled && isPending && items.length === 0;
+  const items = useExternalCatalog ? catalogItems : fetchedItems;
+  const feedLoading = mapEnabled && !useExternalCatalog && isPending && items.length === 0;
 
   const filteredItems = useMemo(
     () => (mapEnabled ? filterExploreMapItemsForList(items, filters, venueRegions) : []),

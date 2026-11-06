@@ -12,7 +12,11 @@ export type CatalogPeekBodyProps = {
 };
 
 /** Shop / agency / mixed catalog rows on the activity pin host (non-venue wire). */
-export const CatalogPeekBody = ({ card, onGuestGatedAction }: CatalogPeekBodyProps) => {
+export const CatalogPeekBody = ({
+  card,
+  onGuestGatedAction,
+  mapPeekCompact = false,
+}: CatalogPeekBodyProps & { mapPeekCompact?: boolean }) => {
   const isShop = card.source === 'shop';
   const showPeopleRow =
     card.source === 'shop' ||
@@ -21,13 +25,19 @@ export const CatalogPeekBody = ({ card, onGuestGatedAction }: CatalogPeekBodyPro
   return (
     <>
       {isShop && card.sections.aboutLine && (
-        <p className="mt-3 text-sm leading-relaxed text-gray-600">{card.sections.aboutLine}</p>
+        <p
+          className={`text-sm leading-relaxed text-gray-600 ${mapPeekCompact ? '' : 'mt-3'}`}
+        >
+          {card.sections.aboutLine}
+        </p>
       )}
       <DiscoveryCardCapacityRow card={card} />
-      {card.requirementBadges && card.requirementBadges.length > 0 && (
-        <DiscoveryCardRequirementBadges badges={card.requirementBadges} />
-      )}
-      {card.price && (
+      {card.requirementBadges && card.requirementBadges.length > 0 ? (
+        <div className={mapPeekCompact ? '' : 'mt-3'}>
+          <DiscoveryCardRequirementBadges badges={card.requirementBadges} compact={mapPeekCompact} />
+        </div>
+      ) : null}
+      {!mapPeekCompact && card.price && (
         <p className="mt-3">
           <span
             className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
@@ -38,10 +48,12 @@ export const CatalogPeekBody = ({ card, onGuestGatedAction }: CatalogPeekBodyPro
           </span>
         </p>
       )}
-      {showPeopleRow && <DiscoveryCardPeopleRow card={card} onGuestGatedAction={onGuestGatedAction} />}
-      {card.venueHint && isShop && (
+      {showPeopleRow && !mapPeekCompact ? (
+        <DiscoveryCardPeopleRow card={card} onGuestGatedAction={onGuestGatedAction} />
+      ) : null}
+      {card.venueHint && isShop && !mapPeekCompact ? (
         <p className="mt-3 text-xs leading-relaxed text-slate-500">{card.venueHint}</p>
-      )}
+      ) : null}
       {card.contactPhone && isShop && (
         <p className="mt-3 text-sm text-gray-600">
           Phone:{' '}

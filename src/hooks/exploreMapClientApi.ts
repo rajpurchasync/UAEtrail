@@ -37,12 +37,14 @@ export const fetchExploreMapItems = async (
   if (params?.projection) search.set('projection', params.projection);
   const qs = search.toString();
   const unscoped = !params?.bbox && !params?.area && !params?.projection;
-  const result = await apiRequestConditional<{ data: { items: ExploreMapItemDTO[] } }>(
+  // Bearer required for optionalAuth — without it the API keeps the guest 3+3 catalog cap.
+  const mapPromise = apiRequestConditional<{ data: { items: ExploreMapItemDTO[] } }>(
     qs ? `/explore/map?${qs}` : '/explore/map',
-    { etag: unscoped ? etag : null }
+    { etag: unscoped ? etag : null, auth: true }
   );
+  const overlayPromise = fetchExploreMapOverlayIfSignedIn(params);
+  const [result, overlay] = await Promise.all([mapPromise, overlayPromise]);
   if (result.notModified) return { notModified: true, etag: result.etag };
-  const overlay = await fetchExploreMapOverlayIfSignedIn(params);
   return {
     notModified: false,
     etag: result.etag,

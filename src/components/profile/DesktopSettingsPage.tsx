@@ -156,14 +156,20 @@ export const DesktopSettingsPage = () => {
           </SettingsSection>
 
           <SettingsSection id="account" title="Account" description="Email, password, and signing out.">
-            <div className="space-y-3">
-              <ProfileAccountSettingsSections
-                email={user?.email ?? ''}
-                onEmailChanged={() => void refreshUser()}
-                onDeleted={() => void signOut()}
-              />
-              <AccountSignOutButton onSignOut={() => void signOut()} />
-            </div>
+            {user ? (
+              <div className="space-y-3">
+                <ProfileAccountSettingsSections
+                  email={user.email ?? ''}
+                  onEmailChanged={() => void refreshUser()}
+                  onDeleted={() => void signOut()}
+                />
+                <AccountSignOutButton onSignOut={() => void signOut()} />
+              </div>
+            ) : (
+              <p className="rounded-2xl border border-neutral-200/80 bg-neutral-50 px-4 py-3 text-sm text-neutral-600">
+                Log in to change email, password, and sign-out options.
+              </p>
+            )}
           </SettingsSection>
 
           <SettingsSection
@@ -171,10 +177,16 @@ export const DesktopSettingsPage = () => {
             title="Privacy"
             description="Who can see your profile, and how you show up on the map."
           >
-            <div className="space-y-3">
-              <ProfileVisibilitySection />
-              <ProfileMapPresenceSection />
-            </div>
+            {user ? (
+              <div className="space-y-3">
+                <ProfileVisibilitySection />
+                <ProfileMapPresenceSection />
+              </div>
+            ) : (
+              <p className="rounded-2xl border border-neutral-200/80 bg-neutral-50 px-4 py-3 text-sm text-neutral-600">
+                Log in to control profile visibility and map presence.
+              </p>
+            )}
           </SettingsSection>
 
           <SettingsSection
@@ -182,20 +194,26 @@ export const DesktopSettingsPage = () => {
             title="Notifications"
             description="In-app alerts and saved-map match notifications."
           >
-            <SettingsMenuGroup>
-              <SettingsMenuRow
-                label="Notification inbox"
-                to={NOTIFICATIONS_PATH}
-                icon={Bell}
-                subtitle="Activity, friends, and map alerts"
-              />
-              <SettingsMenuRow
-                label="Saved map & alerts"
-                to={planHubPath({ layer: 'places' })}
-                icon={MapIcon}
-                subtitle="Places, shops, and plans you starred"
-              />
-            </SettingsMenuGroup>
+            {user ? (
+              <SettingsMenuGroup>
+                <SettingsMenuRow
+                  label="Notification inbox"
+                  to={NOTIFICATIONS_PATH}
+                  icon={Bell}
+                  subtitle="Activity, friends, and map alerts"
+                />
+                <SettingsMenuRow
+                  label="Saved map & alerts"
+                  to={planHubPath({ layer: 'places' })}
+                  icon={MapIcon}
+                  subtitle="Places, shops, and plans you starred"
+                />
+              </SettingsMenuGroup>
+            ) : (
+              <p className="rounded-2xl border border-neutral-200/80 bg-neutral-50 px-4 py-3 text-sm text-neutral-600">
+                Log in to manage outing alerts and the notification inbox.
+              </p>
+            )}
           </SettingsSection>
 
           <SettingsSection
@@ -203,16 +221,24 @@ export const DesktopSettingsPage = () => {
             title="Safety & emergency"
             description="Blood group, medical notes, and an emergency contact your host can reach."
           >
-            {safetySaved ? (
-              <p
-                role="status"
-                className="mb-3 flex items-center gap-2 rounded-xl border border-emerald-200/70 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-800"
-              >
-                <Check className="h-4 w-4" aria-hidden />
-                Safety profile saved.
+            {user ? (
+              <>
+                {safetySaved ? (
+                  <p
+                    role="status"
+                    className="mb-3 flex items-center gap-2 rounded-xl border border-emerald-200/70 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-800"
+                  >
+                    <Check className="h-4 w-4" aria-hidden />
+                    Safety profile saved.
+                  </p>
+                ) : null}
+                <ProfileSafetyForm className="space-y-3" onSaved={() => setSafetySaved(true)} />
+              </>
+            ) : (
+              <p className="rounded-2xl border border-neutral-200/80 bg-neutral-50 px-4 py-3 text-sm text-neutral-600">
+                Log in to save medical notes and an emergency contact.
               </p>
-            ) : null}
-            <ProfileSafetyForm className="space-y-3" onSaved={() => setSafetySaved(true)} />
+            )}
           </SettingsSection>
 
           <IosInstallSettingsSection />

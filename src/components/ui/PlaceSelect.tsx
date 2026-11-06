@@ -122,7 +122,7 @@ export const PlaceSelect = ({
         aria-expanded={open}
         aria-haspopup="listbox"
       >
-        <span className={selected ? 'text-gray-900 truncate' : 'text-gray-400'}>
+        <span className={selected ? 'place-select-trigger-value truncate text-neutral-900' : 'text-neutral-400'}>
           {selected ? `${selected.name} (${selected.region})` : placeholder}
         </span>
         <ChevronDown className={`w-4 h-4 shrink-0 text-gray-400 transition-transform ${open ? 'rotate-180' : ''}`} />
@@ -139,7 +139,7 @@ export const PlaceSelect = ({
       )}
 
       {open && (
-        <div className="absolute z-[7000] mt-1 w-full overflow-hidden rounded-2xl border border-neutral-200/90 bg-white shadow-lg shadow-neutral-900/10">
+        <div className="place-select-panel">
           <div className="border-b border-gray-100 bg-white p-2 sticky top-0 z-10">
             <div className="relative">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
@@ -148,7 +148,7 @@ export const PlaceSelect = ({
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder={selected ? 'Type to find another venue…' : 'Search venues…'}
-                className="w-full rounded-lg border border-gray-200 py-2 pl-9 pr-3 text-sm focus:border-transparent focus:ring-2 focus:ring-emerald-500"
+                className="ios-input w-full rounded-lg border border-gray-200 py-2 pl-9 pr-3 text-sm !min-h-0 focus:border-transparent focus:ring-2 focus:ring-emerald-500"
                 autoFocus
               />
             </div>
@@ -171,8 +171,8 @@ export const PlaceSelect = ({
                 <button
                   type="button"
                   onClick={() => pick(loc.id)}
-                  className={`w-full text-left px-3 py-2.5 text-sm hover:bg-gray-50 flex items-start gap-2 ${
-                    value === loc.id ? 'bg-emerald-50 text-emerald-800 font-medium' : 'text-gray-800'
+                  className={`place-select-option ${
+                    value === loc.id ? 'place-select-option--selected' : ''
                   }`}
                 >
                   <MapPin className="w-4 h-4 shrink-0 mt-0.5 text-emerald-600" />
@@ -188,8 +188,8 @@ export const PlaceSelect = ({
                 <button
                   type="button"
                   onClick={() => pick(loc.id)}
-                  className={`w-full text-left px-3 py-2.5 text-sm hover:bg-gray-50 flex items-start gap-2 ${
-                    value === loc.id ? 'bg-amber-50 text-amber-900 font-medium' : 'text-gray-800'
+                  className={`place-select-option ${
+                    value === loc.id ? 'place-select-option--pending' : ''
                   }`}
                 >
                   <MapPin className="w-4 h-4 shrink-0 mt-0.5 text-amber-600" />

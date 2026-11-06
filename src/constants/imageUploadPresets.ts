@@ -1,6 +1,6 @@
 import type { PhotoShape } from '../components/ui/PhotoEditorDialog';
 
-export type ImageUploadPreset = 'activity' | 'location' | 'rectangle' | 'profile';
+export type ImageUploadPreset = 'activity' | 'location' | 'rectangle' | 'profile' | 'groupPhoto';
 
 export interface ImageUploadPresetConfig {
   skipEditor: boolean;
@@ -34,5 +34,11 @@ export const IMAGE_UPLOAD_PRESETS: Record<ImageUploadPreset, ImageUploadPresetCo
     shape: 'circle',
     outputWidth: 512,
     outputHeight: 512,
+  },
+  groupPhoto: {
+    skipEditor: false,
+    shape: 'circle',
+    outputWidth: 256,
+    outputHeight: 256,
   },
 };

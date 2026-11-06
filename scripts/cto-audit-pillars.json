@@ -5,7 +5,7 @@
     "One write path per aggregate (activity, place, facility, join request, message thread).",
     "Read models explicit (explore map, detail DTO, inbox, coordination attention) — not ad-hoc FE projection stacks.",
     "Surface-first HTTP (public / me / operator / admin) sharing services — never profile-branching CRUD.",
-    "Async side effects durable (outbox) with idempotent consumers — not fire-and-forget only.",
+    "Async side effects durable (outbox) with idempotent consumers — production default on; not fire-and-forget in prod.",
     "Contracts in shared-types; API domain/ for server-only rules.",
     "Tenant boundary enforced at operator mount; member capabilities from GET /me/status only.",
     "Redis required in prod for cache, rate limit, SSE; observability on by default in staging/prod.",

@@ -41,7 +41,7 @@ export const ActivityDetailPlanColumn = ({
   }
 
   return (
-    <div className={consumerInline ? 'space-y-6' : 'lg:col-span-2 space-y-4'}>
+    <div className={consumerInline ? 'space-y-6 lg:space-y-3' : 'lg:col-span-2 space-y-4'}>
       {model.showInviteShare && model.canSendJoinInvites && !consumerInline ? (
         <ActivityInviteLauncher
           activity={{
@@ -86,7 +86,7 @@ export const ActivityDetailPlanColumn = ({
           activity={model.activity}
           showMobileTabs={model.showMobileTabs}
           hideScheduleFactsGrid={consumerInline}
-          hideAboutBody={model.requiresSignIn}
+          hideAboutBody={false}
         />
       ) : null}
 

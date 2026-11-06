@@ -14,5 +14,6 @@ describe('resolveGuestSurfaceForPath', () => {
   it('returns null for public routes', () => {
     expect(resolveGuestSurfaceForPath('/explore')).toBeNull();
     expect(resolveGuestSurfaceForPath('/list')).toBeNull();
+    expect(resolveGuestSurfaceForPath('/profile/settings')).toBeNull();
   });
 });

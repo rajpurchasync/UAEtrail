@@ -1,8 +1,7 @@
-import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 
 import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
-import { COMPOSE_SHEET_DRAG_HINT } from '../../hooks/useMobileBrowseSheetImmersive';
-import { useComposeSheetExpandedState } from '../create/ComposeSheetExpandedContext';
+import { FlowSheetHeader } from './ExploreFlowSheetChrome';
 import { finishComposeFlowClose, requestComposeFlowClose } from './composeFlowClose';
 
 import {
@@ -27,6 +26,7 @@ import {
 
   addPlaceCompose,
 
+  composeItemEmoji,
   composeMenuTitle,
 
   hostCompose,
@@ -67,86 +67,6 @@ const menuGroupClass =
 
 
 
-const ComposeSheetCloseButton = ({ onClose, className = '' }: { onClose: () => void; className?: string }) => (
-
-  <button
-
-    type="button"
-
-    onClick={onClose}
-
-    className={`rounded-full p-2.5 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600 ${className}`}
-
-    aria-label="Close"
-
-  >
-
-    <X className="h-5 w-5" />
-
-  </button>
-
-);
-
-
-
-const ComposeMenuHero = ({ onClose }: { onClose: () => void }) => (
-
-  <header className={`${EXPLORE_FLOW.stepHeaderShell} mb-5`}>
-
-    <ComposeSheetCloseButton onClose={onClose} className="absolute right-0 top-2 -mr-2" />
-
-    <div className={EXPLORE_FLOW.stepTitleBlock}>
-
-      <span className="mb-3 text-[2.5rem] font-emoji leading-none" aria-hidden>
-
-        {COMPOSE_MENU_THINKING_EMOJI}
-
-      </span>
-
-      <h2 className={EXPLORE_FLOW.stepTitle}>{COMPOSE_MENU_TITLE}</h2>
-
-    </div>
-
-  </header>
-
-);
-
-
-
-const ComposeSheetHeader = ({
-  title,
-  onClose,
-  onBack,
-}: {
-  title: string;
-  onClose: () => void;
-  onBack?: () => void;
-}) => (
-
-  <header className={EXPLORE_FLOW.stepHeaderShell}>
-
-    {onBack ? (
-      <button
-        type="button"
-        onClick={onBack}
-        className="absolute left-0 top-2 -ml-2 inline-flex items-center rounded-full p-2 text-neutral-600 hover:bg-neutral-100"
-        aria-label="Back"
-      >
-        <ChevronLeft className="h-5 w-5" aria-hidden />
-      </button>
-    ) : null}
-
-    <ComposeSheetCloseButton onClose={onClose} className="absolute right-0 top-2 -mr-2" />
-
-    <div className={EXPLORE_FLOW.stepTitleBlock}>
-
-      <h2 className={EXPLORE_FLOW.stepTitle}>{title}</h2>
-
-    </div>
-
-  </header>
-
-);
 
 
 
@@ -165,8 +85,6 @@ const isSeekFixedKindStep = (
 export const CreateIntentSheet = ({ route, onRouteChange, onClose }: CreateIntentSheetProps) => {
 
   const open = isComposeMenu(route);
-  const { sheetExpanded, expandSheet } = useComposeSheetExpandedState();
-
   if (!open) return null;
 
 
@@ -257,13 +175,9 @@ export const CreateIntentSheet = ({ route, onRouteChange, onClose }: CreateInten
 
       mobileComposeChrome
 
-      expanded={sheetExpanded}
-
-      onExpand={expandSheet}
-
-      expandHint={COMPOSE_SHEET_DRAG_HINT}
-
       showHandle={false}
+
+      showCloseButton={false}
 
       panelClassName="overflow-hidden px-0 pb-[calc(var(--safe-bottom)+1rem)] pt-0 lg:pb-8 lg:pt-3"
 
@@ -275,7 +189,11 @@ export const CreateIntentSheet = ({ route, onRouteChange, onClose }: CreateInten
 
           <>
 
-            <ComposeMenuHero onClose={requestClose} />
+            <FlowSheetHeader
+              title={COMPOSE_MENU_TITLE}
+              emoji={COMPOSE_MENU_THINKING_EMOJI}
+              onClose={requestClose}
+            />
 
             <div className={`${menuGroupClass} compose-menu-list`}>
 
@@ -327,7 +245,12 @@ export const CreateIntentSheet = ({ route, onRouteChange, onClose }: CreateInten
 
           <>
 
-            <ComposeSheetHeader title={headerTitle} onClose={requestClose} onBack={handleBack} />
+            <FlowSheetHeader
+              title={headerTitle}
+              emoji={composeItemEmoji(route)}
+              onClose={requestClose}
+              onBack={handleBack}
+            />
 
 
 

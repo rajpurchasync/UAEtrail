@@ -89,3 +89,14 @@ export const formatMediaUrl = (url: string): string => {
 
   return formatEnvironmentUrl(url);
 };
+
+/** Prefer stored `-thumb.jpg` sibling for map/list/catalog when the full asset is public. */
+export const formatMediaCatalogUrl = (url: string): string => {
+  const resolved = formatMediaUrl(url);
+  const key = extractMediaStorageKey(resolved);
+  if (!key || isPrivateMediaKey(key)) return resolved;
+  const dot = key.lastIndexOf('.');
+  if (dot <= 0) return resolved;
+  const thumbKey = `${key.slice(0, dot)}-thumb.jpg`;
+  return `/api/media/public/${thumbKey}`;
+};

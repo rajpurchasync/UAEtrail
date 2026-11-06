@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { ChevronLeft, Mail, Lock, Mountain, X } from 'lucide-react';
+import { Link, Navigate, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { Mail, Lock } from 'lucide-react';
+import { AuthFunnelShell } from '../components/auth/AuthFunnelShell';
 import { setActiveTenantId } from '../api/tenant';
 import { fetchMeProfile } from '../hooks/memberProfileApi';
 import { fetchMemberStatus } from '../hooks/memberStatusApi';
@@ -15,7 +16,8 @@ import {
 } from '../utils/authRedirect';
 import { navigateToPostAuthReturn, resolvePostAuthReturnPath } from '../utils/authPostLoginNavigation';
 import { isPendingEmailVerification } from '../utils/authVerification';
-import { SIGNUP_PATH } from '../config/routingCatalog';
+import { SIGNUP_PATH, hasSessionExpiredQuery } from '../config/routingCatalog';
+import { sessionExpiredLandingPath } from '../utils/authSessionLanding';
 import { buildAuthGateUrls, clearAuthReturnContext } from '../utils/authReturnContext';
 import { PageMeta } from '../components/seo/PageMeta';
 import { PRODUCT_AUTH_SIGNIN_SUBLINE } from '../content/productNorthStar';
@@ -29,6 +31,9 @@ export const SignIn = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  if (hasSessionExpiredQuery(searchParams)) {
+    return <Navigate to={sessionExpiredLandingPath()} replace />;
+  }
   const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
   const isPrivateLanHost =
     /^192\.168\./.test(hostname) ||
@@ -156,37 +161,13 @@ export const SignIn = () => {
   const fieldClass = 'ios-input text-[17px] border border-neutral-300 bg-white';
 
   return (
-    <div className="app-page-min-h app-scroll-body bg-ios-bg flex flex-col py-8 px-6 safe-area-top safe-area-bottom">
+    <AuthFunnelShell
+      title="Welcome"
+      subline={PRODUCT_AUTH_SIGNIN_SUBLINE}
+      onBack={handleBack}
+      onClose={handleClose}
+    >
       <PageMeta title="Sign in" noIndex />
-
-      <div className="auth-card max-w-md w-full mx-auto bg-white rounded-[20px] shadow-ios p-6 sm:p-8 flex-1">
-        <div className="relative z-20 flex items-center justify-between mb-2">
-          <button
-            type="button"
-            onClick={handleBack}
-            className="relative z-20 inline-flex items-center gap-0.5 -ml-1 pl-1 pr-2 py-1 text-emerald-600 active:opacity-60"
-          >
-            <ChevronLeft className="w-6 h-6" strokeWidth={2.25} />
-            <span className="text-[17px] font-medium">Back</span>
-          </button>
-          <button
-            type="button"
-            onClick={handleClose}
-            className="relative z-20 inline-flex h-9 w-9 items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 active:opacity-60"
-            aria-label="Close"
-          >
-            <X className="w-5 h-5" strokeWidth={2.25} />
-          </button>
-        </div>
-
-        <Link to="/" className="relative z-0 flex items-center justify-center gap-2 mb-5">
-          <div className="w-9 h-9 bg-gradient-to-br from-emerald-400 to-emerald-700 rounded-[10px] flex items-center justify-center">
-            <Mountain className="w-5 h-5 text-white" />
-          </div>
-          <span className="text-lg font-bold text-neutral-900 tracking-tight">UAE Trail</span>
-        </Link>
-        <h1 className="text-[28px] font-bold text-neutral-900 mb-1 tracking-tight text-center">Welcome</h1>
-        <p className="text-[15px] text-neutral-500 mb-6 text-center">{PRODUCT_AUTH_SIGNIN_SUBLINE}</p>
 
         <GoogleAuthSection
           onSuccess={handleGoogleSignIn}
@@ -239,7 +220,7 @@ export const SignIn = () => {
           </button>
         </form>
 
-        <p className="text-sm text-gray-500 mt-5 text-center">
+        <p className="text-sm text-gray-500 mt-5 text-center md:text-left">
           Don&apos;t have an account?{' '}
           <Link className="text-emerald-700 hover:text-emerald-900 font-medium" to={signUpHref}>
             Sign up
@@ -264,7 +245,6 @@ export const SignIn = () => {
             </div>
           </div>
         )}
-      </div>
-    </div>
+    </AuthFunnelShell>
   );
 };

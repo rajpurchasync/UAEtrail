@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import type { GroupWallStreamEventDTO } from '@uaetrail/shared-types';
 import {
   Users,
   Baby,
@@ -32,17 +33,18 @@ import {
   updateMeGroupMemberRole,
 } from '../hooks/groupClientApi';
 import { groupWallPostPolicyLabel, resolveGroupWallPostPolicy } from '../utils/groupWallPostPolicy';
-import {
-  activityGroupChatPath,
-  MESSAGES_CHAT_RETURN_TO_KEY,
-} from '../utils/activityGroupChatNav';
-import { GROUPS_PATH, groupsManagePath, PROFILE_PATH } from '../config/routingCatalog';
-import { MobileScreen } from '../components/layout/MobileScreen';
+import { GROUPS_PATH, PROFILE_PATH, groupsManagePath } from '../config/routingCatalog';
+import { ConsumerShell } from '../components/mobile/ConsumerShell';
+import { activityGroupChatPath, MESSAGES_CHAT_RETURN_TO_KEY } from '../utils/activityGroupChatNav';
+import { useChatStream } from '../hooks/useChatStream';
+import { formatWallInboxPreview } from '../utils/wallMessagePreview';
 import { GlassCard } from '../components/mobile/GlassCard';
 import { Dialog } from '../components/ui/Dialog';
 import { AppSelect } from '../components/ui/AppSelect';
 import { FormTabBar } from '../components/ui/FormTabBar';
 import { SecureAvatar } from '../components/ui/SecureAvatar';
+import { ProfilePhotoEditorField } from '../components/account/ProfilePhotoEditorField';
+import { updateMyGroupSettings } from '../hooks/socialGroupSettingsApi';
 import { useAuth } from '../context/AuthContext';
 
 type GroupType = 'family' | 'friends';
@@ -107,8 +109,18 @@ export const Groups = () => {
   const [memberActionId, setMemberActionId] = useState<string | null>(null);
   const [acceptingInvite, setAcceptingInvite] = useState(false);
 
+  const manageMode = searchParams.get('tab') === 'members' || searchParams.get('tab') === 'manage';
+  const inRightPanel = Boolean(selectedGroupId && manageMode);
+
   const processedInviteRef = useRef<string | null>(null);
   const inviteToken = searchParams.get('invite');
+
+  useEffect(() => {
+    const groupId = searchParams.get('group');
+    const tab = searchParams.get('tab');
+    if (!groupId || tab === 'members' || tab === 'manage') return;
+    navigate(groupsManagePath(groupId), { replace: true });
+  }, [navigate, searchParams]);
 
   useEffect(() => {
     if (searchParams.get('create') !== '1' && searchParams.get('create') !== 'true') return;
@@ -121,24 +133,22 @@ export const Groups = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- consume create query param once on mount
   }, []);
 
-  const loadGroups = useCallback(async () => {
-    setLoading(true);
+  const loadGroups = useCallback(async (options?: { silent?: boolean }) => {
+    if (!options?.silent) {
+      setLoading(true);
+    }
     setError(null);
     try {
       const list = await fetchMeGroups();
       setGroups(list);
-      setSelectedGroupId((current) => {
-        const fromUrl = searchParams.get('group');
-        if (fromUrl && list.some((g) => g.id === fromUrl)) return fromUrl;
-        if (current && list.some((g) => g.id === current)) return current;
-        return null;
-      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load groups');
     } finally {
-      setLoading(false);
+      if (!options?.silent) {
+        setLoading(false);
+      }
     }
-  }, [searchParams]);
+  }, []);
 
   const loadDetail = async (groupId: string) => {
     try {
@@ -149,40 +159,101 @@ export const Groups = () => {
     }
   };
 
-  const openGroupChat = (groupId: string) => {
-    navigate(activityGroupChatPath(groupId), {
-      state: { [MESSAGES_CHAT_RETURN_TO_KEY]: GROUPS_PATH },
-    });
-  };
+  const focusGroupChat = useCallback(
+    (groupId: string) => {
+      const params = new URLSearchParams(searchParams);
+      params.set('group', groupId);
+      params.delete('tab');
+      const returnTo = `${GROUPS_PATH}?${params.toString()}`;
+      navigate(activityGroupChatPath(groupId), {
+        replace: true,
+        state: { [MESSAGES_CHAT_RETURN_TO_KEY]: returnTo },
+      });
+    },
+    [navigate, searchParams]
+  );
 
   const openGroupManage = (groupId: string, tab: GroupTab = 'members') => {
-    setSelectedGroupId(groupId);
     setActiveTab(tab);
-    navigate(groupsManagePath(groupId, tab), { replace: true });
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        next.set('group', groupId);
+        next.set('tab', tab);
+        return next;
+      },
+      { replace: true }
+    );
   };
 
-  const backToGroupList = () => {
+  const closeRightPanel = useCallback(() => {
     setSelectedGroupId(null);
     setDetail(null);
     setSearchParams({}, { replace: true });
-  };
+  }, [setSearchParams]);
+
+  const handleGroupMetaUpdated = useCallback((group: SocialGroupView) => {
+    setGroups((prev) => prev.map((row) => (row.id === group.id ? group : row)));
+    setDetail((current) =>
+      current?.group.id === group.id
+        ? { ...current, group }
+        : current
+    );
+  }, []);
+
+  const handleGroupWallStream = useCallback((payload: GroupWallStreamEventDTO) => {
+    const isManageForGroup =
+      selectedGroupId === payload.groupId && manageMode;
+    setGroups((prev) =>
+      prev.map((group) =>
+        group.id === payload.groupId
+          ? {
+              ...group,
+              chatPreview: {
+                ...(group.chatPreview ?? {
+                  lastMessageBody: '',
+                  lastMessageAt: payload.message.createdAt,
+                  unreadCount: 0,
+                }),
+                lastMessageBody: payload.message.body,
+                lastMessageAt: payload.message.createdAt,
+                unreadCount: isManageForGroup
+                  ? 0
+                  : (group.chatPreview?.unreadCount ?? 0) + 1,
+              },
+            }
+          : group
+      )
+    );
+  }, [manageMode, selectedGroupId]);
+
+  useChatStream({
+    enabled: Boolean(user),
+    onMessage: () => {},
+    onGroupWallMessage: handleGroupWallStream,
+  });
 
   useEffect(() => {
     void loadGroups();
   }, [loadGroups]);
 
   useEffect(() => {
+    setSelectedGroupId(searchParams.get('group'));
+  }, [searchParams]);
+
+  useEffect(() => {
     if (!selectedGroupId) {
       setDetail(null);
       return;
     }
-    setSearchParams((prev) => {
-      const next = new URLSearchParams(prev);
-      next.set('group', selectedGroupId);
-      return next;
-    }, { replace: true });
     void loadDetail(selectedGroupId);
-  }, [selectedGroupId, setSearchParams]);
+  }, [selectedGroupId]);
+
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab === 'manage') setActiveTab('manage');
+    else if (tab === 'members') setActiveTab('members');
+  }, [searchParams]);
 
   useEffect(() => {
     if (!inviteToken || processedInviteRef.current === inviteToken) return;
@@ -278,7 +349,7 @@ export const Groups = () => {
       setGroupForm(emptyGroupForm);
       setShowCreateModal(false);
       await loadGroups();
-      openGroupChat(created.id);
+      focusGroupChat(created.id);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not create group');
     } finally {
@@ -323,21 +394,90 @@ export const Groups = () => {
     }
   };
 
+  const handleGroupPhotoUpdated = useCallback((group: SocialGroupView) => {
+    handleGroupMetaUpdated(group);
+  }, [handleGroupMetaUpdated]);
+
+  const saveGroupPhoto = async (groupId: string, photoUrl: string) => {
+    setSaving(true);
+    setError(null);
+    try {
+      const updated = await updateMyGroupSettings(groupId, {
+        photoUrl: photoUrl.trim() ? photoUrl.trim() : null,
+      });
+      handleGroupPhotoUpdated(updated);
+      setSuccess('Group image updated.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not update group image.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const renderGroupIconCard = () => {
+    if (!detail || !isAdmin) return null;
+    const { group } = detail;
+    const isActivity = group.type === 'activity';
+
+    return (
+      <GlassCard padding>
+        <h3 className="text-sm font-semibold text-neutral-900 mb-2">Group image</h3>
+        {isActivity ? (
+          <>
+            <div className="flex items-center gap-3">
+              <SecureAvatar
+                src={group.photoUrl ?? undefined}
+                name={group.name}
+                className="h-14 w-14 shrink-0 text-base ring-1 ring-black/10"
+              />
+              <p className="text-xs leading-relaxed text-neutral-500">
+                Outing crew chats use the outing cover photo (256px-friendly in chat and inbox). Change it by
+                updating the activity images — it syncs here automatically.
+              </p>
+            </div>
+          </>
+        ) : (
+          <>
+            <ProfilePhotoEditorField
+              value={group.photoUrl ?? undefined}
+              name={group.name}
+              label="Icon"
+              editorTitle="Edit group icon"
+              keyPrefix={`groups/${group.id}`}
+              kind="group-photo"
+              disabled={saving}
+              onChange={(url) => void saveGroupPhoto(group.id, url)}
+            />
+            <p className="mt-2 text-xs text-neutral-500">
+              Circular crop · saved at 256×256 for fast load in chat, groups, and inbox.
+            </p>
+          </>
+        )}
+      </GlassCard>
+    );
+  };
+
   const renderGroupSummary = () => {
     if (!detail) return null;
 
     return (
-      <div className="rounded-xl border border-neutral-200 bg-white px-4 py-3">
+      <div className="overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">
+        {detail.group.bannerUrl ? (
+          <img src={detail.group.bannerUrl} alt="" className="h-24 w-full object-cover md:h-32" />
+        ) : (
+          <div className="h-16 bg-gradient-to-r from-sky-100 via-emerald-50 to-amber-50 md:h-20" />
+        )}
+        <div className="px-4 py-3 md:px-5">
         <div className="flex items-start gap-3">
-          <div className="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center shrink-0 overflow-hidden">
+          <div className="-mt-8 h-14 w-14 shrink-0 overflow-hidden rounded-2xl ring-2 ring-white bg-blue-50 flex items-center justify-center shadow-sm md:h-16 md:w-16">
             {detail.group.photoUrl ? (
-              <img src={detail.group.photoUrl} alt="" className="w-full h-full object-cover" />
+              <img src={detail.group.photoUrl} alt="" className="h-full w-full object-cover" />
             ) : (
-              <Users className="w-5 h-5 text-blue-600" />
+              <Users className="w-6 h-6 text-blue-600" />
             )}
           </div>
-          <div className="min-w-0 flex-1">
-            <h2 className="text-base font-bold text-neutral-900 truncate">{detail.group.name}</h2>
+          <div className="min-w-0 flex-1 pt-1">
+            <h2 className="text-lg font-bold text-neutral-900 truncate">{detail.group.name}</h2>
             <p className="text-sm text-neutral-600 mt-0.5">
               {typeLabel[detail.group.type]} · {detail.members.length} member{detail.members.length === 1 ? '' : 's'} ·{' '}
               {memberRoleLabel(detail.membership)}
@@ -354,12 +494,13 @@ export const Groups = () => {
         </div>
         <button
           type="button"
-          onClick={() => openGroupChat(detail.group.id)}
-          className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700"
+          onClick={() => focusGroupChat(detail.group.id)}
+          className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 md:mt-4"
         >
           <MessageSquare className="h-4 w-4" aria-hidden />
           Open group chat
         </button>
+        </div>
       </div>
     );
   };
@@ -459,6 +600,7 @@ export const Groups = () => {
 
     return (
       <div className="space-y-3">
+        {renderGroupIconCard()}
         <GlassCard padding>
           <h3 className="text-sm font-semibold text-neutral-900 mb-2">Group chat</h3>
           <p className="text-xs text-neutral-500 mb-2">
@@ -469,7 +611,7 @@ export const Groups = () => {
           </p>
           <button
             type="button"
-            onClick={() => openGroupChat(detail.group.id)}
+            onClick={() => focusGroupChat(detail.group.id)}
             className="flex w-full items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-900 hover:bg-emerald-100"
           >
             <MessageSquare className="h-4 w-4" aria-hidden />
@@ -626,9 +768,64 @@ export const Groups = () => {
     );
   };
 
-  return (
-    <MobileScreen title="My Groups" backTo={PROFILE_PATH} showBanner={false}>
-      <div className="space-y-4 pb-6">
+  const renderManageDetail = () => {
+    if (!detail || !manageMode) return null;
+
+    return (
+      <div className="space-y-3 overflow-y-auto px-4 py-4 pb-bottom-nav-safe md:pb-4 md:px-6">
+        <button
+          type="button"
+          onClick={closeRightPanel}
+          className="inline-flex items-center gap-1 text-sm font-semibold text-neutral-600 hover:text-neutral-900 md:hidden"
+        >
+          <ChevronLeft className="h-4 w-4" aria-hidden />
+          All groups
+        </button>
+        {renderGroupSummary()}
+        <FormTabBar
+          tabs={[
+            { id: 'members', label: 'Members' },
+            ...(isAdmin ? [{ id: 'manage', label: 'Manage' }] : []),
+          ]}
+          activeId={activeTab}
+          onChange={(id) => {
+            const tab = id as GroupTab;
+            setActiveTab(tab);
+            setSearchParams({ group: detail.group.id, tab }, { replace: true });
+          }}
+        />
+        {activeTab === 'members' && renderMembersTab()}
+        {activeTab === 'manage' && renderManageTab()}
+        {!isCreator && detail.group.type !== 'activity' && (
+          <GlassCard padding className="border-neutral-200">
+            <div className="flex items-start gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-neutral-100">
+                <LogOut className="h-5 w-5 text-neutral-600" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h3 className="text-sm font-semibold text-neutral-900">Leave group</h3>
+                <p className="mt-1 text-xs leading-relaxed text-neutral-500">
+                  You will lose access to this group&apos;s chat and member list. You can rejoin if an admin invites you
+                  again.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setShowLeaveModal(true)}
+                  className="mt-3 inline-flex items-center gap-1.5 rounded-xl border border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-800 hover:bg-neutral-50"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Leave group
+                </button>
+              </div>
+            </div>
+          </GlassCard>
+        )}
+      </div>
+    );
+  };
+
+  const listBody = (
+    <div className="space-y-4 pb-6">
         <div className="flex items-center justify-between gap-3">
           <p className="text-sm text-neutral-600">
             Create groups, invite members, and chat together.
@@ -679,69 +876,28 @@ export const Groups = () => {
               Create your first group
             </button>
           </GlassCard>
-        ) : selectedGroupId && detail ? (
-          <div className="space-y-3">
-            <button
-              type="button"
-              onClick={backToGroupList}
-              className="inline-flex items-center gap-1 text-sm font-semibold text-neutral-600 hover:text-neutral-900"
-            >
-              <ChevronLeft className="h-4 w-4" aria-hidden />
-              All groups
-            </button>
-            {renderGroupSummary()}
-            <FormTabBar
-              tabs={[
-                { id: 'members', label: 'Members' },
-                ...(isAdmin ? [{ id: 'manage', label: 'Manage' }] : []),
-              ]}
-              activeId={activeTab}
-              onChange={(id) => {
-                const tab = id as GroupTab;
-                setActiveTab(tab);
-                setSearchParams({ group: detail.group.id, tab }, { replace: true });
-              }}
-            />
-            {activeTab === 'members' && renderMembersTab()}
-            {activeTab === 'manage' && renderManageTab()}
-            {!isCreator && detail.group.type !== 'activity' && (
-              <GlassCard padding className="border-neutral-200">
-                <div className="flex items-start gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-neutral-100">
-                    <LogOut className="h-5 w-5 text-neutral-600" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <h3 className="text-sm font-semibold text-neutral-900">Leave group</h3>
-                    <p className="mt-1 text-xs leading-relaxed text-neutral-500">
-                      You will lose access to this group&apos;s chat and member list. You can rejoin if an admin invites
-                      you again.
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() => setShowLeaveModal(true)}
-                      className="mt-3 inline-flex items-center gap-1.5 rounded-xl border border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-800 hover:bg-neutral-50"
-                    >
-                      <LogOut className="h-4 w-4" />
-                      Leave group
-                    </button>
-                  </div>
-                </div>
-              </GlassCard>
-            )}
-          </div>
         ) : (
           <div className="space-y-2">
-            {groups.map((group) => (
+            {groups.map((group) => {
+              const selected = selectedGroupId === group.id;
+              const preview = group.chatPreview?.lastMessageBody
+                ? formatWallInboxPreview(group.chatPreview.lastMessageBody)
+                : null;
+              return (
               <div
                 key={group.id}
-                className="flex items-stretch gap-1 rounded-xl border border-neutral-200 bg-white shadow-sm overflow-hidden"
+                className={`flex items-stretch gap-1 rounded-xl border bg-white shadow-sm overflow-hidden ${
+                  selected ? 'border-emerald-300 ring-1 ring-emerald-200' : 'border-neutral-200'
+                }`}
               >
                 <button
                   type="button"
-                  onClick={() => openGroupChat(group.id)}
-                  className="flex min-w-0 flex-1 items-center gap-3 px-4 py-3 text-left hover:bg-neutral-50"
+                  onClick={() => focusGroupChat(group.id)}
+                  className={`chat-row consumer-list-row-interactive flex min-w-0 flex-1 items-center gap-3 px-4 py-3 text-left ${
+                    selected ? 'chat-row-selected consumer-list-row-selected' : ''
+                  }`}
                 >
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-sky-100 text-sky-700 overflow-hidden">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-sky-100 text-sky-700 ring-1 ring-black/5">
                     {group.photoUrl ? (
                       <img src={group.photoUrl} alt="" className="h-full w-full object-cover" />
                     ) : (
@@ -750,24 +906,88 @@ export const Groups = () => {
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-semibold text-neutral-900">{group.name}</p>
-                    <p className="text-xs text-neutral-500">{typeLabel[group.type]}</p>
+                    <p className="truncate text-xs text-neutral-500">
+                      {preview ?? typeLabel[group.type]}
+                    </p>
                   </div>
                   <MessageSquare className="h-4 w-4 shrink-0 text-emerald-600" aria-hidden />
                 </button>
                 {group.type !== 'activity' ? (
                   <button
                     type="button"
-                    onClick={() => openGroupManage(group.id)}
-                    className="flex shrink-0 items-center justify-center border-l border-neutral-100 px-3 text-neutral-500 hover:bg-neutral-50 hover:text-neutral-800"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      openGroupManage(group.id);
+                    }}
+                    className={`flex shrink-0 items-center justify-center border-l border-neutral-100 px-3 text-neutral-500 hover:bg-neutral-50 hover:text-neutral-800 ${
+                      selected && manageMode ? 'bg-emerald-50/80 text-emerald-800' : ''
+                    }`}
                     aria-label={`Manage ${group.name}`}
                   >
                     <Settings2 className="h-5 w-5" />
                   </button>
                 ) : null}
               </div>
-            ))}
+            );
+            })}
           </div>
         )}
+    </div>
+  );
+
+  const rightPanel =
+    manageMode && selectedGroupId ? (
+      detail ? (
+        renderManageDetail()
+      ) : (
+        <div className="flex flex-1 items-center justify-center p-8">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent" />
+        </div>
+      )
+    ) : (
+      <div className="hidden h-full min-h-0 flex-1 flex-col items-center justify-center px-8 text-center md:flex">
+        <MessageSquare className="mb-3 h-10 w-10 text-neutral-300" aria-hidden />
+        <p className="text-lg font-semibold text-neutral-800">Group details</p>
+        <p className="mt-2 max-w-sm text-sm text-neutral-500">
+          Pick a group to manage members, or open chat from the list.
+        </p>
+      </div>
+    );
+
+  return (
+    <>
+      <div
+        className={`groups-app chat-app flex h-full min-h-0 w-full flex-1 overflow-hidden ${
+          inRightPanel ? 'md:[--chat-inbox-width:24rem]' : ''
+        }`}
+      >
+        <div
+          className={`${
+            inRightPanel ? 'hidden md:flex' : 'flex'
+          } h-full min-h-0 w-full min-w-0 flex-col md:w-[24rem] lg:w-[26rem] md:max-w-[40%] md:shrink-0 md:border-r md:border-neutral-200`}
+        >
+          <ConsumerShell
+            layout="tab"
+            title="My Groups"
+            maxWidth="4xl"
+            flush
+            showJourney
+            journey={{ fallbackTo: PROFILE_PATH, label: 'Back' }}
+          >
+            <div className="pb-bottom-nav-safe md:pb-0">{listBody}</div>
+          </ConsumerShell>
+        </div>
+
+        <div
+          key={selectedGroupId ?? 'groups-panel-empty'}
+          className={
+            inRightPanel
+              ? 'groups-panel-enter flex h-full min-h-0 min-w-0 w-full max-w-full flex-1 flex-col overflow-hidden bg-white max-md:fixed max-md:inset-0 max-md:z-[1300] max-md:h-[100dvh] max-md:max-w-[100vw]'
+              : 'hidden min-h-0 min-w-0 flex-1 bg-white md:flex'
+          }
+        >
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col">{rightPanel}</div>
+        </div>
       </div>
 
       <Dialog open={showCreateModal} onClose={() => !saving && setShowCreateModal(false)} title="Create group">
@@ -891,6 +1111,6 @@ export const Groups = () => {
           </button>
         </div>
       </Dialog>
-    </MobileScreen>
+    </>
   );
 };

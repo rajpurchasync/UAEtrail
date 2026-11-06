@@ -110,8 +110,8 @@ export const PeopleBrowsePanel = ({
         showMobileDismiss && !isDesktop
           ? 'inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-neutral-800 active:bg-neutral-100'
           : isDesktop
-            ? 'rounded-full p-2 text-gray-500 hover:bg-neutral-50 hover:text-gray-800'
-            : 'inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-gray-500 hover:bg-neutral-100'
+            ? 'rounded-full bg-neutral-100 p-2 text-neutral-600 shadow-sm ring-1 ring-black/5 hover:bg-neutral-200 hover:text-neutral-800'
+            : 'inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
       }
       aria-label={closePanelAriaLabel}
     >

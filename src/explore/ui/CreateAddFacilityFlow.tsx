@@ -30,8 +30,8 @@ import {
 } from './composeWizardSession';
 import { ExploreResponsiveSheet } from './ExploreResponsiveSheet';
 import { FlowSheetChrome } from './ExploreFlowSheetChrome';
-import { COMPOSE_SHEET_DRAG_HINT } from '../../hooks/useMobileBrowseSheetImmersive';
-import { useComposeSheetExpandedState } from '../create/ComposeSheetExpandedContext';
+import { ComposeWizardItemProvider } from '../create/ComposeWizardItemContext';
+import { composeItemEmoji } from '../compose';
 import { useComposeWizardExitBack } from '../create/useComposeWizardExitBack';
 import {
   composeWizardHasDraftContent,
@@ -98,7 +98,6 @@ export const CreateAddFacilityFlow = ({
   const [error, setError] = useState<string | null>(null);
   const [locationMapOpen, setLocationMapOpen] = useState(false);
   const [mapPrecision, setMapPrecision] = useState<LocationPrecision>('specific');
-  const { sheetExpanded, expandSheet } = useComposeSheetExpandedState();
 
   const flowSteps = FACILITY_ADD_STEPS;
   const currentStepIndex = flowSteps.indexOf(step);
@@ -283,11 +282,11 @@ export const CreateAddFacilityFlow = ({
       zClass={EXPLORE_Z.composeFlow}
       overlayFixed
       mobileComposeChrome
-      expanded={sheetExpanded}
-      onExpand={expandSheet}
-      expandHint={COMPOSE_SHEET_DRAG_HINT}
+      showHandle={false}
+      showCloseButton={false}
       panelClassName="px-5 pb-[calc(var(--safe-bottom)+1rem)] pt-0 lg:px-6 lg:pb-6 lg:pt-2"
     >
+      <ComposeWizardItemProvider emoji={composeItemEmoji({ intent: 'add', target: 'facility', kind: 'toilet' })}>
       {step === 'title' && (
         <FlowSheetChrome title={headerTitle} onClose={requestClose} onBack={goBack}>
           <FlowStepTextInput
@@ -435,6 +434,7 @@ export const CreateAddFacilityFlow = ({
           </div>
         </FlowSheetChrome>
       )}
+      </ComposeWizardItemProvider>
     </ExploreResponsiveSheet>
   );
 };

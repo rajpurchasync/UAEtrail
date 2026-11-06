@@ -36,7 +36,6 @@ type Props = {
   onRefreshHostGate: () => void;
   setRideshareLinkParent: (value: ActivityDTO | null) => void;
   setRideshareLinkSeeking: (value: ExploreMapItemDTO | null) => void;
-  inviteShareSheet: ReactNode;
   hostManageSheet: ReactNode;
   tenantId: string | null;
   useDesktopGuestGatePanel: boolean;
@@ -63,13 +62,11 @@ export const ExploreExperienceOverlays = ({
   onRefreshHostGate,
   setRideshareLinkParent,
   setRideshareLinkSeeking,
-  inviteShareSheet,
   hostManageSheet,
   tenantId,
   useDesktopGuestGatePanel,
 }: Props) => (
   <>
-    {inviteShareSheet}
     {hostManageSheet}
 
     <ComposeHost

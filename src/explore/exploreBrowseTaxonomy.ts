@@ -25,8 +25,12 @@ export const EXPLORE_SEARCH_OPEN_PLACEHOLDER = 'Activities, places, people, shop
 /** Guest map search — no member People scope until signed in. */
 export const EXPLORE_SEARCH_GUEST_PLACEHOLDER = 'Activities, places, spots, events, shops…';
 
-export const EXPLORE_GUEST_MAP_PREVIEW_NOTICE =
-  'Preview map — up to 3 outings and 3 places per visit. Join free to explore the full UAE catalog.';
+export const EXPLORE_GUEST_MAP_PREVIEW_LEAD =
+  'Preview map — up to 3 outings and 3 places per visit.';
+
+export const EXPLORE_GUEST_MAP_PREVIEW_CTA_SUFFIX = 'to explore the full UAE catalog.';
+
+export const EXPLORE_GUEST_MAP_PREVIEW_NOTICE = `${EXPLORE_GUEST_MAP_PREVIEW_LEAD} Join free or log in ${EXPLORE_GUEST_MAP_PREVIEW_CTA_SUFFIX}`;
 
 /** Map search modal — guest sees capped map matches only. */
 export const EXPLORE_SEARCH_GUEST_PREVIEW_NOTICE = 'Preview only — 3 outings & 3 places.';

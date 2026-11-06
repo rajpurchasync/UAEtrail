@@ -14,6 +14,7 @@
 
 /** Every catalog / map POI kind — extend this list only; do not add parallel enums. */
 export const PLACE_KINDS = [
+  /** Wire `hiking` — product name **Trail** (`/trail/:id`). */
   'hiking',
   'camping',
   'event',

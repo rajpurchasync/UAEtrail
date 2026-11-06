@@ -48,7 +48,7 @@ describe('adminSurfacesAcceptance (S13-W9)', () => {
   });
 
   it('W9-02: App.tsx registers each admin route to its page module', () => {
-    const app = read('src/App.tsx');
+    const app = `${read('src/App.tsx')}\n${read('src/routing/AppRoutes.tsx')}\n${read('src/routing/appLazyPages.tsx')}`;
     const violations: string[] = [];
     for (const { path, page, element } of ADMIN_PLATFORM_ROUTE_CATALOG) {
       if (!app.includes(`path="${path}"`)) {

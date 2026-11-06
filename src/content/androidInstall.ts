@@ -7,7 +7,7 @@ export const ANDROID_INSTALL = {
   installButton: 'Install app',
   showSteps: 'How to add on this phone',
   insecureNotice:
-    'Chrome and Edge only install over https. Open https://uaetrail.com in Chrome or Edge on this phone, then tap Install app.',
+    'Chrome and Edge only install over HTTPS. A Wi‑Fi dev link like http://192.168.x.x:5175 cannot install — use https://uaetrail.com on this phone, or an HTTPS tunnel to your laptop for install testing.',
   chromeNotice:
     'On Galaxy phones, Chrome installs from the button below or from the ⋮ menu at the top right.',
   edgeNotice:
