@@ -18,6 +18,9 @@ const RETIRED_ACTIVITY_DETAIL_MODULES = [
   'src/components/activity/detail/ActivityDetailParticipationAffordances.tsx',
   'src/components/activity/detail/ActivityDetailParticipantRosterSection.tsx',
   'src/activity/activityDetailScrollEssentialChips.ts',
+  'src/components/activity/detail/ActivityDetailTabBar.tsx',
+  'src/components/activity/detail/ActivityDetailMobileHero.tsx',
+  'src/components/activity/detail/activityDetailTabPanelClass.ts',
 ];
 
 describe('activityDetailUiHygieneGuard', () => {
@@ -26,7 +29,7 @@ describe('activityDetailUiHygieneGuard', () => {
     expect(present).toEqual([]);
   });
 
-  it('AD-HYG-02: public route uses consumer template; embed keeps tab body', () => {
+  it('AD-HYG-02: public route uses section template; embed keeps the manage body', () => {
     expect(read('src/activity/detail/templates/ActivityDetailPageShell.tsx')).not.toMatch(/scrollDetailLayout/);
     expect(read('src/components/activity/ActivityDetailView.tsx')).toMatch(/ActivityDetailSections/);
     expect(read('src/components/activity/detail/ActivityDetailBody.tsx')).toMatch(/publicDetail/);

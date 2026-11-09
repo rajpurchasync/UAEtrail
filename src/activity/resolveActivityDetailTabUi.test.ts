@@ -30,14 +30,13 @@ describe('resolveActivityDetailTabUi', () => {
     });
 
     const ui = resolveActivityDetailTabUi({
-      wireTabs: presentation.tabs,
       publicDetail: true,
+      isHostUser: false,
       showMeetingPoint: presentation.sections.showMeetingPoint,
       previewMode: false,
       isEmbedded: false,
       onMobileTabChange: () => {},
-      canAccessCrewSurfaces: false,
-      showCrewLockedHint: true,
+      showCrewLockedHint: presentation.engagement.showCrewLockedHint,
       showParticipantFooterShortcuts: false,
       rideshareEnabled: false,
       hasLinkedRideshare: false,
@@ -46,7 +45,8 @@ describe('resolveActivityDetailTabUi', () => {
     expect(ui.showMobileTabs).toBe(false);
     expect(ui.showPlaceLockedOnMobile).toBe(false);
     expect(ui.showPlaceCrewBody).toBe(presentation.sections.showMeetingPoint);
-    expect(ui.showCrewLockedHint).toBe(presentation.tabs.buddies.showCrewLockedHint);
+    expect(ui.showCrewLockedHint).toBe(presentation.engagement.showCrewLockedHint);
+    expect(ui.showHostManageHub).toBe(false);
     expect(ui.showTransportEncouragementOnTab('transport')).toBe(false);
     expect(ui.showTransportEncouragementOnTab('plan')).toBe(false);
   });
@@ -61,13 +61,12 @@ describe('resolveActivityDetailTabUi', () => {
     });
 
     const ui = resolveActivityDetailTabUi({
-      wireTabs: presentation.tabs,
       publicDetail: false,
+      isHostUser: false,
       showMeetingPoint: presentation.sections.showMeetingPoint,
       previewMode: false,
       isEmbedded: true,
       onMobileTabChange: () => {},
-      canAccessCrewSurfaces: true,
       showCrewLockedHint: false,
       showParticipantFooterShortcuts: false,
       rideshareEnabled: false,
@@ -77,15 +76,14 @@ describe('resolveActivityDetailTabUi', () => {
     expect(ui.showMobileTabs).toBe(false);
   });
 
-  it('falls back to local crew flags when wire tabs are missing', () => {
+  it('uses engagement flags and sections for crew chrome', () => {
     const ui = resolveActivityDetailTabUi({
-      wireTabs: null,
       publicDetail: true,
+      isHostUser: true,
       showMeetingPoint: true,
       previewMode: false,
       isEmbedded: false,
       onMobileTabChange: () => {},
-      canAccessCrewSurfaces: true,
       showCrewLockedHint: false,
       showParticipantFooterShortcuts: true,
       rideshareEnabled: false,
@@ -95,6 +93,7 @@ describe('resolveActivityDetailTabUi', () => {
     expect(ui.showMobileTabs).toBe(false);
     expect(ui.showPlaceCrewBody).toBe(true);
     expect(ui.showParticipantFooterShortcuts).toBe(true);
+    expect(ui.showHostManageHub).toBe(true);
     expect(ui.showTransportEncouragementOnTab('transport')).toBe(false);
   });
 });

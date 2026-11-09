@@ -297,10 +297,10 @@ Helpers: `src/content/workspaceVocabulary.ts` — `workspaceConsoleLabel()`, `wo
 | `HOST_CONSOLE_LINKS` | `ORGANISATION_CONSOLE_LINKS` | Console nav constant |
 | `resolveProfileHostKind()` | `resolveProfileOrganisationKind()` | Profile hub |
 | `hostName` (signup) | `organizationName` | Wire field on `/auth/register` |
-| `hostDetails`, `shopId` (tenant profile JSON) | `organizerDetails`, `merchantId` | Dual keys on GET tenant profile + PATCH `/me/host-details` |
-| `GET /admin/places` (admin CRUD) | `GET /admin/locations` | Same handlers; legacy path kept |
-| `shopId`, `/shop/organisation/*` (shop manage) | `merchantId`, `/shop/merchant/*` | Dual JSON keys + parallel routes; Mongo still `merchant_profiles` |
-| `GET /shop/shops/:id` (public shop) | `GET /shop/merchants/:id` | Same handler; legacy path kept |
+| `hostDetails`, `shopId` (tenant profile JSON) | — | GET tenant profile sends `hostDetails` and `shopId` |
+| `GET /admin/places` (admin CRUD) | `GET /admin/locations` | SPA redirect only |
+| `shopId`, `/shop/organisation/*` (shop manage) | — | Mongo collection stays `merchant_profiles` |
+| `GET /shop/shops/:id` (public shop) | — | One public storefront route |
 
 ### Capabilities by host kind
 

@@ -277,8 +277,8 @@ describe('detail surface lineage (host publish → activity detail)', () => {
       showMeetingPoint: expect.any(Boolean),
       canOpenParticipantRoster: expect.any(Boolean),
     });
-    expect(res.body.presentation.tabs).toBeTruthy();
     expect(res.body.presentation.footerByTab).toBeTruthy();
+    expect(res.body.presentation.tabs).toBeUndefined();
   });
 
   it('POST /publishing/activities + publish exposes GET /activities/:id', async () => {

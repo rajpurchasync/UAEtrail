@@ -14,7 +14,7 @@ type PlaceMapPeekHostProps = {
 
 /**
  * **Mount** for {@link PlacePeekCard} on the map — not an activity organizer (“host”).
- * Wire `source: place` (and `facility` until a dedicated peek) on the map.
+ * Place pins plan a trip. Facility pins use the same shell with directions and the facility page.
  */
 export const PlaceMapPeekHost = ({
   item,

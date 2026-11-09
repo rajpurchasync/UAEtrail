@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { resolveActivityScrollDetailAudienceBadges } from './activityScrollDetailAudienceBadges';
+import { resolveActivityDetailAudienceBadges } from './activityDetailAudienceBadges';
 
-describe('resolveActivityScrollDetailAudienceBadges', () => {
+describe('resolveActivityDetailAudienceBadges', () => {
   it('keeps audience rules and drops difficulty / rideshare chips', () => {
     expect(
-      resolveActivityScrollDetailAudienceBadges([
+      resolveActivityDetailAudienceBadges([
         'Women only',
         'Difficulty: Hard',
         'Reachable by 4x4 only',
@@ -14,7 +14,7 @@ describe('resolveActivityScrollDetailAudienceBadges', () => {
   });
 
   it('does not add kids welcome when children are excluded', () => {
-    expect(resolveActivityScrollDetailAudienceBadges(['Women only', 'No children'])).toEqual([
+    expect(resolveActivityDetailAudienceBadges(['Women only', 'No children'])).toEqual([
       'Women only',
       'No children',
     ]);

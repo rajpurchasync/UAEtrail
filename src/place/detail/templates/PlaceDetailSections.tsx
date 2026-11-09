@@ -34,9 +34,9 @@ import { buildPlaceDetailPageModel } from '../buildPlaceDetailPageModel';
 import { resolvePlaceDisplayTitle, readPlaceArabicName } from '../../../utils/venueDetailDisplay';
 import { resolvePlaceAreaLabelFromTags } from '../resolvePlaceAreaFromTags';
 import { placeCoverFallbackClass, resolvePlaceCoverFromPlace } from '../../peek/resolvePlaceRegistryCoverImage';
-import { PlaceScrollKindFacts } from '../PlaceScrollKindFacts';
+import { PlaceDetailKindFacts } from '../PlaceDetailKindFacts';
 import { splitPlacePracticalTags } from '../../../utils/placePracticalInfo';
-import { PLACE_PEEK_ARRANGE_TRIP, PLACE_PEEK_RATE_LABEL, PLACE_PEEK_SCHEDULED } from '../../../content/placePeekCopy';
+import { PLACE_PEEK_FOOTER_PLAN_TRIP, PLACE_PEEK_RATE_LABEL, PLACE_PEEK_SCHEDULED } from '../../../content/placePeekCopy';
 import { navigateHostFromPlace } from '../../peek/navigateHostFromPlaceCard';
 import { capitalize } from '../../../utils';
 import type { DiscoveryCardTone } from '../../../discovery/discoveryCardModel';
@@ -50,7 +50,7 @@ const toneForKind = (kind: PlaceDetailKind): DiscoveryCardTone => {
   return 'hiking';
 };
 
-export type PlaceScrollDetailPageProps = {
+export type PlaceDetailSectionsProps = {
   kind: PlaceDetailKind;
   config: PlaceDetailKindConfig;
   place: Place;
@@ -66,7 +66,7 @@ export type PlaceScrollDetailPageProps = {
   onReviewSubmitted: (review: ReviewDTO) => void;
 };
 
-export const PlaceScrollDetailPage = ({
+export const PlaceDetailSections = ({
   kind,
   config,
   place,
@@ -80,7 +80,7 @@ export const PlaceScrollDetailPage = ({
   unlockNotice,
   onDismissUnlockNotice,
   onReviewSubmitted,
-}: PlaceScrollDetailPageProps) => {
+}: PlaceDetailSectionsProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [arranging, setArranging] = useState(false);
@@ -133,7 +133,7 @@ export const PlaceScrollDetailPage = ({
       }}
       className={`${EXPLORE_PEEK_CTA.primary} lg:!rounded-lg lg:!py-2 lg:!text-[13px]`}
     >
-      {arranging ? 'Opening…' : PLACE_PEEK_ARRANGE_TRIP}
+      {arranging ? 'Opening…' : PLACE_PEEK_FOOTER_PLAN_TRIP}
     </button>
   );
 
@@ -206,7 +206,7 @@ export const PlaceScrollDetailPage = ({
           <div className="flex flex-col gap-6 lg:gap-3">
             <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between md:gap-6">
             <section className="min-w-0 flex-1" aria-label="At a glance">
-              <PlaceScrollKindFacts kind={kind} place={place} />
+              <PlaceDetailKindFacts kind={kind} place={place} />
             </section>
 
             <section className="shrink-0 md:pt-1" aria-label="Ratings">

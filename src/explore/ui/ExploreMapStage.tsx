@@ -27,6 +27,7 @@ import { ExploreMapLoadErrorBoundary } from './ExploreMapLoadErrorBoundary';
 import { ExploreMapLoadingSkeleton } from './ExploreMapLoadingSkeleton';
 import { ExploreMapLocationPrompt } from './ExploreMapLocationPrompt';
 import { ExploreMapControlToolbar } from './ExploreMapControlToolbar';
+import { CatalogMapPeekHost } from './CatalogMapPeekHost';
 import { PlaceMapPeekHost } from './peek/place/PlaceMapPeekHost';
 import type { ExploreSearchScopeCounts, ExploreSearchScopeKey } from '../exploreBrowseTaxonomy';
 import type { ExplorePanel, MapFilterKey, VenueListFilterKey } from '../routing';
@@ -398,7 +399,7 @@ export const ExploreMapStage = ({
           pinAnchor={pinAnchor}
           pinKey={selected.id}
         />
-      ) : selectedCard ? (
+      ) : selectedCard?.source === 'activity' ? (
         <ActivityMapPeekHost
           card={selectedCard}
           pinAnchor={pinAnchor}
@@ -416,6 +417,16 @@ export const ExploreMapStage = ({
           onOfferTransport={onOfferTransport}
           joinInvitePeekBanner={joinInvitePeekBanner}
           onShareActivity={onShareActivity}
+        />
+      ) : selectedCard ? (
+        <CatalogMapPeekHost
+          card={selectedCard}
+          pinAnchor={pinAnchor}
+          pinKey={selected?.id ?? null}
+          onClose={onCloseSelection}
+          onGuestGatedAction={
+            guestGatedActionForActivity ? () => guestGatedActionForActivity('view_detail') : undefined
+          }
         />
       ) : null}
     </div>

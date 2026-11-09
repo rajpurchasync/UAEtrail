@@ -16,7 +16,7 @@ const resolvePresence = (latitude?: number | null, longitude?: number | null): S
   latitude != null && longitude != null ? 'physical' : 'online';
 
 const tenantToShopView = (tenant: TenantProfile): ShopPublicView => ({
-  id: tenant.shopId ?? tenant.merchantId ?? tenant.slug,
+  id: tenant.shopId ?? tenant.slug,
   reviewTargetId: tenant.id,
   shopName: tenant.name,
   description: tenant.description ?? tenant.ownerBio ?? null,

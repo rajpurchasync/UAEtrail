@@ -87,7 +87,7 @@ describe('member surfaces §11 acceptance (automated)', () => {
     expect(labels).toContain("trips: 'Trips'");
     expect(labels).toContain("venues: 'Venues'");
     expect(labels).toContain("crews: 'Crews'");
-    expect(labels).toContain("plan: 'Plan'");
+    expect(labels).toContain("plan: 'Plans'");
     expect(labels).toContain("chat: 'Chat'");
     expect(nav).not.toContain('PRODUCT_PLAN_SURFACE_TITLE');
     const northStar = read('src/content/productNorthStar.ts');

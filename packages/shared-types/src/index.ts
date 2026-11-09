@@ -643,8 +643,6 @@ export interface MerchantProfileDTO {
   id: string;
   /** Preferred shop profile id (`merchant_profiles._id`). Same as `id`. */
   shopId?: string;
-  /** @deprecated Use shopId — legacy alias for the same id. */
-  merchantId?: string;
   /** Linked shop tenant when merchant_profiles.tenantId is set. */
   tenantId?: string | null;
   shopName: string;
@@ -860,11 +858,6 @@ export interface ExploreMapItemDTO {
    * replace this from `GET /me/discover/overlay`. Not stored in Redis payload.
    */
   viewerAccess?: ActivityViewerAccessDTO;
-  /**
-   * Slim L1 discovery read model (`EXPLORE_MAP_DISCOVERY_PROJECTION=1`).
-   * Attached on `GET /explore/map` after cache read — not stored in Redis.
-   */
-  discoveryCard?: import('./discovery-card-projection.js').DiscoveryCardProjection | null;
   /** ISO timestamp — guest preview cap picks oldest posted events (server catalog assembly). */
   catalogPostedAt?: string | null;
   /** ISO timestamp — guest preview cap picks oldest updated places (server catalog assembly). */
@@ -958,15 +951,11 @@ export interface TenantPublicDTO {
   ownerAvatar: string | null;
   ownerBio: string | null;
   hostDetails?: OrganisationHostDetailsDTO;
-  /** @deprecated Use hostDetails — kept for legacy clients. */
-  organizerDetails?: OrganisationHostDetailsDTO;
   memberCount: number;
   team: TenantPublicTeamMemberDTO[];
   activities: ActivityDTO[];
   /** Preferred shop public id when tenant is a shop. Wire: merchant_profiles._id */
   shopId?: string | null;
-  /** @deprecated Use shopId */
-  merchantId?: string | null;
 }
 
 // ─── Member medical safety (join / host roster) ─────────────────────────────
@@ -1412,14 +1401,10 @@ export {
 
 export {
   buildActivityPresentationDTO,
-  type ActivityPresentationBuddiesTabDTO,
   type ActivityPresentationSectionsDTO,
   type ActivityDetailParticipantsSlot,
   type ActivityPresentationDTO,
   type ActivityPresentationEngagementDTO,
-  type ActivityPresentationPlaceTabDTO,
-  type ActivityPresentationTabsDTO,
-  type ActivityPresentationTransportTabDTO,
   type BuildActivityPresentationInput,
 } from './activity-detail-presentation.js';
 

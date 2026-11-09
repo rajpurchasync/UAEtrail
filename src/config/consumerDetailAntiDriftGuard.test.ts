@@ -11,7 +11,7 @@ const DETAIL_BACK_VIA_CATALOG: Array<{ path: string; pattern: RegExp }> = [
   { path: 'src/pages/ActivityDetail.tsx', pattern: /ActivityDetailByKind/ },
   { path: 'src/activity/detail/templates/ActivityDetailPageShell.tsx', pattern: /ActivityDetailView/ },
   { path: 'src/components/activity/ActivityDetailView.tsx', pattern: /detailBackPath/ },
-  { path: 'src/place/detail/templates/PlaceScrollDetailPage.tsx', pattern: /detailBackPath/ },
+  { path: 'src/place/detail/templates/PlaceDetailSections.tsx', pattern: /detailBackPath/ },
   { path: 'src/pages/AreaDetailPage.tsx', pattern: /detailBackPath/ },
   { path: 'src/components/shop/ShopPublicPage.tsx', pattern: /detailBackPath\(['"]shop['"]\)/ },
   { path: 'src/components/organisation-console/OrganisationPublicProfile.tsx', pattern: /detailBackPath/ },

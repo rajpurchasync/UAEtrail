@@ -10,13 +10,6 @@ import {
 } from './activity-detail-tab-footers.js';
 import type { ActivityEngagementStripsDTO } from './activity-engagement-policy.js';
 
-const TRANSPORT_REQUIREMENT_PATTERN = /^(Reachable by|Vehicle:)/i;
-
-const countTransportReachLines = (requirements?: string[] | null): number => {
-  if (!requirements?.length) return 0;
-  return requirements.filter((line) => TRANSPORT_REQUIREMENT_PATTERN.test(line.trim())).length;
-};
-
 export type ActivityPresentationEngagementDTO = {
   participationMode: ParticipationMode;
   canAccessCrewSurfaces: boolean;
@@ -30,7 +23,7 @@ export type ActivityDetailParticipantsSlot = 'hidden' | 'preview' | 'roster';
 
 /**
  * Section visibility for `/activity/:id`.
- * Public page and embed both read this. Tab objects only group embed chrome.
+ * Public page and embed both read this.
  */
 export type ActivityPresentationSectionsDTO = {
   showHostProfile: boolean;
@@ -40,36 +33,11 @@ export type ActivityPresentationSectionsDTO = {
   canOpenParticipantRoster: boolean;
 };
 
-export type ActivityPresentationPlaceTabDTO = {
-  showLockedPlaceholder: boolean;
-  hasDirections: boolean;
-};
-
-export type ActivityPresentationBuddiesTabDTO = {
-  showCrewLockedHint: boolean;
-  showParticipantShortcuts: boolean;
-  showHostManageHub: boolean;
-};
-
-export type ActivityPresentationTransportTabDTO = {
-  reachByLineCount: number;
-  linkedRideshareActivityId: string | null;
-  showLinkedRide: boolean;
-  showParticipantEmptyEncouragement: boolean;
-};
-
-export type ActivityPresentationTabsDTO = {
-  place: ActivityPresentationPlaceTabDTO;
-  buddies: ActivityPresentationBuddiesTabDTO;
-  transport: ActivityPresentationTransportTabDTO;
-};
-
 export type ActivityPresentationDTO = {
   engagement: ActivityPresentationEngagementDTO;
   /** One section policy for the public page and embed. */
   sections: ActivityPresentationSectionsDTO;
-  /** Embed chrome. Public `/activity/:id` does not render a tab bar. */
-  tabs: ActivityPresentationTabsDTO;
+  /** Embed footer kind per legacy tab id. Not a second section policy. */
   footerByTab: Record<ActivityDetailTabId, ActivityDetailTabFooterKind>;
   /** Peek-parity strip flags (detail hero invited chip, etc.). */
   strips?: ActivityEngagementStripsDTO;
@@ -135,12 +103,9 @@ export const buildActivityPresentationDTO = (
 
   const previewMode = input.previewMode ?? false;
   const isEmbedded = input.isEmbedded ?? false;
-  /** Public route only. Embed and preview keep tab chrome flags off. */
-  const publicDetail = input.activityPublished && !previewMode && !isEmbedded;
   const coordinates = hasMeetingCoordinates(input);
   const linkedRideshareId = input.linkedRideshareActivityId ?? null;
   const rideshareEnabled = Boolean(input.rideshareEnabled);
-  const reachByLineCount = countTransportReachLines(input.requirements);
 
   const footerInputBase = {
     isHostUser: input.isHostUser,
@@ -191,24 +156,6 @@ export const buildActivityPresentationDTO = (
       joinEngagement,
     },
     sections,
-    tabs: {
-      place: {
-        showLockedPlaceholder: publicDetail && !canAccessCrewSurfaces,
-        hasDirections: coordinates,
-      },
-      buddies: {
-        showCrewLockedHint: showCrewLockedHint && publicDetail,
-        showParticipantShortcuts: showParticipantFooterShortcuts,
-        showHostManageHub: input.isHostUser && publicDetail,
-      },
-      transport: {
-        reachByLineCount,
-        linkedRideshareActivityId: linkedRideshareId,
-        showLinkedRide: Boolean(linkedRideshareId) || rideshareEnabled,
-        showParticipantEmptyEncouragement:
-          publicDetail && !input.isHostUser && !linkedRideshareId && !rideshareEnabled,
-      },
-    },
     footerByTab,
   };
 };

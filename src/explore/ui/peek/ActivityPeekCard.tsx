@@ -1,7 +1,9 @@
 import type { ActivityMapPeekActionId } from '@uaetrail/shared-types';
 import type { DiscoveryCardModel } from '../../../discovery/discoveryCardModel';
 import type { JoinRequestUiState } from '../../../utils/joinRequestUi';
-import { MapPeekShell, MapPeekActionsSlot, MapPeekBodySlot } from '../map-peek';
+import { MapPeekShell } from '../map-peek';
+import { ActivityPeekActions } from './activity/ActivityPeekActions';
+import { ActivityPeekBody } from './activity/ActivityPeekBody';
 
 export type ActivityPeekCardProps = {
   card: DiscoveryCardModel;
@@ -58,7 +60,7 @@ export const ActivityPeekCard = ({
       showDismissChrome={showDismissChrome}
       onShareActivity={onShareActivity}
       actions={
-        <MapPeekActionsSlot
+        <ActivityPeekActions
           card={card}
           onClose={onClose}
           onJoin={onJoin}
@@ -72,7 +74,7 @@ export const ActivityPeekCard = ({
         />
       }
     >
-      <MapPeekBodySlot
+      <ActivityPeekBody
         card={card}
         onGuestGatedAction={bodyGuestGate}
         onOpenLinkedPin={onOpenExploreItem}

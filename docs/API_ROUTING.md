@@ -391,7 +391,7 @@ SPA: `/admin/hosts` → `pages/admin/Organisations` (see [`NAVIGATION.md`](./NAV
 | `member.ts` | **`/me/status`** |
 | `badges.ts` | **`/me/badges`** |
 | `activities.ts` | `/activities`, `/me/requests`, `/publishing/activities`, `/publishing/requests` |
-| `shop.ts` | `GET /shop/shops/:id` (alias `/shop/merchants/:id`); auth `PATCH /shop/merchant/*` (alias `/shop/organisation/*` profile) |
+| `shop.ts` | `GET /shop/shops/:id`; auth shop manage on `/shop/organisation/*` |
 | `explore.ts` | `/explore/map`, `/explore/seeking-activities` |
 | `seeking.ts` | **`/me/seeking-posts`** (+ requests, link-activity) |
 | `groups.ts`, `chat.ts` | Groups, DMs, inbox |

@@ -2,7 +2,7 @@ import { ReviewSection } from '../../../components/ui/ReviewSection';
 import { useTenantReviewsQuery } from '../../../hooks/useTenantReviewsQuery';
 
 /** Driver / host community reviews (tenant) — not activity trail reviews. */
-export const ActivityScrollDriverReviews = ({ tenantId }: { tenantId: string }) => {
+export const ActivityDetailDriverReviews = ({ tenantId }: { tenantId: string }) => {
   const { data } = useTenantReviewsQuery(tenantId);
   const reviews = data?.reviews ?? [];
 

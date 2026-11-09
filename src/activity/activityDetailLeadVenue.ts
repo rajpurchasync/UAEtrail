@@ -2,7 +2,7 @@ const normalizeLeadText = (value: string): string =>
   value.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
 
 /** Hide emerald subtitle when it repeats the H1 or the linked place card already covers it. */
-export const shouldShowActivityScrollLeadVenue = (
+export const shouldShowActivityDetailLeadVenue = (
   title: string,
   venueLabel: string | null | undefined,
   hasLinkedPlaceCard: boolean

@@ -8,7 +8,6 @@ import {
   parseExploreMapBboxParam,
   parseExploreMapLimitParam,
 } from './explore-map-bbox.js';
-import { enrichExploreMapItemsDiscoveryProjection } from './explore-map-discovery-projection.js';
 import { applyExploreMapHttpProjection } from './explore-map-list-projection.js';
 
 export type ExploreMapRouteQuery = {
@@ -79,10 +78,7 @@ export const loadExploreMapForRequest = async (input: {
 
   const { items: catalogItems, pageMeta } = await resolveExploreMapCatalogItemsForQuery(input.query);
   const { items: cappedCatalog, guestCatalogPreview } = capGuestCatalogItems(catalogItems);
-  const projected = applyExploreMapHttpProjection(
-    enrichExploreMapItemsDiscoveryProjection(cappedCatalog),
-    input.query.projection
-  );
+  const projected = applyExploreMapHttpProjection(cappedCatalog, input.query.projection);
 
   return {
     items: projected,

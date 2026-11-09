@@ -12,7 +12,7 @@ Companion to [`DOMAIN.md`](./DOMAIN.md) and [`NORTHSTAR.md`](./NORTHSTAR.md). De
 | **Browse** | `/explore` | Map-first discovery — activities (`activity-discovery`), places/shops (`places-discovery`), people (`people-discovery`); map/list/search are projections |
 | **List discovery** | `/list` | Full-screen explorer (thumbnails · list · calendar, date-sorted; same filters as explore; `listDiscoveryPath()` ↔ map via `exploreMapPathFromListSearch()`) |
 | **Personal hub** | `/profile`, `/profile/settings`, `/profile/edit`, `/profile/history` | Account hub, settings stack, outing **history** + journey map |
-| **Plan tab** | `/plan` | Active layer — goals, upcoming outings. Page title **`PRODUCT_PLAN_SURFACE_TITLE`** (**My Plans**); bottom nav label **Plan**. |
+| **Plan tab** | `/plan` | Active layer — goals, upcoming outings. Page title **`PRODUCT_PLAN_SURFACE_TITLE`** (**My Plans**); bottom nav label **Plans**. |
 | **Mobile tabs (`md:hidden`)** | `/explore`, `/list`, `/plan`, `/chat` | **Five tabs** — **Trips** · **Venues** · **Plans** · **Crews** · **Chat**. Trips/Venues use map (`/explore`) + list (`/list`) projections via `mobileFiveTabHomePath()` · `resolveMobileFiveTab()`. Crews → `listPeopleDiscoveryPath()`. Contract: `src/config/mobileFiveTabNav.ts` · § **Mobile five-tab bottom nav** below. |
 | **Mobile tabs (guests)** | Same five-tab row | **Trips** / **Venues** on `/explore` and `/list`; **Plans** · **Crews** · **Chat** → feature explainer when gated. **Profile** is not a tab. |
 | **Entity detail** | `/trail`, `/camp`, `/venue`, `/activity`, `/shop`, `/agency`, `/partner`, `/member/:userId`, `/area/:slug` | Place, scheduled outing, shop, brand profile, person card, or curated **area** hub |
@@ -231,9 +231,9 @@ Compose URLs are `host:*` / `seek:*` / `add:*` only.
 | Loader | `ActivityDetail.tsx` | `PlaceDetailPage.tsx` |
 | Kind pick | `ActivityDetailByKind` | `PlaceDetailPage` (`kind`) |
 | L3 shell | `*ActivityDetailPage` → `ActivityDetailPageShell` | `*PlaceDetailPage` → `PlaceDetailPageShell` |
-| Public body | `ActivityDetailSections` | `PlaceScrollDetailPage` (no public tab bar) |
+| Public body | `ActivityDetailSections` | `PlaceDetailSections` (no public tab bar) |
 
-Section visibility is **`GET /activities/:id` → `presentation.sections`** (one policy; embed reads the same object and groups chrome in `tabs`). Legacy `?tab=` scrolls via `activityDetailScrollAnchors` — no public tab bar. **Embed only:** `ActivityManageSheet` uses `layout="embedded"`. Host preview passes `previewMode`. Catalog places: `/trail`, `/camp`, `/venue`; areas: `AreaDetailPage`. Chrome: `MobileDetailScrollShell`.
+Section visibility is **`GET /activities/:id` → `presentation.sections`** (one policy for the public page and embed). Legacy `?tab=` scrolls via `activityDetailScrollAnchors` — no public tab bar. **Embed only:** `ActivityManageSheet` uses `layout="embedded"`. Host preview passes `previewMode`. Catalog places: `/trail`, `/camp`, `/venue`; areas: `AreaDetailPage`. Chrome: `MobileDetailScrollShell`.
 
 **Place detail (`/trail` · `/camp` · `/venue`):** Same scroll chrome as activity (`MobileDetailScrollShell`) — **Back** · kind label · **Share** (header). Registry rows without `images[0]` are excluded from map/registry queries and return **404** on `GET /places/:id` when active (draft preview by submitter still allowed). **Hero image:** region · area · title. **Sections:** kind facts · ratings · about · **Transport** · scheduled activities · **Nearby facilities** (`nearbyFacilities` from `GET /places/:id` + `facility:` / `nearby:` tags) · reviews. **Footer:** **Arrange trip** only. Premium guide on consumer scroll via **`PlacePremiumGuidePanel`** (shared with legacy **`PlaceDetailTabs`** guide tab). **Map peek:** `PlacePeekHero` · kind facts · ratings · scheduled · **Arrange trip** + **View details**.
 

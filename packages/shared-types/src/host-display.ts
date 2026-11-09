@@ -56,7 +56,11 @@ type HostIdentityFields = {
 };
 
 type HostUserIdentityFields = {
+  /** Person shown as the host on the activity (`hostId`, or the tenant owner when unset). */
   hostUserId?: string | null;
+  hostId?: string | null;
+  /** Tenant owner. Used only when the outing has no assigned host. */
+  tenantOwnerId?: string | null;
 };
 
 type HostAvatarIdentityFields = {
@@ -70,9 +74,15 @@ export const resolveActivityHostDisplayName = (activity: HostIdentityFields): st
   return HOST_FALLBACK_DISPLAY_NAME;
 };
 
-export const resolveActivityHostUserId = (
-  activity: HostUserIdentityFields
-): string | null | undefined => activity.hostUserId ?? null;
+/**
+ * The person who hosts this outing.
+ * The creator and accepted guides are not the host unless this id is theirs.
+ */
+export const resolveActivityHostUserId = (activity: HostUserIdentityFields): string | null => {
+  const id = activity.hostUserId ?? activity.hostId ?? activity.tenantOwnerId ?? null;
+  const trimmed = typeof id === 'string' ? id.trim() : '';
+  return trimmed || null;
+};
 
 export const resolveActivityHostAvatar = (
   activity: HostAvatarIdentityFields

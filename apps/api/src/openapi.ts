@@ -155,10 +155,10 @@ export const openApiSpec = swaggerJsdoc({
           tags: ['Shop', 'Host'],
           summary: 'Get managed shop organisation profile',
           description:
-            'Preferred manage path. Scope via `shopId` or `tenantId` query. Legacy alias: `GET /shop/merchant/profile?merchantId=`.',
+            'Scope via `shopId` or `tenantId` query.',
           security: [{ bearerAuth: [] }],
           responses: {
-            200: { description: 'Shop profile with dual keys `shopId` and `merchantId`.' }
+            200: { description: 'Shop profile (`id` and `shopId`).' }
           }
         }
       },
@@ -166,7 +166,7 @@ export const openApiSpec = swaggerJsdoc({
         get: {
           tags: ['Shop'],
           summary: 'Public shop page payload',
-          description: 'Preferred public path. Legacy alias: `GET /shop/merchants/{id}`.',
+          description: 'Public shop page.',
           parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
           responses: {
             200: { description: 'Public shop organisation profile.' }

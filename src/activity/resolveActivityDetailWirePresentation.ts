@@ -44,26 +44,17 @@ const joinRequestStatusFromUi = (
 };
 
 /**
- * Prefer API `presentation`, but backfill fields the client resolver always knows
- * (e.g. `sections` when an older API build omitted it).
+ * Public detail uses the API presentation.
+ * Preview and manage call `resolveActivityDetailWirePresentation` when GET has not returned one.
+ * A payload without `sections` is not patched from the client resolver.
  */
 export const mergeActivityDetailWirePresentation = (
   fromApi: (Omit<ActivityPresentationDTO, 'sections'> & { sections?: ActivityPresentationSectionsDTO }) | null | undefined,
   resolved: ActivityPresentationDTO | null
 ): ActivityPresentationDTO | null => {
-  if (!fromApi && !resolved) return null;
-  if (!fromApi) return resolved;
-  if (!resolved) {
-    return fromApi.sections ? (fromApi as ActivityPresentationDTO) : null;
-  }
-  return {
-    ...fromApi,
-    engagement: fromApi.engagement ?? resolved.engagement,
-    tabs: fromApi.tabs ?? resolved.tabs,
-    footerByTab: fromApi.footerByTab ?? resolved.footerByTab,
-    sections: fromApi.sections ?? resolved.sections,
-    strips: fromApi.strips ?? resolved.strips,
-  };
+  if (fromApi?.sections) return fromApi as ActivityPresentationDTO;
+  if (fromApi) return null;
+  return resolved;
 };
 
 /** L1 `presentation` envelope when GET detail omits wire (preview, optimistic paths). */

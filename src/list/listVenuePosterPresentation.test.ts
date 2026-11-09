@@ -66,8 +66,39 @@ describe('listVenuePosterPresentation', () => {
     ]);
   });
 
-  it('uses Get Directions + View Details on venue posters', () => {
+  it('uses Plan trip + View Details on place posters', () => {
     const card = buildDiscoveryCardViewModelCard(venueItem());
+    const model = resolveListFeedFooterModel(card, { isGuest: true });
+    expect(model.primary).toMatchObject({
+      kind: 'plan_trip',
+      label: 'Plan trip',
+    });
+    expect(model.secondary).toMatchObject({
+      kind: 'link',
+      label: 'View Details',
+    });
+  });
+
+  it('uses Get Directions + View Details on facility posters', () => {
+    const card = buildDiscoveryCardViewModelCard(
+      venueItem({
+        id: 'facility:f1',
+        source: 'facility',
+        path: '/facility/f1',
+        presentation: {
+          kind: 'hiking',
+          source: 'facility',
+          emoji: '🚻',
+          headline: 'Parking',
+          listTitle: 'Parking',
+          listHost: null,
+          subtitle: null,
+          primaryCta: 'View details',
+          secondaryCta: null,
+          sections: { details: [] },
+        },
+      })
+    );
     const model = resolveListFeedFooterModel(card, { isGuest: true });
     expect(model.primary).toMatchObject({
       kind: 'directions',

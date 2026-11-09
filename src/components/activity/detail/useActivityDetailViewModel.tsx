@@ -4,7 +4,6 @@ import type {
   ActivityEngagementStripsDTO,
   ActivityGroupChatPostPolicy,
   ActivityPresentationSectionsDTO,
-  ActivityPresentationTabsDTO,
   ActivityViewerAccessDTO,
   MyActivityRequestDTO,
   ActivityParticipationDTO,
@@ -52,7 +51,6 @@ import {
 import { buildActivityDetailPageShellCard } from '../../../activity/detail/activityDetailPageShellCard';
 import { resolveActivityDetailHeroImage } from '../../../activity/resolveActivityDetailHeroImage';
 import type { DiscoveryCardModel } from '../../../discovery/discoveryCardModel';
-import { activityDetailTabPanelClass } from './activityDetailTabPanelClass';
 import { useActivityDetailJoinSurfaces } from './useActivityDetailJoinSurfaces';
 import {
   ActivityDetailEngagementActions,
@@ -101,7 +99,6 @@ export type ActivityDetailViewModelInput = {
     onRequestsChanged: () => void | Promise<void>;
   };
   wireFooterByTab?: Record<ActivityDetailTabId, ActivityDetailTabFooterKind> | null;
-  wireTabs?: ActivityPresentationTabsDTO | null;
   wireStrips?: ActivityEngagementStripsDTO | null;
   /** Wire `presentation.sections` — one section policy for public page and embed. */
   wireSections?: ActivityPresentationSectionsDTO | null;
@@ -145,7 +142,6 @@ export const useActivityDetailViewModel = ({
   hostCrewChatPolicy,
   hostBuddiesHub,
   wireFooterByTab = null,
-  wireTabs = null,
   wireStrips = null,
   wireSections = null,
   onHostShareOuting,
@@ -170,13 +166,12 @@ export const useActivityDetailViewModel = ({
   const tabUi = useMemo(
     () =>
       resolveActivityDetailTabUi({
-        wireTabs,
         publicDetail,
+        isHostUser: Boolean(hostCrewChatPolicy),
         showMeetingPoint: wireSections?.showMeetingPoint ?? canAccessCrewSurfaces,
         previewMode,
         isEmbedded,
         onMobileTabChange,
-        canAccessCrewSurfaces,
         showCrewLockedHint,
         showParticipantFooterShortcuts,
         rideshareEnabled: Boolean(activity.rideshareEnabled),
@@ -185,19 +180,19 @@ export const useActivityDetailViewModel = ({
         ),
       }),
     [
-      wireTabs,
       publicDetail,
+      hostCrewChatPolicy,
       wireSections,
       previewMode,
       isEmbedded,
       onMobileTabChange,
-      canAccessCrewSurfaces,
       showCrewLockedHint,
       showParticipantFooterShortcuts,
       activity.rideshareEnabled,
       activity.linkedParentActivity,
       activity.linkedRideshare,
       linkedRideshareId,
+      canAccessCrewSurfaces,
     ]
   );
   const {
@@ -315,15 +310,11 @@ export const useActivityDetailViewModel = ({
       !viewerEntitlements.canOfferTransport
   );
 
-  const mobilePlanPanel = activityDetailTabPanelClass('plan', mobileTab);
-  const mobilePlacePanel = activityDetailTabPanelClass('place', mobileTab);
-  const mobileBuddiesPanel = activityDetailTabPanelClass('buddies', mobileTab);
-  const mobileTransportPanel = activityDetailTabPanelClass('transport', mobileTab);
-  const mobileSidebarPanel = publicDetail
-    ? 'hidden md:block'
-    : mobileTab === 'plan' || mobileTab === 'buddies'
-      ? 'block'
-      : 'hidden md:block';
+  const mobilePlanPanel = '';
+  const mobilePlacePanel = '';
+  const mobileBuddiesPanel = '';
+  const mobileTransportPanel = '';
+  const mobileSidebarPanel = publicDetail ? 'hidden md:block' : 'block';
 
   const showInviteShare = !previewMode && activity.status === 'published';
   const tabFooterKind = wireFooterByTab?.[mobileTab] ?? 'plan_join';

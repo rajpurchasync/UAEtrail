@@ -3,7 +3,7 @@
   "description": "CTO system audit baseline. Regenerate: npm run system:audit",
   "summary": {
     "apiRegistrarFiles": 50,
-    "apiRouteEndpointsParsed": 157,
+    "apiRouteEndpointsParsed": 156,
     "mongoCollectionsDefined": 47,
     "mongoCollectionsOrphanInApi": 0,
     "mongoCollectionsMultiWriterOver4": 0,

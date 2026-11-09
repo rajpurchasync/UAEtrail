@@ -1,11 +1,12 @@
 import type { ActivityMapPeekAction, ActivityMapPeekActionId } from '@uaetrail/shared-types';
-import { isGeographyMapSource } from '@uaetrail/shared-types';
+import { isFacilityMapSource, isPlaceMapSource } from '@uaetrail/shared-types';
 import type { DiscoveryCardModel } from '../discovery/discoveryCardModel';
 import { resolveActivityPeekEngagement } from '../activity/activityPeekEngagement';
 import { activityMapPeekActionLabel } from '../explore/exploreMapPeekActionCopy';
 import { discoveryCardHasMapCoords } from '../discovery/discoveryCardModel';
 import type { JoinRequestUiState } from '../utils/joinRequestUi';
 import { ACTIVITY_CTA_MESSAGE_HOST } from '../content/activityParticipationCopy';
+import { PLACE_PEEK_FOOTER_PLAN_TRIP } from '../content/placePeekCopy';
 import {
   LIST_FEED_CTA_GET_DIRECTIONS,
   LIST_FEED_CTA_VIEW_DETAILS,
@@ -16,7 +17,8 @@ export type ListFeedFooterButton =
   | { kind: 'action'; label: string; actionId: ActivityMapPeekActionId }
   | { kind: 'disabled'; label: string }
   | { kind: 'guest_gate'; label: string }
-  | { kind: 'directions'; label: string; lat: number; lng: number };
+  | { kind: 'directions'; label: string; lat: number; lng: number }
+  | { kind: 'plan_trip'; label: string };
 
 export type ListFeedFooterModel = {
   primary: ListFeedFooterButton;
@@ -32,6 +34,7 @@ export const shouldShowListFeedImageCta = (model: ListFeedFooterModel): boolean 
     kinds.has('guest_gate') ||
     kinds.has('disabled') ||
     kinds.has('directions') ||
+    kinds.has('plan_trip') ||
     kinds.has('link')
   );
 };
@@ -117,7 +120,7 @@ export const resolveListFeedFooterModel = (
     joinUiState?: JoinRequestUiState;
   }
 ): ListFeedFooterModel => {
-  if (isGeographyMapSource(card.source) && discoveryCardHasMapCoords(card)) {
+  if (isFacilityMapSource(card.source) && discoveryCardHasMapCoords(card)) {
     return {
       primary: {
         kind: 'directions',
@@ -125,6 +128,14 @@ export const resolveListFeedFooterModel = (
         lat: card.mapLatitude!,
         lng: card.mapLongitude!,
       },
+      secondary: detailButton(card),
+      usesJoinFlow: false,
+    };
+  }
+
+  if (isPlaceMapSource(card.source)) {
+    return {
+      primary: { kind: 'plan_trip', label: PLACE_PEEK_FOOTER_PLAN_TRIP },
       secondary: detailButton(card),
       usesJoinFlow: false,
     };

@@ -36,10 +36,10 @@ describe('map peek naming', () => {
     expect(model).not.toMatch(/@deprecated/);
   });
 
-  it('PEEK-NAME-04: map peek wire actions use ActivityPeekEngagementActions + PeekDetailLink', () => {
-    expect(read('src/explore/ui/peek/activity/ActivityPeekEngagementActions.tsx')).toMatch(
-      /PeekDetailLink/
-    );
+  it('PEEK-NAME-04: map peek footer shares the detail membership states and links to the page', () => {
+    const footer = read('src/explore/ui/peek/activity/ActivityPeekStandardFooter.tsx');
+    expect(footer).toMatch(/resolveActivityDetailStandardFooter/);
+    expect(footer).toMatch(/PeekDetailLink/);
   });
 
   it('PEEK-CTA-01: wire peek CTAs render immediately (join context does not blank footer)', () => {

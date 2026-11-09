@@ -13,7 +13,7 @@
         "apps/api/src/lib/explore-map-viewer-access.ts",
         "apps/api/src/lib/explore-map-cache-schedule.ts",
         "apps/api/src/services/explore-map-overlay-read.ts",
-        "apps/api/src/lib/discovery-card-projection.ts",
+        "apps/api/src/lib/explore-map-list-projection.ts",
         "apps/api/src/lib/activity-engagement-policy-input.ts",
         "apps/api/src/services/explore-seeking-activities-read.ts"
       ],

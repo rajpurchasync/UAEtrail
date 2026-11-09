@@ -9,7 +9,6 @@ import type {
   ActivityEngagementStripsDTO,
   ActivityGroupChatPostPolicy,
   ActivityPresentationSectionsDTO,
-  ActivityPresentationTabsDTO,
   MyActivityRequestDTO,
   ActivityParticipationDTO,
   ReviewDTO,
@@ -87,8 +86,6 @@ export interface ActivityDetailViewProps {
   };
   /** Wire `presentation.footerByTab` from GET /activities/:id (AD-PRES-02). */
   wireFooterByTab?: Record<ActivityDetailTabId, ActivityDetailTabFooterKind> | null;
-  /** Wire `presentation.tabs` from GET /activities/:id (AD-PRES-02). */
-  wireTabs?: ActivityPresentationTabsDTO | null;
   /** Wire `presentation.strips` — host invited chip on hero, etc. */
   wireStrips?: ActivityEngagementStripsDTO | null;
   /** Wire `presentation.sections` — section visibility for the public page and embed. */
@@ -140,7 +137,6 @@ export const ActivityDetailView = ({
   hostCrewChatPolicy,
   hostBuddiesHub,
   wireFooterByTab = null,
-  wireTabs = null,
   wireStrips = null,
   wireSections = null,
   onHostShareOuting,
@@ -216,7 +212,6 @@ export const ActivityDetailView = ({
     hostCrewChatPolicy,
     hostBuddiesHub,
     wireFooterByTab,
-    wireTabs,
     wireStrips,
     wireSections,
     onHostShareOuting,

@@ -4,7 +4,7 @@ import {
   formatRideshareVehicleLabel,
 } from '@uaetrail/shared-types';
 import { MapPin } from 'lucide-react';
-import { formatActivityScrollDetailLeadDate } from '../../formatActivityScrollDetailLead';
+import { formatActivityDetailLeadDate } from '../../formatActivityDetailLead';
 import {
   resolveRidesharePlanFacts,
   ridesharePlanFactsHasContent,
@@ -17,7 +17,7 @@ import { MEMBER_VEHICLE_COLOR_LABELS } from '../../../components/vehicles/member
 import { DirectionsControl } from '../../../components/ui/DirectionsControl';
 
 /** Ride share schedule, seats, car, pickup, and payment — single block under the title on consumer detail. */
-export const ActivityScrollRideshareEssentials = ({
+export const ActivityDetailRideshareEssentials = ({
   activity,
   showVehiclePlate = false,
 }: {
@@ -28,7 +28,7 @@ export const ActivityScrollRideshareEssentials = ({
   const facts = resolveRidesharePlanFacts(activity);
   if (!ridesharePlanFactsHasContent(facts) && !activity.date) return null;
 
-  const leadDate = formatActivityScrollDetailLeadDate(activity.date, activity.time);
+  const leadDate = formatActivityDetailLeadDate(activity.date, activity.time);
   const scheduleLine = [leadDate.label, leadDate.time]
     .filter(Boolean)
     .join(' · ');

@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { activityDetailPath } from '../../config/routingCatalog';
 import { EXPLORE_VIEW_LINKED_PLAN_CTA } from '../../explore/createFlowCopy';
 import { linkedParentRidesharePeekCopy } from '../../explore/exploreLinkedParentRideshareCopy';
-import { formatActivityScrollDetailLeadDate } from '../../activity/formatActivityScrollDetailLead';
+import { formatActivityDetailLeadDate } from '../../activity/formatActivityDetailLead';
 import type { ActivityLinkagePlanSummary } from '../../activity/resolveActivityLinkageSummaries';
 import { ActivityLinkageAffordanceBody } from './activityLinkageAffordanceLayout';
 
@@ -34,7 +34,7 @@ export const ActivityLinkedParentPlanAffordance = ({
   const href = detailHref ?? activityDetailPath(parent.id);
   const schedule =
     parent.date || parent.time
-      ? formatActivityScrollDetailLeadDate(parent.date ?? '', parent.time ?? null)
+      ? formatActivityDetailLeadDate(parent.date ?? '', parent.time ?? null)
       : null;
   const scheduleLine = schedule?.time ?? null;
   const blurb = parent.description?.trim();

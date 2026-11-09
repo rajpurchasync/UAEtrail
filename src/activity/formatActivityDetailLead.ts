@@ -12,7 +12,7 @@ export type ActivityDetailConsumerLeadDate = {
 
 const formatTimeLabel = (time?: string | null): string | null => formatExploreTime(time?.trim().slice(0, 5));
 
-export const formatActivityScrollDetailLeadDate = (
+export const formatActivityDetailLeadDate = (
   dateStr?: string | null,
   time?: string | null
 ): ActivityDetailConsumerLeadDate => {

@@ -283,16 +283,14 @@ describe('systemCoherenceGuard', () => {
     expect(api).toMatch(/EXPLORE_MAP_BBOX\?\.trim\(\) === '1'/);
   });
 
-  it('MIG-EXPLORE-READ discovery projection stays opt-in via explicit env flag', () => {
-    const fe = readFileSync(join(ROOT, 'src/explore/exploreMapDiscoveryProjection.ts'), 'utf8');
-    expect(fe).toMatch(/VITE_EXPLORE_MAP_DISCOVERY_PROJECTION === '1'/);
-    const api = readFileSync(
-      join(ROOT, 'apps/api/src/lib/explore-map-discovery-projection.ts'),
-      'utf8'
-    );
-    expect(api).toMatch(/EXPLORE_MAP_DISCOVERY_PROJECTION\?\.trim\(\) === '1'/);
+  it('MIG-EXPLORE-READ map cards use wire presentation, not a second discoveryCard flag', () => {
+    expect(existsSync(join(ROOT, 'src/explore/exploreMapDiscoveryProjection.ts'))).toBe(false);
+    expect(existsSync(join(ROOT, 'apps/api/src/lib/explore-map-discovery-projection.ts'))).toBe(false);
     const route = readFileSync(join(ROOT, 'apps/api/src/lib/explore-map-route.ts'), 'utf8');
-    expect(route).toMatch(/enrichExploreMapItemsDiscoveryProjection/);
+    expect(route).not.toMatch(/enrichExploreMapItemsDiscoveryProjection|EXPLORE_MAP_DISCOVERY_PROJECTION/);
+    const viewModel = readFileSync(join(ROOT, 'src/discovery/discoveryCardViewModel.ts'), 'utf8');
+    expect(viewModel).not.toMatch(/item\.discoveryCard|isExploreMapDiscoveryProjectionEnabled/);
+    expect(viewModel).toMatch(/buildDiscoveryCardModel/);
   });
 
   it('S10d activity pin deep link callback avoids whole browse object in deps', () => {

@@ -37,7 +37,7 @@ describe('explore map HTTP projection (W2 pin default)', () => {
     expect(slim.locationCard?.images).toHaveLength(1);
     expect(slim.participantPreviews).toHaveLength(3);
     expect(slim.about).toBeNull();
-    expect(slim.discoveryCard).toBeTruthy();
+    expect('discoveryCard' in slim).toBe(false);
   });
 
   it('keeps nested payload when projection=full', () => {

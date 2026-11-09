@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react';
 import type { DiscoveryCardModel } from '../../../discovery/discoveryCardModel';
 import { MapPeekShell } from '../map-peek';
-import { PlacePeekActions } from '../peek/place/PlacePeekActions';
+import { FacilityPeekActions } from './facility/FacilityPeekActions';
+import { PlacePeekActions } from './place/PlacePeekActions';
 
 export type PlacePeekCardProps = {
   card: DiscoveryCardModel;
@@ -14,8 +15,8 @@ export type PlacePeekCardProps = {
 };
 
 /**
- * Catalog place peek (`source: venue`) — trail / camp / event venue pins.
- * Detail depth: `PlaceDetailPage` (`kind` trail · camp · event).
+ * Place and facility pins.
+ * Trails, camps, and venues plan a trip. Amenities open directions and the facility page.
  */
 export const PlacePeekCard = ({
   card,
@@ -33,13 +34,12 @@ export const PlacePeekCard = ({
     catalogPlaceSummary
     embedMode={embedMode}
     actions={
-      actions ?? (
-        <PlacePeekActions
-          card={card}
-          onClose={onClose}
-          onGuestGatedPlanTrip={onGuestGatedAction}
-        />
-      )
+      actions ??
+      (card.source === 'facility' ? (
+        <FacilityPeekActions card={card} onClose={onClose} onGuestGatedAction={onGuestGatedAction} />
+      ) : (
+        <PlacePeekActions card={card} onClose={onClose} onGuestGatedPlanTrip={onGuestGatedAction} />
+      ))
     }
   />
 );

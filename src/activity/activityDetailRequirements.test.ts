@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { resolveActivityScrollRequirementLines } from './activityScrollDetailRequirements';
+import { resolveActivityDetailRequirementLines } from './activityDetailRequirements';
 
-describe('resolveActivityScrollRequirementLines', () => {
+describe('resolveActivityDetailRequirementLines', () => {
   it('keeps bring-list lines and drops transport + trail metadata', () => {
-    const lines = resolveActivityScrollRequirementLines([
+    const lines = resolveActivityDetailRequirementLines([
       'Water 1.5L',
       'Trail shoes',
       'Reachable by: 4x4',

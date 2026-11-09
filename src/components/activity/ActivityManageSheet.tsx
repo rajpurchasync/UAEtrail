@@ -26,7 +26,6 @@ import type {
 } from '@uaetrail/shared-types';
 import { resolveActivityDetailWirePresentation } from '../../activity/resolveActivityDetailWirePresentation';
 import { ActivityDetailView } from './ActivityDetailView';
-import type { ActivityDetailTabId } from '../../activity/activityDetailTab';
 import { CONSUMER_MAIN_OVERLAY_INSET } from '../../config/consumerOverlayInset';
 import { HostActivityManageFooterActions } from './HostActivityManageFooterActions';
 import { HostActivityManageOptionsSheet } from './HostActivityManageOptionsSheet';
@@ -92,7 +91,6 @@ export const ActivityManageSheet = ({
   const [rideshareNotice, setRideshareNotice] = useState<string | null>(null);
   const [activityRequests, setActivityRequests] = useState<ActivityRequestView[]>([]);
   const [requestsLoading, setRequestsLoading] = useState(false);
-  const [detailTab, setDetailTab] = useState<ActivityDetailTabId>('plan');
   const [sheetActivity, setSheetActivity] = useState<ActivityDTO | null>(activity);
   const [taggedPlace, setTaggedPlace] = useState<ActivityDetailDTO['location']>(undefined);
   const [viewerEntitlements, setViewerEntitlements] = useState<ActivityViewerEntitlementsDTO | null>(null);
@@ -160,7 +158,6 @@ export const ActivityManageSheet = ({
     setManageOptionsOpen(false);
     setReturnToManageMenu(false);
     setEditWizardOpen(false);
-    setDetailTab('plan');
   }, [open, initialView, activity?.id]);
 
   useEffect(() => {
@@ -378,8 +375,6 @@ export const ActivityManageSheet = ({
               <ActivityDetailView
                 layout="embedded"
                 activity={{ ...(sheetActivity as ActivityDetailDTO), location: taggedPlace ?? (sheetActivity as ActivityDetailDTO).location }}
-                mobileTab={detailTab}
-                onMobileTabChange={setDetailTab}
                 canAccessCrewSurfaces
                 hostCrewChatPolicy={
                   tenantId
@@ -392,7 +387,6 @@ export const ActivityManageSheet = ({
                     : undefined
                 }
                 wireFooterByTab={embeddedWirePresentation?.footerByTab ?? null}
-                wireTabs={embeddedWirePresentation?.tabs ?? null}
                 wireSections={embeddedWirePresentation?.sections ?? null}
               />
             </div>

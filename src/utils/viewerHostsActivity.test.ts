@@ -15,5 +15,15 @@ describe('viewerIsActivityHostUser', () => {
       viewerIsActivityHostUser({ hostUserId: 'other', tenantId: 't1' }, 'u2')
     ).toBe(false);
   });
+
+  it('uses hostId when hostUserId is unset, and ignores a different creator', () => {
+    expect(viewerIsActivityHostUser({ hostId: 'u1', tenantId: 't1' }, 'u1')).toBe(true);
+    expect(
+      viewerIsActivityHostUser(
+        { hostUserId: 'u1', hostId: 'creator', tenantId: 't1' },
+        'creator'
+      )
+    ).toBe(false);
+  });
 });
 

@@ -202,7 +202,7 @@ Aligned with [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §4.1 and [`NORTHS
 - **Many entity URLs where identity matters** — `/activity`, place paths, `/shop`, brand paths: sharing, notifications, per-id cache and `viewerAccess`. These are **not** browse department homepages.
 - **Private engagement off the public map** — wishlist, entity follow, member follow, goals: `/me/*` and trips/profile UI ([`MEMBER_MODEL.md`](./MEMBER_MODEL.md) § Follow · Wishlist · Goal).
 
-**Scale levers (prefer before new route trees):** bbox/region or cursor on explore map (**production default target** — §8.9); normalized query cache keys; **`GET /explore/map?projection=list`** for `/list` (same Redis catalog, stripped nested fields + `discoveryCard`); admin tables use **server pages** (`page` / `pageSize`, no client concatenation); **optional** HTML prerender for **`/`** guest marketing and **entity detail** routes only — not a whole-SPA framework rewrite (§8.9 out of scope).
+**Scale levers (prefer before new route trees):** bbox/region or cursor on explore map (**production default target** — §8.9); normalized query cache keys; **`GET /explore/map?projection=list`** for `/list` (same Redis catalog, stripped nested fields); admin tables use **server pages** (`page` / `pageSize`, no client concatenation); **optional** HTML prerender for **`/`** guest marketing and **entity detail** routes only — not a whole-SPA framework rewrite (§8.9 out of scope).
 
 ---
 
@@ -263,13 +263,13 @@ Detail: [`API_ROUTING.md`](./API_ROUTING.md).
 | Layer | Responsibility | Canonical modules |
 |-------|----------------|-------------------|
 | **L0 Wire** | Map/list DTO from API | `ExploreMapItemDTO` (`shared-types`), `GET /explore/map` + overlay `GET /me/discover/overlay` |
-| **L1 Card VM** | Projection for peek + list + poster | `src/discovery/discoveryCardModel.ts`, `buildDiscoveryCardViewModel`; optional server `discoveryCard` on map when `EXPLORE_MAP_DISCOVERY_PROJECTION=1` |
+| **L1 Card VM** | Projection for peek + list + poster | `src/discovery/discoveryCardModel.ts`, `buildDiscoveryCardViewModel`. Headlines come from map `presentation`; the client reapplies clock strings. |
 | **L2 Map peek** | Minimized card on map/list | `MapPeekShell` + `peek/{entity}/*` + `*PeekCard` |
 | **L3 Entity detail** | Marketing depth, join, tabs | `src/activity/detail/*`, `*PlaceDetailPage`, `/area/:slug` |
 
-**Naming (L2):** One shared shell — **`MapPeekShell`**. Per entity — **`{Entity}PeekCard`**, **`{Entity}PeekBody`**, **`{Entity}PeekActions`** (activity wire actions via **`ActivityPeekEngagementActions`**). Do **not** stack extra prefixes (`PinSummary`, `Explore`) on entity parts.
+**Naming (L2):** One shared shell — **`MapPeekShell`**. Per entity — **`{Entity}PeekCard`**, **`{Entity}PeekBody`**, **`{Entity}PeekActions`**. Activity membership buttons are **`ActivityPeekStandardFooter`**, the same resolver as the activity page (`resolveActivityDetailStandardFooter`). Do **not** stack extra prefixes (`PinSummary`, `Explore`) on entity parts.
 
-**Routing rule:** `mapPeekSlots` is the **only** module that branches on `card.source` for the activity map peek **mount** (`ActivityMapPeekHost` — React surface, not activity organizer). New logic goes under `peek/{activity|place|area|shop}/`, not new `Explore*Peek*` files.
+**Routing rule:** `ExploreMapStage` mounts one host: geography (place and facility) → `PlaceMapPeekHost`; activity → `ActivityMapPeekHost`; shop and area → `CatalogMapPeekHost`. `mapPeekSlots` branches shop, area, and activity only inside the catalog card. Facility actions are directions plus the facility page (`FacilityPeekActions`). New logic goes under `peek/{activity|place|facility|area|shop}/`, not new `Explore*Peek*` files.
 
 **Looking-for / seeking (unified with activity):** Product = **activity** (`activityMode: seeking`); publisher = **host** on wire. Map/list peek = same stack as hosted outings: `ActivityMapPeekHost` → `ActivityPeekCard` → `peek/activity/*` + `resolveActivityPeekEngagement` (`viewerAccess.mapPeekActions`). **No** intent-only peek UI in app code — map wire is activity-backed. L1 cards force `source: 'activity'` for seeking. Ops: backfill leftover `participant_intents` rows (`seeking:storage-status`). Leftover `pin=demand:` is not a product path (`seekingPinHygieneGuard`).
 
@@ -342,7 +342,7 @@ One **person account**; **one consumer profile page** (`/member/:userId` — `Me
 | Context | L1 (card VM) | L2 (peek / row) | L3 (detail composer) |
 |---------|--------------|-----------------|----------------------|
 | Activity (hosted + seeking) | `discoveryCardModel` | `peek/activity/*` | Kind **page composers** (`*ActivityDetailPage` → shell) — **not** one `ActivityDetailBody` with kind `if` chains |
-| Place | L1 place slice | `peek/place/*` (`PlacePeekHero`, `PlacePeekBody`, …) | `buildPlaceDetailPageModel` → `PlaceDetailPage` → `PlaceDetailPageShell` → `PlaceScrollDetailPage` |
+| Place | L1 place slice | `peek/place/*` (`PlacePeekHero`, `PlacePeekBody`, …) | `buildPlaceDetailPageModel` → `PlaceDetailPage` → `PlaceDetailPageShell` → `PlaceDetailSections` |
 | Area | **Not a pin** — `areaId` / `areaSlug` on Place/Facility (and activity via place) | Hub chrome / `peek/area/*` (hub page only — do not emit `source: area` on the map) | `AreaDetailPage` sections/tabs |
 | Shop | L1 shop pin | `peek/shop/*` | `ShopPublicPage` |
 | Member (browse) | `memberPeople*` row VM | Optional mini-card in people panel | `MemberProfile` |
@@ -358,12 +358,12 @@ One methodology for catalog **detail templates** — not one URL for every entit
 | Kind key | `ActivityDetailKind` from `activityType` | `PlaceDetailKind` from route wrapper |
 | Kind route file | `*ActivityDetailPage` → `ActivityDetailPageShell` | `*PlaceDetailPage` → `PlaceDetailPageShell` |
 | L1 | `buildActivityDetailPageModel` | `buildPlaceDetailPageModel` |
-| Public body | `ActivityDetailSections` (peek L1 card) | `PlaceScrollDetailPage` (peek-native hero parity) |
+| Public body | `ActivityDetailSections` (peek L1 card) | `PlaceDetailSections` (peek-native hero parity) |
 | **Presentation wire** | `GET /activities/:id` → `presentation.sections` (+ `engagement`, `mapPeekActions` via `viewerAccess`) | Place: catalog fields on `GET /places/:id` (no `sections` wire yet — page sections local) |
-| Kind-specific facts / plan | `*ActivityDetailPlanSections` → `ActivityDetailBody` (hiking / camping / rideshare / other) | `PlaceScrollKindFacts` + shared scroll (`PlaceScrollDetailPage`); contribute preview still uses `PlaceDetailTabs` |
-| Shared core | `ActivityDetailView` + `MobileDetailShell` | `MobileDetailShell` via `PlaceScrollDetailPage` |
+| Kind-specific facts / plan | `*ActivityDetailPlanSections` → `ActivityDetailBody` (hiking / camping / rideshare / other) | `PlaceDetailKindFacts` + shared scroll (`PlaceDetailSections`); contribute preview still uses `PlaceDetailTabs` |
+| Shared core | `ActivityDetailView` + `MobileDetailShell` | `MobileDetailShell` via `PlaceDetailSections` |
 
-Host preview (`previewMode`) and `ActivityManageSheet` (`isEmbedded: true`) use `ActivityDetailView` with the same `presentation.sections`, plus `tabs` + `footerByTab` for embed chrome. They skip `ActivityDetailByKind`.
+Host preview (`previewMode`) and `ActivityManageSheet` (`isEmbedded: true`) use `ActivityDetailView` with the same `presentation.sections` and `footerByTab`. They skip `ActivityDetailByKind`.
 
 #### 6.2.5 Cross-cutting kits (one implementation per concern)
 
@@ -460,7 +460,7 @@ Ordered for **coherence**, not feature count:
 | **L0 Wire** | API DTO + `viewerAccess` / entitlements | Server only — [`DOMAIN_CANONICALS.md`](./DOMAIN_CANONICALS.md) §15 |
 | **L1 Projection** | Card/row view model | `discoveryCardModel` (catalog pins) · `memberPeople*` (people browse) · future `activityDetailPageModel` (L3) |
 | **L2 Peek / row / explorer card** | Minimized engagement | `MapPeekShell` + `peek/{entity}/*` · list explorer cards |
-| **L3 Page composer** | Sections + tabs for one id | `*ActivityDetailPage`, `PlaceScrollDetailPage`, `MemberProfile`, `ShopPublicPage`, … |
+| **L3 Page composer** | Sections + tabs for one id | `*ActivityDetailPage`, `PlaceDetailSections`, `MemberProfile`, `ShopPublicPage`, … |
 | **L3 Shell** | Shared chrome (hero, tabs, sticky footer) | `MobileDetailShell`, `EntityPublicDetailShell`, `ActivityDetailPageShell` |
 
 ```mermaid
@@ -495,7 +495,7 @@ flowchart LR
 |------|--------|--------|
 | Discovery L1 + unified activity peek (hosted + seeking) | Done | S8, §6.1, `discoveryUiMethodologyGuard` |
 | `viewerAccess` on activity detail + peek parity | Done | S7, `mapDetailEngagementParity` |
-| Place L3 (`PlaceScrollDetailPage` + kind routes) | Done | S6, `placeDetailCore.test.ts`, `placeDetailUiHygieneGuard` |
+| Place L3 (`PlaceDetailSections` + kind routes) | Done | S6, `placeDetailCore.test.ts`, `placeDetailUiHygieneGuard` |
 | Consumer detail shells (shop/agency/area/activity chrome) | Eng done | S9, `consumerDetailAntiDriftGuard` |
 | Single member route `/member/:userId` + API profile access | Done | `MemberProfile`, `profile-viewer-access` |
 | `/buddies` list → `/member` links | Done | `Buddies.tsx` |
@@ -737,8 +737,8 @@ Mark `[x]` in the PR that completes the item. **Gate:** `npm run verify:system:q
 **CPC-6 — FE: routes, detail shells, redirects**  
 *Depends: CPC-3, CPC-5.*
 
-- [x] Canonical `/place/:id` — single `PlaceScrollDetailPage`
-- [x] `/facility/:id` — `FacilityScrollDetailPage`
+- [x] Canonical `/place/:id` — single `PlaceDetailSections`
+- [x] `/facility/:id` — `FacilityDetailSections`
 - [x] Client redirects: `/trail`, `/camp`, `/venue`, `/event` → `/place/:id`
 - [x] `/profile/submissions` + redirect `/contributions`
 - [x] `routingCatalog.ts`, `entity-path.ts` (`placeDetailPath` → `/place/:id`)
@@ -942,7 +942,7 @@ Board one-liner: *P4 thinned the API; **PCOH** (§8.8) finished UPL/BWL coherenc
 | **MIG-CPC-P1** | P1 | CPC-7+ catalog vocabulary (**C26**) | **Complete** |
 | **MIG-SEEKING-READ** | P1 | `seeking:deploy-gate`; C20 read paths | **Complete** |
 | **MIG-OUTBOX** | P2 | Side-effect outbox (production default on; `SIDE_EFFECT_OUTBOX=0` blocked in prod) | **Complete** |
-| **MIG-EXPLORE-READ** | P2 | `discoveryCard` on map (incl. bbox) + list/peek via VM merge; flags default off | **Complete** |
+| **MIG-EXPLORE-READ** | P2 | Map `presentation` is the card copy. No second `discoveryCard` payload or projection flag | **Complete** |
 | **MIG-CLIENT-QUERY** | P3 | `clientQueryKeys` + hooks across discovery, social, member, messaging, place detail | **Complete** |
 | **MIG-CQRS-ROUTES** | P4 | Route CQRS guard; entire `apps/api/src/routes/**` tree → read/command services (no `*-store`) | **Complete** |
 | **MIG-CQRS-ROUTE-DATA** | P4 | Route layer → services for `auth-users`, `chat-data`, `social-data` (guard enforced) | **Complete** |
@@ -1116,7 +1116,7 @@ Discover map `GET /explore/map` (guest catalog) · overlay `GET /me/discover/ove
 | Host compose tree | `create/hosting` + `hostingFlowEngine` + `hostingFlows` (COH-10). No `organizeFlow.ts` / `createOrganize` / `CreateActivityFlow` |
 | Seeking compose engine | `seekingFlowEngine.ts` + `CreateSeekingFlow.tsx` (no `CreateDemandFlow` / `demandFlow.ts` / `demandWizardSteps`) |
 | People browse module | `src/people-discovery/*` only. No `explore/ui/peopleBrowse` re-export; no `explore/peopleBrowseTab.ts` |
-| Shop HTTP | `shop.ts` mounts `registerShopPublicRoutes` · `registerShopMerchantManageRoutes` only. Live aliases `/shop/merchants/:id` and `/shop/organisation/*` stay in those registrars |
+| Shop HTTP | `shop.ts` mounts `registerShopPublicRoutes` (`GET /shop/shops/:id`) and `registerShopMerchantManageRoutes` (`/shop/organisation/*`). Mongo collection stays `merchant_profiles` |
 | Admin HTTP | `admin.ts` mounts `registerAdmin*` only. Pages: `src/pages/admin/*` (folder-as-namespace; no root `Admin*.tsx`) |
 | SPA legacy pages | No Navigate-only page modules (`ShopManage`, `AgencyManage`, `BecomeHost`, `Membership`, `MerchantPublic`). Bookmark aliases stay inline in `App.tsx`; `routingHygiene` bans new links |
 | Identity / chat / review data libs | `auth-users-store`, `auth-tokens-store`, `chat-messages-store`, `social-reviews-store`. No `auth-users.ts` / `auth-tokens.ts` / `chat-data.ts` / `social-data.ts` (no re-export shim) |

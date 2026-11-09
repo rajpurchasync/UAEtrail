@@ -5,7 +5,7 @@ import { LinkRidesharePanel } from '../../../explore/ui/LinkRidesharePanel';
 import { canLinkRideshareToActivity } from '../../../explore/linkActivityRideshareOffer';
 import { HOSTING_LINK_RIDESHARE_CREATE } from '../../../explore/createFlowCopy';
 
-export type ActivityScrollOfferRideshareProps = {
+export type ActivityDetailOfferRideshareProps = {
   activity: ActivityDetailDTO;
   viewerAccess: ActivityViewerAccessDTO | null;
   tenantId: string | null;
@@ -14,13 +14,13 @@ export type ActivityScrollOfferRideshareProps = {
 };
 
 /** Host / entitled members — create or paste-link a rideshare for this outing. */
-export const ActivityScrollOfferRideshare = ({
+export const ActivityDetailOfferRideshare = ({
   activity,
   viewerAccess,
   tenantId,
   onCreateRideshare,
   onRideshareLinked,
-}: ActivityScrollOfferRideshareProps) => {
+}: ActivityDetailOfferRideshareProps) => {
   const [notice, setNotice] = useState<string | null>(null);
   const entitlements = viewerAccess?.entitlements;
   const canAddLinkedRide = Boolean(entitlements?.canAddLinkedRide);

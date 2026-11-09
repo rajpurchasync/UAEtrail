@@ -2,7 +2,6 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import request from 'supertest';
 import type { Express } from 'express';
 import { invalidateExploreMapCache } from '../src/lib/explore-map-cache.js';
-import { isExploreMapDiscoveryProjectionEnabled } from '../src/lib/explore-map-discovery-projection.js';
 import { createPublishedEventFixture } from './helpers/fixtures.js';
 import { bootstrapTestApp, configureTestEnv } from './helpers/bootstrap.js';
 import { getMongoClient } from '../src/lib/mongo.js';
@@ -14,16 +13,8 @@ beforeAll(async () => {
   app = await bootstrapTestApp();
 });
 
-describe('GET /api/explore/map discoveryCard (EXPLORE_MAP_DISCOVERY_PROJECTION)', () => {
-  it('isExploreMapDiscoveryProjectionEnabled requires exact "1"', () => {
-    delete process.env.EXPLORE_MAP_DISCOVERY_PROJECTION;
-    expect(isExploreMapDiscoveryProjectionEnabled()).toBe(false);
-    process.env.EXPLORE_MAP_DISCOVERY_PROJECTION = '1';
-    expect(isExploreMapDiscoveryProjectionEnabled()).toBe(true);
-  });
-
-  it('includes discoveryCard on items when flag is on', async () => {
-    process.env.EXPLORE_MAP_DISCOVERY_PROJECTION = '1';
+describe('GET /api/explore/map card payload', () => {
+  it('does not attach a second discoveryCard read model', async () => {
     const suffix = `disc-proj-${Date.now()}`;
     const fixture = await createPublishedEventFixture(suffix);
     await getMongoClient()!
@@ -41,18 +32,12 @@ describe('GET /api/explore/map discoveryCard (EXPLORE_MAP_DISCOVERY_PROJECTION)'
       discoveryCard?: { path: string; headline: string; entityRef?: { kind: string; activityId?: string } };
     }>;
     const row = items.find((item) => item.id === `activity:${fixture.activityId}`);
-    expect(row?.discoveryCard?.headline).toBeTruthy();
-    expect(row?.discoveryCard?.entityRef).toEqual({
-      kind: 'activity',
-      activityId: fixture.activityId
-    });
-
-    delete process.env.EXPLORE_MAP_DISCOVERY_PROJECTION;
+    expect(row?.discoveryCard).toBeUndefined();
+    expect(row && 'presentation' in row).toBe(true);
   });
 
-  it('bbox page includes discoveryCard when bbox + projection flags are on', async () => {
+  it('bbox page does not attach discoveryCard', async () => {
     process.env.EXPLORE_MAP_BBOX = '1';
-    process.env.EXPLORE_MAP_DISCOVERY_PROJECTION = '1';
     const suffix = `disc-bbox-${Date.now()}`;
     const fixture = await createPublishedEventFixture(suffix);
     await getMongoClient()!
@@ -71,9 +56,8 @@ describe('GET /api/explore/map discoveryCard (EXPLORE_MAP_DISCOVERY_PROJECTION)'
 
     const items = res.body.data.items as Array<{ id: string; discoveryCard?: { headline: string } }>;
     const row = items.find((item) => item.id === `activity:${fixture.activityId}`);
-    expect(row?.discoveryCard?.headline).toBeTruthy();
+    expect(row?.discoveryCard).toBeUndefined();
 
     delete process.env.EXPLORE_MAP_BBOX;
-    delete process.env.EXPLORE_MAP_DISCOVERY_PROJECTION;
   });
 });

@@ -269,9 +269,9 @@
       "feRoots": ["src/explore", "src/discovery"],
       "apiRoots": [
         "apps/api/src/lib/explore-map.ts",
-        "apps/api/src/lib/explore-map-discovery-projection.ts"
+        "apps/api/src/lib/explore-map-route.ts"
       ],
-      "successMetric": "API discoveryCard on map + FE consumes when flagged; bbox when S10e passes"
+      "successMetric": "Map presentation is the card copy; no second discoveryCard payload"
     },
     {
       "id": "MIG-CQRS-ROUTES",

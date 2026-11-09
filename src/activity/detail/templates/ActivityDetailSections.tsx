@@ -19,12 +19,12 @@ import type { useActivityDetailViewModel } from '../../../components/activity/de
 import { ActivityDetailGuestGate } from '../../../components/activity/detail/ActivityDetailGuestGate';
 import { ActivityDetailParticipantsRosterDialog } from '../../../components/activity/detail/ActivityDetailParticipantsRosterDialog';
 import { activityDetailParticipantCountLabel } from '../../../components/activity/detail/activityDetailParticipantCountLabel';
-import { formatActivityScrollDetailLeadDate } from '../../../activity/formatActivityScrollDetailLead';
-import { ActivityScrollLeadDateChip } from '../../../activity/detail/ActivityScrollLeadDateChip';
-import { resolveActivityScrollRequirementLines } from '../../../activity/activityScrollDetailRequirements';
+import { formatActivityDetailLeadDate } from '../../../activity/formatActivityDetailLead';
+import { ActivityDetailLeadDateChip } from '../../../activity/detail/ActivityDetailLeadDateChip';
+import { resolveActivityDetailRequirementLines } from '../../../activity/activityDetailRequirements';
 import { ActivityPackingListPreview } from '../../../components/activity/ActivityPackingListPreview';
-import { resolveActivityScrollDetailAudienceBadges } from '../../../activity/activityScrollDetailAudienceBadges';
-import { shouldShowActivityScrollLeadVenue } from '../../../activity/activityScrollDetailLeadVenue';
+import { resolveActivityDetailAudienceBadges } from '../../../activity/activityDetailAudienceBadges';
+import { shouldShowActivityDetailLeadVenue } from '../../../activity/activityDetailLeadVenue';
 import {
   ACTIVITY_DETAIL_LINKED_VENUE_SUBLINE,
   ACTIVITY_DETAIL_THIS_OUTING_LABEL,
@@ -37,15 +37,15 @@ import {
   resolveActivityLinkedRideshareSummary,
 } from '../../../activity/resolveActivityLinkageSummaries';
 import {
-  resolveActivityScrollVenueEyebrow,
-  resolveActivityScrollVenueKindLabel,
-} from '../../../activity/resolveActivityScrollVenueEyebrow';
+  resolveActivityDetailVenueEyebrow,
+  resolveActivityDetailVenueKindLabel,
+} from '../../../activity/resolveActivityDetailVenueEyebrow';
 import { UaeTrailBrandMark } from '../../../components/layout/UaeTrailBrandMark';
 import { SITE_TITLE_BRAND } from '../../../config/seo';
-import { ActivityScrollRideshareLinkage } from './ActivityScrollRideshareLinkage';
-import { ActivityScrollOfferRideshare } from './ActivityScrollOfferRideshare';
-import { ActivityScrollRideshareEssentials } from './ActivityScrollRideshareEssentials';
-import { ActivityScrollDriverReviews } from './ActivityScrollDriverReviews';
+import { ActivityDetailRideshareLinkage } from './ActivityDetailRideshareLinkage';
+import { ActivityDetailOfferRideshare } from './ActivityDetailOfferRideshare';
+import { ActivityDetailRideshareEssentials } from './ActivityDetailRideshareEssentials';
+import { ActivityDetailDriverReviews } from './ActivityDetailDriverReviews';
 import { TenantHostRatingInline } from '../../../components/reviews/TenantHostRatingInline';
 import { resolveRideshareSeatsAvailability } from '../../resolveRideshareSeatsAvailability';
 import { rideshareCardCoversDirections } from '../../rideshareCardDirections';
@@ -113,13 +113,13 @@ export const ActivityDetailSections = ({
   const isRideshare = model.activity.activityType === 'rideshare';
   const linkedParentSummary = resolveActivityLinkedParentSummary(model.activity);
   const linkedRideshareSummary = resolveActivityLinkedRideshareSummary(model.activity);
-  const showLeadVenue = shouldShowActivityScrollLeadVenue(
+  const showLeadVenue = shouldShowActivityDetailLeadVenue(
     model.activityTitle,
     venueLabel,
     hasLinkedPlaceCard
   );
   const venueLine = showLeadVenue && !isRideshare ? (
-    <ActivityScrollDetailVenueLead
+    <ActivityDetailVenueLead
       activity={model.activity}
       activityTitle={model.activityTitle}
       venueLabel={venueLabel}
@@ -147,7 +147,7 @@ export const ActivityDetailSections = ({
         {showHostProfile ? (
           <div className="min-w-0">
             <ActivityGuideInviteBanner activity={model.activity} />
-            <ActivityScrollDetailHostRow
+            <ActivityDetailHostRow
               activity={model.activity}
               hostPath={model.hostPath}
               canOpenHostProfile={model.canOpenHostProfile}
@@ -156,7 +156,7 @@ export const ActivityDetailSections = ({
           </div>
         ) : null}
         {showParticipantsRow ? (
-          <ActivityScrollDetailSocialRow
+          <ActivityDetailSocialRow
             activity={model.activity}
             participants={model.participants}
             rosterParticipants={
@@ -173,7 +173,7 @@ export const ActivityDetailSections = ({
 
   return (
     <div className="w-full pt-1 pb-2" data-activity-scroll-detail-template>
-      <ActivityScrollDetailLead
+      <ActivityDetailLead
         activity={model.activity}
         title={model.activityTitle}
         card={model.peekParityCard}
@@ -182,7 +182,7 @@ export const ActivityDetailSections = ({
       />
 
       {isRideshare ? (
-        <ActivityScrollRideshareLinkage
+        <ActivityDetailRideshareLinkage
           activity={model.activity}
           isRideHost={isRideHost}
           hostTenantId={rideHostTenantId}
@@ -193,7 +193,7 @@ export const ActivityDetailSections = ({
           <ActivityLinkedRideshareAffordance rideshare={linkedRideshareSummary} className="mt-0" />
         </section>
       ) : !model.requiresSignIn ? (
-        <ActivityScrollOfferRideshare
+        <ActivityDetailOfferRideshare
           activity={model.activity}
           viewerAccess={model.viewerAccess}
           tenantId={model.linkRideshareTenantId ?? model.activity.tenantId ?? null}
@@ -212,17 +212,17 @@ export const ActivityDetailSections = ({
 
       <div className="mt-3 flex flex-col gap-6 lg:mt-2 lg:gap-3">
         {isRideshare ? (
-          <ActivityScrollRideshareEssentials
+          <ActivityDetailRideshareEssentials
             activity={model.activity}
             showVehiclePlate={model.viewerAccess?.canAccessCrewSurfaces === true}
           />
         ) : null}
         <div className="grid gap-6 md:grid-cols-2 lg:gap-3">
-          <ActivityScrollDetailPlaceCard
+          <ActivityDetailPlaceCard
             activity={model.activity}
             hideForLinkedRideshare={isRideshare && Boolean(linkedParentSummary)}
           />
-          <ActivityScrollDetailGettingThere
+          <ActivityDetailGettingThere
             activity={model.activity}
             viewerAccess={model.viewerAccess}
             wireStrips={model.wireStrips}
@@ -237,11 +237,11 @@ export const ActivityDetailSections = ({
           />
         </div>
         {isRideshare ? hostAndSocialBlock : null}
-        <ActivityScrollDetailPacking activity={model.activity} />
-        <ActivityScrollDetailInstructions activity={model.activity} />
-        <ActivityDetailPlanColumn model={model} planSections={planSections} consumerInline />
+        <ActivityDetailPacking activity={model.activity} />
+        <ActivityDetailInstructions activity={model.activity} />
+        <ActivityDetailPlanColumn model={model} planSections={planSections} factsOnly />
         {isRideshare && model.activity.tenantId ? (
-          <ActivityScrollDriverReviews tenantId={model.activity.tenantId} />
+          <ActivityDetailDriverReviews tenantId={model.activity.tenantId} />
         ) : null}
       </div>
     </div>
@@ -276,7 +276,7 @@ const audienceBadgeClass = (badge: string): string => {
   return 'border-neutral-200 bg-white text-neutral-800';
 };
 
-const ActivityScrollDetailAudienceBadges = ({ badges }: { badges: string[] }) => {
+const ActivityDetailAudienceBadges = ({ badges }: { badges: string[] }) => {
   if (badges.length === 0) return null;
   return (
     <>
@@ -292,7 +292,7 @@ const ActivityScrollDetailAudienceBadges = ({ badges }: { badges: string[] }) =>
   );
 };
 
-const ActivityScrollDetailLead = ({
+const ActivityDetailLead = ({
   activity,
   title,
   card,
@@ -305,8 +305,8 @@ const ActivityScrollDetailLead = ({
   venueLine: ReactNode;
   statusChips: ActivityDetailHeroStatusChip[];
 }) => {
-  const leadDate = formatActivityScrollDetailLeadDate(activity.date, activity.time);
-  const audienceBadges = resolveActivityScrollDetailAudienceBadges(activity.requirements);
+  const leadDate = formatActivityDetailLeadDate(activity.date, activity.time);
+  const audienceBadges = resolveActivityDetailAudienceBadges(activity.requirements);
   const participationChip = participationStatusChip(statusChips);
   const isRideshareLead = activity.activityType === 'rideshare';
   const explorePrice = card?.source === 'activity' ? card.price : null;
@@ -331,7 +331,7 @@ const ActivityScrollDetailLead = ({
         <h1 className="min-w-0 flex-1 text-[1.5rem] font-bold leading-[1.15] tracking-tight text-neutral-950 md:text-[1.75rem] lg:text-[1.375rem] lg:leading-tight lg:tracking-tight">
           {title}
         </h1>
-        <ActivityScrollLeadDateChip leadDate={leadDate} />
+        <ActivityDetailLeadDateChip leadDate={leadDate} />
       </div>
 
       {showMetaRow ? (
@@ -369,7 +369,7 @@ const ActivityScrollDetailLead = ({
               {participationChip.label}
             </span>
           ) : null}
-          <ActivityScrollDetailAudienceBadges badges={audienceBadges} />
+          <ActivityDetailAudienceBadges badges={audienceBadges} />
         </div>
       ) : null}
 
@@ -378,7 +378,7 @@ const ActivityScrollDetailLead = ({
   );
 };
 
-const ActivityScrollDetailVenueLead = ({
+const ActivityDetailVenueLead = ({
   activity,
   activityTitle,
   venueLabel,
@@ -389,8 +389,8 @@ const ActivityScrollDetailVenueLead = ({
   venueLabel: string;
   placePath: string | null;
 }) => {
-  const venueEyebrow = resolveActivityScrollVenueEyebrow(activity, placePath);
-  const venueKindLabel = resolveActivityScrollVenueKindLabel(activity, placePath);
+  const venueEyebrow = resolveActivityDetailVenueEyebrow(activity, placePath);
+  const venueKindLabel = resolveActivityDetailVenueKindLabel(activity, placePath);
   const outingPath = activityDetailPath(activity.id);
   const linkedParent = activity.linkedParentActivity;
   const isRideshare = activity.activityType === 'rideshare';
@@ -460,7 +460,7 @@ const ActivityScrollDetailVenueLead = ({
   );
 };
 
-const ActivityScrollDetailSocialRow = ({
+const ActivityDetailSocialRow = ({
   activity,
   participants,
   rosterParticipants,
@@ -522,9 +522,9 @@ const ActivityScrollDetailSocialRow = ({
   );
 };
 
-type ActivityScrollDetailPanelTone = 'logistics' | 'prep';
+type ActivityDetailPanelTone = 'logistics' | 'prep';
 
-const ActivityScrollDetailOpenSection = ({
+const ActivityDetailOpenSection = ({
   title,
   children,
   id,
@@ -535,7 +535,7 @@ const ActivityScrollDetailOpenSection = ({
   children: ReactNode;
   id?: string;
   icon?: ReactNode;
-  tone?: ActivityScrollDetailPanelTone;
+  tone?: ActivityDetailPanelTone;
 }) => (
   <section id={id} className="scroll-mt-24 lg:scroll-mt-12">
     <div className="mb-2.5 flex items-center gap-2 lg:mb-1.5">
@@ -552,24 +552,24 @@ const ActivityScrollDetailOpenSection = ({
   </section>
 );
 
-const ActivityScrollDetailPacking = ({ activity }: { activity: ActivityDetailDTO }) => {
+const ActivityDetailPacking = ({ activity }: { activity: ActivityDetailDTO }) => {
   if (!hasPackingList(activity.requirements)) return null;
   return (
-    <ActivityScrollDetailOpenSection id="activity-detail-packing" title="What to bring" tone="prep">
+    <ActivityDetailOpenSection id="activity-detail-packing" title="What to bring" tone="prep">
       <ActivityPackingListPreview
         requirements={activity.requirements}
         showTitle={false}
         className="border-0 bg-transparent p-0"
       />
-    </ActivityScrollDetailOpenSection>
+    </ActivityDetailOpenSection>
   );
 };
 
-const ActivityScrollDetailInstructions = ({ activity }: { activity: ActivityDetailDTO }) => {
-  const lines = resolveActivityScrollRequirementLines(activity.requirements);
+const ActivityDetailInstructions = ({ activity }: { activity: ActivityDetailDTO }) => {
+  const lines = resolveActivityDetailRequirementLines(activity.requirements);
   if (lines.length === 0) return null;
   return (
-    <ActivityScrollDetailOpenSection id="activity-detail-instructions" title="Instructions" tone="prep">
+    <ActivityDetailOpenSection id="activity-detail-instructions" title="Instructions" tone="prep">
       <ul className="space-y-2">
         {lines.map((line) => (
           <li key={line} className="flex gap-2">
@@ -578,11 +578,11 @@ const ActivityScrollDetailInstructions = ({ activity }: { activity: ActivityDeta
           </li>
         ))}
       </ul>
-    </ActivityScrollDetailOpenSection>
+    </ActivityDetailOpenSection>
   );
 };
 
-const ActivityScrollDetailGettingThere = ({
+const ActivityDetailGettingThere = ({
   activity,
   viewerAccess,
   wireStrips,
@@ -661,7 +661,7 @@ const ActivityScrollDetailGettingThere = ({
   };
 
   return (
-    <ActivityScrollDetailOpenSection
+    <ActivityDetailOpenSection
       id="activity-detail-transport"
       title="Getting there"
       icon={<Car className="h-4 w-4 text-sky-700/80" aria-hidden />}
@@ -703,7 +703,7 @@ const ActivityScrollDetailGettingThere = ({
           />
         ) : null}
       </div>
-    </ActivityScrollDetailOpenSection>
+    </ActivityDetailOpenSection>
   );
 };
 
@@ -717,7 +717,7 @@ const placeStatLine = (activity: ActivityDetailDTO): string | null => {
   return parts.length > 0 ? parts.join(' · ') : null;
 };
 
-const ActivityScrollDetailPlaceCard = ({
+const ActivityDetailPlaceCard = ({
   activity,
   hideForLinkedRideshare = false,
 }: {
@@ -761,7 +761,7 @@ const ActivityScrollDetailPlaceCard = ({
   );
 };
 
-const ActivityScrollDetailHostRow = ({
+const ActivityDetailHostRow = ({
   activity,
   hostPath,
   canOpenHostProfile,

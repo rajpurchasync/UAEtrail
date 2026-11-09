@@ -30,11 +30,12 @@ const PeekLoading = () => (
   </div>
 );
 
-/** Hosted + seeking activity map peek — standard four-button footer. */
+/** Hosted + seeking activity map peek. States match the activity detail footer. */
 export const ActivityPeekActions = ({
   card,
   onClose,
   onJoin,
+  onWithdraw,
   onActivityMapPeekAction,
   joinUiState,
   joinStateLoading = false,
@@ -89,6 +90,7 @@ export const ActivityPeekActions = ({
       joinStateLoading={effectiveJoinStateLoading}
       onAction={onActivityMapPeekAction}
       onJoin={onJoin}
+      onWithdraw={onWithdraw}
       onGuestGatedAction={gate}
       onBeforeDetailNavigate={onClose}
     />

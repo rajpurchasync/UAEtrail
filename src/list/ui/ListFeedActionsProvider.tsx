@@ -31,6 +31,7 @@ import { useActivityJoinActions, useActivityJoinContext } from '../../hooks/useA
 import { useActivityJoinGuardMessage } from '../../hooks/useActivityJoinGuardMessage';
 import { executeActivityMapPeekAction } from '../../activity/executeActivityMapPeekAction';
 import { activityMapPeekNeedsJoinContext } from '../../activity/activityPeekEngagement';
+import { navigateHostFromPlaceCard } from '../../place/peek/navigateHostFromPlaceCard';
 import { resolveListFeedFooterModel } from '../listFeedFooterActions';
 import { activityDetailPath } from '../../config/routingCatalog';
 
@@ -248,6 +249,14 @@ export const ListFeedActionsProvider = ({
       const model = footerModel(card);
       const primary = model.primary;
 
+      if (primary.kind === 'plan_trip') {
+        if (!user) {
+          joinActions.openGuestSheet('place');
+          return;
+        }
+        void navigateHostFromPlaceCard(navigate, card);
+        return;
+      }
       if (primary.kind === 'guest_gate') {
         if (!user) {
           joinActions.openGuestSheet('activity');

@@ -154,12 +154,12 @@ describe('activity detail program — wiring', () => {
     const view = read('src/components/activity/ActivityDetailView.tsx');
     expect(view).toMatch(/MobileDetailScrollShell/);
     expect(view).toMatch(/footer=\{model\.stickyFooter\}/);
-    expect(consumerBody).toMatch(/ActivityScrollDetailHostRow/);
+    expect(consumerBody).toMatch(/ActivityDetailHostRow/);
     const joinSurfaces = read('src/components/activity/detail/useActivityDetailJoinSurfaces.tsx');
     expect(joinSurfaces).toMatch(/consumerWireEngagementCta/);
-    expect(consumerBody).toMatch(/ActivityScrollDetailGettingThere/);
-    expect(consumerBody).toMatch(/ActivityScrollDetailLead/);
-    expect(consumerBody).toMatch(/ActivityScrollDetailSocialRow/);
+    expect(consumerBody).toMatch(/ActivityDetailGettingThere/);
+    expect(consumerBody).toMatch(/ActivityDetailLead/);
+    expect(consumerBody).toMatch(/ActivityDetailSocialRow/);
     expect(consumerBody).toMatch(/activity-detail-meeting-point/);
     const actions = read('src/components/activity/detail/ActivityDetailEngagementActions.tsx');
     expect(actions).toMatch(/resolveActivityMapPeekActions/);
@@ -264,17 +264,19 @@ describe('activity detail program — wiring', () => {
     const vm = read('src/components/activity/detail/useActivityDetailViewModel.tsx');
     expect(vm).toMatch(/buildActivityDetailPageModel/);
     expect(vm).toMatch(/visibleMobileTabs/);
-    const tabBar = read('src/components/activity/detail/ActivityDetailTabBar.tsx');
-    expect(tabBar).toMatch(/visibleTabs/);
+    expect(read('src/components/activity/detail/ActivityDetailBody.tsx')).not.toMatch(
+      /ActivityDetailTabBar/
+    );
     const planColumn = read('src/components/activity/detail/ActivityDetailPlanColumn.tsx');
     expect(planColumn).toMatch(/KindPlanSections/);
     expect(planColumn).not.toMatch(/ActivityDetailPlanFactsSection/);
-    expect(planColumn).toMatch(/showPlaceTab/);
-    expect(planColumn).toMatch(/showTransportTab/);
+    expect(planColumn).not.toMatch(/showPlaceTab|showTransportTab/);
     const body = read('src/components/activity/detail/ActivityDetailBody.tsx');
     expect(body).toMatch(/ActivityDetailPlanColumn/);
     expect(body).toMatch(/ActivityDetailSidebarColumn/);
-    expect(body).not.toMatch(/ActivityDetailPlaceTabPanels/);
+    expect(body).toMatch(/showPlaceTab/);
+    expect(body).toMatch(/showTransportTab/);
+    expect(body).toMatch(/ActivityDetailPlaceTabPanels/);
     expect(read('src/pages/ActivityDetail.tsx')).toMatch(/resolveActivityDetailMobileTab/);
     expect(read('src/pages/ActivityDetail.tsx')).toMatch(/ActivityDetailByKind/);
     expect(read('src/pages/ActivityDetail.tsx')).not.toMatch(/<ActivityDetailView/);
@@ -313,8 +315,8 @@ describe('activity detail program — wiring', () => {
     const shell = read('src/activity/detail/templates/ActivityDetailPageShell.tsx');
     expect(shell).toMatch(/ActivityDetailView/);
     const consumerBody = read('src/activity/detail/templates/ActivityDetailSections.tsx');
-    expect(consumerBody).toMatch(/ActivityScrollDetailGettingThere/);
-    expect(consumerBody).toMatch(/ActivityScrollDetailLead/);
+    expect(consumerBody).toMatch(/ActivityDetailGettingThere/);
+    expect(consumerBody).toMatch(/ActivityDetailLead/);
     const view = read('src/components/activity/ActivityDetailView.tsx');
     expect(view).toMatch(/ActivityDetailSections/);
     expect(read('src/activity/detail/activityDetailPageShellCard.ts')).toMatch(
@@ -322,14 +324,15 @@ describe('activity detail program — wiring', () => {
     );
   });
 
-  it('AD-BODY-01: consumer body hosts profile + published facts; embed keeps Plan column', () => {
+  it('AD-BODY-01: public sections host profile + facts; embed body owns place and transport', () => {
     const body = read('src/components/activity/detail/ActivityDetailPlanColumn.tsx');
+    const embed = read('src/components/activity/detail/ActivityDetailBody.tsx');
     const aboutIdx = body.indexOf('<ActivityDetailPlanAboutCard');
     const extrasIdx = body.indexOf('<ActivityDetailPlanExtras');
-    const placeIdx = body.indexOf('<ActivityDetailPlaceTabPanels');
+    const placeIdx = embed.indexOf('<ActivityDetailPlaceTabPanels');
     const consumerBody = read('src/activity/detail/templates/ActivityDetailSections.tsx');
-    const hostIdx = consumerBody.indexOf('<ActivityScrollDetailHostRow');
-    const publishedFactsIdx = consumerBody.indexOf('<ActivityScrollDetailLead');
+    const hostIdx = consumerBody.indexOf('<ActivityDetailHostRow');
+    const publishedFactsIdx = consumerBody.indexOf('<ActivityDetailLead');
     const sidebarColumn = read('src/components/activity/detail/ActivityDetailSidebarColumn.tsx');
     const sidebar = read('src/components/activity/detail/ActivityDetailPricingSidebar.tsx');
     const model = read('src/components/activity/detail/useActivityDetailViewModel.tsx');
@@ -340,7 +343,10 @@ describe('activity detail program — wiring', () => {
     expect(publishedFactsIdx).toBeGreaterThan(-1);
     expect(model).toMatch(/buildActivityDetailPageShellCard/);
     expect(extrasIdx).toBeGreaterThan(aboutIdx);
-    expect(placeIdx).toBeGreaterThan(extrasIdx);
+    expect(body).not.toMatch(/consumerInline|ActivityDetailPlaceTabPanels/);
+    expect(consumerBody).toMatch(/factsOnly/);
+    expect(placeIdx).toBeGreaterThan(-1);
+    expect(embed.indexOf('<ActivityDetailTransportTabPanels')).toBeGreaterThan(placeIdx);
     expect(sidebarColumn).toMatch(
       /hideHostProfile=\{model\.publicDetail \|\| model\.requiresSignIn\}/
     );
@@ -379,7 +385,8 @@ describe('activity detail program — engagement wire (AD-PRO-01, AD-PRES-02)', 
       /sections: ActivityPresentationSectionsDTO/
     );
     const manage = read('src/components/activity/ActivityManageSheet.tsx');
-    expect(manage).toMatch(/wireTabs/);
+    expect(manage).toMatch(/wireSections/);
+    expect(manage).not.toMatch(/wireTabs/);
     const model = read('src/components/activity/detail/useActivityDetailViewModel.tsx');
     expect(model).toMatch(/resolveActivityDetailTabUi/);
     expect(page).toMatch(/resolveActivityDetailWirePresentation/);

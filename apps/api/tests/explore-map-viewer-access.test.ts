@@ -148,6 +148,28 @@ describe('attachExploreMapViewerAccess', () => {
     expect(enriched[0].viewerAccess?.entitlements?.canAddLinkedRide).toBe(false);
   });
 
+  it('does not give the creator host actions when another person hosts', () => {
+    const item = openActivityItem();
+    item.activity = {
+      ...item.activity!,
+      hostUserId: 'host-1',
+      createdById: 'creator-1',
+    };
+    const enriched = attachExploreMapViewerAccess([item], {
+      viewerUserId: 'creator-1',
+      isPlatformAdmin: false,
+      participantActivityIds: new Set(),
+      requestStatusByActivityId: new Map(),
+      staffTenantIds: new Set(),
+      demandJoinStatusByIntentId: new Map(),
+      hostStatus: null,
+      buddyUserIds: new Set(),
+      pendingJoinInviteCountByActivityId: new Map(),
+    });
+
+    expect(enriched[0].viewerAccess?.level).not.toBe('host');
+  });
+
   it('attaches pending join-invite count on mapPeekStrips for host', () => {
     const enriched = attachExploreMapViewerAccess([openActivityItem()], {
       viewerUserId: 'host-1',

@@ -1,4 +1,4 @@
-import type { ActivityDTO } from '@uaetrail/shared-types';
+import { resolveActivityHostUserId, type ActivityDTO } from '@uaetrail/shared-types';
 import { ApiError } from '../lib/api-error.js';
 import { findPublishedActivityWithPreviewsById, listFeaturedPublishedActivities, listPublishedActivitiesWithPreviews } from '../lib/activities-store.js';
 import { countPendingActivityInvitesForSenderOnActivity } from '../lib/activity-invites-store.js';
@@ -51,7 +51,10 @@ export const loadPublicActivityDetail = async (input: {
   }
 
   const viewerUserId = input.viewerUserId;
-  const hostUserId = event.createdById ?? event.hostId ?? null;
+  const hostUserId = resolveActivityHostUserId({
+    hostId: event.hostId,
+    tenantOwnerId: event.tenant.ownerId,
+  });
   const participantUserIds = event.participants.map((row) => row.userId);
   const hostStatus = viewerUserId ? await resolveMemberStatus(viewerUserId) : null;
 
@@ -62,6 +65,7 @@ export const loadPublicActivityDetail = async (input: {
         id: event.id,
         tenantId: event.tenantId,
         hostId: event.hostId,
+        hostUserId,
         createdById: event.createdById,
         joinMode: event.joinMode,
         requirements: event.requirements,

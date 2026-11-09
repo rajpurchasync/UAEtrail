@@ -1,5 +1,6 @@
 import {
   computeActivityDetailExposure,
+  resolveActivityHostUserId,
   type ActivityViewerAccessDTO,
   type ActivityViewerAccessLevel,
 } from '@uaetrail/shared-types';
@@ -38,6 +39,8 @@ export type ActivityViewerAccessInput = {
     id: string;
     tenantId: string;
     hostId: string | null;
+    /** Same id the activity DTO publishes. Wins over `hostId` when both are set. */
+    hostUserId?: string | null;
     createdById: string;
     joinMode?: unknown;
     requirements?: string[] | null;
@@ -59,15 +62,15 @@ const resolveActivityViewerLevel = async (
     return joinMode === 'open' ? 'public' : 'denied';
   }
 
-  const hostUserId = input.activity.hostId ?? input.activity.createdById;
-  if (viewerUserId === hostUserId || viewerUserId === input.activity.createdById) {
+  const hostUserId = resolveActivityHostUserId(input.activity);
+  if (hostUserId && viewerUserId === hostUserId) {
     return 'host';
   }
   const acceptedGuide = (input.activity.guides ?? []).some(
     (guide) => guide.userId === viewerUserId && (guide.status ?? 'accepted') === 'accepted'
   );
   if (acceptedGuide) {
-    return 'host';
+    return 'participant';
   }
 
   const membership = await findTenantMembershipContext(input.activity.tenantId, viewerUserId);

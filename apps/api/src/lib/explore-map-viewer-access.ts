@@ -1,5 +1,6 @@
 import {
   computeActivityDetailExposure,
+  resolveActivityHostUserId,
   resolveActivityEngagementMapPeekActionsBase,
   resolveActivityEngagementMapPeekStrips,
   resolveCommerceMapViewerAccess,
@@ -110,9 +111,8 @@ export const resolveActivityMapViewerLevel = (input: {
     return 'public';
   }
 
-  const hostUserId =
-    input.activity.hostId ?? input.activity.hostUserId ?? input.activity.createdById ?? null;
-  if (hostUserId && (viewerUserId === hostUserId || viewerUserId === input.activity.createdById)) {
+  const hostUserId = resolveActivityHostUserId(input.activity);
+  if (hostUserId && viewerUserId === hostUserId) {
     return 'host';
   }
 

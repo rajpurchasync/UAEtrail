@@ -19,12 +19,12 @@ const resolveLinkedVenueKind = (
 };
 
 /** Trail/camp/venue label for the catalog link row (not generic “Place” when path is `/trail/`). */
-export const resolveActivityScrollVenueEyebrow = (
+export const resolveActivityDetailVenueEyebrow = (
   activity: ActivityDetailDTO,
   placePath: string | null
 ): string => activityDetailLinkedVenueEyebrow(resolveLinkedVenueKind(activity, placePath));
 
-export const resolveActivityScrollVenueKindLabel = (
+export const resolveActivityDetailVenueKindLabel = (
   activity: ActivityDetailDTO,
   placePath: string | null
 ): string => activityDetailLinkedVenueKindLabel(resolveLinkedVenueKind(activity, placePath));

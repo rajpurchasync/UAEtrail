@@ -13,7 +13,7 @@ const LOGISTICS_OR_DIFFICULTY = new Set([
 ]);
 
 /** Audience / house-rules chips for consumer detail — not activity kind, price, or trail difficulty. */
-export const resolveActivityScrollDetailAudienceBadges = (
+export const resolveActivityDetailAudienceBadges = (
   requirements?: string[] | null
 ): string[] => {
   const lines = requirements ?? [];

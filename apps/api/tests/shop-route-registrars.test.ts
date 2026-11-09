@@ -14,17 +14,18 @@ describe('shop route registrars (COH-11)', () => {
     expect(shop).not.toMatch(/merchantScopeSchema/);
   });
 
-  it('public storefront keeps /shops/:id with /merchants/:id alias', () => {
+  it('public storefront is GET /shops/:id', () => {
     const registrar = read('src/routes/shop/registerShopPublicRoutes.ts');
     expect(registrar).toMatch(/\/shops\/:id/);
-    expect(registrar).toMatch(/\/merchants\/:id/);
+    expect(registrar).not.toMatch(/\/merchants\/:id/);
     expect(registrar).toMatch(/shop-public-read/);
     expect(registrar).not.toMatch(/\/products/);
   });
 
   it('merchant manage is profile-only (no product catalog routes)', () => {
     const registrar = read('src/routes/shop/registerShopMerchantManageRoutes.ts');
-    expect(registrar).toMatch(/shopOrganisationManagePrefixes/);
+    expect(registrar).toMatch(/shopManagePrefix/);
+    expect(registrar).not.toMatch(/\/merchant\//);
     expect(registrar).toMatch(/shop-merchant-commands/);
     expect(registrar).not.toMatch(/\/merchant\/products/);
     expect(registrar).not.toMatch(/merchantScopeSchema/);

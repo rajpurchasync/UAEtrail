@@ -19,15 +19,15 @@ import { PageMeta } from '../../../components/seo/PageMeta';
 import { detailBackPath } from '../../../config/routingCatalog';
 import { EXPLORE_PEEK_CTA } from '../../../config/exploreTheme';
 
-export type FacilityScrollDetailPageProps = {
+export type FacilityDetailSectionsProps = {
   facility: FacilityDTO;
   facilityId: string;
 };
 
-export const FacilityScrollDetailPage = ({
+export const FacilityDetailSections = ({
   facility,
   facilityId,
-}: FacilityScrollDetailPageProps) => {
+}: FacilityDetailSectionsProps) => {
   const kind = facility.facilityKind;
   const label = PLACE_KIND_LABELS[kind];
   const detailPath = facilityDetailPath(facilityId);

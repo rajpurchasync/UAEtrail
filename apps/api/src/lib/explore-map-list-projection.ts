@@ -1,5 +1,4 @@
 import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
-import { buildApiDiscoveryCardProjection } from './discovery-card-projection.js';
 
 const slimExploreMapCatalogItem = (item: ExploreMapItemDTO): ExploreMapItemDTO => {
   const locationCard = item.locationCard
@@ -23,7 +22,6 @@ const slimExploreMapCatalogItem = (item: ExploreMapItemDTO): ExploreMapItemDTO =
     participantPreviews: item.participantPreviews?.slice(0, 3),
     locationCard,
     activity,
-    discoveryCard: buildApiDiscoveryCardProjection(item),
     viewerAccess: undefined,
   };
 };

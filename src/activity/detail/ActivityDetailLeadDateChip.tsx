@@ -1,7 +1,7 @@
-import type { ActivityDetailConsumerLeadDate } from '../formatActivityScrollDetailLead';
+import type { ActivityDetailConsumerLeadDate } from '../formatActivityDetailLead';
 
 /** Calendar chip — month + day (weekday is the header label, not a substitute for the date). */
-export const ActivityScrollLeadDateChip = ({
+export const ActivityDetailLeadDateChip = ({
   leadDate,
 }: {
   leadDate: ActivityDetailConsumerLeadDate;

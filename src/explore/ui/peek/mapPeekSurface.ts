@@ -4,7 +4,7 @@ import type { ExploreMapItemDTO } from '@uaetrail/shared-types';
 
 /**
  * Map peek template family — pairs with consumer detail templates on `card.path`.
- * Facility pins are on the map (`source: facility`) but share Place peek until a facility peek ships.
+ * Facility pins use the place shell with facility actions (directions + facility page).
  */
 export type MapPeekSurface = 'activity' | 'place' | 'facility' | 'area' | 'shop' | 'other';
 

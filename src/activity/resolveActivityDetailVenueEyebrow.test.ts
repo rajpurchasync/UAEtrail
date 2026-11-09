@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import type { ActivityDetailDTO } from '@uaetrail/shared-types';
 import {
-  resolveActivityScrollVenueEyebrow,
-  resolveActivityScrollVenueKindLabel,
-} from './resolveActivityScrollVenueEyebrow';
+  resolveActivityDetailVenueEyebrow,
+  resolveActivityDetailVenueKindLabel,
+} from './resolveActivityDetailVenueEyebrow';
 
 const base = (overrides: Partial<ActivityDetailDTO> = {}): ActivityDetailDTO =>
   ({
@@ -13,15 +13,15 @@ const base = (overrides: Partial<ActivityDetailDTO> = {}): ActivityDetailDTO =>
     ...overrides,
   }) as ActivityDetailDTO;
 
-describe('resolveActivityScrollVenueEyebrow', () => {
+describe('resolveActivityDetailVenueEyebrow', () => {
   it('uses trail path when scheduled type is rideshare', () => {
-    expect(resolveActivityScrollVenueEyebrow(base(), '/trail/p1')).toBe('Trail on UAETrail');
-    expect(resolveActivityScrollVenueKindLabel(base(), '/trail/p1')).toBe('Trail');
+    expect(resolveActivityDetailVenueEyebrow(base(), '/trail/p1')).toBe('Trail on UAETrail');
+    expect(resolveActivityDetailVenueKindLabel(base(), '/trail/p1')).toBe('Trail');
   });
 
   it('prefers linked location catalog kind', () => {
     expect(
-      resolveActivityScrollVenueEyebrow(
+      resolveActivityDetailVenueEyebrow(
         base({ location: { activityType: 'camping', name: 'X' } as ActivityDetailDTO['location'] }),
         '/camp/p1'
       )

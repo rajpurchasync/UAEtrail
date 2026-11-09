@@ -14,7 +14,7 @@ const factLabelClass = 'text-[11px] font-semibold uppercase tracking-wide text-n
 const labelChipClass =
   'inline-flex rounded-lg border border-neutral-200 bg-white px-2.5 py-1 text-xs font-semibold text-neutral-800';
 
-export const PlaceScrollKindFacts = ({ kind, place }: { kind: PlaceDetailKind; place: Place }) => {
+export const PlaceDetailKindFacts = ({ kind, place }: { kind: PlaceDetailKind; place: Place }) => {
   const catalogKind = placeKindFromLocationRow({
     activityType: place.activityType,
     tags: place.tags,

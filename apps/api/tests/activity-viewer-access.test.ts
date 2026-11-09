@@ -197,6 +197,30 @@ describe('buildActivityViewerAccess', () => {
     expect(access.canViewFullActivity).toBe(true);
     expect(access.level).toBe('tenant_staff');
   });
+
+  it('does not treat the creator as the host when someone else hosts', async () => {
+    const access = await buildActivityViewerAccess({
+      viewerUserId: 'creator-1',
+      activity: { ...activity, hostId: 'host-1', hostUserId: 'host-1', createdById: 'creator-1' },
+    });
+
+    expect(access.level).not.toBe('host');
+  });
+
+  it('lets an accepted guide see the outing without host actions', async () => {
+    const access = await buildActivityViewerAccess({
+      viewerUserId: 'guide-1',
+      activity: {
+        ...activity,
+        joinMode: 'open',
+        requirements: ['Open: anyone can request to join'],
+        guides: [{ userId: 'guide-1', status: 'accepted' }],
+      },
+    });
+
+    expect(access.level).toBe('participant');
+    expect(access.canAccessCrewSurfaces).toBe(true);
+  });
 });
 
 describe('computeActivityDetailExposure (shared policy)', () => {

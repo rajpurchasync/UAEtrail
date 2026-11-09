@@ -19,7 +19,6 @@ async function handleShopPublic(
       data: {
         id: merchant.id,
         shopId: merchant.id,
-        merchantId: merchant.id,
         tenantId: merchant.tenantId ?? null,
         shopName: merchant.shopName,
         description: merchant.description,
@@ -40,9 +39,7 @@ async function handleShopPublic(
   }
 }
 
-/** Public storefront (`GET /shop/shops/:id`; `/merchants/:id` alias). */
+/** Public storefront (`GET /shop/shops/:id`). */
 export const registerShopPublicRoutes = (router: Router): void => {
-  router.get('/merchants/:id', validate({ params: idParamSchema }), handleShopPublic);
-  /** Preferred public path — live alias of `/merchants/:id`. */
   router.get('/shops/:id', validate({ params: idParamSchema }), handleShopPublic);
 };

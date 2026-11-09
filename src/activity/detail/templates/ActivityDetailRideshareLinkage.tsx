@@ -8,7 +8,7 @@ import {
 import { LinkParentActivityPanel } from '../../../explore/ui/LinkParentActivityPanel';
 import { resolveActivityLinkedParentSummary } from '../../../activity/resolveActivityLinkageSummaries';
 
-export type ActivityScrollRideshareLinkageProps = {
+export type ActivityDetailRideshareLinkageProps = {
   activity: ActivityDetailDTO;
   isRideHost: boolean;
   hostTenantId: string | null;
@@ -16,12 +16,12 @@ export type ActivityScrollRideshareLinkageProps = {
 };
 
 /** Rideshare consumer detail — parent plan link or host link flow. */
-export const ActivityScrollRideshareLinkage = ({
+export const ActivityDetailRideshareLinkage = ({
   activity,
   isRideHost,
   hostTenantId,
   onParentLinked,
-}: ActivityScrollRideshareLinkageProps) => {
+}: ActivityDetailRideshareLinkageProps) => {
   const [notice, setNotice] = useState<string | null>(null);
   const linkedParent = resolveActivityLinkedParentSummary(activity);
 

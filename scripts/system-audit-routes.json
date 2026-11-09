@@ -3,28 +3,23 @@
   "endpoints": [
     {
       "method": "GET",
-      "path": "/shop/${prefix}/stores",
+      "path": "/shop/organisation/stores",
       "registrar": "apps/api/src/routes/shop/registerShopMerchantManageRoutes.ts"
     },
     {
       "method": "GET",
-      "path": "/shop/${prefix}/profile",
+      "path": "/shop/organisation/profile",
       "registrar": "apps/api/src/routes/shop/registerShopMerchantManageRoutes.ts"
     },
     {
       "method": "POST",
-      "path": "/shop/${prefix}/profile",
+      "path": "/shop/organisation/profile",
       "registrar": "apps/api/src/routes/shop/registerShopMerchantManageRoutes.ts"
     },
     {
       "method": "PATCH",
-      "path": "/shop/${prefix}/profile",
+      "path": "/shop/organisation/profile",
       "registrar": "apps/api/src/routes/shop/registerShopMerchantManageRoutes.ts"
-    },
-    {
-      "method": "GET",
-      "path": "/shop/merchants/:id",
-      "registrar": "apps/api/src/routes/shop/registerShopPublicRoutes.ts"
     },
     {
       "method": "GET",

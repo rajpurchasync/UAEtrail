@@ -123,7 +123,7 @@ export const OrganisationPublicProfile = ({
         setTenant(tenantData);
         setActivities(tenantData.activities);
         setEditBio(tenantData.ownerBio ?? '');
-        setEditDetails(tenantData.hostDetails ?? tenantData.organizerDetails ?? {});
+        setEditDetails(tenantData.hostDetails ?? {});
         const reviewList = await fetchOrganisationReviews(tenantData.id).catch(() => []);
         setReviews(reviewList);
       })
@@ -194,7 +194,7 @@ export const OrganisationPublicProfile = ({
       slug
     ) ?? `/agency/${slug}`;
 
-  const details = tenant.hostDetails ?? tenant.organizerDetails ?? {};
+  const details = tenant.hostDetails ?? {};
   const avgRating =
     reviews.length > 0
       ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1)

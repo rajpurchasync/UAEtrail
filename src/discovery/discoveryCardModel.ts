@@ -21,6 +21,7 @@ import {
   memberProfilePath,
   resolveActivityPublisherProfilePath,
   resolveExploreFeaturedPerson,
+  type DiscoveryCardPresentationDTO,
 } from '@uaetrail/shared-types';
 import { groupRegionTextAtBrowseFilterLevel } from '../config/groupRegionFilter';
 import {
@@ -150,10 +151,37 @@ export const buildDiscoveryListMeta = (card: DiscoveryCardModel): string | null 
   return null;
 };
 
+/**
+ * Map items already carry `presentation` from the catalog build.
+ * Clock strings are reapplied here because the member's 12h/24h preference lives on the client.
+ */
+const presentationWithClientClock = (
+  item: ExploreMapItemDTO
+): DiscoveryCardPresentationDTO => {
+  const clocked = buildDiscoveryCardPresentation(item);
+  const wire = item.presentation;
+  if (!wire?.sections?.details) return clocked;
+  const clockTimes = clocked.sections.details.filter((detail) => detail.icon === 'time');
+  let timeIndex = 0;
+  return {
+    ...wire,
+    whenLabel: clocked.whenLabel,
+    shareText: clocked.shareText,
+    sections: {
+      ...wire.sections,
+      listWhen: clocked.sections.listWhen,
+      details: wire.sections.details.map((detail) => {
+        if (detail.icon !== 'time') return detail;
+        const next = clockTimes[timeIndex];
+        timeIndex += 1;
+        return next ?? detail;
+      }),
+    },
+  };
+};
+
 export const buildDiscoveryCardModel = (item: ExploreMapItemDTO): DiscoveryCardModel => {
-  const presentation = item.date
-    ? buildDiscoveryCardPresentation(item)
-    : (item.presentation ?? buildDiscoveryCardPresentation(item));
+  const presentation = presentationWithClientClock(item);
   const kind = presentation.kind;
   const source = exploreMapItemIsSeeking(item) ? 'activity' : presentation.source;
   const featuredPerson = item.featuredPerson ?? presentation.featuredPerson ?? resolveExploreFeaturedPerson(item);

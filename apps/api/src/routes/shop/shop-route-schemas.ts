@@ -9,7 +9,6 @@ import {
 export const idParamSchema = z.object({ id: z.string().min(1) });
 
 export const shopScopeSchema = z.object({
-  merchantId: z.string().min(1).optional(),
   shopId: z.string().min(1).optional(),
   tenantId: z.string().min(1).optional(),
 });
@@ -30,8 +29,8 @@ export const merchantProfileSchema = z.object({
 
 export const merchantProfilePatchSchema = merchantProfileSchema.partial();
 
-/** Live dual prefixes — `/organisation/*` stays next to `/merchant/*` (not a leftover file). */
-export const shopOrganisationManagePrefixes = ['/merchant', '/organisation'] as const;
+/** Shop manage routes. Mongo collection stays `merchant_profiles`. */
+export const shopManagePrefix = '/organisation' as const;
 
 export const serializeMerchantProfile = (profile: {
   id: string;
@@ -48,7 +47,6 @@ export const serializeMerchantProfile = (profile: {
 }) => ({
   id: profile.id,
   shopId: profile.id,
-  merchantId: profile.id,
   tenantId: profile.tenantId ?? null,
   shopName: profile.shopName,
   description: profile.description,
@@ -61,9 +59,9 @@ export const serializeMerchantProfile = (profile: {
   region: profile.region ?? null,
 });
 
-export async function getManagedMerchantProfile(userId: string, scope?: ShopManageScope | string) {
-  const resolvedScope: ShopManageScope = typeof scope === 'string' ? { merchantId: scope } : (scope ?? {});
-  const merchantKey = resolvedScope.merchantId ?? resolvedScope.shopId;
+export async function getManagedMerchantProfile(userId: string, scope?: ShopManageScope) {
+  const resolvedScope: ShopManageScope = scope ?? {};
+  const merchantKey = resolvedScope.shopId;
 
   if (merchantKey) {
     const profile = await findManagedMerchantProfileById(userId, merchantKey);

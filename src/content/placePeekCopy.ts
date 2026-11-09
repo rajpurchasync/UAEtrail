@@ -5,9 +5,9 @@ export const PLACE_PEEK_SECTION_REVIEWS = 'Reviews';
 export const PLACE_PEEK_SECTION_OUTINGS = 'Outings here';
 export const PLACE_PEEK_AREA_LABEL = 'Area';
 export const PLACE_PEEK_SCHEDULED = 'Scheduled';
-export const PLACE_PEEK_ARRANGE_TRIP = 'Arrange trip';
-/** Compact map peek footer tile. */
+/** Place page, map peek, and list poster — one label for starting an outing here. */
 export const PLACE_PEEK_FOOTER_PLAN_TRIP = 'Plan trip';
+export const PLACE_PEEK_ARRANGE_TRIP = PLACE_PEEK_FOOTER_PLAN_TRIP;
 export const PLACE_PEEK_FOOTER_DETAILS = 'Details';
 export const PLACE_PEEK_FOOTER_TRIP_ALERTS = 'Trip alerts';
 export const PLACE_PEEK_FOOTER_TRIP_ALERTS_ON = 'Alerts on';

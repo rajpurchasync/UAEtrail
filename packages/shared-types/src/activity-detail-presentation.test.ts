@@ -28,10 +28,8 @@ describe('buildActivityPresentationDTO', () => {
 
     expect(presentation.engagement.showCrewLockedHint).toBe(true);
     expect(presentation.engagement.joinEngagement).toBe('open');
-    expect(presentation.tabs.place.showLockedPlaceholder).toBe(true);
     expect(presentation.footerByTab.place).toBe('plan_join');
     expect(presentation.sections.showMeetingPoint).toBe(false);
-    expect(presentation.tabs.place.showLockedPlaceholder).toBe(true);
   });
 
   it('exposes one sections policy for the public page and embed', () => {
@@ -58,7 +56,7 @@ describe('buildActivityPresentationDTO', () => {
       showMeetingPoint: true,
       canOpenParticipantRoster: true,
     });
-    expect(presentation.tabs.place.showLockedPlaceholder).toBe(false);
+    expect(presentation.engagement.canAccessCrewSurfaces).toBe(true);
   });
 
   it('keeps section policy when embedded (tab chrome flags stay off)', () => {
@@ -80,8 +78,7 @@ describe('buildActivityPresentationDTO', () => {
 
     expect(presentation.sections.showMeetingPoint).toBe(true);
     expect(presentation.sections.showHostProfile).toBe(true);
-    expect(presentation.tabs.place.showLockedPlaceholder).toBe(false);
-    expect(presentation.tabs.buddies.showHostManageHub).toBe(false);
+    expect(presentation.engagement.showCrewLockedHint).toBe(false);
     expect(presentation.footerByTab.plan).toBeDefined();
   });
 

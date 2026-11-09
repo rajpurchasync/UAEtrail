@@ -59,10 +59,10 @@ describe('resolveActivityDetailWirePresentation', () => {
     });
 
     expect(presentation?.sections.showHostProfile).toBe(true);
-    expect(presentation?.tabs.buddies.showHostManageHub).toBe(false);
+    expect(presentation?.engagement.canAccessCrewSurfaces).toBe(true);
   });
 
-  it('mergeActivityDetailWirePresentation backfills sections from resolver', () => {
+  it('mergeActivityDetailWirePresentation keeps a complete API presentation and does not invent sections', () => {
     const openJoin: JoinRequestUiState = { kind: 'open' };
     const resolved = resolveActivityDetailWirePresentation({
       activity: {
@@ -78,12 +78,13 @@ describe('resolveActivityDetailWirePresentation', () => {
     });
     const staleApi = {
       engagement: resolved!.engagement,
-      tabs: resolved!.tabs,
       footerByTab: resolved!.footerByTab,
       strips: resolved!.strips,
     };
     const merged = mergeActivityDetailWirePresentation(staleApi, resolved);
-    expect(merged?.sections.showHostProfile).toBe(true);
+    expect(merged).toBeNull();
+    const complete = mergeActivityDetailWirePresentation(resolved, null);
+    expect(complete?.sections.showHostProfile).toBe(true);
   });
 
   it('returns null without viewerAccess', () => {
